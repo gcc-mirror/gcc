@@ -141,20 +141,23 @@ package body System.Interrupts is
    pragma Volatile_Components (User_Entry);
    --  Holds the task and entry index (if any) for each interrupt
 
-   --  Type and Head, Tail of the list containing Registered Interrupt
-   --  Handlers. These definitions are used to register the handlers
-   --  specified by the pragma Interrupt_Handler.
+   --  Type and the list containing Registered Interrupt Handlers. These
+   --  definitions are used to register the handlers specified by the pragma
+   --  Interrupt_Handler.
+
+   --------------------------
+   -- Handler Registration --
+   --------------------------
 
    type Registered_Handler;
    type R_Link is access all Registered_Handler;
 
    type Registered_Handler is record
-      H    : System.Address := System.Null_Address;
-      Next : R_Link := null;
+      H    : System.Address;
+      Next : R_Link;
    end record;
 
-   Registered_Handler_Head : R_Link := null;
-   Registered_Handler_Tail : R_Link := null;
+   Registered_Handlers : R_Link := null;
 
    Server_ID : array (Interrupt_ID) of System.Tasking.Task_Id :=
                  (others => System.Tasking.Null_Task);
@@ -543,6 +546,7 @@ package body System.Interrupts is
    -------------------
 
    function Is_Registered (Handler : Parameterless_Handler) return Boolean is
+      Ptr : R_Link := Registered_Handlers;
 
       type Acc_Proc is access procedure;
 
@@ -554,7 +558,6 @@ package body System.Interrupts is
       function To_Fat_Ptr is new Ada.Unchecked_Conversion
         (Parameterless_Handler, Fat_Ptr);
 
-      Ptr : R_Link;
       Fat : Fat_Ptr;
 
    begin
@@ -564,7 +567,6 @@ package body System.Interrupts is
 
       Fat := To_Fat_Ptr (Handler);
 
-      Ptr := Registered_Handler_Head;
       while Ptr /= null loop
          if Ptr.H = Fat.Handler_Addr.all'Address then
             return True;
@@ -635,8 +637,6 @@ package body System.Interrupts is
    --------------------------------
 
    procedure Register_Interrupt_Handler (Handler_Addr : System.Address) is
-      New_Node_Ptr : R_Link;
-
    begin
       --  This routine registers a handler as usable for dynamic interrupt
       --  handler association. Routines attaching and detaching handlers
@@ -650,16 +650,8 @@ package body System.Interrupts is
 
       pragma Assert (Handler_Addr /= System.Null_Address);
 
-      New_Node_Ptr := new Registered_Handler;
-      New_Node_Ptr.H := Handler_Addr;
-
-      if Registered_Handler_Head = null then
-         Registered_Handler_Head := New_Node_Ptr;
-         Registered_Handler_Tail := New_Node_Ptr;
-      else
-         Registered_Handler_Tail.Next := New_Node_Ptr;
-         Registered_Handler_Tail := New_Node_Ptr;
-      end if;
+      Registered_Handlers :=
+       new Registered_Handler'(H => Handler_Addr, Next => Registered_Handlers);
    end Register_Interrupt_Handler;
 
    -----------------------
@@ -882,7 +874,7 @@ package body System.Interrupts is
               To_System (Interrupt_Access_Hold.all'Identity);
          end if;
 
-         if (New_Handler = null) and then Old_Handler /= null then
+         if New_Handler = null and then Old_Handler /= null then
 
             --  Restore default handler
 

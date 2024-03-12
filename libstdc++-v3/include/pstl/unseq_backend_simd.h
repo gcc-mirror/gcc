@@ -61,7 +61,7 @@ template <class _Index, class _DifferenceType, class _Pred>
 bool
 __simd_or(_Index __first, _DifferenceType __n, _Pred __pred) noexcept
 {
-#if _PSTL_EARLYEXIT_PRESENT
+#if defined(_PSTL_EARLYEXIT_PRESENT)
     _DifferenceType __i;
     _PSTL_PRAGMA_VECTOR_UNALIGNED
     _PSTL_PRAGMA_SIMD_EARLYEXIT
@@ -101,7 +101,7 @@ template <class _Index, class _DifferenceType, class _Compare>
 _Index
 __simd_first(_Index __first, _DifferenceType __begin, _DifferenceType __end, _Compare __comp) noexcept
 {
-#if _PSTL_EARLYEXIT_PRESENT
+#if defined(_PSTL_EARLYEXIT_PRESENT)
     _DifferenceType __i = __begin;
     _PSTL_PRAGMA_VECTOR_UNALIGNED // Do not generate peel loop part
         _PSTL_PRAGMA_SIMD_EARLYEXIT for (; __i < __end; ++__i)
@@ -161,7 +161,7 @@ template <class _Index1, class _DifferenceType, class _Index2, class _Pred>
 std::pair<_Index1, _Index2>
 __simd_first(_Index1 __first1, _DifferenceType __n, _Index2 __first2, _Pred __pred) noexcept
 {
-#if _PSTL_EARLYEXIT_PRESENT
+#if defined(_PSTL_EARLYEXIT_PRESENT)
     _DifferenceType __i = 0;
     _PSTL_PRAGMA_VECTOR_UNALIGNED
     _PSTL_PRAGMA_SIMD_EARLYEXIT
@@ -383,7 +383,7 @@ __simd_adjacent_find(_Index __first, _Index __last, _BinaryPredicate __pred, boo
     typedef typename std::iterator_traits<_Index>::difference_type _DifferenceType;
     _DifferenceType __i = 0;
 
-#if _PSTL_EARLYEXIT_PRESENT
+#if defined(_PSTL_EARLYEXIT_PRESENT)
     //Some compiler versions fail to compile the following loop when iterators are used. Indices are used instead
     const _DifferenceType __n = __last - __first - 1;
     _PSTL_PRAGMA_VECTOR_UNALIGNED
@@ -532,7 +532,7 @@ struct _Combiner
     _BinaryOp* __bin_op; // Here is a pointer to function because of default ctor
 
     _Combiner() : __value{}, __bin_op(nullptr) {}
-    _Combiner(const _Tp& value, const _BinaryOp* __bin_op) : __value(value), __bin_op(const_cast<_BinaryOp*>(__bin_op)) {}
+    _Combiner(const _Tp& __v, const _BinaryOp* __b) : __value(__v), __bin_op(const_cast<_BinaryOp*>(__b)) {}
     _Combiner(const _Combiner& __obj) : __value{}, __bin_op(__obj.__bin_op) {}
 
     void
@@ -624,8 +624,8 @@ __simd_min_element(_ForwardIterator __first, _Size __n, _Compare __comp) noexcep
         _Compare* __min_comp;
 
         _ComplexType() : __min_val{}, __min_ind{}, __min_comp(nullptr) {}
-        _ComplexType(const _ValueType& __val, const _Compare* comp)
-            : __min_val(__val), __min_ind(0), __min_comp(const_cast<_Compare*>(comp))
+        _ComplexType(const _ValueType& val, const _Compare* comp)
+            : __min_val(val), __min_ind(0), __min_comp(const_cast<_Compare*>(comp))
         {
         }
         _ComplexType(const _ComplexType& __obj)
@@ -685,9 +685,9 @@ __simd_minmax_element(_ForwardIterator __first, _Size __n, _Compare __comp) noex
         _Compare* __minmax_comp;
 
         _ComplexType() : __min_val{}, __max_val{}, __min_ind{}, __max_ind{}, __minmax_comp(nullptr) {}
-        _ComplexType(const _ValueType& __min_val, const _ValueType& __max_val, const _Compare* comp)
-            : __min_val(__min_val), __max_val(__max_val), __min_ind(0), __max_ind(0),
-              __minmax_comp(const_cast<_Compare*>(comp))
+        _ComplexType(const _ValueType& __min, const _ValueType& __max, const _Compare* __comp)
+            : __min_val(__min), __max_val(__max), __min_ind(0), __max_ind(0),
+              __minmax_comp(const_cast<_Compare*>(__comp))
         {
         }
         _ComplexType(const _ComplexType& __obj)

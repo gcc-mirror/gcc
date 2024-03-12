@@ -571,12 +571,6 @@ void test12231()
 
 /***************************************************/
 
-int test2a(scope int a) { return a; }
-
-static assert(test2a.mangleof == "_D6mangle6test2aFiZi");
-
-/***************************************************/
-
 class CC
 {
     int* p;

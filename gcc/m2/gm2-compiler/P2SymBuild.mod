@@ -59,7 +59,7 @@ FROM SymbolTable IMPORT NulSym,
                         MakeSubrange,
                         MakeVar, MakeType, PutType,
                         MakeModuleCtor,
-                        PutMode, PutDeclared,
+                        PutMode, PutDeclared, GetParameterShadowVar,
                         PutFieldEnumeration, PutSubrange, PutVar, PutConst,
                         PutConstSet, PutConstructor,
                         IsDefImp, IsType, IsRecord, IsRecordField, IsPointer,
@@ -109,6 +109,7 @@ FROM SymbolTable IMPORT NulSym,
                         ParametersDefinedInImplementation,
                         ProcedureParametersDefined,
                         PutProcedureNoReturn,
+                        PutProcedureParameterHeapVars,
                         CheckForUnImplementedExports,
                         CheckForUndeclaredExports,
                         IsHiddenTypeDeclared,
@@ -1017,25 +1018,26 @@ VAR
    type,
    align    : CARDINAL ;
 BEGIN
-   PopT(alignment) ;
-   IF alignment=MakeKey('bytealignment')
+   PopT (alignment) ;
+   IF alignment = MakeKey ('bytealignment')
    THEN
-      PopT(align) ;
-      PopT(type) ;
-      IF align#NulSym
+      PopT (align) ;
+      PopT (type) ;
+      IF align # NulSym
       THEN
-         IF IsRecord(type) OR IsRecordField(type) OR IsType(type) OR IsArray(type) OR IsPointer(type)
+         IF IsRecord (type) OR IsRecordField (type) OR IsType (type) OR
+            IsArray (type) OR IsPointer( type) OR IsSubrange (type)
          THEN
-            PutAlignment(type, align)
+            PutAlignment (type, align)
          ELSE
-            MetaError1('not allowed to add an alignment attribute to type {%1ad}', type)
+            MetaError1 ('not allowed to add an alignment attribute to type {%1ad}', type)
          END
       END
-   ELSIF alignment#NulName
+   ELSIF alignment # NulName
    THEN
-      WriteFormat1('unknown type alignment attribute, %a', alignment)
+      WriteFormat1 ('unknown type alignment attribute, %a', alignment)
    ELSE
-      PopT(type)
+      PopT (type)
    END
 END BuildTypeAlignment ;
 
@@ -1377,6 +1379,7 @@ BEGIN
    THEN
       WriteFormat2('end procedure name does not match beginning %a name %a', NameStart, NameEnd)
    END ;
+   PutProcedureParameterHeapVars (ProcSym) ;
    EndScope ;
    M2Error.LeaveErrorScope
 END EndBuildProcedure ;
@@ -1820,14 +1823,15 @@ BEGIN
                (* different parameter names *)
                FailParameter('',
                              'the parameter has been declared with a different name',
-                             OperandT(pi), ParamTotal+i, ProcSym)
+                             OperandT (pi), ParamTotal+i, ProcSym)
             END
          ELSE
-            IF GetSymName(ParamI)=NulName
+            IF GetSymName (ParamI) = NulName
             THEN
-               PutParamName (OperandTok (pi), ProcSym, ParamTotal+i, OperandT(pi))
+               PutParamName (OperandTok (pi), ProcSym, ParamTotal+i, OperandT (pi))
             END
          END ;
+         PutDeclared (OperandTok (pi), GetParameterShadowVar (ParamI)) ;
          IF Unbounded
          THEN
             (* GetType(ParamI) yields an UnboundedSym or a PartialUnboundedSym,

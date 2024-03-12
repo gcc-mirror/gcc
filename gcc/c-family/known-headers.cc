@@ -320,6 +320,6 @@ suggest_missing_header::~suggest_missing_header ()
   maybe_add_include_fixit (&richloc, m_header_hint, true);
   inform (&richloc,
 	  "%qs is defined in header %qs;"
-	  " did you forget to %<#include %s%>?",
+	  " this is probably fixable by adding %<#include %s%>",
 	  m_name_str, m_header_hint, m_header_hint);
 }

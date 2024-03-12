@@ -25,4 +25,4 @@ test3 (svbool_t *ptr)
   *ptr = svwhilele_b8_u64 (0x8000000000000001ULL, 0x7ffffffffffffffeULL);
 }
 
-/* { dg-final { scan-assembler-times {\tpfalse\tp[0-7]\.b\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tpfalse\tp[0-9]+\.b\n} 3 } } */

@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -47,6 +48,7 @@ int main (void)
 
   for (i = 0; i < N; i++)
    {
+#pragma GCC novector
     for (j = 0; j < N; j++)
      {
        if (a[i][j] != c[i][j])
@@ -59,3 +61,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "possible dependence between data-refs" 0 "vect" } } */
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" { target { lp64 } } } } */

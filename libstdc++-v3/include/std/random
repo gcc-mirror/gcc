@@ -38,21 +38,16 @@
 #else
 
 #include <cmath>
+#include <cstdint> // For uint_fast32_t, uint_fast64_t, uint_least32_t
 #include <cstdlib>
 #include <string>
 #include <iosfwd>
 #include <limits>
 #include <debug/debug.h>
 #include <type_traits>
-
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
-#include <cstdint> // For uint_fast32_t, uint_fast64_t, uint_least32_t
 #include <bits/random.h>
 #include <bits/opt_random.h>
 #include <bits/random.tcc>
-
-#endif // _GLIBCXX_USE_C99_STDINT_TR1
 
 #endif // C++11
 

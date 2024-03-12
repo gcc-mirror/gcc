@@ -135,11 +135,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __extension__ inline _GLIBCXX_CONSTEXPR
   __float128
   abs(__float128 __x)
-  { return __x < 0 ? -__x : __x; }
+  {
+#if defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128)
+    return __builtin_fabsl(__x);
+#elif defined(_GLIBCXX_HAVE_FLOAT128_MATH)
+    return __builtin_fabsf128(__x);
+#else
+    // Assume that __builtin_signbit works for __float128.
+    return __builtin_signbit(__x) ? -__x : __x;
+#endif
+  }
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-} // extern "C"++"
+} // extern "C++"
 
 #endif // _GLIBCXX_BITS_STD_ABS_H

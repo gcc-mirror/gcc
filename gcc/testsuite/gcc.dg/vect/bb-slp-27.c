@@ -35,6 +35,7 @@ int main (void)
 
   foo (A);
 
+#pragma GCC novector
   for (i = 0; i < 8; i++)
     {
       if (dst[i] != A * i)

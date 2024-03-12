@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
    gimple code, we need to handle GIMPLE tuples as well as their
    corresponding tree equivalents.  */
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -150,6 +151,76 @@ static tree fold_convert_const (enum tree_code, tree, tree);
 static tree fold_view_convert_expr (tree, tree);
 static tree fold_negate_expr (location_t, tree);
 
+/* This is a helper function to detect min/max for some operands of COND_EXPR.
+   The form is "(EXP0 CMP EXP1) ? EXP2 : EXP3". */
+tree_code
+minmax_from_comparison (tree_code cmp, tree exp0, tree exp1, tree exp2, tree exp3)
+{
+  enum tree_code code = ERROR_MARK;
+
+  if (HONOR_NANS (exp0) || HONOR_SIGNED_ZEROS (exp0))
+    return ERROR_MARK;
+
+  if (!operand_equal_p (exp0, exp2))
+    return ERROR_MARK;
+
+  if (TREE_CODE (exp3) == INTEGER_CST && TREE_CODE (exp1) == INTEGER_CST)
+    {
+      if (wi::to_widest (exp1) == (wi::to_widest (exp3) - 1))
+	{
+	  /* X <= Y - 1 equals to X < Y.  */
+	  if (cmp == LE_EXPR)
+	    code = LT_EXPR;
+	  /* X > Y - 1 equals to X >= Y.  */
+	  if (cmp == GT_EXPR)
+	    code = GE_EXPR;
+	  /* a != MIN_RANGE<a> ? a : MIN_RANGE<a>+1 -> MAX_EXPR<MIN_RANGE<a>+1, a> */
+	  if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
+	    {
+	      value_range r;
+	      get_range_query (cfun)->range_of_expr (r, exp0);
+	      if (r.undefined_p ())
+		r.set_varying (TREE_TYPE (exp0));
+
+	      widest_int min = widest_int::from (r.lower_bound (),
+						 TYPE_SIGN (TREE_TYPE (exp0)));
+	      if (min == wi::to_widest (exp1))
+		code = MAX_EXPR;
+	    }
+	}
+      if (wi::to_widest (exp1) == (wi::to_widest (exp3) + 1))
+	{
+	  /* X < Y + 1 equals to X <= Y.  */
+	  if (cmp == LT_EXPR)
+	    code = LE_EXPR;
+	  /* X >= Y + 1 equals to X > Y.  */
+	  if (cmp == GE_EXPR)
+	  code = GT_EXPR;
+	  /* a != MAX_RANGE<a> ? a : MAX_RANGE<a>-1 -> MIN_EXPR<MIN_RANGE<a>-1, a> */
+	  if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
+	    {
+	      value_range r;
+	      get_range_query (cfun)->range_of_expr (r, exp0);
+	      if (r.undefined_p ())
+		r.set_varying (TREE_TYPE (exp0));
+
+	      widest_int max = widest_int::from (r.upper_bound (),
+						 TYPE_SIGN (TREE_TYPE (exp0)));
+	      if (max == wi::to_widest (exp1))
+		code = MIN_EXPR;
+	    }
+	}
+    }
+  if (code != ERROR_MARK
+      || operand_equal_p (exp1, exp3))
+    {
+      if (cmp == LT_EXPR || cmp == LE_EXPR)
+	code = MIN_EXPR;
+      if (cmp == GT_EXPR || cmp == GE_EXPR)
+	code = MAX_EXPR;
+    }
+  return code;
+}
 
 /* Return EXPR_LOCATION of T if it is not UNKNOWN_LOCATION.
    Otherwise, return LOC.  */
@@ -529,7 +600,7 @@ negate_expr_p (tree t)
 
     case NOP_EXPR:
       /* Negate -((double)float) as (double)(-float).  */
-      if (TREE_CODE (type) == REAL_TYPE)
+      if (SCALAR_FLOAT_TYPE_P (type))
 	{
 	  tree tem = strip_float_extensions (t);
 	  if (tem != t)
@@ -715,7 +786,7 @@ fold_negate_expr_1 (location_t loc, tree t)
 
     case NOP_EXPR:
       /* Convert -((double)float) into (double)(-float).  */
-      if (TREE_CODE (type) == REAL_TYPE)
+      if (SCALAR_FLOAT_TYPE_P (type))
 	{
 	  tem = strip_float_extensions (t);
 	  if (tem != t && negate_expr_p (tem))
@@ -852,8 +923,8 @@ split_tree (tree in, tree type, enum tree_code code,
     {
       tree op0 = TREE_OPERAND (in, 0);
       tree op1 = TREE_OPERAND (in, 1);
-      int neg1_p = TREE_CODE (in) == MINUS_EXPR;
-      int neg_litp_p = 0, neg_conp_p = 0, neg_var_p = 0;
+      bool neg1_p = TREE_CODE (in) == MINUS_EXPR;
+      bool neg_litp_p = false, neg_conp_p = false, neg_var_p = false;
 
       /* First see if either of the operands is a literal, then a constant.  */
       if (TREE_CODE (op0) == INTEGER_CST || TREE_CODE (op0) == REAL_CST
@@ -1142,6 +1213,25 @@ wide_int_binop (wide_int &res,
   return true;
 }
 
+/* Returns true if we know who is smaller or equal, ARG1 or ARG2, and set the
+   min value to RES.  */
+bool
+can_min_p (const_tree arg1, const_tree arg2, poly_wide_int &res)
+{
+  if (known_le (wi::to_poly_widest (arg1), wi::to_poly_widest (arg2)))
+    {
+      res = wi::to_poly_wide (arg1);
+      return true;
+    }
+  else if (known_le (wi::to_poly_widest (arg2), wi::to_poly_widest (arg1)))
+    {
+      res = wi::to_poly_wide (arg2);
+      return true;
+    }
+
+  return false;
+}
+
 /* Combine two poly int's ARG1 and ARG2 under operation CODE to
    produce a new constant in RES.  Return FALSE if we don't know how
    to evaluate CODE at compile-time.  */
@@ -1187,6 +1277,11 @@ poly_int_binop (poly_wide_int &res, enum tree_code code,
       if (TREE_CODE (arg2) != INTEGER_CST
 	  || !can_ior_p (wi::to_poly_wide (arg1), wi::to_wide (arg2),
 			 &res))
+	return false;
+      break;
+
+    case MIN_EXPR:
+      if (!can_min_p (arg1, arg2, res))
 	return false;
       break;
 
@@ -1380,7 +1475,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       FIXED_VALUE_TYPE f2;
       FIXED_VALUE_TYPE result;
       tree t, type;
-      int sat_p;
+      bool sat_p;
       bool overflow_p;
 
       /* The following codes are handled by fixed_arithmetic.  */
@@ -2042,7 +2137,10 @@ fold_convert_const_int_from_int (tree type, const_tree arg1)
   /* Given an integer constant, make new constant with new type,
      appropriately sign-extended or truncated.  Use widest_int
      so that any extension is done according ARG1's type.  */
-  return force_fit_type (type, wi::to_widest (arg1),
+  tree arg1_type = TREE_TYPE (arg1);
+  unsigned prec = MAX (TYPE_PRECISION (arg1_type), TYPE_PRECISION (type));
+  return force_fit_type (type, wide_int::from (wi::to_wide (arg1), prec,
+					       TYPE_SIGN (arg1_type)),
 			 !POINTER_TYPE_P (TREE_TYPE (arg1)),
 			 TREE_OVERFLOW (arg1));
 }
@@ -2341,7 +2439,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
       else if (TREE_CODE (arg1) == FIXED_CST)
 	return fold_convert_const_int_from_fixed (type, arg1);
     }
-  else if (TREE_CODE (type) == REAL_TYPE)
+  else if (SCALAR_FLOAT_TYPE_P (type))
     {
       if (TREE_CODE (arg1) == INTEGER_CST)
 	{
@@ -2363,7 +2461,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
       else if (TREE_CODE (arg1) == FIXED_CST)
 	return fold_convert_const_real_from_fixed (type, arg1);
     }
-  else if (TREE_CODE (type) == FIXED_POINT_TYPE)
+  else if (FIXED_POINT_TYPE_P (type))
     {
       if (TREE_CODE (arg1) == FIXED_CST)
 	return fold_convert_const_fixed_from_fixed (type, arg1);
@@ -2372,7 +2470,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
       else if (TREE_CODE (arg1) == REAL_CST)
 	return fold_convert_const_fixed_from_real (type, arg1);
     }
-  else if (TREE_CODE (type) == VECTOR_TYPE)
+  else if (VECTOR_TYPE_P (type))
     {
       if (TREE_CODE (arg1) == VECTOR_CST
 	  && known_eq (TYPE_VECTOR_SUBPARTS (type), VECTOR_CST_NELTS (arg1)))
@@ -2487,7 +2585,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
       /* fall through */
 
     case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
-    case OFFSET_TYPE:
+    case OFFSET_TYPE: case BITINT_TYPE:
       if (TREE_CODE (arg) == INTEGER_CST)
 	{
 	  tem = fold_convert_const (NOP_EXPR, type, arg);
@@ -2501,7 +2599,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
 	return fold_convert_loc (loc, type,
 				 fold_build1_loc (loc, REALPART_EXPR,
 						  TREE_TYPE (orig), arg));
-      gcc_assert (TREE_CODE (orig) == VECTOR_TYPE
+      gcc_assert (VECTOR_TYPE_P (orig)
 		  && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
       return fold_build1_loc (loc, VIEW_CONVERT_EXPR, type, arg);
 
@@ -2527,7 +2625,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
 
       switch (TREE_CODE (orig))
 	{
-	case INTEGER_TYPE:
+	case INTEGER_TYPE: case BITINT_TYPE:
 	case BOOLEAN_TYPE: case ENUMERAL_TYPE:
 	case POINTER_TYPE: case REFERENCE_TYPE:
 	  return fold_build1_loc (loc, FLOAT_EXPR, type, arg);
@@ -2562,6 +2660,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
 	case ENUMERAL_TYPE:
 	case BOOLEAN_TYPE:
 	case REAL_TYPE:
+	case BITINT_TYPE:
 	  return fold_build1_loc (loc, FIXED_CONVERT_EXPR, type, arg);
 
 	case COMPLEX_TYPE:
@@ -2575,7 +2674,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
     case COMPLEX_TYPE:
       switch (TREE_CODE (orig))
 	{
-	case INTEGER_TYPE:
+	case INTEGER_TYPE: case BITINT_TYPE:
 	case BOOLEAN_TYPE: case ENUMERAL_TYPE:
 	case POINTER_TYPE: case REFERENCE_TYPE:
 	case REAL_TYPE:
@@ -2614,7 +2713,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
 	return build_zero_vector (type);
       gcc_assert (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
       gcc_assert (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
-		  || TREE_CODE (orig) == VECTOR_TYPE);
+		  || VECTOR_TYPE_P (orig));
       return fold_build1_loc (loc, VIEW_CONVERT_EXPR, type, arg);
 
     case VOID_TYPE:
@@ -5254,6 +5353,8 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
 	    equiv_type
 	      = lang_hooks.types.type_for_mode (TYPE_MODE (arg0_type),
 						TYPE_SATURATING (arg0_type));
+	  else if (TREE_CODE (arg0_type) == BITINT_TYPE)
+	    equiv_type = arg0_type;
 	  else
 	    equiv_type
 	      = lang_hooks.types.type_for_mode (TYPE_MODE (arg0_type), 1);
@@ -5467,7 +5568,12 @@ range_check_type (tree etype)
       else
 	return NULL_TREE;
     }
-  else if (POINTER_TYPE_P (etype) || TREE_CODE (etype) == OFFSET_TYPE)
+  else if (POINTER_TYPE_P (etype)
+	   || TREE_CODE (etype) == OFFSET_TYPE
+	   /* Right now all BITINT_TYPEs satisfy
+	      (unsigned) max + 1 == (unsigned) min, so no need to verify
+	      that like for INTEGER_TYPEs.  */
+	   || TREE_CODE (etype) == BITINT_TYPE)
     etype = unsigned_type_for (etype);
   return etype;
 }
@@ -5610,7 +5716,7 @@ bool
 merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 	      tree high0, int in1_p, tree low1, tree high1)
 {
-  int no_overlap;
+  bool no_overlap;
   int subset;
   int temp;
   tree tem;
@@ -6780,12 +6886,21 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 {
   tree type = TREE_TYPE (t);
   enum tree_code tcode = TREE_CODE (t);
-  tree ctype = (wide_type != 0
-		&& (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (wide_type))
-		    > GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)))
-		? wide_type : type);
+  tree ctype = type;
+  if (wide_type)
+    {
+      if (TREE_CODE (type) == BITINT_TYPE
+	  || TREE_CODE (wide_type) == BITINT_TYPE)
+	{
+	  if (TYPE_PRECISION (wide_type) > TYPE_PRECISION (type))
+	    ctype = wide_type;
+	}
+      else if (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (wide_type))
+	       > GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)))
+	ctype = wide_type;
+    }
   tree t1, t2;
-  int same_p = tcode == code;
+  bool same_p = tcode == code;
   tree op0 = NULL_TREE, op1 = NULL_TREE;
   bool sub_strict_overflow_p;
 
@@ -7140,7 +7255,7 @@ constant_boolean_node (bool value, tree type)
     return value ? integer_one_node : integer_zero_node;
   else if (type == boolean_type_node)
     return value ? boolean_true_node : boolean_false_node;
-  else if (TREE_CODE (type) == VECTOR_TYPE)
+  else if (VECTOR_TYPE_P (type))
     return build_vector_from_val (type,
 				  build_int_cst (TREE_TYPE (type),
 						 value ? -1 : 0));
@@ -7193,7 +7308,7 @@ fold_binary_op_with_conditional_arg (location_t loc,
 	rhs = false_value;
     }
   else if (!(TREE_CODE (type) != VECTOR_TYPE
-	     && TREE_CODE (TREE_TYPE (cond)) == VECTOR_TYPE))
+	     && VECTOR_TYPE_P (TREE_TYPE (cond))))
     {
       tree testtype = TREE_TYPE (cond);
       test = cond;
@@ -7204,7 +7319,7 @@ fold_binary_op_with_conditional_arg (location_t loc,
     /* Detect the case of mixing vector and scalar types - bail out.  */
     return NULL_TREE;
 
-  if (TREE_CODE (TREE_TYPE (test)) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (TREE_TYPE (test)))
     cond_code = VEC_COND_EXPR;
 
   /* This transformation is only worthwhile if we don't have to wrap ARG
@@ -7389,118 +7504,6 @@ fold_div_compare (enum tree_code code, tree c1, tree c2, tree *lo,
   return code;
 }
 
-
-/* If CODE with arguments ARG0 and ARG1 represents a single bit
-   equality/inequality test, then return a simplified form of the test
-   using a sign testing.  Otherwise return NULL.  TYPE is the desired
-   result type.  */
-
-static tree
-fold_single_bit_test_into_sign_test (location_t loc,
-				     enum tree_code code, tree arg0, tree arg1,
-				     tree result_type)
-{
-  /* If this is testing a single bit, we can optimize the test.  */
-  if ((code == NE_EXPR || code == EQ_EXPR)
-      && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
-      && integer_pow2p (TREE_OPERAND (arg0, 1)))
-    {
-      /* If we have (A & C) != 0 where C is the sign bit of A, convert
-	 this into A < 0.  Similarly for (A & C) == 0 into A >= 0.  */
-      tree arg00 = sign_bit_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg0, 1));
-
-      if (arg00 != NULL_TREE
-	  /* This is only a win if casting to a signed type is cheap,
-	     i.e. when arg00's type is not a partial mode.  */
-	  && type_has_mode_precision_p (TREE_TYPE (arg00)))
-	{
-	  tree stype = signed_type_for (TREE_TYPE (arg00));
-	  return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,
-			      result_type,
-			      fold_convert_loc (loc, stype, arg00),
-			      build_int_cst (stype, 0));
-	}
-    }
-
-  return NULL_TREE;
-}
-
-/* If CODE with arguments ARG0 and ARG1 represents a single bit
-   equality/inequality test, then return a simplified form of
-   the test using shifts and logical operations.  Otherwise return
-   NULL.  TYPE is the desired result type.  */
-
-tree
-fold_single_bit_test (location_t loc, enum tree_code code,
-		      tree arg0, tree arg1, tree result_type)
-{
-  /* If this is testing a single bit, we can optimize the test.  */
-  if ((code == NE_EXPR || code == EQ_EXPR)
-      && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
-      && integer_pow2p (TREE_OPERAND (arg0, 1)))
-    {
-      tree inner = TREE_OPERAND (arg0, 0);
-      tree type = TREE_TYPE (arg0);
-      int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
-      scalar_int_mode operand_mode = SCALAR_INT_TYPE_MODE (type);
-      int ops_unsigned;
-      tree signed_type, unsigned_type, intermediate_type;
-      tree tem, one;
-
-      /* First, see if we can fold the single bit test into a sign-bit
-	 test.  */
-      tem = fold_single_bit_test_into_sign_test (loc, code, arg0, arg1,
-						 result_type);
-      if (tem)
-	return tem;
-
-      /* Otherwise we have (A & C) != 0 where C is a single bit,
-	 convert that into ((A >> C2) & 1).  Where C2 = log2(C).
-	 Similarly for (A & C) == 0.  */
-
-      /* If INNER is a right shift of a constant and it plus BITNUM does
-	 not overflow, adjust BITNUM and INNER.  */
-      if (TREE_CODE (inner) == RSHIFT_EXPR
-	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
-	  && bitnum < TYPE_PRECISION (type)
-	  && wi::ltu_p (wi::to_wide (TREE_OPERAND (inner, 1)),
-			TYPE_PRECISION (type) - bitnum))
-	{
-	  bitnum += tree_to_uhwi (TREE_OPERAND (inner, 1));
-	  inner = TREE_OPERAND (inner, 0);
-	}
-
-      /* If we are going to be able to omit the AND below, we must do our
-	 operations as unsigned.  If we must use the AND, we have a choice.
-	 Normally unsigned is faster, but for some machines signed is.  */
-      ops_unsigned = (load_extend_op (operand_mode) == SIGN_EXTEND
-		      && !flag_syntax_only) ? 0 : 1;
-
-      signed_type = lang_hooks.types.type_for_mode (operand_mode, 0);
-      unsigned_type = lang_hooks.types.type_for_mode (operand_mode, 1);
-      intermediate_type = ops_unsigned ? unsigned_type : signed_type;
-      inner = fold_convert_loc (loc, intermediate_type, inner);
-
-      if (bitnum != 0)
-	inner = build2 (RSHIFT_EXPR, intermediate_type,
-			inner, size_int (bitnum));
-
-      one = build_int_cst (intermediate_type, 1);
-
-      if (code == EQ_EXPR)
-	inner = fold_build2_loc (loc, BIT_XOR_EXPR, intermediate_type, inner, one);
-
-      /* Put the AND last so it can combine with more things.  */
-      inner = build2 (BIT_AND_EXPR, intermediate_type, inner, one);
-
-      /* Make sure to return the proper type.  */
-      inner = fold_convert_loc (loc, result_type, inner);
-
-      return inner;
-    }
-  return NULL_TREE;
-}
-
 /* Test whether it is preferable to swap two operands, ARG0 and
    ARG1, for example because ARG0 is an integer constant and ARG1
    isn't.  */
@@ -7509,17 +7512,17 @@ bool
 tree_swap_operands_p (const_tree arg0, const_tree arg1)
 {
   if (CONSTANT_CLASS_P (arg1))
-    return 0;
+    return false;
   if (CONSTANT_CLASS_P (arg0))
-    return 1;
+    return true;
 
   STRIP_NOPS (arg0);
   STRIP_NOPS (arg1);
 
   if (TREE_CONSTANT (arg1))
-    return 0;
+    return false;
   if (TREE_CONSTANT (arg0))
-    return 1;
+    return true;
 
   /* It is preferable to swap two SSA_NAME to ensure a canonical form
      for commutative and comparison operators.  Ensuring a canonical
@@ -7528,21 +7531,21 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1)
   if (TREE_CODE (arg0) == SSA_NAME
       && TREE_CODE (arg1) == SSA_NAME
       && SSA_NAME_VERSION (arg0) > SSA_NAME_VERSION (arg1))
-    return 1;
+    return true;
 
   /* Put SSA_NAMEs last.  */
   if (TREE_CODE (arg1) == SSA_NAME)
-    return 0;
+    return false;
   if (TREE_CODE (arg0) == SSA_NAME)
-    return 1;
+    return true;
 
   /* Put variables last.  */
   if (DECL_P (arg1))
-    return 0;
+    return false;
   if (DECL_P (arg0))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 
@@ -7756,7 +7759,29 @@ static int
 native_encode_int (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
-  int total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+  int total_bytes;
+  if (TREE_CODE (type) == BITINT_TYPE)
+    {
+      struct bitint_info info;
+      bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+      gcc_assert (ok);
+      scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+      if (TYPE_PRECISION (type) > GET_MODE_PRECISION (limb_mode))
+	{
+	  total_bytes = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+	  /* More work is needed when adding _BitInt support to PDP endian
+	     if limb is smaller than word, or if _BitInt limb ordering doesn't
+	     match target endianity here.  */
+	  gcc_checking_assert (info.big_endian == WORDS_BIG_ENDIAN
+			       && (BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
+				   || (GET_MODE_SIZE (limb_mode)
+				       >= UNITS_PER_WORD)));
+	}
+      else
+	total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+    }
+  else
+    total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
   int byte, offset, word, words;
   unsigned char value;
 
@@ -8428,20 +8453,26 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 	      if (fieldsize == 0)
 		continue;
 
+	      /* Prepare to deal with integral bit-fields and filter out other
+		 bit-fields that do not start and end on a byte boundary.  */
 	      if (DECL_BIT_FIELD (field))
 		{
 		  if (!tree_fits_uhwi_p (DECL_FIELD_BIT_OFFSET (field)))
 		    return 0;
-		  fieldsize = TYPE_PRECISION (TREE_TYPE (field));
 		  bpos = tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field));
-		  if (bpos % BITS_PER_UNIT)
-		    bpos %= BITS_PER_UNIT;
-		  else
-		    bpos = 0;
-		  fieldsize += bpos;
-		  epos = fieldsize % BITS_PER_UNIT;
-		  fieldsize += BITS_PER_UNIT - 1;
-		  fieldsize /= BITS_PER_UNIT;
+		  if (INTEGRAL_TYPE_P (TREE_TYPE (field)))
+		    {
+		      bpos %= BITS_PER_UNIT;
+		      fieldsize = TYPE_PRECISION (TREE_TYPE (field)) + bpos;
+		      epos = fieldsize % BITS_PER_UNIT;
+		      fieldsize += BITS_PER_UNIT - 1;
+		      fieldsize /= BITS_PER_UNIT;
+		    }
+		  else if (bpos % BITS_PER_UNIT
+			   || DECL_SIZE (field) == NULL_TREE
+			   || !tree_fits_shwi_p (DECL_SIZE (field))
+			   || tree_to_shwi (DECL_SIZE (field)) % BITS_PER_UNIT)
+		    return 0;
 		}
 
 	      if (off != -1 && pos + fieldsize <= off)
@@ -8450,7 +8481,8 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 	      if (val == NULL_TREE)
 		continue;
 
-	      if (DECL_BIT_FIELD (field))
+	      if (DECL_BIT_FIELD (field)
+		  && INTEGRAL_TYPE_P (TREE_TYPE (field)))
 		{
 		  /* FIXME: Handle PDP endian.  */
 		  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
@@ -8657,7 +8689,29 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 static tree
 native_interpret_int (tree type, const unsigned char *ptr, int len)
 {
-  int total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+  int total_bytes;
+  if (TREE_CODE (type) == BITINT_TYPE)
+    {
+      struct bitint_info info;
+      bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+      gcc_assert (ok);
+      scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+      if (TYPE_PRECISION (type) > GET_MODE_PRECISION (limb_mode))
+	{
+	  total_bytes = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+	  /* More work is needed when adding _BitInt support to PDP endian
+	     if limb is smaller than word, or if _BitInt limb ordering doesn't
+	     match target endianity here.  */
+	  gcc_checking_assert (info.big_endian == WORDS_BIG_ENDIAN
+			       && (BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
+				   || (GET_MODE_SIZE (limb_mode)
+				       >= UNITS_PER_WORD)));
+	}
+      else
+	total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+    }
+  else
+    total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
 
   if (total_bytes > len
       || total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
@@ -8831,16 +8885,13 @@ native_interpret_vector_part (tree type, const unsigned char *bytes,
 static tree
 native_interpret_vector (tree type, const unsigned char *ptr, unsigned int len)
 {
-  tree etype;
-  unsigned int size;
-  unsigned HOST_WIDE_INT count;
+  unsigned HOST_WIDE_INT size;
 
-  etype = TREE_TYPE (type);
-  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (etype));
-  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&count)
-      || size * count > len)
+  if (!tree_to_poly_uint64 (TYPE_SIZE_UNIT (type)).is_constant (&size)
+      || size > len)
     return NULL_TREE;
 
+  unsigned HOST_WIDE_INT count = TYPE_VECTOR_SUBPARTS (type).to_constant ();
   return native_interpret_vector_part (type, ptr, len, count, 1);
 }
 
@@ -8862,6 +8913,7 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
+    case BITINT_TYPE:
       return native_interpret_int (type, ptr, len);
 
     case REAL_TYPE:
@@ -8973,7 +9025,8 @@ native_interpret_aggregate (tree type, const unsigned char *ptr, int off,
     return NULL_TREE;
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
-      if (TREE_CODE (field) != FIELD_DECL || DECL_PADDING_P (field))
+      if (TREE_CODE (field) != FIELD_DECL || DECL_PADDING_P (field)
+	  || is_empty_type (TREE_TYPE (field)))
 	continue;
       tree fld = field;
       HOST_WIDE_INT bitoff = 0, pos = 0, sz = 0;
@@ -9216,8 +9269,8 @@ fold_view_convert_vector_encoding (tree type, tree expr)
 static tree
 fold_view_convert_expr (tree type, tree expr)
 {
-  /* We support up to 512-bit values (for V8DFmode).  */
-  unsigned char buffer[64];
+  /* We support up to 1024-bit values (for GCN/RISC-V V128QImode).  */
+  unsigned char buffer[128];
   int len;
 
   /* Check that the host and target are sane.  */
@@ -9245,7 +9298,7 @@ build_fold_addr_expr_with_type_loc (location_t loc, tree t, tree ptrtype)
   if (TREE_CODE (t) == WITH_SIZE_EXPR)
     t = TREE_OPERAND (t, 0);
 
-  if (TREE_CODE (t) == INDIRECT_REF)
+  if (INDIRECT_REF_P (t))
     {
       t = TREE_OPERAND (t, 0);
 
@@ -9515,8 +9568,13 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    }
 	  if (change)
 	    {
-	      tem = force_fit_type (type, wi::to_widest (and1), 0,
-				    TREE_OVERFLOW (and1));
+	      tree and1_type = TREE_TYPE (and1);
+	      unsigned prec = MAX (TYPE_PRECISION (and1_type),
+				   TYPE_PRECISION (type));
+	      tem = force_fit_type (type,
+				    wide_int::from (wi::to_wide (and1), prec,
+						    TYPE_SIGN (and1_type)),
+				    0, TREE_OVERFLOW (and1));
 	      return fold_build2_loc (loc, BIT_AND_EXPR, type,
 				      fold_convert_loc (loc, type, and0), tem);
 	    }
@@ -9731,10 +9789,10 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
       tree a01 = TREE_OPERAND (arg0, 1);
       tree a10 = TREE_OPERAND (arg1, 0);
       tree a11 = TREE_OPERAND (arg1, 1);
-      int commutative = ((TREE_CODE (arg0) == TRUTH_OR_EXPR
-			  || TREE_CODE (arg0) == TRUTH_AND_EXPR)
-			 && (code == TRUTH_AND_EXPR
-			     || code == TRUTH_OR_EXPR));
+      bool commutative = ((TREE_CODE (arg0) == TRUTH_OR_EXPR
+			   || TREE_CODE (arg0) == TRUTH_AND_EXPR)
+			  && (code == TRUTH_AND_EXPR
+			      || code == TRUTH_OR_EXPR));
 
       if (operand_equal_p (a00, a10, 0))
 	return fold_build2_loc (loc, TREE_CODE (arg0), type, a00,
@@ -10093,7 +10151,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	    = get_inner_reference (TREE_OPERAND (arg0, 0),
 				   &bitsize, &bitpos0, &offset0, &mode,
 				   &unsignedp, &reversep, &volatilep);
-	  if (TREE_CODE (base0) == INDIRECT_REF)
+	  if (INDIRECT_REF_P (base0))
 	    base0 = TREE_OPERAND (base0, 0);
 	  else
 	    indirect_base0 = true;
@@ -10108,7 +10166,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 		= get_inner_reference (TREE_OPERAND (base0, 0),
 				       &bitsize, &bitpos0, &offset0, &mode,
 				       &unsignedp, &reversep, &volatilep);
-	      if (TREE_CODE (base0) == INDIRECT_REF)
+	      if (INDIRECT_REF_P (base0))
 		base0 = TREE_OPERAND (base0, 0);
 	      else
 		indirect_base0 = true;
@@ -10136,7 +10194,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	    = get_inner_reference (TREE_OPERAND (arg1, 0),
 				   &bitsize, &bitpos1, &offset1, &mode,
 				   &unsignedp, &reversep, &volatilep);
-	  if (TREE_CODE (base1) == INDIRECT_REF)
+	  if (INDIRECT_REF_P (base1))
 	    base1 = TREE_OPERAND (base1, 0);
 	  else
 	    indirect_base1 = true;
@@ -10151,7 +10209,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 		= get_inner_reference (TREE_OPERAND (base1, 0),
 				       &bitsize, &bitpos1, &offset1, &mode,
 				       &unsignedp, &reversep, &volatilep);
-	      if (TREE_CODE (base1) == INDIRECT_REF)
+	      if (INDIRECT_REF_P (base1))
 		base1 = TREE_OPERAND (base1, 0);
 	      else
 		indirect_base1 = true;
@@ -10557,6 +10615,181 @@ vec_cst_ctor_to_array (tree arg, unsigned int nelts, tree *elts)
   return true;
 }
 
+/* Helper routine for fold_vec_perm_cst to check if SEL is a suitable
+   mask for VLA vec_perm folding.
+   REASON if specified, will contain the reason why SEL is not suitable.
+   Used only for debugging and unit-testing.  */
+
+static bool
+valid_mask_for_fold_vec_perm_cst_p (tree arg0, tree arg1,
+				    const vec_perm_indices &sel,
+				    const char **reason = NULL)
+{
+  unsigned sel_npatterns = sel.encoding ().npatterns ();
+  unsigned sel_nelts_per_pattern = sel.encoding ().nelts_per_pattern ();
+
+  if (!(pow2p_hwi (sel_npatterns)
+	&& pow2p_hwi (VECTOR_CST_NPATTERNS (arg0))
+	&& pow2p_hwi (VECTOR_CST_NPATTERNS (arg1))))
+    {
+      if (reason)
+	*reason = "npatterns is not power of 2";
+      return false;
+    }
+
+  /* We want to avoid cases where sel.length is not a multiple of npatterns.
+     For eg: sel.length = 2 + 2x, and sel npatterns = 4.  */
+  poly_uint64 esel;
+  if (!multiple_p (sel.length (), sel_npatterns, &esel))
+    {
+      if (reason)
+	*reason = "sel.length is not multiple of sel_npatterns";
+      return false;
+    }
+
+  if (sel_nelts_per_pattern < 3)
+    return true;
+
+  for (unsigned pattern = 0; pattern < sel_npatterns; pattern++)
+    {
+      poly_uint64 a1 = sel[pattern + sel_npatterns];
+      poly_uint64 a2 = sel[pattern + 2 * sel_npatterns];
+      HOST_WIDE_INT step;
+      if (!poly_int64 (a2 - a1).is_constant (&step))
+	{
+	  if (reason)
+	    *reason = "step is not constant";
+	  return false;
+	}
+      // FIXME: Punt on step < 0 for now, revisit later.
+      if (step < 0)
+	return false;
+      if (step == 0)
+	continue;
+
+      if (!pow2p_hwi (step))
+	{
+	  if (reason)
+	    *reason = "step is not power of 2";
+	  return false;
+	}
+
+      /* Ensure that stepped sequence of the pattern selects elements
+	 only from the same input vector.  */
+      uint64_t q1, qe;
+      poly_uint64 r1, re;
+      poly_uint64 ae = a1 + (esel - 2) * step;
+      poly_uint64 arg_len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+      if (!(can_div_trunc_p (a1, arg_len, &q1, &r1)
+	    && can_div_trunc_p (ae, arg_len, &qe, &re)
+	    && q1 == qe))
+	{
+	  if (reason)
+	    *reason = "crossed input vectors";
+	  return false;
+	}
+
+      /* Ensure that the stepped sequence always selects from the same
+	 input pattern.  */
+      unsigned arg_npatterns
+	= ((q1 & 1) == 0) ? VECTOR_CST_NPATTERNS (arg0)
+			  : VECTOR_CST_NPATTERNS (arg1);
+
+      if (!multiple_p (step, arg_npatterns))
+	{
+	  if (reason)
+	    *reason = "step is not multiple of npatterns";
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+/* Try to fold permutation of ARG0 and ARG1 with SEL selector when
+   the input vectors are VECTOR_CST. Return NULL_TREE otherwise.
+   REASON has same purpose as described in
+   valid_mask_for_fold_vec_perm_cst_p.  */
+
+static tree
+fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
+		   const char **reason = NULL)
+{
+  unsigned res_npatterns, res_nelts_per_pattern;
+  unsigned HOST_WIDE_INT res_nelts;
+
+  /* (1) If SEL is a suitable mask as determined by
+     valid_mask_for_fold_vec_perm_cst_p, then:
+     res_npatterns = max of npatterns between ARG0, ARG1, and SEL
+     res_nelts_per_pattern = max of nelts_per_pattern between
+			     ARG0, ARG1 and SEL.
+     (2) If SEL is not a suitable mask, and TYPE is VLS then:
+     res_npatterns = nelts in result vector.
+     res_nelts_per_pattern = 1.
+     This exception is made so that VLS ARG0, ARG1 and SEL work as before.  */
+  if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
+    {
+      res_npatterns
+	= std::max (VECTOR_CST_NPATTERNS (arg0),
+		    std::max (VECTOR_CST_NPATTERNS (arg1),
+			      sel.encoding ().npatterns ()));
+
+      res_nelts_per_pattern
+	= std::max (VECTOR_CST_NELTS_PER_PATTERN (arg0),
+		    std::max (VECTOR_CST_NELTS_PER_PATTERN (arg1),
+			      sel.encoding ().nelts_per_pattern ()));
+
+      res_nelts = res_npatterns * res_nelts_per_pattern;
+    }
+  else if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
+    {
+      res_npatterns = res_nelts;
+      res_nelts_per_pattern = 1;
+    }
+  else
+    return NULL_TREE;
+
+  tree_vector_builder out_elts (type, res_npatterns, res_nelts_per_pattern);
+  for (unsigned i = 0; i < res_nelts; i++)
+    {
+      poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      uint64_t q;
+      poly_uint64 r;
+      unsigned HOST_WIDE_INT index;
+
+      /* Punt if sel[i] /trunc_div len cannot be determined,
+	 because the input vector to be chosen will depend on
+	 runtime vector length.
+	 For example if len == 4 + 4x, and sel[i] == 4,
+	 If len at runtime equals 4, we choose arg1[0].
+	 For any other value of len > 4 at runtime, we choose arg0[4].
+	 which makes the element choice dependent on runtime vector length.  */
+      if (!can_div_trunc_p (sel[i], len, &q, &r))
+	{
+	  if (reason)
+	    *reason = "cannot divide selector element by arg len";
+	  return NULL_TREE;
+	}
+
+      /* sel[i] % len will give the index of element in the chosen input
+	 vector. For example if sel[i] == 5 + 4x and len == 4 + 4x,
+	 we will choose arg1[1] since (5 + 4x) % (4 + 4x) == 1.  */
+      if (!r.is_constant (&index))
+	{
+	  if (reason)
+	    *reason = "remainder is not constant";
+	  return NULL_TREE;
+	}
+
+      tree arg = ((q & 1) == 0) ? arg0 : arg1;
+      tree elem = vector_cst_elt (arg, index);
+      out_elts.quick_push (elem);
+    }
+
+  return out_elts.build ();
+}
+
 /* Attempt to fold vector permutation of ARG0 and ARG1 vectors using SEL
    selector.  Return the folded VECTOR_CST or CONSTRUCTOR if successful,
    NULL_TREE otherwise.  */
@@ -10566,43 +10799,41 @@ fold_vec_perm (tree type, tree arg0, tree arg1, const vec_perm_indices &sel)
 {
   unsigned int i;
   unsigned HOST_WIDE_INT nelts;
-  bool need_ctor = false;
 
-  if (!sel.length ().is_constant (&nelts))
-    return NULL_TREE;
-  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type), nelts)
-	      && known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)), nelts)
-	      && known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)), nelts));
+  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type), sel.length ())
+	      && known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)),
+			   TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1))));
+
   if (TREE_TYPE (TREE_TYPE (arg0)) != TREE_TYPE (type)
       || TREE_TYPE (TREE_TYPE (arg1)) != TREE_TYPE (type))
     return NULL_TREE;
 
+  if (TREE_CODE (arg0) == VECTOR_CST
+      && TREE_CODE (arg1) == VECTOR_CST)
+    return fold_vec_perm_cst (type, arg0, arg1, sel);
+
+  /* For fall back case, we want to ensure we have VLS vectors
+     with equal length.  */
+  if (!sel.length ().is_constant (&nelts))
+    return NULL_TREE;
+
+  gcc_assert (known_eq (sel.length (),
+			TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0))));
   tree *in_elts = XALLOCAVEC (tree, nelts * 2);
   if (!vec_cst_ctor_to_array (arg0, nelts, in_elts)
       || !vec_cst_ctor_to_array (arg1, nelts, in_elts + nelts))
     return NULL_TREE;
 
-  tree_vector_builder out_elts (type, nelts, 1);
+  vec<constructor_elt, va_gc> *v;
+  vec_alloc (v, nelts);
   for (i = 0; i < nelts; i++)
     {
       HOST_WIDE_INT index;
       if (!sel[i].is_constant (&index))
 	return NULL_TREE;
-      if (!CONSTANT_CLASS_P (in_elts[index]))
-	need_ctor = true;
-      out_elts.quick_push (unshare_expr (in_elts[index]));
+      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, in_elts[index]);
     }
-
-  if (need_ctor)
-    {
-      vec<constructor_elt, va_gc> *v;
-      vec_alloc (v, nelts);
-      for (i = 0; i < nelts; i++)
-	CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, out_elts[i]);
-      return build_constructor (type, v);
-    }
-  else
-    return out_elts.build ();
+  return build_constructor (type, v);
 }
 
 /* Try to fold a pointer difference of type TYPE two address expressions of
@@ -10833,13 +11064,8 @@ expr_not_equal_to (tree t, const wide_int &w)
       if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	return false;
 
-      if (cfun)
-	get_range_query (cfun)->range_of_expr (vr, t);
-      else
-	get_global_range_query ()->range_of_expr (vr, t);
-
-      if (!vr.undefined_p ()
-	  && !vr.contains_p (wide_int_to_tree (TREE_TYPE (t), w)))
+      get_range_query (cfun)->range_of_expr (vr, t);
+      if (!vr.undefined_p () && !vr.contains_p (w))
 	return true;
       /* If T has some known zero bits and W has any of those bits set,
 	 then T is known not to be equal to W.  */
@@ -12337,13 +12563,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 			      tem, build_int_cst (TREE_TYPE (tem), 0));
 	}
 
-      if (integer_zerop (arg1)
-	  && tree_expr_nonzero_p (arg0))
-        {
-	  tree res = constant_boolean_node (code==NE_EXPR, type);
-	  return omit_one_operand_loc (loc, type, res, arg0);
-	}
-
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	  && TREE_CODE (arg1) == BIT_XOR_EXPR)
 	{
@@ -12610,10 +12829,10 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	tree targ1 = strip_float_extensions (arg1);
 	tree newtype = TREE_TYPE (targ0);
 
-	if (TYPE_PRECISION (TREE_TYPE (targ1)) > TYPE_PRECISION (newtype))
+	if (element_precision (TREE_TYPE (targ1)) > element_precision (newtype))
 	  newtype = TREE_TYPE (targ1);
 
-	if (TYPE_PRECISION (newtype) < TYPE_PRECISION (TREE_TYPE (arg0)))
+	if (element_precision (newtype) < element_precision (TREE_TYPE (arg0)))
 	  return fold_build2_loc (loc, code, type,
 			      fold_convert_loc (loc, newtype, targ0),
 			      fold_convert_loc (loc, newtype, targ1));
@@ -13720,9 +13939,7 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 	  fold_checksum_tree (TYPE_MAX_VALUE (expr), ctx, ht);
 	}
       fold_checksum_tree (TYPE_MAIN_VARIANT (expr), ctx, ht);
-      if (TREE_CODE (expr) == RECORD_TYPE
-	  || TREE_CODE (expr) == UNION_TYPE
-	  || TREE_CODE (expr) == QUAL_UNION_TYPE)
+      if (RECORD_OR_UNION_TYPE_P (expr))
 	fold_checksum_tree (TYPE_BINFO (expr), ctx, ht);
       fold_checksum_tree (TYPE_CONTEXT (expr), ctx, ht);
       break;
@@ -14060,8 +14277,8 @@ fold_binary_initializer_loc (location_t loc, tree_code code, tree type,
 #undef START_FOLD_INIT
 #undef END_FOLD_INIT
 
-/* Determine if first argument is a multiple of second argument.  Return 0 if
-   it is not, or we cannot easily determined it to be.
+/* Determine if first argument is a multiple of second argument.  Return
+   false if it is not, or we cannot easily determined it to be.
 
    An example of the sort of thing we care about (at this point; this routine
    could surely be made more general, and expanded to do what the *_DIV_EXPR's
@@ -14106,17 +14323,17 @@ fold_binary_initializer_loc (location_t loc, tree_code code, tree type,
    NOWRAP is mostly used to treat expressions in TYPE_SIZE and friends
    as not wrapping even though they are generally using unsigned arithmetic.  */
 
-int
+bool
 multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 {
   gimple *stmt;
   tree op1, op2;
 
   if (operand_equal_p (top, bottom, 0))
-    return 1;
+    return true;
 
   if (TREE_CODE (type) != INTEGER_TYPE)
-    return 0;
+    return false;
 
   switch (TREE_CODE (top))
     {
@@ -14124,7 +14341,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
       /* Bitwise and provides a power of two multiple.  If the mask is
 	 a multiple of BOTTOM then TOP is a multiple of BOTTOM.  */
       if (!integer_pow2p (bottom))
-	return 0;
+	return false;
       return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom, nowrap)
 	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap));
 
@@ -14135,7 +14352,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
       if (!nowrap
 	  && !TYPE_OVERFLOW_UNDEFINED (type)
 	  && !integer_pow2p (bottom))
-	return 0;
+	return false;
       if (TREE_CODE (bottom) == INTEGER_CST)
 	{
 	  op1 = TREE_OPERAND (top, 0);
@@ -14145,7 +14362,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	  if (TREE_CODE (op2) == INTEGER_CST)
 	    {
 	      if (multiple_of_p (type, op2, bottom, nowrap))
-		return 1;
+		return true;
 	      /* Handle multiple_of_p ((x * 2 + 2) * 4, 8).  */
 	      if (multiple_of_p (type, bottom, op2, nowrap))
 		{
@@ -14177,7 +14394,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 				    nowrap);
 	    }
 	}
-      return 0;
+      return false;
 
     case MINUS_EXPR:
     case PLUS_EXPR:
@@ -14187,7 +14404,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
       if (!nowrap
 	  && !TYPE_OVERFLOW_UNDEFINED (type)
 	  && !integer_pow2p (bottom))
-	return 0;
+	return false;
 
       /* Handle cases like op0 + 0xfffffffd as op0 - 3 if the expression has
 	 unsigned type.  For example, (X / 3) + 0xfffffffd is multiple of 3,
@@ -14211,7 +14428,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
       if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (top, 0))) != INTEGER_TYPE)
 	  || (TYPE_PRECISION (type)
 	      < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (top, 0)))))
-	return 0;
+	return false;
       /* NOWRAP only extends to operations in the outermost type so
 	 make sure to strip it off here.  */
       return multiple_of_p (TREE_TYPE (TREE_OPERAND (top, 0)),
@@ -14226,7 +14443,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 
     case INTEGER_CST:
       if (TREE_CODE (bottom) != INTEGER_CST || integer_zerop (bottom))
-	return 0;
+	return false;
       return wi::multiple_of_p (wi::to_widest (top), wi::to_widest (bottom),
 				SIGNED);
 
@@ -14252,7 +14469,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	      && integer_pow2p (bottom)
 	      && wi::multiple_of_p (wi::to_widest (op2),
 				    wi::to_widest (bottom), UNSIGNED))
-	    return 1;
+	    return true;
 
 	  op1 = gimple_assign_rhs1 (stmt);
 	  if (code == MINUS_EXPR
@@ -14263,7 +14480,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	      && (code = gimple_assign_rhs_code (stmt)) == TRUNC_MOD_EXPR
 	      && operand_equal_p (op1, gimple_assign_rhs1 (stmt), 0)
 	      && operand_equal_p (bottom, gimple_assign_rhs2 (stmt), 0))
-	    return 1;
+	    return true;
 	}
 
       /* fall through */
@@ -14273,7 +14490,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	return multiple_p (wi::to_poly_widest (top),
 			   wi::to_poly_widest (bottom));
 
-      return 0;
+      return false;
     }
 }
 
@@ -14578,7 +14795,8 @@ tree_expr_maybe_real_minus_zero_p (const_tree x)
 static bool
 tree_simple_nonnegative_warnv_p (enum tree_code code, tree type)
 {
-  if ((TYPE_PRECISION (type) != 1 || TYPE_UNSIGNED (type))
+  if (!VECTOR_TYPE_P (type)
+      && (TYPE_PRECISION (type) != 1 || TYPE_UNSIGNED (type))
       && truth_value_p (code))
     /* Truth values evaluate to 0 or 1, which is nonnegative unless we
        have a signed:1 type (where the value is -1 and 0).  */
@@ -14622,9 +14840,9 @@ tree_unary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
 	tree inner_type = TREE_TYPE (op0);
 	tree outer_type = type;
 
-	if (TREE_CODE (outer_type) == REAL_TYPE)
+	if (SCALAR_FLOAT_TYPE_P (outer_type))
 	  {
-	    if (TREE_CODE (inner_type) == REAL_TYPE)
+	    if (SCALAR_FLOAT_TYPE_P (inner_type))
 	      return RECURSE (op0);
 	    if (INTEGRAL_TYPE_P (inner_type))
 	      {
@@ -14635,7 +14853,7 @@ tree_unary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
 	  }
 	else if (INTEGRAL_TYPE_P (outer_type))
 	  {
-	    if (TREE_CODE (inner_type) == REAL_TYPE)
+	    if (SCALAR_FLOAT_TYPE_P (inner_type))
 	      return RECURSE (op0);
 	    if (INTEGRAL_TYPE_P (inner_type))
 	      return TYPE_PRECISION (inner_type) < TYPE_PRECISION (outer_type)
@@ -15399,7 +15617,7 @@ integer_valued_real_unary_p (tree_code code, tree op0, int depth)
 	tree type = TREE_TYPE (op0);
 	if (TREE_CODE (type) == INTEGER_TYPE)
 	  return true;
-	if (TREE_CODE (type) == REAL_TYPE)
+	if (SCALAR_FLOAT_TYPE_P (type))
 	  return RECURSE (op0);
 	break;
       }
@@ -15630,7 +15848,7 @@ fold_unary_to_constant (enum tree_code code, tree type, tree op0)
 tree
 fold_read_from_constant_string (tree exp)
 {
-  if ((TREE_CODE (exp) == INDIRECT_REF
+  if ((INDIRECT_REF_P (exp)
        || TREE_CODE (exp) == ARRAY_REF)
       && TREE_CODE (TREE_TYPE (exp)) == INTEGER_TYPE)
     {
@@ -15639,7 +15857,7 @@ fold_read_from_constant_string (tree exp)
       tree string;
       location_t loc = EXPR_LOCATION (exp);
 
-      if (TREE_CODE (exp) == INDIRECT_REF)
+      if (INDIRECT_REF_P (exp))
 	string = string_constant (exp1, &index, NULL, NULL);
       else
 	{
@@ -16350,7 +16568,7 @@ round_down_loc (location_t loc, tree value, int divisor)
 
 static tree
 split_address_to_core_and_offset (tree exp,
-				  poly_int64_pod *pbitpos, tree *poffset)
+				  poly_int64 *pbitpos, tree *poffset)
 {
   tree core;
   machine_mode mode;
@@ -16400,7 +16618,7 @@ split_address_to_core_and_offset (tree exp,
    otherwise.  If they do, E1 - E2 is stored in *DIFF.  */
 
 bool
-ptr_difference_const (tree e1, tree e2, poly_int64_pod *diff)
+ptr_difference_const (tree e1, tree e2, poly_int64 *diff)
 {
   tree core1, core2;
   poly_int64 bitpos1, bitpos2;
@@ -16938,6 +17156,618 @@ test_arithmetic_folding ()
 				   x);
 }
 
+namespace test_fold_vec_perm_cst {
+
+/* Build a VECTOR_CST corresponding to VMODE, and has
+   encoding given by NPATTERNS, NELTS_PER_PATTERN and STEP.
+   Fill it with randomized elements, using rand() % THRESHOLD.  */
+
+static tree
+build_vec_cst_rand (machine_mode vmode, unsigned npatterns,
+		    unsigned nelts_per_pattern,
+		    int step = 0, int threshold = 100)
+{
+  tree inner_type = lang_hooks.types.type_for_mode (GET_MODE_INNER (vmode), 1);
+  tree vectype = build_vector_type_for_mode (inner_type, vmode);
+  tree_vector_builder builder (vectype, npatterns, nelts_per_pattern);
+
+  // Fill a0 for each pattern
+  for (unsigned i = 0; i < npatterns; i++)
+    builder.quick_push (build_int_cst (inner_type, rand () % threshold));
+
+  if (nelts_per_pattern == 1)
+    return builder.build ();
+
+  // Fill a1 for each pattern
+  for (unsigned i = 0; i < npatterns; i++)
+    builder.quick_push (build_int_cst (inner_type, rand () % threshold));
+
+  if (nelts_per_pattern == 2)
+    return builder.build ();
+
+  for (unsigned i = npatterns * 2; i < npatterns * nelts_per_pattern; i++)
+    {
+      tree prev_elem = builder[i - npatterns];
+      int prev_elem_val = TREE_INT_CST_LOW (prev_elem);
+      int val = prev_elem_val + step;
+      builder.quick_push (build_int_cst (inner_type, val));
+    }
+
+  return builder.build ();
+}
+
+/* Validate result of VEC_PERM_EXPR folding for the unit-tests below,
+   when result is VLA.  */
+
+static void
+validate_res (unsigned npatterns, unsigned nelts_per_pattern,
+	      tree res, tree *expected_res)
+{
+  /* Actual npatterns and encoded_elts in res may be less than expected due
+     to canonicalization.  */
+  ASSERT_TRUE (res != NULL_TREE);
+  ASSERT_TRUE (VECTOR_CST_NPATTERNS (res) <= npatterns);
+  ASSERT_TRUE (vector_cst_encoded_nelts (res) <= npatterns * nelts_per_pattern);
+
+  for (unsigned i = 0; i < npatterns * nelts_per_pattern; i++)
+    ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (res, i), expected_res[i], 0));
+}
+
+/* Validate result of VEC_PERM_EXPR folding for the unit-tests below,
+   when the result is VLS.  */
+
+static void
+validate_res_vls (tree res, tree *expected_res, unsigned expected_nelts)
+{
+  ASSERT_TRUE (known_eq (VECTOR_CST_NELTS (res), expected_nelts));
+  for (unsigned i = 0; i < expected_nelts; i++)
+    ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (res, i), expected_res[i], 0));
+}
+
+/* Helper routine to push multiple elements into BUILDER.  */
+template<unsigned N>
+static void builder_push_elems (vec_perm_builder& builder,
+				poly_uint64 (&elems)[N])
+{
+  for (unsigned i = 0; i < N; i++)
+    builder.quick_push (elems[i]);
+}
+
+#define ARG0(index) vector_cst_elt (arg0, index)
+#define ARG1(index) vector_cst_elt (arg1, index)
+
+/* Test cases where result is VNx4SI and input vectors are V4SI.  */
+
+static void
+test_vnx4si_v4si (machine_mode vnx4si_mode, machine_mode v4si_mode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1:
+	 sel = { 0, 4, 1, 5, ... }
+	 res = { arg[0], arg1[0], arg0[1], arg1[1], ...} // (4, 1)  */
+      {
+	tree arg0 = build_vec_cst_rand (v4si_mode, 4, 1, 0);
+	tree arg1 = build_vec_cst_rand (v4si_mode, 4, 1, 0);
+
+	tree inner_type
+	  = lang_hooks.types.type_for_mode (GET_MODE_INNER (vnx4si_mode), 1);
+	tree res_type = build_vector_type_for_mode (inner_type, vnx4si_mode);
+
+	poly_uint64 res_len = TYPE_VECTOR_SUBPARTS (res_type);
+	vec_perm_builder builder (res_len, 4, 1);
+	poly_uint64 mask_elems[] = { 0, 4, 1, 5 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, res_len);
+	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG0(1), ARG1(1) };
+	validate_res (4, 1, res, expected_res);
+      }
+
+      /* Case 2: Same as case 1, but contains an out of bounds access which
+	 should wrap around.
+	 sel = {0, 8, 4, 12, ...} (4, 1)
+	 res = { arg0[0], arg0[0], arg1[0], arg1[0], ... } (4, 1).  */
+      {
+	tree arg0 = build_vec_cst_rand (v4si_mode, 4, 1, 0);
+	tree arg1 = build_vec_cst_rand (v4si_mode, 4, 1, 0);
+
+	tree inner_type
+	  = lang_hooks.types.type_for_mode (GET_MODE_INNER (vnx4si_mode), 1);
+	tree res_type = build_vector_type_for_mode (inner_type, vnx4si_mode);
+
+	poly_uint64 res_len = TYPE_VECTOR_SUBPARTS (res_type);
+	vec_perm_builder builder (res_len, 4, 1);
+	poly_uint64 mask_elems[] = { 0, 8, 4, 12 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, res_len);
+	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(0), ARG1(0), ARG1(0) };
+	validate_res (4, 1, res, expected_res);
+      }
+    }
+}
+
+/* Test cases where result is V4SI and input vectors are VNx4SI.  */
+
+static void
+test_v4si_vnx4si (machine_mode v4si_mode, machine_mode vnx4si_mode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1:
+	 sel = { 0, 1, 2, 3}
+	 res = { arg0[0], arg0[1], arg0[2], arg0[3] }.  */
+      {
+	tree arg0 = build_vec_cst_rand (vnx4si_mode, 4, 1);
+	tree arg1 = build_vec_cst_rand (vnx4si_mode, 4, 1);
+
+	tree inner_type
+	  = lang_hooks.types.type_for_mode (GET_MODE_INNER (v4si_mode), 1);
+	tree res_type = build_vector_type_for_mode (inner_type, v4si_mode);
+
+	poly_uint64 res_len = TYPE_VECTOR_SUBPARTS (res_type);
+	vec_perm_builder builder (res_len, 4, 1);
+	poly_uint64 mask_elems[] = {0, 1, 2, 3};
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, res_len);
+	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(1), ARG0(2), ARG0(3) };
+	validate_res_vls (res, expected_res, 4);
+      }
+
+      /* Case 2: Same as Case 1, but crossing input vector.
+	 sel = {0, 2, 4, 6}
+	 In this case,the index 4 is ambiguous since len = 4 + 4x.
+	 Since we cannot determine, which vector to choose from during
+	 compile time, should return NULL_TREE.  */
+      {
+	tree arg0 = build_vec_cst_rand (vnx4si_mode, 4, 1);
+	tree arg1 = build_vec_cst_rand (vnx4si_mode, 4, 1);
+
+	tree inner_type
+	  = lang_hooks.types.type_for_mode (GET_MODE_INNER (v4si_mode), 1);
+	tree res_type = build_vector_type_for_mode (inner_type, v4si_mode);
+
+	poly_uint64 res_len = TYPE_VECTOR_SUBPARTS (res_type);
+	vec_perm_builder builder (res_len, 4, 1);
+	poly_uint64 mask_elems[] = {0, 2, 4, 6};
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, res_len);
+	const char *reason;
+	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel, &reason);
+
+	ASSERT_TRUE (res == NULL_TREE);
+	ASSERT_TRUE (!strcmp (reason, "cannot divide selector element by arg len"));
+      }
+    }
+}
+
+/* Test all input vectors.  */
+
+static void
+test_all_nunits (machine_mode vmode)
+{
+  /* Test with 10 different inputs.  */
+  for (int i = 0; i < 10; i++)
+    {
+      tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+      tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+      poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+      /* Case 1: mask = {0, ...} // (1, 1)
+	 res = { arg0[0], ... } // (1, 1)  */
+      {
+	vec_perm_builder builder (len, 1, 1);
+	builder.quick_push (0);
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+	tree expected_res[] = { ARG0(0) };
+	validate_res (1, 1, res, expected_res);
+      }
+
+      /* Case 2: mask = {len, ...} // (1, 1)
+	 res = { arg1[0], ... } // (1, 1)  */
+      {
+	vec_perm_builder builder (len, 1, 1);
+	builder.quick_push (len);
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG1(0) };
+	validate_res (1, 1, res, expected_res);
+      }
+    }
+}
+
+/* Test all vectors which contain at-least 2 elements.  */
+
+static void
+test_nunits_min_2 (machine_mode vmode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1: mask = { 0, len, ... }  // (2, 1)
+	 res = { arg0[0], arg1[0], ... } // (2, 1)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 1);
+	poly_uint64 mask_elems[] = { 0, len };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0) };
+	validate_res (2, 1, res, expected_res);
+      }
+
+      /* Case 2: mask = { 0, len, 1, len+1, ... } // (2, 2)
+	 res = { arg0[0], arg1[0], arg0[1], arg1[1], ... } // (2, 2)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 2);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG0(1), ARG1(1) };
+	validate_res (2, 2, res, expected_res);
+      }
+
+      /* Case 4: mask = {0, 0, 1, ...} // (1, 3)
+	 Test that the stepped sequence of the pattern selects from
+	 same input pattern. Since input vectors have npatterns = 2,
+	 and step (a2 - a1) = 1, step is not a multiple of npatterns
+	 in input vector. So return NULL_TREE.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 2, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 2, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { 0, 0, 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	const char *reason;
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel,
+				      &reason);
+	ASSERT_TRUE (res == NULL_TREE);
+	ASSERT_TRUE (!strcmp (reason, "step is not multiple of npatterns"));
+      }
+
+      /* Case 5: mask = {len, 0, 1, ...} // (1, 3)
+	 Test that stepped sequence of the pattern selects from arg0.
+	 res = { arg1[0], arg0[0], arg0[1], ... } // (1, 3)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { len, 0, 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG1(0), ARG0(0), ARG0(1) };
+	validate_res (1, 3, res, expected_res);
+      }
+    }
+}
+
+/* Test all vectors which contain at-least 4 elements.  */
+
+static void
+test_nunits_min_4 (machine_mode vmode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1: mask = { 0, len, 1, len+1, ... } // (4, 1)
+	 res: { arg0[0], arg1[0], arg0[1], arg1[1], ... } // (4, 1)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 4, 1);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG0(1), ARG1(1) };
+	validate_res (4, 1, res, expected_res);
+      }
+
+      /* Case 2: sel = {0, 1, 2, ...}  // (1, 3)
+	 res: { arg0[0], arg0[1], arg0[2], ... } // (1, 3) */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 2);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 2);
+	poly_uint64 arg0_len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (arg0_len, 1, 3);
+	poly_uint64 mask_elems[] = {0, 1, 2};
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, arg0_len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+	tree expected_res[] = { ARG0(0), ARG0(1), ARG0(2) };
+	validate_res (1, 3, res, expected_res);
+      }
+
+      /* Case 3: sel = {len, len+1, len+2, ...} // (1, 3)
+	 res: { arg1[0], arg1[1], arg1[2], ... } // (1, 3) */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 2);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 2);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = {len, len + 1, len + 2};
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+	tree expected_res[] = { ARG1(0), ARG1(1), ARG1(2) };
+	validate_res (1, 3, res, expected_res);
+      }
+
+      /* Case 4:
+	sel = { len, 0, 2, ... } // (1, 3)
+	This should return NULL because we cross the input vectors.
+	Because,
+	Let's assume len = C + Cx
+	a1 = 0
+	S = 2
+	esel = arg0_len / sel_npatterns = C + Cx
+	ae = 0 + (esel - 2) * S
+	   = 0 + (C + Cx - 2) * 2
+	   = 2(C-2) + 2Cx
+
+	For C >= 4:
+	Let q1 = a1 / arg0_len = 0 / (C + Cx) = 0
+	Let qe = ae / arg0_len = (2(C-2) + 2Cx) / (C + Cx) = 1
+	Since q1 != qe, we cross input vectors.
+	So return NULL_TREE.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 2);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 2);
+	poly_uint64 arg0_len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (arg0_len, 1, 3);
+	poly_uint64 mask_elems[] = { arg0_len, 0, 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, arg0_len);
+	const char *reason;
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel, &reason);
+	ASSERT_TRUE (res == NULL_TREE);
+	ASSERT_TRUE (!strcmp (reason, "crossed input vectors"));
+      }
+
+      /* Case 5: npatterns(arg0) = 4 > npatterns(sel) = 2
+	 mask = { 0, len, 1, len + 1, ...} // (2, 2)
+	 res = { arg0[0], arg1[0], arg0[1], arg1[1], ... } // (2, 2)
+
+	 Note that fold_vec_perm_cst will set
+	 res_npatterns = max(4, max(4, 2)) = 4
+	 However after canonicalizing, we will end up with shape (2, 2).  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 4, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 4, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 2);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG0(1), ARG1(1) };
+	validate_res (2, 2, res, expected_res);
+      }
+
+      /* Case 6: Test combination in sel, where one pattern is dup and other
+	 is stepped sequence.
+	 sel = { 0, 0, 0, 1, 0, 2, ... } // (2, 3)
+	 res = { arg0[0], arg0[0], arg0[0],
+		 arg0[1], arg0[0], arg0[2], ... } // (2, 3)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 3);
+	poly_uint64 mask_elems[] = { 0, 0, 0, 1, 0, 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(0), ARG0(0),
+				ARG0(1), ARG0(0), ARG0(2) };
+	validate_res (2, 3, res, expected_res);
+      }
+
+      /* Case 7: PR111048: Check that we set arg_npatterns correctly,
+	 when arg0, arg1 and sel have different number of patterns.
+	 arg0 is of shape (1, 1)
+	 arg1 is of shape (4, 1)
+	 sel is of shape (2, 3) = {1, len, 2, len+1, 3, len+2, ...}
+
+	 In this case the pattern: {len, len+1, len+2, ...} chooses arg1.
+	 However,
+	 step = (len+2) - (len+1) = 1
+	 arg_npatterns = VECTOR_CST_NPATTERNS (arg1) = 4
+	 Since step is not a multiple of arg_npatterns,
+	 valid_mask_for_fold_vec_perm_cst should return false,
+	 and thus fold_vec_perm_cst should return NULL_TREE.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 4, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 3);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1, 2, len + 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	const char *reason;
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel, &reason);
+
+	ASSERT_TRUE (res == NULL_TREE);
+	ASSERT_TRUE (!strcmp (reason, "step is not multiple of npatterns"));
+      }
+    }
+}
+
+/* Test all vectors which contain at-least 8 elements.  */
+
+static void
+test_nunits_min_8 (machine_mode vmode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1: sel_npatterns (4) > input npatterns (2)
+	 sel: { 0, 0, 1, len, 2, 0, 3, len, 4, 0, 5, len, ...} // (4, 3)
+	 res: { arg0[0], arg0[0], arg0[0], arg1[0],
+		arg0[2], arg0[0], arg0[3], arg1[0],
+		arg0[4], arg0[0], arg0[5], arg1[0], ... } // (4, 3)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 2, 3, 2);
+	tree arg1 = build_vec_cst_rand (vmode, 2, 3, 2);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder(len, 4, 3);
+	poly_uint64 mask_elems[] = { 0, 0, 1, len, 2, 0, 3, len,
+				     4, 0, 5, len };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(0), ARG0(1), ARG1(0),
+				ARG0(2), ARG0(0), ARG0(3), ARG1(0),
+				ARG0(4), ARG0(0), ARG0(5), ARG1(0) };
+	validate_res (4, 3, res, expected_res);
+      }
+    }
+}
+
+/* Test vectors for which nunits[0] <= 4.  */
+
+static void
+test_nunits_max_4 (machine_mode vmode)
+{
+  /* Case 1: mask = {0, 4, ...} // (1, 2)
+     This should return NULL_TREE because the index 4 may choose
+     from either arg0 or arg1 depending on vector length.  */
+  {
+    tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+    tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+    poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+    vec_perm_builder builder (len, 1, 2);
+    poly_uint64 mask_elems[] = {0, 4};
+    builder_push_elems (builder, mask_elems);
+
+    vec_perm_indices sel (builder, 2, len);
+    const char *reason;
+    tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel, &reason);
+    ASSERT_TRUE (res == NULL_TREE);
+    ASSERT_TRUE (reason != NULL);
+    ASSERT_TRUE (!strcmp (reason, "cannot divide selector element by arg len"));
+  }
+}
+
+#undef ARG0
+#undef ARG1
+
+/* Return true if SIZE is of the form C + Cx and C is power of 2.  */
+
+static bool
+is_simple_vla_size (poly_uint64 size)
+{
+  if (size.is_constant ()
+      || !pow2p_hwi (size.coeffs[0]))
+    return false;
+  for (unsigned i = 1; i < ARRAY_SIZE (size.coeffs); ++i)
+    if (size.coeffs[i] != (i <= 1 ? size.coeffs[0] : 0))
+      return false;
+  return true;
+}
+
+/* Execute fold_vec_perm_cst unit tests.  */
+
+static void
+test ()
+{
+  machine_mode vnx4si_mode = E_VOIDmode;
+  machine_mode v4si_mode = E_VOIDmode;
+
+  machine_mode vmode;
+  FOR_EACH_MODE_IN_CLASS (vmode, MODE_VECTOR_INT)
+    {
+      /* Obtain modes corresponding to VNx4SI and V4SI,
+	 to call mixed mode tests below.
+	 FIXME: Is there a better way to do this ?  */
+      if (GET_MODE_INNER (vmode) == SImode)
+	{
+	  poly_uint64 nunits = GET_MODE_NUNITS (vmode);
+	  if (is_simple_vla_size (nunits)
+	      && nunits.coeffs[0] == 4)
+	    vnx4si_mode = vmode;
+	  else if (known_eq (nunits, poly_uint64 (4)))
+	    v4si_mode = vmode;
+	}
+
+      if (!is_simple_vla_size (GET_MODE_NUNITS (vmode))
+	  || !targetm.vector_mode_supported_p (vmode))
+	continue;
+
+      poly_uint64 nunits = GET_MODE_NUNITS (vmode);
+      test_all_nunits (vmode);
+      if (nunits.coeffs[0] >= 2)
+	test_nunits_min_2 (vmode);
+      if (nunits.coeffs[0] >= 4)
+	test_nunits_min_4 (vmode);
+      if (nunits.coeffs[0] >= 8)
+	test_nunits_min_8 (vmode);
+
+      if (nunits.coeffs[0] <= 4)
+	test_nunits_max_4 (vmode);
+    }
+
+  if (vnx4si_mode != E_VOIDmode && v4si_mode != E_VOIDmode
+      && targetm.vector_mode_supported_p (vnx4si_mode)
+      && targetm.vector_mode_supported_p (v4si_mode))
+    {
+      test_vnx4si_v4si (vnx4si_mode, v4si_mode);
+      test_v4si_vnx4si (v4si_mode, vnx4si_mode);
+    }
+}
+} // end of test_fold_vec_perm_cst namespace
+
 /* Verify that various binary operations on vectors are folded
    correctly.  */
 
@@ -16989,6 +17819,7 @@ fold_const_cc_tests ()
   test_arithmetic_folding ();
   test_vector_folding ();
   test_vec_duplicate_folding ();
+  test_fold_vec_perm_cst::test ();
 }
 
 } // namespace selftest

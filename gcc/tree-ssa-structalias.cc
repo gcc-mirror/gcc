@@ -237,6 +237,7 @@ static struct constraint_stats
   unsigned int iterations;
   unsigned int num_edges;
   unsigned int num_implicit_edges;
+  unsigned int num_avoided_edges;
   unsigned int points_to_sets_created;
 } stats;
 
@@ -965,28 +966,40 @@ solution_set_expand (bitmap set, bitmap *expanded)
 
   *expanded = BITMAP_ALLOC (&iteration_obstack);
 
-  /* In a first pass expand to the head of the variables we need to
-     add all sub-fields off.  This avoids quadratic behavior.  */
+  /* In a first pass expand variables, once for each head to avoid
+     quadratic behavior, to include all sub-fields.  */
+  unsigned prev_head = 0;
   EXECUTE_IF_SET_IN_BITMAP (set, 0, j, bi)
     {
       varinfo_t v = get_varinfo (j);
       if (v->is_artificial_var
 	  || v->is_full_var)
 	continue;
-      bitmap_set_bit (*expanded, v->head);
+      if (v->head != prev_head)
+	{
+	  varinfo_t head = get_varinfo (v->head);
+	  unsigned num = 1;
+	  for (varinfo_t n = vi_next (head); n != NULL; n = vi_next (n))
+	    {
+	      if (n->id != head->id + num)
+		{
+		  /* Usually sub variables are adjacent but since we
+		     create pointed-to restrict representatives there
+		     can be gaps as well.  */
+		  bitmap_set_range (*expanded, head->id, num);
+		  head = n;
+		  num = 1;
+		}
+	      else
+		num++;
+	    }
+
+	  bitmap_set_range (*expanded, head->id, num);
+	  prev_head = v->head;
+	}
     }
 
-  /* In the second pass now expand all head variables with subfields.  */
-  EXECUTE_IF_SET_IN_BITMAP (*expanded, 0, j, bi)
-    {
-      varinfo_t v = get_varinfo (j);
-      if (v->head != j)
-	continue;
-      for (v = vi_next (v); v != NULL; v = vi_next (v))
-	bitmap_set_bit (*expanded, v->id);
-    }
-
-  /* And finally set the rest of the bits from SET.  */
+  /* And finally set the rest of the bits from SET in an efficient way.  */
   bitmap_ior_into (*expanded, set);
 
   return *expanded;
@@ -1213,7 +1226,10 @@ add_graph_edge (constraint_graph_t graph, unsigned int to,
       if (to < FIRST_REF_NODE
 	  && bitmap_bit_p (graph->succs[from], find (escaped_id))
 	  && bitmap_bit_p (get_varinfo (find (to))->solution, escaped_id))
-	return false;
+	{
+	  stats.num_avoided_edges++;
+	  return false;
+	}
 
       if (bitmap_set_bit (graph->succs[from], to))
 	{
@@ -1581,62 +1597,27 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
     bitmap_clear_bit (graph->succs[to], to);
 }
 
-/* Information needed to compute the topological ordering of a graph.  */
+/* Add a copy edge FROM -> TO, optimizing special cases.  Returns TRUE
+   if the solution of TO changed.  */
 
-struct topo_info
+static bool
+solve_add_graph_edge (constraint_graph_t graph, unsigned int to,
+		      unsigned int from)
 {
-  /* sbitmap of visited nodes.  */
-  sbitmap visited;
-  /* Array that stores the topological order of the graph, *in
-     reverse*.  */
-  vec<unsigned> topo_order;
-};
-
-
-/* Initialize and return a topological info structure.  */
-
-static struct topo_info *
-init_topo_info (void)
-{
-  size_t size = graph->size;
-  struct topo_info *ti = XNEW (struct topo_info);
-  ti->visited = sbitmap_alloc (size);
-  bitmap_clear (ti->visited);
-  ti->topo_order.create (1);
-  return ti;
-}
-
-
-/* Free the topological sort info pointed to by TI.  */
-
-static void
-free_topo_info (struct topo_info *ti)
-{
-  sbitmap_free (ti->visited);
-  ti->topo_order.release ();
-  free (ti);
-}
-
-/* Visit the graph in topological order, and store the order in the
-   topo_info structure.  */
-
-static void
-topo_visit (constraint_graph_t graph, struct topo_info *ti,
-	    unsigned int n)
-{
-  bitmap_iterator bi;
-  unsigned int j;
-
-  bitmap_set_bit (ti->visited, n);
-
-  if (graph->succs[n])
-    EXECUTE_IF_SET_IN_BITMAP (graph->succs[n], 0, j, bi)
-      {
-	if (!bitmap_bit_p (ti->visited, j))
-	  topo_visit (graph, ti, j);
-      }
-
-  ti->topo_order.safe_push (n);
+  /* Adding edges from the special vars is pointless.
+     They don't have sets that can change.  */
+  if (get_varinfo (from)->is_special_var)
+    return bitmap_ior_into (get_varinfo (to)->solution,
+			    get_varinfo (from)->solution);
+  /* Merging the solution from ESCAPED needlessly increases
+     the set.  Use ESCAPED as representative instead.  */
+  else if (from == find (escaped_id))
+    return bitmap_set_bit (get_varinfo (to)->solution, escaped_id);
+  else if (get_varinfo (from)->may_have_pointers
+	   && add_graph_edge (graph, to, from))
+    return bitmap_ior_into (get_varinfo (to)->solution,
+			    get_varinfo (from)->solution);
+  return false;
 }
 
 /* Process a constraint C that represents x = *(y + off), using DELTA as the
@@ -1699,17 +1680,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	{
 	  t = find (v->id);
 
-	  /* Adding edges from the special vars is pointless.
-	     They don't have sets that can change.  */
-	  if (get_varinfo (t)->is_special_var)
-	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
-	  /* Merging the solution from ESCAPED needlessly increases
-	     the set.  Use ESCAPED as representative instead.  */
-	  else if (v->id == escaped_id)
-	    flag |= bitmap_set_bit (sol, escaped_id);
-	  else if (v->may_have_pointers
-		   && add_graph_edge (graph, lhs, t))
-	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
+	  flag |= solve_add_graph_edge (graph, lhs, t);
 
 	  if (v->is_full_var
 	      || v->next == 0)
@@ -1723,10 +1694,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 done:
   /* If the LHS solution changed, mark the var as changed.  */
   if (flag)
-    {
-      get_varinfo (lhs)->solution = sol;
-      bitmap_set_bit (changed, lhs);
-    }
+    bitmap_set_bit (changed, lhs);
 }
 
 /* Process a constraint C that represents *(x + off) = y using DELTA
@@ -1756,11 +1724,8 @@ do_ds_constraint (constraint_t c, bitmap delta, bitmap *expanded_delta)
   if (bitmap_bit_p (delta, anything_id))
     {
       unsigned t = find (storedanything_id);
-      if (add_graph_edge (graph, t, rhs))
-	{
-	  if (bitmap_ior_into (get_varinfo (t)->solution, sol))
-	    bitmap_set_bit (changed, t);
-	}
+      if (solve_add_graph_edge (graph, t, rhs))
+	bitmap_set_bit (changed, t);
       return;
     }
 
@@ -1814,8 +1779,8 @@ do_ds_constraint (constraint_t c, bitmap delta, bitmap *expanded_delta)
 		break;
 
 	      t = find (v->id);
-	      if (add_graph_edge (graph, t, rhs)
-		  && bitmap_ior_into (get_varinfo (t)->solution, sol))
+
+	      if (solve_add_graph_edge  (graph, t, rhs))
 		bitmap_set_bit (changed, t);
 	    }
 
@@ -1913,19 +1878,56 @@ find_indirect_cycles (constraint_graph_t graph)
       scc_visit (graph, &si, i);
 }
 
-/* Compute a topological ordering for GRAPH, and store the result in the
-   topo_info structure TI.  */
+/* Visit the graph in topological order starting at node N, and store the
+   order in TOPO_ORDER using VISITED to indicate visited nodes.  */
 
 static void
-compute_topo_order (constraint_graph_t graph,
-		    struct topo_info *ti)
+topo_visit (constraint_graph_t graph, vec<unsigned> &topo_order,
+	    sbitmap visited, unsigned int n)
+{
+  bitmap_iterator bi;
+  unsigned int j;
+
+  bitmap_set_bit (visited, n);
+
+  if (graph->succs[n])
+    EXECUTE_IF_SET_IN_BITMAP (graph->succs[n], 0, j, bi)
+      {
+	unsigned k = find (j);
+	if (!bitmap_bit_p (visited, k))
+	  topo_visit (graph, topo_order, visited, k);
+      }
+
+  topo_order.quick_push (n);
+}
+
+/* Compute a topological ordering for GRAPH, and return the result.  */
+
+static auto_vec<unsigned>
+compute_topo_order (constraint_graph_t graph)
 {
   unsigned int i;
   unsigned int size = graph->size;
 
+  auto_sbitmap visited (size);
+  bitmap_clear (visited);
+
+  /* For the heuristic in add_graph_edge to work optimally make sure to
+     first visit the connected component of the graph containing
+     ESCAPED.  Do this by extracting the connected component
+     with ESCAPED and append that to all other components as solve_graph
+     pops from the order.  */
+  auto_vec<unsigned> tail (size);
+  topo_visit (graph, tail, visited, find (escaped_id));
+
+  auto_vec<unsigned> topo_order (size);
+
   for (i = 0; i != size; ++i)
-    if (!bitmap_bit_p (ti->visited, i) && find (i) == i)
-      topo_visit (graph, ti, i);
+    if (!bitmap_bit_p (visited, i) && find (i) == i)
+      topo_visit (graph, topo_order, visited, i);
+
+  topo_order.splice (tail);
+  return topo_order;
 }
 
 /* Structure used to for hash value numbering of pointer equivalence
@@ -2753,17 +2755,14 @@ solve_graph (constraint_graph_t graph)
   while (!bitmap_empty_p (changed))
     {
       unsigned int i;
-      struct topo_info *ti = init_topo_info ();
       stats.iterations++;
 
       bitmap_obstack_initialize (&iteration_obstack);
 
-      compute_topo_order (graph, ti);
-
-      while (ti->topo_order.length () != 0)
+      auto_vec<unsigned> topo_order = compute_topo_order (graph);
+      while (topo_order.length () != 0)
 	{
-
-	  i = ti->topo_order.pop ();
+	  i = topo_order.pop ();
 
 	  /* If this variable is not a representative, skip it.  */
 	  if (find (i) != i)
@@ -2875,19 +2874,22 @@ solve_graph (constraint_graph_t graph)
 			}
 		      /* Don't try to propagate to ourselves.  */
 		      if (to == i)
-			continue;
-
-		      bitmap tmp = get_varinfo (to)->solution;
-		      bool flag = false;
-
-		      /* If we propagate from ESCAPED use ESCAPED as
-		         placeholder.  */
+			{
+			  to_remove = j;
+			  continue;
+			}
+		      /* Early node unification can lead to edges from
+			 escaped - remove them.  */
 		      if (i == eff_escaped_id)
-			flag = bitmap_set_bit (tmp, escaped_id);
-		      else
-			flag = bitmap_ior_into (tmp, pts);
+			{
+			  to_remove = j;
+			  if (bitmap_set_bit (get_varinfo (to)->solution,
+					      escaped_id))
+			    bitmap_set_bit (changed, to);
+			  continue;
+			}
 
-		      if (flag)
+		      if (bitmap_ior_into (get_varinfo (to)->solution, pts))
 			bitmap_set_bit (changed, to);
 		    }
 		  if (to_remove != ~0U)
@@ -2895,7 +2897,6 @@ solve_graph (constraint_graph_t graph)
 		}
 	    }
 	}
-      free_topo_info (ti);
       bitmap_obstack_release (&iteration_obstack);
     }
 
@@ -5820,8 +5821,7 @@ type_must_have_pointers (tree type)
 
   /* A function or method can have pointers as arguments, so track
      those separately.  */
-  if (TREE_CODE (type) == FUNCTION_TYPE
-      || TREE_CODE (type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     return true;
 
   return false;
@@ -7137,33 +7137,35 @@ pt_solutions_intersect (struct pt_solution *pt1, struct pt_solution *pt2)
   return res;
 }
 
+/* Dump stats information to OUTFILE.  */
+
+static void
+dump_sa_stats (FILE *outfile)
+{
+  fprintf (outfile, "Points-to Stats:\n");
+  fprintf (outfile, "Total vars:               %d\n", stats.total_vars);
+  fprintf (outfile, "Non-pointer vars:          %d\n",
+	   stats.nonpointer_vars);
+  fprintf (outfile, "Statically unified vars:  %d\n",
+	   stats.unified_vars_static);
+  fprintf (outfile, "Dynamically unified vars: %d\n",
+	   stats.unified_vars_dynamic);
+  fprintf (outfile, "Iterations:               %d\n", stats.iterations);
+  fprintf (outfile, "Number of edges:          %d\n", stats.num_edges);
+  fprintf (outfile, "Number of implicit edges: %d\n",
+	   stats.num_implicit_edges);
+  fprintf (outfile, "Number of avoided edges: %d\n",
+	   stats.num_avoided_edges);
+}
 
 /* Dump points-to information to OUTFILE.  */
 
 static void
 dump_sa_points_to_info (FILE *outfile)
 {
-  unsigned int i;
-
   fprintf (outfile, "\nPoints-to sets\n\n");
 
-  if (dump_flags & TDF_STATS)
-    {
-      fprintf (outfile, "Stats:\n");
-      fprintf (outfile, "Total vars:               %d\n", stats.total_vars);
-      fprintf (outfile, "Non-pointer vars:          %d\n",
-	       stats.nonpointer_vars);
-      fprintf (outfile, "Statically unified vars:  %d\n",
-	       stats.unified_vars_static);
-      fprintf (outfile, "Dynamically unified vars: %d\n",
-	       stats.unified_vars_dynamic);
-      fprintf (outfile, "Iterations:               %d\n", stats.iterations);
-      fprintf (outfile, "Number of edges:          %d\n", stats.num_edges);
-      fprintf (outfile, "Number of implicit edges: %d\n",
-	       stats.num_implicit_edges);
-    }
-
-  for (i = 1; i < varmap.length (); i++)
+  for (unsigned i = 1; i < varmap.length (); i++)
     {
       varinfo_t vi = get_varinfo (i);
       if (!vi->may_have_pointers)
@@ -7544,7 +7546,7 @@ compute_points_to_sets (void)
 	}
     }
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Points-to analysis\n\nConstraints:\n\n");
       dump_constraints (dump_file, 0);
@@ -7557,7 +7559,7 @@ compute_points_to_sets (void)
   edge_iterator ei;
   edge e;
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
-    if (greturn *ret = safe_dyn_cast <greturn *> (last_stmt (e->src)))
+    if (greturn *ret = safe_dyn_cast <greturn *> (*gsi_last_bb (e->src)))
       {
 	tree val = gimple_return_retval (ret);
 	/* ???  Easy to handle simple indirections with some work.
@@ -7617,7 +7619,10 @@ compute_points_to_sets (void)
 	BITMAP_FREE (new_delta);
       }
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_STATS))
+    dump_sa_stats (dump_file);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
     dump_sa_points_to_info (dump_file);
 
   /* Compute the points-to set for ESCAPED used for call-clobber analysis.  */
@@ -8039,7 +8044,8 @@ compute_may_aliases (void)
 		   "because IPA points-to information is available.\n\n");
 
 	  /* But still dump what we have remaining it.  */
-	  dump_alias_info (dump_file);
+	  if (dump_flags & (TDF_DETAILS|TDF_ALIAS))
+	    dump_alias_info (dump_file);
 	}
 
       return 0;
@@ -8051,7 +8057,7 @@ compute_may_aliases (void)
   compute_points_to_sets ();
 
   /* Debugging dumps.  */
-  if (dump_file)
+  if (dump_file && (dump_flags & (TDF_DETAILS|TDF_ALIAS)))
     dump_alias_info (dump_file);
 
   /* Compute restrict-based memory disambiguations.  */
@@ -8312,7 +8318,7 @@ ipa_pta_execute (void)
       fprintf (dump_file, "\n");
     }
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Generating generic constraints\n\n");
       dump_constraints (dump_file, from);
@@ -8351,7 +8357,7 @@ ipa_pta_execute (void)
       vi = create_function_info_for (node->decl,
 				     alias_get_name (node->decl), false,
 				     nonlocal_p);
-      if (dump_file
+      if (dump_file && (dump_flags & TDF_DETAILS)
 	  && from != constraints.length ())
 	{
 	  fprintf (dump_file,
@@ -8392,7 +8398,7 @@ ipa_pta_execute (void)
 	vi->is_ipa_escape_point = true;
     }
 
-  if (dump_file
+  if (dump_file && (dump_flags & TDF_DETAILS)
       && from != constraints.length ())
     {
       fprintf (dump_file,
@@ -8413,7 +8419,7 @@ ipa_pta_execute (void)
 	  || node->clone_of)
 	continue;
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file,
 		   "Generating constraints for %s", node->dump_name ());
@@ -8449,7 +8455,7 @@ ipa_pta_execute (void)
 	    }
 	}
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "\n");
 	  dump_constraints (dump_file, from);
@@ -8461,7 +8467,10 @@ ipa_pta_execute (void)
   /* From the constraints compute the points-to sets.  */
   solve_constraints ();
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_STATS))
+    dump_sa_stats (dump_file);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
     dump_sa_points_to_info (dump_file);
 
   /* Now post-process solutions to handle locals from different

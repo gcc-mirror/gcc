@@ -524,6 +524,7 @@ public:
   type *get_pointer ();
   type *get_const ();
   type *get_volatile ();
+  type *get_restrict ();
   type *get_aligned (size_t alignment_in_bytes);
   type *get_vector (size_t num_units);
 
@@ -568,6 +569,7 @@ public:
   virtual bool is_bool () const = 0;
   virtual type *is_pointer () = 0;
   virtual type *is_volatile () { return NULL; }
+  virtual type *is_restrict () { return NULL; }
   virtual type *is_const () { return NULL; }
   virtual type *is_array () = 0;
   virtual struct_ *is_struct () { return NULL; }
@@ -686,7 +688,7 @@ private:
 };
 
 /* A decorated version of a type, for get_const, get_volatile,
-   get_aligned, and get_vector.  */
+   get_aligned, get_restrict, and get_vector.  */
 
 class decorated_type : public type
 {
@@ -761,6 +763,32 @@ public:
   type *unqualified () final override { return m_other_type; }
 
   type *is_volatile () final override { return m_other_type; }
+
+  void replay_into (replayer *) final override;
+
+private:
+  string * make_debug_string () final override;
+  void write_reproducer (reproducer &r) final override;
+};
+
+/* Result of "gcc_jit_type_get_restrict".  */
+class memento_of_get_restrict : public decorated_type
+{
+public:
+  memento_of_get_restrict (type *other_type)
+  : decorated_type (other_type) {}
+
+  bool is_same_type_as (type *other) final override
+  {
+    if (!other->is_restrict ())
+      return false;
+    return m_other_type->is_same_type_as (other->is_restrict ());
+  }
+
+  /* Strip off the "restrict", giving the underlying type.  */
+  type *unqualified () final override { return m_other_type; }
+
+  type *is_restrict () final override { return m_other_type; }
 
   void replay_into (replayer *) final override;
 

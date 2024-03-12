@@ -74,7 +74,7 @@ package Set_Targ is
    Long_Long_Size             : Pos; -- Standard.Long_Long_Integer'Size
    Long_Size                  : Pos; -- Standard.Long_Integer'Size
    Maximum_Alignment          : Pos; -- Maximum permitted alignment
-   Max_Unaligned_Field        : Pos; -- Maximum size for unaligned bit field
+   Max_Unaligned_Field        : Pos; -- Kept only for backward compatibility
    Pointer_Size               : Pos; -- System.Address'Size
    Short_Enums                : Nat; -- Foreign enums use short size?
    Short_Size                 : Pos; -- Standard.Short_Integer'Size

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 // { dg-xfail-if "not supported" { debug_mode } }
 
@@ -89,11 +88,19 @@ test_shrink_to_fit()
   std::vector<int> v;
   v.reserve(9);
   v.shrink_to_fit();
+#if __cpp_exceptions
   VERIFY( v.capacity() == 0 );
+#else
+  VERIFY( v.capacity() == 9 );
+#endif
   v.reserve(9);
   v.resize(5);
   v.shrink_to_fit();
+#if __cpp_exceptions
   VERIFY( v.capacity() == v.size() );
+#else
+  VERIFY( v.capacity() == 9 );
+#endif
 
   return true;
 }

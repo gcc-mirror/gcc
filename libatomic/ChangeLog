@@ -1,3 +1,38 @@
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Alexander von Gluck IV  <kallisti5@unixzen.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-06-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.tgt: For x86_64, always set try_ifunc=yes.
+
+2023-06-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac (PERL): Remove.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2023-03-24  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	PR libgcc/108891

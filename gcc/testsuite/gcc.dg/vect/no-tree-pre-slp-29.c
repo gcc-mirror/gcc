@@ -22,6 +22,7 @@ main1 (unsigned short *in)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*4] !=  in[i*4]
@@ -48,6 +49,7 @@ main2 (unsigned short * __restrict__ in, unsigned short * __restrict__ out)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*4] !=  in[i*4]

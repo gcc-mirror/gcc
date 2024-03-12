@@ -17,7 +17,7 @@ class Identifier final : public RootObject
 {
 private:
     int value;
-    bool isAnonymous_;
+    d_bool isAnonymous_;
     DString string;
 
 public:

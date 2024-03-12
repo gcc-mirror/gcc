@@ -130,6 +130,7 @@ main1 (void)
 	case 7: f8 (); break;
 	}
 
+#pragma GCC novector
       for (i = 0; i <= N; i++)
 	{
 	  int ea = i + 3;

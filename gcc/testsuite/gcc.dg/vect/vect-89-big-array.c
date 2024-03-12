@@ -1,5 +1,5 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
-/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0 -fdump-tree-optimized-details-blocks" } */
 /* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
@@ -28,6 +28,7 @@ int main1 ()
     }
 
   /* check results: */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (p->y[i] != 5)
@@ -49,3 +50,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" { xfail { ! vect_align_stack_vars } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { vect_element_align_preferred || { ! vect_align_stack_vars } } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

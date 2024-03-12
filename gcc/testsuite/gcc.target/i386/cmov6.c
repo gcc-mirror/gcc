@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=k8" } */
-/* { dg-final { scan-assembler "cmov\[^6\]" } } */
+/* if-converting this sequence would require two cmov
+   instructions and seems to always cost more independent
+   of the TUNE_ONE_IF_CONV setting.  */
+/* { dg-final { scan-assembler-not "cmov\[^6\]" } } */
 
 /* Verify that blocks are converted to conditional moves.  */
 extern int bar (int, int);

@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 #include <coroutine>
 #include <testsuite_hooks.h>

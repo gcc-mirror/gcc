@@ -1899,14 +1899,19 @@ test_can_div_trunc_p_const ()
 				ph::make (4, 8, 12),
 				&const_quot));
   ASSERT_EQ (const_quot, C (2));
-  ASSERT_EQ (can_div_trunc_p (ph::make (15, 25, 40),
+  ASSERT_TRUE (can_div_trunc_p (ph::make (15, 25, 40),
+				ph::make (4, 8, 10),
+				&const_quot));
+  ASSERT_EQ (const_quot, C (3));
+  const_quot = 0;
+  ASSERT_EQ (can_div_trunc_p (ph::make (15, 25, 41),
 			      ph::make (4, 8, 10),
 			      &const_quot), N <= 2);
-  ASSERT_EQ (const_quot, C (N <= 2 ? 3 : 2));
+  ASSERT_EQ (const_quot, C (N <= 2 ? 3 : 0));
   ASSERT_EQ (can_div_trunc_p (ph::make (43, 79, 80),
 			      ph::make (4, 8, 10),
 			      &const_quot), N == 1);
-  ASSERT_EQ (const_quot, C (N == 1 ? 10 : N == 2 ? 3 : 2));
+  ASSERT_EQ (const_quot, C (N == 1 ? 10 : N == 2 ? 3 : 0));
   ASSERT_TRUE (can_div_trunc_p (ph::make (3, 4, 5),
 				ph::make (4, 5, 6),
 				&const_quot));
@@ -1964,16 +1969,22 @@ test_can_div_trunc_p_const ()
 				&const_quot, &rem));
   ASSERT_EQ (const_quot, C (2));
   ASSERT_KNOWN_EQ (rem, ph::make (1, 7, 6));
-  ASSERT_EQ (can_div_trunc_p (ph::make (15, 25, 40),
+  ASSERT_TRUE (can_div_trunc_p (ph::make (15, 25, 40),
+				ph::make (4, 8, 10),
+				&const_quot, &rem));
+  ASSERT_EQ (const_quot, C (3));
+  ASSERT_KNOWN_EQ (rem, ph::make (3, 1, 10));
+  const_quot = 0, rem = 0;
+  ASSERT_EQ (can_div_trunc_p (ph::make (15, 25, 41),
 			      ph::make (4, 8, 10),
 			      &const_quot, &rem), N <= 2);
-  ASSERT_EQ (const_quot, C (N <= 2 ? 3 : 2));
+  ASSERT_EQ (const_quot, C (N <= 2 ? 3 : 0));
   if (N <= 2)
     ASSERT_KNOWN_EQ (rem, ph::make (3, 1, 0));
   ASSERT_EQ (can_div_trunc_p (ph::make (43, 79, 80),
 			      ph::make (4, 8, 10),
 			      &const_quot, &rem), N == 1);
-  ASSERT_EQ (const_quot, C (N == 1 ? 10 : N == 2 ? 3 : 2));
+  ASSERT_EQ (const_quot, C (N == 1 ? 10 : N == 2 ? 3 : 0));
   if (N == 1)
     ASSERT_KNOWN_EQ (rem, ch::make (3));
   ASSERT_TRUE (can_div_trunc_p (ph::make (3, 4, 5),
@@ -2024,6 +2035,19 @@ test_can_div_trunc_p_const ()
 				&const_quot, &rem));
   ASSERT_EQ (const_quot, C (0));
   ASSERT_KNOWN_EQ (rem, ch::make (0));
+  ASSERT_TRUE (can_div_trunc_p (ph::make (9, 10, 20),
+				ph::make (5, 5, 20),
+				&const_quot, &rem));
+  ASSERT_EQ (const_quot, C (1));
+  ASSERT_KNOWN_EQ (rem, ph::make (4, 5, 0));
+  ASSERT_EQ (can_div_trunc_p (ph::make (9, 11, 20),
+			      ph::make (5, 5, 20),
+			      &const_quot, &rem), N == 1);
+  if (N == 1)
+    {
+      ASSERT_EQ (const_quot, C (1));
+      ASSERT_KNOWN_EQ (rem, C (4));
+    }
 }
 
 /* Test the form of can_div_trunc_p that returns a polynomail quotient,
@@ -2093,14 +2117,14 @@ test_can_div_away_from_zero_p ()
 					 ph::make (4, 8, 12),
 					 &const_quot));
   ASSERT_EQ (const_quot, C (3));
-  ASSERT_EQ (can_div_away_from_zero_p (ph::make (15, 25, 40),
-				       ph::make (4, 8, 10),
-				       &const_quot), N <= 2);
-  ASSERT_EQ (const_quot, C (N <= 2 ? 4 : 3));
+  ASSERT_TRUE (can_div_away_from_zero_p (ph::make (15, 25, 40),
+					 ph::make (4, 8, 10),
+					 &const_quot));
+  ASSERT_EQ (const_quot, C (4));
   ASSERT_EQ (can_div_away_from_zero_p (ph::make (43, 79, 80),
 				       ph::make (4, 8, 10),
 				       &const_quot), N == 1);
-  ASSERT_EQ (const_quot, C (N == 1 ? 11 : N == 2 ? 4 : 3));
+  ASSERT_EQ (const_quot, C (N == 1 ? 11 : 4));
   ASSERT_TRUE (can_div_away_from_zero_p (ph::make (3, 4, 5),
 					 ph::make (4, 5, 6),
 					 &const_quot));
@@ -3232,6 +3256,45 @@ test_signed_can_div_trunc_p_const ()
 				&const_quot, &rem));
   ASSERT_EQ (const_quot, -2);
   ASSERT_KNOWN_EQ (rem, ph::make (2, 1, 3));
+  ASSERT_TRUE (can_div_trunc_p (ph::make (-9, -10, -20),
+				ph::make (-5, -5, -20),
+				&const_quot, &rem));
+  ASSERT_EQ (const_quot, C (1));
+  ASSERT_KNOWN_EQ (rem, ph::make (-4, -5, 0));
+  ASSERT_EQ (can_div_trunc_p (ph::make (-9, -11, -20),
+			      ph::make (-5, -5, -20),
+			      &const_quot, &rem), N == 1);
+  if (N == 1)
+    {
+      ASSERT_EQ (const_quot, C (1));
+      ASSERT_KNOWN_EQ (rem, C (-4));
+    }
+  ASSERT_TRUE (can_div_trunc_p (ph::make (9, 10, 20),
+				ph::make (-5, -5, -20),
+				&const_quot, &rem));
+  ASSERT_EQ (const_quot, C (-1));
+  ASSERT_KNOWN_EQ (rem, ph::make (4, 5, 0));
+  ASSERT_EQ (can_div_trunc_p (ph::make (9, 11, 20),
+			      ph::make (-5, -5, -20),
+			      &const_quot, &rem), N == 1);
+  if (N == 1)
+    {
+      ASSERT_EQ (const_quot, C (-1));
+      ASSERT_KNOWN_EQ (rem, C (4));
+    }
+  ASSERT_TRUE (can_div_trunc_p (ph::make (-9, -10, -20),
+				ph::make (5, 5, 20),
+				&const_quot, &rem));
+  ASSERT_EQ (const_quot, C (-1));
+  ASSERT_KNOWN_EQ (rem, ph::make (-4, -5, 0));
+  ASSERT_EQ (can_div_trunc_p (ph::make (-9, -11, -20),
+			      ph::make (5, 5, 20),
+			      &const_quot, &rem), N == 1);
+  if (N == 1)
+    {
+      ASSERT_EQ (const_quot, C (-1));
+      ASSERT_KNOWN_EQ (rem, C (-4));
+    }
 }
 
 /* Test the form of can_div_trunc_p that returns a poly_int, for signed C.  */
@@ -4776,11 +4839,11 @@ test_num_coeffs_extra ()
 {
   /* Test the most common POD types.  */
   test_unsigned<N, unsigned short, HOST_WIDE_INT,
-		poly_int_pod<N, unsigned short> > ();
+		poly_int<N, unsigned short> > ();
   test_signed<N, HOST_WIDE_INT, HOST_WIDE_INT,
-	      poly_int_pod<N, HOST_WIDE_INT> > ();
+	      poly_int<N, HOST_WIDE_INT> > ();
   test_unsigned<N, unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-		poly_int_pod<N, unsigned HOST_WIDE_INT> > ();
+		poly_int<N, unsigned HOST_WIDE_INT> > ();
 
   /* Test some coefficient types that weren't covered in the core tests.  */
   test_signed<N, int, HOST_WIDE_INT,

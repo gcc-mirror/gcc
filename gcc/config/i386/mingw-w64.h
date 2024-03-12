@@ -25,7 +25,27 @@ along with GCC; see the file COPYING3.  If not see
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} " \
 		 "%{municode:-DUNICODE} " \
 		 "%{" SPEC_PTHREAD1 ":-D_REENTRANT} " \
-		 "%{" SPEC_PTHREAD2 ":-U_REENTRANT} "
+		 "%{" SPEC_PTHREAD2 ":-U_REENTRANT} " \
+		 "%{mcrtdll=crtdll*:-U__MSVCRT__ -D__CRTDLL__} " \
+		 "%{mcrtdll=msvcrt10*:-D__MSVCRT_VERSION__=0x100} " \
+		 "%{mcrtdll=msvcrt20*:-D__MSVCRT_VERSION__=0x200} " \
+		 "%{mcrtdll=msvcrt40*:-D__MSVCRT_VERSION__=0x400} " \
+		 "%{mcrtdll=msvcrt-os*:-D__MSVCRT_VERSION__=0x700} " \
+		 "%{mcrtdll=msvcr70*:-D__MSVCRT_VERSION__=0x700} " \
+		 "%{mcrtdll=msvcr71*:-D__MSVCRT_VERSION__=0x701} " \
+		 "%{mcrtdll=msvcr80*:-D__MSVCRT_VERSION__=0x800} " \
+		 "%{mcrtdll=msvcr90*:-D__MSVCRT_VERSION__=0x900} " \
+		 "%{mcrtdll=msvcr100*:-D__MSVCRT_VERSION__=0xA00} " \
+		 "%{mcrtdll=msvcr110*:-D__MSVCRT_VERSION__=0xB00} " \
+		 "%{mcrtdll=msvcr120*:-D__MSVCRT_VERSION__=0xC00} " \
+		 "%{mcrtdll=ucrt*:-D_UCRT} "
+
+#undef REAL_LIBGCC_SPEC
+#define REAL_LIBGCC_SPEC \
+  "%{mthreads:-lmingwthrd} -lmingw32 \
+   " SHARED_LIBGCC_SPEC " \
+   -lmingwex %{!mcrtdll=*:-lmsvcrt} %{mcrtdll=*:-l%*} \
+   -lkernel32 " MCFGTHREAD_SPEC
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \

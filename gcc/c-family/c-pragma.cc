@@ -840,11 +840,11 @@ public:
 
 };
 
-/* When compiling normally, use pragma_lex () to obtain the needed tokens.
-   This will call into either the C or C++ frontends as appropriate.  */
+/* This will call into either the C or C++ frontends as appropriate to get
+   tokens from libcpp for the pragma.  */
 
 static void
-pragma_diagnostic_lex_normal (pragma_diagnostic_data *result)
+pragma_diagnostic_lex (pragma_diagnostic_data *result)
 {
   result->clear ();
   tree x;
@@ -866,46 +866,6 @@ pragma_diagnostic_lex_normal (pragma_diagnostic_data *result)
   result->valid = true;
 }
 
-/* When preprocessing only, pragma_lex () is not available, so obtain the
-   tokens directly from libcpp.  We also need to inform the token streamer
-   about all tokens we lex ourselves here, so it outputs them too; this is
-   done by calling c_pp_stream_token () for each.
-
-   ???  If we need to support more pragmas in the future, maybe initialize
-   this_parser with the pragma tokens and call pragma_lex () instead?  */
-
-static void
-pragma_diagnostic_lex_pp (pragma_diagnostic_data *result)
-{
-  result->clear ();
-
-  auto tok = cpp_get_token_with_location (parse_in, &result->loc_kind);
-  c_pp_stream_token (parse_in, tok, result->loc_kind);
-  if (!(tok->type == CPP_NAME || tok->type == CPP_KEYWORD))
-    return;
-  const unsigned char *const kind_u = cpp_token_as_text (parse_in, tok);
-  result->set_kind ((const char *)kind_u);
-  if (result->pd_kind == pragma_diagnostic_data::PK_INVALID)
-    return;
-
-  if (result->needs_option ())
-    {
-      tok = cpp_get_token_with_location (parse_in, &result->loc_option);
-      c_pp_stream_token (parse_in, tok, result->loc_option);
-      if (tok->type != CPP_STRING)
-	return;
-      cpp_string str;
-      if (!cpp_interpret_string_notranslate (parse_in, &tok->val.str, 1, &str,
-					     CPP_STRING)
-	  || !str.len)
-	return;
-      result->option_str = (const char *)str.text;
-      result->own_option_str = true;
-    }
-
-  result->valid = true;
-}
-
 /* Handle #pragma GCC diagnostic.  Early mode is used by frontends (such as C++)
    that do not process the deferred pragma while they are consuming tokens; they
    can use early mode to make sure diagnostics affecting the preprocessor itself
@@ -916,10 +876,7 @@ handle_pragma_diagnostic_impl ()
   static const bool want_diagnostics = (is_pp || !early);
 
   pragma_diagnostic_data data;
-  if (is_pp)
-    pragma_diagnostic_lex_pp (&data);
-  else
-    pragma_diagnostic_lex_normal (&data);
+  pragma_diagnostic_lex (&data);
 
   if (!data.kind_str)
     {
@@ -1808,7 +1765,10 @@ c_pp_invoke_early_pragma_handler (unsigned int id)
 {
   const auto data = &registered_pp_pragmas[id - PRAGMA_FIRST_EXTERNAL];
   if (data->early_handler)
-    data->early_handler (parse_in);
+    {
+      data->early_handler (parse_in);
+      pragma_lex_discard_to_eol ();
+    }
 }
 
 /* Set up front-end pragmas.  */
@@ -1860,6 +1820,10 @@ init_pragma (void)
 
   if (!flag_preprocess_only)
     cpp_register_deferred_pragma (parse_in, "GCC", "unroll", PRAGMA_UNROLL,
+				  false, false);
+
+  if (!flag_preprocess_only)
+    cpp_register_deferred_pragma (parse_in, "GCC", "novector", PRAGMA_NOVECTOR,
 				  false, false);
 
 #ifdef HANDLE_PRAGMA_PACK_WITH_EXPANSION

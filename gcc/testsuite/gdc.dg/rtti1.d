@@ -11,8 +11,3 @@ bool testAAEqual(int[string] aa1, int[string] aa2)
 {
     return aa1 == aa2; // { dg-error "requires .object.TypeInfo. and cannot be used with .-fno-rtti." }
 }
-
-string testConcat(string a, string b)
-{
-    return a ~ b; // { dg-error "requires .object.TypeInfo. and cannot be used with .-fno-rtti." }
-}

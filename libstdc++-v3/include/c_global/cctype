@@ -78,7 +78,7 @@ namespace std
 
 #if __cplusplus >= 201103L
 
-#ifdef _GLIBCXX_USE_C99_CTYPE_TR1
+#ifdef _GLIBCXX_USE_C99_CTYPE
 
 #undef isblank
 
@@ -87,7 +87,7 @@ namespace std
   using ::isblank;
 } // namespace std
 
-#endif // _GLIBCXX_USE_C99_CTYPE_TR1
+#endif // _GLIBCXX_USE_C99_CTYPE
 
 #endif // C++11
 

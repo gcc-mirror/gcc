@@ -1,3 +1,208 @@
+2023-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2iso/wrapclock.cc (longint_t): New declaration.
+	(GetTimespec): Replace types for sec and nano with
+	longint_t.
+	(SetTimespec): Replace types for sec and nano with
+	longint_t.
+
+2023-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Makefile.am (TARGET_LONGDOUBLE_ABI): New variable set to
+	-mabi=ieeelongdouble if the target is powerpc64le.
+	(AM_MAKEFLAGS): Append TARGET_LONGDOUBLE_ABI.
+	* Makefile.in: Rebuild.
+	* libm2cor/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2cor_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2cor_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2cor/Makefile.in: Rebuild.
+	* libm2iso/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2iso_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2iso_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2iso/Makefile.in: Rebuild.
+	* libm2log/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2log_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2log_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2log/Makefile.in: Rebuild.
+	* libm2min/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2min_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2min_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2min/Makefile.in: Rebuild.
+	* libm2pim/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2pim_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2pim_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2pim/Makefile.in: Rebuild.
+
+2023-09-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2cor/Makefile.am (libm2cor_la_M2FLAGS): Add
+	-Wcase-enum.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am (libm2iso_la_M2FLAGS): Add
+	-Wcase-enum.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.am (libm2log_la_M2FLAGS): Add
+	-Wcase-enum.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2pim/Makefile.am (libm2pim_la_M2FLAGS): Add
+	-Wcase-enum.
+	* libm2pim/Makefile.in: Regenerate.
+
+2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* configure: Regenerate.
+	* configure.ac: Provide special case test for Darwin cross
+	configuration.
+	(GLIBCXX_CONFIGURE): New statement.
+	(GLIBCXX_CHECK_GETTIMEOFDAY): New statement.
+	(GLIBCXX_ENABLE_LIBSTDCXX_TIME): New statement.
+	* libm2iso/wrapclock.cc: New sys/time.h conditional include.
+	(sys/syscall.h): Conditional include.
+	(unistd.h): Conditional include.
+	(GetTimeRealtime): Re-implement.
+	(SetTimeRealtime): Re-implement.
+	(timezone): Re-implement.
+	(istimezone): New function.
+	(daylight): Re-implement.
+	(isdst): Re-implement.
+	(tzname): Re-implement.
+
+2023-08-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (AC_CACHE_CHECK): Check for tm_gmtoff field in
+	struct tm.
+	(GM2_CHECK_LIB): Check for daylight, timezone and tzname.
+	* libm2iso/wrapclock.cc (timezone): Guard against absence of
+	struct tm and tm_gmtoff.
+	(daylight): Check for daylight.
+	(timezone): Check for timezone.
+	(isdst): Check for isdst.
+	(tzname): Check for tzname.
+	(GetTimeRealtime): Check for struct timespec.
+	(SetTimeRealtime): Check for struct timespec.
+	(InitTimespec): Check for struct timespec.
+	(KillTimespec): Check for struct timespec.
+	(SetTimespec): Check for struct timespec.
+	(GetTimespec): Check for struct timespec.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Alexander von Gluck IV  <kallisti5@unixzen.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (GM2_CHECK_LIB): Check for clock_gettime
+	and clock_settime.
+	* libm2iso/Makefile.am (M2DEFS): Add wrapclock.def.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2iso/wraptime.cc: Replace HAVE_TIMEVAL with
+	HAVE_STRUCT_TIMEVAL.
+	* libm2iso/wrapclock.cc: New file.
+
+2023-06-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac (PERL): Remove.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* libm2cor/Makefile.in: Likewise.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
+2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109879
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am (M2DEFS): Add TextUtil.def.
+	(M2MODS): Add TextUtil.mod.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+
+2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108344
+	* libm2cor/KeyBoardLEDs.cc (initialize_module): New function.
+	(SwitchScroll): Call initialize_module.
+	(SwitchNum): Call initialize_module.
+	(SwitchCaps): Call initialize_module.
+	(SwitchLEDs): Call initialize_module.
+	(M2EXPORT): Remove initialization code.
+
+2023-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2cor/KeyBoardLEDs.cc (TRUE): Remove.
+	(FALSE): Remove.
+	(init): Replace TRUE with true.
+	* libm2iso/RTco.cc (TRUE): Remove.
+	(FALSE): Remove.
+	(initSem): Replace int with bool.
+	(init): Replace FALSE with false.
+	* libm2pim/sckt.cc (TRUE): Remove.
+	(FALSE): Remove.
+	* libm2pim/wrapc.cc: Replace TRUE with true
+	and FALSE with false.
+	(FALSE): Remove.
+	(TRUE): Remove.
+
+2023-05-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* autogen.sh: Remove.
+
+2023-05-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* autogen.sh: For 'aclocal', 'autoreconf', remove '-I .',
+	add '-I ..'.
+	* Makefile.am (ACLOCAL_AMFLAGS): Remove '-I .'.
+	* libm2cor/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* libm2iso/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* libm2log/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* libm2min/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* libm2pim/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Likewise.
+	* libm2cor/Makefile.in: Likewise.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
 2023-03-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2pim/Makefile.am (M2DEFS): Remove M2LINK.def.

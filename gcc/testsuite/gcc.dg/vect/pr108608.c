@@ -13,6 +13,7 @@ main (void)
 {
   check_vect ();
   float ptr[256];
+#pragma GCC novector
   for (int j = 0; j < 16; ++j)
     {
       for (int i = 0; i < 256; ++i)

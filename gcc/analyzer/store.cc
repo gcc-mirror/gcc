@@ -236,8 +236,8 @@ bit_range::dump () const
   pp_flush (&pp);
 }
 
-/* If OTHER is a subset of this, return true and write
-   to *OUT the relative range of OTHER within this.
+/* If OTHER is a subset of this, return true and, if OUT is
+   non-null, write to *OUT the relative range of OTHER within this.
    Otherwise return false.  */
 
 bool
@@ -246,8 +246,11 @@ bit_range::contains_p (const bit_range &other, bit_range *out) const
   if (contains_p (other.get_start_bit_offset ())
       && contains_p (other.get_last_bit_offset ()))
     {
-      out->m_start_bit_offset = other.m_start_bit_offset - m_start_bit_offset;
-      out->m_size_in_bits = other.m_size_in_bits;
+      if (out)
+	{
+	  out->m_start_bit_offset = other.m_start_bit_offset - m_start_bit_offset;
+	  out->m_size_in_bits = other.m_size_in_bits;
+	}
       return true;
     }
   else
@@ -533,6 +536,15 @@ concrete_binding::overlaps_p (const concrete_binding &other) const
       && get_next_bit_offset () > other.get_start_bit_offset ())
     return true;
   return false;
+}
+
+/* If this is expressible as a concrete byte range, return true
+   and write it to *OUT.  Otherwise return false.  */
+
+bool
+concrete_binding::get_byte_range (byte_range *out) const
+{
+  return m_bit_range.as_byte_range (out);
 }
 
 /* Comparator for use by vec<const concrete_binding *>::qsort.  */
@@ -2710,6 +2722,18 @@ tristate
 store::eval_alias_1 (const region *base_reg_a,
 		     const region *base_reg_b) const
 {
+  /* If they're in different memory spaces, they can't alias.  */
+  {
+    enum memory_space memspace_a = base_reg_a->get_memory_space ();
+    if (memspace_a != MEMSPACE_UNKNOWN)
+      {
+	enum memory_space memspace_b = base_reg_b->get_memory_space ();
+	if (memspace_b != MEMSPACE_UNKNOWN
+	    && memspace_a != memspace_b)
+	  return tristate::TS_FALSE;
+      }
+  }
+
   if (const symbolic_region *sym_reg_a
       = base_reg_a->dyn_cast_symbolic_region ())
     {

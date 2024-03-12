@@ -29,15 +29,16 @@ union tree_node
 };
 int make_decl_rtl (tree, int);
 void *
-get_alias_set (t)
+get_alias_set (t, t1)
      tree t;
+     void *t1;
 {
   long set;
   if (t->decl.rtl)
     return (t->decl.rtl->fld[1].rtmem 
 	    ? 0
 	    : (((t->decl.rtl ? t->decl.rtl: (make_decl_rtl (t, 0), t->decl.rtl)))->fld[1]).rtmem);
-  return (void*)-1;
+  return t1;
 }
 
 /* There should be precisely one load of ->decl.rtl.  If there is

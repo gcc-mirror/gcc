@@ -403,7 +403,7 @@ public:
 	    && 0 == strcmp (m_usage_fnname, other.m_usage_fnname));
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     return warning_at (rich_loc, get_controlling_option (),
@@ -478,7 +478,7 @@ public:
     return va_list_sm_diagnostic::subclass_equal_p (other);
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     return warning_at (rich_loc, get_controlling_option (),
@@ -892,7 +892,7 @@ public:
     return OPT_Wanalyzer_va_arg_type_mismatch;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
@@ -942,7 +942,7 @@ public:
     return OPT_Wanalyzer_va_list_exhausted;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
@@ -1006,6 +1006,8 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
 
   tree va_list_tree = get_va_list_diag_arg (cd.get_arg_tree (0));
   ap_sval = model->check_for_poison (ap_sval, va_list_tree, ap_reg, ctxt);
+
+  cd.set_any_lhs_with_defaults ();
 
   if (const region *impl_reg = ap_sval->maybe_get_region ())
     {

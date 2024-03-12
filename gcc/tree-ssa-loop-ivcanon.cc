@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "builtins.h"
 #include "tree-ssa-sccvn.h"
+#include "tree-vectorizer.h" /* For find_loop_location */
 #include "dbgcnt.h"
 
 /* Specifies types of loops that may be unrolled.  */
@@ -98,7 +99,7 @@ create_canonical_iv (class loop *loop, edge exit, tree niter,
       fprintf (dump_file, " iterations.\n");
     }
 
-  cond = as_a <gcond *> (last_stmt (exit->src));
+  cond = as_a <gcond *> (*gsi_last_bb (exit->src));
   in = EDGE_SUCC (exit->src, 0);
   if (in == exit)
     in = EDGE_SUCC (exit->src, 1);
@@ -113,7 +114,7 @@ create_canonical_iv (class loop *loop, edge exit, tree niter,
 		       niter,
 		       build_int_cst (type, 1));
   incr_at = gsi_last_bb (in->src);
-  create_iv (niter,
+  create_iv (niter, PLUS_EXPR,
 	     build_int_cst (type, -1),
 	     NULL_TREE, loop,
 	     &incr_at, false, var_before, &var);
@@ -166,6 +167,11 @@ constant_after_peeling (tree op, gimple *stmt, class loop *loop)
   if (CONSTANT_CLASS_P (op))
     return true;
 
+  /* Get at the actual SSA operand.  */
+  if (handled_component_p (op)
+      && TREE_CODE (TREE_OPERAND (op, 0)) == SSA_NAME)
+    op = TREE_OPERAND (op, 0);
+
   /* We can still fold accesses to constant arrays when index is known.  */
   if (TREE_CODE (op) != SSA_NAME)
     {
@@ -198,7 +204,46 @@ constant_after_peeling (tree op, gimple *stmt, class loop *loop)
   tree ev = analyze_scalar_evolution (loop, op);
   if (chrec_contains_undetermined (ev)
       || chrec_contains_symbols (ev))
-    return false;
+    {
+      if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (op)))
+	{
+	  gassign *ass = nullptr;
+	  gphi *phi = nullptr;
+	  if (is_a <gassign *> (SSA_NAME_DEF_STMT (op)))
+	    {
+	      ass = as_a <gassign *> (SSA_NAME_DEF_STMT (op));
+	      if (TREE_CODE (gimple_assign_rhs1 (ass)) == SSA_NAME)
+		phi = dyn_cast <gphi *>
+			(SSA_NAME_DEF_STMT (gimple_assign_rhs1  (ass)));
+	    }
+	  else if (is_a <gphi *> (SSA_NAME_DEF_STMT (op)))
+	    {
+	      phi = as_a <gphi *> (SSA_NAME_DEF_STMT (op));
+	      if (gimple_bb (phi) == loop->header)
+		{
+		  tree def = gimple_phi_arg_def_from_edge
+		    (phi, loop_latch_edge (loop));
+		  if (TREE_CODE (def) == SSA_NAME
+		      && is_a <gassign *> (SSA_NAME_DEF_STMT (def)))
+		    ass = as_a <gassign *> (SSA_NAME_DEF_STMT (def));
+		}
+	    }
+	  if (ass && phi)
+	    {
+	      tree rhs1 = gimple_assign_rhs1 (ass);
+	      if (gimple_assign_rhs_class (ass) == GIMPLE_BINARY_RHS
+		  && CONSTANT_CLASS_P (gimple_assign_rhs2 (ass))
+		  && rhs1 == gimple_phi_result (phi)
+		  && gimple_bb (phi) == loop->header
+		  && (gimple_phi_arg_def_from_edge (phi, loop_latch_edge (loop))
+		      == gimple_assign_lhs (ass))
+		  && (CONSTANT_CLASS_P (gimple_phi_arg_def_from_edge
+					 (phi, loop_preheader_edge (loop)))))
+		return true;
+	    }
+	}
+      return false;
+    }
   return true;
 }
 
@@ -263,7 +308,7 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 	    {
 	      /* Exit conditional.  */
 	      if (exit && body[i] == exit->src
-		  && stmt == last_stmt (exit->src))
+		  && stmt == *gsi_last_bb (exit->src))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "   Exit condition will be eliminated "
@@ -271,7 +316,7 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 		  likely_eliminated_peeled = true;
 		}
 	      if (edge_to_cancel && body[i] == edge_to_cancel->src
-		  && stmt == last_stmt (edge_to_cancel->src))
+		  && stmt == *gsi_last_bb (edge_to_cancel->src))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "   Exit condition will be eliminated "
@@ -577,10 +622,11 @@ remove_redundant_iv_tests (class loop *loop)
 	      || !integer_zerop (niter.may_be_zero)
 	      || !niter.niter
 	      || TREE_CODE (niter.niter) != INTEGER_CST
-	      || !wi::ltu_p (loop->nb_iterations_upper_bound,
+	      || !wi::ltu_p (widest_int::from (loop->nb_iterations_upper_bound,
+					       SIGNED),
 			     wi::to_widest (niter.niter)))
 	    continue;
-	  
+
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Removed pointless exit: ");
@@ -618,8 +664,10 @@ static bitmap peeled_loops;
    LOOP_CLOSED_SSA_INVALIDATED is used to bookkepp the case
    when we need to go into loop closed SSA form.  */
 
-static void
-unloop_loops (bitmap loop_closed_ssa_invalidated,
+void
+unloop_loops (vec<class loop *> &loops_to_unloop,
+	      vec<int> &loops_to_unloop_nunroll,
+	      bitmap loop_closed_ssa_invalidated,
 	      bool *irred_invalidated)
 {
   while (loops_to_unloop.length ())
@@ -653,8 +701,6 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
       gsi = gsi_start_bb (latch_edge->dest);
       gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
     }
-  loops_to_unloop.release ();
-  loops_to_unloop_nunroll.release ();
 
   /* Remove edges in peeled copies.  Given remove_path removes dominated
      regions we need to cope with removal of already removed paths.  */
@@ -906,6 +952,10 @@ try_unroll_loop_completely (class loop *loop,
       if (may_be_zero)
 	bitmap_clear_bit (wont_exit, 1);
 
+      /* If loop was originally estimated to iterate too many times,
+	 reduce the profile to avoid new profile inconsistencies.  */
+      scale_loop_profile (loop, profile_probability::always (), n_unroll);
+
       if (!gimple_duplicate_loop_body_to_header_edge (
 	    loop, loop_preheader_edge (loop), n_unroll, wont_exit, exit,
 	    &edges_to_remove,
@@ -919,11 +969,13 @@ try_unroll_loop_completely (class loop *loop,
 
       free_original_copy_tables ();
     }
+  else
+    scale_loop_profile (loop, profile_probability::always (), 0);
 
   /* Remove the conditional from the last copy of the loop.  */
   if (edge_to_cancel)
     {
-      gcond *cond = as_a <gcond *> (last_stmt (edge_to_cancel->src));
+      gcond *cond = as_a <gcond *> (*gsi_last_bb (edge_to_cancel->src));
       force_edge_cold (edge_to_cancel, true);
       if (edge_to_cancel->flags & EDGE_TRUE_VALUE)
 	gimple_cond_make_false (cond);
@@ -978,6 +1030,56 @@ estimated_peeled_sequence_size (struct loop_size *size,
 {
   return MAX (npeel * (HOST_WIDE_INT) (size->overall
 			     	       - size->eliminated_by_peeling), 1);
+}
+
+/* Update loop estimates after peeling LOOP by NPEEL.
+   If PRECISE is false only likely exists were duplicated and thus
+   do not update any estimates that are supposed to be always reliable.  */
+void
+adjust_loop_info_after_peeling (class loop *loop, int npeel, bool precise)
+{
+  if (loop->any_estimate)
+    {
+      /* Since peeling is mostly about loops where first few
+	 iterations are special, it is not quite correct to
+	 assume that the remaining iterations will behave
+	 the same way.  However we do not have better info
+	 so update the esitmate, since it is likely better
+	 than keeping it as it is.
+
+	 Remove it if it looks wrong.
+
+	 TODO: We likely want to special case the situation where
+	 peeling is optimizing out exit edges and only update
+	 estimates here.  */
+      if (wi::leu_p (npeel, loop->nb_iterations_estimate))
+	loop->nb_iterations_estimate -= npeel;
+      else
+	loop->any_estimate = false;
+    }
+  if (loop->any_upper_bound && precise)
+    {
+      if (wi::leu_p (npeel, loop->nb_iterations_upper_bound))
+	loop->nb_iterations_upper_bound -= npeel;
+      else
+	{
+	  /* Peeling maximal number of iterations or more
+	     makes no sense and is a bug.
+	     We should peel completely.  */
+	  gcc_unreachable ();
+	}
+    }
+  if (loop->any_likely_upper_bound)
+    {
+      if (wi::leu_p (npeel, loop->nb_iterations_likely_upper_bound))
+	loop->nb_iterations_likely_upper_bound -= npeel;
+      else
+	{
+	  loop->any_estimate = true;
+	  loop->nb_iterations_estimate = 0;
+	  loop->nb_iterations_likely_upper_bound = 0;
+	}
+    }
 }
 
 /* If the loop is expected to iterate N times and is
@@ -1096,6 +1198,7 @@ try_peel_loop (class loop *loop,
     }
   if (may_be_zero)
     bitmap_clear_bit (wont_exit, 1);
+
   if (!gimple_duplicate_loop_body_to_header_edge (
 	loop, loop_preheader_edge (loop), npeel, wont_exit, exit,
 	&edges_to_remove, DLTHE_FLAG_UPDATE_FREQ))
@@ -1109,45 +1212,8 @@ try_peel_loop (class loop *loop,
       fprintf (dump_file, "Peeled loop %d, %i times.\n",
 	       loop->num, (int) npeel);
     }
-  if (loop->any_estimate)
-    {
-      if (wi::ltu_p (npeel, loop->nb_iterations_estimate))
-        loop->nb_iterations_estimate -= npeel;
-      else
-	loop->nb_iterations_estimate = 0;
-    }
-  if (loop->any_upper_bound)
-    {
-      if (wi::ltu_p (npeel, loop->nb_iterations_upper_bound))
-        loop->nb_iterations_upper_bound -= npeel;
-      else
-        loop->nb_iterations_upper_bound = 0;
-    }
-  if (loop->any_likely_upper_bound)
-    {
-      if (wi::ltu_p (npeel, loop->nb_iterations_likely_upper_bound))
-	loop->nb_iterations_likely_upper_bound -= npeel;
-      else
-	{
-	  loop->any_estimate = true;
-	  loop->nb_iterations_estimate = 0;
-	  loop->nb_iterations_likely_upper_bound = 0;
-	}
-    }
-  profile_count entry_count = profile_count::zero ();
+  adjust_loop_info_after_peeling (loop, npeel, true);
 
-  edge e;
-  edge_iterator ei;
-  FOR_EACH_EDGE (e, ei, loop->header->preds)
-    if (e->src != loop->latch)
-      {
-	if (e->src->count.initialized_p ())
-	  entry_count += e->src->count;
-	gcc_assert (!flow_bb_inside_loop_p (loop, e->src));
-      }
-  profile_probability p;
-  p = entry_count.probability_in (loop->header->count);
-  scale_loop_profile (loop, p, 0);
   bitmap_set_bit (peeled_loops, loop->num);
   return true;
 }
@@ -1166,7 +1232,6 @@ canonicalize_loop_induction_variables (class loop *loop,
   tree niter;
   HOST_WIDE_INT maxiter;
   bool modified = false;
-  dump_user_location_t locus;
   class tree_niter_desc niter_desc;
   bool may_be_zero = false;
 
@@ -1180,9 +1245,7 @@ canonicalize_loop_induction_variables (class loop *loop,
       may_be_zero
 	= niter_desc.may_be_zero && !integer_zerop (niter_desc.may_be_zero);
     }
-  if (TREE_CODE (niter) == INTEGER_CST)
-    locus = last_stmt (exit->src);
-  else
+  if (TREE_CODE (niter) != INTEGER_CST)
     {
       /* For non-constant niter fold may_be_zero into niter again.  */
       if (may_be_zero)
@@ -1206,9 +1269,6 @@ canonicalize_loop_induction_variables (class loop *loop,
 	  && (chrec_contains_undetermined (niter)
 	      || TREE_CODE (niter) != INTEGER_CST))
 	niter = find_loop_niter_by_eval (loop, &exit);
-
-      if (exit)
-        locus = last_stmt (exit->src);
 
       if (TREE_CODE (niter) != INTEGER_CST)
 	exit = NULL;
@@ -1251,6 +1311,7 @@ canonicalize_loop_induction_variables (class loop *loop,
      populates the loop bounds.  */
   modified |= remove_redundant_iv_tests (loop);
 
+  dump_user_location_t locus = find_loop_location (loop);
   if (try_unroll_loop_completely (loop, exit, niter, may_be_zero, ul,
 				  maxiter, locus, allow_peel))
     return true;
@@ -1300,7 +1361,10 @@ canonicalize_induction_variables (void)
     }
   gcc_assert (!need_ssa_update_p (cfun));
 
-  unloop_loops (loop_closed_ssa_invalidated, &irred_invalidated);
+  unloop_loops (loops_to_unloop, loops_to_unloop_nunroll,
+		loop_closed_ssa_invalidated, &irred_invalidated);
+  loops_to_unloop.release ();
+  loops_to_unloop_nunroll.release ();
   if (irred_invalidated
       && loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
     mark_irreducible_loops ();
@@ -1447,7 +1511,12 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	{
 	  unsigned i;
 
-          unloop_loops (loop_closed_ssa_invalidated, &irred_invalidated);
+	  unloop_loops (loops_to_unloop,
+			loops_to_unloop_nunroll,
+			loop_closed_ssa_invalidated,
+			&irred_invalidated);
+	  loops_to_unloop.release ();
+	  loops_to_unloop_nunroll.release ();
 
 	  /* We cannot use TODO_update_ssa_no_phi because VOPS gets confused.  */
 	  if (loop_closed_ssa_invalidated
@@ -1486,15 +1555,16 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	    }
 	  BITMAP_FREE (fathers);
 
+	  /* Clean up the information about numbers of iterations, since
+	     complete unrolling might have invalidated it.  */
+	  scev_reset ();
+
 	  /* This will take care of removing completely unrolled loops
 	     from the loop structures so we can continue unrolling now
 	     innermost loops.  */
 	  if (cleanup_tree_cfg ())
 	    update_ssa (TODO_update_ssa_only_virtuals);
 
-	  /* Clean up the information about numbers of iterations, since
-	     complete unrolling might have invalidated it.  */
-	  scev_reset ();
 	  if (flag_checking && loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	    verify_loop_closed_ssa (true);
 	}

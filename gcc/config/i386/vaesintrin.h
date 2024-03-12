@@ -24,9 +24,9 @@
 #ifndef __VAESINTRIN_H_INCLUDED
 #define __VAESINTRIN_H_INCLUDED
 
-#if !defined(__VAES__) || !defined(__AVX__)
+#if !defined(__VAES__)
 #pragma GCC push_options
-#pragma GCC target("vaes,avx")
+#pragma GCC target("vaes")
 #define __DISABLE_VAES__
 #endif /* __VAES__ */
 
@@ -66,9 +66,9 @@ _mm256_aesenclast_epi128 (__m256i __A, __m256i __B)
 #endif /* __DISABLE_VAES__ */
 
 
-#if !defined(__VAES__) || !defined(__AVX512F__)
+#if !defined(__VAES__) || !defined(__AVX512F__) || !defined(__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("vaes,avx512f")
+#pragma GCC target("vaes,avx512f,evex512")
 #define __DISABLE_VAESF__
 #endif /* __VAES__ */
 

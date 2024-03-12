@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-additional-options "-ftree-vectorize -fno-vect-cost-model" } */
 /* { dg-additional-options "-mavx2" { target avx2_runtime } } */
 

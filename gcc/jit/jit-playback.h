@@ -446,6 +446,11 @@ public:
     return new type (build_qualified_type (m_inner, TYPE_QUAL_VOLATILE));
   }
 
+  type *get_restrict () const
+  {
+    return new type (build_qualified_type (m_inner, TYPE_QUAL_RESTRICT));
+  }
+
   type *get_aligned (size_t alignment_in_bytes) const;
   type *get_vector (size_t num_units) const;
 

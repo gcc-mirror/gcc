@@ -34,8 +34,8 @@ struct test_replace_copy
               typename Predicate, typename T>
     void
     operator()(Policy&& exec, InputIterator first, InputIterator last, OutputIterator out_first,
-               OutputIterator out_last, OutputIterator2 expected_first, OutputIterator2 expected_last, Size n,
-               Predicate pred, const T& old_value, const T& new_value, T trash)
+               OutputIterator out_last, OutputIterator2 expected_first, OutputIterator2, Size n, Predicate pred,
+               const T& old_value, const T& new_value, T trash)
     {
         // Cleaning
         std::fill_n(expected_first, n, trash);
@@ -91,7 +91,7 @@ struct test_non_const
     }
 };
 
-int32_t
+int
 main()
 {
 
@@ -101,7 +101,7 @@ main()
     test<int32_t>(-666, 42, 99, [](const int32_t& x) { return x != 42; },
                   [](size_t j) { return ((j + 1) % 5 & 2) != 0 ? 42 : -1 - int32_t(j); });
 
-#if !_PSTL_ICC_17_TEST_MAC_RELEASE_32_BROKEN
+#if !defined(_PSTL_ICC_17_TEST_MAC_RELEASE_32_BROKEN)
     test<Number>(Number(42, OddTag()), Number(2001, OddTag()), Number(2017, OddTag()), IsMultiple(3, OddTag()),
                  [](int32_t j) { return ((j + 1) % 3 & 2) != 0 ? Number(2001, OddTag()) : Number(j, OddTag()); });
 #endif

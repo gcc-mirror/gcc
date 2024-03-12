@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-bswap-details" } */
 
-typedef unsigned int uint32_t;
+typedef __UINT32_TYPE__ uint32_t;
 typedef unsigned char uint8_t;
 
 uint32_t load_le_32_or(const uint8_t *ptr)

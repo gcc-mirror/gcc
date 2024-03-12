@@ -11,4 +11,4 @@ sub (int i)
   i &= 0x7fffffff;
   return i > 0x7f800000;
 }
-/* { dg-final { scan-assembler-not "srli" } } */
+/* { dg-final { scan-assembler-not {\msrli} } } */

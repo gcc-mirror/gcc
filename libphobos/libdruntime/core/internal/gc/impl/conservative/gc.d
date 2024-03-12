@@ -26,6 +26,7 @@ module core.internal.gc.impl.conservative.gc;
 //debug = INVARIANT;            // enable invariants
 //debug = PROFILE_API;          // profile API calls for config.profile > 1
 //debug = GC_RECURSIVE_LOCK;    // check for recursive locking on the same thread
+//debug = VALGRIND;             // Valgrind memcheck integration
 
 /***************************************************/
 version = COLLECT_PARALLEL;  // parallel scanning
@@ -51,6 +52,8 @@ version (GNU) import gcc.builtins;
 
 debug (PRINTF_TO_FILE) import core.stdc.stdio : sprintf, fprintf, fopen, fflush, FILE;
 else                   import core.stdc.stdio : sprintf, printf; // needed to output profiling results
+
+debug (VALGRIND) import etc.valgrind.valgrind;
 
 import core.time;
 alias currTime = MonoTime.currTime;
@@ -90,7 +93,7 @@ private
         int rt_hasFinalizerInSegment(void* p, size_t size, uint attr, const scope void[] segment) nothrow;
 
         // Declared as an extern instead of importing core.exception
-        // to avoid inlining - see issue 13725.
+        // to avoid inlining - see https://issues.dlang.org/show_bug.cgi?id=13725.
         void onInvalidMemoryOperationError(void* pretend_sideffect = null) @trusted pure nothrow @nogc;
         void onOutOfMemoryErrorNoGC() @trusted nothrow @nogc;
 
@@ -480,6 +483,8 @@ class ConservativeGC : GC
 
         auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(size, bits, localAllocSize, ti);
 
+        invalidate(p[0 .. localAllocSize], 0xF0, true);
+
         if (!(bits & BlkAttr.NO_SCAN))
         {
             memset(p + size, 0, localAllocSize - size);
@@ -566,6 +571,9 @@ class ConservativeGC : GC
         size_t localAllocSize = void;
 
         auto p = runLocked!(mallocNoSync, mallocTime, numMallocs)(size, bits, localAllocSize, ti);
+
+        debug (VALGRIND) makeMemUndefined(p[0..size]);
+        invalidate((p + size)[0 .. localAllocSize - size], 0xF0, true);
 
         memset(p, 0, size);
         if (!(bits & BlkAttr.NO_SCAN))
@@ -688,7 +696,7 @@ class ConservativeGC : GC
             else if (newsz < psz)
             {
                 // Shrink in place
-                debug (MEMSTOMP) memset(p + size, 0xF2, psize - size);
+                invalidate((p + size)[0 .. psize - size], 0xF2, false);
                 lpool.freePages(pagenum + newsz, psz - newsz);
                 lpool.mergeFreePageOffsets!(false, true)(pagenum + newsz, psz - newsz);
                 lpool.bPageOffsets[pagenum] = cast(uint) newsz;
@@ -704,7 +712,7 @@ class ConservativeGC : GC
                 if (freesz < newPages)
                     return doMalloc(); // free range too small
 
-                debug (MEMSTOMP) memset(p + psize, 0xF0, size - psize);
+                invalidate((p + psize)[0 .. size - psize], 0xF0, true);
                 debug (PRINTF) printFreeInfo(pool);
                 memset(&lpool.pagetable[pagenum + psz], Bins.B_PAGEPLUS, newPages);
                 lpool.bPageOffsets[pagenum] = cast(uint) newsz;
@@ -795,7 +803,7 @@ class ConservativeGC : GC
             if (freesz < minsz)
                 return 0;
             size_t sz = freesz > maxsz ? maxsz : freesz;
-            debug (MEMSTOMP) memset(pool.baseAddr + (pagenum + psz) * PAGESIZE, 0xF0, sz * PAGESIZE);
+            invalidate((pool.baseAddr + (pagenum + psz) * PAGESIZE)[0 .. sz * PAGESIZE], 0xF0, true);
             memset(lpool.pagetable + pagenum + psz, Bins.B_PAGEPLUS, sz);
             lpool.bPageOffsets[pagenum] = cast(uint) (psz + sz);
             for (auto offset = psz; offset < psz + sz; offset++)
@@ -911,7 +919,7 @@ class ConservativeGC : GC
             size_t npages = lpool.bPageOffsets[pagenum];
             auto size = npages * PAGESIZE;
             ssize = sentinel_size(q, size);
-            debug (MEMSTOMP) memset(p, 0xF2, size);
+            invalidate(p[0 .. size], 0xF2, false);
             lpool.freePages(pagenum, npages);
             lpool.mergeFreePageOffsets!(true, true)(pagenum, npages);
         }
@@ -925,13 +933,13 @@ class ConservativeGC : GC
 
             auto size = binsize[bin];
             ssize = sentinel_size(q, size);
-            debug (MEMSTOMP) memset(p, 0xF2, size);
+            invalidate(p[0 .. size], 0xF2, false);
 
             // in case the page hasn't been recovered yet, don't add the object to the free list
             if (!gcx.recoverPool[bin] || pool.binPageChain[pagenum] == Pool.PageRecovered)
             {
-                list.next = gcx.bucket[bin];
-                list.pool = pool;
+                undefinedWrite(list.next, gcx.bucket[bin]);
+                undefinedWrite(list.pool, pool);
                 gcx.bucket[bin] = list;
             }
             pool.freebits.set(biti);
@@ -1509,7 +1517,7 @@ struct Gcx
     List*[Bins.B_NUMSMALL] bucket; // free list for each small size
 
     // run a collection when reaching those thresholds (number of used pages)
-    float smallCollectThreshold, largeCollectThreshold;
+    float smallCollectThreshold = 0.0f, largeCollectThreshold = 0.0f;
     uint usedSmallPages, usedLargePages;
     // total number of mapped pages
     uint mappedPages;
@@ -1965,8 +1973,8 @@ struct Gcx
         assert(p !is null);
     L_hasBin:
         // Return next item from free list
-        bucket[bin] = (cast(List*)p).next;
-        auto pool = (cast(List*)p).pool;
+        bucket[bin] = undefinedRead((cast(List*)p).next);
+        auto pool = undefinedRead((cast(List*)p).pool);
 
         auto biti = (p - pool.baseAddr) >> pool.shiftBy;
         assert(pool.freebits.test(biti));
@@ -1976,7 +1984,7 @@ struct Gcx
         if (bits)
             pool.setBits(biti, bits);
         //debug(PRINTF) printf("\tmalloc => %p\n", p);
-        debug (MEMSTOMP) memset(p, 0xF0, alloc_size);
+        invalidate(p[0 .. alloc_size], 0xF0, true);
 
         if (ConservativeGC.isPrecise)
         {
@@ -2059,7 +2067,7 @@ struct Gcx
 
         auto p = pool.baseAddr + pn * PAGESIZE;
         debug(PRINTF) printf("Got large alloc:  %p, pt = %d, np = %d\n", p, pool.pagetable[pn], npages);
-        debug (MEMSTOMP) memset(p, 0xF1, size);
+        invalidate(p[0 .. size], 0xF1, true);
         alloc_size = npages * PAGESIZE;
         //debug(PRINTF) printf("\tp = %p\n", p);
 
@@ -2241,6 +2249,7 @@ struct Gcx
             immutable ncap = _cap ? 2 * _cap : initSize / RANGE.sizeof;
             auto p = cast(RANGE*)os_mem_map(ncap * RANGE.sizeof);
             if (p is null) onOutOfMemoryErrorNoGC();
+            debug (VALGRIND) makeMemUndefined(p[0..ncap]);
             if (_p !is null)
             {
                 p[0 .. _length] = _p[0 .. _length];
@@ -2295,7 +2304,8 @@ struct Gcx
 
         for (;;)
         {
-            auto p = *cast(void**)(rng.pbot);
+            auto p = undefinedRead(*cast(void**)(rng.pbot));
+            debug (VALGRIND) makeMemDefined((&p)[0 .. 1]);
 
             debug(MARK_PRINTF) printf("\tmark %p: %p\n", rng.pbot, p);
 
@@ -2525,6 +2535,7 @@ struct Gcx
         for (auto p = cast(void**)pbot; cast(void*)p < ptop; p++)
         {
             auto ptr = *p;
+            debug (VALGRIND) makeMemDefined((&ptr)[0 .. 1]);
             if (cast(size_t)(ptr - minAddr) < memSize)
                 toscanRoots.push(ptr);
         }
@@ -2650,7 +2661,7 @@ struct Gcx
                         pool.freepages += npages;
                         numFree += npages;
 
-                        debug (MEMSTOMP) memset(p, 0xF3, npages * PAGESIZE);
+                        invalidate(p[0 .. npages * PAGESIZE], 0xF3, false);
                         // Don't need to update searchStart here because
                         // pn is guaranteed to be greater than last time
                         // we updated it.
@@ -2765,7 +2776,7 @@ struct Gcx
                                     debug(COLLECT_PRINTF) printf("\tcollecting %p\n", p);
                                     leakDetector.log_free(q, sentinel_size(q, size));
 
-                                    debug (MEMSTOMP) memset(p, 0xF3, size);
+                                    invalidate(p[0 .. size], 0xF3, false);
                                 }
                             }
                         }
@@ -2830,11 +2841,11 @@ struct Gcx
             if (!core.bitop.bt(freebitsdata, u / 16))
                 continue;
             auto elem = cast(List *)(p + u);
-            elem.pool = &pool.base;
-            *bucketTail = elem;
+            undefinedWrite(elem.pool, &pool.base);
+            undefinedWrite(*bucketTail, elem);
             bucketTail = &elem.next;
         }
-        *bucketTail = null;
+        undefinedWrite(*bucketTail, null);
         assert(bucket[bin] !is null);
         return true;
     }
@@ -3529,7 +3540,7 @@ struct Pool
         Small = 4,
         Large = 12
     }
-    ShiftBy shiftBy;    // shift count for the divisor used for determining bit indices.
+    ShiftBy shiftBy = void;    // shift count for the divisor used for determining bit indices.
 
     // This tracks how far back we have to go to find the nearest B_PAGE at
     // a smaller address than a B_PAGEPLUS.  To save space, we use a uint.
@@ -3572,6 +3583,7 @@ struct Pool
         //debug(PRINTF) printf("Pool::Pool(%u)\n", npages);
         poolsize = npages * PAGESIZE;
         baseAddr = cast(byte *)os_mem_map(poolsize);
+        version (VALGRIND) makeMemNoAccess(baseAddr[0..poolsize]);
 
         // Some of the code depends on page alignment of memory pools
         assert((cast(size_t)baseAddr & (PAGESIZE - 1)) == 0);
@@ -4275,7 +4287,7 @@ struct LargeObjectPool
             for (; pn + n < npages; ++n)
                 if (pagetable[pn + n] != Bins.B_PAGEPLUS)
                     break;
-            debug (MEMSTOMP) memset(baseAddr + pn * PAGESIZE, 0xF3, n * PAGESIZE);
+            invalidate((baseAddr + pn * PAGESIZE)[0 .. n * PAGESIZE], 0xF3, false);
             freePages(pn, n);
             mergeFreePageOffsets!(true, true)(pn, n);
         }
@@ -4394,7 +4406,7 @@ struct SmallObjectPool
                 debug(COLLECT_PRINTF) printf("\tcollecting %p\n", p);
                 //log_free(sentinel_add(p));
 
-                debug (MEMSTOMP) memset(p, 0xF3, size);
+                invalidate(p[0 .. size], 0xF3, false);
             }
 
             if (freeBits)
@@ -4431,17 +4443,17 @@ struct SmallObjectPool
         void* ptop = p + PAGESIZE - 2 * size + 1;
         for (; p < ptop; p += size)
         {
-            (cast(List *)p).next = cast(List *)(p + size);
-            (cast(List *)p).pool = &base;
+            undefinedWrite((cast(List *)p).next, cast(List *)(p + size));
+            undefinedWrite((cast(List *)p).pool, &base);
         }
-        (cast(List *)p).next = null;
-        (cast(List *)p).pool = &base;
+        undefinedWrite((cast(List *)p).next, null);
+        undefinedWrite((cast(List *)p).pool, &base);
         return first;
     }
 }
 
 debug(SENTINEL) {} else // no additional capacity with SENTINEL
-unittest // bugzilla 14467
+unittest // https://issues.dlang.org/show_bug.cgi?id=14467
 {
     int[] arr = new int[10];
     assert(arr.capacity);
@@ -4449,7 +4461,7 @@ unittest // bugzilla 14467
     assert(arr.capacity);
 }
 
-unittest // bugzilla 15353
+unittest // https://issues.dlang.org/show_bug.cgi?id=15353
 {
     import core.memory : GC;
 
@@ -4466,7 +4478,7 @@ unittest // bugzilla 15353
     GC.collect();
 }
 
-unittest // bugzilla 15822
+unittest // https://issues.dlang.org/show_bug.cgi?id=15822
 {
     import core.memory : GC;
 
@@ -4487,7 +4499,7 @@ unittest // bugzilla 15822
     GC.collect();
 }
 
-unittest // bugzilla 1180
+unittest // https://issues.dlang.org/show_bug.cgi?id=1180
 {
     import core.exception;
     try
@@ -4823,13 +4835,22 @@ debug (SENTINEL)
     {
         assert(size <= uint.max);
         *sentinel_psize(p) = cast(uint)size;
-        *sentinel_pre(p) = SENTINEL_PRE;
-        *sentinel_post(p) = SENTINEL_POST;
+        debug (VALGRIND)
+        {
+            makeMemNoAccess(sentinel_pre(p)[0..1]);
+            makeMemNoAccess(sentinel_post(p)[0..1]);
+        }
+        else
+        {
+            *sentinel_pre(p) = SENTINEL_PRE;
+            *sentinel_post(p) = SENTINEL_POST;
+        }
     }
 
 
     void sentinel_Invariant(const void *p) nothrow @nogc
     {
+        debug (VALGRIND) {} else
         debug
         {
             assert(*sentinel_pre(p) == SENTINEL_PRE);
@@ -5062,4 +5083,54 @@ unittest
         // adjacent allocations likely but not guaranteed
         printf("unexpected pointers %p and %p\n", p.ptr, q.ptr);
     }
+}
+
+/* ============================ MEMSTOMP =============================== */
+
+/// Mark the specified memory region as uninitialized -
+/// reading from this region is an error.
+/// If writable is false, writing to it is also an error.
+pragma(inline, true)
+void invalidate(void[] mem, ubyte pattern, bool writable) nothrow @nogc
+{
+    debug (MEMSTOMP) memset(mem.ptr, pattern, mem.length);
+    debug (VALGRIND)
+    {
+        if (writable)
+            makeMemUndefined(mem);
+        else
+            makeMemNoAccess(mem);
+    }
+}
+
+/// Read memory that should otherwise be marked as unreadable
+/// (e.g. free lists overlapped with unallocated heap objects).
+pragma(inline, true)
+T undefinedRead(T)(ref T var) nothrow
+{
+    debug (VALGRIND)
+    {
+        auto varArr = (&var)[0..1];
+        disableAddrReportingInRange(varArr);
+        T result = var;
+        enableAddrReportingInRange(varArr);
+        return result;
+    }
+    else
+        return var;
+}
+
+/// Write memory that should otherwise be marked as unwritable.
+pragma(inline, true)
+void undefinedWrite(T)(ref T var, T value) nothrow
+{
+    debug (VALGRIND)
+    {
+        auto varArr = (&var)[0..1];
+        disableAddrReportingInRange(varArr);
+        var = value;
+        enableAddrReportingInRange(varArr);
+    }
+    else
+        var = value;
 }

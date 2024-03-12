@@ -16,7 +16,7 @@
 /* { dg-final { scan-assembler-times "\[\t \]0x20000020\[\t \]+\[^\n\]*btm_offset" 1 } } */
 
 /* Only 2 members.  */
-/* { dg-final { scan-assembler-times "btm_name" 2 } } */
+/* { dg-final { scan-assembler-times "MEMBER" 2 } } */
 
 struct foo
 {

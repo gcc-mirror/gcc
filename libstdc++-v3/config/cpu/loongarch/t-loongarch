@@ -1,0 +1,1 @@
+AM_MAKEFLAGS += " MULTISUBDIR=/$(shell $(CXX) --print-multi-directory)"

@@ -272,7 +272,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 
   if (*spec != 'v')
     {
-      t = va_arg (*text->args_ptr, tree);
+      t = va_arg (*text->m_args_ptr, tree);
       if (set_locus)
 	text->set_location (0, DECL_SOURCE_LOCATION (t),
 			    SHOW_RANGE_WITH_CARET);
@@ -316,7 +316,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       return true;
 
     case 'v':
-      pp_c_cv_qualifiers (cpp, va_arg (*text->args_ptr, int), hash);
+      pp_c_cv_qualifiers (cpp, va_arg (*text->m_args_ptr, int), hash);
       return true;
 
     default:

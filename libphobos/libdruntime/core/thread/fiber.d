@@ -176,6 +176,11 @@ private
     {
         version = AlignFiberStackTo16Byte;
     }
+    else version (LoongArch64)
+    {
+        version = AsmLoongArch64_Posix;
+        version = AsmExternal;
+    }
 
     version (Posix)
     {
@@ -1437,6 +1442,27 @@ private:
             pstack -= ABOVE;
             *cast(size_t*)(pstack - SZ_RA) = cast(size_t)&fiber_entryPoint;
         }
+        else version (AsmLoongArch64_Posix)
+        {
+            version (StackGrowsDown) {}
+            else static assert(0);
+
+            // Like others, FP registers and return address (ra) are kept
+            // below the saved stack top (tstack) to hide from GC scanning.
+            // The newp stack should look like this on LoongArch64:
+            // 18: fp     <- pstack
+            // ...
+            //  9: s0     <- newp tstack
+            //  8: ra     [&fiber_entryPoint]
+            //  7: fs7
+            // ...
+            //  1: fs1
+            //  0: fs0
+            pstack -= 10 * size_t.sizeof; // skip s0-s8 and fp
+            // set $ra
+            push( cast(size_t) &fiber_entryPoint );
+            pstack += size_t.sizeof;
+        }
         else version (AsmAArch64_Posix)
         {
             // Like others, FP registers and return address (lr) are kept
@@ -1785,6 +1811,7 @@ version (OSX)
 {
     version (X86)    version = UnsafeFiberMigration;
     version (X86_64) version = UnsafeFiberMigration;
+    version (AArch64) version = UnsafeFiberMigration;
 }
 
 version (UnsafeFiberMigration)

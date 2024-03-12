@@ -255,7 +255,7 @@ public:
     return 0;
   }
 
-  bool emit (rich_location *richloc) final override
+  bool emit (rich_location *richloc, logger *) final override
   {
     inform (richloc, "path");
     return true;
@@ -379,6 +379,7 @@ register_known_analyzer_functions (known_function_manager &kfm)
   kfm.add ("__analyzer_eval", make_unique<kf_analyzer_eval> ());
   kfm.add ("__analyzer_get_unknown_ptr",
 	   make_unique<kf_analyzer_get_unknown_ptr> ());
+  kfm.add ("__analyzer_get_strlen", make_kf_strlen ());
 }
 
 } // namespace ana

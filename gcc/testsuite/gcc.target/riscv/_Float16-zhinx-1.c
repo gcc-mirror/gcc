@@ -6,5 +6,5 @@ _Float16 foo1 (_Float16 a, _Float16 b)
     return b;
 }
 
-/* { dg-final { scan-assembler-not "fmv.h" } } */
-/* { dg-final { scan-assembler-times "mv" 1 } } */
+/* { dg-final { scan-assembler-not {\mfmv\.h\M} } } */
+/* { dg-final { scan-assembler-times {\mmv\M} 1 } } */

@@ -214,6 +214,8 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
     case EXEC_OACC_ROUTINE:
+    case EXEC_OMP_ALLOCATE:
+    case EXEC_OMP_ALLOCATORS:
     case EXEC_OMP_ASSUME:
     case EXEC_OMP_ATOMIC:
     case EXEC_OMP_CANCEL:
@@ -286,7 +288,7 @@ gfc_free_statement (gfc_code *p)
       break;
 
     case EXEC_OMP_FLUSH:
-      gfc_free_omp_namelist (p->ext.omp_namelist, false, false);
+      gfc_free_omp_namelist (p->ext.omp_namelist, false, false, false);
       break;
 
     case EXEC_OMP_BARRIER:

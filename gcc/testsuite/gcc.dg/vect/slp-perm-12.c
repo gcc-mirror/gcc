@@ -1,5 +1,6 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_pack_trunc } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-additional-options "-msse4" { target { i?86-*-* x86_64-*-* } } } */
 
 #include "tree-vect.h"
@@ -42,6 +43,7 @@ int main()
 
   test (a, b);
 
+#pragma GCC novector
   for (i = 0; i < 64; ++i)
     if (a[i] != 253)
       abort ();

@@ -72,8 +72,7 @@ test3 (uint32_t a, uint32x4_t b, uint32x4_t* rt)
 **	ushr	v[0-9]+.16b, v[0-9]+.16b, 7
 **	mov	x[0-9]+, 16512
 **	movk	x[0-9]+, 0x1020, lsl 16
-**	movk	x[0-9]+, 0x408, lsl 32
-**	movk	x[0-9]+, 0x102, lsl 48
+**	orr	x[0-9]+, x[0-9]+, x[0-9]+, lsl 28
 **	fmov	d[0-9]+, x[0-9]+
 **	pmull	v[0-9]+.1q, v[0-9]+.1d, v[0-9]+.1d
 **	dup	v[0-9]+.2d, v[0-9]+.d\[0\]

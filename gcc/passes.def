@@ -88,6 +88,8 @@ along with GCC; see the file COPYING3.  If not see
 	  /* pass_build_ealias is a dummy pass that ensures that we
 	     execute TODO_rebuild_alias at this point.  */
 	  NEXT_PASS (pass_build_ealias);
+	  /* Do phiprop before FRE so we optimize std::min and std::max well.  */
+	  NEXT_PASS (pass_phiprop);
 	  NEXT_PASS (pass_fre, true /* may_iterate */);
 	  NEXT_PASS (pass_early_vrp);
 	  NEXT_PASS (pass_merge_phi);
@@ -204,6 +206,10 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_post_ipa_warn);
       /* Must run before loop unrolling.  */
       NEXT_PASS (pass_warn_access, /*early=*/true);
+      /* Profile count may overflow as a result of inlinining very large
+         loop nests.  This pass should run before any late pass that makes
+	 use of profile.  */
+      NEXT_PASS (pass_rebuild_frequencies);
       NEXT_PASS (pass_complete_unrolli);
       NEXT_PASS (pass_backprop);
       NEXT_PASS (pass_phiprop);
@@ -215,7 +221,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fre, true /* may_iterate */);
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_thread_jumps_full, /*first=*/true);
-      NEXT_PASS (pass_vrp, true /* warn_array_bounds_p */);
+      NEXT_PASS (pass_vrp, false /* final_p*/);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_dce);
       /* pass_stdarg is always run and at this point we execute
@@ -231,6 +237,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_tail_recursion);
       NEXT_PASS (pass_ch);
       NEXT_PASS (pass_lower_complex);
+      NEXT_PASS (pass_lower_bitint);
       NEXT_PASS (pass_sra);
       /* The dom pass will also resolve all __builtin_constant_p calls
          that are still there to 0.  This has to be done after some
@@ -276,8 +283,8 @@ along with GCC; see the file COPYING3.  If not see
 	     form if possible.  */
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_tree_unswitch);
-	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_loop_split);
+	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_loop_versioning);
 	  NEXT_PASS (pass_loop_jam);
 	  /* All unswitching, final value replacement and splitting can expose
@@ -341,7 +348,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_thread_jumps_full, /*first=*/false);
-      NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
+      NEXT_PASS (pass_vrp, true /* final_p */);
       /* Run CCP to compute alignment and nonzero bits.  */
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
       NEXT_PASS (pass_warn_restrict);
@@ -380,6 +387,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_strip_predict_hints, false /* early_p */);
       /* Lower remaining pieces of GIMPLE.  */
       NEXT_PASS (pass_lower_complex);
+      NEXT_PASS (pass_lower_bitint);
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_lower_switch);
       /* Perform simple scalar cleanup which is constant/copy propagation.  */
@@ -393,6 +401,10 @@ along with GCC; see the file COPYING3.  If not see
          to forward object-size and builtin folding results properly.  */
       NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_dce);
+      /* Profile count may overflow as a result of inlinining very large
+         loop nests.  This pass should run before any late pass that makes
+	 use of profile.  */
+      NEXT_PASS (pass_rebuild_frequencies);
       NEXT_PASS (pass_sancov);
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
@@ -419,6 +431,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_vaarg);
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_lower_complex_O0);
+  NEXT_PASS (pass_lower_bitint_O0);
   NEXT_PASS (pass_sancov_O0);
   NEXT_PASS (pass_lower_switch_O0);
   NEXT_PASS (pass_asan_O0);
@@ -506,6 +519,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_if_after_reload);
 	  NEXT_PASS (pass_regrename);
+	  NEXT_PASS (pass_fold_mem_offsets);
 	  NEXT_PASS (pass_cprop_hardreg);
 	  NEXT_PASS (pass_fast_rtl_dce);
 	  NEXT_PASS (pass_reorder_blocks);

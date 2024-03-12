@@ -3819,7 +3819,8 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
 
 /* Parse a macro and save its expansion.  Returns nonzero on success.  */
 bool
-_cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
+_cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node,
+			location_t name_loc)
 {
   cpp_macro *macro;
 
@@ -3830,6 +3831,13 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
   if (!macro)
     return false;
+
+  /* _cpp_new_macro () has set macro->line to pfile->directive_line, which
+     denotes the line containing the #define with no column information.  If
+     provided, change to name_loc, which will be the token src_loc for the
+     macro name, including the location and range information.  */
+  if (name_loc)
+    macro->line = name_loc;
 
   if (cpp_macro_p (node))
     {
@@ -3844,7 +3852,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
 	  bool warned = 
 	    cpp_pedwarning_with_line (pfile, reason,
-				      pfile->directive_line, 0,
+				      macro->line, 0,
 				      "\"%s\" redefined", NODE_NAME (node));
 
 	  if (warned && cpp_user_macro_p (node))

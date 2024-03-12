@@ -10,7 +10,7 @@ void main()
      * the TypeInfo object on comdat section (done by TypeInfoDeclaration::toObjFile),
      * even if the associated struct belongs *non-root modules*.
      *
-     * And, from 2.062, issue 7511 is implemented.
+     * And, from 2.062, https://issues.dlang.org/show_bug.cgi?id=7511 is implemented.
      * The attribute inference for member functions in instantiated struct may modify
      * their actual mangled names. Then TypeInfo object compiled in this module would
      * use wrong symbol names, to link non-template opEquals/opCmp/toHash/toString

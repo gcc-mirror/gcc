@@ -498,6 +498,9 @@ static int mips_base_target_flags;
 /* The default compression mode.  */
 unsigned int mips_base_compression_flags;
 
+/* The default code readable setting.  */
+enum mips_code_readable_setting mips_base_code_readable;
+
 /* The ambient values of other global variables.  */
 static int mips_base_schedule_insns; /* flag_schedule_insns */
 static int mips_base_reorder_blocks_and_partition; /* flag_reorder... */
@@ -602,6 +605,7 @@ const enum reg_class mips_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   ALL_REGS,	ALL_REGS,	ALL_REGS,	ALL_REGS
 };
 
+static tree mips_handle_code_readable_attr (tree *, tree, tree, int, bool *);
 static tree mips_handle_interrupt_attr (tree *, tree, tree, int, bool *);
 static tree mips_handle_use_shadow_register_set_attr (tree *, tree, tree, int,
 						      bool *);
@@ -623,6 +627,8 @@ static const struct attribute_spec mips_attribute_table[] = {
   { "micromips",   0, 0, true,  false, false, false, NULL, NULL },
   { "nomicromips", 0, 0, true,  false, false, false, NULL, NULL },
   { "nocompression", 0, 0, true,  false, false, false, NULL, NULL },
+  { "code_readable", 0, 1, true,  false, false, false,
+    mips_handle_code_readable_attr, NULL },
   /* Allow functions to be specified as interrupt handlers */
   { "interrupt",   0, 1, false, true,  true, false, mips_handle_interrupt_attr,
     NULL },
@@ -1309,6 +1315,81 @@ mips_use_debug_exception_return_p (tree type)
   return lookup_attribute ("use_debug_exception_return",
 			   TYPE_ATTRIBUTES (type)) != NULL;
 }
+
+
+/* Verify the arguments to a code_readable attribute.  */
+
+static tree
+mips_handle_code_readable_attr (tree *node ATTRIBUTE_UNUSED, tree name,
+				tree args, int flags ATTRIBUTE_UNUSED,
+				bool *no_add_attrs)
+{
+  if (!is_attribute_p ("code_readable", name) || args == NULL)
+    return NULL_TREE;
+
+  if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute requires a string argument", name);
+      *no_add_attrs = true;
+    }
+  else if (strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "no") != 0
+	   && strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "pcrel") != 0
+	   && strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "yes") != 0)
+    {
+      warning (OPT_Wattributes,
+	       "argument to %qE attribute is neither no, pcrel nor yes", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Determine the code_readable setting for a function if it has one.  Set
+   *valid to true if we have a properly formed argument and
+   return the result.  If there's no argument, return GCC's default.
+   Otherwise, leave valid false and return mips_base_code_readable.  In
+   that case the result should be unused anyway.  */
+
+static enum mips_code_readable_setting
+mips_get_code_readable_attr (tree decl)
+{
+  tree attr;
+
+  if (decl == NULL)
+    return mips_base_code_readable;
+
+  attr = lookup_attribute ("code_readable", DECL_ATTRIBUTES (decl));
+
+  if (attr != NULL)
+    {
+      if (TREE_VALUE (attr) != NULL_TREE)
+	{
+	  const char * str;
+
+	  str = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
+	  if (strcmp (str, "no") == 0)
+	    return CODE_READABLE_NO;
+	  else if (strcmp (str, "pcrel") == 0)
+	    return CODE_READABLE_PCREL;
+	  else if (strcmp (str, "yes") == 0)
+	    return CODE_READABLE_YES;
+
+	  /* mips_handle_code_readable_attr will have verified the
+	     arguments are correct before adding the attribute.  */
+	  gcc_unreachable ();
+	}
+
+      /* Just like GCC's default -mcode-readable= setting, the
+	 presence of the code_readable attribute implies that a
+	 function can read data from the instruction stream by
+	 default.  */
+      return CODE_READABLE_YES;
+    }
+
+  return mips_base_code_readable;
+}
+
 
 /* Return the set of compression modes that are explicitly required
    by the attributes in ATTRIBUTES.  */
@@ -2295,7 +2376,9 @@ mips_symbol_insns_1 (enum mips_symbol_type type, machine_mode mode)
 	 The final address is then $at + %lo(symbol).  With 32-bit
 	 symbols we just need a preparatory LUI for normal mode and
 	 a preparatory LI and SLL for MIPS16.  */
-      return ABI_HAS_64BIT_SYMBOLS ? 6 : TARGET_MIPS16 ? 3 : 2;
+      return ABI_HAS_64BIT_SYMBOLS
+	      ? 6
+	      : (TARGET_MIPS16 && !ISA_HAS_MIPS16E2) ? 3 : 2;
 
     case SYMBOL_GP_RELATIVE:
       /* Treat GP-relative accesses as taking a single instruction on
@@ -2474,6 +2557,9 @@ mips_regno_mode_ok_for_base_p (int regno, machine_mode mode,
   if (TARGET_MIPS16 && regno == STACK_POINTER_REGNUM)
     return GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8;
 
+  if (MIPS16_GP_LOADS && regno == GLOBAL_POINTER_REGNUM)
+    return (UNITS_PER_WORD > 4 ? GET_MODE_SIZE (mode) <= 4 : true);
+
   return TARGET_MIPS16 ? M16_REG_P (regno) : GP_REG_P (regno);
 }
 
@@ -2610,7 +2696,8 @@ mips_classify_address (struct mips_address_info *info, rtx x,
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 
 static bool
-mips_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
+mips_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
+			   code_helper = ERROR_MARK)
 {
   struct mips_address_info addr;
 
@@ -2689,7 +2776,8 @@ static bool
 mips16_unextended_reference_p (machine_mode mode, rtx base,
 			       unsigned HOST_WIDE_INT offset)
 {
-  if (mode != BLKmode && offset % GET_MODE_SIZE (mode) == 0)
+  if (mode != BLKmode && offset % GET_MODE_SIZE (mode) == 0
+      && REGNO (base) != GLOBAL_POINTER_REGNUM)
     {
       if (GET_MODE_SIZE (mode) == 4 && base == stack_pointer_rtx)
 	return offset < 256U * GET_MODE_SIZE (mode);
@@ -2839,6 +2927,9 @@ mips_9bit_offset_address_p (rtx x, machine_mode mode)
   return (mips_classify_address (&addr, x, mode, false)
 	  && addr.type == ADDRESS_REG
 	  && CONST_INT_P (addr.offset)
+	  && (!TARGET_MIPS16E2
+	      || M16_REG_P (REGNO (addr.reg))
+	      || REGNO (addr.reg) >= FIRST_PSEUDO_REGISTER)
 	  && MIPS_9BIT_OFFSET_P (INTVAL (addr.offset)));
 }
 
@@ -2863,7 +2954,7 @@ mips_const_insns (rtx x)
 
       /* This is simply an LUI for normal mode.  It is an extended
 	 LI followed by an extended SLL for MIPS16.  */
-      return TARGET_MIPS16 ? 4 : 1;
+      return TARGET_MIPS16 ? (ISA_HAS_MIPS16E2 ? 2 : 4) : 1;
 
     case CONST_INT:
       if (TARGET_MIPS16)
@@ -2875,7 +2966,10 @@ mips_const_insns (rtx x)
 		: SMALL_OPERAND_UNSIGNED (INTVAL (x)) ? 2
 		: IN_RANGE (-INTVAL (x), 0, 255) ? 2
 		: SMALL_OPERAND_UNSIGNED (-INTVAL (x)) ? 3
-		: 0);
+		: ISA_HAS_MIPS16E2
+		  ? (trunc_int_for_mode (INTVAL (x), SImode) == INTVAL (x)
+		     ? 4 : 8)
+		  : 0);
 
       return mips_build_integer (codes, INTVAL (x));
 
@@ -3249,7 +3343,7 @@ mips16_gp_pseudo_reg (void)
 rtx
 mips_pic_base_register (rtx temp)
 {
-  if (!TARGET_MIPS16)
+  if (MIPS16_GP_LOADS ||!TARGET_MIPS16)
     return pic_offset_table_rtx;
 
   if (currently_expanding_to_rtl)
@@ -3890,6 +3984,10 @@ mips16_constant_cost (int code, HOST_WIDE_INT x)
       if (x == 0)
 	return 0;
       return -1;
+
+    case ZERO_EXTRACT:
+      /* The bit position and size are immediate operands.  */
+      return ISA_HAS_EXT_INS ? COSTS_N_INSNS (1) : -1;
 
     default:
       return -1;
@@ -5244,6 +5342,11 @@ mips_output_move (rtx dest, rtx src)
 	  if (!TARGET_MIPS16)
 	    return "li\t%0,%1\t\t\t# %X1";
 
+	  if (ISA_HAS_MIPS16E2
+	      && LUI_INT (src)
+	      && !SMALL_OPERAND_UNSIGNED (INTVAL (src)))
+	    return "lui\t%0,%%hi(%1)\t\t\t# %X1";
+
 	  if (SMALL_OPERAND_UNSIGNED (INTVAL (src)))
 	    return "li\t%0,%1";
 
@@ -5252,7 +5355,7 @@ mips_output_move (rtx dest, rtx src)
 	}
 
       if (src_code == HIGH)
-	return TARGET_MIPS16 ? "#" : "lui\t%0,%h1";
+	return (TARGET_MIPS16 && !ISA_HAS_MIPS16E2) ? "#" : "lui\t%0,%h1";
 
       if (CONST_GP_P (src))
 	return "move\t%0,%1";
@@ -6190,6 +6293,23 @@ mips_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
   return info.stack_words > 0 ? info.reg_words * UNITS_PER_WORD : 0;
 }
 
+/* Given MODE and TYPE of a function argument, return the alignment in
+   bits.
+   In case of typedef, alignment of its original type is
+   used.  */
+
+static unsigned int
+mips_function_arg_alignment (machine_mode mode, const_tree type)
+{
+  if (!type)
+    return GET_MODE_ALIGNMENT (mode);
+
+  if (is_typedef_decl (TYPE_NAME (type)))
+    type = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
+
+  return TYPE_ALIGN (type);
+}
+
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.  Every parameter gets at
    least PARM_BOUNDARY bits of alignment, but will be given anything up
    to STACK_BOUNDARY bits if the type requires it.  */
@@ -6198,8 +6318,8 @@ static unsigned int
 mips_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int alignment;
+  alignment = mips_function_arg_alignment (mode, type);
 
-  alignment = type ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode);
   if (alignment < PARM_BOUNDARY)
     alignment = PARM_BOUNDARY;
   if (alignment > STACK_BOUNDARY)
@@ -8167,8 +8287,9 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
      For ISA_HAS_LWL_LWR we rely on the lwl/lwr & swl/swr load. Otherwise
      picking the minimum of alignment or BITS_PER_WORD gets us the
      desired size for bits.  */
-
-  if (!ISA_HAS_LWL_LWR)
+  if (ISA_HAS_UNALIGNED_ACCESS)
+    bits = BITS_PER_WORD;
+  else if (!ISA_HAS_LWL_LWR)
     bits = MIN (BITS_PER_WORD, MIN (MEM_ALIGN (src), MEM_ALIGN (dest)));
   else
     {
@@ -8190,7 +8311,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
   for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
     {
       regs[i] = gen_reg_rtx (mode);
-      if (MEM_ALIGN (src) >= bits)
+      if (ISA_HAS_UNALIGNED_ACCESS || MEM_ALIGN (src) >= bits)
 	mips_emit_move (regs[i], adjust_address (src, mode, offset));
       else
 	{
@@ -8203,7 +8324,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
 
   /* Copy the chunks to the destination.  */
   for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
-    if (MEM_ALIGN (dest) >= bits)
+    if (ISA_HAS_UNALIGNED_ACCESS || MEM_ALIGN (dest) >= bits)
       mips_emit_move (adjust_address (dest, mode, offset), regs[i]);
     else
       {
@@ -8299,25 +8420,26 @@ mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 bool
 mips_expand_block_move (rtx dest, rtx src, rtx length)
 {
-  if (!ISA_HAS_LWL_LWR
+  if (!CONST_INT_P (length))
+    return false;
+
+  if (mips_isa_rev >= 6 && !ISA_HAS_UNALIGNED_ACCESS
       && (MEM_ALIGN (src) < MIPS_MIN_MOVE_MEM_ALIGN
 	  || MEM_ALIGN (dest) < MIPS_MIN_MOVE_MEM_ALIGN))
     return false;
 
-  if (CONST_INT_P (length))
+  if (INTVAL (length) <= MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER)
     {
-      if (INTVAL (length) <= MIPS_MAX_MOVE_BYTES_STRAIGHT)
-	{
-	  mips_block_move_straight (dest, src, INTVAL (length));
-	  return true;
-	}
-      else if (optimize)
-	{
-	  mips_block_move_loop (dest, src, INTVAL (length),
-				MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER);
-	  return true;
-	}
+      mips_block_move_straight (dest, src, INTVAL (length));
+      return true;
     }
+  else if (optimize)
+    {
+      mips_block_move_loop (dest, src, INTVAL (length),
+			    MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER);
+      return true;
+    }
+
   return false;
 }
 
@@ -8585,11 +8707,24 @@ mips_expand_ins_as_unaligned_store (rtx dest, rtx src, HOST_WIDE_INT width,
     return false;
 
   mode = int_mode_for_size (width, 0).require ();
-  src = gen_lowpart (mode, src);
+  if (TARGET_MIPS16
+      && src == const0_rtx)
+    src = force_reg (mode, src);
+  else
+    src = gen_lowpart (mode, src);
+
   if (mode == DImode)
     {
+      if (TARGET_MIPS16)
+	gcc_unreachable ();
       emit_insn (gen_mov_sdl (dest, src, left));
       emit_insn (gen_mov_sdr (copy_rtx (dest), copy_rtx (src), right));
+    }
+  else if (TARGET_MIPS16)
+    {
+      emit_insn (gen_mov_swl_mips16e2 (dest, src, left));
+      emit_insn (gen_mov_swr_mips16e2 (copy_rtx (dest), copy_rtx (src),
+				       right));
     }
   else
     {
@@ -8756,7 +8891,7 @@ mips_init_relocs (void)
 	}
     }
 
-  if (TARGET_MIPS16)
+  if (!MIPS16_GP_LOADS && TARGET_MIPS16)
     {
       /* The high part is provided by a pseudo copy of $gp.  */
       mips_split_p[SYMBOL_GP_RELATIVE] = true;
@@ -9838,7 +9973,7 @@ mips_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
      .rdata then don't put them in .comm.  */
   if (TARGET_EMBEDDED_DATA
       && TARGET_UNINIT_CONST_IN_RODATA
-      && TREE_CODE (decl) == VAR_DECL
+      && VAR_P (decl)
       && TREE_READONLY (decl)
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
     {
@@ -10047,7 +10182,8 @@ mips_file_start (void)
     fputs ("\t.module\tmsa\n", asm_out_file);
   if (TARGET_XPA)
     fputs ("\t.module\txpa\n", asm_out_file);
-  /* FIXME: MIPS16E2 is not supported by GCC? gas does support it */
+  if (TARGET_MIPS16E2)
+    fputs ("\t.module\tmips16e2\n", asm_out_file);
   if (TARGET_CRC)
     fputs ("\t.module\tcrc\n", asm_out_file);
   if (TARGET_GINV)
@@ -11974,13 +12110,25 @@ mips_output_function_prologue (FILE *file)
     {
       if (TARGET_MIPS16)
 	{
-	  /* This is a fixed-form sequence.  The position of the
-	     first two instructions is important because of the
-	     way _gp_disp is defined.  */
-	  output_asm_insn ("li\t$2,%%hi(_gp_disp)", 0);
-	  output_asm_insn ("addiu\t$3,$pc,%%lo(_gp_disp)", 0);
-	  output_asm_insn ("sll\t$2,16", 0);
-	  output_asm_insn ("addu\t$2,$3", 0);
+	  if (ISA_HAS_MIPS16E2)
+	    {
+	      /* This is a fixed-form sequence.  The position of the
+		 first two instructions is important because of the
+		 way _gp_disp is defined.  */
+	      output_asm_insn ("lui\t$2,%%hi(_gp_disp)", 0);
+	      output_asm_insn ("addiu\t$3,$pc,%%lo(_gp_disp)", 0);
+	      output_asm_insn ("addu\t$2,$3", 0);
+	    }
+	  else
+	    {
+	      /* This is a fixed-form sequence.  The position of the
+		 first two instructions is important because of the
+		 way _gp_disp is defined.  */
+	      output_asm_insn ("li\t$2,%%hi(_gp_disp)", 0);
+	      output_asm_insn ("addiu\t$3,$pc,%%lo(_gp_disp)", 0);
+	      output_asm_insn ("sll\t$2,16", 0);
+	      output_asm_insn ("addu\t$2,$3", 0);
+	    }
 	}
       else
 	{
@@ -13611,6 +13759,9 @@ mips_autovectorize_vector_modes (vector_modes *modes, bool)
   return 0;
 }
 
+
+static GTY (()) rtx speculation_barrier_libfunc;
+
 /* Implement TARGET_INIT_LIBFUNCS.  */
 
 static void
@@ -13680,6 +13831,7 @@ mips_init_libfuncs (void)
       synchronize_libfunc = init_one_libfunc ("__sync_synchronize");
       init_sync_libfuncs (UNITS_PER_WORD);
     }
+  speculation_barrier_libfunc = init_one_libfunc ("__speculation_barrier");
 }
 
 /* Build up a multi-insn sequence that loads label TARGET into $AT.  */
@@ -15368,9 +15520,13 @@ mips_loongson_ext2_prefetch_cookie (rtx write, rtx)
 	The function is available on the current target if !TARGET_MIPS16.
 
    BUILTIN_AVAIL_MIPS16
-	The function is available on the current target if TARGET_MIPS16.  */
+	The function is available on the current target if TARGET_MIPS16.
+
+   BUILTIN_AVAIL_MIPS16E2
+	The function is available on the current target if TARGET_MIPS16E2.  */
 #define BUILTIN_AVAIL_NON_MIPS16 1
 #define BUILTIN_AVAIL_MIPS16 2
+#define BUILTIN_AVAIL_MIPS16E2 4
 
 /* Declare an availability predicate for built-in functions that
    require non-MIPS16 mode and also require COND to be true.
@@ -15380,6 +15536,17 @@ mips_loongson_ext2_prefetch_cookie (rtx write, rtx)
  mips_builtin_avail_##NAME (void)					\
  {									\
    return (COND) ? BUILTIN_AVAIL_NON_MIPS16 : 0;			\
+ }
+
+/* Declare an availability predicate for built-in functions that
+   require non-MIPS16 mode or MIPS16E2 and also require COND to be true.
+   NAME is the main part of the predicate's name.  */
+#define AVAIL_MIPS16E2_OR_NON_MIPS16(NAME, COND)			\
+ static unsigned int							\
+ mips_builtin_avail_##NAME (void)					\
+ {									\
+   return ((COND) ? BUILTIN_AVAIL_NON_MIPS16 | BUILTIN_AVAIL_MIPS16E2	\
+	   : 0);							\
  }
 
 /* Declare an availability predicate for built-in functions that
@@ -15427,7 +15594,7 @@ AVAIL_NON_MIPS16 (dsp_32, !TARGET_64BIT && TARGET_DSP)
 AVAIL_NON_MIPS16 (dsp_64, TARGET_64BIT && TARGET_DSP)
 AVAIL_NON_MIPS16 (dspr2_32, !TARGET_64BIT && TARGET_DSPR2)
 AVAIL_NON_MIPS16 (loongson, TARGET_LOONGSON_MMI)
-AVAIL_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
+AVAIL_MIPS16E2_OR_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
 AVAIL_NON_MIPS16 (msa, TARGET_MSA)
 
 /* Construct a mips_builtin_description from the given arguments.
@@ -17427,7 +17594,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   d = &mips_builtins[fcode];
   avail = d->avail ();
   gcc_assert (avail != 0);
-  if (TARGET_MIPS16 && !(avail & BUILTIN_AVAIL_MIPS16))
+  if (TARGET_MIPS16 && !(avail & BUILTIN_AVAIL_MIPS16)
+      && (!TARGET_MIPS16E2 || !(avail & BUILTIN_AVAIL_MIPS16E2)))
     {
       error ("built-in function %qE not supported for MIPS16",
 	     DECL_NAME (fndecl));
@@ -19092,6 +19260,14 @@ mips_avoid_hazard (rtx_insn *after, rtx_insn *insn, int *hilo_delay,
       }
 }
 
+/* Emit a speculation barrier.
+   JR.HB is needed, so we put speculation_barrier_libfunc in libgcc.  */
+void
+mips_emit_speculation_barrier_function ()
+{
+  emit_library_call (speculation_barrier_libfunc, LCT_NORMAL, VOIDmode);
+}
+
 /* A SEQUENCE is breakable iff the branch inside it has a compact form
    and the target has compact branches.  */
 
@@ -19905,12 +20081,25 @@ mips_set_compression_mode (unsigned int compression_mode)
 
 /* Implement TARGET_SET_CURRENT_FUNCTION.  Decide whether the current
    function should use the MIPS16 or microMIPS ISA and switch modes
-   accordingly.  */
+   accordingly.  Also set the current code_readable mode.  */
 
 static void
 mips_set_current_function (tree fndecl)
 {
+  enum mips_code_readable_setting old_code_readable = mips_code_readable;
+
   mips_set_compression_mode (mips_get_compress_mode (fndecl));
+
+  mips_code_readable = mips_get_code_readable_attr (fndecl);
+
+  /* Since the mips_code_readable setting has potentially changed, the
+     relocation tables must be reinitialized.  Otherwise GCC will not
+     split symbols for functions that are code_readable ("no") when others
+     are code_readable ("yes") and ICE later on in places such as
+     mips_emit_move.  Ditto for similar paired cases.  It must be restored
+     to its previous state as well.  */
+  if (old_code_readable != mips_code_readable)
+    mips_init_relocs ();
 }
 
 /* Allocate a chunk of memory for per-function machine-dependent data.  */
@@ -20042,6 +20231,7 @@ mips_option_override (void)
      were generating uncompressed code.  */
   mips_base_compression_flags = TARGET_COMPRESSION;
   target_flags &= ~TARGET_COMPRESSION;
+  mips_base_code_readable = mips_code_readable;
 
   /* -mno-float overrides -mhard-float and -msoft-float.  */
   if (TARGET_NO_FLOAT)
@@ -22748,7 +22938,68 @@ mips_asm_file_end (void)
   if (NEED_INDICATE_EXEC_STACK)
     file_end_indicate_exec_stack ();
 }
-
+
+void
+mips_bit_clear_info (enum machine_mode mode, unsigned HOST_WIDE_INT m,
+		      int *start_pos, int *size)
+{
+  unsigned int shift = 0;
+  unsigned int change_count = 0;
+  unsigned int prev_val = 1;
+  unsigned int curr_val = 0;
+  unsigned int end_pos = GET_MODE_SIZE (mode) * BITS_PER_UNIT;
+
+  for (shift = 0 ; shift < (GET_MODE_SIZE (mode) * BITS_PER_UNIT) ; shift++)
+    {
+      curr_val = (unsigned int)((m & (unsigned int)(1 << shift)) >> shift);
+      if (curr_val != prev_val)
+	{
+	  change_count++;
+	  switch (change_count)
+	    {
+	      case 1:
+		*start_pos = shift;
+		break;
+	      case 2:
+		end_pos = shift;
+		break;
+	      default:
+		gcc_unreachable ();
+	    }
+	}
+      prev_val = curr_val;
+   }
+  *size = (end_pos - *start_pos);
+}
+
+bool
+mips_bit_clear_p (enum machine_mode mode, unsigned HOST_WIDE_INT m)
+{
+  unsigned int shift = 0;
+  unsigned int change_count = 0;
+  unsigned int prev_val = 1;
+  unsigned int curr_val = 0;
+
+  if (mode != SImode && mode != VOIDmode)
+    return false;
+
+  if (!ISA_HAS_EXT_INS)
+    return false;
+
+  for (shift = 0 ; shift < (UNITS_PER_WORD * BITS_PER_UNIT) ; shift++)
+    {
+      curr_val = (unsigned int)((m & (unsigned int)(1 << shift)) >> shift);
+      if (curr_val != prev_val)
+	change_count++;
+      prev_val = curr_val;
+    }
+
+  if (change_count == 2)
+    return true;
+
+  return false;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"

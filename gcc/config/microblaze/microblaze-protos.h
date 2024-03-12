@@ -22,6 +22,8 @@
 #ifndef GCC_MICROBLAZE_PROTOS_H
 #define GCC_MICROBLAZE_PROTOS_H
 
+#include "tree.h"  /* For ERROR_MARK.  */
+
 #ifdef RTX_CODE
 extern int pic_address_needs_scratch (rtx);
 extern bool microblaze_constant_address_p (rtx x);
@@ -40,7 +42,8 @@ extern int microblaze_can_use_return_insn (void);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
 extern void init_cumulative_args (CUMULATIVE_ARGS *,tree, rtx);
-extern bool microblaze_legitimate_address_p (machine_mode, rtx, bool);
+extern bool microblaze_legitimate_address_p (machine_mode, rtx, bool,
+					     code_helper = ERROR_MARK);
 extern int microblaze_is_interrupt_variant (void);
 extern int microblaze_is_break_handler (void);
 extern int microblaze_break_function_p (tree func);

@@ -1,3 +1,14 @@
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Use @PICFLAG@ in COMPILE as well.
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG after this check.
+	* configure: Regenerate.
+
 2022-11-23  Marek Polacek  <polacek@redhat.com>
 
 	Revert:

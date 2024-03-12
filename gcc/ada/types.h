@@ -102,8 +102,8 @@ typedef struct { const char *Array; String_Template *Bounds; }
    once again, the annoying restriction on bit fields for some compilers
    bites us!  */
 
-typedef unsigned int Node_Kind;
-typedef unsigned int Entity_Kind;
+enum Node_Kind : unsigned int;
+enum Entity_Kind : unsigned int;
 
 /* Types used for Text Buffer Handling:  */
 
@@ -140,7 +140,7 @@ typedef Text_Ptr Source_Ptr;
 #define Standard_Location -2
 
 /* Convention identifiers.  */
-typedef Byte Convention_Id;
+enum Convention_Id : Byte;
 
 /* Instance identifiers.  */
 typedef Nat Instance_Id;
@@ -188,7 +188,7 @@ SUBTYPE (Ureal_Range,     Int, Ureal_Low_Bound,   Ureal_High_Bound)
 
 /* Types for Names_Table Package:  */
 
-typedef Int Name_Id;
+enum Name_Id : Int;
 
 /* Name_Id value for no name present.  */
 #define No_Name Names_Low_Bound

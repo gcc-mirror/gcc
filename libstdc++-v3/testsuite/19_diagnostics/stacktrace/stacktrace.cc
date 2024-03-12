@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++23 -lstdc++_libbacktrace" }
+// { dg-options "-lstdc++exp" }
 // { dg-do run { target c++23 } }
 // { dg-require-effective-target stacktrace }
 

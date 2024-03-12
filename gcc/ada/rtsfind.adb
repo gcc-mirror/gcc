@@ -1023,6 +1023,13 @@ package body Rtsfind is
       U        : RT_Unit_Table_Record renames RT_Unit_Table (U_Id);
       Priv_Par : constant Elist_Id := New_Elmt_List;
       Lib_Unit : Node_Id;
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_ISMP : constant Boolean        :=
+                     Ignore_SPARK_Mode_Pragmas_In_Instance;
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save Ghost and SPARK mode-related data to restore on exit
 
       procedure Save_Private_Visibility;
       --  If the current unit is the body of child unit or the spec of a
@@ -1033,6 +1040,9 @@ package body Rtsfind is
 
       procedure Restore_Private_Visibility;
       --  Restore the visibility of ancestors after compiling RTU
+
+      procedure Restore_SPARK_Context;
+      --  Restore Ghost and SPARK mode-related data saved on procedure entry
 
       --------------------------------
       -- Restore_Private_Visibility --
@@ -1075,15 +1085,16 @@ package body Rtsfind is
          end loop;
       end Save_Private_Visibility;
 
-      --  Local variables
+      ---------------------------
+      -- Restore_SPARK_Context --
+      ---------------------------
 
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
-      Saved_ISMP : constant Boolean        :=
-                     Ignore_SPARK_Mode_Pragmas_In_Instance;
-      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
-      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
-      --  Save Ghost and SPARK mode-related data to restore on exit
+      procedure Restore_SPARK_Context is
+      begin
+         Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
+      end Restore_SPARK_Context;
 
    --  Start of processing for Load_RTU
 
@@ -1195,9 +1206,17 @@ package body Rtsfind is
          Set_Is_Potentially_Use_Visible (U.Entity, True);
       end if;
 
-      Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Region (Saved_GM, Saved_IGR);
-      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
+      Restore_SPARK_Context;
+
+   exception
+      --  The Load_Fail procedure that is called when the result of Load_Unit
+      --  is not satisfactory raises an exception. As the compiler is able to
+      --  recover in some cases (i.e. when RE_Not_Available is raised), we need
+      --  to restore the SPARK/Ghost context correctly.
+
+      when others =>
+         Restore_SPARK_Context;
+         raise;
    end Load_RTU;
 
    --------------------

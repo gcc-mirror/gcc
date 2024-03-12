@@ -176,9 +176,7 @@ package body Ada.Directories is
          raise Name_Error with
            "invalid directory path name """ & Containing_Directory & '"';
 
-      elsif
-        Extension'Length = 0 and then (not Is_Valid_Simple_Name (Name))
-      then
+      elsif Extension'Length = 0 and then not Is_Valid_Simple_Name (Name) then
          raise Name_Error with
            "invalid simple name """ & Name & '"';
 
@@ -1381,13 +1379,21 @@ package body Ada.Directories is
                              Compose (Directory, File_Name) & ASCII.NUL;
                   Path   : String renames
                              Path_C (Path_C'First .. Path_C'Last - 1);
-                  Found  : Boolean := False;
                   Attr   : aliased File_Attributes;
                   Exists : Integer;
                   Error  : Integer;
-                  Kind   : File_Kind;
-                  Size   : File_Size;
 
+                  type Result (Found : Boolean := False) is record
+                     case Found is
+                        when True =>
+                           Kind : File_Kind;
+                           Size : File_Size;
+                        when False =>
+                           null;
+                     end case;
+                  end record;
+
+                  Res : Result := (Found => False);
                begin
                   --  Get the file attributes for the directory item
 
@@ -1416,32 +1422,30 @@ package body Ada.Directories is
 
                   elsif Exists = 1 then
                      if Is_Regular_File_Attr (Path_C'Address, Attr'Access) = 1
-                       and then Filter (Ordinary_File)
                      then
-                        Found := True;
-                        Kind := Ordinary_File;
-                        Size :=
-                          File_Size
-                            (File_Length_Attr
-                               (-1, Path_C'Address, Attr'Access));
+                        if Filter (Ordinary_File) then
+                           Res := (Found => True,
+                                   Kind => Ordinary_File,
+                                   Size => File_Size
+                                     (File_Length_Attr
+                                        (-1, Path_C'Address, Attr'Access)));
 
+                        end if;
                      elsif Is_Directory_Attr (Path_C'Address, Attr'Access) = 1
-                       and then Filter (File_Kind'First)
                      then
-                        Found := True;
-                        Kind := File_Kind'First;
-                        --  File_Kind'First is used instead of Directory due
-                        --  to a name overload issue with the procedure
-                        --  parameter Directory.
-                        Size := 0;
+                        if Filter (File_Kind'First) then
+                           Res := (Found => True,
+                                   Kind => File_Kind'First,
+                                   Size => 0);
+                        end if;
 
                      elsif Filter (Special_File) then
-                        Found := True;
-                        Kind := Special_File;
-                        Size := 0;
+                        Res := (Found => True,
+                                Kind => Special_File,
+                                Size => 0);
                      end if;
 
-                     if Found then
+                     if Res.Found then
                         Search.State.Dir_Contents.Append
                           (Directory_Entry_Type'
                              (Valid             => True,
@@ -1449,9 +1453,9 @@ package body Ada.Directories is
                                 To_Unbounded_String (File_Name),
                               Full_Name         => To_Unbounded_String (Path),
                               Attr_Error_Code   => 0,
-                              Kind              => Kind,
+                              Kind              => Res.Kind,
                               Modification_Time => Modification_Time (Path),
-                              Size              => Size));
+                              Size              => Res.Size));
                      end if;
                   end if;
                end;

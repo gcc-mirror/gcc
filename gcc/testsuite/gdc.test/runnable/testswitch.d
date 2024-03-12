@@ -353,15 +353,11 @@ int foo15(int i)
     return y;
 }
 
-static this()
-{
-    X15 = 4;
-    Z15 = 5;
-}
-
 shared static this()
 {
+    X15 = 4;
     Y15 = 4;
+    Z15 = 5;
 }
 
 void test15()

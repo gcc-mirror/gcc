@@ -63,7 +63,7 @@ static void mark_all_labels (rtx_insn *);
 static void mark_jump_label_1 (rtx, rtx_insn *, bool, bool);
 static void mark_jump_label_asm (rtx, rtx_insn *);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx_insn *);
-static int invert_exp_1 (rtx, rtx_insn *);
+static bool invert_exp_1 (rtx, rtx_insn *);
 
 /* Worker for rebuild_jump_labels and rebuild_jump_labels_chain.  */
 static void
@@ -686,91 +686,91 @@ signed_condition (enum rtx_code code)
     }
 }
 
-/* Return nonzero if CODE1 is more strict than CODE2, i.e., if the
+/* Return true if CODE1 is more strict than CODE2, i.e., if the
    truth of CODE1 implies the truth of CODE2.  */
 
-int
+bool
 comparison_dominates_p (enum rtx_code code1, enum rtx_code code2)
 {
   /* UNKNOWN comparison codes can happen as a result of trying to revert
      comparison codes.
      They can't match anything, so we have to reject them here.  */
   if (code1 == UNKNOWN || code2 == UNKNOWN)
-    return 0;
+    return false;
 
   if (code1 == code2)
-    return 1;
+    return true;
 
   switch (code1)
     {
     case UNEQ:
       if (code2 == UNLE || code2 == UNGE)
-	return 1;
+	return true;
       break;
 
     case EQ:
       if (code2 == LE || code2 == LEU || code2 == GE || code2 == GEU
 	  || code2 == ORDERED)
-	return 1;
+	return true;
       break;
 
     case UNLT:
       if (code2 == UNLE || code2 == NE)
-	return 1;
+	return true;
       break;
 
     case LT:
       if (code2 == LE || code2 == NE || code2 == ORDERED || code2 == LTGT)
-	return 1;
+	return true;
       break;
 
     case UNGT:
       if (code2 == UNGE || code2 == NE)
-	return 1;
+	return true;
       break;
 
     case GT:
       if (code2 == GE || code2 == NE || code2 == ORDERED || code2 == LTGT)
-	return 1;
+	return true;
       break;
 
     case GE:
     case LE:
       if (code2 == ORDERED)
-	return 1;
+	return true;
       break;
 
     case LTGT:
       if (code2 == NE || code2 == ORDERED)
-	return 1;
+	return true;
       break;
 
     case LTU:
       if (code2 == LEU || code2 == NE)
-	return 1;
+	return true;
       break;
 
     case GTU:
       if (code2 == GEU || code2 == NE)
-	return 1;
+	return true;
       break;
 
     case UNORDERED:
       if (code2 == NE || code2 == UNEQ || code2 == UNLE || code2 == UNLT
 	  || code2 == UNGE || code2 == UNGT)
-	return 1;
+	return true;
       break;
 
     default:
       break;
     }
 
-  return 0;
+  return false;
 }
 
-/* Return 1 if INSN is an unconditional jump and nothing else.  */
+/* Return true if INSN is an unconditional jump and nothing else.  */
 
-int
+bool
 simplejump_p (const rtx_insn *insn)
 {
   return (JUMP_P (insn)
@@ -779,24 +779,24 @@ simplejump_p (const rtx_insn *insn)
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == LABEL_REF);
 }
 
-/* Return nonzero if INSN is a (possibly) conditional jump
+/* Return true if INSN is a (possibly) conditional jump
    and nothing more.
 
    Use of this function is deprecated, since we need to support combined
    branch and compare insns.  Use any_condjump_p instead whenever possible.  */
 
-int
+bool
 condjump_p (const rtx_insn *insn)
 {
   const_rtx x = PATTERN (insn);
 
   if (GET_CODE (x) != SET
       || GET_CODE (SET_DEST (x)) != PC)
-    return 0;
+    return false;
 
   x = SET_SRC (x);
   if (GET_CODE (x) == LABEL_REF)
-    return 1;
+    return true;
   else
     return (GET_CODE (x) == IF_THEN_ELSE
 	    && ((GET_CODE (XEXP (x, 2)) == PC
@@ -807,39 +807,39 @@ condjump_p (const rtx_insn *insn)
 			|| ANY_RETURN_P (XEXP (x, 2))))));
 }
 
-/* Return nonzero if INSN is a (possibly) conditional jump inside a
+/* Return true if INSN is a (possibly) conditional jump inside a
    PARALLEL.
 
    Use this function is deprecated, since we need to support combined
    branch and compare insns.  Use any_condjump_p instead whenever possible.  */
 
-int
+bool
 condjump_in_parallel_p (const rtx_insn *insn)
 {
   const_rtx x = PATTERN (insn);
 
   if (GET_CODE (x) != PARALLEL)
-    return 0;
+    return false;
   else
     x = XVECEXP (x, 0, 0);
 
   if (GET_CODE (x) != SET)
-    return 0;
+    return false;
   if (GET_CODE (SET_DEST (x)) != PC)
-    return 0;
+    return false;
   if (GET_CODE (SET_SRC (x)) == LABEL_REF)
-    return 1;
+    return true;
   if (GET_CODE (SET_SRC (x)) != IF_THEN_ELSE)
-    return 0;
+    return false;
   if (XEXP (SET_SRC (x), 2) == pc_rtx
       && (GET_CODE (XEXP (SET_SRC (x), 1)) == LABEL_REF
 	  || ANY_RETURN_P (XEXP (SET_SRC (x), 1))))
-    return 1;
+    return true;
   if (XEXP (SET_SRC (x), 1) == pc_rtx
       && (GET_CODE (XEXP (SET_SRC (x), 2)) == LABEL_REF
 	  || ANY_RETURN_P (XEXP (SET_SRC (x), 2))))
-    return 1;
-  return 0;
+    return true;
+  return false;
 }
 
 /* Return set of PC, otherwise NULL.  */
@@ -875,17 +875,17 @@ pc_set (const rtx_insn *insn)
    The instruction may have various other effects so before removing the jump
    you must verify onlyjump_p.  */
 
-int
+bool
 any_uncondjump_p (const rtx_insn *insn)
 {
   const_rtx x = pc_set (insn);
   if (!x)
-    return 0;
+    return false;
   if (GET_CODE (SET_SRC (x)) != LABEL_REF)
-    return 0;
+    return false;
   if (find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
-    return 0;
-  return 1;
+    return false;
+  return true;
 }
 
 /* Return true when insn is a conditional jump.  This function works for
@@ -895,16 +895,16 @@ any_uncondjump_p (const rtx_insn *insn)
 
    Note that unlike condjump_p it returns false for unconditional jumps.  */
 
-int
+bool
 any_condjump_p (const rtx_insn *insn)
 {
   const_rtx x = pc_set (insn);
   enum rtx_code a, b;
 
   if (!x)
-    return 0;
+    return false;
   if (GET_CODE (SET_SRC (x)) != IF_THEN_ELSE)
-    return 0;
+    return false;
 
   a = GET_CODE (XEXP (SET_SRC (x), 1));
   b = GET_CODE (XEXP (SET_SRC (x), 2));
@@ -937,7 +937,7 @@ condjump_label (const rtx_insn *insn)
 
 /* Return TRUE if INSN is a return jump.  */
 
-int
+bool
 returnjump_p (const rtx_insn *insn)
 {
   if (JUMP_P (insn))
@@ -968,7 +968,7 @@ returnjump_p (const rtx_insn *insn)
 
 /* Return true if INSN is a (possibly conditional) return insn.  */
 
-int
+bool
 eh_returnjump_p (rtx_insn *insn)
 {
   if (JUMP_P (insn))
@@ -984,23 +984,23 @@ eh_returnjump_p (rtx_insn *insn)
 /* Return true if INSN is a jump that only transfers control and
    nothing more.  */
 
-int
+bool
 onlyjump_p (const rtx_insn *insn)
 {
   rtx set;
 
   if (!JUMP_P (insn))
-    return 0;
+    return false;
 
   set = single_set (insn);
   if (set == NULL)
-    return 0;
+    return false;
   if (GET_CODE (SET_DEST (set)) != PC)
-    return 0;
+    return false;
   if (side_effects_p (SET_SRC (set)))
-    return 0;
+    return false;
 
-  return 1;
+  return true;
 }
 
 /* Return true iff INSN is a jump and its JUMP_LABEL is a label, not
@@ -1212,7 +1212,7 @@ rtx_insn *
 delete_related_insns (rtx uncast_insn)
 {
   rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
-  int was_code_label = (LABEL_P (insn));
+  bool was_code_label = LABEL_P (insn);
   rtx note;
   rtx_insn *next = NEXT_INSN (insn), *prev = PREV_INSN (insn);
 
@@ -1442,7 +1442,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx_insn *insn)
    the modifications into the change group.  Return false if we did
    not see how to do that.  */
 
-int
+bool
 redirect_jump_1 (rtx_insn *jump, rtx nlabel)
 {
   int ochanges = num_validated_changes ();
@@ -1453,7 +1453,7 @@ redirect_jump_1 (rtx_insn *jump, rtx nlabel)
   if (asmop)
     {
       if (nlabel == NULL)
-	return 0;
+	return false;
       gcc_assert (ASM_OPERANDS_LABEL_LENGTH (asmop) == 1);
       loc = &ASM_OPERANDS_LABEL (asmop, 0);
     }
@@ -1474,10 +1474,10 @@ redirect_jump_1 (rtx_insn *jump, rtx nlabel)
    in that case we are to turn the jump into a (possibly conditional)
    return insn.
 
-   The return value will be 1 if the change was made, 0 if it wasn't
+   The return value will be true if the change was made, false if it wasn't
    (this can only occur when trying to produce return insns).  */
 
-int
+bool
 redirect_jump (rtx_jump_insn *jump, rtx nlabel, int delete_unused)
 {
   rtx olabel = jump->jump_label ();
@@ -1486,23 +1486,23 @@ redirect_jump (rtx_jump_insn *jump, rtx nlabel, int delete_unused)
     {
       /* If there is no label, we are asked to redirect to the EXIT block.
 	 When before the epilogue is emitted, return/simple_return cannot be
-	 created so we return 0 immediately.  After the epilogue is emitted,
-	 we always expect a label, either a non-null label, or a
+	 created so we return false immediately.  After the epilogue
+	 is emitted, we always expect a label, either a non-null label, or a
 	 return/simple_return RTX.  */
 
       if (!epilogue_completed)
-	return 0;
+	return false;
       gcc_unreachable ();
     }
 
   if (nlabel == olabel)
-    return 1;
+    return true;
 
   if (! redirect_jump_1 (jump, nlabel) || ! apply_change_group ())
-    return 0;
+    return false;
 
   redirect_jump_2 (jump, olabel, nlabel, delete_unused, 0);
-  return 1;
+  return true;
 }
 
 /* Fix up JUMP_LABEL and label ref counts after OLABEL has been replaced with
@@ -1554,8 +1554,8 @@ redirect_jump_2 (rtx_jump_insn *jump, rtx olabel, rtx nlabel, int delete_unused,
 }
 
 /* Invert the jump condition X contained in jump insn INSN.  Accrue the
-   modifications into the change group.  Return nonzero for success.  */
-static int
+   modifications into the change group.  Return true for success.  */
+static bool
 invert_exp_1 (rtx x, rtx_insn *insn)
 {
   RTX_CODE code = GET_CODE (x);
@@ -1580,16 +1580,16 @@ invert_exp_1 (rtx x, rtx_insn *insn)
 					   GET_MODE (comp), XEXP (comp, 0),
 					   XEXP (comp, 1)),
 			   1);
-	  return 1;
+	  return true;
 	}
 
       tem = XEXP (x, 1);
       validate_change (insn, &XEXP (x, 1), XEXP (x, 2), 1);
       validate_change (insn, &XEXP (x, 2), tem, 1);
-      return 1;
+      return true;
     }
   else
-    return 0;
+    return false;
 }
 
 /* Invert the condition of the jump JUMP, and make it jump to label
@@ -1597,21 +1597,21 @@ invert_exp_1 (rtx x, rtx_insn *insn)
    change group.  Return false if we didn't see how to perform the
    inversion and redirection.  */
 
-int
+bool
 invert_jump_1 (rtx_jump_insn *jump, rtx nlabel)
 {
   rtx x = pc_set (jump);
   int ochanges;
-  int ok;
+  bool ok;
 
   ochanges = num_validated_changes ();
   if (x == NULL)
-    return 0;
+    return false;
   ok = invert_exp_1 (SET_SRC (x), jump);
   gcc_assert (ok);
 
   if (num_validated_changes () == ochanges)
-    return 0;
+    return false;
 
   /* redirect_jump_1 will fail of nlabel == olabel, and the current use is
      in Pmode, so checking this is not merely an optimization.  */
@@ -1621,7 +1621,7 @@ invert_jump_1 (rtx_jump_insn *jump, rtx nlabel)
 /* Invert the condition of the jump JUMP, and make it jump to label
    NLABEL instead of where it jumps now.  Return true if successful.  */
 
-int
+bool
 invert_jump (rtx_jump_insn *jump, rtx nlabel, int delete_unused)
 {
   rtx olabel = JUMP_LABEL (jump);
@@ -1629,10 +1629,10 @@ invert_jump (rtx_jump_insn *jump, rtx nlabel, int delete_unused)
   if (invert_jump_1 (jump, nlabel) && apply_change_group ())
     {
       redirect_jump_2 (jump, olabel, nlabel, delete_unused, 1);
-      return 1;
+      return true;
     }
   cancel_changes (0);
-  return 0;
+  return false;
 }
 
 
@@ -1641,7 +1641,7 @@ invert_jump (rtx_jump_insn *jump, rtx nlabel, int delete_unused)
    operations to be the same if the order of the operands has been
    reversed.  */
 
-int
+bool
 rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 {
   int i;
@@ -1649,7 +1649,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
   const char *fmt;
 
   if (x == y)
-    return 1;
+    return true;
 
   if ((code == REG || (code == SUBREG && REG_P (SUBREG_REG (x))))
       && (REG_P (y) || (GET_CODE (y) == SUBREG
@@ -1660,7 +1660,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
       struct subreg_info info;
 
       if (GET_MODE (x) != GET_MODE (y))
-	return 0;
+	return false;
 
       /* If we haven't done any renumbering, don't
 	 make any assumptions.  */
@@ -1678,7 +1678,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 			       GET_MODE (SUBREG_REG (x)), byte_x,
 			       GET_MODE (x), &info);
 	      if (!info.representable_p)
-		return 0;
+		return false;
 	      reg_x = info.offset;
 	      byte_x = 0;
 	    }
@@ -1701,7 +1701,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 			       GET_MODE (SUBREG_REG (y)), byte_y,
 			       GET_MODE (y), &info);
 	      if (!info.representable_p)
-		return 0;
+		return false;
 	      reg_y = info.offset;
 	      byte_y = 0;
 	    }
@@ -1719,7 +1719,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
   /* Now we have disposed of all the cases
      in which different rtx codes can match.  */
   if (code != GET_CODE (y))
-    return 0;
+    return false;
 
   switch (code)
     {
@@ -1727,7 +1727,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
     CASE_CONST_UNIQUE:
-      return 0;
+      return false;
 
     case CONST_VECTOR:
       if (!same_vector_encodings_p (x, y))
@@ -1757,7 +1757,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 
     case CODE_LABEL:
       /* If we didn't match EQ equality above, they aren't the same.  */
-      return 0;
+      return false;
 
     default:
       break;
@@ -1766,11 +1766,11 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
   /* (MULT:SI x y) and (MULT:HI x y) are NOT equivalent.  */
 
   if (GET_MODE (x) != GET_MODE (y))
-    return 0;
+    return false;
 
   /* MEMs referring to different address space are not equivalent.  */
   if (code == MEM && MEM_ADDR_SPACE (x) != MEM_ADDR_SPACE (y))
-    return 0;
+    return false;
 
   /* For commutative operations, the RTX match if the operand match in any
      order.  Also handle the simple binary and unary cases without a loop.  */
@@ -1786,7 +1786,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
     return rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 0));
 
   /* Compare the elements.  If any pair of corresponding elements
-     fail to match, return 0 for the whole things.  */
+     fail to match, return false for the whole things.  */
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -1796,7 +1796,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 	{
 	case 'w':
 	  if (XWINT (x, i) != XWINT (y, i))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'i':
@@ -1805,50 +1805,50 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 	      if (((code == ASM_OPERANDS && i == 6)
 		   || (code == ASM_INPUT && i == 1)))
 		break;
-	      return 0;
+	      return false;
 	    }
 	  break;
 
 	case 'p':
 	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
-	    return 0;
+	    return false;
 	  break;
 
 	case 't':
 	  if (XTREE (x, i) != XTREE (y, i))
-	    return 0;
+	    return false;
 	  break;
 
 	case 's':
 	  if (strcmp (XSTR (x, i), XSTR (y, i)))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'e':
 	  if (! rtx_renumbered_equal_p (XEXP (x, i), XEXP (y, i)))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'u':
 	  if (XEXP (x, i) != XEXP (y, i))
-	    return 0;
+	    return false;
 	  /* Fall through.  */
 	case '0':
 	  break;
 
 	case 'E':
 	  if (XVECLEN (x, i) != XVECLEN (y, i))
-	    return 0;
+	    return false;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    if (!rtx_renumbered_equal_p (XVECEXP (x, i, j), XVECEXP (y, i, j)))
-	      return 0;
+	      return false;
 	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
     }
-  return 1;
+  return true;
 }
 
 /* If X is a hard register or equivalent to one or a subregister of one,

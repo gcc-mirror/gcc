@@ -1,13 +1,22 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to enable to integrate valgrind (a memory checker) in the GC. */
+#undef ENABLE_VALGRIND_CHECKING
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define if valgrind's memcheck.h header is installed. */
+#undef HAVE_MEMCHECK_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -29,6 +38,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define if valgrind's valgrind/memcheck.h header is installed. */
+#undef HAVE_VALGRIND_MEMCHECK_H
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

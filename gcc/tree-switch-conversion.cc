@@ -1143,32 +1143,89 @@ jump_table_cluster::emit (tree index_expr, tree,
 			  tree default_label_expr, basic_block default_bb,
 			  location_t loc)
 {
-  unsigned HOST_WIDE_INT range = get_range (get_low (), get_high ());
+  tree low = get_low ();
+  unsigned HOST_WIDE_INT range = get_range (low, get_high ());
   unsigned HOST_WIDE_INT nondefault_range = 0;
+  bool bitint = false;
+  gimple_stmt_iterator gsi = gsi_start_bb (m_case_bb);
+
+  /* For large/huge _BitInt, subtract low from index_expr, cast to unsigned
+     DImode type (get_range doesn't support ranges larger than 64-bits)
+     and subtract low from all case values as well.  */
+  if (TREE_CODE (TREE_TYPE (index_expr)) == BITINT_TYPE
+      && TYPE_PRECISION (TREE_TYPE (index_expr)) > GET_MODE_PRECISION (DImode))
+    {
+      bitint = true;
+      tree this_low = low, type;
+      gimple *g;
+      gimple_seq seq = NULL;
+      if (!TYPE_OVERFLOW_WRAPS (TREE_TYPE (index_expr)))
+	{
+	  type = unsigned_type_for (TREE_TYPE (index_expr));
+	  index_expr = gimple_convert (&seq, type, index_expr);
+	  this_low = fold_convert (type, this_low);
+	}
+      this_low = const_unop (NEGATE_EXPR, TREE_TYPE (this_low), this_low);
+      index_expr = gimple_build (&seq, PLUS_EXPR, TREE_TYPE (index_expr),
+				 index_expr, this_low);
+      type = build_nonstandard_integer_type (GET_MODE_PRECISION (DImode), 1);
+      g = gimple_build_cond (GT_EXPR, index_expr,
+			     fold_convert (TREE_TYPE (index_expr),
+					   TYPE_MAX_VALUE (type)),
+			     NULL_TREE, NULL_TREE);
+      gimple_seq_add_stmt (&seq, g);
+      gimple_seq_set_location (seq, loc);
+      gsi_insert_seq_after (&gsi, seq, GSI_NEW_STMT);
+      edge e1 = split_block (m_case_bb, g);
+      e1->flags = EDGE_FALSE_VALUE;
+      e1->probability = profile_probability::likely ();
+      edge e2 = make_edge (e1->src, default_bb, EDGE_TRUE_VALUE);
+      e2->probability = e1->probability.invert ();
+      gsi = gsi_start_bb (e1->dest);
+      seq = NULL;
+      index_expr = gimple_convert (&seq, type, index_expr);
+      gimple_seq_set_location (seq, loc);
+      gsi_insert_seq_after (&gsi, seq, GSI_NEW_STMT);
+    }
 
   /* For jump table we just emit a new gswitch statement that will
      be latter lowered to jump table.  */
   auto_vec <tree> labels;
   labels.create (m_cases.length ());
 
-  make_edge (m_case_bb, default_bb, 0);
+  basic_block case_bb = gsi_bb (gsi);
+  make_edge (case_bb, default_bb, 0);
   for (unsigned i = 0; i < m_cases.length (); i++)
     {
-      labels.quick_push (unshare_expr (m_cases[i]->m_case_label_expr));
-      make_edge (m_case_bb, m_cases[i]->m_case_bb, 0);
+      tree lab = unshare_expr (m_cases[i]->m_case_label_expr);
+      if (bitint)
+	{
+	  CASE_LOW (lab)
+	    = fold_convert (TREE_TYPE (index_expr),
+			    const_binop (MINUS_EXPR,
+					 TREE_TYPE (CASE_LOW (lab)),
+					 CASE_LOW (lab), low));
+	  if (CASE_HIGH (lab))
+	    CASE_HIGH (lab)
+	      = fold_convert (TREE_TYPE (index_expr),
+			      const_binop (MINUS_EXPR,
+					   TREE_TYPE (CASE_HIGH (lab)),
+					   CASE_HIGH (lab), low));
+	}
+      labels.quick_push (lab);
+      make_edge (case_bb, m_cases[i]->m_case_bb, 0);
     }
 
   gswitch *s = gimple_build_switch (index_expr,
 				    unshare_expr (default_label_expr), labels);
   gimple_set_location (s, loc);
-  gimple_stmt_iterator gsi = gsi_start_bb (m_case_bb);
   gsi_insert_after (&gsi, s, GSI_NEW_STMT);
 
   /* Set up even probabilities for all cases.  */
   for (unsigned i = 0; i < m_cases.length (); i++)
     {
       simple_cluster *sc = static_cast<simple_cluster *> (m_cases[i]);
-      edge case_edge = find_edge (m_case_bb, sc->m_case_bb);
+      edge case_edge = find_edge (case_bb, sc->m_case_bb);
       unsigned HOST_WIDE_INT case_range
 	= sc->get_range (sc->get_low (), sc->get_high ());
       nondefault_range += case_range;
@@ -1184,7 +1241,7 @@ jump_table_cluster::emit (tree index_expr, tree,
   for (unsigned i = 0; i < m_cases.length (); i++)
     {
       simple_cluster *sc = static_cast<simple_cluster *> (m_cases[i]);
-      edge case_edge = find_edge (m_case_bb, sc->m_case_bb);
+      edge case_edge = find_edge (case_bb, sc->m_case_bb);
       case_edge->probability
 	= profile_probability::always ().apply_scale ((intptr_t)case_edge->aux,
 						      range);
@@ -1590,7 +1647,8 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   value_range r;
   if (TREE_CODE (index_expr) == SSA_NAME
       && get_range_query (cfun)->range_of_expr (r, index_expr)
-      && r.kind () == VR_RANGE
+      && !r.undefined_p ()
+      && !r.varying_p ()
       && wi::leu_p (r.upper_bound () - r.lower_bound (), prec - 1))
     {
       wide_int min = r.lower_bound ();
@@ -2489,8 +2547,7 @@ pass_convert_switch::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
   {
-    gimple *stmt = last_stmt (bb);
-    if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
+    if (gswitch *stmt = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
       {
 	if (dump_file)
 	  {
@@ -2504,7 +2561,7 @@ pass_convert_switch::execute (function *fun)
 	  }
 
 	switch_conversion sconv;
-	sconv.expand (as_a <gswitch *> (stmt));
+	sconv.expand (stmt);
 	cfg_altered |= sconv.m_cfg_altered;
 	if (!sconv.m_reason)
 	  {
@@ -2594,9 +2651,7 @@ pass_lower_switch<O0>::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple *stmt = last_stmt (bb);
-      gswitch *swtch;
-      if (stmt && (swtch = dyn_cast<gswitch *> (stmt)))
+      if (gswitch *swtch = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
 	{
 	  if (!O0)
 	    group_case_labels_stmt (swtch);

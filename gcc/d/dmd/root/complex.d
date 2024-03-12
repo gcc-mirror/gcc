@@ -29,7 +29,7 @@ extern (C++) struct complex_t
         this(re, CTFloat.zero);
     }
 
-    this(real_t re, real_t im)
+    this(real_t re, real_t im) @safe
     {
         this.re = re;
         this.im = im;
@@ -99,18 +99,18 @@ extern (C++) struct complex_t
         return re || im;
     }
 
-    int opEquals(complex_t y) const
+    int opEquals(complex_t y) const @safe
     {
         return re == y.re && im == y.im;
     }
 }
 
-extern (C++) real_t creall(complex_t x)
+extern (C++) real_t creall(complex_t x) @safe
 {
     return x.re;
 }
 
-extern (C++) real_t cimagl(complex_t x)
+extern (C++) real_t cimagl(complex_t x) @safe
 {
     return x.im;
 }

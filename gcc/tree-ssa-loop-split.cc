@@ -41,6 +41,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "gimple-fold.h"
 #include "gimplify-me.h"
+#include "print-tree.h"
+#include "value-query.h"
+#include "sreal.h"
 
 /* This file implements two kinds of loop splitting.
 
@@ -74,32 +77,18 @@ along with GCC; see the file COPYING3.  If not see
    point in *BORDER and the comparison induction variable in IV.  */
 
 static tree
-split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv)
+split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv,
+	       enum tree_code *guard_code)
 {
-  gimple *last;
   gcond *stmt;
   affine_iv iv2;
 
   /* BB must end in a simple conditional jump.  */
-  last = last_stmt (bb);
-  if (!last || gimple_code (last) != GIMPLE_COND)
+  stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+  if (!stmt)
     return NULL_TREE;
-  stmt = as_a <gcond *> (last);
 
   enum tree_code code = gimple_cond_code (stmt);
-
-  /* Only handle relational comparisons, for equality and non-equality
-     we'd have to split the loop into two loops and a middle statement.  */
-  switch (code)
-    {
-      case LT_EXPR:
-      case LE_EXPR:
-      case GT_EXPR:
-      case GE_EXPR:
-	break;
-      default:
-	return NULL_TREE;
-    }
 
   if (loop_exits_from_bb_p (loop, bb))
     return NULL_TREE;
@@ -130,6 +119,56 @@ split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv)
   if (!iv->no_overflow)
     return NULL_TREE;
 
+  /* Only handle relational comparisons, for equality and non-equality
+     we'd have to split the loop into two loops and a middle statement.  */
+  switch (code)
+    {
+      case LT_EXPR:
+      case LE_EXPR:
+      case GT_EXPR:
+      case GE_EXPR:
+	break;
+      case NE_EXPR:
+      case EQ_EXPR:
+	/* If the test check for first iteration, we can handle NE/EQ
+	   with only one split loop.  */
+	if (operand_equal_p (iv->base, iv2.base, 0))
+	  {
+	    if (code == EQ_EXPR)
+	      code = !tree_int_cst_sign_bit (iv->step) ? LE_EXPR : GE_EXPR;
+	    else
+	      code = !tree_int_cst_sign_bit (iv->step) ? GT_EXPR : LT_EXPR;
+	    break;
+	  }
+	/* Similarly when the test checks for minimal or maximal
+	   value range.  */
+	else
+	  {
+	    int_range<2> r;
+	    get_global_range_query ()->range_of_expr (r, op0, stmt);
+	    if (!r.varying_p () && !r.undefined_p ()
+		&& TREE_CODE (op1) == INTEGER_CST)
+	      {
+		wide_int val = wi::to_wide (op1);
+		if (known_eq (val, r.lower_bound ()))
+		  {
+		    code = (code == EQ_EXPR) ? LE_EXPR : GT_EXPR;
+		    break;
+		  }
+		else if (known_eq (val, r.upper_bound ()))
+		  {
+		    code = (code == EQ_EXPR) ? GE_EXPR : LT_EXPR;
+		    break;
+		  }
+	      }
+	  }
+	/* TODO: We can compare with exit condition; it seems that testing for
+	   last iteration is common case.  */
+	return NULL_TREE;
+      default:
+	return NULL_TREE;
+    }
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Found potential split point: ");
@@ -144,6 +183,7 @@ split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv)
     }
 
   *border = iv2.base;
+  *guard_code = code;
   return op0;
 }
 
@@ -158,7 +198,7 @@ patch_loop_exit (class loop *loop, gcond *guard, tree nextval, tree newbound,
 		 bool initial_true)
 {
   edge exit = single_exit (loop);
-  gcond *stmt = as_a <gcond *> (last_stmt (exit->src));
+  gcond *stmt = as_a <gcond *> (*gsi_last_bb (exit->src));
   gimple_cond_set_condition (stmt, gimple_cond_code (guard),
 			     nextval, newbound);
   update_stmt (stmt);
@@ -335,7 +375,7 @@ connect_loops (class loop *loop1, class loop *loop2)
   gimple_stmt_iterator gsi;
   edge new_e, skip_e;
 
-  gimple *stmt = last_stmt (exit->src);
+  gcond *stmt = as_a <gcond *> (*gsi_last_bb (exit->src));
   skip_stmt = gimple_build_cond (gimple_cond_code (stmt),
 				 gimple_cond_lhs (stmt),
 				 gimple_cond_rhs (stmt),
@@ -357,7 +397,7 @@ connect_loops (class loop *loop1, class loop *loop2)
       new_e->flags |= EDGE_TRUE_VALUE;
     }
 
-  new_e->probability = profile_probability::likely ();
+  new_e->probability = profile_probability::very_likely ();
   skip_e->probability = new_e->probability.invert ();
 
   return new_e;
@@ -498,6 +538,8 @@ fix_loop_bb_probability (class loop *loop1, class loop *loop2, edge true_edge,
   unsigned j;
   for (j = 0; j < loop1->num_nodes; j++)
     if (bbs1[j] == loop1->latch
+	/* Watch for case where the true conditional is empty.  */
+	|| !single_pred_p (true_edge->dest)
 	|| !dominated_by_p (CDI_DOMINATORS, bbs1[j], true_edge->dest))
       bbs1[j]->count
 	= bbs1[j]->count.apply_probability (true_edge->probability);
@@ -509,6 +551,8 @@ fix_loop_bb_probability (class loop *loop1, class loop *loop2, edge true_edge,
   bbs2 = get_loop_body (loop2);
   for (j = 0; j < loop2->num_nodes; j++)
     if (bbs2[j] == loop2->latch
+	/* Watch for case where the flase conditional is empty.  */
+	|| !single_pred_p (bbi_copy)
 	|| !dominated_by_p (CDI_DOMINATORS, bbs2[j], bbi_copy))
       bbs2[j]->count
 	= bbs2[j]->count.apply_probability (true_edge->probability.invert ());
@@ -542,10 +586,17 @@ split_loop (class loop *loop1)
       || !empty_block_p (loop1->latch)
       || !easy_exit_values (loop1)
       || !number_of_iterations_exit (loop1, exit1, &niter, false, true)
-      || niter.cmp == ERROR_MARK
-      /* We can't yet handle loops controlled by a != predicate.  */
-      || niter.cmp == NE_EXPR)
+      || niter.cmp == ERROR_MARK)
     return false;
+  if (niter.cmp == NE_EXPR)
+    {
+      if (!niter.control.no_overflow)
+	return false;
+      if (tree_int_cst_sign_bit (niter.control.step))
+	niter.cmp = GT_EXPR;
+      else
+	niter.cmp = LT_EXPR;
+    }
 
   bbs = get_loop_body (loop1);
 
@@ -556,8 +607,9 @@ split_loop (class loop *loop1)
     }
 
   /* Find a splitting opportunity.  */
+  enum tree_code guard_code;
   for (i = 0; i < loop1->num_nodes; i++)
-    if ((guard_iv = split_at_bb_p (loop1, bbs[i], &border, &iv)))
+    if ((guard_iv = split_at_bb_p (loop1, bbs[i], &border, &iv, &guard_code)))
       {
 	/* Handling opposite steps is not implemented yet.  Neither
 	   is handling different step sizes.  */
@@ -571,10 +623,9 @@ split_loop (class loop *loop1)
 	gphi *phi = find_or_create_guard_phi (loop1, guard_iv, &iv);
 	if (!phi)
 	  continue;
-	gcond *guard_stmt = as_a<gcond *> (last_stmt (bbs[i]));
+	gcond *guard_stmt = as_a<gcond *> (*gsi_last_bb (bbs[i]));
 	tree guard_init = PHI_ARG_DEF_FROM_EDGE (phi,
 						 loop_preheader_edge (loop1));
-	enum tree_code guard_code = gimple_cond_code (guard_stmt);
 
 	/* Loop splitting is implemented by versioning the loop, placing
 	   the new loop after the old loop, make the first loop iterate
@@ -605,7 +656,8 @@ split_loop (class loop *loop1)
 	if (stmts2)
 	  gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop1),
 					    stmts2);
-	tree cond = build2 (guard_code, boolean_type_node, guard_init, border);
+	tree cond = fold_build2 (guard_code, boolean_type_node,
+				 guard_init, border);
 	if (!initial_true)
 	  cond = fold_build1 (TRUTH_NOT_EXPR, boolean_type_node, cond);
 
@@ -617,13 +669,66 @@ split_loop (class loop *loop1)
 	initialize_original_copy_tables ();
 	basic_block cond_bb;
 
+	profile_probability loop1_prob
+	  = integer_onep (cond) ? profile_probability::always ()
+				: true_edge->probability;
+	/* TODO: It is commonly a case that we know that both loops will be
+	   entered.  very_likely below is the probability that second loop will
+	   be entered given by connect_loops.  We should work out the common
+	   case it is always true.  */
 	class loop *loop2 = loop_version (loop1, cond, &cond_bb,
-					  true_edge->probability,
-					  true_edge->probability.invert (),
+					  loop1_prob,
+					  /* Pass always as we will later
+					     redirect first loop to second
+					     loop.  */
 					  profile_probability::always (),
 					  profile_probability::always (),
+					  profile_probability::very_likely (),
 					  true);
 	gcc_assert (loop2);
+	/* Correct probability of edge  cond_bb->preheader_of_loop2.  */
+	single_pred_edge
+		(loop_preheader_edge (loop2)->src)->probability
+			= loop1_prob.invert ();
+
+	fix_loop_bb_probability (loop1, loop2, true_edge, false_edge);
+	/* If conditional we split on has reliable profilea nd both
+	   preconditionals of loop1 and loop2 are constant true, we can
+	   only redistribute the iteration counts to the split loops.
+
+	   If the conditionals we insert before loop1 or loop2 are non-trivial
+	   they increase expected loop count, so account this accordingly.
+	   If we do not know the probability of split conditional, avoid
+	   reudcing loop estimates, since we do not really know how they are
+	   split between of the two new loops.  Keep orignal estimate since
+	   it is likely better then completely dropping it.
+
+	   TODO: If we know that one of the new loops has constant
+	   number of iterations, we can do better.  We could also update
+	   upper bounds.  */
+	if (loop1->any_estimate
+	    && wi::fits_shwi_p (loop1->nb_iterations_estimate))
+	  {
+	    sreal scale = true_edge->probability.reliable_p ()
+			  ? true_edge->probability.to_sreal () : (sreal)1;
+	    sreal scale2 = false_edge->probability.reliable_p ()
+			  ? false_edge->probability.to_sreal () : (sreal)1;
+	    sreal div1 = loop1_prob.to_sreal ();
+	    /* +1 to get header interations rather than latch iterations and then
+	       -1 to convert back.  */
+	    if (div1 != 0)
+	      loop1->nb_iterations_estimate
+		= MAX ((((sreal)loop1->nb_iterations_estimate.to_shwi () + 1)
+		       * scale / div1).to_nearest_int () - 1, 0);
+	    else
+	      loop1->any_estimate = false;
+	    loop2->nb_iterations_estimate
+	      = MAX ((((sreal)loop2->nb_iterations_estimate.to_shwi () + 1) * scale2
+		     / profile_probability::very_likely ().to_sreal ())
+		     .to_nearest_int () - 1, 0);
+	  }
+	update_loop_exit_probability_scale_dom_bbs (loop1);
+	update_loop_exit_probability_scale_dom_bbs (loop2);
 
 	edge new_e = connect_loops (loop1, loop2);
 	connect_loop_phis (loop1, loop2, new_e);
@@ -642,21 +747,10 @@ split_loop (class loop *loop1)
 	tree guard_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop1));
 	patch_loop_exit (loop1, guard_stmt, guard_next, newend, initial_true);
 
-	fix_loop_bb_probability (loop1, loop2, true_edge, false_edge);
-
-	/* Fix first loop's exit probability after scaling.  */
-	edge exit_to_latch1;
-	if (EDGE_SUCC (exit1->src, 0) == exit1)
-	  exit_to_latch1 = EDGE_SUCC (exit1->src, 1);
-	else
-	  exit_to_latch1 = EDGE_SUCC (exit1->src, 0);
-	exit_to_latch1->probability *= true_edge->probability;
-	exit1->probability = exit_to_latch1->probability.invert ();
-
 	/* Finally patch out the two copies of the condition to be always
 	   true/false (or opposite).  */
-	gcond *force_true = as_a<gcond *> (last_stmt (bbs[i]));
-	gcond *force_false = as_a<gcond *> (last_stmt (get_bb_copy (bbs[i])));
+	gcond *force_true = as_a<gcond *> (*gsi_last_bb (bbs[i]));
+	gcond *force_false = as_a<gcond *> (*gsi_last_bb (get_bb_copy (bbs[i])));
 	if (!initial_true)
 	  std::swap (force_true, force_false);
 	gimple_cond_make_true (force_true);
@@ -1148,8 +1242,7 @@ control_dep_semi_invariant_p (struct loop *loop, basic_block bb,
   for (hash_set<basic_block>::iterator iter = dep_bbs->begin ();
        iter != dep_bbs->end (); ++iter)
     {
-      gimple *last = last_stmt (*iter);
-
+      gimple *last = *gsi_last_bb (*iter);
       if (!last)
 	return false;
 
@@ -1393,7 +1486,7 @@ compute_added_num_insns (struct loop *loop, const_edge branch_edge)
 
   auto_vec<gimple *> worklist;
   hash_set<gimple *> removed;
-  gimple *stmt = last_stmt (cond_bb);
+  gimple *stmt = last_nondebug_stmt (cond_bb);
 
   worklist.safe_push (stmt);
   removed.add (stmt);
@@ -1520,7 +1613,7 @@ do_split_loop_on_cond (struct loop *loop1, edge invar_branch)
 {
   basic_block cond_bb = invar_branch->src;
   bool true_invar = !!(invar_branch->flags & EDGE_TRUE_VALUE);
-  gcond *cond = as_a <gcond *> (last_stmt (cond_bb));
+  gcond *cond = as_a <gcond *> (*gsi_last_bb (cond_bb));
 
   gcc_assert (cond_bb->loop_father == loop1);
 
@@ -1544,7 +1637,7 @@ do_split_loop_on_cond (struct loop *loop1, edge invar_branch)
     }
 
   basic_block cond_bb_copy = get_bb_copy (cond_bb);
-  gcond *cond_copy = as_a<gcond *> (last_stmt (cond_bb_copy));
+  gcond *cond_copy = as_a<gcond *> (*gsi_last_bb (cond_bb_copy));
 
   /* Replace the condition in loop2 with a bool constant to let PassManager
      remove the variant branch after current pass completes.  */
@@ -1628,12 +1721,10 @@ split_loop_on_cond (struct loop *loop)
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
 	continue;
 
-      gimple *last = last_stmt (bb);
-
-      if (!last || gimple_code (last) != GIMPLE_COND)
+      gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+      if (!cond)
 	continue;
 
-      gcond *cond = as_a <gcond *> (last);
       edge branch_edge = get_cond_branch_to_split_loop (loop, cond);
 
       if (branch_edge)

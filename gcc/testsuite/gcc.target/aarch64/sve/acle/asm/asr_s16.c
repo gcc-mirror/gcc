@@ -43,7 +43,7 @@ TEST_UNIFORM_ZX (asr_w0_s16_m_tied1, svint16_t, uint16_t,
 		 z0 = svasr_m (p0, z0, x0))
 
 /*
-** asr_w0_s16_m_untied: { xfail *-*-* }
+** asr_w0_s16_m_untied:
 **	mov	(z[0-9]+\.h), w0
 **	movprfx	z0, z1
 **	asr	z0\.h, p0/m, z0\.h, \1

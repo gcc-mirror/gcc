@@ -398,6 +398,9 @@ can_use_same_reg_p (rtx_insn *insn, int output, int input)
       if (op_alt[input].matches == output)
 	return true;
 
+      if (op_alt[output].earlyclobber)
+	continue;
+
       if (ira_reg_class_intersect[op_alt[input].cl][op_alt[output].cl]
 	  != NO_REGS)
 	return true;

@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 /* { dg-do compile } */
 
 #define N 1024
@@ -13,3 +14,4 @@ f (unsigned int *x1, unsigned int *x2, unsigned short *y, unsigned char z)
       x2[i] += 1;
     }
 }
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

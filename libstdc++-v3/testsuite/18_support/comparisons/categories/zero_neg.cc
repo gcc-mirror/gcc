@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a -Wno-unused-result" }
-// { dg-do compile { target c++2a } }
+// { dg-options "-Wno-unused-result" }
+// { dg-do compile { target c++20 } }
 
 #include <compare>
 
@@ -34,6 +34,11 @@ test01()
   std::weak_ordering::equivalent == 1;    // { dg-error "invalid conversion" }
   std::strong_ordering::equivalent == 1;  // { dg-error "invalid conversion" }
 
+  constexpr int z = 0;
+  std::partial_ordering::equivalent == z; // { dg-error "invalid conversion" }
+  std::weak_ordering::equivalent == z;    // { dg-error "invalid conversion" }
+  std::strong_ordering::equivalent == z;  // { dg-error "invalid conversion" }
+
   constexpr void* p = nullptr;
   std::partial_ordering::equivalent == p; // { dg-error "invalid conversion" }
   std::weak_ordering::equivalent == p;    // { dg-error "invalid conversion" }
@@ -44,3 +49,6 @@ test01()
   std::weak_ordering::equivalent == nullptr;
   std::strong_ordering::equivalent == nullptr;
 }
+
+// { dg-prune-output "reinterpret_cast.* is not a constant expression" }
+// { dg-prune-output "cast from 'void.' is not allowed" }

@@ -5,7 +5,7 @@
 
 void f (int8_t * restrict in, int8_t * restrict out, int l, int n, int m, size_t cond)
 {
-  size_t vl = 555;
+  size_t vl = cond + 555;
   
   if (cond) {
     for (int i = 0; i < l; i++){

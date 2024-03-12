@@ -70,16 +70,14 @@ package body System.Image_F is
    --  if the small is larger than 1, and smaller than 2**(Int'Size - 1) / 10
    --  if the small is smaller than 1.
 
-   Unsigned_Width_Ghost : constant Natural := Int'Width;
-
    package Uns_Spec is new System.Value_U_Spec (Uns);
-   package Int_Spec is new System.Value_I_Spec (Int, Uns, Uns_Spec.Uns_Params);
+   package Int_Spec is new System.Value_I_Spec (Int, Uns, Uns_Spec);
 
    package Image_I is new System.Image_I
-     (Int                  => Int,
-      Uns                  => Uns,
-      Unsigned_Width_Ghost => Unsigned_Width_Ghost,
-      Int_Params           => Int_Spec.Int_Params);
+     (Int    => Int,
+      Uns    => Uns,
+      U_Spec => Uns_Spec,
+      I_Spec => Int_Spec);
 
    procedure Set_Image_Integer
      (V : Int;

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // PR libstdc++/105027 - Missing constraints on std::bit_cast

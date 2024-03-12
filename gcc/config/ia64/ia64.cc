@@ -313,7 +313,8 @@ static tree ia64_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool ia64_scalar_mode_supported_p (scalar_mode mode);
 static bool ia64_vector_mode_supported_p (machine_mode mode);
 static bool ia64_legitimate_constant_p (machine_mode, rtx);
-static bool ia64_legitimate_address_p (machine_mode, rtx, bool);
+static bool ia64_legitimate_address_p (machine_mode, rtx, bool,
+				       code_helper = ERROR_MARK);
 static bool ia64_cannot_force_const_mem (machine_mode, rtx);
 static const char *ia64_mangle_type (const_tree);
 static const char *ia64_invalid_conversion (const_tree, const_tree);
@@ -873,7 +874,7 @@ ia64_encode_section_info (tree decl, rtx rtl, int first)
   default_encode_section_info (decl, rtl, first);
 
   /* Careful not to prod global register variables.  */
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && GET_CODE (DECL_RTL (decl)) == MEM
       && GET_CODE (XEXP (DECL_RTL (decl), 0)) == SYMBOL_REF
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
@@ -1024,8 +1025,8 @@ ia64_legitimate_address_disp (const_rtx reg, const_rtx disp, bool strict)
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 
 static bool
-ia64_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
-			   rtx x, bool strict)
+ia64_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
+			   bool strict, code_helper)
 {
   if (ia64_legitimate_address_reg (x, strict))
     return true;
@@ -5156,7 +5157,7 @@ ia64_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
      the next even boundary.  Integer and floating point arguments
      do so if they are larger than 8 bytes, whether or not they are
      also aligned larger than 8 bytes.  */
-  if ((TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == INTEGER_TYPE)
+  if ((SCALAR_FLOAT_TYPE_P (type) || TREE_CODE (type) == INTEGER_TYPE)
       ? int_size_in_bytes (type) > 8 : TYPE_ALIGN (type) > 8 * BITS_PER_UNIT)
     {
       tree t = fold_build_pointer_plus_hwi (valist, 2 * UNITS_PER_WORD - 1);
@@ -10003,7 +10004,7 @@ ia64_in_small_data_p (const_tree exp)
   if (TREE_CODE (exp) == FUNCTION_DECL)
     return false;
 
-  if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
+  if (VAR_P (exp) && DECL_SECTION_NAME (exp))
     {
       const char *section = DECL_SECTION_NAME (exp);
 

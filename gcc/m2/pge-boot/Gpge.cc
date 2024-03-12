@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -65,7 +66,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   define MaxCodeHunkLength 8192
 #   define MaxFileName 8192
 #   define MaxString 8192
-#   define DefaultRecovery TRUE
+#   define DefaultRecovery true
 #   define MaxElementsInSet 32
 #   define BaseRightLimit 75
 #   define BaseRightMargin 50
@@ -146,7 +147,7 @@ struct pge__T2_r {
                    pge_ProductionDesc next;
                    pge_StatementDesc statement;
                    pge_SetDesc first;
-                   unsigned int firstsolved;
+                   bool firstsolved;
                    pge_FollowDesc followinfo;
                    unsigned int line;
                    NameKey_Name description;
@@ -180,7 +181,7 @@ struct pge__T5_r {
                  };
 
 struct pge__T6_r {
-                   unsigned int calcfollow;
+                   bool calcfollow;
                    pge_SetDesc follow;
                    pge_TraverseResult reachend;
                    pge_TraverseResult epsilon;
@@ -210,16 +211,16 @@ struct pge__T9_r {
                  };
 
 static unsigned int LastLineNo;
-static unsigned int Finished;
-static unsigned int SuppressFileLineTag;
-static unsigned int KeywordFormatting;
-static unsigned int PrettyPrint;
-static unsigned int EmitCode;
-static unsigned int Texinfo;
-static unsigned int Sphinx;
-static unsigned int FreeDocLicense;
-static unsigned int Debugging;
-static unsigned int WasNoError;
+static bool Finished;
+static bool SuppressFileLineTag;
+static bool KeywordFormatting;
+static bool PrettyPrint;
+static bool EmitCode;
+static bool Texinfo;
+static bool Sphinx;
+static bool FreeDocLicense;
+static bool Debugging;
+static bool WasNoError;
 static unsigned int LinePrologue;
 static unsigned int LineEpilogue;
 static unsigned int LineDeclaration;
@@ -248,13 +249,13 @@ static NameKey_Name ErrorProcArray;
 static NameKey_Name ErrorProcString;
 static pge__T11 ArgName;
 static pge__T11 FileName;
-static unsigned int OnLineStart;
-static unsigned int BeginningOfLine;
+static bool OnLineStart;
+static bool BeginningOfLine;
 static unsigned int Indent;
-static unsigned int EmittedVar;
-static unsigned int ErrorRecovery;
+static bool EmittedVar;
+static bool ErrorRecovery;
 static unsigned int LargestValue;
-static unsigned int InitialElement;
+static bool InitialElement;
 static unsigned int ParametersUsed;
 
 /*
@@ -305,7 +306,7 @@ static pge_FollowDesc NewFollow (void);
                    providing condition is TRUE.
 */
 
-static void AssignEpsilon (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value);
+static void AssignEpsilon (bool condition, pge_FollowDesc f, pge_TraverseResult value);
 
 /*
    GetEpsilon - returns the value of epsilon
@@ -317,7 +318,7 @@ static pge_TraverseResult GetEpsilon (pge_FollowDesc f);
    AssignReachEnd - assigns the reachend value providing that, condition, is TRUE.
 */
 
-static void AssignReachEnd (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value);
+static void AssignReachEnd (bool condition, pge_FollowDesc f, pge_TraverseResult value);
 
 /*
    GetReachEnd - returns the value of reachend
@@ -419,21 +420,21 @@ static void WriteIndent (unsigned int n);
    CheckWrite -
 */
 
-static void CheckWrite (char ch, unsigned int *curpos, unsigned int left, unsigned int *seentext);
+static void CheckWrite (char ch, unsigned int *curpos, unsigned int left, bool *seentext);
 
 /*
    WriteStringIndent - writes a string but it will try and remove upto indent spaces
                        if they exist.
 */
 
-static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext);
+static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned int indent, unsigned int *curpos, unsigned int left, bool *seentext);
 
 /*
    WriteCodeHunkListIndent - writes the CodeHunk list in the correct order
                              but it removes up to indent spaces if they exist.
 */
 
-static void WriteCodeHunkListIndent (pge_CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext);
+static void WriteCodeHunkListIndent (pge_CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, bool *seentext);
 
 /*
    Add - adds a character to a code hunk and creates another code hunk if necessary.
@@ -1108,13 +1109,13 @@ static void CodeThenDo (pge_m2condition m);
    CodeElseEnd - builds an ELSE END statement using string, end.
 */
 
-static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int consumed, pge_FactorDesc f, unsigned int inopt);
+static void CodeElseEnd (const char *end_, unsigned int _end_high, bool consumed, pge_FactorDesc f, bool inopt);
 
 /*
    CodeEnd - codes a "END" depending upon, m.
 */
 
-static void CodeEnd (pge_m2condition m, pge_TermDesc t, unsigned int consumed, pge_FactorDesc f, unsigned int inopt);
+static void CodeEnd (pge_m2condition m, pge_TermDesc t, bool consumed, pge_FactorDesc f, bool inopt);
 
 /*
    EmitNonVarCode - writes out, code, providing it is not a variable declaration.
@@ -1138,19 +1139,19 @@ static void FlushCode (pge_FactorDesc *codeStack);
    CodeFactor -
 */
 
-static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge_m2condition n, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
+static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge_m2condition n, bool inopt, bool inwhile, bool consumed, pge_FactorDesc codeStack);
 
 /*
    CodeTerm -
 */
 
-static void CodeTerm (pge_TermDesc t, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
+static void CodeTerm (pge_TermDesc t, pge_m2condition m, bool inopt, bool inwhile, bool consumed, pge_FactorDesc codeStack);
 
 /*
    CodeExpression -
 */
 
-static void CodeExpression (pge_ExpressionDesc e, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
+static void CodeExpression (pge_ExpressionDesc e, pge_m2condition m, bool inopt, bool inwhile, bool consumed, pge_FactorDesc codeStack);
 
 /*
    CodeStatement -
@@ -1226,7 +1227,7 @@ static void RecoverFactor (pge_FactorDesc f, pge_m2condition m, pge_FactorDesc c
                 and FALSE in the first.
 */
 
-static unsigned int OptExpSeen (pge_FactorDesc f);
+static bool OptExpSeen (pge_FactorDesc f);
 
 /*
    RecoverTerm -
@@ -1262,20 +1263,20 @@ static void EmitUsed (unsigned int wordno);
    EmitStopParameters - generate the stop set.
 */
 
-static void EmitStopParameters (unsigned int FormalParameters);
+static void EmitStopParameters (bool FormalParameters);
 
 /*
    IsBetween - returns TRUE if the value of the token, string, is
                in the range: low..high
 */
 
-static unsigned int IsBetween (NameKey_Name string, unsigned int low, unsigned int high);
+static bool IsBetween (NameKey_Name string, unsigned int low, unsigned int high);
 
 /*
    IsEmptySet - returns TRUE if no elements exist in set, to, with values, low..high.
 */
 
-static unsigned int IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int high);
+static bool IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitSet - emits the tokens in the set, to, which have values low..high
@@ -1328,13 +1329,13 @@ static void RecoverProduction (pge_ProductionDesc p);
    IsWhite - returns TRUE if, ch, is a space or a tab.
 */
 
-static unsigned int IsWhite (char ch);
+static bool IsWhite (char ch);
 
 /*
    FindStr - returns TRUE if, str, was seen inside the code hunk
 */
 
-static unsigned int FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high);
+static bool FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high);
 
 /*
    WriteUpto -
@@ -1383,14 +1384,14 @@ static void VarProduction (pge_ProductionDesc p);
    In - returns TRUE if token, s, is already in the set, to.
 */
 
-static unsigned int In (pge_SetDesc to, NameKey_Name s);
+static bool In (pge_SetDesc to, NameKey_Name s);
 
 /*
    IntersectionIsNil - given two set lists, s1, s2, return TRUE if the
                        s1 * s2 = {}
 */
 
-static unsigned int IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2);
+static bool IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2);
 
 /*
    AddSet - adds a first symbol to a production.
@@ -1553,31 +1554,31 @@ static void CalcReachEndProduction (pge_ProductionDesc p);
    EmptyFactor -
 */
 
-static unsigned int EmptyFactor (pge_FactorDesc f);
+static bool EmptyFactor (pge_FactorDesc f);
 
 /*
    EmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int EmptyTerm (pge_TermDesc t);
+static bool EmptyTerm (pge_TermDesc t);
 
 /*
    EmptyExpression -
 */
 
-static unsigned int EmptyExpression (pge_ExpressionDesc e);
+static bool EmptyExpression (pge_ExpressionDesc e);
 
 /*
    EmptyStatement - returns TRUE if statement, s, is empty.
 */
 
-static unsigned int EmptyStatement (pge_StatementDesc s);
+static bool EmptyStatement (pge_StatementDesc s);
 
 /*
    EmptyProduction - returns if production, p, maybe empty.
 */
 
-static unsigned int EmptyProduction (pge_ProductionDesc p);
+static bool EmptyProduction (pge_ProductionDesc p);
 
 /*
    EmitFDLNotice -
@@ -1643,67 +1644,67 @@ static void DisposeSetDesc (pge_SetDesc *s);
    OptionalFactor -
 */
 
-static unsigned int OptionalFactor (pge_FactorDesc f);
+static bool OptionalFactor (pge_FactorDesc f);
 
 /*
    OptionalTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int OptionalTerm (pge_TermDesc t);
+static bool OptionalTerm (pge_TermDesc t);
 
 /*
    OptionalExpression -
 */
 
-static unsigned int OptionalExpression (pge_ExpressionDesc e);
+static bool OptionalExpression (pge_ExpressionDesc e);
 
 /*
    OptionalStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int OptionalStatement (pge_StatementDesc s);
+static bool OptionalStatement (pge_StatementDesc s);
 
 /*
    OptionalProduction -
 */
 
-static unsigned int OptionalProduction (pge_ProductionDesc p);
+static bool OptionalProduction (pge_ProductionDesc p);
 
 /*
    CheckFirstFollow -
 */
 
-static unsigned int CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after);
+static bool CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after);
 
 /*
    ConstrainedEmptyFactor -
 */
 
-static unsigned int ConstrainedEmptyFactor (pge_FactorDesc f);
+static bool ConstrainedEmptyFactor (pge_FactorDesc f);
 
 /*
    ConstrainedEmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int ConstrainedEmptyTerm (pge_TermDesc t);
+static bool ConstrainedEmptyTerm (pge_TermDesc t);
 
 /*
    ConstrainedEmptyExpression -
 */
 
-static unsigned int ConstrainedEmptyExpression (pge_ExpressionDesc e);
+static bool ConstrainedEmptyExpression (pge_ExpressionDesc e);
 
 /*
    ConstrainedEmptyStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int ConstrainedEmptyStatement (pge_StatementDesc s);
+static bool ConstrainedEmptyStatement (pge_StatementDesc s);
 
 /*
    ConstrainedEmptyProduction - returns TRUE if a problem exists with, p.
 */
 
-static unsigned int ConstrainedEmptyProduction (pge_ProductionDesc p);
+static bool ConstrainedEmptyProduction (pge_ProductionDesc p);
 
 /*
    TestForLALR1 -
@@ -1795,7 +1796,7 @@ static pge_FollowDesc NewFollow (void);
                    providing condition is TRUE.
 */
 
-static void AssignEpsilon (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value);
+static void AssignEpsilon (bool condition, pge_FollowDesc f, pge_TraverseResult value);
 
 /*
    GetEpsilon - returns the value of epsilon
@@ -1807,7 +1808,7 @@ static pge_TraverseResult GetEpsilon (pge_FollowDesc f);
    AssignReachEnd - assigns the reachend value providing that, condition, is TRUE.
 */
 
-static void AssignReachEnd (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value);
+static void AssignReachEnd (bool condition, pge_FollowDesc f, pge_TraverseResult value);
 
 /*
    GetReachEnd - returns the value of reachend
@@ -1909,21 +1910,21 @@ static void WriteIndent (unsigned int n);
    CheckWrite -
 */
 
-static void CheckWrite (char ch, unsigned int *curpos, unsigned int left, unsigned int *seentext);
+static void CheckWrite (char ch, unsigned int *curpos, unsigned int left, bool *seentext);
 
 /*
    WriteStringIndent - writes a string but it will try and remove upto indent spaces
                        if they exist.
 */
 
-static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext);
+static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned int indent, unsigned int *curpos, unsigned int left, bool *seentext);
 
 /*
    WriteCodeHunkListIndent - writes the CodeHunk list in the correct order
                              but it removes up to indent spaces if they exist.
 */
 
-static void WriteCodeHunkListIndent (pge_CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext);
+static void WriteCodeHunkListIndent (pge_CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, bool *seentext);
 
 /*
    Add - adds a character to a code hunk and creates another code hunk if necessary.
@@ -2598,13 +2599,13 @@ static void CodeThenDo (pge_m2condition m);
    CodeElseEnd - builds an ELSE END statement using string, end.
 */
 
-static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int consumed, pge_FactorDesc f, unsigned int inopt);
+static void CodeElseEnd (const char *end_, unsigned int _end_high, bool consumed, pge_FactorDesc f, bool inopt);
 
 /*
    CodeEnd - codes a "END" depending upon, m.
 */
 
-static void CodeEnd (pge_m2condition m, pge_TermDesc t, unsigned int consumed, pge_FactorDesc f, unsigned int inopt);
+static void CodeEnd (pge_m2condition m, pge_TermDesc t, bool consumed, pge_FactorDesc f, bool inopt);
 
 /*
    EmitNonVarCode - writes out, code, providing it is not a variable declaration.
@@ -2628,19 +2629,19 @@ static void FlushCode (pge_FactorDesc *codeStack);
    CodeFactor -
 */
 
-static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge_m2condition n, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
+static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge_m2condition n, bool inopt, bool inwhile, bool consumed, pge_FactorDesc codeStack);
 
 /*
    CodeTerm -
 */
 
-static void CodeTerm (pge_TermDesc t, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
+static void CodeTerm (pge_TermDesc t, pge_m2condition m, bool inopt, bool inwhile, bool consumed, pge_FactorDesc codeStack);
 
 /*
    CodeExpression -
 */
 
-static void CodeExpression (pge_ExpressionDesc e, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
+static void CodeExpression (pge_ExpressionDesc e, pge_m2condition m, bool inopt, bool inwhile, bool consumed, pge_FactorDesc codeStack);
 
 /*
    CodeStatement -
@@ -2716,7 +2717,7 @@ static void RecoverFactor (pge_FactorDesc f, pge_m2condition m, pge_FactorDesc c
                 and FALSE in the first.
 */
 
-static unsigned int OptExpSeen (pge_FactorDesc f);
+static bool OptExpSeen (pge_FactorDesc f);
 
 /*
    RecoverTerm -
@@ -2752,20 +2753,20 @@ static void EmitUsed (unsigned int wordno);
    EmitStopParameters - generate the stop set.
 */
 
-static void EmitStopParameters (unsigned int FormalParameters);
+static void EmitStopParameters (bool FormalParameters);
 
 /*
    IsBetween - returns TRUE if the value of the token, string, is
                in the range: low..high
 */
 
-static unsigned int IsBetween (NameKey_Name string, unsigned int low, unsigned int high);
+static bool IsBetween (NameKey_Name string, unsigned int low, unsigned int high);
 
 /*
    IsEmptySet - returns TRUE if no elements exist in set, to, with values, low..high.
 */
 
-static unsigned int IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int high);
+static bool IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitSet - emits the tokens in the set, to, which have values low..high
@@ -2818,13 +2819,13 @@ static void RecoverProduction (pge_ProductionDesc p);
    IsWhite - returns TRUE if, ch, is a space or a tab.
 */
 
-static unsigned int IsWhite (char ch);
+static bool IsWhite (char ch);
 
 /*
    FindStr - returns TRUE if, str, was seen inside the code hunk
 */
 
-static unsigned int FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high);
+static bool FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high);
 
 /*
    WriteUpto -
@@ -2873,14 +2874,14 @@ static void VarProduction (pge_ProductionDesc p);
    In - returns TRUE if token, s, is already in the set, to.
 */
 
-static unsigned int In (pge_SetDesc to, NameKey_Name s);
+static bool In (pge_SetDesc to, NameKey_Name s);
 
 /*
    IntersectionIsNil - given two set lists, s1, s2, return TRUE if the
                        s1 * s2 = {}
 */
 
-static unsigned int IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2);
+static bool IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2);
 
 /*
    AddSet - adds a first symbol to a production.
@@ -3043,31 +3044,31 @@ static void CalcReachEndProduction (pge_ProductionDesc p);
    EmptyFactor -
 */
 
-static unsigned int EmptyFactor (pge_FactorDesc f);
+static bool EmptyFactor (pge_FactorDesc f);
 
 /*
    EmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int EmptyTerm (pge_TermDesc t);
+static bool EmptyTerm (pge_TermDesc t);
 
 /*
    EmptyExpression -
 */
 
-static unsigned int EmptyExpression (pge_ExpressionDesc e);
+static bool EmptyExpression (pge_ExpressionDesc e);
 
 /*
    EmptyStatement - returns TRUE if statement, s, is empty.
 */
 
-static unsigned int EmptyStatement (pge_StatementDesc s);
+static bool EmptyStatement (pge_StatementDesc s);
 
 /*
    EmptyProduction - returns if production, p, maybe empty.
 */
 
-static unsigned int EmptyProduction (pge_ProductionDesc p);
+static bool EmptyProduction (pge_ProductionDesc p);
 
 /*
    EmitFDLNotice -
@@ -3133,67 +3134,67 @@ static void DisposeSetDesc (pge_SetDesc *s);
    OptionalFactor -
 */
 
-static unsigned int OptionalFactor (pge_FactorDesc f);
+static bool OptionalFactor (pge_FactorDesc f);
 
 /*
    OptionalTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int OptionalTerm (pge_TermDesc t);
+static bool OptionalTerm (pge_TermDesc t);
 
 /*
    OptionalExpression -
 */
 
-static unsigned int OptionalExpression (pge_ExpressionDesc e);
+static bool OptionalExpression (pge_ExpressionDesc e);
 
 /*
    OptionalStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int OptionalStatement (pge_StatementDesc s);
+static bool OptionalStatement (pge_StatementDesc s);
 
 /*
    OptionalProduction -
 */
 
-static unsigned int OptionalProduction (pge_ProductionDesc p);
+static bool OptionalProduction (pge_ProductionDesc p);
 
 /*
    CheckFirstFollow -
 */
 
-static unsigned int CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after);
+static bool CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after);
 
 /*
    ConstrainedEmptyFactor -
 */
 
-static unsigned int ConstrainedEmptyFactor (pge_FactorDesc f);
+static bool ConstrainedEmptyFactor (pge_FactorDesc f);
 
 /*
    ConstrainedEmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int ConstrainedEmptyTerm (pge_TermDesc t);
+static bool ConstrainedEmptyTerm (pge_TermDesc t);
 
 /*
    ConstrainedEmptyExpression -
 */
 
-static unsigned int ConstrainedEmptyExpression (pge_ExpressionDesc e);
+static bool ConstrainedEmptyExpression (pge_ExpressionDesc e);
 
 /*
    ConstrainedEmptyStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int ConstrainedEmptyStatement (pge_StatementDesc s);
+static bool ConstrainedEmptyStatement (pge_StatementDesc s);
 
 /*
    ConstrainedEmptyProduction - returns TRUE if a problem exists with, p.
 */
 
-static unsigned int ConstrainedEmptyProduction (pge_ProductionDesc p);
+static bool ConstrainedEmptyProduction (pge_ProductionDesc p);
 
 /*
    TestForLALR1 -
@@ -3773,12 +3774,12 @@ static pge_FollowDesc NewFollow (void)
                    providing condition is TRUE.
 */
 
-static void AssignEpsilon (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value)
+static void AssignEpsilon (bool condition, pge_FollowDesc f, pge_TraverseResult value)
 {
   if ((condition && (value != pge_unknown)) && (f->epsilon == pge_unknown))
     {
       f->epsilon = value;
-      Finished = FALSE;
+      Finished = false;
     }
 }
 
@@ -3791,7 +3792,7 @@ static pge_TraverseResult GetEpsilon (pge_FollowDesc f)
 {
   if (f == NULL)
     {
-      Debug_Halt ((const char *) "why is the follow info NIL?", 27, 596, (const char *) "m2/gm2-auto/pge.mod", 19);
+      Debug_Halt ((const char *) "why is the follow info NIL?", 27, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetEpsilon", 10, 597);
     }
   else
     {
@@ -3806,14 +3807,14 @@ static pge_TraverseResult GetEpsilon (pge_FollowDesc f)
    AssignReachEnd - assigns the reachend value providing that, condition, is TRUE.
 */
 
-static void AssignReachEnd (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value)
+static void AssignReachEnd (bool condition, pge_FollowDesc f, pge_TraverseResult value)
 {
   if (condition)
     {
       if ((f->reachend == pge_unknown) && (value != pge_unknown))
         {
           f->reachend = value;
-          Finished = FALSE;
+          Finished = false;
         }
     }
 }
@@ -3827,7 +3828,7 @@ static pge_TraverseResult GetReachEnd (pge_FollowDesc f)
 {
   if (f == NULL)
     {
-      Debug_Halt ((const char *) "why is the follow info NIL?", 27, 630, (const char *) "m2/gm2-auto/pge.mod", 19);
+      Debug_Halt ((const char *) "why is the follow info NIL?", 27, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetReachEnd", 11, 632);
     }
   else
     {
@@ -3846,10 +3847,10 @@ static void AssignFollow (pge_FollowDesc f, pge_SetDesc s)
 {
   if (f->calcfollow)
     {
-      Debug_Halt ((const char *) "why are we reassigning this follow set?", 39, 646, (const char *) "m2/gm2-auto/pge.mod", 19);
+      Debug_Halt ((const char *) "why are we reassigning this follow set?", 39, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "AssignFollow", 12, 649);
     }
   f->follow = s;
-  f->calcfollow = TRUE;
+  f->calcfollow = true;
 }
 
 
@@ -3861,7 +3862,7 @@ static pge_SetDesc GetFollow (pge_FollowDesc f)
 {
   if (f == NULL)
     {
-      Debug_Halt ((const char *) "why is the follow info NIL?", 27, 662, (const char *) "m2/gm2-auto/pge.mod", 19);
+      Debug_Halt ((const char *) "why is the follow info NIL?", 27, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetFollow", 9, 666);
     }
   else
     {
@@ -3871,7 +3872,7 @@ static pge_SetDesc GetFollow (pge_FollowDesc f)
         }
       else
         {
-          Debug_Halt ((const char *) "not calculated the follow set yet..", 35, 669, (const char *) "m2/gm2-auto/pge.mod", 19);
+          Debug_Halt ((const char *) "not calculated the follow set yet..", 35, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetFollow", 9, 674);
         }
     }
   ReturnException ("m2/gm2-auto/pge.mod", 1, 7);
@@ -3900,7 +3901,7 @@ static pge_ProductionDesc NewProduction (void)
   p->next = NULL;
   p->statement = NULL;
   p->first = NULL;
-  p->firstsolved = FALSE;
+  p->firstsolved = false;
   p->followinfo = NewFollow ();
   p->line = PushBackInput_GetCurrentLine ();
   p->description = NameKey_NulName;
@@ -4109,7 +4110,7 @@ static void WriteCodeHunkList (pge_CodeHunk l)
 {
   if (l != NULL)
     {
-      OnLineStart = FALSE;
+      OnLineStart = false;
       /* recursion  */
       WriteCodeHunkList (l->next);
       Output_WriteString ((const char *) &l->codetext.array[0], MaxCodeHunkLength);
@@ -4128,7 +4129,7 @@ static void WriteIndent (unsigned int n)
       Output_Write (' ');
       n -= 1;
     }
-  OnLineStart = FALSE;
+  OnLineStart = false;
 }
 
 
@@ -4136,13 +4137,13 @@ static void WriteIndent (unsigned int n)
    CheckWrite -
 */
 
-static void CheckWrite (char ch, unsigned int *curpos, unsigned int left, unsigned int *seentext)
+static void CheckWrite (char ch, unsigned int *curpos, unsigned int left, bool *seentext)
 {
   if (ch == ASCII_lf)
     {
       NewLine (left);
       (*curpos) = 0;
-      (*seentext) = FALSE;
+      (*seentext) = false;
     }
   else
     {
@@ -4157,7 +4158,7 @@ static void CheckWrite (char ch, unsigned int *curpos, unsigned int left, unsign
                        if they exist.
 */
 
-static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext)
+static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned int indent, unsigned int *curpos, unsigned int left, bool *seentext)
 {
   unsigned int l;
   unsigned int i;
@@ -4187,7 +4188,7 @@ static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned in
                 {
                   WriteIndent ((*curpos)-indent);
                 }
-              (*seentext) = TRUE;
+              (*seentext) = true;
               CheckWrite (a[i], curpos, left, seentext);
             }
         }
@@ -4201,7 +4202,7 @@ static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned in
                              but it removes up to indent spaces if they exist.
 */
 
-static void WriteCodeHunkListIndent (pge_CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext)
+static void WriteCodeHunkListIndent (pge_CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, bool *seentext)
 {
   if (l != NULL)
     {
@@ -4307,7 +4308,7 @@ static void SyntaxError (pge_SetOfStop stop)
       StrIO_WriteString ((const char *) " ***", 4);
       StrIO_WriteLn ();
     }
-  WasNoError = FALSE;
+  WasNoError = false;
 }
 
 
@@ -4366,7 +4367,7 @@ static void Modula2Code (pge_SetOfStop stop)
 {
   pge_CodeHunk p;
   unsigned int i;
-  unsigned int quote;
+  bool quote;
   unsigned int line;
   unsigned int position;
 
@@ -4606,13 +4607,13 @@ static void Special (pge_SetOfStop stopset)
   Ident (stopset|(pge_SetOfStop) ((1 << (bnflex_firsttok-bnflex_identtok))));
   p = NewProduction ();
   p->statement = NewStatement ();
-  p->statement->followinfo->calcfollow = TRUE;
+  p->statement->followinfo->calcfollow = true;
   p->statement->followinfo->epsilon = pge_false;
   p->statement->followinfo->reachend = pge_false;
   p->statement->ident = CurrentIdent;
   p->statement->expr = NULL;
-  p->firstsolved = TRUE;
-  p->followinfo->calcfollow = TRUE;
+  p->firstsolved = true;
+  p->followinfo->calcfollow = true;
   p->followinfo->epsilon = pge_false;
   p->followinfo->reachend = pge_false;
   First (stopset|(pge_SetOfStop) ((1 << (bnflex_followtok-bnflex_identtok))));
@@ -5336,7 +5337,7 @@ static void BackPatchIdent (pge_IdentDesc i)
       if (i->definition == NULL)
         {
           WarnError1 ((const char *) "unable to find production %s", 28, i->name);
-          WasNoError = FALSE;
+          WasNoError = false;
         }
     }
 }
@@ -5484,7 +5485,7 @@ static void ForeachRuleDo (pge_DoProcedure p)
 static void WhileNotCompleteDo (pge_DoProcedure p)
 {
   do {
-    Finished = TRUE;
+    Finished = true;
     ForeachRuleDo (p);
   } while (! (Finished));
 }
@@ -5497,7 +5498,7 @@ static void WhileNotCompleteDo (pge_DoProcedure p)
 static void NewLine (unsigned int Left)
 {
   Output_WriteLn ();
-  BeginningOfLine = TRUE;
+  BeginningOfLine = true;
   Indent = 0;
   while (Indent < Left)
     {
@@ -5633,7 +5634,7 @@ static void WriteKeyTexinfo (NameKey_Name s)
 static void PrettyCommentFactor (pge_FactorDesc f, unsigned int Left)
 {
   unsigned int curpos;
-  unsigned int seentext;
+  bool seentext;
 
   while (f != NULL)
     {
@@ -5686,7 +5687,7 @@ static void PrettyCommentFactor (pge_FactorDesc f, unsigned int Left)
               {
                 NewLine (Left);
                 Output_WriteString ((const char *) "% ", 2);
-                seentext = FALSE;
+                seentext = false;
                 curpos = 0;
                 WriteCodeHunkListIndent (f->code->code, f->code->indent, &curpos, Left+2, &seentext);
                 Output_WriteString ((const char *) " %", 2);
@@ -5852,7 +5853,7 @@ static void PrettyCommentProduction (pge_ProductionDesc p)
 
   if (p != NULL)
     {
-      BeginningOfLine = TRUE;
+      BeginningOfLine = true;
       Indent = 0;
       Output_WriteString ((const char *) "(*", 2);
       NewLine (3);
@@ -5905,7 +5906,7 @@ static void PrettyPrintProduction (pge_ProductionDesc p)
 
   if (p != NULL)
     {
-      BeginningOfLine = TRUE;
+      BeginningOfLine = true;
       Indent = 0;
       if (Texinfo)
         {
@@ -5973,7 +5974,7 @@ static void EmitFileLineTag (unsigned int line)
       Output_WriteString ((const char *) &FileName.array[0], MaxFileName);
       Output_Write ('"');
       Output_WriteLn ();
-      OnLineStart = TRUE;
+      OnLineStart = true;
     }
 }
 
@@ -6026,7 +6027,7 @@ static void CodeCondition (pge_m2condition m)
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 2680, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "CodeCondition", 13, 2686);
         break;
     }
 }
@@ -6058,10 +6059,10 @@ static void CodeThenDo (pge_m2condition m)
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 2705, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "CodeThenDo", 10, 2712);
         break;
     }
-  OnLineStart = TRUE;
+  OnLineStart = true;
 }
 
 
@@ -6069,7 +6070,7 @@ static void CodeThenDo (pge_m2condition m)
    CodeElseEnd - builds an ELSE END statement using string, end.
 */
 
-static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int consumed, pge_FactorDesc f, unsigned int inopt)
+static void CodeElseEnd (const char *end_, unsigned int _end_high, bool consumed, pge_FactorDesc f, bool inopt)
 {
   char end[_end_high+1];
 
@@ -6077,7 +6078,7 @@ static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int 
   memcpy (end, end_, _end_high+1);
 
   Output_WriteLn ();
-  OnLineStart = TRUE;
+  OnLineStart = true;
   EmitFileLineTag (f->line);
   if (! inopt)
     {
@@ -6137,7 +6138,7 @@ static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int 
     }
   IndentString ((const char *) end, _end_high);
   Output_WriteLn ();
-  OnLineStart = TRUE;
+  OnLineStart = true;
 }
 
 
@@ -6145,11 +6146,11 @@ static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int 
    CodeEnd - codes a "END" depending upon, m.
 */
 
-static void CodeEnd (pge_m2condition m, pge_TermDesc t, unsigned int consumed, pge_FactorDesc f, unsigned int inopt)
+static void CodeEnd (pge_m2condition m, pge_TermDesc t, bool consumed, pge_FactorDesc f, bool inopt)
 {
   Indent -= 3;
   Output_WriteLn ();
-  OnLineStart = TRUE;
+  OnLineStart = true;
   switch (m)
     {
       case pge_m2none:
@@ -6179,10 +6180,10 @@ static void CodeEnd (pge_m2condition m, pge_TermDesc t, unsigned int consumed, p
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 2788, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "CodeEnd", 7, 2796);
         break;
     }
-  OnLineStart = FALSE;
+  OnLineStart = false;
 }
 
 
@@ -6194,19 +6195,19 @@ static void EmitNonVarCode (pge_CodeDesc code, unsigned int curpos, unsigned int
 {
   unsigned int i;
   pge_CodeHunk t;
-  unsigned int seentext;
+  bool seentext;
 
   t = code->code;
   if ((! (FindStr (&t, &i, (const char *) "VAR", 3))) && EmitCode)
     {
-      seentext = FALSE;
+      seentext = false;
       curpos = 0;
       EmitFileLineTag (code->line);
       IndentString ((const char *) "", 0);
       WriteCodeHunkListIndent (code->code, code->indent, &curpos, left, &seentext);
       Output_WriteString ((const char *) " ;", 2);
       Output_WriteLn ();
-      OnLineStart = TRUE;
+      OnLineStart = true;
     }
 }
 
@@ -6249,7 +6250,7 @@ static void FlushCode (pge_FactorDesc *codeStack)
     {
       NewLine (Indent);
       Output_WriteString ((const char *) "(* begin flushing code *)", 25);
-      OnLineStart = FALSE;
+      OnLineStart = false;
       while ((*codeStack) != NULL)
         {
           NewLine (Indent);
@@ -6260,12 +6261,12 @@ static void FlushCode (pge_FactorDesc *codeStack)
             {
               Output_WriteString ((const char *) " (* again flushing code *)", 26);
               Output_WriteLn ();
-              OnLineStart = TRUE;
+              OnLineStart = true;
             }
         }
       NewLine (Indent);
       Output_WriteString ((const char *) "(* end flushing code *)", 23);
-      OnLineStart = FALSE;
+      OnLineStart = false;
     }
 }
 
@@ -6274,7 +6275,7 @@ static void FlushCode (pge_FactorDesc *codeStack)
    CodeFactor -
 */
 
-static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge_m2condition n, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack)
+static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge_m2condition n, bool inopt, bool inwhile, bool consumed, pge_FactorDesc codeStack)
 {
   if (f == NULL)
     {
@@ -6283,7 +6284,7 @@ static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge
         {
           Output_WriteLn ();
           IndentString ((const char *) "RETURN( TRUE )", 14);
-          OnLineStart = FALSE;
+          OnLineStart = false;
         }
     }
   else
@@ -6298,7 +6299,7 @@ static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge
             Output_WriteString ((const char *) "()", 2);
             CodeThenDo (n);
             Indent += 3;
-            CodeFactor (f->next, NULL, n, pge_m2none, inopt, inwhile, TRUE, NULL);
+            CodeFactor (f->next, NULL, n, pge_m2none, inopt, inwhile, true, NULL);
             CodeEnd (n, t, consumed, f, inopt);
             break;
 
@@ -6311,7 +6312,7 @@ static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge
             Output_Write (')');
             CodeThenDo (n);
             Indent += 3;
-            CodeFactor (f->next, NULL, n, pge_m2none, inopt, inwhile, TRUE, NULL);
+            CodeFactor (f->next, NULL, n, pge_m2none, inopt, inwhile, true, NULL);
             CodeEnd (n, t, consumed, f, inopt);
             break;
 
@@ -6324,19 +6325,19 @@ static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge
                     *  the test above makes sure that we don't emit a RETURN( TRUE )
                     *  after a subexpression. Remember sub expressions are not conditional
   */
-                CodeFactor (f->next, t, n, pge_m2none, inopt, inwhile, TRUE, NULL);
+                CodeFactor (f->next, t, n, pge_m2none, inopt, inwhile, true, NULL);
               }
             break;
 
           case pge_opt:
             FlushCode (&codeStack);
-            CodeExpression (f->expr, pge_m2if, TRUE, inwhile, FALSE, NULL);
+            CodeExpression (f->expr, pge_m2if, true, inwhile, false, NULL);
             CodeFactor (f->next, t, n, pge_m2none, inopt, inwhile, consumed, NULL);
             break;
 
           case pge_mult:
             FlushCode (&codeStack);
-            CodeExpression (f->expr, pge_m2while, FALSE, TRUE, consumed, NULL);
+            CodeExpression (f->expr, pge_m2while, false, true, consumed, NULL);
             CodeFactor (f->next, t, n, pge_m2none, inopt, inwhile, consumed, NULL);
             break;
 
@@ -6361,7 +6362,7 @@ static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge
    CodeTerm -
 */
 
-static void CodeTerm (pge_TermDesc t, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack)
+static void CodeTerm (pge_TermDesc t, pge_m2condition m, bool inopt, bool inwhile, bool consumed, pge_FactorDesc codeStack)
 {
   pge_m2condition l;
 
@@ -6374,13 +6375,13 @@ static void CodeTerm (pge_TermDesc t, pge_m2condition m, unsigned int inopt, uns
           m = pge_m2if;
           IndentString ((const char *) "ELSE", 4);
           Output_WriteLn ();
-          OnLineStart = TRUE;
+          OnLineStart = true;
           Indent += 3;
           CodeFactor (t->factor, t->next, pge_m2none, pge_m2none, inopt, inwhile, consumed, codeStack);
           Indent -= 3;
           IndentString ((const char *) "END ;", 5);
           Output_WriteLn ();
-          OnLineStart = TRUE;
+          OnLineStart = true;
         }
       else
         {
@@ -6400,7 +6401,7 @@ static void CodeTerm (pge_TermDesc t, pge_m2condition m, unsigned int inopt, uns
    CodeExpression -
 */
 
-static void CodeExpression (pge_ExpressionDesc e, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack)
+static void CodeExpression (pge_ExpressionDesc e, pge_m2condition m, bool inopt, bool inwhile, bool consumed, pge_FactorDesc codeStack)
 {
   if (e != NULL)
     {
@@ -6419,7 +6420,7 @@ static void CodeStatement (pge_StatementDesc s, pge_m2condition m)
   if (s != NULL)
     {
       EmitFileLineTag (s->line);
-      CodeExpression (s->expr, m, FALSE, FALSE, FALSE, NULL);
+      CodeExpression (s->expr, m, false, false, false, NULL);
     }
 }
 
@@ -6432,7 +6433,7 @@ static void CodeProduction (pge_ProductionDesc p)
 {
   if ((p != NULL) && (! p->firstsolved || ((p->statement != NULL) && (p->statement->expr != NULL))))
     {
-      BeginningOfLine = TRUE;
+      BeginningOfLine = true;
       Indent = 0;
       Output_WriteLn ();
       EmitFileLineTag (p->line);
@@ -6441,11 +6442,11 @@ static void CodeProduction (pge_ProductionDesc p)
       Output_WriteString ((const char *) " () : BOOLEAN ;", 15);
       VarProduction (p);
       Output_WriteLn ();
-      OnLineStart = TRUE;
+      OnLineStart = true;
       EmitFileLineTag (p->line);
       IndentString ((const char *) "BEGIN", 5);
       StrIO_WriteLn ();
-      OnLineStart = FALSE;
+      OnLineStart = false;
       EmitFileLineTag (p->line);
       Indent = 3;
       CodeStatement (p->statement, pge_m2none);
@@ -6487,7 +6488,7 @@ static void RecoverCondition (pge_m2condition m)
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 3045, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "RecoverCondition", 16, 3054);
         break;
     }
 }
@@ -6519,7 +6520,7 @@ static unsigned int ConditionIndent (pge_m2condition m)
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 3064, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "ConditionIndent", 15, 3074);
         break;
     }
   ReturnException ("m2/gm2-auto/pge.mod", 1, 7);
@@ -6566,13 +6567,13 @@ static unsigned int NumberOfElements (pge_SetDesc to, unsigned int low, unsigned
 
           case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
 
 
           default:
             PushBackInput_WarnError ((const char *) "unknown enuneration element", 27);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
         }
       to = to->next;
@@ -6681,7 +6682,7 @@ static void EmitIsInSubSet (pge_SetDesc to, unsigned int low, unsigned int high)
 static void EmitIsInFirst (pge_SetDesc to, pge_m2condition m)
 {
   unsigned int i;
-  unsigned int first;
+  bool first;
 
   if ((NumberOfElements (to, static_cast<unsigned int> (0), static_cast<unsigned int> (0))) == 1)
     {
@@ -6703,7 +6704,7 @@ static void EmitIsInFirst (pge_SetDesc to, pge_m2condition m)
       else
         {
           i = 0;
-          first = TRUE;
+          first = true;
           do {
             if (! (IsEmptySet (to, i*MaxElementsInSet, ((i+1)*MaxElementsInSet)-1)))
               {
@@ -6714,7 +6715,7 @@ static void EmitIsInFirst (pge_SetDesc to, pge_m2condition m)
                     Indent -= ConditionIndent (m);
                   }
                 EmitIsInSubSet (to, i*MaxElementsInSet, ((i+1)*MaxElementsInSet)-1);
-                first = FALSE;
+                first = false;
               }
             i += 1;
           } while (! ((i*MaxElementsInSet) > LargestValue));
@@ -6907,11 +6908,11 @@ static void RecoverFactor (pge_FactorDesc f, pge_m2condition m, pge_FactorDesc c
                 and FALSE in the first.
 */
 
-static unsigned int OptExpSeen (pge_FactorDesc f)
+static bool OptExpSeen (pge_FactorDesc f)
 {
   if (f == NULL)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -6919,11 +6920,11 @@ static unsigned int OptExpSeen (pge_FactorDesc f)
         {
           case pge_id:
           case pge_lit:
-            return FALSE;
+            return false;
             break;
 
           case pge_sub:
-            return FALSE;  /* is this correct?  */
+            return false;  /* is this correct?  */
             break;
 
           case pge_opt:
@@ -6932,7 +6933,7 @@ static unsigned int OptExpSeen (pge_FactorDesc f)
             break;
 
           case pge_m2:
-            return TRUE;
+            return true;
             break;
 
 
@@ -6941,7 +6942,7 @@ static unsigned int OptExpSeen (pge_FactorDesc f)
         }
     }
   PushBackInput_WarnError ((const char *) "all cases were not handled", 26);
-  WasNoError = FALSE;
+  WasNoError = false;
   ReturnException ("m2/gm2-auto/pge.mod", 1, 7);
   __builtin_unreachable ();
 }
@@ -6953,14 +6954,14 @@ static unsigned int OptExpSeen (pge_FactorDesc f)
 
 static void RecoverTerm (pge_TermDesc t, pge_m2condition new_, pge_m2condition old)
 {
-  unsigned int LastWasM2Only;
-  unsigned int alternative;
+  bool LastWasM2Only;
+  bool alternative;
   pge_SetDesc to;
 
   LastWasM2Only = (t->factor->type == pge_m2) && (t->factor->next == NULL);  /* does the factor only contain inline code?  */
   to = NULL;
   CalcFirstTerm (t, NULL, &to);
-  alternative = FALSE;
+  alternative = false;
   if (t->next != NULL)
     {
       new_ = pge_m2if;
@@ -6976,7 +6977,7 @@ static void RecoverTerm (pge_TermDesc t, pge_m2condition new_, pge_m2condition o
           Output_WriteLn ();
           Indent += 3;
           RecoverFactor (t->factor, pge_m2none, NULL);
-          alternative = FALSE;
+          alternative = false;
         }
       else
         {
@@ -6985,7 +6986,7 @@ static void RecoverTerm (pge_TermDesc t, pge_m2condition new_, pge_m2condition o
       if (t->next != NULL)
         {
           new_ = pge_m2elsif;
-          alternative = TRUE;
+          alternative = true;
         }
       t = t->next;
     }
@@ -7080,7 +7081,7 @@ static void EmitUsed (unsigned int wordno)
    EmitStopParameters - generate the stop set.
 */
 
-static void EmitStopParameters (unsigned int FormalParameters)
+static void EmitStopParameters (bool FormalParameters)
 {
   unsigned int i;
 
@@ -7136,7 +7137,7 @@ static void EmitStopParameters (unsigned int FormalParameters)
                in the range: low..high
 */
 
-static unsigned int IsBetween (NameKey_Name string, unsigned int low, unsigned int high)
+static bool IsBetween (NameKey_Name string, unsigned int low, unsigned int high)
 {
   return ((SymbolKey_GetSymKey (Values, string)) >= low) && ((SymbolKey_GetSymKey (Values, string)) <= high);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7148,7 +7149,7 @@ static unsigned int IsBetween (NameKey_Name string, unsigned int low, unsigned i
    IsEmptySet - returns TRUE if no elements exist in set, to, with values, low..high.
 */
 
-static unsigned int IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int high)
+static bool IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int high)
 {
   while (to != NULL)
     {
@@ -7157,31 +7158,31 @@ static unsigned int IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int h
           case pge_tokel:
             if (IsBetween (to->string, low, high))
               {
-                return FALSE;
+                return false;
               }
             break;
 
           case pge_litel:
             if (IsBetween (SymbolKey_GetSymKey (Aliases, to->string), low, high))
               {
-                return FALSE;
+                return false;
               }
             break;
 
           case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
 
 
           default:
             PushBackInput_WarnError ((const char *) "unknown enuneration element", 27);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
         }
       to = to->next;
     }
-  return TRUE;
+  return true;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -7193,9 +7194,9 @@ static unsigned int IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int h
 
 static void EmitSet (pge_SetDesc to, unsigned int low, unsigned int high)
 {
-  unsigned int first;
+  bool first;
 
-  first = TRUE;
+  first = true;
   while (to != NULL)
     {
       switch (to->type)
@@ -7208,7 +7209,7 @@ static void EmitSet (pge_SetDesc to, unsigned int low, unsigned int high)
                     Output_WriteString ((const char *) ", ", 2);
                   }
                 Output_WriteKey (to->string);
-                first = FALSE;
+                first = false;
               }
             break;
 
@@ -7220,19 +7221,19 @@ static void EmitSet (pge_SetDesc to, unsigned int low, unsigned int high)
                     Output_WriteString ((const char *) ", ", 2);
                   }
                 Output_WriteKey (SymbolKey_GetSymKey (Aliases, to->string));
-                first = FALSE;
+                first = false;
               }
             break;
 
           case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
 
 
           default:
             PushBackInput_WarnError ((const char *) "unknown enuneration element", 27);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
         }
       to = to->next;
@@ -7275,13 +7276,13 @@ static void EmitSetName (pge_SetDesc to, unsigned int low, unsigned int high)
 
           case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
 
 
           default:
             PushBackInput_WarnError ((const char *) "unknown enuneration element", 27);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
         }
       to = to->next;
@@ -7427,10 +7428,10 @@ static void RecoverProduction (pge_ProductionDesc p)
 
   if ((p != NULL) && (! p->firstsolved || ((p->statement != NULL) && (p->statement->expr != NULL))))
     {
-      BeginningOfLine = TRUE;
+      BeginningOfLine = true;
       Indent = 0;
       Output_WriteLn ();
-      OnLineStart = FALSE;
+      OnLineStart = false;
       EmitFileLineTag (p->line);
       IndentString ((const char *) "PROCEDURE ", 10);
       Output_WriteKey (GetDefinitionName (p));
@@ -7440,12 +7441,12 @@ static void RecoverProduction (pge_ProductionDesc p)
       Output_WriteString ((const char *) ") ;", 3);
       VarProduction (p);
       Output_WriteLn ();
-      OnLineStart = FALSE;
+      OnLineStart = false;
       EmitFileLineTag (p->line);
       Indent = 0;
       IndentString ((const char *) "BEGIN", 5);
       Output_WriteLn ();
-      OnLineStart = FALSE;
+      OnLineStart = false;
       EmitFileLineTag (p->line);
       Indent = 3;
       RecoverStatement (p->statement, pge_m2none);
@@ -7457,7 +7458,7 @@ static void RecoverProduction (pge_ProductionDesc p)
       Output_WriteLn ();
       Output_WriteLn ();
       s = Output_EndBuffer ();
-      EmitStopParameters (TRUE);
+      EmitStopParameters (true);
       Output_KillWriteS (s);
     }
 }
@@ -7467,7 +7468,7 @@ static void RecoverProduction (pge_ProductionDesc p)
    IsWhite - returns TRUE if, ch, is a space or a tab.
 */
 
-static unsigned int IsWhite (char ch)
+static bool IsWhite (char ch)
 {
   return ((ch == ' ') || (ch == ASCII_tab)) || (ch == ASCII_lf);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7479,7 +7480,7 @@ static unsigned int IsWhite (char ch)
    FindStr - returns TRUE if, str, was seen inside the code hunk
 */
 
-static unsigned int FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high)
+static bool FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high)
 {
   unsigned int j;
   unsigned int k;
@@ -7582,7 +7583,7 @@ static void CheckForVar (pge_CodeHunk code)
           IndentString ((const char *) "VAR", 3);
           Indent += 3;
           Output_WriteLn ();
-          EmittedVar = TRUE;
+          EmittedVar = true;
         }
       WriteUpto (code, t, i);
     }
@@ -7670,7 +7671,7 @@ static void VarStatement (pge_StatementDesc s)
 
 static void VarProduction (pge_ProductionDesc p)
 {
-  EmittedVar = FALSE;
+  EmittedVar = false;
   if (p != NULL)
     {
       VarStatement (p->statement);
@@ -7682,7 +7683,7 @@ static void VarProduction (pge_ProductionDesc p)
    In - returns TRUE if token, s, is already in the set, to.
 */
 
-static unsigned int In (pge_SetDesc to, NameKey_Name s)
+static bool In (pge_SetDesc to, NameKey_Name s)
 {
   while (to != NULL)
     {
@@ -7691,7 +7692,7 @@ static unsigned int In (pge_SetDesc to, NameKey_Name s)
           case pge_idel:
             if (s == to->ident->name)
               {
-                return TRUE;
+                return true;
               }
             break;
 
@@ -7699,19 +7700,19 @@ static unsigned int In (pge_SetDesc to, NameKey_Name s)
           case pge_litel:
             if (s == to->string)
               {
-                return TRUE;
+                return true;
               }
             break;
 
 
           default:
             PushBackInput_WarnError ((const char *) "internal error CASE type not known", 34);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
         }
       to = to->next;
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -7722,7 +7723,7 @@ static unsigned int In (pge_SetDesc to, NameKey_Name s)
                        s1 * s2 = {}
 */
 
-static unsigned int IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2)
+static bool IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2)
 {
   while (s1 != NULL)
     {
@@ -7731,7 +7732,7 @@ static unsigned int IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2)
           case pge_idel:
             if (In (s2, s1->ident->name))
               {
-                return FALSE;
+                return false;
               }
             break;
 
@@ -7739,19 +7740,19 @@ static unsigned int IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2)
           case pge_litel:
             if (In (s2, s1->string))
               {
-                return FALSE;
+                return false;
               }
             break;
 
 
           default:
             PushBackInput_WarnError ((const char *) "internal error CASE type not known", 34);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
         }
       s1 = s1->next;
     }
-  return TRUE;
+  return true;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -7772,7 +7773,7 @@ static void AddSet (pge_SetDesc *to, NameKey_Name s)
       d->string = s;
       d->next = (*to);
       (*to) = d;
-      Finished = FALSE;
+      Finished = false;
     }
 }
 
@@ -7797,12 +7798,12 @@ static void OrSet (pge_SetDesc *to, pge_SetDesc from)
 
           case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
-            WasNoError = FALSE;
+            WasNoError = false;
             break;
 
 
           default:
-            Debug_Halt ((const char *) "unknown element in enumeration type", 35, 4122, (const char *) "m2/gm2-auto/pge.mod", 19);
+            Debug_Halt ((const char *) "unknown element in enumeration type", 35, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "OrSet", 5, 4133);
             break;
         }
       from = from->next;
@@ -7838,7 +7839,7 @@ static void CalcFirstFactor (pge_FactorDesc f, pge_ProductionDesc from, pge_SetD
             if ((SymbolKey_GetSymKey (Aliases, f->string)) == SymbolKey_NulKey)
               {
                 WarnError1 ((const char *) "unknown token for '%s'", 22, f->string);
-                WasNoError = FALSE;
+                WasNoError = false;
               }
             else
               {
@@ -7997,7 +7998,7 @@ static void WorkOutFollowFactor (pge_FactorDesc f, pge_SetDesc *followset, pge_S
         {
           PushBackInput_WarnError ((const char *) "internal error: epsilon unknown", 31);
           PrettyCommentFactor (f, 3);
-          WasNoError = FALSE;
+          WasNoError = false;
         }
       foundepsilon = GetEpsilon (f->followinfo);
       canreachend = GetReachEnd (f->followinfo);  /* only goes from FALSE -> TRUE  */
@@ -8183,7 +8184,7 @@ static void CalcEpsilonFactor (pge_FactorDesc f)
             break;
 
           case pge_lit:
-            AssignEpsilon (TRUE, f->followinfo, pge_false);
+            AssignEpsilon (true, f->followinfo, pge_false);
             break;
 
           case pge_sub:
@@ -8192,13 +8193,13 @@ static void CalcEpsilonFactor (pge_FactorDesc f)
             break;
 
           case pge_m2:
-            AssignEpsilon (TRUE, f->followinfo, pge_true);
+            AssignEpsilon (true, f->followinfo, pge_true);
             break;
 
           case pge_opt:
           case pge_mult:
             CalcEpsilonExpression (f->expr);
-            AssignEpsilon (TRUE, f->followinfo, pge_true);
+            AssignEpsilon (true, f->followinfo, pge_true);
             break;
 
 
@@ -8225,11 +8226,11 @@ static void CalcEpsilonTerm (pge_TermDesc t)
               switch (GetReachEnd (t->factor->followinfo))
                 {
                   case pge_true:
-                    AssignEpsilon (TRUE, t->followinfo, pge_true);
+                    AssignEpsilon (true, t->followinfo, pge_true);
                     break;
 
                   case pge_false:
-                    AssignEpsilon (TRUE, t->followinfo, pge_false);
+                    AssignEpsilon (true, t->followinfo, pge_false);
                     break;
 
                   case pge_unknown:
@@ -8550,7 +8551,7 @@ static void CalcReachEndProduction (pge_ProductionDesc p)
    EmptyFactor -
 */
 
-static unsigned int EmptyFactor (pge_FactorDesc f)
+static bool EmptyFactor (pge_FactorDesc f)
 {
   while (f != NULL)
     {
@@ -8559,24 +8560,24 @@ static unsigned int EmptyFactor (pge_FactorDesc f)
           case pge_id:
             if (! (EmptyProduction (f->ident->definition)))
               {
-                return FALSE;
+                return false;
               }
             break;
 
           case pge_lit:
-            return FALSE;
+            return false;
             break;
 
           case pge_sub:
             if (! (EmptyExpression (f->expr)))
               {
-                return FALSE;
+                return false;
               }
             break;
 
           case pge_opt:
           case pge_mult:
-            return TRUE;
+            return true;
             break;
 
           case pge_m2:
@@ -8588,7 +8589,7 @@ static unsigned int EmptyFactor (pge_FactorDesc f)
         }
       f = f->next;
     }
-  return TRUE;
+  return true;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -8598,20 +8599,20 @@ static unsigned int EmptyFactor (pge_FactorDesc f)
    EmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int EmptyTerm (pge_TermDesc t)
+static bool EmptyTerm (pge_TermDesc t)
 {
   while (t != NULL)
     {
       if (EmptyFactor (t->factor))
         {
-          return TRUE;
+          return true;
         }
       else
         {
           t = t->next;
         }
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -8621,11 +8622,11 @@ static unsigned int EmptyTerm (pge_TermDesc t)
    EmptyExpression -
 */
 
-static unsigned int EmptyExpression (pge_ExpressionDesc e)
+static bool EmptyExpression (pge_ExpressionDesc e)
 {
   if (e == NULL)
     {
-      return TRUE;
+      return true;
     }
   else
     {
@@ -8640,11 +8641,11 @@ static unsigned int EmptyExpression (pge_ExpressionDesc e)
    EmptyStatement - returns TRUE if statement, s, is empty.
 */
 
-static unsigned int EmptyStatement (pge_StatementDesc s)
+static bool EmptyStatement (pge_StatementDesc s)
 {
   if (s == NULL)
     {
-      return TRUE;
+      return true;
     }
   else
     {
@@ -8659,18 +8660,18 @@ static unsigned int EmptyStatement (pge_StatementDesc s)
    EmptyProduction - returns if production, p, maybe empty.
 */
 
-static unsigned int EmptyProduction (pge_ProductionDesc p)
+static bool EmptyProduction (pge_ProductionDesc p)
 {
   if (p == NULL)
     {
       PushBackInput_WarnError ((const char *) "unknown production", 18);
-      return TRUE;
+      return true;
     }
   else if (p->firstsolved && (p->first != NULL))
     {
       /* avoid dangling else.  */
       /* predefined but first set to something - thus not empty  */
-      return FALSE;
+      return false;
     }
   else
     {
@@ -8726,7 +8727,7 @@ static void DescribeElement (unsigned int name)
 
   if (InitialElement)
     {
-      InitialElement = FALSE;
+      InitialElement = false;
     }
   else
     {
@@ -8954,7 +8955,7 @@ static void EmitDescribeStop (void)
   Output_WriteLn ();
   Output_WriteLn ();
   s = Output_EndBuffer ();
-  EmitStopParameters (TRUE);
+  EmitStopParameters (true);
   Output_KillWriteS (s);
 }
 
@@ -8996,7 +8997,7 @@ static void EmitDescribeError (void)
   WriteGetTokenType ();
   Output_WriteString ((const char *) " OF", 3);
   NewLine (3);
-  InitialElement = TRUE;
+  InitialElement = true;
   SymbolKey_ForeachNodeDo (Aliases, (SymbolKey_PerformOperation) {(SymbolKey_PerformOperation_t) DescribeElement});
   Output_WriteLn ();
   Indent = 3;
@@ -9136,7 +9137,7 @@ static void DisposeSetDesc (pge_SetDesc *s)
    OptionalFactor -
 */
 
-static unsigned int OptionalFactor (pge_FactorDesc f)
+static bool OptionalFactor (pge_FactorDesc f)
 {
   while (f != NULL)
     {
@@ -9153,7 +9154,7 @@ static unsigned int OptionalFactor (pge_FactorDesc f)
           case pge_mult:
             if (OptionalExpression (f->expr))
               {
-                return TRUE;
+                return true;
               }
             break;
 
@@ -9166,7 +9167,7 @@ static unsigned int OptionalFactor (pge_FactorDesc f)
         }
       f = f->next;
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -9176,7 +9177,7 @@ static unsigned int OptionalFactor (pge_FactorDesc f)
    OptionalTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int OptionalTerm (pge_TermDesc t)
+static bool OptionalTerm (pge_TermDesc t)
 {
   pge_TermDesc u;
   pge_TermDesc v;
@@ -9188,7 +9189,7 @@ static unsigned int OptionalTerm (pge_TermDesc t)
     {
       if (OptionalFactor (u->factor))
         {
-          return TRUE;
+          return true;
         }
       v = t;
       tou = NULL;
@@ -9213,7 +9214,7 @@ static unsigned int OptionalTerm (pge_TermDesc t)
                   StrIO_WriteLn ();
                   DisposeSetDesc (&tou);
                   DisposeSetDesc (&tov);
-                  return TRUE;
+                  return true;
                 }
             }
           v = v->next;
@@ -9221,7 +9222,7 @@ static unsigned int OptionalTerm (pge_TermDesc t)
       DisposeSetDesc (&tou);
       u = u->next;
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -9231,11 +9232,11 @@ static unsigned int OptionalTerm (pge_TermDesc t)
    OptionalExpression -
 */
 
-static unsigned int OptionalExpression (pge_ExpressionDesc e)
+static bool OptionalExpression (pge_ExpressionDesc e)
 {
   if (e == NULL)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -9250,11 +9251,11 @@ static unsigned int OptionalExpression (pge_ExpressionDesc e)
    OptionalStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int OptionalStatement (pge_StatementDesc s)
+static bool OptionalStatement (pge_StatementDesc s)
 {
   if (s == NULL)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -9269,11 +9270,11 @@ static unsigned int OptionalStatement (pge_StatementDesc s)
    OptionalProduction -
 */
 
-static unsigned int OptionalProduction (pge_ProductionDesc p)
+static bool OptionalProduction (pge_ProductionDesc p)
 {
   if (p == NULL)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -9288,7 +9289,7 @@ static unsigned int OptionalProduction (pge_ProductionDesc p)
    CheckFirstFollow -
 */
 
-static unsigned int CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after)
+static bool CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after)
 {
   pge_SetDesc first;
   pge_SetDesc follow;
@@ -9301,7 +9302,7 @@ static unsigned int CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after)
     {
       DisposeSetDesc (&first);
       DisposeSetDesc (&follow);
-      return FALSE;
+      return false;
     }
   else
     {
@@ -9315,7 +9316,7 @@ static unsigned int CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after)
       NewLine (3);
       DisposeSetDesc (&first);
       DisposeSetDesc (&follow);
-      return TRUE;
+      return true;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -9326,7 +9327,7 @@ static unsigned int CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after)
    ConstrainedEmptyFactor -
 */
 
-static unsigned int ConstrainedEmptyFactor (pge_FactorDesc f)
+static bool ConstrainedEmptyFactor (pge_FactorDesc f)
 {
   while (f != NULL)
     {
@@ -9343,7 +9344,7 @@ static unsigned int ConstrainedEmptyFactor (pge_FactorDesc f)
           case pge_mult:
             if (ConstrainedEmptyExpression (f->expr))
               {
-                return TRUE;
+                return true;
               }
             break;
 
@@ -9356,11 +9357,11 @@ static unsigned int ConstrainedEmptyFactor (pge_FactorDesc f)
         }
       if (((f->type != pge_m2) && (EmptyFactor (f))) && (CheckFirstFollow (f, f->next)))
         {
-          return TRUE;
+          return true;
         }
       f = f->next;
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -9370,7 +9371,7 @@ static unsigned int ConstrainedEmptyFactor (pge_FactorDesc f)
    ConstrainedEmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int ConstrainedEmptyTerm (pge_TermDesc t)
+static bool ConstrainedEmptyTerm (pge_TermDesc t)
 {
   pge_SetDesc first;
   pge_SetDesc follow;
@@ -9379,16 +9380,16 @@ static unsigned int ConstrainedEmptyTerm (pge_TermDesc t)
     {
       if (ConstrainedEmptyFactor (t->factor))
         {
-          return TRUE;
+          return true;
         }
       else if (((t->factor->type != pge_m2) && (EmptyFactor (t->factor))) && (CheckFirstFollow (t->factor, t->factor->next)))
         {
           /* avoid dangling else.  */
-          return TRUE;
+          return true;
         }
       t = t->next;
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -9398,11 +9399,11 @@ static unsigned int ConstrainedEmptyTerm (pge_TermDesc t)
    ConstrainedEmptyExpression -
 */
 
-static unsigned int ConstrainedEmptyExpression (pge_ExpressionDesc e)
+static bool ConstrainedEmptyExpression (pge_ExpressionDesc e)
 {
   if (e == NULL)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -9417,11 +9418,11 @@ static unsigned int ConstrainedEmptyExpression (pge_ExpressionDesc e)
    ConstrainedEmptyStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int ConstrainedEmptyStatement (pge_StatementDesc s)
+static bool ConstrainedEmptyStatement (pge_StatementDesc s)
 {
   if (s == NULL)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -9436,11 +9437,11 @@ static unsigned int ConstrainedEmptyStatement (pge_StatementDesc s)
    ConstrainedEmptyProduction - returns TRUE if a problem exists with, p.
 */
 
-static unsigned int ConstrainedEmptyProduction (pge_ProductionDesc p)
+static bool ConstrainedEmptyProduction (pge_ProductionDesc p)
 {
   if (p == NULL)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -9460,7 +9461,7 @@ static void TestForLALR1 (pge_ProductionDesc p)
   if (OptionalProduction (p))
     {
       WarnError1 ((const char *) "production %s has two optional sentances using | which both have the same start symbols", 87, p->statement->ident->name);
-      WasNoError = FALSE;
+      WasNoError = false;
       PrettyCommentProduction (p);
     }
 }
@@ -9487,7 +9488,7 @@ static void CheckComplete (pge_ProductionDesc p)
     {
       PrettyCommentProduction (p);
       WarnError1 ((const char *) "cannot determine epsilon, probably a left recursive rule in %s and associated rules (hint rewrite using ebnf and eliminate left recursion)", 138, p->statement->ident->name);
-      WasNoError = FALSE;
+      WasNoError = false;
     }
 }
 
@@ -9573,10 +9574,10 @@ static void ParseArgs (void)
   unsigned int n;
   unsigned int i;
 
-  ErrorRecovery = TRUE;  /* DefaultRecovery ;  */
-  Debugging = FALSE;  /* DefaultRecovery ;  */
-  PrettyPrint = FALSE;
-  KeywordFormatting = FALSE;
+  ErrorRecovery = true;  /* DefaultRecovery ;  */
+  Debugging = false;  /* DefaultRecovery ;  */
+  PrettyPrint = false;
+  KeywordFormatting = false;
   i = 1;
   n = Args_Narg ();
   while (i < n)
@@ -9586,28 +9587,28 @@ static void ParseArgs (void)
           /* avoid gcc warning by using compound statement even if not strictly necessary.  */
           if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-e", 2))
             {
-              ErrorRecovery = FALSE;
+              ErrorRecovery = false;
             }
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-d", 2))
             {
               /* avoid dangling else.  */
-              Debugging = TRUE;
-              bnflex_SetDebugging (TRUE);
+              Debugging = true;
+              bnflex_SetDebugging (true);
             }
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-c", 2))
             {
               /* avoid dangling else.  */
-              EmitCode = FALSE;
+              EmitCode = false;
             }
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-k", 2))
             {
               /* avoid dangling else.  */
-              KeywordFormatting = TRUE;
+              KeywordFormatting = true;
             }
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-l", 2))
             {
               /* avoid dangling else.  */
-              SuppressFileLineTag = TRUE;
+              SuppressFileLineTag = true;
             }
           else if ((StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-h", 2)) || (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "--help", 6)))
             {
@@ -9617,22 +9618,22 @@ static void ParseArgs (void)
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-p", 2))
             {
               /* avoid dangling else.  */
-              PrettyPrint = TRUE;
+              PrettyPrint = true;
             }
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-t", 2))
             {
               /* avoid dangling else.  */
-              Texinfo = TRUE;
+              Texinfo = true;
             }
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-x", 2))
             {
               /* avoid dangling else.  */
-              Sphinx = TRUE;
+              Sphinx = true;
             }
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-f", 2))
             {
               /* avoid dangling else.  */
-              FreeDocLicense = TRUE;
+              FreeDocLicense = true;
             }
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-o", 2))
             {
@@ -9681,11 +9682,11 @@ static void ParseArgs (void)
 
 static void Init (void)
 {
-  WasNoError = TRUE;
-  Texinfo = FALSE;
-  Sphinx = FALSE;
-  FreeDocLicense = FALSE;
-  EmitCode = TRUE;
+  WasNoError = true;
+  Texinfo = false;
+  Sphinx = false;
+  FreeDocLicense = false;
+  EmitCode = true;
   LargestValue = 0;
   HeadProduction = NULL;
   CurrentProduction = NULL;
@@ -9701,7 +9702,7 @@ static void Init (void)
   ErrorProcString = NameKey_MakeKey ((const char *) "ErrorS", 6);
   TokenTypeProc = NameKey_MakeKey ((const char *) "GetCurrentTokenType()", 21);
   SymIsProc = NameKey_MakeKey ((const char *) "SymIs", 5);
-  OnLineStart = TRUE;
+  OnLineStart = true;
   ParseArgs ();
   Main (static_cast<pge_SetOfStop> ((unsigned int) ((1 << (bnflex_eoftok)))));  /* this line will be manipulated by sed in buildpg  */
   if (WasNoError)  /* this line will be manipulated by sed in buildpg  */
@@ -9726,9 +9727,9 @@ static void Init (void)
               Output_WriteString ((const char *) &FileName.array[0], MaxFileName);
               Output_WriteString ((const char *) " *)", 3);
               Output_WriteLn ();
-              OnLineStart = FALSE;
+              OnLineStart = false;
               EmitFileLineTag (LinePrologue);
-              BeginningOfLine = TRUE;
+              BeginningOfLine = true;
               WriteCodeHunkList (CodePrologue);
               EmitSupport ();
               EmitFileLineTag (LineDeclaration);

@@ -48,6 +48,10 @@
     (CARRY_REG 16)
   ]
 )
+
+(define_code_iterator any_lshift [ashift lshiftrt])
+(define_code_iterator any_or_plus [plus ior xor])
+(define_code_iterator any_rotate [rotate rotatert])
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -268,17 +272,35 @@
   ""
   "cbw %0")
 
+(define_insn "extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extend:SI (match_operand:HI 1 "register_operand" "0")))]
+  ""
+  "mov %h0,%0 | asr %h0,#15"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "clobber")])
+
 (define_insn "zero_extendqihi2"
-  [(set (match_operand:HI                 0 "register_operand" 	   "=e,r")
-	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "m,0")))]
+  [(set (match_operand:HI                 0 "register_operand" 	   "=e,T,r")
+	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "m,0,0")))]
   ""
   "@
-   mov.b %0, %1
-   shl %0,#8\n\tshr %0,#8"
-  [(set_attr "psw_operand" "nop,0")
+   mov.b %0,%1
+   and Rx,#255
+   shl %0,#8 | shr %0,#8"
+  [(set_attr "psw_operand" "nop,nop,0")
    (set_attr_alternative "length"
 	     [(const_int 4)
-	      (const_int 8)])])
+	      (const_int 2)
+	      (const_int 4)])])
+
+(define_insn "zero_extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (match_operand:HI 1 "register_operand" "0")))]
+  ""
+  "mov %h0,#0"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "clobber")])
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -497,13 +519,12 @@
 
 ;; Negation
 
-(define_expand "neghi2"
-  [(set (match_operand:HI 0 "register_operand" "")
-	(not:HI (match_operand:HI 1 "register_operand" "")))
-   (parallel [(set (match_dup 0) (plus:HI (match_dup 0) (const_int 1)))
-	      (clobber (reg:BI CARRY_REG))])]
+(define_insn "neghi2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(neg:HI (match_operand:HI 1 "register_operand" "0")))]
   ""
-  "")
+  "not %0 | inc %0"
+  [(set_attr "length" "4")])
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -537,6 +558,24 @@
    (clobber (reg:BI CARRY_REG))]
   ""
   "shr %0,%2")
+
+;; HImode rotate left by 1 bit
+(define_insn "*rotatehi_1"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(rotate:HI (match_operand:HI 1 "register_operand" "0")
+		   (const_int 1)))
+   (clobber (reg:BI CARRY_REG))]
+  ""
+  "shl %0,#1 | adc %0,#0"
+  [(set_attr "length" "4")])
+
+;; HImode rotate left by 8 bits
+(define_insn "*<code>hi_8"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(any_rotate:HI (match_operand:HI 1 "register_operand" "0")
+		       (const_int 8)))]
+  ""
+  "swpb %0")
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -1248,3 +1287,122 @@
   "bp %1,#7,%l0"
   [(set_attr "length" "4")
    (set_attr "psw_operand" "nop")])
+
+(define_insn "bswaphi2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(bswap:HI (match_operand:HI 1 "register_operand" "0")))]
+  ""
+  "swpb %0")
+
+(define_insn "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(bswap:SI (match_operand:SI 1 "register_operand" "0")))]
+  ""
+  "swpb %0 | swpb %h0 | swpw %0,%h0"
+  [(set_attr "length" "6")])
+
+(define_insn "swaphi"
+  [(set (match_operand:HI 0 "register_operand" "+r")
+	(match_operand:HI 1 "register_operand" "+r"))
+   (set (match_dup 1)
+	(match_dup 0))]
+  ""
+  "swpw %0,%1")
+
+(define_peephole2
+  [(set (match_operand:HI 0 "register_operand")
+	(match_operand:HI 1 "register_operand"))
+   (set (match_dup 1)
+	(match_operand:HI 2 "register_operand"))
+   (set (match_dup 2)
+	(match_dup 0))]
+  "REGNO (operands[0]) != REGNO (operands[1])
+   && REGNO (operands[0]) != REGNO (operands[2])
+   && REGNO (operands[1]) != REGNO (operands[2])
+   && peep2_reg_dead_p (3, operands[0])"
+  [(parallel [(set (match_dup 2) (match_dup 1))
+              (set (match_dup 1) (match_dup 2))])])
+
+;; Recognize shl+and and shr+and as macro instructions.
+(define_insn_and_split "*<code>_and_internal"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (and:HI (any_lshift:HI (match_operand 1 "register_operand" "0")
+			       (match_operand 2 "const_int_operand" "i"))
+		(match_operand 3 "const_int_operand" "i")))
+   (clobber (reg:BI CARRY_REG))]
+  "IN_RANGE (INTVAL (operands[2]), 0, 15)"
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (any_lshift:HI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:BI CARRY_REG))])
+   (set (match_dup 0) (and:HI (match_dup 0) (match_dup 3)))])
+
+;; Swap nibbles instruction
+(define_insn "*swpn"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(any_or_plus:HI
+	  (any_or_plus:HI
+	    (and:HI (ashift:HI (match_operand:HI 1 "register_operand" "0")
+			       (const_int 4))
+		    (const_int 240))
+	    (and:HI (lshiftrt:HI (match_dup 1) (const_int 4))
+		    (const_int 15)))
+	  (and:HI (match_dup 1) (const_int -256))))]
+  ""
+  "swpn %0")
+
+(define_insn "*swpn_zext"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(any_or_plus:HI
+	  (and:HI (ashift:HI (match_operand:HI 1 "register_operand" "0")
+			     (const_int 4))
+		  (const_int 240))
+	  (and:HI (lshiftrt:HI (match_dup 1) (const_int 4))
+		  (const_int 15))))]
+  ""
+  "swpn %0 | and %0,#255"
+  [(set_attr "length" "6")])
+
+(define_insn "*swpn_sext"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(sign_extend:HI
+	  (rotate:QI (subreg:QI (match_operand:HI 1 "register_operand" "0") 0)
+		     (const_int 4))))]
+  ""
+  "swpn %0 | cbw %0"
+  [(set_attr "length" "4")])
+
+(define_insn "*swpn_sext_2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(sign_extend:HI
+	  (subreg:QI
+	    (any_or_plus:HI
+	      (ashift:HI (match_operand:HI 1 "register_operand" "0")
+			 (const_int 4))
+	      (subreg:HI (lshiftrt:QI (subreg:QI (match_dup 1) 0)
+				      (const_int 4)) 0)) 0)))]
+  ""
+  "swpn %0 | cbw %0"
+  [(set_attr "length" "4")])
+
+;; Recognize swpn_zext+ior as a macro instruction.
+(define_insn_and_split "*swpn_zext_ior"
+  [(set (match_operand:HI 0 "register_operand")
+	(any_or_plus:HI
+	  (any_or_plus:HI
+	    (and:HI (ashift:HI (match_operand:HI 1 "register_operand")
+			       (const_int 4))
+		    (const_int 240))
+	    (and:HI (lshiftrt:HI (match_dup 1) (const_int 4))
+		    (const_int 15)))
+	  (match_operand:HI 2 "nonmemory_operand")))]
+  "can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+ [(set (match_dup 3) (ior:HI (and:HI (ashift:HI (match_dup 1) (const_int 4))
+				     (const_int 240))
+			     (and:HI (lshiftrt:HI (match_dup 1) (const_int 4))
+				     (const_int 15))))
+  (set (match_dup 0) (ior:HI (match_dup 3) (match_dup 2)))]
+  "operands[3] = gen_reg_rtx (HImode);")
+

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details" } */
+/* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details-blocks" } */
 
 /* Test for predictive commoning of expressions, without reassociation.  */
 
@@ -26,3 +26,4 @@ int main(void)
 
 /* { dg-final { scan-tree-dump-times "Combination" 1 "pcom"} } */
 /* { dg-final { scan-tree-dump-times "Unrolling 3 times." 1 "pcom"} } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" } } */

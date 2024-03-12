@@ -113,7 +113,7 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 
 #define _FP_TININESS_AFTER_ROUNDING 1
 
-#ifdef __riscv_flen
+#if defined(__riscv_flen) || defined(__riscv_zfinx)
 #define FP_INIT_ROUNDMODE			\
 do {						\
   __asm__ volatile ("frrm %0" : "=r" (_frm));	\

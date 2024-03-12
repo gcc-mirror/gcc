@@ -41,6 +41,7 @@ main ()
       h[i] = 8193845517487445944ULL;
     }
   foo ();
+#pragma GCC novector
   for (i = 0; i < 64; i++)
     if (d[i] != 8193845517487445944ULL || e[i] != 1
 	|| g[i] != 4402992416302558097ULL)

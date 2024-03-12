@@ -36,8 +36,10 @@ using namespace __cxxabiv1;
 // terminate.
 
 extern "C" void
-__cxa_call_terminate(_Unwind_Exception* ue_header) throw ()
+__cxa_call_terminate(void* ue_header_in) throw ()
 {
+  _Unwind_Exception* ue_header
+    = reinterpret_cast<_Unwind_Exception*>(ue_header_in);
 
   if (ue_header)
     {

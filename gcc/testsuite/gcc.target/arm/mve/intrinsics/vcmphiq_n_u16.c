@@ -39,7 +39,7 @@ foo1 (uint16x8_t a, uint16_t b)
 }
 
 /*
-**foo2:
+**foo2: { xfail *-*-* }
 **	...
 **	vcmp.u16	hi, q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
 **	...

@@ -55,7 +55,7 @@ is
    begin
       Normalize_String (S, F, L);
 
-      pragma Assert (F = System.Val_Util.First_Non_Space_Ghost
+      pragma Assert (F = System.Val_Spec.First_Non_Space_Ghost
                      (S, Str'First, Str'Last));
 
       if S (F .. L) = "TRUE" then

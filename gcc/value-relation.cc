@@ -183,6 +183,25 @@ relation_transitive (relation_kind r1, relation_kind r2)
   return relation_kind (rr_transitive_table[r1][r2]);
 }
 
+// When one name is an equivalence of another, ensure the equivalence
+// range is correct.  Specifically for floating point, a +0 is also
+// equivalent to a -0 which may not be reflected.  See PR 111694.
+
+void
+adjust_equivalence_range (vrange &range)
+{
+  if (range.undefined_p () || !is_a<frange> (range))
+    return;
+
+  frange fr = as_a<frange> (range);
+  // If range includes 0 make sure both signs of zero are included.
+  if (fr.contains_p (dconst0) || fr.contains_p (dconstm0))
+    {
+      frange zeros (range.type (), dconstm0, dconst0);
+      range.union_ (zeros);
+    }
+ }
+
 // This vector maps a relation to the equivalent tree code.
 
 static const tree_code relation_to_code [VREL_LAST] = {
@@ -218,7 +237,7 @@ relation_oracle::validate_relation (relation_kind rel, vrange &op1, vrange &op2)
     return VREL_VARYING;
 
   // If there is no handler, leave the relation as is.
-  range_op_handler handler (code, t1);
+  range_op_handler handler (code);
   if (!handler)
     return rel;
 
@@ -260,9 +279,12 @@ relation_oracle::valid_equivs (bitmap b, const_bitmap equivs, basic_block bb)
   EXECUTE_IF_SET_IN_BITMAP (equivs, 0, i, bi)
     {
       tree ssa = ssa_name (i);
-      const_bitmap ssa_equiv = equiv_set (ssa, bb);
-      if (ssa_equiv == equivs)
-	bitmap_set_bit (b, i);
+      if (ssa && !SSA_NAME_IN_FREE_LIST (ssa))
+	{
+	  const_bitmap ssa_equiv = equiv_set (ssa, bb);
+	  if (ssa_equiv == equivs)
+	    bitmap_set_bit (b, i);
+	}
     }
 }
 
@@ -370,6 +392,9 @@ equiv_oracle::add_partial_equiv (relation_kind r, tree op1, tree op2)
       // In either case, if PE2 has an entry, we simply do nothing.
       if (pe2.members)
 	return;
+      // If there are no uses of op2, do not register.
+      if (has_zero_uses (op2))
+	return;
       // PE1 is the LHS and already has members, so everything in the set
       // should be a slice of PE2 rather than PE1.
       pe2.code = pe_min (r, pe1.code);
@@ -387,6 +412,9 @@ equiv_oracle::add_partial_equiv (relation_kind r, tree op1, tree op2)
     }
   if (pe2.members)
     {
+      // If there are no uses of op1, do not register.
+      if (has_zero_uses (op1))
+	return;
       pe1.ssa_base = pe2.ssa_base;
       // If pe2 is a 16 bit value, but only an 8 bit copy, we can't be any
       // more than an 8 bit equivalence here, so choose MIN value.
@@ -396,6 +424,9 @@ equiv_oracle::add_partial_equiv (relation_kind r, tree op1, tree op2)
     }
   else
     {
+      // If there are no uses of either operand, do not register.
+      if (has_zero_uses (op1) || has_zero_uses (op2))
+	return;
       // Neither name has an entry, simply create op1 as slice of op2.
       pe2.code = bits_to_pe (TYPE_PRECISION (TREE_TYPE (op2)));
       if (pe2.code == VREL_VARYING)
@@ -1373,6 +1404,12 @@ dom_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   unsigned v2 = SSA_NAME_VERSION (ssa2);
   if (v1 == v2)
     return VREL_EQ;
+
+  // If v1 or v2 do not have any relations or equivalences, a partial
+  // equivalence is the only possibility.
+  if ((!bitmap_bit_p (m_relation_set, v1) && !has_equiv_p (v1))
+      || (!bitmap_bit_p (m_relation_set, v2) && !has_equiv_p (v2)))
+    return partial_equiv (ssa1, ssa2);
 
   // Check for equivalence first.  They must be in each equivalency set.
   const_bitmap equiv1 = equiv_set (ssa1, bb);

@@ -64,7 +64,7 @@ ALL_DFLAGS = $(DFLAGS-$@) $(GDCFLAGS) -fversion=IN_GCC $(CHECKING_DFLAGS) \
 	$(PICFLAG) $(ALIASING_FLAGS) $(NOEXCEPTION_DFLAGS) $(COVERAGE_FLAGS) \
 	$(WARN_DFLAGS)
 
-DCOMPILE.base = $(GDC) $(NO_PIE_CFLAGS) -c $(ALL_DFLAGS) -o $@
+DCOMPILE.base = $(GDC) -c $(ALL_DFLAGS) -o $@
 DCOMPILE = $(DCOMPILE.base) -MT $@ -MMD -MP -MF $(@D)/$(DEPDIR)/$(*F).TPo
 DPOSTCOMPILE = @mv $(@D)/$(DEPDIR)/$(*F).TPo $(@D)/$(DEPDIR)/$(*F).Po
 DLINKER = $(GDC) $(NO_PIE_FLAG) -lstdc++
@@ -81,7 +81,6 @@ D_FRONTEND_OBJS = \
 	d/access.o \
 	d/aggregate.o \
 	d/aliasthis.o \
-	d/apply.o \
 	d/arrayop.o \
 	d/arraytypes.o \
 	d/attrib.o \
@@ -160,6 +159,7 @@ D_FRONTEND_OBJS = \
 	d/parse.o \
 	d/parsetimevisitor.o \
 	d/permissivevisitor.o \
+	d/postordervisitor.o \
 	d/printast.o \
 	d/root-aav.o \
 	d/root-array.o \

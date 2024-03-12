@@ -47,8 +47,9 @@ real function f8 ()
   f8 = 1
 end
 
-real function f9 ()
-!$acc host_data
+real function f9 (a)
+  integer a(:)
+!$acc host_data use_device(a)
 !$acc end host_data
   f8 = 1
 end

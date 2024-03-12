@@ -48,6 +48,14 @@
 #include <bits/c++config.h>
 #include <bits/stl_function.h> // std::equal_to, std::unary_function etc.
 
+#define __glibcxx_want_invoke
+#define __glibcxx_want_constexpr_functional
+#define __glibcxx_want_invoke_r
+#define __glibcxx_want_bind_front
+#define __glibcxx_want_not_fn
+#define __glibcxx_want_boyer_moore_searcher
+#include <bits/version.h>
+
 #if __cplusplus >= 201103L
 
 #include <tuple>
@@ -64,7 +72,7 @@
 #  include <vector>
 #  include <array>
 # endif
-# include <bits/stl_algo.h> // std::search
+# include <bits/stl_algobase.h> // std::search
 #endif
 #if __cplusplus >= 202002L
 # include <bits/ranges_cmp.h> // std::identity, ranges::equal_to etc.
@@ -86,13 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<int _Num> struct _Placeholder { };
 
-#if __cplusplus >= 201103L
-
-#if __cplusplus >= 201703L
-# define __cpp_lib_invoke 201411L
-# if __cplusplus > 201703L
-#  define __cpp_lib_constexpr_functional 201907L
-# endif
+#ifdef __cpp_lib_invoke // C++ >= 17
 
   /** Invoke a callable object.
    *
@@ -113,9 +115,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__invoke(std::forward<_Callable>(__fn),
 			   std::forward<_Args>(__args)...);
     }
+#endif
 
-#if __cplusplus > 202002L
-# define __cpp_lib_invoke_r 202106L
+#ifdef __cpp_lib_invoke_r // C++ >= 23
 
   /** Invoke a callable object and convert the result to `_Res`.
    *
@@ -133,11 +135,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__invoke_r<_Res>(std::forward<_Callable>(__fn),
 				   std::forward<_Args>(__args)...);
     }
-#endif // C++23
-#endif // C++17
+#endif // __cpp_lib_invoke_r
 
   /// @cond undocumented
 
+#if __cplusplus >= 201103L
   template<typename _MemFunPtr,
 	   bool __is_mem_fn = is_member_function_pointer<_MemFunPtr>::value>
     class _Mem_fn_base
@@ -910,8 +912,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  std::forward<_BoundArgs>(__args)...);
     }
 
-#if __cplusplus > 201703L
-#define __cpp_lib_bind_front 201907L
+#ifdef __cpp_lib_bind_front // C++ >= 20
 
   template<typename _Fd, typename... _BoundArgs>
     struct _Bind_front
@@ -937,6 +938,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~_Bind_front() = default;
 
       template<typename... _CallArgs>
+	requires true
 	constexpr
 	invoke_result_t<_Fd&, _BoundArgs&..., _CallArgs...>
 	operator()(_CallArgs&&... __call_args) &
@@ -947,6 +949,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _CallArgs>
+	requires true
 	constexpr
 	invoke_result_t<const _Fd&, const _BoundArgs&..., _CallArgs...>
 	operator()(_CallArgs&&... __call_args) const &
@@ -958,6 +961,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _CallArgs>
+	requires true
 	constexpr
 	invoke_result_t<_Fd, _BoundArgs..., _CallArgs...>
 	operator()(_CallArgs&&... __call_args) &&
@@ -968,6 +972,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _CallArgs>
+	requires true
 	constexpr
 	invoke_result_t<const _Fd, const _BoundArgs..., _CallArgs...>
 	operator()(_CallArgs&&... __call_args) const &&
@@ -977,6 +982,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return _S_call(std::move(*this), _BoundIndices(),
 	      std::forward<_CallArgs>(__call_args)...);
 	}
+
+      template<typename... _CallArgs>
+	void operator()(_CallArgs&&...) & = delete;
+
+      template<typename... _CallArgs>
+	void operator()(_CallArgs&&...) const & = delete;
+
+      template<typename... _CallArgs>
+	void operator()(_CallArgs&&...) && = delete;
+
+      template<typename... _CallArgs>
+	void operator()(_CallArgs&&...) const && = delete;
 
     private:
       using _BoundIndices = index_sequence_for<_BoundArgs...>;
@@ -995,69 +1012,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[no_unique_address]] std::tuple<_BoundArgs...> _M_bound_args;
     };
 
-  // Avoid the overhead of an empty tuple<> if there are no bound args.
-  template<typename _Fd>
-    struct _Bind_front0
-    {
-      static_assert(is_move_constructible_v<_Fd>);
-
-      // First parameter is to ensure this constructor is never used
-      // instead of the copy/move constructor.
-      template<typename _Fn>
-	explicit constexpr
-	_Bind_front0(int, _Fn&& __fn)
-	noexcept(is_nothrow_constructible_v<_Fd, _Fn>)
-	: _M_fd(std::forward<_Fn>(__fn))
-	{ }
-
-      _Bind_front0(const _Bind_front0&) = default;
-      _Bind_front0(_Bind_front0&&) = default;
-      _Bind_front0& operator=(const _Bind_front0&) = default;
-      _Bind_front0& operator=(_Bind_front0&&) = default;
-      ~_Bind_front0() = default;
-
-      template<typename... _CallArgs>
-	constexpr
-	invoke_result_t<_Fd&, _CallArgs...>
-	operator()(_CallArgs&&... __call_args) &
-	noexcept(is_nothrow_invocable_v<_Fd&, _CallArgs...>)
-	{ return std::invoke(_M_fd, std::forward<_CallArgs>(__call_args)...); }
-
-      template<typename... _CallArgs>
-	constexpr
-	invoke_result_t<const _Fd&, _CallArgs...>
-	operator()(_CallArgs&&... __call_args) const &
-	noexcept(is_nothrow_invocable_v<const _Fd&, _CallArgs...>)
-	{ return std::invoke(_M_fd, std::forward<_CallArgs>(__call_args)...); }
-
-      template<typename... _CallArgs>
-	constexpr
-	invoke_result_t<_Fd, _CallArgs...>
-	operator()(_CallArgs&&... __call_args) &&
-	noexcept(is_nothrow_invocable_v<_Fd, _CallArgs...>)
-	{
-	  return std::invoke(std::move(_M_fd),
-			     std::forward<_CallArgs>(__call_args)...);
-	}
-
-      template<typename... _CallArgs>
-	constexpr
-	invoke_result_t<const _Fd, _CallArgs...>
-	operator()(_CallArgs&&... __call_args) const &&
-	noexcept(is_nothrow_invocable_v<const _Fd, _CallArgs...>)
-	{
-	  return std::invoke(std::move(_M_fd),
-			     std::forward<_CallArgs>(__call_args)...);
-	}
-
-    private:
-      [[no_unique_address]] _Fd _M_fd;
-    };
-
   template<typename _Fn, typename... _Args>
-    using _Bind_front_t
-      = __conditional_t<sizeof...(_Args) == 0, _Bind_front0<decay_t<_Fn>>,
-			_Bind_front<decay_t<_Fn>, decay_t<_Args>...>>;
+    using _Bind_front_t = _Bind_front<decay_t<_Fn>, decay_t<_Args>...>;
 
   /** Create call wrapper by partial application of arguments to function.
    *
@@ -1077,7 +1033,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Bind_front_t<_Fn, _Args...>(0, std::forward<_Fn>(__fn),
 					  std::forward<_Args>(__args)...);
     }
-#endif // C++20
+#endif // __cpp_lib_bind_front
 
 #if __cplusplus >= 201402L
   /// Generalized negator.
@@ -1105,7 +1061,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // forwarding _M_fn and the function arguments with the same qualifiers,
       // and deducing the return type and exception-specification.
 #define _GLIBCXX_NOT_FN_CALL_OP( _QUALS )				\
-      template<typename... _Args>					\
+      template<typename... _Args,					\
+	       typename = enable_if_t<__is_invocable<_Fn _QUALS, _Args...>::value>> \
 	_GLIBCXX20_CONSTEXPR						\
 	decltype(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>())		\
 	operator()(_Args&&... __args) _QUALS				\
@@ -1114,7 +1071,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{								\
 	  return !std::__invoke(std::forward< _Fn _QUALS >(_M_fn),	\
 				std::forward<_Args>(__args)...);	\
-	}
+	}								\
+									\
+      template<typename... _Args,					\
+	       typename = enable_if_t<!__is_invocable<_Fn _QUALS, _Args...>::value>> \
+	void operator()(_Args&&... __args) _QUALS = delete;
+
       _GLIBCXX_NOT_FN_CALL_OP( & )
       _GLIBCXX_NOT_FN_CALL_OP( const & )
       _GLIBCXX_NOT_FN_CALL_OP( && )
@@ -1147,9 +1109,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_byte_like<byte, equal_to<void>>
     : true_type { };
+#endif
 
   // [func.not_fn] Function template not_fn
-#define __cpp_lib_not_fn 201603L
+#ifdef __cpp_lib_not_fn // C++ >= 17
   /** Wrap a function object to create one that negates its result.
    *
    * The function template `std::not_fn` creates a "forwarding call wrapper",
@@ -1170,7 +1133,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return _Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn), 0};
     }
+#endif
 
+#if __cplusplus >= 201703L
   // Searchers
 
   template<typename _ForwardIterator1, typename _BinaryPredicate = equal_to<>>
@@ -1203,8 +1168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       tuple<_ForwardIterator1, _ForwardIterator1, _BinaryPredicate> _M_m;
     };
 
-#if _GLIBCXX_HOSTED
-#define __cpp_lib_boyer_moore_searcher 201603L
+#ifdef __cpp_lib_boyer_moore_searcher // C++ >= 17 && HOSTED
 
   template<typename _Key, typename _Tp, typename _Hash, typename _Pred>
     struct __boyer_moore_map_base
@@ -1448,7 +1412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return std::make_pair(__last, __last);
     }
-#endif // HOSTED
+#endif // __cpp_lib_boyer_moore_searcher
 
 #endif // C++17
 #endif // C++14

@@ -50,8 +50,8 @@
 
 /* In our predicate normal form we have MAX_NUM_CHAINS or predicates
    and in those MAX_CHAIN_LEN (inverted) and predicates.  */
-#define MAX_NUM_CHAINS 8
-#define MAX_CHAIN_LEN 5
+#define MAX_NUM_CHAINS (unsigned)param_uninit_max_num_chains
+#define MAX_CHAIN_LEN (unsigned)param_uninit_max_chain_len
 
 /* Return true if X1 is the negation of X2.  */
 
@@ -307,7 +307,8 @@ find_var_cmp_const (pred_chain_union preds, gphi *phi, gimple **flag_def,
 	  value_range r;
 	  if (!INTEGRAL_TYPE_P (type)
 	      || !get_range_query (cfun)->range_of_expr (r, cond_rhs)
-	      || r.kind () != VR_RANGE)
+	      || r.undefined_p ()
+	      || r.varying_p ())
 	    continue;
 
 	  wide_int min = r.lower_bound ();
@@ -1162,11 +1163,12 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 			   vec<edge> cd_chains[], unsigned *num_chains,
 			   unsigned in_region = 0)
 {
-  auto_vec<edge, MAX_CHAIN_LEN + 1> cur_cd_chain;
+  auto_vec<edge, 10> cur_cd_chain;
   unsigned num_calls = 0;
   unsigned depth = 0;
   bool complete_p = true;
   /* Walk the post-dominator chain.  */
+  cur_cd_chain.reserve (MAX_CHAIN_LEN + 1);
   compute_control_dep_chain_pdom (dom_bb, dep_bb, NULL, cd_chains,
 				  num_chains, cur_cd_chain, &num_calls,
 				  in_region, depth, &complete_p);
@@ -1830,7 +1832,7 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 		}
 	    }
 	  /* Get the conditional controlling the bb exit edge.  */
-	  gimple *cond_stmt = last_stmt (guard_bb);
+	  gimple *cond_stmt = *gsi_last_bb (guard_bb);
 	  if (gimple_code (cond_stmt) == GIMPLE_COND)
 	    {
 	      /* The true edge corresponds to the uninteresting condition.
@@ -2034,7 +2036,7 @@ uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
      are logical conjunctions.  Together, the DEP_CHAINS vector is
      used below to initialize an OR expression of the conjunctions.  */
   unsigned num_chains = 0;
-  auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
+  auto_vec<edge> *dep_chains = new auto_vec<edge>[MAX_NUM_CHAINS];
 
   if (!dfs_mark_dominating_region (use_bb, cd_root, in_region, region)
       || !compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
@@ -2059,6 +2061,7 @@ uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
      Each OR subexpression is represented by one element of DEP_CHAINS,
      where each element consists of a series of AND subexpressions.  */
   use_preds.init_from_control_deps (dep_chains, num_chains, true);
+  delete[] dep_chains;
   return !use_preds.is_empty ();
 }
 
@@ -2143,7 +2146,7 @@ uninit_analysis::init_from_phi_def (gphi *phi)
       break;
 
   unsigned num_chains = 0;
-  auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
+  auto_vec<edge> *dep_chains = new auto_vec<edge>[MAX_NUM_CHAINS];
   for (unsigned i = 0; i < nedges; i++)
     {
       edge e = def_edges[i];
@@ -2174,6 +2177,7 @@ uninit_analysis::init_from_phi_def (gphi *phi)
      which the PHI operands are defined to values for which M_EVAL is
      false.  */
   m_phi_def_preds.init_from_control_deps (dep_chains, num_chains, false);
+  delete[] dep_chains;
   return !m_phi_def_preds.is_empty ();
 }
 
@@ -2215,11 +2219,11 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
     return false;
 
   use_preds.simplify (use_stmt, /*is_use=*/true);
+  use_preds.normalize (use_stmt, /*is_use=*/true);
   if (use_preds.is_false ())
     return true;
   if (use_preds.is_true ())
     return false;
-  use_preds.normalize (use_stmt, /*is_use=*/true);
 
   /* Try to prune the dead incoming phi edges.  */
   if (!overlap (phi, opnds, visited, use_preds))
@@ -2237,11 +2241,11 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
 	return false;
 
       m_phi_def_preds.simplify (phi);
+      m_phi_def_preds.normalize (phi);
       if (m_phi_def_preds.is_false ())
 	return false;
       if (m_phi_def_preds.is_true ())
 	return true;
-      m_phi_def_preds.normalize (phi);
     }
 
   /* Return true if the predicate guarding the valid definition (i.e.,

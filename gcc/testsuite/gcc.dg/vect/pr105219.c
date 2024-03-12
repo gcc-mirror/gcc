@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-O3" } */
 /* { dg-additional-options "-mtune=intel" { target x86_64-*-* i?86-*-* } } */
 /* { dg-additional-options "-mtune=thunderx" { target aarch64*-*-* } } */
@@ -22,6 +21,7 @@ int main()
       {
         __builtin_memset (data, 0, sizeof (data));
         foo (&data[start], n);
+#pragma GCC novector
         for (int j = 0; j < n; ++j)
           if (data[start + j] != j)
             __builtin_abort ();

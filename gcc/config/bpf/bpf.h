@@ -22,7 +22,8 @@
 
 /**** Controlling the Compilation Driver.  */
 
-#define ASM_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL} %{mxbpf:-mxbpf}"
+#define ASM_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL} %{mxbpf:-mxbpf} " \
+  "%{masm=pseudoc:-mdialect=pseudoc}"
 #define LINK_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL}"
 #define LIB_SPEC ""
 #define STARTFILE_SPEC ""
@@ -152,30 +153,34 @@
 #define BPF_R7	7
 #define BPF_R8	8
 #define BPF_R9	9
-#define BPF_SP BPF_R9
 #define BPF_R10	10
 #define BPF_FP  BPF_R10
+#define BPF_R11 11
+#define BPF_R12 12
+#define BPF_SP  BPF_R12
+
 /* 11 is not a real eBPF hard register and is eliminated or not used
    in the final assembler.  See below.  */
 
-#define FIRST_PSEUDO_REGISTER 12
+#define FIRST_PSEUDO_REGISTER 13
 
 /* The registers %r0..%r8 are available for general allocation.
-   %r9 is the pseudo-stack pointer.
    %r10 is the stack frame, which is read-only.
-   %r11 (__arg__) is a fake register that always gets eliminated.  */
+   %r11 (__arg__) is a fake register that always gets eliminated.
+   %r12 is the pseudo-stack pointer that always gets eliminated.  */
 #define FIXED_REGISTERS				\
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1}
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1}
 
 /* %r0..%r5 are clobbered by function calls.  */
 #define CALL_USED_REGISTERS				\
-  {1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1}
+  {1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1}
 
 /**** Register Classes.  */
 
 enum reg_class
 {
   NO_REGS,		/* no registers in set.  */
+  R0,		        /* register r0.  */
   ALL_REGS,		/* all registers.  */
   LIM_REG_CLASSES	/* max value + 1.  */
 };
@@ -189,6 +194,7 @@ enum reg_class
 #define REG_CLASS_NAMES				\
 {						\
   "NO_REGS",					\
+  "R0",					\
   "ALL_REGS"					\
 }
 
@@ -202,14 +208,16 @@ enum reg_class
 #define REG_CLASS_CONTENTS			\
 {						\
    0x00000000, /* NO_REGS */			\
-   0x00000fff, /* ALL_REGS */		        \
+   0x00000001, /* R0 */                         \
+   0x00001fff, /* ALL_REGS */		        \
 }
 
 /* A C expression whose value is a register class containing hard
    register REGNO.  In general there is more that one such class;
    choose a class which is "minimal", meaning that no smaller class
    also contains the register.  */
-#define REGNO_REG_CLASS(REGNO) ((void)(REGNO), GENERAL_REGS)
+#define REGNO_REG_CLASS(REGNO) \
+  ((REGNO) == 0 ? R0 : GENERAL_REGS)
 
 /* A macro whose definition is the name of the class to which a
    valid base register must belong.  A base register is one used in
@@ -255,15 +263,15 @@ enum reg_class
 /*** Registers That Address the Stack Frame.  */
 
 #define FRAME_POINTER_REGNUM 10
-#define STACK_POINTER_REGNUM 9
 #define ARG_POINTER_REGNUM 11
+#define STACK_POINTER_REGNUM 12
 #define STATIC_CHAIN_REGNUM 8
 
 /*** Registers elimination.  */
 
 #define ELIMINABLE_REGS					\
   {{ ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },	\
-   { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM }}
+   { STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM }}
 
 /* Define the offset between two registers, one to be eliminated, and
    the other its replacement, at the start of a routine.  */
@@ -439,7 +447,7 @@ enum reg_class
 
 #define REGISTER_NAMES						\
   { "%r0", "%r1", "%r2", "%r3", "%r4", "%r5", "%r6", "%r7",	\
-    "%r8", "%r9", "%fp", "__arg__" }
+      "%r8", "%r9", "%fp", "__arg__", "__sp__" }
 
 #define ADDITIONAL_REGISTER_NAMES		\
   { { "%a", 0 }, { "%ctx", 6 }, { "%r10" , 10 } }
@@ -502,5 +510,7 @@ enum reg_class
   do { } while (0)
 #define DO_GLOBAL_DTORS_BODY			\
   do { } while (0)
+
+#define ASSEMBLER_DIALECT ((int) asm_dialect)
 
 #endif /* ! GCC_BPF_H */

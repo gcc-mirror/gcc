@@ -14,4 +14,4 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-set GOC_UNDER_TEST {@GOC@}
+set SYSROOT_CFLAGS_FOR_TARGET {@SYSROOT_CFLAGS_FOR_TARGET@}

@@ -221,8 +221,10 @@
   VUNSPEC_SC		; Represent a store-register-exclusive.
   VUNSPEC_LAX		; Represent a load-register-acquire-exclusive.
   VUNSPEC_SLX		; Represent a store-register-release-exclusive.
-  VUNSPEC_LDA		; Represent a store-register-acquire.
+  VUNSPEC_LDA		; Represent a load-register-acquire.
+  VUNSPEC_LDR		; Represent a load-register-relaxed.
   VUNSPEC_STL		; Represent a store-register-release.
+  VUNSPEC_STR		; Represent a store-register-relaxed.
   VUNSPEC_GET_FPSCR	; Represent fetch of FPSCR content.
   VUNSPEC_SET_FPSCR	; Represent assign of FPSCR content.
   VUNSPEC_SET_FPSCR_NZCVQC	; Represent assign of FPSCR_nzcvqc content.
@@ -995,8 +997,7 @@
   VMAXQ_M_U
   VQRDMLAHQ_M_N_U
   VCADDQ_ROT270_M_F
-  VCADDQ_ROT270_M_U
-  VCADDQ_ROT270_M_S
+  VCADDQ_ROT270_M
   VQRSHLQ_M_S
   VMULQ_M_F
   VRHADDQ_M_U
@@ -1050,8 +1051,7 @@
   VSLIQ_M_N_S
   VQSHLQ_M_U
   VQSHLQ_M_S
-  VCADDQ_ROT90_M_U
-  VCADDQ_ROT90_M_S
+  VCADDQ_ROT90_M
   VORNQ_M_U
   VORNQ_M_S
   VQSHLQ_M_N_S
@@ -1255,4 +1255,5 @@
   SQRSHRL_64
   SQRSHRL_48
   VSHLCQ_M_
+  REINTERPRET
 ])

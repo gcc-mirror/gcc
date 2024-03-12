@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
    During streaming in, we translate the on the disk mode using this
    table.  For normal LTO it is set to identity, for ACCEL_COMPILER
    depending on the mode_table content.  */
-unsigned char streamer_mode_table[1 << 8];
+unsigned char streamer_mode_table[MAX_MACHINE_MODE];
 
 /* Check that all the TS_* structures handled by the streamer_write_* and
    streamer_read_* routines are exactly ALL the structures defined in

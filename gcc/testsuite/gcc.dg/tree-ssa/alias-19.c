@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-alias" } */
+/* { dg-options "-O2 -fdump-tree-alias-details" } */
 
 const static int a;
 

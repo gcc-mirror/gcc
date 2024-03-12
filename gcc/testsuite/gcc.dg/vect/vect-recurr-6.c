@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_perm } */
 
@@ -28,6 +27,7 @@ main ()
     }
   int c = 7;
   foo (a, b, &c, 63);
+#pragma GCC novector
   for (int i = 1; i < 63; ++i)
     if (b[i] != a[i] - a[i-1])
       abort ();

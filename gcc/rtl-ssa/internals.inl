@@ -22,6 +22,7 @@ namespace rtl_ssa {
 // Construct a new access with the given resource () and kind () values.
 inline access_info::access_info (resource_info resource, access_kind kind)
   : m_regno (resource.regno),
+    m_mode (resource.mode),
     m_kind (kind),
     m_is_artificial (false),
     m_is_set_with_nondebug_insn_uses (false),
@@ -36,9 +37,7 @@ inline access_info::access_info (resource_info resource, access_kind kind)
     m_is_last_nondebug_insn_use (false),
     m_is_in_debug_insn_or_phi (false),
     m_has_been_superceded (false),
-    m_is_temp (false),
-    m_spare (0),
-    m_mode (resource.mode)
+    m_is_temp (false)
 {
 }
 
@@ -673,6 +672,9 @@ combine_modes (machine_mode mode1, machine_mode mode2)
 
   if (mode2 == E_BLKmode)
     return mode1;
+
+  if (!ordered_p (GET_MODE_SIZE (mode1), GET_MODE_SIZE (mode2)))
+    return BLKmode;
 
   return wider_subreg_mode (mode1, mode2);
 }

@@ -81,7 +81,8 @@ public:
   };
 
   mkdeps ()
-    : module_name (NULL), cmi_name (NULL), is_header_unit (false), quote_lwm (0)
+    : primary_output (NULL), module_name (NULL), cmi_name (NULL)
+    , is_header_unit (false), is_exported (false), quote_lwm (0)
   {
   }
   ~mkdeps ()
@@ -90,6 +91,9 @@ public:
 
     for (i = targets.size (); i--;)
       free (const_cast <char *> (targets[i]));
+    free (const_cast <char *> (primary_output));
+    for (i = fdeps_targets.size (); i--;)
+      free (const_cast <char *> (fdeps_targets[i]));
     for (i = deps.size (); i--;)
       free (const_cast <char *> (deps[i]));
     for (i = vpath.size (); i--;)
@@ -103,6 +107,8 @@ public:
 public:
   vec<const char *> targets;
   vec<const char *> deps;
+  const char * primary_output;
+  vec<const char *> fdeps_targets;
   vec<velt> vpath;
   vec<const char *> modules;
 
@@ -110,6 +116,7 @@ public:
   const char *module_name;
   const char *cmi_name;
   bool is_header_unit;
+  bool is_exported;
   unsigned short quote_lwm;
 };
 
@@ -288,6 +295,26 @@ deps_add_default_target (class mkdeps *d, const char *tgt)
     }
 }
 
+/* Adds a target O.  We make a copy, so it need not be a permanent
+   string.
+
+   This is the target associated with the rule that (in a C++ modules build)
+   compiles the source that is being scanned for dynamic dependencies.  It is
+   used to associate the structured dependency information with that rule as
+   needed.  */
+void
+fdeps_add_target (struct mkdeps *d, const char *o, bool is_primary)
+{
+  o = apply_vpath (d, o);
+  if (is_primary)
+  {
+    if (d->primary_output)
+      d->fdeps_targets.push (d->primary_output);
+    d->primary_output = xstrdup (o);
+  } else
+    d->fdeps_targets.push (xstrdup (o));
+}
+
 void
 deps_add_dep (class mkdeps *d, const char *t)
 {
@@ -325,12 +352,13 @@ deps_add_vpath (class mkdeps *d, const char *vpath)
 
 void
 deps_add_module_target (struct mkdeps *d, const char *m,
-			const char *cmi, bool is_header_unit)
+			const char *cmi, bool is_header_unit, bool is_exported)
 {
   gcc_assert (!d->module_name);
   
   d->module_name = xstrdup (m);
   d->is_header_unit = is_header_unit;
+  d->is_exported = is_exported;
   d->cmi_name = xstrdup (cmi);
 }
 
@@ -395,10 +423,16 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
   if (colmax && colmax < 34)
     colmax = 34;
 
+  /* Write out C++ modules information if no other `-fdeps-format=`
+     option is given. */
+  cpp_fdeps_format fdeps_format = CPP_OPTION (pfile, deps.fdeps_format);
+  bool write_make_modules_deps = (fdeps_format == FDEPS_FMT_NONE
+				  && CPP_OPTION (pfile, deps.modules));
+
   if (d->deps.size ())
     {
       column = make_write_vec (d->targets, fp, 0, colmax, d->quote_lwm);
-      if (CPP_OPTION (pfile, deps.modules) && d->cmi_name)
+      if (write_make_modules_deps && d->cmi_name)
 	column = make_write_name (d->cmi_name, fp, column, colmax);
       fputs (":", fp);
       column++;
@@ -409,7 +443,7 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 	  fprintf (fp, "%s:\n", munge (d->deps[i]));
     }
 
-  if (!CPP_OPTION (pfile, deps.modules))
+  if (!write_make_modules_deps)
     return;
 
   if (d->modules.size ())
@@ -471,6 +505,127 @@ void
 deps_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 {
   make_write (pfile, fp, colmax);
+}
+
+/* Write out a a filepath for P1689R5 output.  */
+
+static void
+p1689r5_write_filepath (const char *name, FILE *fp)
+{
+  if (cpp_valid_utf8_p (name, strlen (name)))
+    {
+      fputc ('"', fp);
+      for (const char* c = name; *c; c++)
+	{
+	  // Escape control characters.
+	  if (ISCNTRL (*c))
+	    fprintf (fp, "\\u%04x", *c);
+	  // JSON escape characters.
+	  else if (*c == '"' || *c == '\\')
+	    {
+	      fputc ('\\', fp);
+	      fputc (*c, fp);
+	    }
+	  // Everything else.
+	  else
+	    fputc (*c, fp);
+	}
+      fputc ('"', fp);
+    }
+  else
+    {
+      // TODO: print an error
+    }
+}
+
+/* Write a JSON array from a `vec` for P1689R5 output.
+
+   In P1689R5, all array values are filepaths.  */
+
+static void
+p1689r5_write_vec (const mkdeps::vec<const char *> &vec, FILE *fp)
+{
+  for (unsigned ix = 0; ix != vec.size (); ix++)
+    {
+      p1689r5_write_filepath (vec[ix], fp);
+      if (ix < vec.size () - 1)
+	fputc (',', fp);
+      fputc ('\n', fp);
+    }
+}
+
+/* Write out the P1689R5 format using the module dependency tracking
+   information gathered while scanning and/or compiling.
+
+   Ideally this (and the above `p1689r5_` functions) would use `gcc/json.h`,
+   but since this is `libcpp`, we cannot use `gcc/` code.
+
+  TODO: move `json.h` to libiberty.  */
+
+void
+deps_write_p1689r5 (const struct mkdeps *d, FILE *fp)
+{
+  fputs ("{\n", fp);
+
+  fputs ("\"rules\": [\n", fp);
+  fputs ("{\n", fp);
+
+  if (d->primary_output)
+    {
+      fputs ("\"primary-output\": ", fp);
+      p1689r5_write_filepath (d->primary_output, fp);
+      fputs (",\n", fp);
+    }
+
+  if (d->fdeps_targets.size ())
+    {
+      fputs ("\"outputs\": [\n", fp);
+      p1689r5_write_vec (d->fdeps_targets, fp);
+      fputs ("],\n", fp);
+    }
+
+  if (d->module_name)
+    {
+      fputs ("\"provides\": [\n", fp);
+      fputs ("{\n", fp);
+
+      fputs ("\"logical-name\": ", fp);
+      p1689r5_write_filepath (d->module_name, fp);
+      fputs (",\n", fp);
+
+      fprintf (fp, "\"is-interface\": %s\n", d->is_exported ? "true" : "false");
+
+      // TODO: header-unit information
+
+      fputs ("}\n", fp);
+      fputs ("],\n", fp);
+    }
+
+  fputs ("\"requires\": [\n", fp);
+  for (size_t i = 0; i < d->modules.size (); i++)
+    {
+      if (i != 0)
+	fputs (",\n", fp);
+      fputs ("{\n", fp);
+
+      fputs ("\"logical-name\": ", fp);
+      p1689r5_write_filepath (d->modules[i], fp);
+      fputs ("\n", fp);
+
+      // TODO: header-unit information
+
+      fputs ("}\n", fp);
+    }
+  fputs ("]\n", fp);
+
+  fputs ("}\n", fp);
+
+  fputs ("],\n", fp);
+
+  fputs ("\"version\": 0,\n", fp);
+  fputs ("\"revision\": 0\n", fp);
+
+  fputs ("}\n", fp);
 }
 
 /* Write out a deps buffer to a file, in a form that can be read back

@@ -33,6 +33,7 @@ FROM StringConvert IMPORT IntegerToString, CardinalToString ;
 FROM WholeConv IMPORT ScanInt, ScanCard ;
 FROM StringChan IMPORT writeString ;
 FROM IOConsts IMPORT ReadResults ;
+FROM TextUtil IMPORT SkipSpaces ;
 
 
 (* Input and output of whole numbers in decimal text form
@@ -63,6 +64,7 @@ VAR
    ch       : CHAR ;
    negative : BOOLEAN ;
 BEGIN
+   SkipSpaces (cid) ;
    ReadChar(cid, ch) ;
    negative := FALSE ;
    c := 0 ;
@@ -114,9 +116,9 @@ PROCEDURE WriteInt (cid: IOChan.ChanId; int: SHORTINT;
 VAR
    s: String ;
 BEGIN
-   s := IntegerToString(int, width, ' ', TRUE, 10, FALSE) ;
-   writeString(cid, s) ;
-   s := KillString(s)
+   s := IntegerToString (int, width, ' ', int < 0, 10, FALSE) ;
+   writeString (cid, s) ;
+   s := KillString (s)
 END WriteInt ;
 
 
@@ -133,6 +135,7 @@ VAR
    ch       : CHAR ;
    c        : SHORTCARD ;
 BEGIN
+   SkipSpaces (cid) ;
    ReadChar(cid, ch) ;
    c := 0 ;
    nextState := ScanCard ;

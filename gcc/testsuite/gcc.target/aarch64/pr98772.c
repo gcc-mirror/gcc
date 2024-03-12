@@ -155,4 +155,4 @@ int main ()
 /* { dg-final { scan-assembler-times "uaddl\\tv" 2 } } */
 /* { dg-final { scan-assembler-times "usubl\\tv" 2 } } */
 /* { dg-final { scan-assembler-times "umull\\tv" 2 } } */
-/* { dg-final { scan-assembler-times "shl\\tv" 2 } } */
+/* { dg-final { scan-assembler-times "shll\\tv" 2 } } */

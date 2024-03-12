@@ -2925,25 +2925,8 @@ The default mode for overflow checks is
 
       General => Strict
 
-which causes all computations both inside and outside assertions to use
-the base type.
-
-This retains compatibility with previous versions of
-GNAT which suppressed overflow checks by default and always
-used the base type for computation of intermediate results.
-
-.. Sphinx allows no emphasis within :index: role. As a workaround we
-   point the index to "switch" and use emphasis for "-gnato".
-
-The :index:`switch <-gnato (gcc)>` :switch:`-gnato` (with no digits following)
-is equivalent to
-
-  ::
-
-      General => Strict
-
-which causes overflow checking of all intermediate overflows
-both inside and outside assertions against the base type.
+which causes all computations both inside and outside assertions to use the
+base type, and is equivalent to :switch:`-gnato` (with no digits following).
 
 The pragma ``Suppress (Overflow_Check)`` disables overflow
 checking, but it has no effect on the method used for computing
@@ -2964,7 +2947,7 @@ reasonably efficient, and can be generally used. It also helps
 to ensure compatibility with code imported from some other
 compiler to GNAT.
 
-Setting all intermediate overflows checking (``CHECKED`` mode)
+Setting all intermediate overflows checking (``STRICT`` mode)
 makes sense if you want to
 make sure that your code is compatible with any other possible
 Ada implementation. This may be useful in ensuring portability
@@ -3311,6 +3294,18 @@ requires ``DV(Source)`` = ``DV(Target)``, and analogously for parameter
 passing (the dimension vector for the actual parameter must be equal to the
 dimension vector for the formal parameter).
 
+When using dimensioned types with elementary functions it is necessary to
+instantiate the ``Ada.Numerics.Generic_Elementary_Functions`` package using
+the ``Mks_Type`` and not any of the derived subtypes such as ``Distance``.
+For functions such as ``Sqrt`` the dimensional analysis will fail when using
+the subtypes because both the parameter and return are of the same type.
+
+An example instantiation
+
+  .. code-block:: ada
+  
+        package Mks_Numerics is new 
+           Ada.Numerics.Generic_Elementary_Functions (System.Dim.Mks.Mks_Type);
 
 .. _Stack_Related_Facilities:
 
@@ -3530,12 +3525,12 @@ leak memory even though it does not perform explicit deallocation:
            for A'Storage_Pool use X;
            v : A;
         begin
-           for I in  1 .. 50 loop
+           for I in 1 .. 50 loop
               v := new Integer;
            end loop;
         end Internal;
      begin
-        for I in  1 .. 100 loop
+        for I in 1 .. 100 loop
            Internal;
         end loop;
      end Pooloc1;

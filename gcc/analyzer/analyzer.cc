@@ -41,6 +41,8 @@ namespace ana {
 location_t
 get_stmt_location (const gimple *stmt, function *fun)
 {
+  if (!stmt)
+    return UNKNOWN_LOCATION;
   if (get_pure_location (stmt->location) == UNKNOWN_LOCATION)
     {
       /* Workaround for missing location information for clobber
@@ -423,19 +425,13 @@ make_label_text (bool can_colorize, const char *fmt, ...)
   if (!can_colorize)
     pp_show_color (pp) = false;
 
-  text_info ti;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_list ap;
 
   va_start (ap, fmt);
 
-  ti.format_spec = _(fmt);
-  ti.args_ptr = &ap;
-  ti.err_no = 0;
-  ti.x_data = NULL;
-  ti.m_richloc = &rich_loc;
-
+  text_info ti (_(fmt), &ap, 0, NULL, &rich_loc);
   pp_format (pp, &ti);
   pp_output_formatted_text (pp);
 
@@ -459,7 +455,6 @@ make_label_text_n (bool can_colorize, unsigned HOST_WIDE_INT n,
   if (!can_colorize)
     pp_show_color (pp) = false;
 
-  text_info ti;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_list ap;
@@ -468,11 +463,7 @@ make_label_text_n (bool can_colorize, unsigned HOST_WIDE_INT n,
 
   const char *fmt = ngettext (singular_fmt, plural_fmt, n);
 
-  ti.format_spec = fmt;
-  ti.args_ptr = &ap;
-  ti.err_no = 0;
-  ti.x_data = NULL;
-  ti.m_richloc = &rich_loc;
+  text_info ti (fmt, &ap, 0, NULL, &rich_loc);
 
   pp_format (pp, &ti);
   pp_output_formatted_text (pp);

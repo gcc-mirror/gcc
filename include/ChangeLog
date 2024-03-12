@@ -1,3 +1,90 @@
+2023-10-12  Zhang, Jun  <jun.zhang@intel.com>
+
+	PR target/109812
+	* spincount.h: New file.
+
+2023-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109751
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_FRIEND.
+
+2023-08-07  Vladimir Mezentsev  <vladimir.mezentsev@oracle.com>
+
+	* collectorAPI.h: New file.
+	* libcollector.h: New file.
+	* libfcollector.h: New file.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* xtensa-dynconfig.h (xtensa_isa_internal): Delete unnecessary
+	forward declaration.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* plugin-api.h: When handling non-gcc or gcc < 4.6.0 include
+	necessary header files before testing macros.  Make more use
+	of #elif.  Test _LITTLE_ENDIAN and _BIG_ENDIAN in final tests.
+
+2023-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cuda/cuda.h (CUDA_MEMCPY2D, CUDA_MEMCPY3D, CUDA_MEMCPY3D_PEER):
+	Remove bogus 'const' from 'const void *dst' and fix reserved-name
+	name in those structs.
+	(cuMemcpyPeer, cuMemcpyPeerAsync): Add.
+
+2023-07-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cuda/cuda.h (CUlimit): Add CUDA_ERROR_NOT_INITIALIZED,
+	CUDA_ERROR_DEINITIALIZED, CUDA_ERROR_INVALID_HANDLE.
+	(CUarray, CUmemorytype, CUDA_MEMCPY2D, CUDA_MEMCPY3D,
+	CUDA_MEMCPY3D_PEER): New typdefs.
+	(cuMemcpy2D, cuMemcpy2DAsync, cuMemcpy2DUnaligned,
+	cuMemcpy3D, cuMemcpy3DAsync, cuMemcpy3DPeer,
+	cuMemcpy3DPeerAsync): New prototypes.
+
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gomp-constants.h (enum gomp_map_kind): Change the enum values
+	GOMP_MAP_PRESENT_{TO,TOFROM,FROM,ALLOC} to be compiler only.
+	(GOMP_MAP_PRESENT_P): Update to include also GOMP_MAP_FORCE_PRESENT.
+
+2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* gomp-constants.h (GOMP_MAP_FLAG_SPECIAL_5): New.
+	(GOMP_MAP_FLAG_FORCE): Redefine.
+	(GOMP_MAP_FLAG_PRESENT, GOMP_MAP_FLAG_ALWAYS_PRESENT): New.
+	(enum gomp_map_kind): Add map kinds with 'present' modifiers.
+	(GOMP_MAP_COPY_TO_P, GOMP_MAP_COPY_FROM_P): Evaluate to true for
+	map variants with 'present'
+	(GOMP_MAP_ALWAYS_TO_P, GOMP_MAP_ALWAYS_FROM_P): Evaluate to true
+	for map variants with 'always, present' modifiers.
+	(GOMP_MAP_ALWAYS): Redefine.
+	(GOMP_MAP_FORCE_P, GOMP_MAP_PRESENT_P): New.
+
+2023-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/109128
+	* plugin-api.h (ld_plugin_claim_file_handler_v2)
+	(ld_plugin_register_claim_file_v2)
+	(LDPT_REGISTER_CLAIM_FILE_HOOK_V2): New.
+	(struct ld_plugin_tv): Add tv_register_claim_file_v2.
+
+2023-04-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* ctf.h: Import latest version from binutils/libctf.
+
+2023-04-19  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* xtensa-dynconfig.h (xtensa_config_v4): New struct.
+	(XCHAL_DATA_WIDTH, XCHAL_UNALIGNED_LOAD_EXCEPTION)
+	(XCHAL_UNALIGNED_STORE_EXCEPTION, XCHAL_UNALIGNED_LOAD_HW)
+	(XCHAL_UNALIGNED_STORE_HW, XTENSA_CONFIG_V4_ENTRY_LIST): New
+	definitions.
+	(XTENSA_CONFIG_INSTANCE_LIST): Add xtensa_config_v4 instance.
+	(XTENSA_CONFIG_ENTRY_LIST): Add XTENSA_CONFIG_V4_ENTRY_LIST.
+
 2023-02-27  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* xtensa-dynconfig.h (xtensa_config_v3): New struct.

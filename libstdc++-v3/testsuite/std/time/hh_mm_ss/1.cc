@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 // Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
@@ -109,8 +108,8 @@ size()
   static_assert(sizeof(hh_mm_ss<duration<int, std::centi>>) == sizeof(S1));
   struct S2 { long long h; char m, s; bool neg; int ss; };
   static_assert(sizeof(hh_mm_ss<duration<int, std::milli>>) == sizeof(S2));
-  static_assert(sizeof(hh_mm_ss<duration<int, std::pico>>) == sizeof(S2));
   struct S3 { long long h; char m, s; bool neg; long long ss; };
+  static_assert(sizeof(hh_mm_ss<duration<int, std::pico>>) == sizeof(S3));
   static_assert(sizeof(hh_mm_ss<duration<long long, std::pico>>) == sizeof(S3));
   struct S4 { long long h; char m, s; bool neg; double ss; };
   static_assert(sizeof(hh_mm_ss<duration<double, std::micro>>) == sizeof(S4));

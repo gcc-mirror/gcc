@@ -232,6 +232,16 @@ run_poly_int_selftests (void)
 			 worklist);
   run_poly_int_selftest ("rv32imafd_zve32x1p0", ABI_ILP32D, POLY_TEST_DIMODE,
 			 worklist);
+  simple_poly_selftest ("rv64imafdv_zvl256b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
+  simple_poly_selftest ("rv64imafdv_zvl512b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
+  simple_poly_selftest ("rv64imafdv_zvl1024b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
+  simple_poly_selftest ("rv64imafdv_zvl2048b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
+  simple_poly_selftest ("rv64imafdv_zvl4096b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
 }
 
 static void
@@ -333,7 +343,7 @@ run_broadcast_selftests (void)
 	  rtx mem = gen_rtx_MEM (inner_mode, addr);                            \
 	  expand_vector_broadcast (mode, mem);                                 \
 	  insn = get_last_insn ();                                             \
-	  src = XEXP (SET_SRC (PATTERN (insn)), 1);                            \
+	  src = SET_SRC (PATTERN (insn));                                      \
 	  ASSERT_TRUE (MEM_P (XEXP (src, 0)));                                 \
 	  ASSERT_TRUE (                                                        \
 	    rtx_equal_p (src, gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));   \
@@ -343,7 +353,7 @@ run_broadcast_selftests (void)
 	  rtx reg = gen_reg_rtx (inner_mode);                                  \
 	  expand_vector_broadcast (mode, reg);                                 \
 	  insn = get_last_insn ();                                             \
-	  src = XEXP (SET_SRC (PATTERN (insn)), 1);                            \
+	  src = SET_SRC (PATTERN (insn));                                      \
 	  ASSERT_TRUE (REG_P (XEXP (src, 0)));                                 \
 	  ASSERT_TRUE (                                                        \
 	    rtx_equal_p (src, gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));   \

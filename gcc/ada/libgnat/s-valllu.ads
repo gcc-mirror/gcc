@@ -46,13 +46,14 @@ pragma Assertion_Policy (Pre                => Ignore,
 
 with System.Unsigned_Types;
 with System.Value_U;
+with System.Vs_LLU;
 
 package System.Val_LLU with SPARK_Mode is
    pragma Preelaborate;
 
    subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
 
-   package Impl is new Value_U (Long_Long_Unsigned);
+   package Impl is new Value_U (Long_Long_Unsigned, System.Vs_LLU.Spec);
 
    procedure Scan_Raw_Long_Long_Unsigned
      (Str : String;

@@ -1477,7 +1477,7 @@ real_to_integer (const REAL_VALUE_TYPE *r)
 wide_int
 real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 {
-  HOST_WIDE_INT val[2 * WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT valb[WIDE_INT_MAX_INL_ELTS], *val;
   int exp;
   int words, w;
   wide_int result;
@@ -1516,7 +1516,11 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 	 is the smallest HWI-multiple that has at least PRECISION bits.
 	 This ensures that the top bit of the significand is in the
 	 top bit of the wide_int.  */
-      words = (precision + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
+      words = ((precision + HOST_BITS_PER_WIDE_INT - 1)
+	       / HOST_BITS_PER_WIDE_INT);
+      val = valb;
+      if (UNLIKELY (words > WIDE_INT_MAX_INL_ELTS))
+	val = XALLOCAVEC (HOST_WIDE_INT, words);
       w = words * HOST_BITS_PER_WIDE_INT;
 
 #if (HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG)
@@ -2131,7 +2135,6 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
     {
       /* Decimal floating point.  */
       const char *cstr = str;
-      mpfr_t m;
       bool inexact;
 
       while (*cstr == '0')
@@ -2148,21 +2151,15 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	goto is_a_zero;
 
       /* Nonzero value, possibly overflowing or underflowing.  */
-      mpfr_init2 (m, SIGNIFICAND_BITS);
+      auto_mpfr m (SIGNIFICAND_BITS);
       inexact = mpfr_strtofr (m, str, NULL, 10, MPFR_RNDZ);
       /* The result should never be a NaN, and because the rounding is
 	 toward zero should never be an infinity.  */
       gcc_assert (!mpfr_nan_p (m) && !mpfr_inf_p (m));
       if (mpfr_zero_p (m) || mpfr_get_exp (m) < -MAX_EXP + 4)
-	{
-	  mpfr_clear (m);
-	  goto underflow;
-	}
+	goto underflow;
       else if (mpfr_get_exp (m) > MAX_EXP - 4)
-	{
-	  mpfr_clear (m);
-	  goto overflow;
-	}
+	goto overflow;
       else
 	{
 	  real_from_mpfr (r, m, NULL_TREE, MPFR_RNDZ);
@@ -2173,7 +2170,6 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	  gcc_assert (r->cl == rvc_normal);
 	  /* Set a sticky bit if mpfr_strtofr was inexact.  */
 	  r->sig[0] |= inexact;
-	  mpfr_clear (m);
 	}
     }
 
@@ -2474,12 +2470,30 @@ dconst_e_ptr (void)
      These constants need to be given to at least 160 bits precision.  */
   if (value.cl == rvc_zero)
     {
-      mpfr_t m;
-      mpfr_init2 (m, SIGNIFICAND_BITS);
+      auto_mpfr m (SIGNIFICAND_BITS);
       mpfr_set_ui (m, 1, MPFR_RNDN);
       mpfr_exp (m, m, MPFR_RNDN);
       real_from_mpfr (&value, m, NULL_TREE, MPFR_RNDN);
-      mpfr_clear (m);
+
+    }
+  return &value;
+}
+
+/* Returns the special REAL_VALUE_TYPE corresponding to 'pi'.  */
+
+const REAL_VALUE_TYPE *
+dconst_pi_ptr (void)
+{
+  static REAL_VALUE_TYPE value;
+
+  /* Initialize mathematical constants for constant folding builtins.
+     These constants need to be given to at least 160 bits precision.  */
+  if (value.cl == rvc_zero)
+    {
+      auto_mpfr m (SIGNIFICAND_BITS);
+      mpfr_set_si (m, -1, MPFR_RNDN);
+      mpfr_acos (m, m, MPFR_RNDN);
+      real_from_mpfr (&value, m, NULL_TREE, MPFR_RNDN);
 
     }
   return &value;
@@ -2517,11 +2531,9 @@ dconst_sqrt2_ptr (void)
      These constants need to be given to at least 160 bits precision.  */
   if (value.cl == rvc_zero)
     {
-      mpfr_t m;
-      mpfr_init2 (m, SIGNIFICAND_BITS);
+      auto_mpfr m (SIGNIFICAND_BITS);
       mpfr_sqrt_ui (m, 2, MPFR_RNDN);
       real_from_mpfr (&value, m, NULL_TREE, MPFR_RNDN);
-      mpfr_clear (m);
     }
   return &value;
 }

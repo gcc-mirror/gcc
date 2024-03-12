@@ -42,6 +42,10 @@
 /* Define to 1 if you have the `at_quick_exit' function. */
 #undef HAVE_AT_QUICK_EXIT
 
+/* Define if C99 float_t and double_t in <math.h> should be imported in
+   <cmath> in namespace std for C++11. */
+#undef HAVE_C99_FLT_EVAL_TYPES
+
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 
@@ -249,6 +253,9 @@
 
 /* Define to 1 if you have the `logl' function. */
 #undef HAVE_LOGL
+
+/* Define if lseek is available in <unistd.h>. */
+#undef HAVE_LSEEK
 
 /* Define to 1 if you have the <machine/endian.h> header file. */
 #undef HAVE_MACHINE_ENDIAN_H
@@ -779,8 +786,8 @@
    C99 library functions to be present. */
 #undef _GLIBCXX11_USE_C99_COMPLEX
 
-/* Define if C99 functions or macros in <math.h> should be imported in <cmath>
-   in namespace std for C++11. */
+/* Define if C99 generic macros in <math.h> should be imported in <cmath> in
+   namespace std for C++11. */
 #undef _GLIBCXX11_USE_C99_MATH
 
 /* Define if C99 functions or macros in <stdio.h> should be imported in
@@ -818,6 +825,10 @@
 
 /* Define if the compiler supports C++11 atomics. */
 #undef _GLIBCXX_ATOMIC_BUILTINS
+
+/* Define if global objects can be aligned to
+   std::hardware_destructive_interference_size. */
+#undef _GLIBCXX_CAN_ALIGNAS_DESTRUCTIVE_SIZE
 
 /* Define to use concept checking code from the boost libraries. */
 #undef _GLIBCXX_CONCEPT_CHECKS
@@ -892,34 +903,69 @@
    <stdio.h>, and <stdlib.h> can be used or exposed. */
 #undef _GLIBCXX_USE_C99
 
+/* Define if C99 inverse trig functions in <complex.h> should be used in
+   <complex>. Using compiler builtins for these functions requires
+   corresponding C99 library functions to be present. */
+#undef _GLIBCXX_USE_C99_COMPLEX_ARC
+
 /* Define if C99 functions in <complex.h> should be used in <tr1/complex>.
    Using compiler builtins for these functions requires corresponding C99
    library functions to be present. */
 #undef _GLIBCXX_USE_C99_COMPLEX_TR1
 
+/* Define if C99 functions in <ctype.h> should be imported in <cctype> in
+   namespace std for C++11. */
+#undef _GLIBCXX_USE_C99_CTYPE
+
 /* Define if C99 functions in <ctype.h> should be imported in <tr1/cctype> in
    namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_CTYPE_TR1
 
+/* Define if C99 functions in <fenv.h> should be imported in <cfenv> in
+   namespace std for C++11. */
+#undef _GLIBCXX_USE_C99_FENV
+
 /* Define if C99 functions in <fenv.h> should be imported in <tr1/cfenv> in
    namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_FENV_TR1
+
+/* Define if C99 functions in <inttypes.h> should be imported in <cinttypes>
+   in namespace std in C++11. */
+#undef _GLIBCXX_USE_C99_INTTYPES
 
 /* Define if C99 functions in <inttypes.h> should be imported in
    <tr1/cinttypes> in namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_INTTYPES_TR1
 
 /* Define if wchar_t C99 functions in <inttypes.h> should be imported in
+   <cinttypes> in namespace std in C++11. */
+#undef _GLIBCXX_USE_C99_INTTYPES_WCHAR_T
+
+/* Define if wchar_t C99 functions in <inttypes.h> should be imported in
    <tr1/cinttypes> in namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1
+
+/* Define if C99 functions in <math.h> should be imported in <cmath> in
+   namespace std for C++11. */
+#undef _GLIBCXX_USE_C99_MATH_FUNCS
 
 /* Define if C99 functions or macros in <math.h> should be imported in
    <tr1/cmath> in namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_MATH_TR1
 
+/* Define if C99 types in <stdint.h> should be imported in <cstdint> in
+   namespace std for C++11. */
+#undef _GLIBCXX_USE_C99_STDINT
+
 /* Define if C99 types in <stdint.h> should be imported in <tr1/cstdint> in
    namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_STDINT_TR1
+
+/* Define if usable chdir is available in <unistd.h>. */
+#undef _GLIBCXX_USE_CHDIR
+
+/* Define if usable chmod is available in <sys/stat.h>. */
+#undef _GLIBCXX_USE_CHMOD
 
 /* Defined if clock_gettime syscall has monotonic and realtime clock support.
    */
@@ -930,6 +976,9 @@
 
 /* Defined if clock_gettime has realtime clock support. */
 #undef _GLIBCXX_USE_CLOCK_REALTIME
+
+/* Define if copy_file_range is available in <unistd.h>. */
+#undef _GLIBCXX_USE_COPY_FILE_RANGE
 
 /* Define if ISO/IEC TR 24733 decimal floating point types are supported on
    this host. */
@@ -945,11 +994,20 @@
 /* Define if fchmodat is available in <sys/stat.h>. */
 #undef _GLIBCXX_USE_FCHMODAT
 
+/* Define if fseeko and ftello are available. */
+#undef _GLIBCXX_USE_FSEEKO_FTELLO
+
+/* Define if usable getcwd is available in <unistd.h>. */
+#undef _GLIBCXX_USE_GETCWD
+
 /* Defined if gettimeofday is available. */
 #undef _GLIBCXX_USE_GETTIMEOFDAY
 
 /* Define if get_nprocs is available in <sys/sysinfo.h>. */
 #undef _GLIBCXX_USE_GET_NPROCS
+
+/* Define if init_priority should be used for iostream initialization. */
+#undef _GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE
 
 /* Define if LFS support is available. */
 #undef _GLIBCXX_USE_LFS
@@ -959,6 +1017,9 @@
 
 /* Define if lstat is available in <sys/stat.h>. */
 #undef _GLIBCXX_USE_LSTAT
+
+/* Define if usable mkdir is available in <sys/stat.h>. */
+#undef _GLIBCXX_USE_MKDIR
 
 /* Defined if nanosleep is available. */
 #undef _GLIBCXX_USE_NANOSLEEP
@@ -1033,6 +1094,9 @@
 
 /* Defined if Sleep exists. */
 #undef _GLIBCXX_USE_WIN32_SLEEP
+
+/* Define if _get_osfhandle should be used for filebuf::native_handle(). */
+#undef _GLIBCXX_USE__GET_OSFHANDLE
 
 /* Define to 1 if a verbose library is built, or 0 otherwise. */
 #undef _GLIBCXX_VERBOSE

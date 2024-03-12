@@ -277,17 +277,12 @@ single_pred_cond_non_loop_exit (basic_block bb)
 {
   if (single_pred_p (bb))
     {
-      edge e = single_pred_edge (bb);
-      basic_block pred = e->src;
-      gimple *stmt;
+      basic_block pred = single_pred (bb);
 
       if (loop_depth (pred->loop_father) > loop_depth (bb->loop_father))
 	return NULL;
 
-      stmt = last_stmt (pred);
-
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
-	return as_a<gcond *> (stmt);
+      return safe_dyn_cast <gcond *> (*gsi_last_bb (pred));
     }
 
   return NULL;
@@ -469,8 +464,7 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
      its border it acts more like a visited bitmap.  */
   do
     {
-      int index = bitmap_first_set_bit (worklist);
-      bitmap_clear_bit (worklist, index);
+      int index = bitmap_clear_first_set_bit (worklist);
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, index);
       edge_iterator ei;
       edge e;
@@ -986,8 +980,8 @@ scop_detection::graphite_can_represent_scev (sese_l scop, tree scev)
 	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 1));
 
     case MULT_EXPR:
-      return !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 0)))
-	&& !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 1)))
+      return !CONVERT_EXPR_P (TREE_OPERAND (scev, 0))
+	&& !CONVERT_EXPR_P (TREE_OPERAND (scev, 1))
 	&& !(chrec_contains_symbols (TREE_OPERAND (scev, 0))
 	     && chrec_contains_symbols (TREE_OPERAND (scev, 1)))
 	&& graphite_can_represent_init (scev)

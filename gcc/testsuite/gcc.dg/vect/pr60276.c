@@ -44,6 +44,7 @@ int main(void)
   foo (out + 2, lp + 1, 48);
   foo_novec (out2 + 2, lp + 1, 48);
 
+#pragma GCC novector
   for (s = 0; s < 49; s++)
     if (out[s] != out2[s])
       abort ();

@@ -108,6 +108,14 @@
    (MAX_17BIT_OFFSET   262100)	; 17-bit branch
   ])
 
+;; Register numbers
+
+(define_constants
+  [(R1_REGNUM		 1)
+   (R19_REGNUM		19)
+   (R27_REGNUM		27)
+  ])
+
 ;; Mode and code iterators
 
 ;; This mode iterator allows :P to be used for patterns that operate on
@@ -9940,6 +9948,23 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "52")])
 
+(define_expand "clear_cache"
+  [(match_operand 0 "pmode_register_operand")
+   (match_operand 1 "pmode_register_operand")]
+  ""
+{
+  rtx line_length = gen_reg_rtx (Pmode);
+
+  emit_move_insn (line_length, GEN_INT (MIN_CACHELINE_SIZE));
+  if (TARGET_64BIT)
+    emit_insn (gen_icacheflushdi (operands[0], operands[1], line_length,
+				  gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));
+  else
+    emit_insn (gen_icacheflushsi (operands[0], operands[1], line_length,
+				  gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));
+  DONE;
+})
+
 ;; An out-of-line prologue.
 (define_insn "outline_prologue_call"
   [(unspec_volatile [(const_int 0)] UNSPECV_OPC)
@@ -10245,9 +10270,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "tgd_load"
  [(set (match_operand:SI 0 "register_operand" "=r")
        (unspec:SI [(match_operand 1 "tgd_symbolic_operand" "")] UNSPEC_TLSGD))
-  (clobber (reg:SI 1))
-  (use (reg:SI 27))]
-  ""
+  (clobber (reg:SI R1_REGNUM))
+  (use (reg:SI R27_REGNUM))]
+  "!TARGET_64BIT"
   "*
 {
   return \"addil LR'%1-$tls_gdidx$,%%r27\;ldo RR'%1-$tls_gdidx$(%%r1),%0\";
@@ -10255,12 +10280,25 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-(define_insn "tgd_load_pic"
+(define_expand "tgd_load_pic"
+ [(set (match_operand 0 "register_operand")
+       (unspec [(match_operand 1 "tgd_symbolic_operand")] UNSPEC_TLSGD_PIC))
+  (clobber (reg R1_REGNUM))]
+  ""
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_tgd_load_picdi (operands[0], operands[1]));
+  else
+    emit_insn (gen_tgd_load_picsi (operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn "tgd_load_picsi"
  [(set (match_operand:SI 0 "register_operand" "=r")
        (unspec:SI [(match_operand 1 "tgd_symbolic_operand" "")] UNSPEC_TLSGD_PIC))
-  (clobber (reg:SI 1))
-  (use (reg:SI 19))]
-  ""
+  (clobber (reg:SI R1_REGNUM))
+  (use (reg:SI R19_REGNUM))]
+  "!TARGET_64BIT"
   "*
 {
   return \"addil LT'%1-$tls_gdidx$,%%r19\;ldo RT'%1-$tls_gdidx$(%%r1),%0\";
@@ -10268,12 +10306,25 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
+(define_insn "tgd_load_picdi"
+ [(set (match_operand:DI 0 "register_operand" "=r")
+       (unspec:DI [(match_operand 1 "tgd_symbolic_operand" "")] UNSPEC_TLSGD_PIC))
+  (clobber (reg:DI R1_REGNUM))
+  (use (reg:DI R27_REGNUM))]
+  "TARGET_64BIT"
+  "*
+{
+  return \"addil LT'%1-$tls_gdidx$,%%r27\;ldo RT'%1-$tls_gdidx$(%%r1),%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
 (define_insn "tld_load"
  [(set (match_operand:SI 0 "register_operand" "=r")
        (unspec:SI [(match_operand 1 "tld_symbolic_operand" "")] UNSPEC_TLSLDM))
-  (clobber (reg:SI 1))
-  (use (reg:SI 27))]
-  ""
+  (clobber (reg:SI R1_REGNUM))
+  (use (reg:SI R27_REGNUM))]
+  "!TARGET_64BIT"
   "*
 {
   return \"addil LR'%1-$tls_ldidx$,%%r27\;ldo RR'%1-$tls_ldidx$(%%r1),%0\";
@@ -10281,12 +10332,25 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-(define_insn "tld_load_pic"
+(define_expand "tld_load_pic"
+ [(set (match_operand 0 "register_operand")
+       (unspec [(match_operand 1 "tld_symbolic_operand")] UNSPEC_TLSLDM_PIC))
+  (clobber (reg R1_REGNUM))]
+  ""
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_tld_load_picdi (operands[0], operands[1]));
+  else
+    emit_insn (gen_tld_load_picsi (operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn "tld_load_picsi"
  [(set (match_operand:SI 0 "register_operand" "=r")
        (unspec:SI [(match_operand 1 "tld_symbolic_operand" "")] UNSPEC_TLSLDM_PIC))
-  (clobber (reg:SI 1))
-  (use (reg:SI 19))]
-  ""
+  (clobber (reg:SI R1_REGNUM))
+  (use (reg:SI R19_REGNUM))]
+  "!TARGET_64BIT"
   "*
 {
   return \"addil LT'%1-$tls_ldidx$,%%r19\;ldo RT'%1-$tls_ldidx$(%%r1),%0\";
@@ -10294,12 +10358,40 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-(define_insn "tld_offset_load"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (plus:SI (unspec:SI [(match_operand 1 "tld_symbolic_operand" "")] 
+(define_insn "tld_load_picdi"
+ [(set (match_operand:DI 0 "register_operand" "=r")
+       (unspec:DI [(match_operand 1 "tld_symbolic_operand" "")] UNSPEC_TLSLDM_PIC))
+  (clobber (reg:DI R1_REGNUM))
+  (use (reg:DI R27_REGNUM))]
+  "TARGET_64BIT"
+  "*
+{
+  return \"addil LT'%1-$tls_ldidx$,%%r27\;ldo RT'%1-$tls_ldidx$(%%r1),%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_expand "tld_offset_load"
+  [(set (match_operand 0 "register_operand")
+        (plus (unspec [(match_operand 1 "tld_symbolic_operand")] 
 		 	    UNSPEC_TLSLDO)
-		 (match_operand:SI 2 "register_operand" "r")))
-   (clobber (reg:SI 1))]
+		 (match_operand 2 "register_operand")))
+   (clobber (reg R1_REGNUM))]
+  ""
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_tld_offset_loaddi (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_tld_offset_loadsi (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "tld_offset_load<P:mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (plus:P (unspec:P [(match_operand 1 "tld_symbolic_operand" "")] 
+		 	    UNSPEC_TLSLDO)
+		(match_operand:P 2 "register_operand" "r")))
+   (clobber (reg:P R1_REGNUM))]
   ""
   "*
 {
@@ -10308,9 +10400,21 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-(define_insn "tp_load"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(const_int 0)] UNSPEC_TP))]
+(define_expand "tp_load"
+  [(set (match_operand 0 "register_operand")
+	(unspec [(const_int 0)] UNSPEC_TP))]
+  ""
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_tp_loaddi (operands[0]));
+  else
+    emit_insn (gen_tp_loadsi (operands[0]));
+  DONE;
+})
+
+(define_insn "tp_load<P:mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(const_int 0)] UNSPEC_TP))]
   ""
   "mfctl %%cr27,%0"
   [(set_attr "type" "multi")
@@ -10319,9 +10423,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "tie_load"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(match_operand 1 "tie_symbolic_operand" "")] UNSPEC_TLSIE))
-   (clobber (reg:SI 1))
-   (use (reg:SI 27))]
-  ""
+   (clobber (reg:SI R1_REGNUM))
+   (use (reg:SI R27_REGNUM))]
+  "!TARGET_64BIT"
   "*
 {
   return \"addil LR'%1-$tls_ieoff$,%%r27\;ldw RR'%1-$tls_ieoff$(%%r1),%0\";
@@ -10329,12 +10433,25 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-(define_insn "tie_load_pic"
+(define_expand "tie_load_pic"
+  [(set (match_operand 0 "register_operand")
+        (unspec [(match_operand 1 "tie_symbolic_operand")] UNSPEC_TLSIE_PIC))
+   (clobber (reg R1_REGNUM))]
+  ""
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_tie_load_picdi (operands[0], operands[1]));
+  else
+    emit_insn (gen_tie_load_picsi (operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn "tie_load_picsi"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(match_operand 1 "tie_symbolic_operand" "")] UNSPEC_TLSIE_PIC))
-   (clobber (reg:SI 1))
-   (use (reg:SI 19))]
-  ""
+   (clobber (reg:SI R1_REGNUM))
+   (use (reg:SI R19_REGNUM))]
+  "!TARGET_64BIT"
   "*
 {
   return \"addil LT'%1-$tls_ieoff$,%%r19\;ldw RT'%1-$tls_ieoff$(%%r1),%0\";
@@ -10342,12 +10459,40 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-(define_insn "tle_load"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (plus:SI (unspec:SI [(match_operand 1 "tle_symbolic_operand" "")] 
+(define_insn "tie_load_picdi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(match_operand 1 "tie_symbolic_operand" "")] UNSPEC_TLSIE_PIC))
+   (clobber (reg:DI R1_REGNUM))
+   (use (reg:DI R27_REGNUM))]
+  "!TARGET_64BIT"
+  "*
+{
+  return \"addil LT'%1-$tls_ieoff$,%%r27\;ldd RT'%1-$tls_ieoff$(%%r1),%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_expand "tle_load"
+  [(set (match_operand 0 "register_operand")
+        (plus (unspec [(match_operand 1 "tle_symbolic_operand")] 
 		 	    UNSPEC_TLSLE)
-		 (match_operand:SI 2 "register_operand" "r")))
-   (clobber (reg:SI 1))]
+		(match_operand 2 "register_operand")))
+   (clobber (reg R1_REGNUM))]
+  ""
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_tle_loaddi (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_tle_loadsi (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "tle_load<P:mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (plus:P (unspec:P [(match_operand 1 "tle_symbolic_operand" "")] 
+		 	    UNSPEC_TLSLE)
+		 (match_operand:P 2 "register_operand" "r")))
+   (clobber (reg:P R1_REGNUM))]
   ""
   "addil LR'%1-$tls_leoff$,%2\;ldo RR'%1-$tls_leoff$(%%r1),%0"
   [(set_attr "type" "multi")
@@ -10594,10 +10739,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 ;; generating PA 1.x code even though all PA 1.x systems are strongly ordered.
 
 ;; When barriers are needed, we use a strongly ordered ldcw instruction as
-;; the barrier.  Most PA 2.0 targets are cache coherent.  In that case, we
-;; can use the coherent cache control hint and avoid aligning the ldcw
-;; address.  In spite of its description, it is not clear that the sync
-;; instruction works as a barrier.
+;; the barrier.  All PA 2.0 targets accept the "co" cache control hint but
+;; only PA8800 and PA8900 processors implement the cacheable hint.  In
+;; that case, we can avoid aligning the ldcw address.  In spite of its
+;; description, it is not clear that the sync instruction works as a barrier.
 
 (define_expand "memory_barrier"
   [(parallel
@@ -10627,7 +10772,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
         (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
     (clobber (match_operand 1 "pmode_register_operand" "=&r"))]
   "TARGET_64BIT"
-  "ldo 15(%%sp),%1\n\tdepd %%r0,63,3,%1\n\tldcw 0(%1),%1"
+  "ldo 15(%%sp),%1\n\tdepd %%r0,63,3,%1\n\tldcw,co 0(%1),%1"
   [(set_attr "type" "binary")
    (set_attr "length" "12")])
 
@@ -10636,6 +10781,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
         (unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
     (clobber (match_operand 1 "pmode_register_operand" "=&r"))]
   ""
-  "ldo 15(%%sp),%1\n\t{dep|depw} %%r0,31,3,%1\n\tldcw 0(%1),%1"
+  "ldo 15(%%sp),%1\n\t{dep|depw} %%r0,31,3,%1\n\t{ldcw|ldcw,co} 0(%1),%1"
   [(set_attr "type" "binary")
    (set_attr "length" "12")])

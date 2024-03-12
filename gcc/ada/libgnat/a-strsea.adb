@@ -185,6 +185,9 @@ package body Ada.Strings.Search with SPARK_Mode is
          Ind := Ind + 1;
          for K in Pattern'Range loop
             if Pattern (K) /= Mapping (Source (Ind + (K - Pattern'First))) then
+               pragma Annotate (GNATprove, False_Positive,
+                                "call via access-to-subprogram",
+                                "function Mapping must always terminate");
                pragma Assert (not (Match (Source, Pattern, Mapping, Ind)));
                goto Cont;
             end if;
@@ -192,6 +195,9 @@ package body Ada.Strings.Search with SPARK_Mode is
             pragma Loop_Invariant
               (for all J in Pattern'First .. K =>
                  Pattern (J) = Mapping (Source (Ind + (J - Pattern'First))));
+            pragma Annotate (GNATprove, False_Positive,
+                             "call via access-to-subprogram",
+                             "function Mapping must always terminate");
          end loop;
 
          pragma Assert (Match (Source, Pattern, Mapping, Ind));
@@ -489,12 +495,18 @@ package body Ada.Strings.Search with SPARK_Mode is
                if Pattern (K) /= Mapping.all
                  (Source (Ind + (K - Pattern'First)))
                then
+                  pragma Annotate (GNATprove, False_Positive,
+                                   "call via access-to-subprogram",
+                                   "function Mapping must always terminate");
                   goto Cont1;
                end if;
 
                pragma Loop_Invariant
                  (for all J in Pattern'First .. K =>
                    Pattern (J) = Mapping (Source (Ind + (J - Pattern'First))));
+               pragma Annotate (GNATprove, False_Positive,
+                                "call via access-to-subprogram",
+                                "function Mapping must always terminate");
             end loop;
 
             pragma Assert (Match (Source, Pattern, Mapping, Ind));
@@ -515,19 +527,25 @@ package body Ada.Strings.Search with SPARK_Mode is
                if Pattern (K) /= Mapping.all
                  (Source (Ind + (K - Pattern'First)))
                then
+                  pragma Annotate (GNATprove, False_Positive,
+                                   "call via access-to-subprogram",
+                                   "function Mapping must always terminate");
                   goto Cont2;
                end if;
 
                pragma Loop_Invariant
                  (for all J in Pattern'First .. K =>
                    Pattern (J) = Mapping (Source (Ind + (J - Pattern'First))));
+               pragma Annotate (GNATprove, False_Positive,
+                                "call via access-to-subprogram",
+                                "function Mapping must always terminate");
             end loop;
 
             return Ind;
 
             <<Cont2>>
             pragma Loop_Invariant
-              (for all J in Ind .. (Source'Last - PL1) =>
+              (for all J in Ind .. Source'Last - PL1 =>
                 not (Match (Source, Pattern, Mapping, J)));
             null;
          end loop;

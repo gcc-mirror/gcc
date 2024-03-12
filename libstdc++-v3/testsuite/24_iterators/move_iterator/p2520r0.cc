@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
+// { dg-add-options no_pch }
 
 // Verify P2520R0 changes to move_iterator's iterator_concept, which we treat
 // as a DR against C++20.

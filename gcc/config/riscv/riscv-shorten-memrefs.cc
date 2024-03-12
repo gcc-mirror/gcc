@@ -65,7 +65,8 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return TARGET_RVC && riscv_mshorten_memrefs && optimize > 0;
+      return (TARGET_RVC || TARGET_ZCA)
+	&& riscv_mshorten_memrefs && optimize > 0;
     }
   virtual unsigned int execute (function *);
 

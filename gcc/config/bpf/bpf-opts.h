@@ -20,44 +20,18 @@
 #ifndef BPF_OPTS_H
 #define BPF_OPTS_H
 
-/* Supported versions of the Linux kernel.  */
-enum bpf_kernel_version
-{
-  /* Linux 4.x */
-  LINUX_V4_0,
-  LINUX_V4_1,
-  LINUX_V4_2,
-  LINUX_V4_3,
-  LINUX_V4_4,
-  LINUX_V4_5,
-  LINUX_V4_6,
-  LINUX_V4_7,
-  LINUX_V4_8,
-  LINUX_V4_9,
-  LINUX_V4_10,
-  LINUX_V4_11,
-  LINUX_V4_12,
-  LINUX_V4_13,
-  LINUX_V4_14,
-  LINUX_V4_15,
-  LINUX_V4_16,
-  LINUX_V4_17,
-  LINUX_V4_18,
-  LINUX_V4_19,
-  LINUX_V4_20,
-  /* Linux 5.x  */
-  LINUX_V5_0,
-  LINUX_V5_1,
-  LINUX_V5_2,
-  LINUX_LATEST = LINUX_V5_2,
-  LINUX_NATIVE,
-};
-
 enum bpf_isa_version
 {
   ISA_V1,
   ISA_V2,
   ISA_V3,
+  ISA_V4
+};
+
+enum bpf_asm_dialect
+{
+  ASM_NORMAL,
+  ASM_PSEUDOC
 };
 
 #endif /* ! BPF_OPTS_H */

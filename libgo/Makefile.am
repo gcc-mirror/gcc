@@ -417,6 +417,7 @@ toolexeclibgounicode_DATA = \
 # Some internal packages are needed to bootstrap the gc toolchain.
 toolexeclibgointernaldir = $(toolexeclibgodir)/internal
 toolexeclibgointernal_DATA = \
+	internal/lazyregexp.gox \
 	internal/reflectlite.gox \
 	internal/unsafeheader.gox
 
@@ -462,6 +463,7 @@ runtime_files = \
 	runtime/go-memclr.c \
 	runtime/go-memmove.c \
 	runtime/go-memequal.c \
+	runtime/go-mmap.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-nosys.c \

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_RANGE_H
 #define GCC_GIMPLE_RANGE_H
 
+#include "ssa.h"
 #include "range.h"
 #include "value-query.h"
 #include "gimple-range-op.h"
@@ -63,6 +64,7 @@ public:
   bool fold_stmt (gimple_stmt_iterator *gsi, tree (*) (tree));
   void register_inferred_ranges (gimple *s);
   void register_transitive_inferred_ranges (basic_block bb);
+  range_query &const_query ();
 protected:
   bool fold_range_internal (vrange &r, gimple *s, tree name);
   void prefill_name (vrange &r, tree name);
@@ -95,9 +97,37 @@ protected:
   void calculate_phi (gphi *phi, vrange &lhs_range, fur_source &src);
   void check_taken_edge (edge e, fur_source &src);
 
-  ssa_global_cache global;
+  ssa_lazy_cache global;
   gori_compute m_gori;
 };
 
+// DOM based ranger for fast VRP.
+// This must be processed in DOM order, and does only basic range operations.
 
+class dom_ranger : public range_query
+{
+public:
+  dom_ranger ();
+  ~dom_ranger ();
+
+  virtual bool range_of_expr (vrange &r, tree expr, gimple *s = NULL) override;
+  virtual bool range_on_edge (vrange &r, edge e, tree expr) override;
+  virtual bool range_of_stmt (vrange &r, gimple *s, tree name = NULL) override;
+
+  bool edge_range (vrange &r, edge e, tree name);
+  void range_in_bb (vrange &r, basic_block bb, tree name);
+
+  void pre_bb (basic_block bb);
+  void post_bb (basic_block bb);
+protected:
+  DISABLE_COPY_AND_ASSIGN (dom_ranger);
+  void maybe_push_edge (edge e, bool edge_0);
+  ssa_cache m_global;
+  gimple_outgoing_range m_out;
+  vec<ssa_lazy_cache *> m_freelist;
+  vec<ssa_lazy_cache *> m_e0;
+  vec<ssa_lazy_cache *> m_e1;
+  bitmap m_pop_list;
+  range_tracer tracer;
+};
 #endif // GCC_GIMPLE_RANGE_H

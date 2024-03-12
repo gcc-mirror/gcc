@@ -1227,7 +1227,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	  {
 	    bool cstresult
 	      = (result
-		 && TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant);
+		 && CONSTANT_CLASS_P (result));
 	    if (TYPE_UNSIGNED (type))
 	      {
 		if (cstresult)
@@ -1255,7 +1255,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 			      expr_type, type, expr);
 	      }
 	  }
-	else if (TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant)
+	else if (CONSTANT_CLASS_P (result))
 	  warning_at (loc, warnopt,
 		      "conversion from %qT to %qT changes value from %qE to %qE",
 		      expr_type, type, expr, result);
@@ -1306,8 +1306,10 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
       }
 
     case BIT_AND_EXPR:
-      if (TREE_CODE (expr_type) == INTEGER_TYPE
-	  && TREE_CODE (type) == INTEGER_TYPE)
+      if ((TREE_CODE (expr_type) == INTEGER_TYPE
+	   || TREE_CODE (expr_type) == BITINT_TYPE)
+	  && (TREE_CODE (type) == INTEGER_TYPE
+	      || TREE_CODE (type) == BITINT_TYPE))
 	for (int i = 0; i < 2; ++i)
 	  {
 	    tree op = TREE_OPERAND (expr, i);
@@ -1404,7 +1406,7 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
   while (TREE_CODE (result) == COMPOUND_EXPR)
     result = TREE_OPERAND (result, 1);
 
-  bool cst = TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant;
+  bool cst = CONSTANT_CLASS_P (result);
   tree exprtype = TREE_TYPE (expr);
   tree result_diag;
   /* We're interested in the actual numerical value here, not its ASCII
@@ -1416,6 +1418,7 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
+	  || TREE_CODE (type) == BITINT_TYPE
 	  || (TREE_CODE (type) == ENUMERAL_TYPE
 	      && TREE_CODE (ENUM_UNDERLYING_TYPE (type)) != BOOLEAN_TYPE))
       && !int_fits_type_p (expr, type))
@@ -1466,9 +1469,10 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 	}
       /* No warning for converting 0x80000000 to int.  */
       else if (pedantic
-	       && (TREE_CODE (exprtype) != INTEGER_TYPE
-		   || TYPE_PRECISION (exprtype)
-		   != TYPE_PRECISION (type)))
+	       && ((TREE_CODE (exprtype) != INTEGER_TYPE
+		    && TREE_CODE (exprtype) != BITINT_TYPE)
+		   || (TYPE_PRECISION (exprtype)
+		       != TYPE_PRECISION (type))))
 	{
 	  if (cst)
 	    warning_at (loc, OPT_Woverflow,
@@ -1513,13 +1517,15 @@ match_case_to_enum_1 (tree key, tree type, tree label)
     return;
 
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+  wide_int w = wi::to_wide (key);
 
+  gcc_assert (w.get_precision () <= WIDE_INT_MAX_INL_PRECISION);
   if (tree_fits_uhwi_p (key))
-    print_dec (wi::to_wide (key), buf, UNSIGNED);
+    print_dec (w, buf, UNSIGNED);
   else if (tree_fits_shwi_p (key))
-    print_dec (wi::to_wide (key), buf, SIGNED);
+    print_dec (w, buf, SIGNED);
   else
-    print_hex (wi::to_wide (key), buf);
+    print_hex (w, buf);
 
   if (TYPE_NAME (type) == NULL_TREE)
     warning_at (DECL_SOURCE_LOCATION (CASE_LABEL (label)),
@@ -3599,23 +3605,13 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	      continue;
 	    }
 
-	  if (newunspec != curunspec)
+	  if (newunspec > curunspec)
 	    {
 	      location_t warnloc = newloc, noteloc = origloc;
 	      const char *warnparmstr = newparmstr.c_str ();
 	      const char *noteparmstr = curparmstr.c_str ();
 	      unsigned warnunspec = newunspec, noteunspec = curunspec;
 
-	      if (newunspec < curunspec)
-		{
-		  /* If the new declaration has fewer unspecified bounds
-		     point the warning to the previous declaration to make
-		     it clear that that's the one to change.  Otherwise,
-		     point it to the new decl.  */
-		  std::swap (warnloc, noteloc);
-		  std::swap (warnparmstr, noteparmstr);
-		  std::swap (warnunspec, noteunspec);
-		}
 	      if (warning_n (warnloc, OPT_Wvla_parameter, warnunspec,
 			     "argument %u of type %s declared with "
 			     "%u unspecified variable bound",
@@ -3643,14 +3639,10 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	}
 
       /* Iterate over the lists of VLA variable bounds, comparing each
-	 pair for equality, and diagnosing mismatches.  The case of
-	 the lists having different lengths is handled above so at
-	 this point they do .  */
-      for (tree newvbl = newa->size, curvbl = cura->size; newvbl;
+	 pair for equality, and diagnosing mismatches.  */
+      for (tree newvbl = newa->size, curvbl = cura->size; newvbl && curvbl;
 	   newvbl = TREE_CHAIN (newvbl), curvbl = TREE_CHAIN (curvbl))
 	{
-	  gcc_assert (curvbl);
-
 	  tree newpos = TREE_PURPOSE (newvbl);
 	  tree curpos = TREE_PURPOSE (curvbl);
 

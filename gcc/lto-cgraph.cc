@@ -1020,7 +1020,7 @@ output_symtab (void)
      When doing WPA we must output every asm just once.  Since we do not partition asm
      nodes at all, output them to first output.  This is kind of hack, but should work
      well.  */
-  if (!asm_nodes_output)
+  if (!asm_nodes_output && !lto_stream_offload_p)
     {
       asm_nodes_output = true;
       lto_output_toplevel_asms ();
@@ -2174,7 +2174,7 @@ input_cgraph_opt_section (struct lto_file_decl_data *file_data,
   unsigned int count;
 
   lto_input_block ib_main ((const char *) data + main_offset,
-			   header->main_size, file_data->mode_table);
+			   header->main_size, file_data);
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,

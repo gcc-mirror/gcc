@@ -15,7 +15,7 @@ int foo ()
   a[1] = tem1;
   a[2] = tem2;
   a[3] = tem3;
-  return temx + temy;
+  return temx / temy;
 }
 
 /* We should extract the live lane from the vectorized add rather than

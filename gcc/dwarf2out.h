@@ -30,7 +30,7 @@ typedef struct dw_cfi_node *dw_cfi_ref;
 typedef struct dw_loc_descr_node *dw_loc_descr_ref;
 typedef struct dw_loc_list_struct *dw_loc_list_ref;
 typedef struct dw_discr_list_node *dw_discr_list_ref;
-typedef wide_int *wide_int_ptr;
+typedef struct dw_wide_int *dw_wide_int_ptr;
 
 
 /* Call frames are described using a sequence of Call Frame
@@ -158,8 +158,8 @@ struct GTY(()) cfa_reg {
    Instead of passing around REG and OFFSET, we pass a copy
    of this structure.  */
 struct GTY(()) dw_cfa_location {
-  poly_int64_pod offset;
-  poly_int64_pod base_offset;
+  poly_int64 offset;
+  poly_int64 base_offset;
   /* REG is in DWARF_FRAME_REGNUM space, *not* normal REGNO space.  */
   struct cfa_reg reg;
   BOOL_BITFIELD indirect : 1;  /* 1 if CFA is accessed via a dereference.  */
@@ -252,7 +252,7 @@ struct GTY(()) dw_val_node {
       unsigned HOST_WIDE_INT
 	GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
       double_int GTY ((tag ("dw_val_class_const_double"))) val_double;
-      wide_int_ptr GTY ((tag ("dw_val_class_wide_int"))) val_wide;
+      dw_wide_int_ptr GTY ((tag ("dw_val_class_wide_int"))) val_wide;
       dw_vec_const GTY ((tag ("dw_val_class_vec"))) val_vec;
       struct dw_val_die_union
 	{
@@ -312,6 +312,35 @@ struct GTY(()) dw_discr_list_node {
      otherwise.  */
   int dw_discr_range;
 };
+
+struct GTY((variable_size)) dw_wide_int {
+  unsigned int precision;
+  unsigned int len;
+  HOST_WIDE_INT val[1];
+
+  unsigned int get_precision () const { return precision; }
+  unsigned int get_len () const { return len; }
+  const HOST_WIDE_INT *get_val () const { return val; }
+  inline HOST_WIDE_INT elt (unsigned int) const;
+  inline bool operator == (const dw_wide_int &) const;
+};
+
+inline HOST_WIDE_INT
+dw_wide_int::elt (unsigned int i) const
+{
+  if (i < len)
+    return val[i];
+  wide_int_ref ref = wi::storage_ref (val, len, precision);
+  return wi::sign_mask (ref);
+}
+
+inline bool
+dw_wide_int::operator == (const dw_wide_int &o) const
+{
+  wide_int_ref ref1 = wi::storage_ref (val, len, precision);
+  wide_int_ref ref2 = wi::storage_ref (o.val, o.len, o.precision);
+  return ref1 == ref2;
+}
 
 /* Interface from dwarf2out.cc to dwarf2cfi.cc.  */
 extern struct dw_loc_descr_node *build_cfa_loc
@@ -419,6 +448,7 @@ struct fixed_point_type_info
     } scale_factor;
 };
 
+void dwarf2cfi_cc_finalize (void);
 void dwarf2out_cc_finalize (void);
 
 /* Some DWARF internals are exposed for the needs of DWARF-based debug

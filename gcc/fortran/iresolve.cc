@@ -2424,7 +2424,7 @@ gfc_resolve_reshape (gfc_expr *f, gfc_expr *source, gfc_expr *shape,
       break;
     }
 
-  if (shape->expr_type == EXPR_ARRAY && gfc_is_constant_expr (shape))
+  if (shape->expr_type == EXPR_ARRAY && gfc_is_constant_array_expr (shape))
     {
       gfc_constructor *c;
       f->shape = gfc_get_shape (f->rank);
@@ -3104,7 +3104,7 @@ gfc_resolve_trim (gfc_expr *f, gfc_expr *string)
 }
 
 
-/* Resolve the degree trignometric functions.  This amounts to setting
+/* Resolve the degree trigonometric functions.  This amounts to setting
    the function return type-spec from its argument and building a
    library function names of the form _gfortran_sind_r4.  */
 

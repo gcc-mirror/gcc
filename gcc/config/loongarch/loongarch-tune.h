@@ -48,4 +48,12 @@ struct loongarch_cache {
     int simultaneous_prefetches; /* number of parallel prefetch */
 };
 
+/* Alignment for functions and labels for best performance.  For new uarchs
+   the value should be measured via benchmarking.  See the documentation for
+   -falign-functions and -falign-labels in invoke.texi for the format.  */
+struct loongarch_align {
+  const char *function;	/* default value for -falign-functions */
+  const char *label;	/* default value for -falign-labels */
+};
+
 #endif /* LOONGARCH_TUNE_H */

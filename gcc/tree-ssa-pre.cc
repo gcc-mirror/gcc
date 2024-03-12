@@ -2216,6 +2216,10 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	}
     }
 
+  /* Dump ANTIC_OUT before it's pruned.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    print_bitmap_set (dump_file, ANTIC_OUT, "ANTIC_OUT", block->index);
+
   /* Prune expressions that are clobbered in block and thus become
      invalid if translated from ANTIC_OUT to ANTIC_IN.  */
   prune_clobbered_mems (ANTIC_OUT, block);
@@ -2270,9 +2274,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
  maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      if (ANTIC_OUT)
-	print_bitmap_set (dump_file, ANTIC_OUT, "ANTIC_OUT", block->index);
-
       if (changed)
 	fprintf (dump_file, "[changed] ");
       print_bitmap_set (dump_file, ANTIC_IN (block), "ANTIC_IN",
@@ -2464,8 +2465,8 @@ compute_antic (void)
   /* For ANTIC computation we need a postorder that also guarantees that
      a block with a single successor is visited after its successor.
      RPO on the inverted CFG has this property.  */
-  auto_vec<int, 20> postorder;
-  inverted_post_order_compute (&postorder);
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int n = inverted_rev_post_order_compute (cfun, rpo);
 
   auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
   bitmap_clear (worklist);
@@ -2481,11 +2482,11 @@ compute_antic (void)
 	 for PA ANTIC computation.  */
       num_iterations++;
       changed = false;
-      for (i = postorder.length () - 1; i >= 0; i--)
+      for (i = 0; i < n; ++i)
 	{
-	  if (bitmap_bit_p (worklist, postorder[i]))
+	  if (bitmap_bit_p (worklist, rpo[i]))
 	    {
-	      basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
+	      basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
 	      bitmap_clear_bit (worklist, block->index);
 	      if (compute_antic_aux (block,
 				     bitmap_bit_p (has_abnormal_preds,
@@ -2513,15 +2514,17 @@ compute_antic (void)
   if (do_partial_partial)
     {
       /* For partial antic we ignore backedges and thus we do not need
-         to perform any iteration when we process blocks in postorder.  */
-      for (i = postorder.length () - 1; i >= 0; i--)
+	 to perform any iteration when we process blocks in rpo.  */
+      for (i = 0; i < n; ++i)
 	{
-	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
+	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
 	  compute_partial_antic_aux (block,
 				     bitmap_bit_p (has_abnormal_preds,
 						   block->index));
 	}
     }
+
+  free (rpo);
 }
 
 
@@ -3245,7 +3248,8 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
     {
       value_range r;
       if (get_range_query (cfun)->range_of_expr (r, expr->u.nary->op[0])
-	  && r.kind () == VR_RANGE
+	  && !r.undefined_p ()
+	  && !r.varying_p ()
 	  && !wi::neg_p (r.lower_bound (), SIGNED)
 	  && !wi::neg_p (r.upper_bound (), SIGNED))
 	{
@@ -3310,6 +3314,8 @@ do_pre_regular_insertion (basic_block block, basic_block dom,
 	  bool by_some = false;
 	  bool cant_insert = false;
 	  bool all_same = true;
+	  unsigned num_inserts = 0;
+	  unsigned num_const = 0;
 	  pre_expr first_s = NULL;
 	  edge pred;
 	  basic_block bprime;
@@ -3366,11 +3372,14 @@ do_pre_regular_insertion (basic_block block, basic_block dom,
 		{
 		  avail[pred->dest_idx] = eprime;
 		  all_same = false;
+		  num_inserts++;
 		}
 	      else
 		{
 		  avail[pred->dest_idx] = edoubleprime;
 		  by_some = true;
+		  if (edoubleprime->kind == CONSTANT)
+		    num_const++;
 		  /* We want to perform insertions to remove a redundancy on
 		     a path in the CFG we want to optimize for speed.  */
 		  if (optimize_edge_for_speed_p (pred))
@@ -3387,6 +3396,12 @@ do_pre_regular_insertion (basic_block block, basic_block dom,
 	     partially redundant.  */
 	  if (!cant_insert && !all_same && by_some)
 	    {
+	      /* If the expression is redundant on all edges and we need
+		 to at most insert one copy from a constant do the PHI
+		 insertion even when not optimizing a path that's to be
+		 optimized for speed.  */
+	      if (num_inserts == 0 && num_const <= 1)
+		do_insertion = true;
 	      if (!do_insertion)
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3619,19 +3634,47 @@ do_hoist_insertion (basic_block block)
       && stmt_ends_bb_p (gsi_stmt (last)))
     return false;
 
-  /* Compute the set of hoistable expressions from ANTIC_IN.  First compute
+  /* We have multiple successors, compute ANTIC_OUT by taking the intersection
+     of all of ANTIC_IN translating through PHI nodes.  Note we do not have to
+     worry about iteration stability here so just use the expression set
+     from the first set and prune that by sorted_array_from_bitmap_set.
+     This is a simplification of what we do in compute_antic_aux.  */
+  bitmap_set_t ANTIC_OUT = bitmap_set_new ();
+  bool first = true;
+  FOR_EACH_EDGE (e, ei, block->succs)
+    {
+      if (first)
+	{
+	  phi_translate_set (ANTIC_OUT, ANTIC_IN (e->dest), e);
+	  first = false;
+	}
+      else if (!gimple_seq_empty_p (phi_nodes (e->dest)))
+	{
+	  bitmap_set_t tmp = bitmap_set_new ();
+	  phi_translate_set (tmp, ANTIC_IN (e->dest), e);
+	  bitmap_and_into (&ANTIC_OUT->values, &tmp->values);
+	  bitmap_set_free (tmp);
+	}
+      else
+	bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (e->dest)->values);
+    }
+
+  /* Compute the set of hoistable expressions from ANTIC_OUT.  First compute
      hoistable values.  */
   bitmap_set hoistable_set;
 
-  /* A hoistable value must be in ANTIC_IN(block)
+  /* A hoistable value must be in ANTIC_OUT(block)
      but not in AVAIL_OUT(BLOCK).  */
   bitmap_initialize (&hoistable_set.values, &grand_bitmap_obstack);
   bitmap_and_compl (&hoistable_set.values,
-		    &ANTIC_IN (block)->values, &AVAIL_OUT (block)->values);
+		    &ANTIC_OUT->values, &AVAIL_OUT (block)->values);
 
   /* Short-cut for a common case: hoistable_set is empty.  */
   if (bitmap_empty_p (&hoistable_set.values))
-    return false;
+    {
+      bitmap_set_free (ANTIC_OUT);
+      return false;
+    }
 
   /* Compute which of the hoistable values is in AVAIL_OUT of
      at least one of the successors of BLOCK.  */
@@ -3649,11 +3692,14 @@ do_hoist_insertion (basic_block block)
 
   /* Short-cut for a common case: availout_in_some is empty.  */
   if (bitmap_empty_p (&availout_in_some))
-    return false;
+    {
+      bitmap_set_free (ANTIC_OUT);
+      return false;
+    }
 
   /* Hack hoitable_set in-place so we can use sorted_array_from_bitmap_set.  */
   bitmap_move (&hoistable_set.values, &availout_in_some);
-  hoistable_set.expressions = ANTIC_IN (block)->expressions;
+  hoistable_set.expressions = ANTIC_OUT->expressions;
 
   /* Now finally construct the topological-ordered expression set.  */
   vec<pre_expr> exprs = sorted_array_from_bitmap_set (&hoistable_set);
@@ -3728,6 +3774,7 @@ do_hoist_insertion (basic_block block)
     }
 
   exprs.release ();
+  bitmap_set_free (ANTIC_OUT);
 
   return new_stuff;
 }
@@ -4181,8 +4228,10 @@ compute_avail (function *fun)
 		      /* TBAA behavior is an obvious part so make sure
 		         that the hashtable one covers this as well
 			 by adjusting the ref alias set and its base.  */
-		      if (ref->set == set
-			  || alias_set_subset_of (set, ref->set))
+		      if ((ref->set == set
+			   || alias_set_subset_of (set, ref->set))
+			  && (ref->base_set == base_set
+			      || alias_set_subset_of (base_set, ref->base_set)))
 			;
 		      else if (ref1->opcode != ref2->opcode
 			       || (ref1->opcode != MEM_REF
@@ -4194,21 +4243,25 @@ compute_avail (function *fun)
 			  operands.release ();
 			  continue;
 			}
-		      else if (alias_set_subset_of (ref->set, set))
+		      else if (ref->set == set
+			       || alias_set_subset_of (ref->set, set))
 			{
+			  tree reft = reference_alias_ptr_type (rhs1);
 			  ref->set = set;
+			  ref->base_set = set;
 			  if (ref1->opcode == MEM_REF)
 			    ref1->op0
-			      = wide_int_to_tree (TREE_TYPE (ref2->op0),
+			      = wide_int_to_tree (reft,
 						  wi::to_wide (ref1->op0));
 			  else
 			    ref1->op2
-			      = wide_int_to_tree (TREE_TYPE (ref2->op2),
+			      = wide_int_to_tree (reft,
 						  wi::to_wide (ref1->op2));
 			}
 		      else
 			{
 			  ref->set = 0;
+			  ref->base_set = 0;
 			  if (ref1->opcode == MEM_REF)
 			    ref1->op0
 			      = wide_int_to_tree (ptr_type_node,

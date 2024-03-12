@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512fp16" } */
+/* Cope with --enable-frame-pointer.  */
+/* { dg-additional-options "-fomit-frame-pointer" } */
 
 typedef _Float16 v4hf __attribute__ ((vector_size (8)));
 typedef _Float16 v2hf __attribute__ ((vector_size (4)));

@@ -18,8 +18,13 @@ TEST_UNIFORM_Z (sri_1_s64_tied2, svint64_t,
 
 /*
 ** sri_1_s64_untied:
+** (
 **	mov	z0\.d, z1\.d
 **	sri	z0\.d, z2\.d, #1
+** |
+**	sri	z1\.d, z2\.d, #1
+**	mov	z0\.d, z1\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (sri_1_s64_untied, svint64_t,
@@ -42,8 +47,13 @@ TEST_UNIFORM_Z (sri_2_s64_tied2, svint64_t,
 
 /*
 ** sri_2_s64_untied:
+** (
 **	mov	z0\.d, z1\.d
 **	sri	z0\.d, z2\.d, #2
+** |
+**	sri	z1\.d, z2\.d, #2
+**	mov	z0\.d, z1\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (sri_2_s64_untied, svint64_t,
@@ -66,8 +76,13 @@ TEST_UNIFORM_Z (sri_64_s64_tied2, svint64_t,
 
 /*
 ** sri_64_s64_untied:
+** (
 **	mov	z0\.d, z1\.d
 **	sri	z0\.d, z2\.d, #64
+** |
+**	sri	z1\.d, z2\.d, #64
+**	mov	z0\.d, z1\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (sri_64_s64_untied, svint64_t,

@@ -59,7 +59,7 @@ package Exp_Ch11 is
      (Ename : Entity_Id;
       Nod   : Node_Id) return Node_Id;
    --  This function searches for a local exception handler that will handle
-   --  the exception named by Ename. If such a local hander exists, then the
+   --  the exception named by Ename. If such a local handler exists, then the
    --  corresponding N_Exception_Handler is returned. If no such handler is
    --  found then Empty is returned. In order to match and return True, the
    --  handler may not have a choice parameter specification. Nod is the raise

@@ -5,17 +5,17 @@ f (void)
 {
   int i;
 
-#pragma acc parallel one /* { dg-error "expected '#pragma acc' clause before 'one'" } */
+#pragma acc parallel one /* { dg-error "expected an OpenACC clause before 'one'" } */
   ;
 
-#pragma acc kernels eins /* { dg-error "expected '#pragma acc' clause before 'eins'" } */
+#pragma acc kernels eins /* { dg-error "expected an OpenACC clause before 'eins'" } */
   ;
 
-#pragma acc data two /* { dg-error "expected '#pragma acc' clause before 'two'" } */
+#pragma acc data two /* { dg-error "expected an OpenACC clause before 'two'" } */
   ;
 
 #pragma acc parallel
-#pragma acc loop deux /* { dg-error "expected '#pragma acc' clause before 'deux'" } */
+#pragma acc loop deux /* { dg-error "expected an OpenACC clause before 'deux'" } */
   for (i = 0; i < 2; ++i)
     ;
 }

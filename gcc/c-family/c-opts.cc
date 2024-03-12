@@ -77,6 +77,9 @@ static bool verbose;
 /* Dependency output file.  */
 static const char *deps_file;
 
+/* Structured dependency output file.  */
+static const char *fdeps_file;
+
 /* The prefix given by -iprefix, if any.  */
 static const char *iprefix;
 
@@ -111,6 +114,7 @@ static void set_std_cxx14 (int);
 static void set_std_cxx17 (int);
 static void set_std_cxx20 (int);
 static void set_std_cxx23 (int);
+static void set_std_cxx26 (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
@@ -268,7 +272,7 @@ c_common_init_options (unsigned int decoded_options_count,
   if (c_dialect_cxx ())
     set_std_cxx17 (/*ISO*/false);
 
-  global_dc->colorize_source_p = true;
+  global_dc->m_source_printing.colorize_source_p = true;
 }
 
 /* Handle switch SCODE with argument ARG.  VALUE is true, unless no-
@@ -358,6 +362,24 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       cpp_opts->deps.style = (code == OPT_MD ? DEPS_SYSTEM: DEPS_USER);
       cpp_opts->deps.need_preprocessor_output = true;
       deps_file = arg;
+      break;
+
+    case OPT_fdeps_format_:
+      /* https://wg21.link/p1689r5 */
+      if (!strcmp (arg, "p1689r5"))
+	cpp_opts->deps.fdeps_format = FDEPS_FMT_P1689R5;
+      else
+	error ("%<-fdeps-format=%> unknown format %<%s%>", arg);
+      break;
+
+    case OPT_fdeps_file_:
+      deps_seen = true;
+      fdeps_file = arg;
+      break;
+
+    case OPT_fdeps_target_:
+      deps_seen = true;
+      defer_opt (code, arg);
       break;
 
     case OPT_MF:
@@ -661,6 +683,12 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_std_gnu__23:
       if (!preprocessing_asm_p)
 	set_std_cxx23 (code == OPT_std_c__23 /* ISO */);
+      break;
+
+    case OPT_std_c__26:
+    case OPT_std_gnu__26:
+      if (!preprocessing_asm_p)
+	set_std_cxx26 (code == OPT_std_c__26 /* ISO */);
       break;
 
     case OPT_std_c90:
@@ -967,7 +995,7 @@ c_common_post_options (const char **pfilename)
 
   /* Change flag_abi_version to be the actual current ABI level, for the
      benefit of c_cpp_builtins, and to make comparison simpler.  */
-  const int latest_abi_version = 18;
+  const int latest_abi_version = 19;
   /* Generate compatibility aliases for ABI v13 (8.2) by default.  */
   const int abi_compat_default = 13;
 
@@ -1032,7 +1060,8 @@ c_common_post_options (const char **pfilename)
 	warn_narrowing = 1;
 
       /* Unless -f{,no-}ext-numeric-literals has been used explicitly,
-	 for -std=c++{11,14,17,20,23} default to -fno-ext-numeric-literals.  */
+	 for -std=c++{11,14,17,20,23,26} default to
+	 -fno-ext-numeric-literals.  */
       if (flag_iso && !OPTION_SET_P (flag_ext_numeric_literals))
 	cpp_opts->ext_numeric_literals = 0;
     }
@@ -1224,6 +1253,7 @@ c_common_init (void)
   if (flag_preprocess_only)
     {
       c_finish_options ();
+      c_init_preprocess ();
       preprocess_file (parse_in);
       return false;
     }
@@ -1272,6 +1302,7 @@ void
 c_common_finish (void)
 {
   FILE *deps_stream = NULL;
+  FILE *fdeps_stream = NULL;
 
   /* Note that we write the dependencies even if there are errors. This is
      useful for handling outdated generated headers that now trigger errors
@@ -1300,9 +1331,27 @@ c_common_finish (void)
      locations with input_location, which would be incorrect now.  */
   override_libcpp_locations = false;
 
+  if (cpp_opts->deps.fdeps_format != FDEPS_FMT_NONE)
+    {
+      if (!fdeps_file)
+	fdeps_stream = out_stream;
+      else if (fdeps_file[0] == '-' && fdeps_file[1] == '\0')
+	fdeps_stream = stdout;
+      else
+	{
+	  fdeps_stream = fopen (fdeps_file, "w");
+	  if (!fdeps_stream)
+	    fatal_error (input_location, "opening dependency file %s: %m",
+			 fdeps_file);
+	}
+      if (fdeps_stream == deps_stream && fdeps_stream != stdout)
+	fatal_error (input_location, "%<-MF%> and %<-fdeps-file=%> cannot share an output file %s: %m",
+		     fdeps_file);
+    }
+
   /* For performance, avoid tearing down cpplib's internal structures
      with cpp_destroy ().  */
-  cpp_finish (parse_in, deps_stream);
+  cpp_finish (parse_in, deps_stream, fdeps_stream);
 
   if (deps_stream && deps_stream != out_stream && deps_stream != stdout
       && (ferror (deps_stream) || fclose (deps_stream)))
@@ -1374,6 +1423,8 @@ handle_deferred_opts (void)
 
 	if (opt->code == OPT_MT || opt->code == OPT_MQ)
 	  deps_add_target (deps, opt->arg, opt->code == OPT_MQ);
+	else if (opt->code == OPT_fdeps_target_)
+	  fdeps_add_target (deps, opt->arg, true);
       }
 }
 
@@ -1818,6 +1869,24 @@ set_std_cxx23 (int iso)
   flag_coroutines = true;
   cxx_dialect = cxx23;
   lang_hooks.name = "GNU C++23";
+}
+
+/* Set the C++ 2026 standard (without GNU extensions if ISO).  */
+static void
+set_std_cxx26 (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_CXX26: CLK_GNUCXX26);
+  flag_no_gnu_keywords = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  /* C++26 includes the C11 standard library.  */
+  flag_isoc94 = 1;
+  flag_isoc99 = 1;
+  flag_isoc11 = 1;
+  /* C++26 includes coroutines.  */
+  flag_coroutines = true;
+  cxx_dialect = cxx26;
+  lang_hooks.name = "GNU C++26";
 }
 
 /* Args to -d specify what to dump.  Silently ignore

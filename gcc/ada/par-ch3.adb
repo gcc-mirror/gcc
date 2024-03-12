@@ -1466,7 +1466,7 @@ package body Ch3 is
          Save_Scan_State (Scan_State); -- at colon
          T_Colon;
 
-      --  If we have identifier followed by := then we assume that what is
+      --  If we have an identifier followed by := then we assume that what is
       --  really meant is an assignment statement. The assignment statement
       --  is scanned out and added to the list of declarations. An exception
       --  occurs if the := is followed by the keyword constant, in which case
@@ -3064,10 +3064,25 @@ package body Ch3 is
       elsif Token = Tok_Dot_Dot then
          Range_Node := New_Node (N_Range, Token_Ptr);
          Set_Low_Bound (Range_Node, Expr_Node);
+
+         if Style_Check then
+            Style.Check_Xtra_Parens (Expr_Node);
+         end if;
+
          Scan; -- past ..
          Expr_Node := P_Expression;
          Check_Simple_Expression (Expr_Node);
          Set_High_Bound (Range_Node, Expr_Node);
+
+         --  If Expr_Node (ignoring parentheses) is not a simple expression
+         --  then emit a style check.
+
+         if Style_Check
+           and then Nkind (Expr_Node) not in N_Op_Boolean | N_Subexpr
+         then
+            Style.Check_Xtra_Parens (Expr_Node);
+         end if;
+
          return Range_Node;
 
       --  Otherwise we must have a subtype mark, or an Ada 2012 iterator

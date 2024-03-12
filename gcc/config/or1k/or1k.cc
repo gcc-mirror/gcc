@@ -44,6 +44,8 @@
 #include "explow.h"
 #include "cfgrtl.h"
 #include "alias.h"
+#include "targhooks.h"
+#include "case-cfn-macros.h"
 
 /* These 4 are needed to allow using satisfies_constraint_J.  */
 #include "insn-config.h"
@@ -573,7 +575,8 @@ or1k_initial_elimination_offset (int from, int to)
    Returns true if X is a legitimate address RTX on OpenRISC.  */
 
 static bool
-or1k_legitimate_address_p (machine_mode, rtx x, bool strict_p)
+or1k_legitimate_address_p (machine_mode, rtx x, bool strict_p,
+			   code_helper = ERROR_MARK)
 {
   rtx base, addend;
 
@@ -2191,6 +2194,32 @@ or1k_output_mi_thunk (FILE *file, tree thunk_fndecl,
   epilogue_completed = 0;
 }
 
+static unsigned
+or1k_libm_function_max_error (unsigned cfn, machine_mode mode,
+			      bool boundary_p)
+{
+#ifdef OPTION_GLIBC
+  bool glibc_p = OPTION_GLIBC;
+#else
+  bool glibc_p = false;
+#endif
+  if (glibc_p)
+    {
+      switch (cfn)
+	{
+	CASE_CFN_SIN:
+	CASE_CFN_SIN_FN:
+	  if (!boundary_p && mode == DFmode && flag_rounding_math)
+	    return 7;
+	  break;
+	default:
+	  break;
+	}
+      return glibc_linux_libm_function_max_error (cfn, mode, boundary_p);
+    }
+  return default_libm_function_max_error (cfn, mode, boundary_p);
+}
+
 #undef  TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK or1k_output_mi_thunk
 #undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
@@ -2213,6 +2242,9 @@ or1k_output_mi_thunk (FILE *file, tree thunk_fndecl,
 
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef  TARGET_LIBM_FUNCTION_MAX_ERROR
+#define TARGET_LIBM_FUNCTION_MAX_ERROR or1k_libm_function_max_error
 
 /* Calling Conventions.  */
 #undef  TARGET_FUNCTION_VALUE

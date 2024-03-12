@@ -488,7 +488,7 @@ namespace
   create_dir(const fs::path& p, fs::perms perm, std::error_code& ec)
   {
     bool created = false;
-#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+#if _GLIBCXX_USE_MKDIR
     posix::mode_t mode = static_cast<std::underlying_type_t<fs::perms>>(perm);
     if (posix::mkdir(p.c_str(), mode))
       {
@@ -645,7 +645,7 @@ fs::path
 fs::current_path(error_code& ec)
 {
   path p;
-#ifdef _GLIBCXX_HAVE_UNISTD_H
+#if _GLIBCXX_USE_GETCWD
 #if defined __GLIBC__ || defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
   if (char_ptr cwd = char_ptr{posix::getcwd(nullptr, 0)})
     {
@@ -711,7 +711,7 @@ fs::current_path(const path& p)
 void
 fs::current_path(const path& p, error_code& ec) noexcept
 {
-#ifdef _GLIBCXX_HAVE_UNISTD_H
+#if _GLIBCXX_USE_CHDIR
   if (posix::chdir(p.c_str()))
     ec.assign(errno, std::generic_category());
   else
@@ -947,6 +947,7 @@ fs::permissions(const path& p, perms prms)
 void
 fs::permissions(const path& p, perms prms, error_code& ec) noexcept
 {
+#if _GLIBCXX_USE_FCHMODAT || _GLIBCXX_USE_CHMOD
   const bool add = is_set(prms, perms::add_perms);
   const bool remove = is_set(prms, perms::remove_perms);
   const bool nofollow = is_set(prms, perms::symlink_nofollow);
@@ -987,6 +988,9 @@ fs::permissions(const path& p, perms prms, error_code& ec) noexcept
     ec.assign(err, std::generic_category());
   else
     ec.clear();
+#else
+  ec = std::make_error_code(std::errc::function_not_supported);
+#endif
 }
 
 fs::path

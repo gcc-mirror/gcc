@@ -64,7 +64,7 @@ void sve_load_8_s (int8_t *a)
   asm volatile ("" :: "w" (*(vnx16qi *)&a[i]));
 }
 
-/* { dg-final { scan-assembler-times {\tld1d\tz0\.d, p[0-7]/z, \[x0, x1, lsl 3\]\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tld1w\tz0\.s, p[0-7]/z, \[x0, x1, lsl 2\]\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tld1h\tz0\.h, p[0-7]/z, \[x0, x1, lsl 1\]\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tld1b\tz0\.b, p[0-7]/z, \[x0, x1\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tld1d\tz[0-9]+\.d, p[0-7]/z, \[x0, x1, lsl 3\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tld1w\tz[0-9]+\.s, p[0-7]/z, \[x0, x1, lsl 2\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tld1h\tz[0-9]+\.h, p[0-7]/z, \[x0, x1, lsl 1\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tld1b\tz[0-9]+\.b, p[0-7]/z, \[x0, x1\]\n} 2 } } */

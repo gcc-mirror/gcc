@@ -18,4 +18,4 @@ int foo ()
   return var[2].four;
 }
 
-/* { dg-final { scan-assembler-times "stp\tq0, q0," 5 } } */
+/* { dg-final { scan-assembler-times {stp\tq[0-9]+, q[0-9]+,} 5 } } */

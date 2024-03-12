@@ -9,7 +9,7 @@ void test_1 ()
    MACRO_1(42);
              ^
      { dg-end-multiline-output "" } */
-  /* { dg-message "-: macro .MACRO_1. defined here" "" { target *-*-* } def_of_MACRO_1 }
+  /* { dg-message "macro .MACRO_1. defined here" "" { target *-*-* } def_of_MACRO_1 }
   /* { dg-begin-multiline-output "" }
  #define MACRO_1(X,Y)
  
@@ -33,7 +33,7 @@ void test_2 ()
    MACRO_2(1, 2, 3);
                   ^
      { dg-end-multiline-output "" } */
-  /* { dg-message "-: macro .MACRO_2. defined here" "" { target *-*-* } def_of_MACRO_2 }
+  /* { dg-message "macro .MACRO_2. defined here" "" { target *-*-* } def_of_MACRO_2 }
   /* { dg-begin-multiline-output "" }
  #define MACRO_2(X,Y)
  

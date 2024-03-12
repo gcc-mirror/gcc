@@ -1,2 +1,3 @@
 /* { dg-additional-options "-Wno-int-conversion" } */
-#include "../pr61861.c"
+/* { C only: Wno-int-conversion is not valid for C++. */
+#include "../../gcc.dg/pr61861.c"

@@ -108,6 +108,9 @@ is
       --  Ghost variable to hold Factor**Exp between Exp and Factor updates
 
    begin
+      pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                       "early returns for performance");
+
       --  We use the standard logarithmic approach, Exp gets shifted right
       --  testing successive low order bits and Factor is the value of the
       --  base raised to the next power of 2.
@@ -173,6 +176,8 @@ is
       pragma Assert (Big (Result) = Big (Left) ** Right);
 
       return Result;
+
+      pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
    end Expon;
 
    ----------------------

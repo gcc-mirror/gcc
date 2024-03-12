@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2b" }
 // { dg-do run { target c++23 } }
 // { dg-add-options ieee }
 
@@ -286,7 +285,7 @@ test_max_mantissa()
 
   if (Float_limits::is_iec559 && Float_limits::digits < UInt_limits::digits)
   {
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
     std::printf("Testing %d-bit float, using %zu-bit integer\n",
 	Float_limits::digits + (int)std::log2(Float_limits::max_exponent) + 1,
 	sizeof(UIntT) * __CHAR_BIT__);

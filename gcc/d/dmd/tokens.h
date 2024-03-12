@@ -133,6 +133,7 @@ enum class TOK : unsigned char
     // Leaf operators
     identifier,
     string_,
+    hexadecimalString,
     this_,
     super_,
     error,
@@ -283,6 +284,7 @@ enum class TOK : unsigned char
     cdecl_,
     declspec,
     stdcall,
+    thread,
     pragma,
     int128_,
     attribute__,
@@ -299,8 +301,6 @@ enum class EXP : unsigned char
     cast_,
     null_,
     assert_,
-    true_,
-    false_,
     array,
     call,
     address,
@@ -317,13 +317,10 @@ enum class EXP : unsigned char
     dotType,
     slice,
     arrayLength,
-    version_,
     dollar,
     template_,
     dotTemplateDeclaration,
     declaration,
-    typeof_,
-    pragma_,
     dSymbol,
     typeid_,
     uadd,
@@ -404,13 +401,11 @@ enum class EXP : unsigned char
     int64,
     float64,
     complex80,
-    char_,
     import_,
     delegate_,
     function_,
     mixin_,
     in_,
-    default_,
     break_,
     continue_,
     goto_,
@@ -424,7 +419,6 @@ enum class EXP : unsigned char
     moduleString,   // __MODULE__
     functionString, // __FUNCTION__
     prettyFunction, // __PRETTY_FUNCTION__
-    shared_,
     pow,
     powAssign,
     vector,
@@ -434,7 +428,6 @@ enum class EXP : unsigned char
     showCtfeContext,
     objcClassReference,
     vectorArray,
-    arrow,      // ->
     compoundLiteral, // ( type-name ) { initializer-list }
     _Generic_,
     interval,

@@ -28,7 +28,7 @@ f (void)
 /* { dg-final { scan-assembler {\t// s7 out: s7\n.*[/]/ s7 in: s7\n} } } */
 /* { dg-final { scan-assembler {\t// s8 out: s8\n.*[/]/ s8 in: s8\n} } } */
 /* { dg-final { scan-assembler {\t// s15 out: s15\n.*[/]/ s15 in: s15\n} } } */
-/* { dg-final { scan-assembler {\t// s16 out: s16\n.*\tfmov\t(s[0-7]), s16\n.*[/]/ s16 in: \1\n} } } */
-/* { dg-final { scan-assembler {\t// s31 out: s31\n.*\tfmov\t(s[0-7]), s31\n.*[/]/ s31 in: \1\n} } } */
+/* { dg-final { scan-assembler {\t// s16 out: s16\n.*\tfmov\t(s[0-9]|s1[0-5]), s16\n.*[/]/ s16 in: \1\n} } } */
+/* { dg-final { scan-assembler {\t// s31 out: s31\n.*\tfmov\t(s[0-9]|s1[0-5]), s31\n.*[/]/ s31 in: \1\n} } } */
 /* { dg-final { scan-assembler-not {\t// s16 in: s16\n} } } */
 /* { dg-final { scan-assembler-not {\t// s31 in: s31\n} } } */

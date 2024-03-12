@@ -82,12 +82,6 @@ package Sinfo is
    --                 for this purpose, so e.g. in X := (if A then B else C);
    --                 Paren_Count for the right side will be 1.
 
-   --   Comes_From_Check_Or_Contract
-   --                 This flag is present in all N_If_Statement nodes and
-   --                 gets set when an N_If_Statement is generated as part of
-   --                 the expansion of a Check, Assert, or contract-related
-   --                 pragma.
-
    --   Comes_From_Source
    --                 This flag is present in all nodes. It is set if the
    --                 node is built by the scanner or parser, and clear if
@@ -389,21 +383,23 @@ package Sinfo is
    --  abbreviations are used:
 
    --    "plus fields for binary operator"
-   --       Chars                     Name_Id for the operator
-   --       Left_Opnd                 left operand expression
-   --       Right_Opnd                right operand expression
-   --       Entity                    defining entity for operator
-   --       Associated_Node           for generic processing
-   --       Do_Overflow_Check         set if overflow check needed
-   --       Has_Private_View          set in generic units.
+   --       Chars                       Name_Id for the operator
+   --       Left_Opnd                   left operand expression
+   --       Right_Opnd                  right operand expression
+   --       Entity                      defining entity for operator
+   --       Associated_Node             for generic processing
+   --       Do_Overflow_Check           set if overflow check needed
+   --       Has_Private_View            set in generic units
+   --       Has_Secondary_Private_View  set in generic units
 
    --    "plus fields for unary operator"
-   --       Chars                     Name_Id for the operator
-   --       Right_Opnd                right operand expression
-   --       Entity                    defining entity for operator
-   --       Associated_Node           for generic processing
-   --       Do_Overflow_Check         set if overflow check needed
-   --       Has_Private_View          set in generic units.
+   --       Chars                       Name_Id for the operator
+   --       Right_Opnd                  right operand expression
+   --       Entity                      defining entity for operator
+   --       Associated_Node             for generic processing
+   --       Do_Overflow_Check           set if overflow check needed
+   --       Has_Private_View            set in generic units
+   --       Has_Secondary_Private_View  set in generic units
 
    --    "plus fields for expression"
    --       Paren_Count               number of parentheses levels
@@ -830,7 +826,7 @@ package Sinfo is
    --    an unconstrained packed array and the dereference is the prefix of
    --    a 'Size attribute reference, or 2) when the dereference node is
    --    created for the expansion of an allocator with a subtype_indication
-   --    and the designated subtype is an unconstrained discriminated type.
+   --    and the designated subtype is an unconstrained composite type.
 
    --  Address_Warning_Posted
    --    Present in N_Attribute_Definition nodes. Set to indicate that we have
@@ -932,6 +928,12 @@ package Sinfo is
    --    a pragma Import or Interface applies, in which case no body is
    --    permitted (in Ada 83 or Ada 95).
 
+   --  Cannot_Be_Superflat
+   --    This flag is present in N_Range nodes. It is set if the range is of a
+   --    discrete type and cannot be superflat, i.e. it is guaranteed that the
+   --    inequality High_Bound >= Low_Bound - 1 is true. At the time of this
+   --    writing, it is only used by the code generator to streamline things.
+
    --  Cleanup_Actions
    --    Present in block statements created for transient blocks, contains
    --    additional cleanup actions carried over from the transient scope.
@@ -944,6 +946,12 @@ package Sinfo is
    --    check for range checks being suppressed at the point where the
    --    attribute definition clause is given, rather than testing this at the
    --    freeze point.
+
+   --  Comes_From_Check_Or_Contract
+   --    This flag is present in all N_If_Statement nodes and
+   --    gets set when an N_If_Statement is generated as part of
+   --    the expansion of a Check, Assert, or contract-related
+   --    pragma.
 
    --  Comes_From_Extended_Return_Statement
    --    Present in N_Simple_Return_Statement nodes. True if this node was
@@ -1046,8 +1054,8 @@ package Sinfo is
    --    and their first named subtypes.
 
    --  Corresponding_Spec
-   --    This field is set in subprogram, package, task, and protected body
-   --    nodes, where it points to the defining entity in the corresponding
+   --    This field is set in subprogram, package, task, entry and protected
+   --    body nodes where it points to the defining entity in the corresponding
    --    spec. The attribute is also set in N_With_Clause nodes where it points
    --    to the defining entity for the with'ed spec, and in a subprogram
    --    renaming declaration when it is a Renaming_As_Body. The field is Empty
@@ -1323,8 +1331,9 @@ package Sinfo is
    --    to the entity for the first subtype.
 
    --  Float_Truncate
-   --    A flag present in type conversion nodes. This is used for float to
-   --    integer conversions where truncation is required rather than rounding.
+   --    A flag present in type conversion nodes. It is used for floating-point
+   --    to fixed-point or integer conversions, where truncation is required
+   --    rather than rounding.
 
    --  Forwards_OK
    --    A flag present in the N_Assignment_Statement node. It is used only
@@ -1449,6 +1458,13 @@ package Sinfo is
    --  Has_Relative_Deadline_Pragma
    --    A flag present in N_Subprogram_Body and N_Task_Definition nodes to
    --    flag the presence of a pragma Relative_Deadline.
+
+   --  Has_Secondary_Private_View
+   --    A flag present in generic nodes that have an entity, to indicate that
+   --    the node is either of an access type whose Designated_Type is private
+   --    or of an array type whose Component_Type is private. Used to exchange
+   --    private and full declarations if the visibility at instantiation is
+   --    different from the visibility at generic definition.
 
    --  Has_Self_Reference
    --    Present in N_Aggregate and N_Extension_Aggregate. Indicates that one
@@ -1704,8 +1720,10 @@ package Sinfo is
    --    a source construct, applies to a generic unit or its body, and denotes
    --    one of the following contract-related annotations:
    --      Abstract_State
+   --      Always_Terminates
    --      Contract_Cases
    --      Depends
+   --      Exceptional_Cases
    --      Extensions_Visible
    --      Global
    --      Initial_Condition
@@ -1720,6 +1738,7 @@ package Sinfo is
    --      Refined_Global
    --      Refined_Post
    --      Refined_State
+   --      Subprogram_Variant
    --      Test_Case
 
    --  Is_Homogeneous_Aggregate
@@ -1899,6 +1918,11 @@ package Sinfo is
    --    Present in variable reference markers. Set when the original variable
    --    reference constitutes a write of the variable.
 
+   --  Iterator_Filter
+   --    Present in N_Loop_Parameter_Specification and N_Iterator_Specification
+   --    nodes for Ada 2022. It is used to store the condition present in the
+   --    eponymous Ada 2022 construct.
+
    --  Itype
    --    Used in N_Itype_Reference node to reference an itype for which it is
    --    important to ensure that it is defined. See description of this node
@@ -2058,12 +2082,14 @@ package Sinfo is
    --    is undefined and should not be read).
 
    --  No_Ctrl_Actions
-   --    Present in N_Assignment_Statement to indicate that no Finalize nor
-   --    Adjust should take place on this assignment even though the RHS is
-   --    controlled. Also indicates that the primitive _assign should not be
-   --    used for a tagged assignment. This is used in init procs and aggregate
-   --    expansions where the generated assignments are initializations, not
-   --    real assignments.
+   --    Present in N_Assignment_Statement to indicate that neither Finalize
+   --    nor Adjust should take place on this assignment even though the LHS
+   --    and RHS are controlled. Also to indicate that the primitive _assign
+   --    should not be used for a tagged assignment. This flag is used in init
+   --    proc and aggregate expansion where the generated assignments are
+   --    initializations, not real assignments. Note that it also suppresses
+   --    the creation of transient scopes around the N_Assignment_Statement,
+   --    in other words it disables all controlled actions for the assignment.
 
    --  No_Elaboration_Check
    --    NOTE: this flag is relevant only for the legacy ABE mechanism and
@@ -2083,6 +2109,15 @@ package Sinfo is
    --    to generate the proper message (see Sem_Util.Check_Unused_Withs for
    --    full details).
 
+   --  No_Finalize_Actions
+   --    Present in N_Assignment_Statement to indicate that no Finalize should
+   --    take place on this assignment even though the LHS is controlled. Also
+   --    to indicate that the primitive _assign should not be used for a tagged
+   --    assignment. This flag is only used in aggregates expansion where the
+   --    generated assignments are initializations, not real assignments. Note
+   --    that, unlike the No_Ctrl_Actions flag, it does *not* suppress the
+   --    creation of transient scopes around the N_Assignment_Statement.
+
    --  No_Initialization
    --    Present in N_Object_Declaration and N_Allocator to indicate that the
    --    object must not be initialized (by Initialize or call to an init
@@ -2096,12 +2131,6 @@ package Sinfo is
    --    This flag is present in membership operator nodes (N_In/N_Not_In).
    --    It is used to indicate that processing for extended overflow checking
    --    modes is not required (this is used to prevent infinite recursion).
-
-   --  No_Side_Effect_Removal
-   --    Present in N_Function_Call nodes. Set when a function call does not
-   --    require side effect removal. This attribute suppresses the generation
-   --    of a temporary to capture the result of the function which eventually
-   --    replaces the function call.
 
    --  No_Truncation
    --    Present in N_Unchecked_Type_Conversion node. This flag has an effect
@@ -2305,7 +2334,7 @@ package Sinfo is
    --    can be set in N_Object_Declaration nodes, to similarly suppress any
    --    checks on the initializing value. In assignment statements it also
    --    suppresses access checks in the generated code for out- and in-out
-   --    parameters in entry calls, as well as length checks.
+   --    parameters in entry calls, as well as discriminant and length checks.
 
    --  Suppress_Loop_Warnings
    --    Used in N_Loop_Statement node to indicate that warnings within the
@@ -2502,6 +2531,7 @@ package Sinfo is
       --  Is_SPARK_Mode_On_Node
       --  Is_Elaboration_Warnings_OK_Node
       --  Has_Private_View (set in generic units)
+      --  Has_Secondary_Private_View (set in generic units)
       --  Redundant_Use
       --  Atomic_Sync_Required
       --  plus fields for expression
@@ -2585,6 +2615,7 @@ package Sinfo is
       --  Entity
       --  Associated_Node
       --  Has_Private_View (set in generic units)
+      --  Has_Secondary_Private_View (set in generic units)
       --  plus fields for expression
 
       --  Note: the Entity field will be missing (set to Empty) for character
@@ -2777,12 +2808,6 @@ package Sinfo is
       --  depending on the setting of the Ekind field. These additional
       --  fields are defined (and access subprograms declared) in package
       --  Einfo.
-
-      --  Note: N_Defining_Identifier is an extended node whose fields are
-      --  deliberately laid out to match the layout of fields in an ordinary
-      --  N_Identifier node allowing for easy alteration of an identifier
-      --  node into a defining identifier node. For details, see procedure
-      --  Sinfo.CN.Change_Identifier_To_Defining_Identifier.
 
       --  N_Defining_Identifier
       --  Sloc points to identifier
@@ -3081,6 +3106,7 @@ package Sinfo is
       --  Sloc points to ..
       --  Low_Bound
       --  High_Bound
+      --  Cannot_Be_Superflat
       --  Includes_Infinities
       --  plus fields for expression
 
@@ -3123,12 +3149,6 @@ package Sinfo is
       --  fields depending on the setting of the Ekind field. These
       --  additional fields are defined (and access subprograms declared)
       --  in package Einfo.
-
-      --  Note: N_Defining_Character_Literal is an extended node whose fields
-      --  are deliberately laid out to match layout of fields in an ordinary
-      --  N_Character_Literal node, allowing for easy alteration of a character
-      --  literal node into a defining character literal node. For details, see
-      --  Sinfo.CN.Change_Character_Literal_To_Defining_Character_Literal.
 
       --  N_Defining_Character_Literal
       --  Sloc points to literal
@@ -4924,6 +4944,7 @@ package Sinfo is
       --  Forwards_OK
       --  Backwards_OK
       --  No_Ctrl_Actions
+      --  No_Finalize_Actions
       --  Has_Target_Names
       --  Is_Elaboration_Code
       --  Componentwise_Assignment
@@ -5366,6 +5387,7 @@ package Sinfo is
       --  Associated_Node Note this is shared with Entity
       --  Etype
       --  Has_Private_View (set in generic units)
+      --  Has_Secondary_Private_View (set in generic units)
 
       --  Note: the Strval field may be set to No_String for generated
       --  operator symbols that are known not to be string literals
@@ -5381,13 +5403,6 @@ package Sinfo is
       --  fields depending on the setting of the Ekind field. These
       --  additional fields are defined (and access subprograms declared)
       --  in package Einfo.
-
-      --  Note: N_Defining_Operator_Symbol is an extended node whose fields
-      --  are deliberately laid out to match the layout of fields in an
-      --  ordinary N_Operator_Symbol node allowing for easy alteration of
-      --  an operator symbol node into a defining operator symbol node.
-      --  See Sinfo.CN.Change_Operator_Symbol_To_Defining_Operator_Symbol
-      --  for further details.
 
       --  N_Defining_Operator_Symbol
       --  Sloc points to literal
@@ -5550,7 +5565,6 @@ package Sinfo is
       --  Is_Elaboration_Warnings_OK_Node
       --  No_Elaboration_Check
       --  Is_Expanded_Build_In_Place_Call
-      --  No_Side_Effect_Removal
       --  Is_Known_Guaranteed_ABE
       --  plus fields for expression
 
@@ -6199,6 +6213,7 @@ package Sinfo is
       --  Declarations
       --  Handled_Statement_Sequence
       --  Activation_Chain_Entity
+      --  Corresponding_Spec
       --  At_End_Proc (set to Empty if no clean up procedure)
 
       -----------------------------------
@@ -7955,13 +7970,14 @@ package Sinfo is
       --  operation) are also in this list.
 
       --  Contract_Test_Cases contains a collection of pragmas that correspond
-      --  to aspects/pragmas Contract_Cases, Test_Case and Subprogram_Variant.
-      --  The ordering in the list is in LIFO fashion.
+      --  to aspects/pragmas Contract_Cases, Exceptional_Cases, Test_Case and
+      --  Subprogram_Variant. The ordering in the list is in LIFO fashion.
 
       --  Classifications contains pragmas that either declare, categorize, or
       --  establish dependencies between subprogram or package inputs and
       --  outputs. Currently the following pragmas appear in this list:
       --    Abstract_States
+      --    Always_Terminates
       --    Async_Readers
       --    Async_Writers
       --    Constant_After_Elaboration
@@ -8007,6 +8023,7 @@ package Sinfo is
       --  Is_SPARK_Mode_On_Node
       --  Is_Elaboration_Warnings_OK_Node
       --  Has_Private_View (set in generic units)
+      --  Has_Secondary_Private_View (set in generic units)
       --  Redundant_Use
       --  Atomic_Sync_Required
       --  plus fields for expression

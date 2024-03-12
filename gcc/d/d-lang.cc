@@ -293,9 +293,8 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   /* Set default values.  */
   global._init ();
 
-  global.vendor = lang_hooks.name;
+  global.compileEnv.vendor = lang_hooks.name;
   global.params.argv0 = xstrdup (decoded_options[0].arg);
-  global.params.errorLimit = flag_max_errors;
 
   /* Default extern(C++) mangling to C++17.  */
   global.params.cplusplus = CppStdRevisionCpp17;
@@ -303,7 +302,8 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   /* Warnings and deprecations are disabled by default.  */
   global.params.useDeprecated = DIAGNOSTICinform;
   global.params.warnings = DIAGNOSTICoff;
-  global.params.messageStyle = MessageStyle::gnu;
+  global.params.v.errorLimit = flag_max_errors;
+  global.params.v.messageStyle = MessageStyle::gnu;
 
   global.params.imppath = d_gc_malloc<Strings> ();
   global.params.fileImppath = d_gc_malloc<Strings> ();
@@ -458,9 +458,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_fdebug_:
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
-	  if (!global.params.debugids)
-	    global.params.debugids = d_gc_malloc<Strings> ();
-	  global.params.debugids->push (arg);
+	  DebugCondition::addGlobalIdent (arg);
 	  break;
 	}
 
@@ -562,7 +560,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.useDIP1021 = value;
       global.params.bitfields = value;
       global.params.dtorFields = FeatureState::enabled;
-      global.params.fieldwise = value;
+      global.params.fieldwise = FeatureState::enabled;
       global.params.fixAliasThis = value;
       global.params.previewIn = value;
       global.params.fix16997 = value;
@@ -594,7 +592,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fpreview_fieldwise:
-      global.params.fieldwise = value;
+      global.params.fieldwise = FeatureState::enabled;
       break;
 
     case OPT_fpreview_fixaliasthis:
@@ -662,30 +660,30 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_ftransition_all:
-      global.params.vfield = value;
-      global.params.vgc = value;
-      global.params.vin = value;
-      global.params.vtls = value;
+      global.params.v.field = value;
+      global.params.v.gc = value;
+      global.params.v.vin = value;
+      global.params.v.tls = value;
       break;
 
     case OPT_ftransition_field:
-      global.params.vfield = value;
+      global.params.v.field = value;
       break;
 
     case OPT_ftransition_in:
-      global.params.vin = value;
+      global.params.v.vin = value;
       break;
 
     case OPT_ftransition_nogc:
-      global.params.vgc = value;
+      global.params.v.gc = value;
       break;
 
     case OPT_ftransition_templates:
-      global.params.vtemplates = value;
+      global.params.v.templates = value;
       break;
 
     case OPT_ftransition_tls:
-      global.params.vtls = value;
+      global.params.v.tls = value;
       break;
 
     case OPT_funittest:
@@ -695,9 +693,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_fversion_:
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
-	  if (!global.params.versionids)
-	    global.params.versionids = d_gc_malloc<Strings> ();
-	  global.params.versionids->push (arg);
+	  VersionCondition::addGlobalIdent (arg);
 	  break;
 	}
 
@@ -773,7 +769,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_v:
-      global.params.verbose = value;
+      global.params.v.verbose = value;
       break;
 
     case OPT_Wall:
@@ -792,7 +788,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_Wspeculative:
       if (value)
-	global.params.showGaggedErrors = 1;
+	global.params.v.showGaggedErrors = 1;
       break;
 
     case OPT_Xf:
@@ -894,6 +890,7 @@ d_post_options (const char ** fn)
 	  flag_exceptions = false;
 	}
 
+      global.params.useGC = false;
       global.params.checkAction = CHECKACTION_C;
     }
 
@@ -915,43 +912,31 @@ d_post_options (const char ** fn)
       && global.params.warnings == DIAGNOSTICerror)
     global.params.useDeprecated = DIAGNOSTICerror;
 
-  /* Make -fmax-errors visible to frontend's diagnostic machinery.  */
-  if (OPTION_SET_P (flag_max_errors))
-    global.params.errorLimit = flag_max_errors;
-
   if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision = EXCESS_PRECISION_STANDARD;
 
   global.params.useInline = flag_inline_functions;
-  global.params.showColumns = flag_show_column;
-  global.params.printErrorContext = flag_diagnostics_show_caret;
+
+  /* Make -fmax-errors visible to frontend's diagnostic machinery.  */
+  if (OPTION_SET_P (flag_max_errors))
+    global.params.v.errorLimit = flag_max_errors;
+
+  global.params.v.showColumns = flag_show_column;
+  global.params.v.printErrorContext = flag_diagnostics_show_caret;
 
   /* Keep the front-end location type in sync with params.  */
-  Loc::set (global.params.showColumns, global.params.messageStyle);
+  Loc::set (global.params.v.showColumns, global.params.v.messageStyle);
 
   if (global.params.useInline)
     global.params.dihdr.fullOutput = true;
 
   global.params.obj = !flag_syntax_only;
 
-  /* Add in versions given on the command line.  */
-  if (global.params.versionids)
-    {
-      for (size_t i = 0; i < global.params.versionids->length; i++)
-	{
-	  const char *s = (*global.params.versionids)[i];
-	  VersionCondition::addGlobalIdent (s);
-	}
-    }
-
-  if (global.params.debugids)
-    {
-      for (size_t i = 0; i < global.params.debugids->length; i++)
-	{
-	  const char *s = (*global.params.debugids)[i];
-	  DebugCondition::addGlobalIdent (s);
-	}
-    }
+  /* The front-end parser only has access to `compileEnv', synchronize its
+     fields with params.  */
+  global.compileEnv.previewIn = global.params.previewIn;
+  global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
+  global.compileEnv.shortenedMethods = global.params.shortenedMethods;
 
   if (warn_return_type == -1)
     warn_return_type = 0;
@@ -969,12 +954,96 @@ d_add_builtin_module (Module *m)
   builtin_modules.push (m);
 }
 
+/* Writes to FILENAME.  DATA is the full content of the file to be written.  */
+
+static void
+d_write_file (const char *filename, const char *data)
+{
+  FILE *stream;
+
+  if (filename && (filename[0] != '-' || filename[1] != '\0'))
+    stream = fopen (filename, "w");
+  else
+    stream = stdout;
+
+  if (!stream)
+    {
+      error ("unable to open %s for writing: %m", filename);
+      return;
+    }
+
+  fprintf (stream, "%s", data);
+
+  if (stream != stdout && (ferror (stream) || fclose (stream)))
+    error ("writing output file %s: %m", filename);
+}
+
+/* Read ddoc macro files named by the DDOCFILES, then write the concatenated
+   the contents into DDOCBUF.  */
+
+static void
+d_read_ddoc_files (Strings &ddocfiles, OutBuffer &ddocbuf)
+{
+  if (ddocbuf.length ())
+    return;
+
+  for (size_t i = 0; i < ddocfiles.length; i++)
+    {
+      int fd = open (ddocfiles[i], O_RDONLY);
+      bool ok = false;
+      struct stat buf;
+
+      if (fd == -1 || fstat (fd, &buf))
+	{
+	  error ("unable to open %s for reading: %m", ddocfiles[i]);
+	  continue;
+	}
+
+      /* Check we've not been given a directory, or a file bigger than 4GB.  */
+      if (S_ISDIR (buf.st_mode))
+	errno = ENOENT;
+      else if (buf.st_size != unsigned (buf.st_size))
+	errno = EMFILE;
+      else
+	{
+	  unsigned size = unsigned (buf.st_size);
+	  char *buffer = (char *) xmalloc (size);
+
+	  if (read (fd, buffer, size) == ssize_t (size))
+	    {
+	      ddocbuf.write (buffer, size);
+	      ok = true;
+	    }
+
+	  free (buffer);
+	}
+
+      close (fd);
+      if (!ok)
+	fatal_error (input_location, "reading ddoc file %s: %m", ddocfiles[i]);
+    }
+}
+
+static void
+d_generate_ddoc_file (Module *m, OutBuffer &ddocbuf)
+{
+  input_location = make_location_t (m->loc);
+
+  d_read_ddoc_files (global.params.ddoc.files, ddocbuf);
+
+  OutBuffer ddocbuf_out;
+  gendocfile (m, ddocbuf.peekChars (), ddocbuf.length (), global.datetime,
+	      global.errorSink, ddocbuf_out);
+
+  d_write_file (m->docfile.toChars (), ddocbuf_out.peekChars ());
+}
+
 /* Implements the lang_hooks.parse_file routine for language D.  */
 
 static void
 d_parse_file (void)
 {
-  if (global.params.verbose)
+  if (global.params.v.verbose)
     {
       message ("binary    %s", global.params.argv0.ptr);
       message ("version   %s", global.versionChars ());
@@ -1004,6 +1073,9 @@ d_parse_file (void)
   /* Create Module's for all sources we will load.  */
   Modules modules;
   modules.reserve (num_in_fnames);
+
+  /* Buffer for contents of .ddoc files.  */
+  OutBuffer ddocbuf;
 
   /* In this mode, the first file name is supposed to be a duplicate
      of one of the input files.  */
@@ -1081,7 +1153,7 @@ d_parse_file (void)
     {
       Module *m = modules[i];
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("parse     %s", m->toChars ());
 
       if (!Module::rootModule)
@@ -1092,7 +1164,8 @@ d_parse_file (void)
 
       if (m->filetype == FileType::ddoc)
 	{
-	  gendocfile (m);
+	  d_generate_ddoc_file (m, ddocbuf);
+
 	  /* Remove M from list of modules.  */
 	  modules.remove (i);
 	  i--;
@@ -1132,10 +1205,12 @@ d_parse_file (void)
 	      || (d_option.fonly && m != Module::rootModule))
 	    continue;
 
-	  if (global.params.verbose)
+	  if (global.params.v.verbose)
 	    message ("import    %s", m->toChars ());
 
-	  genhdrfile (m);
+	  OutBuffer buf;
+	  genhdrfile (m, buf);
+	  d_write_file (m->hdrfile.toChars (), buf.peekChars ());
 	}
 
       dump_headers = true;
@@ -1149,7 +1224,7 @@ d_parse_file (void)
     {
       Module *m = modules[i];
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("importall %s", m->toChars ());
 
       m->importAll (NULL);
@@ -1173,7 +1248,7 @@ d_parse_file (void)
 	  continue;
 	}
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("semantic  %s", m->toChars ());
 
       dsymbolSemantic (m, NULL);
@@ -1204,7 +1279,7 @@ d_parse_file (void)
     {
       Module *m = modules[i];
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("semantic2 %s", m->toChars ());
 
       semantic2 (m, NULL);
@@ -1220,7 +1295,7 @@ d_parse_file (void)
     {
       Module *m = modules[i];
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("semantic3 %s", m->toChars ());
 
       semantic3 (m, NULL);
@@ -1247,7 +1322,7 @@ d_parse_file (void)
       /* Declare the name of the root module as the first global name in order
 	 to make the middle-end fully deterministic.  */
       OutBuffer buf;
-      mangleToBuffer (Module::rootModule, &buf);
+      mangleToBuffer (Module::rootModule, buf);
       first_global_object_name = buf.extractChars ();
     }
 
@@ -1255,8 +1330,6 @@ d_parse_file (void)
   if (d_option.deps)
     {
       obstack buffer;
-      FILE *deps_stream;
-
       gcc_obstack_init (&buffer);
 
       for (size_t i = 0; i < modules.length; i++)
@@ -1266,60 +1339,19 @@ d_parse_file (void)
       if (d_option.deps_filename_user)
 	d_option.deps_filename = d_option.deps_filename_user;
 
-      if (d_option.deps_filename)
-	{
-	  deps_stream = fopen (d_option.deps_filename, "w");
-	  if (!deps_stream)
-	    {
-	      fatal_error (input_location, "opening dependency file %s: %m",
-			   d_option.deps_filename);
-	      goto had_errors;
-	    }
-	}
-      else
-	deps_stream = stdout;
-
-      fprintf (deps_stream, "%s", (char *) obstack_finish (&buffer));
-
-      if (deps_stream != stdout
-	  && (ferror (deps_stream) || fclose (deps_stream)))
-	{
-	  fatal_error (input_location, "closing dependency file %s: %m",
-		       d_option.deps_filename);
-	}
+      d_write_file (d_option.deps_filename,
+		    (char *) obstack_finish (&buffer));
     }
 
-  if (global.params.vtemplates)
+  if (global.params.v.templates)
     printTemplateStats ();
 
   /* Generate JSON files.  */
   if (global.params.json.doOutput)
     {
       OutBuffer buf;
-      json_generate (&buf, &modules);
-
-      const char *name = global.params.json.name.ptr;
-      FILE *json_stream;
-
-      if (name && (name[0] != '-' || name[1] != '\0'))
-	{
-	  const char *nameext
-	    = FileName::defaultExt (name, json_ext.ptr);
-	  json_stream = fopen (nameext, "w");
-	  if (!json_stream)
-	    {
-	      fatal_error (input_location, "opening json file %s: %m", nameext);
-	      goto had_errors;
-	    }
-	}
-      else
-	json_stream = stdout;
-
-      fprintf (json_stream, "%s", buf.peekChars ());
-
-      if (json_stream != stdout
-	  && (ferror (json_stream) || fclose (json_stream)))
-	fatal_error (input_location, "closing json file %s: %m", name);
+      json_generate (modules, buf);
+      d_write_file (global.params.json.name.ptr, buf.peekChars ());
     }
 
   /* Generate Ddoc files.  */
@@ -1328,7 +1360,7 @@ d_parse_file (void)
       for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
-	  gendocfile (m);
+	  d_generate_ddoc_file (m, ddocbuf);
 	}
     }
 
@@ -1341,7 +1373,7 @@ d_parse_file (void)
 	  OutBuffer buf;
 	  buf.doindent = 1;
 
-	  moduleToBuffer (&buf, m);
+	  moduleToBuffer (buf, m);
 	  message ("%s", buf.peekChars ());
 	}
     }
@@ -1363,7 +1395,7 @@ d_parse_file (void)
 	  || (d_option.fonly && m != Module::rootModule))
 	continue;
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("code      %s", m->toChars ());
 
       if (!flag_syntax_only)
@@ -1382,22 +1414,8 @@ d_parse_file (void)
   /* We want to write the mixin expansion file also on error.  */
   if (global.params.mixinOut.doOutput)
     {
-      FILE *mixin_stream = fopen (global.params.mixinOut.name.ptr, "w");
-
-      if (mixin_stream)
-	{
-	  OutBuffer *buf = global.params.mixinOut.buffer;
-	  fprintf (mixin_stream, "%s", buf->peekChars ());
-
-	  if (ferror (mixin_stream) || fclose (mixin_stream))
-	    fatal_error (input_location, "closing mixin file %s: %m",
-			 global.params.mixinOut.name.ptr);
-	}
-      else
-	{
-	  fatal_error (input_location, "opening mixin file %s: %m",
-		       global.params.mixinOut.name.ptr);
-	}
+      d_write_file (global.params.mixinOut.name.ptr,
+		    global.params.mixinOut.buffer->peekChars ());
     }
 
   /* Remove generated .di files on error.  */

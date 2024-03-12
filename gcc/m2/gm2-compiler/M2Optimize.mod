@@ -58,8 +58,7 @@ FROM SymbolTable IMPORT GetSymName,
 
 FROM M2Quads IMPORT QuadOperator, GetQuad, GetFirstQuad, GetNextQuad,
                     PutQuad, SubQuad, Opposite, IsReferenced,
-                    GetRealQuad ;
-
+                    GetRealQuad, GetQuadOtok, PutQuadOtok ;
 
 (*
    FoldBranches - folds unneccessary branches in the list of quadruples.
@@ -114,14 +113,14 @@ BEGIN
          GetQuad(i, Operator, Operand1, Operand2, Operand3) ;
          CASE Operator OF
 
-         GotoOp             : Folded := ReduceGoto(i, Operand3,
-                                                   Right, Folded) |
+         GotoOp             : Folded := ReduceGoto (i, Operand3,
+                                                    Right, Folded) |
          IfInOp, IfNotInOp,
          IfNotEquOp, IfEquOp,
          IfLessEquOp, IfGreEquOp,
-         IfGreOp, IfLessOp  : Folded := ReduceBranch(Operator, i,
-                                                     Operand1, Operand2, Operand3,
-                                                     Right, Folded)
+         IfGreOp, IfLessOp  : Folded := ReduceBranch (Operator, i,
+                                                      Operand1, Operand2, Operand3,
+                                                      Right, Folded)
 
          ELSE
          END ;
@@ -154,48 +153,56 @@ PROCEDURE ReduceBranch (Operator: QuadOperator;
                         VAR NextQuad: CARDINAL;
                         Folded: BOOLEAN) : BOOLEAN ;
 VAR
-   OpNext : QuadOperator ;
+   overflowChecking: BOOLEAN ;
+   OpNext          : QuadOperator ;
+   tok,
    NextPlusOne,
    Op1Next,
    Op2Next,
    Op3Next,
-   From,
-   To     : CARDINAL ;
+   op1tok,
+   op2tok,
+   op3tok,
+   From, To        : CARDINAL ;
 BEGIN
    (* If op         NextQuad+1 *)
    (* Goto          x          *)
 
    IF NextQuad#0
    THEN
-      IF (GetNextQuad(CurrentQuad)=CurrentOperand3) OR
-         (GetRealQuad(GetNextQuad(CurrentQuad))=CurrentOperand3)
+      IF (GetNextQuad (CurrentQuad) = CurrentOperand3) OR
+         (GetRealQuad (GetNextQuad (CurrentQuad)) = CurrentOperand3)
       THEN
-         SubQuad(CurrentQuad) ;
+         SubQuad (CurrentQuad) ;
          Folded := TRUE
       ELSE
-         From := GetNextQuad(CurrentQuad) ;  (* start after CurrentQuad *)
+         From := GetNextQuad (CurrentQuad) ;  (* start after CurrentQuad *)
          To := NextQuad ;
-         CurrentOperand3 := GetRealQuad(CurrentOperand3) ;
+         CurrentOperand3 := GetRealQuad (CurrentOperand3) ;
 
-         NextPlusOne := GetRealQuad(GetNextQuad(NextQuad)) ;
-         GetQuad(NextQuad, OpNext, Op1Next, Op2Next, Op3Next) ;
-         IF (OpNext=GotoOp) AND (NextPlusOne=CurrentOperand3) AND
-            IsBasicBlock(From, To)
+         NextPlusOne := GetRealQuad (GetNextQuad (NextQuad)) ;
+         GetQuad (NextQuad, OpNext, Op1Next, Op2Next, Op3Next) ;
+         IF (OpNext = GotoOp) AND (NextPlusOne = CurrentOperand3) AND
+            IsBasicBlock (From, To)
          THEN
-            (*       Op3Next := GetRealQuad(Op3Next) ; *)
-            SubQuad(NextQuad) ;
-            PutQuad(CurrentQuad, Opposite(Operator),
-                    CurrentOperand1, CurrentOperand2, Op3Next) ;
+            GetQuadOtok (CurrentQuad, tok, Operator,
+                         CurrentOperand1, CurrentOperand2, CurrentOperand3,
+                         overflowChecking, op1tok, op2tok, op3tok) ;
+            SubQuad (NextQuad) ;
+            PutQuadOtok (CurrentQuad, tok, Opposite (Operator),
+                         CurrentOperand1, CurrentOperand2, Op3Next,
+                         overflowChecking,
+                         op1tok, op2tok, op3tok) ;
             NextQuad := NextPlusOne ;
             Folded := TRUE
          END
       END ;
-      IF FoldMultipleGoto(CurrentQuad)
+      IF FoldMultipleGoto (CurrentQuad)
       THEN
          Folded := TRUE
       END
    END ;
-   RETURN( Folded )
+   RETURN Folded
 END ReduceBranch ;
 
 
@@ -237,20 +244,20 @@ END IsBasicBlock ;
 PROCEDURE ReduceGoto (CurrentQuad, CurrentOperand3, NextQuad: CARDINAL;
                       Folded: BOOLEAN) : BOOLEAN ;
 BEGIN
-   CurrentOperand3 := GetRealQuad(CurrentOperand3) ;
+   CurrentOperand3 := GetRealQuad (CurrentOperand3) ;
    (* IF next quad is a GotoOp *)
-   IF CurrentOperand3=NextQuad
+   IF CurrentOperand3 = NextQuad
    THEN
-      SubQuad(CurrentQuad) ;
+      SubQuad (CurrentQuad) ;
       Folded := TRUE
    ELSE
       (* Does Goto point to another Goto ? *)
-      IF FoldMultipleGoto(CurrentQuad)
+      IF FoldMultipleGoto (CurrentQuad)
       THEN
          Folded := TRUE
       END
    END ;
-   RETURN( Folded )
+   RETURN Folded
 END ReduceGoto ;
 
 
@@ -272,18 +279,18 @@ VAR
    Operand2,
    Operand3: CARDINAL ;
 BEGIN
-   GetQuad(QuadNo, Operator, Operand1, Operand2, Operand3) ;
-   Operand3 := GetRealQuad(Operand3) ;  (* skip pseudo quadruples *)
-   GetQuad(Operand3, Op, Op1, Op2, Op3) ;
-   IF Op=GotoOp
+   GetQuad (QuadNo, Operator, Operand1, Operand2, Operand3) ;
+   Operand3 := GetRealQuad (Operand3) ;  (* skip pseudo quadruples *)
+   GetQuad (Operand3, Op, Op1, Op2, Op3) ;
+   IF Op = GotoOp
    THEN
-      PutQuad(QuadNo, Operator, Operand1, Operand2, Op3) ;
+      PutQuad (QuadNo, Operator, Operand1, Operand2, Op3) ;
       (* Dont want success to be returned if in fact the Goto *)
       (* line number has not changed... otherwise we loop     *)
       (* forever.                                             *)
-      RETURN( Op3#Operand3 )
+      RETURN Op3 # Operand3
    ELSE
-      RETURN( FALSE )
+      RETURN FALSE
    END
 END FoldMultipleGoto ;
 
@@ -344,7 +351,8 @@ BEGIN
 END RemoveProcedures ;
 
 
-PROCEDURE KnownReachable (Start, End: CARDINAL) ;
+PROCEDURE KnownReachable (Scope: CARDINAL;
+                          Start, End: CARDINAL) ;
 VAR
    Op           : QuadOperator ;
    Op1, Op2, Op3: CARDINAL ;
@@ -352,29 +360,29 @@ BEGIN
    IF Start#0
    THEN
       REPEAT
-         GetQuad(Start, Op, Op1, Op2, Op3) ;
+         GetQuad (Start, Op, Op1, Op2, Op3) ;
          CASE Op OF
 
-         CallOp   : KnownReach(Op3) |
+         CallOp   : KnownReach (Op3) |
          AddrOp,
          ParamOp,
          XIndrOp,
-         BecomesOp: KnownReach(Op3) ;
-                    CheckNeedSavePriority(Op3)
+         BecomesOp: KnownReach (Op3) ;
+                    CheckNeedSavePriority (Op3)
 
          ELSE
          END ;
-         Start := GetNextQuad(Start)
-      UNTIL (Start>End) OR (Start=0)
+         Start := GetNextQuad (Start)
+      UNTIL (Start > End) OR (Start = 0)
    END
 END KnownReachable ;
 
 
 PROCEDURE KnownReach (sym: CARDINAL) ;
 BEGIN
-   IF IsProcedure(sym) AND (NOT IsProcedureReachable(sym))
+   IF IsProcedure (sym) AND (NOT IsProcedureReachable (sym))
    THEN
-      RemoveProcedures(sym)
+      RemoveProcedures (sym)
    END
 END KnownReach ;
 

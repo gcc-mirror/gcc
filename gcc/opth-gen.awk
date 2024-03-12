@@ -406,6 +406,18 @@ for (i = 0; i < n_extra_masks; i++) {
 		print "#define MASK_" extra_masks[i] " (1U << " masknum[""]++ ")"
 }
 
+for (i = 0; i < n_target_vars; i++)
+{
+	if (find_index(target_vars[i], extra_target_vars, n_extra_target_vars) == n_extra_target_vars)
+		continue
+	for (j = 0; j < n_other_mask[i]; j++)
+	{
+		print "#define MASK_" other_masks[i "," j] " (1U << " other_masknum[i]++ ")"
+	}
+	if (other_masknum[i] > 32)
+		print "#error too many target masks for" extra_target_vars[i]
+}
+
 for (var in masknum) {
 	if (var != "" && host_wide_int[var] == "yes") {
 		print "#if defined(HOST_BITS_PER_WIDE_INT) && " masknum[var] " > HOST_BITS_PER_WIDE_INT"
@@ -417,6 +429,20 @@ for (var in masknum) {
 			print "#error too many target masks"
 		else
 			print "#error too many masks for " var
+	}
+}
+for (i = 0; i < n_target_vars; i++)
+{
+	if (find_index(target_vars[i], extra_target_vars, n_extra_target_vars) == n_extra_target_vars)
+		continue
+	for (j = 0; j < n_other_mask[i]; j++)
+	{
+		print "#define TARGET_" other_masks[i "," j] \
+		      " ((" target_vars[i] " & MASK_" other_masks[i "," j] ") != 0)"
+		print "#define TARGET_" other_masks[i "," j] "_P(" target_vars[i] ")" \
+		      " (((" target_vars[i] ") & MASK_" other_masks[i "," j] ") != 0)"
+		print "#define TARGET_" other_masks[i "," j] "_OPTS_P(opts)" \
+		      " (((opts->x_" target_vars[i] ") & MASK_" other_masks[i "," j] ") != 0)"
 	}
 }
 print ""
@@ -447,15 +473,22 @@ for (i = 0; i < n_opts; i++) {
 		      " ((" vname " & " mask original_name ") != 0)"
 		print "#define TARGET_" name "_P(" vname ")" \
 		      " (((" vname ") & " mask original_name ") != 0)"
+		print "#define TARGET_" name "_OPTS_P(opts)" \
+		      " (((opts->x_" vname ") & " mask original_name ") != 0)"
 		print "#define TARGET_EXPLICIT_" name "_P(opts)" \
 		      " ((opts->x_" vname "_explicit & " mask original_name ") != 0)"
 		print "#define SET_TARGET_" name "(opts) opts->x_" vname " |= " mask original_name
 	}
 }
 for (i = 0; i < n_extra_masks; i++) {
-	if (extra_mask_macros[extra_masks[i]] == 0)
+	if (extra_mask_macros[extra_masks[i]] == 0) {
 		print "#define TARGET_" extra_masks[i] \
 		      " ((target_flags & MASK_" extra_masks[i] ") != 0)"
+		print "#define TARGET_" extra_masks[i] "_P(target_flags)" \
+		      " (((target_flags) & " extra_masks[i] ") != 0)"
+		print "#define TARGET_" extra_masks[i] "_OPTS_P(opts)" \
+		      " (((opts->x_target_flags) & MASK_" extra_masks[i] ") != 0)"
+	}
 }
 print ""
 

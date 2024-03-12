@@ -12,6 +12,10 @@ extern (C):
 nothrow:
 @nogc:
 
+public import core.sys.posix.sys.types;
+
 int getentropy(void*, size_t);
+int getthrname(pid_t, char*, size_t);
 int pledge(const scope char*, const scope char*);
+int setthrname(pid_t, const scope char*);
 int unveil(const scope char*, const scope char*);

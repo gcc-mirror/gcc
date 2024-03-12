@@ -1,3 +1,340 @@
+2023-10-15  Mike Frysinger  <vapier@gentoo.org>
+
+	* Makefile.def: Add distclean-sim dependency on distclean-gnulib.
+	* Makefile.in: Regenerate.
+
+2023-10-11  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Fix name order.
+
+2023-10-10  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* MAINTAINERS: Add myself.
+
+2023-10-06  Sergei Trofimovich  <siarheit@google.com>
+
+	PR bootstrap/111663
+	* Makefile.tpl (STAGEfeedback_CONFIGURE_FLAGS): Disable -Werror.
+	* Makefile.in: Regenerate.
+
+2023-10-05  Jan Engelhardt  <jengelh@inai.de>
+
+	* SECURITY.txt: Fix up indentation.
+
+2023-10-05  Jan Engelhardt  <jengelh@inai.de>
+
+	* SECURITY.txt: Fix up commas.
+
+2023-10-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* SECURITY.txt: New file.
+
+2023-09-18  Fei Gao  <gaofei@eswincomputing.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-09-15  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config-ml.in: Remove unneeded loongarch clause.
+	* configure.ac: Register custom makefile fragments mt-loongarch-*
+	for loongarch targets.
+	* configure: Regenerate.
+
+2023-09-12  Edwin Lu  <ewlu@rivosinc.com>
+
+	* MAINTAINERS: Add myself
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR testsuite/109951
+	* Makefile.tpl (BASE_TARGET_EXPORTS): Add
+	'SYSROOT_CFLAGS_FOR_TARGET'.
+	* Makefile.in: Regenerate.
+
+2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config-ml.in: Do not build the multilib library variant
+	that is duplicate with the toplevel one.
+
+2023-08-29  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-08-22  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Update my email address.
+
+2023-08-11  Eric Feng  <ef2648@columbia.edu>
+
+	* MAINTAINERS: Add myself.
+
+2023-08-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* Makefile.def: Reflect that libsframe needs to installed before
+	libbfd.  Reorder a bit to better track libsframe dependencies.
+	* Makefile.in: Regenerate.
+
+2023-08-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* Makefile.def: Add install dependency on libsframe for libbfd.
+	* Makefile.in: Regenerated.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* libtool.m4 (lt_cv_sys_global_symbol_pipe): Augment symcode for
+	Solaris 11.
+
+2023-08-07  Alexander von Gluck IV  <kallisti5@unixzen.com>
+
+	* configure: Regenerate.
+	* configure.ac: Add Haiku to list of ELF OSes
+	* libtool.m4: Update sys_lib_dlsearch_path_spec on Haiku.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* libtool.m4 (LT_PATH_NM): Handle user-specified NM with
+	options, including options containing paths.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* libtool.m4 (LT_PATH_NM): Try BSDization flags with a user-provided
+	NM, if there is one.  Run nm on itself, not on /dev/null, to avoid
+	errors from nms that refuse to work on non-regular files.  Remove
+	other workarounds for this problem.  Strip out blank lines from the
+	nm output.
+
+2023-08-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure.ac: Reinstate 32b PA-RISC HP-UX targets
+	* configure: Regenerate.
+
+2023-08-07  Simon Marchi  <simon.marchi@efficios.com>
+
+	* configure.ac: Add AC_SUBST(PKG_CONFIG_PATH).
+	* configure: Re-generate.
+	* Makefile.tpl (HOST_EXPORTS): Pass PKG_CONFIG_PATH.
+	(PKG_CONFIG_PATH): New.
+	* Makefile.in: Re-generate.
+
+2023-08-07  Luis Machado  <luis.machado@arm.com>
+
+	* configure.ac: Disable year2038 by default on 32-bit hosts.
+	* configure: Regenerate.
+
+2023-08-07  Vladimir Mezentsev  <vladimir.mezentsev@oracle.com>
+
+	* Makefile.def: Add gprofng module.
+	* configure.ac: Add --enable-gprofng option.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2023-08-07  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Add --enable-default-compressed-debug-sections-algorithm.
+	* configure: Regenerate.
+
+2023-08-07  Fangrui Song  <maskray@google.com>
+
+	* configure: Regenerate.
+	* configure.ac: Add --with-zstd.
+
+2023-08-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure: Regenerate.
+	* configure.ac: Recover tilegx/tilepro targets.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerated.
+	* libtool.m4 (_LT_CMD_OLD_ARCHIVE): Check if AR works with
+	--plugin and rc before enabling --plugin.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.tpl (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	* configure.ac: Include config/gcc-plugin.m4.
+	AC_SUBST AR_PLUGIN_OPTION and RANLIB_PLUGIN_OPTION.
+	* libtool.m4 (_LT_CMD_OLD_ARCHIVE): Pass --plugin to AR and
+	RANLIB if possible.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2023-08-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	* Makefile.tpl: Substitute @GDCFLAGS@ instead of using
+	$(CFLAGS).
+
+2023-08-07  David Faust  <david.faust@oracle.com>
+
+	* MAINTAINERS: Add the BPF port to my reviewer listing.
+
+2023-08-02  Jan Beulich  <jbeulich@suse.com>
+
+	* MAINTAINERS: Correct my email address.
+
+2023-08-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-08-01  Richard Ball  <richard.ball@arm.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-07-31  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac (GDCFLAGS): Set default from ${CFLAGS}.
+	* configure: Regenerate.
+	* Makefile.in (GDCFLAGS): Substitute @GDCFLAGS@.
+
+2023-07-31  xuli  <xuli1@eswincomputing.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-07-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: List myself as "nvptx port" maintainer.
+
+2023-07-21  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* MAINTAINERS: Add myself to write after approval
+
+2023-07-18  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* MAINTAINERS: Add myself as a reviewer for the riscv port.
+
+2023-07-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Add myself as a reviewer for the riscv port.
+
+2023-07-12  Hao Liu  <hliu@os.amperecomputing.com>
+
+	* MAINTAINERS: Add Hao Liu to write after approval
+
+2023-07-12  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* MAINTAINERS: Add Ken Matsui to write after approval
+
+2023-07-07  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Collect both kernel and user events for autofdo
+	* Makefile.tpl: Collect both kernel and user events for autofdo
+
+2023-06-30  Rishi Raj  <rishiraj45035@gmail.com>
+
+	* MAINTAINERS: Added myself to Write After Approval and DCO
+
+2023-06-29  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Remove -gtoggle for STAGEautoprofile
+	* Makefile.tpl: Remove -gtoggle for STAGEautoprofile
+
+2023-06-25  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* MAINTAINERS: Add Lehua Ding to write after approval
+
+2023-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.def: Pass the enable-host-pie value to GCC configure.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Adjust the logic for shared and PIE host flags to
+	ensure that PIE is passed for hosts that require it.
+
+2023-06-16  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS (Write After Approval): move Matthew Fortune
+	to Write After Approval.
+
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-pie): New check.  Set PICFLAG after this
+	check.
+	* configure: Regenerate.
+
+2023-06-14  Filip Kastl  <filip.kastl@gmail.com>
+
+	* MAINTAINERS: Add myself to write after approval
+
+2023-06-02  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself as MIPS
+	port maintainer.
+	(Write After Approval): Remove myself.
+
+2023-05-30  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	* MAINTAINERS: Replace spaces with tabs.
+
+2023-05-27  Benjamin Priour  <vultkayn@gcc.gnu.org>
+
+	* MAINTAINERS: New entry.
+
+2023-05-18  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.tpl: Disable warnings as errors for STAGEautofeedback
+	* Makefile.in: Regenerate
+
+2023-05-17  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Disable warnings as errors for STAGEautofeedback
+
+2023-05-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Sort.
+
+2023-05-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* MAINTAINERS: Add myself.
+
+2023-05-10  Pan Li  <pan2.li@intel.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Define PROFILE_MERGER
+	* Makefile.tpl: Define PROFILE_MERGER
+
+2023-04-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Change my email address.
+
+2023-04-26  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-04-26  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: fix sorting
+
+2023-04-25  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-04-24  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Fix sorting.
+
+2023-04-21  Peter Foley  <pefoley2@pefoley.com>
+
+	* configure: Regenerate.
+	* configure.ac: Only create serdep.tmp if needed
+
+2023-04-21  “ajit.kumar.agarwal@ibm.com”  <aagarwa@ltcden2-lp1.aus.stglabs.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-04-21  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+	Ref: <680c7bbe-5d6e-07cd-8468-247afc65e1dd@gmail.com>
+
 2023-04-06  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* MAINTAINERS: Add myself.

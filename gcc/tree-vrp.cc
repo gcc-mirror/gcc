@@ -56,11 +56,17 @@ along with GCC; see the file COPYING3.  If not see
 // This class is utilized by VRP and ranger to remove __builtin_unreachable
 // calls, and reflect any resulting global ranges.
 //
-// maybe_register_block () is called on basic blocks, and if that block
-// matches the pattern of one branch being a builtin_unreachable, register
-// the resulting executable edge in a list.
+// maybe_register() is called on condition statements , and if that
+// matches the pattern of one branch being a builtin_unreachable, either check
+// for early removal or register the resulting executable edge in a list.
 //
-// After all blocks have been processed, remove_and_update_globals() will
+// During early/non-final processing, we check to see if ALL exports from the
+// block can be safely updated with a new global value.  If they can, then
+// we rewrite the condition and update those values immediately.  Otherwise
+// the unreachable condition is left in the IL until the final pass.
+//
+// During final processing, after all blocks have been registered,
+// remove_and_update_globals() will
 // - check all exports from registered blocks
 // - ensure the cache entry of each export is set with the appropriate range
 // - rewrite the conditions to take the executable edge
@@ -71,23 +77,25 @@ along with GCC; see the file COPYING3.  If not see
 
 class remove_unreachable {
 public:
-  remove_unreachable (gimple_ranger &r) : m_ranger (r) { m_list.create (30); }
+  remove_unreachable (gimple_ranger &r, bool all) : m_ranger (r), final_p (all)
+    { m_list.create (30); }
   ~remove_unreachable () { m_list.release (); }
-  void maybe_register_block (basic_block bb);
-  bool remove_and_update_globals (bool final_p);
+  void handle_early (gimple *s, edge e);
+  void maybe_register (gimple *s);
+  bool remove_and_update_globals ();
   vec<std::pair<int, int> > m_list;
   gimple_ranger &m_ranger;
+  bool final_p;
 };
 
 // Check if block BB has a __builtin_unreachable () call on one arm, and
 // register the executable edge if so.
 
 void
-remove_unreachable::maybe_register_block (basic_block bb)
+remove_unreachable::maybe_register (gimple *s)
 {
-  gimple *s = gimple_outgoing_range_stmt_p (bb);
-  if (!s || gimple_code (s) != GIMPLE_COND)
-    return;
+  gcc_checking_assert  (gimple_code (s) == GIMPLE_COND);
+  basic_block bb = gimple_bb (s);
 
   edge e0 = EDGE_SUCC (bb, 0);
   basic_block bb0 = e0->dest;
@@ -102,21 +110,150 @@ remove_unreachable::maybe_register_block (basic_block bb)
   if (un0 == un1)
     return;
 
-  if (un0)
-    m_list.safe_push (std::make_pair (e1->src->index, e1->dest->index));
+  // Constant expressions are ignored.
+  if (TREE_CODE (gimple_cond_lhs (s)) != SSA_NAME
+      && TREE_CODE (gimple_cond_rhs (s)) != SSA_NAME)
+    return;
+
+  edge e = un0 ? e1 : e0;
+
+  if (!final_p)
+    handle_early (s, e);
   else
-    m_list.safe_push (std::make_pair (e0->src->index, e0->dest->index));
+    m_list.safe_push (std::make_pair (e->src->index, e->dest->index));
 }
+
+// Return true if all uses of NAME are dominated by by block BB.  1 use
+// is allowed in block BB, This is one we hope to remove.
+// ie
+//  _2 = _1 & 7;
+//  if (_2 != 0)
+//    goto <bb 3>; [0.00%]
+//  Any additional use of _1 or _2 in this block invalidates early replacement.
+
+static bool
+fully_replaceable (tree name, basic_block bb)
+{
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  bool saw_in_bb = false;
+
+  // If a name loads from memory, we may lose information used in
+  // commoning opportunities later.  See tree-ssa/ssa-pre-34.c.
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  if (gimple_vuse (def_stmt))
+    return false;
+
+  FOR_EACH_IMM_USE_FAST (use_p, iter, name)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+      // Ignore debug stmts and the branch.
+      if (is_gimple_debug (use_stmt))
+	continue;
+      basic_block use_bb = gimple_bb (use_stmt);
+      // Only one use in the block allowed to avoid complicated cases.
+      if (use_bb == bb)
+	{
+	  if (saw_in_bb)
+	    return false;
+	  else
+	    saw_in_bb = true;
+	}
+      else if (!dominated_by_p (CDI_DOMINATORS, use_bb, bb))
+	return false;
+    }
+  return true;
+}
+
+// This routine is called to check builtin_unreachable calls during any
+// time before final removal.  The only way we can be sure it does not
+// provide any additional information is to expect that we can update the
+// global values of all exports from a block.   This means the branch
+// to the unreachable call must dominate all uses of those ssa-names, with
+// the exception that there can be a single use in the block containing
+// the branch. IF the name used in the branch is defined in the block, it may
+// contain the name of something else that will be an export.  And likewise
+// that may also use another name that is an export etc.
+//
+// As long as there is only a single use, we can be sure that there are no other
+// side effects (like being passed to a call, or stored to a global, etc.
+// This means we will miss cases where there are 2 or more uses that have
+// no interveneing statements that may had side effects, but it catches most
+// of the caes we care about, and prevents expensive in depth analysis.
+//
+// Ranger will still reflect the proper ranges at other places in these missed
+// cases, we simply will not remove/set globals early.
+
+void
+remove_unreachable::handle_early (gimple *s, edge e)
+{
+  bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;
+  bool rhs_p = TREE_CODE (gimple_cond_rhs (s)) == SSA_NAME;
+  // Do not remove __builtin_unreachable if it confers a relation, or
+  // that relation may be lost in subsequent passes.
+  if (lhs_p && rhs_p)
+    return;
+  // Do not remove addresses early. ie if (x == &y)
+  if (lhs_p && TREE_CODE (gimple_cond_rhs (s)) == ADDR_EXPR)
+    return;
+
+  gcc_checking_assert (gimple_outgoing_range_stmt_p (e->src) == s);
+  gcc_checking_assert (!final_p);
+
+  // Check if every export use is dominated by this branch.
+  tree name;
+  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+    {
+      if (!fully_replaceable (name, e->src))
+	return;
+    }
+
+  // Set the global value for each.
+  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+    {
+      Value_Range r (TREE_TYPE (name));
+      m_ranger.range_on_entry (r, e->dest, name);
+      // Nothing at this late stage we can do if the write fails.
+      if (!set_range_info (name, r))
+	continue;
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Global Exported (via early unreachable): ");
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fprintf (dump_file, " = ");
+	  gimple_range_global (r, name);
+	  r.dump (dump_file);
+	  fputc ('\n', dump_file);
+	}
+    }
+
+  tree ssa = lhs_p ? gimple_cond_lhs (s) : gimple_cond_rhs (s);
+
+  // Rewrite the condition.
+  if (e->flags & EDGE_TRUE_VALUE)
+    gimple_cond_make_true (as_a<gcond *> (s));
+  else
+    gimple_cond_make_false (as_a<gcond *> (s));
+  update_stmt (s);
+
+  // If the name on S is defined in this block, see if there is DCE work to do.
+  if (gimple_bb (SSA_NAME_DEF_STMT (ssa)) == e->src)
+    {
+      auto_bitmap dce;
+      bitmap_set_bit (dce, SSA_NAME_VERSION (ssa));
+      simple_dce_from_worklist (dce);
+    }
+}
+
 
 // Process the edges in the list, change the conditions and removing any
 // dead code feeding those conditions.  Calculate the range of any
 // names that may have been exported from those blocks, and determine if
 // there is any updates to their global ranges..
-// FINAL_P indicates all builtin_unreachable calls should be removed.
 // Return true if any builtin_unreachables/globals eliminated/updated.
 
 bool
-remove_unreachable::remove_and_update_globals (bool final_p)
+remove_unreachable::remove_and_update_globals ()
 {
   if (m_list.length () == 0)
     return false;
@@ -140,16 +277,6 @@ remove_unreachable::remove_and_update_globals (bool final_p)
       edge e = find_edge (src, dest);
       gimple *s = gimple_outgoing_range_stmt_p (e->src);
       gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
-      bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;
-      bool rhs_p = TREE_CODE (gimple_cond_rhs (s)) == SSA_NAME;
-      // Do not remove __builtin_unreachable if it confers a relation, or
-      // that relation will be lost in subsequent passes.  Unless its the
-      // final pass.
-      if (!final_p && lhs_p && rhs_p)
-	continue;
-      // If this is already a constant condition, don't look either
-      if (!lhs_p && !rhs_p)
-	continue;
 
       bool dominate_exit_p = true;
       FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
@@ -310,15 +437,6 @@ intersect_range_with_nonzero_bits (enum value_range_kind vr_type,
   return vr_type;
 }
 
-/* Return true if max and min of VR are INTEGER_CST.  It's not necessary
-   a singleton.  */
-
-bool
-range_int_cst_p (const value_range *vr)
-{
-  return (vr->kind () == VR_RANGE && range_has_numeric_bounds_p (vr));
-}
-
 /* Return the single symbol (an SSA_NAME) contained in T if any, or NULL_TREE
    otherwise.  We only handle additive operations and set NEG to true if the
    symbol is negated and INV to the invariant part, if any.  */
@@ -372,30 +490,6 @@ get_single_symbol (tree t, bool *neg, tree *inv)
   *neg = neg_;
   *inv = inv_;
   return t;
-}
-
-/* Return
-   1 if VAL < VAL2
-   0 if !(VAL < VAL2)
-   -2 if those are incomparable.  */
-int
-operand_less_p (tree val, tree val2)
-{
-  /* LT is folded faster than GE and others.  Inline the common case.  */
-  if (TREE_CODE (val) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
-    return tree_int_cst_lt (val, val2);
-  else if (TREE_CODE (val) == SSA_NAME && TREE_CODE (val2) == SSA_NAME)
-    return val == val2 ? 0 : -2;
-  else
-    {
-      int cmp = compare_values (val, val2);
-      if (cmp == -1)
-	return 1;
-      else if (cmp == 0 || cmp == 1)
-	return 0;
-      else
-	return -2;
-    }
 }
 
 /* Compare two values VAL1 and VAL2.  Return
@@ -585,92 +679,6 @@ compare_values (tree val1, tree val2)
   return compare_values_warnv (val1, val2, &sop);
 }
 
-/* If the types passed are supported, return TRUE, otherwise set VR to
-   VARYING and return FALSE.  */
-
-static bool
-supported_types_p (value_range *vr,
-		   tree type0,
-		   tree = NULL)
-{
-  if (!value_range::supports_p (type0))
-    {
-      vr->set_varying (type0);
-      return false;
-    }
-  return true;
-}
-
-/* If any of the ranges passed are defined, return TRUE, otherwise set
-   VR to UNDEFINED and return FALSE.  */
-
-static bool
-defined_ranges_p (value_range *vr,
-		  const value_range *vr0, const value_range *vr1 = NULL)
-{
-  if (vr0->undefined_p () && (!vr1 || vr1->undefined_p ()))
-    {
-      vr->set_undefined ();
-      return false;
-    }
-  return true;
-}
-
-/* Perform a binary operation on a pair of ranges.  */
-
-void
-range_fold_binary_expr (value_range *vr,
-			enum tree_code code,
-			tree expr_type,
-			const value_range *vr0_,
-			const value_range *vr1_)
-{
-  if (!supported_types_p (vr, expr_type)
-      || !defined_ranges_p (vr, vr0_, vr1_))
-    return;
-  range_op_handler op (code, expr_type);
-  if (!op)
-    {
-      vr->set_varying (expr_type);
-      return;
-    }
-
-  value_range vr0 (*vr0_);
-  value_range vr1 (*vr1_);
-  if (vr0.undefined_p ())
-    vr0.set_varying (expr_type);
-  if (vr1.undefined_p ())
-    vr1.set_varying (expr_type);
-  vr0.normalize_addresses ();
-  vr1.normalize_addresses ();
-  if (!op.fold_range (*vr, expr_type, vr0, vr1))
-    vr->set_varying (expr_type);
-}
-
-/* Perform a unary operation on a range.  */
-
-void
-range_fold_unary_expr (value_range *vr,
-		       enum tree_code code, tree expr_type,
-		       const value_range *vr0,
-		       tree vr0_type)
-{
-  if (!supported_types_p (vr, expr_type, vr0_type)
-      || !defined_ranges_p (vr, vr0))
-    return;
-  range_op_handler op (code, expr_type);
-  if (!op)
-    {
-      vr->set_varying (expr_type);
-      return;
-    }
-
-  value_range vr0_cst (*vr0);
-  vr0_cst.normalize_addresses ();
-  if (!op.fold_range (*vr, expr_type, vr0_cst, value_range (expr_type)))
-    vr->set_varying (expr_type);
-}
-
 /* Helper for overflow_comparison_p
 
    OP0 CODE OP1 is a comparison.  Examine the comparison and potentially
@@ -748,72 +756,6 @@ overflow_comparison_p (tree_code code, tree name, tree val, tree *new_cst)
     return true;
   return overflow_comparison_p_1 (swap_tree_comparison (code), val, name,
 				  true, new_cst);
-}
-
-/* Handle
-   _4 = x_3 & 31;
-   if (_4 != 0)
-     goto <bb 6>;
-   else
-     goto <bb 7>;
-   <bb 6>:
-   __builtin_unreachable ();
-   <bb 7>:
-
-   If x_3 has no other immediate uses (checked by caller), var is the
-   x_3 var, we can clear low 5 bits from the non-zero bitmask.  */
-
-void
-maybe_set_nonzero_bits (edge e, tree var)
-{
-  basic_block cond_bb = e->src;
-  gimple *stmt = last_stmt (cond_bb);
-  tree cst;
-
-  if (stmt == NULL
-      || gimple_code (stmt) != GIMPLE_COND
-      || gimple_cond_code (stmt) != ((e->flags & EDGE_TRUE_VALUE)
-				     ? EQ_EXPR : NE_EXPR)
-      || TREE_CODE (gimple_cond_lhs (stmt)) != SSA_NAME
-      || !integer_zerop (gimple_cond_rhs (stmt)))
-    return;
-
-  stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (stmt));
-  if (!is_gimple_assign (stmt)
-      || gimple_assign_rhs_code (stmt) != BIT_AND_EXPR
-      || TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST)
-    return;
-  if (gimple_assign_rhs1 (stmt) != var)
-    {
-      gimple *stmt2;
-
-      if (TREE_CODE (gimple_assign_rhs1 (stmt)) != SSA_NAME)
-	return;
-      stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
-      if (!gimple_assign_cast_p (stmt2)
-	  || gimple_assign_rhs1 (stmt2) != var
-	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt2))
-	  || (TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (stmt)))
-			      != TYPE_PRECISION (TREE_TYPE (var))))
-	return;
-    }
-  cst = gimple_assign_rhs2 (stmt);
-  if (POINTER_TYPE_P (TREE_TYPE (var)))
-    {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (var);
-      if (pi && pi->misalign)
-	return;
-      wide_int w = wi::bit_not (wi::to_wide (cst));
-      unsigned int bits = wi::ctz (w);
-      if (bits == 0 || bits >= HOST_BITS_PER_INT)
-	return;
-      unsigned int align = 1U << bits;
-      if (pi == NULL || pi->align < align)
-	set_ptr_info_alignment (get_ptr_info (var), align, 0);
-    }
-  else
-    set_nonzero_bits (var, wi::bit_and_not (get_nonzero_bits (var),
-					    wi::to_wide (cst)));
 }
 
 /* Searches the case label vector VEC for the index *IDX of the CASE_LABEL
@@ -944,6 +886,8 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
   size_t i, j;
   tree op = gimple_switch_index (switch_stmt);
   tree type = TREE_TYPE (op);
+  unsigned prec = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (type);
   tree tmin = wide_int_to_tree (type, range_of_op->lower_bound ());
   tree tmax = wide_int_to_tree (type, range_of_op->upper_bound ());
   find_case_label_range (switch_stmt, tmin, tmax, &i, &j);
@@ -954,7 +898,11 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       tree label = gimple_switch_label (switch_stmt, i);
       tree case_high
 	= CASE_HIGH (label) ? CASE_HIGH (label) : CASE_LOW (label);
-      int_range_max label_range (CASE_LOW (label), case_high);
+      wide_int wlow = wi::to_wide (CASE_LOW (label));
+      wide_int whigh = wi::to_wide (case_high);
+      int_range_max label_range (type,
+				 wide_int::from (wlow, prec, sign),
+				 wide_int::from (whigh, prec, sign));
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
       label_range.intersect (*range_of_op);
@@ -978,7 +926,9 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       tree case_high = CASE_HIGH (max_label);
       if (!case_high)
 	case_high = CASE_LOW (max_label);
-      int_range_max label_range (CASE_LOW (min_label), case_high);
+      int_range_max label_range (TREE_TYPE (CASE_LOW (min_label)),
+				 wi::to_wide (CASE_LOW (min_label)),
+				 wi::to_wide (case_high));
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
       label_range.intersect (*range_of_op);
@@ -1002,9 +952,10 @@ class rvrp_folder : public substitute_and_fold_engine
 {
 public:
 
-  rvrp_folder (gimple_ranger *r) : substitute_and_fold_engine (),
-				   m_unreachable (*r),
-				   m_simplifier (r, r->non_executable_edge_flag)
+  rvrp_folder (gimple_ranger *r, bool all)
+    : substitute_and_fold_engine (),
+      m_unreachable (*r, all),
+      m_simplifier (r, r->non_executable_edge_flag)
   {
     m_ranger = r;
     m_pta = new pointer_equiv_analyzer (m_ranger);
@@ -1052,14 +1003,12 @@ public:
     for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	 gsi_next (&gsi))
       m_ranger->register_inferred_ranges (gsi.phi ());
-    m_last_bb_stmt = last_stmt (bb);
+    m_last_bb_stmt = last_nondebug_stmt (bb);
   }
 
   void post_fold_bb (basic_block bb) override
   {
     m_pta->leave (bb);
-    if (cfun->after_inlining)
-      m_unreachable.maybe_register_block (bb);
   }
 
   void pre_fold_stmt (gimple *stmt) override
@@ -1068,7 +1017,12 @@ public:
     // If this is the last stmt and there are inferred ranges, reparse the
     // block for transitive inferred ranges that occur earlier in the block.
     if (stmt == m_last_bb_stmt)
-      m_ranger->register_transitive_inferred_ranges (gimple_bb (stmt));
+      {
+	m_ranger->register_transitive_inferred_ranges (gimple_bb (stmt));
+	// Also check for builtin_unreachable calls.
+	if (cfun->after_inlining && gimple_code (stmt) == GIMPLE_COND)
+	  m_unreachable.maybe_register (stmt);
+      }
   }
 
   bool fold_stmt (gimple_stmt_iterator *gsi) override
@@ -1103,10 +1057,11 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
 
   set_all_edges_as_executable (fun);
   gimple_ranger *ranger = enable_ranger (fun, false);
-  rvrp_folder folder (ranger);
+  rvrp_folder folder (ranger, final_p);
+  phi_analysis_initialize (ranger->const_query ());
   folder.substitute_and_fold ();
   // Remove tagged builtin-unreachable and maybe update globals.
-  folder.m_unreachable.remove_and_update_globals (final_p);
+  folder.m_unreachable.remove_and_update_globals ();
   if (dump_file && (dump_flags & TDF_DETAILS))
     ranger->dump (dump_file);
 
@@ -1130,9 +1085,110 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
       array_checker.check ();
     }
 
+  phi_analysis_finalize ();
   disable_ranger (fun);
   scev_finalize ();
   loop_optimizer_finalize ();
+  return 0;
+}
+
+// Implement a Fast VRP folder.  Not quite as effective but faster.
+
+class fvrp_folder : public substitute_and_fold_engine
+{
+public:
+  fvrp_folder (dom_ranger *dr) : substitute_and_fold_engine (),
+				 m_simplifier (dr)
+  { m_dom_ranger = dr; }
+
+  ~fvrp_folder () { }
+
+  tree value_of_expr (tree name, gimple *s = NULL) override
+  {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
+    return m_dom_ranger->value_of_expr (name, s);
+  }
+
+  tree value_on_edge (edge e, tree name) override
+  {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
+    return m_dom_ranger->value_on_edge (e, name);
+  }
+
+  tree value_of_stmt (gimple *s, tree name = NULL) override
+  {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
+    return m_dom_ranger->value_of_stmt (s, name);
+  }
+
+  void pre_fold_bb (basic_block bb) override
+  {
+    m_dom_ranger->pre_bb (bb);
+    // Now process the PHIs in advance.
+    gphi_iterator psi = gsi_start_phis (bb);
+    for ( ; !gsi_end_p (psi); gsi_next (&psi))
+      {
+	tree name = gimple_range_ssa_p (PHI_RESULT (psi.phi ()));
+	if (name)
+	  {
+	    Value_Range vr(TREE_TYPE (name));
+	    m_dom_ranger->range_of_stmt (vr, psi.phi (), name);
+	  }
+      }
+  }
+
+  void post_fold_bb (basic_block bb) override
+  {
+    m_dom_ranger->post_bb (bb);
+  }
+
+  void pre_fold_stmt (gimple *s) override
+  {
+    // Ensure range_of_stmt has been called.
+    tree type = gimple_range_type (s);
+    if (type)
+      {
+	Value_Range vr(type);
+	m_dom_ranger->range_of_stmt (vr, s);
+      }
+  }
+
+  bool fold_stmt (gimple_stmt_iterator *gsi) override
+  {
+    bool ret = m_simplifier.simplify (gsi);
+    if (!ret)
+      ret = ::fold_stmt (gsi, follow_single_use_edges);
+    return ret;
+  }
+
+private:
+  DISABLE_COPY_AND_ASSIGN (fvrp_folder);
+  simplify_using_ranges m_simplifier;
+  dom_ranger *m_dom_ranger;
+};
+
+
+// Main entry point for a FAST VRP pass using a dom ranger.
+
+unsigned int
+execute_fast_vrp (struct function *fun)
+{
+  calculate_dominance_info (CDI_DOMINATORS);
+  dom_ranger dr;
+  fvrp_folder folder (&dr);
+
+  gcc_checking_assert (!fun->x_range_query);
+  fun->x_range_query = &dr;
+
+  folder.substitute_and_fold ();
+
+  fun->x_range_query = NULL;
   return 0;
 }
 
@@ -1164,36 +1220,50 @@ const pass_data pass_data_early_vrp =
   ( TODO_cleanup_cfg | TODO_update_ssa | TODO_verify_all ),
 };
 
-static int vrp_pass_num = 0;
+const pass_data pass_data_fast_vrp =
+{
+  GIMPLE_PASS, /* type */
+  "fvrp", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_TREE_FAST_VRP, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_update_ssa | TODO_verify_all ),
+};
+
+
 class pass_vrp : public gimple_opt_pass
 {
 public:
-  pass_vrp (gcc::context *ctxt, const pass_data &data_)
-    : gimple_opt_pass (data_, ctxt), data (data_), warn_array_bounds_p (false),
-      my_pass (vrp_pass_num++)
-  {}
+  pass_vrp (gcc::context *ctxt, const pass_data &data_, bool warn_p)
+    : gimple_opt_pass (data_, ctxt), data (data_),
+      warn_array_bounds_p (warn_p), final_p (false)
+    { }
 
   /* opt_pass methods: */
-  opt_pass * clone () final override { return new pass_vrp (m_ctxt, data); }
+  opt_pass * clone () final override
+    { return new pass_vrp (m_ctxt, data, false); }
   void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
-      warn_array_bounds_p = param;
+      final_p = param;
     }
   bool gate (function *) final override { return flag_tree_vrp != 0; }
   unsigned int execute (function *fun) final override
     {
-      // Early VRP pass.
-      if (my_pass == 0)
-	return execute_ranger_vrp (fun, /*warn_array_bounds_p=*/false, false);
+      // Check for fast vrp.
+      if (&data == &pass_data_fast_vrp)
+	return execute_fast_vrp (fun);
 
-      return execute_ranger_vrp (fun, warn_array_bounds_p, my_pass == 2);
+      return execute_ranger_vrp (fun, warn_array_bounds_p, final_p);
     }
 
  private:
   const pass_data &data;
   bool warn_array_bounds_p;
-  int my_pass;
+  bool final_p;
 }; // class pass_vrp
 
 const pass_data pass_data_assumptions =
@@ -1263,13 +1333,19 @@ public:
 gimple_opt_pass *
 make_pass_vrp (gcc::context *ctxt)
 {
-  return new pass_vrp (ctxt, pass_data_vrp);
+  return new pass_vrp (ctxt, pass_data_vrp, true);
 }
 
 gimple_opt_pass *
 make_pass_early_vrp (gcc::context *ctxt)
 {
-  return new pass_vrp (ctxt, pass_data_early_vrp);
+  return new pass_vrp (ctxt, pass_data_early_vrp, false);
+}
+
+gimple_opt_pass *
+make_pass_fast_vrp (gcc::context *ctxt)
+{
+  return new pass_vrp (ctxt, pass_data_fast_vrp, false);
 }
 
 gimple_opt_pass *

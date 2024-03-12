@@ -1217,12 +1217,12 @@ bitmap_single_bit_set_p (const_bitmap a)
 
 
 /* Return the bit number of the first set bit in the bitmap.  The
-   bitmap must be non-empty.  */
+   bitmap must be non-empty.  When CLEAR is true it clears the bit.  */
 
-unsigned
-bitmap_first_set_bit (const_bitmap a)
+static unsigned
+bitmap_first_set_bit_worker (bitmap a, bool clear)
 {
-  const bitmap_element *elt = a->first;
+  bitmap_element *elt = a->first;
   unsigned bit_no;
   BITMAP_WORD word;
   unsigned ix;
@@ -1269,7 +1269,40 @@ bitmap_first_set_bit (const_bitmap a)
 
  gcc_checking_assert (word & 1);
 #endif
+
+ if (clear)
+   {
+     elt->bits[ix] &= ~((BITMAP_WORD) 1 << (bit_no % BITMAP_WORD_BITS));
+     /* If we cleared the entire word, free up the element.  */
+     if (!elt->bits[ix]
+	 && bitmap_element_zerop (elt))
+       {
+	 if (!a->tree_form)
+	   bitmap_list_unlink_element (a, elt);
+	 else
+	   bitmap_tree_unlink_element (a, elt);
+       }
+   }
+
  return bit_no;
+}
+
+/* Return the bit number of the first set bit in the bitmap.  The
+   bitmap must be non-empty.  */
+
+unsigned
+bitmap_first_set_bit (const_bitmap a)
+{
+  return bitmap_first_set_bit_worker (const_cast<bitmap> (a), false);
+}
+
+/* Return and clear the bit number of the first set bit in the bitmap.  The
+   bitmap must be non-empty.  */
+
+unsigned
+bitmap_clear_first_set_bit (bitmap a)
+{
+  return bitmap_first_set_bit_worker (a, true);
 }
 
 /* Return the bit number of the first set bit in the bitmap.  The

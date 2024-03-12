@@ -32,6 +32,7 @@ main ()
       e[i] = 14234165565810642243ULL;
     }
   foo ();
+#pragma GCC novector
   for (i = 0; i < N; ++i)
     if (e[i] != ((i & 3) ? 14234165565810642243ULL : 1ULL))
       __builtin_abort ();

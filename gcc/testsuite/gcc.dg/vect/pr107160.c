@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include <math.h>
 
 #define N 128

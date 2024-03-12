@@ -85,7 +85,7 @@ int flag_dump_unnumbered_links = 0;
 
 rtx_writer::rtx_writer (FILE *outf, int ind, bool simple, bool compact,
 			rtx_reuse_manager *reuse_manager ATTRIBUTE_UNUSED)
-: m_outfile (outf), m_sawclose (0), m_indent (ind),
+: m_outfile (outf), m_indent (ind), m_sawclose (false),
   m_in_call_function_usage (false), m_simple (simple), m_compact (compact)
 #ifndef GENERATOR_FILE
   , m_rtx_reuse_manager (reuse_manager)
@@ -237,13 +237,13 @@ rtx_writer::print_rtx_operand_code_0 (const_rtx in_rtx ATTRIBUTE_UNUSED,
 	    fprintf (m_outfile, " #");
 	  else
 	    fprintf (m_outfile, " %d", NOTE_EH_HANDLER (in_rtx));
-	  m_sawclose = 1;
+	  m_sawclose = true;
 	  break;
 
 	case NOTE_INSN_BLOCK_BEG:
 	case NOTE_INSN_BLOCK_END:
 	  dump_addr (m_outfile, " ", NOTE_BLOCK (in_rtx));
-	  m_sawclose = 1;
+	  m_sawclose = true;
 	  break;
 
 	case NOTE_INSN_BASIC_BLOCK:
@@ -370,7 +370,7 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
     {
       fprintf (m_outfile, "\n%s%*s",
       print_rtx_head, m_indent * 2, "");
-      m_sawclose = 0;
+      m_sawclose = false;
     }
   if (GET_CODE (in_rtx) == CONST_VECTOR
       && !GET_MODE_NUNITS (GET_MODE (in_rtx)).is_constant ()
@@ -381,7 +381,7 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
     {
       m_indent += 2;
       if (XVECLEN (in_rtx, idx))
-	m_sawclose = 1;
+	m_sawclose = true;
 
       int barrier = XVECLEN (in_rtx, idx);
       if (GET_CODE (in_rtx) == CONST_VECTOR
@@ -431,7 +431,7 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
     fprintf (m_outfile, "\n%s%*s", print_rtx_head, m_indent * 2, "");
 
   fputs ("]", m_outfile);
-  m_sawclose = 1;
+  m_sawclose = true;
   m_indent -= 2;
 }
 
@@ -510,7 +510,7 @@ rtx_writer::print_rtx_operand_code_i (const_rtx in_rtx, int idx)
       /* Don't print INSN_CODEs in compact mode.  */
       if (m_compact && is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, idx))
 	{
-	  m_sawclose = 0;
+	  m_sawclose = false;
 	  return;
 	}
 
@@ -524,7 +524,7 @@ rtx_writer::print_rtx_operand_code_i (const_rtx in_rtx, int idx)
 	  && XINT (in_rtx, idx) >= 0
 	  && (name = get_insn_name (XINT (in_rtx, idx))) != NULL)
 	fprintf (m_outfile, " {%s}", name);
-      m_sawclose = 0;
+      m_sawclose = false;
     }
 }
 
@@ -619,7 +619,7 @@ rtx_writer::print_rtx_operand_code_u (const_rtx in_rtx, int idx)
 		fprintf (m_outfile, " [# deleted]");
 	      else
 		fprintf (m_outfile, " [%d deleted]", INSN_UID (sub));
-	      m_sawclose = 0;
+	      m_sawclose = false;
 	      return;
 	    }
 
@@ -640,7 +640,7 @@ rtx_writer::print_rtx_operand_code_u (const_rtx in_rtx, int idx)
     }
   else
     fputs (" 0", m_outfile);
-  m_sawclose = 0;
+  m_sawclose = false;
 }
 
 /* Subroutine of print_rtx.   Print operand IDX of IN_RTX.  */
@@ -667,7 +667,7 @@ rtx_writer::print_rtx_operand (const_rtx in_rtx, int idx)
 	fputs (" (nil)", m_outfile);
       else
 	fprintf (m_outfile, " (\"%s\")", str);
-      m_sawclose = 1;
+      m_sawclose = true;
       break;
 
     case '0':
@@ -709,7 +709,7 @@ rtx_writer::print_rtx_operand (const_rtx in_rtx, int idx)
 
     case 'n':
       fprintf (m_outfile, " %s", GET_NOTE_INSN_NAME (XINT (in_rtx, idx)));
-      m_sawclose = 0;
+      m_sawclose = false;
       break;
 
     case 'u':
@@ -729,7 +729,7 @@ rtx_writer::print_rtx_operand (const_rtx in_rtx, int idx)
 
     case '*':
       fputs (" Unknown", m_outfile);
-      m_sawclose = 0;
+      m_sawclose = false;
       break;
 
     case 'B':
@@ -797,20 +797,20 @@ rtx_writer::print_rtx (const_rtx in_rtx)
 	fputc (' ', m_outfile);
       else
 	fprintf (m_outfile, "\n%s%*s", print_rtx_head, m_indent * 2, "");
-      m_sawclose = 0;
+      m_sawclose = false;
     }
 
   if (in_rtx == 0)
     {
       fputs ("(nil)", m_outfile);
-      m_sawclose = 1;
+      m_sawclose = true;
       return;
     }
   else if (GET_CODE (in_rtx) > NUM_RTX_CODE)
     {
        fprintf (m_outfile, "(??? bad code %d\n%s%*s)", GET_CODE (in_rtx),
 		print_rtx_head, m_indent * 2, "");
-       m_sawclose = 1;
+       m_sawclose = true;
        return;
     }
 
@@ -829,7 +829,7 @@ rtx_writer::print_rtx (const_rtx in_rtx)
 	  if (m_rtx_reuse_manager->seen_def_p (reuse_id))
 	    {
 	      fprintf (m_outfile, "reuse_rtx %i)", reuse_id);
-	      m_sawclose = 1;
+	      m_sawclose = true;
 	      return;
 	    }
 	  else
@@ -907,7 +907,7 @@ rtx_writer::print_rtx (const_rtx in_rtx)
 	  if (PAT_VAR_LOCATION_STATUS (in_rtx)
 	      == VAR_INIT_STATUS_UNINITIALIZED)
 	    fprintf (m_outfile, " [uninit]");
-	  m_sawclose = 1;
+	  m_sawclose = true;
 	  idx = GET_RTX_LENGTH (VAR_LOCATION);
 	}
 #endif
@@ -1027,7 +1027,7 @@ rtx_writer::print_rtx (const_rtx in_rtx)
     }
 
   fputc (')', m_outfile);
-  m_sawclose = 1;
+  m_sawclose = true;
 }
 
 /* Emit a closing parenthesis and newline.  */
@@ -1036,7 +1036,7 @@ void
 rtx_writer::finish_directive ()
 {
   fprintf (m_outfile, ")\n");
-  m_sawclose = 0;
+  m_sawclose = false;
 }
 
 /* Print an rtx on the current line of FILE.  Initially indent IND
@@ -1223,18 +1223,17 @@ print_rtl (FILE *outf, const_rtx rtx_first)
 }
 
 /* Like print_rtx, except specify a file.  */
-/* Return nonzero if we actually printed anything.  */
 
-int
+void
 print_rtl_single (FILE *outf, const_rtx x)
 {
   rtx_writer w (outf, 0, false, false, NULL);
-  return w.print_rtl_single_with_indent (x, 0);
+  w.print_rtl_single_with_indent (x, 0);
 }
 
 /* Like print_rtl_single, except specify an indentation.  */
 
-int
+void
 rtx_writer::print_rtl_single_with_indent (const_rtx x, int ind)
 {
   char *s_indent = (char *) alloca ((size_t) ind + 1);
@@ -1245,11 +1244,10 @@ rtx_writer::print_rtl_single_with_indent (const_rtx x, int ind)
 
   int old_indent = m_indent;
   m_indent = ind;
-  m_sawclose = 0;
+  m_sawclose = false;
   print_rtx (x);
   putc ('\n', m_outfile);
   m_indent = old_indent;
-  return 1;
 }
 
 

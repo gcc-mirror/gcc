@@ -45,6 +45,9 @@
 #include <bits/utility.h>      // std::index_sequence, std::tuple_size
 #include <debug/assertions.h>
 
+#define __glibcxx_want_to_array
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -69,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
        // Conversion to a pointer produces a null pointer.
        __attribute__((__always_inline__))
-       constexpr operator _Tp*() const noexcept { return nullptr; }
+       constexpr explicit operator _Tp*() const noexcept { return nullptr; }
      };
 
      using _Is_swappable = true_type;
@@ -240,7 +243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       front() noexcept
       {
 	__glibcxx_requires_nonempty();
-	return _M_elems[0];
+	return _M_elems[(size_type)0];
       }
 
       [[__nodiscard__]]
@@ -250,7 +253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201402L
 	__glibcxx_requires_nonempty();
 #endif
-	return _M_elems[0];
+	return _M_elems[(size_type)0];
       }
 
       [[__nodiscard__]]
@@ -274,12 +277,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[__nodiscard__, __gnu__::__const__, __gnu__::__always_inline__]]
       _GLIBCXX17_CONSTEXPR pointer
       data() noexcept
-      { return _M_elems; }
+      { return static_cast<pointer>(_M_elems); }
 
       [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_pointer
       data() const noexcept
-      { return _M_elems; }
+      { return static_cast<const_pointer>(_M_elems); }
     };
 
 #if __cpp_deduction_guides >= 201606
@@ -297,7 +300,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return std::equal(__one.begin(), __one.end(), __two.begin()); }
 
-#if __cpp_lib_three_way_comparison && __cpp_lib_concepts
+#if __cpp_lib_three_way_comparison // C++ >= 20 && lib_concepts
   template<typename _Tp, size_t _Nm>
     [[nodiscard]]
     constexpr __detail::__synth3way_t<_Tp>
@@ -414,19 +417,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::move(std::get<_Int>(__arr));
     }
 
-#if __cplusplus > 201703L
-#define __cpp_lib_to_array 201907L
-
-  template<bool _Move = false, typename _Tp, size_t... _Idx>
-    constexpr array<remove_cv_t<_Tp>, sizeof...(_Idx)>
-    __to_array(_Tp (&__a)[sizeof...(_Idx)], index_sequence<_Idx...>)
-    {
-      if constexpr (_Move)
-	return {{std::move(__a[_Idx])...}};
-      else
-	return {{__a[_Idx]...}};
-    }
-
+#ifdef __cpp_lib_to_array // C++ >= 20 && __cpp_generic_lambdas >= 201707L
   template<typename _Tp, size_t _Nm>
     [[nodiscard]]
     constexpr array<remove_cv_t<_Tp>, _Nm>
@@ -436,8 +427,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(!is_array_v<_Tp>);
       static_assert(is_constructible_v<_Tp, _Tp&>);
       if constexpr (is_constructible_v<_Tp, _Tp&>)
-	return __to_array(__a, make_index_sequence<_Nm>{});
-      __builtin_unreachable(); // FIXME: see PR c++/91388
+	{
+	  if constexpr (is_trivial_v<_Tp>)
+	    {
+	      array<remove_cv_t<_Tp>, _Nm> __arr;
+	      if (!__is_constant_evaluated() && _Nm != 0)
+		__builtin_memcpy((void*)__arr.data(), (void*)__a, sizeof(__a));
+	      else
+		for (size_t __i = 0; __i < _Nm; ++__i)
+		  __arr._M_elems[__i] = __a[__i];
+	      return __arr;
+	    }
+	  else
+	    return [&__a]<size_t... _Idx>(index_sequence<_Idx...>) {
+	      return array<remove_cv_t<_Tp>, _Nm>{{ __a[_Idx]... }};
+	    }(make_index_sequence<_Nm>{});
+	}
+      else
+	__builtin_unreachable(); // FIXME: see PR c++/91388
     }
 
   template<typename _Tp, size_t _Nm>
@@ -449,10 +456,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(!is_array_v<_Tp>);
       static_assert(is_move_constructible_v<_Tp>);
       if constexpr (is_move_constructible_v<_Tp>)
-	return __to_array<1>(__a, make_index_sequence<_Nm>{});
-      __builtin_unreachable(); // FIXME: see PR c++/91388
+	{
+	  if constexpr (is_trivial_v<_Tp>)
+	    {
+	      array<remove_cv_t<_Tp>, _Nm> __arr;
+	      if (!__is_constant_evaluated() && _Nm != 0)
+		__builtin_memcpy((void*)__arr.data(), (void*)__a, sizeof(__a));
+	      else
+		for (size_t __i = 0; __i < _Nm; ++__i)
+		  __arr._M_elems[__i] = __a[__i];
+	      return __arr;
+	    }
+	  else
+	    return [&__a]<size_t... _Idx>(index_sequence<_Idx...>) {
+	      return array<remove_cv_t<_Tp>, _Nm>{{ std::move(__a[_Idx])... }};
+	    }(make_index_sequence<_Nm>{});
+	}
+      else
+	__builtin_unreachable(); // FIXME: see PR c++/91388
     }
-#endif // C++20
+#endif // __cpp_lib_to_array
 
   // Tuple interface to class template array.
 

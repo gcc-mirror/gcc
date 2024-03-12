@@ -114,7 +114,7 @@ typedef struct vn_reference_op_struct
   /* For storing TYPE_ALIGN for array ref element size computation.  */
   unsigned align : 6;
   /* Constant offset this op adds or -1 if it is variable.  */
-  poly_int64_pod off;
+  poly_int64 off;
   tree type;
   tree op0;
   tree op1;

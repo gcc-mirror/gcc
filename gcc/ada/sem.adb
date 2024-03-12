@@ -27,7 +27,6 @@ with Atree;          use Atree;
 with Debug;          use Debug;
 with Debug_A;        use Debug_A;
 with Einfo;          use Einfo;
-with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Exp_SPARK;      use Exp_SPARK;
@@ -759,6 +758,29 @@ package body Sem is
       end case;
 
       Debug_A_Exit ("analyzing  ", N, "  (done)");
+
+      --  Set Is_Not_Self_Hidden flag. RM-8.3(16) says a declaration
+      --  is no longer hidden from all visibility after "the end of the
+      --  declaration", so we set the flag here (in addition to setting it
+      --  elsewhere to handle the "except..." cases of 8.3(16)). However,
+      --  we implement 3.8(10) using the same flag, so in that case we
+      --  need to defer the setting until the end of the record.
+
+      declare
+         E : constant Entity_Id := Defining_Entity_Or_Empty (N);
+      begin
+         if Present (E) then
+            if Ekind (E) = E_Void
+              and then Nkind (N) = N_Component_Declaration
+              and then Present (Scope (E))
+              and then Ekind (Scope (E)) = E_Record_Type
+            then
+               null; -- Set it later, in Analyze_Component_Declaration
+            elsif not Is_Not_Self_Hidden (E) then
+               Set_Is_Not_Self_Hidden (E);
+            end if;
+         end if;
+      end;
 
       --  Mark relevant use-type and use-package clauses as effective
       --  preferring the original node over the analyzed one in the case that

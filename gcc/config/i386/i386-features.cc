@@ -66,7 +66,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "target-globals.h"
 #include "gimple-iterator.h"
-#include "tree-vectorizer.h"
 #include "shrink-wrap.h"
 #include "builtins.h"
 #include "rtl-iter.h"
@@ -572,6 +571,9 @@ general_scalar_chain::compute_convert_gain ()
 	      {
 		if (INTVAL (XEXP (src, 1)) >= 32)
 		  igain += ix86_cost->add;
+		/* Gain for extend highpart case.  */
+		else if (GET_CODE (XEXP (src, 0)) == ASHIFT)
+		  igain += ix86_cost->shift_const - ix86_cost->sse_op;
 		else
 		  igain += ix86_cost->shift_const;
 	      }
@@ -580,6 +582,27 @@ general_scalar_chain::compute_convert_gain ()
 
 	    if (CONST_INT_P (XEXP (src, 0)))
 	      igain -= vector_const_cost (XEXP (src, 0));
+	    break;
+
+	  case ROTATE:
+	  case ROTATERT:
+	    igain += m * ix86_cost->shift_const;
+	    if (TARGET_AVX512VL)
+	      igain -= ix86_cost->sse_op;
+	    else if (smode == DImode)
+	      {
+		int bits = INTVAL (XEXP (src, 1));
+		if ((bits & 0x0f) == 0)
+		  igain -= ix86_cost->sse_op;
+		else if ((bits & 0x07) == 0)
+		  igain -= 2 * ix86_cost->sse_op;
+		else
+		  igain -= 3 * ix86_cost->sse_op;
+	      }
+	    else if (INTVAL (XEXP (src, 1)) == 16)
+	      igain -= ix86_cost->sse_op;
+	    else
+	      igain -= 2 * ix86_cost->sse_op;
 	    break;
 
 	  case AND:
@@ -631,7 +654,31 @@ general_scalar_chain::compute_convert_gain ()
 	    break;
 
 	  case COMPARE:
-	    /* Assume comparison cost is the same.  */
+	    if (XEXP (src, 1) != const0_rtx)
+	      {
+		/* cmp vs. pxor;pshufd;ptest.  */
+		igain += COSTS_N_INSNS (m - 3);
+	      }
+	    else if (GET_CODE (XEXP (src, 0)) != AND)
+	      {
+		/* test vs. pshufd;ptest.  */
+		igain += COSTS_N_INSNS (m - 2);
+	      }
+	    else if (GET_CODE (XEXP (XEXP (src, 0), 0)) != NOT)
+	      {
+		/* and;test vs. pshufd;ptest.  */
+		igain += COSTS_N_INSNS (2 * m - 2);
+	      }
+	    else if (TARGET_BMI)
+	      {
+		/* andn;test vs. pandn;pshufd;ptest.  */
+		igain += COSTS_N_INSNS (2 * m - 3);
+	      }
+	    else
+	      {
+		/* not;and;test vs. pandn;pshufd;ptest.  */
+		igain += COSTS_N_INSNS (3 * m - 3);
+	      }
 	    break;
 
 	  case CONST_INT:
@@ -906,7 +953,8 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 {
   *op = copy_rtx_if_shared (*op);
 
-  if (GET_CODE (*op) == NOT)
+  if (GET_CODE (*op) == NOT
+      || GET_CODE (*op) == ASHIFT)
     {
       convert_op (&XEXP (*op, 0), insn);
       PUT_MODE (*op, vmode);
@@ -974,12 +1022,45 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     }
 }
 
-/* Convert COMPARE to vector mode.  */
+/* Convert CCZmode COMPARE to vector mode.  */
 
 rtx
 scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 {
   rtx src, tmp;
+
+  /* Handle any REG_EQUAL notes.  */
+  tmp = find_reg_equal_equiv_note (insn);
+  if (tmp)
+    {
+      if (GET_CODE (XEXP (tmp, 0)) == COMPARE
+	  && GET_MODE (XEXP (tmp, 0)) == CCZmode
+	  && REG_P (XEXP (XEXP (tmp, 0), 0)))
+	{
+	  rtx *op = &XEXP (XEXP (tmp, 0), 1);
+	  if (CONST_SCALAR_INT_P (*op))
+	    {
+	      if (constm1_operand (*op, GET_MODE (*op)))
+		*op = CONSTM1_RTX (vmode);
+	      else
+		{
+		  unsigned n = GET_MODE_NUNITS (vmode);
+		  rtx *v = XALLOCAVEC (rtx, n);
+		  v[0] = *op;
+		  for (unsigned i = 1; i < n; ++i)
+		    v[i] = const0_rtx;
+		  *op = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (n, v));
+		}
+	      tmp = NULL_RTX;
+	    }
+	  else if (REG_P (*op))
+	    tmp = NULL_RTX;
+	}
+
+      if (tmp)
+	remove_note (insn, tmp);
+    }
+
   /* Comparison against anything other than zero, requires an XOR.  */
   if (op2 != const0_rtx)
     {
@@ -1023,7 +1104,7 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 	  emit_insn_before (gen_rtx_SET (tmp, op11), insn);
 	  op11 = tmp;
 	}
-      return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, op11, op12),
+      return gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, op11, op12),
 			     UNSPEC_PTEST);
     }
   else
@@ -1052,7 +1133,7 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
       src = tmp;
     }
 
-  return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, src, src), UNSPEC_PTEST);
+  return gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, src, src), UNSPEC_PTEST);
 }
 
 /* Helper function for converting INSN to vector mode.  */
@@ -1121,6 +1202,99 @@ scalar_chain::convert_insn_common (rtx_insn *insn)
 	}
 }
 
+/* Convert INSN which is an SImode or DImode rotation by a constant
+   to vector mode.  CODE is either ROTATE or ROTATERT with operands
+   OP0 and OP1.  Returns the SET_SRC of the last instruction in the
+   resulting sequence, which is emitted before INSN.  */
+
+rtx
+general_scalar_chain::convert_rotate (enum rtx_code code, rtx op0, rtx op1,
+				      rtx_insn *insn)
+{
+  int bits = INTVAL (op1);
+  rtx pat, result;
+
+  convert_op (&op0, insn);
+  if (bits == 0)
+    return op0;
+
+  if (smode == DImode)
+    {
+      if (code == ROTATE)
+	bits = 64 - bits;
+      if (bits == 32)
+	{
+	  rtx tmp1 = gen_reg_rtx (V4SImode);
+	  pat = gen_sse2_pshufd (tmp1, gen_lowpart (V4SImode, op0),
+				 GEN_INT (225));
+	  emit_insn_before (pat, insn);
+	  result = gen_lowpart (V2DImode, tmp1);
+	}
+      else if (TARGET_AVX512VL)
+	result = simplify_gen_binary (code, V2DImode, op0, op1);
+      else if (bits == 16 || bits == 48)
+	{
+	  rtx tmp1 = gen_reg_rtx (V8HImode);
+	  pat = gen_sse2_pshuflw (tmp1, gen_lowpart (V8HImode, op0),
+				  GEN_INT (bits == 16 ? 57 : 147));
+	  emit_insn_before (pat, insn);
+	  result = gen_lowpart (V2DImode, tmp1);
+	}
+      else if ((bits & 0x07) == 0)
+	{
+	  rtx tmp1 = gen_reg_rtx (V4SImode);
+	  pat = gen_sse2_pshufd (tmp1, gen_lowpart (V4SImode, op0),
+				 GEN_INT (68));
+	  emit_insn_before (pat, insn);
+	  rtx tmp2 = gen_reg_rtx (V1TImode);
+	  pat = gen_sse2_lshrv1ti3 (tmp2, gen_lowpart (V1TImode, tmp1),
+				    GEN_INT (bits));
+	  emit_insn_before (pat, insn);
+	  result = gen_lowpart (V2DImode, tmp2);
+	}
+      else
+	{
+	  rtx tmp1 = gen_reg_rtx (V4SImode);
+	  pat = gen_sse2_pshufd (tmp1, gen_lowpart (V4SImode, op0),
+				 GEN_INT (20));
+	  emit_insn_before (pat, insn);
+	  rtx tmp2 = gen_reg_rtx (V2DImode);
+	  pat = gen_lshrv2di3 (tmp2, gen_lowpart (V2DImode, tmp1),
+			       GEN_INT (bits & 31));
+	  emit_insn_before (pat, insn);
+	  rtx tmp3 = gen_reg_rtx (V4SImode);
+	  pat = gen_sse2_pshufd (tmp3, gen_lowpart (V4SImode, tmp2),
+				 GEN_INT (bits > 32 ? 34 : 136));
+	  emit_insn_before (pat, insn);
+	  result = gen_lowpart (V2DImode, tmp3);
+	}
+    }
+  else if (bits == 16)
+    {
+      rtx tmp1 = gen_reg_rtx (V8HImode);
+      pat = gen_sse2_pshuflw (tmp1, gen_lowpart (V8HImode, op0), GEN_INT (225));
+      emit_insn_before (pat, insn);
+      result = gen_lowpart (V4SImode, tmp1);
+    }
+  else if (TARGET_AVX512VL)
+    result = simplify_gen_binary (code, V4SImode, op0, op1);
+  else
+    {
+      if (code == ROTATE)
+	bits = 32 - bits;
+
+      rtx tmp1 = gen_reg_rtx (V4SImode);
+      emit_insn_before (gen_sse2_pshufd (tmp1, op0, GEN_INT (224)), insn);
+      rtx tmp2 = gen_reg_rtx (V2DImode);
+      pat = gen_lshrv2di3 (tmp2, gen_lowpart (V2DImode, tmp1),
+			   GEN_INT (bits));
+      emit_insn_before (pat, insn);
+      result = gen_lowpart (V4SImode, tmp2);
+    }
+
+  return result;
+}
+
 /* Convert INSN to vector mode.  */
 
 void
@@ -1176,6 +1350,12 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
       PUT_MODE (src, vmode);
       break;
 
+    case ROTATE:
+    case ROTATERT:
+      src = convert_rotate (GET_CODE (src), XEXP (src, 0), XEXP (src, 1),
+			    insn);
+      break;
+
     case NEG:
       src = XEXP (src, 0);
 
@@ -1219,7 +1399,7 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
       break;
 
     case COMPARE:
-      dst = gen_rtx_REG (CCmode, FLAGS_REG);
+      dst = gen_rtx_REG (CCZmode, FLAGS_REG);
       src = convert_compare (XEXP (src, 0), XEXP (src, 1), insn);
       break;
 
@@ -1635,10 +1815,11 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
   switch (GET_CODE (src))
     {
     case REG:
-      PUT_MODE (src, V1TImode);
-      /* Call fix_debug_reg_uses only if SRC is never defined.  */
-      if (!DF_REG_DEF_CHAIN (REGNO (src)))
-	fix_debug_reg_uses (src);
+      if (GET_MODE (src) == TImode)
+	{
+	  PUT_MODE (src, V1TImode);
+	  fix_debug_reg_uses (src);
+	}
       break;
 
     case MEM:
@@ -1725,7 +1906,7 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       break;
 
     case COMPARE:
-      dst = gen_rtx_REG (CCmode, FLAGS_REG);
+      dst = gen_rtx_REG (CCZmode, FLAGS_REG);
       src = convert_compare (XEXP (src, 0), XEXP (src, 1), insn);
       break;
 
@@ -1942,15 +2123,25 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
   switch (GET_CODE (src))
     {
     case ASHIFTRT:
-      if (!TARGET_AVX512VL)
+      if (mode == DImode && !TARGET_AVX512VL)
 	return false;
       /* FALLTHRU */
 
     case ASHIFT:
     case LSHIFTRT:
+    case ROTATE:
+    case ROTATERT:
       if (!CONST_INT_P (XEXP (src, 1))
 	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, GET_MODE_BITSIZE (mode)-1))
 	return false;
+
+      /* Check for extend highpart case.  */
+      if (mode != DImode
+	  || GET_CODE (src) != ASHIFTRT
+	  || GET_CODE (XEXP (src, 0)) != ASHIFT)
+	break;
+
+      src = XEXP (src, 0);
       break;
 
     case SMAX:
@@ -2455,8 +2646,7 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return TARGET_AVX && TARGET_VZEROUPPER
-	&& flag_expensive_optimizations && !optimize_size;
+      return TARGET_AVX && TARGET_VZEROUPPER;
     }
 
   unsigned int execute (function *) final override

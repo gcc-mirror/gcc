@@ -20,6 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RECOG_H
 #define GCC_RECOG_H
 
+/* For enum tree_code ERROR_MARK.  */
+#include "tree.h"
+
 /* Random number that should be large enough for all purposes.  Also define
    a type that has at least MAX_RECOG_ALTERNATIVES + 1 bits, with the extra
    bit giving an invalid value that can be used to mean "uninitialized".  */
@@ -184,33 +187,34 @@ inline insn_propagation::insn_propagation (rtx_insn *insn)
 
 extern void init_recog (void);
 extern void init_recog_no_volatile (void);
-extern int check_asm_operands (rtx);
+extern bool check_asm_operands (rtx);
 extern int asm_operand_ok (rtx, const char *, const char **);
 extern bool validate_change (rtx, rtx *, rtx, bool);
 extern bool validate_unshare_change (rtx, rtx *, rtx, bool);
 extern bool validate_change_xveclen (rtx, rtx *, int, bool);
 extern bool canonicalize_change_group (rtx_insn *insn, rtx x);
-extern int insn_invalid_p (rtx_insn *, bool);
-extern int verify_changes (int);
+extern bool insn_invalid_p (rtx_insn *, bool);
+extern bool verify_changes (int);
 extern void confirm_change_group (void);
-extern int apply_change_group (void);
+extern bool apply_change_group (void);
 extern int num_validated_changes (void);
 extern void cancel_changes (int);
 extern void temporarily_undo_changes (int);
 extern void redo_changes (int);
-extern int constrain_operands (int, alternative_mask);
-extern int constrain_operands_cached (rtx_insn *, int);
-extern bool memory_address_addr_space_p (machine_mode, rtx, addr_space_t);
+extern bool constrain_operands (int, alternative_mask);
+extern bool constrain_operands_cached (rtx_insn *, int);
+extern bool memory_address_addr_space_p (machine_mode, rtx, addr_space_t,
+					 code_helper = ERROR_MARK);
 #define memory_address_p(mode,addr) \
 	memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
-extern bool strict_memory_address_addr_space_p (machine_mode, rtx,
-						addr_space_t);
+extern bool strict_memory_address_addr_space_p (machine_mode, rtx, addr_space_t,
+						code_helper = ERROR_MARK);
 #define strict_memory_address_p(mode,addr) \
 	strict_memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
-extern int validate_replace_rtx_subexp (rtx, rtx, rtx_insn *, rtx *);
-extern int validate_replace_rtx (rtx, rtx, rtx_insn *);
-extern int validate_replace_rtx_part (rtx, rtx, rtx *, rtx_insn *);
-extern int validate_replace_rtx_part_nosimplify (rtx, rtx, rtx *, rtx_insn *);
+extern bool validate_replace_rtx_subexp (rtx, rtx, rtx_insn *, rtx *);
+extern bool validate_replace_rtx (rtx, rtx, rtx_insn *);
+extern bool validate_replace_rtx_part (rtx, rtx, rtx *, rtx_insn *);
+extern bool validate_replace_rtx_part_nosimplify (rtx, rtx, rtx *, rtx_insn *);
 extern void validate_replace_rtx_group (rtx, rtx, rtx_insn *);
 extern void validate_replace_src_group (rtx, rtx, rtx_insn *);
 extern bool validate_simplify_insn (rtx_insn *insn);
@@ -232,7 +236,7 @@ extern int recog (rtx, rtx_insn *, int *);
 inline int recog_memoized (rtx_insn *insn);
 #endif
 extern void add_clobbers (rtx, int);
-extern int added_clobbers_hard_reg_p (int);
+extern bool added_clobbers_hard_reg_p (int);
 extern void insn_extract (rtx_insn *);
 extern void extract_insn (rtx_insn *);
 extern void extract_constrain_insn (rtx_insn *insn);
@@ -243,16 +247,16 @@ extern void preprocess_constraints (int, int, const char **,
 extern const operand_alternative *preprocess_insn_constraints (unsigned int);
 extern void preprocess_constraints (rtx_insn *);
 extern rtx_insn *peep2_next_insn (int);
-extern int peep2_regno_dead_p (int, int);
-extern int peep2_reg_dead_p (int, rtx);
+extern bool peep2_regno_dead_p (int, int);
+extern bool peep2_reg_dead_p (int, rtx);
 #ifdef HARD_CONST
 extern rtx peep2_find_free_register (int, int, const char *,
 				     machine_mode, HARD_REG_SET *);
 #endif
 extern rtx_insn *peephole2_insns (rtx, rtx_insn *, int *);
 
-extern int store_data_bypass_p (rtx_insn *, rtx_insn *);
-extern int if_test_bypass_p (rtx_insn *, rtx_insn *);
+extern bool store_data_bypass_p (rtx_insn *, rtx_insn *);
+extern bool if_test_bypass_p (rtx_insn *, rtx_insn *);
 
 extern void copy_frame_info_to_split_insn (rtx_insn *, rtx_insn *);
 

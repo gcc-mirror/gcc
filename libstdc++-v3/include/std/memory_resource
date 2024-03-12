@@ -24,6 +24,9 @@
 
 /** @file include/memory_resource
  *  This is a Standard C++ Library header.
+ *
+ *  This header declares the @ref pmr (std::pmr) memory resources.
+ *  @ingroup pmr
  */
 
 #ifndef _GLIBCXX_MEMORY_RESOURCE
@@ -33,7 +36,30 @@
 
 #include <bits/requires_hosted.h> // polymorphic allocation
 
+#define __glibcxx_want_polymorphic_allocator
+#define __glibcxx_want_memory_resource
+#include <bits/version.h>
+
 #if __cplusplus >= 201703L
+
+/**
+ * @defgroup pmr Polymorphic memory resources
+ *
+ * @anchor pmr
+ * @ingroup memory
+ * @since C++17
+ *
+ * Memory resources are classes that implement the `std::pmr::memory_resource`
+ * interface for allocating and deallocating memory. Unlike traditional C++
+ * allocators, memory resources are not value types and are used via pointers
+ * to the abstract base class. They are only responsible for allocating and
+ * deallocating, not for construction and destruction of objects. As a result,
+ * memory resources just allocate raw memory as type `void*` and are not
+ * templates that allocate/deallocate and construct/destroy a specific type.
+ *
+ * The class template `std::pmr::polymorphic_allocator` is an allocator that
+ * uses a memory resource for its allocations.
+ */
 
 #include <bits/memory_resource.h>
 #include <vector>			// vector
@@ -46,16 +72,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace pmr
 {
-#ifdef _GLIBCXX_HAS_GTHREADS
-  // Header and all contents are present.
-# define __cpp_lib_memory_resource 201603L
-#else
-  // The pmr::synchronized_pool_resource type is missing.
-# define __cpp_lib_memory_resource 1
-#endif
 
-#if __cplusplus >= 202002L
-# define __cpp_lib_polymorphic_allocator 201902L
+#ifdef __cpp_lib_polymorphic_allocator // C++ >= 20 && HOSTED
   template<typename _Tp = std::byte>
     class polymorphic_allocator;
 #endif
@@ -63,6 +81,11 @@ namespace pmr
   // Global memory resources
 
   /// A pmr::memory_resource that uses `new` to allocate memory
+  /**
+   * @ingroup pmr
+   * @headerfile memory_resource
+   * @since C++17
+   */
   [[nodiscard, __gnu__::__returns_nonnull__, __gnu__::__const__]]
   memory_resource*
   new_delete_resource() noexcept;
@@ -84,13 +107,18 @@ namespace pmr
 
   // Pool resource classes
   struct pool_options;
-#ifdef _GLIBCXX_HAS_GTHREADS
+#if __cpp_lib_memory_resource >= 201603L // C++ >= 17 && hosted && gthread
   class synchronized_pool_resource;
 #endif
   class unsynchronized_pool_resource;
   class monotonic_buffer_resource;
 
   /// Parameters for tuning a pool resource's behaviour.
+  /**
+   * @ingroup pmr
+   * @headerfile memory_resource
+   * @since C++17
+   */
   struct pool_options
   {
     /** @brief Upper limit on number of blocks in a chunk.
@@ -150,8 +178,13 @@ namespace pmr
     const int _M_npools;
   };
 
-#ifdef _GLIBCXX_HAS_GTHREADS
+#if __cpp_lib_memory_resource >= 201603L // C++ >= 17 && hosted && gthread
   /// A thread-safe memory resource that manages pools of fixed-size blocks.
+  /**
+   * @ingroup pmr
+   * @headerfile memory_resource
+   * @since C++17
+   */
   class synchronized_pool_resource : public memory_resource
   {
   public:
@@ -215,9 +248,14 @@ namespace pmr
     _TPools* _M_tpools = nullptr;
     mutable shared_mutex _M_mx;
   };
-#endif
+#endif // __cpp_lib_memory_resource >= 201603L
 
   /// A non-thread-safe memory resource that manages pools of fixed-size blocks.
+  /**
+   * @ingroup pmr
+   * @headerfile memory_resource
+   * @since C++17
+   */
   class unsynchronized_pool_resource : public memory_resource
   {
   public:
@@ -275,6 +313,27 @@ namespace pmr
     _Pool* _M_pools = nullptr;
   };
 
+  /// A memory resource that allocates from a fixed-size buffer.
+  /**
+   * The main feature of a `pmr::monotonic_buffer_resource` is that its
+   * `do_deallocate` does nothing. This makes it very fast because there is no
+   * need to manage a free list, and every allocation simply returns a new
+   * block of memory, rather than searching for a suitably-sized free block.
+   * Because deallocating is a no-op, the amount of memory used by the resource
+   * only grows until `release()` (or the destructor) is called to return all
+   * memory to upstream.
+   *
+   * A `monotonic_buffer_resource` can be initialized with a buffer that
+   * will be used to satisfy all allocation requests, until the buffer is full.
+   * After that a new buffer will be allocated from the upstream resource.
+   * By using a stack buffer and `pmr::null_memory_resource()` as the upstream
+   * you can get a memory resource that only uses the stack and never
+   * dynamically allocates.
+   *
+   * @ingroup pmr
+   * @headerfile memory_resource
+   * @since C++17
+   */
   class monotonic_buffer_resource : public memory_resource
   {
   public:

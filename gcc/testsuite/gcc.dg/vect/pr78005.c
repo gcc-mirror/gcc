@@ -22,6 +22,7 @@ foo (int n, int d)
 
 #define check_u(x)		\
   foo (x, 2);			\
+  _Pragma("GCC novector")	\
   for (i = 0; i < N; i++)	\
     {				\
       if (u[i] != res##x[i])	\

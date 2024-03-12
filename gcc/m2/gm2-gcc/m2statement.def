@@ -309,4 +309,11 @@ PROCEDURE SetBeginLocation (location: location_t) ;
 PROCEDURE SetEndLocation (location: location_t) ;
 
 
+(*
+   BuildBuiltinCallTree - calls the builtin procedure.
+*)
+
+PROCEDURE BuildBuiltinCallTree (location: location_t; func: Tree) : Tree ;
+
+
 END m2statement.

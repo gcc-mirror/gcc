@@ -108,7 +108,7 @@ gimple_parser::push_edge (int src, int dest, int flags,
 static bool c_parser_gimple_compound_statement (gimple_parser &, gimple_seq *);
 static void c_parser_gimple_label (gimple_parser &, gimple_seq *);
 static void c_parser_gimple_statement (gimple_parser &, gimple_seq *);
-static struct c_expr c_parser_gimple_binary_expression (gimple_parser &);
+static struct c_expr c_parser_gimple_binary_expression (gimple_parser &, tree);
 static struct c_expr c_parser_gimple_unary_expression (gimple_parser &);
 static struct c_expr c_parser_gimple_postfix_expression (gimple_parser &);
 static struct c_expr c_parser_gimple_postfix_expression_after_primary
@@ -294,8 +294,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
       FOR_EACH_BB_FN (bb, cfun)
 	if (EDGE_COUNT (bb->succs) == 0)
 	  {
-	    gimple *last = last_stmt (bb);
-	    if (gswitch *sw = safe_dyn_cast <gswitch *> (last))
+	    if (gswitch *sw = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
 	      for (unsigned i = 0; i < gimple_switch_num_labels (sw); ++i)
 		{
 		  basic_block label_bb = gimple_switch_label_bb (cfun, sw, i);
@@ -870,7 +869,7 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
       return;
     }
 
-  rhs = c_parser_gimple_binary_expression (parser);
+  rhs = c_parser_gimple_binary_expression (parser, TREE_TYPE (lhs.value));
   if (lhs.value != error_mark_node
       && rhs.value != error_mark_node)
     {
@@ -931,7 +930,7 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
 */
 
 static c_expr
-c_parser_gimple_binary_expression (gimple_parser &parser)
+c_parser_gimple_binary_expression (gimple_parser &parser, tree ret_type)
 {
   /* Location of the binary operator.  */
   struct c_expr ret, lhs, rhs;
@@ -940,7 +939,6 @@ c_parser_gimple_binary_expression (gimple_parser &parser)
   lhs = c_parser_gimple_postfix_expression (parser);
   if (c_parser_error (parser))
     return ret;
-  tree ret_type = TREE_TYPE (lhs.value);
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_MULT:
@@ -959,7 +957,10 @@ c_parser_gimple_binary_expression (gimple_parser &parser)
 	code = PLUS_EXPR;
       break;
     case CPP_MINUS:
-      code = MINUS_EXPR;
+      if (POINTER_TYPE_P (TREE_TYPE (lhs.value)))
+	code = POINTER_DIFF_EXPR;
+      else
+	code = MINUS_EXPR;
       break;
     case CPP_LSHIFT:
       code = LSHIFT_EXPR;
@@ -969,27 +970,21 @@ c_parser_gimple_binary_expression (gimple_parser &parser)
       break;
     case CPP_LESS:
       code = LT_EXPR;
-      ret_type = boolean_type_node;
       break;
     case CPP_GREATER:
       code = GT_EXPR;
-      ret_type = boolean_type_node;
       break;
     case CPP_LESS_EQ:
       code = LE_EXPR;
-      ret_type = boolean_type_node;
       break;
     case CPP_GREATER_EQ:
       code = GE_EXPR;
-      ret_type = boolean_type_node;
       break;
     case CPP_EQ_EQ:
       code = EQ_EXPR;
-      ret_type = boolean_type_node;
       break;
     case CPP_NOT_EQ:
       code = NE_EXPR;
-      ret_type = boolean_type_node;
       break;
     case CPP_AND:
       code = BIT_AND_EXPR;
@@ -1007,14 +1002,54 @@ c_parser_gimple_binary_expression (gimple_parser &parser)
       c_parser_error (parser, "%<||%> not valid in GIMPLE");
       return ret;
     case CPP_NAME:
-	{
-	  tree id = c_parser_peek_token (parser)->value;
-	  if (strcmp (IDENTIFIER_POINTER (id), "__MULT_HIGHPART") == 0)
-	    {
-	      code = MULT_HIGHPART_EXPR;
-	      break;
-	    }
-	}
+      {
+	tree id = c_parser_peek_token (parser)->value;
+	if (strcmp (IDENTIFIER_POINTER (id), "__MULT_HIGHPART") == 0)
+	  {
+	    code = MULT_HIGHPART_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__UNLT") == 0)
+	  {
+	    code = UNLT_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__UNLE") == 0)
+	  {
+	    code = UNLE_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__UNGT") == 0)
+	  {
+	    code = UNGT_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__UNGE") == 0)
+	  {
+	    code = UNGE_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__UNEQ") == 0)
+	  {
+	    code = UNEQ_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__UNORDERED") == 0)
+	  {
+	    code = UNORDERED_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__ORDERED") == 0)
+	  {
+	    code = ORDERED_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__LTGT") == 0)
+	  {
+	    code = LTGT_EXPR;
+	    break;
+	  }
+      }
       /* Fallthru.  */
     default:
       /* Not a binary expression.  */
@@ -2159,7 +2194,8 @@ c_parser_gimple_paren_condition (gimple_parser &parser)
 {
   if (! c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return error_mark_node;
-  tree cond = c_parser_gimple_binary_expression (parser).value;
+  tree cond
+    = c_parser_gimple_binary_expression (parser, boolean_type_node).value;
   if (cond != error_mark_node
       && ! COMPARISON_CLASS_P (cond)
       && ! CONSTANT_CLASS_P (cond)
@@ -2473,7 +2509,7 @@ c_finish_gimple_return (location_t loc, tree retval)
 
   if (! retval)
     current_function_returns_null = 1;
-  else if (valtype == 0 || TREE_CODE (valtype) == VOID_TYPE)
+  else if (valtype == 0 || VOID_TYPE_P (valtype))
     {
       current_function_returns_null = 1;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)

@@ -50,6 +50,7 @@ int main (void)
 
   foo ();
 
+#pragma GCC novector
   for (j = 0; j < M; j++)
     if (x_out_a[j] != check_result_a[j]
         || x_out_b[j] != check_result_b[j])

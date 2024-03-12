@@ -39,8 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "go-c.h"
 #include "go-gcc.h"
 
-#ifndef TARGET_AIX
-#define TARGET_AIX 0
+#ifndef TARGET_AIX_OS
+#define TARGET_AIX_OS 0
 #endif
 
 /* Language-dependent contents of a type.  */
@@ -90,6 +90,7 @@ static const char *go_prefix = NULL;
 static const char *go_relative_import_path = NULL;
 static const char *go_c_header = NULL;
 static const char *go_embedcfg = NULL;
+static const char *go_importcfg = NULL;
 
 /* Language hooks.  */
 
@@ -111,14 +112,15 @@ go_langhook_init (void)
   args.relative_import_path = go_relative_import_path;
   args.c_header = go_c_header;
   args.embedcfg = go_embedcfg;
+  args.importcfg = go_importcfg;
   args.check_divide_by_zero = go_check_divide_zero;
   args.check_divide_overflow = go_check_divide_overflow;
   args.compiling_runtime = go_compiling_runtime;
   args.debug_escape_level = go_debug_escape_level;
   args.debug_escape_hash = go_debug_escape_hash;
-  args.nil_check_size_threshold = TARGET_AIX ? -1 : 4096;
+  args.nil_check_size_threshold = TARGET_AIX_OS ? -1 : 4096;
   args.debug_optimization = go_debug_optimization;
-  args.need_eqtype = TARGET_AIX ? true : false;
+  args.need_eqtype = TARGET_AIX_OS ? true : false;
   args.linemap = go_get_linemap();
   args.backend = go_get_backend();
   go_create_gogo (&args);
@@ -286,6 +288,10 @@ go_langhook_handle_option (
       go_embedcfg = arg;
       break;
 
+    case OPT_fgo_importcfg_:
+      go_importcfg = arg;
+      break;
+
     default:
       /* Just return 1 to indicate that the option is valid.  */
       break;
@@ -408,7 +414,7 @@ go_langhook_type_for_mode (machine_mode mode, int unsignedp)
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
       && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
-      unsigned int elem_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+      unsigned int elem_bits = vector_element_size (GET_MODE_PRECISION (mode),
 						    GET_MODE_NUNITS (mode));
       tree bool_type = build_nonstandard_boolean_type (elem_bits);
       return build_vector_type_for_mode (bool_type, mode);

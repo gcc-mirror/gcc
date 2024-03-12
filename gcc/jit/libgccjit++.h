@@ -1411,6 +1411,12 @@ type::get_const ()
 }
 
 inline type
+type::get_restrict ()
+{
+  return type (gcc_jit_type_get_restrict (get_inner_type ()));
+}
+
+inline type
 type::get_volatile ()
 {
   return type (gcc_jit_type_get_volatile (get_inner_type ()));

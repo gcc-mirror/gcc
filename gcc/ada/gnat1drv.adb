@@ -712,27 +712,6 @@ procedure Gnat1drv is
          Suppress_Options.Suppress (Alignment_Check) := True;
       end if;
 
-      --  Set switch indicating if back end can handle limited types, and
-      --  guarantee that no incorrect copies are made (e.g. in the context
-      --  of an if or case expression).
-
-      --  Debug flag -gnatd.L decisively sets usage on
-
-      if Debug_Flag_Dot_LL then
-         Back_End_Handles_Limited_Types := True;
-
-      --  If no debug flag, usage off for SCIL cases
-
-      elsif Generate_SCIL then
-         Back_End_Handles_Limited_Types := False;
-
-      --  Otherwise normal gcc back end, for now still turn flag off by
-      --  default, since there are unresolved problems in the front end.
-
-      else
-         Back_End_Handles_Limited_Types := False;
-      end if;
-
       --  Return slot support is disabled if -gnatd_r is specified
 
       if Debug_Flag_Underscore_R then
@@ -1396,6 +1375,17 @@ begin
          Back_End_Mode := Skip;
       end if;
 
+      --  Ensure that we properly register a dependency on system.ads, since
+      --  even if we do not semantically depend on this, Targparm has read
+      --  system parameters from the system.ads file.
+
+      Lib.Writ.Ensure_System_Dependency;
+
+      --  Add dependencies, if any, on preprocessing data file and on
+      --  preprocessing definition file(s).
+
+      Prepcomp.Add_Dependencies;
+
       --  At this stage Back_End_Mode is set to indicate if the backend should
       --  be called to generate code. If it is Skip, then code generation has
       --  been turned off, even though code was requested by the original
@@ -1541,17 +1531,6 @@ begin
 
          return;
       end if;
-
-      --  Ensure that we properly register a dependency on system.ads, since
-      --  even if we do not semantically depend on this, Targparm has read
-      --  system parameters from the system.ads file.
-
-      Lib.Writ.Ensure_System_Dependency;
-
-      --  Add dependencies, if any, on preprocessing data file and on
-      --  preprocessing definition file(s).
-
-      Prepcomp.Add_Dependencies;
 
       if GNATprove_Mode then
 

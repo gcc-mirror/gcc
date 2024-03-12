@@ -14,5 +14,5 @@ sub2 (unsigned int i)
 {
   return (i << 20) >> 20;
 }
-/* { dg-final { scan-assembler-times "slli" 2 } } */
-/* { dg-final { scan-assembler-times "srli" 2 } } */
+/* { dg-final { scan-assembler-times {\mslli} 2 } } */
+/* { dg-final { scan-assembler-times {\msrli} 2 } } */

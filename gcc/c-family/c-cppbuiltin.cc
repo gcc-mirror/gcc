@@ -1074,15 +1074,22 @@ c_cpp_builtins (cpp_reader *pfile)
 	  /* Set feature test macros for C++23.  */
 	  cpp_define (pfile, "__cpp_size_t_suffix=202011L");
 	  cpp_define (pfile, "__cpp_if_consteval=202106L");
-	  cpp_define (pfile, "__cpp_constexpr=202211L");
+	  cpp_define (pfile, "__cpp_auto_cast=202110L");
+	  if (cxx_dialect <= cxx23)
+	    cpp_define (pfile, "__cpp_constexpr=202211L");
 	  cpp_define (pfile, "__cpp_multidimensional_subscript=202211L");
 	  cpp_define (pfile, "__cpp_named_character_escapes=202207L");
 	  cpp_define (pfile, "__cpp_static_call_operator=202207L");
 	  cpp_define (pfile, "__cpp_implicit_move=202207L");
 	}
+      if (cxx_dialect > cxx23)
+	{
+	  /* Set feature test macros for C++26.  */
+	  cpp_define (pfile, "__cpp_constexpr=202306L");
+	}
       if (flag_concepts)
         {
-	  if (cxx_dialect >= cxx20)
+	  if (cxx_dialect >= cxx20 || !flag_concepts_ts)
 	    cpp_define (pfile, "__cpp_concepts=202002L");
           else
             cpp_define (pfile, "__cpp_concepts=201507L");
@@ -1182,6 +1189,29 @@ c_cpp_builtins (cpp_reader *pfile)
   builtin_define_type_width ("__WINT_WIDTH__", wint_type_node, NULL_TREE);
   builtin_define_type_width ("__PTRDIFF_WIDTH__", ptrdiff_type_node, NULL_TREE);
   builtin_define_type_width ("__SIZE_WIDTH__", size_type_node, NULL_TREE);
+
+  if (!c_dialect_cxx ())
+    {
+      struct bitint_info info;
+      /* For now, restrict __BITINT_MAXWIDTH__ to what can be represented in
+	 wide_int and widest_int.  */
+      if (targetm.c.bitint_type_info (WIDE_INT_MAX_PRECISION - 1, &info))
+	{
+	  cpp_define_formatted (pfile, "__BITINT_MAXWIDTH__=%d",
+				(int) WIDE_INT_MAX_PRECISION - 1);
+	  if (flag_building_libgcc)
+	    {
+	      scalar_int_mode limb_mode
+		= as_a <scalar_int_mode> (info.limb_mode);
+	      cpp_define_formatted (pfile, "__LIBGCC_BITINT_LIMB_WIDTH__=%d",
+				    (int) GET_MODE_PRECISION (limb_mode));
+	      cpp_define_formatted (pfile, "__LIBGCC_BITINT_ORDER__=%s",
+				    info.big_endian
+				    ? "__ORDER_BIG_ENDIAN__"
+				    : "__ORDER_LITTLE_ENDIAN__");
+	    }
+	}
+    }
 
   if (c_dialect_cxx ())
     for (i = 0; i < NUM_INT_N_ENTS; i ++)

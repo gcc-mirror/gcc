@@ -373,12 +373,14 @@ private:
 						    unsigned unit_offset);
   ipa_param_body_replacement *lookup_first_base_replacement (tree base);
   tree replace_removed_params_ssa_names (tree old_name, gimple *stmt);
-  bool modify_expression (tree *expr_p, bool convert);
+  bool modify_expression (tree *expr_p, bool convert, gimple_seq * = nullptr);
   bool modify_assignment (gimple *stmt, gimple_seq *extra_stmts);
   bool modify_call_stmt (gcall **stmt_p, gimple *orig_stmt);
   bool modify_cfun_body ();
   void reset_debug_stmts ();
+  tree get_ddef_if_exists_and_is_used (tree decl);
   void mark_dead_statements (tree dead_param, vec<tree> *debugstack);
+  void mark_clobbers_dead (tree dead_param);
   bool prepare_debug_expressions (tree dead_ssa);
 
   /* Declaration of the function that is being transformed.  */

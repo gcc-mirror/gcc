@@ -812,7 +812,7 @@ Parameters for the generator.
 
     // Bitmasks used in the 'twist' part of the algorithm
     private enum UIntType lowerMask = (cast(UIntType) 1u << r) - 1,
-                          upperMask = (~lowerMask) & this.max;
+                          upperMask = (~lowerMask) & max;
 
     /*
        Collection of all state variables
@@ -905,17 +905,17 @@ Parameters for the generator.
     private static void seedImpl(UIntType value, ref State mtState) @nogc
     {
         mtState.data[$ - 1] = value;
-        static if (this.max != UIntType.max)
+        static if (max != UIntType.max)
         {
-            mtState.data[$ - 1] &= this.max;
+            mtState.data[$ - 1] &= max;
         }
 
         foreach_reverse (size_t i, ref e; mtState.data[0 .. $ - 1])
         {
             e = f * (mtState.data[i + 1] ^ (mtState.data[i + 1] >> (w - 2))) + cast(UIntType)(n - (i + 1));
-            static if (this.max != UIntType.max)
+            static if (max != UIntType.max)
             {
-                e &= this.max;
+                e &= max;
             }
         }
 
@@ -2842,7 +2842,7 @@ auto ref choice(Range)(ref Range range)
            "Choice did not return a valid element from the given Range");
 }
 
-@safe unittest // issue 18631
+@safe unittest // https://issues.dlang.org/show_bug.cgi?id=18631
 {
     auto rng = MinstdRand0(42);
     const a = [0,1,2];
@@ -2855,7 +2855,7 @@ auto ref choice(Range)(ref Range range)
     auto z1 = choice(cast(const)[1, 2, 3], rng);
 }
 
-@safe unittest // Ref range (issue 18631 PR)
+@safe unittest // Ref range (https://issues.dlang.org/show_bug.cgi?id=18631 PR)
 {
     struct TestRange
     {

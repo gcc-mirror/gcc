@@ -49,10 +49,29 @@ CharMatcher[CodepointSet] matcherCache;
     }
 }
 
-@property ref wordMatcher()()
+// Force pure because that is needed
+// Templated so that we don't pull in std.uni wordCharacter unnecessarily.
+@property ref wordMatcher()() pure
 {
-    static immutable CharMatcher matcher = CharMatcher(wordCharacter);
-    return matcher;
+    static auto actual()
+    {
+        static CharMatcher matcher;
+        static bool haveMatcher;
+
+        if (!haveMatcher)
+        {
+            matcher = CharMatcher(wordCharacter);
+            haveMatcher = true;
+        }
+
+        return &matcher;
+    }
+
+    // WORKAROUND: if the compiler won't memoize the output of the function for us,
+    //  we'll do it with pure and there will be casts and it'll be happy about it.
+    // This is unfortunately needed to make std.regex as a whole faster to import & use
+    //  in build times ~500ms.
+    return *(cast(immutable(CharMatcher)* function() @safe nothrow @nogc pure)&actual)();
 }
 
 // some special Unicode white space characters
@@ -1026,7 +1045,7 @@ if (!hasElaborateDestructor!T)
         return isBig ? big.ptr[0 .. length] : small[0 .. length];
     }
 
-    this(this)
+    this(this) @trusted
     {
         if (isBig)
         {

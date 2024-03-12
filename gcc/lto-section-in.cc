@@ -262,7 +262,7 @@ lto_create_simple_input_block (struct lto_file_decl_data *file_data,
 
   *datar = data;
   return new lto_input_block (data + main_offset, header->main_size,
-			      file_data->mode_table);
+			      file_data);
 }
 
 

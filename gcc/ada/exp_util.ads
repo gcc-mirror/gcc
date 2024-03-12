@@ -25,6 +25,7 @@
 
 --  Package containing utility procedures used throughout the expander
 
+with Einfo.Utils;    use Einfo.Utils;
 with Exp_Tss;        use Exp_Tss;
 with Namet;          use Namet;
 with Rtsfind;        use Rtsfind;
@@ -351,6 +352,18 @@ package Exp_Util is
    --  is false, the call is for a stand-alone object, and the generated
    --  function itself must do its own cleanups.
 
+   function Build_Temporary_On_Secondary_Stack
+     (Loc  : Source_Ptr;
+      Typ  : Entity_Id;
+      Code : List_Id) return Entity_Id;
+   --  Build a temporary of type Typ on the secondary stack, appending the
+   --  necessary actions to Code, and return a constant holding the access
+   --  value designating this temporary, under the assumption that Typ does
+   --  not need finalization.
+
+   --  This should be used when Typ can potentially be large, to avoid putting
+   --  too much pressure on the primary stack, for example with storage models.
+
    procedure Build_Transient_Object_Statements
      (Obj_Decl     : Node_Id;
       Fin_Call     : out Node_Id;
@@ -360,9 +373,9 @@ package Exp_Util is
       Ptr_Decl     : out Node_Id;
       Finalize_Obj : Boolean := True);
    --  Subsidiary to the processing of transient objects in transient scopes,
-   --  if expressions, case expressions, expression_with_action nodes, array
-   --  aggregates, and record aggregates. Obj_Decl denotes the declaration of
-   --  the transient object. Generate the following nodes:
+   --  if expressions, case expressions, and expression_with_action nodes.
+   --  Obj_Decl denotes the declaration of the transient object. Generate the
+   --  following nodes:
    --
    --    * Fin_Call - the call to [Deep_]Finalize which cleans up the transient
    --    object if flag Finalize_Obj is set to True, or finalizes the hook when
@@ -387,16 +400,19 @@ package Exp_Util is
    --  since for floating-point, abs, unary "-", and unary "+" can never
    --  case overflow.
 
-   function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean;
+   function Component_May_Be_Bit_Aligned
+     (Comp      : Entity_Id;
+      For_Slice : Boolean := False) return Boolean;
    --  This function is in charge of detecting record components that may cause
-   --  trouble for the back end if an attempt is made to access the component
-   --  as a whole. The back end can handle such accesses with no problem if the
-   --  components involved are small (64 bits or less) records or scalar items
+   --  trouble for the back end if an attempt is made to access the component,
+   --  either as a whole if For_Slice is False, or through an array slice if
+   --  For_Slice is True. The back end can handle such accesses only if the
+   --  components involved are small (64/128 bits or less) records or scalars
    --  (including bit-packed arrays represented with a modular type), or else
    --  if they are aligned on byte boundaries (i.e. starting on a byte boundary
    --  and occupying an integral number of bytes).
    --
-   --  However, problems arise for records larger than 64 bits, or for arrays
+   --  However problems arise for records larger than 64/128 bits or for arrays
    --  (other than bit-packed arrays represented with a modular type) if the
    --  component either does not start on a byte boundary or does not occupy an
    --  integral number of bytes (i.e. there are some bits possibly shared with
@@ -635,13 +651,6 @@ package Exp_Util is
    --  current declarative part to look for an address clause for the object
    --  being declared, and returns the clause if one is found, returns
    --  Empty otherwise.
-   --
-   --  Note: this function can be costly and must be invoked with special care.
-   --  Possibly we could introduce a flag at parse time indicating the presence
-   --  of an address clause to speed this up???
-   --
-   --  Note: currently this function does not scan the private part, that seems
-   --  like a potential bug ???
 
    type Force_Evaluation_Mode is (Relaxed, Strict);
 
@@ -848,6 +857,22 @@ package Exp_Util is
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
+   function Is_Statically_Disabled
+     (N             : Node_Id;
+      Value         : Boolean;
+      Include_Valid : Boolean)
+      return Boolean
+   with Pre => Nkind (N) in N_Subexpr and then Is_Boolean_Type (Etype (N));
+   --  Returns whether N is a "statically disabled" condition which evaluates
+   --  to Value, as described in section 7.3.2 of SPARK User's Guide.
+   --
+   --  If Include_Valid is True, a reference to 'Valid or 'Valid_Scalar is
+   --  considered as disabled for Value=True, which is useful in GNATprove, as
+   --  proof considers that these attributes always return the value True. In
+   --  general, Include_Valid is set to True in the proof phase of GNATprove,
+   --  as 'Valid is assumed to always evaluate to True, but not in the flow
+   --  analysis phase of GNATprove, which does not make this assumption.
+
    function Is_Untagged_Derivation (T : Entity_Id) return Boolean;
    --  Returns true if type T is not tagged and is a derived type,
    --  or is a private type whose completion is such a type.
@@ -912,6 +937,13 @@ package Exp_Util is
    --  expression E. Unc_Typ is an unconstrained array or record, or a class-
    --  wide type. Set Related_Id to request an external name for the subtype
    --  rather than an internal temporary.
+
+   function Make_Tag_Assignment_From_Type
+     (Loc    : Source_Ptr;
+      Target : Node_Id;
+      Typ    : Entity_Id) return Node_Id;
+   --  Return an assignment of the tag of tagged type Typ to prefix Target,
+   --  which must be a record object of a descendant of Typ.
 
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
@@ -986,7 +1018,9 @@ package Exp_Util is
    --  address might be captured in a way we do not detect. A value of True is
    --  returned only if the replacement is safe.
 
-   function Possible_Bit_Aligned_Component (N : Node_Id) return Boolean;
+   function Possible_Bit_Aligned_Component
+     (N         : Node_Id;
+      For_Slice : Boolean := False) return Boolean;
    --  This function is used during processing the assignment of a record or an
    --  array, or the construction of an aggregate. The argument N is either the
    --  left or the right hand side of an assignment and the function determines
@@ -1221,7 +1255,9 @@ package Exp_Util is
    --  extension to verify legality rules on inherited conditions.
 
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N is within a case or an if expression
+   --  Determine whether arbitrary node N is immediately within a case or an if
+   --  expression. The criterion is whether temporaries created by the actions
+   --  attached to N need to outlive an enclosing case or if expression.
 
 private
    pragma Inline (Duplicate_Subexpr);

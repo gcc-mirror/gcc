@@ -120,18 +120,17 @@ class infeasible_node : public base_feasible_node
 {
 public:
   infeasible_node (const exploded_node *inner_node, unsigned index,
-		   rejected_constraint *rc)
+		   std::unique_ptr<rejected_constraint> rc)
   : base_feasible_node (inner_node, index),
-    m_rc (rc)
+    m_rc (std::move (rc))
   {
   }
-  ~infeasible_node () { delete m_rc; }
 
   void dump_dot (graphviz_out *gv,
 		 const dump_args_t &args) const final override;
 
 private:
-  rejected_constraint *m_rc;
+  std::unique_ptr<rejected_constraint> m_rc;
 };
 
 /* Base class of edge within a feasible_graph.  */
@@ -198,7 +197,7 @@ class feasible_graph : public digraph <fg_traits>
 
   void add_feasibility_problem (feasible_node *src_fnode,
 				const exploded_edge *eedge,
-				rejected_constraint *rc);
+				std::unique_ptr<rejected_constraint> rc);
 
   std::unique_ptr<exploded_path> make_epath (feasible_node *fnode) const;
 

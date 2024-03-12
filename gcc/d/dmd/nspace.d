@@ -52,6 +52,7 @@ import dmd.astenums;
 import dmd.dscope;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
+import dmd.errors;
 import dmd.expression;
 import dmd.globals;
 import dmd.identifier;
@@ -134,7 +135,7 @@ extern (C++) final class Nspace : ScopeDsymbol
         if (!members || !symtab) // opaque or semantic() is not yet called
         {
             if (!(flags & IgnoreErrors))
-                error("is forward referenced when looking for `%s`", ident.toChars());
+                .error(loc, "%s `%s` is forward referenced when looking for `%s`", kind, toPrettyChars, ident.toChars());
             return null;
         }
 

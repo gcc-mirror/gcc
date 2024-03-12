@@ -6,8 +6,8 @@
 
 /*
 **set128bits:
-**	dup	v0.16b, w1
-**	str	q0, \[x0\]
+**	dup	v([0-9]+).16b, w1
+**	str	q\1, \[x0\]
 **	ret
 */
 void __attribute__((__noinline__))
@@ -29,9 +29,9 @@ set128bitszero (int64_t *src)
 
 /*
 ** set128bitsplus:
-**	dup	v0.16b, w1
-**	str	q0, \[x0\]
-**	str	q0, \[x0, 12\]
+**	dup	v([0-9]+).16b, w1
+**	str	q\1, \[x0\]
+**	str	q\1, \[x0, 12\]
 **	ret
 */
 void __attribute__((__noinline__))
@@ -42,8 +42,8 @@ set128bitsplus (int64_t *src, char c)
 
 /*
 ** set256bits:
-**	movi	v0.16b, 0x63
-**	stp	q0, q0, \[x0\]
+**	movi	v([0-9]+).16b, 0x63
+**	stp	q\1, q\1, \[x0\]
 **	ret
 */
 void __attribute__((__noinline__))
@@ -66,10 +66,10 @@ set256bitszero (int64_t *src)
 
 /*
 ** set256bitsplus:
-**	movi	v0.16b, 0x63
-**	stp	q0, q0, \[x0\]
-**	str	q0, \[x0, 32\]
-**	str	d0, \[x0, 48\]
+**	movi	v([0-9]+).16b, 0x63
+**	stp	q\1, q\1, \[x0\]
+**	str	q\1, \[x0, 32\]
+**	str	d\1, \[x0, 48\]
 **	ret
 */
 void __attribute__((__noinline__))

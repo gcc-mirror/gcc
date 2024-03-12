@@ -14,6 +14,13 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+if { [board_info target exists multilib_flags]
+     && [string match "* -march=*" " [board_info target multilib_flags] "] } {
+    # Multilib flags come after the -march flags we pass and override
+    # them, so skip these tests when such flags are passed.
+    return
+}
+
 # Test that the correct data prefetch instructions (SSE or 3DNow! variant,
 # or none) are used for various i386 cpu-type and instruction set
 # extension options for __builtin_prefetch.  When using -mtune, specify
@@ -89,13 +96,6 @@ load_lib torture-options.exp
 # Initialize harness.
 dg-init
 torture-init
-
-if { [board_info target exists multilib_flags]
-     && [string match "* -march=*" " [board_info target multilib_flags] "] } {
-    # Multilib flags come after the -march flags we pass and override
-    # them, so skip these tests when such flags are passed.
-    return
-}
 
 set-torture-options $PREFETCH_NONE
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/i386-pf-none-*.c]] "" ""

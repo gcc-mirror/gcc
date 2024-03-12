@@ -75,6 +75,18 @@ ggc_mark_root_tab (const_ggc_root_tab_t rt)
       (*rt->cb) (*(void **) ((char *)rt->base + rt->stride * i));
 }
 
+/* Zero out all the roots in the table RT.  */
+
+static void
+ggc_zero_rtab_roots (const_ggc_root_tab_t rt)
+{
+  size_t i;
+
+  for ( ; rt->base != NULL; rt++)
+    for (i = 0; i < rt->nelt; i++)
+      (*(void **) ((char *)rt->base + rt->stride * i)) = (void*)0;
+}
+
 /* Iterate through all registered roots and mark each element.  */
 
 void
@@ -86,7 +98,7 @@ ggc_mark_roots (void)
 
   for (rt = gt_ggc_deletable_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
-      memset (rti->base, 0, rti->stride);
+      memset (rti->base, 0, rti->stride * rti->nelt);
 
   for (rt = gt_ggc_rtab; *rt; rt++)
     ggc_mark_root_tab (*rt);
@@ -314,6 +326,9 @@ gt_pch_note_reorder (void *obj, void *note_ptr_cookie,
   data = (struct ptr_data *)
     saving_htab->find_with_hash (obj, POINTER_HASH (obj));
   gcc_assert (data && data->note_ptr_cookie == note_ptr_cookie);
+  /* The GTY 'reorder' option doesn't make sense if we don't walk pointers,
+     such as for strings.  */
+  gcc_checking_assert (data->note_ptr_fn != gt_pch_p_S);
 
   data->reorder_fn = reorder_fn;
 }
@@ -336,8 +351,7 @@ ggc_call_count (ptr_data **slot, traversal_state *state)
 {
   struct ptr_data *d = *slot;
 
-  ggc_pch_count_object (state->d, d->obj, d->size,
-			d->note_ptr_fn == gt_pch_p_S);
+  ggc_pch_count_object (state->d, d->obj, d->size);
   state->count++;
   return 1;
 }
@@ -347,8 +361,7 @@ ggc_call_alloc (ptr_data **slot, traversal_state *state)
 {
   struct ptr_data *d = *slot;
 
-  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size,
-				      d->note_ptr_fn == gt_pch_p_S);
+  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size);
   state->ptrs[state->ptrs_i++] = d;
   return 1;
 }
@@ -638,13 +651,19 @@ gt_pch_save (FILE *f)
 	state.ptrs[i]->reorder_fn (state.ptrs[i]->obj,
 				   state.ptrs[i]->note_ptr_cookie,
 				   relocate_ptrs, &state);
-      state.ptrs[i]->note_ptr_fn (state.ptrs[i]->obj,
-				  state.ptrs[i]->note_ptr_cookie,
-				  relocate_ptrs, &state);
+      gt_note_pointers note_ptr_fn = state.ptrs[i]->note_ptr_fn;
+      gcc_checking_assert (note_ptr_fn != NULL);
+      /* 'gt_pch_p_S' enables certain special handling, but otherwise
+     corresponds to no 'note_ptr_fn'.  */
+      if (note_ptr_fn == gt_pch_p_S)
+	note_ptr_fn = NULL;
+      if (note_ptr_fn != NULL)
+	note_ptr_fn (state.ptrs[i]->obj, state.ptrs[i]->note_ptr_cookie,
+		     relocate_ptrs, &state);
       ggc_pch_write_object (state.d, state.f, state.ptrs[i]->obj,
-			    state.ptrs[i]->new_addr, state.ptrs[i]->size,
-			    state.ptrs[i]->note_ptr_fn == gt_pch_p_S);
-      if (state.ptrs[i]->note_ptr_fn != gt_pch_p_S)
+			    state.ptrs[i]->new_addr, state.ptrs[i]->size);
+      if (state.ptrs[i]->reorder_fn != NULL
+	  || note_ptr_fn != NULL)
 	memcpy (state.ptrs[i]->obj, this_object, state.ptrs[i]->size);
 #if defined ENABLE_VALGRIND_ANNOTATIONS && defined VALGRIND_GET_VBITS
       if (UNLIKELY (get_vbits == 1))
@@ -1285,4 +1304,24 @@ report_heap_memory_use ()
     fprintf (stderr, " {heap " PRsa (0) "}",
 	     SIZE_AMOUNT (MALLINFO_FN ().arena));
 #endif
+}
+
+/* Forcibly clear all GTY roots.  */
+
+void
+ggc_common_finalize ()
+{
+  const struct ggc_root_tab *const *rt;
+  const_ggc_root_tab_t rti;
+
+  for (rt = gt_ggc_deletable_rtab; *rt; rt++)
+    for (rti = *rt; rti->base != NULL; rti++)
+      memset (rti->base, 0, rti->stride * rti->nelt);
+
+  for (rt = gt_ggc_rtab; *rt; rt++)
+    ggc_zero_rtab_roots (*rt);
+
+  for (rt = gt_pch_scalar_rtab; *rt; rt++)
+    for (rti = *rt; rti->base != NULL; rti++)
+      memset (rti->base, 0, rti->stride * rti->nelt);
 }

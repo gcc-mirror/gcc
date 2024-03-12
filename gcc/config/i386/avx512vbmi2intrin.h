@@ -28,9 +28,9 @@
 #ifndef __AVX512VBMI2INTRIN_H_INCLUDED
 #define __AVX512VBMI2INTRIN_H_INCLUDED
 
-#if !defined(__AVX512VBMI2__)
+#if !defined(__AVX512VBMI2__) || !defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512vbmi2")
+#pragma GCC target("avx512vbmi2,evex512")
 #define __DISABLE_AVX512VBMI2__
 #endif /* __AVX512VBMI2__ */
 
@@ -326,18 +326,6 @@ _mm512_maskz_shldv_epi64 (__mmask8 __A, __m512i __B, __m512i __C, __m512i __D)
 						(__v8di) __D, (__mmask8)__A);
 }
 
-#ifdef __DISABLE_AVX512VBMI2__
-#undef __DISABLE_AVX512VBMI2__
-
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512VBMI2__ */
-
-#if !defined(__AVX512VBMI2__) || !defined(__AVX512BW__)
-#pragma GCC push_options
-#pragma GCC target("avx512vbmi2,avx512bw")
-#define __DISABLE_AVX512VBMI2BW__
-#endif /* __AVX512VBMI2BW__ */
-
 extern __inline __m512i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_compress_epi8 (__m512i __A, __mmask64 __B, __m512i __C)
@@ -548,10 +536,10 @@ _mm512_maskz_shldv_epi16 (__mmask32 __A, __m512i __B, __m512i __C, __m512i __D)
 				(__v32hi) __C, (__v32hi) __D, (__mmask32)__A);
 }
 
-#ifdef __DISABLE_AVX512VBMI2BW__
-#undef __DISABLE_AVX512VBMI2BW__
+#ifdef __DISABLE_AVX512VBMI2__
+#undef __DISABLE_AVX512VBMI2__
 
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX512VBMI2BW__ */
+#endif /* __DISABLE_AVX512VBMI2__ */
 
 #endif /* __AVX512VBMI2INTRIN_H_INCLUDED */

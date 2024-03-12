@@ -51,6 +51,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define TARGET_MMX_WITH_SSE	(TARGET_64BIT && TARGET_SSE2)
 
+#define TARGET_APX_EGPR (ix86_apx_features & apx_egpr)
+#define TARGET_APX_PUSH2POP2 (ix86_apx_features & apx_push2pop2)
+#define TARGET_APX_NDD (ix86_apx_features & apx_ndd)
+
 #include "config/vxworks-dummy.h"
 
 #include "config/i386/i386-opts.h"
@@ -403,10 +407,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_USE_GATHER_4PARTS]
 #define TARGET_USE_SCATTER_4PARTS \
 	ix86_tune_features[X86_TUNE_USE_SCATTER_4PARTS]
-#define TARGET_USE_GATHER \
-	ix86_tune_features[X86_TUNE_USE_GATHER]
-#define TARGET_USE_SCATTER \
-	ix86_tune_features[X86_TUNE_USE_SCATTER]
+#define TARGET_USE_GATHER_8PARTS \
+	ix86_tune_features[X86_TUNE_USE_GATHER_8PARTS]
+#define TARGET_USE_SCATTER_8PARTS \
+	ix86_tune_features[X86_TUNE_USE_SCATTER_8PARTS]
 #define TARGET_FUSE_CMP_AND_BRANCH_32 \
 	ix86_tune_features[X86_TUNE_FUSE_CMP_AND_BRANCH_32]
 #define TARGET_FUSE_CMP_AND_BRANCH_64 \
@@ -448,6 +452,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD]
 #define TARGET_DEST_FALSE_DEP_FOR_GLC \
 	ix86_tune_features[X86_TUNE_DEST_FALSE_DEP_FOR_GLC]
+#define TARGET_SLOW_STC ix86_tune_features[X86_TUNE_SLOW_STC]
+#define TARGET_USE_RCR ix86_tune_features[X86_TUNE_USE_RCR]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -769,7 +775,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    TARGET_ABSOLUTE_BIGGEST_ALIGNMENT.  */
 
 #define BIGGEST_ALIGNMENT \
-  (TARGET_IAMCU ? 32 : (TARGET_AVX512F ? 512 : (TARGET_AVX ? 256 : 128)))
+  (TARGET_IAMCU ? 32 : ((TARGET_AVX512F && TARGET_EVEX512) \
+			? 512 : (TARGET_AVX ? 256 : 128)))
 
 /* Maximum stack alignment.  */
 #define MAX_STACK_ALIGNMENT MAX_OFILE_ALIGNMENT
@@ -943,7 +950,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
      0,   0,    0,    0,    0,    0,    0,    0,		\
 /*  k0,  k1, k2, k3, k4, k5, k6, k7*/				\
-     0,  0,   0,  0,  0,  0,  0,  0 }
+     0,  0,   0,  0,  0,  0,  0,  0,				\
+/*  r16,  r17, r18, r19, r20, r21, r22, r23*/			\
+     0,   0,   0,   0,   0,   0,   0,   0,			\
+/*  r24,  r25, r26, r27, r28, r29, r30, r31*/			\
+     0,   0,   0,   0,   0,   0,   0,   0}			\
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -980,7 +991,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
      1,    1,     1,    1,    1,    1,    1,    1,		\
  /* k0,  k1,  k2,  k3,  k4,  k5,  k6,  k7*/			\
-     1,   1,   1,   1,   1,   1,   1,   1 }
+     1,   1,   1,   1,   1,   1,   1,   1,			\
+/*  r16,  r17, r18, r19, r20, r21, r22, r23*/			\
+     1,   1,   1,   1,   1,   1,   1,   1,			\
+/*  r24,  r25, r26, r27, r28, r29, r30, r31*/			\
+     1,   1,   1,   1,   1,   1,   1,   1}			\
 
 /* Order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  List frame pointer
@@ -996,7 +1011,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,	\
   32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,	\
   48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,	\
-  64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75 }
+  64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,	\
+  80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91}
 
 /* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
    to be rearranged based on a particular function.  When using sse math,
@@ -1004,6 +1020,14 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define ADJUST_REG_ALLOC_ORDER x86_order_regs_for_local_alloc ()
 
+#define INSN_BASE_REG_CLASS(INSN) \
+  ix86_insn_base_reg_class (INSN)
+
+#define REGNO_OK_FOR_INSN_BASE_P(NUM, INSN) \
+  ix86_regno_ok_for_insn_base_p (NUM, INSN)
+
+#define INSN_INDEX_REG_CLASS(INSN) \
+  ix86_insn_index_reg_class (INSN)
 
 #define OVERRIDE_ABI_FORMAT(FNDECL) ix86_call_abi_override (FNDECL)
 
@@ -1045,6 +1069,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_AVX512FP16_REG_MODE(MODE)					\
   ((MODE) == V8HFmode || (MODE) == V16HFmode || (MODE) == V32HFmode)
+
+#define VALID_SSE2_TYPE_MODE(MODE)		\
+  ((MODE) == HFmode || (MODE) == BFmode		\
+   || (MODE) == HCmode || (MODE) == BCmode)
 
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
@@ -1166,6 +1194,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define FIRST_INT_REG AX_REG
 #define LAST_INT_REG  SP_REG
 
+#define FIRST_INDEX_REG AX_REG
+#define LAST_INDEX_REG  BP_REG
+
 #define FIRST_QI_REG AX_REG
 #define LAST_QI_REG  BX_REG
 
@@ -1190,6 +1221,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define FIRST_MASK_REG  MASK0_REG
 #define LAST_MASK_REG   MASK7_REG
+
+#define FIRST_REX2_INT_REG  R16_REG
+#define LAST_REX2_INT_REG   R31_REG
 
 /* Override this in other tm.h files to cope with various OS lossage
    requiring a frame pointer.  */
@@ -1268,6 +1302,12 @@ enum reg_class
   INDEX_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp */
   LEGACY_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp %esp */
   GENERAL_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp %esp
+				   %r8 %r9 %r10 %r11 %r12 %r13 %r14 %r15
+				   %r16 %r17 %r18 %r19 %r20 %r21 %r22 %r23
+				   %r24 %r25 %r26 %r27 %r28 %r29 %r30 %r31 */
+  GENERAL_GPR16,		/* %eax %ebx %ecx %edx %esi %edi %ebp %esp
+				   %r8 %r9 %r10 %r11 %r12 %r13 %r14 %r15 */
+  INDEX_GPR16,			/* %eax %ebx %ecx %edx %esi %edi %ebp
 				   %r8 %r9 %r10 %r11 %r12 %r13 %r14 %r15 */
   FP_TOP_REG, FP_SECOND_REG,	/* %st(0) %st(1) */
   FLOAT_REGS,
@@ -1331,6 +1371,8 @@ enum reg_class
    "INDEX_REGS",			\
    "LEGACY_REGS",			\
    "GENERAL_REGS",			\
+   "GENERAL_GPR16",			\
+   "INDEX_GPR16",			\
    "FP_TOP_REG", "FP_SECOND_REG",	\
    "FLOAT_REGS",			\
    "SSE_FIRST_REG",			\
@@ -1366,9 +1408,11 @@ enum reg_class
       { 0x0f,        0x0,   0x0 },	/* Q_REGS */			\
    { 0x900f0,        0x0,   0x0 },	/* NON_Q_REGS */		\
       { 0x7e,      0xff0,   0x0 },	/* TLS_GOTBASE_REGS */		\
-      { 0x7f,      0xff0,   0x0 },	/* INDEX_REGS */		\
+      { 0x7f,      0xff0,   0xffff000 },	/* INDEX_REGS */		\
    { 0x900ff,        0x0,   0x0 },	/* LEGACY_REGS */		\
-   { 0x900ff,      0xff0,   0x0 },	/* GENERAL_REGS */		\
+   { 0x900ff,      0xff0,   0xffff000 },	/* GENERAL_REGS */		\
+   { 0x900ff,      0xff0,   0x0 },	/* GENERAL_GPR16 */		\
+   { 0x0007f,      0xff0,   0x0 },	/* INDEX_GPR16 */		\
      { 0x100,        0x0,   0x0 },	/* FP_TOP_REG */		\
      { 0x200,        0x0,   0x0 },	/* FP_SECOND_REG */		\
     { 0xff00,        0x0,   0x0 },	/* FLOAT_REGS */		\
@@ -1378,13 +1422,13 @@ enum reg_class
  { 0xff00000, 0xfffff000,   0xf },	/* ALL_SSE_REGS */		\
 { 0xf0000000,        0xf,   0x0 },	/* MMX_REGS */			\
  { 0xff0ff00, 0xfffff000,   0xf },	/* FLOAT_SSE_REGS */		\
- {   0x9ffff,      0xff0,   0x0 },	/* FLOAT_INT_REGS */		\
- { 0xff900ff, 0xfffffff0,   0xf },	/* INT_SSE_REGS */		\
- { 0xff9ffff, 0xfffffff0,   0xf },	/* FLOAT_INT_SSE_REGS */	\
+ {   0x9ffff,      0xff0,   0xffff000 },	/* FLOAT_INT_REGS */		\
+ { 0xff900ff, 0xfffffff0,   0xffff00f },	/* INT_SSE_REGS */		\
+ { 0xff9ffff, 0xfffffff0,   0xffff00f },	/* FLOAT_INT_SSE_REGS */	\
        { 0x0,        0x0, 0xfe0 },	/* MASK_REGS */			\
        { 0x0,        0x0, 0xff0 },	/* ALL_MASK_REGS */		\
-   { 0x900ff,      0xff0, 0xff0 },	/* INT_MASK_REGS */	\
-{ 0xffffffff, 0xffffffff, 0xfff }	/* ALL_REGS  */			\
+   { 0x900ff,      0xff0, 0xffffff0 },	/* INT_MASK_REGS */	\
+{ 0xffffffff, 0xffffffff, 0xfffffff }	/* ALL_REGS  */			\
 }
 
 /* The same information, inverted:
@@ -1404,14 +1448,29 @@ enum reg_class
 #define QI_REGNO_P(N) IN_RANGE ((N), FIRST_QI_REG, LAST_QI_REG)
 
 #define LEGACY_INT_REG_P(X) (REG_P (X) && LEGACY_INT_REGNO_P (REGNO (X)))
-#define LEGACY_INT_REGNO_P(N) (IN_RANGE ((N), FIRST_INT_REG, LAST_INT_REG))
+#define LEGACY_INT_REGNO_P(N) IN_RANGE ((N), FIRST_INT_REG, LAST_INT_REG)
+
+#define LEGACY_INDEX_REG_P(X) (REG_P (X) && LEGACY_INDEX_REGNO_P (REGNO (X)))
+#define LEGACY_INDEX_REGNO_P(N) \
+  IN_RANGE ((N), FIRST_INDEX_REG, LAST_INDEX_REG)
 
 #define REX_INT_REG_P(X) (REG_P (X) && REX_INT_REGNO_P (REGNO (X)))
 #define REX_INT_REGNO_P(N) \
   IN_RANGE ((N), FIRST_REX_INT_REG, LAST_REX_INT_REG)
 
+#define REX2_INT_REG_P(X) (REG_P (X) && REX2_INT_REGNO_P (REGNO (X)))
+#define REX2_INT_REGNO_P(N) \
+  IN_RANGE ((N), FIRST_REX2_INT_REG, LAST_REX2_INT_REG)
+
 #define GENERAL_REG_P(X) (REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
 #define GENERAL_REGNO_P(N) \
+  (LEGACY_INT_REGNO_P (N) || REX_INT_REGNO_P (N) || REX2_INT_REGNO_P (N))
+
+#define INDEX_REG_P(X) (REG_P (X) && INDEX_REGNO_P (REGNO (X)))
+#define INDEX_REGNO_P(N) \
+  (LEGACY_INDEX_REGNO_P (N) || REX_INT_REGNO_P (N) || REX2_INT_REGNO_P (N))
+
+#define GENERAL_GPR16_REGNO_P(N) \
   (LEGACY_INT_REGNO_P (N) || REX_INT_REGNO_P (N))
 
 #define ANY_QI_REG_P(X) (REG_P (X) && ANY_QI_REGNO_P (REGNO (X)))
@@ -1678,56 +1737,26 @@ typedef struct ix86_args {
    has been allocated, which happens in reginfo.cc during register
    allocation.  */
 
-#define REGNO_OK_FOR_INDEX_P(REGNO) 					\
-  ((REGNO) < STACK_POINTER_REGNUM 					\
-   || REX_INT_REGNO_P (REGNO)						\
-   || (unsigned) reg_renumber[(REGNO)] < STACK_POINTER_REGNUM		\
-   || REX_INT_REGNO_P ((unsigned) reg_renumber[(REGNO)]))
+#define REGNO_OK_FOR_INDEX_P(REGNO)					\
+  (INDEX_REGNO_P (REGNO)						\
+   || INDEX_REGNO_P (reg_renumber[(REGNO)]))
 
-#define REGNO_OK_FOR_BASE_P(REGNO) 					\
+#define REGNO_OK_FOR_BASE_P(REGNO)					\
   (GENERAL_REGNO_P (REGNO)						\
    || (REGNO) == ARG_POINTER_REGNUM 					\
    || (REGNO) == FRAME_POINTER_REGNUM 					\
-   || GENERAL_REGNO_P ((unsigned) reg_renumber[(REGNO)]))
-
-/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
-   and check its validity for a certain class.
-   We have two alternate definitions for each of them.
-   The usual definition accepts all pseudo regs; the other rejects
-   them unless they have been allocated suitable hard regs.
-   The symbol REG_OK_STRICT causes the latter definition to be used.
-
-   Most source files want to accept pseudo regs in the hope that
-   they will get allocated to the class that the insn wants them to be in.
-   Source files for reload pass need to be strict.
-   After reload, it makes no difference, since pseudo regs have
-   been eliminated by then.  */
-
+   || GENERAL_REGNO_P (reg_renumber[(REGNO)]))
 
 /* Non strict versions, pseudos are ok.  */
-#define REG_OK_FOR_INDEX_NONSTRICT_P(X)					\
-  (REGNO (X) < STACK_POINTER_REGNUM					\
-   || REX_INT_REGNO_P (REGNO (X))					\
-   || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+#define REGNO_OK_FOR_INDEX_NONSTRICT_P(REGNO)				\
+  (INDEX_REGNO_P (REGNO)						\
+   || !HARD_REGISTER_NUM_P (REGNO))
 
-#define REG_OK_FOR_BASE_NONSTRICT_P(X)					\
-  (GENERAL_REGNO_P (REGNO (X))						\
-   || REGNO (X) == ARG_POINTER_REGNUM					\
-   || REGNO (X) == FRAME_POINTER_REGNUM 				\
-   || REGNO (X) >= FIRST_PSEUDO_REGISTER)
-
-/* Strict versions, hard registers only */
-#define REG_OK_FOR_INDEX_STRICT_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-#define REG_OK_FOR_BASE_STRICT_P(X)  REGNO_OK_FOR_BASE_P (REGNO (X))
-
-#ifndef REG_OK_STRICT
-#define REG_OK_FOR_INDEX_P(X)  REG_OK_FOR_INDEX_NONSTRICT_P (X)
-#define REG_OK_FOR_BASE_P(X)   REG_OK_FOR_BASE_NONSTRICT_P (X)
-
-#else
-#define REG_OK_FOR_INDEX_P(X)  REG_OK_FOR_INDEX_STRICT_P (X)
-#define REG_OK_FOR_BASE_P(X)   REG_OK_FOR_BASE_STRICT_P (X)
-#endif
+#define REGNO_OK_FOR_BASE_NONSTRICT_P(REGNO)				\
+  (GENERAL_REGNO_P (REGNO)						\
+   || (REGNO) == ARG_POINTER_REGNUM					\
+   || (REGNO) == FRAME_POINTER_REGNUM					\
+   || !HARD_REGISTER_NUM_P (REGNO))
 
 /* TARGET_LEGITIMATE_ADDRESS_P recognizes an RTL expression
    that is a valid memory address for an instruction.
@@ -1821,7 +1850,7 @@ typedef struct ix86_args {
    MOVE_MAX_PIECES defaults to MOVE_MAX.  */
 
 #define MOVE_MAX \
-  ((TARGET_AVX512F \
+  ((TARGET_AVX512F && TARGET_EVEX512\
     && (ix86_move_max == PVW_AVX512 \
 	|| ix86_store_max == PVW_AVX512)) \
    ? 64 \
@@ -1840,7 +1869,7 @@ typedef struct ix86_args {
    store_by_pieces of 16/32/64 bytes.  */
 #define STORE_MAX_PIECES \
   (TARGET_INTER_UNIT_MOVES_TO_VEC \
-   ? ((TARGET_AVX512F && ix86_store_max == PVW_AVX512) \
+   ? ((TARGET_AVX512F && TARGET_EVEX512 && ix86_store_max == PVW_AVX512) \
       ? 64 \
       : ((TARGET_AVX \
 	  && ix86_store_max >= PVW_AVX256) \
@@ -2000,7 +2029,9 @@ do {							\
  "xmm20", "xmm21", "xmm22", "xmm23",					\
  "xmm24", "xmm25", "xmm26", "xmm27",					\
  "xmm28", "xmm29", "xmm30", "xmm31",					\
- "k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7" }
+ "k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7",			\
+ "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",		\
+ "r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31" }
 
 #define REGISTER_NAMES HI_REGISTER_NAMES
 
@@ -2214,7 +2245,7 @@ extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 #define DEFAULT_LARGE_SECTION_THRESHOLD 65536
 
 /* Which processor to tune code generation for.  These must be in sync
-   with processor_target_table in i386.cc.  */ 
+   with processor_cost_table in i386-options.cc.  */
 
 enum processor_type
 {
@@ -2237,6 +2268,7 @@ enum processor_type
   PROCESSOR_TREMONT,
   PROCESSOR_SIERRAFOREST,
   PROCESSOR_GRANDRIDGE,
+  PROCESSOR_CLEARWATERFOREST,
   PROCESSOR_KNL,
   PROCESSOR_KNM,
   PROCESSOR_SKYLAKE,
@@ -2251,6 +2283,10 @@ enum processor_type
   PROCESSOR_ALDERLAKE,
   PROCESSOR_ROCKETLAKE,
   PROCESSOR_GRANITERAPIDS,
+  PROCESSOR_GRANITERAPIDS_D,
+  PROCESSOR_ARROWLAKE,
+  PROCESSOR_ARROWLAKE_S,
+  PROCESSOR_PANTHERLAKE,
   PROCESSOR_INTEL,
   PROCESSOR_LUJIAZUI,
   PROCESSOR_GEODE,
@@ -2359,10 +2395,18 @@ constexpr wide_int_bitmask PTA_ALDERLAKE = PTA_TREMONT | PTA_ADX | PTA_AVX
   | PTA_PCONFIG | PTA_PKU | PTA_VAES | PTA_VPCLMULQDQ | PTA_SERIALIZE
   | PTA_HRESET | PTA_KL | PTA_WIDEKL | PTA_AVXVNNI;
 constexpr wide_int_bitmask PTA_SIERRAFOREST = PTA_ALDERLAKE | PTA_AVXIFMA
-  | PTA_AVXVNNIINT8 | PTA_AVXNECONVERT | PTA_CMPCCXADD;
+  | PTA_AVXVNNIINT8 | PTA_AVXNECONVERT | PTA_CMPCCXADD | PTA_ENQCMD | PTA_UINTR;
 constexpr wide_int_bitmask PTA_GRANITERAPIDS = PTA_SAPPHIRERAPIDS | PTA_AMX_FP16
-  | PTA_PREFETCHI | PTA_AMX_COMPLEX;
+  | PTA_PREFETCHI;
+constexpr wide_int_bitmask PTA_GRANITERAPIDS_D = PTA_GRANITERAPIDS
+  | PTA_AMX_COMPLEX;
 constexpr wide_int_bitmask PTA_GRANDRIDGE = PTA_SIERRAFOREST | PTA_RAOINT;
+constexpr wide_int_bitmask PTA_ARROWLAKE = PTA_SIERRAFOREST;
+constexpr wide_int_bitmask PTA_ARROWLAKE_S = PTA_ARROWLAKE | PTA_AVXVNNIINT16
+  | PTA_SHA512 | PTA_SM3 | PTA_SM4;
+constexpr wide_int_bitmask PTA_CLEARWATERFOREST = PTA_ARROWLAKE_S | PTA_PREFETCHI
+  | PTA_USER_MSR;
+constexpr wide_int_bitmask PTA_PANTHERLAKE = PTA_ARROWLAKE_S | PTA_PREFETCHI;
 constexpr wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
   | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ;
 constexpr wide_int_bitmask PTA_ZNVER1 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2

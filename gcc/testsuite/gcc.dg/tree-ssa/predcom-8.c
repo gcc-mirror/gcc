@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-pcom-details" } */
+/* { dg-options "-O3 -fdump-tree-pcom-details-blocks" } */
 
 int is_sorted(int *a, int n)
 {
@@ -10,3 +10,4 @@ int is_sorted(int *a, int n)
 }
 
 /* { dg-final { scan-tree-dump "Executing predictive commoning without unrolling" "pcom" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" } } */

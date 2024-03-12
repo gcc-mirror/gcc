@@ -2742,6 +2742,17 @@ integer of mode @var{m}.  The mode of @var{x} must be @var{m} or
 Represents the value @var{x} with the order of bytes reversed, carried out
 in mode @var{m}, which must be a fixed-point machine mode.
 The mode of @var{x} must be @var{m} or @code{VOIDmode}.
+
+@findex bitreverse
+@item (bitreverse:@var{m} @var{x})
+Represents the value @var{x} with the order of bits reversed, carried out
+in mode @var{m}, which must be a fixed-point machine mode.
+The mode of @var{x} must be @var{m} or @code{VOIDmode}.
+
+@findex copysign
+@item (copysign:@var{m} @var{x} @var{y})
+Represents the value @var{x} with the sign of @var{y}.
+Both @var{x} and @var{y} must have floating point machine mode @var{m}.
 @end table
 
 @node Comparisons
@@ -4953,7 +4964,7 @@ the pass should check whether the new pattern matches a target
 instruction or satisfies the requirements of an inline asm:
 
 @smallexample
-if (!rtl_ssa::recog (change))
+if (!rtl_ssa::recog (attempt, change))
   return false;
 @end smallexample
 
@@ -5004,7 +5015,7 @@ if (!rtl_ssa::restrict_movement (change))
 insn_change_watermark watermark;
 // Use validate_change etc. to change INSN's pattern.
 @dots{}
-if (!rtl_ssa::recog (change)
+if (!rtl_ssa::recog (attempt, change)
     || !rtl_ssa::change_is_worthwhile (change))
   return false;
 
@@ -5037,7 +5048,7 @@ For example, if a pass is changing exactly two instructions,
 it might do:
 
 @smallexample
-rtl_ssa::insn_change *changes[] = @{ &change1, change2 @};
+rtl_ssa::insn_change *changes[] = @{ &change1, &change2 @};
 @end smallexample
 
 where @code{change1}'s instruction must come before @code{change2}'s.
@@ -5055,7 +5066,7 @@ in the correct order with respect to each other.
 The way to do this is:
 
 @smallexample
-if (!rtl_ssa::restrict_movement (change, insn_is_changing (changes)))
+if (!rtl_ssa::restrict_movement_ignoring (change, insn_is_changing (changes)))
   return false;
 @end smallexample
 
@@ -5067,7 +5078,7 @@ changing instructions (which might, for example, no longer need
 to clobber the flags register).  The way to do this is:
 
 @smallexample
-if (!rtl_ssa::recog (change, insn_is_changing (changes)))
+if (!rtl_ssa::recog_ignoring (attempt, change, insn_is_changing (changes)))
   return false;
 @end smallexample
 
@@ -5107,28 +5118,28 @@ Putting all this together, the process for a two-instruction change is:
 @smallexample
 auto attempt = crtl->ssa->new_change_attempt ();
 
-rtl_ssa::insn_change change (insn1);
+rtl_ssa::insn_change change1 (insn1);
 change1.new_defs = @dots{};
 change1.new_uses = @dots{};
 change1.move_range = @dots{};
 
-rtl_ssa::insn_change change (insn2);
+rtl_ssa::insn_change change2 (insn2);
 change2.new_defs = @dots{};
 change2.new_uses = @dots{};
 change2.move_range = @dots{};
 
-rtl_ssa::insn_change *changes[] = @{ &change1, change2 @};
+rtl_ssa::insn_change *changes[] = @{ &change1, &change2 @};
 
 auto is_changing = insn_is_changing (changes);
-if (!rtl_ssa::restrict_movement (change1, is_changing)
-    || !rtl_ssa::restrict_movement (change2, is_changing))
+if (!rtl_ssa::restrict_movement_ignoring (change1, is_changing)
+    || !rtl_ssa::restrict_movement_ignoring (change2, is_changing))
   return false;
 
 insn_change_watermark watermark;
 // Use validate_change etc. to change INSN1's and INSN2's patterns.
 @dots{}
-if (!rtl_ssa::recog (change1, is_changing)
-    || !rtl_ssa::recog (change2, is_changing)
+if (!rtl_ssa::recog_ignoring (attempt, change1, is_changing)
+    || !rtl_ssa::recog_ignoring (attempt, change2, is_changing)
     || !rtl_ssa::changes_are_worthwhile (changes)
     || !crtl->ssa->verify_insn_changes (changes))
   return false;

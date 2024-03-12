@@ -781,7 +781,7 @@ s390_fn_types_compatible (enum s390_builtin_ov_type_index typeindex,
       tree in_arg = (*arglist)[i];
       tree in_type = TREE_TYPE (in_arg);
 
-      if (TREE_CODE (b_arg_type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (b_arg_type))
 	{
 	  /* Vector types have to match precisely.  */
 	  if (b_arg_type != in_type
@@ -854,7 +854,7 @@ s390_vec_n_elem (tree fndecl)
   tree b_arg_chain;
   int n_elem = -1;
 
-  if (TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl))))
     n_elem = TYPE_VECTOR_SUBPARTS (TREE_TYPE (TREE_TYPE ((fndecl))));
 
   for (b_arg_chain = TYPE_ARG_TYPES (TREE_TYPE (fndecl));

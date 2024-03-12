@@ -1,5 +1,5 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
-/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0 -fdump-tree-optimized-details-blocks" } */
 /* { dg-skip-if "" { vect_no_align } } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-add-options bind_pic_locally } */
@@ -34,6 +34,7 @@ int main1 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (sa[i+2] != sb[i] + sc[i] || ia[i+1] != ib[i] + ic[i])
@@ -56,6 +57,7 @@ int main2 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (sa[i] != sb[i] + sc[i] || ia[i+1] != ib[i] + ic[i])
@@ -80,3 +82,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "unsupported unaligned access" 2 "vect" { xfail vect_element_align } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 3 "vect" { target vect_element_align xfail { ! vect_unaligned_possible } } } } */
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

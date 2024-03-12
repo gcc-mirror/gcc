@@ -5,7 +5,7 @@
 
 void f (void * restrict in, void * restrict out, int n, int cond)
 {
-  size_t vl = 101;
+  size_t vl = 101 + cond;
   for (size_t i = 0; i < n; i++)
     {
       vint8mf8_t v = __riscv_vle8_v_i8mf8 (in + i, vl);

@@ -22,6 +22,7 @@ int main ()
     A[i] = ( A[i] == MAX ? 0 : MAX); 
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (A[i] != B[i])
       abort ();

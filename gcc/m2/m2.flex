@@ -163,7 +163,7 @@ extern  void  yylex                   (void);
 ^\#.*                      { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */ BEGIN LINE0; }
 \n\#.*                     { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */ BEGIN LINE0; }
 <LINE0>\#[ \t]*            { updatepos(); }
-<LINE0>[0-9]+[ \t]*\"      { updatepos(); lineno=atoi(yytext)-1; BEGIN LINE1; }
+<LINE0>[0-9]+[ \t]*\"      { updatepos(); lineno=atoi(yytext); BEGIN LINE1; }
 <LINE0>\n                  { m2flex_M2Error("missing initial quote after #line directive"); resetpos(); BEGIN INITIAL; }
 <LINE0>[^\n]
 <LINE1>[^\"\n]+            { m2flex_M2Error("missing final quote after #line directive"); resetpos(); BEGIN INITIAL; }
@@ -302,6 +302,7 @@ VOLATILE                   { updatepos(); M2LexBuf_AddTok(M2Reserved_volatiletok
 [0-9]*\.E[+-]?[0-9]+       { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_realtok, yytext); return; }
 [a-zA-Z_][a-zA-Z0-9_]*     { checkFunction(); updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_identtok, yytext); return; }
 [0-9]+                     { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_integertok, yytext); return; }
+[0-1]+A                    { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_integertok, yytext); return; }
 [0-9]+B                    { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_integertok, yytext); return; }
 [0-9]+C                    { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_integertok, yytext); return; }
 [0-9A-F]+H                 { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_integertok, yytext); return; }

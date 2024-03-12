@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv64gc_xtheadmac" { target { rv64 } } } */
 
 #ifndef __riscv_xtheadmac
-#error Feature macro not defined
+#error "Feature macro not defined"
 #endif
 
 int

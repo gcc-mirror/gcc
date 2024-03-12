@@ -1,5 +1,6 @@
 /* PR tree-optimization/66718 */
 /* { dg-do compile } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 int *a[1024], b[1024];
 struct S { int u, v, w, x; };
@@ -61,3 +62,4 @@ f6 (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 7 "vect" { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

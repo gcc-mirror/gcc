@@ -47,5 +47,9 @@ bool expand_vec_cond_expr_p (tree, tree, enum tree_code);
 void init_tree_optimization_optabs (tree);
 bool target_supports_op_p (tree, enum tree_code,
 			   enum optab_subtype = optab_default);
+bool can_vec_mask_load_store_p (machine_mode, machine_mode, bool,
+				internal_fn * = nullptr);
+opt_machine_mode get_len_load_store_mode (machine_mode, bool,
+					  internal_fn * = nullptr);
 
 #endif

@@ -18,6 +18,7 @@
 
 // { dg-require-time "" }
 // { dg-require-cstdint "" }
+// { dg-require-effective-target exceptions_enabled }
 
 #include <ext/throw_allocator.h>
 #include <testsuite_allocator.h>

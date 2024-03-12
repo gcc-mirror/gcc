@@ -338,6 +338,7 @@ namespace zero_regs_flags {
   const unsigned int ONLY_GPR = 1UL << 2;
   const unsigned int ONLY_ARG = 1UL << 3;
   const unsigned int ENABLED = 1UL << 4;
+  const unsigned int LEAFY_MODE = 1UL << 5;
   const unsigned int USED_GPR_ARG = ENABLED | ONLY_USED | ONLY_GPR | ONLY_ARG;
   const unsigned int USED_GPR = ENABLED | ONLY_USED | ONLY_GPR;
   const unsigned int USED_ARG = ENABLED | ONLY_USED | ONLY_ARG;
@@ -346,6 +347,10 @@ namespace zero_regs_flags {
   const unsigned int ALL_GPR = ENABLED | ONLY_GPR;
   const unsigned int ALL_ARG = ENABLED | ONLY_ARG;
   const unsigned int ALL = ENABLED;
+  const unsigned int LEAFY_GPR_ARG = ENABLED | LEAFY_MODE | ONLY_GPR | ONLY_ARG;
+  const unsigned int LEAFY_GPR = ENABLED | LEAFY_MODE | ONLY_GPR;
+  const unsigned int LEAFY_ARG = ENABLED | LEAFY_MODE | ONLY_ARG;
+  const unsigned int LEAFY = ENABLED | LEAFY_MODE;
 }
 
 /* Settings of flag_incremental_link.  */
@@ -471,13 +476,6 @@ enum threader_debug
 {
   THREADER_DEBUG_NONE = 0,
   THREADER_DEBUG_ALL = 1
-};
-
-/* VRP modes.  */
-enum vrp_mode
-{
-  VRP_MODE_VRP,
-  VRP_MODE_RANGER
 };
 
 /* Modes of OpenACC 'kernels' constructs handling.  */

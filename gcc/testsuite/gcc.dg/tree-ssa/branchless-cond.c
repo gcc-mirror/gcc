@@ -21,6 +21,6 @@ int f4(unsigned int x, unsigned int y, unsigned int z)
   return ((x & 1) != 0) ? z | y : y;
 }
 
-/* { dg-final { scan-tree-dump-times " -" 4 "optimized" } } */
-/* { dg-final { scan-tree-dump-times " & " 8 "optimized" } } */
-/* { dg-final { scan-tree-dump-not "if" "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \\\*" 4 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " & " 4 "optimized" } } */
+/* { dg-final { scan-tree-dump-not "if " "optimized" } } */

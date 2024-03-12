@@ -205,6 +205,7 @@ static tree get_vcall_index (tree, tree);
 static bool type_maybe_constexpr_default_constructor (tree);
 static bool type_maybe_constexpr_destructor (tree);
 static bool field_poverlapping_p (tree);
+static void propagate_class_warmth_attribute (tree);
 
 /* Set CURRENT_ACCESS_SPECIFIER based on the protection of DECL.  */
 
@@ -344,7 +345,7 @@ build_base_path (enum tree_code code,
 
   bool uneval = (cp_unevaluated_operand != 0
 		 || processing_template_decl
-		 || in_template_function ());
+		 || in_template_context);
 
   /* For a non-pointer simple base reference, express it as a COMPONENT_REF
      without taking its address (and so causing lambda capture, 91933).  */
@@ -673,7 +674,7 @@ convert_to_base_statically (tree expr, tree base)
 bool
 is_empty_base_ref (tree expr)
 {
-  if (TREE_CODE (expr) == INDIRECT_REF)
+  if (INDIRECT_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
   if (TREE_CODE (expr) != NOP_EXPR)
     return false;
@@ -3292,6 +3293,22 @@ one_inherited_ctor (tree ctor, tree t, tree using_decl)
     }
 }
 
+/* Implicitly declare T().  */
+
+static void
+add_implicit_default_ctor (tree t)
+{
+  TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
+  CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
+  if (cxx_dialect >= cxx11)
+    TYPE_HAS_CONSTEXPR_CTOR (t)
+      /* Don't force the declaration to get a hard answer; if the
+	 definition would have made the class non-literal, it will still be
+	 non-literal because of the base or member in question, and that
+	 gives a better diagnostic.  */
+      = type_maybe_constexpr_default_constructor (t);
+}
+
 /* Create default constructors, assignment operators, and so forth for
    the type indicated by T, if they are needed.  CANT_HAVE_CONST_CTOR,
    and CANT_HAVE_CONST_ASSIGNMENT are nonzero if, for whatever reason,
@@ -3320,17 +3337,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
      If there is no user-declared constructor for a class, a default
      constructor is implicitly declared.  */
   if (! TYPE_HAS_USER_CONSTRUCTOR (t))
-    {
-      TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
-      CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
-      if (cxx_dialect >= cxx11)
-	TYPE_HAS_CONSTEXPR_CTOR (t)
-	  /* Don't force the declaration to get a hard answer; if the
-	     definition would have made the class non-literal, it will still be
-	     non-literal because of the base or member in question, and that
-	     gives a better diagnostic.  */
-	  = type_maybe_constexpr_default_constructor (t);
-    }
+    add_implicit_default_ctor (t);
 
   /* [class.ctor]
 
@@ -3394,7 +3401,13 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	  location_t loc = input_location;
 	  input_location = DECL_SOURCE_LOCATION (using_decl);
 	  for (tree fn : ovl_range (ctor_list))
-	    one_inherited_ctor (fn, t, using_decl);
+	    {
+	      if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (t) && default_ctor_p (fn))
+		/* CWG2799: Inheriting a default constructor gives us a default
+		   constructor, not just an inherited constructor.  */
+		add_implicit_default_ctor (t);
+	      one_inherited_ctor (fn, t, using_decl);
+	    }
 	  *access_decls = TREE_CHAIN (*access_decls);
 	  input_location = loc;
 	}
@@ -4053,9 +4066,33 @@ check_subobject_offset (tree type, tree offset, splay_tree offsets)
   if (!n)
     return 0;
 
+  enum { ignore, fast, slow, warn }
+  cv_check = (abi_version_crosses (19) ? slow
+	      : abi_version_at_least (19) ? fast
+	      : ignore);
   for (t = (tree) n->value; t; t = TREE_CHAIN (t))
-    if (same_type_p (TREE_VALUE (t), type))
-      return 1;
+    {
+      tree elt = TREE_VALUE (t);
+
+      if (same_type_p (elt, type))
+	return 1;
+
+      if (cv_check != ignore
+	  && similar_type_p (elt, type))
+	{
+	  if (cv_check == fast)
+	    return 1;
+	  cv_check = warn;
+	}
+    }
+
+  if (cv_check == warn)
+    {
+      warning (OPT_Wabi, "layout of %qs member of type %qT changes in %qs",
+	       "[[no_unique_address]]", type, "-fabi-version=19");
+      if (abi_version_at_least (19))
+	return 1;
+    }
 
   return 0;
 }
@@ -6253,6 +6290,12 @@ check_bases_and_members (tree t)
      allocating an array of this type.  */
   LANG_TYPE_CLASS_CHECK (t)->vec_new_uses_cookie
     = type_requires_array_cookie (t);
+
+  /* Classes marked hot or cold propagate the attribute to all members.  We
+     may do this now that methods are declared.  This does miss some lazily
+     declared special member functions (CLASSTYPE_LAZY_*), which are handled
+     in lazily_declare_fn later on.  */
+  propagate_class_warmth_attribute (t);
 }
 
 /* If T needs a pointer to its virtual function table, set TYPE_VFIELD
@@ -7733,6 +7776,28 @@ unreverse_member_declarations (tree t)
     }
 }
 
+/* Classes, structs or unions T marked with hotness attributes propagate
+   the attribute to all methods.  */
+
+void
+propagate_class_warmth_attribute (tree t)
+{
+  if (t == NULL_TREE
+      || !(TREE_CODE (t) == RECORD_TYPE
+	   || TREE_CODE (t) == UNION_TYPE))
+    return;
+
+  tree class_has_cold_attr
+    = lookup_attribute ("cold", TYPE_ATTRIBUTES (t));
+  tree class_has_hot_attr
+    = lookup_attribute ("hot", TYPE_ATTRIBUTES (t));
+
+  if (class_has_cold_attr || class_has_hot_attr)
+    for (tree f = TYPE_FIELDS (t); f; f = DECL_CHAIN (f))
+      if (TREE_CODE (f) == FUNCTION_DECL)
+	maybe_propagate_warmth_attributes (f, t);
+}
+
 tree
 finish_struct (tree t, tree attributes)
 {
@@ -8055,7 +8120,7 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
   /* processing_template_decl can be false in a template if we're in
      instantiate_non_dependent_expr, but we still want to suppress
      this check.  */
-  if (in_template_function ())
+  if (in_template_context)
     {
       /* In a template we only care about the type of the result.  */
       if (nonnull)

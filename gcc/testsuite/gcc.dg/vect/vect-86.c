@@ -1,5 +1,6 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-add-options bind_pic_locally } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -24,11 +25,12 @@ int main1 (int n)
       b[i] = k;
     }
 
-
+#pragma GCC novector
   for (j = 0; j < n; j++)
     if (a[j] != i + n - 1)
       abort();	
 
+#pragma GCC novector
   for (i = 0; i < n; i++)
     if (b[i] != i + n)
       abort();	
@@ -53,3 +55,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

@@ -58,6 +58,7 @@ baz (int x)
   return r;
 }
 
+// This function is not instantiated so NDR.
 template <typename T>
 constexpr int
 qux (int x)
@@ -65,7 +66,7 @@ qux (int x)
   int r = 0;
   if not consteval	// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
     {
-      r += foo (x);	// { dg-error "'x' is not a constant expression" }
+      r += foo (x);	// { dg-error "'x' is not a constant expression" "" { xfail *-*-* } }
     }
   else
     {

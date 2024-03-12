@@ -29,6 +29,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N*2; i++)
     {
       if (out[i*4] !=  in[i*4] + 1

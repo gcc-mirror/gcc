@@ -53,8 +53,6 @@
   BUILTIN_VHSDF_DF (UNOP, sqrt, 2, FP)
   BUILTIN_VDQ_I (BINOP, addp, 0, NONE)
   BUILTIN_VDQ_I (BINOPU, addp, 0, NONE)
-  VAR1 (UNOP, addp, 0, NONE, di)
-  VAR1 (UNOPU, addp, 0, NONE, di)
   BUILTIN_VDQ_BHSI (UNOP, clrsb, 2, NONE)
   BUILTIN_VDQ_BHSI (UNOP, clz, 2, NONE)
   BUILTIN_VS (UNOP, ctz, 2, NONE)
@@ -262,21 +260,17 @@
   BUILTIN_VDQHS (TERNOP, mls_n, 0, NONE)
   BUILTIN_VDQHS (TERNOPU, mls_n, 0, NONE)
 
-  /* Implemented by aarch64_shrn<mode>".  */
-  BUILTIN_VQN (SHIFTIMM, shrn, 0, NONE)
-  BUILTIN_VQN (USHIFTIMM, shrn, 0, NONE)
+  BUILTIN_VQN (SHIFTIMM, shrn_n, 0, NONE)
+  BUILTIN_VQN (USHIFTIMM, shrn_n, 0, NONE)
 
-  /* Implemented by aarch64_shrn2<mode>.  */
-  BUILTIN_VQN (SHIFT2IMM, shrn2, 0, NONE)
-  BUILTIN_VQN (USHIFT2IMM, shrn2, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM, ushrn2_n, 0, NONE)
+  BUILTIN_VQN (USHIFT2IMM, ushrn2_n, 0, NONE)
 
-  /* Implemented by aarch64_rshrn<mode>".  */
-  BUILTIN_VQN (SHIFTIMM, rshrn, 0, NONE)
-  BUILTIN_VQN (USHIFTIMM, rshrn, 0, NONE)
+  BUILTIN_VQN (SHIFTIMM, rshrn_n, 0, NONE)
+  BUILTIN_VQN (USHIFTIMM, rshrn_n, 0, NONE)
 
-  /* Implemented by aarch64_rshrn2<mode>.  */
-  BUILTIN_VQN (SHIFT2IMM, rshrn2, 0, NONE)
-  BUILTIN_VQN (USHIFT2IMM, rshrn2, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM, rshrn2_n, 0, NONE)
+  BUILTIN_VQN (USHIFT2IMM, rshrn2_n, 0, NONE)
 
   /* Implemented by aarch64_<su>mlsl<mode>.  */
   BUILTIN_VD_BHSI (TERNOP, smlsl, 0, NONE)
@@ -472,7 +466,6 @@
   /* Implemented by aarch64_<sur>shll2_n<mode>.  */
   BUILTIN_VQW (SHIFTIMM, sshll2_n, 0, NONE)
   BUILTIN_VQW (SHIFTIMM, ushll2_n, 0, NONE)
-  /* Implemented by aarch64_<sur>q<r>shr<u>n_n<mode>.  */
   BUILTIN_VQN (SHIFTIMM, sqshrun_n, 0, NONE)
   BUILTIN_VQN (SHIFTIMM, sqrshrun_n, 0, NONE)
   BUILTIN_VQN (SHIFTIMM, sqshrn_n, 0, NONE)
@@ -485,11 +478,10 @@
   BUILTIN_SD_HSDI (USHIFTIMM, uqshrn_n, 0, NONE)
   BUILTIN_SD_HSDI (SHIFTIMM, sqrshrn_n, 0, NONE)
   BUILTIN_SD_HSDI (USHIFTIMM, uqrshrn_n, 0, NONE)
-  /* Implemented by aarch64_<sur>q<r>shr<u>n2_n<mode>.  */
   BUILTIN_VQN (SHIFT2IMM_UUSS, sqshrun2_n, 0, NONE)
   BUILTIN_VQN (SHIFT2IMM_UUSS, sqrshrun2_n, 0, NONE)
-  BUILTIN_VQN (SHIFT2IMM, sqshrn2_n, 0, NONE)
-  BUILTIN_VQN (USHIFT2IMM, uqshrn2_n, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM, sqsshrn2_n, 0, NONE)
+  BUILTIN_VQN (USHIFT2IMM, uqushrn2_n, 0, NONE)
   BUILTIN_VQN (SHIFT2IMM, sqrshrn2_n, 0, NONE)
   BUILTIN_VQN (USHIFT2IMM, uqrshrn2_n, 0, NONE)
   /* Implemented by aarch64_<sur>s<lr>i_n<mode>.  */
@@ -847,9 +839,6 @@
   BUILTIN_VHSDF_HSDF (BINOP_USS, cmgt, 0, FP)
   BUILTIN_VHSDF_HSDF (BINOP_USS, cmle, 0, FP)
   BUILTIN_VHSDF_HSDF (BINOP_USS, cmlt, 0, FP)
-
-  /* Implemented by neg<mode>2.  */
-  BUILTIN_VHSDF_HSDF (UNOP, neg, 2, ALL)
 
   /* Implemented by aarch64_fac<optab><mode>.  */
   BUILTIN_VHSDF_HSDF (BINOP_USS, faclt, 0, FP)

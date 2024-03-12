@@ -14,7 +14,7 @@ struct C {
 
 struct A {
   int r;
-  const C c;
+  const C c; // { dg-message "originally declared" }
   constexpr A() : r(11) { r = 14; const_cast<C &>(c).n = 42; } // { dg-error "modifying a const object" }
 };
 
@@ -34,5 +34,4 @@ struct B {
 };
 
 constexpr B b(false); // { dg-message "in .constexpr. expansion of" }
-// { dg-message "originally declared" "" { target *-*-* } .-1 }
 static_assert(b.e.d.a.c.n == 2, ""); // { dg-error "non-constant condition" }

@@ -26,16 +26,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE SysClock ;
 
-FROM wraptime IMPORT timeval, timezone, tm,
-                     InitTimezone, InitTimeval,
-                     InitTM, KillTM,
-                     gettimeofday, settimeofday, GetFractions,
-                     localtime_r, GetSummerTime, GetDST,
-                     KillTimezone, KillTimeval, GetYear,
-                     GetMonth, GetDay, GetHour, GetMinute,
-                     GetSecond, SetTimeval, SetTimezone ;
+FROM wrapclock IMPORT timespec, timezone, isdst, InitTimespec, KillTimespec,
+                      GetTimespec, SetTimespec, GetTimeRealtime, SetTimeRealtime ;
+
+FROM libc IMPORT printf ;
 
 IMPORT Args ;
+
+CONST
+   Debugging = FALSE ;
 
 VAR
    canget,
@@ -50,25 +49,23 @@ VAR
 
 PROCEDURE determineAccess ;
 VAR
-   tv: timeval ;
-   tz: timezone ;
+   ts: timespec ;
 BEGIN
-   tz := InitTimezone () ;
-   tv := InitTimeval () ;
-   canget := gettimeofday (tv, tz) = 0 ;
-   canset := canget AND (settimeofday (tv, tz) = 0) ;
-   tz := KillTimezone (tz) ;
-   tv := KillTimeval (tv)
+   IF NOT known
+   THEN
+      ts := InitTimespec () ;
+      canget := GetTimeRealtime (ts) = 0 ;
+      canset := canget AND (SetTimeRealtime (ts) = 0) ;
+      ts := KillTimespec (ts) ;
+      known := TRUE
+   END
 END determineAccess ;
 
 
 PROCEDURE CanGetClock () : BOOLEAN ;
 (* Tests if the clock can be read *)
 BEGIN
-   IF NOT known
-   THEN
-      determineAccess
-   END ;
+   determineAccess ;
    RETURN canget
 END CanGetClock ;
 
@@ -76,10 +73,7 @@ END CanGetClock ;
 PROCEDURE CanSetClock () : BOOLEAN ;
 (* Tests if the clock can be set *)
 BEGIN
-   IF NOT known
-   THEN
-      determineAccess
-   END ;
+   determineAccess ;
    RETURN canset
 END CanSetClock ;
 
@@ -115,51 +109,134 @@ END IsValidDateTime ;
 
 
 (*
-   foo -
+   DivMod - returns seconds MOD modulus.  It also divides seconds by modulus.
 *)
 
-PROCEDURE foo () : CARDINAL ;
+PROCEDURE DivMod (VAR seconds: LONGCARD; modulus: LONGCARD) : LONGCARD ;
+VAR
+   result: LONGCARD ;
 BEGIN
-   RETURN 1
-END foo ;
+   result := seconds MOD modulus ;
+   seconds := seconds DIV modulus ;
+   RETURN result
+END DivMod ;
+
+
+(*
+   daysInYear - return the number of days in year up to month/day.
+*)
+
+PROCEDURE daysInYear (day, month, year: LONGCARD) : LONGCARD ;
+BEGIN
+   WHILE month > 1 DO
+      INC (day, daysInMonth (year, month)) ;
+      DEC (month)
+   END ;
+   RETURN day
+END daysInYear ;
+
+
+(*
+   ExtractDate - extracts the year, month, day from secs.  days is the
+                 total days since 1970.
+*)
+
+PROCEDURE ExtractDate (days: LONGCARD;
+                       VAR year: CARDINAL; VAR month: Month; VAR day: Day) ;
+VAR
+   testMonth,
+   testYear : CARDINAL ;
+   monthOfDays,
+   yearOfDays : LONGCARD ;
+BEGIN
+   testYear := 1970 ;
+   LOOP
+      yearOfDays := daysInYear (31, 12, testYear) ;
+      IF days < yearOfDays
+      THEN
+         year := testYear ;
+         testMonth := 1 ;
+         LOOP
+            monthOfDays := daysInMonth (year, testMonth) ;
+            IF days < monthOfDays
+            THEN
+               day := VAL (Day, days) + MIN (Day) ;
+               month := VAL (Month, testMonth) ;
+               RETURN
+            END ;
+            DEC (days, monthOfDays) ;
+            INC (testMonth)
+         END
+      ELSE
+         DEC (days, yearOfDays) ;
+         INC (testYear)
+      END
+   END
+END ExtractDate ;
+
+
+(*
+   EpochTime - assigns all fields of userData to 0 or FALSE.
+*)
+
+PROCEDURE EpochTime (VAR userData: DateTime) ;
+BEGIN
+   WITH userData DO
+      second := 0 ;
+      minute :=  0 ;
+      hour := 0 ;
+      year := 0 ;
+      month := 0 ;
+      day := 0 ;
+      fractions := 0 ;
+      zone := 0 ;
+      summerTimeFlag := FALSE
+   END
+END EpochTime ;
 
 
 PROCEDURE GetClock (VAR userData: DateTime) ;
 (* Assigns local date and time of the day to userData *)
 VAR
-   m : tm ;
-   tv: timeval ;
-   tz: timezone ;
+   ts       : timespec ;
+   nano, sec: LONGCARD ;
+   offset   : LONGINT ;
 BEGIN
    IF CanGetClock ()
    THEN
-      tv := InitTimeval () ;
-      tz := InitTimezone () ;
-      IF gettimeofday (tv, tz)=0
+      ts := InitTimespec () ;
+      IF GetTimeRealtime (ts) = 0
       THEN
-         m := InitTM () ;
-         (* m := localtime_r (tv, m) ; *)
-         WITH userData DO
-         (*
-            year := GetYear (m) ;
-         *)
-            month := Args.Narg () (* GetMonth (m) *) (* + 1 *) ;
-            (*
-            day := GetDay (m) ;
-            hour := GetHour (m) ;
-            minute := GetMinute (m) ;
-            second := GetSecond (m) ;
-            fractions := GetFractions (tv) ;
-            zone := GetDST (tz) ;
-            summerTimeFlag := GetSummerTime (tz)
-            *)
-         END ;
-         m := KillTM (m)
+         IF GetTimespec (ts, sec, nano) = 1
+         THEN
+            offset := timezone () ;
+            IF Debugging
+            THEN
+               printf ("getclock = %ld\n", sec)
+            END ;
+            sec := VAL (LONGINT, sec) + offset ;
+            IF Debugging
+            THEN
+               printf ("getclock = %ld\n", sec)
+            END ;
+            WITH userData DO
+               (* Here we keep dividing sec by max seconds, minutes, hours
+                  to convert sec into total days since epoch.  *)
+               second := VAL (Sec, DivMod (sec, MAX (Sec) + 1)) ;
+               minute := VAL (Min, DivMod (sec, MAX (Min) + 1)) ;
+               hour := VAL (Hour, DivMod (sec, MAX (Hour) + 1)) ;
+               ExtractDate (sec, year, month, day) ;
+               fractions := nano DIV ((1000 * 1000 * 1000) DIV maxSecondParts) ;
+               zone := - (offset DIV 60) ;
+               summerTimeFlag := (isdst () = 1)
+            END
+         ELSE
+            EpochTime (userData)
+         END
       ELSE
-         HALT
+         EpochTime (userData)
       END ;
-      tv := KillTimeval (tv) ;
-      tz := KillTimezone (tz)
+      ts := KillTimespec (ts)
    END
 END GetClock ;
 
@@ -168,7 +245,7 @@ END GetClock ;
    daysInMonth - returns how many days there are in a month.
 *)
 
-PROCEDURE daysInMonth (year, month: CARDINAL) : CARDINAL ;
+PROCEDURE daysInMonth (year, month: CARDINAL) : LONGCARD ;
 BEGIN
    CASE month OF
 
@@ -196,76 +273,74 @@ END daysInMonth ;
 
 
 (*
-   dayInYear -
+   totalYear - return the sum of all days prior to year from the epoch.
 *)
 
-PROCEDURE dayInYear (day, month, year: CARDINAL) : CARDINAL ;
+PROCEDURE totalYear (year: LONGCARD) : LONGCARD ;
+VAR
+   lastYear,
+   result  : LONGCARD ;
 BEGIN
-   WHILE month > 1 DO
-      INC (day, daysInMonth (year, month)) ;
-      DEC (month)
+   lastYear := 1970 ;
+   result := 0 ;
+   WHILE lastYear < year DO
+      INC (result, daysInYear (31, 12, lastYear)) ;
+      INC (lastYear)
    END ;
-   RETURN day
-END dayInYear ;
+   RETURN result
+END totalYear ;
 
 
 (*
-   dayInWeek -
+   totalSeconds - returns the total seconds
 *)
 
-PROCEDURE dayInWeek (day, month, year: CARDINAL) : CARDINAL ;
-CONST
-   janFirst1970 = 5 ;   (* thursday *)
+PROCEDURE totalSeconds (second, minute, hour,
+                        day, month, year: LONGCARD) : LONGCARD ;
 VAR
-   yearOffset: CARDINAL ;  (* days since Jan 1st 1970 *)
+   result: LONGCARD ;
 BEGIN
-   yearOffset := janFirst1970 ;
-   WHILE year > 1970 DO
-      DEC (year) ;
-      INC (yearOffset, dayInYear (31, 12, year))
-   END ;
-   INC (yearOffset, dayInYear (day, month, year)) ;
-   RETURN yearOffset MOD 7
-END dayInWeek ;
+   result := second
+             + minute * (MAX (Sec) + 1)
+             + hour * ((MAX (Min) + 1) * (MAX (Sec) + 1))
+             + ((daysInYear (day, month, year) + totalYear (year))
+                * ((MAX (Hour) + 1) * ((MAX (Min) + 1) * (MAX (Sec) + 1)))) ;
+   RETURN result
+END totalSeconds ;
 
 
 PROCEDURE SetClock (userData: DateTime);
-(* Sets the system time clock to the given local date and
-   time *)
 VAR
-   tv: timeval ;
-   tz: timezone ;
+   ts       : timespec ;
+   nano, sec: LONGCARD ;
+   offset   : LONGINT ;
 BEGIN
+   IF Debugging
+   THEN
+      sec := totalSeconds (userData.second, userData.minute, userData.hour,
+                           VAL (CARDINAL, userData.day) - MIN (Day),
+                           userData.month, userData.year) ;
+      printf ("setclock = %ld\n", sec);
+      offset := timezone () ;
+      sec := VAL (LONGINT, sec) - offset ;
+      printf ("setclock = %ld\n", sec);
+   END ;
    IF CanSetClock ()
    THEN
-      tv := InitTimeval () ;
-      tz := InitTimezone () ;
-      IF gettimeofday (tv, tz) = 0
+      ts := InitTimespec () ;
+      nano := VAL (LONGCARD, userData.fractions * 1000) ;
+      sec := totalSeconds (userData.second, userData.minute, userData.hour,
+                           VAL (CARDINAL, userData.day) - MIN (Day),
+                           userData.month, userData.year) ;
+      offset := timezone () ;
+      sec := VAL (LONGINT, sec) - offset ;
+      IF SetTimespec (ts, sec, nano) = 1
       THEN
-         (* fill in as many of tv, tz fields from userData as we can *)
-         WITH userData DO
-            IF summerTimeFlag
-            THEN
-               SetTimeval (tv, second, minute, hour, day, month, year,
-                           dayInYear(day, month, year),
-                           dayInWeek(day, month, year),
-                           1) ;
-               SetTimezone (tz, 1, zone)
-            ELSE
-               SetTimeval (tv, second, minute, hour, day, month, year,
-                           dayInYear(day, month, year),
-                           dayInWeek(day, month, year),
-                           0) ;
-               SetTimezone (tz, 0, zone)
-            END ;
-            IF settimeofday (tv, tz)#0
-            THEN
-               (* error, which we ignore *)
-            END
+         IF SetTimeRealtime (ts) = 0
+         THEN
          END
       END ;
-      tv := KillTimeval (tv) ;
-      tz := KillTimezone (tz)
+      ts := KillTimespec (ts)
    END
 END SetClock ;
 

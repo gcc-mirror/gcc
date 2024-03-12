@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-O3" } */
 /* { dg-additional-options "-march=skylake-avx512" { target avx512f } } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 extern unsigned long long int arr_86[];
 extern unsigned long long int arr_87[][15];
@@ -14,3 +15,4 @@ void test(_Bool a, unsigned short c[][15], unsigned char d[])
 	arr_87[h][0] = a ? c[h][i] : 0;
       }
 }
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

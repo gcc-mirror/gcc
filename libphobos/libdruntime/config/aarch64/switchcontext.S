@@ -44,7 +44,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  */
     .text
     .global CSYM(fiber_switchContext)
+#ifndef __APPLE__
     .type CSYM(fiber_switchContext), %function
+#endif
     .align 4
 CSYM(fiber_switchContext):
     .cfi_startproc
@@ -77,8 +79,9 @@ CSYM(fiber_switchContext):
     ldp     d15, d14, [sp], #20*8
     ret
     .cfi_endproc
+#ifndef __APPLE__
     .size CSYM(fiber_switchContext),.-CSYM(fiber_switchContext)
-
+#endif
 /**
  * When generating any kind of backtrace (gdb, exception handling) for
  * a function called in a Fiber, we need to tell the unwinder to stop
@@ -93,11 +96,15 @@ CSYM(fiber_switchContext):
     .text
     .global CSYM(fiber_trampoline)
     .p2align  2
+#ifndef __APPLE__
     .type CSYM(fiber_trampoline), %function
+#endif
 CSYM(fiber_trampoline):
     .cfi_startproc
     .cfi_undefined x30
     // fiber_entryPoint never returns
     bl CSYM(fiber_entryPoint)
     .cfi_endproc
+#ifndef __APPLE__
     .size CSYM(fiber_trampoline),.-CSYM(fiber_trampoline)
+#endif

@@ -951,7 +951,7 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
     {
     case 'C':
       {
-	cgraph_node *node = va_arg (*text->args_ptr, cgraph_node *);
+	cgraph_node *node = va_arg (*text->m_args_ptr, cgraph_node *);
 
 	/* Make an item for the node, and stash it.  */
 	optinfo_item *item = make_item_for_dump_symtab_node (node);
@@ -961,7 +961,7 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 
     case 'E':
       {
-	gimple *stmt = va_arg (*text->args_ptr, gimple *);
+	gimple *stmt = va_arg (*text->m_args_ptr, gimple *);
 
 	/* Make an item for the stmt, and stash it.  */
 	optinfo_item *item = make_item_for_dump_gimple_expr (stmt, 0, TDF_SLIM);
@@ -971,7 +971,7 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 
     case 'G':
       {
-	gimple *stmt = va_arg (*text->args_ptr, gimple *);
+	gimple *stmt = va_arg (*text->m_args_ptr, gimple *);
 
 	/* Make an item for the stmt, and stash it.  */
 	optinfo_item *item = make_item_for_dump_gimple_stmt (stmt, 0, TDF_SLIM);
@@ -981,7 +981,7 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 
     case 'T':
       {
-	tree t = va_arg (*text->args_ptr, tree);
+	tree t = va_arg (*text->m_args_ptr, tree);
 
 	/* Make an item for the tree, and stash it.  */
 	optinfo_item *item = make_item_for_dump_generic_expr (t, TDF_SLIM);
@@ -1002,10 +1002,7 @@ dump_context::dump_printf_va (const dump_metadata_t &metadata, const char *forma
 {
   dump_pretty_printer pp (this, metadata.get_dump_flags ());
 
-  text_info text;
-  text.err_no = errno;
-  text.args_ptr = ap;
-  text.format_spec = format;
+  text_info text (format, ap, errno);
 
   /* Phases 1 and 2, using pp_format.  */
   pp_format (&pp, &text);
@@ -2072,15 +2069,6 @@ dump_function (int phase, tree fn)
       dump_function_to_file (fn, stream, flags);
       dump_end (phase, stream);
     }
-}
-
-/* Print information from the combine pass on dump_file.  */
-
-void
-print_combine_total_stats (void)
-{
-  if (dump_file)
-    dump_combine_total_stats (dump_file);
 }
 
 /* Enable RTL dump for all the RTL passes.  */

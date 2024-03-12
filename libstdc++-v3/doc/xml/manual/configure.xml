@@ -74,9 +74,14 @@
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-cstdio=OPTION</code></term>
- <listitem><para>Select a target-specific I/O package. At the moment, the only
-	choice is to use 'stdio', a generic "C" abstraction.
-	The default is 'stdio'. This option can change the library ABI.
+ <listitem><para>Select a target-specific I/O package. The choices are 'stdio'
+       which is a generic abstraction using POSIX file I/O APIs
+       (<function>read</function>, <function>write</function>,
+       <function>lseek</function>, etc.), and 'stdio_pure' which is similar
+       but only uses standard C file I/O APIs (<function>fread</function>,
+       <function>fwrite</function>, <function>fseek</function>, etc.).
+       The 'stdio_posix' choice is a synonym for 'stdio'.
+       The default is 'stdio'. This option can change the library ABI.
      </para>
  </listitem></varlistentry>
 
@@ -336,8 +341,8 @@
 	C++ includes. If enabled (as by default), and the compiler
 	seems capable of passing the simple sanity checks thrown at
 	it, try to build stdc++.h.gch as part of the make process.
-	In addition, this generated file is used later on (by appending <code>
-	--include bits/stdc++.h </code> to CXXFLAGS) when running the
+	In addition, this generated file is used later on (by appending
+	<code>-include bits/stdc++.h</code> to CXXFLAGS) when running the
 	testsuite.
      </para>
  </listitem></varlistentry>

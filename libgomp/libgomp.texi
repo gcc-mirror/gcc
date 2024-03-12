@@ -136,14 +136,21 @@ changed to GNU Offloading and Multi Processing Runtime Library.
 @node Enabling OpenMP
 @chapter Enabling OpenMP
 
-To activate the OpenMP extensions for C/C++ and Fortran, the compile-time 
-flag @command{-fopenmp} must be specified.  This enables the OpenMP directive
-@code{#pragma omp} in C/C++ and @code{!$omp} directives in free form, 
-@code{c$omp}, @code{*$omp} and @code{!$omp} directives in fixed form, 
-@code{!$} conditional compilation sentinels in free form and @code{c$},
-@code{*$} and @code{!$} sentinels in fixed form, for Fortran.  The flag also
-arranges for automatic linking of the OpenMP runtime library 
+To activate the OpenMP extensions for C/C++ and Fortran, the compile-time
+flag @option{-fopenmp} must be specified.  For C and C++, this enables
+the handling of the OpenMP directives using @code{#pragma omp} and, for C++, the
+@code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
+@code{[[omp::decl(...)]]} attributes.  For Fortran, it enables for
+free source form the @code{!$omp} sentinel for directives and the
+@code{!$} conditional compilation sentinel and for fixed source form the
+@code{c$omp}, @code{*$omp} and @code{!$omp} sentinels for directives and
+the @code{c$}, @code{*$} and @code{!$} conditional compilation sentinels.
+The flag also arranges for automatic linking of the OpenMP runtime library
 (@ref{Runtime Library Routines}).
+
+The @option{-fopenmp-simd} flag can be used to enable a subset of
+OpenMP directives that do not require the linking of either the
+OpenMP runtime library or the POSIX threads library.
 
 A complete description of all OpenMP directives may be found in the
 @uref{https://www.openmp.org, OpenMP Application Program Interface} manuals.
@@ -188,18 +195,19 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{metadirective} directive @tab N @tab
 @item @code{declare variant} directive
       @tab P @tab @emph{simd} traits not handled correctly
-@item @emph{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
+@item @var{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
       env variable @tab Y @tab
-@item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
+@item Nested-parallel changes to @var{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab complete but no non-host devices provides @code{unified_address} or
-      @code{unified_shared_memory}
+      @tab complete but no non-host device provides @code{unified_shared_memory}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
-@item Non-rectangular loop nests @tab P @tab Full support for C/C++, partial for Fortran
+@item Non-rectangular loop nests @tab P
+      @tab Full support for C/C++, partial for Fortran
+           (@uref{https://gcc.gnu.org/PR110735,PR110735})
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
 @item @code{nonmonotonic} as default loop schedule modifier for worksharing-loop
       constructs @tab Y @tab
-@item Collapse of associated loops that are imperfectly nested loops @tab N @tab
+@item Collapse of associated loops that are imperfectly nested loops @tab Y @tab
 @item Clauses @code{if}, @code{nontemporal} and @code{order(concurrent)} in
       @code{simd} construct @tab Y @tab
 @item @code{atomic} constructs in @code{simd} @tab Y @tab
@@ -222,9 +230,9 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{mutexinoutset} @emph{dependence-type} for @code{depend} clause
       @tab Y @tab
 @item Predefined memory spaces, memory allocators, allocator traits
-      @tab Y @tab Some are only stubs
+      @tab Y @tab See also @ref{Memory allocation}
 @item Memory management routines @tab Y @tab
-@item @code{allocate} directive @tab N @tab
+@item @code{allocate} directive @tab P @tab Only C and Fortran, only stack variables
 @item @code{allocate} clause @tab P @tab Initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause @tab Y @tab
@@ -295,7 +303,8 @@ The OpenMP 4.5 specification is fully supported.
 @item Loop transformation constructs @tab N @tab
 @item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
       clauses of the @code{taskloop} construct @tab Y @tab
-@item @code{align} clause in @code{allocate} directive @tab N @tab
+@item @code{align} clause in @code{allocate} directive @tab P
+      @tab Only C and Fortran (and only stack variables)
 @item @code{align} modifier in @code{allocate} clause @tab Y @tab
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
 @item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
@@ -311,7 +320,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{inoutset} argument to the @code{depend} clause @tab Y @tab
 @item @code{private} and @code{firstprivate} argument to @code{default}
       clause in C and C++ @tab Y @tab
-@item @code{present} argument to @code{defaultmap} clause @tab N @tab
+@item @code{present} argument to @code{defaultmap} clause @tab Y @tab
 @item @code{omp_set_num_teams}, @code{omp_set_teams_thread_limit},
       @code{omp_get_max_teams}, @code{omp_get_teams_thread_limit} runtime
       routines @tab Y @tab
@@ -353,6 +362,8 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Optional comma between directive and clause in the @code{#pragma} form @tab Y @tab
 @item @code{indirect} clause in @code{declare target} @tab N @tab
 @item @code{device_type(nohost)}/@code{device_type(host)} for variables @tab N @tab
+@item @code{present} modifier to the @code{map}, @code{to} and @code{from}
+      clauses @tab Y @tab
 @end multitable
 
 
@@ -363,7 +374,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 
 @multitable @columnfractions .60 .10 .25
 @headitem Description @tab Status @tab Comments
-@item @code{omp_in_explicit_task} routine and @emph{explicit-task-var} ICV
+@item @code{omp_in_explicit_task} routine and @var{explicit-task-var} ICV
       @tab Y @tab
 @item @code{omp}/@code{ompx}/@code{omx} sentinels and @code{omp_}/@code{ompx_}
       namespaces @tab N/A
@@ -375,6 +386,8 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       sentinel is warned for with with @code{-Wsurprising} (enabled by
       @code{-Wall}).  Unknown clauses are always rejected with an error.}
 @item Clauses on @code{end} directive can be on directive @tab Y @tab
+@item @code{destroy} clause with destroy-var argument on @code{depobj}
+      @tab N @tab
 @item Deprecation of no-argument @code{destroy} clause on @code{depobj}
       @tab N @tab
 @item @code{linear} clause syntax changes and @code{step} modifier @tab Y @tab
@@ -383,12 +396,12 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{declare mapper} with iterator and @code{present} modifiers
       @tab N @tab
 @item If a matching mapped list item is not found in the data environment, the
-      pointer retains its original value @tab N @tab
+      pointer retains its original value @tab Y @tab
 @item New @code{enter} clause as alias for @code{to} on declare target directive
       @tab Y @tab
 @item Deprecation of @code{to} clause on declare target directive @tab N @tab
 @item Extended list of directives permitted in Fortran pure procedures
-      @tab N @tab
+      @tab Y @tab
 @item New @code{allocators} directive for Fortran @tab N @tab
 @item Deprecation of @code{allocate} directive for Fortran
       allocatables/pointers @tab N @tab
@@ -421,8 +434,9 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item For Fortran, optional comma between directive and clause @tab N @tab
 @item Conforming device numbers and @code{omp_initial_device} and
       @code{omp_invalid_device} enum/PARAMETER @tab Y @tab
-@item Initial value of @emph{default-device-var} ICV with
-      @code{OMP_TARGET_OFFLOAD=mandatory} @tab N @tab
+@item Initial value of @var{default-device-var} ICV with
+      @code{OMP_TARGET_OFFLOAD=mandatory} @tab Y @tab
+@item @code{all} as @emph{implicit-behavior} for @code{defaultmap} @tab Y @tab
 @item @emph{interop_types} in any position of the modifier list for the @code{init} clause
       of the @code{interop} construct @tab N @tab
 @end multitable
@@ -438,7 +452,7 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @item Features deprecated in versions 5.2, 5.1 and 5.0 were removed
       @tab N/A @tab Backward compatibility
 @item The @code{decl} attribute was added to the C++ attribute syntax
-      @tab N @tab
+      @tab Y @tab
 @item @code{_ALL} suffix to the device-scope environment variables
       @tab P @tab Host device number wrongly accepted
 @item For Fortran, @emph{locator list} can be also function reference with
@@ -486,8 +500,6 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @item Mapping lambda captures @tab N @tab
 @item For Fortran, atomic compare with storing the comparison result
       @tab N @tab
-@item @code{aligned} clause changes for @code{simd} and @code{declare simd}
-      @tab N @tab
 @end multitable
 
 
@@ -499,214 +511,229 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @node Runtime Library Routines
 @chapter OpenMP Runtime Library Routines
 
-The runtime routines described here are defined by Section 3 of the OpenMP
-specification in version 4.5.  The routines are structured in following
-three parts:
+The runtime routines described here are defined by Section 18 of the OpenMP
+specification in version 5.2.
 
 @menu
-Control threads, processors and the parallel environment.  They have C
-linkage, and do not throw exceptions.
-
-* omp_get_active_level::        Number of active parallel regions
-* omp_get_ancestor_thread_num:: Ancestor thread ID
-* omp_get_cancellation::        Whether cancellation support is enabled
-* omp_get_default_device::      Get the default device for target regions
-* omp_get_device_num::          Get device that current thread is running on
-* omp_get_dynamic::             Dynamic teams setting
-* omp_get_initial_device::      Device number of host device
-* omp_get_level::               Number of parallel regions
-* omp_get_max_active_levels::   Current maximum number of active regions
-* omp_get_max_task_priority::   Maximum task priority value that can be set
-* omp_get_max_teams::           Maximum number of teams for teams region
-* omp_get_max_threads::         Maximum number of threads of parallel region
-* omp_get_nested::              Nested parallel regions
-* omp_get_num_devices::         Number of target devices
-* omp_get_num_procs::           Number of processors online
-* omp_get_num_teams::           Number of teams
-* omp_get_num_threads::         Size of the active team
-* omp_get_proc_bind::           Whether threads may be moved between CPUs
-* omp_get_schedule::            Obtain the runtime scheduling method
-* omp_get_supported_active_levels:: Maximum number of active regions supported
-* omp_get_team_num::            Get team number
-* omp_get_team_size::           Number of threads in a team
-* omp_get_teams_thread_limit::  Maximum number of threads imposed by teams
-* omp_get_thread_limit::        Maximum number of threads
-* omp_get_thread_num::          Current thread ID
-* omp_in_parallel::             Whether a parallel region is active
-* omp_in_final::                Whether in final or included task region
-* omp_is_initial_device::       Whether executing on the host device
-* omp_set_default_device::      Set the default device for target regions
-* omp_set_dynamic::             Enable/disable dynamic teams
-* omp_set_max_active_levels::   Limits the number of active parallel regions
-* omp_set_nested::              Enable/disable nested parallel regions
-* omp_set_num_teams::           Set upper teams limit for teams region
-* omp_set_num_threads::         Set upper team size limit
-* omp_set_schedule::            Set the runtime scheduling method
-* omp_set_teams_thread_limit::  Set upper thread limit for teams construct
-
-Initialize, set, test, unset and destroy simple and nested locks.
-
-* omp_init_lock::            Initialize simple lock
-* omp_set_lock::             Wait for and set simple lock
-* omp_test_lock::            Test and set simple lock if available
-* omp_unset_lock::           Unset simple lock
-* omp_destroy_lock::         Destroy simple lock
-* omp_init_nest_lock::       Initialize nested lock
-* omp_set_nest_lock::        Wait for and set simple lock
-* omp_test_nest_lock::       Test and set nested lock if available
-* omp_unset_nest_lock::      Unset nested lock
-* omp_destroy_nest_lock::    Destroy nested lock
-
-Portable, thread-based, wall clock timer.
-
-* omp_get_wtick::            Get timer precision.
-* omp_get_wtime::            Elapsed wall clock time.
-
-Support for event objects.
-
-* omp_fulfill_event::        Fulfill and destroy an OpenMP event.
+* Thread Team Routines::
+* Thread Affinity Routines::
+* Teams Region Routines::
+* Tasking Routines::
+@c * Resource Relinquishing Routines::
+* Device Information Routines::
+* Device Memory Routines::
+* Lock Routines::
+* Timing Routines::
+* Event Routine::
+@c * Interoperability Routines::
+* Memory Management Routines::
+@c * Tool Control Routine::
+@c * Environment Display Routine::
 @end menu
 
 
 
-@node omp_get_active_level
-@section @code{omp_get_active_level} -- Number of parallel regions
+@node Thread Team Routines
+@section Thread Team Routines
+
+Routines controlling threads in the current contention group.
+They have C linkage and do not throw exceptions.
+
+@menu
+* omp_set_num_threads::         Set upper team size limit
+* omp_get_num_threads::         Size of the active team
+* omp_get_max_threads::         Maximum number of threads of parallel region
+* omp_get_thread_num::          Current thread ID
+* omp_in_parallel::             Whether a parallel region is active
+* omp_set_dynamic::             Enable/disable dynamic teams
+* omp_get_dynamic::             Dynamic teams setting
+* omp_get_cancellation::        Whether cancellation support is enabled
+* omp_set_nested::              Enable/disable nested parallel regions
+* omp_get_nested::              Nested parallel regions
+* omp_set_schedule::            Set the runtime scheduling method
+* omp_get_schedule::            Obtain the runtime scheduling method
+* omp_get_teams_thread_limit::  Maximum number of threads imposed by teams
+* omp_get_supported_active_levels:: Maximum number of active regions supported
+* omp_set_max_active_levels::   Limits the number of active parallel regions
+* omp_get_max_active_levels::   Current maximum number of active regions
+* omp_get_level::               Number of parallel regions
+* omp_get_ancestor_thread_num:: Ancestor thread ID
+* omp_get_team_size::           Number of threads in a team
+* omp_get_active_level::        Number of active parallel regions
+@end menu
+
+
+
+@node omp_set_num_threads
+@subsection @code{omp_set_num_threads} -- Set upper team size limit
 @table @asis
 @item @emph{Description}:
-This function returns the nesting level for the active parallel blocks,
-which enclose the calling call.
-
-@item @emph{C/C++}
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_active_level(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_active_level()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_get_level}, @ref{omp_get_max_active_levels}, @ref{omp_set_max_active_levels}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.20.
-@end table
-
-
-
-@node omp_get_ancestor_thread_num
-@section @code{omp_get_ancestor_thread_num} -- Ancestor thread ID
-@table @asis
-@item @emph{Description}:
-This function returns the thread identification number for the given
-nesting level of the current thread.  For values of @var{level} outside
-zero to @code{omp_get_level} -1 is returned; if @var{level} is
-@code{omp_get_level} the result is identical to @code{omp_get_thread_num}.
-
-@item @emph{C/C++}
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_ancestor_thread_num(int level);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_ancestor_thread_num(level)}
-@item                   @tab @code{integer level}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_get_level}, @ref{omp_get_thread_num}, @ref{omp_get_team_size}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.18.
-@end table
-
-
-
-@node omp_get_cancellation
-@section @code{omp_get_cancellation} -- Whether cancellation support is enabled
-@table @asis
-@item @emph{Description}:
-This function returns @code{true} if cancellation is activated, @code{false}
-otherwise.  Here, @code{true} and @code{false} represent their language-specific
-counterparts.  Unless @env{OMP_CANCELLATION} is set true, cancellations are
-deactivated.
+Specifies the number of threads used by default in subsequent parallel
+sections, if those do not specify a @code{num_threads} clause.  The
+argument of @code{omp_set_num_threads} shall be a positive integer.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_cancellation(void);}
+@item @emph{Prototype}: @tab @code{void omp_set_num_threads(int num_threads);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{logical function omp_get_cancellation()}
+@item @emph{Interface}: @tab @code{subroutine omp_set_num_threads(num_threads)}
+@item                   @tab @code{integer, intent(in) :: num_threads}
 @end multitable
 
 @item @emph{See also}:
-@ref{OMP_CANCELLATION}
+@ref{OMP_NUM_THREADS}, @ref{omp_get_num_threads}, @ref{omp_get_max_threads}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.9.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.1.
 @end table
 
 
 
-@node omp_get_default_device
-@section @code{omp_get_default_device} -- Get the default device for target regions
+@node omp_get_num_threads
+@subsection @code{omp_get_num_threads} -- Size of the active team
 @table @asis
 @item @emph{Description}:
-Get the default device for target regions without device clause.
+Returns the number of threads in the current team.  In a sequential section of
+the program @code{omp_get_num_threads} returns 1.
+
+The default team size may be initialized at startup by the
+@env{OMP_NUM_THREADS} environment variable.  At runtime, the size
+of the current team may be set either by the @code{NUM_THREADS}
+clause or by @code{omp_set_num_threads}.  If none of the above were
+used to define a specific value and @env{OMP_DYNAMIC} is disabled,
+one thread per CPU online is used.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_default_device(void);}
+@item @emph{Prototype}: @tab @code{int omp_get_num_threads(void);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_default_device()}
+@item @emph{Interface}: @tab @code{integer function omp_get_num_threads()}
 @end multitable
 
 @item @emph{See also}:
-@ref{OMP_DEFAULT_DEVICE}, @ref{omp_set_default_device}
+@ref{omp_get_max_threads}, @ref{omp_set_num_threads}, @ref{OMP_NUM_THREADS}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.30.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.2.
 @end table
 
 
 
-@node omp_get_device_num
-@section @code{omp_get_device_num} -- Return device number of current device
+@node omp_get_max_threads
+@subsection @code{omp_get_max_threads} -- Maximum number of threads of parallel region
 @table @asis
 @item @emph{Description}:
-This function returns a device number that represents the device that the
-current thread is executing on. For OpenMP 5.0, this must be equal to the
-value returned by the @code{omp_get_initial_device} function when called
-from the host.
+Return the maximum number of threads used for the current parallel region
+that does not use the clause @code{num_threads}.
 
-@item @emph{C/C++}
+@item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_device_num(void);}
+@item @emph{Prototype}: @tab @code{int omp_get_max_threads(void);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_device_num()}
+@item @emph{Interface}: @tab @code{integer function omp_get_max_threads()}
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_get_initial_device}
+@ref{omp_set_num_threads}, @ref{omp_set_dynamic}, @ref{omp_get_thread_limit}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.37.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.3.
+@end table
+
+
+
+@node omp_get_thread_num
+@subsection @code{omp_get_thread_num} -- Current thread ID
+@table @asis
+@item @emph{Description}:
+Returns a unique thread identification number within the current team.
+In a sequential parts of the program, @code{omp_get_thread_num}
+always returns 0.  In parallel regions the return value varies
+from 0 to @code{omp_get_num_threads}-1 inclusive.  The return
+value of the primary thread of a team is always 0.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_thread_num(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_thread_num()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_num_threads}, @ref{omp_get_ancestor_thread_num}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.4.
+@end table
+
+
+
+@node omp_in_parallel
+@subsection @code{omp_in_parallel} -- Whether a parallel region is active
+@table @asis
+@item @emph{Description}:
+This function returns @code{true} if currently running in parallel,
+@code{false} otherwise.  Here, @code{true} and @code{false} represent
+their language-specific counterparts.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_in_parallel(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{logical function omp_in_parallel()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.6.
+@end table
+
+
+@node omp_set_dynamic
+@subsection @code{omp_set_dynamic} -- Enable/disable dynamic teams
+@table @asis
+@item @emph{Description}:
+Enable or disable the dynamic adjustment of the number of threads 
+within a team.  The function takes the language-specific equivalent
+of @code{true} and @code{false}, where @code{true} enables dynamic 
+adjustment of team sizes and @code{false} disables it.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_set_dynamic(int dynamic_threads);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_set_dynamic(dynamic_threads)}
+@item                   @tab @code{logical, intent(in) :: dynamic_threads}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_DYNAMIC}, @ref{omp_get_dynamic}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.7.
 @end table
 
 
 
 @node omp_get_dynamic
-@section @code{omp_get_dynamic} -- Dynamic teams setting
+@subsection @code{omp_get_dynamic} -- Dynamic teams setting
 @table @asis
 @item @emph{Description}:
 This function returns @code{true} if enabled, @code{false} otherwise. 
@@ -737,673 +764,36 @@ disabled by default.
 
 
 
-@node omp_get_initial_device
-@section @code{omp_get_initial_device} -- Return device number of initial device
+@node omp_get_cancellation
+@subsection @code{omp_get_cancellation} -- Whether cancellation support is enabled
 @table @asis
 @item @emph{Description}:
-This function returns a device number that represents the host device.
-For OpenMP 5.1, this must be equal to the value returned by the
-@code{omp_get_num_devices} function.
+This function returns @code{true} if cancellation is activated, @code{false}
+otherwise.  Here, @code{true} and @code{false} represent their language-specific
+counterparts.  Unless @env{OMP_CANCELLATION} is set true, cancellations are
+deactivated.
 
-@item @emph{C/C++}
+@item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_initial_device(void);}
+@item @emph{Prototype}: @tab @code{int omp_get_cancellation(void);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_initial_device()}
+@item @emph{Interface}: @tab @code{logical function omp_get_cancellation()}
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_get_num_devices}
+@ref{OMP_CANCELLATION}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.35.
-@end table
-
-
-
-@node omp_get_level
-@section @code{omp_get_level} -- Obtain the current nesting level
-@table @asis
-@item @emph{Description}:
-This function returns the nesting level for the parallel blocks,
-which enclose the calling call.
-
-@item @emph{C/C++}
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_level(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_level()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_get_active_level}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.17.
-@end table
-
-
-
-@node omp_get_max_active_levels
-@section @code{omp_get_max_active_levels} -- Current maximum number of active regions
-@table @asis
-@item @emph{Description}:
-This function obtains the maximum allowed number of nested, active parallel regions.
-
-@item @emph{C/C++}
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_max_active_levels(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_max_active_levels()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_set_max_active_levels}, @ref{omp_get_active_level}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.16.
-@end table
-
-
-@node omp_get_max_task_priority
-@section @code{omp_get_max_task_priority} -- Maximum priority value
-that can be set for tasks.
-@table @asis
-@item @emph{Description}:
-This function obtains the maximum allowed priority number for tasks.
-
-@item @emph{C/C++}
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_max_task_priority(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_max_task_priority()}
-@end multitable
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.29.
-@end table
-
-
-@node omp_get_max_teams
-@section @code{omp_get_max_teams} -- Maximum number of teams of teams region
-@table @asis
-@item @emph{Description}:
-Return the maximum number of teams used for the teams region
-that does not use the clause @code{num_teams}.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_max_teams(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_max_teams()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_set_num_teams}, @ref{omp_get_num_teams}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.4.4.
-@end table
-
-
-
-@node omp_get_max_threads
-@section @code{omp_get_max_threads} -- Maximum number of threads of parallel region
-@table @asis
-@item @emph{Description}:
-Return the maximum number of threads used for the current parallel region
-that does not use the clause @code{num_threads}.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_max_threads(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_max_threads()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_set_num_threads}, @ref{omp_set_dynamic}, @ref{omp_get_thread_limit}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.3.
-@end table
-
-
-
-@node omp_get_nested
-@section @code{omp_get_nested} -- Nested parallel regions
-@table @asis
-@item @emph{Description}:
-This function returns @code{true} if nested parallel regions are
-enabled, @code{false} otherwise.  Here, @code{true} and @code{false}
-represent their language-specific counterparts.
-
-The state of nested parallel regions at startup depends on several
-environment variables.  If @env{OMP_MAX_ACTIVE_LEVELS} is defined
-and is set to greater than one, then nested parallel regions will be
-enabled.  If not defined, then the value of the @env{OMP_NESTED}
-environment variable will be followed if defined.  If neither are
-defined, then if either @env{OMP_NUM_THREADS} or @env{OMP_PROC_BIND}
-are defined with a list of more than one value, then nested parallel
-regions are enabled.  If none of these are defined, then nested parallel
-regions are disabled by default.
-
-Nested parallel regions can be enabled or disabled at runtime using
-@code{omp_set_nested}, or by setting the maximum number of nested
-regions with @code{omp_set_max_active_levels} to one to disable, or
-above one to enable.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_nested(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{logical function omp_get_nested()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_set_max_active_levels}, @ref{omp_set_nested},
-@ref{OMP_MAX_ACTIVE_LEVELS}, @ref{OMP_NESTED}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.11.
-@end table
-
-
-
-@node omp_get_num_devices
-@section @code{omp_get_num_devices} -- Number of target devices
-@table @asis
-@item @emph{Description}:
-Returns the number of target devices.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_num_devices(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_num_devices()}
-@end multitable
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.31.
-@end table
-
-
-
-@node omp_get_num_procs
-@section @code{omp_get_num_procs} -- Number of processors online
-@table @asis
-@item @emph{Description}:
-Returns the number of processors online on that device.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_num_procs(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_num_procs()}
-@end multitable
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.5.
-@end table
-
-
-
-@node omp_get_num_teams
-@section @code{omp_get_num_teams} -- Number of teams
-@table @asis
-@item @emph{Description}:
-Returns the number of teams in the current team region.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_num_teams(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_num_teams()}
-@end multitable
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.32.
-@end table
-
-
-
-@node omp_get_num_threads
-@section @code{omp_get_num_threads} -- Size of the active team
-@table @asis
-@item @emph{Description}:
-Returns the number of threads in the current team.  In a sequential section of
-the program @code{omp_get_num_threads} returns 1.
-
-The default team size may be initialized at startup by the 
-@env{OMP_NUM_THREADS} environment variable.  At runtime, the size
-of the current team may be set either by the @code{NUM_THREADS}
-clause or by @code{omp_set_num_threads}.  If none of the above were
-used to define a specific value and @env{OMP_DYNAMIC} is disabled,
-one thread per CPU online is used.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_num_threads(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_num_threads()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_get_max_threads}, @ref{omp_set_num_threads}, @ref{OMP_NUM_THREADS}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.2.
-@end table
-
-
-
-@node omp_get_proc_bind
-@section @code{omp_get_proc_bind} -- Whether threads may be moved between CPUs
-@table @asis
-@item @emph{Description}:
-This functions returns the currently active thread affinity policy, which is
-set via @env{OMP_PROC_BIND}.  Possible values are @code{omp_proc_bind_false},
-@code{omp_proc_bind_true}, @code{omp_proc_bind_primary},
-@code{omp_proc_bind_master}, @code{omp_proc_bind_close} and @code{omp_proc_bind_spread},
-where @code{omp_proc_bind_master} is an alias for @code{omp_proc_bind_primary}.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{omp_proc_bind_t omp_get_proc_bind(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer(kind=omp_proc_bind_kind) function omp_get_proc_bind()}
-@end multitable
-
-@item @emph{See also}:
-@ref{OMP_PROC_BIND}, @ref{OMP_PLACES}, @ref{GOMP_CPU_AFFINITY},
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.22.
-@end table
-
-
-
-@node omp_get_schedule
-@section @code{omp_get_schedule} -- Obtain the runtime scheduling method
-@table @asis
-@item @emph{Description}:
-Obtain the runtime scheduling method.  The @var{kind} argument will be
-set to the value @code{omp_sched_static}, @code{omp_sched_dynamic},
-@code{omp_sched_guided} or @code{omp_sched_auto}.  The second argument,
-@var{chunk_size}, is set to the chunk size.
-
-@item @emph{C/C++}
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_get_schedule(omp_sched_t *kind, int *chunk_size);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_get_schedule(kind, chunk_size)}
-@item                   @tab @code{integer(kind=omp_sched_kind) kind}
-@item                   @tab @code{integer chunk_size}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_set_schedule}, @ref{OMP_SCHEDULE}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.13.
-@end table
-
-
-@node omp_get_supported_active_levels
-@section @code{omp_get_supported_active_levels} -- Maximum number of active regions supported
-@table @asis
-@item @emph{Description}:
-This function returns the maximum number of nested, active parallel regions
-supported by this implementation.
-
-@item @emph{C/C++}
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_supported_active_levels(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_supported_active_levels()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_get_max_active_levels}, @ref{omp_set_max_active_levels}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.15.
-@end table
-
-
-
-@node omp_get_team_num
-@section @code{omp_get_team_num} -- Get team number
-@table @asis
-@item @emph{Description}:
-Returns the team number of the calling thread.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_team_num(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_team_num()}
-@end multitable
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.33.
-@end table
-
-
-
-@node omp_get_team_size
-@section @code{omp_get_team_size} -- Number of threads in a team
-@table @asis
-@item @emph{Description}:
-This function returns the number of threads in a thread team to which
-either the current thread or its ancestor belongs.  For values of @var{level}
-outside zero to @code{omp_get_level}, -1 is returned; if @var{level} is zero,
-1 is returned, and for @code{omp_get_level}, the result is identical
-to @code{omp_get_num_threads}.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_team_size(int level);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_team_size(level)}
-@item                   @tab @code{integer level}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_get_num_threads}, @ref{omp_get_level}, @ref{omp_get_ancestor_thread_num}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.19.
-@end table
-
-
-
-@node omp_get_teams_thread_limit
-@section @code{omp_get_teams_thread_limit} -- Maximum number of threads imposed by teams
-@table @asis
-@item @emph{Description}:
-Return the maximum number of threads that will be able to participate in
-each team created by a teams construct.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_teams_thread_limit(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_teams_thread_limit()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_set_teams_thread_limit}, @ref{OMP_TEAMS_THREAD_LIMIT}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.4.6.
-@end table
-
-
-
-@node omp_get_thread_limit
-@section @code{omp_get_thread_limit} -- Maximum number of threads
-@table @asis
-@item @emph{Description}:
-Return the maximum number of threads of the program.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_thread_limit(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_thread_limit()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_get_max_threads}, @ref{OMP_THREAD_LIMIT}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.14.
-@end table
-
-
-
-@node omp_get_thread_num
-@section @code{omp_get_thread_num} -- Current thread ID
-@table @asis
-@item @emph{Description}:
-Returns a unique thread identification number within the current team.
-In a sequential parts of the program, @code{omp_get_thread_num}
-always returns 0.  In parallel regions the return value varies
-from 0 to @code{omp_get_num_threads}-1 inclusive.  The return
-value of the primary thread of a team is always 0.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_get_thread_num(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_thread_num()}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_get_num_threads}, @ref{omp_get_ancestor_thread_num}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.4.
-@end table
-
-
-
-@node omp_in_parallel
-@section @code{omp_in_parallel} -- Whether a parallel region is active
-@table @asis
-@item @emph{Description}:
-This function returns @code{true} if currently running in parallel,
-@code{false} otherwise.  Here, @code{true} and @code{false} represent
-their language-specific counterparts.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_in_parallel(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{logical function omp_in_parallel()}
-@end multitable
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.6.
-@end table
-
-
-@node omp_in_final
-@section @code{omp_in_final} -- Whether in final or included task region
-@table @asis
-@item @emph{Description}:
-This function returns @code{true} if currently running in a final
-or included task region, @code{false} otherwise.  Here, @code{true}
-and @code{false} represent their language-specific counterparts.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_in_final(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{logical function omp_in_final()}
-@end multitable
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.21.
-@end table
-
-
-
-@node omp_is_initial_device
-@section @code{omp_is_initial_device} -- Whether executing on the host device
-@table @asis
-@item @emph{Description}:
-This function returns @code{true} if currently running on the host device,
-@code{false} otherwise.  Here, @code{true} and @code{false} represent
-their language-specific counterparts.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_is_initial_device(void);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{logical function omp_is_initial_device()}
-@end multitable
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.34.
-@end table
-
-
-
-@node omp_set_default_device
-@section @code{omp_set_default_device} -- Set the default device for target regions
-@table @asis
-@item @emph{Description}:
-Set the default device for target regions without device clause.  The argument
-shall be a nonnegative device number.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_set_default_device(int device_num);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_set_default_device(device_num)}
-@item                   @tab @code{integer device_num}
-@end multitable
-
-@item @emph{See also}:
-@ref{OMP_DEFAULT_DEVICE}, @ref{omp_get_default_device}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.29.
-@end table
-
-
-
-@node omp_set_dynamic
-@section @code{omp_set_dynamic} -- Enable/disable dynamic teams
-@table @asis
-@item @emph{Description}:
-Enable or disable the dynamic adjustment of the number of threads 
-within a team.  The function takes the language-specific equivalent
-of @code{true} and @code{false}, where @code{true} enables dynamic 
-adjustment of team sizes and @code{false} disables it.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_set_dynamic(int dynamic_threads);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_set_dynamic(dynamic_threads)}
-@item                   @tab @code{logical, intent(in) :: dynamic_threads}
-@end multitable
-
-@item @emph{See also}:
-@ref{OMP_DYNAMIC}, @ref{omp_get_dynamic}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.7.
-@end table
-
-
-
-@node omp_set_max_active_levels
-@section @code{omp_set_max_active_levels} -- Limits the number of active parallel regions
-@table @asis
-@item @emph{Description}:
-This function limits the maximum allowed number of nested, active
-parallel regions.  @var{max_levels} must be less or equal to
-the value returned by @code{omp_get_supported_active_levels}.
-
-@item @emph{C/C++}
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_set_max_active_levels(int max_levels);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_set_max_active_levels(max_levels)}
-@item                   @tab @code{integer max_levels}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_get_max_active_levels}, @ref{omp_get_active_level},
-@ref{omp_get_supported_active_levels}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.15.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.9.
 @end table
 
 
 
 @node omp_set_nested
-@section @code{omp_set_nested} -- Enable/disable nested parallel regions
+@subsection @code{omp_set_nested} -- Enable/disable nested parallel regions
 @table @asis
 @item @emph{Description}:
 Enable or disable nested parallel regions, i.e., whether team members
@@ -1411,9 +801,12 @@ are allowed to create new teams.  The function takes the language-specific
 equivalent of @code{true} and @code{false}, where @code{true} enables 
 dynamic adjustment of team sizes and @code{false} disables it.
 
-Enabling nested parallel regions will also set the maximum number of
+Enabling nested parallel regions also sets the maximum number of
 active nested regions to the maximum supported.  Disabling nested parallel
-regions will set the maximum number of active nested regions to one.
+regions sets the maximum number of active nested regions to one.
+
+Note that the @code{omp_set_nested} API routine was deprecated
+in the OpenMP specification 5.2 in favor of @code{omp_set_max_active_levels}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -1436,64 +829,54 @@ regions will set the maximum number of active nested regions to one.
 
 
 
-@node omp_set_num_teams
-@section @code{omp_set_num_teams} -- Set upper teams limit for teams construct
+@node omp_get_nested
+@subsection @code{omp_get_nested} -- Nested parallel regions
 @table @asis
 @item @emph{Description}:
-Specifies the upper bound for number of teams created by the teams construct
-which does not specify a @code{num_teams} clause.  The
-argument of @code{omp_set_num_teams} shall be a positive integer.
+This function returns @code{true} if nested parallel regions are
+enabled, @code{false} otherwise.  Here, @code{true} and @code{false}
+represent their language-specific counterparts.
+
+The state of nested parallel regions at startup depends on several
+environment variables.  If @env{OMP_MAX_ACTIVE_LEVELS} is defined
+and is set to greater than one, then nested parallel regions will be
+enabled.  If not defined, then the value of the @env{OMP_NESTED}
+environment variable will be followed if defined.  If neither are
+defined, then if either @env{OMP_NUM_THREADS} or @env{OMP_PROC_BIND}
+are defined with a list of more than one value, then nested parallel
+regions are enabled.  If none of these are defined, then nested parallel
+regions are disabled by default.
+
+Nested parallel regions can be enabled or disabled at runtime using
+@code{omp_set_nested}, or by setting the maximum number of nested
+regions with @code{omp_set_max_active_levels} to one to disable, or
+above one to enable.
+
+Note that the @code{omp_get_nested} API routine was deprecated
+in the OpenMP specification 5.2 in favor of @code{omp_get_max_active_levels}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_set_num_teams(int num_teams);}
+@item @emph{Prototype}: @tab @code{int omp_get_nested(void);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_set_num_teams(num_teams)}
-@item                   @tab @code{integer, intent(in) :: num_teams}
+@item @emph{Interface}: @tab @code{logical function omp_get_nested()}
 @end multitable
 
 @item @emph{See also}:
-@ref{OMP_NUM_TEAMS}, @ref{omp_get_num_teams}, @ref{omp_get_max_teams}
+@ref{omp_get_max_active_levels}, @ref{omp_set_nested},
+@ref{OMP_MAX_ACTIVE_LEVELS}, @ref{OMP_NESTED}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.4.3.
-@end table
-
-
-
-@node omp_set_num_threads
-@section @code{omp_set_num_threads} -- Set upper team size limit
-@table @asis
-@item @emph{Description}:
-Specifies the number of threads used by default in subsequent parallel 
-sections, if those do not specify a @code{num_threads} clause.  The
-argument of @code{omp_set_num_threads} shall be a positive integer.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_set_num_threads(int num_threads);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_set_num_threads(num_threads)}
-@item                   @tab @code{integer, intent(in) :: num_threads}
-@end multitable
-
-@item @emph{See also}:
-@ref{OMP_NUM_THREADS}, @ref{omp_get_num_threads}, @ref{omp_get_max_threads}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.1.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.11.
 @end table
 
 
 
 @node omp_set_schedule
-@section @code{omp_set_schedule} -- Set the runtime scheduling method
+@subsection @code{omp_set_schedule} -- Set the runtime scheduling method
 @table @asis
 @item @emph{Description}:
 Sets the runtime scheduling method.  The @var{kind} argument can have the
@@ -1525,11 +908,422 @@ For @code{omp_sched_auto} the @var{chunk_size} argument is ignored.
 
 
 
-@node omp_set_teams_thread_limit
-@section @code{omp_set_teams_thread_limit} -- Set upper thread limit for teams construct
+@node omp_get_schedule
+@subsection @code{omp_get_schedule} -- Obtain the runtime scheduling method
 @table @asis
 @item @emph{Description}:
-Specifies the upper bound for number of threads that will be available
+Obtain the runtime scheduling method.  The @var{kind} argument is set to
+@code{omp_sched_static}, @code{omp_sched_dynamic},
+@code{omp_sched_guided} or @code{omp_sched_auto}.  The second argument,
+@var{chunk_size}, is set to the chunk size.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_get_schedule(omp_sched_t *kind, int *chunk_size);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_get_schedule(kind, chunk_size)}
+@item                   @tab @code{integer(kind=omp_sched_kind) kind}
+@item                   @tab @code{integer chunk_size}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_set_schedule}, @ref{OMP_SCHEDULE}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.13.
+@end table
+
+
+@node omp_get_teams_thread_limit
+@subsection @code{omp_get_teams_thread_limit} -- Maximum number of threads imposed by teams
+@table @asis
+@item @emph{Description}:
+Return the maximum number of threads that are able to participate in
+each team created by a teams construct.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_teams_thread_limit(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_teams_thread_limit()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_set_teams_thread_limit}, @ref{OMP_TEAMS_THREAD_LIMIT}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.4.6.
+@end table
+
+
+
+@node omp_get_supported_active_levels
+@subsection @code{omp_get_supported_active_levels} -- Maximum number of active regions supported
+@table @asis
+@item @emph{Description}:
+This function returns the maximum number of nested, active parallel regions
+supported by this implementation.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_supported_active_levels(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_supported_active_levels()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_max_active_levels}, @ref{omp_set_max_active_levels}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.15.
+@end table
+
+
+
+@node omp_set_max_active_levels
+@subsection @code{omp_set_max_active_levels} -- Limits the number of active parallel regions
+@table @asis
+@item @emph{Description}:
+This function limits the maximum allowed number of nested, active
+parallel regions.  @var{max_levels} must be less or equal to
+the value returned by @code{omp_get_supported_active_levels}.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_set_max_active_levels(int max_levels);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_set_max_active_levels(max_levels)}
+@item                   @tab @code{integer max_levels}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_max_active_levels}, @ref{omp_get_active_level},
+@ref{omp_get_supported_active_levels}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.15.
+@end table
+
+
+
+@node omp_get_max_active_levels
+@subsection @code{omp_get_max_active_levels} -- Current maximum number of active regions
+@table @asis
+@item @emph{Description}:
+This function obtains the maximum allowed number of nested, active parallel regions.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_max_active_levels(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_max_active_levels()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_set_max_active_levels}, @ref{omp_get_active_level}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.16.
+@end table
+
+
+@node omp_get_level
+@subsection @code{omp_get_level} -- Obtain the current nesting level
+@table @asis
+@item @emph{Description}:
+This function returns the nesting level for the parallel blocks,
+which enclose the calling call.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_level(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_level()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_active_level}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.17.
+@end table
+
+
+
+@node omp_get_ancestor_thread_num
+@subsection @code{omp_get_ancestor_thread_num} -- Ancestor thread ID
+@table @asis
+@item @emph{Description}:
+This function returns the thread identification number for the given
+nesting level of the current thread.  For values of @var{level} outside
+zero to @code{omp_get_level} -1 is returned; if @var{level} is
+@code{omp_get_level} the result is identical to @code{omp_get_thread_num}.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_ancestor_thread_num(int level);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_ancestor_thread_num(level)}
+@item                   @tab @code{integer level}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_level}, @ref{omp_get_thread_num}, @ref{omp_get_team_size}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.18.
+@end table
+
+
+
+@node omp_get_team_size
+@subsection @code{omp_get_team_size} -- Number of threads in a team
+@table @asis
+@item @emph{Description}:
+This function returns the number of threads in a thread team to which
+either the current thread or its ancestor belongs.  For values of @var{level}
+outside zero to @code{omp_get_level}, -1 is returned; if @var{level} is zero,
+1 is returned, and for @code{omp_get_level}, the result is identical
+to @code{omp_get_num_threads}.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_team_size(int level);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_team_size(level)}
+@item                   @tab @code{integer level}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_num_threads}, @ref{omp_get_level}, @ref{omp_get_ancestor_thread_num}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.19.
+@end table
+
+
+
+@node omp_get_active_level
+@subsection @code{omp_get_active_level} -- Number of parallel regions
+@table @asis
+@item @emph{Description}:
+This function returns the nesting level for the active parallel blocks,
+which enclose the calling call.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_active_level(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_active_level()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_level}, @ref{omp_get_max_active_levels}, @ref{omp_set_max_active_levels}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.20.
+@end table
+
+
+
+@node Thread Affinity Routines
+@section Thread Affinity Routines
+
+Routines controlling and accessing thread-affinity policies.
+They have C linkage and do not throw exceptions.
+
+@menu
+* omp_get_proc_bind::           Whether threads may be moved between CPUs
+@c * omp_get_num_places:: <fixme>
+@c * omp_get_place_num_procs:: <fixme>
+@c * omp_get_place_proc_ids:: <fixme>
+@c * omp_get_place_num:: <fixme>
+@c * omp_get_partition_num_places:: <fixme>
+@c * omp_get_partition_place_nums:: <fixme>
+@c * omp_set_affinity_format:: <fixme>
+@c * omp_get_affinity_format:: <fixme>
+@c * omp_display_affinity:: <fixme>
+@c * omp_capture_affinity:: <fixme>
+@end menu
+
+
+
+@node omp_get_proc_bind
+@subsection @code{omp_get_proc_bind} -- Whether threads may be moved between CPUs
+@table @asis
+@item @emph{Description}:
+This functions returns the currently active thread affinity policy, which is
+set via @env{OMP_PROC_BIND}.  Possible values are @code{omp_proc_bind_false},
+@code{omp_proc_bind_true}, @code{omp_proc_bind_primary},
+@code{omp_proc_bind_master}, @code{omp_proc_bind_close} and @code{omp_proc_bind_spread},
+where @code{omp_proc_bind_master} is an alias for @code{omp_proc_bind_primary}.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{omp_proc_bind_t omp_get_proc_bind(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(kind=omp_proc_bind_kind) function omp_get_proc_bind()}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_PROC_BIND}, @ref{OMP_PLACES}, @ref{GOMP_CPU_AFFINITY},
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.22.
+@end table
+
+
+
+@node Teams Region Routines
+@section Teams Region Routines
+
+Routines controlling the league of teams that are executed in a @code{teams}
+region.  They have C linkage and do not throw exceptions.
+
+@menu
+* omp_get_num_teams::           Number of teams
+* omp_get_team_num::            Get team number
+* omp_set_num_teams::           Set upper teams limit for teams region
+* omp_get_max_teams::           Maximum number of teams for teams region
+* omp_set_teams_thread_limit::  Set upper thread limit for teams construct
+* omp_get_thread_limit::        Maximum number of threads
+@end menu
+
+
+
+@node omp_get_num_teams
+@subsection @code{omp_get_num_teams} -- Number of teams
+@table @asis
+@item @emph{Description}:
+Returns the number of teams in the current team region.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_num_teams(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_num_teams()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.32.
+@end table
+
+
+
+@node omp_get_team_num
+@subsection @code{omp_get_team_num} -- Get team number
+@table @asis
+@item @emph{Description}:
+Returns the team number of the calling thread.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_team_num(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_team_num()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.33.
+@end table
+
+
+
+@node omp_set_num_teams
+@subsection @code{omp_set_num_teams} -- Set upper teams limit for teams construct
+@table @asis
+@item @emph{Description}:
+Specifies the upper bound for number of teams created by the teams construct
+which does not specify a @code{num_teams} clause.  The
+argument of @code{omp_set_num_teams} shall be a positive integer.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_set_num_teams(int num_teams);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_set_num_teams(num_teams)}
+@item                   @tab @code{integer, intent(in) :: num_teams}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_NUM_TEAMS}, @ref{omp_get_num_teams}, @ref{omp_get_max_teams}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.4.3.
+@end table
+
+
+
+@node omp_get_max_teams
+@subsection @code{omp_get_max_teams} -- Maximum number of teams of teams region
+@table @asis
+@item @emph{Description}:
+Return the maximum number of teams used for the teams region
+that does not use the clause @code{num_teams}.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_max_teams(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_max_teams()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_set_num_teams}, @ref{omp_get_num_teams}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.4.4.
+@end table
+
+
+
+@node omp_set_teams_thread_limit
+@subsection @code{omp_set_teams_thread_limit} -- Set upper thread limit for teams construct
+@table @asis
+@item @emph{Description}:
+Specifies the upper bound for number of threads that are available
 for each team created by the teams construct which does not specify a
 @code{thread_limit} clause.  The argument of
 @code{omp_set_teams_thread_limit} shall be a positive integer.
@@ -1554,8 +1348,641 @@ for each team created by the teams construct which does not specify a
 
 
 
+@node omp_get_thread_limit
+@subsection @code{omp_get_thread_limit} -- Maximum number of threads
+@table @asis
+@item @emph{Description}:
+Return the maximum number of threads of the program.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_thread_limit(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_thread_limit()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_max_threads}, @ref{OMP_THREAD_LIMIT}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.14.
+@end table
+
+
+
+@node Tasking Routines
+@section Tasking Routines
+
+Routines relating to explicit tasks.
+They have C linkage and do not throw exceptions.
+
+@menu
+* omp_get_max_task_priority::   Maximum task priority value that can be set
+* omp_in_explicit_task::        Whether a given task is an explicit task
+* omp_in_final::                Whether in final or included task region
+@end menu
+
+
+
+@node omp_get_max_task_priority
+@subsection @code{omp_get_max_task_priority} -- Maximum priority value
+that can be set for tasks.
+@table @asis
+@item @emph{Description}:
+This function obtains the maximum allowed priority number for tasks.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_max_task_priority(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_max_task_priority()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.29.
+@end table
+
+
+
+@node omp_in_explicit_task
+@subsection @code{omp_in_explicit_task} -- Whether a given task is an explicit task
+@table @asis
+@item @emph{Description}:
+The function returns the @var{explicit-task-var} ICV; it returns true when the
+encountering task was generated by a task-generating construct such as
+@code{target}, @code{task} or @code{taskloop}.  Otherwise, the encountering task
+is in an implicit task region such as generated by the implicit or explicit
+@code{parallel} region and @code{omp_in_explicit_task} returns false.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_in_explicit_task(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{logical function omp_in_explicit_task()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.2}, Section 18.5.2.
+@end table
+
+
+
+@node omp_in_final
+@subsection @code{omp_in_final} -- Whether in final or included task region
+@table @asis
+@item @emph{Description}:
+This function returns @code{true} if currently running in a final
+or included task region, @code{false} otherwise.  Here, @code{true}
+and @code{false} represent their language-specific counterparts.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_in_final(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{logical function omp_in_final()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.21.
+@end table
+
+
+
+@c @node Resource Relinquishing Routines
+@c @section Resource Relinquishing Routines
+@c
+@c Routines releasing resources used by the OpenMP runtime.
+@c They have C linkage and do not throw exceptions.
+@c
+@c @menu
+@c * omp_pause_resource:: <fixme>
+@c * omp_pause_resource_all:: <fixme>
+@c @end menu
+
+@node Device Information Routines
+@section Device Information Routines
+
+Routines related to devices available to an OpenMP program.
+They have C linkage and do not throw exceptions.
+
+@menu
+* omp_get_num_procs::           Number of processors online
+@c * omp_get_max_progress_width:: <fixme>/TR11
+* omp_set_default_device::      Set the default device for target regions
+* omp_get_default_device::      Get the default device for target regions
+* omp_get_num_devices::         Number of target devices
+* omp_get_device_num::          Get device that current thread is running on
+* omp_is_initial_device::       Whether executing on the host device
+* omp_get_initial_device::      Device number of host device
+@end menu
+
+
+
+@node omp_get_num_procs
+@subsection @code{omp_get_num_procs} -- Number of processors online
+@table @asis
+@item @emph{Description}:
+Returns the number of processors online on that device.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_num_procs(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_num_procs()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.5.
+@end table
+
+
+
+@node omp_set_default_device
+@subsection @code{omp_set_default_device} -- Set the default device for target regions
+@table @asis
+@item @emph{Description}:
+Set the default device for target regions without device clause.  The argument
+shall be a nonnegative device number.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_set_default_device(int device_num);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_set_default_device(device_num)}
+@item                   @tab @code{integer device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_DEFAULT_DEVICE}, @ref{omp_get_default_device}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.29.
+@end table
+
+
+
+@node omp_get_default_device
+@subsection @code{omp_get_default_device} -- Get the default device for target regions
+@table @asis
+@item @emph{Description}:
+Get the default device for target regions without device clause.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_default_device(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_default_device()}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_DEFAULT_DEVICE}, @ref{omp_set_default_device}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.30.
+@end table
+
+
+
+@node omp_get_num_devices
+@subsection @code{omp_get_num_devices} -- Number of target devices
+@table @asis
+@item @emph{Description}:
+Returns the number of target devices.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_num_devices(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_num_devices()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.31.
+@end table
+
+
+
+@node omp_get_device_num
+@subsection @code{omp_get_device_num} -- Return device number of current device
+@table @asis
+@item @emph{Description}:
+This function returns a device number that represents the device that the
+current thread is executing on. For OpenMP 5.0, this must be equal to the
+value returned by the @code{omp_get_initial_device} function when called
+from the host.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_device_num(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_device_num()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_initial_device}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.37.
+@end table
+
+
+
+@node omp_is_initial_device
+@subsection @code{omp_is_initial_device} -- Whether executing on the host device
+@table @asis
+@item @emph{Description}:
+This function returns @code{true} if currently running on the host device,
+@code{false} otherwise.  Here, @code{true} and @code{false} represent
+their language-specific counterparts.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_is_initial_device(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{logical function omp_is_initial_device()}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.34.
+@end table
+
+
+
+@node omp_get_initial_device
+@subsection @code{omp_get_initial_device} -- Return device number of initial device
+@table @asis
+@item @emph{Description}:
+This function returns a device number that represents the host device.
+For OpenMP 5.1, this must be equal to the value returned by the
+@code{omp_get_num_devices} function.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_initial_device(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_initial_device()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_num_devices}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.35.
+@end table
+
+
+
+@node Device Memory Routines
+@section Device Memory Routines
+
+Routines related to memory allocation and managing corresponding
+pointers on devices. They have C linkage and do not throw exceptions.
+
+@menu
+* omp_target_alloc:: Allocate device memory
+* omp_target_free:: Free device memory
+* omp_target_is_present:: Check whether storage is mapped
+@c * omp_target_is_accessible:: <fixme>
+@c * omp_target_memcpy:: <fixme>
+@c * omp_target_memcpy_rect:: <fixme>
+@c * omp_target_memcpy_async:: <fixme>
+@c * omp_target_memcpy_rect_async:: <fixme>
+@c * omp_target_memset:: <fixme>/TR12
+@c * omp_target_memset_async:: <fixme>/TR12
+* omp_target_associate_ptr:: Associate a device pointer with a host pointer
+* omp_target_disassociate_ptr:: Remove device--host pointer association
+* omp_get_mapped_ptr:: Return device pointer to a host pointer
+@end menu
+
+
+
+@node omp_target_alloc
+@subsection @code{omp_target_alloc} -- Allocate device memory
+@table @asis
+@item @emph{Description}:
+This routine allocates @var{size} bytes of memory in the device environment
+associated with the device number @var{device_num}.  If successful, a device
+pointer is returned, otherwise a null pointer.
+
+In GCC, when the device is the host or the device shares memory with the host,
+the memory is allocated on the host; in that case, when @var{size} is zero,
+either NULL or a unique pointer value that can later be successfully passed to
+@code{omp_target_free} is returned.  When the allocation is not performed on
+the host, a null pointer is returned when @var{size} is zero; in that case,
+additionally a diagnostic might be printed to standard error (stderr).
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void *omp_target_alloc(size_t size, int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_target_alloc(size, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_size_t}
+@item                   @tab @code{integer(c_size_t), value :: size}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_free}, @ref{omp_target_associate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.1
+@end table
+
+
+
+@node omp_target_free
+@subsection @code{omp_target_free} -- Free device memory
+@table @asis
+@item @emph{Description}:
+This routine frees memory allocated by the @code{omp_target_alloc} routine.
+The @var{device_ptr} argument must be either a null pointer or a device pointer
+returned by @code{omp_target_alloc} for the specified @code{device_num}.  The
+device number @var{device_num} must be a conforming device number.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_target_free(void *device_ptr, int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_target_free(device_ptr, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int}
+@item                   @tab @code{type(c_ptr), value :: device_ptr}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_alloc}, @ref{omp_target_disassociate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.2
+@end table
+
+
+
+@node omp_target_is_present
+@subsection @code{omp_target_is_present} -- Check whether storage is mapped
+@table @asis
+@item @emph{Description}:
+This routine tests whether storage, identified by the host pointer @var{ptr}
+is mapped to the device specified by @var{device_num}.  If so, it returns
+@emph{true} and otherwise @emph{false}.
+
+In GCC, this includes self mapping such that @code{omp_target_is_present}
+returns @emph{true} when @var{device_num} specifies the host or when the host
+and the device share memory.  If @var{ptr} is a null pointer, @var{true} is
+returned and if @var{device_num} is an invalid device number, @var{false} is
+returned.
+
+If those conditions do not apply, @emph{true} is returned if the association has
+been established by an explicit or implicit @code{map} clause, the
+@code{declare target} directive or a call to the @code{omp_target_associate_ptr}
+routine.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_is_present(const void *ptr,}
+@item                   @tab @code{                          int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_is_present(ptr, &}
+@item                   @tab @code{    device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_associate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.3
+@end table
+
+
+
+@node omp_target_associate_ptr
+@subsection @code{omp_target_associate_ptr} -- Associate a device pointer with a host pointer
+@table @asis
+@item @emph{Description}:
+This routine associates storage on the host with storage on a device identified
+by @var{device_num}.  The device pointer is usually obtained by calling
+@code{omp_target_alloc} or by other means (but not by using the @code{map}
+clauses or the @code{declare target} directive).  The host pointer should point
+to memory that has a storage size of at least @var{size}.
+
+The @var{device_offset} parameter specifies the offset into @var{device_ptr}
+that is used as the base address for the device side of the mapping; the
+storage size should be at least @var{device_offset} plus @var{size}.
+
+After the association, the host pointer can be used in a @code{map} clause and
+in the @code{to} and @code{from} clauses of the @code{target update} directive
+to transfer data between the associated pointers. The reference count of such
+associated storage is infinite.  The association can be removed by calling
+@code{omp_target_disassociate_ptr} which should be done before the lifetime
+of either either storage ends.
+
+The routine returns nonzero (@code{EINVAL}) when the @var{device_num} invalid,
+for when the initial device or the associated device shares memory with the
+host.  @code{omp_target_associate_ptr} returns zero if @var{host_ptr} points
+into already associated storage that is fully inside of a previously associated
+memory.  Otherwise, if the association was successful zero is returned; if none
+of the cases above apply, nonzero (@code{EINVAL}) is returned.
+
+The @code{omp_target_is_present} routine can be used to test whether
+associated storage for a device pointer exists.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_associate_ptr(const void *host_ptr,}
+@item                   @tab @code{                             const void *device_ptr,}
+@item                   @tab @code{                             size_t size,}
+@item                   @tab @code{                             size_t device_offset,}
+@item                   @tab @code{                             int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_associate_ptr(host_ptr, &}
+@item                   @tab @code{    device_ptr, size, device_offset, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_size_t}
+@item                   @tab @code{type(c_ptr), value :: host_ptr, device_ptr}
+@item                   @tab @code{integer(c_size_t), value :: size, device_offset}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_disassociate_ptr}, @ref{omp_target_is_present},
+@ref{omp_target_alloc}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.9
+@end table
+
+
+
+@node omp_target_disassociate_ptr
+@subsection @code{omp_target_disassociate_ptr} -- Remove device--host pointer association
+@table @asis
+@item @emph{Description}:
+This routine removes the storage association established by calling
+@code{omp_target_associate_ptr} and sets the reference count to zero,
+even if @code{omp_target_associate_ptr} was invoked multiple times for
+for host pointer @code{ptr}.  If applicable, the device memory needs
+to be freed by the user.
+
+If an associated device storage location for the @var{device_num} was
+found and has infinite reference count, the association is removed and
+zero is returned.  In all other cases, nonzero (@code{EINVAL}) is returned
+and no other action is taken.
+
+Note that passing a host pointer where the association to the device pointer
+was established with the @code{declare target} directive yields undefined
+behavior.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_disassociate_ptr(const void *ptr,}
+@item                   @tab @code{                                int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_disassociate_ptr(ptr, &}
+@item                   @tab @code{    device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_associate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.10
+@end table
+
+
+
+@node omp_get_mapped_ptr
+@subsection @code{omp_get_mapped_ptr} -- Return device pointer to a host pointer
+@table @asis
+@item @emph{Description}:
+If the device number is refers to the initial device or to a device with
+memory accessible from the host (shared memory), the @code{omp_get_mapped_ptr}
+routines returns the value of the passed @var{ptr}.  Otherwise, if associated
+storage to the passed host pointer @var{ptr} exists on device associated with
+@var{device_num}, it returns that pointer. In all other cases and in cases of
+an error, a null pointer is returned.
+
+The association of storage location is established either via an explicit or
+implicit @code{map} clause, the @code{declare target} directive or the
+@code{omp_target_associate_ptr} routine.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void *omp_get_mapped_ptr(const void *ptr, int device_num);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_get_mapped_ptr(ptr, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_associate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.11
+@end table
+
+
+
+@node Lock Routines
+@section Lock Routines
+
+Initialize, set, test, unset and destroy simple and nested locks.
+The routines have C linkage and do not throw exceptions.
+
+@menu
+* omp_init_lock::            Initialize simple lock
+* omp_init_nest_lock::       Initialize nested lock
+@c * omp_init_lock_with_hint:: <fixme>
+@c * omp_init_nest_lock_with_hint:: <fixme>
+* omp_destroy_lock::         Destroy simple lock
+* omp_destroy_nest_lock::    Destroy nested lock
+* omp_set_lock::             Wait for and set simple lock
+* omp_set_nest_lock::        Wait for and set simple lock
+* omp_unset_lock::           Unset simple lock
+* omp_unset_nest_lock::      Unset nested lock
+* omp_test_lock::            Test and set simple lock if available
+* omp_test_nest_lock::       Test and set nested lock if available
+@end menu
+
+
+
 @node omp_init_lock
-@section @code{omp_init_lock} -- Initialize simple lock
+@subsection @code{omp_init_lock} -- Initialize simple lock
 @table @asis
 @item @emph{Description}:
 Initialize a simple lock.  After initialization, the lock is in
@@ -1581,8 +2008,89 @@ an unlocked state.
 
 
 
+@node omp_init_nest_lock
+@subsection @code{omp_init_nest_lock} -- Initialize nested lock
+@table @asis
+@item @emph{Description}:
+Initialize a nested lock.  After initialization, the lock is in
+an unlocked state and the nesting count is set to zero.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_init_nest_lock(omp_nest_lock_t *lock);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_init_nest_lock(nvar)}
+@item                   @tab @code{integer(omp_nest_lock_kind), intent(out) :: nvar}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_destroy_nest_lock}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.1.
+@end table
+
+
+
+@node omp_destroy_lock
+@subsection @code{omp_destroy_lock} -- Destroy simple lock
+@table @asis
+@item @emph{Description}:
+Destroy a simple lock.  In order to be destroyed, a simple lock must be
+in the unlocked state. 
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_destroy_lock(omp_lock_t *lock);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_destroy_lock(svar)}
+@item                   @tab @code{integer(omp_lock_kind), intent(inout) :: svar}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_init_lock}
+
+@item @emph{Reference}: 
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.3.
+@end table
+
+
+
+@node omp_destroy_nest_lock
+@subsection @code{omp_destroy_nest_lock} -- Destroy nested lock
+@table @asis
+@item @emph{Description}:
+Destroy a nested lock.  In order to be destroyed, a nested lock must be
+in the unlocked state and its nesting count must equal zero.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_destroy_nest_lock(omp_nest_lock_t *);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_destroy_nest_lock(nvar)}
+@item                   @tab @code{integer(omp_nest_lock_kind), intent(inout) :: nvar}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_init_lock}
+
+@item @emph{Reference}: 
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.3.
+@end table
+
+
+
 @node omp_set_lock
-@section @code{omp_set_lock} -- Wait for and set simple lock
+@subsection @code{omp_set_lock} -- Wait for and set simple lock
 @table @asis
 @item @emph{Description}:
 Before setting a simple lock, the lock variable must be initialized by 
@@ -1610,38 +2118,37 @@ a deadlock occurs.
 
 
 
-@node omp_test_lock
-@section @code{omp_test_lock} -- Test and set simple lock if available
+@node omp_set_nest_lock
+@subsection @code{omp_set_nest_lock} -- Wait for and set nested lock
 @table @asis
 @item @emph{Description}:
-Before setting a simple lock, the lock variable must be initialized by 
-@code{omp_init_lock}.  Contrary to @code{omp_set_lock}, @code{omp_test_lock} 
-does not block if the lock is not available.  This function returns
-@code{true} upon success, @code{false} otherwise.  Here, @code{true} and
-@code{false} represent their language-specific counterparts.
+Before setting a nested lock, the lock variable must be initialized by 
+@code{omp_init_nest_lock}.  The calling thread is blocked until the lock
+is available.  If the lock is already held by the current thread, the
+nesting count for the lock is incremented.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{int omp_test_lock(omp_lock_t *lock);}
+@item @emph{Prototype}: @tab @code{void omp_set_nest_lock(omp_nest_lock_t *lock);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{logical function omp_test_lock(svar)}
-@item                   @tab @code{integer(omp_lock_kind), intent(inout) :: svar}
+@item @emph{Interface}: @tab @code{subroutine omp_set_nest_lock(nvar)}
+@item                   @tab @code{integer(omp_nest_lock_kind), intent(inout) :: nvar}
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_init_lock}, @ref{omp_set_lock}, @ref{omp_set_lock}
+@ref{omp_init_nest_lock}, @ref{omp_unset_nest_lock}
 
 @item @emph{Reference}: 
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.6.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.4.
 @end table
 
 
 
 @node omp_unset_lock
-@section @code{omp_unset_lock} -- Unset simple lock
+@subsection @code{omp_unset_lock} -- Unset simple lock
 @table @asis
 @item @emph{Description}:
 A simple lock about to be unset must have been locked by @code{omp_set_lock}
@@ -1670,90 +2177,68 @@ again, set the lock to itself.
 
 
 
-@node omp_destroy_lock
-@section @code{omp_destroy_lock} -- Destroy simple lock
+@node omp_unset_nest_lock
+@subsection @code{omp_unset_nest_lock} -- Unset nested lock
 @table @asis
 @item @emph{Description}:
-Destroy a simple lock.  In order to be destroyed, a simple lock must be
-in the unlocked state. 
+A nested lock about to be unset must have been locked by @code{omp_set_nested_lock}
+or @code{omp_test_nested_lock} before.  In addition, the lock must be held by the
+thread calling @code{omp_unset_nested_lock}.  If the nesting count drops to zero, the
+lock becomes unlocked.  If one ore more threads attempted to set the lock before,
+one of them is chosen to, again, set the lock to itself.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_destroy_lock(omp_lock_t *lock);}
+@item @emph{Prototype}: @tab @code{void omp_unset_nest_lock(omp_nest_lock_t *lock);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_destroy_lock(svar)}
-@item                   @tab @code{integer(omp_lock_kind), intent(inout) :: svar}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_init_lock}
-
-@item @emph{Reference}: 
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.3.
-@end table
-
-
-
-@node omp_init_nest_lock
-@section @code{omp_init_nest_lock} -- Initialize nested lock
-@table @asis
-@item @emph{Description}:
-Initialize a nested lock.  After initialization, the lock is in
-an unlocked state and the nesting count is set to zero.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_init_nest_lock(omp_nest_lock_t *lock);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_init_nest_lock(nvar)}
-@item                   @tab @code{integer(omp_nest_lock_kind), intent(out) :: nvar}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_destroy_nest_lock}
-
-@item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.1.
-@end table
-
-
-@node omp_set_nest_lock
-@section @code{omp_set_nest_lock} -- Wait for and set nested lock
-@table @asis
-@item @emph{Description}:
-Before setting a nested lock, the lock variable must be initialized by 
-@code{omp_init_nest_lock}.  The calling thread is blocked until the lock
-is available.  If the lock is already held by the current thread, the
-nesting count for the lock is incremented.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_set_nest_lock(omp_nest_lock_t *lock);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_set_nest_lock(nvar)}
+@item @emph{Interface}: @tab @code{subroutine omp_unset_nest_lock(nvar)}
 @item                   @tab @code{integer(omp_nest_lock_kind), intent(inout) :: nvar}
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_init_nest_lock}, @ref{omp_unset_nest_lock}
+@ref{omp_set_nest_lock}
 
 @item @emph{Reference}: 
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.4.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.5.
+@end table
+
+
+
+@node omp_test_lock
+@subsection @code{omp_test_lock} -- Test and set simple lock if available
+@table @asis
+@item @emph{Description}:
+Before setting a simple lock, the lock variable must be initialized by 
+@code{omp_init_lock}.  Contrary to @code{omp_set_lock}, @code{omp_test_lock} 
+does not block if the lock is not available.  This function returns
+@code{true} upon success, @code{false} otherwise.  Here, @code{true} and
+@code{false} represent their language-specific counterparts.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_test_lock(omp_lock_t *lock);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{logical function omp_test_lock(svar)}
+@item                   @tab @code{integer(omp_lock_kind), intent(inout) :: svar}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_init_lock}, @ref{omp_set_lock}, @ref{omp_set_lock}
+
+@item @emph{Reference}: 
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.6.
 @end table
 
 
 
 @node omp_test_nest_lock
-@section @code{omp_test_nest_lock} -- Test and set nested lock if available
+@subsection @code{omp_test_nest_lock} -- Test and set nested lock if available
 @table @asis
 @item @emph{Description}:
 Before setting a nested lock, the lock variable must be initialized by 
@@ -1783,65 +2268,21 @@ is returned.  Otherwise, the return value equals zero.
 
 
 
-@node omp_unset_nest_lock
-@section @code{omp_unset_nest_lock} -- Unset nested lock
-@table @asis
-@item @emph{Description}:
-A nested lock about to be unset must have been locked by @code{omp_set_nested_lock}
-or @code{omp_test_nested_lock} before.  In addition, the lock must be held by the
-thread calling @code{omp_unset_nested_lock}.  If the nesting count drops to zero, the
-lock becomes unlocked.  If one ore more threads attempted to set the lock before,
-one of them is chosen to, again, set the lock to itself.
+@node Timing Routines
+@section Timing Routines
 
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_unset_nest_lock(omp_nest_lock_t *lock);}
-@end multitable
+Portable, thread-based, wall clock timer.
+The routines have C linkage and do not throw exceptions.
 
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_unset_nest_lock(nvar)}
-@item                   @tab @code{integer(omp_nest_lock_kind), intent(inout) :: nvar}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_set_nest_lock}
-
-@item @emph{Reference}: 
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.5.
-@end table
-
-
-
-@node omp_destroy_nest_lock
-@section @code{omp_destroy_nest_lock} -- Destroy nested lock
-@table @asis
-@item @emph{Description}:
-Destroy a nested lock.  In order to be destroyed, a nested lock must be
-in the unlocked state and its nesting count must equal zero.
-
-@item @emph{C/C++}:
-@multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void omp_destroy_nest_lock(omp_nest_lock_t *);}
-@end multitable
-
-@item @emph{Fortran}:
-@multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_destroy_nest_lock(nvar)}
-@item                   @tab @code{integer(omp_nest_lock_kind), intent(inout) :: nvar}
-@end multitable
-
-@item @emph{See also}:
-@ref{omp_init_lock}
-
-@item @emph{Reference}: 
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.3.
-@end table
+@menu
+* omp_get_wtick::            Get timer precision.
+* omp_get_wtime::            Elapsed wall clock time.
+@end menu
 
 
 
 @node omp_get_wtick
-@section @code{omp_get_wtick} -- Get timer precision
+@subsection @code{omp_get_wtick} -- Get timer precision
 @table @asis
 @item @emph{Description}:
 Gets the timer precision, i.e., the number of seconds between two 
@@ -1867,7 +2308,7 @@ successive clock ticks.
 
 
 @node omp_get_wtime
-@section @code{omp_get_wtime} -- Elapsed wall clock time
+@subsection @code{omp_get_wtime} -- Elapsed wall clock time
 @table @asis
 @item @emph{Description}:
 Elapsed wall clock time in seconds.  The time is measured per thread, no
@@ -1894,8 +2335,20 @@ guaranteed not to change during the execution of the program.
 
 
 
+@node Event Routine
+@section Event Routine
+
+Support for event objects.
+The routine has C linkage and do not throw exceptions.
+
+@menu
+* omp_fulfill_event::        Fulfill and destroy an OpenMP event.
+@end menu
+
+
+
 @node omp_fulfill_event
-@section @code{omp_fulfill_event} -- Fulfill and destroy an OpenMP event
+@subsection @code{omp_fulfill_event} -- Fulfill and destroy an OpenMP event
 @table @asis
 @item @emph{Description}:
 Fulfill the event associated with the event handle argument.  Currently, it
@@ -1924,6 +2377,517 @@ event handle that has already been fulfilled is also undefined.
 
 
 
+@c @node Interoperability Routines
+@c @section Interoperability Routines
+@c
+@c Routines to obtain properties from an @code{omp_interop_t} object.
+@c They have C linkage and do not throw exceptions.
+@c
+@c @menu
+@c * omp_get_num_interop_properties:: <fixme>
+@c * omp_get_interop_int:: <fixme>
+@c * omp_get_interop_ptr:: <fixme>
+@c * omp_get_interop_str:: <fixme>
+@c * omp_get_interop_name:: <fixme>
+@c * omp_get_interop_type_desc:: <fixme>
+@c * omp_get_interop_rc_desc:: <fixme>
+@c @end menu
+
+@node Memory Management Routines
+@section Memory Management Routines
+
+Routines to manage and allocate memory on the current device.
+They have C linkage and do not throw exceptions.
+
+@menu
+* omp_init_allocator:: Create an allocator
+* omp_destroy_allocator:: Destroy an allocator
+* omp_set_default_allocator:: Set the default allocator
+* omp_get_default_allocator:: Get the default allocator
+* omp_alloc:: Memory allocation with an allocator
+* omp_aligned_alloc:: Memory allocation with an allocator and alignment
+* omp_free:: Freeing memory allocated with OpenMP routines
+* omp_calloc:: Allocate nullified memory with an allocator
+* omp_aligned_calloc:: Allocate nullified aligned memory with an allocator
+* omp_realloc:: Reallocate memory allocated with OpenMP routines
+@c * omp_get_memspace_num_resources:: <fixme>/TR11
+@c * omp_get_submemspace:: <fixme>/TR11
+@end menu
+
+
+
+@node omp_init_allocator
+@subsection @code{omp_init_allocator} -- Create an allocator
+@table @asis
+@item @emph{Description}:
+Create an allocator that uses the specified memory space and has the specified
+traits; if an allocator that fulfills the requirements cannot be created,
+@code{omp_null_allocator} is returned.
+
+The predefined memory spaces and available traits can be found at
+@ref{OMP_ALLOCATOR}, where the trait names have to be be prefixed by
+@code{omp_atk_} (e.g. @code{omp_atk_pinned}) and the named trait values by
+@code{omp_atv_} (e.g. @code{omp_atv_true}); additionally, @code{omp_atv_default}
+may be used as trait value to specify that the default value should be used.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{omp_allocator_handle_t omp_init_allocator(}
+@item                   @tab @code{  omp_memspace_handle_t memspace,}
+@item                   @tab @code{  int ntraits,}
+@item                   @tab @code{  const omp_alloctrait_t traits[]);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{function omp_init_allocator(memspace, ntraits, traits)}
+@item                   @tab @code{integer (omp_allocator_handle_kind) :: omp_init_allocator}
+@item                   @tab @code{integer (omp_memspace_handle_kind), intent(in) :: memspace}
+@item                   @tab @code{integer, intent(in) :: ntraits}
+@item                   @tab @code{type (omp_alloctrait), intent(in) :: traits(*)}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_destroy_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.2
+@end table
+
+
+
+@node omp_destroy_allocator
+@subsection @code{omp_destroy_allocator} -- Destroy an allocator
+@table @asis
+@item @emph{Description}:
+Releases all resources used by a memory allocator, which must not represent
+a predefined memory allocator.  Accessing memory after its allocator has been
+destroyed has unspecified behavior.  Passing @code{omp_null_allocator} to the
+routine is permitted but has no effect.
+
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_destroy_allocator (omp_allocator_handle_t allocator);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_destroy_allocator(allocator)}
+@item                   @tab @code{integer (omp_allocator_handle_kind), intent(in) :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.3
+@end table
+
+
+
+@node omp_set_default_allocator
+@subsection @code{omp_set_default_allocator} -- Set the default allocator
+@table @asis
+@item @emph{Description}:
+Sets the default allocator that is used when no allocator has been specified
+in the @code{allocate} or @code{allocator} clause or if an OpenMP memory
+routine is invoked with the @code{omp_null_allocator} allocator.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_set_default_allocator(omp_allocator_handle_t allocator);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_set_default_allocator(allocator)}
+@item                   @tab @code{integer (omp_allocator_handle_kind), intent(in) :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_default_allocator}, @ref{omp_init_allocator}, @ref{OMP_ALLOCATOR},
+@ref{Memory allocation}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.4
+@end table
+
+
+
+@node omp_get_default_allocator
+@subsection @code{omp_get_default_allocator} -- Get the default allocator
+@table @asis
+@item @emph{Description}:
+The routine returns the default allocator that is used when no allocator has
+been specified in the @code{allocate} or @code{allocator} clause or if an
+OpenMP memory routine is invoked with the @code{omp_null_allocator} allocator.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{omp_allocator_handle_t omp_get_default_allocator();}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{function omp_get_default_allocator()}
+@item                   @tab @code{integer (omp_allocator_handle_kind) :: omp_get_default_allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_set_default_allocator}, @ref{OMP_ALLOCATOR}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.5
+@end table
+
+
+
+@node omp_alloc
+@subsection @code{omp_alloc} -- Memory allocation with an allocator
+@table @asis
+@item @emph{Description}:
+Allocate memory with the specified allocator, which can either be a predefined
+allocator, an allocator handle or @code{omp_null_allocator}.  If the allocators
+is @code{omp_null_allocator}, the allocator specified by the
+@var{def-allocator-var} ICV is used.  @var{size} must be a nonnegative number
+denoting the number of bytes to be allocated; if @var{size} is zero,
+@code{omp_alloc} will return a null pointer.  If successful, a pointer to the
+allocated memory is returned, otherwise the @code{fallback} trait of the
+allocator determines the behavior.  The content of the allocated memory is
+unspecified.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{allocator} argument may only be a constant expression with the value of
+one of the predefined allocators and may not be @code{omp_null_allocator}.
+
+Memory allocated by @code{omp_alloc} must be freed using @code{omp_free}.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_alloc(size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_alloc(size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_alloc(size, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{integer (c_size_t), value :: size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.6
+@end table
+
+
+
+@node omp_aligned_alloc
+@subsection @code{omp_aligned_alloc} -- Memory allocation with an allocator and alignment
+@table @asis
+@item @emph{Description}:
+Allocate memory with the specified allocator, which can either be a predefined
+allocator, an allocator handle or @code{omp_null_allocator}.  If the allocators
+is @code{omp_null_allocator}, the allocator specified by the
+@var{def-allocator-var} ICV is used.  @var{alignment} must be a positive power
+of two and @var{size} must be a nonnegative number that is a multiple of the
+alignment and denotes the number of bytes to be allocated; if @var{size} is
+zero, @code{omp_aligned_alloc} will return a null pointer.  The alignment will
+be at least the maximal value required by @code{alignment} trait of the
+allocator and the value of the  passed @var{alignment} argument.  If successful,
+a pointer to the allocated memory is returned, otherwise the @code{fallback}
+trait of the allocator determines the behavior.  The content of the allocated
+memory is unspecified.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{allocator} argument may only be a constant expression with the value of
+one of the predefined allocators and may not be @code{omp_null_allocator}.
+
+Memory allocated by @code{omp_aligned_alloc} must be freed using
+@code{omp_free}.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_aligned_alloc(size_t alignment,}
+@item                   @tab @code{  size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_aligned_alloc(size_t alignment,}
+@item                   @tab @code{  size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_aligned_alloc(alignment, size, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{integer (c_size_t), value :: alignment, size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.13.6
+@end table
+
+
+
+@node omp_free
+@subsection @code{omp_free} -- Freeing memory allocated with OpenMP routines
+@table @asis
+@item @emph{Description}:
+The @code{omp_free} routine deallocates memory previously allocated by an
+OpenMP memory-management routine. The @var{ptr} argument must point to such
+memory or be a null pointer; if it is a null pointer, no operation is
+performed.  If specified, the @var{allocator} argument must be either the
+memory allocator that was used for the allocation or @code{omp_null_allocator};
+if it is @code{omp_null_allocator}, the implementation will determine the value
+automatically.
+
+Calling @code{omp_free} invokes undefined behavior if the memory
+was already deallocated or when the used allocator has already been destroyed.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_free(void *ptr,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_free(void *ptr,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_free(ptr, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr}
+@item                   @tab @code{type (c_ptr), value :: ptr}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_alloc}, @ref{omp_aligned_alloc}, @ref{omp_calloc},
+@ref{omp_aligned_calloc}, @ref{omp_realloc}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.7
+@end table
+
+
+
+@node omp_calloc
+@subsection @code{omp_calloc} -- Allocate nullified memory with an allocator
+@table @asis
+@item @emph{Description}:
+Allocate zero-initialized memory with the specified allocator, which can either
+be a predefined allocator, an allocator handle or @code{omp_null_allocator}.  If
+the allocators is @code{omp_null_allocator}, the allocator specified by the
+@var{def-allocator-var} ICV is used.  The to-be allocated memory is for an
+array with @var{nmemb} elements, each having a size of @var{size} bytes.  Both
+@var{nmemb} and @var{size} must be nonnegative numbers; if either of them is
+zero, @code{omp_calloc} will return a null pointer.  If successful, a pointer to
+the zero-initialized allocated memory is returned, otherwise the @code{fallback}
+trait of the allocator determines the behavior.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{allocator} argument may only be a constant expression with the value of
+one of the predefined allocators and may not be @code{omp_null_allocator}.
+
+Memory allocated by @code{omp_calloc} must be freed using @code{omp_free}.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_calloc(size_t nmemb, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_calloc(size_t nmemb, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_calloc(nmemb, size, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{integer (c_size_t), value :: nmemb, size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.13.8
+@end table
+
+
+
+@node omp_aligned_calloc
+@subsection @code{omp_aligned_calloc} -- Allocate aligned nullified memory with an allocator
+@table @asis
+@item @emph{Description}:
+Allocate zero-initialized memory with the specified allocator, which can either
+be a predefined allocator, an allocator handle or @code{omp_null_allocator}.  If
+the allocators is @code{omp_null_allocator}, the allocator specified by the
+@var{def-allocator-var} ICV is used.  The to-be allocated memory is for an
+array with @var{nmemb} elements, each having a size of @var{size} bytes.  Both
+@var{nmemb} and @var{size} must be nonnegative numbers; if either of them is
+zero, @code{omp_aligned_calloc} will return a null pointer.  @var{alignment}
+must be a positive power of two and @var{size} must be a multiple of the
+alignment; the alignment will be at least the maximal value required by
+@code{alignment} trait of the allocator and the value of the  passed
+@var{alignment} argument.  If successful, a pointer to the zero-initialized
+allocated memory is returned, otherwise the @code{fallback} trait of the
+allocator determines the behavior.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{allocator} argument may only be a constant expression with the value of
+one of the predefined allocators and may not be @code{omp_null_allocator}.
+
+Memory allocated by @code{omp_aligned_calloc} must be freed using
+@code{omp_free}.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_aligned_calloc(size_t nmemb, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_aligned_calloc(size_t nmemb, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_aligned_calloc(nmemb, size, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{integer (c_size_t), value :: nmemb, size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.13.8
+@end table
+
+
+
+@node omp_realloc
+@subsection @code{omp_realloc} -- Reallocate memory allocated with OpenMP routines
+@table @asis
+@item @emph{Description}:
+The @code{omp_realloc} routine deallocates memory to which @var{ptr} points to
+and allocates new memory with the specified @var{allocator} argument; the
+new memory will have the content of the old memory up to the minimum of the
+old size and the new @var{size}, otherwise the content of the returned memory
+is unspecified.  If the new allocator is the same as the old one, the routine
+tries to resize the existing memory allocation, returning the same address as
+@var{ptr} if successful.  @var{ptr} must point to memory allocated by an OpenMP
+memory-management routine.
+
+The @var{allocator} and @var{free_allocator} arguments must be a predefined
+allocator, an allocator handle or @code{omp_null_allocator}.  If
+@var{free_allocator} is @code{omp_null_allocator}, the implementation
+automatically determines the allocator used for the allocation of @var{ptr}.
+If @var{allocator} is @code{omp_null_allocator} and @var{ptr} is is not a
+null pointer, the same allocator as @code{free_allocator} is used and
+when @var{ptr} is a null pointer the allocator specified by the
+@var{def-allocator-var} ICV is used.
+
+The @var{size} must be a nonnegative number denoting the number of bytes to be
+allocated; if @var{size} is zero, @code{omp_realloc} will return free the
+memory and return a null pointer.  When @var{size} is nonzero: if successful,
+a pointer to the allocated memory is returned, otherwise the @code{fallback}
+trait of the allocator determines the behavior.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{free_allocator} and @var{allocator} arguments may only be a constant
+expression with the value of one of the predefined allocators and may not be
+@code{omp_null_allocator}.
+
+Memory allocated by @code{omp_realloc} must be freed using @code{omp_free}.
+Calling @code{omp_free} invokes undefined behavior if the memory
+was already deallocated or when the used allocator has already been destroyed.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_realloc(void *ptr, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator,}
+@item                   @tab @code{  omp_allocator_handle_t free_allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_realloc(void *ptr, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator,}
+@item                   @tab @code{  omp_allocator_handle_t free_allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_realloc(ptr, size, allocator, free_allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{type(C_ptr), value :: ptr}
+@item                   @tab @code{integer (c_size_t), value :: size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator, free_allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.9
+@end table
+
+
+
+@c @node Tool Control Routine
+@c
+@c FIXME
+
+@c @node Environment Display Routine
+@c @section Environment Display Routine
+@c
+@c Routine to display the OpenMP number and the initial value of ICVs.
+@c It has C linkage and do not throw exceptions.
+@c
+@c menu
+@c * omp_display_env:: <fixme>
+@c end menu
+
 @c ---------------------------------------------------------------------
 @c OpenMP Environment Variables
 @c ---------------------------------------------------------------------
@@ -1932,11 +2896,27 @@ event handle that has already been fulfilled is also undefined.
 @chapter OpenMP Environment Variables
 
 The environment variables which beginning with @env{OMP_} are defined by
-section 4 of the OpenMP specification in version 4.5, while those
-beginning with @env{GOMP_} are GNU extensions.
+section 4 of the OpenMP specification in version 4.5 or in a later version
+of the specification, while those beginning with @env{GOMP_} are GNU extensions.
+Most @env{OMP_} environment variables have an associated internal control
+variable (ICV).
+
+For any OpenMP environment variable that sets an ICV and is neither
+@code{OMP_DEFAULT_DEVICE} nor has global ICV scope, associated
+device-specific environment variables exist.  For them, the environment
+variable without suffix affects the host.  The suffix @code{_DEV_} followed
+by a non-negative device number less that the number of available devices sets
+the ICV for the corresponding device.  The suffix @code{_DEV} sets the ICV
+of all non-host devices for which a device-specific corresponding environment
+variable has not been set while the @code{_ALL} suffix sets the ICV of all
+host and non-host devices for which a more specific corresponding environment
+variable is not set.
 
 @menu
+* OMP_ALLOCATOR::           Set the default allocator
+* OMP_AFFINITY_FORMAT::     Set the format string used for affinity display
 * OMP_CANCELLATION::        Set whether cancellation is activated
+* OMP_DISPLAY_AFFINITY::    Display thread affinity information
 * OMP_DISPLAY_ENV::         Show OpenMP version and environment variables
 * OMP_DEFAULT_DEVICE::      Set the device used in target regions
 * OMP_DYNAMIC::             Dynamic adjustment of threads
@@ -1949,7 +2929,7 @@ beginning with @env{GOMP_} are GNU extensions.
 * OMP_PLACES::              Specifies on which CPUs the threads should be placed
 * OMP_STACKSIZE::           Set default thread stack size
 * OMP_SCHEDULE::            How threads are scheduled
-* OMP_TARGET_OFFLOAD::      Controls offloading behaviour
+* OMP_TARGET_OFFLOAD::      Controls offloading behavior
 * OMP_TEAMS_THREAD_LIMIT::  Set the maximum number of threads imposed by teams
 * OMP_THREAD_LIMIT::        Set the maximum number of threads
 * OMP_WAIT_POLICY::         How waiting threads are handled
@@ -1961,10 +2941,161 @@ beginning with @env{GOMP_} are GNU extensions.
 @end menu
 
 
+@node OMP_ALLOCATOR
+@section @env{OMP_ALLOCATOR} -- Set the default allocator
+@cindex Environment Variable
+@table @asis
+@item @emph{ICV:} @var{def-allocator-var}
+@item @emph{Scope:} data environment
+@item @emph{Description}:
+Sets the default allocator that is used when no allocator has been specified
+in the @code{allocate} or @code{allocator} clause or if an OpenMP memory
+routine is invoked with the @code{omp_null_allocator} allocator.
+If unset, @code{omp_default_mem_alloc} is used.
+
+The value can either be a predefined allocator or a predefined memory space
+or a predefined memory space followed by a colon and a comma-separated list
+of memory trait and value pairs, separated by @code{=}.
+
+Note: The corresponding device environment variables are currently not
+supported.  Therefore, the non-host @var{def-allocator-var} ICVs are always
+initialized to @code{omp_default_mem_alloc}.  However, on all devices,
+the @code{omp_set_default_allocator} API routine can be used to change
+value.
+
+@multitable @columnfractions .45 .45
+@headitem Predefined allocators @tab Associated predefined memory spaces
+@item omp_default_mem_alloc     @tab omp_default_mem_space
+@item omp_large_cap_mem_alloc   @tab omp_large_cap_mem_space
+@item omp_const_mem_alloc       @tab omp_const_mem_space
+@item omp_high_bw_mem_alloc     @tab omp_high_bw_mem_space
+@item omp_low_lat_mem_alloc     @tab omp_low_lat_mem_space
+@item omp_cgroup_mem_alloc      @tab --
+@item omp_pteam_mem_alloc       @tab --
+@item omp_thread_mem_alloc      @tab --
+@end multitable
+
+The predefined allocators use the default values for the traits,
+as listed below.  Except that the last three allocators have the
+@code{access} trait set to @code{cgroup}, @code{pteam}, and
+@code{thread}, respectively.
+
+@multitable @columnfractions .25 .40 .25
+@headitem Trait @tab Allowed values @tab Default value
+@item @code{sync_hint} @tab @code{contended}, @code{uncontended},
+                            @code{serialized}, @code{private}
+                       @tab @code{contended}
+@item @code{alignment} @tab Positive integer being a power of two
+                       @tab 1 byte
+@item @code{access}    @tab @code{all}, @code{cgroup},
+                            @code{pteam}, @code{thread}
+                       @tab @code{all}
+@item @code{pool_size} @tab Positive integer
+                       @tab See @ref{Memory allocation}
+@item @code{fallback}  @tab @code{default_mem_fb}, @code{null_fb},
+                            @code{abort_fb}, @code{allocator_fb}
+                       @tab See below
+@item @code{fb_data}   @tab @emph{unsupported as it needs an allocator handle}
+                       @tab (none)
+@item @code{pinned}    @tab @code{true}, @code{false}
+                       @tab @code{false}
+@item @code{partition} @tab @code{environment}, @code{nearest},
+                            @code{blocked}, @code{interleaved}
+                       @tab @code{environment}
+@end multitable
+
+For the @code{fallback} trait, the default value is @code{null_fb} for the
+@code{omp_default_mem_alloc} allocator and any allocator that is associated
+with device memory; for all other other allocators, it is @code{default_mem_fb}
+by default.
+
+Examples:
+@smallexample
+OMP_ALLOCATOR=omp_high_bw_mem_alloc
+OMP_ALLOCATOR=omp_large_cap_mem_space
+OMP_ALLOCATOR=omp_low_lat_mem_space:pinned=true,partition=nearest
+@end smallexample
+
+@item @emph{See also}:
+@ref{Memory allocation}, @ref{omp_get_default_allocator},
+@ref{omp_set_default_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.21
+@end table
+
+
+
+@node OMP_AFFINITY_FORMAT
+@section @env{OMP_AFFINITY_FORMAT} -- Set the format string used for affinity display
+@cindex Environment Variable
+@table @asis
+@item @emph{ICV:} @var{affinity-format-var}
+@item @emph{Scope:} device
+@item @emph{Description}:
+Sets the format string used when displaying OpenMP thread affinity information.
+Special values are output using @code{%} followed by an optional size
+specification and then either the single-character field type or its long
+name enclosed in curly braces; using @code{%%} displays a literal percent.
+The size specification consists of an optional @code{0.} or @code{.} followed
+by a positive integer, specifying the minimal width of the output.  With
+@code{0.} and numerical values, the output is padded with zeros on the left;
+with @code{.}, the output is padded by spaces on the left; otherwise, the
+output is padded by spaces on the right.  If unset, the value is
+``@code{level %L thread %i affinity %A}''.
+
+Supported field types are:
+
+@multitable @columnfractions .10 .25 .60
+@item t @tab team_num @tab value returned by @code{omp_get_team_num}
+@item T @tab num_teams @tab value returned by @code{omp_get_num_teams}
+@item L @tab nesting_level @tab value returned by @code{omp_get_level}
+@item n @tab thread_num @tab value returned by @code{omp_get_thread_num}
+@item N @tab num_threads @tab value returned by @code{omp_get_num_threads}
+@item a @tab ancestor_tnum
+      @tab value returned by
+           @code{omp_get_ancestor_thread_num(omp_get_level()-1)}
+@item H @tab host @tab name of the host that executes the thread
+@item P @tab process_id @tab process identifier
+@item i @tab native_thread_id @tab native thread identifier
+@item A @tab thread_affinity
+      @tab comma separated list of integer values or ranges, representing the
+           processors on which a process might execute, subject to affinity
+           mechanisms
+@end multitable
+
+For instance, after setting
+
+@smallexample
+OMP_AFFINITY_FORMAT="%0.2a!%n!%.4L!%N;%.2t;%0.2T;%@{team_num@};%@{num_teams@};%A"
+@end smallexample
+
+with either @code{OMP_DISPLAY_AFFINITY} being set or when calling
+@code{omp_display_affinity} with @code{NULL} or an empty string, the program
+might display the following:
+
+@smallexample
+00!0!   1!4; 0;01;0;1;0-11
+00!3!   1!4; 0;01;0;1;0-11
+00!2!   1!4; 0;01;0;1;0-11
+00!1!   1!4; 0;01;0;1;0-11
+@end smallexample
+
+@item @emph{See also}:
+@ref{OMP_DISPLAY_AFFINITY}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.14
+@end table
+
+
+
 @node OMP_CANCELLATION
 @section @env{OMP_CANCELLATION} -- Set whether cancellation is activated
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{cancel-var}
+@item @emph{Scope:} global
 @item @emph{Description}:
 If set to @code{TRUE}, the cancellation is activated.  If set to @code{FALSE} or
 if unset, cancellation is disabled and the @code{cancel} construct is ignored.
@@ -1978,16 +3109,40 @@ if unset, cancellation is disabled and the @code{cancel} construct is ignored.
 
 
 
+@node OMP_DISPLAY_AFFINITY
+@section @env{OMP_DISPLAY_AFFINITY} -- Display thread affinity information
+@cindex Environment Variable
+@table @asis
+@item @emph{ICV:} @var{display-affinity-var}
+@item @emph{Scope:} global
+@item @emph{Description}:
+If set to @code{FALSE} or if unset, affinity displaying is disabled.
+If set to @code{TRUE}, the runtime displays affinity information about
+OpenMP threads in a parallel region upon entering the region and every time
+any change occurs.
+
+@item @emph{See also}:
+@ref{OMP_AFFINITY_FORMAT}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.13
+@end table
+
+
+
+
 @node OMP_DISPLAY_ENV
 @section @env{OMP_DISPLAY_ENV} -- Show OpenMP version and environment variables
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} none
+@item @emph{Scope:} not applicable
 @item @emph{Description}:
 If set to @code{TRUE}, the OpenMP version number and the values
 associated with the OpenMP environment variables are printed to @code{stderr}.
 If set to @code{VERBOSE}, it additionally shows the value of the environment
 variables which are GNU extensions.  If undefined or set to @code{FALSE},
-this information will not be shown.
+this information is not shown.
 
 
 @item @emph{Reference}:
@@ -2000,19 +3155,24 @@ this information will not be shown.
 @section @env{OMP_DEFAULT_DEVICE} -- Set the device used in target regions
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{default-device-var}
+@item @emph{Scope:} data environment
 @item @emph{Description}:
 Set to choose the device which is used in a @code{target} region, unless the
 value is overridden by @code{omp_set_default_device} or by a @code{device}
 clause.  The value shall be the nonnegative device number. If no device with
 the given device number exists, the code is executed on the host.  If unset,
-device number 0 will be used.
+@env{OMP_TARGET_OFFLOAD} is @code{mandatory} and no non-host devices are
+available, it is set to @code{omp_invalid_device}.  Otherwise, if unset,
+device number 0 is used.
 
 
 @item @emph{See also}:
 @ref{omp_get_default_device}, @ref{omp_set_default_device},
+@ref{OMP_TARGET_OFFLOAD}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.13
+@uref{https://www.openmp.org, OpenMP specification v5.2}, Section 21.2.7
 @end table
 
 
@@ -2021,6 +3181,8 @@ device number 0 will be used.
 @section @env{OMP_DYNAMIC} -- Dynamic adjustment of threads
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{dyn-var}
+@item @emph{Scope:} global
 @item @emph{Description}:
 Enable or disable the dynamic adjustment of the number of threads 
 within a team.  The value of this environment variable shall be 
@@ -2040,17 +3202,21 @@ disabled by default.
 @section @env{OMP_MAX_ACTIVE_LEVELS} -- Set the maximum number of nested parallel regions
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{max-active-levels-var}
+@item @emph{Scope:} data environment
 @item @emph{Description}:
 Specifies the initial value for the maximum number of nested parallel
 regions.  The value of this variable shall be a positive integer.
 If undefined, then if @env{OMP_NESTED} is defined and set to true, or
 if @env{OMP_NUM_THREADS} or @env{OMP_PROC_BIND} are defined and set to
 a list with more than one item, the maximum number of nested parallel
-regions will be initialized to the largest number supported, otherwise
-it will be set to one.
+regions is initialized to the largest number supported, otherwise
+it is set to one.
 
 @item @emph{See also}:
-@ref{omp_set_max_active_levels}, @ref{OMP_NESTED}
+@ref{omp_set_max_active_levels}, @ref{OMP_NESTED}, @ref{OMP_PROC_BIND},
+@ref{OMP_NUM_THREADS}
+
 
 @item @emph{Reference}: 
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.9
@@ -2063,6 +3229,8 @@ it will be set to one.
 number that can be set for a task.
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{max-task-priority-var}
+@item @emph{Scope:} global
 @item @emph{Description}:
 Specifies the initial value for the maximum priority value that can be
 set for a task.  The value of this variable shall be a non-negative
@@ -2083,19 +3251,25 @@ integer, and zero is allowed.  If undefined, the default priority is
 @cindex Environment Variable
 @cindex Implementation specific setting
 @table @asis
+@item @emph{ICV:} @var{max-active-levels-var}
+@item @emph{Scope:} data environment
 @item @emph{Description}:
 Enable or disable nested parallel regions, i.e., whether team members
 are allowed to create new teams.  The value of this environment variable 
 shall be @code{TRUE} or @code{FALSE}.  If set to @code{TRUE}, the number
-of maximum active nested regions supported will by default be set to the
-maximum supported, otherwise it will be set to one.  If
-@env{OMP_MAX_ACTIVE_LEVELS} is defined, its setting will override this
+of maximum active nested regions supported is by default set to the
+maximum supported, otherwise it is set to one.  If
+@env{OMP_MAX_ACTIVE_LEVELS} is defined, its setting overrides this
 setting.  If both are undefined, nested parallel regions are enabled if
 @env{OMP_NUM_THREADS} or @env{OMP_PROC_BINDS} are defined to a list with
 more than one item, otherwise they are disabled by default.
 
+Note that the @code{OMP_NESTED} environment variable was deprecated in
+the OpenMP specification 5.2 in favor of @code{OMP_MAX_ACTIVE_LEVELS}.
+
 @item @emph{See also}:
-@ref{omp_set_max_active_levels}, @ref{omp_set_nested}
+@ref{omp_set_max_active_levels}, @ref{omp_set_nested},
+@ref{OMP_MAX_ACTIVE_LEVELS}
 
 @item @emph{Reference}: 
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.6
@@ -2107,6 +3281,8 @@ more than one item, otherwise they are disabled by default.
 @section @env{OMP_NUM_TEAMS} -- Specifies the number of teams to use by teams region
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{nteams-var}
+@item @emph{Scope:} device
 @item @emph{Description}:
 Specifies the upper bound for number of teams to use in teams regions
 without explicit @code{num_teams} clause.  The value of this variable shall
@@ -2127,15 +3303,20 @@ implementation defined upper bound.
 @cindex Environment Variable
 @cindex Implementation specific setting
 @table @asis
+@item @emph{ICV:} @var{nthreads-var}
+@item @emph{Scope:} data environment
 @item @emph{Description}:
 Specifies the default number of threads to use in parallel regions.  The 
 value of this variable shall be a comma-separated list of positive integers;
 the value specifies the number of threads to use for the corresponding nested
-level.  Specifying more than one item in the list will automatically enable
+level.  Specifying more than one item in the list automatically enables
 nesting by default.  If undefined one thread per CPU is used.
 
+When a list with more than value is specified, it also affects the
+@var{max-active-levels-var} ICV as described in @ref{OMP_MAX_ACTIVE_LEVELS}.
+
 @item @emph{See also}:
-@ref{omp_set_num_threads}, @ref{OMP_NESTED}
+@ref{omp_set_num_threads}, @ref{OMP_MAX_ACTIVE_LEVELS}
 
 @item @emph{Reference}: 
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.2
@@ -2147,6 +3328,8 @@ nesting by default.  If undefined one thread per CPU is used.
 @section @env{OMP_PROC_BIND} -- Whether threads may be moved between CPUs
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{bind-var}
+@item @emph{Scope:} data environment
 @item @emph{Description}:
 Specifies whether threads may be moved between processors.  If set to
 @code{TRUE}, OpenMP threads should not be moved; if set to @code{FALSE}
@@ -2158,14 +3341,17 @@ same place partition as the primary thread.  With @code{CLOSE} those are
 kept close to the primary thread in contiguous place partitions.  And
 with @code{SPREAD} a sparse distribution
 across the place partitions is used.  Specifying more than one item in the
-list will automatically enable nesting by default.
+list automatically enables nesting by default.
+
+When a list is specified, it also affects the @var{max-active-levels-var} ICV
+as described in @ref{OMP_MAX_ACTIVE_LEVELS}.
 
 When undefined, @env{OMP_PROC_BIND} defaults to @code{TRUE} when
 @env{OMP_PLACES} or @env{GOMP_CPU_AFFINITY} is set and @code{FALSE} otherwise.
 
 @item @emph{See also}:
-@ref{omp_get_proc_bind}, @ref{GOMP_CPU_AFFINITY},
-@ref{OMP_NESTED}, @ref{OMP_PLACES}
+@ref{omp_get_proc_bind}, @ref{GOMP_CPU_AFFINITY}, @ref{OMP_PLACES},
+@ref{OMP_MAX_ACTIVE_LEVELS}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.4
@@ -2177,6 +3363,8 @@ When undefined, @env{OMP_PROC_BIND} defaults to @code{TRUE} when
 @section @env{OMP_PLACES} -- Specifies on which CPUs the threads should be placed
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{place-partition-var}
+@item @emph{Scope:} implicit tasks
 @item @emph{Description}:
 The thread placement can be either specified using an abstract name or by an
 explicit list of the places.  The abstract names @code{threads}, @code{cores},
@@ -2202,8 +3390,8 @@ specify an interval, a colon followed by the count is placed after
 the hardware thread number or the place.  Optionally, the length can be
 followed by a colon and the stride number -- otherwise a unit stride is
 assumed.  Placing an exclamation mark (@code{!}) directly before a curly
-brace or numbers inside the curly braces (excluding intervals) will
-exclude those hardware threads.
+brace or numbers inside the curly braces (excluding intervals)
+excludes those hardware threads.
 
 For instance, the following specifies the same places list:
 @code{"@{0,1,2@}, @{3,4,6@}, @{7,8,9@}, @{10,11,12@}"};
@@ -2227,6 +3415,8 @@ between CPUs following no placement policy.
 @section @env{OMP_STACKSIZE} -- Set default thread stack size
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{stacksize-var}
+@item @emph{Scope:} device
 @item @emph{Description}:
 Set the default thread stack size in kilobytes, unless the number
 is suffixed by @code{B}, @code{K}, @code{M} or @code{G}, in which
@@ -2236,6 +3426,9 @@ which gets the number of bytes as an argument.  If the stack size cannot
 be set due to system constraints, an error is reported and the initial
 stack size is left unchanged.  If undefined, the stack size is system
 dependent.
+
+@item @emph{See also}:
+@ref{GOMP_STACKSIZE}
 
 @item @emph{Reference}: 
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.7
@@ -2248,6 +3441,8 @@ dependent.
 @cindex Environment Variable
 @cindex Implementation specific setting
 @table @asis
+@item @emph{ICV:} @var{run-sched-var}
+@item @emph{Scope:} data environment
 @item @emph{Description}:
 Allows to specify @code{schedule type} and @code{chunk size}. 
 The value of the variable shall have the form: @code{type[,chunk]} where
@@ -2265,25 +3460,37 @@ dynamic scheduling and a chunk size of 1 is used.
 
 
 @node OMP_TARGET_OFFLOAD
-@section @env{OMP_TARGET_OFFLOAD} -- Controls offloading behaviour
+@section @env{OMP_TARGET_OFFLOAD} -- Controls offloading behavior
 @cindex Environment Variable
 @cindex Implementation specific setting
 @table @asis
+@item @emph{ICV:} @var{target-offload-var}
+@item @emph{Scope:} global
 @item @emph{Description}:
-Specifies the behaviour with regard to offloading code to a device.  This
+Specifies the behavior with regard to offloading code to a device.  This
 variable can be set to one of three values - @code{MANDATORY}, @code{DISABLED}
 or @code{DEFAULT}.
 
-If set to @code{MANDATORY}, the program will terminate with an error if
-the offload device is not present or is not supported.  If set to
-@code{DISABLED}, then offloading is disabled and all code will run on the
-host. If set to @code{DEFAULT}, the program will try offloading to the
-device first, then fall back to running code on the host if it cannot.
+If set to @code{MANDATORY}, the program terminates with an error if
+any device construct or device memory routine uses a device that is unavailable
+or not supported by the implementation, or uses a non-conforming device number.
+If set to @code{DISABLED}, then offloading is disabled and all code runs on
+the host. If set to @code{DEFAULT}, the program tries offloading to the
+device first, then falls back to running code on the host if it cannot.
 
-If undefined, then the program will behave as if @code{DEFAULT} was set.
+If undefined, then the program behaves as if @code{DEFAULT} was set.
+
+Note: Even with @code{MANDATORY}, no run-time termination is performed when
+the device number in a @code{device} clause or argument to a device memory
+routine is for host, which includes using the device number in the
+@var{default-device-var} ICV.  However, the initial value of
+the @var{default-device-var} ICV is affected by @code{MANDATORY}.
+
+@item @emph{See also}:
+@ref{OMP_DEFAULT_DEVICE}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.17
+@uref{https://www.openmp.org, OpenMP specification v5.2}, Section 21.2.8
 @end table
 
 
@@ -2292,6 +3499,8 @@ If undefined, then the program will behave as if @code{DEFAULT} was set.
 @section @env{OMP_TEAMS_THREAD_LIMIT} -- Set the maximum number of threads imposed by teams
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{teams-thread-limit-var}
+@item @emph{Scope:} device
 @item @emph{Description}:
 Specifies an upper bound for the number of threads to use by each contention
 group created by a teams construct without explicit @code{thread_limit}
@@ -2312,6 +3521,8 @@ limit.
 @section @env{OMP_THREAD_LIMIT} -- Set the maximum number of threads
 @cindex Environment Variable
 @table @asis
+@item @emph{ICV:} @var{thread-limit-var}
+@item @emph{Scope:} data environment
 @item @emph{Description}:
 Specifies the number of threads to use for the whole program.  The
 value of this variable shall be a positive integer.  If undefined,
@@ -2355,10 +3566,10 @@ Binds threads to specific CPUs.  The variable should contain a space-separated
 or comma-separated list of CPUs.  This list may contain different kinds of 
 entries: either single CPU numbers in any order, a range of CPUs (M-N) 
 or a range with some stride (M-N:S).  CPU numbers are zero based.  For example,
-@code{GOMP_CPU_AFFINITY="0 3 1-2 4-15:2"} will bind the initial thread
+@code{GOMP_CPU_AFFINITY="0 3 1-2 4-15:2"} binds the initial thread
 to CPU 0, the second to CPU 3, the third to CPU 1, the fourth to 
 CPU 2, the fifth to CPU 4, the sixth through tenth to CPUs 6, 8, 10, 12,
-and 14 respectively and then start assigning back from the beginning of
+and 14 respectively and then starts assigning back from the beginning of
 the list.  @code{GOMP_CPU_AFFINITY=0} binds all threads to CPU 0.
 
 There is no libgomp library routine to determine whether a CPU affinity
@@ -2371,7 +3582,7 @@ or disabled during the runtime of the application.
 If both @env{GOMP_CPU_AFFINITY} and @env{OMP_PROC_BIND} are set,
 @env{OMP_PROC_BIND} has a higher precedence.  If neither has been set and
 @env{OMP_PROC_BIND} is unset, or when @env{OMP_PROC_BIND} is set to
-@code{FALSE}, the host system will handle the assignment of threads to CPUs.
+@code{FALSE}, the host system handles the assignment of threads to CPUs.
 
 @item @emph{See also}:
 @ref{OMP_PLACES}, @ref{OMP_PROC_BIND}
@@ -2387,7 +3598,7 @@ If both @env{GOMP_CPU_AFFINITY} and @env{OMP_PROC_BIND} are set,
 Enable debugging output.  The variable should be set to @code{0}
 (disabled, also the default if not set), or @code{1} (enabled).
 
-If enabled, some debugging output will be printed during execution.
+If enabled, some debugging output is printed during execution.
 This is currently not specified in more detail, and subject to change.
 @end table
 
@@ -2460,7 +3671,7 @@ separated by @code{:} where:
 instance.
 @item @code{$<priority>} is an optional priority for the worker threads of a
 thread pool according to @code{pthread_setschedparam}.  In case a priority
-value is omitted, then a worker thread will inherit the priority of the OpenMP
+value is omitted, then a worker thread inherits the priority of the OpenMP
 primary thread that created it.  The priority of the worker thread is not
 changed after creation, even if a new OpenMP primary thread using the worker has
 a different priority.
@@ -2468,7 +3679,7 @@ a different priority.
 RTEMS application configuration.
 @end itemize
 In case no thread pool configuration is specified for a scheduler instance,
-then each OpenMP primary thread of this scheduler instance will use its own
+then each OpenMP primary thread of this scheduler instance uses its own
 dynamically allocated thread pool.  To limit the worker thread count of the
 thread pools, each OpenMP primary thread must call @code{omp_set_num_threads}.
 @item @emph{Example}:
@@ -2493,12 +3704,10 @@ pools available and their worker threads run at priority four.
 
 To activate the OpenACC extensions for C/C++ and Fortran, the compile-time 
 flag @option{-fopenacc} must be specified.  This enables the OpenACC directive
-@code{#pragma acc} in C/C++ and @code{!$acc} directives in free form,
-@code{c$acc}, @code{*$acc} and @code{!$acc} directives in fixed form,
-@code{!$} conditional compilation sentinels in free form and @code{c$},
-@code{*$} and @code{!$} sentinels in fixed form, for Fortran.  The flag also
-arranges for automatic linking of the OpenACC runtime library 
-(@ref{OpenACC Runtime Library Routines}).
+@samp{#pragma acc} in C/C++ and, in Fortran, the @samp{!$acc} sentinel in free
+source form and the @samp{c$acc}, @samp{*$acc} and @samp{!$acc} sentinels in
+fixed source form.  The flag also arranges for automatic linking of the OpenACC
+runtime library (@ref{OpenACC Runtime Library Routines}).
 
 See @uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
 
@@ -2746,7 +3955,7 @@ modified the interface introduced in OpenACC 2.6.  The kind-value parameter
 @code{acc_device_property} has been renamed to @code{acc_device_property_kind}
 for consistency and the return type of the @code{acc_get_property} function is
 now a @code{c_size_t} integer instead of a @code{acc_device_property} integer.
-The parameter @code{acc_device_property} will continue to be provided,
+The parameter @code{acc_device_property} is still provided,
 but might be removed in a future version of GCC.
 
 @item @emph{C/C++}:
@@ -2779,10 +3988,10 @@ but might be removed in a future version of GCC.
 @table @asis
 @item @emph{Description}
 This function tests for completion of the asynchronous operation specified
-in @var{arg}. In C/C++, a non-zero value will be returned to indicate
-the specified asynchronous operation has completed. While Fortran will return
-a @code{true}. If the asynchronous operation has not completed, C/C++ returns
-a zero and Fortran returns a @code{false}.
+in @var{arg}. In C/C++, a non-zero value is returned to indicate
+the specified asynchronous operation has completed while Fortran returns
+@code{true}. If the asynchronous operation has not completed, C/C++ returns
+zero and Fortran returns @code{false}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -2808,10 +4017,10 @@ a zero and Fortran returns a @code{false}.
 @table @asis
 @item @emph{Description}
 This function tests for completion of all asynchronous operations.
-In C/C++, a non-zero value will be returned to indicate all asynchronous
-operations have completed. While Fortran will return a @code{true}. If
-any asynchronous operation has not completed, C/C++ returns a zero and
-Fortran returns a @code{false}.
+In C/C++, a non-zero value is returned to indicate all asynchronous
+operations have completed while Fortran returns @code{true}. If
+any asynchronous operation has not completed, C/C++ returns zero and
+Fortran returns @code{false}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -2992,9 +4201,9 @@ This function shuts down the runtime for the device type specified in
 This function returns whether the program is executing on a particular
 device specified in @var{devicetype}. In C/C++ a non-zero value is
 returned to indicate the device is executing on the specified device type.
-In Fortran, @code{true} will be returned. If the program is not executing
-on the specified device type C/C++ will return a zero, while Fortran will
-return @code{false}.
+In Fortran, @code{true} is returned. If the program is not executing
+on the specified device type C/C++ returns zero, while Fortran
+returns @code{false}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -3099,8 +4308,8 @@ variable or array element and @var{len} specifies the length in bytes.
 @table @asis
 @item @emph{Description}
 This function tests if the host data specified by @var{a} and of length
-@var{len} is present or not. If it is not present, then device memory
-will be allocated and the host memory copied. The device address of
+@var{len} is present or not. If it is not present, device memory
+is allocated and the host memory copied. The device address of
 the newly allocated device memory is returned.
 
 In Fortran, two (2) forms are supported. In the first form, @var{a} specifies
@@ -3183,8 +4392,8 @@ array element and @var{len} specifies the length in bytes.
 @table @asis
 @item @emph{Description}
 This function tests if the host data specified by @var{a} and of length
-@var{len} is present or not. If it is not present, then device memory
-will be allocated and mapped to host memory. In C/C++, the device address
+@var{len} is present or not. If it is not present, device memory
+is allocated and mapped to host memory. In C/C++, the device address
 of the newly allocated device memory is returned.
 
 In Fortran, two (2) forms are supported. In the first form, @var{a} specifies
@@ -3785,13 +4994,11 @@ The variables @env{ACC_DEVICE_TYPE} and @env{ACC_DEVICE_NUM}
 are defined by section 4 of the OpenACC specification in version 2.0.
 The variable @env{ACC_PROFLIB}
 is defined by section 4 of the OpenACC specification in version 2.6.
-The variable @env{GCC_ACC_NOTIFY} is used for diagnostic purposes.
 
 @menu
 * ACC_DEVICE_TYPE::
 * ACC_DEVICE_NUM::
 * ACC_PROFLIB::
-* GCC_ACC_NOTIFY::
 @end menu
 
 
@@ -3799,6 +5006,17 @@ The variable @env{GCC_ACC_NOTIFY} is used for diagnostic purposes.
 @node ACC_DEVICE_TYPE
 @section @code{ACC_DEVICE_TYPE}
 @table @asis
+@item @emph{Description}:
+Control the default device type to use when executing compute regions.
+If unset, the code can be run on any device type, favoring a non-host
+device type.
+
+Supported values in GCC (if compiled in) are
+@itemize
+@item @code{host}
+@item @code{nvidia}
+@item @code{radeon}
+@end itemize
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
 4.1.
@@ -3809,6 +5027,10 @@ The variable @env{GCC_ACC_NOTIFY} is used for diagnostic purposes.
 @node ACC_DEVICE_NUM
 @section @code{ACC_DEVICE_NUM}
 @table @asis
+@item @emph{Description}:
+Control which device, identified by device number, is the default device.
+The value must be a nonnegative integer less than the number of devices.
+If unset, device number zero is used.
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
 4.2.
@@ -3819,21 +5041,17 @@ The variable @env{GCC_ACC_NOTIFY} is used for diagnostic purposes.
 @node ACC_PROFLIB
 @section @code{ACC_PROFLIB}
 @table @asis
+@item @emph{Description}:
+Semicolon-separated list of dynamic libraries that are loaded as profiling
+libraries.  Each library must provide at least the @code{acc_register_library}
+routine.  Each library file is found as described by the documentation of
+@code{dlopen} of your operating system.
 @item @emph{See also}:
 @ref{acc_register_library}, @ref{OpenACC Profiling Interface}
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
 4.3.
-@end table
-
-
-
-@node GCC_ACC_NOTIFY
-@section @code{GCC_ACC_NOTIFY}
-@table @asis
-@item @emph{Description}:
-Print debug information pertaining to the accelerator.
 @end table
 
 
@@ -3871,11 +5089,11 @@ completed.
 Normally, the management of the streams that are created as a result of
 using the @code{async} clause, is done without any intervention by the
 caller.  This implies the association between the @code{async-argument}
-and the CUDA stream will be maintained for the lifetime of the program.
+and the CUDA stream is maintained for the lifetime of the program.
 However, this association can be changed through the use of the library
 function @code{acc_set_cuda_stream}.  When the function
 @code{acc_set_cuda_stream} is called, the CUDA stream that was
-originally associated with the @code{async} clause will be destroyed.
+originally associated with the @code{async} clause is destroyed.
 Caution should be taken when changing the association as subsequent
 references to the @code{async-argument} refer to a different
 CUDA stream.
@@ -3925,7 +5143,7 @@ parameters to the OpenACC library function @code{acc_set_device_num()}.
 
 Once the call to @code{acc_set_device_num()} has completed, the OpenACC
 library uses the  context that was created during the call to
-@code{cublasCreate()}. In other words, both libraries will be sharing the
+@code{cublasCreate()}. In other words, both libraries share the
 same context.
 
 @smallexample
@@ -3964,7 +5182,7 @@ call parameters specify which device to use and what device
 type to use, i.e., @code{acc_device_nvidia}. It should be noted that this
 is but one method to initialize the OpenACC library and allocate the
 appropriate hardware resources. Other methods are available through the
-use of environment variables and these will be discussed in the next section.
+use of environment variables and these is discussed in the next section.
 
 Once the call to @code{acc_set_device_num()} has completed, other OpenACC
 functions can be called as seen with multiple calls being made to
@@ -3974,7 +5192,7 @@ subsequent to the calls to @code{acc_copyin()}.
 As seen in the previous use case, a call to @code{cublasCreate()}
 initializes the CUBLAS library and allocates the hardware resources on the
 host and the device.  However, since the device has already been allocated,
-@code{cublasCreate()} will only initialize the CUBLAS library and allocate
+@code{cublasCreate()} only initializes the CUBLAS library and allocates
 the appropriate hardware resources on the host. The context that was created
 as part of the OpenACC initialization is shared with the CUBLAS library,
 similarly to the first use case.
@@ -4063,8 +5281,8 @@ possible for the (very common) case that the Profiling Interface is
 not enabled.  This is relevant, as the Profiling Interface affects all
 the @emph{hot} code paths (in the target code, not in the offloaded
 code).  Users of the OpenACC Profiling Interface can be expected to
-understand that performance will be impacted to some degree once the
-Profiling Interface has gotten enabled: for example, because of the
+understand that performance is impacted to some degree once the
+Profiling Interface is enabled: for example, because of the
 @emph{runtime} (libgomp) calling into a third-party @emph{library} for
 every event that has been registered.
 
@@ -4085,7 +5303,7 @@ does directly calling @code{acc_prof_register},
 @code{acc_prof_unregister}, @code{acc_prof_lookup}.
 
 As currently there are no inquiry functions defined, calls to
-@code{acc_prof_lookup} will always return @code{NULL}.
+@code{acc_prof_lookup} always returns @code{NULL}.
 
 There aren't separate @emph{start}, @emph{stop} events defined for the
 event types @code{acc_ev_create}, @code{acc_ev_delete},
@@ -4103,7 +5321,7 @@ It's not clear if for @emph{nested} event callbacks (for example,
 construct), this should be set for the nested event
 (@code{acc_ev_enqueue_launch_start}), or if the value of the parent
 construct should remain (@code{acc_ev_compute_construct_start}).  In
-this implementation, the value will generally correspond to the
+this implementation, the value generally corresponds to the
 innermost nested event type.
 
 @item @code{acc_prof_info.device_type}
@@ -4111,7 +5329,7 @@ innermost nested event type.
 
 @item
 For @code{acc_ev_compute_construct_start}, and in presence of an
-@code{if} clause with @emph{false} argument, this will still refer to
+@code{if} clause with @emph{false} argument, this still refers to
 the offloading device type.
 It's not clear if that's the expected behavior.
 
@@ -4136,20 +5354,20 @@ Not yet implemented correctly for
 
 @item
 In a compute construct, for host-fallback
-execution/@code{acc_device_host} it will always be
+execution/@code{acc_device_host} it always is
 @code{acc_async_sync}.
-It's not clear if that's the expected behavior.
+It is unclear if that is the expected behavior.
 
 @item
 For @code{acc_ev_device_init_start} and @code{acc_ev_device_init_end},
 it will always be @code{acc_async_sync}.
-It's not clear if that's the expected behavior.
+It is unclear if that is the expected behavior.
 
 @end itemize
 
 @item @code{acc_prof_info.async_queue}
 There is no @cite{limited number of asynchronous queues} in libgomp.
-This will always have the same value as @code{acc_prof_info.async}.
+This always has the same value as @code{acc_prof_info.async}.
 
 @item @code{acc_prof_info.src_file}
 Always @code{NULL}; not yet implemented.
@@ -4359,32 +5577,103 @@ offloading devices (it's not clear if they should be):
 @chapter OpenMP-Implementation Specifics
 
 @menu
+* Implementation-defined ICV Initialization::
 * OpenMP Context Selectors::
-* Memory allocation with libmemkind::
+* Memory allocation::
 @end menu
+
+@node Implementation-defined ICV Initialization
+@section Implementation-defined ICV Initialization
+@cindex Implementation specific setting
+
+@multitable @columnfractions .30 .70
+@item @var{affinity-format-var} @tab See @ref{OMP_AFFINITY_FORMAT}.
+@item @var{def-allocator-var} @tab See @ref{OMP_ALLOCATOR}.
+@item @var{max-active-levels-var} @tab See @ref{OMP_MAX_ACTIVE_LEVELS}.
+@item @var{dyn-var} @tab See @ref{OMP_DYNAMIC}.
+@item @var{nthreads-var} @tab See @ref{OMP_NUM_THREADS}.
+@item @var{num-devices-var} @tab Number of non-host devices found
+by GCC's run-time library
+@item @var{num-procs-var} @tab The number of CPU cores on the
+initial device, except that affinity settings might lead to a
+smaller number.  On non-host devices, the value of the
+@var{nthreads-var} ICV.
+@item @var{place-partition-var} @tab See @ref{OMP_PLACES}.
+@item @var{run-sched-var} @tab See @ref{OMP_SCHEDULE}.
+@item @var{stacksize-var} @tab See @ref{OMP_STACKSIZE}.
+@item @var{thread-limit-var} @tab See @ref{OMP_TEAMS_THREAD_LIMIT}
+@item @var{wait-policy-var} @tab See @ref{OMP_WAIT_POLICY} and
+@ref{GOMP_SPINCOUNT}
+@end multitable
 
 @node OpenMP Context Selectors
 @section OpenMP Context Selectors
 
 @code{vendor} is always @code{gnu}. References are to the GCC manual.
 
-@multitable @columnfractions .60 .10 .25
-@headitem @code{arch} @tab @code{kind} @tab @code{isa}
+@c NOTE: Only the following selectors have been implemented. To add
+@c additional traits for target architecture, TARGET_OMP_DEVICE_KIND_ARCH_ISA
+@c has to be implemented; cf. also PR target/105640.
+@c For offload devices, add *additionally* gcc/config/*/t-omp-device.
+
+For the host compiler, @code{kind} always matches @code{host}; for the
+offloading architectures AMD GCN and Nvidia PTX, @code{kind} always matches
+@code{gpu}.  For the x86 family of computers, AMD GCN and Nvidia PTX
+the following traits are supported in addition; while OpenMP is supported
+on more architectures, GCC currently does not match any @code{arch} or
+@code{isa} traits for those.
+
+@multitable @columnfractions .65 .30
+@headitem @code{arch} @tab @code{isa}
 @item @code{x86}, @code{x86_64}, @code{i386}, @code{i486},
       @code{i586}, @code{i686}, @code{ia32}
-      @tab @code{host}
       @tab See @code{-m...} flags in ``x86 Options'' (without @code{-m})
 @item @code{amdgcn}, @code{gcn}
-      @tab @code{gpu}
       @tab See @code{-march=} in ``AMD GCN Options''@footnote{Additionally,
       @code{gfx803} is supported as an alias for @code{fiji}.}
 @item @code{nvptx}
-      @tab @code{gpu}
       @tab See @code{-march=} in ``Nvidia PTX Options''
 @end multitable
 
-@node Memory allocation with libmemkind
-@section Memory allocation with libmemkind
+@node Memory allocation
+@section Memory allocation
+
+The description below applies to:
+
+@itemize
+@item Explicit use of the OpenMP API routines, see
+      @ref{Memory Management Routines}.
+@item The @code{allocate} clause, except when the @code{allocator} modifier is a
+      constant expression with value @code{omp_default_mem_alloc} and no
+      @code{align} modifier has been specified. (In that case, the normal
+      @code{malloc} allocation is used.)
+@item Using the @code{allocate} directive for automatic/stack variables, except
+      when the @code{allocator} clause is a constant expression with value
+      @code{omp_default_mem_alloc} and no @code{align} clause has been
+      specified. (In that case, the normal allocation is used: stack allocation
+      and, sometimes for Fortran, also @code{malloc} [depending on flags such as
+      @option{-fstack-arrays}].)
+@item Using the @code{allocate} directive for variable in static memory is
+      currently not supported (compile time error).
+@item Using the @code{allocators} directive for Fortran pointers and
+      allocatables is currently not supported (compile time error).
+@end itemize
+
+For the available predefined allocators and, as applicable, their associated
+predefined memory spaces and for the available traits and their default values,
+see @ref{OMP_ALLOCATOR}.  Predefined allocators without an associated memory
+space use the @code{omp_default_mem_space} memory space.
+
+For the memory spaces, the following applies:
+@itemize
+@item @code{omp_default_mem_space} is supported
+@item @code{omp_const_mem_space} maps to @code{omp_default_mem_space}
+@item @code{omp_low_lat_mem_space} maps to @code{omp_default_mem_space}
+@item @code{omp_large_cap_mem_space} maps to @code{omp_default_mem_space},
+      unless the memkind library is available
+@item @code{omp_high_bw_mem_space} maps to @code{omp_default_mem_space},
+      unless the memkind library is available
+@end itemize
 
 On Linux systems, where the @uref{https://github.com/memkind/memkind, memkind
 library} (@code{libmemkind.so.0}) is available at runtime, it is used when
@@ -4393,9 +5682,47 @@ creating memory allocators requesting
 @itemize
 @item the memory space @code{omp_high_bw_mem_space}
 @item the memory space @code{omp_large_cap_mem_space}
-@item the partition trait @code{omp_atv_interleaved}
+@item the @code{partition} trait @code{interleaved}; note that for
+      @code{omp_large_cap_mem_space} the allocation will not be interleaved
 @end itemize
 
+On Linux systems, where the @uref{https://github.com/numactl/numactl, numa
+library} (@code{libnuma.so.1}) is available at runtime, it used when creating
+memory allocators requesting
+
+@itemize
+@item the @code{partition} trait @code{nearest}, except when both the
+libmemkind library is available and the memory space is either
+@code{omp_large_cap_mem_space} or @code{omp_high_bw_mem_space}
+@end itemize
+
+Note that the numa library will round up the allocation size to a multiple of
+the system page size; therefore, consider using it only with large data or
+by sharing allocations via the @code{pool_size} trait.  Furthermore, the Linux
+kernel does not guarantee that an allocation will always be on the nearest NUMA
+node nor that after reallocation the same node will be used.  Note additionally
+that, on Linux, the default setting of the memory placement policy is to use the
+current node; therefore, unless the memory placement policy has been overridden,
+the @code{partition} trait @code{environment} (the default) will be effectively
+a @code{nearest} allocation.
+
+Additional notes regarding the traits:
+@itemize
+@item The @code{pinned} trait is unsupported.
+@item The default for the @code{pool_size} trait is no pool and for every
+      (re)allocation the associated library routine is called, which might
+      internally use a memory pool.
+@item For the @code{partition} trait, the partition part size will be the same
+      as the requested size (i.e. @code{interleaved} or @code{blocked} has no
+      effect), except for @code{interleaved} when the memkind library is
+      available.  Furthermore, for @code{nearest} and unless the numa library
+      is available, the memory might not be on the same NUMA node as thread
+      that allocated the memory; on Linux, this is in particular the case when
+      the memory placement policy is set to preferred.
+@item The @code{access} trait has no effect such that memory is always
+      accessible by all threads.
+@item The @code{sync_hint} trait has no effect.
+@end itemize
 
 @c ---------------------------------------------------------------------
 @c Offload-Target Specifics
@@ -4458,7 +5785,7 @@ The implementation remark:
       @code{device(ancestor:1)}) are processed serially per @code{target} region
       such that the next reverse offload region is only executed after the previous
       one returned.
-@item OpenMP code that has a requires directive with @code{unified_address} or
+@item OpenMP code that has a @code{requires} directive with
       @code{unified_shared_memory} will remove any GCN device from the list of
       available devices (``host fallback'').
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
@@ -4520,9 +5847,16 @@ The implementation remark:
       Per device, reverse offload regions are processed serially such that
       the next reverse offload region is only executed after the previous
       one returned.
-@item OpenMP code that has a requires directive with @code{unified_address}
-      or @code{unified_shared_memory} will remove any nvptx device from the
+@item OpenMP code that has a @code{requires} directive with
+      @code{unified_shared_memory} will remove any nvptx device from the
       list of available devices (``host fallback'').
+@item The default per-warp stack size is 128 kiB; see also @code{-msoft-stack}
+      in the GCC manual.
+@item The OpenMP routines @code{omp_target_memcpy_rect} and
+      @code{omp_target_memcpy_rect_async} and the @code{target update}
+      directive for non-contiguous list items will use the 2D and 3D
+      memory-copy functions of the CUDA library.  Higher dimensions will
+      call those functions in a loop and are therefore supported.
 @end itemize
 
 

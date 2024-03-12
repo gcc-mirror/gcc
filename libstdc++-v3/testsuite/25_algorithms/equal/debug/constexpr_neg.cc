@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-require-debug-mode "" }
 
 #include <algorithm>
@@ -32,7 +31,8 @@ test01()
   return outa;
 }
 
-static_assert(test01()); // { dg-error }
+static_assert(test01()); // { dg-error "non-constant condition" }
+// { dg-error "builtin_unreachable" "" { target *-*-* } 0 }
 
 constexpr bool
 test02()
@@ -44,8 +44,5 @@ test02()
   return outa;
 }
 
-static_assert(test02()); // { dg-error "outside the bounds" }
-
-// { dg-prune-output "non-constant condition" }
-// { dg-prune-output "in 'constexpr'" }
-// { dg-prune-output "builtin_unreachable" }
+static_assert(test02()); // { dg-error "non-constant condition" }
+// { dg-error "is outside the bounds" "" { target *-*-* } 0 }

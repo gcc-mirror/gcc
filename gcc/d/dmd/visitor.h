@@ -10,13 +10,14 @@
 #pragma once
 
 #include "root/dsystem.h"
+#include "root/dcompat.h"   // for d_bool
 
 class Statement;
 class ErrorStatement;
 class PeelStatement;
 class ExpStatement;
 class DtorExpStatement;
-class CompileStatement;
+class MixinStatement;
 class CompoundStatement;
 class CompoundDeclarationStatement;
 class UnrolledLoopStatement;
@@ -109,7 +110,7 @@ class AnonDeclaration;
 class PragmaDeclaration;
 class ConditionalDeclaration;
 class StaticIfDeclaration;
-class CompileDeclaration;
+class MixinDeclaration;
 class StaticForeachDeclaration;
 class UserAttributeDeclaration;
 class ForwardingAttribDeclaration;
@@ -267,6 +268,7 @@ class UshrAssignExp;
 class CatAssignExp;
 class CatElemAssignExp;
 class CatDcharAssignExp;
+class LoweredAssignExp;
 class AddExp;
 class MinExp;
 class CatExp;
@@ -364,7 +366,7 @@ public:
     virtual void visit(SharedStaticDtorDeclaration *s) { visit((StaticDtorDeclaration *)s); }
 
     // AttribDeclarations
-    virtual void visit(CompileDeclaration *s) { visit((AttribDeclaration *)s); }
+    virtual void visit(MixinDeclaration *s) { visit((AttribDeclaration *)s); }
     virtual void visit(UserAttributeDeclaration *s) { visit((AttribDeclaration *)s); }
     virtual void visit(LinkDeclaration *s) { visit((AttribDeclaration *)s); }
     virtual void visit(AnonDeclaration *s) { visit((AttribDeclaration *)s); }
@@ -395,7 +397,7 @@ public:
     virtual void visit(ReturnStatement *s) { visit((Statement *)s); }
     virtual void visit(LabelStatement *s) { visit((Statement *)s); }
     virtual void visit(StaticAssertStatement *s) { visit((Statement *)s); }
-    virtual void visit(CompileStatement *s) { visit((Statement *)s); }
+    virtual void visit(MixinStatement *s) { visit((Statement *)s); }
     virtual void visit(WhileStatement *s) { visit((Statement *)s); }
     virtual void visit(ForStatement *s) { visit((Statement *)s); }
     virtual void visit(DoStatement *s) { visit((Statement *)s); }
@@ -658,11 +660,12 @@ public:
     virtual void visit(ClassReferenceExp *e) { visit((Expression *)e); }
     virtual void visit(VoidInitExp *e) { visit((Expression *)e); }
     virtual void visit(ThrownExceptionExp *e) { visit((Expression *)e); }
+    virtual void visit(LoweredAssignExp *e) { visit((AssignExp *)e); }
 };
 
 class StoppableVisitor : public Visitor
 {
 public:
-    bool stop;
+    d_bool stop;
     StoppableVisitor() : stop(false) {}
 };

@@ -268,7 +268,6 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 			 tree op0, tree op1 = NULL_TREE)
 {
   aff_tree tmp;
-  poly_int64 bitpos, bitsize, bytepos;
 
   switch (code)
     {
@@ -351,7 +350,8 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 		&& TYPE_OVERFLOW_WRAPS (itype)
 		&& TREE_CODE (op1) == INTEGER_CST
 		&& get_range_query (cfun)->range_of_expr (vr, op0)
-		&& vr.kind () == VR_RANGE)
+		&& !vr.varying_p ()
+		&& !vr.undefined_p ())
 	      {
 		wide_int minv = vr.lower_bound ();
 		wide_int maxv = vr.upper_bound ();
@@ -805,6 +805,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 	      continue;
 	    }
 	  exp = XNEW (class name_expansion);
+	  ::new (static_cast<void *> (exp)) name_expansion ();
 	  exp->in_progress = 1;
 	  if (!*cache)
 	    *cache = new hash_map<tree, name_expansion *>;
@@ -860,6 +861,7 @@ tree_to_aff_combination_expand (tree expr, tree type, aff_tree *comb,
 bool
 free_name_expansion (tree const &, name_expansion **value, void *)
 {
+  (*value)->~name_expansion ();
   free (*value);
   return true;
 }

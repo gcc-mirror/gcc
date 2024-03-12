@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "cgraph.h"
 #include "data-streamer.h"
+#include "value-range.h"
+#include "streamer-hooks.h"
 
 /* Read a string from the string table in DATA_IN using input block
    IB.  Write the length to RLEN.  */
@@ -206,16 +208,81 @@ streamer_read_gcov_count (class lto_input_block *ib)
   return ret;
 }
 
+/* Read REAL_VALUE_TYPE from IB.  */
+
+void
+streamer_read_real_value (class lto_input_block *ib, REAL_VALUE_TYPE *r)
+{
+  struct bitpack_d bp = streamer_read_bitpack (ib);
+  bp_unpack_real_value (&bp, r);
+}
+
+void
+streamer_read_value_range (class lto_input_block *ib, data_in *data_in,
+			   Value_Range &vr)
+{
+  // Read the common fields to all vranges.
+  value_range_kind kind = streamer_read_enum (ib, value_range_kind, VR_LAST);
+  gcc_checking_assert (kind != VR_UNDEFINED);
+  tree type = stream_read_tree (ib, data_in);
+
+  // Initialize the Value_Range to the correct type.
+  vr.set_type (type);
+
+  if (is_a <irange> (vr))
+    {
+      irange &r = as_a <irange> (vr);
+      r.set_undefined ();
+      unsigned HOST_WIDE_INT num_pairs = streamer_read_uhwi (ib);
+      for (unsigned i = 0; i < num_pairs; ++i)
+	{
+	  wide_int lb = streamer_read_wide_int (ib);
+	  wide_int ub = streamer_read_wide_int (ib);
+	  int_range<2> tmp (type, lb, ub);
+	  r.union_ (tmp);
+	}
+      wide_int value = streamer_read_wide_int (ib);
+      wide_int mask = streamer_read_wide_int (ib);
+      irange_bitmask bm (value, mask);
+      r.update_bitmask (bm);
+      return;
+    }
+  if (is_a <frange> (vr))
+    {
+      frange &r = as_a <frange> (vr);
+
+      // Stream in NAN bits.
+      struct bitpack_d bp = streamer_read_bitpack (ib);
+      bool pos_nan = (bool) bp_unpack_value (&bp, 1);
+      bool neg_nan = (bool) bp_unpack_value (&bp, 1);
+      nan_state nan (pos_nan, neg_nan);
+
+      if (kind == VR_NAN)
+	r.set_nan (type, nan);
+      else
+	{
+	  REAL_VALUE_TYPE lb, ub;
+	  streamer_read_real_value (ib, &lb);
+	  streamer_read_real_value (ib, &ub);
+	  r.set (type, lb, ub, nan);
+	}
+      return;
+    }
+  gcc_unreachable ();
+}
+
 /* Read the physical representation of a wide_int val from
    input block IB.  */
 
 wide_int
 streamer_read_wide_int (class lto_input_block *ib)
 {
-  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT abuf[WIDE_INT_MAX_INL_ELTS], *a = abuf;
   int i;
   int prec = streamer_read_uhwi (ib);
   int len = streamer_read_uhwi (ib);
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    a = XALLOCAVEC (HOST_WIDE_INT, len);
   for (i = 0; i < len; i++)
     a[i] = streamer_read_hwi (ib);
   return wide_int::from_array (a, len, prec);
@@ -227,10 +294,12 @@ streamer_read_wide_int (class lto_input_block *ib)
 widest_int
 streamer_read_widest_int (class lto_input_block *ib)
 {
-  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT abuf[WIDE_INT_MAX_INL_ELTS], *a = abuf;
   int i;
   int prec ATTRIBUTE_UNUSED = streamer_read_uhwi (ib);
   int len = streamer_read_uhwi (ib);
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    a = XALLOCAVEC (HOST_WIDE_INT, len);
   for (i = 0; i < len; i++)
     a[i] = streamer_read_hwi (ib);
   return widest_int::from_array (a, len);

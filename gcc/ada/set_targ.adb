@@ -943,7 +943,7 @@ begin
             Long_Long_Size             := Get_Long_Long_Size;
             Long_Size                  := Get_Long_Size;
             Maximum_Alignment          := Get_Maximum_Alignment;
-            Max_Unaligned_Field        := Get_Max_Unaligned_Field;
+            Max_Unaligned_Field        := 1;
             Pointer_Size               := Get_Pointer_Size;
             Short_Enums                := Get_Short_Enums;
             Short_Size                 := Get_Short_Size;

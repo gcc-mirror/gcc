@@ -1,6 +1,6 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
-/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-do compile } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0 -fdump-tree-optimized-details-blocks" } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-additional-options "--param vect-max-peeling-for-alignment=0" } */
 
@@ -69,3 +69,4 @@ main3 ()
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 3 "vect" { xfail vect_no_int_add } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 3 "vect" {target { {! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

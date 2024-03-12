@@ -37,7 +37,6 @@ class VoidInitExp final : public Expression
 public:
     VarDeclaration *var;
 
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 

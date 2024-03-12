@@ -75,18 +75,18 @@ enum CppStdRevision
 };
 
 /// Trivalent boolean to represent the state of a `revert`able change
-enum class FeatureState : signed char
+enum class FeatureState : unsigned char
 {
-    default_ = -1, /// Not specified by the user
-    disabled = 0,  /// Specified as `-revert=`
-    enabled = 1    /// Specified as `-preview=`
+    default_ = 0,  /// Not specified by the user
+    disabled = 1,  /// Specified as `-revert=`
+    enabled  = 2,  /// Specified as `-preview=`
 };
 
 struct Output
 {
     /// Configuration for the compiler generator
-    bool doOutput;      // Output is enabled
-    bool fullOutput;    // Generate comments for hidden declarations (for -HC),
+    d_bool doOutput;      // Output is enabled
+    d_bool fullOutput;    // Generate comments for hidden declarations (for -HC),
                         // and don't strip the bodies of plain (non-template) functions (for -H)
     DString dir;   // write to directory 'dir'
     DString name;  // write to file 'name'
@@ -96,74 +96,95 @@ struct Output
     int bufferLines;    // number of lines written to the buffer
 };
 
+/// Command line state related to printing uasage about other switches
+struct Help
+{
+    d_bool manual;       // open browser on compiler manual
+    d_bool usage;        // print usage and exit
+    // print help of switch:
+    d_bool mcpu;         // -mcpu
+    d_bool transition;   // -transition
+    d_bool check;        // -check
+    d_bool checkAction;  // -checkaction
+    d_bool revert;       // -revert
+    d_bool preview;      // -preview
+    d_bool externStd;    // -extern-std
+    d_bool hc;           // -HC
+};
+
+struct Verbose
+{
+    d_bool verbose;           // verbose compile
+    d_bool showColumns;       // print character (column) numbers in diagnostics
+    d_bool tls;               // identify thread local variables
+    d_bool templates;         // collect and list statistics on template instantiations
+    // collect and list statistics on template instantiations origins.
+    // TODO: make this an enum when we want to list other kinds of instances
+    d_bool templatesListInstances;
+    d_bool gc;                 // identify gc usage
+    d_bool field;              // identify non-mutable field variables
+    d_bool complex = true;     // identify complex/imaginary type usage
+    d_bool vin;                // identify 'in' parameters
+    d_bool showGaggedErrors;   // print gagged errors anyway
+    d_bool printErrorContext;  // print errors with the error context (the error line in the source file)
+    d_bool logo;               // print compiler logo
+    d_bool color;              // use ANSI colors in console output
+    d_bool cov;                // generate code coverage data
+    MessageStyle messageStyle; // style of file/line annotations on messages
+    unsigned errorLimit;
+    unsigned errorSupplementLimit; // Limit the number of supplemental messages for each error (0 means unlimited)
+    unsigned errorSupplementCount();
+};
+
 // Put command line switches in here
 struct Param
 {
-    bool obj;           // write object file
-    bool multiobj;      // break one object file into multiple ones
-    bool trace;         // insert profiling hooks
-    bool tracegc;       // instrument calls to 'new'
-    bool verbose;       // verbose compile
-    bool vcg_ast;       // write-out codegen-ast
-    bool showColumns;   // print character (column) numbers in diagnostics
-    bool vtls;          // identify thread local variables
-    bool vtemplates;    // collect and list statistics on template instantiations
-    bool vtemplatesListInstances; // collect and list statistics on template instantiations origins
-    bool vgc;           // identify gc usage
-    bool vfield;        // identify non-mutable field variables
-    bool vcomplex;      // identify complex/imaginary type usage
-    bool vin;           // identify 'in' parameters
+    d_bool obj;           // write object file
+    d_bool multiobj;      // break one object file into multiple ones
+    d_bool trace;         // insert profiling hooks
+    d_bool tracegc;       // instrument calls to 'new'
+    d_bool vcg_ast;       // write-out codegen-ast
     Diagnostic useDeprecated;
-    bool useUnitTests;  // generate unittest code
-    bool useInline;     // inline expand functions
-    bool release;       // build release version
-    bool preservePaths; // true means don't strip path from source file
+    d_bool useUnitTests;  // generate unittest code
+    d_bool useInline;     // inline expand functions
+    d_bool release;       // build release version
+    d_bool preservePaths; // true means don't strip path from source file
     Diagnostic warnings;
-    bool color;         // use ANSI colors in console output
-    bool cov;           // generate code coverage data
+    d_bool cov;           // generate code coverage data
     unsigned char covPercent;   // 0..100 code coverage percentage required
-    bool ctfe_cov;      // generate coverage data for ctfe
-    bool ignoreUnsupportedPragmas;      // rather than error on them
-    bool useModuleInfo; // generate runtime module information
-    bool useTypeInfo;   // generate runtime type information
-    bool useExceptions; // support exception handling
-    bool betterC;       // be a "better C" compiler; no dependency on D runtime
-    bool addMain;       // add a default main() function
-    bool allInst;       // generate code for all template instantiations
-    bool bitfields;         // support C style bit fields
+    d_bool ctfe_cov;      // generate coverage data for ctfe
+    d_bool ignoreUnsupportedPragmas;      // rather than error on them
+    d_bool useModuleInfo; // generate runtime module information
+    d_bool useTypeInfo;   // generate runtime type information
+    d_bool useExceptions; // support exception handling
+    d_bool useGC;         // support features that require the D runtime GC
+    d_bool betterC;       // be a "better C" compiler; no dependency on D runtime
+    d_bool addMain;       // add a default main() function
+    d_bool allInst;       // generate code for all template instantiations
+    d_bool bitfields;         // support C style bit fields
     CppStdRevision cplusplus;  // version of C++ name mangling to support
-    bool showGaggedErrors;  // print gagged errors anyway
-    bool printErrorContext;  // print errors with the error context (the error line in the source file)
-    bool manual;            // open browser on compiler manual
-    bool usage;             // print usage and exit
-    bool mcpuUsage;         // print help on -mcpu switch
-    bool transitionUsage;   // print help on -transition switch
-    bool checkUsage;        // print help on -check switch
-    bool checkActionUsage;  // print help on -checkaction switch
-    bool revertUsage;       // print help on -revert switch
-    bool previewUsage;      // print help on -preview switch
-    bool externStdUsage;    // print help on -extern-std switch
-    bool hcUsage;           // print help on -HC switch
-    bool logo;              // print logo;
+
+    Help help;
+    Verbose v;
 
     // Options for `-preview=/-revert=`
     FeatureState useDIP25;       // implement https://wiki.dlang.org/DIP25
     FeatureState useDIP1000;     // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
-    bool ehnogc;                 // use @nogc exception handling
-    bool useDIP1021;             // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
-    bool fieldwise;              // do struct equality testing field-wise rather than by memcmp()
-    bool fixAliasThis;           // if the current scope has an alias this, check it before searching upper scopes
+    d_bool ehnogc;                 // use @nogc exception handling
+    d_bool useDIP1021;             // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
+    FeatureState fieldwise;      // do struct equality testing field-wise rather than by memcmp()
+    d_bool fixAliasThis;           // if the current scope has an alias this, check it before searching upper scopes
     FeatureState rvalueRefParam; // allow rvalues to be arguments to ref parameters
                                  // https://dconf.org/2019/talks/alexandrescu.html
                                  // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
                                  // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
                                  // Implementation: https://github.com/dlang/dmd/pull/9817
     FeatureState noSharedAccess; // read/write access to shared memory objects
-    bool previewIn;              // `in` means `[ref] scope const`, accepts rvalues
-    bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract
-    bool shortenedMethods;       // allow => in normal function declarations
-    bool fixImmutableConv;       // error on unsound immutable conversion - https://github.com/dlang/dmd/pull/14070
-    bool fix16997;               // fix integral promotions for unary + - ~ operators
+    d_bool previewIn;              // `in` means `[ref] scope const`, accepts rvalues
+    d_bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract
+    d_bool shortenedMethods;       // allow => in normal function declarations
+    d_bool fixImmutableConv;       // error on unsound immutable conversion - https://github.com/dlang/dmd/pull/14070
+    d_bool fix16997;               // fix integral promotions for unary + - ~ operators
                                  // https://issues.dlang.org/show_bug.cgi?id=16997
     FeatureState dtorFields;     // destruct fields of partially constructed objects
                                  // https://issues.dlang.org/show_bug.cgi?id=14246
@@ -178,9 +199,6 @@ struct Param
     CHECKENABLE boundscheck;       // state of -boundscheck switch
 
     CHECKACTION checkAction;       // action to take when bounds, asserts or switch defaults are violated
-
-    unsigned errorLimit;
-    unsigned errorSupplementLimit; // Limit the number of supplemental messages for each error (0 means unlimited)
 
     DString  argv0;    // program name
     Array<const char *> modFileAliasStrings; // array of char*'s of -I module filename alias strings
@@ -200,18 +218,13 @@ struct Param
     Output moduleDeps;        // Generate `.deps` module dependencies
 
     unsigned debuglevel;   // debug level
-    Array<const char *> *debugids;     // debug identifiers
-
     unsigned versionlevel; // version level
-    Array<const char *> *versionids;   // version identifiers
 
-
-    MessageStyle messageStyle;  // style of file/line annotations on messages
-
-    bool run;           // run resulting executable
+    d_bool run;           // run resulting executable
     Strings runargs;    // arguments for executable
 
     Array<const char *> cppswitches; // preprocessor switches
+    const char *cpp;                 // if not null, then this specifies the C preprocessor
 
     // Linker stuff
     Array<const char *> objfiles;
@@ -228,7 +241,7 @@ struct Param
 struct structalign_t
 {
     unsigned short value;
-    bool pack;
+    d_bool pack;
 
     bool isDefault() const;
     void setDefault();
@@ -252,6 +265,18 @@ const DString hdr_ext  = "di";       // for D 'header' import files
 const DString json_ext = "json";     // for JSON files
 const DString map_ext  = "map";      // for .map files
 
+struct CompileEnv
+{
+    uint32_t versionNumber;
+    DString date;
+    DString time;
+    DString vendor;
+    DString timestamp;
+    bool previewIn;
+    bool ddocOutput;
+    bool shortenedMethods;
+};
+
 struct Global
 {
     DString inifilename;
@@ -261,7 +286,8 @@ struct Global
     Array<const char *> *path;        // Array of char*'s which form the import lookup path
     Array<const char *> *filePath;    // Array of char*'s which form the file import lookup path
 
-    DString vendor;          // Compiler backend name
+    char datetime[26];       /// string returned by ctime()
+    CompileEnv compileEnv;
 
     Param params;
     unsigned errors;         // number of errors reported so far
@@ -275,11 +301,12 @@ struct Global
     Array<class Identifier*>* versionids; // command line versions and predefined versions
     Array<class Identifier*>* debugids;   // command line debug versions and predefined versions
 
-    bool hasMainFunction;
+    d_bool hasMainFunction;
     unsigned varSequenceNumber;
 
     FileManager* fileManager;
     ErrorSink* errorSink;       // where the error messages go
+    ErrorSink* errorSinkNull;   // where the error messages disappear
 
     FileName (*preprocess)(FileName, const Loc&, bool&, OutBuffer&);
 
@@ -340,10 +367,11 @@ typedef unsigned long long uinteger_t;
 // file location
 struct Loc
 {
-    const char *filename; // either absolute or relative to cwd
-    unsigned linnum;
-    unsigned charnum;
-
+private:
+    unsigned _linnum;
+    unsigned _charnum;
+    unsigned fileIndex;
+public:
     static void set(bool showColumns, MessageStyle messageStyle);
 
     static bool showColumns;
@@ -351,17 +379,24 @@ struct Loc
 
     Loc()
     {
-        linnum = 0;
-        charnum = 0;
-        filename = NULL;
+        _linnum = 0;
+        _charnum = 0;
+        fileIndex = 0;
     }
 
     Loc(const char *filename, unsigned linnum, unsigned charnum)
     {
-        this->linnum = linnum;
-        this->charnum = charnum;
-        this->filename = filename;
+        this->linnum(linnum);
+        this->charnum(charnum);
+        this->filename(filename);
     }
+
+    uint32_t charnum() const;
+    uint32_t charnum(uint32_t num);
+    uint32_t linnum() const;
+    uint32_t linnum(uint32_t num);
+    const char *filename() const;
+    void filename(const char *name);
 
     const char *toChars(
         bool showColumns = Loc::showColumns,

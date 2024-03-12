@@ -124,6 +124,7 @@ enum TOK : ubyte
     // Leaf operators
     identifier,
     string_,
+    hexadecimalString,
     this_,
     super_,
     error,
@@ -274,6 +275,7 @@ enum TOK : ubyte
     __cdecl,
     __declspec,
     __stdcall,
+    __thread,
     __pragma,
     __int128,
     __attribute__,
@@ -289,8 +291,6 @@ enum EXP : ubyte
     cast_,
     null_,
     assert_,
-    true_,
-    false_,
     array,
     call,
     address,
@@ -307,13 +307,10 @@ enum EXP : ubyte
     dotType,
     slice,
     arrayLength,
-    version_,
     dollar,
     template_,
     dotTemplateDeclaration,
     declaration,
-    typeof_,
-    pragma_,
     dSymbol,
     typeid_,
     uadd,
@@ -394,13 +391,11 @@ enum EXP : ubyte
     int64,
     float64,
     complex80,
-    char_,
     import_,
     delegate_,
     function_,
     mixin_,
     in_,
-    default_,
     break_,
     continue_,
     goto_,
@@ -414,7 +409,6 @@ enum EXP : ubyte
     moduleString,   // __MODULE__
     functionString, // __FUNCTION__
     prettyFunction, // __PRETTY_FUNCTION__
-    shared_,
     pow,
     powAssign,
     vector,
@@ -424,10 +418,11 @@ enum EXP : ubyte
     showCtfeContext,
     objcClassReference,
     vectorArray,
-    arrow,      // ->
     compoundLiteral, // ( type-name ) { initializer-list }
     _Generic,
     interval,
+
+    loweredAssignExp,
 }
 
 enum FirstCKeyword = TOK.inline;
@@ -586,6 +581,7 @@ private immutable TOK[] keywords =
     TOK.__cdecl,
     TOK.__declspec,
     TOK.__stdcall,
+    TOK.__thread,
     TOK.__pragma,
     TOK.__int128,
     TOK.__attribute__,
@@ -598,7 +594,7 @@ shared static this() nothrow
     foreach (kw; keywords)
     {
         //printf("keyword[%d] = '%s'\n",kw, Token.tochars[kw].ptr);
-        Identifier.idPool(Token.tochars[kw].ptr, Token.tochars[kw].length, cast(uint)kw);
+        Identifier.idPool(Token.tochars[kw], kw);
     }
 }
 
@@ -617,7 +613,7 @@ static immutable TOK[TOK.max + 1] Ckeywords =
                        union_, unsigned, void_, volatile, while_, asm_, typeof_,
                        _Alignas, _Alignof, _Atomic, _Bool, _Complex, _Generic, _Imaginary, _Noreturn,
                        _Static_assert, _Thread_local,
-                       _import, __cdecl, __declspec, __stdcall, __pragma, __int128, __attribute__,
+                       _import, __cdecl, __declspec, __stdcall, __thread, __pragma, __int128, __attribute__,
                        _assert ];
 
         foreach (kw; Ckwds)
@@ -860,6 +856,7 @@ extern (C++) struct Token
         TOK.wcharLiteral: "wcharv",
         TOK.dcharLiteral: "dcharv",
         TOK.wchar_tLiteral: "wchar_tv",
+        TOK.hexadecimalString: "xstring",
         TOK.endOfLine: "\\n",
         TOK.whitespace: "whitespace",
 
@@ -889,6 +886,7 @@ extern (C++) struct Token
         TOK.__cdecl        : "__cdecl",
         TOK.__declspec     : "__declspec",
         TOK.__stdcall      : "__stdcall",
+        TOK.__thread       : "__thread",
         TOK.__pragma       : "__pragma",
         TOK.__int128       : "__int128",
         TOK.__attribute__  : "__attribute__",
@@ -902,7 +900,7 @@ extern (C++) struct Token
 
 nothrow:
 
-    int isKeyword() const
+    int isKeyword() pure const @safe @nogc
     {
         foreach (kw; keywords)
         {
@@ -1018,6 +1016,24 @@ nothrow:
                 p = buf.extractChars();
             }
             break;
+        case TOK.hexadecimalString:
+            {
+                OutBuffer buf;
+                buf.writeByte('x');
+                buf.writeByte('"');
+                foreach (size_t i; 0 .. len)
+                {
+                    if (i)
+                        buf.writeByte(' ');
+                    buf.printf("%02x", ustring[i]);
+                }
+                buf.writeByte('"');
+                if (postfix)
+                    buf.writeByte(postfix);
+                buf.writeByte(0);
+                p = buf.extractData();
+                break;
+            }
         case TOK.identifier:
         case TOK.enum_:
         case TOK.struct_:

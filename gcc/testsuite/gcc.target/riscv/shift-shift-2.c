@@ -36,7 +36,8 @@ sub5 (unsigned int i)
   j = i - j;
   return j;
 }
-/* { dg-final { scan-assembler-times "slli" 5 } } */
-/* { dg-final { scan-assembler-times "srli" 5 } } */
-/* { dg-final { scan-assembler-times "slliw" 1 } } */
-/* { dg-final { scan-assembler-times "srliw" 1 } } */
+/* { dg-final { scan-assembler-times {\mslli} 5 } } */
+/* { dg-final { scan-assembler-times {\msrli} 5 } } */
+/* { dg-final { scan-assembler-times ",40" 2 } } */ /* For sub5 test */
+/* { dg-final { scan-assembler-not {\mslliw} } } */
+/* { dg-final { scan-assembler-not {\msrliw} } } */

@@ -55,7 +55,9 @@ GOMP_teams4 (unsigned int num_teams_lower, unsigned int num_teams_upper,
 	= thread_limit > INT_MAX ? UINT_MAX : thread_limit;
     }
   if (!num_teams_upper)
-    num_teams_upper = num_blocks;
+    num_teams_upper = ((GOMP_ADDITIONAL_ICVS.nteams > 0
+			&& num_blocks > GOMP_ADDITIONAL_ICVS.nteams)
+		       ? GOMP_ADDITIONAL_ICVS.nteams : num_blocks);
   else if (num_blocks < num_teams_lower)
     num_teams_upper = num_teams_lower;
   else if (num_blocks < num_teams_upper)

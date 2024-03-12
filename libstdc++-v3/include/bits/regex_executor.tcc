@@ -339,7 +339,7 @@ namespace __detail
   template<typename _BiIter, typename _TraitsT>
     struct _Backref_matcher
     {
-      _Backref_matcher(bool __icase, const _TraitsT& __traits)
+      _Backref_matcher(bool /* __icase */, const _TraitsT& __traits)
       : _M_traits(__traits) { }
 
       bool

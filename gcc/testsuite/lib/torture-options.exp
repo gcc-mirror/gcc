@@ -23,11 +23,38 @@ proc torture-init { args } {
     global torture_without_loops global_with_loops
 
     if [info exists torture_without_loops] {
-	error "torture-init: torture_without_loops is not empty as expected"
+	error "torture-init: torture_without_loops is not empty as expected = \"${torture_without_loops}\""
     }
     if [info exists torture_with_loops] {
-	error "torture-init: torture_with_loops is not empty as expected"
+	error "torture-init: torture_with_loops is not empty as expected = \"${torture_with_loops}\""
     }
+
+    global LTO_TORTURE_OPTIONS
+    if [info exists LTO_TORTURE_OPTIONS] {
+	error "torture-init: LTO_TORTURE_OPTIONS is not empty as expected =  \"${LTO_TORTURE_OPTIONS}\""
+    }
+    set LTO_TORTURE_OPTIONS ""
+    if [check_effective_target_lto] {
+	# When having plugin test both slim and fat LTO and plugin/nonplugin
+	# path.
+	if [check_linker_plugin_available] {
+	    set LTO_TORTURE_OPTIONS [list \
+	      { -O2 -flto -fno-use-linker-plugin -flto-partition=none } \
+	      { -O2 -flto -fuse-linker-plugin -fno-fat-lto-objects }
+	    ]
+	} else {
+	    set LTO_TORTURE_OPTIONS [list \
+	      { -O2 -flto -flto-partition=none } \
+	      { -O2 -flto }
+	    ]
+	}
+    }
+}
+
+# Return 1 if 'torture-init' has already been done, 0 otherwise.
+proc torture-init-done { args } {
+    global LTO_TORTURE_OPTIONS
+    return [info exists LTO_TORTURE_OPTIONS]
 }
 
 # Return 1 if torture options have already been set, 0 otherwise.
@@ -99,6 +126,13 @@ proc torture-finish { args } {
 	unset torture_with_loops
     } else {
 	error "torture-finish: torture_with_loops is not defined"
+    }
+
+    global LTO_TORTURE_OPTIONS
+    if [info exists LTO_TORTURE_OPTIONS] {
+	unset LTO_TORTURE_OPTIONS
+    } else {
+	error "torture-finish: LTO_TORTURE_OPTIONS is not defined"
     }
 }
 

@@ -70,11 +70,6 @@ DEF_D_RUNTIME (DYNAMIC_CAST, "_d_dynamic_cast", RT(OBJECT),
 DEF_D_RUNTIME (INTERFACE_CAST, "_d_interface_cast", RT(OBJECT),
 	       P2(OBJECT, CLASSINFO), 0)
 
-/* Used when calling new on a pointer.  The `i' variant is for when the
-   initializer is nonzero.  */
-DEF_D_RUNTIME (NEWITEMT, "_d_newitemT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
-DEF_D_RUNTIME (NEWITEMIT, "_d_newitemiT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
-
 /* Used when calling new on an array.  The `i' variant is for when the
    initializer is nonzero, and the `m' variant is when initializing a
    multi-dimensional array.  */
@@ -111,13 +106,6 @@ DEF_D_RUNTIME (ALLOCMEMORY, "_d_allocmemory", RT(VOIDPTR), P1(SIZE_T),
    and destination are equal in size and do not overlap.  */
 DEF_D_RUNTIME (ARRAYCOPY, "_d_arraycopy", RT(ARRAY_VOID),
 	       P3(SIZE_T, ARRAY_VOID, ARRAY_VOID), 0)
-
-/* Used for concatenating two or more arrays together.  Then `n' variant is
-   for when there is more than two arrays to handle.  */
-DEF_D_RUNTIME (ARRAYCATT, "_d_arraycatT", RT(ARRAY_BYTE),
-	       P3(CONST_TYPEINFO, ARRAY_BYTE, ARRAY_BYTE), 0)
-DEF_D_RUNTIME (ARRAYCATNTX, "_d_arraycatnTX", RT(ARRAY_VOID),
-	       P2(CONST_TYPEINFO, ARRAYARRAY_BYTE), 0)
 
 /* Used for appending a single element to an array.  */
 DEF_D_RUNTIME (ARRAYAPPENDCTX, "_d_arrayappendcTX", RT(ARRAY_BYTE),

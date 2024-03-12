@@ -2085,6 +2085,11 @@ for convenience: @code{c_complex_double}, @code{c_complex_float},
 @code{c_complex_real}, @code{cpp_long}, @code{cpp_longlong},
 @code{c_long_double}, @code{cpp_ulong}, @code{cpp_ulonglong}.
 
+It may cause undefined behavior at runtime if a special enum is declared with a
+base type that has a different size to the target C/C++ type it is
+representing.  The GNU D compiler will catch such declarations and emit a
+warning when the @option{-Wmismatched-special-enum} option is seen on the
+command-line.
 
 @c --------------------------------------------------------
 

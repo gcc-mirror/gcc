@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-tuple(func)
+AliasSeq!(func)
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=21282

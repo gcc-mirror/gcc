@@ -19,21 +19,25 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
+#include "intl.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "diagnostic-core.h"
 #include "diagnostic-metadata.h"
+#include "diagnostic-diagram.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/region-model.h"
 #include "analyzer/checker-event.h"
 #include "analyzer/checker-path.h"
+#include "analyzer/access-diagram.h"
 
 #if ENABLE_ANALYZER
 
@@ -44,8 +48,35 @@ namespace ana {
 class out_of_bounds : public pending_diagnostic
 {
 public:
-  out_of_bounds (const region *reg, tree diag_arg)
-  : m_reg (reg), m_diag_arg (diag_arg)
+  class oob_region_creation_event_capacity : public region_creation_event_capacity
+  {
+  public:
+    oob_region_creation_event_capacity (tree capacity,
+					const event_loc_info &loc_info,
+					out_of_bounds &oob)
+      : region_creation_event_capacity (capacity,
+					loc_info),
+	m_oob (oob)
+    {
+    }
+    void prepare_for_emission (checker_path *path,
+			       pending_diagnostic *pd,
+			       diagnostic_event_id_t emission_id) override
+    {
+      region_creation_event_capacity::prepare_for_emission (path,
+							    pd,
+							    emission_id);
+      m_oob.m_region_creation_event_id = emission_id;
+    }
+    private:
+    out_of_bounds &m_oob;
+  };
+
+  out_of_bounds (const region_model &model,
+		 const region *reg,
+		 tree diag_arg,
+		 const svalue *sval_hint)
+  : m_model (model), m_reg (reg), m_diag_arg (diag_arg), m_sval_hint (sval_hint)
   {}
 
   bool subclass_equal_p (const pending_diagnostic &base_other) const override
@@ -63,7 +94,7 @@ public:
 
   void mark_interesting_stuff (interesting_t *interest) final override
   {
-    interest->add_region_creation (m_reg);
+    interest->add_region_creation (m_reg->get_base_region ());
   }
 
   void add_region_creation_events (const region *,
@@ -75,13 +106,23 @@ public:
        so we don't need an event for that.  */
     if (capacity)
       emission_path.add_event
-	(make_unique<region_creation_event_capacity> (capacity, loc_info));
+	(make_unique<oob_region_creation_event_capacity> (capacity, loc_info,
+							  *this));
   }
+
+  virtual enum access_direction get_dir () const = 0;
 
 protected:
   enum memory_space get_memory_space () const
   {
     return m_reg->get_memory_space ();
+  }
+
+  void
+  maybe_show_notes (location_t loc, logger *logger) const
+  {
+    maybe_describe_array_bounds (loc);
+    maybe_show_diagram (logger);
   }
 
   /* Potentially add a note about valid ways to index this array, such
@@ -112,8 +153,49 @@ protected:
 	    m_diag_arg, min_idx, max_idx);
   }
 
+  void
+  maybe_show_diagram (logger *logger) const
+  {
+    access_operation op (m_model, get_dir (), *m_reg, m_sval_hint);
+
+    /* Don't attempt to make a diagram if there's no valid way of
+       accessing the base region (e.g. a 0-element array).  */
+    if (op.get_valid_bits ().empty_p ())
+      return;
+
+    if (const text_art::theme *theme = global_dc->m_diagrams.m_theme)
+      {
+	text_art::style_manager sm;
+	text_art::canvas canvas (make_access_diagram (op, sm, *theme, logger));
+	if (canvas.get_size ().w == 0 && canvas.get_size ().h == 0)
+	  {
+	    /* In lieu of exceptions, return a zero-sized diagram if there's
+	       a problem.  Give up if that's happened.  */
+	    return;
+	  }
+	diagnostic_diagram diagram
+	  (canvas,
+	   /* Alt text.  */
+	   _("Diagram visualizing the predicted out-of-bounds access"));
+	diagnostic_emit_diagram (global_dc, diagram);
+      }
+  }
+
+  text_art::canvas
+  make_access_diagram (const access_operation &op,
+		       text_art::style_manager &sm,
+		       const text_art::theme &theme,
+		       logger *logger) const
+  {
+    access_diagram d (op, m_region_creation_event_id, sm, theme, logger);
+    return d.to_canvas (sm);
+  }
+
+  region_model m_model;
   const region *m_reg;
   tree m_diag_arg;
+  const svalue *m_sval_hint;
+  diagnostic_event_id_t m_region_creation_event_id;
 };
 
 /* Abstract base class for all out-of-bounds warnings where the
@@ -122,9 +204,11 @@ protected:
 class concrete_out_of_bounds : public out_of_bounds
 {
 public:
-  concrete_out_of_bounds (const region *reg, tree diag_arg,
-			  byte_range out_of_bounds_range)
-  : out_of_bounds (reg, diag_arg),
+  concrete_out_of_bounds (const region_model &model,
+			  const region *reg, tree diag_arg,
+			  byte_range out_of_bounds_range,
+			  const svalue *sval_hint)
+  : out_of_bounds (model, reg, diag_arg, sval_hint),
     m_out_of_bounds_range (out_of_bounds_range)
   {}
 
@@ -146,9 +230,12 @@ protected:
 class concrete_past_the_end : public concrete_out_of_bounds
 {
 public:
-  concrete_past_the_end (const region *reg, tree diag_arg, byte_range range,
-			 tree byte_bound)
-  : concrete_out_of_bounds (reg, diag_arg, range), m_byte_bound (byte_bound)
+  concrete_past_the_end (const region_model &model,
+			 const region *reg, tree diag_arg, byte_range range,
+			 tree byte_bound,
+			 const svalue *sval_hint)
+  : concrete_out_of_bounds (model, reg, diag_arg, range, sval_hint),
+    m_byte_bound (byte_bound)
   {}
 
   bool
@@ -168,7 +255,9 @@ public:
   {
     if (m_byte_bound && TREE_CODE (m_byte_bound) == INTEGER_CST)
       emission_path.add_event
-	(make_unique<region_creation_event_capacity> (m_byte_bound, loc_info));
+	(make_unique<oob_region_creation_event_capacity> (m_byte_bound,
+							  loc_info,
+							  *this));
   }
 
 protected:
@@ -180,9 +269,11 @@ protected:
 class concrete_buffer_overflow : public concrete_past_the_end
 {
 public:
-  concrete_buffer_overflow (const region *reg, tree diag_arg,
-		   byte_range range, tree byte_bound)
-  : concrete_past_the_end (reg, diag_arg, range, byte_bound)
+  concrete_buffer_overflow (const region_model &model,
+			    const region *reg, tree diag_arg,
+			    byte_range range, tree byte_bound,
+			    const svalue *sval_hint)
+  : concrete_past_the_end (model, reg, diag_arg, range, byte_bound, sval_hint)
   {}
 
   const char *get_kind () const final override
@@ -190,7 +281,8 @@ public:
     return "concrete_buffer_overflow";
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc,
+	     logger *logger) final override
   {
     diagnostic_metadata m;
     bool warned;
@@ -238,7 +330,7 @@ public:
 		  "write to beyond the end of %qE",
 		  m_diag_arg);
 
-	maybe_describe_array_bounds (rich_loc->get_loc ());
+	maybe_show_notes (rich_loc->get_loc (), logger);
       }
 
     return warned;
@@ -276,6 +368,8 @@ public:
 				   start_buf, end_buf, m_byte_bound);
       }
   }
+
+  enum access_direction get_dir () const final override { return DIR_WRITE; }
 };
 
 /* Concrete subclass to complain about buffer over-reads.  */
@@ -283,9 +377,10 @@ public:
 class concrete_buffer_over_read : public concrete_past_the_end
 {
 public:
-  concrete_buffer_over_read (const region *reg, tree diag_arg,
+  concrete_buffer_over_read (const region_model &model,
+			     const region *reg, tree diag_arg,
 			     byte_range range, tree byte_bound)
-  : concrete_past_the_end (reg, diag_arg, range, byte_bound)
+  : concrete_past_the_end (model, reg, diag_arg, range, byte_bound, NULL)
   {}
 
   const char *get_kind () const final override
@@ -293,7 +388,7 @@ public:
     return "concrete_buffer_over_read";
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *logger) final override
   {
     diagnostic_metadata m;
     bool warned;
@@ -339,7 +434,7 @@ public:
 		  "read from after the end of %qE",
 		  m_diag_arg);
 
-	maybe_describe_array_bounds (rich_loc->get_loc ());
+	maybe_show_notes (rich_loc->get_loc (), logger);
       }
 
     return warned;
@@ -377,6 +472,8 @@ public:
 				   start_buf, end_buf, m_byte_bound);
       }
   }
+
+  enum access_direction get_dir () const final override { return DIR_READ; }
 };
 
 /* Concrete subclass to complain about buffer underwrites.  */
@@ -384,9 +481,11 @@ public:
 class concrete_buffer_underwrite : public concrete_out_of_bounds
 {
 public:
-  concrete_buffer_underwrite (const region *reg, tree diag_arg,
-			      byte_range range)
-  : concrete_out_of_bounds (reg, diag_arg, range)
+  concrete_buffer_underwrite (const region_model &model,
+			      const region *reg, tree diag_arg,
+			      byte_range range,
+			      const svalue *sval_hint)
+  : concrete_out_of_bounds (model, reg, diag_arg, range, sval_hint)
   {}
 
   const char *get_kind () const final override
@@ -394,7 +493,7 @@ public:
     return "concrete_buffer_underwrite";
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *logger) final override
   {
     diagnostic_metadata m;
     bool warned;
@@ -415,7 +514,7 @@ public:
 	break;
       }
     if (warned)
-      maybe_describe_array_bounds (rich_loc->get_loc ());
+      maybe_show_notes (rich_loc->get_loc (), logger);
     return warned;
   }
 
@@ -449,6 +548,8 @@ public:
 				   start_buf, end_buf);;
       }
   }
+
+  enum access_direction get_dir () const final override { return DIR_WRITE; }
 };
 
 /* Concrete subclass to complain about buffer under-reads.  */
@@ -456,9 +557,10 @@ public:
 class concrete_buffer_under_read : public concrete_out_of_bounds
 {
 public:
-  concrete_buffer_under_read (const region *reg, tree diag_arg,
+  concrete_buffer_under_read (const region_model &model,
+			      const region *reg, tree diag_arg,
 			      byte_range range)
-  : concrete_out_of_bounds (reg, diag_arg, range)
+  : concrete_out_of_bounds (model, reg, diag_arg, range, NULL)
   {}
 
   const char *get_kind () const final override
@@ -466,7 +568,7 @@ public:
     return "concrete_buffer_under_read";
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *logger) final override
   {
     diagnostic_metadata m;
     bool warned;
@@ -487,7 +589,7 @@ public:
 	break;
       }
     if (warned)
-      maybe_describe_array_bounds (rich_loc->get_loc ());
+      maybe_show_notes (rich_loc->get_loc (), logger);
     return warned;
   }
 
@@ -521,6 +623,8 @@ public:
 				   start_buf, end_buf);;
       }
   }
+
+  enum access_direction get_dir () const final override { return DIR_READ; }
 };
 
 /* Abstract class to complain about out-of-bounds read/writes where
@@ -529,9 +633,11 @@ public:
 class symbolic_past_the_end : public out_of_bounds
 {
 public:
-  symbolic_past_the_end (const region *reg, tree diag_arg, tree offset,
-			 tree num_bytes, tree capacity)
-  : out_of_bounds (reg, diag_arg),
+  symbolic_past_the_end (const region_model &model,
+			 const region *reg, tree diag_arg, tree offset,
+			 tree num_bytes, tree capacity,
+			 const svalue *sval_hint)
+  : out_of_bounds (model, reg, diag_arg, sval_hint),
     m_offset (offset),
     m_num_bytes (num_bytes),
     m_capacity (capacity)
@@ -559,9 +665,12 @@ protected:
 class symbolic_buffer_overflow : public symbolic_past_the_end
 {
 public:
-  symbolic_buffer_overflow (const region *reg, tree diag_arg, tree offset,
-			    tree num_bytes, tree capacity)
-  : symbolic_past_the_end (reg, diag_arg, offset, num_bytes, capacity)
+  symbolic_buffer_overflow (const region_model &model,
+			    const region *reg, tree diag_arg, tree offset,
+			    tree num_bytes, tree capacity,
+			    const svalue *sval_hint)
+  : symbolic_past_the_end (model, reg, diag_arg, offset, num_bytes, capacity,
+			   sval_hint)
   {
   }
 
@@ -570,24 +679,31 @@ public:
     return "symbolic_buffer_overflow";
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *logger) final override
   {
     diagnostic_metadata m;
+    bool warned;
     switch (get_memory_space ())
       {
       default:
 	m.add_cwe (787);
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "buffer overflow");
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "buffer overflow");
+	break;
       case MEMSPACE_STACK:
 	m.add_cwe (121);
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "stack-based buffer overflow");
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "stack-based buffer overflow");
+	break;
       case MEMSPACE_HEAP:
 	m.add_cwe (122);
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "heap-based buffer overflow");
+	warned =  warning_meta (rich_loc, m, get_controlling_option (),
+				"heap-based buffer overflow");
+	break;
       }
+    if (warned)
+      maybe_show_notes (rich_loc->get_loc (), logger);
+    return warned;
   }
 
   label_text
@@ -658,6 +774,8 @@ public:
 				 m_diag_arg);
     return ev.formatted_print ("out-of-bounds write");
   }
+
+  enum access_direction get_dir () const final override { return DIR_WRITE; }
 };
 
 /* Concrete subclass to complain about over-reads with symbolic values.  */
@@ -665,9 +783,11 @@ public:
 class symbolic_buffer_over_read : public symbolic_past_the_end
 {
 public:
-  symbolic_buffer_over_read (const region *reg, tree diag_arg, tree offset,
+  symbolic_buffer_over_read (const region_model &model,
+			     const region *reg, tree diag_arg, tree offset,
 			     tree num_bytes, tree capacity)
-  : symbolic_past_the_end (reg, diag_arg, offset, num_bytes, capacity)
+  : symbolic_past_the_end (model, reg, diag_arg, offset, num_bytes, capacity,
+			   NULL)
   {
   }
 
@@ -676,25 +796,32 @@ public:
     return "symbolic_buffer_over_read";
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *logger) final override
   {
     diagnostic_metadata m;
     m.add_cwe (126);
+    bool warned;
     switch (get_memory_space ())
       {
       default:
 	m.add_cwe (787);
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "buffer over-read");
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "buffer over-read");
+	break;
       case MEMSPACE_STACK:
 	m.add_cwe (121);
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "stack-based buffer over-read");
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "stack-based buffer over-read");
+	break;
       case MEMSPACE_HEAP:
 	m.add_cwe (122);
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "heap-based buffer over-read");
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "heap-based buffer over-read");
+	break;
       }
+    if (warned)
+      maybe_show_notes (rich_loc->get_loc (), logger);
+    return warned;
   }
 
   label_text
@@ -765,16 +892,20 @@ public:
 				 m_diag_arg);
     return ev.formatted_print ("out-of-bounds read");
   }
+
+  enum access_direction get_dir () const final override { return DIR_READ; }
 };
 
-/* Check whether an access is past the end of the BASE_REG.  */
+/* Check whether an access is past the end of the BASE_REG.
+  Return TRUE if the access was valid, FALSE otherwise.  */
 
-void
+bool
 region_model::check_symbolic_bounds (const region *base_reg,
 				     const svalue *sym_byte_offset,
 				     const svalue *num_bytes_sval,
 				     const svalue *capacity,
 				     enum access_direction dir,
+				     const svalue *sval_hint,
 				     region_model_context *ctxt) const
 {
   gcc_assert (ctxt);
@@ -789,27 +920,40 @@ region_model::check_symbolic_bounds (const region *base_reg,
       tree offset_tree = get_representative_tree (sym_byte_offset);
       tree num_bytes_tree = get_representative_tree (num_bytes_sval);
       tree capacity_tree = get_representative_tree (capacity);
+      const region *offset_reg = m_mgr->get_offset_region (base_reg,
+							   NULL_TREE,
+							   sym_byte_offset);
+      const region *sized_offset_reg = m_mgr->get_sized_region (offset_reg,
+								NULL_TREE,
+								num_bytes_sval);
       switch (dir)
 	{
 	default:
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (make_unique<symbolic_buffer_over_read> (base_reg,
+	  gcc_assert (sval_hint == nullptr);
+	  ctxt->warn (make_unique<symbolic_buffer_over_read> (*this,
+							      sized_offset_reg,
 							      diag_arg,
 							      offset_tree,
 							      num_bytes_tree,
 							      capacity_tree));
+	  return false;
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (make_unique<symbolic_buffer_overflow> (base_reg,
+	  ctxt->warn (make_unique<symbolic_buffer_overflow> (*this,
+							     sized_offset_reg,
 							     diag_arg,
 							     offset_tree,
 							     num_bytes_tree,
-							     capacity_tree));
+							     capacity_tree,
+							     sval_hint));
+	  return false;
 	  break;
 	}
     }
+  return true;
 }
 
 static tree
@@ -822,11 +966,13 @@ maybe_get_integer_cst_tree (const svalue *sval)
   return NULL_TREE;
 }
 
-/* May complain when the access on REG is out-of-bounds.  */
+/* May complain when the access on REG is out-of-bounds.
+   Return TRUE if the access was valid, FALSE otherwise.  */
 
-void
+bool
 region_model::check_region_bounds (const region *reg,
 				   enum access_direction dir,
+				   const svalue *sval_hint,
 				   region_model_context *ctxt) const
 {
   gcc_assert (ctxt);
@@ -835,18 +981,12 @@ region_model::check_region_bounds (const region *reg,
   region_offset reg_offset = reg->get_offset (m_mgr);
   const region *base_reg = reg_offset.get_base_region ();
 
-  /* Bail out on symbolic regions.
-     (e.g. because the analyzer did not see previous offsets on the latter,
-     it might think that a negative access is before the buffer).  */
-  if (base_reg->symbolic_p ())
-    return;
-
   /* Find out how many bytes were accessed.  */
   const svalue *num_bytes_sval = reg->get_byte_size_sval (m_mgr);
   tree num_bytes_tree = maybe_get_integer_cst_tree (num_bytes_sval);
   /* Bail out if 0 bytes are accessed.  */
   if (num_bytes_tree && zerop (num_bytes_tree))
-    return;
+	  return true;
 
   /* Get the capacity of the buffer.  */
   const svalue *capacity = get_capacity (base_reg);
@@ -864,9 +1004,9 @@ region_model::check_region_bounds (const region *reg,
     offset = wi::sext (reg_offset.get_bit_offset () >> LOG2_BITS_PER_UNIT,
 		       TYPE_PRECISION (size_type_node));
 
-  /* If either the offset or the number of bytes accessed are symbolic,
-     we have to reason about symbolic values.  */
-  if (reg_offset.symbolic_p () || !num_bytes_tree)
+  /* If any of the base region, the offset, or the number of bytes accessed
+     are symbolic, we have to reason about symbolic values.  */
+  if (base_reg->symbolic_p () || reg_offset.symbolic_p () || !num_bytes_tree)
     {
       const svalue* byte_offset_sval;
       if (!reg_offset.symbolic_p ())
@@ -877,13 +1017,13 @@ region_model::check_region_bounds (const region *reg,
 	}
       else
 	byte_offset_sval = reg_offset.get_symbolic_byte_offset ();
-      check_symbolic_bounds (base_reg, byte_offset_sval, num_bytes_sval,
-			     capacity, dir, ctxt);
-      return;
+      return check_symbolic_bounds (base_reg, byte_offset_sval, num_bytes_sval,
+			     capacity, dir, sval_hint, ctxt);
     }
 
   /* Otherwise continue to check with concrete values.  */
   byte_range out (0, 0);
+  bool oob_safe = true;
   /* NUM_BYTES_TREE should always be interpreted as unsigned.  */
   byte_offset_t num_bytes_unsigned = wi::to_offset (num_bytes_tree);
   byte_range read_bytes (offset, num_bytes_unsigned);
@@ -897,12 +1037,18 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (make_unique<concrete_buffer_under_read> (reg, diag_arg,
+	  gcc_assert (sval_hint == nullptr);
+	  ctxt->warn (make_unique<concrete_buffer_under_read> (*this, reg,
+							       diag_arg,
 							       out));
+	  oob_safe = false;
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (make_unique<concrete_buffer_underwrite> (reg, diag_arg,
-							       out));
+	  ctxt->warn (make_unique<concrete_buffer_underwrite> (*this,
+							       reg, diag_arg,
+							       out,
+							       sval_hint));
+	  oob_safe = false;
 	  break;
 	}
     }
@@ -911,7 +1057,7 @@ region_model::check_region_bounds (const region *reg,
      do a symbolic check here because the inequality check does not reason
      whether constants are greater than symbolic values.  */
   if (!cst_capacity_tree)
-    return;
+	  return oob_safe;
 
   byte_range buffer (0, wi::to_offset (cst_capacity_tree));
   /* If READ_BYTES exceeds BUFFER, we do have an overflow.  */
@@ -927,15 +1073,22 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (make_unique<concrete_buffer_over_read> (reg, diag_arg,
+	  gcc_assert (sval_hint == nullptr);
+	  ctxt->warn (make_unique<concrete_buffer_over_read> (*this,
+							      reg, diag_arg,
 							      out, byte_bound));
+	  oob_safe = false;
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (make_unique<concrete_buffer_overflow> (reg, diag_arg,
-							     out, byte_bound));
+	  ctxt->warn (make_unique<concrete_buffer_overflow> (*this,
+							     reg, diag_arg,
+							     out, byte_bound,
+							     sval_hint));
+	  oob_safe = false;
 	  break;
 	}
     }
+  return oob_safe;
 }
 
 } // namespace ana

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // Public domain testcase from Casey Carter, send to LWG list on 2021-07-24.

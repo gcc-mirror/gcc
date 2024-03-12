@@ -15,10 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run }
-// { dg-options "-pthread" }
-// { dg-require-effective-target c++17 }
-// { dg-require-effective-target pthread }
+// { dg-do run { target c++17 } }
+// { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-gthreads "" }
 
 #include <memory_resource>

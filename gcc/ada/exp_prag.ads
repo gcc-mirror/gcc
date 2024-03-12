@@ -31,6 +31,10 @@ package Exp_Prag is
 
    procedure Expand_N_Pragma (N : Node_Id);
 
+   procedure Expand_Pragma_Always_Terminates (Prag : Node_Id);
+   --  This routine only exists for consistency with other pragmas, since
+   --  Always_Terminates has no meaningful expansion.
+
    procedure Expand_Pragma_Contract_Cases
      (CCs     : Node_Id;
       Subp_Id : Entity_Id;
@@ -41,6 +45,10 @@ package Exp_Prag is
    --  subprogram for which the pragma applies. Decls are the declarations of
    --  Subp_Id's body. All generated code is added to list Stmts. If Stmts is
    --  No_List on entry, a new list is created.
+
+   procedure Expand_Pragma_Exceptional_Cases (Prag : Node_Id);
+   --  Given pragma Exceptional_Cases Prag, create the circuitry needed to
+   --  catch exceptions and evaluate consequence expressions.
 
    procedure Expand_Pragma_Initial_Condition
      (Pack_Id : Entity_Id;

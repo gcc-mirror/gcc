@@ -22,7 +22,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 DEFINITION MODULE FOR "C" m2configure ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-EXPORT QUALIFIED UseUnderscoreForC, FullPathCPP ;
 
 
 CONST
@@ -39,6 +38,41 @@ CONST
 *)
 
 PROCEDURE FullPathCPP () : ADDRESS ;
+
+
+(*
+   M2CLongRealFloat128 - return true if M2C_LONGREAL_FLOAT128
+                         is defined.
+                         Only one of M2CLongRealFloat128,
+                         M2CLongRealIBM128,
+                         M2CLongRealLongDouble will be set true.
+*)
+
+PROCEDURE M2CLongRealFloat128 () : BOOLEAN ;
+
+
+(*
+   M2CLongRealIBM128 - return true if M2C_LONGREAL_IBM128
+                       is defined.
+*)
+
+PROCEDURE M2CLongRealIBM128 () : BOOLEAN ;
+
+
+(*
+   M2CLongRealLongDouble - return true if M2C_LONGREAL_LONGDOUBLE
+                           is defined.  This is true if the LONGREAL
+                           maps onto the default gcc long double type.
+*)
+
+PROCEDURE M2CLongRealLongDouble () : BOOLEAN ;
+
+
+(*
+   M2CLongRealLongDoublePPC64LE - return true if the target is ppc64le.
+*)
+
+PROCEDURE M2CLongRealLongDoublePPC64LE () : BOOLEAN ;
 
 
 END m2configure.

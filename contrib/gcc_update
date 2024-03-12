@@ -182,6 +182,7 @@ libphobos/config.h.in: libphobos/configure.ac libphobos/aclocal.m4
 libphobos/configure: libphobos/configure.ac libphobos/aclocal.m4
 libphobos/src/Makefile.in: libphobos/src/Makefile.am libphobos/aclocal.m4
 libphobos/testsuite/Makefile.in: libphobos/testsuite/Makefile.am libphobos/aclocal.m4
+libstdc++-v3/include/bits/version.h: libstdc++-v3/include/bits/version.def libstdc++-v3/include/bits/version.tpl
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.ac config/acx.m4
@@ -342,7 +343,7 @@ case $vcs_type in
 	revision=`$GCC_GIT log -n1 --pretty=tformat:%h`
 	r=`$GCC_GIT describe --all --match 'basepoints/gcc-[0-9]*' HEAD \
 	   | sed -n 's,^\(tags/\)\?basepoints/gcc-\([0-9]\+\)-\([0-9]\+\)-g[0-9a-f]*$,r\2-\3,p;s,^\(tags/\)\?basepoints/gcc-\([0-9]\+\)$,r\2-0,p'`;
-	if test -n $r; then
+	if test -n "$r"; then
 		o=`$GCC_GIT config --get gcc-config.upstream`;
 		rr=`echo $r | sed -n 's,^r\([0-9]\+\)-[0-9]\+\(-g[0-9a-f]\+\)\?$,\1,p'`;
 		if $GCC_GIT rev-parse --verify --quiet ${o:-origin}/releases/gcc-$rr >/dev/null; then

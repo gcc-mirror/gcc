@@ -256,6 +256,18 @@ MT
 C ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
 -MT <target>	Add a target that does not require quoting.
 
+fdeps-format=
+C ObjC C++ ObjC++ NoDriverArg Joined MissingArgError(missing format after %qs)
+Structured format for output dependency information.  Supported (\"p1689r5\").
+
+fdeps-file=
+C ObjC C++ ObjC++ NoDriverArg Joined MissingArgError(missing output path after %qs)
+File for output dependency information.
+
+fdeps-target=
+C ObjC C++ ObjC++ NoDriverArg Joined MissingArgError(missing path after %qs)
+-fdeps-target=obj.o Output file for the compile step.
+
 P
 C ObjC C++ ObjC++
 Do not generate #line directives.
@@ -737,6 +749,11 @@ Wformat-truncation=
 C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_trunc) Warning LangEnabledBy(C ObjC C++ LTO ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
 Warn about calls to snprintf and similar functions that truncate output.
 
+Wflex-array-member-not-at-end
+C C++ Var(warn_flex_array_member_not_at_end) Warning
+Warn when a structure containing a C99 flexible array member as the last
+field is not at the end of another structure.
+
 Wif-not-aligned
 C ObjC C++ ObjC++ Var(warn_if_not_aligned) Init(1) Warning
 Warn when the field in a struct is not aligned.
@@ -923,6 +940,10 @@ Wnamespaces
 C++ ObjC++ Var(warn_namespaces) Warning
 Warn on namespace definition.
 
+Wnrvo
+C++ ObjC++ Var(warn_nrvo)
+Warn if the named return value optimization is not performed although it is allowed.
+
 Wpacked-not-aligned
 C ObjC C++ ObjC++ Var(warn_packed_not_aligned) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when fields in a struct with the packed attribute are misaligned.
@@ -1038,6 +1059,10 @@ Warn about function parameters declared without a type specifier in K&R-style fu
 Wmissing-prototypes
 C ObjC Var(warn_missing_prototypes) Warning
 Warn about global functions without prototypes.
+
+Wmissing-variable-declarations
+C ObjC Var(warn_missing_variable_declarations) Warning
+Warn about global variables without previous declarations.
 
 Wmudflap
 C ObjC C++ ObjC++ WarnRemoved
@@ -1477,12 +1502,16 @@ C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
 Warn when a literal '0' is used as null pointer.
 
 Wuseless-cast
-C++ ObjC++ Var(warn_useless_cast) Warning
+C ObjC C++ ObjC++ Var(warn_useless_cast) Warning
 Warn about useless casts.
 
 Wsubobject-linkage
 C++ ObjC++ Var(warn_subobject_linkage) Warning Init(1)
 Warn if a class type has a base or a field whose type uses the anonymous namespace or depends on a type with no linkage.
+
+Welaborated-enum-base
+C++ ObjC++ Var(warn_elaborated_enum_base) Warning Init(1)
+Warn if an additional enum-base is used in an elaborated-type-specifier.
 
 Wduplicate-decl-specifier
 C ObjC Var(warn_duplicate_decl_specifier) Warning LangEnabledBy(C ObjC,Wall)
@@ -1918,6 +1947,10 @@ Winvalid-imported-macros
 C++ ObjC++ Var(warn_imported_macros) Warning
 Warn about macros that have conflicting header units definitions.
 
+Wcompare-distinct-pointer-types
+C ObjC Var(warn_compare_distinct_pointer_types) Warning Init(1)
+Warn if pointers of distinct types are compared without a cast.
+
 flang-info-include-translate
 C++ Var(note_include_translate_yes)
 Note #include directives translated to import declarations.
@@ -1967,7 +2000,7 @@ Implement resolution of DR 150 for matching of template template arguments.
 
 fnext-runtime
 ObjC ObjC++ LTO RejectNegative Var(flag_next_runtime)
-Generate code for NeXT (Apple Mac OS X) runtime environment.
+Generate code for NeXT (Apple macOS) runtime environment.
 
 fnil-receivers
 ObjC ObjC++ Var(flag_nil_receivers) Init(1)
@@ -2395,12 +2428,20 @@ C++ ObjC++
 Conform to the ISO 2020 C++ standard (experimental and incomplete support).
 
 std=c++2b
-C++ ObjC++ Alias(std=c++23)
+C++ ObjC++ Alias(std=c++23) Undocumented
 Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
 
 std=c++23
-C++ ObjC++ Undocumented
+C++ ObjC++
 Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
+
+std=c++2c
+C++ ObjC++ Alias(std=c++26)
+Conform to the ISO 2026 C++ draft standard (experimental and incomplete support).
+
+std=c++26
+C++ ObjC++ Undocumented
+Conform to the ISO 2026 C++ draft standard (experimental and incomplete support).
 
 std=c11
 C ObjC
@@ -2481,12 +2522,20 @@ C++ ObjC++
 Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++2b
-C++ ObjC++ Alias(std=gnu++23)
+C++ ObjC++ Alias(std=gnu++23) Undocumented
 Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++23
-C++ ObjC++ Undocumented
+C++ ObjC++
 Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++2c
+C++ ObjC++ Alias(std=gnu++26)
+Conform to the ISO 2026 C++ draft standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++26
+C++ ObjC++ Undocumented
+Conform to the ISO 2026 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11
 C ObjC

@@ -15,16 +15,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 #include <chrono>
 
 #ifndef __cpp_lib_chrono
 # error "Feature test macro for chrono is missing in <chrono>"
-// FIXME
-// #elif __cpp_lib_chrono < 201907L
-// # error "Feature test macro for chrono has wrong value in <chrono>"
+#elif __cpp_lib_chrono < 201907L
+# error "Feature test macro for chrono has wrong value in <chrono>"
 #endif
 
 namespace __gnu_test
@@ -126,8 +124,8 @@ namespace __gnu_test
 
   using std::chrono::local_time_format;
 
-  // FIXME
-  // using std::chrono::parse;
+  using std::chrono::from_stream;
+  using std::chrono::parse;
 
   using std::chrono::last;
   using std::chrono::Sunday;

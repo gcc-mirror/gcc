@@ -3645,6 +3645,25 @@ $as_echo "#define HAVE_OPENDIR 1" >>confdefs.h
 
 fi
 
+
+case $target in #(
+  powerpc64le*) :
+
+$as_echo "#define M2C_LONGREAL_FLOAT128 1" >>confdefs.h
+ ;; #(
+  *) :
+     ;;
+esac
+
+case $target in #(
+  powerpc64le*) :
+
+$as_echo "#define M2C_LONGREAL_PPC64LE 1" >>confdefs.h
+ ;; #(
+  *) :
+     ;;
+esac
+
 ac_config_headers="$ac_config_headers gm2config.aci"
 
 cat >confcache <<\_ACEOF

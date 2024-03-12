@@ -41,6 +41,7 @@ main ()
     }
   foo (a, b + N, d, N);
   bar (a, c, e, N);
+#pragma GCC novector
   for (i = 0; i < N; ++i)
     if (d[i].r != e[i].r || d[i].i != e[i].i)
       __builtin_abort ();

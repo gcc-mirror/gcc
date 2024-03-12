@@ -1029,6 +1029,21 @@ Return a value, with the same meaning as the C99 macro
 @code{FLT_EVAL_METHOD} that describes which excess precision should be
 applied.
 
+@deftypefn {Target Hook} bool TARGET_C_BITINT_TYPE_INFO (int @var{n}, struct bitint_info *@var{info})
+This target hook returns true if @code{_BitInt(@var{N})} is supported and
+provides details on it.  @code{_BitInt(@var{N})} is to be represented as
+series of @code{info->limb_mode}
+@code{CEIL (@var{N}, GET_MODE_PRECISION (info->limb_mode))} limbs,
+ordered from least significant to most significant if
+@code{!info->big_endian}, otherwise from most significant to least
+significant.  If @code{info->extended} is false, the bits above or equal to
+@var{N} are undefined when stored in a register or memory, otherwise they
+are zero or sign extended depending on if it is
+@code{unsigned _BitInt(@var{N})} or one of @code{_BitInt(@var{N})} or
+@code{signed _BitInt(@var{N})}.  Alignment of the type is
+@code{GET_MODE_ALIGNMENT (info->limb_mode)}.
+@end deftypefn
+
 @deftypefn {Target Hook} machine_mode TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
 Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or
 function return values.  The target hook should return the new mode
@@ -2553,11 +2568,28 @@ of an address, @code{ADDRESS} for something that occurs in an
 index expression if @var{outer_code} is @code{PLUS}; @code{SCRATCH} otherwise.
 @end defmac
 
+@defmac INSN_BASE_REG_CLASS (@var{insn})
+A C expression whose value is the register class to which a valid
+base register for a specified @var{insn} must belong. This macro is
+used when some backend insns may have limited usage of base register
+compared with other insns. If you define this macro, the compiler will
+use it instead of all other defined macros that relate to
+BASE_REG_CLASS.
+@end defmac
+
 @defmac INDEX_REG_CLASS
 A macro whose definition is the name of the class to which a valid
 index register must belong.  An index register is one used in an
 address where its value is either multiplied by a scale factor or
 added to another register (as well as added to a displacement).
+@end defmac
+
+@defmac INSN_INDEX_REG_CLASS (@var{insn})
+A C expression whose value is the register class to which a valid
+index register for a specified @var{insn} must belong. This macro is
+used when some backend insns may have limited usage of index register
+compared with other insns. If you defined this macro, the compiler
+will use it instead of @code{INDEX_REG_CLASS}.
 @end defmac
 
 @defmac REGNO_OK_FOR_BASE_P (@var{num})
@@ -2601,6 +2633,15 @@ address, @code{ADDRESS} for something that occurs in an
 corresponding index expression if @var{outer_code} is @code{PLUS};
 @code{SCRATCH} otherwise.  The mode may be @code{VOIDmode} for addresses
 that appear outside a @code{MEM}, i.e., as an @code{address_operand}.
+@end defmac
+
+@defmac REGNO_OK_FOR_INSN_BASE_P (@var{num}, @var{insn})
+A C expression which is nonzero if register number @var{num} is
+suitable for use as a base register in operand addresses for a specified
+@var{insn}. This macro is used when some backend insn may have limited
+usage of base register compared with other insns. If you define this
+macro, the compiler will use it instead of all other defined macros
+that relate to REGNO_OK_FOR_BASE_P.
 @end defmac
 
 @defmac REGNO_OK_FOR_INDEX_P (@var{num})
@@ -4465,9 +4506,21 @@ code in @file{optabs.cc}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_P (machine_mode @var{mode})
-Define this to return nonzero if the port is prepared to handle
+Define this to return nonzero if the current target is prepared to handle
 insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P (machine_mode @var{mode})
+Define this to return nonzero if the port is prepared to handle
+insns involving vector mode @var{mode} in any target configuration.
+Returning @var{true} means that the mode can be used as the @samp{TYPE_MODE}
+for vector types.
+
+The default version of this hook returns true.  The final mode assigned to
+@samp{TYPE_MODE} will also be checked against
+@code{TARGET_VECTOR_MODE_SUPPORTED_P} to take target configuration into
+account.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_COMPATIBLE_VECTOR_TYPES_P (const_tree @var{type1}, const_tree @var{type2})
@@ -5769,11 +5822,26 @@ This hook determines whether a function from a class of functions
 @code{(enum function_class)}@var{fcode} has a fast implementation.
 @end deftypefn
 
+@deftypefn {Target Hook} unsigned TARGET_LIBM_FUNCTION_MAX_ERROR (unsigned @var{cfn}, machine_mode @var{mode}, bool @var{boundary_p})
+This hook determines expected maximum errors for math functions measured
+in ulps (units of the last place).  0 means 0.5ulps precision (correctly
+rounded).  ~0U means unknown errors.  The @code{combined_fn} @var{cfn}
+argument should identify just which math built-in function it is rather than
+its variant, @var{mode} the variant in terms of floating-point machine mode.
+The hook should also take into account @code{flag_rounding_math} whether it
+is maximum error just in default rounding mode, or in all possible rounding
+modes.  @var{boundary_p} is @code{true} for maximum errors on intrinsic math
+boundaries of functions rather than errors inside of the usual result ranges
+of the functions.  E.g.@ the sin/cos function finite result is in between
+-1.0 and 1.0 inclusive, with @var{boundary_p} true the function returns how
+many ulps below or above those boundaries result could be.
+@end deftypefn
+
 @defmac NEXT_OBJC_RUNTIME
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
 by default.  This calling convention involves passing the object, the selector
 and the method arguments all at once to the method-lookup library function.
-This is the usual setting when targeting Darwin/Mac OS X systems, which have
+This is the usual setting when targeting Darwin / macOS systems, which have
 the NeXT runtime installed.
 
 If the macro is set to 0, the "GNU" Objective-C message sending convention
@@ -5835,9 +5903,16 @@ the maximum number that @code{TARGET_LEGITIMATE_ADDRESS_P} would ever
 accept.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{x}, bool @var{strict})
+@deftypefn {Target Hook} bool TARGET_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{x}, bool @var{strict}, code_helper @var{ch})
 A function that returns whether @var{x} (an RTX) is a legitimate memory
 address on the target machine for a memory operand of mode @var{mode}.
+If @var{ch} is not @code{ERROR_MARK}, it can be called from middle-end to
+determine if it is valid to use @var{x} as a memory operand for RTX insn
+which is generated for the given code_helper @var{ch}.  For example,
+assuming the given @var{ch} is IFN_LEN_LOAD, on some target its underlying
+hardware instructions support fewer addressing modes than what are for the
+normal vector load and store, then with this @var{ch} target can know the
+actual use context and return more exact result.
 
 Legitimate addresses are defined in two variants: a strict variant and a
 non-strict one.  The @var{strict} parameter chooses which variant is
@@ -10991,11 +11066,12 @@ version of this hook returns true for the modes returned by either the
 target hooks for the given address space.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as})
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as}, code_helper @var{ch})
 Define this to return true if @var{exp} is a valid address for mode
-@var{mode} in the named address space @var{as}.  The @var{strict}
-parameter says whether strict addressing is in effect after reload has
-finished.  This target hook is the same as the
+@var{mode} in the named address space @var{as} with the use context
+@var{ch}.  The @var{strict} parameter says whether strict addressing
+is in effect after reload has finished.  The @var{ch} indicates what
+context @var{exp} will be used for.  This target hook is the same as the
 @code{TARGET_LEGITIMATE_ADDRESS_P} target hook, except that it includes
 explicit named address space support.
 @end deftypefn
@@ -12004,7 +12080,7 @@ This target hook is required only when the target has several different
 modes and they have different conditional execution capability, such as ARM.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_FIRST (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, int @var{code}, tree @var{op0}, tree @var{op1})
+@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_FIRST (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx_code @var{code}, tree @var{op0}, tree @var{op1})
 This function prepares to emit a comparison insn for the first compare in a
  sequence of conditional comparisions.  It returns an appropriate comparison
  with @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.
@@ -12014,7 +12090,7 @@ This function prepares to emit a comparison insn for the first compare in a
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_NEXT (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx @var{prev}, int @var{cmp_code}, tree @var{op0}, tree @var{op1}, int @var{bit_code})
+@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_NEXT (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx @var{prev}, rtx_code @var{cmp_code}, tree @var{op0}, tree @var{op1}, rtx_code @var{bit_code})
 This function prepares to emit a conditional comparison within a sequence
  of conditional comparisons.  It returns an appropriate comparison with
  @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.

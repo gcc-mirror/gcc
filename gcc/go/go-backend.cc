@@ -45,8 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #define GO_EXPORT_SECTION_NAME ".go_export"
 #endif
 
-#ifndef TARGET_AIX
-#define TARGET_AIX 0
+#ifndef TARGET_AIX_OS
+#define TARGET_AIX_OS 0
 #endif
 
 /* This file holds all the cases where the Go frontend needs
@@ -107,7 +107,7 @@ go_write_export_data (const char *bytes, unsigned int size)
     {
       gcc_assert (targetm_common.have_named_sections);
       sec = get_section (GO_EXPORT_SECTION_NAME,
-			 TARGET_AIX ? SECTION_EXCLUDE : SECTION_DEBUG,
+			 TARGET_AIX_OS ? SECTION_EXCLUDE : SECTION_DEBUG,
 			 NULL);
     }
 

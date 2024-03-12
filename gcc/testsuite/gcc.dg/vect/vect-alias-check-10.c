@@ -45,6 +45,7 @@ typedef unsigned long long ull;
   }
 
 #define DO_TEST(TYPE)					\
+  _Pragma("GCC novector")				\
   for (int j = -M; j <= M; ++j)				\
     {							\
       TYPE a[N * M], b[N * M];				\

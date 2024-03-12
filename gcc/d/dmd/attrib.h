@@ -132,7 +132,7 @@ public:
 class AnonDeclaration final : public AttribDeclaration
 {
 public:
-    bool isunion;
+    d_bool isunion;
     int sem;                    // 1 if successful semantic()
     unsigned anonoffset;        // offset of anonymous struct
     unsigned anonstructsize;    // size of anonymous struct
@@ -175,8 +175,8 @@ class StaticIfDeclaration final : public ConditionalDeclaration
 {
 public:
     ScopeDsymbol *scopesym;
-    bool addisdone;
-    bool onStack;
+    d_bool addisdone;
+    d_bool onStack;
 
     StaticIfDeclaration *syntaxCopy(Dsymbol *s) override;
     Dsymbols *include(Scope *sc) override;
@@ -193,8 +193,8 @@ class StaticForeachDeclaration final : public AttribDeclaration
 public:
     StaticForeach *sfe;
     ScopeDsymbol *scopesym;
-    bool onStack;
-    bool cached;
+    d_bool onStack;
+    d_bool cached;
     Dsymbols *cache;
 
     StaticForeachDeclaration *syntaxCopy(Dsymbol *s) override;
@@ -221,15 +221,15 @@ public:
 
 // Mixin declarations
 
-class CompileDeclaration final : public AttribDeclaration
+class MixinDeclaration final : public AttribDeclaration
 {
 public:
     Expressions *exps;
 
     ScopeDsymbol *scopesym;
-    bool compiled;
+    d_bool compiled;
 
-    CompileDeclaration *syntaxCopy(Dsymbol *s) override;
+    MixinDeclaration *syntaxCopy(Dsymbol *s) override;
     void addMember(Scope *sc, ScopeDsymbol *sds) override;
     void setScope(Scope *sc) override;
     const char *kind() const override;

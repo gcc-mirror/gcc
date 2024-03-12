@@ -31,14 +31,15 @@
 
 #include <bits/requires_hosted.h> // concurrency
 
+#define __glibcxx_want_jthread
+#include <bits/version.h>
+
 #if __cplusplus > 201703L
 
 #include <atomic>
 #include <bits/std_thread.h>
 
 #include <semaphore>
-
-#define __cpp_lib_jthread 201911L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -558,72 +558,6 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
   return 0;
 }
 
-/* Return true if target supports vector masked load/store for mode.  */
-
-bool
-can_vec_mask_load_store_p (machine_mode mode,
-			   machine_mode mask_mode,
-			   bool is_load)
-{
-  optab op = is_load ? maskload_optab : maskstore_optab;
-  machine_mode vmode;
-
-  /* If mode is vector mode, check it directly.  */
-  if (VECTOR_MODE_P (mode))
-    return convert_optab_handler (op, mode, mask_mode) != CODE_FOR_nothing;
-
-  /* Otherwise, return true if there is some vector mode with
-     the mask load/store supported.  */
-
-  /* See if there is any chance the mask load or store might be
-     vectorized.  If not, punt.  */
-  scalar_mode smode;
-  if (!is_a <scalar_mode> (mode, &smode))
-    return false;
-
-  vmode = targetm.vectorize.preferred_simd_mode (smode);
-  if (VECTOR_MODE_P (vmode)
-      && targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
-      && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
-    return true;
-
-  auto_vector_modes vector_modes;
-  targetm.vectorize.autovectorize_vector_modes (&vector_modes, true);
-  for (machine_mode base_mode : vector_modes)
-    if (related_vector_mode (base_mode, smode).exists (&vmode)
-	&& targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
-	&& convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
-      return true;
-  return false;
-}
-
-/* If target supports vector load/store with length for vector mode MODE,
-   return the corresponding vector mode, otherwise return opt_machine_mode ().
-   There are two flavors for vector load/store with length, one is to measure
-   length with bytes, the other is to measure length with lanes.
-   As len_{load,store} optabs point out, for the flavor with bytes, we use
-   VnQI to wrap the other supportable same size vector modes.  */
-
-opt_machine_mode
-get_len_load_store_mode (machine_mode mode, bool is_load)
-{
-  optab op = is_load ? len_load_optab : len_store_optab;
-  gcc_assert (VECTOR_MODE_P (mode));
-
-  /* Check if length in lanes supported for this mode directly.  */
-  if (direct_optab_handler (op, mode))
-    return mode;
-
-  /* Check if length in bytes supported for same vector size VnQI.  */
-  machine_mode vmode;
-  poly_uint64 nunits = GET_MODE_SIZE (mode);
-  if (related_vector_mode (mode, QImode, nunits).exists (&vmode)
-      && direct_optab_handler (op, vmode))
-    return vmode;
-
-  return opt_machine_mode ();
-}
-
 /* Return true if there is a compare_and_swap pattern.  */
 
 bool
@@ -742,6 +676,7 @@ supports_vec_gather_load_p (machine_mode mode)
     this_fn_optabs->supports_vec_gather_load[mode]
       = (supports_vec_convert_optab_p (gather_load_optab, mode)
 	 || supports_vec_convert_optab_p (mask_gather_load_optab, mode)
+	 || supports_vec_convert_optab_p (mask_len_gather_load_optab, mode)
 	 ? 1 : -1);
 
   return this_fn_optabs->supports_vec_gather_load[mode] > 0;
@@ -758,6 +693,7 @@ supports_vec_scatter_store_p (machine_mode mode)
     this_fn_optabs->supports_vec_scatter_store[mode]
       = (supports_vec_convert_optab_p (scatter_store_optab, mode)
 	 || supports_vec_convert_optab_p (mask_scatter_store_optab, mode)
+	 || supports_vec_convert_optab_p (mask_len_scatter_store_optab, mode)
 	 ? 1 : -1);
 
   return this_fn_optabs->supports_vec_scatter_store[mode] > 0;

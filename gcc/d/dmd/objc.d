@@ -58,7 +58,7 @@ struct ObjcSelector
         stringtable._init();
     }
 
-    extern (D) this(const(char)* sv, size_t len, size_t pcount)
+    extern (D) this(const(char)* sv, size_t len, size_t pcount) @safe
     {
         stringvalue = sv;
         stringlen = len;
@@ -119,7 +119,7 @@ struct ObjcSelector
             buf.writeByte('_');
             foreach (i, fparam; ftype.parameterList)
             {
-                mangleToBuffer(fparam.type, &buf);
+                mangleToBuffer(fparam.type, buf);
                 buf.writeByte(':');
             }
         }
@@ -167,12 +167,12 @@ extern (C++) struct ObjcClassDeclaration
     /// List of non-inherited methods.
     FuncDeclaration[] methodList;
 
-    extern (D) this(ClassDeclaration classDeclaration)
+    extern (D) this(ClassDeclaration classDeclaration) @safe
     {
         this.classDeclaration = classDeclaration;
     }
 
-    bool isRootClass() const
+    bool isRootClass() const @safe
     {
         return classDeclaration.classKind == ClassKind.objc &&
             !metaclass &&
@@ -410,12 +410,12 @@ extern(C++) private final class Unsupported : Objc
 
     override void setObjc(ClassDeclaration cd)
     {
-        cd.error("Objective-C classes not supported");
+        .error(cd.loc, "%s `%s` Objective-C classes not supported", cd.kind, cd.toPrettyChars);
     }
 
     override void setObjc(InterfaceDeclaration id)
     {
-        id.error("Objective-C interfaces not supported");
+        .error(id.loc, "%s `%s` Objective-C interfaces not supported", id.kind, id.toPrettyChars);
     }
 
     override const(char)* toPrettyChars(ClassDeclaration, bool qualifyTypes) const
@@ -552,7 +552,7 @@ extern(C++) private final class Supported : Objc
 
             if (fd.objc.selector)
             {
-                fd.error("can only have one Objective-C selector per method");
+                .error(fd.loc, "%s `%s` can only have one Objective-C selector per method", fd.kind, fd.toPrettyChars);
                 return 1;
             }
 
@@ -572,15 +572,15 @@ extern(C++) private final class Supported : Objc
             return;
         TypeFunction tf = cast(TypeFunction)fd.type;
         if (fd.objc.selector.paramCount != tf.parameterList.parameters.length)
-            fd.error("number of colons in Objective-C selector must match number of parameters");
+            .error(fd.loc, "%s `%s` number of colons in Objective-C selector must match number of parameters", fd.kind, fd.toPrettyChars);
         if (fd.parent && fd.parent.isTemplateInstance())
-            fd.error("template cannot have an Objective-C selector attached");
+            .error(fd.loc, "%s `%s` template cannot have an Objective-C selector attached", fd.kind, fd.toPrettyChars);
     }
 
     override void checkLinkage(FuncDeclaration fd)
     {
         if (fd._linkage != LINK.objc && fd.objc.selector)
-            fd.error("must have Objective-C linkage to attach a selector");
+            .error(fd.loc, "%s `%s` must have Objective-C linkage to attach a selector", fd.kind, fd.toPrettyChars);
     }
 
     override bool isVirtual(const FuncDeclaration fd) const
@@ -608,7 +608,7 @@ extern(C++) private final class Supported : Objc
         fd.objc.isOptional = count > 0;
 
         if (count > 1)
-            fd.error("can only declare a function as optional once");
+            .error(fd.loc, "%s `%s` can only declare a function as optional once", fd.kind, fd.toPrettyChars);
     }
 
     /// Returns: the number of times `fd` has been declared as optional.
@@ -643,7 +643,7 @@ extern(C++) private final class Supported : Objc
 
         if (fd._linkage != LINK.objc)
         {
-            fd.error("only functions with Objective-C linkage can be declared as optional");
+            .error(fd.loc, "%s `%s` only functions with Objective-C linkage can be declared as optional", fd.kind, fd.toPrettyChars);
 
             const linkage = linkageToString(fd._linkage);
 
@@ -655,14 +655,14 @@ extern(C++) private final class Supported : Objc
 
         if (parent && parent.isTemplateInstance())
         {
-            fd.error("template cannot be optional");
+            .error(fd.loc, "%s `%s` template cannot be optional", fd.kind, fd.toPrettyChars);
             parent = parent.parent;
             assert(parent);
         }
 
         if (parent && !parent.isInterfaceDeclaration())
         {
-            fd.error("only functions declared inside interfaces can be optional");
+            .error(fd.loc, "%s `%s` only functions declared inside interfaces can be optional", fd.kind, fd.toPrettyChars);
             errorSupplemental(fd.loc, "function is declared inside %s", fd.parent.kind);
         }
     }
@@ -805,9 +805,9 @@ extern(C++) private final class Supported : Objc
         enum supplementalMessage = "`offsetof` is not available for members " ~
             "of Objective-C classes. Please use the Objective-C runtime instead";
 
-        expression.error(errorMessage, expression.toChars(),
+        error(expression.loc, errorMessage, expression.toChars(),
             expression.type.toChars());
-        expression.errorSupplemental(supplementalMessage);
+        errorSupplemental(expression.loc, supplementalMessage);
     }
 
     override void checkTupleof(Expression expression, TypeClass type) const
@@ -815,8 +815,8 @@ extern(C++) private final class Supported : Objc
         if (type.sym.classKind != ClassKind.objc)
             return;
 
-        expression.error("no property `tupleof` for type `%s`", type.toChars());
-        expression.errorSupplemental("`tupleof` is not available for members " ~
+        error(expression.loc, "no property `tupleof` for type `%s`", type.toChars());
+        errorSupplemental(expression.loc, "`tupleof` is not available for members " ~
             "of Objective-C classes. Please use the Objective-C runtime instead");
     }
 }
@@ -866,8 +866,8 @@ if (is(T == ClassDeclaration) || is(T == InterfaceDeclaration))
             }
             else
             {
-                error("base " ~ errorType ~ " for an Objective-C " ~
-                      errorType ~ " must be `extern (Objective-C)`");
+                .error(classDeclaration.loc, "%s `%s` base " ~ errorType ~ " for an Objective-C " ~
+                      errorType ~ " must be `extern (Objective-C)`", classDeclaration.kind, classDeclaration.toPrettyChars);
             }
         }
 

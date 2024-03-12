@@ -18,19 +18,18 @@ import core.stdc.stdio;
 
 import dmd.astenums;
 import dmd.attrib;
+import dmd.errors;
 import dmd.gluelayer;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.expression;
-import dmd.globals;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
 import dmd.location;
 import dmd.mtype;
-import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
 
@@ -169,7 +168,12 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
             return defaultval;
         }
         //printf("EnumDeclaration::getDefaultValue() %p %s\n", this, toChars());
-        if (defaultval)
+        // https://issues.dlang.org/show_bug.cgi?id=23904
+        // Return defaultval only if it is not ErrorExp.
+        // A speculative context may set defaultval to ErrorExp;
+        // subsequent non-speculative contexts need to be able
+        // to print the error.
+        if (defaultval && !defaultval.isErrorExp())
             return defaultval;
 
         if (isCsymbol())
@@ -188,7 +192,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
                 return defaultval = memtype.defaultInit(loc);
             }
 
-            error(loc, "is opaque and has no default initializer");
+            error(loc, "%s `%s` is opaque and has no default initializer", kind, toPrettyChars);
             return handleErrors();
         }
 
@@ -199,7 +203,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
             {
                 if (em.semanticRun < PASS.semanticdone)
                 {
-                    error(loc, "forward reference of `%s.init`", toChars());
+                    error(loc, "%s `%s` forward reference of `%s.init`", kind, toPrettyChars, toChars());
                     return handleErrors();
                 }
 

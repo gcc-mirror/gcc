@@ -116,8 +116,6 @@ namespace __detail
   /// @endcond
 } // namespace __detail
 
-  /// @cond
-
   template<typename _Ch_type>
   template<typename _Fwd_iter>
     typename regex_traits<_Ch_type>::string_type
@@ -664,8 +662,6 @@ namespace __detail
       else
 	_M_result = nullptr;
     }
-
-  /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

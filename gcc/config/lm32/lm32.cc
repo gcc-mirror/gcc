@@ -69,8 +69,8 @@ static void lm32_setup_incoming_varargs (cumulative_args_t cum,
 static bool lm32_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 			    int *total, bool speed);
 static bool lm32_can_eliminate (const int, const int);
-static bool
-lm32_legitimate_address_p (machine_mode mode, rtx x, bool strict);
+static bool lm32_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+				       code_helper = ERROR_MARK);
 static HOST_WIDE_INT lm32_compute_frame_size (int size);
 static void lm32_option_override (void);
 static rtx lm32_function_arg (cumulative_args_t, const function_arg_info &);
@@ -787,7 +787,7 @@ lm32_in_small_data_p (const_tree exp)
   if (TREE_CODE (exp) == FUNCTION_DECL)
     return false;
 
-  if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
+  if (VAR_P (exp) && DECL_SECTION_NAME (exp))
     {
       const char *section = DECL_SECTION_NAME (exp);
       if (strcmp (section, ".sdata") == 0 || strcmp (section, ".sbss") == 0)
@@ -1192,7 +1192,8 @@ lm32_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 
 static bool
-lm32_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x, bool strict)
+lm32_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
+			   bool strict, code_helper)
 {  
    /* (rM) */                                                    
   if (strict && REG_P (x) && STRICT_REG_OK_FOR_BASE_P (x))

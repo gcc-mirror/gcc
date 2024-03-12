@@ -287,7 +287,7 @@
 ;; Used for storing or loading pairs in an AdvSIMD register using an STP/LDP
 ;; as a vector-concat.  The address mode uses the same constraints as if it
 ;; were for a single value.
-(define_memory_constraint "Umn"
+(define_relaxed_memory_constraint "Umn"
   "@internal
   A memory address suitable for a load/store pair operation."
   (and (match_code "mem")
@@ -467,6 +467,20 @@
       (match_test "aarch64_const_vec_all_same_in_range_p (op,
 			GET_MODE_UNIT_BITSIZE (mode) - 1,
 			GET_MODE_UNIT_BITSIZE (mode) - 1)")))
+
+(define_constraint "D2"
+  "@internal
+ A constraint that matches vector of immediates that is bits(mode)/2."
+ (and (match_code "const,const_vector")
+      (match_test "aarch64_simd_shift_imm_vec_exact_top (op, mode)")))
+
+(define_constraint "DL"
+  "@internal
+ A constraint that matches vector of immediates for left shift long.
+ That is immediates between 0 to (bits(mode)/2)-1."
+ (and (match_code "const,const_vector")
+      (match_test "aarch64_const_vec_all_same_in_range_p (op, 0,
+			(GET_MODE_UNIT_BITSIZE (mode) / 2) - 1)")))
 
 (define_constraint "Dr"
   "@internal

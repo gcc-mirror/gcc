@@ -432,6 +432,30 @@ else version (MIPS_Any)
         MAP_HUGETLB = 0x80000,
     }
 }
+else version (LoongArch64)
+{
+    static if (_DEFAULT_SOURCE) enum
+    {
+        MAP_GROWSDOWN = 0x00100,
+        MAP_DENYWRITE = 0x00800,
+        MAP_EXECUTABLE = 0x01000,
+        MAP_LOCKED = 0x02000,
+        MAP_NORESERVE = 0x04000,
+        MAP_POPULATE = 0x08000,
+        MAP_NONBLOCK = 0x10000,
+        MAP_STACK = 0x20000,
+        MAP_HUGETLB = 0x40000,
+        MAP_SYNC = 0x80000,
+        MAP_FIXED_NOREPLACE = 0x100000,
+    }
+
+    // in core.sys.posix.sys.mman
+    // enum
+    // {
+    //     MCL_CURRENT = 0x1,
+    //     MCL_FUTURE = 0x2,
+    // }
+}
 else
 {
     static assert(0, "unimplemented");

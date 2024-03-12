@@ -40,25 +40,25 @@ struct _d_dynamicArray final
 #endif
 
 enum class __c_not_special;
-extern "C" void fn_long(long _param_0);
+extern "C" void fn_long(long __param_0_);
 
-extern "C" void fn_ulong(unsigned long _param_0);
+extern "C" void fn_ulong(unsigned long __param_0_);
 
-extern "C" void fn_longlong(long long _param_0);
+extern "C" void fn_longlong(long long __param_0_);
 
-extern "C" void fn_ulonglong(unsigned long long _param_0);
+extern "C" void fn_ulonglong(unsigned long long __param_0_);
 
-extern "C" void fn_long_double(long double _param_0);
+extern "C" void fn_long_double(long double __param_0_);
 
-extern "C" void fn_wchar_t(wchar_t _param_0);
+extern "C" void fn_wchar_t(wchar_t __param_0_);
 
-extern "C" void fn_complex_float(_Complex float _param_0);
+extern "C" void fn_complex_float(_Complex float __param_0_);
 
-extern "C" void fn_complex_double(_Complex double _param_0);
+extern "C" void fn_complex_double(_Complex double __param_0_);
 
-extern "C" void fn_complex_real(_Complex long double _param_0);
+extern "C" void fn_complex_real(_Complex long double __param_0_);
 
-extern "C" void fn_not_special(__c_not_special _param_0);
+extern "C" void fn_not_special(__c_not_special __param_0_);
 
 ---
 +/

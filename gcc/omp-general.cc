@@ -1986,13 +1986,17 @@ omp_get_context_selector (tree ctx, const char *set, const char *sel)
   return NULL_TREE;
 }
 
+/* Needs to be a GC-friendly widest_int variant, but precision is
+   desirable to be the same on all targets.  */
+typedef generic_wide_int <fixed_wide_int_storage <1024> > score_wide_int;
+
 /* Compute *SCORE for context selector CTX.  Return true if the score
    would be different depending on whether it is a declare simd clone or
    not.  DECLARE_SIMD should be true for the case when it would be
    a declare simd clone.  */
 
 static bool
-omp_context_compute_score (tree ctx, widest_int *score, bool declare_simd)
+omp_context_compute_score (tree ctx, score_wide_int *score, bool declare_simd)
 {
   tree construct = omp_get_context_selector (ctx, "construct", NULL);
   bool has_kind = omp_get_context_selector (ctx, "device", "kind");
@@ -2007,7 +2011,11 @@ omp_context_compute_score (tree ctx, widest_int *score, bool declare_simd)
 	  if (TREE_PURPOSE (t3)
 	      && strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)), " score") == 0
 	      && TREE_CODE (TREE_VALUE (t3)) == INTEGER_CST)
-	    *score += wi::to_widest (TREE_VALUE (t3));
+	    {
+	      tree t4 = TREE_VALUE (t3);
+	      *score += score_wide_int::from (wi::to_wide (t4),
+					      TYPE_SIGN (TREE_TYPE (t4)));
+	    }
   if (construct || has_kind || has_arch || has_isa)
     {
       int scores[12];
@@ -2028,16 +2036,16 @@ omp_context_compute_score (tree ctx, widest_int *score, bool declare_simd)
 		  *score = -1;
 		  return ret;
 		}
-	      *score += wi::shifted_mask <widest_int> (scores[b + n], 1, false);
+	      *score += wi::shifted_mask <score_wide_int> (scores[b + n], 1, false);
 	    }
 	  if (has_kind)
-	    *score += wi::shifted_mask <widest_int> (scores[b + nconstructs],
+	    *score += wi::shifted_mask <score_wide_int> (scores[b + nconstructs],
 						     1, false);
 	  if (has_arch)
-	    *score += wi::shifted_mask <widest_int> (scores[b + nconstructs] + 1,
+	    *score += wi::shifted_mask <score_wide_int> (scores[b + nconstructs] + 1,
 						     1, false);
 	  if (has_isa)
-	    *score += wi::shifted_mask <widest_int> (scores[b + nconstructs] + 2,
+	    *score += wi::shifted_mask <score_wide_int> (scores[b + nconstructs] + 2,
 						     1, false);
 	}
       else /* FIXME: Implement this.  */
@@ -2051,9 +2059,9 @@ struct GTY(()) omp_declare_variant_entry {
   /* NODE of the variant.  */
   cgraph_node *variant;
   /* Score if not in declare simd clone.  */
-  widest_int score;
+  score_wide_int score;
   /* Score if in declare simd clone.  */
-  widest_int score_in_declare_simd_clone;
+  score_wide_int score_in_declare_simd_clone;
   /* Context selector for the variant.  */
   tree ctx;
   /* True if the context selector is known to match already.  */
@@ -2214,12 +2222,12 @@ omp_resolve_late_declare_variant (tree alt)
 	    }
       }
 
-  widest_int max_score = -1;
+  score_wide_int max_score = -1;
   varentry2 = NULL;
   FOR_EACH_VEC_SAFE_ELT (entryp->variants, i, varentry1)
     if (matches[i])
       {
-	widest_int score
+	score_wide_int score
 	  = (cur_node->simdclone ? varentry1->score_in_declare_simd_clone
 	     : varentry1->score);
 	if (score > max_score)
@@ -2300,8 +2308,8 @@ omp_resolve_declare_variant (tree base)
 
   if (any_deferred)
     {
-      widest_int max_score1 = 0;
-      widest_int max_score2 = 0;
+      score_wide_int max_score1 = 0;
+      score_wide_int max_score2 = 0;
       bool first = true;
       unsigned int i;
       tree attr1, attr2;
@@ -2311,8 +2319,8 @@ omp_resolve_declare_variant (tree base)
       vec_alloc (entry.variants, variants.length ());
       FOR_EACH_VEC_ELT (variants, i, attr1)
 	{
-	  widest_int score1;
-	  widest_int score2;
+	  score_wide_int score1;
+	  score_wide_int score2;
 	  bool need_two;
 	  tree ctx = TREE_VALUE (TREE_VALUE (attr1));
 	  need_two = omp_context_compute_score (ctx, &score1, false);
@@ -2471,16 +2479,16 @@ omp_resolve_declare_variant (tree base)
 		variants[j] = NULL_TREE;
 	    }
       }
-  widest_int max_score1 = 0;
-  widest_int max_score2 = 0;
+  score_wide_int max_score1 = 0;
+  score_wide_int max_score2 = 0;
   bool first = true;
   FOR_EACH_VEC_ELT (variants, i, attr1)
     if (attr1)
       {
 	if (variant1)
 	  {
-	    widest_int score1;
-	    widest_int score2;
+	    score_wide_int score1;
+	    score_wide_int score2;
 	    bool need_two;
 	    tree ctx;
 	    if (first)
@@ -2552,7 +2560,7 @@ omp_lto_output_declare_variant_alt (lto_simple_output_block *ob,
       gcc_assert (nvar != LCC_NOT_FOUND);
       streamer_write_hwi_stream (ob->main_stream, nvar);
 
-      for (widest_int *w = &varentry->score; ;
+      for (score_wide_int *w = &varentry->score; ;
 	   w = &varentry->score_in_declare_simd_clone)
 	{
 	  unsigned len = w->get_len ();
@@ -2602,15 +2610,15 @@ omp_lto_input_declare_variant_alt (lto_input_block *ib, cgraph_node *node,
       omp_declare_variant_entry varentry;
       varentry.variant
 	= dyn_cast<cgraph_node *> (nodes[streamer_read_hwi (ib)]);
-      for (widest_int *w = &varentry.score; ;
+      for (score_wide_int *w = &varentry.score; ;
 	   w = &varentry.score_in_declare_simd_clone)
 	{
 	  unsigned len2 = streamer_read_hwi (ib);
-	  HOST_WIDE_INT arr[WIDE_INT_MAX_ELTS];
-	  gcc_assert (len2 <= WIDE_INT_MAX_ELTS);
+	  HOST_WIDE_INT arr[WIDE_INT_MAX_HWIS (1024)];
+	  gcc_assert (len2 <= WIDE_INT_MAX_HWIS (1024));
 	  for (unsigned int j = 0; j < len2; j++)
 	    arr[j] = streamer_read_hwi (ib);
-	  *w = widest_int::from_array (arr, len2, true);
+	  *w = score_wide_int::from_array (arr, len2, true);
 	  if (w == &varentry.score_in_declare_simd_clone)
 	    break;
 	}
@@ -3011,6 +3019,140 @@ omp_build_component_ref (tree obj, tree field)
   if (TREE_READONLY (field))
     TREE_READONLY (ret) |= 1;
   return ret;
+}
+
+/* Return true if NAME is the name of an omp_* runtime API call.  */
+bool
+omp_runtime_api_procname (const char *name)
+{
+  if (!startswith (name, "omp_"))
+    return false;
+
+  static const char *omp_runtime_apis[] =
+    {
+      /* This array has 3 sections.  First omp_* calls that don't
+	 have any suffixes.  */
+      "aligned_alloc",
+      "aligned_calloc",
+      "alloc",
+      "calloc",
+      "free",
+      "get_mapped_ptr",
+      "realloc",
+      "target_alloc",
+      "target_associate_ptr",
+      "target_disassociate_ptr",
+      "target_free",
+      "target_is_accessible",
+      "target_is_present",
+      "target_memcpy",
+      "target_memcpy_async",
+      "target_memcpy_rect",
+      "target_memcpy_rect_async",
+      NULL,
+      /* Now omp_* calls that are available as omp_* and omp_*_; however, the
+	 DECL_NAME is always omp_* without tailing underscore.  */
+      "capture_affinity",
+      "destroy_allocator",
+      "destroy_lock",
+      "destroy_nest_lock",
+      "display_affinity",
+      "fulfill_event",
+      "get_active_level",
+      "get_affinity_format",
+      "get_cancellation",
+      "get_default_allocator",
+      "get_default_device",
+      "get_device_num",
+      "get_dynamic",
+      "get_initial_device",
+      "get_level",
+      "get_max_active_levels",
+      "get_max_task_priority",
+      "get_max_teams",
+      "get_max_threads",
+      "get_nested",
+      "get_num_devices",
+      "get_num_places",
+      "get_num_procs",
+      "get_num_teams",
+      "get_num_threads",
+      "get_partition_num_places",
+      "get_place_num",
+      "get_proc_bind",
+      "get_supported_active_levels",
+      "get_team_num",
+      "get_teams_thread_limit",
+      "get_thread_limit",
+      "get_thread_num",
+      "get_wtick",
+      "get_wtime",
+      "in_explicit_task",
+      "in_final",
+      "in_parallel",
+      "init_lock",
+      "init_nest_lock",
+      "is_initial_device",
+      "pause_resource",
+      "pause_resource_all",
+      "set_affinity_format",
+      "set_default_allocator",
+      "set_lock",
+      "set_nest_lock",
+      "test_lock",
+      "test_nest_lock",
+      "unset_lock",
+      "unset_nest_lock",
+      NULL,
+      /* And finally calls available as omp_*, omp_*_ and omp_*_8_; however,
+	 as DECL_NAME only omp_* and omp_*_8 appear.  */
+      "display_env",
+      "get_ancestor_thread_num",
+      "init_allocator",
+      "get_partition_place_nums",
+      "get_place_num_procs",
+      "get_place_proc_ids",
+      "get_schedule",
+      "get_team_size",
+      "set_default_device",
+      "set_dynamic",
+      "set_max_active_levels",
+      "set_nested",
+      "set_num_teams",
+      "set_num_threads",
+      "set_schedule",
+      "set_teams_thread_limit"
+    };
+
+  int mode = 0;
+  for (unsigned i = 0; i < ARRAY_SIZE (omp_runtime_apis); i++)
+    {
+      if (omp_runtime_apis[i] == NULL)
+	{
+	  mode++;
+	  continue;
+	}
+      size_t len = strlen (omp_runtime_apis[i]);
+      if (strncmp (name + 4, omp_runtime_apis[i], len) == 0
+	  && (name[4 + len] == '\0'
+	      || (mode > 1 && strcmp (name + 4 + len, "_8") == 0)))
+	return true;
+    }
+  return false;
+}
+
+/* Return true if FNDECL is an omp_* runtime API call.  */
+
+bool
+omp_runtime_api_call (const_tree fndecl)
+{
+  tree declname = DECL_NAME (fndecl);
+  if (!declname
+      || (DECL_CONTEXT (fndecl) != NULL_TREE
+	  && TREE_CODE (DECL_CONTEXT (fndecl)) != TRANSLATION_UNIT_DECL)
+      || !TREE_PUBLIC (fndecl))
+    return false;
+  return omp_runtime_api_procname (IDENTIFIER_POINTER (declname));
 }
 
 #include "gt-omp-general.h"

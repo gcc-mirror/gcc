@@ -34,6 +34,9 @@ public:
   region_model_manager (logger *logger = NULL);
   ~region_model_manager ();
 
+  unsigned get_num_symbols () const { return m_next_symbol_id; }
+  unsigned alloc_symbol_id () { return m_next_symbol_id++; }
+
   /* call_string consolidation.  */
   const call_string &get_empty_call_string () const
   {
@@ -42,14 +45,15 @@ public:
 
   /* svalue consolidation.  */
   const svalue *get_or_create_constant_svalue (tree cst_expr);
-  const svalue *get_or_create_int_cst (tree type, poly_int64);
+  const svalue *get_or_create_int_cst (tree type, const poly_wide_int_ref &cst);
   const svalue *get_or_create_null_ptr (tree pointer_type);
   const svalue *get_or_create_unknown_svalue (tree type);
   const svalue *get_or_create_setjmp_svalue (const setjmp_record &r,
 					     tree type);
   const svalue *get_or_create_poisoned_svalue (enum poison_kind kind,
 					       tree type);
-  const svalue *get_or_create_initial_value (const region *reg);
+  const svalue *get_or_create_initial_value (const region *reg,
+					     bool check_poisoned = true);
   const svalue *get_ptr_svalue (tree ptr_type, const region *pointee);
   const svalue *get_or_create_unaryop (tree type, enum tree_code op,
 				       const svalue *arg);
@@ -101,7 +105,6 @@ public:
   const svalue *create_unique_svalue (tree type);
 
   /* region consolidation.  */
-  unsigned get_num_regions () const { return m_next_region_id; }
   const stack_region * get_stack_region () const { return &m_stack_region; }
   const heap_region *get_heap_region () const { return &m_heap_region; }
   const code_region *get_code_region () const { return &m_code_region; }
@@ -140,8 +143,6 @@ public:
   get_region_for_unexpected_tree_code (region_model_context *ctxt,
 				       tree t,
 				       const dump_location_t &loc);
-
-  unsigned alloc_region_id () { return m_next_region_id++; }
 
   store_manager *get_store_manager () { return &m_store_mgr; }
   bounded_ranges_manager *get_range_manager () const { return m_range_mgr; }
@@ -192,9 +193,10 @@ private:
 
   logger *m_logger;
 
+  unsigned m_next_symbol_id;
+
   const call_string m_empty_call_string;
 
-  unsigned m_next_region_id;
   root_region m_root_region;
   stack_region m_stack_region;
   heap_region m_heap_region;

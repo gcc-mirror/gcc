@@ -530,6 +530,17 @@
   "vsel\t%v0,%1,%2,%3"
   [(set_attr "op_type" "VRR")])
 
+(define_insn "*vsel<mode>_swapped"
+  [(set (match_operand:V_HW_FT               0 "register_operand" "=v")
+	(ior:V_HW_FT
+	 (and:V_HW_FT (not:V_HW_FT (match_operand:V_HW_FT 3 "register_operand"  "v"))
+		      (match_operand:V_HW_FT 1 "register_operand"  "v"))
+	 (and:V_HW_FT (match_dup 3)
+		      (match_operand:V_HW_FT 2 "register_operand"  "v"))))]
+  "TARGET_VX"
+  "vsel\t%v0,%2,%1,%3"
+  [(set_attr "op_type" "VRR")])
+
 
 ; Vector sign extend to doubleword
 

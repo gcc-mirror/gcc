@@ -581,10 +581,10 @@ public:
   bitmap_head insns_to_delete;
   bitmap_head insns_to_rescan;
   bitmap_head insns_to_notes_rescan;
-  int *postorder;                /* The current set of basic blocks
-                                    in reverse postorder.  */
-  vec<int> postorder_inverted;       /* The current set of basic blocks
-                                    in reverse postorder of inverted CFG.  */
+  int *postorder;                /* The current set of basic blocks in reverse
+				    postorder for DF_BACKWARD problems.  */
+  int *postorder_inverted;       /* The current set of basic blocks in reverse
+				    postorder for DF_FORWARD problems. */
   int n_blocks;                  /* The number of blocks in reverse postorder.  */
 
   /* An array [FIRST_PSEUDO_REGISTER], indexed by regno, of the number

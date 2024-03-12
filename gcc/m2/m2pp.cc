@@ -183,7 +183,7 @@ do_pf (tree t, int bits)
 }
 
 /* pf print function.  Expected to be printed interactively from
-   the debugger: print pf(func), or to be called from code.  */
+   the debugger: print modula2::pf(func), or to be called from code.  */
 
 void
 pf (tree t)
@@ -192,7 +192,7 @@ pf (tree t)
 }
 
 /* pe print expression.  Expected to be printed interactively from
-   the debugger: print pe(expr), or to be called from code.  */
+   the debugger: print modula2::pe(expr), or to be called from code.  */
 
 void
 pe (tree t)
@@ -206,8 +206,8 @@ pe (tree t)
 }
 
 /* pet print expression and its type.  Expected to be printed
-   interactively from the debugger: print pet(expr), or to be called
-   from code.  */
+   interactively from the debugger: print modula2::pet(expr), or to
+   be called from code.  */
 
 void
 pet (tree t)
@@ -579,7 +579,7 @@ hextree (tree t)
       hextree (DECL_INITIAL (t));
       hextree (DECL_SAVED_TREE (t));
     }
-  if (TREE_CODE (t) == VAR_DECL)
+  if (VAR_P (t))
     {
       pretty *state = initPretty (FALSE);
 
@@ -1308,6 +1308,33 @@ m2pp_complex (pretty *s, tree t ATTRIBUTE_UNUSED)
 }
 #endif
 
+void
+m2pp_real_type (pretty *s, tree t)
+{
+  if (t == m2type_GetRealType ())
+    m2pp_print (s, "C double");
+  else if (t == m2type_GetShortRealType ())
+    m2pp_print (s, "C float");
+  else if (t == m2type_GetLongRealType ())
+    m2pp_print (s, "C long double");
+  else if (t == m2type_GetM2RealType ())
+    m2pp_print (s, "REAL");
+  else if (t == m2type_GetM2ShortRealType ())
+    m2pp_print (s, "SHORTREAL");
+  else if (t == m2type_GetM2LongRealType ())
+    m2pp_print (s, "LONGREAL");
+  else if (t == m2type_GetM2Real128 ())
+    m2pp_print (s, "REAL128");
+  else if (t == m2type_GetM2Real64 ())
+    m2pp_print (s, "REAL64");
+  else if (t == m2type_GetM2Real32 ())
+    m2pp_print (s, "REAL32");
+  else if (t == m2type_GetM2RType ())
+    m2pp_print (s, "R Type");
+  else
+    m2pp_print (s, "unknown REAL");
+}
+
 /* m2pp_type prints a full type.  */
 
 void
@@ -1326,7 +1353,7 @@ m2pp_type (pretty *s, tree t)
       m2pp_integer (s, t);
       break;
     case REAL_TYPE:
-      m2pp_print (s, "REAL");
+      m2pp_real_type (s, t);
       break;
     case ENUMERAL_TYPE:
       m2pp_enum (s, t);
@@ -1593,6 +1620,22 @@ m2pp_union_type (pretty *s, tree t)
   pop ();
 }
 
+/* m2pp_print_mode.  */
+
+static void
+m2pp_print_mode (pretty *s, tree t)
+{
+  int mode = SCALAR_FLOAT_TYPE_MODE (t);
+  char buf[100];
+
+  snprintf (buf, sizeof (buf), "%d", mode);
+  m2pp_print (s, "<*");
+  m2pp_needspace (s);
+  m2pp_print (s, buf);
+  m2pp_needspace (s);
+  m2pp_print (s, "*>");
+}
+
 /* m2pp_simple_type.  */
 
 static void
@@ -1611,7 +1654,8 @@ m2pp_simple_type (pretty *s, tree t)
       m2pp_integer (s, t);
       break;
     case REAL_TYPE:
-      m2pp_print (s, "REAL");
+      m2pp_real_type (s, t);
+      m2pp_print_mode (s, t);
       break;
     case BOOLEAN_TYPE:
       m2pp_print (s, "BOOLEAN");
@@ -1642,6 +1686,19 @@ m2pp_simple_type (pretty *s, tree t)
     }
 }
 
+/* m2pp_float issue a VAL (type, expr) expression.  */
+
+static void
+m2pp_float (pretty *s, tree t)
+{
+  m2pp_needspace (s);
+  m2pp_print (s, "VAL (");
+  m2pp_simple_type (s, TREE_TYPE (t));
+  m2pp_print (s, ", ");
+  m2pp_expression (s, TREE_OPERAND (t, 0));
+  m2pp_print (s, ")");
+}
+
 /* m2pp_expression display an expression.  */
 
 static void
@@ -1668,6 +1725,9 @@ m2pp_expression (pretty *s, tree t)
       break;
     case GT_EXPR:
       m2pp_relop (s, t, ">");
+      break;
+    case FLOAT_EXPR:
+      m2pp_float (s, t);
       break;
     default:
       m2pp_simple_expression (s, t);
@@ -2209,6 +2269,34 @@ m2pp_if_stmt (pretty *s, tree t)
 }
 #endif
 
+static void
+m2pp_asm_expr (pretty *state, tree node)
+{
+  m2pp_begin (state);
+  m2pp_print (state, "ASM");
+  m2pp_needspace (state);
+  if (ASM_VOLATILE_P (node))
+    {
+      m2pp_print (state, "VOLATILE");
+      m2pp_needspace (state);
+    }
+  m2pp_print (state, "(");
+  m2pp_expression (state, ASM_STRING (node));
+  m2pp_print (state, ":");
+  m2pp_needspace (state);
+  m2pp_expression (state, ASM_OUTPUTS (node));
+  m2pp_print (state, ":");
+  m2pp_needspace (state);
+  m2pp_expression (state, ASM_INPUTS (node));
+  if (ASM_CLOBBERS (node) != NULL)
+    {
+      m2pp_print (state, ":");
+      m2pp_needspace (state);
+      m2pp_expression (state, ASM_CLOBBERS (node));
+    }
+  m2pp_print (state, ");\n");
+}
+
 /* m2pp_statement attempts to reconstruct a statement.  */
 
 static void
@@ -2270,6 +2358,9 @@ m2pp_statement (pretty *s, tree t)
       break;
     case CATCH_EXPR:
       m2pp_catch_expr (s, t);
+      break;
+    case ASM_EXPR:
+      m2pp_asm_expr (s, t);
       break;
 #if defined(CPP)
     case IF_STMT:
@@ -2364,7 +2455,7 @@ m2pp_call_expr (pretty *s, tree t)
   int has_return_type = TRUE;
   tree proc;
 
-  if (type && (TREE_CODE (type) == VOID_TYPE))
+  if (type && VOID_TYPE_P (type))
     has_return_type = FALSE;
 
   if (TREE_CODE (call) == ADDR_EXPR || TREE_CODE (call) == NON_LVALUE_EXPR)

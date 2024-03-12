@@ -1,3 +1,71 @@
+2023-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109751
+	* cp-demangle.c (d_make_comp): Handle DEMANGLE_COMPONENT_FRIEND.
+	(d_count_templates_scopes): Likewise.
+	(d_print_comp_inner): Likewise.
+	(d_unqualified_name): Handle member-like friend mangling.
+	* testsuite/demangle-expected: Add test.
+
+2023-08-07  John Ericson  <git@JohnEricson.me>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.in (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	(configure_deps): Depend on ../config/gcc-plugin.m4.
+	* configure.ac: AC_SUBST AR_PLUGIN_OPTION and
+	RANLIB_PLUGIN_OPTION.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac: Also set shared when enable_host_pie.
+	* configure: Regenerate.
+
+2023-06-13  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_print_conversion): Remove incorrect
+	template instantiation handling.
+	* testsuite/demangle-expected: Add testcases.
+
+2023-06-07  Costas Argyris  <costas.argyris@gmail.com>
+
+	* argv.c (writeargv): Constant propagate "0" for "status",
+	simplifying the code slightly.
+
+2023-06-06  Costas Argyris  <costas.argyris@gmail.com>
+
+	* argv.c (writeargv): Simplify & remove gotos.
+
+2023-06-05  Costas Argyris  <costas.argyris@gmail.com>
+
+	* pex-win32.c: fix typos.
+
+2023-06-05  Costas Argyris  <costas.argyris@gmail.com>
+
+	* pex-win32.c (win32_spawn): Check command line length
+	and generate a response file if necessary.
+	(spawn_script): Adjust parameters.
+	(pex_win32_exec_child): Ditto.
+
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70790
+	* cp-demangle.c (cplus_demangle_operators): Add the noexcept
+	operator.
+	(d_print_comp_inner) <case DEMANGLE_COMPONENT_UNARY>: Always
+	print parens around the operand of noexcept too.
+	* testsuite/demangle-expected: Test noexcept operator
+	demangling.
+
 2023-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/109306

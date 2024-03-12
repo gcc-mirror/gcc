@@ -598,7 +598,7 @@ stamp-pdf-docbook: doc-pdf-docbook-pre doc-xml-single-docbook
 doc-pdf-docbook: stamp-pdf-docbook
 
 # TEXINFO, via docbook2X
-# NB: Both experimental and tempermental
+# NB: Both experimental and temperamental
 manual_texi = ${docbook_outdir}/texinfo/libstdc++-manual.texi
 manual_info = ${docbook_outdir}/texinfo/libstdc++-manual.info
 DB2TEXI_FLAGS = \
@@ -615,7 +615,7 @@ stamp-texinfo-docbook: stamp-xml-single-docbook ${docbook_outdir}/texinfo
 
 stamp-info-docbook: stamp-texinfo-docbook
 	@echo "Generating info files..."
-	$(MAKEINFO) $(MAKEINFOFLAGS) ${manual_texi}
+	$(MAKEINFO) $(MAKEINFOFLAGS) ${manual_texi} -o ${manual_info}
 	$(STAMP) stamp-info-docbook
 
 doc-texinfo-docbook: stamp-texinfo-docbook

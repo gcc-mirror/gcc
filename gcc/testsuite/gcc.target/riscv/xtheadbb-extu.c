@@ -17,6 +17,6 @@ foo (struct bar *s)
 }
 
 /* { dg-final { scan-assembler "th.extu\t" } } */
-/* { dg-final { scan-assembler-not "andi" } } */
-/* { dg-final { scan-assembler-not "slli" } } */
-/* { dg-final { scan-assembler-not "srli" } } */
+/* { dg-final { scan-assembler-not {\mandi} } } */
+/* { dg-final { scan-assembler-not {\mslli} } } */
+/* { dg-final { scan-assembler-not {\msrli} } } */

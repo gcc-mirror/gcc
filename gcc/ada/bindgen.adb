@@ -691,6 +691,8 @@ package body Bindgen is
             WBI ("      null;");
          end if;
 
+         Gen_Restrictions;
+
          --  Generate the default-sized secondary stack pool if the secondary
          --  stack is used by the program.
 
@@ -2804,9 +2806,7 @@ package body Bindgen is
       --  Generate with of System.Restrictions to initialize
       --  Run_Time_Restrictions.
 
-      if System_Restrictions_Used
-        and not Suppress_Standard_Library_On_Target
-      then
+      if System_Restrictions_Used then
          WBI ("");
          WBI ("with System.Restrictions;");
       end if;
@@ -2946,9 +2946,7 @@ package body Bindgen is
       Count : Integer;
 
    begin
-      if Suppress_Standard_Library_On_Target
-        or not System_Restrictions_Used
-      then
+      if not System_Restrictions_Used then
          return;
       end if;
 

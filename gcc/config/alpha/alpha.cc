@@ -784,10 +784,10 @@ alpha_in_small_data_p (const_tree exp)
     return false;
 
   /* COMMON symbols are never small data.  */
-  if (TREE_CODE (exp) == VAR_DECL && DECL_COMMON (exp))
+  if (VAR_P (exp) && DECL_COMMON (exp))
     return false;
 
-  if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
+  if (VAR_P (exp) && DECL_SECTION_NAME (exp))
     {
       const char *section = DECL_SECTION_NAME (exp);
       if (strcmp (section, ".sdata") == 0
@@ -844,7 +844,8 @@ alpha_linkage_symbol_p (const char *symname)
    low-order three bits; this is an "unaligned" access.  */
 
 static bool
-alpha_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+alpha_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+			    code_helper = ERROR_MARK)
 {
   /* If this is an ldq_u type address, discard the outer AND.  */
   if (mode == DImode
@@ -2070,6 +2071,8 @@ static rtx
 alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1)
 {
   HOST_WIDE_INT d1, d2, d3, d4;
+  machine_mode mode = GET_MODE (target);
+  rtx orig_target = target;
 
   /* Decompose the entire word */
 
@@ -2081,6 +2084,9 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1)
   c1 -= d3;
   d4 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
   gcc_assert (c1 == d4);
+
+  if (mode != DImode)
+    target = gen_lowpart (DImode, target);
 
   /* Construct the high word */
   if (d4)
@@ -2101,7 +2107,7 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1)
   if (d1)
     emit_move_insn (target, gen_rtx_PLUS (DImode, target, GEN_INT (d1)));
 
-  return target;
+  return orig_target;
 }
 
 /* Given an integral CONST_INT or CONST_VECTOR, return the low 64 bits.  */
@@ -6253,7 +6259,7 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
 
       return build2 (COMPLEX_EXPR, type, real_temp, imag_part);
     }
-  else if (TREE_CODE (type) == REAL_TYPE)
+  else if (SCALAR_FLOAT_TYPE_P (type))
     {
       tree fpaddend, cond, fourtyeight;
 

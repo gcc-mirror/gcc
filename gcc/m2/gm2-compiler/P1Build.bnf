@@ -64,8 +64,7 @@ FROM M2Quads IMPORT PushT, PopT,
                     EndBuildInit,
                     BuildProcedureStart,
                     BuildProcedureEnd,
-                    BuildAssignment,
-                    BuildInline ;
+                    BuildAssignment ;
 
 FROM P1SymBuild IMPORT P1StartBuildProgramModule,
                        P1EndBuildProgramModule,
@@ -1037,14 +1036,14 @@ NamedOperand := '[' Ident ']' =:
 
 AsmOperandName := [ NamedOperand ] =:
 
-AsmOperands  := string [ ':' AsmList [ ':' AsmList [ ':' TrashList ] ] ]
-             =:
+AsmOperands  := ConstExpression ':' AsmList [ ':' AsmList [ ':' TrashList ] ]
+              =:
 
 AsmList      := [ AsmElement ] { ',' AsmElement } =:
 
-AsmElement   := AsmOperandName string '(' Expression ')'
-             =:
+AsmElement   := AsmOperandName ConstExpression '(' Expression ')'
+              =:
 
-TrashList    := [ string ] { ',' string } =:
+TrashList    := [ ConstExpression ] { ',' ConstExpression } =:
 
 FNB

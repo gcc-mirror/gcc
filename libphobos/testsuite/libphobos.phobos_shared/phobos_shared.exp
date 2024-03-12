@@ -46,7 +46,7 @@ dg-init
 foreach test $tests {
     set libphobos_test_name "$subdir/[dg-trim-dirname $srcdir/../src $test]"
     dg-runtest $test "-shared-libphobos" \
-	"-fmain -fbuilding-libphobos-tests -fno-moduleinfo $version_flags"
+	"-Wno-deprecated -fmain -fbuilding-libphobos-tests -fno-moduleinfo $version_flags"
     set libphobos_test_name ""
 }
 

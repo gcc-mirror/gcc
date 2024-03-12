@@ -371,3 +371,10 @@ alignment of a variable:
 
   * :func:`gcc_jit_lvalue_set_alignment`
   * :func:`gcc_jit_lvalue_get_alignment`
+
+.. _LIBGCCJIT_ABI_25:
+
+``LIBGCCJIT_ABI_25``
+--------------------
+``LIBGCCJIT_ABI_25`` covers the addition of
+:func:`gcc_jit_type_get_restrict`

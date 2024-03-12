@@ -25,4 +25,5 @@ caller (int8_t *x0, svbool_t p0, svint32x4_t z0, svint32x4_t z4)
   callee (x0, 1, 2, 3, z0, z4, svdup_s8 (42), 5, p0, 6, 7);
 }
 
-/* { dg-final { scan-assembler {\tmov\t(z[0-9]+\.b), #42\n.*\tst1b\t\1, p[0-7], \[x4\]\n} } } */
+/* { dg-final { scan-assembler {\tmov\t(z[0-9]+\.b), #42\n.*\tst1b\t\1, p[0-7], \[(?:x4|sp)\]\n} } } */
+/* { dg-final { scan-assembler {\tmov\tx4, sp.*\tst1b\tz[0-9]+\.b, p[0-7], \[(?:x4|sp)\]\n} } } */

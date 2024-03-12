@@ -1,12 +1,5 @@
 // https://issues.dlang.org/show_bug.cgi?id=21039
 
-/*
-TEST_OUTPUT:
----
-runnable/test21039.d(14): Deprecation: alias this for classes/interfaces is deprecated
----
-*/
-
 class Inner {}
 
 class Outer {

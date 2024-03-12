@@ -71,8 +71,7 @@ update_pdt (st_parameter_dt **old, st_parameter_dt *new) {
   NOTE ("Changing pdts, current_unit = %p", (void *) (new->u.p.current_unit));
   temp = *old;
   *old = new;
-  if (temp)
-    free (temp);
+  free (temp);
 }
 
 /* Destroy an adv_cond structure.  */
@@ -106,8 +105,7 @@ async_io (void *arg)
       /* Loop over the queue entries until they are finished.  */
       while (ctq)
 	{
-	  if (prev)
-	    free (prev);
+	  free (prev);
 	  prev = ctq;
 	  if (!au->error.has_error)
 	    {

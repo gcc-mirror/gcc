@@ -23,21 +23,24 @@
 private generic
    type Enum is (<>);
 
-package Ada.Text_IO.Enumeration_IO is
+package Ada.Text_IO.Enumeration_IO with
+  Always_Terminates
+is
 
    Default_Width : Field := 0;
    Default_Setting : Type_Set := Upper_Case;
 
    procedure Get (File : File_Type; Item : out Enum) with
-     Pre      => Is_Open (File) and then Mode (File) = In_File,
-     Global   => (In_Out => File_System),
-     Annotate => (GNATprove, Might_Not_Return);
+     Pre               => Is_Open (File) and then Mode (File) = In_File,
+     Global            => (In_Out => File_System),
+     Exceptional_Cases => (Data_Error | End_Error => Standard.True);
+
    procedure Get (Item : out Enum) with
-     Post     =>
+     Post              =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global   => (In_Out => File_System),
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => (In_Out => File_System),
+     Exceptional_Cases => (Data_Error | End_Error => Standard.True);
 
    procedure Put
      (File  : File_Type;
@@ -45,38 +48,38 @@ package Ada.Text_IO.Enumeration_IO is
       Width : Field := Default_Width;
       Set   : Type_Set := Default_Setting)
    with
-     Pre      => Is_Open (File) and then Mode (File) /= In_File,
-     Post     =>
+     Pre               => Is_Open (File) and then Mode (File) /= In_File,
+     Post              =>
        Line_Length (File)'Old = Line_Length (File)
        and Page_Length (File)'Old = Page_Length (File),
-     Global   => (In_Out => File_System),
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => (In_Out => File_System),
+     Exceptional_Cases => (Layout_Error => Line_Length (File) /= 0);
 
    procedure Put
      (Item  : Enum;
       Width : Field := Default_Width;
       Set   : Type_Set := Default_Setting)
    with
-     Post     =>
+     Post              =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global   => (In_Out => File_System),
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => (In_Out => File_System),
+     Exceptional_Cases => (Layout_Error => Ada.Text_IO.Line_Length /= 0);
 
    procedure Get
      (From : String;
       Item : out Enum;
       Last : out Positive)
    with
-     Global   => null,
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => null,
+     Exceptional_Cases => (Data_Error => Standard.True);
 
    procedure Put
      (To   : out String;
       Item : Enum;
       Set  : Type_Set := Default_Setting)
    with
-     Global   => null,
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => null,
+     Exceptional_Cases => (Layout_Error => Standard.True);
 
 end Ada.Text_IO.Enumeration_IO;

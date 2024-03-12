@@ -25,12 +25,15 @@ import core.stdc.stdint;
 extern(C++):
 nothrow:
 @nogc:
+pure:
+@trusted:
 
 // Type used by the front-end for compile-time reals
 struct longdouble
 {
 nothrow:
 @nogc:
+pure:
     extern (D) this(T)(T r)
     {
         this.set(cast(SetType!T)r);

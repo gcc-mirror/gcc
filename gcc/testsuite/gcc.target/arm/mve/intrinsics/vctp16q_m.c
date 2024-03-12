@@ -1,22 +1,52 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vctpt.16	(?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vmrs	(?:ip|fp|r[0-9]+), p0(?:	@.*|)
+**	...
+*/
 mve_pred16_t
 foo (uint32_t a, mve_pred16_t p)
 {
   return vctp16q_m (a, p);
 }
 
-/* { dg-final { scan-assembler "vpst" } } */
-/* { dg-final { scan-assembler "vctpt.16"  }  } */
-
+/*
+**foo1:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vctpt.16	(?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vmrs	(?:ip|fp|r[0-9]+), p0(?:	@.*|)
+**	...
+*/
 mve_pred16_t
-foo1 (uint32_t a, mve_pred16_t p)
+foo1 (mve_pred16_t p)
 {
-  return vctp16q_m (a, p);
+  return vctp16q_m (1, p);
 }
 
-/* { dg-final { scan-assembler "vpst" } } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

@@ -18,6 +18,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 void gfc_formalize_init_value (gfc_symbol *);
-void gfc_get_section_index (gfc_array_ref *, mpz_t *, mpz_t *);
+void gfc_get_section_index (gfc_array_ref *, mpz_t *, mpz_t *, int *);
 bool gfc_assign_data_value (gfc_expr *, gfc_expr *, mpz_t, mpz_t *);
-void gfc_advance_section (mpz_t *, gfc_array_ref *, mpz_t *);
+void gfc_advance_section (mpz_t *, gfc_array_ref *, mpz_t *, int *);

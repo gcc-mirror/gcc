@@ -32,8 +32,10 @@
 
 #pragma GCC system_header
 
-#include <bits/c++config.h>
-#if defined _GLIBCXX_HAS_GTHREADS || defined _GLIBCXX_HAVE_LINUX_FUTEX
+#define __glibcxx_want_atomic_wait
+#include <bits/version.h>
+
+#if __cpp_lib_atomic_wait
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
 #include <ext/numeric_traits.h>
@@ -47,8 +49,6 @@
 #endif
 
 # include <bits/std_mutex.h>  // std::mutex, std::__condvar
-
-#define __cpp_lib_atomic_wait 201907L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -476,5 +476,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // GTHREADS || LINUX_FUTEX
+#endif // __cpp_lib_atomic_wait
 #endif // _GLIBCXX_ATOMIC_WAIT_H

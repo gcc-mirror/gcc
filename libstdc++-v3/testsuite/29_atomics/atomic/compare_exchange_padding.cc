@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
+// { dg-require-atomic-cmpxchg-word "" }
 // { dg-add-options libatomic }
 
 #include <atomic>

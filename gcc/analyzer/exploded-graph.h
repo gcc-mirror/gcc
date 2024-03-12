@@ -56,8 +56,10 @@ class impl_region_model_context : public region_model_context
 			     uncertainty_t *uncertainty,
 			     logger *logger = NULL);
 
-  bool warn (std::unique_ptr<pending_diagnostic> d) final override;
+  bool warn (std::unique_ptr<pending_diagnostic> d,
+	     const stmt_finder *custom_finder = NULL) final override;
   void add_note (std::unique_ptr<pending_note> pn) final override;
+  void add_event (std::unique_ptr<checker_event> event) final override;
   void on_svalue_leak (const svalue *) override;
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) final override;
@@ -106,6 +108,7 @@ class impl_region_model_context : public region_model_context
 			 std::unique_ptr<sm_context> *out_sm_context) override;
 
   const gimple *get_stmt () const override { return m_stmt; }
+  const exploded_graph *get_eg () const override { return m_eg; }
 
   exploded_graph *m_eg;
   log_user m_logger;
@@ -946,18 +949,17 @@ public:
   feasibility_problem (unsigned eedge_idx,
 		       const exploded_edge &eedge,
 		       const gimple *last_stmt,
-		       rejected_constraint *rc)
+		       std::unique_ptr<rejected_constraint> rc)
   : m_eedge_idx (eedge_idx), m_eedge (eedge),
-    m_last_stmt (last_stmt), m_rc (rc)
+    m_last_stmt (last_stmt), m_rc (std::move (rc))
   {}
-  ~feasibility_problem () { delete m_rc; }
 
   void dump_to_pp (pretty_printer *pp) const;
 
   unsigned m_eedge_idx;
   const exploded_edge &m_eedge;
   const gimple *m_last_stmt;
-  rejected_constraint *m_rc;
+  std::unique_ptr<rejected_constraint> m_rc;
 };
 
 /* A class for capturing the state of a node when checking a path
@@ -972,7 +974,7 @@ public:
 
   bool maybe_update_for_edge (logger *logger,
 			      const exploded_edge *eedge,
-			      rejected_constraint **out_rc);
+			      std::unique_ptr<rejected_constraint> *out_rc);
   void update_for_stmt (const gimple *stmt);
 
   const region_model &get_model () const { return m_model; }

@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "cgraph.h"
 #include "data-streamer.h"
+#include "value-range.h"
+#include "streamer-hooks.h"
 
 
 /* Adds a new block to output stream OBS.  */
@@ -390,6 +392,65 @@ streamer_write_data_stream (struct lto_output_stream *obs, const void *data,
       data = (const char *) data + copy;
       len -= copy;
     }
+}
+
+/* Write REAL_VALUE_TYPE into OB.  */
+
+void
+streamer_write_real_value (struct output_block *ob, const REAL_VALUE_TYPE *r)
+{
+  bitpack_d bp = bitpack_create (ob->main_stream);
+  bp_pack_real_value (&bp, r);
+  streamer_write_bitpack (&bp);
+}
+
+void
+streamer_write_vrange (struct output_block *ob, const vrange &v)
+{
+  gcc_checking_assert (!v.undefined_p ());
+
+  // Write the common fields to all vranges.
+  value_range_kind kind = v.m_kind;
+  streamer_write_enum (ob->main_stream, value_range_kind, VR_LAST, kind);
+  stream_write_tree (ob, v.type (), true);
+
+  if (is_a <irange> (v))
+    {
+      const irange &r = as_a <irange> (v);
+      streamer_write_uhwi (ob, r.num_pairs ());
+      for (unsigned i = 0; i < r.num_pairs (); ++i)
+	{
+	  streamer_write_wide_int (ob, r.lower_bound (i));
+	  streamer_write_wide_int (ob, r.upper_bound (i));
+	}
+      // TODO: We could avoid streaming out the value if the mask is -1.
+      irange_bitmask bm = r.get_bitmask ();
+      streamer_write_wide_int (ob, bm.value ());
+      streamer_write_wide_int (ob, bm.mask ());
+      return;
+    }
+  if (is_a <frange> (v))
+    {
+      const frange &r = as_a <frange> (v);
+
+      // Stream out NAN bits.
+      bitpack_d bp = bitpack_create (ob->main_stream);
+      nan_state nan = r.get_nan_state ();
+      bp_pack_value (&bp, nan.pos_p (), 1);
+      bp_pack_value (&bp, nan.neg_p (), 1);
+      streamer_write_bitpack (&bp);
+
+      // Stream out bounds.
+      if (kind != VR_NAN)
+	{
+	  REAL_VALUE_TYPE lb = r.lower_bound ();
+	  REAL_VALUE_TYPE ub = r.upper_bound ();
+	  streamer_write_real_value (ob, &lb);
+	  streamer_write_real_value (ob, &ub);
+	}
+      return;
+    }
+  gcc_unreachable ();
 }
 
 /* Emit the physical representation of wide_int VAL to output block OB.  */

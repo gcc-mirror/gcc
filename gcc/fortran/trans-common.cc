@@ -1048,7 +1048,7 @@ find_equivalence (segment_info *n)
   gfc_equiv *e1, *e2, *eq;
   bool found;
 
-  found = FALSE;
+  found = false;
 
   for (e1 = n->sym->ns->equiv; e1; e1 = e1->next)
     {
@@ -1083,7 +1083,7 @@ find_equivalence (segment_info *n)
 	    {
 	      add_condition (n, eq, e2);
 	      e2->used = 1;
-	      found = TRUE;
+	      found = true;
 	    }
 	}
     }
@@ -1102,11 +1102,11 @@ static void
 add_equivalences (bool *saw_equiv)
 {
   segment_info *f;
-  bool more = TRUE;
+  bool more = true;
 
   while (more)
     {
-      more = FALSE;
+      more = false;
       for (f = current_segment; f; f = f->next)
 	{
 	  if (!f->sym->equiv_built)

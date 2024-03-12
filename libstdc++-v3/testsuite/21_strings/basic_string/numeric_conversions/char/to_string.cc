@@ -46,13 +46,18 @@ test01()
   string four(to_string(ull2));
   VERIFY( four == "3000" );
 
+  string tail;
+#if __cpp_lib_to_string < 202306L
+  tail = ".000000";
+#endif
+
   long double ld1 = 2.0L;
   string five(to_string(ld1));
-  VERIFY( five == "2.000000" );
+  VERIFY( five == "2" + tail );
 
   long double ld2 = -4.0L;
   string six(to_string(ld2));
-  VERIFY( six == "-4.000000" );
+  VERIFY( six == "-4" + tail );
 }
 
 int main()

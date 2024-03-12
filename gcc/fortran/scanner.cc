@@ -56,7 +56,7 @@ gfc_directorylist *include_dirs, *intrinsic_modules_dirs;
 
 static gfc_file *file_head, *current_file;
 
-static int continue_flag, end_flag, gcc_attribute_flag;
+static bool continue_flag, end_flag, gcc_attribute_flag;
 /* If !$omp/!$acc occurred in current comment line.  */
 static int openmp_flag, openacc_flag;
 static int continue_count, continue_line;
@@ -86,7 +86,7 @@ static gfc_char_t *last_error_char;
 /* Functions dealing with our wide characters (gfc_char_t) and
    sequences of such characters.  */
 
-int
+bool
 gfc_wide_fits_in_byte (gfc_char_t c)
 {
   return (c <= UCHAR_MAX);
@@ -98,7 +98,7 @@ wide_is_ascii (gfc_char_t c)
   return (gfc_wide_fits_in_byte (c) && ((unsigned char) c & ~0x7f) == 0);
 }
 
-int
+bool
 gfc_wide_is_printable (gfc_char_t c)
 {
   return (gfc_wide_fits_in_byte (c) && ISPRINT ((unsigned char) c));
@@ -116,7 +116,7 @@ gfc_wide_toupper (gfc_char_t c)
   return (wide_is_ascii (c) ? (gfc_char_t) TOUPPER((unsigned char) c) : c);
 }
 
-int
+bool
 gfc_wide_is_digit (gfc_char_t c)
 {
   return (c >= '0' && c <= '9');
@@ -518,7 +518,7 @@ gfc_open_included_file (const char *name, bool include_cwd, bool module)
 
 /* Test to see if we're at the end of the main source file.  */
 
-int
+bool
 gfc_at_end (void)
 {
   return end_flag;
@@ -527,7 +527,7 @@ gfc_at_end (void)
 
 /* Test to see if we're at the end of the current file.  */
 
-int
+bool
 gfc_at_eof (void)
 {
   if (gfc_at_end ())
@@ -545,7 +545,7 @@ gfc_at_eof (void)
 
 /* Test to see if we're at the beginning of a new line.  */
 
-int
+bool
 gfc_at_bol (void)
 {
   if (gfc_at_eof ())
@@ -557,7 +557,7 @@ gfc_at_bol (void)
 
 /* Test to see if we're at the end of a line.  */
 
-int
+bool
 gfc_at_eol (void)
 {
   if (gfc_at_eof ())
@@ -702,7 +702,7 @@ skip_comment_line (void)
 }
 
 
-int
+bool
 gfc_define_undef_line (void)
 {
   char *tmp;
@@ -877,7 +877,7 @@ skip_free_comments (void)
 
 	  /* If -fopenmp/-fopenacc, we need to handle here 2 things:
 	     1) don't treat !$omp/!$acc as comments, but directives
-	     2) handle OpenMP/OpenACC conditional compilation, where
+	     2) handle OpenMP conditional compilation, where
 		!$ should be treated as 2 spaces (for initial lines
 		only if followed by space).  */
 	  if (at_bol)
@@ -1106,7 +1106,7 @@ skip_fixed_comments (void)
 	  /* If -fopenmp/-fopenacc, we need to handle here 2 things:
 	     1) don't treat !$omp/!$acc|c$omp/c$acc|*$omp / *$acc as comments, 
 		but directives
-	     2) handle OpenMP/OpenACC conditional compilation, where
+	     2) handle OpenMP conditional compilation, where
 		!$|c$|*$ should be treated as 2 spaces if the characters
 		in columns 3 to 6 are valid fixed form label columns
 		characters.  */
@@ -1803,7 +1803,7 @@ gfc_gobble_whitespace (void)
 	 easily report line and column numbers consistent with other 
 	 parts of gfortran.  */
 
-static int
+static bool
 load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 {
   int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;

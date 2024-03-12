@@ -283,8 +283,8 @@ DEFUN copy
     cp      XL,     ZL
     cpc     XH,     ZH
     breq 9f
-    adiw    XL,     10
-    adiw    ZL,     10
+    adiw    XL,     F7_SIZEOF
+    adiw    ZL,     F7_SIZEOF
     set
     bld     ZERO,   1
     bld     ZERO,   3   ; ZERO = 0b1010 = 10.
@@ -312,8 +312,8 @@ DEFUN copy_P
     st      X+,     TMP
     dec     ZERO
     brne .Loop
-    sbiw    X,      10
-    sbiw    Z,      10
+    sbiw    X,      F7_SIZEOF
+    sbiw    Z,      F7_SIZEOF
     ret
 ENDF copy_P
 #endif /* F7MOD_copy_P_ */
@@ -1328,6 +1328,58 @@ ENDF sqrt_approx
 #undef Carry
 
 
+#ifdef F7MOD_D_fma_
+_DEFUN __fma
+    DALIAS fma
+    LALIAS fmal
+
+#define n_pushed    4
+#define n_frame     (2 * F7_SIZEOF)
+
+    do_prologue_saves n_pushed, n_frame
+    ;; Y = FramePointer + 1
+    adiw    Y,      1
+
+    ;; FP + 1 = (f7_t) arg1
+    wmov    r16,    Y
+    ;; The double argument arg1 is already in R18[].
+    XCALL   F7_NAME (set_double_impl)
+
+    ;; The double argument arg2 is in R10[].  Move it to R18[].
+    wmov    r18,    r10
+    wmov    r20,    r12
+    wmov    r22,    r14
+    ;; R16, R17 are clobbered.  Fetch them from where prologue_saves put them.
+    ldd     r24,    Y + n_frame + 3     ; Saved R16
+    ldd     r25,    Y + n_frame + 2     ; Saved R17
+    ;; FP + 1 + 10 = (f7_t) arg2
+    subi    r16,    lo8 (-F7_SIZEOF)
+    sbci    r17,    hi8 (-F7_SIZEOF)
+    XCALL   F7_NAME (set_double_impl)
+
+    wmov    r24,    Y                   ; &arg1
+    wmov    r22,    r16                 ; &arg2
+    XCALL   F7_NAME (Imul)              ; arg1 *= arg2
+
+    ;; The 3rd double argument arg3 was passed on the stack.  Move it to R18[],
+    ;; Don't use f7_set_pdouble() because that function is unused (for now).
+    .irp n, 0, 1, 2, 3, 4, 5, 6, 7
+    ldd     18+\n,  Y + n_frame + n_pushed + PC_SIZE + \n
+    .endr
+    XCALL   F7_NAME (set_double_impl)
+
+    wmov    r24,    Y                   ; &arg1
+    wmov    r22,    r16                 ; &arg2
+    XCALL   F7_NAME (Iadd)              ; arg1 += arg2
+
+    wmov    r24,    Y                   ; &arg1
+    XCALL   F7_NAME (get_double)
+
+    do_epilogue_restores n_pushed, n_frame
+_ENDF __fma
+#endif /* F7MOD_D_fma_ */
+
+
 #ifdef F7MOD_D_fabs_
 _DEFUN __fabs
     DALIAS fabs
@@ -1493,7 +1545,7 @@ LABEL call_dx   ; WHAT = R13 = 0
     wmov    r14,     Z
 
 #define n_pushed    4
-#define n_frame     10
+#define n_frame     F7_SIZEOF
 
     do_prologue_saves n_pushed, n_frame
     ;; Y = FramePointer + 1
@@ -1565,7 +1617,7 @@ LABEL call_xdd
     ret
 
 #define n_pushed    4
-#define n_frame     20
+#define n_frame     (2 * F7_SIZEOF)
 
 call.2:
     do_prologue_saves n_pushed, n_frame
@@ -1576,9 +1628,8 @@ call.2:
     ;; First double argument is already in R18[].
     XCALL   F7_NAME (set_double_impl)
     ;; FP + 11 = (f7_t) arg2
-    wmov    r16,    Y
-    subi    r16,    lo8 (-10)
-    sbci    r17,    hi8 (-10)
+    subi    r16,    lo8 (-F7_SIZEOF)
+    sbci    r17,    hi8 (-F7_SIZEOF)
     ;; Move second double argument to R18[].
     wmov    r18,    r10
     wmov    r20,    r12

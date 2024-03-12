@@ -738,7 +738,7 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
         assert(FloatingPointControl.rounding == FloatingPointControl.roundToNearest);
     }
 
-    // issue 20320
+    // https://issues.dlang.org/show_bug.cgi?id=20320
     real a = 0.16;
     real b = 0.016;
     assert(format("%.1f", a) == "0.2");
@@ -749,7 +749,7 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
     assert(format("%.1f", a1) == "0.2");
     assert(format("%.2f", b1) == "0.02");
 
-    // issue 9889
+    // https://issues.dlang.org/show_bug.cgi?id=9889
     assert(format("%.1f", 0.09) == "0.1");
     assert(format("%.1f", -0.09) == "-0.1");
     assert(format("%.1f", 0.095) == "0.1");
@@ -907,7 +907,7 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 
     // log2 is broken for x87-reals on some computers in CTFE
     // the following test excludes these computers from the test
-    // (issue 21757)
+    // (https://issues.dlang.org/show_bug.cgi?id=21757)
     enum test = cast(int) log2(3.05e2312L);
     static if (real.mant_dig == 64 && test == 7681) // 80 bit reals
     {
@@ -2529,35 +2529,37 @@ if ((is(T == struct) || is(T == union)) && (hasToString!(T, Char) || !is(Builtin
         enum right = ")";
 
         put(w, left);
-        foreach (i, e; val.tupleof)
-        {
+        static foreach (i; 0 .. T.tupleof.length)
+        {{
             static if (__traits(identifier, val.tupleof[i]) == "this")
-                continue;
-            else static if (0 < i && val.tupleof[i-1].offsetof == val.tupleof[i].offsetof)
             {
-                static if (i == val.tupleof.length - 1 || val.tupleof[i].offsetof != val.tupleof[i+1].offsetof)
+                // ignore hidden context pointer
+            }
+            else static if (0 < i && T.tupleof[i-1].offsetof == T.tupleof[i].offsetof)
+            {
+                static if (i == T.tupleof.length - 1 || T.tupleof[i].offsetof != T.tupleof[i+1].offsetof)
                 {
-                    enum el = separator ~ val.tupleof[i].stringof[4 .. $] ~ "}";
+                    enum el = separator ~ __traits(identifier, T.tupleof[i]) ~ "}";
                     put(w, el);
                 }
                 else
                 {
-                    enum el = separator ~ val.tupleof[i].stringof[4 .. $];
+                    enum el = separator ~ __traits(identifier, T.tupleof[i]);
                     put(w, el);
                 }
             }
-            else static if (i+1 < val.tupleof.length && val.tupleof[i].offsetof == val.tupleof[i+1].offsetof)
+            else static if (i+1 < T.tupleof.length && T.tupleof[i].offsetof == T.tupleof[i+1].offsetof)
             {
-                enum el = (i > 0 ? separator : "") ~ "#{overlap " ~ val.tupleof[i].stringof[4 .. $];
+                enum el = (i > 0 ? separator : "") ~ "#{overlap " ~ __traits(identifier, T.tupleof[i]);
                 put(w, el);
             }
             else
             {
                 static if (i > 0)
                     put(w, separator);
-                formatElement(w, e, f);
+                formatElement(w, val.tupleof[i], f);
             }
-        }
+        }}
         put(w, right);
     }
     else
@@ -2660,7 +2662,7 @@ if ((is(T == struct) || is(T == union)) && (hasToString!(T, Char) || !is(Builtin
     {
         int n;
         string s;
-        string toString() const { return s; }
+        string toString() @trusted const { return s; }
     }
     U2 u2;
     () @trusted { u2.s = "hello"; } ();
@@ -3334,7 +3336,7 @@ if (isSomeString!T1 && isSomeString!T2 && isSomeString!T3 && isSomeString!T4)
     long fractsWidth = fracts.length; // TODO: does not take graphemes into account
     long suffixWidth;
 
-    // TODO: remove this workaround which hides issue 21815
+    // TODO: remove this workaround which hides https://issues.dlang.org/show_bug.cgi?id=21815
     if (f.width > 0)
     {
         prefixWidth = getWidth(prefix);

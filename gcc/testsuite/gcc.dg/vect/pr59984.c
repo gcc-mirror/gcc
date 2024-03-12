@@ -37,6 +37,7 @@ test (void)
       foo (a[i], &v1, &v2);
       a[i] = v1 * v2;
     }
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (a[i] != i * i * i * i - 1)
       __builtin_abort ();
@@ -49,6 +50,7 @@ test (void)
       bar (a[i], &v1, &v2);
       a[i] = v1 * v2;
     }
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (a[i] != i * i * i * i - 1)
       __builtin_abort ();

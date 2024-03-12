@@ -252,7 +252,7 @@ namespace ip
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
-	auto __write = [__addr = to_uint()](char* __p, size_t __n) {
+	auto __write = [__addr = to_uint()](char* __p, size_t) {
 	  auto __to_chars = [](char* __p, uint8_t __v) {
 	    unsigned __n = __v >= 100u ? 3 : __v >= 10u ? 2 : 1;
 	    std::__detail::__to_chars_10_impl(__p, __n, __v);
@@ -1502,6 +1502,7 @@ namespace ip
     operator<<(basic_ostream<_CharT, _Traits>& __os, const network_v6& __net)
     { return __os << __net.to_string(); }
 
+#if defined IPPROTO_TCP || defined  IPPROTO_UDP
   /// An IP endpoint.
   template<typename _InternetProtocol>
     class basic_endpoint
@@ -2187,6 +2188,7 @@ namespace ip
       __ec = std::make_error_code(errc::operation_not_supported);
 #endif
     }
+#endif // IPPROTO_TCP || IPPROTO_UDP
 
   /** The name of the local host.
    * @{

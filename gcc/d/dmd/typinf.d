@@ -47,10 +47,15 @@ extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope
     {
         if (!global.params.useTypeInfo)
         {
+            global.gag = 0;
             if (e)
                 .error(loc, "expression `%s` uses the GC and cannot be used with switch `-betterC`", e.toChars());
             else
                 .error(loc, "`TypeInfo` cannot be used with -betterC");
+
+            if (sc && sc.tinst)
+                sc.tinst.printInstantiationTrace(Classification.error, uint.max);
+
             fatal();
         }
     }

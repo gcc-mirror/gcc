@@ -15,9 +15,9 @@
 #define used3			/* { dg-bogus "used" } */
 #define used4 used4		/* { dg-bogus "used" } */
 
-#define unused5			/* { dg-warning "-:used" } */
-#define unused6			/* { dg-warning "-:used" } */
-#define unused7()		/* { dg-warning "-:used" } */
+#define unused5			/* { dg-warning "used" } */
+#define unused6			/* { dg-warning "used" } */
+#define unused7()		/* { dg-warning "used" } */
 
 #if defined used1
 #endif

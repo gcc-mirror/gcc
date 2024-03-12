@@ -58,6 +58,8 @@ package body System.Parameters is
    begin
       if Default_Stack_Size = -1 then
          return 2 * 1024 * 1024;
+      elsif Size_Type (Default_Stack_Size) < Minimum_Stack_Size then
+         return Minimum_Stack_Size;
       else
          return Size_Type (Default_Stack_Size);
       end if;

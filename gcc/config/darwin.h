@@ -1,4 +1,4 @@
-/* Target definitions for Darwin (Mac OS X) systems.
+/* Target definitions for Darwin (macOS) systems.
    Copyright (C) 1989-2023 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CONFIG_DARWIN_H
 
 /* The definitions in this file are common to all processor types
-   running Darwin, which is the kernel for Mac OS X.  Darwin is
+   running Darwin, which is the kernel for macOS.  Darwin is
    basically a BSD user layer laid over a Mach kernel, then evolved
    for many years (at NeXT) in parallel with other Unix systems.  So
    while the runtime is a somewhat idiosyncratic Mach-based thing,
@@ -133,10 +133,9 @@ extern GTY(()) int darwin_ms_struct;
    cases where these driver opts are used multiple times, or to control
    operations on more than one command (e.g. dynamiclib).  These are handled
    specially and we then add %<xxxx specs for the commands that _don't_ need
-   them.  NOTE: the order of 'shared' and 'dynamiclib' is significant, hence
-   they are placed out of alphabetical order at the start.  Likewise, we keep
-   a couple of cases where a negative option originally appeared after the
-   positive alternate, potentially overriding it.
+   them.
+   We keep a couple of cases where a negative option originally appeared after
+   the positive alternate, potentially overriding it.
    When we report an error with %e, it seems necessary to strip the option
    before doing so, otherwise it survives to the cc1 command line (%e doesn't
    appear to abort the program before this).
@@ -147,9 +146,9 @@ extern GTY(()) int darwin_ms_struct;
 
 #undef SUBTARGET_DRIVER_SELF_SPECS
 #define SUBTARGET_DRIVER_SELF_SPECS					\
-  "%{shared:%{!dynamiclib:-dynamiclib}} %<shared",			\
-  "%{static:%{dynamic|dynamiclib:%econflicting code generation switches}}",\
-  "%{dynamiclib:-Xlinker -dylib \
+  "%{static|fapple-kext|mkernel:%{shared|dynamic|dynamiclib: \
+     %econflicting code generation switches}}",\
+  "%{shared|dynamiclib:-Xlinker -dylib \
      %{allowable_client*:-Xlinker -allowable_client -Xlinker %*} \
        %<allowable_client* \
      %{bundle_loader*: %<bundle_loader* \
@@ -167,8 +166,8 @@ extern GTY(()) int darwin_ms_struct;
        %e-keep_private_externs not allowed with -dynamiclib} \
      %{private_bundle: %<private_bundle \
        %e-private_bundle not allowed with -dynamiclib} \
-    }",									\
-  "%{!dynamiclib: \
+    }",							\
+  "%{!dynamiclib:%{!shared: \
      %{bundle_loader*:-Xlinker -bundle_loader -Xlinker %*} \
        %<bundle_loader* \
      %{client_name*:-Xlinker -client_name -Xlinker %*} \
@@ -183,13 +182,14 @@ extern GTY(()) int darwin_ms_struct;
        %<keep_private_externs \
      %{private_bundle:-Xlinker -private_bundle} \
        %<private_bundle \
-    }",									\
+    }}",									\
   "%{all_load:-Xlinker -all_load} %<all_load",				\
   "%{arch_errors_fatal:-Xlinker -arch_errors_fatal} \
     %<arch_errors_fatal",						\
   "%{bind_at_load:-Xlinker -bind_at_load} %<bind_at_load",		\
-  "%{bundle:%{!dynamiclib:-Xlinker -bundle; \
-              :%e-bundle not allowed with -dynamiclib}}",	\
+  "%{bundle:%{!dynamiclib:%{!shared: -Xlinker -bundle; \
+			    :%e-bundle not allowed with -shared}; \
+	      :%e-bundle not allowed with -dynamiclib}}",		\
   "%{dead_strip:-Xlinker -dead_strip} %<dead_strip",			\
   "%{dylib_file*:-Xlinker -dylib_file -Xlinker %*} %<dylib_file*",	\
   "%{dylinker:-Xlinker -dylinker} %<dylinker",				\
@@ -217,8 +217,7 @@ extern GTY(()) int darwin_ms_struct;
   "%{image_base*:-Xlinker -image_base -Xlinker %*} %<image_base*",	\
   "%{init*:-Xlinker -init -Xlinker %*} %<init*",			\
   "%{multi_module:-Xlinker -multi_module} %<multi_module",		\
-  "%{multiply_defined*:-Xlinker -multiply_defined -Xlinker %*} \
-     %<multiply_defined* ",						\
+  "%{multiply_defined*:-Xlinker -multiply_defined -Xlinker %*} ",	\
   "%{multiplydefinedunused*:\
      -Xlinker -multiply_defined_unused -Xlinker %*} \
      %<multiplydefinedunused* ",					\
@@ -271,10 +270,24 @@ extern GTY(()) int darwin_ms_struct;
   "%<y*",								\
   "%<Mach "
 
+#if LD64_HAS_DEMANGLE
+#define DARWIN_LD_DEMANGLE " -demangle "
+#else
+#define DARWIN_LD_DEMANGLE ""
+#endif
+
 #if LD64_HAS_EXPORT_DYNAMIC
 #define DARWIN_RDYNAMIC "%{rdynamic:-export_dynamic}"
 #else
 #define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
+#endif
+
+#if LD64_HAS_PLATFORM_VERSION
+#define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*: -platform_version macos %* 0.0} "
+#else
+#define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*:-macosx_version_min %*} "
 #endif
 
 /* Code built with mdynamic-no-pic does not support PIE/PIC, so  we disallow
@@ -294,7 +307,7 @@ extern GTY(()) int darwin_ms_struct;
    %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) }"
 
 #define DARWIN_CC1_SPEC							\
-  "%<dynamic %<dynamiclib %<force_cpusubtype_ALL "
+  "%<dynamic %<force_cpusubtype_ALL %<multiply_defined* %<dynamiclib"
 
 #define SUBSUBTARGET_OVERRIDE_OPTIONS					\
   do {									\
@@ -349,10 +362,13 @@ extern GTY(()) int darwin_ms_struct;
 #define LINK_COMMAND_SPEC_A \
    "%{!c:%{!E:%{!S:%{!M:%{!MM:%{!fsyntax-only:%{!fdump=*: \
     %(linker)" \
+    DARWIN_LD_DEMANGLE \
     LINK_PLUGIN_SPEC \
     "%{flto*:%<fcompare-debug*} \
      %{flto} %{fno-lto} %{flto=*} \
-    %l " LINK_COMPRESS_DEBUG_SPEC \
+    %l " \
+    DARWIN_PLATFORM_ID \
+    LINK_COMPRESS_DEBUG_SPEC \
    "%X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \
     %{o*}%{!o:-o a.out} \
@@ -455,8 +471,7 @@ extern GTY(()) int darwin_ms_struct;
   %{force_cpusubtype_ALL:-arch %(darwin_arch)} \
    %{!force_cpusubtype_ALL:-arch %(darwin_subarch)} "\
    LINK_SYSROOT_SPEC \
-  "%{mmacosx-version-min=*:-macosx_version_min %*} \
-   %{!multiply_defined*:%{shared-libgcc: \
+   "%{!multiply_defined*:%{shared-libgcc: \
      %:version-compare(< 10.5 mmacosx-version-min= -multiply_defined) \
      %:version-compare(< 10.5 mmacosx-version-min= suppress) }} \
    %{sectalign*} %{sectcreate*} %{sectobjectsymbols*}  %{sectorder*} \
@@ -515,8 +530,8 @@ extern GTY(()) int darwin_ms_struct;
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC							    \
-"%{dynamiclib: %(darwin_dylib1) %{fgnu-tm: -lcrttms.o}}			   \
- %{!dynamiclib:%{bundle:%(darwin_bundle1)}				    \
+"%{dynamiclib|shared: %(darwin_dylib1) %{fgnu-tm: -lcrttms.o}}		   \
+ %{!dynamiclib:%{!shared:%{bundle:%(darwin_bundle1)}			    \
      %{!bundle:%{pg:%{static:-lgcrt0.o}					    \
                      %{!static:%{object:-lgcrt0.o}			    \
                                %{!object:%{preload:-lgcrt0.o}		    \
@@ -527,8 +542,8 @@ extern GTY(()) int darwin_ms_struct;
                       %{!static:%{object:-lcrt0.o}			    \
                                 %{!object:%{preload:-lcrt0.o}		    \
                                   %{!preload: %(darwin_crt1)		    \
-					      %(darwin_crt2)}}}}}}	    \
- %(darwin_crt3) %<dynamiclib "
+					      %(darwin_crt2)}}}}}}}	    \
+ %(darwin_crt3) "
 
 /* We want a destructor last in the list.  */
 #define TM_DESTRUCTOR "%{fgnu-tm: -lcrttme.o}"
@@ -1074,7 +1089,7 @@ enum machopic_addr_class {
 
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \
-  (((CODE) == 2 && (GLOBAL) == 1) \
+  (((CODE) == 2 && (GLOBAL) == 1) || ((CODE) == 0 && (GLOBAL) == 1) \
    ? (DW_EH_PE_pcrel | DW_EH_PE_indirect | DW_EH_PE_sdata4) : \
      ((CODE) == 1 || (GLOBAL) == 0) ? DW_EH_PE_pcrel : DW_EH_PE_absptr)
 

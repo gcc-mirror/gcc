@@ -1861,9 +1861,9 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
   /* fallthru edges must be forwarded to the same destination.  */
   if (fallthru1)
     {
-      basic_block d1 = (forwarder_block_p (fallthru1->dest)
+      basic_block d1 = (FORWARDER_BLOCK_P (fallthru1->dest)
 			? single_succ (fallthru1->dest): fallthru1->dest);
-      basic_block d2 = (forwarder_block_p (fallthru2->dest)
+      basic_block d2 = (FORWARDER_BLOCK_P (fallthru2->dest)
 			? single_succ (fallthru2->dest): fallthru2->dest);
 
       if (d1 != d2)
@@ -2608,14 +2608,14 @@ bb_is_just_return (basic_block bb, rtx_insn **ret, rtx_insn **use)
   if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return false;
 
-  FOR_BB_INSNS (bb, insn)
+  FOR_BB_INSNS_REVERSE (bb, insn)
     if (NONDEBUG_INSN_P (insn))
       {
 	rtx pat = PATTERN (insn);
 
 	if (!*ret && ANY_RETURN_P (pat))
 	  *ret = insn;
-	else if (!*ret && !*use && GET_CODE (pat) == USE
+	else if (*ret && !*use && GET_CODE (pat) == USE
 	    && REG_P (XEXP (pat, 0))
 	    && REG_FUNCTION_VALUE_P (XEXP (pat, 0)))
 	  *use = insn;

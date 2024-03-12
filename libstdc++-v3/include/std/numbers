@@ -31,7 +31,10 @@
 
 #pragma GCC system_header
 
-#if __cplusplus > 201703L
+#define __glibcxx_want_math_constants
+#include <bits/version.h>
+
+#ifdef __cpp_lib_math_constants // C++ >= 20
 
 #include <type_traits>
 
@@ -47,9 +50,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 /// Namespace for mathematical constants
 namespace numbers
 {
-#define __cpp_lib_math_constants 201907L
 
-  /// @cond undoc
+  /// @cond undocumented
   template<typename _Tp>
     using _Enable_if_floating = enable_if_t<is_floating_point_v<_Tp>, _Tp>;
   /// @endcond
@@ -230,5 +232,5 @@ __glibcxx_numbers (__float128, Q);
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // C++20
+#endif // __cpp_lib_math_constants
 #endif // _GLIBCXX_NUMBERS

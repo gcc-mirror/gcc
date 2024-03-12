@@ -148,21 +148,8 @@ struct GTY(()) alias_set_entry {
   hash_map<alias_set_hash, int> *children;
 };
 
-static int rtx_equal_for_memref_p (const_rtx, const_rtx);
-static void record_set (rtx, const_rtx, void *);
-static int base_alias_check (rtx, rtx, rtx, rtx, machine_mode,
-			     machine_mode);
-static rtx find_base_value (rtx);
-static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
-static alias_set_entry *get_alias_set_entry (alias_set_type);
-static tree decl_for_component_ref (tree);
-static int write_dependence_p (const_rtx,
-			       const_rtx, machine_mode, rtx,
-			       bool, bool, bool);
 static int compare_base_symbol_refs (const_rtx, const_rtx,
 				     HOST_WIDE_INT * = NULL);
-
-static void memory_modified_1 (rtx, const_rtx, void *);
 
 /* Query statistics for the different low-level disambiguators.
    A high-level query may trigger multiple of them.  */
@@ -412,10 +399,10 @@ get_alias_set_entry (alias_set_type alias_set)
   return (*alias_sets)[alias_set];
 }
 
-/* Returns nonzero if the alias sets for MEM1 and MEM2 are such that
+/* Returns true if the alias sets for MEM1 and MEM2 are such that
    the two MEMs cannot alias each other.  */
 
-static inline int
+static inline bool
 mems_in_disjoint_alias_sets_p (const_rtx mem1, const_rtx mem2)
 {
   return (flag_strict_aliasing
@@ -487,9 +474,9 @@ alias_set_subset_of (alias_set_type set1, alias_set_type set2)
   return false;
 }
 
-/* Return 1 if the two specified alias sets may conflict.  */
+/* Return true if the two specified alias sets may conflict.  */
 
-int
+bool
 alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
 {
   alias_set_entry *ase1;
@@ -497,7 +484,7 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
 
   /* The easy case.  */
   if (alias_sets_must_conflict_p (set1, set2))
-    return 1;
+    return true;
 
   /* See if the first alias set is a subset of the second.  */
   ase1 = get_alias_set_entry (set1);
@@ -505,7 +492,7 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
       && ase1->children && ase1->children->get (set2))
     {
       ++alias_stats.num_dag;
-      return 1;
+      return true;
     }
 
   /* Now do the same, but with the alias sets reversed.  */
@@ -514,7 +501,7 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
       && ase2->children && ase2->children->get (set1))
     {
       ++alias_stats.num_dag;
-      return 1;
+      return true;
     }
 
   /* We want void * to be compatible with any other pointer without
@@ -558,37 +545,37 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
 
   /* The two alias sets are distinct and neither one is the
      child of the other.  Therefore, they cannot conflict.  */
-  return 0;
+  return false;
 }
 
-/* Return 1 if the two specified alias sets will always conflict.  */
+/* Return true if the two specified alias sets will always conflict.  */
 
-int
+bool
 alias_sets_must_conflict_p (alias_set_type set1, alias_set_type set2)
 {
   /* Disable TBAA oracle with !flag_strict_aliasing.  */
   if (!flag_strict_aliasing)
-    return 1;
+    return true;
   if (set1 == 0 || set2 == 0)
     {
       ++alias_stats.num_alias_zero;
-      return 1;
+      return true;
     }
   if (set1 == set2)
     {
       ++alias_stats.num_same_alias_set;
-      return 1;
+      return true;
     }
 
-  return 0;
+  return false;
 }
 
-/* Return 1 if any MEM object of type T1 will always conflict (using the
+/* Return true if any MEM object of type T1 will always conflict (using the
    dependency routines in this file) with any MEM object of type T2.
    This is used when allocating temporary storage.  If T1 and/or T2 are
    NULL_TREE, it means we know nothing about the storage.  */
 
-int
+bool
 objects_must_conflict_p (tree t1, tree t2)
 {
   alias_set_type set1, set2;
@@ -597,19 +584,19 @@ objects_must_conflict_p (tree t1, tree t2)
      because we may be using them to store objects of various types, for
      example the argument and local variables areas of inlined functions.  */
   if (t1 == 0 && t2 == 0)
-    return 0;
+    return false;
 
   /* If they are the same type, they must conflict.  */
   if (t1 == t2)
     {
       ++alias_stats.num_same_objects;
-      return 1;
+      return true;
     }
   /* Likewise if both are volatile.  */
   if (t1 != 0 && TYPE_VOLATILE (t1) && t2 != 0 && TYPE_VOLATILE (t2))
     {
       ++alias_stats.num_volatile;
-      return 1;
+      return true;
     }
 
   set1 = t1 ? get_alias_set (t1) : 0;
@@ -699,7 +686,7 @@ component_uses_parent_alias_set_from (const_tree t)
 static bool
 ref_all_alias_ptr_type_p (const_tree t)
 {
-  return (TREE_CODE (TREE_TYPE (t)) == VOID_TYPE
+  return (VOID_TYPE_P (TREE_TYPE (t))
 	  || TYPE_REF_CAN_ALIAS_ALL (t));
 }
 
@@ -787,7 +774,22 @@ reference_alias_ptr_type_1 (tree *t)
       && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
 	  != TYPE_MAIN_VARIANT
 	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (inner, 1))))))
-    return TREE_TYPE (TREE_OPERAND (inner, 1));
+    {
+      tree alias_ptrtype = TREE_TYPE (TREE_OPERAND (inner, 1));
+      /* Unless we have the (aggregate) effective type of the access
+	 somewhere on the access path.  If we have for example
+	 (&a->elts[i])->l.len exposed by abstraction we'd see
+	 MEM <A> [(B *)a].elts[i].l.len and we can use the alias set
+	 of 'len' when typeof (MEM <A> [(B *)a].elts[i]) == B for
+	 example.  See PR111715.  */
+      tree inner = *t;
+      while (handled_component_p (inner)
+	     && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
+		 != TYPE_MAIN_VARIANT (TREE_TYPE (alias_ptrtype))))
+	inner = TREE_OPERAND (inner, 0);
+      if (TREE_CODE (inner) == MEM_REF)
+	return alias_ptrtype;
+    }
 
   /* Otherwise, pick up the outermost object that we could have
      a pointer to.  */
@@ -1809,13 +1811,13 @@ canon_rtx (rtx x)
   return x;
 }
 
-/* Return 1 if X and Y are identical-looking rtx's.
+/* Return true if X and Y are identical-looking rtx's.
    Expect that X and Y has been already canonicalized.
 
    We use the data in reg_known_value above to see if two registers with
    different numbers are, in fact, equivalent.  */
 
-static int
+static bool
 rtx_equal_for_memref_p (const_rtx x, const_rtx y)
 {
   int i;
@@ -1824,23 +1826,23 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
   const char *fmt;
 
   if (x == 0 && y == 0)
-    return 1;
+    return true;
   if (x == 0 || y == 0)
-    return 0;
+    return false;
 
   if (x == y)
-    return 1;
+    return true;
 
   code = GET_CODE (x);
   /* Rtx's of different codes cannot be equal.  */
   if (code != GET_CODE (y))
-    return 0;
+    return false;
 
   /* (MULT:SI x y) and (MULT:HI x y) are NOT equivalent.
      (REG:SI x) and (REG:HI x) are NOT equivalent.  */
 
   if (GET_MODE (x) != GET_MODE (y))
-    return 0;
+    return false;
 
   /* Some RTL can be compared without a recursive examination.  */
   switch (code)
@@ -1865,7 +1867,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
     case VALUE:
     CASE_CONST_UNIQUE:
       /* Pointer equality guarantees equality for these nodes.  */
-      return 0;
+      return false;
 
     default:
       break;
@@ -1902,7 +1904,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
 				   canon_rtx (XEXP (y, 0)));
 
   /* Compare the elements.  If any pair of corresponding elements
-     fail to match, return 0 for the whole things.
+     fail to match, return false for the whole things.
 
      Limit cases to types which actually appear in addresses.  */
 
@@ -1913,36 +1915,36 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
 	{
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'p':
 	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'E':
 	  /* Two vectors must have the same length.  */
 	  if (XVECLEN (x, i) != XVECLEN (y, i))
-	    return 0;
+	    return false;
 
 	  /* And the corresponding elements must match.  */
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    if (rtx_equal_for_memref_p (canon_rtx (XVECEXP (x, i, j)),
 					canon_rtx (XVECEXP (y, i, j))) == 0)
-	      return 0;
+	      return false;
 	  break;
 
 	case 'e':
 	  if (rtx_equal_for_memref_p (canon_rtx (XEXP (x, i)),
 				      canon_rtx (XEXP (y, i))) == 0)
-	    return 0;
+	    return false;
 	  break;
 
 	  /* This can happen for asm operands.  */
 	case 's':
 	  if (strcmp (XSTR (x, i), XSTR (y, i)))
-	    return 0;
+	    return false;
 	  break;
 
 	/* This can happen for an asm which clobbers memory.  */
@@ -1956,7 +1958,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
 	  gcc_unreachable ();
 	}
     }
-  return 1;
+  return true;
 }
 
 static rtx
@@ -2263,10 +2265,10 @@ compare_base_symbol_refs (const_rtx x_base, const_rtx y_base,
   return -1;
 }
 
-/* Return 0 if the addresses X and Y are known to point to different
-   objects, 1 if they might be pointers to the same object.  */
+/* Return false if the addresses X and Y are known to point to different
+   objects, true if they might be pointers to the same object.  */
 
-static int
+static bool
 base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
 		  machine_mode x_mode, machine_mode y_mode)
 {
@@ -2278,27 +2280,27 @@ base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
       rtx x_c;
 
       if (! flag_expensive_optimizations || (x_c = canon_rtx (x)) == x)
-	return 1;
+	return true;
 
       x_base = find_base_term (x_c);
       if (x_base == 0)
-	return 1;
+	return true;
     }
 
   if (y_base == 0)
     {
       rtx y_c;
       if (! flag_expensive_optimizations || (y_c = canon_rtx (y)) == y)
-	return 1;
+	return true;
 
       y_base = find_base_term (y_c);
       if (y_base == 0)
-	return 1;
+	return true;
     }
 
   /* If the base addresses are equal nothing is known about aliasing.  */
   if (rtx_equal_p (x_base, y_base))
-    return 1;
+    return true;
 
   /* The base addresses are different expressions.  If they are not accessed
      via AND, there is no conflict.  We can bring knowledge of object
@@ -2308,27 +2310,27 @@ base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
      via AND address can alias all surrounding object types except those
      with aligment 8 or higher.  */
   if (GET_CODE (x) == AND && GET_CODE (y) == AND)
-    return 1;
+    return true;
   if (GET_CODE (x) == AND
       && (!CONST_INT_P (XEXP (x, 1))
 	  || (int) GET_MODE_UNIT_SIZE (y_mode) < -INTVAL (XEXP (x, 1))))
-    return 1;
+    return true;
   if (GET_CODE (y) == AND
       && (!CONST_INT_P (XEXP (y, 1))
 	  || (int) GET_MODE_UNIT_SIZE (x_mode) < -INTVAL (XEXP (y, 1))))
-    return 1;
+    return true;
 
   /* Differing symbols not accessed via AND never alias.  */
   if (GET_CODE (x_base) == SYMBOL_REF && GET_CODE (y_base) == SYMBOL_REF)
     return compare_base_symbol_refs (x_base, y_base) != 0;
 
   if (GET_CODE (x_base) != ADDRESS && GET_CODE (y_base) != ADDRESS)
-    return 0;
+    return false;
 
   if (unique_base_value_p (x_base) || unique_base_value_p (y_base))
-    return 0;
+    return false;
 
-  return 1;
+  return true;
 }
 
 /* Return TRUE if EXPR refers to a VALUE whose uid is greater than
@@ -2764,7 +2766,7 @@ memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
    only be a dependence here if both reads are volatile, or if either is
    an explicit barrier.  */
 
-int
+bool
 read_dependence (const_rtx mem, const_rtx x)
 {
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
@@ -2825,11 +2827,11 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
   while (x && TREE_CODE (x) == COMPONENT_REF);
 }
 
-/* Return nonzero if we can determine the exprs corresponding to memrefs
+/* Return true if we can determine the exprs corresponding to memrefs
    X and Y and they do not overlap. 
    If LOOP_VARIANT is set, skip offset-based disambiguation */
 
-int
+bool
 nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 {
   tree exprx = MEM_EXPR (x), expry = MEM_EXPR (y);
@@ -2841,14 +2843,14 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 
   /* Unless both have exprs, we can't tell anything.  */
   if (exprx == 0 || expry == 0)
-    return 0;
+    return false;
 
   /* For spill-slot accesses make sure we have valid offsets.  */
   if ((exprx == get_spill_slot_decl (false)
        && ! MEM_OFFSET_KNOWN_P (x))
       || (expry == get_spill_slot_decl (false)
 	  && ! MEM_OFFSET_KNOWN_P (y)))
-    return 0;
+    return false;
 
   /* If the field reference test failed, look at the DECLs involved.  */
   moffsetx_known_p = MEM_OFFSET_KNOWN_P (x);
@@ -2858,7 +2860,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
     {
       tree t = decl_for_component_ref (exprx);
       if (! t)
-	return 0;
+	return false;
       adjust_offset_for_component_ref (exprx, &moffsetx_known_p, &moffsetx);
       exprx = t;
     }
@@ -2870,13 +2872,13 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
     {
       tree t = decl_for_component_ref (expry);
       if (! t)
-	return 0;
+	return false;
       adjust_offset_for_component_ref (expry, &moffsety_known_p, &moffsety);
       expry = t;
     }
 
   if (! DECL_P (exprx) || ! DECL_P (expry))
-    return 0;
+    return false;
 
   /* If we refer to different gimple registers, or one gimple register
      and one non-gimple-register, we know they can't overlap.  First,
@@ -2900,7 +2902,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
      See gfortran.dg/lto/20091028-2_0.f90.  */
   if (TREE_CODE (exprx) == CONST_DECL
       || TREE_CODE (expry) == CONST_DECL)
-    return 1;
+    return true;
 
   /* If one decl is known to be a function or label in a function and
      the other is some kind of data, they can't overlap.  */
@@ -2908,14 +2910,14 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
        || TREE_CODE (exprx) == LABEL_DECL)
       != (TREE_CODE (expry) == FUNCTION_DECL
 	  || TREE_CODE (expry) == LABEL_DECL))
-    return 1;
+    return true;
 
   /* If either of the decls doesn't have DECL_RTL set (e.g. marked as
      living in multiple places), we can't tell anything.  Exception
      are FUNCTION_DECLs for which we can create DECL_RTL on demand.  */
   if ((!DECL_RTL_SET_P (exprx) && TREE_CODE (exprx) != FUNCTION_DECL)
       || (!DECL_RTL_SET_P (expry) && TREE_CODE (expry) != FUNCTION_DECL))
-    return 0;
+    return false;
 
   rtlx = DECL_RTL (exprx);
   rtly = DECL_RTL (expry);
@@ -2925,14 +2927,14 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
      of the stack frame used for locals for spilled pseudos.  */
   if ((!MEM_P (rtlx) || !MEM_P (rtly))
       && ! rtx_equal_p (rtlx, rtly))
-    return 1;
+    return true;
 
   /* If we have MEMs referring to different address spaces (which can
      potentially overlap), we cannot easily tell from the addresses
      whether the references overlap.  */
   if (MEM_P (rtlx) && MEM_P (rtly)
       && MEM_ADDR_SPACE (rtlx) != MEM_ADDR_SPACE (rtly))
-    return 0;
+    return false;
 
   /* Get the base and offsets of both decls.  If either is a register, we
      know both are and are the same, so use that as the base.  The only
@@ -2957,7 +2959,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 
   /* Offset based disambiguation not appropriate for loop invariant */
   if (loop_invariant)
-    return 0;
+    return false;
 
   /* Offset based disambiguation is OK even if we do not know that the
      declarations are necessarily different
@@ -2997,9 +2999,9 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 
    If X_ADDR is non-NULL, it is used in preference of XEXP (x, 0).
 
-   Returns 1 if there is a true dependence, 0 otherwise.  */
+   Returns true if there is a true dependence, false otherwise.  */
 
-static int
+static bool
 true_dependence_1 (const_rtx mem, machine_mode mem_mode, rtx mem_addr,
 		   const_rtx x, rtx x_addr, bool mem_canonicalized)
 {
@@ -3011,17 +3013,17 @@ true_dependence_1 (const_rtx mem, machine_mode mem_mode, rtx mem_addr,
 		       : (mem_addr == NULL_RTX && x_addr == NULL_RTX));
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
-    return 1;
+    return true;
 
   /* (mem:BLK (scratch)) is a special mechanism to conflict with everything.
      This is used in epilogue deallocation functions, and in cselib.  */
   if (GET_MODE (x) == BLKmode && GET_CODE (XEXP (x, 0)) == SCRATCH)
-    return 1;
+    return true;
   if (GET_MODE (mem) == BLKmode && GET_CODE (XEXP (mem, 0)) == SCRATCH)
-    return 1;
+    return true;
   if (MEM_ALIAS_SET (x) == ALIAS_SET_MEMORY_BARRIER
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
-    return 1;
+    return true;
 
   if (! x_addr)
     x_addr = XEXP (x, 0);
@@ -3043,24 +3045,24 @@ true_dependence_1 (const_rtx mem, machine_mode mem_mode, rtx mem_addr,
   if (MEM_READONLY_P (x)
       && GET_CODE (x_addr) != AND
       && GET_CODE (true_mem_addr) != AND)
-    return 0;
+    return false;
 
   /* If we have MEMs referring to different address spaces (which can
      potentially overlap), we cannot easily tell from the addresses
      whether the references overlap.  */
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
-    return 1;
+    return true;
 
   base = find_base_term (x_addr);
   if (base && (GET_CODE (base) == LABEL_REF
 	       || (GET_CODE (base) == SYMBOL_REF
 		   && CONSTANT_POOL_ADDRESS_P (base))))
-    return 0;
+    return false;
 
   rtx mem_base = find_base_term (true_mem_addr);
   if (! base_alias_check (x_addr, base, true_mem_addr, mem_base,
 			  GET_MODE (x), mem_mode))
-    return 0;
+    return false;
 
   x_addr = canon_rtx (x_addr);
   if (!mem_canonicalized)
@@ -3068,20 +3070,20 @@ true_dependence_1 (const_rtx mem, machine_mode mem_mode, rtx mem_addr,
 
   if ((ret = memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
 				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
-    return ret;
+    return !!ret;
 
   if (mems_in_disjoint_alias_sets_p (x, mem))
-    return 0;
+    return false;
 
   if (nonoverlapping_memrefs_p (mem, x, false))
-    return 0;
+    return false;
 
   return rtx_refs_may_alias_p (x, mem, true);
 }
 
 /* True dependence: X is read after store in MEM takes place.  */
 
-int
+bool
 true_dependence (const_rtx mem, machine_mode mem_mode, const_rtx x)
 {
   return true_dependence_1 (mem, mem_mode, NULL_RTX,
@@ -3094,7 +3096,7 @@ true_dependence (const_rtx mem, machine_mode mem_mode, const_rtx x)
    The mem_addr argument has been added, since true_dependence_1 computed
    this value prior to canonicalizing.  */
 
-int
+bool
 canon_true_dependence (const_rtx mem, machine_mode mem_mode, rtx mem_addr,
 		       const_rtx x, rtx x_addr)
 {
@@ -3102,13 +3104,13 @@ canon_true_dependence (const_rtx mem, machine_mode mem_mode, rtx mem_addr,
 			    x, x_addr, /*mem_canonicalized=*/true);
 }
 
-/* Returns nonzero if a write to X might alias a previous read from
+/* Returns true if a write to X might alias a previous read from
    (or, if WRITEP is true, a write to) MEM.
    If X_CANONCALIZED is true, then X_ADDR is the canonicalized address of X,
    and X_MODE the mode for that access.
    If MEM_CANONICALIZED is true, MEM is canonicalized.  */
 
-static int
+static bool
 write_dependence_p (const_rtx mem,
 		    const_rtx x, machine_mode x_mode, rtx x_addr,
 		    bool mem_canonicalized, bool x_canonicalized, bool writep)
@@ -3124,17 +3126,17 @@ write_dependence_p (const_rtx mem,
 		       : (x_addr == NULL_RTX && x_mode == VOIDmode));
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
-    return 1;
+    return true;
 
   /* (mem:BLK (scratch)) is a special mechanism to conflict with everything.
      This is used in epilogue deallocation functions.  */
   if (GET_MODE (x) == BLKmode && GET_CODE (XEXP (x, 0)) == SCRATCH)
-    return 1;
+    return true;
   if (GET_MODE (mem) == BLKmode && GET_CODE (XEXP (mem, 0)) == SCRATCH)
-    return 1;
+    return true;
   if (MEM_ALIAS_SET (x) == ALIAS_SET_MEMORY_BARRIER
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
-    return 1;
+    return true;
 
   if (!x_addr)
     x_addr = XEXP (x, 0);
@@ -3150,13 +3152,13 @@ write_dependence_p (const_rtx mem,
       && MEM_READONLY_P (mem)
       && GET_CODE (true_x_addr) != AND
       && GET_CODE (true_mem_addr) != AND)
-    return 0;
+    return false;
 
   /* If we have MEMs referring to different address spaces (which can
      potentially overlap), we cannot easily tell from the addresses
      whether the references overlap.  */
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
-    return 1;
+    return true;
 
   base = find_base_term (true_mem_addr);
   if (! writep
@@ -3164,12 +3166,12 @@ write_dependence_p (const_rtx mem,
       && (GET_CODE (base) == LABEL_REF
 	  || (GET_CODE (base) == SYMBOL_REF
 	      && CONSTANT_POOL_ADDRESS_P (base))))
-    return 0;
+    return false;
 
   rtx x_base = find_base_term (true_x_addr);
   if (! base_alias_check (true_x_addr, x_base, true_mem_addr, base,
 			  GET_MODE (x), GET_MODE (mem)))
-    return 0;
+    return false;
 
   if (!x_canonicalized)
     {
@@ -3181,17 +3183,17 @@ write_dependence_p (const_rtx mem,
 
   if ((ret = memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
 				 GET_MODE_SIZE (x_mode), x_addr, 0)) != -1)
-    return ret;
+    return !!ret;
 
   if (nonoverlapping_memrefs_p (x, mem, false))
-    return 0;
+    return false;
 
   return rtx_refs_may_alias_p (x, mem, false);
 }
 
 /* Anti dependence: X is written after read in MEM takes place.  */
 
-int
+bool
 anti_dependence (const_rtx mem, const_rtx x)
 {
   return write_dependence_p (mem, x, VOIDmode, NULL_RTX,
@@ -3204,7 +3206,7 @@ anti_dependence (const_rtx mem, const_rtx x)
    STRICT_LOW_PART / ZERO_EXTRACT).
    If MEM_CANONICALIZED is true, MEM is canonicalized.  */
 
-int
+bool
 canon_anti_dependence (const_rtx mem, bool mem_canonicalized,
 		       const_rtx x, machine_mode x_mode, rtx x_addr)
 {
@@ -3215,7 +3217,7 @@ canon_anti_dependence (const_rtx mem, bool mem_canonicalized,
 
 /* Output dependence: X is written after store in MEM takes place.  */
 
-int
+bool
 output_dependence (const_rtx mem, const_rtx x)
 {
   return write_dependence_p (mem, x, VOIDmode, NULL_RTX,
@@ -3228,7 +3230,7 @@ output_dependence (const_rtx mem, const_rtx x)
    STRICT_LOW_PART / ZERO_EXTRACT).
    If MEM_CANONICALIZED is true, MEM is canonicalized.  */
 
-int
+bool
 canon_output_dependence (const_rtx mem, bool mem_canonicalized,
 			 const_rtx x, machine_mode x_mode, rtx x_addr)
 {
@@ -3241,23 +3243,23 @@ canon_output_dependence (const_rtx mem, bool mem_canonicalized,
 
 /* Check whether X may be aliased with MEM.  Don't do offset-based
   memory disambiguation & TBAA.  */
-int
+bool
 may_alias_p (const_rtx mem, const_rtx x)
 {
   rtx x_addr, mem_addr;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
-    return 1;
+    return true;
 
   /* (mem:BLK (scratch)) is a special mechanism to conflict with everything.
      This is used in epilogue deallocation functions.  */
   if (GET_MODE (x) == BLKmode && GET_CODE (XEXP (x, 0)) == SCRATCH)
-    return 1;
+    return true;
   if (GET_MODE (mem) == BLKmode && GET_CODE (XEXP (mem, 0)) == SCRATCH)
-    return 1;
+    return true;
   if (MEM_ALIAS_SET (x) == ALIAS_SET_MEMORY_BARRIER
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
-    return 1;
+    return true;
 
   x_addr = XEXP (x, 0);
   x_addr = get_addr (x_addr);
@@ -3273,22 +3275,22 @@ may_alias_p (const_rtx mem, const_rtx x)
   if (MEM_READONLY_P (x)
       && GET_CODE (x_addr) != AND
       && GET_CODE (mem_addr) != AND)
-    return 0;
+    return false;
 
   /* If we have MEMs referring to different address spaces (which can
      potentially overlap), we cannot easily tell from the addresses
      whether the references overlap.  */
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
-    return 1;
+    return true;
 
   rtx x_base = find_base_term (x_addr);
   rtx mem_base = find_base_term (mem_addr);
   if (! base_alias_check (x_addr, x_base, mem_addr, mem_base,
 			  GET_MODE (x), GET_MODE (mem_addr)))
-    return 0;
+    return false;
 
   if (nonoverlapping_memrefs_p (mem, x, true))
-    return 0;
+    return false;
 
   /* TBAA not valid for loop_invarint */
   return rtx_refs_may_alias_p (x, mem, false);
@@ -3374,8 +3376,8 @@ init_alias_analysis (void)
       && !frame_pointer_needed
       && targetm.can_eliminate (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM);
   unsigned int maxreg = max_reg_num ();
-  int changed, pass;
-  int i;
+  bool changed;
+  int pass, i;
   unsigned int ui;
   rtx_insn *insn;
   rtx val;
@@ -3430,7 +3432,7 @@ init_alias_analysis (void)
   do
     {
       /* Assume nothing will change this iteration of the loop.  */
-      changed = 0;
+      changed = false;
 
       /* We want to assign the same IDs each iteration of this loop, so
 	 start counting from one each iteration of the loop.  */
@@ -3543,7 +3545,7 @@ init_alias_analysis (void)
 	      && ! rtx_equal_p (new_reg_base_value[ui], (*reg_base_value)[ui]))
 	    {
 	      (*reg_base_value)[ui] = new_reg_base_value[ui];
-	      changed = 1;
+	      changed = true;
 	    }
 	}
     }

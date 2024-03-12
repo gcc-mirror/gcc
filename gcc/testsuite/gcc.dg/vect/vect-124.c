@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 #include "tree-vect.h"
 
 #ifndef N
@@ -21,9 +22,11 @@ main ()
   
   check_vect ();
   foo (6);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (a[i] != i * 3 + 6)
       abort ();
   return 0;
 }
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

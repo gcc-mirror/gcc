@@ -55,7 +55,7 @@ void test2(scope int* p, int[] a ...) @safe
 TEST_OUTPUT:
 ---
 fail_compilation/retscope.d(75): Error: function `retscope.HTTP.Impl.onReceive` is `@nogc` yet allocates closure for `onReceive()` with the GC
-fail_compilation/retscope.d(77):        `retscope.HTTP.Impl.onReceive.__lambda1` closes over variable `this` at fail_compilation/retscope.d(75)
+fail_compilation/retscope.d(77):        delegate `retscope.HTTP.Impl.onReceive.__lambda1` closes over variable `this`
 ---
 */
 
@@ -403,7 +403,7 @@ class Foo13
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(1205): Error: scope variable `f14` assigned to non-scope parameter `this` calling `foo`
+fail_compilation/retscope.d(1205): Error: scope variable `f14` calling non-scope member function `Foo14.foo()`
 ---
 */
 

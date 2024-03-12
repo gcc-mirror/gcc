@@ -27,6 +27,10 @@ abstract class ErrorSink
 
     void warning(const ref Loc loc, const(char)* format, ...);
 
+    void warningSupplemental(const ref Loc loc, const(char)* format, ...);
+
+    void message(const ref Loc loc, const(char)* format, ...);
+
     void deprecation(const ref Loc loc, const(char)* format, ...);
 
     void deprecationSupplemental(const ref Loc loc, const(char)* format, ...);
@@ -47,6 +51,10 @@ class ErrorSinkNull : ErrorSink
 
     void warning(const ref Loc loc, const(char)* format, ...) { }
 
+    void warningSupplemental(const ref Loc loc, const(char)* format, ...) { }
+
+    void message(const ref Loc loc, const(char)* format, ...) { }
+
     void deprecation(const ref Loc loc, const(char)* format, ...) { }
 
     void deprecationSupplemental(const ref Loc loc, const(char)* format, ...) { }
@@ -54,6 +62,7 @@ class ErrorSinkNull : ErrorSink
 
 /*****************************************
  * Simplest implementation, just sends messages to stderr.
+ * See also: ErrorSinkCompiler.
  */
 class ErrorSinkStderr : ErrorSink
 {
@@ -100,9 +109,27 @@ class ErrorSinkStderr : ErrorSink
         va_end(ap);
     }
 
+    void warningSupplemental(const ref Loc loc, const(char)* format, ...) { }
+
     void deprecation(const ref Loc loc, const(char)* format, ...)
     {
         fputs("Deprecation: ", stderr);
+        const p = loc.toChars();
+        if (*p)
+        {
+            fprintf(stderr, "%s: ", p);
+            //mem.xfree(cast(void*)p); // loc should provide the free()
+        }
+
+        va_list ap;
+        va_start(ap, format);
+        vfprintf(stderr, format, ap);
+        fputc('\n', stderr);
+        va_end(ap);
+    }
+
+    void message(const ref Loc loc, const(char)* format, ...)
+    {
         const p = loc.toChars();
         if (*p)
         {

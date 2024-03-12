@@ -411,6 +411,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			   conflict with address reloads.  */
 			if (copy_start >= ret_start
 			    && copy_start + copy_num <= ret_end
+			    && GET_CODE (return_copy_pat) == SET
 			    && OBJECT_P (SET_SRC (return_copy_pat)))
 			  forced_late_switch = true;
 			break;
@@ -499,8 +500,8 @@ optimize_mode_switching (void)
   bool need_commit = false;
   static const int num_modes[] = NUM_MODES_FOR_MODE_SWITCHING;
 #define N_ENTITIES ARRAY_SIZE (num_modes)
-  int entity_map[N_ENTITIES];
-  struct bb_info *bb_info[N_ENTITIES];
+  int entity_map[N_ENTITIES] = {};
+  struct bb_info *bb_info[N_ENTITIES] = {};
   int i, j;
   int n_entities = 0;
   int max_num_modes = 0;

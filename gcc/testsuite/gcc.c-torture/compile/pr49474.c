@@ -1,8 +1,9 @@
 typedef struct gfc_formal_arglist
 {
-  int next;
+  struct gfc_formal_arglist* next;
 }
 gfc_actual_arglist;
+struct gfc_formal_arglist*
 update_arglist_pass (gfc_actual_arglist* lst, int po, unsigned argpos,
        const char *name)
 {

@@ -46,6 +46,8 @@ struct bitpack_d
 /* In data-streamer.cc  */
 void bp_pack_var_len_unsigned (struct bitpack_d *, unsigned HOST_WIDE_INT);
 void bp_pack_var_len_int (struct bitpack_d *, HOST_WIDE_INT);
+void bp_pack_real_value (struct bitpack_d *, const REAL_VALUE_TYPE *);
+void bp_unpack_real_value (struct bitpack_d *, REAL_VALUE_TYPE *);
 unsigned HOST_WIDE_INT bp_unpack_var_len_unsigned (struct bitpack_d *);
 HOST_WIDE_INT bp_unpack_var_len_int (struct bitpack_d *);
 
@@ -73,6 +75,7 @@ void streamer_write_data_stream (struct lto_output_stream *, const void *,
 				 size_t);
 void streamer_write_wide_int (struct output_block *, const wide_int &);
 void streamer_write_widest_int (struct output_block *, const widest_int &);
+void streamer_write_vrange (struct output_block *, const class vrange &);
 
 /* In data-streamer-in.cc  */
 const char *streamer_read_string (class data_in *, class lto_input_block *);
@@ -89,6 +92,8 @@ poly_int64 streamer_read_poly_int64 (class lto_input_block *);
 gcov_type streamer_read_gcov_count (class lto_input_block *);
 wide_int streamer_read_wide_int (class lto_input_block *);
 widest_int streamer_read_widest_int (class lto_input_block *);
+void streamer_read_value_range (class lto_input_block *, class data_in *,
+				class Value_Range &);
 
 /* Returns a new bit-packing context for bit-packing into S.  */
 inline struct bitpack_d
@@ -194,7 +199,7 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
 inline poly_int<NUM_POLY_INT_COEFFS, bitpack_word_t>
 bp_unpack_poly_value (struct bitpack_d *bp, unsigned nbits)
 {
-  poly_int_pod<NUM_POLY_INT_COEFFS, bitpack_word_t> x;
+  poly_int<NUM_POLY_INT_COEFFS, bitpack_word_t> x;
   for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
     x.coeffs[i] = bp_unpack_value (bp, nbits);
   return x;

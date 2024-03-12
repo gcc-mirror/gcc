@@ -27,6 +27,7 @@ main ()
   check_vect ();
   r = foo (78, 0, 10000, p);
   for (j = 0; j < 7; j++)
+#pragma GCC novector
     for (i = 0; i < 10000 / 78; i++)
       if (p[j * (10000 / 78 + 1) + i] != 78 * i)
 	abort ();
@@ -34,6 +35,7 @@ main ()
     abort ();
   r = foo (87, 0, 10000, p);
   for (j = 0; j < 7; j++)
+#pragma GCC novector
     for (i = 0; i < 10000 / 87; i++)
       if (p[j * (10000 / 87 + 1) + i] != 87 * i)
 	abort ();

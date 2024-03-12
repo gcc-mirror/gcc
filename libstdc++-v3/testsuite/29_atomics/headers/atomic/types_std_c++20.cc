@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-require-cstdint "" }
 
 // Copyright (C) 2008-2023 Free Software Foundation, Inc.

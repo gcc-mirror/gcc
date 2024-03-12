@@ -32,6 +32,7 @@ main1 (s *arr)
     } 
    
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     { 
       if (res[i].c != arr[i].c + arr[i].c
@@ -67,5 +68,5 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target {! vect_strided5 } } } } */
   

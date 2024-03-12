@@ -90,6 +90,7 @@ main (void)
   for (i = 0; i < 8; i++)
     Loop_err (images + i, s, -1);
 
+#pragma GCC novector
   for (i = 0; i < 8; i++)
     if (__builtin_memcmp (&expected, images + i, sizeof (expected)))
       __builtin_abort ();

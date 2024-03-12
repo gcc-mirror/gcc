@@ -27,6 +27,7 @@ See the next chapter for information on the C header file.
                         from such an insn.
 * Output Statement::    For more generality, write C code to output
                         the assembler code.
+* Compact Syntax::      Compact syntax for writing machine descriptors.
 * Predicates::          Controlling what kinds of operands can be used
                         for an insn.
 * Constraints::         Fine-tuning operand selection.
@@ -712,6 +713,168 @@ you can use @samp{*} inside of a @samp{@@} multi-alternative template:
    clrmem %0")
 @end group
 @end smallexample
+
+@node Compact Syntax
+@section Compact Syntax
+@cindex compact syntax
+
+When a @code{define_insn} or @code{define_insn_and_split} has multiple
+alternatives it may be beneficial to use the compact syntax when specifying
+alternatives.
+
+This syntax puts the constraints and attributes on the same horizontal line as
+the instruction assembly template.
+
+As an example
+
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,k,r,r,r,r")
+	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv"))]
+  ""
+  "@@
+   mov\\t%w0, %w1
+   mov\\t%w0, %w1
+   mov\\t%w0, %w1
+   mov\\t%w0, %1
+   #
+   * return aarch64_output_sve_cnt_immediate ('cnt', '%x0', operands[1]);"
+  "&& true"
+   [(const_int 0)]
+  @{
+     aarch64_expand_mov_immediate (operands[0], operands[1]);
+     DONE;
+  @}
+  [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm")
+   (set_attr "arch"   "*,*,*,*,*,sve")
+   (set_attr "length" "4,4,4,4,*,  4")
+]
+)
+@end group
+@end smallexample
+
+can be better expressed as:
+
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  ""
+  @{@@ [cons: =0, 1; attrs: type, arch, length]
+     [r , r  ; mov_reg  , *   , 4] mov\t%w0, %w1
+     [k , r  ; mov_reg  , *   , 4] ^
+     [r , k  ; mov_reg  , *   , 4] ^
+     [r , M  ; mov_imm  , *   , 4] mov\t%w0, %1
+     [r , n  ; mov_imm  , *   , *] #
+     [r , Usv; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+  @}
+  "&& true"
+  [(const_int 0)]
+  @{
+    aarch64_expand_mov_immediate (operands[0], operands[1]);
+    DONE;
+  @}
+)
+@end group
+@end smallexample
+
+The syntax rules are as follows:
+@itemize @bullet
+@item
+Templates must start with @samp{@{@@} to use the new syntax.
+
+@item
+@samp{@{@@} is followed by a layout in square brackets which is @samp{cons:}
+followed by a comma-separated list of @code{match_operand}/@code{match_scratch}
+operand numbers, then a semicolon, followed by the same for attributes
+(@samp{attrs:}).  Operand modifiers like @code{=} and @code{+} can be placed
+before an operand number.
+Both sections are optional (so you can use only @samp{cons}, or only
+@samp{attrs}, or both), and @samp{cons} must come before @samp{attrs} if
+present.
+
+@item
+Each alternative begins with any amount of whitespace.
+
+@item
+Following the whitespace is a comma-separated list of "constraints" and/or
+"attributes" within brackets @code{[]}, with sections separated by a semicolon.
+
+@item
+Should you want to copy the previous asm line, the symbol @code{^} can be used.
+This allows less copy pasting between alternative and reduces the number of
+lines to update on changes.
+
+@item
+When using C functions for output, the idiom @samp{* return @var{function};}
+can be replaced with the shorthand @samp{<< @var{function};}.
+
+@item
+Following the closing @samp{]} is any amount of whitespace, and then the actual
+asm output.
+
+@item
+Spaces are allowed in the list (they will simply be removed).
+
+@item
+All constraint alternatives should be specified.  For example, a list of
+of three blank alternatives should be written @samp{[,,]} rather than
+@samp{[]}.
+
+@item
+All attribute alternatives should be non-empty, with @samp{*}
+representing the default attribute value.  For example, a list of three
+default attribute values should be written @samp{[*,*,*]} rather than
+@samp{[]}.
+
+@item
+Within an @samp{@{@@} block both multiline and singleline C comments are
+allowed, but when used outside of a C block they must be the only non-whitespace
+blocks on the line.
+
+@item
+Within an @samp{@{@@} block, any iterators that do not get expanded will result
+in an error.  If for some reason it is required to have @code{<} or @code{>} in
+the output then these must be escaped using @samp{\}.
+
+@item
+It is possible to use the @samp{attrs} list to specify some attributes and to
+use the normal @code{set_attr} syntax to specify other attributes.  There must
+not be any overlap between the two lists.
+
+In other words, the following is valid:
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  ""
+  @{@@ [cons: 0, 1; attrs: type, arch, length]@}
+  @dots{} 
+  [(set_attr "foo" "mov_imm")]
+)
+@end group
+@end smallexample
+
+but this is not valid:
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  ""
+  @{@@ [cons: 0, 1; attrs: type, arch, length]@}
+  @dots{} 
+  [(set_attr "arch" "bar")
+   (set_attr "foo" "mov_imm")]
+)
+@end group
+@end smallexample
+
+because it specifies @code{arch} twice.
+@end itemize
 
 @node Predicates
 @section Predicates
@@ -2729,6 +2892,17 @@ as @code{st.w} and @code{ld.w}.
 A signed 12-bit constant (for arithmetic instructions).
 @item K
 An unsigned 12-bit constant (for logic instructions).
+@item M
+A constant that cannot be loaded using @code{lui}, @code{addiu}
+or @code{ori}.
+@item N
+A constant in the range -65535 to -1 (inclusive).
+@item O
+A signed 15-bit constant.
+@item P
+A constant in the range 1 to 65535 (inclusive).
+@item R
+An address that can be used in a non-macro load or store.
 @item ZB
 An address that is held in a general-purpose register.
 The offset is zero.
@@ -3534,6 +3708,15 @@ An address that is held in a general-purpose register.
 
 @item S
 A constraint that matches an absolute symbolic address.
+
+@item vr
+A vector register (if available)..
+
+@item vd
+A vector register, excluding v0 (if available).
+
+@item vm
+A vector register, only v0 (if available).
 
 @end table
 
@@ -4806,6 +4989,23 @@ for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{vec_mask_len_load_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_len_load_lanes@var{m}@var{n}}
+Like @samp{vec_load_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2), length operand (operand 3) as well as bias operand (operand 4)
+that specifies which elements of the destination vectors should be loaded.
+Other elements of the destination vectors are undefined.  The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < operand3 + operand4; j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[i][j] = operand1[j * c + i];
+@end smallexample
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_store_lanes@var{m}@var{n}} instruction pattern
 @item @samp{vec_store_lanes@var{m}@var{n}}
 Equivalent to @samp{vec_load_lanes@var{m}@var{n}}, with the memory
@@ -4832,6 +5032,23 @@ vectors should be stored.  The operation is equivalent to:
 @smallexample
 int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
 for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[j * c + i] = operand1[i][j];
+@end smallexample
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{vec_mask_len_store_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_len_store_lanes@var{m}@var{n}}
+Like @samp{vec_store_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2), length operand (operand 3) as well as bias operand (operand 4)
+that specifies which elements of the source vectors should be stored.
+The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < operand3 + operand4; j++)
   if (operand2[j])
     for (i = 0; i < c; i++)
       operand0[j * c + i] = operand1[i][j];
@@ -4868,6 +5085,15 @@ operand 5.  Bit @var{i} of the mask is set if element @var{i}
 of the result should be loaded from memory and clear if element @var{i}
 of the result should be set to zero.
 
+@cindex @code{mask_len_gather_load@var{m}@var{n}} instruction pattern
+@item @samp{mask_len_gather_load@var{m}@var{n}}
+Like @samp{gather_load@var{m}@var{n}}, but takes an extra mask operand (operand 5),
+a len operand (operand 6) as well as a bias operand (operand 7).  Similar to mask_len_load,
+the instruction loads at most (operand 6 + operand 7) elements from memory.
+Bit @var{i} of the mask is set if element @var{i} of the result should
+be loaded from memory and clear if element @var{i} of the result should be undefined.
+Mask elements @var{i} with @var{i} > (operand 6 + operand 7) are ignored.
+
 @cindex @code{scatter_store@var{m}@var{n}} instruction pattern
 @item @samp{scatter_store@var{m}@var{n}}
 Store a vector of mode @var{m} into several distinct memory locations.
@@ -4897,10 +5123,20 @@ Like @samp{scatter_store@var{m}@var{n}}, but takes an extra mask operand as
 operand 5.  Bit @var{i} of the mask is set if element @var{i}
 of the result should be stored to memory.
 
+@cindex @code{mask_len_scatter_store@var{m}@var{n}} instruction pattern
+@item @samp{mask_len_scatter_store@var{m}@var{n}}
+Like @samp{scatter_store@var{m}@var{n}}, but takes an extra mask operand (operand 5),
+a len operand (operand 6) as well as a bias operand (operand 7).  The instruction stores
+at most (operand 6 + operand 7) elements of (operand 4) to memory.
+Bit @var{i} of the mask is set if element @var{i} of (operand 4) should be stored.
+Mask elements @var{i} with @var{i} > (operand 6 + operand 7) are ignored.
+
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
 Set given field in the vector value.  Operand 0 is the vector to modify,
 operand 1 is new value of field and operand 2 specify the field index.
+
+This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{vec_extract@var{m}@var{n}} instruction pattern
 @item @samp{vec_extract@var{m}@var{n}}
@@ -4909,7 +5145,10 @@ specify field index and operand 0 place to store value into.  The
 @var{n} mode is the mode of the field or vector of fields that should be
 extracted, should be either element mode of the vector mode @var{m}, or
 a vector mode with the same element mode and smaller number of elements.
-If @var{n} is a vector mode, the index is counted in units of that mode.
+If @var{n} is a vector mode the index is counted in multiples of
+mode @var{n}.
+
+This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{vec_init@var{m}@var{n}} instruction pattern
 @item @samp{vec_init@var{m}@var{n}}
@@ -4964,6 +5203,28 @@ operand0[0] = operand1 < operand2;
 for (i = 1; i < operand3; i++)
   operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
 @end smallexample
+
+@cindex @code{select_vl@var{m}} instruction pattern
+@item @code{select_vl@var{m}}
+Set operand 0 to the number of scalar iterations that should be handled
+by one iteration of a vector loop.  Operand 1 is the total number of
+scalar iterations that the loop needs to process and operand 2 is a
+maximum bound on the result (also known as the maximum ``vectorization
+factor'').
+
+The maximum value of operand 0 is given by:
+@smallexample
+operand0 = MIN (operand1, operand2)
+@end smallexample
+However, targets might choose a lower value than this, based on
+target-specific criteria.  Each iteration of the vector loop might
+therefore process a different number of scalar iterations, which in turn
+means that induction variables will have a variable step.  Because of
+this, it is generally not useful to define this instruction if it will
+always calculate the maximum value.
+
+This optab is only useful on targets that implement @samp{len_load_@var{m}}
+and/or @samp{len_store_@var{m}}.
 
 @cindex @code{check_raw_ptrs@var{m}} instruction pattern
 @item @samp{check_raw_ptrs@var{m}}
@@ -5063,7 +5324,7 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_load_@var{m}} instruction pattern
 @item @samp{len_load_@var{m}}
-Load (operand 2 - operand 3) elements from vector memory operand 1
+Load (operand 2 + operand 3) elements from memory operand 1
 into vector register operand 0, setting the other elements of
 operand 0 to undefined values.  Operands 0 and 1 have mode @var{m},
 which must be a vector mode.  Operand 2 has whichever integer mode the
@@ -5074,7 +5335,7 @@ constant bias: it is either a constant 0 or a constant -1.  The predicate on
 operand 3 must only accept the bias values that the target actually supports.
 GCC handles a bias of 0 more efficiently than a bias of -1.
 
-If (operand 2 - operand 3) exceeds the number of elements in mode
+If (operand 2 + operand 3) exceeds the number of elements in mode
 @var{m}, the behavior is undefined.
 
 If the target prefers the length to be measured in bytes rather than
@@ -5085,7 +5346,7 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_store_@var{m}} instruction pattern
 @item @samp{len_store_@var{m}}
-Store (operand 2 - operand 3) vector elements from vector register operand 1
+Store (operand 2 + operand 3) vector elements from vector register operand 1
 into memory operand 0, leaving the other elements of
 operand 0 unchanged.  Operands 0 and 1 have mode @var{m}, which must be
 a vector mode.  Operand 2 has whichever integer mode the target prefers.
@@ -5096,7 +5357,60 @@ constant bias: it is either a constant 0 or a constant -1.  The predicate on
 operand 3 must only accept the bias values that the target actually supports.
 GCC handles a bias of 0 more efficiently than a bias of -1.
 
-If (operand 2 - operand 3) exceeds the number of elements in mode
+If (operand 2 + operand 3) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes
+rather than elements, it should only implement this pattern for vectors
+of @code{QI} elements.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{mask_len_load@var{m}@var{n}} instruction pattern
+@item @samp{mask_len_load@var{m}@var{n}}
+Perform a masked load from the memory location pointed to by operand 1
+into register operand 0.  (operand 3 + operand 4) elements are loaded from
+memory and other elements in operand 0 are set to undefined values.
+This is a combination of len_load and maskload.
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 3
+has whichever integer mode the target prefers.  A mask is specified in
+operand 2 which must be of type @var{n}.  The mask has lower precedence than
+the length and is itself subject to length masking,
+i.e. only mask indices < (operand 3 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 4 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 4 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 + operand 4) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes
+rather than elements, it should only implement this pattern for vectors
+of @code{QI} elements.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{mask_len_store@var{m}@var{n}} instruction pattern
+@item @samp{mask_len_store@var{m}@var{n}}
+Perform a masked store from vector register operand 1 into memory operand 0.
+(operand 3 + operand 4) elements are stored to memory
+and leave the other elements of operand 0 unchanged.
+This is a combination of len_store and maskstore.
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 3 has whichever
+integer mode the target prefers.  A mask is specified in operand 2 which must be
+of type @var{n}.  The mask has lower precedence than the length and is itself subject to
+length masking, i.e. only mask indices < (operand 3 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 4 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 + operand 4) exceeds the number of elements in mode
 @var{m}, the behavior is undefined.
 
 If the target prefers the length to be measured in bytes
@@ -5192,6 +5506,22 @@ is taken only on unsigned overflow.
 @cindex @code{umulv@var{m}4} instruction pattern
 @item @samp{usubv@var{m}4}, @samp{umulv@var{m}4}
 Similar, for other unsigned arithmetic operations.
+
+@cindex @code{uaddc@var{m}5} instruction pattern
+@item @samp{uaddc@var{m}5}
+Adds unsigned operands 2, 3 and 4 (where the last operand is guaranteed to
+have only values 0 or 1) together, sets operand 0 to the result of the
+addition of the 3 operands and sets operand 1 to 1 iff there was
+overflow on the unsigned additions, and to 0 otherwise.  So, it is
+an addition with carry in (operand 4) and carry out (operand 1).
+All operands have the same mode.
+
+@cindex @code{usubc@var{m}5} instruction pattern
+@item @samp{usubc@var{m}5}
+Similarly to @samp{uaddc@var{m}5}, except subtracts unsigned operands 3
+and 4 from operand 2 instead of adding them.  So, it is
+a subtraction with carry/borrow in (operand 4) and carry/borrow out
+(operand 1).  All operands have the same mode.
 
 @cindex @code{addptr@var{m}3} instruction pattern
 @item @samp{addptr@var{m}3}
@@ -5317,6 +5647,12 @@ has mode @var{m} and operands 0 and 1 have the mode appropriate for
 one element of @var{m}.  Operand 2 has the usual mask mode for vectors
 of mode @var{m}; see @code{TARGET_VECTORIZE_GET_MASK_MODE}.
 
+@cindex @code{len_fold_extract_last_@var{m}} instruction pattern
+@item @code{len_fold_extract_last_@var{m}}
+Like @samp{fold_extract_last_@var{m}}, but takes an extra length operand as
+operand 4 and an extra bias operand as operand 5.  The last associated element
+is extracted should have the index i < len (operand 4) + bias (operand 5).
+
 @cindex @code{fold_left_plus_@var{m}} instruction pattern
 @item @code{fold_left_plus_@var{m}}
 Take scalar operand 1 and successively add each element from vector
@@ -5329,6 +5665,19 @@ no reassociation.
 @item @code{mask_fold_left_plus_@var{m}}
 Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
 (operand 3) that specifies which elements of the source vector should be added.
+
+@cindex @code{mask_len_fold_left_plus_@var{m}} instruction pattern
+@item @code{mask_len_fold_left_plus_@var{m}}
+Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
+(operand 3), len operand (operand 4) and bias operand (operand 5) that
+performs following operations strictly in-order (no reassociation):
+
+@smallexample
+operand0 = operand1;
+for (i = 0; i < LEN + BIAS; i++)
+  if (operand3[i])
+    operand0 += operand2[i];
+@end smallexample
 
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
@@ -5608,6 +5957,23 @@ signed/unsigned elements of size S@.  Subtract the high/low elements of 2 from
 1 and widen the resulting elements. Put the N/2 results of size 2*S in the
 output vector (operand 0).
 
+@cindex @code{vec_widen_sabd_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_sabd_lo_@var{m}} instruction pattern
+@cindex @code{vec_widen_sabd_odd_@var{m}} instruction pattern
+@cindex @code{vec_widen_sabd_even_@var{m}} instruction pattern
+@cindex @code{vec_widen_uabd_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_uabd_lo_@var{m}} instruction pattern
+@cindex @code{vec_widen_uabd_odd_@var{m}} instruction pattern
+@cindex @code{vec_widen_uabd_even_@var{m}} instruction pattern
+@item @samp{vec_widen_uabd_hi_@var{m}}, @samp{vec_widen_uabd_lo_@var{m}}
+@itemx @samp{vec_widen_uabd_odd_@var{m}}, @samp{vec_widen_uabd_even_@var{m}}
+@itemx @samp{vec_widen_sabd_hi_@var{m}}, @samp{vec_widen_sabd_lo_@var{m}}
+@itemx @samp{vec_widen_sabd_odd_@var{m}}, @samp{vec_widen_sabd_even_@var{m}}
+Signed/Unsigned widening absolute difference.  Operands 1 and 2 are
+vectors with N signed/unsigned elements of size S@.  Find the absolute
+difference between operands 1 and 2 and widen the resulting elements.
+Put the N/2 results of size 2*S in the output vector (operand 0).
+
 @cindex @code{vec_addsub@var{m}3} instruction pattern
 @item @samp{vec_addsub@var{m}3}
 Alternating subtract, add with even lanes doing subtract and odd
@@ -5777,6 +6143,16 @@ Other shift and rotate instructions, analogous to the
 @item @samp{vashl@var{m}3}, @samp{vashr@var{m}3}, @samp{vlshr@var{m}3}, @samp{vrotl@var{m}3}, @samp{vrotr@var{m}3}
 Vector shift and rotate instructions that take vectors as operand 2
 instead of a scalar type.
+
+@cindex @code{uabd@var{m}} instruction pattern
+@cindex @code{sabd@var{m}} instruction pattern
+@item @samp{uabd@var{m}}, @samp{sabd@var{m}}
+Signed and unsigned absolute difference instructions.  These
+instructions find the difference between operands 1 and 2
+then return the absolute value.  A C code equivalent would be:
+@smallexample
+op0 = op1 > op2 ? op1 - op2 : op2 - op1;
+@end smallexample
 
 @cindex @code{avg@var{m}3_floor} instruction pattern
 @cindex @code{uavg@var{m}3_floor} instruction pattern
@@ -6835,6 +7211,40 @@ move operand 2 or (operands 2 + operand 3) into operand 0 according to the
 comparison in operand 1.  If the comparison is false, operand 2 is moved into
 operand 0, otherwise (operand 2 + operand 3) is moved.
 
+@cindex @code{cond_neg@var{mode}} instruction pattern
+@cindex @code{cond_one_cmpl@var{mode}} instruction pattern
+@item @samp{cond_neg@var{mode}}
+@itemx @samp{cond_one_cmpl@var{mode}}
+When operand 1 is true, perform an operation on operands 2 and
+store the result in operand 0, otherwise store operand 3 in operand 0.
+The operation works elementwise if the operands are vectors.
+
+The scalar case is equivalent to:
+
+@smallexample
+op0 = op1 ? @var{op} op2 : op3;
+@end smallexample
+
+while the vector case is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? @var{op} op2[i] : op3[i];
+@end smallexample
+
+where, for example, @var{op} is @code{~} for @samp{cond_one_cmpl@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op2[i]}
+are not interpreted if @samp{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2, and 3 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@samp{cond_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}2}.
+
 @cindex @code{cond_add@var{mode}} instruction pattern
 @cindex @code{cond_sub@var{mode}} instruction pattern
 @cindex @code{cond_mul@var{mode}} instruction pattern
@@ -6919,6 +7329,114 @@ takes 3 operands rather than two.  For example, the vector form of
 
 @smallexample
 for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
+@end smallexample
+
+@cindex @code{cond_len_neg@var{mode}} instruction pattern
+@cindex @code{cond_len_one_cmpl@var{mode}} instruction pattern
+@item @samp{cond_len_neg@var{mode}}
+@itemx @samp{cond_len_one_cmpl@var{mode}}
+When operand 1 is true and element index < operand 4 + operand 5, perform an operation on operands 1 and
+store the result in operand 0, otherwise store operand 2 in operand 0.
+The operation only works for the operands are vectors.
+
+@smallexample
+for (i = 0; i < ops[4] + ops[5]; i++)
+  op0[i] = op1[i] ? @var{op} op2[i] : op3[i];
+@end smallexample
+
+where, for example, @var{op} is @code{~} for @samp{cond_len_one_cmpl@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op2[i]}
+are not interpreted if @samp{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2, and 3 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.  Operand 4 has whichever
+integer mode the target prefers.
+
+@samp{cond_len_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}2}.
+
+
+@cindex @code{cond_len_add@var{mode}} instruction pattern
+@cindex @code{cond_len_sub@var{mode}} instruction pattern
+@cindex @code{cond_len_mul@var{mode}} instruction pattern
+@cindex @code{cond_len_div@var{mode}} instruction pattern
+@cindex @code{cond_len_udiv@var{mode}} instruction pattern
+@cindex @code{cond_len_mod@var{mode}} instruction pattern
+@cindex @code{cond_len_umod@var{mode}} instruction pattern
+@cindex @code{cond_len_and@var{mode}} instruction pattern
+@cindex @code{cond_len_ior@var{mode}} instruction pattern
+@cindex @code{cond_len_xor@var{mode}} instruction pattern
+@cindex @code{cond_len_smin@var{mode}} instruction pattern
+@cindex @code{cond_len_smax@var{mode}} instruction pattern
+@cindex @code{cond_len_umin@var{mode}} instruction pattern
+@cindex @code{cond_len_umax@var{mode}} instruction pattern
+@cindex @code{cond_len_fmin@var{mode}} instruction pattern
+@cindex @code{cond_len_fmax@var{mode}} instruction pattern
+@cindex @code{cond_len_ashl@var{mode}} instruction pattern
+@cindex @code{cond_len_ashr@var{mode}} instruction pattern
+@cindex @code{cond_len_lshr@var{mode}} instruction pattern
+@item @samp{cond_len_add@var{mode}}
+@itemx @samp{cond_len_sub@var{mode}}
+@itemx @samp{cond_len_mul@var{mode}}
+@itemx @samp{cond_len_div@var{mode}}
+@itemx @samp{cond_len_udiv@var{mode}}
+@itemx @samp{cond_len_mod@var{mode}}
+@itemx @samp{cond_len_umod@var{mode}}
+@itemx @samp{cond_len_and@var{mode}}
+@itemx @samp{cond_len_ior@var{mode}}
+@itemx @samp{cond_len_xor@var{mode}}
+@itemx @samp{cond_len_smin@var{mode}}
+@itemx @samp{cond_len_smax@var{mode}}
+@itemx @samp{cond_len_umin@var{mode}}
+@itemx @samp{cond_len_umax@var{mode}}
+@itemx @samp{cond_len_fmin@var{mode}}
+@itemx @samp{cond_len_fmax@var{mode}}
+@itemx @samp{cond_len_ashl@var{mode}}
+@itemx @samp{cond_len_ashr@var{mode}}
+@itemx @samp{cond_len_lshr@var{mode}}
+When operand 1 is true and element index < operand 5 + operand 6, perform an operation on operands 2 and 3 and
+store the result in operand 0, otherwise store operand 4 in operand 0.
+The operation only works for the operands are vectors.
+
+@smallexample
+for (i = 0; i < ops[5] + ops[6]; i++)
+  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op4[i];
+@end smallexample
+
+where, for example, @var{op} is @code{+} for @samp{cond_len_add@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op3[i]}
+are not interpreted if @samp{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.  Operand 5 has whichever
+integer mode the target prefers.
+
+@samp{cond_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}3}.  As an exception, the vector forms
+of shifts correspond to patterns like @code{vashl@var{mode}3} rather
+than patterns like @code{ashl@var{mode}3}.
+
+@cindex @code{cond_len_fma@var{mode}} instruction pattern
+@cindex @code{cond_len_fms@var{mode}} instruction pattern
+@cindex @code{cond_len_fnma@var{mode}} instruction pattern
+@cindex @code{cond_len_fnms@var{mode}} instruction pattern
+@item @samp{cond_len_fma@var{mode}}
+@itemx @samp{cond_len_fms@var{mode}}
+@itemx @samp{cond_len_fnma@var{mode}}
+@itemx @samp{cond_len_fnms@var{mode}}
+Like @samp{cond_len_add@var{m}}, except that the conditional operation
+takes 3 operands rather than two.  For example, the vector form of
+@samp{cond_len_fma@var{mode}} is equivalent to:
+
+@smallexample
+for (i = 0; i < ops[6] + ops[7]; i++)
   op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
 @end smallexample
 
@@ -8215,6 +8733,13 @@ second operand.  If a machine only supports a constant as the second
 operand, only patterns that match a constant in the second operand need
 be supplied.
 
+@cindex @code{vec_merge}, canonicalization of
+@item
+For the @code{vec_merge} with constant mask(the third operand), the first
+and the second operand can be exchanged by inverting the mask. In such cases,
+a constant is always made the second operand, otherwise the least significant
+bit of the mask is always set(select the first operand first).
+
 @item
 For associative operators, a sequence of operators will always chain
 to the left; for instance, only the left operand of an integer @code{plus}
@@ -9361,6 +9886,15 @@ prevents the input insn from being split at all.)
 If the preparation falls through (invokes neither @code{DONE} nor
 @code{FAIL}), then the @code{define_peephole2} uses the replacement
 template.
+
+Insns are scanned in forward order from beginning to end for each basic
+block.  Matches are attempted in order of @code{define_peephole2}
+appearance in the @file{md} file.  After a successful replacement,
+scanning for further opportunities for @code{define_peephole2}, resumes
+with the first generated replacement insn as the first insn to be
+matched against all @code{define_peephole2}.  For the example above,
+after its successful replacement, the first insn that can be matched by
+a @code{define_peephole2} is @code{(set (match_dup 4) (match_dup 1))}.
 
 @end ifset
 @ifset INTERNALS
@@ -11477,11 +12011,10 @@ The construct:
 @end smallexample
 
 defines a pseudo integer constant @var{name} that can be instantiated as
-@var{inti} if condition @var{condi} is true.  Each @var{int} must have the
-same rtx format.  @xref{RTL Classes}.  Int iterators can appear in only
-those rtx fields that have 'i', 'n', 'w', or 'p' as the specifier.  This
-means that each @var{int} has to be a constant defined using define_constant
-or define_c_enum.
+@var{inti} if condition @var{condi} is true.  Int iterators can appear in
+only those rtx fields that have `i', `n', `w', or `p' as the specifier.
+This means that each @var{int} has to be a constant defined using
+@samp{define_constant} or @samp{define_c_enum}.
 
 As with mode and code iterators, each pattern that uses @var{name} will be
 expanded @var{n} times, once with all uses of @var{name} replaced by
@@ -11492,8 +12025,12 @@ It is possible to define attributes for ints as well as for codes and modes.
 Attributes are defined using:
 
 @smallexample
-(define_int_attr @var{name} [(@var{int1} "@var{value1}") @dots{} (@var{intn} "@var{valuen}")])
+(define_int_attr @var{attr_name} [(@var{int1} "@var{value1}") @dots{} (@var{intn} "@var{valuen}")])
 @end smallexample
+
+In additon to these user-defined attributes, it is possible to use
+@samp{<@var{name}>} to refer to the current expansion of iterator
+@var{name} (such as @var{int1}, @var{int2}, and so on).
 
 Here's an example of int iterators in action, taken from the ARM port:
 

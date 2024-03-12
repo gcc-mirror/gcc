@@ -257,7 +257,7 @@ convert (tree type, tree expr)
     return fold_convert (type, expr);
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
-  if (TREE_CODE (TREE_TYPE (expr)) == VOID_TYPE)
+  if (VOID_TYPE_P (TREE_TYPE (expr)))
     {
       error ("void value not ignored as it ought to be");
       return error_mark_node;
@@ -270,8 +270,7 @@ convert (tree type, tree expr)
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-      if (TREE_CODE (etype) == POINTER_TYPE
-	  || TREE_CODE (etype) == REFERENCE_TYPE)
+      if (POINTER_TYPE_P (etype))
 	{
 	  if (integer_zerop (e))
 	    return build_int_cst (type, 0);
@@ -300,7 +299,7 @@ convert (tree type, tree expr)
       return fold (convert_to_real (type, e));
 
     case COMPLEX_TYPE:
-      if (TREE_CODE (etype) == REAL_TYPE && TYPE_IMAGINARY_FLOAT (etype))
+      if (SCALAR_FLOAT_TYPE_P (etype) && TYPE_IMAGINARY_FLOAT (etype))
 	return fold_build2 (COMPLEX_EXPR, type,
 			    build_zero_cst (TREE_TYPE (type)),
 			    convert (TREE_TYPE (type), expr));
@@ -620,7 +619,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
   return result ? result : convert (build_ctype (totype), exp);
 }
 
-/* Return a TREE represenwation of EXPR, whose type has been converted from
+/* Return a TREE representation of EXPR, whose type has been converted from
  * ETYPE to TOTYPE, and is being used in an rvalue context.  */
 
 tree
@@ -635,19 +634,26 @@ convert_for_rvalue (tree expr, Type *etype, Type *totype)
     {
       /* If casting from bool, the result is either 0 or 1, any other value
 	 violates @safe code, so enforce that it is never invalid.  */
-      if (CONSTANT_CLASS_P (expr))
-	result = d_truthvalue_conversion (expr);
-      else
+      for (tree ref = expr; TREE_CODE (ref) == COMPONENT_REF;
+	   ref = TREE_OPERAND (ref, 0))
 	{
-	  /* Reinterpret the boolean as an integer and test the first bit.
-	     The generated code should end up being equivalent to:
+	  /* If the expression is a field that's part of a union, reinterpret
+	     the boolean as an integer and test the first bit.  The generated
+	     code should end up being equivalent to:
 		*cast(ubyte *)&expr & 1;  */
-	  machine_mode bool_mode = TYPE_MODE (TREE_TYPE (expr));
-	  tree mtype = lang_hooks.types.type_for_mode (bool_mode, 1);
-	  result = fold_build2 (BIT_AND_EXPR, mtype,
-				build_vconvert (mtype, expr),
-				build_one_cst (mtype));
+	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0))) == UNION_TYPE)
+	    {
+	      machine_mode bool_mode = TYPE_MODE (TREE_TYPE (expr));
+	      tree mtype = lang_hooks.types.type_for_mode (bool_mode, 1);
+	      result = fold_build2 (BIT_AND_EXPR, mtype,
+				    build_vconvert (mtype, expr),
+				    build_one_cst (mtype));
+	      break;
+	    }
 	}
+
+      if (result == NULL_TREE)
+	result = d_truthvalue_conversion (expr);
 
       result = convert (build_ctype (tbtype), result);
     }
@@ -656,7 +662,7 @@ convert_for_rvalue (tree expr, Type *etype, Type *totype)
       && ebtype->ty == TY::Tsarray
       && tbtype->nextOf ()->ty == ebtype->nextOf ()->ty
       && INDIRECT_REF_P (expr)
-      && CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (expr, 0)))
+      && CONVERT_EXPR_P (TREE_OPERAND (expr, 0))
       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (expr, 0), 0)) == ADDR_EXPR)
     {
       /* If expression is a vector that was casted to an array either by
@@ -845,7 +851,7 @@ convert_for_condition (tree expr, Type *type)
       break;
 
     default:
-      result = expr;
+      result = convert_for_rvalue (expr, type, type);
       break;
     }
 

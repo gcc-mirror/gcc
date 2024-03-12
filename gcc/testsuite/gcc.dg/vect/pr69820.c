@@ -28,6 +28,7 @@ main ()
       c[i] = 38364;
     }
   foo ();
+#pragma GCC novector
   for (i = 0; i < 100; ++i)
     if (b[i] != 0xed446af8U)
       __builtin_abort ();

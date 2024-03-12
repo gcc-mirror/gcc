@@ -289,6 +289,11 @@ DEF_RVV_FUNCTION (vfadd, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfsub, alu, full_preds, f_vvv_ops)
 DEF_RVV_FUNCTION (vfsub, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfrsub, alu, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfadd_frm, alu_frm, full_preds, f_vvv_ops)
+DEF_RVV_FUNCTION (vfadd_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfsub_frm, alu_frm, full_preds, f_vvv_ops)
+DEF_RVV_FUNCTION (vfsub_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfrsub_frm, alu_frm, full_preds, f_vvf_ops)
 
 // 13.3. Vector Widening Floating-Point Add/Subtract Instructions
 DEF_RVV_FUNCTION (vfwadd, widen_alu, full_preds, f_wvv_ops)
@@ -299,6 +304,14 @@ DEF_RVV_FUNCTION (vfwadd, widen_alu, full_preds, f_wwv_ops)
 DEF_RVV_FUNCTION (vfwadd, widen_alu, full_preds, f_wwf_ops)
 DEF_RVV_FUNCTION (vfwsub, widen_alu, full_preds, f_wwv_ops)
 DEF_RVV_FUNCTION (vfwsub, widen_alu, full_preds, f_wwf_ops)
+DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wvv_ops)
+DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wvf_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wvv_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wvf_ops)
+DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wwv_ops)
+DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wwf_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wwv_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wwf_ops)
 
 // 13.4. Vector Single-Width Floating-Point Multiply/Divide Instructions
 DEF_RVV_FUNCTION (vfmul, alu, full_preds, f_vvv_ops)
@@ -306,10 +319,17 @@ DEF_RVV_FUNCTION (vfmul, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfdiv, alu, full_preds, f_vvv_ops)
 DEF_RVV_FUNCTION (vfdiv, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfrdiv, alu, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfmul_frm, alu_frm, full_preds, f_vvv_ops)
+DEF_RVV_FUNCTION (vfmul_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfdiv_frm, alu_frm, full_preds, f_vvv_ops)
+DEF_RVV_FUNCTION (vfdiv_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfrdiv_frm, alu_frm, full_preds, f_vvf_ops)
 
 // 13.5. Vector Widening Floating-Point Multiply
 DEF_RVV_FUNCTION (vfwmul, alu, full_preds, f_wvv_ops)
 DEF_RVV_FUNCTION (vfwmul, alu, full_preds, f_wvf_ops)
+DEF_RVV_FUNCTION (vfwmul_frm, alu_frm, full_preds, f_wvv_ops)
+DEF_RVV_FUNCTION (vfwmul_frm, alu_frm, full_preds, f_wvf_ops)
 
 // 13.6. Vector Single-Width Floating-Point Fused Multiply-Add Instructions
 DEF_RVV_FUNCTION (vfmacc, alu, full_preds, f_vvvv_ops)
@@ -329,6 +349,23 @@ DEF_RVV_FUNCTION (vfnmadd, alu, full_preds, f_vvfv_ops)
 DEF_RVV_FUNCTION (vfmsub, alu, full_preds, f_vvvv_ops)
 DEF_RVV_FUNCTION (vfmsub, alu, full_preds, f_vvfv_ops)
 
+DEF_RVV_FUNCTION (vfmacc_frm, alu_frm, full_preds, f_vvvv_ops)
+DEF_RVV_FUNCTION (vfmacc_frm, alu_frm, full_preds, f_vvfv_ops)
+DEF_RVV_FUNCTION (vfnmacc_frm, alu_frm, full_preds, f_vvvv_ops)
+DEF_RVV_FUNCTION (vfnmacc_frm, alu_frm, full_preds, f_vvfv_ops)
+DEF_RVV_FUNCTION (vfmsac_frm, alu_frm, full_preds, f_vvvv_ops)
+DEF_RVV_FUNCTION (vfmsac_frm, alu_frm, full_preds, f_vvfv_ops)
+DEF_RVV_FUNCTION (vfnmsac_frm, alu_frm, full_preds, f_vvvv_ops)
+DEF_RVV_FUNCTION (vfnmsac_frm, alu_frm, full_preds, f_vvfv_ops)
+DEF_RVV_FUNCTION (vfmadd_frm, alu_frm, full_preds, f_vvvv_ops)
+DEF_RVV_FUNCTION (vfmadd_frm, alu_frm, full_preds, f_vvfv_ops)
+DEF_RVV_FUNCTION (vfnmadd_frm, alu_frm, full_preds, f_vvvv_ops)
+DEF_RVV_FUNCTION (vfnmadd_frm, alu_frm, full_preds, f_vvfv_ops)
+DEF_RVV_FUNCTION (vfmsub_frm, alu_frm, full_preds, f_vvvv_ops)
+DEF_RVV_FUNCTION (vfmsub_frm, alu_frm, full_preds, f_vvfv_ops)
+DEF_RVV_FUNCTION (vfnmsub_frm, alu_frm, full_preds, f_vvvv_ops)
+DEF_RVV_FUNCTION (vfnmsub_frm, alu_frm, full_preds, f_vvfv_ops)
+
 // 13.7. Vector Widening Floating-Point Fused Multiply-Add Instructions
 DEF_RVV_FUNCTION (vfwmacc, alu, full_preds, f_wwvv_ops)
 DEF_RVV_FUNCTION (vfwmacc, alu, full_preds, f_wwfv_ops)
@@ -339,14 +376,27 @@ DEF_RVV_FUNCTION (vfwmsac, alu, full_preds, f_wwfv_ops)
 DEF_RVV_FUNCTION (vfwnmsac, alu, full_preds, f_wwvv_ops)
 DEF_RVV_FUNCTION (vfwnmsac, alu, full_preds, f_wwfv_ops)
 
+DEF_RVV_FUNCTION (vfwmacc_frm, alu_frm, full_preds, f_wwvv_ops)
+DEF_RVV_FUNCTION (vfwmacc_frm, alu_frm, full_preds, f_wwfv_ops)
+DEF_RVV_FUNCTION (vfwnmacc_frm, alu_frm, full_preds, f_wwvv_ops)
+DEF_RVV_FUNCTION (vfwnmacc_frm, alu_frm, full_preds, f_wwfv_ops)
+DEF_RVV_FUNCTION (vfwmsac_frm, alu_frm, full_preds, f_wwvv_ops)
+DEF_RVV_FUNCTION (vfwmsac_frm, alu_frm, full_preds, f_wwfv_ops)
+DEF_RVV_FUNCTION (vfwnmsac_frm, alu_frm, full_preds, f_wwvv_ops)
+DEF_RVV_FUNCTION (vfwnmsac_frm, alu_frm, full_preds, f_wwfv_ops)
+
 // 13.8. Vector Floating-Point Square-Root Instruction
 DEF_RVV_FUNCTION (vfsqrt, alu, full_preds, f_v_ops)
+
+DEF_RVV_FUNCTION (vfsqrt_frm, alu_frm, full_preds, f_v_ops)
 
 // 13.9. Vector Floating-Point Reciprocal Square-Root Estimate Instruction
 DEF_RVV_FUNCTION (vfrsqrt7, alu, full_preds, f_v_ops)
 
 // 13.10. Vector Floating-Point Reciprocal Estimate Instruction
 DEF_RVV_FUNCTION (vfrec7, alu, full_preds, f_v_ops)
+
+DEF_RVV_FUNCTION (vfrec7_frm, alu_frm, full_preds, f_v_ops)
 
 // 13.11. Vector Floating-Point MIN/MAX Instructions
 DEF_RVV_FUNCTION (vfmin, alu, full_preds, f_vvv_ops)
@@ -395,6 +445,11 @@ DEF_RVV_FUNCTION (vfcvt_rtz_xu, alu, full_preds, f_to_u_f_v_ops)
 DEF_RVV_FUNCTION (vfcvt_f, alu, full_preds, i_to_f_x_v_ops)
 DEF_RVV_FUNCTION (vfcvt_f, alu, full_preds, u_to_f_xu_v_ops)
 
+DEF_RVV_FUNCTION (vfcvt_x_frm, alu_frm, full_preds, f_to_i_f_v_ops)
+DEF_RVV_FUNCTION (vfcvt_xu_frm, alu_frm, full_preds, f_to_u_f_v_ops)
+DEF_RVV_FUNCTION (vfcvt_f_frm, alu_frm, full_preds, i_to_f_x_v_ops)
+DEF_RVV_FUNCTION (vfcvt_f_frm, alu_frm, full_preds, u_to_f_xu_v_ops)
+
 // 13.18. Widening Floating-Point/Integer Type-Convert Instructions
 DEF_RVV_FUNCTION (vfwcvt_x, alu, full_preds, f_to_wi_f_v_ops)
 DEF_RVV_FUNCTION (vfwcvt_xu, alu, full_preds, f_to_wu_f_v_ops)
@@ -403,6 +458,9 @@ DEF_RVV_FUNCTION (vfwcvt_rtz_xu, alu, full_preds, f_to_wu_f_v_ops)
 DEF_RVV_FUNCTION (vfwcvt_f, alu, full_preds, i_to_wf_x_v_ops)
 DEF_RVV_FUNCTION (vfwcvt_f, alu, full_preds, u_to_wf_xu_v_ops)
 DEF_RVV_FUNCTION (vfwcvt_f, alu, full_preds, f_to_wf_f_v_ops)
+
+DEF_RVV_FUNCTION (vfwcvt_x_frm, alu_frm, full_preds, f_to_wi_f_v_ops)
+DEF_RVV_FUNCTION (vfwcvt_xu_frm, alu_frm, full_preds, f_to_wu_f_v_ops)
 
 // 13.19. Narrowing Floating-Point/Integer Type-Convert Instructions
 DEF_RVV_FUNCTION (vfncvt_x, narrow_alu, full_preds, f_to_ni_f_w_ops)
@@ -413,6 +471,12 @@ DEF_RVV_FUNCTION (vfncvt_f, narrow_alu, full_preds, i_to_nf_x_w_ops)
 DEF_RVV_FUNCTION (vfncvt_f, narrow_alu, full_preds, u_to_nf_xu_w_ops)
 DEF_RVV_FUNCTION (vfncvt_f, narrow_alu, full_preds, f_to_nf_f_w_ops)
 DEF_RVV_FUNCTION (vfncvt_rod_f, narrow_alu, full_preds, f_to_nf_f_w_ops)
+
+DEF_RVV_FUNCTION (vfncvt_x_frm, narrow_alu_frm, full_preds, f_to_ni_f_w_ops)
+DEF_RVV_FUNCTION (vfncvt_xu_frm, narrow_alu_frm, full_preds, f_to_nu_f_w_ops)
+DEF_RVV_FUNCTION (vfncvt_f_frm, narrow_alu_frm, full_preds, i_to_nf_x_w_ops)
+DEF_RVV_FUNCTION (vfncvt_f_frm, narrow_alu_frm, full_preds, u_to_nf_xu_w_ops)
+DEF_RVV_FUNCTION (vfncvt_f_frm, narrow_alu_frm, full_preds, f_to_nf_f_w_ops)
 
 /* 14. Vector Reduction Operations.  */
 
@@ -436,9 +500,15 @@ DEF_RVV_FUNCTION (vfredosum, reduc_alu, no_mu_preds, f_vs_ops)
 DEF_RVV_FUNCTION (vfredmax, reduc_alu, no_mu_preds, f_vs_ops)
 DEF_RVV_FUNCTION (vfredmin, reduc_alu, no_mu_preds, f_vs_ops)
 
+DEF_RVV_FUNCTION (vfredusum_frm, reduc_alu_frm, no_mu_preds, f_vs_ops)
+DEF_RVV_FUNCTION (vfredosum_frm, reduc_alu_frm, no_mu_preds, f_vs_ops)
+
 // 14.4. Vector Widening Floating-Point Reduction Instructions
 DEF_RVV_FUNCTION (vfwredosum, reduc_alu, no_mu_preds, wf_vs_ops)
 DEF_RVV_FUNCTION (vfwredusum, reduc_alu, no_mu_preds, wf_vs_ops)
+
+DEF_RVV_FUNCTION (vfwredosum_frm, reduc_alu_frm, no_mu_preds, wf_vs_ops)
+DEF_RVV_FUNCTION (vfwredusum_frm, reduc_alu_frm, no_mu_preds, wf_vs_ops)
 
 /* 15. Vector Mask Instructions.  */
 
@@ -508,6 +578,21 @@ DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_eew8_interpret_ops)
 DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_eew16_interpret_ops)
 DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_eew32_interpret_ops)
 DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_eew64_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_bool1_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_bool2_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_bool4_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_bool8_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_bool16_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_bool32_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_bool64_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, b_v_signed_eew8_lmul1_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, b_v_signed_eew16_lmul1_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, b_v_signed_eew32_lmul1_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, b_v_signed_eew64_lmul1_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, b_v_unsigned_eew8_lmul1_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, b_v_unsigned_eew16_lmul1_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, b_v_unsigned_eew32_lmul1_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, b_v_unsigned_eew64_lmul1_interpret_ops)
 DEF_RVV_FUNCTION (vlmul_ext, misc, none_preds, all_v_vlmul_ext_x2_ops)
 DEF_RVV_FUNCTION (vlmul_ext, misc, none_preds, all_v_vlmul_ext_x4_ops)
 DEF_RVV_FUNCTION (vlmul_ext, misc, none_preds, all_v_vlmul_ext_x8_ops)
@@ -532,5 +617,31 @@ DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul1_x8_ops)
 DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul2_x2_ops)
 DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul2_x4_ops)
 DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul4_x2_ops)
+
+// Tuple types
+DEF_RVV_FUNCTION (vset, vset, none_preds, all_v_vset_tuple_ops)
+DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_tuple_ops)
+DEF_RVV_FUNCTION (vcreate, vcreate, none_preds, all_v_vcreate_tuple_ops)
+DEF_RVV_FUNCTION (vlseg, seg_loadstore, full_preds, tuple_v_scalar_const_ptr_ops)
+DEF_RVV_FUNCTION (vsseg, seg_loadstore, none_m_preds, tuple_v_scalar_ptr_ops)
+DEF_RVV_FUNCTION (vlsseg, seg_loadstore, full_preds, tuple_v_scalar_const_ptr_ptrdiff_ops)
+DEF_RVV_FUNCTION (vssseg, seg_loadstore, none_m_preds, tuple_v_scalar_ptr_ptrdiff_ops)
+DEF_RVV_FUNCTION (vluxseg, seg_indexed_loadstore, full_preds, tuple_v_scalar_const_ptr_eew8_index_ops)
+DEF_RVV_FUNCTION (vluxseg, seg_indexed_loadstore, full_preds, tuple_v_scalar_const_ptr_eew16_index_ops)
+DEF_RVV_FUNCTION (vluxseg, seg_indexed_loadstore, full_preds, tuple_v_scalar_const_ptr_eew32_index_ops)
+DEF_RVV_FUNCTION (vluxseg, seg_indexed_loadstore, full_preds, tuple_v_scalar_const_ptr_eew64_index_ops)
+DEF_RVV_FUNCTION (vloxseg, seg_indexed_loadstore, full_preds, tuple_v_scalar_const_ptr_eew8_index_ops)
+DEF_RVV_FUNCTION (vloxseg, seg_indexed_loadstore, full_preds, tuple_v_scalar_const_ptr_eew16_index_ops)
+DEF_RVV_FUNCTION (vloxseg, seg_indexed_loadstore, full_preds, tuple_v_scalar_const_ptr_eew32_index_ops)
+DEF_RVV_FUNCTION (vloxseg, seg_indexed_loadstore, full_preds, tuple_v_scalar_const_ptr_eew64_index_ops)
+DEF_RVV_FUNCTION (vsuxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew8_index_ops)
+DEF_RVV_FUNCTION (vsuxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew16_index_ops)
+DEF_RVV_FUNCTION (vsuxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew32_index_ops)
+DEF_RVV_FUNCTION (vsuxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew64_index_ops)
+DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew8_index_ops)
+DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew16_index_ops)
+DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew32_index_ops)
+DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew64_index_ops)
+DEF_RVV_FUNCTION (vlsegff, seg_fault_load, full_preds, tuple_v_scalar_const_ptr_size_ptr_ops)
 
 #undef DEF_RVV_FUNCTION

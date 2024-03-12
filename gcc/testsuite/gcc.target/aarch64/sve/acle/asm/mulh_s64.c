@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (mulh_11_s64_m_tied1, svint64_t,
 		z0 = svmulh_m (p0, z0, 11))
 
 /*
-** mulh_11_s64_m_untied: { xfail *-*-* }
+** mulh_11_s64_m_untied:
 **	mov	(z[0-9]+\.d), #11
 **	movprfx	z0, z1
 **	smulh	z0\.d, p0/m, z0\.d, \1

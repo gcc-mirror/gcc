@@ -79,6 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else if (__s.length())
 	      {
+		(void)_M_use_local_data();
 		traits_type::copy(_M_local_buf, __s._M_local_buf,
 				  __s.length() + 1);
 		_M_length(__s.length());
@@ -87,6 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else if (length())
 	      {
+		(void)__s._M_use_local_data();
 		traits_type::copy(__s._M_local_buf, _M_local_buf,
 				  length() + 1);
 		__s._M_length(length());
@@ -97,6 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	else
 	  {
 	    const size_type __tmp_capacity = __s._M_allocated_capacity;
+	    (void)__s._M_use_local_data();
 	    traits_type::copy(__s._M_local_buf, _M_local_buf,
 			      length() + 1);
 	    _M_data(__s._M_data());
@@ -108,6 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const size_type __tmp_capacity = _M_allocated_capacity;
 	  if (__s._M_is_local())
 	    {
+	      (void)_M_use_local_data();
 	      traits_type::copy(_M_local_buf, __s._M_local_buf,
 				__s.length() + 1);
 	      __s._M_data(_M_data());
@@ -152,7 +156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // NB: Need an array of char_type[__capacity], plus a terminating
       // null char_type() element.
-      return _Alloc_traits::allocate(_M_get_allocator(), __capacity + 1);
+      return _S_allocate(_M_get_allocator(), __capacity + 1);
     }
 
   // NB: This is the special case for Input Iterators, used in
@@ -376,8 +380,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (__length < __capacity)
 	try
 	  {
-	    pointer __tmp
-	      = _Alloc_traits::allocate(_M_get_allocator(), __length + 1);
+	    pointer __tmp = _S_allocate(_M_get_allocator(), __length + 1);
 	    this->_S_copy(__tmp, _M_data(), __length + 1);
 	    _M_dispose();
 	    _M_data(__tmp);
@@ -521,8 +524,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_lib_is_constant_evaluated
 	  if (std::is_constant_evaluated())
 	    {
-	      auto __newp = _Alloc_traits::allocate(_M_get_allocator(),
-						    __new_size);
+	      auto __newp = _S_allocate(_M_get_allocator(), __new_size);
 	      _S_copy(__newp, this->_M_data(), __pos);
 	      _S_copy(__newp + __pos, __s, __len2);
 	      _S_copy(__newp + __pos + __len2, __p + __len1, __how_much);
@@ -563,43 +565,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __n;
     }
 
-#if __cplusplus > 202002L
+#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
   template<typename _CharT, typename _Traits, typename _Alloc>
   template<typename _Operation>
+    [[__gnu__::__always_inline__]]
     constexpr void
     basic_string<_CharT, _Traits, _Alloc>::
-    resize_and_overwrite(size_type __n, _Operation __op)
-    {
-      const size_type __capacity = capacity();
-      _CharT* __p;
-      if (__n > __capacity)
-	{
-	  __p = _M_create(__n, __capacity);
-	  this->_S_copy(__p, _M_data(), length()); // exclude trailing null
-#if __cpp_lib_is_constant_evaluated
-	  if (std::is_constant_evaluated())
-	    traits_type::assign(__p + length(), __n - length(), _CharT());
+    __resize_and_overwrite(const size_type __n, _Operation __op)
+    { resize_and_overwrite<_Operation&>(__n, __op); }
 #endif
-	  _M_dispose();
-	  _M_data(__p);
-	  _M_capacity(__n);
-	}
-      else
-	__p = _M_data();
+
+#if __cplusplus >= 201103L
+  template<typename _CharT, typename _Traits, typename _Alloc>
+  template<typename _Operation>
+    _GLIBCXX20_CONSTEXPR void
+    basic_string<_CharT, _Traits, _Alloc>::
+#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+    resize_and_overwrite(const size_type __n, _Operation __op)
+#else
+    __resize_and_overwrite(const size_type __n, _Operation __op)
+#endif
+    {
+      reserve(__n);
+      _CharT* const __p = _M_data();
+#if __cpp_lib_is_constant_evaluated
+      if (std::__is_constant_evaluated() && __n > size())
+	traits_type::assign(__p + size(), __n - size(), _CharT());
+#endif
       struct _Terminator {
-	constexpr ~_Terminator() { _M_this->_M_set_length(_M_r); }
+	_GLIBCXX20_CONSTEXPR ~_Terminator() { _M_this->_M_set_length(_M_r); }
 	basic_string* _M_this;
 	size_type _M_r;
       };
-      _Terminator __term{this};
-      auto __r = std::move(__op)(auto(__p), auto(__n));
+      _Terminator __term{this, 0};
+      auto __r = std::move(__op)(__p + 0, __n + 0);
+#ifdef __cpp_lib_concepts
       static_assert(ranges::__detail::__is_integer_like<decltype(__r)>);
+#else
+      static_assert(__gnu_cxx::__is_integer_nonstrict<decltype(__r)>::__value,
+		    "resize_and_overwrite operation must return an integer");
+#endif
       _GLIBCXX_DEBUG_ASSERT(__r >= 0 && __r <= __n);
       __term._M_r = size_type(__r);
       if (__term._M_r > __n)
 	__builtin_unreachable();
     }
-#endif // C++23
+#endif // C++11
 
 #endif  // _GLIBCXX_USE_CXX11_ABI
    

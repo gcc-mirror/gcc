@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """
 Filters out some of the #defines used throughout the GCC sources:
 - GTY(()) marks declarations for gengtype.c

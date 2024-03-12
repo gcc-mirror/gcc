@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE DynamicStrings ;
 
-FROM libc IMPORT strlen, strncpy, write, exit ;
+FROM libc IMPORT strlen, strncpy, write, exit, snprintf ;
 FROM StrLib IMPORT StrLen ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM Assertion IMPORT Assert ;
@@ -411,12 +411,15 @@ END writeLongcard ;
 
 
 (*
-   writeAddress -
+   writeAddress - writes out the address of a with a C style hex prefix.
 *)
 
 PROCEDURE writeAddress (a: ADDRESS) ;
+VAR
+   buffer: ARRAY [0..30] OF CHAR ;
 BEGIN
-   writeLongcard (VAL (LONGCARD, a))
+   snprintf (ADR (buffer), SIZE (buffer), "0x%", a) ;
+   writeString (buffer) ;
 END writeAddress ;
 
 
@@ -1129,6 +1132,31 @@ BEGIN
    ConcatContents (t^.contents, b, 1, 0) ;
    RETURN a
 END ConCatChar ;
+
+
+(*
+   ReplaceChar - returns string s after it has changed all occurances of from to to.
+*)
+
+PROCEDURE ReplaceChar (s: String; from, to: CHAR) : String ;
+VAR
+   t: String ;
+   i: CARDINAL ;
+BEGIN
+   t := s ;
+   WHILE t # NIL DO
+      i := 0 ;
+      WHILE i < t^.contents.len DO
+         IF t^.contents.buf[i] = from
+         THEN
+            t^.contents.buf[i] := to
+         END ;
+         INC (i)
+      END ;
+      t := t^.contents.next
+   END ;
+   RETURN s
+END ReplaceChar ;
 
 
 (*

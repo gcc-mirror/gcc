@@ -102,7 +102,7 @@ TEST_UNIFORM_Z (lsl_wide_32_u32_m_tied1, svuint32_t,
 		z0 = svlsl_wide_m (p0, z0, 32))
 
 /*
-** lsl_wide_32_u32_m_untied: { xfail *-*-* }
+** lsl_wide_32_u32_m_untied:
 **	mov	(z[0-9]+\.d), #32
 **	movprfx	z0, z1
 **	lsl	z0\.s, p0/m, z0\.s, \1
@@ -155,7 +155,7 @@ TEST_UNIFORM_ZX (lsl_wide_x0_u32_z_tied1, svuint32_t, uint64_t,
 		 z0 = svlsl_wide_z (p0, z0, x0))
 
 /*
-** lsl_wide_x0_u32_z_untied: { xfail *-*-* }
+** lsl_wide_x0_u32_z_untied:
 **	mov	(z[0-9]+\.d), x0
 **	movprfx	z0\.s, p0/z, z1\.s
 **	lsl	z0\.s, p0/m, z0\.s, \1
@@ -217,7 +217,7 @@ TEST_UNIFORM_Z (lsl_wide_32_u32_z_tied1, svuint32_t,
 		z0 = svlsl_wide_z (p0, z0, 32))
 
 /*
-** lsl_wide_32_u32_z_untied: { xfail *-*-* }
+** lsl_wide_32_u32_z_untied:
 **	mov	(z[0-9]+\.d), #32
 **	movprfx	z0\.s, p0/z, z1\.s
 **	lsl	z0\.s, p0/m, z0\.s, \1

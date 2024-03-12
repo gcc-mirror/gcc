@@ -58,6 +58,8 @@ TEST_OUTPUT:
 ---
 fail_compilation/enum_init.d(306): Error: variable `enum_init.fooOB.ob` - no definition of struct `S`
 fail_compilation/enum_init.d(302):        required by type `OpaqueBase`
+fail_compilation/enum_init.d(306):        see https://dlang.org/spec/struct.html#opaque_struct_unions
+fail_compilation/enum_init.d(306):        perhaps declare a variable with pointer type `OpaqueBase*` instead
 ---
 */
 #line 300

@@ -66,7 +66,7 @@ enum eh_region_type
 /* A landing pad for a given exception region.  Any transfer of control
    from the EH runtime to the function happens at a landing pad.  */
 
-struct GTY(()) eh_landing_pad_d
+struct GTY((chain_next("%h.next_lp"))) eh_landing_pad_d
 {
   /* The linked list of all landing pads associated with the region.  */
   struct eh_landing_pad_d *next_lp;
@@ -155,7 +155,7 @@ struct GTY(()) eh_region_d
     struct eh_region_u_must_not_throw {
       /* A function decl to be invoked if this region is actually reachable
 	 from within the function, rather than implementable from the runtime.
-	 The normal way for this to happen is for there to be a CLEANUP region
+	 The normal way for this to happen is for there to be a TRY region
 	 contained within this MUST_NOT_THROW region.  Note that if the
 	 runtime handles the MUST_NOT_THROW region, we have no control over
 	 what termination function is called; it will be decided by the

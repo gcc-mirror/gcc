@@ -504,6 +504,7 @@ set_internal_unit (st_parameter_dt *dtp, gfc_unit *iunit, int kind)
   iunit->current_record=0;
   iunit->read_bad = 0;
   iunit->endfile = NO_ENDFILE;
+  iunit->last_char = 0;
 
   /* Set flags for the internal unit.  */
 

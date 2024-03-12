@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++20 -Wnonnull -O0 -Wno-unused-result" }
+// { dg-options "-Wnonnull -O0 -Wno-unused-result" }
 // { dg-do compile { target c++20 } }
 
 #include <testsuite_string.h>

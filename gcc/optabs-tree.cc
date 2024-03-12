@@ -63,7 +63,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	 expansion has code to adjust TRUNC_MOD_EXPR into the desired other
 	 modes, but for vector modes it does not.  The adjustment code
 	 should be instead emitted in tree-vect-patterns.cc.  */
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	return unknown_optab;
       /* FALLTHRU */
     case TRUNC_MOD_EXPR:
@@ -77,7 +77,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	 into the desired other modes, but for vector modes it does not.
 	 The adjustment code should be instead emitted in
 	 tree-vect-patterns.cc.  */
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	return unknown_optab;
       /* FALLTHRU */
     case RDIV_EXPR:
@@ -88,7 +88,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ? udiv_optab : sdiv_optab;
 
     case LSHIFT_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	{
 	  if (subtype == optab_vector)
 	    return TYPE_SATURATING (type) ? unknown_optab : vashl_optab;
@@ -100,7 +100,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return ashl_optab;
 
     case RSHIFT_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	{
 	  if (subtype == optab_vector)
 	    return TYPE_UNSIGNED (type) ? vlshr_optab : vashr_optab;
@@ -110,7 +110,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ? lshr_optab : ashr_optab;
 
     case LROTATE_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	{
 	  if (subtype == optab_vector)
 	    return vrotl_optab;
@@ -120,7 +120,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return rotl_optab;
 
     case RROTATE_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	{
 	  if (subtype == optab_vector)
 	    return vrotr_optab;
@@ -189,22 +189,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case VEC_WIDEN_LSHIFT_LO_EXPR:
       return (TYPE_UNSIGNED (type)
 	      ? vec_widen_ushiftl_lo_optab : vec_widen_sshiftl_lo_optab);
-
-    case VEC_WIDEN_PLUS_LO_EXPR:
-      return (TYPE_UNSIGNED (type)
-	      ? vec_widen_uaddl_lo_optab : vec_widen_saddl_lo_optab);
-
-    case VEC_WIDEN_PLUS_HI_EXPR:
-      return (TYPE_UNSIGNED (type)
-	      ? vec_widen_uaddl_hi_optab : vec_widen_saddl_hi_optab);
-
-    case VEC_WIDEN_MINUS_LO_EXPR:
-      return (TYPE_UNSIGNED (type)
-	      ? vec_widen_usubl_lo_optab : vec_widen_ssubl_lo_optab);
-
-    case VEC_WIDEN_MINUS_HI_EXPR:
-      return (TYPE_UNSIGNED (type)
-	      ? vec_widen_usubl_hi_optab : vec_widen_ssubl_hi_optab);
 
     case VEC_UNPACK_HI_EXPR:
       return (TYPE_UNSIGNED (type)
@@ -312,8 +296,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
    'hi'/'lo' pair using codes such as VEC_WIDEN_MINUS_HI/LO.
 
    Supported widening operations:
-    WIDEN_MINUS_EXPR
-    WIDEN_PLUS_EXPR
     WIDEN_MULT_EXPR
     WIDEN_LSHIFT_EXPR
 
@@ -344,12 +326,6 @@ supportable_half_widening_operation (enum tree_code code, tree vectype_out,
     {
     case WIDEN_LSHIFT_EXPR:
       *code1 = LSHIFT_EXPR;
-      break;
-    case WIDEN_MINUS_EXPR:
-      *code1 = MINUS_EXPR;
-      break;
-    case WIDEN_PLUS_EXPR:
-      *code1 = PLUS_EXPR;
       break;
     case WIDEN_MULT_EXPR:
       *code1 = MULT_EXPR;
@@ -567,3 +543,132 @@ target_supports_op_p (tree type, enum tree_code code,
 	  && optab_handler (ot, TYPE_MODE (type)) != CODE_FOR_nothing);
 }
 
+/* Return true if the target has support for masked load/store.
+   We can support masked load/store by either mask{load,store}
+   or mask_len_{load,store}.
+   This helper function checks whether target supports masked
+   load/store and return corresponding IFN in the last argument
+   (IFN_MASK_{LOAD,STORE} or IFN_MASK_LEN_{LOAD,STORE}).  */
+
+static bool
+target_supports_mask_load_store_p (machine_mode mode, machine_mode mask_mode,
+				   bool is_load, internal_fn *ifn)
+{
+  optab op = is_load ? maskload_optab : maskstore_optab;
+  optab len_op = is_load ? mask_len_load_optab : mask_len_store_optab;
+  if (convert_optab_handler (op, mode, mask_mode) != CODE_FOR_nothing)
+    {
+      if (ifn)
+	*ifn = is_load ? IFN_MASK_LOAD : IFN_MASK_STORE;
+      return true;
+    }
+  else if (convert_optab_handler (len_op, mode, mask_mode) != CODE_FOR_nothing)
+    {
+      if (ifn)
+	*ifn = is_load ? IFN_MASK_LEN_LOAD : IFN_MASK_LEN_STORE;
+      return true;
+    }
+  return false;
+}
+
+/* Return true if target supports vector masked load/store for mode.
+   An additional output in the last argument which is the IFN pointer.
+   We set IFN as MASK_{LOAD,STORE} or MASK_LEN_{LOAD,STORE} according
+   which optab is supported in the target.  */
+
+bool
+can_vec_mask_load_store_p (machine_mode mode,
+			   machine_mode mask_mode,
+			   bool is_load,
+			   internal_fn *ifn)
+{
+  machine_mode vmode;
+
+  /* If mode is vector mode, check it directly.  */
+  if (VECTOR_MODE_P (mode))
+    return target_supports_mask_load_store_p (mode, mask_mode, is_load, ifn);
+
+  /* Otherwise, return true if there is some vector mode with
+     the mask load/store supported.  */
+
+  /* See if there is any chance the mask load or store might be
+     vectorized.  If not, punt.  */
+  scalar_mode smode;
+  if (!is_a <scalar_mode> (mode, &smode))
+    return false;
+
+  vmode = targetm.vectorize.preferred_simd_mode (smode);
+  if (VECTOR_MODE_P (vmode)
+      && targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
+      && target_supports_mask_load_store_p (vmode, mask_mode, is_load, ifn))
+    return true;
+
+  auto_vector_modes vector_modes;
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes, true);
+  for (machine_mode base_mode : vector_modes)
+    if (related_vector_mode (base_mode, smode).exists (&vmode)
+	&& targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
+	&& target_supports_mask_load_store_p (vmode, mask_mode, is_load, ifn))
+      return true;
+  return false;
+}
+
+/* Return true if the target has support for len load/store.
+   We can support len load/store by either len_{load,store}
+   or mask_len_{load,store}.
+   This helper function checks whether target supports len
+   load/store and return corresponding IFN in the last argument
+   (IFN_LEN_{LOAD,STORE} or IFN_MASK_LEN_{LOAD,STORE}).  */
+
+static bool
+target_supports_len_load_store_p (machine_mode mode, bool is_load,
+				  internal_fn *ifn)
+{
+  optab op = is_load ? len_load_optab : len_store_optab;
+  optab masked_op = is_load ? mask_len_load_optab : mask_len_store_optab;
+
+  if (direct_optab_handler (op, mode))
+    {
+      if (ifn)
+	*ifn = is_load ? IFN_LEN_LOAD : IFN_LEN_STORE;
+      return true;
+    }
+  machine_mode mask_mode;
+  if (targetm.vectorize.get_mask_mode (mode).exists (&mask_mode)
+      && convert_optab_handler (masked_op, mode, mask_mode) != CODE_FOR_nothing)
+    {
+      if (ifn)
+	*ifn = is_load ? IFN_MASK_LEN_LOAD : IFN_MASK_LEN_STORE;
+      return true;
+    }
+  return false;
+}
+
+/* If target supports vector load/store with length for vector mode MODE,
+   return the corresponding vector mode, otherwise return opt_machine_mode ().
+   There are two flavors for vector load/store with length, one is to measure
+   length with bytes, the other is to measure length with lanes.
+   As len_{load,store} optabs point out, for the flavor with bytes, we use
+   VnQI to wrap the other supportable same size vector modes.
+   An additional output in the last argument which is the IFN pointer.
+   We set IFN as LEN_{LOAD,STORE} or MASK_LEN_{LOAD,STORE} according
+   which optab is supported in the target.  */
+
+opt_machine_mode
+get_len_load_store_mode (machine_mode mode, bool is_load, internal_fn *ifn)
+{
+  gcc_assert (VECTOR_MODE_P (mode));
+
+  /* Check if length in lanes supported for this mode directly.  */
+  if (target_supports_len_load_store_p (mode, is_load, ifn))
+    return mode;
+
+  /* Check if length in bytes supported for same vector size VnQI.  */
+  machine_mode vmode;
+  poly_uint64 nunits = GET_MODE_SIZE (mode);
+  if (related_vector_mode (mode, QImode, nunits).exists (&vmode)
+      && target_supports_len_load_store_p (vmode, is_load, ifn))
+    return vmode;
+
+  return opt_machine_mode ();
+}

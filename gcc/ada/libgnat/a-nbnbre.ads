@@ -17,10 +17,10 @@ with Ada.Numerics.Big_Numbers.Big_Integers;
 
 with Ada.Strings.Text_Buffers; use Ada.Strings.Text_Buffers;
 
-package Ada.Numerics.Big_Numbers.Big_Reals
-  with Preelaborate
+package Ada.Numerics.Big_Numbers.Big_Reals with
+  Preelaborate,
+  Always_Terminates
 is
-   pragma Annotate (GNATprove, Always_Return, Big_Reals);
 
    type Big_Real is private with
      Real_Literal => From_Universal_Image,

@@ -1659,3 +1659,36 @@ auto f()::{lambda<typename $T0>(X<$T0>*, X<int>*)#1}::operator()<char>(X<char>*,
 
 _ZZN1XIiE1FEvENKUliE_clEi
 X<int>::F()::{lambda(int)#1}::operator()(int) const
+
+_Z1fIiEv1AIXnxtlT_EEE
+void f<int>(A<noexcept(int{})>)
+
+_ZNO1Ycv1XEv
+Y::operator X() &&
+
+_ZNO1Ycv1XIT_EIvEEv
+Y::operator X<void><void>() &&
+
+_ZNO1Y3bobEv
+Y::bob() &&
+
+_ZNR1Y3bobEv
+Y::bob() &
+
+_ZNKR1YcvRK1XIT_EIvEEv
+Y::operator X<void> const&<void>() const &
+
+_ZZN1XIiEcviEvE1y
+X<int>::operator int()::y
+
+_ZZN1XIiEcv1ZIiEEvE1y
+X<int>::operator Z<int>()::y
+
+_ZZN1Xcv1ZIT_EIiEEvE1y
+X::operator Z<int><int>()::y
+
+_ZZN1XIfEcv1ZIT_EIiEEvE1y
+X<float>::operator Z<int><int>()::y
+
+_ZN1SILi1EEF3barIiEEiR4Base
+int S<1>::bar[friend]<int>(Base&)

@@ -106,18 +106,18 @@ FuncDeclaration hasIdentityOpAssign(AggregateDeclaration ad, Scope* sc)
         scope er = new NullExp(ad.loc, ad.type);    // dummy rvalue
         scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
         el.type = ad.type;
-        auto a = Expressions(1);
+        auto a = new Expressions(1);
         const errors = global.startGagging(); // Do not report errors, even if the template opAssign fbody makes it.
         sc = sc.push();
         sc.tinst = null;
         sc.minst = null;
 
-        a[0] = er;
-        auto f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(&a), FuncResolveFlag.quiet);
+        (*a)[0] = er;
+        auto f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(a), FuncResolveFlag.quiet);
         if (!f)
         {
-            a[0] = el;
-            f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(&a), FuncResolveFlag.quiet);
+            (*a)[0] = el;
+            f = resolveFuncCall(ad.loc, sc, assign, null, ad.type, ArgumentList(a), FuncResolveFlag.quiet);
         }
 
         sc = sc.pop();
@@ -297,7 +297,7 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
     }
 
     auto fparams = new Parameters();
-    fparams.push(new Parameter(STC.nodtor, sd.type, Id.p, null, null));
+    fparams.push(new Parameter(loc, STC.nodtor, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(fparams), sd.handleType(), LINK.d, stc | STC.ref_);
     auto fop = new FuncDeclaration(declLoc, Loc.initial, Id.assign, stc, tf);
     fop.storage_class |= STC.inference;
@@ -465,7 +465,7 @@ private FuncDeclaration hasIdentityOpEquals(AggregateDeclaration ad, Scope* sc)
          */
         scope er = new NullExp(ad.loc, null); // dummy rvalue
         scope el = new IdentifierExp(ad.loc, Id.p); // dummy lvalue
-        auto a = Expressions(1);
+        auto a = new Expressions(1);
 
         bool hasIt(Type tthis)
         {
@@ -476,9 +476,9 @@ private FuncDeclaration hasIdentityOpEquals(AggregateDeclaration ad, Scope* sc)
 
             FuncDeclaration rfc(Expression e)
             {
-                a[0] = e;
-                a[0].type = tthis;
-                return resolveFuncCall(ad.loc, sc, eq, null, tthis, ArgumentList(&a), FuncResolveFlag.quiet);
+                (*a)[0] = e;
+                (*a)[0].type = tthis;
+                return resolveFuncCall(ad.loc, sc, eq, null, tthis, ArgumentList(a), FuncResolveFlag.quiet);
             }
 
             f = rfc(er);
@@ -546,10 +546,11 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
             TypeFunction tfeqptr;
             {
                 Scope scx;
+                scx.eSink = sc.eSink;
                 /* const bool opEquals(ref const S s);
                  */
                 auto parameters = new Parameters();
-                parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, null, null, null));
+                parameters.push(new Parameter(Loc.initial, STC.ref_ | STC.const_, sd.type, null, null, null));
                 tfeqptr = new TypeFunction(ParameterList(parameters), Type.tbool, LINK.d);
                 tfeqptr.mod = MODFlags.const_;
                 tfeqptr = cast(TypeFunction)tfeqptr.typeSemantic(Loc.initial, &scx);
@@ -577,7 +578,7 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
     Loc declLoc; // loc is unnecessary so __xopEquals is never called directly
     Loc loc; // loc is unnecessary so errors are gagged
     auto parameters = new Parameters();
-    parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, Id.p, null, null));
+    parameters.push(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(parameters), Type.tbool, LINK.d, STC.const_);
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopEquals;
@@ -620,10 +621,11 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
             TypeFunction tfcmpptr;
             {
                 Scope scx;
+                scx.eSink = sc.eSink;
                 /* const int opCmp(ref const S s);
                  */
                 auto parameters = new Parameters();
-                parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, null, null, null));
+                parameters.push(new Parameter(Loc.initial, STC.ref_ | STC.const_, sd.type, null, null, null));
                 tfcmpptr = new TypeFunction(ParameterList(parameters), Type.tint32, LINK.d);
                 tfcmpptr.mod = MODFlags.const_;
                 tfcmpptr = cast(TypeFunction)tfcmpptr.typeSemantic(Loc.initial, &scx);
@@ -701,7 +703,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
     Loc declLoc; // loc is unnecessary so __xopCmp is never called directly
     Loc loc; // loc is unnecessary so errors are gagged
     auto parameters = new Parameters();
-    parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, Id.p, null, null));
+    parameters.push(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(parameters), Type.tint32, LINK.d, STC.const_);
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopCmp;
@@ -820,7 +822,7 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
     Loc declLoc; // loc is unnecessary so __xtoHash is never called directly
     Loc loc; // internal code should have no loc to prevent coverage
     auto parameters = new Parameters();
-    parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, Id.p, null, null));
+    parameters.push(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(parameters), Type.thash_t, LINK.d, STC.nothrow_ | STC.trusted);
     Identifier id = Id.xtoHash;
     auto fop = new FuncDeclaration(declLoc, Loc.initial, id, STC.static_, tf);
@@ -840,7 +842,7 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
         "    else " ~
         "        h = h * 33 + typeid(T).getHash(cast(const void*)&p.tupleof[i]);" ~
         "return h;";
-    fop.fbody = new CompileStatement(loc, new StringExp(loc, code));
+    fop.fbody = new MixinStatement(loc, new StringExp(loc, code));
     Scope* sc2 = sc.push();
     sc2.stc = 0;
     sc2.linkage = LINK.d;
@@ -1074,7 +1076,7 @@ private DtorDeclaration buildWindowsCppDtor(AggregateDeclaration ad, DtorDeclara
     //   // TODO: if (del) delete (char*)this;
     //   return (void*) this;
     // }
-    Parameter delparam = new Parameter(STC.undefined_, Type.tuns32, Identifier.idPool("del"), new IntegerExp(dtor.loc, 0, Type.tuns32), null);
+    Parameter delparam = new Parameter(Loc.initial, STC.undefined_, Type.tuns32, Identifier.idPool("del"), new IntegerExp(dtor.loc, 0, Type.tuns32), null);
     Parameters* params = new Parameters;
     params.push(delparam);
     const stc = dtor.storage_class & ~STC.scope_; // because we add the `return this;` later
@@ -1126,7 +1128,7 @@ private DtorDeclaration buildExternDDtor(AggregateDeclaration ad, Scope* sc)
         return null;
 
     // Generate shim only when ABI incompatible on target platform
-    if (ad.classKind != ClassKind.cpp || !target.cpp.wrapDtorInExternD)
+    if (dtor._linkage != LINK.cpp || !target.cpp.wrapDtorInExternD)
         return dtor;
 
     // generate member function that adjusts calling convention
@@ -1199,7 +1201,7 @@ FuncDeclaration buildInv(AggregateDeclaration ad, Scope* sc)
                 version (all)
                 {
                     // currently rejects
-                    ad.error(inv.loc, "mixing invariants with different `shared`/`synchronized` qualifiers is not supported");
+                    .error(inv.loc, "%s `%s` mixing invariants with different `shared`/`synchronized` qualifiers is not supported", ad.kind(), ad.toPrettyChars());
                     e = null;
                     break;
                 }
@@ -1261,8 +1263,9 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
 
         // if this field's postblit is not `nothrow`, add a `scope(failure)`
         // block to destroy any prior successfully postblitted fields should
-        // this field's postblit fail
-        if (fieldsToDestroy.length > 0 && !(cast(TypeFunction)sdv.postblit.type).isnothrow)
+        // this field's postblit fail.
+        // Don't generate it for betterC code since it cannot throw exceptions.
+        if (fieldsToDestroy.length > 0 && !(cast(TypeFunction)sdv.postblit.type).isnothrow && global.params.useExceptions)
         {
              // create a list of destructors that need to be called
             Expression[] dtorCalls;
@@ -1513,7 +1516,7 @@ private CtorDeclaration generateCopyCtorDeclaration(StructDeclaration sd, const 
 {
     auto fparams = new Parameters();
     auto structType = sd.type;
-    fparams.push(new Parameter(paramStc | STC.ref_ | STC.return_ | STC.scope_, structType, Id.p, null, null));
+    fparams.push(new Parameter(Loc.initial, paramStc | STC.ref_ | STC.return_ | STC.scope_, structType, Id.p, null, null));
     ParameterList pList = ParameterList(fparams);
     auto tf = new TypeFunction(pList, structType, LINK.d, STC.ref_);
     auto ccd = new CtorDeclaration(sd.loc, Loc.initial, STC.ref_, tf, true);

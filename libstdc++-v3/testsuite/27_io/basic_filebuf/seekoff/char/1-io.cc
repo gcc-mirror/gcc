@@ -21,13 +21,11 @@
 
 // { dg-require-fileio "" }
 // { dg-require-binary-io "" }
+// { dg-additional-files "seekoff-1io.tst" }
 
 #include <fstream>
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
-
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %*.txt
 
 const char name_01[] = "seekoff-1io.tst";
 

@@ -322,7 +322,8 @@ build_frontend_type (tree type)
 		  return NULL;
 		}
 
-	      args->push (Parameter::create (sc, targ, NULL, NULL, NULL));
+	      args->push (Parameter::create (Loc (), sc, targ,
+					     NULL, NULL, NULL));
 	    }
 
 	  /* GCC generic and placeholder built-ins are marked as variadic, yet
@@ -500,9 +501,12 @@ d_init_versions (void)
     VersionCondition::addPredefinedGlobalIdent ("D_BetterC");
   else
     {
-      VersionCondition::addPredefinedGlobalIdent ("D_ModuleInfo");
-      VersionCondition::addPredefinedGlobalIdent ("D_Exceptions");
-      VersionCondition::addPredefinedGlobalIdent ("D_TypeInfo");
+      if (global.params.useModuleInfo)
+       VersionCondition::addPredefinedGlobalIdent ("D_ModuleInfo");
+      if (global.params.useExceptions)
+       VersionCondition::addPredefinedGlobalIdent ("D_Exceptions");
+      if (global.params.useTypeInfo)
+       VersionCondition::addPredefinedGlobalIdent ("D_TypeInfo");
     }
 
   if (optimize)

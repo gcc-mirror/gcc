@@ -23,4 +23,4 @@ softfp_int_modes :=
 softfp_extensions :=
 softfp_truncations :=
 softfp_exclude_libgcc2 := n
-softfp_extras := unordsf2 unorddf2
+softfp_extras += unordsf2 unorddf2

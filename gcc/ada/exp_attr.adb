@@ -77,7 +77,54 @@ with Uname;          use Uname;
 with Urealp;         use Urealp;
 with Validsw;        use Validsw;
 
+with GNAT.HTable;
+
 package body Exp_Attr is
+
+   package Cached_Streaming_Ops is
+
+      Map_Size : constant := 63;
+      subtype Header_Num is Integer range 0 .. Map_Size - 1;
+
+      function Streaming_Op_Hash (Id : Entity_Id) return Header_Num is
+        (Header_Num (Id mod Map_Size));
+
+      --  Cache used to avoid building duplicate subprograms for a single
+      --  type/streaming-attribute pair.
+
+      package Read_Map is new GNAT.HTable.Simple_HTable
+        (Header_Num => Header_Num,
+         Key        => Entity_Id,
+         Element    => Entity_Id,
+         No_Element => Empty,
+         Hash       => Streaming_Op_Hash,
+         Equal      => "=");
+
+      package Write_Map is new GNAT.HTable.Simple_HTable
+        (Header_Num => Header_Num,
+         Key        => Entity_Id,
+         Element    => Entity_Id,
+         No_Element => Empty,
+         Hash       => Streaming_Op_Hash,
+         Equal      => "=");
+
+      package Input_Map is new GNAT.HTable.Simple_HTable
+        (Header_Num => Header_Num,
+         Key        => Entity_Id,
+         Element    => Entity_Id,
+         No_Element => Empty,
+         Hash       => Streaming_Op_Hash,
+         Equal      => "=");
+
+      package Output_Map is new GNAT.HTable.Simple_HTable
+        (Header_Num => Header_Num,
+         Key        => Entity_Id,
+         Element    => Entity_Id,
+         No_Element => Empty,
+         Hash       => Streaming_Op_Hash,
+         Equal      => "=");
+
+   end Cached_Streaming_Ops;
 
    -----------------------
    -- Local Subprograms --
@@ -210,13 +257,15 @@ package body Exp_Attr is
    --  is not a floating-point type.
 
    function Find_Stream_Subprogram
-     (Typ : Entity_Id;
-      Nam : TSS_Name_Type) return Entity_Id;
+     (Typ      : Entity_Id;
+      Nam      : TSS_Name_Type;
+      Attr_Ref : Node_Id) return Entity_Id;
    --  Returns the stream-oriented subprogram attribute for Typ. For tagged
    --  types, the corresponding primitive operation is looked up, else the
    --  appropriate TSS from the type itself, or from its closest ancestor
    --  defining it, is returned. In both cases, inheritance of representation
-   --  aspects is thus taken into account.
+   --  aspects is thus taken into account. Attr_Ref is used to identify the
+   --  point from which the function result will be referenced.
 
    function Full_Base (T : Entity_Id) return Entity_Id;
    --  The stream functions need to examine the underlying representation of
@@ -1354,14 +1403,14 @@ package body Exp_Attr is
 
       --  Local variables
 
-      Pref      : constant Node_Id   := Prefix (N);
-      Base_Typ  : constant Entity_Id := Base_Type (Etype (Pref));
-      Exprs     : constant List_Id   := Expressions (N);
+      Pref      : constant Node_Id    := Prefix (N);
+      Base_Typ  : constant Entity_Id  := Base_Type (Etype (Pref));
+      Exprs     : constant List_Id    := Expressions (N);
+      Loc       : constant Source_Ptr := Sloc (N);
       Aux_Decl  : Node_Id;
       Blk       : Node_Id := Empty;
       Decls     : List_Id;
       Installed : Boolean;
-      Loc       : Source_Ptr;
       Loop_Id   : Entity_Id;
       Loop_Stmt : Node_Id;
       Result    : Node_Id := Empty;
@@ -1401,8 +1450,6 @@ package body Exp_Attr is
 
          Loop_Id := Entity (Identifier (Loop_Stmt));
       end if;
-
-      Loc := Sloc (Loop_Stmt);
 
       --  Step 2: Transform the loop
 
@@ -4117,18 +4164,19 @@ package body Exp_Attr is
       -----------
 
       when Attribute_Input => Input : declare
-         P_Type : constant Entity_Id := Entity (Pref);
-         B_Type : constant Entity_Id := Base_Type (P_Type);
-         U_Type : constant Entity_Id := Underlying_Type (P_Type);
-         Strm   : constant Node_Id   := First (Exprs);
-         Fname  : Entity_Id;
-         Decl   : Node_Id;
-         Call   : Node_Id;
-         Prag   : Node_Id;
-         Arg2   : Node_Id;
-         Rfunc  : Node_Id;
+         P_Type  : constant Entity_Id := Entity (Pref);
+         B_Type  : constant Entity_Id := Base_Type (P_Type);
+         U_Type  : constant Entity_Id := Underlying_Type (P_Type);
+         Strm    : constant Node_Id   := First (Exprs);
+         Has_TSS : Boolean := False;
+         Fname   : Entity_Id;
+         Decl    : Node_Id;
+         Call    : Node_Id;
+         Prag    : Node_Id;
+         Arg2    : Node_Id;
+         Rfunc   : Node_Id;
 
-         Cntrl  : Node_Id := Empty;
+         Cntrl   : Node_Id := Empty;
          --  Value for controlling argument in call. Always Empty except in
          --  the dispatching (class-wide type) case, where it is a reference
          --  to the dummy object initialized to the right internal tag.
@@ -4194,10 +4242,10 @@ package body Exp_Attr is
 
          --  If there is a TSS for Input, just call it
 
-         Fname := Find_Stream_Subprogram (P_Type, TSS_Stream_Input);
+         Fname := Find_Stream_Subprogram (P_Type, TSS_Stream_Input, N);
 
          if Present (Fname) then
-            null;
+            Has_TSS := True;
 
          else
             --  If there is a Stream_Convert pragma, use it, we rewrite
@@ -4254,7 +4302,7 @@ package body Exp_Attr is
 
                if Present (Find_Inherited_TSS (P_Type, TSS_Stream_Read)) then
                   Build_Record_Or_Elementary_Input_Function
-                    (Loc, P_Type, Decl, Fname);
+                    (P_Type, Decl, Fname);
                   Insert_Action (N, Decl);
 
                --  For normal cases, we call the I_xxx routine directly
@@ -4268,7 +4316,7 @@ package body Exp_Attr is
             --  Array type case
 
             elsif Is_Array_Type (U_Type) then
-               Build_Array_Input_Function (Loc, U_Type, Decl, Fname);
+               Build_Array_Input_Function (U_Type, Decl, Fname);
                Compile_Stream_Body_In_Scope (N, Decl, U_Type);
 
             --  Dispatching case with class-wide type
@@ -4397,7 +4445,7 @@ package body Exp_Attr is
                --  constrained discriminants (see Ada 2012 AI05-0192).
 
                Build_Record_Or_Elementary_Input_Function
-                 (Loc, U_Type, Decl, Fname);
+                 (U_Type, Decl, Fname);
                Insert_Action (N, Decl);
 
                if Nkind (Parent (N)) = N_Object_Declaration
@@ -4415,7 +4463,7 @@ package body Exp_Attr is
                      while Present (Comp) loop
                         Func :=
                           Find_Stream_Subprogram
-                            (Etype (Comp), TSS_Stream_Read);
+                            (Etype (Comp), TSS_Stream_Read, N);
 
                         if Present (Func) then
                            Freeze_Stream_Subprogram (Func);
@@ -4444,6 +4492,10 @@ package body Exp_Attr is
 
          if Nkind (Parent (N)) = N_Object_Declaration then
             Freeze_Stream_Subprogram (Fname);
+         end if;
+
+         if not Has_TSS then
+            Cached_Streaming_Ops.Input_Map.Set (P_Type, Fname);
          end if;
       end Input;
 
@@ -4999,7 +5051,7 @@ package body Exp_Attr is
          if Present (Subp) then
             Ins_Nod := Subp;
 
-         --  General case where the postcondtion checks occur after the call
+         --  General case where the postcondition checks occur after the call
          --  to _Wrapped_Statements.
 
          else
@@ -5281,13 +5333,14 @@ package body Exp_Attr is
       ------------
 
       when Attribute_Output => Output : declare
-         P_Type : constant Entity_Id := Entity (Pref);
-         U_Type : constant Entity_Id := Underlying_Type (P_Type);
-         Pname  : Entity_Id;
-         Decl   : Node_Id;
-         Prag   : Node_Id;
-         Arg3   : Node_Id;
-         Wfunc  : Node_Id;
+         P_Type  : constant Entity_Id := Entity (Pref);
+         U_Type  : constant Entity_Id := Underlying_Type (P_Type);
+         Has_TSS : Boolean := False;
+         Pname   : Entity_Id;
+         Decl    : Node_Id;
+         Prag    : Node_Id;
+         Arg3    : Node_Id;
+         Wfunc   : Node_Id;
 
       begin
          --  If no underlying type, we have an error that will be diagnosed
@@ -5312,10 +5365,10 @@ package body Exp_Attr is
 
          --  If TSS for Output is present, just call it
 
-         Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Output);
+         Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Output, N);
 
          if Present (Pname) then
-            null;
+            Has_TSS := True;
 
          else
             --  If there is a Stream_Convert pragma, use it, we rewrite
@@ -5376,7 +5429,7 @@ package body Exp_Attr is
 
                if Present (Find_Inherited_TSS (P_Type, TSS_Stream_Write)) then
                   Build_Record_Or_Elementary_Output_Procedure
-                    (Loc, P_Type, Decl, Pname);
+                    (P_Type, Decl, Pname);
                   Insert_Action (N, Decl);
 
                --  For normal cases, we call the W_xxx routine directly
@@ -5390,7 +5443,7 @@ package body Exp_Attr is
             --  Array type case
 
             elsif Is_Array_Type (U_Type) then
-               Build_Array_Output_Procedure (Loc, U_Type, Decl, Pname);
+               Build_Array_Output_Procedure (U_Type, Decl, Pname);
                Compile_Stream_Body_In_Scope (N, Decl, U_Type);
 
             --  Class-wide case, first output external tag, then dispatch
@@ -5501,7 +5554,7 @@ package body Exp_Attr is
                end if;
 
                Build_Record_Or_Elementary_Output_Procedure
-                 (Loc, Base_Type (U_Type), Decl, Pname);
+                 (Base_Type (U_Type), Decl, Pname);
                Insert_Action (N, Decl);
             end if;
          end if;
@@ -5509,6 +5562,10 @@ package body Exp_Attr is
          --  If we fall through, Pname is the name of the procedure to call
 
          Rewrite_Attribute_Proc_Call (Pname);
+
+         if not Has_TSS then
+            Cached_Streaming_Ops.Output_Map.Set (P_Type, Pname);
+         end if;
       end Output;
 
       ---------
@@ -5849,7 +5906,7 @@ package body Exp_Attr is
          if No (Pname) then
             --  If Put_Image is disabled, call the "unknown" version
 
-            if not Enable_Put_Image (U_Type) then
+            if not Put_Image_Enabled (U_Type) then
                Rewrite (N, Build_Unknown_Put_Image_Call (N));
                Analyze (N);
                return;
@@ -5880,7 +5937,7 @@ package body Exp_Attr is
 
                --  ????Need Find_Optional_Prim_Op instead of Find_Prim_Op,
                --  because we might be deriving from a predefined type, which
-               --  currently has Enable_Put_Image False.
+               --  currently has Put_Image_Enabled False.
 
                if No (Pname) then
                   Rewrite (N, Build_Unknown_Put_Image_Call (N));
@@ -5978,27 +6035,30 @@ package body Exp_Attr is
       when Attribute_Reduce =>
          declare
             Loc : constant Source_Ptr := Sloc (N);
-            E1  : constant Node_Id := First (Expressions (N));
-            E2  : constant Node_Id := Next (E1);
-            Bnn : constant Entity_Id := Make_Temporary (Loc, 'B', N);
-            Typ : constant Entity_Id := Etype (N);
+            E1  : constant Node_Id    := First (Expressions (N));
+            E2  : constant Node_Id    := Next (E1);
+            Bnn : constant Entity_Id  := Make_Temporary (Loc, 'B', N);
 
-            New_Loop : Node_Id;
-            Stat     : Node_Id;
+            Accum_Typ : Entity_Id;
+            New_Loop  : Node_Id;
 
             function Build_Stat (Comp : Node_Id) return Node_Id;
             --  The reducer can be a function, a procedure whose first
             --  parameter is in-out, or an attribute that is a function,
             --  which (for now) can only be Min/Max. This subprogram
-            --  builds the corresponding computation for the generated loop.
+            --  builds the corresponding computation for the generated loop
+            --  and retrieves the accumulator type as per RM 4.5.10(19/5).
 
             ----------------
             -- Build_Stat --
             ----------------
 
             function Build_Stat (Comp : Node_Id) return Node_Id is
+               Stat : Node_Id;
+
             begin
                if Nkind (E1) = N_Attribute_Reference then
+                  Accum_Typ := Entity (Prefix (E1));
                   Stat := Make_Assignment_Statement (Loc,
                             Name => New_Occurrence_Of (Bnn, Loc),
                             Expression => Make_Attribute_Reference (Loc,
@@ -6009,12 +6069,14 @@ package body Exp_Attr is
                                 Comp)));
 
                elsif Ekind (Entity (E1)) = E_Procedure then
+                  Accum_Typ := Etype (First_Formal (Entity (E1)));
                   Stat := Make_Procedure_Call_Statement (Loc,
                             Name => New_Occurrence_Of (Entity (E1), Loc),
                                Parameter_Associations => New_List (
                                  New_Occurrence_Of (Bnn, Loc),
                                  Comp));
                else
+                  Accum_Typ := Etype (Entity (E1));
                   Stat := Make_Assignment_Statement (Loc,
                             Name => New_Occurrence_Of (Bnn, Loc),
                             Expression => Make_Function_Call (Loc,
@@ -6074,6 +6136,13 @@ package body Exp_Attr is
                       End_Label => Empty,
                       Statements =>
                         New_List (Build_Stat (Relocate_Node (Expr))));
+
+                  --  If the reducer subprogram is a universal operator, then
+                  --  we still look at the context to find the type for now.
+
+                  if Is_Universal_Numeric_Type (Accum_Typ) then
+                     Accum_Typ := Etype (N);
+                  end if;
                end;
 
             else
@@ -6082,8 +6151,9 @@ package body Exp_Attr is
                --  a container with the proper aspects.
 
                declare
-                  Iter : Node_Id;
                   Elem : constant Entity_Id := Make_Temporary (Loc, 'E', N);
+
+                  Iter : Node_Id;
 
                begin
                   Iter :=
@@ -6101,6 +6171,44 @@ package body Exp_Attr is
                       End_Label => Empty,
                       Statements => New_List (
                         Build_Stat (New_Occurrence_Of (Elem, Loc))));
+
+                  --  If the reducer subprogram is a universal operator, then
+                  --  we need to look at the prefix to find the type. This is
+                  --  modeled on Analyze_Iterator_Specification in Sem_Ch5.
+
+                  if Is_Universal_Numeric_Type (Accum_Typ) then
+                     declare
+                        Ptyp : constant Entity_Id :=
+                                 Base_Type (Etype (Prefix (N)));
+
+                     begin
+                        if Is_Array_Type (Ptyp) then
+                           Accum_Typ := Component_Type (Ptyp);
+
+                        elsif Has_Aspect (Ptyp, Aspect_Iterable) then
+                           declare
+                              Element : constant Entity_Id :=
+                                          Get_Iterable_Type_Primitive
+                                            (Ptyp, Name_Element);
+                           begin
+                              if Present (Element) then
+                                 Accum_Typ := Etype (Element);
+                              end if;
+                           end;
+
+                        else
+                           declare
+                              Element : constant Node_Id :=
+                                          Find_Value_Of_Aspect
+                                            (Ptyp, Aspect_Iterator_Element);
+                           begin
+                              if Present (Element) then
+                                 Accum_Typ := Entity (Element);
+                              end if;
+                           end;
+                        end if;
+                     end;
+                  end if;
                end;
             end if;
 
@@ -6110,10 +6218,11 @@ package body Exp_Attr is
                    Make_Object_Declaration (Loc,
                      Defining_Identifier => Bnn,
                      Object_Definition   =>
-                       New_Occurrence_Of (Typ, Loc),
+                       New_Occurrence_Of (Accum_Typ, Loc),
                      Expression => Relocate_Node (E2)), New_Loop),
                  Expression => New_Occurrence_Of (Bnn, Loc)));
-            Analyze_And_Resolve (N, Typ);
+
+            Analyze_And_Resolve (N, Accum_Typ);
          end;
 
       ----------
@@ -6121,16 +6230,17 @@ package body Exp_Attr is
       ----------
 
       when Attribute_Read => Read : declare
-         P_Type : constant Entity_Id := Entity (Pref);
-         B_Type : constant Entity_Id := Base_Type (P_Type);
-         U_Type : constant Entity_Id := Underlying_Type (P_Type);
-         Pname  : Entity_Id;
-         Decl   : Node_Id;
-         Prag   : Node_Id;
-         Arg2   : Node_Id;
-         Rfunc  : Node_Id;
-         Lhs    : Node_Id;
-         Rhs    : Node_Id;
+         P_Type  : constant Entity_Id := Entity (Pref);
+         B_Type  : constant Entity_Id := Base_Type (P_Type);
+         U_Type  : constant Entity_Id := Underlying_Type (P_Type);
+         Has_TSS : Boolean := False;
+         Pname   : Entity_Id;
+         Decl    : Node_Id;
+         Prag    : Node_Id;
+         Arg2    : Node_Id;
+         Rfunc   : Node_Id;
+         Lhs     : Node_Id;
+         Rhs     : Node_Id;
 
       begin
          --  If no underlying type, we have an error that will be diagnosed
@@ -6155,10 +6265,10 @@ package body Exp_Attr is
 
          --  The simple case, if there is a TSS for Read, just call it
 
-         Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Read);
+         Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Read, N);
 
          if Present (Pname) then
-            null;
+            Has_TSS := True;
 
          else
             --  If there is a Stream_Convert pragma, use it, we rewrite
@@ -6258,7 +6368,7 @@ package body Exp_Attr is
             --  Array type case
 
             elsif Is_Array_Type (U_Type) then
-               Build_Array_Read_Procedure (N, U_Type, Decl, Pname);
+               Build_Array_Read_Procedure (U_Type, Decl, Pname);
                Compile_Stream_Body_In_Scope (N, Decl, U_Type);
 
             --  Tagged type case, use the primitive Read function. Note that
@@ -6292,10 +6402,10 @@ package body Exp_Attr is
 
                if Has_Defaulted_Discriminants (U_Type) then
                   Build_Mutable_Record_Read_Procedure
-                    (Loc, Full_Base (U_Type), Decl, Pname);
+                    (Full_Base (U_Type), Decl, Pname);
                else
                   Build_Record_Read_Procedure
-                    (Loc, Full_Base (U_Type), Decl, Pname);
+                    (Full_Base (U_Type), Decl, Pname);
                end if;
 
                Insert_Action (N, Decl);
@@ -6303,6 +6413,10 @@ package body Exp_Attr is
          end if;
 
          Rewrite_Attribute_Proc_Call (Pname);
+
+         if not Has_TSS then
+            Cached_Streaming_Ops.Read_Map.Set (P_Type, Pname);
+         end if;
       end Read;
 
       ---------
@@ -7807,13 +7921,14 @@ package body Exp_Attr is
       -----------
 
       when Attribute_Write => Write : declare
-         P_Type : constant Entity_Id := Entity (Pref);
-         U_Type : constant Entity_Id := Underlying_Type (P_Type);
-         Pname  : Entity_Id;
-         Decl   : Node_Id;
-         Prag   : Node_Id;
-         Arg3   : Node_Id;
-         Wfunc  : Node_Id;
+         P_Type  : constant Entity_Id := Entity (Pref);
+         U_Type  : constant Entity_Id := Underlying_Type (P_Type);
+         Has_TSS : Boolean := False;
+         Pname   : Entity_Id;
+         Decl    : Node_Id;
+         Prag    : Node_Id;
+         Arg3    : Node_Id;
+         Wfunc   : Node_Id;
 
       begin
          --  If no underlying type, we have an error that will be diagnosed
@@ -7838,10 +7953,10 @@ package body Exp_Attr is
 
          --  The simple case, if there is a TSS for Write, just call it
 
-         Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Write);
+         Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Write, N);
 
          if Present (Pname) then
-            null;
+            Has_TSS := True;
 
          else
             --  If there is a Stream_Convert pragma, use it, we rewrite
@@ -7901,7 +8016,7 @@ package body Exp_Attr is
             --  Array type case
 
             elsif Is_Array_Type (U_Type) then
-               Build_Array_Write_Procedure (N, U_Type, Decl, Pname);
+               Build_Array_Write_Procedure (U_Type, Decl, Pname);
                Compile_Stream_Body_In_Scope (N, Decl, U_Type);
 
             --  Tagged type case, use the primitive Write function. Note that
@@ -7942,10 +8057,10 @@ package body Exp_Attr is
 
                if Has_Defaulted_Discriminants (U_Type) then
                   Build_Mutable_Record_Write_Procedure
-                    (Loc, Full_Base (U_Type), Decl, Pname);
+                    (Full_Base (U_Type), Decl, Pname);
                else
                   Build_Record_Write_Procedure
-                    (Loc, Full_Base (U_Type), Decl, Pname);
+                    (Full_Base (U_Type), Decl, Pname);
                end if;
 
                Insert_Action (N, Decl);
@@ -7955,6 +8070,10 @@ package body Exp_Attr is
          --  If we fall through, Pname is the procedure to be called
 
          Rewrite_Attribute_Proc_Call (Pname);
+
+         if not Has_TSS then
+            Cached_Streaming_Ops.Write_Map.Set (P_Type, Pname);
+         end if;
       end Write;
 
       --  The following attributes are handled by the back end (except that
@@ -8526,14 +8645,100 @@ package body Exp_Attr is
    ----------------------------
 
    function Find_Stream_Subprogram
-     (Typ : Entity_Id;
-      Nam : TSS_Name_Type) return Entity_Id
+     (Typ      : Entity_Id;
+      Nam      : TSS_Name_Type;
+      Attr_Ref : Node_Id) return Entity_Id
    is
+
+      function In_Available_Context (Ent : Entity_Id) return Boolean;
+      --  Ent is a candidate result for Find_Stream_Subprogram.
+      --  If, for example, a subprogram is declared within a case
+      --  alternative then Gigi does not want to see a call to it from
+      --  outside of the case alternative. Compare placement of Ent and
+      --  Attr_Ref to prevent this situation (by returning False).
+
+      --------------------------
+      -- In_Available_Context --
+      --------------------------
+
+      function In_Available_Context (Ent : Entity_Id) return Boolean is
+         Decl : Node_Id := Enclosing_Declaration (Ent);
+      begin
+         --  Enclosing_Declaration does not always return a declaration;
+         --  cope with this irregularity.
+         if Decl in N_Subprogram_Specification_Id
+           and then Nkind (Parent (Decl)) in
+                      N_Subprogram_Body | N_Subprogram_Declaration
+         then
+            Decl := Parent (Decl);
+         end if;
+
+         if Has_Declarations (Parent (Decl)) then
+            return In_Subtree (Attr_Ref, Root => Parent (Decl));
+         elsif Is_List_Member (Decl) then
+            declare
+               List_Elem : Node_Id := Next (Decl);
+            begin
+               while Present (List_Elem) loop
+                  if In_Subtree (Attr_Ref, Root => List_Elem) then
+                     return True;
+                  end if;
+                  Next (List_Elem);
+               end loop;
+               return False;
+            end;
+         else
+            return False; --  Can this occur ???
+         end if;
+      end In_Available_Context;
+
+      --  Local declarations
+
       Base_Typ : constant Entity_Id := Base_Type (Typ);
-      Ent      : constant Entity_Id := TSS (Typ, Nam);
+      Ent      : Entity_Id := TSS (Typ, Nam);
+
+   --  Start of processing for Find_Stream_Subprogram
+
    begin
       if Present (Ent) then
          return Ent;
+      end if;
+
+      --  Everything after this point is an optimization. In other words,
+      --  there should be no *correctness* problems if we were to
+      --  unconditionally return Empty here.
+
+      if Is_Unchecked_Union (Base_Typ) then
+         --  Conservatively avoid possible problems (e.g., Write behaves
+         --  differently for a U_U type when called by Output vs. when
+         --  called from elsewhere).
+
+         return Empty;
+      end if;
+
+      if Nam = TSS_Stream_Read then
+         Ent := Cached_Streaming_Ops.Read_Map.Get (Typ);
+      elsif Nam = TSS_Stream_Write then
+         Ent := Cached_Streaming_Ops.Write_Map.Get (Typ);
+      elsif Nam = TSS_Stream_Input then
+         Ent := Cached_Streaming_Ops.Input_Map.Get (Typ);
+      elsif Nam = TSS_Stream_Output then
+         Ent := Cached_Streaming_Ops.Output_Map.Get (Typ);
+      end if;
+
+      if Present (Ent) then
+         --  Can't reuse Ent if it is no longer in scope
+
+         if In_Open_Scopes (Scope (Ent))
+
+           --  The preceding In_Open_Scopes test may not suffice if
+           --  case alternatives are involved.
+           and then In_Available_Context (Ent)
+         then
+            return Ent;
+         else
+            Ent := Empty;
+         end if;
       end if;
 
       --  Stream attributes for strings are expanded into library calls. The

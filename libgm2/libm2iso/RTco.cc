@@ -61,14 +61,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define gm2_printf __printf__
 #endif
 
-#if !defined(TRUE)
-#define TRUE (1 == 1)
-#endif
-
-#if !defined(FALSE)
-#define FALSE (1 == 0)
-#endif
-
 #if defined(TRACEON)
 #define tprintf printf
 #else
@@ -92,7 +84,7 @@ typedef struct threadCB_s
 typedef struct threadSem_s
 {
   __gthread_cond_t counter;
-  int waiting;
+  bool waiting;
   int sem_value;
 } threadSem;
 
@@ -104,7 +96,7 @@ static threadSem **semArray = NULL;
 /* These are used to lock the above module data structures.  */
 static __gthread_mutex_t lock;  /* This is the only mutex for
 				   the whole module.  */
-static int initialized = FALSE;
+static int initialized = false;
 
 extern "C" int EXPORT(init) (void);
 
@@ -128,7 +120,7 @@ static void
 initSem (threadSem *sem, int value)
 {
   __GTHREAD_COND_INIT_FUNCTION (&sem->counter);
-  sem->waiting = FALSE;
+  sem->waiting = false;
   sem->sem_value = value;
 }
 
@@ -138,9 +130,9 @@ waitSem (threadSem *sem)
   __gthread_mutex_lock (&lock);
   if (sem->sem_value == 0)
     {
-      sem->waiting = TRUE;
+      sem->waiting = true;
       __gthread_cond_wait (&sem->counter, &lock);
-      sem->waiting = FALSE;
+      sem->waiting = false;
     }
   else
     sem->sem_value--;
@@ -495,7 +487,7 @@ EXPORT(init) (void)
   tprintf ("checking init\n");
   if (! initialized)
     {
-      initialized = TRUE;
+      initialized = true;
 
       tprintf ("RTco initialized\n");
       __GTHREAD_MUTEX_INIT_FUNCTION (&lock);

@@ -104,6 +104,26 @@ int __attribute__ ((target("arch=grandridge"))) foo () {
   return 27;
 }
 
+int __attribute__ ((target("arch=graniterapids-d"))) foo () {
+  return 28;
+}
+
+int __attribute__ ((target("arch=arrowlake"))) foo () {
+  return 29;
+}
+
+int __attribute__ ((target("arch=arrowlake-s"))) foo () {
+  return 30;
+}
+
+int __attribute__ ((target("arch=clearwaterforest"))) foo () {
+  return 31;
+}
+
+int __attribute__ ((target("arch=pantherlake"))) foo () {
+  return 32;
+}
+
 int main ()
 {
   int val = foo ();
@@ -148,6 +168,16 @@ int main ()
     assert (val == 26);
   else if (__builtin_cpu_is ("grandridge"))
     assert (val == 27);
+  else if (__builtin_cpu_is ("graniterapids-d"))
+    assert (val == 28);
+  else if (__builtin_cpu_is ("arrowlake"))
+    assert (val == 29);
+  else if (__builtin_cpu_is ("arrowlake-s"))
+    assert (val == 30);
+  else if (__builtin_cpu_is ("clearwaterforest"))
+    assert (val == 31);
+  else if (__builtin_cpu_is ("pantherlake"))
+    assert (val == 32);
   else
     assert (val == 0);
 

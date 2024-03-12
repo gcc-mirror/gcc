@@ -25,13 +25,15 @@
 
 with Ada.Unchecked_Conversion;
 with Aspects;        use Aspects;
-with Debug;          use Debug;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
+with Osint;
 with Output;         use Output;
 with Sinfo.Utils;    use Sinfo.Utils;
 with System.Storage_Elements;
+
+with GNAT.Table;
 
 package body Atree is
 
@@ -265,6 +267,10 @@ package body Atree is
       --  True if a node/entity of the given Kind has the given Field.
       --  Always True if assertions are disabled.
 
+      function Field_Present
+        (N : Node_Id; Field : Node_Or_Entity_Field) return Boolean;
+      --  Same for a node, which could be an entity
+
    end Field_Checking;
 
    package body Field_Checking is
@@ -364,6 +370,17 @@ package body Atree is
          end if;
 
          return Entity_Fields_Present (Kind) (Field);
+      end Field_Present;
+
+      function Field_Present
+        (N : Node_Id; Field : Node_Or_Entity_Field) return Boolean is
+      begin
+         case Field is
+            when Node_Field =>
+               return Field_Present (Nkind (N), Field);
+            when Entity_Field =>
+               return Field_Present (Ekind (N), Field);
+         end case;
       end Field_Present;
 
    end Field_Checking;
@@ -885,6 +902,7 @@ package body Atree is
    function Get_Field_Value
      (N : Node_Id; Field : Node_Or_Entity_Field) return Field_Size_32_Bit
    is
+      pragma Assert (Field_Checking.Field_Present (N, Field));
       Desc : Field_Descriptor renames Field_Descriptors (Field);
       NN : constant Node_Or_Entity_Id := Node_To_Fetch_From (N, Field);
 
@@ -905,6 +923,7 @@ package body Atree is
    procedure Set_Field_Value
      (N : Node_Id; Field : Node_Or_Entity_Field; Val : Field_Size_32_Bit)
    is
+      pragma Assert (Field_Checking.Field_Present (N, Field));
       Desc : Field_Descriptor renames Field_Descriptors (Field);
 
    begin
@@ -948,11 +967,10 @@ package body Atree is
    procedure Check_Vanishing_Fields
      (Old_N : Node_Id; New_Kind : Node_Kind)
    is
+      --  If this fails, see comments in the spec of Mutate_Nkind and in
+      --  Check_Vanishing_Fields for entities below.
+
       Old_Kind : constant Node_Kind := Nkind (Old_N);
-
-      --  If this fails, it means you need to call Reinit_Field_To_Zero before
-      --  calling Mutate_Nkind.
-
    begin
       for J in Node_Field_Table (Old_Kind)'Range loop
          declare
@@ -979,42 +997,76 @@ package body Atree is
    procedure Check_Vanishing_Fields
      (Old_N : Entity_Id; New_Kind : Entity_Kind)
    is
+      --  If this fails, it means Mutate_Ekind is changing the Ekind from
+      --  Old_Kind to New_Kind, such that some field F exists in Old_Kind but
+      --  not in New_Kind, and F contains non-default information. The usual
+      --  solution is to call Reinit_Field_To_Zero before calling Mutate_Ekind.
+      --  Another solution is to change Gen_IL so that the new field DOES exist
+      --  in New_Kind. See also comments in the spec of Mutate_Ekind.
+
       Old_Kind : constant Entity_Kind := Ekind (Old_N);
 
-      --  If this fails, it means you need to call Reinit_Field_To_Zero before
-      --  calling Mutate_Ekind. But we have many cases where vanishing fields
-      --  are expected to reappear after converting to/from E_Void. Other cases
-      --  are more problematic; set a breakpoint on "(non-E_Void case)" below.
+      function Same_Node_To_Fetch_From
+        (N : Node_Or_Entity_Id; Field : Node_Or_Entity_Field)
+        return Boolean;
+      --  True if the field should be fetched from N. For most fields, this is
+      --  true. However, if the field is a "root type only" field, then this is
+      --  true only if N is the root type. If this is false, then we should not
+      --  do Reinit_Field_To_Zero, and we should not fail below, because the
+      --  field is not vanishing from the root type. Similar comments apply to
+      --  "base type only" and "implementation base type only" fields.
+      --
+      --  We need to ignore exceptions here, because in some cases,
+      --  Node_To_Fetch_From is being called before the relevant (root, base)
+      --  type has been set, so we fail some assertions.
+
+      function Same_Node_To_Fetch_From
+        (N : Node_Or_Entity_Id; Field : Node_Or_Entity_Field)
+        return Boolean is
+      begin
+         return N = Node_To_Fetch_From (N, Field);
+      exception
+         when others => return False; -- ignore the exception
+      end Same_Node_To_Fetch_From;
+
+   --  Start of processing for Check_Vanishing_Fields
 
    begin
       for J in Entity_Field_Table (Old_Kind)'Range loop
          declare
             F : constant Entity_Field := Entity_Field_Table (Old_Kind) (J);
          begin
-            if not Field_Checking.Field_Present (New_Kind, F) then
+            if not Same_Node_To_Fetch_From (Old_N, F) then
+               null; -- no check in this case
+            elsif not Field_Checking.Field_Present (New_Kind, F) then
                if not Field_Is_Initial_Zero (Old_N, F) then
+                  Write_Str ("# ");
+                  Write_Str (Osint.Get_First_Main_File_Name);
+                  Write_Str (": ");
                   Write_Str (Old_Kind'Img);
                   Write_Str (" --> ");
                   Write_Str (New_Kind'Img);
                   Write_Str (" Nonzero field ");
                   Write_Str (F'Img);
-                  Write_Str (" is vanishing for node ");
-                  Write_Int (Nat (Old_N));
-                  Write_Eol;
+                  Write_Str (" is vanishing ");
 
                   if New_Kind = E_Void or else Old_Kind = E_Void then
-                     Write_Line ("    (E_Void case)");
+                     Write_Line ("(E_Void case)");
                   else
-                     Write_Line ("    (non-E_Void case)");
+                     Write_Line ("(non-E_Void case)");
                   end if;
+
+                  Write_Str ("    ...mutating node ");
+                  Write_Int (Nat (Old_N));
+                  Write_Line ("");
+                  raise Program_Error;
                end if;
             end if;
          end;
       end loop;
    end Check_Vanishing_Fields;
 
-   Nkind_Offset : constant Field_Offset :=
-     Field_Descriptors (F_Nkind).Offset;
+   Nkind_Offset : constant Field_Offset := Field_Descriptors (F_Nkind).Offset;
 
    procedure Set_Node_Kind_Type is new Set_8_Bit_Field (Node_Kind) with Inline;
 
@@ -1036,6 +1088,8 @@ package body Atree is
       All_Node_Offsets : Node_Offsets.Table_Type renames
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
    begin
+      pragma Assert (Nkind (N) /= Val);
+
       pragma Debug (Check_Vanishing_Fields (N, Val));
 
       --  Grow the slots if necessary
@@ -1082,29 +1136,25 @@ package body Atree is
       Mutate_Nkind (N, Val, Old_Size => Size_In_Slots_Dynamic (N));
    end Mutate_Nkind;
 
-   Ekind_Offset : constant Field_Offset :=
-     Field_Descriptors (F_Ekind).Offset;
+   Ekind_Offset : constant Field_Offset := Field_Descriptors (F_Ekind).Offset;
 
    procedure Set_Entity_Kind_Type is new Set_8_Bit_Field (Entity_Kind)
      with Inline;
 
-   procedure Mutate_Ekind
-     (N : Entity_Id; Val : Entity_Kind)
-   is
+   procedure Mutate_Ekind (N : Entity_Id; Val : Entity_Kind) is
    begin
       if Ekind (N) = Val then
          return;
       end if;
 
-      if Debug_Flag_Underscore_V then
-         pragma Debug (Check_Vanishing_Fields (N, Val));
-      end if;
+      pragma Assert (Val /= E_Void);
+      pragma Debug (Check_Vanishing_Fields (N, Val));
 
       --  For now, we are allocating all entities with the same size, so we
       --  don't need to reallocate slots here.
 
       if Atree_Statistics_Enabled then
-         Set_Count (F_Nkind) := Set_Count (F_Ekind) + 1;
+         Set_Count (F_Ekind) := Set_Count (F_Ekind) + 1;
       end if;
 
       Set_Entity_Kind_Type (N, Ekind_Offset, Val);
@@ -1353,12 +1403,7 @@ package body Atree is
 
             E := First (List);
             while Present (E) loop
-               if Is_Entity (E) then
-                  Append (Copy_Entity (E), NL);
-               else
-                  Append (Copy_Separate_Tree (E), NL);
-               end if;
-
+               Append (Copy_Separate_Tree (E), NL);
                Next (E);
             end loop;
 
@@ -1378,7 +1423,7 @@ package body Atree is
             New_N := Union_Id (Copy_Separate_Tree (Node_Id (Field)));
 
             if Present (Node_Id (Field))
-              and then Parent (Node_Id (Field)) = Source
+              and then Is_Syntactic_Node (Source, Node_Id (Field))
             then
                Set_Parent (Node_Id (New_N), New_Id);
             end if;
@@ -1618,6 +1663,66 @@ package body Atree is
    begin
       return Nkind (N) in N_Entity;
    end Is_Entity;
+
+   -----------------------
+   -- Is_Syntactic_Node --
+   -----------------------
+
+   function Is_Syntactic_Node
+     (Source : Node_Id;
+      Field  : Node_Id)
+      return Boolean
+   is
+      function Has_More_Ids (N : Node_Id) return Boolean;
+      --  Return True when N has attribute More_Ids set to True
+
+      ------------------
+      -- Has_More_Ids --
+      ------------------
+
+      function Has_More_Ids (N : Node_Id) return Boolean is
+      begin
+         if Nkind (N) in N_Component_Declaration
+                       | N_Discriminant_Specification
+                       | N_Exception_Declaration
+                       | N_Formal_Object_Declaration
+                       | N_Number_Declaration
+                       | N_Object_Declaration
+                       | N_Parameter_Specification
+                       | N_Use_Package_Clause
+                       | N_Use_Type_Clause
+         then
+            return More_Ids (N);
+         else
+            return False;
+         end if;
+      end Has_More_Ids;
+
+   --  Start of processing for Is_Syntactic_Node
+
+   begin
+      if Parent (Field) = Source then
+         return True;
+
+      --  Perform the check using the last id in the syntactic chain
+
+      elsif Has_More_Ids (Source) then
+         declare
+            N : Node_Id := Source;
+
+         begin
+            while Present (N) and then More_Ids (N) loop
+               Next (N);
+            end loop;
+
+            pragma Assert (Prev_Ids (N));
+            return Parent (Field) = N;
+         end;
+
+      else
+         return False;
+      end if;
+   end Is_Syntactic_Node;
 
    ----------------
    -- Initialize --
@@ -2783,6 +2888,34 @@ package body Atree is
       Node_Counts : array (Node_Kind) of Count := (others => 0);
       Entity_Counts : array (Entity_Kind) of Count := (others => 0);
 
+      --  We put the Node_Kinds and Entity_Kinds into a table just because
+      --  GNAT.Table has a handy sort procedure. We're sorting in decreasing
+      --  order of Node_Counts, for printing.
+
+      package Node_Kind_Table is new GNAT.Table
+        (Table_Component_Type => Node_Kind,
+         Table_Index_Type     => Pos,
+         Table_Low_Bound      => Pos'First,
+         Table_Initial        => 8,
+         Table_Increment      => 100
+        );
+      function Higher_Count (X, Y : Node_Kind) return Boolean is
+        (Node_Counts (X) > Node_Counts (Y));
+      procedure Sort_Node_Kind_Table is new
+        Node_Kind_Table.Sort_Table (Lt => Higher_Count);
+
+      package Entity_Kind_Table is new GNAT.Table
+        (Table_Component_Type => Entity_Kind,
+         Table_Index_Type     => Pos,
+         Table_Low_Bound      => Pos'First,
+         Table_Initial        => 8,
+         Table_Increment      => 100
+        );
+      function Higher_Count (X, Y : Entity_Kind) return Boolean is
+        (Entity_Counts (X) > Entity_Counts (Y));
+      procedure Sort_Entity_Kind_Table is new
+        Entity_Kind_Table.Sort_Table (Lt => Higher_Count);
+
       All_Node_Offsets : Node_Offsets.Table_Type renames
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
    begin
@@ -2790,6 +2923,8 @@ package body Atree is
       Write_Line (" nodes (including entities)");
       Write_Int (Int (Slots.Last));
       Write_Line (" non-header slots");
+
+      --  Count up the number of each kind of node and entity
 
       for N in All_Node_Offsets'Range loop
          declare
@@ -2804,44 +2939,95 @@ package body Atree is
          end;
       end loop;
 
+      --  Copy kinds to tables, and sort:
+
       for K in Node_Kind loop
-         declare
-            Count : constant Nat_64 := Node_Counts (K);
-         begin
-            Write_Int_64 (Count);
-            Write_Ratio (Count, Int_64 (Node_Offsets.Last));
-            Write_Str (" ");
-            Write_Str (Node_Kind'Image (K));
-            Write_Str (" ");
-            Write_Int (Int (Sinfo.Nodes.Size (K)));
-            Write_Str (" slots");
-            Write_Eol;
-         end;
+         Node_Kind_Table.Append (K);
       end loop;
+      Sort_Node_Kind_Table;
 
       for K in Entity_Kind loop
-         declare
-            Count : constant Nat_64 := Entity_Counts (K);
-         begin
-            Write_Int_64 (Count);
-            Write_Ratio (Count, Int_64 (Node_Offsets.Last));
-            Write_Str (" ");
-            Write_Str (Entity_Kind'Image (K));
-            Write_Str (" ");
-            Write_Int (Int (Einfo.Entities.Size (K)));
-            Write_Str (" slots");
-            Write_Eol;
-         end;
+         Entity_Kind_Table.Append (K);
       end loop;
+      Sort_Entity_Kind_Table;
+
+      --  Print out the counts for each kind in decreasing order. Exit the loop
+      --  if we see a zero count, because all the rest must be zero, and the
+      --  zero ones are boring.
+
+      declare
+         use Node_Kind_Table;
+         --  Note: the full qualification of First below is needed for
+         --  bootstrap builds.
+         Table : Table_Type renames Node_Kind_Table.Table
+           (Node_Kind_Table.First .. Last);
+      begin
+         for J in Table'Range loop
+            declare
+               K : constant Node_Kind := Table (J);
+               Count : constant Nat_64 := Node_Counts (K);
+            begin
+               exit when Count = 0; -- skip the rest
+
+               Write_Int_64 (Count);
+               Write_Ratio (Count, Int_64 (Node_Offsets.Last));
+               Write_Str (" ");
+               Write_Str (Node_Kind'Image (K));
+               Write_Str (" ");
+               Write_Int (Int (Sinfo.Nodes.Size (K)));
+               Write_Str (" slots");
+               Write_Eol;
+            end;
+         end loop;
+      end;
+
+      declare
+         use Entity_Kind_Table;
+         --  Note: the full qualification of First below is needed for
+         --  bootstrap builds.
+         Table : Table_Type renames Entity_Kind_Table.Table
+           (Entity_Kind_Table.First .. Last);
+      begin
+         for J in Table'Range loop
+            declare
+               K : constant Entity_Kind := Table (J);
+               Count : constant Nat_64 := Entity_Counts (K);
+            begin
+               exit when Count = 0; -- skip the rest
+
+               Write_Int_64 (Count);
+               Write_Ratio (Count, Int_64 (Node_Offsets.Last));
+               Write_Str (" ");
+               Write_Str (Entity_Kind'Image (K));
+               Write_Str (" ");
+               Write_Int (Int (Einfo.Entities.Size (K)));
+               Write_Str (" slots");
+               Write_Eol;
+            end;
+         end loop;
+      end;
    end Print_Node_Statistics;
 
    procedure Print_Field_Statistics is
       Total, G_Total, S_Total : Call_Count := 0;
+
+      --  Use a table for sorting, as done in Print_Node_Statistics.
+
+      package Field_Table is new GNAT.Table
+        (Table_Component_Type => Node_Or_Entity_Field,
+         Table_Index_Type     => Pos,
+         Table_Low_Bound      => Pos'First,
+         Table_Initial        => 8,
+         Table_Increment      => 100
+        );
+      function Higher_Count (X, Y : Node_Or_Entity_Field) return Boolean is
+        (Get_Count (X) + Set_Count (X) > Get_Count (Y) + Set_Count (Y));
+      procedure Sort_Field_Table is new
+        Field_Table.Sort_Table (Lt => Higher_Count);
    begin
       Write_Int_64 (Get_Original_Node_Count);
       Write_Str (" + ");
       Write_Int_64 (Set_Original_Node_Count);
-      Write_Eol;
       Write_Line (" Original_Node_Count getter and setter calls");
       Write_Eol;
 
@@ -2864,32 +3050,55 @@ package body Atree is
       Write_Int_64 (S_Total);
       Write_Line (" total getter and setter calls");
 
-      for Field in Node_Or_Entity_Field loop
-         declare
-            G : constant Call_Count := Get_Count (Field);
-            S : constant Call_Count := Set_Count (Field);
-            GS : constant Call_Count := G + S;
+      --  Copy fields to the table, and sort:
 
-            Desc : Field_Descriptor renames Field_Descriptors (Field);
-            Slot : constant Field_Offset :=
-              (Field_Size (Desc.Kind) * Desc.Offset) / Slot_Size;
-
-         begin
-            Write_Int_64 (GS);
-            Write_Ratio (GS, Total);
-            Write_Str (" = ");
-            Write_Int_64 (G);
-            Write_Str (" + ");
-            Write_Int_64 (S);
-            Write_Str (" ");
-            Write_Str (Node_Or_Entity_Field'Image (Field));
-            Write_Str (" in slot ");
-            Write_Int (Int (Slot));
-            Write_Str (" size ");
-            Write_Int (Int (Field_Size (Desc.Kind)));
-            Write_Eol;
-         end;
+      for F in Node_Or_Entity_Field loop
+         Field_Table.Append (F);
       end loop;
+      Sort_Field_Table;
+
+      --  Print out the counts for each field in decreasing order of
+      --  getter+setter sum. As in Print_Node_Statistics, exit the loop
+      --  if we see a zero sum.
+
+      declare
+         use Field_Table;
+         --  Note: the full qualification of First below is needed for
+         --  bootstrap builds.
+         Table : Table_Type renames
+           Field_Table.Table (Field_Table.First .. Last);
+      begin
+         for J in Table'Range loop
+            declare
+               Field : constant Node_Or_Entity_Field := Table (J);
+
+               G : constant Call_Count := Get_Count (Field);
+               S : constant Call_Count := Set_Count (Field);
+               GS : constant Call_Count := G + S;
+
+               Desc : Field_Descriptor renames Field_Descriptors (Field);
+               Slot : constant Field_Offset :=
+                 (Field_Size (Desc.Kind) * Desc.Offset) / Slot_Size;
+
+            begin
+               exit when GS = 0; -- skip the rest
+
+               Write_Int_64 (GS);
+               Write_Ratio (GS, Total);
+               Write_Str (" = ");
+               Write_Int_64 (G);
+               Write_Str (" + ");
+               Write_Int_64 (S);
+               Write_Str (" ");
+               Write_Str (Node_Or_Entity_Field'Image (Field));
+               Write_Str (" in slot ");
+               Write_Int (Int (Slot));
+               Write_Str (" size ");
+               Write_Int (Int (Field_Size (Desc.Kind)));
+               Write_Eol;
+            end;
+         end loop;
+      end;
    end Print_Field_Statistics;
 
    procedure Print_Statistics is
@@ -2897,6 +3106,7 @@ package body Atree is
       Write_Eol;
       Write_Eol;
       Print_Node_Statistics;
+      Write_Eol;
       Print_Field_Statistics;
    end Print_Statistics;
 

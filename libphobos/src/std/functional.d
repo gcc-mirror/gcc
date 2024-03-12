@@ -48,6 +48,9 @@ $(TR $(TH Function Name) $(TH Description)
         $(TD Create a unary or binary function from a string. Most often
         used when defining algorithms on ranges.
     ))
+    $(TR $(TD $(LREF bind))
+        $(TD Passes the fields of a struct as arguments to a function.
+    ))
 ))
 
 Copyright: Copyright Andrei Alexandrescu 2008 - 2009.

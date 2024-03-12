@@ -40,13 +40,15 @@
 # endif
 #endif
 
+#define __glibcxx_want_constexpr_dynamic_alloc
+#define __glibcxx_want_allocator_traits_is_always_equal
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
-#define __cpp_lib_allocator_traits_is_always_equal 201411L
-
   /// @cond undocumented
   struct __allocator_traits_base
   {
@@ -418,11 +420,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if _GLIBCXX_HOSTED
-
-#if __cplusplus > 201703L
-# define __cpp_lib_constexpr_dynamic_alloc 201907L
-#endif
-
   /// Partial specialization for std::allocator.
   template<typename _Tp>
     struct allocator_traits<allocator<_Tp>>
@@ -493,7 +490,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       [[__nodiscard__,__gnu__::__always_inline__]]
       static _GLIBCXX20_CONSTEXPR pointer
-      allocate(allocator_type& __a, size_type __n, const_void_pointer __hint)
+      allocate(allocator_type& __a, size_type __n,
+	       [[maybe_unused]] const_void_pointer __hint)
       {
 #if __cplusplus <= 201703L
 	return __a.allocate(__n, __hint);
@@ -944,7 +942,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Destroy(_ForwardIterator __first, _ForwardIterator __last,
 	     allocator<_Tp>&)
     {
-      _Destroy(__first, __last);
+      std::_Destroy(__first, __last);
     }
 #endif
   /// @endcond

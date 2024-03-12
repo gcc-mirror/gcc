@@ -23,6 +23,7 @@
 #define TEST(OP)						\
   {								\
     f_##OP (a, b, 10);						\
+    _Pragma("GCC novector")					\
     for (int i = 0; i < N; ++i)					\
       {								\
 	int bval = (i % 17) * 10;				\
@@ -55,8 +56,8 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times {vectorizing stmts using SLP} 4 "vect" { target vect_double_cond_arith } } } */
-/* { dg-final { scan-tree-dump-times { = \.COND_ADD} 1 "optimized" { target vect_double_cond_arith } } } */
-/* { dg-final { scan-tree-dump-times { = \.COND_SUB} 1 "optimized" { target vect_double_cond_arith } } } */
-/* { dg-final { scan-tree-dump-times { = \.COND_MUL} 1 "optimized" { target vect_double_cond_arith } } } */
-/* { dg-final { scan-tree-dump-times { = \.COND_RDIV} 1 "optimized" { target vect_double_cond_arith } } } */
+/* { dg-final { scan-tree-dump { = \.COND_(LEN_)?ADD} "optimized" { target vect_double_cond_arith } } } */
+/* { dg-final { scan-tree-dump { = \.COND_(LEN_)?SUB} "optimized" { target vect_double_cond_arith } } } */
+/* { dg-final { scan-tree-dump { = \.COND_(LEN_)?MUL} "optimized" { target vect_double_cond_arith } } } */
+/* { dg-final { scan-tree-dump { = \.COND_(LEN_)?RDIV} "optimized" { target vect_double_cond_arith } } } */
 /* { dg-final { scan-tree-dump-not {VEC_COND_EXPR} "optimized" { target vect_double_cond_arith } } } */

@@ -1012,8 +1012,7 @@ sanitize_asan_mark_unpoison (void)
   /* 2) Propagate the information to all reachable blocks.  */
   while (!bitmap_empty_p (worklist))
     {
-      unsigned i = bitmap_first_set_bit (worklist);
-      bitmap_clear_bit (worklist, i);
+      unsigned i = bitmap_clear_first_set_bit (worklist);
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       gcc_assert (bb);
 
@@ -1109,8 +1108,7 @@ sanitize_asan_mark_poison (void)
   /* 2) Propagate the information to all definitions blocks.  */
   while (!bitmap_empty_p (worklist))
     {
-      unsigned i = bitmap_first_set_bit (worklist);
-      bitmap_clear_bit (worklist, i);
+      unsigned i = bitmap_clear_first_set_bit (worklist);
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       gcc_assert (bb);
 

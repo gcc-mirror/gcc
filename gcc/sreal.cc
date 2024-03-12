@@ -116,7 +116,26 @@ sreal::to_int () const
   if (m_exp > 0)
     return sign * (SREAL_ABS ((int64_t)m_sig) << m_exp);
   if (m_exp < 0)
-    return m_sig >> -m_exp;
+    return sign * (SREAL_ABS ((int64_t)m_sig) >> -m_exp);
+  return m_sig;
+}
+
+/* Return nearest integer value of *this.  */
+
+int64_t
+sreal::to_nearest_int () const
+{
+  int64_t sign = SREAL_SIGN (m_sig);
+
+  if (m_exp <= -SREAL_BITS)
+    return 0;
+  if (m_exp >= SREAL_PART_BITS)
+    return sign * INTTYPE_MAXIMUM (int64_t);
+  if (m_exp > 0)
+    return sign * (SREAL_ABS ((int64_t)m_sig) << m_exp);
+  if (m_exp < 0)
+    return sign * ((SREAL_ABS ((int64_t)m_sig) >> -m_exp)
+		   + ((SREAL_ABS (m_sig) >> (-m_exp - 1)) & 1));
   return m_sig;
 }
 
@@ -286,6 +305,8 @@ sreal_verify_basics (void)
 
   ASSERT_EQ (INT_MIN/2, minimum.to_int ());
   ASSERT_EQ (INT_MAX/2, maximum.to_int ());
+  ASSERT_EQ (INT_MIN/2, minimum.to_nearest_int ());
+  ASSERT_EQ (INT_MAX/2, maximum.to_nearest_int ());
 
   ASSERT_FALSE (minus_two < minus_two);
   ASSERT_FALSE (seven < seven);
@@ -302,7 +323,7 @@ sreal_verify_basics (void)
    of given arguments A and B.  */
 
 static void
-verify_aritmetics (int64_t a, int64_t b)
+verify_arithmetics (int64_t a, int64_t b)
 {
   ASSERT_EQ (a, -(-(sreal (a))).to_int ());
   ASSERT_EQ (a < b, sreal (a) < sreal (b));
@@ -315,6 +336,10 @@ verify_aritmetics (int64_t a, int64_t b)
   ASSERT_EQ (a - b, (sreal (a) - sreal (b)).to_int ());
   ASSERT_EQ (b + a, (sreal (b) + sreal (a)).to_int ());
   ASSERT_EQ (b - a, (sreal (b) - sreal (a)).to_int ());
+  ASSERT_EQ (a + b, (sreal (a) + sreal (b)).to_nearest_int ());
+  ASSERT_EQ (a - b, (sreal (a) - sreal (b)).to_nearest_int ());
+  ASSERT_EQ (b + a, (sreal (b) + sreal (a)).to_nearest_int ());
+  ASSERT_EQ (b - a, (sreal (b) - sreal (a)).to_nearest_int ());
 }
 
 /* Verify arithmetics for interesting numbers.  */
@@ -331,7 +356,7 @@ sreal_verify_arithmetics (void)
 	int a = values[i];
 	int b = values[j];
 
-	verify_aritmetics (a, b);
+	verify_arithmetics (a, b);
       }
 }
 
@@ -377,6 +402,33 @@ sreal_verify_negative_division (void)
   ASSERT_EQ (sreal (1234567) / sreal (-1234567), sreal (-1));
 }
 
+static void
+sreal_verify_conversions (void)
+{
+  ASSERT_EQ ((sreal (11) / sreal (3)).to_int (), 3);
+  ASSERT_EQ ((sreal (11) / sreal (3)).to_nearest_int (), 4);
+  ASSERT_EQ ((sreal (10) / sreal (3)).to_int (), 3);
+  ASSERT_EQ ((sreal (10) / sreal (3)).to_nearest_int (), 3);
+  ASSERT_EQ ((sreal (9) / sreal (3)).to_int (), 3);
+  ASSERT_EQ ((sreal (9) / sreal (3)).to_nearest_int (), 3);
+  ASSERT_EQ ((sreal (-11) / sreal (3)).to_int (), -3);
+  ASSERT_EQ ((sreal (-11) / sreal (3)).to_nearest_int (), -4);
+  ASSERT_EQ ((sreal (-10) / sreal (3)).to_int (), -3);
+  ASSERT_EQ ((sreal (-10) / sreal (3)).to_nearest_int (), -3);
+  ASSERT_EQ ((sreal (-3)).to_int (), -3);
+  ASSERT_EQ ((sreal (-3)).to_nearest_int (), -3);
+  for (int i = -100000 ; i < 100000; i += 123)
+    for (int j = -10000 ; j < 100000; j += 71)
+      if (j != 0)
+	{
+	  sreal sval = ((sreal)i) / (sreal)j;
+	  double val = (double)i / (double)j;
+	  ASSERT_EQ ((fabs (sval.to_double () - val) < 0.00001), true);
+	  ASSERT_EQ (sval.to_int (), (int)val);
+	  ASSERT_EQ (sval.to_nearest_int (), lround (val));
+	}
+}
+
 /* Run all of the selftests within this file.  */
 
 void sreal_cc_tests ()
@@ -385,6 +437,7 @@ void sreal_cc_tests ()
   sreal_verify_arithmetics ();
   sreal_verify_shifting ();
   sreal_verify_negative_division ();
+  sreal_verify_conversions ();
 }
 
 } // namespace selftest

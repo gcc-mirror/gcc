@@ -4,7 +4,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize -fno-math-errno" } */
 /* { dg-additional-options -foffload-options=amdgcn-amdhsa=-mstack-size=3000000 { target offload_target_amdgcn } } */
-/* { dg-additional-options -foffload-options=-lm } */
+/* { dg-additional-options "-DNONSTDFUNC=1" { target nonstandard_math_functions } } */
 
 #undef PRINT_RESULT
 #define VERBOSE 0
@@ -161,7 +161,9 @@ int main (void)
   TEST_FUN (float, -10.0, 10.0, expf);
   TEST_FUN (float, -10.0, 10.0, exp2f);
   TEST_FUN2 (float, -10.0, 10.0, 100.0, -25.0, fmodf);
+#ifdef NONSTDFUNC
   TEST_FUN (float, -10.0, 10.0, gammaf);
+#endif
   TEST_FUN2 (float, -10.0, 10.0, 15.0, -5.0,hypotf);
   TEST_FUN (float, -10.0, 10.0, lgammaf);
   TEST_FUN (float, -1.0, 50.0, logf);
@@ -170,8 +172,10 @@ int main (void)
   TEST_FUN2 (float, -100.0, 100.0, 100.0, -100.0, powf);
   TEST_FUN2 (float, -50.0, 100.0, -2.0, 40.0, remainderf);
   TEST_FUN (float, -50.0, 50.0, rintf);
+#ifdef NONSTDFUNC
   TEST_FUN2 (float, -50.0, 50.0, -10.0, 32.0, __builtin_scalbf);
   TEST_FUN (float, -10.0, 10.0, __builtin_significandf);
+#endif
   TEST_FUN (float, -3.14159265359, 3.14159265359, sinf);
   TEST_FUN (float, -3.14159265359, 3.14159265359, sinhf);
   TEST_FUN (float, -0.1, 10000.0, sqrtf);
@@ -194,7 +198,9 @@ int main (void)
   TEST_FUN (double, -10.0, 10.0, exp);
   TEST_FUN (double, -10.0, 10.0, exp2);
   TEST_FUN2 (double, -10.0, 10.0, 100.0, -25.0, fmod);
+#ifdef NONSTDFUNC
   TEST_FUN (double, -10.0, 10.0, gamma);
+#endif
   TEST_FUN2 (double, -10.0, 10.0, 15.0, -5.0, hypot);
   TEST_FUN (double, -10.0, 10.0, lgamma);
   TEST_FUN (double, -1.0, 50.0, log);
@@ -203,8 +209,10 @@ int main (void)
   TEST_FUN2 (double, -100.0, 100.0, 100.0, -100.0, pow);
   TEST_FUN2 (double, -50.0, 100.0, -2.0, 40.0, remainder);
   TEST_FUN (double, -50.0, 50.0, rint);
+#ifdef NONSTDFUNC
   TEST_FUN2 (double, -50.0, 50.0, -10.0, 32.0, __builtin_scalb);
   TEST_FUN (double, -10.0, 10.0, __builtin_significand);
+#endif
   TEST_FUN (double, -3.14159265359, 3.14159265359, sin);
   TEST_FUN (double, -3.14159265359, 3.14159265359, sinh);
   TEST_FUN (double, -0.1, 10000.0, sqrt);

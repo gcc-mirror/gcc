@@ -23,10 +23,8 @@
 namespace std {
   template<class T> class numeric_limits;
 
-#if 0
   enum float_round_style;
   enum float_denorm_style;
-#endif
 
   template<> class numeric_limits<bool>;
 

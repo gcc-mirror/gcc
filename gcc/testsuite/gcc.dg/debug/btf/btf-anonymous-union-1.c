@@ -9,9 +9,9 @@
 
 /* Struct type with 1 member.  */
 /* { dg-final { scan-assembler-times "\[\t \]0x4000001\[\t \]+\[^\n\]*btt_info" 1 } } */
-/* Union type with 2 members.  */
+/* Anonymous union type with 2 members.  */
 /* { dg-final { scan-assembler-times "\[\t \]0x5000002\[\t \]+\[^\n\]*btt_info" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0\[\t \]+\[^\n\]*btt_name" 1 } } */
+/* { dg-final { scan-assembler-times " BTF_KIND_UNION ''" 1 } } */
 
 struct foo
 {

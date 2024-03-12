@@ -89,6 +89,7 @@ public:
     void visit(ASTCodegen.ClassReferenceExp e) { visit(cast(ASTCodegen.Expression)e); }
     void visit(ASTCodegen.VoidInitExp e) { visit(cast(ASTCodegen.Expression)e); }
     void visit(ASTCodegen.ThrownExceptionExp e) { visit(cast(ASTCodegen.Expression)e); }
+    void visit(ASTCodegen.LoweredAssignExp e) { visit(cast(ASTCodegen.AssignExp)e); }
 }
 
 /**
@@ -152,7 +153,7 @@ extern (C++) class SemanticTimeTransitiveVisitor : SemanticTimePermissiveVisitor
         // need to avoid infinite recursion.
         if (!(e.stageflags & stageToCBuffer))
         {
-            int old = e.stageflags;
+            const old = e.stageflags;
             e.stageflags |= stageToCBuffer;
             foreach (el; *e.elements)
                 if (el)
@@ -240,6 +241,12 @@ extern (C++) class SemanticTimeTransitiveVisitor : SemanticTimePermissiveVisitor
         e.e1.accept(this);
         e.e2.accept(this);
     }
+
+    override void visit(ASTCodegen.LoweredAssignExp e)
+    {
+        e.lowering.accept(this);
+        visit(cast(AssignExp)e);
+    }
 }
 
 extern (C++) class StoppableVisitor : Visitor
@@ -248,7 +255,7 @@ extern (C++) class StoppableVisitor : Visitor
 public:
     bool stop;
 
-    final extern (D) this() scope
+    final extern (D) this() scope @safe
     {
     }
 }

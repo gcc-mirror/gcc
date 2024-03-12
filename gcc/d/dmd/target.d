@@ -25,7 +25,7 @@
 
 module dmd.target;
 
-import dmd.globals : Param;
+import dmd.globals : Param, CHECKENABLE;
 
 enum CPU : ubyte
 {
@@ -111,7 +111,7 @@ extern (C++) struct Target
     /// Architecture name
     const(char)[] architectureName;
     CPU cpu = CPU.baseline; // CPU instruction set to target
-    bool is64bit;           // generate 64 bit code for x86_64; true by default for 64 bit dmd
+    bool isX86_64;          // generate 64 bit code for x86_64; true by default for 64 bit dmd
     bool isLP64;            // pointers are 64 bits
 
     // Environmental
@@ -159,7 +159,7 @@ extern (C++) struct Target
      * This can be used to restore the state set by `_init` to its original
      * state.
      */
-    void deinitialize()
+    void deinitialize() @safe
     {
         this = this.init;
     }
@@ -203,7 +203,7 @@ extern (C++) struct Target
      *      2   vector element type is not supported
      *      3   vector size is not supported
      */
-    extern (C++) int isVectorTypeSupported(int sz, Type type);
+    extern (C++) int isVectorTypeSupported(int sz, Type type) @safe;
 
     /**
      * Checks whether the target supports the given operation for vectors.
@@ -221,7 +221,7 @@ extern (C++) struct Target
      * Returns:
      *      `LINK` to use for `extern(System)`
      */
-    extern (C++) LINK systemLinkage();
+    extern (C++) LINK systemLinkage() @safe;
 
     /**
      * Describes how an argument type is passed to a function on target.
@@ -270,7 +270,7 @@ extern (C++) struct Target
      *  tf = type of function being called
      * Returns: `true` if the callee invokes destructors for arguments.
      */
-    extern (C++) bool isCalleeDestroyingArgs(TypeFunction tf);
+    extern (C++) bool isCalleeDestroyingArgs(TypeFunction tf) @safe;
 
     /**
      * Returns true if the implementation for object monitors is always defined
@@ -288,7 +288,7 @@ extern (C++) struct Target
      * Returns:
      *      `false` if the target does not support `pragma(linkerDirective)`.
      */
-    extern (C++) bool supportsLinkerDirective() const;
+    extern (C++) bool supportsLinkerDirective() const @safe;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

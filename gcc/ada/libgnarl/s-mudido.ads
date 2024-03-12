@@ -20,10 +20,6 @@ with Ada.Task_Identification;
 private with System.Tasking;
 
 package System.Multiprocessors.Dispatching_Domains is
-   --  pragma Preelaborate (Dispatching_Domains);
-   --  ??? According to AI 167 this unit should be preelaborate, but it cannot
-   --  be preelaborate because it depends on Ada.Real_Time which is not
-   --  preelaborate.
 
    Dispatching_Domain_Error : exception;
 

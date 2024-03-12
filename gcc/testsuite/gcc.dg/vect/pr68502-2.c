@@ -41,6 +41,7 @@ int main ()
   for (i = 0; i < numf1s; i++)
     f1_layer[i].I = -1;
   reset_nodes ();
+#pragma GCC novector
   for (i = 0; i < numf1s; i++)
     if (f1_layer[i].I != -1)
       abort ();

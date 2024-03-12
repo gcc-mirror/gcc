@@ -70,10 +70,9 @@ if { $orig_environment_saved == 0 } {
 # Some torture-options cause intermediate code output, unusable for
 # testing using e.g. scan-assembler.  In this variable are the options
 # how to force it, when needed.
-global gcc_force_conventional_output
-set gcc_force_conventional_output ""
+global gcc_set_required_options
+set gcc_set_required_options ""
 
-set LTO_TORTURE_OPTIONS ""
 if [info exists TORTURE_OPTIONS] {
     set DG_TORTURE_OPTIONS $TORTURE_OPTIONS
 } else {
@@ -93,20 +92,7 @@ if [info exists TORTURE_OPTIONS] {
 	{ -Os } ]
 
     if [check_effective_target_lto] {
-        # When having plugin test both slim and fat LTO and plugin/nonplugin
-        # path.
-	if [check_linker_plugin_available] {
-           set LTO_TORTURE_OPTIONS [list \
-	      { -O2 -flto -fno-use-linker-plugin -flto-partition=none } \
-	      { -O2 -flto -fuse-linker-plugin -fno-fat-lto-objects }
-           ]
-        } else {
-           set LTO_TORTURE_OPTIONS [list \
-	      { -O2 -flto -flto-partition=none } \
-	      { -O2 -flto }
-           ]
-        }
-        set gcc_force_conventional_output "-ffat-lto-objects"
+        set gcc_set_required_options "-ffat-lto-objects"
     }
 }
 
@@ -378,6 +364,11 @@ proc gcc-dg-prune { system text } {
     # Always remember to clear it in .exp file after executed all tests.
     global dg_runtest_extra_prunes
 
+    # Call into multiline.exp to handle any multiline output directives.
+    # This is done before the check for blank lines so that multiline
+    # output directives can have blank lines within them.
+    set text [handle-multiline-outputs $text]
+
     # Complain about blank lines in the output (PR other/69006)
     global allow_blank_lines
     if { !$allow_blank_lines } {
@@ -582,11 +573,15 @@ proc search_for { file pattern } {
 proc gcc-dg-runtest { testcases flags default-extra-flags } {
     global runtests
 
+    # Some callers initialize torture testing themselves; don't override those.
+    set existing_torture_init [torture-init-done]
+    if { $existing_torture_init == 0 } {
+	torture-init
+    }
     # Some callers set torture options themselves; don't override those.
     set existing_torture_options [torture-options-exist]
     if { $existing_torture_options == 0 } {
 	global DG_TORTURE_OPTIONS LTO_TORTURE_OPTIONS
-	torture-init
 	set-torture-options $DG_TORTURE_OPTIONS [list {}] $LTO_TORTURE_OPTIONS
     }
     dump-torture-options
@@ -617,7 +612,7 @@ proc gcc-dg-runtest { testcases flags default-extra-flags } {
 	}
     }
 
-    if { $existing_torture_options == 0 } {
+    if { $existing_torture_init == 0 } {
 	torture-finish
     }
 }

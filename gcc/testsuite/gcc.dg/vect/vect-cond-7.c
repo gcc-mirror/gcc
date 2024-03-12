@@ -53,6 +53,7 @@ main ()
 #undef F
 #define F(var) f##var ();
   TESTS
+#pragma GCC novector
   for (i = 0; i < 64; i++)
     {
       asm volatile ("" : : : "memory");

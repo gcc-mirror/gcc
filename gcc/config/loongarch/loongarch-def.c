@@ -21,25 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "loongarch-def.h"
 #include "loongarch-str.h"
 
-/* Default RTX cost initializer.  */
-#define COSTS_N_INSNS(N) ((N) * 4)
-#define DEFAULT_COSTS				\
-    .fp_add		= COSTS_N_INSNS (1),	\
-    .fp_mult_sf		= COSTS_N_INSNS (2),	\
-    .fp_mult_df		= COSTS_N_INSNS (4),	\
-    .fp_div_sf		= COSTS_N_INSNS (6),	\
-    .fp_div_df		= COSTS_N_INSNS (8),	\
-    .int_mult_si	= COSTS_N_INSNS (1),	\
-    .int_mult_di	= COSTS_N_INSNS (1),	\
-    .int_div_si		= COSTS_N_INSNS (4),	\
-    .int_div_di		= COSTS_N_INSNS (6),	\
-    .branch_cost	= 2,			\
-    .memory_latency	= 4
-
 /* CPU property tables.  */
 const char*
 loongarch_cpu_strings[N_TUNE_TYPES] = {
   [CPU_NATIVE]		  = STR_CPU_NATIVE,
+  [CPU_ABI_DEFAULT]	  = STR_CPU_ABI_DEFAULT,
   [CPU_LOONGARCH64]	  = STR_CPU_LOONGARCH64,
   [CPU_LA464]		  = STR_CPU_LA464,
 };
@@ -49,10 +35,12 @@ loongarch_cpu_default_isa[N_ARCH_TYPES] = {
   [CPU_LOONGARCH64] = {
       .base = ISA_BASE_LA64V100,
       .fpu = ISA_EXT_FPU64,
+      .simd = 0,
   },
   [CPU_LA464] = {
       .base = ISA_BASE_LA64V100,
       .fpu = ISA_EXT_FPU64,
+      .simd = ISA_EXT_SIMD_LASX,
   },
 };
 
@@ -71,6 +59,34 @@ loongarch_cpu_cache[N_TUNE_TYPES] = {
       .simultaneous_prefetches = 4,
   },
 };
+
+struct loongarch_align
+loongarch_cpu_align[N_TUNE_TYPES] = {
+  [CPU_LOONGARCH64] = {
+    .function = "32",
+    .label = "16",
+  },
+  [CPU_LA464] = {
+    .function = "32",
+    .label = "16",
+  },
+};
+
+
+/* Default RTX cost initializer.  */
+#define COSTS_N_INSNS(N) ((N) * 4)
+#define DEFAULT_COSTS				\
+    .fp_add		= COSTS_N_INSNS (1),	\
+    .fp_mult_sf		= COSTS_N_INSNS (2),	\
+    .fp_mult_df		= COSTS_N_INSNS (4),	\
+    .fp_div_sf		= COSTS_N_INSNS (6),	\
+    .fp_div_df		= COSTS_N_INSNS (8),	\
+    .int_mult_si	= COSTS_N_INSNS (1),	\
+    .int_mult_di	= COSTS_N_INSNS (1),	\
+    .int_div_si		= COSTS_N_INSNS (4),	\
+    .int_div_di		= COSTS_N_INSNS (6),	\
+    .branch_cost	= 6,			\
+    .memory_latency	= 4
 
 /* The following properties cannot be looked up directly using "cpucfg".
  So it is necessary to provide a default value for "unknown native"
@@ -91,7 +107,7 @@ loongarch_cpu_rtx_cost_data[N_TUNE_TYPES] = {
 };
 
 /* RTX costs to use when optimizing for size.  */
-extern const struct loongarch_rtx_cost_data
+const struct loongarch_rtx_cost_data
 loongarch_rtx_cost_optimize_size = {
     .fp_add	      = 4,
     .fp_mult_sf	      = 4,
@@ -102,7 +118,7 @@ loongarch_rtx_cost_optimize_size = {
     .int_mult_di      = 4,
     .int_div_si	      = 4,
     .int_div_di	      = 4,
-    .branch_cost      = 2,
+    .branch_cost      = 6,
     .memory_latency   = 4,
 };
 
@@ -132,9 +148,11 @@ loongarch_isa_base_strings[N_ISA_BASE_TYPES] = {
 
 const char*
 loongarch_isa_ext_strings[N_ISA_EXT_TYPES] = {
-  [ISA_EXT_FPU64] = STR_ISA_EXT_FPU64,
+  [ISA_EXT_NONE] = STR_NONE,
   [ISA_EXT_FPU32] = STR_ISA_EXT_FPU32,
-  [ISA_EXT_NOFPU] = STR_ISA_EXT_NOFPU,
+  [ISA_EXT_FPU64] = STR_ISA_EXT_FPU64,
+  [ISA_EXT_SIMD_LSX] = STR_ISA_EXT_LSX,
+  [ISA_EXT_SIMD_LASX] = STR_ISA_EXT_LASX,
 };
 
 const char*
@@ -159,24 +177,29 @@ loongarch_cmodel_strings[] = {
   [CMODEL_EXTREME]	  = STR_CMODEL_EXTREME,
 };
 
-const char*
-loongarch_switch_strings[] = {
-  [SW_SOFT_FLOAT]	  = OPTSTR_SOFT_FLOAT,
-  [SW_SINGLE_FLOAT]	  = OPTSTR_SINGLE_FLOAT,
-  [SW_DOUBLE_FLOAT]	  = OPTSTR_DOUBLE_FLOAT,
-};
-
 
 /* ABI-related definitions.  */
 const struct loongarch_isa
 abi_minimal_isa[N_ABI_BASE_TYPES][N_ABI_EXT_TYPES] = {
   [ABI_BASE_LP64D] = {
-      [ABI_EXT_BASE] = {.base = ISA_BASE_LA64V100, .fpu = ISA_EXT_FPU64},
+      [ABI_EXT_BASE] = {
+	  .base = ISA_BASE_LA64V100,
+	  .fpu = ISA_EXT_FPU64,
+	  .simd = 0
+      },
   },
   [ABI_BASE_LP64F] = {
-      [ABI_EXT_BASE] = {.base = ISA_BASE_LA64V100, .fpu = ISA_EXT_FPU32},
+      [ABI_EXT_BASE] = {
+	  .base = ISA_BASE_LA64V100,
+	  .fpu = ISA_EXT_FPU32,
+	  .simd = 0
+      },
   },
   [ABI_BASE_LP64S] = {
-      [ABI_EXT_BASE] = {.base = ISA_BASE_LA64V100, .fpu = ISA_EXT_NOFPU},
+      [ABI_EXT_BASE] = {
+	  .base = ISA_BASE_LA64V100,
+	  .fpu = ISA_EXT_NONE,
+	  .simd = 0
+      },
   },
 };

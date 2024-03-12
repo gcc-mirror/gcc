@@ -2319,7 +2319,7 @@ redirect_eh_edge_1 (edge edge_in, basic_block new_bb, bool change_region)
   gcc_assert (old_lp_nr > 0);
   old_lp = get_eh_landing_pad_from_number (old_lp_nr);
 
-  throw_stmt = last_stmt (edge_in->src);
+  throw_stmt = *gsi_last_bb (edge_in->src);
   gcc_checking_assert (lookup_stmt_eh_lp (throw_stmt) == old_lp_nr);
 
   new_label = gimple_block_label (new_bb);
@@ -2490,6 +2490,9 @@ operation_could_trap_helper_p (enum tree_code op,
     case GT_EXPR:
     case GE_EXPR:
     case LTGT_EXPR:
+    /* MIN/MAX similar as LT/LE/GT/GE. */
+    case MIN_EXPR:
+    case MAX_EXPR:
       /* Some floating point comparisons may trap.  */
       return honor_nans;
 
@@ -3379,8 +3382,22 @@ lower_resx (basic_block bb, gresx *stmt,
 	      lab = gimple_block_label (new_bb);
 	      gsi2 = gsi_start_bb (new_bb);
 
+	      /* Handle failure fns that expect either no arguments or the
+		 exception pointer.  */
 	      fn = dst_r->u.must_not_throw.failure_decl;
-	      x = gimple_build_call (fn, 0);
+	      if (TYPE_ARG_TYPES (TREE_TYPE (fn)) != void_list_node)
+		{
+		  tree epfn = builtin_decl_implicit (BUILT_IN_EH_POINTER);
+		  src_nr = build_int_cst (integer_type_node, src_r->index);
+		  x = gimple_build_call (epfn, 1, src_nr);
+		  tree var = create_tmp_var (ptr_type_node);
+		  var = make_ssa_name (var, x);
+		  gimple_call_set_lhs (x, var);
+		  gsi_insert_after (&gsi2, x, GSI_CONTINUE_LINKING);
+		  x = gimple_build_call (fn, 1, var);
+		}
+	      else
+		x = gimple_build_call (fn, 0);
 	      gimple_set_location (x, dst_r->u.must_not_throw.failure_loc);
 	      gsi_insert_after (&gsi2, x, GSI_CONTINUE_LINKING);
 
@@ -3515,11 +3532,9 @@ pass_lower_resx::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple *last = last_stmt (bb);
-      if (last && is_gimple_resx (last))
+      if (gresx *last = safe_dyn_cast <gresx *> (*gsi_last_bb (bb)))
 	{
-	  dominance_invalidated |=
-	    lower_resx (bb, as_a <gresx *> (last), &mnt_map);
+	  dominance_invalidated |= lower_resx (bb, last, &mnt_map);
 	  any_rewritten = true;
 	}
     }
@@ -3944,7 +3959,7 @@ pass_lower_eh_dispatch::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple *last = last_stmt (bb);
+      gimple *last = *gsi_last_bb (bb);
       if (last == NULL)
 	continue;
       if (gimple_code (last) == GIMPLE_EH_DISPATCH)
@@ -3979,7 +3994,7 @@ pass_lower_eh_dispatch::execute (function *fun)
       for (int i = 0; i < rpo_n; ++i)
 	{
 	  bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
-	  gimple *last = last_stmt (bb);
+	  gimple *last = *gsi_last_bb (bb);
 	  if (last
 	      && gimple_code (last) == GIMPLE_RESX
 	      && !stmt_can_throw_external (fun, last))
@@ -4705,7 +4720,7 @@ cleanup_empty_eh (eh_landing_pad lp)
       for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
 	if (e->flags & EDGE_EH)
 	  {
-	    gimple *stmt = last_stmt (e->src);
+	    gimple *stmt = *gsi_last_bb (e->src);
 	    remove_stmt_from_eh_lp (stmt);
 	    remove_edge (e);
 	  }
@@ -4721,7 +4736,7 @@ cleanup_empty_eh (eh_landing_pad lp)
       for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
 	if (e->flags & EDGE_EH)
 	  {
-	    gimple *stmt = last_stmt (e->src);
+	    gimple *stmt = *gsi_last_bb (e->src);
 	    remove_stmt_from_eh_lp (stmt);
 	    add_stmt_to_eh_lp (stmt, new_lp_nr);
 	    remove_edge (e);

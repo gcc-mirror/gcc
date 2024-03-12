@@ -809,7 +809,8 @@ Marek Polacek for his work on the C front end, the sanitizers and general
 bug fixing.
 
 @item
-Andrew Pinski for processing bug reports by the dozen.
+Andrew Pinski for processing bug reports by the dozen, maintenance of the
+Objective-C runtime libraries, and many scalar optimizations.
 
 @item
 Ovidiu Predescu for his work on the Objective-C front end and runtime
@@ -1095,8 +1096,7 @@ Todd Vierling for contributions for NetBSD ports.
 Andrew Waterman for contributing the RISC-V port, as well as maintaining it.
 
 @item
-Jonathan Wakely for contributing libstdc++ Doxygen notes and XHTML
-guidance and maintaining libstdc++.
+Jonathan Wakely for contributing to and maintaining libstdc++.
 
 @item
 Dean Wakerley for converting the install documentation from HTML to texinfo
@@ -1515,7 +1515,7 @@ Gael Thomas for @code{VMClassLoader} boot packages support suggestions.
 
 @item
 Andreas Tobler for Darwin and Solaris testing and fixing, @code{Qt4}
-support for Darwin/OS X, @code{Graphics2D} support, @code{gtk+}
+support for Darwin / macOS, @code{Graphics2D} support, @code{gtk+}
 updates.
 
 @item

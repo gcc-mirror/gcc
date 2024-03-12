@@ -113,7 +113,6 @@ static rtx expand_builtin_apply_args (void);
 static rtx expand_builtin_apply_args_1 (void);
 static rtx expand_builtin_apply (rtx, rtx, rtx);
 static void expand_builtin_return (rtx);
-static enum type_class type_to_class (tree);
 static rtx expand_builtin_classify_type (tree);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_ternary (tree, rtx, rtx);
@@ -171,6 +170,7 @@ static tree fold_builtin_fabs (location_t, tree, tree);
 static tree fold_builtin_abs (location_t, tree, tree);
 static tree fold_builtin_unordered_cmp (location_t, tree, tree, tree, enum tree_code,
 					enum tree_code);
+static tree fold_builtin_iseqsig (location_t, tree, tree);
 static tree fold_builtin_varargs (location_t, tree, tree*, int);
 
 static tree fold_builtin_strpbrk (location_t, tree, tree, tree, tree);
@@ -743,39 +743,22 @@ c_strlen (tree arg, int only_value, c_strlen_data *data, unsigned eltsize)
    as needed.  */
 
 rtx
-c_readstr (const char *str, scalar_int_mode mode,
+c_readstr (const char *str, fixed_size_mode mode,
 	   bool null_terminated_p/*=true*/)
 {
-  HOST_WIDE_INT ch;
-  unsigned int i, j;
-  HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
+  auto_vec<target_unit, MAX_BITSIZE_MODE_ANY_INT / BITS_PER_UNIT> bytes;
 
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
-  unsigned int len = (GET_MODE_PRECISION (mode) + HOST_BITS_PER_WIDE_INT - 1)
-    / HOST_BITS_PER_WIDE_INT;
+  bytes.reserve (GET_MODE_SIZE (mode));
 
-  gcc_assert (len <= MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT);
-  for (i = 0; i < len; i++)
-    tmp[i] = 0;
-
-  ch = 1;
-  for (i = 0; i < GET_MODE_SIZE (mode); i++)
+  target_unit ch = 1;
+  for (unsigned int i = 0; i < GET_MODE_SIZE (mode); ++i)
     {
-      j = i;
-      if (WORDS_BIG_ENDIAN)
-	j = GET_MODE_SIZE (mode) - i - 1;
-      if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
-	  && GET_MODE_SIZE (mode) >= UNITS_PER_WORD)
-	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
-      j *= BITS_PER_UNIT;
-
       if (ch || !null_terminated_p)
 	ch = (unsigned char) str[i];
-      tmp[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
+      bytes.quick_push (ch);
     }
 
-  wide_int c = wide_int::from_array (tmp, len, GET_MODE_PRECISION (mode));
-  return immed_wide_int_const (c, mode);
+  return native_decode_rtx (mode, bytes, 0);
 }
 
 /* Cast a target constant CST to target CHAR and if that value fits into
@@ -1852,7 +1835,7 @@ expand_builtin_return (rtx result)
 
 /* Used by expand_builtin_classify_type and fold_builtin_classify_type.  */
 
-static enum type_class
+int
 type_to_class (tree type)
 {
   switch (TREE_CODE (type))
@@ -1875,6 +1858,7 @@ type_to_class (tree type)
 				   ? string_type_class : array_type_class);
     case LANG_TYPE:	   return lang_type_class;
     case OPAQUE_TYPE:      return opaque_type_class;
+    case BITINT_TYPE:	   return bitint_type_class;
     default:		   return no_type_class;
     }
 }
@@ -3494,7 +3478,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
   wide_int min, max;
   value_range r;
   get_global_range_query ()->range_of_expr (r, bound);
-  if (r.kind () != VR_RANGE)
+  if (r.varying_p () || r.undefined_p ())
     return NULL_RTX;
   min = r.lower_bound ();
   max = r.upper_bound ();
@@ -3529,10 +3513,7 @@ builtin_memcpy_read_str (void *data, void *, HOST_WIDE_INT offset,
      string but the caller guarantees it's large enough for MODE.  */
   const char *rep = (const char *) data;
 
-  /* The by-pieces infrastructure does not try to pick a vector mode
-     for memcpy expansion.  */
-  return c_readstr (rep + offset, as_a <scalar_int_mode> (mode),
-		    /*nul_terminated=*/false);
+  return c_readstr (rep + offset, mode, /*nul_terminated=*/false);
 }
 
 /* LEN specify length of the block of memcpy/memset operation.
@@ -3570,12 +3551,13 @@ determine_block_size (tree len, rtx len_rtx,
       if (TREE_CODE (len) == SSA_NAME)
 	{
 	  value_range r;
+	  tree tmin, tmax;
 	  get_global_range_query ()->range_of_expr (r, len);
-	  range_type = r.kind ();
+	  range_type = get_legacy_range (r, tmin, tmax);
 	  if (range_type != VR_UNDEFINED)
 	    {
-	      min = wi::to_wide (r.min ());
-	      max = wi::to_wide (r.max ());
+	      min = wi::to_wide (tmin);
+	      max = wi::to_wide (tmax);
 	    }
 	}
       if (range_type == VR_RANGE)
@@ -3992,9 +3974,7 @@ builtin_strncpy_read_str (void *data, void *, HOST_WIDE_INT offset,
   if ((unsigned HOST_WIDE_INT) offset > strlen (str))
     return const0_rtx;
 
-  /* The by-pieces infrastructure does not try to pick a vector mode
-     for strncpy expansion.  */
-  return c_readstr (str + offset, as_a <scalar_int_mode> (mode));
+  return c_readstr (str + offset, mode);
 }
 
 /* Helper to check the sizes of sequences and the destination of calls
@@ -4225,8 +4205,7 @@ builtin_memset_read_str (void *data, void *prev,
 
   memset (p, *c, size);
 
-  /* Vector modes should be handled above.  */
-  return c_readstr (p, as_a <scalar_int_mode> (mode));
+  return c_readstr (p, mode);
 }
 
 /* Callback routine for store_by_pieces.  Return the RTL of a register
@@ -4273,8 +4252,7 @@ builtin_memset_gen_str (void *data, void *prev,
 
   p = XALLOCAVEC (char, size);
   memset (p, 1, size);
-  /* Vector modes should be handled above.  */
-  coeff = c_readstr (p, as_a <scalar_int_mode> (mode));
+  coeff = c_readstr (p, mode);
 
   target = convert_to_mode (mode, (rtx) data, 1);
   target = expand_mult (mode, target, coeff, NULL_RTX, 1);
@@ -8385,7 +8363,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       break;
 
     case BUILT_IN_ATOMIC_TEST_AND_SET:
-      return expand_builtin_atomic_test_and_set (exp, target);
+      target = expand_builtin_atomic_test_and_set (exp, target);
+      if (target)
+	return target;
+      break;
 
     case BUILT_IN_ATOMIC_CLEAR:
       return expand_builtin_atomic_clear (exp);
@@ -8645,8 +8626,8 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2,
 
   if (TREE_CODE (inner) == CALL_EXPR
       && (fndecl = get_callee_fndecl (inner))
-      && (fndecl_built_in_p (fndecl, BUILT_IN_EXPECT)
-	  || fndecl_built_in_p (fndecl, BUILT_IN_EXPECT_WITH_PROBABILITY)))
+      && fndecl_built_in_p (fndecl, BUILT_IN_EXPECT,
+			    BUILT_IN_EXPECT_WITH_PROBABILITY))
     return arg0;
 
   inner = inner_arg0;
@@ -8936,7 +8917,7 @@ static tree
 fold_builtin_carg (location_t loc, tree arg, tree type)
 {
   if (validate_arg (arg, COMPLEX_TYPE)
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == REAL_TYPE)
+      && SCALAR_FLOAT_TYPE_P (TREE_TYPE (TREE_TYPE (arg))))
     {
       tree atan2_fn = mathfn_built_in (type, BUILT_IN_ATAN2);
 
@@ -9421,9 +9402,11 @@ fold_builtin_unordered_cmp (location_t loc, tree fndecl, tree arg0, tree arg1,
     /* Choose the wider of two real types.  */
     cmp_type = TYPE_PRECISION (type0) >= TYPE_PRECISION (type1)
       ? type0 : type1;
-  else if (code0 == REAL_TYPE && code1 == INTEGER_TYPE)
+  else if (code0 == REAL_TYPE
+	   && (code1 == INTEGER_TYPE || code1 == BITINT_TYPE))
     cmp_type = type0;
-  else if (code0 == INTEGER_TYPE && code1 == REAL_TYPE)
+  else if ((code0 == INTEGER_TYPE || code0 == BITINT_TYPE)
+	   && code1 == REAL_TYPE)
     cmp_type = type1;
 
   arg0 = fold_convert_loc (loc, cmp_type, arg0);
@@ -9442,6 +9425,42 @@ fold_builtin_unordered_cmp (location_t loc, tree fndecl, tree arg0, tree arg1,
 	 ? unordered_code : ordered_code;
   return fold_build1_loc (loc, TRUTH_NOT_EXPR, type,
 		      fold_build2_loc (loc, code, type, arg0, arg1));
+}
+
+/* Fold a call to __builtin_iseqsig().  ARG0 and ARG1 are the arguments.
+   After choosing the wider floating-point type for the comparison,
+   the code is folded to:
+     SAVE_EXPR<ARG0> >= SAVE_EXPR<ARG1> && SAVE_EXPR<ARG0> <= SAVE_EXPR<ARG1>  */
+
+static tree
+fold_builtin_iseqsig (location_t loc, tree arg0, tree arg1)
+{
+  tree type0, type1;
+  enum tree_code code0, code1;
+  tree cmp1, cmp2, cmp_type = NULL_TREE;
+
+  type0 = TREE_TYPE (arg0);
+  type1 = TREE_TYPE (arg1);
+
+  code0 = TREE_CODE (type0);
+  code1 = TREE_CODE (type1);
+
+  if (code0 == REAL_TYPE && code1 == REAL_TYPE)
+    /* Choose the wider of two real types.  */
+    cmp_type = TYPE_PRECISION (type0) >= TYPE_PRECISION (type1)
+      ? type0 : type1;
+  else if (code0 == REAL_TYPE && code1 == INTEGER_TYPE)
+    cmp_type = type0;
+  else if (code0 == INTEGER_TYPE && code1 == REAL_TYPE)
+    cmp_type = type1;
+
+  arg0 = builtin_save_expr (fold_convert_loc (loc, cmp_type, arg0));
+  arg1 = builtin_save_expr (fold_convert_loc (loc, cmp_type, arg1));
+
+  cmp1 = fold_build2_loc (loc, GE_EXPR, integer_type_node, arg0, arg1);
+  cmp2 = fold_build2_loc (loc, LE_EXPR, integer_type_node, arg0, arg1);
+
+  return fold_build2_loc (loc, TRUTH_AND_EXPR, integer_type_node, cmp1, cmp2);
 }
 
 /* Fold __builtin_{,s,u}{add,sub,mul}{,l,ll}_overflow, either into normal
@@ -9552,6 +9571,51 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
   tree store
     = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, mem_arg2, intres);
   return build2_loc (loc, COMPOUND_EXPR, boolean_type_node, store, ovfres);
+}
+
+/* Fold __builtin_{add,sub}c{,l,ll} into pair of internal functions
+   that return both result of arithmetics and overflowed boolean
+   flag in a complex integer result.  */
+
+static tree
+fold_builtin_addc_subc (location_t loc, enum built_in_function fcode,
+			tree *args)
+{
+  enum internal_fn ifn;
+
+  switch (fcode)
+    {
+    case BUILT_IN_ADDC:
+    case BUILT_IN_ADDCL:
+    case BUILT_IN_ADDCLL:
+      ifn = IFN_ADD_OVERFLOW;
+      break;
+    case BUILT_IN_SUBC:
+    case BUILT_IN_SUBCL:
+    case BUILT_IN_SUBCLL:
+      ifn = IFN_SUB_OVERFLOW;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  tree type = TREE_TYPE (args[0]);
+  tree ctype = build_complex_type (type);
+  tree call = build_call_expr_internal_loc (loc, ifn, ctype, 2,
+					    args[0], args[1]);
+  tree tgt = save_expr (call);
+  tree intres = build1_loc (loc, REALPART_EXPR, type, tgt);
+  tree ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
+  call = build_call_expr_internal_loc (loc, ifn, ctype, 2,
+				       intres, args[2]);
+  tgt = save_expr (call);
+  intres = build1_loc (loc, REALPART_EXPR, type, tgt);
+  tree ovfres2 = build1_loc (loc, IMAGPART_EXPR, type, tgt);
+  ovfres = build2_loc (loc, BIT_IOR_EXPR, type, ovfres, ovfres2);
+  tree mem_arg3 = build_fold_indirect_ref_loc (loc, args[3]);
+  tree store
+    = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, mem_arg3, ovfres);
+  return build2_loc (loc, COMPOUND_EXPR, type, store, intres);
 }
 
 /* Fold a call to __builtin_FILE to a constant string.  */
@@ -9831,6 +9895,9 @@ fold_builtin_2 (location_t loc, tree expr, tree fndecl, tree arg0, tree arg1)
       return fold_builtin_unordered_cmp (loc, fndecl,
 					 arg0, arg1, UNORDERED_EXPR,
 					 NOP_EXPR);
+
+    case BUILT_IN_ISEQSIG:
+      return fold_builtin_iseqsig (loc, arg0, arg1);
 
       /* We do the folding for va_start in the expander.  */
     case BUILT_IN_VA_START:
@@ -10444,7 +10511,7 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 	 We must also strip off INDIRECT_EXPR for C++ reference
 	 parameters.  */
       while (CONVERT_EXPR_P (arg)
-	     || TREE_CODE (arg) == INDIRECT_REF)
+	     || INDIRECT_REF_P (arg))
 	arg = TREE_OPERAND (arg, 0);
       if (arg != last_parm)
 	{
@@ -10842,6 +10909,14 @@ fold_builtin_varargs (location_t loc, tree fndecl, tree *args, int nargs)
       ret = fold_builtin_fpclassify (loc, args, nargs);
       break;
 
+    case BUILT_IN_ADDC:
+    case BUILT_IN_ADDCL:
+    case BUILT_IN_ADDCLL:
+    case BUILT_IN_SUBC:
+    case BUILT_IN_SUBCL:
+    case BUILT_IN_SUBCLL:
+      return fold_builtin_addc_subc (loc, fcode, args);
+
     default:
       break;
     }
@@ -10910,7 +10985,7 @@ do_mpfr_ckconv (mpfr_srcptr m, tree type, int inexact)
       real_from_mpfr (&rr, m, type, MPFR_RNDN);
       /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR value,
 	 check for overflow/underflow.  If the REAL_VALUE_TYPE is zero
-	 but the mpft_t is not, then we underflowed in the
+	 but the mpfr_t is not, then we underflowed in the
 	 conversion.  */
       if (real_isfinite (&rr)
 	  && (rr.cl == rvc_zero) == (mpfr_zero_p (m) != 0))
@@ -10951,7 +11026,7 @@ do_mpc_ckconv (mpc_srcptr m, tree type, int inexact, int force_convert)
       real_from_mpfr (&im, mpc_imagref (m), TREE_TYPE (type), MPFR_RNDN);
       /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR values,
 	 check for overflow/underflow.  If the REAL_VALUE_TYPE is zero
-	 but the mpft_t is not, then we underflowed in the
+	 but the mpfr_t is not, then we underflowed in the
 	 conversion.  */
       if (force_convert
 	  || (real_isfinite (&re) && real_isfinite (&im)
@@ -11084,15 +11159,13 @@ do_mpfr_lgamma_r (tree arg, tree arg_sg, tree type)
 	  const int prec = fmt->p;
 	  const mpfr_rnd_t rnd = fmt->round_towards_zero? MPFR_RNDZ : MPFR_RNDN;
 	  int inexact, sg;
-	  mpfr_t m;
 	  tree result_lg;
 
-	  mpfr_init2 (m, prec);
+	  auto_mpfr m (prec);
 	  mpfr_from_real (m, ra, MPFR_RNDN);
 	  mpfr_clear_flags ();
 	  inexact = mpfr_lgamma (m, &sg, m, rnd);
 	  result_lg = do_mpfr_ckconv (m, type, inexact);
-	  mpfr_clear (m);
 	  if (result_lg)
 	    {
 	      tree result_sg;
@@ -11134,9 +11207,9 @@ do_mpc_arg2 (tree arg0, tree arg1, tree type, int do_nonfinite,
   /* To proceed, MPFR must exactly represent the target floating point
      format, which only happens when the target base equals two.  */
   if (TREE_CODE (arg0) == COMPLEX_CST && !TREE_OVERFLOW (arg0)
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE
+      && SCALAR_FLOAT_TYPE_P (TREE_TYPE (TREE_TYPE (arg0)))
       && TREE_CODE (arg1) == COMPLEX_CST && !TREE_OVERFLOW (arg1)
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg1))) == REAL_TYPE
+      && SCALAR_FLOAT_TYPE_P (TREE_TYPE (TREE_TYPE (arg1)))
       && REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0))))->b == 2)
     {
       const REAL_VALUE_TYPE *const re0 = TREE_REAL_CST_PTR (TREE_REALPART (arg0));
@@ -11344,6 +11417,7 @@ is_inexpensive_builtin (tree decl)
       case BUILT_IN_ISLESSEQUAL:
       case BUILT_IN_ISLESSGREATER:
       case BUILT_IN_ISUNORDERED:
+      case BUILT_IN_ISEQSIG:
       case BUILT_IN_VA_ARG_PACK:
       case BUILT_IN_VA_ARG_PACK_LEN:
       case BUILT_IN_VA_COPY:
@@ -11719,6 +11793,8 @@ builtin_fnspec (tree callee)
       case BUILT_IN_RETURN_ADDRESS:
 	return ".c";
       case BUILT_IN_ASSUME_ALIGNED:
+      case BUILT_IN_EXPECT:
+      case BUILT_IN_EXPECT_WITH_PROBABILITY:
 	return "1cX ";
       /* But posix_memalign stores a pointer into the memory pointed to
 	 by its first argument.  */

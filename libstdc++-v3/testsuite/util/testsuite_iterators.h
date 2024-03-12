@@ -916,7 +916,7 @@ namespace __gnu_test
   // Test for basic properties of C++20 16.3.3.6 [customization.point.object].
   template<typename T>
     constexpr bool
-    is_customization_point_object(T& obj) noexcept
+    is_customization_point_object(T&) noexcept
     {
       // A [CPO] is a function object with a literal class type.
       static_assert( std::is_class_v<T> || std::is_union_v<T> );

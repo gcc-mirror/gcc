@@ -17,9 +17,25 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef DEF_MVE_TYPE
-#error "arm-mve-builtins.def included without defining DEF_MVE_TYPE"
+#ifndef DEF_MVE_MODE
+#define DEF_MVE_MODE(A, B, C, D)
 #endif
+
+#ifndef DEF_MVE_TYPE
+#define DEF_MVE_TYPE(A, B)
+#endif
+
+#ifndef DEF_MVE_TYPE_SUFFIX
+#define DEF_MVE_TYPE_SUFFIX(A, B, C, D, E)
+#endif
+
+#ifndef DEF_MVE_FUNCTION
+#define DEF_MVE_FUNCTION(A, B, C, D)
+#endif
+
+DEF_MVE_MODE (n, none, none, none)
+DEF_MVE_MODE (offset, none, none, bytes)
+DEF_MVE_MODE (r, none, none, none)
 
 #define REQUIRES_FLOAT false
 DEF_MVE_TYPE (mve_pred16_t, boolean_type_node)
@@ -37,3 +53,28 @@ DEF_MVE_TYPE (int64x2_t, intDI_type_node)
 DEF_MVE_TYPE (float16x8_t, arm_fp16_type_node)
 DEF_MVE_TYPE (float32x4_t, float_type_node)
 #undef REQUIRES_FLOAT
+
+#define REQUIRES_FLOAT false
+DEF_MVE_TYPE_SUFFIX (s8, int8x16_t, signed, 8, V16QImode)
+DEF_MVE_TYPE_SUFFIX (s16, int16x8_t, signed, 16, V8HImode)
+DEF_MVE_TYPE_SUFFIX (s32, int32x4_t, signed, 32, V4SImode)
+DEF_MVE_TYPE_SUFFIX (s64, int64x2_t, signed, 64, V2DImode)
+DEF_MVE_TYPE_SUFFIX (u8, uint8x16_t, unsigned, 8, V16QImode)
+DEF_MVE_TYPE_SUFFIX (u16, uint16x8_t, unsigned, 16, V8HImode)
+DEF_MVE_TYPE_SUFFIX (u32, uint32x4_t, unsigned, 32, V4SImode)
+DEF_MVE_TYPE_SUFFIX (u64, uint64x2_t, unsigned, 64, V2DImode)
+DEF_MVE_TYPE_SUFFIX (p8, uint8x16_t, poly, 8, V16QImode)
+DEF_MVE_TYPE_SUFFIX (p16, uint16x8_t, poly, 16, V8HImode)
+#undef REQUIRES_FLOAT
+
+#define REQUIRES_FLOAT true
+DEF_MVE_TYPE_SUFFIX (f16, float16x8_t, float, 16, V8HFmode)
+DEF_MVE_TYPE_SUFFIX (f32, float32x4_t, float, 32, V4SFmode)
+#undef REQUIRES_FLOAT
+
+#include "arm-mve-builtins-base.def"
+
+#undef DEF_MVE_TYPE
+#undef DEF_MVE_TYPE_SUFFIX
+#undef DEF_MVE_FUNCTION
+#undef DEF_MVE_MODE

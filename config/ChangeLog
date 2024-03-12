@@ -1,3 +1,61 @@
+2023-09-15  Yang Yujie  <yangyujie@loongson.cn>
+
+	* mt-loongarch-mlib: New file.  Pass -fmultiflags when building
+	target libraries (FLAGS_FOR_TARGET).
+	* mt-loongarch-elf: New file.
+	* mt-loongarch-gnu: New file.
+
+2023-08-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-plugin.m4 (GCC_ENABLE_PLUGINS): Use
+	export_sym_check="$ac_cv_prog_OBJDUMP -T" also when host is not
+	build or target.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* pkg.m4 (PKG_CHECK_MODULES): Use AC_TRY_LINK only if
+	$pkg_failed = no.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* pkg.m4 (PKG_CHECK_MODULES): Add AC_TRY_LINK to check if
+	$pkg_cv_[]$1[]_LIBS works.
+
+2023-08-07  John Ericson  <git@JohnEricson.me>
+
+	* picflag.m4: Simplify SHmedia NetBSD match by presuming ELF.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* override.m4: Correct comment grammar.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* lib-ld.m4 (AC_LIB_PROG_LD_GNU): Require AC_PROG_EGREP and
+	invoke $EGREP.
+	(AC_LIB_PROG_LD): Likewise.
+
+2023-08-07  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* zstd.m4: Add minimum version requirement of 1.4.0.
+
+2023-08-07  Fangrui Song  <maskray@google.com>
+
+	* zstd.m4: New file.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc-plugin.m4 (GCC_PLUGIN_OPTION): Check if AR works with
+	--plugin and rc before enabling --plugin.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc-plugin.m4 (GCC_PLUGIN_OPTION): New.
+
+2023-07-21  Sergei Trofimovich  <siarheit@google.com>
+
+	* mh-mingw: Drop assignment of unused BOOT_CXXFLAGS variable.
+
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	Revert:

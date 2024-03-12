@@ -55,6 +55,7 @@ main (void)
 
   foo (a, b);
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (a[i] != result[2*i] || b[i] != result[2*i+1])

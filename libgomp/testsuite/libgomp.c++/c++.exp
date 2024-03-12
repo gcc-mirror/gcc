@@ -1,15 +1,25 @@
 load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 
-global shlib_ext
-
-set shlib_ext [get_shlib_extension]
-set lang_link_flags "-lstdc++"
-set lang_test_file_found 0
-set lang_library_path "../libstdc++-v3/src/.libs"
-if [info exists lang_include_flags] then {
-    unset lang_include_flags
+if { $blddir != "" } {
+    set libstdc++_library_path "../libstdc++-v3/src/.libs"
+    set shlib_ext [get_shlib_extension]
+    if { ![file exists "${blddir}/${libstdc++_library_path}/libstdc++.a"]
+	 && ![file exists "${blddir}/${libstdc++_library_path}/libstdc++.${shlib_ext}"] } {
+	verbose -log "No libstdc++ library found, will not execute c++ tests"
+	unset libstdc++_library_path
+	return
+    }
+    lappend lang_library_paths ${libstdc++_library_path}
+} elseif { ![info exists GXX_UNDER_TEST] } {
+    verbose -log "GXX_UNDER_TEST not defined, will not execute c++ tests"
+    return
 }
+if { $blddir != "" } {
+    set lang_source_re {^.*\.[cC]$}
+    set lang_include_flags [exec sh ${blddir}/../libstdc++-v3/scripts/testsuite_flags --build-includes]
+}
+lappend ALWAYS_CFLAGS "compiler=$GXX_UNDER_TEST"
 
 # If a testcase doesn't have special options, use these.
 if ![info exists DEFAULT_CFLAGS] then {
@@ -22,61 +32,27 @@ dg-init
 # Turn on OpenMP.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
 
-# Switch into C++ mode.  Otherwise, the libgomp.c-c++-common/*.c
-# files would be compiled as C files.
-set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
-set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
+# Gather a list of all tests.
+set tests [lsort [concat \
+		      [find $srcdir/$subdir *.C] \
+		      [find $srcdir/$subdir/../libgomp.c-c++-common *.c]]]
 
-set blddir [lookfor_file [get_multilibs] libgomp]
+set ld_library_path $always_ld_library_path
+if { $blddir != "" } {
+    append ld_library_path ":${blddir}/${libstdc++_library_path}"
+}
+append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+set_ld_library_path_env_vars
 
+# Main loop.
+dg-runtest $tests "" $DEFAULT_CFLAGS
 
 if { $blddir != "" } {
-    # Look for a static libstdc++ first.
-    if [file exists "${blddir}/${lang_library_path}/libstdc++.a"] {
-        set lang_test_file "${lang_library_path}/libstdc++.a"
-        set lang_test_file_found 1
-        # We may have a shared only build, so look for a shared libstdc++.
-    } elseif [file exists "${blddir}/${lang_library_path}/libstdc++.${shlib_ext}"] {
-        set lang_test_file "${lang_library_path}/libstdc++.${shlib_ext}"
-        set lang_test_file_found 1
-    } else {
-        puts "No libstdc++ library found, will not execute c++ tests"
-    }
-} elseif { [info exists GXX_UNDER_TEST] } {
-    set lang_test_file_found 1
-    # Needs to exist for libgomp.exp.
-    set lang_test_file ""
-} else {
-    puts "GXX_UNDER_TEST not defined, will not execute c++ tests"
+    unset lang_source_re
+    unset lang_include_flags
+    unset libstdc++_library_path
+    unset lang_library_paths
 }
-
-if { $lang_test_file_found } {
-    # Gather a list of all tests.
-    set tests [lsort [concat \
-			  [find $srcdir/$subdir *.C] \
-			  [find $srcdir/$subdir/../libgomp.c-c++-common *.c]]]
-
-    if { $blddir != "" } {
-        set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
-    } else {
-        set ld_library_path "$always_ld_library_path"
-    }
-    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
-    set_ld_library_path_env_vars
-
-    set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
-    if { [file exists $flags_file] } {
-	set libstdcxx_includes [exec sh $flags_file --build-includes]
-    } else {
-	set libstdcxx_includes ""
-    }
-
-    # Main loop.
-    dg-runtest $tests "" "$libstdcxx_includes $DEFAULT_CFLAGS"
-}
-
-# See above.
-set GCC_UNDER_TEST "$SAVE_GCC_UNDER_TEST"
 
 # All done.
 dg-finish

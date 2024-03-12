@@ -21,8 +21,8 @@ int main() {
 
 /* { dg-output "HWAddressSanitizer: tag-mismatch on address 0x\[0-9a-f\]*.*" } */
 /* { dg-output "READ of size 1 at 0x\[0-9a-f\]* tags: \[\[:xdigit:\]\]\[\[:xdigit:\]\]/\[\[:xdigit:\]\]\[\[:xdigit:\]\] \\(ptr/mem\\) in thread T0.*" } */
-/* { dg-output "is located 5 bytes inside of 10-byte region.*" } */
+/* { dg-output "is located 5 bytes inside a 10-byte region.*" } */
 /* { dg-output "freed by thread T0 here:.*" } */
 /* { dg-output "#1\[^\n\r]*main\[^\n\r]*use-after-free.c:17.*" } */
-/* { dg-output "previously allocated here:.*" } */
+/* { dg-output "previously allocated by thread T0 here:.*" } */
 /* { dg-output "#1\[^\n\r]*main\[^\n\r]*use-after-free.c:16" } */

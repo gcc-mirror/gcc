@@ -26,7 +26,6 @@
 with Atree;          use Atree;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
-with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
@@ -535,6 +534,11 @@ package body Sem_Ch8 is
 
    procedure Premature_Usage (N : Node_Id);
    --  Diagnose usage of an entity before it is visible
+
+   function Is_Self_Hidden (E : Entity_Id) return Boolean;
+   --  True within a declaration if it is hidden from all visibility by itself
+   --  (see RM-8.3(16-18)). This is mostly just "not Is_Not_Self_Hidden", but
+   --  we need to check for E_Void in case of errors.
 
    procedure Use_One_Package
      (N         : Node_Id;
@@ -3485,9 +3489,13 @@ package body Sem_Ch8 is
          --  constructed later at the freeze point, so indicate that the
          --  completion has not been seen yet.
 
-         Reinit_Field_To_Zero (New_S, F_Has_Out_Or_In_Out_Parameter);
-         Reinit_Field_To_Zero (New_S, F_Needs_No_Actuals,
+         Reinit_Field_To_Zero (New_S, F_Has_Out_Or_In_Out_Parameter,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
+         Reinit_Field_To_Zero (New_S, F_Needs_No_Actuals);
+         Reinit_Field_To_Zero (New_S, F_Is_Predicate_Function);
+         Reinit_Field_To_Zero (New_S, F_Protected_Subprogram);
+         Reinit_Field_To_Zero (New_S, F_Is_Inlined_Always);
+         Reinit_Field_To_Zero (New_S, F_Is_Generic_Actual_Subprogram);
          Mutate_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
          Set_Has_Completion (Rename_Spec, False);
@@ -5066,7 +5074,6 @@ package body Sem_Ch8 is
          if Id /= Current_Entity (Id) then
             Prev := Current_Entity (Id);
             while Present (Prev)
-              and then Present (Homonym (Prev))
               and then Homonym (Prev) /= Id
             loop
                Prev := Homonym (Prev);
@@ -5074,7 +5081,7 @@ package body Sem_Ch8 is
 
             --  Skip to end of loop if Id is not in the visibility chain
 
-            if No (Prev) or else Homonym (Prev) /= Id then
+            if No (Prev) then
                goto Next_Ent;
             end if;
 
@@ -5451,6 +5458,19 @@ package body Sem_Ch8 is
             raise Program_Error;
       end case;
    end Error_Missing_With_Of_Known_Unit;
+
+   --------------------
+   -- Is_Self_Hidden --
+   --------------------
+
+   function Is_Self_Hidden (E : Entity_Id) return Boolean is
+   begin
+      if Is_Not_Self_Hidden (E) then
+         return Ekind (E) = E_Void;
+      else
+         return True;
+      end if;
+   end Is_Self_Hidden;
 
    ----------------------
    -- Find_Direct_Name --
@@ -6440,14 +6460,7 @@ package body Sem_Ch8 is
             Write_Entity_Info (E, "      ");
          end if;
 
-         --  If the Ekind of the entity is Void, it means that all homonyms
-         --  are hidden from all visibility (RM 8.3(5,14-20)). However, this
-         --  test is skipped if the current scope is a record and the name is
-         --  a pragma argument expression (case of Atomic and Volatile pragmas
-         --  and possibly other similar pragmas added later, which are allowed
-         --  to reference components in the current record).
-
-         if Ekind (E) = E_Void
+         if Is_Self_Hidden (E)
            and then
              (not Is_Record_Type (Current_Scope)
                or else Nkind (Parent (N)) /= N_Pragma_Argument_Association)
@@ -7199,10 +7212,7 @@ package body Sem_Ch8 is
 
       Check_Wide_Character_Restriction (Id, N);
 
-      --  If the Ekind of the entity is Void, it means that all homonyms are
-      --  hidden from all visibility (RM 8.3(5,14-20)).
-
-      if Ekind (Id) = E_Void then
+      if Is_Self_Hidden (Id) then
          Premature_Usage (N);
 
       elsif Is_Overloadable (Id) and then Present (Homonym (Id)) then
@@ -7631,8 +7641,8 @@ package body Sem_Ch8 is
             elsif
               Present (First_Formal (It.Nam))
                 and then Present (First_Formal (New_S))
-                and then (Base_Type (Etype (First_Formal (It.Nam))) =
-                          Base_Type (Etype (First_Formal (New_S))))
+                and then Base_Type (Etype (First_Formal (It.Nam))) =
+                         Base_Type (Etype (First_Formal (New_S)))
             then
                Candidate_Renaming := It.Nam;
             end if;
@@ -7664,8 +7674,8 @@ package body Sem_Ch8 is
 
          elsif Present (First_Formal (Entity (Nam)))
            and then Present (First_Formal (New_S))
-           and then (Base_Type (Etype (First_Formal (Entity (Nam)))) =
-                     Base_Type (Etype (First_Formal (New_S))))
+           and then Base_Type (Etype (First_Formal (Entity (Nam)))) =
+                    Base_Type (Etype (First_Formal (New_S)))
          then
             Candidate_Renaming := Entity (Nam);
          end if;
@@ -8145,7 +8155,7 @@ package body Sem_Ch8 is
                   end loop;
                end;
 
-            elsif Ekind (P_Name) = E_Void then
+            elsif Is_Self_Hidden (P_Name) then
                Premature_Usage (P);
 
             elsif Ekind (P_Name) = E_Generic_Package then
@@ -9290,7 +9300,7 @@ package body Sem_Ch8 is
 
    procedure Pop_Scope is
       SST : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
-      S   : constant Entity_Id := SST.Entity;
+      S   : constant Scope_Kind_Id := SST.Entity;
 
    begin
       if Debug_Flag_E then
@@ -9352,7 +9362,7 @@ package body Sem_Ch8 is
    -- Push_Scope --
    ----------------
 
-   procedure Push_Scope (S : Entity_Id) is
+   procedure Push_Scope (S : Scope_Kind_Id) is
       E : constant Entity_Id := Scope (S);
 
       function Component_Alignment_Default return Component_Alignment_Kind;
@@ -10316,7 +10326,7 @@ package body Sem_Ch8 is
             if Is_Immediately_Visible (Prev)
               and then (not Is_Overloadable (Prev)
                          or else not Is_Overloadable (Id)
-                         or else (Type_Conformant (Id, Prev)))
+                         or else Type_Conformant (Id, Prev))
             then
                if No (Current_Instance) then
 
@@ -10419,7 +10429,7 @@ package body Sem_Ch8 is
          --  On exit, we know entity is not hidden, unless it is private
 
          if not Is_Hidden (Id)
-           and then ((not Is_Child_Unit (Id)) or else Is_Visible_Lib_Unit (Id))
+           and then (not Is_Child_Unit (Id) or else Is_Visible_Lib_Unit (Id))
          then
             Set_Is_Potentially_Use_Visible (Id);
 
@@ -10752,7 +10762,7 @@ package body Sem_Ch8 is
                      Error_Msg_Sloc := Sloc (Clause1);
                      Error_Msg_NE -- CODEFIX
                        ("& is already use-visible through previous "
-                        & "use_type_clause #??", Clause2, T);
+                        & "use_type_clause #?r?", Clause2, T);
                      return;
                   end if;
 
@@ -10824,7 +10834,7 @@ package body Sem_Ch8 is
 
                      Error_Msg_NE -- CODEFIX
                        ("& is already use-visible through previous "
-                        & "use_type_clause #??", Err_No, Id);
+                        & "use_type_clause #?r?", Err_No, Id);
                   end if;
                end Use_Clause_Known;
 
@@ -10834,7 +10844,7 @@ package body Sem_Ch8 is
             else
                Error_Msg_NE -- CODEFIX
                  ("& is already use-visible through previous "
-                  & "use_type_clause??", Id, T);
+                  & "use_type_clause?r?", Id, T);
             end if;
 
          --  The package where T is declared is already used
@@ -10849,7 +10859,7 @@ package body Sem_Ch8 is
                Error_Msg_Sloc :=
                  Sloc (Find_First_Use (Current_Use_Clause (Scope (T))));
                Error_Msg_NE -- CODEFIX
-                 ("& is already use-visible through package use clause #??",
+                 ("& is already use-visible through package use clause #?r?",
                   Id, T);
             end if;
 
@@ -10858,7 +10868,7 @@ package body Sem_Ch8 is
          else
             Error_Msg_Node_2 := Scope (T);
             Error_Msg_NE -- CODEFIX
-              ("& is already use-visible inside package &??", Id, T);
+              ("& is already use-visible inside package &?r?", Id, T);
          end if;
       end if;
    end Use_One_Type;

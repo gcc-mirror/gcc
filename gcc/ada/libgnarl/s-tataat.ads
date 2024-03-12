@@ -35,7 +35,7 @@ with Ada.Unchecked_Conversion;
 
 package System.Tasking.Task_Attributes is
 
-   type Deallocator is access procedure (Ptr : Atomic_Address);
+   type Deallocator is access procedure (Ptr : System.Address);
    pragma Favor_Top_Level (Deallocator);
 
    type Attribute_Record is record
@@ -48,7 +48,7 @@ package System.Tasking.Task_Attributes is
    pragma No_Strict_Aliasing (Attribute_Access);
 
    function To_Attribute is new
-     Ada.Unchecked_Conversion (Atomic_Address, Attribute_Access);
+     Ada.Unchecked_Conversion (System.Address, Attribute_Access);
 
    function Next_Index (Require_Finalization : Boolean) return Integer;
    --  Return the next attribute index available. Require_Finalization is True

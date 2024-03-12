@@ -42,18 +42,18 @@ main()
 // { dg-final { note-test str "\"string\"" } }
 
   optional<int> o;
-// { dg-final { note-test o {std::experimental::optional<int> [no contained value]} } }
+// { dg-final { note-test o {std::experimental::optional [no contained value]} } }
   optional<bool> ob{false};
-// { dg-final { note-test ob {std::experimental::optional<bool> = {[contained value] = false}} } }
+// { dg-final { note-test ob {std::experimental::optional = {[contained value] = false}} } }
   optional<int> oi{5};
-// { dg-final { note-test oi {std::experimental::optional<int> = {[contained value] = 5}} } }
+// { dg-final { note-test oi {std::experimental::optional = {[contained value] = 5}} } }
   optional<void*> op{nullptr};
-// { dg-final { note-test op {std::experimental::optional<void *> = {[contained value] = 0x0}} } }
+// { dg-final { note-test op {std::experimental::optional = {[contained value] = 0x0}} } }
   optional<std::map<int, double>> om;
   om = std::map<int, double>{ {1, 2.}, {3, 4.}, {5, 6.} };
-// { dg-final { regexp-test om {std::experimental::optional<std::(__debug::)?map<int, double>> containing std::(__debug::)?map with 3 elements = {\[1\] = 2, \[3\] = 4, \[5\] = 6}} } }
+// { dg-final { regexp-test om {std::experimental::optional containing std::(__debug::)?map with 3 elements = {\[1\] = 2, \[3\] = 4, \[5\] = 6}} } }
   optional<std::string> os{ "stringy" };
-// { dg-final { note-test os {std::experimental::optional<std::string> = {[contained value] = "stringy"}} } }
+// { dg-final { note-test os {std::experimental::optional = {[contained value] = "stringy"}} } }
 
   any a;
 // { dg-final { note-test a {std::experimental::any [no contained value]} } }

@@ -67,6 +67,11 @@
 			    (DF "TARGET_DOUBLE_FLOAT || TARGET_ZDINX")
 			    (HF "TARGET_ZFH || TARGET_ZHINX")])
 
+;; Iterator for hardware-supported load/store floating-point modes.
+(define_mode_iterator ANYLSF [(SF "TARGET_HARD_FLOAT || TARGET_ZFINX")
+			      (DF "TARGET_DOUBLE_FLOAT || TARGET_ZDINX")
+			      (HF "TARGET_ZFHMIN || TARGET_ZHINXMIN")])
+
 ;; Iterator for floating-point modes that can be loaded into X registers.
 (define_mode_iterator SOFTF [SF (DF "TARGET_64BIT") (HF "TARGET_ZFHMIN")])
 
@@ -117,8 +122,23 @@
 (define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TF "DI")])
 
 ; bitmanip mode attribute
-(define_mode_attr shiftm1 [(SI "const31_operand") (DI "const63_operand")])
+(define_mode_attr shiftm1 [(SI "const_si_mask_operand") (DI "const_di_mask_operand")])
 (define_mode_attr shiftm1p [(SI "DsS") (DI "DsD")])
+
+; zcmp mode attribute
+(define_mode_attr slot0_offset  [(SI "-4")  (DI "-8")])
+(define_mode_attr slot1_offset  [(SI "-8")  (DI "-16")])
+(define_mode_attr slot2_offset  [(SI "-12") (DI "-24")])
+(define_mode_attr slot3_offset  [(SI "-16") (DI "-32")])
+(define_mode_attr slot4_offset  [(SI "-20") (DI "-40")])
+(define_mode_attr slot5_offset  [(SI "-24") (DI "-48")])
+(define_mode_attr slot6_offset  [(SI "-28") (DI "-56")])
+(define_mode_attr slot7_offset  [(SI "-32") (DI "-64")])
+(define_mode_attr slot8_offset  [(SI "-36") (DI "-72")])
+(define_mode_attr slot9_offset  [(SI "-40") (DI "-80")])
+(define_mode_attr slot10_offset [(SI "-44") (DI "-88")])
+(define_mode_attr slot11_offset [(SI "-48") (DI "-96")])
+(define_mode_attr slot12_offset [(SI "-52") (DI "-104")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators
@@ -152,6 +172,11 @@
 ;; from the same template.
 (define_code_iterator any_mod [mod umod])
 
+;; These code iterators allow unsigned and signed divmod to be generated
+;; from the same template.
+(define_code_iterator only_div [div udiv])
+(define_code_attr paired_mod [(div "mod") (udiv "umod")])
+
 ;; These code iterators allow the signed and unsigned scc operations to use
 ;; the same template.
 (define_code_iterator any_gt [gt gtu])
@@ -169,6 +194,8 @@
 
 (define_code_iterator clz_ctz_pcnt [clz ctz popcount])
 
+(define_code_iterator bitmanip_rotate [rotate rotatert])
+
 ;; -------------------------------------------------------------------
 ;; Code Attributes
 ;; -------------------------------------------------------------------
@@ -181,6 +208,7 @@
 		     (lt "") (ltu "u")
 		     (le "") (leu "u")
 		     (fix "") (unsigned_fix "u")
+		     (div "") (udiv "u")
 		     (float "") (unsigned_float "u")])
 
 ;; <su> is like <u>, but the signed form expands to "s" rather than "".
@@ -217,7 +245,9 @@
 			 (ss_minus "sssub")
 			 (us_minus "ussub")
 			 (sign_extend "extend")
-			 (zero_extend "zero_extend")])
+			 (zero_extend "zero_extend")
+			 (fix "fix_trunc")
+			 (unsigned_fix "fixuns_trunc")])
 
 ;; <or_optab> code attributes
 (define_code_attr or_optab [(ior "ior")
@@ -265,7 +295,9 @@
 				  (umax "umax")
 				  (clz "clz")
 				  (ctz "ctz")
-				  (popcount "popcount")])
+				  (popcount "popcount")
+				  (rotate "rotl")
+				  (rotatert "rotr")])
 (define_code_attr bitmanip_insn [(smin "min")
 				 (smax "max")
 				 (umin "minu")
@@ -288,3 +320,8 @@
 (define_int_attr quiet_pattern [(UNSPEC_FLT_QUIET "lt") (UNSPEC_FLE_QUIET "le")])
 (define_int_attr QUIET_PATTERN [(UNSPEC_FLT_QUIET "LT") (UNSPEC_FLE_QUIET "LE")])
 
+(define_int_iterator ROUND [UNSPEC_ROUND UNSPEC_FLOOR UNSPEC_CEIL UNSPEC_BTRUNC UNSPEC_ROUNDEVEN UNSPEC_NEARBYINT])
+(define_int_attr round_pattern [(UNSPEC_ROUND "round") (UNSPEC_FLOOR "floor") (UNSPEC_CEIL "ceil")
+				(UNSPEC_BTRUNC "btrunc") (UNSPEC_ROUNDEVEN "roundeven") (UNSPEC_NEARBYINT "nearbyint")])
+(define_int_attr round_rm [(UNSPEC_ROUND "rmm") (UNSPEC_FLOOR "rdn") (UNSPEC_CEIL "rup")
+			   (UNSPEC_BTRUNC "rtz") (UNSPEC_ROUNDEVEN "rne") (UNSPEC_NEARBYINT "dyn")])

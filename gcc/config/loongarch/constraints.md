@@ -60,13 +60,29 @@
 ;; "I" "A signed 12-bit constant (for arithmetic instructions)."
 ;; "J" "Integer zero."
 ;; "K" "An unsigned 12-bit constant (for logic instructions)."
-;; "L" <-----unused
-;; "M" <-----unused
-;; "N" <-----unused
-;; "O" <-----unused
-;; "P" <-----unused
+;; "L" -
+;;     "La"
+;;	 "A signed constant in [-4096, 2048) or (2047, 4094]."
+;;     "Lb"
+;;	 "A signed 32-bit constant and low 16-bit is zero, which can be
+;;	  added onto a register with addu16i.d.  It matches nothing if
+;;	  the addu16i.d instruction is not available."
+;;     "Lc"
+;;	 "A signed 64-bit constant can be expressed as Lb + I, but not a
+;;	  single Lb or I."
+;;     "Ld"
+;;	 "A signed 64-bit constant can be expressed as Lb + Lb, but not a
+;;	  single Lb."
+;;     "Le"
+;;	 "A signed 32-bit constant can be expressed as Lb + I, but not a
+;;	  single Lb or I."
+;; "M" "A constant that cannot be loaded using @code{lui}, @code{addiu}
+;;	or @code{ori}."
+;; "N" "A constant in the range -65535 to -1 (inclusive)."
+;; "O" "A signed 15-bit constant."
+;; "P" "A constant in the range 1 to 65535 (inclusive)."
 ;; "Q" <-----unused
-;; "R" <-----unused
+;; "R" "An address that can be used in a non-macro load or store."
 ;; "S" <-----unused
 ;; "T" <-----unused
 ;; "U" <-----unused
@@ -170,6 +186,92 @@
   (and (match_code "const_int")
        (match_test "IMM12_OPERAND_UNSIGNED (ival)")))
 
+(define_constraint "La"
+  "A signed constant in [-4096, 2048) or (2047, 4094]."
+  (and (match_code "const_int")
+       (match_test "DUAL_IMM12_OPERAND (ival)")))
+
+(define_constraint "Lb"
+  "A signed 32-bit constant and low 16-bit is zero, which can be added
+   onto a register with addu16i.d."
+  (and (match_code "const_int")
+       (match_test "ADDU16I_OPERAND (ival)")))
+
+(define_constraint "Lc"
+  "A signed 64-bit constant can be expressed as Lb + I, but not a single Lb
+   or I."
+  (and (match_code "const_int")
+       (match_test "loongarch_addu16i_imm12_operand_p (ival, DImode)")))
+
+(define_constraint "Ld"
+  "A signed 64-bit constant can be expressed as Lb + Lb, but not a single
+   Lb."
+  (and (match_code "const_int")
+       (match_test "DUAL_ADDU16I_OPERAND (ival)")))
+
+(define_constraint "Le"
+  "A signed 32-bit constant can be expressed as Lb + I, but not a single Lb
+   or I."
+  (and (match_code "const_int")
+       (match_test "loongarch_addu16i_imm12_operand_p (ival, SImode)")))
+
+(define_constraint "M"
+  "A constant that cannot be loaded using @code{lui}, @code{addiu}
+   or @code{ori}."
+  (and (match_code "const_int")
+       (not (match_test "IMM12_OPERAND (ival)"))
+       (not (match_test "IMM12_OPERAND_UNSIGNED (ival)"))
+       (not (match_test "LU12I_OPERAND (ival)"))))
+
+(define_constraint "N"
+  "A constant in the range -65535 to -1 (inclusive)."
+  (and (match_code "const_int")
+       (match_test "ival >= -0xffff && ival < 0")))
+
+(define_constraint "O"
+  "A signed 15-bit constant."
+  (and (match_code "const_int")
+       (match_test "ival >= -0x4000 && ival < 0x4000")))
+
+(define_constraint "P"
+  "A constant in the range 1 to 65535 (inclusive)."
+  (and (match_code "const_int")
+       (match_test "ival > 0 && ival < 0x10000")))
+
+;; General constraints
+
+(define_memory_constraint "R"
+  "An address that can be used in a non-macro load or store."
+  (and (match_code "mem")
+       (match_test "loongarch_address_insns (XEXP (op, 0), mode, false) == 1")))
+(define_constraint "S"
+  "@internal
+   A constant call address."
+  (and (match_operand 0 "call_insn_operand")
+       (match_test "CONSTANT_P (op)")))
+
+(define_constraint "YG"
+  "@internal
+   A vector zero."
+  (and (match_code "const_vector")
+       (match_test "op == CONST0_RTX (mode)")))
+
+(define_constraint "YA"
+  "@internal
+   An unsigned 6-bit constant."
+  (and (match_code "const_int")
+       (match_test "UIMM6_OPERAND (ival)")))
+
+(define_constraint "YB"
+  "@internal
+   A signed 10-bit constant."
+  (and (match_code "const_int")
+       (match_test "IMM10_OPERAND (ival)")))
+
+(define_constraint "Yb"
+   "@internal"
+   (match_operand 0 "qi_mask_operand"))
+
 (define_constraint "Yd"
   "@internal
    A constant @code{move_operand} that can be safely loaded using
@@ -177,9 +279,72 @@
   (and (match_operand 0 "move_operand")
        (match_test "CONSTANT_P (op)")))
 
+(define_constraint "Yh"
+   "@internal"
+    (match_operand 0 "hi_mask_operand"))
+
+(define_constraint "Yw"
+   "@internal"
+    (match_operand 0 "si_mask_operand"))
+
 (define_constraint "Yx"
    "@internal"
    (match_operand 0 "low_bitmask_operand"))
+
+(define_constraint "YI"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [-512,511]."
+  (and (match_code "const_vector")
+       (match_test "loongarch_const_vector_same_int_p (op, mode, -512, 511)")))
+
+(define_constraint "YC"
+  "@internal
+   A replicated vector const in which the replicated value has a single
+   bit set."
+  (and (match_code "const_vector")
+       (match_test "loongarch_const_vector_bitimm_set_p (op, mode)")))
+
+(define_constraint "YZ"
+  "@internal
+   A replicated vector const in which the replicated value has a single
+   bit clear."
+  (and (match_code "const_vector")
+       (match_test "loongarch_const_vector_bitimm_clr_p (op, mode)")))
+
+(define_constraint "Unv5"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [-31,0]."
+  (and (match_code "const_vector")
+       (match_test "loongarch_const_vector_same_int_p (op, mode, -31, 0)")))
+
+(define_constraint "Uuv5"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [0,31]."
+  (and (match_code "const_vector")
+       (match_test "loongarch_const_vector_same_int_p (op, mode, 0, 31)")))
+
+(define_constraint "Usv5"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [-16,15]."
+  (and (match_code "const_vector")
+       (match_test "loongarch_const_vector_same_int_p (op, mode, -16, 15)")))
+
+(define_constraint "Uuv6"
+  "@internal
+   A replicated vector const in which the replicated value is in the range
+   [0,63]."
+  (and (match_code "const_vector")
+       (match_test "loongarch_const_vector_same_int_p (op, mode, 0, 63)")))
+
+(define_constraint "Urv8"
+  "@internal
+   A replicated vector const with replicated byte values as well as elements"
+  (and (match_code "const_vector")
+       (match_test "loongarch_const_vector_same_bytes_p (op, mode)")))
 
 (define_memory_constraint "ZC"
   "A memory operand whose address is formed by a base register and offset

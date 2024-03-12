@@ -26,6 +26,7 @@ load_lib gcc-dg.exp
 
 # Initialize `dg'.
 dg-init
+torture-init
 
 set saved-dg-do-what-default ${dg-do-what-default}
 set dg-do-what-default "assemble"
@@ -48,5 +49,7 @@ gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
 # Restore globals
 set dg-do-what-default ${saved-dg-do-what-default}
 set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}
+
 # All done.
+torture-finish
 dg-finish

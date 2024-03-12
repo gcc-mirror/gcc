@@ -23,7 +23,6 @@
 
 module dmd.cppmangle;
 
-import core.stdc.string;
 import core.stdc.stdio;
 
 import dmd.arraytypes;
@@ -46,7 +45,6 @@ import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.root.string;
 import dmd.target;
-import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
 
@@ -139,7 +137,7 @@ private struct Context
      * Returns:
      *   The previous state of this `Context` object
      */
-    private Context push(lazy RootObject next)
+    private Context push(lazy RootObject next) @safe
     {
         auto r = this.res;
         if (r !is null)
@@ -150,7 +148,7 @@ private struct Context
     /**
      * Reset the context to a previous one, making any adjustment necessary
      */
-    private void pop(ref Context prev)
+    private void pop(ref Context prev) @safe
     {
         this.res = prev.res;
     }
@@ -211,8 +209,13 @@ private final class CppMangleVisitor : Visitor
      */
     void mangleReturnType(TypeFunction preSemantic)
     {
-        auto tf = cast(TypeFunction)this.context.res.asFuncDecl().type;
+        auto tf = this.context.res.asFuncDecl().type.isTypeFunction();
         Type rt = preSemantic.nextOf();
+        // https://issues.dlang.org/show_bug.cgi?id=22739
+        // auto return type means that rt is null.
+        // if so, just pick up the type from the instance
+        if (!rt)
+            rt = tf.nextOf();
         if (tf.isref)
             rt = rt.referenceTo();
         auto prev = this.context.push(tf.nextOf());
@@ -231,7 +234,7 @@ private final class CppMangleVisitor : Visitor
      * See-Also:
      *  https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangle.seq-id
      */
-    private void writeSequenceFromIndex(size_t idx)
+    private void writeSequenceFromIndex(size_t idx) @safe
     {
         if (idx)
         {
@@ -342,14 +345,14 @@ private final class CppMangleVisitor : Visitor
      *
      * Params:
      *   off  = Offset to insert at
-     *   fd   = Type of the function to mangle the return type of
+     *   tf   = Type of the function to mangle the return type of
      */
     void writeRemainingTags(size_t off, TypeFunction tf)
     {
-        scope remainingVisitor = new LeftoverVisitor(&this.abiTags.written);
-        tf.next.accept(remainingVisitor);
+        Array!StringExp toWrite;
+        leftOver(tf, &this.abiTags.written, &toWrite);
         OutBuffer b2;
-        foreach (se; remainingVisitor.toWrite)
+        foreach (se; toWrite)
         {
             auto tag = se.peekString();
             // We can only insert a slice, and each insert is a memmove,
@@ -441,7 +444,15 @@ private final class CppMangleVisitor : Visitor
                 if (this.context.res.dyncast() == DYNCAST.dsymbol)
                     parentti = this.context.res.asFuncDecl().parent.isTemplateInstance();
                 else
-                    parentti = this.context.res.asType().toDsymbol(null).parent.isTemplateInstance();
+                {
+                    auto parent = this.context.res.asType().toDsymbol(null).parent;
+                    parentti = parent.isTemplateInstance();
+                    // https://issues.dlang.org/show_bug.cgi?id=22760
+                    // The template instance may sometimes have the form
+                    // S1!int.S1, therefore the above instruction might yield null
+                    if (parentti is null && parent.parent)
+                        parentti = parent.parent.isTemplateInstance();
+                }
                 return (*parentti.tiargs)[arg];
             }());
         scope (exit) this.context.pop(prev);
@@ -472,7 +483,7 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("internal compiler error: C++ `%s` template value parameter is not supported", tv.valType.toChars());
+                .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template value parameter is not supported", ti.kind, ti.toPrettyChars, tv.valType.toChars());
                 fatal();
             }
         }
@@ -491,9 +502,9 @@ private final class CppMangleVisitor : Visitor
                 mangle_function(d.isFuncDeclaration());
                 buf.writestring("EE");
             }
-            else if (e && e.op == EXP.variable && (cast(VarExp)e).var.isVarDeclaration())
+            else if (e && e.isVarExp() && e.isVarExp().var.isVarDeclaration())
             {
-                VarDeclaration vd = (cast(VarExp)e).var.isVarDeclaration();
+                VarDeclaration vd = e.isVarExp().var.isVarDeclaration();
                 buf.writeByte('L');
                 mangle_variable(vd, true);
                 buf.writeByte('E');
@@ -507,13 +518,13 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("internal compiler error: C++ `%s` template alias parameter is not supported", o.toChars());
+                .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template alias parameter is not supported", ti.kind, ti.toPrettyChars, o.toChars());
                 fatal();
             }
         }
         else if (tp.isTemplateThisParameter())
         {
-            ti.error("internal compiler error: C++ `%s` template this parameter is not supported", o.toChars());
+            .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template this parameter is not supported", ti.kind, ti.toPrettyChars, o.toChars());
             fatal();
         }
         else
@@ -560,7 +571,11 @@ private final class CppMangleVisitor : Visitor
                 foreach (j; i .. (*ti.tiargs).length)
                 {
                     Type t = isType((*ti.tiargs)[j]);
-                    assert(t);
+                    if (t is null)
+                    {
+                        .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template value parameter is not supported", ti.kind, ti.toPrettyChars, (*ti.tiargs)[j].toChars());
+                        fatal();
+                    }
                     t.accept(this);
                 }
 
@@ -748,9 +763,9 @@ private final class CppMangleVisitor : Visitor
     bool isIdent_char(Identifier ident, RootObject o)
     {
         Type t = isType(o);
-        if (!t || t.ty != Tstruct)
+        if (!t || !t.isTypeStruct())
             return false;
-        Dsymbol s = (cast(TypeStruct)t).toDsymbol(null);
+        Dsymbol s = t.toDsymbol(null);
         if (s.ident != ident)
             return false;
         Dsymbol p = s.toParent();
@@ -996,7 +1011,7 @@ private final class CppMangleVisitor : Visitor
         // fake mangling for fields to fix https://issues.dlang.org/show_bug.cgi?id=16525
         if (!(d.storage_class & (STC.extern_ | STC.field | STC.gshared)))
         {
-            d.error("internal compiler error: C++ static non-`__gshared` non-`extern` variables not supported");
+            .error(d.loc, "%s `%s` internal compiler error: C++ static non-`__gshared` non-`extern` variables not supported", d.kind, d.toPrettyChars);
             fatal();
         }
         Dsymbol p = d.toParent();
@@ -1050,7 +1065,7 @@ private final class CppMangleVisitor : Visitor
          *            ::= <data name>
          *            ::= <special-name>
          */
-        TypeFunction tf = cast(TypeFunction)d.type;
+        TypeFunction tf = d.type.isTypeFunction();
 
         if (TemplateDeclaration ftd = getFuncTemplateDecl(d))
         {
@@ -1164,7 +1179,7 @@ private final class CppMangleVisitor : Visitor
             this.context.ti = ti;
             this.context.fd = d;
             this.context.res = d;
-            TypeFunction preSemantic = cast(TypeFunction)d.originalType;
+            TypeFunction preSemantic = d.originalType.isTypeFunction();
             auto nspace = ti.toParent();
             if (nspace && nspace.isNspace())
                 this.writeChained(ti.toParent(), () => source_name(ti, true));
@@ -1338,7 +1353,7 @@ private final class CppMangleVisitor : Visitor
             auto prev = this.context.push({
                     TypeFunction tf;
                     if (isDsymbol(this.context.res))
-                        tf = cast(TypeFunction)this.context.res.asFuncDecl().type;
+                        tf = this.context.res.asFuncDecl().type.isTypeFunction();
                     else
                         tf = this.context.res.asType().isTypeFunction();
                     assert(tf);
@@ -1382,9 +1397,9 @@ private final class CppMangleVisitor : Visitor
      */
     void headOfType(Type t)
     {
-        if (t.ty == Tclass)
+        if (auto tc = t.isTypeClass())
         {
-            mangleTypeClass(cast(TypeClass)t, true);
+            mangleTypeClass(tc, true);
         }
         else
         {
@@ -1580,7 +1595,7 @@ private final class CppMangleVisitor : Visitor
      *   or `params.length` if there wasn't any match.
      */
     private static size_t templateParamIndex(
-        const ref Identifier ident, TemplateParameters* params)
+        const ref Identifier ident, TemplateParameters* params) @safe
     {
         foreach (idx, param; *params)
             if (param.ident == ident)
@@ -1951,7 +1966,7 @@ extern(C++):
      */
     override void visit(TypeIdentifier t)
     {
-        auto decl = cast(TemplateDeclaration)this.context.ti.tempdecl;
+        auto decl = this.context.ti.tempdecl.isTemplateDeclaration();
         assert(decl.parameters !is null);
         auto idx = templateParamIndex(t.ident, decl.parameters);
         // If not found, default to the post-semantic type
@@ -2010,7 +2025,7 @@ extern(C++):
             {
                 // If the resolved AST has more args than the parse one,
                 // we have default arguments
-                auto oparams = (cast(TemplateDeclaration)analyzed_ti.tempdecl).origParameters;
+                auto oparams = analyzed_ti.tempdecl.isTemplateDeclaration().origParameters;
                 foreach (idx, arg; (*oparams)[t.tiargs.length .. $])
                 {
                     this.context.res = (*analyzed_ti.tiargs)[idx + t.tiargs.length];
@@ -2035,7 +2050,7 @@ extern(C++):
         assert(t.tiargs !is null);
 
         bool needsTa;
-        auto decl = cast(TemplateDeclaration)this.context.ti.tempdecl;
+        auto decl = this.context.ti.tempdecl.isTemplateDeclaration();
         // Attempt to substitute the template itself
         auto idx = templateParamIndex(t.name, decl.parameters);
         if (idx < decl.parameters.length)
@@ -2114,18 +2129,19 @@ private void visitObject(V : Visitor)(RootObject o, V this_)
 }
 
 /// Helper function to safely get a type out of a `RootObject`
-private Type asType(RootObject o)
+private Type asType(RootObject o) @safe
 {
-    Type ta = isType(o);
+    if (Type ta = isType(o))
+        return ta;
+
     // When called with context.res as argument, it can be `FuncDeclaration`
-    if (!ta && o.asFuncDecl())
-        ta = (cast(FuncDeclaration)o).type;
-    assert(ta !is null, o.toString());
-    return ta;
+    if (auto fd = o.asFuncDecl())
+        return fd.type;
+    assert(0);
 }
 
 /// Helper function to safely get a `FuncDeclaration` out of a `RootObject`
-private FuncDeclaration asFuncDecl(RootObject o)
+private FuncDeclaration asFuncDecl(RootObject o) @safe
 {
     Dsymbol d = isDsymbol(o);
     assert(d !is null);
@@ -2159,7 +2175,7 @@ private extern(C++) final class ComponentVisitor : Visitor
     /// Set to the result of the comparison
     private bool result;
 
-    public this(RootObject base)
+    public this(RootObject base) @safe
     {
         switch (base.dyncast())
         {
@@ -2174,12 +2190,12 @@ private extern(C++) final class ComponentVisitor : Visitor
 
         case DYNCAST.type:
             auto t = cast(Type)base;
-            if (t.ty == Tpointer)
-                this.tpointer = cast(TypePointer)t;
-            else if (t.ty == Treference)
-                this.tref = cast(TypeReference)t;
-            else if (t.ty == Tident)
-                this.tident = cast(TypeIdentifier)t;
+            if (auto tp = t.isTypePointer())
+                this.tpointer = tp;
+            else if (auto tr = t.isTypeReference())
+                this.tref = tr;
+            else if (auto ti = t.isTypeIdentifier())
+                this.tident = ti;
             else
                 goto default;
             break;
@@ -2335,7 +2351,7 @@ private bool isNamespaceEqual (CPPNamespaceDeclaration a, Nspace b, size_t idx =
 
 /// Returns:
 ///   Whether  two `CPPNamespaceDeclaration` are equals
-private bool isNamespaceEqual (CPPNamespaceDeclaration a, CPPNamespaceDeclaration b)
+private bool isNamespaceEqual (CPPNamespaceDeclaration a, CPPNamespaceDeclaration b) @safe
 {
     if (a is null || b is null)
         return false;
@@ -2522,58 +2538,70 @@ unittest
     assert(closestIndex([s1, s2, s4], s5, match) == 3 && !match);
 }
 
-/**
+/***
  * Visits the return type of a function and writes leftover ABI tags
+ * Params:
+ *   tf = Type of the function to mangle the return type of
+ *   previous = already written ones
+ *   toWrite = where to put StringExp's to be written
  */
-extern(C++) private final class LeftoverVisitor : Visitor
+private
+void leftOver(TypeFunction tf, const(Array!StringExp)* previous, Array!StringExp* toWrite)
 {
-    /// List of tags to write
-    private Array!StringExp toWrite;
-    /// List of tags to ignore
-    private const(Array!StringExp)* ignore;
-
-    ///
-    public this(const(Array!StringExp)* previous)
+    extern(C++) final class LeftoverVisitor : Visitor
     {
-        this.ignore = previous;
-    }
+        /// List of tags to write
+        private Array!StringExp* toWrite;
+        /// List of tags to ignore
+        private const(Array!StringExp)* ignore;
 
-    /// Reintroduce base class overloads
-    public alias visit = Visitor.visit;
-
-    /// Least specialized overload of each direct child of `RootObject`
-    public override void visit(Dsymbol o)
-    {
-        auto ale = ABITagContainer.forSymbol(o);
-        if (!ale) return;
-
-        bool match;
-        foreach (elem; *ale.elements)
+        ///
+        public this(const(Array!StringExp)* previous, Array!StringExp* toWrite) @safe
         {
-            auto se = elem.toStringExp();
-            closestIndex((*this.ignore)[], se, match);
-            if (match) continue;
-            auto idx = closestIndex(this.toWrite[], se, match);
-            if (!match)
-                this.toWrite.insert(idx, se);
+            this.ignore = previous;
+            this.toWrite = toWrite;
+        }
+
+        /// Reintroduce base class overloads
+        public alias visit = Visitor.visit;
+
+        /// Least specialized overload of each direct child of `RootObject`
+        public override void visit(Dsymbol o)
+        {
+            auto ale = ABITagContainer.forSymbol(o);
+            if (!ale) return;
+
+            bool match;
+            foreach (elem; *ale.elements)
+            {
+                auto se = elem.toStringExp();
+                closestIndex((*this.ignore)[], se, match);
+                if (match) continue;
+                auto idx = closestIndex((*this.toWrite)[], se, match);
+                if (!match)
+                    (*this.toWrite).insert(idx, se);
+            }
+        }
+
+        /// Ditto
+        public override void visit(Type o)
+        {
+            if (auto sym = o.toDsymbol(null))
+                sym.accept(this);
+        }
+
+        /// Composite type
+        public override void visit(TypePointer o)
+        {
+            o.next.accept(this);
+        }
+
+        public override void visit(TypeReference o)
+        {
+            o.next.accept(this);
         }
     }
 
-    /// Ditto
-    public override void visit(Type o)
-    {
-        if (auto sym = o.toDsymbol(null))
-            sym.accept(this);
-    }
-
-    /// Composite type
-    public override void visit(TypePointer o)
-    {
-        o.next.accept(this);
-    }
-
-    public override void visit(TypeReference o)
-    {
-        o.next.accept(this);
-    }
+    scope remainingVisitor = new LeftoverVisitor(previous, toWrite);
+    tf.next.accept(remainingVisitor);
 }

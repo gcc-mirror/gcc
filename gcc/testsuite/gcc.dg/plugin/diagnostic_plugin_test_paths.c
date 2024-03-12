@@ -192,7 +192,7 @@ struct event_location_t
 /* If FUN's name matches FUNCNAME, write the function and its start location
    into *OUT_ENTRY.  */
 
-static void
+static bool
 check_for_named_function (function *fun, const char *funcname,
 			  event_location_t *out_entry)
 {
@@ -200,9 +200,10 @@ check_for_named_function (function *fun, const char *funcname,
   gcc_assert (funcname);
 
   if (strcmp (IDENTIFIER_POINTER (DECL_NAME (fun->decl)), funcname))
-    return;
+    return false;
 
   *out_entry = event_location_t (fun, fun->function_start_locus);
+  return true;
 }
 
 
@@ -215,12 +216,21 @@ class test_diagnostic_path : public simple_diagnostic_path
   : simple_diagnostic_path (event_pp)
   {
   }
-  void add_entry (event_location_t evloc, int stack_depth,
-		  const char *funcname)
+  void add_event_2 (event_location_t evloc, int stack_depth,
+		    const char *desc,
+		    diagnostic_thread_id_t thread_id = 0)
   {
     gcc_assert (evloc.m_fun);
-    add_event (evloc.m_loc, evloc.m_fun->decl, stack_depth,
-	       "entering %qs", funcname);
+    add_thread_event (thread_id, evloc.m_loc, evloc.m_fun->decl,
+		      stack_depth, desc);
+  }
+  void add_entry (event_location_t evloc, int stack_depth,
+		  const char *funcname,
+		  diagnostic_thread_id_t thread_id = 0)
+  {
+    gcc_assert (evloc.m_fun);
+    add_thread_event (thread_id, evloc.m_loc, evloc.m_fun->decl, stack_depth,
+		      "entering %qs", funcname);
   }
 
   void add_call (event_location_t call_evloc, int caller_stack_depth,
@@ -422,12 +432,86 @@ example_3 ()
     }
 }
 
+/* Example 4: a multithreaded path.  */
+
+static void
+example_4 ()
+{
+  gimple_stmt_iterator gsi;
+  basic_block bb;
+
+  event_location_t entry_to_foo;
+  event_location_t entry_to_bar;
+  event_location_t call_to_acquire_lock_a_in_foo;
+  event_location_t call_to_acquire_lock_b_in_foo;
+  event_location_t call_to_acquire_lock_a_in_bar;
+  event_location_t call_to_acquire_lock_b_in_bar;
+
+  cgraph_node *node;
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    {
+      function *fun = node->get_fun ();
+      FOR_EACH_BB_FN (bb, fun)
+	{
+	  bool in_foo = check_for_named_function (fun, "foo",
+						  &entry_to_foo);
+	  bool in_bar = check_for_named_function (fun, "bar",
+						  &entry_to_bar);
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple *stmt = gsi_stmt (gsi);
+	      event_location_t *evloc = NULL;
+	      gcall *call = NULL;
+	      if (call = check_for_named_call (stmt, "acquire_lock_a", 0))
+		evloc = (in_foo
+			 ? &call_to_acquire_lock_a_in_foo
+			 : &call_to_acquire_lock_a_in_bar);
+	      else if (call
+		       = check_for_named_call (stmt, "acquire_lock_b", 0))
+		evloc = (in_foo
+			 ? &call_to_acquire_lock_b_in_foo
+			 : &call_to_acquire_lock_b_in_bar);
+	      if (evloc)
+		evloc->set (call, fun);
+	    }
+	}
+    }
+
+  if (call_to_acquire_lock_a_in_foo.m_fun)
+    {
+      auto_diagnostic_group d;
+
+      gcc_rich_location richloc (call_to_acquire_lock_a_in_bar.m_loc);
+      test_diagnostic_path path (global_dc->printer);
+      diagnostic_thread_id_t thread_1 = path.add_thread ("Thread 1");
+      diagnostic_thread_id_t thread_2 = path.add_thread ("Thread 2");
+      path.add_entry (entry_to_foo, 0, "foo", thread_1);
+      path.add_event_2 (call_to_acquire_lock_a_in_foo, 1,
+			"lock a is now held by thread 1", thread_1);
+      path.add_entry (entry_to_bar, 0, "bar", thread_2);
+      path.add_event_2 (call_to_acquire_lock_b_in_bar, 1,
+			"lock b is now held by thread 2", thread_2);
+      path.add_event_2 (call_to_acquire_lock_b_in_foo, 1,
+			"deadlocked due to waiting for lock b in thread 1...",
+			thread_1);
+      path.add_event_2 (call_to_acquire_lock_a_in_bar, 1,
+			"...whilst waiting for lock a in thread 2",
+			thread_2);
+      richloc.set_path (&path);
+
+      diagnostic_metadata m;
+      warning_meta (&richloc, m, 0,
+		    "deadlock due to inconsistent lock acquisition order");
+    }
+}
+
 unsigned int
 pass_test_show_path::execute (function *)
 {
   example_1 ();
   example_2 ();
   example_3 ();
+  example_4 ();
 
   return 0;
 }
@@ -450,7 +534,7 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  global_dc->caret_max_width = 80;
+  global_dc->m_source_printing.max_width = 80;
 
   pass_info.pass = make_pass_test_show_path (g);
   pass_info.reference_pass_name = "whole-program";

@@ -31,7 +31,8 @@ int main()
 
   try
     {
-      __gnu_test::check_deallocate_null<allocator_type>(); 
+      __gnu_test::check_deallocate_null<allocator_type>();
+      VERIFY(false);
     }
   catch (std::runtime_error& obj)
     {

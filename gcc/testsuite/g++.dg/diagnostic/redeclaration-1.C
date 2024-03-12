@@ -15,6 +15,6 @@ bar (int i)  // { dg-message "10:.int i. previously declared here" }
     { }
   catch (...)
     {
-      int i  // { dg-error "11:redeclaration of .int i." }
+      int i  // { dg-error "11:declaration of .int i. shadows a parameter" }
 	(0);
     }

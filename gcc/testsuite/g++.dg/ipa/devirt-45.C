@@ -37,5 +37,5 @@ int main()
 }
 
 /* One invocation is A::foo () other is B::foo () even though the type is destroyed and rebuilt in test() */
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*A::foo" 1 "inline"  } } */
+/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*A::foo" 2 "inline" { target { ! implicit_constexpr } } } }*/
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target\[^\\n\]*B::foo" 1 "inline"  } } */

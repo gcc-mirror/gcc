@@ -19,8 +19,8 @@ namespace __internal
 {
 
 template <typename _Fp>
-typename std::result_of<_Fp()>::type
-__except_handler(_Fp __f)
+auto
+__except_handler(_Fp __f) -> decltype(__f())
 {
     try
     {
@@ -44,8 +44,7 @@ __invoke_if(std::true_type, _Fp __f)
 }
 
 template <typename _Fp>
-void
-__invoke_if(std::false_type, _Fp __f)
+void __invoke_if(std::false_type, _Fp)
 {
 }
 
@@ -57,21 +56,20 @@ __invoke_if_not(std::false_type, _Fp __f)
 }
 
 template <typename _Fp>
-void
-__invoke_if_not(std::true_type, _Fp __f)
+void __invoke_if_not(std::true_type, _Fp)
 {
 }
 
 template <typename _F1, typename _F2>
-typename std::result_of<_F1()>::type
-__invoke_if_else(std::true_type, _F1 __f1, _F2 __f2)
+auto
+__invoke_if_else(std::true_type, _F1 __f1, _F2) -> decltype(__f1())
 {
     return __f1();
 }
 
 template <typename _F1, typename _F2>
-typename std::result_of<_F2()>::type
-__invoke_if_else(std::false_type, _F1 __f1, _F2 __f2)
+auto
+__invoke_if_else(std::false_type, _F1, _F2 __f2) -> decltype(__f2())
 {
     return __f2();
 }
@@ -84,23 +82,6 @@ struct __no_op
     operator()(_Tp&& __a) const
     {
         return std::forward<_Tp>(__a);
-    }
-};
-
-//! Logical negation of a predicate
-template <typename _Pred>
-class __not_pred
-{
-    _Pred _M_pred;
-
-  public:
-    explicit __not_pred(_Pred __pred) : _M_pred(__pred) {}
-
-    template <typename... _Args>
-    bool
-    operator()(_Args&&... __args)
-    {
-        return !_M_pred(std::forward<_Args>(__args)...);
     }
 };
 
@@ -117,36 +98,6 @@ class __reorder_pred
     operator()(_FTp&& __a, _STp&& __b)
     {
         return _M_pred(std::forward<_STp>(__b), std::forward<_FTp>(__a));
-    }
-};
-
-//! "==" comparison.
-/** Not called "equal" to avoid (possibly unfounded) concerns about accidental invocation via
-    argument-dependent name lookup by code expecting to find the usual std::equal. */
-class __pstl_equal
-{
-  public:
-    explicit __pstl_equal() {}
-
-    template <typename _Xp, typename _Yp>
-    bool
-    operator()(_Xp&& __x, _Yp&& __y) const
-    {
-        return std::forward<_Xp>(__x) == std::forward<_Yp>(__y);
-    }
-};
-
-//! "<" comparison.
-class __pstl_less
-{
-  public:
-    explicit __pstl_less() {}
-
-    template <typename _Xp, typename _Yp>
-    bool
-    operator()(_Xp&& __x, _Yp&& __y) const
-    {
-        return std::forward<_Xp>(__x) < std::forward<_Yp>(__y);
     }
 };
 

@@ -28,7 +28,7 @@ test_utf8_utf32_codecvts ()
 {
 #if __SIZEOF_WCHAR_T__ == 4
   codecvt_utf8<wchar_t> cvt;
-  test_utf8_utf32_codecvts (cvt);
+  test_utf8_utf32_cvt (cvt);
 #endif
 }
 
@@ -37,7 +37,7 @@ test_utf8_utf16_codecvts ()
 {
 #if __SIZEOF_WCHAR_T__ >= 2
   codecvt_utf8_utf16<wchar_t> cvt;
-  test_utf8_utf16_cvts (cvt);
+  test_utf8_utf16_cvt (cvt);
 #endif
 }
 
@@ -46,7 +46,31 @@ test_utf8_ucs2_codecvts ()
 {
 #if __SIZEOF_WCHAR_T__ == 2
   codecvt_utf8<wchar_t> cvt;
-  test_utf8_ucs2_cvts (cvt);
+  test_utf8_ucs2_cvt (cvt);
+#endif
+}
+
+void
+test_utf16_utf32_codecvts ()
+{
+#if __SIZEOF_WCHAR_T__ == 4
+  codecvt_utf16<wchar_t> cvt3;
+  test_utf16_utf32_cvt (cvt3, utf16_big_endian);
+
+  codecvt_utf16<wchar_t, 0x10FFFF, codecvt_mode::little_endian> cvt4;
+  test_utf16_utf32_cvt (cvt4, utf16_little_endian);
+#endif
+}
+
+void
+test_utf16_ucs2_codecvts ()
+{
+#if __SIZEOF_WCHAR_T__ == 2
+  codecvt_utf16<wchar_t> cvt3;
+  test_utf16_ucs2_cvt (cvt3, utf16_big_endian);
+
+  codecvt_utf16<wchar_t, 0x10FFFF, codecvt_mode::little_endian> cvt4;
+  test_utf16_ucs2_cvt (cvt4, utf16_little_endian);
 #endif
 }
 
@@ -56,4 +80,6 @@ main ()
   test_utf8_utf32_codecvts ();
   test_utf8_utf16_codecvts ();
   test_utf8_ucs2_codecvts ();
+  test_utf16_utf32_codecvts ();
+  test_utf16_ucs2_codecvts ();
 }

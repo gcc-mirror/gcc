@@ -6,7 +6,7 @@ module asm4;
 void test1()
 {
     asm pure nothrow @nogc @trusted {}
-    asm @safe {}
+    asm @system {}
 }
 
 void test2() pure nothrow @nogc @safe

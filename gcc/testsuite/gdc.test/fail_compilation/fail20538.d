@@ -1,8 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail20538.d(12): Error: assignment must be preceded by an identifier
-fail_compilation/fail20538.d(12): Error: found `1` when expecting `,`
+fail_compilation/fail20538.d(13): Error: found `=` when expecting `identifier`
+fail_compilation/fail20538.d(13): Error: found `1` when expecting `identifier`
+fail_compilation/fail20538.d(14): Error: named enum cannot declare member with type
 ---
 */
 
@@ -10,5 +11,6 @@ enum smth
 {
     a,
     = 1,
+    int x = 1,
     @disable b
 }

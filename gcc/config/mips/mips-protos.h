@@ -388,4 +388,10 @@ extern void mips_register_frame_header_opt (void);
 extern void mips_expand_vec_cond_expr (machine_mode, machine_mode, rtx *);
 extern void mips_expand_vec_cmp_expr (rtx *);
 
+extern void mips_emit_speculation_barrier_function (void);
+
+extern bool mips_bit_clear_p (enum machine_mode, unsigned HOST_WIDE_INT);
+extern void mips_bit_clear_info (enum machine_mode, unsigned HOST_WIDE_INT,
+				  int *, int *);
+
 #endif /* ! GCC_MIPS_PROTOS_H */

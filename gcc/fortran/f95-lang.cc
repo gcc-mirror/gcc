@@ -836,6 +836,20 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_scalbnf", mfunc_float[2],
 		      BUILT_IN_SCALBNF, "scalbnf", ATTR_CONST_NOTHROW_LEAF_LIST);
  
+  gfc_define_builtin ("__builtin_fmaxl", mfunc_longdouble[1],
+		      BUILT_IN_FMAXL, "fmaxl", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_fmax", mfunc_double[1],
+		      BUILT_IN_FMAX, "fmax", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_fmaxf", mfunc_float[1],
+		      BUILT_IN_FMAXF, "fmaxf", ATTR_CONST_NOTHROW_LEAF_LIST);
+
+  gfc_define_builtin ("__builtin_fminl", mfunc_longdouble[1],
+		      BUILT_IN_FMINL, "fminl", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_fmin", mfunc_double[1],
+		      BUILT_IN_FMIN, "fmin", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_fminf", mfunc_float[1],
+		      BUILT_IN_FMINF, "fminf", ATTR_CONST_NOTHROW_LEAF_LIST);
+
   gfc_define_builtin ("__builtin_fmodl", mfunc_longdouble[1], 
 		      BUILT_IN_FMODL, "fmodl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_fmod", mfunc_double[1], 
@@ -1033,6 +1047,8 @@ gfc_init_builtin_functions (void)
 		      ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_isunordered", ftype, BUILT_IN_ISUNORDERED,
 		      "__builtin_isunordered", ATTR_CONST_NOTHROW_LEAF_LIST);
+  gfc_define_builtin ("__builtin_iseqsig", ftype, BUILT_IN_ISEQSIG,
+		      "__builtin_iseqsig", ATTR_CONST_NOTHROW_LEAF_LIST);
 
 
 #define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \

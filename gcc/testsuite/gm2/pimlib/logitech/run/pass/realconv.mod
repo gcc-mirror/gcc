@@ -45,6 +45,7 @@ VAR
 BEGIN
    res := 0 ;
    RealToString(100.0, 10, 10, a, ok) ;
+   printf ("RealToString generates string: %s\n", a) ;
    Assert(ok, __FILE__, __LINE__, 'testing ok return BOOLEAN') ;
    printf("value returned is '%s'\n", ADR(a)) ;
    Assert(StrEqual('100.000000', a), __FILE__, __LINE__, 'testing return value of "100.000000"') ;

@@ -349,6 +349,7 @@ const struct c_common_resword c_common_reswords[] =
   { "_Alignas",		RID_ALIGNAS,   D_CONLY },
   { "_Alignof",		RID_ALIGNOF,   D_CONLY },
   { "_Atomic",		RID_ATOMIC,    D_CONLY },
+  { "_BitInt",		RID_BITINT,    D_CONLY },
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
@@ -420,6 +421,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__transaction_cancel", RID_TRANSACTION_CANCEL, 0 },
   { "__typeof",		RID_TYPEOF,	0 },
   { "__typeof__",	RID_TYPEOF,	0 },
+  { "__typeof_unqual",	RID_TYPEOF_UNQUAL, D_CONLY },
+  { "__typeof_unqual__", RID_TYPEOF_UNQUAL, D_CONLY },
   { "__volatile",	RID_VOLATILE,	0 },
   { "__volatile__",	RID_VOLATILE,	0 },
   { "__GIMPLE",		RID_GIMPLE,	D_CONLY },
@@ -1338,6 +1341,10 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
   int uns;
   tree type;
 
+  /* Do not shorten vector operations.  */
+  if (VECTOR_TYPE_P (result_type))
+    return result_type;
+
   /* Cast OP0 and OP1 to RESULT_TYPE.  Doing so prevents
      excessive narrowing when we call get_narrower below.  For
      example, suppose that OP0 is of unsigned int extended
@@ -1483,15 +1490,18 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 
       /* Warn for real constant that is not an exact integer converted
 	 to integer type.  */
-      if (TREE_CODE (expr_type) == REAL_TYPE
-	  && TREE_CODE (type) == INTEGER_TYPE)
+      if (SCALAR_FLOAT_TYPE_P (expr_type)
+	  && (TREE_CODE (type) == INTEGER_TYPE
+	      || TREE_CODE (type) == BITINT_TYPE))
 	{
 	  if (!real_isinteger (TREE_REAL_CST_PTR (expr), TYPE_MODE (expr_type)))
 	    give_warning = UNSAFE_REAL;
 	}
       /* Warn for an integer constant that does not fit into integer type.  */
-      else if (TREE_CODE (expr_type) == INTEGER_TYPE
-	       && TREE_CODE (type) == INTEGER_TYPE
+      else if ((TREE_CODE (expr_type) == INTEGER_TYPE
+		|| TREE_CODE (expr_type) == BITINT_TYPE)
+	       && (TREE_CODE (type) == INTEGER_TYPE
+		   || TREE_CODE (type) == BITINT_TYPE)
 	       && !int_fits_type_p (expr, type))
 	{
 	  if (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (expr_type)
@@ -1508,10 +1518,11 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 	  else
 	    give_warning = UNSAFE_OTHER;
 	}
-      else if (TREE_CODE (type) == REAL_TYPE)
+      else if (SCALAR_FLOAT_TYPE_P (type))
 	{
 	  /* Warn for an integer constant that does not fit into real type.  */
-	  if (TREE_CODE (expr_type) == INTEGER_TYPE)
+	  if (TREE_CODE (expr_type) == INTEGER_TYPE
+	      || TREE_CODE (expr_type) == BITINT_TYPE)
 	    {
 	      REAL_VALUE_TYPE a = real_value_from_int_cst (0, expr);
 	      if (!exact_real_truncate (TYPE_MODE (type), &a))
@@ -1519,7 +1530,7 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 	    }
 	  /* Warn for a real constant that does not fit into a smaller
 	     real type.  */
-	  else if (TREE_CODE (expr_type) == REAL_TYPE
+	  else if (SCALAR_FLOAT_TYPE_P (expr_type)
 		   && TYPE_PRECISION (type) < TYPE_PRECISION (expr_type))
 	    {
 	      REAL_VALUE_TYPE a = TREE_REAL_CST (expr);
@@ -1579,12 +1590,15 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
   else
     {
       /* Warn for real types converted to integer types.  */
-      if (TREE_CODE (expr_type) == REAL_TYPE
-	  && TREE_CODE (type) == INTEGER_TYPE)
+      if (SCALAR_FLOAT_TYPE_P (expr_type)
+	  && (TREE_CODE (type) == INTEGER_TYPE
+	      || TREE_CODE (type) == BITINT_TYPE))
 	give_warning = UNSAFE_REAL;
 
-      else if (TREE_CODE (expr_type) == INTEGER_TYPE
-	       && TREE_CODE (type) == INTEGER_TYPE)
+      else if ((TREE_CODE (expr_type) == INTEGER_TYPE
+		|| TREE_CODE (expr_type) == BITINT_TYPE)
+	       && (TREE_CODE (type) == INTEGER_TYPE
+		   || TREE_CODE (type) == BITINT_TYPE))
 	{
 	  /* Don't warn about unsigned char y = 0xff, x = (int) y;  */
 	  expr = get_unwidened (expr, 0);
@@ -1650,8 +1664,9 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
       /* Warn for integer types converted to real types if and only if
 	 all the range of values of the integer type cannot be
 	 represented by the real type.  */
-      else if (TREE_CODE (expr_type) == INTEGER_TYPE
-	       && TREE_CODE (type) == REAL_TYPE)
+      else if ((TREE_CODE (expr_type) == INTEGER_TYPE
+		|| TREE_CODE (expr_type) == BITINT_TYPE)
+	       && SCALAR_FLOAT_TYPE_P (type))
 	{
 	  /* Don't warn about char y = 0xff; float x = (int) y;  */
 	  expr = get_unwidened (expr, 0);
@@ -1662,8 +1677,8 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 	}
 
       /* Warn for real types converted to smaller real types.  */
-      else if (TREE_CODE (expr_type) == REAL_TYPE
-	       && TREE_CODE (type) == REAL_TYPE
+      else if (SCALAR_FLOAT_TYPE_P (expr_type)
+	       && SCALAR_FLOAT_TYPE_P (type)
 	       && TYPE_PRECISION (type) < TYPE_PRECISION (expr_type))
 	give_warning = UNSAFE_REAL;
 
@@ -1677,13 +1692,13 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 	  tree to_type = TREE_TYPE (type);
 
 	  /* Warn for real types converted to integer types.  */
-	  if (TREE_CODE (from_type) == REAL_TYPE
+	  if (SCALAR_FLOAT_TYPE_P (from_type)
 	      && TREE_CODE (to_type) == INTEGER_TYPE)
 	    give_warning = UNSAFE_REAL;
 
 	  /* Warn for real types converted to smaller real types.  */
-	  else if (TREE_CODE (from_type) == REAL_TYPE
-		   && TREE_CODE (to_type) == REAL_TYPE
+	  else if (SCALAR_FLOAT_TYPE_P (from_type)
+		   && SCALAR_FLOAT_TYPE_P (to_type)
 		   && TYPE_PRECISION (to_type) < TYPE_PRECISION (from_type))
 	    give_warning = UNSAFE_REAL;
 
@@ -1706,7 +1721,7 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 		give_warning = UNSAFE_SIGN;
 	    }
 	  else if (TREE_CODE (from_type) == INTEGER_TYPE
-		   && TREE_CODE (to_type) == REAL_TYPE
+		   && SCALAR_FLOAT_TYPE_P (to_type)
 		   && !int_safely_convertible_to_real_p (from_type, to_type))
 	    give_warning = UNSAFE_OTHER;
 	}
@@ -2454,7 +2469,7 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
   else if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
 	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
-      unsigned int elem_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+      unsigned int elem_bits = vector_element_size (GET_MODE_PRECISION (mode),
 						    GET_MODE_NUNITS (mode));
       tree bool_type = build_nonstandard_boolean_type (elem_bits);
       return build_vector_type_for_mode (bool_type, mode);
@@ -2724,6 +2739,11 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
       || TYPE_UNSIGNED (type) == unsignedp)
     return type;
 
+  if (TREE_CODE (type) == BITINT_TYPE
+      /* signed _BitInt(1) is invalid, avoid creating that.  */
+      && (unsignedp || TYPE_PRECISION (type) > 1))
+    return build_bitint_type (TYPE_PRECISION (type), unsignedp);
+
 #define TYPE_OK(node)							    \
   (TYPE_MODE (type) == TYPE_MODE (node)					    \
    && TYPE_PRECISION (type) == TYPE_PRECISION (node))
@@ -2951,8 +2971,8 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
     unsignedp1 = TYPE_UNSIGNED (TREE_TYPE (op1));
 
   /* If one of the operands must be floated, we cannot optimize.  */
-  real1 = TREE_CODE (TREE_TYPE (primop0)) == REAL_TYPE;
-  real2 = TREE_CODE (TREE_TYPE (primop1)) == REAL_TYPE;
+  real1 = SCALAR_FLOAT_TYPE_P (TREE_TYPE (primop0));
+  real2 = SCALAR_FLOAT_TYPE_P (TREE_TYPE (primop1));
 
   /* If first arg is constant, swap the args (changing operation
      so value is preserved), for canonicalization.  Don't do this if
@@ -3283,7 +3303,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
   /* The result is a pointer of the same type that is being added.  */
   tree result_type = TREE_TYPE (ptrop);
 
-  if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
+  if (VOID_TYPE_P (TREE_TYPE (result_type)))
     {
       if (complain && warn_pointer_arith)
 	pedwarn (loc, OPT_Wpointer_arith,
@@ -3597,7 +3617,8 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	 was used in anticipation of a possible overflow.
 	 Furthermore, if we see an unsigned type here we know that the
 	 result of the shift is not subject to integer promotion rules.  */
-      if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
+      if ((TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
+	   || TREE_CODE (TREE_TYPE (expr)) == BITINT_TYPE)
 	  && !TYPE_UNSIGNED (TREE_TYPE (expr)))
 	warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
 		    "%<<<%> in boolean context, did you mean %<<%>?");
@@ -3681,7 +3702,8 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	  {
 	    tree op0 = TREE_OPERAND (expr, 0);
 	    if ((TREE_CODE (fromtype) == POINTER_TYPE
-		 && TREE_CODE (totype) == INTEGER_TYPE)
+		 && (TREE_CODE (totype) == INTEGER_TYPE
+		     || TREE_CODE (totype) == BITINT_TYPE))
 		|| warning_suppressed_p (expr, OPT_Waddress))
 	      /* Suppress -Waddress for casts to intptr_t, propagating
 		 any suppression from the enclosing expression to its
@@ -3730,7 +3752,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       goto ret;
     }
 
-  if (TREE_CODE (TREE_TYPE (expr)) == FIXED_POINT_TYPE)
+  if (FIXED_POINT_TYPE_P (TREE_TYPE (expr)))
     {
       tree fixed_zero_node = build_fixed (TREE_TYPE (expr),
 					  FCONST0 (TYPE_MODE
@@ -3820,7 +3842,8 @@ c_common_get_alias_set (tree t)
   /* The C standard specifically allows aliasing between signed and
      unsigned variants of the same type.  We treat the signed
      variant as canonical.  */
-  if (TREE_CODE (t) == INTEGER_TYPE && TYPE_UNSIGNED (t))
+  if ((TREE_CODE (t) == INTEGER_TYPE || TREE_CODE (t) == BITINT_TYPE)
+      && TYPE_UNSIGNED (t))
     {
       tree t1 = c_common_signed_type (t);
 
@@ -6330,14 +6353,17 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ISLESSEQUAL:
     case BUILT_IN_ISLESSGREATER:
     case BUILT_IN_ISUNORDERED:
+    case BUILT_IN_ISEQSIG:
       if (builtin_function_validate_nargs (loc, fndecl, nargs, 2))
 	{
 	  enum tree_code code0, code1;
 	  code0 = TREE_CODE (TREE_TYPE (args[0]));
 	  code1 = TREE_CODE (TREE_TYPE (args[1]));
 	  if (!((code0 == REAL_TYPE && code1 == REAL_TYPE)
-		|| (code0 == REAL_TYPE && code1 == INTEGER_TYPE)
-		|| (code0 == INTEGER_TYPE && code1 == REAL_TYPE)))
+		|| (code0 == REAL_TYPE
+		    && (code1 == INTEGER_TYPE || code1 == BITINT_TYPE))
+		|| ((code0 == INTEGER_TYPE || code0 == BITINT_TYPE)
+		    && code1 == REAL_TYPE)))
 	    {
 	      error_at (loc, "non-floating-point arguments in call to "
 			"function %qE", fndecl);
@@ -6371,7 +6397,9 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
     case BUILT_IN_ASSUME_ALIGNED:
       if (builtin_function_validate_nargs (loc, fndecl, nargs, 2 + (nargs > 2)))
 	{
-	  if (nargs >= 3 && TREE_CODE (TREE_TYPE (args[2])) != INTEGER_TYPE)
+	  if (nargs >= 3
+	      && TREE_CODE (TREE_TYPE (args[2])) != INTEGER_TYPE
+	      && TREE_CODE (TREE_TYPE (args[2])) != BITINT_TYPE)
 	    {
 	      error_at (ARG_LOCATION (2), "non-integer argument 3 in call to "
 			"function %qE", fndecl);
@@ -7180,12 +7208,16 @@ speculation_safe_value_resolve_return (tree first_param, tree result)
 /* A helper function for resolve_overloaded_builtin in resolving the
    overloaded __sync_ builtins.  Returns a positive power of 2 if the
    first operand of PARAMS is a pointer to a supported data type.
-   Returns 0 if an error is encountered.
+   Returns 0 if an error is encountered.  Return -1 for _BitInt
+   __atomic*fetch* with unsupported type which should be handled by
+   a cas loop.
    FETCH is true when FUNCTION is one of the _FETCH_OP_ or _OP_FETCH_
+   built-ins.  ORIG_FORMAT is for __sync_* rather than __atomic_*
    built-ins.  */
 
 static int
-sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch)
+sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch,
+		   bool orig_format)
 {
   /* Type of the argument.  */
   tree argtype;
@@ -7220,8 +7252,18 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch)
     goto incompatible;
 
   size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+  if (size == 16
+      && fetch
+      && !orig_format
+      && TREE_CODE (type) == BITINT_TYPE
+      && !targetm.scalar_mode_supported_p (TImode))
+    return -1;
+
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
     return size;
+
+  if (fetch && !orig_format && TREE_CODE (type) == BITINT_TYPE)
+    return -1;
 
  incompatible:
   /* Issue the diagnostic only if the argument is valid, otherwise
@@ -7839,6 +7881,223 @@ resolve_overloaded_atomic_store (location_t loc, tree function,
 }
 
 
+/* Emit __atomic*fetch* on _BitInt which doesn't have a size of
+   1, 2, 4, 8 or 16 bytes using __atomic_compare_exchange loop.
+   ORIG_CODE is the DECL_FUNCTION_CODE of ORIG_FUNCTION and
+   ORIG_PARAMS arguments of the call.  */
+
+static tree
+atomic_bitint_fetch_using_cas_loop (location_t loc,
+				    enum built_in_function orig_code,
+				    tree orig_function,
+				    vec<tree, va_gc> *orig_params)
+{
+  enum tree_code code = ERROR_MARK;
+  bool return_old_p = false;
+  switch (orig_code)
+    {
+    case BUILT_IN_ATOMIC_ADD_FETCH_N:
+      code = PLUS_EXPR;
+      break;
+    case BUILT_IN_ATOMIC_SUB_FETCH_N:
+      code = MINUS_EXPR;
+      break;
+    case BUILT_IN_ATOMIC_AND_FETCH_N:
+      code = BIT_AND_EXPR;
+      break;
+    case BUILT_IN_ATOMIC_NAND_FETCH_N:
+      break;
+    case BUILT_IN_ATOMIC_XOR_FETCH_N:
+      code = BIT_XOR_EXPR;
+      break;
+    case BUILT_IN_ATOMIC_OR_FETCH_N:
+      code = BIT_IOR_EXPR;
+      break;
+    case BUILT_IN_ATOMIC_FETCH_ADD_N:
+      code = PLUS_EXPR;
+      return_old_p = true;
+      break;
+    case BUILT_IN_ATOMIC_FETCH_SUB_N:
+      code = MINUS_EXPR;
+      return_old_p = true;
+      break;
+    case BUILT_IN_ATOMIC_FETCH_AND_N:
+      code = BIT_AND_EXPR;
+      return_old_p = true;
+      break;
+    case BUILT_IN_ATOMIC_FETCH_NAND_N:
+      return_old_p = true;
+      break;
+    case BUILT_IN_ATOMIC_FETCH_XOR_N:
+      code = BIT_XOR_EXPR;
+      return_old_p = true;
+      break;
+    case BUILT_IN_ATOMIC_FETCH_OR_N:
+      code = BIT_IOR_EXPR;
+      return_old_p = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (orig_params->length () != 3)
+    {
+      if (orig_params->length () < 3)
+	error_at (loc, "too few arguments to function %qE", orig_function);
+      else
+	error_at (loc, "too many arguments to function %qE", orig_function);
+      return error_mark_node;
+    }
+
+  tree stmts = push_stmt_list ();
+
+  tree nonatomic_lhs_type = TREE_TYPE (TREE_TYPE ((*orig_params)[0]));
+  nonatomic_lhs_type = TYPE_MAIN_VARIANT (nonatomic_lhs_type);
+  gcc_assert (TREE_CODE (nonatomic_lhs_type) == BITINT_TYPE);
+
+  tree lhs_addr = (*orig_params)[0];
+  tree val = convert (nonatomic_lhs_type, (*orig_params)[1]);
+  tree model = convert (integer_type_node, (*orig_params)[2]);
+  if (TREE_SIDE_EFFECTS (lhs_addr))
+    {
+      tree var = create_tmp_var_raw (TREE_TYPE (lhs_addr));
+      lhs_addr = build4 (TARGET_EXPR, TREE_TYPE (lhs_addr), var, lhs_addr,
+			 NULL_TREE, NULL_TREE);
+      add_stmt (lhs_addr);
+    }
+  if (TREE_SIDE_EFFECTS (val))
+    {
+      tree var = create_tmp_var_raw (nonatomic_lhs_type);
+      val = build4 (TARGET_EXPR, nonatomic_lhs_type, var, val, NULL_TREE,
+		    NULL_TREE);
+      add_stmt (val);
+    }
+  if (TREE_SIDE_EFFECTS (model))
+    {
+      tree var = create_tmp_var_raw (integer_type_node);
+      model = build4 (TARGET_EXPR, integer_type_node, var, model, NULL_TREE,
+		      NULL_TREE);
+      add_stmt (model);
+    }
+
+  tree old = create_tmp_var_raw (nonatomic_lhs_type);
+  tree old_addr = build_unary_op (loc, ADDR_EXPR, old, false);
+  TREE_ADDRESSABLE (old) = 1;
+  suppress_warning (old);
+
+  tree newval = create_tmp_var_raw (nonatomic_lhs_type);
+  tree newval_addr = build_unary_op (loc, ADDR_EXPR, newval, false);
+  TREE_ADDRESSABLE (newval) = 1;
+  suppress_warning (newval);
+
+  tree loop_decl = create_artificial_label (loc);
+  tree loop_label = build1 (LABEL_EXPR, void_type_node, loop_decl);
+
+  tree done_decl = create_artificial_label (loc);
+  tree done_label = build1 (LABEL_EXPR, void_type_node, done_decl);
+
+  vec<tree, va_gc> *params;
+  vec_alloc (params, 6);
+
+  /* __atomic_load (addr, &old, SEQ_CST).  */
+  tree fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_LOAD);
+  params->quick_push (lhs_addr);
+  params->quick_push (old_addr);
+  params->quick_push (build_int_cst (integer_type_node, MEMMODEL_RELAXED));
+  tree func_call = resolve_overloaded_builtin (loc, fndecl, params);
+  if (func_call == NULL_TREE)
+    func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+  old = build4 (TARGET_EXPR, nonatomic_lhs_type, old, func_call, NULL_TREE,
+		NULL_TREE);
+  add_stmt (old);
+  params->truncate (0);
+
+  /* loop:  */
+  add_stmt (loop_label);
+
+  /* newval = old + val;  */
+  tree rhs;
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      if (!TYPE_OVERFLOW_WRAPS (nonatomic_lhs_type))
+	{
+	  tree utype
+	    = build_bitint_type (TYPE_PRECISION (nonatomic_lhs_type), 1);
+	  rhs = convert (nonatomic_lhs_type,
+			 build2_loc (loc, code, utype,
+				     convert (utype, old),
+				     convert (utype, val)));
+	}
+      else
+	rhs = build2_loc (loc, code, nonatomic_lhs_type, old, val);
+      break;
+    case BIT_AND_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      rhs = build2_loc (loc, code, nonatomic_lhs_type, old, val);
+      break;
+    case ERROR_MARK:
+      rhs = build2_loc (loc, BIT_AND_EXPR, nonatomic_lhs_type,
+			build1_loc (loc, BIT_NOT_EXPR,
+				    nonatomic_lhs_type, old), val);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  rhs = build4 (TARGET_EXPR, nonatomic_lhs_type, newval, rhs, NULL_TREE,
+		NULL_TREE);
+  SET_EXPR_LOCATION (rhs, loc);
+  add_stmt (rhs);
+
+  /* if (__atomic_compare_exchange (addr, &old, &new, false, model, model))
+       goto done;  */
+  fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_COMPARE_EXCHANGE);
+  params->quick_push (lhs_addr);
+  params->quick_push (old_addr);
+  params->quick_push (newval_addr);
+  params->quick_push (integer_zero_node);
+  params->quick_push (model);
+  if (tree_fits_uhwi_p (model)
+      && (tree_to_uhwi (model) == MEMMODEL_RELEASE
+	  || tree_to_uhwi (model) == MEMMODEL_ACQ_REL))
+    params->quick_push (build_int_cst (integer_type_node, MEMMODEL_RELAXED));
+  else
+    params->quick_push (model);
+  func_call = resolve_overloaded_builtin (loc, fndecl, params);
+  if (func_call == NULL_TREE)
+    func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+
+  tree goto_stmt = build1 (GOTO_EXPR, void_type_node, done_decl);
+  SET_EXPR_LOCATION (goto_stmt, loc);
+
+  tree stmt
+    = build3 (COND_EXPR, void_type_node, func_call, goto_stmt, NULL_TREE);
+  SET_EXPR_LOCATION (stmt, loc);
+  add_stmt (stmt);
+
+  /* goto loop;  */
+  goto_stmt = build1 (GOTO_EXPR, void_type_node, loop_decl);
+  SET_EXPR_LOCATION (goto_stmt, loc);
+  add_stmt (goto_stmt);
+
+  /* done:  */
+  add_stmt (done_label);
+
+  tree ret = create_tmp_var_raw (nonatomic_lhs_type);
+  stmt = build2_loc (loc, MODIFY_EXPR, void_type_node, ret,
+		     return_old_p ? old : newval);
+  add_stmt (stmt);
+
+  /* Finish the compound statement.  */
+  stmts = pop_stmt_list (stmts);
+
+  return build4 (TARGET_EXPR, nonatomic_lhs_type, ret, stmts, NULL_TREE,
+		 NULL_TREE);
+}
+
+
 /* Some builtin functions are placeholders for other expressions.  This
    function should be called immediately after parsing the call expression
    before surrounding code has committed to the type of the expression.
@@ -8020,18 +8279,21 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	/* The following are not _FETCH_OPs and must be accepted with
 	   pointers to _Bool (or C++ bool).  */
 	if (fetch_op)
-	  fetch_op =
-	    (orig_code != BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N
-	     && orig_code != BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N
-	     && orig_code != BUILT_IN_SYNC_LOCK_TEST_AND_SET_N
-	     && orig_code != BUILT_IN_SYNC_LOCK_RELEASE_N);
+	  fetch_op = (orig_code != BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N
+		      && orig_code != BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N
+		      && orig_code != BUILT_IN_SYNC_LOCK_TEST_AND_SET_N
+		      && orig_code != BUILT_IN_SYNC_LOCK_RELEASE_N);
 
-	int n = sync_resolve_size (function, params, fetch_op);
+	int n = sync_resolve_size (function, params, fetch_op, orig_format);
 	tree new_function, first_param, result;
 	enum built_in_function fncode;
 
 	if (n == 0)
 	  return error_mark_node;
+
+	if (n == -1)
+	  return atomic_bitint_fetch_using_cas_loop (loc, orig_code,
+						     function, params);
 
 	fncode = (enum built_in_function)((int)orig_code + exact_log2 (n) + 1);
 	new_function = builtin_decl_explicit (fncode);
@@ -8397,6 +8659,7 @@ keyword_begins_type_specifier (enum rid keyword)
     case RID_FRACT:
     case RID_ACCUM:
     case RID_BOOL:
+    case RID_BITINT:
     case RID_WCHAR:
     case RID_CHAR8:
     case RID_CHAR16:
@@ -8649,7 +8912,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	  }
 	else if (!integer_only_op
 		    /* Allow integer --> real conversion if safe.  */
-		 && (TREE_CODE (type0) == REAL_TYPE
+		 && (SCALAR_FLOAT_TYPE_P (type0)
 		     || TREE_CODE (type0) == INTEGER_TYPE)
 		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
 	  {
@@ -9306,7 +9569,7 @@ maybe_add_include_fixit (rich_location *richloc, const char *header,
   richloc->add_fixit_insert_before (include_insert_loc, text);
   free (text);
 
-  if (override_location && global_dc->show_caret)
+  if (override_location && global_dc->m_source_printing.enabled)
     {
       /* Replace the primary location with that of the insertion point for the
 	 fix-it hint.

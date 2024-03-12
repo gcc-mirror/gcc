@@ -4,18 +4,33 @@ load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 load_gcc_lib gfortran-dg.exp
 
-global shlib_ext
-global ALWAYS_CFLAGS
+if { $blddir != "" } {
+    set libgfortran_library_path "../libgfortran/.libs"
+    set shlib_ext [get_shlib_extension]
+    if { ![file exists "${blddir}/${libgfortran_library_path}/libgfortran.a"]
+	 && ![file exists "${blddir}/${libgfortran_library_path}/libgfortran.${shlib_ext}"] } {
+        verbose -log "No libgfortran library found, will not execute fortran tests"
+	unset libgfortran_library_path
+	return
+    }
+    lappend lang_library_paths $libgfortran_library_path
 
-set shlib_ext [get_shlib_extension]
-set lang_library_path	"../libgfortran/.libs"
-set lang_link_flags	"-lgfortran -foffload=-lgfortran"
-if [info exists lang_include_flags] then {
-    unset lang_include_flags
+    set libquadmath_library_path "../libquadmath/.libs"
+    if { [file exists "${blddir}/${libquadmath_library_path}/libquadmath.a"]
+	 || [file exists "${blddir}/${libquadmath_library_path}/libquadmath.${shlib_ext}"] } {
+	lappend lang_library_paths $libquadmath_library_path
+    } else {
+	set libquadmath_library_path ""
+    }
+} elseif { ![info exists GFORTRAN_UNDER_TEST] } {
+    verbose -log "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
+    return
 }
-set lang_test_file_found 0
-set quadmath_library_path "../libquadmath/.libs"
-
+if { $blddir != "" } {
+    set lang_source_re {^.*\.[fF](|90|95|03|08)$}
+    set lang_include_flags "-fintrinsic-modules-path=${blddir}"
+}
+lappend ALWAYS_CFLAGS "compiler=$GFORTRAN_UNDER_TEST"
 
 # Initialize dg.
 dg-init
@@ -23,105 +38,79 @@ dg-init
 # Turn on OpenACC.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
 
+
+# Gather a list of all tests.
+set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
+
+set ld_library_path $always_ld_library_path
 if { $blddir != "" } {
-    set lang_source_re {^.*\.[fF](|90|95|03|08)$}
-    set lang_include_flags "-fintrinsic-modules-path=${blddir}"
-    # Look for a static libgfortran first.
-    if [file exists "${blddir}/${lang_library_path}/libgfortran.a"] {
-        set lang_test_file "${lang_library_path}/libgfortran.a"
-        set lang_test_file_found 1
-	# We may have a shared only build, so look for a shared libgfortran.
-    } elseif [file exists "${blddir}/${lang_library_path}/libgfortran.${shlib_ext}"] {
-        set lang_test_file "${lang_library_path}/libgfortran.${shlib_ext}"
-        set lang_test_file_found 1
-    } else {
-        puts "No libgfortran library found, will not execute fortran tests"
+    append ld_library_path ":${blddir}/${libgfortran_library_path}"
+
+    if { $libquadmath_library_path != "" } {
+	append ld_library_path ":${blddir}/${libquadmath_library_path}"
     }
-} elseif [info exists GFORTRAN_UNDER_TEST] {
-    set lang_test_file_found 1
-    # Needs to exist for libgomp.exp.
-    set lang_test_file ""
-} else {
-    puts "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
 }
+append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+set_ld_library_path_env_vars
 
-if { $lang_test_file_found } {
-    # Gather a list of all tests.
-    set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
+# Test with all available offload targets, and with offloading disabled.
+foreach offload_target [concat [split $offload_targets ","] "disable"] {
+    global openacc_device_type
+    set openacc_device_type [offload_target_to_openacc_device_type $offload_target]
+    set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=1"
 
-    if { $blddir != "" } {
-	if { [file exists "${blddir}/${quadmath_library_path}/libquadmath.a"]
-	     || [file exists "${blddir}/${quadmath_library_path}/libquadmath.${shlib_ext}"] } {
-	    lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
-	    # Allow for spec subsitution.
-	    lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
-	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}:${blddir}/${quadmath_library_path}"
-	    append lang_link_flags " -lquadmath"
-	} else {
-	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+    switch $openacc_device_type {
+	"" {
+	    unsupported "$subdir $offload_target offloading"
+	    continue
 	}
-    } else {
-        set ld_library_path "$always_ld_library_path"
-        if { [check_no_compiler_messages has_libquadmath executable {
-                 int main() {return 0;}
-              } "-lgfortran -lquadmath"] } then {
-            append lang_link_flags " -lquadmath"
-        }
-    }
-    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
-    set_ld_library_path_env_vars
-
-    # Test with all available offload targets, and with offloading disabled.
-    foreach offload_target [concat [split $offload_targets ","] "disable"] {
-	global openacc_device_type
-	set openacc_device_type [offload_target_to_openacc_device_type $offload_target]
-	set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=1"
-
-	switch $openacc_device_type {
-	    "" {
-		unsupported "$subdir $offload_target offloading"
+	host {
+	    set acc_mem_shared 1
+	}
+	nvidia {
+	    if { ![check_effective_target_openacc_nvidia_accel_present] } {
+		# Don't bother; execution testing is going to FAIL.
+		untested "$subdir $offload_target offloading: supported, but hardware not accessible"
 		continue
 	    }
-	    host {
-		set acc_mem_shared 1
-	    }
-	    nvidia {
-		if { ![check_effective_target_openacc_nvidia_accel_present] } {
-		    # Don't bother; execution testing is going to FAIL.
-		    untested "$subdir $offload_target offloading: supported, but hardware not accessible"
-		    continue
-		}
 
-		set acc_mem_shared 0
-	    }
-	    radeon {
-		if { ![check_effective_target_openacc_radeon_accel_present] } {
-		    # Don't bother; execution testing is going to FAIL.
-		    untested "$subdir $offload_target offloading: supported, but hardware not accessible"
-		    continue
-		}
-
-		set acc_mem_shared 0
-	    }
-	    default {
-		error "Unknown OpenACC device type: $openacc_device_type (offload target: $offload_target)"
-	    }
+	    set acc_mem_shared 0
 	}
-	set tagopt "$tagopt -DACC_MEM_SHARED=$acc_mem_shared"
+	radeon {
+	    if { ![check_effective_target_openacc_radeon_accel_present] } {
+		# Don't bother; execution testing is going to FAIL.
+		untested "$subdir $offload_target offloading: supported, but hardware not accessible"
+		continue
+	    }
 
-	# To avoid compilation overhead, and to keep simple '-foffload=[...]'
-	# handling in test cases, by default only build for the offload target
-	# that we're actually going to test.
-	set tagopt "$tagopt -foffload=$offload_target"
-	# Force usage of the corresponding OpenACC device type.
-	setenv ACC_DEVICE_TYPE $openacc_device_type
-
-	# For Fortran we're doing torture testing, as Fortran has far more tests
-	# with arrays etc. that testing just -O0 or -O2 is insufficient, that is
-	# typically not the case for C/C++.
-	gfortran-dg-runtest $tests "$tagopt" ""
+	    set acc_mem_shared 0
+	}
+	default {
+	    error "Unknown OpenACC device type: $openacc_device_type (offload target: $offload_target)"
+	}
     }
-    unset offload_target
+    set tagopt "$tagopt -DACC_MEM_SHARED=$acc_mem_shared"
+
+    # To avoid compilation overhead, and to keep simple '-foffload=[...]'
+    # handling in test cases, by default only build for the offload target
+    # that we're actually going to test.
+    set tagopt "$tagopt -foffload=$offload_target"
+    # Force usage of the corresponding OpenACC device type.
+    setenv ACC_DEVICE_TYPE $openacc_device_type
+
+    # For Fortran we're doing torture testing, as Fortran has far more tests
+    # with arrays etc. that testing just -O0 or -O2 is insufficient, that is
+    # typically not the case for C/C++.
+    gfortran-dg-runtest $tests "$tagopt" ""
+}
+unset offload_target
+
+if { $blddir != "" } {
+    unset lang_source_re
+    unset lang_include_flags
+    unset libgfortran_library_path
+    unset libquadmath_library_path
+    unset lang_library_paths
 }
 
 # All done.

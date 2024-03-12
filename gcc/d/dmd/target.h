@@ -92,11 +92,11 @@ struct TargetCPP
         Microsoft,
         Sun
     };
-    bool reverseOverloads;    // with dmc and cl, overloaded functions are grouped and in reverse order
-    bool exceptions;          // set if catching C++ exceptions is supported
-    bool twoDtorInVtable;     // target C++ ABI puts deleting and non-deleting destructor into vtable
-    bool splitVBasetable;     // set if C++ ABI uses separate tables for virtual functions and virtual bases
-    bool wrapDtorInExternD;   // set if C++ dtors require a D wrapper to be callable from runtime
+    d_bool reverseOverloads;    // with dmc and cl, overloaded functions are grouped and in reverse order
+    d_bool exceptions;          // set if catching C++ exceptions is supported
+    d_bool twoDtorInVtable;     // target C++ ABI puts deleting and non-deleting destructor into vtable
+    d_bool splitVBasetable;     // set if C++ ABI uses separate tables for virtual functions and virtual bases
+    d_bool wrapDtorInExternD;   // set if C++ dtors require a D wrapper to be callable from runtime
     Runtime runtime;
 
     const char *toMangle(Dsymbol *s);
@@ -110,7 +110,7 @@ struct TargetCPP
 
 struct TargetObjC
 {
-    bool supported;     // set if compiler can interface with Objective-C
+    d_bool supported;     // set if compiler can interface with Objective-C
 };
 
 struct Target
@@ -156,15 +156,15 @@ struct Target
 
     DString architectureName;    // name of the platform architecture (e.g. X86_64)
     CPU cpu;                // CPU instruction set to target
-    bool is64bit;           // generate 64 bit code for x86_64; true by default for 64 bit dmd
-    bool isLP64;            // pointers are 64 bits
+    d_bool isX86_64;          // generate 64 bit code for x86_64; true by default for 64 bit dmd
+    d_bool isLP64;            // pointers are 64 bits
 
     // Environmental
     DString obj_ext;    /// extension for object files
     DString lib_ext;    /// extension for static library files
     DString dll_ext;    /// extension for dynamic library files
-    bool run_noext;     /// allow -run sources without extensions
-    bool omfobj;        /// for Win32: write OMF object files instead of COFF
+    d_bool run_noext;     /// allow -run sources without extensions
+    d_bool omfobj;        /// for Win32: write OMF object files instead of COFF
 
     template <typename T>
     struct FPTypeProperties

@@ -29,7 +29,12 @@
 
 #include <bits/requires_hosted.h> // execution policies are hosted only
 
-#if __cplusplus >= 201703L
+#define __glibcxx_want_parallel_algorithm
+#define __glibcxx_want_execution
+#include <bits/version.h>
+
+// C++ >= 17 && HOSTED
+#if defined(__cpp_lib_parallel_algorithm) || defined(__cpp_lib_execution)
 # include <bits/c++config.h>
 # include <pstl/glue_execution_defs.h>
 
@@ -49,10 +54,6 @@
 # if _PSTL_NUMERIC_FORWARD_DECLARED
 #  include <pstl/glue_memory_impl.h>
 # endif
-
-// Feature test macro for parallel algorithms
-# define __cpp_lib_parallel_algorithm 201603L
-# define __cpp_lib_execution 201902L
 
 #endif // C++17
 

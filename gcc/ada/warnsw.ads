@@ -71,6 +71,7 @@ package Warnsw is
          Warn_On_Export_Import,
          Warn_On_Hiding,
          Warn_On_Ignored_Equality,
+         Warn_On_Ineffective_Predicate_Test,
          Warn_On_Late_Primitives,
          Warn_On_Modified_Unread,
          Warn_On_No_Value_Assigned,
@@ -155,6 +156,7 @@ package Warnsw is
       Warn_On_Elab_Access |
       Warn_On_Hiding |
       Warn_On_Ignored_Equality |
+      Warn_On_Ineffective_Predicate_Test |
       Warn_On_Late_Primitives |
       Warn_On_Modified_Unread |
       Warn_On_Non_Local_Exception |
@@ -215,7 +217,7 @@ package Warnsw is
    --  of the old ABE mechanism.
 
    Implementation_Unit_Warnings : Boolean renames F (X.Implementation_Unit_Warnings);
-   --  Set True to active warnings for use of implementation internal units.
+   --  Set True to activate warnings for use of implementation internal units.
    --  Modified by use of -gnatwi/-gnatwI.
 
    Ineffective_Inline_Warnings : Boolean renames F (X.Ineffective_Inline_Warnings);
@@ -332,6 +334,11 @@ package Warnsw is
    --  for a predefined "=" for a composite type containing a component of
    --  whose type has the user-defined "=" as primitive). Off by default, and
    --  set by -gnatw_q (but not -gnatwa).
+
+   Warn_On_Ineffective_Predicate_Test : Boolean renames F (X.Warn_On_Ineffective_Predicate_Test);
+   --  Set to True to generate warnings if a static predicate is testing for
+   --  values that do not belong to the parent subtype. Modified by use of
+   --  -gnatw_s/S.
 
    Warn_On_Late_Primitives : Boolean renames F (X.Warn_On_Late_Primitives);
    --  Warn when tagged type public primitives are defined after its private

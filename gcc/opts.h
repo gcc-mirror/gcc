@@ -425,6 +425,7 @@ extern void control_warning_option (unsigned int opt_index, int kind,
 extern char *write_langs (unsigned int mask);
 extern void print_ignored_options (void);
 extern void handle_common_deferred_options (void);
+extern void handle_deferred_dump_options (void);
 unsigned int parse_sanitizer_options (const char *, location_t, int,
 				      unsigned int, int, bool);
 

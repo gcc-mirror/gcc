@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 #include <ranges>
 #include <utility> // as_const
@@ -48,6 +47,10 @@ struct R
   friend int* begin(R&&); // this function is not defined
   friend const int* begin(const R& r) noexcept { return r.a + 2; }
   friend const int* begin(const R&&); // this function is not defined
+
+#if __cpp_lib_ranges_as_const
+  friend const int* end(const R&) noexcept; // C++23 requires this.
+#endif
 };
 
 struct RV // view on an R
@@ -56,6 +59,10 @@ struct RV // view on an R
 
   friend int* begin(RV&); // this function is not defined
   friend const int* begin(const RV& rv) noexcept { return begin(std::as_const(rv.r)); }
+
+#if __cpp_lib_ranges_as_const
+  friend const int* end(const RV&) noexcept; // C++23 requires this.
+#endif
 };
 
 // Allow ranges::begin to work with RV&&
@@ -88,6 +95,11 @@ struct RR
   friend int* begin(RR&& r) { return r.a + 1; }
   friend const int* begin(const RR& r) { return r.a + 2; }
   friend const int* begin(const RR&& r) noexcept { return r.a + 3; }
+
+#if __cpp_lib_ranges_as_const
+  short* end() noexcept { return &s + 1; }   // C++23 requires this.
+  const long* end() const { return &l + 1; } // C++23 requires this.
+#endif
 };
 
 // N.B. this is a lie, cbegin on an RR rvalue will return a dangling pointer.

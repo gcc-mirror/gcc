@@ -46,7 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 
 static void vax_option_override (void);
-static bool vax_legitimate_address_p (machine_mode, rtx, bool);
+static bool vax_legitimate_address_p (machine_mode, rtx, bool,
+				      code_helper = ERROR_MARK);
 static void vax_file_start (void);
 static void vax_init_libfuncs (void);
 static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -1902,7 +1903,7 @@ indexable_address_p (rtx xfoo0, rtx xfoo1, machine_mode mode, bool strict)
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.  */
 bool
-vax_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+vax_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 {
   rtx xfoo0, xfoo1;
 

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target tls_native } */
 
 void *get_tp()
 {

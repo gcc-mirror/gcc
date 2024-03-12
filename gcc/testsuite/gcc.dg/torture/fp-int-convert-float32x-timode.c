@@ -3,6 +3,7 @@
 /* { dg-options "" } */
 /* { dg-add-options float32x } */
 /* { dg-require-effective-target float32x_runtime } */
+/* { dg-skip-if "double support is incomplete" { "avr-*-*" } } */
 
 #define __STDC_WANT_IEC_60559_TYPES_EXT__
 #include <float.h>

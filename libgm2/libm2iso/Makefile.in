@@ -176,11 +176,11 @@ libm2iso_la_LIBADD =
 @BUILD_ISOLIB_TRUE@	Storage.lo StreamFile.lo StringChan.lo \
 @BUILD_ISOLIB_TRUE@	Strings.lo SWholeIO.lo SysClock.lo \
 @BUILD_ISOLIB_TRUE@	SYSTEM.lo TermFile.lo TERMINATION.lo \
-@BUILD_ISOLIB_TRUE@	TextIO.lo WholeConv.lo WholeIO.lo \
-@BUILD_ISOLIB_TRUE@	WholeStr.lo
+@BUILD_ISOLIB_TRUE@	TextIO.lo TextUtil.lo WholeConv.lo \
+@BUILD_ISOLIB_TRUE@	WholeIO.lo WholeStr.lo
 @BUILD_ISOLIB_TRUE@am_libm2iso_la_OBJECTS = $(am__objects_1) \
-@BUILD_ISOLIB_TRUE@	ErrnoCategory.lo wraptime.lo RTco.lo \
-@BUILD_ISOLIB_TRUE@	libm2iso_la-wrapsock.lo
+@BUILD_ISOLIB_TRUE@	ErrnoCategory.lo RTco.lo wrapclock.lo \
+@BUILD_ISOLIB_TRUE@	wraptime.lo libm2iso_la-wrapsock.lo
 libm2iso_la_OBJECTS = $(am_libm2iso_la_OBJECTS)
 @BUILD_ISOLIB_TRUE@am_libm2iso_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -329,7 +329,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PERL = @PERL@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -409,7 +408,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUFFIXES = .c .cc .mod .def .o .obj .lo .a .la
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -470,6 +469,7 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
+        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 
@@ -512,9 +512,10 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         SWholeIO.def  SysClock.def \
 @BUILD_ISOLIB_TRUE@         SYSTEM.def  TermFile.def \
 @BUILD_ISOLIB_TRUE@         TERMINATION.def  TextIO.def \
+@BUILD_ISOLIB_TRUE@         TextUtil.def \
 @BUILD_ISOLIB_TRUE@         WholeConv.def  WholeIO.def \
-@BUILD_ISOLIB_TRUE@         WholeStr.def  wrapsock.def \
-@BUILD_ISOLIB_TRUE@         wraptime.def
+@BUILD_ISOLIB_TRUE@         WholeStr.def  wrapclock.def \
+@BUILD_ISOLIB_TRUE@         wrapsock.def wraptime.def
 
 @BUILD_ISOLIB_TRUE@M2MODS = ChanConsts.mod  CharClass.mod \
 @BUILD_ISOLIB_TRUE@         ClientSocket.mod  ComplexMath.mod \
@@ -551,22 +552,29 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         SWholeIO.mod  SysClock.mod \
 @BUILD_ISOLIB_TRUE@         SYSTEM.mod  TermFile.mod \
 @BUILD_ISOLIB_TRUE@         TERMINATION.mod  TextIO.mod \
+@BUILD_ISOLIB_TRUE@         TextUtil.mod \
 @BUILD_ISOLIB_TRUE@         WholeConv.mod  WholeIO.mod \
 @BUILD_ISOLIB_TRUE@         WholeStr.mod
 
 @BUILD_ISOLIB_TRUE@toolexeclib_LTLIBRARIES = libm2iso.la
 @BUILD_ISOLIB_TRUE@libm2iso_la_SOURCES = $(M2MODS) \
-@BUILD_ISOLIB_TRUE@                     ErrnoCategory.cc wraptime.cc RTco.cc wrapsock.c
+@BUILD_ISOLIB_TRUE@                     ErrnoCategory.cc RTco.cc wrapclock.cc wraptime.cc wrapsock.c
 
 #  wrapsock.cc
 @BUILD_ISOLIB_TRUE@C_INCLUDES = -I.. -I$(toplevel_srcdir)/libiberty -I$(toplevel_srcdir)/include
 @BUILD_ISOLIB_TRUE@libm2isodir = libm2iso
 @BUILD_ISOLIB_TRUE@libm2iso_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2iso_la_SOURCES)))
-@BUILD_ISOLIB_TRUE@libm2iso_la_CFLAGS = $(C_INCLUDES) -I. -I.. -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs -DBUILD_GM2_LIBS -I@srcdir@/../ -I../../../gcc -I$(GCC_DIR) -I$(GCC_DIR)/../include -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include
+@BUILD_ISOLIB_TRUE@libm2iso_la_CFLAGS = \
+@BUILD_ISOLIB_TRUE@   $(C_INCLUDES) -I. -I.. -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@   -DBUILD_GM2_LIBS -I@srcdir@/../ -I../../../gcc -I$(GCC_DIR) -I$(GCC_DIR)/../include \
+@BUILD_ISOLIB_TRUE@   -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include \
+@BUILD_ISOLIB_TRUE@   $(TARGET_LONGDOUBLE_ABI)
+
 @BUILD_ISOLIB_TRUE@libm2iso_la_M2FLAGS = \
 @BUILD_ISOLIB_TRUE@  -fm2-pathname=m2iso -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso \
 @BUILD_ISOLIB_TRUE@  -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
-@BUILD_ISOLIB_TRUE@  -fiso -fextended-opaque -fm2-g -g -Wreturn-type -fcase -fm2-prefix=m2iso
+@BUILD_ISOLIB_TRUE@  -fiso -fextended-opaque -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2iso \
+@BUILD_ISOLIB_TRUE@   $(TARGET_LONGDOUBLE_ABI)
 
 @BUILD_ISOLIB_TRUE@@TARGET_DARWIN_FALSE@libm2iso_la_link_flags = 
 @BUILD_ISOLIB_TRUE@@TARGET_DARWIN_TRUE@libm2iso_la_link_flags = -Wl,-undefined,dynamic_lookup
@@ -657,6 +665,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ErrnoCategory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RTco.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2iso_la-wrapsock.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wrapclock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wraptime.Plo@am__quote@
 
 .c.o:
@@ -906,13 +915,17 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_ISOLIB_TRUE@             "$(GM2_FOR_TARGET)" $@
 
 @BUILD_ISOLIB_TRUE@.mod.lo:
-@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_M2FLAGS) $< -o $@
+@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+@BUILD_ISOLIB_TRUE@                   $(GM2_FOR_TARGET) -c \
+@BUILD_ISOLIB_TRUE@                   $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_M2FLAGS) $< -o $@
 
 @BUILD_ISOLIB_TRUE@.cc.lo:
-@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
+@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) \
+@BUILD_ISOLIB_TRUE@                   $(CXXFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 @BUILD_ISOLIB_TRUE@.c.lo:
-@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) -c -I$(srcdir) $(CFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
+@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) -c -I$(srcdir) \
+@BUILD_ISOLIB_TRUE@                   $(CFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 @BUILD_ISOLIB_TRUE@install-data-local: force
 @BUILD_ISOLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

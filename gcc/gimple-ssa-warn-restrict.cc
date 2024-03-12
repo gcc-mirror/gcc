@@ -355,11 +355,12 @@ builtin_memref::extend_offset_range (tree offset)
       value_range vr;
       if (m_ptr_qry.rvals->range_of_expr (vr, offset, stmt))
 	{
-	  rng = vr.kind ();
+	  tree vr_min, vr_max;
+	  rng = get_legacy_range (vr, vr_min, vr_max);
 	  if (!vr.undefined_p ())
 	    {
-	      min = wi::to_wide (vr.min ());
-	      max = wi::to_wide (vr.max ());
+	      min = wi::to_wide (vr_min);
+	      max = wi::to_wide (vr_max);
 	    }
 	}
 

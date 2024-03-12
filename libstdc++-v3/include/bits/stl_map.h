@@ -63,6 +63,9 @@
 #include <tuple>
 #endif
 
+#define __glibcxx_want_map_try_emplace
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -76,6 +79,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  retrieved based on a key, in logarithmic time.
    *
    *  @ingroup associative_containers
+   *  @headerfile map
+   *  @since C++98
    *
    *  @tparam _Key  Type of key objects.
    *  @tparam  _Tp  Type of mapped objects.
@@ -694,8 +699,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ merge(__source); }
 #endif // C++17
 
-#if __cplusplus > 201402L
-#define __cpp_lib_map_try_emplace 201411L
+#ifdef __cpp_lib_map_try_emplace // C++ >= 17 && HOSTED
       /**
        *  @brief Attempts to build and insert a std::pair into the %map.
        *

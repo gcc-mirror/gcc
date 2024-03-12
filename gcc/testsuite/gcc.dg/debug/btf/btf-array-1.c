@@ -18,6 +18,9 @@
 /* { dg-final { scan-assembler-times "\[\t \]0x5\[\t \]+\[^\n\]*bta_nelems" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0\[\t \]+\[^\n\]*bta_nelems" 1 } } */
 
+/* { dg-final { scan-assembler-times " bta_elem_type: \\(BTF_KIND_INT 'int'\\)" 4 } } */
+/* { dg-final { scan-assembler-times " bta_elem_type: \\(BTF_KIND_ARRAY ''\\)" 1 } } */
+
 int b1[2] = {0,1};
 int c1[5] = {0,1,2,3,4};
 int a1[2][3] = { {3,4,5}, {2,3,4} };

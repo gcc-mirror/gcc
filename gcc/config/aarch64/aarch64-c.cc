@@ -82,6 +82,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 {
   aarch64_def_or_undef (flag_unsafe_math_optimizations, "__ARM_FP_FAST", pfile);
 
+  cpp_undef (pfile, "__ARM_ARCH");
   builtin_define_with_int_value ("__ARM_ARCH", AARCH64_ISA_V9A ? 9 : 8);
 
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",

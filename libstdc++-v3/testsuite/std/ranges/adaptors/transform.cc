@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 #include <algorithm>
 #include <ranges>
@@ -108,16 +107,20 @@ test05()
   auto r = ranges::subrange{i, std::default_sentinel};
   auto v = r | views::transform(std::negate{});
 
+#if ! __cpp_lib_ranges_as_const
   // Verify that _Iterator<false> is implicitly convertible to _Iterator<true>.
   static_assert(!std::same_as<decltype(ranges::begin(v)),
 			      decltype(ranges::cbegin(v))>);
+#endif
   auto a = ranges::cbegin(v);
   a = ranges::begin(v);
 
+#if ! __cpp_lib_ranges_as_const
   // Verify that _Sentinel<false> is implicitly convertible to _Sentinel<true>.
   static_assert(!ranges::common_range<decltype(v)>);
   static_assert(!std::same_as<decltype(ranges::end(v)),
 			      decltype(ranges::cend(v))>);
+#endif
   auto b = ranges::cend(v);
   b = ranges::end(v);
 }
@@ -175,6 +178,24 @@ test08()
   static_assert(!requires { views::all | transform; });
 }
 
+template<auto transform = views::transform>
+void
+test09()
+{
+  extern int x[5];
+  struct move_only {
+    move_only() { }
+    move_only(move_only&&) { }
+    int operator()(int i) const { return i; }
+  };
+#if __cpp_lib_ranges >= 202207L
+  // P2494R2 Relaxing range adaptors to allow for move only types
+  static_assert( requires { transform(x, move_only{}); } );
+#else
+  static_assert( ! requires { transform(x, move_only{}); } );
+#endif
+}
+
 int
 main()
 {
@@ -186,4 +207,5 @@ main()
   test06();
   test07();
   test08();
+  test09();
 }

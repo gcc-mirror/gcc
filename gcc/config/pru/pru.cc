@@ -1466,7 +1466,8 @@ int pru_symref2ioregno (rtx op)
 /* Implement TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P.  */
 static bool
 pru_addr_space_legitimate_address_p (machine_mode mode, rtx operand,
-				     bool strict_p, addr_space_t as)
+				     bool strict_p, addr_space_t as,
+				     code_helper = ERROR_MARK)
 {
   if (as == ADDR_SPACE_REGIO)
     {

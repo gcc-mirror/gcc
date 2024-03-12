@@ -87,7 +87,8 @@ namespace ranges
 
   } // namespace __detail
 
-  namespace __cust_access
+  // Namespace for helpers for the <ranges> customization points.
+  namespace __access
   {
     using std::ranges::__detail::__maybe_borrowed_range;
     using std::__detail::__range_iter_t;
@@ -132,9 +133,8 @@ namespace ranges
 	  { __decay_copy(__t.end()) } -> sentinel_for<__range_iter_t<_Tp>>;
 	};
 
-    // Poison pills so that unqualified lookup doesn't find std::end.
-    void end(auto&) = delete;
-    void end(const auto&) = delete;
+    // Poison pill so that unqualified lookup doesn't find std::end.
+    void end() = delete;
 
     template<typename _Tp>
       concept __adl_end = __class_or_enum<remove_reference_t<_Tp>>
@@ -183,8 +183,7 @@ namespace ranges
 	  { __decay_copy(__t.rbegin()) } -> input_or_output_iterator;
 	};
 
-    void rbegin(auto&) = delete;
-    void rbegin(const auto&) = delete;
+    void rbegin() = delete;
 
     template<typename _Tp>
       concept __adl_rbegin = __class_or_enum<remove_reference_t<_Tp>>
@@ -247,8 +246,7 @@ namespace ranges
 	    -> sentinel_for<decltype(_RBegin{}(std::forward<_Tp>(__t)))>;
 	};
 
-    void rend(auto&) = delete;
-    void rend(const auto&) = delete;
+    void rend() = delete;
 
     template<typename _Tp>
       concept __adl_rend = __class_or_enum<remove_reference_t<_Tp>>
@@ -305,8 +303,7 @@ namespace ranges
 	  { __decay_copy(__t.size()) } -> __detail::__is_integer_like;
 	};
 
-    void size(auto&) = delete;
-    void size(const auto&) = delete;
+    void size() = delete;
 
     template<typename _Tp>
       concept __adl_size = __class_or_enum<remove_reference_t<_Tp>>
@@ -482,18 +479,18 @@ namespace ranges
 	}
     };
 
-  } // namespace __cust_access
+  } // namespace __access
 
-  inline namespace __cust
+  inline namespace _Cpo
   {
-    inline constexpr __cust_access::_Begin begin{};
-    inline constexpr __cust_access::_End end{};
-    inline constexpr __cust_access::_RBegin rbegin{};
-    inline constexpr __cust_access::_REnd rend{};
-    inline constexpr __cust_access::_Size size{};
-    inline constexpr __cust_access::_SSize ssize{};
-    inline constexpr __cust_access::_Empty empty{};
-    inline constexpr __cust_access::_Data data{};
+    inline constexpr ranges::__access::_Begin begin{};
+    inline constexpr ranges::__access::_End end{};
+    inline constexpr ranges::__access::_RBegin rbegin{};
+    inline constexpr ranges::__access::_REnd rend{};
+    inline constexpr ranges::__access::_Size size{};
+    inline constexpr ranges::__access::_SSize ssize{};
+    inline constexpr ranges::__access::_Empty empty{};
+    inline constexpr ranges::__access::_Data data{};
   }
 
   /// [range.range] The range concept.
@@ -624,7 +621,7 @@ namespace ranges
       = input_range<_Tp> && std::__detail::__constant_iterator<iterator_t<_Tp>>;
 #endif
 
-  namespace __cust_access
+  namespace __access
   {
 #if __cplusplus > 202020L
     template<typename _Range>
@@ -659,11 +656,11 @@ namespace ranges
 	constexpr auto
 	operator()(_Tp&& __t) const
 	noexcept(noexcept(std::make_const_iterator
-			  (ranges::begin(__cust_access::__possibly_const_range(__t)))))
+			  (ranges::begin(__access::__possibly_const_range(__t)))))
 	requires requires { std::make_const_iterator
-			    (ranges::begin(__cust_access::__possibly_const_range(__t))); }
+			    (ranges::begin(__access::__possibly_const_range(__t))); }
 	{
-	  auto& __r = __cust_access::__possibly_const_range(__t);
+	  auto& __r = __access::__possibly_const_range(__t);
 	  return const_iterator_t<decltype(__r)>(ranges::begin(__r));
 	}
 #else
@@ -671,10 +668,10 @@ namespace ranges
 	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_Begin{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _Begin{}(__cust_access::__as_const<_Tp>(__e)); }
+	noexcept(noexcept(_Begin{}(__access::__as_const<_Tp>(__e))))
+	requires requires { _Begin{}(__access::__as_const<_Tp>(__e)); }
 	{
-	  return _Begin{}(__cust_access::__as_const<_Tp>(__e));
+	  return _Begin{}(__access::__as_const<_Tp>(__e));
 	}
 #endif
     };
@@ -687,11 +684,11 @@ namespace ranges
 	constexpr auto
 	operator()(_Tp&& __t) const
 	noexcept(noexcept(std::make_const_sentinel
-			  (ranges::end(__cust_access::__possibly_const_range(__t)))))
+			  (ranges::end(__access::__possibly_const_range(__t)))))
 	requires requires { std::make_const_sentinel
-			    (ranges::end(__cust_access::__possibly_const_range(__t))); }
+			    (ranges::end(__access::__possibly_const_range(__t))); }
 	{
-	  auto& __r = __cust_access::__possibly_const_range(__t);
+	  auto& __r = __access::__possibly_const_range(__t);
 	  return const_sentinel_t<decltype(__r)>(ranges::end(__r));
 	}
 #else
@@ -699,10 +696,10 @@ namespace ranges
 	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_End{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _End{}(__cust_access::__as_const<_Tp>(__e)); }
+	noexcept(noexcept(_End{}(__access::__as_const<_Tp>(__e))))
+	requires requires { _End{}(__access::__as_const<_Tp>(__e)); }
 	{
-	  return _End{}(__cust_access::__as_const<_Tp>(__e));
+	  return _End{}(__access::__as_const<_Tp>(__e));
 	}
 #endif
     };
@@ -715,11 +712,11 @@ namespace ranges
 	constexpr auto
 	operator()(_Tp&& __t) const
 	noexcept(noexcept(std::make_const_iterator
-			  (ranges::rbegin(__cust_access::__possibly_const_range(__t)))))
+			  (ranges::rbegin(__access::__possibly_const_range(__t)))))
 	requires requires { std::make_const_iterator
-			    (ranges::rbegin(__cust_access::__possibly_const_range(__t))); }
+			    (ranges::rbegin(__access::__possibly_const_range(__t))); }
 	{
-	  auto& __r = __cust_access::__possibly_const_range(__t);
+	  auto& __r = __access::__possibly_const_range(__t);
 	  return const_iterator<decltype(ranges::rbegin(__r))>(ranges::rbegin(__r));
 	}
 #else
@@ -727,10 +724,10 @@ namespace ranges
 	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_RBegin{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _RBegin{}(__cust_access::__as_const<_Tp>(__e)); }
+	noexcept(noexcept(_RBegin{}(__access::__as_const<_Tp>(__e))))
+	requires requires { _RBegin{}(__access::__as_const<_Tp>(__e)); }
 	{
-	  return _RBegin{}(__cust_access::__as_const<_Tp>(__e));
+	  return _RBegin{}(__access::__as_const<_Tp>(__e));
 	}
 #endif
     };
@@ -743,11 +740,11 @@ namespace ranges
 	constexpr auto
 	operator()(_Tp&& __t) const
 	noexcept(noexcept(std::make_const_sentinel
-			  (ranges::rend(__cust_access::__possibly_const_range(__t)))))
+			  (ranges::rend(__access::__possibly_const_range(__t)))))
 	requires requires { std::make_const_sentinel
-			    (ranges::rend(__cust_access::__possibly_const_range(__t))); }
+			    (ranges::rend(__access::__possibly_const_range(__t))); }
 	{
-	  auto& __r = __cust_access::__possibly_const_range(__t);
+	  auto& __r = __access::__possibly_const_range(__t);
 	  return const_sentinel<decltype(ranges::rend(__r))>(ranges::rend(__r));
 	}
 #else
@@ -755,10 +752,10 @@ namespace ranges
 	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_REnd{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _REnd{}(__cust_access::__as_const<_Tp>(__e)); }
+	noexcept(noexcept(_REnd{}(__access::__as_const<_Tp>(__e))))
+	requires requires { _REnd{}(__access::__as_const<_Tp>(__e)); }
 	{
-	  return _REnd{}(__cust_access::__as_const<_Tp>(__e));
+	  return _REnd{}(__access::__as_const<_Tp>(__e));
 	}
 #endif
     };
@@ -770,31 +767,30 @@ namespace ranges
 	[[nodiscard]]
 	constexpr const auto*
 	operator()(_Tp&& __t) const
-	noexcept(noexcept(ranges::data(__cust_access::__possibly_const_range(__t))))
-	requires requires { ranges::data(__cust_access::__possibly_const_range(__t)); }
-	{ return ranges::data(__cust_access::__possibly_const_range(__t)); }
+	noexcept(noexcept(ranges::data(__access::__possibly_const_range(__t))))
+	requires requires { ranges::data(__access::__possibly_const_range(__t)); }
+	{ return ranges::data(__access::__possibly_const_range(__t)); }
 #else
       template<typename _Tp>
 	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
-	noexcept(noexcept(_Data{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _Data{}(__cust_access::__as_const<_Tp>(__e)); }
+	noexcept(noexcept(_Data{}(__access::__as_const<_Tp>(__e))))
+	requires requires { _Data{}(__access::__as_const<_Tp>(__e)); }
 	{
-	  return _Data{}(__cust_access::__as_const<_Tp>(__e));
+	  return _Data{}(__access::__as_const<_Tp>(__e));
 	}
 #endif
     };
+  } // namespace __access
 
-  } // namespace __cust_access
-
-  inline namespace __cust
+  inline namespace _Cpo
   {
-    inline constexpr __cust_access::_CBegin cbegin{};
-    inline constexpr __cust_access::_CEnd cend{};
-    inline constexpr __cust_access::_CRBegin crbegin{};
-    inline constexpr __cust_access::_CREnd crend{};
-    inline constexpr __cust_access::_CData cdata{};
+    inline constexpr ranges::__access::_CBegin cbegin{};
+    inline constexpr ranges::__access::_CEnd cend{};
+    inline constexpr ranges::__access::_CRBegin crbegin{};
+    inline constexpr ranges::__access::_CREnd crend{};
+    inline constexpr ranges::__access::_CData cdata{};
   }
 
   namespace __detail

@@ -42,15 +42,15 @@
 
 #include <bits/requires_hosted.h> // threading primitive
 
-#if __cplusplus > 201703L
+#define __glibcxx_want_barrier
+#include <bits/version.h>
+
+#ifdef __cpp_lib_barrier // C++ >= 20 && __cpp_aligned_new && lib_atomic_wait
 #include <bits/atomic_base.h>
-#if __cpp_lib_atomic_wait && __cpp_aligned_new
 #include <bits/std_thread.h>
 #include <bits/unique_ptr.h>
 
 #include <array>
-
-#define __cpp_lib_barrier 201907L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -261,6 +261,5 @@ It looks different from literature pseudocode for two main reasons:
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-#endif // __cpp_lib_atomic_wait && __cpp_aligned_new
-#endif // __cplusplus > 201703L
+#endif // __cpp_lib_barrier
 #endif // _GLIBCXX_BARRIER

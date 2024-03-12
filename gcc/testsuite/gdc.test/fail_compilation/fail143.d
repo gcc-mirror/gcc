@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail143.d(23): Error: need `this` for `next` of type `uint()`
+fail_compilation/fail143.d(23): Error: calling non-static function `next` requires an instance of type `Quux`
 fail_compilation/fail143.d(30): Error: template instance `fail143.Foo!int` error instantiating
 ---
 */

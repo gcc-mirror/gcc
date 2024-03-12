@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RISCV_H
 #define GCC_RISCV_H
 
+#include <stdbool.h>
 #include "config/riscv/riscv-opts.h"
 
 /* Target CPU builtins.  */
@@ -121,7 +122,9 @@ ASM_MISA_SPEC
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
 #define DWARF_FRAME_REGNUM(REGNO)                                              \
-  (VL_REG_P (REGNO) ? RISCV_DWARF_VL                                           \
+  (FRM_REG_P (REGNO)	? RISCV_DWARF_FRM                                      \
+   : VXRM_REG_P (REGNO) ? RISCV_DWARF_VXRM                                     \
+   : VL_REG_P (REGNO)	? RISCV_DWARF_VL                                       \
    : VTYPE_REG_P (REGNO)                                                       \
      ? RISCV_DWARF_VTYPE                                                       \
      : (GP_REG_P (REGNO) || FP_REG_P (REGNO) || V_REG_P (REGNO)                \
@@ -148,6 +151,7 @@ ASM_MISA_SPEC
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#define BITS_PER_WORD (BITS_PER_UNIT * UNITS_PER_WORD)
 #ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
 #endif
@@ -183,7 +187,7 @@ ASM_MISA_SPEC
 #define PARM_BOUNDARY BITS_PER_WORD
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY (TARGET_RVC ? 16 : 32)
+#define FUNCTION_BOUNDARY ((TARGET_RVC || TARGET_ZCA) ? 16 : 32)
 
 /* The smallest supported stack boundary the calling convention supports.  */
 #define STACK_BOUNDARY \
@@ -306,7 +310,7 @@ ASM_MISA_SPEC
 
 #define FIXED_REGISTERS							\
 { /* General registers.  */						\
-  1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
+  1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   /* Floating-point registers.  */					\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
@@ -324,7 +328,7 @@ ASM_MISA_SPEC
 
 #define CALL_USED_REGISTERS						\
 { /* General registers.  */						\
-  1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,			\
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,			\
   /* Floating-point registers.  */					\
   1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,			\
@@ -372,6 +376,8 @@ ASM_MISA_SPEC
   ((unsigned int) ((int) (REGNO) - V_REG_FIRST) < V_REG_NUM)
 #define VL_REG_P(REGNO) ((REGNO) == VL_REGNUM)
 #define VTYPE_REG_P(REGNO) ((REGNO) == VTYPE_REGNUM)
+#define VXRM_REG_P(REGNO) ((REGNO) == VXRM_REGNUM)
+#define FRM_REG_P(REGNO) ((REGNO) == FRM_REGNUM)
 
 /* True when REGNO is in SIBCALL_REGS set.  */
 #define SIBCALL_REG_P(REGNO)	\
@@ -390,6 +396,8 @@ ASM_MISA_SPEC
 #define FRAME_POINTER_REGNUM 65
 
 /* Define Dwarf for RVV.  */
+#define RISCV_DWARF_FRM (4096 + 0x003)
+#define RISCV_DWARF_VXRM (4096 + 0x00a)
 #define RISCV_DWARF_VL (4096 + 0xc20)
 #define RISCV_DWARF_VTYPE (4096 + 0xc21)
 #define RISCV_DWARF_VLENB (4096 + 0xc22)
@@ -412,6 +420,29 @@ ASM_MISA_SPEC
 #define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
   gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
+
+#define RETURN_ADDR_MASK (1 << RETURN_ADDR_REGNUM)
+#define S0_MASK (1 << S0_REGNUM)
+#define S1_MASK (1 << S1_REGNUM)
+#define S2_MASK (1 << S2_REGNUM)
+#define S3_MASK (1 << S3_REGNUM)
+#define S4_MASK (1 << S4_REGNUM)
+#define S5_MASK (1 << S5_REGNUM)
+#define S6_MASK (1 << S6_REGNUM)
+#define S7_MASK (1 << S7_REGNUM)
+#define S8_MASK (1 << S8_REGNUM)
+#define S9_MASK (1 << S9_REGNUM)
+#define S10_MASK (1 << S10_REGNUM)
+#define S11_MASK (1 << S11_REGNUM)
+
+#define MULTI_PUSH_GPR_MASK                                                    \
+  (RETURN_ADDR_MASK | S0_MASK | S1_MASK | S2_MASK | S3_MASK | S4_MASK          \
+   | S5_MASK | S6_MASK | S7_MASK | S8_MASK | S9_MASK | S10_MASK | S11_MASK)
+#define ZCMP_MAX_SPIMM 3
+#define ZCMP_SP_INC_STEP 16
+#define ZCMP_INVALID_S0S10_SREGS_COUNTS 11
+#define ZCMP_S0S11_SREGS_COUNTS 12
+#define ZCMP_MAX_GRP_SLOTS 13
 
 #define MCOUNT_NAME "_mcount"
 
@@ -535,7 +566,7 @@ enum reg_class
    factor or added to another register (as well as added to a
    displacement).  */
 
-#define INDEX_REG_CLASS NO_REGS
+#define INDEX_REG_CLASS riscv_index_reg_class()
 
 /* We generally want to put call-clobbered registers ahead of
    call-saved ones.  (IRA expects this.)  */
@@ -553,13 +584,12 @@ enum reg_class
   60, 61, 62, 63,							\
   /* Call-saved FPRs.  */						\
   40, 41, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,			\
-  /* V24 ~ V31.  */							\
-  120, 121, 122, 123, 124, 125, 126, 127,				\
-  /* V8 ~ V23.  */							\
-  104, 105, 106, 107, 108, 109, 110, 111,				\
-  112, 113, 114, 115, 116, 117, 118, 119,				\
-  /* V0 ~ V7.  */							\
-  96, 97, 98, 99, 100, 101, 102, 103,					\
+  /* v1 ~ v31 vector registers.  */					\
+  97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110,	\
+  111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123,	\
+  124, 125, 126, 127,							\
+  /* The vector mask register.  */					\
+  96,									\
   /* None of the remaining classes have defined call-saved		\
      registers.  */							\
   64, 65, 66, 67							\
@@ -573,7 +603,7 @@ enum reg_class
 #define POLY_SMALL_OPERAND_P(POLY_VALUE)		\
   (POLY_VALUE.is_constant () ?				\
      SMALL_OPERAND (POLY_VALUE.to_constant ()) : false)
-     
+
 /* True if VALUE can be loaded into a register using LUI.  */
 
 #define LUI_OPERAND(VALUE)						\
@@ -637,6 +667,9 @@ enum reg_class
 
 #define MAX_ARGS_IN_REGISTERS (riscv_abi == ABI_ILP32E ? 6 : 8)
 
+#define MAX_ARGS_IN_VECTOR_REGISTERS (16)
+#define MAX_ARGS_IN_MASK_REGISTERS (1)
+
 /* Symbolic macros for the first/last argument registers.  */
 
 #define GP_ARG_FIRST (GP_REG_FIRST + 10)
@@ -644,10 +677,14 @@ enum reg_class
 #define GP_TEMP_FIRST (GP_REG_FIRST + 5)
 #define FP_ARG_FIRST (FP_REG_FIRST + 10)
 #define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
+#define V_ARG_FIRST (V_REG_FIRST + 8)
+#define V_ARG_LAST (V_ARG_FIRST + MAX_ARGS_IN_VECTOR_REGISTERS - 1)
 
 #define CALLEE_SAVED_REG_NUMBER(REGNO)			\
   ((REGNO) >= 8 && (REGNO) <= 9 ? (REGNO) - 8 :		\
    (REGNO) >= 18 && (REGNO) <= 27 ? (REGNO) - 16 : -1)
+
+#define CALLEE_SAVED_FREG_NUMBER(REGNO) CALLEE_SAVED_REG_NUMBER (REGNO - 32)
 
 #define LIBCALL_VALUE(MODE) \
   riscv_function_value (NULL_TREE, NULL_TREE, MODE)
@@ -665,20 +702,45 @@ enum reg_class
   (IN_RANGE ((N), GP_ARG_FIRST, GP_ARG_LAST)				\
    || (UNITS_PER_FP_ARG && IN_RANGE ((N), FP_ARG_FIRST, FP_ARG_LAST)))
 
+/* Define the standard RISC-V calling convention and variants.  */
+
+enum riscv_cc
+{
+  RISCV_CC_BASE = 0, /* Base standard RISC-V ABI.  */
+  RISCV_CC_V, /* For functions that pass or return values in V registers.  */
+  RISCV_CC_UNKNOWN
+};
+
 typedef struct {
+  /* The calling convention that current function used.  */
+  enum riscv_cc variant_cc;
+
   /* Number of integer registers used so far, up to MAX_ARGS_IN_REGISTERS. */
   unsigned int num_gprs;
 
   /* Number of floating-point registers used so far, likewise.  */
   unsigned int num_fprs;
+
+  int rvv_psabi_warning;
+
+  /* Number of mask registers used so far, up to MAX_ARGS_IN_MASK_REGISTERS.  */
+  unsigned int num_mrs;
+
+  /* The used state of args in vector registers, true for used by prev arg,
+     initial to false.  */
+  bool used_vrs[MAX_ARGS_IN_VECTOR_REGISTERS];
 } CUMULATIVE_ARGS;
+
+/* Return riscv calling convention of call_insn.  */
+extern enum riscv_cc get_riscv_cc (const rtx use);
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
-  memset (&(CUM), 0, sizeof (CUM))
+  riscv_init_cumulative_args (&(CUM), (FNTYPE), (LIBNAME), (INDIRECT),     \
+			(N_NAMED_ARGS) != -1)
 
 #define EPILOGUE_USES(REGNO)	riscv_epilogue_uses (REGNO)
 
@@ -705,7 +767,9 @@ typedef struct {
 
 /* Addressing modes, and classification of registers for them.  */
 
-#define REGNO_OK_FOR_INDEX_P(REGNO) 0
+#define REGNO_OK_FOR_INDEX_P(REGNO) \
+  riscv_regno_ok_for_index_p (REGNO)
+
 #define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) \
   riscv_regno_mode_ok_for_base_p (REGNO, MODE, 1)
 
@@ -791,6 +855,10 @@ typedef struct {
 
 #define Pmode word_mode
 
+/* Specify the machine mode that registers have.  */
+
+#define Xmode (TARGET_64BIT ? DImode : SImode)
+
 /* Give call MEMs SImode since it is the "most permissive" mode
    for both 32-bit and 64-bit targets.  */
 
@@ -840,7 +908,7 @@ typedef struct {
   "fs0", "fs1", "fa0", "fa1", "fa2", "fa3", "fa4", "fa5",	\
   "fa6", "fa7", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7",	\
   "fs8", "fs9", "fs10","fs11","ft8", "ft9", "ft10","ft11",	\
-  "arg", "frame", "vl", "vtype", "N/A", "N/A", "N/A", "N/A",    \
+  "arg", "frame", "vl", "vtype", "vxrm", "frm", "N/A", "N/A",   \
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",	\
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",	\
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",	\
@@ -981,6 +1049,21 @@ while (0)
 
 #define ASM_COMMENT_START "#"
 
+/* Add output .variant_cc directive for specific function definition.  */
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)                             \
+  riscv_declare_function_name (STR, NAME, DECL)
+
+/* Add output .variant_cc directive for specific alias definition.  */
+#undef ASM_OUTPUT_DEF_FROM_DECLS
+#define ASM_OUTPUT_DEF_FROM_DECLS(STR, DECL, TARGET)                           \
+  riscv_asm_output_alias (STR, DECL, TARGET)
+
+/* Add output .variant_cc directive for specific extern function.  */
+#undef ASM_OUTPUT_EXTERNAL
+#define ASM_OUTPUT_EXTERNAL(STR, DECL, NAME)                                   \
+  riscv_asm_output_external (STR, DECL, NAME)
+
 #undef SIZE_TYPE
 #define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")
 
@@ -1021,10 +1104,12 @@ while (0)
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_slow_unaligned_access_p;
+extern bool riscv_user_wants_strict_align;
 extern unsigned riscv_stack_boundary;
 extern unsigned riscv_bytes_per_vector_chunk;
 extern poly_uint16 riscv_vector_chunks;
 extern poly_int64 riscv_v_adjust_nunits (enum machine_mode, int);
+extern poly_int64 riscv_v_adjust_nunits (machine_mode, bool, int, int);
 extern poly_int64 riscv_v_adjust_precision (enum machine_mode, int);
 extern poly_int64 riscv_v_adjust_bytesize (enum machine_mode, int);
 /* The number of bits and bytes in a RVV vector.  */
@@ -1096,5 +1181,19 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #define DWARF_REG_TO_UNWIND_COLUMN(REGNO) \
   ((REGNO == RISCV_DWARF_VLENB) ? (FIRST_PSEUDO_REGISTER + 1) : REGNO)
+
+/* Like s390, riscv also defined this macro for the vector comparision.  Then
+   the simplify-rtx relational_result will canonicalize the result to the
+   CONST1_RTX for the simplification.  */
+#define VECTOR_STORE_FLAG_VALUE(MODE) CONSTM1_RTX (GET_MODE_INNER (MODE))
+
+/* Mode switching (Lazy code motion) for RVV rounding mode instructions.  */
+#define OPTIMIZE_MODE_SWITCHING(ENTITY) (TARGET_VECTOR)
+#define NUM_MODES_FOR_MODE_SWITCHING {VXRM_MODE_NONE, riscv_vector::FRM_NONE}
+
+
+/* The size difference between different RVV modes can be up to 64 times.
+   e.g. RVVMF64BI vs RVVMF1BI on zvl512b, which is [1, 1] vs [64, 64].  */
+#define MAX_POLY_VARIANT 64
 
 #endif /* ! GCC_RISCV_H */

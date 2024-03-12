@@ -91,6 +91,7 @@ LS = ls
 RANLIB = @RANLIB@
 RANLIB_FLAGS = @ranlib_flags@
 AWK = @AWK@
+PICFLAG = @PICFLAG@
 
 COMPILER = $(CC)
 COMPILER_FLAGS = $(CFLAGS)
@@ -239,7 +240,11 @@ ALL_CPPFLAGS = $(CPPFLAGS)
 ALL_COMPILERFLAGS = $(ALL_CFLAGS)
 
 # This is where we get libiberty.a from.
+ifneq ($(findstring $(PICFLAG),-fPIC -fPIE),)
+LIBIBERTY = ../../libiberty/pic/libiberty.a
+else
 LIBIBERTY = ../../libiberty/libiberty.a
+endif
 
 # We need to link against libbacktrace because diagnostic.c in
 # libcommon.a uses it.
@@ -257,7 +262,7 @@ TOOLS_LIBS = ../version.o ../link.o ../targext.o ../../ggc-none.o \
   $(SYSLIBS) $(TGT_LIB)
 
 # Add -no-pie to TOOLS_LIBS since some of them are compiled with -fno-PIE.
-TOOLS_LIBS += @NO_PIE_FLAG@
+TOOLS_LIBS += @LD_PICFLAG@
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,

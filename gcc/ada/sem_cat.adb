@@ -346,14 +346,13 @@ package body Sem_Cat is
 
       if Null_Present (Recdef) then
          return;
-      else
-         Component_Decl := First (Component_Items (Component_List (Recdef)));
       end if;
 
-      while Present (Component_Decl)
-        and then Nkind (Component_Decl) = N_Component_Declaration
-      loop
-         if Present (Expression (Component_Decl))
+      Component_Decl := First (Component_Items (Component_List (Recdef)));
+
+      while Present (Component_Decl) loop
+         if Nkind (Component_Decl) = N_Component_Declaration
+           and then Present (Expression (Component_Decl))
            and then Nkind (Expression (Component_Decl)) /= N_Null
            and then not Is_OK_Static_Expression (Expression (Component_Decl))
 
@@ -562,7 +561,7 @@ package body Sem_Cat is
       --  There are no constraints on the body of Remote_Call_Interface or
       --  Remote_Types packages.
 
-      return (Unit_Entity /= Standard_Standard)
+      return Unit_Entity /= Standard_Standard
         and then (Is_Preelaborated (Unit_Entity)
                     or else Is_Pure (Unit_Entity)
                     or else Is_Shared_Passive (Unit_Entity)

@@ -604,6 +604,11 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags)
   /* Tell the user -mrop-protect is in play.  */
   if (rs6000_rop_protect)
     rs6000_define_or_undefine_macro (define_p, "__ROP_PROTECT__");
+  /* Tell the user __builtin_set_fpscr_rn now returns the FPSCR fields
+     in a double.  Originally the built-in returned void.  */
+  if ((flags & OPTION_MASK_SOFT_FLOAT) == 0)
+    rs6000_define_or_undefine_macro (define_p,
+				     "__SET_FPSCR_RN_RETURNS_FPSCR__");
 }
 
 void
@@ -1663,18 +1668,19 @@ resolve_vec_step (resolution *res, vec<tree, va_gc> *arglist, unsigned nargs)
 /* Look for a matching instance in a chain of instances.  INSTANCE points to
    the chain of instances; INSTANCE_CODE is the code identifying the specific
    built-in being searched for; FCODE is the overloaded function code; TYPES
-   contains an array of two types that must match the types of the instance's
-   parameters; and ARGS contains an array of two arguments to be passed to
-   the instance.  If found, resolve the built-in and return it, unless the
-   built-in is not supported in context.  In that case, set
-   UNSUPPORTED_BUILTIN to true.  If we don't match, return error_mark_node
-   and leave UNSUPPORTED_BUILTIN alone.  */
+   contains an array of NARGS types that must match the types of the
+   instance's parameters; ARGS contains an array of NARGS arguments to be
+   passed to the instance; and NARGS is the number of built-in arguments to
+   check.  If found, resolve the built-in and return it, unless the built-in
+   is not supported in context.  In that case, set UNSUPPORTED_BUILTIN to
+   true.  If we don't match, return error_mark_node and leave
+   UNSUPPORTED_BUILTIN alone.  */
 
 tree
 find_instance (bool *unsupported_builtin, ovlddata **instance,
 	       rs6000_gen_builtins instance_code,
 	       rs6000_gen_builtins fcode,
-	       tree *types, tree *args)
+	       tree *types, tree *args, int nargs)
 {
   while (*instance && (*instance)->bifid != instance_code)
     *instance = (*instance)->next;
@@ -1686,17 +1692,27 @@ find_instance (bool *unsupported_builtin, ovlddata **instance,
   if (!inst->fntype)
     return error_mark_node;
   tree fntype = rs6000_builtin_info[inst->bifid].fntype;
-  tree parmtype0 = TREE_VALUE (TYPE_ARG_TYPES (fntype));
-  tree parmtype1 = TREE_VALUE (TREE_CHAIN (TYPE_ARG_TYPES (fntype)));
+  tree argtype = TYPE_ARG_TYPES (fntype);
+  bool args_compatible = true;
 
-  if (rs6000_builtin_type_compatible (types[0], parmtype0)
-      && rs6000_builtin_type_compatible (types[1], parmtype1))
+  for (int i = 0; i < nargs; i++)
+    {
+      tree parmtype = TREE_VALUE (argtype);
+      if (!rs6000_builtin_type_compatible (types[i], parmtype))
+	{
+	  args_compatible = false;
+	  break;
+	}
+      argtype = TREE_CHAIN (argtype);
+    }
+
+  if (args_compatible)
     {
       if (rs6000_builtin_decl (inst->bifid, false) != error_mark_node
 	  && rs6000_builtin_is_supported (inst->bifid))
 	{
 	  tree ret_type = TREE_TYPE (inst->fntype);
-	  return altivec_build_resolved_builtin (args, 2, fntype, ret_type,
+	  return altivec_build_resolved_builtin (args, nargs, fntype, ret_type,
 						 inst->bifid, fcode);
 	}
       else
@@ -1916,7 +1932,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  instance_code = RS6000_BIF_CMPB_32;
 
 	tree call = find_instance (&unsupported_builtin, &instance,
-				   instance_code, fcode, types, args);
+				   instance_code, fcode, types, args, nargs);
 	if (call != error_mark_node)
 	  return call;
 	break;
@@ -1929,11 +1945,15 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	   128-bit variant of built-in function.  */
 	if (GET_MODE_PRECISION (arg1_mode) > 64)
 	  {
-	    /* If first argument is of float variety, choose variant
-	       that expects __ieee128 argument.  Otherwise, expect
-	       __int128 argument.  */
+	    /* If first argument is of float variety, choose the variant that
+	       expects __ieee128 argument.  If the first argument is vector
+	       int, choose the variant that expects vector unsigned
+	       __int128 argument.  Otherwise, expect scalar __int128 argument.
+	    */
 	    if (GET_MODE_CLASS (arg1_mode) == MODE_FLOAT)
 	      instance_code = RS6000_BIF_VSIEQPF;
+	    else if (GET_MODE_CLASS (arg1_mode) == MODE_VECTOR_INT)
+	      instance_code = RS6000_BIF_VSIEQPV;
 	    else
 	      instance_code = RS6000_BIF_VSIEQP;
 	  }
@@ -1949,7 +1969,30 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  }
 
 	tree call = find_instance (&unsupported_builtin, &instance,
-				   instance_code, fcode, types, args);
+				   instance_code, fcode, types, args, nargs);
+	if (call != error_mark_node)
+	  return call;
+	break;
+      }
+    case RS6000_OVLD_VEC_REPLACE_UN:
+      {
+	machine_mode arg2_mode = TYPE_MODE (types[1]);
+
+	if (arg2_mode == SImode)
+	  /* Signed and unsigned are handled the same.  */
+	  instance_code = RS6000_BIF_VREPLACE_UN_USI;
+	else if (arg2_mode == SFmode)
+	  instance_code = RS6000_BIF_VREPLACE_UN_SF;
+	else if (arg2_mode == DImode)
+	  /* Signed and unsigned are handled the same.  */
+	  instance_code = RS6000_BIF_VREPLACE_UN_UDI;
+	else if (arg2_mode == DFmode)
+	  instance_code = RS6000_BIF_VREPLACE_UN_DF;
+	else
+	  break;
+
+	tree call = find_instance (&unsupported_builtin, &instance,
+				   instance_code, fcode, types, args, nargs);
 	if (call != error_mark_node)
 	  return call;
 	break;

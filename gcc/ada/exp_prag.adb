@@ -269,6 +269,16 @@ package body Exp_Prag is
       end;
    end Expand_Pragma_Abort_Defer;
 
+   -------------------------------------
+   -- Expand_Pragma_Always_Terminates --
+   -------------------------------------
+
+   procedure Expand_Pragma_Always_Terminates (Prag : Node_Id) is
+      pragma Unreferenced (Prag);
+   begin
+      null;
+   end Expand_Pragma_Always_Terminates;
+
    --------------------------
    -- Expand_Pragma_Check --
    --------------------------
@@ -564,6 +574,13 @@ package body Exp_Prag is
          then
             null;
 
+         --  For Subprogram_Variant suppress the warning altogether, because
+         --  for mutually recursive subprograms with multiple variant clauses
+         --  some of the clauses might have expressions that are only meant for
+         --  verification and would always fail when executed.
+
+         elsif Nam = Name_Subprogram_Variant then
+            null;
          elsif Nam = Name_Assert then
             Error_Msg_N ("?.a?assertion will fail at run time", N);
          else
@@ -668,7 +685,7 @@ package body Exp_Prag is
    --        Blocks_Id'address,
    --        Mem_Id'address,
    --        Stream_Id'address),
-   --      CUDA.Runtime_Api.Launch_Kernel (
+   --      CUDA.Internal.Launch_Kernel (
    --        My_Proc'Address,
    --        Blocks_Id,
    --        Grids_Id,
@@ -686,7 +703,7 @@ package body Exp_Prag is
          Decls  : List_Id;
          Copies : Elist_Id);
       --  For each parameter in list Params, create an object declaration of
-      --  the followinng form:
+      --  the following form:
       --
       --    Copy_Id : Param_Typ := Param_Val;
       --
@@ -738,8 +755,8 @@ package body Exp_Prag is
          Kernel_Arg : Entity_Id;
          Memory     : Entity_Id;
          Stream     : Entity_Id) return Node_Id;
-      --  Builds and returns a call to CUDA.Launch_Kernel using the given
-      --  arguments. Proc is the entity of the procedure passed to the
+      --  Builds and returns a call to CUDA.Internal.Launch_Kernel using the
+      --  given arguments. Proc is the entity of the procedure passed to the
       --  CUDA_Execute pragma. Grid_Dims and Block_Dims are entities of the
       --  generated declarations that hold the kernel's dimensions. Args is the
       --  entity of the temporary array that holds the arguments of the kernel.
@@ -1970,6 +1987,47 @@ package body Exp_Prag is
 
       In_Assertion_Expr := In_Assertion_Expr - 1;
    end Expand_Pragma_Contract_Cases;
+
+   -------------------------------------
+   -- Expand_Pragma_Exceptional_Cases --
+   -------------------------------------
+
+   --  Aspect Exceptional_Cases shoule be expanded in the following manner:
+
+   --  Original declaration
+
+   --     procedure P (...) with
+   --        Exceptional_Cases =>
+   --           (Exp_1 => True,
+   --            Exp_2 => Post_4);
+
+   --  Expanded body
+
+   --     procedure P (...) is
+   --     begin
+   --        --  normal body of of P
+   --        declare
+   --        ...
+   --        end;
+   --
+   --     exception
+   --        when Exp1 =>
+   --           pragma Assert (True);
+   --           raise;
+   --        when E : Exp2 =>
+   --           pragma Assert (Post_4);
+   --           raise;
+   --        when others =>
+   --           pragma Assert (False);
+   --           raise;
+   --     end P;
+
+   procedure Expand_Pragma_Exceptional_Cases (Prag : Node_Id) is
+   begin
+      --  Currently we don't expand this pragma
+
+      Rewrite (Prag, Make_Null_Statement (Sloc (Prag)));
+   end Expand_Pragma_Exceptional_Cases;
 
    ---------------------------------------
    -- Expand_Pragma_Import_Or_Interface --

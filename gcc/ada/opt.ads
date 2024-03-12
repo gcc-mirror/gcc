@@ -81,8 +81,13 @@ package Opt is
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
    --  Think twice before using "="; Ada_Version >= Ada_2012 is more likely
    --  what you want, because it will apply to future versions of the language.
+   --
    --  Note that Ada_With_All_Extensions should always be last since it should
-   --  always be a superset of the other Ada versions.
+   --  always be a superset of the other Ada versions. Likewise, the
+   --  penultimate one should be Ada_With_Core_Extensions.
+   --
+   --  Use the ..._Extensions_Allowed functions below instead of referring
+   --  directly to Ada_With_..._Extensions.
 
    --  WARNING: There is a matching C declaration of this type in fe.h
 
@@ -99,6 +104,16 @@ package Opt is
    --  predefined or internal file is compiled.
 
    --  WARNING: There is a matching C declaration of this variable in fe.h
+
+   function All_Extensions_Allowed return Boolean is
+     (Ada_Version = Ada_With_All_Extensions);
+   --  True if GNAT specific language extensions are allowed. See GNAT RM for
+   --  details.
+
+   function Core_Extensions_Allowed return Boolean is
+     (Ada_Version >= Ada_With_Core_Extensions);
+   --  True if some but not all GNAT specific language extensions are allowed.
+   --  See GNAT RM for details.
 
    Ada_Version_Pragma : Node_Id := Empty;
    --  Reflects the Ada_xxx pragma that resulted in setting Ada_Version. Used
@@ -193,16 +208,6 @@ package Opt is
    --  (list representation information). It is also set true if certain
    --  Unchecked_Conversion instantiations require checking based on annotated
    --  values.
-
-   Back_End_Handles_Limited_Types : Boolean;
-   --  This flag is set True if the back end can properly handle limited or
-   --  other by reference types, and avoid copies. If this flag is False, then
-   --  the front end does special expansion for if/case expressions to make
-   --  sure that no copy occurs. If the flag is True, then the expansion for
-   --  if and case expressions relies on the back end properly handling things.
-   --  Currently the default is False for all cases (set in gnat1drv). The
-   --  default can be modified using -gnatd.L (sets the flag True). This is
-   --  used to test the possibility of having the backend handle this.
 
    Back_End_Inlining : Boolean := False;
    --  GNAT
@@ -593,16 +598,6 @@ package Opt is
    Expand_Nonbinary_Modular_Ops : Boolean := False;
    --  Set to True to convert nonbinary modular additions into code
    --  that relies on the front-end expansion of operator Mod.
-
-   function All_Extensions_Allowed return Boolean is
-     (Ada_Version = Ada_With_All_Extensions);
-   --  True if GNAT specific language extensions are allowed. See GNAT RM for
-   --  details.
-
-   function Core_Extensions_Allowed return Boolean is
-     (Ada_Version >= Ada_With_Core_Extensions);
-   --  True if some but not all GNAT specific language extensions are allowed.
-   --  See GNAT RM for details.
 
    type External_Casing_Type is (
      As_Is,       -- External names cased as they appear in the Ada source
@@ -1336,6 +1331,11 @@ package Opt is
    Replace_In_Comments : Boolean := False;
    --  GNATPREP
    --  Set to True if -C switch used.
+
+   Reverse_Bit_Order_Threshold : Int := -1;
+   --  GNAT
+   --  Set to the threshold from which the RM 13.5.1(13.3/2) clause applies,
+   --  or -1 if the size of the largest machine scalar is to be used.
 
    RTS_Lib_Path_Name : String_Ptr := null;
    RTS_Src_Path_Name : String_Ptr := null;

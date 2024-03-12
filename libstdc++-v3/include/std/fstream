@@ -46,6 +46,9 @@
 #include <string>             // For std::string overloads.
 #endif
 
+#define __glibcxx_want_fstream_native_handle
+#include <bits/version.h>
+
 // This can be overridden by the target's os_defines.h
 #ifndef _GLIBCXX_BUFSIZ
 # define _GLIBCXX_BUFSIZ BUFSIZ
@@ -366,6 +369,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       __filebuf_type*
       close();
+
+#if __cpp_lib_fstream_native_handle // C++ >= 26
+      /**
+       *  @brief The platform-specific file handle type.
+       *
+       *  The type is `int` for POSIX platforms that use file descriptors,
+       *  or `HANDLE` for Windows, or `FILE*` if the library was configured
+       *  with `--enable-cstdio=stdio_pure`.
+       *
+       *  @since C++26
+       */
+      using native_handle_type = typename __file_type::native_handle_type;
+
+      /**
+       *  @brief Return the platform-specific native handle for the file.
+       *  @pre `is_open()` is true.
+       *  @return The native file handle associated with `*this`.
+       *
+       *  The handle is invalidated when this filebuf is closed or destroyed.
+       *
+       *  @since C++26
+       */
+      [[__gnu__::__always_inline__]]
+      native_handle_type
+      native_handle() const noexcept
+      {
+	__glibcxx_assert(is_open());
+	return _M_file.native_handle();
+      }
+#endif
 
     protected:
       void
@@ -739,6 +772,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (!_M_filebuf.close())
 	  this->setstate(ios_base::failbit);
       }
+
+#if __cpp_lib_fstream_native_handle // C++ >= 26
+      using native_handle_type = typename __filebuf_type::native_handle_type;
+
+      [[__gnu__::__always_inline__]]
+      native_handle_type
+      native_handle() const noexcept
+      { return _M_filebuf.native_handle(); }
+#endif
     };
 
 
@@ -1002,6 +1044,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (!_M_filebuf.close())
 	  this->setstate(ios_base::failbit);
       }
+
+#if __cpp_lib_fstream_native_handle // C++ >= 26
+      using native_handle_type = typename __filebuf_type::native_handle_type;
+
+      [[__gnu__::__always_inline__]]
+      native_handle_type
+      native_handle() const noexcept
+      { return _M_filebuf.native_handle(); }
+#endif
     };
 
 
@@ -1262,6 +1313,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (!_M_filebuf.close())
 	  this->setstate(ios_base::failbit);
       }
+
+#if __cpp_lib_fstream_native_handle // C++ >= 26
+      using native_handle_type = typename __filebuf_type::native_handle_type;
+
+      [[__gnu__::__always_inline__]]
+      native_handle_type
+      native_handle() const noexcept
+      { return _M_filebuf.native_handle(); }
+#endif
     };
 
 #if __cplusplus >= 201103L

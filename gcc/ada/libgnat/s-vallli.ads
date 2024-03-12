@@ -47,6 +47,8 @@ pragma Assertion_Policy (Pre                => Ignore,
 with System.Unsigned_Types;
 with System.Val_LLU;
 with System.Value_I;
+with System.Vs_LLI;
+with System.Vs_LLU;
 
 package System.Val_LLI with SPARK_Mode is
    pragma Preelaborate;
@@ -57,7 +59,8 @@ package System.Val_LLI with SPARK_Mode is
      (Int               => Long_Long_Integer,
       Uns               => Long_Long_Unsigned,
       Scan_Raw_Unsigned => Val_LLU.Scan_Raw_Long_Long_Unsigned,
-      Uns_Params        => System.Val_LLU.Impl.Spec.Uns_Params);
+      U_Spec            => System.Vs_LLU.Spec,
+      Spec              => System.Vs_LLI.Spec);
 
    procedure Scan_Long_Long_Integer
      (Str  : String;

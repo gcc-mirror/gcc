@@ -166,7 +166,7 @@ static class lra_elim_table self_elim_table;
 /* Offsets should be used to restore original offsets for eliminable
    hard register which just became not eliminable.  Zero,
    otherwise.  */
-static poly_int64_pod self_elim_offsets[FIRST_PSEUDO_REGISTER];
+static poly_int64 self_elim_offsets[FIRST_PSEUDO_REGISTER];
 
 /* Map: hard regno -> RTL presentation.	 RTL presentations of all
    potentially eliminable hard registers are stored in the map.	 */
@@ -286,7 +286,7 @@ move_plus_up (rtx x)
 {
   rtx subreg_reg;
   machine_mode x_mode, subreg_reg_mode;
-  
+
   if (GET_CODE (x) != SUBREG || !subreg_lowpart_p (x))
     return x;
   subreg_reg = SUBREG_REG (x);
@@ -308,6 +308,9 @@ move_plus_up (rtx x)
     }
   return x;
 }
+
+/* Flag that we already did frame pointer to stack pointer elimination.  */
+static bool elimination_fp2sp_occured_p = false;
 
 /* Scan X and replace any eliminable registers (such as fp) with a
    replacement (such as sp) if SUBST_P, plus an offset.  The offset is
@@ -366,6 +369,9 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	{
 	  rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
 
+	  if (ep->to_rtx == stack_pointer_rtx && ep->from == FRAME_POINTER_REGNUM)
+	    elimination_fp2sp_occured_p = true;
+
 	  if (maybe_ne (update_sp_offset, 0))
 	    {
 	      if (ep->to_rtx == stack_pointer_rtx)
@@ -396,9 +402,12 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	      poly_int64 offset, curr_offset;
 	      rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
 
+	      if (ep->to_rtx == stack_pointer_rtx && ep->from == FRAME_POINTER_REGNUM)
+		elimination_fp2sp_occured_p = true;
+
 	      if (! update_p && ! full_p)
-		return gen_rtx_PLUS (Pmode, to, XEXP (x, 1));
-	      
+		return simplify_gen_binary (PLUS, Pmode, to, XEXP (x, 1));
+
 	      if (maybe_ne (update_sp_offset, 0))
 		offset = ep->to_rtx == stack_pointer_rtx ? update_sp_offset : 0;
 	      else
@@ -456,6 +465,9 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	{
 	  rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
 
+	  if (ep->to_rtx == stack_pointer_rtx && ep->from == FRAME_POINTER_REGNUM)
+	    elimination_fp2sp_occured_p = true;
+
 	  if (maybe_ne (update_sp_offset, 0))
 	    {
 	      if (ep->to_rtx == stack_pointer_rtx)
@@ -500,7 +512,7 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
     case LE:	   case LT:	  case LEU:    case LTU:
       {
 	rtx new0 = lra_eliminate_regs_1 (insn, XEXP (x, 0), mem_mode,
-					 subst_p, update_p, 
+					 subst_p, update_p,
 					 update_sp_offset, full_p);
 	rtx new1 = XEXP (x, 1)
 		   ? lra_eliminate_regs_1 (insn, XEXP (x, 1), mem_mode,
@@ -749,7 +761,7 @@ mark_not_eliminable (rtx x, machine_mode mem_mode)
 		  && poly_int_rtx_p (XEXP (XEXP (x, 1), 1), &offset))))
 	{
 	  poly_int64 size = GET_MODE_SIZE (mem_mode);
-	  
+
 #ifdef PUSH_ROUNDING
 	  /* If more bytes than MEM_MODE are pushed, account for
 	     them.  */
@@ -822,7 +834,7 @@ mark_not_eliminable (rtx x, machine_mode mem_mode)
 	{
 	  /* See if this is setting the replacement hard register for
 	     an elimination.
-	     
+
 	     If DEST is the hard frame pointer, we do nothing because
 	     we assume that all assignments to the frame pointer are
 	     for non-local gotos and are being done at a time when
@@ -838,7 +850,7 @@ mark_not_eliminable (rtx x, machine_mode mem_mode)
 		&& SET_DEST (x) != hard_frame_pointer_rtx)
 	      setup_can_eliminate (ep, false);
 	}
-      
+
       mark_not_eliminable (SET_SRC (x), mem_mode);
       return;
 
@@ -914,6 +926,18 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
       /* First see if the source is of the form (plus (...) CST).  */
       if (plus_src && poly_int_rtx_p (XEXP (plus_src, 1), &offset))
 	plus_cst_src = plus_src;
+      /* If we are doing initial offset computation, then utilize
+	 eqivalences to discover a constant for the second term
+	 of PLUS_SRC.  */
+      else if (plus_src && REG_P (XEXP (plus_src, 1)))
+	{
+	  int regno = REGNO (XEXP (plus_src, 1));
+	  if (regno < ira_reg_equiv_len
+	      && ira_reg_equiv[regno].constant != NULL_RTX
+	      && !replace_p
+	      && poly_int_rtx_p (ira_reg_equiv[regno].constant, &offset))
+	    plus_cst_src = plus_src;
+	}
       /* Check that the first operand of the PLUS is a hard reg or
 	 the lowpart subreg of one.  */
       if (plus_cst_src)
@@ -1047,7 +1071,7 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
       && GET_CODE (XEXP (SET_SRC (set), 0)) == PLUS)
     {
       rtx reg1, reg2, op1, op2;
-      
+
       reg1 = op1 = XEXP (XEXP (SET_SRC (set), 0), 0);
       reg2 = op2 = XEXP (SET_SRC (set), 1);
       if (GET_CODE (reg1) == SUBREG)
@@ -1074,18 +1098,18 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
   lra_update_insn_recog_data (insn);
 }
 
-/* Spill pseudos which are assigned to hard registers in SET.  Add
-   affected insns for processing in the subsequent constraint
-   pass.  */
-static void
-spill_pseudos (HARD_REG_SET set)
+/* Spill pseudos which are assigned to hard registers in SET, record them in
+   SPILLED_PSEUDOS unless it is null, and return the recorded pseudos number.
+   Add affected insns for processing in the subsequent constraint pass.  */
+static int
+spill_pseudos (HARD_REG_SET set, int *spilled_pseudos)
 {
-  int i;
+  int i, n;
   bitmap_head to_process;
   rtx_insn *insn;
 
   if (hard_reg_set_empty_p (set))
-    return;
+    return 0;
   if (lra_dump_file != NULL)
     {
       fprintf (lra_dump_file, "	   Spilling non-eliminable hard regs:");
@@ -1095,6 +1119,7 @@ spill_pseudos (HARD_REG_SET set)
       fprintf (lra_dump_file, "\n");
     }
   bitmap_initialize (&to_process, &reg_obstack);
+  n = 0;
   for (i = FIRST_PSEUDO_REGISTER; i < max_reg_num (); i++)
     if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
 	&& overlaps_hard_reg_set_p (set,
@@ -1104,6 +1129,8 @@ spill_pseudos (HARD_REG_SET set)
 	  fprintf (lra_dump_file, "	 Spilling r%d(%d)\n",
 		   i, reg_renumber[i]);
 	reg_renumber[i] = -1;
+	if (spilled_pseudos != NULL)
+	  spilled_pseudos[n++] = i;
 	bitmap_ior_into (&to_process, &lra_reg_info[i].insn_bitmap);
       }
   lra_no_alloc_regs |= set;
@@ -1114,6 +1141,7 @@ spill_pseudos (HARD_REG_SET set)
 	lra_set_used_insn_alternative (insn, LRA_UNKNOWN_ALT);
       }
   bitmap_clear (&to_process);
+  return n;
 }
 
 /* Update all offsets and possibility for elimination on eliminable
@@ -1160,11 +1188,16 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 	    fprintf (lra_dump_file,
 		     "	Elimination %d to %d is not possible anymore\n",
 		     ep->from, ep->to);
-	  /* If after processing RTL we decides that SP can be used as
-	     a result of elimination, it cannot be changed.  */
-	  gcc_assert ((ep->to_rtx != stack_pointer_rtx)
+	  /* If after processing RTL we decides that SP can be used as a result
+	     of elimination, it cannot be changed.  For frame pointer to stack
+	     pointer elimination the condition is a bit relaxed and we just require
+	     that actual elimination has not been done yet.   */
+	  gcc_assert (ep->to_rtx != stack_pointer_rtx
+		      || (ep->from == FRAME_POINTER_REGNUM
+			  && !elimination_fp2sp_occured_p)
 		      || (ep->from < FIRST_PSEUDO_REGISTER
 			  && fixed_regs [ep->from]));
+
 	  /* Mark that is not eliminable anymore.  */
 	  elimination_map[ep->from] = NULL;
 	  for (ep1 = ep + 1; ep1 < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep1++)
@@ -1221,7 +1254,7 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
       }
   lra_no_alloc_regs |= temp_hard_reg_set;
   eliminable_regset &= ~temp_hard_reg_set;
-  spill_pseudos (temp_hard_reg_set);
+  spill_pseudos (temp_hard_reg_set, NULL);
   return result;
 }
 
@@ -1261,14 +1294,14 @@ init_elim_table (void)
      will cause, e.g., gen_rtx_REG (Pmode, STACK_POINTER_REGNUM) to
      equal stack_pointer_rtx.  We depend on this. Threfore we switch
      off that we are in LRA temporarily.  */
-  lra_in_progress = 0;
+  lra_in_progress = false;
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       ep->from_rtx = gen_rtx_REG (Pmode, ep->from);
       ep->to_rtx = gen_rtx_REG (Pmode, ep->to);
       eliminable_reg_rtx[ep->from] = ep->from_rtx;
     }
-  lra_in_progress = 1;
+  lra_in_progress = true;
 }
 
 /* Function for initialization of elimination once per function.  It
@@ -1307,6 +1340,16 @@ init_elimination (void)
     }
   setup_elimination_map ();
 }
+
+/* Update and return stack pointer OFFSET after processing X.  */
+poly_int64
+lra_update_sp_offset (rtx x, poly_int64 offset)
+{
+  curr_sp_change = offset;
+  mark_not_eliminable (x, VOIDmode);
+  return curr_sp_change;
+}
+
 
 /* Eliminate hard reg given by its location LOC.  */
 void
@@ -1353,6 +1396,33 @@ process_insn_for_elimination (rtx_insn *insn, bool final_p, bool first_p)
     }
 }
 
+/* Update frame pointer to stack pointer elimination if we started with
+   permitted frame pointer elimination and now target reports that we can not
+   do this elimination anymore.  Record spilled pseudos in SPILLED_PSEUDOS
+   unless it is null, and return the recorded pseudos number.  */
+int
+lra_update_fp2sp_elimination (int *spilled_pseudos)
+{
+  int n;
+  HARD_REG_SET set;
+  class lra_elim_table *ep;
+
+  if (frame_pointer_needed || !targetm.frame_pointer_required ())
+    return 0;
+  gcc_assert (!elimination_fp2sp_occured_p);
+  if (lra_dump_file != NULL)
+    fprintf (lra_dump_file,
+	     "	   Frame pointer can not be eliminated anymore\n");
+  frame_pointer_needed = true;
+  CLEAR_HARD_REG_SET (set);
+  add_to_hard_reg_set (&set, Pmode, HARD_FRAME_POINTER_REGNUM);
+  n = spill_pseudos (set, spilled_pseudos);
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    if (ep->from == FRAME_POINTER_REGNUM && ep->to == STACK_POINTER_REGNUM)
+      setup_can_eliminate (ep, false);
+  return n;
+}
+
 /* Entry function to do final elimination if FINAL_P or to update
    elimination register offsets (FIRST_P if we are doing it the first
    time).  */
@@ -1369,7 +1439,10 @@ lra_eliminate (bool final_p, bool first_p)
   timevar_push (TV_LRA_ELIMINATE);
 
   if (first_p)
-    init_elimination ();
+    {
+      elimination_fp2sp_occured_p = false;
+      init_elimination ();
+    }
 
   bitmap_initialize (&insns_with_changed_offsets, &reg_obstack);
   if (final_p)

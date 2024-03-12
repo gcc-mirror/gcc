@@ -79,7 +79,6 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     BuildElsif1, BuildElsif2,
                     BuildProcedureCall, BuildReturn, BuildNulExpression,
                     StartBuildWith, EndBuildWith,
-                    BuildInline,
                     BuildCaseStart,
                     BuildCaseOr,
                     BuildCaseElse,
@@ -1227,14 +1226,14 @@ NamedOperand := '[' Ident ']' =:
 
 AsmOperandName := [ NamedOperand ] =:
 
-AsmOperands  := AsmOperandName string [ ':' AsmList [ ':' AsmList [ ':' TrashList ] ] ]
-             =:
+AsmOperands  := ConstExpression ':' AsmList [ ':' AsmList [ ':' TrashList ] ]
+              =:
 
 AsmList      := [ AsmElement ] { ',' AsmElement } =:
 
-AsmElement   := string '(' Expression ')'
-             =:
+AsmElement   := AsmOperandName ConstExpression '(' Expression ')'
+              =:
 
-TrashList    := [ string ] { ',' string } =:
+TrashList    := [ ConstExpression ] { ',' ConstExpression } =:
 
 FNB

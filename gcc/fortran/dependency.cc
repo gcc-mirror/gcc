@@ -543,7 +543,7 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
   e1 = gfc_discard_nops (e1);
   e2 = gfc_discard_nops (e2);
 
-  /* Inizialize tentatively, clear if we don't return anything.  */
+  /* Initialize tentatively, clear if we don't return anything.  */
   mpz_init (*result);
 
   /* Case 1: c1 - c2 = c1 - c2, trivially.  */
@@ -921,7 +921,7 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 }
 
 
-static int
+static bool
 gfc_is_data_pointer (gfc_expr *e)
 {
   gfc_ref *ref;
@@ -1091,7 +1091,7 @@ gfc_check_argument_dependency (gfc_expr *other, sym_intent intent,
 /* Like gfc_check_argument_dependency, but check all the arguments in ACTUAL.
    FNSYM is the function being called, or NULL if not known.  */
 
-int
+bool
 gfc_check_fncall_dependency (gfc_expr *other, sym_intent intent,
 			     gfc_symbol *fnsym, gfc_actual_arglist *actual,
 			     gfc_dep_check elemental)
@@ -1137,7 +1137,7 @@ gfc_check_fncall_dependency (gfc_expr *other, sym_intent intent,
    e1->ref and e2->ref to determine whether the actually accessed
    portions of these variables/arrays potentially overlap.  */
 
-int
+bool
 gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
 {
   gfc_equiv_list *l;
@@ -2092,13 +2092,11 @@ ref_same_as_full_array (gfc_ref *full_ref, gfc_ref *ref)
 
 /* Finds if two array references are overlapping or not.
    Return value
-	2 : array references are overlapping but reversal of one or
-	    more dimensions will clear the dependency.
 	1 : array references are overlapping, or identical is true and
 	    there is some kind of overlap.
 	0 : array references are identical or not overlapping.  */
 
-int
+bool
 gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
 		  bool identical)
 {

@@ -16,6 +16,11 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+
+GTM_H += loongarch-multilib.h
+OPTIONS_H_EXTRA += $(srcdir)/config/loongarch/loongarch-def.h \
+		   $(srcdir)/config/loongarch/loongarch-tune.h
+
 # Canonical target triplet from config.gcc
 LA_MULTIARCH_TRIPLET = $(patsubst LA_MULTIARCH_TRIPLET=%,%,$\
 $(filter LA_MULTIARCH_TRIPLET=%,$(tm_defines)))

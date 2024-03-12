@@ -57,7 +57,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
       && sanitize_flags_p (SANITIZE_DIVIDE))
     t = fold_build2 (EQ_EXPR, boolean_type_node,
 		     op1, build_int_cst (type, 0));
-  else if (TREE_CODE (type) == REAL_TYPE
+  else if (SCALAR_FLOAT_TYPE_P (type)
 	   && sanitize_flags_p (SANITIZE_FLOAT_DIVIDE))
     {
       t = fold_build2 (EQ_EXPR, boolean_type_node,
@@ -256,8 +256,8 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
-      tree data = ubsan_create_data ("__ubsan_shift_data", 1, &loc,
-				     ubsan_type_descriptor (type0),
+      tree utd0 = ubsan_type_descriptor (type0, UBSAN_PRINT_FORCE_INT);
+      tree data = ubsan_create_data ("__ubsan_shift_data", 1, &loc, utd0,
 				     ubsan_type_descriptor (type1), NULL_TREE,
 				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
@@ -505,12 +505,8 @@ ubsan_maybe_instrument_array_ref (tree *expr_p, bool ignore_off_by_one)
       tree e = ubsan_instrument_bounds (EXPR_LOCATION (*expr_p), op0, &op1,
 					ignore_off_by_one);
       if (e != NULL_TREE)
-	{
-	  tree t = copy_node (*expr_p);
-	  TREE_OPERAND (t, 1) = build2 (COMPOUND_EXPR, TREE_TYPE (op1),
-					e, op1);
-	  *expr_p = t;
-	}
+	TREE_OPERAND (*expr_p, 1) = build2 (COMPOUND_EXPR, TREE_TYPE (op1),
+					    e, op1);
     }
 }
 

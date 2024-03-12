@@ -147,8 +147,11 @@ public:
 
     if (tree cst = num_bytes_sval->maybe_get_constant ())
       if (zerop (cst))
-	/* No-op.  */
-	return;
+	{
+	  /* No-op.  */
+	  cd.set_any_lhs_with_defaults ();
+	  return;
+	}
 
     const region *sized_src_reg = mgr->get_sized_region (src_reg,
 							 NULL_TREE,

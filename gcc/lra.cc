@@ -106,6 +106,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "rtl-error.h"
 #include "tree.h"
 #include "predict.h"
 #include "df.h"
@@ -534,6 +535,27 @@ lra_update_dups (lra_insn_recog_data_t id, signed char *nops)
     for (j = 0; (nop = nops[j]) >= 0; j++)
       if (static_id->dup_num[i] == nop)
 	*id->dup_loc[i] = *id->operand_loc[nop];
+}
+
+/* Report asm insn error and modify the asm insn.  */
+void
+lra_asm_insn_error (rtx_insn *insn)
+{
+  lra_asm_error_p = true;
+  error_for_asm (insn,
+		 "%<asm%> operand has impossible constraints"
+		 " or there are not enough registers");
+  /* Avoid further trouble with this insn.  */
+  if (JUMP_P (insn))
+    {
+      ira_nullify_asm_goto (insn);
+      lra_update_insn_regno_info (insn);
+    }
+  else
+    {
+      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
+      lra_set_insn_deleted (insn);
+    }
 }
 
 
@@ -973,6 +995,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
   lra_insn_recog_data[uid] = data;
   data->insn = insn;
   data->used_insn_alternative = LRA_UNKNOWN_ALT;
+  data->asm_reloads_num = 0;
   data->icode = icode;
   data->regs = NULL;
   if (DEBUG_INSN_P (insn))
@@ -1838,10 +1861,10 @@ push_insns (rtx_insn *from, rtx_insn *to)
       lra_push_insn (insn);
 }
 
-/* Set up sp offset for insn in range [FROM, LAST].  The offset is
+/* Set up and return sp offset for insns in range [FROM, LAST].  The offset is
    taken from the next BB insn after LAST or zero if there in such
    insn.  */
-static void
+static poly_int64
 setup_sp_offset (rtx_insn *from, rtx_insn *last)
 {
   rtx_insn *before = next_nonnote_nondebug_insn_bb (last);
@@ -1849,7 +1872,11 @@ setup_sp_offset (rtx_insn *from, rtx_insn *last)
 		       ? 0 : lra_get_insn_recog_data (before)->sp_offset);
 
   for (rtx_insn *insn = from; insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
-    lra_get_insn_recog_data (insn)->sp_offset = offset;
+    {
+      lra_get_insn_recog_data (insn)->sp_offset = offset;
+      offset = lra_update_sp_offset (PATTERN (insn), offset);
+    }
+  return offset;
 }
 
 /* Emit insns BEFORE before INSN and insns AFTER after INSN.  Put the
@@ -1875,8 +1902,25 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
       if (cfun->can_throw_non_call_exceptions)
 	copy_reg_eh_region_note_forward (insn, before, NULL);
       emit_insn_before (before, insn);
+      poly_int64 old_sp_offset = lra_get_insn_recog_data (insn)->sp_offset;
+      poly_int64 new_sp_offset = setup_sp_offset (before, PREV_INSN (insn));
+      if (maybe_ne (old_sp_offset, new_sp_offset))
+	{
+	  if (lra_dump_file != NULL)
+	    {
+	      fprintf (lra_dump_file, "    Changing sp offset from ");
+	      print_dec (old_sp_offset, lra_dump_file);
+	      fprintf (lra_dump_file, " to ");
+	      print_dec (new_sp_offset, lra_dump_file);
+	      fprintf (lra_dump_file, " for insn");
+	      dump_rtl_slim (lra_dump_file, insn, NULL, -1, 0);
+	    }
+	  lra_get_insn_recog_data (insn)->sp_offset = new_sp_offset;
+	  eliminate_regs_in_insn (insn, false, false,
+				  old_sp_offset - new_sp_offset);
+	  lra_push_insn (insn);
+	}
       push_insns (PREV_INSN (insn), PREV_INSN (before));
-      setup_sp_offset (before, PREV_INSN (insn));
     }
   if (after != NULL_RTX)
     {
@@ -2218,8 +2262,8 @@ update_inc_notes (void)
       }
 }
 
-/* Set to 1 while in lra.  */
-int lra_in_progress;
+/* Set to true while in LRA.  */
+bool lra_in_progress = false;
 
 /* Start of pseudo regnos before the LRA.  */
 int lra_new_regno_start;
@@ -2316,7 +2360,7 @@ lra (FILE *f)
   if (flag_checking)
     check_rtl (false);
 
-  lra_in_progress = 1;
+  lra_in_progress = true;
 
   lra_live_range_iter = lra_coalesce_iter = lra_constraint_iter = 0;
   lra_assignment_iter = lra_assignment_iter_after_spill = 0;
@@ -2508,7 +2552,7 @@ lra (FILE *f)
   ira_restore_scratches (lra_dump_file);
   lra_eliminate (true, false);
   lra_final_code_change ();
-  lra_in_progress = 0;
+  lra_in_progress = false;
   if (live_p)
     lra_clear_live_ranges ();
   lra_live_ranges_finish ();
@@ -2535,9 +2579,8 @@ lra (FILE *f)
   if (inserted_p)
     commit_edge_insertions ();
 
-  /* Replacing pseudos with their memory equivalents might have
-     created shared rtx.  Subsequent passes would get confused
-     by this, so unshare everything here.  */
+  /* Subsequent passes expect that rtl is unshared, so unshare everything
+     here.  */
   unshare_all_rtl_again (get_insns ());
 
   if (flag_checking)

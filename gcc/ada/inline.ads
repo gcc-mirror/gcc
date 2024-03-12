@@ -61,8 +61,14 @@ package Inline is
    --  See full description in body of Sem_Ch12 for more details
 
    type Pending_Body_Info is record
+      Inst_Node : Node_Id;
+      --  Node for instantiation that requires the body
+
       Act_Decl : Node_Id;
       --  Declaration for package or subprogram spec for instantiation
+
+      Fin_Scop : Node_Id;
+      --  Enclosing finalization scope for package instantiation
 
       Config_Switches : Config_Switches_Type;
       --  Capture the values of configuration switches
@@ -75,9 +81,6 @@ package Inline is
       Expander_Status : Boolean;
       --  If the body is instantiated only for semantic checking, expansion
       --  must be inhibited.
-
-      Inst_Node : Node_Id;
-      --  Node for instantiation that requires the body
 
       Scope_Suppress           : Suppress_Record;
       Local_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;
@@ -119,7 +122,10 @@ package Inline is
    --  Add E's enclosing unit to Inlined_Bodies so that E can be subsequently
    --  retrieved and analyzed. N is the node giving rise to the call to E.
 
-   procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id);
+   procedure Add_Pending_Instantiation
+     (Inst     : Node_Id;
+      Act_Decl : Node_Id;
+      Fin_Scop : Node_Id := Empty);
    --  Add an entry in the table of generic bodies to be instantiated.
 
    procedure Analyze_Inlined_Bodies;

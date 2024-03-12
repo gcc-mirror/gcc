@@ -332,8 +332,8 @@
 
 (define_expand "vector_copysign<mode>3"
   [(set (match_operand:VEC_F 0 "vfloat_operand")
-	(unspec:VEC_F [(match_operand:VEC_F 1 "vfloat_operand")
-		       (match_operand:VEC_F 2 "vfloat_operand")] UNSPEC_COPYSIGN))]
+	(copysign:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
+			(match_operand:VEC_F 2 "vfloat_operand")))]
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))

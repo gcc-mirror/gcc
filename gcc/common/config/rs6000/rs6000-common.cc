@@ -34,6 +34,8 @@ static const struct default_options rs6000_option_optimization_table[] =
     { OPT_LEVELS_ALL, OPT_fsplit_wide_types_early, NULL, 1 },
     /* Enable -fsched-pressure for first pass instruction scheduling.  */
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
+    /* Enable -free for zero extension and sign extension elimination.*/
+    { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
     /* Enable -munroll-only-small-loops with -funroll-loops to unroll small
        loops at -O2 and above by default.  */
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_funroll_loops, NULL, 1 },

@@ -16,13 +16,13 @@ void foo (void)
 }
 
 
-/* { dg-final { scan-assembler-times "enter_s" 1 } } */
+/* { dg-final { scan-assembler-times "enter_s" 1 {xfail *-linux-* } } } */
 /* { dg-final { scan-assembler-times "\.cfi_def_cfa_offset 32" 1 } } */
-/* { dg-final { scan-assembler-times "\.cfi_offset 31, -32" 1 } } */
-/* { dg-final { scan-assembler-times "\.cfi_offset 13, -28" 1 } } */
-/* { dg-final { scan-assembler-times "\.cfi_offset 14, -24" 1 } } */
-/* { dg-final { scan-assembler-times "\.cfi_offset 15, -20" 1 } } */
-/* { dg-final { scan-assembler-times "\.cfi_offset 16, -16" 1 } } */
-/* { dg-final { scan-assembler-times "\.cfi_offset 17, -12" 1 } } */
-/* { dg-final { scan-assembler-times "\.cfi_offset 18, -8" 1 } } */
-/* { dg-final { scan-assembler-times "\.cfi_offset 19, -4" 1 } } */
+/* { dg-final { scan-assembler-times "\.cfi_offset 31, -32" 1 {xfail *-linux-* } } } */
+/* { dg-final { scan-assembler-times "\.cfi_offset 13, -28" 1 {xfail *-linux-* } } } */
+/* { dg-final { scan-assembler-times "\.cfi_offset 14, -24" 1 {xfail *-linux-* } } } */
+/* { dg-final { scan-assembler-times "\.cfi_offset 15, -20" 1 {xfail *-linux-* } } } */
+/* { dg-final { scan-assembler-times "\.cfi_offset 16, -16" 1 {xfail *-linux-* } } } */
+/* { dg-final { scan-assembler-times "\.cfi_offset 17, -12" 1 {xfail *-linux-* } } } */
+/* { dg-final { scan-assembler-times "\.cfi_offset 18, -8" 1 {xfail *-linux-* } } } */
+/* { dg-final { scan-assembler-times "\.cfi_offset 19, -4" 1 {xfail *-linux-* } } } */

@@ -36,9 +36,10 @@ with Ada.Unchecked_Conversion;
 
 package body System.Generic_Vector_Operations is
 
-   IU : constant Integer := Integer (Storage_Unit);
-   VU : constant Address := Address (Vectors.Vector'Size / IU);
-   EU : constant Address := Address (Element_Array'Component_Size / IU);
+   IU : constant Integer       := Integer (Storage_Unit);
+   VU : constant Storage_Count := Storage_Count (Vectors.Vector'Size / IU);
+   EU : constant Storage_Count :=
+          Storage_Count (Element_Array'Component_Size / IU);
 
    ----------------------
    -- Binary_Operation --
@@ -53,10 +54,10 @@ package body System.Generic_Vector_Operations is
       YA : Address := Y;
       --  Address of next element to process in R, X and Y
 
-      VI : constant Integer_Address := To_Integer (VU);
+      VI : constant Integer_Address := Integer_Address (VU);
 
       Unaligned : constant Integer_Address :=
-                    Boolean'Pos (ModA (OrA (OrA (RA, XA), YA), VU) /= 0) - 1;
+                    Boolean'Pos (OrA (OrA (RA, XA), YA) mod VU /= 0) - 1;
       --  Zero iff one or more argument addresses is not aligned, else all 1's
 
       type Vector_Ptr is access all Vectors.Vector;
@@ -73,23 +74,23 @@ package body System.Generic_Vector_Operations is
       --  Vector'Size > Storage_Unit
       --  VI > 0
       SA : constant Address :=
-             AddA (XA, To_Address
-                         ((Integer_Address (Length) / VI * VI) and Unaligned));
+             XA + Storage_Offset
+                    ((Integer_Address (Length) / VI * VI) and Unaligned);
       --  First address of argument X to start serial processing
 
    begin
       while XA < SA loop
          VP (RA).all := Vector_Op (VP (XA).all, VP (YA).all);
-         XA := AddA (XA, VU);
-         YA := AddA (YA, VU);
-         RA := AddA (RA, VU);
+         XA := XA + VU;
+         YA := YA + VU;
+         RA := RA + VU;
       end loop;
 
       while XA < X + Length loop
          EP (RA).all := Element_Op (EP (XA).all, EP (YA).all);
-         XA := AddA (XA, EU);
-         YA := AddA (YA, EU);
-         RA := AddA (RA, EU);
+         XA := XA + EU;
+         YA := YA + EU;
+         RA := RA + EU;
       end loop;
    end Binary_Operation;
 
@@ -105,10 +106,10 @@ package body System.Generic_Vector_Operations is
       XA : Address := X;
       --  Address of next element to process in R and X
 
-      VI : constant Integer_Address := To_Integer (VU);
+      VI : constant Integer_Address := Integer_Address (VU);
 
       Unaligned : constant Integer_Address :=
-                    Boolean'Pos (ModA (OrA (RA, XA), VU) /= 0) - 1;
+                    Boolean'Pos (OrA (RA, XA) mod VU /= 0) - 1;
       --  Zero iff one or more argument addresses is not aligned, else all 1's
 
       type Vector_Ptr is access all Vectors.Vector;
@@ -125,21 +126,21 @@ package body System.Generic_Vector_Operations is
       --  Vector'Size > Storage_Unit
       --  VI > 0
       SA : constant Address :=
-             AddA (XA, To_Address
-                         ((Integer_Address (Length) / VI * VI) and Unaligned));
+             XA + Storage_Offset
+                    ((Integer_Address (Length) / VI * VI) and Unaligned);
       --  First address of argument X to start serial processing
 
    begin
       while XA < SA loop
          VP (RA).all := Vector_Op (VP (XA).all);
-         XA := AddA (XA, VU);
-         RA := AddA (RA, VU);
+         XA := XA + VU;
+         RA := RA + VU;
       end loop;
 
       while XA < X + Length loop
          EP (RA).all := Element_Op (EP (XA).all);
-         XA := AddA (XA, EU);
-         RA := AddA (RA, EU);
+         XA := XA + EU;
+         RA := RA + EU;
       end loop;
    end Unary_Operation;
 

@@ -127,6 +127,8 @@ static const struct lang_flags lang_defaults[] =
   /* CXX20    */  { 1,  1,  1,  1,  1,  1,    1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   0,   0,      0,      0,    1 },
   /* GNUCXX23 */  { 1,  1,  1,  1,  1,  1,    0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      1,      1,    1 },
   /* CXX23    */  { 1,  1,  1,  1,  1,  1,    1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      1,      1,    1 },
+  /* GNUCXX26 */  { 1,  1,  1,  1,  1,  1,    0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      1,      1,    1 },
+  /* CXX26    */  { 1,  1,  1,  1,  1,  1,    1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0,   1,   1,      1,      1,    1 },
   /* ASM      */  { 0,  0,  1,  0,  0,  0,    0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0,     0,   0,   0,      0,      0,    0 }
 };
 
@@ -561,11 +563,14 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, cplusplus))
     {
-      /* C++23 is not yet a standard.  For now, use an invalid
-       * year/month, 202100L, which is larger than 202002L.  */
-      if (CPP_OPTION (pfile, lang) == CLK_CXX23
+      /* C++26 is not yet a standard.  For now, use an invalid
+	 year/month, 202400L, which is larger than 202302L.  */
+      if (CPP_OPTION (pfile, lang) == CLK_CXX26
+	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX26)
+	_cpp_define_builtin (pfile, "__cplusplus 202400L");
+      else if (CPP_OPTION (pfile, lang) == CLK_CXX23
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX23)
-	_cpp_define_builtin (pfile, "__cplusplus 202100L");
+	_cpp_define_builtin (pfile, "__cplusplus 202302L");
       else if (CPP_OPTION (pfile, lang) == CLK_CXX20
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX20)
 	_cpp_define_builtin (pfile, "__cplusplus 202002L");
@@ -783,7 +788,7 @@ read_original_filename (cpp_reader *pfile)
 	      penult[1].reason = penult[0].reason;
 	      penult[0] = penult[1];
 	      pfile->line_table->info_ordinary.used--;
-	      pfile->line_table->info_ordinary.cache = 0;
+	      pfile->line_table->info_ordinary.m_cache = 0;
 	    }
 
 	  return true;
@@ -855,7 +860,7 @@ read_original_directory (cpp_reader *pfile)
    Maybe it should also reset state, such that you could call
    cpp_start_read with a new filename to restart processing.  */
 void
-cpp_finish (cpp_reader *pfile, FILE *deps_stream)
+cpp_finish (struct cpp_reader *pfile, FILE *deps_stream, FILE *fdeps_stream)
 {
   /* Warn about unused macros before popping the final buffer.  */
   if (CPP_OPTION (pfile, warn_unused_macros))
@@ -869,8 +874,15 @@ cpp_finish (cpp_reader *pfile, FILE *deps_stream)
   while (pfile->buffer)
     _cpp_pop_buffer (pfile);
 
-  if (deps_stream)
-    deps_write (pfile, deps_stream, 72);
+  cpp_fdeps_format fdeps_format = CPP_OPTION (pfile, deps.fdeps_format);
+  if (fdeps_format == FDEPS_FMT_P1689R5 && fdeps_stream)
+    deps_write_p1689r5 (pfile->deps, fdeps_stream);
+
+  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE
+      && deps_stream)
+    {
+      deps_write (pfile, deps_stream, 72);
+    }
 
   /* Report on headers that could use multiple include guards.  */
   if (CPP_OPTION (pfile, print_include_names))

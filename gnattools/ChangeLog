@@ -1,3 +1,9 @@
+2023-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (TOOLS_TARGET_PAIRS): Remove obsolete settings.
+	(EXTRA_GNATTOOLS): Likewise.
+	* configure: Regenerate.
+
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
 	* configure.ac: Remove deprecated ports.

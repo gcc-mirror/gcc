@@ -1,7 +1,10 @@
 LIB2ADD += $(srcdir)/config/gcn/atomic.c \
 	   $(srcdir)/config/gcn/lib2-divmod.c \
-	   $(srcdir)/config/gcn/lib2-divmod-hi.c \
 	   $(srcdir)/config/gcn/lib2-divmod-di.c \
+	   $(srcdir)/config/gcn/lib2-vec_divmod.c \
+	   $(srcdir)/config/gcn/lib2-vec_divmod-qi.c \
+	   $(srcdir)/config/gcn/lib2-vec_divmod-hi.c \
+	   $(srcdir)/config/gcn/lib2-vec_divmod-di.c \
 	   $(srcdir)/config/gcn/lib2-bswapti2.c \
 	   $(srcdir)/config/gcn/unwind-gcn.c
 

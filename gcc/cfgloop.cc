@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "tree-ssa.h"
 #include "tree-pretty-print.h"
+#include "sreal.h"
 
 static void flow_loops_cfg_dump (FILE *);
 
@@ -134,20 +135,12 @@ flow_loop_dump (const class loop *loop, FILE *file,
       fprintf (file, "\n");
     }
 
-  fprintf (file, ";;  depth %d, outer %ld\n",
+  fprintf (file, ";;  depth %d, outer %ld",
 	   loop_depth (loop), (long) (loop_outer (loop)
 				      ? loop_outer (loop)->num : -1));
+  print_loop_info (file, loop, ";;  ");
 
-  if (loop->latch)
-    {
-      bool read_profile_p;
-      gcov_type nit = expected_loop_iterations_unbounded (loop, &read_profile_p);
-      if (read_profile_p && !loop->any_estimate)
-	fprintf (file, ";;  profile-based iteration count: %" PRIu64 "\n",
-		 (uint64_t) nit);
-    }
-
-  fprintf (file, ";;  nodes:");
+  fprintf (file, "\n;;  nodes:");
   bbs = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
     fprintf (file, " %d", bbs[i]->index);
@@ -1902,33 +1895,38 @@ void
 record_niter_bound (class loop *loop, const widest_int &i_bound,
 		    bool realistic, bool upper)
 {
+  if (wi::min_precision (i_bound, SIGNED) > bound_wide_int ().get_precision ())
+    return;
+
+  bound_wide_int bound = bound_wide_int::from (i_bound, SIGNED);
+
   /* Update the bounds only when there is no previous estimation, or when the
      current estimation is smaller.  */
   if (upper
       && (!loop->any_upper_bound
-	  || wi::ltu_p (i_bound, loop->nb_iterations_upper_bound)))
+	  || wi::ltu_p (bound, loop->nb_iterations_upper_bound)))
     {
       loop->any_upper_bound = true;
-      loop->nb_iterations_upper_bound = i_bound;
+      loop->nb_iterations_upper_bound = bound;
       if (!loop->any_likely_upper_bound)
 	{
 	  loop->any_likely_upper_bound = true;
-	  loop->nb_iterations_likely_upper_bound = i_bound;
+	  loop->nb_iterations_likely_upper_bound = bound;
 	}
     }
   if (realistic
       && (!loop->any_estimate
-	  || wi::ltu_p (i_bound, loop->nb_iterations_estimate)))
+	  || wi::ltu_p (bound, loop->nb_iterations_estimate)))
     {
       loop->any_estimate = true;
-      loop->nb_iterations_estimate = i_bound;
+      loop->nb_iterations_estimate = bound;
     }
   if (!realistic
       && (!loop->any_likely_upper_bound
-          || wi::ltu_p (i_bound, loop->nb_iterations_likely_upper_bound)))
+	  || wi::ltu_p (bound, loop->nb_iterations_likely_upper_bound)))
     {
       loop->any_likely_upper_bound = true;
-      loop->nb_iterations_likely_upper_bound = i_bound;
+      loop->nb_iterations_likely_upper_bound = bound;
     }
 
   /* If an upper bound is smaller than the realistic estimate of the
@@ -2014,16 +2012,18 @@ get_estimated_loop_iterations (class loop *loop, widest_int *nit)
      profile.  */
   if (!loop->any_estimate)
     {
-      if (loop->header->count.reliable_p ())
+      sreal snit;
+      bool reliable;
+      if (expected_loop_iterations_by_profile (loop, &snit, &reliable)
+	  && reliable)
 	{
-          *nit = gcov_type_to_wide_int
-		   (expected_loop_iterations_unbounded (loop) + 1);
+	  *nit = snit.to_nearest_int ();
 	  return true;
 	}
       return false;
     }
 
-  *nit = loop->nb_iterations_estimate;
+  *nit = widest_int::from (loop->nb_iterations_estimate, SIGNED);
   return true;
 }
 
@@ -2037,7 +2037,7 @@ get_max_loop_iterations (const class loop *loop, widest_int *nit)
   if (!loop->any_upper_bound)
     return false;
 
-  *nit = loop->nb_iterations_upper_bound;
+  *nit = widest_int::from (loop->nb_iterations_upper_bound, SIGNED);
   return true;
 }
 
@@ -2071,7 +2071,7 @@ get_likely_max_loop_iterations (class loop *loop, widest_int *nit)
   if (!loop->any_likely_upper_bound)
     return false;
 
-  *nit = loop->nb_iterations_likely_upper_bound;
+  *nit = widest_int::from (loop->nb_iterations_likely_upper_bound, SIGNED);
   return true;
 }
 

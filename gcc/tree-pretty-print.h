@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
   pp_verbatim (PP, "%qs not supported by %s", \
 	       get_tree_code_name (TREE_CODE (T)), __FUNCTION__)
 
-#define pp_ti_abstract_origin(TI) ((tree *) (TI)->x_data)
+#define pp_ti_abstract_origin(TI) ((tree *) (TI)->m_data)
 
 
 extern void debug_generic_expr (tree);
@@ -49,7 +49,7 @@ extern int dump_generic_node (pretty_printer *, tree, int, dump_flags_t, bool);
 extern void print_declaration (pretty_printer *, tree, int, dump_flags_t);
 extern int op_code_prio (enum tree_code);
 extern int op_prio (const_tree);
-extern const char *op_symbol_code (enum tree_code);
+extern const char *op_symbol_code (enum tree_code, dump_flags_t = TDF_NONE);
 extern void pretty_print_string (pretty_printer *, const char *, size_t);
 extern void print_call_name (pretty_printer *, tree, dump_flags_t);
 extern void pp_tree_identifier (pretty_printer *, tree);

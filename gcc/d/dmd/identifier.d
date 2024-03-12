@@ -64,13 +64,13 @@ nothrow:
     }
 
     /// ditto
-    extern (D) this(const(char)[] name, int value)
+    extern (D) this(const(char)[] name, int value) @safe
     {
         //printf("Identifier('%.*s', %d)\n", cast(int)name.length, name.ptr, value);
         this(name, value, false);
     }
 
-    extern (D) private this(const(char)[] name, int value, bool isAnonymous)
+    extern (D) private this(const(char)[] name, int value, bool isAnonymous) @safe
     {
         //printf("Identifier('%.*s', %d, %d)\n", cast(int)name.length, name.ptr, value, isAnonymous);
         this.name = name;
@@ -274,12 +274,7 @@ nothrow:
         return idPool(s[0 .. len]);
     }
 
-    extern (D) static Identifier idPool(const(char)[] s)
-    {
-        return idPool(s, false);
-    }
-
-    extern (D) private static Identifier idPool(const(char)[] s, bool isAnonymous)
+    extern (D) static Identifier idPool(const(char)[] s, bool isAnonymous = false)
     {
         auto sv = stringtable.update(s);
         auto id = sv.value;
@@ -291,18 +286,18 @@ nothrow:
         return id;
     }
 
-    extern (D) static Identifier idPool(const(char)* s, size_t len, int value)
-    {
-        return idPool(s[0 .. len], value);
-    }
-
-    extern (D) static Identifier idPool(const(char)[] s, int value)
+    /******************************************
+     * Used for inserting keywords into the string table.
+     * Params:
+     *  s = string for keyword
+     *  value = TOK.xxxx for the keyword
+     */
+    extern (D) static void idPool(const(char)[] s, TOK value)
     {
         auto sv = stringtable.insert(s, null);
         assert(sv);
         auto id = new Identifier(sv.toString(), value);
         sv.value = id;
-        return id;
     }
 
     /**********************************
@@ -320,7 +315,7 @@ nothrow:
     /**********************************
      * ditto
      */
-    extern (D) static bool isValidIdentifier(const(char)[] str)
+    extern (D) static bool isValidIdentifier(const(char)[] str) @safe
     {
         if (str.length == 0 ||
             (str[0] >= '0' && str[0] <= '9')) // beware of isdigit() on signed chars

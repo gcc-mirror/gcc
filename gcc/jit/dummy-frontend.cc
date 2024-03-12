@@ -589,8 +589,8 @@ jit_langhook_init (void)
     }
 
   gcc_assert (global_dc);
-  global_dc->begin_diagnostic = jit_begin_diagnostic;
-  global_dc->end_diagnostic = jit_end_diagnostic;
+  diagnostic_starter (global_dc) = jit_begin_diagnostic;
+  diagnostic_finalizer (global_dc) = jit_end_diagnostic;
 
   build_common_tree_nodes (false);
 

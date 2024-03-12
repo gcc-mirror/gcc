@@ -58,6 +58,7 @@ static void
 test_map_of_strings_to_int ()
 {
   ordered_hash_map <const char *, int> m;
+  bool existed;
 
   const char *ostrich = "ostrich";
   const char *elephant = "elephant";
@@ -74,9 +75,13 @@ test_map_of_strings_to_int ()
   ASSERT_EQ (false, m.put (ostrich, 2));
   ASSERT_EQ (false, m.put (elephant, 4));
   ASSERT_EQ (false, m.put (ant, 6));
-  ASSERT_EQ (false, m.put (spider, 8));
+  existed = true;
+  int &value = m.get_or_insert (spider, &existed);
+  value = 8;
+  ASSERT_EQ (false, existed);
   ASSERT_EQ (false, m.put (millipede, 750));
   ASSERT_EQ (false, m.put (eric, 3));
+
 
   /* Verify that we can recover the stored values.  */
   ASSERT_EQ (6, m.elements ());
@@ -84,7 +89,9 @@ test_map_of_strings_to_int ()
   ASSERT_EQ (4, *m.get (elephant));
   ASSERT_EQ (6, *m.get (ant));
   ASSERT_EQ (8, *m.get (spider));
-  ASSERT_EQ (750, *m.get (millipede));
+  existed = false;
+  ASSERT_EQ (750, m.get_or_insert (millipede, &existed));
+  ASSERT_EQ (true, existed);
   ASSERT_EQ (3, *m.get (eric));
 
   /* Verify that the order of insertion is preserved.  */
@@ -113,6 +120,7 @@ test_map_of_int_to_strings ()
 {
   const int EMPTY = -1;
   const int DELETED = -2;
+  bool existed;
   typedef int_hash <int, EMPTY, DELETED> int_hash_t;
   ordered_hash_map <int_hash_t, const char *> m;
 
@@ -131,7 +139,9 @@ test_map_of_int_to_strings ()
   ASSERT_EQ (false, m.put (2, ostrich));
   ASSERT_EQ (false, m.put (4, elephant));
   ASSERT_EQ (false, m.put (6, ant));
-  ASSERT_EQ (false, m.put (8, spider));
+  const char* &value = m.get_or_insert (8, &existed);
+  value = spider;
+  ASSERT_EQ (false, existed);
   ASSERT_EQ (false, m.put (750, millipede));
   ASSERT_EQ (false, m.put (3, eric));
 
@@ -141,7 +151,8 @@ test_map_of_int_to_strings ()
   ASSERT_EQ (*m.get (4), elephant);
   ASSERT_EQ (*m.get (6), ant);
   ASSERT_EQ (*m.get (8), spider);
-  ASSERT_EQ (*m.get (750), millipede);
+  ASSERT_EQ (m.get_or_insert (750, &existed), millipede);
+  ASSERT_EQ (existed, true);
   ASSERT_EQ (*m.get (3), eric);
 
   /* Verify that the order of insertion is preserved.  */

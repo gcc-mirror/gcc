@@ -110,7 +110,7 @@ struct InvalidNames final
     }
 };
 
-extern void useInvalid(InvalidNames<int32_t > _param_0);
+extern void useInvalid(InvalidNames<int32_t > __param_0_);
 
 extern size_t offsetof();
 

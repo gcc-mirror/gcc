@@ -4,7 +4,15 @@
 // -O1 doesn't iterate VN and thus has bogus uninit diagnostics
 // { dg-skip-if "" { *-*-* } { "-O1" } { "" } }
 
+// The testcase still emits bogus diagnostics with the pre-C++11 ABI
+#undef _GLIBCXX_USE_CXX11_ABI
+#define _GLIBCXX_USE_CXX11_ABI 1
+
 #include <vector>
+
+// When the library is not dual-ABI and defaults to old just compile
+// an empty TU
+#if _GLIBCXX_USE_CXX11_ABI
 
 #include <optional>
 template <class T>
@@ -46,3 +54,4 @@ void test()
         externals.external2 = internal2;
     }
 }
+#endif

@@ -28,9 +28,9 @@
 #ifndef _VPCLMULQDQINTRIN_H_INCLUDED
 #define _VPCLMULQDQINTRIN_H_INCLUDED
 
-#if !defined(__VPCLMULQDQ__) || !defined(__AVX512F__)
+#if !defined(__VPCLMULQDQ__) || !defined(__AVX512F__) || !defined(__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("vpclmulqdq,avx512f")
+#pragma GCC target("vpclmulqdq,avx512f,evex512")
 #define __DISABLE_VPCLMULQDQF__
 #endif /* __VPCLMULQDQF__ */
 
@@ -53,9 +53,9 @@ _mm512_clmulepi64_epi128 (__m512i __A, __m512i __B, const int __C)
 #pragma GCC pop_options
 #endif /* __DISABLE_VPCLMULQDQF__ */
 
-#if !defined(__VPCLMULQDQ__) || !defined(__AVX__)
+#if !defined(__VPCLMULQDQ__)
 #pragma GCC push_options
-#pragma GCC target("vpclmulqdq,avx")
+#pragma GCC target("vpclmulqdq")
 #define __DISABLE_VPCLMULQDQ__
 #endif /* __VPCLMULQDQ__ */
 

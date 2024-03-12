@@ -3753,7 +3753,7 @@ expand_return (tree retval)
   tree retval_rhs;
 
   /* If function wants no value, give it none.  */
-  if (TREE_CODE (TREE_TYPE (TREE_TYPE (current_function_decl))) == VOID_TYPE)
+  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
     {
       expand_normal (retval);
       expand_null_return ();
@@ -4524,6 +4524,10 @@ expand_debug_expr (tree exp)
       /* Fall through.  */
 
     case INTEGER_CST:
+      if (TREE_CODE (TREE_TYPE (exp)) == BITINT_TYPE
+	  && TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
+	return NULL;
+      /* FALLTHRU */
     case REAL_CST:
     case FIXED_CST:
       op0 = expand_expr (exp, NULL_RTX, mode, EXPAND_INITIALIZER);
@@ -5365,10 +5369,6 @@ expand_debug_expr (tree exp)
     case VEC_WIDEN_MULT_ODD_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
-    case VEC_WIDEN_PLUS_HI_EXPR:
-    case VEC_WIDEN_PLUS_LO_EXPR:
-    case VEC_WIDEN_MINUS_HI_EXPR:
-    case VEC_WIDEN_MINUS_LO_EXPR:
     case VEC_PERM_EXPR:
     case VEC_DUPLICATE_EXPR:
     case VEC_SERIES_EXPR:
@@ -5405,8 +5405,6 @@ expand_debug_expr (tree exp)
     case WIDEN_MULT_EXPR:
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
-    case WIDEN_PLUS_EXPR:
-    case WIDEN_MINUS_EXPR:
       if (SCALAR_INT_MODE_P (GET_MODE (op0))
 	  && SCALAR_INT_MODE_P (mode))
 	{
@@ -5419,10 +5417,6 @@ expand_debug_expr (tree exp)
 	    op1 = simplify_gen_unary (ZERO_EXTEND, mode, op1, inner_mode);
 	  else
 	    op1 = simplify_gen_unary (SIGN_EXTEND, mode, op1, inner_mode);
-	  if (TREE_CODE (exp) == WIDEN_PLUS_EXPR)
-	    return simplify_gen_binary (PLUS, mode, op0, op1);
-	  else if (TREE_CODE (exp) == WIDEN_MINUS_EXPR)
-	    return simplify_gen_binary (MINUS, mode, op0, op1);
 	  op0 = simplify_gen_binary (MULT, mode, op0, op1);
 	  if (TREE_CODE (exp) == WIDEN_MULT_EXPR)
 	    return op0;

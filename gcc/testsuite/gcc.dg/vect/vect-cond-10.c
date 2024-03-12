@@ -120,41 +120,49 @@ main ()
 	}
     }
   f1 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 && ((i / 9) % 3) == 0))
       abort ();
   __builtin_memset (k, 0, sizeof (k));
   f2 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 && ((i / 9) % 3) == 0))
       abort ();
   __builtin_memset (k, 0, sizeof (k));
   f3 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 || ((i / 9) % 3) == 0))
       abort ();
   __builtin_memset (k, 0, sizeof (k));
   f4 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 || ((i / 9) % 3) == 0))
       abort ();
   __builtin_memset (k, 0, sizeof (k));
   f5 (k);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 && ((i / 9) % 3) == 0))
       abort ();
   __builtin_memset (k, 0, sizeof (k));
   f6 (k);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 && ((i / 9) % 3) == 0))
       abort ();
   __builtin_memset (k, 0, sizeof (k));
   f7 (k);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 || ((i / 9) % 3) == 0))
       abort ();
   __builtin_memset (k, 0, sizeof (k));
   f8 (k);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 || ((i / 9) % 3) == 0))
       abort ();

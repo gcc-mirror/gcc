@@ -105,6 +105,10 @@ package Exp_Ch4 is
    --  membership test. The whole membership is rewritten connecting these
    --  with OR ELSE.
 
+   procedure Expand_Unchecked_Union_Equality (N : Node_Id);
+   --  Expand a call to the predefined equality operator of an unchecked union
+   --  type, possibly rewriting it as a raise statement.
+
    function Integer_Promotion_Possible (N : Node_Id) return Boolean;
    --  Returns true if the node is a type conversion whose operand is an
    --  arithmetic operation on signed integers, and the base type of the

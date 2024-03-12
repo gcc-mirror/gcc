@@ -60,11 +60,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  */
 
     .text
+#ifndef __APPLE__
 #if defined(__ARM_PCS_VFP) || (defined(__ARM_PCS) && !defined(__SOFTFP__))
     .fpu vfp
 #endif
     .global CSYM(fiber_switchContext)
     .type CSYM(fiber_switchContext), %function
+#else
+    .global CSYM(fiber_switchContext)
+#endif
     .align 4
 CSYM(fiber_switchContext):
     .cfi_sections .debug_frame
@@ -111,8 +115,12 @@ CSYM(fiber_switchContext):
     mov lr, #0
     // return by writing lr into pc
     mov pc, r1
+#ifndef __APPLE__
     .fnend
     .cfi_endproc
     .size CSYM(fiber_switchContext),.-CSYM(fiber_switchContext)
+#else
+    .cfi_endproc
+#endif
 
 #endif

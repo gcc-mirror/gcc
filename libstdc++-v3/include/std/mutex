@@ -37,11 +37,13 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <tuple>
-#include <exception>
-#include <type_traits>
-#include <bits/chrono.h>
-#include <bits/error_constants.h>
+#include <tuple>	      // std::tuple
+#include <type_traits>        // is_same_v
+#include <errno.h>	      // EAGAIN, EDEADLK
+#include <bits/chrono.h>      // duration, time_point, is_clock_v
+#include <bits/functexcept.h> // __throw_system_error
+#include <bits/invoke.h>      // __invoke
+#include <bits/move.h>	      // std::forward
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
 #if ! _GTHREAD_USE_MUTEX_TIMEDLOCK
@@ -53,6 +55,9 @@
 #if defined _GLIBCXX_HAS_GTHREADS && ! defined _GLIBCXX_HAVE_TLS
 # include <bits/std_function.h>  // std::function
 #endif
+
+#define __glibcxx_want_scoped_lock
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -726,8 +731,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-#if __cplusplus >= 201703L
-#define __cpp_lib_scoped_lock 201703L
+#ifdef __cpp_lib_scoped_lock // C++ >= 17 && hosted && gthread
   /** @brief A scoped lock type for multiple lockable objects.
    *
    * A scoped_lock controls mutex ownership within a scope, releasing
@@ -791,7 +795,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       mutex_type&  _M_device;
     };
-#endif // C++17
+#endif // __cpp_lib_scoped_lock
 
 #ifdef _GLIBCXX_HAS_GTHREADS
   /// Flag type used by std::call_once

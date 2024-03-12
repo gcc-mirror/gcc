@@ -550,7 +550,7 @@ noinst_HEADERS = src/aarch64/ffitarget.h src/aarch64/internal.h		\
 	src/sparc/internal.h src/tile/ffitarget.h src/vax/ffitarget.h	\
 	src/x86/ffitarget.h src/x86/internal.h src/x86/internal64.h	\
 	src/x86/asmnames.h src/xtensa/ffitarget.h src/dlmalloc.c	\
-	src/kvx/ffitarget.h
+	src/kvx/ffitarget.h src/loongarch64/ffitarget.h
 
 EXTRA_libffi_la_SOURCES = src/aarch64/ffi.c src/aarch64/sysv.S		\
 	src/aarch64/win64_armasm.S src/alpha/ffi.c src/alpha/osf.S	\
@@ -580,7 +580,7 @@ EXTRA_libffi_la_SOURCES = src/aarch64/ffi.c src/aarch64/sysv.S		\
 	src/x86/ffiw64.c src/x86/win64.S src/x86/ffi64.c		\
 	src/x86/unix64.S src/x86/sysv_intel.S src/x86/win64_intel.S	\
 	src/xtensa/ffi.c src/xtensa/sysv.S src/kvx/ffi.c		\
-	src/kvx/sysv.S
+	src/kvx/sysv.S src/loongarch64/ffi.c src/loongarch64/sysv.S
 
 libffi_la_LIBADD = $(TARGET_OBJ)
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
@@ -1074,6 +1074,16 @@ src/kvx/ffi.lo: src/kvx/$(am__dirstamp) \
 	src/kvx/$(DEPDIR)/$(am__dirstamp)
 src/kvx/sysv.lo: src/kvx/$(am__dirstamp) \
 	src/kvx/$(DEPDIR)/$(am__dirstamp)
+src/loongarch64/$(am__dirstamp):
+	@$(MKDIR_P) src/loongarch64
+	@: > src/loongarch64/$(am__dirstamp)
+src/loongarch64/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/loongarch64/$(DEPDIR)
+	@: > src/loongarch64/$(DEPDIR)/$(am__dirstamp)
+src/loongarch64/ffi.lo: src/loongarch64/$(am__dirstamp) \
+	src/loongarch64/$(DEPDIR)/$(am__dirstamp)
+src/loongarch64/sysv.lo: src/loongarch64/$(am__dirstamp) \
+	src/loongarch64/$(DEPDIR)/$(am__dirstamp)
 
 libffi.la: $(libffi_la_OBJECTS) $(libffi_la_DEPENDENCIES) $(EXTRA_libffi_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libffi_la_LINK) -rpath $(toolexeclibdir) $(libffi_la_OBJECTS) $(libffi_la_LIBADD) $(LIBS)
@@ -1107,6 +1117,8 @@ mostlyclean-compile:
 	-rm -f src/ia64/*.lo
 	-rm -f src/kvx/*.$(OBJEXT)
 	-rm -f src/kvx/*.lo
+	-rm -f src/loongarch64/*.$(OBJEXT)
+	-rm -f src/loongarch64/*.lo
 	-rm -f src/m32r/*.$(OBJEXT)
 	-rm -f src/m32r/*.lo
 	-rm -f src/m68k/*.$(OBJEXT)
@@ -1182,6 +1194,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/ia64/$(DEPDIR)/unix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/kvx/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/kvx/$(DEPDIR)/sysv.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/loongarch64/$(DEPDIR)/ffi.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/loongarch64/$(DEPDIR)/sysv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/m32r/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/m32r/$(DEPDIR)/sysv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/m68k/$(DEPDIR)/ffi.Plo@am__quote@
@@ -1308,6 +1322,7 @@ clean-libtool:
 	-rm -rf src/frv/.libs src/frv/_libs
 	-rm -rf src/ia64/.libs src/ia64/_libs
 	-rm -rf src/kvx/.libs src/kvx/_libs
+	-rm -rf src/loongarch64/.libs src/loongarch64/_libs
 	-rm -rf src/m32r/.libs src/m32r/_libs
 	-rm -rf src/m68k/.libs src/m68k/_libs
 	-rm -rf src/m88k/.libs src/m88k/_libs
@@ -1658,6 +1673,8 @@ distclean-generic:
 	-rm -f src/ia64/$(am__dirstamp)
 	-rm -f src/kvx/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/kvx/$(am__dirstamp)
+	-rm -f src/loongarch64/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/loongarch64/$(am__dirstamp)
 	-rm -f src/m32r/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/m32r/$(am__dirstamp)
 	-rm -f src/m68k/$(DEPDIR)/$(am__dirstamp)
@@ -1712,7 +1729,7 @@ clean-am: clean-aminfo clean-generic clean-libtool clean-local \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf src/$(DEPDIR) src/aarch64/$(DEPDIR) src/alpha/$(DEPDIR) src/arc/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/bfin/$(DEPDIR) src/cris/$(DEPDIR) src/csky/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/kvx/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/m88k/$(DEPDIR) src/metag/$(DEPDIR) src/microblaze/$(DEPDIR) src/mips/$(DEPDIR) src/moxie/$(DEPDIR) src/nios2/$(DEPDIR) src/or1k/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/riscv/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/tile/$(DEPDIR) src/vax/$(DEPDIR) src/x86/$(DEPDIR) src/xtensa/$(DEPDIR)
+	-rm -rf src/$(DEPDIR) src/aarch64/$(DEPDIR) src/alpha/$(DEPDIR) src/arc/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/bfin/$(DEPDIR) src/cris/$(DEPDIR) src/csky/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/kvx/$(DEPDIR) src/loongarch64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/m88k/$(DEPDIR) src/metag/$(DEPDIR) src/microblaze/$(DEPDIR) src/mips/$(DEPDIR) src/moxie/$(DEPDIR) src/nios2/$(DEPDIR) src/or1k/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/riscv/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/tile/$(DEPDIR) src/vax/$(DEPDIR) src/x86/$(DEPDIR) src/xtensa/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-local distclean-tags
@@ -1851,7 +1868,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf src/$(DEPDIR) src/aarch64/$(DEPDIR) src/alpha/$(DEPDIR) src/arc/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/bfin/$(DEPDIR) src/cris/$(DEPDIR) src/csky/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/kvx/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/m88k/$(DEPDIR) src/metag/$(DEPDIR) src/microblaze/$(DEPDIR) src/mips/$(DEPDIR) src/moxie/$(DEPDIR) src/nios2/$(DEPDIR) src/or1k/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/riscv/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/tile/$(DEPDIR) src/vax/$(DEPDIR) src/x86/$(DEPDIR) src/xtensa/$(DEPDIR)
+	-rm -rf src/$(DEPDIR) src/aarch64/$(DEPDIR) src/alpha/$(DEPDIR) src/arc/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/bfin/$(DEPDIR) src/cris/$(DEPDIR) src/csky/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/kvx/$(DEPDIR) src/loongarch64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/m88k/$(DEPDIR) src/metag/$(DEPDIR) src/microblaze/$(DEPDIR) src/mips/$(DEPDIR) src/moxie/$(DEPDIR) src/nios2/$(DEPDIR) src/or1k/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/riscv/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/tile/$(DEPDIR) src/vax/$(DEPDIR) src/x86/$(DEPDIR) src/xtensa/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-aminfo \
 	maintainer-clean-generic maintainer-clean-local \

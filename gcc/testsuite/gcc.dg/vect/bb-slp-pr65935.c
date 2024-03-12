@@ -24,11 +24,17 @@ void rephase (void)
   struct site *s;
   for(i=0,s=lattice;i<sites_on_node;i++,s++)
     for(dir=0;dir<32;dir++)
-      for(j=0;j<3;j++)for(k=0;k<3;k++)
-	{
-	  s->link[dir].e[j][k].real *= s->phase[dir];
-	  s->link[dir].e[j][k].imag *= s->phase[dir];
-	}
+      {
+	for(j=0;j<3;j++)
+	  for(k=0;k<3;k++)
+	    {
+	      s->link[dir].e[j][k].real *= s->phase[dir];
+	      s->link[dir].e[j][k].imag *= s->phase[dir];
+	    }
+	/* Avoid loop vectorizing the outer loop after unrolling
+	   the inners.  */
+	__asm__ volatile ("" : : : "memory");
+      }
 }
 
 int main()
@@ -51,6 +57,7 @@ int main()
   rephase ();
   for (i = 0; i < 32; ++i)
     for (j = 0; j < 3; ++j)
+#pragma GCC novector
       for (k = 0; k < 3; ++k)
 	if (lattice->link[i].e[j][k].real != i
 	    || lattice->link[i].e[j][k].imag != i)
@@ -60,7 +67,8 @@ int main()
 
 /* We should also be able to use 2-lane SLP to initialize the real and
    imaginary components in the first loop of main.  */
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 10 "slp1" } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 10 "slp1" { target {! { vect1024 } } } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 11 "slp1" { target { { vect1024 } } } } } */
 /* We should see the s->phase[dir] operand splatted and no other operand built
    from scalars.  See PR97334.  */
 /* { dg-final { scan-tree-dump "Using a splat" "slp1" } } */

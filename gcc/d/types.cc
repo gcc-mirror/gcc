@@ -49,8 +49,8 @@ along with GCC; see the file COPYING3.  If not see
 static tree
 d_signed_or_unsigned_type (int unsignedp, tree type)
 {
-  if (TYPE_UNSIGNED (type) == (unsigned) unsignedp)
-    return type;
+  if (VECTOR_TYPE_P (type) || !ANY_INTEGRAL_TYPE_P (type))
+    return signed_or_unsigned_type_for (unsignedp, type);
 
   if (TYPE_PRECISION (type) == TYPE_PRECISION (d_cent_type))
     return unsignedp ? d_ucent_type : d_cent_type;
@@ -573,6 +573,35 @@ layout_aggregate_type (AggregateDeclaration *decl, tree type,
     }
 }
 
+/* Given a record type TYPE compute the finalized record mode if all fields have
+   had their types resolved and sizes determined.  */
+
+void
+finish_aggregate_mode (tree type)
+{
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      /* Fields of type `typeof(*null)' have no size, so let them force the
+	 record type mode to be computed as BLKmode.  */
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (field)) == noreturn_type_node)
+	break;
+
+      if (DECL_SIZE (field) == NULL_TREE)
+	return;
+    }
+
+  compute_record_mode (type);
+
+  /* Propagate computed mode to all variants of this aggregate type.  */
+  for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+    {
+      if (t == type)
+	continue;
+
+      SET_TYPE_MODE (t, TYPE_MODE (type));
+    }
+}
+
 /* If the aggregate type TYPE completes the type of any previous field
    declarations, lay them out now.  */
 
@@ -596,6 +625,9 @@ finish_incomplete_fields (tree type)
 	}
 
       relayout_decl (field);
+
+      /* Relayout of field may change the mode of its RECORD_TYPE.  */
+      finish_aggregate_mode (DECL_FIELD_CONTEXT (field));
     }
 
   /* No more forward references to process.  */
@@ -614,9 +646,6 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
   TYPE_SIZE_UNIT (type) = size_int (structsize);
   SET_TYPE_ALIGN (type, alignsize * BITS_PER_UNIT);
   TYPE_PACKED (type) = (alignsize == 1);
-
-  /* Set the back-end type mode.  */
-  compute_record_mode (type);
 
   /* Layout all fields now the type is complete.  */
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -662,6 +691,9 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
 	}
     }
 
+  /* Set the back-end type mode after all fields have had their size set.  */
+  finish_aggregate_mode (type);
+
   /* Fix up all forward-referenced variants of this aggregate type.  */
   for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
     {
@@ -673,7 +705,6 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
       TYPE_SIZE (t) = TYPE_SIZE (type);
       TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (type);
       TYPE_PACKED (type) = TYPE_PACKED (type);
-      SET_TYPE_MODE (t, TYPE_MODE (type));
       SET_TYPE_ALIGN (t, TYPE_ALIGN (type));
       TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (type);
     }
@@ -1067,6 +1098,21 @@ public:
 	gcc_assert (underlying != NULL);
 
 	t->ctype = build_variant_type_copy (build_ctype (underlying));
+
+	/* When the size of the declared enum base type doesn't match the target
+	   C type that this enum is being used as a placeholder for, we can't
+	   use the generated underlying type as it'll conflict with all sizes
+	   the front-end has computed during semantic.  */
+	if (TYPE_SIZE (t->ctype) != TYPE_SIZE (basetype))
+	  {
+	    warning_at (make_location_t (t->sym->loc),
+			OPT_Wmismatched_special_enum,
+			"size of %qs (%wd) differ from its declared size (%wd)",
+			t->sym->ident->toChars (), int_size_in_bytes (t->ctype),
+			int_size_in_bytes (basetype));
+	    t->ctype = basetype;
+	  }
+
 	build_type_decl (t->ctype, t->sym);
       }
     else if (t->sym->ident == NULL

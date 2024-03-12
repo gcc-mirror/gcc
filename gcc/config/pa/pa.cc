@@ -196,7 +196,8 @@ static section *pa_function_section (tree, enum node_frequency, bool, bool);
 static bool pa_cannot_force_const_mem (machine_mode, rtx);
 static bool pa_legitimate_constant_p (machine_mode, rtx);
 static unsigned int pa_section_type_flags (tree, const char *, int);
-static bool pa_legitimate_address_p (machine_mode, rtx, bool);
+static bool pa_legitimate_address_p (machine_mode, rtx, bool,
+				     code_helper = ERROR_MARK);
 static bool pa_callee_copies (cumulative_args_t, const function_arg_info &);
 static unsigned int pa_hard_regno_nregs (unsigned int, machine_mode);
 static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
@@ -6387,7 +6388,7 @@ pa_function_arg_padding (machine_mode mode, const_tree type)
 	  && type
 	  && (AGGREGATE_TYPE_P (type)
 	      || TREE_CODE (type) == COMPLEX_TYPE
-	      || TREE_CODE (type) == VECTOR_TYPE)))
+	      || VECTOR_TYPE_P (type))))
     {
       /* Return PAD_NONE if justification is not required.  */
       if (type
@@ -9660,7 +9661,7 @@ pa_function_value (const_tree valtype,
 
   if (AGGREGATE_TYPE_P (valtype)
       || TREE_CODE (valtype) == COMPLEX_TYPE
-      || TREE_CODE (valtype) == VECTOR_TYPE)
+      || VECTOR_TYPE_P (valtype))
     {
       HOST_WIDE_INT valsize = int_size_in_bytes (valtype);
 
@@ -9709,7 +9710,7 @@ pa_function_value (const_tree valtype,
   else
     valmode = TYPE_MODE (valtype);
 
-  if (TREE_CODE (valtype) == REAL_TYPE
+  if (SCALAR_FLOAT_TYPE_P (valtype)
       && !AGGREGATE_TYPE_P (valtype)
       && TYPE_MODE (valtype) != TFmode
       && !TARGET_SOFT_FLOAT)
@@ -9828,7 +9829,7 @@ pa_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 	  || mode == BLKmode
 	  || (type && (AGGREGATE_TYPE_P (type)
 		       || TREE_CODE (type) == COMPLEX_TYPE
-		       || TREE_CODE (type) == VECTOR_TYPE)))
+		       || VECTOR_TYPE_P (type))))
 	{
 	  /* Double-extended precision (80-bit), quad-precision (128-bit)
 	     and aggregates including complex numbers are aligned on
@@ -9888,7 +9889,7 @@ pa_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 	  if (mode == BLKmode
 	      || (type && (AGGREGATE_TYPE_P (type)
 			   || TREE_CODE (type) == COMPLEX_TYPE
-			   || TREE_CODE (type) == VECTOR_TYPE)))
+			   || VECTOR_TYPE_P (type))))
 	    {
 	      rtx loc = gen_rtx_EXPR_LIST (VOIDmode,
 					   gen_rtx_REG (DImode, gpr_reg_base),
@@ -10787,7 +10788,7 @@ pa_section_type_flags (tree decl, const char *name, int reloc)
    output as REG+SMALLINT.  */
 
 static bool
-pa_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 {
   if ((REG_P (x)
        && (strict ? STRICT_REG_OK_FOR_BASE_P (x)

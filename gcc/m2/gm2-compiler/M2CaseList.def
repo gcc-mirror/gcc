@@ -36,10 +36,15 @@ FROM Lists IMPORT List ;
 
 (*
    PushCase - create a case entity and push it to an internal stack.
+              rec is NulSym if this is a CASE statement.
+              If rec is a record then it indicates a possible
+              varients reside in the record to check.
+              Both rec and va might be NulSym and then the expr
+              will contain the selector expression to a case statement.
               Return the case id.
 *)
 
-PROCEDURE PushCase (r: CARDINAL; v: CARDINAL) : CARDINAL ;
+PROCEDURE PushCase (rec, va, expr: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -111,6 +116,14 @@ PROCEDURE OverlappingCaseBounds (c: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE MissingCaseBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+
+
+(*
+   MissingCaseStatementBounds - returns TRUE if the case statement has a missing
+                                clause.  It will also generate error messages.
+*)
+
+PROCEDURE MissingCaseStatementBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
 
 
 (*

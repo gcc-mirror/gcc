@@ -96,11 +96,17 @@ class ssa_propagation_engine
   void simulate_block (basic_block);
 };
 
-class substitute_and_fold_engine : public value_query
+class substitute_and_fold_engine : public range_query
 {
  public:
   substitute_and_fold_engine (bool fold_all_stmts = false)
     : fold_all_stmts (fold_all_stmts) { }
+
+  virtual tree value_of_expr (tree expr, gimple * = NULL) = 0;
+  virtual tree value_on_edge (edge, tree expr) override;
+  virtual tree value_of_stmt (gimple *, tree name = NULL) override;
+  virtual bool range_of_expr (vrange &r, tree expr, gimple * = NULL);
+
   virtual ~substitute_and_fold_engine (void) { }
   virtual bool fold_stmt (gimple_stmt_iterator *) { return false; }
 

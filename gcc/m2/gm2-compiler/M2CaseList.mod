@@ -24,24 +24,27 @@ IMPLEMENTATION MODULE M2CaseList ;
 
 FROM M2Debug IMPORT Assert ;
 FROM M2GCCDeclare IMPORT TryDeclareConstant, GetTypeMin, GetTypeMax ;
-FROM M2MetaError IMPORT MetaError1, MetaError2, MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3, MetaErrorT4, MetaErrorString1 ;
+FROM M2MetaError IMPORT MetaError1, MetaError2, MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3, MetaErrorT4, MetaErrorStringT0, MetaErrorString1 ;
 FROM M2Error IMPORT InternalError ;
 FROM M2Range IMPORT OverlapsRange, IsEqual, IsGreater ;
 FROM M2ALU IMPORT PushIntegerTree, PopIntegerTree, Addn, Sub, PushInt ;
 FROM Indexing IMPORT Index, InitIndex, PutIndice, GetIndice, ForeachIndiceInIndexDo, HighIndice ;
-FROM Lists IMPORT InitList, IncludeItemIntoList ;
+FROM Lists IMPORT InitList, IncludeItemIntoList, RemoveItemFromList, NoOfItemsInList, GetItemFromList ;
 FROM NameKey IMPORT KeyToCharStar ;
 FROM SymbolConversion IMPORT GccKnowsAbout, Mod2Gcc, AddModGcc ;
-FROM DynamicStrings IMPORT InitString, InitStringCharStar, ConCat, Mark, KillString ;
+FROM DynamicStrings IMPORT InitString, InitStringCharStar, InitStringChar, ConCat, Mark, KillString ;
 FROM m2tree IMPORT Tree ;
 FROM m2block IMPORT RememberType ;
 FROM m2type IMPORT GetMinFrom ;
+FROM m2expr IMPORT GetIntegerOne, CSTIntToString, CSTIntToChar ;
 FROM Storage IMPORT ALLOCATE ;
-FROM M2Base IMPORT IsExpressionCompatible ;
+FROM M2Base IMPORT IsExpressionCompatible, Char ;
 FROM M2Printf IMPORT printf1 ;
+FROM M2LexBuf IMPORT TokenToLocation ;
 
 FROM SymbolTable IMPORT NulSym, IsConst, IsFieldVarient, IsRecord, IsRecordField, GetVarientTag, GetType,
-                        ForeachLocalSymDo, GetSymName, IsEnumeration, SkipType ;
+                        ForeachLocalSymDo, GetSymName, IsEnumeration, SkipType, NoOfElements, GetNth,
+                        IsSubrange ;
 
 TYPE
    RangePair = POINTER TO RECORD
@@ -65,6 +68,7 @@ TYPE
                        elseField    : CARDINAL ;
                        record       : CARDINAL ;
                        varient      : CARDINAL ;
+                       expression   : CARDINAL ;
                        maxCaseId    : CARDINAL ;
                        caseListArray: Index ;
                        currentCase  : CaseList ;
@@ -87,37 +91,39 @@ VAR
 
 (*
    PushCase - create a case entity and push it to an internal stack.
-              r, is NulSym if this is a CASE statement.
-              If, r, is a record then it indicates it includes one
-              or more varients reside in the record.  The particular
-              varient is, v.
+              rec is NulSym if this is a CASE statement.
+              If rec is a record then it indicates a possible
+              varients reside in the record to check.
+              Both rec and va might be NulSym and then the expr
+              will contain the selector expression to a case statement.
               Return the case id.
 *)
 
-PROCEDURE PushCase (r: CARDINAL; v: CARDINAL) : CARDINAL ;
+PROCEDURE PushCase (rec, va, expr: CARDINAL) : CARDINAL ;
 VAR
    c: CaseDescriptor ;
 BEGIN
-   INC(caseId) ;
-   NEW(c) ;
-   IF c=NIL
+   INC (caseId) ;
+   NEW (c) ;
+   IF c = NIL
    THEN
       InternalError ('out of memory error')
    ELSE
       WITH c^ DO
          elseClause := FALSE ;
          elseField := NulSym ;
-         record := r ;
-         varient := v ;
+         record := rec ;
+         varient := va ;
+         expression := expr ;
          maxCaseId := 0 ;
-         caseListArray := InitIndex(1) ;
+         caseListArray := InitIndex (1) ;
          next := caseStack ;
          currentCase := NIL
       END ;
       caseStack := c ;
-      PutIndice(caseArray, caseId, c)
+      PutIndice (caseArray, caseId, c)
    END ;
-   RETURN( caseId )
+   RETURN caseId
 END PushCase ;
 
 
@@ -505,7 +511,7 @@ END OverlappingCaseBounds ;
 
 
 (*
-   NewRanges -
+   NewRanges - return a new range from the freelist or heap.
 *)
 
 PROCEDURE NewRanges () : SetRange ;
@@ -525,7 +531,8 @@ END NewRanges ;
 
 
 (*
-   NewSet -
+   NewSet - returns a new set based on type with the low and high fields assigned
+            to the min and max values for the type.
 *)
 
 PROCEDURE NewSet (type: CARDINAL) : SetRange ;
@@ -543,7 +550,7 @@ END NewSet ;
 
 
 (*
-   DisposeRanges -
+   DisposeRanges - place set and its list onto the free list.
 *)
 
 PROCEDURE DisposeRanges (set: SetRange) : SetRange ;
@@ -569,40 +576,61 @@ END DisposeRanges ;
 
 
 (*
+   RemoveRange - removes the range descriptor h from set and return the
+                 possibly new head of set.
+*)
+
+PROCEDURE RemoveRange (set: SetRange; h: SetRange) : SetRange ;
+VAR
+   i: SetRange ;
+BEGIN
+   IF h=set
+   THEN
+      set := set^.next ;
+      h^.next := NIL ;
+      h := DisposeRanges(h) ;
+   ELSE
+      i := set ;
+      WHILE i^.next#h DO
+         i := i^.next
+      END ;
+      i^.next := h^.next ;
+      i := h ;
+      h := h^.next ;
+      i^.next := NIL ;
+      i := DisposeRanges(i)
+   END ;
+   RETURN set
+END RemoveRange ;
+
+
+(*
    SubBitRange - subtracts bits, lo..hi, from, set.
 *)
 
 PROCEDURE SubBitRange (set: SetRange; lo, hi: Tree; tokenno: CARDINAL) : SetRange ;
 VAR
-   h, i : SetRange ;
+   h, i: SetRange ;
 BEGIN
    h := set ;
    WHILE h#NIL DO
+      (* Check to see if a single set element h is obliterated by lo..hi.  *)
       IF (h^.high=NIL) OR IsEqual(h^.high, h^.low)
       THEN
          IF IsEqual(h^.low, lo) OR OverlapsRange(lo, hi, h^.low, h^.low)
          THEN
-            IF h=set
-            THEN
-               set := set^.next ;
-               h^.next := NIL ;
-               h := DisposeRanges(h) ;
-               h := set
-            ELSE
-               i := set ;
-               WHILE i^.next#h DO
-                  i := i^.next
-               END ;
-               i^.next := h^.next ;
-               i := h ;
-               h := h^.next ;
-               i^.next := NIL ;
-               i := DisposeRanges(i)
-            END
+            set := RemoveRange (set, h) ;
+            h := set
          ELSE
             h := h^.next
          END
+      (* Now check to see if the lo..hi match exactly with the set range.  *)
+      ELSIF (h^.high#NIL) AND IsEqual (lo, h^.low) AND IsEqual (hi, h^.high)
+      THEN
+         (* Remove h and return as lo..hi have been removed.  *)
+         RETURN RemoveRange (set, h)
       ELSE
+         (* All other cases require modifying the existing set range.  *)
          IF OverlapsRange(lo, hi, h^.low, h^.high)
          THEN
             IF IsGreater(h^.low, lo) OR IsGreater(hi, h^.high)
@@ -647,104 +675,396 @@ END SubBitRange ;
 
 
 (*
+   CheckLowHigh - checks to see the low value <= high value and issues an error
+                  if this is not true.
+*)
+
+PROCEDURE CheckLowHigh (rp: RangePair) ;
+VAR
+   lo, hi: Tree ;
+   temp  : CARDINAL ;
+BEGIN
+   lo := Mod2Gcc (rp^.low) ;
+   hi := Mod2Gcc (rp^.high) ;
+   IF IsGreater (lo, hi)
+   THEN
+      MetaErrorT2 (rp^.tokenno, 'case range should be low..high rather than high..low, range specified as {%1Euad}..{%2Euad}', rp^.low, rp^.high) ;
+      temp := rp^.high ;
+      rp^.high := rp^.low ;
+      rp^.low := temp
+   END
+END CheckLowHigh ;
+
+
+(*
    ExcludeCaseRanges - excludes all case ranges found in, p, from, set
 *)
 
-PROCEDURE ExcludeCaseRanges (set: SetRange; p: CaseDescriptor) : SetRange ;
+PROCEDURE ExcludeCaseRanges (set: SetRange; cd: CaseDescriptor) : SetRange ;
 VAR
    i, j: CARDINAL ;
-   q   : CaseList ;
-   r   : RangePair ;
+   cl  : CaseList ;
+   rp  : RangePair ;
 BEGIN
-   WITH p^ DO
+   WITH cd^ DO
       i := 1 ;
-      WHILE i<=maxCaseId DO
-         q := GetIndice(caseListArray, i) ;
+      WHILE i <= maxCaseId DO
+         cl := GetIndice (caseListArray, i) ;
          j := 1 ;
-         WHILE j<=q^.maxRangeId DO
-            r := GetIndice(q^.rangeArray, j) ;
-            IF r^.high=NulSym
+         WHILE j <= cl^.maxRangeId DO
+            rp := GetIndice (cl^.rangeArray, j) ;
+            IF rp^.high = NulSym
             THEN
-               set := SubBitRange(set, Mod2Gcc(r^.low), Mod2Gcc(r^.low), r^.tokenno)
+               set := SubBitRange (set,
+                                   Mod2Gcc (rp^.low),
+                                   Mod2Gcc (rp^.low), rp^.tokenno)
             ELSE
-               set := SubBitRange(set, Mod2Gcc(r^.low), Mod2Gcc(r^.high), r^.tokenno)
+               CheckLowHigh (rp) ;
+               set := SubBitRange (set,
+                                   Mod2Gcc (rp^.low),
+                                   Mod2Gcc (rp^.high), rp^.tokenno)
             END ;
-            INC(j)
+            INC (j)
          END ;
-         INC(i)
+         INC (i)
       END
    END ;
-   RETURN( set )
+   RETURN set
 END ExcludeCaseRanges ;
 
 
 VAR
-   High, Low  : Tree ;
    errorString: String ;
 
 
 (*
-   DoEnumValues -
+   IncludeElement - only include enumeration field into errorString if it lies between low..high.
 *)
 
-PROCEDURE DoEnumValues (sym: CARDINAL) ;
+PROCEDURE IncludeElement (enumList: List; field: CARDINAL; low, high: Tree) ;
+VAR
+   fieldTree: Tree ;
 BEGIN
-   IF (Low#NIL) AND IsEqual(Mod2Gcc(sym), Low)
+   IF field # NulSym
    THEN
-      errorString := ConCat(errorString, InitStringCharStar(KeyToCharStar(GetSymName(sym)))) ;
-      Low := NIL
-   END ;
-   IF (High#NIL) AND IsEqual(Mod2Gcc(sym), High)
-   THEN
-      errorString := ConCat(errorString, Mark(InitString('..'))) ;
-      errorString := ConCat(errorString, Mark(InitStringCharStar(KeyToCharStar(GetSymName(sym))))) ;
-      High := NIL
-   END
-END DoEnumValues ;
-
-
-(*
-   ErrorRange -
-*)
-
-PROCEDURE ErrorRange (p: CaseDescriptor; type: CARDINAL; set: SetRange) ;
-BEGIN
-   type := SkipType(type) ;
-   IF IsEnumeration(type)
-   THEN
-      Low := set^.low ;
-      High := set^.high ;
-      IF IsEqual(Low, High)
+      fieldTree := Mod2Gcc (field) ;
+      IF OverlapsRange (fieldTree, fieldTree, low, high)
       THEN
-         High := NIL ;
-         errorString := InitString('enumeration value ') ;
-         ForeachLocalSymDo(type, DoEnumValues) ;
-         errorString := ConCat(errorString, InitString(' is ignored by the CASE variant record {%1D}'))
-      ELSE
-         errorString := InitString('enumeration values ') ;
-         ForeachLocalSymDo(type, DoEnumValues) ;
-         errorString := ConCat(errorString, InitString(' are ignored by the CASE variant record {%1D}'))
-      END ;
-      MetaErrorString1(errorString, p^.varient)
+         IncludeItemIntoList (enumList, field)
+      END
    END
-END ErrorRange ;
+END IncludeElement ;
 
 
 (*
-   ErrorRanges -
+   IncludeElements - only include enumeration field values low..high in errorString.
 *)
 
-PROCEDURE ErrorRanges (p: CaseDescriptor; type: CARDINAL; set: SetRange) ;
+PROCEDURE IncludeElements (type: CARDINAL; enumList: List; low, high: Tree) ;
+VAR
+   field     : CARDINAL ;
+   i,
+   NoElements: CARDINAL ;
 BEGIN
-   WHILE set#NIL DO
-      ErrorRange(p, type, set) ;
-      set := set^.next
+   NoElements := NoOfElements (type) ;
+   i := 1 ;
+   WHILE i <= NoElements DO
+      field := GetNth (type, i) ;
+      IncludeElement (enumList, field, low, high) ;
+      INC (i)
    END
+END IncludeElements ;
+
+
+(*
+   ErrorRangeEnum - include enumeration fields Low to High in errorString.
+*)
+
+PROCEDURE ErrorRangeEnum (type: CARDINAL; set: SetRange; enumList: List) ;
+VAR
+   Low, High: Tree ;
+BEGIN
+   Low := set^.low ;
+   High := set^.high ;
+   IF Low = NIL
+   THEN
+      Low := High
+   END ;
+   IF High = NIL
+   THEN
+      High := Low
+   END ;
+   IF (Low # NIL) AND (High # NIL)
+   THEN
+      IncludeElements (type, enumList, Low, High)
+   END
+END ErrorRangeEnum ;
+
+
+(*
+   ErrorRanges - return a list of all enumeration fields not present in the case statement.
+                 The return value will be nil if type is not an enumeration type.
+*)
+
+PROCEDURE ErrorRanges (type: CARDINAL; set: SetRange) : List ;
+VAR
+   enumSet: List ;
+BEGIN
+   type := SkipType (type) ;
+   IF IsEnumeration (type)
+   THEN
+      InitList (enumSet) ;
+      WHILE set#NIL DO
+         ErrorRangeEnum (type, set, enumSet) ;
+         set := set^.next
+      END ;
+      RETURN enumSet
+   END ;
+   RETURN NIL
 END ErrorRanges ;
 
 
 (*
-   MissingCaseBounds - returns TRUE if there were any missing bounds
+   appendString - appends str to errorString.
+*)
+
+PROCEDURE appendString (str: String) ;
+BEGIN
+   errorString := ConCat (errorString, str)
+END appendString ;
+
+
+(*
+   appendEnum - appends enum to errorString.
+*)
+
+PROCEDURE appendEnum (enum: CARDINAL) ;
+BEGIN
+   appendString (Mark (InitStringCharStar (KeyToCharStar (GetSymName (enum)))))
+END appendEnum ;
+
+
+(*
+   appendStr - appends str to errorString.
+*)
+
+PROCEDURE appendStr (str: ARRAY OF CHAR) ;
+BEGIN
+   appendString (Mark (InitString (str)))
+END appendStr ;
+
+
+(*
+   EnumerateErrors - populate errorString with the contents of enumList.
+*)
+
+PROCEDURE EnumerateErrors (enumList: List) ;
+VAR
+   i, n: CARDINAL ;
+BEGIN
+   n := NoOfItemsInList (enumList) ;
+   IF (enumList # NIL) AND (n > 0)
+   THEN
+      IF n = 1
+      THEN
+         errorString := InitString ('{%W}the missing enumeration field is: ') ;
+      ELSE
+         errorString := InitString ('{%W}the missing enumeration fields are: ') ;
+      END ;
+      appendEnum (GetItemFromList (enumList, 1)) ;
+      IF n > 1
+      THEN
+         IF n > 2
+         THEN
+            i := 2 ;
+            WHILE i <= n-1 DO
+               appendStr (', ') ;
+               appendEnum (GetItemFromList (enumList, i)) ;
+               INC (i)
+            END
+         END ;
+         appendStr (' and ') ;
+         appendEnum (GetItemFromList (enumList, n))
+      END
+   END
+END EnumerateErrors ;
+
+
+(*
+   NoOfSetElements - return the number of set elements.
+*)
+
+PROCEDURE NoOfSetElements (set: SetRange) : Tree ;
+BEGIN
+   PushInt (0) ;
+   WHILE set # NIL DO
+      IF ((set^.low # NIL) AND (set^.high = NIL)) OR
+         ((set^.low = NIL) AND (set^.high # NIL))
+      THEN
+         PushInt (1) ;
+         Addn
+      ELSIF (set^.low # NIL) AND (set^.high # NIL)
+      THEN
+         PushIntegerTree (set^.high) ;
+         PushIntegerTree (set^.low) ;
+         Sub ;
+         PushInt (1) ;
+         Addn ;
+         Addn
+      END ;
+      set := set^.next
+   END ;
+   RETURN PopIntegerTree ()
+END NoOfSetElements ;
+
+
+(*
+   isPrintableChar - a cautious isprint.
+*)
+
+PROCEDURE isPrintableChar (value: Tree) : BOOLEAN ;
+BEGIN
+   CASE CSTIntToChar (value) OF
+
+   'a'..'z':  RETURN TRUE |
+   'A'..'Z':  RETURN TRUE |
+   '0'..'9':  RETURN TRUE |
+   '!', '@':  RETURN TRUE |
+   '#', '$':  RETURN TRUE |
+   '%', '^':  RETURN TRUE |
+   '&', '*':  RETURN TRUE |
+   '(', ')':  RETURN TRUE |
+   '[', ']':  RETURN TRUE |
+   '{', '}':  RETURN TRUE |
+   '-', '+':  RETURN TRUE |
+   '_', '=':  RETURN TRUE |
+   ':', ';':  RETURN TRUE |
+   "'", '"':  RETURN TRUE |
+   ',', '.':  RETURN TRUE |
+   '<', '>':  RETURN TRUE |
+   '/', '?':  RETURN TRUE |
+   '\', '|':  RETURN TRUE |
+   '~', '`':  RETURN TRUE |
+   ' '     :  RETURN TRUE
+
+   ELSE
+      RETURN FALSE
+   END
+END isPrintableChar ;
+
+
+(*
+   appendTree - append tree value to the errorString.  It attempts to pretty print
+                CHAR constants and will fall back to CHR (x) if necessary.
+*)
+
+PROCEDURE appendTree (value: Tree; type: CARDINAL) ;
+BEGIN
+    IF SkipType (GetType (type)) = Char
+    THEN
+       IF isPrintableChar (value)
+       THEN
+          IF CSTIntToChar (value) = "'"
+          THEN
+             appendString (InitStringChar ('"')) ;
+             appendString (InitStringChar (CSTIntToChar (value))) ;
+             appendString (InitStringChar ('"'))
+          ELSE
+             appendString (InitStringChar ("'")) ;
+             appendString (InitStringChar (CSTIntToChar (value))) ;
+             appendString (InitStringChar ("'"))
+          END
+       ELSE
+          appendString (InitString ('CHR (')) ;
+          appendString (InitStringCharStar (CSTIntToString (value))) ;
+          appendString (InitStringChar (')'))
+       END
+    ELSE
+       appendString (InitStringCharStar (CSTIntToString (value)))
+    END
+END appendTree ;
+
+
+(*
+   SubrangeErrors - create an errorString containing all set ranges.
+*)
+
+PROCEDURE SubrangeErrors (subrangetype: CARDINAL; set: SetRange) ;
+VAR
+   sr       : SetRange ;
+   rangeNo  : CARDINAL ;
+   nMissing,
+   zero, one: Tree ;
+BEGIN
+   nMissing := NoOfSetElements (set) ;
+   PushInt (0) ;
+   zero := PopIntegerTree () ;
+   IF IsGreater (nMissing, zero)
+   THEN
+      PushInt (1) ;
+      one := PopIntegerTree () ;
+      IF IsGreater (nMissing, one)
+      THEN
+         errorString := InitString ('{%W}there are a total of ')
+      ELSE
+         errorString := InitString ('{%W}there is a total of ')
+      END ;
+      appendString (InitStringCharStar (CSTIntToString (nMissing))) ;
+      appendStr (' missing values in the subrange, the {%kCASE} statement needs labels (or an {%kELSE} statement)') ;
+      appendStr (' for the following values: ') ;
+      sr := set ;
+      rangeNo := 0 ;
+      WHILE sr # NIL DO
+         INC (rangeNo) ;
+         IF rangeNo > 1
+         THEN
+            IF sr^.next = NIL
+            THEN
+               appendStr (' and ')
+            ELSE
+               appendStr (', ')
+            END
+         END ;
+         IF sr^.low = NIL
+         THEN
+            appendTree (sr^.high, subrangetype)
+         ELSIF (sr^.high = NIL) OR IsEqual (sr^.low, sr^.high)
+         THEN
+            appendTree (sr^.low, subrangetype)
+         ELSE
+            appendTree (sr^.low, subrangetype) ;
+            appendStr ('..') ;
+            appendTree (sr^.high, subrangetype)
+         END ;
+         sr := sr^.next
+      END
+   END
+END SubrangeErrors ;
+
+
+(*
+   EmitMissingRangeErrors - emits a singular/plural error message for an enumeration type.
+*)
+
+PROCEDURE EmitMissingRangeErrors (tokenno: CARDINAL; type: CARDINAL; set: SetRange) ;
+BEGIN
+   errorString := NIL ;
+   IF IsEnumeration (type)
+   THEN
+      EnumerateErrors (ErrorRanges (type, set))
+   ELSIF IsSubrange (type)
+   THEN
+      SubrangeErrors (type, set)
+   END ;
+   IF errorString # NIL
+   THEN
+      MetaErrorStringT0 (tokenno, errorString)
+   END
+END EmitMissingRangeErrors ;
+
+
+(*
+   MissingCaseBounds - returns true if there were any missing bounds
                        in the varient record case list, c.  It will
                        generate an error message for each missing
                        bounds found.
@@ -757,61 +1077,110 @@ VAR
    missing: BOOLEAN ;
    set    : SetRange ;
 BEGIN
-   p := GetIndice(caseArray, c) ;
+   p := GetIndice (caseArray, c) ;
    missing := FALSE ;
    WITH p^ DO
-      IF (record#NulSym) AND (varient#NulSym) AND (NOT elseClause)
+      IF NOT elseClause
       THEN
-         (* not a CASE statement, but a varient record containing without an ELSE clause *)
-         type := GetVariantTagType(varient) ;
-         set := NewSet(type) ;
-         set := ExcludeCaseRanges(set, p) ;
-         IF set#NIL
+         IF (record # NulSym) AND (varient # NulSym)
          THEN
-            missing := TRUE ;
-            MetaErrorT2 (tokenno,
-                         'not all variant record alternatives in the {%kCASE} clause are specified, hint you either need to specify each value of {%2ad} or use an {%kELSE} clause',
-                         varient, type) ;
-            ErrorRanges(p, type, set)
-         END ;
-         set := DisposeRanges(set)
+            (* Not a case statement, but a varient record without an else clause.  *)
+            type := GetVariantTagType (varient) ;
+            set := NewSet (type) ;
+            set := ExcludeCaseRanges (set, p) ;
+            IF set # NIL
+            THEN
+               missing := TRUE ;
+               MetaErrorT2 (tokenno,
+                            'not all variant record alternatives in the {%kCASE} clause are specified, hint you either need to specify each value of {%2ad} or use an {%kELSE} clause',
+                            varient, type) ;
+               EmitMissingRangeErrors (tokenno, type, set)
+            END ;
+            set := DisposeRanges (set)
+         END
       END
    END ;
-   RETURN( missing )
+   RETURN missing
 END MissingCaseBounds ;
 
 
 (*
-   InRangeList - returns TRUE if the value, tag, is defined in the case list.
+   MissingCaseStatementBounds - returns true if the case statement has a missing
+                                clause.  It will also generate error messages.
+*)
 
-PROCEDURE InRangeList (cl: CaseList; tag: CARDINAL) : BOOLEAN ;
+PROCEDURE MissingCaseStatementBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
 VAR
-   i, h: CARDINAL ;
-   r   : RangePair ;
-   a   : Tree ;
+   p      : CaseDescriptor ;
+   type   : CARDINAL ;
+   missing: BOOLEAN ;
+   set    : SetRange ;
 BEGIN
-   WITH cl^ DO
-      i := 1 ;
-      h := HighIndice(rangeArray) ;
-      WHILE i<=h DO
-         r := GetIndice(rangeArray, i) ;
-         WITH r^ DO
-            IF high=NulSym
+   p := GetIndice (caseArray, c) ;
+   missing := FALSE ;
+   WITH p^ DO
+      IF NOT elseClause
+      THEN
+         IF expression # NulSym
+         THEN
+            type := SkipType (GetType (expression)) ;
+            IF type # NulSym
             THEN
-               a := Mod2Gcc(low)
-            ELSE
-               a := Mod2Gcc(high)
-            END ;
-            IF OverlapsRange(Mod2Gcc(low), a, Mod2Gcc(tag), Mod2Gcc(tag))
-            THEN
-               RETURN( TRUE )
+               IF IsEnumeration (type) OR IsSubrange (type)
+               THEN
+                  (* A case statement sequence without an else clause but
+                     selecting using an enumeration type.  *)
+                  set := NewSet (type) ;
+                  set := ExcludeCaseRanges (set, p) ;
+                  IF set # NIL
+                  THEN
+                     missing := TRUE ;
+                     MetaErrorT1 (tokenno,
+                                  'not all {%1Wd} values in the {%kCASE} statements are specified, hint you either need to specify each value of {%1ad} or use an {%kELSE} clause',
+                                  type) ;
+                     EmitMissingRangeErrors (tokenno, type, set)
+                  END ;
+                  set := DisposeRanges (set)
+               END
             END
-         END ;
-         INC(i)
+         END
       END
    END ;
-   RETURN( FALSE )
-END InRangeList ;
+   RETURN missing
+END MissingCaseStatementBounds ;
+
+
+(*
+   InRangeList - returns true if the value, tag, is defined in the case list.
+
+procedure InRangeList (cl: CaseList; tag: cardinal) : boolean ;
+var
+   i, h: cardinal ;
+   r   : RangePair ;
+   a   : Tree ;
+begin
+   with cl^ do
+      i := 1 ;
+      h := HighIndice(rangeArray) ;
+      while i<=h do
+         r := GetIndice(rangeArray, i) ;
+         with r^ do
+            if high=NulSym
+            then
+               a := Mod2Gcc(low)
+            else
+               a := Mod2Gcc(high)
+            end ;
+            if OverlapsRange(Mod2Gcc(low), a, Mod2Gcc(tag), Mod2Gcc(tag))
+            then
+               return( true )
+            end
+         end ;
+         inc(i)
+      end
+   end ;
+   return( false )
+end InRangeList ;
 *)
 
 
@@ -821,7 +1190,7 @@ END InRangeList ;
 
 PROCEDURE WriteCase (c: CARDINAL) ;
 BEGIN
-   (* this debugging procedure should be finished.  *)
+   (* this debugging PROCEDURE should be finished.  *)
    printf1 ("%d", c)
 END WriteCase ;
 
@@ -834,32 +1203,32 @@ PROCEDURE checkTypes (constant, type: CARDINAL) : BOOLEAN ;
 VAR
    consttype: CARDINAL ;
 BEGIN
-   IF (constant#NulSym) AND IsConst(constant)
+   IF (constant # NulSym) AND IsConst (constant)
    THEN
-      consttype := GetType(constant) ;
-      IF NOT IsExpressionCompatible(consttype, type)
+      consttype := GetType (constant) ;
+      IF NOT IsExpressionCompatible (consttype, type)
       THEN
-         MetaError2('the CASE statement variant tag {%1ad} must be type compatible with the constant {%2Da:is a {%2d}}',
-                    type, constant) ;
-         RETURN( FALSE )
+         MetaError2 ('the case statement variant tag {%1ad} must be type compatible with the constant {%2Da:is a {%2d}}',
+                     type, constant) ;
+         RETURN FALSE
       END
    END ;
-   RETURN( TRUE )
+   RETURN TRUE
 END checkTypes ;
 
 
 (*
-   inRange - returns TRUE if, min <= i <= max.
+   inRange - returns true if, min <= i <= max.
 *)
 
 PROCEDURE inRange (i, min, max: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( OverlapsRange(Mod2Gcc(i), Mod2Gcc(i), Mod2Gcc(min), Mod2Gcc(max)) )
+   RETURN OverlapsRange (Mod2Gcc (i), Mod2Gcc (i), Mod2Gcc (min), Mod2Gcc (max))
 END inRange ;
 
 
 (*
-   TypeCaseBounds - returns TRUE if all bounds in case list, c, are
+   TypeCaseBounds - returns true if all bounds in case list, c, are
                     compatible with the tagged type.
 *)
 
@@ -915,11 +1284,11 @@ BEGIN
             THEN
                compatible := FALSE
             END ;
-            INC(j)
+            INC (j)
          END ;
-         INC(i)
+         INC (i)
       END ;
-      RETURN( compatible )
+      RETURN compatible
    END
 END TypeCaseBounds ;
 

@@ -76,10 +76,8 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	  != TYPE_ADDR_SPACE (TREE_TYPE (inner_type)))
 	return false;
       /* Do not lose casts to function pointer types.  */
-      if ((TREE_CODE (TREE_TYPE (outer_type)) == FUNCTION_TYPE
-	   || TREE_CODE (TREE_TYPE (outer_type)) == METHOD_TYPE)
-	  && !(TREE_CODE (TREE_TYPE (inner_type)) == FUNCTION_TYPE
-	       || TREE_CODE (TREE_TYPE (inner_type)) == METHOD_TYPE))
+      if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (outer_type))
+	  && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (inner_type)))
 	return false;
     }
 
@@ -111,6 +109,15 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       if (((TREE_CODE (inner_type) == BOOLEAN_TYPE)
 	   != (TREE_CODE (outer_type) == BOOLEAN_TYPE))
 	  && TYPE_PRECISION (outer_type) != 1)
+	return false;
+
+      /* Preserve conversions to/from BITINT_TYPE.  While we don't
+	 need to care that much about such conversions within a function's
+	 body, we need to prevent changing BITINT_TYPE to INTEGER_TYPE
+	 of the same precision or vice versa when passed to functions,
+	 especially for varargs.  */
+      if ((TREE_CODE (inner_type) == BITINT_TYPE)
+	  != (TREE_CODE (outer_type) == BITINT_TYPE))
 	return false;
 
       /* We don't need to preserve changes in the types minimum or
@@ -147,8 +154,8 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 				      TREE_TYPE (inner_type));
 
   /* Recurse for vector types with the same number of subparts.  */
-  else if (TREE_CODE (inner_type) == VECTOR_TYPE
-	   && TREE_CODE (outer_type) == VECTOR_TYPE)
+  else if (VECTOR_TYPE_P (inner_type)
+	   && VECTOR_TYPE_P (outer_type))
     return (known_eq (TYPE_VECTOR_SUBPARTS (inner_type),
 		      TYPE_VECTOR_SUBPARTS (outer_type))
 	    && useless_type_conversion_p (TREE_TYPE (outer_type),
@@ -223,8 +230,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 					TREE_TYPE (inner_type));
     }
 
-  else if ((TREE_CODE (inner_type) == FUNCTION_TYPE
-	    || TREE_CODE (inner_type) == METHOD_TYPE)
+  else if (FUNC_OR_METHOD_TYPE_P (inner_type)
 	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
     {
       tree outer_parm, inner_parm;
@@ -819,7 +825,7 @@ is_gimple_reg (tree t)
      it seems safest to not do too much optimization with these at the
      tree level at all.  We'll have to rely on the rtl optimizers to
      clean this up, as there we've got all the appropriate bits exposed.  */
-  if (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t))
+  if (VAR_P (t) && DECL_HARD_REGISTER (t))
     return false;
 
   /* Variables can be marked as having partial definitions, avoid
@@ -847,7 +853,7 @@ is_gimple_val (tree t)
 bool
 is_gimple_asm_val (tree t)
 {
-  if (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t))
+  if (VAR_P (t) && DECL_HARD_REGISTER (t))
     return true;
 
   return is_gimple_val (t);
@@ -955,7 +961,7 @@ mark_addressable (tree x)
   mark_addressable_1 (x);
 
   /* Also mark the artificial SSA_NAME that points to the partition of X.  */
-  if (TREE_CODE (x) == VAR_DECL
+  if (VAR_P (x)
       && !DECL_EXTERNAL (x)
       && !TREE_STATIC (x)
       && cfun->gimple_df != NULL

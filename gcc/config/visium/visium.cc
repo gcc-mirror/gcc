@@ -194,7 +194,8 @@ static rtx_insn *visium_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 
 static bool visium_legitimate_constant_p (machine_mode, rtx);
 
-static bool visium_legitimate_address_p (machine_mode, rtx, bool);
+static bool visium_legitimate_address_p (machine_mode, rtx, bool,
+					 code_helper = ERROR_MARK);
 
 static bool visium_print_operand_punct_valid_p (unsigned char);
 static void visium_print_operand (FILE *, rtx, int);
@@ -1313,7 +1314,7 @@ static bool
 visium_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
   tree type = arg.type;
-  return type && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == VECTOR_TYPE);
+  return type && (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type));
 }
 
 /* Define how arguments are passed.
@@ -1409,7 +1410,7 @@ visium_function_arg_advance (cumulative_args_t pcum_v,
 static bool
 visium_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  return (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == VECTOR_TYPE);
+  return (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type));
 }
 
 /* Define how scalar values are returned.  */
@@ -1818,7 +1819,7 @@ rtx_ok_for_offset_p (machine_mode mode, rtx op)
    kind of register is required.  */
 
 static bool
-visium_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+visium_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 {
   rtx base;
   unsigned int regno;

@@ -1338,6 +1338,71 @@ all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
   return true;
 }
 
+/* Handle
+   _4 = x_3 & 31;
+   if (_4 != 0)
+     goto <bb 6>;
+   else
+     goto <bb 7>;
+   <bb 6>:
+   __builtin_unreachable ();
+   <bb 7>:
+
+   If x_3 has no other immediate uses (checked by caller), var is the
+   x_3 var, we can clear low 5 bits from the non-zero bitmask.  */
+
+static void
+maybe_set_nonzero_bits (edge e, tree var)
+{
+  basic_block cond_bb = e->src;
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (cond_bb));
+  tree cst;
+
+  if (cond == NULL
+      || gimple_cond_code (cond) != ((e->flags & EDGE_TRUE_VALUE)
+				     ? EQ_EXPR : NE_EXPR)
+      || TREE_CODE (gimple_cond_lhs (cond)) != SSA_NAME
+      || !integer_zerop (gimple_cond_rhs (cond)))
+    return;
+
+  gimple *stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (cond));
+  if (!is_gimple_assign (stmt)
+      || gimple_assign_rhs_code (stmt) != BIT_AND_EXPR
+      || TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST)
+    return;
+  if (gimple_assign_rhs1 (stmt) != var)
+    {
+      gimple *stmt2;
+
+      if (TREE_CODE (gimple_assign_rhs1 (stmt)) != SSA_NAME)
+	return;
+      stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+      if (!gimple_assign_cast_p (stmt2)
+	  || gimple_assign_rhs1 (stmt2) != var
+	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt2))
+	  || (TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (stmt)))
+			      != TYPE_PRECISION (TREE_TYPE (var))))
+	return;
+    }
+  cst = gimple_assign_rhs2 (stmt);
+  if (POINTER_TYPE_P (TREE_TYPE (var)))
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (var);
+      if (pi && pi->misalign)
+	return;
+      wide_int w = wi::bit_not (wi::to_wide (cst));
+      unsigned int bits = wi::ctz (w);
+      if (bits == 0 || bits >= HOST_BITS_PER_INT)
+	return;
+      unsigned int align = 1U << bits;
+      if (pi == NULL || pi->align < align)
+	set_ptr_info_alignment (get_ptr_info (var), align, 0);
+    }
+  else
+    set_nonzero_bits (var, wi::bit_and_not (get_nonzero_bits (var),
+					    wi::to_wide (cst)));
+}
+
 /* Set global ranges that can be determined from the C->M edge:
 
    <bb C>:
@@ -1358,7 +1423,7 @@ dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
   if (!pred_e)
     return;
 
-  gimple *stmt = last_stmt (pred_e->src);
+  gimple *stmt = *gsi_last_bb (pred_e->src);
   if (!stmt
       || gimple_code (stmt) != GIMPLE_COND
       || !assert_unreachable_fallthru_edge_p (pred_e))
@@ -2162,8 +2227,8 @@ reduce_vector_comparison_to_scalar_comparison (gimple *stmt)
       /* We may have a vector comparison where both arms are uniform
 	 vectors.  If so, we can simplify the vector comparison down
 	 to a scalar comparison.  */
-      if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE
-	  && TREE_CODE (TREE_TYPE (rhs)) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (TREE_TYPE (lhs))
+	  && VECTOR_TYPE_P (TREE_TYPE (rhs)))
 	{
 	  /* If either operand is an SSA_NAME, then look back to its
 	     defining statement to try and get at a suitable source.  */

@@ -228,7 +228,7 @@ package body GPrep is
       --  the deleted lines are not put as comment, we must output them as
       --  blank lines.
 
-      if Source_Ref_Pragma and (not Opt.Comment_Deleted_Lines) then
+      if Source_Ref_Pragma and not Opt.Comment_Deleted_Lines then
          Opt.Blank_Deleted_Lines := True;
       end if;
 

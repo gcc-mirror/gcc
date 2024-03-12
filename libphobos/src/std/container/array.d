@@ -1566,7 +1566,7 @@ if (!is(immutable T == immutable bool))
     r2[0 .. 0] += 0;
 }
 
-// Test issue 11194
+// Test https://issues.dlang.org/show_bug.cgi?id=11194
 @system unittest
 {
     static struct S {

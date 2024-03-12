@@ -109,6 +109,10 @@ struct _cpp_file
   /* If this file is implicitly preincluded.  */
   bool implicit_preinclude : 1;
 
+  /* Set if a header wasn't found with __has_include or __has_include_next
+     and error should be emitted if it is included normally.  */
+  bool deferred_error : 1;
+
   /* > 0: Known C++ Module header unit, <0: known not.  ==0, unknown  */
   int header_unit : 2;
 };
@@ -523,14 +527,23 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
   cpp_file_hash_entry *entry
     = search_cache ((struct cpp_file_hash_entry *) *hash_slot, start_dir);
   if (entry)
-    return entry->u.file;
+    {
+      if (entry->u.file->deferred_error && kind == _cpp_FFK_NORMAL)
+	{
+	  open_file_failed (pfile, entry->u.file, angle_brackets, loc);
+	  entry->u.file->deferred_error = false;
+	}
+      return entry->u.file;
+    }
 
   _cpp_file *file = make_cpp_file (start_dir, fname);
   file->implicit_preinclude
     = (kind == _cpp_FFK_PRE_INCLUDE
        || (pfile->buffer && pfile->buffer->file->implicit_preinclude));
 
-  if (kind != _cpp_FFK_FAKE)
+  if (kind == _cpp_FFK_FAKE)
+    file->dont_read = true;
+  else
     /* Try each path in the include chain.  */
     for (;;)
       {
@@ -589,6 +602,8 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 
 	    if (kind != _cpp_FFK_HAS_INCLUDE)
 	      open_file_failed (pfile, file, angle_brackets, loc);
+	    else
+	      file->deferred_error = true;
 	    break;
 	  }
 
@@ -1477,7 +1492,12 @@ cpp_clear_file_cache (cpp_reader *pfile)
 void
 _cpp_fake_include (cpp_reader *pfile, const char *fname)
 {
-  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, 0, _cpp_FFK_FAKE, 0);
+  /* It does not matter what are the contents of fake_source_dir, it will never
+     be inspected; we just use its address to uniquely signify that this file
+     was added as a fake include, so a later call to _cpp_find_file (to include
+     the file for real) won't find the fake one in the hash table.  */
+  static cpp_dir fake_source_dir;
+  _cpp_find_file (pfile, fname, &fake_source_dir, 0, _cpp_FFK_FAKE, 0);
 }
 
 /* Not everyone who wants to set system-header-ness on a buffer can

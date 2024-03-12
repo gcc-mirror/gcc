@@ -60,12 +60,15 @@ struct intrinsic_decl
 
   /* True if the intrinsic is only handled in CTFE.  */
   bool ctfeonly;
+
+  /* True if the intrinsic has a library implementation.  */
+  bool fallback;
 };
 
 static const intrinsic_decl intrinsic_decls[] =
 {
-#define DEF_D_INTRINSIC(CODE, BUILTIN, NAME, MODULE, DECO, CTFE) \
-    { CODE, BUILTIN, NAME, MODULE, DECO, CTFE },
+#define DEF_D_INTRINSIC(CODE, BUILTIN, NAME, MODULE, DECO, CTFE, FALLBACK) \
+    { CODE, BUILTIN, NAME, MODULE, DECO, CTFE, FALLBACK },
 
 #include "intrinsics.def"
 
@@ -123,7 +126,7 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	    return;
 
 	  OutBuffer buf;
-	  mangleToBuffer (fd->type, &buf);
+	  mangleToBuffer (fd->type, buf);
 	  tdeco = buf.extractChars ();
 	}
 
@@ -1007,6 +1010,7 @@ expand_volatile_load (tree callexp)
   tree type = build_qualified_type (TREE_TYPE (ptrtype), TYPE_QUAL_VOLATILE);
   tree result = indirect_ref (type, ptr);
   TREE_THIS_VOLATILE (result) = 1;
+  TREE_SIDE_EFFECTS (result) = 1;
 
   return result;
 }
@@ -1034,6 +1038,7 @@ expand_volatile_store (tree callexp)
   tree type = build_qualified_type (TREE_TYPE (ptrtype), TYPE_QUAL_VOLATILE);
   tree result = indirect_ref (type, ptr);
   TREE_THIS_VOLATILE (result) = 1;
+  TREE_SIDE_EFFECTS (result) = 1;
 
   /* (*(volatile T *) ptr) = value;  */
   tree value = CALL_EXPR_ARG (callexp, 1);
@@ -1433,4 +1438,44 @@ maybe_expand_intrinsic (tree callexp)
     default:
       gcc_unreachable ();
     }
+}
+
+/* If FNDECL is an intrinsic, return the FUNCTION_DECL that has a library
+   fallback implementation of it, otherwise raise an error.  */
+
+tree
+maybe_reject_intrinsic (tree fndecl)
+{
+  gcc_assert (TREE_CODE (fndecl) == FUNCTION_DECL);
+
+  intrinsic_code intrinsic = DECL_INTRINSIC_CODE (fndecl);
+
+  if (intrinsic == INTRINSIC_NONE)
+    {
+      /* Not an intrinsic, but it still might be a declaration from the
+	 `gcc.builtins' module.  */
+      if (fndecl_built_in_p (fndecl) && DECL_IS_UNDECLARED_BUILTIN (fndecl)
+	  && !DECL_ASSEMBLER_NAME_SET_P (fndecl))
+	error ("built-in function %qE must be directly called", fndecl);
+
+      return fndecl;
+    }
+
+  /* Nothing to do if the intrinsic has a D library implementation.  */
+  if (intrinsic_decls[intrinsic].fallback)
+    return fndecl;
+
+  /* Check the GCC built-in decl if the intrinsic maps to one.  */
+  built_in_function code = intrinsic_decls[intrinsic].built_in;
+  if (code != BUILT_IN_NONE)
+    {
+      tree builtin = builtin_decl_explicit (code);
+      if (!DECL_IS_UNDECLARED_BUILTIN (builtin)
+	  || DECL_ASSEMBLER_NAME_SET_P (builtin))
+	return builtin;
+    }
+
+  /* It's a D language intrinsic with no library implementation.  */
+  error ("intrinsic function %qE must be directly called", fndecl);
+  return fndecl;
 }

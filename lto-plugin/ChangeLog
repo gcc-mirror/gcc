@@ -1,3 +1,45 @@
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Alexander von Gluck IV  <kallisti5@unixzen.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-06-30  Martin Jambor  <mjambor@suse.cz>
+
+	* Makefile.in: Regenerate.
+
+2023-06-22  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-bind-now): New check.  Link with
+	-z,now.
+	* configure: Regenerate.
+
+2023-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/109128
+	* lto-plugin.c (register_claim_file_v2): New.
+	(claim_file_handler_v2): New.
+	(claim_file_handler): Wrap claim_file_handler_v2.
+	(onload): Handle LDPT_REGISTER_CLAIM_FILE_HOOK_V2.
+
 2022-11-23  Marek Polacek  <polacek@redhat.com>
 
 	Revert:

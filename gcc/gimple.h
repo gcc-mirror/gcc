@@ -1591,6 +1591,7 @@ gomp_parallel *gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
 gomp_task *gimple_build_omp_task (gimple_seq, tree, tree, tree, tree,
 				       tree, tree);
 gimple *gimple_build_omp_section (gimple_seq);
+gimple *gimple_build_omp_structured_block (gimple_seq);
 gimple *gimple_build_omp_scope (gimple_seq, tree);
 gimple *gimple_build_omp_master (gimple_seq);
 gimple *gimple_build_omp_masked (gimple_seq, tree);
@@ -1629,6 +1630,7 @@ tree gimple_call_nonnull_arg (gcall *);
 bool gimple_assign_copy_p (gimple *);
 bool gimple_assign_ssa_name_copy_p (gimple *);
 bool gimple_assign_unary_nop_p (gimple *);
+bool gimple_assign_load_p (const gimple *);
 void gimple_set_bb (gimple *, basic_block);
 void gimple_assign_set_rhs_from_tree (gimple_stmt_iterator *, tree);
 void gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *, enum tree_code,
@@ -1878,6 +1880,7 @@ gimple_has_substatements (gimple *g)
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SCOPE:
@@ -2951,23 +2954,6 @@ gimple_store_p (const gimple *gs)
   tree lhs = gimple_get_lhs (gs);
   return lhs && !is_gimple_reg (lhs);
 }
-
-/* Return true if GS is an assignment that loads from its rhs1.  */
-
-inline bool
-gimple_assign_load_p (const gimple *gs)
-{
-  tree rhs;
-  if (!gimple_assign_single_p (gs))
-    return false;
-  rhs = gimple_assign_rhs1 (gs);
-  if (TREE_CODE (rhs) == WITH_SIZE_EXPR)
-    return true;
-  rhs = get_base_address (rhs);
-  return (DECL_P (rhs)
-	  || TREE_CODE (rhs) == MEM_REF || TREE_CODE (rhs) == TARGET_MEM_REF);
-}
-
 
 /* Return true if S is a type-cast assignment.  */
 
@@ -4649,6 +4635,13 @@ gimple_phi_arg (const gphi *gs, unsigned index)
   return &(gs->args[index]);
 }
 
+inline const phi_arg_d *
+gimple_phi_arg (const gimple *gs, unsigned index)
+{
+  const gphi *phi_stmt = as_a <const gphi *> (gs);
+  return gimple_phi_arg (phi_stmt, index);
+}
+
 inline struct phi_arg_d *
 gimple_phi_arg (gimple *gs, unsigned index)
 {
@@ -4694,11 +4687,27 @@ gimple_phi_arg_def (const gphi *gs, size_t index)
 }
 
 inline tree
-gimple_phi_arg_def (gimple *gs, size_t index)
+gimple_phi_arg_def (const gimple *gs, size_t index)
 {
   return gimple_phi_arg (gs, index)->def;
 }
 
+/* Return the tree operand for the argument associated with
+   edge E of PHI node GS.  */
+
+inline tree
+gimple_phi_arg_def_from_edge (const gphi *gs, const_edge e)
+{
+  gcc_checking_assert (e->dest == gimple_bb (gs));
+  return gimple_phi_arg (gs, e->dest_idx)->def;
+}
+
+inline tree
+gimple_phi_arg_def_from_edge (const gimple *gs, const_edge e)
+{
+  gcc_checking_assert (e->dest == gimple_bb (gs));
+  return gimple_phi_arg (gs, e->dest_idx)->def;
+}
 
 /* Return a pointer to the tree operand for argument I of phi node PHI.  */
 
@@ -6739,6 +6748,7 @@ gimple_return_set_retval (greturn *gs, tree retval)
     case GIMPLE_OMP_TEAMS:			\
     case GIMPLE_OMP_SCOPE:			\
     case GIMPLE_OMP_SECTION:			\
+    case GIMPLE_OMP_STRUCTURED_BLOCK:		\
     case GIMPLE_OMP_MASTER:			\
     case GIMPLE_OMP_MASKED:			\
     case GIMPLE_OMP_TASKGROUP:			\

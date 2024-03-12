@@ -927,7 +927,8 @@ reg_ok_for_addr (rtx r, bool strict)
 bool
 msp430_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 			     rtx x ATTRIBUTE_UNUSED,
-			     bool strict ATTRIBUTE_UNUSED)
+			     bool strict ATTRIBUTE_UNUSED,
+			     code_helper = ERROR_MARK)
 {
   switch (GET_CODE (x))
     {
@@ -980,9 +981,10 @@ bool
 msp430_addr_space_legitimate_address_p (machine_mode mode,
 					rtx x,
 					bool strict,
-					addr_space_t as ATTRIBUTE_UNUSED)
+					addr_space_t as ATTRIBUTE_UNUSED,
+					code_helper ch = ERROR_MARK)
 {
-  return msp430_legitimate_address_p (mode, x, strict);
+  return msp430_legitimate_address_p (mode, x, strict, ch);
 }
 
 #undef  TARGET_ASM_INTEGER

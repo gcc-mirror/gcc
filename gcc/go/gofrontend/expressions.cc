@@ -12272,7 +12272,8 @@ Call_expression::intrinsify(Gogo* gogo,
           return Runtime::make_call(code, loc, 3, a1, a2, a3);
         }
     }
-  else if (package == "internal/abi")
+  else if (package == "internal/abi"
+	   || package == "bootstrap/internal/abi") // for bootstrapping gc
     {
       if (is_method)
 	return NULL;
@@ -18305,6 +18306,16 @@ Slice_value_expression::do_traverse(Traverse* traverse)
       || Expression::traverse(&this->cap_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
+}
+
+// Determine type of a slice value.
+
+void
+Slice_value_expression::do_determine_type(const Type_context*)
+{
+  this->valmem_->determine_type_no_context();
+  this->len_->determine_type_no_context();
+  this->cap_->determine_type_no_context();
 }
 
 Expression*

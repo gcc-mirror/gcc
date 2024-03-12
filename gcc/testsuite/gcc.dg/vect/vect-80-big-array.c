@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_float } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -35,6 +36,7 @@ main1 (float * __restrict__ pa, float * __restrict__ pb, float *__restrict__ pc)
       pa[i] = q[i] * pc[i];
     }
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (pa[i] != q[i] * pc[i])
@@ -64,3 +66,4 @@ int main (void)
  dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail vect_no_align } }
  dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 3 "vect" { target vect_no_align } }
 */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

@@ -1,20 +1,4 @@
 /* PERMUTE_ARGS: -inline -g -O
-TEST_OUTPUT:
----
-runnable/testcontracts.d(323): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(324): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(325): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(326): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(328): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(329): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(330): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(331): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(502): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(503): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(504): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(505): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
-runnable/testcontracts.d(505): Deprecation: usage of the `body` keyword is deprecated. Use `do` instead.
----
 */
 extern(C) int printf(const char*, ...);
 
@@ -936,7 +920,7 @@ void test9383()
 
 /*******************************************/
 // https://issues.dlang.org/show_bug.cgi?id=15524
-// Different from issue 9383 cases, closed variable size is bigger than REGSIZE.
+// Different from https://issues.dlang.org/show_bug.cgi?id=9383 cases, closed variable size is bigger than REGSIZE.
 
 class A15524
 {

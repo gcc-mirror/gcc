@@ -64,7 +64,7 @@ riscv_fallback_frame_state (struct _Unwind_Context *context,
     return _URC_END_OF_STACK;
 
   rt_ = context->cfa;
-  sc = &rt_->uc.uc_mcontext;
+  sc = (struct sigcontext *) &rt_->uc.uc_mcontext;
 
   new_cfa = (_Unwind_Ptr) sc;
   fs->regs.cfa_how = CFA_REG_OFFSET;

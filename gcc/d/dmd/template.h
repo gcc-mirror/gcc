@@ -78,12 +78,12 @@ public:
 
     Dsymbol *onemember;         // if !=NULL then one member of this template
 
-    bool literal;               // this template declaration is a literal
-    bool ismixin;               // template declaration is only to be used as a mixin
-    bool isstatic;              // this is static template declaration
-    bool isTrivialAliasSeq;     // matches `template AliasSeq(T...) { alias AliasSeq = T; }
-    bool isTrivialAlias;        // matches pattern `template Alias(T) { alias Alias = qualifiers(T); }`
-    bool deprecated_;           // this template declaration is deprecated
+    d_bool literal;               // this template declaration is a literal
+    d_bool ismixin;               // template declaration is only to be used as a mixin
+    d_bool isstatic;              // this is static template declaration
+    d_bool isTrivialAliasSeq;     // matches `template AliasSeq(T...) { alias AliasSeq = T; }
+    d_bool isTrivialAlias;        // matches pattern `template Alias(T) { alias Alias = qualifiers(T); }`
+    d_bool deprecated_;           // this template declaration is deprecated
     Visibility visibility;
 
     TemplatePrevious *previous;         // threaded list of previous instantiation attempts on stack
@@ -133,7 +133,7 @@ public:
      * A dependent template parameter should return MATCHexact in matchArg()
      * to respect the match level of the corresponding precedent parameter.
      */
-    bool dependent;
+    d_bool dependent;
 
     virtual TemplateTypeParameter  *isTemplateTypeParameter();
     virtual TemplateValueParameter *isTemplateValueParameter();

@@ -31,9 +31,7 @@ class saved_diagnostic
 {
 public:
   saved_diagnostic (const state_machine *sm,
-		    const exploded_node *enode,
-		    const supernode *snode, const gimple *stmt,
-		    const stmt_finder *stmt_finder,
+		    const pending_location &ploc,
 		    tree var, const svalue *sval,
 		    state_machine::state_t state,
 		    std::unique_ptr<pending_diagnostic> d,
@@ -42,6 +40,7 @@ public:
   bool operator== (const saved_diagnostic &other) const;
 
   void add_note (std::unique_ptr<pending_note> pn);
+  void add_event (std::unique_ptr<checker_event> event);
 
   json::object *to_json () const;
 
@@ -64,6 +63,8 @@ public:
 
   bool supercedes_p (const saved_diagnostic &other) const;
 
+  void add_any_saved_events (checker_path &dst_path);
+
   void emit_any_notes () const;
 
   //private:
@@ -72,6 +73,7 @@ public:
   const supernode *m_snode;
   const gimple *m_stmt;
   std::unique_ptr<stmt_finder> m_stmt_finder;
+  location_t m_loc;
   tree m_var;
   const svalue *m_sval;
   state_machine::state_t m_state;
@@ -87,9 +89,55 @@ private:
 
   auto_vec<const saved_diagnostic *> m_duplicates;
   auto_delete_vec <pending_note> m_notes;
+
+  /* Optionally: additional context-dependent events to be emitted
+     immediately before the warning_event, giving more details of what
+     operation was being simulated when a diagnostic was saved
+     e.g. "looking for null terminator in param 2 of 'foo'".  */
+  auto_delete_vec <checker_event> m_saved_events;
 };
 
 class path_builder;
+
+/* A bundle of information capturing where a pending_diagnostic should
+   be emitted.  */
+
+struct pending_location
+{
+public:
+  pending_location (exploded_node *enode,
+		    const supernode *snode,
+		    const gimple *stmt,
+		    const stmt_finder *finder)
+  : m_enode (enode),
+    m_snode (snode),
+    m_stmt (stmt),
+    m_finder (finder),
+    m_loc (UNKNOWN_LOCATION)
+  {
+    gcc_assert (m_stmt || m_finder);
+  }
+
+  /* ctor for cases where we have a location_t but there isn't any
+     gimple stmt associated with the diagnostic.  */
+
+  pending_location (exploded_node *enode,
+		    const supernode *snode,
+		    location_t loc)
+  : m_enode (enode),
+    m_snode (snode),
+    m_stmt (nullptr),
+    m_finder (nullptr),
+    m_loc (loc)
+  {
+  }
+
+  exploded_node *m_enode;
+  const supernode *m_snode;
+  const gimple *m_stmt;
+  const stmt_finder *m_finder;
+  location_t m_loc;
+};
 
 /* A class with responsibility for saving pending diagnostics, so that
    they can be emitted after the exploded_graph is complete.
@@ -110,25 +158,22 @@ public:
   json::object *to_json () const;
 
   bool add_diagnostic (const state_machine *sm,
-		       exploded_node *enode,
-		       const supernode *snode, const gimple *stmt,
-		       const stmt_finder *finder,
+		       const pending_location &ploc,
 		       tree var,
 		       const svalue *sval,
 		       state_machine::state_t state,
 		       std::unique_ptr<pending_diagnostic> d);
 
-  bool add_diagnostic (exploded_node *enode,
-		       const supernode *snode, const gimple *stmt,
-		       const stmt_finder *finder,
+  bool add_diagnostic (const pending_location &ploc,
 		       std::unique_ptr<pending_diagnostic> d);
 
   void add_note (std::unique_ptr<pending_note> pn);
+  void add_event (std::unique_ptr<checker_event> event);
 
   void emit_saved_diagnostics (const exploded_graph &eg);
 
   void emit_saved_diagnostic (const exploded_graph &eg,
-			      const saved_diagnostic &sd);
+			      saved_diagnostic &sd);
 
   unsigned get_num_diagnostics () const
   {
@@ -180,6 +225,7 @@ private:
 				state_machine::state_t state) const;
   void update_for_unsuitable_sm_exprs (tree *expr) const;
   void prune_interproc_events (checker_path *path) const;
+  void prune_system_headers (checker_path *path) const;
   void consolidate_conditions (checker_path *path) const;
   void finish_pruning (checker_path *path) const;
 

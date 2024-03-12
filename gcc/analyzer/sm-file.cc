@@ -176,7 +176,7 @@ public:
     return OPT_Wanalyzer_double_fclose;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     /* CWE-1341: Multiple Releases of Same Resource or Handle.  */
@@ -224,7 +224,7 @@ public:
     return OPT_Wanalyzer_file_leak;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     /* CWE-775: "Missing Release of File Descriptor or Handle after
@@ -494,7 +494,7 @@ make_fileptr_state_machine (logger *logger)
    effects that are out of scope for the analyzer: we only want to model
    the effects on the return value.  */
 
-class kf_stdio_output_fn : public known_function
+class kf_stdio_output_fn : public pure_known_function_with_default_return
 {
 public:
   bool matches_call_types_p (const call_details &) const final override
@@ -507,7 +507,7 @@ public:
 
 /* Handler for "ferror"".  */
 
-class kf_ferror : public known_function
+class kf_ferror : public pure_known_function_with_default_return
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -521,7 +521,7 @@ public:
 
 /* Handler for "fileno"".  */
 
-class kf_fileno : public known_function
+class kf_fileno : public pure_known_function_with_default_return
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -557,6 +557,7 @@ public:
 	const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
 	model->set_value (base_reg, new_sval, cd.get_ctxt ());
       }
+    cd.set_any_lhs_with_defaults ();
   }
 };
 
@@ -592,12 +593,13 @@ public:
 	const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
 	model->set_value (base_reg, new_sval, cd.get_ctxt ());
       }
+    cd.set_any_lhs_with_defaults ();
   }
 };
 
 /* Handler for "getc"".  */
 
-class kf_getc : public known_function
+class kf_getc : public pure_known_function_with_default_return
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -605,13 +607,11 @@ public:
     return (cd.num_args () == 1
 	    && cd.arg_is_pointer_p (0));
   }
-
-  /* No side effects.  */
 };
 
 /* Handler for "getchar"".  */
 
-class kf_getchar : public known_function
+class kf_getchar : public pure_known_function_with_default_return
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override

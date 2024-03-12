@@ -17,11 +17,11 @@ struct B : A {
 constexpr int
 foo ()
 {
-  A *a = new B ();
+  A *a = new B ();  // { dg-message "allocated here" }
   a->a = 4;
   delete a;
-  int r = a->foo ();
+  int r = a->foo ();  // { dg-error "constant expression" }
   return r;
 }
 
-constexpr auto a = foo ();	// { dg-error "constant expression" }
+constexpr auto a = foo ();  // { dg-message "in .constexpr. expansion" }

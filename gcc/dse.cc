@@ -251,6 +251,9 @@ public:
      and known (rather than -1).  */
   poly_int64 width;
 
+  /* The address space that the memory reference uses.  */
+  unsigned char addrspace;
+
   union
     {
       /* A bitmask as wide as the number of bytes in the word that
@@ -1524,6 +1527,7 @@ record_store (rtx body, bb_info_t bb_info)
   ptr = active_local_stores;
   last = NULL;
   redundant_reason = NULL;
+  unsigned char addrspace = MEM_ADDR_SPACE (mem);
   mem = canon_rtx (mem);
 
   if (group_id < 0)
@@ -1548,7 +1552,9 @@ record_store (rtx body, bb_info_t bb_info)
       while (!s_info->is_set)
 	s_info = s_info->next;
 
-      if (s_info->group_id == group_id && s_info->cse_base == base)
+      if (s_info->group_id == group_id
+	  && s_info->cse_base == base
+	  && s_info->addrspace == addrspace)
 	{
 	  HOST_WIDE_INT i;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1688,6 +1694,7 @@ record_store (rtx body, bb_info_t bb_info)
   store_info->rhs = rhs;
   store_info->const_rhs = const_rhs;
   store_info->redundant_reason = redundant_reason;
+  store_info->addrspace = addrspace;
 
   /* If this is a clobber, we return 0.  We will only be able to
      delete this insn if there is only one store USED store, but we
@@ -1726,7 +1733,8 @@ find_shift_sequence (poly_int64 access_size,
   /* If a constant was stored into memory, try to simplify it here,
      otherwise the cost of the shift might preclude this optimization
      e.g. at -Os, even when no actual shift will be needed.  */
-  if (store_info->const_rhs)
+  if (store_info->const_rhs
+      && known_le (access_size, GET_MODE_SIZE (MAX_MODE_INT)))
     {
       auto new_mode = smallest_int_mode_for_size (access_size * BITS_PER_UNIT);
       auto byte = subreg_lowpart_offset (new_mode, store_mode);
@@ -2012,7 +2020,19 @@ replace_read (store_info *store_info, insn_info_t store_insn,
     }
   /* Force the value into a new register so that it won't be clobbered
      between the store and the load.  */
-  read_reg = copy_to_mode_reg (read_mode, read_reg);
+  if (WORD_REGISTER_OPERATIONS
+      && GET_CODE (read_reg) == SUBREG
+      && REG_P (SUBREG_REG (read_reg))
+      && GET_MODE (SUBREG_REG (read_reg)) == word_mode)
+    {
+      /* For WORD_REGISTER_OPERATIONS with subreg of word_mode register
+	 force SUBREG_REG into a new register rather than the SUBREG.  */
+      rtx r = copy_to_mode_reg (word_mode, SUBREG_REG (read_reg));
+      read_reg = shallow_copy_rtx (read_reg);
+      SUBREG_REG (read_reg) = r;
+    }
+  else
+    read_reg = copy_to_mode_reg (read_mode, read_reg);
   insns = get_insns ();
   end_sequence ();
 

@@ -610,17 +610,9 @@ remove_forwarder_block (basic_block bb)
 
       if (s == e)
 	{
-	  /* Create arguments for the phi nodes, since the edge was not
+	  /* Copy arguments for the phi nodes, since the edge was not
 	     here before.  */
-	  for (gphi_iterator psi = gsi_start_phis (dest);
-	       !gsi_end_p (psi);
-	       gsi_next (&psi))
-	    {
-	      gphi *phi = psi.phi ();
-	      location_t l = gimple_phi_arg_location_from_edge (phi, succ);
-	      tree def = gimple_phi_arg_def (phi, succ->dest_idx);
-	      add_phi_arg (phi, unshare_expr (def), s, l);
-	    }
+	  copy_phi_arg_into_existing_phi (succ, s);
 	}
     }
 
@@ -1133,8 +1125,7 @@ cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
   /* Now process the altered blocks, as long as any are available.  */
   while (!bitmap_empty_p (cfgcleanup_altered_bbs))
     {
-      unsigned i = bitmap_first_set_bit (cfgcleanup_altered_bbs);
-      bitmap_clear_bit (cfgcleanup_altered_bbs, i);
+      unsigned i = bitmap_clear_first_set_bit (cfgcleanup_altered_bbs);
       if (i < NUM_FIXED_BLOCKS)
 	continue;
 

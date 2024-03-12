@@ -15,12 +15,7 @@ void fn3 (char*);
 **	addi\tt0,t0,192
 **	add\tsp,sp,t0
 **	...
-**	li\ta0,-8192
-**	addi\ta0,a0,192
-**	li\ta5,8192
-**	addi\ta5,a5,-192
-**	add\ta5,a5,a0
-**	add\ta0,a5,sp
+**	mv\ta0,sp
 **	...
 **	tail\t__riscv_restore_0
 */

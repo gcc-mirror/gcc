@@ -1,5 +1,5 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
-/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0 -fdump-tree-optimized-details-blocks" } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-add-options double_vectors } */
 
@@ -28,7 +28,8 @@ int main1 (int off)
   for (i = 0; i < N; i++)
       pp->ia[i] = ib[i];
 
-  /* check results: */  
+  /* check results: */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
        if (pp->ia[i] != ib[i])
@@ -54,3 +55,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { target { { {! vect_no_align} && vector_alignment_reachable } && vect_align_stack_vars } xfail { ! vect_unaligned_possible } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { { vect_no_align } || { { ! vector_alignment_reachable} || vect_element_align } } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 1 "vect" { target { { vect_no_align && { ! vect_hw_misalign } } || { {! vector_alignment_reachable} && {! vect_element_align} } } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

@@ -29,10 +29,11 @@
 #ifndef _GLIBCXX_STDATOMIC_H
 #define _GLIBCXX_STDATOMIC_H
 
-#if __cplusplus > 202002L
-#include <atomic>
+#define __glibcxx_want_stdatomic_h
+#include <bits/version.h>
 
-#define __cpp_lib_stdatomic_h 202011L
+#ifdef __cpp_lib_stdatomic_h // C++ >= 23
+#include <atomic>
 
 #define _Atomic(_Tp) std::atomic<_Tp>
 
@@ -62,7 +63,7 @@ using std::atomic_char8_t;
 using std::atomic_char16_t;
 using std::atomic_char32_t;
 using std::atomic_wchar_t;
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_C99_STDINT
 using std::atomic_int8_t;
 using std::atomic_uint8_t;
 using std::atomic_int16_t;
@@ -92,7 +93,7 @@ using std::atomic_intptr_t;
 using std::atomic_uintptr_t;
 using std::atomic_size_t;
 using std::atomic_ptrdiff_t;
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_C99_STDINT
 using std::atomic_intmax_t;
 using std::atomic_uintmax_t;
 #endif
@@ -126,5 +127,5 @@ using std::atomic_signal_fence;
 
 #elif defined __clang__
 # include_next <stdatomic.h>
-#endif // C++23
+#endif // __cpp_lib_stdatomic_h
 #endif // _GLIBCXX_STDATOMIC_H

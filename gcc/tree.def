@@ -113,7 +113,7 @@ DEFTREECODE (BLOCK, "block", tcc_exceptional, 0)
 /* The ordering of the following codes is optimized for the checking
    macros in tree.h.  Changing the order will degrade the speed of the
    compiler.  OFFSET_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE, INTEGER_TYPE,
-   REAL_TYPE, POINTER_TYPE.  */
+   BITINT_TYPE, REAL_TYPE, POINTER_TYPE.  */
 
 /* An offset is a pointer relative to an object.
    The TREE_TYPE field is the type of the object at the offset.
@@ -143,6 +143,13 @@ DEFTREECODE (BOOLEAN_TYPE, "boolean_type", tcc_type, 0)
    Has components TYPE_MIN_VALUE, TYPE_MAX_VALUE (expressions, inclusive)
    and TYPE_PRECISION (number of bits used by this type).  */
 DEFTREECODE (INTEGER_TYPE, "integer_type", tcc_type, 0)
+
+/* Bit-precise integer type.  These are similar to INTEGER_TYPEs, but
+   can have arbitrary user selected precisions and do or can have different
+   alignment, function argument and return value passing conventions.
+   Larger BITINT_TYPEs can have BLKmode TYPE_MODE and need to be lowered
+   by a special BITINT_TYPE lowering pass.  */
+DEFTREECODE (BITINT_TYPE, "bitint_type", tcc_type, 0)
 
 /* C's float and double.  Different floating types are distinguished
    by machine mode and by the TYPE_SIZE and the TYPE_PRECISION.  */
@@ -565,13 +572,18 @@ DEFTREECODE (VEC_COND_EXPR, "vec_cond_expr", tcc_expression, 3)
 
    N = length(mask)
    foreach i in N:
-     M = mask[i] % (2*N)
-     A = M < N ? v0[M] : v1[M-N]
+     M = mask[i] % (length(v0) + length(v1))
+     A[i] = M < length(v0) ? v0[M] : v1[M - length(v0)]
 
-   V0 and V1 are vectors of the same type.  MASK is an integer-typed
-   vector.  The number of MASK elements must be the same with the
-   number of elements in V0 and V1.  The size of the inner type
-   of the MASK and of the V0 and V1 must be the same.
+   V0 and V1 are vectors of the same type.
+
+   When MASK is not constant:
+     MASK is an integer-typed vector.  The number of MASK elements must
+     be the same as the number of elements in V0 and V1.  The size of
+     the inner type of the MASK and of the V0 and V1 must be the same.
+
+   When MASK is constant:
+     MASK is an integer-typed vector.
 */
 DEFTREECODE (VEC_PERM_EXPR, "vec_perm_expr", tcc_expression, 3)
 
@@ -1159,7 +1171,7 @@ DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 2)
    variable initializations of the form VAR = N1.
 
    Operand 3: OMP_FOR_COND is vector containing loop
-   conditional expressions of the form VAR {<,>,<=,>=} N2.
+   conditional expressions of the form VAR {<,>,<=,>=,!=} N2.
 
    Operand 4: OMP_FOR_INCR is a vector containing loop index
    increment expressions of the form VAR {+=,-=} INCR.
@@ -1185,7 +1197,7 @@ DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 2)
    OMP_FOR_ORIG_DECLS is a vector field, with each element holding
    a list of VAR_DECLS for the corresponding collapse level.
 
-   The loop index variable VAR must be a signed integer variable,
+   The loop index variable VAR must be an integer variable,
    which is implicitly private to each thread.  For rectangular loops,
    the bounds N1 and N2 and the increment expression
    INCR are required to be loop-invariant integer expressions
@@ -1282,6 +1294,15 @@ DEFTREECODE (OMP_SCAN, "omp_scan", tcc_statement, 2)
    Operand 0: OMP_SECTION_BODY: Section body.  */
 DEFTREECODE (OMP_SECTION, "omp_section", tcc_statement, 1)
 
+/* OpenMP structured block sequences that don't correspond to the body
+   another directive.  This is used for code fragments within the body
+   of a directive that are separately required to be structured block
+   sequence; in particular, for intervening code sequences in
+   imperfectly-nested loops.
+   Operand 0: BODY: contains the statement(s) within the structured block
+   sequence.  */
+DEFTREECODE (OMP_STRUCTURED_BLOCK, "omp_structured_block", tcc_statement, 1)
+
 /* OpenMP - #pragma omp master
    Operand 0: OMP_MASTER_BODY: Master section body.  */
 DEFTREECODE (OMP_MASTER, "omp_master", tcc_statement, 1)
@@ -1374,15 +1395,16 @@ DEFTREECODE (DOT_PROD_EXPR, "dot_prod_expr", tcc_expression, 3)
 DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
 
 /* Widening sad (sum of absolute differences).
-   The first two arguments are of type t1 which should be integer.
-   The third argument and the result are of type t2, such that t2 is at least
-   twice the size of t1.  Like DOT_PROD_EXPR, SAD_EXPR (arg1,arg2,arg3) is
+   The first two arguments are of type t1 which should be a vector of integers.
+   The third argument and the result are of type t2, such that the size of
+   the elements of t2 is at least twice the size of the elements of t1.
+   Like DOT_PROD_EXPR, SAD_EXPR (arg1,arg2,arg3) is
    equivalent to:
-       tmp = WIDEN_MINUS_EXPR (arg1, arg2)
+       tmp = IFN_VEC_WIDEN_MINUS_EXPR (arg1, arg2)
        tmp2 = ABS_EXPR (tmp)
        arg3 = PLUS_EXPR (tmp2, arg3)
   or:
-       tmp = WIDEN_MINUS_EXPR (arg1, arg2)
+       tmp = IFN_VEC_WIDEN_MINUS_EXPR (arg1, arg2)
        tmp2 = ABS_EXPR (tmp)
        arg3 = WIDEN_SUM_EXPR (tmp2, arg3)
  */
@@ -1421,8 +1443,6 @@ DEFTREECODE (WIDEN_MULT_MINUS_EXPR, "widen_mult_minus_expr", tcc_expression, 3)
    the first argument from type t1 to type t2, and then shifting it
    by the second argument.  */
 DEFTREECODE (WIDEN_LSHIFT_EXPR, "widen_lshift_expr", tcc_binary, 2)
-DEFTREECODE (WIDEN_PLUS_EXPR, "widen_plus_expr", tcc_binary, 2)
-DEFTREECODE (WIDEN_MINUS_EXPR, "widen_minus_expr", tcc_binary, 2)
 
 /* Widening vector multiplication.
    The two operands are vectors with N elements of size S. Multiplying the
@@ -1487,10 +1507,6 @@ DEFTREECODE (VEC_PACK_FLOAT_EXPR, "vec_pack_float_expr", tcc_binary, 2)
  */
 DEFTREECODE (VEC_WIDEN_LSHIFT_HI_EXPR, "widen_lshift_hi_expr", tcc_binary, 2)
 DEFTREECODE (VEC_WIDEN_LSHIFT_LO_EXPR, "widen_lshift_lo_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_PLUS_HI_EXPR, "widen_plus_hi_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_PLUS_LO_EXPR, "widen_plus_lo_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_MINUS_HI_EXPR, "widen_minus_hi_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_MINUS_LO_EXPR, "widen_minus_lo_expr", tcc_binary, 2)
 
 /* PREDICT_EXPR.  Specify hint for branch prediction.  The
    PREDICT_EXPR_PREDICTOR specify predictor and PREDICT_EXPR_OUTCOME the

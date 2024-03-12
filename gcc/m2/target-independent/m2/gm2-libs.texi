@@ -55,7 +55,6 @@ building the GNU Modula-2 compiler.
 * gm2-libs/LegacyReal::LegacyReal.def
 * gm2-libs/M2Dependent::M2Dependent.def
 * gm2-libs/M2EXCEPTION::M2EXCEPTION.def
-* gm2-libs/M2LINK::M2LINK.def
 * gm2-libs/M2RTS::M2RTS.def
 * gm2-libs/MathLib0::MathLib0.def
 * gm2-libs/MemUtils::MemUtils.def
@@ -1944,7 +1943,8 @@ TYPE
 
 
 @findex ConstructModules
-PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname,
+                            overrideliborder: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 
 @findex DeconstructModules
@@ -1979,7 +1979,7 @@ END M2Dependent.
 @end example
 @page
 
-@node gm2-libs/M2EXCEPTION, gm2-libs/M2LINK, gm2-libs/M2Dependent, Base libraries
+@node gm2-libs/M2EXCEPTION, gm2-libs/M2RTS, gm2-libs/M2Dependent, Base libraries
 @subsection gm2-libs/M2EXCEPTION
 
 @example
@@ -2017,33 +2017,7 @@ END M2EXCEPTION.
 @end example
 @page
 
-@node gm2-libs/M2LINK, gm2-libs/M2RTS, gm2-libs/M2EXCEPTION, Base libraries
-@subsection gm2-libs/M2LINK
-
-@example
-DEFINITION MODULE FOR "C" M2LINK ;
-
-
-TYPE
-@findex PtrToChar (type)
-   PtrToChar = POINTER TO CHAR ;
-
-(* These variables are set by the compiler in the program module
-   according to linking command line options.  *)
-
-VAR
-@findex ForcedModuleInitOrder (var)
-   ForcedModuleInitOrder: PtrToChar ;
-@findex StaticInitialization (var)
-   StaticInitialization : BOOLEAN ;
-
-
-@findex END M2LINK. (var)
-END M2LINK.
-@end example
-@page
-
-@node gm2-libs/M2RTS, gm2-libs/MathLib0, gm2-libs/M2LINK, Base libraries
+@node gm2-libs/M2RTS, gm2-libs/MathLib0, gm2-libs/M2EXCEPTION, Base libraries
 @subsection gm2-libs/M2RTS
 
 @example
@@ -2058,7 +2032,8 @@ TYPE
 
 
 @findex ConstructModules
-PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname,
+                            overrideliborder: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 
 @findex DeconstructModules
@@ -8956,6 +8931,7 @@ coexist with their PIM counterparts.
 * gm2-libs-iso/TERMINATION::TERMINATION.def
 * gm2-libs-iso/TermFile::TermFile.def
 * gm2-libs-iso/TextIO::TextIO.def
+* gm2-libs-iso/TextUtil::TextUtil.def
 * gm2-libs-iso/WholeConv::WholeConv.def
 * gm2-libs-iso/WholeIO::WholeIO.def
 * gm2-libs-iso/WholeStr::WholeStr.def
@@ -10830,6 +10806,7 @@ TYPE
 
 @findex ConstructModules
 PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
+                            overrideliborder: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 
 @findex DeconstructModules
@@ -14344,7 +14321,7 @@ END TermFile.
 @end example
 @page
 
-@node gm2-libs-iso/TextIO, gm2-libs-iso/WholeConv, gm2-libs-iso/TermFile, M2 ISO Libraries
+@node gm2-libs-iso/TextIO, gm2-libs-iso/TextUtil, gm2-libs-iso/TermFile, M2 ISO Libraries
 @subsection gm2-libs-iso/TextIO
 
 @example
@@ -14422,7 +14399,42 @@ END TextIO.
 @end example
 @page
 
-@node gm2-libs-iso/WholeConv, gm2-libs-iso/WholeIO, gm2-libs-iso/TextIO, M2 ISO Libraries
+@node gm2-libs-iso/TextUtil, gm2-libs-iso/WholeConv, gm2-libs-iso/TextIO, M2 ISO Libraries
+@subsection gm2-libs-iso/TextUtil
+
+@example
+DEFINITION MODULE TextUtil ;
+
+(*
+    Description: provides text manmipulation routines.
+*)
+
+IMPORT IOChan ;
+
+
+(*
+   SkipSpaces - skips any spaces.
+*)
+
+@findex SkipSpaces
+PROCEDURE SkipSpaces (cid: IOChan.ChanId) ;
+
+
+(* The following procedures do not read past line marks.  *)
+
+@findex CharAvailable
+PROCEDURE CharAvailable (cid: IOChan.ChanId) : BOOLEAN ;
+
+
+@findex EofOrEoln
+PROCEDURE EofOrEoln (cid: IOChan.ChanId) : BOOLEAN ;
+
+
+END TextUtil.
+@end example
+@page
+
+@node gm2-libs-iso/WholeConv, gm2-libs-iso/WholeIO, gm2-libs-iso/TextUtil, M2 ISO Libraries
 @subsection gm2-libs-iso/WholeConv
 
 @example

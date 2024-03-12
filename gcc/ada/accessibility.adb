@@ -119,8 +119,9 @@ package body Accessibility is
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
-      function Accessibility_Level (Expr : Node_Id) return Node_Id
-        is (Accessibility_Level (Expr, Level, In_Return_Context));
+      function Accessibility_Level (Expr : Node_Id) return Node_Id is
+        (Accessibility_Level
+          (Expr, Level, In_Return_Context, Allow_Alt_Model));
       --  Renaming of the enclosing function to facilitate recursive calls
 
       function Make_Level_Literal (Level : Uint) return Node_Id;
@@ -164,7 +165,19 @@ package body Accessibility is
             Ent := Defining_Entity_Or_Empty (Node_Par);
 
             if Present (Ent) then
-               Encl_Scop := Find_Enclosing_Scope (Ent);
+               --  X'Old is nested within the current subprogram, so we do not
+               --  want Find_Enclosing_Scope of that subprogram. If this is an
+               --  allocator, then we're looking for the innermost master of
+               --  the call, so again we do not want Find_Enclosing_Scope.
+
+               if (Nkind (N) = N_Attribute_Reference
+                    and then Attribute_Name (N) = Name_Old)
+                 or else Nkind (N) = N_Allocator
+               then
+                  Encl_Scop := Ent;
+               else
+                  Encl_Scop := Find_Enclosing_Scope (Ent);
+               end if;
 
                --  Ignore transient scopes made during expansion while also
                --  taking into account certain expansions - like iterators
@@ -177,17 +190,13 @@ package body Accessibility is
                then
                   --  Note that in some rare cases the scope depth may not be
                   --  set, for example, when we are in the middle of analyzing
-                  --  a type and the enclosing scope is said type. So, instead,
-                  --  continue to move up the parent chain since the scope
-                  --  depth of the type's parent is the same as that of the
-                  --  type.
+                  --  a type and the enclosing scope is said type. In that case
+                  --  simply return zero for the outermost scope.
 
-                  if not Scope_Depth_Set (Encl_Scop) then
-                     pragma Assert (Nkind (Parent (Encl_Scop))
-                                     = N_Full_Type_Declaration);
+                  if Scope_Depth_Set (Encl_Scop) then
+                     return Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
                   else
-                     return
-                       Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
+                     return Uint_0;
                   end if;
                end if;
 
@@ -424,7 +433,7 @@ package body Accessibility is
          when N_Aggregate =>
             return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
 
-         --  The accessibility level is that of the access type, except for an
+         --  The accessibility level is that of the access type, except for
          --  anonymous allocators which have special rules defined in RM 3.10.2
          --  (14/3).
 
@@ -472,6 +481,7 @@ package body Accessibility is
                  and then Present (Get_Dynamic_Accessibility (Entity (Pre)))
                  and then Level = Dynamic_Level
                then
+                  pragma Assert (Is_Anonymous_Access_Type (Etype (Pre)));
                   return New_Occurrence_Of
                            (Get_Dynamic_Accessibility (Entity (Pre)), Loc);
 
@@ -1153,7 +1163,7 @@ package body Accessibility is
       --  Obtain the first selector or choice from a given association
 
       function Is_Formal_Of_Current_Function
-        (Assoc_Expr : Entity_Id) return Boolean;
+        (Assoc_Expr : Node_Id) return Boolean;
       --  Predicate to test if a given expression associated with a
       --  discriminant is a formal parameter to the function in which the
       --  return construct we checking applies to.
@@ -1180,7 +1190,7 @@ package body Accessibility is
       -----------------------------------
 
       function Is_Formal_Of_Current_Function
-        (Assoc_Expr : Entity_Id) return Boolean is
+        (Assoc_Expr : Node_Id) return Boolean is
       begin
          return Is_Entity_Name (Assoc_Expr)
                   and then Enclosing_Subprogram

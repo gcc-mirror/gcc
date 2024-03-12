@@ -1,0 +1,10 @@
+#define TYPE short
+#include "simd-math-5.c"
+
+/* C integer promotion means that div uses SImode and divmod doesn't match.  */
+/* { dg-final { scan-assembler-times {__divmodv64si4@rel32@lo} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {__divv64si3@rel32@lo} 1 } } */
+/* { dg-final { scan-assembler-times {__divv64hi3@rel32@lo} 0 } } */
+/* { dg-final { scan-assembler-times {__udivv64hi3@rel32@lo} 0 } } */
+/* { dg-final { scan-assembler-times {__modv64hi3@rel32@lo} 1 } } */
+/* { dg-final { scan-assembler-times {__umodv64hi3@rel32@lo} 0 } } */

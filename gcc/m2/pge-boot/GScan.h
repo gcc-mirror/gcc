@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -51,7 +52,7 @@ extern "C" {
 /*
  OpenSource - opens a source file for reading.                  */
 
-EXTERN unsigned int Scan_OpenSource (const char *a_, unsigned int _a_high);
+EXTERN bool Scan_OpenSource (const char *a_, unsigned int _a_high);
 
 /*
  CloseSource - closes the current source file from reading.     */
@@ -84,7 +85,7 @@ EXTERN void Scan_TerminateOnError (void);
                     are allowed.
 */
 
-EXTERN void Scan_DefineComments (const char *Start_, unsigned int _Start_high, const char *End_, unsigned int _End_high, unsigned int eoln);
+EXTERN void Scan_DefineComments (const char *Start_, unsigned int _Start_high, const char *End_, unsigned int _End_high, bool eoln);
 #   ifdef __cplusplus
 }
 #   endif

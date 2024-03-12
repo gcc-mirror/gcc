@@ -36,15 +36,16 @@
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by
 --  setting the corresponding assertion policy to Ignore. These preconditions
---  protect from Dereference_Error and Update_Error, but not from
---  Storage_Error.
+--  protect from Constraint_Error, Dereference_Error and Update_Error, but not
+--  from Storage_Error.
 
 pragma Assertion_Policy (Pre => Ignore);
 
 package Interfaces.C.Strings with
   SPARK_Mode     => On,
   Abstract_State => (C_Memory),
-  Initializes    => (C_Memory)
+  Initializes    => (C_Memory),
+  Always_Terminates
 is
    pragma Preelaborate;
 
@@ -67,7 +68,7 @@ is
      (Item      : char_array_access;
       Nul_Check : Boolean := False) return chars_ptr
    with
-     SPARK_Mode => Off;
+     SPARK_Mode => Off;  --  To_Chars_Ptr'Result is aliased with Item
 
    function New_Char_Array (Chars : char_array) return chars_ptr with
      Volatile_Function,
@@ -94,7 +95,7 @@ is
      (Item   : chars_ptr;
       Length : size_t) return char_array
    with
-     Pre    => Item /= Null_Ptr,
+     Pre    => Item /= Null_Ptr and then Length /= 0,
      Global => (Input => C_Memory);
 
    function Value (Item : chars_ptr) return String with
@@ -105,7 +106,7 @@ is
      (Item   : chars_ptr;
       Length : size_t) return String
    with
-     Pre    => Item /= Null_Ptr,
+     Pre    => Item /= Null_Ptr and then Length /= 0,
      Global => (Input => C_Memory);
 
    function Strlen (Item : chars_ptr) return size_t with
@@ -120,10 +121,8 @@ is
    with
      Pre    =>
        Item /= Null_Ptr
-         and then
-      (if Check then
-         Strlen (Item) <= size_t'Last - Offset
-           and then Strlen (Item) + Offset <= Chars'Length),
+         and then Strlen (Item) <= size_t'Last - Offset
+         and then Strlen (Item) + Offset <= Chars'Length,
      Global => (In_Out => C_Memory);
 
    procedure Update
@@ -134,10 +133,8 @@ is
    with
      Pre    =>
        Item /= Null_Ptr
-         and then
-      (if Check then
-         Strlen (Item) <= size_t'Last - Offset
-           and then Strlen (Item) + Offset <= Str'Length),
+         and then Strlen (Item) <= size_t'Last - Offset
+         and then Strlen (Item) + Offset <= Str'Length,
      Global => (In_Out => C_Memory);
 
    Update_Error : exception;

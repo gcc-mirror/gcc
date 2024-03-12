@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do preprocess { target c++20 } }
 // { dg-require-effective-target hosted }
 

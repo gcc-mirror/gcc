@@ -222,8 +222,9 @@ alloca_call_type (gimple *stmt, bool is_vla)
       && !r.varying_p ())
     {
       // The invalid bits are anything outside of [0, MAX_SIZE].
-      int_range<2> invalid_range (build_int_cst (size_type_node, 0),
-				  build_int_cst (size_type_node, max_size),
+      int_range<2> invalid_range (size_type_node,
+				  wi::shwi (0, TYPE_PRECISION (size_type_node)),
+				  wi::shwi (max_size, TYPE_PRECISION (size_type_node)),
 				  VR_ANTI_RANGE);
 
       r.intersect (invalid_range);
@@ -256,7 +257,7 @@ in_loop_p (gimple *stmt)
 unsigned int
 pass_walloca::execute (function *fun)
 {
-  gimple_ranger *ranger = enable_ranger (fun);
+  enable_ranger (fun);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -309,7 +310,7 @@ pass_walloca::execute (function *fun)
 
 	  enum opt_code wcode
 	    = is_vla ? OPT_Wvla_larger_than_ : OPT_Walloca_larger_than_;
-	  char buff[WIDE_INT_MAX_PRECISION / 4 + 4];
+	  char buff[WIDE_INT_MAX_INL_PRECISION / 4 + 4];
 	  switch (t.type)
 	    {
 	    case ALLOCA_OK:
@@ -328,6 +329,7 @@ pass_walloca::execute (function *fun)
 				      "large")))
 		    && t.limit != 0)
 		  {
+		    gcc_assert (t.limit.get_len () < WIDE_INT_MAX_INL_ELTS);
 		    print_decu (t.limit, buff);
 		    inform (loc, "limit is %wu bytes, but argument "
 				 "may be as large as %s",
@@ -346,6 +348,7 @@ pass_walloca::execute (function *fun)
 				 : G_("argument to %<alloca%> is too large")))
 		    && t.limit != 0)
 		  {
+		    gcc_assert (t.limit.get_len () < WIDE_INT_MAX_INL_ELTS);
 		    print_decu (t.limit, buff);
 		    inform (loc, "limit is %wu bytes, but argument is %s",
 			    is_vla ? warn_vla_limit : adjusted_alloca_limit,
@@ -379,7 +382,6 @@ pass_walloca::execute (function *fun)
 	    }
 	}
     }
-  ranger->export_global_ranges ();
   disable_ranger (fun);
   return 0;
 }

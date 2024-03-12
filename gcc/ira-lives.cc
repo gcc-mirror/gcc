@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira-int.h"
 #include "sparseset.h"
 #include "function-abi.h"
+#include "except.h"
 
 /* The code in this file is similar to one in global but the code
    works on the allocno basis and creates live ranges instead of
@@ -1383,14 +1384,24 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		      SET_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj));
 		      SET_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
 		    }
-		  if (can_throw_internal (insn))
+		  eh_region r;
+		  eh_landing_pad lp;
+		  rtx_code_label *landing_label;
+		  basic_block landing_bb;
+		  if (can_throw_internal (insn)
+		      && (r = get_eh_region_from_rtx (insn)) != NULL
+		      && (lp = gen_eh_landing_pad (r)) != NULL
+		      && (landing_label = lp->landing_pad) != NULL
+		      && (landing_bb = BLOCK_FOR_INSN (landing_label)) != NULL
+		      && (r->type != ERT_CLEANUP
+			  || bitmap_bit_p (df_get_live_in (landing_bb),
+					   ALLOCNO_REGNO (a))))
 		    {
-		      OBJECT_CONFLICT_HARD_REGS (obj)
-			|= callee_abi.mode_clobbers (ALLOCNO_MODE (a));
-		      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
-			|= callee_abi.mode_clobbers (ALLOCNO_MODE (a));
+		      HARD_REG_SET new_conflict_regs
+			= callee_abi.mode_clobbers (ALLOCNO_MODE (a));
+		      OBJECT_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
+		      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
 		    }
-
 		  if (sparseset_bit_p (allocnos_processed, num))
 		    continue;
 		  sparseset_set_bit (allocnos_processed, num);

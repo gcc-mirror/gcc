@@ -7,11 +7,11 @@ struct X {
 
 template <typename T>
 struct S {
-  const X x;
+  const X x; // { dg-message "originally declared" }
   constexpr S(int) : x{}
   {
     const_cast<X&>(x).i = 19; // { dg-error "modifying a const object" }
   }
 };
 
-constexpr S<int> p = { 10 }; // { dg-message "originally declared" }
+constexpr S<int> p = { 10 };

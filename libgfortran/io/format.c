@@ -269,8 +269,7 @@ free_format_data (format_data *fmt)
        fnp->format != FMT_NONE; fnp++)
     if (fnp->format == FMT_DT)
 	{
-	  if (GFC_DESCRIPTOR_DATA(fnp->u.udf.vlist))
-	    free (GFC_DESCRIPTOR_DATA(fnp->u.udf.vlist));
+	  free (GFC_DESCRIPTOR_DATA(fnp->u.udf.vlist));
 	  free (fnp->u.udf.vlist);
 	}
 

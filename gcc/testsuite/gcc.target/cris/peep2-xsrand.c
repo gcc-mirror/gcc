@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-final { scan-assembler "and.w " } } */
 /* { dg-final { scan-assembler "and.b " } } */
-/* { dg-final { scan-assembler-not "and.d" } } */
+/* { dg-final { scan-assembler-not "and.d " } } */
 /* { dg-options "-O2" } */
 
 /* Test the "asrandb", "asrandw", "lsrandb" and "lsrandw" peephole2:s
@@ -10,7 +10,7 @@
 unsigned int
 andwlsr (unsigned int x)
 {
-  return (x >> 17) & 0x7ff;
+  return (x >> 17) & 0x7fd;
 }
 
 unsigned int
@@ -22,7 +22,7 @@ andblsr (unsigned int x)
 int
 andwasr (int x)
 {
-  return (x >> 17) & 0x7ff;
+  return (x >> 17) & 0x7fd;
 }
 
 int

@@ -13,7 +13,7 @@ softfp_extensions := sftf dftf
 softfp_truncations := tfsf tfdf
 
 # Enable divide routines to make -mno-fdiv work.
-softfp_extras := divsf3 divdf3
+softfp_extras += divsf3 divdf3
 
 else
 # !ABI_DOUBLE
@@ -28,7 +28,7 @@ else
 # ABI_SINGLE
 
 # Enable divide routines to make -mno-fdiv work.
-softfp_extras := divsf3
+softfp_extras += divsf3
 
 endif
 
@@ -38,7 +38,7 @@ else
 # ABI_QUAD
 
 # Enable divide routines to make -mno-fdiv work.
-softfp_extras := divsf3 divdf3 divtf3
+softfp_extras += divsf3 divdf3 divtf3
 
 endif
 

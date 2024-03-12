@@ -2186,9 +2186,15 @@ the Custom Datapath Extension (CDE) and floating-point (VFP).
 Some multilibs may be incompatible with these options.
 
 @item arm_v8_1m_main_cde_mve
-ARM target supports options to generate instructions from ARMv8.1-M with
+Arm target supports options to generate instructions from Armv8.1-M with
 the Custom Datapath Extension (CDE) and M-Profile Vector Extension (MVE).
 Some multilibs may be incompatible with these options.
+
+@item arm_v8_1m_main_cde_mve_fp
+Arm target supports options to generate instructions from Armv8.1-M
+with the Custom Datapath Extension (CDE) and M-Profile Vector
+Extension (MVE) with floating-point support.  Some multilibs may be
+incompatible with these options.
 
 @item arm_pacbti_hw
 Test system supports executing Pointer Authentication and Branch Target
@@ -2465,6 +2471,18 @@ Test system has an integer register width of 64 bits.
 
 @end table
 
+@subsubsection CORE-V specific attributes
+
+@table @code
+
+@item cv_mac
+Test system has support for the CORE-V MAC extension.
+
+@item cv_alu
+Test system has support for the CORE-V ALU extension.
+
+@end table
+
 @subsubsection Other hardware attributes
 
 @c Please keep this table sorted alphabetically.
@@ -2504,6 +2522,9 @@ Target supports the execution of @code{avxneconvert} instructions.
 
 @item avxvnniint8
 Target supports the execution of @code{avxvnniint8} instructions.
+
+@item avxvnniint16
+Target supports the execution of @code{avxvnniint16} instructions.
 
 @item amx_tile
 Target supports the execution of @code{amx-tile} instructions.
@@ -2580,6 +2601,15 @@ Target supports the execution of @code{raoint} instructions.
 @item rdrand
 Target supports x86 @code{rdrand} instruction.
 
+@item sha512
+Target supports the execution of @code{sha512} instructions.
+
+@item sm3
+Target supports the execution of @code{sm3} instructions.
+
+@item sm4
+Target supports the execution of @code{sm4} instructions.
+
 @item sqrt_insn
 Target has a square root instruction that the compiler can generate.
 
@@ -2605,6 +2635,9 @@ Target supports atomic operations on @code{int} and @code{long}.
 Test environment appears to run executables on a simulator that
 accepts only @code{EM_SPARC} executables and chokes on @code{EM_SPARC32PLUS}
 or @code{EM_SPARCV9} executables.
+
+@item user_msr
+Target supports the execution of @code{user_msr} instructions.
 
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.
@@ -2913,6 +2946,10 @@ Target defaults to short enums.
 Target has limited stack size.  The stack size limit can be obtained using the
 STACK_SIZE macro defined by @ref{stack_size_ao,,@code{dg-add-options} feature
 @code{stack_size}}.
+
+Note that for certain targets, stack size limits are relevant for
+execution only, and therefore considered only if @code{dg-do run} is
+in effect, otherwise unlimited.
 
 @item static
 Target supports @option{-static}.
@@ -3309,9 +3346,12 @@ The first line of the expected output for a function @var{fn} has the form:
 Subsequent lines of the expected output also start with @var{prefix}.
 In both cases, whitespace after @var{prefix} is not significant.
 
-The test discards assembly directives such as @code{.cfi_startproc}
-and local label definitions such as @code{.LFB0} from the compiler's
-assembly output.  It then matches the result against the expected
+Depending on the configuration (see
+@code{configure_check-function-bodies} in
+@file{gcc/testsuite/lib/scanasm.exp}), the test may discard from the
+compiler's assembly output directives such as @code{.cfi_startproc},
+local label definitions such as @code{.LFB0}, and more.
+It then matches the result against the expected
 output for a function as a single regular expression.  This means that
 later lines can use backslashes to refer back to @samp{(@dots{})}
 captures on earlier lines.  For example:

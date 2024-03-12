@@ -966,16 +966,7 @@ package body System.Task_Primitives.Operations is
 
       --  Handle dispatching domains
 
-      --  To avoid changing CPU affinities when not needed, we set the
-      --  affinity only when assigning to a domain other than the default
-      --  one, or when the default one has been modified.
-
-      elsif T.Common.Domain /= null and then
-        (T.Common.Domain /= ST.System_Domain
-          or else T.Common.Domain.all /=
-                    [Multiprocessors.CPU'First ..
-                     Multiprocessors.Number_Of_CPUs => True])
-      then
+      else
          declare
             CPUs    : constant size_t :=
                         C.size_t (Multiprocessors.Number_Of_CPUs);
@@ -1497,17 +1488,9 @@ package body System.Task_Primitives.Operations is
 
             --  Handle dispatching domains
 
-            elsif T.Common.Domain /= null and then
-              (T.Common.Domain /= ST.System_Domain
-                or else T.Common.Domain.all /=
-                          [Multiprocessors.CPU'First ..
-                           Multiprocessors.Number_Of_CPUs => True])
-            then
+            else
                --  Set the affinity to all the processors belonging to the
-               --  dispatching domain. To avoid changing CPU affinities when
-               --  not needed, we set the affinity only when assigning to a
-               --  domain other than the default one, or when the default one
-               --  has been modified.
+               --  dispatching domain.
 
                CPU_Set := CPU_ALLOC (CPUs);
                System.OS_Interface.CPU_ZERO (Size, CPU_Set);
@@ -1519,18 +1502,11 @@ package body System.Task_Primitives.Operations is
                end loop;
             end if;
 
-            --  We set the new affinity if needed. Otherwise, the new task
-            --  will inherit its creator's CPU affinity mask (according to
-            --  the documentation of pthread_setaffinity_np), which is
-            --  consistent with Ada's required semantics.
+            Result :=
+              pthread_setaffinity_np (T.Common.LL.Thread, Size, CPU_Set);
+            pragma Assert (Result = 0);
 
-            if CPU_Set /= null then
-               Result :=
-                 pthread_setaffinity_np (T.Common.LL.Thread, Size, CPU_Set);
-               pragma Assert (Result = 0);
-
-               CPU_FREE (CPU_Set);
-            end if;
+            CPU_FREE (CPU_Set);
          end;
       end if;
    end Set_Task_Affinity;

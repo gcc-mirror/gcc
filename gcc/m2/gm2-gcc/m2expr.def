@@ -38,11 +38,28 @@ TYPE
 
 
 (*
-    init - initialise this module.
+   init - initialize this module.
 *)
 
 PROCEDURE init (location: location_t) ;
 
+
+(*
+   CSTIntToString - return an integer string using base 10 and no padding.
+                    The string returned will have been malloc'd.
+*)
+
+PROCEDURE CSTIntToString (t: Tree) : ADDRESS ;
+
+(*
+   CSTIntToChar - return the CHAR representation of tree t.
+*)
+
+PROCEDURE CSTIntToChar (t: Tree) : CHAR ;
+
+
+PROCEDURE CheckConstStrZtypeRange (location: location_t;
+				   str: ADDRESS; base: CARDINAL) : BOOLEAN ;
 
 (*
    CompareTrees - returns -1 if e1 < e2, 0 if e1 == e2, and 1 if e1 > e2.
@@ -702,6 +719,14 @@ PROCEDURE ConstantExpressionWarning (value: Tree) ;
 *)
 
 PROCEDURE BuildAddAddress (location: location_t; op1, op2: Tree) : Tree ;
+
+
+(*
+   calcNbits - return the smallest number of bits required to
+               represent: min..max.
+*)
+
+PROCEDURE calcNbits (location: location_t; min, max: Tree) : Tree ;
 
 
 END m2expr.

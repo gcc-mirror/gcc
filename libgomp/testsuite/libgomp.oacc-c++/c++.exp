@@ -11,15 +11,25 @@ proc check_effective_target_c++ { } {
     return 1
 }
 
-global shlib_ext
-
-set shlib_ext [get_shlib_extension]
-set lang_link_flags "-lstdc++"
-set lang_test_file_found 0
-set lang_library_path "../libstdc++-v3/src/.libs"
-if [info exists lang_include_flags] then {
-    unset lang_include_flags
+if { $blddir != "" } {
+    set libstdc++_library_path "../libstdc++-v3/src/.libs"
+    set shlib_ext [get_shlib_extension]
+    if { ![file exists "${blddir}/${libstdc++_library_path}/libstdc++.a"]
+	 && ![file exists "${blddir}/${libstdc++_library_path}/libstdc++.${shlib_ext}"] } {
+        verbose -log "No libstdc++ library found, will not execute c++ tests"
+	unset libstdc++_library_path
+	return
+    }
+    lappend lang_library_paths ${libstdc++_library_path}
+} elseif { ![info exists GXX_UNDER_TEST] } {
+    verbose -log "GXX_UNDER_TEST not defined, will not execute c++ tests"
+    return
 }
+if { $blddir != "" } {
+    set lang_source_re {^.*\.[cC]$}
+    set lang_include_flags [exec sh ${blddir}/../libstdc++-v3/scripts/testsuite_flags --build-includes]
+}
+lappend ALWAYS_CFLAGS "compiler=$GXX_UNDER_TEST"
 
 # Initialize dg.
 dg-init
@@ -28,136 +38,98 @@ torture-init
 # Turn on OpenACC.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
 
-# Switch into C++ mode.  Otherwise, the libgomp.oacc-c-c++-common/*.c
-# files would be compiled as C files.
-set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
-set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
+# Gather a list of all tests.
+set tests [lsort [concat \
+		      [find $srcdir/$subdir *.C] \
+		      [find $srcdir/$subdir/../libgomp.oacc-c-c++-common *.c]]]
 
-set blddir [lookfor_file [get_multilibs] libgomp]
-
-
+set ld_library_path $always_ld_library_path
 if { $blddir != "" } {
-    # Look for a static libstdc++ first.
-    if [file exists "${blddir}/${lang_library_path}/libstdc++.a"] {
-        set lang_test_file "${lang_library_path}/libstdc++.a"
-        set lang_test_file_found 1
-        # We may have a shared only build, so look for a shared libstdc++.
-    } elseif [file exists "${blddir}/${lang_library_path}/libstdc++.${shlib_ext}"] {
-        set lang_test_file "${lang_library_path}/libstdc++.${shlib_ext}"
-        set lang_test_file_found 1
-    } else {
-        puts "No libstdc++ library found, will not execute c++ tests"
-    }
-} elseif { [info exists GXX_UNDER_TEST] } {
-    set lang_test_file_found 1
-    # Needs to exist for libgomp.exp.
-    set lang_test_file ""
-} else {
-    puts "GXX_UNDER_TEST not defined, will not execute c++ tests"
+    append ld_library_path ":${blddir}/${libstdc++_library_path}"
 }
+append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+set_ld_library_path_env_vars
 
-if { $lang_test_file_found } {
-    # Gather a list of all tests.
-    set tests [lsort [concat \
-			  [find $srcdir/$subdir *.C] \
-			  [find $srcdir/$subdir/../libgomp.oacc-c-c++-common *.c]]]
+# Test with all available offload targets, and with offloading disabled.
+foreach offload_target [concat [split $offload_targets ","] "disable"] {
+    global openacc_device_type
+    set openacc_device_type [offload_target_to_openacc_device_type $offload_target]
+    set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=1"
 
-    if { $blddir != "" } {
-        set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
-    } else {
-        set ld_library_path "$always_ld_library_path"
-    }
-    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
-    set_ld_library_path_env_vars
-
-    set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
-    if { [file exists $flags_file] } {
-	set libstdcxx_includes [exec sh $flags_file --build-includes]
-    } else {
-	set libstdcxx_includes ""
-    }
-
-    # Test with all available offload targets, and with offloading disabled.
-    foreach offload_target [concat [split $offload_targets ","] "disable"] {
-	global openacc_device_type
-	set openacc_device_type [offload_target_to_openacc_device_type $offload_target]
-	set tagopt "-DACC_DEVICE_TYPE_$openacc_device_type=1"
-
-	switch $openacc_device_type {
-	    "" {
-		unsupported "$subdir $offload_target offloading"
+    switch $openacc_device_type {
+	"" {
+	    unsupported "$subdir $offload_target offloading"
+	    continue
+	}
+	host {
+	    set acc_mem_shared 1
+	}
+	nvidia {
+	    if { ![check_effective_target_openacc_nvidia_accel_present] } {
+		# Don't bother; execution testing is going to FAIL.
+		untested "$subdir $offload_target offloading: supported, but hardware not accessible"
 		continue
 	    }
-	    host {
-		set acc_mem_shared 1
-	    }
-	    nvidia {
-		if { ![check_effective_target_openacc_nvidia_accel_present] } {
-		    # Don't bother; execution testing is going to FAIL.
-		    untested "$subdir $offload_target offloading: supported, but hardware not accessible"
-		    continue
-		}
 
-		# Copy ptx file (TEMPORARY)
-		remote_download host $srcdir/libgomp.oacc-c-c++-common/subr.ptx
+	    # Copy ptx file (TEMPORARY)
+	    remote_download host $srcdir/libgomp.oacc-c-c++-common/subr.ptx
 
-		# Where timer.h lives
-		lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/libgomp.oacc-c-c++-common"
+	    # Where timer.h lives
+	    lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/libgomp.oacc-c-c++-common"
 
-		set acc_mem_shared 0
-	    }
-	    radeon {
-		if { ![check_effective_target_openacc_radeon_accel_present] } {
-		    # Don't bother; execution testing is going to FAIL.
-		    untested "$subdir $offload_target offloading: supported, but hardware not accessible"
-		    continue
-		}
-
-		set acc_mem_shared 0
-	    }
-	    default {
-		error "Unknown OpenACC device type: $openacc_device_type (offload target: $offload_target)"
-	    }
+	    set acc_mem_shared 0
 	}
-	set tagopt "$tagopt -DACC_MEM_SHARED=$acc_mem_shared"
-
-	# To avoid compilation overhead, and to keep simple '-foffload=[...]'
-	# handling in test cases, by default only build for the offload target
-	# that we're actually going to test.
-	set tagopt "$tagopt -foffload=$offload_target"
-	# Force usage of the corresponding OpenACC device type.
-	setenv ACC_DEVICE_TYPE $openacc_device_type
-
-	# To get better test coverage for device-specific code that is only
-	# ever used in offloading configurations, we'd like more thorough
-	# testing for test cases that deal with offloading, which most of all
-	# OpenACC test cases are.  We enable torture testing, but limit it to
-	# -O0 and -O2 only, to avoid testing times exploding too much, under
-	# the assumption that between -O0 and -O[something] there is the
-	# biggest difference in the overall structure of the generated code.
-	switch -glob $offload_target {
-	    disable {
-		set-torture-options [list \
-					 { -O2 } ]
+	radeon {
+	    if { ![check_effective_target_openacc_radeon_accel_present] } {
+		# Don't bother; execution testing is going to FAIL.
+		untested "$subdir $offload_target offloading: supported, but hardware not accessible"
+		continue
 	    }
-	    default {
-		set-torture-options [list \
-					 { -O0 } \
-					 { -O2 } ]
-	    }
+
+	    set acc_mem_shared 0
 	}
-
-	gcc-dg-runtest $tests "$tagopt" "$libstdcxx_includes"
+	default {
+	    error "Unknown OpenACC device type: $openacc_device_type (offload target: $offload_target)"
+	}
     }
-    unset offload_target
-} else {
-    # Call this once, which placates the subsequent torture-finish.
-    set-torture-options [list \
-			     { INVALID } ]
-}
+    set tagopt "$tagopt -DACC_MEM_SHARED=$acc_mem_shared"
 
-# See above.
-set GCC_UNDER_TEST "$SAVE_GCC_UNDER_TEST"
+    # To avoid compilation overhead, and to keep simple '-foffload=[...]'
+    # handling in test cases, by default only build for the offload target
+    # that we're actually going to test.
+    set tagopt "$tagopt -foffload=$offload_target"
+    # Force usage of the corresponding OpenACC device type.
+    setenv ACC_DEVICE_TYPE $openacc_device_type
+
+    # To get better test coverage for device-specific code that is only
+    # ever used in offloading configurations, we'd like more thorough
+    # testing for test cases that deal with offloading, which most of all
+    # OpenACC test cases are.  We enable torture testing, but limit it to
+    # -O0 and -O2 only, to avoid testing times exploding too much, under
+    # the assumption that between -O0 and -O[something] there is the
+    # biggest difference in the overall structure of the generated code.
+    switch -glob $offload_target {
+	disable {
+	    set-torture-options [list \
+				     { -O2 } ]
+	}
+	default {
+	    set-torture-options [list \
+				     { -O0 } \
+				     { -O2 } ]
+	}
+    }
+
+    gcc-dg-runtest $tests "$tagopt" ""
+}
+unset offload_target
+
+if { $blddir != "" } {
+    unset lang_source_re
+    unset lang_include_flags
+    unset libstdc++_library_path
+    unset lang_library_paths
+}
 
 # All done.
 torture-finish

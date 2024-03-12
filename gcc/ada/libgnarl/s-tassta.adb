@@ -1615,8 +1615,8 @@ package body System.Tasking.Stages is
 
             --  Usually, C.Common.Activator = Self_ID implies C.Master_Of_Task
             --  = CM. The only case where C is pending activation by this
-            --  task, but the master of C is not CM is in Ada 2005, when C is
-            --  part of a return object of a build-in-place function.
+            --  task, but the master of C is not CM is when C is part of a
+            --  return object of a build-in-place function.
 
             pragma Assert (C.Common.State = Unactivated);
 

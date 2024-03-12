@@ -19,7 +19,7 @@ TEST_UNIFORM_Z (aesmc_u8_tied1, svuint8_t,
 **	mov	z0\.d, z1\.d
 **	aesmc	z0\.b, z0\.b
 ** |
-**	aesmc	z1\.b, z0\.b
+**	aesmc	z1\.b, z1\.b
 **	mov	z0\.d, z1\.d
 ** )
 **	ret

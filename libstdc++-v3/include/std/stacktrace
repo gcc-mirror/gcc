@@ -30,8 +30,13 @@
 
 #include <bits/c++config.h>
 
-#if __cplusplus > 202002L && _GLIBCXX_HAVE_STACKTRACE
+#define __glibcxx_want_stacktrace
+#define __glibcxx_want_formatters
+#include <bits/version.h>
+
+#ifdef __cpp_lib_stacktrace // C++ >= 23 && hosted && HAVE_STACKTRACE
 #include <compare>
+#include <format>
 #include <new>
 #include <string>
 #include <sstream>
@@ -42,48 +47,9 @@
 #include <bits/stl_uninitialized.h>
 #include <ext/numeric_traits.h>
 
-struct __glibcxx_backtrace_state;
-struct __glibcxx_backtrace_simple_data;
-
-extern "C"
-{
-__glibcxx_backtrace_state*
-__glibcxx_backtrace_create_state(const char*, int,
-				 void(*)(void*, const char*, int),
-				 void*);
-
-int
-__glibcxx_backtrace_simple(__glibcxx_backtrace_state*, int,
-			   int (*) (void*, __UINTPTR_TYPE__),
-			   void(*)(void*, const char*, int),
-			   void*);
-int
-__glibcxx_backtrace_pcinfo(__glibcxx_backtrace_state*, __UINTPTR_TYPE__,
-			   int (*)(void*, __UINTPTR_TYPE__,
-				   const char*, int, const char*),
-			   void(*)(void*, const char*, int),
-			   void*);
-
-int
-__glibcxx_backtrace_syminfo(__glibcxx_backtrace_state*, __UINTPTR_TYPE__ addr,
-			    void (*) (void*, __UINTPTR_TYPE__, const char*,
-				      __UINTPTR_TYPE__, __UINTPTR_TYPE__),
-			    void(*)(void*, const char*, int),
-			    void*);
-}
-
-namespace __cxxabiv1
-{
-  extern "C" char*
-  __cxa_demangle(const char* __mangled_name, char* __output_buffer,
-		 size_t* __length, int* __status);
-}
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#define __cpp_lib_stacktrace 202011L
 
   // [stacktrace.entry], class stacktrace_entry
   class stacktrace_entry
@@ -155,80 +121,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Allocator> friend class basic_stacktrace;
 
-    static void _S_err_handler(void*, const char*, int) { }
-
-    static __glibcxx_backtrace_state*
-    _S_init()
-    {
-      static __glibcxx_backtrace_state* __state
-	= __glibcxx_backtrace_create_state(nullptr, 1, _S_err_handler, nullptr);
-      return __state;
-    }
-
     friend ostream&
     operator<<(ostream&, const stacktrace_entry&);
+
+    // Type-erased wrapper for the fields of a stacktrace entry.
+    // This type is independent of which std::string ABI is in use.
+    struct _Info
+    {
+      void* _M_desc;
+      void* _M_file;
+      int* _M_line;
+      void (*_M_set)(void*, const char*);
+
+      _GLIBCXX_DEFAULT_ABI_TAG
+      static void
+      _S_set(void* __dest, const char* __str)
+      { static_cast<string*>(__dest)->assign(__str); }
+
+      _Info(string* __desc, string* __file, int* __line)
+      : _M_desc(__desc), _M_file(__file), _M_line(__line), _M_set(_S_set)
+      { }
+
+      bool
+      _M_populate(native_handle_type);
+
+      void _M_set_file(const char*);
+      void _M_set_desc(const char*);
+    };
 
     bool
     _M_get_info(string* __desc, string* __file, int* __line) const
     {
       if (!*this)
 	return false;
-
-      struct _Data
-      {
-	string* _M_desc;
-	string* _M_file;
-	int* _M_line;
-      } __data = { __desc, __file, __line };
-
-      auto __cb = [](void* __data, uintptr_t, const char* __filename,
-		     int __lineno, const char* __function) -> int {
-	  auto& __d = *static_cast<_Data*>(__data);
-	  if (__function && __d._M_desc)
-	    *__d._M_desc = _S_demangle(__function);
-	  if (__filename && __d._M_file)
-	    *__d._M_file = __filename;
-	  if (__d._M_line)
-	    *__d._M_line = __lineno;
-	  return __function != nullptr;
-      };
-      const auto __state = _S_init();
-      if (::__glibcxx_backtrace_pcinfo(__state, _M_pc, +__cb, _S_err_handler,
-				       &__data))
-	return true;
-      if (__desc && __desc->empty())
-	{
-	  auto __cb2 = [](void* __data, uintptr_t, const char* __symname,
-	      uintptr_t, uintptr_t) {
-	      if (__symname)
-		*static_cast<_Data*>(__data)->_M_desc = _S_demangle(__symname);
-	  };
-	  if (::__glibcxx_backtrace_syminfo(__state, _M_pc, +__cb2,
-					    _S_err_handler, &__data))
-	    return true;
-	}
-      return false;
+      return _Info(__desc, __file, __line)._M_populate(_M_pc);
     }
+  };
 
-    static string
-    _S_demangle(const char* __name)
-    {
-      string __s;
-      int __status;
-      char* __str = __cxxabiv1::__cxa_demangle(__name, nullptr, nullptr,
-					       &__status);
-      if (__status == 0)
-	__s = __str;
-      else
-	__s = __name;
-      __builtin_free(__str);
-      return __s;
-    }
+  class __stacktrace_impl
+  {
+  protected:
+    static int _S_current(int (*) (void*, __UINTPTR_TYPE__), void*, int = 0);
   };
 
   // [stacktrace.basic], class template basic_stacktrace
   template<typename _Allocator>
     class basic_stacktrace
+    : private __stacktrace_impl
     {
       using _AllocTraits = allocator_traits<_Allocator>;
       using uintptr_t = __UINTPTR_TYPE__;
@@ -255,10 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	basic_stacktrace __ret(__alloc);
 	if (auto __cb = __ret._M_prepare()) [[likely]]
 	  {
-	    auto __state = stacktrace_entry::_S_init();
-	    if (__glibcxx_backtrace_simple(__state, 1, __cb,
-					   stacktrace_entry::_S_err_handler,
-					   std::__addressof(__ret)))
+	    if (_S_current(__cb, std::__addressof(__ret)))
 	      __ret._M_clear();
 	  }
 	return __ret;
@@ -274,10 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __ret;
 	if (auto __cb = __ret._M_prepare()) [[likely]]
 	  {
-	    auto __state = stacktrace_entry::_S_init();
-	    if (__glibcxx_backtrace_simple(__state, __skip + 1, __cb,
-					   stacktrace_entry::_S_err_handler,
-					   std::__addressof(__ret)))
+	    if (_S_current(__cb, std::__addressof(__ret), __skip))
 	      __ret._M_clear();
 	  }
 
@@ -298,11 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __ret;
 	if (auto __cb = __ret._M_prepare(__max_depth)) [[likely]]
 	  {
-	    auto __state = stacktrace_entry::_S_init();
-	    int __err = __glibcxx_backtrace_simple(__state, __skip + 1, __cb,
-						   stacktrace_entry::_S_err_handler,
-						   std::__addressof(__ret));
-	    if (__err < 0)
+	    if (_S_current(__cb, std::__addressof(__ret), __skip) < 0)
 	      __ret._M_clear();
 	    else if (__ret.size() > __max_depth)
 	      {
@@ -765,6 +694,84 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::move(__os).str();
     }
 
+  template<>
+    class formatter<stacktrace_entry>
+    {
+    public:
+      constexpr typename basic_format_parse_context<char>::iterator
+      parse(basic_format_parse_context<char>& __pc)
+      {
+	__format::_Spec<char> __spec{};
+	const auto __last = __pc.end();
+	auto __first = __pc.begin();
+
+	auto __finalize = [this, &__spec] {
+	  _M_spec = __spec;
+	};
+
+	auto __finished = [&] {
+	  if (__first == __last || *__first == '}')
+	    {
+	      __finalize();
+	      return true;
+	    }
+	  return false;
+	};
+
+	if (__finished())
+	  return __first;
+
+	__first = __spec._M_parse_fill_and_align(__first, __last);
+	if (__finished())
+	  return __first;
+
+	__first = __spec._M_parse_width(__first, __last, __pc);
+	if (__finished())
+	  return __first;
+
+	__throw_format_error("format error: invalid format-spec for "
+			     "std::stacktrace_entry");
+      }
+
+      template<typename _Out>
+	typename basic_format_context<_Out, char>::iterator
+	format(const stacktrace_entry& __x,
+	       basic_format_context<_Out, char>& __fc) const
+	{
+	  std::ostringstream __os;
+	  __os << __x;
+	  return __format::__write(__fc.out(), __os.view());
+	}
+
+    private:
+      __format::_Spec<char> _M_spec;
+    };
+
+  template<typename _Allocator>
+    class formatter<basic_stacktrace<_Allocator>>
+    {
+    public:
+      constexpr typename basic_format_parse_context<char>::iterator
+      parse(basic_format_parse_context<char>& __pc)
+      {
+	const auto __first = __pc.begin();
+	if (__first == __pc.end() || *__first == '}')
+	  return __first;
+	__throw_format_error("format error: invalid format-spec for "
+			     "std::basic_stacktrace");
+      }
+
+      template<typename _Out>
+	typename basic_format_context<_Out, char>::iterator
+	format(const basic_stacktrace<_Allocator>& __x,
+	       basic_format_context<_Out, char>& __fc) const
+	{
+	  std::ostringstream __os;
+	  __os << __x;
+	  return __format::__write(__fc.out(), __os.view());
+	}
+    };
+
   namespace pmr
   {
     using stacktrace
@@ -800,6 +807,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // C++23
-
+#endif // __cpp_lib_stacktrace
 #endif /* _GLIBCXX_STACKTRACE */

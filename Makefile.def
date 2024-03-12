@@ -47,7 +47,8 @@ host_modules= { module= fixincludes; bootstrap=true;
 host_modules= { module= flex; no_check_cross= true; };
 host_modules= { module= gas; bootstrap=true; };
 host_modules= { module= gcc; bootstrap=true; 
-		extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
+		extra_make_flags="$(EXTRA_GCC_FLAGS)";
+		extra_configure_flags='@gcc_host_pie@'; };
 host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
 		// Work around in-tree gmp configure bug with missing flex.
 		extra_configure_flags='--disable-shared LEX="touch lex.yy.c" @host_libs_picflag@';
@@ -72,6 +73,7 @@ host_modules= { module= isl; lib_path=.libs; bootstrap=true;
 		no_install= true; };
 host_modules= { module= gold; bootstrap=true; };
 host_modules= { module= gprof; };
+host_modules= { module= gprofng; };
 // intl acts on 'host_shared' directly, and does not support --with-pic.
 host_modules= { module= intl; bootstrap=true; };
 host_modules= { module= tcl;
@@ -460,11 +462,14 @@ dependencies = { module=all-gdbsupport; on=all-gnulib; };
 dependencies = { module=all-gdbsupport; on=all-intl; };
 
 // Host modules specific to binutils.
+// build libsframe before bfd for encoder/decoder support for linking
+// SFrame sections
 dependencies = { module=configure-bfd; on=configure-libiberty; hard=true; };
 dependencies = { module=configure-bfd; on=configure-intl; };
 dependencies = { module=all-bfd; on=all-libiberty; };
 dependencies = { module=all-bfd; on=all-intl; };
 dependencies = { module=all-bfd; on=all-zlib; };
+dependencies = { module=all-bfd; on=all-libsframe; };
 dependencies = { module=configure-opcodes; on=configure-libiberty; hard=true; };
 dependencies = { module=all-opcodes; on=all-libiberty; };
 
@@ -497,6 +502,10 @@ dependencies = { module=install-strip-libctf; on=install-strip-bfd; };
 dependencies = { module=install-strip-ld; on=install-strip-bfd; };
 dependencies = { module=install-strip-ld; on=install-strip-libctf; };
 
+// libbfd depends on libsframe
+dependencies = { module=install-bfd; on=install-libsframe; };
+dependencies = { module=install-strip-bfd; on=install-strip-libsframe; };
+
 // libopcodes depends on libbfd
 dependencies = { module=configure-opcodes; on=configure-bfd; hard=true; };
 dependencies = { module=install-opcodes; on=install-bfd; };
@@ -513,6 +522,16 @@ dependencies = { module=all-gprof; on=all-bfd; };
 dependencies = { module=all-gprof; on=all-opcodes; };
 dependencies = { module=all-gprof; on=all-intl; };
 dependencies = { module=all-gprof; on=all-gas; };
+
+dependencies = { module=configure-gprofng; on=configure-intl; };
+dependencies = { module=all-gprofng; on=all-libiberty; };
+dependencies = { module=all-gprofng; on=all-bfd; };
+dependencies = { module=all-gprofng; on=all-opcodes; };
+dependencies = { module=all-gprofng; on=all-intl; };
+dependencies = { module=all-gprofng; on=all-gas; };
+dependencies = { module=install-gprofng; on=install-opcodes; };
+dependencies = { module=install-gprofng; on=install-bfd; };
+
 dependencies = { module=configure-ld; on=configure-intl; };
 dependencies = { module=all-ld; on=all-libiberty; };
 dependencies = { module=all-ld; on=all-bfd; };
@@ -596,6 +615,7 @@ dependencies = { module=check-libctf; on=all-ld; };
 // gdb and gdbserver.
 dependencies = { module=distclean-gnulib; on=distclean-gdb; };
 dependencies = { module=distclean-gnulib; on=distclean-gdbserver; };
+dependencies = { module=distclean-gnulib; on=distclean-sim; };
 
 // Warning, these are not well tested.
 dependencies = { module=all-bison; on=all-intl; };

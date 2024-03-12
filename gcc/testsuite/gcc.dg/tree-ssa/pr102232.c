@@ -1,6 +1,7 @@
 /* PR tree-optimization/102232 */
 /* { dg-do run } */
 /* { dg-options "-O -fdump-tree-optimized" } */
+/* { dg-require-effective-target int32plus } */
 
 int __attribute__ ((noipa)) foo (int a, int b)
 {

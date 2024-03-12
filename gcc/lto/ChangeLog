@@ -1,3 +1,58 @@
+2023-09-30  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Make create_fdas_for_lto1 target not .PHONY
+
+2023-09-19  Thomas Schwinge  <thomas@codesourcery.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	* lto-common.cc (lto_mode_identity_table): Remove.
+	(lto_file_finalize) [!ACCEL_COMPILER]: 'NULL'-intialize
+	'file_data->mode_table'.
+	(lto_fe_init): Don't initialize 'lto_mode_identity_table'.
+	* lto-common.h (lto_mode_identity_table): Remove.
+
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lto-lang.cc (lto_type_for_mode): Ditto.
+
+2023-07-04  Pan Li  <pan2.li@intel.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-common.cc (lto_file_finalize) [!ACCEL_COMPILER]: Initialize
+	'file_data->mode_bits'.
+
+2023-07-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-common.cc (lto_read_decls): Adjust.
+
+2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
+
+	* lto-common.cc (compare_tree_sccs_1): Compare bit
+	TYPE_NO_NAMED_ARGS_STDARG_P or TYPE_INCLUDES_FLEXARRAY properly
+	for its corresponding type.
+
+2023-06-29  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Pass correct stage lto when processing
+	profile data collected while building target libraries
+
+2023-06-28  Richard Biener  <rguenther@suse.de>
+
+	* lto-common.cc (compare_tree_sccs_1): Use TYPE_PRECISION_RAW.
+
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* lto-common.cc (lto_maybe_register_decl): Use _P defines from tree.h.
+	* lto-symtab.cc (warn_type_compatibility_p): Ditto.
+	(lto_symtab_resolve_replaceable_p): Ditto.
+	(lto_symtab_merge_decls_1): Ditto.
+	* lto-symtab.h (lto_symtab_prevailing_decl): Ditto.
+
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Merge perf data collected when compiling lto1 and runtime libraries
+
 2023-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/108910

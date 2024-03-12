@@ -385,14 +385,22 @@
 
 (define_insn_and_split "sldoi_to_mov<mode>"
   [(set (match_operand:VM 0 "altivec_register_operand")
-	(unspec:VM [(match_operand:VM 1 "easy_vector_constant")
+	(unspec:VM [(match_operand:VM 1 "const_vector_each_byte_same")
 	            (match_dup 1)
 		    (match_operand:QI 2 "u5bit_cint_operand")]
 		    UNSPEC_VSLDOI))]
-  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode) && can_create_pseudo_p ()"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode) && can_create_pseudo_p ()"
   "#"
   "&& 1"
-  [(set (match_dup 0) (match_dup 1))])
+  [(set (match_dup 0) (match_dup 1))]
+  "{
+     if (!easy_vector_constant (operands[1], <MODE>mode))
+       {
+	 rtx dest = gen_reg_rtx (<MODE>mode);
+	 emit_move_insn (dest, operands[1]);
+	 operands[1] = dest;
+       }
+  }")
 
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2542,7 +2550,7 @@
 }
   [(set_attr "type" "vecperm")])
 
-(define_insn "*altivec_vupkhs<VU_char>_direct"
+(define_insn "altivec_vupkhs<VU_char>_direct"
   [(set (match_operand:VP 0 "register_operand" "=v")
 	(unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
 		     UNSPEC_VUNPACK_HI_SIGN_DIRECT))]
@@ -2622,6 +2630,18 @@
   "TARGET_POWER10"
   "vcmpequq. %0,%1,%2"
   [(set_attr "type" "veccmpfx")])
+
+;; Expand for builtin vcmpne{b,h,w}
+(define_expand "altivec_vcmpne_<mode>"
+  [(set (match_operand:VSX_EXTRACT_I 3 "altivec_register_operand" "=v")
+	(eq:VSX_EXTRACT_I (match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")
+			  (match_operand:VSX_EXTRACT_I 2 "altivec_register_operand" "v")))
+   (set (match_operand:VSX_EXTRACT_I 0 "altivec_register_operand" "=v")
+        (not:VSX_EXTRACT_I (match_dup 3)))]
+  "TARGET_ALTIVEC"
+  {
+    operands[3] = gen_reg_rtx (GET_MODE (operands[0]));
+  })
 
 (define_insn "*altivec_vcmpgts<VI_char>_p"
   [(set (reg:CC CR6_REGNO)

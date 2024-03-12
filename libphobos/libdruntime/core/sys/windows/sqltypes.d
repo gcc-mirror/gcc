@@ -1,4 +1,7 @@
 /**
+$(RED Warning:
+      This binding is out-of-date and does not allow use on non-Windows platforms. Use `etc.c.odbc.sqltypes` instead.)
+
  * Windows API header module
  *
  * Translated from MinGW Windows headers
@@ -6,6 +9,7 @@
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source: $(DRUNTIMESRC core/sys/windows/_sqltypes.d)
  */
+
 module core.sys.windows.sqltypes;
 version (Windows):
 
@@ -32,7 +36,7 @@ alias UDWORD SQLUINTEGER;
 // #endif
 
 //static if (ODBCVER >= 0x0300) {
-alias TypeDef!(HANDLE) SQLHANDLE;
+alias HANDLE SQLHANDLE;
 alias SQLHANDLE SQLHENV, SQLHDBC, SQLHSTMT, SQLHDESC;
 /*
 } else {

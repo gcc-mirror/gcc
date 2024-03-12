@@ -1,3 +1,63 @@
+2023-09-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* backend/rust-constexpr.cc (rs_fold_indirect_ref): Remove unused
+	variables.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* rust-session-manager.cc (Session::init): Call
+	targetrustm.rust_os_info.
+	* rust-target.def (rust_os_info): New hook.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* rust-lang.cc (rust_add_target_info): Remove sorry.
+	* rust-session-manager.cc: Replace include of target.h with
+	include of tm.h and rust-target.h.
+	(Session::init): Call targetrustm.rust_cpu_info.
+	* rust-target.def (rust_cpu_info): New hook.
+	* rust-target.h (rust_add_target_info): Declare.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* rust-target-def.h: New file.
+	* rust-target.def: New file.
+	* rust-target.h: New file.
+
+2023-09-11  Parthib  <94271200+Parthib314@users.noreply.github.com>
+
+	* Make-lang.in: Removed rust-gcc-diagnostics object file.
+	* rust-diagnostics.cc (rust_be_get_quotechars): Added from original file.
+		(rust_be_internal_error_at): Likewise.
+		(rust_be_error_at): Likewise.
+		(class rust_error_code_rule): Likewise.
+		(rust_be_warning_at): Likewise.
+		(rust_be_fatal_error): Likewise.
+		(rust_be_inform): Likewise.
+		(rust_be_debug_p): Likewise.
+	* rust-gcc-diagnostics.cc: Removed.
+
+2023-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* rust-diagnostics.cc (rust_error_at): New overload.
+	* rust-diagnostics.h (struct ErrorCode): New struct.
+	(rust_error_at): New.
+	(rust_be_error_at): Likewise.
+	* rust-gcc-diagnostics.cc (class rust_error_code_rule): New class.
+	(rust_be_error_at): New function.
+	* typecheck/rust-casts.cc (TypeCastRules::emit_cast_error): Emit E0054
+	when reporting invalid cast error.
+
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* backend/rust-tree.cc (c_common_type_for_mode): Ditto.
+
+2023-06-22  Paul E. Murphy  <murphyp@linux.ibm.com>
+
+	* rust-object-export.cc [TARGET_AIX]: Rename and update usage to
+	TARGET_AIX_OS.
+
 2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* parse/rust-parse-impl.h

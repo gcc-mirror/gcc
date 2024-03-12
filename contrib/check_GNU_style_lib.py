@@ -182,6 +182,9 @@ class SquareBracketCheck:
         self.re = re.compile('\w\s+(\[)')
 
     def check(self, filename, lineno, line):
+        if filename.endswith('.md'):
+            return None
+
         m = self.re.search(line)
         if m != None:
             return CheckError(filename, lineno,

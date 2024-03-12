@@ -48,7 +48,7 @@
 #  endif
 # endif
 
-#ifdef _GLIBCXX_USE_C99_INTTYPES_TR1
+#ifdef _GLIBCXX_USE_C99_INTTYPES
 
 namespace std
 {
@@ -72,13 +72,13 @@ namespace std
   using ::strtoimax;
   using ::strtoumax;
 
-#if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1
+#if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_INTTYPES_WCHAR_T
   using ::wcstoimax;
   using ::wcstoumax;
 #endif
 } // namespace
 
-#endif _GLIBCXX_USE_C99_INTTYPES_TR1
+#endif _GLIBCXX_USE_C99_INTTYPES
 
 #else
 

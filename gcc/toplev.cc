@@ -323,7 +323,7 @@ wrapup_global_declaration_1 (tree decl)
 {
   /* We're not deferring this any longer.  Assignment is conditional to
      avoid needlessly dirtying PCH pages.  */
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (decl), TS_DECL_WITH_VIS)
+  if (HAS_DECL_ASSEMBLER_NAME_P (decl)
       && DECL_DEFER_OUTPUT (decl) != 0)
     DECL_DEFER_OUTPUT (decl) = 0;
 
@@ -829,7 +829,8 @@ output_stack_usage_1 (FILE *cf)
   if (stack_usage_file)
     {
       print_decl_identifier (stack_usage_file, current_function_decl,
-			     PRINT_DECL_ORIGIN | PRINT_DECL_NAME);
+			     PRINT_DECL_ORIGIN | PRINT_DECL_NAME
+			     | PRINT_DECL_REMAP_DEBUG);
       fprintf (stack_usage_file, "\t" HOST_WIDE_INT_PRINT_DEC"\t%s\n",
 	       stack_usage, stack_usage_kind_str[stack_usage_kind]);
     }
@@ -1022,11 +1023,11 @@ general_init (const char *argv0, bool init_signals)
      override it later.  */
   tree_diagnostics_defaults (global_dc);
 
-  global_dc->show_caret
+  global_dc->m_source_printing.enabled
     = global_options_init.x_flag_diagnostics_show_caret;
-  global_dc->show_labels_p
+  global_dc->m_source_printing.show_labels_p
     = global_options_init.x_flag_diagnostics_show_labels;
-  global_dc->show_line_numbers_p
+  global_dc->m_source_printing.show_line_numbers_p
     = global_options_init.x_flag_diagnostics_show_line_numbers;
   global_dc->show_cwe
     = global_options_init.x_flag_diagnostics_show_cwe;
@@ -1038,7 +1039,7 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_path_depths;
   global_dc->show_option_requested
     = global_options_init.x_flag_diagnostics_show_option;
-  global_dc->min_margin_width
+  global_dc->m_source_printing.min_margin_width
     = global_options_init.x_diagnostics_minimum_margin_width;
   global_dc->show_column
     = global_options_init.x_flag_show_column;
@@ -1081,8 +1082,8 @@ general_init (const char *argv0, bool init_signals)
   input_location = UNKNOWN_LOCATION;
   line_table = ggc_alloc<line_maps> ();
   linemap_init (line_table, BUILTINS_LOCATION);
-  line_table->reallocator = realloc_for_line_map;
-  line_table->round_alloc_size = ggc_round_alloc_size;
+  line_table->m_reallocator = realloc_for_line_map;
+  line_table->m_round_alloc_size = ggc_round_alloc_size;
   line_table->default_range_bits = 5;
   init_ttree ();
 
@@ -2252,6 +2253,10 @@ toplev::main (int argc, char **argv)
 
   initialize_plugins ();
 
+  /* Handle the dump options now that plugins have had a chance to install new
+     passes.  */
+  handle_deferred_dump_options ();
+
   if (version_flag)
     print_version (stderr, "", true);
 
@@ -2331,6 +2336,7 @@ toplev::finalize (void)
   cgraph_cc_finalize ();
   cgraphunit_cc_finalize ();
   symtab_thunks_cc_finalize ();
+  dwarf2cfi_cc_finalize ();
   dwarf2out_cc_finalize ();
   gcse_cc_finalize ();
   ipa_cp_cc_finalize ();
@@ -2344,6 +2350,8 @@ toplev::finalize (void)
   XDELETEVEC (save_decoded_options);
   save_decoded_options = NULL;
   save_decoded_options_count = 0;
+
+  ggc_common_finalize ();
 
   /* Clean up the context (and pass_manager etc). */
   delete g;

@@ -115,7 +115,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   typedef basic_ofstream<wchar_t> wofstream;
   typedef basic_fstream<wchar_t>  wfstream;
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L && _GLIBCXX_USE_CXX11_ABI
   typedef basic_syncbuf<wchar_t>     wsyncbuf;
   typedef basic_osyncstream<wchar_t> wosyncstream;
 #endif

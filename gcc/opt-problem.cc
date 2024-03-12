@@ -62,10 +62,8 @@ opt_problem::opt_problem (const dump_location_t &loc,
   {
     dump_pretty_printer pp (&dump_context::get (), MSG_MISSED_OPTIMIZATION);
 
-    text_info text;
-    text.err_no = errno;
-    text.args_ptr = ap;
-    text.format_spec = fmt; /* No i18n is performed.  */
+    text_info text (fmt, /* No i18n is performed.  */
+		    ap, errno);
 
     /* Phases 1 and 2, using pp_format.  */
     pp_format (&pp, &text);

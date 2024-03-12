@@ -153,7 +153,7 @@ TEST_UNIFORM_ZX (lsr_wide_x0_u16_z_tied1, svuint16_t, uint64_t,
 		 z0 = svlsr_wide_z (p0, z0, x0))
 
 /*
-** lsr_wide_x0_u16_z_untied: { xfail *-*-* }
+** lsr_wide_x0_u16_z_untied:
 **	mov	(z[0-9]+\.d), x0
 **	movprfx	z0\.h, p0/z, z1\.h
 **	lsr	z0\.h, p0/m, z0\.h, \1

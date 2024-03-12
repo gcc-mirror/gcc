@@ -78,18 +78,47 @@ along with GCC; see the file COPYING3.  If not see
 gfc_interface_info current_interface;
 
 
+/* Free the leading members of the gfc_interface linked list given in INTR
+   up to the END element (exclusive: the END element is not freed).
+   If END is not nullptr, it is assumed that END is in the linked list starting
+   with INTR.  */
+
+static void
+free_interface_elements_until (gfc_interface *intr, gfc_interface *end)
+{
+  gfc_interface *next;
+
+  for (; intr != end; intr = next)
+    {
+      next = intr->next;
+      free (intr);
+    }
+}
+
+
 /* Free a singly linked list of gfc_interface structures.  */
 
 void
 gfc_free_interface (gfc_interface *intr)
 {
-  gfc_interface *next;
+  free_interface_elements_until (intr, nullptr);
+}
 
-  for (; intr; intr = next)
-    {
-      next = intr->next;
-      free (intr);
-    }
+
+/* Update the interface pointer given by IFC_PTR to make it point to TAIL.
+   It is expected that TAIL (if non-null) is in the list pointed to by
+   IFC_PTR, hence the tail of it.  The members of the list before TAIL are
+   freed before the pointer reassignment.  */
+
+void
+gfc_drop_interface_elements_before (gfc_interface **ifc_ptr,
+				    gfc_interface *tail)
+{
+  if (ifc_ptr == nullptr)
+    return;
+
+  free_interface_elements_until (*ifc_ptr, tail);
+  *ifc_ptr = tail;
 }
 
 
@@ -3312,6 +3341,16 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	    }
 	}
 
+      if (UNLIMITED_POLY (a->expr)
+	  && !(f->sym->ts.type == BT_ASSUMED || UNLIMITED_POLY (f->sym)))
+	{
+	  gfc_error ("Unlimited polymorphic actual argument at %L is not "
+		     "matched with either an unlimited polymorphic or "
+		     "assumed type dummy argument", &a->expr->where);
+	  ok = false;
+	  goto match;
+	}
+
       /* Special case for character arguments.  For allocatable, pointer
 	 and assumed-shape dummies, the string length needs to match
 	 exactly.  */
@@ -3633,6 +3672,18 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Actual argument for %qs must be ALLOCATABLE at %L",
+		       f->sym->name, &a->expr->where);
+	  ok = false;
+	  goto match;
+	}
+
+      if (a->expr->expr_type == EXPR_FUNCTION
+	  && a->expr->value.function.esym
+	  && f->sym->attr.allocatable)
+	{
+	  if (where)
+	    gfc_error ("Actual argument for %qs at %L is a function result "
+		       "and the dummy argument is ALLOCATABLE",
 		       f->sym->name, &a->expr->where);
 	  ok = false;
 	  goto match;
@@ -4931,7 +4982,7 @@ gfc_add_interface (gfc_symbol *new_sym)
 }
 
 
-gfc_interface *
+gfc_interface *&
 gfc_current_interface_head (void)
 {
   switch (current_interface.type)

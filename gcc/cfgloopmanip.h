@@ -32,6 +32,8 @@ enum
 					   field of newly create BB.  */
 #define DLTHE_FLAG_COMPLETTE_PEEL 4	/* Update frequencies expecting
 					   a complete peeling.  */
+#define DLTHE_FLAG_FLAT_PROFILE 8	/* Profile is flat; do not reduce
+					   count by unroll factor.  */
 extern edge mfb_kj_edge;
 
 extern bool remove_path (edge, bool * = NULL, bitmap = NULL);
@@ -43,6 +45,10 @@ extern edge create_empty_if_region_on_edge (edge, tree);
 extern class loop *create_empty_loop_on_edge (edge, tree, tree, tree, tree,
 					       tree *, tree *, class loop *);
 extern void unloop (class loop *, bool *, bitmap);
+extern void unloop_loops (vec<class loop *> &loops_to_unloop,
+			  vec<int> &loops_to_unloop_nunroll,
+			  bitmap loop_closed_ssa_invalidated,
+			  bool *irred_invalidated);
 extern void copy_loop_info (class loop *loop, class loop *target);
 extern class loop * duplicate_loop (class loop *, class loop *,
 				     class loop * = NULL);
@@ -59,5 +65,12 @@ class loop * loop_version (class loop *, void *,
 			    basic_block *,
 			    profile_probability, profile_probability,
 			    profile_probability, profile_probability, bool);
+void adjust_loop_info_after_peeling (class loop *loop, int npeel, bool precise);
+void scale_dominated_blocks_in_loop (class loop *loop, basic_block bb,
+				     profile_count num, profile_count den);
+edge update_loop_exit_probability_scale_dom_bbs
+		(class loop *loop, edge exit_edge = NULL,
+		 profile_count desired_count = profile_count::uninitialized ());
+void update_exit_probability_after_unrolling (class loop *loop, edge new_exit);
 
 #endif /* GCC_CFGLOOPMANIP_H */

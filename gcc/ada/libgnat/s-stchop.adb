@@ -234,11 +234,10 @@ package body System.Stack_Checking.Operations is
          --  it is essential to use our local copy of Stack.
 
       begin
-         if (Stack_Grows_Down and then
-               (not (Frame_Address <= My_Stack.Base)))
+         if (Stack_Grows_Down and then not (Frame_Address <= My_Stack.Base))
            or else
             (not Stack_Grows_Down and then
-               (not (Frame_Address >= My_Stack.Base)))
+               not (Frame_Address >= My_Stack.Base))
          then
             --  The returned Base is lower than the stored one, so assume that
             --  the original one wasn't right and use the current Frame_Address

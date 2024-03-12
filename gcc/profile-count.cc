@@ -87,10 +87,16 @@ const char *profile_quality_display_names[] =
 /* Dump THIS to BUFFER.  */
 
 void
-profile_count::dump (char *buffer) const
+profile_count::dump (char *buffer, struct function *fun) const
 {
   if (!initialized_p ())
     sprintf (buffer, "uninitialized");
+  else if (fun && initialized_p ()
+	   && fun->cfg
+	   && ENTRY_BLOCK_PTR_FOR_FN (fun)->count.initialized_p ())
+    sprintf (buffer, "%" PRId64 " (%s, freq %.4f)", m_val,
+	     profile_quality_display_names[m_quality],
+	     to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (fun)->count).to_double ());
   else
     sprintf (buffer, "%" PRId64 " (%s)", m_val,
 	     profile_quality_display_names[m_quality]);
@@ -99,10 +105,10 @@ profile_count::dump (char *buffer) const
 /* Dump THIS to F.  */
 
 void
-profile_count::dump (FILE *f) const
+profile_count::dump (FILE *f, struct function *fun) const
 {
   char buffer[64];
-  dump (buffer);
+  dump (buffer, fun);
   fputs (buffer, f);
 }
 
@@ -111,7 +117,7 @@ profile_count::dump (FILE *f) const
 void
 profile_count::debug () const
 {
-  dump (stderr);
+  dump (stderr, cfun);
   fprintf (stderr, "\n");
 }
 
@@ -122,13 +128,14 @@ profile_count::differs_from_p (profile_count other) const
 {
   gcc_checking_assert (compatible_p (other));
   if (!initialized_p () || !other.initialized_p ())
-    return false;
+    return initialized_p () != other.initialized_p ();
   if ((uint64_t)m_val - (uint64_t)other.m_val < 100
       || (uint64_t)other.m_val - (uint64_t)m_val < 100)
     return false;
   if (!other.m_val)
     return true;
-  int64_t ratio = (int64_t)m_val * 100 / other.m_val;
+  uint64_t ratio;
+  safe_scale_64bit (m_val, 100, other.m_val, &ratio);
   return ratio < 99 || ratio > 101;
 }
 
@@ -339,7 +346,7 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
       return 1;
     }
   if (known)
-    *known = true;
+    *known = in.m_val != 0;
   if (*this == in)
     return 1;
   gcc_checking_assert (compatible_p (in));
@@ -464,4 +471,61 @@ profile_probability::to_sreal () const
 {
   gcc_checking_assert (initialized_p ());
   return ((sreal)m_val) >> (n_bits - 2);
+}
+
+/* Compute square root.  */
+
+profile_probability
+profile_probability::sqrt () const
+{
+  if (!initialized_p () || *this == never () || *this == always ())
+    return *this;
+  profile_probability ret = *this;
+  ret.m_quality = MIN (ret.m_quality, ADJUSTED);
+  uint32_t min_range = m_val;
+  uint32_t max_range = max_probability;
+  if (!m_val)
+    max_range = 0;
+  if (m_val == max_probability)
+    min_range = max_probability;
+  while (min_range != max_range)
+    {
+      uint32_t val = (min_range + max_range) / 2;
+      uint32_t val2 = RDIV ((uint64_t)val * val, max_probability);
+      if (val2 == m_val)
+	min_range = max_range = m_val;
+      else if (val2 > m_val)
+	max_range = val - 1;
+      else if (val2 < m_val)
+	min_range = val + 1;
+    }
+  ret.m_val = min_range;
+  return ret;
+}
+
+/* Compute n-th power of THIS.  */
+
+profile_probability
+profile_probability::pow (int n) const
+{
+  if (n == 1 || !initialized_p ())
+    return *this;
+  if (!n)
+    return profile_probability::always ();
+  if (!nonzero_p ()
+      || !(profile_probability::always () - *this).nonzero_p ())
+    return *this;
+  profile_probability ret = profile_probability::always ();
+  profile_probability v = *this;
+  int p = 1;
+  while (true)
+    {
+      if (n & p)
+	ret = ret * v;
+      p <<= 1;
+      if (p > n)
+	break;
+      v = v * v;
+    }
+  return ret;
 }

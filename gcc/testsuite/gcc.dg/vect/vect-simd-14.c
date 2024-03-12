@@ -76,6 +76,7 @@ main ()
   if (r * 16384.0f != 0.125f)
     abort ();
   float m = -175.25f;
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       if (b[i] != s)
@@ -89,6 +90,7 @@ main ()
   if (bar () != 592.0f)
     abort ();
   s = FLT_MIN_VALUE;
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       if (b[i] != s)

@@ -116,6 +116,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "targhooks.h"
 #include "domwalk.h"
 #include "tree-ssa-math-opts.h"
+#include "dbgcnt.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a
@@ -2754,6 +2755,14 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
   if (!is_widening_mult_p (stmt, &type1, &rhs1, &type2, &rhs2))
     return false;
 
+  /* if any one of rhs1 and rhs2 is subject to abnormal coalescing,
+     avoid the tranform. */
+  if ((TREE_CODE (rhs1) == SSA_NAME
+       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
+      || (TREE_CODE (rhs2) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs2)))
+    return false;
+
   to_mode = SCALAR_INT_TYPE_MODE (type);
   from_mode = SCALAR_INT_TYPE_MODE (type1);
   if (to_mode == from_mode)
@@ -3099,10 +3108,11 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
 	  negate_p = true;
 	}
 
-      tree cond, else_value, ops[3];
+      tree cond, else_value, ops[3], len, bias;
       tree_code code;
       if (!can_interpret_as_conditional_op_p (use_stmt, &cond, &code,
-					      ops, &else_value))
+					      ops, &else_value,
+					      &len, &bias))
 	gcc_unreachable ();
       addop = ops[0] == result ? ops[1] : ops[0];
 
@@ -3122,7 +3132,11 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
       if (seq)
 	gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
 
-      if (cond)
+      if (len)
+	fma_stmt
+	  = gimple_build_call_internal (IFN_COND_LEN_FMA, 7, cond, mulop1, op2,
+					addop, else_value, len, bias);
+      else if (cond)
 	fma_stmt = gimple_build_call_internal (IFN_COND_FMA, 5, cond, mulop1,
 					       op2, addop, else_value);
       else
@@ -3307,7 +3321,8 @@ last_fma_candidate_feeds_initial_phi (fma_deferring_state *state,
 
 static bool
 convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
-		     fma_deferring_state *state, tree mul_cond = NULL_TREE)
+		     fma_deferring_state *state, tree mul_cond = NULL_TREE,
+		     tree mul_len = NULL_TREE, tree mul_bias = NULL_TREE)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
   /* If there isn't a LHS then this can't be an FMA.  There can be no LHS
@@ -3320,7 +3335,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
   imm_use_iterator imm_iter;
 
   if (FLOAT_TYPE_P (type)
-      && flag_fp_contract_mode == FP_CONTRACT_OFF)
+      && flag_fp_contract_mode != FP_CONTRACT_FAST)
     return false;
 
   /* We don't want to do bitfield reduction ops.  */
@@ -3358,6 +3373,9 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
      because the result is not a natural FMA chain.  */
   if (ANY_INTEGRAL_TYPE_P (type)
       && !has_single_use (mul_result))
+    return false;
+
+  if (!dbg_cnt (form_fma))
     return false;
 
   /* Make sure that the multiplication statement becomes dead after
@@ -3420,10 +3438,10 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  negate_p = seen_negate_p = true;
 	}
 
-      tree cond, else_value, ops[3];
+      tree cond, else_value, ops[3], len, bias;
       tree_code code;
       if (!can_interpret_as_conditional_op_p (use_stmt, &cond, &code, ops,
-					      &else_value))
+					      &else_value, &len, &bias))
 	return false;
 
       switch (code)
@@ -3439,15 +3457,49 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  return false;
 	}
 
-      if (mul_cond && cond != mul_cond)
-	return false;
-
-      if (cond)
+      if (len)
 	{
-	  if (cond == result || else_value == result)
+	  /* For COND_LEN_* operations, we may have dummpy mask which is
+	     the all true mask.  Such TREE type may be mul_cond != cond
+	     but we still consider they are equal.  */
+	  if (mul_cond && cond != mul_cond
+	      && !(integer_truep (mul_cond) && integer_truep (cond)))
 	    return false;
-	  if (!direct_internal_fn_supported_p (IFN_COND_FMA, type, opt_type))
+
+	  if (else_value == result)
 	    return false;
+
+	  if (!direct_internal_fn_supported_p (IFN_COND_LEN_FMA, type,
+					       opt_type))
+	    return false;
+
+	  if (mul_len)
+	    {
+	      poly_int64 mul_value, value;
+	      if (poly_int_tree_p (mul_len, &mul_value)
+		  && poly_int_tree_p (len, &value)
+		  && maybe_ne (mul_value, value))
+		return false;
+	      else if (mul_len != len)
+		return false;
+
+	      if (wi::to_widest (mul_bias) != wi::to_widest (bias))
+		return false;
+	    }
+	}
+      else
+	{
+	  if (mul_cond && cond != mul_cond)
+	    return false;
+
+	  if (cond)
+	    {
+	      if (cond == result || else_value == result)
+		return false;
+	      if (!direct_internal_fn_supported_p (IFN_COND_FMA, type,
+						   opt_type))
+		return false;
+	    }
 	}
 
       /* If the subtrahend (OPS[1]) is computed by a MULT_EXPR that
@@ -3605,9 +3657,8 @@ maybe_optimize_guarding_check (vec<gimple *> &mul_stmts, gimple *cond_stmt,
     }
   else if (!single_succ_p (bb) || other_edge->dest != single_succ (bb))
     return;
-  gimple *zero_cond = last_stmt (pred_bb);
+  gcond *zero_cond = safe_dyn_cast <gcond *> (*gsi_last_bb (pred_bb));
   if (zero_cond == NULL
-      || gimple_code (zero_cond) != GIMPLE_COND
       || (gimple_cond_code (zero_cond)
 	  != ((pred_edge->flags & EDGE_TRUE_VALUE) ? NE_EXPR : EQ_EXPR))
       || !integer_zerop (gimple_cond_rhs (zero_cond)))
@@ -3726,11 +3777,10 @@ maybe_optimize_guarding_check (vec<gimple *> &mul_stmts, gimple *cond_stmt,
       else if (!integer_onep (other_val))
 	return;
     }
-  gcond *zero_gcond = as_a <gcond *> (zero_cond);
   if (pred_edge->flags & EDGE_TRUE_VALUE)
-    gimple_cond_make_true (zero_gcond);
+    gimple_cond_make_true (zero_cond);
   else
-    gimple_cond_make_false (zero_gcond);
+    gimple_cond_make_false (zero_cond);
   update_stmt (zero_cond);
   *cfg_changed = true;
 }
@@ -3804,6 +3854,21 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
       use_operand_p use;
       if (!single_imm_use (divlhs, &use, &cur_use_stmt))
 	return 0;
+      if (cast_stmt && gimple_assign_cast_p (cur_use_stmt))
+	{
+	  tree cast_lhs = gimple_assign_lhs (cur_use_stmt);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (cast_lhs))
+	      && TYPE_UNSIGNED (TREE_TYPE (cast_lhs))
+	      && (TYPE_PRECISION (TREE_TYPE (cast_lhs))
+		  == TYPE_PRECISION (TREE_TYPE (divlhs)))
+	      && single_imm_use (cast_lhs, &use, &cur_use_stmt))
+	    {
+	      cast_stmt = NULL;
+	      divlhs = cast_lhs;
+	    }
+	  else
+	    return 0;
+	}
     }
   if (gimple_code (cur_use_stmt) == GIMPLE_COND)
     {
@@ -4076,7 +4141,10 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 			    TYPE_MODE (type)) == CODE_FOR_nothing)
       || (code == MULT_EXPR
 	  && optab_handler (cast_stmt ? mulv4_optab : umulv4_optab,
-			    TYPE_MODE (type)) == CODE_FOR_nothing))
+			    TYPE_MODE (type)) == CODE_FOR_nothing
+	  && (use_seen
+	      || cast_stmt
+	      || !can_mult_highpart_p (TYPE_MODE (type), true))))
     {
       if (code != PLUS_EXPR)
 	return false;
@@ -4389,6 +4457,16 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	  gimple_stmt_iterator gsi2 = gsi_for_stmt (orig_use_stmt);
 	  maybe_optimize_guarding_check (mul_stmts, use_stmt, orig_use_stmt,
 					 cfg_changed);
+	  use_operand_p use;
+	  gimple *cast_stmt;
+	  if (single_imm_use (gimple_assign_lhs (orig_use_stmt), &use,
+			      &cast_stmt)
+	      && gimple_assign_cast_p (cast_stmt))
+	    {
+	      gimple_stmt_iterator gsi3 = gsi_for_stmt (cast_stmt);
+	      gsi_remove (&gsi3, true);
+	      release_ssa_name (gimple_assign_lhs (cast_stmt));
+	    }
 	  gsi_remove (&gsi2, true);
 	  release_ssa_name (gimple_assign_lhs (orig_use_stmt));
 	}
@@ -4413,6 +4491,665 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
       return true;
     }
   return false;
+}
+
+/* Helper of match_uaddc_usubc.  Look through an integral cast
+   which should preserve [0, 1] range value (unless source has
+   1-bit signed type) and the cast has single use.  */
+
+static gimple *
+uaddc_cast (gimple *g)
+{
+  if (!gimple_assign_cast_p (g))
+    return g;
+  tree op = gimple_assign_rhs1 (g);
+  if (TREE_CODE (op) == SSA_NAME
+      && INTEGRAL_TYPE_P (TREE_TYPE (op))
+      && (TYPE_PRECISION (TREE_TYPE (op)) > 1
+	  || TYPE_UNSIGNED (TREE_TYPE (op)))
+      && has_single_use (gimple_assign_lhs (g)))
+    return SSA_NAME_DEF_STMT (op);
+  return g;
+}
+
+/* Helper of match_uaddc_usubc.  Look through a NE_EXPR
+   comparison with 0 which also preserves [0, 1] value range.  */
+
+static gimple *
+uaddc_ne0 (gimple *g)
+{
+  if (is_gimple_assign (g)
+      && gimple_assign_rhs_code (g) == NE_EXPR
+      && integer_zerop (gimple_assign_rhs2 (g))
+      && TREE_CODE (gimple_assign_rhs1 (g)) == SSA_NAME
+      && has_single_use (gimple_assign_lhs (g)))
+    return SSA_NAME_DEF_STMT (gimple_assign_rhs1 (g));
+  return g;
+}
+
+/* Return true if G is {REAL,IMAG}PART_EXPR PART with SSA_NAME
+   operand.  */
+
+static bool
+uaddc_is_cplxpart (gimple *g, tree_code part)
+{
+  return (is_gimple_assign (g)
+	  && gimple_assign_rhs_code (g) == part
+	  && TREE_CODE (TREE_OPERAND (gimple_assign_rhs1 (g), 0)) == SSA_NAME);
+}
+
+/* Try to match e.g.
+   _29 = .ADD_OVERFLOW (_3, _4);
+   _30 = REALPART_EXPR <_29>;
+   _31 = IMAGPART_EXPR <_29>;
+   _32 = .ADD_OVERFLOW (_30, _38);
+   _33 = REALPART_EXPR <_32>;
+   _34 = IMAGPART_EXPR <_32>;
+   _35 = _31 + _34;
+   as
+   _36 = .UADDC (_3, _4, _38);
+   _33 = REALPART_EXPR <_36>;
+   _35 = IMAGPART_EXPR <_36>;
+   or
+   _22 = .SUB_OVERFLOW (_6, _5);
+   _23 = REALPART_EXPR <_22>;
+   _24 = IMAGPART_EXPR <_22>;
+   _25 = .SUB_OVERFLOW (_23, _37);
+   _26 = REALPART_EXPR <_25>;
+   _27 = IMAGPART_EXPR <_25>;
+   _28 = _24 | _27;
+   as
+   _29 = .USUBC (_6, _5, _37);
+   _26 = REALPART_EXPR <_29>;
+   _288 = IMAGPART_EXPR <_29>;
+   provided _38 or _37 above have [0, 1] range
+   and _3, _4 and _30 or _6, _5 and _23 are unsigned
+   integral types with the same precision.  Whether + or | or ^ is
+   used on the IMAGPART_EXPR results doesn't matter, with one of
+   added or subtracted operands in [0, 1] range at most one
+   .ADD_OVERFLOW or .SUB_OVERFLOW will indicate overflow.  */
+
+static bool
+match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
+{
+  tree rhs[4];
+  rhs[0] = gimple_assign_rhs1 (stmt);
+  rhs[1] = gimple_assign_rhs2 (stmt);
+  rhs[2] = NULL_TREE;
+  rhs[3] = NULL_TREE;
+  tree type = TREE_TYPE (rhs[0]);
+  if (!INTEGRAL_TYPE_P (type) || !TYPE_UNSIGNED (type))
+    return false;
+
+  auto_vec<gimple *, 2> temp_stmts;
+  if (code != BIT_IOR_EXPR && code != BIT_XOR_EXPR)
+    {
+      /* If overflow flag is ignored on the MSB limb, we can end up with
+	 the most significant limb handled as r = op1 + op2 + ovf1 + ovf2;
+	 or r = op1 - op2 - ovf1 - ovf2; or various equivalent expressions
+	 thereof.  Handle those like the ovf = ovf1 + ovf2; case to recognize
+	 the limb below the MSB, but also create another .UADDC/.USUBC call
+	 for the last limb.
+
+	 First look through assignments with the same rhs code as CODE,
+	 with the exception that subtraction of a constant is canonicalized
+	 into addition of its negation.  rhs[0] will be minuend for
+	 subtractions and one of addends for addition, all other assigned
+	 rhs[i] operands will be subtrahends or other addends.  */
+      while (TREE_CODE (rhs[0]) == SSA_NAME && !rhs[3])
+	{
+	  gimple *g = SSA_NAME_DEF_STMT (rhs[0]);
+	  if (has_single_use (rhs[0])
+	      && is_gimple_assign (g)
+	      && (gimple_assign_rhs_code (g) == code
+		  || (code == MINUS_EXPR
+		      && gimple_assign_rhs_code (g) == PLUS_EXPR
+		      && TREE_CODE (gimple_assign_rhs2 (g)) == INTEGER_CST)))
+	    {
+	      tree r2 = gimple_assign_rhs2 (g);
+	      if (gimple_assign_rhs_code (g) != code)
+		{
+		  r2 = const_unop (NEGATE_EXPR, TREE_TYPE (r2), r2);
+		  if (!r2)
+		    break;
+		}
+	      rhs[0] = gimple_assign_rhs1 (g);
+	      tree &r = rhs[2] ? rhs[3] : rhs[2];
+	      r = r2;
+	      temp_stmts.quick_push (g);
+	    }
+	  else
+	    break;
+	}
+      for (int i = 1; i <= 2; ++i)
+	while (rhs[i] && TREE_CODE (rhs[i]) == SSA_NAME && !rhs[3])
+	  {
+	    gimple *g = SSA_NAME_DEF_STMT (rhs[i]);
+	    if (has_single_use (rhs[i])
+		&& is_gimple_assign (g)
+		&& gimple_assign_rhs_code (g) == PLUS_EXPR)
+	      {
+		rhs[i] = gimple_assign_rhs1 (g);
+		if (rhs[2])
+		  rhs[3] = gimple_assign_rhs2 (g);
+		else
+		  rhs[2] = gimple_assign_rhs2 (g);
+		temp_stmts.quick_push (g);
+	      }
+	    else
+	      break;
+	  }
+      /* If there are just 3 addends or one minuend and two subtrahends,
+	 check for UADDC or USUBC being pattern recognized earlier.
+	 Say r = op1 + op2 + ovf1 + ovf2; where the (ovf1 + ovf2) part
+	 got pattern matched earlier as __imag__ .UADDC (arg1, arg2, arg3)
+	 etc.  */
+      if (rhs[2] && !rhs[3])
+	{
+	  for (int i = (code == MINUS_EXPR ? 1 : 0); i < 3; ++i)
+	    if (TREE_CODE (rhs[i]) == SSA_NAME)
+	      {
+		gimple *im = uaddc_cast (SSA_NAME_DEF_STMT (rhs[i]));
+		im = uaddc_ne0 (im);
+		if (uaddc_is_cplxpart (im, IMAGPART_EXPR))
+		  {
+		    /* We found one of the 3 addends or 2 subtrahends to be
+		       __imag__ of something, verify it is .UADDC/.USUBC.  */
+		    tree rhs1 = gimple_assign_rhs1 (im);
+		    gimple *ovf = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs1, 0));
+		    tree ovf_lhs = NULL_TREE;
+		    tree ovf_arg1 = NULL_TREE, ovf_arg2 = NULL_TREE;
+		    if (gimple_call_internal_p (ovf, code == PLUS_EXPR
+						     ? IFN_ADD_OVERFLOW
+						     : IFN_SUB_OVERFLOW))
+		      {
+			/* Or verify it is .ADD_OVERFLOW/.SUB_OVERFLOW.
+			   This is for the case of 2 chained .UADDC/.USUBC,
+			   where the first one uses 0 carry-in and the second
+			   one ignores the carry-out.
+			   So, something like:
+			   _16 = .ADD_OVERFLOW (_1, _2);
+			   _17 = REALPART_EXPR <_16>;
+			   _18 = IMAGPART_EXPR <_16>;
+			   _15 = _3 + _4;
+			   _12 = _15 + _18;
+			   where the first 3 statements come from the lower
+			   limb addition and the last 2 from the higher limb
+			   which ignores carry-out.  */
+			ovf_lhs = gimple_call_lhs (ovf);
+			tree ovf_lhs_type = TREE_TYPE (TREE_TYPE (ovf_lhs));
+			ovf_arg1 = gimple_call_arg (ovf, 0);
+			ovf_arg2 = gimple_call_arg (ovf, 1);
+			/* In that case we need to punt if the types don't
+			   mismatch.  */
+			if (!types_compatible_p (type, ovf_lhs_type)
+			    || !types_compatible_p (type, TREE_TYPE (ovf_arg1))
+			    || !types_compatible_p (type,
+						    TREE_TYPE (ovf_arg2)))
+			  ovf_lhs = NULL_TREE;
+			else
+			  {
+			    for (int i = (code == PLUS_EXPR ? 1 : 0);
+				 i >= 0; --i)
+			      {
+				tree r = gimple_call_arg (ovf, i);
+				if (TREE_CODE (r) != SSA_NAME)
+				  continue;
+				if (uaddc_is_cplxpart (SSA_NAME_DEF_STMT (r),
+						       REALPART_EXPR))
+				  {
+				    /* Punt if one of the args which isn't
+				       subtracted isn't __real__; that could
+				       then prevent better match later.
+				       Consider:
+				       _3 = .ADD_OVERFLOW (_1, _2);
+				       _4 = REALPART_EXPR <_3>;
+				       _5 = IMAGPART_EXPR <_3>;
+				       _7 = .ADD_OVERFLOW (_4, _6);
+				       _8 = REALPART_EXPR <_7>;
+				       _9 = IMAGPART_EXPR <_7>;
+				       _12 = _10 + _11;
+				       _13 = _12 + _9;
+				       _14 = _13 + _5;
+				       We want to match this when called on
+				       the last stmt as a pair of .UADDC calls,
+				       but without this check we could turn
+				       that prematurely on _13 = _12 + _9;
+				       stmt into .UADDC with 0 carry-in just
+				       on the second .ADD_OVERFLOW call and
+				       another replacing the _12 and _13
+				       additions.  */
+				    ovf_lhs = NULL_TREE;
+				    break;
+				  }
+			      }
+			  }
+			if (ovf_lhs)
+			  {
+			    use_operand_p use_p;
+			    imm_use_iterator iter;
+			    tree re_lhs = NULL_TREE;
+			    FOR_EACH_IMM_USE_FAST (use_p, iter, ovf_lhs)
+			      {
+				gimple *use_stmt = USE_STMT (use_p);
+				if (is_gimple_debug (use_stmt))
+				  continue;
+				if (use_stmt == im)
+				  continue;
+				if (!uaddc_is_cplxpart (use_stmt,
+							REALPART_EXPR))
+				  {
+				    ovf_lhs = NULL_TREE;
+				    break;
+				  }
+				re_lhs = gimple_assign_lhs (use_stmt);
+			      }
+			    if (ovf_lhs && re_lhs)
+			      {
+				FOR_EACH_IMM_USE_FAST (use_p, iter, re_lhs)
+				  {
+				    gimple *use_stmt = USE_STMT (use_p);
+				    if (is_gimple_debug (use_stmt))
+				      continue;
+				    internal_fn ifn
+				      = gimple_call_internal_fn (ovf);
+				    /* Punt if the __real__ of lhs is used
+				       in the same .*_OVERFLOW call.
+				       Consider:
+				       _3 = .ADD_OVERFLOW (_1, _2);
+				       _4 = REALPART_EXPR <_3>;
+				       _5 = IMAGPART_EXPR <_3>;
+				       _7 = .ADD_OVERFLOW (_4, _6);
+				       _8 = REALPART_EXPR <_7>;
+				       _9 = IMAGPART_EXPR <_7>;
+				       _12 = _10 + _11;
+				       _13 = _12 + _5;
+				       _14 = _13 + _9;
+				       We want to match this when called on
+				       the last stmt as a pair of .UADDC calls,
+				       but without this check we could turn
+				       that prematurely on _13 = _12 + _5;
+				       stmt into .UADDC with 0 carry-in just
+				       on the first .ADD_OVERFLOW call and
+				       another replacing the _12 and _13
+				       additions.  */
+				    if (gimple_call_internal_p (use_stmt, ifn))
+				      {
+					ovf_lhs = NULL_TREE;
+					break;
+				      }
+				  }
+			      }
+			  }
+		      }
+		    if ((ovf_lhs
+			 || gimple_call_internal_p (ovf,
+						    code == PLUS_EXPR
+						    ? IFN_UADDC : IFN_USUBC))
+			&& (optab_handler (code == PLUS_EXPR
+					   ? uaddc5_optab : usubc5_optab,
+					   TYPE_MODE (type))
+			    != CODE_FOR_nothing))
+		      {
+			/* And in that case build another .UADDC/.USUBC
+			   call for the most significand limb addition.
+			   Overflow bit is ignored here.  */
+			if (i != 2)
+			  std::swap (rhs[i], rhs[2]);
+			gimple *g
+			  = gimple_build_call_internal (code == PLUS_EXPR
+							? IFN_UADDC
+							: IFN_USUBC,
+							3, rhs[0], rhs[1],
+							rhs[2]);
+			tree nlhs = make_ssa_name (build_complex_type (type));
+			gimple_call_set_lhs (g, nlhs);
+			gsi_insert_before (gsi, g, GSI_SAME_STMT);
+			tree ilhs = gimple_assign_lhs (stmt);
+			g = gimple_build_assign (ilhs, REALPART_EXPR,
+						 build1 (REALPART_EXPR,
+							 TREE_TYPE (ilhs),
+							 nlhs));
+			gsi_replace (gsi, g, true);
+			/* And if it is initialized from result of __imag__
+			   of .{ADD,SUB}_OVERFLOW call, replace that
+			   call with .U{ADD,SUB}C call with the same arguments,
+			   just 0 added as third argument.  This isn't strictly
+			   necessary, .ADD_OVERFLOW (x, y) and .UADDC (x, y, 0)
+			   produce the same result, but may result in better
+			   generated code on some targets where the backend can
+			   better prepare in how the result will be used.  */
+			if (ovf_lhs)
+			  {
+			    tree zero = build_zero_cst (type);
+			    g = gimple_build_call_internal (code == PLUS_EXPR
+							    ? IFN_UADDC
+							    : IFN_USUBC,
+							    3, ovf_arg1,
+							    ovf_arg2, zero);
+			    gimple_call_set_lhs (g, ovf_lhs);
+			    gimple_stmt_iterator gsi2 = gsi_for_stmt (ovf);
+			    gsi_replace (&gsi2, g, true);
+			  }
+			return true;
+		      }
+		  }
+	      }
+	  return false;
+	}
+      if (code == MINUS_EXPR && !rhs[2])
+	return false;
+      if (code == MINUS_EXPR)
+	/* Code below expects rhs[0] and rhs[1] to have the IMAGPART_EXPRs.
+	   So, for MINUS_EXPR swap the single added rhs operand (others are
+	   subtracted) to rhs[3].  */
+	std::swap (rhs[0], rhs[3]);
+    }
+  /* Walk from both operands of STMT (for +/- even sometimes from
+     all the 4 addends or 3 subtrahends), see through casts and != 0
+     statements which would preserve [0, 1] range of values and
+     check which is initialized from __imag__.  */
+  gimple *im1 = NULL, *im2 = NULL;
+  for (int i = 0; i < (code == MINUS_EXPR ? 3 : 4); i++)
+    if (rhs[i] && TREE_CODE (rhs[i]) == SSA_NAME)
+      {
+	gimple *im = uaddc_cast (SSA_NAME_DEF_STMT (rhs[i]));
+	im = uaddc_ne0 (im);
+	if (uaddc_is_cplxpart (im, IMAGPART_EXPR))
+	  {
+	    if (im1 == NULL)
+	      {
+		im1 = im;
+		if (i != 0)
+		  std::swap (rhs[0], rhs[i]);
+	      }
+	    else
+	      {
+		im2 = im;
+		if (i != 1)
+		  std::swap (rhs[1], rhs[i]);
+		break;
+	      }
+	  }
+      }
+  /* If we don't find at least two, punt.  */
+  if (!im2)
+    return false;
+  /* Check they are __imag__ of .ADD_OVERFLOW or .SUB_OVERFLOW call results,
+     either both .ADD_OVERFLOW or both .SUB_OVERFLOW and that we have
+     uaddc5/usubc5 named pattern for the corresponding mode.  */
+  gimple *ovf1
+    = SSA_NAME_DEF_STMT (TREE_OPERAND (gimple_assign_rhs1 (im1), 0));
+  gimple *ovf2
+    = SSA_NAME_DEF_STMT (TREE_OPERAND (gimple_assign_rhs1 (im2), 0));
+  internal_fn ifn;
+  if (!is_gimple_call (ovf1)
+      || !gimple_call_internal_p (ovf1)
+      || ((ifn = gimple_call_internal_fn (ovf1)) != IFN_ADD_OVERFLOW
+	  && ifn != IFN_SUB_OVERFLOW)
+      || !gimple_call_internal_p (ovf2, ifn)
+      || optab_handler (ifn == IFN_ADD_OVERFLOW ? uaddc5_optab : usubc5_optab,
+			TYPE_MODE (type)) == CODE_FOR_nothing
+      || (rhs[2]
+	  && optab_handler (code == PLUS_EXPR ? uaddc5_optab : usubc5_optab,
+			    TYPE_MODE (type)) == CODE_FOR_nothing))
+    return false;
+  tree arg1, arg2, arg3 = NULL_TREE;
+  gimple *re1 = NULL, *re2 = NULL;
+  /* On one of the two calls, one of the .ADD_OVERFLOW/.SUB_OVERFLOW arguments
+     should be initialized from __real__ of the other of the two calls.
+     Though, for .SUB_OVERFLOW, it has to be the first argument, not the
+     second one.  */
+  for (int i = (ifn == IFN_ADD_OVERFLOW ? 1 : 0); i >= 0; --i)
+    for (gimple *ovf = ovf1; ovf; ovf = (ovf == ovf1 ? ovf2 : NULL))
+      {
+	tree arg = gimple_call_arg (ovf, i);
+	if (TREE_CODE (arg) != SSA_NAME)
+	  continue;
+	re1 = SSA_NAME_DEF_STMT (arg);
+	if (uaddc_is_cplxpart (re1, REALPART_EXPR)
+	    && (SSA_NAME_DEF_STMT (TREE_OPERAND (gimple_assign_rhs1 (re1), 0))
+		== (ovf == ovf1 ? ovf2 : ovf1)))
+	  {
+	    if (ovf == ovf1)
+	      {
+		/* Make sure ovf2 is the .*_OVERFLOW call with argument
+		   initialized from __real__ of ovf1.  */
+		std::swap (rhs[0], rhs[1]);
+		std::swap (im1, im2);
+		std::swap (ovf1, ovf2);
+	      }
+	    arg3 = gimple_call_arg (ovf, 1 - i);
+	    i = -1;
+	    break;
+	  }
+      }
+  if (!arg3)
+    return false;
+  arg1 = gimple_call_arg (ovf1, 0);
+  arg2 = gimple_call_arg (ovf1, 1);
+  if (!types_compatible_p (type, TREE_TYPE (arg1)))
+    return false;
+  int kind[2] = { 0, 0 };
+  tree arg_im[2] = { NULL_TREE, NULL_TREE };
+  /* At least one of arg2 and arg3 should have type compatible
+     with arg1/rhs[0], and the other one should have value in [0, 1]
+     range.  If both are in [0, 1] range and type compatible with
+     arg1/rhs[0], try harder to find after looking through casts,
+     != 0 comparisons which one is initialized to __imag__ of
+     .{ADD,SUB}_OVERFLOW or .U{ADD,SUB}C call results.  */
+  for (int i = 0; i < 2; ++i)
+    {
+      tree arg = i == 0 ? arg2 : arg3;
+      if (types_compatible_p (type, TREE_TYPE (arg)))
+	kind[i] = 1;
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (arg))
+	  || (TYPE_PRECISION (TREE_TYPE (arg)) == 1
+	      && !TYPE_UNSIGNED (TREE_TYPE (arg))))
+	continue;
+      if (tree_zero_one_valued_p (arg))
+	kind[i] |= 2;
+      if (TREE_CODE (arg) == SSA_NAME)
+	{
+	  gimple *g = SSA_NAME_DEF_STMT (arg);
+	  if (gimple_assign_cast_p (g))
+	    {
+	      tree op = gimple_assign_rhs1 (g);
+	      if (TREE_CODE (op) == SSA_NAME
+		  && INTEGRAL_TYPE_P (TREE_TYPE (op)))
+		g = SSA_NAME_DEF_STMT (op);
+	    }
+	  g = uaddc_ne0 (g);
+	  if (!uaddc_is_cplxpart (g, IMAGPART_EXPR))
+	    continue;
+	  arg_im[i] = gimple_assign_lhs (g);
+	  g = SSA_NAME_DEF_STMT (TREE_OPERAND (gimple_assign_rhs1 (g), 0));
+	  if (!is_gimple_call (g) || !gimple_call_internal_p (g))
+	    continue;
+	  switch (gimple_call_internal_fn (g))
+	    {
+	    case IFN_ADD_OVERFLOW:
+	    case IFN_SUB_OVERFLOW:
+	    case IFN_UADDC:
+	    case IFN_USUBC:
+	      break;
+	    default:
+	      continue;
+	    }
+	  kind[i] |= 4;
+	}
+    }
+  /* Make arg2 the one with compatible type and arg3 the one
+     with [0, 1] range.  If both is true for both operands,
+     prefer as arg3 result of __imag__ of some ifn.  */
+  if ((kind[0] & 1) == 0 || ((kind[1] & 1) != 0 && kind[0] > kind[1]))
+    {
+      std::swap (arg2, arg3);
+      std::swap (kind[0], kind[1]);
+      std::swap (arg_im[0], arg_im[1]);
+    }
+  if ((kind[0] & 1) == 0 || (kind[1] & 6) == 0)
+    return false;
+  if (!has_single_use (gimple_assign_lhs (im1))
+      || !has_single_use (gimple_assign_lhs (im2))
+      || !has_single_use (gimple_assign_lhs (re1))
+      || num_imm_uses (gimple_call_lhs (ovf1)) != 2)
+    return false;
+  /* Check that ovf2's result is used in __real__ and set re2
+     to that statement.  */
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  tree lhs = gimple_call_lhs (ovf2);
+  FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+      if (is_gimple_debug (use_stmt))
+	continue;
+      if (use_stmt == im2)
+	continue;
+      if (re2)
+	return false;
+      if (!uaddc_is_cplxpart (use_stmt, REALPART_EXPR))
+	return false;
+      re2 = use_stmt;
+    }
+  /* Build .UADDC/.USUBC call which will be placed before the stmt.  */
+  gimple_stmt_iterator gsi2 = gsi_for_stmt (ovf2);
+  gimple *g;
+  if ((kind[1] & 4) != 0 && types_compatible_p (type, TREE_TYPE (arg_im[1])))
+    arg3 = arg_im[1];
+  if ((kind[1] & 1) == 0)
+    {
+      if (TREE_CODE (arg3) == INTEGER_CST)
+	arg3 = fold_convert (type, arg3);
+      else
+	{
+	  g = gimple_build_assign (make_ssa_name (type), NOP_EXPR, arg3);
+	  gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
+	  arg3 = gimple_assign_lhs (g);
+	}
+    }
+  g = gimple_build_call_internal (ifn == IFN_ADD_OVERFLOW
+				  ? IFN_UADDC : IFN_USUBC,
+				  3, arg1, arg2, arg3);
+  tree nlhs = make_ssa_name (TREE_TYPE (lhs));
+  gimple_call_set_lhs (g, nlhs);
+  gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
+  /* In the case where stmt is | or ^ of two overflow flags
+     or addition of those, replace stmt with __imag__ of the above
+     added call.  In case of arg1 + arg2 + (ovf1 + ovf2) or
+     arg1 - arg2 - (ovf1 + ovf2) just emit it before stmt.  */
+  tree ilhs = rhs[2] ? make_ssa_name (type) : gimple_assign_lhs (stmt);
+  g = gimple_build_assign (ilhs, IMAGPART_EXPR,
+			   build1 (IMAGPART_EXPR, TREE_TYPE (ilhs), nlhs));
+  if (rhs[2])
+    {
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      /* Remove some further statements which can't be kept in the IL because
+	 they can use SSA_NAMEs whose setter is going to be removed too.  */
+      while (temp_stmts.length ())
+	{
+	  g = temp_stmts.pop ();
+	  gsi2 = gsi_for_stmt (g);
+	  gsi_remove (&gsi2, true);
+	}
+    }
+  else
+    gsi_replace (gsi, g, true);
+  /* Remove some statements which can't be kept in the IL because they
+     use SSA_NAME whose setter is going to be removed too.  */
+  tree rhs1 = rhs[1];
+  for (int i = 0; i < 2; i++)
+    if (rhs1 == gimple_assign_lhs (im2))
+      break;
+    else
+      {
+	g = SSA_NAME_DEF_STMT (rhs1);
+	rhs1 = gimple_assign_rhs1 (g);
+	gsi2 = gsi_for_stmt (g);
+	gsi_remove (&gsi2, true);
+      }
+  gcc_checking_assert (rhs1 == gimple_assign_lhs (im2));
+  gsi2 = gsi_for_stmt (im2);
+  gsi_remove (&gsi2, true);
+  /* Replace the re2 statement with __real__ of the newly added
+     .UADDC/.USUBC call.  */
+  if (re2)
+    {
+      gsi2 = gsi_for_stmt (re2);
+      tree rlhs = gimple_assign_lhs (re2);
+      g = gimple_build_assign (rlhs, REALPART_EXPR,
+			       build1 (REALPART_EXPR, TREE_TYPE (rlhs), nlhs));
+      gsi_replace (&gsi2, g, true);
+    }
+  if (rhs[2])
+    {
+      /* If this is the arg1 + arg2 + (ovf1 + ovf2) or
+	 arg1 - arg2 - (ovf1 + ovf2) case for the most significant limb,
+	 replace stmt with __real__ of another .UADDC/.USUBC call which
+	 handles the most significant limb.  Overflow flag from this is
+	 ignored.  */
+      g = gimple_build_call_internal (code == PLUS_EXPR
+				      ? IFN_UADDC : IFN_USUBC,
+				      3, rhs[3], rhs[2], ilhs);
+      nlhs = make_ssa_name (TREE_TYPE (lhs));
+      gimple_call_set_lhs (g, nlhs);
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      ilhs = gimple_assign_lhs (stmt);
+      g = gimple_build_assign (ilhs, REALPART_EXPR,
+			       build1 (REALPART_EXPR, TREE_TYPE (ilhs), nlhs));
+      gsi_replace (gsi, g, true);
+    }
+  if (TREE_CODE (arg3) == SSA_NAME)
+    {
+      /* When pattern recognizing the second least significant limb
+	 above (i.e. first pair of .{ADD,SUB}_OVERFLOW calls for one limb),
+	 check if the [0, 1] range argument (i.e. carry in) isn't the
+	 result of another .{ADD,SUB}_OVERFLOW call (one handling the
+	 least significant limb).  Again look through casts and != 0.  */
+      gimple *im3 = SSA_NAME_DEF_STMT (arg3);
+      for (int i = 0; i < 2; ++i)
+	{
+	  gimple *im4 = uaddc_cast (im3);
+	  if (im4 == im3)
+	    break;
+	  else
+	    im3 = im4;
+	}
+      im3 = uaddc_ne0 (im3);
+      if (uaddc_is_cplxpart (im3, IMAGPART_EXPR))
+	{
+	  gimple *ovf3
+	    = SSA_NAME_DEF_STMT (TREE_OPERAND (gimple_assign_rhs1 (im3), 0));
+	  if (gimple_call_internal_p (ovf3, ifn))
+	    {
+	      lhs = gimple_call_lhs (ovf3);
+	      arg1 = gimple_call_arg (ovf3, 0);
+	      arg2 = gimple_call_arg (ovf3, 1);
+	      if (types_compatible_p (type, TREE_TYPE (TREE_TYPE (lhs)))
+		  && types_compatible_p (type, TREE_TYPE (arg1))
+		  && types_compatible_p (type, TREE_TYPE (arg2)))
+		{
+		  /* And if it is initialized from result of __imag__
+		     of .{ADD,SUB}_OVERFLOW call, replace that
+		     call with .U{ADD,SUB}C call with the same arguments,
+		     just 0 added as third argument.  This isn't strictly
+		     necessary, .ADD_OVERFLOW (x, y) and .UADDC (x, y, 0)
+		     produce the same result, but may result in better
+		     generated code on some targets where the backend can
+		     better prepare in how the result will be used.  */
+		  g = gimple_build_call_internal (ifn == IFN_ADD_OVERFLOW
+						  ? IFN_UADDC : IFN_USUBC,
+						  3, arg1, arg2,
+						  build_zero_cst (type));
+		  gimple_call_set_lhs (g, lhs);
+		  gsi2 = gsi_for_stmt (ovf3);
+		  gsi_replace (&gsi2, g, true);
+		}
+	    }
+	}
+    }
+  return true;
 }
 
 /* Return true if target has support for divmod.  */
@@ -4474,8 +5211,8 @@ divmod_candidate_p (gassign *stmt)
       if (integer_pow2p (op2))
 	return false;
 
-      if (TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT
-	  && TYPE_PRECISION (type) <= BITS_PER_WORD)
+      if (element_precision (type) <= HOST_BITS_PER_WIDE_INT
+	  && element_precision (type) <= BITS_PER_WORD)
 	return false;
 
       /* If the divisor is not power of 2 and the precision wider than
@@ -4778,7 +5515,7 @@ convert_mult_to_highpart (gassign *stmt, gimple_stmt_iterator *gsi)
    conditional jump sequence.  */
 
 static void
-optimize_spaceship (gimple *stmt)
+optimize_spaceship (gcond *stmt)
 {
   enum tree_code code = gimple_cond_code (stmt);
   if (code != EQ_EXPR && code != NE_EXPR)
@@ -4797,9 +5534,8 @@ optimize_spaceship (gimple *stmt)
   if (((EDGE_SUCC (bb0, 0)->flags & EDGE_TRUE_VALUE) != 0) ^ (code == EQ_EXPR))
     bb1 = EDGE_SUCC (bb0, 0)->dest;
 
-  gimple *g = last_stmt (bb1);
+  gcond *g = safe_dyn_cast <gcond *> (*gsi_last_bb (bb1));
   if (g == NULL
-      || gimple_code (g) != GIMPLE_COND
       || !single_pred_p (bb1)
       || (operand_equal_p (gimple_cond_lhs (g), arg1, 0)
 	  ? !operand_equal_p (gimple_cond_rhs (g), arg2, 0)
@@ -4833,9 +5569,8 @@ optimize_spaceship (gimple *stmt)
 	continue;
 
       bb2 = EDGE_SUCC (bb1, i)->dest;
-      g = last_stmt (bb2);
+      g = safe_dyn_cast <gcond *> (*gsi_last_bb (bb2));
       if (g == NULL
-	  || gimple_code (g) != GIMPLE_COND
 	  || !single_pred_p (bb2)
 	  || (operand_equal_p (gimple_cond_lhs (g), arg1, 0)
 	      ? !operand_equal_p (gimple_cond_rhs (g), arg2, 0)
@@ -4899,19 +5634,17 @@ optimize_spaceship (gimple *stmt)
 	}
     }
 
-  g = gimple_build_call_internal (IFN_SPACESHIP, 2, arg1, arg2);
+  gcall *gc = gimple_build_call_internal (IFN_SPACESHIP, 2, arg1, arg2);
   tree lhs = make_ssa_name (integer_type_node);
-  gimple_call_set_lhs (g, lhs);
+  gimple_call_set_lhs (gc, lhs);
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  gsi_insert_before (&gsi, gc, GSI_SAME_STMT);
 
-  gcond *cond = as_a <gcond *> (stmt);
-  gimple_cond_set_lhs (cond, lhs);
-  gimple_cond_set_rhs (cond, integer_zero_node);
+  gimple_cond_set_lhs (stmt, lhs);
+  gimple_cond_set_rhs (stmt, integer_zero_node);
   update_stmt (stmt);
 
-  g = last_stmt (bb1);
-  cond = as_a <gcond *> (g);
+  gcond *cond = as_a <gcond *> (*gsi_last_bb (bb1));
   gimple_cond_set_lhs (cond, lhs);
   if (em1->src == bb1 && e2 != em1)
     {
@@ -4926,12 +5659,11 @@ optimize_spaceship (gimple *stmt)
       gimple_cond_set_code (cond, (e1->flags & EDGE_TRUE_VALUE)
 				  ? EQ_EXPR : NE_EXPR);
     }
-  update_stmt (g);
+  update_stmt (cond);
 
   if (e2 != e1 && e2 != em1)
     {
-      g = last_stmt (bb2);
-      cond = as_a <gcond *> (g);
+      cond = as_a <gcond *> (*gsi_last_bb (bb2));
       gimple_cond_set_lhs (cond, lhs);
       if (em1->src == bb2)
 	gimple_cond_set_rhs (cond, integer_minus_one_node);
@@ -4942,7 +5674,7 @@ optimize_spaceship (gimple *stmt)
 	}
       gimple_cond_set_code (cond,
 			    (e2->flags & EDGE_TRUE_VALUE) ? NE_EXPR : EQ_EXPR);
-      update_stmt (g);
+      update_stmt (cond);
     }
 
   wide_int wm1 = wi::minus_one (TYPE_PRECISION (integer_type_node));
@@ -5048,7 +5780,11 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	    case PLUS_EXPR:
 	    case MINUS_EXPR:
 	      if (!convert_plusminus_to_widen (&gsi, stmt, code))
-		match_arith_overflow (&gsi, stmt, code, m_cfg_changed_p);
+		{
+		  match_arith_overflow (&gsi, stmt, code, m_cfg_changed_p);
+		  if (gsi_stmt (gsi) == stmt)
+		    match_uaddc_usubc (&gsi, stmt, code);
+		}
 	      break;
 
 	    case BIT_NOT_EXPR:
@@ -5062,6 +5798,11 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
 	    case RSHIFT_EXPR:
 	      convert_mult_to_highpart (as_a<gassign *> (stmt), &gsi);
+	      break;
+
+	    case BIT_IOR_EXPR:
+	    case BIT_XOR_EXPR:
+	      match_uaddc_usubc (&gsi, stmt, code);
 	      break;
 
 	    default:;
@@ -5104,6 +5845,22 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 		}
 	      break;
 
+	    case CFN_COND_LEN_MUL:
+	      if (convert_mult_to_fma (stmt,
+				       gimple_call_arg (stmt, 1),
+				       gimple_call_arg (stmt, 2),
+				       &fma_state,
+				       gimple_call_arg (stmt, 0),
+				       gimple_call_arg (stmt, 4),
+				       gimple_call_arg (stmt, 5)))
+
+		{
+		  gsi_remove (&gsi, true);
+		  release_defs (stmt);
+		  continue;
+		}
+	      break;
+
 	    case CFN_LAST:
 	      cancel_fma_deferring (&fma_state);
 	      break;
@@ -5113,7 +5870,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	    }
 	}
       else if (gimple_code (stmt) == GIMPLE_COND)
-	optimize_spaceship (stmt);
+	optimize_spaceship (as_a <gcond *> (stmt));
       gsi_next (&gsi);
     }
   if (fma_state.m_deferring_p

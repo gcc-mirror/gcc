@@ -142,6 +142,20 @@ else version (IBMZ_Any)
         void _dl_mcount_wrapper_check(void* __selfpc);
     }
 }
+else version (LoongArch64)
+{
+    // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/dlfcn.h
+    static if (_GNU_SOURCE)
+    {
+        RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
+        {
+            _dl_mcount_wrapper_check(cast(void*)fctp);
+            return fctp(args);
+        }
+
+        void _dl_mcount_wrapper_check(void* __selfpc);
+    }
+}
 else
     static assert(0, "unimplemented");
 

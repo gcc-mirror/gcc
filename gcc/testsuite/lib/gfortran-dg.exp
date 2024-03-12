@@ -126,11 +126,15 @@ proc gfortran-dg-runtest { testcases flags default-extra-flags } {
     global runtests
     global torture_with_loops
 
+    # Some callers initialize torture testing themselves; don't override those.
+    set existing_torture_init [torture-init-done]
+    if { $existing_torture_init == 0 } {
+	torture-init
+    }
     # Some callers set torture options themselves; don't override those.
     set existing_torture_options [torture-options-exist]
     if { $existing_torture_options == 0 } {
 	global DG_TORTURE_OPTIONS
-	torture-init
 	set-torture-options $DG_TORTURE_OPTIONS
     }
     dump-torture-options
@@ -160,7 +164,7 @@ proc gfortran-dg-runtest { testcases flags default-extra-flags } {
 	}
     }
 
-    if { $existing_torture_options == 0 } {
+    if { $existing_torture_init == 0 } {
 	torture-finish
     }
 }

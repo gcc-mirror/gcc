@@ -1303,7 +1303,7 @@ afdo_propagate_circuit (const bb_set &annotated_bb)
   {
     gimple *def_stmt;
     tree cmp_rhs, cmp_lhs;
-    gimple *cmp_stmt = last_stmt (bb);
+    gimple *cmp_stmt = last_nondebug_stmt (bb);
     edge e;
     edge_iterator ei;
 
@@ -1434,7 +1434,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
       else
         total_count += AFDO_EINFO (e)->get_count ();
     }
-    if (num_unknown_succ == 0 && total_count > profile_count::zero ())
+    if (num_unknown_succ == 0 && total_count.nonzero_p())
       {
 	FOR_EACH_EDGE (e, ei, bb->succs)
 	  e->probability
@@ -1571,13 +1571,14 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
       DECL_SOURCE_LOCATION (current_function_decl));
   afdo_source_profile->mark_annotated (cfun->function_start_locus);
   afdo_source_profile->mark_annotated (cfun->function_end_locus);
-  if (max_count > profile_count::zero ())
+  if (max_count.nonzero_p())
     {
       /* Calculate, propagate count and probability information on CFG.  */
       afdo_calculate_branch_prob (&annotated_bb);
     }
   update_max_bb_count ();
   profile_status_for_fn (cfun) = PROFILE_READ;
+  cfun->cfg->full_profile = true;
   if (flag_value_profile_transformations)
     {
       gimple_value_profile_transformations ();
@@ -1589,13 +1590,14 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
 
 /* Wrapper function to invoke early inliner.  */
 
-static void
+static unsigned int
 early_inline ()
 {
   compute_fn_summary (cgraph_node::get (current_function_decl), true);
-  unsigned todo = early_inliner (cfun);
+  unsigned int todo = early_inliner (cfun);
   if (todo & TODO_update_ssa_any)
     update_ssa (TODO_update_ssa);
+  return todo;
 }
 
 /* Use AutoFDO profile to annoate the control flow graph.
@@ -1651,20 +1653,22 @@ auto_profile (void)
        function before annotation, so the profile inside bar@loc_foo2
        will be useful.  */
     autofdo::stmt_set promoted_stmts;
+    unsigned int todo = 0;
     for (int i = 0; i < 10; i++)
       {
-        if (!flag_value_profile_transformations
-            || !autofdo::afdo_vpt_for_early_inline (&promoted_stmts))
-          break;
-        early_inline ();
+	if (!flag_value_profile_transformations
+	    || !autofdo::afdo_vpt_for_early_inline (&promoted_stmts))
+	  break;
+	todo |= early_inline ();
       }
 
-    early_inline ();
+    todo |= early_inline ();
     autofdo::afdo_annotate_cfg (promoted_stmts);
     compute_function_frequency ();
 
     /* Local pure-const may imply need to fixup the cfg.  */
-    if (execute_fixup_cfg () & TODO_cleanup_cfg)
+    todo |= execute_fixup_cfg ();
+    if (todo & TODO_cleanup_cfg)
       cleanup_tree_cfg ();
 
     free_dominance_info (CDI_DOMINATORS);
@@ -1674,7 +1678,7 @@ auto_profile (void)
     pop_cfun ();
   }
 
-  return TODO_rebuild_cgraph_edges;
+  return 0;
 }
 } /* namespace autofdo.  */
 

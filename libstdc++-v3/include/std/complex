@@ -47,9 +47,14 @@
 // Get rid of a macro possibly defined in <complex.h>
 #undef complex
 
-#if __cplusplus > 201703L
-# define __cpp_lib_constexpr_complex 201711L
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-extensions"
 #endif
+
+#define __glibcxx_want_constexpr_complex
+#define __glibcxx_want_complex_udls
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1359,6 +1364,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
 
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex(const complex&) = default;
+#endif
+
 #if __cplusplus > 202002L
       template<typename _Up>
 	explicit(!requires(_Up __u) { value_type{__u}; })
@@ -1510,6 +1519,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__real__ _M_value = __r;
 	__imag__ _M_value = __i;
       }
+#endif
+
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex(const complex&) = default;
 #endif
 
 #if __cplusplus > 202002L
@@ -1664,6 +1677,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__real__ _M_value = __r;
 	__imag__ _M_value = __i;
       }
+#endif
+
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex(const complex&) = default;
 #endif
 
 #if __cplusplus > 202002L
@@ -1901,6 +1918,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Let the compiler synthesize the copy and assignment
       // operator.  It always does a pretty good job.
+      constexpr complex(const complex&) = default;
       constexpr complex& operator=(const complex&) = default;
 
       template<typename _Up>
@@ -2021,7 +2039,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::complex<_Tp>(__pi_2 - __t.real(), -__t.imag());
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
 #if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
   inline __complex__ _Float16
   __complex_acos(__complex__ _Float16 __z)
@@ -2177,7 +2195,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_acos(__complex__ float __z)
   { return __builtin_cacosf(__z); }
@@ -2213,7 +2231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::complex<_Tp>(__t.imag(), -__t.real());
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_asin(__complex__ float __z)
   { return __builtin_casinf(__z); }
@@ -2257,7 +2275,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       _Tp(0.25) * log(__num / __den));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_atan(__complex__ float __z)
   { return __builtin_catanf(__z); }
@@ -2293,7 +2311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 + std::sqrt(_Tp(0.5) * (__z - _Tp(1.0))));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_acosh(__complex__ float __z)
   { return __builtin_cacoshf(__z); }
@@ -2332,7 +2350,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::log(__t + __z);
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_asinh(__complex__ float __z)
   { return __builtin_casinhf(__z); }
@@ -2376,7 +2394,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       _Tp(0.5) * atan2(_Tp(2.0) * __z.imag(), __x));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_atanh(__complex__ float __z)
   { return __builtin_catanhf(__z); }
@@ -2534,7 +2552,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __complex_proj(__z.__rep()); }
 #endif
 
-#elif defined _GLIBCXX_USE_C99_MATH_TR1
+#elif defined _GLIBCXX_USE_C99_MATH_FUNCS
   inline complex<float>
   __complex_proj(const complex<float>& __z)
   {
@@ -2586,13 +2604,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::complex<__type>(__x, -__type());
     }
 
-#if __cplusplus > 201103L
+#ifdef __cpp_lib_complex_udls // C++ >= 14
 
 inline namespace literals {
 inline namespace complex_literals {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wliteral-suffix"
-#define __cpp_lib_complex_udls 201309L
 
   constexpr std::complex<float>
   operator""if(long double __num)
@@ -2622,11 +2639,15 @@ inline namespace complex_literals {
 } // inline namespace complex_literals
 } // inline namespace literals
 
-#endif // C++14
+#endif // __cpp_lib_complex_udls
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif  // C++11
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #endif  /* _GLIBCXX_COMPLEX */

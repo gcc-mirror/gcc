@@ -1,4 +1,4 @@
-/* { dg-do run { target { { {riscv_vector} && {rv64} } } } } */
+/* { dg-do run { target { { {riscv_v} && {rv64} } } } } */
 /* { dg-options "-O2" } */
 
 #include<cstdalign>
@@ -382,7 +382,7 @@ vuint16m2_t var_18 = __riscv_vwmulu_vv_u16m2_mu(var_24, var_25, var_26, var_27, 
 if(!check(var_91, var_142, var_143)) {cerr << "check 141 fails" << endl; return_value = 1;}
 if(!check(var_90, var_139, var_140)) {cerr << "check 138 fails" << endl; return_value = 1;}
 __riscv_vsetvl_e64m1(2);
-vuint64m1_t var_7 = __riscv_vasubu_vx_u64m1(var_42, var_15, 2);
+vuint64m1_t var_7 = __riscv_vasubu_vx_u64m1(var_42, var_15, 0, 2);
 // 13578039560782071336, 1484621602351210644
 
 if(!check(var_94, var_136, var_137)) {cerr << "check 135 fails" << endl; return_value = 1;}

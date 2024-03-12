@@ -50,6 +50,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;          use Stand;
+with Stringt;        use Stringt;
 with Stylesw;        use Stylesw;
 with System.OS_Lib;
 with Uname;          use Uname;
@@ -138,6 +139,11 @@ package body Errout is
    --  number, as described above for Output_Line_Number. The Errs parameter
    --  indicates if there are errors attached to the line, which forces
    --  listing on, even in the presence of pragma List (Off).
+
+   function Paren_Required (N : Node_Id) return Boolean;
+   --  Subsidiary to First_Sloc and Last_Sloc. Returns True iff parentheses
+   --  around node N are required by the Ada syntax, e.g. when N is an
+   --  expression of a qualified expression.
 
    procedure Set_Msg_Insertion_Column;
    --  Handle column number insertion (@ insertion character)
@@ -1441,6 +1447,24 @@ package body Errout is
             raise Unrecoverable_Error;
          end if;
       end if;
+
+      if Has_Error_Code then
+         declare
+            Msg : constant String :=
+              "\launch ""gnatprove --explain=[]"" for more information";
+         begin
+            Has_Double_Exclam := False;
+            Has_Error_Code := False;
+            Has_Insertion_Line := False;
+
+            Error_Msg_Internal
+              (Msg      => Msg,
+               Span     => Span,
+               Opan     => Opan,
+               Msg_Cont => True,
+               Node     => Node);
+         end;
+      end if;
    end Error_Msg_Internal;
 
    -----------------
@@ -1763,6 +1787,24 @@ package body Errout is
          Loc   : constant Source_Ptr := Sloc (Norig);
 
       begin
+         --  ??? For assignments that require accessiblity checks, e.g.:
+         --
+         --    Y := Func (123);
+         --
+         --  the function call gets an extra actual parameter association with
+         --  Sloc of the assigned name "Y":
+         --
+         --    Y := Func (123, A8b => 2);
+         --
+         --  We can simply ignore those extra actual parameters when
+         --  determining the Sloc range of the "Func (123)" expression.
+
+         if Nkind (N) = N_Parameter_Association
+           and then Is_Accessibility_Actual (N)
+         then
+            return Skip;
+         end if;
+
          --  Check for earlier
 
          if Loc < Eloc
@@ -1845,11 +1887,12 @@ package body Errout is
    ----------------
 
    function First_Sloc (N : Node_Id) return Source_Ptr is
-      SI : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
-      SF : constant Source_Ptr        := Source_First (SI);
-      SL : constant Source_Ptr        := Source_Last (SI);
-      F  : Node_Id;
-      S  : Source_Ptr;
+      SI  : constant Source_File_Index := Get_Source_File_Index (Sloc (N));
+      SF  : constant Source_Ptr        := Source_First (SI);
+      SL  : constant Source_Ptr        := Source_Last (SI);
+      Src : constant Source_Buffer_Ptr := Source_Text (SI);
+      F   : Node_Id;
+      S   : Source_Ptr;
 
    begin
       F := First_Node (N);
@@ -1868,6 +1911,12 @@ package body Errout is
       --  values), but this is only for an error message so it is good enough.
 
       Node_Loop : loop
+         --  Include parentheses around the top node, except when they are
+         --  required by the syntax of the parent node.
+
+         exit Node_Loop when F = N
+           and then Paren_Required (N);
+
          Paren_Loop : for J in 1 .. Paren_Count (F) loop
 
             --  We don't look more than 12 characters behind the current
@@ -1876,11 +1925,11 @@ package body Errout is
             Search_Loop : for K in 1 .. 12 loop
                exit Search_Loop when S = SF;
 
-               if Source_Text (SI) (S - 1) = '(' then
+               if Src (S - 1) = '(' then
                   S := S - 1;
                   exit Search_Loop;
 
-               elsif Source_Text (SI) (S - 1) <= ' ' then
+               elsif Src (S - 1) <= ' ' then
                   S := S - 1;
 
                else
@@ -1963,11 +2012,28 @@ package body Errout is
    ---------------
 
    function Last_Sloc (N : Node_Id) return Source_Ptr is
-      SI : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
-      SF : constant Source_Ptr        := Source_First (SI);
-      SL : constant Source_Ptr        := Source_Last (SI);
-      F  : Node_Id;
-      S  : Source_Ptr;
+      procedure Skip_Char (S : in out Source_Ptr);
+      --  Skip one character of the source buffer at location S
+
+      ---------------
+      -- Skip_Char --
+      ---------------
+
+      procedure Skip_Char (S : in out Source_Ptr) is
+      begin
+         S := S + 1;
+      end Skip_Char;
+
+      --  Local variables
+
+      SI  : constant Source_File_Index := Get_Source_File_Index (Sloc (N));
+      SF  : constant Source_Ptr        := Source_First (SI);
+      SL  : constant Source_Ptr        := Source_Last (SI);
+      Src : constant Source_Buffer_Ptr := Source_Text (SI);
+      F   : Node_Id;
+      S   : Source_Ptr;
+
+   --  Start of processing for Last_Sloc
 
    begin
       F := Last_Node (N);
@@ -1977,21 +2043,182 @@ package body Errout is
          return S;
       end if;
 
-      --  Skip past an identifier
+      --  For string and character literals simply forward the sloc by their
+      --  length including the closing quotes. Perhaps we should do something
+      --  special for multibyte characters, but this code is only used to emit
+      --  error messages, so it is not worth the effort.
 
-      while S in SF .. SL - 1
-        and then Source_Text (SI) (S + 1)
-          in
-        '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' | '.' | '_'
-      loop
-         S := S + 1;
-      end loop;
+      case Nkind (F) is
+         when N_String_Literal =>
+            return S + Source_Ptr (String_Length (Strval (F))) + 1;
+
+         when N_Character_Literal =>
+            return S + 2;
+
+         --  Skip past integer literals, both decimal and based, integer and
+         --  real. We can't greedily accept all allowed character, because
+         --  we would consme too many of them in expressions like "123+ABC"
+         --  or "123..456", so we follow quite precisely the Ada grammar and
+         --  consume different characters depending on the context.
+
+         when N_Integer_Literal =>
+
+            --  Skip past the initial numeral, which either leads the decimal
+            --  literal or is the base of a based literal.
+
+            while S < SL
+              and then Src (S + 1) in '0' .. '9' | '_'
+            loop
+               Skip_Char (S);
+            end loop;
+
+            --  Skip past #based_numeral#, if present
+
+            if S < SL
+              and then Src (S + 1) = '#'
+            then
+               Skip_Char (S);
+
+               while S < SL
+                 and then
+                   Src (S + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'
+               loop
+                  Skip_Char (S);
+               end loop;
+
+               if S < SL
+                 and then Src (S + 1) = '#'
+               then
+                  Skip_Char (S);
+               end if;
+            end if;
+
+            --  Skip past exponent, if present
+
+            if S < SL
+              and then Src (S + 1) in 'e' | 'E'
+            then
+               Skip_Char (S);
+
+               --  For positive exponents the plus sign is optional, but we
+               --  can simply skip past both plus and minus.
+
+               if S < SL
+                 and then Src (S + 1) in '+' | '-'
+               then
+                  Skip_Char (S);
+               end if;
+
+               --  Skip past the numeral part
+
+               while S < SL
+                 and then Src (S + 1) in '0' .. '9' | '_'
+               loop
+                  Skip_Char (S);
+               end loop;
+            end if;
+
+         when N_Real_Literal =>
+            --  Skip past the initial numeral, which either leads the decimal
+            --  literal or is the base of a based literal.
+
+            while S < SL
+              and then Src (S + 1) in '0' .. '9' | '_'
+            loop
+               Skip_Char (S);
+            end loop;
+
+            if S < SL then
+
+               --  Skip the dot and continue with a decimal literal
+
+               if Src (S + 1) = '.' then
+                  Skip_Char (S);
+
+                  while S < SL
+                    and then Src (S + 1) in '0' .. '9' | '_'
+                  loop
+                     Skip_Char (S);
+                  end loop;
+
+               --  Skip the hash and continue with a based literal
+
+               elsif Src (S + 1) = '#' then
+                  Skip_Char (S);
+
+                  while S < SL
+                    and then
+                      Src (S + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'
+                  loop
+                     Skip_Char (S);
+                  end loop;
+
+                  if S < SL
+                    and then Src (S + 1) = '.'
+                  then
+                     Skip_Char (S);
+                  end if;
+
+                  while S < SL
+                    and then
+                      Src (S + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'
+                  loop
+                     Skip_Char (S);
+                  end loop;
+
+                  if S < SL
+                    and then Src (S + 1) = '#'
+                  then
+                     Skip_Char (S);
+                  end if;
+               end if;
+            end if;
+
+            --  Skip past exponent, if present
+
+            if S < SL
+              and then Src (S + 1) in 'e' | 'E'
+            then
+               Skip_Char (S);
+               --  For positive exponents the plus sign is optional, but we
+               --  can simply skip past both plus and minus.
+
+               if Src (S + 1) in '+' | '-' then
+                  Skip_Char (S);
+               end if;
+
+               --  Skip past the numeral part
+
+               while S < SL
+                 and then Src (S + 1) in '0' .. '9' | '_'
+               loop
+                  Skip_Char (S);
+               end loop;
+            end if;
+
+         --  For other nodes simply skip past a keyword/identifier
+
+         when others =>
+            while S in SF .. SL - 1
+              and then Src (S + 1)
+                in
+              '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' | '_'
+            loop
+               Skip_Char (S);
+            end loop;
+      end case;
 
       --  The following circuit attempts at crawling up the tree from the
       --  Last_Node, adjusting the Sloc value for any parentheses we know
       --  are present, similarly to what is done in First_Sloc.
 
       Node_Loop : loop
+         --  Include parentheses around the top node, except when they are
+         --  required by the syntax of the parent node.
+
+         exit Node_Loop when F = N
+           and then Paren_Required (N);
+
          Paren_Loop : for J in 1 .. Paren_Count (F) loop
 
             --  We don't look more than 12 characters after the current
@@ -2000,11 +2227,11 @@ package body Errout is
             Search_Loop : for K in 1 .. 12 loop
                exit Node_Loop when S = SL;
 
-               if Source_Text (SI) (S + 1) = ')' then
+               if Src (S + 1) = ')' then
                   S := S + 1;
                   exit Search_Loop;
 
-               elsif Source_Text (SI) (S + 1) <= ' ' then
+               elsif Src (S + 1) <= ' ' then
                   S := S + 1;
 
                else
@@ -2021,7 +2248,7 @@ package body Errout is
       --  Remove any trailing space
 
       while S in SF + 1 .. SL
-        and then Source_Text (SI) (S) = ' '
+        and then Src (S) = ' '
       loop
          S := S - 1;
       end loop;
@@ -2853,16 +3080,19 @@ package body Errout is
 
             E := Errors.Table (E).Next;
 
-            --  Skip deleted messages.
-            --  Also skip continuation messages, as they have already been
-            --  printed along the message they're attached to.
+            while E /= No_Error_Msg loop
 
-            while E /= No_Error_Msg
-              and then not Errors.Table (E).Deleted
-              and then not Errors.Table (E).Msg_Cont
-            loop
-               Write_Char (',');
-               Output_JSON_Message (E);
+               --  Skip deleted messages.
+               --  Also skip continuation messages, as they have already been
+               --  printed along the message they're attached to.
+
+               if not Errors.Table (E).Deleted
+                 and then not Errors.Table (E).Msg_Cont
+               then
+                  Write_Char (',');
+                  Output_JSON_Message (E);
+               end if;
+
                E := Errors.Table (E).Next;
             end loop;
          end if;
@@ -3295,6 +3525,23 @@ package body Errout is
          end if;
       end if;
    end Output_Source_Line;
+
+   --------------------
+   -- Paren_Required --
+   --------------------
+
+   function Paren_Required (N : Node_Id) return Boolean is
+   begin
+      --  In a qualifed_expression the expression part needs to be enclosed in
+      --  parentheses.
+
+      if Nkind (Parent (N)) = N_Qualified_Expression then
+         return N = Expression (Parent (N));
+
+      else
+         return False;
+      end if;
+   end Paren_Required;
 
    -----------------------------
    -- Remove_Warning_Messages --
@@ -3976,7 +4223,8 @@ package body Errout is
             P := P + 1;
 
          elsif P < Text'Last and then Text (P + 1) = C
-           and then Text (P) in 'a' .. 'z' | '*' | '$'
+           and then Text (P) in 'a' .. 'z' | 'A' .. 'Z' |
+                                '0' .. '9' | '*' | '$'
          then
             P := P + 2;
 
@@ -4108,21 +4356,29 @@ package body Errout is
 
             when '[' =>
 
-               --  Switch the message from a warning to an error if the flag
-               --  -gnatwE is specified to treat run-time exception warnings
-               --  as errors.
+               --  "[]" (insertion of error code)
 
-               if Is_Warning_Msg
-                 and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
-               then
-                  Is_Warning_Msg   := False;
-                  Is_Runtime_Raise := True;
-               end if;
+               if P <= Text'Last and then Text (P) = ']' then
+                  P := P + 1;
+                  Set_Msg_Insertion_Code;
 
-               if Is_Warning_Msg then
-                  Set_Msg_Str ("will be raised at run time");
                else
-                  Set_Msg_Str ("would have been raised at run time");
+                  --  Switch the message from a warning to an error if the flag
+                  --  -gnatwE is specified to treat run-time exception warnings
+                  --  as errors.
+
+                  if Is_Warning_Msg
+                    and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
+                  then
+                     Is_Warning_Msg   := False;
+                     Is_Runtime_Raise := True;
+                  end if;
+
+                  if Is_Warning_Msg then
+                     Set_Msg_Str ("will be raised at run time");
+                  else
+                     Set_Msg_Str ("would have been raised at run time");
+                  end if;
                end if;
 
             --   ']' (may be/might have been raised at run time)

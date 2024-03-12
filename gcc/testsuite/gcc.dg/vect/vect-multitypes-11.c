@@ -30,6 +30,7 @@ int main (void)
 
   foo (N,z+2);
 
+#pragma GCC novector
   for (i=0; i<N; i++) {
     if (z[i+2] != x[i])
       abort ();

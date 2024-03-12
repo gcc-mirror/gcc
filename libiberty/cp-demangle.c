@@ -1036,6 +1036,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_TEMPLATE_NON_TYPE_PARM:
     case DEMANGLE_COMPONENT_TEMPLATE_TEMPLATE_PARM:
     case DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM:
+    case DEMANGLE_COMPONENT_FRIEND:
       if (left == NULL)
 	return NULL;
       break;
@@ -1681,6 +1682,7 @@ d_maybe_module_name (struct d_info *di, struct demangle_component **name)
 /* <unqualified-name> ::= [<module-name>] <operator-name> [<abi-tags>]
                       ::= [<module-name>] <ctor-dtor-name> [<abi-tags>]
                       ::= [<module-name>] <source-name> [<abi-tags>]
+		      ::= [<module-name>] F <source-name> [<abi-tags>]
 		      ::= [<module-name>] <local-source-name>  [<abi-tags>]
                       ::= [<module-name>] DC <source-name>+ E [<abi-tags>]
     <local-source-name>	::= L <source-name> <discriminator> [<abi-tags>]
@@ -1692,11 +1694,18 @@ d_unqualified_name (struct d_info *di, struct demangle_component *scope,
 {
   struct demangle_component *ret;
   char peek;
+  int member_like_friend = 0;
 
   if (!d_maybe_module_name (di, &module))
     return NULL;
 
   peek = d_peek_char (di);
+  if (peek == 'F')
+    {
+      member_like_friend = 1;
+      d_advance (di, 1);
+      peek = d_peek_char (di);
+    }
   if (IS_DIGIT (peek))
     ret = d_source_name (di);
   else if (IS_LOWER (peek))
@@ -1773,6 +1782,8 @@ d_unqualified_name (struct d_info *di, struct demangle_component *scope,
     ret = d_make_comp (di, DEMANGLE_COMPONENT_MODULE_ENTITY, ret, module);
   if (d_peek_char (di) == 'B')
     ret = d_abi_tags (di, ret);
+  if (member_like_friend)
+    ret = d_make_comp (di, DEMANGLE_COMPONENT_FRIEND, ret, NULL);
   if (scope)
     ret = d_make_comp (di, DEMANGLE_COMPONENT_QUAL_NAME, scope, ret);
 
@@ -1947,6 +1958,7 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "ng", NL ("-"),         1 },
   { "nt", NL ("!"),         1 },
   { "nw", NL ("new"),       3 },
+  { "nx", NL ("noexcept"),  1 },
   { "oR", NL ("|="),        2 },
   { "oo", NL ("||"),        2 },
   { "or", NL ("|"),         2 },
@@ -4458,6 +4470,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:
     case DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS:
     case DEMANGLE_COMPONENT_MODULE_ENTITY:
+    case DEMANGLE_COMPONENT_FRIEND:
       d_count_templates_scopes (dpi, d_left (dc));
       break;
 
@@ -5836,8 +5849,8 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	if (code && !strcmp (code, "gs"))
 	  /* Avoid parens after '::'.  */
 	  d_print_comp (dpi, options, operand);
-	else if (code && !strcmp (code, "st"))
-	  /* Always print parens for sizeof (type).  */
+	else if (code && (!strcmp (code, "st") || !strcmp (code, "nx")))
+	  /* Always print parens for sizeof (type) and noexcept(expr).  */
 	  {
 	    d_append_char (dpi, '(');
 	    d_print_comp (dpi, options, operand);
@@ -6194,6 +6207,11 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       d_append_string (dpi, " [clone ");
       d_print_comp (dpi, options, d_right (dc));
       d_append_char (dpi, ']');
+      return;
+
+    case DEMANGLE_COMPONENT_FRIEND:
+      d_print_comp (dpi, options, d_left (dc));
+      d_append_string (dpi, "[friend]");
       return;
 
     case DEMANGLE_COMPONENT_TEMPLATE_HEAD:
@@ -6659,32 +6677,10 @@ d_print_conversion (struct d_print_info *dpi, int options,
       dpt.template_decl = dpi->current_template;
     }
 
-  if (d_left (dc)->type != DEMANGLE_COMPONENT_TEMPLATE)
-    {
-      d_print_comp (dpi, options, d_left (dc));
-      if (dpi->current_template != NULL)
-	dpi->templates = dpt.next;
-    }
-  else
-    {
-      d_print_comp (dpi, options, d_left (d_left (dc)));
+  d_print_comp (dpi, options, d_left (dc));
 
-      /* For a templated cast operator, we need to remove the template
-	 parameters from scope after printing the operator name,
-	 so we need to handle the template printing here.  */
-      if (dpi->current_template != NULL)
-	dpi->templates = dpt.next;
-
-      if (d_last_char (dpi) == '<')
-	d_append_char (dpi, ' ');
-      d_append_char (dpi, '<');
-      d_print_comp (dpi, options, d_right (d_left (dc)));
-      /* Avoid generating two consecutive '>' characters, to avoid
-	 the C++ syntactic ambiguity.  */
-      if (d_last_char (dpi) == '>')
-	d_append_char (dpi, ' ');
-      d_append_char (dpi, '>');
-    }
+  if (dpi->current_template != NULL)
+    dpi->templates = dpt.next;
 }
 
 /* Initialize the information structure we use to pass around

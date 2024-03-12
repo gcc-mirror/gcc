@@ -46,8 +46,8 @@ protected:
   bitmap_obstack m_bitmaps;
 private:
   struct rdc {
-   tree ssa1;		// First direct dependency
-   tree ssa2;		// Second direct dependency
+   unsigned int ssa1;		// First direct dependency
+   unsigned int ssa2;		// Second direct dependency
    bitmap bm;		// All dependencies
    bitmap m_import;
   };
@@ -66,7 +66,10 @@ range_def_chain::depend1 (tree name) const
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_def_chain.length ())
     return NULL_TREE;
-  return m_def_chain[v].ssa1;
+  unsigned v1 = m_def_chain[v].ssa1;
+  if (!v1)
+    return NULL_TREE;
+  return ssa_name (v1);
 }
 
 // Return the second direct dependency for NAME, if there is one.
@@ -77,7 +80,10 @@ range_def_chain::depend2 (tree name) const
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_def_chain.length ())
     return NULL_TREE;
-  return m_def_chain[v].ssa2;
+  unsigned v2 = m_def_chain[v].ssa2;
+  if (!v2)
+    return NULL_TREE;
+  return ssa_name (v2);
 }
 
 // GORI_MAP is used to accumulate what SSA names in a block can
@@ -177,10 +183,10 @@ private:
   bool compute_operand_range_switch (vrange &r, gswitch *s, const vrange &lhs,
 				     tree name, fur_source &src);
   bool compute_operand1_range (vrange &r, gimple_range_op_handler &handler,
-			       const vrange &lhs, tree name, fur_source &src,
+			       const vrange &lhs, fur_source &src,
 			       value_relation *rel = NULL);
   bool compute_operand2_range (vrange &r, gimple_range_op_handler &handler,
-			       const vrange &lhs, tree name, fur_source &src,
+			       const vrange &lhs, fur_source &src,
 			       value_relation *rel = NULL);
   bool compute_operand1_and_operand2_range (vrange &r,
 					    gimple_range_op_handler &handler,
@@ -201,6 +207,21 @@ private:
   range_tracer tracer;
   int m_not_executable_flag;
 };
+
+// These APIs are used to query GORI if there are ranges generated on an edge.
+// GORI_ON_EDGE is used to get all the ranges at once (returned in an
+// ssa_cache structure).
+// GORI_NAME_ON_EDGE  is used to simply ask if NAME has a range on edge E
+
+// Fill ssa-cache R with any outgoing ranges on edge E, using OGR and QUERY.
+bool gori_on_edge (class ssa_cache &r, edge e,
+		   range_query *query = NULL,
+		   gimple_outgoing_range *ogr = NULL);
+
+// Query if NAME has an outgoing range on edge E, and return it in R if so.
+// Note this doesnt use ranger, its a static GORI analysis of the range in
+// block e->src and is based on any branch at the exit of that block.
+bool gori_name_on_edge (vrange &r, tree name, edge e, range_query *q = NULL);
 
 // For each name that is an import into BB's exports..
 #define FOR_EACH_GORI_IMPORT_NAME(gori, bb, name)			\

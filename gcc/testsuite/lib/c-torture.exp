@@ -38,7 +38,6 @@ if { $orig_environment_saved == 0 } {
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ list1 } ... { listN }"
 
-set LTO_TORTURE_OPTIONS ""
 if [info exists TORTURE_OPTIONS] {
     set C_TORTURE_OPTIONS $TORTURE_OPTIONS
 } else {
@@ -57,22 +56,6 @@ if [info exists TORTURE_OPTIONS] {
 	{ -O3 -g } \
 	{ -Os } \
 	{ -Og -g } ]
-
-    if [check_effective_target_lto] {
-        # When having plugin test both slim and fat LTO and plugin/nonplugin
-        # path.
-        if [check_linker_plugin_available] {
-          set LTO_TORTURE_OPTIONS [list \
-    	      { -O2 -flto -fno-use-linker-plugin -flto-partition=none } \
-	      { -O2 -flto -fuse-linker-plugin -fno-fat-lto-objects }
-          ]
-        } else {
-          set LTO_TORTURE_OPTIONS [list \
-	      { -O2 -flto -flto-partition=none } \
-	      { -O2 -flto }
-          ]
-        }
-    }
 }
 
 if [info exists ADDITIONAL_TORTURE_OPTIONS] {

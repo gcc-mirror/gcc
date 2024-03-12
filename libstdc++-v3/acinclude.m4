@@ -49,7 +49,7 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   # Keep these sync'd with the list in Makefile.am.  The first provides an
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
-  m4_define([glibcxx_SUBDIRS],[include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem src/libbacktrace src/experimental doc po testsuite python])
+  m4_define([glibcxx_SUBDIRS],[include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/c++23 src/filesystem src/libbacktrace src/experimental doc po testsuite python])
   SUBDIRS='glibcxx_SUBDIRS'
 
   # These need to be absolute paths, yet at the same time need to
@@ -497,6 +497,22 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
   if test $glibcxx_cv_LFS = yes; then
     AC_DEFINE(_GLIBCXX_USE_LFS, 1, [Define if LFS support is available.])
   fi
+
+  AC_CACHE_CHECK([for fseeko and ftello], glibcxx_cv_posix_lfs, [
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <stdio.h>
+      ],
+      [FILE* fp;
+       fseeko(fp, 0, SEEK_CUR);
+       ftello(fp);
+      ],
+      [glibcxx_cv_posix_lfs=yes],
+      [glibcxx_cv_posix_lfs=no])
+  ])
+  if test $glibcxx_cv_posix_lfs = yes; then
+    AC_DEFINE(_GLIBCXX_USE_FSEEKO_FTELLO, 1, [Define if fseeko and ftello are available.])
+  fi
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
@@ -588,7 +604,7 @@ dnl  XSL_STYLE_DIR
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_DOCBOOK], [
 
-glibcxx_docbook_url=http://docbook.sourceforge.net/release/xsl-ns/current/
+glibcxx_docbook_url=http://cdn.docbook.org/release/xsl/current/
 
 AC_MSG_CHECKING([for local stylesheet directory])
 glibcxx_local_stylesheets=no
@@ -1103,8 +1119,150 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
       ])
     fi
 
-    # Check for the existence of <math.h> functions used if C99 is enabled.
-    AC_CACHE_CHECK([for ISO C99 support in <math.h> for C++11],
+    # Check for the existence of <stdint.h> types.
+    AC_CACHE_CHECK([for ISO C99 support in <stdint.h> for C++11],
+    glibcxx_cv_c99_stdint, [
+    AC_TRY_COMPILE([#define __STDC_LIMIT_MACROS
+		    #define __STDC_CONSTANT_MACROS
+		    #include <stdint.h>],
+		   [typedef int8_t          my_int8_t;
+		    my_int8_t               i8 = INT8_MIN;
+		    i8 = INT8_MAX;
+		    typedef int16_t         my_int16_t;
+		    my_int16_t              i16 = INT16_MIN;
+		    i16 = INT16_MAX;
+		    typedef int32_t         my_int32_t;
+		    my_int32_t              i32 = INT32_MIN;
+		    i32 = INT32_MAX;
+		    typedef int64_t         my_int64_t;
+		    my_int64_t              i64 = INT64_MIN;
+		    i64 = INT64_MAX;
+		    typedef int_fast8_t     my_int_fast8_t;
+		    my_int_fast8_t          if8 = INT_FAST8_MIN;
+		    if8 = INT_FAST8_MAX;
+		    typedef int_fast16_t    my_int_fast16_t;
+		    my_int_fast16_t         if16 = INT_FAST16_MIN;
+		    if16 = INT_FAST16_MAX;
+		    typedef int_fast32_t    my_int_fast32_t;
+		    my_int_fast32_t         if32 = INT_FAST32_MIN;
+		    if32 = INT_FAST32_MAX;
+		    typedef int_fast64_t    my_int_fast64_t;
+		    my_int_fast64_t         if64 = INT_FAST64_MIN;
+		    if64 = INT_FAST64_MAX;
+		    typedef int_least8_t    my_int_least8_t;
+		    my_int_least8_t         il8 = INT_LEAST8_MIN;
+		    il8 = INT_LEAST8_MAX;
+		    typedef int_least16_t   my_int_least16_t;
+		    my_int_least16_t        il16 = INT_LEAST16_MIN;
+		    il16 = INT_LEAST16_MAX;
+		    typedef int_least32_t   my_int_least32_t;
+		    my_int_least32_t        il32 = INT_LEAST32_MIN;
+		    il32 = INT_LEAST32_MAX;
+		    typedef int_least64_t   my_int_least64_t;
+		    my_int_least64_t        il64 = INT_LEAST64_MIN;
+		    il64 = INT_LEAST64_MAX;
+		    typedef intmax_t        my_intmax_t;
+		    my_intmax_t             im = INTMAX_MAX;
+		    im = INTMAX_MIN;
+		    typedef intptr_t        my_intptr_t;
+		    my_intptr_t             ip = INTPTR_MAX;
+		    ip = INTPTR_MIN;
+		    typedef uint8_t         my_uint8_t;
+		    my_uint8_t              ui8 = UINT8_MAX;
+		    ui8 = UINT8_MAX;
+		    typedef uint16_t        my_uint16_t;
+		    my_uint16_t             ui16 = UINT16_MAX;
+		    ui16 = UINT16_MAX;
+		    typedef uint32_t        my_uint32_t;
+		    my_uint32_t             ui32 = UINT32_MAX;
+		    ui32 = UINT32_MAX;
+		    typedef uint64_t        my_uint64_t;
+		    my_uint64_t             ui64 = UINT64_MAX;
+		    ui64 = UINT64_MAX;
+		    typedef uint_fast8_t    my_uint_fast8_t;
+		    my_uint_fast8_t         uif8 = UINT_FAST8_MAX;
+		    uif8 = UINT_FAST8_MAX;
+		    typedef uint_fast16_t   my_uint_fast16_t;
+		    my_uint_fast16_t        uif16 = UINT_FAST16_MAX;
+		    uif16 = UINT_FAST16_MAX;
+		    typedef uint_fast32_t   my_uint_fast32_t;
+		    my_uint_fast32_t        uif32 = UINT_FAST32_MAX;
+		    uif32 = UINT_FAST32_MAX;
+		    typedef uint_fast64_t   my_uint_fast64_t;
+		    my_uint_fast64_t        uif64 = UINT_FAST64_MAX;
+		    uif64 = UINT_FAST64_MAX;
+		    typedef uint_least8_t   my_uint_least8_t;
+		    my_uint_least8_t        uil8 = UINT_LEAST8_MAX;
+		    uil8 = UINT_LEAST8_MAX;
+		    typedef uint_least16_t  my_uint_least16_t;
+		    my_uint_least16_t       uil16 = UINT_LEAST16_MAX;
+		    uil16 = UINT_LEAST16_MAX;
+		    typedef uint_least32_t  my_uint_least32_t;
+		    my_uint_least32_t       uil32 = UINT_LEAST32_MAX;
+		    uil32 = UINT_LEAST32_MAX;
+		    typedef uint_least64_t  my_uint_least64_t;
+		    my_uint_least64_t       uil64 = UINT_LEAST64_MAX;
+		    uil64 = UINT_LEAST64_MAX;
+		    typedef uintmax_t       my_uintmax_t;
+		    my_uintmax_t            uim = UINTMAX_MAX;
+		    uim = UINTMAX_MAX;
+		    typedef uintptr_t       my_uintptr_t;
+		    my_uintptr_t            uip = UINTPTR_MAX;
+		    uip = UINTPTR_MAX;
+		   ],[glibcxx_cv_c99_stdint=yes],
+		     [glibcxx_cv_c99_stdint=no])
+    ])
+    if test x"$glibcxx_cv_c99_stdint" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_STDINT, 1,
+		[Define if C99 types in <stdint.h> should be imported in
+		<cstdint> in namespace std for C++11.])
+    fi
+
+    # Check for the existence of <inttypes.h> functions (NB: doesn't make
+    # sense if the glibcxx_cv_c99_stdint check fails, per C99, 7.8/1).
+    ac_c99_inttypes=no;
+    if test x"$glibcxx_cv_c99_stdint" = x"yes"; then
+      AC_MSG_CHECKING([for ISO C99 support for C++11 in <inttypes.h>])
+      AC_TRY_COMPILE([#include <inttypes.h>],
+		     [intmax_t i, numer, denom, base;
+		      const char* s;
+		      char** endptr;
+		      intmax_t ret = imaxabs(i);
+		      imaxdiv_t dret = imaxdiv(numer, denom);
+		      ret = strtoimax(s, endptr, base);
+		      uintmax_t uret = strtoumax(s, endptr, base);
+		     ],[ac_c99_inttypes=yes], [ac_c99_inttypes=no])
+      AC_MSG_RESULT($ac_c99_inttypes)
+    fi
+    if test x"$ac_c99_inttypes" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_INTTYPES, 1,
+		[Define if C99 functions in <inttypes.h> should be imported in
+		<cinttypes> in namespace std in C++11.])
+    fi
+
+    # Check for the existence of wchar_t <inttypes.h> functions (NB: doesn't
+    # make sense if the glibcxx_cv_c99_stdint check fails, per C99, 7.8/1).
+    ac_c99_inttypes_wchar_t=no;
+    if test x"$glibcxx_cv_c99_stdint" = x"yes"; then
+      AC_MSG_CHECKING([for wchar_t ISO C99 support for C++11 in <inttypes.h>])
+      AC_TRY_COMPILE([#include <inttypes.h>],
+		     [intmax_t base;
+		      const wchar_t* s;
+		      wchar_t** endptr;
+		      intmax_t ret = wcstoimax(s, endptr, base);
+		      uintmax_t uret = wcstoumax(s, endptr, base);
+		     ],[ac_c99_inttypes_wchar_t=yes],
+		       [ac_c99_inttypes_wchar_t=no])
+      AC_MSG_RESULT($ac_c99_inttypes_wchar_t)
+    fi
+    if test x"$ac_c99_inttypes_wchar_t" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_INTTYPES_WCHAR_T, 1,
+		[Define if wchar_t C99 functions in <inttypes.h> should be
+		imported in <cinttypes> in namespace std in C++11.])
+    fi
+
+    # Check for the existence of <math.h> generic macros used if C99 is enabled.
+    AC_CACHE_CHECK([for ISO C99 generic macro support in <math.h> for C++11],
     glibcxx_cv_c99_math_cxx11, [
       GCC_TRY_COMPILE_OR_LINK(
         [#include <math.h>
@@ -1127,8 +1285,178 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     ])
     if test x"$glibcxx_cv_c99_math_cxx11" = x"yes"; then
       AC_DEFINE(_GLIBCXX11_USE_C99_MATH, 1,
-        [Define if C99 functions or macros in <math.h> should be imported
+        [Define if C99 generic macros in <math.h> should be imported
         in <cmath> in namespace std for C++11.])
+    fi
+
+    # Check for the existence of <math.h> typedefs.
+    AC_CACHE_CHECK([for ISO C99 float types for C++11 in <math.h>],
+    glibcxx_cv_c99_flt_eval_types, [
+    AC_TRY_COMPILE([#include <math.h>],
+		   [// Types
+		    typedef double_t  my_double_t;
+		    typedef float_t   my_float_t;
+		   ],
+		   [glibcxx_cv_c99_flt_eval_types=yes],
+		   [glibcxx_cv_c99_flt_eval_types=no])
+    ])
+    if test x"$glibcxx_cv_c99_flt_eval_types" = x"yes"; then
+      AC_DEFINE(HAVE_C99_FLT_EVAL_TYPES, 1,
+		[Define if C99 float_t and double_t in <math.h> should be
+		imported in <cmath> in namespace std for C++11.])
+    fi
+
+    # Check for the existence of <math.h> functions.
+    AC_CACHE_CHECK([for ISO C99 function support for C++11 in <math.h>],
+    glibcxx_cv_c99_math_funcs, [
+    AC_TRY_COMPILE([#include <math.h>],
+		   [
+		    // Hyperbolic
+		    acosh(0.0);
+		    acoshf(0.0f);
+		    acoshl(0.0l);
+		    asinh(0.0);
+		    asinhf(0.0f);
+		    asinhl(0.0l);
+		    atanh(0.0);
+		    atanhf(0.0f);
+		    atanhl(0.0l);
+		    // Exponential and logarithmic
+		    exp2(0.0);
+		    exp2f(0.0f);
+		    exp2l(0.0l);
+		    expm1(0.0);
+		    expm1f(0.0f);
+		    expm1l(0.0l);
+		    ilogb(0.0);
+		    ilogbf(0.0f);
+		    ilogbl(0.0l);
+		    log1p(0.0);
+		    log1pf(0.0f);
+		    log1pl(0.0l);
+		    log2(0.0);
+		    log2f(0.0f);
+		    log2l(0.0l);
+		    logb(0.0);
+		    logbf(0.0f);
+		    logbl(0.0l);
+		    scalbln(0.0, 0l);
+		    scalblnf(0.0f, 0l);
+		    scalblnl(0.0l, 0l);
+		    scalbn(0.0, 0);
+		    scalbnf(0.0f, 0);
+		    scalbnl(0.0l, 0);
+		    // Power and absolute-value
+		    cbrt(0.0);
+		    cbrtf(0.0f);
+		    cbrtl(0.0l);
+		    hypot(0.0, 0.0);
+		    hypotf(0.0f, 0.0f);
+		    hypotl(0.0l, 0.0l);
+		    // Error and gamma
+		    erf(0.0);
+		    erff(0.0f);
+		    erfl(0.0l);
+		    erfc(0.0);
+		    erfcf(0.0f);
+		    erfcl(0.0l);
+		    lgamma(0.0);
+		    lgammaf(0.0f);
+		    lgammal(0.0l);
+		    tgamma(0.0);
+		    tgammaf(0.0f);
+		    tgammal(0.0l);
+		    // Nearest integer
+		    nearbyint(0.0);
+		    nearbyintf(0.0f);
+		    nearbyintl(0.0l);
+		    rint(0.0);
+		    rintf(0.0f);
+		    rintl(0.0l);
+		    round(0.0);
+		    roundf(0.0f);
+		    roundl(0.0l);
+		    lrint(0.0);
+		    lrintf(0.0f);
+		    lrintl(0.0l);
+		    lround(0.0);
+		    lroundf(0.0f);
+		    lroundl(0.0l);
+		    #ifndef __APPLE__ /* see below */
+		    llrint(0.0);
+		    llrintf(0.0f);
+		    llrintl(0.0l);
+		    llround(0.0);
+		    llroundf(0.0f);
+		    llroundl(0.0l);
+		    #endif
+		    trunc(0.0);
+		    truncf(0.0f);
+		    truncl(0.0l);
+		    // Remainder
+		    remainder(0.0, 0.0);
+		    remainderf(0.0f, 0.0f);
+		    remainderl(0.0l, 0.0l);
+		    remquo(0.0, 0.0, 0);
+		    remquof(0.0f, 0.0f, 0);
+		    remquol(0.0l, 0.0l, 0);
+		    // Manipulation
+		    copysign(0.0, 0.0);
+		    copysignf(0.0f, 0.0f);
+		    copysignl(0.0l, 0.0l);
+		    nan("");
+		    nanf("");
+		    nanl("");
+		    nextafter(0.0, 0.0);
+		    nextafterf(0.0f, 0.0f);
+		    nextafterl(0.0l, 0.0l);
+		    nexttoward(0.0, 0.0);
+		    nexttowardf(0.0f, 0.0f);
+		    nexttowardl(0.0l, 0.0l);
+		    // Max, min, positive difference
+		    fdim(0.0, 0.0);
+		    fdimf(0.0f, 0.0f);
+		    fdiml(0.0l, 0.0l);
+		    fmax(0.0, 0.0);
+		    fmaxf(0.0f, 0.0f);
+		    fmaxl(0.0l, 0.0l);
+		    fmin(0.0, 0.0);
+		    fminf(0.0f, 0.0f);
+		    fminl(0.0l, 0.0l);
+		    // FP Multiply-add
+		    fma(0.0, 0.0, 0.0);
+		    fmaf(0.0f, 0.0f, 0.0f);
+		    fmal(0.0l, 0.0l, 0.0l);
+		   ],
+		   [glibcxx_cv_c99_math_funcs=yes],
+		   [glibcxx_cv_c99_math_funcs=no])
+    ])
+    if test x"$glibcxx_cv_c99_math_funcs" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_MATH_FUNCS, 1,
+		[Define if C99 functions in <math.h> should be imported
+		in <cmath> in namespace std for C++11.])
+
+      case "${target_os}" in
+	darwin*)
+	  AC_CACHE_CHECK([for ISO C99 rounding functions in <math.h>],
+	    glibcxx_cv_c99_math_llround, [
+	    AC_TRY_COMPILE([#include <math.h>],
+		   [llrint(0.0);
+		    llrintf(0.0f);
+		    llrintl(0.0l);
+		    llround(0.0);
+		    llroundf(0.0f);
+		    llroundl(0.0l);
+		   ],
+		   [glibcxx_cv_c99_math_llround=yes],
+		   [glibcxx_cv_c99_math_llround=no])
+	    ])
+	  ;;
+      esac
+      if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
+	AC_DEFINE(_GLIBCXX_NO_C99_ROUNDING_FUNCS, 1,
+		  [Define if C99 llrint and llround functions are missing from <math.h>.])
+      fi
     fi
 
     # Check for the existence of <complex.h> complex math functions.
@@ -1198,6 +1526,43 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
         [Define if C99 functions in <complex.h> should be used in
         <complex> for C++11. Using compiler builtins for these functions
         requires corresponding C99 library functions to be present.])
+    fi
+
+    # Check for the existence of <complex.h> complex inverse trigonometric
+    # math functions used by <complex> for C++11 and later.
+    ac_c99_complex_arc=no;
+    if test x"$ac_has_complex_h" = x"yes"; then
+      AC_MSG_CHECKING([for ISO C99 support for inverse trig functions in <complex.h>])
+      AC_TRY_COMPILE([#include <complex.h>],
+		     [typedef __complex__ float float_type; float_type tmpf;
+		      cacosf(tmpf);
+		      casinf(tmpf);
+		      catanf(tmpf);
+		      cacoshf(tmpf);
+		      casinhf(tmpf);
+		      catanhf(tmpf);
+		      typedef __complex__ double double_type; double_type tmpd;
+		      cacos(tmpd);
+		      casin(tmpd);
+		      catan(tmpd);
+		      cacosh(tmpd);
+		      casinh(tmpd);
+		      catanh(tmpd);
+		      typedef __complex__ long double ld_type; ld_type tmpld;
+		      cacosl(tmpld);
+		      casinl(tmpld);
+		      catanl(tmpld);
+		      cacoshl(tmpld);
+		      casinhl(tmpld);
+		      catanhl(tmpld);
+		     ],[ac_c99_complex_arc=yes], [ac_c99_complex_arc=no])
+    fi
+    AC_MSG_RESULT($ac_c99_complex_arc)
+    if test x"$ac_c99_complex_arc" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_COMPLEX_ARC, 1,
+		[Define if C99 inverse trig functions in <complex.h> should be
+		used in <complex>. Using compiler builtins for these functions
+		requires corresponding C99 library functions to be present.])
     fi
 
     # Check for the existence in <stdio.h> of vscanf, et. al.
@@ -1295,6 +1660,52 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
           [Define if C99 functions or macros in <wchar.h> should be imported
           in <cwchar> in namespace std for C++11.])
       fi
+    fi
+
+    # Check for the existence of <ctype.h> functions.
+    AC_CACHE_CHECK([for ISO C99 support for C++11 in <ctype.h>],
+    glibcxx_cv_c99_ctype, [
+    AC_TRY_COMPILE([#include <ctype.h>],
+		   [int ch;
+		    int ret;
+		    ret = isblank(ch);
+		   ],[glibcxx_cv_c99_ctype=yes],
+		     [glibcxx_cv_c99_ctype=no])
+    ])
+    if test x"$glibcxx_cv_c99_ctype" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_CTYPE, 1,
+		[Define if C99 functions in <ctype.h> should be imported in
+		<cctype> in namespace std for C++11.])
+    fi
+
+    # Check for the existence of <fenv.h> functions.
+    AC_CHECK_HEADERS(fenv.h, ac_has_fenv_h=yes, ac_has_fenv_h=no)
+    ac_c99_fenv=no;
+    if test x"$ac_has_fenv_h" = x"yes"; then
+      AC_MSG_CHECKING([for ISO C99 support for C++11 in <fenv.h>])
+      AC_TRY_COMPILE([#include <fenv.h>],
+		     [int except, mode;
+		      fexcept_t* pflag;
+		      fenv_t* penv;
+		      int ret;
+		      ret = feclearexcept(except);
+		      ret = fegetexceptflag(pflag, except);
+		      ret = feraiseexcept(except);
+		      ret = fesetexceptflag(pflag, except);
+		      ret = fetestexcept(except);
+		      ret = fegetround();
+		      ret = fesetround(mode);
+		      ret = fegetenv(penv);
+		      ret = feholdexcept(penv);
+		      ret = fesetenv(penv);
+		      ret = feupdateenv(penv);
+		     ],[ac_c99_fenv=yes], [ac_c99_fenv=no])
+      AC_MSG_RESULT($ac_c99_fenv)
+    fi
+    if test x"$ac_c99_fenv" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_FENV, 1,
+		[Define if C99 functions in <fenv.h> should be imported in
+		<cfenv> in namespace std for C++11.])
     fi
 
     gcc_no_link="$ac_save_gcc_no_link"
@@ -1620,7 +2031,7 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
 
-  # Use -std=c++98 because the default (-std=gnu++98) leaves __STRICT_ANSI__
+  # Use -std=c++98 because -std=gnu++98 leaves __STRICT_ANSI__
   # undefined and fake C99 facilities may be spuriously enabled.
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -std=c++98"
@@ -1885,9 +2296,9 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		  lround(0.0);
 		  lroundf(0.0f);
 		  lroundl(0.0l);
-		  nan(0);
-		  nanf(0);
-		  nanl(0);
+		  nan("");
+		  nanf("");
+		  nanl("");
 		  nearbyint(0.0);
 		  nearbyintf(0.0f);
 		  nearbyintl(0.0l);
@@ -1927,28 +2338,6 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
     AC_DEFINE(_GLIBCXX_USE_C99_MATH_TR1, 1,
 	      [Define if C99 functions or macros in <math.h> should be imported
 	      in <tr1/cmath> in namespace std::tr1.])
-
-    case "${target_os}" in
-      darwin*)
-	AC_CACHE_CHECK([for ISO C99 rounding functions in <math.h>],
-	  glibcxx_cv_c99_math_llround, [
-          AC_TRY_COMPILE([#include <math.h>],
-		 [llrint(0.0);
-		  llrintf(0.0f);
-		  llrintl(0.0l);
-		  llround(0.0);
-		  llroundf(0.0f);
-		  llroundl(0.0l);
-		 ],
-		 [glibcxx_cv_c99_math_llround=yes],
-		 [glibcxx_cv_c99_math_llround=no])
-          ])
-        ;;
-    esac
-    if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
-      AC_DEFINE(_GLIBCXX_NO_C99_ROUNDING_FUNCS, 1,
-		[Define if C99 llrint and llround functions are missing from <math.h>.])
-    fi
   fi
 
   # Check for the existence of <inttypes.h> functions (NB: doesn't make
@@ -3841,7 +4230,7 @@ changequote([,])dnl
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:31:0
+libtool_VERSION=6:33:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -4314,7 +4703,7 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK], [
       [glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK=no])
   ])
   if test $glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK = yes; then
-    AC_DEFINE(_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK, 1, [Define if pthread_mutex_clocklock is available in <pthread.h>.])
+    AC_DEFINE(_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK, (_GLIBCXX_TSAN==0), [Define if pthread_mutex_clocklock is available in <pthread.h>.])
   fi
 
   CXXFLAGS="$ac_save_CXXFLAGS"
@@ -4581,8 +4970,10 @@ dnl  _GLIBCXX_USE_UTIMENSAT
 dnl  _GLIBCXX_USE_ST_MTIM
 dnl  _GLIBCXX_USE_FCHMOD
 dnl  _GLIBCXX_USE_FCHMODAT
+dnl  _GLIBCXX_USE_COPY_FILE_RANGE
 dnl  _GLIBCXX_USE_SENDFILE
 dnl  HAVE_LINK
+dnl  HAVE_LSEEK
 dnl  HAVE_READLINK
 dnl  HAVE_SYMLINK
 dnl
@@ -4605,6 +4996,66 @@ dnl
   ])
   if test $glibcxx_cv_dirent_d_type = yes; then
     AC_DEFINE(HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
+  fi
+dnl
+  AC_CACHE_CHECK([for chmod], glibcxx_cv_chmod, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [
+       #include <sys/stat.h>
+      ],
+      [
+       int i = chmod("", S_IRUSR);
+      ],
+      [glibcxx_cv_chmod=yes],
+      [glibcxx_cv_chmod=no])
+  ])
+  if test $glibcxx_cv_chmod = yes; then
+    AC_DEFINE(_GLIBCXX_USE_CHMOD, 1, [Define if usable chmod is available in <sys/stat.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for mkdir], glibcxx_cv_mkdir, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [
+       #include <sys/stat.h>
+      ],
+      [
+       int i = mkdir("", S_IRUSR);
+      ],
+      [glibcxx_cv_mkdir=yes],
+      [glibcxx_cv_mkdir=no])
+  ])
+  if test $glibcxx_cv_mkdir = yes; then
+    AC_DEFINE(_GLIBCXX_USE_MKDIR, 1, [Define if usable mkdir is available in <sys/stat.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for chdir], glibcxx_cv_chdir, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [
+       #include <unistd.h>
+      ],
+      [
+       int i = chdir("");
+      ],
+      [glibcxx_cv_chdir=yes],
+      [glibcxx_cv_chdir=no])
+  ])
+  if test $glibcxx_cv_chdir = yes; then
+    AC_DEFINE(_GLIBCXX_USE_CHDIR, 1, [Define if usable chdir is available in <unistd.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for getcwd], glibcxx_cv_getcwd, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [
+       #include <unistd.h>
+      ],
+      [
+       char* s = getcwd((char*)0, 1);
+      ],
+      [glibcxx_cv_getcwd=yes],
+      [glibcxx_cv_getcwd=no])
+  ])
+  if test $glibcxx_cv_getcwd = yes; then
+    AC_DEFINE(_GLIBCXX_USE_GETCWD, 1, [Define if usable getcwd is available in <unistd.h>.])
   fi
 dnl
   AC_CACHE_CHECK([for realpath], glibcxx_cv_realpath, [dnl
@@ -4719,25 +5170,6 @@ dnl
     AC_DEFINE(_GLIBCXX_USE_FCHMODAT, 1, [Define if fchmodat is available in <sys/stat.h>.])
   fi
 dnl
-  AC_CACHE_CHECK([for sendfile that can copy files],
-    glibcxx_cv_sendfile, [dnl
-    case "${target_os}" in
-      gnu* | linux* | solaris* | uclinux*)
-	GCC_TRY_COMPILE_OR_LINK(
-	  [#include <sys/sendfile.h>],
-	  [sendfile(1, 2, (off_t*)0, sizeof 1);],
-	  [glibcxx_cv_sendfile=yes],
-	  [glibcxx_cv_sendfile=no])
-	;;
-      *)
-	glibcxx_cv_sendfile=no
-	;;
-    esac
-  ])
-  if test $glibcxx_cv_sendfile = yes; then
-    AC_DEFINE(_GLIBCXX_USE_SENDFILE, 1, [Define if sendfile is available in <sys/sendfile.h>.])
-  fi
-dnl
   AC_CACHE_CHECK([for link],
     glibcxx_cv_link, [dnl
     GCC_TRY_COMPILE_OR_LINK(
@@ -4748,6 +5180,18 @@ dnl
   ])
   if test $glibcxx_cv_link = yes; then
     AC_DEFINE(HAVE_LINK, 1, [Define if link is available in <unistd.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for lseek],
+    glibcxx_cv_lseek, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <unistd.h>],
+      [lseek(1, 0, SEEK_SET);],
+      [glibcxx_cv_lseek=yes],
+      [glibcxx_cv_lseek=no])
+  ])
+  if test $glibcxx_cv_lseek = yes; then
+    AC_DEFINE(HAVE_LSEEK, 1, [Define if lseek is available in <unistd.h>.])
   fi
 dnl
   AC_CACHE_CHECK([for readlink],
@@ -4784,6 +5228,44 @@ dnl
   ])
   if test $glibcxx_cv_truncate = yes; then
     AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for copy_file_range that can copy files],
+    glibcxx_cv_copy_file_range, [dnl
+    case "${target_os}" in
+      linux*)
+	GCC_TRY_COMPILE_OR_LINK(
+	  [#include <unistd.h>],
+	  [copy_file_range(1, (loff_t*)nullptr, 2, (loff_t*)nullptr, 1, 0);],
+	  [glibcxx_cv_copy_file_range=yes],
+	  [glibcxx_cv_copy_file_range=no])
+	;;
+      *)
+	glibcxx_cv_copy_file_range=no
+	;;
+    esac
+  ])
+  if test $glibcxx_cv_copy_file_range = yes; then
+    AC_DEFINE(_GLIBCXX_USE_COPY_FILE_RANGE, 1, [Define if copy_file_range is available in <unistd.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for sendfile that can copy files],
+    glibcxx_cv_sendfile, [dnl
+    case "${target_os}" in
+      gnu* | linux* | solaris* | uclinux*)
+	GCC_TRY_COMPILE_OR_LINK(
+	  [#include <sys/sendfile.h>],
+	  [sendfile(1, 2, (off_t*)0, sizeof 1);],
+	  [glibcxx_cv_sendfile=yes],
+	  [glibcxx_cv_sendfile=no])
+	;;
+      *)
+	glibcxx_cv_sendfile=no
+	;;
+    esac
+  ])
+  if test $glibcxx_cv_sendfile = yes && test $glibcxx_cv_lseek = yes; then
+    AC_DEFINE(_GLIBCXX_USE_SENDFILE, 1, [Define if sendfile is available in <sys/sendfile.h>.])
   fi
 dnl
   AC_CACHE_CHECK([for fdopendir],
@@ -5059,7 +5541,10 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
 
   AC_MSG_CHECKING([whether to build libbacktrace support])
   if test "$enable_libstdcxx_backtrace" = "auto"; then
-    enable_libstdcxx_backtrace=no
+    case "$host" in
+      avr-*-*) enable_libstdcxx_backtrace=no ;;
+      *) enable_libstdcxx_backtrace="$is_hosted" ;;
+    esac
   fi
   AC_MSG_RESULT($enable_libstdcxx_backtrace)
   if test "$enable_libstdcxx_backtrace" = "yes"; then
@@ -5201,12 +5686,15 @@ AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
 	zoneinfo_dir=none
 	;;
     esac
-    case "$host" in
-      avr-*-* | msp430-*-* ) embed_zoneinfo=no ;;
-      *)
-	# Also embed a copy of the tzdata.zi file as a static string.
-	embed_zoneinfo=yes ;;
-    esac
+
+    AC_COMPUTE_INT(glibcxx_cv_at_least_32bit, [__INTPTR_WIDTH__ >= 32])
+    if test "$glibcxx_cv_at_least_32bit" -ne 0; then
+      # Also embed a copy of the tzdata.zi file as a static string.
+      embed_zoneinfo=yes
+    else
+      # The embedded data is too large for 16-bit targets.
+      embed_zoneinfo=no
+    fi
   elif test "x${with_libstdcxx_zoneinfo}" = xno; then
     # Disable tzdb support completely.
     zoneinfo_dir=none
@@ -5244,6 +5732,89 @@ AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
     AC_DEFINE_UNQUOTED(_GLIBCXX_STATIC_TZDATA, 1,
       [Define if static tzdata should be compiled into the library.])
   fi
+])
+
+dnl
+dnl Check whether lock tables can be aligned to avoid false sharing.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_CAN_ALIGNAS_DESTRUCTIVE_SIZE if objects with static storage
+dnl    duration can be aligned to std::hardware_destructive_interference_size.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_ALIGNAS_CACHELINE], [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_MSG_CHECKING([whether static objects can be aligned to the cacheline size])
+  AC_TRY_COMPILE(, [struct alignas(__GCC_DESTRUCTIVE_SIZE) Aligned { };
+		    alignas(Aligned) static char buf[sizeof(Aligned) * 16];
+		 ], [ac_alignas_cacheline=yes], [ac_alignas_cacheline=no])
+  if test "$ac_alignas_cacheline" = yes; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_CAN_ALIGNAS_DESTRUCTIVE_SIZE, 1,
+      [Define if global objects can be aligned to
+       std::hardware_destructive_interference_size.])
+  fi
+  AC_MSG_RESULT($ac_alignas_cacheline)
+
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check whether iostream initialization should be done in the library,
+dnl using the init_priority attribute.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE if GCC supports the init_priority
+dnl    attribute for the target.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_INIT_PRIORITY], [
+AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_MSG_CHECKING([whether init_priority attribute is supported])
+  AC_TRY_COMPILE(, [
+  #if ! __has_attribute(init_priority)
+  #error init_priority not supported
+  #endif
+		 ], [ac_init_priority=yes], [ac_init_priority=no])
+  if test "$ac_init_priority" = yes; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE, 1,
+      [Define if init_priority should be used for iostream initialization.])
+  fi
+  AC_MSG_RESULT($ac_init_priority)
+
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check whether the Windows CRT function _get_osfhandle is available.
+dnl
+dnl Defines:
+dnl   _GLIBCXX_USE__GET_OSFHANDLE if _get_osfhandle is in <io.h> for Windows.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_FILEBUF_NATIVE_HANDLES], [
+AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_MSG_CHECKING([whether _get_osfhandle is defined in <io.h>])
+  AC_TRY_COMPILE([
+  #if defined(_WIN32) && !defined(__CYGWIN__)
+  # include <stdint.h>
+  # include <io.h>
+  #endif
+  ],[
+    FILE* file = 0;
+    int fd = fileno(file);
+    intptr_t crt_handle = _get_osfhandle(fd);
+    void* win32_handle = reinterpret_cast<void*>(crt_handle);
+  ], [ac_get_osfhandle=yes], [ac_get_osfhandle=no])
+  if test "$ac_objext" = yes; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_USE__GET_OSFHANDLE, 1,
+      [Define if _get_osfhandle should be used for filebuf::native_handle().])
+  fi
+  AC_MSG_RESULT($ac_get_osfhandle)
+
+  AC_LANG_RESTORE
 ])
 
 # Macros from the top-level gcc directory.

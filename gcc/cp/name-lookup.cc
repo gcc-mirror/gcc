@@ -3096,10 +3096,6 @@ check_local_shadow (tree decl)
   if (TREE_CODE (decl) == PARM_DECL && !DECL_CONTEXT (decl))
     return;
 
-  /* External decls are something else.  */
-  if (DECL_EXTERNAL (decl))
-    return;
-
   tree old = NULL_TREE;
   cp_binding_level *old_scope = NULL;
   if (cxx_binding *binding = outer_binding (DECL_NAME (decl), NULL, true))
@@ -3130,11 +3126,9 @@ check_local_shadow (tree decl)
 	      && DECL_CONTEXT (old) == lambda_function (current_lambda_expr ())
 	      && TREE_CODE (old) == PARM_DECL
 	      && DECL_NAME (decl) != this_identifier)
-	    {
-	      error_at (DECL_SOURCE_LOCATION (old),
-			"lambda parameter %qD "
-			"previously declared as a capture", old);
-	    }
+	    error_at (DECL_SOURCE_LOCATION (old),
+		      "lambda parameter %qD "
+		      "previously declared as a capture", old);
 	  return;
 	}
       /* Don't complain if it's from an enclosing function.  */
@@ -3146,18 +3140,31 @@ check_local_shadow (tree decl)
 	     them there.  */
 	  cp_binding_level *b = current_binding_level->level_chain;
 
-	  if (FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
-	    /* Skip the ctor/dtor cleanup level.  */
+	  if (in_function_try_handler && b->kind == sk_catch)
+	    b = b->level_chain;
+
+	  /* Skip artificially added scopes which aren't present
+	     in the C++ standard, e.g. for function-try-block or
+	     ctor/dtor cleanups.  */
+	  while (b->artificial)
 	    b = b->level_chain;
 
 	  /* [basic.scope.param] A parameter name shall not be redeclared
 	     in the outermost block of the function definition.  */
 	  if (b->kind == sk_function_parms)
 	    {
-	      error_at (DECL_SOURCE_LOCATION (decl),
-			"declaration of %q#D shadows a parameter", decl);
-	      inform (DECL_SOURCE_LOCATION (old),
-		      "%q#D previously declared here", old);
+	      auto_diagnostic_group d;
+	      bool emit = true;
+	      if (DECL_EXTERNAL (decl))
+		emit = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+				"declaration of %q#D shadows a parameter",
+				decl);
+	      else
+		error_at (DECL_SOURCE_LOCATION (decl),
+			  "declaration of %q#D shadows a parameter", decl);
+	      if (emit)
+		inform (DECL_SOURCE_LOCATION (old),
+			"%q#D previously declared here", old);
 	      return;
 	    }
 	}
@@ -3183,10 +3190,16 @@ check_local_shadow (tree decl)
 	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
 	{
 	  auto_diagnostic_group d;
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "redeclaration of %q#D", decl);
-	  inform (DECL_SOURCE_LOCATION (old),
-		  "%q#D previously declared here", old);
+	  bool emit = true;
+	  if (DECL_EXTERNAL (decl))
+	    emit = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+			    "redeclaration of %q#D", decl);
+	  else
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "redeclaration of %q#D", decl);
+	  if (emit)
+	    inform (DECL_SOURCE_LOCATION (old),
+		    "%q#D previously declared here", old);
 	  return;
 	}
       /* C++11:
@@ -3194,21 +3207,20 @@ check_local_shadow (tree decl)
 	 shall not be redeclared in the outermost block of the handler.
 	 3.3.3/2:  A parameter name shall not be redeclared (...) in
 	 the outermost block of any handler associated with a
-	 function-try-block.
-	 3.4.1/15: The function parameter names shall not be redeclared
-	 in the exception-declaration nor in the outermost block of a
-	 handler for the function-try-block.  */
-      else if ((TREE_CODE (old) == VAR_DECL
-		&& old_scope == current_binding_level->level_chain
-		&& old_scope->kind == sk_catch)
-	       || (TREE_CODE (old) == PARM_DECL
-		   && (current_binding_level->kind == sk_catch
-		       || current_binding_level->level_chain->kind == sk_catch)
-		   && in_function_try_handler))
+	 function-try-block.  */
+      else if (TREE_CODE (old) == VAR_DECL
+	       && old_scope == current_binding_level->level_chain
+	       && old_scope->kind == sk_catch)
 	{
 	  auto_diagnostic_group d;
-	  if (permerror (DECL_SOURCE_LOCATION (decl),
-			 "redeclaration of %q#D", decl))
+	  bool emit;
+	  if (DECL_EXTERNAL (decl))
+	    emit = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+			    "redeclaration of %q#D", decl);
+	  else
+	    emit = permerror (DECL_SOURCE_LOCATION (decl),
+			      "redeclaration of %q#D", decl);
+	  if (emit)
 	    inform (DECL_SOURCE_LOCATION (old),
 		    "%q#D previously declared here", old);
 	  return;
@@ -3312,6 +3324,7 @@ check_local_shadow (tree decl)
 	  || (TREE_CODE (old) == TYPE_DECL
 	      && (!DECL_ARTIFICIAL (old)
 		  || TREE_CODE (decl) == TYPE_DECL)))
+      && !DECL_EXTERNAL (decl)
       && !instantiating_current_function_p ()
       && !warning_suppressed_p (decl, OPT_Wshadow))
     /* XXX shadow warnings in outer-more namespaces */
@@ -3488,7 +3501,7 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
 
   tree not_tmpl = STRIP_TEMPLATE (decl);
   if ((TREE_CODE (not_tmpl) == FUNCTION_DECL
-       || TREE_CODE (not_tmpl) == VAR_DECL)
+       || VAR_P (not_tmpl))
       && DECL_THIS_STATIC (not_tmpl))
     /* Internal linkage.  */
     return;
@@ -5938,6 +5951,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
 	 So tell check_explicit_specialization to look for a match.  */
       SET_DECL_IMPLICIT_INSTANTIATION (decl);
+      DECL_TEMPLATE_INFO (decl) = build_template_info (old, NULL_TREE);
       return;
     }
 
@@ -6730,6 +6744,8 @@ get_cxx_dialect_name (enum cxx_dialect dialect)
       return "C++20";
     case cxx23:
       return "C++23";
+    case cxx26:
+      return "C++26";
     }
 }
 
@@ -6759,7 +6775,7 @@ class missing_std_header : public deferred_diagnostic
 	maybe_add_include_fixit (&richloc, header, true);
 	inform (&richloc,
 		"%<std::%s%> is defined in header %qs;"
-		" did you forget to %<#include %s%>?",
+		" this is probably fixable by adding %<#include %s%>",
 		m_name_str, header, header);
       }
     else
@@ -6795,7 +6811,7 @@ maybe_suggest_missing_std_header (location_t location, tree name)
    for NAME within SCOPE at LOCATION, or an empty name_hint if this isn't
    applicable.  */
 
-static name_hint
+name_hint
 maybe_suggest_missing_header (location_t location, tree name, tree scope)
 {
   if (scope == NULL_TREE)
@@ -6931,7 +6947,7 @@ consider_decl (tree decl,  best_match <tree, const char *> &bm,
 {
   /* Skip compiler-generated variables (e.g. __for_begin/__for_end
      within range for).  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl))
+  if (VAR_P (decl) && DECL_ARTIFICIAL (decl))
     return;
 
   tree suggestion = DECL_NAME (decl);
@@ -6966,7 +6982,7 @@ maybe_add_fuzzy_decl (auto_vec<tree> &vec, tree decl)
 {
   /* Skip compiler-generated variables (e.g. __for_begin/__for_end
      within range for).  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl))
+  if (VAR_P (decl) && DECL_ARTIFICIAL (decl))
     return false;
 
   tree suggestion = DECL_NAME (decl);
@@ -7448,6 +7464,28 @@ innermost_non_namespace_value (tree name)
   cxx_binding *binding;
   binding = outer_binding (name, /*binding=*/NULL, /*class_p=*/true);
   return binding ? binding->value : NULL_TREE;
+}
+
+/* True iff current_binding_level is within the potential scope of local
+   variable DECL. */
+
+bool
+decl_in_scope_p (tree decl)
+{
+  gcc_checking_assert (DECL_FUNCTION_SCOPE_P (decl));
+
+  tree name = DECL_NAME (decl);
+
+  for (cxx_binding *iter = NULL;
+       (iter = outer_binding (name, iter, /*class_p=*/false)); )
+    {
+      if (!LOCAL_BINDING_P (iter))
+	return false;
+      if (iter->value == decl)
+	return true;
+    }
+
+  return false;
 }
 
 /* Look up NAME in the current binding level and its superiors in the
@@ -8205,9 +8243,6 @@ pop_from_top_level (void)
 
   auto_cond_timevar tv (TV_NAME_LOOKUP);
 
-  /* Clear out class-level bindings cache.  */
-  if (previous_class_level)
-    invalidate_class_lookup_cache ();
   pop_class_stack ();
 
   release_tree_vector (current_lang_base);
@@ -8234,6 +8269,43 @@ pop_from_top_level (void)
      push_to_top_level.  */
   s->prev = free_saved_scope;
   free_saved_scope = s;
+}
+
+/* Like push_to_top_level, but not if D is function-local.  Returns whether we
+   did push to top.  */
+
+bool
+maybe_push_to_top_level (tree d)
+{
+  /* Push if D isn't function-local, or is a lambda function, for which name
+     resolution is already done.  */
+  bool push_to_top
+    = !(current_function_decl
+	&& !LAMBDA_FUNCTION_P (d)
+	&& decl_function_context (d) == current_function_decl);
+
+  if (push_to_top)
+    push_to_top_level ();
+  else
+    {
+      gcc_assert (!processing_template_decl);
+      push_function_context ();
+      cp_unevaluated_operand = 0;
+      c_inhibit_evaluation_warnings = 0;
+    }
+
+  return push_to_top;
+}
+
+/* Return from whatever maybe_push_to_top_level did.  */
+
+void
+maybe_pop_from_top_level (bool push_to_top)
+{
+  if (push_to_top)
+    pop_from_top_level ();
+  else
+    pop_function_context ();
 }
 
 /* Push into the scope of the namespace NS, even if it is deeply
@@ -8330,12 +8402,24 @@ finish_using_directive (tree target, tree attribs)
 	else if ((flag_openmp || flag_openmp_simd)
 		 && get_attribute_namespace (a) == omp_identifier
 		 && (is_attribute_p ("directive", name)
-		     || is_attribute_p ("sequence", name)))
+		     || is_attribute_p ("sequence", name)
+		     || is_attribute_p ("decl", name)))
 	  {
 	    if (!diagnosed)
-	      error ("%<omp::%E%> not allowed to be specified in this "
-		     "context", name);
-	    diagnosed = true;
+	      {
+		if (tree ar = TREE_VALUE (a))
+		  {
+		    tree d = TREE_VALUE (ar);
+		    gcc_assert (TREE_CODE (d) == DEFERRED_PARSE);
+		    error ("%<omp::%s%> not allowed to be specified in "
+			   "this context",
+			   TREE_PUBLIC (d) ? "decl" : "directive");
+		  }
+		else
+		  error ("%<omp::%E%> not allowed to be specified in this "
+			 "context", name);
+		diagnosed = true;
+	      }
 	  }
 	else
 	  warning (OPT_Wattributes, "%qD attribute directive ignored", name);

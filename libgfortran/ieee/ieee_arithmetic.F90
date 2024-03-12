@@ -223,6 +223,132 @@ module IEEE_ARITHMETIC
   end interface
   public :: IEEE_IS_NORMAL
 
+  ! IEEE_MIN_NUM, IEEE_MAX_NUM, IEEE_MIN_NUM_MAG, IEEE_MAX_NUM_MAG
+
+  interface
+    elemental real(kind=4) function _gfortran_ieee_max_num_4(X, Y)
+      real(kind=4), intent(in) :: X, Y
+    end function
+    elemental real(kind=8) function _gfortran_ieee_max_num_8(X, Y)
+      real(kind=8), intent(in) :: X, Y
+    end function
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_max_num_10(X, Y)
+      real(kind=10), intent(in) :: X, Y
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_max_num_16(X, Y)
+      real(kind=16), intent(in) :: X, Y
+    end function
+#endif
+  end interface
+
+  interface IEEE_MAX_NUM
+    procedure &
+#ifdef HAVE_GFC_REAL_16
+      _gfortran_ieee_max_num_16, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_max_num_10, &
+#endif
+      _gfortran_ieee_max_num_8, _gfortran_ieee_max_num_4
+  end interface
+  public :: IEEE_MAX_NUM
+
+  interface
+    elemental real(kind=4) function _gfortran_ieee_max_num_mag_4(X, Y)
+      real(kind=4), intent(in) :: X, Y
+    end function
+    elemental real(kind=8) function _gfortran_ieee_max_num_mag_8(X, Y)
+      real(kind=8), intent(in) :: X, Y
+    end function
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_max_num_mag_10(X, Y)
+      real(kind=10), intent(in) :: X, Y
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_max_num_mag_16(X, Y)
+      real(kind=16), intent(in) :: X, Y
+    end function
+#endif
+  end interface
+
+  interface IEEE_MAX_NUM_MAG
+    procedure &
+#ifdef HAVE_GFC_REAL_16
+      _gfortran_ieee_max_num_mag_16, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_max_num_mag_10, &
+#endif
+      _gfortran_ieee_max_num_mag_8, _gfortran_ieee_max_num_mag_4
+  end interface
+  public :: IEEE_MAX_NUM_MAG
+
+  interface
+    elemental real(kind=4) function _gfortran_ieee_min_num_4(X, Y)
+      real(kind=4), intent(in) :: X, Y
+    end function
+    elemental real(kind=8) function _gfortran_ieee_min_num_8(X, Y)
+      real(kind=8), intent(in) :: X, Y
+    end function
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_min_num_10(X, Y)
+      real(kind=10), intent(in) :: X, Y
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_min_num_16(X, Y)
+      real(kind=16), intent(in) :: X, Y
+    end function
+#endif
+  end interface
+
+  interface IEEE_MIN_NUM
+    procedure &
+#ifdef HAVE_GFC_REAL_16
+      _gfortran_ieee_min_num_16, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_min_num_10, &
+#endif
+      _gfortran_ieee_min_num_8, _gfortran_ieee_min_num_4
+  end interface
+  public :: IEEE_MIN_NUM
+
+  interface
+    elemental real(kind=4) function _gfortran_ieee_min_num_mag_4(X, Y)
+      real(kind=4), intent(in) :: X, Y
+    end function
+    elemental real(kind=8) function _gfortran_ieee_min_num_mag_8(X, Y)
+      real(kind=8), intent(in) :: X, Y
+    end function
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_min_num_mag_10(X, Y)
+      real(kind=10), intent(in) :: X, Y
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_min_num_mag_16(X, Y)
+      real(kind=16), intent(in) :: X, Y
+    end function
+#endif
+  end interface
+
+  interface IEEE_MIN_NUM_MAG
+    procedure &
+#ifdef HAVE_GFC_REAL_16
+      _gfortran_ieee_min_num_mag_16, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_min_num_mag_10, &
+#endif
+      _gfortran_ieee_min_num_mag_8, _gfortran_ieee_min_num_mag_4
+  end interface
+  public :: IEEE_MIN_NUM_MAG
+
   ! IEEE_COPY_SIGN
 
 #define COPYSIGN_MACRO(A,B) \
@@ -377,6 +503,75 @@ UNORDERED_MACRO(4,4)
       _gfortran_ieee_fma_8, _gfortran_ieee_fma_4
   end interface
   public :: IEEE_FMA
+
+  ! IEEE_QUIET_* and IEEE_SIGNALING_* comparison functions
+
+#define COMP_MACRO(TYPE,OP,K) \
+  elemental logical function \
+    _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_/**/K (X,Y) ; \
+      real(kind = K), intent(in) :: X ; \
+      real(kind = K), intent(in) :: Y ; \
+  end function
+
+#ifdef HAVE_GFC_REAL_16
+#  define EXPAND_COMP_MACRO_16(TYPE,OP) COMP_MACRO(TYPE,OP,16)
+#else
+#  define EXPAND_COMP_MACRO_16(TYPE,OP)
+#endif
+
+#undef EXPAND_MACRO_10
+#ifdef HAVE_GFC_REAL_10
+#  define EXPAND_COMP_MACRO_10(TYPE,OP) COMP_MACRO(TYPE,OP,10)
+#else
+#  define EXPAND_COMP_MACRO_10(TYPE,OP)
+#endif
+
+#define COMP_FUNCTION(TYPE,OP) \
+  interface ; \
+    COMP_MACRO(TYPE,OP,4) ; \
+    COMP_MACRO(TYPE,OP,8) ; \
+    EXPAND_COMP_MACRO_10(TYPE,OP) ; \
+    EXPAND_COMP_MACRO_16(TYPE,OP) ; \
+  end interface
+
+#ifdef HAVE_GFC_REAL_16
+#  define EXPAND_INTER_MACRO_16(TYPE,OP) _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_16 ,
+#else
+#  define EXPAND_INTER_MACRO_16(TYPE,OP)
+#endif
+
+#ifdef HAVE_GFC_REAL_10
+#  define EXPAND_INTER_MACRO_10(TYPE,OP) _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_10 ,
+#else
+#  define EXPAND_INTER_MACRO_10(TYPE,OP)
+#endif
+
+#define COMP_INTERFACE(TYPE,OP) \
+  interface IEEE_/**/TYPE/**/_/**/OP ; \
+    procedure \
+      EXPAND_INTER_MACRO_16(TYPE,OP) \
+      EXPAND_INTER_MACRO_10(TYPE,OP) \
+      _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_8 , \
+      _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_4 ; \
+  end interface ; \
+  public :: IEEE_/**/TYPE/**/_/**/OP
+
+#define IEEE_COMPARISON(TYPE,OP) \
+  COMP_FUNCTION(TYPE,OP) ; \
+  COMP_INTERFACE(TYPE,OP)
+
+  IEEE_COMPARISON(QUIET,EQ)
+  IEEE_COMPARISON(QUIET,GE)
+  IEEE_COMPARISON(QUIET,GT)
+  IEEE_COMPARISON(QUIET,LE)
+  IEEE_COMPARISON(QUIET,LT)
+  IEEE_COMPARISON(QUIET,NE)
+  IEEE_COMPARISON(SIGNALING,EQ)
+  IEEE_COMPARISON(SIGNALING,GE)
+  IEEE_COMPARISON(SIGNALING,GT)
+  IEEE_COMPARISON(SIGNALING,LE)
+  IEEE_COMPARISON(SIGNALING,LT)
+  IEEE_COMPARISON(SIGNALING,NE)
 
   ! IEEE_LOGB
 

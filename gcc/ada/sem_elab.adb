@@ -15263,10 +15263,13 @@ package body Sem_Elab is
             --  Nothing to do for predefined primitives because they are
             --  artifacts of tagged type expansion and cannot override source
             --  primitives. Nothing to do as well for inherited primitives, as
-            --  the check concerns overriding ones.
+            --  the check concerns overriding ones. Finally, nothing to do for
+            --  abstract subprograms, because they have no body that could be
+            --  examined.
 
             if Is_Predefined_Dispatching_Operation (Prim)
               or else not Is_Overriding_Subprogram (Prim)
+              or else Is_Abstract_Subprogram (Prim)
             then
                return;
             end if;
@@ -15313,9 +15316,10 @@ package body Sem_Elab is
 
             if Earlier_In_Extended_Unit (FNode, Region) then
                Error_Msg_Node_2 := Prim;
+               Error_Msg_Code := GEC_Type_Early_Call_Region;
                Error_Msg_NE
                  ("first freezing point of type & must appear within early "
-                  & "call region of primitive body & (SPARK RM 7.7(8))",
+                  & "call region of primitive body '[[]']",
                   Typ_Decl, Typ);
 
                Error_Msg_Sloc := Sloc (Region);
@@ -19617,7 +19621,7 @@ package body Sem_Elab is
                     Etype (First (Parameter_Associations (Call)));
          begin
             Elab_Unit := Scope (Typ);
-            while (Present (Elab_Unit))
+            while Present (Elab_Unit)
               and then not Is_Compilation_Unit (Elab_Unit)
             loop
                Elab_Unit := Scope (Elab_Unit);

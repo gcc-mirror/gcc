@@ -363,7 +363,6 @@ assign_stack_slot_num_and_sort_pseudos (int *pseudo_regnos, int n)
 {
   int i, j, regno;
 
-  slots_num = 0;
   /* Assign stack slot numbers to spilled pseudos, use smaller numbers
      for most frequently used pseudos.	*/
   for (i = 0; i < n; i++)
@@ -453,7 +452,10 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
 	return true;
       if ((hard_reg = spill_hard_reg[i]) != NULL_RTX)
 	*loc = copy_rtx (hard_reg);
-      else
+      else if (pseudo_slots[i].mem != NULL_RTX)
+	/* There might be no memory slot or hard reg for a pseudo when we spill
+	   the frame pointer after elimination of frame pointer to stack
+	   pointer became impossible.  */
 	{
 	  rtx x = lra_eliminate_regs_1 (insn, pseudo_slots[i].mem,
 					GET_MODE (pseudo_slots[i].mem),
@@ -603,7 +605,7 @@ lra_need_for_spills_p (void)
 void
 lra_spill (void)
 {
-  int i, n, curr_regno;
+  int i, n, n2, curr_regno;
   int *pseudo_regnos;
 
   regs_num = max_reg_num ();
@@ -625,11 +627,20 @@ lra_spill (void)
   /* Sort regnos according their usage frequencies.  */
   qsort (pseudo_regnos, n, sizeof (int), regno_freq_compare);
   n = assign_spill_hard_regs (pseudo_regnos, n);
+  slots_num = 0;
   assign_stack_slot_num_and_sort_pseudos (pseudo_regnos, n);
   for (i = 0; i < n; i++)
     if (pseudo_slots[pseudo_regnos[i]].mem == NULL_RTX)
       assign_mem_slot (pseudo_regnos[i]);
-  if (n > 0 && crtl->stack_alignment_needed)
+  if ((n2 = lra_update_fp2sp_elimination (pseudo_regnos)) > 0)
+    {
+      /* Assign stack slots to spilled pseudos assigned to fp.  */
+      assign_stack_slot_num_and_sort_pseudos (pseudo_regnos, n2);
+      for (i = 0; i < n2; i++)
+	if (pseudo_slots[pseudo_regnos[i]].mem == NULL_RTX)
+	  assign_mem_slot (pseudo_regnos[i]);
+    }
+  if (n + n2 > 0 && crtl->stack_alignment_needed)
     /* If we have a stack frame, we must align it now.  The stack size
        may be a part of the offset computation for register
        elimination.  */
@@ -701,72 +712,6 @@ alter_subregs (rtx *loc, bool final_p)
   return res;
 }
 
-/* Return true if REGNO is used for return in the current
-   function.  */
-static bool
-return_regno_p (unsigned int regno)
-{
-  rtx outgoing = crtl->return_rtx;
-
-  if (! outgoing)
-    return false;
-
-  if (REG_P (outgoing))
-    return REGNO (outgoing) == regno;
-  else if (GET_CODE (outgoing) == PARALLEL)
-    {
-      int i;
-
-      for (i = 0; i < XVECLEN (outgoing, 0); i++)
-	{
-	  rtx x = XEXP (XVECEXP (outgoing, 0, i), 0);
-
-	  if (REG_P (x) && REGNO (x) == regno)
-	    return true;
-	}
-    }
-  return false;
-}
-
-/* Return true if REGNO is in one of subsequent USE after INSN in the
-   same BB.  */
-static bool
-regno_in_use_p (rtx_insn *insn, unsigned int regno)
-{
-  static lra_insn_recog_data_t id;
-  static struct lra_static_insn_data *static_id;
-  struct lra_insn_reg *reg;
-  int i, arg_regno;
-  basic_block bb = BLOCK_FOR_INSN (insn);
-
-  while ((insn = next_nondebug_insn (insn)) != NULL_RTX)
-    {
-      if (BARRIER_P (insn) || bb != BLOCK_FOR_INSN (insn))
-	return false;
-      if (! INSN_P (insn))
-	continue;
-      if (GET_CODE (PATTERN (insn)) == USE
-	  && REG_P (XEXP (PATTERN (insn), 0))
-	  && regno == REGNO (XEXP (PATTERN (insn), 0)))
-	return true;
-      /* Check that the regno is not modified.  */
-      id = lra_get_insn_recog_data (insn);
-      for (reg = id->regs; reg != NULL; reg = reg->next)
-	if (reg->type != OP_IN && reg->regno == (int) regno)
-	  return false;
-      static_id = id->insn_static_data;
-      for (reg = static_id->hard_regs; reg != NULL; reg = reg->next)
-	if (reg->type != OP_IN && reg->regno == (int) regno)
-	  return false;
-      if (id->arg_hard_regs != NULL)
-	for (i = 0; (arg_regno = id->arg_hard_regs[i]) >= 0; i++)
-	  if ((int) regno == (arg_regno >= FIRST_PSEUDO_REGISTER
-			      ? arg_regno : arg_regno - FIRST_PSEUDO_REGISTER))
-	    return false;
-    }
-  return false;
-}
-
 /* Final change of pseudos got hard registers into the corresponding
    hard registers and removing temporary clobbers.  */
 void
@@ -817,8 +762,7 @@ lra_final_code_change (void)
 	  if (NONJUMP_INSN_P (insn) && GET_CODE (pat) == SET
 	      && REG_P (SET_SRC (pat)) && REG_P (SET_DEST (pat))
 	      && REGNO (SET_SRC (pat)) == REGNO (SET_DEST (pat))
-	      && (! return_regno_p (REGNO (SET_SRC (pat)))
-		  || ! regno_in_use_p (insn, REGNO (SET_SRC (pat)))))
+	      && REGNO (SET_SRC (pat)) >= FIRST_PSEUDO_REGISTER)
 	    {
 	      lra_invalidate_insn_data (insn);
 	      delete_insn (insn);

@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with System.Address_Operations; use System.Address_Operations;
+with System.Storage_Elements;   use System.Storage_Elements;
 
 with Ada.Unchecked_Conversion;
 
@@ -57,6 +58,9 @@ package body System.Compare_Array_Signed_8 is
 
    function To_Big_Bytes is new
      Ada.Unchecked_Conversion (System.Address, Big_Bytes_Ptr);
+
+   pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                    "early returns for performance");
 
    ----------------------
    -- Compare_Array_S8 --
@@ -91,8 +95,8 @@ package body System.Compare_Array_Signed_8 is
          for J in 0 .. Words_To_Compare - 1 loop
             if LeftP (J) /= RightP (J) then
                return Compare_Array_S8_Unaligned
-                        (AddA (Left,  Address (4 * J)),
-                         AddA (Right, Address (4 * J)),
+                        (Left  + Storage_Offset (4 * J),
+                         Right + Storage_Offset (4 * J),
                          4, 4);
             end if;
          end loop;
@@ -105,8 +109,8 @@ package body System.Compare_Array_Signed_8 is
          --    * Words_To_Compare = Compare_Len / 4
          --    * Bytes_Compared_As_Words = Words_To_Compare * 4
          return Compare_Array_S8_Unaligned
-                  (AddA (Left,  Address (Bytes_Compared_As_Words)),
-                   AddA (Right, Address (Bytes_Compared_As_Words)),
+                        (Left  + Storage_Offset (Bytes_Compared_As_Words),
+                         Right + Storage_Offset (Bytes_Compared_As_Words),
                    Left_Len  - Bytes_Compared_As_Words,
                    Right_Len - Bytes_Compared_As_Words);
       end;
@@ -147,4 +151,5 @@ package body System.Compare_Array_Signed_8 is
       end if;
    end Compare_Array_S8_Unaligned;
 
+   pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
 end System.Compare_Array_Signed_8;

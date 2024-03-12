@@ -219,6 +219,8 @@ EXTERN tree m2type_BuildProcTypeParameterDeclaration (location_t location,
                                                       bool isreference);
 EXTERN int m2type_IsAddress (tree type);
 EXTERN tree m2type_GetCardinalAddressType (void);
+EXTERN bool m2type_SameRealType (tree a, tree b);
+
 
 #undef EXTERN
 #endif /* m2type_h  */

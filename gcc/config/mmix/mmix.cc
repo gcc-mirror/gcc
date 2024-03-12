@@ -132,7 +132,8 @@ static void mmix_target_asm_function_end_prologue (FILE *);
 static void mmix_target_asm_function_epilogue (FILE *);
 static reg_class_t mmix_preferred_reload_class (rtx, reg_class_t);
 static reg_class_t mmix_preferred_output_reload_class (rtx, reg_class_t);
-static bool mmix_legitimate_address_p (machine_mode, rtx, bool);
+static bool mmix_legitimate_address_p (machine_mode, rtx, bool,
+				       code_helper = ERROR_MARK);
 static bool mmix_legitimate_constant_p (machine_mode, rtx);
 static void mmix_reorg (void);
 static void mmix_asm_output_mi_thunk
@@ -272,9 +273,6 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 #define TARGET_PREFERRED_RELOAD_CLASS mmix_preferred_reload_class
 #undef TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS mmix_preferred_output_reload_class
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mmix_legitimate_address_p
@@ -1112,7 +1110,8 @@ mmix_constant_address_p (rtx x)
 bool
 mmix_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 			   rtx x,
-			   bool strict_checking)
+			   bool strict_checking,
+			   code_helper)
 {
 #define MMIX_REG_OK(X)							\
   ((strict_checking							\
@@ -1265,7 +1264,7 @@ static void
 mmix_encode_section_info (tree decl, rtx rtl, int first)
 {
   /* Test for an external declaration, and do nothing if it is one.  */
-  if ((TREE_CODE (decl) == VAR_DECL
+  if ((VAR_P (decl)
        && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl)))
       || (TREE_CODE (decl) == FUNCTION_DECL && TREE_PUBLIC (decl)))
     ;
@@ -1294,7 +1293,7 @@ mmix_encode_section_info (tree decl, rtx rtl, int first)
      For now, functions and things we know or have been told are constant.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       || TREE_CONSTANT (decl)
-      || (TREE_CODE (decl) == VAR_DECL
+      || (VAR_P (decl)
 	  && TREE_READONLY (decl)
 	  && !TREE_SIDE_EFFECTS (decl)
 	  && (!DECL_INITIAL (decl)

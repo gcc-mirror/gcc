@@ -246,15 +246,15 @@ am__objects_4 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-construct-map.lo runtime/go-ffi.lo \
 	runtime/go-fieldtrack.lo runtime/go-matherr.lo \
 	runtime/go-memclr.lo runtime/go-memmove.lo \
-	runtime/go-memequal.lo runtime/go-nanotime.lo \
-	runtime/go-now.lo runtime/go-nosys.lo runtime/go-strerror.lo \
-	runtime/go-reflect-call.lo runtime/go-setenv.lo \
-	runtime/go-signal.lo runtime/go-unsafe-pointer.lo \
-	runtime/go-unsetenv.lo runtime/go-unwind.lo \
-	runtime/go-varargs.lo runtime/env_posix.lo runtime/panic.lo \
-	runtime/print.lo runtime/proc.lo runtime/runtime_c.lo \
-	runtime/stack.lo runtime/yield.lo $(am__objects_2) \
-	$(am__objects_3)
+	runtime/go-memequal.lo runtime/go-mmap.lo \
+	runtime/go-nanotime.lo runtime/go-now.lo runtime/go-nosys.lo \
+	runtime/go-strerror.lo runtime/go-reflect-call.lo \
+	runtime/go-setenv.lo runtime/go-signal.lo \
+	runtime/go-unsafe-pointer.lo runtime/go-unsetenv.lo \
+	runtime/go-unwind.lo runtime/go-varargs.lo \
+	runtime/env_posix.lo runtime/panic.lo runtime/print.lo \
+	runtime/proc.lo runtime/runtime_c.lo runtime/stack.lo \
+	runtime/yield.lo $(am__objects_2) $(am__objects_3)
 am_libgo_llgo_la_OBJECTS = $(am__objects_4)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -474,6 +474,7 @@ SPLIT_STACK = @SPLIT_STACK@
 STRINGOPS_FLAG = @STRINGOPS_FLAG@
 STRIP = @STRIP@
 STRUCT_EPOLL_EVENT_FD_OFFSET = @STRUCT_EPOLL_EVENT_FD_OFFSET@
+SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
 USE_DEJAGNU = @USE_DEJAGNU@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
@@ -885,6 +886,7 @@ toolexeclibgounicode_DATA = \
 # Some internal packages are needed to bootstrap the gc toolchain.
 toolexeclibgointernaldir = $(toolexeclibgodir)/internal
 toolexeclibgointernal_DATA = \
+	internal/lazyregexp.gox \
 	internal/reflectlite.gox \
 	internal/unsafeheader.gox
 
@@ -914,6 +916,7 @@ runtime_files = \
 	runtime/go-memclr.c \
 	runtime/go-memmove.c \
 	runtime/go-memequal.c \
+	runtime/go-mmap.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-nosys.c \
@@ -1385,6 +1388,8 @@ runtime/go-memmove.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-memequal.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/go-mmap.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-nanotime.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-now.lo: runtime/$(am__dirstamp) \
@@ -1454,6 +1459,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memclr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memequal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memmove.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-mmap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nanotime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nosys.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-now.Plo@am__quote@

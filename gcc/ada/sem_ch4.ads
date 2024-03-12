@@ -88,4 +88,7 @@ package Sem_Ch4  is
    --  of a non-tagged type is allowed as if Extensions_Allowed returned True.
    --  This is used to issue better error messages.
 
+   procedure Unresolved_Operator (N : Node_Id);
+   --  Give an error for an unresolved operator
+
 end Sem_Ch4;

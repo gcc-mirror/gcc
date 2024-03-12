@@ -25,3 +25,10 @@ void VerifyHash(fixed_string s) {
   fixed_string::size_static(-1); // { dg-message "expansion of" }
   s(); // { dg-bogus "" }
 }
+
+void
+do_test ()
+{
+  fixed_string f;
+  VerifyHash<int>(f);
+}

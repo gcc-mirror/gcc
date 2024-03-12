@@ -652,6 +652,14 @@ __analyzer_get_unknown_ptr ();
 @end smallexample
 will obtain an unknown @code{void *}.
 
+@item __analyzer_get_strlen
+@smallexample
+__analyzer_get_strlen (buf);
+@end smallexample
+will emit a warning if PTR doesn't point to a null-terminated string.
+TODO: eventually get the strlen of the buffer (without the
+optimizer touching it).
+
 @end table
 
 @subsection Other Debugging Techniques

@@ -217,6 +217,21 @@ struct GTY(()) non_terminated_string @{
 @};
 @end smallexample
 
+Similarly, this is useful for (regular NUL-terminated) strings with
+NUL characters embedded (that the default @code{strlen} use would run
+afoul of):
+
+@smallexample
+struct GTY(()) multi_string @{
+  const char * GTY((string_length ("%h.len + 1"))) str;
+  size_t len;
+@};
+@end smallexample
+
+The @code{string_length} option currently is not supported for (fields
+in) global variables.
+@c <https://inbox.sourceware.org/87bkgqvlst.fsf@euler.schwinge.homeip.net>
+
 @findex skip
 @item skip
 
@@ -290,6 +305,13 @@ When the @code{cache} option is applied to a global variable gt_cleare_cache is
 called on that variable between the mark and sweep phases of garbage
 collection.  The gt_clear_cache function is free to mark blocks as used, or to
 clear pointers in the variable.
+
+In a hash table, the @samp{gt_cleare_cache} function discards entries
+if the key is not marked, or marks the value if the key is marked.
+
+Note that caches should generally use @code{deletable} instead;
+@code{cache} is only preferable if the value is impractical to
+recompute from the key when needed.
 
 @findex deletable
 @item deletable

@@ -93,7 +93,6 @@ extern void tree_estimate_probability (bool);
 extern void handle_missing_profiles (void);
 extern bool update_max_bb_count (void);
 extern bool expensive_function_p (int);
-extern void estimate_bb_frequencies (bool);
 extern void compute_function_frequency (void);
 extern tree build_predict_expr (enum br_predictor, enum prediction);
 extern const char *predictor_name (enum br_predictor);
@@ -101,7 +100,6 @@ extern void rebuild_frequencies (void);
 extern void report_predictor_hitrates (void);
 extern void force_edge_cold (edge, bool);
 extern void propagate_unlikely_bbs_forward (void);
-extern void change_edge_frequency (edge, profile_probability);
 
 extern void add_reg_br_prob_note (rtx_insn *, profile_probability);
 

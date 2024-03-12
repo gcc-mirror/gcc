@@ -53,7 +53,7 @@ fail_compilation/fail66.d(59): Error: cannot modify `const` expression `x`
 class C4
 {
     static const int x;
-    static this() { x = 5; }
+    shared static this() { x = 5; }
     void foo()
     {
         x = 4;
@@ -67,7 +67,7 @@ fail_compilation/fail66.d(73): Error: cannot modify `const` expression `z5`
 ---
 */
 const int z5;
-static this() { z5 = 3; }
+shared static this() { z5 = 3; }
 void test5()
 {
     z5 = 4;

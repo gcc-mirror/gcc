@@ -737,7 +737,7 @@ version (Shared)
         !pthread_mutex_unlock(&_handleToDSOMutex) || assert(0);
     }
 
-    void getDependencies(in ref dl_phdr_info info, ref Array!(DSO*) deps)
+    void getDependencies(const ref dl_phdr_info info, ref Array!(DSO*) deps)
     {
         // get the entries of the .dynamic section
         ElfW!"Dyn"[] dyns;
@@ -833,7 +833,7 @@ version (Shared)
  * Scan segments in Linux dl_phdr_info struct and store
  * the TLS and writeable data segments in *pdso.
  */
-void scanSegments(in ref dl_phdr_info info, DSO* pdso) nothrow @nogc
+void scanSegments(const ref dl_phdr_info info, DSO* pdso) nothrow @nogc
 {
     foreach (ref phdr; info.dlpi_phdr[0 .. info.dlpi_phnum])
     {
@@ -957,7 +957,7 @@ bool findDSOInfoForAddr(in void* addr, dl_phdr_info* result=null) nothrow @nogc
  * Determine if 'addr' lies within shared object 'info'.
  * If so, return true and fill in 'result' with the corresponding ELF program header.
  */
-bool findSegmentForAddr(in ref dl_phdr_info info, in void* addr, ElfW!"Phdr"* result=null) nothrow @nogc
+bool findSegmentForAddr(const ref dl_phdr_info info, in void* addr, ElfW!"Phdr"* result=null) nothrow @nogc
 {
     if (addr < cast(void*)info.dlpi_addr) // less than base address of object means quick reject
         return false;

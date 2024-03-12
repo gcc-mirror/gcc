@@ -232,10 +232,10 @@ module std.range;
 public import std.array;
 public import std.range.interfaces;
 public import std.range.primitives;
-public import std.typecons : Flag, Yes, No;
+public import std.typecons : Flag, Yes, No, Rebindable, rebindable;
 
 import std.internal.attributes : betterC;
-import std.meta : allSatisfy, anySatisfy, staticMap;
+import std.meta : aliasSeqOf, allSatisfy, anySatisfy, staticMap;
 import std.traits : CommonType, isCallable, isFloatingPoint, isIntegral,
     isPointer, isSomeFunction, isStaticArray, Unqual, isInstanceOf;
 
@@ -313,12 +313,16 @@ if (isBidirectionalRange!(Unqual!Range))
             {
                 @property void front(ElementType!R val)
                 {
-                    source.back = val;
+                    import std.algorithm.mutation : move;
+
+                    source.back = move(val);
                 }
 
                 @property void back(ElementType!R val)
                 {
-                    source.front = val;
+                    import std.algorithm.mutation : move;
+
+                    source.front = move(val);
                 }
             }
 
@@ -330,7 +334,9 @@ if (isBidirectionalRange!(Unqual!Range))
                 {
                     void opIndexAssign(ElementType!R val, size_t n)
                     {
-                        source[retroIndex(n)] = val;
+                        import std.algorithm.mutation : move;
+
+                        source[retroIndex(n)] = move(val);
                     }
                 }
 
@@ -474,6 +480,19 @@ pure @safe nothrow @nogc unittest
     foreach (x; data.retro) {}
 }
 
+pure @safe nothrow unittest
+{
+    import std.algorithm.comparison : equal;
+
+    static struct S {
+        int v;
+        @disable this(this);
+    }
+
+    immutable foo = [S(1), S(2), S(3)];
+    auto r = retro(foo);
+    assert(equal(r, [S(3), S(2), S(1)]));
+}
 
 /**
 Iterates range `r` with stride `n`. If the range is a
@@ -585,7 +604,9 @@ do
             {
                 @property void front(ElementType!R val)
                 {
-                    source.front = val;
+                    import std.algorithm.mutation : move;
+
+                    source.front = move(val);
                 }
             }
 
@@ -864,6 +885,20 @@ pure @safe nothrow unittest
     assert(equal(s, [1L, 4L, 7L]));
 }
 
+pure @safe nothrow unittest
+{
+    import std.algorithm.comparison : equal;
+
+    static struct S {
+        int v;
+        @disable this(this);
+    }
+
+    immutable foo = [S(1), S(2), S(3), S(4), S(5)];
+    auto r = stride(foo, 3);
+    assert(equal(r, [S(1), S(4)]));
+}
+
 /**
 Spans multiple ranges in sequence. The function `chain` takes any
 number of ranges and returns a $(D Chain!(R1, R2,...)) object. The
@@ -871,6 +906,11 @@ ranges may be different, but they must have the same element type. The
 result is a range that offers the `front`, `popFront`, and $(D
 empty) primitives. If all input ranges offer random access and $(D
 length), `Chain` offers them as well.
+
+Note that repeated random access of the resulting range is likely
+to perform somewhat badly since lengths of the ranges in the chain have to be
+added up for each random access operation. Random access to elements of
+the first remaining range is still efficient.
 
 If only one range is offered to `Chain` or `chain`, the $(D
 Chain) type exits the picture by aliasing itself directly to that
@@ -907,7 +947,12 @@ if (Ranges.length > 0 &&
                 enum sameET = is(.ElementType!A == RvalueElementType);
             }
 
-            enum bool allSameType = allSatisfy!(sameET, R);
+            enum bool allSameType = allSatisfy!(sameET, R),
+                bidirectional = allSatisfy!(isBidirectionalRange, R),
+                mobileElements = allSatisfy!(hasMobileElements, R),
+                assignableElements = allSameType
+                    && allSatisfy!(hasAssignableElements, R);
+
             alias ElementType = RvalueElementType;
 
             static if (allSameType && allSatisfy!(hasLvalueElements, R))
@@ -925,17 +970,49 @@ if (Ranges.length > 0 &&
                 }
             }
 
-            // This is the entire state
             R source;
-            // TODO: use a vtable (or more) instead of linear iteration
+            size_t frontIndex;
+            // Always points to index one past the last non-empty range,
+            // because otherwise decrementing while pointing to first range
+            // would overflow to size_t.max.
+            static if (bidirectional) size_t backIndex;
+            else enum backIndex = source.length;
+
+            this(typeof(Result.tupleof) fields)
+            {
+                this.tupleof = fields;
+            }
 
         public:
             this(R input)
             {
-                // Must be static foreach because of https://issues.dlang.org/show_bug.cgi?id=21209
-                static foreach (i, v; input)
+                frontIndex = source.length;
+                static if (bidirectional) backIndex = 0;
+
+                foreach (i, ref v; input) source[i] = v;
+
+                // We do this separately to avoid invoking `empty` needlessly.
+                // While not recommended, a range may depend on side effects of
+                // `empty` call.
+                foreach (i, ref v; input) if (!v.empty)
                 {
-                    source[i] = v;
+                    frontIndex = i;
+                    static if (bidirectional) backIndex = i+1;
+                    break;
+                }
+
+                // backIndex is already set in the first loop to
+                // as frontIndex+1, so we'll use that if we don't find a
+                // non-empty range here.
+                static if (bidirectional)
+                    static foreach_reverse (i; 1 .. R.length + 1)
+                {
+                    if (i <= frontIndex + 1) return;
+                    if (!input[i-1].empty)
+                    {
+                        backIndex = i;
+                        return;
+                    }
                 }
             }
 
@@ -948,120 +1025,209 @@ if (Ranges.length > 0 &&
             }
             else
             {
-                @property bool empty()
-                {
-                    foreach (i, Unused; R)
-                    {
-                        if (!source[i].empty) return false;
-                    }
-                    return true;
-                }
+                @property bool empty() => frontIndex >= backIndex;
             }
 
             static if (allSatisfy!(isForwardRange, R))
+            {
                 @property auto save()
                 {
-                    auto saveSource(size_t len)()
-                    {
-                        import std.typecons : tuple;
-                        static assert(len > 0);
-                        static if (len == 1)
-                        {
-                            return tuple(source[0].save);
-                        }
-                        else
-                        {
-                            return saveSource!(len - 1)() ~
-                                tuple(source[len - 1].save);
-                        }
-                    }
-                    return Result(saveSource!(R.length).expand);
+                    auto saveI(size_t i)() => source[i].save;
+
+                    // TODO: this has the constructor needlessly refind
+                    // frontIndex and backIndex. It'd be better to just copy
+                    // those from `.this`.
+                    auto saveResult =
+                        Result(staticMap!(saveI, aliasSeqOf!(R.length.iota)));
+
+                    return saveResult;
                 }
+            }
 
             void popFront()
             {
-                foreach (i, Unused; R)
+                sw1: switch (frontIndex)
                 {
-                    if (source[i].empty) continue;
-                    source[i].popFront();
-                    return;
+                    static foreach (i; 0 .. R.length)
+                    {
+                    case i:
+                        source[i].popFront();
+                        break sw1;
+                    }
+
+                case R.length:
+                    assert(0, "Attempt to `popFront` of empty `chain` range");
+
+                default:
+                    assert(0, "Internal library error. Please report it.");
                 }
-                assert(false, "Attempt to `popFront` of empty `chain` range");
+
+                sw2: switch (frontIndex)
+                {
+                    static foreach (i; 0 .. R.length)
+                    {
+                    case i:
+                        if (source[i].empty)
+                        {
+                            frontIndex++;
+                            goto case;
+                        }
+                        else break sw2;
+                    }
+
+                // Only possible to reach from goto of previous case.
+                case R.length:
+                    break;
+
+                default:
+                    assert(0, "Internal library error. Please report it.");
+                }
             }
 
             @property auto ref front()
             {
-                foreach (i, Unused; R)
+                switch (frontIndex)
                 {
-                    if (source[i].empty) continue;
-                    return fixRef(source[i].front);
+                    static foreach (i; 0 .. R.length)
+                    {
+                    case i:
+                        return fixRef(source[i].front);
+                    }
+
+                case R.length:
+                    assert(0, "Attempt to get `front` of empty `chain` range");
+
+                default:
+                    assert(0, "Internal library error. Please report it.");
                 }
-                assert(false, "Attempt to get `front` of empty `chain` range");
             }
 
-            static if (allSameType && allSatisfy!(hasAssignableElements, R))
+            static if (assignableElements)
             {
                 // @@@BUG@@@
                 //@property void front(T)(T v) if (is(T : RvalueElementType))
 
                 @property void front(RvalueElementType v)
                 {
-                    foreach (i, Unused; R)
+                    import std.algorithm.mutation : move;
+
+                    sw: switch (frontIndex)
                     {
-                        if (source[i].empty) continue;
-                        source[i].front = v;
-                        return;
+                        static foreach (i; 0 .. R.length)
+                        {
+                        case i:
+                            source[i].front = move(v);
+                            break sw;
+                        }
+
+                    case R.length:
+                        assert(0, "Attempt to set `front` of empty `chain` range");
+
+                    default:
+                        assert(0, "Internal library error. Please report it.");
                     }
-                    assert(false, "Attempt to set `front` of empty `chain` range");
                 }
             }
 
-            static if (allSatisfy!(hasMobileElements, R))
+            static if (mobileElements)
             {
                 RvalueElementType moveFront()
                 {
-                    foreach (i, Unused; R)
+                    switch (frontIndex)
                     {
-                        if (source[i].empty) continue;
-                        return source[i].moveFront();
+                        static foreach (i; 0 .. R.length)
+                        {
+                        case i:
+                            return source[i].moveFront();
+                        }
+
+                    case R.length:
+                        assert(0, "Attempt to `moveFront` of empty `chain` range");
+
+                    default:
+                        assert(0, "Internal library error. Please report it.");
                     }
-                    assert(false, "Attempt to `moveFront` of empty `chain` range");
                 }
             }
 
-            static if (allSatisfy!(isBidirectionalRange, R))
+            static if (bidirectional)
             {
                 @property auto ref back()
                 {
-                    foreach_reverse (i, Unused; R)
+                    switch (backIndex)
                     {
-                        if (source[i].empty) continue;
-                        return fixRef(source[i].back);
+                        static foreach_reverse (i; 1 .. R.length + 1)
+                        {
+                        case i:
+                            return fixRef(source[i-1].back);
+                        }
+
+                    case 0:
+                        assert(0, "Attempt to get `back` of empty `chain` range");
+
+                    default:
+                        assert(0, "Internal library error. Please report it.");
                     }
-                    assert(false, "Attempt to get `back` of empty `chain` range");
                 }
 
                 void popBack()
                 {
-                    foreach_reverse (i, Unused; R)
+                    sw1: switch (backIndex)
                     {
-                        if (source[i].empty) continue;
-                        source[i].popBack();
-                        return;
+                        static foreach_reverse (i; 1 .. R.length + 1)
+                        {
+                        case i:
+                            source[i-1].popBack();
+                            break sw1;
+                        }
+
+                    case 0:
+                        assert(0, "Attempt to `popFront` of empty `chain` range");
+
+                    default:
+                        assert(0, "Internal library error. Please report it.");
                     }
-                    assert(false, "Attempt to `popBack` of empty `chain` range");
+
+                    sw2: switch (backIndex)
+                    {
+                        static foreach_reverse (i; 1 .. R.length + 1)
+                        {
+                        case i:
+                            if (source[i-1].empty)
+                            {
+                                backIndex--;
+                                goto case;
+                            }
+                            else break sw2;
+                        }
+
+                    // Only possible to reach from goto of previous case.
+                    case 0:
+                        break;
+
+                    default:
+                        assert(0, "Internal library error. Please report it.");
+                    }
                 }
 
-                static if (allSatisfy!(hasMobileElements, R))
+                static if (mobileElements)
                 {
                     RvalueElementType moveBack()
                     {
-                        foreach_reverse (i, Unused; R)
+                        switch (backIndex)
                         {
-                            if (source[i].empty) continue;
-                            return source[i].moveBack();
+                            static foreach_reverse (i; 1 .. R.length + 1)
+                            {
+                            case i:
+                                return source[i-1].moveBack();
+                            }
+
+                        case 0:
+                            assert(0, "Attempt to `moveBack` of empty `chain` range");
+
+                        default:
+                            assert(0, "Internal library error. Please report it.");
                         }
-                        assert(false, "Attempt to `moveBack` of empty `chain` range");
                     }
                 }
 
@@ -1069,13 +1235,23 @@ if (Ranges.length > 0 &&
                 {
                     @property void back(RvalueElementType v)
                     {
-                        foreach_reverse (i, Unused; R)
+                        import std.algorithm.mutation : move;
+
+                        sw: switch (backIndex)
                         {
-                            if (source[i].empty) continue;
-                            source[i].back = v;
-                            return;
+                            static foreach_reverse (i; 1 .. R.length + 1)
+                            {
+                            case i:
+                                source[i-1].back = move(v);
+                                break sw;
+                            }
+
+                        case 0:
+                            assert(0, "Attempt to set `back` of empty `chain` range");
+
+                        default:
+                            assert(0, "Internal library error. Please report it.");
                         }
-                        assert(false, "Attempt to set `back` of empty `chain` range");
                     }
                 }
             }
@@ -1084,11 +1260,24 @@ if (Ranges.length > 0 &&
             {
                 @property size_t length()
                 {
-                    size_t result;
-                    foreach (i, Unused; R)
+                    size_t result = 0;
+                    sw: switch (frontIndex)
                     {
-                        result += source[i].length;
+                        static foreach (i; 0 .. R.length)
+                        {
+                        case i:
+                            result += source[i].length;
+                            if (backIndex == i+1) break sw;
+                            else goto case;
+                        }
+
+                    case R.length:
+                        break;
+
+                    default:
+                        assert(0, "Internal library error. Please report it.");
                     }
+
                     return result;
                 }
 
@@ -1099,106 +1288,181 @@ if (Ranges.length > 0 &&
             {
                 auto ref opIndex(size_t index)
                 {
-                    foreach (i, Range; R)
+                    switch (frontIndex)
                     {
-                        static if (isInfinite!(Range))
+                        static foreach (i; 0 .. R.length)
                         {
-                            return source[i][index];
+                        case i:
+                            static if (!isInfinite!(R[i]))
+                            {
+                                immutable length = source[i].length;
+                                if (index >= length)
+                                {
+                                    index -= length;
+                                    goto case;
+                                }
+                            }
+
+                            return fixRef(source[i][index]);
                         }
-                        else
-                        {
-                            immutable length = source[i].length;
-                            if (index < length) return fixRef(source[i][index]);
-                            index -= length;
-                        }
+
+                    case R.length:
+                        assert(0, "Attempt to access out-of-bounds index of `chain` range");
+
+                    default:
+                        assert(0, "Internal library error. Please report it.");
                     }
-                    assert(false, "Attempt to access out-of-bounds index of `chain` range");
                 }
 
-                static if (allSatisfy!(hasMobileElements, R))
+                static if (mobileElements)
                 {
                     RvalueElementType moveAt(size_t index)
                     {
-                        foreach (i, Range; R)
+                        switch (frontIndex)
                         {
-                            static if (isInfinite!(Range))
+                            static foreach (i; 0 .. R.length)
                             {
+                            case i:
+                                static if (!isInfinite!(R[i]))
+                                {
+                                    immutable length = source[i].length;
+                                    if (index >= length)
+                                    {
+                                        index -= length;
+                                        goto case;
+                                    }
+                                }
+
                                 return source[i].moveAt(index);
                             }
-                            else
-                            {
-                                immutable length = source[i].length;
-                                if (index < length) return source[i].moveAt(index);
-                                index -= length;
-                            }
+
+                        case R.length:
+                            assert(0, "Attempt to move out-of-bounds index of `chain` range");
+
+                        default:
+                            assert(0, "Internal library error. Please report it.");
                         }
-                        assert(false, "Attempt to move out-of-bounds index of `chain` range");
                     }
                 }
 
                 static if (allSameType && allSatisfy!(hasAssignableElements, R))
                     void opIndexAssign(ElementType v, size_t index)
                     {
-                        foreach (i, Range; R)
+                        import std.algorithm.mutation : move;
+
+                        sw: switch (frontIndex)
                         {
-                            static if (isInfinite!(Range))
+                            static foreach (i; 0 .. R.length)
                             {
-                                source[i][index] = v;
-                            }
-                            else
-                            {
-                                immutable length = source[i].length;
-                                if (index < length)
+                            case i:
+                                static if (!isInfinite!(R[i]))
                                 {
-                                    source[i][index] = v;
-                                    return;
+                                    immutable length = source[i].length;
+                                    if (index >= length)
+                                    {
+                                        index -= length;
+                                        goto case;
+                                    }
                                 }
-                                index -= length;
+
+                                source[i][index] = move(v);
+                                break sw;
                             }
+
+                        case R.length:
+                            assert(0, "Attempt to write out-of-bounds index of `chain` range");
+
+                        default:
+                            assert(0, "Internal library error. Please report it.");
                         }
-                        assert(false, "Attempt to write out-of-bounds index of `chain` range");
                     }
             }
 
             static if (allSatisfy!(hasLength, R) && allSatisfy!(hasSlicing, R))
                 auto opSlice(size_t begin, size_t end) return scope
                 {
-                    auto result = this;
-                    foreach (i, Unused; R)
+                    // force staticMap type conversion to Rebindable
+                    static struct ResultRanges
                     {
-                        immutable len = result.source[i].length;
-                        if (len < begin)
-                        {
-                            result.source[i] = result.source[i]
-                                [len .. len];
-                            begin -= len;
-                        }
-                        else
-                        {
-                            result.source[i] = result.source[i]
-                                [begin .. len];
-                            break;
-                        }
+                        staticMap!(Rebindable, typeof(source)) fields;
                     }
-                    auto cut = length;
-                    cut = cut <= end ? 0 : cut - end;
-                    foreach_reverse (i, Unused; R)
+                    auto sourceI(size_t i)() => rebindable(this.source[i]);
+                    auto resultRanges = ResultRanges(staticMap!(sourceI, aliasSeqOf!(R.length.iota))).fields;
+                    size_t resultFrontIndex = this.frontIndex;
+                    static if (bidirectional)
+                        size_t resultBackIndex = this.backIndex;
+
+                    sw: switch (frontIndex)
                     {
-                        immutable len = result.source[i].length;
-                        if (cut > len)
+                        static foreach (i; 0 .. R.length)
                         {
-                            result.source[i] = result.source[i]
-                                [0 .. 0];
-                            cut -= len;
+                        case i:
+                            immutable len = resultRanges[i].length;
+                            if (len <= begin)
+                            {
+                                resultRanges[i] = resultRanges[i]
+                                    [len .. len];
+                                begin -= len;
+                                resultFrontIndex++;
+                                goto case;
+                            }
+                            else
+                            {
+                                resultRanges[i] = resultRanges[i]
+                                    [begin .. len];
+                                break sw;
+                            }
                         }
-                        else
-                        {
-                            result.source[i] = result.source[i]
-                                [0 .. len - cut];
-                            break;
-                        }
+
+                    case R.length:
+                        assert(begin == 0,
+                            "Attempt to access out-of-bounds slice of `chain` range");
+                        break;
+
+                    default:
+                        assert(0, "Internal library error. Please report it.");
                     }
-                    return result;
+
+                    // Overflow intentional if end index too big.
+                    // This will trigger the bounds check failure below.
+                    auto cut = length - end;
+
+                    sw2: switch (backIndex)
+                    {
+                        static foreach_reverse (i; 1 .. R.length + 1)
+                        {
+                        case i:
+                            immutable len = resultRanges[i-1].length;
+                            if (len <= cut)
+                            {
+                                resultRanges[i-1] = resultRanges[i-1]
+                                    [0 .. 0];
+                                cut -= len;
+                                resultBackIndex--;
+                                goto case;
+                            }
+                            else
+                            {
+                                resultRanges[i-1] = resultRanges[i-1]
+                                    [0 .. len - cut];
+                                break sw2;
+                            }
+                        }
+
+                    case 0:
+                        assert(cut == 0, end > length?
+                            "Attempt to access out-of-bounds slice of `chain` range":
+                            "Attempt to access negative length slice of `chain` range");
+                        break sw2;
+
+                    default:
+                        assert(0, "Internal library error. Please report it.");
+                    }
+
+                    static if (bidirectional)
+                        return Result(resultRanges, resultFrontIndex, resultBackIndex);
+                    else
+                        return Result(resultRanges, resultFrontIndex);
                 }
         }
         return Result(rs);
@@ -1293,6 +1557,10 @@ pure @safe nothrow unittest
         auto s = chain(arr1, arr2, arr3);
         assert(s[5] == 6);
         assert(equal(s, witness));
+        assert(s[4 .. 6].equal(arr2));
+        assert(s[2 .. 5].equal([3, 4, 5]));
+        assert(s[0 .. 0].empty);
+        assert(s[7 .. $].empty);
         assert(s[5] == 6);
     }
     {
@@ -1390,6 +1658,51 @@ pure @safe unittest
     auto r = refRange(&s).chain("bar");
     assert(equal(r.save, "foobar"));
     assert(equal(r, "foobar"));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23844
+pure @safe unittest
+{
+    struct S
+    {
+        immutable int value;
+    }
+
+    auto range = chain(only(S(5)), only(S(6)));
+    assert(range.array == [S(5), S(6)]);
+}
+
+/// https://issues.dlang.org/show_bug.cgi?id=24064
+pure @safe nothrow unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.typecons : Nullable;
+
+    immutable Nullable!string foo = "b";
+    string[] bar = ["a"];
+    assert(chain(bar, foo).equal(["a", "b"]));
+}
+
+pure @safe nothrow @nogc unittest
+{
+    // support non-copyable items
+
+    static struct S {
+        int v;
+        @disable this(this);
+    }
+
+    S[2] s0, s1;
+    foreach (ref el; chain(s0[], s1[]))
+    {
+        int n = el.v;
+    }
+
+    S[] s2, s3;
+    foreach (ref el; chain(s2, s3))
+    {
+        int n = el.v;
+    }
 }
 
 /**
@@ -1825,6 +2138,23 @@ pure @safe unittest
     auto chosen2 = chosen.save;
 }
 
+pure @safe nothrow unittest
+{
+    static struct S {
+        int v;
+        @disable this(this);
+    }
+
+    auto a = [S(1), S(2), S(3)];
+    auto b = [S(4), S(5), S(6)];
+
+    auto chosen = choose(true, a, b);
+    assert(chosen.front.v == 1);
+
+    auto chosen2 = choose(false, a, b);
+    assert(chosen2.front.v == 4);
+}
+
 /**
 Choose one of multiple ranges at runtime.
 
@@ -2122,6 +2452,20 @@ pure @safe unittest
     assert(equal(r.save, "fboaor"));
     assert(equal(r.save, "fboaor"));
 }
+pure @safe nothrow unittest
+{
+    import std.algorithm.comparison : equal;
+
+    static struct S {
+        int v;
+        @disable this(this);
+    }
+
+    S[] a = [ S(1), S(2) ];
+    S[] b = [ S(10), S(20) ];
+    auto r = roundRobin(a, b);
+    assert(equal(r, [ S(1), S(10), S(2), S(20) ]));
+}
 
 /**
 Iterates a random-access range starting from a given point and
@@ -2313,12 +2657,12 @@ if (isInputRange!(Unqual!Range) &&
         /// ditto
         @property void front(ElementType!R v)
         {
+            import std.algorithm.mutation : move;
+
             assert(!empty,
                 "Attempting to assign to the front of an empty "
                 ~ Take.stringof);
-            // This has to return auto instead of void because of
-            // https://issues.dlang.org/show_bug.cgi?id=4706
-            source.front = v;
+            source.front = move(v);
         }
 
     static if (hasMobileElements!R)
@@ -2694,10 +3038,12 @@ if (isInputRange!R)
             {
                 @property auto ref front(ElementType!R v)
                 {
+                    import std.algorithm.mutation : move;
+
                     assert(!empty,
                         "Attempting to assign to the front of an empty "
                         ~ typeof(this).stringof);
-                    return _input.front = v;
+                    return _input.front = move(v);
                 }
             }
         }
@@ -3567,24 +3913,17 @@ Returns:
 struct Repeat(T)
 {
 private:
-    //Store a non-qualified T when possible: This is to make Repeat assignable
-    static if ((is(T == class) || is(T == interface)) && (is(T == const) || is(T == immutable)))
-    {
-        import std.typecons : Rebindable;
-        alias UT = Rebindable!T;
-    }
-    else static if (is(T : Unqual!T) && is(Unqual!T : T))
-        alias UT = Unqual!T;
-    else
-        alias UT = T;
-    UT _value;
+    import std.typecons : Rebindable2;
+
+    // Store a rebindable T to make Repeat assignable.
+    Rebindable2!T _value;
 
 public:
     /// Range primitives
-    @property inout(T) front() inout { return _value; }
+    @property inout(T) front() inout { return _value.get; }
 
     /// ditto
-    @property inout(T) back() inout { return _value; }
+    @property inout(T) back() inout { return _value.get; }
 
     /// ditto
     enum bool empty = false;
@@ -3599,7 +3938,7 @@ public:
     @property auto save() inout { return this; }
 
     /// ditto
-    inout(T) opIndex(size_t) inout { return _value; }
+    inout(T) opIndex(size_t) inout { return _value.get; }
 
     /// ditto
     auto opSlice(size_t i, size_t j)
@@ -3624,7 +3963,12 @@ public:
 }
 
 /// Ditto
-Repeat!T repeat(T)(T value) { return Repeat!T(value); }
+Repeat!T repeat(T)(T value)
+{
+    import std.typecons : Rebindable2;
+
+    return Repeat!T(Rebindable2!T(value));
+}
 
 ///
 pure @safe nothrow unittest
@@ -3929,7 +4273,9 @@ if (isForwardRange!R && !isInfinite!R)
             /// ditto
             @property void front(ElementType!R val)
             {
-                _original[_index] = val;
+                import std.algorithm.mutation : move;
+
+                _original[_index] = move(val);
             }
         }
 
@@ -4039,7 +4385,9 @@ if (isForwardRange!R && !isInfinite!R)
             /// ditto
             @property auto front(ElementType!R val)
             {
-                return _current.front = val;
+                import std.algorithm.mutation : move;
+
+                return _current.front = move(val);
             }
         }
 
@@ -7053,7 +7401,9 @@ struct FrontTransversal(Ror,
     {
         @property void front(ElementType val)
         {
-            _input.front.front = val;
+            import std.algorithm.mutation : move;
+
+            _input.front.front = move(val);
         }
     }
 
@@ -7110,7 +7460,9 @@ struct FrontTransversal(Ror,
         {
             @property void back(ElementType val)
             {
-                _input.back.front = val;
+                import std.algorithm.mutation : move;
+
+                _input.back.front = move(val);
             }
         }
     }
@@ -7143,7 +7495,9 @@ struct FrontTransversal(Ror,
         {
             void opIndexAssign(ElementType val, size_t n)
             {
-                _input[n].front = val;
+                import std.algorithm.mutation : move;
+
+                _input[n].front = move(val);
             }
         }
         mixin ImplementLength!_input;
@@ -8785,7 +9139,8 @@ public:
         {
             // `nextSource` is used to "look one step into the future" and check for the end
             // this means `nextSource` is advanced by `stepSize` on every `popFront`
-            nextSource = source.save.drop(windowSize);
+            nextSource = source.save;
+            auto poppedElems = nextSource.popFrontN(windowSize);
         }
 
         if (source.empty)
@@ -8806,14 +9161,13 @@ public:
                 if (source.length <= windowSize)
                     hasShownPartialBefore = true;
             }
-
         }
         else
         {
             // empty source range is needed, s.t. length, slicing etc. works properly
             static if (needsEndTracker)
             {
-                if (nextSource.empty)
+                if (poppedElems < windowSize)
                      _empty = true;
             }
             else
@@ -9770,6 +10124,24 @@ public:
     assert([1].map!(x => x).slide(2).equal!equal([[1]]));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=19642
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.algorithm.iteration : splitter;
+
+    assert("ab cd".splitter(' ').slide!(No.withPartial)(2).equal!equal([["ab", "cd"]]));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23976
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.algorithm.iteration : splitter;
+
+    assert("1<2".splitter('<').slide(2).equal!equal([["1", "2"]]));
+}
+
 private struct OnlyResult(Values...)
 if (Values.length > 1)
 {
@@ -9985,7 +10357,7 @@ if (!is(CommonType!Values == void))
 /// ditto
 auto only()()
 {
-    // cannot use noreturn due to issue 22383
+    // cannot use noreturn due to https://issues.dlang.org/show_bug.cgi?id=22383
     struct EmptyElementType {}
     EmptyElementType[] result;
     return result;

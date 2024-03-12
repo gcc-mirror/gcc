@@ -599,6 +599,18 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     </para>
 
     <para>
+      Since GCC 14, the libstdc++ testsuite has built-in support for running
+      tests with more than one <option>-std</option>, similar to the G++ tests.
+      Adding <code>set v3_std_list { 11 17 23 }</code> to
+      <filename>~/.dejagnurc</filename> or a file named by the
+      <envar>DEJAGNU</envar> environment variable will cause every test to
+      be run three times, using a different <option>-std</option> each time.
+      Alternatively, a list of standard versions to test with can be specified
+      as a comma-separated list in the <envvar>GLIBCXX_TESTSUITE_STDS</envvar>
+      environment variable.
+    </para>
+
+    <para>
       To run the libstdc++ test suite under the
       <link linkend="manual.ext.debug_mode">debug mode</link>, use
       <userinput>make check-debug</userinput>. Alternatively, edit
@@ -766,11 +778,12 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     It is possible to indicate that a test should <emphasis>only</emphasis>
     be run for a specific standard (and not later standards) using an
     effective target like <literal>c++11_only</literal>. However, this means
-    the test will be skipped by default (because the default mode is
-    <literal>gnu++14</literal>), and so will only run when
-    <option>-std=gnu++11</option> or <option>-std=c++11</option> is used
-    explicitly. For tests that require a specific standard it is better to
-    use a <literal>dg-options</literal> directive:
+    the test will be skipped by default unless <option>-std=gnu++11</option>
+    or <option>-std=c++11</option> is explicitly specified, either via a
+    target board, the <varname>v3_std_list</varname> dejagnu variable,
+    or the <envvar>GLIBCXX_TESTSUITE_STDS</envvar> environment variable.
+    For tests that require a specific standard it is useful to also add a
+    <literal>dg-options</literal> directive:
 <programlisting>    // { dg-options "-std=gnu++11" }</programlisting>
     This means the test will not get skipped by default, and will always use
     the specific standard dialect that the test requires. This isn't needed
@@ -780,16 +793,25 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
   </para>
 
   <para>
-    Similarly, tests which depend on a newer standard than the default
-    must use <literal>dg-options</literal> instead of (or in addition to)
-    an effective target, so that they are not skipped by default.
-    For example, tests for C++17 features should use
-<programlisting>    // { dg-options "-std=gnu++17" }</programlisting>
-    before any <literal>dg-do</literal> such as:
-<programlisting>    // { dg-do run "c++17" }</programlisting>
-    The <literal>dg-options</literal> directive must come first, so that
-    the <literal>-std</literal> flag has already been added to the options
-    before checking the <literal>c++17</literal> target.
+    N.B. when a <literal>dg-options</literal> directive is used, it must come
+    first so dejagnu will include those options when checking against any
+    effective targets in <literal>dg-do</literal> and
+    <literal>dg-require-effective-target</literal> directives.
+  </para>
+
+  <para>
+    Since GCC 14, tests which depend on a newer standard than the default
+    do not need to specify that standard in a <literal>dg-options</literal>
+    directive. The testsuite will detect when a test requires a newer standard
+    and will automatically add a suitable <option>-std</option> flag.
+  </para>
+
+  <para>
+    If a testcase requires the use of a strict language dialect, e.g.
+    <option>-std=c++11</option> rather than <option>-std=gnu++11</option>,
+    the following directive will cause that to be used when the testsuite
+    decides which <option>-std</option> options to use for the test:
+<programlisting>    // { dg-add-options strict_std }</programlisting>
   </para>
 
 <section xml:id="tests.dg.examples"><info><title>Examples of Test Directives</title></info>

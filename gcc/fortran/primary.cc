@@ -109,10 +109,10 @@ get_kind (int *is_iso_c)
 /* Given a character and a radix, see if the character is a valid
    digit in that radix.  */
 
-int
+bool
 gfc_check_digit (char c, int radix)
 {
-  int r;
+  bool r;
 
   switch (radix)
     {
@@ -530,13 +530,13 @@ match_real_constant (gfc_expr **result, int signflag)
   seen_dp = 0;
   seen_digits = 0;
   exp_char = ' ';
-  negate = FALSE;
+  negate = false;
 
   c = gfc_next_ascii_char ();
   if (signflag && (c == '+' || c == '-'))
     {
       if (c == '-')
-	negate = TRUE;
+	negate = true;
 
       gfc_gobble_whitespace ();
       c = gfc_next_ascii_char ();
@@ -756,8 +756,8 @@ done:
     }
 
   /* Warn about trailing digits which suggest the user added too many
-     trailing digits, which may cause the appearance of higher pecision
-     than the kind kan support.
+     trailing digits, which may cause the appearance of higher precision
+     than the kind can support.
 
      This is done by replacing the rightmost non-zero digit with zero
      and comparing with the original value.  If these are equal, we
@@ -3060,7 +3060,7 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 		return false;
 	      value = gfc_get_null_expr (&gfc_current_locus);
 	    }
-	  /* ....(Preceeding sentence) If a component with default
+	  /* ....(Preceding sentence) If a component with default
 	     initialization has no corresponding component-data-source, then
 	     the default initialization is applied to that component.  */
 	  else if (comp->initializer)
@@ -3188,10 +3188,11 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	goto cleanup;
 
       /* For a constant string constructor, make sure the length is
-	 correct; truncate of fill with blanks if needed.  */
+	 correct; truncate or fill with blanks if needed.  */
       if (this_comp->ts.type == BT_CHARACTER && !this_comp->attr.allocatable
 	  && this_comp->ts.u.cl && this_comp->ts.u.cl->length
 	  && this_comp->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && this_comp->ts.u.cl->length->ts.type == BT_INTEGER
 	  && actual->expr->ts.type == BT_CHARACTER
 	  && actual->expr->expr_type == EXPR_CONSTANT)
 	{

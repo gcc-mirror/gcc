@@ -1,10 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/scope_class.d(10): Deprecation: `scope` as a type constraint is deprecated.  Use `scope` at the usage site.
 fail_compilation/scope_class.d(12): Error: functions cannot return `scope scope_class.C`
 ---
 */
+
 
 
 scope class C { int i; }    // Notice the use of `scope` here

@@ -92,7 +92,7 @@ public:
     return 0;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     return warning_at (rich_loc, get_controlling_option (),
 		       "pattern match on %<%E %s %E%>",

@@ -359,6 +359,41 @@ public:
   }
 }; // avr_pass_casesi
 
+
+static const pass_data avr_pass_data_ifelse =
+{
+  RTL_PASS,      // type
+  "",            // name (will be patched)
+  OPTGROUP_NONE, // optinfo_flags
+  TV_DF_SCAN,    // tv_id
+  0,             // properties_required
+  0,             // properties_provided
+  0,             // properties_destroyed
+  0,             // todo_flags_start
+  TODO_df_finish | TODO_df_verify // todo_flags_finish
+};
+
+class avr_pass_ifelse : public rtl_opt_pass
+{
+public:
+  avr_pass_ifelse (gcc::context *ctxt, const char *name)
+    : rtl_opt_pass (avr_pass_data_ifelse, ctxt)
+  {
+    this->name = name;
+  }
+
+  void avr_rest_of_handle_ifelse (function*);
+
+  virtual bool gate (function*) { return optimize > 0; }
+
+  virtual unsigned int execute (function *func)
+  {
+    avr_rest_of_handle_ifelse (func);
+
+    return 0;
+  }
+}; // avr_pass_ifelse
+
 } // anon namespace
 
 rtl_opt_pass*
@@ -371,6 +406,12 @@ rtl_opt_pass*
 make_avr_pass_casesi (gcc::context *ctxt)
 {
   return new avr_pass_casesi (ctxt, "avr-casesi");
+}
+
+rtl_opt_pass*
+make_avr_pass_ifelse (gcc::context *ctxt)
+{
+  return new avr_pass_ifelse (ctxt, "avr-ifelse");
 }
 
 
@@ -603,9 +644,11 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
   emit_insn (gen_add (reg, reg, gen_int_mode (-low_idx, mode)));
   rtx op0 = reg; rtx op1 = gen_int_mode (num_idx, mode);
   rtx labelref = copy_rtx (xop[4]);
-  emit_jump_insn (gen_cbranch (gen_rtx_fmt_ee (GTU, VOIDmode, op0, op1),
-                               op0, op1,
-                               labelref));
+  rtx xbranch = gen_cbranch (gen_rtx_fmt_ee (GTU, VOIDmode, op0, op1),
+			     op0, op1, labelref);
+  rtx_insn *cbranch = emit_jump_insn (xbranch);
+  JUMP_LABEL (cbranch) = xop[4];
+  ++LABEL_NUSES (xop[4]);
 
   seq1 = get_insns();
   last1 = get_last_insn();
@@ -686,6 +729,304 @@ avr_pass_casesi::avr_rest_of_handle_casesi (function *func)
 }
 
 
+/* A helper for the next method.  Suppose we have two conditional branches
+
+      if (reg <cond1> xval1) goto label1;
+      if (reg <cond2> xval2) goto label2;
+
+   If the second comparison is redundant and there is a code <cond> such
+   that the sequence can be performed as
+
+      REG_CC = compare (reg, xval1);
+      if (REG_CC <cond1> 0)  goto label1;
+      if (REG_CC <cond> 0)   goto label2;
+
+   then return <cond>.  Otherwise, return UNKNOWN.
+   xval1 and xval2 are CONST_INT, and mode is the scalar int mode in which
+   the comparison will be carried out.  reverse_cond1 can be set to reverse
+   condition cond1.  This is useful if the second comparison does not follow
+   the first one, but is located after label1 like in:
+
+      if (reg <cond1> xval1) goto label1;
+      ...
+      label1:
+      if (reg <cond2> xval2) goto label2;  */
+
+static enum rtx_code
+avr_redundant_compare (enum rtx_code cond1, rtx xval1,
+		       enum rtx_code cond2, rtx xval2,
+		       machine_mode mode, bool reverse_cond1)
+{
+  HOST_WIDE_INT ival1 = INTVAL (xval1);
+  HOST_WIDE_INT ival2 = INTVAL (xval2);
+
+  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (mode);
+  unsigned HOST_WIDE_INT uval1 = mask & UINTVAL (xval1);
+  unsigned HOST_WIDE_INT uval2 = mask & UINTVAL (xval2);
+
+  if (reverse_cond1)
+    cond1 = reverse_condition (cond1);
+
+  if (cond1 == EQ)
+    {
+      ////////////////////////////////////////////////
+      // A sequence like
+      //    if (reg == val)  goto label1;
+      //    if (reg > val)   goto label2;
+      // can be re-written using the same, simple comparison like in:
+      //    REG_CC = compare (reg, val)
+      //    if (REG_CC == 0)  goto label1;
+      //    if (REG_CC >= 0)  goto label2;
+      if (ival1 == ival2
+	  && (cond2 == GT || cond2 == GTU))
+	return avr_normalize_condition (cond2);
+
+      // Similar, but the input sequence is like
+      //    if (reg == val)  goto label1;
+      //    if (reg >= val)  goto label2;
+      if (ival1 == ival2
+	  && (cond2 == GE || cond2 == GEU))
+	return cond2;
+
+      // Similar, but the input sequence is like
+      //    if (reg == val)      goto label1;
+      //    if (reg >= val + 1)  goto label2;
+      if ((cond2 == GE && ival2 == 1 + ival1)
+	  || (cond2 == GEU && uval2 == 1 + uval1))
+	return cond2;
+
+      // Similar, but the input sequence is like
+      //    if (reg == val)      goto label1;
+      //    if (reg >  val - 1)  goto label2;
+      if ((cond2 == GT && ival2 == ival1 - 1)
+	  || (cond2 == GTU && uval2 == uval1 - 1))
+	return avr_normalize_condition (cond2);
+
+      /////////////////////////////////////////////////////////
+      // A sequence like
+      //    if (reg == val)      goto label1;
+      //    if (reg < 1 + val)   goto label2;
+      // can be re-written as
+      //    REG_CC = compare (reg, val)
+      //    if (REG_CC == 0)  goto label1;
+      //    if (REG_CC < 0)   goto label2;
+      if ((cond2 == LT && ival2 == 1 + ival1)
+	  || (cond2 == LTU && uval2 == 1 + uval1))
+	return cond2;
+
+      // Similar, but with an input sequence like
+      //    if (reg == val)   goto label1;
+      //    if (reg <= val)   goto label2;
+      if (ival1 == ival2
+	  && (cond2 == LE || cond2 == LEU))
+	return avr_normalize_condition (cond2);
+
+      // Similar, but with an input sequence like
+      //    if (reg == val)  goto label1;
+      //    if (reg < val)   goto label2;
+      if (ival1 == ival2
+	  && (cond2 == LT || cond2 == LTU))
+	return cond2;
+
+      // Similar, but with an input sequence like
+      //    if (reg == val)      goto label1;
+      //    if (reg <= val - 1)  goto label2;
+      if ((cond2 == LE && ival2 == ival1 - 1)
+	  || (cond2 == LEU && uval2 == uval1 - 1))
+	return avr_normalize_condition (cond2);
+
+    } // cond1 == EQ
+
+  return UNKNOWN;
+}
+
+
+/* If-else decision trees generated for switch / case may produce sequences
+   like
+
+      SREG = compare (reg, val);
+	  if (SREG == 0)  goto label1;
+      SREG = compare (reg, 1 + val);
+	  if (SREG >= 0)  goto label2;
+
+   which can be optimized to
+
+      SREG = compare (reg, val);
+	  if (SREG == 0)  goto label1;
+	  if (SREG >= 0)  goto label2;
+
+   The optimal place for such a pass would be directly after expand, but
+   it's not possible for a jump insn to target more than one code label.
+   Hence, run a mini pass right before split2 which introduces REG_CC.  */
+
+void
+avr_pass_ifelse::avr_rest_of_handle_ifelse (function*)
+{
+  rtx_insn *next_insn;
+
+  for (rtx_insn *insn = get_insns(); insn; insn = next_insn)
+    {
+      next_insn = next_nonnote_nondebug_insn (insn);
+
+      if (! next_insn)
+	break;
+
+      // Search for two cbranch insns.  The first one is a cbranch.
+      // Filter for "cbranch<mode>4_insn" with mode in QI, HI, PSI, SI.
+
+      if (! JUMP_P (insn))
+	continue;
+
+      int icode1 = recog_memoized (insn);
+
+      if (icode1 != CODE_FOR_cbranchqi4_insn
+	  && icode1 != CODE_FOR_cbranchhi4_insn
+	  && icode1 != CODE_FOR_cbranchpsi4_insn
+	  && icode1 != CODE_FOR_cbranchsi4_insn)
+	continue;
+
+      rtx_jump_insn *insn1 = as_a<rtx_jump_insn *> (insn);
+      rtx_jump_insn *insn2 = nullptr;
+      bool follow_label1 = false;
+
+      // Extract the operands of the first insn:
+      // $0 = comparison operator ($1, $2)
+      // $1 = reg
+      // $2 = reg or const_int
+      // $3 = code_label
+      // $4 = optional SCRATCH for HI, PSI, SI cases.
+
+      const auto &op = recog_data.operand;
+
+      extract_insn (insn1);
+      rtx xop1[5] = { op[0], op[1], op[2], op[3], op[4] };
+      int n_operands = recog_data.n_operands;
+
+      // For now, we can optimize cbranches that follow an EQ cbranch,
+      // and cbranches that follow the label of a NE cbranch.
+
+      if (GET_CODE (xop1[0]) == EQ
+	  && JUMP_P (next_insn)
+	  && recog_memoized (next_insn) == icode1)
+	{
+	  // The 2nd cbranch insn follows insn1, i.e. is located in the
+	  // fallthrough path of insn1.
+
+	  insn2 = as_a<rtx_jump_insn *> (next_insn);
+	}
+      else if (GET_CODE (xop1[0]) == NE)
+	{
+	  // insn1 might branch to a label followed by a cbranch.
+
+	  rtx target1 = JUMP_LABEL (insn1);
+	  rtx_insn *code_label1 = JUMP_LABEL_AS_INSN (insn1);
+	  rtx_insn *next = next_nonnote_nondebug_insn (code_label1);
+	  rtx_insn *barrier = prev_nonnote_nondebug_insn (code_label1);
+
+	  if (// Target label of insn1 is used exactly once and
+	      // is not a fallthru, i.e. is preceded by a barrier.
+	      LABEL_NUSES (target1) == 1
+	      && barrier
+	      && BARRIER_P (barrier)
+	      // Following the target label is a cbranch of the same kind.
+	      && next
+	      && JUMP_P (next)
+	      && recog_memoized (next) == icode1)
+	    {
+	      follow_label1 = true;
+	      insn2 = as_a<rtx_jump_insn *> (next);
+	    }
+	}
+
+      if (! insn2)
+	continue;
+
+      // Also extract operands of insn2, and filter for REG + CONST_INT
+      // comparsons against the same register.
+
+      extract_insn (insn2);
+      rtx xop2[5] = { op[0], op[1], op[2], op[3], op[4] };
+
+      if (! rtx_equal_p (xop1[1], xop2[1])
+	  || ! CONST_INT_P (xop1[2])
+	  || ! CONST_INT_P (xop2[2]))
+	continue;
+
+      machine_mode mode = GET_MODE (xop1[1]);
+      enum rtx_code code1 = GET_CODE (xop1[0]);
+      enum rtx_code code2 = GET_CODE (xop2[0]);
+
+      code2 = avr_redundant_compare (code1, xop1[2], code2, xop2[2],
+				     mode, follow_label1);
+      if (code2 == UNKNOWN)
+	continue;
+
+      //////////////////////////////////////////////////////
+      // Found a replacement.
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\n;; Found chain of jump_insn %d and"
+		   " jump_insn %d, follow_label1=%d:\n",
+		   INSN_UID (insn1), INSN_UID (insn2), follow_label1);
+	  print_rtl_single (dump_file, PATTERN (insn1));
+	  print_rtl_single (dump_file, PATTERN (insn2));
+	}
+
+      if (! follow_label1)
+	next_insn = next_nonnote_nondebug_insn (insn2);
+
+      // Pop the new branch conditions and the new comparison.
+      // Prematurely split into compare + branch so that we can drop
+      // the 2nd comparison.  The following pass, split2, splits all
+      // insns for REG_CC, and it should still work as usual even when
+      // there are already some REG_CC insns around.
+
+      rtx xcond1 = gen_rtx_fmt_ee (code1, VOIDmode, cc_reg_rtx, const0_rtx);
+      rtx xcond2 = gen_rtx_fmt_ee (code2, VOIDmode, cc_reg_rtx, const0_rtx);
+      rtx xpat1 = gen_branch (xop1[3], xcond1);
+      rtx xpat2 = gen_branch (xop2[3], xcond2);
+      rtx xcompare = NULL_RTX;
+
+      if (mode == QImode)
+	{
+	  gcc_assert (n_operands == 4);
+	  xcompare = gen_cmpqi3 (xop1[1], xop1[2]);
+	}
+      else
+	{
+	  gcc_assert (n_operands == 5);
+	  rtx (*gen_cmp)(rtx,rtx,rtx)
+	    = mode == HImode  ? gen_gen_comparehi
+	    : mode == PSImode ? gen_gen_comparepsi
+	    : gen_gen_comparesi; // SImode
+	  xcompare = gen_cmp (xop1[1], xop1[2], xop1[4]);
+	}
+
+      // Emit that stuff.
+
+      rtx_insn *cmp = emit_insn_before (xcompare, insn1);
+      rtx_jump_insn *branch1 = emit_jump_insn_before (xpat1, insn1);
+      rtx_jump_insn *branch2 = emit_jump_insn_before (xpat2, insn2);
+
+      JUMP_LABEL (branch1) = xop1[3];
+      JUMP_LABEL (branch2) = xop2[3];
+      // delete_insn() decrements LABEL_NUSES when deleting a JUMP_INSN, but
+      // when we pop a new JUMP_INSN, do it by hand.
+      ++LABEL_NUSES (xop1[3]);
+      ++LABEL_NUSES (xop2[3]);
+
+      delete_insn (insn1);
+      delete_insn (insn2);
+
+      // As a side effect, also recog the new insns.
+      gcc_assert (valid_insn_p (cmp));
+      gcc_assert (valid_insn_p (branch1));
+      gcc_assert (valid_insn_p (branch2));
+    } // loop insns
+}
+
+
 /* Set `avr_arch' as specified by `-mmcu='.
    Return true on success.  */
 
@@ -755,6 +1096,10 @@ avr_option_override (void)
     {
       flag_omit_frame_pointer = 0;
     }
+
+  /* Disable flag_delete_null_pointer_checks if zero is a valid address. */
+  if (targetm.addr_space.zero_address_valid (ADDR_SPACE_GENERIC))
+    flag_delete_null_pointer_checks = 0;
 
   if (flag_pic == 1)
     warning (OPT_fpic, "%<-fpic%> is not supported");
@@ -961,8 +1306,7 @@ avr_lookup_function_attribute1 (const_tree func, const char *name)
       func = TREE_TYPE (func);
     }
 
-  gcc_assert (TREE_CODE (func) == FUNCTION_TYPE
-              || TREE_CODE (func) == METHOD_TYPE);
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (func));
 
   return NULL_TREE != lookup_attribute (name, TYPE_ATTRIBUTES (func));
 }
@@ -1017,6 +1361,19 @@ static int
 avr_no_gccisr_function_p (tree func)
 {
   return avr_lookup_function_attribute1 (func, "no_gccisr");
+}
+
+
+/* Implement `TARGET_CAN_INLINE_P'.  */
+/* Some options like -mgas_isr_prologues depend on optimization level,
+   and the inliner might think that due to different options, inlining
+   is not permitted; see PR104327.  */
+
+static bool
+avr_can_inline_p (tree /* caller */, tree /* callee */)
+{
+  // No restrictions whatsoever.
+  return true;
 }
 
 /* Implement `TARGET_SET_CURRENT_FUNCTION'.  */
@@ -3170,28 +3527,6 @@ avr_asm_final_postscan_insn (FILE *stream, rtx_insn *insn, rtx*, int)
       fprintf (stream, "\t__gcc_isr %d,r%d\n", GASISR_Done,
                cfun->machine->gasisr.regno);
     }
-}
-
-
-/* Return 0 if undefined, 1 if always true or always false.  */
-
-int
-avr_simplify_comparison_p (machine_mode mode, RTX_CODE op, rtx x)
-{
-  unsigned int max = (mode == QImode ? 0xff :
-                      mode == HImode ? 0xffff :
-                      mode == PSImode ? 0xffffff :
-                      mode == SImode ? 0xffffffff : 0);
-  if (max && op && CONST_INT_P (x))
-    {
-      if (unsigned_condition (op) != op)
-        max >>= 1;
-
-      if (max != (INTVAL (x) & max)
-          && INTVAL (x) != 0xff)
-        return 1;
-    }
-  return 0;
 }
 
 
@@ -5677,29 +6012,36 @@ avr_frame_pointer_required_p (void)
           || get_frame_size () > 0);
 }
 
-/* Returns the condition of compare insn INSN, or UNKNOWN.  */
+
+/* Returns the condition of the branch following INSN, where INSN is some
+   comparison.  If the next insn is not a branch or the condition code set
+   by INSN might be used by more insns than the next one, return UNKNOWN.
+   For now, just look at the next insn, which misses some opportunities like
+   following jumps.  */
 
 static RTX_CODE
 compare_condition (rtx_insn *insn)
 {
-  rtx_insn *next = next_real_insn (insn);
+  rtx set;
+  rtx_insn *next = next_real_nondebug_insn (insn);
 
-  if (next && JUMP_P (next))
+  if (next
+      && JUMP_P (next)
+      // If SREG does not die in the next insn, it is used in more than one
+      // branch.  This can happen due to pass .avr-ifelse optimizations.
+      && dead_or_set_regno_p (next, REG_CC)
+      // Branches are (set (pc) (if_then_else (COND (...)))).
+      && (set = single_set (next))
+      && GET_CODE (SET_SRC (set)) == IF_THEN_ELSE)
     {
-      rtx pat = PATTERN (next);
-      if (GET_CODE (pat) == PARALLEL)
-        pat = XVECEXP (pat, 0, 0);
-      rtx src = SET_SRC (pat);
-
-      if (IF_THEN_ELSE == GET_CODE (src))
-        return GET_CODE (XEXP (src, 0));
+      return GET_CODE (XEXP (SET_SRC (set), 0));
     }
 
   return UNKNOWN;
 }
 
 
-/* Returns true iff INSN is a tst insn that only tests the sign.  */
+/* Returns true if INSN is a tst insn that only tests the sign.  */
 
 static bool
 compare_sign_p (rtx_insn *insn)
@@ -5709,23 +6051,95 @@ compare_sign_p (rtx_insn *insn)
 }
 
 
-/* Returns true iff the next insn is a JUMP_INSN with a condition
-   that needs to be swapped (GT, GTU, LE, LEU).  */
-
-static bool
-compare_diff_p (rtx_insn *insn)
-{
-  RTX_CODE cond = compare_condition (insn);
-  return (cond == GT || cond == GTU || cond == LE || cond == LEU) ? cond : 0;
-}
-
-/* Returns true iff INSN is a compare insn with the EQ or NE condition.  */
+/* Returns true if INSN is a compare insn with the EQ or NE condition.  */
 
 static bool
 compare_eq_p (rtx_insn *insn)
 {
   RTX_CODE cond = compare_condition (insn);
   return (cond == EQ || cond == NE);
+}
+
+
+/* Implement `TARGET_CANONICALIZE_COMPARISON'.  */
+/* Basically tries to convert "difficult" comparisons like GT[U]
+   and LE[U] to simple ones.  Some asymmetric comparisons can be
+   transformed to EQ or NE against zero.  */
+
+static void
+avr_canonicalize_comparison (int *icode, rtx *op0, rtx *op1, bool op0_fixed)
+{
+  enum rtx_code code = (enum rtx_code) *icode;
+  machine_mode mode = GET_MODE (*op0);
+
+  bool signed_p = code == GT || code == LE;
+  bool unsigned_p = code == GTU || code == LEU;
+  bool difficult_p = signed_p || unsigned_p;
+
+  if (// Only do integers and fixed-points.
+      (! SCALAR_INT_MODE_P (mode)
+       && ! ALL_SCALAR_FIXED_POINT_MODE_P (mode))
+      // Only do comparisons against a register.
+      || ! register_operand (*op0, mode))
+    return;
+
+  // Canonicalize "difficult" reg-reg comparisons.
+
+  if (! op0_fixed
+      && difficult_p
+      && register_operand (*op1, mode))
+    {
+      std::swap (*op0, *op1);
+      *icode = (int) swap_condition (code);
+      return;
+    }
+
+  // Canonicalize comparisons against compile-time constants.
+
+  if (CONST_INT_P (*op1)
+      || CONST_FIXED_P (*op1))
+    {
+      // INT_MODE of the same size.
+      scalar_int_mode imode = int_mode_for_mode (mode).require ();
+
+      unsigned HOST_WIDE_INT mask = GET_MODE_MASK (imode);
+      unsigned HOST_WIDE_INT maxval = signed_p ? mask >> 1 : mask;
+
+      // Convert value *op1 to imode.
+      rtx xval = simplify_gen_subreg (imode, *op1, mode, 0);
+
+      // Canonicalize difficult comparisons against const.
+      if (difficult_p
+	  && (UINTVAL (xval) & mask) != maxval)
+	{
+	  // Convert *op0 > *op1  to *op0 >= 1 + *op1.
+	  // Convert *op0 <= *op1 to *op0 <  1 + *op1.
+	  xval = simplify_binary_operation (PLUS, imode, xval, const1_rtx);
+
+	  // Convert value back to its original mode.
+	  *op1 = simplify_gen_subreg (mode, xval, imode, 0);
+
+	  // Map  >  to  >=  and  <=  to  <.
+	  *icode = (int) avr_normalize_condition (code);
+
+	  return;
+	}
+
+      // Some asymmetric comparisons can be turned into EQ or NE.
+      if (code == LTU && xval == const1_rtx)
+	{
+	  *icode = (int) EQ;
+	  *op1 = CONST0_RTX (mode);
+	  return;
+	}
+
+      if (code == GEU && xval == const1_rtx)
+	{
+	  *icode = (int) NE;
+	  *op1 = CONST0_RTX (mode);
+	  return;
+	}
+    }
 }
 
 
@@ -6012,6 +6426,68 @@ avr_out_tstsi (rtx_insn *insn, rtx *op, int *plen)
   else
     {
       avr_out_compare (insn, op, plen);
+    }
+
+  return "";
+}
+
+
+/* Output a comparison of a zero- or sign-extended register against a
+   plain register.  CODE is SIGN_EXTEND or ZERO_EXTEND.  Return "".
+
+   PLEN != 0: Set *PLEN to the code length in words. Don't output anything.
+   PLEN == 0: Print instructions.  */
+
+const char*
+avr_out_cmp_ext (rtx xop[], enum rtx_code code, int *plen)
+{
+  // The smaller reg is the one that's to be extended.  Get its index as z.
+  int z = GET_MODE_SIZE (GET_MODE (xop[1])) < GET_MODE_SIZE (GET_MODE (xop[0]));
+  rtx zreg = xop[z];
+  rtx reg = xop[1 - z];
+  machine_mode mode = GET_MODE (reg);
+  machine_mode zmode = GET_MODE (zreg);
+  rtx zex;
+
+  if (plen)
+    *plen = 0;
+
+  // zex holds the extended bytes above zreg.  This is 0 for ZERO_EXTEND,
+  // and 0 or -1 for SIGN_EXTEND.
+
+  if (code == SIGN_EXTEND)
+    {
+      // Sign-extend the high-byte of zreg to tmp_reg.
+      int zmsb = GET_MODE_SIZE (zmode) - 1;
+      rtx xzmsb = simplify_gen_subreg (QImode, zreg, zmode, zmsb);
+
+      avr_asm_len ("mov __tmp_reg__,%0" CR_TAB
+		   "rol __tmp_reg__"    CR_TAB
+		   "sbc __tmp_reg__,__tmp_reg__", &xzmsb, plen, 3);
+      zex = tmp_reg_rtx;
+    }
+  else if (code == ZERO_EXTEND)
+    {
+      zex = zero_reg_rtx;
+    }
+  else
+    gcc_unreachable();
+
+  // Now output n_bytes bytes of the very comparison.
+
+  int n_bytes = GET_MODE_SIZE (mode);
+
+  avr_asm_len ("cp %0,%1", xop, plen, 1);
+
+  for (int b = 1; b < n_bytes; ++b)
+    {
+      rtx regs[2];
+      regs[1 - z] = simplify_gen_subreg (QImode, reg, mode, b);
+      regs[z] = (b < GET_MODE_SIZE (zmode)
+		 ? simplify_gen_subreg (QImode, zreg, zmode, b)
+		 : zex);
+
+      avr_asm_len ("cpc %0,%1", regs, plen, 1);
     }
 
   return "";
@@ -7130,9 +7606,9 @@ lshrqi3_out (rtx_insn *insn, rtx operands[], int *len)
 
 	case 7:
 	  *len = 3;
-	  return ("rol %0" CR_TAB
-		  "clr %0" CR_TAB
-		  "rol %0");
+	  return ("bst %1,7" CR_TAB
+		  "clr %0"   CR_TAB
+		  "bld %0,0");
 	}
     }
   else if (CONSTANT_P (operands[2]))
@@ -7389,10 +7865,10 @@ lshrhi3_out (rtx_insn *insn, rtx operands[], int *len)
 
 	case 15:
 	  *len = 4;
-	  return ("clr %A0" CR_TAB
-		  "lsl %B0" CR_TAB
-		  "rol %A0" CR_TAB
-		  "clr %B0");
+	  return ("bst %B1,7" CR_TAB
+		  "clr %A0"   CR_TAB
+		  "clr %B0"   CR_TAB
+		  "bld %A0,0");
 	}
       len = t;
     }
@@ -7441,11 +7917,11 @@ avr_out_lshrpsi3 (rtx_insn *insn, rtx *op, int *plen)
           /* fall through */
 
         case 23:
-          return avr_asm_len ("clr %A0"    CR_TAB
-                              "sbrc %C0,7" CR_TAB
-                              "inc %A0"    CR_TAB
-                              "clr %B0"    CR_TAB
-                              "clr %C0", op, plen, 5);
+          return avr_asm_len ("bst %C1,7" CR_TAB
+                              "clr %A0"   CR_TAB
+                              "clr %B0"   CR_TAB
+                              "clr %C0"   CR_TAB
+                              "bld %A0,0", op, plen, 5);
         } /* switch */
     }
 
@@ -7528,13 +8004,19 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *len)
 			    "clr %D0");
 
 	case 31:
+	  if (AVR_HAVE_MOVW)
+	    return *len = 5, ("bst %D1,7"    CR_TAB
+			      "clr %A0"      CR_TAB
+			      "clr %B0"      CR_TAB
+			      "movw %C0,%A0" CR_TAB
+			      "bld %A0,0");
 	  *len = 6;
-	  return ("clr %A0"    CR_TAB
-		  "sbrc %D0,7" CR_TAB
-		  "inc %A0"    CR_TAB
-		  "clr %B0"    CR_TAB
-		  "clr %C0"    CR_TAB
-		  "clr %D0");
+	  return ("bst %D1,7" CR_TAB
+		  "clr %A0"   CR_TAB
+		  "clr %B0"   CR_TAB
+		  "clr %C0"   CR_TAB
+		  "clr %D0"   CR_TAB
+		  "bld %A0,0");
 	}
       len = t;
     }
@@ -8160,6 +8642,122 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, int *pcc, bool out_label)
 }
 
 
+/* Output an instruction sequence for addition of REG in XOP[0] and CONST_INT
+   in XOP[1] in such a way that SREG.Z and SREG.N are set according to the
+   result.  XOP[2] might be a d-regs clobber register.  If XOP[2] is SCRATCH,
+   then the addition can be performed without a clobber reg.  Return "".
+
+   If PLEN == NULL, then output the instructions.
+   If PLEN != NULL, then set *PLEN to the length of the sequence in words. */
+
+const char*
+avr_out_plus_set_ZN (rtx *xop, int *plen)
+{
+  if (plen)
+    *plen = 0;
+
+  // Register to compare and value to compare against.
+  rtx xreg = xop[0];
+  rtx xval = xop[1];
+
+  machine_mode mode = GET_MODE (xreg);
+
+  // Number of bytes to operate on.
+  int n_bytes = GET_MODE_SIZE (mode);
+
+  if (n_bytes == 1)
+    {
+      if (INTVAL (xval) == 1)
+	return avr_asm_len ("inc %0", xop, plen, 1);
+
+      if (INTVAL (xval) == -1)
+	return avr_asm_len ("dec %0", xop, plen, 1);
+    }
+
+  if (n_bytes == 2
+      && test_hard_reg_class (ADDW_REGS, xreg)
+      && IN_RANGE (INTVAL (xval), 1, 63))
+    {
+      // Add 16-bit value in [1..63] to a w register.
+      return avr_asm_len ("adiw %0, %1", xop, plen, 1);
+    }
+
+  // Addition won't work; subtract the negative of XVAL instead.
+  xval = simplify_unary_operation (NEG, mode, xval, mode);
+
+  // Value (0..0xff) held in clobber register xop[2] or -1 if unknown.
+  int clobber_val = -1;
+
+  // [0] = Current sub-register.
+  // [1] = Current partial xval.
+  // [2] = 8-bit clobber d-register or SCRATCH.
+  rtx op[3];
+  op[2] = xop[2];
+
+  // Work byte-wise from LSB to MSB.  The lower two bytes might be
+  // SBIW'ed in one go.
+  for (int i = 0; i < n_bytes; ++i)
+    {
+      op[0] = simplify_gen_subreg (QImode, xreg, mode, i);
+
+      if (i == 0
+	  && n_bytes >= 2
+	  && test_hard_reg_class (ADDW_REGS, op[0]))
+	{
+	  op[1] = simplify_gen_subreg (HImode, xval, mode, 0);
+	  if (IN_RANGE (INTVAL (op[1]), 0, 63))
+	    {
+	      // SBIW can handle the lower 16 bits.
+	      avr_asm_len ("sbiw %0, %1", op, plen, 1);
+
+	      // Next byte has already been handled: Skip it.
+	      ++i;
+	      continue;
+	    }
+	}
+
+      op[1] = simplify_gen_subreg (QImode, xval, mode, i);
+
+      if (test_hard_reg_class (LD_REGS, op[0]))
+	{
+	  // d-regs can subtract immediates.
+	  avr_asm_len (i == 0
+		       ? "subi %0, %1"
+		       : "sbci %0, %1", op, plen, 1);
+	}
+      else
+	{
+	  int val8 = 0xff & INTVAL (op[1]);
+	  if (val8 == 0)
+	    {
+	      // Any register can subtract 0.
+	      avr_asm_len (i == 0
+			   ? "sub %0, __zero_reg__"
+			   : "sbc %0, __zero_reg__", op, plen, 1);
+	    }
+	  else
+	    {
+	      // Use d-register to hold partial xval.
+
+	      if (val8 != clobber_val)
+		{
+		  // Load partial xval to QI clobber reg and memoize for later.
+		  gcc_assert (REG_P (op[2]));
+		  avr_asm_len ("ldi %2, %1", op, plen, 1);
+		  clobber_val = val8;
+		}
+
+	      avr_asm_len (i == 0
+			   ? "sub %0, %2"
+			   : "sbc %0, %2", op, plen, 1);
+	    }
+	}
+    } // Loop bytes.
+
+  return "";
+}
+
+
 /* Output bit operation (IOR, AND, XOR) with register XOP[0] and compile
    time constant XOP[2]:
 
@@ -8403,20 +9001,15 @@ avr_out_addto_sp (rtx *op, int *plen)
 }
 
 
-/* Output instructions to insert an inverted bit into OPERANDS[0]:
-   $0.$1 = ~$2.$3      if XBITNO = NULL
-   $0.$1 = ~$2.XBITNO  if XBITNO != NULL.
+/* Output instructions to insert an inverted bit into OP[0]: $0.$1 = ~$2.$3.
    If PLEN = NULL then output the respective instruction sequence which
    is a combination of BST / BLD and some instruction(s) to invert the bit.
    If PLEN != NULL then store the length of the sequence (in words) in *PLEN.
    Return "".  */
 
 const char*
-avr_out_insert_notbit (rtx_insn *insn, rtx operands[], rtx xbitno, int *plen)
+avr_out_insert_notbit (rtx_insn *insn, rtx op[], int *plen)
 {
-  rtx op[4] = { operands[0], operands[1], operands[2],
-                xbitno == NULL_RTX ? operands [3] : xbitno };
-
   if (INTVAL (op[1]) == 7
       && test_hard_reg_class (LD_REGS, op[0]))
     {
@@ -8470,6 +9063,135 @@ avr_out_insert_notbit (rtx_insn *insn, rtx operands[], rtx xbitno, int *plen)
     }
 
   return "";
+}
+
+
+/* Output instructions to extract a bit to 8-bit register XOP[0].
+   The input XOP[1] is a register or an 8-bit MEM in the lower I/O range.
+   XOP[2] is the const_int bit position.  Return "".
+
+   PLEN != 0: Set *PLEN to the code length in words.  Don't output anything.
+   PLEN == 0: Output instructions.  */
+
+const char*
+avr_out_extr (rtx_insn *insn, rtx xop[], int *plen)
+{
+  rtx dest = xop[0];
+  rtx src = xop[1];
+  int bit = INTVAL (xop[2]);
+
+  if (GET_MODE (src) != QImode)
+    {
+      src = xop[1] = simplify_gen_subreg (QImode, src, GET_MODE (src), bit / 8);
+      bit %= 8;
+      xop[2] = GEN_INT (bit);
+    }
+
+  if (MEM_P (src))
+    {
+      xop[1] = XEXP (src, 0); // address
+      gcc_assert (low_io_address_operand (xop[1], Pmode));
+
+      return avr_asm_len ("clr %0"      CR_TAB
+			  "sbic %i1,%2" CR_TAB
+			  "inc %0", xop, plen, -3);
+    }
+
+  gcc_assert (REG_P (src));
+
+  bool ld_dest_p = test_hard_reg_class (LD_REGS, dest);
+  bool ld_src_p = test_hard_reg_class (LD_REGS, src);
+
+  if (ld_dest_p
+      && REGNO (src) == REGNO (dest))
+    {
+      if (bit == 0)
+	return avr_asm_len ("andi %0,1", xop, plen, -1);
+      if (bit == 1)
+	return avr_asm_len ("lsr %0" CR_TAB
+			    "andi %0,1", xop, plen, -2);
+      if (bit == 4)
+	return avr_asm_len ("swap %0" CR_TAB
+			    "andi %0,1", xop, plen, -2);
+    }
+
+  if (bit == 0
+      && REGNO (src) != REGNO (dest))
+  {
+    if (ld_dest_p)
+      return avr_asm_len ("mov %0,%1" CR_TAB
+			  "andi %0,1", xop, plen, -2);
+    if (ld_src_p
+	&& reg_unused_after (insn, src))
+      return avr_asm_len ("andi %1,1" CR_TAB
+			  "mov %0,%1", xop, plen, -2);
+  }
+
+  return avr_asm_len ("bst %1,%2" CR_TAB
+		      "clr %0"    CR_TAB
+		      "bld %0,0", xop, plen, -3);
+}
+
+
+/* Output instructions to extract a negated bit to 8-bit register XOP[0].
+   The input XOP[1] is an 8-bit register or MEM in the lower I/O range.
+   XOP[2] is the const_int bit position.  Return "".
+
+   PLEN != 0: Set *PLEN to the code length in words.  Don't output anything.
+   PLEN == 0: Output instructions.  */
+
+const char*
+avr_out_extr_not (rtx_insn* /* insn */, rtx xop[], int *plen)
+{
+  rtx dest = xop[0];
+  rtx src = xop[1];
+  int bit = INTVAL (xop[2]);
+
+  if (MEM_P (src))
+    {
+      xop[1] = XEXP (src, 0); // address
+      gcc_assert (low_io_address_operand (xop[1], Pmode));
+
+      return avr_asm_len ("clr %0"      CR_TAB
+			  "sbis %i1,%2" CR_TAB
+			  "inc %0", xop, plen, -3);
+    }
+
+  gcc_assert (REG_P (src));
+
+  bool ld_src_p = test_hard_reg_class (LD_REGS, src);
+
+  if (ld_src_p
+      && REGNO (src) == REGNO (dest))
+    {
+      if (bit == 0)
+	return avr_asm_len ("inc %0" CR_TAB
+			    "andi %0,1", xop, plen, -2);
+      if (bit == 1)
+	return avr_asm_len ("lsr %0" CR_TAB
+			    "inc %0" CR_TAB
+			    "andi %0,1", xop, plen, -3);
+      if (bit == 4)
+	return avr_asm_len ("swap %0" CR_TAB
+			    "inc %0"  CR_TAB
+			    "andi %0,1", xop, plen, -3);
+    }
+
+  if (bit == 7
+      && ld_src_p)
+    return avr_asm_len ("cpi %1,0x80" CR_TAB
+			"sbc %0,%0"   CR_TAB
+			"neg %0", xop, plen, -3);
+
+  if (REGNO (src) != REGNO (dest))
+    return avr_asm_len ("clr %0"     CR_TAB
+			"sbrs %1,%2" CR_TAB
+			"inc %0", xop, plen, -3);
+
+  return avr_asm_len ("clr __tmp_reg__" CR_TAB
+		      "sbrs %1,%2"      CR_TAB
+		      "inc __tmp_reg__" CR_TAB
+		      "mov %0,__tmp_reg__", xop, plen, -4);
 }
 
 
@@ -9270,6 +9992,8 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_RELOAD_IN32: output_reload_insisf (op, op[2], &len); break;
 
     case ADJUST_LEN_OUT_BITOP: avr_out_bitop (insn, op, &len); break;
+    case ADJUST_LEN_EXTR_NOT: avr_out_extr_not (insn, op, &len); break;
+    case ADJUST_LEN_EXTR: avr_out_extr (insn, op, &len); break;
 
     case ADJUST_LEN_PLUS: avr_out_plus (insn, op, &len); break;
     case ADJUST_LEN_ADDTO_SP: avr_out_addto_sp (op, &len); break;
@@ -9291,6 +10015,8 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_TSTSI: avr_out_tstsi (insn, op, &len); break;
     case ADJUST_LEN_COMPARE: avr_out_compare (insn, op, &len); break;
     case ADJUST_LEN_COMPARE64: avr_out_compare64 (insn, op, &len); break;
+    case ADJUST_LEN_CMP_UEXT: avr_out_cmp_ext (op, ZERO_EXTEND, &len); break;
+    case ADJUST_LEN_CMP_SEXT: avr_out_cmp_ext (op, SIGN_EXTEND, &len); break;
 
     case ADJUST_LEN_LSHRQI: lshrqi3_out (insn, op, &len); break;
     case ADJUST_LEN_LSHRHI: lshrhi3_out (insn, op, &len); break;
@@ -9311,16 +10037,9 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_CALL: len = AVR_HAVE_JMP_CALL ? 2 : 1; break;
 
     case ADJUST_LEN_INSERT_BITS: avr_out_insert_bits (op, &len); break;
+    case ADJUST_LEN_ADD_SET_ZN: avr_out_plus_set_ZN (op, &len); break;
 
-    case ADJUST_LEN_INSV_NOTBIT:
-      avr_out_insert_notbit (insn, op, NULL_RTX, &len);
-      break;
-    case ADJUST_LEN_INSV_NOTBIT_0:
-      avr_out_insert_notbit (insn, op, const0_rtx, &len);
-      break;
-    case ADJUST_LEN_INSV_NOTBIT_7:
-      avr_out_insert_notbit (insn, op, GEN_INT (7), &len);
-      break;
+    case ADJUST_LEN_INSV_NOTBIT: avr_out_insert_notbit (insn, op, &len); break;
 
     default:
       gcc_unreachable();
@@ -9788,6 +10507,16 @@ avr_addr_space_diagnose_usage (addr_space_t as, location_t loc)
   (void) avr_addr_space_supported_p (as, loc);
 }
 
+/* Implement `TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID. Zero is a valid
+   address in all address spaces. Even in ADDR_SPACE_FLASH1 etc..,
+   a zero address is valid and means 0x<RAMPZ val>0000, where RAMPZ is
+   set to the appropriate segment value. */
+
+static bool
+avr_addr_space_zero_address_valid (addr_space_t)
+{
+  return true;
+}
 
 /* Look if DECL shall be placed in program memory space by
    means of attribute `progmem' or some address-space qualifier.
@@ -9839,7 +10568,7 @@ avr_progmem_p (tree decl, tree attributes)
 static bool
 avr_decl_absdata_p (tree decl, tree attributes)
 {
-  return (TREE_CODE (decl) == VAR_DECL
+  return (VAR_P (decl)
           && NULL_TREE != lookup_attribute ("absdata", attributes));
 }
 
@@ -9976,7 +10705,7 @@ avr_insert_attributes (tree node, tree *attributes)
 
   /* Add the section attribute if the variable is in progmem.  */
 
-  if (TREE_CODE (node) == VAR_DECL
+  if (VAR_P (node)
       && (TREE_STATIC (node) || DECL_EXTERNAL (node))
       && avr_progmem_p (node, *attributes))
     {
@@ -10190,7 +10919,7 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 
   if (startswith (name, ".noinit"))
     {
-      if (decl && TREE_CODE (decl) == VAR_DECL
+      if (decl && VAR_P (decl)
 	  && DECL_INITIAL (decl) == NULL_TREE)
 	flags |= SECTION_BSS;  /* @nobits */
       else
@@ -10338,7 +11067,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
 
   if (AVR_TINY
       && decl
-      && VAR_DECL == TREE_CODE (decl)
+      && VAR_P (decl)
       && MEM_P (rtl)
       && SYMBOL_REF_P (XEXP (rtl, 0)))
     {
@@ -10607,6 +11336,58 @@ avr_mul_highpart_cost (rtx x, int)
 }
 
 
+/* Return the expected cost of a conditional branch like
+   (set (pc)
+	(if_then_else (X)
+		      (label_ref *)
+		      (pc)))
+   where X is some comparison operator.  */
+
+static int
+avr_cbranch_cost (rtx x)
+{
+  bool difficult_p = difficult_comparison_operator (x, VOIDmode);
+
+  if (reload_completed)
+    {
+      // After reload, we basically just have plain branches.
+      return COSTS_N_INSNS (1 + difficult_p);
+    }
+
+  rtx xreg = XEXP (x, 0);
+  rtx xval = XEXP (x, 1);
+  machine_mode mode = GET_MODE (xreg);
+  if (mode == VOIDmode)
+    mode = GET_MODE (xval);
+  int size = GET_MODE_SIZE (mode);
+
+  if (GET_CODE (xreg) == ZERO_EXTEND
+      || GET_CODE (xval) == ZERO_EXTEND)
+    {
+      // *cbranch<HISI:mode>.<code><QIPSI:mode>.0/1, code = zero_extend.
+      return COSTS_N_INSNS (size + 1);
+    }
+
+  if (GET_CODE (xreg) == SIGN_EXTEND
+      || GET_CODE (xval) == SIGN_EXTEND)
+    {
+      // *cbranch<HISI:mode>.<code><QIPSI:mode>.0/1, code = sign_extend.
+      // Make it a bit cheaper than it actually is (less reg pressure).
+      return COSTS_N_INSNS (size + 1 + 1);
+    }
+
+  bool reg_p = register_operand (xreg, mode);
+  bool reg_or_0_p = reg_or_0_operand (xval, mode);
+
+  return COSTS_N_INSNS (size
+			// For the branch
+			+ 1 + difficult_p
+			// Combine might propagate constants other than zero
+			// into the 2nd operand.  Make that more expensive.
+			+ 1 * (!reg_p || !reg_or_0_p));
+}
+
+
 /* Mutually recursive subroutine of avr_rtx_cost for calculating the
    cost of an RTX operand given its context.  X is the rtx of the
    operand, MODE is its mode, and OUTER is the rtx_code of this
@@ -10842,6 +11623,25 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
             *total += COSTS_N_INSNS (1);
           if (REG_P (XEXP (x, 1)))
             *total += COSTS_N_INSNS (1);
+          return true;
+        }
+      if (IOR == code
+          && AND == GET_CODE (XEXP (x, 0))
+          && AND == GET_CODE (XEXP (x, 1))
+          && single_zero_operand (XEXP (XEXP (x, 0), 1), mode))
+        {
+          // Open-coded bit transfer.
+          *total = COSTS_N_INSNS (2);
+          return true;
+        }
+      if (AND == code
+          && single_one_operand (XEXP (x, 1), mode)
+          && (ASHIFT == GET_CODE (XEXP (x, 0))
+              || ASHIFTRT == GET_CODE (XEXP (x, 0))
+              || LSHIFTRT == GET_CODE (XEXP (x, 0))))
+        {
+          // "*insv.any_shift.<mode>
+          *total = COSTS_N_INSNS (1 + GET_MODE_SIZE (mode));
           return true;
         }
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
@@ -11490,6 +12290,15 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
         }
       break;
 
+    case IF_THEN_ELSE:
+      if (outer_code == SET
+	  && XEXP (x, 2) == pc_rtx
+	  && ordered_comparison_operator (XEXP (x, 0), VOIDmode))
+	{
+	  *total = avr_cbranch_cost (XEXP (x, 0));
+	  return true;
+	}
+
     default:
       break;
     }
@@ -11512,6 +12321,52 @@ avr_rtx_costs (rtx x, machine_mode mode, int outer_code,
     }
 
   return done;
+}
+
+
+/* Implement `TARGET_INSN_COST'.  */
+/* For some insns, it is not enough to look at the cost of the SET_SRC.
+   In that case, have a look at the entire insn, e.g. during insn combine.  */
+
+static int
+avr_insn_cost (rtx_insn *insn, bool speed)
+{
+  const int unknown_cost = -1;
+  int cost = unknown_cost;
+
+  rtx set = single_set (insn);
+
+  if (set
+      && ZERO_EXTRACT == GET_CODE (SET_DEST (set)))
+    {
+      // Try find anything that would flip the extracted bit.
+      bool not_bit_p = false;
+
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, SET_SRC (set), NONCONST)
+	{
+	  enum rtx_code code = GET_CODE (*iter);
+	  not_bit_p |= code == NOT || code == XOR || code == GE;
+	}
+
+      // Don't go too deep into the analysis.  In almost all cases,
+      // using BLD/BST is the best we can do for single-bit moves,
+      // even considering CSE.
+      cost = COSTS_N_INSNS (2 + not_bit_p);
+    }
+
+  if (cost != unknown_cost)
+    {
+      if (avr_log.rtx_costs)
+	avr_edump ("\n%? (%s) insn_cost=%d\n%r\n",
+		   speed ? "speed" : "size", cost, insn);
+      return cost;
+    }
+
+  // Resort to what rtlanal.cc::insn_cost() implements as a default
+  // when targetm.insn_cost() is not implemented.
+
+  return pattern_cost (PATTERN (insn), speed);
 }
 
 
@@ -11602,281 +12457,6 @@ avr_normalize_condition (RTX_CODE condition)
     }
 }
 
-/* Helper function for `avr_reorg'.  */
-
-static rtx
-avr_compare_pattern (rtx_insn *insn)
-{
-  rtx pattern = single_set (insn);
-
-  if (pattern
-      && NONJUMP_INSN_P (insn)
-      && REG_P (SET_DEST (pattern))
-      && REGNO (SET_DEST (pattern)) == REG_CC
-      && GET_CODE (SET_SRC (pattern)) == COMPARE)
-    {
-      machine_mode mode0 = GET_MODE (XEXP (SET_SRC (pattern), 0));
-      machine_mode mode1 = GET_MODE (XEXP (SET_SRC (pattern), 1));
-
-      /* The 64-bit comparisons have fixed operands ACC_A and ACC_B.
-         They must not be swapped, thus skip them.  */
-
-      if ((mode0 == VOIDmode || GET_MODE_SIZE (mode0) <= 4)
-          && (mode1 == VOIDmode || GET_MODE_SIZE (mode1) <= 4))
-        return pattern;
-    }
-
-  return NULL_RTX;
-}
-
-/* Helper function for `avr_reorg'.  */
-
-/* Expansion of switch/case decision trees leads to code like
-
-       REG_CC = compare (Reg, Num)
-       if (REG_CC == 0)
-         goto L1
-
-       REG_CC = compare (Reg, Num)
-       if (REG_CC > 0)
-         goto L2
-
-   The second comparison is superfluous and can be deleted.
-   The second jump condition can be transformed from a
-   "difficult" one to a "simple" one because "REG_CC > 0" and
-   "REG_CC >= 0" will have the same effect here.
-
-   This function relies on the way switch/case is being expaned
-   as binary decision tree.  For example code see PR 49903.
-
-   Return TRUE if optimization performed.
-   Return FALSE if nothing changed.
-
-   INSN1 is a comparison, i.e. avr_compare_pattern != 0.
-
-   We don't want to do this in text peephole because it is
-   tedious to work out jump offsets there and the second comparison
-   might have been transormed by `avr_reorg'.
-
-   RTL peephole won't do because peephole2 does not scan across
-   basic blocks.  */
-
-static bool
-avr_reorg_remove_redundant_compare (rtx_insn *insn1)
-{
-  rtx comp1, ifelse1, xcond1;
-  rtx_insn *branch1;
-  rtx comp2, ifelse2, xcond2;
-  rtx_insn *branch2, *insn2;
-  enum rtx_code code;
-  rtx_insn *jump;
-  rtx target, cond;
-
-  /* Look out for:  compare1 - branch1 - compare2 - branch2  */
-
-  branch1 = next_nonnote_nondebug_insn (insn1);
-  if (!branch1 || !JUMP_P (branch1))
-    return false;
-
-  insn2 = next_nonnote_nondebug_insn (branch1);
-  if (!insn2 || !avr_compare_pattern (insn2))
-    return false;
-
-  branch2 = next_nonnote_nondebug_insn (insn2);
-  if (!branch2 || !JUMP_P (branch2))
-    return false;
-
-  comp1 = avr_compare_pattern (insn1);
-  comp2 = avr_compare_pattern (insn2);
-  xcond1 = single_set (branch1);
-  xcond2 = single_set (branch2);
-
-  if (!comp1 || !comp2
-      || !rtx_equal_p (comp1, comp2)
-      || !xcond1 || SET_DEST (xcond1) != pc_rtx
-      || !xcond2 || SET_DEST (xcond2) != pc_rtx
-      || IF_THEN_ELSE != GET_CODE (SET_SRC (xcond1))
-      || IF_THEN_ELSE != GET_CODE (SET_SRC (xcond2)))
-    {
-      return false;
-    }
-
-  comp1 = SET_SRC (comp1);
-  ifelse1 = SET_SRC (xcond1);
-  ifelse2 = SET_SRC (xcond2);
-
-  /* comp<n> is COMPARE now and ifelse<n> is IF_THEN_ELSE.  */
-
-  if (EQ != GET_CODE (XEXP (ifelse1, 0))
-      || !REG_P (XEXP (comp1, 0))
-      || !CONST_INT_P (XEXP (comp1, 1))
-      || XEXP (ifelse1, 2) != pc_rtx
-      || XEXP (ifelse2, 2) != pc_rtx
-      || LABEL_REF != GET_CODE (XEXP (ifelse1, 1))
-      || LABEL_REF != GET_CODE (XEXP (ifelse2, 1))
-      || !COMPARISON_P (XEXP (ifelse2, 0))
-      || REG_CC != REGNO (XEXP (XEXP (ifelse1, 0), 0))
-      || REG_CC != REGNO (XEXP (XEXP (ifelse2, 0), 0))
-      || const0_rtx != XEXP (XEXP (ifelse1, 0), 1)
-      || const0_rtx != XEXP (XEXP (ifelse2, 0), 1))
-    {
-      return false;
-    }
-
-  /* We filtered the insn sequence to look like
-
-        (set (reg:CC cc)
-             (compare (reg:M N)
-                      (const_int VAL)))
-        (set (pc)
-             (if_then_else (eq (reg:CC cc)
-                               (const_int 0))
-                           (label_ref L1)
-                           (pc)))
-
-        (set (reg:CC cc)
-             (compare (reg:M N)
-                      (const_int VAL)))
-        (set (pc)
-             (if_then_else (CODE (reg:CC cc)
-                                 (const_int 0))
-                           (label_ref L2)
-                           (pc)))
-  */
-
-  code = GET_CODE (XEXP (ifelse2, 0));
-
-  /* Map GT/GTU to GE/GEU which is easier for AVR.
-     The first two instructions compare/branch on EQ
-     so we may replace the difficult
-
-        if (x == VAL)   goto L1;
-        if (x > VAL)    goto L2;
-
-     with easy
-
-         if (x == VAL)   goto L1;
-         if (x >= VAL)   goto L2;
-
-     Similarly, replace LE/LEU by LT/LTU.  */
-
-  switch (code)
-    {
-    case EQ:
-    case LT:  case LTU:
-    case GE:  case GEU:
-      break;
-
-    case LE:  case LEU:
-    case GT:  case GTU:
-      code = avr_normalize_condition (code);
-      break;
-
-    default:
-      return false;
-    }
-
-  /* Wrap the branches into UNSPECs so they won't be changed or
-     optimized in the remainder.  */
-
-  target = XEXP (XEXP (ifelse1, 1), 0);
-  cond = XEXP (ifelse1, 0);
-  jump = emit_jump_insn_after (gen_branch_unspec (target, cond), insn1);
-
-  JUMP_LABEL (jump) = JUMP_LABEL (branch1);
-
-  target = XEXP (XEXP (ifelse2, 1), 0);
-  cond = gen_rtx_fmt_ee (code, VOIDmode, cc_reg_rtx, const0_rtx);
-  jump = emit_jump_insn_after (gen_branch_unspec (target, cond), insn2);
-
-  JUMP_LABEL (jump) = JUMP_LABEL (branch2);
-
-  /* The comparisons in insn1 and insn2 are exactly the same;
-     insn2 is superfluous so delete it.  */
-
-  delete_insn (insn2);
-  delete_insn (branch1);
-  delete_insn (branch2);
-
-  return true;
-}
-
-
-/* Implement `TARGET_MACHINE_DEPENDENT_REORG'.  */
-/* Optimize conditional jumps.  */
-
-static void
-avr_reorg (void)
-{
-  rtx_insn *insn = get_insns();
-
-  for (insn = next_real_insn (insn); insn; insn = next_real_insn (insn))
-    {
-      rtx pattern = avr_compare_pattern (insn);
-
-      if (!pattern)
-        continue;
-
-      if (optimize
-          && avr_reorg_remove_redundant_compare (insn))
-        {
-          continue;
-        }
-
-      if (compare_diff_p (insn))
-	{
-          /* Now we work under compare insn with difficult branch.  */
-
-	  rtx_insn *next = next_real_insn (insn);
-          rtx pat = PATTERN (next);
-          if (GET_CODE (pat) == PARALLEL)
-            pat = XVECEXP (pat, 0, 0);
-
-          pattern = SET_SRC (pattern);
-
-          if (true_regnum (XEXP (pattern, 0)) >= 0
-              && true_regnum (XEXP (pattern, 1)) >= 0)
-            {
-              rtx x = XEXP (pattern, 0);
-              rtx src = SET_SRC (pat);
-              rtx t = XEXP (src, 0);
-              PUT_CODE (t, swap_condition (GET_CODE (t)));
-              XEXP (pattern, 0) = XEXP (pattern, 1);
-              XEXP (pattern, 1) = x;
-              INSN_CODE (next) = -1;
-            }
-          else if (true_regnum (XEXP (pattern, 0)) >= 0
-                   && XEXP (pattern, 1) == const0_rtx)
-            {
-              /* This is a tst insn, we can reverse it.  */
-              rtx src = SET_SRC (pat);
-              rtx t = XEXP (src, 0);
-
-              PUT_CODE (t, swap_condition (GET_CODE (t)));
-              XEXP (pattern, 1) = XEXP (pattern, 0);
-              XEXP (pattern, 0) = const0_rtx;
-              INSN_CODE (next) = -1;
-              INSN_CODE (insn) = -1;
-            }
-          else if (true_regnum (XEXP (pattern, 0)) >= 0
-                   && CONST_INT_P (XEXP (pattern, 1)))
-            {
-              rtx x = XEXP (pattern, 1);
-              rtx src = SET_SRC (pat);
-              rtx t = XEXP (src, 0);
-              machine_mode mode = GET_MODE (XEXP (pattern, 0));
-
-              if (avr_simplify_comparison_p (mode, GET_CODE (t), x))
-                {
-                  XEXP (pattern, 1) = gen_int_mode (INTVAL (x) + 1, mode);
-                  PUT_CODE (t, avr_normalize_condition (GET_CODE (t)));
-                  INSN_CODE (next) = -1;
-                  INSN_CODE (insn) = -1;
-                }
-            }
-        }
-    }
-}
 
 /* Returns register number for function return value.*/
 
@@ -12853,8 +13433,8 @@ avr_reg_ok_for_pgm_addr (rtx reg, bool strict)
 /* Implement `TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P'.  */
 
 static bool
-avr_addr_space_legitimate_address_p (machine_mode mode, rtx x,
-                                     bool strict, addr_space_t as)
+avr_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+				     addr_space_t as, code_helper = ERROR_MARK)
 {
   bool ok = false;
 
@@ -14426,10 +15006,13 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         if (changed)
           return build_call_expr (fndecl, 3, tmap, tbits, tval);
 
-        /* If bits don't change their position we can use vanilla logic
-           to merge the two arguments.  */
+        /* If bits don't change their position, we can use vanilla logic
+           to merge the two arguments...  */
 
-	if (avr_map_metric (map, MAP_NONFIXED_0_7) == 0)
+        if (avr_map_metric (map, MAP_NONFIXED_0_7) == 0
+            // ...except when we are copying just one bit. In that
+            // case, BLD/BST is better than XOR/AND/XOR, see PR90622.
+            && avr_map_metric (map, MAP_FIXED_0_7) != 1)
           {
             int mask_f = avr_map_metric (map, MAP_MASK_PREIMAGE_F);
             tree tres, tmask = build_int_cst (val_type, mask_f ^ 0xff);
@@ -14572,6 +15155,8 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 #undef  TARGET_ASM_FINAL_POSTSCAN_INSN
 #define TARGET_ASM_FINAL_POSTSCAN_INSN avr_asm_final_postscan_insn
 
+#undef  TARGET_INSN_COST
+#define TARGET_INSN_COST avr_insn_cost
 #undef  TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST avr_register_move_cost
 #undef  TARGET_MEMORY_MOVE_COST
@@ -14580,8 +15165,6 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 #define TARGET_RTX_COSTS avr_rtx_costs
 #undef  TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST avr_address_cost
-#undef  TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG avr_reorg
 #undef  TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG avr_function_arg
 #undef  TARGET_FUNCTION_ARG_ADVANCE
@@ -14688,6 +15271,9 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 #undef  TARGET_ADDR_SPACE_DIAGNOSE_USAGE
 #define TARGET_ADDR_SPACE_DIAGNOSE_USAGE avr_addr_space_diagnose_usage
 
+#undef  TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
+#define TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID avr_addr_space_zero_address_valid
+
 #undef  TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P avr_mode_dependent_address_p
 
@@ -14710,6 +15296,12 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 
 #undef  TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST avr_md_asm_adjust
+
+#undef  TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P avr_can_inline_p
+
+#undef  TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON avr_canonicalize_comparison
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

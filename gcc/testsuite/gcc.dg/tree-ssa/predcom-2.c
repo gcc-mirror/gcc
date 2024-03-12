@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details -fno-tree-pre" } */
+/* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details-blocks -fno-tree-pre" } */
+/* { dg-additional-options "-fno-tree-vectorize" { target amdgcn-*-* riscv*-*-* } } */
 
 void abort (void);
 
@@ -43,3 +44,4 @@ int main(void)
 
 /* Verify that both loops were transformed and unrolled.  */
 /* { dg-final { scan-tree-dump-times "Unrolling 2 times." 2 "pcom"} } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" } } */

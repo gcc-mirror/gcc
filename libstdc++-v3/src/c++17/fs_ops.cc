@@ -112,18 +112,17 @@ fs::absolute(const path& p, error_code& ec)
   wstring buf;
   do
     {
-      buf.resize(len);
-      len = GetFullPathNameW(s.data(), len, buf.data(), nullptr);
+      buf.__resize_and_overwrite(len, [&s, &len](wchar_t* p, unsigned n) {
+	len = GetFullPathNameW(s.data(), n, p, nullptr);
+	return len > n ? 0 : len;
+      });
     }
   while (len > buf.size());
 
   if (len == 0)
     ec = __last_system_error();
   else
-    {
-      buf.resize(len);
-      ret = std::move(buf);
-    }
+    ret = std::move(buf);
 #else
   ret = current_path(ec);
   ret /= p;
@@ -578,7 +577,7 @@ namespace
   create_dir(const fs::path& p, fs::perms perm, std::error_code& ec)
   {
     bool created = false;
-#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+#if _GLIBCXX_USE_MKDIR
     posix::mode_t mode = static_cast<std::underlying_type_t<fs::perms>>(perm);
     if (posix::mkdir(p.c_str(), mode))
       {
@@ -736,7 +735,7 @@ fs::path
 fs::current_path(error_code& ec)
 {
   path p;
-#if defined _GLIBCXX_HAVE_UNISTD_H && ! defined __AVR__
+#if _GLIBCXX_USE_GETCWD
 #if defined __GLIBC__ || defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
   if (char_ptr cwd = char_ptr{posix::getcwd(nullptr, 0)})
     {
@@ -784,7 +783,7 @@ fs::current_path(error_code& ec)
 	}
     }
 #endif  // __GLIBC__
-#else   // _GLIBCXX_HAVE_UNISTD_H
+#else   // _GLIBCXX_USE_GETCWD
   ec = std::make_error_code(std::errc::function_not_supported);
 #endif
   return p;
@@ -802,7 +801,7 @@ fs::current_path(const path& p)
 void
 fs::current_path(const path& p, error_code& ec) noexcept
 {
-#ifdef _GLIBCXX_HAVE_UNISTD_H
+#if _GLIBCXX_USE_CHDIR
   if (posix::chdir(p.c_str()))
     ec.assign(errno, std::generic_category());
   else
@@ -1098,6 +1097,7 @@ void
 fs::permissions(const path& p, perms prms, perm_options opts,
 		error_code& ec) noexcept
 {
+#if _GLIBCXX_USE_FCHMODAT || _GLIBCXX_USE_CHMOD
   const bool replace = is_set(opts, perm_options::replace);
   const bool add = is_set(opts, perm_options::add);
   const bool remove = is_set(opts, perm_options::remove);
@@ -1139,6 +1139,9 @@ fs::permissions(const path& p, perms prms, perm_options opts,
     ec.assign(err, std::generic_category());
   else
     ec.clear();
+#else
+  ec = std::make_error_code(std::errc::function_not_supported);
+#endif
 }
 
 fs::path
@@ -1187,31 +1190,33 @@ fs::path fs::read_symlink(const path& p, error_code& ec)
       return result;
     }
 
-  std::string buf(st.st_size ? st.st_size + 1 : 128, '\0');
+  std::string buf;
+  size_t bufsz = st.st_size ? st.st_size + 1 : 128;
   do
     {
-      ssize_t len = ::readlink(p.c_str(), buf.data(), buf.size());
-      if (len == -1)
+      ssize_t len;
+      buf.__resize_and_overwrite(bufsz, [&p, &len](char* ptr, size_t n) {
+	len = ::readlink(p.c_str(), ptr, n);
+	return size_t(len) < n ? len : 0;
+      });
+      if (buf.size())
+	{
+	  result.assign(std::move(buf));
+	  ec.clear();
+	  break;
+	}
+      else if (len == -1)
 	{
 	  ec.assign(errno, std::generic_category());
 	  return result;
 	}
-      else if (len == (ssize_t)buf.size())
+      else if (bufsz > 4096)
 	{
-	  if (buf.size() > 4096)
-	    {
-	      ec.assign(ENAMETOOLONG, std::generic_category());
-	      return result;
-	    }
-	  buf.resize(buf.size() * 2);
+	  ec.assign(ENAMETOOLONG, std::generic_category());
+	  return result;
 	}
       else
-	{
-	  buf.resize(len);
-	  result.assign(buf);
-	  ec.clear();
-	  break;
-	}
+	bufsz *= 2;
     }
   while (true);
 #else

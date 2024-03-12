@@ -728,10 +728,6 @@ package body Sem_Aux is
       CList : Node_Id;
 
    begin
-      if not Is_Type (Typ) then
-         return False;
-      end if;
-
       FSTyp := First_Subtype (Typ);
 
       if not Has_Discriminants (FSTyp) then

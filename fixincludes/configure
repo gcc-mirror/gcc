@@ -623,6 +623,8 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 get_gcc_base_ver
 MAINT
+LD_PICFLAG
+PICFLAG
 TARGET
 target_noncanonical
 WERROR
@@ -695,6 +697,7 @@ enable_option_checking
 enable_werror_always
 with_local_prefix
 enable_twoprocess
+enable_host_pie
 enable_maintainer_mode
 with_gcc_major_version_only
 '
@@ -1323,6 +1326,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-werror-always  enable -Werror despite compiler version
   --enable-twoprocess       Use a separate process to apply the fixes
+  --enable-host-pie       build host code as PIE
   --enable-maintainer-mode enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer
 
@@ -2937,7 +2941,8 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 # LT_PATH_NM
 # ----------
-# find the pathname to a BSD- or MS-compatible name lister
+# find the pathname to a BSD- or MS-compatible name lister, and any flags
+# needed to make it compatible
 # LT_PATH_NM
 
 # Old names:
@@ -4834,6 +4839,15 @@ if test $TARGET = twoprocess; then
 $as_echo "#define SEPARATE_FIX_PROC 1" >>confdefs.h
 
 fi
+
+# Enable --enable-host-pie.
+# Check whether --enable-host-pie was given.
+if test "${enable_host_pie+set}" = set; then :
+  enableval=$enable_host_pie; PICFLAG=-fPIE; LD_PICFLAG=-pie
+fi
+
+
+
 
 case $host in
 	vax-dec-bsd* )

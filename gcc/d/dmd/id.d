@@ -61,6 +61,8 @@ immutable Msgtable[] msgtable =
     { "IUnknown" },
     { "Object" },
     { "object" },
+    { "_size_t", "size_t" },
+    { "_ptrdiff_t", "ptrdiff_t" },
     { "string" },
     { "wstring" },
     { "dstring" },
@@ -114,6 +116,7 @@ immutable Msgtable[] msgtable =
     { "returnLabel", "__returnLabel" },
     { "line" },
     { "empty", "" },
+    { "dotdotdot", "..." }, // use for error messages
     { "p" },
     { "__vptr" },
     { "__monitor" },
@@ -305,6 +308,7 @@ immutable Msgtable[] msgtable =
     { "aaKeys", "_aaKeys" },
     { "aaValues", "_aaValues" },
     { "aaRehash", "_aaRehash" },
+    { "_aaAsStruct" },
     { "monitorenter", "_d_monitorenter" },
     { "monitorexit", "_d_monitorexit" },
     { "criticalenter", "_d_criticalenter2" },
@@ -315,6 +319,8 @@ immutable Msgtable[] msgtable =
     { "_d_newThrowable" },
     { "_d_newclassT" },
     { "_d_newclassTTrace" },
+    { "_d_newitemT" },
+    { "_d_newitemTTrace" },
     { "_d_assert_fail" },
     { "dup" },
     { "_aaApply" },
@@ -361,6 +367,8 @@ immutable Msgtable[] msgtable =
     { "_d_arrayappendcTXImpl" },
     { "_d_arrayappendcTX" },
     { "_d_arrayappendcTXTrace" },
+    { "_d_arraycatnTX" },
+    { "_d_arraycatnTXTrace" },
 
     // varargs implementation
     { "stdc" },
@@ -370,6 +378,10 @@ immutable Msgtable[] msgtable =
     // Builtin functions
     { "std" },
     { "core" },
+    { "config" },
+    { "c_complex_float" },
+    { "c_complex_double" },
+    { "c_complex_real" },
     { "etc" },
     { "attribute" },
     { "atomic" },
@@ -519,9 +531,17 @@ immutable Msgtable[] msgtable =
     { "__tag" },
     { "dllimport" },
     { "dllexport" },
+    { "naked" },
+    { "thread" },
     { "vector_size" },
     { "__func__" },
+    { "always_inline" },
+    { "noinline" },
     { "noreturn" },
+    { "_nothrow", "nothrow" },
+    { "_deprecated", "deprecated" },
+    { "_align", "align" },
+    { "aligned" },
     { "__pragma", "pragma" },
     { "builtins", "__builtins" },
     { "builtin_va_list", "__builtin_va_list" },
@@ -532,8 +552,10 @@ immutable Msgtable[] msgtable =
     { "show" },
     { "push" },
     { "pop" },
+    { "_pure", "pure" },
     { "define" },
     { "undef" },
+    { "ident" },
 ];
 
 
@@ -557,7 +579,7 @@ struct Msgtable
      * Returns: the name to use in the D executable, `name_` if non-empty,
      *  otherwise `ident`
      */
-    string name()
+    string name() @safe
     {
         return name_ ? name_ : ident;
     }
@@ -584,19 +606,19 @@ string generate(immutable(Msgtable)[] msgtable, string function(Msgtable) dg)
 }
 
 // Used to generate the code for each identifier.
-string identifier(Msgtable m)
+string identifier(Msgtable m) @safe
 {
     return "Identifier " ~ m.ident ~ ";";
 }
 
 // Used to generate the code for each initializer.
-string initializer(Msgtable m)
+string initializer(Msgtable m) @safe
 {
     return m.ident ~ ` = Identifier.idPool("` ~ m.name ~ `");`;
 }
 
 // Used to generate the code for each deinitializer.
-string deinitializer(Msgtable m)
+string deinitializer(Msgtable m) @safe
 {
     return m.ident ~ " = Identifier.init;";
 }

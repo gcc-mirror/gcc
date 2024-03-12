@@ -72,19 +72,23 @@ static GTY(()) section *bss100_section;
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-xstormy16_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
+xstormy16_rtx_costs (rtx x, machine_mode mode,
 		     int outer_code ATTRIBUTE_UNUSED,
-		     int opno ATTRIBUTE_UNUSED, int *total,
-		     bool speed ATTRIBUTE_UNUSED)
+		     int opno ATTRIBUTE_UNUSED, int *total, bool speed_p)
 {
-  int code = GET_CODE (x);
+  rtx_code code = GET_CODE (x);
 
   switch (code)
     {
     case CONST_INT:
-      if (INTVAL (x) < 16 && INTVAL (x) >= 0)
-        *total = COSTS_N_INSNS (1) / 2;
-      else if (INTVAL (x) < 256 && INTVAL (x) >= 0)
+      if (mode == SImode)
+	{
+	  HOST_WIDE_INT lo_word = INTVAL (x) & 0xffff;
+	  HOST_WIDE_INT hi_word = INTVAL (x) >> 16;
+	  *total = COSTS_N_INSNS (IN_RANGE (lo_word, 0, 255) ? 1 : 2);
+	  *total += COSTS_N_INSNS (IN_RANGE (hi_word, 0, 255) ? 1 : 2);
+	}
+      else if (mode == QImode || IN_RANGE(INTVAL (x), 0, 255))
 	*total = COSTS_N_INSNS (1);
       else
 	*total = COSTS_N_INSNS (2);
@@ -97,12 +101,152 @@ xstormy16_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
       *total = COSTS_N_INSNS (2);
       return true;
 
+    case PLUS:
+    case MINUS:
+      if (mode == SImode)
+	{
+	  if (CONST_INT_P (XEXP (x, 1)))
+	    {
+	      HOST_WIDE_INT lo_word = INTVAL (XEXP (x, 1)) & 0xffff;
+	      HOST_WIDE_INT hi_word = INTVAL (XEXP (x, 1)) >> 16;
+	      if (IN_RANGE (lo_word, 0, 16))
+		*total = COSTS_N_INSNS (1);
+	      else
+		*total = COSTS_N_INSNS (2);
+	      if (IN_RANGE (hi_word, 0, 16))
+		*total += COSTS_N_INSNS (1);
+	      else
+		*total += COSTS_N_INSNS (2);
+	    }
+	  else
+	    {
+	      *total = COSTS_N_INSNS (2);
+	      *total += rtx_cost (XEXP (x, 1), mode, code, 0, speed_p);
+	    }
+	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed_p);
+	  return true;
+	}
+      else
+	{
+	  if (CONST_INT_P (XEXP (x, 1)))
+	    {
+	      if (IN_RANGE (INTVAL (XEXP (x, 1)), 0, 16))
+		*total = COSTS_N_INSNS (1);
+	      else
+		*total = COSTS_N_INSNS (2);
+	    }
+	  else
+	    {
+	      *total = COSTS_N_INSNS (1);
+	      *total += rtx_cost (XEXP (x, 1), mode, code, 0, speed_p);
+	    }
+	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed_p);
+	  return true;
+	}
+      return false;
+
     case MULT:
-      *total = COSTS_N_INSNS (35 + 6);
-      return true;
+      if (mode == QImode)
+        *total = COSTS_N_INSNS (speed_p ? 18 + 5 : 6);
+      else if (mode == SImode)
+	*total = COSTS_N_INSNS (speed_p ? 3 * 18 + 14 : 17);
+      else 
+        *total = COSTS_N_INSNS (speed_p ? 18 + 3 : 4);
+      return false;
+
     case DIV:
-      *total = COSTS_N_INSNS (51 - 6);
-      return true;
+    case MOD:
+      if (mode == QImode)
+        *total = COSTS_N_INSNS (speed_p ? 19 + 6 : 7);
+      else if (mode == SImode)
+	*total = COSTS_N_INSNS (speed_p ? 100 : 7);
+      else
+        *total = COSTS_N_INSNS (speed_p ? 19 + 3 : 4);
+      return false;
+
+    case UDIV:
+    case UMOD:
+      if (mode == QImode)
+        *total = COSTS_N_INSNS (speed_p ? 18 + 7 : 8);
+      else if (mode == SImode)
+	*total = COSTS_N_INSNS (speed_p ? 100 : 7);
+      else
+        *total = COSTS_N_INSNS (speed_p ? 18 + 3 : 4);
+      return false;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      if (REG_P (XEXP (x, 0))
+	  && CONST_INT_P (XEXP (x, 1)))
+	{
+	  if (mode == HImode)
+	    {
+	      /* asr/shl/shr.  */
+	      *total = COSTS_N_INSNS (1);
+	      return true;
+	    }
+	  else if (mode == QImode)
+	    {
+	      /* (shl+shr)+shr.  */
+	      *total = COSTS_N_INSNS (3);
+	      return true;
+	    }
+	  else if (mode == SImode)
+	    {
+	      if (IN_RANGE (INTVAL (XEXP (x, 1)), 16, 31))
+		*total = COSTS_N_INSNS (3);
+	      else
+	        *total = COSTS_N_INSNS (5);
+	      return true;
+	    }
+	}
+      return false;
+
+    case ZERO_EXTEND:
+      if (mode == HImode)
+	{
+	  if (GET_MODE (XEXP (x, 0)) == QImode)
+	    /* shl+shr.  */
+	    *total = COSTS_N_INSNS (2);
+	}
+      else if (mode == SImode)
+	{
+	  if (GET_MODE (XEXP (x, 0)) == HImode)
+	    /* mov+mov.  */
+	    *total = COSTS_N_INSNS (2);
+	  else if (GET_MODE (XEXP (x, 0)) == QImode)
+	    /* mov+shl+shr+mov.  */
+	    *total = COSTS_N_INSNS (4);
+	}
+      return false;
+
+    case SIGN_EXTEND:
+      if (mode == HImode)
+	{
+	  if (GET_MODE (XEXP (x, 0)) == QImode)
+	    /* cbw.  */
+	    *total = COSTS_N_INSNS (1);
+	}
+      else if (mode == SImode)
+	{
+	  if (GET_MODE (XEXP (x, 0)) == HImode)
+	    /* mov+asr.  */
+	    *total = COSTS_N_INSNS (2);
+	  else if (GET_MODE (XEXP (x, 0)) == QImode)
+	    /* mov+shl+shr+mov.  */
+	    *total = COSTS_N_INSNS (3);
+	}
+      return false;
+
+    case SET:
+      if (REG_P (XEXP (x, 0)))
+	{
+	  if (!REG_P (XEXP (x, 1)))
+	    *total = rtx_cost (XEXP (x, 1), mode, SET, 1, speed_p);
+	  return true;
+	}
+      return false;
 
     default:
       return false;
@@ -651,8 +795,8 @@ xstormy16_expand_andqi3 (rtx *operands)
   && (INTVAL (X) + (OFFSET) < 0x100 || INTVAL (X) + (OFFSET) >= 0x7F00))
 
 bool
-xstormy16_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
-				rtx x, bool strict)
+xstormy16_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
+				bool strict, code_helper)
 {
   if (LEGITIMATE_ADDRESS_CONST_INT_P (x, 0))
     return true;
@@ -1612,7 +1756,7 @@ xstormy16_encode_section_info (tree decl, rtx r, int first)
 {
   default_encode_section_info (decl, r, first);
 
-   if (TREE_CODE (decl) == VAR_DECL
+   if (VAR_P (decl)
       && (lookup_attribute ("below100", DECL_ATTRIBUTES (decl))
 	  || lookup_attribute ("BELOW100", DECL_ATTRIBUTES (decl))))
     {
@@ -1827,6 +1971,14 @@ xstormy16_print_operand (FILE *file, rtx x, int code)
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, l);
 	return;
       }
+
+    case 'h':
+      /* Print the highpart register of an SI mode register pair.  */
+      if (REG_P (x) && GET_MODE (x) == SImode)
+        fputs (reg_names [REGNO (x) + 1], file);
+      else
+	output_operand_lossage ("'h' operand is not SImode register");
+      return;
 
     case 0:
       /* Handled below.  */
@@ -2105,6 +2257,29 @@ xstormy16_output_shift (machine_mode mode, enum rtx_code code,
       return r;
     }
 
+  /* For shifts of size 2, we can use two shifts of size 1.  */
+  if (size == 2)
+    {
+      switch (code)
+	{
+	case ASHIFT:
+	  sprintf (r, "shl %s,#1 | rlc %s,#1 | shl %s,#1 | rlc %s,#1",
+		   r0, r1, r0, r1);
+	  break;
+	case ASHIFTRT:
+	  sprintf (r, "asr %s,#1 | rrc %s,#1 | asr %s,#1 | rrc %s,#1",
+		   r1, r0, r1, r0);
+	  break;
+	case LSHIFTRT:
+	  sprintf (r, "shr %s,#1 | rrc %s,#1 | shr %s,#1 | rrc %s,#1",
+		   r1, r0, r1, r0);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      return r;
+    }
+
   /* For large shifts, there are easy special cases.  */
   if (size == 16)
     {
@@ -2252,7 +2427,7 @@ xstormy16_handle_below100_attribute (tree *node,
 	       "%<__BELOW100__%> attribute only applies to variables");
       *no_add_attrs = true;
     }
-  else if (args == NULL_TREE && TREE_CODE (*node) == VAR_DECL)
+  else if (args == NULL_TREE && VAR_P (*node))
     {
       if (! (TREE_PUBLIC (*node) || TREE_STATIC (*node)))
 	{
@@ -2718,9 +2893,6 @@ xstormy16_push_rounding (poly_int64 bytes)
 #define TARGET_PREFERRED_RELOAD_CLASS xstormy16_preferred_reload_class
 #undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS xstormy16_preferred_reload_class
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	xstormy16_legitimate_address_p

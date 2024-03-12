@@ -274,7 +274,7 @@ widest_int_from_isl_expr_int (__isl_keep isl_ast_expr *expr)
   isl_val *val = isl_ast_expr_get_val (expr);
   size_t n = isl_val_n_abs_num_chunks (val, sizeof (HOST_WIDE_INT));
   HOST_WIDE_INT *chunks = XALLOCAVEC (HOST_WIDE_INT, n);
-  if (n > WIDE_INT_MAX_ELTS
+  if (n > WIDEST_INT_MAX_ELTS
       || isl_val_get_abs_num_chunks (val, sizeof (HOST_WIDE_INT), chunks) == -1)
     {
       isl_val_free (val);

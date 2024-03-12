@@ -44,6 +44,27 @@ void f2 ()
   }
 }
 
+void f2_ ()
+{
+  int f2__a = 2;
+  float f2__b[2];
+
+#pragma acc data default (none) copyin (f2__a) copyout (f2__b)
+  /* { dg-final { scan-tree-dump-times "omp target oacc_data map\\(from:f2__b \[^\\)\]+\\) map\\(to:f2__a \[^\\)\]+\\) default\\(none\\)" 1 "gimple" } } */
+  {
+#pragma acc kernels
+    /* { dg-final { scan-tree-dump-times "omp target oacc_kernels map\\(tofrom:f2__b \[^\\)\]+\\) map\\(tofrom:f2__a" 1 "gimple" } } */
+    {
+      f2__b[0] = f2__a;
+    }
+#pragma acc parallel
+    /* { dg-final { scan-tree-dump-times "omp target oacc_parallel map\\(tofrom:f2__b \[^\\)\]+\\) map\\(tofrom:f2__a" 1 "gimple" } } */
+    {
+      f2__b[0] = f2__a;
+    }
+  }
+}
+
 void f3 ()
 {
   int f3_a = 2;
@@ -61,6 +82,27 @@ void f3 ()
     /* { dg-final { scan-tree-dump-times "omp target oacc_parallel default\\(present\\) map\\(tofrom:f3_b \[^\\)\]+\\) map\\(tofrom:f3_a" 1 "gimple" } } */
     {
       f3_b[0] = f3_a;
+    }
+  }
+}
+
+void f3_ ()
+{
+  int f3__a = 2;
+  float f3__b[2];
+
+#pragma acc data default (present) copyin (f3__a) copyout (f3__b)
+  /* { dg-final { scan-tree-dump-times "omp target oacc_data map\\(from:f3__b \[^\\)\]+\\) map\\(to:f3__a \[^\\)\]+\\) default\\(present\\)" 1 "gimple" } } */
+  {
+#pragma acc kernels
+    /* { dg-final { scan-tree-dump-times "omp target oacc_kernels map\\(tofrom:f3__b \[^\\)\]+\\) map\\(tofrom:f3__a" 1 "gimple" } } */
+    {
+      f3__b[0] = f3__a;
+    }
+#pragma acc parallel
+    /* { dg-final { scan-tree-dump-times "omp target oacc_parallel map\\(tofrom:f3__b \[^\\)\]+\\) map\\(tofrom:f3__a" 1 "gimple" } } */
+    {
+      f3__b[0] = f3__a;
     }
   }
 }

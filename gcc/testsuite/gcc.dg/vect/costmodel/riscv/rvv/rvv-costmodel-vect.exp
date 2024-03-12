@@ -1,0 +1,52 @@
+# Copyright (C) 2023-2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Exit immediately if this isn't a riscv target.
+if { ![istarget riscv*-*-*] } then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+set gcc_march "rv64gcv_zvfh"
+set gcc_mabi  "lp64d"
+if [istarget riscv32-*-*] then {
+  set gcc_march "rv32gcv_zvfh"
+  set gcc_mabi  "ilp32d"
+}
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+set CFLAGS "$DEFAULT_CFLAGS -march=$gcc_march -mabi=$gcc_mabi -O3"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/dynamic-lmul*.\[cS\]]] \
+	"-O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic" $CFLAGS
+
+# All done.
+dg-finish

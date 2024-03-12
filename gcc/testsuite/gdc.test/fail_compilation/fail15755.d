@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail15755.d(28): Error: `tuple(123)` has no effect
+fail_compilation/fail15755.d(28): Error: `AliasSeq!(123)` has no effect
 ---
 */
 

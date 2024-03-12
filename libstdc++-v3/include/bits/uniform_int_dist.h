@@ -44,6 +44,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __cpp_lib_concepts
   /// Requirements for a uniform random bit generator.
+  /**
+   * @ingroup random_distributions_uniform
+   * @headerfile random
+   * @since C++20
+   */
   template<typename _Gen>
     concept uniform_random_bit_generator
       = invocable<_Gen&> && unsigned_integral<invoke_result_t<_Gen&>>
@@ -55,6 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 #endif
 
+  /// @cond undocumented
   namespace __detail
   {
     // Determine whether number is a power of two.
@@ -67,11 +73,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return ((__x - 1) & __x) == 0;
       }
   }
+  /// @endcond
 
   /**
    * @brief Uniform discrete distribution for random numbers.
    * A discrete random distribution on the range @f$[min, max]@f$ with equal
    * probability throughout the range.
+   *
+   * @ingroup random_distributions_uniform
+   * @headerfile random
+   * @since C++11
    */
   template<typename _IntType = int>
     class uniform_int_distribution

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 // TODO [!HOSTED]: avoidable std::allocator usage
 // { dg-require-effective-target hosted }

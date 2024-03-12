@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++23 -frtti" }
+// { dg-options "-frtti" }
 // { dg-do compile { target c++23 } }
 // { dg-additional-options "-fdelete-null-pointer-checks" }
 

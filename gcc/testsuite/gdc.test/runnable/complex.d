@@ -243,11 +243,11 @@ void test12()
 {
     real x = 3;
     creal a = (2 + 4i) % 3;
-    printf("%Lg %Lgi\n", a.re, a.im);
+    //printf("%Lg %Lgi\n", a.re, a.im);
     assert(a == 2 + 1i);
 
     creal b = (2 + 4i) % x;
-    printf("%Lg %Lgi\n", b.re, b.im);
+    //printf("%Lg %Lgi\n", b.re, b.im);
     assert(b == a);
 }
 
@@ -257,7 +257,7 @@ void test13()
 {
         ireal a = 5i;
         ireal b = a % 2;
-        printf("%Lg %Lgi\n", b.re, b.im);
+        //printf("%Lg %Lgi\n", b.re, b.im);
         assert(b == 1i);
 }
 
@@ -530,9 +530,9 @@ void test22()
 {
     static creal[] params = [1+0i, 3+0i, 5+0i];
 
-    printf("params[0] = %Lf + %Lfi\n", params[0].re, params[0].im);
-    printf("params[1] = %Lf + %Lfi\n", params[1].re, params[1].im);
-    printf("params[2] = %Lf + %Lfi\n", params[2].re, params[2].im);
+    //printf("params[0] = %Lf + %Lfi\n", params[0].re, params[0].im);
+    //printf("params[1] = %Lf + %Lfi\n", params[1].re, params[1].im);
+    //printf("params[2] = %Lf + %Lfi\n", params[2].re, params[2].im);
 
     creal[] sums = new creal[3];
     sums[] = 0+0i;
@@ -603,19 +603,19 @@ float func_24_4(float f, double d)
 void test24()
 {
     ifloat f = func_24_1(10i, 8);
-    printf("%fi\n", f);
+    //printf("%fi\n", f);
 //    assert(f == 1.25i);
 
     f = func_24_2(10i, 8);
-    printf("%fi\n", f);
+    //printf("%fi\n", f);
     assert(f == 1.25i);
 
     float g = func_24_3(10, 8);
-    printf("%f\n", g);
+    //printf("%f\n", g);
 //    assert(g == 1.25);
 
     g = func_24_4(10, 8);
-    printf("%f\n", g);
+    //printf("%f\n", g);
     assert(g == 1.25);
 }
 
@@ -647,9 +647,9 @@ void test26()
   foreach( cdouble z; A )
   {
     s = toString26(z);
-    printf("%.*s  ", cast(int)s.length, s.ptr);
+    //printf("%.*s  ", cast(int)s.length, s.ptr);
   }
-  printf("\n");
+  //printf("\n");
 
   for(int ii=0; ii<A.length; ii++ )
     A[ii] += -1i*A[ii];
@@ -661,9 +661,9 @@ void test26()
   foreach( cdouble z; A )
   {
     s = toString26(z);
-    printf("%.*s  ", cast(int)s.length, s.ptr);
+    //printf("%.*s  ", cast(int)s.length, s.ptr);
   }
-  printf("\n");
+  //printf("\n");
 }
 
 /*************************************/
@@ -698,19 +698,19 @@ void test28()
 void test29()
 {
     ireal a = 6.5i % 3i;
-    printf("%Lfi %Lfi\n", a, a - .5i);
+    //printf("%Lfi %Lfi\n", a, a - .5i);
     assert(a == .5i);
 
     a = 6.5i % 3;
-    printf("%Lfi %Lfi\n", a, a - .5i);
+    //printf("%Lfi %Lfi\n", a, a - .5i);
     assert(a == .5i);
 
     real b = 6.5 % 3i;
-    printf("%Lf %Lf\n", b, b - .5);
+    //printf("%Lf %Lf\n", b, b - .5);
     assert(b == .5);
 
     b = 6.5 % 3;
-    printf("%Lf %Lf\n", b, b - .5);
+    //printf("%Lf %Lf\n", b, b - .5);
     assert(b == .5);
 }
 
@@ -720,17 +720,17 @@ void test30()
 {
     cfloat f = 1+0i;
     f %= 2fi;
-    printf("%f + %fi\n", f.re, f.im);
+    //printf("%f + %fi\n", f.re, f.im);
     assert(f == 1 + 0i);
 
     cdouble d = 1+0i;
     d %= 2i;
-    printf("%f + %fi\n", d.re, d.im);
+    //printf("%f + %fi\n", d.re, d.im);
     assert(d == 1 + 0i);
 
     creal r = 1+0i;
     r %= 2i;
-    printf("%Lf + %Lfi\n", r.re, r.im);
+    //printf("%Lf + %Lfi\n", r.re, r.im);
     assert(r == 1 + 0i);
 }
 
@@ -740,17 +740,17 @@ void test31()
 {
     cfloat f = 1+0i;
     f %= 2i;
-    printf("%f + %fi\n", f.re, f.im);
+    //printf("%f + %fi\n", f.re, f.im);
     assert(f == 1);
 
     cdouble d = 1+0i;
     d = d % 2i;
-    printf("%f + %fi\n", d.re, d.im);
+    //printf("%f + %fi\n", d.re, d.im);
     assert(d == 1);
 
     creal r = 1+0i;
     r = r % 2i;
-    printf("%Lf + %Lfi\n", r.re, r.im);
+    //printf("%Lf + %Lfi\n", r.re, r.im);
     assert(r == 1);
 }
 
@@ -770,7 +770,7 @@ void assertEqual(real* a, real* b, string file = __FILE__, size_t line = __LINE_
     {
         if (x[i] != y[i])
         {
-            printf("%02zd: %02x %02x\n", i, x[i], y[i]);
+            //printf("%02zd: %02x %02x\n", i, x[i], y[i]);
             import core.exception;
             throw new AssertError(file, line);
         }
@@ -856,7 +856,7 @@ void test35()
 void test36()
 {
     ireal imag = 2.5i;
-    printf ("test of imag*imag = %Lf\n",imag*imag);
+    //printf ("test of imag*imag = %Lf\n",imag*imag);
     assert(imag * imag == -6.25);
 }
 
@@ -885,7 +885,7 @@ void test39()
     creal z = 1 + 2.5i;
     real e = z.im;
 
-    printf ("e = %Lf\n", e);
+    //printf ("e = %Lf\n", e);
     assert(e == 2.5);
 }
 
@@ -942,7 +942,7 @@ void test44()
 {
     ifloat f = 1.0fi;
 //    f *= 2.0fi; // illegal but compiles
-    printf("%g\n", f);
+    //printf("%g\n", f);
 //    assert(f == 0i);
 }
 

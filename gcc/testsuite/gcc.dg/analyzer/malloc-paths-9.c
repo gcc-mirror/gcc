@@ -1,5 +1,7 @@
 /* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
 /* { dg-enable-nn-line-numbers "" } */
+/* C only: C++ exceptions mess up events. Therefore this test has been duplicated
+   as c-c++-common/analyzer/malloc-paths-9-noexcept.c */
 
 #include <stdlib.h>
 

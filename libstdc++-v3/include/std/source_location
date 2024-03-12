@@ -29,14 +29,15 @@
 #ifndef _GLIBCXX_SRCLOC
 #define _GLIBCXX_SRCLOC 1
 
-#if __cplusplus > 201703L && __has_builtin(__builtin_source_location)
+#define __glibcxx_want_source_location
+#include <bits/version.h>
+
+#if __cpp_lib_source_location // C++ >= 20 && builtin_source_location
 #include <bits/c++config.h>
 
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#define __cpp_lib_source_location 201907L
 
   /// A class that describes a location in source code.
   struct source_location
@@ -88,5 +89,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // C++20 && __builtin_source_location
+#endif // __cpp_lib_source_location
 #endif // _GLIBCXX_SRCLOC

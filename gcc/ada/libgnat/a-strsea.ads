@@ -50,9 +50,11 @@ pragma Assertion_Policy (Pre            => Ignore,
 
 with Ada.Strings.Maps; use type Ada.Strings.Maps.Character_Mapping_Function;
 
-package Ada.Strings.Search with SPARK_Mode is
+package Ada.Strings.Search with
+  SPARK_Mode,
+  Always_Terminates
+is
    pragma Preelaborate;
-   pragma Annotate (GNATprove, Always_Return, Search);
 
    --  The ghost function Match tells whether the slice of Source starting at
    --  From and of length Pattern'Length matches with Pattern with respect to
@@ -74,6 +76,9 @@ package Ada.Strings.Search with SPARK_Mode is
        and then Source'Length > 0
        and then From in Source'First .. Source'Last - (Pattern'Length - 1),
      Global => null;
+   pragma Annotate (GNATprove, False_Positive,
+                    "call via access-to-subprogram",
+                    "function Mapping must always terminate");
 
    function Match
      (Source  : String;

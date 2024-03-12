@@ -1,6 +1,5 @@
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { xfail *-*-* } }
-// { dg-require-effective-target c++2a }
+// { dg-do run { target c++20 xfail *-*-* } }
+// { dg-add-options no_pch }
 
 #undef _GLIBCXX_DEBUG
 #define _GLIBCXX_DEBUG

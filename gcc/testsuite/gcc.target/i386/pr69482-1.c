@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -fno-stack-protector" } */
 
 static inline void memset_s(void* s, int n) {
   volatile unsigned char * p = s;

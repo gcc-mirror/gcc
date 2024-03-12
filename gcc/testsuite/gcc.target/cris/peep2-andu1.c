@@ -20,13 +20,13 @@ clearb (int x, int *y)
 int
 andb (int x, int *y)
 {
-  return *y & 0x3f;
+  return *y & 0x3d;
 }
 
 int
 andw (int x, int *y)
 {
-  return *y & 0xfff;
+  return *y & 0xffd;
 }
 
 int

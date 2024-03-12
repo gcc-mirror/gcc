@@ -4,8 +4,9 @@
 /* See PR99888, one single preceding nop isn't allowed on powerpc_elfv2,
    so overriding with two preceding nops to make it pass there.  */
 /* { dg-additional-options "-fpatchable-function-entry=3,2" { target powerpc_elfv2 } } */
-/* { dg-final { scan-assembler-times "nop|NOP|SWYM" 3 { target { ! { alpha*-*-* } } } } } */
+/* { dg-final { scan-assembler-times "nop|NOP|SWYM" 3 { target { ! { alpha*-*-* riscv*-*-* } } } } } */
 /* { dg-final { scan-assembler-times "bis" 3 { target alpha*-*-* } } } */
+/* { dg-final { scan-assembler-times "nop\n" 3 { target riscv*-*-* } } } */
 
 extern int a;
 

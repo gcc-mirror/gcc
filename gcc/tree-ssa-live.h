@@ -70,6 +70,10 @@ typedef struct _var_map
   /* Vector of basic block in the region.  */
   vec<basic_block> vec_bbs;
 
+  /* If non-NULL, only coalesce SSA_NAMEs from this bitmap, and try harder
+     for those (for bitint lowering pass).  */
+  bitmap bitint;
+
   /* True if this map is for out-of-ssa, otherwise for live range
      computation.  When for out-of-ssa, it also means the var map is computed
      for whole current function.  */
@@ -80,7 +84,7 @@ typedef struct _var_map
 /* Value used to represent no partition number.  */
 #define NO_PARTITION		-1
 
-extern var_map init_var_map (int, class loop* = NULL);
+extern var_map init_var_map (int, class loop * = NULL, bitmap = NULL);
 extern void delete_var_map (var_map);
 extern int var_union (var_map, tree, tree);
 extern void partition_view_normal (var_map);
@@ -100,7 +104,7 @@ inline bool
 region_contains_p (var_map map, basic_block bb)
 {
   /* It's possible that the function is called with ENTRY_BLOCK/EXIT_BLOCK.  */
-  if (map->outofssa_p)
+  if (map->outofssa_p || map->bitint)
     return (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK);
 
   return bitmap_bit_p (map->bmp_bbs, bb->index);
@@ -327,5 +331,33 @@ make_live_on_entry (tree_live_info_p live, basic_block bb , int p)
   bitmap_set_bit (&live->livein[bb->index], p);
   bitmap_set_bit (live->global, p);
 }
+
+
+/* On-demand virtual operand global live analysis.  There is at most
+   a single virtual operand live at a time, the following computes and
+   caches the virtual operand live at the exit of a basic block
+   supporting related live-in and live-on-edge queries.  It requires
+   up-to-date marked backedges.  */
+
+class virtual_operand_live
+{
+public:
+  virtual_operand_live() : liveout (nullptr) {}
+  ~virtual_operand_live()
+  {
+    if (liveout)
+      free (liveout);
+  }
+
+  tree get_live_in (basic_block bb);
+  tree get_live_out (basic_block bb);
+  tree get_live_on_edge (edge e) { return get_live_out (e->src); }
+
+private:
+  void init ();
+
+  tree *liveout;
+};
+
 
 #endif /* _TREE_SSA_LIVE_H  */

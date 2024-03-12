@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gc_xtheadcondmov" { target { rv32 } } } */
 /* { dg-options "-march=rv64gc_xtheadcondmov" { target { rv64 } } } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-Os" "-Og" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-Os" "-Og" "-Oz" } } */
 
 int
 not_int_int (int x, int cond)

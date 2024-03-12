@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run }
-// { dg-require-effective-target c++17 }
+// { dg-do run { target c++17 } }
 // { dg-require-gthreads "" }
 
 // This runs the same tests as release.cc but without -pthread

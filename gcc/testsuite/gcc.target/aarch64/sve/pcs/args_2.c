@@ -64,7 +64,7 @@ caller_int (int8_t *x0, int16_t *x1, int32_t *x2, int64_t *x3)
 /* { dg-final { scan-assembler {\tmov\tz6\.s, #6\n} } } */
 /* { dg-final { scan-assembler {\tmov\tz7\.d, #7\n} } } */
 /* { dg-final { scan-assembler {\tmov\tx4, sp\n} } } */
-/* { dg-final { scan-assembler {\tmov\t(z[0-9]+\.b), #8\n.*\tst1b\t\1, p[0-7], \[x4\]\n} } } */
+/* { dg-final { scan-assembler {\tmov\t(z[0-9]+\.b), #8\n.*\tst1b\t\1, p[0-7], \[(?:x4|sp)\]\n} } } */
 /* { dg-final { scan-assembler {\tptrue\tp0\.b, vl1\n} } } */
 /* { dg-final { scan-assembler {\tptrue\tp1\.h, vl2\n} } } */
 /* { dg-final { scan-assembler {\tptrue\tp2\.s, vl3\n} } } */

@@ -313,6 +313,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-restrict.c: This can't be in the testcases array as it needs
+   the `-O3` flag.  */
+
 /* test-register-variable.c: This can't be in the testcases array as it
    is target-specific.  */
 

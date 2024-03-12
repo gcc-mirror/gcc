@@ -51,18 +51,10 @@ extern (C++) class Initializer : ASTNode
     }
 
 
-    extern (D) this(const ref Loc loc, InitKind kind)
+    extern (D) this(const ref Loc loc, InitKind kind) @safe
     {
         this.loc = loc;
         this.kind = kind;
-    }
-
-    override final const(char)* toChars() const
-    {
-        OutBuffer buf;
-        HdrGenState hgs;
-        .toCBuffer(this, &buf, &hgs);
-        return buf.extractChars();
     }
 
     final inout(ErrorInitializer) isErrorInitializer() inout @nogc nothrow pure
@@ -108,7 +100,7 @@ extern (C++) final class VoidInitializer : Initializer
 {
     Type type;      // type that this will initialize to
 
-    extern (D) this(const ref Loc loc)
+    extern (D) this(const ref Loc loc) @safe
     {
         super(loc, InitKind.void_);
     }
@@ -123,7 +115,7 @@ extern (C++) final class VoidInitializer : Initializer
  */
 extern (C++) final class ErrorInitializer : Initializer
 {
-    extern (D) this()
+    extern (D) this() @safe
     {
         super(Loc.initial, InitKind.error);
     }
@@ -206,7 +198,7 @@ extern (C++) final class ExpInitializer : Initializer
     bool expandTuples;
     Expression exp;
 
-    extern (D) this(const ref Loc loc, Expression exp)
+    extern (D) this(const ref Loc loc, Expression exp) @safe
     {
         super(loc, InitKind.exp);
         this.exp = exp;
@@ -226,8 +218,8 @@ struct Designator
     Expression exp;     /// [ constant-expression ]
     Identifier ident;   /// . identifier
 
-    this(Expression exp) { this.exp = exp; }
-    this(Identifier ident) { this.ident = ident; }
+    this(Expression exp) @safe { this.exp = exp; }
+    this(Identifier ident) @safe  { this.ident = ident; }
 }
 
 /*********************************************
@@ -269,7 +261,22 @@ extern (C++) final class CInitializer : Initializer
  */
 Initializer syntaxCopy(Initializer inx)
 {
-    static Initializer copyStruct(StructInitializer vi)
+    static Initializer visitVoid(VoidInitializer vi)
+    {
+        return new VoidInitializer(vi.loc);
+    }
+
+    static Initializer visitError(ErrorInitializer vi)
+    {
+        return vi;
+    }
+
+    static Initializer visitExp(ExpInitializer vi)
+    {
+        return new ExpInitializer(vi.loc, vi.exp.syntaxCopy());
+    }
+
+    static Initializer visitStruct(StructInitializer vi)
     {
         auto si = new StructInitializer(vi.loc);
         assert(vi.field.length == vi.value.length);
@@ -283,7 +290,7 @@ Initializer syntaxCopy(Initializer inx)
         return si;
     }
 
-    static Initializer copyArray(ArrayInitializer vi)
+    static Initializer visitArray(ArrayInitializer vi)
     {
         auto ai = new ArrayInitializer(vi.loc);
         assert(vi.index.length == vi.value.length);
@@ -297,7 +304,7 @@ Initializer syntaxCopy(Initializer inx)
         return ai;
     }
 
-    static Initializer copyC(CInitializer vi)
+    static Initializer visitC(CInitializer vi)
     {
         auto ci = new CInitializer(vi.loc);
         ci.initializerList.setDim(vi.initializerList.length);
@@ -322,13 +329,62 @@ Initializer syntaxCopy(Initializer inx)
         return ci;
     }
 
-    final switch (inx.kind)
+    mixin VisitInitializer!Initializer visit;
+    return visit.VisitInitializer(inx);
+}
+
+/***********************************************************
+ * Visit each Initializer in init. Call a function visit%s(init) for
+ * each node, where %s is the op of the node. Otherwise call visitDefault(init)
+ * for that node. If the visit function returns R.init, continue
+ * visiting each node, otherwise return the value of R.
+ * Params:
+ *      Result = return type
+ *      init = Initializer tree to traverse
+ * Returns:
+ *      Result.init for continue, value of type Result for early exit
+ */
+
+mixin template VisitInitializer(Result)
+{
+    Result VisitInitializer(Initializer init)
     {
-        case InitKind.void_:   return new VoidInitializer(inx.loc);
-        case InitKind.error:   return inx;
-        case InitKind.struct_: return copyStruct(cast(StructInitializer)inx);
-        case InitKind.array:   return copyArray(cast(ArrayInitializer)inx);
-        case InitKind.exp:     return new ExpInitializer(inx.loc, (cast(ExpInitializer)inx).exp.syntaxCopy());
-        case InitKind.C_:      return copyC(cast(CInitializer)inx);
+        final switch (init.kind)
+        {
+            case InitKind.void_:    mixin(visitCase("Void"));    break;
+            case InitKind.error:    mixin(visitCase("Error"));   break;
+            case InitKind.struct_:  mixin(visitCase("Struct"));  break;
+            case InitKind.array:    mixin(visitCase("Array"));   break;
+            case InitKind.exp:      mixin(visitCase("Exp"));     break;
+            case InitKind.C_:       mixin(visitCase("C"));       break;
+        }
+        static if (is(Result == void)) { } else
+            return Result.init;
     }
+}
+
+/****************************************
+ * CTFE-only helper function for VisitInitializer.
+ * Params:
+ *      handler = string for the name of the visit handler
+ * Returns: boilerplate code for a case
+ */
+string visitCase(string handler) pure @safe
+{
+    if (__ctfe)
+    {
+        return
+            "
+            auto ix = init.is"~handler~"Initializer();
+            static if (is(Result == void))
+                visit"~handler~"(ix);
+            else
+            {
+                Result r = visit"~handler~"(ix);
+                if (r !is Result.init)
+                    return r;
+            }
+            ";
+    }
+    assert(0);
 }

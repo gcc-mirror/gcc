@@ -53,6 +53,7 @@ main1 (s *arr, int n)
     } 
    
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     { 
       if (res[i].c != arr[i].b + arr[i].c
@@ -67,6 +68,7 @@ main1 (s *arr, int n)
    }
 
   /* Check also that we don't do more iterations than needed.  */
+#pragma GCC novector
   for (i = n; i < N; i++)
     {
       if (res[i].c == arr[i].b + arr[i].c

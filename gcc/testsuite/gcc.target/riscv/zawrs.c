@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv32gc_zawrs" { target { rv32 } } } */
 
 #ifndef __riscv_zawrs
-#error Feature macro not defined
+#error "Feature macro not defined"
 #endif
 
 int

@@ -465,7 +465,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     /*CWE-775: Missing Release of File Descriptor or Handle after Effective
       Lifetime
@@ -550,7 +550,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     bool warned;
     switch (m_fd_dir)
@@ -612,7 +612,7 @@ public:
     return OPT_Wanalyzer_fd_double_close;
   }
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     // CWE-1341: Multiple Releases of Same Resource or Handle
@@ -677,7 +677,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     bool warned;
     warned = warning_at (rich_loc, get_controlling_option (),
@@ -748,7 +748,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     bool warned;
     warned = warning_at (rich_loc, get_controlling_option (),
@@ -859,7 +859,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     /* CWE-666: Operation on Resource in Wrong Phase of Lifetime.  */
     diagnostic_metadata m;
@@ -1019,7 +1019,7 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc) final override
+  emit (rich_location *rich_loc, logger *) final override
   {
     switch (m_expected_type)
       {
@@ -1294,8 +1294,19 @@ fd_state_machine::check_for_fd_attrs (
     const gcall *call, const tree callee_fndecl, const char *attr_name,
     access_directions fd_attr_access_dir) const
 {
+  /* Handle interesting fd attributes of the callee_fndecl,
+     or prioritize those of the builtin that callee_fndecl is
+     expected to be.
+     Might want this to be controlled by a flag.  */
+  tree fndecl = callee_fndecl;
+  /* If call is recognized as a builtin known_function,
+     use that builtin's function_decl.  */
+  if (const region_model *old_model = sm_ctxt->get_old_region_model ())
+    if (const builtin_known_function *builtin_kf
+	 = old_model->get_builtin_kf (call))
+      fndecl = builtin_kf->builtin_decl ();
 
-  tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (callee_fndecl));
+  tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (fndecl));
   attrs = lookup_attribute (attr_name, attrs);
   if (!attrs)
     return;
@@ -1325,13 +1336,15 @@ fd_state_machine::check_for_fd_attrs (
 		   // attributes
 	{
 
+	  /* Do use the fndecl that caused the warning so that the
+	     misused attributes are printed and the user not confused.  */
 	  if (is_closed_fd_p (state))
 	    {
 
 	      sm_ctxt->warn (node, stmt, arg,
 			     make_unique<fd_use_after_close>
 			       (*this, diag_arg,
-				callee_fndecl, attr_name,
+				fndecl, attr_name,
 				arg_idx));
 	      continue;
 	    }
@@ -1343,7 +1356,7 @@ fd_state_machine::check_for_fd_attrs (
 		  sm_ctxt->warn (node, stmt, arg,
 				 make_unique<fd_use_without_check>
 				 (*this, diag_arg,
-				  callee_fndecl, attr_name,
+				  fndecl, attr_name,
 				  arg_idx));
 		  continue;
 		}
@@ -1361,7 +1374,7 @@ fd_state_machine::check_for_fd_attrs (
 		      node, stmt, arg,
 		      make_unique<fd_access_mode_mismatch> (*this, diag_arg,
 							    DIRS_WRITE,
-							    callee_fndecl,
+							    fndecl,
 							    attr_name,
 							    arg_idx));
 		}
@@ -1375,7 +1388,7 @@ fd_state_machine::check_for_fd_attrs (
 		      node, stmt, arg,
 		      make_unique<fd_access_mode_mismatch> (*this, diag_arg,
 							    DIRS_READ,
-							    callee_fndecl,
+							    fndecl,
 							    attr_name,
 							    arg_idx));
 		}
@@ -2282,10 +2295,16 @@ public:
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
 
       return fd_sm->on_socket (cd, m_success, sm_ctxt.get (), *ext_state);
     }
@@ -2329,10 +2348,16 @@ public:
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       return fd_sm->on_bind (cd, m_success, sm_ctxt.get (), *ext_state);
     }
   };
@@ -2374,10 +2399,16 @@ class kf_listen : public known_function
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
 
       return fd_sm->on_listen (cd, m_success, sm_ctxt.get (), *ext_state);
     }
@@ -2420,10 +2451,16 @@ class kf_accept : public known_function
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
 
       return fd_sm->on_accept (cd, m_success, sm_ctxt.get (), *ext_state);
     }
@@ -2469,10 +2506,16 @@ public:
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
 
       return fd_sm->on_connect (cd, m_success, sm_ctxt.get (), *ext_state);
     }
@@ -2687,6 +2730,7 @@ public:
 	const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
 	model->set_value (base_reg, new_sval, cd.get_ctxt ());
       }
+    cd.set_any_lhs_with_defaults ();
   }
 };
 

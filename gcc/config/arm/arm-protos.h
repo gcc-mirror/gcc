@@ -23,6 +23,7 @@
 #define GCC_ARM_PROTOS_H
 
 #include "sbitmap.h"
+#include "tree.h" /* For ERROR_MARK.  */
 
 rtl_opt_pass *make_pass_insert_bti (gcc::context *ctxt);
 
@@ -83,7 +84,8 @@ extern int arm_split_constant (RTX_CODE, machine_mode, rtx,
 extern int legitimate_pic_operand_p (rtx);
 extern rtx legitimize_pic_address (rtx, machine_mode, rtx, rtx, bool);
 extern rtx legitimize_tls_address (rtx, rtx);
-extern bool arm_legitimate_address_p (machine_mode, rtx, bool);
+extern bool arm_legitimate_address_p (machine_mode, rtx, bool,
+				      code_helper = ERROR_MARK);
 extern int arm_legitimate_address_outer_p (machine_mode, rtx, RTX_CODE, int);
 extern int thumb_legitimate_offset_p (machine_mode, HOST_WIDE_INT);
 extern int thumb1_legitimate_address_p (machine_mode, rtx, int);
@@ -182,6 +184,7 @@ extern bool arm_is_long_call_p (tree);
 extern int    arm_emit_vector_const (FILE *, rtx);
 extern void arm_emit_fp16_const (rtx c);
 extern const char * arm_output_load_gr (rtx *);
+extern const char * arm_output_load_tpidr (rtx, bool);
 extern const char *vfp_output_vstmd (rtx *);
 extern void arm_output_multireg_pop (rtx *, bool, rtx, bool, bool);
 extern void arm_set_return_address (rtx, rtx);
@@ -210,9 +213,34 @@ extern opt_machine_mode arm_get_mask_mode (machine_mode mode);
 
 #endif /* RTX_CODE */
 
+/* It's convenient to divide the built-in function codes into groups,
+   rather than having everything in a single enum.  This type enumerates
+   those groups.  */
+enum arm_builtin_class
+{
+  ARM_BUILTIN_GENERAL,
+  ARM_BUILTIN_MVE
+};
+
+/* Built-in function codes are structured so that the low
+   ARM_BUILTIN_SHIFT bits contain the arm_builtin_class
+   and the upper bits contain a group-specific subcode.  */
+const unsigned int ARM_BUILTIN_SHIFT = 1;
+
+/* Mask that selects the arm part of a function code.  */
+const unsigned int ARM_BUILTIN_CLASS = (1 << ARM_BUILTIN_SHIFT) - 1;
+
 /* MVE functions.  */
 namespace arm_mve {
   void handle_arm_mve_types_h ();
+  void handle_arm_mve_h (bool);
+  tree builtin_decl (unsigned);
+  tree resolve_overloaded_builtin (location_t, unsigned int,
+				   vec<tree, va_gc> *);
+  bool check_builtin_call (location_t, vec<location_t>, unsigned int,
+			   tree, unsigned int, tree *);
+  gimple *gimple_fold_builtin (unsigned int code, gcall *stmt);
+  rtx expand_builtin (unsigned int, tree, rtx);
 }
 
 /* Thumb functions.  */

@@ -511,31 +511,6 @@ fwd_jt_path_registry::lookup_redirection_data (edge e, insert_option insert)
     }
 }
 
-/* Similar to copy_phi_args, except that the PHI arg exists, it just
-   does not have a value associated with it.  */
-
-static void
-copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
-{
-  int src_idx = src_e->dest_idx;
-  int tgt_idx = tgt_e->dest_idx;
-
-  /* Iterate over each PHI in e->dest.  */
-  for (gphi_iterator gsi = gsi_start_phis (src_e->dest),
-			   gsi2 = gsi_start_phis (tgt_e->dest);
-       !gsi_end_p (gsi);
-       gsi_next (&gsi), gsi_next (&gsi2))
-    {
-      gphi *src_phi = gsi.phi ();
-      gphi *dest_phi = gsi2.phi ();
-      tree val = gimple_phi_arg_def (src_phi, src_idx);
-      location_t locus = gimple_phi_arg_location (src_phi, src_idx);
-
-      SET_PHI_ARG_DEF (dest_phi, tgt_idx, val);
-      gimple_phi_arg_set_location (dest_phi, tgt_idx, locus);
-    }
-}
-
 /* Given ssa_name DEF, backtrack jump threading PATH from node IDX
    to see if it has constant value in a flow sensitive manner.  Set
    LOCUS to location of the constant phi arg and return the value.
@@ -1084,14 +1059,19 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 	     threading path.  */
 	  if (!any_remaining_duplicated_blocks (path, i))
 	    {
-	      e2 = redirect_edge_and_branch (victim, elast->dest);
-	      /* If we redirected the edge, then we need to copy PHI arguments
-		 at the target.  If the edge already existed (e2 != victim
-		 case), then the PHIs in the target already have the correct
-		 arguments.  */
-	      if (e2 == victim)
-		copy_phi_args (e2->dest, elast, e2,
-			       path, multi_incomings ? 0 : i);
+	      if (victim->dest != elast->dest)
+		{
+		  e2 = redirect_edge_and_branch (victim, elast->dest);
+		  /* If we redirected the edge, then we need to copy PHI arguments
+		     at the target.  If the edge already existed (e2 != victim
+		     case), then the PHIs in the target already have the correct
+		     arguments.  */
+		  if (e2 == victim)
+		    copy_phi_args (e2->dest, elast, e2,
+				   path, multi_incomings ? 0 : i);
+		}
+	      else
+		e2 = victim;
 	    }
 	  else
 	    {
@@ -1473,6 +1453,19 @@ fwd_jt_path_registry::thread_block_1 (basic_block bb,
       if (((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK && !joiners)
 	  || ((*path)[1]->type == EDGE_COPY_SRC_BLOCK && joiners))
 	continue;
+
+      /* When a NO_COPY_SRC block became non-empty cancel the path.  */
+      if (path->last ()->type == EDGE_NO_COPY_SRC_BLOCK)
+	{
+	  auto gsi = gsi_start_nondebug_bb (path->last ()->e->src);
+	  if (!gsi_end_p (gsi)
+	      && !is_ctrl_stmt (gsi_stmt (gsi)))
+	    {
+	      cancel_thread (path, "Non-empty EDGE_NO_COPY_SRC_BLOCK");
+	      e->aux = NULL;
+	      continue;
+	    }
+	}
 
       e2 = path->last ()->e;
       if (!e2 || noloop_only)

@@ -9269,7 +9269,7 @@
 		 (match_operand:SF 3 "arith_reg_operand" "0")))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "TARGET_SH2E && flag_fp_contract_mode != FP_CONTRACT_OFF"
+  "TARGET_SH2E && flag_fp_contract_mode == FP_CONTRACT_FAST"
   "fmac	%1,%2,%0"
   "&& can_create_pseudo_p ()"
   [(parallel [(set (match_dup 0)
@@ -10680,6 +10680,45 @@
    && peep2_reg_dead_p (2, operands[1]) && peep2_reg_dead_p (3, operands[0])"
   [(const_int 0)]
 {
+  if (MEM_P (operands[3]) && reg_overlap_mentioned_p (operands[0], operands[3]))
+    {
+      // Take care when the eliminated operand[0] register is part of
+      // the destination memory address.
+      rtx addr = XEXP (operands[3], 0);
+
+      if (REG_P (addr))
+	operands[3] = replace_equiv_address (operands[3], operands[1]);
+
+      else if (GET_CODE (addr) == PLUS && REG_P (XEXP (addr, 0))
+	       && CONST_INT_P (XEXP (addr, 1))
+	       && REGNO (operands[0]) == REGNO (XEXP (addr, 0)))
+	operands[3] = replace_equiv_address (operands[3],
+			    gen_rtx_PLUS (SImode, operands[1], XEXP (addr, 1)));
+
+      else if (GET_CODE (addr) == PLUS && REG_P (XEXP (addr, 0))
+	       && REG_P (XEXP (addr, 1)))
+        {
+          // register + register address  @(R0, Rn)
+          // can change only the Rn in the address, not R0.
+          if (REGNO (operands[0]) == REGNO (XEXP (addr, 0))
+	      && REGNO (XEXP (addr, 0)) != 0)
+	    {
+	      operands[3] = replace_equiv_address (operands[3],
+			    gen_rtx_PLUS (SImode, operands[1], XEXP (addr, 1)));
+	    }
+          else if (REGNO (operands[0]) == REGNO (XEXP (addr, 1))
+		   && REGNO (XEXP (addr, 1)) != 0)
+            {
+	      operands[3] = replace_equiv_address (operands[3],
+			    gen_rtx_PLUS (SImode, XEXP (addr, 0), operands[1]));
+            }
+          else
+            FAIL;
+        }
+      else
+        FAIL;
+    }
+
   emit_insn (gen_addsi3 (operands[1], operands[1], operands[2]));
   sh_peephole_emit_move_insn (operands[3], operands[1]);
 })

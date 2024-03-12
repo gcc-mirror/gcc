@@ -838,7 +838,7 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
 	      != NULL)
 	    {
 	      _cpp_clean_line (r);
-	      if (!_cpp_create_definition (r, h))
+	      if (!_cpp_create_definition (r, h, 0))
 		abort ();
 	      _cpp_pop_buffer (r);
 	    }

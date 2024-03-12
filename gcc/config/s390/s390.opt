@@ -329,3 +329,10 @@ Target Undocumented Var(unroll_only_small_loops) Init(0) Save
 mpreserve-args
 Target Var(s390_preserve_args_p) Init(0)
 Store all argument registers on the stack.
+
+munaligned-symbols
+Target Var(s390_unaligned_symbols_p) Init(0)
+Assume external symbols to be potentially unaligned.  By default all
+symbols without explicit alignment are assumed to reside on a 2 byte
+boundary as mandated by the IBM Z ABI.
+

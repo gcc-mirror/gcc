@@ -174,7 +174,7 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
 	     CLK_GNUCXX20, CLK_CXX20, CLK_GNUCXX23, CLK_CXX23,
-	     CLK_ASM};
+	     CLK_GNUCXX26, CLK_CXX26, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -301,6 +301,9 @@ typedef CPPCHAR_SIGNED_T cppchar_signed_t;
 
 /* Style of header dependencies to generate.  */
 enum cpp_deps_style { DEPS_NONE = 0, DEPS_USER, DEPS_SYSTEM };
+
+/* Structured format of module dependencies to generate.  */
+enum cpp_fdeps_format { FDEPS_FMT_NONE = 0, FDEPS_FMT_P1689R5 };
 
 /* The possible normalization levels, from most restrictive to least.  */
 enum cpp_normalize_level {
@@ -588,6 +591,9 @@ struct cpp_options
   {
     /* Style of header dependencies to generate.  */
     enum cpp_deps_style style;
+
+    /* Structured format of module dependencies to generate.  */
+    enum cpp_fdeps_format fdeps_format;
 
     /* Assume missing files are generated files.  */
     bool missing_files;
@@ -1112,9 +1118,9 @@ extern void cpp_post_options (cpp_reader *);
 extern void cpp_init_iconv (cpp_reader *);
 
 /* Call this to finish preprocessing.  If you requested dependency
-   generation, pass an open stream to write the information to,
-   otherwise NULL.  It is your responsibility to close the stream.  */
-extern void cpp_finish (cpp_reader *, FILE *deps_stream);
+   generation, pass open stream(s) to write the information to,
+   otherwise NULL.  It is your responsibility to close the stream(s).  */
+extern void cpp_finish (cpp_reader *, FILE *deps_stream, FILE *fdeps_stream = NULL);
 
 /* Call this to release the handle at the end of preprocessing.  Any
    use of the handle after this function returns is invalid.  */
@@ -1284,6 +1290,7 @@ struct cpp_num
 
 #define CPP_N_SIZE_T	0x2000000 /* C++23 size_t literal.  */
 #define CPP_N_BFLOAT16	0x4000000 /* std::bfloat16_t type.  */
+#define CPP_N_BITINT	0x8000000 /* C2X _BitInt literal.  */
 
 #define CPP_N_WIDTH_FLOATN_NX	0xF0000000 /* _FloatN / _FloatNx value
 					      of N, divided by 16.  */
@@ -1601,6 +1608,9 @@ int cpp_wcwidth (cppchar_t c);
 bool cpp_input_conversion_is_trivial (const char *input_charset);
 int cpp_check_utf8_bom (const char *data, size_t data_length);
 bool cpp_valid_utf8_p (const char *data, size_t num_bytes);
+
+bool cpp_is_combining_char (cppchar_t c);
+bool cpp_is_printable_char (cppchar_t c);
 
 enum {
    XID_START = 1,

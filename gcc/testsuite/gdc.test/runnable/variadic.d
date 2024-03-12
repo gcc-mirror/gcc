@@ -1119,6 +1119,53 @@ void test15417()
 
 
 /***************************************/
+// https://issues.dlang.org/show_bug.cgi?id=21425
+
+import core.stdc.stdarg;
+import core.stdc.stdio;
+
+extern(C) void f5(int dummy, ...)
+{
+    va_list ap;
+
+    va_start(ap, dummy);
+    int x = va_arg!int(ap);
+    assert(x == 5);
+    va_end(ap);
+
+    va_start(ap, dummy);
+    int y = va_arg!int(ap);
+    assert(y == 5);
+    va_end(ap);
+}
+
+void test21425()
+{
+    f5(0, 5);
+}
+
+/*********************************************/
+// https://issues.dlang.org/show_bug.cgi?id=23409
+
+import core.stdc.string;
+
+void printf10(const(char)* fmt, ...){
+    char[30] s;
+    for(int i = 0; i < 10; i++){
+        va_list args;
+        va_start(args, fmt);
+        vsprintf(s.ptr, fmt, args);
+        va_end(args);
+        assert(strcmp(s.ptr, "Hello world\n") == 0);
+    }
+}
+
+void test23409()
+{
+    printf10("Hello %s\n".ptr, "world".ptr);
+}
+
+/***************************************/
 
 int main()
 {
@@ -1169,6 +1216,8 @@ int main()
     testCopy();
     test14179();
     test15417();
+    test21425();
+    test23409();
 
     return 0;
 }

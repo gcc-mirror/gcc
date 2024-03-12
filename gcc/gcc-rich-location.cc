@@ -200,7 +200,7 @@ maybe_range_label_for_tree_type_mismatch::get_text (unsigned range_idx) const
   tree expr_type = TREE_TYPE (m_expr);
 
   tree other_type = NULL_TREE;
-  if (m_other_expr && EXPR_P (m_other_expr))
+  if (CAN_HAVE_LOCATION_P (m_other_expr))
     other_type = TREE_TYPE (m_other_expr);
 
   range_label_for_type_mismatch inner (expr_type, other_type);

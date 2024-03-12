@@ -34,6 +34,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-details.h"
+#include "analyzer/ranges.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -54,6 +58,16 @@ call_details::call_details (const gcall *call, region_model *model,
       m_lhs_region = model->get_lvalue (lhs, ctxt);
       m_lhs_type = TREE_TYPE (lhs);
     }
+}
+
+/* call_details's ctor: copy CD, but override the context,
+   using CTXT instead.  */
+
+call_details::call_details (const call_details &cd,
+			    region_model_context *ctxt)
+{
+  *this = cd;
+  m_ctxt = ctxt;
 }
 
 /* Get the manager from m_model.  */
@@ -103,6 +117,135 @@ call_details::maybe_set_lhs (const svalue *result) const
     return false;
 }
 
+/* Return true if CD is known to be a call to a function with
+   __attribute__((const)).  */
+
+static bool
+const_fn_p (const call_details &cd)
+{
+  tree fndecl = cd.get_fndecl_for_call ();
+  if (!fndecl)
+    return false;
+  gcc_assert (DECL_P (fndecl));
+  return TREE_READONLY (fndecl);
+}
+
+/* If this CD is known to be a call to a function with
+   __attribute__((const)), attempt to get a const_fn_result_svalue
+   based on the arguments, or return NULL otherwise.  */
+
+static const svalue *
+maybe_get_const_fn_result (const call_details &cd)
+{
+  if (!const_fn_p (cd))
+    return NULL;
+
+  unsigned num_args = cd.num_args ();
+  if (num_args > const_fn_result_svalue::MAX_INPUTS)
+    /* Too many arguments.  */
+    return NULL;
+
+  auto_vec<const svalue *> inputs (num_args);
+  for (unsigned arg_idx = 0; arg_idx < num_args; arg_idx++)
+    {
+      const svalue *arg_sval = cd.get_arg_svalue (arg_idx);
+      if (!arg_sval->can_have_associated_state_p ())
+	return NULL;
+      inputs.quick_push (arg_sval);
+    }
+
+  region_model_manager *mgr = cd.get_manager ();
+  const svalue *sval
+    = mgr->get_or_create_const_fn_result_svalue (cd.get_lhs_type (),
+						 cd.get_fndecl_for_call (),
+						 inputs);
+  return sval;
+}
+
+/* Look for attribute "alloc_size" on the called function and, if found,
+   return a symbolic value of type size_type_node for the allocation size
+   based on the call's parameters.
+   Otherwise, return null.  */
+
+static const svalue *
+get_result_size_in_bytes (const call_details &cd)
+{
+  const tree attr = cd.lookup_function_attribute ("alloc_size");
+  if (!attr)
+    return nullptr;
+
+  const tree atval_1 = TREE_VALUE (attr);
+  if (!atval_1)
+    return nullptr;
+
+  unsigned argidx1 = TREE_INT_CST_LOW (TREE_VALUE (atval_1)) - 1;
+  if (cd.num_args () <= argidx1)
+    return nullptr;
+
+  const svalue *sval_arg1 = cd.get_arg_svalue (argidx1);
+
+  if (const tree atval_2 = TREE_CHAIN (atval_1))
+    {
+      /* Two arguments.  */
+      unsigned argidx2 = TREE_INT_CST_LOW (TREE_VALUE (atval_2)) - 1;
+      if (cd.num_args () <= argidx2)
+	return nullptr;
+      const svalue *sval_arg2 = cd.get_arg_svalue (argidx2);
+      /* TODO: ideally we shouldn't need this cast here;
+	 see PR analyzer/110902.  */
+      return cd.get_manager ()->get_or_create_cast
+	(size_type_node,
+	 cd.get_manager ()->get_or_create_binop (size_type_node,
+						 MULT_EXPR,
+						 sval_arg1, sval_arg2));
+    }
+  else
+    /* Single argument.  */
+    return cd.get_manager ()->get_or_create_cast (size_type_node, sval_arg1);
+}
+
+/* If this call has an LHS, assign a value to it based on attributes
+   of the function:
+   - if __attribute__((const)), use a const_fn_result_svalue,
+   - if __attribute__((malloc)), use a heap-allocated region with
+   unknown content
+   - otherwise, use a conjured_svalue.
+
+   If __attribute__((alloc_size), set the dynamic extents on the region
+   pointed to.  */
+
+void
+call_details::set_any_lhs_with_defaults () const
+{
+  if (!m_lhs_region)
+    return;
+
+  const svalue *sval = maybe_get_const_fn_result (*this);
+  if (!sval)
+    {
+      region_model_manager *mgr = get_manager ();
+      if (lookup_function_attribute ("malloc"))
+	{
+	  const region *new_reg
+	    = m_model->get_or_create_region_for_heap_alloc (NULL, m_ctxt);
+	  m_model->mark_region_as_unknown (new_reg, NULL);
+	  sval = mgr->get_ptr_svalue (get_lhs_type (), new_reg);
+	}
+      else
+	/* For the common case of functions without __attribute__((const)),
+	   use a conjured value, and purge any prior state involving that
+	   value (in case this is in a loop).  */
+	sval = get_or_create_conjured_svalue (m_lhs_region);
+      if (const svalue *size_in_bytes = get_result_size_in_bytes (*this))
+	{
+	  const region *reg
+	    = m_model->deref_rvalue (sval, NULL_TREE, m_ctxt, false);
+	  m_model->set_dynamic_extents (reg, size_in_bytes, m_ctxt);
+	}
+    }
+  maybe_set_lhs (sval);
+}
+
 /* Return the number of arguments used by the call statement.  */
 
 unsigned
@@ -150,6 +293,17 @@ call_details::get_arg_svalue (unsigned idx) const
 {
   tree arg = get_arg_tree (idx);
   return m_model->get_rvalue (arg, m_ctxt);
+}
+
+/* If argument IDX's svalue at the callsite is of pointer type,
+   return the region it points to.
+   Otherwise return NULL.  */
+
+const region *
+call_details::deref_ptr_arg (unsigned idx) const
+{
+  const svalue *ptr_sval = get_arg_svalue (idx);
+  return m_model->deref_rvalue (ptr_sval, get_arg_tree (idx), m_ctxt);
 }
 
 /* Attempt to get the string literal for argument IDX, or return NULL
@@ -224,6 +378,148 @@ call_details::get_or_create_conjured_svalue (const region *reg) const
   region_model_manager *mgr = m_model->get_manager ();
   return mgr->get_or_create_conjured_svalue (reg->get_type (), m_call, reg,
 					     conjured_purge (m_model, m_ctxt));
+}
+
+/* Look for a function attribute with name ATTR_NAME on the called
+   function (or on its type).
+   Return the attribute if one is found, otherwise return NULL_TREE.  */
+
+tree
+call_details::lookup_function_attribute (const char *attr_name) const
+{
+  tree allocfntype;
+  if (tree fndecl = get_fndecl_for_call ())
+    allocfntype = TREE_TYPE (fndecl);
+  else
+    allocfntype = gimple_call_fntype (m_call);
+
+  if (!allocfntype)
+    return NULL_TREE;
+
+  return lookup_attribute (attr_name, TYPE_ATTRIBUTES (allocfntype));
+}
+
+void
+call_details::check_for_null_terminated_string_arg (unsigned arg_idx) const
+{
+  check_for_null_terminated_string_arg (arg_idx, false, nullptr);
+}
+
+const svalue *
+call_details::
+check_for_null_terminated_string_arg (unsigned arg_idx,
+				      bool include_terminator,
+				      const svalue **out_sval) const
+{
+  region_model *model = get_model ();
+  return model->check_for_null_terminated_string_arg (*this,
+						      arg_idx,
+						      include_terminator,
+						      out_sval);
+}
+
+/* A subclass of pending_diagnostic for complaining about overlapping
+   buffers.  */
+
+class overlapping_buffers
+: public pending_diagnostic_subclass<overlapping_buffers>
+{
+public:
+  overlapping_buffers (tree fndecl)
+  : m_fndecl (fndecl)
+  {
+  }
+
+  const char *get_kind () const final override
+  {
+    return "overlapping_buffers";
+  }
+
+  bool operator== (const overlapping_buffers &other) const
+  {
+    return m_fndecl == other.m_fndecl;
+  }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_overlapping_buffers;
+  }
+
+  bool emit (rich_location *rich_loc, logger *) final override
+  {
+    auto_diagnostic_group d;
+
+    bool warned;
+    warned = warning_at (rich_loc, get_controlling_option (),
+			 "overlapping buffers passed as arguments to %qD",
+			 m_fndecl);
+
+    // TODO: draw a picture?
+
+    if (warned)
+      inform (DECL_SOURCE_LOCATION (m_fndecl),
+	      "the behavior of %qD is undefined for overlapping buffers",
+	      m_fndecl);
+
+    return warned;
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) final override
+  {
+    return ev.formatted_print
+      ("overlapping buffers passed as arguments to %qD",
+       m_fndecl);
+  }
+
+private:
+  tree m_fndecl;
+};
+
+
+/* Check if the buffers pointed to by arguments ARG_IDX_A and ARG_IDX_B
+   (zero-based) overlap, when considering them both to be of size
+   NUM_BYTES_READ_SVAL.
+
+   If they do overlap, complain to the context.  */
+
+void
+call_details::complain_about_overlap (unsigned arg_idx_a,
+				      unsigned arg_idx_b,
+				      const svalue *num_bytes_read_sval) const
+{
+  region_model_context *ctxt = get_ctxt ();
+  if (!ctxt)
+    return;
+
+  region_model *model = get_model ();
+  region_model_manager *mgr = model->get_manager ();
+
+  const svalue *arg_a_ptr_sval = get_arg_svalue (arg_idx_a);
+  if (arg_a_ptr_sval->get_kind () == SK_UNKNOWN)
+    return;
+  const region *arg_a_reg = model->deref_rvalue (arg_a_ptr_sval,
+						 get_arg_tree (arg_idx_a),
+						 ctxt);
+  const svalue *arg_b_ptr_sval = get_arg_svalue (arg_idx_b);
+  if (arg_b_ptr_sval->get_kind () == SK_UNKNOWN)
+    return;
+  const region *arg_b_reg = model->deref_rvalue (arg_b_ptr_sval,
+						 get_arg_tree (arg_idx_b),
+						 ctxt);
+  if (arg_a_reg->get_base_region () != arg_b_reg->get_base_region ())
+    return;
+
+  /* Are they within NUM_BYTES_READ_SVAL of each other?  */
+  symbolic_byte_range byte_range_a (arg_a_reg->get_offset (mgr),
+				    num_bytes_read_sval,
+				    *mgr);
+  symbolic_byte_range byte_range_b (arg_b_reg->get_offset (mgr),
+				    num_bytes_read_sval,
+				    *mgr);
+  if (!byte_range_a.intersection (byte_range_b, *model).is_true ())
+    return;
+
+  ctxt->warn (make_unique<overlapping_buffers> (get_fndecl_for_call ()));
 }
 
 } // namespace ana

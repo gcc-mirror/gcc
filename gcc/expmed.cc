@@ -1631,6 +1631,7 @@ extract_bit_field_as_subreg (machine_mode mode, rtx op0,
 }
 
 /* A subroutine of extract_bit_field, with the same arguments.
+   If UNSIGNEDP is -1, the result need not be sign or zero extended.
    If FALLBACK_P is true, fall back to extract_fixed_bit_field
    if we can find no other means of implementing the operation.
    if FALLBACK_P is false, return NULL instead.  */
@@ -1933,7 +1934,8 @@ extract_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	  rtx result_part
 	    = extract_bit_field_1 (op0, MIN (BITS_PER_WORD,
 					     bitsize - i * BITS_PER_WORD),
-				   bitnum + bit_offset, 1, target_part,
+				   bitnum + bit_offset,
+				   (unsignedp ? 1 : -1), target_part,
 				   mode, word_mode, reverse, fallback_p, NULL);
 
 	  gcc_assert (target_part);
@@ -2187,6 +2189,7 @@ extract_fixed_bit_field (machine_mode tmode, rtx op0,
 
 /* Helper function for extract_fixed_bit_field, extracts
    the bit field always using MODE, which is the mode of OP0.
+   If UNSIGNEDP is -1, the result need not be sign or zero extended.
    The other arguments are as for extract_fixed_bit_field.  */
 
 static rtx
@@ -2231,7 +2234,8 @@ extract_fixed_bit_field_1 (machine_mode tmode, rtx op0, scalar_int_mode mode,
       /* Unless the msb of the field used to be the msb when we shifted,
 	 mask out the upper bits.  */
 
-      if (GET_MODE_BITSIZE (mode) != bitnum + bitsize)
+      if (GET_MODE_BITSIZE (mode) != bitnum + bitsize
+	  && unsignedp != -1)
 	return expand_binop (new_mode, and_optab, op0,
 			     mask_rtx (new_mode, 0, bitsize, 0),
 			     target, 1, OPTAB_LIB_WIDEN);
@@ -2535,14 +2539,10 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
 	op1 = SUBREG_REG (op1);
     }
 
-  /* Canonicalize rotates by constant amount.  If op1 is bitsize / 2,
-     prefer left rotation, if op1 is from bitsize / 2 + 1 to
-     bitsize - 1, use other direction of rotate with 1 .. bitsize / 2 - 1
-     amount instead.  */
-  if (rotate
-      && CONST_INT_P (op1)
-      && IN_RANGE (INTVAL (op1), GET_MODE_BITSIZE (scalar_mode) / 2 + left,
-		   GET_MODE_BITSIZE (scalar_mode) - 1))
+  /* Canonicalize rotates by constant amount.  We may canonicalize
+     to reduce the immediate or if the ISA can rotate by constants
+     in only on direction.  */
+  if (rotate && reverse_rotate_by_imm_p (scalar_mode, left, op1))
     {
       op1 = gen_int_shift_amount (mode, (GET_MODE_BITSIZE (scalar_mode)
 					 - INTVAL (op1)));

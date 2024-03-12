@@ -35,7 +35,7 @@ void test01(int dummy, ...)
   char* s = 0;
   const char* cs = 0;
   const char* format = "%i";
-  FILE* stream = 0;
+  FILE* stream = va_arg(ap, FILE*);
   std::size_t n = 0;
 
   int ret;

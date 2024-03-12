@@ -40,6 +40,7 @@ main (void)
       asm volatile ("" ::: "memory");
     }
   f (a, b, c);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     {
       int res = BASE_B + BASE_C + i * 9;

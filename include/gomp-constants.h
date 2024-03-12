@@ -42,6 +42,7 @@
 #define GOMP_MAP_FLAG_SPECIAL_2		(1 << 4)
 #define GOMP_MAP_FLAG_SPECIAL_3		(1 << 5)
 #define GOMP_MAP_FLAG_SPECIAL_4		(1 << 6)
+#define GOMP_MAP_FLAG_SPECIAL_5		(1 << 7)
 #define GOMP_MAP_FLAG_SPECIAL		(GOMP_MAP_FLAG_SPECIAL_1 \
 					 | GOMP_MAP_FLAG_SPECIAL_0)
 #define GOMP_MAP_DEEP_COPY		(GOMP_MAP_FLAG_SPECIAL_4 \
@@ -55,9 +56,14 @@
 					 | GOMP_MAP_FLAG_SPECIAL_1 \
 					 | GOMP_MAP_FLAG_SPECIAL_2 \
 					 | GOMP_MAP_FLAG_SPECIAL_3 \
-					 | GOMP_MAP_FLAG_SPECIAL_4)
+					 | GOMP_MAP_FLAG_SPECIAL_4 \
+					 | GOMP_MAP_FLAG_SPECIAL_5)
 /* Flag to force a specific behavior (or else, trigger a run-time error).  */
-#define GOMP_MAP_FLAG_FORCE		(1 << 7)
+#define GOMP_MAP_FLAG_FORCE		(GOMP_MAP_FLAG_SPECIAL_5)
+#define GOMP_MAP_FLAG_PRESENT		(GOMP_MAP_FLAG_SPECIAL_5 \
+					 | GOMP_MAP_FLAG_SPECIAL_0)
+#define GOMP_MAP_FLAG_ALWAYS_PRESENT	(GOMP_MAP_FLAG_SPECIAL_2 \
+					 | GOMP_MAP_FLAG_PRESENT)
 
 enum gomp_map_kind
   {
@@ -130,6 +136,15 @@ enum gomp_map_kind
        device.  */
     GOMP_MAP_ALWAYS_TOFROM =		(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_TOFROM),
+    /* Must already be present, unconditionally copy to device.  */
+    GOMP_MAP_ALWAYS_PRESENT_TO =	(GOMP_MAP_FLAG_ALWAYS_PRESENT
+					 | GOMP_MAP_TO),
+    /* Must already be present, unconditionally copy from device.  */
+    GOMP_MAP_ALWAYS_PRESENT_FROM =	(GOMP_MAP_FLAG_ALWAYS_PRESENT
+					 | GOMP_MAP_FROM),
+    /* Must already be present, unconditionally copy to and from device.  */
+    GOMP_MAP_ALWAYS_PRESENT_TOFROM =	(GOMP_MAP_FLAG_ALWAYS_PRESENT
+					 | GOMP_MAP_TOFROM),
     /* Map a sparse struct; the address is the base of the structure, alignment
        it's required alignment, and size is the number of adjacent entries
        that belong to the struct.  The adjacent entries should be sorted by
@@ -182,15 +197,21 @@ enum gomp_map_kind
     /* An attach or detach operation.  Rewritten to the appropriate type during
        gimplification, depending on directive (i.e. "enter data" or
        parallel/kernels region vs. "exit data").  */
-    GOMP_MAP_ATTACH_DETACH =		(GOMP_MAP_LAST | 3)
+    GOMP_MAP_ATTACH_DETACH =		(GOMP_MAP_LAST | 3),
+    /* Must already be present - all of following map to GOMP_MAP_FORCE_PRESENT
+       as no data transfer is needed.  */
+    GOMP_MAP_PRESENT_ALLOC =		(GOMP_MAP_LAST | 4),
+    GOMP_MAP_PRESENT_TO =		(GOMP_MAP_LAST | 5),
+    GOMP_MAP_PRESENT_FROM =		(GOMP_MAP_LAST | 6),
+    GOMP_MAP_PRESENT_TOFROM =		(GOMP_MAP_LAST | 7)
   };
 
 #define GOMP_MAP_COPY_TO_P(X) \
-  (!((X) & GOMP_MAP_FLAG_SPECIAL) \
+  ((!((X) & GOMP_MAP_FLAG_SPECIAL) || GOMP_MAP_PRESENT_P (X)) \
    && ((X) & GOMP_MAP_FLAG_TO))
 
 #define GOMP_MAP_COPY_FROM_P(X) \
-  (!((X) & GOMP_MAP_FLAG_SPECIAL) \
+  ((!((X) & GOMP_MAP_FLAG_SPECIAL) || GOMP_MAP_PRESENT_P (X)) \
    && ((X) & GOMP_MAP_FLAG_FROM))
 
 #define GOMP_MAP_ALWAYS_POINTER_P(X) \
@@ -201,16 +222,27 @@ enum gomp_map_kind
    || (X) == GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION)
 
 #define GOMP_MAP_ALWAYS_TO_P(X) \
-  (((X) == GOMP_MAP_ALWAYS_TO) || ((X) == GOMP_MAP_ALWAYS_TOFROM))
+  (((X) == GOMP_MAP_ALWAYS_TO) || ((X) == GOMP_MAP_ALWAYS_TOFROM) \
+   || ((X) == GOMP_MAP_ALWAYS_PRESENT_TO) \
+   || ((X) == GOMP_MAP_ALWAYS_PRESENT_TOFROM))
 
 #define GOMP_MAP_ALWAYS_FROM_P(X) \
-  (((X) == GOMP_MAP_ALWAYS_FROM) || ((X) == GOMP_MAP_ALWAYS_TOFROM))
+  (((X) == GOMP_MAP_ALWAYS_FROM) || ((X) == GOMP_MAP_ALWAYS_TOFROM) \
+   || ((X) == GOMP_MAP_ALWAYS_PRESENT_FROM) \
+   || ((X) == GOMP_MAP_ALWAYS_PRESENT_TOFROM))
 
 #define GOMP_MAP_ALWAYS_P(X) \
-  (GOMP_MAP_ALWAYS_TO_P (X) || ((X) == GOMP_MAP_ALWAYS_FROM))
+  (GOMP_MAP_ALWAYS_TO_P (X) || GOMP_MAP_ALWAYS_FROM_P (X))
 
 #define GOMP_MAP_IMPLICIT_P(X) \
   (((X) & GOMP_MAP_FLAG_SPECIAL_BITS) == GOMP_MAP_IMPLICIT)
+
+#define GOMP_MAP_FORCE_P(X) \
+  (((X) & GOMP_MAP_FLAG_SPECIAL_BITS) == GOMP_MAP_FLAG_FORCE)
+
+#define GOMP_MAP_PRESENT_P(X) \
+  (((X) & GOMP_MAP_FLAG_PRESENT) == GOMP_MAP_FLAG_PRESENT \
+   || (X) == GOMP_MAP_FORCE_PRESENT)
 
 
 /* Asynchronous behavior.  Keep in sync with

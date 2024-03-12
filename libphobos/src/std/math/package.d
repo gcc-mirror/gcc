@@ -3,7 +3,7 @@
 /**
  * Contains the elementary mathematical functions (powers, roots,
  * and trigonometric functions), and low-level floating-point operations.
- * Mathematical special functions are available in `std.mathspecial`.
+ * Mathematical special functions are available in $(MREF std, mathspecial).
  *
 $(SCRIPT inhibitQuickIndex = 1;)
 
@@ -167,12 +167,6 @@ public import std.math.remainder;
 public import std.math.rounding;
 public import std.math.traits;
 public import std.math.trigonometry;
-
-// @@@DEPRECATED_2.102@@@
-// Note: Exposed accidentally, should be deprecated / removed
-deprecated("std.meta.AliasSeq was unintentionally available from std.math "
-           ~ "and will be removed after 2.102. Please import std.meta instead")
-public import std.meta : AliasSeq;
 
 package(std): // Not public yet
 /* Return the value that lies halfway between x and y on the IEEE number line.

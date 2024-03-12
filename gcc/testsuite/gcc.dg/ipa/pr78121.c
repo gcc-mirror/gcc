@@ -13,4 +13,4 @@ static void fn1(c) unsigned char c;
 
 void fn3() { fn1 (267); }
 
-/* { dg-final { scan-ipa-dump "Setting value range of param 0 \\(now 0\\) \\\[11, 35\\\]" "cp" } } */
+/* { dg-final { scan-ipa-dump "Setting value range of param 0 \\(now 0\\).* \\\[11, .*35\\\]" "cp" } } */

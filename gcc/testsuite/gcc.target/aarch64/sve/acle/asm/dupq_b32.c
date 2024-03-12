@@ -14,12 +14,12 @@ TEST_UNIFORM_P (dupq_0_b32,
 /*
 ** dupq_1_b32:
 ** (
-**	ptrue	(p[0-7])\.d, all
-**	pfalse	(p[0-7])\.b
+**	ptrue	(p[0-9]+)\.d, all
+**	pfalse	(p[0-9]+)\.b
 **	trn1	p0\.d, \1\.d, \2\.d
 ** |
-**	pfalse	(p[0-7])\.b
-**	ptrue	(p[0-7])\.d, all
+**	pfalse	(p[0-9]+)\.b
+**	ptrue	(p[0-9]+)\.d, all
 **	trn1	p0\.d, \4\.d, \3\.d
 ** )
 **	ret
@@ -31,12 +31,12 @@ TEST_UNIFORM_P (dupq_1_b32,
 /*
 ** dupq_3_b32:
 ** (
-**	ptrue	(p[0-7])\.s, all
-**	pfalse	(p[0-7])\.b
+**	ptrue	(p[0-9]+)\.s, all
+**	pfalse	(p[0-9]+)\.b
 **	trn1	p0\.d, \1\.d, \2\.d
 ** |
-**	pfalse	(p[0-7])\.b
-**	ptrue	(p[0-7])\.s, all
+**	pfalse	(p[0-9]+)\.b
+**	ptrue	(p[0-9]+)\.s, all
 **	trn1	p0\.d, \4\.d, \3\.d
 ** )
 **	ret
@@ -48,12 +48,12 @@ TEST_UNIFORM_P (dupq_3_b32,
 /*
 ** dupq_4_b32:
 ** (
-**	pfalse	(p[0-7])\.b
-**	ptrue	(p[0-7])\.d, all
+**	pfalse	(p[0-9]+)\.b
+**	ptrue	(p[0-9]+)\.d, all
 **	trn1	p0\.d, \1\.d, \2\.d
 ** |
-**	ptrue	(p[0-7])\.d, all
-**	pfalse	(p[0-7])\.b
+**	ptrue	(p[0-9]+)\.d, all
+**	pfalse	(p[0-9]+)\.b
 **	trn1	p0\.d, \4\.d, \3\.d
 ** )
 **	ret
@@ -74,12 +74,12 @@ TEST_UNIFORM_P (dupq_5_b32,
 /*
 ** dupq_7_b32:
 ** (
-**	ptrue	(p[0-7])\.s, all
-**	ptrue	(p[0-7])\.d, all
+**	ptrue	(p[0-9]+)\.s, all
+**	ptrue	(p[0-9]+)\.d, all
 **	trn1	p0\.d, \1\.d, \2\.d
 ** |
-**	ptrue	(p[0-7])\.d, all
-**	ptrue	(p[0-7])\.s, all
+**	ptrue	(p[0-9]+)\.d, all
+**	ptrue	(p[0-9]+)\.s, all
 **	trn1	p0\.d, \4\.d, \3\.d
 ** )
 **	ret
@@ -91,12 +91,12 @@ TEST_UNIFORM_P (dupq_7_b32,
 /*
 ** dupq_a_b32:
 ** (
-**	ptrue	(p[0-7])\.d, all
-**	ptrue	(p[0-7])\.s, all
+**	ptrue	(p[0-9]+)\.d, all
+**	ptrue	(p[0-9]+)\.s, all
 **	not	p0\.b, \2/z, \1\.b
 ** |
-**	ptrue	(p[0-7])\.s, all
-**	ptrue	(p[0-7])\.d, all
+**	ptrue	(p[0-9]+)\.s, all
+**	ptrue	(p[0-9]+)\.d, all
 **	not	p0\.b, \3/z, \4\.b
 ** )
 **	ret
@@ -108,12 +108,12 @@ TEST_UNIFORM_P (dupq_a_b32,
 /*
 ** dupq_e_b32:
 ** (
-**	ptrue	(p[0-7])\.d, all
-**	ptrue	(p[0-7])\.s, all
+**	ptrue	(p[0-9]+)\.d, all
+**	ptrue	(p[0-9]+)\.s, all
 **	trn1	p0\.d, \1\.d, \2\.d
 ** |
-**	ptrue	(p[0-7])\.s, all
-**	ptrue	(p[0-7])\.d, all
+**	ptrue	(p[0-9]+)\.s, all
+**	ptrue	(p[0-9]+)\.d, all
 **	trn1	p0\.d, \4\.d, \3\.d
 ** )
 **	ret

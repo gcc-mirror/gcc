@@ -1474,7 +1474,7 @@ void
 start_lambda_scope (tree decl)
 {
   gcc_checking_assert (decl);
-  if (current_function_decl && TREE_CODE (decl) == VAR_DECL)
+  if (current_function_decl && VAR_P (decl))
     // If we're inside a function, we ignore variable scope.  Don't push.
     lambda_scope.nesting++;
   else

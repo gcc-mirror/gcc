@@ -6,7 +6,7 @@ foo (void)
 {
 }
 
-/* { dg-final { scan-assembler-not "vsetvli" } } */
+/* { dg-final { scan-assembler-not {\mvsetvli} } } */
 /* { dg-final { scan-assembler "li\[ \t\]*t0,0" } } */
 /* { dg-final { scan-assembler "li\[ \t\]*t1,0" } } */
 /* { dg-final { scan-assembler "li\[ \t\]*t2,0" } } */

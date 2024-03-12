@@ -20,11 +20,32 @@
 (include "predicates.md")
 (include "constraints.md")
 
+;;;; Instruction Scheduler FSM
+
+;; This is just to get INSN_SCHEDULING defined, so that combine does
+;; not make paradoxical subregs of memory.  These subregs seems to
+;; confuse LRA that ends generating wrong instructions.
+
+(define_automaton "frob")
+(define_cpu_unit "frob_unit" "frob")
+(define_insn_reservation "frobnicator" 814
+  (const_int 0) "frob_unit")
+
 ;;;; Unspecs
 
 (define_c_enum "unspec" [
   UNSPEC_LDINDABS
-  UNSPEC_XADD
+  UNSPEC_AADD
+  UNSPEC_AAND
+  UNSPEC_AOR
+  UNSPEC_AXOR
+  UNSPEC_AFADD
+  UNSPEC_AFAND
+  UNSPEC_AFOR
+  UNSPEC_AFXOR
+  UNSPEC_AXCHG
+  UNSPEC_ACMP
+  UNSPEC_CORE_RELOC
 ])
 
 ;;;; Constants
@@ -49,18 +70,17 @@
 ;; Instruction classes.
 ;; alu		64-bit arithmetic.
 ;; alu32	32-bit arithmetic.
-;; end		endianness conversion instructions.
+;; end		endianness conversion or byte swap instructions.
 ;; ld		load instructions.
 ;; lddx		load 64-bit immediate instruction.
 ;; ldx		generic load instructions.
 ;; st		generic store instructions for immediates.
 ;; stx		generic store instructions.
 ;; jmp		jump instructions.
-;; xadd		atomic exchange-and-add instructions.
 ;; multi	multiword sequence (or user asm statements).
 
 (define_attr "type"
-  "unknown,alu,alu32,end,ld,lddw,ldx,st,stx,jmp,xadd,multi"
+  "unknown,alu,alu32,end,ld,lddw,ldx,st,stx,jmp,multi,atomic"
   (const_string "unknown"))
 
 ;; Length of instruction in bytes.
@@ -77,6 +97,8 @@
 
 (define_mode_attr mop [(QI "b") (HI "h") (SI "w") (DI "dw")
                        (SF "w") (DF "dw")])
+(define_mode_attr smop [(QI "u8") (HI "u16") (SI "u32") (DI "u64")
+                       (SF "u32") (DF "u64")])
 (define_mode_attr mtype [(SI "alu32") (DI "alu")])
 (define_mode_attr msuffix [(SI "32") (DI "")])
 
@@ -90,8 +112,21 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "ja\t0"
+  "{ja\t0|goto 0}"
   [(set_attr "type" "alu")])
+
+;;;; Stack usage
+
+(define_expand "allocate_stack"
+  [(match_operand:DI 0 "general_operand" "")
+   (match_operand:DI 1 "general_operand" "")]
+  ""
+  "
+{
+  error (\"BPF does not support dynamic stack allocation\");
+  emit_insn (gen_nop ());
+  DONE;
+}")
 
 ;;;; Arithmetic/Logical
 
@@ -110,7 +145,7 @@
         (plus:AM (match_operand:AM 1 "register_operand"   " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" " r,I")))]
   "1"
-  "add<msuffix>\t%0,%2"
+  "{add<msuffix>\t%0,%2|%w0 += %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Subtraction
@@ -123,15 +158,15 @@
         (minus:AM (match_operand:AM 1 "register_operand" " 0")
                   (match_operand:AM 2 "register_operand" " r")))]
   ""
-  "sub<msuffix>\t%0,%2"
+  "{sub<msuffix>\t%0,%2|%w0 -= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Negation
 (define_insn "neg<AM:mode>2"
-  [(set (match_operand:AM 0 "register_operand" "=r")
+  [(set (match_operand:AM         0 "register_operand" "=r")
         (neg:AM (match_operand:AM 1 "register_operand" " 0")))]
   ""
-  "neg<msuffix>\t%0"
+  "{neg<msuffix>\t%0|%w0 = -%w1}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Multiplication
@@ -140,7 +175,7 @@
         (mult:AM (match_operand:AM 1 "register_operand"   " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" " r,I")))]
   ""
-  "mul<msuffix>\t%0,%2"
+  "{mul<msuffix>\t%0,%2|%w0 *= %w2}"
   [(set_attr "type" "<mtype>")])
 
 (define_insn "*mulsidi3_zeroextend"
@@ -149,53 +184,53 @@
          (mult:SI (match_operand:SI 1 "register_operand" "0,0")
                   (match_operand:SI 2 "reg_or_imm_operand" "r,I"))))]
   ""
-  "mul32\t%0,%2"
+  "{mul32\t%0,%2|%w0 *= %w2}"
   [(set_attr "type" "alu32")])
 
 ;;; Division
 
-;; Note that eBPF doesn't provide instructions for signed integer
-;; division.
+;; Note that eBPF <= V3 doesn't provide instructions for signed
+;; integer division.
 
 (define_insn "udiv<AM:mode>3"
   [(set (match_operand:AM 0 "register_operand" "=r,r")
         (udiv:AM (match_operand:AM 1 "register_operand" " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "div<msuffix>\t%0,%2"
+  "{div<msuffix>\t%0,%2|%w0 /= %w2}"
   [(set_attr "type" "<mtype>")])
 
-;; However, xBPF does provide a signed division operator, sdiv.
+;; However, BPF V4 does provide a signed division operator, sdiv.
 
 (define_insn "div<AM:mode>3"
   [(set (match_operand:AM 0 "register_operand" "=r,r")
         (div:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
-  "TARGET_XBPF"
-  "sdiv<msuffix>\t%0,%2"
+  "bpf_has_sdiv"
+  "{sdiv<msuffix>\t%0,%2|%w0 s/= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Modulus
 
-;; Note that eBPF doesn't provide instructions for signed integer
-;; remainder.
+;; Note that eBPF <= V3 doesn't provide instructions for signed
+;; integer remainder.
 
 (define_insn "umod<AM:mode>3"
   [(set (match_operand:AM 0 "register_operand" "=r,r")
         (umod:AM (match_operand:AM 1 "register_operand" " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "mod<msuffix>\t%0,%2"
+  "{mod<msuffix>\t%0,%2|%w0 %%= %w2}"
   [(set_attr "type" "<mtype>")])
 
-;; Again, xBPF provides a signed version, smod.
+;; However, BPF V4 does provide a signed modulus operator, smod.
 
 (define_insn "mod<AM:mode>3"
   [(set (match_operand:AM 0 "register_operand" "=r,r")
         (mod:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
-  "TARGET_XBPF"
-  "smod<msuffix>\t%0,%2"
+  "bpf_has_sdiv"
+  "{smod<msuffix>\t%0,%2|%w0 s%%= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Logical AND
@@ -204,7 +239,7 @@
         (and:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "and<msuffix>\t%0,%2"
+  "{and<msuffix>\t%0,%2|%w0 &= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Logical inclusive-OR
@@ -213,7 +248,7 @@
         (ior:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "or<msuffix>\t%0,%2"
+  "{or<msuffix>\t%0,%2|%w0 %|= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Logical exclusive-OR
@@ -222,7 +257,7 @@
         (xor:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "xor<msuffix>\t%0,%2"
+  "{xor<msuffix>\t%0,%2|%w0 ^= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;;; Conversions
@@ -245,9 +280,9 @@
 	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "0,r,q")))]
   ""
   "@
-   and\t%0,0xffff
-   mov\t%0,%1\;and\t%0,0xffff
-   ldxh\t%0,%1"
+   {and\t%0,0xffff|%0 &= 0xffff}
+   {mov\t%0,%1\;and\t%0,0xffff|%0 = %1;%0 &= 0xffff}
+   {ldxh\t%0,%1|%0 = *(u16 *) (%1)}"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendqidi2"
@@ -255,9 +290,9 @@
 	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "0,r,q")))]
   ""
   "@
-   and\t%0,0xff
-   mov\t%0,%1\;and\t%0,0xff
-   ldxb\t%0,%1"
+   {and\t%0,0xff|%0 &= 0xff}
+   {mov\t%0,%1\;and\t%0,0xff|%0 = %1;%0 &= 0xff}
+   {ldxh\t%0,%1|%0 = *(u8 *) (%1)}"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendsidi2"
@@ -266,8 +301,8 @@
 	  (match_operand:SI 1 "nonimmediate_operand" "r,q")))]
   ""
   "@
-   * return bpf_has_alu32 ? \"mov32\t%0,%1\" : \"mov\t%0,%1\;and\t%0,0xffffffff\";
-   ldxw\t%0,%1"
+   * return bpf_has_alu32 ? \"{mov32\t%0,%1|%0 = %1}\" : \"{mov\t%0,%1\;and\t%0,0xffffffff|%0 = %1;%0 &= 0xffffffff}\";
+   {ldxw\t%0,%1|%0 = *(u32 *) (%1)}"
   [(set_attr "type" "alu,ldx")])
 
 ;;; Sign-extension
@@ -286,6 +321,49 @@
   DONE;
 })
 
+;; ISA V4 introduces sign-extending move and load operations.
+
+(define_insn "*extendsidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+        (sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,q")))]
+  "bpf_has_smov"
+  "@
+   {movs\t%0,%1,32|%0 = (s32) %1}
+   {ldxsw\t%0,%1|%0 = *(s32 *) (%1)}"
+  [(set_attr "type" "alu,ldx")])
+
+(define_insn "extendhidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+        (sign_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,q")))]
+  "bpf_has_smov"
+  "@
+   {movs\t%0,%1,16|%0 = (s16) %1}
+   {ldxsh\t%0,%1|%0 = *(s16 *) (%1)}"
+  [(set_attr "type" "alu,ldx")])
+
+(define_insn "extendqidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+        (sign_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,q")))]
+  "bpf_has_smov"
+  "@
+   {movs\t%0,%1,8|%0 = (s8) %1}
+   {ldxsb\t%0,%1|%0 = *(s8 *) (%1)}"
+  [(set_attr "type" "alu,ldx")])
+
+(define_insn "extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+  "bpf_has_smov"
+  "{movs32\t%0,%1,16|%w0 = (s16) %w1}"
+  [(set_attr "type" "alu")])
+
+(define_insn "extendqisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+  "bpf_has_smov"
+  "{movs32\t%0,%1,8|%w0 = (s8) %w1}"
+  [(set_attr "type" "alu")])
+
 ;;;; Data movement
 
 (define_mode_iterator MM [QI HI SI DI SF DF])
@@ -296,6 +374,8 @@
         ""
         "
 {
+  bpf_replace_core_move_operands (operands);
+
   if (!register_operand(operands[0], <MM:MODE>mode)
       && !register_operand(operands[1], <MM:MODE>mode))
     operands[1] = force_reg (<MM:MODE>mode, operands[1]);
@@ -306,12 +386,26 @@
         (match_operand:MM 1 "mov_src_operand"      " q,rI,B,r,I"))]
   ""
   "@
-   ldx<mop>\t%0,%1
-   mov\t%0,%1
-   lddw\t%0,%1
-   stx<mop>\t%0,%1
-   st<mop>\t%0,%1"
+   {ldx<mop>\t%0,%1|%0 = *(<smop> *) (%1)}
+   {mov\t%0,%1|%0 = %1}
+   {lddw\t%0,%1|%0 = %1 ll}
+   {stx<mop>\t%0,%1|*(<smop> *) (%0) = %1}
+   {st<mop>\t%0,%1|*(<smop> *) (%0) = %1}"
 [(set_attr "type" "ldx,alu,alu,stx,st")])
+
+(define_insn "mov_reloc_core<MM:mode>"
+  [(set (match_operand:MM 0 "nonimmediate_operand" "=r,q,r")
+	(unspec:MM [
+	  (match_operand:MM 1 "immediate_operand"  " I,I,B")
+	  (match_operand:SI 2 "immediate_operand"  " I,I,I")
+	 ] UNSPEC_CORE_RELOC)
+   )]
+  ""
+  "@
+   *return bpf_add_core_reloc (operands, \"{mov\t%0,%1|%0 = %1}\");
+   *return bpf_add_core_reloc (operands, \"{st<mop>\t%0,%1|*(<smop> *) (%0) = %1}\");
+   *return bpf_add_core_reloc (operands, \"{lddw\t%0,%1|%0 = %1 ll}\");"
+  [(set_attr "type" "alu,st,alu")])
 
 ;;;; Shifts
 
@@ -322,7 +416,7 @@
         (ashiftrt:SIM (match_operand:SIM 1 "register_operand"   " 0,0")
                       (match_operand:SIM 2 "reg_or_imm_operand" " r,I")))]
   ""
-  "arsh<msuffix>\t%0,%2"
+  "{arsh<msuffix>\t%0,%2|%w0 s>>= %w2}"
   [(set_attr "type" "<mtype>")])
 
 (define_insn "ashl<SIM:mode>3"
@@ -330,7 +424,7 @@
         (ashift:SIM (match_operand:SIM 1 "register_operand"   " 0,0")
                     (match_operand:SIM 2 "reg_or_imm_operand" " r,I")))]
   ""
-  "lsh<msuffix>\t%0,%2"
+  "{lsh<msuffix>\t%0,%2|%w0 <<= %w2}"
   [(set_attr "type" "<mtype>")])
 
 (define_insn "lshr<SIM:mode>3"
@@ -338,23 +432,28 @@
         (lshiftrt:SIM (match_operand:SIM 1 "register_operand"   " 0,0")
                       (match_operand:SIM 2 "reg_or_imm_operand" " r,I")))]
   ""
-  "rsh<msuffix>\t%0,%2"
+  "{rsh<msuffix>\t%0,%2|%w0 >>= %w2}"
   [(set_attr "type" "<mtype>")])
 
-;;;; Endianness conversion
+;;;; Byte swapping
 
 (define_mode_iterator BSM [HI SI DI])
 (define_mode_attr endmode [(HI "16") (SI "32") (DI "64")])
 
 (define_insn "bswap<BSM:mode>2"
   [(set (match_operand:BSM 0 "register_operand"            "=r")
-        (bswap:BSM (match_operand:BSM 1 "register_operand" " r")))]
+        (bswap:BSM (match_operand:BSM 1 "register_operand" " 0")))]
   ""
 {
-  if (TARGET_BIG_ENDIAN)
-    return "endle\t%0, <endmode>";
+  if (bpf_has_bswap)
+    return "{bswap\t%0, <endmode>|%0 = bswap<endmode> %1}";
   else
-    return "endbe\t%0, <endmode>";
+    {
+      if (TARGET_BIG_ENDIAN)
+        return "{endle\t%0, <endmode>|%0 = le<endmode> %1}";
+      else
+        return "{endbe\t%0, <endmode>|%0 = be<endmode> %1}";
+    }
 }
   [(set_attr "type" "end")])
 
@@ -393,16 +492,16 @@
 
   switch (code)
   {
-  case EQ: return "jeq<msuffix>\t%0,%1,%2"; break;
-  case NE: return "jne<msuffix>\t%0,%1,%2"; break;
-  case LT: return "jslt<msuffix>\t%0,%1,%2"; break;
-  case LE: return "jsle<msuffix>\t%0,%1,%2"; break;
-  case GT: return "jsgt<msuffix>\t%0,%1,%2"; break;
-  case GE: return "jsge<msuffix>\t%0,%1,%2"; break;
-  case LTU: return "jlt<msuffix>\t%0,%1,%2"; break;
-  case LEU: return "jle<msuffix>\t%0,%1,%2"; break;
-  case GTU: return "jgt<msuffix>\t%0,%1,%2"; break;
-  case GEU: return "jge<msuffix>\t%0,%1,%2"; break;
+  case EQ: return  "{jeq<msuffix>\t%0,%1,%2|if %w0 == %w1 goto %2}"; break;
+  case NE: return  "{jne<msuffix>\t%0,%1,%2|if %w0 != %w1 goto %2}"; break;
+  case LT: return  "{jslt<msuffix>\t%0,%1,%2|if %w0 s< %w1 goto %2}"; break;
+  case LE: return  "{jsle<msuffix>\t%0,%1,%2|if %w0 s<= %w1 goto %2}"; break;
+  case GT: return  "{jsgt<msuffix>\t%0,%1,%2|if %w0 s> %w1 goto %2}"; break;
+  case GE: return  "{jsge<msuffix>\t%0,%1,%2|if %w0 s>= %w1 goto %2}"; break;
+  case LTU: return "{jlt<msuffix>\t%0,%1,%2|if %w0 < %w1 goto %2}"; break;
+  case LEU: return "{jle<msuffix>\t%0,%1,%2|if %w0 <= %w1 goto %2}"; break;
+  case GTU: return "{jgt<msuffix>\t%0,%1,%2|if %w0 > %w1 goto %2}"; break;
+  case GEU: return "{jge<msuffix>\t%0,%1,%2|if %w0 >= %w1 goto %2}"; break;
   default:
     gcc_unreachable ();
     return "";
@@ -416,7 +515,7 @@
   [(set (pc)
         (label_ref (match_operand 0 "" "")))]
   ""
-  "ja\t%0"
+  "{ja\t%0|goto %0}"
 [(set_attr "type" "jmp")])
 
 ;;;; Function prologue/epilogue
@@ -495,13 +594,14 @@
   ;; operands[2] is next_arg_register
   ;; operands[3] is struct_value_size_rtx.
   ""
-  "ja\t%0"
+  "{ja\t%0|goto %0}"
   [(set_attr "type" "jmp")])
 
 ;;;; Non-generic load instructions
 
 (define_mode_iterator LDM [QI HI SI DI])
 (define_mode_attr ldop [(QI "b") (HI "h") (SI "w") (DI "dw")])
+(define_mode_attr pldop [(QI "u8") (HI "u16") (SI "u32") (DI "u64")])
 
 (define_insn "ldind<ldop>"
   [(set (reg:LDM R0_REGNUM)
@@ -513,7 +613,7 @@
    (clobber (reg:DI R3_REGNUM))
    (clobber (reg:DI R4_REGNUM))]
   ""
-  "ldind<ldop>\t%0,%1"
+  "{ldind<ldop>\t%0,%1|r0 = *(<pldop> *) skb[%0 + %1]}"
   [(set_attr "type" "ld")])
 
 (define_insn "ldabs<ldop>"
@@ -526,20 +626,7 @@
    (clobber (reg:DI R3_REGNUM))
    (clobber (reg:DI R4_REGNUM))]
   ""
-  "ldabs<ldop>\t%0"
+  "{ldabs<ldop>\t%0|r0 = *(<pldop> *) skb[%0]}"
   [(set_attr "type" "ld")])
 
-;;;; Atomic increments
-
-(define_mode_iterator AMO [SI DI])
-
-(define_insn "atomic_add<AMO:mode>"
-  [(set (match_operand:AMO 0 "memory_operand" "+m")
-        (unspec_volatile:AMO
-         [(plus:AMO (match_dup 0)
-                    (match_operand:AMO 1 "register_operand" "r"))
-          (match_operand:SI 2 "const_int_operand")] ;; Memory model.
-         UNSPEC_XADD))]
-  ""
-  "xadd<mop>\t%0,%1"
-  [(set_attr "type" "xadd")])
+(include "atomic.md")

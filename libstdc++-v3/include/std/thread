@@ -42,8 +42,16 @@
 # include <stop_token>	// std::stop_source, std::stop_token, std::nostopstate
 #endif
 
+#if __cplusplus >= 202302L
+# include <format>
+#endif
+
 #include <bits/std_thread.h> // std::thread, get_id, yield
 #include <bits/this_thread_sleep.h> // std::this_thread::sleep_for, sleep_until
+
+#define __glibcxx_want_jthread
+#define __glibcxx_want_formatters
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -103,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   /// @}
 
-#ifdef __cpp_lib_jthread
+#ifdef __cpp_lib_jthread // C++ >= 20
 
   /// @cond undocumented
 #ifndef __STRICT_ANSI__
@@ -277,6 +285,63 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     thread _M_thread;
   };
 #endif // __cpp_lib_jthread
+
+#ifdef __cpp_lib_formatters // C++ >= 23
+
+  template<typename _CharT>
+    class formatter<thread::id, _CharT>
+    {
+    public:
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      parse(basic_format_parse_context<_CharT>& __pc)
+      {
+	__format::_Spec<_CharT> __spec{};
+	const auto __last = __pc.end();
+	auto __first = __pc.begin();
+
+	auto __finalize = [this, &__spec] {
+	  _M_spec = __spec;
+	};
+
+	auto __finished = [&] {
+	  if (__first == __last || *__first == '}')
+	    {
+	      __finalize();
+	      return true;
+	    }
+	  return false;
+	};
+
+	if (__finished())
+	  return __first;
+
+	__first = __spec._M_parse_fill_and_align(__first, __last);
+	if (__finished())
+	  return __first;
+
+	__first = __spec._M_parse_width(__first, __last, __pc);
+	if (__finished())
+	  return __first;
+
+	__throw_format_error("format error: invalid format-spec for "
+			     "std::thread::id");
+      }
+
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(thread::id __id, basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  std::basic_ostringstream<_CharT> __os;
+	  __os << __id;
+	  auto __str = __os.view();
+	  return __format::__write_padded_as_spec(__str, __str.size(),
+						  __fc, _M_spec);
+	}
+
+    private:
+      __format::_Spec<_CharT> _M_spec;
+    };
+#endif // __cpp_lib_formatters
 
   /// @} group threads
 

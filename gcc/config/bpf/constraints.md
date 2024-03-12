@@ -30,6 +30,9 @@
   "A constant call address."
   (match_code "const,symbol_ref,label_ref,const_int"))
 
+(define_register_constraint "t" "R0"
+  "Register r0")
+
 ;;
 ;; Memory constraints.
 ;;

@@ -39,7 +39,8 @@ enum ubsan_null_ckind {
 enum ubsan_print_style {
   UBSAN_PRINT_NORMAL,
   UBSAN_PRINT_POINTER,
-  UBSAN_PRINT_ARRAY
+  UBSAN_PRINT_ARRAY,
+  UBSAN_PRINT_FORCE_INT
 };
 
 /* This controls ubsan_encode_value behavior.  */

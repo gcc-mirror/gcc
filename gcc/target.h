@@ -68,6 +68,20 @@ union cumulative_args_t { void *p; };
 
 #endif /* !CHECKING_P */
 
+/* Target properties of _BitInt(N) type.  _BitInt(N) is to be represented
+   as series of limb_mode CEIL (N, GET_MODE_PRECISION (limb_mode)) limbs,
+   ordered from least significant to most significant if !big_endian,
+   otherwise from most significant to least significant.  If extended is
+   false, the bits above or equal to N are undefined when stored in a register
+   or memory, otherwise they are zero or sign extended depending on if
+   it is unsigned _BitInt(N) or _BitInt(N) / signed _BitInt(N).  */
+
+struct bitint_info {
+  machine_mode limb_mode;
+  bool big_endian;
+  bool extended;
+};
+
 /* Types of memory operation understood by the "by_pieces" infrastructure.
    Used by the TARGET_USE_BY_PIECES_INFRASTRUCTURE_P target hook and
    internally by the functions in expr.cc.  */

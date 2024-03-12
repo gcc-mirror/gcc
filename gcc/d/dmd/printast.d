@@ -39,7 +39,7 @@ extern (C++) final class PrintASTVisitor : Visitor
 
     int indent;
 
-    extern (D) this(int indent) scope
+    extern (D) this(int indent) scope @safe
     {
         this.indent = indent;
     }
@@ -64,7 +64,7 @@ extern (C++) final class PrintASTVisitor : Visitor
         import dmd.hdrgen : floatToBuffer;
         import dmd.common.outbuffer : OutBuffer;
         OutBuffer buf;
-        floatToBuffer(e.type, e.value, &buf, false);
+        floatToBuffer(e.type, e.value, buf, false);
         printf("Real %s %s\n", buf.peekChars(), e.type ? e.type.toChars() : "");
     }
 
@@ -217,6 +217,25 @@ extern (C++) final class PrintASTVisitor : Visitor
         printIndent(indent + 2);
         printf(".value: %s\n", e.value ? e.value.toChars() : "");
         printAST(e.value, indent + 2);
+    }
+
+    override void visit(ArrayLiteralExp e)
+    {
+        visit(cast(Expression)e);
+        printIndent(indent + 2);
+        printf(".basis : %s\n", e.basis ? e.basis.toChars() : "");
+        if (e.elements)
+        {
+            printIndent(indent + 2);
+            printf("[");
+            foreach (i, element; (*e.elements)[])
+            {
+                if (i)
+                    printf(", ");
+                printf("%s", element.toChars());
+            }
+            printf("]\n");
+        }
     }
 
     static void printIndent(int indent)

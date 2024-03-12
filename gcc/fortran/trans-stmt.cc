@@ -82,7 +82,7 @@ gfc_conv_label_variable (gfc_se * se, gfc_expr * expr)
   if (TREE_CODE (se->expr) == COMPONENT_REF)
     se->expr = TREE_OPERAND (se->expr, 1);
   /* Deals with dummy argument. Get the parameter declaration.  */
-  else if (TREE_CODE (se->expr) == INDIRECT_REF)
+  else if (INDIRECT_REF_P (se->expr))
     se->expr = TREE_OPERAND (se->expr, 0);
 }
 
@@ -470,7 +470,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
       gfc_conv_ss_startstride (&loop);
       /* TODO: gfc_conv_loop_setup generates a temporary for vector
 	 subscripts.  This could be prevented in the elemental case
-	 as temporaries are handled separatedly
+	 as temporaries are handled separately
 	 (below in gfc_conv_elemental_dependencies).  */
       if (code->expr1)
 	gfc_conv_loop_setup (&loop, &code->expr1->where);
@@ -1930,15 +1930,13 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_conv_expr_descriptor (&se, e);
 
       if (sym->ts.type == BT_CHARACTER
-	  && sym->ts.deferred
 	  && !sym->attr.select_type_temporary
+	  && sym->ts.u.cl->backend_decl
 	  && VAR_P (sym->ts.u.cl->backend_decl)
 	  && se.string_length != sym->ts.u.cl->backend_decl)
-	{
-	  gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl,
+	gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl,
 			  fold_convert (TREE_TYPE (sym->ts.u.cl->backend_decl),
 					se.string_length));
-	}
 
       /* If we didn't already do the pointer assignment, set associate-name
 	 descriptor to the one generated for the temporary.  */
@@ -2141,11 +2139,14 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  tree ctree = gfc_get_class_from_expr (se.expr);
 	  tmp = TREE_TYPE (sym->backend_decl);
 
-	  /* Coarray scalar component expressions can emerge from
-	     the front end as array elements of the _data field.  */
+	  /* F2018:19.5.1.6 "If a selector has the POINTER attribute,
+	     it shall be associated; the associate name is associated
+	     with the target of the pointer and does not have the
+	     POINTER attribute."  */
 	  if (sym->ts.type == BT_CLASS
-	      && e->ts.type == BT_CLASS && e->rank == 0
-	      && !GFC_CLASS_TYPE_P (TREE_TYPE (se.expr)) && ctree)
+	      && e->ts.type == BT_CLASS && e->rank == 0 && ctree
+	      && (!GFC_CLASS_TYPE_P (TREE_TYPE (se.expr))
+		  || CLASS_DATA (e)->attr.class_pointer))
 	    {
 	      tree stmp;
 	      tree dtmp;
@@ -2155,10 +2156,10 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	      ctree = gfc_create_var (dtmp, "class");
 
 	      stmp = gfc_class_data_get (se.expr);
-	      gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (stmp)));
-
-	      /* Set the fields of the target class variable.  */
-	      stmp = gfc_conv_descriptor_data_get (stmp);
+	      /* Coarray scalar component expressions can emerge from
+		 the front end as array elements of the _data field.  */
+	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (stmp)))
+		stmp = gfc_conv_descriptor_data_get (stmp);
 	      dtmp = gfc_class_data_get (ctree);
 	      stmp = fold_convert (TREE_TYPE (dtmp), stmp);
 	      gfc_add_modify (&se.pre, dtmp, stmp);
@@ -2172,6 +2173,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 		  dtmp = gfc_class_len_get (ctree);
 		  stmp = fold_convert (TREE_TYPE (dtmp), stmp);
 		  gfc_add_modify (&se.pre, dtmp, stmp);
+		  need_len_assign = false;
 		}
 	      se.expr = ctree;
 	    }
@@ -2293,7 +2295,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_init_se (&se, NULL);
       if (e->symtree->n.sym->ts.type == BT_CHARACTER)
 	{
-	  /* Deferred strings are dealt with in the preceeding.  */
+	  /* Deferred strings are dealt with in the preceding.  */
 	  gcc_assert (!e->symtree->n.sym->ts.deferred);
 	  tmp = e->symtree->n.sym->ts.u.cl->backend_decl;
 	}
@@ -2332,6 +2334,7 @@ gfc_trans_block_construct (gfc_code* code)
   tree exit_label;
   stmtblock_t body;
   gfc_association_list *ass;
+  tree translated_body;
 
   ns = code->ext.block.ns;
   gcc_assert (ns);
@@ -2350,7 +2353,11 @@ gfc_trans_block_construct (gfc_code* code)
 
   finish_oacc_declare (ns, sym, true);
 
-  gfc_add_expr_to_block (&body, gfc_trans_code (ns->code));
+  translated_body = gfc_trans_code (ns->code);
+  if (ns->omp_structured_block)
+    translated_body = build1 (OMP_STRUCTURED_BLOCK, void_type_node,
+			      translated_body);
+  gfc_add_expr_to_block (&body, translated_body);
   gfc_add_expr_to_block (&body, build1_v (LABEL_EXPR, exit_label));
 
   /* Finish everything.  */
@@ -4103,7 +4110,7 @@ gfc_trans_forall_loop (forall_info *forall_tmp, tree body,
 			      count, build_int_cst (TREE_TYPE (count), 0));
 
       /* PR 83064 means that we cannot use annot_expr_parallel_kind until
-       the autoparallelizer can hande this.  */
+       the autoparallelizer can handle this.  */
       if (forall_tmp->do_concurrent)
 	cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		       build_int_cst (integer_type_node,
@@ -6351,7 +6358,7 @@ gfc_trans_allocate (gfc_code * code)
 		}
 	      /* Create a temp variable only for component refs to prevent
 		 having to go through the full deref-chain each time and to
-		 simplfy computation of array properties.  */
+		 simplify computation of array properties.  */
 	      temp_var_needed = TREE_CODE (se.expr) == COMPONENT_REF;
 	    }
 	}
@@ -6626,7 +6633,7 @@ gfc_trans_allocate (gfc_code * code)
 	  && DECL_P (expr3) && DECL_ARTIFICIAL (expr3))
 	{
 	  /* Build a temporary symtree and symbol.  Do not add it to the current
-	     namespace to prevent accidently modifying a colliding
+	     namespace to prevent accidentaly modifying a colliding
 	     symbol's as.  */
 	  newsym = XCNEW (gfc_symtree);
 	  /* The name of the symtree should be unique, because gfc_create_var ()
@@ -7460,7 +7467,8 @@ gfc_trans_deallocate (gfc_code *code)
 	{
 	  tmp = gfc_deallocate_scalar_with_status (se.expr, pstat, label_finish,
 						   false, al->expr,
-						   al->expr->ts, is_coarray);
+						   al->expr->ts, NULL_TREE,
+						   is_coarray);
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
 	  /* Set to zero after deallocation.  */

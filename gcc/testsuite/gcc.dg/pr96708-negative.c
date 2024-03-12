@@ -42,7 +42,7 @@ int main()
     return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "MAX_EXPR" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "optimized" } } */
+/* Even though test[1-4] originally has MIN/MAX, those can be optimized away
+   into just comparing a and b arguments. */
 /* { dg-final { scan-tree-dump-times "return 0;" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-not { "return 1;" } "optimized" } } */

@@ -105,8 +105,8 @@ end module
 ! { dg-final { scan-tree-dump-times "#pragma omp for nowait" 6 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp for linear\\(x:D\\.\[0-9\]+\\) nowait" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp for linear\\(x:val,step\\(D\\.\[0-9\]+\\)\\) nowait" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(count\\.\[0-9\]:1\\) linear\\(i:3\\)" 2 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(count\\.\[0-9\]:1\\) linear\\(i:val,step\\(3\\)\\)" 2 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:3\\)" 2 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:val,step\\(3\\)\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:1\\) linear\\(x:D\\.\[0-9\]+\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:1\\) linear\\(x:val,step\\(D\\.\[0-9\]+\\)\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:D\\.\[0-9\]+\\)" 2 "original" } }

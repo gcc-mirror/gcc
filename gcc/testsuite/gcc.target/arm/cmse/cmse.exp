@@ -32,6 +32,7 @@ if ![info exists DEFAULT_CFLAGS] then {
 
 # Initialize `dg'.
 dg-init
+torture-init
 
 set saved-dg-do-what-default ${dg-do-what-default}
 
@@ -104,4 +105,5 @@ set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}
 set dg-do-what-default ${saved-dg-do-what-default}
 
 # All done.
+torture-finish
 dg-finish

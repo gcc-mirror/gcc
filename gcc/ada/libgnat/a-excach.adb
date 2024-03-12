@@ -66,8 +66,8 @@ begin
         (Traceback   => Excep.Tracebacks,
          Max_Len     => Max_Tracebacks,
          Len         => Excep.Num_Tracebacks,
-         Exclude_Min => Code_Address_For_AAA,
-         Exclude_Max => Code_Address_For_ZZZ,
+         Exclude_Min => AAA'Code_Address,
+         Exclude_Max => ZZZ'Code_Address,
          Skip_Frames => 3);
    end if;
 

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "input.h"
 #include "pretty-print.h"
 #include "gcc-rich-location.h"
 #include "gimple-pretty-print.h"
@@ -515,7 +516,7 @@ process_worklist_item (feasible_worklist *worklist,
 	}
 
       feasibility_state succ_state (fnode->get_state ());
-      rejected_constraint *rc = NULL;
+      std::unique_ptr<rejected_constraint> rc;
       if (succ_state.maybe_update_for_edge (logger, succ_eedge, &rc))
 	{
 	  gcc_assert (rc == NULL);
@@ -559,7 +560,7 @@ process_worklist_item (feasible_worklist *worklist,
 	  gcc_assert (rc);
 	  fg->add_feasibility_problem (fnode,
 				       succ_eedge,
-				       rc);
+				       std::move (rc));
 
 	  /* Give up if there have been too many infeasible edges.  */
 	  if (fg->get_num_infeasible ()
@@ -663,30 +664,27 @@ epath_finder::dump_feasible_path (const exploded_node *target_enode,
 
 /* class saved_diagnostic.  */
 
-/* saved_diagnostic's ctor.
-   Take ownership of D and STMT_FINDER.  */
+/* saved_diagnostic's ctor.  */
 
 saved_diagnostic::saved_diagnostic (const state_machine *sm,
-				    const exploded_node *enode,
-				    const supernode *snode, const gimple *stmt,
-				    const stmt_finder *stmt_finder,
+				    const pending_location &ploc,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
 				    std::unique_ptr<pending_diagnostic> d,
 				    unsigned idx)
-: m_sm (sm), m_enode (enode), m_snode (snode), m_stmt (stmt),
- /* stmt_finder could be on-stack; we want our own copy that can
-    outlive that.  */
-  m_stmt_finder (stmt_finder ? stmt_finder->clone () : NULL),
+: m_sm (sm), m_enode (ploc.m_enode), m_snode (ploc.m_snode),
+  m_stmt (ploc.m_stmt),
+  /* stmt_finder could be on-stack; we want our own copy that can
+     outlive that.  */
+  m_stmt_finder (ploc.m_finder ? ploc.m_finder->clone () : NULL),
+  m_loc (ploc.m_loc),
   m_var (var), m_sval (sval), m_state (state),
   m_d (std::move (d)), m_trailing_eedge (NULL),
   m_idx (idx),
   m_best_epath (NULL), m_problem (NULL),
   m_notes ()
 {
-  gcc_assert (m_stmt || m_stmt_finder);
-
   /* We must have an enode in order to be able to look for paths
      through the exploded_graph to this diagnostic.  */
   gcc_assert (m_enode);
@@ -705,6 +703,7 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 	  && m_snode == other.m_snode
 	  && m_stmt == other.m_stmt
 	  /* We don't compare m_stmt_finder.  */
+	  && m_loc == other.m_loc
 	  && pending_diagnostic::same_tree_p (m_var, other.m_var)
 	  && m_state == other.m_state
 	  && m_d->equal_p (*other.m_d)
@@ -718,6 +717,15 @@ saved_diagnostic::add_note (std::unique_ptr<pending_note> pn)
 {
   gcc_assert (pn);
   m_notes.safe_push (pn.release ());
+}
+
+/* Add EVENT to this diagnostic.  */
+
+void
+saved_diagnostic::add_event (std::unique_ptr<checker_event> event)
+{
+  gcc_assert (event);
+  m_saved_events.safe_push (event.release ());
 }
 
 /* Return a new json::object of the form
@@ -825,8 +833,8 @@ saved_diagnostic::dump_as_dot_node (pretty_printer *pp) const
 
 /* Use PF to find the best exploded_path for this saved_diagnostic,
    and store it in m_best_epath.
-   If m_stmt is still NULL, use m_stmt_finder on the epath to populate
-   m_stmt.
+   If we don't have a specific location in m_loc and m_stmt is still NULL,
+   use m_stmt_finder on the epath to populate m_stmt.
    Return true if a best path was found.  */
 
 bool
@@ -845,12 +853,15 @@ saved_diagnostic::calc_best_epath (epath_finder *pf)
     return false;
 
   gcc_assert (m_best_epath);
-  if (m_stmt == NULL)
+  if (m_loc == UNKNOWN_LOCATION)
     {
-      gcc_assert (m_stmt_finder);
-      m_stmt = m_stmt_finder->find_stmt (*m_best_epath);
+      if (m_stmt == NULL)
+	{
+	  gcc_assert (m_stmt_finder);
+	  m_stmt = m_stmt_finder->find_stmt (*m_best_epath);
+	}
+      gcc_assert (m_stmt);
     }
-  gcc_assert (m_stmt);
 
   return true;
 }
@@ -877,6 +888,96 @@ saved_diagnostic::add_duplicate (saved_diagnostic *other)
   m_duplicates.safe_push (other);
 }
 
+/* Walk up the sedges of each of the two paths.
+   If the two sequences of sedges do not perfectly correspond,
+   then paths are incompatible.
+   If there is at least one sedge that either cannot be paired up
+   or its counterpart is not equal, then the paths are incompatible
+   and this function returns FALSE.
+   Otherwise return TRUE.
+
+   Incompatible paths:
+
+       <cond Y>
+       /      \
+      /        \
+    true      false
+     |          |
+    ...        ...
+     |          |
+    ...       stmt x
+     |
+   stmt x
+
+   Both LHS_PATH and RHS_PATH final enodes should be
+   over the same gimple statement.  */
+
+static bool
+compatible_epath_p (const exploded_path *lhs_path,
+		    const exploded_path *rhs_path)
+{
+  gcc_assert (lhs_path);
+  gcc_assert (rhs_path);
+  gcc_assert (rhs_path->length () > 0);
+  gcc_assert (rhs_path->length () > 0);
+  int lhs_eedge_idx = lhs_path->length () - 1;
+  int rhs_eedge_idx = rhs_path->length () - 1;
+  const exploded_edge *lhs_eedge;
+  const exploded_edge *rhs_eedge;
+
+  while (lhs_eedge_idx >= 0 && rhs_eedge_idx >= 0)
+    {
+      while (lhs_eedge_idx >= 0)
+	{
+	  /* Find LHS_PATH's next superedge.  */
+	  lhs_eedge = lhs_path->m_edges[lhs_eedge_idx];
+	  if (lhs_eedge->m_sedge)
+	    break;
+	  else
+	    lhs_eedge_idx--;
+	}
+      while (rhs_eedge_idx >= 0)
+	{
+	  /* Find RHS_PATH's next superedge.  */
+	  rhs_eedge = rhs_path->m_edges[rhs_eedge_idx];
+	  if (rhs_eedge->m_sedge)
+	    break;
+	  else
+	    rhs_eedge_idx--;
+	}
+
+      if (lhs_eedge->m_sedge && rhs_eedge->m_sedge)
+	{
+	  if (lhs_eedge->m_sedge != rhs_eedge->m_sedge)
+	    /* Both superedges do not match.
+	       Superedges are not dependent on the exploded path, so even
+	       different epaths will have similar sedges if they follow
+	       the same outcome of a conditional node.  */
+	    return false;
+
+	  lhs_eedge_idx--;
+	  rhs_eedge_idx--;
+	  continue;
+	}
+      else if (lhs_eedge->m_sedge == nullptr && rhs_eedge->m_sedge == nullptr)
+	/* Both paths were drained up entirely.
+	   No discriminant was found.  */
+	return true;
+
+      /* A superedge was found for only one of the two paths.  */
+      return false;
+    }
+
+  /* A superedge was found for only one of the two paths.  */
+  if (lhs_eedge_idx >= 0 || rhs_eedge_idx >= 0)
+    return false;
+
+  /* Both paths were drained up entirely.
+     No discriminant was found.  */
+  return true;
+}
+
+
 /* Return true if this diagnostic supercedes OTHER, and that OTHER should
    therefore not be emitted.  */
 
@@ -886,7 +987,26 @@ saved_diagnostic::supercedes_p (const saved_diagnostic &other) const
   /* They should be at the same stmt.  */
   if (m_stmt != other.m_stmt)
     return false;
-  return m_d->supercedes_p (*other.m_d);
+  /* return early if OTHER won't be superseded anyway.  */
+  if (!m_d->supercedes_p (*other.m_d))
+    return false;
+
+  /* If the two saved_diagnostics' path are not compatible
+     then they cannot supersede one another.  */
+  return compatible_epath_p (m_best_epath.get (), other.m_best_epath.get ());
+}
+
+/* Move any saved checker_events from this saved_diagnostic to
+   the end of DST_PATH.  */
+
+void
+saved_diagnostic::add_any_saved_events (checker_path &dst_path)
+{
+  for (auto &event : m_saved_events)
+    {
+      dst_path.add_event (std::unique_ptr<checker_event> (event));
+      event = nullptr;
+    }
 }
 
 /* Emit any pending notes owned by this diagnostic.  */
@@ -983,9 +1103,7 @@ diagnostic_manager::diagnostic_manager (logger *logger, engine *eng,
 
 bool
 diagnostic_manager::add_diagnostic (const state_machine *sm,
-				    exploded_node *enode,
-				    const supernode *snode, const gimple *stmt,
-				    const stmt_finder *finder,
+				    const pending_location &ploc,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
@@ -995,15 +1113,16 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
 
   /* We must have an enode in order to be able to look for paths
      through the exploded_graph to the diagnostic.  */
-  gcc_assert (enode);
+  gcc_assert (ploc.m_enode);
 
   /* If this warning is ultimately going to be rejected by a -Wno-analyzer-*
      flag, reject it now.
      We can only do this for diagnostics where we already know the stmt,
      and thus can determine the emission location.  */
-  if (stmt)
+  if (ploc.m_stmt)
     {
-      location_t loc = get_emission_location (stmt, snode->m_fun, *d);
+      location_t loc
+	= get_emission_location (ploc.m_stmt, ploc.m_snode->m_fun, *d);
       int option = d->get_controlling_option ();
       if (!warning_enabled_at (loc, option))
 	{
@@ -1016,14 +1135,14 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
     }
 
   saved_diagnostic *sd
-    = new saved_diagnostic (sm, enode, snode, stmt, finder, var, sval,
-			    state, std::move (d), m_saved_diagnostics.length ());
+    = new saved_diagnostic (sm, ploc, var, sval, state, std::move (d),
+			    m_saved_diagnostics.length ());
   m_saved_diagnostics.safe_push (sd);
-  enode->add_diagnostic (sd);
+  ploc.m_enode->add_diagnostic (sd);
   if (get_logger ())
     log ("adding saved diagnostic %i at SN %i to EN %i: %qs",
 	 sd->get_index (),
-	 snode->m_index, enode->m_index, sd->m_d->get_kind ());
+	 ploc.m_snode->m_index, ploc.m_enode->m_index, sd->m_d->get_kind ());
   return true;
 }
 
@@ -1032,14 +1151,11 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
    Take ownership of D (or delete it).  */
 
 bool
-diagnostic_manager::add_diagnostic (exploded_node *enode,
-				    const supernode *snode, const gimple *stmt,
-				    const stmt_finder *finder,
+diagnostic_manager::add_diagnostic (const pending_location &ploc,
 				    std::unique_ptr<pending_diagnostic> d)
 {
-  gcc_assert (enode);
-  return add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE,
-			 NULL, 0, std::move (d));
+  gcc_assert (ploc.m_enode);
+  return add_diagnostic (NULL, ploc, NULL_TREE, NULL, 0, std::move (d));
 }
 
 /* Add PN to the most recent saved_diagnostic.  */
@@ -1054,6 +1170,20 @@ diagnostic_manager::add_note (std::unique_ptr<pending_note> pn)
   gcc_assert (m_saved_diagnostics.length () > 0);
   saved_diagnostic *sd = m_saved_diagnostics[m_saved_diagnostics.length () - 1];
   sd->add_note (std::move (pn));
+}
+
+/* Add EVENT to the most recent saved_diagnostic.  */
+
+void
+diagnostic_manager::add_event (std::unique_ptr<checker_event> event)
+{
+  LOG_FUNC (get_logger ());
+  gcc_assert (event);
+
+  /* Get most recent saved_diagnostic.  */
+  gcc_assert (m_saved_diagnostics.length () > 0);
+  saved_diagnostic *sd = m_saved_diagnostics[m_saved_diagnostics.length () - 1];
+  sd->add_event (std::move (event));
 }
 
 /* Return a new json::object of the form
@@ -1085,9 +1215,9 @@ class dedupe_key
 {
 public:
   dedupe_key (const saved_diagnostic &sd)
-  : m_sd (sd), m_stmt (sd.m_stmt)
+  : m_sd (sd), m_stmt (sd.m_stmt), m_loc (sd.m_loc)
   {
-    gcc_assert (m_stmt);
+    gcc_assert (m_stmt || m_loc != UNKNOWN_LOCATION);
   }
 
   hashval_t hash () const
@@ -1100,11 +1230,15 @@ public:
   bool operator== (const dedupe_key &other) const
   {
     return (m_sd == other.m_sd
-	    && m_stmt == other.m_stmt);
+	    && m_stmt == other.m_stmt
+	    && m_loc == other.m_loc);
   }
 
   location_t get_location () const
   {
+    if (m_loc != UNKNOWN_LOCATION)
+      return m_loc;
+    gcc_assert (m_stmt);
     return m_stmt->location;
   }
 
@@ -1133,6 +1267,7 @@ public:
 
   const saved_diagnostic &m_sd;
   const gimple *m_stmt;
+  location_t m_loc;
 };
 
 /* Traits for use by dedupe_winners.  */
@@ -1307,7 +1442,7 @@ public:
       {
 	saved_diagnostic **slot = m_map.get (key);
 	gcc_assert (*slot);
-	const saved_diagnostic *sd = *slot;
+	saved_diagnostic *sd = *slot;
 	dm->emit_saved_diagnostic (eg, *sd);
       }
   }
@@ -1369,10 +1504,11 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
 
 void
 diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
-					   const saved_diagnostic &sd)
+					   saved_diagnostic &sd)
 {
   LOG_SCOPE (get_logger ());
-  log ("sd: %qs at SN: %i", sd.m_d->get_kind (), sd.m_snode->m_index);
+  log ("sd[%i]: %qs at SN: %i",
+       sd.get_index (), sd.m_d->get_kind (), sd.m_snode->m_index);
   log ("num dupes: %i", sd.get_num_dupes ());
 
   pretty_printer *pp = global_dc->printer->clone ();
@@ -1393,6 +1529,11 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   /* Now prune it to just cover the most pertinent events.  */
   prune_path (&emission_path, sd.m_sm, sd.m_sval, sd.m_state);
 
+  /* Add any saved events to the path, giving contextual information
+     about what the analyzer was simulating as the diagnostic was
+     generated.  These don't get pruned, as they are probably pertinent.  */
+  sd.add_any_saved_events (emission_path);
+
   /* Add a final event to the path, covering the diagnostic itself.
      We use the final enode from the epath, which might be different from
      the sd.m_enode, as the dedupe code doesn't care about enodes, just
@@ -1410,8 +1551,9 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   emission_path.prepare_for_emission (sd.m_d.get ());
 
-  location_t loc
-    = get_emission_location (sd.m_stmt, sd.m_snode->m_fun, *sd.m_d);
+  location_t loc = sd.m_loc;
+  if (loc == UNKNOWN_LOCATION)
+    loc = get_emission_location (sd.m_stmt, sd.m_snode->m_fun, *sd.m_d);
 
   /* Allow the pending_diagnostic to fix up the locations of events.  */
   emission_path.fixup_locations (sd.m_d.get ());
@@ -1421,7 +1563,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   auto_diagnostic_group d;
   auto_cfun sentinel (sd.m_snode->m_fun);
-  if (sd.m_d->emit (&rich_loc))
+  if (sd.m_d->emit (&rich_loc, get_logger ()))
     {
       sd.emit_any_notes ();
 
@@ -2281,6 +2423,8 @@ diagnostic_manager::prune_path (checker_path *path,
   path->maybe_log (get_logger (), "path");
   prune_for_sm_diagnostic (path, sm, sval, state);
   prune_interproc_events (path);
+  if (! flag_analyzer_show_events_in_system_headers)
+    prune_system_headers (path);
   consolidate_conditions (path);
   finish_pruning (path);
   path->maybe_log (get_logger (), "pruned");
@@ -2665,6 +2809,99 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 
     }
   while (changed);
+}
+
+/* Remove everything within [call point, IDX]. For consistency,
+   IDX should represent the return event of the frame to delete,
+   or if there is none it should be the last event of the frame.
+   After this function, IDX designates the event prior to calling
+   this frame.  */
+
+static void
+prune_frame (checker_path *path, int &idx)
+{
+  gcc_assert (idx >= 0);
+  int nesting = 1;
+  if (path->get_checker_event (idx)->is_return_p ())
+    nesting = 0;
+  do
+    {
+      if (path->get_checker_event (idx)->is_call_p ())
+	nesting--;
+      else if (path->get_checker_event (idx)->is_return_p ())
+	nesting++;
+
+      path->delete_event (idx--);
+    } while (idx >= 0 && nesting != 0);
+}
+
+/* This function is called when fanalyzer-show-events-in-system-headers
+   is disabled and will prune the diagnostic of all events within a
+   system header, only keeping the entry and exit events to the header.
+   This should be called after diagnostic_manager::prune_interproc_events
+   so that sucessive events [system header call, system header return]
+   are preserved thereafter.
+
+   Given a diagnostics path diving into a system header in the form
+   [
+     prefix events...,
+     system header call,
+       system header entry,
+       events within system headers...,
+     system header return,
+     suffix events...
+   ]
+
+   then transforms it into
+   [
+     prefix events...,
+     system header call,
+     system header return,
+     suffix events...
+   ].  */
+
+void
+diagnostic_manager::prune_system_headers (checker_path *path) const
+{
+  int idx = (signed)path->num_events () - 1;
+  while (idx >= 0)
+    {
+      const checker_event *event = path->get_checker_event (idx);
+      /* Prune everything between
+	 [..., system entry, (...), system return, ...].  */
+      if (event->is_return_p ()
+	  && in_system_header_at (event->get_location ()))
+      {
+	int ret_idx = idx;
+	prune_frame (path, idx);
+
+	if (get_logger ())
+	{
+	  log ("filtering system headers events %i-%i:",
+	       idx, ret_idx);
+	}
+	// Delete function entry within system headers.
+	if (idx >= 0)
+	  {
+	    event = path->get_checker_event (idx);
+	    if (event->is_function_entry_p ()
+		&& in_system_header_at (event->get_location ()))
+	      {
+		if (get_logger ())
+		  {
+		    label_text desc (event->get_desc (false));
+		    log ("filtering event %i:"
+			 "system header entry event: %s",
+			 idx, desc.get ());
+		  }
+
+		path->delete_event (idx);
+	      }
+	  }
+      }
+
+      idx--;
+    }
 }
 
 /* Return true iff event IDX within PATH is on the same line as REF_EXP_LOC.  */

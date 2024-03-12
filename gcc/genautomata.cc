@@ -1251,7 +1251,7 @@ gen_cpu_unit (md_rtx_info *info)
   int i;
 
   rtx def = info->def;
-  str_cpu_units = get_str_vect (XSTR (def, 0), &vect_length, ',', FALSE);
+  str_cpu_units = get_str_vect (XSTR (def, 0), &vect_length, ',', false);
   if (str_cpu_units == NULL)
     fatal_at (info->loc, "invalid string `%s' in %s",
 	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
@@ -1283,7 +1283,7 @@ gen_query_cpu_unit (md_rtx_info *info)
 
   rtx def = info->def;
   str_cpu_units = get_str_vect (XSTR (def, 0), &vect_length, ',',
-				FALSE);
+				false);
   if (str_cpu_units == NULL)
     fatal_at (info->loc, "invalid string `%s' in %s",
 	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
@@ -1315,11 +1315,11 @@ gen_bypass (md_rtx_info *info)
   int i, j;
 
   rtx def = info->def;
-  out_patterns = get_str_vect (XSTR (def, 1), &out_length, ',', FALSE);
+  out_patterns = get_str_vect (XSTR (def, 1), &out_length, ',', false);
   if (out_patterns == NULL)
     fatal_at (info->loc, "invalid string `%s' in %s",
 	      XSTR (def, 1), GET_RTX_NAME (GET_CODE (def)));
-  in_patterns = get_str_vect (XSTR (def, 2), &in_length, ',', FALSE);
+  in_patterns = get_str_vect (XSTR (def, 2), &in_length, ',', false);
   if (in_patterns == NULL)
     fatal_at (info->loc, "invalid string `%s' in %s",
 	      XSTR (def, 2), GET_RTX_NAME (GET_CODE (def)));
@@ -1354,12 +1354,12 @@ gen_excl_set (md_rtx_info *info)
 
   rtx def = info->def;
   first_str_cpu_units
-    = get_str_vect (XSTR (def, 0), &first_vect_length, ',', FALSE);
+    = get_str_vect (XSTR (def, 0), &first_vect_length, ',', false);
   if (first_str_cpu_units == NULL)
     fatal_at (info->loc, "invalid string `%s' in %s",
 	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
   second_str_cpu_units = get_str_vect (XSTR (def, 1), &length, ',',
-				       FALSE);
+				       false);
   if (second_str_cpu_units == NULL)
     fatal_at (info->loc, "invalid string `%s' in %s",
 	      XSTR (def, 1), GET_RTX_NAME (GET_CODE (def)));
@@ -1399,12 +1399,12 @@ gen_presence_absence_set (md_rtx_info *info, int presence_p, int final_p)
 
   rtx def = info->def;
   str_cpu_units = get_str_vect (XSTR (def, 0), &cpu_units_length, ',',
-				FALSE);
+				false);
   if (str_cpu_units == NULL)
     fatal_at (info->loc, "invalid string `%s' in %s",
 	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
   str_pattern_lists = get_str_vect (XSTR (def, 1),
-				    &patterns_length, ',', FALSE);
+				    &patterns_length, ',', false);
   if (str_pattern_lists == NULL)
     fatal_at (info->loc, "invalid string `%s' in %s",
 	      XSTR (def, 1), GET_RTX_NAME (GET_CODE (def)));
@@ -1412,7 +1412,7 @@ gen_presence_absence_set (md_rtx_info *info, int presence_p, int final_p)
   for (i = 0; i < patterns_length; i++)
     {
       str_patterns [i] = get_str_vect (str_pattern_lists [i],
-				       &length, ' ', FALSE);
+				       &length, ' ', false);
       gcc_assert (str_patterns [i]);
     }
   decl = XCREATENODE (struct decl);
@@ -1446,7 +1446,7 @@ gen_presence_absence_set (md_rtx_info *info, int presence_p, int final_p)
 static void
 gen_presence_set (md_rtx_info *info)
 {
-  gen_presence_absence_set (info, TRUE, FALSE);
+  gen_presence_absence_set (info, true, false);
 }
 
 /* Process a FINAL_PRESENCE_SET.
@@ -1457,7 +1457,7 @@ gen_presence_set (md_rtx_info *info)
 static void
 gen_final_presence_set (md_rtx_info *info)
 {
-  gen_presence_absence_set (info, TRUE, TRUE);
+  gen_presence_absence_set (info, true, true);
 }
 
 /* Process an ABSENCE_SET.
@@ -1468,7 +1468,7 @@ gen_final_presence_set (md_rtx_info *info)
 static void
 gen_absence_set (md_rtx_info *info)
 {
-  gen_presence_absence_set (info, FALSE, FALSE);
+  gen_presence_absence_set (info, false, false);
 }
 
 /* Process a FINAL_ABSENCE_SET.
@@ -1479,7 +1479,7 @@ gen_absence_set (md_rtx_info *info)
 static void
 gen_final_absence_set (md_rtx_info *info)
 {
-  gen_presence_absence_set (info, FALSE, TRUE);
+  gen_presence_absence_set (info, false, true);
 }
 
 /* Process a DEFINE_AUTOMATON.
@@ -1496,7 +1496,7 @@ gen_automaton (md_rtx_info *info)
   int i;
 
   rtx def = info->def;
-  str_automata = get_str_vect (XSTR (def, 0), &vect_length, ',', FALSE);
+  str_automata = get_str_vect (XSTR (def, 0), &vect_length, ',', false);
   if (str_automata == NULL)
     fatal_at (info->loc, "invalid string `%s' in %s",
 	      XSTR (def, 0), GET_RTX_NAME (GET_CODE (def)));
@@ -1590,7 +1590,7 @@ gen_regexp_repeat (const char *str)
   int els_num;
   int i;
 
-  repeat_vect = get_str_vect (str, &els_num, '*', TRUE);
+  repeat_vect = get_str_vect (str, &els_num, '*', true);
   if (repeat_vect == NULL)
     fatal ("invalid `%s' in reservation `%s'", str, reserv_str);
   if (els_num > 1)
@@ -1622,7 +1622,7 @@ gen_regexp_allof (const char *str)
   int els_num;
   int i;
 
-  allof_vect = get_str_vect (str, &els_num, '+', TRUE);
+  allof_vect = get_str_vect (str, &els_num, '+', true);
   if (allof_vect == NULL)
     fatal ("invalid `%s' in reservation `%s'", str, reserv_str);
   if (els_num > 1)
@@ -1648,7 +1648,7 @@ gen_regexp_oneof (const char *str)
   int els_num;
   int i;
 
-  oneof_vect = get_str_vect (str, &els_num, '|', TRUE);
+  oneof_vect = get_str_vect (str, &els_num, '|', true);
   if (oneof_vect == NULL)
     fatal ("invalid `%s' in reservation `%s'", str, reserv_str);
   if (els_num > 1)
@@ -1674,7 +1674,7 @@ gen_regexp_sequence (const char *str)
   int els_num;
   int i;
 
-  sequence_vect = get_str_vect (str, &els_num, ',', TRUE);
+  sequence_vect = get_str_vect (str, &els_num, ',', true);
   if (els_num == -1)
     fatal ("unbalanced parentheses in reservation `%s'", str);
   if (sequence_vect == NULL)
@@ -2686,14 +2686,14 @@ process_decls (void)
 	  unit_set_el_list
             = process_presence_absence_names
 	      (DECL_PRESENCE (decl)->names, DECL_PRESENCE (decl)->names_num,
-	       decl->pos, TRUE, DECL_PRESENCE (decl)->final_p);
+	       decl->pos, true, DECL_PRESENCE (decl)->final_p);
 	  pattern_set_el_list
 	    = process_presence_absence_patterns
 	      (DECL_PRESENCE (decl)->patterns,
 	       DECL_PRESENCE (decl)->patterns_num,
-	       decl->pos, TRUE, DECL_PRESENCE (decl)->final_p);
+	       decl->pos, true, DECL_PRESENCE (decl)->final_p);
 	  add_presence_absence (unit_set_el_list, pattern_set_el_list,
-				decl->pos, TRUE,
+				decl->pos, true,
 				DECL_PRESENCE (decl)->final_p);
 	}
     }
@@ -2710,14 +2710,14 @@ process_decls (void)
 	  unit_set_el_list
             = process_presence_absence_names
 	      (DECL_ABSENCE (decl)->names, DECL_ABSENCE (decl)->names_num,
-	       decl->pos, FALSE, DECL_ABSENCE (decl)->final_p);
+	       decl->pos, false, DECL_ABSENCE (decl)->final_p);
 	  pattern_set_el_list
 	    = process_presence_absence_patterns
 	      (DECL_ABSENCE (decl)->patterns,
 	       DECL_ABSENCE (decl)->patterns_num,
-	       decl->pos, FALSE, DECL_ABSENCE (decl)->final_p);
+	       decl->pos, false, DECL_ABSENCE (decl)->final_p);
 	  add_presence_absence (unit_set_el_list, pattern_set_el_list,
-				decl->pos, FALSE,
+				decl->pos, false,
 				DECL_ABSENCE (decl)->final_p);
 	}
     }
@@ -3597,16 +3597,16 @@ reserv_sets_are_intersected (reserv_sets_t operand_1,
 	   el_ptr_1++, el_ptr_2++)
 	if (*el_ptr_1 & *el_ptr_2)
 	  return 1;
-      if (!check_presence_pattern_sets (cycle_ptr_1, cycle_ptr_2, FALSE))
+      if (!check_presence_pattern_sets (cycle_ptr_1, cycle_ptr_2, false))
 	return 1;
       if (!check_presence_pattern_sets (temp_reserv + (cycle_ptr_2
 						       - operand_2),
-					cycle_ptr_2, TRUE))
+					cycle_ptr_2, true))
 	return 1;
-      if (!check_absence_pattern_sets (cycle_ptr_1, cycle_ptr_2, FALSE))
+      if (!check_absence_pattern_sets (cycle_ptr_1, cycle_ptr_2, false))
 	return 1;
       if (!check_absence_pattern_sets (temp_reserv + (cycle_ptr_2 - operand_2),
-				       cycle_ptr_2, TRUE))
+				       cycle_ptr_2, true))
 	return 1;
     }
   return 0;
@@ -4272,7 +4272,7 @@ initiate_excl_sets (void)
 	       el = el->next_unit_set_el)
 	    {
 	      bitmap_set_bit (unit_excl_set, el->unit_decl->unit_num);
-	      el->unit_decl->in_set_p = TRUE;
+	      el->unit_decl->in_set_p = true;
 	    }
           unit_excl_set_table [DECL_UNIT (decl)->unit_num] = unit_excl_set;
         }
@@ -4337,7 +4337,7 @@ form_reserv_sets_list (pattern_set_el_t pattern_list)
       for (i = 0; i < el->units_num; i++)
 	{
 	  bitmap_set_bit (curr->reserv, el->unit_decls [i]->unit_num);
-	  el->unit_decls [i]->in_set_p = TRUE;
+	  el->unit_decls [i]->in_set_p = true;
 	}
       if (prev != NULL)
 	prev->next_pattern_reserv = curr;
@@ -4414,7 +4414,7 @@ check_presence_pattern_sets (reserv_sets_t checked_set,
 		|| (!final_p
 		    && unit_presence_set_table [start_unit_num] == NULL))
 	      continue;
-	    presence_p = FALSE;
+	    presence_p = false;
 	    for (pat_reserv = (final_p
 			       ? unit_final_presence_set_table [start_unit_num]
 			       : unit_presence_set_table [start_unit_num]);
@@ -4428,9 +4428,9 @@ check_presence_pattern_sets (reserv_sets_t checked_set,
 		presence_p = presence_p || unit_num >= els_in_cycle_reserv;
 	      }
 	    if (!presence_p)
-	      return FALSE;
+	      return false;
 	  }
-  return TRUE;
+  return true;
 }
 
 /* The function checks that CHECKED_SET satisfies all absence pattern
@@ -4467,10 +4467,10 @@ check_absence_pattern_sets (reserv_sets_t checked_set,
 		      && pat_reserv->reserv [unit_num])
 		    break;
 		if (unit_num >= els_in_cycle_reserv)
-		  return FALSE;
+		  return false;
 	      }
 	  }
-  return TRUE;
+  return true;
 }
 
 
@@ -5284,7 +5284,7 @@ check_regexp_units_distribution (const char *insn_reserv_name,
 		  error ("The following units do not satisfy units-automata distribution rule");
 		  error ("(Unit presence on one alt and its absence on other alt\n");
 		  error (" result in different other automata reservations)");
-		  annotation_message_reported_p = TRUE;
+		  annotation_message_reported_p = true;
 		}
 	      if (! annotation_reservation_message_reported_p)
 		{
@@ -5319,7 +5319,7 @@ check_unit_distributions_to_automata (void)
     }
   if (automaton_decls.length () > 1)
     {
-      annotation_message_reported_p = FALSE;
+      annotation_message_reported_p = false;
       for (i = 0; i < description->decls_num; i++)
 	{
 	  decl = description->decls [i];
@@ -6638,7 +6638,7 @@ create_ainsns (automaton_t automaton)
 	{
 	  curr_ainsn = XCREATENODE (struct ainsn);
 	  curr_ainsn->insn_reserv_decl = DECL_INSN_RESERV (decl);
-	  curr_ainsn->important_p = FALSE;
+	  curr_ainsn->important_p = false;
 	  curr_ainsn->next_ainsn = NULL;
 	  if (prev_ainsn == NULL)
 	    first_ainsn = curr_ainsn;
@@ -7897,7 +7897,7 @@ output_insn_code_cases (void (*output_automata_list_code)
     {
       decl = description->decls [i];
       if (decl->mode == dm_insn_reserv)
-	DECL_INSN_RESERV (decl)->processed_p = FALSE;
+	DECL_INSN_RESERV (decl)->processed_p = false;
     }
   for (i = 0; i < description->decls_num; i++)
     {
@@ -7912,7 +7912,7 @@ output_insn_code_cases (void (*output_automata_list_code)
 		  && (DECL_INSN_RESERV (decl2)->important_automata_list
 		      == DECL_INSN_RESERV (decl)->important_automata_list))
 		{
-		  DECL_INSN_RESERV (decl2)->processed_p = TRUE;
+		  DECL_INSN_RESERV (decl2)->processed_p = true;
 		  fprintf (output_file, "    case %d: /* %s */\n",
 			   DECL_INSN_RESERV (decl2)->insn_num,
 			   DECL_INSN_RESERV (decl2)->name);
@@ -8247,9 +8247,9 @@ output_internal_dead_lock_func (void)
 	output_dead_lock_vect_name (output_file, automaton);
 	fprintf (output_file, " [%s->", CHIP_PARAMETER_NAME);
 	output_chip_member_name (output_file, automaton);
-	fprintf (output_file, "])\n    return 1/* TRUE */;\n");
+	fprintf (output_file, "])\n    return 1 /* TRUE */;\n");
       }
-  fprintf (output_file, "  return 0/* FALSE */;\n}\n\n");
+  fprintf (output_file, "  return 0 /* FALSE */;\n}\n\n");
 }
 
 /* The function outputs PHR interface function `state_dead_lock_p'.  */
@@ -9382,7 +9382,7 @@ form_important_insn_automata_lists (void)
 		for (ainsn = arc->insn;
 		     ainsn != NULL;
 		     ainsn = ainsn->next_same_reservs_insn)
-		  ainsn->important_p = TRUE;
+		  ainsn->important_p = true;
 	      }
 	}
     }

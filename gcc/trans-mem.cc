@@ -637,6 +637,9 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     {
     case GIMPLE_CALL:
       {
+	if (gimple_call_internal_p (stmt))
+	  break;
+
 	tree fn = gimple_call_fn (stmt);
 
 	if ((d->summary_flags & DIAG_TM_OUTER) == 0
@@ -1062,7 +1065,7 @@ tm_log_delete (void)
 static bool
 transaction_invariant_address_p (const_tree mem, basic_block region_entry_block)
 {
-  if ((TREE_CODE (mem) == INDIRECT_REF || TREE_CODE (mem) == MEM_REF)
+  if ((INDIRECT_REF_P (mem) || TREE_CODE (mem) == MEM_REF)
       && TREE_CODE (TREE_OPERAND (mem, 0)) == SSA_NAME)
     {
       basic_block def_bb;
@@ -2057,7 +2060,7 @@ tm_region_init (struct tm_region *region)
       region = tm_region_init_1 (region, bb);
 
       /* Check for the last statement in the block beginning a new region.  */
-      g = last_stmt (bb);
+      g = last_nondebug_stmt (bb);
       old_region = region;
       if (g)
 	if (gtransaction *trans_stmt = dyn_cast <gtransaction *> (g))

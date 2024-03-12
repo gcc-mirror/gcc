@@ -393,7 +393,7 @@ pdp11_expand_epilogue (void)
   rtx x, reg, via_ac = NULL;
 
   /* Deallocate the local variables.  */
-  if (fsize)
+  if (fsize || cfun->calls_alloca)
     {
       if (frame_pointer_needed)
 	{
@@ -1615,8 +1615,8 @@ pdp11_secondary_memory_needed (machine_mode, reg_class_t c1, reg_class_t c2)
 */
 
 static bool
-pdp11_legitimate_address_p (machine_mode mode,
-			    rtx operand, bool strict)
+pdp11_legitimate_address_p (machine_mode mode, rtx operand, bool strict,
+			    code_helper = ERROR_MARK)
 {
     rtx xfoob;
 
@@ -1881,7 +1881,7 @@ pdp11_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
      in registers.  The rest go into memory.  */
   return (TYPE_MODE (type) == DImode
 	  || (FLOAT_MODE_P (TYPE_MODE (type)) && ! TARGET_AC0)
-	  || TREE_CODE (type) == VECTOR_TYPE
+	  || VECTOR_TYPE_P (type)
 	  || COMPLEX_MODE_P (TYPE_MODE (type)));
 }
 

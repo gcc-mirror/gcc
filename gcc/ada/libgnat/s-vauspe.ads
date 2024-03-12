@@ -44,7 +44,7 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Ghost              => Ignore,
                          Subprogram_Variant => Ignore);
 
-with System.Val_Util; use System.Val_Util;
+with System.Val_Spec; use System.Val_Spec;
 
 generic
 
@@ -53,10 +53,23 @@ generic
 package System.Value_U_Spec with
    Ghost,
    SPARK_Mode,
-   Annotate => (GNATprove, Always_Return)
+   Always_Terminates
 is
    pragma Preelaborate;
 
+   --  Maximum value of exponent for 10 that fits in Uns'Base
+   function Max_Log10 return Natural is
+     (case Uns'Base'Size is
+        when 8   => 2,
+        when 16  => 4,
+        when 32  => 9,
+        when 64  => 19,
+        when 128 => 38,
+        when others => raise Program_Error)
+   with Ghost;
+
+   pragma Annotate (Gnatcheck, Exempt_On, "Discriminated_Records",
+                    "variant record only used in proof code");
    type Uns_Option (Overflow : Boolean := False) is record
       case Overflow is
          when True =>
@@ -65,6 +78,7 @@ is
             Value : Uns := 0;
       end case;
    end record;
+   pragma Annotate (Gnatcheck, Exempt_Off, "Discriminated_Records");
 
    function Wrap_Option (Value : Uns) return Uns_Option is
      (Overflow => False, Value => Value);
@@ -279,24 +293,50 @@ is
             Exponent_Unsigned_Ghost (Value * Base, Exp - 1, Base));
    --  Normal case: exponentiation without overflows
 
+   function Raw_Unsigned_Starts_As_Based_Ghost
+     (Str               : String;
+      Last_Num_Init, To : Integer)
+      return Boolean
+   is
+     (Last_Num_Init < To - 1
+      and then Str (Last_Num_Init + 1) in '#' | ':'
+      and then Str (Last_Num_Init + 2) in
+      '0' .. '9' | 'a' .. 'f' | 'A' .. 'F')
+   with Ghost,
+     Pre => Last_Num_Init in Str'Range
+     and then To in Str'Range;
+   --  Return True if Str starts as a based number
+
+   function Raw_Unsigned_Is_Based_Ghost
+     (Str            : String;
+      Last_Num_Init  : Integer;
+      Last_Num_Based : Integer;
+      To             : Integer)
+      return Boolean
+   is
+     (Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, To)
+      and then Last_Num_Based < To
+      and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1))
+   with Ghost,
+     Pre => Last_Num_Init in Str'Range
+     and then Last_Num_Based in Last_Num_Init .. Str'Last
+     and then To in Str'Range;
+   --  Return True if Str is a based number
+
    function Is_Raw_Unsigned_Format_Ghost (Str : String) return Boolean is
      (Is_Natural_Format_Ghost (Str)
       and then
         (declare
            Last_Num_Init   : constant Integer := Last_Number_Ghost (Str);
            Starts_As_Based : constant Boolean :=
-             Last_Num_Init < Str'Last - 1
-             and then Str (Last_Num_Init + 1) in '#' | ':'
-             and then Str (Last_Num_Init + 2) in
-               '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
+             Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, Str'Last);
            Last_Num_Based  : constant Integer :=
              (if Starts_As_Based
               then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. Str'Last))
               else Last_Num_Init);
            Is_Based        : constant Boolean :=
-             Starts_As_Based
-             and then Last_Num_Based < Str'Last
-             and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
+             Raw_Unsigned_Is_Based_Ghost
+               (Str, Last_Num_Init, Last_Num_Based, Str'Last);
            First_Exp       : constant Integer :=
              (if Is_Based then Last_Num_Based + 2 else Last_Num_Init + 1);
          begin
@@ -330,10 +370,7 @@ is
         Init_Val        : constant Uns_Option :=
           Scan_Based_Number_Ghost (Str, From, Last_Num_Init);
         Starts_As_Based : constant Boolean :=
-          Last_Num_Init < To - 1
-          and then Str (Last_Num_Init + 1) in '#' | ':'
-          and then Str (Last_Num_Init + 2) in
-          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
+          Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, To);
         Last_Num_Based  : constant Integer :=
           (if Starts_As_Based
            then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. To))
@@ -378,18 +415,13 @@ is
         Init_Val        : constant Uns_Option :=
           Scan_Based_Number_Ghost (Str, From, Last_Num_Init);
         Starts_As_Based : constant Boolean :=
-          Last_Num_Init < To - 1
-          and then Str (Last_Num_Init + 1) in '#' | ':'
-          and then Str (Last_Num_Init + 2) in
-          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
+          Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, To);
         Last_Num_Based  : constant Integer :=
           (if Starts_As_Based
            then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. To))
            else Last_Num_Init);
         Is_Based        : constant Boolean :=
-          Starts_As_Based
-          and then Last_Num_Based < To
-          and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
+          Raw_Unsigned_Is_Based_Ghost (Str, Last_Num_Init, Last_Num_Based, To);
         Based_Val       : constant Uns_Option :=
           (if Starts_As_Based and then not Init_Val.Overflow
            then Scan_Based_Number_Ghost
@@ -468,18 +500,13 @@ is
         Last_Num_Init   : constant Integer :=
           Last_Number_Ghost (Str (From .. To));
         Starts_As_Based : constant Boolean :=
-          Last_Num_Init < To - 1
-          and then Str (Last_Num_Init + 1) in '#' | ':'
-          and then Str (Last_Num_Init + 2) in
-          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
+          Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, To);
         Last_Num_Based  : constant Integer :=
           (if Starts_As_Based
            then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. To))
            else Last_Num_Init);
         Is_Based        : constant Boolean :=
-          Starts_As_Based
-          and then Last_Num_Based < To
-          and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
+          Raw_Unsigned_Is_Based_Ghost (Str, Last_Num_Init, Last_Num_Based, To);
         First_Exp       : constant Integer :=
           (if Is_Based then Last_Num_Based + 2 else Last_Num_Init + 1);
       begin
@@ -492,7 +519,8 @@ is
      Pre  => Str'Last /= Positive'Last
        and then From in Str'Range
        and then To in From .. Str'Last
-       and then Str (From) in '0' .. '9';
+       and then Str (From) in '0' .. '9',
+     Post => Raw_Unsigned_Last_Ghost'Result >= From;
    --  Ghost function that returns the position of the cursor once an unsigned
    --  number has been seen.
 
@@ -583,46 +611,6 @@ is
    --  Bundle Uns type with other types, constants and subprograms used in
    --  ghost code, so that this package can be instantiated once and used
    --  multiple times as generic formal for a given Int type.
-
-   package Uns_Params is new System.Val_Util.Uns_Params
-     (Uns                                        => Uns,
-      P_Uns_Option                               => Uns_Option,
-      P_Wrap_Option                              => Wrap_Option,
-      P_Hexa_To_Unsigned_Ghost                   => Hexa_To_Unsigned_Ghost,
-      P_Scan_Overflows_Ghost                     => Scan_Overflows_Ghost,
-      P_Is_Raw_Unsigned_Format_Ghost             =>
-         Is_Raw_Unsigned_Format_Ghost,
-      P_Scan_Split_No_Overflow_Ghost             =>
-         Scan_Split_No_Overflow_Ghost,
-      P_Raw_Unsigned_No_Overflow_Ghost           =>
-         Raw_Unsigned_No_Overflow_Ghost,
-      P_Exponent_Unsigned_Ghost                  => Exponent_Unsigned_Ghost,
-      P_Lemma_Exponent_Unsigned_Ghost_Base       =>
-         Lemma_Exponent_Unsigned_Ghost_Base,
-      P_Lemma_Exponent_Unsigned_Ghost_Overflow   =>
-         Lemma_Exponent_Unsigned_Ghost_Overflow,
-      P_Lemma_Exponent_Unsigned_Ghost_Step       =>
-         Lemma_Exponent_Unsigned_Ghost_Step,
-      P_Scan_Raw_Unsigned_Ghost                  => Scan_Raw_Unsigned_Ghost,
-      P_Lemma_Scan_Based_Number_Ghost_Base       =>
-         Lemma_Scan_Based_Number_Ghost_Base,
-      P_Lemma_Scan_Based_Number_Ghost_Underscore =>
-         Lemma_Scan_Based_Number_Ghost_Underscore,
-      P_Lemma_Scan_Based_Number_Ghost_Overflow   =>
-         Lemma_Scan_Based_Number_Ghost_Overflow,
-      P_Lemma_Scan_Based_Number_Ghost_Step       =>
-         Lemma_Scan_Based_Number_Ghost_Step,
-      P_Raw_Unsigned_Last_Ghost                  => Raw_Unsigned_Last_Ghost,
-      P_Only_Decimal_Ghost                       => Only_Decimal_Ghost,
-      P_Scan_Based_Number_Ghost                  => Scan_Based_Number_Ghost,
-      P_Is_Unsigned_Ghost                        =>
-         Is_Unsigned_Ghost,
-      P_Is_Value_Unsigned_Ghost                  =>
-         Is_Value_Unsigned_Ghost,
-      P_Prove_Scan_Only_Decimal_Ghost            =>
-         Prove_Scan_Only_Decimal_Ghost,
-      P_Prove_Scan_Based_Number_Ghost_Eq         =>
-         Prove_Scan_Based_Number_Ghost_Eq);
 
 private
 

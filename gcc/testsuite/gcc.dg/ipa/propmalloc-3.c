@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-ipa-pure-const-details -fdelete-null-pointer-checks" } */
+/* { dg-skip-if "" keeps_null_pointer_checks } */
 
 static void *foo(__SIZE_TYPE__, int) __attribute__((noinline, no_icf, used));
 

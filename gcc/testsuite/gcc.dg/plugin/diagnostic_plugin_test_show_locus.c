@@ -175,7 +175,7 @@ test_show_locus (function *fun)
 
   /* Hardcode the "terminal width", to verify the behavior of
      very wide lines.  */
-  global_dc->caret_max_width = 71;
+  global_dc->m_source_printing.max_width = 71;
 
   if (0 == strcmp (fnname, "test_simple"))
     {
@@ -246,7 +246,7 @@ test_show_locus (function *fun)
   if (0 == strcmp (fnname, "test_very_wide_line"))
     {
       const int line = fnstart_line + 2;
-      global_dc->show_ruler_p = true;
+      global_dc->m_source_printing.show_ruler_p = true;
       text_range_label label0 ("label 0");
       text_range_label label1 ("label 1");
       rich_location richloc (line_table,
@@ -258,7 +258,7 @@ test_show_locus (function *fun)
 			 &label1);
       richloc.add_fixit_replace ("bar * foo");
       warning_at (&richloc, 0, "test");
-      global_dc->show_ruler_p = false;
+      global_dc->m_source_printing.show_ruler_p = false;
     }
 
   /* Likewise, but with a secondary location that's immediately before
@@ -266,7 +266,7 @@ test_show_locus (function *fun)
   if (0 == strcmp (fnname, "test_very_wide_line_2"))
     {
       const int line = fnstart_line + 2;
-      global_dc->show_ruler_p = true;
+      global_dc->m_source_printing.show_ruler_p = true;
       text_range_label label0 ("label 0");
       text_range_label label1 ("label 1");
       rich_location richloc (line_table,
@@ -278,7 +278,7 @@ test_show_locus (function *fun)
       richloc.add_range (get_loc (line, 34), SHOW_RANGE_WITHOUT_CARET,
 			 &label1);
       warning_at (&richloc, 0, "test");
-      global_dc->show_ruler_p = false;
+      global_dc->m_source_printing.show_ruler_p = false;
     }
 
   /* Example of multiple carets.  */
@@ -289,11 +289,11 @@ test_show_locus (function *fun)
       location_t caret_b = get_loc (line, 11);
       rich_location richloc (line_table, caret_a);
       add_range (&richloc, caret_b, caret_b, SHOW_RANGE_WITH_CARET);
-      global_dc->caret_chars[0] = 'A';
-      global_dc->caret_chars[1] = 'B';
+      global_dc->m_source_printing.caret_chars[0] = 'A';
+      global_dc->m_source_printing.caret_chars[1] = 'B';
       warning_at (&richloc, 0, "test");
-      global_dc->caret_chars[0] = '^';
-      global_dc->caret_chars[1] = '^';
+      global_dc->m_source_printing.caret_chars[0] = '^';
+      global_dc->m_source_printing.caret_chars[1] = '^';
     }
 
   /* Tests of rendering fixit hints.  */
@@ -407,11 +407,11 @@ test_show_locus (function *fun)
       location_t caret_b = get_loc (line - 1, 19);
       rich_location richloc (line_table, caret_a);
       richloc.add_range (caret_b, SHOW_RANGE_WITH_CARET);
-      global_dc->caret_chars[0] = '1';
-      global_dc->caret_chars[1] = '2';
+      global_dc->m_source_printing.caret_chars[0] = '1';
+      global_dc->m_source_printing.caret_chars[1] = '2';
       warning_at (&richloc, 0, "test");
-      global_dc->caret_chars[0] = '^';
-      global_dc->caret_chars[1] = '^';
+      global_dc->m_source_printing.caret_chars[0] = '^';
+      global_dc->m_source_printing.caret_chars[1] = '^';
     }
 
   /* Example of using the "%q+D" format code, which as well as printing

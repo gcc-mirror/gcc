@@ -61,7 +61,7 @@ template <typename T>
 struct check_swap
 {
     bool
-    operator()(T& a)
+    operator()(T&)
     {
         return true;
     }
@@ -129,7 +129,7 @@ test()
     }
 }
 
-int32_t
+int
 main()
 {
     test<wrapper<uint16_t>>();

@@ -5,6 +5,7 @@
 /* { dg-require-effective-target sockets } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
 
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>

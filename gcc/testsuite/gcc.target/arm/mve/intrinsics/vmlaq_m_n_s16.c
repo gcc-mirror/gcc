@@ -1,23 +1,49 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vmlat.s16	q[0-9]+, q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+*/
 int16x8_t
-foo (int16x8_t a, int16x8_t b, int16_t c, mve_pred16_t p)
+foo (int16x8_t add, int16x8_t m1, int16_t m2, mve_pred16_t p)
 {
-  return vmlaq_m_n_s16 (a, b, c, p);
+  return vmlaq_m_n_s16 (add, m1, m2, p);
 }
 
-/* { dg-final { scan-assembler "vpst" } } */
-/* { dg-final { scan-assembler "vmlat.s16"  }  } */
 
+/*
+**foo1:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vmlat.s16	q[0-9]+, q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+*/
 int16x8_t
-foo1 (int16x8_t a, int16x8_t b, int16_t c, mve_pred16_t p)
+foo1 (int16x8_t add, int16x8_t m1, int16_t m2, mve_pred16_t p)
 {
-  return vmlaq_m (a, b, c, p);
+  return vmlaq_m (add, m1, m2, p);
 }
 
-/* { dg-final { scan-assembler "vpst" } } */
-/* { dg-final { scan-assembler "vmlat.s16"  }  } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

@@ -35,16 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef MUSL_DYNAMIC_LINKER
 #define MUSL_DYNAMIC_LINKER "/lib/ld-musl-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so.1"
 
-/* Because RISC-V only has word-sized atomics, it requries libatomic where
-   others do not.  So link libatomic by default, as needed.  */
-#undef LIB_SPEC
-#ifdef LD_AS_NEEDED_OPTION
-#define LIB_SPEC GNU_USER_TARGET_LIB_SPEC \
-  " %{pthread:" LD_AS_NEEDED_OPTION " -latomic " LD_NO_AS_NEEDED_OPTION "}"
-#else
-#define LIB_SPEC GNU_USER_TARGET_LIB_SPEC " -latomic "
-#endif
-
 #define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
 
 #define CPP_SPEC "%{pthread:-D_REENTRANT}"
@@ -65,14 +55,15 @@ along with GCC; see the file COPYING3.  If not see
 %{shared} \
   %{!shared: \
     %{!static: \
-      %{rdynamic:-export-dynamic} \
-      -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
-    %{static:-static}}"
-
-#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+      %{!static-pie: \
+	%{rdynamic:-export-dynamic} \
+	-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
+    %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
 
 #define STARTFILE_PREFIX_SPEC 			\
    "/lib" XLEN_SPEC "/" ABI_SPEC "/ "		\
    "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
    "/lib/ "					\
    "/usr/lib/ "
+
+#define RISCV_USE_CUSTOMISED_MULTI_LIB select_by_abi

@@ -28,9 +28,73 @@
 #define _GCC_ARM_ACLE_H
 
 #include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define _GCC_ARM_ACLE_ROR_FN(NAME, TYPE)				  \
+__extension__ extern __inline TYPE					  \
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))	  \
+NAME (TYPE __value, uint32_t __rotate)					  \
+{									  \
+  int __size = (int) sizeof (TYPE) * __CHAR_BIT__;                        \
+  __rotate = __rotate % __size;                                           \
+  return __value >> __rotate | __value << ((__size - __rotate) % __size); \
+}
+
+_GCC_ARM_ACLE_ROR_FN (__ror, uint32_t)
+_GCC_ARM_ACLE_ROR_FN (__rorl, unsigned long)
+_GCC_ARM_ACLE_ROR_FN (__rorll, uint64_t)
+
+#undef _GCC_ARM_ACLE_ROR_FN
+
+#define _GCC_ARM_ACLE_DATA_FN(NAME, ITYPE, RTYPE) \
+__extension__ extern __inline RTYPE				    \
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__)) \
+__##NAME (ITYPE __value)
+
+#define _GCC_ARM_ACLE_DATA_ALIAS(NAME, BUILTIN, ITYPE, RTYPE)	    \
+_GCC_ARM_ACLE_DATA_FN(NAME, ITYPE, RTYPE) \
+{                                         \
+  return __builtin_##BUILTIN (__value);   \
+}
+
+_GCC_ARM_ACLE_DATA_ALIAS (clz, clz, uint32_t, unsigned int)
+_GCC_ARM_ACLE_DATA_ALIAS (clzl, clzl, unsigned long, unsigned int)
+_GCC_ARM_ACLE_DATA_ALIAS (clzll, clzll, uint64_t, unsigned int)
+_GCC_ARM_ACLE_DATA_ALIAS (cls, clrsb, uint32_t, unsigned int)
+_GCC_ARM_ACLE_DATA_ALIAS (clsl, clrsbl, unsigned long, unsigned int)
+_GCC_ARM_ACLE_DATA_ALIAS (clsll, clrsbll, uint64_t, unsigned int)
+_GCC_ARM_ACLE_DATA_ALIAS (revsh, bswap16, int16_t, int16_t)
+_GCC_ARM_ACLE_DATA_ALIAS (rev, bswap32, uint32_t, uint32_t)
+_GCC_ARM_ACLE_DATA_ALIAS (revl, bswap32, unsigned long, unsigned long)
+_GCC_ARM_ACLE_DATA_ALIAS (revll, bswap64, uint64_t, uint64_t)
+#if __ARM_ARCH >= 6
+_GCC_ARM_ACLE_DATA_ALIAS (rev16, arm_rev16si2, uint32_t, uint32_t)
+_GCC_ARM_ACLE_DATA_ALIAS (rev16l, arm_rev16si2, unsigned long, unsigned long)
+#else
+_GCC_ARM_ACLE_DATA_FN(rev16, uint32_t, uint32_t) {
+  return ((__value & 0xff00ff) << 8 | (__value & 0xff00ff00) >> 8);
+}
+_GCC_ARM_ACLE_DATA_FN(rev16l, unsigned long, unsigned long) {
+  return ((__value & 0xff00ff) << 8 | (__value & 0xff00ff00) >> 8);
+}
+#endif
+_GCC_ARM_ACLE_DATA_FN(rev16ll, uint64_t, uint64_t) {
+  return __rev16l(__value) | (uint64_t)__rev16l(__value >> 32) << 32;
+}
+
+#if __ARM_ARCH_6T2__ ||  __ARM_ARCH >= 7
+_GCC_ARM_ACLE_DATA_ALIAS (rbit, arm_rbit, uint32_t, uint32_t)
+_GCC_ARM_ACLE_DATA_ALIAS (rbitl, arm_rbit, unsigned long, unsigned int)
+_GCC_ARM_ACLE_DATA_FN(rbitll, uint64_t, uint64_t) {
+  return ((uint64_t)__rbit(__value) << 32) | __rbit(__value >> 32);
+}
+#endif
+
+#undef _GCC_ARM_ACLE_DATA_ALIAS
+#undef _GCC_ARM_ACLE_DATA_FN
 
 #if (!__thumb__ || __thumb2__) &&  __ARM_ARCH >= 4
 __extension__ static __inline void __attribute__ ((__always_inline__))

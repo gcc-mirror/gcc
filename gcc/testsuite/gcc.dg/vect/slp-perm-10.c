@@ -35,6 +35,7 @@ int main ()
 
   foo ();
 
+#pragma GCC novector
   for (i = 0; i < 32; ++i)
     if (b[i*8+0] != i*8+0
 	|| b[i*8+1] != i*8+0
@@ -52,4 +53,4 @@ int main ()
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_perm } } } */
 /* SLP fails for variable-length SVE because the load size is greater
    than the minimum vector size.  */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm xfail { aarch64_sve && vect_variable_length } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm xfail { { aarch64_sve || riscv_v } && vect_variable_length } } } } */

@@ -114,7 +114,7 @@ public:
     return OPT_Wanalyzer_unsafe_call_within_signal_handler;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;

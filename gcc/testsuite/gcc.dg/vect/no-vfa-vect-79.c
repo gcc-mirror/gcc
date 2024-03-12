@@ -23,6 +23,7 @@ main1 (float *pa, float *pb, float *pc)
       pa[i] = q[i] * pc[i];
     }
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (pa[i] != q[i] * pc[i])

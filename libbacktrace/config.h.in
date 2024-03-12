@@ -20,6 +20,10 @@
    don't. */
 #undef HAVE_DECL_STRNLEN
 
+/* Define to 1 if you have the declaration of `_pgmptr', and to 0 if you
+   don't. */
+#undef HAVE_DECL__PGMPTR
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 

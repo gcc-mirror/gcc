@@ -48,12 +48,14 @@ int main ()
 
   foo(0, 0);
 
+#pragma GCC novector
   for (k = 0; k < K; k++)
     if (out_max[k] != check_max[k] || out_min[k] != 0)
       abort ();
 
   foo(100, 45);
 
+#pragma GCC novector
   for (k = 0; k < K; k++)
     if (out_min[k] != check_min[k] || out_max[k] != 100)
       abort ();

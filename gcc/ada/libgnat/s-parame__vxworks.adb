@@ -58,11 +58,13 @@ package body System.Parameters is
    begin
       if Default_Stack_Size = -1 then
          if Stack_Check_Limits then
-            return 32 * 1024;
             --  Extra stack to allow for 12K exception area.
+            return 32 * 1024;
          else
             return 20 * 1024;
          end if;
+      elsif Size_Type (Default_Stack_Size) < Minimum_Stack_Size then
+         return Minimum_Stack_Size;
       else
          return Size_Type (Default_Stack_Size);
       end if;
@@ -74,7 +76,12 @@ package body System.Parameters is
 
    function Minimum_Stack_Size return Size_Type is
    begin
-      return 8 * 1024;
+      if Stack_Check_Limits then
+         --  Extra stack to allow for 12K exception area.
+         return 20 * 1024;
+      else
+         return 8 * 1024;
+      end if;
    end Minimum_Stack_Size;
 
 end System.Parameters;

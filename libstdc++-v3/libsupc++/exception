@@ -35,6 +35,9 @@
 #include <bits/c++config.h>
 #include <bits/exception.h>
 
+#define __glibcxx_want_uncaught_exceptions
+#include <bits/version.h>
+
 extern "C++" {
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -75,7 +78,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
   /** The runtime will call this function if %exception handling must be
    *  abandoned for any reason.  It can also be called by the user.  */
-  void terminate() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__noreturn__));
+  void terminate() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__noreturn__,__cold__));
 
 #if __cplusplus < 201703L || (__cplusplus <= 202002L && _GLIBCXX_USE_DEPRECATED)
   /// If you write a replacement %unexpected handler, it must be of this type.
@@ -104,7 +107,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
    * @deprecated Removed from the C++ standard in C++17
    */
   _GLIBCXX11_DEPRECATED
-  void unexpected() __attribute__ ((__noreturn__));
+  void unexpected() __attribute__ ((__noreturn__,__cold__));
 #endif
 
   /** [18.6.4]/1:  'Returns true after completing evaluation of a
@@ -121,8 +124,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   _GLIBCXX17_DEPRECATED_SUGGEST("std::uncaught_exceptions()")
   bool uncaught_exception() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
-#if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++98
-#define __cpp_lib_uncaught_exceptions 201411L
+#ifdef __cpp_lib_uncaught_exceptions // C++ >= 17 || GNU++ >= 03
   /** The number of uncaught exceptions.
    *  @since C++17, or any non-strict mode, e.g. `-std=gnu++98`
    *  @see uncaught_exception()

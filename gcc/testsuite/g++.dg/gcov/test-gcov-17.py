@@ -12,7 +12,7 @@ def test_basics(gcov):
     files = gcov['files']
     assert len(files) == 1
     functions = files[0]['functions']
-    assert len(functions) == 5
+    assert len(functions) == 6
 
 
 def test_lines(gcov):
@@ -31,7 +31,19 @@ def test_lines(gcov):
     assert line9[1]['count'] == 2
     assert line9[0]['unexecuted_block']
     assert not line9[1]['unexecuted_block']
-    assert linesdict[31][0]['unexecuted_block']
-    assert linesdict[34][0]['unexecuted_block']
-    assert not linesdict[37][0]['unexecuted_block']
+    assert linesdict[36][0]['unexecuted_block']
+    assert linesdict[39][0]['unexecuted_block']
+    assert not linesdict[41][0]['unexecuted_block']
     assert 32 not in linesdict
+    print(lines)
+
+    line41 = linesdict[41][0]
+    assert line41['count'] == 1
+    assert line41['calls'][0]['returned'] == 1
+    assert line41['calls'][0]['source_block_id'] == 13
+    assert line41['calls'][0]['destination_block_id'] == 1
+    assert len(line41['block_ids']) > 0
+
+    line43 = linesdict[43][0]
+    assert line43['count'] == 1
+    assert line43['calls'][0]['returned'] == 0

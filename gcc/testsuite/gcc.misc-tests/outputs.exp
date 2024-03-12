@@ -50,7 +50,15 @@ if !$skip_lto {
     set ltop [check_linker_plugin_available]
 }
 
-# Check for GNU LD.  Some files like .ld1_args depend on this.
+# Check for GNU LD.  Some files like .ld1_args depend on this.  This
+# should really be testing whether HAVE_GNU_LD was set by configure.
+# If we find GNU ld here, but the compiler wasn't configured
+# --with-gnu-ld or with DEFAULT_LINKER pointing at GNU ld, on a target
+# that doesn't set gnu_ld=yes unconditionally, configure and thus
+# collect2 will conservatively assume there's no support for @file in
+# the linker, but our atfile tests will expect ld1_args files to be
+# created, and thus fail.  Configuring the compiler --with-gnu-ld
+# fixes this.
 set gld [check_effective_target_gld]
 
 # Prepare additional options to be used for linking.

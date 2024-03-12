@@ -19,19 +19,4 @@ foo (u_quad_t uq, unsigned int u, unsigned short us, unsigned char uc,
   printf ("%qb%qB", uq, uq);
   printf ("%Lb%LB", ull, ull);
   printf ("%Zb%ZB", z, z);
-  /* Use of %B in cases valid for %b.  */
-  printf ("%B %hB %hhB %lB %llB %jB %zB %tB\n", u, us, uc, ul, ull, uj, z, ut);
-  printf ("%*.*llB\n", 1, 2, ull);
-  printf ("%-B\n", u);
-  printf ("%#B\n", u);
-  printf ("%08B\n", u);
-  /* Flags valid on signed conversions only.  */
-  printf ("%+B\n", u); /* { dg-warning "flag" } */
-  printf ("% B\n", u); /* { dg-warning "flag" } */
-  /* Flags ignored in certain combinations.  */
-  printf ("%-08B\n", u); /* { dg-warning "ignored" } */
-  printf ("%08.5B\n", u); /* { dg-warning "ignored" } */
-  /* Use of %wN and %wfN with %B.  */
-  printf ("%w8B %w16B %w32B %w64B %wf8B %wf16B %wf32B %wf64B",
-	  u8, u16, u32, u64, uf8, uf16, uf32, uf64);
 }

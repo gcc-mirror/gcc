@@ -41,6 +41,11 @@ struct riscv_subset_t
 /* Subset list.  */
 class riscv_subset_list
 {
+public:
+  /* Because the parse method is called in several places, to prevent repeated
+     errors, use this flag to prevent it from repeating parse. */
+  static bool parse_failed;
+
 private:
   /* Original arch string.  */
   const char *m_arch;
@@ -64,10 +69,15 @@ private:
 
   const char *parse_std_ext (const char *);
 
+  const char *parse_single_std_ext (const char *);
+
   const char *parse_multiletter_ext (const char *, const char *,
 				     const char *);
+  const char *parse_single_multiletter_ext (const char *, const char *,
+					    const char *);
 
-  void handle_implied_ext (riscv_subset_t *);
+  void handle_implied_ext (const char *);
+  bool check_implied_ext ();
   void handle_combine_ext ();
 
 public:
@@ -85,14 +95,21 @@ public:
 
   unsigned xlen () const {return m_xlen;};
 
+  riscv_subset_list *clone () const;
+
   static riscv_subset_list *parse (const char *, location_t);
+  const char *parse_single_ext (const char *);
 
   const riscv_subset_t *begin () const {return m_head;};
   const riscv_subset_t *end () const {return NULL;};
 
   int match_score (riscv_subset_list *) const;
+
+  void set_loc (location_t);
 };
 
 extern const riscv_subset_list *riscv_current_subset_list (void);
+extern void
+riscv_set_arch_by_subset_list (riscv_subset_list *, struct gcc_options *);
 
 #endif /* ! GCC_RISCV_SUBSET_H */

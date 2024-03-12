@@ -102,21 +102,6 @@ private auto convError(S, T)(S source, string fn = __FILE__, size_t ln = __LINE_
     return new ConvException(msg, fn, ln);
 }
 
-private auto convError(S, T)(S source, int radix, string fn = __FILE__, size_t ln = __LINE__)
-{
-    string msg;
-
-    if (source.empty)
-        msg = text("Unexpected end of input when converting from type " ~ S.stringof ~ " base ", radix,
-                " to type " ~ T.stringof);
-    else
-        msg = text("Unexpected '", source.front,
-            "' when converting from type " ~ S.stringof ~ " base ", radix,
-            " to type " ~ T.stringof);
-
-    return new ConvException(msg, fn, ln);
-}
-
 @safe pure/* nothrow*/  // lazy parameter bug
 private auto parseError(lazy string msg, string fn = __FILE__, size_t ln = __LINE__)
 {
@@ -205,8 +190,9 @@ Conversions from string _to numeric types differ from the C equivalents
 `atoi()` and `atol()` by checking for overflow and not allowing whitespace.
 
 For conversion of strings _to signed types, the grammar recognized is:
-$(PRE $(I Integer): $(I Sign UnsignedInteger)
-$(I UnsignedInteger)
+$(PRE $(I Integer):
+    $(I Sign UnsignedInteger)
+    $(I UnsignedInteger)
 $(I Sign):
     $(B +)
     $(B -))
@@ -224,14 +210,14 @@ template to(T)
         return toImpl!T(args);
     }
 
-    // Fix issue 6175
+    // Fix https://issues.dlang.org/show_bug.cgi?id=6175
     T to(S)(ref S arg)
         if (isStaticArray!S)
     {
         return toImpl!T(arg);
     }
 
-    // Fix issue 16108
+    // Fix https://issues.dlang.org/show_bug.cgi?id=16108
     T to(S)(ref S arg)
         if (isAggregateType!S && !isCopyable!S)
     {
@@ -275,7 +261,7 @@ template to(T)
 }
 
 /**
- * When converting strings _to numeric types, note that the D hexadecimal and binary
+ * When converting strings _to numeric types, note that D hexadecimal and binary
  * literals are not handled. Neither the prefixes that indicate the base, nor the
  * horizontal bar used _to separate groups of digits are recognized. This also
  * applies to the suffixes that indicate the type.
@@ -412,7 +398,7 @@ template to(T)
  *   $(LI Pointer to string conversions convert the pointer to a `size_t` value.
  *        If pointer is `char*`, treat it as C-style strings.
  *        In that case, this function is `@system`.))
- * See $(REF formatValue, std,format) on how toString should be defined.
+ * See $(REF formatValue, std,format) on how `toString` should be defined.
  */
 @system pure unittest // @system due to cast and ptr
 {
@@ -438,7 +424,23 @@ template to(T)
     assert(c == "abcx");
 }
 
-// Tests for issue 6175
+/**
+ * Strings can be converted to enum types. The enum member with the same name as the
+ * input string is returned. The comparison is case-sensitive.
+ *
+ * A $(LREF ConvException) is thrown if the enum does not have the specified member.
+ */
+@safe pure unittest
+{
+    import std.exception : assertThrown;
+
+    enum E { a, b, c }
+    assert(to!E("a") == E.a);
+    assert(to!E("b") == E.b);
+    assertThrown!ConvException(to!E("A"));
+}
+
+// Tests for https://issues.dlang.org/show_bug.cgi?id=6175
 @safe pure nothrow unittest
 {
     char[9] sarr = "blablabla";
@@ -447,7 +449,7 @@ template to(T)
     assert(sarr.length == darr.length);
 }
 
-// Tests for issue 7348
+// Tests for https://issues.dlang.org/show_bug.cgi?id=7348
 @safe pure /+nothrow+/ unittest
 {
     assert(to!string(null) == "null");
@@ -469,7 +471,7 @@ template to(T)
     assert(text("a", s) == "aS");
 }
 
-// Tests for issue 11390
+// Tests for https://issues.dlang.org/show_bug.cgi?id=11390
 @safe pure /+nothrow+/ unittest
 {
     const(typeof(null)) ctn;
@@ -478,7 +480,7 @@ template to(T)
     assert(to!string(itn) == "null");
 }
 
-// Tests for issue 8729: do NOT skip leading WS
+// Tests for https://issues.dlang.org/show_bug.cgi?id=8729: do NOT skip leading WS
 @safe pure unittest
 {
     import std.exception;
@@ -1023,7 +1025,15 @@ if (!(is(S : T) &&
     else static if (isIntegral!S && !is(S == enum))
     {
         // other integral-to-string conversions with default radix
-        return toImpl!(T, S)(value, 10);
+
+        import core.internal.string : signedToTempString, unsignedToTempString;
+
+        alias EEType = Unqual!(ElementEncodingType!T);
+        EEType[long.sizeof * 3 + 1] buf = void;
+        EEType[] t = isSigned!S
+            ?   signedToTempString!(10, false, EEType)(value, buf)
+            : unsignedToTempString!(10, false, EEType)(value, buf);
+        return t.dup;
     }
     else static if (is(S == void[]) || is(S == const(void)[]) || is(S == immutable(void)[]))
     {
@@ -1377,7 +1387,7 @@ if (is (T == immutable) && isExactSomeString!T && is(S == enum))
     S2 s2;
     assert(to!string(s2) == "S2(42, 43.5)");
 
-    // Test for issue 8080
+    // Test for https://issues.dlang.org/show_bug.cgi?id=8080
     struct S8080
     {
         short[4] data;
@@ -1979,7 +1989,7 @@ $(UL
 private T toImpl(T, S)(S value)
 if (isInputRange!S && isSomeChar!(ElementEncodingType!S) &&
     !isExactSomeString!T && is(typeof(parse!T(value))) &&
-    // issue 20539
+    // https://issues.dlang.org/show_bug.cgi?id=20539
     !(is(T == enum) && is(typeof(value == OriginalType!T.init)) && !isSomeString!(OriginalType!T)))
 {
     scope(success)
@@ -2254,19 +2264,21 @@ template roundTo(Target)
 }
 
 /**
-The `parse` family of functions works quite like the `to`
+$(PANEL
+The `parse` family of functions works quite like the $(LREF to)
 family, except that:
 $(OL
     $(LI It only works with character ranges as input.)
-    $(LI It takes the input by reference. (This means that rvalues - such
-    as string literals - are not accepted: use `to` instead.))
+    $(LI It takes the input by reference. This means that rvalues (such
+    as string literals) are not accepted: use `to` instead.)
     $(LI It advances the input to the position following the conversion.)
     $(LI It does not throw if it could not convert the entire input.))
+)
 
-This overload converts a character input range to a `bool`.
+This overload parses a `bool` from a character input range.
 
 Params:
-    Target = the type to convert to
+    Target = the boolean type to convert to
     source = the lvalue of an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
     doCount = the flag for deciding to report the number of consumed characters
 
@@ -2283,9 +2295,9 @@ Note:
     to `parse` and do not require lvalues.
 */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source source)
-if (isInputRange!Source &&
-    isSomeChar!(ElementType!Source) &&
-    is(immutable Target == immutable bool))
+if (is(immutable Target == immutable bool) &&
+    isInputRange!Source &&
+    isSomeChar!(ElementType!Source))
 {
     import std.ascii : toLower;
 
@@ -2384,8 +2396,7 @@ Lerr:
 }
 
 /**
-Parses a character $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
-to an integral value.
+Parses an integer from a character $(REF_ALTTEXT input range, isInputRange, std,range,primitives).
 
 Params:
     Target = the integral type to convert to
@@ -2402,8 +2413,8 @@ Throws:
     if no character of the input was meaningfully converted.
 */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref scope Source s)
-if (isSomeChar!(ElementType!Source) &&
-    isIntegral!Target && !is(Target == enum))
+if (isIntegral!Target && !is(Target == enum) &&
+    isSomeChar!(ElementType!Source))
 {
     static if (Target.sizeof < int.sizeof)
     {
@@ -2824,8 +2835,8 @@ Lerr:
 
 /// ditto
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source source, uint radix)
-if (isSomeChar!(ElementType!Source) &&
-    isIntegral!Target && !is(Target == enum))
+if (isIntegral!Target && !is(Target == enum) &&
+    isSomeChar!(ElementType!Source))
 in
 {
     assert(radix >= 2 && radix <= 36, "radix must be in range [2,36]");
@@ -2976,7 +2987,7 @@ do
 }
 
 /**
- * Takes a string representing an `enum` type and returns that type.
+ * Parses an `enum` type from a string representing an enum member name.
  *
  * Params:
  *     Target = the `enum` type to convert to
@@ -2993,8 +3004,7 @@ do
  *     represented by `s`.
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s)
-if (isSomeString!Source && !is(Source == enum) &&
-    is(Target == enum))
+if (is(Target == enum) && isSomeString!Source && !is(Source == enum))
 {
     import std.algorithm.searching : startsWith;
     import std.traits : Unqual, EnumMembers;
@@ -3086,7 +3096,7 @@ if (isSomeString!Source && !is(Source == enum) &&
 }
 
 /**
- * Parses a character range to a floating point number.
+ * Parses a floating point number from a character range.
  *
  * Params:
  *     Target = a floating point type
@@ -3104,8 +3114,8 @@ if (isSomeString!Source && !is(Source == enum) &&
  *     parsed, or if an overflow occurred.
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source source)
-if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum) &&
-    isFloatingPoint!Target && !is(Target == enum))
+if (isFloatingPoint!Target && !is(Target == enum) &&
+    isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum))
 {
     import std.ascii : isDigit, isAlpha, toLower, toUpper, isHexDigit;
     import std.exception : enforce;
@@ -3797,7 +3807,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
 }
 
 /**
-Parsing one character off a range returns the first element and calls `popFront`.
+Parses one character from a character range.
 
 Params:
     Target = the type to convert to
@@ -3813,8 +3823,8 @@ Throws:
     A $(LREF ConvException) if the range is empty.
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s)
-if (isSomeString!Source && !is(Source == enum) &&
-    staticIndexOf!(immutable Target, immutable dchar, immutable ElementEncodingType!Source) >= 0)
+if (staticIndexOf!(immutable Target, immutable dchar, immutable ElementEncodingType!Source) >= 0 &&
+    isSomeString!Source && !is(Source == enum))
 {
     if (s.empty)
         throw convError!(Source, Target)(s);
@@ -3870,8 +3880,8 @@ if (isSomeString!Source && !is(Source == enum) &&
 
 /// ditto
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s)
-if (!isSomeString!Source && isInputRange!Source && isSomeChar!(ElementType!Source) &&
-    isSomeChar!Target && Target.sizeof >= ElementType!Source.sizeof && !is(Target == enum))
+if (isSomeChar!Target && Target.sizeof >= ElementType!Source.sizeof && !is(Target == enum) &&
+    !isSomeString!Source && isInputRange!Source && isSomeChar!(ElementType!Source))
 {
     if (s.empty)
         throw convError!(Source, Target)(s);
@@ -3938,7 +3948,7 @@ if (!isSomeString!Source && isInputRange!Source && isSomeChar!(ElementType!Sourc
 }
 
 /**
-Parsing a character range to `typeof(null)` returns `null` if the range
+Parses `typeof(null)` from a character range if the range
 spells `"null"`. This function is case insensitive.
 
 Params:
@@ -3955,9 +3965,9 @@ Throws:
     A $(LREF ConvException) if the range doesn't represent `null`.
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s)
-if (isInputRange!Source &&
-    isSomeChar!(ElementType!Source) &&
-    is(immutable Target == immutable typeof(null)))
+if (is(immutable Target == immutable typeof(null)) &&
+    isInputRange!Source &&
+    isSomeChar!(ElementType!Source))
 {
     import std.ascii : toLower;
     foreach (c; "null")
@@ -4069,8 +4079,8 @@ package auto skipWS(R, Flag!"doCount" doCount = No.doCount)(ref R r)
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s, dchar lbracket = '[',
     dchar rbracket = ']', dchar comma = ',')
-if (isSomeString!Source && !is(Source == enum) &&
-    isDynamicArray!Target && !is(Target == enum))
+if (isDynamicArray!Target && !is(Target == enum) &&
+    isSomeString!Source && !is(Source == enum))
 {
     import std.array : appender;
 
@@ -4256,8 +4266,8 @@ if (isSomeString!Source && !is(Source == enum) &&
 /// ditto
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s, dchar lbracket = '[',
     dchar rbracket = ']', dchar comma = ',')
-if (isExactSomeString!Source &&
-    isStaticArray!Target && !is(Target == enum))
+if (isStaticArray!Target && !is(Target == enum) &&
+    isExactSomeString!Source)
 {
     static if (hasIndirections!Target)
         Target result = Target.init[0].init;
@@ -4365,8 +4375,8 @@ Lfewerr:
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s, dchar lbracket = '[',
                              dchar rbracket = ']', dchar keyval = ':', dchar comma = ',')
-if (isSomeString!Source && !is(Source == enum) &&
-    isAssociativeArray!Target && !is(Target == enum))
+if (isAssociativeArray!Target && !is(Target == enum) &&
+    isSomeString!Source && !is(Source == enum))
 {
     alias KeyType = typeof(Target.init.keys[0]);
     alias ValType = typeof(Target.init.values[0]);
@@ -5567,7 +5577,7 @@ private bool isHexLiteral(String)(scope const String hexData)
     static assert( ("5A 01A C FF de 1b"d).isHexLiteral);
     static assert( ("0123456789abcdefABCDEF"d).isHexLiteral);
     static assert( (" 012 34 5 6789 abcd ef\rAB\nCDEF"d).isHexLiteral);
-    // library version allows what's pointed by issue 10454
+    // library version allows what's pointed by https://issues.dlang.org/show_bug.cgi?id=10454
     static assert( ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").isHexLiteral);
 }
 
@@ -5726,33 +5736,13 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
         {
             void initialize(UT value)
             {
-                bool neg = false;
-                if (value < 10)
-                {
-                    if (value >= 0)
-                    {
-                        lwr = 0;
-                        upr = 1;
-                        buf[0] = cast(char)(cast(uint) value + '0');
-                        return;
-                    }
-                    value = -value;
-                    neg = true;
-                }
-                auto i = cast(uint) buf.length - 1;
-                while (cast(Unsigned!UT) value >= 10)
-                {
-                    buf[i] = cast(ubyte)('0' + cast(Unsigned!UT) value % 10);
-                    value = unsigned(value) / 10;
-                    --i;
-                }
-                buf[i] = cast(char)(cast(uint) value + '0');
-                if (neg)
-                {
-                    buf[i - 1] = '-';
-                    --i;
-                }
-                lwr = i;
+                import core.internal.string : signedToTempString, unsignedToTempString;
+
+                char[] t = value < 0
+                    ?   signedToTempString!(10, false, char)(value, buf)
+                    : unsignedToTempString!(10, false, char)(value, buf);
+
+                lwr = cast(uint) (buf.length - t.length);
                 upr = cast(uint) buf.length;
             }
 
@@ -5958,7 +5948,7 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
     }
 }
 
-@safe unittest // opSlice (issue 16192)
+@safe unittest // opSlice (https://issues.dlang.org/show_bug.cgi?id=16192)
 {
     import std.meta : AliasSeq;
 
@@ -5986,7 +5976,7 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
         for (; !r.empty; r.popFront(), ++i)
         {
             assert(original[i .. original.length].tupleof == r.tupleof);
-                // tupleof is used to work around issue 16216.
+                // tupleof is used to work around https://issues.dlang.org/show_bug.cgi?id=16216.
         }
 
         // opSlice vs popBack

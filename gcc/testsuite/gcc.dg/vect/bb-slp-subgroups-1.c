@@ -31,9 +31,11 @@ main (int argc, char **argv)
   __asm__ volatile ("" : : : "memory");
   test (a, b);
   __asm__ volatile ("" : : : "memory");
+#pragma GCC novector
   for (int i = 0; i < 4; i++)
     if (a[i] != i+4)
       abort ();
+#pragma GCC novector
   for (int i = 4; i < 8; i++)
     if (a[i] != 0)
       abort ();

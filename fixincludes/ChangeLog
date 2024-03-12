@@ -1,3 +1,21 @@
+2023-08-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (darwin_flt_eval_method): Handle macOS 14 guard
+	variant.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h [DARWIN_FLT_EVAL_METHOD_CHECK]: Update test.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Set and use PICFLAG and LD_PICFLAG.  Use the "pic"
+	build of libiberty if PICFLAG is set.
+	* configure.ac:
+	* configure: Regenerate.
+
 2023-03-28  Xi Ruoyao  <xry111@xry111.site>
 
 	PR other/109293

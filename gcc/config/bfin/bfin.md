@@ -1401,7 +1401,8 @@
 	 (popcount:SI (match_operand:SI 1 "register_operand" "d"))))]
   ""
   "%h0 = ONES %1;"
-  [(set_attr "type" "alu0")])
+  [(set_attr "type" "alu0")
+   (set_attr "length" "4")])
 
 (define_expand "popcountsi2"
   [(set (match_dup 2)

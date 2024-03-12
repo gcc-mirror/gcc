@@ -120,6 +120,7 @@ package Sem_Disp is
         (S               : Entity_Id;
          No_Interfaces   : Boolean := False;
          Interfaces_Only : Boolean := False;
+         Skip_Overridden : Boolean := False;
          One_Only        : Boolean := False) return Subprogram_List;
 
       function Is_Overriding_Subprogram (E : Entity_Id) return Boolean;
@@ -129,6 +130,7 @@ package Sem_Disp is
      (S               : Entity_Id;
       No_Interfaces   : Boolean := False;
       Interfaces_Only : Boolean := False;
+      Skip_Overridden : Boolean := False;
       One_Only        : Boolean := False) return Subprogram_List;
    --  Given the spec of a subprogram, this function gathers any inherited
    --  subprograms from direct inheritance or via interfaces. The result is an
@@ -142,6 +144,9 @@ package Sem_Disp is
    --  come first, starting with the closest ancestors, and are followed by
    --  subprograms inherited from interfaces. At most one of No_Interfaces
    --  and Interfaces_Only should be True.
+   --
+   --  If Skip_Overridden is True, subprograms overridden by another subprogram
+   --  in the result list are skipped.
    --
    --  If One_Only is set, the search is discontinued as soon as one entry
    --  is found. In this case the resulting array is either null or contains

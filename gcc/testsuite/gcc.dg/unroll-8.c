@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-rtl-loop2_unroll -funroll-loops" } */
+/* { dg-options "-O2 -fdump-rtl-loop2_unroll-details-blocks -funroll-loops" } */
+/* { dg-additional-options "-fno-tree-vectorize" { target amdgcn-*-* } } */
+
 struct a {int a[7];};
 int t(struct a *a, int n)
 {
@@ -8,7 +10,7 @@ int t(struct a *a, int n)
     a->a[i]++;
 }
 /* { dg-final { scan-rtl-dump-not "Unrolled loop" "loop2_unroll" } } */
-/* { dg-final { scan-rtl-dump "likely upper bound: 7" "loop2_unroll" } } */
+/* { dg-final { scan-rtl-dump "likely upper bound: 6" "loop2_unroll" } } */
 /* { dg-final { scan-rtl-dump "realistic bound: -1" "loop2_unroll" } } */
 /* { dg-final { scan-rtl-dump "Not unrolling loop, doesn't roll" "loop2_unroll" } } */
 /* { dg-final { scan-rtl-dump-not "Invalid sum" "loop2_unroll" } } */

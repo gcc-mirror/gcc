@@ -12,4 +12,4 @@ void bla (void)
 }
 
 /* There should be a header duplicated.  */
-/* { dg-final { scan-tree-dump-times "Duplicating header" 1 "ch2"} } */
+/* { dg-final { scan-tree-dump-times "Duplicating header of the" 1 "ch2"} } */

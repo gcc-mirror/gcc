@@ -37,14 +37,14 @@ void test_nowarm (void)
 void test_warn (void)
 {
   char *p = f ();
-  free (p + 1);               // { dg-warning "'free|void free\\(void\\*\\)' called on pointer 'p|<unknown>' with nonzero offset" }
+  free (p + 1);               // { dg-warning "'(free|void free\\(void\\*\\))' called on pointer '(p|<unknown>)' with nonzero offset" }
 
   p = g ();
-  free (p + 2);               // { dg-warning "'free|void free\\(void\\*\\)' called on pointer 'p|<unknown>' with nonzero offset" }
+  free (p + 2);               // { dg-warning "'(free|void free\\(void\\*\\))' called on pointer '(p|<unknown>)' with nonzero offset" }
 
   p = f ();
-  __builtin_free (p + 3);     // { dg-warning "'__builtin_free|void __builtin_free\\(void\\*\\)' called on pointer 'p|<unknown>' with nonzero offset" }
+  __builtin_free (p + 3);     // { dg-warning "'(__builtin_free|void __builtin_free\\(void\\*\\))' called on pointer '(p|<unknown>)' with nonzero offset" }
 
   p = g ();
-  __builtin_free (p + 4);     // { dg-warning "'__builtin_free|void __builtin_free\\(void\\*\\)' called on pointer 'p|<unknown>' with nonzero offset" }
+  __builtin_free (p + 4);     // { dg-warning "'(__builtin_free|void __builtin_free\\(void\\*\\))' called on pointer '(p|<unknown>)' with nonzero offset" }
 }

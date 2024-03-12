@@ -27,6 +27,7 @@ main (void)
     }
 
   foo (data);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (data[i] / 123 != i)

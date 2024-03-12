@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (abd_1_u32_m_tied1, svuint32_t,
 		z0 = svabd_m (p0, z0, 1))
 
 /*
-** abd_1_u32_m_untied: { xfail *-*-* }
+** abd_1_u32_m_untied:
 **	mov	(z[0-9]+\.s), #1
 **	movprfx	z0, z1
 **	uabd	z0\.s, p0/m, z0\.s, \1

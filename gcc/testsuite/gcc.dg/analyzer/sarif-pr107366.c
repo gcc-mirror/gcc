@@ -18,3 +18,4 @@ hwloc_apply_diff_one() {
   }
 }
 
+/* { dg-final { verify-sarif-file } } */

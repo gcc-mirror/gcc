@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-require-effective-target vect_float} */
 /* { dg-additional-options "-w -Wno-psabi -ffast-math" } */
 

@@ -112,12 +112,6 @@
   (and (match_code "const_int")
        (match_test "UNSIGNED_INT6 (~ival)")))
 
-(define_constraint "CmL"
-  "@internal
-   Two's complement of a 6-bit unsigned integer constant"
-  (and (match_code "const_int")
-       (match_test "UNSIGNED_INT6 (-ival)")))
-
 (define_constraint "C16"
   "@internal
    A 16-bit signed integer constant"
@@ -160,42 +154,17 @@
   (and (match_code "const_int")
        (match_test "ival <= 0")))
 
-(define_constraint "Cca"
-  "@internal
-   Conditional or three-address add / sub constant"
-  (and (match_code "const_int")
-       (match_test "ival == (HOST_WIDE_INT)(HOST_WIDE_INT_M1U << 31)
-		    || (ival >= -0x1f8 && ival <= 0x1f8
-			&& ((ival >= 0 ? ival : -ival)
-			    <= 0x3f * (ival & -ival)))")))
-
-; intersection of "O" and "Cca".
-(define_constraint "CL2"
-  "@internal
-   A 6-bit unsigned integer constant times 2"
-  (and (match_code "const_int")
-       (match_test "!(ival & ~126)")))
-
 (define_constraint "CM4"
   "@internal
-   A 5-bit unsigned integer constant times 4"
+   A valid 5-bit unsigned stack offset for a short add"
   (and (match_code "const_int")
        (match_test "!(ival & ~124)")))
 
-(define_constraint "Csp"
+(define_constraint "CP4"
   "@internal
-   A valid stack pointer offset for a short add"
+   A valid 5-bit unsigned stack offset for a short sub"
   (and (match_code "const_int")
-       (match_test "!(ival & ~124) || !(-ival & ~124)")))
-
-(define_constraint "C2a"
-  "@internal
-   Unconditional two-address add / sub constant"
-  (and (match_code "const_int")
-       (match_test "ival == (HOST_WIDE_INT) (HOST_WIDE_INT_M1U << 31)
-		    || (ival >= -0x4000 && ival <= 0x4000
-			&& ((ival >= 0 ? ival : -ival)
-			    <= 0x7ff * (ival & -ival)))")))
+       (match_test "!(-ival & ~124)")))
 
 (define_constraint "C0p"
  "@internal
@@ -532,3 +501,35 @@
   "TARGET_CODE_DENSITY ? R0_REGS : NO_REGS"
   "@internal
    @code{r0} register for code density instructions.")
+
+(define_constraint "C6u" "@internal
+  A 6-bit unsigned integer constant shifted by x-bit(s)"
+  (and (match_code "const_int")
+       (ior (match_test "UNSIGNED_INT9_SHIFTED (ival,3)")
+	    (match_test "UNSIGNED_INT8_SHIFTED (ival,2)")
+	    (match_test "UNSIGNED_INT7_SHIFTED (ival,1)")
+	    (match_test "UNSIGNED_INT6 (ival)"))))
+
+(define_constraint "C6n" "@internal
+  A negative 6-bit integer constant shifted by x-bit(s) used by add."
+  (and (match_code "const_int")
+       (match_test "ival < 0")
+       (match_test "SIGNED_INT10(ival)")
+       (ior (match_test "UNSIGNED_INT9_SHIFTED (-ival,3)")
+	    (match_test "UNSIGNED_INT8_SHIFTED (-ival,2)")
+	    (match_test "UNSIGNED_INT7_SHIFTED (-ival,1)")
+	    (match_test "UNSIGNED_INT6 (-ival)"))))
+
+(define_constraint "CIs" "@internal
+  A 12-bit signed integer constant shifted by x-bit(s)"
+  (and (match_code "const_int")
+       (ior (match_test "SIGNED_INT15_SHIFTED (ival,3)")
+	    (match_test "SIGNED_INT14_SHIFTED (ival,2)")
+	    (match_test "SIGNED_INT13_SHIFTED (ival,1)")
+	    (match_test "SIGNED_INT12 (ival)"))))
+
+(define_constraint "C4p"
+ "@internal
+  Matches 0x8000_0000"
+  (and (match_code "const_int")
+       (match_test "ival == (HOST_WIDE_INT) (HOST_WIDE_INT_M1U << 31)")))

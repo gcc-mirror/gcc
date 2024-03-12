@@ -26,8 +26,7 @@
 #define _CRT_RAND_S // define this before including <stdlib.h> to get rand_s
 
 #include <random>
-
-#ifdef  _GLIBCXX_USE_C99_STDINT_TR1
+#include <system_error>
 
 #if defined __i386__ || defined __x86_64__
 # include <cpuid.h>
@@ -94,6 +93,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
   namespace
   {
+    [[noreturn]]
+    inline void
+    __throw_syserr([[maybe_unused]] int e, [[maybe_unused]] const char* msg)
+    { _GLIBCXX_THROW_OR_ABORT(system_error(e, std::generic_category(), msg)); }
+
 #if USE_RDRAND
     unsigned int
     __attribute__ ((target("rdrnd")))
@@ -365,9 +369,18 @@ namespace std _GLIBCXX_VISIBILITY(default)
       which = prng;
 #endif
     else
-      std::__throw_runtime_error(
-	  __N("random_device::random_device(const std::string&):"
-	      " unsupported token"));
+      std::__throw_syserr(EINVAL, __N("random_device::random_device"
+				      "(const std::string&):"
+				      " unsupported token"));
+
+#if defined ENOSYS
+    [[maybe_unused]] const int unsupported = ENOSYS;
+#elif defined ENOTSUP
+    [[maybe_unused]] const int unsupported = ENOTSUP;
+#else
+    [[maybe_unused]] const int unsupported = 0;
+#endif
+    int err = 0;
 
 #ifdef _GLIBCXX_USE_CRT_RAND_S
     if (which & rand_s)
@@ -403,6 +416,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	      return;
 	    }
 	}
+      err = unsupported;
     }
 #endif // USE_RDSEED
 
@@ -423,6 +437,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	      return;
 	    }
 	}
+      err = unsupported;
     }
 #endif // USE_RDRAND
 
@@ -434,6 +449,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	    _M_func = &__ppc_darn;
 	    return;
 	  }
+	err = unsupported;
       }
 #endif // USE_DARN
 
@@ -454,6 +470,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	    _M_func = &__libc_getentropy;
 	    return;
 	  }
+	err = unsupported;
       }
 #endif // _GLIBCXX_HAVE_GETENTROPY
 
@@ -473,6 +490,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       if (_M_file)
 	return;
 #endif // USE_POSIX_FILE_IO
+      err = errno;
     }
 #endif // _GLIBCXX_USE_DEV_RANDOM
 
@@ -489,9 +507,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 #endif
 
-    std::__throw_runtime_error(
-	__N("random_device::random_device(const std::string&):"
-	    " device not available"));
+    auto msg = __N("random_device::random_device(const std::string&):"
+		   " device not available");
+    if (err)
+      std::__throw_syserr(err, msg);
+    else
+      std::__throw_runtime_error(msg);
 #endif // USE_MT19937
   }
 
@@ -508,8 +529,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	char* endptr;
 	seed = std::strtoul(nptr, &endptr, 0);
 	if (*nptr == '\0' || *endptr != '\0')
-	  std::__throw_runtime_error(__N("random_device::_M_init_pretr1"
-					 "(const std::string&)"));
+	  std::__throw_syserr(EINVAL, __N("random_device::_M_init_pretr1"
+					  "(const std::string&)"));
       }
     _M_mt.seed(seed);
 #else
@@ -582,7 +603,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	    p = static_cast<char*>(p) + e;
 	  }
 	else if (e != -1 || errno != EINTR)
-	  __throw_runtime_error(__N("random_device could not be read"));
+	  __throw_syserr(errno, __N("random_device could not be read"));
       }
     while (n > 0);
 #else // USE_POSIX_FILE_IO
@@ -668,4 +689,3 @@ namespace std _GLIBCXX_VISIBILITY(default)
   template struct __detail::_Mod<unsigned, 2147483647UL, 16807UL, 0UL>;
 #endif
 }
-#endif // _GLIBCXX_USE_C99_STDINT_TR1

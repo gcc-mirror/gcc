@@ -79,6 +79,14 @@
 # include <limits>
 #endif
 
+#define __glibcxx_want_constexpr_numeric
+#define __glibcxx_want_gcd
+#define __glibcxx_want_gcd_lcm
+#define __glibcxx_want_interpolate
+#define __glibcxx_want_lcm
+#define __glibcxx_want_parallel_algorithm
+#include <bits/version.h>
+
 /**
  * @defgroup numerics Numerics
  *
@@ -150,14 +158,9 @@ namespace __detail
 	}
     }
 } // namespace __detail
+#endif // C++14
 
-#if __cplusplus >= 201703L
-
-#define __cpp_lib_gcd_lcm 201606L
-// These were used in drafts of SD-6:
-#define __cpp_lib_gcd 201606L
-#define __cpp_lib_lcm 201606L
-
+#ifdef __cpp_lib_gcd_lcm // C++ >= 17
   /// Greatest common divisor
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>
@@ -198,14 +201,10 @@ namespace __detail
       return __r;
     }
 
-#endif // C++17
-#endif // C++14
-
-#if __cplusplus > 201703L
+#endif // __cpp_lib_gcd_lcm
 
   // midpoint
-# define __cpp_lib_interpolate 201902L
-
+#ifdef __cpp_lib_interpolate // C++ >= 20
   template<typename _Tp>
     constexpr
     enable_if_t<__and_v<is_arithmetic<_Tp>, is_same<remove_cv_t<_Tp>, _Tp>,
@@ -251,14 +250,9 @@ namespace __detail
       static_assert( sizeof(_Tp) != 0, "type must be complete" );
       return __a  + (__b - __a) / 2;
     }
-#endif // C++20
+#endif // __cpp_lib_interpolate
 
 #if __cplusplus >= 201703L
-
-#if __cplusplus > 201703L
-#define __cpp_lib_constexpr_numeric 201911L
-#endif
-
   /// @addtogroup numeric_ops
   /// @{
 
@@ -739,9 +733,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #  include <pstl/glue_numeric_defs.h>
 #  define _PSTL_NUMERIC_FORWARD_DECLARED 1
 # endif
-
-// Feature test macro for parallel algorithms
-# define __cpp_lib_parallel_algorithm 201603L
 #endif // C++17
 
 #endif /* _GLIBCXX_NUMERIC */

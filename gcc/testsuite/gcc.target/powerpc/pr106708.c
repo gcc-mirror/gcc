@@ -4,7 +4,7 @@
 /* { dg-require-effective-target has_arch_ppc64 } */
 
 long long arr[]
-  = {0xffffffff7cdeab55LL, 0x98765432LL, 0xabcd0000LL};
+= {0xffffffff7cdeab55LL, 0x98765432LL, 0xabcd0000LL, 0xffffffff65430000LL};
 
 void __attribute__ ((__noipa__)) test_li_xoris (long long *arg)
 {
@@ -27,6 +27,13 @@ void __attribute__ ((__noipa__)) test_lis_rldicl (long long *arg)
 /* { dg-final { scan-assembler-times {\mlis .*,0xabcd\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mrldicl .*,0,32\M} 1 } } */
 
+void __attribute__ ((__noipa__)) test_lis_xoris (long long *arg)
+{
+  *arg = 0xffffffff65430000LL;
+}
+/* { dg-final { scan-assembler-times {\mlis .*,0xe543\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxoris .*0x8000\M} 1 } } */
+
 int
 main ()
 {
@@ -35,6 +42,7 @@ main ()
   test_li_xoris (a);
   test_li_oris (a + 1);
   test_lis_rldicl (a + 2);
+  test_lis_xoris (a + 3);
   if (__builtin_memcmp (a, arr, sizeof (arr)) != 0)
     __builtin_abort ();
   return 0;

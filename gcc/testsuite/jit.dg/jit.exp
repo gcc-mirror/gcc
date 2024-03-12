@@ -440,6 +440,10 @@ proc jit-check-debug-info { obj_file cmds match } {
         send $cmd
     }
     expect {
+	-re "Dwarf Error: wrong version in compilation unit header" {
+	    set testcase [testname-for-summary]
+	    unsupported "$testcase: gdb does not support dwarf version"
+	}
         -re $match { pass OK }
         default { fail FAIL }
     }

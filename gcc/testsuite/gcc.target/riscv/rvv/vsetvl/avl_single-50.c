@@ -3,13 +3,14 @@
 
 #include "riscv_vector.h"
 
-void f(void *base, void *out, void *mask_in, size_t m) {
+void f(void *base, void *out, void *mask_in, size_t m, size_t vl) {
   vbool64_t mask = *(vbool64_t*)mask_in;
-  size_t vl = 105;
+  vl = 105 + vl;
   for (size_t i = 0; i < m; i++) {
     if (i % 2 == 0) {
       vint8mf8_t v0 = __riscv_vle8_v_i8mf8(base + i, vl);
       vint8mf8_t v1 = __riscv_vle8_v_i8mf8_tu(v0, base + i + 100, vl);
+      v1 = __riscv_vadd_vv_i8mf8 (v0,v1,vl);
       __riscv_vse8_v_i8mf8 (out + i, v1, vl);
     } else {
       vint16mf4_t v0 = __riscv_vle16_v_i16mf4(base + i, vl);

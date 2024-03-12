@@ -29,12 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Ghost code, loop invariants and assertions in this unit are meant for
+--  Ghost code, loop (in)variants and assertions in this unit are meant for
 --  analysis only, not for run-time checking, as it would be too costly
 --  otherwise. This is enforced by setting the assertion policy to Ignore.
 
 pragma Assertion_Policy (Ghost          => Ignore,
                          Loop_Invariant => Ignore,
+                         Loop_Variant   => Ignore,
                          Assert         => Ignore);
 
 with Ada.Strings.Maps; use Ada.Strings.Maps;
@@ -1570,6 +1571,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                     (for all K in 1 .. Indx =>
                        Result.Data (K) =
                          Item (Item'First + (K - 1) mod Ilen));
+                  pragma Loop_Variant (Increases => Indx);
                end loop;
 
                Result.Data (Indx + 1 .. Max_Length) := Super_String_Data
@@ -1609,6 +1611,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                     (for all K in Indx + 1 .. Max_Length =>
                        Result.Data (K) =
                          Item (Item'Last - (Max_Length - K) mod Ilen));
+                  pragma Loop_Variant (Decreases => Indx);
                end loop;
 
                Result.Data (1 .. Indx) :=
@@ -1654,6 +1657,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       Low    : Positive;
       High   : Natural) return Super_String
    is
+      Len : constant Natural := (if Low > High then 0 else High - Low + 1);
    begin
       return Result : Super_String (Source.Max_Length) do
          if Low - 1 > Source.Current_Length
@@ -1662,9 +1666,8 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
             raise Index_Error;
          end if;
 
-         Result.Current_Length := (if Low > High then 0 else High - Low + 1);
-         Result.Data (1 .. Result.Current_Length) :=
-           Source.Data (Low .. High);
+         Result.Data (1 .. Len) := Source.Data (Low .. High);
+         Result.Current_Length := Len;
       end return;
    end Super_Slice;
 
@@ -1674,6 +1677,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       Low    : Positive;
       High   : Natural)
    is
+      Len : constant Natural := (if Low > High then 0 else High - Low + 1);
    begin
       if Low - 1 > Source.Current_Length
         or else High > Source.Current_Length
@@ -1681,8 +1685,8 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          raise Index_Error;
       end if;
 
-      Target.Current_Length := (if Low > High then 0 else High - Low + 1);
-      Target.Data (1 .. Target.Current_Length) := Source.Data (Low .. High);
+      Target.Data (1 .. Len) := Source.Data (Low .. High);
+      Target.Current_Length := Len;
    end Super_Slice;
 
    ----------------
@@ -1784,6 +1788,12 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                   Source.Data (1 .. Npad) := [others => Pad];
                   Source.Data (Npad + 1 .. Max_Length) :=
                     Temp (1 .. Max_Length - Npad);
+
+                  pragma Assert
+                    (Source.Data (1 .. Npad) = [1 .. Npad => Pad]);
+                  pragma Assert
+                    (Source.Data (Npad + 1 .. Max_Length)
+                     = Temp (1 .. Max_Length - Npad));
                end if;
 
             when Strings.Left =>
@@ -1844,10 +1854,16 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
    begin
       for J in 1 .. Source.Current_Length loop
          Result.Data (J) := Mapping.all (Source.Data (J));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
          pragma Loop_Invariant (Result.Data (1 .. J)'Initialized);
          pragma Loop_Invariant
            (for all K in 1 .. J =>
               Result.Data (K) = Mapping (Source.Data (K)));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
       end loop;
 
       Result.Current_Length := Source.Current_Length;
@@ -1861,9 +1877,15 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
    begin
       for J in 1 .. Source.Current_Length loop
          Source.Data (J) := Mapping.all (Source.Data (J));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
          pragma Loop_Invariant
            (for all K in 1 .. J =>
               Source.Data (K) = Mapping (Source'Loop_Entry.Data (K)));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
       end loop;
    end Super_Translate;
 

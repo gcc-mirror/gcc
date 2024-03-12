@@ -158,7 +158,7 @@
 ;; See also comment above the "*call_real" pattern.
 
 (define_predicate "mmix_address_operand"
-  (if_then_else (match_test "reload_in_progress || reload_completed")
+  (if_then_else (match_test "lra_in_progress || reload_completed")
     (match_test "strict_memory_address_p (Pmode, op)")
     (match_test "memory_address_p (Pmode, op)")))
 
@@ -171,4 +171,14 @@
     (match_code "plus")
     (match_code "reg" "0")
     (match_code "const_int" "1")
-    (match_test "XEXP (op, 0) == stack_pointer_rtx"))))
+    (ior
+     (match_test "XEXP (op, 0) == stack_pointer_rtx")
+     ;; We can temporarily have a FP+offset here, where we (for FP)
+     ;; accept only FP and the equivalent elimination of SP+offset.
+     ;; See lra_eliminate_regs_1 in lra-eliminations.cc c:a line 370:
+     ;;  "rtx to = subst_p ? ep->to_rtx : ep->from_rtx;"
+     (and
+      (match_test "lra_in_progress")
+      (ior
+       (match_test "XEXP (op, 0) == hard_frame_pointer_rtx")
+       (match_test "XEXP (op, 0) == frame_pointer_rtx")))))))

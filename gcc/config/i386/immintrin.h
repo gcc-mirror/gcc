@@ -48,6 +48,8 @@
 
 #include <avxvnniint8intrin.h>
 
+#include <avxvnniint16intrin.h>
+
 #include <avx2intrin.h>
 
 #include <avx512fintrin.h>
@@ -94,17 +96,23 @@
 
 #include <avx512bitalgintrin.h>
 
+#include <avx512bitalgvlintrin.h>
+
 #include <avx512vp2intersectintrin.h>
 
 #include <avx512vp2intersectvlintrin.h>
 
-#ifdef __SSE2__
 #include <avx512fp16intrin.h>
 
 #include <avx512fp16vlintrin.h>
-#endif
 
 #include <shaintrin.h>
+
+#include <sm3intrin.h>
+
+#include <sha512intrin.h>
+
+#include <sm4intrin.h>
 
 #include <fmaintrin.h>
 
@@ -118,13 +126,11 @@
 
 #include <vpclmulqdqintrin.h>
 
-#ifdef __SSE2__
 #include <avx512bf16vlintrin.h>
 
 #include <avx512bf16intrin.h>
 
 #include <avxneconvertintrin.h>
-#endif
 
 #include <amxtileintrin.h>
 

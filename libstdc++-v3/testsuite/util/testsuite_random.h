@@ -26,6 +26,7 @@
 
 #include <cmath>
 #include <initializer_list>
+#include <system_error>
 #include <testsuite_hooks.h>
 
 namespace __gnu_test
@@ -82,7 +83,7 @@ namespace __gnu_test
       return 0.0;
   }
 
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
   inline double
   binomial_pdf(int k, int n, double p)
   {
@@ -140,7 +141,7 @@ namespace __gnu_test
       return p * std::pow(1 - p, k);
   }
 
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
   inline double
   negative_binomial_pdf(int k, int n, double p)
   {
@@ -178,7 +179,7 @@ namespace __gnu_test
       return 1.0 / (b - a + 1.0);
   }
 
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
   inline double
   lbincoef(int n, int k)
   {
@@ -204,7 +205,7 @@ namespace __gnu_test
     try {
       std::random_device dev(token);
       return true;
-    } catch (...) {
+    } catch (const std::system_error& /* See PR libstdc++/105081 */) {
       return false;
     }
   }

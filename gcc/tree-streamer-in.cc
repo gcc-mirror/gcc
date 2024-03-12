@@ -188,21 +188,9 @@ unpack_ts_int_cst_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_real_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
-  unsigned i;
   REAL_VALUE_TYPE r;
 
-  /* Clear all bits of the real value type so that we can later do
-     bitwise comparisons to see if two values are the same.  */
-  memset (&r, 0, sizeof r);
-  r.cl = (unsigned) bp_unpack_value (bp, 2);
-  r.decimal = (unsigned) bp_unpack_value (bp, 1);
-  r.sign = (unsigned) bp_unpack_value (bp, 1);
-  r.signalling = (unsigned) bp_unpack_value (bp, 1);
-  r.canonical = (unsigned) bp_unpack_value (bp, 1);
-  r.uexp = (unsigned) bp_unpack_value (bp, EXP_BITS);
-  for (i = 0; i < SIGSZ; i++)
-    r.sig[i] = (unsigned long) bp_unpack_value (bp, HOST_BITS_PER_LONG);
-
+  bp_unpack_real_value (bp, &r);
   memcpy (TREE_REAL_CST_PTR (expr), &r, sizeof (REAL_VALUE_TYPE));
 }
 
@@ -398,8 +386,11 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   if (AGGREGATE_TYPE_P (expr))
     TYPE_TYPELESS_STORAGE (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_EMPTY_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_NO_NAMED_ARGS_STDARG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
+  if (FUNC_OR_METHOD_TYPE_P (expr))
+    TYPE_NO_NAMED_ARGS_STDARG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (RECORD_OR_UNION_TYPE_P (expr))
+    TYPE_INCLUDES_FLEXARRAY (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_PRECISION_RAW (expr) = bp_unpack_var_len_unsigned (bp);
   SET_TYPE_ALIGN (expr, bp_unpack_var_len_unsigned (bp));
 #ifdef ACCEL_COMPILER
   if (TYPE_ALIGN (expr) > targetm.absolute_biggest_alignment)
@@ -860,8 +851,7 @@ lto_input_ts_type_non_common_tree_pointers (class lto_input_block *ib,
     TYPE_DOMAIN (expr) = stream_read_tree_ref (ib, data_in);
   else if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_FIELDS (expr) = streamer_read_chain (ib, data_in);
-  else if (TREE_CODE (expr) == FUNCTION_TYPE
-	   || TREE_CODE (expr) == METHOD_TYPE)
+  else if (FUNC_OR_METHOD_TYPE_P (expr))
     TYPE_ARG_TYPES (expr) = stream_read_tree_ref (ib, data_in);
 
   if (!POINTER_TYPE_P (expr))

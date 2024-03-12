@@ -42,7 +42,7 @@ void test01(int dummy, ...)
 #endif
 
 #if _GLIBCXX_HAVE_VFWSCANF
-  FILE* stream = 0;
+  FILE* stream = va_arg(arg, FILE*);
   const wchar_t* format1 = 0;
   int ret1;
   ret1 = std::tr1::vfwscanf(stream, format1, arg);

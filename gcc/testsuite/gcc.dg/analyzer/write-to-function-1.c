@@ -1,3 +1,5 @@
+/* { C only: C++ does not allow for conversion from function pointer to 'void *' */
+
 typedef __SIZE_TYPE__ size_t;
 
 int getrandom (void *__buffer, size_t __length, /* { dg-message "parameter 1 of 'getrandom' marked with attribute 'access \\(write_only, 1, 2\\)'" } */

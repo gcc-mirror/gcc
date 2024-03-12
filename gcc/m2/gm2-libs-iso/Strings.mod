@@ -103,26 +103,64 @@ BEGIN
 END Extract ;
 
 
+PROCEDURE MinCard (a, b: CARDINAL) : CARDINAL ;
+BEGIN
+   IF a < b
+   THEN
+      RETURN a
+   ELSE
+      RETURN b
+   END
+END MinCard ;
+
+
 (* Deletes at most numberToDelete characters from stringVar, starting at position
    startIndex.
 *)
 
 PROCEDURE Delete (VAR stringVar: ARRAY OF CHAR;
                   startIndex, numberToDelete: CARDINAL) ;
+CONST
+   Debugging = FALSE ;
 VAR
-   h: CARDINAL ;
+   length,
+   high,
+   last   : CARDINAL ;
 BEGIN
-   IF numberToDelete>0
+   IF numberToDelete > 0
    THEN
-      (* numberToDelete can be consider as the number of characters to skip over *)
-      h := Length(stringVar) ;
-      WHILE (startIndex+numberToDelete<h) DO
-         stringVar[startIndex] := stringVar[startIndex+numberToDelete] ;
-         INC(startIndex)
-      END ;
-      IF startIndex<HIGH(stringVar)
+      length := Length (stringVar) ;
+      IF startIndex < length
       THEN
-         stringVar[startIndex] := ASCII.nul
+         high := HIGH (stringVar) ;
+         (* Calculate the number of characters to delete.  *)
+         last := MinCard (high, length-1) ;
+         IF last - startIndex < numberToDelete
+         THEN
+            numberToDelete := last - startIndex + 1
+         END ;
+         IF numberToDelete > 0
+         THEN
+            IF Debugging
+            THEN
+               printf ("startIndex = %d, numberToDelete = %d, last = %d\n",
+                       startIndex, numberToDelete, last)
+            END ;
+            WHILE startIndex + numberToDelete <= last DO
+               IF Debugging
+               THEN
+                  printf ("strVar[%d] is %c\n", startIndex, stringVar[startIndex]) ;
+                  printf ("  overwriting with strVar[%d] <- %c\n",
+                          startIndex + numberToDelete, stringVar[startIndex + numberToDelete])
+               END ;
+               stringVar[startIndex] := stringVar[startIndex + numberToDelete] ;
+               INC (startIndex) ;
+            END
+         END ;
+         IF startIndex <= high
+         THEN
+            stringVar[startIndex] := ASCII.nul
+         END
       END
    END
 END Delete ;

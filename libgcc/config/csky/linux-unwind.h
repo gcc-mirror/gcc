@@ -75,7 +75,7 @@ csky_fallback_frame_state (struct _Unwind_Context *context,
 	siginfo_t info;
 	ucontext_t uc;
       } *_rt = context->cfa;
-      sc = &(_rt->uc.uc_mcontext);
+      sc = (struct sigcontext *) &(_rt->uc.uc_mcontext);
     }
   else
     return _URC_END_OF_STACK;

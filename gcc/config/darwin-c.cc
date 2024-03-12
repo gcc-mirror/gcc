@@ -139,7 +139,7 @@ darwin_pragma_unused (cpp_reader *pfile ATTRIBUTE_UNUSED)
 	{
 	  tree local = lookup_name (decl);
 	  if (local && (TREE_CODE (local) == PARM_DECL
-			|| TREE_CODE (local) == VAR_DECL))
+			|| VAR_P (local)))
 	    {
 	      TREE_USED (local) = 1;
 	      DECL_READ_P (local) = 1;
@@ -555,7 +555,7 @@ find_subframework_header (cpp_reader *pfile, const char *header, cpp_dir **dirp)
   return 0;
 }
 
-/* Given an OS X version VERSION_STR, return it as a statically-allocated array
+/* Given an macOS version VERSION_STR, return it as a statically-allocated array
    of three integers. If VERSION_STR is invalid, return NULL.
 
    VERSION_STR must consist of one, two, or three tokens, each separated by
@@ -612,7 +612,7 @@ parse_version (const char *version_str)
   return version_array;
 }
 
-/* Given VERSION -- a three-component OS X version represented as an array of
+/* Given VERSION -- a three-component macOS version represented as an array of
    non-negative integers -- return a statically-allocated string suitable for
    the legacy __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ macro.  If VERSION
    is invalid and cannot be coerced into a valid form, return NULL.
@@ -645,7 +645,7 @@ version_as_legacy_macro (const unsigned long *version)
   return result;
 }
 
-/* Given VERSION -- a three-component OS X version represented as an array of
+/* Given VERSION -- a three-component macOS version represented as an array of
    non-negative integers -- return a statically-allocated string suitable for
    the modern __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ macro.  If VERSION
    is invalid, return NULL.
@@ -675,7 +675,7 @@ version_as_modern_macro (const unsigned long *version)
 
 /* Return the value of darwin_macosx_version_min, suitably formatted for the
    __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ macro.  Values representing
-   OS X 10.9 and earlier are encoded using the legacy four-character format,
+   macOS 10.9 and earlier are encoded using the legacy four-character format,
    while 10.10 and later use a modern six-character format.  (For example,
    "10.9" produces "1090", and "10.10.1" produces "101001".)  If
    darwin_macosx_version_min is invalid and cannot be coerced into a valid

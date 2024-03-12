@@ -62,7 +62,7 @@ class back_threader_profitability
 {
 public:
   back_threader_profitability (bool speed_p, gimple *stmt);
-  bool possibly_profitable_path_p (const vec<basic_block> &, tree, bool *);
+  bool possibly_profitable_path_p (const vec<basic_block> &, bool *);
   bool profitable_path_p (const vec<basic_block> &,
 			  edge taken, bool *irreducible_loop);
 private:
@@ -126,9 +126,6 @@ private:
   auto_bitmap m_imports;
   // The last statement in the path.
   gimple *m_last_stmt;
-  // This is a bit of a wart.  It's used to pass the LHS SSA name to
-  // the profitability engine.
-  tree m_name;
   // Marker to differentiate unreachable edges.
   static const edge UNREACHABLE_EDGE;
   // Set to TRUE if unknown SSA names along a path should be resolved
@@ -327,8 +324,8 @@ back_threader::find_taken_edge_cond (const vec<basic_block> &path,
   if (solver.unreachable_path_p ())
     return UNREACHABLE_EDGE;
 
-  int_range<2> true_range (boolean_true_node, boolean_true_node);
-  int_range<2> false_range (boolean_false_node, boolean_false_node);
+  int_range<2> true_range = range_true ();
+  int_range<2> false_range = range_false ();
 
   if (r == true_range || r == false_range)
     {
@@ -366,7 +363,7 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
   // on the way to the backedge could be worthwhile.
   bool large_non_fsm;
   if (m_path.length () > 1
-      && (!profit.possibly_profitable_path_p (m_path, m_name, &large_non_fsm)
+      && (!profit.possibly_profitable_path_p (m_path, &large_non_fsm)
 	  || (!large_non_fsm
 	      && maybe_register_path (profit))))
     ;
@@ -512,28 +509,24 @@ back_threader::maybe_thread_block (basic_block bb)
   if (EDGE_COUNT (bb->succs) <= 1)
     return;
 
-  gimple *stmt = last_stmt (bb);
+  gimple *stmt = *gsi_last_bb (bb);
   if (!stmt)
     return;
 
   enum gimple_code code = gimple_code (stmt);
-  tree name;
-  if (code == GIMPLE_SWITCH)
-    name = gimple_switch_index (as_a <gswitch *> (stmt));
-  else if (code == GIMPLE_COND)
-    name = gimple_cond_lhs (stmt);
-  else
+  if (code != GIMPLE_SWITCH
+      && code != GIMPLE_COND)
     return;
 
   m_last_stmt = stmt;
   m_visited_bbs.empty ();
   m_path.truncate (0);
-  m_name = name;
 
   // We compute imports of the path during discovery starting
   // just with names used in the conditional.
   bitmap_clear (m_imports);
   ssa_op_iter iter;
+  tree name;
   FOR_EACH_SSA_TREE_OPERAND (name, stmt, iter, SSA_OP_USE)
     {
       if (!gimple_range_ssa_p (name))
@@ -588,15 +581,12 @@ back_threader::debug ()
    *LARGE_NON_FSM whether the thread is too large for a non-FSM thread
    but would be OK if we extend the path to cover the loop backedge.
 
-   NAME is the SSA_NAME of the variable we found to have a constant
-   value on PATH.  If unknown, SSA_NAME is NULL.
-
    ?? It seems we should be able to loosen some of the restrictions in
    this function after loop optimizations have run.  */
 
 bool
 back_threader_profitability::possibly_profitable_path_p
-				  (const vec<basic_block> &m_path, tree name,
+				  (const vec<basic_block> &m_path,
 				   bool *large_non_fsm)
 {
   gcc_checking_assert (!m_path.is_empty ());
@@ -645,44 +635,6 @@ back_threader_profitability::possibly_profitable_path_p
       if (j < m_path.length () - 1)
 	{
 	  int orig_n_insns = m_n_insns;
-	  /* PHIs in the path will create degenerate PHIS in the
-	     copied path which will then get propagated away, so
-	     looking at just the duplicate path the PHIs would
-	     seem unimportant.
-
-	     But those PHIs, because they're assignments to objects
-	     typically with lives that exist outside the thread path,
-	     will tend to generate PHIs (or at least new PHI arguments)
-	     at points where we leave the thread path and rejoin
-	     the original blocks.  So we do want to account for them.
-
-	     We ignore virtual PHIs.  We also ignore cases where BB
-	     has a single incoming edge.  That's the most common
-	     degenerate PHI we'll see here.  Finally we ignore PHIs
-	     that are associated with the value we're tracking as
-	     that object likely dies.  */
-	  if (EDGE_COUNT (bb->succs) > 1 && EDGE_COUNT (bb->preds) > 1)
-	    {
-	      for (gphi_iterator gsip = gsi_start_phis (bb);
-		   !gsi_end_p (gsip);
-		   gsi_next (&gsip))
-		{
-		  gphi *phi = gsip.phi ();
-		  tree dst = gimple_phi_result (phi);
-
-		  /* Note that if both NAME and DST are anonymous
-		     SSA_NAMEs, then we do not have enough information
-		     to consider them associated.  */
-		  if (dst != name
-		      && name
-		      && TREE_CODE (name) == SSA_NAME
-		      && (SSA_NAME_VAR (dst) != SSA_NAME_VAR (name)
-			  || !SSA_NAME_VAR (dst))
-		      && !virtual_operand_p (dst))
-		    ++m_n_insns;
-		}
-	    }
-
 	  if (!m_contains_hot_bb && m_speed_p)
 	    m_contains_hot_bb |= optimize_bb_for_speed_p (bb);
 	  for (gsi = gsi_after_labels (bb);
@@ -718,7 +670,7 @@ back_threader_profitability::possibly_profitable_path_p
 	     going to be able to eliminate its branch.  */
 	  if (j > 0)
 	    {
-	      gimple *last = last_stmt (bb);
+	      gimple *last = *gsi_last_bb (bb);
 	      if (last
 		  && (gimple_code (last) == GIMPLE_SWITCH
 		      || gimple_code (last) == GIMPLE_GOTO))

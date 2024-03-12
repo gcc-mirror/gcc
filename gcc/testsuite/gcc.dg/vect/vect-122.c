@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 #include "tree-vect.h"
 
 #ifndef N
@@ -50,9 +51,11 @@ main ()
   f2 ();
   f3 ();
   f4 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (a[i] != i || b[i] != i || l[i] != i * (i + 7LL) || m[i] != i * 7LL)
       abort ();
   return 0;
 }
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

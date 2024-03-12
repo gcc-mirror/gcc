@@ -35,10 +35,11 @@
 
 --  This is the runtime version of this unit (not used during GNAT build)
 
-package Interfaces is
+package Interfaces with
+  Always_Terminates
+is
    pragma No_Elaboration_Code_All;
    pragma Pure;
-   pragma Annotate (GNATprove, Always_Return, Interfaces);
 
    --  All identifiers in this unit are implementation defined
 

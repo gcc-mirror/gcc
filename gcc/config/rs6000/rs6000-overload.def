@@ -195,6 +195,16 @@
   unsigned long long __builtin_cmpb (unsigned long long, unsigned long long);
     CMPB
 
+[DFPQUAN, dfp_quantize, __builtin_dfp_quantize]
+  _Decimal64 __builtin_dfp_quantize (_Decimal64, _Decimal64, const int);
+    DFPQUAN_64
+  _Decimal64 __builtin_dfp_quantize (const int, _Decimal64, const int);
+    DFPQUAN_64i
+  _Decimal128 __builtin_dfp_quantize (_Decimal128, _Decimal128, const int);
+    DFPQUAN_128
+  _Decimal128 __builtin_dfp_quantize (const int, _Decimal128, const int);
+    DFPQUAN_128i
+
 [VEC_ABS, vec_abs, __builtin_vec_abs]
   vsc __builtin_vec_abs (vsc);
     ABS_V16QI
@@ -3059,18 +3069,18 @@
     VREPLACE_ELT_V2DF
 
 [VEC_REPLACE_UN, vec_replace_unaligned, __builtin_vec_replace_un]
-  vuc __builtin_vec_replace_un (vui, unsigned int, const int);
-    VREPLACE_UN_UV4SI
-  vuc __builtin_vec_replace_un (vsi, signed int, const int);
-    VREPLACE_UN_V4SI
-  vuc __builtin_vec_replace_un (vull, unsigned long long, const int);
-    VREPLACE_UN_UV2DI
-  vuc __builtin_vec_replace_un (vsll, signed long long, const int);
-    VREPLACE_UN_V2DI
-  vuc __builtin_vec_replace_un (vf, float, const int);
-    VREPLACE_UN_V4SF
-  vuc __builtin_vec_replace_un (vd, double, const int);
-    VREPLACE_UN_V2DF
+  vuc __builtin_vec_replace_un (vuc, unsigned int, const int);
+    VREPLACE_UN_USI
+  vuc __builtin_vec_replace_un (vuc, signed int, const int);
+    VREPLACE_UN_SI
+  vuc __builtin_vec_replace_un (vuc, unsigned long long, const int);
+    VREPLACE_UN_UDI
+  vuc __builtin_vec_replace_un (vuc, signed long long, const int);
+    VREPLACE_UN_DI
+  vuc __builtin_vec_replace_un (vuc, float, const int);
+    VREPLACE_UN_SF
+  vuc __builtin_vec_replace_un (vuc, double, const int);
+    VREPLACE_UN_DF
 
 [VEC_REVB, vec_revb, __builtin_vec_revb]
   vss __builtin_vec_revb (vss);
@@ -4515,6 +4525,18 @@
     VSIEQP
   _Float128 __builtin_vec_scalar_insert_exp (_Float128, unsigned long long);
     VSIEQPF
+  _Float128 __builtin_vec_scalar_insert_exp (vuq, vull);
+    VSIEQPV
+
+[VEC_VSEEV, scalar_extract_exp_to_vec, \
+            __builtin_vec_scalar_extract_exp_to_vector]
+  vull __builtin_vec_scalar_extract_exp_to_vector (_Float128);
+    VSEEQPV
+
+[VEC_VSESV, scalar_extract_sig_to_vec, \
+            __builtin_vec_scalar_extract_sig_to_vector]
+  vuq __builtin_vec_scalar_extract_sig_to_vector (_Float128);
+    VSESQPV
 
 [VEC_VSTDC, scalar_test_data_class, __builtin_vec_scalar_test_data_class]
   unsigned int __builtin_vec_scalar_test_data_class (float, const int);

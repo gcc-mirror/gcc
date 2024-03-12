@@ -8,7 +8,9 @@ void
 f (void)
 {
   int v2 = 3;
-#pragma acc host_data copy(v2) /* { dg-error ".copy. is not valid for ..pragma acc host_data." } */
+#pragma acc host_data copy(v2)
+  /* { dg-error ".copy. is not valid for ..pragma acc host_data." "" { target *-*-* } .-1 } */
+  /* { dg-error ".host_data. construct requires .use_device. clause" "" { target *-*-* } .-2 } */
   ;
 
 #pragma acc host_data use_device(v2)
@@ -19,6 +21,9 @@ f (void)
 #pragma acc host_data use_device(v0)
   /* { dg-error ".use_device_ptr. variable is neither a pointer nor an array" "" { target c } .-1 } */
   /* { dg-error ".use_device_ptr. variable is neither a pointer, nor an array nor reference to pointer or array" "" { target c++ } .-2 } */
+  ;
+
+#pragma acc host_data /* { dg-error ".host_data. construct requires .use_device. clause" } */
   ;
 }
 

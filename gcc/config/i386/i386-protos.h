@@ -64,17 +64,25 @@ extern bool symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
 extern bool x86_extended_QIreg_mentioned_p (rtx_insn *);
 extern bool x86_extended_reg_mentioned_p (rtx);
+extern bool x86_extended_rex2reg_mentioned_p (rtx);
+extern bool x86_evex_reg_mentioned_p (rtx [], int);
 extern bool x86_maybe_negate_const_int (rtx *, machine_mode);
 extern machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 
 extern int avx_vpermilp_parallel (rtx par, machine_mode mode);
 extern int avx_vperm2f128_parallel (rtx par, machine_mode mode);
 
+extern int vpternlog_redundant_operand_mask (rtx);
+extern void substitute_vpternlog_operands (rtx[]);
+
 extern bool ix86_expand_strlen (rtx, rtx, rtx, rtx);
 extern bool ix86_expand_set_or_cpymem (rtx, rtx, rtx, rtx, rtx, rtx,
 				       rtx, rtx, rtx, rtx, bool);
 extern bool ix86_expand_cmpstrn_or_cmpmem (rtx, rtx, rtx, rtx, rtx, bool);
 
+extern enum reg_class ix86_insn_base_reg_class (rtx_insn *);
+extern bool ix86_regno_ok_for_insn_base_p (int, rtx_insn *);
+extern enum reg_class ix86_insn_index_reg_class (rtx_insn *);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern bool legitimate_pic_address_disp_p (rtx);
@@ -140,6 +148,7 @@ extern void ix86_expand_copysign (rtx []);
 extern void ix86_expand_xorsign (rtx []);
 extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[2]);
 extern bool ix86_match_ccmode (rtx, machine_mode);
+extern bool ix86_match_ptest_ccmode (rtx);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);
 extern void ix86_expand_setcc (rtx, enum rtx_code, rtx, rtx);
 extern bool ix86_expand_int_movcc (rtx[]);
@@ -151,9 +160,11 @@ extern bool ix86_expand_mask_vec_cmp (rtx, enum rtx_code, rtx, rtx);
 extern bool ix86_expand_int_vec_cmp (rtx[]);
 extern bool ix86_expand_fp_vec_cmp (rtx[]);
 extern void ix86_expand_sse_movcc (rtx, rtx, rtx, rtx);
+extern void ix86_expand_sse_extend (rtx, rtx, bool);
 extern void ix86_expand_sse_unpack (rtx, rtx, bool, bool);
 extern void ix86_expand_fp_spaceship (rtx, rtx, rtx);
 extern bool ix86_expand_int_addcc (rtx[]);
+extern void ix86_expand_carry (rtx arg);
 extern rtx_insn *ix86_expand_call (rtx, rtx, rtx, rtx, rtx, bool);
 extern bool ix86_call_use_plt_p (rtx);
 extern void ix86_split_call_vzeroupper (rtx, rtx);
@@ -215,6 +226,7 @@ extern void ix86_expand_round (rtx, rtx);
 extern void ix86_expand_rounddf_32 (rtx, rtx);
 extern void ix86_expand_round_sse4 (rtx, rtx);
 
+extern void ix86_expand_vecop_qihi_partial (enum rtx_code, rtx, rtx, rtx);
 extern void ix86_expand_vecop_qihi (enum rtx_code, rtx, rtx, rtx);
 extern rtx ix86_split_stack_guard (void);
 

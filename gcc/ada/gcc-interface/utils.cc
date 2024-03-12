@@ -87,6 +87,7 @@ tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 /* Forward declarations for handlers of attributes.  */
 static tree handle_const_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
+static tree handle_expected_throw_attribute (tree *, tree, tree, int, bool *);
 static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
@@ -143,6 +144,8 @@ const struct attribute_spec gnat_internal_attribute_table[] =
     handle_const_attribute, NULL },
   { "nothrow",      0, 0,  true,  false, false, false,
     handle_nothrow_attribute, NULL },
+  { "expected_throw", 0, 0, true,  false, false, false,
+    handle_expected_throw_attribute, NULL },
   { "pure",         0, 0,  true,  false, false, false,
     handle_pure_attribute, NULL },
   { "no vops",      0, 0,  true,  false, false, false,
@@ -1562,6 +1565,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      at the RTL level when the stand-alone object is accessed as a whole.  */
   if (align > 0
       && RECORD_OR_UNION_TYPE_P (type)
+      && !TYPE_IS_FAT_POINTER_P (type)
       && TYPE_MODE (type) == BLKmode
       && !TYPE_BY_REFERENCE_P (type)
       && TREE_CODE (orig_size) == INTEGER_CST
@@ -2155,7 +2159,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       /* If this is a padding record, we never want to make the size smaller
 	 than what was specified in it, if any.  */
       if (TYPE_IS_PADDING_P (record_type) && had_size)
-	size = TYPE_SIZE (record_type);
+	size = round_up (TYPE_SIZE (record_type), BITS_PER_UNIT);
       else
 	size = round_up (size, BITS_PER_UNIT);
 
@@ -2802,7 +2806,7 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
       if (TREE_CODE (inner) == ADDR_EXPR
 	  && ((TREE_CODE (TREE_OPERAND (inner, 0)) == CALL_EXPR
 	       && !call_is_atomic_load (TREE_OPERAND (inner, 0)))
-	      || (TREE_CODE (TREE_OPERAND (inner, 0)) == VAR_DECL
+	      || (VAR_P (TREE_OPERAND (inner, 0))
 		  && DECL_RETURN_VALUE_P (TREE_OPERAND (inner, 0)))))
 	DECL_RETURN_VALUE_P (var_decl) = 1;
     }
@@ -2853,7 +2857,7 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
      support global BSS sections, uninitialized global variables would
      go in DATA instead, thus increasing the size of the executable.  */
   if (!flag_no_common
-      && TREE_CODE (var_decl) == VAR_DECL
+      && VAR_P (var_decl)
       && TREE_PUBLIC (var_decl)
       && !have_global_bss_p ())
     DECL_COMMON (var_decl) = 1;
@@ -2871,13 +2875,13 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
     DECL_IGNORED_P (var_decl) = 1;
 
   /* ??? Some attributes cannot be applied to CONST_DECLs.  */
-  if (TREE_CODE (var_decl) == VAR_DECL)
+  if (VAR_P (var_decl))
     process_attributes (&var_decl, &attr_list, true, gnat_node);
 
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (var_decl, gnat_node);
 
-  if (TREE_CODE (var_decl) == VAR_DECL && asm_name)
+  if (VAR_P (var_decl) && asm_name)
     {
       /* Let the target mangle the name if this isn't a verbatim asm.  */
       if (*IDENTIFIER_POINTER (asm_name) != '*')
@@ -3826,6 +3830,100 @@ fntype_same_flags_p (const_tree t, tree cico_list, bool return_by_direct_ref_p,
 	 && TREE_ADDRESSABLE (t) == return_by_invisi_ref_p;
 }
 
+/* Try to compute the maximum (if MAX_P) or minimum (if !MAX_P) value for the
+   expression EXP, for very simple expressions.  Substitute variable references
+   with their respective type's min/max values.  Return the computed value if
+   any, or EXP if no value can be computed. */
+
+tree
+max_value (tree exp, bool max_p)
+{
+  enum tree_code code = TREE_CODE (exp);
+  tree type = TREE_TYPE (exp);
+  tree op0, op1, op2;
+
+  switch (TREE_CODE_CLASS (code))
+    {
+    case tcc_declaration:
+      if (VAR_P (exp))
+        return fold_convert (type,
+                             max_p
+                             ? TYPE_MAX_VALUE (type) : TYPE_MIN_VALUE (type));
+      break;
+
+    case tcc_vl_exp:
+      if (code == CALL_EXPR)
+	{
+          tree t;
+
+          t = maybe_inline_call_in_expr (exp);
+          if (t)
+            return max_value (t, max_p);
+        }
+      break;
+
+    case tcc_comparison:
+      return build_int_cst (type, max_p ? 1 : 0);
+
+    case tcc_unary:
+      op0 = TREE_OPERAND (exp, 0);
+
+      if (code == NON_LVALUE_EXPR)
+        return max_value (op0, max_p);
+
+      if (code == NEGATE_EXPR)
+        return max_value (op0, !max_p);
+
+      if (code == NOP_EXPR)
+	return fold_convert (type, max_value (op0, max_p));
+
+      break;
+
+    case tcc_binary:
+      op0 = TREE_OPERAND (exp, 0);
+      op1 = TREE_OPERAND (exp, 1);
+
+      switch (code) {
+      case PLUS_EXPR:
+      case MULT_EXPR:
+        return fold_build2 (code, type, max_value(op0, max_p),
+                            max_value (op1, max_p));
+      case MINUS_EXPR:
+      case TRUNC_DIV_EXPR:
+        return fold_build2 (code, type, max_value(op0, max_p),
+                            max_value (op1, !max_p));
+      default:
+        break;
+      }
+      break;
+
+    case tcc_expression:
+      if (code == COND_EXPR)
+        {
+          op0 = TREE_OPERAND (exp, 0);
+          op1 = TREE_OPERAND (exp, 1);
+          op2 = TREE_OPERAND (exp, 2);
+
+          if (!op1 || !op2)
+            break;
+
+          op1 = max_value (op1, max_p);
+          op2 = max_value (op2, max_p);
+
+          if (op1 == TREE_OPERAND (exp, 1) && op2 == TREE_OPERAND (exp, 2))
+            break;
+
+          return fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type, op1, op2);
+	}
+      break;
+
+    default:
+      break;
+    }
+  return exp;
+}
+
+
 /* EXP is an expression for the size of an object.  If this size contains
    discriminant references, replace them with the maximum (if MAX_P) or
    minimum (if !MAX_P) possible value of the discriminant.
@@ -3863,6 +3961,7 @@ max_size (tree exp, bool max_p)
 	  n = call_expr_nargs (exp);
 	  gcc_assert (n > 0);
 	  argarray = XALLOCAVEC (tree, n);
+	  /* This is used to remove possible placeholder in call args.  */
 	  for (i = 0; i < n; i++)
 	    argarray[i] = max_size (CALL_EXPR_ARG (exp, i), max_p);
 	  return build_call_array (type, CALL_EXPR_FN (exp), n, argarray);
@@ -5543,7 +5642,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	}
     }
 
-  /* Likewise if we are converting from a fixed-szie type to a type with self-
+  /* Likewise if we are converting from a fixed-size type to a type with self-
      referential size.  We use the max size to do the padding in this case.  */
   else if (!INDIRECT_REF_P (expr)
 	   && TREE_CODE (expr) != STRING_CST
@@ -6372,6 +6471,22 @@ handle_nothrow_attribute (tree *node, tree ARG_UNUSED (name),
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     TREE_NOTHROW (*node) = 1;
+  else
+    *no_add_attrs = true;
+
+  return NULL_TREE;
+}
+
+/* Handle a "expected_throw" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_expected_throw_attribute (tree *node, tree ARG_UNUSED (name),
+				 tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+				 bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    /* No flag to set here.  */;
   else
     *no_add_attrs = true;
 

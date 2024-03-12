@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "version.h"
 #include "selftest.h"
 #include "file-prefix-map.h"
+#include "diagnostic-text-art.h"
 
 /* In this file all option sets are explicit.  */
 #undef OPTION_SET_P
@@ -2114,6 +2115,10 @@ const struct zero_call_used_regs_opts_s zero_call_used_regs_opts[] =
   ZERO_CALL_USED_REGS_OPT (all-gpr, zero_regs_flags::ALL_GPR),
   ZERO_CALL_USED_REGS_OPT (all-arg, zero_regs_flags::ALL_ARG),
   ZERO_CALL_USED_REGS_OPT (all, zero_regs_flags::ALL),
+  ZERO_CALL_USED_REGS_OPT (leafy-gpr-arg, zero_regs_flags::LEAFY_GPR_ARG),
+  ZERO_CALL_USED_REGS_OPT (leafy-gpr, zero_regs_flags::LEAFY_GPR),
+  ZERO_CALL_USED_REGS_OPT (leafy-arg, zero_regs_flags::LEAFY_ARG),
+  ZERO_CALL_USED_REGS_OPT (leafy, zero_regs_flags::LEAFY),
 #undef ZERO_CALL_USED_REGS_OPT
   {NULL, 0U}
 };
@@ -2859,15 +2864,15 @@ common_handle_option (struct gcc_options *opts,
       break;
  
     case OPT_fdiagnostics_show_caret:
-      dc->show_caret = value;
+      dc->m_source_printing.enabled = value;
       break;
 
     case OPT_fdiagnostics_show_labels:
-      dc->show_labels_p = value;
+      dc->m_source_printing.show_labels_p = value;
       break;
 
     case OPT_fdiagnostics_show_line_numbers:
-      dc->show_line_numbers_p = value;
+      dc->m_source_printing.show_line_numbers_p = value;
       break;
 
     case OPT_fdiagnostics_color_:
@@ -2886,6 +2891,11 @@ common_handle_option (struct gcc_options *opts,
 					 (enum diagnostics_output_format)value);
 	  break;
 	}
+
+    case OPT_fdiagnostics_text_art_charset_:
+      diagnostics_text_art_charset_init (dc,
+					 (enum diagnostic_text_art_charset)value);
+      break;
 
     case OPT_fdiagnostics_parseable_fixits:
       dc->extra_output_kind = (value
@@ -2926,7 +2936,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_minimum_margin_width_:
-      dc->min_margin_width = value;
+      dc->m_source_printing.min_margin_width = value;
       break;
 
     case OPT_fdump_:
@@ -3132,6 +3142,9 @@ common_handle_option (struct gcc_options *opts,
     case OPT_g:
       set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, arg, opts, opts_set,
                        loc);
+      break;
+
+    case OPT_gcodeview:
       break;
 
     case OPT_gbtf:

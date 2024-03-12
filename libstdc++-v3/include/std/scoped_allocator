@@ -65,7 +65,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __outermost_type
     {
       using type = _Alloc;
-      static type& _S_outermost(_Alloc& __a) { return __a; }
+      static type& _S_outermost(_Alloc& __a) noexcept { return __a; }
     };
 
   template<typename _Alloc>
@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       >;
 
       static typename __base::type&
-      _S_outermost(_Alloc& __a)
+      _S_outermost(_Alloc& __a) noexcept
       { return __base::_S_outermost(__a.outer_allocator()); }
     };
 
@@ -104,11 +104,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __inner_type_impl& operator=(__inner_type_impl&&) = default;
 
       template<typename _Alloc>
-      __inner_type_impl(const __inner_type_impl<_Alloc>& __other)
+      __inner_type_impl(const __inner_type_impl<_Alloc>&) noexcept
       { }
 
       template<typename _Alloc>
-      __inner_type_impl(__inner_type_impl<_Alloc>&& __other)
+      __inner_type_impl(__inner_type_impl<_Alloc>&&) noexcept
       { }
 
       __type&
@@ -137,16 +137,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __inner_type_impl& operator=(__inner_type_impl&&) = default;
 
       template<typename... _Allocs>
-      __inner_type_impl(const __inner_type_impl<_Allocs...>& __other)
+      __inner_type_impl(const __inner_type_impl<_Allocs...>& __other) noexcept
       : _M_inner(__other._M_inner) { }
 
       template<typename... _Allocs>
-      __inner_type_impl(__inner_type_impl<_Allocs...>&& __other)
+      __inner_type_impl(__inner_type_impl<_Allocs...>&& __other) noexcept
       : _M_inner(std::move(__other._M_inner)) { }
 
     template<typename... _Args>
       explicit
-      __inner_type_impl(_Args&&... __args)
+      __inner_type_impl(_Args&&... __args) noexcept
       : _M_inner(std::forward<_Args>(__args)...) { }
 
       __type&
@@ -164,7 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_inner == __other._M_inner; }
 
     private:
-      template<typename...> friend class __inner_type_impl;
+      template<typename...> friend struct __inner_type_impl;
       template<typename, typename...> friend class scoped_allocator_adaptor;
 
       __type _M_inner;
@@ -186,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         friend class scoped_allocator_adaptor;
 
       template<typename...>
-        friend class __inner_type_impl;
+	friend struct __inner_type_impl;
 
       tuple<const _OuterAlloc&, const _InnerAllocs&...>
       _M_tie() const noexcept
@@ -307,31 +307,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Outer2, typename = _Constructible<_Outer2>>
         scoped_allocator_adaptor(_Outer2&& __outer,
-                                 const _InnerAllocs&... __inner)
+                                 const _InnerAllocs&... __inner) noexcept
         : _OuterAlloc(std::forward<_Outer2>(__outer)),
           _M_inner(__inner...)
         { }
 
-      scoped_allocator_adaptor(const scoped_allocator_adaptor& __other)
+      scoped_allocator_adaptor(const scoped_allocator_adaptor& __other) noexcept
       : _OuterAlloc(__other.outer_allocator()),
 	_M_inner(__other._M_inner)
       { }
 
-      scoped_allocator_adaptor(scoped_allocator_adaptor&& __other)
+      scoped_allocator_adaptor(scoped_allocator_adaptor&& __other) noexcept
       : _OuterAlloc(std::move(__other.outer_allocator())),
 	_M_inner(std::move(__other._M_inner))
       { }
 
       template<typename _Outer2, typename = _Constructible<const _Outer2&>>
         scoped_allocator_adaptor(
-            const scoped_allocator_adaptor<_Outer2, _InnerAllocs...>& __other)
+	  const scoped_allocator_adaptor<_Outer2, _InnerAllocs...>& __other
+	) noexcept
         : _OuterAlloc(__other.outer_allocator()),
           _M_inner(__other._M_inner)
         { }
 
       template<typename _Outer2, typename = _Constructible<_Outer2>>
         scoped_allocator_adaptor(
-            scoped_allocator_adaptor<_Outer2, _InnerAllocs...>&& __other)
+	  scoped_allocator_adaptor<_Outer2, _InnerAllocs...>&& __other) noexcept
         : _OuterAlloc(std::move(__other.outer_allocator())),
           _M_inner(std::move(__other._M_inner))
         { }
@@ -342,25 +343,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       scoped_allocator_adaptor&
       operator=(scoped_allocator_adaptor&&) = default;
 
-      inner_allocator_type& inner_allocator() noexcept
+      inner_allocator_type&
+      inner_allocator() noexcept
       { return _M_inner._M_get(this); }
 
-      const inner_allocator_type& inner_allocator() const noexcept
+      const inner_allocator_type&
+      inner_allocator() const noexcept
       { return _M_inner._M_get(this); }
 
-      outer_allocator_type& outer_allocator() noexcept
+      outer_allocator_type&
+      outer_allocator() noexcept
       { return static_cast<_OuterAlloc&>(*this); }
 
-      const outer_allocator_type& outer_allocator() const noexcept
+      const outer_allocator_type&
+      outer_allocator() const noexcept
       { return static_cast<const _OuterAlloc&>(*this); }
 
-      _GLIBCXX_NODISCARD pointer allocate(size_type __n)
+      _GLIBCXX_NODISCARD pointer
+      allocate(size_type __n)
       { return __traits::allocate(outer_allocator(), __n); }
 
-      _GLIBCXX_NODISCARD pointer allocate(size_type __n, const_void_pointer __hint)
+      _GLIBCXX_NODISCARD pointer
+      allocate(size_type __n, const_void_pointer __hint)
       { return __traits::allocate(outer_allocator(), __n, __hint); }
 
-      void deallocate(pointer __p, size_type __n)
+      void deallocate(pointer __p, size_type __n) noexcept
       { return __traits::deallocate(outer_allocator(), __p, __n); }
 
       size_type max_size() const

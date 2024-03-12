@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 
 struct gimple_stmt_iterator
 {
+  gimple *operator * () const { return ptr; }
+
   /* Sequence node holding the current statement.  */
   gimple_seq_node ptr;
 
@@ -38,6 +40,8 @@ struct gimple_stmt_iterator
 /* Iterator over GIMPLE_PHI statements.  */
 struct gphi_iterator : public gimple_stmt_iterator
 {
+  gphi *operator * () const { return as_a <gphi *> (ptr); }
+
   gphi *phi () const
   {
     return as_a <gphi *> (ptr);

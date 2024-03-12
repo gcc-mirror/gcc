@@ -113,7 +113,7 @@ struct Ungag
 {
     uint oldgag;
 
-    extern (D) this(uint old) nothrow
+    extern (D) this(uint old) nothrow @safe
     {
         this.oldgag = old;
     }
@@ -177,7 +177,7 @@ struct Visibility
     /**
      * Checks if `this` is absolutely identical visibility attribute to `other`
      */
-    bool opEquals(ref const Visibility other) const
+    bool opEquals(ref const Visibility other) const @safe
     {
         if (this.kind == other.kind)
         {
@@ -264,27 +264,27 @@ extern (C++) class Dsymbol : ASTNode
     PASS semanticRun = PASS.initial;
     ushort localNum;        /// perturb mangled name to avoid collisions with those in FuncDeclaration.localsymtab
 
-    final extern (D) this() nothrow
+    final extern (D) this() nothrow @safe
     {
         //printf("Dsymbol::Dsymbol(%p)\n", this);
         loc = Loc(null, 0, 0);
     }
 
-    final extern (D) this(Identifier ident) nothrow
+    final extern (D) this(Identifier ident) nothrow @safe
     {
         //printf("Dsymbol::Dsymbol(%p, ident)\n", this);
         this.loc = Loc(null, 0, 0);
         this.ident = ident;
     }
 
-    final extern (D) this(const ref Loc loc, Identifier ident) nothrow
+    final extern (D) this(const ref Loc loc, Identifier ident) nothrow @safe
     {
         //printf("Dsymbol::Dsymbol(%p, ident)\n", this);
         this.loc = loc;
         this.ident = ident;
     }
 
-    static Dsymbol create(Identifier ident) nothrow
+    static Dsymbol create(Identifier ident) nothrow @safe
     {
         return new Dsymbol(ident);
     }
@@ -353,9 +353,9 @@ extern (C++) class Dsymbol : ASTNode
     {
         if (this == o)
             return true;
-        if (o.dyncast() != DYNCAST.dsymbol)
+        const s = o.isDsymbol();
+        if (!s)
             return false;
-        auto s = cast(Dsymbol)o;
         // Overload sets don't have an ident
         // Function-local declarations may have identical names
         // if they are declared in different scopes
@@ -373,79 +373,6 @@ extern (C++) class Dsymbol : ASTNode
     {
         const cstr = toPrettyChars();
         return '`' ~ cstr.toDString() ~ "`\0";
-    }
-
-    static if (__VERSION__ < 2092)
-    {
-        final void error(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verror(loc, format, ap, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        final void error(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verror(loc, format, ap, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        final void deprecation(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .vdeprecation(loc, format, ap, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        final void deprecation(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .vdeprecation(loc, format, ap, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-    }
-    else
-    {
-        pragma(printf) final void error(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verror(loc, format, ap, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        pragma(printf) final void error(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verror(loc, format, ap, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        pragma(printf) final void deprecation(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .vdeprecation(loc, format, ap, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        pragma(printf) final void deprecation(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .vdeprecation(loc, format, ap, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
     }
 
     final bool checkDeprecated(const ref Loc loc, Scope* sc)
@@ -470,9 +397,9 @@ extern (C++) class Dsymbol : ASTNode
                 break;
         }
         if (message)
-            deprecation(loc, "is deprecated - %s", message);
+            deprecation(loc, "%s `%s` is deprecated - %s", kind, toPrettyChars, message);
         else
-            deprecation(loc, "is deprecated");
+            deprecation(loc, "%s `%s` is deprecated", kind, toPrettyChars);
 
         if (auto ti = sc.parent ? sc.parent.isInstantiated() : null)
             ti.printInstantiationTrace(Classification.deprecation);
@@ -886,7 +813,7 @@ extern (C++) class Dsymbol : ASTNode
             if (ident == Id.__sizeof ||
                 !(sc && sc.flags & SCOPE.Cfile) && (ident == Id.__xalignof || ident == Id._mangleof))
             {
-                error("`.%s` property cannot be redefined", ident.toChars());
+                .error(loc, "%s `%s` `.%s` property cannot be redefined", kind, toPrettyChars, ident.toChars());
                 errors = true;
             }
         }
@@ -1026,7 +953,7 @@ extern (C++) class Dsymbol : ASTNode
      */
     uinteger_t size(const ref Loc loc)
     {
-        error("symbol `%s` has no size", toChars());
+        .error(loc, "%s `%s` symbol `%s` has no size", kind, toPrettyChars, toChars());
         return SIZE_INVALID;
     }
 
@@ -1407,7 +1334,7 @@ extern (C++) class Dsymbol : ASTNode
     inout(CPPNamespaceDeclaration)     isCPPNamespaceDeclaration()     inout { return null; }
     inout(VisibilityDeclaration)       isVisibilityDeclaration()       inout { return null; }
     inout(OverloadSet)                 isOverloadSet()                 inout { return null; }
-    inout(CompileDeclaration)          isCompileDeclaration()          inout { return null; }
+    inout(MixinDeclaration)            isMixinDeclaration()            inout { return null; }
     inout(StaticAssert)                isStaticAssert()                inout { return null; }
     inout(StaticIfDeclaration)         isStaticIfDeclaration()         inout { return null; }
 }
@@ -1430,16 +1357,16 @@ private:
     BitArray accessiblePackages, privateAccessiblePackages;// whitelists of accessible (imported) packages
 
 public:
-    final extern (D) this() nothrow
+    final extern (D) this() nothrow @safe
     {
     }
 
-    final extern (D) this(Identifier ident) nothrow
+    final extern (D) this(Identifier ident) nothrow @safe
     {
         super(ident);
     }
 
-    final extern (D) this(const ref Loc loc, Identifier ident) nothrow
+    final extern (D) this(const ref Loc loc, Identifier ident) nothrow @safe
     {
         super(loc, ident);
     }
@@ -1776,7 +1703,7 @@ public:
         }
         else
         {
-            s1.error(s1.loc, "conflicts with %s `%s` at %s", s2.kind(), s2.toPrettyChars(), s2.locToChars());
+            .error(s1.loc, "%s `%s` conflicts with %s `%s` at %s", s1.kind, s1.toPrettyChars, s2.kind(), s2.toPrettyChars(), s2.locToChars());
         }
     }
 
@@ -1801,6 +1728,7 @@ public:
             if (!tfgetmembers)
             {
                 Scope sc;
+                sc.eSink = global.errorSink;
                 auto parameters = new Parameters();
                 Parameters* p = new Parameter(STC.in_, Type.tchar.constOf().arrayOf(), null, null);
                 parameters.push(p);
@@ -1919,7 +1847,7 @@ extern (C++) final class WithScopeSymbol : ScopeDsymbol
 {
     WithStatement withstate;
 
-    extern (D) this(WithStatement withstate) nothrow
+    extern (D) this(WithStatement withstate) nothrow @safe
     {
         this.withstate = withstate;
     }
@@ -1979,7 +1907,7 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
     private RootObject arrayContent;
     Scope* sc;
 
-    extern (D) this(Scope* sc, Expression exp) nothrow
+    extern (D) this(Scope* sc, Expression exp) nothrow @safe
     {
         super(exp.loc, null);
         assert(exp.op == EXP.index || exp.op == EXP.slice || exp.op == EXP.array);
@@ -1987,13 +1915,13 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
         this.arrayContent = exp;
     }
 
-    extern (D) this(Scope* sc, TypeTuple type) nothrow
+    extern (D) this(Scope* sc, TypeTuple type) nothrow @safe
     {
         this.sc = sc;
         this.arrayContent = type;
     }
 
-    extern (D) this(Scope* sc, TupleDeclaration td) nothrow
+    extern (D) this(Scope* sc, TupleDeclaration td) nothrow @safe
     {
         this.sc = sc;
         this.arrayContent = td;
@@ -2139,7 +2067,7 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                      */
                     if (exp.op == EXP.array && (cast(ArrayExp)exp).arguments.length != 1)
                     {
-                        exp.error("`%s` only defines opDollar for one dimension", ad.toChars());
+                        error(exp.loc, "`%s` only defines opDollar for one dimension", ad.toChars());
                         return null;
                     }
                     Declaration d = s.isDeclaration();
@@ -2148,7 +2076,7 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                 }
                 e = e.expressionSemantic(sc);
                 if (!e.type)
-                    exp.error("`%s` has no value", e.toChars());
+                    error(exp.loc, "`%s` has no value", e.toChars());
                 t = e.type.toBasetype();
                 if (t && t.ty == Tfunction)
                     e = new CallExp(e.loc, e);
@@ -2242,7 +2170,7 @@ extern (C++) final class OverloadSet : Dsymbol
  */
 extern (C++) final class ForwardingScopeDsymbol : ScopeDsymbol
 {
-    extern (D) this() nothrow
+    extern (D) this() nothrow @safe
     {
         super();
     }
@@ -2328,7 +2256,7 @@ extern (C++) final class ForwardingScopeDsymbol : ScopeDsymbol
 extern (C++) final class ExpressionDsymbol : Dsymbol
 {
     Expression exp;
-    this(Expression exp) nothrow
+    this(Expression exp) nothrow @safe
     {
         super();
         this.exp = exp;
@@ -2353,7 +2281,7 @@ extern (C++) final class AliasAssign : Dsymbol
     Dsymbol aliassym; /// replace previous RHS of AliasDeclaration with `aliassym`
                       /// only one of type and aliassym can be != null
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type type, Dsymbol aliassym) nothrow
+    extern (D) this(const ref Loc loc, Identifier ident, Type type, Dsymbol aliassym) nothrow @safe
     {
         super(loc, null);
         this.ident = ident;

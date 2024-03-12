@@ -94,11 +94,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
 #include "options.h"
+#include "case-cfn-macros.h"
 
 bool
 default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 			      rtx addr ATTRIBUTE_UNUSED,
-			      bool strict ATTRIBUTE_UNUSED)
+			      bool strict ATTRIBUTE_UNUSED,
+			      code_helper ATTRIBUTE_UNUSED)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
   /* Defer to the old implementation using a goto.  */
@@ -1679,9 +1681,10 @@ target_default_pointer_address_modes_p (void)
 bool
 default_addr_space_legitimate_address_p (machine_mode mode, rtx mem,
 					 bool strict,
-					 addr_space_t as ATTRIBUTE_UNUSED)
+					 addr_space_t as ATTRIBUTE_UNUSED,
+					 code_helper code)
 {
-  return targetm.legitimate_address_p (mode, mem, strict);
+  return targetm.legitimate_address_p (mode, mem, strict, code);
 }
 
 /* Named address space version of LEGITIMIZE_ADDRESS.
@@ -1903,6 +1906,73 @@ bsd_libc_has_function (enum function_class fn_class,
   return false;
 }
 
+unsigned
+default_libm_function_max_error (unsigned, machine_mode, bool)
+{
+  return ~0U;
+}
+
+unsigned
+glibc_linux_libm_function_max_error (unsigned cfn, machine_mode mode,
+				     bool boundary_p)
+{
+  /* Let's use
+     https://www.gnu.org/software/libc/manual/2.22/html_node/Errors-in-Math-Functions.html
+     https://www.gnu.org/software/libc/manual/html_node/Errors-in-Math-Functions.html
+     with usual values recorded here and significant outliers handled in
+     target CPU specific overriders.  The tables only record default
+     rounding to nearest, for -frounding-math let's add some extra ulps.
+     For boundary_p values (say finite results outside of [-1.,1.] for
+     sin/cos, or [-0.,+Inf] for sqrt etc. let's use custom random testers.  */
+  int rnd = flag_rounding_math ? 4 : 0;
+  bool sf = (REAL_MODE_FORMAT (mode) == &ieee_single_format
+	     || REAL_MODE_FORMAT (mode) == &mips_single_format
+	     || REAL_MODE_FORMAT (mode) == &motorola_single_format);
+  bool df = (REAL_MODE_FORMAT (mode) == &ieee_double_format
+	     || REAL_MODE_FORMAT (mode) == &mips_double_format
+	     || REAL_MODE_FORMAT (mode) == &motorola_double_format);
+  bool xf = (REAL_MODE_FORMAT (mode) == &ieee_extended_intel_96_format
+	     || REAL_MODE_FORMAT (mode) == &ieee_extended_intel_128_format
+	     || REAL_MODE_FORMAT (mode) == &ieee_extended_motorola_format);
+  bool tf = (REAL_MODE_FORMAT (mode) == &ieee_quad_format
+	     || REAL_MODE_FORMAT (mode) == &mips_quad_format);
+
+  switch (cfn)
+    {
+    CASE_CFN_SQRT:
+    CASE_CFN_SQRT_FN:
+      if (boundary_p)
+	/* https://gcc.gnu.org/pipermail/gcc-patches/2023-April/616595.html */
+	return 0;
+      if (sf || df || xf || tf)
+	return 0 + rnd;
+      break;
+    CASE_CFN_COS:
+    CASE_CFN_COS_FN:
+      /* cos is generally errors like sin, but far more arches have 2ulps
+	 for double.  */
+      if (!boundary_p && df)
+	return 2 + rnd;
+      gcc_fallthrough ();
+    CASE_CFN_SIN:
+    CASE_CFN_SIN_FN:
+      if (boundary_p)
+	/* According to
+	   https://sourceware.org/pipermail/gcc-patches/2023-April/616315.html
+	   seems default rounding sin/cos stay strictly in [-1.,1.] range,
+	   with rounding to infinity it can be 1ulp larger/smaller.  */
+	return flag_rounding_math ? 1 : 0;
+      if (sf || df)
+	return 1 + rnd;
+      if (xf || tf)
+	return 2 + rnd;
+      break;
+    default:
+      break;
+    }
+
+  return default_libm_function_max_error (cfn, mode, boundary_p);
+}
 
 tree
 default_builtin_tm_load_store (tree ARG_UNUSED (type))
@@ -2525,6 +2595,14 @@ enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED)
 {
   return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+}
+
+/* Return true if _BitInt(N) is supported and fill details about it into
+   *INFO.  */
+bool
+default_bitint_type_info (int, struct bitint_info *)
+{
+  return false;
 }
 
 /* Default implementation for

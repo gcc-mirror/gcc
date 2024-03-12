@@ -120,6 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "memmodel.h"
 #include "optabs.h"
+#include "tree-ssa-loop-niter.h"
 
 
 #define MAX_DATAREFS_NUM \
@@ -453,7 +454,7 @@ create_edge_for_control_dependence (struct graph *rdg, basic_block bb,
 			    0, edge_n, bi)
     {
       basic_block cond_bb = cd->get_edge_src (edge_n);
-      gimple *stmt = last_stmt (cond_bb);
+      gimple *stmt = *gsi_last_bb (cond_bb);
       if (stmt && is_ctrl_stmt (stmt))
 	{
 	  struct graph_edge *e;
@@ -948,7 +949,8 @@ copy_loop_before (class loop *loop, bool redirect_lc_phi_defs)
   edge preheader = loop_preheader_edge (loop);
 
   initialize_original_copy_tables ();
-  res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, NULL, preheader);
+  res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, single_exit (loop), NULL,
+						NULL, preheader, NULL, false);
   gcc_assert (res != NULL);
 
   /* When a not last partition is supposed to keep the LC PHIs computed
@@ -1573,6 +1575,7 @@ find_single_drs (class loop *loop, struct graph *rdg, const bitmap &partition_st
 
   basic_block bb_ld = NULL;
   basic_block bb_st = NULL;
+  edge exit = single_exit (loop);
 
   if (single_ld)
     {
@@ -1588,6 +1591,14 @@ find_single_drs (class loop *loop, struct graph *rdg, const bitmap &partition_st
       bb_ld = gimple_bb (DR_STMT (single_ld));
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_ld))
 	return false;
+
+      /* The data reference must also be executed before possibly exiting
+	 the loop as otherwise we'd for example unconditionally execute
+	 memset (ptr, 0, n) which even with n == 0 implies ptr is non-NULL.  */
+      if (bb_ld != loop->header
+	  && (!exit
+	      || !dominated_by_p (CDI_DOMINATORS, exit->src, bb_ld)))
+	return false;
     }
 
   if (single_st)
@@ -1602,6 +1613,12 @@ find_single_drs (class loop *loop, struct graph *rdg, const bitmap &partition_st
 	 loop.  */
       bb_st = gimple_bb (DR_STMT (single_st));
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_st))
+	return false;
+
+      /* And before exiting the loop.  */
+      if (bb_st != loop->header
+	  && (!exit
+	      || !dominated_by_p (CDI_DOMINATORS, exit->src, bb_st)))
 	return false;
     }
 
@@ -1756,11 +1773,12 @@ classify_builtin_st (loop_p loop, partition *partition, data_reference_p dr)
       return;
     }
 
-  poly_uint64 base_offset;
-  unsigned HOST_WIDE_INT const_base_offset;
-  tree base_base = strip_offset (base, &base_offset);
-  if (!base_offset.is_constant (&const_base_offset))
+  tree base_offset;
+  tree base_base;
+  split_constant_offset (base, &base_base, &base_offset);
+  if (!cst_and_fits_in_hwi (base_offset))
     return;
+  unsigned HOST_WIDE_INT const_base_offset = int_cst_value (base_offset);
 
   struct builtin_info *builtin;
   builtin = alloc_builtin (dr, NULL, base, NULL_TREE, size);
@@ -3587,7 +3605,7 @@ loop_distribution::transform_reduction_loop (loop_p loop)
   data_reference_p load_dr = NULL, store_dr = NULL;
 
   edge e = single_exit (loop);
-  gcond *cond = safe_dyn_cast <gcond *> (last_stmt (e->src));
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (e->src));
   if (!cond)
     return false;
   /* Ensure loop condition is an (in)equality test and loop is exited either if
@@ -3870,10 +3888,20 @@ loop_distribution::execute (function *fun)
 
 	  bool destroy_p;
 	  int nb_generated_loops, nb_generated_calls;
+	  bool only_patterns = !optimize_loop_for_speed_p (loop)
+			       || !flag_tree_loop_distribution;
+	  /* do not try to distribute loops that are not expected to iterate.  */
+	  if (!only_patterns)
+	    {
+	      HOST_WIDE_INT iterations = estimated_loop_iterations_int (loop);
+	      if (iterations < 0)
+		iterations = likely_max_loop_iterations_int (loop);
+	      if (!iterations)
+		only_patterns = true;
+	    }
 	  nb_generated_loops
 	    = distribute_loop (loop, work_list, cd, &nb_generated_calls,
-			       &destroy_p, (!optimize_loop_for_speed_p (loop)
-					    || !flag_tree_loop_distribution));
+			       &destroy_p, only_patterns);
 	  if (destroy_p)
 	    loops_to_be_destroyed.safe_push (loop);
 

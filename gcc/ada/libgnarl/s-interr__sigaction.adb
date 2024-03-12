@@ -91,9 +91,9 @@ package body System.Interrupts is
    pragma Convention (C, Signal_Handler);
    --  This procedure is used to handle all the signals
 
-   --  Type and Head, Tail of the list containing Registered Interrupt
-   --  Handlers. These definitions are used to register the handlers
-   --  specified by the pragma Interrupt_Handler.
+   --  Type and the list containing Registered Interrupt Handlers. These
+   --  definitions are used to register the handlers specified by the pragma
+   --  Interrupt_Handler.
 
    --------------------------
    -- Handler Registration --
@@ -103,8 +103,8 @@ package body System.Interrupts is
    type R_Link is access all Registered_Handler;
 
    type Registered_Handler is record
-      H    : System.Address := System.Null_Address;
-      Next : R_Link := null;
+      H    : System.Address;
+      Next : R_Link;
    end record;
 
    Registered_Handlers : R_Link := null;
@@ -471,6 +471,18 @@ package body System.Interrupts is
 
    procedure Register_Interrupt_Handler (Handler_Addr : System.Address) is
    begin
+      --  This routine registers a handler as usable for dynamic interrupt
+      --  handler association. Routines attaching and detaching handlers
+      --  dynamically should determine whether the handler is registered.
+      --  Program_Error should be raised if it is not registered.
+
+      --  Pragma Interrupt_Handler can only appear in a library level PO
+      --  definition and instantiation. Therefore, we do not need to implement
+      --  an unregister operation. Nor do we need to protect the queue
+      --  structure with a lock.
+
+      pragma Assert (Handler_Addr /= System.Null_Address);
+
       Registered_Handlers :=
        new Registered_Handler'(H => Handler_Addr, Next => Registered_Handlers);
    end Register_Interrupt_Handler;

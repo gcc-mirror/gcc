@@ -21,19 +21,6 @@ AS_HELP_STRING([--enable-version-specific-runtime-libs],
 [version_specific_libs=no])
 AC_MSG_RESULT($version_specific_libs)
 
-# Build with intermodule optimisations
-AC_MSG_CHECKING([for --enable-intermodule])
-AC_ARG_ENABLE(intermodule,
-AS_HELP_STRING([--enable-intermodule],[build the library in one step]),
-[case "$enable_intermodule" in
-  yes) onestep="-onestep";;
-    *) onestep="";;
-esac],
-[onestep=""])
-AC_MSG_RESULT($enable_intermodule)
-AM_CONDITIONAL(onestep,[test x$onestep = x-onestep])
-AC_SUBST(onestep)
-
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
 #
 # You will slowly go insane if you do not grok the following fact:  when

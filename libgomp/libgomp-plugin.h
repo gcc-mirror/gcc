@@ -121,11 +121,7 @@ extern void GOMP_PLUGIN_fatal (const char *, ...)
 	__attribute__ ((noreturn, format (printf, 1, 2)));
 
 extern void GOMP_PLUGIN_target_rev (uint64_t, uint64_t, uint64_t, uint64_t,
-				    uint64_t, int,
-				    void (*) (void *, const void *, size_t,
-					      void *),
-				    void (*) (void *, const void *, size_t,
-					      void *), void *);
+				    uint64_t, int, struct goacc_asyncqueue *);
 
 /* Prototypes for functions implemented by libgomp plugins.  */
 extern const char *GOMP_OFFLOAD_get_name (void);
@@ -143,6 +139,13 @@ extern bool GOMP_OFFLOAD_free (int, void *);
 extern bool GOMP_OFFLOAD_dev2host (int, void *, const void *, size_t);
 extern bool GOMP_OFFLOAD_host2dev (int, void *, const void *, size_t);
 extern bool GOMP_OFFLOAD_dev2dev (int, void *, const void *, size_t);
+extern int GOMP_OFFLOAD_memcpy2d (int, int, size_t, size_t,
+				  void*, size_t, size_t, size_t,
+				  const void*, size_t, size_t, size_t);
+extern int GOMP_OFFLOAD_memcpy3d (int, int, size_t, size_t, size_t, void *,
+				  size_t, size_t, size_t, size_t, size_t,
+				  const void *, size_t, size_t, size_t, size_t,
+				  size_t);
 extern bool GOMP_OFFLOAD_can_run (void *);
 extern void GOMP_OFFLOAD_run (int, void *, void *, void **);
 extern void GOMP_OFFLOAD_async_run (int, void *, void *, void **, void *);

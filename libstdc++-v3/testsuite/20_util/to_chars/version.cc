@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++23" }
 // { dg-do preprocess { target c++23 } }
 // { dg-require-effective-target hosted }
 
@@ -6,7 +5,7 @@
 
 #ifndef __cpp_lib_to_chars
 # error "Feature-test macro for to_chars missing in <version>"
-#elif __cpp_lib_to_chars != 201611L
+#elif __cpp_lib_to_chars != (__cplusplus == 202302L ? 201611L : 202306L)
 # error "Feature-test macro for to_chars has wrong value in <version>"
 #endif
 

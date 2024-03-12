@@ -1,3 +1,282 @@
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (LINEMAPS_ORDINARY_MAPS): Delete.
+	(LINEMAPS_MACRO_MAPS): Delete.
+	* line-map.cc (linemap_tracks_macro_expansion_locs_p): Update for
+	deletion of LINEMAPS_MACRO_MAPS.
+	(linemap_get_statistics): Likewise.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (maps_info_ordinary::cache): Rename to...
+	(maps_info_ordinary::m_cache): ...this.
+	(maps_info_macro::cache): Rename to...
+	(maps_info_macro::m_cache): ...this.
+	(LINEMAPS_CACHE): Delete.
+	(LINEMAPS_ORDINARY_CACHE): Delete.
+	(LINEMAPS_MACRO_CACHE): Delete.
+	* init.cc (read_original_filename): Update for adding "m_" prefix.
+	* line-map.cc (linemap_add): Eliminate LINEMAPS_ORDINARY_CACHE in
+	favor of a simple field access.
+	(linemap_enter_macro): Likewise for LINEMAPS_MACRO_CACHE.
+	(linemap_ordinary_map_lookup): Likewise for
+	LINEMAPS_ORDINARY_CACHE, twice.
+	(linemap_lookup_macro_index): Likewise for LINEMAPS_MACRO_CACHE.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (LINEMAPS_LAST_ALLOCATED_MAP): Delete.
+	(LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP): Delete.
+	(LINEMAPS_LAST_ALLOCATED_MACRO_MAP): Delete.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (line_maps::reallocator): Rename to...
+	(line_maps::m_reallocator): ...this.
+	(line_maps::round_alloc_size): Rename to...
+	(line_maps::m_round_alloc_size): ...this.
+	(line_maps::location_adhoc_data_map): Rename to...
+	(line_maps::m_location_adhoc_data_map): ...this.
+	(line_maps::num_optimized_ranges): Rename to...
+	(line_maps::m_num_optimized_ranges): ..this.
+	(line_maps::num_unoptimized_ranges): Rename to...
+	(line_maps::m_num_unoptimized_ranges): ...this.
+	(get_combined_adhoc_loc): Delete decl.
+	(COMBINE_LOCATION_DATA): Delete.
+	* lex.cc (get_location_for_byte_range_in_cur_line): Update for
+	removal of COMBINE_LOCATION_DATA.
+	(warn_about_normalization): Likewise.
+	(_cpp_lex_direct): Likewise.
+	* line-map.cc (line_maps::~line_maps): Update for "m_" prefix of
+	some fields of line_maps.
+	(rebuild_location_adhoc_htab): Likewise.
+	(can_be_stored_compactly_p): Convert to...
+	(line_maps::can_be_stored_compactly_p): ...this private member
+	function.
+	(get_combined_adhoc_loc): Convert to...
+	(line_maps::get_or_create_combined_loc): ...this public member
+	function.
+	(line_maps::make_location): Update for removal of
+	COMBINE_LOCATION_DATA.
+	(get_data_from_adhoc_loc): Update for "m_" prefix of some fields
+	of line_maps.
+	(get_discriminator_from_adhoc_loc): Likewise.
+	(get_location_from_adhoc_loc): Likewise.
+	(get_range_from_adhoc_loc): Convert to...
+	(line_maps::get_range_from_adhoc_loc): ...this private member
+	function.
+	(line_maps::get_range_from_loc): Update for conversion of
+	get_range_from_adhoc_loc to a member function.
+	(linemap_init): Update for "m_" prefix of some fields of
+	line_maps.
+	(line_map_new_raw): Likewise.
+	(linemap_enter_macro): Likewise.
+	(linemap_get_statistics): Likewise.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (line_maps::pure_location_p): New decl.
+	(line_maps::get_pure_location): New decl.
+	(line_maps::get_range_from_loc): New decl.
+	(line_maps::get_start): New.
+	(line_maps::get_finish): New.
+	(line_maps::make_location): New decl.
+	(get_range_from_loc): Make line_maps param const.
+	(get_discriminator_from_loc): Likewise.
+	(pure_location_p): Likewise.
+	(get_pure_location): Likewise.
+	(linemap_check_files_exited): Likewise.
+	(linemap_tracks_macro_expansion_locs_p): Likewise.
+	(linemap_location_in_system_header_p): Likewise.
+	(linemap_location_from_macro_definition_p): Likewise.
+	(linemap_macro_map_loc_unwind_toward_spelling): Likewise.
+	(linemap_included_from_linemap): Likewise.
+	(first_map_in_common): Likewise.
+	(linemap_compare_locations): Likewise.
+	(linemap_location_before_p): Likewise.
+	(linemap_resolve_location): Likewise.
+	(linemap_unwind_toward_expansion): Likewise.
+	(linemap_unwind_to_first_non_reserved_loc): Likewise.
+	(linemap_expand_location): Likewise.
+	(linemap_get_file_highest_location): Likewise.
+	(linemap_get_statistics): Likewise.
+	(linemap_dump_location): Likewise.
+	(linemap_dump): Likewise.
+	(line_table_dump): Likewise.
+	* internal.h (linemap_get_expansion_line): Likewise.
+	(linemap_get_expansion_filename): Likewise.
+	* line-map.cc (can_be_stored_compactly_p): Likewise.
+	(get_data_from_adhoc_loc): Drop redundant "class".
+	(get_discriminator_from_adhoc_loc): Likewise.
+	(get_location_from_adhoc_loc): Likewise.
+	(get_range_from_adhoc_loc): Likewise.
+	(get_range_from_loc): Make const and move implementation to...
+	(line_maps::get_range_from_loc): ...this new function.
+	(get_discriminator_from_loc): Make line_maps param const.
+	(pure_location_p): Make const and move implementation to...
+	(line_maps::pure_location_p): ...this new function.
+	(get_pure_location): Make const and move implementation to...
+	(line_maps::get_pure_location): ...this new function.
+	(linemap_included_from_linemap): Make line_maps param const.
+	(linemap_check_files_exited): Likewise.
+	(linemap_tracks_macro_expansion_locs_p): Likewise.
+	(linemap_macro_map_loc_unwind_toward_spelling): Likewise.
+	(linemap_get_expansion_line): Likewise.
+	(linemap_get_expansion_filename): Likewise.
+	(linemap_location_in_system_header_p): Likewise.
+	(first_map_in_common_1): Likewise.
+	(linemap_compare_locations): Likewise.
+	(linemap_macro_loc_to_spelling_point): Likewise.
+	(linemap_macro_loc_to_def_point): Likewise.
+	(linemap_macro_loc_to_exp_point): Likewise.
+	(linemap_resolve_location): Likewise.
+	(linemap_location_from_macro_definition_p): Likewise.
+	(linemap_unwind_toward_expansion): Likewise.
+	(linemap_unwind_to_first_non_reserved_loc): Likewise.
+	(linemap_expand_location): Likewise.
+	(linemap_dump): Likewise.
+	(linemap_dump_location): Likewise.
+	(linemap_get_file_highest_location): Likewise.
+	(linemap_get_statistics): Likewise.
+	(line_table_dump): Likewise.
+
+2023-09-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/61474
+	* files.cc (_cpp_find_file): Set DONT_READ to TRUE for fake
+	include files.
+	(_cpp_fake_include): Pass a unique cpp_dir* address so
+	the fake file will not be found when looked up for real.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* include/cpplib.h: Add cpp_fdeps_format enum.
+	(cpp_options): Add fdeps_format field
+	(cpp_finish): Add structured dependency fdeps_stream parameter.
+	* include/mkdeps.h (deps_add_module_target): Add flag for
+	whether a module is exported or not.
+	(fdeps_add_target): Add function.
+	(deps_write_p1689r5): Add function.
+	* init.cc (cpp_finish): Add new preprocessor parameter used for C++
+	module tracking.
+	* mkdeps.cc (mkdeps): Implement P1689R5 output.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* expr.cc (cpp_classify_number): Diagnose wb literal suffixes
+	for -pedantic* before C2X or -Wc11-c2x-compat.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* expr.cc (interpret_int_suffix): Handle wb and WB suffixes.
+	* include/cpplib.h (CPP_N_BITINT): Define.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
+2023-07-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/103902
+	* lex.cc (identifier_diagnostics_on_lex): New function refactoring
+	some common code.
+	(lex_identifier_intern): Use the new function.
+	(lex_identifier): Don't run identifier diagnostics here, rather let
+	the call site do it when needed.
+	(_cpp_lex_direct): Adjust the call sites of lex_identifier ()
+	acccordingly.
+	(struct scan_id_result): New struct.
+	(scan_cur_identifier): New function.
+	(create_literal2): New function.
+	(lit_accum::create_literal2): New function.
+	(is_macro): Folded into new function...
+	(maybe_ignore_udl_macro_suffix): ...here.
+	(is_macro_not_literal_suffix): Folded likewise.
+	(lex_raw_string): Handle UTF-8 in UDL suffix via
+	scan_cur_identifier ().
+	(lex_string): Likewise.
+
+2023-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* include/symtab.h (struct ht_identifier): Document different
+	rationale.
+
+2023-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* include/cpplib.h (c_lang): Add CXX26 and GNUCXX26.
+	* init.cc (lang_defaults): Add rows for CXX26 and GNUCXX26.
+	(cpp_init_builtins): Set __cplusplus to 202400L for C++26.
+	Set __cplusplus to 202302L for C++23.
+
+2023-06-23  Ben Boeckel  <me@benboeckel.net>
+
+	* charset.cc: Allow `UCS_LIMIT` in UTF-8 strings.
+
+2023-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.cc (get_cppchar_property): New function template, based
+	on...
+	(cpp_wcwidth): ...this function.  Rework to use the above.
+	Include "combining-chars.inc".
+	(cpp_is_combining_char): New function
+	Include "printable-chars.inc".
+	(cpp_is_printable_char): New function
+	* combining-chars.inc: New file, generated by
+	contrib/unicode/gen-combining-chars.py.
+	* include/cpplib.h (cpp_is_combining_char): New function decl.
+	(cpp_is_printable_char): New function decl.
+	* printable-chars.inc: New file, generated by
+	contrib/unicode/gen-printable-chars.py.
+
+2023-06-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/66290
+	* macro.cc (_cpp_create_definition): Add location argument.
+	* internal.h (_cpp_create_definition): Adjust prototype.
+	* directives.cc (do_define): Pass new location argument to
+	_cpp_create_definition.
+	(do_undef): Stop passing inferior location to cpp_warning_with_line;
+	the default from cpp_warning is better.
+	(cpp_pop_definition): Pass new location argument to
+	_cpp_create_definition.
+	* pch.cc (cpp_read_state): Likewise.
+
+2023-06-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* charset.cc: Reject encodings of codepoints above 0x10FFFF.
+	UTF-16 does not support such codepoints and therefore all
+	Unicode rejects such values.
+
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG after this check.
+	* configure: Regenerate.
+
+2023-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/80753
+	* files.cc (struct _cpp_file): Add deferred_error bitfield.
+	(_cpp_find_file): When finding a file in cache with deferred_error
+	set in _cpp_FFK_NORMAL mode, call open_file_failed and clear the flag.
+	Set deferred_error in _cpp_FFK_HAS_INCLUDE mode if open_file_failed
+	hasn't been called.
+
+2023-04-30  Jeff Law  <jlaw@ventanamicro>
+
+	Revert:
+	2023-04-30  Longjun Luo  <luolongjuna@gmail.com>
+
+	* init.cc (builtin_array): Do not always warn for a redefinition
+	of __LINE__.
+
+2023-04-30  Longjun Luo  <luolongjuna@gmail.com>
+
+	* init.cc (builtin_array): Do not always warn for a redefinition
+	of __LINE__.
+
 2023-03-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109098

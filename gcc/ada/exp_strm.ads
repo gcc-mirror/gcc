@@ -57,38 +57,31 @@ package Exp_Strm is
    --  results are the declaration and name (entity) of the subprogram.
 
    procedure Build_Array_Input_Function
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Fnam : out Entity_Id);
    --  Build function for Input attribute for array type
 
    procedure Build_Array_Output_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
    --  Build procedure for Output attribute for array type
 
    procedure Build_Array_Read_Procedure
-     (Nod  : Node_Id;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
-   --  Build procedure for Read attribute for array type. Nod provides the
-   --  Sloc value for generated code.
+   --  Build procedure for Read attribute for array type.
 
    procedure Build_Array_Write_Procedure
-     (Nod  : Node_Id;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
-   --  Build procedure for Write attribute for array type. Nod provides the
-   --  Sloc value for generated code.
+   --  Build procedure for Write attribute for array type.
 
    procedure Build_Mutable_Record_Read_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
    --  Build procedure to Read a record with default discriminants.
@@ -96,8 +89,7 @@ package Exp_Strm is
    --  same manner as is done for 'Input.
 
    procedure Build_Mutable_Record_Write_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
    --  Build procedure to write a record with default discriminants.
@@ -105,8 +97,7 @@ package Exp_Strm is
    --  the same manner as is done for 'Output.
 
    procedure Build_Record_Or_Elementary_Input_Function
-     (Loc            : Source_Ptr;
-      Typ            : Entity_Id;
+     (Typ            : Entity_Id;
       Decl           : out Node_Id;
       Fnam           : out Entity_Id);
    --  Build function for Input attribute for record type or for an elementary
@@ -115,8 +106,7 @@ package Exp_Strm is
    --  runtime library routine directly).
 
    procedure Build_Record_Or_Elementary_Output_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
    --  Build procedure for Output attribute for record type or for an
@@ -125,22 +115,19 @@ package Exp_Strm is
    --  Output calls the appropriate runtime library routine directly.
 
    procedure Build_Record_Read_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
    --  Build procedure for Read attribute for record type
 
    procedure Build_Record_Write_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
    --  Build procedure for Write attribute for record type
 
    procedure Build_Stream_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : Entity_Id;
       Stms : List_Id;

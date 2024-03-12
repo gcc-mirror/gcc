@@ -3,7 +3,7 @@
 
 template <class ...Ts> class A
 {
-  void e ();
+  constexpr bool e () { return true; };
   bool f (int() noexcept(this->e())); // { dg-error "this" }
   bool g (int() noexcept(e()));	      // { dg-error "without object" }
 };

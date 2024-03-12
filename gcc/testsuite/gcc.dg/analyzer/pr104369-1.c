@@ -1,5 +1,7 @@
 /* { dg-additional-options "-Wno-analyzer-too-complex -Wno-analyzer-fd-leak" } */
 // TODO: remove need for these options
+/* C only: C++ does not support transparent_union. */
+
 
 typedef __SIZE_TYPE__ size_t;
 #define NULL ((void *)0)
@@ -61,7 +63,7 @@ int main() {
   struct sockaddr_un remote;
   socklen_t len = sizeof(remote);
 
-  pollfds = calloc(1, sizeof(struct pollfd));
+  pollfds = (struct pollfd *) calloc(1, sizeof(struct pollfd));
   if (!pollfds) {
     exit(1);
   }
@@ -74,12 +76,13 @@ int main() {
 
     if (pollfds[0].revents & POLLIN) {
       nsockets++;
-      newpollfds = realloc(pollfds, nsockets * sizeof(*pollfds));
+      newpollfds = (struct pollfd *) realloc(pollfds, nsockets * sizeof(*pollfds));
       if (!newpollfds) {
         exit(1);
       }
       pollfds = newpollfds;
       pollfds[nsockets - 1].fd = accept(pollfds[0].fd, &remote, &len);
+      /* { dg-error "could not convert '& remote' from 'sockaddr_un*' to '__SOCKADDR_ARG'" "G++ doesn't support transparent_union" { target c++ } .-1 } */
     }
   }
   return 0;

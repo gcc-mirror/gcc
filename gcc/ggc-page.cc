@@ -1538,7 +1538,7 @@ gt_ggc_mx (unsigned char& x ATTRIBUTE_UNUSED)
    P must have been allocated by the GC allocator; it mustn't point to
    static objects, stack variables, or memory allocated with malloc.  */
 
-int
+bool
 ggc_set_mark (const void *p)
 {
   page_entry *entry;
@@ -1558,7 +1558,7 @@ ggc_set_mark (const void *p)
 
   /* If the bit was previously set, skip it.  */
   if (entry->in_use_p[word] & mask)
-    return 1;
+    return true;
 
   /* Otherwise set it, and decrement the free object count.  */
   entry->in_use_p[word] |= mask;
@@ -1567,14 +1567,14 @@ ggc_set_mark (const void *p)
   if (GGC_DEBUG_LEVEL >= 4)
     fprintf (G.debug_file, "Marking %p\n", p);
 
-  return 0;
+  return false;
 }
 
-/* Return 1 if P has been marked, zero otherwise.
+/* Return true if P has been marked, zero otherwise.
    P must have been allocated by the GC allocator; it mustn't point to
    static objects, stack variables, or memory allocated with malloc.  */
 
-int
+bool
 ggc_marked_p (const void *p)
 {
   page_entry *entry;
@@ -2409,7 +2409,7 @@ init_ggc_pch (void)
 
 void
 ggc_pch_count_object (struct ggc_pch_data *d, void *x ATTRIBUTE_UNUSED,
-		      size_t size, bool is_string ATTRIBUTE_UNUSED)
+		      size_t size)
 {
   unsigned order;
 
@@ -2452,7 +2452,7 @@ ggc_pch_this_base (struct ggc_pch_data *d, void *base)
 
 char *
 ggc_pch_alloc_object (struct ggc_pch_data *d, void *x ATTRIBUTE_UNUSED,
-		      size_t size, bool is_string ATTRIBUTE_UNUSED)
+		      size_t size)
 {
   unsigned order;
   char *result;
@@ -2481,7 +2481,7 @@ ggc_pch_prepare_write (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
 void
 ggc_pch_write_object (struct ggc_pch_data *d,
 		      FILE *f, void *x, void *newx ATTRIBUTE_UNUSED,
-		      size_t size, bool is_string ATTRIBUTE_UNUSED)
+		      size_t size)
 {
   unsigned order;
   static const char emptyBytes[256] = { 0 };

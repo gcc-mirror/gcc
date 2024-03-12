@@ -525,6 +525,38 @@ package body Tbuild is
       return Make_String_Literal (Sloc, Strval => End_String);
    end Make_String_Literal;
 
+   -------------------------
+   -- Make_Suppress_Block --
+   -------------------------
+
+   --  Generates the following expansion:
+
+   --    declare
+   --       pragma Suppress (<check>);
+   --    begin
+   --       <stmts>
+   --    end;
+
+   function Make_Suppress_Block
+     (Loc   : Source_Ptr;
+      Check : Name_Id;
+      Stmts : List_Id) return Node_Id
+   is
+   begin
+      return
+        Make_Block_Statement (Loc,
+          Declarations => New_List (
+            Make_Pragma (Loc,
+              Chars => Name_Suppress,
+              Pragma_Argument_Associations => New_List (
+                Make_Pragma_Argument_Association (Loc,
+                  Expression => Make_Identifier (Loc, Check))))),
+
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => Stmts));
+   end Make_Suppress_Block;
+
    --------------------
    -- Make_Temporary --
    --------------------
@@ -548,7 +580,7 @@ package body Tbuild is
    --  Generates the following expansion:
 
    --    declare
-   --       pragma Suppress (<check>);
+   --       pragma Unsuppress (<check>);
    --    begin
    --       <stmts>
    --    end;
@@ -563,7 +595,7 @@ package body Tbuild is
         Make_Block_Statement (Loc,
           Declarations => New_List (
             Make_Pragma (Loc,
-              Chars => Name_Suppress,
+              Chars => Name_Unsuppress,
               Pragma_Argument_Associations => New_List (
                 Make_Pragma_Argument_Association (Loc,
                   Expression => Make_Identifier (Loc, Check))))),

@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <stdio.h>
 
-#define WIDE_INT_PRINT_BUFFER_SIZE (WIDE_INT_MAX_PRECISION / 4 + 4)
+#define WIDE_INT_PRINT_BUFFER_SIZE (WIDE_INT_MAX_INL_PRECISION / 4 + 4)
 
 /* Printing functions.  */
 
@@ -34,5 +34,42 @@ extern void print_decu (const wide_int_ref &wi, char *buf);
 extern void print_decu (const wide_int_ref &wi, FILE *file);
 extern void print_hex (const wide_int_ref &wi, char *buf);
 extern void print_hex (const wide_int_ref &wi, FILE *file);
+extern void pp_wide_int_large (pretty_printer *, const wide_int_ref &, signop);
+
+inline bool
+print_dec_buf_size (const wide_int_ref &wi, signop sgn, unsigned int *len)
+{
+  unsigned int l = wi.get_len ();
+  if ((l != 1 || sgn == UNSIGNED) && wi::neg_p (wi))
+    l = WIDE_INT_MAX_HWIS (wi.get_precision ());
+  l = l * HOST_BITS_PER_WIDE_INT / 3 + 3;
+  *len = l;
+  return UNLIKELY (l > WIDE_INT_PRINT_BUFFER_SIZE);
+}
+
+inline bool
+print_decs_buf_size (const wide_int_ref &wi, unsigned int *len)
+{
+  return print_dec_buf_size (wi, SIGNED, len);
+}
+
+inline bool
+print_decu_buf_size (const wide_int_ref &wi, unsigned int *len)
+{
+  return print_dec_buf_size (wi, UNSIGNED, len);
+}
+
+inline bool
+print_hex_buf_size (const wide_int_ref &wi, unsigned int *len)
+{
+  unsigned int l;
+  if (wi::neg_p (wi))
+    l = WIDE_INT_MAX_HWIS (wi.get_precision ());
+  else
+    l = wi.get_len ();
+  l = l * HOST_BITS_PER_WIDE_INT / 4 + 4;
+  *len = l;
+  return UNLIKELY (l > WIDE_INT_PRINT_BUFFER_SIZE);
+}
 
 #endif /* WIDE_INT_PRINT_H */

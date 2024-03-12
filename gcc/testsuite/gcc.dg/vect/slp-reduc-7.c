@@ -57,5 +57,5 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail vect_no_int_add } } } */
 /* For variable-length SVE, the number of scalar statements in the
    reduction exceeds the number of elements in a 128-bit granule.  */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { xfail { vect_no_int_add || { aarch64_sve && vect_variable_length } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { xfail { vect_no_int_add || { { aarch64_sve && vect_variable_length } || { riscv_v && vect_variable_length } } } } } } */
 /* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 0 "vect" { xfail { aarch64_sve && vect_variable_length } } } } */

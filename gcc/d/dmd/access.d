@@ -16,17 +16,13 @@ module dmd.access;
 import dmd.aggregate;
 import dmd.astenums;
 import dmd.dclass;
-import dmd.declaration;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.errors;
 import dmd.expression;
-import dmd.func;
-import dmd.globals;
 import dmd.location;
-import dmd.mtype;
 import dmd.tokens;
 
 private enum LOG = false;
@@ -52,7 +48,7 @@ bool checkAccess(AggregateDeclaration ad, Loc loc, Scope* sc, Dsymbol smember)
 
     if (!symbolIsVisible(sc, smember))
     {
-        ad.error(loc, "%s `%s` is not accessible", smember.kind(), smember.toChars());
+        error(loc, "%s `%s` %s `%s` is not accessible", ad.kind(), ad.toPrettyChars(), smember.kind(), smember.toChars());
         //printf("smember = %s %s, vis = %d, semanticRun = %d\n",
         //        smember.kind(), smember.toPrettyChars(), smember.visible() smember.semanticRun);
         return true;

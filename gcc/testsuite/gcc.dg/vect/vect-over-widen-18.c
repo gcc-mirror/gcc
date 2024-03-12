@@ -35,6 +35,7 @@ main (void)
       asm volatile ("" ::: "memory");
     }
   f (a, b);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != (unsigned char) ((((i * 3) & 0xef) | 0x80) + (i << 4)))
       __builtin_abort ();

@@ -37,6 +37,7 @@ main ()
   asm volatile ("" : : "g" (s), "g" (d) : "memory");
   foo ();
   asm volatile ("" : : "g" (s), "g" (d) : "memory");
+#pragma GCC novector
   for (i = 0; i < 50; ++i)
     if (d[i].q != i || d[i].r != 50 * i)
       abort ();

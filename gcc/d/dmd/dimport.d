@@ -26,6 +26,7 @@ import dmd.location;
 import dmd.mtype;
 import dmd.visitor;
 
+import core.stdc.stdio;
 /***********************************************************
  */
 extern (C++) final class Import : Dsymbol
@@ -92,7 +93,7 @@ extern (C++) final class Import : Dsymbol
     extern (D) void addAlias(Identifier name, Identifier _alias)
     {
         if (isstatic)
-            error("cannot have an import bind list");
+            .error(loc, "%s `%s` cannot have an import bind list", kind, toPrettyChars);
         if (!aliasId)
             this.ident = null; // make it an anonymous import
         names.push(name);
@@ -232,7 +233,20 @@ extern (C++) final class Import : Dsymbol
          * most likely because of parsing errors.
          * Therefore we cannot trust the resulting AST.
          */
-        if (load(sc)) return;
+        if (load(sc))
+        {
+            // https://issues.dlang.org/show_bug.cgi?id=23873
+            // For imports that are not at module or function level,
+            // e.g. aggregate level, the import symbol is added to the
+            // symbol table and later semantic is performed on it.
+            // This leads to semantic analysis on an malformed AST
+            // which causes all kinds of segfaults.
+            // The fix is to note that the module has errors and avoid
+            // semantic analysis on it.
+            if(mod)
+                mod.errors = true;
+            return;
+        }
 
         if (!mod) return; // Failed
 

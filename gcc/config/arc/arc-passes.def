@@ -17,12 +17,6 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* First target dependent ARC if-conversion pass.  */
-INSERT_PASS_AFTER (pass_delay_slots, 1, pass_arc_ifcvt);
-
-/* Second target dependent ARC if-conversion pass.  */
-INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_arc_ifcvt);
-
 /* Find annulled delay insns and convert them to use the appropriate
    predicate.  This allows branch shortening to size up these
    instructions properly.  */

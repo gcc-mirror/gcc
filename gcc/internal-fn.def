@@ -34,10 +34,12 @@ along with GCC; see the file COPYING3.  If not see
 				   UNSIGNED_OPTAB, TYPE)
      DEF_INTERNAL_FLT_FN (NAME, FLAGS, OPTAB, TYPE)
      DEF_INTERNAL_INT_FN (NAME, FLAGS, OPTAB, TYPE)
+     DEF_INTERNAL_COND_FN (NAME, FLAGS, OPTAB, TYPE)
+     DEF_INTERNAL_SIGNED_COND_FN (NAME, FLAGS, OPTAB, TYPE)
 
    where NAME is the name of the function, FLAGS is a set of
    ECF_* flags and FNSPEC is a string describing functions fnspec.
-   
+
    DEF_INTERNAL_OPTAB_FN defines an internal function that maps to a
    direct optab.  The function should only be called with a given
    set of types if the associated optab is available for the modes
@@ -48,14 +50,18 @@ along with GCC; see the file COPYING3.  If not see
    - mask_load: currently just maskload
    - load_lanes: currently just vec_load_lanes
    - mask_load_lanes: currently just vec_mask_load_lanes
-   - gather_load: used for {mask_,}gather_load
+   - mask_len_load_lanes: currently just vec_mask_len_load_lanes
+   - gather_load: used for {mask_,mask_len_,}gather_load
    - len_load: currently just len_load
+   - mask_len_load: currently just mask_len_load
 
    - mask_store: currently just maskstore
    - store_lanes: currently just vec_store_lanes
    - mask_store_lanes: currently just vec_mask_store_lanes
-   - scatter_store: used for {mask_,}scatter_store
+   - mask_len_store_lanes: currently just vec_mask_len_store_lanes
+   - scatter_store: used for {mask_,mask_len_,}scatter_store
    - len_store: currently just len_store
+   - mask_len_store: currently just mask_len_store
 
    - unary: a normal unary optab, such as vec_reverse_<mode>
    - binary: a normal binary optab, such as vec_interleave_lo_<mode>
@@ -65,10 +71,16 @@ along with GCC; see the file COPYING3.  If not see
      lround<srcmode><dstmode>2.
 
    - cond_binary: a conditional binary optab, such as cond_add<mode>
+   - cond_unary: a conditional unary optab, such as cond_neg<mode>
    - cond_ternary: a conditional ternary optab, such as cond_fma_rev<mode>
 
    - fold_left: for scalar = FN (scalar, vector), keyed off the vector mode
    - check_ptrs: used for check_{raw,war}_ptrs
+
+   - cond_len_unary: a conditional unary optab, such as cond_len_neg<mode>
+   - cond_len_binary: a conditional binary optab, such as cond_len_add<mode>
+   - cond_len_ternary: a conditional ternary optab, such as
+   cond_len_fma_rev<mode>
 
    DEF_INTERNAL_SIGNED_OPTAB_FN defines an internal function that
    maps to one of two optabs, depending on the signedness of an input.
@@ -84,6 +96,31 @@ along with GCC; see the file COPYING3.  If not see
    DEF_INTERNAL_INT_FN is like DEF_INTERNAL_OPTAB_FN, but in addition
    says that the function extends the C-level BUILT_IN_<NAME>{,L,LL,IMAX}
    group of functions to any integral mode (including vector modes).
+
+   DEF_INTERNAL_WIDENING_OPTAB_FN is a wrapper that defines five internal
+   functions with DEF_INTERNAL_SIGNED_OPTAB_FN:
+   - one that describes a widening operation with the same number of elements
+   in the output and input vectors,
+   - two that describe a pair of high-low widening operations where the output
+   vectors each have half the number of elements of the input vectors,
+   corresponding to the result of the widening operation on the top half and
+   bottom half, these have the suffixes _HI and _LO,
+   - and two that describe a pair of even-odd widening operations where the
+   output vectors each have half the number of elements of the input vectors,
+   corresponding to the result of the widening operation on the even and odd
+   elements, these have the suffixes _EVEN and _ODD.
+   These five internal functions will require two optabs each, a SIGNED_OPTAB
+   and an UNSIGNED_OTPAB.
+
+   DEF_INTERNAL_COND_FN is a wrapper that defines 2 internal functions with
+   DEF_INTERNAL_OPTAB_FN:
+   - One is COND_* operations that are predicated by mask only. Such operations
+     make sense for both vectors and scalars.
+   - The other is COND_LEN_* operations that are predicated by mask and len
+     both. Such operations only make sense for vectors.
+
+   DEF_INTERNAL_SIGNED_COND_FN is like DEF_INTERNAL_COND_FN but defines intenal
+   functions with DEF_INTERNAL_SIGNED_OPTAB_FN.
 
    Each entry must have a corresponding expander of the form:
 
@@ -123,36 +160,77 @@ along with GCC; see the file COPYING3.  If not see
   DEF_INTERNAL_OPTAB_FN (NAME, FLAGS, OPTAB, TYPE)
 #endif
 
+#ifndef DEF_INTERNAL_WIDENING_OPTAB_FN
+#define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, FLAGS, SELECTOR, SOPTAB, UOPTAB, TYPE)		    \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME, FLAGS, SELECTOR, SOPTAB, UOPTAB, TYPE)			    \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME ## _LO, FLAGS, SELECTOR, SOPTAB##_lo, UOPTAB##_lo, TYPE)	    \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME ## _HI, FLAGS, SELECTOR, SOPTAB##_hi, UOPTAB##_hi, TYPE)	    \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME ## _EVEN, FLAGS, SELECTOR, SOPTAB##_even, UOPTAB##_even, TYPE) \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME ## _ODD, FLAGS, SELECTOR, SOPTAB##_odd, UOPTAB##_odd, TYPE)
+#endif
+
+#ifndef DEF_INTERNAL_COND_FN
+#define DEF_INTERNAL_COND_FN(NAME, FLAGS, OPTAB, TYPE)                         \
+  DEF_INTERNAL_OPTAB_FN (COND_##NAME, FLAGS, cond_##OPTAB, cond_##TYPE)        \
+  DEF_INTERNAL_OPTAB_FN (COND_LEN_##NAME, FLAGS, cond_len_##OPTAB,             \
+			 cond_len_##TYPE)
+#endif
+
+#ifndef DEF_INTERNAL_SIGNED_COND_FN
+#define DEF_INTERNAL_SIGNED_COND_FN(NAME, FLAGS, SELECTOR, SIGNED_OPTAB,       \
+				    UNSIGNED_OPTAB, TYPE)                      \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (COND_##NAME, FLAGS, SELECTOR,                  \
+				cond_##SIGNED_OPTAB, cond_##UNSIGNED_OPTAB,    \
+				cond_##TYPE)                                   \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (COND_LEN_##NAME, FLAGS, SELECTOR,              \
+				cond_len_##SIGNED_OPTAB,                       \
+				cond_len_##UNSIGNED_OPTAB, cond_len_##TYPE)
+#endif
+
 DEF_INTERNAL_OPTAB_FN (MASK_LOAD, ECF_PURE, maskload, mask_load)
 DEF_INTERNAL_OPTAB_FN (LOAD_LANES, ECF_CONST, vec_load_lanes, load_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_LOAD_LANES, ECF_PURE,
 		       vec_mask_load_lanes, mask_load_lanes)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_LOAD_LANES, ECF_PURE,
+		       vec_mask_len_load_lanes, mask_load_lanes)
 
 DEF_INTERNAL_OPTAB_FN (GATHER_LOAD, ECF_PURE, gather_load, gather_load)
 DEF_INTERNAL_OPTAB_FN (MASK_GATHER_LOAD, ECF_PURE,
 		       mask_gather_load, gather_load)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_GATHER_LOAD, ECF_PURE,
+		       mask_len_gather_load, gather_load)
 
 DEF_INTERNAL_OPTAB_FN (LEN_LOAD, ECF_PURE, len_load, len_load)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_LOAD, ECF_PURE, mask_len_load, mask_len_load)
 
 DEF_INTERNAL_OPTAB_FN (SCATTER_STORE, 0, scatter_store, scatter_store)
 DEF_INTERNAL_OPTAB_FN (MASK_SCATTER_STORE, 0,
 		       mask_scatter_store, scatter_store)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_SCATTER_STORE, 0,
+		       mask_len_scatter_store, scatter_store)
 
 DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_STORE_LANES, 0,
 		       vec_mask_store_lanes, mask_store_lanes)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_STORE_LANES, 0,
+		       vec_mask_len_store_lanes, mask_store_lanes)
 
-DEF_INTERNAL_OPTAB_FN (VCOND, 0, vcond, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCONDU, 0, vcondu, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCONDEQ, 0, vcondeq, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCOND_MASK, 0, vcond_mask, vec_cond_mask)
+DEF_INTERNAL_OPTAB_FN (VCOND, ECF_CONST | ECF_NOTHROW, vcond, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCONDU, ECF_CONST | ECF_NOTHROW, vcondu, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCONDEQ, ECF_CONST | ECF_NOTHROW, vcondeq, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCOND_MASK, ECF_CONST | ECF_NOTHROW,
+		       vcond_mask, vec_cond_mask)
 
-DEF_INTERNAL_OPTAB_FN (VEC_SET, 0, vec_set, vec_set)
+DEF_INTERNAL_OPTAB_FN (VEC_SET, ECF_CONST | ECF_NOTHROW, vec_set, vec_set)
+DEF_INTERNAL_OPTAB_FN (VEC_EXTRACT, ECF_CONST | ECF_NOTHROW,
+		       vec_extract, vec_extract)
 
 DEF_INTERNAL_OPTAB_FN (LEN_STORE, 0, len_store, len_store)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_STORE, 0, mask_len_store, mask_len_store)
 
 DEF_INTERNAL_OPTAB_FN (WHILE_ULT, ECF_CONST | ECF_NOTHROW, while_ult, while)
+DEF_INTERNAL_OPTAB_FN (SELECT_VL, ECF_CONST | ECF_NOTHROW, select_vl, binary)
 DEF_INTERNAL_OPTAB_FN (CHECK_RAW_PTRS, ECF_CONST | ECF_NOTHROW,
 		       check_raw_ptrs, check_ptrs)
 DEF_INTERNAL_OPTAB_FN (CHECK_WAR_PTRS, ECF_CONST | ECF_NOTHROW,
@@ -167,6 +245,9 @@ DEF_INTERNAL_OPTAB_FN (FMS, ECF_CONST, fms, ternary)
 DEF_INTERNAL_OPTAB_FN (FNMA, ECF_CONST, fnma, ternary)
 DEF_INTERNAL_OPTAB_FN (FNMS, ECF_CONST, fnms, ternary)
 
+DEF_INTERNAL_SIGNED_OPTAB_FN (ABD, ECF_CONST | ECF_NOTHROW, first,
+			      sabd, uabd, binary)
+
 DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_FLOOR, ECF_CONST | ECF_NOTHROW, first,
 			      savg_floor, uavg_floor, binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_CEIL, ECF_CONST | ECF_NOTHROW, first,
@@ -179,37 +260,30 @@ DEF_INTERNAL_SIGNED_OPTAB_FN (MULHS, ECF_CONST | ECF_NOTHROW, first,
 DEF_INTERNAL_SIGNED_OPTAB_FN (MULHRS, ECF_CONST | ECF_NOTHROW, first,
 			      smulhrs, umulhrs, binary)
 
-DEF_INTERNAL_OPTAB_FN (COND_ADD, ECF_CONST, cond_add, cond_binary)
-DEF_INTERNAL_OPTAB_FN (COND_SUB, ECF_CONST, cond_sub, cond_binary)
-DEF_INTERNAL_OPTAB_FN (COND_MUL, ECF_CONST, cond_smul, cond_binary)
-DEF_INTERNAL_SIGNED_OPTAB_FN (COND_DIV, ECF_CONST, first,
-			      cond_sdiv, cond_udiv, cond_binary)
-DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MOD, ECF_CONST, first,
-			      cond_smod, cond_umod, cond_binary)
-DEF_INTERNAL_OPTAB_FN (COND_RDIV, ECF_CONST, cond_sdiv, cond_binary)
-DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MIN, ECF_CONST, first,
-			      cond_smin, cond_umin, cond_binary)
-DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MAX, ECF_CONST, first,
-			      cond_smax, cond_umax, cond_binary)
-DEF_INTERNAL_OPTAB_FN (COND_FMIN, ECF_CONST, cond_fmin, cond_binary)
-DEF_INTERNAL_OPTAB_FN (COND_FMAX, ECF_CONST, cond_fmax, cond_binary)
-DEF_INTERNAL_OPTAB_FN (COND_AND, ECF_CONST | ECF_NOTHROW,
-		       cond_and, cond_binary)
-DEF_INTERNAL_OPTAB_FN (COND_IOR, ECF_CONST | ECF_NOTHROW,
-		       cond_ior, cond_binary)
-DEF_INTERNAL_OPTAB_FN (COND_XOR, ECF_CONST | ECF_NOTHROW,
-		       cond_xor, cond_binary)
-DEF_INTERNAL_OPTAB_FN (COND_SHL, ECF_CONST | ECF_NOTHROW,
-		       cond_ashl, cond_binary)
-DEF_INTERNAL_SIGNED_OPTAB_FN (COND_SHR, ECF_CONST | ECF_NOTHROW, first,
-			      cond_ashr, cond_lshr, cond_binary)
+DEF_INTERNAL_COND_FN (ADD, ECF_CONST, add, binary)
+DEF_INTERNAL_COND_FN (SUB, ECF_CONST, sub, binary)
+DEF_INTERNAL_COND_FN (MUL, ECF_CONST, smul, binary)
+DEF_INTERNAL_SIGNED_COND_FN (DIV, ECF_CONST, first, sdiv, udiv, binary)
+DEF_INTERNAL_SIGNED_COND_FN (MOD, ECF_CONST, first, smod, umod, binary)
+DEF_INTERNAL_COND_FN (RDIV, ECF_CONST, sdiv, binary)
+DEF_INTERNAL_SIGNED_COND_FN (MIN, ECF_CONST, first, smin, umin, binary)
+DEF_INTERNAL_SIGNED_COND_FN (MAX, ECF_CONST, first, smax, umax, binary)
+DEF_INTERNAL_COND_FN (FMIN, ECF_CONST, fmin, binary)
+DEF_INTERNAL_COND_FN (FMAX, ECF_CONST, fmax, binary)
+DEF_INTERNAL_COND_FN (AND, ECF_CONST | ECF_NOTHROW, and, binary)
+DEF_INTERNAL_COND_FN (IOR, ECF_CONST | ECF_NOTHROW, ior, binary)
+DEF_INTERNAL_COND_FN (XOR, ECF_CONST | ECF_NOTHROW, xor, binary)
+DEF_INTERNAL_COND_FN (SHL, ECF_CONST | ECF_NOTHROW, ashl, binary)
+DEF_INTERNAL_SIGNED_COND_FN (SHR, ECF_CONST | ECF_NOTHROW, first, ashr, lshr,
+			     binary)
 
-DEF_INTERNAL_OPTAB_FN (COND_FMA, ECF_CONST, cond_fma, cond_ternary)
-DEF_INTERNAL_OPTAB_FN (COND_FMS, ECF_CONST, cond_fms, cond_ternary)
-DEF_INTERNAL_OPTAB_FN (COND_FNMA, ECF_CONST, cond_fnma, cond_ternary)
-DEF_INTERNAL_OPTAB_FN (COND_FNMS, ECF_CONST, cond_fnms, cond_ternary)
+DEF_INTERNAL_COND_FN (FMA, ECF_CONST, fma, ternary)
+DEF_INTERNAL_COND_FN (FMS, ECF_CONST, fms, ternary)
+DEF_INTERNAL_COND_FN (FNMA, ECF_CONST, fnma, ternary)
+DEF_INTERNAL_COND_FN (FNMS, ECF_CONST, fnms, ternary)
 
-DEF_INTERNAL_OPTAB_FN (COND_NEG, ECF_CONST, cond_neg, cond_unary)
+DEF_INTERNAL_COND_FN (NEG, ECF_CONST, neg, unary)
+DEF_INTERNAL_COND_FN (NOT, ECF_CONST, one_cmpl, unary)
 
 DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
 
@@ -238,11 +312,17 @@ DEF_INTERNAL_OPTAB_FN (EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 DEF_INTERNAL_OPTAB_FN (FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 		       fold_extract_last, fold_extract)
 
+DEF_INTERNAL_OPTAB_FN (LEN_FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
+		       len_fold_extract_last, fold_len_extract)
+
 DEF_INTERNAL_OPTAB_FN (FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
 		       fold_left_plus, fold_left)
 
 DEF_INTERNAL_OPTAB_FN (MASK_FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
 		       mask_fold_left_plus, mask_fold_left)
+
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
+		       mask_len_fold_left_plus, mask_len_fold_left)
 
 /* Unary math functions.  */
 DEF_INTERNAL_FLT_FN (ACOS, ECF_CONST, acos, unary)
@@ -315,6 +395,21 @@ DEF_INTERNAL_OPTAB_FN (COMPLEX_ADD_ROT270, ECF_CONST, cadd270, binary)
 DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL, ECF_CONST, cmul, binary)
 DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL_CONJ, ECF_CONST, cmul_conj, binary)
 DEF_INTERNAL_OPTAB_FN (VEC_ADDSUB, ECF_CONST, vec_addsub, binary)
+DEF_INTERNAL_WIDENING_OPTAB_FN (VEC_WIDEN_PLUS,
+				ECF_CONST | ECF_NOTHROW,
+				first,
+				vec_widen_sadd, vec_widen_uadd,
+				binary)
+DEF_INTERNAL_WIDENING_OPTAB_FN (VEC_WIDEN_MINUS,
+				ECF_CONST | ECF_NOTHROW,
+				first,
+				vec_widen_ssub, vec_widen_usub,
+				binary)
+DEF_INTERNAL_WIDENING_OPTAB_FN (VEC_WIDEN_ABD,
+				ECF_CONST | ECF_NOTHROW,
+				first,
+				vec_widen_sabd, vec_widen_uabd,
+				binary)
 DEF_INTERNAL_OPTAB_FN (VEC_FMADDSUB, ECF_CONST, vec_fmaddsub, ternary)
 DEF_INTERNAL_OPTAB_FN (VEC_FMSUBADD, ECF_CONST, vec_fmsubadd, ternary)
 
@@ -381,6 +476,8 @@ DEF_INTERNAL_FN (ASAN_POISON_USE, ECF_LEAF | ECF_NOTHROW | ECF_NOVOPS, NULL)
 DEF_INTERNAL_FN (ADD_OVERFLOW, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (SUB_OVERFLOW, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (MUL_OVERFLOW, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+DEF_INTERNAL_FN (UADDC, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+DEF_INTERNAL_FN (USUBC, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (TSAN_FUNC_EXIT, ECF_NOVOPS | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (VA_ARG, ECF_NOTHROW | ECF_LEAF, NULL)
 DEF_INTERNAL_FN (VEC_CONVERT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
@@ -463,6 +560,12 @@ DEF_INTERNAL_FN (ASSUME, ECF_CONST | ECF_LEAF | ECF_NOTHROW
 
 /* For if-conversion of inbranch SIMD clones.  */
 DEF_INTERNAL_FN (MASK_CALL, ECF_NOVOPS, NULL)
+
+/* _BitInt support.  */
+DEF_INTERNAL_FN (MULBITINT, ECF_LEAF | ECF_NOTHROW, ". O . R . R . ")
+DEF_INTERNAL_FN (DIVMODBITINT, ECF_LEAF, ". O . O . R . R . ")
+DEF_INTERNAL_FN (FLOATTOBITINT, ECF_LEAF | ECF_NOTHROW, ". O . . ")
+DEF_INTERNAL_FN (BITINTTOFLOAT, ECF_PURE | ECF_LEAF, ". R . ")
 
 #undef DEF_INTERNAL_INT_FN
 #undef DEF_INTERNAL_FLT_FN

@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_float } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -39,6 +40,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i=0; i<N; i++)
     {
       if (a[i] != results1[i] || e[i] != results2[i])
@@ -52,6 +54,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 1; i <=N-4; i++)
     {
       if (a[i+3] != b[i-1])
@@ -71,3 +74,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" { target { { vect_aligned_arrays } && {! vect_sizes_32B_16B} } } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { target { {! vect_aligned_arrays } && {vect_sizes_32B_16B} } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

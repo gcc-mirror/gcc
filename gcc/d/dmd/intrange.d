@@ -18,7 +18,7 @@ import dmd.mtype;
 import dmd.expression;
 import dmd.globals;
 
-private uinteger_t copySign(uinteger_t x, bool sign)
+private uinteger_t copySign(uinteger_t x, bool sign) @safe
 {
     // return sign ? -x : x;
     return (x - cast(uinteger_t)sign) ^ -cast(uinteger_t)sign;
@@ -29,37 +29,37 @@ struct SignExtendedNumber
     uinteger_t value;
     bool negative;
 
-    static SignExtendedNumber fromInteger(uinteger_t value_)
+    static SignExtendedNumber fromInteger(uinteger_t value_) @safe
     {
         return SignExtendedNumber(value_, value_ >> 63);
     }
 
-    static SignExtendedNumber extreme(bool minimum)
+    static SignExtendedNumber extreme(bool minimum) @safe
     {
         return SignExtendedNumber(minimum - 1, minimum);
     }
 
-    static SignExtendedNumber max()
+    static SignExtendedNumber max() @safe
     {
         return SignExtendedNumber(ulong.max, false);
     }
 
-    static SignExtendedNumber min()
+    static SignExtendedNumber min() @safe
     {
         return SignExtendedNumber(0, true);
     }
 
-    bool isMinimum() const
+    bool isMinimum() const @safe
     {
         return negative && value == 0;
     }
 
-    bool opEquals(const ref SignExtendedNumber a) const
+    bool opEquals(const ref SignExtendedNumber a) const @safe
     {
         return value == a.value && negative == a.negative;
     }
 
-    int opCmp(const ref SignExtendedNumber a) const
+    int opCmp(const ref SignExtendedNumber a) const @safe
     {
         if (negative != a.negative)
         {
@@ -297,19 +297,19 @@ struct IntRange
 {
     SignExtendedNumber imin, imax;
 
-    this(IntRange another)
+    this(IntRange another) @safe
     {
         imin = another.imin;
         imax = another.imax;
     }
 
-    this(SignExtendedNumber a)
+    this(SignExtendedNumber a) @safe
     {
         imin = a;
         imax = a;
     }
 
-    this(SignExtendedNumber lower, SignExtendedNumber upper)
+    this(SignExtendedNumber lower, SignExtendedNumber upper) @safe
     {
         imin = lower;
         imax = upper;
@@ -358,12 +358,12 @@ struct IntRange
         return ab;
     }
 
-    static IntRange widest()
+    static IntRange widest() @safe
     {
         return IntRange(SignExtendedNumber.min(), SignExtendedNumber.max());
     }
 
-    IntRange castSigned(uinteger_t mask)
+    IntRange castSigned(uinteger_t mask) @safe
     {
         // .... 0x1e7f ] [0x1e80 .. 0x1f7f] [0x1f80 .. 0x7f] [0x80 .. 0x17f] [0x180 ....
         //
@@ -405,7 +405,7 @@ struct IntRange
         return this;
     }
 
-    IntRange castUnsigned(uinteger_t mask)
+    IntRange castUnsigned(uinteger_t mask) @safe
     {
         // .... 0x1eff ] [0x1f00 .. 0x1fff] [0 .. 0xff] [0x100 .. 0x1ff] [0x200 ....
         //
@@ -430,7 +430,7 @@ struct IntRange
         return this;
     }
 
-    IntRange castDchar()
+    IntRange castDchar() @safe
     {
         // special case for dchar. Casting to dchar means "I'll ignore all
         //  invalid characters."
@@ -464,18 +464,18 @@ struct IntRange
             return castUnsigned(type.sizemask());
     }
 
-    bool contains(IntRange a)
+    bool contains(IntRange a) @safe
     {
         return imin <= a.imin && imax >= a.imax;
     }
 
-    bool containsZero() const
+    bool containsZero() const @safe
     {
         return (imin.negative && !imax.negative)
             || (!imin.negative && imin.value == 0);
     }
 
-    IntRange absNeg() const
+    IntRange absNeg() const @safe
     {
         if (imax.negative)
             return this;
@@ -489,13 +489,13 @@ struct IntRange
         }
     }
 
-    IntRange unionWith(const ref IntRange other) const
+    IntRange unionWith(const ref IntRange other) const @safe
     {
         return IntRange(imin < other.imin ? imin : other.imin,
                         imax > other.imax ? imax : other.imax);
     }
 
-    void unionOrAssign(IntRange other, ref bool union_)
+    void unionOrAssign(IntRange other, ref bool union_) @safe
     {
         if (!union_ || imin > other.imin)
             imin = other.imin;
@@ -513,7 +513,7 @@ struct IntRange
         return this;
     }
 
-    void splitBySign(ref IntRange negRange, ref bool hasNegRange, ref IntRange nonNegRange, ref bool hasNonNegRange) const
+    void splitBySign(ref IntRange negRange, ref bool hasNegRange, ref IntRange nonNegRange, ref bool hasNonNegRange) const @safe
     {
         hasNegRange = imin.negative;
         if (hasNegRange)
@@ -785,7 +785,7 @@ struct IntRange
 private:
     // Credits to Timon Gehr maxOr, minOr, maxAnd, minAnd
     // https://github.com/tgehr/d-compiler/blob/master/vrange.d
-    static SignExtendedNumber maxOr(const IntRange lhs, const IntRange rhs)
+    static SignExtendedNumber maxOr(const IntRange lhs, const IntRange rhs) @safe
     {
         uinteger_t x = 0;
         auto sign = false;
@@ -856,14 +856,14 @@ private:
 
     // Credits to Timon Gehr maxOr, minOr, maxAnd, minAnd
     // https://github.com/tgehr/d-compiler/blob/master/vrange.d
-    static SignExtendedNumber minOr(const IntRange lhs, const IntRange rhs)
+    static SignExtendedNumber minOr(const IntRange lhs, const IntRange rhs) @safe
     {
         return ~maxAnd(~lhs, ~rhs);
     }
 
     // Credits to Timon Gehr maxOr, minOr, maxAnd, minAnd
     // https://github.com/tgehr/d-compiler/blob/master/vrange.d
-    static SignExtendedNumber maxAnd(const IntRange lhs, const IntRange rhs)
+    static SignExtendedNumber maxAnd(const IntRange lhs, const IntRange rhs) @safe
     {
         uinteger_t x = 0;
         bool sign = false;
@@ -905,7 +905,7 @@ private:
 
     // Credits to Timon Gehr maxOr, minOr, maxAnd, minAnd
     // https://github.com/tgehr/d-compiler/blob/master/vrange.d
-    static SignExtendedNumber minAnd(const IntRange lhs, const IntRange rhs)
+    static SignExtendedNumber minAnd(const IntRange lhs, const IntRange rhs) @safe
     {
         return ~maxOr(~lhs, ~rhs);
     }

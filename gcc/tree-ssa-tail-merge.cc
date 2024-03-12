@@ -1165,6 +1165,9 @@ gimple_equal_p (same_succ *same_succ, gimple *s1, gimple *s2)
       return operand_equal_p (lhs1, lhs2, 0);
 
     case GIMPLE_ASSIGN:
+      if (gimple_assign_rhs_code (s1) != gimple_assign_rhs_code (s2))
+	return false;
+
       lhs1 = gimple_get_lhs (s1);
       lhs2 = gimple_get_lhs (s2);
       if (TREE_CODE (lhs1) != SSA_NAME
@@ -1172,11 +1175,20 @@ gimple_equal_p (same_succ *same_succ, gimple *s1, gimple *s2)
 	return (operand_equal_p (lhs1, lhs2, 0)
 		&& gimple_operand_equal_value_p (gimple_assign_rhs1 (s1),
 						 gimple_assign_rhs1 (s2)));
-      else if (TREE_CODE (lhs1) == SSA_NAME
-	       && TREE_CODE (lhs2) == SSA_NAME)
-	return operand_equal_p (gimple_assign_rhs1 (s1),
-				gimple_assign_rhs1 (s2), 0);
-      return false;
+
+      if (TREE_CODE (lhs1) != SSA_NAME
+	  || TREE_CODE (lhs2) != SSA_NAME)
+	return false;
+
+      gcc_checking_assert (gimple_num_args (s1) == gimple_num_args (s2));
+      for (i = 0; i < gimple_num_args (s1); ++i)
+	{
+	  t1 = gimple_arg (s1, i);
+	  t2 = gimple_arg (s2, i);
+	  if (!gimple_operand_equal_value_p (t1, t2))
+	    return false;
+	}
+      return true;
 
     case GIMPLE_COND:
       t1 = gimple_cond_lhs (s1);
@@ -1593,7 +1605,7 @@ replace_block_by (basic_block bb1, basic_block bb2)
 
 	/* If probabilities are same, we are done.
 	   If counts are nonzero we can distribute accordingly. In remaining
-	   cases just avreage the values and hope for the best.  */
+	   cases just average the values and hope for the best.  */
 	e2->probability = e1->probability.combine_with_count
 	                     (bb1->count, e2->probability, bb2->count);
       }

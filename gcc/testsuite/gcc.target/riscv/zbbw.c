@@ -20,6 +20,7 @@ popcount (int i)
 }
 
 
-/* { dg-final { scan-assembler-times "clzw" 1 } } */
-/* { dg-final { scan-assembler-times "ctzw" 1 } } */
-/* { dg-final { scan-assembler-times "cpopw" 1 } } */
+/* { dg-final { scan-assembler-times {\mclzw} 1 } } */
+/* { dg-final { scan-assembler-times {\mctzw} 1 } } */
+/* { dg-final { scan-assembler-times {\mcpopw} 1 } } */
+/* { dg-final { scan-assembler-not "andi\t" } } */

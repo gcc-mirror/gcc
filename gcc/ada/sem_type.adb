@@ -884,6 +884,16 @@ package body Sem_Type is
             end;
          end if;
 
+      --  This test may seem to be redundant with the above one, but it catches
+      --  peculiar cases where a private type declared in a package is used in
+      --  a generic construct declared in another package, and the body of the
+      --  former package contains an instantiation of the generic construct on
+      --  an object whose type is a subtype of the private type; in this case,
+      --  the subtype is not private but the type is private in the instance.
+
+      elsif Is_Subtype_Of (T1 => T2, T2 => T1) then
+         return True;
+
       --  Literals are compatible with types in a given "class"
 
       elsif     (T2 = Universal_Integer and then Is_Integer_Type (T1))
@@ -1033,8 +1043,8 @@ package body Sem_Type is
         and then Ekind (BT1) = E_General_Access_Type
         and then Ekind (BT2) = E_Anonymous_Access_Type
         and then Covers (Designated_Type (T1), Designated_Type (T2))
-        and then (Is_Class_Wide_Type (Designated_Type (T1)) >=
-                  Is_Class_Wide_Type (Designated_Type (T2)))
+        and then Is_Class_Wide_Type (Designated_Type (T1)) >=
+                 Is_Class_Wide_Type (Designated_Type (T2))
       then
          return True;
 
@@ -1161,20 +1171,20 @@ package body Sem_Type is
       then
          return True;
 
-      --  In instances, or with types exported from instantiations, check
-      --  whether a partial and a full view match. Verify that types are
-      --  legal, to prevent cascaded errors.
+      --  With types exported from instantiations, check whether a partial and
+      --  a full view match. Verify that types are legal, to prevent cascaded
+      --  errors.
 
       elsif Is_Private_Type (T1)
-        and then (In_Instance
-                   or else (Is_Type (T2) and then Is_Generic_Actual_Type (T2)))
+        and then Is_Type (T2)
+        and then Is_Generic_Actual_Type (T2)
         and then Full_View_Covers (T1, T2)
       then
          return True;
 
       elsif Is_Private_Type (T2)
-        and then (In_Instance
-                   or else (Is_Type (T1) and then Is_Generic_Actual_Type (T1)))
+        and then Is_Type (T1)
+        and then Is_Generic_Actual_Type (T1)
         and then Full_View_Covers (T2, T1)
       then
          return True;
@@ -2229,7 +2239,7 @@ package body Sem_Type is
                 Is_Immediately_Visible (Base_Type (Etype (Right_Opnd (N))))
               and then Is_Potentially_Use_Visible (User_Subp)
             then
-               if It2.Nam = Predef_Subp then
+               if It1.Nam = Predef_Subp then
                   return It1;
                else
                   return It2;
@@ -2568,8 +2578,8 @@ package body Sem_Type is
          end if;
 
          loop
-            if Present (Interfaces (E))
-              and then not Is_Empty_Elmt_List (Interfaces (E))
+            if Is_Record_Type (E)
+              and then Present (Interfaces (E))
             then
                Elmt := First_Elmt (Interfaces (E));
                while Present (Elmt) loop
@@ -2639,34 +2649,32 @@ package body Sem_Type is
       --  In case of concurrent types we can't use the Corresponding Record_Typ
       --  to look for the interface because it is built by the expander (and
       --  hence it is not always available). For this reason we traverse the
-      --  list of interfaces (available in the parent of the concurrent type)
+      --  list of interfaces (available in the parent of the concurrent type).
 
       if Is_Concurrent_Type (Target_Typ) then
-         if Present (Interface_List (Parent (Target_Typ))) then
-            declare
-               AI : Node_Id;
+         declare
+            AI : Node_Id;
 
-            begin
-               AI := First (Interface_List (Parent (Target_Typ)));
+         begin
+            AI := First (Interface_List (Parent (Target_Typ)));
 
-               --  The progenitor itself may be a subtype of an interface type.
+            --  The progenitor itself may be a subtype of an interface type
 
-               while Present (AI) loop
-                  if Etype (AI) = Iface_Typ
-                    or else Base_Type (Etype (AI)) = Iface_Typ
-                  then
-                     return True;
+            while Present (AI) loop
+               if Etype (AI) = Iface_Typ
+                 or else Base_Type (Etype (AI)) = Iface_Typ
+               then
+                  return True;
 
-                  elsif Present (Interfaces (Etype (AI)))
-                    and then Iface_Present_In_Ancestor (Etype (AI))
-                  then
-                     return True;
-                  end if;
+               elsif Present (Interfaces (Etype (AI)))
+                 and then Iface_Present_In_Ancestor (Etype (AI))
+               then
+                  return True;
+               end if;
 
-                  Next (AI);
-               end loop;
-            end;
-         end if;
+               Next (AI);
+            end loop;
+         end;
 
          return False;
       end if;
@@ -3210,7 +3218,7 @@ package body Sem_Type is
 
          elsif Op_Name = Name_Op_Concat then
             return Is_Array_Type (T)
-              and then (Base_Type (T) = Base_Type (Etype (Op)))
+              and then Base_Type (T) = Base_Type (Etype (Op))
               and then (Base_Type (T1) = Base_Type (T)
                           or else
                         Base_Type (T1) = Base_Type (Component_Type (T)))
@@ -3457,9 +3465,10 @@ package body Sem_Type is
       then
          return T2;
 
-      --  In instances, also check private views the same way as Covers
+      --  With types exported from instantiation, also check private views the
+      --  same way as Covers
 
-      elsif Is_Private_Type (T1) and then In_Instance then
+      elsif Is_Private_Type (T1) and then Is_Generic_Actual_Type (T2) then
          if Present (Full_View (T1)) then
             return Specific_Type (Full_View (T1), T2);
 
@@ -3467,7 +3476,7 @@ package body Sem_Type is
             return Specific_Type (Underlying_Full_View (T1), T2);
          end if;
 
-      elsif Is_Private_Type (T2) and then In_Instance then
+      elsif Is_Private_Type (T2) and then Is_Generic_Actual_Type (T1) then
          if Present (Full_View (T2)) then
             return Specific_Type (T1, Full_View (T2));
 

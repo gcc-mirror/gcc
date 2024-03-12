@@ -42,10 +42,10 @@ if [ $# -lt 2 ] ; then
     exit 1
 fi
 
-if [ "$1" == "--debug" ] ; then
+if [ "$1" = "--debug" ] ; then
     debug_args="-wrapper gdb,--args"
     shift
-elif [ "$1" == "--debug-tui" ] ; then
+elif [ "$1" = "--debug-tui" ] ; then
     debug_args="-wrapper gdb,--tui,--args"
     shift
 else

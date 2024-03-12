@@ -281,11 +281,185 @@ else
     alias cpp_ptrdiff_t = ptrdiff_t;
 }
 
-// ABI layout of native complex types.
-private struct _Complex(T)
+/** ABI layout of native complex types.
+ */
+struct _Complex(T)
+    if (is(T == float) || is(T == double) || is(T == c_long_double))
 {
-    T re;
-    T im;
+    T re = 0;
+    T im = 0;
+
+    // Construction
+/+ https://issues.dlang.org/show_bug.cgi?id=23788 dmd codegen problem with constructors and _Complex!float
+    this(_Complex!float  c) { re = c.re; im = c.im; }
+    this(_Complex!double c) { re = c.re; im = c.im; }
+    this(_Complex!c_long_double   c) { re = c.re; im = c.im; }
+
+    this(T re, T im) { this.re = re; this.im = im; }
+
+    this(T re) { this.re = re; this.im = 0; }
++/
+    // Cast
+    R opCast(R)()
+        if (is(R == _Complex!float) || is(R == _Complex!double) || is(R == _Complex!c_long_double))
+    {
+        return R(this.re, this.im);
+    }
+
+    // Assignment
+
+    ref _Complex opAssign(_Complex!float  c) { re = c.re; im = c.im; return this; }
+    ref _Complex opAssign(_Complex!double c) { re = c.re; im = c.im; return this; }
+    ref _Complex opAssign(_Complex!c_long_double   c) { re = c.re; im = c.im; return this; }
+
+    ref _Complex opAssign(T t) { re = t; im = 0; return this; }
+
+    // Equals
+
+    bool opEquals(_Complex!float  c) { return re == c.re && im == c.im; }
+    bool opEquals(_Complex!double c) { return re == c.re && im == c.im; }
+    bool opEquals(_Complex!c_long_double   c) { return re == c.re && im == c.im; }
+
+    bool opEquals(T t) { return re == t && im == 0; }
+
+    // Unary operators
+
+    // +complex
+    _Complex opUnary(string op)()
+        if (op == "+")
+    {
+        return this;
+    }
+
+    // -complex
+    _Complex opUnary(string op)()
+        if (op == "-")
+    {
+        return _Complex(-re, -im);
+    }
+
+    // BINARY OPERATORS
+
+    // complex op complex
+    _Complex!(CommonType!(T,R)) opBinary(string op, R)(_Complex!R z)
+    {
+        alias C = typeof(return);
+        auto w = C(this.re, this.im);
+        return w.opOpAssign!(op)(z);
+    }
+
+    // complex op numeric
+    _Complex!(CommonType!(T,R)) opBinary(string op, R)(R r)
+        if (is(R : c_long_double))
+    {
+        alias C = typeof(return);
+        auto w = C(this.re, this.im);
+        return w.opOpAssign!(op)(r);
+    }
+
+    // numeric + complex,  numeric * complex
+    _Complex!(CommonType!(T, R)) opBinaryRight(string op, R)(R r)
+        if ((op == "+" || op == "*") && is(R : c_long_double))
+    {
+        return opBinary!(op)(r);
+    }
+
+    // numeric - complex
+    _Complex!(CommonType!(T, R)) opBinaryRight(string op, R)(R r)
+        if (op == "-" && is(R : c_long_double))
+    {
+        return _Complex(r - re, -im);
+    }
+
+    // numeric / complex
+    _Complex!(CommonType!(T, R)) opBinaryRight(string op, R)(R r)
+        if (op == "/" && is(R : c_long_double))
+    {
+        import core.math : fabs;
+        typeof(return) w = void;
+        if (fabs(re) < fabs(im))
+        {
+            immutable ratio = re/im;
+            immutable rdivd = r/(re*ratio + im);
+
+            w.re = rdivd*ratio;
+            w.im = -rdivd;
+        }
+        else
+        {
+            immutable ratio = im/re;
+            immutable rdivd = r/(re + im*ratio);
+
+            w.re = rdivd;
+            w.im = -rdivd*ratio;
+        }
+
+        return w;
+    }
+
+    // OP-ASSIGN OPERATORS
+
+    // complex += complex,  complex -= complex
+    ref _Complex opOpAssign(string op, C)(C z)
+        if ((op == "+" || op == "-") && is(C R == _Complex!R))
+    {
+        mixin ("re "~op~"= z.re;");
+        mixin ("im "~op~"= z.im;");
+        return this;
+    }
+
+    // complex *= complex
+    ref _Complex opOpAssign(string op, C)(C z)
+        if (op == "*" && is(C R == _Complex!R))
+    {
+        auto temp = re*z.re - im*z.im;
+        im = im*z.re + re*z.im;
+        re = temp;
+        return this;
+    }
+
+    // complex /= complex
+    ref _Complex opOpAssign(string op, C)(C z)
+        if (op == "/" && is(C R == _Complex!R))
+    {
+        import core.math : fabs;
+        if (fabs(z.re) < fabs(z.im))
+        {
+            immutable ratio = z.re/z.im;
+            immutable denom = z.re*ratio + z.im;
+
+            immutable temp = (re*ratio + im)/denom;
+            im = (im*ratio - re)/denom;
+            re = temp;
+        }
+        else
+        {
+            immutable ratio = z.im/z.re;
+            immutable denom = z.re + z.im*ratio;
+
+            immutable temp = (re + im*ratio)/denom;
+            im = (im - re*ratio)/denom;
+            re = temp;
+        }
+        return this;
+    }
+
+    // complex += numeric,  complex -= numeric
+    ref _Complex opOpAssign(string op, U : T)(U a)
+        if (op == "+" || op == "-")
+    {
+        mixin ("re "~op~"= a;");
+        return this;
+    }
+
+    // complex *= numeric,  complex /= numeric
+    ref _Complex opOpAssign(string op, U : T)(U a)
+        if (op == "*" || op == "/")
+    {
+        mixin ("re "~op~"= a;");
+        mixin ("im "~op~"= a;");
+        return this;
+    }
 
     // Helper properties.
     pragma(inline, true)
@@ -311,6 +485,168 @@ enum __c_complex_real   : _Complex!c_long_double;
 alias c_complex_float = __c_complex_float;
 alias c_complex_double = __c_complex_double;
 alias c_complex_real = __c_complex_real;
+
+private template CommonType(T, R)
+{
+    // Special kludge for Microsoft c_long_double
+    static if (is(T == c_long_double))
+        alias CommonType = T;
+    else static if (is(R == c_long_double))
+        alias CommonType = R;
+    else
+        alias CommonType = typeof(true ? T.init : R.init);
+}
+
+/************ unittests ****************/
+
+version (unittest)
+{
+  private:
+
+    alias _cfloat  = _Complex!float;
+    alias _cdouble = _Complex!double;
+    alias _creal   = _Complex!c_long_double;
+
+    T abs(T)(T t) => t < 0 ? -t : t;
+}
+
+@safe pure nothrow unittest
+{
+    auto c1 = _cdouble(1.0, 1.0);
+
+    // Check unary operations.
+    auto c2 = _cdouble(0.5, 2.0);
+
+    assert(c2 == +c2);
+
+    assert((-c2).re == -(c2.re));
+    assert((-c2).im == -(c2.im));
+    assert(c2 == -(-c2));
+
+    // Check complex-complex operations.
+    auto cpc = c1 + c2;
+    assert(cpc.re == c1.re + c2.re);
+    assert(cpc.im == c1.im + c2.im);
+
+    auto cmc = c1 - c2;
+    assert(cmc.re == c1.re - c2.re);
+    assert(cmc.im == c1.im - c2.im);
+
+    auto ctc = c1 * c2;
+    assert(ctc == _cdouble(-1.5, 2.5));
+
+    auto cdc = c1 / c2;
+    assert(abs(cdc.re -  0.5882352941177) < 1e-12);
+    assert(abs(cdc.im - -0.3529411764706) < 1e-12);
+
+    // Check complex-real operations.
+    double a = 123.456;
+
+    auto cpr = c1 + a;
+    assert(cpr.re == c1.re + a);
+    assert(cpr.im == c1.im);
+
+    auto cmr = c1 - a;
+    assert(cmr.re == c1.re - a);
+    assert(cmr.im == c1.im);
+
+    auto ctr = c1 * a;
+    assert(ctr.re == c1.re*a);
+    assert(ctr.im == c1.im*a);
+
+    auto cdr = c1 / a;
+    assert(abs(cdr.re - 0.00810005184033) < 1e-12);
+    assert(abs(cdr.im - 0.00810005184033) < 1e-12);
+
+    auto rpc = a + c1;
+    assert(rpc == cpr);
+
+    auto rmc = a - c1;
+    assert(rmc.re == a-c1.re);
+    assert(rmc.im == -c1.im);
+
+    auto rtc = a * c1;
+    assert(rtc == ctr);
+
+    auto rdc = a / c1;
+    assert(abs(rdc.re -  61.728) < 1e-12);
+    assert(abs(rdc.im - -61.728) < 1e-12);
+
+    rdc = a / c2;
+    assert(abs(rdc.re -  14.5242352941) < 1e-10);
+    assert(abs(rdc.im - -58.0969411765) < 1e-10);
+
+    // Check operations between different complex types.
+    auto cf = _cfloat(1.0, 1.0);
+    auto cr = _creal(1.0, 1.0);
+    auto c1pcf = c1 + cf;
+    auto c1pcr = c1 + cr;
+    static assert(is(typeof(c1pcf) == _cdouble));
+    static assert(is(typeof(c1pcr) == _creal));
+    assert(c1pcf.re == c1pcr.re);
+    assert(c1pcf.im == c1pcr.im);
+
+    auto c1c = c1;
+    auto c2c = c2;
+
+    c1c /= c1;
+    assert(abs(c1c.re - 1.0) < 1e-10);
+    assert(abs(c1c.im - 0.0) < 1e-10);
+
+    c1c = c1;
+    c1c /= c2;
+    assert(abs(c1c.re -  0.5882352941177) < 1e-12);
+    assert(abs(c1c.im - -0.3529411764706) < 1e-12);
+
+    c2c /= c1;
+    assert(abs(c2c.re -  1.25) < 1e-11);
+    assert(abs(c2c.im -  0.75) < 1e-12);
+
+    c2c = c2;
+    c2c /= c2;
+    assert(abs(c2c.re -  1.0) < 1e-11);
+    assert(abs(c2c.im -  0.0) < 1e-12);
+}
+
+@safe pure nothrow unittest
+{
+    // Initialization
+    _cdouble a = _cdouble(1, 0);
+    assert(a.re == 1 && a.im == 0);
+    _cdouble b = _cdouble(1.0, 0);
+    assert(b.re == 1.0 && b.im == 0);
+//    _cdouble c = _creal(1.0, 2);
+//    assert(c.re == 1.0 && c.im == 2);
+}
+
+@safe pure nothrow unittest
+{
+    // Assignments and comparisons
+    _cdouble z;
+
+    z = 1;
+    assert(z == 1);
+    assert(z.re == 1.0  &&  z.im == 0.0);
+
+    z = 2.0;
+    assert(z == 2.0);
+    assert(z.re == 2.0  &&  z.im == 0.0);
+
+    z = 1.0L;
+    assert(z == 1.0L);
+    assert(z.re == 1.0  &&  z.im == 0.0);
+
+    auto w = _creal(1.0, 1.0);
+    z = w;
+    assert(z == w);
+    assert(z.re == 1.0  &&  z.im == 1.0);
+
+    auto c = _cfloat(2.0, 2.0);
+    z = c;
+    assert(z == c);
+    assert(z.re == 2.0  &&  z.im == 2.0);
+}
+
 }
 
 

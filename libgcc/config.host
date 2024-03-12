@@ -136,7 +136,7 @@ hppa*-*-*)
 lm32*-*-*)
 	cpu_type=lm32
 	;;
-loongarch*-*-*)
+loongarch*-*)
 	cpu_type=loongarch
 	tmake_file="loongarch/t-loongarch"
 	if test "${libgcc_cv_loongarch_hard_float}" = yes; then
@@ -233,6 +233,24 @@ case ${host} in
       ;;
   esac
   tmake_file="$tmake_file t-slibgcc-darwin"
+  # newer toolsets produce warnings when building for unsupported versions.
+  case ${host} in
+    *-*-darwin1[89]* | *-*-darwin2* )
+      tmake_file="t-darwin-min-8 $tmake_file"
+      ;;
+    *-*-darwin9* | *-*-darwin1[0-7]*)
+      tmake_file="t-darwin-min-5 $tmake_file"
+      ;;
+    *-*-darwin[4-8]*)
+      tmake_file="t-darwin-min-1 $tmake_file"
+      ;;
+    *)
+      # Fall back to configuring for the oldest system known to work with
+      # all archs and the current sources.
+      tmake_file="t-darwin-min-5 $tmake_file"
+      echo "Warning: libgcc configured to support macOS 10.5" 1>&2
+      ;;
+  esac
   extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o libemutls_w.a"
   ;;
 *-*-dragonfly*)
@@ -926,7 +944,7 @@ lm32-*-uclinux*)
         extra_parts="$extra_parts crtbegin.o crtendS.o crtbeginT.o"
         tmake_file="lm32/t-lm32 lm32/t-uclinux t-libgcc-pic t-softfp-sfdf t-softfp"
 	;;
-loongarch*-*-linux*)
+loongarch*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
 	case ${host} in
@@ -935,6 +953,11 @@ loongarch*-*-linux*)
 	    ;;
 	esac
 	md_unwind_header=loongarch/linux-unwind.h
+	;;
+loongarch*-elf*)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
+	tmake_file="${tmake_file} t-slibgcc-libgcc"
 	;;
 m32r-*-elf*)
 	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"
@@ -1286,12 +1309,12 @@ pru-*-*)
 	tm_file="$tm_file pru/pru-abi.h"
 	;;
 riscv*-*-linux*)
-	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
+	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 	md_unwind_header=riscv/linux-unwind.h
 	;;
 riscv*-*-freebsd*)
-	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
+	tmake_file="${tmake_file} riscv/t-crtstuff riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 	;;
 riscv*-*-*)

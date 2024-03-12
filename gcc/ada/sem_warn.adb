@@ -353,7 +353,7 @@ package body Sem_Warn is
             begin
                --  One argument, so check the argument
 
-               if Present (PA) and then List_Length (PA) = 1 then
+               if List_Length (PA) = 1 then
                   if Nkind (First (PA)) = N_Parameter_Association then
                      Find_Var (Explicit_Actual_Parameter (First (PA)));
                   else
@@ -591,7 +591,9 @@ package body Sem_Warn is
             begin
                Actual := First_Actual (N);
                while Present (Actual) loop
-                  if Is_Access_Subprogram_Type (Etype (Actual)) then
+                  if No (Etype (Actual))
+                    or else Is_Access_Subprogram_Type (Etype (Actual))
+                  then
                      return Abandon;
                   else
                      Next_Actual (Actual);

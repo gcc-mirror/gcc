@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32 -fno-schedule-insns -fno-schedule-insns2 -O3" } */
+/* { dg-options "-march=rv32gc_zve64d -mabi=ilp32 -fno-schedule-insns -fno-schedule-insns2 -O3 -Wno-psabi" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include "riscv_vector.h"

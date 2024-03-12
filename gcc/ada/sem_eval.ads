@@ -409,9 +409,9 @@ package Sem_Eval is
    --  an entity with Is_Known_Valid set, or Assume_No_Invalid_Values is True.
 
    function Is_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean;
-   --  Returns True if it can guarantee that Lo .. Hi is a null range. If it
-   --  cannot (because the value of Lo or Hi is not known at compile time) then
-   --  it returns False.
+   --  Returns True if it can guarantee that Lo .. Hi is a null range
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Is_OK_Static_Expression (N : Node_Id) return Boolean;
    --  An OK static expression is one that is static in the RM definition sense
@@ -485,9 +485,7 @@ package Sem_Eval is
    --  per RM 4.9(38/2). N is a node only used to post warnings.
 
    function Not_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean;
-   --  Returns True if it can guarantee that Lo .. Hi is not a null range. If
-   --  it cannot (because the value of Lo or Hi is not known at compile time)
-   --  then it returns False.
+   --  Returns True if it can guarantee that Lo .. Hi is not a null range
 
    function Predicates_Compatible (T1, T2 : Entity_Id) return Boolean;
    --  In Ada 2012, subtypes are statically compatible if the predicates are

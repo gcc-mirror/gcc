@@ -9,8 +9,13 @@
 
 /*
 **test_bfcvtnq2_untied:
+** (
 **     mov	v0.16b, v1.16b
 **     bfcvtn2	v0.8h, v2.4s
+** |
+**     bfcvtn2	v1.8h, v2.4s
+**     mov	v0.16b, v1.16b
+** )
 **     ret
 */
 bfloat16x8_t test_bfcvtnq2_untied (bfloat16x8_t unused, bfloat16x8_t inactive,

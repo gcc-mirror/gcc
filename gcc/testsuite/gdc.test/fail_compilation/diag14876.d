@@ -8,7 +8,7 @@ fail_compilation/diag14876.d(20): Deprecation: class `diag14876.Dep` is deprecat
 fail_compilation/diag14876.d(21): Deprecation: class `diag14876.Dep` is deprecated
 fail_compilation/diag14876.d(22): Deprecation: class `diag14876.Dep` is deprecated
 fail_compilation/diag14876.d(23): Deprecation: class `diag14876.Dep` is deprecated
-fail_compilation/diag14876.d(23): Error: can only slice tuple types, not `diag14876.Dep`
+fail_compilation/diag14876.d(23): Error: can only slice type sequences, not `diag14876.Dep`
 ---
 */
 

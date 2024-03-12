@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "tree-dfa.h"
 #include "stor-layout.h"
+#include "gimple-lower-bitint.h"
 
 /* This set of routines implements a coalesce_list.  This is an object which
    is used to track pairs of ssa_names which are desirable to coalesce
@@ -914,6 +915,14 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
 	  else if (is_gimple_debug (stmt))
 	    continue;
 
+	  if (map->bitint)
+	    {
+	      build_bitint_stmt_ssa_conflicts (stmt, live, graph, map->bitint,
+					       live_track_process_def,
+					       live_track_process_use);
+	      continue;
+	    }
+
 	  /* For stmts with more than one SSA_NAME definition pretend all the
 	     SSA_NAME outputs but the first one are live at this point, so
 	     that conflicts are added in between all those even when they are
@@ -1058,6 +1067,8 @@ create_coalesce_list_for_region (var_map map, bitmap used_in_copy)
 	  if (virtual_operand_p (res))
 	    continue;
 	  ver = SSA_NAME_VERSION (res);
+	  if (map->bitint && !bitmap_bit_p (map->bitint, ver))
+	    continue;
 
 	  /* Register ssa_names and coalesces between the args and the result
 	     of all PHI.  */
@@ -1106,6 +1117,8 @@ create_coalesce_list_for_region (var_map map, bitmap used_in_copy)
 		  {
 		    v1 = SSA_NAME_VERSION (lhs);
 		    v2 = SSA_NAME_VERSION (rhs1);
+		    if (map->bitint && !bitmap_bit_p (map->bitint, v1))
+		      break;
 		    cost = coalesce_cost_bb (bb);
 		    add_coalesce (cl, v1, v2, cost);
 		    bitmap_set_bit (used_in_copy, v1);
@@ -1124,12 +1137,16 @@ create_coalesce_list_for_region (var_map map, bitmap used_in_copy)
 		if (!rhs1)
 		  break;
 		tree lhs = ssa_default_def (cfun, res);
+		if (map->bitint && !lhs)
+		  break;
 		gcc_assert (lhs);
 		if (TREE_CODE (rhs1) == SSA_NAME
 		    && gimple_can_coalesce_p (lhs, rhs1))
 		  {
 		    v1 = SSA_NAME_VERSION (lhs);
 		    v2 = SSA_NAME_VERSION (rhs1);
+		    if (map->bitint && !bitmap_bit_p (map->bitint, v1))
+		      break;
 		    cost = coalesce_cost_bb (bb);
 		    add_coalesce (cl, v1, v2, cost);
 		    bitmap_set_bit (used_in_copy, v1);
@@ -1177,6 +1194,8 @@ create_coalesce_list_for_region (var_map map, bitmap used_in_copy)
 
 		    v1 = SSA_NAME_VERSION (outputs[match]);
 		    v2 = SSA_NAME_VERSION (input);
+		    if (map->bitint && !bitmap_bit_p (map->bitint, v1))
+		      continue;
 
 		    if (gimple_can_coalesce_p (outputs[match], input))
 		      {
@@ -1298,7 +1317,7 @@ populate_coalesce_list_for_outofssa (coalesce_list *cl, bitmap used_in_copy)
 		     originally with optimizations and only the link
 		     performed at -O0, so we can't actually require it.  */
 		  const int cost
-		    = (TREE_CODE (SSA_NAME_VAR (a)) == VAR_DECL || in_lto_p)
+		    = (VAR_P (SSA_NAME_VAR (a)) || in_lto_p)
 		      ? MUST_COALESCE_COST - 1 : MUST_COALESCE_COST;
 		  add_coalesce (cl, SSA_NAME_VERSION (a),
 				SSA_NAME_VERSION (*slot), cost);
@@ -1651,6 +1670,33 @@ compute_optimized_partition_bases (var_map map, bitmap used_in_copies,
 	  }
     }
 
+  if (map->bitint
+      && flag_tree_coalesce_vars
+      && (optimize > 1 || parts < 500))
+    for (i = 0; i < (unsigned) parts; ++i)
+      {
+	tree s1 = partition_to_var (map, i);
+	int p1 = partition_find (tentative, i);
+	for (unsigned j = i + 1; j < (unsigned) parts; ++j)
+	  {
+	    tree s2 = partition_to_var (map, j);
+	    if (s1 == s2)
+	      continue;
+	    if (tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (s1)),
+				    TYPE_SIZE (TREE_TYPE (s2))))
+	      {
+		int p2 = partition_find (tentative, j);
+
+		if (p1 == p2)
+		  continue;
+
+		partition_union (tentative, p1, p2);
+		if (partition_find (tentative, i) != p1)
+		  break;
+	      }
+	  }
+      }
+
   map->partition_to_base_index = XCNEWVEC (int, parts);
   auto_vec<unsigned int> index_map (parts);
   if (parts)
@@ -1692,6 +1738,101 @@ compute_optimized_partition_bases (var_map map, bitmap used_in_copies,
   partition_delete (tentative);
 }
 
+/* For the bitint lowering pass, try harder.  Partitions which contain
+   SSA_NAME default def of a PARM_DECL or have RESULT_DECL need to have
+   compatible types because they will use that RESULT_DECL or PARM_DECL.
+   Other partitions can have even incompatible _BitInt types, as long
+   as they have the same size - those will use VAR_DECLs which are just
+   arrays of the limbs.  */
+
+static void
+coalesce_bitint (var_map map, ssa_conflicts *graph)
+{
+  unsigned n = num_var_partitions (map);
+  if (optimize <= 1 && n > 500)
+    return;
+
+  bool try_same_size = false;
+  FILE *debug_file = (dump_flags & TDF_DETAILS) ? dump_file : NULL;
+  for (unsigned i = 0; i < n; ++i)
+    {
+      tree s1 = partition_to_var (map, i);
+      if ((unsigned) var_to_partition (map, s1) != i)
+	continue;
+      int v1 = SSA_NAME_VERSION (s1);
+      for (unsigned j = i + 1; j < n; ++j)
+	{
+	  tree s2 = partition_to_var (map, j);
+	  if (s1 == s2 || (unsigned) var_to_partition (map, s2) != j)
+	    continue;
+	  if (!types_compatible_p (TREE_TYPE (s1), TREE_TYPE (s2)))
+	    {
+	      if (!try_same_size
+		  && tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (s1)),
+					 TYPE_SIZE (TREE_TYPE (s2))))
+		try_same_size = true;
+	      continue;
+	    }
+	  int v2 = SSA_NAME_VERSION (s2);
+	  if (attempt_coalesce (map, graph, v1, v2, debug_file)
+	      && partition_to_var (map, i) != s1)
+	    break;
+	}
+    }
+
+  if (!try_same_size)
+    return;
+
+  unsigned i;
+  bitmap_iterator bi;
+  bitmap same_type = NULL;
+
+  EXECUTE_IF_SET_IN_BITMAP (map->bitint, 0, i, bi)
+    {
+      tree s = ssa_name (i);
+      if (!SSA_NAME_VAR (s))
+	continue;
+      if (TREE_CODE (SSA_NAME_VAR (s)) != RESULT_DECL
+	  && (TREE_CODE (SSA_NAME_VAR (s)) != PARM_DECL
+	      || !SSA_NAME_IS_DEFAULT_DEF (s)))
+	continue;
+      if (same_type == NULL)
+	same_type = BITMAP_ALLOC (NULL);
+      int p = var_to_partition (map, s);
+      bitmap_set_bit (same_type, p);
+    }
+
+  for (i = 0; i < n; ++i)
+    {
+      if (same_type && bitmap_bit_p (same_type, i))
+	continue;
+      tree s1 = partition_to_var (map, i);
+      if ((unsigned) var_to_partition (map, s1) != i)
+	continue;
+      int v1 = SSA_NAME_VERSION (s1);
+      for (unsigned j = i + 1; j < n; ++j)
+	{
+	  if (same_type && bitmap_bit_p (same_type, j))
+	    continue;
+
+	  tree s2 = partition_to_var (map, j);
+	  if (s1 == s2 || (unsigned) var_to_partition (map, s2) != j)
+	    continue;
+
+	  if (!tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (s1)),
+				   TYPE_SIZE (TREE_TYPE (s2))))
+	    continue;
+
+	  int v2 = SSA_NAME_VERSION (s2);
+	  if (attempt_coalesce (map, graph, v1, v2, debug_file)
+	      && partition_to_var (map, i) != s1)
+	    break;
+	}
+    }
+
+  BITMAP_FREE (same_type);
+}
+
 /* Given an initial var_map MAP, coalesce variables and return a partition map
    with the resulting coalesce.  Note that this function is called in either
    live range computation context or out-of-ssa context, indicated by MAP.  */
@@ -1709,6 +1850,8 @@ coalesce_ssa_name (var_map map)
   if (map->outofssa_p)
     populate_coalesce_list_for_outofssa (cl, used_in_copies);
   bitmap_list_view (used_in_copies);
+  if (map->bitint)
+    bitmap_ior_into (used_in_copies, map->bitint);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_var_map (dump_file, map);
@@ -1756,6 +1899,9 @@ coalesce_ssa_name (var_map map)
 		       ((dump_flags & TDF_DETAILS) ? dump_file : NULL));
 
   delete_coalesce_list (cl);
+
+  if (map->bitint && flag_tree_coalesce_vars)
+    coalesce_bitint (map, graph);
+
   ssa_conflicts_delete (graph);
 }
-

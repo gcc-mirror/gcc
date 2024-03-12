@@ -60,7 +60,8 @@ PROCEDURE InitBasicBlocks (sb: ScopeBlock) : BasicBlock ;
                               reachable are removed.
 *)
 
-PROCEDURE InitBasicBlocksFromRange (start, end: CARDINAL) : BasicBlock ;
+PROCEDURE InitBasicBlocksFromRange (ScopeSym: CARDINAL;
+                                    start, end: CARDINAL) : BasicBlock ;
 
 
 (*

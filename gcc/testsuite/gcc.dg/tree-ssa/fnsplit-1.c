@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fnsplit" } */
+/* { dg-options "-O2 -fdump-tree-fnsplit-blocks-details" } */
 #include <stdio.h>
 int a[1000];
 

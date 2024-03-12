@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized-blocks-details" } */
 
 typedef struct { unsigned short a; } A;
 
@@ -20,4 +20,4 @@ main (int argc, char **argv)
     foo (((A) { ((!(i >> 4) ? 8 : 64 + (i >> 4)) << 8) + (i << 4) } ).a);
   exit (0);
 }
-/* { dg-final { scan-tree-dump-times "Invalid sum" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "Invalid sum" 0 "optimized" { xfail cris-*-* } } } Xfail: PR110628 */

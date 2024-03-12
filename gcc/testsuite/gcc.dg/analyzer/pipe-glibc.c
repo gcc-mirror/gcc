@@ -1,5 +1,7 @@
 /* Example of pipe usage from glibc manual.  */
 
+/* { dg-skip-if "" { "avr-*-*" } } */
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>

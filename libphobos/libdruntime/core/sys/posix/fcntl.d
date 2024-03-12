@@ -135,7 +135,34 @@ version (linux)
     enum F_SETLK        = 6;
     enum F_SETLKW       = 7;
   }
-  else
+  else version (MIPS_N64)
+  {
+    enum F_GETLK        = 14;
+    enum F_SETLK        = 6;
+    enum F_SETLKW       = 7;
+  }
+  else version (MIPS_Any)
+  {
+    static if ( __USE_FILE_OFFSET64 )
+    {
+      enum F_GETLK      = 33;
+      enum F_SETLK      = 34;
+      enum F_SETLKW     = 35;
+    }
+    else
+    {
+      enum F_GETLK      = 14;
+      enum F_SETLK      = 6;
+      enum F_SETLKW     = 7;
+    }
+  }
+  else version (LoongArch64)
+  {
+    static assert(off_t.sizeof == 8);
+    enum F_GETLK        = 5;
+    enum F_SETLK        = 6;
+    enum F_SETLKW       = 7;
+  } else
   static if ( __USE_FILE_OFFSET64 )
   {
     enum F_GETLK        = 12;
@@ -365,6 +392,33 @@ version (linux)
         else
             enum O_LARGEFILE = 0x08000; // octal   0100000
         enum O_TMPFILE      = 0x410000; // octal 020200000
+        enum O_ASYNC        = 0x2000;   // octal    020000
+        enum O_NOATIME      = 0x40000;  // octal  01000000
+        enum O_PATH         = 0x200000; // octal 010000000
+        enum O_NDELAY       = O_NONBLOCK;
+    }
+    else version (LoongArch64)
+    {
+        enum O_CREAT        = 0x40;     // octal     0100
+        enum O_EXCL         = 0x80;     // octal     0200
+        enum O_NOCTTY       = 0x100;    // octal     0400
+        enum O_TRUNC        = 0x200;    // octal    01000
+
+        enum O_APPEND       = 0x400;    // octal    02000
+        enum O_NONBLOCK     = 0x800;    // octal    04000
+        enum O_CLOEXEC      = 0x80000;  // octal 02000000
+        enum O_SYNC         = 0x101000; // octal 04010000
+        enum O_DSYNC        = 0x1000;   // octal   010000
+        enum O_RSYNC        = O_SYNC;
+
+        enum O_DIRECTORY    = 0x010000; // octal    200000
+        enum O_NOFOLLOW     = 0x020000; // octal    400000
+        enum O_DIRECT       = 0x004000; // octal    040000
+        version (D_LP64)
+            enum O_LARGEFILE = 0;
+        else
+            enum O_LARGEFILE = 0x8000;  // octal   0100000
+        enum O_TMPFILE      = 0x404000; // octal 020040000
         enum O_ASYNC        = 0x2000;   // octal    020000
         enum O_NOATIME      = 0x40000;  // octal  01000000
         enum O_PATH         = 0x200000; // octal 010000000

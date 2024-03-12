@@ -15,6 +15,7 @@ main ()
       s[i].a = i;
     }
   asm volatile ("" : : : "memory");
+#pragma GCC novector
   for (i = 0; i < 8; i++)
     if (s[i].b != 0 || s[i].a != i)
       abort ();

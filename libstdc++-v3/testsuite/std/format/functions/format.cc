@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
+// { dg-add-options no_pch }
 
 #include <format>
 
@@ -152,6 +152,22 @@ test_alternate_forms()
 
   s = std::format("{:#.2g}", -0.0);
   VERIFY( s == "-0.0" );
+
+  // PR libstdc++/108046
+  s = std::format("{0:#.0} {0:#.1} {0:#.0g}", 10.0);
+  VERIFY( s == "1.e+01 1.e+01 1.e+01" );
+}
+
+void
+test_infnan()
+{
+  double inf = std::numeric_limits<double>::infinity();
+  double nan = std::numeric_limits<double>::quiet_NaN();
+  std::string s;
+  s = std::format("{0} {0:e} {0:E} {0:f} {0:F} {0:g} {0:G} {0:a} {0:A}", inf);
+  VERIFY( s == "inf inf INF inf INF inf INF inf INF" );
+  s = std::format("{0} {0:e} {0:E} {0:f} {0:F} {0:g} {0:G} {0:a} {0:A}", nan);
+  VERIFY( s == "nan nan NAN nan NAN nan NAN nan NAN" );
 }
 
 struct euro_punc : std::numpunct<char>
@@ -193,6 +209,9 @@ test_locale()
   s = std::format(eloc, "{0:#Lg} {0:+#.3Lg} {0:#08.4Lg}", -1234.);
   VERIFY( s == "-1.234,00 -1,23e+03 -01.234," );
 
+  s = std::format(cloc, "{:05L}", -1.0); // PR libstdc++/110968
+  VERIFY( s == "-0001" );
+
   // Restore
   std::locale::global(cloc);
 }
@@ -206,6 +225,8 @@ test_width()
   VERIFY( s == "    " );
   s = std::format("{:{}}", "", 3);
   VERIFY( s == "   " );
+  s = std::format("{:{}}|{:{}}", 1, 2, 3, 4);
+  VERIFY( s == " 1|   3" );
   s = std::format("{1:{0}}", 2, "");
   VERIFY( s == "  " );
   s = std::format("{:03}", 9);
@@ -247,6 +268,21 @@ test_wchar()
   std::locale loc;
   s = std::format(loc, L"{:L} {:.3s}{:Lc}", true, L"data"sv, '.');
   VERIFY( s == L"true dat." );
+
+  s = std::format(L"{}", 0.0625);
+  VERIFY( s == L"0.0625" );
+  s = std::format(L"{}", 0.25);
+  VERIFY( s == L"0.25" );
+  s = std::format(L"{:+a} {:A}", 0x1.23p45, -0x1.abcdefp-15);
+  VERIFY( s == L"+1.23p+45 -1.ABCDEFP-15" );
+
+  double inf = std::numeric_limits<double>::infinity();
+  double nan = std::numeric_limits<double>::quiet_NaN();
+  s = std::format(L"{0} {0:F} {1} {1:E}", -inf, -nan);
+  VERIFY( s == L"-inf -INF -nan -NAN" );
+
+  s = std::format(L"{0:#b} {0:#B} {0:#x} {0:#X}", 99);
+  VERIFY( s == L"0b1100011 0B1100011 0x63 0X63" );
 }
 
 void
@@ -310,35 +346,42 @@ test_p1652r1() // printf corner cases in std::format
   VERIFY( s == "3.31" );
 }
 
-template<typename T>
-bool format_float()
-{
-    auto s = std::format("{:#} != {:<+7.3f}", (T)-0.0, (T)0.5);
-    return s == "-0. != +0.500 ";
-}
-
-#if __cplusplus > 202002L
-template<typename T>
-concept formattable = std::formattable<T, char>;
-#else
-template<typename T>
-concept formattable = requires (T t, char* p) { std::to_chars(p, p, t); };
-#endif
-
 void
-test_float128()
+test_pointer()
 {
-#ifdef __SIZEOF_FLOAT128__
-  if constexpr (formattable<__float128>)
-    VERIFY( format_float<__float128>() );
-  else
-    std::puts("Cannot format __float128 on this target");
-#endif
-#if __FLT128_DIG__
-  if constexpr (formattable<_Float128>)
-    VERIFY( format_float<_Float128>() );
-  else
-    std::puts("Cannot format _Float128 on this target");
+  void* p = nullptr;
+  const void* pc = p;
+  std::string s, str_int;
+
+  s = std::format("{} {} {}", p, pc, nullptr);
+  VERIFY( s == "0x0 0x0 0x0" );
+  s = std::format("{:p} {:p} {:p}", p, pc, nullptr);
+  VERIFY( s == "0x0 0x0 0x0" );
+  s = std::format("{:4},{:5},{:6}", p, pc, nullptr); // width
+  VERIFY( s == " 0x0,  0x0,   0x0" );
+  s = std::format("{:<4},{:>5},{:^7}", p, pc, nullptr); // align+width
+  VERIFY( s == "0x0 ,  0x0,  0x0  " );
+  s = std::format("{:o<4},{:o>5},{:o^7}", p, pc, nullptr); // fill+align+width
+  VERIFY( s == "0x0o,oo0x0,oo0x0oo" );
+
+  pc = p = &s;
+  str_int = std::format("{:#x}", reinterpret_cast<std::uintptr_t>(p));
+  s = std::format("{} {} {}", p, pc, nullptr);
+  VERIFY( s == (str_int + ' ' + str_int + " 0x0") );
+  str_int = std::format("{:#20x}", reinterpret_cast<std::uintptr_t>(p));
+  s = std::format("{:20} {:20p}", p, pc);
+  VERIFY( s == (str_int + ' ' + str_int) );
+
+#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
+  // P2510R3 Formatting pointers
+  s = std::format("{:06} {:07P} {:08p}", (void*)0, (const void*)0, nullptr);
+  VERIFY( s == "0x0000 0X00000 0x000000" );
+  str_int = std::format("{:#016x}", reinterpret_cast<std::uintptr_t>(p));
+  s = std::format("{:016} {:016}", p, pc);
+  VERIFY( s == (str_int + ' ' + str_int) );
+  str_int = std::format("{:#016X}", reinterpret_cast<std::uintptr_t>(p));
+  s = std::format("{:016P} {:016P}", p, pc);
+  VERIFY( s == (str_int + ' ' + str_int) );
 #endif
 }
 
@@ -353,5 +396,5 @@ int main()
   test_wchar();
   test_minmax();
   test_p1652r1();
-  test_float128();
+  test_pointer();
 }

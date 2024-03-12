@@ -158,7 +158,8 @@ static int m68k_sched_first_cycle_multipass_dfa_lookahead (void);
 
 static bool m68k_can_eliminate (const int, const int);
 static void m68k_conditional_register_usage (void);
-static bool m68k_legitimate_address_p (machine_mode, rtx, bool);
+static bool m68k_legitimate_address_p (machine_mode, rtx, bool,
+				       code_helper = ERROR_MARK);
 static void m68k_option_override (void);
 static void m68k_override_options_after_change (void);
 static rtx find_addr_reg (rtx);
@@ -2311,7 +2312,7 @@ m68k_decompose_address (machine_mode mode, rtx x,
    STRICT_P says whether strict checking is needed.  */
 
 bool
-m68k_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
+m68k_legitimate_address_p (machine_mode mode, rtx x, bool strict_p, code_helper)
 {
   struct m68k_address address;
 

@@ -215,6 +215,11 @@ proc lto_init { args } {
 	      {-O2 -flto}		\
 	  ]
 	}
+	global lto_init_set_LTO_OPTIONS
+	if [info exists lto_init_set_LTO_OPTIONS] {
+	    error "lto_init_set_LTO_OPTIONS already set"
+	}
+	set lto_init_set_LTO_OPTIONS 1
     }
 }
 
@@ -232,6 +237,14 @@ proc lto_finish { } {
 	set board_info($dest,mathlib) $saved_mathlib
     } elseif [board_info $dest exists mathlib] {
 	unset board_info($dest,mathlib)
+    }
+
+    # Let the next 'lto_init' redetermine the default 'LTO_OPTIONS'.
+    global lto_init_set_LTO_OPTIONS
+    if [info exists lto_init_set_LTO_OPTIONS] {
+	global LTO_OPTIONS
+	unset LTO_OPTIONS
+	unset lto_init_set_LTO_OPTIONS
     }
 }
 

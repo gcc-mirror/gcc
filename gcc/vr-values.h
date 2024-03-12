@@ -35,16 +35,18 @@ public:
   bool simplify (gimple_stmt_iterator *);
   bool fold_cond (gcond *);
 private:
-  void vrp_visit_cond_stmt (gcond *, edge *);
-  tree vrp_evaluate_conditional_warnv_with_ops (gimple *stmt, enum tree_code,
-						tree, tree, bool *, bool *);
-  bool simplify_casted_cond (gcond *);
+  void legacy_fold_cond (gcond *, edge *);
+  tree legacy_fold_cond_overflow (gimple *stmt);
+  tree fold_cond_with_ops (tree_code, tree, tree, gimple *s);
+  bool simplify_casted_compare (tree_code &cond_code, tree &op0, tree &op1);
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_bit_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_min_or_max_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_cond_using_ranges_1 (gcond *);
+  bool simplify_compare_using_ranges_1 (tree_code &, tree &, tree &, gimple *);
+  bool simplify_compare_assign_using_ranges_1 (gimple_stmt_iterator *, gimple *);
   bool simplify_switch_using_ranges (gswitch *);
   bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
 					       gimple *);
@@ -52,11 +54,6 @@ private:
 
   bool two_valued_val_range_p (tree, tree *, tree *, gimple *);
   bool op_with_boolean_value_range_p (tree, gimple *);
-  tree compare_name_with_value (enum tree_code, tree, tree, bool *, gimple *);
-  const value_range *get_vr_for_comparison (int, value_range *, gimple *s);
-  tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
-							     tree, tree,
-							     bool *, gimple *s);
   void set_and_propagate_unexecutable (edge e);
   void cleanup_edges_and_switches (void);
 
@@ -77,9 +74,9 @@ private:
   vec<edge> m_flag_set_edges;  // List of edges with flag to be cleared.
 };
 
-extern bool range_fits_type_p (const value_range *vr,
+extern bool range_fits_type_p (const irange *vr,
 			       unsigned dest_precision, signop dest_sgn);
-extern bool bounds_of_var_in_loop (tree *min, tree *max, range_query *,
-				   class loop *loop, gimple *stmt, tree var);
+extern bool range_of_var_in_loop (vrange &, tree var, class loop *, gimple *,
+				  range_query *);
 
 #endif /* GCC_VR_VALUES_H */

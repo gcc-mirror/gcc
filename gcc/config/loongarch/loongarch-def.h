@@ -59,11 +59,13 @@ extern const char* loongarch_isa_base_strings[];
 
 /* enum isa_ext_* */
 extern const char* loongarch_isa_ext_strings[];
-#define ISA_EXT_NOFPU	      0
+#define ISA_EXT_NONE	      0
 #define ISA_EXT_FPU32	      1
 #define ISA_EXT_FPU64	      2
 #define N_ISA_EXT_FPU_TYPES   3
-#define N_ISA_EXT_TYPES	      3
+#define ISA_EXT_SIMD_LSX      3
+#define ISA_EXT_SIMD_LASX     4
+#define N_ISA_EXT_TYPES	      5
 
 /* enum abi_base */
 extern const char* loongarch_abi_base_strings[];
@@ -71,6 +73,16 @@ extern const char* loongarch_abi_base_strings[];
 #define ABI_BASE_LP64F	      1
 #define ABI_BASE_LP64S	      2
 #define N_ABI_BASE_TYPES      3
+
+#define TO_LP64_ABI_BASE(C) (C)
+
+#define ABI_FPU_64(abi_base) \
+  (abi_base == ABI_BASE_LP64D)
+#define ABI_FPU_32(abi_base) \
+  (abi_base == ABI_BASE_LP64F)
+#define ABI_FPU_NONE(abi_base) \
+  (abi_base == ABI_BASE_LP64S)
+
 
 /* enum abi_ext */
 extern const char* loongarch_abi_ext_strings[];
@@ -87,55 +99,44 @@ extern const char* loongarch_cmodel_strings[];
 #define CMODEL_EXTREME	      5
 #define N_CMODEL_TYPES	      6
 
-/* enum switches */
-/* The "SW_" codes represent command-line switches (options that
-   accept no parameters). Definition for other switches that affects
-   the target ISA / ABI configuration will also be appended here
-   in the future.  */
-
-extern const char* loongarch_switch_strings[];
-#define SW_SOFT_FLOAT	      0
-#define SW_SINGLE_FLOAT	      1
-#define SW_DOUBLE_FLOAT	      2
-#define N_SWITCH_TYPES	      3
-
 /* The common default value for variables whose assignments
    are triggered by command-line options.  */
 
-#define M_OPTION_NOT_SEEN -1
-#define M_OPT_ABSENT(opt_enum)  ((opt_enum) == M_OPTION_NOT_SEEN)
+#define M_OPT_UNSET -1
+#define M_OPT_ABSENT(opt_enum)  ((opt_enum) == M_OPT_UNSET)
 
 
 /* Internal representation of the target.  */
 struct loongarch_isa
 {
-  unsigned char base;	    /* ISA_BASE_ */
-  unsigned char fpu;	    /* ISA_EXT_FPU_ */
+  int base;	    /* ISA_BASE_ */
+  int fpu;	    /* ISA_EXT_FPU_ */
+  int simd;	    /* ISA_EXT_SIMD_ */
 };
 
 struct loongarch_abi
 {
-  unsigned char base;	    /* ABI_BASE_ */
-  unsigned char ext;	    /* ABI_EXT_ */
+  int base;	    /* ABI_BASE_ */
+  int ext;	    /* ABI_EXT_ */
 };
 
 struct loongarch_target
 {
   struct loongarch_isa isa;
   struct loongarch_abi abi;
-  unsigned char cpu_arch;   /* CPU_ */
-  unsigned char cpu_tune;   /* same */
-  unsigned char cpu_native; /* same */
-  unsigned char cmodel;	    /* CMODEL_ */
+  int cpu_arch;	    /* CPU_ */
+  int cpu_tune;	    /* same */
+  int cmodel;	    /* CMODEL_ */
 };
 
 /* CPU properties.  */
 /* index */
 #define CPU_NATIVE	  0
-#define CPU_LOONGARCH64	  1
-#define CPU_LA464	  2
-#define N_ARCH_TYPES	  3
-#define N_TUNE_TYPES	  3
+#define CPU_ABI_DEFAULT   1
+#define CPU_LOONGARCH64	  2
+#define CPU_LA464	  3
+#define N_ARCH_TYPES	  4
+#define N_TUNE_TYPES	  4
 
 /* parallel tables.  */
 extern const char* loongarch_cpu_strings[];
@@ -144,6 +145,7 @@ extern int loongarch_cpu_issue_rate[];
 extern int loongarch_cpu_multipass_dfa_lookahead[];
 
 extern struct loongarch_cache loongarch_cpu_cache[];
+extern struct loongarch_align loongarch_cpu_align[];
 extern struct loongarch_rtx_cost_data loongarch_cpu_rtx_cost_data[];
 
 #ifdef __cplusplus

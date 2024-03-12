@@ -1,6 +1,6 @@
 /* Verify signed modulo does not produce 'smod' insn in eBPF.  */
 /* { dg-do compile } */
-/* { dg-options "-O0" } */
+/* { dg-options "-O0 -mcpu=v3" } */
 
 void
 foo ()

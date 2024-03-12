@@ -39,6 +39,7 @@ int main ()
 
       test1(da, ia, ca, stride, 256/stride);
 
+#pragma GCC novector
       for (i = 0; i < 256/stride; i++)
 	{
 	  if (da[i*stride] != 0.5 * ia[i*stride] * ca[i*stride])

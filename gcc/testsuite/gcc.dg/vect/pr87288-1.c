@@ -16,6 +16,7 @@ run (int *restrict a, int *restrict b, int count)
 void __attribute__ ((noipa))
 check (int *restrict a, int count)
 {
+#pragma GCC novector
   for (int i = 0; i < count * N; ++i)
     if (a[i * 2] != i * 41 + count || a[i * 2 + 1] != count)
       __builtin_abort ();

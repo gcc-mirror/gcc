@@ -12,7 +12,7 @@ alias Tuple!(int, int) TupleType;
 TEST_OUTPUT:
 ---
 fail_compilation/fail12436.d(18): Error: functions cannot return a function
-fail_compilation/fail12436.d(19): Error: functions cannot return a tuple
+fail_compilation/fail12436.d(19): Error: functions cannot return a sequence (use `std.typecons.Tuple`)
 ---
 */
 FuncType test1();

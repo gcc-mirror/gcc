@@ -2161,7 +2161,7 @@ v850_encode_section_info (tree decl, rtx rtl, int first)
 {
   default_encode_section_info (decl, rtl, first);
 
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     v850_encode_data_area (decl, XEXP (rtl, 0));
 }
@@ -2482,7 +2482,7 @@ v850_insert_attributes (tree decl, tree * attr_ptr ATTRIBUTE_UNUSED )
   if (data_area_stack
       && data_area_stack->data_area
       && current_function_decl == NULL_TREE
-      && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == CONST_DECL)
+      && (VAR_P (decl) || TREE_CODE (decl) == CONST_DECL)
       && v850_get_data_area (decl) == DATA_AREA_NORMAL)
     v850_set_data_area (decl, data_area_stack->data_area);
 
@@ -2508,7 +2508,7 @@ v850_insert_attributes (tree decl, tree * attr_ptr ATTRIBUTE_UNUSED )
     }
   
   if (current_function_decl == NULL_TREE
-      && (TREE_CODE (decl) == VAR_DECL
+      && (VAR_P (decl)
 	  || TREE_CODE (decl) == CONST_DECL
 	  || TREE_CODE (decl) == FUNCTION_DECL)
       && (!DECL_EXTERNAL (decl) || DECL_INITIAL (decl))
@@ -3030,7 +3030,8 @@ v850_rtx_ok_for_base_p (const_rtx x, bool strict_p)
 
 static bool
 v850_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
-			   addr_space_t as ATTRIBUTE_UNUSED)
+			   addr_space_t as ATTRIBUTE_UNUSED,
+			   code_helper = ERROR_MARK)
 {
   gcc_assert (ADDR_SPACE_GENERIC_P (as));
 

@@ -212,4 +212,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # undef TARGET_LIBC_HAS_FUNCTION
 # define TARGET_LIBC_HAS_FUNCTION linux_libc_has_function
 
+# undef TARGET_LIBM_FUNCTION_MAX_ERROR
+# define TARGET_LIBM_FUNCTION_MAX_ERROR linux_libm_function_max_error
+
 #endif

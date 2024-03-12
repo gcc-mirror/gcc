@@ -1283,6 +1283,33 @@ insert_backedge_copies (void)
     }
 }
 
+/* Remove indirect clobbers.  */
+
+static void
+remove_indirect_clobbers (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    for (auto gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (gimple_clobber_p (stmt))
+	  {
+	    tree lhs = gimple_assign_lhs (stmt);
+	    if (TREE_CODE (lhs) == MEM_REF
+		&& TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME)
+	      {
+		unlink_stmt_vdef (stmt);
+		gsi_remove (&gsi, true);
+		release_defs (stmt);
+		continue;
+	      }
+	  }
+	gsi_next (&gsi);
+      }
+}
+
 /* Free all memory associated with going out of SSA form.  SA is
    the outof-SSA info object.  */
 
@@ -1305,6 +1332,10 @@ finish_out_of_ssa (struct ssaexpand *sa)
 unsigned int
 rewrite_out_of_ssa (struct ssaexpand *sa)
 {
+  /* Remove remaining indirect clobbers as we do not need those anymore.
+     Those might extend SSA lifetime and restrict coalescing.  */
+  remove_indirect_clobbers ();
+
   /* If elimination of a PHI requires inserting a copy on a backedge,
      then we will have to split the backedge which has numerous
      undesirable performance effects.
@@ -1312,7 +1343,6 @@ rewrite_out_of_ssa (struct ssaexpand *sa)
      A significant number of such cases can be handled here by inserting
      copies into the loop itself.  */
   insert_backedge_copies ();
-
 
   /* Eliminate PHIs which are of no use, such as virtual or dead phis.  */
   eliminate_useless_phis ();

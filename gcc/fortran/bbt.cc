@@ -162,37 +162,54 @@ delete_root (gfc_bbt *t)
 }
 
 
-/* Delete an element from a tree.  The 'old' value does not
-   necessarily have to point to the element to be deleted, it must
-   just point to a treap structure with the key to be deleted.
-   Returns the new root node of the tree.  */
+/* Delete an element from a tree, returning the new root node of the tree.
+   The OLD value does not necessarily have to point to the element to be
+   deleted, it must just point to a treap structure with the key to be deleted.
+   The REMOVED argument, if non-null, is set to the removed element from the
+   tree upon return.  */
 
 static gfc_bbt *
-delete_treap (gfc_bbt *old, gfc_bbt *t, compare_fn compare)
+delete_treap (gfc_bbt *old, gfc_bbt *t, compare_fn compare, gfc_bbt **removed)
 {
   int c;
 
-  if (t == NULL)
-    return NULL;
+  if (t == nullptr)
+    {
+      if (removed)
+	*removed = nullptr;
+      return nullptr;
+    }
 
   c = (*compare) (old, t);
 
   if (c < 0)
-    t->left = delete_treap (old, t->left, compare);
+    t->left = delete_treap (old, t->left, compare, removed);
   if (c > 0)
-    t->right = delete_treap (old, t->right, compare);
+    t->right = delete_treap (old, t->right, compare, removed);
   if (c == 0)
-    t = delete_root (t);
+    {
+      if (removed)
+	*removed = t;
+      t = delete_root (t);
+    }
 
   return t;
 }
 
 
-void
+/* Delete the element from the tree at *ROOT that matches the OLD element
+   according to the COMPARE_FN function.  This updates the *ROOT pointer to
+   point to the new tree root (if different from the original) and returns the
+   deleted element.  */
+
+void *
 gfc_delete_bbt (void *root, void *old, compare_fn compare)
 {
   gfc_bbt **t;
+  gfc_bbt *removed;
 
   t = (gfc_bbt **) root;
-  *t = delete_treap ((gfc_bbt *) old, *t, compare);
+  *t = delete_treap ((gfc_bbt *) old, *t, compare, &removed);
+
+  return (void *) removed;
 }

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
 
 #include <chrono>
@@ -89,18 +88,18 @@ test_format()
   }
 
   std::string s = ss.str();
-  VERIFY( s == "Mon | Monday | Dec | December | Mon Dec 19 17:26:25.708 2022"
+  VERIFY( s == "Mon | Monday | Dec | December | Mon Dec 19 17:26:25 2022"
 	       " | 20 | 19 | 12/19/22 | 19 | 2022-12-19 | 22 | 2022 | Dec"
-	       " | 17 | 05 | 353 | 12 | 26 | PM | 05:26:25.708 PM | 17:26"
+	       " | 17 | 05 | 353 | 12 | 26 | PM | 05:26:25 PM | 17:26"
 	       " | 25.708 | 17:26:25.708 | 1 | 51 | 51 | 1 | 51 | 12/19/22"
-	       " | 17:26:25.708 | 22 | 2022 | +0000 | UTC | " );
+	       " | 17:26:25 | 22 | 2022 | +0000 | UTC | " );
 
   std::wstring ws = wss.str();
-  VERIFY( ws == L"Mon | Monday | Dec | December | Mon Dec 19 17:26:25.708 2022"
+  VERIFY( ws == L"Mon | Monday | Dec | December | Mon Dec 19 17:26:25 2022"
 		 " | 20 | 19 | 12/19/22 | 19 | 2022-12-19 | 22 | 2022 | Dec"
-		 " | 17 | 05 | 353 | 12 | 26 | PM | 05:26:25.708 PM | 17:26"
+		 " | 17 | 05 | 353 | 12 | 26 | PM | 05:26:25 PM | 17:26"
 		 " | 25.708 | 17:26:25.708 | 1 | 51 | 51 | 1 | 51 | 12/19/22"
-		 " | 17:26:25.708 | 22 | 2022 | +0000 | UTC | " );
+		 " | 17:26:25 | 22 | 2022 | +0000 | UTC | " );
 
   std::chrono::utc_seconds leap(1483228800s + 26s); // 1 Jan 2017
   s = std::format("{:%T}", leap - 1s);
@@ -114,8 +113,39 @@ test_format()
   VERIFY( s == "00:00:00" );
 }
 
+void
+test_parse()
+{
+  using namespace std::chrono;
+  const sys_seconds expected = sys_days(2023y/August/9) + 20h + 44min + 3s;
+  utc_seconds tp;
+
+  minutes offset;
+  std::string abbrev;
+  std::istringstream is("23 2210 21:44:3 +1 BST#");
+  VERIFY( is >> parse("%y %j0 %4H:%5M:%6S %Oz %Z", tp, abbrev, offset) );
+  VERIFY( ! is.eof() );
+  VERIFY( tp == clock_cast<utc_clock>(expected) );
+  VERIFY( abbrev == "BST" );
+  VERIFY( offset == 60min );
+
+  tp = {};
+  is.clear();
+  is.str("20230809214403  0100  BST:");
+  VERIFY( is >> parse("%Y%m%d%H%M%S %z %Z:", tp) );
+  VERIFY( ! is.eof() );
+  VERIFY( tp == clock_cast<utc_clock>(expected) );
+
+  is.clear();
+  is.str("2023-W32-3 20:44:03");
+  VERIFY( is >> parse("%G-W%V-%u %T", tp) );
+  VERIFY( ! is.eof() );
+  VERIFY( tp == clock_cast<utc_clock>(expected) );
+}
+
 int main()
 {
   test_ostream();
   test_format();
+  test_parse();
 }

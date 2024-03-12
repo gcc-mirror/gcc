@@ -654,7 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    {
 	      // Move all nodes back into *this.
 	      __carry._M_put_all(end()._M_node);
-	      for (int __i = 0; __i < sizeof(__tmp)/sizeof(__tmp[0]); ++__i)
+	      for (size_t __i = 0; __i < sizeof(__tmp)/sizeof(__tmp[0]); ++__i)
 		__tmp[__i]._M_put_all(end()._M_node);
 	      __throw_exception_again;
 	    }

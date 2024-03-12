@@ -1048,7 +1048,7 @@ spaceship_comp_cat (tree optype)
 {
   if (INTEGRAL_OR_ENUMERATION_TYPE_P (optype) || TYPE_PTROBV_P (optype))
     return cc_strong_ordering;
-  else if (TREE_CODE (optype) == REAL_TYPE)
+  else if (SCALAR_FLOAT_TYPE_P (optype))
     return cc_partial_ordering;
 
   /* ??? should vector <=> produce a vector of one of the above?  */
@@ -1645,7 +1645,8 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
 		      add_stmt (idx);
 		      finish_init_stmt (for_stmt);
 		      finish_for_cond (build2 (LE_EXPR, boolean_type_node, idx,
-					       maxval), for_stmt, false, 0);
+					       maxval), for_stmt, false, 0,
+					       false);
 		      finish_for_expr (cp_build_unary_op (PREINCREMENT_EXPR,
 							  TARGET_EXPR_SLOT (idx),
 							  false, complain),
@@ -1679,6 +1680,7 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
 	      if (defining)
 		{
 		  tree var = create_temporary_var (rettype);
+		  DECL_NAME (var) = get_identifier ("retval");
 		  pushdecl (var);
 		  cp_finish_decl (var, comp, false, NULL_TREE, flags);
 		  comp = retval = var;
@@ -1902,6 +1904,27 @@ build_stub_object (tree reftype)
   return convert_from_reference (stub);
 }
 
+/* Build a std::declval<TYPE>() expression and return it.  */
+
+tree
+build_trait_object (tree type)
+{
+  /* TYPE can't be a function with cv-/ref-qualifiers: std::declval is
+     defined as
+
+       template<class T>
+       typename std::add_rvalue_reference<T>::type declval() noexcept;
+
+     and std::add_rvalue_reference yields T when T is a function with
+     cv- or ref-qualifiers, making the definition ill-formed.  */
+  if (FUNC_OR_METHOD_TYPE_P (type)
+      && (type_memfn_quals (type) != TYPE_UNQUALIFIED
+	  || type_memfn_rqual (type) != REF_QUAL_NONE))
+    return error_mark_node;
+
+  return build_stub_object (type);
+}
+
 /* Determine which function will be called when looking up NAME in TYPE,
    called with a single ARGTYPE argument, or no argument if ARGTYPE is
    null.  FLAGS and COMPLAIN are as for build_new_method_call.
@@ -2050,8 +2073,8 @@ static tree
 assignable_expr (tree to, tree from)
 {
   cp_unevaluated cp_uneval_guard;
-  to = build_stub_object (to);
-  from = build_stub_object (from);
+  to = build_trait_object (to);
+  from = build_trait_object (from);
   tree r = cp_build_modify_expr (input_location, to, NOP_EXPR, from, tf_none);
   return r;
 }
@@ -2075,8 +2098,9 @@ constructible_expr (tree to, tree from)
       if (!TYPE_REF_P (to))
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
-      for (; from; from = TREE_CHAIN (from))
-	vec_safe_push (args, build_stub_object (TREE_VALUE (from)));
+      vec_alloc (args, TREE_VEC_LENGTH (from));
+      for (tree arg : tree_vec_range (from))
+	args->quick_push (build_stub_object (arg));
       expr = build_special_member_call (ob, complete_ctor_identifier, &args,
 					ctype, LOOKUP_NORMAL, tf_none);
       if (expr == error_mark_node)
@@ -2096,9 +2120,9 @@ constructible_expr (tree to, tree from)
     }
   else
     {
-      if (from == NULL_TREE)
+      const int len = TREE_VEC_LENGTH (from);
+      if (len == 0)
 	return build_value_init (strip_array_types (to), tf_none);
-      const int len = list_length (from);
       if (len > 1)
 	{
 	  if (cxx_dialect < cxx20)
@@ -2112,9 +2136,9 @@ constructible_expr (tree to, tree from)
 	     should be true.  */
 	  vec<constructor_elt, va_gc> *v;
 	  vec_alloc (v, len);
-	  for (tree t = from; t; t = TREE_CHAIN (t))
+	  for (tree arg : tree_vec_range (from))
 	    {
-	      tree stub = build_stub_object (TREE_VALUE (t));
+	      tree stub = build_stub_object (arg);
 	      constructor_elt elt = { NULL_TREE, stub };
 	      v->quick_push (elt);
 	    }
@@ -2123,7 +2147,7 @@ constructible_expr (tree to, tree from)
 	  CONSTRUCTOR_IS_PAREN_INIT (from) = true;
 	}
       else
-	from = build_stub_object (TREE_VALUE (from));
+	from = build_stub_object (TREE_VEC_ELT (from, 0));
       expr = perform_direct_initialization_if_possible (to, from,
 							/*cast*/false,
 							tf_none);
@@ -2160,7 +2184,7 @@ is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
   tree expr;
   if (code == MODIFY_EXPR)
     expr = assignable_expr (to, from);
-  else if (trivial && from && TREE_CHAIN (from)
+  else if (trivial && TREE_VEC_LENGTH (from) > 1
 	   && cxx_dialect < cxx20)
     return error_mark_node; // only 0- and 1-argument ctors can be trivial
 			    // before C++20 aggregate paren init
@@ -2230,7 +2254,9 @@ ref_xes_from_temporary (tree to, tree from, bool direct_init_p)
     return false;
   /* We don't check is_constructible<T, U>: if T isn't constructible
      from U, we won't be able to create a conversion.  */
-  tree val = build_stub_object (from);
+  tree val = build_trait_object (from);
+  if (val == error_mark_node)
+    return false;
   if (!TYPE_REF_P (from) && TREE_CODE (from) != FUNCTION_TYPE)
     val = CLASS_TYPE_P (from) ? force_rvalue (val, tf_none) : rvalue (val);
   return ref_conv_binds_to_temporary (to, val, direct_init_p).is_true ();
@@ -2245,7 +2271,15 @@ is_convertible_helper (tree from, tree to)
   if (VOID_TYPE_P (from) && VOID_TYPE_P (to))
     return integer_one_node;
   cp_unevaluated u;
-  tree expr = build_stub_object (from);
+  tree expr = build_trait_object (from);
+  /* std::is_{,nothrow_}convertible test whether the imaginary function
+     definition
+
+       To test() { return std::declval<From>(); }
+
+     is well-formed.  A function can't return a function.  */
+  if (FUNC_OR_METHOD_TYPE_P (to) || expr == error_mark_node)
+    return error_mark_node;
   deferring_access_check_sentinel acs (dk_no_deferred);
   return perform_implicit_conversion (to, expr, tf_none);
 }
@@ -3261,6 +3295,8 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       /* Copy constexpr from the inherited constructor even if the
 	 inheriting constructor doesn't satisfy the requirements.  */
       constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);
+      /* Also copy any attributes.  */
+      DECL_ATTRIBUTES (fn) = clone_attrs (DECL_ATTRIBUTES (inherited_ctor));
     }
 
   /* Add the "this" parameter.  */
@@ -3555,6 +3591,12 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   if (DECL_MAYBE_IN_CHARGE_CDTOR_P (fn))
     /* Create appropriate clones.  */
     clone_cdtor (fn, /*update_methods=*/true);
+
+  /* Classes, structs or unions TYPE marked with hotness attributes propagate
+     the attribute to all methods.  This is typically done in
+     check_bases_and_members, but we must also inject them here for deferred
+     lazily-declared functions.  */
+  maybe_propagate_warmth_attributes (fn, type);
 
   return fn;
 }

@@ -1,21 +1,49 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vstrht.32	q[0-9]+, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+*/
 void
-foo (uint16_t * addr, uint32x4_t value, mve_pred16_t p)
+foo (uint16_t *base, uint32x4_t value, mve_pred16_t p)
 {
-  vstrhq_p_u32 (addr, value, p);
+  return vstrhq_p_u32 (base, value, p);
 }
 
-/* { dg-final { scan-assembler "vstrht.32"  }  } */
 
+/*
+**foo1:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vstrht.32	q[0-9]+, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+*/
 void
-foo1 (uint16_t * addr, uint32x4_t value, mve_pred16_t p)
+foo1 (uint16_t *base, uint32x4_t value, mve_pred16_t p)
 {
-  vstrhq_p (addr, value, p);
+  return vstrhq_p (base, value, p);
 }
 
-/* { dg-final { scan-assembler "vstrht.32"  }  } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

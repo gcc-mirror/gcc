@@ -51,6 +51,10 @@
 #ifndef _GLIBCXX_CMATH
 #define _GLIBCXX_CMATH 1
 
+#define __glibcxx_want_hypot
+#define __glibcxx_want_interpolate
+#include <bits/version.h>
+
 // Get rid of those macros defined in <math.h> in lieu of real functions.
 #undef div
 #undef acos
@@ -150,15 +154,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   atan2(long double __y, long double __x)
   { return __builtin_atan2l(__y, __x); }
 #endif
-
-  template<typename _Tp, typename _Up>
-    inline _GLIBCXX_CONSTEXPR
-    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    atan2(_Tp __y, _Up __x)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return atan2(__type(__y), __type(__x));
-    }
 
   using ::ceil;
 
@@ -286,15 +281,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_fmodl(__x, __y); }
 #endif
 
-  template<typename _Tp, typename _Up>
-    inline _GLIBCXX_CONSTEXPR
-    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    fmod(_Tp __x, _Up __y)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return fmod(__type(__x), __type(__y));
-    }
-
   using ::frexp;
 
 #ifndef __CORRECT_ISO_CPP_MATH_H_PROTO
@@ -410,15 +396,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_powil(__x, __n); }
 #endif
 #endif
-
-  template<typename _Tp, typename _Up>
-    inline _GLIBCXX_CONSTEXPR
-    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    pow(_Tp __x, _Up __y)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return pow(__type(__x), __type(__y));
-    }
 
   using ::sin;
 
@@ -1073,6 +1050,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __gnu_cxx::__bfloat16_t(__builtin_tanhf(__x)); }
 #endif
 
+  template<typename _Tp, typename _Up>
+    inline _GLIBCXX_CONSTEXPR
+    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    atan2(_Tp __y, _Up __x)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return atan2(__type(__y), __type(__x));
+    }
+
+  template<typename _Tp, typename _Up>
+    inline _GLIBCXX_CONSTEXPR
+    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    fmod(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return fmod(__type(__x), __type(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    inline _GLIBCXX_CONSTEXPR
+    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    pow(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return pow(__type(__x), __type(__y));
+    }
+
 #if _GLIBCXX_USE_C99_MATH
 #if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
 
@@ -1135,7 +1139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
                                               bool>::__type
-    isfinite(_Tp __x)
+    isfinite(_Tp)
     { return true; }
 #endif
 
@@ -1162,7 +1166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
                                               bool>::__type
-    isinf(_Tp __x)
+    isinf(_Tp)
     { return false; }
 #endif
 
@@ -1189,7 +1193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
                                               bool>::__type
-    isnan(_Tp __x)
+    isnan(_Tp)
     { return false; }
 #endif
 
@@ -1767,7 +1771,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
 
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
 
 #undef acosh
 #undef acoshf
@@ -1877,9 +1881,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef truncf
 #undef truncl
 
+#ifdef _GLIBCXX_HAVE_C99_FLT_EVAL_TYPES
   // types
   using ::double_t;
   using ::float_t;
+#endif
 
   // functions
   using ::acosh;
@@ -2107,16 +2113,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_copysignl(__x, __y); }
 #endif
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
-  template<typename _Tp, typename _Up>
-    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    copysign(_Tp __x, _Up __y)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return copysign(__type(__x), __type(__y));
-    }
-#endif
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   constexpr float
   erf(float __x)
@@ -2199,16 +2195,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_fdiml(__x, __y); }
 #endif
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
-  template<typename _Tp, typename _Up>
-    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    fdim(_Tp __x, _Up __y)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return fdim(__type(__x), __type(__y));
-    }
-#endif
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   constexpr float
   fma(float __x, float __y, float __z)
@@ -2217,16 +2203,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   fma(long double __x, long double __y, long double __z)
   { return __builtin_fmal(__x, __y, __z); }
-#endif
-
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
-  template<typename _Tp, typename _Up, typename _Vp>
-    constexpr typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type
-    fma(_Tp __x, _Up __y, _Vp __z)
-    {
-      typedef typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type __type;
-      return fma(__type(__x), __type(__y), __type(__z));
-    }
 #endif
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
@@ -2239,16 +2215,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_fmaxl(__x, __y); }
 #endif
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
-  template<typename _Tp, typename _Up>
-    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    fmax(_Tp __x, _Up __y)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return fmax(__type(__x), __type(__y));
-    }
-#endif
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   constexpr float
   fmin(float __x, float __y)
@@ -2259,16 +2225,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_fminl(__x, __y); }
 #endif
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
-  template<typename _Tp, typename _Up>
-    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    fmin(_Tp __x, _Up __y)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return fmin(__type(__x), __type(__y));
-    }
-#endif
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   constexpr float
   hypot(float __x, float __y)
@@ -2277,16 +2233,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   hypot(long double __x, long double __y)
   { return __builtin_hypotl(__x, __y); }
-#endif
-
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
-  template<typename _Tp, typename _Up>
-    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    hypot(_Tp __x, _Up __y)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return hypot(__type(__x), __type(__y));
-    }
 #endif
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
@@ -2481,16 +2427,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_nextafterl(__x, __y); }
 #endif
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
-  template<typename _Tp, typename _Up>
-    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    nextafter(_Tp __x, _Up __y)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return nextafter(__type(__x), __type(__y));
-    }
-#endif
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   constexpr float
   nexttoward(float __x, long double __y)
@@ -2519,16 +2455,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_remainderl(__x, __y); }
 #endif
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
-  template<typename _Tp, typename _Up>
-    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    remainder(_Tp __x, _Up __y)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return remainder(__type(__x), __type(__y));
-    }
-#endif
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   remquo(float __x, float __y, int* __pquo)
@@ -2537,16 +2463,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline long double
   remquo(long double __x, long double __y, int* __pquo)
   { return __builtin_remquol(__x, __y, __pquo); }
-#endif
-
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
-  template<typename _Tp, typename _Up>
-    inline typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
-    remquo(_Tp __x, _Up __y, int* __pquo)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return remquo(__type(__x), __type(__y), __pquo);
-    }
 #endif
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
@@ -3555,15 +3471,85 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __gnu_cxx::__bfloat16_t(__builtin_truncf(__x)); }
 #endif
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
+  template<typename _Tp, typename _Up>
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    copysign(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return copysign(__type(__x), __type(__y));
+    }
 
-#endif // _GLIBCXX_USE_C99_MATH_TR1
+  template<typename _Tp, typename _Up>
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    fdim(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return fdim(__type(__x), __type(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    fmax(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return fmax(__type(__x), __type(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    fmin(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return fmin(__type(__x), __type(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    hypot(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return hypot(__type(__x), __type(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    nextafter(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return nextafter(__type(__x), __type(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    remainder(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return remainder(__type(__x), __type(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    inline typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    remquo(_Tp __x, _Up __y, int* __pquo)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return remquo(__type(__x), __type(__y), __pquo);
+    }
+
+  template<typename _Tp, typename _Up, typename _Vp>
+    constexpr typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type
+    fma(_Tp __x, _Up __y, _Vp __z)
+    {
+      typedef typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type __type;
+      return fma(__type(__x), __type(__y), __type(__z));
+    }
+#endif
+
+#endif // _GLIBCXX_USE_C99_MATH_FUNCS
 #endif // C++11
 
-#if __cplusplus >= 201703L
-
+#ifdef __cpp_lib_hypot // C++ >= 17 && HOSTED
   // [c.math.hypot3], three-dimensional hypotenuse
-#define __cpp_lib_hypot 201603L
-
   template<typename _Tp>
     inline _Tp
     __hypot3(_Tp __x, _Tp __y, _Tp __z)
@@ -3631,12 +3617,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return std::__hypot3<__gnu_cxx::__bfloat16_t>(__x, __y, __z); }
 #endif
 
-#endif // C++17
+#endif // __cpp_lib_hypot
 
-#if __cplusplus >= 202002L
+#ifdef __cpp_lib_interpolate // C++ >= 20
   // linear interpolation
-# define __cpp_lib_interpolate 201902L
-
   template<typename _Fp>
     constexpr _Fp
     __lerp(_Fp __a, _Fp __b, _Fp __t) noexcept
@@ -3706,8 +3690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   lerp(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y, __gnu_cxx::__bfloat16_t __z) noexcept
   { return std::__lerp<__gnu_cxx::__bfloat16_t>(__x, __y, __z); }
 #endif
-
-#endif // C++20
+#endif // __cpp_lib_interpolate
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

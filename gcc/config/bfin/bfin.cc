@@ -2718,7 +2718,8 @@ bfin_valid_reg_p (unsigned int regno, int strict, machine_mode mode,
 */
 
 static bool
-bfin_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+bfin_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+			   code_helper = ERROR_MARK)
 {
   switch (GET_CODE (x)) {
   case REG:
@@ -4877,7 +4878,7 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
       else
 	set_decl_section_name (decl, ".l2.text");
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       if (DECL_SECTION_NAME (decl) != NULL
 	  && strcmp (DECL_SECTION_NAME (decl),

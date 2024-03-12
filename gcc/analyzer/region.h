@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_REGION_H
 #define GCC_ANALYZER_REGION_H
 
-#include "analyzer/complexity.h"
+#include "analyzer/symbol.h"
 
 namespace ana {
 
@@ -118,13 +118,10 @@ enum region_kind
    within the frames and the "globals" region.  Regions for structs
    can have subregions for fields.  */
 
-class region
+class region : public symbol
 {
 public:
   virtual ~region ();
-
-  unsigned get_id () const { return m_id; }
-  static int cmp_ids (const region *reg1, const region *reg2);
 
   virtual enum region_kind get_kind () const = 0;
   virtual const frame_region *
@@ -161,6 +158,7 @@ public:
   const frame_region *maybe_get_frame_region () const;
   enum memory_space get_memory_space () const;
   bool can_have_initial_svalue_p () const;
+  const svalue *get_initial_value_at_main (region_model_manager *mgr) const;
 
   tree maybe_get_decl () const;
 
@@ -182,6 +180,7 @@ public:
   bool involves_p (const svalue *sval) const;
 
   region_offset get_offset (region_model_manager *mgr) const;
+  region_offset get_next_offset (region_model_manager *mgr) const;
 
   /* Attempt to get the size of this region as a concrete number of bytes.
      If successful, return true and write the size to *OUT.
@@ -229,24 +228,25 @@ public:
      bloating the store object with redundant binding clusters).  */
   virtual bool tracked_p () const { return true; }
 
-  const complexity &get_complexity () const { return m_complexity; }
-
   bool is_named_decl_p (const char *decl_name) const;
 
   bool empty_p () const;
 
  protected:
-  region (complexity c, unsigned id, const region *parent, tree type);
+  region (complexity c, symbol::id_t id, const region *parent, tree type);
 
  private:
   region_offset calc_offset (region_model_manager *mgr) const;
+  const svalue *calc_initial_value_at_main (region_model_manager *mgr) const;
 
-  complexity m_complexity;
-  unsigned m_id; // purely for deterministic sorting at this stage, for dumps
   const region *m_parent;
   tree m_type;
 
   mutable region_offset *m_cached_offset;
+
+  /* For regions within a global decl, a cache of the svalue for the initial
+     value of this region when the program starts.  */
+  mutable const svalue *m_cached_init_sval_at_main;
 };
 
 } // namespace ana
@@ -267,7 +267,7 @@ namespace ana {
 class space_region : public region
 {
 protected:
-  space_region (unsigned id, const region *parent)
+  space_region (symbol::id_t id, const region *parent)
   : region (complexity (parent), id, parent, NULL_TREE)
   {}
 };
@@ -322,7 +322,7 @@ public:
     function *m_fun;
   };
 
-  frame_region (unsigned id, const region *parent,
+  frame_region (symbol::id_t id, const region *parent,
 		const frame_region *calling_frame,
 		function *fun, int index)
   : space_region (id, parent), m_calling_frame (calling_frame),
@@ -391,7 +391,7 @@ namespace ana {
 class globals_region : public space_region
 {
  public:
-  globals_region (unsigned id, const region *parent)
+  globals_region (symbol::id_t id, const region *parent)
   : space_region (id, parent)
   {}
 
@@ -418,7 +418,7 @@ namespace ana {
 class code_region : public space_region
 {
 public:
-  code_region (unsigned id, const region *parent)
+  code_region (symbol::id_t id, const region *parent)
   : space_region (id, parent)
   {}
 
@@ -445,7 +445,7 @@ namespace ana {
 class function_region : public region
 {
 public:
-  function_region (unsigned id, const code_region *parent, tree fndecl)
+  function_region (symbol::id_t id, const code_region *parent, tree fndecl)
   : region (complexity (parent), id, parent, TREE_TYPE (fndecl)),
     m_fndecl (fndecl)
   {
@@ -482,7 +482,7 @@ namespace ana {
 class label_region : public region
 {
 public:
-  label_region (unsigned id, const function_region *parent, tree label)
+  label_region (symbol::id_t id, const function_region *parent, tree label)
   : region (complexity (parent), id, parent, NULL_TREE), m_label (label)
   {
     gcc_assert (TREE_CODE (label) == LABEL_DECL);
@@ -516,7 +516,7 @@ namespace ana {
 class stack_region : public space_region
 {
 public:
-  stack_region (unsigned id, region *parent)
+  stack_region (symbol::id_t id, region *parent)
   : space_region (id, parent)
   {}
 
@@ -543,7 +543,7 @@ namespace ana {
 class heap_region : public space_region
 {
 public:
-  heap_region (unsigned id, region *parent)
+  heap_region (symbol::id_t id, region *parent)
   : space_region (id, parent)
   {}
 
@@ -569,7 +569,7 @@ namespace ana {
 class thread_local_region : public space_region
 {
 public:
-  thread_local_region (unsigned id, region *parent)
+  thread_local_region (symbol::id_t id, region *parent)
   : space_region (id, parent)
   {}
 
@@ -596,7 +596,7 @@ namespace ana {
 class root_region : public region
 {
 public:
-  root_region (unsigned id);
+  root_region (symbol::id_t id);
 
   enum region_kind get_kind () const final override { return RK_ROOT; }
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
@@ -654,7 +654,7 @@ public:
     const svalue *m_sval_ptr;
   };
 
-  symbolic_region (unsigned id, region *parent, const svalue *sval_ptr);
+  symbolic_region (symbol::id_t id, region *parent, const svalue *sval_ptr);
 
   const symbolic_region *
   dyn_cast_symbolic_region () const final override { return this; }
@@ -694,9 +694,10 @@ namespace ana {
 class decl_region : public region
 {
 public:
-  decl_region (unsigned id, const region *parent, tree decl)
+  decl_region (symbol::id_t id, const region *parent, tree decl)
   : region (complexity (parent), id, parent, TREE_TYPE (decl)), m_decl (decl),
-    m_tracked (calc_tracked_p (decl))
+    m_tracked (calc_tracked_p (decl)),
+    m_ctor_svalue (NULL)
   {}
 
   enum region_kind get_kind () const final override { return RK_DECL; }
@@ -716,6 +717,8 @@ public:
   const svalue *get_svalue_for_initializer (region_model_manager *mgr) const;
 
 private:
+  const svalue *calc_svalue_for_constructor (tree ctor,
+					     region_model_manager *mgr) const;
   static bool calc_tracked_p (tree decl);
 
   tree m_decl;
@@ -725,6 +728,9 @@ private:
      store objects).
      This can be debugged using -fdump-analyzer-untracked.  */
   bool m_tracked;
+
+  /* Cached result of get_svalue_for_constructor.  */
+  mutable const svalue *m_ctor_svalue;
 };
 
 } // namespace ana
@@ -776,7 +782,7 @@ public:
     tree m_field;
   };
 
-  field_region (unsigned id, const region *parent, tree field)
+  field_region (symbol::id_t id, const region *parent, tree field)
   : region (complexity (parent), id, parent, TREE_TYPE (field)),
     m_field (field)
   {}
@@ -858,7 +864,7 @@ public:
     const svalue *m_index;
   };
 
-  element_region (unsigned id, const region *parent, tree element_type,
+  element_region (symbol::id_t id, const region *parent, tree element_type,
 		  const svalue *index)
   : region (complexity::from_pair (parent, index), id, parent, element_type),
     m_index (index)
@@ -945,7 +951,7 @@ public:
     const svalue *m_byte_offset;
   };
 
-  offset_region (unsigned id, const region *parent, tree type,
+  offset_region (symbol::id_t id, const region *parent, tree type,
 		 const svalue *byte_offset)
   : region (complexity::from_pair (parent, byte_offset), id, parent, type),
     m_byte_offset (byte_offset)
@@ -1037,7 +1043,7 @@ public:
     const svalue *m_end_offset;
   };
 
-  sized_region (unsigned id, const region *parent, tree type,
+  sized_region (symbol::id_t id, const region *parent, tree type,
 		const svalue *byte_size_sval)
   : region (complexity::from_pair (parent, byte_size_sval),
 	    id, parent, type),
@@ -1094,7 +1100,7 @@ public:
     key_t (const region *original_region, tree type)
     : m_original_region (original_region), m_type (type)
     {
-      gcc_assert (type);
+      gcc_assert (original_region);
     }
 
     hashval_t hash () const
@@ -1111,16 +1117,22 @@ public:
 	      && m_type == other.m_type);
     }
 
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    void mark_deleted ()
+    {
+      m_original_region = reinterpret_cast<const region *> (1);
+    }
+    void mark_empty () { m_original_region = nullptr; }
+    bool is_deleted () const
+    {
+      return m_original_region == reinterpret_cast<const region *> (1);
+    }
+    bool is_empty () const { return m_original_region == nullptr; }
 
     const region *m_original_region;
     tree m_type;
   };
 
-  cast_region (unsigned id, const region *original_region, tree type)
+  cast_region (symbol::id_t id, const region *original_region, tree type)
   : region (complexity (original_region), id,
 	    original_region->get_parent_region (), type),
     m_original_region (original_region)
@@ -1164,7 +1176,7 @@ namespace ana {
 class heap_allocated_region : public region
 {
 public:
-  heap_allocated_region (unsigned id, const region *parent)
+  heap_allocated_region (symbol::id_t id, const region *parent)
   : region (complexity (parent), id, parent, NULL_TREE)
   {}
 
@@ -1179,7 +1191,7 @@ public:
 class alloca_region : public region
 {
 public:
-  alloca_region (unsigned id, const frame_region *parent)
+  alloca_region (symbol::id_t id, const frame_region *parent)
   : region (complexity (parent), id, parent, NULL_TREE)
   {}
 
@@ -1193,7 +1205,7 @@ public:
 class string_region : public region
 {
 public:
-  string_region (unsigned id, const region *parent, tree string_cst)
+  string_region (symbol::id_t id, const region *parent, tree string_cst)
   : region (complexity (parent), id, parent, TREE_TYPE (string_cst)),
     m_string_cst (string_cst)
   {}
@@ -1271,7 +1283,7 @@ public:
     bit_range m_bits;
   };
 
-  bit_range_region (unsigned id, const region *parent, tree type,
+  bit_range_region (symbol::id_t id, const region *parent, tree type,
 		    const bit_range &bits)
   : region (complexity (parent), id, parent, type),
     m_bits (bits)
@@ -1358,7 +1370,7 @@ public:
     unsigned m_idx;
   };
 
-  var_arg_region (unsigned id, const frame_region *parent,
+  var_arg_region (symbol::id_t id, const frame_region *parent,
 		  unsigned idx)
   : region (complexity (parent), id, parent, NULL_TREE),
     m_idx (idx)
@@ -1401,7 +1413,7 @@ namespace ana {
 class errno_region : public region
 {
 public:
-  errno_region (unsigned id, const thread_local_region *parent)
+  errno_region (symbol::id_t id, const thread_local_region *parent)
   : region (complexity (parent), id, parent, integer_type_node)
   {}
 
@@ -1427,7 +1439,7 @@ namespace ana {
 class unknown_region : public region
 {
 public:
-  unknown_region (unsigned id, const region *parent, tree type)
+  unknown_region (symbol::id_t id, const region *parent, tree type)
   : region (complexity (parent), id, parent, type)
   {}
 

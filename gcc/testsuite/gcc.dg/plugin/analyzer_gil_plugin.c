@@ -155,7 +155,7 @@ class double_save_thread : public gil_diagnostic
     return m_call == sub_other.m_call;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     return warning_at (rich_loc, get_controlling_option (),
 		       "nested usage of %qs", "Py_BEGIN_ALLOW_THREADS");
@@ -194,7 +194,7 @@ class fncall_without_gil : public gil_diagnostic
 	    && m_arg_idx == sub_other.m_arg_idx);
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     if (m_callee_fndecl)
@@ -245,7 +245,7 @@ class pyobject_usage_without_gil : public gil_diagnostic
 			((const pyobject_usage_without_gil&)base_other).m_expr);
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     return warning_at (rich_loc, get_controlling_option (),

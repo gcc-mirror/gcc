@@ -144,7 +144,8 @@ static bool       mcore_warn_func_return        (tree);
 static void       mcore_option_override		(void);
 static bool       mcore_legitimate_constant_p   (machine_mode, rtx);
 static bool	  mcore_legitimate_address_p	(machine_mode, rtx, bool,
-						 addr_space_t);
+						 addr_space_t,
+						 code_helper = ERROR_MARK);
 static bool	  mcore_hard_regno_mode_ok	(unsigned int, machine_mode);
 static bool	  mcore_modes_tieable_p		(machine_mode, machine_mode);
 
@@ -1182,7 +1183,7 @@ output_inline_const (machine_mode mode, rtx operands[])
   int trick_no;
   rtx out_operands[3];
   char buf[256];
-  char load_op[256];
+  char load_op[128];
   const char *dst_fmt;
   HOST_WIDE_INT value;
 
@@ -2953,7 +2954,7 @@ mcore_mark_dllimport (tree decl)
      and that would be a good question.  */
 
   /* Imported variables can't be initialized.  */
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && !DECL_VIRTUAL_P (decl)
       && DECL_INITIAL (decl))
     {
@@ -2963,7 +2964,7 @@ mcore_mark_dllimport (tree decl)
   
   /* `extern' needn't be specified with dllimport.
      Specify `extern' now and hope for the best.  Sigh.  */
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       /* ??? Is this test for vtables needed?  */
       && !DECL_VIRTUAL_P (decl))
     {
@@ -3024,7 +3025,7 @@ mcore_encode_section_info (tree decl, rtx rtl ATTRIBUTE_UNUSED, int first ATTRIB
      a subsequent definition nullified that.  The attribute is gone
      but DECL_RTL still has @i.__imp_foo.  We need to remove that.  */
   else if ((TREE_CODE (decl) == FUNCTION_DECL
-	    || TREE_CODE (decl) == VAR_DECL)
+	    || VAR_P (decl))
 	   && DECL_RTL (decl) != NULL_RTX
 	   && GET_CODE (DECL_RTL (decl)) == MEM
 	   && GET_CODE (XEXP (DECL_RTL (decl), 0)) == MEM
@@ -3249,7 +3250,7 @@ mcore_legitimate_index_p (machine_mode mode, const_rtx op)
 
 static bool
 mcore_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
-			    addr_space_t as)
+			    addr_space_t as, code_helper)
 {
   gcc_assert (ADDR_SPACE_GENERIC_P (as));
 

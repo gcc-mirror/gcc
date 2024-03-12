@@ -44,4 +44,4 @@ load2r (long long *array)
   return a;
 }
 
-/* { dg-final { scan-assembler-not "addi" } } */
+/* { dg-final { scan-assembler-not {\maddi} } } */

@@ -2,8 +2,8 @@
 TEST_OUTPUT:
 ---
 fail_compilation/test21008.d(110): Error: function `test21008.C.after` circular reference to class `C`
-fail_compilation/test21008.d(117): Error: need `this` for `toString` of type `string()`
-fail_compilation/test21008.d(117): Error: need `this` for `toHash` of type `nothrow @trusted $?:32=uint|64=ulong$()`
+fail_compilation/test21008.d(117): Error: calling non-static function `toString` requires an instance of type `Object`
+fail_compilation/test21008.d(117): Error: calling non-static function `toHash` requires an instance of type `Object`
 fail_compilation/test21008.d(117): Error: function `object.Object.opCmp(Object o)` is not callable using argument types `()`
 fail_compilation/test21008.d(117):        too few arguments, expected 1, got 0
 fail_compilation/test21008.d(117): Error: function `object.Object.opEquals(Object o)` is not callable using argument types `()`

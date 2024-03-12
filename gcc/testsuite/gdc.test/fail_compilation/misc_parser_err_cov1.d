@@ -17,14 +17,16 @@ fail_compilation/misc_parser_err_cov1.d(38): Error: template argument expected f
 fail_compilation/misc_parser_err_cov1.d(38): Error: missing closing `)` after `if (parseShift!()`
 fail_compilation/misc_parser_err_cov1.d(38): Error: found `)` when expecting `(`
 fail_compilation/misc_parser_err_cov1.d(39): Error: missing closing `)` after `if (`
-fail_compilation/misc_parser_err_cov1.d(39): Error: identifier expected following `(type)`.
+fail_compilation/misc_parser_err_cov1.d(39): Error: identifier expected following `immutable(int).`, not `+`
 fail_compilation/misc_parser_err_cov1.d(39): Error: expression expected, not `;`
 fail_compilation/misc_parser_err_cov1.d(40): Error: semicolon expected following auto declaration, not `auto`
 fail_compilation/misc_parser_err_cov1.d(40): Error: identifier or `new` expected following `.`, not `+`
 fail_compilation/misc_parser_err_cov1.d(41): Error: identifier or new keyword expected following `(...)`.
 fail_compilation/misc_parser_err_cov1.d(41): Error: expression expected, not `;`
-fail_compilation/misc_parser_err_cov1.d(42): Error: found `}` when expecting `;` following statement
-fail_compilation/misc_parser_err_cov1.d(43): Error: found `End of File` when expecting `}` following compound statement
+fail_compilation/misc_parser_err_cov1.d(42): Error: found `}` when expecting `;` following expression
+fail_compilation/misc_parser_err_cov1.d(41):        expression: `(__error) + 0`
+fail_compilation/misc_parser_err_cov1.d(43): Error: matching `}` expected following compound statement, not `End of File`
+fail_compilation/misc_parser_err_cov1.d(33):        unmatched `{`
 ---
 */
 module misc_parser_err_cov1;

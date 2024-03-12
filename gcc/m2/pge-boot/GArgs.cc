@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -54,7 +55,7 @@ static Args__T1 Source;
             The success of the operation is returned.
 */
 
-extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int n);
+extern "C" bool Args_GetArg (char *a, unsigned int _a_high, unsigned int n);
 
 /*
    Narg - returns the number of arguments available from
@@ -69,7 +70,7 @@ extern "C" unsigned int Args_Narg (void);
             The success of the operation is returned.
 */
 
-extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int n)
+extern "C" bool Args_GetArg (char *a, unsigned int _a_high, unsigned int n)
 {
   int i;
   unsigned int High;

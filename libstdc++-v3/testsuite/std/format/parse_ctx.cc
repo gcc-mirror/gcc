@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
 
 #include <format>
@@ -244,10 +243,6 @@ test_pointer()
   VERIFY( ! is_std_format_spec_for<void*>("-") );
   VERIFY( ! is_std_format_spec_for<void*>(" ") );
   VERIFY( ! is_std_format_spec_for<void*>("#") );
-  VERIFY( is_std_format_spec_for<void*>("0p") ); // P2510
-  VERIFY( is_std_format_spec_for<void*>("0") );
-  VERIFY( ! is_std_format_spec_for<void*>("00p") );
-  VERIFY( is_std_format_spec_for<void*>("01p") );
   VERIFY( is_std_format_spec_for<void*>("1") );
   VERIFY( ! is_std_format_spec_for<void*>("-1") );
   VERIFY( ! is_std_format_spec_for<void*>("-1p") );
@@ -263,7 +258,6 @@ test_pointer()
   VERIFY( ! is_std_format_spec_for<void*>("s") );
   VERIFY( ! is_std_format_spec_for<void*>("?") );
   VERIFY( is_std_format_spec_for<void*>("p") );
-  VERIFY( is_std_format_spec_for<void*>("P") );
   VERIFY( ! is_std_format_spec_for<void*>("a") );
   VERIFY( ! is_std_format_spec_for<void*>("A") );
   VERIFY( ! is_std_format_spec_for<void*>("f") );
@@ -271,6 +265,16 @@ test_pointer()
   VERIFY( ! is_std_format_spec_for<void*>("g") );
   VERIFY( ! is_std_format_spec_for<void*>("G") );
   VERIFY( ! is_std_format_spec_for<void*>("+p") );
+
+#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
+  // As an extension, we support P2510R3 Formatting pointers
+  VERIFY( is_std_format_spec_for<void*>("P") );
+  VERIFY( is_std_format_spec_for<void*>("0p") );
+  VERIFY( is_std_format_spec_for<void*>("0P") );
+  VERIFY( is_std_format_spec_for<void*>("0") );
+  VERIFY( is_std_format_spec_for<void*>("01p") );
+  VERIFY( ! is_std_format_spec_for<void*>("00p") );
+#endif
 }
 
 void

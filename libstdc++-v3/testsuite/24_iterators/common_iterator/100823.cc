@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++20 -D_GLIBCXX_ASSERTIONS" }
+// { dg-options "-D_GLIBCXX_ASSERTIONS" }
 // { dg-do run { target c++20 } }
 #include <iterator>
 #include <testsuite_iterators.h>

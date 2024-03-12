@@ -370,7 +370,6 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
   int width;
   int nextperc;
   int afterperc;
-  int endpos;
   char leader;
   char ch;
   char ch2;
@@ -544,7 +543,6 @@ static DynamicStrings_String Copy (DynamicStrings_String fmt, DynamicStrings_Str
 static DynamicStrings_String HandlePercent (DynamicStrings_String fmt, DynamicStrings_String s, int startpos)
 {
   int prevpos;
-  DynamicStrings_String result;
 
   if ((startpos == ((int ) (DynamicStrings_Length (fmt)))) || (startpos < 0))
     {

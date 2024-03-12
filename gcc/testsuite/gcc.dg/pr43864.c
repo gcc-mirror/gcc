@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-tail-merge -fdump-tree-pre" } */
+/* { dg-options "-O2 -fdump-tree-pre -fdump-tree-optimized-blocks-details" } */
 
 extern void foo (char*, int);
 extern void mysprintf (char *, char *);
@@ -32,4 +32,4 @@ hprofStartupp (char *outputFileName, char *ctx)
 }
 
 /* { dg-final { scan-tree-dump-times "myfree \\(" 1 "pre"} } */
-/* { dg-final { scan-tree-dump-not "Invalid sum" "pre"} } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized"} } */

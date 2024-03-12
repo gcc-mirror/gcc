@@ -1,0 +1,1648 @@
+// Feature test macro definitions                                  -*- C++ -*-
+// Copyright (C) 2023 Free Software Foundation, Inc.
+
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+AutoGen Definitions version.tpl;
+
+// The top level variable ftms is an array of feature test macros.  Each entry
+// consists of a structure like following:
+
+// Schema:
+// ftms = {
+//   name = FTM NAME;
+//   [stdname = FTM STANDARD MACRO NAME;]
+//   values = {
+//     v = VALUE FOR FTM IF MATCHING;
+//     [extra_cond = STRING;]
+//     [cxxmin = NUMBER;]
+//     [gnuxxmin = NUMBER;]
+//     [gthread = yes|no;]
+//     [hosted = yes|no;]
+//     [cxx11abi = yes|no;]
+//   }; ...
+// };
+
+// The elements in square brackets are optional.  These are formulated into a
+// logical expression like:
+//   ((strict && c++ >= cxxmin) || (!strict && c++ >= gnuxxmin))
+//   && (gthr <=> gthread)
+//   && (host <=> hosted)
+//   && (cxx11 <=> cxx11abi)
+//   && (extra_cond)
+// Where gthr, cxx11 and host are _GLIBCXX_HAS_GTHREADS, _GLIBCXX_USE_CXX11_ABI
+// and _GLIBCXX_HOSTED respectively.  If any of these are omitted, their
+// sub-expressions are equivalent to the identity.  Specially, if gnuxxmin is
+// omitted, it is taken to be the value of cxxmin, and so, only if both are
+// omitted, the clause is omitted.
+
+// stdname configures the name of the *standard* macro emitted, i.e. it
+// replaces only the __cpp_lib_ macro in the emitted definition.  Defaults to
+// __cpp_lib_${name}
+
+// N.B This list needs to be in topological sort order, as later entries in
+// this list can and do use the earlier entries.
+
+ftms = {
+  name = incomplete_container_elements;
+  values = {
+    v = 201505;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = uncaught_exceptions;
+  values = {
+    v = 201411;
+    cxxmin = 17;
+    gnuxxmin = 03;
+  };
+};
+
+ftms = {
+  name = allocator_traits_is_always_equal;
+  values = {
+    v = 201411;
+    cxxmin = 11;
+  };
+};
+
+ftms = {
+  name = is_null_pointer;
+  values = {
+    v = 201309;
+    cxxmin = 11;
+  };
+};
+
+ftms = {
+  name = result_of_sfinae;
+  values = {
+    v = 201210;
+    cxxmin = 11;
+  };
+};
+
+ftms = {
+  name = shared_ptr_arrays;
+  values = {
+    v = 201707;
+    cxxmin = 20;
+    hosted = yes;
+  };
+  values = {
+    v = 201611;
+    cxxmin = 11;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = is_swappable;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+    gnuxxmin = 11;
+  };
+};
+
+ftms = {
+  name = void_t;
+  values = {
+    v = 201411;
+    cxxmin = 17;
+    gnuxxmin = 11;
+  };
+};
+
+ftms = {
+  name = enable_shared_from_this;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+    gnuxxmin = 11;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = math_spec_funcs;
+  stdname = "__STDCPP_MATH_SPEC_FUNCS__";
+  values = {
+    v = 201003;
+    cxxmin = 11;
+  };
+};
+
+ftms = {
+  name = coroutine;
+  values = {
+    v = 201902;
+    // It is very likely that earlier versions would work, but they are
+    // untested.
+    cxxmin = 14;
+    extra_cond = "__cpp_impl_coroutine";
+  };
+};
+
+ftms = {
+  name = exchange_function;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = integer_sequence;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = integral_constant_callable;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = is_final;
+  values = {
+    v = 201402;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = make_reverse_iterator;
+  values = {
+    v = 201402;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = null_iterators;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+    extra_cond = "!defined(_GLIBCXX_DEBUG)";
+  };
+};
+
+ftms = {
+  name = transformation_trait_aliases;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = transparent_operators;
+  values = {
+    v = 201510;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = tuple_element_t;
+  values = {
+    v = 201402;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = tuples_by_type;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = robust_nonmodifying_seq_ops;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+  };
+};
+
+ftms = {
+  name = to_chars;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    extra_cond = "_GLIBCXX_FLOAT_IS_IEEE_BINARY32 "
+    "&& _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 "
+    "&& __SIZE_WIDTH__ >= 32";
+  };
+  values = {
+    v = 201611;
+    cxxmin = 14;
+    extra_cond = "_GLIBCXX_FLOAT_IS_IEEE_BINARY32 "
+    "&& _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 "
+    "&& __SIZE_WIDTH__ >= 32";
+  };
+};
+
+ftms = {
+  name = chrono_udls;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = complex_udls;
+  values = {
+    v = 201309;
+    cxxmin = 14;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = generic_associative_lookup;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = make_unique;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = quoted_string_io;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = shared_timed_mutex;
+  values = {
+    v = 201402;
+    cxxmin = 14;
+    hosted = yes;
+    gthread = yes;
+  };
+};
+
+ftms = {
+  name = string_udls;
+  values = {
+    v = 201304;
+    cxxmin = 14;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = addressof_constexpr;
+  values = {
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 2296. std::addressof should be constexpr
+    v = 201603;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = any;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = apply;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = as_const;
+  values = {
+    v = 201510;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = atomic_is_always_lock_free;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = bool_constant;
+  values = {
+    v = 201505;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = byte;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = has_unique_object_representations;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+    extra_cond = "defined(_GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP)";
+  };
+};
+
+ftms = {
+  name = hardware_interference_size;
+  values = {
+    v = 201703;
+    cxxmin = 17;
+    extra_cond = "defined(__GCC_DESTRUCTIVE_SIZE)";
+  };
+};
+
+ftms = {
+  name = invoke;
+  values = {
+    v = 201411;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = is_aggregate;
+  values = {
+    v = 201703;
+    cxxmin = 17;
+    extra_cond = "defined(_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE)";
+  };
+};
+
+ftms = {
+  name = is_invocable;
+  values = {
+    v = 201703;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = launder;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+    extra_cond = "defined(_GLIBCXX_HAVE_BUILTIN_LAUNDER)";
+  };
+};
+
+ftms = {
+  name = logical_traits;
+  values = {
+    v = 201510;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = make_from_tuple;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = not_fn;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = type_trait_variable_templates;
+  values = {
+    v = 201510;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = variant;
+  values = {
+    v = 202106;
+    cxxmin = 20;
+    extra_cond = "__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L";
+  };
+  values = {
+    v = 202102;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  // Used in earlier draft of SD6.
+  name = lcm;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  // Used in earlier draft of SD6.
+  name = gcd;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = gcd_lcm;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = raw_memory_algorithms;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = array_constexpr;
+  values = {
+    v = 201811;
+    cxxmin = 20;
+  };
+  values = {
+    v = 201803;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = nonmember_container_access;
+  values = {
+    v = 201411;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = clamp;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = sample;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = boyer_moore_searcher;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = chrono;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    hosted = yes;
+  };
+  values = {
+    v = 201611;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = execution;
+  values = {
+    v = 201902;  // FIXME: should be 201603L
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = filesystem;
+  values = {
+    v = 201703;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = hypot;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = map_try_emplace;
+  values = {
+    v = 201411;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = math_special_functions;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = memory_resource;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+    hosted = yes;
+    gthread = yes;
+  };
+  values = {
+    v = 1;
+    /* For when there's no gthread.  */
+    cxxmin = 17;
+    hosted = yes;
+    gthread = no;
+  };
+};
+
+ftms = {
+  name = node_extract;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = parallel_algorithm;
+  values = {
+    v = 201603;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = scoped_lock;
+  values = {
+    v = 201703;
+    cxxmin = 17;
+    hosted = yes;
+    gthread = yes;
+  };
+};
+
+ftms = {
+  name = shared_mutex;
+  values = {
+    v = 201505;
+    cxxmin = 17;
+    hosted = yes;
+    gthread = yes;
+  };
+};
+
+ftms = {
+  name = shared_ptr_weak_type;
+  values = {
+    v = 201606;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = string_view;
+  values = {
+    v = 201803;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = unordered_map_try_emplace;
+  values = {
+    v = 201411;
+    cxxmin = 17;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = assume_aligned;
+  values = {
+    v = 201811;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = atomic_flag_test;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = atomic_float;
+  values = {
+    v = 201711;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = atomic_lock_free_type_aliases;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = atomic_ref;
+  values = {
+    v = 201806;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = atomic_value_initialization;
+  values = {
+    v = 201911;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = bind_front;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = starts_ends_with;
+  values = {
+    v = 201711;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = bit_cast;
+  values = {
+    v = 201806;
+    cxxmin = 20;
+    extra_cond = "__has_builtin(__builtin_bit_cast)";
+  };
+};
+
+ftms = {
+  name = bitops;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = bounded_array_traits;
+  values = {
+    v = 201902;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = concepts;
+  values = {
+    v = 202002;
+    cxxmin = 20;
+    extra_cond = "__cpp_concepts >= 201907L";
+  };
+};
+
+// Moved down here (after concepts) by topological sort.
+ftms = {
+  name = optional;
+  values = {
+    v = 202110;
+    cxxmin = 23;
+    extra_cond = "__glibcxx_concepts";
+  };
+  values = {
+    v = 202106;
+    cxxmin = 20;
+  };
+  values = {
+    v = 201606;
+    cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = destroying_delete;
+  values = {
+    v = 201806;
+    cxxmin = 20;
+    extra_cond = "__cpp_impl_destroying_delete";
+  };
+};
+
+ftms = {
+  name = constexpr_string_view;
+  values = {
+    v = 201811;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = endian;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = int_pow2;
+  values = {
+    v = 202002;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = integer_comparison_functions;
+  values = {
+    v = 202002;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = is_constant_evaluated;
+  values = {
+    v = 201811;
+    cxxmin = 20;
+    extra_cond = "defined(_GLIBCXX_HAVE_IS_CONSTANT_EVALUATED)";
+  };
+};
+
+// Moved down here (after is_constant_evaluated) by topological sort.
+ftms = {
+  name = constexpr_char_traits;
+  values = {
+    // Unofficial macro indicating P1032R1 support in C++20
+    v = 201811;
+    cxxmin = 20;
+    extra_cond = "defined(__glibcxx_is_constant_evaluated)";
+  };
+  values = {
+    // Unofficial macro indicating P0426R1 support in C++17
+    v = 201611;
+    cxxmin = 17;
+    extra_cond = "_GLIBCXX_HAVE_IS_CONSTANT_EVALUATED";
+  };
+};
+
+ftms = {
+  name = is_layout_compatible;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    extra_cond = "__has_builtin(__is_layout_compatible) "
+    "&& __has_builtin(__builtin_is_corresponding_member)";
+  };
+};
+
+ftms = {
+  name = is_nothrow_convertible;
+  values = {
+    v = 201806;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = is_pointer_interconvertible;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    extra_cond =
+    "__has_builtin(__is_pointer_interconvertible_base_of) "
+    "&& __has_builtin(__builtin_is_pointer_interconvertible_with_class)";
+  };
+};
+
+ftms = {
+  name = math_constants;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = make_obj_using_allocator;
+  values = {
+    // Not specified by C++20, used internally
+    v = 201811;
+    cxxmin = 20;
+    extra_cond = "__cpp_concepts";
+  };
+};
+
+ftms = {
+  name = remove_cvref;
+  values = {
+    v = 201711;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = source_location;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    extra_cond = "__has_builtin(__builtin_source_location)";
+  };
+};
+
+ftms = {
+  name = span;
+  values = {
+    v = 202002;
+    cxxmin = 20;
+    extra_cond = "__glibcxx_concepts";
+  };
+};
+
+ftms = {
+  name = ssize;
+  values = {
+    v = 201902;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = three_way_comparison;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    extra_cond = "__cpp_impl_three_way_comparison >= 201907L "
+    "&& __glibcxx_concepts";
+  };
+};
+
+ftms = {
+  name = to_address;
+  values = {
+    v = 201711;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = to_array;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    extra_cond = "__cpp_generic_lambdas >= 201707L";
+  };
+};
+
+ftms = {
+  name = type_identity;
+  values = {
+    v = 201806;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = unwrap_ref;
+  values = {
+    v = 201811;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = constexpr_iterator;
+  values = {
+    v = 201811;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = interpolate;
+  values = {
+    v = 201902;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = constexpr_utility;
+  values = {
+    v = 201811;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = shift;
+  values = {
+    v = 201806;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = ranges;
+  values = {
+    v = 202211;
+    cxxmin = 23;
+    extra_cond = "__glibcxx_concepts";
+  };
+  values = {
+    v = 202110;
+    cxxmin = 20;
+    extra_cond = "__glibcxx_concepts";
+  };
+};
+
+ftms = {
+  name = constexpr_numeric;
+  values = {
+    v = 201911;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = constexpr_functional;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = constexpr_algorithms;
+  values = {
+    v = 201806;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = constexpr_tuple;
+  values = {
+    v = 201811;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = constexpr_memory;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+    extra_cond = "__cpp_constexpr_dynamic_alloc";
+  };
+  values = {
+    v = 201811;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = atomic_shared_ptr;
+  values = {
+    v = 201711;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = atomic_wait;
+  // atomic_wait is available if either futexes or gthread are.
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    hosted = yes;
+    gthread = yes;
+  };
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    hosted = yes;
+    gthread = no;
+    extra_cond = "defined(_GLIBCXX_HAVE_LINUX_FUTEX)";
+  };
+};
+
+ftms = {
+  name = barrier;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    // This condition carries in the hosted&&(futex||gthread) logic from above.
+    extra_cond = "__cpp_aligned_new && __glibcxx_atomic_wait";
+  };
+};
+
+ftms = {
+  // 201907 Text Formatting, Integration of chrono, printf corner cases.
+  // 202106 std::format improvements.
+  // 202110 Fixing locale handling in chrono formatters, generator-like types.
+  // 202207 Encodings in localized formatting of chrono, basic-format-string.
+  // 202207 P2286R8 Formatting Ranges
+  // 202207 P2585R1 Improving default container formatting
+  // TODO: #define __cpp_lib_format_ranges 202207L
+  name = format;
+  values = {
+    v = 202106;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+// #undef __glibcxx_chrono
+// #define __glibcxx_chrono 201907L
+// FIXME: #define __glibcxx_execution 201902L
+
+ftms = {
+  name = constexpr_complex;
+  values = {
+    v = 201711;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = constexpr_dynamic_alloc;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = constexpr_string;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    hosted = yes;
+    cxx11abi = yes;
+    extra_cond = "defined(__glibcxx_is_constant_evaluated)";
+  };
+  values = {
+    v = 201811;
+    cxxmin = 20;
+    hosted = yes;
+    cxx11abi = no;
+    extra_cond = "defined(__glibcxx_is_constant_evaluated)";
+  };
+  values = {
+    v = 201611;
+    cxxmin = 17;
+    hosted = yes;
+    extra_cond = "_GLIBCXX_HAVE_IS_CONSTANT_EVALUATED";
+  };
+};
+
+ftms = {
+  name = constexpr_vector;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = erase_if;
+  values = {
+    v = 202002;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = generic_unordered_lookup;
+  values = {
+    v = 201811;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = jthread;
+  values = {
+    v = 201911;
+    gthread = yes;
+    hosted = yes;
+    cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = latch;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    extra_cond = "__glibcxx_atomic_wait";
+  };
+};
+
+ftms = {
+  name = list_remove_return_type;
+  values = {
+    v = 201806;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = polymorphic_allocator;
+  values = {
+    v = 201902;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = move_iterator_concept;
+  values = {
+    v = 202207;
+    // This is P2520R0, a C++23 change, but we treat it as a DR against C++20.
+    cxxmin = 20;
+    extra_cond = "__glibcxx_concepts";
+  };
+};
+
+ftms = {
+  name = semaphore;
+  values = {
+    v = 201907;
+    cxxmin = 20;
+    hosted = yes;
+    extra_cond = "__glibcxx_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE";
+  };
+};
+
+ftms = {
+  name = smart_ptr_for_overwrite;
+  values = {
+    v = 202002;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = syncbuf;
+  values = {
+    v = 201803;
+    cxxmin = 20;
+    hosted = yes;
+    cxx11abi = yes;
+  };
+};
+
+ftms = {
+  name = byteswap;
+  values = {
+    v = 202110;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = constexpr_charconv;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = constexpr_typeinfo;
+  values = {
+    v = 202106;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = expected;
+  values = {
+    v = 202211;
+    cxxmin = 23;
+    extra_cond = "__cpp_concepts >= 202002L";
+  };
+};
+
+ftms = {
+  name = invoke_r;
+  values = {
+    v = 202106;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = is_scoped_enum;
+  values = {
+    v = 202011;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = reference_from_temporary;
+  values = {
+    v = 202202;
+    extra_cond =
+    "__has_builtin(__reference_constructs_from_temporary) "
+    "&& __has_builtin(__reference_converts_from_temporary)";
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = to_underlying;
+  values = {
+    v = 202102;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = unreachable;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_zip;
+  values = {
+    v = 202110;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_chunk;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_slide;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_chunk_by;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_join_with;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_repeat;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_stride;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_cartesian_product;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_as_rvalue;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_as_const;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_enumerate;
+  values = {
+    v = 202302;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_fold;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_contains;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_iota;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ranges_find_last;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = constexpr_bitset;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+    hosted = yes;
+    extra_cond = "__cpp_constexpr_dynamic_alloc";
+  };
+};
+
+ftms = {
+  name = stdatomic_h;
+  values = {
+    v = 202011;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = adaptor_iterator_pair_constructor;
+  values = {
+    v = 202106;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = formatters;
+  values = {
+    v = 202302;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = forward_like;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = ios_noreplace;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = move_only_function;
+  values = {
+    v = 202110;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = spanstream;
+  values = {
+    v = 202106;
+    cxxmin = 23;
+    hosted = yes;
+    extra_cond = "__glibcxx_span";
+  };
+};
+
+ftms = {
+  name = stacktrace;
+  values = {
+    v = 202011;
+    cxxmin = 23;
+    hosted = yes;
+    extra_cond = "_GLIBCXX_HAVE_STACKTRACE";
+  };
+};
+
+ftms = {
+  name = string_contains;
+  values = {
+    v = 202011;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = string_resize_and_overwrite;
+  values = {
+    v = 202110;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = fstream_native_handle;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = ratio;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
+  name = to_string;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+    extra_cond = "__glibcxx_to_chars";
+  };
+};
+
+// Standard test specifications.
+stds[97] = ">= 199711L";
+stds[03] = ">= 199711L";
+stds[11] = ">= 201103L";
+stds[14] = ">= 201402L";
+stds[17] = ">= 201703L";
+stds[20] = ">= 202002L";
+stds[23] = ">= 202302L";
+stds[26] = ">  202302L"; // TODO: update when finalized
+
+// Local Variables:
+// compile-command: "autogen version.def"
+// End:

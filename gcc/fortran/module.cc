@@ -2419,7 +2419,7 @@ mio_symbol_attribute (symbol_attribute *attr)
 	  MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_LOP_SEQ, attr_bits);
 	  break;
 	case OACC_ROUTINE_LOP_ERROR:
-	  /* ... intentionally omitted here; it's only unsed internally.  */
+	  /* ... intentionally omitted here; it's only used internally.  */
 	default:
 	  gcc_unreachable ();
 	}
@@ -5744,9 +5744,9 @@ check_access (gfc_access specific_access, gfc_access default_access)
     return true;
 
   if (specific_access == ACCESS_PUBLIC)
-    return TRUE;
+    return true;
   if (specific_access == ACCESS_PRIVATE)
-    return FALSE;
+    return false;
 
   if (flag_module_private)
     return default_access == ACCESS_PUBLIC;

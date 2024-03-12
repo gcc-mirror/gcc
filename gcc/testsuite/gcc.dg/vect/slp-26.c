@@ -24,6 +24,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*4] !=  in[i*4]
@@ -46,7 +47,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! mips_msa } } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { mips_msa } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { ! mips_msa } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { mips_msa } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! { mips_msa || { amdgcn-*-* || riscv_v } } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { mips_msa || { amdgcn-*-* || riscv_v } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { ! { mips_msa || { amdgcn-*-* || riscv_v } } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { mips_msa || { amdgcn-*-* || riscv_v } } } } } */

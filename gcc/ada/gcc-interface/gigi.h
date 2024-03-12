@@ -245,11 +245,12 @@ extern void gigi (Node_Id gnat_root,
 		  struct List_Header *list_headers_ptr,
 		  Nat number_file,
 		  struct File_Info_Type *file_info_ptr,
+		  Entity_Id standard_address,
 		  Entity_Id standard_boolean,
-		  Entity_Id standard_integer,
 		  Entity_Id standard_character,
-		  Entity_Id standard_long_long_float,
 		  Entity_Id standard_exception_type,
+		  Entity_Id standard_integer,
+		  Entity_Id standard_long_long_float,
 		  Int gigi_operating_mode);
 
 #ifdef __cplusplus
@@ -761,6 +762,12 @@ extern void update_pointer_to (tree old_type, tree new_type);
    discriminant references, replace them with the maximum (if MAX_P) or
    minimum (if !MAX_P) possible value of the discriminant.  */
 extern tree max_size (tree exp, bool max_p);
+
+/* Try to compute the maximum (if MAX_P) or minimum (if !MAX_P) value for the
+   expression EXP, for very simple expressions.  Substitute variable references
+   with their respective type's min/max values.  Return the computed value if
+   any, or EXP if no value can be computed. */
+extern tree max_value (tree exp, bool max_p);
 
 /* Remove all conversions that are done in EXP.  This includes converting
    from a padded type or to a left-justified modular type.  If TRUE_ADDRESS

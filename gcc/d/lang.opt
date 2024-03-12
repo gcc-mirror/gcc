@@ -134,6 +134,14 @@ Werror
 D
 ; Documented in common.opt
 
+Wextra
+D Warning
+; Documented in common.opt
+
+Wmismatched-special-enum
+D Warning Var(warn_mismatched_special_enum) LangEnabledBy(D, Wextra)
+Warn when a special enum is declared with the wrong base type.
+
 Wpsabi
 D
 ; Documented in C
@@ -282,6 +290,10 @@ D RejectNegative Joined
 fdump-d-original
 D
 Display the frontend AST after parsing and semantic passes.
+
+fexceptions
+D
+; Documented in common.opt
 
 fextern-std=
 D Joined RejectNegative Enum(extern_stdcpp) Var(flag_extern_stdcpp)

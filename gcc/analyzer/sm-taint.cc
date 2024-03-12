@@ -211,7 +211,7 @@ public:
     return OPT_Wanalyzer_tainted_array_index;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     /* CWE-129: "Improper Validation of Array Index".  */
@@ -327,7 +327,7 @@ public:
     return OPT_Wanalyzer_tainted_offset;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     /* CWE-823: "Use of Out-of-range Pointer Offset".  */
@@ -437,7 +437,7 @@ public:
     return OPT_Wanalyzer_tainted_size;
   }
 
-  bool emit (rich_location *rich_loc) override
+  bool emit (rich_location *rich_loc, logger *) override
   {
     /* "CWE-129: Improper Validation of Array Index".  */
     diagnostic_metadata m;
@@ -547,9 +547,9 @@ public:
     return "tainted_access_attrib_size";
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *logger) final override
   {
-    bool warned = tainted_size::emit (rich_loc);
+    bool warned = tainted_size::emit (rich_loc, logger);
     if (warned)
       {
 	inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
@@ -583,7 +583,7 @@ public:
     return OPT_Wanalyzer_tainted_divisor;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     /* CWE-369: "Divide By Zero".  */
@@ -645,7 +645,7 @@ public:
     return OPT_Wanalyzer_tainted_allocation_size;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     /* "CWE-789: Memory Allocation with Excessive Size Value".  */
@@ -800,7 +800,7 @@ public:
     return OPT_Wanalyzer_tainted_assertion;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     diagnostic_metadata m;
     /* "CWE-617: Reachable Assertion".  */
@@ -1344,6 +1344,12 @@ taint_state_machine::check_for_tainted_divisor (sm_context *sm_ctxt,
     return;
 
   tree divisor_expr = gimple_assign_rhs2 (assign);;
+
+  /* Until we track conditions on floating point values, we can't check to
+     see if they've been checked against zero.  */
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (divisor_expr)))
+    return;
+
   const svalue *divisor_sval = old_model->get_rvalue (divisor_expr, NULL);
 
   state_t state = sm_ctxt->get_state (assign, divisor_sval);

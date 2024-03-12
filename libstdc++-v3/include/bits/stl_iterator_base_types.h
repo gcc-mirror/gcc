@@ -243,16 +243,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   template<typename _Iter>
-    using __iterator_category_t
+    using __iter_category_t
       = typename iterator_traits<_Iter>::iterator_category;
 
   template<typename _InIter>
     using _RequireInputIter =
-      __enable_if_t<is_convertible<__iterator_category_t<_InIter>,
+      __enable_if_t<is_convertible<__iter_category_t<_InIter>,
 				   input_iterator_tag>::value>;
 
   template<typename _It,
-	   typename _Cat = __iterator_category_t<_It>>
+	   typename _Cat = __iter_category_t<_It>>
     struct __is_random_access_iter
       : is_base_of<random_access_iterator_tag, _Cat>
     {

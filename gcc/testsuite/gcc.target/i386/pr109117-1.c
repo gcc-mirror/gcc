@@ -10,5 +10,5 @@ volatile __m128i res;
 void
 foo (void)
 {
-      res = __builtin_ia32_vaesdec_v16qi (x, y); /* { dg-warning "implicit declaration of function" } */
-}     /* { dg-error "incompatible types when assigning to type" "" { target *-*-* } .-1 } */
+      res = __builtin_ia32_vaesdec_v16qi (x, y); /* { dg-error "incompatible types when assigning to type" } */
+}

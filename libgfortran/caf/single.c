@@ -163,10 +163,8 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
       /* Freeing the memory conditionally seems pointless, but
 	 caf_internal_error () may return, when a stat is given and then the
 	 memory may be lost.  */
-      if (local)
-	free (local);
-      if (*token)
-	free (*token);
+      free (local);
+      free (*token);
       caf_internal_error (alloc_fail_msg, stat, errmsg, errmsg_len);
       return;
     }

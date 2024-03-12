@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (mul_1_f16_m_tied1, svfloat16_t,
 		z0 = svmul_m (p0, z0, 1))
 
 /*
-** mul_1_f16_m_untied: { xfail *-*-* }
+** mul_1_f16_m_untied:
 **	fmov	(z[0-9]+\.h), #1\.0(?:e\+0)?
 **	movprfx	z0, z1
 **	fmul	z0\.h, p0/m, z0\.h, \1

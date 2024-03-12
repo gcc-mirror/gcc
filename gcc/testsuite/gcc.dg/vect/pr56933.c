@@ -25,6 +25,7 @@ int main()
   for (i = 0; i < 2*1024; i++)
     d[i] = 1.;
   foo (b, d, f);
+#pragma GCC novector
   for (i = 0; i < 1024; i+= 2)
     {
       if (d[2*i] != 2.)
@@ -32,6 +33,7 @@ int main()
       if (d[2*i+1] != 4.)
 	abort ();
     }
+#pragma GCC novector
   for (i = 0; i < 1024; i++)
     {
       if (b[i] != 1.)

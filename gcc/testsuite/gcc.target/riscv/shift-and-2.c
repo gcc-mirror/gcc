@@ -11,10 +11,10 @@ sub2 (int i, long j)
 }
 
 /* Test for <optab>si3_extend_mask.  */
-unsigned long
-sub3 (int mask)
+int
+sub3 (short mask)
 {
-  return 1 << (mask & 0xff);
+  return 1 << ((int)mask & 0x1f);
 }
 
 /* Test for <optab>si3_extend_mask_1.  */
@@ -38,5 +38,24 @@ sub6 (long i, long j)
 {
   return i << (j & 0x3f);
 }
-/* { dg-final { scan-assembler-not "andi" } } */
-/* { dg-final { scan-assembler-not "sext.w" } } */
+
+/* Test for <optab>si3_extend. */
+int
+sub7 (int i, int j) {
+  return (i << 10) & j;
+}
+
+/* Test for <optab>si3_extend. */
+unsigned
+sub8 (unsigned i, unsigned j) {
+  return (i << 10) & j;
+}
+
+/* Test for <optab>si3_extend. */
+unsigned
+sub9 (unsigned i, unsigned j) {
+  return (i >> 10) & j;
+}
+
+/* { dg-final { scan-assembler-not {\mandi} } } */
+/* { dg-final { scan-assembler-not {\msext\.w\M} } } */

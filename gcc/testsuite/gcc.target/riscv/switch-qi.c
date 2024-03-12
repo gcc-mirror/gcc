@@ -12,4 +12,4 @@ void foo(signed char x) {
   case 4: asdf(14); break;
   }
 }
-/* { dg-final { scan-assembler-not "andi" } } */
+/* { dg-final { scan-assembler-not {\mandi} } } */

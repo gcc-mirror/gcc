@@ -68,7 +68,7 @@ TAB_WIDTH = 8
 #   +--------------------------------------------------+
 
 # this regex matches the first line of the "end" in the initial commit message
-FIRST_LINE_OF_END_RE = re.compile('(?i)^(signed-off-by:|co-authored-by:|#) ')
+FIRST_LINE_OF_END_RE = re.compile('(?i)^(signed-off-by:|co-authored-by:|#)')
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
 prnum_regex = re.compile(r'PR (?P<comp>[a-z+-]+)/(?P<num>[0-9]+)')
@@ -357,7 +357,8 @@ def update_copyright(data):
 
 
 def skip_line_in_changelog(line):
-    return FIRST_LINE_OF_END_RE.match(line) == None
+    return FIRST_LINE_OF_END_RE.match(line) is None
+
 
 if __name__ == '__main__':
     extra_args = os.getenv('GCC_MKLOG_ARGS')
@@ -382,6 +383,8 @@ if __name__ == '__main__':
                              'file')
     parser.add_argument('--update-copyright', action='store_true',
                         help='Update copyright in ChangeLog files')
+    parser.add_argument('-a', '--append', action='store_true',
+                        help='Append the generate ChangeLog to the patch file')
     args = parser.parse_args()
     if args.input == '-':
         args.input = None
@@ -394,7 +397,32 @@ if __name__ == '__main__':
     else:
         output = generate_changelog(data, args.no_functions,
                                     args.fill_up_bug_titles, args.pr_numbers)
-        if args.changelog:
+        if args.append:
+            if (not args.input):
+                raise Exception("`-a or --append` option not support standard "
+                                "input")
+            lines = []
+            with open(args.input, 'r', newline='\n') as f:
+                # 1 -> not find the possible start of diff log
+                # 2 -> find the possible start of diff log
+                # 3 -> finish add ChangeLog to the patch file
+                maybe_diff_log = 1
+                for line in f:
+                    if maybe_diff_log == 1 and line == "---\n":
+                        maybe_diff_log = 2
+                    elif (maybe_diff_log == 2 and
+                          re.match(r"\s[^\s]+\s+\|\s+\d+\s[+\-]+\n", line)):
+                        lines += [output, "---\n", line]
+                        maybe_diff_log = 3
+                    else:
+                        # the possible start is not the true start.
+                        if maybe_diff_log == 2:
+                            lines.append("---\n")
+                            maybe_diff_log = 1
+                        lines.append(line)
+            with open(args.input, "w") as f:
+                f.writelines(lines)
+        elif args.changelog:
             lines = open(args.changelog).read().split('\n')
             start = list(takewhile(skip_line_in_changelog, lines))
             end = lines[len(start):]

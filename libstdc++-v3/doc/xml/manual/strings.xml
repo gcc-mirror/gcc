@@ -145,7 +145,7 @@
    <para>See?  Told you it was easy!</para>
    <para>
      <emphasis>Added June 2000:</emphasis> The May 2000 issue of C++
-     Report contains a fascinating <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://lafstern.org/matt/col2_new.pdf"> article</link> by
+     Report contains a fascinating <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://lafstern.org/matt/col2_new.pdf"> article</link> by
      Matt Austern (yes, <emphasis>the</emphasis> Matt Austern) on why
      case-insensitive comparisons are not as easy as they seem, and
      why creating a class is the <emphasis>wrong</emphasis> way to go

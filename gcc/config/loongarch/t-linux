@@ -16,38 +16,16 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Multilib
-MULTILIB_OPTIONS = mabi=lp64d/mabi=lp64f/mabi=lp64s
-MULTILIB_DIRNAMES = base/lp64d base/lp64f base/lp64s
-
-# The GCC driver always gets all abi-related options on the command line.
-# (see loongarch-driver.c:driver_get_normalized_m_opts)
-comma=,
-MULTILIB_REQUIRED = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
-
-# Multiarch
-ifneq ($(call if_multiarch,yes),yes)
-    # Define LA_DISABLE_MULTIARCH if multiarch is disabled.
-    tm_defines += LA_DISABLE_MULTIARCH
-else
-    # Only define MULTIARCH_DIRNAME when multiarch is enabled,
-    # or it would always introduce ${target} into the search path.
-    MULTIARCH_DIRNAME = $(LA_MULTIARCH_TRIPLET)
-endif
+MULTIOSDIR_lp64d := ../lib64$(call if_multiarch,:loongarch64-linux-gnu)
+MULTIOSDIR_lp64f := ../lib64/f32$(call if_multiarch,:loongarch64-linux-gnuf32)
+MULTIOSDIR_lp64s := ../lib64/sf$(call if_multiarch,:loongarch64-linux-gnusf)
 
 # Don't define MULTILIB_OSDIRNAMES if multilib is disabled.
 ifeq ($(filter LA_DISABLE_MULTILIB,$(tm_defines)),)
 
-    MULTILIB_OSDIRNAMES = \
-      mabi.lp64d=../lib64$\
-      $(call if_multiarch,:loongarch64-linux-gnu)
-
-    MULTILIB_OSDIRNAMES += \
-      mabi.lp64f=../lib64/f32$\
-      $(call if_multiarch,:loongarch64-linux-gnuf32)
-
-    MULTILIB_OSDIRNAMES += \
-      mabi.lp64s=../lib64/sf$\
-      $(call if_multiarch,:loongarch64-linux-gnusf)
+    MULTILIB_OSDIRNAMES = .=$(MULTIOSDIR_$(mlib_default))
+    MULTILIB_OSDIRNAMES += mabi.lp64d=$(MULTIOSDIR_lp64d)
+    MULTILIB_OSDIRNAMES += mabi.lp64f=$(MULTIOSDIR_lp64f)
+    MULTILIB_OSDIRNAMES += mabi.lp64s=$(MULTIOSDIR_lp64s)
 
 endif

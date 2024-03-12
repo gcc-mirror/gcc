@@ -95,7 +95,7 @@ public:
     return OPT_Wanalyzer_infinite_recursion;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     /* "CWE-674: Uncontrolled Recursion".  */
     diagnostic_metadata m;
@@ -625,8 +625,12 @@ exploded_graph::detect_infinite_recursion (exploded_node *enode)
   const supernode *caller_snode = call_string.get_top_of_stack ().m_caller;
   const supernode *snode = enode->get_supernode ();
   gcc_assert (caller_snode->m_returning_call);
+  pending_location ploc (enode,
+			 snode,
+			 caller_snode->m_returning_call,
+			 nullptr);
   get_diagnostic_manager ().add_diagnostic
-    (enode, snode, caller_snode->m_returning_call, NULL,
+    (ploc,
      make_unique<infinite_recursion_diagnostic> (prev_entry_enode,
 						 enode,
 						 fndecl));

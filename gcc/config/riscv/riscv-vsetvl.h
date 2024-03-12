@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RISCV_VSETVL_H
 #define GCC_RISCV_VSETVL_H
 
-#define IS_AGNOSTIC(VALUE) (bool) (VALUE & 0x1 || (VALUE >> 1 & 0x1))
-
 namespace riscv_vector {
 
 /* Classification of vsetvl instruction.  */
@@ -67,12 +65,6 @@ enum fusion_type
   INVALID_FUSION,
   VALID_AVL_FUSION,
   KILLED_AVL_FUSION
-};
-
-enum merge_type
-{
-  LOCAL_MERGE,
-  GLOBAL_MERGE
 };
 
 enum def_type
@@ -167,6 +159,7 @@ public:
   avl_info (rtx, rtl_ssa::set_info *);
   rtx get_value () const { return m_value; }
   rtl_ssa::set_info *get_source () const { return m_source; }
+  void set_source (rtl_ssa::set_info *set) { m_source = set; }
   bool single_source_equal_p (const avl_info &) const;
   bool multiple_source_equal_p (const avl_info &) const;
   avl_info &operator= (const avl_info &);
@@ -180,6 +173,7 @@ public:
   bool has_avl_reg () const { return get_value () && REG_P (get_value ()); }
   bool has_avl_no_reg () const { return !get_value (); }
   bool has_non_zero_avl () const;
+  bool has_avl () const { return get_value (); }
 };
 
 /* Basic structure to save VL/VTYPE information.  */
@@ -219,10 +213,12 @@ public:
   bool has_avl_reg () const { return m_avl.has_avl_reg (); }
   bool has_avl_no_reg () const { return m_avl.has_avl_no_reg (); }
   bool has_non_zero_avl () const { return m_avl.has_non_zero_avl (); };
+  bool has_avl () const { return m_avl.has_avl (); }
 
   rtx get_avl () const { return m_avl.get_value (); }
   const avl_info &get_avl_info () const { return m_avl; }
   rtl_ssa::set_info *get_avl_source () const { return m_avl.get_source (); }
+  void set_avl_source (rtl_ssa::set_info *set) { m_avl.set_source (set); }
   void set_avl_info (const avl_info &avl) { m_avl = avl; }
   uint8_t get_sew () const { return m_sew; }
   riscv_vector::vlmul_type get_vlmul () const { return m_vlmul; }
@@ -244,31 +240,11 @@ private:
     VALID,
     UNKNOWN,
     EMPTY,
-    /* The empty block can not be polluted as dirty.  */
-    HARD_EMPTY,
 
     /* The block is polluted as containing VSETVL instruction during dem
        backward propagation to gain better LCM optimization even though
        such VSETVL instruction is not really emit yet during this time.  */
     DIRTY,
-    /* The block is polluted with killed AVL.
-       We will backward propagate such case:
-	 bb 0: def a5, 55 (empty).
-	 ...
-	 bb 1: vsetvli zero, a5.
-	 ...
-	 bb 2: empty.
-	 ...
-	 bb 3: def a3, 55 (empty).
-	 ...
-	 bb 4: vsetvli zero, a3.
-
-       To elide vsetvli in bb 4, we need to backward pollute bb 3 and bb 2
-       as DIRTY block as long as there is a block def AVL which has the same
-       source with AVL in bb 4. Such polluted block, we call it as
-       DIRTY_WITH_KILLED_AVL
-    */
-    DIRTY_WITH_KILLED_AVL
   };
 
   enum state_type m_state;
@@ -290,13 +266,6 @@ private:
      definition of AVL.  */
   rtl_ssa::insn_info *m_insn;
 
-  /* Parse the instruction to get VL/VTYPE information and demanding
-   * information.  */
-  /* This is only called by simple_vsetvl subroutine when optimize == 0.
-     Since RTL_SSA can not be enabled when optimize == 0, we don't initialize
-     the m_insn.  */
-  void parse_insn (rtx_insn *);
-
   friend class vector_infos_manager;
 
 public:
@@ -305,6 +274,12 @@ public:
       m_insn (nullptr)
   {}
 
+  /* Parse the instruction to get VL/VTYPE information and demanding
+   * information.  */
+  /* This is only called by simple_vsetvl subroutine when optimize == 0.
+     Since RTL_SSA can not be enabled when optimize == 0, we don't initialize
+     the m_insn.  */
+  void parse_insn (rtx_insn *);
   /* This is only called by lazy_vsetvl subroutine when optimize > 0.
      We use RTL_SSA framework to initialize the insn_info.  */
   void parse_insn (rtl_ssa::insn_info *);
@@ -315,21 +290,11 @@ public:
   bool uninit_p () const { return m_state == UNINITIALIZED; }
   bool valid_p () const { return m_state == VALID; }
   bool unknown_p () const { return m_state == UNKNOWN; }
-  bool empty_p () const { return m_state == EMPTY || m_state == HARD_EMPTY; }
-  bool hard_empty_p () const { return m_state == HARD_EMPTY; }
-  bool dirty_p () const
-  {
-    return m_state == DIRTY || m_state == DIRTY_WITH_KILLED_AVL;
-  }
-  bool dirty_with_killed_avl_p () const
-  {
-    return m_state == DIRTY_WITH_KILLED_AVL;
-  }
-  bool real_dirty_p () const { return m_state == DIRTY; }
+  bool empty_p () const { return m_state == EMPTY; }
+  bool dirty_p () const { return m_state == DIRTY; }
   bool valid_or_dirty_p () const
   {
-    return m_state == VALID || m_state == DIRTY
-	   || m_state == DIRTY_WITH_KILLED_AVL;
+    return m_state == VALID || m_state == DIRTY;
   }
   bool available_p (const vector_insn_info &) const;
 
@@ -340,32 +305,10 @@ public:
     return info;
   }
 
-  static vector_insn_info get_hard_empty ()
-  {
-    vector_insn_info info;
-    info.set_hard_empty ();
-    return info;
-  }
-
   void set_valid () { m_state = VALID; }
   void set_unknown () { m_state = UNKNOWN; }
   void set_empty () { m_state = EMPTY; }
-  void set_hard_empty () { m_state = HARD_EMPTY; }
-  void set_dirty (enum fusion_type type)
-  {
-    gcc_assert (type == VALID_AVL_FUSION || type == KILLED_AVL_FUSION);
-    if (type == VALID_AVL_FUSION)
-      m_state = DIRTY;
-    else
-      m_state = DIRTY_WITH_KILLED_AVL;
-  }
-  void set_dirty (bool dirty_with_killed_avl_p)
-  {
-    if (dirty_with_killed_avl_p)
-      m_state = DIRTY_WITH_KILLED_AVL;
-    else
-      m_state = DIRTY;
-  }
+  void set_dirty () { m_state = DIRTY; }
   void set_insn (rtl_ssa::insn_info *insn) { m_insn = insn; }
 
   bool demand_p (enum demand_type type) const { return m_demands[type]; }
@@ -380,14 +323,17 @@ public:
   void fuse_mask_policy (const vector_insn_info &, const vector_insn_info &);
 
   bool compatible_p (const vector_insn_info &) const;
+  bool skip_avl_compatible_p (const vector_insn_info &) const;
   bool compatible_avl_p (const vl_vtype_info &) const;
   bool compatible_avl_p (const avl_info &) const;
   bool compatible_vtype_p (const vl_vtype_info &) const;
   bool compatible_p (const vl_vtype_info &) const;
-  vector_insn_info merge (const vector_insn_info &, enum merge_type) const;
+  vector_insn_info local_merge (const vector_insn_info &) const;
+  vector_insn_info global_merge (const vector_insn_info &, unsigned int) const;
 
   rtl_ssa::insn_info *get_insn () const { return m_insn; }
   const bool *get_demands (void) const { return m_demands; }
+  rtx get_avl_or_vl_reg (void) const;
   rtx get_avl_reg_rtx (void) const
   {
     return gen_rtx_REG (Pmode, get_avl_source ()->regno ());
@@ -429,6 +375,9 @@ public:
   sbitmap *vector_comp;
   sbitmap *vector_avin;
   sbitmap *vector_avout;
+  sbitmap *vector_antin;
+  sbitmap *vector_antout;
+  sbitmap *vector_earliest;
 
   vector_infos_manager ();
 
@@ -449,6 +398,32 @@ public:
 
   /* Return true if all expression set in bitmap are same ratio.  */
   bool all_same_ratio_p (sbitmap) const;
+
+  bool all_avail_in_compatible_p (const basic_block) const;
+  bool earliest_fusion_worthwhile_p (const basic_block) const;
+  bool vsetvl_dominated_by_all_preds_p (const basic_block,
+					const vector_insn_info &) const;
+
+  bool to_delete_p (rtx_insn *rinsn)
+  {
+    if (to_delete_vsetvls.contains (rinsn))
+      {
+	to_delete_vsetvls.remove (rinsn);
+	if (to_refine_vsetvls.contains (rinsn))
+	  to_refine_vsetvls.remove (rinsn);
+	return true;
+      }
+    return false;
+  }
+  bool to_refine_p (rtx_insn *rinsn)
+  {
+    if (to_refine_vsetvls.contains (rinsn))
+      {
+	to_refine_vsetvls.remove (rinsn);
+	return true;
+      }
+    return false;
+  }
 
   void release (void);
   void create_bitmap_vectors (void);

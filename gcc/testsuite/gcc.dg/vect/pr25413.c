@@ -26,6 +26,7 @@ int main (void)
   check_vect ();
   
   main1 ();
+#pragma GCC novector
   for (i=0; i<N; i++)
     if (a.d[i] != 1)
       abort ();

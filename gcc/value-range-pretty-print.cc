@@ -56,24 +56,11 @@ vrange_printer::visit (const irange &r) const
       pp_string (pp, "UNDEFINED");
       return;
     }
-  dump_generic_node (pp, r.type (), 0, TDF_NONE, false);
+  dump_generic_node (pp, r.type (), 0, TDF_NONE | TDF_NOUID, false);
   pp_character (pp, ' ');
   if (r.varying_p ())
     {
       pp_string (pp, "VARYING");
-      return;
-    }
-  // Handle legacy symbolics.
-  if (!r.constant_p ())
-    {
-      if (r.kind () == VR_ANTI_RANGE)
-	pp_character (pp, '~');
-      pp_character (pp, '[');
-      dump_generic_node (pp, r.min (), 0, TDF_NONE, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, r.max (), 0, TDF_NONE, false);
-      pp_character (pp, ']');
-      print_irange_bitmasks (r);
       return;
     }
   for (unsigned i = 0; i < r.num_pairs (); ++i)
@@ -107,14 +94,23 @@ vrange_printer::print_irange_bound (const wide_int &bound, tree type) const
 void
 vrange_printer::print_irange_bitmasks (const irange &r) const
 {
-  wide_int nz = r.get_nonzero_bits ();
-  if (nz == -1)
+  irange_bitmask bm = r.m_bitmask;
+  if (bm.unknown_p ())
     return;
 
-  pp_string (pp, " NONZERO ");
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_hex (nz, buf);
-  pp_string (pp, buf);
+  pp_string (pp, " MASK ");
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p;
+  unsigned len_mask, len_val;
+  if (print_hex_buf_size (bm.mask (), &len_mask)
+      | print_hex_buf_size (bm.value (), &len_val))
+    p = XALLOCAVEC (char, MAX (len_mask, len_val));
+  else
+    p = buf;
+  print_hex (bm.mask (), p);
+  pp_string (pp, p);
+  pp_string (pp, " VALUE ");
+  print_hex (bm.value (), p);
+  pp_string (pp, p);
 }
 
 void

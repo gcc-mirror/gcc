@@ -14,6 +14,17 @@ export GITROOT
 
 PATH=/usr/local/bin:$PATH
 
+makeinfo_git=/home/gccadmin/texinfo/install-git/bin/
+if [ -x "${makeinfo_git}"/makeinfo ]; then
+    : "${MAKEINFO:=${makeinfo_git}/makeinfo}"
+    : "${TEXI2DVI:=${makeinfo_git}/texi2dvi}"
+    : "${TEXI2PDF:=${makeinfo_git}/texi2pdf}"
+else
+    : "${MAKEINFO:=makeinfo}"
+    : "${TEXI2DVI:=texi2dvi}"
+    : "${TEXI2PDF:=texi2pdf}"
+fi
+
 MANUALS="cpp
   cppinternals
   fastjar
@@ -174,10 +185,10 @@ for file in $MANUALS; do
     elif [ "$file" = "gnat_ugn" ]; then
       includes="$includes -I gcc/gcc/ada -I gcc/gcc/ada/doc/gnat_ugn"
     fi
-    makeinfo --html -c CONTENTS_OUTPUT_LOCATION=inline --css-ref $CSS $includes -o ${file} ${filename}
+    "${MAKEINFO}" --html -c CONTENTS_OUTPUT_LOCATION=inline --css-ref $CSS $includes -o ${file} ${filename}
     tar cf ${file}-html.tar ${file}/*.html
-    texi2dvi $includes -o ${file}.dvi ${filename} </dev/null >/dev/null && dvips -o ${file}.ps ${file}.dvi
-    texi2pdf $includes -o ${file}.pdf ${filename} </dev/null
+    "${TEXI2DVI}" $includes -o ${file}.dvi ${filename} </dev/null >/dev/null && dvips -o ${file}.ps ${file}.dvi
+    "${TEXI2PDF}" $includes -o ${file}.pdf ${filename} </dev/null
     mkdir -p $DOCSDIR/$file
   fi
 done

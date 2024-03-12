@@ -29,6 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.Val_Util; use System.Val_Util;
+
 package body System.Value_I is
 
    --  Ghost code, loop invariants and assertions in this unit are meant for
@@ -98,7 +100,7 @@ package body System.Value_I is
 
       Scan_Raw_Unsigned (Str, Ptr, Max, Uval);
       pragma Assert
-        (Uval = Uns_Params.Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max));
+        (Uval = U_Spec.Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max));
 
       --  Deal with overflow cases, and also with largest negative number
 
@@ -175,7 +177,7 @@ package body System.Value_I is
             end;
 
             pragma Assert
-              (P = Uns_Params.Raw_Unsigned_Last_Ghost
+              (P = U_Spec.Raw_Unsigned_Last_Ghost
                  (Str, Fst_Num, Str'Last));
 
             Scan_Trailing_Blanks (Str, P);

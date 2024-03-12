@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (divr_2_u64_m_tied1, svuint64_t,
 		z0 = svdivr_m (p0, z0, 2))
 
 /*
-** divr_2_u64_m_untied: { xfail *-*-* }
+** divr_2_u64_m_untied:
 **	mov	(z[0-9]+\.d), #2
 **	movprfx	z0, z1
 **	udivr	z0\.d, p0/m, z0\.d, \1

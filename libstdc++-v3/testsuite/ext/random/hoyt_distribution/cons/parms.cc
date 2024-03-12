@@ -27,7 +27,7 @@ void
 test01()
 {
   __gnu_cxx::hoyt_distribution<> u(0.05, 3.0);
-  VERIFY( u.q() == 0.05 );
+  VERIFY( u.q() == (double) 0.05 );
   VERIFY( u.omega() == 3.0 );
   VERIFY( u.min() == 0.0 );
   typedef __gnu_cxx::hoyt_distribution<>::result_type result_type;

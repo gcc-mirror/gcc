@@ -27,6 +27,7 @@
 
 enum resolver_ident {
     arm_cde_resolver,
+    arm_mve_resolver,
     arm_no_resolver
 };
 enum resolver_ident arm_describe_resolver (tree);

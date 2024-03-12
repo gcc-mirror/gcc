@@ -51,9 +51,9 @@ test01()
   oss << setbase(8);
   VERIFY(oss.good());
 
-  // setfil
+  // setfill
   setfill(L'a');
-  iss >> setfill(L'a');
+  iss >> setfill(L'a'); // { dg-warning "deprecated" }
   VERIFY(iss.good());
   oss << setfill(L'a');
   VERIFY(oss.good());

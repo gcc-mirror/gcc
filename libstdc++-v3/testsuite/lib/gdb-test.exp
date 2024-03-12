@@ -107,8 +107,12 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 	}
     }
 
+    # A very old version of gdb will not have the type_printers
+    # global.  Some organizations may ship a gdb that has some default
+    # type printers, so accept any list output as indication that the
+    # global exists.
     set do_whatis_tests [gdb_batch_check "python print(gdb.type_printers)" \
-			   "\\\[\\\]"]
+			   "\\\[.+"]
     if {!$do_whatis_tests} {
 	send_log "skipping 'whatis' tests - gdb too old"
     }
@@ -137,6 +141,8 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
     puts $fd "set auto-load no"
     # Now that we've disabled auto-load, it's safe to set the target file
     puts $fd "file ./$output_file"
+    # See the full backtrace of any failures.
+    puts $fd "set python print-stack full"
     # Load & register *our* copy of the pretty-printers
     puts $fd "source $printer_code"
     puts $fd "python register_libstdcxx_printers(None)"

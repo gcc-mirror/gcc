@@ -170,12 +170,10 @@ along with GCC; see the file COPYING3.  If not see
 /* layout_type overrides our ADJUST_ALIGNMENT settings from epiphany-modes.def
    for vector modes, so we have to override it back.  */
 #define ROUND_TYPE_ALIGN(TYPE, MANGLED_ALIGN, SPECIFIED_ALIGN) \
- (TREE_CODE (TYPE) == VECTOR_TYPE && !TYPE_USER_ALIGN (TYPE) \
+ (VECTOR_TYPE_P (TYPE) && !TYPE_USER_ALIGN (TYPE) \
   && SPECIFIED_ALIGN <= GET_MODE_ALIGNMENT (TYPE_MODE (TYPE)) \
   ? GET_MODE_ALIGNMENT (TYPE_MODE (TYPE)) \
-  : ((TREE_CODE (TYPE) == RECORD_TYPE \
-      || TREE_CODE (TYPE) == UNION_TYPE \
-      || TREE_CODE (TYPE) == QUAL_UNION_TYPE) \
+  : (RECORD_OR_UNION_TYPE_P (TYPE) \
      && !TYPE_PACKED (TYPE)) \
   ? epiphany_special_round_type_align ((TYPE), (MANGLED_ALIGN), \
 				       (SPECIFIED_ALIGN)) \

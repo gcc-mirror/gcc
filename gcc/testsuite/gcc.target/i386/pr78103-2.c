@@ -1,6 +1,8 @@
 /* PR target/78103 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mno-lzcnt" } */
+/* Cope with --enable-frame-pointer.  */
+/* { dg-additional-options "-fomit-frame-pointer" } */
 /* { dg-final { scan-assembler-not {\mmovl\M} } } */
 /* { dg-final { scan-assembler-not {\mxor[lq]\M} } } */
 /* { dg-final { scan-assembler-not {\msubl\M} } } */

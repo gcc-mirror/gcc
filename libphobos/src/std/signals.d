@@ -624,7 +624,7 @@ void linkin() { }
     a.value6 = 46;
 }
 
-// Triggers bug from issue 15341
+// Triggers bug from https://issues.dlang.org/show_bug.cgi?id=15341
 @system unittest
 {
     class Observer
@@ -666,7 +666,7 @@ version (none) // Disabled because of https://issues.dlang.org/show_bug.cgi?id=5
     }
 }
 
-// Triggers bug from issue 16249
+// Triggers bug from https://issues.dlang.org/show_bug.cgi?id=16249
 @system unittest
 {
     class myLINE

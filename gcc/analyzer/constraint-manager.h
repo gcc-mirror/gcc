@@ -459,6 +459,7 @@ public:
 
   bool get_equiv_class_by_svalue (const svalue *sval,
 				    equiv_class_id *out) const;
+  bool sval_constrained_p (const svalue *sval) const;
   equiv_class_id get_or_add_equiv_class (const svalue *sval);
   tristate eval_condition (equiv_class_id lhs,
 			   enum tree_code op,

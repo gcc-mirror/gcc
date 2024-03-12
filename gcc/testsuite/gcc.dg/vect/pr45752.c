@@ -146,6 +146,7 @@ int main (int argc, const char* argv[])
 
   foo (input, output, input2, output2);
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (output[i] != check_results[i]
         || output2[i] != check_results2[i])
@@ -158,4 +159,4 @@ int main (int argc, const char* argv[])
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "gaps requires scalar epilogue loop" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" {target { ! { vect_load_lanes && vect_strided5 } } } } } */

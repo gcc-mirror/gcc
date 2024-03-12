@@ -26,105 +26,77 @@
 
 using namespace TestUtils;
 
-struct test_one_policy
+struct test_find
 {
-#if _PSTL_ICC_17_VC141_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN ||                                                            \
-    _PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN //dummy specialization by policy type, in case of broken configuration
-    template <typename Iterator1, typename Iterator2, typename Predicate>
+#if defined(_PSTL_ICC_17_VC141_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) ||                                                             \
+    defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
+    template <typename Iterator, typename Value>
     void
-    operator()(pstl::execution::unsequenced_policy, Iterator1 b, Iterator1 e, Iterator2 bsub, Iterator2 esub,
-               Predicate pred)
+    operator()(__pstl::execution::unsequenced_policy, Iterator first, Iterator last, Value value)
     {
     }
-    template <typename Iterator1, typename Iterator2, typename Predicate>
+    template <typename Iterator, typename Value>
     void
-    operator()(pstl::execution::parallel_unsequenced_policy, Iterator1 b, Iterator1 e, Iterator2 bsub, Iterator2 esub,
-               Predicate pred)
+    operator()(__pstl::execution::parallel_unsequenced_policy, Iterator first, Iterator last, Value value)
     {
     }
 #endif
 
-    template <typename ExecutionPolicy, typename Iterator1, typename Iterator2, typename Predicate>
+    template <typename Policy, typename Iterator, typename Value>
     void
-    operator()(ExecutionPolicy&& exec, Iterator1 b, Iterator1 e, Iterator2 bsub, Iterator2 esub, Predicate pred)
+    operator()(Policy&& exec, Iterator first, Iterator last, Value value)
     {
-        using namespace std;
-        // For find_end
-        {
-            auto expected = find_end(b, e, bsub, esub, pred);
-            auto actual = find_end(exec, b, e, bsub, esub);
-            EXPECT_TRUE(actual == expected, "wrong return result from find_end");
-
-            actual = find_end(exec, b, e, bsub, esub, pred);
-            EXPECT_TRUE(actual == expected, "wrong return result from find_end with a predicate");
-        }
-
-        // For search
-        {
-            auto expected = search(b, e, bsub, esub, pred);
-            auto actual = search(exec, b, e, bsub, esub);
-            EXPECT_TRUE(actual == expected, "wrong return result from search");
-
-            actual = search(exec, b, e, bsub, esub, pred);
-            EXPECT_TRUE(actual == expected, "wrong return result from search with a predicate");
-        }
+        auto i = std::find(first, last, value);
+        auto j = find(exec, first, last, value);
+        EXPECT_TRUE(i == j, "wrong return value from find");
     }
 };
 
-template <typename T>
+template <typename T, typename Value, typename Hit, typename Miss>
 void
-test(const std::size_t bits)
+test(Value value, Hit hit, Miss miss)
 {
-
-    const std::size_t max_n1 = 1000;
-    const std::size_t max_n2 = (max_n1 * 10) / 8;
-    Sequence<T> in(max_n1, [max_n1, bits](std::size_t) { return T(2 * HashBits(max_n1, bits - 1) ^ 1); });
-    Sequence<T> sub(max_n2, [max_n1, bits](std::size_t) { return T(2 * HashBits(max_n1, bits - 1)); });
-    for (std::size_t n1 = 0; n1 <= max_n1; n1 = n1 <= 16 ? n1 + 1 : size_t(3.1415 * n1))
+    // Try sequences of various lengths.
+    for (size_t n = 0; n <= 100000; n = n <= 16 ? n + 1 : size_t(3.1415 * n))
     {
-        std::size_t sub_n[] = {0, 1, 3, n1, (n1 * 10) / 8};
-        std::size_t res[] = {0, 1, n1 / 2, n1};
-        for (auto n2 : sub_n)
+        Sequence<T> in(n, [&](size_t k) -> T { return miss(n ^ k); });
+        // Try different find positions, including not found.
+        // By going backwards, we can add extra matches that are *not* supposed to be found.
+        // The decreasing exponential gives us O(n) total work for the loop since each find takes O(m) time.
+        for (size_t m = n; m > 0; m *= 0.6)
         {
-            for (auto r : res)
-            {
-                std::size_t i = r, isub = 0;
-                for (; i < n1 && isub < n2; ++i, ++isub)
-                    in[i] = sub[isub];
-                invoke_on_all_policies(test_one_policy(), in.begin(), in.begin() + n1, sub.begin(), sub.begin() + n2,
-                                       std::equal_to<T>());
-                invoke_on_all_policies(test_one_policy(), in.cbegin(), in.cbegin() + n1, sub.cbegin(),
-                                       sub.cbegin() + n2, std::equal_to<T>());
-            }
+            if (m < n)
+                in[m] = hit(n ^ m);
+            invoke_on_all_policies(test_find(), in.begin(), in.end(), value);
+            invoke_on_all_policies(test_find(), in.cbegin(), in.cend(), value);
         }
     }
 }
 
-template <typename T>
-struct test_non_const
+// Type defined for sake of checking that std::find works with asymmetric ==.
+class Weird
 {
-    template <typename Policy, typename FirstIterator, typename SecondInterator>
-    void
-    operator()(Policy&& exec, FirstIterator first_iter, SecondInterator second_iter)
+    Number value;
+
+  public:
+    friend bool
+    operator==(Number x, Weird y)
     {
-        invoke_if(exec, [&]() {
-            find_end(exec, first_iter, first_iter, second_iter, second_iter, non_const(std::equal_to<T>()));
-            search(exec, first_iter, first_iter, second_iter, second_iter, non_const(std::equal_to<T>()));
-        });
+        return x == y.value;
     }
+    Weird(int32_t val, OddTag) : value(val, OddTag()) {}
 };
 
-int32_t
+int
 main()
 {
-    test<int32_t>(8 * sizeof(int32_t));
-    test<uint16_t>(8 * sizeof(uint16_t));
-    test<float64_t>(53);
-#if !_PSTL_ICC_16_17_TEST_REDUCTION_BOOL_TYPE_RELEASE_64_BROKEN
-    test<bool>(1);
-#endif
+    // Note that the "hit" and "miss" functions here avoid overflow issues.
+    test<Number>(Weird(42, OddTag()), [](int32_t) { return Number(42, OddTag()); }, // hit
+                 [](int32_t j) { return Number(j == 42 ? 0 : j, OddTag()); });      // miss
 
-    test_algo_basic_double<int32_t>(run_for_rnd_fw<test_non_const<int32_t>>());
+    // Test with value that is equal to two different bit patterns (-0.0 and 0.0)
+    test<float32_t>(-0.0, [](int32_t j) { return j & 1 ? 0.0 : -0.0; }, // hit
+                    [](int32_t j) { return j == 0 ? ~j : j; });         // miss
 
     std::cout << done() << std::endl;
     return 0;

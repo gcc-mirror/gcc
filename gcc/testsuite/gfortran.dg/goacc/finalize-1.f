@@ -20,8 +20,8 @@
 ! { dg-final { scan-tree-dump-times "(?n)#pragma omp target oacc_exit_data map\\(delete:del_f \\\[len: \[0-9\]+\\\]\\) finalize$" 1 "gimple" } }
 
 !$ACC EXIT DATA FINALIZE DELETE (del_f_p(2:5))
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc exit data map\\(release:\\*\\(integer\\(kind=.\\)\\\[0:\\\] \\*\\) parm\\.0\\.data \\\[len: \[^\\\]\]+\\\]\\) map\\(to:del_f_p \\\[pointer set, len: \[0-9\]+\\\]\\) map\\(alloc:\\(integer\\(kind=1\\)\\\[0:\\\] \\* restrict\\) del_f_p\\.data \\\[pointer assign, bias: \\(.*int.*\\) parm\\.0\\.data - \\(.*int.*\\) del_f_p\\.data\\\]\\) finalize;$" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma omp target oacc_exit_data map\\(delete:MEM <\[^>\]+> \\\[\\(integer\\(kind=.\\)\\\[0:\\\] \\*\\)_\[0-9\]+\\\] \\\[len: \[^\\\]\]+\\\]\\) map\\(to:del_f_p \\\[pointer set, len: \[0-9\]+\\\]\\) map\\(alloc:del_f_p\\.data \\\[pointer assign, bias: \[^\\\]\]+\\\]\\) finalize$" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc exit data map\\(release:\\*\\(integer\\(kind=.\\)\\\[0:\\\] \\*\\) parm\\.0\\.data \\\[len: \[^\\\]\]+\\\]\\) map\\(release:del_f_p \\\[len: \[0-9\]+\\\]\\) map\\(alloc:\\(integer\\(kind=1\\)\\\[0:\\\] \\* restrict\\) del_f_p\\.data \\\[pointer assign, bias: \\(.*int.*\\) parm\\.0\\.data - \\(.*int.*\\) del_f_p\\.data\\\]\\) finalize;$" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma omp target oacc_exit_data map\\(delete:MEM <\[^>\]+> \\\[\\(integer\\(kind=.\\)\\\[0:\\\] \\*\\)_\[0-9\]+\\\] \\\[len: \[^\\\]\]+\\\]\\) map\\(delete:del_f_p \\\[len: \[0-9\]+\\\]\\) map\\(alloc:del_f_p\\.data \\\[pointer assign, bias: \[^\\\]\]+\\\]\\) finalize$" 1 "gimple" } }
 
 !$ACC EXIT DATA COPYOUT (cpo_r)
 ! { dg-final { scan-tree-dump-times "(?n)#pragma acc exit data map\\(from:cpo_r\\);$" 1 "original" } }

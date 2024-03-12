@@ -8,5 +8,5 @@
 # process is put on stdout.
 
 dir=`dirname $0`
-python $dir/filter_params.py $1
+env python3 $dir/filter_params.py $1
 exit 0

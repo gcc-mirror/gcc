@@ -129,9 +129,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_STD_FACET(time_put<wchar_t>);
       _GLIBCXX_STD_FACET(messages<wchar_t>);
 #endif
-#ifdef _GLIBCXX_USE_CHAR8_T
-      _GLIBCXX_STD_FACET(codecvt<char8_t, char, mbstate_t>);
-#endif
 #if __cplusplus >= 201103L
       _GLIBCXX_STD_FACET(codecvt<char16_t, char, mbstate_t>);
       _GLIBCXX_STD_FACET(codecvt<char32_t, char, mbstate_t>);

@@ -11,10 +11,10 @@
 
 module dmd.sideeffect;
 
-import dmd.apply;
 import dmd.astenums;
 import dmd.declaration;
 import dmd.dscope;
+import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
@@ -22,6 +22,7 @@ import dmd.globals;
 import dmd.identifier;
 import dmd.init;
 import dmd.mtype;
+import dmd.postordervisitor;
 import dmd.tokens;
 import dmd.visitor;
 
@@ -37,7 +38,7 @@ extern (C++) bool isTrivialExp(Expression e)
     {
         alias visit = typeof(super).visit;
     public:
-        extern (D) this() scope
+        extern (D) this() scope @safe
         {
         }
 
@@ -75,7 +76,7 @@ extern (C++) bool hasSideEffect(Expression e, bool assumeImpureCalls = false)
     {
         alias visit = typeof(super).visit;
     public:
-        extern (D) this() scope
+        extern (D) this() scope @safe
         {
         }
 
@@ -101,9 +102,11 @@ extern (C++) bool hasSideEffect(Expression e, bool assumeImpureCalls = false)
 int callSideEffectLevel(FuncDeclaration f)
 {
     /* https://issues.dlang.org/show_bug.cgi?id=12760
-     * ctor call always has side effects.
+     * https://issues.dlang.org/show_bug.cgi?id=16384
+     *
+     * ctor calls and invariant calls always have side effects
      */
-    if (f.isCtorDeclaration())
+    if (f.isCtorDeclaration() || f.isInvariantDeclaration())
         return 0;
     assert(f.type.ty == Tfunction);
     TypeFunction tf = cast(TypeFunction)f.type;
@@ -185,6 +188,7 @@ private bool lambdaHasSideEffect(Expression e, bool assumeImpureCalls = false)
     case EXP.delete_:
     case EXP.new_:
     case EXP.newAnonymousClass:
+    case EXP.loweredAssignExp:
         return true;
     case EXP.call:
         {
@@ -296,7 +300,7 @@ bool discardValue(Expression e)
                     }
                     else
                         s = ce.e1.toChars();
-                    e.warning("calling `%s` without side effects discards return value of type `%s`; prepend a `cast(void)` if intentional", s, e.type.toChars());
+                    warning(e.loc, "calling `%s` without side effects discards return value of type `%s`; prepend a `cast(void)` if intentional", s, e.type.toChars());
                 }
             }
         }
@@ -365,12 +369,12 @@ bool discardValue(Expression e)
         BinExp tmp = e.isBinExp();
         assert(tmp);
 
-        e.error("the result of the equality expression `%s` is discarded", e.toChars());
+        error(e.loc, "the result of the equality expression `%s` is discarded", e.toChars());
         bool seenSideEffect = false;
         foreach(expr; [tmp.e1, tmp.e2])
         {
             if (hasSideEffect(expr)) {
-                expr.errorSupplemental("note that `%s` may have a side effect", expr.toChars());
+                errorSupplemental(expr.loc, "note that `%s` may have a side effect", expr.toChars());
                 seenSideEffect |= true;
             }
         }
@@ -378,7 +382,7 @@ bool discardValue(Expression e)
     default:
         break;
     }
-    e.error("`%s` has no effect", e.toChars());
+    error(e.loc, "`%s` has no effect", e.toChars());
     return true;
 }
 

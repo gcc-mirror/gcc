@@ -91,8 +91,8 @@ auto ref forwardOrExit(ref int num)
 
 static assert( is(typeof(forwardOrExit(global)) == int));
 
-// // Must not infer ref due to the noreturn rvalue
-static assert(!is(typeof(&forwardOrExit(global))));
+// Noreturn types do not affect `auto ref` deduction
+static assert(is(typeof(&forwardOrExit(global))));
 
 auto ref forwardOrExit2(ref int num)
 {
@@ -104,8 +104,8 @@ auto ref forwardOrExit2(ref int num)
 
 static assert( is(typeof(forwardOrExit2(global)) == int));
 
-// // Must not infer ref due to the noreturn rvalue
-static assert(!is(typeof(&forwardOrExit2(global))));
+// Noreturn types do not affect `auto ref` deduction
+static assert(is(typeof(&forwardOrExit2(global))));
 
 /*****************************************************************************/
 

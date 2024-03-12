@@ -74,7 +74,7 @@ using std::islessgreater;
 using std::isunordered;
 #endif
 
-#if __cplusplus >= 201103L && defined(_GLIBCXX_USE_C99_MATH_TR1)
+#if __cplusplus >= 201103L && defined(_GLIBCXX_USE_C99_MATH_FUNCS)
 using std::acosh;
 using std::asinh;
 using std::atanh;
@@ -109,7 +109,7 @@ using std::scalbln;
 using std::scalbn;
 using std::tgamma;
 using std::trunc;
-#endif // C++11 && _GLIBCXX_USE_C99_MATH_TR1
+#endif // C++11 && _GLIBCXX_USE_C99_MATH_FUNCS
 
 // The mathematical special functions are only added to the global namespace
 // by IS 29124, but not by C++17.

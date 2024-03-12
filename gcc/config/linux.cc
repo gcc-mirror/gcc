@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "linux-protos.h"
+#include "target.h"
+#include "targhooks.h"
 
 bool
 linux_libc_has_function (enum function_class fn_class,
@@ -37,4 +39,13 @@ linux_libc_has_function (enum function_class fn_class,
 	return true;
 
   return false;
+}
+
+unsigned
+linux_libm_function_max_error (unsigned cfn, machine_mode mode,
+			       bool boundary_p)
+{
+  if (OPTION_GLIBC)
+    return glibc_linux_libm_function_max_error (cfn, mode, boundary_p);
+  return default_libm_function_max_error (cfn, mode, boundary_p);
 }

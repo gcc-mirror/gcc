@@ -30,11 +30,6 @@
 
 AARCH64_EXTRA_TUNING_OPTION ("rename_fma_regs", RENAME_FMA_REGS)
 
-/* Don't create non-8 byte aligned load/store pair.  That is if the
-two load/stores are not at least 8 byte aligned don't create load/store
-pairs.   */
-AARCH64_EXTRA_TUNING_OPTION ("slow_unaligned_ldpw", SLOW_UNALIGNED_LDPW)
-
 /* Some of the optional shift to some arthematic instructions are
    considered cheap.  Logical shift left <=4 with or without a
    zero extend are considered cheap.  Sign extend; non logical shift left
@@ -43,9 +38,6 @@ AARCH64_EXTRA_TUNING_OPTION ("cheap_shift_extend", CHEAP_SHIFT_EXTEND)
 
 /* Disallow load/store pair instructions on Q-registers.  */
 AARCH64_EXTRA_TUNING_OPTION ("no_ldp_stp_qregs", NO_LDP_STP_QREGS)
-
-/* Disallow load-pair instructions to be formed in combine/peephole.  */
-AARCH64_EXTRA_TUNING_OPTION ("no_ldp_combine", NO_LDP_COMBINE)
 
 AARCH64_EXTRA_TUNING_OPTION ("rename_load_regs", RENAME_LOAD_REGS)
 

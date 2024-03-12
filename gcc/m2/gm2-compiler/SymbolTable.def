@@ -92,6 +92,8 @@ EXPORT QUALIFIED NulSym,
                  ForeachModuleDo,
                  ForeachInnerModuleDo,
                  ForeachLocalSymDo,
+                 ForeachParamSymDo,
+
                  ForeachFieldEnumerationDo,
                  GetModule,
                  GetCurrentModule,
@@ -158,6 +160,7 @@ EXPORT QUALIFIED NulSym,
                  PutDefLink,
                  PutModLink,
                  PutModuleBuiltin,
+                 PutVarArrayRef, IsVarArrayRef,
 
                  PutConstSet,
                  PutConstructor,
@@ -203,6 +206,7 @@ EXPORT QUALIFIED NulSym,
                  PutVariableSSA, IsVariableSSA,
                  PutPublic, IsPublic, PutCtor, IsCtor, PutExtern, IsExtern,
                  PutMonoName, IsMonoName,
+                 PutVarHeap, IsVarHeap,
 
                  IsDefImp,
                  IsModule,
@@ -262,6 +266,7 @@ EXPORT QUALIFIED NulSym,
                  IsDefLink,
                  IsModLink,
                  IsModuleBuiltin,
+                 IsProcedureBuiltinAvailable,
 
                  ForeachProcedureDo,
                  ProcedureParametersDefined,
@@ -355,7 +360,11 @@ EXPORT QUALIFIED NulSym,
                  PopOffset,
                  PopSumOfParamSize,
                  DisplayTrees,
-		 DebugLineNumbers ;
+		 DebugLineNumbers,
+                 VarCheckReadInit, VarInitState, PutVarInitialized,
+                 PutVarFieldInitialized, GetVarFieldInitialized,
+                 PrintInitialized,
+                 GetParameterHeapVar, PutProcedureParameterHeapVars ;
 
 
 (*
@@ -691,6 +700,20 @@ PROCEDURE PutModuleCtorExtern (tok: CARDINAL; sym: CARDINAL; external: BOOLEAN) 
 
 
 (*
+   PutVarHeap - assigns ArrayRef field with value.
+*)
+
+PROCEDURE PutVarHeap (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsVarHeap - returns ArrayRef field value.
+*)
+
+PROCEDURE IsVarHeap (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
    MakeVar - creates a variable sym with VarName. It returns the
              symbol index.
 *)
@@ -998,10 +1021,14 @@ PROCEDURE MakeRegInterface () : CARDINAL ;
                      sym, at position, i.
                      The string symbol will either be a register name or a constraint.
                      The object is an optional Modula-2 variable or constant symbol.
+                     read and write are the quadruple numbers representing any read
+                     or write operation.
 *)
 
-PROCEDURE PutRegInterface (sym: CARDINAL; i: CARDINAL;
-                           n: Name; string, object: CARDINAL) ;
+PROCEDURE PutRegInterface (tok: CARDINAL;
+                           sym: CARDINAL; i: CARDINAL;
+                           n: Name; string, object: CARDINAL;
+                           read, write: CARDINAL) ;
 
 
 (*
@@ -1010,7 +1037,8 @@ PROCEDURE PutRegInterface (sym: CARDINAL; i: CARDINAL;
 *)
 
 PROCEDURE GetRegInterface (sym: CARDINAL; i: CARDINAL;
-                           VAR n: Name; VAR string, object: CARDINAL) ;
+                           VAR tok: CARDINAL; VAR n: Name;
+                           VAR string, object: CARDINAL) ;
 
 
 (*
@@ -1196,8 +1224,9 @@ PROCEDURE FromModuleGetSym (tok: CARDINAL;
 
 
 (*
-   GetNth - returns the n th symbol in the list of father Sym.
-            Sym may be a Module, DefImp, Procedure or Record symbol.
+   GetNth - returns the n th symbol in the list associated with the scope
+            of Sym.  Sym may be a Module, DefImp, Procedure, Record or
+            Enumeration symbol.
 *)
 
 PROCEDURE GetNth (Sym: CARDINAL; n: CARDINAL) : CARDINAL ;
@@ -2390,8 +2419,18 @@ PROCEDURE ForeachLocalSymDo (Sym: CARDINAL; P: PerformOperation) ;
 
 
 (*
+   ForeachParamSymDo - foreach parameter symbol in procedure, Sym,
+                       perform the procedure, P.
+*)
+
+PROCEDURE ForeachParamSymDo (Sym: CARDINAL; P: PerformOperation) ;
+
+
+(*
    ForeachFieldEnumerationDo - for each field in enumeration, Sym,
-                               do procedure, P.
+                               do procedure, P.  Each call to P contains
+                               an enumeration field, the order is alphabetical.
+                               Use ForeachLocalSymDo for declaration order.
 *)
 
 PROCEDURE ForeachFieldEnumerationDo (Sym: CARDINAL; P: PerformOperation) ;
@@ -3551,6 +3590,90 @@ PROCEDURE IsModuleBuiltin (sym: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE PutModuleBuiltin (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   PutVarArrayRef - assigns ArrayRef field with value.
+*)
+
+PROCEDURE PutVarArrayRef (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsVarArrayRef - returns ArrayRef field value.
+*)
+
+PROCEDURE IsVarArrayRef (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   VarCheckReadInit - returns TRUE if sym has been initialized.
+*)
+
+PROCEDURE VarCheckReadInit (sym: CARDINAL; mode: ModeOfAddr) : BOOLEAN ;
+
+
+(*
+   VarInitState - initializes the init state for variable sym.
+*)
+
+PROCEDURE VarInitState (sym: CARDINAL) ;
+
+
+(*
+   PutVarInitialized - set sym as initialized.
+*)
+
+PROCEDURE PutVarInitialized (sym: CARDINAL; mode: ModeOfAddr) ;
+
+
+(*
+   PutVarFieldInitialized - records that field has been initialized with
+                            variable sym.  TRUE is returned if the field
+                            is detected and changed to initialized.
+*)
+
+PROCEDURE PutVarFieldInitialized (sym: CARDINAL; mode: ModeOfAddr;
+                                  fieldlist: List) : BOOLEAN ;
+
+
+(*
+   GetVarFieldInitialized - return TRUE if fieldlist has been initialized
+                            within variable sym.
+*)
+
+PROCEDURE GetVarFieldInitialized (sym: CARDINAL; mode: ModeOfAddr;
+                                  fieldlist: List) : BOOLEAN ;
+
+
+(*
+   PrintInitialized - display variable sym initialization state.
+*)
+
+PROCEDURE PrintInitialized (sym: CARDINAL) ;
+
+
+(*
+   GetParameterHeapVar - return the heap variable associated with the
+                         parameter or NulSym.
+*)
+
+PROCEDURE GetParameterHeapVar (ParSym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutProcedureParameterHeapVars - creates heap variables for parameter sym.
+*)
+
+PROCEDURE PutProcedureParameterHeapVars (sym: CARDINAL) ;
+
+
+(*
+   IsProcedureBuiltinAvailable - return TRUE if procedure is available as a builtin
+                                 for the target architecture.
+*)
+
+PROCEDURE IsProcedureBuiltinAvailable (procedure: CARDINAL) : BOOLEAN ;
 
 
 END SymbolTable.

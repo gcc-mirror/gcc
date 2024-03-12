@@ -42,11 +42,8 @@ package Exp_Unst is
    --  references, and implements an appropriate static chain approach to
    --  dealing with such uplevel references.
 
-   --  However, we also want to be able to interface with back ends that do
-   --  not easily handle such uplevel references. One example is the back end
-   --  that translates the tree into standard C source code. In the future,
-   --  other back ends might need the same capability (e.g. a back end that
-   --  generated LLVM intermediate code).
+   --  However, we also want to be able to interface with back ends that do not
+   --  easily handle such uplevel references. One example is the LLVM back end.
 
    --  We could imagine simply handling such references in the appropriate
    --  back end. For example the back end that generates C could recognize

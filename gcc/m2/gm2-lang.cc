@@ -131,7 +131,7 @@ gm2_langhook_init (void)
 
   if (M2Options_GetPPOnly ())
     {
-      /* preprocess the file here.  */
+      /* Preprocess the file here.  */
       gm2_langhook_parse_file ();
       return false; /* Finish now, no further compilation.  */
     }
@@ -234,21 +234,52 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 	      building_cpp_command = true;
 	    }
 	  M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
-			      && !(option->flags & CL_SEPARATE));
-	  break;
-	case OPT_M:
-	case OPT_MM:
-	  gcc_checking_assert (building_cpp_command);
-	  M2Options_SetPPOnly (value);
-	  /* This is a preprocessor command.  */
-	  M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
-			      && !(option->flags & CL_SEPARATE));
+			    && !(option->flags & CL_SEPARATE));
 	  break;
 
-	/* We can only use MQ when the command line is either PP-only, or
+	case OPT_M:
+	  /* Output a rule suitable for make describing the dependencies of the
+	     main source file.  */
+	  if (in_cpp_args)
+	    {
+	      gcc_checking_assert (building_cpp_command);
+	      /* This is a preprocessor command.  */
+	      M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+				&& !(option->flags & CL_SEPARATE));
+	    }
+	  M2Options_SetPPOnly (value);
+	  M2Options_SetM (value);
+	  break;
+
+	case OPT_MM:
+	  if (in_cpp_args)
+	    {
+	      gcc_checking_assert (building_cpp_command);
+	      /* This is a preprocessor command.  */
+	      M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+				&& !(option->flags & CL_SEPARATE));
+	    }
+	  M2Options_SetPPOnly (value);
+	  M2Options_SetMM (value);
+	  break;
+
+	case OPT_MF:
+	  if (!in_cpp_args)
+	    M2Options_SetMF (arg);
+	  break;
+
+	case OPT_MP:
+	  M2Options_SetMP (value);
+	  break;
+
+	/* We can only use MQ and MT when the command line is either PP-only, or
 	   when there is a MD/MMD on it.  */
 	case OPT_MQ:
 	  M2Options_SetMQ (arg);
+	  break;
+
+	case OPT_MT:
+	  M2Options_SetMT (arg);
 	  break;
 
 	case OPT_o:
@@ -266,14 +297,23 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 	     For now skip all plugins to avoid fails with the m2 one.  */
 	  break;
 
-	/* Preprocessor arguments with a following filename, we add these
-	   back to the main file preprocess line, but not to dependents
-	   TODO Handle MF.  */
+	/* Preprocessor arguments with a following filename.  */
 	case OPT_MD:
-	  M2Options_SetMD (arg);
+	  M2Options_SetMD (value);
+	  if (value)
+	    {
+	      M2Options_SetM (true);
+	      M2Options_SetMF (arg);
+	    }
 	  break;
+
 	case OPT_MMD:
-	  M2Options_SetMMD (arg);
+	  M2Options_SetMMD (value);
+	  if (value)
+	    {
+	      M2Options_SetMM (true);
+	      M2Options_SetMF (arg);
+	    }
 	  break;
 
 	/* Modula 2 claimed options we pass to the preprocessor.  */
@@ -427,6 +467,9 @@ gm2_langhook_handle_option (
     case OPT_fd:
       M2Options_SetCompilerDebugging (value);
       return 1;
+    case OPT_fdebug_builtins:
+      M2Options_SetDebugBuiltins (value);
+      return 1;
     case OPT_fdebug_trace_quad:
       M2Options_SetDebugTraceQuad (value);
       return 1;
@@ -469,11 +512,18 @@ gm2_langhook_handle_option (
     case OPT_Wunused_parameter:
       M2Options_SetUnusedParameterChecking (value);
       return 1;
+    case OPT_Wuninit_variable_checking:
+      return M2Options_SetUninitVariableChecking (value, "known");
+    case OPT_Wuninit_variable_checking_:
+      return M2Options_SetUninitVariableChecking (value, arg);
     case OPT_fm2_strict_type:
       M2Options_SetStrictTypeChecking (value);
       return 1;
     case OPT_Wall:
       M2Options_SetWall (value);
+      return 1;
+    case OPT_Wcase_enum:
+      M2Options_SetCaseEnumChecking (value);
       return 1;
 #if 0
     /* Not yet implemented.  */
@@ -734,7 +784,7 @@ gm2_langhook_post_options (const char **pfilename)
   if (allow_libraries)
     add_m2_import_paths (flibs);
 
- /* Returning false means that the backend should be used.  */
+  /* Returning false means that the backend should be used.  */
   return M2Options_GetPPOnly ();
 }
 
@@ -802,14 +852,25 @@ gm2_langhook_type_for_mode (machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (long_double_type_node))
     return long_double_type_node;
 
+  if ((float128_type_node != NULL) && (mode == TYPE_MODE (float128_type_node)))
+    return float128_type_node;
+
   if (COMPLEX_MODE_P (mode))
     {
+      machine_mode inner_mode;
+      tree inner_type;
+
       if (mode == TYPE_MODE (complex_float_type_node))
 	return complex_float_type_node;
       if (mode == TYPE_MODE (complex_double_type_node))
 	return complex_double_type_node;
       if (mode == TYPE_MODE (complex_long_double_type_node))
 	return complex_long_double_type_node;
+
+      inner_mode = GET_MODE_INNER (mode);
+      inner_type = gm2_langhook_type_for_mode (inner_mode, unsignedp);
+      if (inner_type != NULL_TREE)
+	return build_complex_type (inner_type);
     }
 
 #if HOST_BITS_PER_WIDE_INT >= 64
@@ -1107,41 +1168,40 @@ gm2_mark_addressable (tree exp)
 tree
 gm2_type_for_size (unsigned int bits, int unsignedp)
 {
-  tree type;
-
   if (unsignedp)
     {
       if (bits == INT_TYPE_SIZE)
-        type = unsigned_type_node;
+        return unsigned_type_node;
       else if (bits == CHAR_TYPE_SIZE)
-        type = unsigned_char_type_node;
+        return unsigned_char_type_node;
       else if (bits == SHORT_TYPE_SIZE)
-        type = short_unsigned_type_node;
+        return short_unsigned_type_node;
       else if (bits == LONG_TYPE_SIZE)
-        type = long_unsigned_type_node;
+        return long_unsigned_type_node;
       else if (bits == LONG_LONG_TYPE_SIZE)
-        type = long_long_unsigned_type_node;
+        return long_long_unsigned_type_node;
       else
-	type = build_nonstandard_integer_type (bits,
+	return build_nonstandard_integer_type (bits,
 					       unsignedp);
     }
   else
     {
       if (bits == INT_TYPE_SIZE)
-        type = integer_type_node;
+        return integer_type_node;
       else if (bits == CHAR_TYPE_SIZE)
-        type = signed_char_type_node;
+        return signed_char_type_node;
       else if (bits == SHORT_TYPE_SIZE)
-        type = short_integer_type_node;
+        return short_integer_type_node;
       else if (bits == LONG_TYPE_SIZE)
-        type = long_integer_type_node;
+        return long_integer_type_node;
       else if (bits == LONG_LONG_TYPE_SIZE)
-        type = long_long_integer_type_node;
+        return long_long_integer_type_node;
       else
-	type = build_nonstandard_integer_type (bits,
+	return build_nonstandard_integer_type (bits,
 					       unsignedp);
     }
-  return type;
+  /* Never reach here.  */
+  gcc_unreachable ();
 }
 
 /* Allow the analyzer to understand Storage ALLOCATE/DEALLOCATE.  */

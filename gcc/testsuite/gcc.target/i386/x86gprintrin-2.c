@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Werror-implicit-function-declaration -march=x86-64 -madx -mbmi -mbmi2 -mcldemote -mclflushopt -mclwb -mclzero -menqcmd -mfsgsbase -mfxsr -mhreset -mlzcnt -mlwp -mmovdiri -mmwaitx -mpconfig -mpopcnt -mpku -mptwrite -mrdpid -mrdrnd -mrdseed -mrtm -mserialize -msgx -mshstk -mtbm -mtsxldtrk -mwaitpkg -mwbnoinvd -mxsave -mxsavec -mxsaveopt -mxsaves -mraoint -mno-sse -mno-mmx" } */
 /* { dg-add-options bind_pic_locally } */
-/* { dg-additional-options "-mcmpccxadd -mprefetchi -muintr" { target { ! ia32 } } }  */
+/* { dg-additional-options "-musermsr -mcmpccxadd -mprefetchi -muintr" { target { ! ia32 } } }  */
 
 /* Test that the intrinsics in <x86gprintrin.h> compile with optimization.
    All of them are defined as inline functions that reference the proper
@@ -31,5 +31,9 @@
 /* cmpccxadd.h */
 #define __builtin_ia32_cmpccxadd(A, B, C, D) __builtin_ia32_cmpccxadd(A, B, C, 1)
 #define __builtin_ia32_cmpccxadd64(A, B, C, D) __builtin_ia32_cmpccxadd64(A, B, C, 1)
+
+/* usermsrintrin.h */
+#define __builtin_ia32_urdmsr(A) __builtin_ia32_urdmsr(1)
+#define __builtin_ia32_uwrmsr(A, B) __builtin_ia32_uwrmsr(1, B)
 
 #include <x86gprintrin.h>

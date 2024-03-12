@@ -275,6 +275,17 @@ static tree mangle_special_for_type (const tree, const char *);
 #define write_unsigned_number(NUMBER)					\
   write_number ((NUMBER), /*unsigned_p=*/1, 10)
 
+/* Check for -fabi-version dependent mangling and also set the need_abi_warning
+   flag as appropriate.  */
+
+static bool
+abi_check (int ver)
+{
+  if (abi_warn_or_compat_version_crosses (ver))
+    G.need_abi_warning = true;
+  return abi_version_at_least (ver);
+}
+
 /* If DECL is a template instance (including the uninstantiated template
    itself), return its TEMPLATE_INFO.  Otherwise return NULL.  */
 
@@ -963,6 +974,9 @@ decl_mangling_context (tree decl)
 
   tcontext = CP_DECL_CONTEXT (decl);
 
+  if (member_like_constrained_friend_p (decl))
+    tcontext = DECL_FRIEND_CONTEXT (decl);
+
   /* Ignore the artificial declare reduction functions.  */
   if (tcontext
       && TREE_CODE (tcontext) == FUNCTION_DECL
@@ -1264,9 +1278,7 @@ write_prefix (const tree node)
 	  /* Before ABI 18, we did not count these as substitution
 	     candidates.  This leads to incorrect demanglings (and
 	     ABI divergence to other compilers).  */
-	  if (abi_warn_or_compat_version_crosses (18))
-	    G.need_abi_warning = true;
-	  if (!abi_version_at_least (18))
+	  if (!abi_check (18))
 	    return;
 	}
     }
@@ -1344,51 +1356,6 @@ write_template_prefix (const tree node)
   add_substitution (substitution);
 }
 
-/* As the list of identifiers for the structured binding declaration
-   DECL is likely gone, try to recover the DC <source-name>+ E portion
-   from its mangled name.  Return pointer to the DC and set len to
-   the length up to and including the terminating E.  On failure
-   return NULL.  */
-
-static const char *
-find_decomp_unqualified_name (tree decl, size_t *len)
-{
-  const char *p = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  const char *end = p + IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl));
-  bool nested = false;
-  if (!startswith (p, "_Z"))
-    return NULL;
-  p += 2;
-  if (startswith (p, "St"))
-    p += 2;
-  else if (*p == 'N')
-    {
-      nested = true;
-      ++p;
-      while (ISDIGIT (p[0]))
-	{
-	  char *e;
-	  long num = strtol (p, &e, 10);
-	  if (num >= 1 && num < end - e)
-	    p = e + num;
-	  else
-	    break;
-	}
-    }
-  if (!startswith (p, "DC"))
-    return NULL;
-  if (nested)
-    {
-      if (end[-1] != 'E')
-	return NULL;
-      --end;
-    }
-  if (end[-1] != 'E')
-    return NULL;
-  *len = end - p;
-  return p;
-}
-
 /* "For the purposes of mangling, the name of an anonymous union is considered
    to be the name of the first named data member found by a pre-order,
    depth-first, declaration-order walk of the data members of the anonymous
@@ -1419,6 +1386,7 @@ anon_aggr_naming_decl (tree type)
 			::= [<module-name>] <source-name>
 			::= [<module-name>] <unnamed-type-name>
 			::= <local-source-name> 
+			::= F <source-name> # member-like constrained friend
 
     <local-source-name>	::= L <source-name> <discriminator> */
 
@@ -1461,21 +1429,17 @@ write_unqualified_name (tree decl)
     {
       found = true;
       gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
-      const char *decomp_str = NULL;
-      size_t decomp_len = 0;
-      if (VAR_P (decl)
-	  && DECL_DECOMPOSITION_P (decl)
-	  && DECL_NAME (decl) == NULL_TREE
-	  && DECL_NAMESPACE_SCOPE_P (decl))
-	decomp_str = find_decomp_unqualified_name (decl, &decomp_len);
-      if (decomp_str)
-	write_chars (decomp_str, decomp_len);
-      else
-	write_source_name (DECL_ASSEMBLER_NAME (decl));
+      write_source_name (DECL_ASSEMBLER_NAME (decl));
     }
   else if (DECL_DECLARES_FUNCTION_P (decl))
     {
       found = true;
+
+      /* A constrained hidden friend is mangled like a member function, with
+	 the name prefixed by 'F'.  */
+      if (member_like_constrained_friend_p (decl))
+	write_char ('F');
+
       if (DECL_CONSTRUCTOR_P (decl))
 	write_special_name_constructor (decl);
       else if (DECL_DESTRUCTOR_P (decl))
@@ -1587,9 +1551,7 @@ write_unqualified_name (tree decl)
       && any_abi_below (11))
     if (tree mtags = missing_abi_tags (decl))
       {
-	if (abi_warn_or_compat_version_crosses (11))
-	  G.need_abi_warning = true;
-	if (!abi_version_at_least (11))
+	if (!abi_check (11))
 	  tags = chainon (mtags, tags);
       }
   write_abi_tags (tags);
@@ -2139,9 +2101,7 @@ write_discriminator (const int discriminator)
       write_char ('_');
       if (discriminator - 1 >= 10)
 	{
-	  if (abi_warn_or_compat_version_crosses (11))
-	    G.need_abi_warning = 1;
-	  if (abi_version_at_least (11))
+	  if (abi_check (11))
 	    write_char ('_');
 	}
       write_unsigned_number (discriminator - 1);
@@ -2470,9 +2430,7 @@ write_type (tree type)
 
 		  if (etype && !type_uses_auto (etype))
 		    {
-		      if (abi_warn_or_compat_version_crosses (5))
-			G.need_abi_warning = 1;
-		      if (!abi_version_at_least (5))
+		      if (!abi_check (5))
 			{
 			  write_type (etype);
 			  return;
@@ -2493,10 +2451,8 @@ write_type (tree type)
 
 	    case NULLPTR_TYPE:
 	      write_string ("Dn");
-	      if (abi_version_at_least (7))
+	      if (abi_check (7))
 		++is_builtin_type;
-	      if (abi_warn_or_compat_version_crosses (7))
-		G.need_abi_warning = 1;
 	      break;
 
 	    case TYPEOF_TYPE:
@@ -2980,10 +2936,8 @@ write_member_name (tree member)
     {
       if (IDENTIFIER_ANY_OP_P (member))
 	{
-	  if (abi_version_at_least (11))
+	  if (abi_check (11))
 	    write_string ("on");
-	  if (abi_warn_or_compat_version_crosses (11))
-	    G.need_abi_warning = 1;
 	}
       write_unqualified_id (member);
     }
@@ -3153,7 +3107,7 @@ write_expression (tree expr)
       write_char ('f');
       if (delta != 0)
 	{
-	  if (abi_version_at_least (5))
+	  if (abi_check (5))
 	    {
 	      /* Let L be the number of function prototype scopes from the
 		 innermost one (in which the parameter reference occurs) up
@@ -3165,8 +3119,6 @@ write_expression (tree expr)
 	      write_char ('L');
 	      write_unsigned_number (delta - 1);
 	    }
-	  if (abi_warn_or_compat_version_crosses (5))
-	    G.need_abi_warning = true;
 	}
       write_char ('p');
       write_compact_number (index - 1);
@@ -3183,9 +3135,7 @@ write_expression (tree expr)
 
       if (PACK_EXPANSION_P (op))
 	{
-	  if (abi_warn_or_compat_version_crosses (11))
-	    G.need_abi_warning = true;
-	  if (abi_version_at_least (11))
+	  if (abi_check (11))
 	    {
 	      /* sZ rather than szDp.  */
 	      write_string ("sZ");
@@ -3203,9 +3153,7 @@ write_expression (tree expr)
 	{
 	  tree args = ARGUMENT_PACK_ARGS (op);
 	  int length = TREE_VEC_LENGTH (args);
-	  if (abi_warn_or_compat_version_crosses (10))
-	    G.need_abi_warning = true;
-	  if (abi_version_at_least (10))
+	  if (abi_check (10))
 	    {
 	      /* sP <template-arg>* E # sizeof...(T), size of a captured
 		 template parameter pack from an alias template */
@@ -3243,9 +3191,7 @@ write_expression (tree expr)
     {
       if (!ALIGNOF_EXPR_STD_P (expr))
 	{
-	  if (abi_warn_or_compat_version_crosses (16))
-	    G.need_abi_warning = true;
-	  if (abi_version_at_least (16))
+	  if (abi_check (16))
 	    {
 	      /* We used to mangle __alignof__ like alignof.  */
 	      write_string ("u11__alignof__");
@@ -3312,7 +3258,8 @@ write_expression (tree expr)
   else if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
     {
       tree fn = TREE_OPERAND (expr, 0);
-      fn = OVL_NAME (fn);
+      if (!identifier_p (fn))
+	fn = OVL_NAME (fn);
       if (IDENTIFIER_ANY_OP_P (fn))
 	write_string ("on");
       write_unqualified_id (fn);
@@ -3402,6 +3349,11 @@ write_expression (tree expr)
       else
 	write_string ("tr");
     }
+  else if (code == NOEXCEPT_EXPR)
+    {
+      write_string ("nx");
+      write_expression (TREE_OPERAND (expr, 0));
+    }
   else if (code == CONSTRUCTOR)
     {
       bool braced_init = BRACE_ENCLOSED_INITIALIZER_P (expr);
@@ -3484,10 +3436,8 @@ write_expression (tree expr)
       tree name = dependent_name (expr);
       if (IDENTIFIER_ANY_OP_P (name))
 	{
-	  if (abi_version_at_least (16))
+	  if (abi_check (16))
 	    write_string ("on");
-	  if (abi_warn_or_compat_version_crosses (16))
-	    G.need_abi_warning = 1;
 	}
       write_unqualified_id (name);
     }
@@ -3546,9 +3496,7 @@ write_expression (tree expr)
       if (code == CONST_CAST_EXPR
 	  || code == STATIC_CAST_EXPR)
 	{
-	  if (abi_warn_or_compat_version_crosses (6))
-	    G.need_abi_warning = 1;
-	  if (!abi_version_at_least (6))
+	  if (!abi_check (6))
 	    name = OVL_OP_INFO (false, CAST_EXPR)->mangled_name;
 	}
 
@@ -3617,10 +3565,8 @@ write_expression (tree expr)
 
 	case PREINCREMENT_EXPR:
 	case PREDECREMENT_EXPR:
-	  if (abi_version_at_least (6))
+	  if (abi_check (6))
 	    write_char ('_');
-	  if (abi_warn_or_compat_version_crosses (6))
-	    G.need_abi_warning = 1;
 	  /* Fall through.  */
 
 	default:
@@ -3793,7 +3739,7 @@ write_template_arg (tree node)
 	}
     }
 
-  if (TREE_CODE (node) == VAR_DECL && DECL_NTTP_OBJECT_P (node))
+  if (VAR_P (node) && DECL_NTTP_OBJECT_P (node))
     /* We want to mangle the argument, not the var we stored it in.  */
     node = tparm_object_argument (node);
 
@@ -3815,11 +3761,9 @@ write_template_arg (tree node)
   if (TREE_CODE (node) == BASELINK
       && !type_unknown_p (node))
     {
-      if (abi_version_at_least (6))
+      /* Before v6 we wrongly wrapped a class-scope function in X/E.  */
+      if (abi_check (6))
 	node = BASELINK_FUNCTIONS (node);
-      if (abi_warn_or_compat_version_crosses (6))
-	/* We wrongly wrapped a class-scope function in X/E.  */
-	G.need_abi_warning = 1;
     }
 
   if (ARGUMENT_PACK_P (node))
@@ -3827,12 +3771,10 @@ write_template_arg (tree node)
       /* Expand the template argument pack. */
       tree args = ARGUMENT_PACK_ARGS (node);
       int i, length = TREE_VEC_LENGTH (args);
-      if (abi_version_at_least (6))
+      if (abi_check (6))
 	write_char ('J');
       else
 	write_char ('I');
-      if (abi_warn_or_compat_version_crosses (6))
-	G.need_abi_warning = 1;
       for (i = 0; i < length; ++i)
         write_template_arg (TREE_VEC_ELT (args, i));
       write_char ('E');
@@ -3855,12 +3797,10 @@ write_template_arg (tree node)
       write_char ('L');
       /* Until ABI version 3, the underscore before the mangled name
 	 was incorrectly omitted.  */
-      if (!abi_version_at_least (3))
+      if (!abi_check (3))
 	write_char ('Z');
       else
 	write_string ("_Z");
-      if (abi_warn_or_compat_version_crosses (3))
-	G.need_abi_warning = 1;
       write_encoding (node);
       write_char ('E');
     }
@@ -3960,6 +3900,7 @@ static void
 write_template_param (const tree parm)
 {
   int parm_index;
+  int level;
 
   MANGLE_TRACE_TREE ("template-parm", parm);
 
@@ -3969,10 +3910,12 @@ write_template_param (const tree parm)
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       parm_index = TEMPLATE_TYPE_IDX (parm);
+      level = TEMPLATE_TYPE_LEVEL (parm);
       break;
 
     case TEMPLATE_PARM_INDEX:
       parm_index = TEMPLATE_PARM_IDX (parm);
+      level = TEMPLATE_PARM_LEVEL (parm);
       break;
 
     default:
@@ -3980,6 +3923,14 @@ write_template_param (const tree parm)
     }
 
   write_char ('T');
+  if (level > 1)
+    {
+      if (abi_check (19))
+	{
+	  write_char ('L');
+	  write_compact_number (level - 1);
+	}
+    }
   /* NUMBER as it appears in the mangling is (-1)-indexed, with the
      earliest template param denoted by `_'.  */
   write_compact_number (parm_index);
@@ -4033,10 +3984,8 @@ write_substitution (const int seq_id)
 static inline void
 start_mangling (const tree entity)
 {
+  G = {};
   G.entity = entity;
-  G.need_abi_warning = false;
-  G.need_cxx17_warning = false;
-  G.mod = false;
   obstack_free (&name_obstack, name_base);
   mangle_obstack = &name_obstack;
   name_base = obstack_alloc (&name_obstack, 0);
@@ -4357,6 +4306,7 @@ mangle_decomp (const tree decl, vec<tree> &decls)
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (decl);
 
+  check_abi_tags (decl);
   start_mangling (decl);
   write_string ("_Z");
 
@@ -4364,13 +4314,21 @@ mangle_decomp (const tree decl, vec<tree> &decls)
   gcc_assert (context != NULL_TREE);
 
   bool nested = false;
+  bool local = false;
   if (DECL_NAMESPACE_STD_P (context))
     write_string ("St");
+  else if (TREE_CODE (context) == FUNCTION_DECL)
+    {
+      local = true;
+      write_char ('Z');
+      write_encoding (context);
+      write_char ('E');
+    }
   else if (context != global_namespace)
     {
       nested = true;
       write_char ('N');
-      write_prefix (decl_mangling_context (decl));
+      write_prefix (context);
     }
 
   write_string ("DC");
@@ -4380,8 +4338,22 @@ mangle_decomp (const tree decl, vec<tree> &decls)
     write_unqualified_name (d);
   write_char ('E');
 
+  if (tree tags = get_abi_tags (decl))
+    {
+      /* We didn't emit ABI tags for structured bindings before ABI 19.  */
+      if (!G.need_abi_warning
+	  && TREE_PUBLIC (decl)
+	  && abi_warn_or_compat_version_crosses (19))
+	G.need_abi_warning = 1;
+
+      if (abi_version_at_least (19))
+	write_abi_tags (tags);
+    }
+
   if (nested)
     write_char ('E');
+  else if (local && DECL_DISCRIMINATOR_P (decl))
+    write_discriminator (discriminator_for_local_entity (decl));
 
   tree id = finish_mangling_get_identifier ();
   if (DEBUG_MANGLE)
@@ -4389,6 +4361,37 @@ mangle_decomp (const tree decl, vec<tree> &decls)
              IDENTIFIER_POINTER (id));
 
   input_location = saved_loc;
+
+  if (warn_abi && G.need_abi_warning)
+    {
+      const char fabi_version[] = "-fabi-version";
+      tree id2 = id;
+      int save_ver = flag_abi_version;
+
+      if (flag_abi_version != warn_abi_version)
+	{
+	  flag_abi_version = warn_abi_version;
+	  id2 = mangle_decomp (decl, decls);
+	  flag_abi_version = save_ver;
+	}
+
+      if (id2 == id)
+	/* OK.  */;
+      else if (warn_abi_version != 0
+	       && abi_version_at_least (warn_abi_version))
+	warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
+		    "the mangled name of %qD changed between "
+		    "%<%s=%d%> (%qD) and %<%s=%d%> (%qD)",
+		    G.entity, fabi_version, warn_abi_version, id2,
+		    fabi_version, save_ver, id);
+      else
+	warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
+		    "the mangled name of %qD changes between "
+		    "%<%s=%d%> (%qD) and %<%s=%d%> (%qD)",
+		    G.entity, fabi_version, save_ver, id,
+		    fabi_version, warn_abi_version, id2);
+    }
+
   return id;
 }
 
@@ -4558,6 +4561,13 @@ write_guarded_var_name (const tree variable)
     /* The name of a guard variable for a reference temporary should refer
        to the reference, not the temporary.  */
     write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);
+  else if (DECL_DECOMPOSITION_P (variable)
+	   && DECL_NAME (variable) == NULL_TREE
+	   && startswith (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (variable)),
+			  "_Z"))
+    /* The name of a guard variable for a structured binding needs special
+       casing.  */
+    write_string (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (variable)) + 2);
   else
     write_name (variable, /*ignore_local_scope=*/0);
 }
@@ -4624,7 +4634,7 @@ mangle_ref_init_variable (const tree variable)
   start_mangling (variable);
   write_string ("_ZGR");
   check_abi_tags (variable);
-  write_name (variable, /*ignore_local_scope=*/0);
+  write_guarded_var_name (variable);
   /* Avoid name clashes with aggregate initialization of multiple
      references at once.  */
   write_compact_number (current_ref_temp_count++);

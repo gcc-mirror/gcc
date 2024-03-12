@@ -158,7 +158,7 @@ symtab_node::address_can_be_compared_p ()
      flag_merge_constants permits us to assume the same on readonly vars.  */
   if (is_a <varpool_node *> (this)
       && (DECL_IN_CONSTANT_POOL (decl)
-	  || (flag_merge_constants >= 2
+	  || ((flag_merge_constants >= 2 || DECL_MERGEABLE (decl))
 	      && TREE_READONLY (decl) && !TREE_THIS_VOLATILE (decl))))
     return false;
   return true;
@@ -1548,8 +1548,8 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
   else
     {
       if (flag_checking
-	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE)
-	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE_TRAP))
+	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE,
+						  BUILT_IN_UNREACHABLE_TRAP))
 	ipa_verify_edge_has_no_modifications (e);
       new_stmt = e->call_stmt;
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
@@ -1635,9 +1635,8 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
 	{
 	  /* Keep calls marked as dead dead.  */
 	  if (new_stmt && is_gimple_call (new_stmt) && e->callee
-	      && (fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE)
-		  || fndecl_built_in_p (e->callee->decl,
-					BUILT_IN_UNREACHABLE_TRAP)))
+	      && fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE,
+				    BUILT_IN_UNREACHABLE_TRAP))
 	    {
 	      cgraph_edge::set_call_stmt (node->get_edge (old_stmt),
 					  as_a <gcall *> (new_stmt));
@@ -3259,9 +3258,8 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
   /* Optimizers can redirect unreachable calls or calls triggering undefined
      behavior to __builtin_unreachable or __builtin_unreachable trap.  */
 
-  if (fndecl_built_in_p (callee->decl, BUILT_IN_NORMAL)
-      && (DECL_FUNCTION_CODE (callee->decl) == BUILT_IN_UNREACHABLE
-	  || DECL_FUNCTION_CODE (callee->decl) == BUILT_IN_UNREACHABLE_TRAP))
+  if (fndecl_built_in_p (callee->decl, BUILT_IN_UNREACHABLE,
+				       BUILT_IN_UNREACHABLE_TRAP))
     return false;
 
   if (callee->former_clone_of != node->decl
@@ -3601,9 +3599,8 @@ cgraph_node::verify_node (void)
 	  /* Optimized out calls are redirected to __builtin_unreachable.  */
 	  && (e->count.nonzero_p ()
 	      || ! e->callee->decl
-	      || !(fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE)
-		   || fndecl_built_in_p (e->callee->decl,
-					 BUILT_IN_UNREACHABLE_TRAP)))
+	      || !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE,
+				     BUILT_IN_UNREACHABLE_TRAP))
 	  && count
 	      == ENTRY_BLOCK_PTR_FOR_FN (DECL_STRUCT_FUNCTION (decl))->count
 	  && (!e->count.ipa_p ()

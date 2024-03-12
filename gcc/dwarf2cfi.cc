@@ -112,8 +112,8 @@ struct dw_trace_info
      while scanning insns.  However, the args_size value is irrelevant at
      any point except can_throw_internal_p insns.  Therefore the "delay"
      sizes the values that must actually be emitted for this trace.  */
-  poly_int64_pod beg_true_args_size, end_true_args_size;
-  poly_int64_pod beg_delay_args_size, end_delay_args_size;
+  poly_int64 beg_true_args_size, end_true_args_size;
+  poly_int64 beg_delay_args_size, end_delay_args_size;
 
   /* The first EH insn in the trace, where beg_delay_args_size must be set.  */
   rtx_insn *eh_head;
@@ -219,7 +219,7 @@ static dw_cfa_location *cur_cfa;
 struct queued_reg_save {
   rtx reg;
   rtx saved_reg;
-  poly_int64_pod cfa_offset;
+  poly_int64 cfa_offset;
 };
 
 
@@ -3291,7 +3291,7 @@ create_cie_data (void)
    state at each location within the function.  These notes will be
    emitted during pass_final.  */
 
-static unsigned int
+static void
 execute_dwarf2_frame (void)
 {
   /* Different HARD_FRAME_POINTER_REGNUM might coexist in the same file.  */
@@ -3322,8 +3322,6 @@ execute_dwarf2_frame (void)
 
   delete trace_index;
   trace_index = NULL;
-
-  return 0;
 }
 
 /* Convert a DWARF call frame info. operation to its string name */
@@ -3796,7 +3794,8 @@ public:
   bool gate (function *) final override;
   unsigned int execute (function *) final override
   {
-    return execute_dwarf2_frame ();
+    execute_dwarf2_frame ();
+    return 0;
   }
 
 }; // class pass_dwarf2_frame
@@ -3821,6 +3820,15 @@ rtl_opt_pass *
 make_pass_dwarf2_frame (gcc::context *ctxt)
 {
   return new pass_dwarf2_frame (ctxt);
+}
+
+void dwarf2cfi_cc_finalize ()
+{
+  add_cfi_insn = NULL;
+  add_cfi_vec = NULL;
+  cur_trace = NULL;
+  cur_row = NULL;
+  cur_cfa = NULL;
 }
 
 #include "gt-dwarf2cfi.h"

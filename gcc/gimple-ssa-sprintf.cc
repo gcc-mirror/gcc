@@ -1181,8 +1181,15 @@ adjust_range_for_overflow (tree dirtype, tree *argmin, tree *argmax)
 							      *argmin),
 					     size_int (dirprec)))))
     {
-      *argmin = force_fit_type (dirtype, wi::to_widest (*argmin), 0, false);
-      *argmax = force_fit_type (dirtype, wi::to_widest (*argmax), 0, false);
+      unsigned int maxprec = MAX (argprec, dirprec);
+      *argmin = force_fit_type (dirtype,
+				wide_int::from (wi::to_wide (*argmin), maxprec,
+						TYPE_SIGN (argtype)),
+				0, false);
+      *argmax = force_fit_type (dirtype,
+				wide_int::from (wi::to_wide (*argmax), maxprec,
+						TYPE_SIGN (argtype)),
+				0, false);
 
       /* If *ARGMIN is still less than *ARGMAX the conversion above
 	 is safe.  Otherwise, it has overflowed and would be unsafe.  */

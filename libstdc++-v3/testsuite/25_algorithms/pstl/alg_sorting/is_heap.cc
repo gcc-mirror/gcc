@@ -43,16 +43,16 @@ struct WithCmpOp
 
 struct test_is_heap
 {
-#if _PSTL_ICC_17_VC141_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN ||                                                            \
-    _PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN //dummy specialization by policy type, in case of broken configuration
+#if defined(_PSTL_ICC_17_VC141_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) ||                                                             \
+    defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename Iterator, typename Predicate>
     typename std::enable_if<is_same_iterator_category<Iterator, std::random_access_iterator_tag>::value, void>::type
-    operator()(pstl::execution::unsequenced_policy, Iterator first, Iterator last, Predicate pred)
+    operator()(__pstl::execution::unsequenced_policy, Iterator first, Iterator last, Predicate pred)
     {
     }
     template <typename Iterator, typename Predicate>
     typename std::enable_if<is_same_iterator_category<Iterator, std::random_access_iterator_tag>::value, void>::type
-    operator()(pstl::execution::parallel_unsequenced_policy, Iterator first, Iterator last, Predicate pred)
+    operator()(__pstl::execution::parallel_unsequenced_policy, Iterator first, Iterator last, Predicate pred)
     {
     }
 #endif
@@ -87,13 +87,14 @@ struct test_is_heap
             const Iterator actual = is_heap_until(exec, first, last, pred);
             const auto x = std::distance(first, actual);
             EXPECT_TRUE(expected == actual, "wrong return value from is_heap_until with predicate");
+            EXPECT_EQ(x, y, "both iterators should be the same distance away from 'first'");
         }
     }
 
     // is_heap, is_heap_until works only with random access iterators
     template <typename Policy, typename Iterator, typename Predicate>
     typename std::enable_if<!is_same_iterator_category<Iterator, std::random_access_iterator_tag>::value, void>::type
-    operator()(Policy&& exec, Iterator first, Iterator last, Predicate pred)
+    operator()(Policy&&, Iterator, Iterator, Predicate)
     {
     }
 };
@@ -121,7 +122,7 @@ test_is_heap_by_type(Comp comp)
         invoke_on_all_policies(test_is_heap(), in.cbegin(), in.cend(), comp);
     }
 
-    Sequence<T> in(max_size / 10, [](size_t v) -> T { return T(1); });
+    Sequence<T> in(max_size / 10, [](size_t) -> T { return T(1); });
     invoke_on_all_policies(test_is_heap(), in.begin(), in.end(), comp);
 }
 
@@ -139,7 +140,7 @@ struct test_non_const
     }
 };
 
-int32_t
+int
 main()
 {
     test_is_heap_by_type<float32_t>(std::greater<float32_t>());

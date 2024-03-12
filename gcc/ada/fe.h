@@ -220,8 +220,11 @@ extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 #define Unnest_Subprogram_Mode		opt__unnest_subprogram_mode
 
 typedef enum {
-  Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022, Ada_With_Extensions
+  Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022
 } Ada_Version_Type;
+// Ada_With_Core_Extensions and Ada_With_All_Extensions (see opt.ads) are not
+// used on the C side for now. If we decide to use them, we should import
+// All_Extensions_Allowed and Core_Extensions_Allowed functions.
 
 extern Ada_Version_Type Ada_Version;
 extern Boolean Back_End_Inlining;
@@ -297,8 +300,10 @@ extern Boolean Is_Derived_Type			(Entity_Id);
 /* sem_eval: */
 
 #define Compile_Time_Known_Value	sem_eval__compile_time_known_value
+#define Is_Null_Range			sem_eval__is_null_range
 
 extern Boolean Compile_Time_Known_Value	(Node_Id);
+extern Boolean Is_Null_Range 		(Node_Id, Node_Id);
 
 /* sem_util: */
 
@@ -678,8 +683,12 @@ Entity_Kind Parameter_Mode (E Id);
 // The following is needed because Convention in Sem_Util is a renaming
 // of Basic_Convention.
 
-#define Convention einfo__entities__basic_convention
-Convention_Id Convention (N Node);
+static inline Convention_Id
+Convention (N Node)
+{
+  extern Byte einfo__entities__basic_convention (N Node);
+  return (Convention_Id) einfo__entities__basic_convention (Node);
+}
 
 // See comments regarding Entity_Or_Associated_Node in Sinfo.Utils.
 

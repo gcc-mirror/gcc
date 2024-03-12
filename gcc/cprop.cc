@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "backend.h"
 #include "rtl.h"
+#include "rtlanal.h"
 #include "cfghooks.h"
 #include "df.h"
 #include "insn-config.h"
@@ -142,10 +143,10 @@ cprop_alloc (unsigned long size)
   return obstack_alloc (&cprop_obstack, size);
 }
 
-/* Return nonzero if register X is unchanged from INSN to the end
+/* Return true if register X is unchanged from INSN to the end
    of INSN's basic block.  */
 
-static int
+static bool
 reg_available_p (const_rtx x, const rtx_insn *insn ATTRIBUTE_UNUSED)
 {
   return ! REGNO_REG_SET_P (reg_set_bitmap, REGNO (x));
@@ -517,10 +518,10 @@ reset_opr_set_tables (void)
   CLEAR_REG_SET (reg_set_bitmap);
 }
 
-/* Return nonzero if the register X has not been set yet [since the
+/* Return true if the register X has not been set yet [since the
    start of the basic block containing INSN].  */
 
-static int
+static bool
 reg_not_set_p (const_rtx x, const rtx_insn *insn ATTRIBUTE_UNUSED)
 {
   return ! REGNO_REG_SET_P (reg_set_bitmap, REGNO (x));
@@ -722,14 +723,14 @@ find_used_regs (rtx *xptr, void *data ATTRIBUTE_UNUSED)
 }
 
 /* Try to replace all uses of FROM in INSN with TO.
-   Return nonzero if successful.  */
+   Return true if successful.  */
 
-static int
+static bool
 try_replace_reg (rtx from, rtx to, rtx_insn *insn)
 {
   rtx note = find_reg_equal_equiv_note (insn);
   rtx src = 0;
-  int success = 0;
+  bool success = false;
   rtx set = single_set (insn);
 
   bool check_rtx_costs = true;
@@ -765,7 +766,7 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
 
 
   if (num_changes_pending () && apply_change_group ())
-    success = 1;
+    success = true;
 
   /* Try to simplify SET_SRC if we have substituted a constant.  */
   if (success && set && CONSTANT_P (to))
@@ -790,12 +791,13 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
 
       if (!rtx_equal_p (src, SET_SRC (set))
 	  && validate_change (insn, &SET_SRC (set), src, 0))
-	success = 1;
+	success = true;
 
       /* If we've failed perform the replacement, have a single SET to
 	 a REG destination and don't yet have a note, add a REG_EQUAL note
 	 to not lose information.  */
-      if (!success && note == 0 && set != 0 && REG_P (SET_DEST (set)))
+      if (!success && note == 0 && set != 0 && REG_P (SET_DEST (set))
+	  && !contains_paradoxical_subreg_p (SET_SRC (set)))
 	note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
     }
 
@@ -808,7 +810,7 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
 
       if (!rtx_equal_p (dest, SET_DEST (set))
           && validate_change (insn, &SET_DEST (set), dest, 0))
-        success = 1;
+	success = true;
     }
 
   /* REG_EQUAL may get simplified into register.
@@ -889,10 +891,10 @@ find_avail_set (int regno, rtx_insn *insn, struct cprop_expr *set_ret[2])
    JUMP_INSNS.  JUMP must be a conditional jump.  If SETCC is non-NULL
    it is the instruction that immediately precedes JUMP, and must be a
    single SET of a register.  FROM is what we will try to replace,
-   SRC is the constant we will try to substitute for it.  Return nonzero
+   SRC is the constant we will try to substitute for it.  Return true
    if a change was made.  */
 
-static int
+static bool
 cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
 {
   rtx new_rtx, set_src, note_src;
@@ -931,7 +933,7 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
 
   /* If no simplification can be made, then try the next register.  */
   if (rtx_equal_p (new_rtx, SET_SRC (set)))
-    return 0;
+    return false;
 
   /* If this is now a no-op delete it, otherwise this must be a valid insn.  */
   if (new_rtx == pc_rtx)
@@ -941,7 +943,7 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
       /* Ensure the value computed inside the jump insn to be equivalent
          to one computed by setcc.  */
       if (setcc && modified_in_p (new_rtx, setcc))
-	return 0;
+	return false;
       if (! validate_unshare_change (jump, &SET_SRC (set), new_rtx, 0))
 	{
 	  /* When (some) constants are not valid in a comparison, and there
@@ -955,7 +957,7 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
 
 	  if (!rtx_equal_p (new_rtx, note_src))
 	    set_unique_reg_note (jump, REG_EQUAL, copy_rtx (new_rtx));
-	  return 0;
+	  return false;
 	}
 
       /* Remove REG_EQUAL note after simplification.  */
@@ -992,14 +994,14 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
       delete_insn (jump);
     }
 
-  return 1;
+  return true;
 }
 
 /* Subroutine of cprop_insn that tries to propagate constants.  FROM is what
    we will try to replace, SRC is the constant we will try to substitute for
    it and INSN is the instruction where this will be happening.  */
 
-static int
+static bool
 constprop_register (rtx from, rtx src, rtx_insn *insn)
 {
   rtx sset;
@@ -1016,12 +1018,12 @@ constprop_register (rtx from, rtx src, rtx_insn *insn)
       if (REG_P (dest)
 	  && cprop_jump (BLOCK_FOR_INSN (insn), insn, next_insn,
 			 from, src))
-	return 1;
+	return true;
     }
 
   /* Handle normal insns next.  */
   if (NONJUMP_INSN_P (insn) && try_replace_reg (from, src, insn))
-    return 1;
+    return true;
 
   /* Try to propagate a CONST_INT into a conditional jump.
      We're pretty specific about what we will handle in this
@@ -1031,17 +1033,18 @@ constprop_register (rtx from, rtx src, rtx_insn *insn)
      (set (pc) (if_then_else ...))  */
   else if (any_condjump_p (insn) && onlyjump_p (insn))
     return cprop_jump (BLOCK_FOR_INSN (insn), NULL, insn, from, src);
-  return 0;
+  return false;
 }
 
 /* Perform constant and copy propagation on INSN.
-   Return nonzero if a change was made.  */
+   Return true if a change was made.  */
 
-static int
+static bool
 cprop_insn (rtx_insn *insn)
 {
   unsigned i;
-  int changed = 0, changed_this_round;
+  int changed_this_round;
+  bool changed = false;
   rtx note;
 
   do
@@ -1079,7 +1082,8 @@ cprop_insn (rtx_insn *insn)
 	  if (src_cst && cprop_constant_p (src_cst)
 	      && constprop_register (reg_used, src_cst, insn))
 	    {
-	      changed_this_round = changed = 1;
+	      changed = true;
+	      changed_this_round = 1;
 	      global_const_prop_count++;
 	      if (dump_file != NULL)
 		{
@@ -1091,14 +1095,15 @@ cprop_insn (rtx_insn *insn)
 		  fprintf (dump_file, "\n");
 		}
 	      if (insn->deleted ())
-		return 1;
+		return true;
 	    }
 	  /* Copy propagation.  */
 	  else if (src_reg && cprop_reg_p (src_reg)
 		   && REGNO (src_reg) != regno
 		   && try_replace_reg (reg_used, src_reg, insn))
 	    {
-	      changed_this_round = changed = 1;
+	      changed = true;
+	      changed_this_round = 1;
 	      global_copy_prop_count++;
 	      if (dump_file != NULL)
 		{
@@ -1121,7 +1126,7 @@ cprop_insn (rtx_insn *insn)
   while (changed_this_round);
 
   if (changed && DEBUG_INSN_P (insn))
-    return 0;
+    return false;
 
   return changed;
 }
@@ -1237,7 +1242,7 @@ do_local_cprop (rtx x, rtx_insn *insn)
 
 /* Do local const/copy propagation (i.e. within each basic block).  */
 
-static int
+static bool
 local_cprop_pass (void)
 {
   basic_block bb;
@@ -1352,12 +1357,12 @@ implicit_set_cond_p (const_rtx cond)
 	 handle float, complex, and vector.  If any subpart is a zero, then
 	 the optimization can't be performed.  */
       /* ??? The complex and vector checks are not implemented yet.  We just
-	 always return zero for them.  */
+	 always return false for them.  */
       if (CONST_DOUBLE_AS_FLOAT_P (cst)
 	  && real_equal (CONST_DOUBLE_REAL_VALUE (cst), &dconst0))
-	return 0;
+	return false;
       else
-	return 0;
+	return false;
     }
 
   return cprop_constant_p (cst);
@@ -1510,21 +1515,21 @@ reg_killed_on_edge (const_rtx reg, const_edge e)
    basic block BB which has more than one predecessor.  If not NULL, SETCC
    is the first instruction of BB, which is immediately followed by JUMP_INSN
    JUMP.  Otherwise, SETCC is NULL, and JUMP is the first insn of BB.
-   Returns nonzero if a change was made.
+   Returns true if a change was made.
 
    During the jump bypassing pass, we may place copies of SETCC instructions
    on CFG edges.  The following routine must be careful to pay attention to
    these inserted insns when performing its transformations.  */
 
-static int
+static bool
 bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 {
   rtx_insn *insn;
   rtx note;
   edge e, edest;
-  int change;
-  int may_be_loop_header = false;
-  unsigned removed_p;
+  bool change;
+  bool may_be_loop_header = false;
+  bool removed_p;
   unsigned i;
   edge_iterator ei;
 
@@ -1555,10 +1560,10 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	  }
     }
 
-  change = 0;
+  change = false;
   for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     {
-      removed_p = 0;
+      removed_p = false;
 
       if (e->flags & EDGE_COMPLEX)
 	{
@@ -1663,8 +1668,8 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 			   old_dest->index, e->src->index, e->src->index,
 			   old_dest->index, dest->index);
 		}
-	      change = 1;
-	      removed_p = 1;
+	      change = true;
+	      removed_p = true;
 	      break;
 	    }
 	}
@@ -1681,22 +1686,22 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 
    This function is now mis-named, because we also handle indirect jumps.  */
 
-static int
+static bool
 bypass_conditional_jumps (void)
 {
   basic_block bb;
-  int changed;
+  bool changed;
   rtx_insn *setcc;
   rtx_insn *insn;
   rtx dest;
 
   /* Note we start at block 1.  */
   if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
-    return 0;
+    return false;
 
   mark_dfs_back_edges ();
 
-  changed = 0;
+  changed = false;
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->next_bb,
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
@@ -1724,7 +1729,8 @@ bypass_conditional_jumps (void)
 	      {
 		if ((any_condjump_p (insn) || computed_jump_p (insn))
 		    && onlyjump_p (insn))
-		  changed |= bypass_block (bb, setcc, insn);
+		  if (bypass_block (bb, setcc, insn))
+		    changed = true;
 		break;
 	      }
 	    else if (INSN_P (insn))
@@ -1742,16 +1748,16 @@ bypass_conditional_jumps (void)
 
 /* Main function for the CPROP pass.  */
 
-static int
+static bool
 one_cprop_pass (void)
 {
+  bool changed = false;
   int i;
-  int changed = 0;
 
   /* Return if there's nothing to do, or it is too expensive.  */
   if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1
       || gcse_or_cprop_is_too_expensive (_ ("const/copy propagation disabled")))
-    return 0;
+    return false;
 
   global_const_prop_count = local_const_prop_count = 0;
   global_copy_prop_count = local_copy_prop_count = 0;
@@ -1772,7 +1778,9 @@ one_cprop_pass (void)
      FIXME: The global analysis would not get into infinite loops if it
 	    would use the DF solver (via df_simple_dataflow) instead of
 	    the solver implemented in this file.  */
-  changed |= local_cprop_pass ();
+  if (local_cprop_pass ())
+    changed = true;
+
   if (changed)
     delete_unreachable_blocks ();
 
@@ -1783,7 +1791,8 @@ one_cprop_pass (void)
      changed something.
      ??? This could run earlier so that any uncovered implicit sets
 	 sets could be exploited in local_cprop_pass() also.  Later.  */
-  changed |= find_implicit_sets ();
+  if (find_implicit_sets ())
+    changed = true;
 
   /* If local_cprop_pass() or find_implicit_sets() changed something,
      run df_analyze() to bring all insn caches up-to-date, and to take
@@ -1840,7 +1849,8 @@ one_cprop_pass (void)
 		  = (GET_CODE (PATTERN (insn)) == TRAP_IF
 		     && XEXP (PATTERN (insn), 0) == const1_rtx);
 
-		changed |= cprop_insn (insn);
+		if (cprop_insn (insn))
+		  changed = true;
 
 		/* Keep track of everything modified by this insn.  */
 		/* ??? Need to be careful w.r.t. mods done to INSN.
@@ -1882,7 +1892,8 @@ one_cprop_pass (void)
 	  emit_barrier_after_bb (to_split);
 	}
 
-      changed |= bypass_conditional_jumps ();
+      if (bypass_conditional_jumps ())
+	changed = true;
 
       FREE_REG_SET (reg_set_bitmap);
       free_cprop_mem ();

@@ -5,4 +5,4 @@ void __attribute__ ((interrupt ("machine")))
 foo (void)
 {
 }
-/* { dg-final { scan-assembler "mret" } } */
+/* { dg-final { scan-assembler {\mmret} } } */

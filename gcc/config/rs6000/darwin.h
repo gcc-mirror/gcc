@@ -98,7 +98,7 @@
    Include libmx when targeting Darwin 7.0 and above, but before libSystem,
    since the functions are actually in libSystem but for 7.x compatibility
    we want them to be looked for in libmx first.
-   Include libSystemStubs when compiling against 10.3 - 10.5 SDKs (we assume
+   Include libSystemStubs when compiling against 10.3 - 10.6 SDKs (we assume
    this is the case when targetting these) - but not for 64-bit long double.
    Don't do either for m64, the library is either a dummy or non-existent.
 */
@@ -107,8 +107,8 @@
 #define LIB_SPEC \
 "%{!static:								\
   %{!m64:%{!mlong-double-64:						\
-    %{pg:%:version-compare(>< 10.3 10.5 mmacosx-version-min= -lSystemStubs_profile)} \
-    %{!pg:%:version-compare(>< 10.3 10.5 mmacosx-version-min= -lSystemStubs)} \
+    %{pg:%:version-compare(>< 10.3 10.7 mmacosx-version-min= -lSystemStubs_profile)} \
+    %{!pg:%:version-compare(>< 10.3 10.7 mmacosx-version-min= -lSystemStubs)} \
      %:version-compare(>< 10.3 10.4 mmacosx-version-min= -lmx)}}	\
   -lSystem								\
 }"
@@ -427,12 +427,10 @@
 /* Darwin increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
 #define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)			  \
-  ((TREE_CODE (STRUCT) == RECORD_TYPE					  \
-    || TREE_CODE (STRUCT) == UNION_TYPE					  \
-    || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)				  \
+  (RECORD_OR_UNION_TYPE_P (STRUCT)				  \
    && TARGET_ALIGN_NATURAL == 0						  \
    ? darwin_rs6000_special_round_type_align (STRUCT, COMPUTED, SPECIFIED) \
-   : (TREE_CODE (STRUCT) == VECTOR_TYPE					  \
+   : (VECTOR_TYPE_P (STRUCT)					  \
       && ALTIVEC_VECTOR_MODE (TYPE_MODE (STRUCT)))			  \
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), 128)				  \
    : MAX ((COMPUTED), (SPECIFIED)))

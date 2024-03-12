@@ -64,8 +64,10 @@
 #endif
 #if __cplusplus >= 202002L
 # include <compare>
-#define __cpp_lib_constexpr_vector 201907L
 #endif
+
+#define __glibcxx_want_constexpr_vector
+#include <bits/version.h>
 
 #include <debug/assertions.h>
 
@@ -388,6 +390,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
     protected:
+
       _GLIBCXX20_CONSTEXPR
       void
       _M_create_storage(size_t __n)
@@ -403,6 +406,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  individual elements in any order.
    *
    *  @ingroup sequences
+   *  @headerfile vector
+   *  @since C++98
    *
    *  @tparam _Tp  Type of element.
    *  @tparam _Alloc  Allocator type, defaults to allocator<_Tp>.
@@ -1071,8 +1076,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       capacity() const _GLIBCXX_NOEXCEPT
-      { return size_type(this->_M_impl._M_end_of_storage
-			 - this->_M_impl._M_start); }
+      {
+	return size_type(this->_M_impl._M_end_of_storage
+			   - this->_M_impl._M_start);
+      }
 
       /**
        *  Returns true if the %vector is empty.  (Thus begin() would

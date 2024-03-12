@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module -isystem [srcdir]" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module -isystem [srcdir] -fno-canonical-system-headers" }
 
 // Alias at the header file.  We have one CMI file
 import "alias-1_a.H";

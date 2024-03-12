@@ -18,6 +18,7 @@ import dmd.astenums;
 import dmd.canthrow;
 import dmd.dclass;
 import dmd.declaration;
+import dmd.errorsink;
 import dmd.expression;
 import dmd.func;
 import dmd.globals;
@@ -27,7 +28,6 @@ import dmd.location;
 import dmd.mtype;
 import dmd.statement;
 import dmd.tokens;
-import dmd.visitor;
 
 /**
  * BE stands for BlockExit.
@@ -57,40 +57,27 @@ enum BE : int
  * Params:
  *   s = statement to check for block exit status
  *   func = function that statement s is in
- *   mustNotThrow = generate an error if it throws
+ *   eSink = generate an error if it throws
  * Returns:
  *   BE.xxxx
  */
-int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
+int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
 {
-    extern (C++) final class BlockExit : Visitor
-    {
-        alias visit = Visitor.visit;
-    public:
-        FuncDeclaration func;
-        bool mustNotThrow;
-        int result;
+        int result = BE.none;
 
-        extern (D) this(FuncDeclaration func, bool mustNotThrow) scope
-        {
-            this.func = func;
-            this.mustNotThrow = mustNotThrow;
-            result = BE.none;
-        }
-
-        override void visit(Statement s)
+        void visitDefaultCase(Statement s)
         {
             printf("Statement::blockExit(%p)\n", s);
             printf("%s\n", s.toChars());
             assert(0);
         }
 
-        override void visit(ErrorStatement s)
+        void visitError(ErrorStatement s)
         {
             result = BE.none;
         }
 
-        override void visit(ExpStatement s)
+        void visitExp(ExpStatement s)
         {
             result = BE.fallthru;
             if (s.exp)
@@ -111,17 +98,22 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 if (s.exp.type && s.exp.type.toBasetype().isTypeNoreturn())
                     result = BE.halt;
 
-                result |= canThrow(s.exp, func, mustNotThrow);
+                result |= canThrow(s.exp, func, eSink);
             }
         }
 
-        override void visit(CompileStatement s)
+        void visitDtorExp(DtorExpStatement s)
+        {
+            visitExp(s);
+        }
+
+        void visitMixin(MixinStatement s)
         {
             assert(global.errors);
             result = BE.fallthru;
         }
 
-        override void visit(CompoundStatement cs)
+        void visitCompound(CompoundStatement cs)
         {
             //printf("CompoundStatement.blockExit(%p) %d result = x%X\n", cs, cs.statements.length, result);
             result = BE.fallthru;
@@ -152,37 +144,38 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                                 // Deprecated in 2.100
                                 // Make an error in 2.110
                                 if (sl && sl.isCaseStatement())
-                                    s.deprecation("switch case fallthrough - use 'goto %s;' if intended", gototype);
+                                    global.errorSink.deprecation(s.loc, "switch case fallthrough - use 'goto %s;' if intended", gototype);
                                 else
-                                    s.error("switch case fallthrough - use 'goto %s;' if intended", gototype);
+                                    global.errorSink.error(s.loc, "switch case fallthrough - use 'goto %s;' if intended", gototype);
                             }
                         }
                     }
 
                     if (!(result & BE.fallthru) && !s.comeFrom())
                     {
-                        if (blockExit(s, func, mustNotThrow) != BE.halt && s.hasCode() &&
+                        version (none) // this warning is completely useless due to insane false positive rate in real life template code
+                        if (blockExit(s, func, eSink) != BE.halt && s.hasCode() &&
                             s.loc != Loc.initial) // don't emit warning for generated code
-                            s.warning("statement is not reachable");
+                            global.errorSink.warning(s.loc, "statement is not reachable");
                     }
                     else
                     {
                         result &= ~BE.fallthru;
-                        result |= blockExit(s, func, mustNotThrow);
+                        result |= blockExit(s, func, eSink);
                     }
                     slast = s;
                 }
             }
         }
 
-        override void visit(UnrolledLoopStatement uls)
+        void visitUnrolledLoop(UnrolledLoopStatement uls)
         {
             result = BE.fallthru;
             foreach (s; *uls.statements)
             {
                 if (s)
                 {
-                    int r = blockExit(s, func, mustNotThrow);
+                    int r = blockExit(s, func, eSink);
                     result |= r & ~(BE.break_ | BE.continue_ | BE.fallthru);
                     if ((r & (BE.fallthru | BE.continue_ | BE.break_)) == 0)
                         result &= ~BE.fallthru;
@@ -190,23 +183,23 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             }
         }
 
-        override void visit(ScopeStatement s)
+        void visitScope(ScopeStatement s)
         {
             //printf("ScopeStatement::blockExit(%p)\n", s.statement);
-            result = blockExit(s.statement, func, mustNotThrow);
+            result = blockExit(s.statement, func, eSink);
         }
 
-        override void visit(WhileStatement s)
+        void visitWhile(WhileStatement s)
         {
             assert(global.errors);
             result = BE.fallthru;
         }
 
-        override void visit(DoStatement s)
+        void visitDo(DoStatement s)
         {
             if (s._body)
             {
-                result = blockExit(s._body, func, mustNotThrow);
+                result = blockExit(s._body, func, eSink);
                 if (result == BE.break_)
                 {
                     result = BE.fallthru;
@@ -219,7 +212,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 result = BE.fallthru;
             if (result & BE.fallthru)
             {
-                result |= canThrow(s.condition, func, mustNotThrow);
+                result |= canThrow(s.condition, func, eSink);
 
                 if (!(result & BE.break_) && s.condition.toBool().hasValue(true))
                     result &= ~BE.fallthru;
@@ -227,18 +220,18 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             result &= ~(BE.break_ | BE.continue_);
         }
 
-        override void visit(ForStatement s)
+        void visitFor(ForStatement s)
         {
             result = BE.fallthru;
             if (s._init)
             {
-                result = blockExit(s._init, func, mustNotThrow);
+                result = blockExit(s._init, func, eSink);
                 if (!(result & BE.fallthru))
                     return;
             }
             if (s.condition)
             {
-                result |= canThrow(s.condition, func, mustNotThrow);
+                result |= canThrow(s.condition, func, eSink);
 
                 const opt = s.condition.toBool();
                 if (opt.hasValue(true))
@@ -250,78 +243,78 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 result &= ~BE.fallthru; // the body must do the exiting
             if (s._body)
             {
-                int r = blockExit(s._body, func, mustNotThrow);
+                int r = blockExit(s._body, func, eSink);
                 if (r & (BE.break_ | BE.goto_))
                     result |= BE.fallthru;
                 result |= r & ~(BE.fallthru | BE.break_ | BE.continue_);
             }
             if (s.increment)
-                result |= canThrow(s.increment, func, mustNotThrow);
+                result |= canThrow(s.increment, func, eSink);
         }
 
-        override void visit(ForeachStatement s)
+        void visitForeach(ForeachStatement s)
         {
             result = BE.fallthru;
-            result |= canThrow(s.aggr, func, mustNotThrow);
+            result |= canThrow(s.aggr, func, eSink);
 
             if (s._body)
-                result |= blockExit(s._body, func, mustNotThrow) & ~(BE.break_ | BE.continue_);
+                result |= blockExit(s._body, func, eSink) & ~(BE.break_ | BE.continue_);
         }
 
-        override void visit(ForeachRangeStatement s)
+        void visitForeachRange(ForeachRangeStatement s)
         {
             assert(global.errors);
             result = BE.fallthru;
         }
 
-        override void visit(IfStatement s)
+        void visitIf(IfStatement s)
         {
             //printf("IfStatement::blockExit(%p)\n", s);
             result = BE.none;
-            result |= canThrow(s.condition, func, mustNotThrow);
+            result |= canThrow(s.condition, func, eSink);
 
             const opt = s.condition.toBool();
             if (opt.hasValue(true))
             {
-                result |= blockExit(s.ifbody, func, mustNotThrow);
+                result |= blockExit(s.ifbody, func, eSink);
             }
             else if (opt.hasValue(false))
             {
-                result |= blockExit(s.elsebody, func, mustNotThrow);
+                result |= blockExit(s.elsebody, func, eSink);
             }
             else
             {
-                result |= blockExit(s.ifbody, func, mustNotThrow);
-                result |= blockExit(s.elsebody, func, mustNotThrow);
+                result |= blockExit(s.ifbody, func, eSink);
+                result |= blockExit(s.elsebody, func, eSink);
             }
             //printf("IfStatement::blockExit(%p) = x%x\n", s, result);
         }
 
-        override void visit(ConditionalStatement s)
+        void visitConditional(ConditionalStatement s)
         {
-            result = blockExit(s.ifbody, func, mustNotThrow);
+            result = blockExit(s.ifbody, func, eSink);
             if (s.elsebody)
-                result |= blockExit(s.elsebody, func, mustNotThrow);
+                result |= blockExit(s.elsebody, func, eSink);
         }
 
-        override void visit(PragmaStatement s)
+        void visitPragma(PragmaStatement s)
         {
             result = BE.fallthru;
         }
 
-        override void visit(StaticAssertStatement s)
+        void visitStaticAssert(StaticAssertStatement s)
         {
             result = BE.fallthru;
         }
 
-        override void visit(SwitchStatement s)
+        void visitSwitch(SwitchStatement s)
         {
             result = BE.none;
-            result |= canThrow(s.condition, func, mustNotThrow);
+            result |= canThrow(s.condition, func, eSink);
 
             if (s._body)
             {
-                result |= blockExit(s._body, func, mustNotThrow);
+                result |= blockExit(s._body, func, eSink);
                 if (result & BE.break_)
                 {
                     result |= BE.fallthru;
@@ -332,66 +325,66 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 result |= BE.fallthru;
         }
 
-        override void visit(CaseStatement s)
+        void visitCase(CaseStatement s)
         {
-            result = blockExit(s.statement, func, mustNotThrow);
+            result = blockExit(s.statement, func, eSink);
         }
 
-        override void visit(DefaultStatement s)
+        void visitDefault(DefaultStatement s)
         {
-            result = blockExit(s.statement, func, mustNotThrow);
+            result = blockExit(s.statement, func, eSink);
         }
 
-        override void visit(GotoDefaultStatement s)
-        {
-            result = BE.goto_;
-        }
-
-        override void visit(GotoCaseStatement s)
+        void visitGotoDefault(GotoDefaultStatement s)
         {
             result = BE.goto_;
         }
 
-        override void visit(SwitchErrorStatement s)
+        void visitGotoCase(GotoCaseStatement s)
+        {
+            result = BE.goto_;
+        }
+
+        void visitSwitchError(SwitchErrorStatement s)
         {
             // Switch errors are non-recoverable
             result = BE.halt;
         }
 
-        override void visit(ReturnStatement s)
+        void visitReturn(ReturnStatement s)
         {
             result = BE.return_;
             if (s.exp)
-                result |= canThrow(s.exp, func, mustNotThrow);
+                result |= canThrow(s.exp, func, eSink);
         }
 
-        override void visit(BreakStatement s)
+        void visitBreak(BreakStatement s)
         {
             //printf("BreakStatement::blockExit(%p) = x%x\n", s, s.ident ? BE.goto_ : BE.break_);
             result = s.ident ? BE.goto_ : BE.break_;
         }
 
-        override void visit(ContinueStatement s)
+        void visitContinue(ContinueStatement s)
         {
             result = s.ident ? BE.continue_ | BE.goto_ : BE.continue_;
         }
 
-        override void visit(SynchronizedStatement s)
+        void visitSynchronized(SynchronizedStatement s)
         {
-            result = blockExit(s._body, func, mustNotThrow);
+            result = blockExit(s._body, func, eSink);
         }
 
-        override void visit(WithStatement s)
+        void visitWith(WithStatement s)
         {
             result = BE.none;
-            result |= canThrow(s.exp, func, mustNotThrow);
-            result |= blockExit(s._body, func, mustNotThrow);
+            result |= canThrow(s.exp, func, eSink);
+            result |= blockExit(s._body, func, eSink);
         }
 
-        override void visit(TryCatchStatement s)
+        void visitTryCatch(TryCatchStatement s)
         {
             assert(s._body);
-            result = blockExit(s._body, func, false);
+            result = blockExit(s._body, func, null);
 
             int catchresult = 0;
             foreach (c; *s.catches)
@@ -399,7 +392,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 if (c.type == Type.terror)
                     continue;
 
-                int cresult = blockExit(c.handler, func, mustNotThrow);
+                int cresult = blockExit(c.handler, func, eSink);
 
                 /* If we're catching Object, then there is no throwing
                  */
@@ -420,24 +413,24 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 }
                 catchresult |= cresult;
             }
-            if (mustNotThrow && (result & BE.throw_))
+            if (eSink && (result & BE.throw_))
             {
                 // now explain why this is nothrow
-                blockExit(s._body, func, mustNotThrow);
+                blockExit(s._body, func, eSink);
             }
             result |= catchresult;
         }
 
-        override void visit(TryFinallyStatement s)
+        void visitTryFinally(TryFinallyStatement s)
         {
             result = BE.fallthru;
             if (s._body)
-                result = blockExit(s._body, func, false);
+                result = blockExit(s._body, func, null);
 
             // check finally body as well, it may throw (bug #4082)
             int finalresult = BE.fallthru;
             if (s.finalbody)
-                finalresult = blockExit(s.finalbody, func, false);
+                finalresult = blockExit(s.finalbody, func, null);
 
             // If either body or finalbody halts
             if (result == BE.halt)
@@ -445,13 +438,13 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             if (finalresult == BE.halt)
                 result = BE.none;
 
-            if (mustNotThrow)
+            if (eSink)
             {
                 // now explain why this is nothrow
                 if (s._body && (result & BE.throw_))
-                    blockExit(s._body, func, mustNotThrow);
+                    blockExit(s._body, func, eSink);
                 if (s.finalbody && (finalresult & BE.throw_))
-                    blockExit(s.finalbody, func, mustNotThrow);
+                    blockExit(s.finalbody, func, eSink);
             }
 
             version (none)
@@ -461,7 +454,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 // destructor call, exit of synchronized statement, etc.
                 if (result == BE.halt && finalresult != BE.halt && s.finalbody && s.finalbody.hasCode())
                 {
-                    s.finalbody.warning("statement is not reachable");
+                    eSink.warning(s.finalbody.loc, "statement is not reachable");
                 }
             }
 
@@ -470,63 +463,64 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             result |= finalresult & ~BE.fallthru;
         }
 
-        override void visit(ScopeGuardStatement s)
+        void visitScopeGuard(ScopeGuardStatement s)
         {
             // At this point, this statement is just an empty placeholder
             result = BE.fallthru;
         }
 
-        override void visit(ThrowStatement s)
+        void visitThrow(ThrowStatement s)
         {
             if (s.internalThrow)
             {
                 // https://issues.dlang.org/show_bug.cgi?id=8675
-                // Allow throwing 'Throwable' object even if mustNotThrow.
+                // Allow throwing 'Throwable' object even if eSink.
                 result = BE.fallthru;
                 return;
             }
 
-            result = checkThrow(s.loc, s.exp, mustNotThrow);
+            result = checkThrow(s.loc, s.exp, func, eSink);
         }
 
-        override void visit(GotoStatement s)
+        void visitGoto(GotoStatement s)
         {
             //printf("GotoStatement::blockExit(%p)\n", s);
             result = BE.goto_;
         }
 
-        override void visit(LabelStatement s)
+        void visitLabel(LabelStatement s)
         {
             //printf("LabelStatement::blockExit(%p)\n", s);
-            result = blockExit(s.statement, func, mustNotThrow);
+            result = blockExit(s.statement, func, eSink);
             if (s.breaks)
                 result |= BE.fallthru;
         }
 
-        override void visit(CompoundAsmStatement s)
+        void visitCompoundAsm(CompoundAsmStatement s)
         {
             // Assume the worst
             result = BE.fallthru | BE.return_ | BE.goto_ | BE.halt;
             if (!(s.stc & STC.nothrow_))
             {
-                if (mustNotThrow && !(s.stc & STC.nothrow_))
-                    s.error("`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
+                if(func)
+                    func.setThrow(s.loc, "`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
+                if (eSink)
+                    eSink.error(s.loc, "`asm` statement is assumed to throw - mark it with `nothrow` if it does not"); // TODO
                 else
                     result |= BE.throw_;
             }
         }
 
-        override void visit(ImportStatement s)
+        void visitImport(ImportStatement s)
         {
             result = BE.fallthru;
         }
-    }
 
     if (!s)
         return BE.fallthru;
-    scope BlockExit be = new BlockExit(func, mustNotThrow);
-    s.accept(be);
-    return be.result;
+    mixin VisitStatement!void visit;
+    visit.VisitStatement(s);
+    return result;
 }
 
 /++
@@ -536,14 +530,13 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
  + Params:
  +   loc          = location of the `throw`
  +   exp          = expression yielding the throwable
- +   mustNotThrow = inside of a `nothrow` scope?
+ +   eSink        = if !null then inside of a `nothrow` scope
+ +   func         = function containing the `throw`
  +
  + Returns: `BE.[err]throw` depending on the type of `exp`
  +/
-BE checkThrow(ref const Loc loc, Expression exp, const bool mustNotThrow)
+BE checkThrow(ref const Loc loc, Expression exp, FuncDeclaration func, ErrorSink eSink)
 {
-    import dmd.errors : error;
-
     Type t = exp.type.toBasetype();
     ClassDeclaration cd = t.isClassHandle();
     assert(cd);
@@ -552,8 +545,10 @@ BE checkThrow(ref const Loc loc, Expression exp, const bool mustNotThrow)
     {
         return BE.errthrow;
     }
-    if (mustNotThrow)
-        loc.error("`%s` is thrown but not caught", exp.type.toChars());
+    if (eSink)
+        eSink.error(loc, "`%s` is thrown but not caught", exp.type.toChars());
+    else if (func)
+        func.setThrow(loc, "`%s` is thrown but not caught", exp.type);
 
     return BE.throw_;
 }

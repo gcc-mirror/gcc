@@ -100,7 +100,7 @@ public:
 
   /* The mode of the reference.  If IS_MULTIREG, this is the mode of
      REGNO - MULTIREG_OFFSET.  */
-  machine_mode mode : 8;
+  machine_mode mode : MACHINE_MODE_BITSIZE;
 
   /* If IS_MULTIREG, the offset of REGNO from the start of the register.  */
   unsigned int multireg_offset : 8;
@@ -338,4 +338,6 @@ vec_series_highpart_p (machine_mode result_mode, machine_mode op_mode,
 bool
 vec_series_lowpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel);
 
+bool
+contains_paradoxical_subreg_p (rtx x);
 #endif

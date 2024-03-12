@@ -51,10 +51,10 @@ static basic_block last_bb;
 /* Implementations of the sched_info functions for region scheduling.  */
 static void init_ready_list (void);
 static void begin_schedule_ready (rtx_insn *);
-static int schedule_more_p (void);
+static bool schedule_more_p (void);
 static const char *ebb_print_insn (const rtx_insn *, int);
 static int rank (rtx_insn *, rtx_insn *);
-static int ebb_contributes_to_priority (rtx_insn *, rtx_insn *);
+static bool ebb_contributes_to_priority (rtx_insn *, rtx_insn *);
 static basic_block earliest_block_with_similiar_load (basic_block, rtx);
 static void add_deps_for_risky_insns (rtx_insn *, rtx_insn *);
 static void debug_ebb_dependencies (rtx_insn *, rtx_insn *);
@@ -83,9 +83,9 @@ restore_ebb_state (void *p_)
   free (p_);
 }
 
-/* Return nonzero if there are more insns that should be scheduled.  */
+/* Return true if there are more insns that should be scheduled.  */
 
-static int
+static bool
 schedule_more_p (void)
 {
   return sched_rgn_n_insns < rgn_n_insns;
@@ -238,14 +238,14 @@ rank (rtx_insn *insn1, rtx_insn *insn2)
 }
 
 /* NEXT is an instruction that depends on INSN (a backward dependence);
-   return nonzero if we should include this dependence in priority
+   return true if we should include this dependence in priority
    calculations.  */
 
-static int
+static bool
 ebb_contributes_to_priority (rtx_insn *next ATTRIBUTE_UNUSED,
                              rtx_insn *insn ATTRIBUTE_UNUSED)
 {
-  return 1;
+  return true;
 }
 
  /* INSN is a JUMP_INSN.  Store the set of registers that

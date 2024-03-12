@@ -63,6 +63,7 @@ int main (void)
   res = foo (2);
 
   /* check results:  */
+#pragma GCC novector
   for (i=0; i<N; i++)
     {
       if (a[i] != bar ())
@@ -76,4 +77,4 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { target vect_widen_mult_hi_to_si } } } */
-/* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected(?:(?!failed)(?!Re-trying).)*succeeded" 1 "vect" } } */

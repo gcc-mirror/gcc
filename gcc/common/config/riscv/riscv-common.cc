@@ -71,6 +71,8 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zks", "zksed"},
   {"zks", "zksh"},
 
+  {"ztso", "a"},
+
   {"v", "zvl128b"},
   {"v", "zve64d"},
 
@@ -102,11 +104,53 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zvl32768b", "zvl16384b"},
   {"zvl65536b", "zvl32768b"},
 
+  {"zvkn", "zvkned"},
+  {"zvkn", "zvknhb"},
+  {"zvkn", "zvbb"},
+  {"zvkn", "zvkt"},
+  {"zvknc", "zvkn"},
+  {"zvknc", "zvbc"},
+  {"zvkng", "zvkn"},
+  {"zvkng", "zvkg"},
+  {"zvks", "zvksed"},
+  {"zvks", "zvksh"},
+  {"zvks", "zvbb"},
+  {"zvks", "zvkt"},
+  {"zvksc", "zvks"},
+  {"zvksc", "zvbc"},
+  {"zvksg", "zvks"},
+  {"zvksg", "zvkg"},
+
   {"zfh", "zfhmin"},
   {"zfhmin", "f"},
-  
+
+  {"zfa", "f"},
+
+  {"zvfhmin", "zve32f"},
+  {"zvfh", "zve32f"},
+  {"zvfh", "zfhmin"},
+
   {"zhinx", "zhinxmin"},
   {"zhinxmin", "zfinx"},
+
+  {"zce",  "zca"},
+  {"zce",  "zcb"},
+  {"zce",  "zcmp"},
+  {"zce",  "zcmt"},
+  {"zcf",  "zca"},
+  {"zcd",  "zca"},
+  {"zcb",  "zca"},
+  {"zcmp", "zca"},
+  {"zcmt", "zca"},
+  {"zcmt", "zicsr"},
+
+  {"smaia", "ssaia"},
+  {"smstateen", "ssstateen"},
+  {"smepmp", "zicsr"},
+  {"ssaia", "zicsr"},
+  {"sscofpmf", "zicsr"},
+  {"ssstateen", "zicsr"},
+  {"sstc", "zicsr"},
 
   {NULL, NULL}
 };
@@ -163,6 +207,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zifencei", ISA_SPEC_CLASS_20191213, 2, 0},
   {"zifencei", ISA_SPEC_CLASS_20190608, 2, 0},
 
+  {"zicond", ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zawrs", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zba", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -186,6 +232,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zksh",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkt",   ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zihintntl", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zihintpause", ISA_SPEC_CLASS_NONE, 2, 0},
+
   {"zicboz",ISA_SPEC_CLASS_NONE, 1, 0},
   {"zicbom",ISA_SPEC_CLASS_NONE, 1, 0},
   {"zicbop",ISA_SPEC_CLASS_NONE, 1, 0},
@@ -194,12 +243,29 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"zks",   ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"ztso",  ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zve32x", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zve32f", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zve32d", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zve64x", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zve64f", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zve64d", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zvbb", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvbc", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvkg", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvkned", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvknha", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvknhb", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvksed", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvksh", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvkn", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvknc", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvkng", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvks", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvksc", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvksg", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvkt", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zvl32b", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvl64b", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -216,11 +282,36 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zfh",       ISA_SPEC_CLASS_NONE, 1, 0},
   {"zfhmin",    ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvfhmin",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvfh",      ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zfa",     ISA_SPEC_CLASS_NONE, 0, 1},
 
   {"zmmul", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zca",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcb",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zce",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcf",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcd",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcmp", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcmt", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"smaia",     ISA_SPEC_CLASS_NONE, 1, 0},
+  {"smepmp",    ISA_SPEC_CLASS_NONE, 1, 0},
+  {"smstateen", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"ssaia",     ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sscofpmf",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"ssstateen", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sstc",      ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
   {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svpbmt",  ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"xcvmac", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xcvalu", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"xtheadba", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xtheadbb", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -235,6 +326,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xtheadmempair", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xtheadsync", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"xventanacondops", ISA_SPEC_CLASS_NONE, 1, 0},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -245,6 +338,12 @@ static const struct riscv_ext_version riscv_combine_info[] =
   {"zk",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkn",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zks",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvkn", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvknc", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvkng", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvks", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvksc", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvksg", ISA_SPEC_CLASS_NONE, 1, 0},
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -266,6 +365,8 @@ static const char *riscv_tunes[] =
 };
 
 static const char *riscv_supported_std_ext (void);
+
+bool riscv_subset_list::parse_failed = false;
 
 static riscv_subset_list *current_subset_list = NULL;
 
@@ -398,10 +499,10 @@ multi_letter_subset_rank (const std::string &subset)
   char multiletter_class = subset[0];
   switch (multiletter_class)
     {
-    case 's':
+    case 'z':
       high_order = 0;
       break;
-    case 'z':
+    case 's':
       high_order = 1;
       break;
     case 'x':
@@ -474,6 +575,18 @@ subset_cmp (const std::string &a, const std::string &b)
     }
 }
 
+/* Return true if EXT is a standard extension.  */
+
+static bool
+standard_extensions_p (const char *ext)
+{
+  const riscv_ext_version *ext_ver;
+  for (ext_ver = &riscv_ext_version_table[0]; ext_ver->name != NULL; ++ext_ver)
+    if (strcmp (ext, ext_ver->name) == 0)
+      return true;
+  return false;
+}
+
 /* Add new subset to list.  */
 
 void
@@ -500,6 +613,38 @@ riscv_subset_list::add (const char *subset, int major_version,
 	  m_arch,
 	  subset);
 
+      return;
+    }
+  else if (strlen (subset) == 1 && !standard_extensions_p (subset))
+    {
+      error_at (m_loc,
+		"%<-march=%s%>: extension %qs is unsupported standard single "
+		"letter extension",
+		m_arch, subset);
+      return;
+    }
+  else if (subset[0] == 'z' && !standard_extensions_p (subset))
+    {
+      error_at (m_loc,
+		"%<-march=%s%>: extension %qs starts with 'z' but is "
+		"unsupported standard extension",
+		m_arch, subset);
+      return;
+    }
+  else if (subset[0] == 's' && !standard_extensions_p (subset))
+    {
+      error_at (m_loc,
+		"%<-march=%s%>: extension %qs starts with 's' but is "
+		"unsupported standard supervisor extension",
+		m_arch, subset);
+      return;
+    }
+  else if (subset[0] == 'x' && !standard_extensions_p (subset))
+    {
+      error_at (m_loc,
+		"%<-march=%s%>: extension %qs starts with 'x' but is "
+		"unsupported non-standard extension",
+		m_arch, subset);
       return;
     }
 
@@ -875,22 +1020,16 @@ riscv_subset_list::parse_std_ext (const char *p)
       while (*std_exts && std_ext != *std_exts)
 	std_exts++;
 
-      if (std_ext != *std_exts)
-	{
-	  if (strchr (all_std_exts, std_ext) == NULL)
-	    error_at (m_loc, "%<-march=%s%>: unsupported ISA subset %<%c%>",
-		      m_arch, *p);
-	  else
-	    error_at (m_loc,
-		      "%<-march=%s%>: ISA string is not in canonical order. "
-		      "%<%c%>", m_arch, *p);
-	  return NULL;
-	}
+      subset[0] = std_ext;
+      if (std_ext != *std_exts && standard_extensions_p (subset))
+	error_at (m_loc,
+		  "%<-march=%s%>: ISA string is not in canonical order. "
+		  "%<%c%>",
+		  m_arch, *p);
 
       std_exts++;
 
       p++;
-      subset[0] = std_ext;
 
       p = parsing_subset_version (subset, p, &major_version, &minor_version,
 				  /* std_ext_p= */ true, &explicit_version_p);
@@ -900,17 +1039,52 @@ riscv_subset_list::parse_std_ext (const char *p)
   return p;
 }
 
+/* Parsing function for one standard extensions.
+
+   Return Value:
+     Points to the end of extensions.
+
+   Arguments:
+     `p`: Current parsing position.  */
+
+const char *
+riscv_subset_list::parse_single_std_ext (const char *p)
+{
+  if (*p == 'x' || *p == 's' || *p == 'z')
+    {
+      error_at (m_loc,
+		"%<-march=%s%>: Not single-letter extension. "
+		"%<%c%>",
+		m_arch, *p);
+      return nullptr;
+    }
+
+  unsigned major_version = 0;
+  unsigned minor_version = 0;
+  bool explicit_version_p = false;
+  char subset[2] = {0, 0};
+
+  subset[0] = *p;
+
+  p++;
+
+  p = parsing_subset_version (subset, p, &major_version, &minor_version,
+			      /* std_ext_p= */ true, &explicit_version_p);
+
+  add (subset, major_version, minor_version, explicit_version_p, false);
+  return p;
+}
 
 /* Check any implied extensions for EXT.  */
 void
-riscv_subset_list::handle_implied_ext (riscv_subset_t *ext)
+riscv_subset_list::handle_implied_ext (const char *ext)
 {
   const riscv_implied_info_t *implied_info;
   for (implied_info = &riscv_implied_info[0];
        implied_info->ext;
        ++implied_info)
     {
-      if (strcmp (ext->name.c_str (), implied_info->ext) != 0)
+      if (strcmp (ext, implied_info->ext) != 0)
 	continue;
 
       /* Skip if implied extension already present.  */
@@ -920,6 +1094,9 @@ riscv_subset_list::handle_implied_ext (riscv_subset_t *ext)
       /* Version of implied extension will get from current ISA spec
 	 version.  */
       add (implied_info->implied_ext, true);
+
+      /* Recursively add implied extension by implied_info->implied_ext.  */
+      handle_implied_ext (implied_info->implied_ext);
     }
 
   /* For RISC-V ISA version 2.2 or earlier version, zicsr and zifence is
@@ -932,6 +1109,27 @@ riscv_subset_list::handle_implied_ext (riscv_subset_t *ext)
       if (lookup ("zifencei") == NULL)
 	add ("zifencei", true);
     }
+}
+
+/* Check that all implied extensions are included.  */
+bool
+riscv_subset_list::check_implied_ext ()
+{
+  riscv_subset_t *itr;
+  for (itr = m_head; itr != NULL; itr = itr->next)
+    {
+      const riscv_implied_info_t *implied_info;
+      for (implied_info = &riscv_implied_info[0]; implied_info->ext;
+	   ++implied_info)
+	{
+	  if (strcmp (itr->name.c_str(), implied_info->ext) != 0)
+	    continue;
+
+	  if (!lookup (implied_info->implied_ext))
+	    return false;
+	}
+    }
+  return true;
 }
 
 /* Check any combine extensions for EXT.  */
@@ -976,6 +1174,105 @@ riscv_subset_list::handle_combine_ext ()
 	    }
 	}
     }
+}
+
+/* Parsing function for multi-letter extensions.
+
+   Return Value:
+     Points to the end of extensions.
+
+   Arguments:
+     `p`: Current parsing position.
+     `ext_type`: What kind of extensions, 's', 'z' or 'x'.
+     `ext_type_str`: Full name for kind of extension.  */
+
+
+const char *
+riscv_subset_list::parse_single_multiletter_ext (const char *p,
+						 const char *ext_type,
+						 const char *ext_type_str)
+{
+  unsigned major_version = 0;
+  unsigned minor_version = 0;
+  size_t ext_type_len = strlen (ext_type);
+
+  if (strncmp (p, ext_type, ext_type_len) != 0)
+    return NULL;
+
+  char *subset = xstrdup (p);
+  const char *end_of_version;
+  bool explicit_version_p = false;
+  char *ext;
+  char backup;
+  size_t len = strlen (p);
+  size_t end_of_version_pos, i;
+  bool found_any_number = false;
+  bool found_minor_version = false;
+
+  end_of_version_pos = len;
+  /* Find the begin of version string.  */
+  for (i = len -1; i > 0; --i)
+    {
+      if (ISDIGIT (subset[i]))
+	{
+	  found_any_number = true;
+	  continue;
+	}
+      /* Might be version seperator, but need to check one more char,
+	 we only allow <major>p<minor>, so we could stop parsing if found
+	 any more `p`.  */
+      if (subset[i] == 'p' &&
+	  !found_minor_version &&
+	  found_any_number && ISDIGIT (subset[i-1]))
+	{
+	  found_minor_version = true;
+	  continue;
+	}
+
+      end_of_version_pos = i + 1;
+      break;
+    }
+
+  backup = subset[end_of_version_pos];
+  subset[end_of_version_pos] = '\0';
+  ext = xstrdup (subset);
+  subset[end_of_version_pos] = backup;
+
+  end_of_version
+    = parsing_subset_version (ext, subset + end_of_version_pos, &major_version,
+			      &minor_version, /* std_ext_p= */ false,
+			      &explicit_version_p);
+  free (ext);
+
+  if (end_of_version == NULL)
+    {
+      free (subset);
+      return NULL;
+    }
+
+  subset[end_of_version_pos] = '\0';
+
+  if (strlen (subset) == 1)
+    {
+      error_at (m_loc, "%<-march=%s%>: name of %s must be more than 1 letter",
+		m_arch, ext_type_str);
+      free (subset);
+      return NULL;
+    }
+
+  add (subset, major_version, minor_version, explicit_version_p, false);
+  p += end_of_version - subset;
+  free (subset);
+
+  if (*p != '\0' && *p != '_')
+    {
+      error_at (m_loc, "%<-march=%s%>: %s must separate with %<_%>",
+		m_arch, ext_type_str);
+      return NULL;
+    }
+
+  return p;
+
 }
 
 /* Parsing function for multi-letter extensions.
@@ -1090,11 +1387,38 @@ riscv_subset_list::parse_multiletter_ext (const char *p,
   return p;
 }
 
+/* Parsing function for a single-letter or multi-letter extensions.
+
+   Return Value:
+     Points to the end of extensions.
+
+   Arguments:
+     `p`: Current parsing position.  */
+
+const char *
+riscv_subset_list::parse_single_ext (const char *p)
+{
+  switch (p[0])
+    {
+    case 'x':
+      return parse_single_multiletter_ext (p, "x", "non-standard extension");
+    case 'z':
+      return parse_single_multiletter_ext (p, "z", "sub-extension");
+    case 's':
+      return parse_single_multiletter_ext (p, "s", "supervisor extension");
+    default:
+      return parse_single_std_ext (p);
+    }
+}
+
 /* Parsing arch string to subset list, return NULL if parsing failed.  */
 
 riscv_subset_list *
 riscv_subset_list::parse (const char *arch, location_t loc)
 {
+  if (riscv_subset_list::parse_failed)
+    return NULL;
+
   riscv_subset_list *subset_list = new riscv_subset_list (arch, loc);
   riscv_subset_t *itr;
   const char *p = arch;
@@ -1121,14 +1445,14 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   if (p == NULL)
     goto fail;
 
-  /* Parsing supervisor extension.  */
-  p = subset_list->parse_multiletter_ext (p, "s", "supervisor extension");
+  /* Parsing sub-extensions.  */
+  p = subset_list->parse_multiletter_ext (p, "z", "sub-extension");
 
   if (p == NULL)
     goto fail;
 
-  /* Parsing sub-extensions.  */
-  p = subset_list->parse_multiletter_ext (p, "z", "sub-extension");
+  /* Parsing supervisor extension.  */
+  p = subset_list->parse_multiletter_ext (p, "s", "supervisor extension");
 
   if (p == NULL)
     goto fail;
@@ -1148,10 +1472,24 @@ riscv_subset_list::parse (const char *arch, location_t loc)
 
   for (itr = subset_list->m_head; itr != NULL; itr = itr->next)
     {
-      subset_list->handle_implied_ext (itr);
+      subset_list->handle_implied_ext (itr->name.c_str ());
     }
 
+  /* Zce only implies zcf when RV32 and 'f' extension exist.  */
+  if (subset_list->lookup ("zce") != NULL
+	&& subset_list->m_xlen == 32
+	&& subset_list->lookup ("f") != NULL
+	&& subset_list->lookup ("zcf") == NULL)
+    subset_list->add ("zcf", false);
+
+  /* Make sure all implied extensions are included. */
+  gcc_assert (subset_list->check_implied_ext ());
+
   subset_list->handle_combine_ext ();
+
+  if (subset_list->lookup ("zcf") && subset_list->m_xlen == 64)
+    error_at (loc, "%<-march=%s%>: zcf extension supports in rv32 only"
+		  , arch);
 
   if (subset_list->lookup ("zfinx") && subset_list->lookup ("f"))
     error_at (loc, "%<-march=%s%>: z*inx conflicts with floating-point "
@@ -1161,7 +1499,28 @@ riscv_subset_list::parse (const char *arch, location_t loc)
 
 fail:
   delete subset_list;
+  riscv_subset_list::parse_failed = true;
   return NULL;
+}
+
+/* Clone whole subset list.  */
+
+riscv_subset_list *
+riscv_subset_list::clone () const
+{
+  riscv_subset_list *new_list = new riscv_subset_list (m_arch, m_loc);
+  for (riscv_subset_t *itr = m_head; itr != NULL; itr = itr->next)
+    new_list->add (itr->name.c_str (), itr->major_version, itr->minor_version,
+		   itr->explicit_version_p, true);
+
+  new_list->m_xlen = m_xlen;
+  return new_list;
+}
+
+void
+riscv_subset_list::set_loc (location_t loc)
+{
+  m_loc = loc;
 }
 
 /* Return the current arch string.  */
@@ -1199,6 +1558,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   {"zicsr",    &gcc_options::x_riscv_zi_subext, MASK_ZICSR},
   {"zifencei", &gcc_options::x_riscv_zi_subext, MASK_ZIFENCEI},
+  {"zicond",   &gcc_options::x_riscv_zi_subext, MASK_ZICOND},
 
   {"zawrs", &gcc_options::x_riscv_za_subext, MASK_ZAWRS},
 
@@ -1223,6 +1583,9 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zksh",   &gcc_options::x_riscv_zk_subext, MASK_ZKSH},
   {"zkt",    &gcc_options::x_riscv_zk_subext, MASK_ZKT},
 
+  {"zihintntl", &gcc_options::x_riscv_zi_subext, MASK_ZIHINTNTL},
+  {"zihintpause", &gcc_options::x_riscv_zi_subext, MASK_ZIHINTPAUSE},
+
   {"zicboz", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOZ},
   {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
   {"zicbop", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOP},
@@ -1243,6 +1606,24 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zve64x",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64},
   {"zve64f",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
   {"zve64d",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64},
+  {"zvfhmin",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
+  {"zvfh",     &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
+
+  {"zvbb",     &gcc_options::x_riscv_zvb_subext, MASK_ZVBB},
+  {"zvbc",     &gcc_options::x_riscv_zvb_subext, MASK_ZVBC},
+  {"zvkg",     &gcc_options::x_riscv_zvk_subext, MASK_ZVKG},
+  {"zvkned",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKNED},
+  {"zvknha",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKNHA},
+  {"zvknhb",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKNHB},
+  {"zvksed",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKSED},
+  {"zvksh",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKSH},
+  {"zvkn",     &gcc_options::x_riscv_zvk_subext, MASK_ZVKN},
+  {"zvknc",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKNC},
+  {"zvkng",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKNG},
+  {"zvks",     &gcc_options::x_riscv_zvk_subext, MASK_ZVKS},
+  {"zvksc",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKSC},
+  {"zvksg",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKSG},
+  {"zvkt",     &gcc_options::x_riscv_zvk_subext, MASK_ZVKT},
 
   {"zvl32b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL32B},
   {"zvl64b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL64B},
@@ -1259,11 +1640,29 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   {"zfhmin",    &gcc_options::x_riscv_zf_subext, MASK_ZFHMIN},
   {"zfh",       &gcc_options::x_riscv_zf_subext, MASK_ZFH},
+  {"zvfhmin",   &gcc_options::x_riscv_zf_subext, MASK_ZVFHMIN},
+  {"zvfh",      &gcc_options::x_riscv_zf_subext, MASK_ZVFH},
+
+  {"zfa",       &gcc_options::x_riscv_zfa_subext, MASK_ZFA},
 
   {"zmmul", &gcc_options::x_riscv_zm_subext, MASK_ZMMUL},
 
+  /* Code-size reduction extensions.  */
+  {"zca",     &gcc_options::x_riscv_zc_subext, MASK_ZCA},
+  {"zcb",     &gcc_options::x_riscv_zc_subext, MASK_ZCB},
+  {"zce",     &gcc_options::x_riscv_zc_subext, MASK_ZCE},
+  {"zcf",     &gcc_options::x_riscv_zc_subext, MASK_ZCF},
+  {"zcd",     &gcc_options::x_riscv_zc_subext, MASK_ZCD},
+  {"zcmp",    &gcc_options::x_riscv_zc_subext, MASK_ZCMP},
+  {"zcmt",    &gcc_options::x_riscv_zc_subext, MASK_ZCMT},
+
   {"svinval", &gcc_options::x_riscv_sv_subext, MASK_SVINVAL},
   {"svnapot", &gcc_options::x_riscv_sv_subext, MASK_SVNAPOT},
+
+  {"ztso", &gcc_options::x_riscv_ztso_subext, MASK_ZTSO},
+
+  {"xcvmac",        &gcc_options::x_riscv_xcv_subext, MASK_XCVMAC},
+  {"xcvalu",        &gcc_options::x_riscv_xcv_subext, MASK_XCVALU},
 
   {"xtheadba",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBA},
   {"xtheadbb",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBB},
@@ -1278,8 +1677,41 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"xtheadmempair", &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMEMPAIR},
   {"xtheadsync",    &gcc_options::x_riscv_xthead_subext, MASK_XTHEADSYNC},
 
+  {"xventanacondops", &gcc_options::x_riscv_xventana_subext, MASK_XVENTANACONDOPS},
+
   {NULL, NULL, 0}
 };
+
+/* Apply SUBSET_LIST to OPTS if OPTS is not null, also set CURRENT_SUBSET_LIST
+   to SUBSET_LIST, just note this WON'T delete old CURRENT_SUBSET_LIST.  */
+
+void
+riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
+			       struct gcc_options *opts)
+{
+  if (opts)
+    {
+      const riscv_ext_flag_table_t *arch_ext_flag_tab;
+      /* Clean up target flags before we set.  */
+      for (arch_ext_flag_tab = &riscv_ext_flag_table[0]; arch_ext_flag_tab->ext;
+	   ++arch_ext_flag_tab)
+	opts->*arch_ext_flag_tab->var_ref &= ~arch_ext_flag_tab->mask;
+
+      if (subset_list->xlen () == 32)
+	opts->x_target_flags &= ~MASK_64BIT;
+      else if (subset_list->xlen () == 64)
+	opts->x_target_flags |= MASK_64BIT;
+
+      for (arch_ext_flag_tab = &riscv_ext_flag_table[0]; arch_ext_flag_tab->ext;
+	   ++arch_ext_flag_tab)
+	{
+	  if (subset_list->lookup (arch_ext_flag_tab->ext))
+	    opts->*arch_ext_flag_tab->var_ref |= arch_ext_flag_tab->mask;
+	}
+    }
+
+  current_subset_list = subset_list;
+}
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
    dependent mask bits, in case more than one -march string is passed.  */
@@ -1441,9 +1873,6 @@ riscv_multi_lib_check (int argc ATTRIBUTE_UNUSED,
   return "";
 }
 
-/* We only override this in bare-metal toolchain.  */
-#ifdef RISCV_USE_CUSTOMISED_MULTI_LIB
-
 /* Find last switch with the prefix, options are take last one in general,
    return NULL if not found, and return the option value if found, it could
    return empty string if the option has no value.  */
@@ -1597,6 +2026,65 @@ riscv_check_conds (
   return match_score + ok_count * 100;
 }
 
+static const char *
+riscv_select_multilib_by_abi (
+  const std::string &riscv_current_abi_str,
+  const std::vector<riscv_multi_lib_info_t> &multilib_infos)
+{
+  for (size_t i = 0; i < multilib_infos.size (); ++i)
+    if (riscv_current_abi_str == multilib_infos[i].abi_str)
+      return xstrdup (multilib_infos[i].path.c_str ());
+
+  return NULL;
+}
+
+static const char *
+riscv_select_multilib (
+  const std::string &riscv_current_abi_str,
+  const riscv_subset_list *subset_list, const struct switchstr *switches,
+  int n_switches, const std::vector<riscv_multi_lib_info_t> &multilib_infos)
+{
+  int match_score = 0;
+  int max_match_score = 0;
+  int best_match_multi_lib = -1;
+  /* Try to decision which set we should used.  */
+  /* We have 3 level decision tree here, ABI, check input arch/ABI must
+     be superset of multi-lib arch, and other rest option checking.  */
+  for (size_t i = 0; i < multilib_infos.size (); ++i)
+    {
+      /* Check ABI is same first.  */
+      if (riscv_current_abi_str != multilib_infos[i].abi_str)
+	continue;
+
+      /* Found a potential compatible multi-lib setting!
+	 Calculate the match score.  */
+      match_score = subset_list->match_score (multilib_infos[i].subset_list);
+
+      /* Checking other cond in the multi-lib setting.  */
+      match_score = riscv_check_conds (switches, n_switches, match_score,
+				       multilib_infos[i].conds);
+
+      /* Record highest match score multi-lib setting.  */
+      if (match_score > max_match_score)
+	{
+	  best_match_multi_lib = i;
+	  max_match_score = match_score;
+	}
+    }
+
+  if (best_match_multi_lib == -1)
+    {
+      riscv_no_matched_multi_lib = true;
+      return NULL;
+    }
+  else
+    return xstrdup (multilib_infos[best_match_multi_lib].path.c_str ());
+}
+
+#ifndef RISCV_USE_CUSTOMISED_MULTI_LIB
+#define RISCV_USE_CUSTOMISED_MULTI_LIB select_by_builtin
+#endif
+
 /* Implement TARGET_COMPUTE_MULTILIB.  */
 static const char *
 riscv_compute_multilib (
@@ -1609,6 +2097,11 @@ riscv_compute_multilib (
   const char *multilib_exclusions ATTRIBUTE_UNUSED,
   const char *multilib_reuse ATTRIBUTE_UNUSED)
 {
+  enum riscv_multilib_select_kind select_kind = RISCV_USE_CUSTOMISED_MULTI_LIB;
+
+  if (select_kind == select_by_builtin)
+    return multilib_dir;
+
   const char *p;
   const char *this_path;
   size_t this_path_len;
@@ -1672,7 +2165,13 @@ riscv_compute_multilib (
 	}
 
       this_path_len = p - this_path;
-      multilib_info.path = std::string (this_path, this_path_len);
+      const char *multi_os_dir_pos
+	= (const char *) memchr (this_path, ':', this_path_len);
+      if (multi_os_dir_pos)
+	multilib_info.path
+	  = std::string (this_path, multi_os_dir_pos - this_path);
+      else
+	multilib_info.path = std::string (this_path, this_path_len);
 
       option_conds.clear ();
       /* Pasrse option check list into vector<string>.
@@ -1707,48 +2206,23 @@ riscv_compute_multilib (
       p++;
     }
 
-  int match_score = 0;
-  int max_match_score = 0;
-  int best_match_multi_lib = -1;
-  /* Try to decision which set we should used.  */
-  /* We have 3 level decision tree here, ABI, check input arch/ABI must
-     be superset of multi-lib arch, and other rest option checking.  */
-  for (size_t i = 0; i < multilib_infos.size (); ++i)
+  switch (select_kind)
     {
-      /* Check ABI is same first.  */
-      if (riscv_current_abi_str != multilib_infos[i].abi_str)
-	continue;
-
-      /* Found a potential compatible multi-lib setting!
-	 Calculate the match score.  */
-      match_score = subset_list->match_score (multilib_infos[i].subset_list);
-
-      /* Checking other cond in the multi-lib setting.  */
-      match_score = riscv_check_conds (switches,
-				       n_switches,
-				       match_score,
-				       multilib_infos[i].conds);
-
-      /* Record highest match score multi-lib setting.  */
-      if (match_score > max_match_score)
-	{
-	  best_match_multi_lib = i;
-	  max_match_score = match_score;
-	}
+    case select_by_abi:
+      return riscv_select_multilib_by_abi (riscv_current_abi_str,
+					   multilib_infos);
+    case select_by_abi_arch_cmodel:
+      return riscv_select_multilib (riscv_current_abi_str, subset_list,
+				    switches, n_switches, multilib_infos);
+    case select_by_builtin:
+      gcc_unreachable ();
+    default:
+      gcc_unreachable ();
     }
-
-  if (best_match_multi_lib == -1)
-    {
-      riscv_no_matched_multi_lib = true;
-      return multilib_dir;
-    }
-  else
-    return xstrdup (multilib_infos[best_match_multi_lib].path.c_str ());
 }
 
 #undef TARGET_COMPUTE_MULTILIB
 #define TARGET_COMPUTE_MULTILIB riscv_compute_multilib
-#endif
 
 vec<const char *>
 riscv_get_valid_option_values (int option_code,
@@ -1789,6 +2263,8 @@ riscv_get_valid_option_values (int option_code,
 static const struct default_options riscv_option_optimization_table[] =
   {
     { OPT_LEVELS_1_PLUS, OPT_fsection_anchors, NULL, 1 },
+    /* Enable -fsched-pressure starting at -O1.  */
+    { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
 #if TARGET_DEFAULT_ASYNC_UNWIND_TABLES == 1
     { OPT_LEVELS_ALL, OPT_fasynchronous_unwind_tables, NULL, 1 },

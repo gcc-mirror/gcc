@@ -45,6 +45,26 @@
   (and (match_code "const_int")
        (match_test "ival == 0")))
 
+(define_constraint "c01"
+  "Constant value 1."
+  (and (match_code "const_int")
+       (match_test "ival == 1")))
+
+(define_constraint "c02"
+  "Constant value 2"
+  (and (match_code "const_int")
+       (match_test "ival == 2")))
+
+(define_constraint "c04"
+  "Constant value 4"
+  (and (match_code "const_int")
+       (match_test "ival == 4")))
+
+(define_constraint "c08"
+  "Constant value 8"
+  (and (match_code "const_int")
+       (match_test "ival == 8")))
+
 (define_constraint "K"
   "A 5-bit unsigned immediate for CSR access instructions."
   (and (match_code "const_int")
@@ -65,13 +85,13 @@
   "@internal
    31 immediate"
   (and (match_code "const_int")
-       (match_test "ival == 31")))
+       (match_test "(ival & 31) == 31")))
 
 (define_constraint "DsD"
   "@internal
    63 immediate"
   (and (match_code "const_int")
-       (match_test "ival == 63")))
+       (match_test "(ival & 63) == 63")))
 
 (define_constraint "DbS"
   "@internal"
@@ -117,6 +137,26 @@
    A constant @code{move_operand}."
   (and (match_operand 0 "move_operand")
        (match_test "CONSTANT_P (op)")))
+
+;; Zfa constraints.
+
+(define_constraint "zfli"
+  "A floating point number that can be loaded using instruction `fli` in zfa."
+  (and (match_code "const_double")
+       (match_test "TARGET_ZFA && (riscv_float_const_rtx_index_for_fli (op) != -1)")))
+
+(define_register_constraint "zmvf" "(TARGET_ZFA || TARGET_XTHEADFMV) ? FP_REGS : NO_REGS"
+  "A floating-point register for ZFA or XTheadFmv.")
+
+(define_register_constraint "zmvr" "(TARGET_ZFA || TARGET_XTHEADFMV) ? GR_REGS : NO_REGS"
+  "An integer register for  ZFA or XTheadFmv.")
+
+;; CORE-V Constraints
+(define_constraint "CVP2"
+  "Checking for CORE-V ALU clip if ival plus 1 is a power of 2"
+  (and (match_code "const_int")
+       (and (match_test "IN_RANGE (ival, 0, 1073741823)")
+            (match_test "exact_log2 (ival + 1) != -1"))))
 
 ;; Vector constraints.
 
@@ -180,11 +220,3 @@
   "Vector duplicate memory operand"
   (and (match_code "mem")
        (match_code "reg" "0")))
-
-;; Vendor ISA extension constraints.
-
-(define_register_constraint "th_f_fmv" "TARGET_XTHEADFMV ? FP_REGS : NO_REGS"
-  "A floating-point register for XTheadFmv.")
-
-(define_register_constraint "th_r_fmv" "TARGET_XTHEADFMV ? GR_REGS : NO_REGS"
-  "An integer register for XTheadFmv.")

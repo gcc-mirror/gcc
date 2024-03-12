@@ -91,6 +91,9 @@ inline bool relation_equiv_p (relation_kind r)
 
 void print_relation (FILE *f, relation_kind rel);
 
+// Adjust range as an equivalence.
+void adjust_equivalence_range (vrange &range);
+
 class relation_oracle
 {
 public:
@@ -170,6 +173,7 @@ public:
   void dump (FILE *f) const override;
 
 protected:
+  inline bool has_equiv_p (unsigned v) { return bitmap_bit_p (m_equiv_set, v); }
   bitmap_obstack m_bitmaps;
   struct obstack m_chain_obstack;
 private:

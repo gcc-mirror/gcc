@@ -9,7 +9,7 @@ public:
   virtual ~Container ();
 };
 
-class List : public Container // { dg-lto-message "final would enable devirtualization" }
+class List : public Container
 {
 };
 

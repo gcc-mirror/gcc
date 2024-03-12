@@ -928,9 +928,6 @@ rs6000_stack_info (void)
   else if (frame_pointer_needed)
     info->push_p = 1;
 
-  else if (TARGET_XCOFF && write_symbols != NO_DEBUG && !flag_compare_debug)
-    info->push_p = 1;
-
   else
     info->push_p = non_fixed_size > (TARGET_32BIT ? 220 : 288);
 
@@ -1171,12 +1168,12 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp)
 	 prototype, so the argument type info must be available
 	 here.  */
       FOREACH_FUNCTION_ARGS(fntype, type, args_iter)
-	if (TREE_CODE (type) == VECTOR_TYPE
+	if (VECTOR_TYPE_P (type)
 	    && ALTIVEC_OR_VSX_VECTOR_MODE (TYPE_MODE (type)))
 	  nvreg++;
 
       FOREACH_FUNCTION_ARGS(TREE_TYPE (current_function_decl), type, args_iter)
-	if (TREE_CODE (type) == VECTOR_TYPE
+	if (VECTOR_TYPE_P (type)
 	    && ALTIVEC_OR_VSX_VECTOR_MODE (TYPE_MODE (type)))
 	  nvreg--;
 

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
 
 #include <format>
@@ -88,9 +87,26 @@ test_move_only()
   VERIFY( wlen == 11 );
 }
 
+void
+test_pr110990()
+{
+  // PR libstdc++/110990 - format_to_n returns wrong value
+
+  char buf[2];
+  auto [ptr, len] = std::format_to_n(buf, 2, "x");
+  VERIFY( len == 1 );
+  VERIFY( ptr == buf + len );
+
+  wchar_t wbuf[3];
+  auto [wptr, wlen] = std::format_to_n(wbuf, 3, L"yz");
+  VERIFY( wlen == 2 );
+  VERIFY( wptr == wbuf + wlen );
+}
+
 int main()
 {
   test();
   test_wchar();
   test_move_only();
+  test_pr110990();
 }

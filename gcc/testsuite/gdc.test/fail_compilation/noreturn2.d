@@ -139,3 +139,16 @@ int throwInvalid(int i) nothrow
             UnkownException("")
     ;
 }
+
+/+
+https://issues.dlang.org/show_bug.cgi?id=24054
+TEST_OUTPUT:
+---
+fail_compilation/noreturn2.d(153): Error: cannot return from `noreturn` function
+fail_compilation/noreturn2.d(153):        Consider adding an endless loop, `assert(0)`, or another `noreturn` expression
+---
++/
+const(noreturn) f()
+{
+    return;
+}

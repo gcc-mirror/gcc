@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optinfo.h"
 #include "gimple-walk.h"
 #include "cfganal.h"
+#include "tree-cfg.h"
 
 static void verify_live_on_entry (tree_live_info_p);
 
@@ -76,10 +77,11 @@ var_map_base_fini (var_map map)
 }
 /* Create a variable partition map of SIZE for region, initialize and return
    it.  Region is a loop if LOOP is non-NULL, otherwise is the current
-   function.  */
+   function.  If BITINT is non-NULL, only SSA_NAMEs from that bitmap
+   will be coalesced.  */
 
 var_map
-init_var_map (int size, class loop *loop)
+init_var_map (int size, class loop *loop, bitmap bitint)
 {
   var_map map;
 
@@ -108,7 +110,8 @@ init_var_map (int size, class loop *loop)
   else
     {
       map->bmp_bbs = NULL;
-      map->outofssa_p = true;
+      map->outofssa_p = bitint == NULL;
+      map->bitint = bitint;
       basic_block bb;
       FOR_EACH_BB_FN (bb, cfun)
 	map->vec_bbs.safe_push (bb);
@@ -1358,7 +1361,7 @@ compute_live_vars (struct function *fn, live_vars_map *vars)
      We then do a mostly classical bitmap liveness algorithm.  */
 
   active.create (last_basic_block_for_fn (fn));
-  active.quick_grow (last_basic_block_for_fn (fn));
+  active.quick_grow_cleared (last_basic_block_for_fn (fn));
   for (int i = 0; i < last_basic_block_for_fn (fn); i++)
     bitmap_initialize (&active[i], &bitmap_default_obstack);
 
@@ -1650,4 +1653,82 @@ verify_live_on_entry (tree_live_info_p live)
 	}
     }
   gcc_assert (num <= 0);
+}
+
+
+/* Virtual operand liveness analysis data init.  */
+
+void
+virtual_operand_live::init ()
+{
+  liveout = XCNEWVEC (tree, last_basic_block_for_fn (cfun) + 1);
+  liveout[ENTRY_BLOCK] = ssa_default_def (cfun, gimple_vop (cfun));
+}
+
+/* Compute live-in of BB from cached live-out.  */
+
+tree
+virtual_operand_live::get_live_in (basic_block bb)
+{
+  /* A virtual PHI is a convenient cache for live-in.  */
+  gphi *phi = get_virtual_phi (bb);
+  if (phi)
+    return gimple_phi_result (phi);
+
+  if (!liveout)
+    init ();
+
+  /* Since we don't have a virtual PHI and we don't know whether there's
+     a downstream virtual use (and thus PHIs are inserted where necessary)
+     we now have to check each incoming edge live-out.  */
+  edge_iterator ei;
+  edge e;
+  tree livein = NULL_TREE;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e->flags & EDGE_DFS_BACK)
+      /* We can ignore backedges since if there's a def there it would
+	 have forced a PHI in the source because it also acts as use
+	 downstream.  */
+      continue;
+    else if (!livein)
+      livein = get_live_out (e->src);
+    else if (get_live_out (e->src) != livein)
+      /* When there's no virtual use downstream this indicates a point
+	 where we'd insert a PHI merging the different live virtual
+	 operands.  */
+      return NULL_TREE;
+
+  return livein;
+}
+
+/* Compute live-out of BB.  */
+
+tree
+virtual_operand_live::get_live_out (basic_block bb)
+{
+  if (!liveout)
+    init ();
+
+  if (liveout[bb->index])
+    return liveout[bb->index];
+
+  tree lo = NULL_TREE;
+  for (auto gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (gimple_vdef (stmt))
+	{
+	  lo = gimple_vdef (stmt);
+	  break;
+	}
+      if (gimple_vuse (stmt))
+	{
+	  lo = gimple_vuse (stmt);
+	  break;
+	}
+    }
+  if (!lo)
+    lo = get_live_in (bb);
+  liveout[bb->index] = lo;
+  return lo;
 }

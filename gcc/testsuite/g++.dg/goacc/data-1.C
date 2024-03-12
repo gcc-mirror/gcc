@@ -5,7 +5,7 @@ foo (int &a, int (&b)[100], int &n)
 #pragma acc enter data create (b[20:30]) async wait
 
 #pragma acc enter data (a)
-  /* { dg-error "expected '#pragma acc' clause before '\\\(' token" "" { target *-*-* } .-1 } */
+  /* { dg-error "expected an OpenACC clause before '\\\(' token" "" { target *-*-* } .-1 } */
   /* { dg-error "has no data movement clause" "" { target *-*-* } .-2 } */
 
 #pragma acc enter data create (b(1:10)) /* { dg-error "expected '\\\)' before '\\\(' token" } */
@@ -28,7 +28,7 @@ foo (T &a, T (&b)[100], T &n)
 #pragma acc enter data create (b[20:30]) async wait
 
 #pragma acc enter data (a)
-  /* { dg-error "expected '#pragma acc' clause before '\\\(' token" "" { target *-*-* } .-1 } */
+  /* { dg-error "expected an OpenACC clause before '\\\(' token" "" { target *-*-* } .-1 } */
   /* { dg-error "has no data movement clause" "" { target *-*-* } .-2 } */
 
 #pragma acc enter data create (b(1:10)) /* { dg-error "expected '\\\)' before '\\\(' token" } */

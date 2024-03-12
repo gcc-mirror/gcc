@@ -20,7 +20,6 @@ import dmd.root.rootobject;
 import dmd.root.rmem;
 
 import dmd.aggregate;
-import dmd.apply;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.declaration;
@@ -146,7 +145,7 @@ enum ObType : ubyte
     fend,
 }
 
-string toString(ObType obtype)
+string toString(ObType obtype) @safe
 {
     return obtype == ObType.goto_     ? "goto  "  :
            obtype == ObType.return_   ? "ret   "  :
@@ -203,7 +202,7 @@ const(char)* toChars(PtrState state)
     return toString(state).ptr;
 }
 
-string toString(PtrState state)
+string toString(PtrState state) @safe
 {
     return ["Initial", "Undefined", "Owner", "Borrowed", "Readonly"][state];
 }
@@ -844,7 +843,7 @@ void toObNodes(ref ObNodes obnodes, Statement s)
             case STMT.Conditional:
             case STMT.While:
             case STMT.Forwarding:
-            case STMT.Compile:
+            case STMT.Mixin:
             case STMT.Peel:
             case STMT.Synchronized:
                 debug printf("s: %s\n", s.toChars());
@@ -1013,7 +1012,7 @@ void insertFinallyBlockGotos(ref ObNodes obnodes)
  * Set the `index` field of each ObNode
  * to its index in the `obnodes[]` array.
  */
-void numberNodes(ref ObNodes obnodes)
+void numberNodes(ref ObNodes obnodes) @safe
 {
     //printf("numberNodes()\n");
     foreach (i, ob; obnodes)
@@ -1971,7 +1970,7 @@ void checkObErrors(ref ObState obstate)
             else
             {
                 if (pvs.state == PtrState.Owner && v.type.hasPointersToMutableFields())
-                    v.error(e.loc, "assigning to Owner without disposing of owned value");
+                    .error(e.loc, "%s `%s` assigning to Owner without disposing of owned value", v.kind, v.toPrettyChars);
 
                 pvs.state = PtrState.Owner;
             }
@@ -1994,12 +1993,12 @@ void checkObErrors(ref ObState obstate)
 
                     if (pvsr.state == Undefined)
                     {
-                        v.error(e.loc, "is reading from `%s` which is Undefined", r.toChars());
+                        .error(e.loc, "%s `%s` is reading from `%s` which is Undefined", v.kind, v.toPrettyChars, r.toChars());
                     }
                     else if (isBorrowedPtr(v))  // v is going to borrow from r
                     {
                         if (pvsr.state == Readonly)
-                            v.error(e.loc, "is borrowing from `%s` which is Readonly", r.toChars());
+                            .error(e.loc, "%s `%s` is borrowing from `%s` which is Readonly", v.kind, v.toPrettyChars, r.toChars());
 
                         pvs.state = Borrowed;
                     }
@@ -2040,7 +2039,7 @@ void checkObErrors(ref ObState obstate)
         assert(vi != size_t.max);
         auto pvs = &gen[vi];
         if (pvs.state == PtrState.Undefined)
-            v.error(loc, "has undefined state and cannot be read");
+            .error(loc, "%s `%s` has undefined state and cannot be read", v.kind, v.toPrettyChars);
 
         readVar(ob, vi, mutable, gen);
     }
@@ -2188,7 +2187,7 @@ void checkObErrors(ref ObState obstate)
                             {
                                 // move (i.e. consume arg)
                                 if (pvs.state != PtrState.Owner)
-                                    v.error(arg.loc, "is not Owner, cannot consume its value");
+                                    .error(arg.loc, "%s `%s` is not Owner, cannot consume its value", v.kind, v.toPrettyChars);
                                 makeUndefined(vi, cpvs);
                             }
                         }
@@ -2227,7 +2226,7 @@ void checkObErrors(ref ObState obstate)
                             {
                                 // move (i.e. consume arg)
                                 if (pvs.state != PtrState.Owner)
-                                    v.error(arg.loc, "is not Owner, cannot consume its value");
+                                    .error(arg.loc, "%s `%s` is not Owner, cannot consume its value", v.kind, v.toPrettyChars);
                                 makeUndefined(vi, cpvs);
                             }
                         }
@@ -2262,7 +2261,7 @@ void checkObErrors(ref ObState obstate)
                             {
                                 if (obstate.mutableStack[vi] || obstate.mutableStack[vk])
                                 {
-                                    v.error(ce.loc, "is passed as Owner more than once");
+                                    .error(ce.loc, "%s `%s` is passed as Owner more than once", v.kind, v.toPrettyChars);
                                     break;  // no need to continue
                                 }
                             }
@@ -2491,7 +2490,7 @@ void checkObErrors(ref ObState obstate)
                     if (s1 != s2 && (s1 == PtrState.Owner || s2 == PtrState.Owner))
                     {
                         auto v = obstate.vars[i];
-                        v.error(ob.exp ? ob.exp.loc : v.loc, "is both %s and %s", s1.toChars(), s2.toChars());
+                        .error(ob.exp ? ob.exp.loc : v.loc, "%s `%s` is both %s and %s", v.kind, v.toPrettyChars, s1.toChars(), s2.toChars());
                     }
                     pvs1.combine(*pvs2, i, ob.gen);
                 }
@@ -2537,7 +2536,7 @@ void checkObErrors(ref ObState obstate)
                     switch (pvsr.state)
                     {
                         case Undefined:
-                            r.error(ob.exp.loc, "is returned but is Undefined");
+                            .error(ob.exp.loc, "%s `%s` is returned but is Undefined", r.kind, r.toPrettyChars);
                             break;
 
                         case Owner:
@@ -2569,7 +2568,7 @@ void checkObErrors(ref ObState obstate)
                 {
                     auto v = obstate.vars[i];
                     if (v.type.hasPointers())
-                        v.error(v.loc, "is not disposed of before return");
+                        .error(v.loc, "%s `%s` is not disposed of before return", v.kind, v.toPrettyChars);
                 }
             }
         }

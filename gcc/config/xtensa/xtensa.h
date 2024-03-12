@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_WINDOWED_ABI	xtensa_windowed_abi
 #define TARGET_DEBUG		XCHAL_HAVE_DEBUG
 #define TARGET_L32R		XCHAL_HAVE_L32R
+#define TARGET_SALT		(XTENSA_MARCH_EARLIEST >= 260000)
 
 #define TARGET_DEFAULT (MASK_SERIALIZE_VOLATILE)
 
@@ -143,7 +144,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT 1
+#define STRICT_ALIGNMENT (xtensa_strict_alignment)
 
 /* Promote integer modes smaller than a word to SImode.  Set UNSIGNEDP
    for QImode, because there is no 8-bit load from memory with sign

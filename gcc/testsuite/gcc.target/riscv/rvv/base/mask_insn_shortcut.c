@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64 -O3" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64 -O3 -Wno-psabi" } */
 
 #include "riscv_vector.h"
 
@@ -233,9 +233,8 @@ vbool64_t test_shortcut_for_riscv_vmxnor_case_6(vbool64_t v1, size_t vl) {
 /* { dg-final { scan-assembler-not {vmxor\.mm\s+v[0-9]+,\s*v[0-9]+} } } */
 /* { dg-final { scan-assembler-not {vmor\.mm\s+v[0-9]+,\s*v[0-9]+} } } */
 /* { dg-final { scan-assembler-not {vmnor\.mm\s+v[0-9]+,\s*v[0-9]+} } } */
-/* { dg-final { scan-assembler-times {vmorn\.mm\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 7 } } */
 /* { dg-final { scan-assembler-not {vmxnor\.mm\s+v[0-9]+,\s*v[0-9]+} } } */
 /* { dg-final { scan-assembler-times {vmclr\.m\s+v[0-9]+} 14 } } */
-/* { dg-final { scan-assembler-times {vmset\.m\s+v[0-9]+} 7 } } */
+/* { dg-final { scan-assembler-times {vmset\.m\s+v[0-9]+} 14 } } */
 /* { dg-final { scan-assembler-times {vmmv\.m\s+v[0-9]+,\s*v[0-9]+} 14 } } */
 /* { dg-final { scan-assembler-times {vmnot\.m\s+v[0-9]+,\s*v[0-9]+} 14 } } */

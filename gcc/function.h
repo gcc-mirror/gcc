@@ -94,7 +94,7 @@ extern GTY ((length ("crtl->emit.x_reg_rtx_no"))) rtx * regno_reg_rtx;
 struct GTY(()) expr_status {
   /* Number of units that we should eventually pop off the stack.
      These are the arguments to function calls that have already returned.  */
-  poly_int64_pod x_pending_stack_adjust;
+  poly_int64 x_pending_stack_adjust;
 
   /* Under some ABIs, it is the caller's responsibility to pop arguments
      pushed for function calls.  A naive implementation would simply pop
@@ -117,7 +117,7 @@ struct GTY(()) expr_status {
      boundary can be momentarily unaligned while pushing the arguments.
      Record the delta since last aligned boundary here in order to get
      stack alignment in the nested function calls working right.  */
-  poly_int64_pod x_stack_pointer_delta;
+  poly_int64 x_stack_pointer_delta;
 
   /* Nonzero means __builtin_saveregs has already been done in this function.
      The value is the pseudoreg containing the value __builtin_saveregs
@@ -537,7 +537,7 @@ extern struct machine_function * (*init_machine_status) (void);
 
 struct args_size
 {
-  poly_int64_pod constant;
+  poly_int64 constant;
   tree var;
 };
 
@@ -657,11 +657,11 @@ extern rtx get_hard_reg_initial_val (machine_mode, unsigned int);
 extern rtx has_hard_reg_initial_val (machine_mode, unsigned int);
 
 /* Called from gimple_expand_cfg.  */
-extern unsigned int emit_initial_value_sets (void);
+extern void emit_initial_value_sets (void);
 
 extern bool initial_value_entry (int i, rtx *, rtx *);
 extern void instantiate_decl_rtl (rtx x);
-extern int aggregate_value_p (const_tree, const_tree);
+extern bool aggregate_value_p (const_tree, const_tree);
 extern bool use_register_for_decl (const_tree);
 extern gimple_seq gimplify_parameters (gimple_seq *);
 extern void locate_and_pad_parm (machine_mode, tree, int, int, int,
@@ -702,9 +702,9 @@ extern void clobber_return_register (void);
 extern void expand_function_end (void);
 extern rtx get_arg_pointer_save_area (void);
 extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
-extern int prologue_contains (const rtx_insn *);
-extern int epilogue_contains (const rtx_insn *);
-extern int prologue_epilogue_contains (const rtx_insn *);
+extern bool prologue_contains (const rtx_insn *);
+extern bool epilogue_contains (const rtx_insn *);
+extern bool prologue_epilogue_contains (const rtx_insn *);
 extern void record_prologue_seq (rtx_insn *);
 extern void record_epilogue_seq (rtx_insn *);
 extern void emit_return_into_block (bool simple_p, basic_block bb);

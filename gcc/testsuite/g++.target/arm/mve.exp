@@ -42,8 +42,12 @@ set dg-do-what-default "assemble"
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/../../gcc.target/arm/mve/intrinsics/*.\[cCS\]]] \
-	"" $DEFAULT_CXXFLAGS
+set gcc_subdir [string replace $subdir 0 2 gcc]
+set files [glob -nocomplain \
+	       "$srcdir/$subdir/../../gcc.target/arm/mve/intrinsics/*.\[cCS\]" \
+	       "$srcdir/$gcc_subdir/mve/general/*.\[cCS\]" \
+	       "$srcdir/$subdir/mve/general-c++/*.\[cCS\]"]
+dg-runtest [lsort $files] "" $DEFAULT_CXXFLAGS
 
 # All done.
 set dg-do-what-default ${save-dg-do-what-default}

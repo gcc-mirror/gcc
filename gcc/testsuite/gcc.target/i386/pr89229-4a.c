@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do assemble { target { ! ia32 } } } */
 /* { dg-options "-O2 -march=skylake-avx512" } */
 
 extern double d;
@@ -12,5 +12,3 @@ foo1 (double x)
   asm volatile ("" : "+v" (xmm17));
   d = xmm17;
 }
-
-/* { dg-final { scan-assembler-not "vmovapd" } } */

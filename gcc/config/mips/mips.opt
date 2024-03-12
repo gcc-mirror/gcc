@@ -380,6 +380,10 @@ msplit-addresses
 Target Mask(SPLIT_ADDRESSES)
 Optimize lui/addiu address loads.
 
+mmips16e2
+Target Var(TARGET_MIPS16E2) Init(0)
+Enable the MIPS16e V2 instructions.
+
 msym32
 Target Var(TARGET_SYM32)
 Assume all symbols have 32-bit values.

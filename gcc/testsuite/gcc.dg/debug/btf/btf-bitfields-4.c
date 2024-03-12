@@ -10,6 +10,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O0 -gbtf -dA" } */
+/* { dg-require-effective-target size32plus } */
 
 /* Struct with 3 members and no bitfield (kind_flag not set).  */
 /* { dg-final { scan-assembler-times "\[\t \]0x4000003\[\t \]+\[^\n\]*btt_info" 1 } } */

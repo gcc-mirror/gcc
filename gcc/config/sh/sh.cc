@@ -266,7 +266,8 @@ static reg_class_t sh_preferred_reload_class (rtx, reg_class_t);
 static reg_class_t sh_secondary_reload (bool, rtx, reg_class_t,
                                         machine_mode,
                                         struct secondary_reload_info *);
-static bool sh_legitimate_address_p (machine_mode, rtx, bool);
+static bool sh_legitimate_address_p (machine_mode, rtx, bool,
+				     code_helper = ERROR_MARK);
 static rtx sh_legitimize_address (rtx, rtx, machine_mode);
 static rtx sh_delegitimize_address (rtx);
 static bool sh_cannot_substitute_mem_equiv_p (rtx);
@@ -7697,7 +7698,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       eff_type = type;
       while (TREE_CODE (eff_type) == RECORD_TYPE
 	     && (member = find_sole_member (eff_type))
-	     && (TREE_CODE (TREE_TYPE (member)) == REAL_TYPE
+	     && (SCALAR_FLOAT_TYPE_P (TREE_TYPE (member))
 		 || TREE_CODE (TREE_TYPE (member)) == COMPLEX_TYPE
 		 || TREE_CODE (TREE_TYPE (member)) == RECORD_TYPE))
 	{
@@ -7718,14 +7719,14 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       bool pass_as_float;
       if (TARGET_FPU_DOUBLE)
 	{
-	  pass_as_float = ((TREE_CODE (eff_type) == REAL_TYPE && size <= 8)
+	  pass_as_float = ((SCALAR_FLOAT_TYPE_P (eff_type) && size <= 8)
 			   || (TREE_CODE (eff_type) == COMPLEX_TYPE
-			       && TREE_CODE (TREE_TYPE (eff_type)) == REAL_TYPE
+			       && SCALAR_FLOAT_TYPE_P (TREE_TYPE (eff_type))
 			       && size <= 16));
 	}
       else
 	{
-	  pass_as_float = (TREE_CODE (eff_type) == REAL_TYPE && size == 4);
+	  pass_as_float = (SCALAR_FLOAT_TYPE_P (eff_type) && size == 4);
 	}
 
       addr = create_tmp_var (pptr_type_node);
@@ -7738,7 +7739,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	{
 	  tree next_fp_tmp = create_tmp_var (TREE_TYPE (f_next_fp));
 	  tree cmp;
-	  bool is_double = size == 8 && TREE_CODE (eff_type) == REAL_TYPE;
+	  bool is_double = size == 8 && SCALAR_FLOAT_TYPE_P (eff_type);
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, unshare_expr (next_fp));
 	  gimplify_assign (unshare_expr (addr), tmp, pre_p);
@@ -8139,7 +8140,7 @@ sh_function_value (const_tree valtype,
 	     && (TREE_CODE (valtype) == INTEGER_TYPE
 		 || TREE_CODE (valtype) == ENUMERAL_TYPE
 		 || TREE_CODE (valtype) == BOOLEAN_TYPE
-		 || TREE_CODE (valtype) == REAL_TYPE
+		 || SCALAR_FLOAT_TYPE_P (valtype)
 		 || TREE_CODE (valtype) == OFFSET_TYPE))
 	    && sh_promote_prototypes (fn_decl_or_type)
 	    ? SImode : TYPE_MODE (valtype)),
@@ -9038,7 +9039,7 @@ sh_legitimate_index_p (machine_mode mode, rtx op, bool consider_sh2a,
 	  GBR
 	  GBR+disp  */
 static bool
-sh_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+sh_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 {
   if (REG_P (x) && REGNO (x) == GBR_REG)
     return true;

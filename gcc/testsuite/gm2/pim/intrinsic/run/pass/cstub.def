@@ -1,0 +1,7 @@
+DEFINITION MODULE FOR "C" cstub ;  (*!m2pim+gm2*)
+
+PROCEDURE identicall (x: LONGREAL) : LONGREAL ;
+PROCEDURE identical (x: REAL) : REAL ;
+PROCEDURE identicalf (x: SHORTREAL) : SHORTREAL ;
+
+END cstub.

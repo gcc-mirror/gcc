@@ -13,4 +13,4 @@ class DocTargetDriver {
 };
 
 #define OVERRIDE override
-// { dg-message "-:it was later defined here" "" { target *-*-* } .-1 }
+// { dg-message "9:it was later defined here" "" { target *-*-* } .-1 }

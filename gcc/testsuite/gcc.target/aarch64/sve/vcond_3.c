@@ -52,17 +52,17 @@ TEST_TYPE16 (int16_t)
 TEST_TYPE32 (int32_t)
 TEST_TYPE32 (int64_t)
 
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.b, p[0-7]/z, #-128\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.b, p[0-7]/z, #-127\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.b, p[0-7]/z, #2\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.b, p[0-7]/z, #127\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.b, p[0-9]+/z, #-128\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.b, p[0-9]+/z, #-127\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.b, p[0-9]+/z, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.b, p[0-9]+/z, #127\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-7]/z, #-32768\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-7]/z, #-32512\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-7]/z, #-256\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-7]/z, #-128\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-7]/z, #-127\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-7]/z, #2\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-7]/z, #127\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-7]/z, #256\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-7]/z, #32512\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-9]+/z, #-32768\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-9]+/z, #-32512\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-9]+/z, #-256\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-9]+/z, #-128\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-9]+/z, #-127\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-9]+/z, #2\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-9]+/z, #127\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-9]+/z, #256\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.[hsd], p[0-9]+/z, #32512\n} 3 } } */

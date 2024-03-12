@@ -37,7 +37,7 @@ convert_optab_p (optab op)
 inline enum insn_code
 optab_handler (optab op, machine_mode mode)
 {
-  unsigned scode = (op << 16) | mode;
+  unsigned scode = (op << 20) | mode;
   gcc_assert (op > LAST_CONV_OPTAB);
   return raw_optab_handler (scode);
 }
@@ -50,7 +50,7 @@ inline enum insn_code
 convert_optab_handler (convert_optab op, machine_mode to_mode,
 		       machine_mode from_mode)
 {
-  unsigned scode = (op << 16) | (from_mode << 8) | to_mode;
+  unsigned scode = (op << 20) | (from_mode << 10) | to_mode;
   gcc_assert (convert_optab_p (op));
   return raw_optab_handler (scode);
 }
@@ -187,8 +187,6 @@ enum insn_code find_widening_optab_handler_and_mode (optab, machine_mode,
 						     machine_mode,
 						     machine_mode *);
 int can_mult_highpart_p (machine_mode, bool);
-bool can_vec_mask_load_store_p (machine_mode, machine_mode, bool);
-opt_machine_mode get_len_load_store_mode (machine_mode, bool);
 bool can_compare_and_swap_p (machine_mode, bool);
 bool can_atomic_exchange_p (machine_mode, bool);
 bool can_atomic_load_p (machine_mode);

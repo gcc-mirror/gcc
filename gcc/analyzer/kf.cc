@@ -40,16 +40,29 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* class pure_known_function_with_default_return : public known_function.  */
+
+void
+pure_known_function_with_default_return::
+impl_call_pre (const call_details &cd) const
+{
+  cd.set_any_lhs_with_defaults ();
+}
+
 /* Implementations of specific functions.  */
 
 /* Handler for "alloca".  */
 
-class kf_alloca : public known_function
+class kf_alloca : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return cd.num_args () == 1;
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_ALLOCA;
   }
   void impl_call_pre (const call_details &cd) const final override;
 };
@@ -69,6 +82,235 @@ kf_alloca::impl_call_pre (const call_details &cd) const
   cd.maybe_set_lhs (ptr_sval);
 }
 
+/* Handler for:
+   void __atomic_exchange (type *ptr, type *val, type *ret, int memorder).  */
+
+class kf_atomic_exchange : public internal_known_function
+{
+public:
+  /* This is effectively:
+       *RET = *PTR;
+       *PTR = *VAL;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_ptr_tree = cd.get_arg_tree (0);
+    const svalue *val_ptr_sval = cd.get_arg_svalue (1);
+    tree val_ptr_tree = cd.get_arg_tree (1);
+    const svalue *ret_ptr_sval = cd.get_arg_svalue (2);
+    tree ret_ptr_tree = cd.get_arg_tree (2);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *val_region
+      = model->deref_rvalue (val_ptr_sval, val_ptr_tree, ctxt);
+    const svalue *star_val_sval = model->get_store_value (val_region, ctxt);
+    const region *ptr_region
+      = model->deref_rvalue (ptr_ptr_sval, ptr_ptr_tree, ctxt);
+    const svalue *star_ptr_sval = model->get_store_value (ptr_region, ctxt);
+    const region *ret_region
+      = model->deref_rvalue (ret_ptr_sval, ret_ptr_tree, ctxt);
+    model->set_value (ptr_region, star_val_sval, ctxt);
+    model->set_value (ret_region, star_ptr_sval, ctxt);
+  }
+};
+
+/* Handler for:
+   __atomic_exchange_n (type *ptr, type val, int memorder).  */
+
+class kf_atomic_exchange_n : public internal_known_function
+{
+public:
+  /* This is effectively:
+       RET = *PTR;
+       *PTR = VAL;
+       return RET;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_tree = cd.get_arg_tree (0);
+    const svalue *set_sval = cd.get_arg_svalue (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *dst_region = model->deref_rvalue (ptr_sval, ptr_tree, ctxt);
+    const svalue *ret_sval = model->get_store_value (dst_region, ctxt);
+    model->set_value (dst_region, set_sval, ctxt);
+    cd.maybe_set_lhs (ret_sval);
+  }
+};
+
+/* Handler for:
+   type __atomic_fetch_add (type *ptr, type val, int memorder);
+   type __atomic_fetch_sub (type *ptr, type val, int memorder);
+   type __atomic_fetch_and (type *ptr, type val, int memorder);
+   type __atomic_fetch_xor (type *ptr, type val, int memorder);
+   type __atomic_fetch_or (type *ptr, type val, int memorder);
+*/
+
+class kf_atomic_fetch_op : public internal_known_function
+{
+public:
+  kf_atomic_fetch_op (enum tree_code op): m_op (op) {}
+
+  /* This is effectively:
+       RET = *PTR;
+       *PTR = RET OP VAL;
+       return RET;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_tree = cd.get_arg_tree (0);
+    const svalue *val_sval = cd.get_arg_svalue (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_manager *mgr = cd.get_manager ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *star_ptr_region
+      = model->deref_rvalue (ptr_sval, ptr_tree, ctxt);
+    const svalue *old_sval = model->get_store_value (star_ptr_region, ctxt);
+    const svalue *new_sval = mgr->get_or_create_binop (old_sval->get_type (),
+						       m_op,
+						       old_sval, val_sval);
+    model->set_value (star_ptr_region, new_sval, ctxt);
+    cd.maybe_set_lhs (old_sval);
+  }
+
+private:
+  enum tree_code m_op;
+};
+
+/* Handler for:
+   type __atomic_add_fetch (type *ptr, type val, int memorder);
+   type __atomic_sub_fetch (type *ptr, type val, int memorder);
+   type __atomic_and_fetch (type *ptr, type val, int memorder);
+   type __atomic_xor_fetch (type *ptr, type val, int memorder);
+   type __atomic_or_fetch (type *ptr, type val, int memorder);
+*/
+
+class kf_atomic_op_fetch : public internal_known_function
+{
+public:
+  kf_atomic_op_fetch (enum tree_code op): m_op (op) {}
+
+  /* This is effectively:
+       *PTR = RET OP VAL;
+       return *PTR;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_tree = cd.get_arg_tree (0);
+    const svalue *val_sval = cd.get_arg_svalue (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_manager *mgr = cd.get_manager ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *star_ptr_region
+      = model->deref_rvalue (ptr_sval, ptr_tree, ctxt);
+    const svalue *old_sval = model->get_store_value (star_ptr_region, ctxt);
+    const svalue *new_sval = mgr->get_or_create_binop (old_sval->get_type (),
+						       m_op,
+						       old_sval, val_sval);
+    model->set_value (star_ptr_region, new_sval, ctxt);
+    cd.maybe_set_lhs (new_sval);
+  }
+
+private:
+  enum tree_code m_op;
+};
+
+/* Handler for:
+   void __atomic_load (type *ptr, type *ret, int memorder).  */
+
+class kf_atomic_load : public internal_known_function
+{
+public:
+  /* This is effectively:
+       *RET = *PTR;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_ptr_tree = cd.get_arg_tree (0);
+    const svalue *ret_ptr_sval = cd.get_arg_svalue (1);
+    tree ret_ptr_tree = cd.get_arg_tree (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *ptr_region
+      = model->deref_rvalue (ptr_ptr_sval, ptr_ptr_tree, ctxt);
+    const svalue *star_ptr_sval = model->get_store_value (ptr_region, ctxt);
+    const region *ret_region
+      = model->deref_rvalue (ret_ptr_sval, ret_ptr_tree, ctxt);
+    model->set_value (ret_region, star_ptr_sval, ctxt);
+  }
+};
+
+/* Handler for:
+   type __atomic_load_n (type *ptr, int memorder) */
+
+class kf_atomic_load_n : public internal_known_function
+{
+public:
+  /* This is effectively:
+       RET = *PTR;
+       return RET;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_ptr_tree = cd.get_arg_tree (0);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *ptr_region
+      = model->deref_rvalue (ptr_ptr_sval, ptr_ptr_tree, ctxt);
+    const svalue *star_ptr_sval = model->get_store_value (ptr_region, ctxt);
+    cd.maybe_set_lhs (star_ptr_sval);
+  }
+};
+
+/* Handler for:
+   void __atomic_store_n (type *ptr, type val, int memorder) */
+
+class kf_atomic_store_n : public internal_known_function
+{
+public:
+  /* This is effectively:
+       *PTR = VAL;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_tree = cd.get_arg_tree (0);
+    const svalue *new_sval = cd.get_arg_svalue (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *star_ptr_region
+      = model->deref_rvalue (ptr_sval, ptr_tree, ctxt);
+    model->set_value (star_ptr_region, new_sval, ctxt);
+  }
+};
+
 /* Handler for "__builtin_expect" etc.  */
 
 class kf_expect : public internal_known_function
@@ -84,7 +326,7 @@ public:
 
 /* Handler for "calloc".  */
 
-class kf_calloc : public known_function
+class kf_calloc : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -93,6 +335,11 @@ public:
 	    && cd.arg_is_size_p (0)
 	    && cd.arg_is_size_p (1));
   }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_CALLOC;
+  }
+
   void impl_call_pre (const call_details &cd) const final override;
 };
 
@@ -111,7 +358,7 @@ kf_calloc::impl_call_pre (const call_details &cd) const
     = model->get_or_create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
   const region *sized_reg
     = mgr->get_sized_region (new_reg, NULL_TREE, prod_sval);
-  model->zero_fill_region (sized_reg);
+  model->zero_fill_region (sized_reg, cd.get_ctxt ());
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
@@ -176,7 +423,38 @@ kf_error::impl_call_pre (const call_details &cd) const
   if (!model->add_constraint (status, EQ_EXPR, integer_zero_node, ctxt))
     if (ctxt)
       ctxt->terminate_path ();
+
+  /* Check "format" arg.  */
+  const int fmt_arg_idx = (m_min_args == 3) ? 2 : 4;
+  model->check_for_null_terminated_string_arg (cd, fmt_arg_idx);
 }
+
+/* Handler for fopen.
+     FILE *fopen (const char *filename, const char *mode);
+   See e.g. https://en.cppreference.com/w/c/io/fopen
+   https://www.man7.org/linux/man-pages/man3/fopen.3.html
+   https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen?view=msvc-170  */
+
+class kf_fopen : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1));
+  }
+
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    cd.check_for_null_terminated_string_arg (0);
+    cd.check_for_null_terminated_string_arg (1);
+    cd.set_any_lhs_with_defaults ();
+
+    /* fopen's mode param is effectively a mini-DSL, but there are various
+       non-standard extensions, so we don't bother to check it.  */
+  }
+};
 
 /* Handler for "free", after sm-handling.
 
@@ -193,12 +471,16 @@ kf_error::impl_call_pre (const call_details &cd) const
    all pointers to the region to the "freed" state together, regardless
    of casts.  */
 
-class kf_free : public known_function
+class kf_free : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
-    return (cd.num_args () == 0 && cd.arg_is_pointer_p (0));
+    return (cd.num_args () == 1 && cd.arg_is_pointer_p (0));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_FREE;
   }
   void impl_call_post (const call_details &cd) const final override;
 };
@@ -219,13 +501,17 @@ kf_free::impl_call_post (const call_details &cd) const
 
 /* Handle the on_call_pre part of "malloc".  */
 
-class kf_malloc : public known_function
+class kf_malloc : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 1
 	    && cd.arg_is_size_p (0));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_MALLOC;
   }
   void impl_call_pre (const call_details &cd) const final override;
 };
@@ -248,12 +534,19 @@ kf_malloc::impl_call_pre (const call_details &cd) const
 
 /* Handler for "memcpy" and "__builtin_memcpy",
    "memmove", and "__builtin_memmove".  */
-/* TODO: complain about overlapping src and dest for the memcpy
-   variants.  */
 
-class kf_memcpy_memmove : public known_function
+class kf_memcpy_memmove : public builtin_known_function
 {
 public:
+  enum kf_memcpy_memmove_variant
+  {
+    KF_MEMCPY,
+    KF_MEMCPY_CHK,
+    KF_MEMMOVE,
+    KF_MEMMOVE_CHK,
+  };
+  kf_memcpy_memmove (enum kf_memcpy_memmove_variant variant)
+    : m_variant (variant) {};
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 3
@@ -261,7 +554,25 @@ public:
 	    && cd.arg_is_pointer_p (1)
 	    && cd.arg_is_size_p (2));
   }
+  enum built_in_function builtin_code () const final override
+  {
+    switch (m_variant)
+      {
+      case KF_MEMCPY:
+	return BUILT_IN_MEMCPY;
+      case KF_MEMCPY_CHK:
+	return BUILT_IN_MEMCPY_CHK;
+      case KF_MEMMOVE:
+	return BUILT_IN_MEMMOVE;
+      case KF_MEMMOVE_CHK:
+	return BUILT_IN_MEMMOVE_CHK;
+      default:
+	gcc_unreachable ();
+      }
+  }
   void impl_call_pre (const call_details &cd) const final override;
+private:
+  const enum kf_memcpy_memmove_variant m_variant;
 };
 
 void
@@ -272,7 +583,6 @@ kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
   const svalue *num_bytes_sval = cd.get_arg_svalue (2);
 
   region_model *model = cd.get_model ();
-  region_model_manager *mgr = cd.get_manager ();
 
   const region *dest_reg
     = model->deref_rvalue (dest_ptr_sval, cd.get_arg_tree (0), cd.get_ctxt ());
@@ -280,29 +590,45 @@ kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
     = model->deref_rvalue (src_ptr_sval, cd.get_arg_tree (1), cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_ptr_sval);
+  /* Check for overlap.  */
+  switch (m_variant)
+    {
+    case KF_MEMCPY:
+    case KF_MEMCPY_CHK:
+      cd.complain_about_overlap (0, 1, num_bytes_sval);
+      break;
 
-  const region *sized_src_reg
-    = mgr->get_sized_region (src_reg, NULL_TREE, num_bytes_sval);
-  const region *sized_dest_reg
-    = mgr->get_sized_region (dest_reg, NULL_TREE, num_bytes_sval);
-  const svalue *src_contents_sval
-    = model->get_store_value (sized_src_reg, cd.get_ctxt ());
-  model->check_for_poison (src_contents_sval, cd.get_arg_tree (1),
-			   sized_src_reg, cd.get_ctxt ());
-  model->set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
+    case KF_MEMMOVE:
+    case KF_MEMMOVE_CHK:
+      /* It's OK for memmove's arguments to overlap.  */
+      break;
+
+    default:
+	gcc_unreachable ();
+    }
+  model->copy_bytes (dest_reg,
+		     src_reg, cd.get_arg_tree (1),
+		     num_bytes_sval,
+		     cd.get_ctxt ());
 }
 
 /* Handler for "memset" and "__builtin_memset".  */
 
-class kf_memset : public known_function
+class kf_memset : public builtin_known_function
 {
 public:
+  kf_memset (bool chk_variant) : m_chk_variant (chk_variant) {}
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 3 && cd.arg_is_pointer_p (0));
   }
-
+  enum built_in_function builtin_code () const final override
+  {
+    return m_chk_variant ? BUILT_IN_MEMSET_CHK : BUILT_IN_MEMSET;
+  }
   void impl_call_pre (const call_details &cd) const final override;
+private:
+  const bool m_chk_variant;
 };
 
 void
@@ -324,8 +650,9 @@ kf_memset::impl_call_pre (const call_details &cd) const
   const region *sized_dest_reg = mgr->get_sized_region (dest_reg,
 							NULL_TREE,
 							num_bytes_sval);
-  model->check_region_for_write (sized_dest_reg, cd.get_ctxt ());
-  model->fill_region (sized_dest_reg, fill_value_u8);
+  model->fill_region (sized_dest_reg, fill_value_u8, cd.get_ctxt ());
+
+  cd.maybe_set_lhs (dest_sval);
 }
 
 /* A subclass of pending_diagnostic for complaining about 'putenv'
@@ -358,7 +685,7 @@ public:
     return OPT_Wanalyzer_putenv_of_auto_var;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
@@ -432,6 +759,7 @@ public:
     gcc_assert (fndecl);
     region_model_context *ctxt = cd.get_ctxt ();
     region_model *model = cd.get_model ();
+    model->check_for_null_terminated_string_arg (cd, 0);
     const svalue *ptr_sval = cd.get_arg_svalue (0);
     const region *reg
       = model->deref_rvalue (ptr_sval, cd.get_arg_tree (0), ctxt);
@@ -452,6 +780,7 @@ public:
 	  ctxt->warn (make_unique<putenv_of_auto_var> (fndecl, reg));
 	break;
       }
+    cd.set_any_lhs_with_defaults ();
   }
 };
 
@@ -478,7 +807,7 @@ public:
    Each of these has a custom_edge_info subclass, which updates
    the region_model and sm-state of the destination state.  */
 
-class kf_realloc : public known_function
+class kf_realloc : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -487,6 +816,12 @@ public:
 	    && cd.arg_is_pointer_p (0)
 	    && cd.arg_is_size_p (1));
   }
+
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_REALLOC;
+  }
+
   void impl_call_post (const call_details &cd) const final override;
 };
 
@@ -699,12 +1034,21 @@ kf_realloc::impl_call_post (const call_details &cd) const
 
 /* Handler for "strchr" and "__builtin_strchr".  */
 
-class kf_strchr : public known_function
+class kf_strchr : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 2 && cd.arg_is_pointer_p (0));
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    cd.check_for_null_terminated_string_arg (0);
+  }
+
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRCHR;
   }
   void impl_call_post (const call_details &cd) const final override;
 };
@@ -782,7 +1126,7 @@ kf_strchr::impl_call_post (const call_details &cd) const
      int sprintf(char *str, const char *format, ...);
 */
 
-class kf_sprintf : public known_function
+class kf_sprintf : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -790,6 +1134,11 @@ public:
     return (cd.num_args () >= 2
 	    && cd.arg_is_pointer_p (0)
 	    && cd.arg_is_pointer_p (1));
+  }
+
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_SPRINTF;
   }
 
   void impl_call_pre (const call_details &cd) const final override
@@ -803,12 +1152,13 @@ public:
       = model->deref_rvalue (dst_ptr, cd.get_arg_tree (0), ctxt);
     const svalue *content = cd.get_or_create_conjured_svalue (dst_reg);
     model->set_value (dst_reg, content, ctxt);
+    cd.set_any_lhs_with_defaults ();
   }
 };
 
 /* Handler for "__builtin_stack_restore".  */
 
-class kf_stack_restore : public known_function
+class kf_stack_restore : public pure_known_function_with_default_return
 {
 public:
   bool matches_call_types_p (const call_details &) const final override
@@ -821,7 +1171,7 @@ public:
 
 /* Handler for "__builtin_stack_save".  */
 
-class kf_stack_save : public known_function
+class kf_stack_save : public pure_known_function_with_default_return
 {
 public:
   bool matches_call_types_p (const call_details &) const final override
@@ -832,12 +1182,14 @@ public:
   /* Currently a no-op.  */
 };
 
-/* Handler for "strcpy" and "__builtin_strcpy_chk".  */
+/* Handler for "strcat" and "__builtin_strcat_chk".  */
 
-class kf_strcpy : public known_function
+class kf_strcat : public builtin_known_function
 {
 public:
-  kf_strcpy (unsigned int num_args) : m_num_args (num_args) {}
+  kf_strcat (unsigned int num_args, bool chk_variant)
+    : m_num_args (num_args),
+      m_chk_variant (chk_variant) {}
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == m_num_args
@@ -845,116 +1197,377 @@ public:
 	    && cd.arg_is_pointer_p (1));
   }
 
+  enum built_in_function builtin_code () const final override
+  {
+    return m_chk_variant ? BUILT_IN_STRCAT_CHK : BUILT_IN_STRCAT;
+  }
+
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model *model = cd.get_model ();
+    region_model_manager *mgr = cd.get_manager ();
+
+    const svalue *dest_sval = cd.get_arg_svalue (0);
+    const region *dest_reg = model->deref_rvalue (dest_sval, cd.get_arg_tree (0),
+						  cd.get_ctxt ());
+
+    const svalue *dst_strlen_sval
+      = cd.check_for_null_terminated_string_arg (0, false, nullptr);
+    if (!dst_strlen_sval)
+      {
+	if (cd.get_ctxt ())
+	  cd.get_ctxt ()->terminate_path ();
+	return;
+      }
+
+    const svalue *bytes_to_copy;
+    const svalue *num_src_bytes_read_sval
+      = cd.check_for_null_terminated_string_arg (1, true, &bytes_to_copy);
+    if (!num_src_bytes_read_sval)
+      {
+	if (cd.get_ctxt ())
+	  cd.get_ctxt ()->terminate_path ();
+	return;
+      }
+
+    cd.maybe_set_lhs (dest_sval);
+    cd.complain_about_overlap (0, 1, num_src_bytes_read_sval);
+
+    const region *offset_reg
+      = mgr->get_offset_region (dest_reg, NULL_TREE, dst_strlen_sval);
+    model->write_bytes (offset_reg,
+			num_src_bytes_read_sval,
+			bytes_to_copy,
+			cd.get_ctxt ());
+  }
+
+private:
+  unsigned int m_num_args;
+  const bool m_chk_variant;
+};
+
+/* Handler for "strcpy" and "__builtin_strcpy_chk".  */
+
+class kf_strcpy : public builtin_known_function
+{
+public:
+  kf_strcpy (unsigned int num_args, bool chk_variant)
+    : m_num_args (num_args),
+      m_chk_variant (chk_variant) {}
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == m_num_args
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return m_chk_variant ? BUILT_IN_STRCPY_CHK : BUILT_IN_STRCPY;
+  }
   void impl_call_pre (const call_details &cd) const final override;
 
 private:
   unsigned int m_num_args;
+  const bool m_chk_variant;
 };
 
 void
 kf_strcpy::impl_call_pre (const call_details &cd) const
 {
   region_model *model = cd.get_model ();
-  region_model_manager *mgr = cd.get_manager ();
+  region_model_context *ctxt = cd.get_ctxt ();
 
   const svalue *dest_sval = cd.get_arg_svalue (0);
   const region *dest_reg = model->deref_rvalue (dest_sval, cd.get_arg_tree (0),
-					 cd.get_ctxt ());
-  const svalue *src_sval = cd.get_arg_svalue (1);
-  const region *src_reg = model->deref_rvalue (src_sval, cd.get_arg_tree (1),
-					cd.get_ctxt ());
-  const svalue *src_contents_sval = model->get_store_value (src_reg,
-							    cd.get_ctxt ());
-
+						    ctxt);
+  /* strcpy returns the initial param.  */
   cd.maybe_set_lhs (dest_sval);
 
-  /* Try to get the string size if SRC_REG is a string_region.  */
-  const svalue *copied_bytes_sval = model->get_string_size (src_reg);
-  /* Otherwise, check if the contents of SRC_REG is a string.  */
-  if (copied_bytes_sval->get_kind () == SK_UNKNOWN)
-    copied_bytes_sval = model->get_string_size (src_contents_sval);
-
-  const region *sized_dest_reg
-    = mgr->get_sized_region (dest_reg, NULL_TREE, copied_bytes_sval);
-  model->set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
+  const svalue *bytes_to_copy;
+  if (const svalue *num_bytes_read_sval
+      = cd.check_for_null_terminated_string_arg (1, true, &bytes_to_copy))
+    {
+      cd.complain_about_overlap (0, 1, num_bytes_read_sval);
+      model->write_bytes (dest_reg, num_bytes_read_sval, bytes_to_copy, ctxt);
+    }
+  else
+    {
+      if (cd.get_ctxt ())
+	cd.get_ctxt ()->terminate_path ();
+    }
 }
 
 /* Handler for "strdup" and "__builtin_strdup".  */
 
-class kf_strdup : public known_function
+class kf_strdup : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 1 && cd.arg_is_pointer_p (0));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRDUP;
   }
   void impl_call_pre (const call_details &cd) const final override
   {
     region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
     region_model_manager *mgr = cd.get_manager ();
-    /* Ideally we'd get the size here, and simulate copying the bytes.  */
-    const region *new_reg
-      = model->get_or_create_region_for_heap_alloc (NULL, cd.get_ctxt ());
-    model->mark_region_as_unknown (new_reg, NULL);
-    if (cd.get_lhs_type ())
+    const svalue *bytes_to_copy;
+    if (const svalue *num_bytes_read_sval
+	= cd.check_for_null_terminated_string_arg (0, true, &bytes_to_copy))
       {
-	const svalue *ptr_sval
-	  = mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
-	cd.maybe_set_lhs (ptr_sval);
+	const region *new_reg
+	  = model->get_or_create_region_for_heap_alloc (num_bytes_read_sval,
+							ctxt);
+	model->write_bytes (new_reg, num_bytes_read_sval, bytes_to_copy, ctxt);
+	if (cd.get_lhs_type ())
+	  {
+	    const svalue *ptr_sval
+	      = mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+	    cd.maybe_set_lhs (ptr_sval);
+	  }
+      }
+    else
+      {
+	if (ctxt)
+	  ctxt->terminate_path ();
       }
   }
 };
 
-/* Handle the on_call_pre part of "strlen".  */
+/* Handler for "strlen" and for "__analyzer_get_strlen".  */
 
-class kf_strlen : public known_function
+class kf_strlen : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 1 && cd.arg_is_pointer_p (0));
   }
-  void impl_call_pre (const call_details &cd) const final override;
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRLEN;
+  }
+
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    if (const svalue *strlen_sval
+	  = cd.check_for_null_terminated_string_arg (0, false, nullptr))
+      if (strlen_sval->get_kind () != SK_UNKNOWN)
+	{
+	  cd.maybe_set_lhs (strlen_sval);
+	  return;
+	}
+
+    /* Use a conjured svalue.  */
+    cd.set_any_lhs_with_defaults ();
+  }
+};
+
+/* Factory function, so that kf-analyzer.cc can use this class.  */
+
+std::unique_ptr<known_function>
+make_kf_strlen ()
+{
+  return make_unique<kf_strlen> ();
+}
+
+/* Handler for "strncpy" and "__builtin_strncpy".
+   See e.g. https://en.cppreference.com/w/c/string/byte/strncpy
+
+     extern char *strncpy (char *dst, const char *src, size_t count);
+
+   Handle this by splitting into two outcomes:
+   (a) truncated read from "src" of "count" bytes,
+       writing "count" bytes to "dst"
+   (b) read from "src" of up to (and including) the null terminator,
+       where the number of bytes read < "count" bytes,
+       writing those bytes to "dst", and zero-filling the rest,
+       up to "count".  */
+
+class kf_strncpy : public builtin_known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1)
+	    && cd.arg_is_integral_p (2));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRNCPY;
+  }
+  void impl_call_post (const call_details &cd) const final override;
 };
 
 void
-kf_strlen::impl_call_pre (const call_details &cd) const
+kf_strncpy::impl_call_post (const call_details &cd) const
 {
-  region_model_context *ctxt = cd.get_ctxt ();
-  region_model *model = cd.get_model ();
-  region_model_manager *mgr = cd.get_manager ();
-
-  const svalue *arg_sval = cd.get_arg_svalue (0);
-  const region *buf_reg
-    = model->deref_rvalue (arg_sval, cd.get_arg_tree (0), ctxt);
-  if (const string_region *str_reg
-      = buf_reg->dyn_cast_string_region ())
+  class strncpy_call_info : public call_info
+  {
+  public:
+    strncpy_call_info (const call_details &cd,
+		       const svalue *num_bytes_with_terminator_sval,
+		       bool truncated_read)
+    : call_info (cd),
+      m_num_bytes_with_terminator_sval (num_bytes_with_terminator_sval),
+      m_truncated_read (truncated_read)
     {
-      tree str_cst = str_reg->get_string_cst ();
-      /* TREE_STRING_LENGTH is sizeof, not strlen.  */
-      int sizeof_cst = TREE_STRING_LENGTH (str_cst);
-      int strlen_cst = sizeof_cst - 1;
-      if (cd.get_lhs_type ())
-	{
-	  tree t_cst = build_int_cst (cd.get_lhs_type (), strlen_cst);
-	  const svalue *result_sval
-	    = mgr->get_or_create_constant_svalue (t_cst);
-	  cd.maybe_set_lhs (result_sval);
-	  return;
-	}
     }
-  /* Otherwise a conjured value.  */
-}
+
+    label_text get_desc (bool can_colorize) const final override
+    {
+      if (m_truncated_read)
+	return make_label_text (can_colorize,
+				"when %qE truncates the source string",
+				get_fndecl ());
+      else
+	return make_label_text (can_colorize,
+				"when %qE copies the full source string",
+				get_fndecl ());
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+
+      const svalue *dest_sval = cd.get_arg_svalue (0);
+      const region *dest_reg
+	= model->deref_rvalue (dest_sval, cd.get_arg_tree (0), ctxt);
+
+      const svalue *src_sval = cd.get_arg_svalue (1);
+      const region *src_reg
+	= model->deref_rvalue (src_sval, cd.get_arg_tree (1), ctxt);
+
+      const svalue *count_sval = cd.get_arg_svalue (2);
+
+      /* strncpy returns the initial param.  */
+      cd.maybe_set_lhs (dest_sval);
+
+      const svalue *num_bytes_read_sval;
+      if (m_truncated_read)
+	{
+	  /* Truncated read.  */
+	  num_bytes_read_sval = count_sval;
+
+	  if (m_num_bytes_with_terminator_sval)
+	    {
+	      /* The terminator is after the limit.  */
+	      if (!model->add_constraint (m_num_bytes_with_terminator_sval,
+					  GT_EXPR,
+					  count_sval,
+					  ctxt))
+		return false;
+	    }
+	  else
+	    {
+	      /* We don't know where the terminator is, or if there is one.
+		 In theory we know that the first COUNT bytes are non-zero,
+		 but we don't have a way to record that constraint.  */
+	    }
+	}
+      else
+	{
+	  /* Full read of the src string before reaching the limit,
+	     so there must be a terminator and it must be at or before
+	     the limit.  */
+	  if (m_num_bytes_with_terminator_sval)
+	    {
+	      if (!model->add_constraint (m_num_bytes_with_terminator_sval,
+					  LE_EXPR,
+					  count_sval,
+					  ctxt))
+		return false;
+	      num_bytes_read_sval = m_num_bytes_with_terminator_sval;
+
+	      /* First, zero-fill the dest buffer.
+		 We don't need to do this for the truncation case, as
+		 this fully populates the dest buffer.  */
+	      const region *sized_dest_reg
+		= model->get_manager ()->get_sized_region (dest_reg,
+							   NULL_TREE,
+							   count_sval);
+	      model->zero_fill_region (sized_dest_reg, ctxt);
+	    }
+	  else
+	    {
+	      /* Don't analyze this case; the other case will
+		 assume a "truncated" read up to the limit.  */
+	      return false;
+	    }
+	}
+
+      gcc_assert (num_bytes_read_sval);
+
+      const svalue *bytes_to_copy
+	= model->read_bytes (src_reg,
+			     cd.get_arg_tree (1),
+			     num_bytes_read_sval,
+			     ctxt);
+      cd.complain_about_overlap (0, 1, num_bytes_read_sval);
+      model->write_bytes (dest_reg,
+			  num_bytes_read_sval,
+			  bytes_to_copy,
+			  ctxt);
+
+      return true;
+    }
+  private:
+    /* (strlen + 1) of the source string if it has a terminator,
+       or NULL for the case where UB would happen before
+       finding any terminator.  */
+    const svalue *m_num_bytes_with_terminator_sval;
+
+    /* true: if this is the outcome where the limit was reached before
+       the null terminator
+       false: if the null terminator was reached before the limit.  */
+    bool m_truncated_read;
+  };
+
+  /* Body of kf_strncpy::impl_call_post.  */
+  if (cd.get_ctxt ())
+    {
+      /* First, scan for a null terminator as if there were no limit,
+	 with a null ctxt so no errors are reported.  */
+      const region_model *model = cd.get_model ();
+      const svalue *ptr_arg_sval = cd.get_arg_svalue (1);
+      const region *buf_reg
+	= model->deref_rvalue (ptr_arg_sval, cd.get_arg_tree (1), nullptr);
+      const svalue *num_bytes_with_terminator_sval
+	= model->scan_for_null_terminator (buf_reg,
+					   cd.get_arg_tree (1),
+					   nullptr,
+					   nullptr);
+      cd.get_ctxt ()->bifurcate
+	(make_unique<strncpy_call_info> (cd, num_bytes_with_terminator_sval,
+					 false));
+      cd.get_ctxt ()->bifurcate
+	(make_unique<strncpy_call_info> (cd, num_bytes_with_terminator_sval,
+					 true));
+      cd.get_ctxt ()->terminate_path ();
+    }
+};
 
 /* Handler for "strndup" and "__builtin_strndup".  */
 
-class kf_strndup : public known_function
+class kf_strndup : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 2 && cd.arg_is_pointer_p (0));
   }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRNDUP;
+  }
   void impl_call_pre (const call_details &cd) const final override
   {
     region_model *model = cd.get_model ();
@@ -971,6 +1584,100 @@ public:
       }
   }
 };
+
+/* Handler for "strstr" and "__builtin_strstr".
+     extern char *strstr (const char* str, const char* substr);
+   See e.g. https://en.cppreference.com/w/c/string/byte/strstr  */
+
+class kf_strstr : public builtin_known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRSTR;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    cd.check_for_null_terminated_string_arg (0);
+    cd.check_for_null_terminated_string_arg (1);
+  }
+  void impl_call_post (const call_details &cd) const final override;
+};
+
+void
+kf_strstr::impl_call_post (const call_details &cd) const
+{
+  class strstr_call_info : public call_info
+  {
+  public:
+    strstr_call_info (const call_details &cd, bool found)
+    : call_info (cd), m_found (found)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const final override
+    {
+      if (m_found)
+	return make_label_text (can_colorize,
+				"when %qE returns non-NULL",
+				get_fndecl ());
+      else
+	return make_label_text (can_colorize,
+				"when %qE returns NULL",
+				get_fndecl ());
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      if (tree lhs_type = cd.get_lhs_type ())
+	{
+	  region_model_manager *mgr = model->get_manager ();
+	  const svalue *result;
+	  if (m_found)
+	    {
+	      const svalue *str_sval = cd.get_arg_svalue (0);
+	      const region *str_reg
+		= model->deref_rvalue (str_sval, cd.get_arg_tree (0),
+				       cd.get_ctxt ());
+	      /* We want str_sval + OFFSET for some unknown OFFSET.
+		 Use a conjured_svalue to represent the offset,
+		 using the str_reg as the id of the conjured_svalue.  */
+	      const svalue *offset
+		= mgr->get_or_create_conjured_svalue (size_type_node,
+						      cd.get_call_stmt (),
+						      str_reg,
+						      conjured_purge (model,
+								      ctxt));
+	      result = mgr->get_or_create_binop (lhs_type, POINTER_PLUS_EXPR,
+						 str_sval, offset);
+	    }
+	  else
+	    result = mgr->get_or_create_int_cst (lhs_type, 0);
+	  cd.maybe_set_lhs (result);
+	}
+      return true;
+    }
+  private:
+    bool m_found;
+  };
+
+  /* Body of kf_strstr::impl_call_post.  */
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<strstr_call_info> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<strstr_call_info> (cd, true));
+      cd.get_ctxt ()->terminate_path ();
+    }
+}
 
 class kf_ubsan_bounds : public internal_known_function
 {
@@ -985,6 +1692,131 @@ region_model::impl_deallocation_call (const call_details &cd)
 {
   kf_free kf;
   kf.impl_call_post (cd);
+}
+
+static void
+register_atomic_builtins (known_function_manager &kfm)
+{
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE, make_unique<kf_atomic_exchange> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_N, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_1, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_2, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_4, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_8, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_16, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD, make_unique<kf_atomic_load> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_N, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_1, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_2, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_4, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_8, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_16, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_N, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_1, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_2, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_4, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_8, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_16, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_1,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_2,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_4,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_8,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_16,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_1,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_2,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_4,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_8,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_16,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_1,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_2,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_4,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_8,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_16,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_1,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_2,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_4,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_8,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_16,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_1,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_2,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_4,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_8,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_16,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
 }
 
 /* Populate KFM with instances of known functions supported by the core of the
@@ -1002,44 +1834,82 @@ register_known_functions (known_function_manager &kfm)
     kfm.add (IFN_UBSAN_BOUNDS, make_unique<kf_ubsan_bounds> ());
   }
 
-  /* Built-ins the analyzer has known_functions for.  */
+  /* GCC built-ins that do not correspond to a function
+     in the standard library.  */
   {
-    kfm.add (BUILT_IN_ALLOCA, make_unique<kf_alloca> ());
-    kfm.add (BUILT_IN_ALLOCA_WITH_ALIGN, make_unique<kf_alloca> ());
-    kfm.add (BUILT_IN_CALLOC, make_unique<kf_calloc> ());
     kfm.add (BUILT_IN_EXPECT, make_unique<kf_expect> ());
     kfm.add (BUILT_IN_EXPECT_WITH_PROBABILITY, make_unique<kf_expect> ());
-    kfm.add (BUILT_IN_FREE, make_unique<kf_free> ());
-    kfm.add (BUILT_IN_MALLOC, make_unique<kf_malloc> ());
-    kfm.add (BUILT_IN_MEMCPY, make_unique<kf_memcpy_memmove> ());
-    kfm.add (BUILT_IN_MEMCPY_CHK, make_unique<kf_memcpy_memmove> ());
-    kfm.add (BUILT_IN_MEMMOVE, make_unique<kf_memcpy_memmove> ());
-    kfm.add (BUILT_IN_MEMMOVE_CHK, make_unique<kf_memcpy_memmove> ());
-    kfm.add (BUILT_IN_MEMSET, make_unique<kf_memset> ());
-    kfm.add (BUILT_IN_MEMSET_CHK, make_unique<kf_memset> ());
-    kfm.add (BUILT_IN_REALLOC, make_unique<kf_realloc> ());
-    kfm.add (BUILT_IN_SPRINTF, make_unique<kf_sprintf> ());
+    kfm.add (BUILT_IN_ALLOCA_WITH_ALIGN, make_unique<kf_alloca> ());
     kfm.add (BUILT_IN_STACK_RESTORE, make_unique<kf_stack_restore> ());
     kfm.add (BUILT_IN_STACK_SAVE, make_unique<kf_stack_save> ());
-    kfm.add (BUILT_IN_STRCHR, make_unique<kf_strchr> ());
-    kfm.add (BUILT_IN_STRCPY, make_unique<kf_strcpy> (2));
-    kfm.add (BUILT_IN_STRCPY_CHK, make_unique<kf_strcpy> (3));
-    kfm.add (BUILT_IN_STRDUP, make_unique<kf_strdup> ());
-    kfm.add (BUILT_IN_STRNDUP, make_unique<kf_strndup> ());
-    kfm.add (BUILT_IN_STRLEN, make_unique<kf_strlen> ());
 
+    register_atomic_builtins (kfm);
     register_varargs_builtins (kfm);
   }
 
-  /* Known builtins and C standard library functions.  */
+  /* Known builtins and C standard library functions
+     the analyzer has known functions for.  */
   {
-    kfm.add ("memset", make_unique<kf_memset> ());
+    kfm.add ("alloca", make_unique<kf_alloca> ());
+    kfm.add ("__builtin_alloca", make_unique<kf_alloca> ());
+    kfm.add ("calloc", make_unique<kf_calloc> ());
+    kfm.add ("__builtin_calloc", make_unique<kf_calloc> ());
+    kfm.add ("free", make_unique<kf_free> ());
+    kfm.add ("__builtin_free", make_unique<kf_free> ());
+    kfm.add ("malloc", make_unique<kf_malloc> ());
+    kfm.add ("__builtin_malloc", make_unique<kf_malloc> ());
+    kfm.add ("memcpy",
+	      make_unique<kf_memcpy_memmove> (kf_memcpy_memmove::KF_MEMCPY));
+    kfm.add ("__builtin_memcpy",
+	      make_unique<kf_memcpy_memmove> (kf_memcpy_memmove::KF_MEMCPY));
+    kfm.add ("__memcpy_chk", make_unique<kf_memcpy_memmove>
+			      (kf_memcpy_memmove::KF_MEMCPY_CHK));
+    kfm.add ("__builtin___memcpy_chk", make_unique<kf_memcpy_memmove>
+			      (kf_memcpy_memmove::KF_MEMCPY_CHK));
+    kfm.add ("memmove",
+	      make_unique<kf_memcpy_memmove> (kf_memcpy_memmove::KF_MEMMOVE));
+    kfm.add ("__builtin_memmove",
+	      make_unique<kf_memcpy_memmove> (kf_memcpy_memmove::KF_MEMMOVE));
+    kfm.add ("__memmove_chk", make_unique<kf_memcpy_memmove>
+			      (kf_memcpy_memmove::KF_MEMMOVE_CHK));
+    kfm.add ("__builtin___memmove_chk", make_unique<kf_memcpy_memmove>
+			      (kf_memcpy_memmove::KF_MEMMOVE_CHK));
+    kfm.add ("memset", make_unique<kf_memset> (false));
+    kfm.add ("__builtin_memset", make_unique<kf_memset> (false));
+    kfm.add ("__memset_chk", make_unique<kf_memset> (true));
+    kfm.add ("__builtin___memset_chk", make_unique<kf_memset> (true));
+    kfm.add ("realloc", make_unique<kf_realloc> ());
+    kfm.add ("__builtin_realloc", make_unique<kf_realloc> ());
+    kfm.add ("sprintf", make_unique<kf_sprintf> ());
+    kfm.add ("__builtin_sprintf", make_unique<kf_sprintf> ());
+    kfm.add ("strchr", make_unique<kf_strchr> ());
+    kfm.add ("__builtin_strchr", make_unique<kf_strchr> ());
+    kfm.add ("strcpy", make_unique<kf_strcpy> (2, false));
+    kfm.add ("__builtin_strcpy", make_unique<kf_strcpy> (2, false));
+    kfm.add ("__strcpy_chk", make_unique<kf_strcpy> (3, true));
+    kfm.add ("__builtin___strcpy_chk", make_unique<kf_strcpy> (3, true));
+    kfm.add ("strcat", make_unique<kf_strcat> (2, false));
+    kfm.add ("__builtin_strcat", make_unique<kf_strcat> (2, false));
+    kfm.add ("__strcat_chk", make_unique<kf_strcat> (3, true));
+    kfm.add ("__builtin___strcat_chk", make_unique<kf_strcat> (3, true));
     kfm.add ("strdup", make_unique<kf_strdup> ());
+    kfm.add ("__builtin_strdup", make_unique<kf_strdup> ());
+    kfm.add ("strncpy", make_unique<kf_strncpy> ());
+    kfm.add ("__builtin_strncpy", make_unique<kf_strncpy> ());
     kfm.add ("strndup", make_unique<kf_strndup> ());
+    kfm.add ("__builtin_strndup", make_unique<kf_strndup> ());
+    kfm.add ("strlen", make_unique<kf_strlen> ());
+    kfm.add ("__builtin_strlen", make_unique<kf_strlen> ());
+    kfm.add ("strstr", make_unique<kf_strstr> ());
+    kfm.add ("__builtin_strstr", make_unique<kf_strstr> ());
+
+    register_atomic_builtins (kfm);
+    register_varargs_builtins (kfm);
   }
 
   /* Known POSIX functions, and some non-standard extensions.  */
   {
+    kfm.add ("fopen", make_unique<kf_fopen> ());
     kfm.add ("putenv", make_unique<kf_putenv> ());
 
     register_known_fd_functions (kfm);
@@ -1059,7 +1929,7 @@ register_known_functions (known_function_manager &kfm)
        like this:
 	 extern int *___errno(void) __attribute__((__const__));
 	 #define errno (*(___errno()))
-       and OS X like this:
+       and macOS like this:
 	 extern int * __error(void);
 	 #define errno (*__error())
        and similarly __errno for newlib.

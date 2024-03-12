@@ -55,20 +55,23 @@ proc g++-dg-runtest { testcases flags default-extra-flags } {
 	    } else {
 		# If the test requires a newer C++ version than which
 		# is tested by default, use that C++ version for that
-		# single test.  This should be updated or commented
-		# out whenever the default std_list is updated or newer
-		# C++ effective target is added.
-		if [search_for $test "{ dg-do * { target c++23 } }"] {
-		    set std_list { 23 }
+		# single test.  Or if a test checks behavior specifically for
+		# one C++ version, include that version in the default list.
+		# These should be adjusted whenever the default std_list is
+		# updated or newer C++ effective target is added.
+		if [search_for $test "\{ dg-do * \{ target c++23"] {
+		    set std_list { 23 26 }
+		} elseif [search_for $test "\{ dg-do * \{ target c++26"] {
+		    set std_list { 26 }
+		} elseif [search_for $test "c++11_only"] {
+		    set std_list { 98 11 14 20 }
 		} else {
 		    set std_list { 98 14 17 20 }
 		}
 	    }
 	    set option_list { }
 	    foreach x $std_list {
-		# Handle "concepts" as C++17 plus Concepts TS.
-		if { $x eq "concepts" } then { set x "17 -fconcepts"
-		} elseif { $x eq "impcx" } then { set x "23 -fimplicit-constexpr" }
+		if { $x eq "impcx" } then { set x "26 -fimplicit-constexpr" }
 		lappend option_list "${std_prefix}$x"
 	    }
 	} else {

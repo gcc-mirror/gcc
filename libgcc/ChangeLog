@@ -1,3 +1,237 @@
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/or1k/linux-unwind.h (or1k_fallback_frame_state): Add
+	missing cast.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/arc/linux-unwind.h (arc_fallback_frame_state): Add
+	missing cast.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/riscv/linux-unwind.h (riscv_fallback_frame_state): Add
+	missing cast.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/csky/linux-unwind.h (csky_fallback_frame_state): Add
+	missing cast.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/m68k/fpgnulib.c (__cmpdf2): Declare.
+
+2023-09-26  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/lse.S (BTI_C): Remove define.
+
+2023-09-20  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	* config/aarch64/aarch64-unwind.h (aarch64_cie_signed_with_b_key):
+	Use const unsigned type and a builtin.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* libgcc2.c (bitint_negate): Add function comment.
+	* soft-fp/bitint.h (bitint_negate): Add function comment.
+	(FP_TO_BITINT, FP_FROM_BITINT): Add comment explaining the macros.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* config/aarch64/t-softfp (softfp_extras): Use += rather than :=.
+	* config/i386/64/t-softfp (softfp_extras): Likewise.
+	* config/i386/libgcc-glibc.ver (GCC_14.0.0): Export _BitInt support
+	routines.
+	* config/i386/t-softfp (softfp_extras): Add fixxfbitint and
+	bf, hf and xf mode floatbitint.
+	(CFLAGS-floatbitintbf.c, CFLAGS-floatbitinthf.c): Add -msse2.
+	* config/riscv/t-softfp32 (softfp_extras): Use += rather than :=.
+	* config/rs6000/t-e500v1-fp (softfp_extras): Likewise.
+	* config/rs6000/t-e500v2-fp (softfp_extras): Likewise.
+	* config/t-softfp (softfp_floatbitint_funcs): New.
+	(softfp_bid_list): New.
+	(softfp_func_list): Add sf and df mode from and to _BitInt libcalls.
+	(softfp_bid_file_list): New.
+	(LIB2ADD_ST): Add $(softfp_bid_file_list).
+	* config/t-softfp-sfdftf (softfp_extras): Add fixtfbitint and
+	floatbitinttf.
+	* config/t-softfp-tf (softfp_extras): Likewise.
+	* libgcc2.c (bitint_reduce_prec): New inline function.
+	(BITINT_INC, BITINT_END): Define.
+	(bitint_mul_1, bitint_addmul_1): New helper functions.
+	(__mulbitint3): New function.
+	(bitint_negate, bitint_submul_1): New helper functions.
+	(__divmodbitint4): New function.
+	* libgcc2.h (LIBGCC2_UNITS_PER_WORD): When building _BitInt support
+	libcalls, redefine depending on __LIBGCC_BITINT_LIMB_WIDTH__.
+	(__mulbitint3, __divmodbitint4): Declare.
+	* libgcc-std.ver.in (GCC_14.0.0): Export _BitInt support routines.
+	* Makefile.in (lib2funcs): Add _mulbitint3.
+	(LIB2_DIVMOD_FUNCS): Add _divmodbitint4.
+	* soft-fp/bitint.h: New file.
+	* soft-fp/fixdfbitint.c: New file.
+	* soft-fp/fixsfbitint.c: New file.
+	* soft-fp/fixtfbitint.c: New file.
+	* soft-fp/fixxfbitint.c: New file.
+	* soft-fp/floatbitintbf.c: New file.
+	* soft-fp/floatbitintdf.c: New file.
+	* soft-fp/floatbitinthf.c: New file.
+	* soft-fp/floatbitintsf.c: New file.
+	* soft-fp/floatbitinttf.c: New file.
+	* soft-fp/floatbitintxf.c: New file.
+	* soft-fp/op-common.h (_FP_FROM_INT): Add support for rsize up to
+	4 * _FP_W_TYPE_SIZE rather than just 2 * _FP_W_TYPE_SIZE.
+	* soft-fp/bitintpow10.c: New file.
+	* soft-fp/fixsdbitint.c: New file.
+	* soft-fp/fixddbitint.c: New file.
+	* soft-fp/fixtdbitint.c: New file.
+	* soft-fp/floatbitintsd.c: New file.
+	* soft-fp/floatbitintdd.c: New file.
+	* soft-fp/floatbitinttd.c: New file.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* soft-fp/bitintpow10.h: New file.
+
+2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.host: add loongarch*-elf target.
+
+2023-08-11  Thomas Neumann  <thomas.neumann@in.tum.de>
+
+	PR libgcc/110956
+	* unwind-dw2-fde.c: Associate object with address of unwinding
+	table.
+
+2023-08-07  John Ericson  <git@JohnEricson.me>
+
+	* configure: Regenerate.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
+2023-07-23  Andrew Pinski  <apinski@marvell.com>
+
+	* config.host (riscv*-*-linux*): Add t-crtstuff to tmake_file.
+	(riscv*-*-freebsd*): Likewise.
+	* config/riscv/t-crtstuff: New file.
+
+2023-07-19  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/t-softfp: Add -msse2 to libbid HFtype related
+	files.
+
+2023-07-11  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/110179
+	* unwind-dw2-fde-dip.c (find_fde_tail): Add cast to avoid
+	implicit conversion of pointer value to integer.
+
+2023-07-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/sfp-machine.h (FP_INIT_ROUNDMODE): Check zfinx.
+	(FP_HANDLE_EXCEPTIONS): Ditto.
+
+2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/lib2-divmod-di.c: Reimplement like lib2-divmod.c.
+	* config/gcn/lib2-divmod.c: Likewise.
+	* config/gcn/lib2-gcn.h: Add new types and prototypes for all the
+	new vector libfuncs.
+	* config/gcn/t-amdgcn: Add new files.
+	* config/gcn/amdgcn_veclib.h: New file.
+	* config/gcn/lib2-vec_divmod-di.c: New file.
+	* config/gcn/lib2-vec_divmod-hi.c: New file.
+	* config/gcn/lib2-vec_divmod-qi.c: New file.
+	* config/gcn/lib2-vec_divmod.c: New file.
+
+2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/lib2-gcn.h (QItype, UQItype, HItype, UHItype): Delete.
+	(__divhi3, __modhi3, __udivhi3, __umodhi3): Delete.
+	* config/gcn/t-amdgcn: Don't build lib2-divmod-hi.c.
+	* config/gcn/lib2-divmod-hi.c: Removed.
+
+2023-06-07  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/109712
+	* unwind-dw2-fde-dip.c (find_fde_tail): Correct fast path for
+	parsing eh_frame.
+
+2023-06-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/i386/morestack.S: Use @init_array rather than
+	@progbits for section type of section .init_array.
+	* config/rs6000/morestack.S: Likewise.
+	* config/s390/morestack.S: Likewise.
+
+2023-06-05  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/lib1funcs.S: New file.
+	define __speculation_barrier and include mips16.S.
+	* config/mips/t-mips: define LIB1ASMSRC as mips/lib1funcs.S.
+	define LIB1ASMFUNCS as _speculation_barrier.
+	set version info for __speculation_barrier.
+	* config/mips/libgcc-mips.ver: New file.
+	* config/mips/t-mips16: don't define LIB1ASMSRC as mips16.S
+	included in lib1funcs.S now.
+
+2023-06-03  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	PR libgcc/109670
+	* unwind-dw2-fde.c: Fix radix sort buffer management.
+
+2023-06-03  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	PR libgcc/109685
+	* unwind-dw2-fde.c: Free sort array in atomic fast path.
+
+2023-05-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Arrange to set min Darwin OS versions from
+	the configured host version.
+	* config/darwin10-unwind-find-enc-func.c: Do not use current
+	headers, but declare the nexessary structures locally to the
+	versions in use for Mac OSX 10.6.
+	* config/t-darwin: Amend to handle configured min OS
+	versions.
+	* config/t-darwin-min-1: New.
+	* config/t-darwin-min-5: New.
+	* config/t-darwin-min-8: New.
+
+2023-05-15  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c: Fix assert in non-atomic path.
+
+2023-05-15  Sören Tempel  <soeren+git@soeren-tempel.net>
+
+	* unwind-dw2-fde.c: Accept empty ranges when deregistering frames.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/atomic.c: Change LR.aq/SC.rl pairs into
+	sequentially consistent LR.aqrl/SC.rl pairs.
+
+2023-05-01  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/t-pru (HOST_LIBGCC2_CFLAGS): Add
+	-DTARGET_HAS_NO_HW_DIVIDE.
+
+2023-04-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/t-cris (HOST_LIBGCC2_CFLAGS): Add
+	-DTARGET_HAS_NO_HW_DIVIDE.
+
+2023-04-26  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/104338
+	* config/riscv/atomic.c: Add reference to duplicate logic.
+
 2023-04-08  Tetsuma Hoshino  <t-hoshino@pony-e.jp>
 
 	PR target/109402

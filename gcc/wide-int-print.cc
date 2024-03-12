@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "pretty-print.h"
 
 /*
  * public printing routines.
@@ -48,14 +49,12 @@ print_dec (const wide_int_ref &wi, FILE *file, signop sgn)
 }
 
 
-/* Try to print the signed self in decimal to BUF if the number fits
-   in a HWI.  Other print in hex.  */
+/* Try to print the signed self in decimal to BUF.  */
 
 void
 print_decs (const wide_int_ref &wi, char *buf)
 {
-  if ((wi.get_precision () <= HOST_BITS_PER_WIDE_INT)
-      || (wi.get_len () == 1))
+  if (wi.get_precision () <= HOST_BITS_PER_WIDE_INT || wi.get_len () == 1)
     {
       if (wi::neg_p (wi))
       	sprintf (buf, "-" HOST_WIDE_INT_PRINT_UNSIGNED,
@@ -63,23 +62,30 @@ print_decs (const wide_int_ref &wi, char *buf)
       else
 	sprintf (buf, HOST_WIDE_INT_PRINT_DEC, wi.to_shwi ());
     }
+  else if (wi::neg_p (wi))
+    {
+      widest2_int w = widest2_int::from (wi, SIGNED);
+      *buf = '-';
+      print_decu (-w, buf + 1);
+    }
   else
-    print_hex (wi, buf);
+    print_decu (wi, buf);
 }
 
-/* Try to print the signed self in decimal to FILE if the number fits
-   in a HWI.  Other print in hex.  */
+/* Try to print the signed self in decimal to FILE.  */
 
 void
 print_decs (const wide_int_ref &wi, FILE *file)
 {
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_decs (wi, buf);
-  fputs (buf, file);
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
+  unsigned len;
+  if (print_decs_buf_size (wi, &len))
+    p = XALLOCAVEC (char, len);
+  print_decs (wi, p);
+  fputs (p, file);
 }
 
-/* Try to print the unsigned self in decimal to BUF if the number fits
-   in a HWI.  Other print in hex.  */
+/* Try to print the unsigned self in decimal to BUF.  */
 
 void
 print_decu (const wide_int_ref &wi, char *buf)
@@ -88,18 +94,47 @@ print_decu (const wide_int_ref &wi, char *buf)
       || (wi.get_len () == 1 && !wi::neg_p (wi)))
     sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, wi.to_uhwi ());
   else
-    print_hex (wi, buf);
+    {
+      widest2_int w = widest2_int::from (wi, UNSIGNED), r;
+      widest2_int ten19 = HOST_WIDE_INT_UC (10000000000000000000);
+      char buf2[20], next1[19], next2[19];
+      size_t l, c = 0, i;
+      /* In order to avoid dividing this twice, print the 19 decimal
+	 digit chunks in reverse order into buffer and then reorder
+	 them in-place.  */
+      while (wi::gtu_p (w, ten19))
+	{
+	  w = wi::divmod_trunc (w, ten19, UNSIGNED, &r);
+	  sprintf (buf + c * 19, "%019" PRIu64, r.to_uhwi ());
+	  ++c;
+	}
+      l = sprintf (buf2, HOST_WIDE_INT_PRINT_UNSIGNED, w.to_uhwi ());
+      buf[c * 19 + l] = '\0';
+      memcpy (next1, buf, 19);
+      memcpy (buf, buf2, l);
+      for (i = 0; i < c / 2; ++i)
+	{
+	  memcpy (next2, buf + (c - i - 1) * 19, 19);
+	  memcpy (buf + l + (c - i - 1) * 19, next1, 19);
+	  memcpy (next1, buf + (i + 1) * 19, 19);
+	  memcpy (buf + l + i * 19, next2, 19);
+	}
+      if (c & 1)
+	memcpy (buf + l + i * 19, next1, 19);
+    }
 }
 
-/* Try to print the signed self in decimal to FILE if the number fits
-   in a HWI.  Other print in hex.  */
+/* Try to print the signed self in decimal to FILE.  */
 
 void
 print_decu (const wide_int_ref &wi, FILE *file)
 {
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_decu (wi, buf);
-  fputs (buf, file);
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
+  unsigned len;
+  if (print_decu_buf_size (wi, &len))
+    p = XALLOCAVEC (char, len);
+  print_decu (wi, p);
+  fputs (p, file);
 }
 
 void
@@ -133,8 +168,23 @@ print_hex (const wide_int_ref &val, char *buf)
 void
 print_hex (const wide_int_ref &wi, FILE *file)
 {
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_hex (wi, buf);
-  fputs (buf, file);
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
+  unsigned len;
+  if (print_hex_buf_size (wi, &len))
+    p = XALLOCAVEC (char, len);
+  print_hex (wi, p);
+  fputs (p, file);
 }
 
+/* Print larger precision wide_int.  Not defined as inline in a header
+   together with pp_wide_int because XALLOCAVEC will make it uninlinable.  */
+
+void
+pp_wide_int_large (pretty_printer *pp, const wide_int_ref &w, signop sgn)
+{
+  unsigned int len;
+  print_dec_buf_size (w, sgn, &len);
+  char *buf = XALLOCAVEC (char, len);
+  print_dec (w, buf, sgn);
+  pp_string (pp, buf);
+}

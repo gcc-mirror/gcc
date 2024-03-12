@@ -30,35 +30,136 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "value-range-storage.h"
 
-// Return a newly allocated slot holding R, or NULL if storing a range
-// of R's type is not supported.
+// Generic memory allocator to share one interface between GC and
+// obstack allocators.
+
+class vrange_internal_alloc
+{
+public:
+  vrange_internal_alloc () { }
+  virtual ~vrange_internal_alloc () { }
+  virtual void *alloc (size_t size) = 0;
+  virtual void free (void *) = 0;
+private:
+  DISABLE_COPY_AND_ASSIGN (vrange_internal_alloc);
+};
+
+class vrange_obstack_alloc final: public vrange_internal_alloc
+{
+public:
+  vrange_obstack_alloc ()
+  {
+    obstack_init (&m_obstack);
+  }
+  virtual ~vrange_obstack_alloc () final override
+  {
+    obstack_free (&m_obstack, NULL);
+  }
+  virtual void *alloc (size_t size) final override
+  {
+    return obstack_alloc (&m_obstack, size);
+  }
+  virtual void free (void *) final override { }
+private:
+  obstack m_obstack;
+};
+
+class vrange_ggc_alloc final: public vrange_internal_alloc
+{
+public:
+  vrange_ggc_alloc () { }
+  virtual ~vrange_ggc_alloc () final override { }
+  virtual void *alloc (size_t size) final override
+  {
+    return ggc_internal_alloc (size);
+  }
+  virtual void free (void *p) final override
+  {
+    return ggc_free (p);
+  }
+};
+
+vrange_allocator::vrange_allocator (bool gc)
+{
+  if (gc)
+    m_alloc = new vrange_ggc_alloc;
+  else
+    m_alloc = new vrange_obstack_alloc;
+}
+
+vrange_allocator::~vrange_allocator ()
+{
+  delete m_alloc;
+}
 
 void *
-vrange_storage::alloc_slot (const vrange &r)
+vrange_allocator::alloc (size_t size)
 {
-  gcc_checking_assert (m_alloc);
+  return m_alloc->alloc (size);
+}
 
-  if (is_a <irange> (r))
-    return irange_storage_slot::alloc_slot (*m_alloc, as_a <irange> (r));
-  if (is_a <frange> (r))
-    return frange_storage_slot::alloc_slot (*m_alloc, as_a <frange> (r));
+void
+vrange_allocator::free (void *p)
+{
+  m_alloc->free (p);
+}
+
+// Allocate a new vrange_storage object initialized to R and return
+// it.
+
+vrange_storage *
+vrange_allocator::clone (const vrange &r)
+{
+  return vrange_storage::alloc (*m_alloc, r);
+}
+
+vrange_storage *
+vrange_allocator::clone_varying (tree type)
+{
+  if (irange::supports_p (type))
+    return irange_storage::alloc (*m_alloc, int_range <1> (type));
+  if (frange::supports_p (type))
+    return frange_storage::alloc (*m_alloc, frange (type));
   return NULL;
 }
 
-// Set SLOT to R.
+vrange_storage *
+vrange_allocator::clone_undefined (tree type)
+{
+  if (irange::supports_p (type))
+    return irange_storage::alloc (*m_alloc, int_range<1> ());
+  if (frange::supports_p (type))
+    return frange_storage::alloc  (*m_alloc, frange ());
+  return NULL;
+}
+
+// Allocate a new vrange_storage object initialized to R and return
+// it.  Return NULL if R is unsupported.
+
+vrange_storage *
+vrange_storage::alloc (vrange_internal_alloc &allocator, const vrange &r)
+{
+  if (is_a <irange> (r))
+    return irange_storage::alloc (allocator, as_a <irange> (r));
+  if (is_a <frange> (r))
+    return frange_storage::alloc (allocator, as_a <frange> (r));
+  return NULL;
+}
+
+// Set storage to R.
 
 void
-vrange_storage::set_vrange (void *slot, const vrange &r)
+vrange_storage::set_vrange (const vrange &r)
 {
   if (is_a <irange> (r))
     {
-      irange_storage_slot *s = static_cast <irange_storage_slot *> (slot);
+      irange_storage *s = static_cast <irange_storage *> (this);
       gcc_checking_assert (s->fits_p (as_a <irange> (r)));
       s->set_irange (as_a <irange> (r));
     }
   else if (is_a <frange> (r))
     {
-      frange_storage_slot *s = static_cast <frange_storage_slot *> (slot);
+      frange_storage *s = static_cast <frange_storage *> (this);
       gcc_checking_assert (s->fits_p (as_a <frange> (r)));
       s->set_frange (as_a <frange> (r));
     }
@@ -66,188 +167,326 @@ vrange_storage::set_vrange (void *slot, const vrange &r)
     gcc_unreachable ();
 }
 
-// Restore R from SLOT.  TYPE is the type of R.
+// Restore R from storage.
 
 void
-vrange_storage::get_vrange (const void *slot, vrange &r, tree type)
+vrange_storage::get_vrange (vrange &r, tree type) const
 {
   if (is_a <irange> (r))
     {
-      const irange_storage_slot *s
-	= static_cast <const irange_storage_slot *> (slot);
+      const irange_storage *s = static_cast <const irange_storage *> (this);
       s->get_irange (as_a <irange> (r), type);
     }
   else if (is_a <frange> (r))
     {
-      const frange_storage_slot *s
-	= static_cast <const frange_storage_slot *> (slot);
+      const frange_storage *s = static_cast <const frange_storage *> (this);
       s->get_frange (as_a <frange> (r), type);
     }
   else
     gcc_unreachable ();
 }
 
-// Return TRUE if SLOT can fit R.
+// Return TRUE if storage can fit R.
 
 bool
-vrange_storage::fits_p (const void *slot, const vrange &r)
+vrange_storage::fits_p (const vrange &r) const
 {
   if (is_a <irange> (r))
     {
-      const irange_storage_slot *s
-	= static_cast <const irange_storage_slot *> (slot);
+      const irange_storage *s = static_cast <const irange_storage *> (this);
       return s->fits_p (as_a <irange> (r));
     }
   if (is_a <frange> (r))
     {
-      const frange_storage_slot *s
-	= static_cast <const frange_storage_slot *> (slot);
+      const frange_storage *s = static_cast <const frange_storage *> (this);
       return s->fits_p (as_a <frange> (r));
     }
   gcc_unreachable ();
   return false;
 }
 
-// Factory that creates a new irange_storage_slot object containing R.
-// This is the only way to construct an irange slot as stack creation
-// is disallowed.
+// Return TRUE if the range in storage is equal to R.  It is the
+// caller's responsibility to verify that the type of the range in
+// storage matches that of R.
 
-irange_storage_slot *
-irange_storage_slot::alloc_slot (vrange_allocator &allocator, const irange &r)
+bool
+vrange_storage::equal_p (const vrange &r) const
 {
-  size_t size = irange_storage_slot::size (r);
-  irange_storage_slot *p
-    = static_cast <irange_storage_slot *> (allocator.alloc (size));
-  new (p) irange_storage_slot (r);
+  if (is_a <irange> (r))
+    {
+      const irange_storage *s = static_cast <const irange_storage *> (this);
+      return s->equal_p (as_a <irange> (r));
+    }
+  if (is_a <frange> (r))
+    {
+      const frange_storage *s = static_cast <const frange_storage *> (this);
+      return s->equal_p (as_a <frange> (r));
+    }
+  gcc_unreachable ();
+}
+
+//============================================================================
+// irange_storage implementation
+//============================================================================
+
+unsigned short *
+irange_storage::write_lengths_address ()
+{
+  return (unsigned short *)&m_val[(m_num_ranges * 2 + 2)
+				  * WIDE_INT_MAX_HWIS (m_precision)];
+}
+
+const unsigned short *
+irange_storage::lengths_address () const
+{
+  return const_cast <irange_storage *> (this)->write_lengths_address ();
+}
+
+// Allocate a new irange_storage object initialized to R.
+
+irange_storage *
+irange_storage::alloc (vrange_internal_alloc &allocator, const irange &r)
+{
+  size_t size = irange_storage::size (r);
+  irange_storage *p = static_cast <irange_storage *> (allocator.alloc (size));
+  new (p) irange_storage (r);
   return p;
 }
 
-// Initialize the current slot with R.
+// Initialize the storage with R.
 
-irange_storage_slot::irange_storage_slot (const irange &r)
+irange_storage::irange_storage (const irange &r)
+  : m_max_ranges (r.num_pairs ())
 {
-  gcc_checking_assert (!r.undefined_p ());
-
-  unsigned prec = TYPE_PRECISION (r.type ());
-  unsigned n = num_wide_ints_needed (r);
-  if (n > MAX_INTS)
-    {
-      int_range<MAX_PAIRS> squash (r);
-      m_ints.set_precision (prec, num_wide_ints_needed (squash));
-      set_irange (squash);
-    }
-  else
-    {
-      m_ints.set_precision (prec, n);
-      set_irange (r);
-    }
+  m_num_ranges = m_max_ranges;
+  set_irange (r);
 }
 
-// Store R into the current slot.
+static inline void
+write_wide_int (HOST_WIDE_INT *&val, unsigned short *&len, const wide_int &w)
+{
+  *len = w.get_len ();
+  for (unsigned i = 0; i < *len; ++i)
+    *val++ = w.elt (i);
+  ++len;
+}
+
+// Store R into the current storage.
 
 void
-irange_storage_slot::set_irange (const irange &r)
+irange_storage::set_irange (const irange &r)
 {
   gcc_checking_assert (fits_p (r));
 
-  m_ints[0] = r.get_nonzero_bits ();
-
-  unsigned pairs = r.num_pairs ();
-  for (unsigned i = 0; i < pairs; ++i)
+  if (r.undefined_p ())
     {
-      m_ints[i*2 + 1] = r.lower_bound (i);
-      m_ints[i*2 + 2] = r.upper_bound (i);
+      m_kind = VR_UNDEFINED;
+      return;
+    }
+  if (r.varying_p ())
+    {
+      m_kind = VR_VARYING;
+      return;
+    }
+
+  m_precision = TYPE_PRECISION (r.type ());
+  m_num_ranges = r.num_pairs ();
+  m_kind = VR_RANGE;
+
+  HOST_WIDE_INT *val = &m_val[0];
+  unsigned short *len = write_lengths_address ();
+
+  for (unsigned i = 0; i < r.num_pairs (); ++i)
+    {
+      write_wide_int (val, len, r.lower_bound (i));
+      write_wide_int (val, len, r.upper_bound (i));
+    }
+
+  // TODO: We could avoid streaming out the value if the mask is -1.
+  irange_bitmask bm = r.m_bitmask;
+  write_wide_int (val, len, bm.value ());
+  write_wide_int (val, len, bm.mask ());
+
+  if (flag_checking)
+    {
+      int_range_max tmp;
+      get_irange (tmp, r.type ());
+      gcc_checking_assert (tmp == r);
     }
 }
 
-// Restore a range of TYPE from the current slot into R.
+static inline void
+read_wide_int (wide_int &w,
+	       const HOST_WIDE_INT *val, unsigned short len, unsigned prec)
+{
+  trailing_wide_int_storage stow (prec, &len,
+				  const_cast <HOST_WIDE_INT *> (val));
+  w = trailing_wide_int (stow);
+}
+
+// Restore a range of TYPE from storage into R.
 
 void
-irange_storage_slot::get_irange (irange &r, tree type) const
+irange_storage::get_irange (irange &r, tree type) const
 {
-  gcc_checking_assert (TYPE_PRECISION (type) == m_ints.get_precision ());
-
-  r.set_undefined ();
-  unsigned nelements = m_ints.num_elements ();
-  for (unsigned i = 1; i < nelements; i += 2)
+  if (m_kind == VR_UNDEFINED)
     {
-      int_range<2> tmp (type, m_ints[i], m_ints[i + 1]);
-      r.union_ (tmp);
+      r.set_undefined ();
+      return;
     }
-  r.set_nonzero_bits (get_nonzero_bits ());
+  if (m_kind == VR_VARYING)
+    {
+      r.set_varying (type);
+      return;
+    }
+
+  gcc_checking_assert (TYPE_PRECISION (type) == m_precision);
+  const HOST_WIDE_INT *val = &m_val[0];
+  const unsigned short *len = lengths_address ();
+
+  // Handle the common case where R can fit the new range.
+  if (r.m_max_ranges >= m_num_ranges)
+    {
+      r.m_kind = VR_RANGE;
+      r.m_num_ranges = m_num_ranges;
+      r.m_type = type;
+      for (unsigned i = 0; i < m_num_ranges * 2; ++i)
+	{
+	  read_wide_int (r.m_base[i], val, *len, m_precision);
+	  val += *len++;
+	}
+    }
+  // Otherwise build the range piecewise.
+  else
+    {
+      r.set_undefined ();
+      for (unsigned i = 0; i < m_num_ranges; ++i)
+	{
+	  wide_int lb, ub;
+	  read_wide_int (lb, val, *len, m_precision);
+	  val += *len++;
+	  read_wide_int (ub, val, *len, m_precision);
+	  val += *len++;
+	  int_range<1> tmp (type, lb, ub);
+	  r.union_ (tmp);
+	}
+    }
+
+  wide_int bits_value, bits_mask;
+  read_wide_int (bits_value, val, *len, m_precision);
+  val += *len++;
+  read_wide_int (bits_mask, val, *len, m_precision);
+  r.m_bitmask = irange_bitmask (bits_value, bits_mask);
+  if (r.m_kind == VR_VARYING)
+    r.m_kind = VR_RANGE;
+
+  if (flag_checking)
+    r.verify_range ();
 }
-
-// Return the size in bytes to allocate a slot that can hold R.
-
-size_t
-irange_storage_slot::size (const irange &r)
-{
-  gcc_checking_assert (!r.undefined_p ());
-
-  unsigned prec = TYPE_PRECISION (r.type ());
-  unsigned n = num_wide_ints_needed (r);
-  if (n > MAX_INTS)
-    n = MAX_INTS;
-  return (sizeof (irange_storage_slot)
-	  + trailing_wide_ints<MAX_INTS>::extra_size (prec, n));
-}
-
-// Return the number of wide ints needed to represent R.
-
-unsigned int
-irange_storage_slot::num_wide_ints_needed (const irange &r)
-{
-  return r.num_pairs () * 2 + 1;
-}
-
-// Return TRUE if R fits in the current slot.
 
 bool
-irange_storage_slot::fits_p (const irange &r) const
+irange_storage::equal_p (const irange &r) const
 {
-  return m_ints.num_elements () >= num_wide_ints_needed (r);
+  if (m_kind == VR_UNDEFINED || r.undefined_p ())
+    return m_kind == r.m_kind;
+  if (m_kind == VR_VARYING || r.varying_p ())
+    return m_kind == r.m_kind;
+
+  // ?? We could make this faster by doing the comparison in place,
+  // without going through get_irange.
+  int_range_max tmp;
+  get_irange (tmp, r.type ());
+  return tmp == r;
 }
 
-// Dump the current slot.
+// Return the size in bytes to allocate storage that can hold R.
+
+size_t
+irange_storage::size (const irange &r)
+{
+  if (r.undefined_p ())
+    return sizeof (irange_storage);
+
+  unsigned prec = TYPE_PRECISION (r.type ());
+  unsigned n = r.num_pairs () * 2 + 2;
+  unsigned hwi_size = ((n * WIDE_INT_MAX_HWIS (prec) - 1)
+		       * sizeof (HOST_WIDE_INT));
+  unsigned len_size = n * sizeof (unsigned short);
+  return sizeof (irange_storage) + hwi_size + len_size;
+}
+
+// Return TRUE if R fits in the current storage.
+
+bool
+irange_storage::fits_p (const irange &r) const
+{
+  return m_max_ranges >= r.num_pairs ();
+}
 
 void
-irange_storage_slot::dump () const
+irange_storage::dump () const
 {
-  fprintf (stderr, "raw irange_storage_slot:\n");
-  for (unsigned i = 1; i < m_ints.num_elements (); i += 2)
+  fprintf (stderr, "irange_storage (prec=%d, ranges=%d):\n",
+	   m_precision, m_num_ranges);
+
+  if (m_num_ranges == 0)
+    return;
+
+  const HOST_WIDE_INT *val = &m_val[0];
+  const unsigned short *len = lengths_address ();
+  int i, j;
+
+  fprintf (stderr, "  lengths = [ ");
+  for (i = 0; i < m_num_ranges * 2 + 2; ++i)
+    fprintf (stderr, "%d ", len[i]);
+  fprintf (stderr, "]\n");
+
+  for (i = 0; i < m_num_ranges; ++i)
     {
-      m_ints[i].dump ();
-      m_ints[i + 1].dump ();
+      for (j = 0; j < *len; ++j)
+	fprintf (stderr, "  [PAIR %d] LB " HOST_WIDE_INT_PRINT_DEC "\n", i,
+		 *val++);
+      ++len;
+      for (j = 0; j < *len; ++j)
+	fprintf (stderr, "  [PAIR %d] UB " HOST_WIDE_INT_PRINT_DEC "\n", i,
+		 *val++);
+      ++len;
     }
-  fprintf (stderr, "NONZERO ");
-  wide_int nz = get_nonzero_bits ();
-  nz.dump ();
+
+  // Dump value/mask pair.
+  for (j = 0; j < *len; ++j)
+    fprintf (stderr, "  [VALUE] " HOST_WIDE_INT_PRINT_DEC "\n", *val++);
+  ++len;
+  for (j = 0; j < *len; ++j)
+    fprintf (stderr, "  [MASK] " HOST_WIDE_INT_PRINT_DEC "\n", *val++);
 }
 
 DEBUG_FUNCTION void
-debug (const irange_storage_slot &storage)
+debug (const irange_storage &storage)
 {
   storage.dump ();
   fprintf (stderr, "\n");
 }
 
-// Implementation of frange_storage_slot.
+//============================================================================
+// frange_storage implementation
+//============================================================================
 
-frange_storage_slot *
-frange_storage_slot::alloc_slot (vrange_allocator &allocator, const frange &r)
+// Allocate a new frange_storage object initialized to R.
+
+frange_storage *
+frange_storage::alloc (vrange_internal_alloc &allocator, const frange &r)
 {
-  size_t size = sizeof (frange_storage_slot);
-  frange_storage_slot *p
-    = static_cast <frange_storage_slot *> (allocator.alloc (size));
-  new (p) frange_storage_slot (r);
+  size_t size = sizeof (frange_storage);
+  frange_storage *p = static_cast <frange_storage *> (allocator.alloc (size));
+  new (p) frange_storage (r);
   return p;
 }
 
 void
-frange_storage_slot::set_frange (const frange &r)
+frange_storage::set_frange (const frange &r)
 {
   gcc_checking_assert (fits_p (r));
-  gcc_checking_assert (!r.undefined_p ());
 
   m_kind = r.m_kind;
   m_min = r.m_min;
@@ -257,7 +496,7 @@ frange_storage_slot::set_frange (const frange &r)
 }
 
 void
-frange_storage_slot::get_frange (frange &r, tree type) const
+frange_storage::get_frange (frange &r, tree type) const
 {
   gcc_checking_assert (r.supports_type_p (type));
 
@@ -273,6 +512,11 @@ frange_storage_slot::get_frange (frange &r, tree type) const
 	}
       else
 	r.set_undefined ();
+      return;
+    }
+  if (m_kind == VR_UNDEFINED)
+    {
+      r.set_undefined ();
       return;
     }
 
@@ -293,7 +537,30 @@ frange_storage_slot::get_frange (frange &r, tree type) const
 }
 
 bool
-frange_storage_slot::fits_p (const frange &) const
+frange_storage::equal_p (const frange &r) const
+{
+  if (r.undefined_p ())
+    return m_kind == VR_UNDEFINED;
+
+  frange tmp;
+  get_frange (tmp, r.type ());
+  return tmp == r;
+}
+
+bool
+frange_storage::fits_p (const frange &) const
 {
   return true;
+}
+
+static vrange_allocator ggc_vrange_allocator (true);
+
+vrange_storage *ggc_alloc_vrange_storage (tree type)
+{
+  return ggc_vrange_allocator.clone_varying (type);
+}
+
+vrange_storage *ggc_alloc_vrange_storage (const vrange &r)
+{
+  return ggc_vrange_allocator.clone (r);
 }

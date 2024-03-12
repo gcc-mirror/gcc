@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "stor-layout.h"
 #include "tree-ssa-loop.h"
+#include "tree-cfg.h"
 
 /* This pass propagates indirect loads through the PHI node for its
    address to make the load source possibly non-addressable and to
@@ -153,6 +154,8 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
       print_gimple_stmt (dump_file, use_stmt, 0);
     }
 
+  gphi *vphi = get_virtual_phi (bb);
+
   /* Add PHI arguments for each edge inserting loads of the
      addressable operands.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -190,9 +193,20 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 	{
 	  tree rhs = gimple_assign_rhs1 (use_stmt);
 	  gcc_assert (TREE_CODE (old_arg) == ADDR_EXPR);
+	  tree vuse = NULL_TREE;
 	  if (TREE_CODE (res) == SSA_NAME)
-	    new_var = make_ssa_name (TREE_TYPE (rhs));
+	    {
+	      new_var = make_ssa_name (TREE_TYPE (rhs));
+	      if (vphi)
+		vuse = PHI_ARG_DEF_FROM_EDGE (vphi, e);
+	      else
+		vuse = gimple_vuse (use_stmt);
+	    }
 	  else
+	    /* For the aggregate copy case updating virtual operands
+	       we'd have to possibly insert a virtual PHI and we have
+	       to split the existing VUSE lifetime.  Leave that to
+	       the generic SSA updating.  */
 	    new_var = unshare_expr (res);
 	  if (!is_gimple_min_invariant (old_arg))
 	    old_arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
@@ -203,6 +217,8 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 						  old_arg,
 						  TREE_OPERAND (rhs, 1)));
 	  gimple_set_location (tmp, locus);
+	  if (vuse)
+	    gimple_set_vuse (tmp, vuse);
 
 	  gsi_insert_on_edge (e, tmp);
 	  update_stmt (tmp);
@@ -324,6 +340,9 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
       gimple *def_stmt;
       tree vuse;
 
+      if (!dom_info_available_p (cfun, CDI_POST_DOMINATORS))
+	calculate_dominance_info (CDI_POST_DOMINATORS);
+
       /* Only replace loads in blocks that post-dominate the PHI node.  That
          makes sure we don't end up speculating loads.  */
       if (!dominated_by_p (CDI_POST_DOMINATORS,
@@ -383,14 +402,18 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 	     there are no statements that could read from memory
 	     aliasing the lhs in between the start of bb and use_stmt.
 	     As we require use_stmt to have a VDEF above, loads after
-	     use_stmt will use a different virtual SSA_NAME.  */
+	     use_stmt will use a different virtual SSA_NAME.  When
+	     we reach an edge inserted load the constraints we place
+	     on processing guarantees that program order is preserved
+	     so we can avoid checking those.  */
 	  FOR_EACH_IMM_USE_FAST (vuse_p, vui, vuse)
 	    {
 	      vuse_stmt = USE_STMT (vuse_p);
 	      if (vuse_stmt == use_stmt)
 		continue;
-	      if (!dominated_by_p (CDI_DOMINATORS,
-				   gimple_bb (vuse_stmt), bb))
+	      if (!gimple_bb (vuse_stmt)
+		  || !dominated_by_p (CDI_DOMINATORS,
+				      gimple_bb (vuse_stmt), bb))
 		continue;
 	      if (ref_maybe_used_by_stmt_p (vuse_stmt,
 					    gimple_assign_lhs (use_stmt)))
@@ -465,7 +488,7 @@ const pass_data pass_data_phiprop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_update_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_phiprop : public gimple_opt_pass
@@ -476,6 +499,7 @@ public:
   {}
 
   /* opt_pass methods: */
+  opt_pass * clone () final override { return new pass_phiprop (m_ctxt); }
   bool gate (function *) final override { return flag_tree_phiprop; }
   unsigned int execute (function *) final override;
 
@@ -492,7 +516,6 @@ pass_phiprop::execute (function *fun)
   size_t n;
 
   calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   n = num_ssa_names;
   phivn = XCNEWVEC (struct phiprop_d, n);
@@ -518,7 +541,7 @@ pass_phiprop::execute (function *fun)
 
   free_dominance_info (CDI_POST_DOMINATORS);
 
-  return 0;
+  return did_something ? TODO_update_ssa_only_virtuals : 0;
 }
 
 } // anon namespace

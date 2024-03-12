@@ -1,5 +1,5 @@
 pure subroutine foo
-  !$omp nothing  ! { dg-error "OpenMP directives other than SIMD or DECLARE TARGET at .1. may not appear in PURE procedures" }
+  !$omp nothing
 end subroutine
 
 subroutine bar

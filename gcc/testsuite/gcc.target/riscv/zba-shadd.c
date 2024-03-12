@@ -10,4 +10,4 @@ unsigned long foo(unsigned int a, unsigned long b)
 }
 
 /* { dg-final { scan-assembler "sh2add.uw" } } */
-/* { dg-final { scan-assembler-not "zext" } } */
+/* { dg-final { scan-assembler-not {\mzext} } } */

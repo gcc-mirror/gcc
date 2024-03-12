@@ -95,8 +95,9 @@ FROM SymbolTable IMPORT NulSym,
                         IsProcedureReachable, IsParameter, IsConstLit,
                         IsDummy, IsVarAParam, IsProcedureVariable,
                         IsGnuAsm, IsGnuAsmVolatile, IsObject, IsTuple,
-                        IsError, IsHiddenType,
+                        IsError, IsHiddenType, IsVarHeap,
                         IsComponent, IsPublic, IsExtern, IsCtor,
+                        IsImport, IsImportStatement,
       	       	     	GetMainModule, GetBaseModule, GetModule, GetLocalSym,
                         PutModuleFinallyFunction,
                         GetProcedureScope, GetProcedureQuads,
@@ -117,10 +118,10 @@ FROM SymbolTable IMPORT NulSym,
 			ForeachOAFamily, GetOAFamily,
                         IsModuleWithinProcedure, IsVariableSSA,
                         IsVariableAtAddress, IsConstructorConstant,
-                        ForeachLocalSymDo, ForeachFieldEnumerationDo,
+                        ForeachLocalSymDo,
       	       	     	ForeachProcedureDo, ForeachModuleDo,
                         ForeachInnerModuleDo, ForeachImportedDo,
-                        ForeachExportedDo ;
+                        ForeachExportedDo, PrintInitialized ;
 
 FROM M2Base IMPORT IsPseudoBaseProcedure, IsPseudoBaseFunction,
                    GetBaseTypeMinMax, MixTypes,
@@ -156,8 +157,6 @@ FROM m2decl IMPORT BuildIntegerConstant, BuildStringConstant, BuildCStringConsta
                    BuildStartFunctionDeclaration,
                    BuildParameterDeclaration, BuildEndFunctionDeclaration,
                    DeclareKnownVariable, GetBitsPerBitset, BuildPtrToTypeString ;
-(*                   DeclareM2linkStaticInitialization,
-                   DeclareM2linkForcedModuleInitOrder ; *)
 
 FROM m2type IMPORT MarkFunctionReferenced, BuildStartRecord, BuildStartVarient, BuildStartFunctionType,
                    BuildStartFieldVarient, BuildStartVarient, BuildStartType, BuildStartArrayType,
@@ -181,12 +180,13 @@ FROM m2type IMPORT MarkFunctionReferenced, BuildStartRecord, BuildStartVarient, 
                    BuildEndFieldVarient, BuildArrayIndexType, BuildEndFunctionType,
                    BuildSetType, BuildEndVarient, BuildEndArrayType, InitFunctionTypeParameters,
                    BuildProcTypeParameterDeclaration, DeclareKnownType,
-                   ValueOutOfTypeRange, ExceedsTypeRange ;
+                   ValueOutOfTypeRange, ExceedsTypeRange,
+                   GetMaxFrom, GetMinFrom ;
 
 FROM m2convert IMPORT BuildConvert ;
 
 FROM m2expr IMPORT BuildSub, BuildLSL, BuildTBitSize, BuildAdd, BuildDivTrunc, BuildModTrunc,
-                   BuildSize, TreeOverflow,
+                   BuildSize, TreeOverflow, AreConstantsEqual, CompareTrees,
                    GetPointerZero, GetIntegerZero, GetIntegerOne ;
 
 FROM m2block IMPORT RememberType, pushGlobalScope, popGlobalScope, pushFunctionScope, popFunctionScope,
@@ -339,7 +339,6 @@ END DebugSetNumbers ;
                    lists.
 *)
 
-(*
 PROCEDURE AddSymToWatch (sym: WORD) ;
 BEGIN
    IF (sym#NulSym) AND (NOT IsElementInSet(WatchList, sym))
@@ -350,7 +349,6 @@ BEGIN
       FIO.FlushBuffer(FIO.StdOut)
    END
 END AddSymToWatch ;
-*)
 
 
 (*
@@ -409,7 +407,7 @@ BEGIN
 
       tobesolvedbyquads :  doInclude(ToBeSolvedByQuads, "symbol %d -> ToBeSolvedByQuads\n", sym) |
       fullydeclared     :  doInclude(FullyDeclared, "symbol %d -> FullyDeclared\n", sym) ;
-                           IF sym=1265
+                           IF sym=8821
                            THEN
                               mystop
                            END |
@@ -1586,6 +1584,33 @@ END PromoteToString ;
 
 
 (*
+   PromoteToCString - declare, sym, and then promote it to a string.
+                      Note that if sym is a single character we do
+                          *not* record it as a string
+                          but as a char however we always
+                          return a string constant.
+*)
+
+PROCEDURE PromoteToCString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+VAR
+   size: CARDINAL ;
+   ch  : CHAR ;
+BEGIN
+   DeclareConstant (tokenno, sym) ;
+   IF IsConst (sym) AND (GetSType (sym) = Char)
+   THEN
+      PushValue (sym) ;
+      ch := PopChar (tokenno) ;
+      RETURN BuildCStringConstant (string (InitStringChar (ch)), 1)
+   ELSE
+      size := GetStringLength (sym) ;
+      RETURN BuildCStringConstant (KeyToCharStar (GetString (sym)),
+                                   size)
+   END
+END PromoteToCString ;
+
+
+(*
    WalkConstructor - walks all dependants of, sym.
 *)
 
@@ -1612,13 +1637,13 @@ BEGIN
    THEN
       InternalError ('trying to declare the NulSym')
    END ;
-   IF IsConstructor(sym) AND (NOT GccKnowsAbout(sym))
+   IF IsConstructor (sym) AND (NOT GccKnowsAbout (sym))
    THEN
-      WalkConstructor(sym, TraverseDependants) ;
-      DeclareTypesConstantsProceduresInRange(quad, quad) ;
-      Assert(IsConstructorDependants(sym, IsFullyDeclared)) ;
-      PushValue(sym) ;
-      DeclareConstantFromTree(sym, PopConstructorTree(tokenno))
+      WalkConstructor (sym, TraverseDependants) ;
+      DeclareTypesConstantsProceduresInRange (GetScope (sym), quad, quad) ;
+      Assert (IsConstructorDependants (sym, IsFullyDeclared)) ;
+      PushValue (sym) ;
+      DeclareConstantFromTree (sym, PopConstructorTree (tokenno))
    END
 END DeclareConstructor ;
 
@@ -2120,7 +2145,8 @@ END WalkTypeInfo ;
 
 PROCEDURE DeclareUnboundedProcedureParameters (sym: WORD) ;
 VAR
-   son, type,
+   param,
+   type,
    p, i     : CARDINAL ;
    location : location_t ;
 BEGIN
@@ -2131,8 +2157,8 @@ BEGIN
       WHILE i>0 DO
          IF IsUnboundedParam(sym, i)
          THEN
-            son := GetNthParam(sym, i) ;
-            type := GetSType(son) ;
+            param := GetNthParam(sym, i) ;
+            type := GetSType(param) ;
             TraverseDependants(type) ;
             IF GccKnowsAbout(type)
             THEN
@@ -2140,8 +2166,8 @@ BEGIN
                BuildTypeDeclaration(location, Mod2Gcc(type))
             END
          ELSE
-            son := GetNth(sym, i) ;
-            type := GetSType(son) ;
+            param := GetNth(sym, i) ;
+            type := GetSType(param) ;
             TraverseDependants(type)
          END ;
          DEC(i)
@@ -2156,31 +2182,24 @@ END DeclareUnboundedProcedureParameters ;
 
 PROCEDURE WalkUnboundedProcedureParameters (sym: WORD) ;
 VAR
-   son,
+   param,
    type,
    p, i: CARDINAL ;
 BEGIN
-   IF IsProcedure(sym)
+   IF IsProcedure (sym)
    THEN
-      p := NoOfParam(sym) ;
+      p := NoOfParam (sym) ;
       i := p ;
       WHILE i>0 DO
-         IF IsUnboundedParam(sym, i)
+         IF IsUnboundedParam (sym, i)
          THEN
-            son := GetNthParam(sym, i) ;
-            type := GetSType(son) ;
-            WalkTypeInfo(type) ;
-(*
-            type := GetUnboundedRecordType(type) ;
-            Assert(IsRecord(type)) ;
-            RecordNotPacked(type)      (* which is never packed.                   *)
-*)
+            param := GetNthParam (sym, i)
          ELSE
-            son := GetNth(sym, i) ;
-            type := GetSType(son) ;
-            WalkTypeInfo(type)
+            param := GetNth (sym, i)
          END ;
-         DEC(i)
+         type := GetSType (param) ;
+         WalkTypeInfo (type) ;
+         DEC (i)
       END
    END
 END WalkUnboundedProcedureParameters ;
@@ -2439,7 +2458,7 @@ BEGIN
       p := NoOfParam(Sym) ;
       i := p ;
       WHILE i>0 DO
-         (* note we dont use GetNthParam as we want the parameter that is seen by
+         (* Note we dont use GetNthParam as we want the parameter that is seen by
             the procedure block remember that this is treated exactly the same as
             a variable, just its position on the activation record is special (ie
             a parameter).  *)
@@ -2541,24 +2560,24 @@ END FoldConstants ;
    DeclareTypesConstantsProceduresInRange -
 *)
 
-PROCEDURE DeclareTypesConstantsProceduresInRange (start, end: CARDINAL) ;
+PROCEDURE DeclareTypesConstantsProceduresInRange (scope, start, end: CARDINAL) ;
 VAR
    n, m: CARDINAL ;
 BEGIN
    IF DisplayQuadruples
    THEN
-      DisplayQuadRange(start, end)
+      DisplayQuadRange (scope, start, end)
    END ;
    REPEAT
       n := NoOfElementsInSet(ToDoList) ;
-      WHILE ResolveConstantExpressions(DeclareConstFully, start, end) DO
+      WHILE ResolveConstantExpressions (DeclareConstFully, start, end) DO
       END ;
       (* we need to evaluate some constant expressions to resolve these types *)
       IF DeclaredOutstandingTypes (FALSE)
       THEN
       END ;
       m := NoOfElementsInSet(ToDoList)
-   UNTIL (NOT ResolveConstantExpressions(DeclareConstFully, start, end)) AND
+   UNTIL (NOT ResolveConstantExpressions (DeclareConstFully, start, end)) AND
          (n=m)
 END DeclareTypesConstantsProceduresInRange ;
 
@@ -2622,16 +2641,16 @@ VAR
    s, t: CARDINAL ;
    sb  : ScopeBlock ;
 BEGIN
-   sb := InitScopeBlock(scope) ;
-   PushBinding(scope) ;
+   sb := InitScopeBlock (scope) ;
+   PushBinding (scope) ;
    REPEAT
-      s := NoOfElementsInSet(ToDoList) ;
+      s := NoOfElementsInSet (ToDoList) ;
       (* ForeachLocalSymDo(scope, DeclareTypeInfo) ; *)
-      ForeachScopeBlockDo(sb, DeclareTypesConstantsProceduresInRange) ;
-      t := NoOfElementsInSet(ToDoList) ;
+      ForeachScopeBlockDo (sb, DeclareTypesConstantsProceduresInRange) ;
+      t := NoOfElementsInSet (ToDoList) ;
    UNTIL s=t ;
-   PopBinding(scope) ;
-   KillScopeBlock(sb)
+   PopBinding (scope) ;
+   KillScopeBlock (sb)
 END DeclareTypesConstantsProcedures ;
 
 
@@ -2693,7 +2712,7 @@ BEGIN
    WalkTypesInProcedure(scope) ;
    DeclareProcedure(scope) ;
    ForeachInnerModuleDo(scope, WalkTypesInModule) ;
-   DeclareTypesConstantsProcedures(scope) ;
+   DeclareTypesConstantsProcedures (scope) ;
    ForeachInnerModuleDo(scope, DeclareTypesConstantsProcedures) ;
    DeclareLocalVariables(scope) ;
    ForeachInnerModuleDo(scope, DeclareModuleVariables) ;
@@ -2797,7 +2816,7 @@ PROCEDURE StartDeclareScope (scope: CARDINAL) ;
 VAR
    n: Name ;
 BEGIN
-   (* AddSymToWatch (1265) ;  *)
+   (* AddSymToWatch (8821) ;  *)
    (* AddSymToWatch (1157) ;  *)  (* watch goes here *)
    (* AddSymToWatch(TryFindSymbol('IOLink', 'DeviceId')) ; *)
    (* AddSymToWatch(819) ; *)
@@ -3175,7 +3194,7 @@ VAR
    varType : CARDINAL ;
    location: location_t ;
 BEGIN
-   IF IsComponent (var)
+   IF IsComponent (var) OR IsVarHeap (var)
    THEN
       RETURN
    END ;
@@ -3492,6 +3511,44 @@ END DeclareEnumeration ;
 
 
 (*
+   DeclareSubrangeNarrow - will return cardinal, integer, or type depending on whether
+                           low..high fits in the C data type.
+*)
+
+PROCEDURE DeclareSubrangeNarrow (location: location_t;
+                                 high, low: CARDINAL; type: Tree) : Tree ;
+VAR
+   m2low, m2high,
+   lowtree,
+   hightree     : Tree ;
+BEGIN
+   (* No zero alignment, therefore the front end will prioritize subranges to match
+      unsigned int, int, or ZTYPE assuming the low..high range fits.  *)
+   lowtree := Mod2Gcc (low) ;
+   hightree := Mod2Gcc (high) ;
+   IF CompareTrees (lowtree, GetIntegerZero (location)) >= 0
+   THEN
+      (* low..high is always positive, can we use unsigned int?  *)
+      m2high := GetMaxFrom (location, GetM2CardinalType ()) ;
+      IF CompareTrees (hightree, m2high) <= 0
+      THEN
+         RETURN GetM2CardinalType ()
+      END
+   ELSE
+      (* Must be a signed subrange base, can we use int?  *)
+      m2high := GetMaxFrom (location, GetM2IntegerType ()) ;
+      m2low := GetMinFrom (location, GetM2IntegerType ()) ;
+      IF (CompareTrees (lowtree, m2low) >= 0) AND (CompareTrees (hightree, m2high) <= 0)
+      THEN
+         RETURN GetM2IntegerType ()
+      END
+   END ;
+   (* Fall back to the ZType.  *)
+   RETURN type
+END DeclareSubrangeNarrow ;
+
+
+(*
    DeclareSubrange - declare a subrange type.
 *)
 
@@ -3499,15 +3556,30 @@ PROCEDURE DeclareSubrange (sym: CARDINAL) : Tree ;
 VAR
    type,
    gccsym   : Tree ;
+   align,
    high, low: CARDINAL ;
    location: location_t ;
 BEGIN
    location := TokenToLocation (GetDeclaredMod (sym)) ;
    GetSubrange (sym, high, low) ;
-   (* type := BuildSmallestTypeRange (location, Mod2Gcc(low), Mod2Gcc(high)) ; *)
+   align := GetAlignment (sym) ;
    type := Mod2Gcc (GetSType (sym)) ;
+   IF align # NulSym
+   THEN
+      IF AreConstantsEqual (GetIntegerZero (location), Mod2Gcc (align))
+      THEN
+         type := BuildSmallestTypeRange (location, Mod2Gcc (low), Mod2Gcc (high))
+      ELSE
+         MetaError1 ('a non-zero alignment in a subrange type {%1Wa} is currently not implemented and will be ignored',
+                     sym)
+      END
+   ELSIF GetSType (sym) = ZType
+   THEN
+      (* Can we narrow the ZType subrange to CARDINAL or INTEGER?  *)
+      type := DeclareSubrangeNarrow (location, high, low, type)
+   END ;
    gccsym := BuildSubrangeType (location,
-                                KeyToCharStar (GetFullSymName(sym)),
+                                KeyToCharStar (GetFullSymName (sym)),
                                 type, Mod2Gcc (low), Mod2Gcc (high)) ;
    RETURN gccsym
 END DeclareSubrange ;
@@ -3521,18 +3593,18 @@ PROCEDURE IncludeGetNth (l: List; sym: CARDINAL) ;
 VAR
    i: CARDINAL ;
 BEGIN
-   printf0(' ListOfSons [') ;
+   printf0 (' ListOfSons [') ;
    i := 1 ;
-   WHILE GetNth(sym, i)#NulSym DO
+   WHILE GetNth (sym, i) # NulSym DO
       IF i>1
       THEN
-         printf0(', ') ;
+         printf0 (', ')
       END ;
-      IncludeItemIntoList(l, GetNth(sym, i)) ;
-      PrintTerse(GetNth(sym, i)) ;
-      INC(i)
+      IncludeItemIntoList (l, GetNth(sym, i)) ;
+      PrintTerse (GetNth (sym, i)) ;
+      INC (i)
    END ;
-   printf0(']')
+   printf0 (']')
 END IncludeGetNth ;
 
 
@@ -3911,6 +3983,12 @@ BEGIN
       THEN
          printf0('component ')
       END ;
+      IF IsVarHeap (sym)
+      THEN
+         printf0('heap ')
+      END ;
+      printf0 ('\n') ;
+      PrintInitialized (sym) ;
       IncludeType(l, sym)
    ELSIF IsConst(sym)
    THEN
@@ -4191,9 +4269,15 @@ BEGIN
    ELSIF IsAModula2Type(sym)
    THEN
       printf2('sym %d IsAModula2Type (%a)', sym, n)
-   ELSIF IsGnuAsmVolatile(sym)
+   ELSIF IsGnuAsm(sym)
    THEN
-      printf2('sym %d IsGnuAsmVolatile (%a)', sym, n)
+      printf2('sym %d IsGnuAsm (%a)', sym, n)
+   ELSIF IsImport (sym)
+   THEN
+      printf1('sym %d IsImport', sym)
+   ELSIF IsImportStatement (sym)
+   THEN
+      printf1('sym %d IsImportStatement', sym)
    END ;
 
    IF IsHiddenType(sym)
@@ -4910,7 +4994,7 @@ BEGIN
    THEN
       MinEnumerationField := NulSym ;
       MaxEnumerationField := NulSym ;
-      ForeachFieldEnumerationDo(type, FindMinMaxEnum) ;
+      ForeachLocalSymDo (type, FindMinMaxEnum) ;
       RETURN( MinEnumerationField )
    ELSIF IsBaseType(type)
    THEN
@@ -4949,7 +5033,7 @@ BEGIN
    THEN
       MinEnumerationField := NulSym ;
       MaxEnumerationField := NulSym ;
-      ForeachFieldEnumerationDo(type, FindMinMaxEnum) ;
+      ForeachLocalSymDo (type, FindMinMaxEnum) ;
       RETURN( MaxEnumerationField )
    ELSIF IsBaseType(type)
    THEN
@@ -5161,7 +5245,6 @@ END CheckResolveSubrange ;
 PROCEDURE TypeConstFullyDeclared (sym: CARDINAL) : Tree ;
 VAR
    t: Tree ;
-   n: Name ;
 BEGIN
    IF IsEnumeration(sym)
    THEN
@@ -5229,16 +5312,7 @@ BEGIN
          t := CheckAlignment(t, sym)
       END
    END ;
-   IF GetSymName(sym)#NulName
-   THEN
-      IF Debugging
-      THEN
-         n := GetSymName(sym) ;
-         printf1('declaring type %a\n', n)
-      END ;
-      t := RememberType(t)
-   END ;
-   RETURN( t )
+   RETURN RememberType (t)
 END TypeConstFullyDeclared ;
 
 
@@ -5278,7 +5352,7 @@ PROCEDURE IsEnumerationDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
 BEGIN
    action := q ;
    enumDeps := TRUE ;
-   ForeachFieldEnumerationDo(sym, IsFieldEnumerationDependants) ;
+   ForeachLocalSymDo (sym, IsFieldEnumerationDependants) ;
    RETURN( enumDeps )
 END IsEnumerationDependants ;
 
@@ -5289,7 +5363,7 @@ END IsEnumerationDependants ;
 
 PROCEDURE WalkEnumerationDependants (sym: CARDINAL; p: WalkAction) ;
 BEGIN
-   ForeachFieldEnumerationDo(sym, p)
+   ForeachLocalSymDo (sym, p)
 END WalkEnumerationDependants ;
 
 
@@ -5299,11 +5373,11 @@ END WalkEnumerationDependants ;
 
 PROCEDURE WalkSubrangeDependants (sym: CARDINAL; p: WalkAction) ;
 VAR
-   type,
-   high, low: CARDINAL ;
+   type, align,
+   high, low  : CARDINAL ;
 BEGIN
    GetSubrange(sym, high, low) ;
-   CheckResolveSubrange(sym) ;
+   CheckResolveSubrange (sym) ;
    type := GetSType(sym) ;
    IF type#NulSym
    THEN
@@ -5311,7 +5385,12 @@ BEGIN
    END ;
    (* low and high are not types but constants and they are resolved by M2GenGCC *)
    p(low) ;
-   p(high)
+   p(high) ;
+   align := GetAlignment (sym) ;
+   IF align # NulSym
+   THEN
+      p(align)
+   END
 END WalkSubrangeDependants ;
 
 
@@ -5323,6 +5402,7 @@ END WalkSubrangeDependants ;
 PROCEDURE IsSubrangeDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
 VAR
    result   : BOOLEAN ;
+   align,
    type,
    high, low: CARDINAL ;
 BEGIN
@@ -5340,6 +5420,11 @@ BEGIN
       result := FALSE
    END ;
    IF NOT q(high)
+   THEN
+      result := FALSE
+   END ;
+   align := GetAlignment(sym) ;
+   IF (align#NulSym) AND (NOT q(align))
    THEN
       result := FALSE
    END ;

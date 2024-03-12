@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 #include <algorithm>
 #include <array>
@@ -105,12 +104,6 @@ static_assert(std::is_empty_v<decltype(views::common
 				       | views::common
 				       | views::keys
 				       | views::reverse)>);
-#if 0
-// Adding empty range adaptor closure objects to a pipeline used to not
-// increase the size of the pipeline, but now that our range adaptor closure
-// objects derive from a common empty base class, [[no_unique_address]] can no
-// longer make two empty adjacent range adaptor closure objects occupy the same
-// data member address.
 static_assert(sizeof(decltype(views::take(5) | views::drop(5)))
 	      == sizeof(decltype(views::take(5)
 				 | views::join
@@ -119,7 +112,6 @@ static_assert(sizeof(decltype(views::take(5) | views::drop(5)))
 				 | views::keys
 				 | views::drop(5)
 				 | views::reverse)));
-#endif
 
 template<auto all = views::all>
 void

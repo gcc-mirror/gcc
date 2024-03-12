@@ -88,7 +88,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
     alias visit = Visitor.visit;
 
     Scope* sc;
-    this(Scope* sc) scope
+    this(Scope* sc) scope @safe
     {
         this.sc = sc;
     }
@@ -141,7 +141,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             if (!tempinst.errors)
             {
                 if (!tempdecl.literal)
-                    tempinst.error(tempinst.loc, "error instantiating");
+                    .error(tempinst.loc, "%s `%s` error instantiating", tempinst.kind, tempinst.toPrettyChars);
                 if (tempinst.tinst)
                     tempinst.tinst.printInstantiationTrace();
             }
@@ -193,7 +193,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
         // Note that modules get their own scope, from scratch.
         // This is so regardless of where in the syntax a module
         // gets imported, it is unaffected by context.
-        Scope* sc = Scope.createGlobal(mod); // create root scope
+        Scope* sc = Scope.createGlobal(mod, global.errorSink); // create root scope
         //printf("Module = %p\n", sc.scopesym);
         if (mod.members)
         {
@@ -303,7 +303,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
 
         if (!funcdecl.fbody && funcdecl.inferRetType && !f.next)
         {
-            funcdecl.error("has no function body with return type inference");
+            .error(funcdecl.loc, "%s `%s` has no function body with return type inference", funcdecl.kind, funcdecl.toPrettyChars);
             return;
         }
 
@@ -371,7 +371,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     if (!sc.intypeof)
                     {
                         if (fld.tok == TOK.delegate_)
-                            funcdecl.error("cannot be %s members", ad.kind());
+                            .error(funcdecl.loc, "%s `%s` cannot be %s members", funcdecl.kind, funcdecl.toPrettyChars, ad.kind());
                         else
                             fld.tok = TOK.function_;
                     }
@@ -395,7 +395,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             // functions to be reworked as a frontend-only feature.
             if (funcdecl.hasDualContext())
             {
-                funcdecl.deprecation("function requires a dual-context, which is deprecated");
+                .deprecation(funcdecl.loc, "%s `%s` function requires a dual-context, which is deprecated", funcdecl.kind, funcdecl.toPrettyChars);
                 if (auto ti = sc2.parent ? sc2.parent.isInstantiated() : null)
                     ti.printInstantiationTrace(Classification.deprecation);
             }
@@ -412,11 +412,11 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     if (!global.params.useTypeInfo || !Type.dtypeinfo || !Type.typeinfotypelist)
                     {
                         if (!global.params.useTypeInfo)
-                            funcdecl.error("D-style variadic functions cannot be used with -betterC");
+                            .error(funcdecl.loc, "%s `%s` D-style variadic functions cannot be used with -betterC", funcdecl.kind, funcdecl.toPrettyChars);
                         else if (!Type.typeinfotypelist)
-                            funcdecl.error("`object.TypeInfo_Tuple` could not be found, but is implicitly used in D-style variadic functions");
+                            .error(funcdecl.loc, "%s `%s` `object.TypeInfo_Tuple` could not be found, but is implicitly used in D-style variadic functions", funcdecl.kind, funcdecl.toPrettyChars);
                         else
-                            funcdecl.error("`object.TypeInfo` could not be found, but is implicitly used in D-style variadic functions");
+                            .error(funcdecl.loc, "%s `%s` `object.TypeInfo` could not be found, but is implicitly used in D-style variadic functions", funcdecl.kind, funcdecl.toPrettyChars);
                         fatal();
                     }
 
@@ -467,11 +467,11 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         /* Generate identifier for un-named parameter,
                          * because we need it later on.
                          */
-                        fparam.ident = id = Identifier.generateId("_param_", i);
+                        fparam.ident = id = Identifier.generateId("__param_", i);
                         stc |= STC.temp;
                     }
                     Type vtype = fparam.type;
-                    auto v = new VarDeclaration(funcdecl.loc, vtype, id, null);
+                    auto v = new VarDeclaration(fparam.loc, vtype, id, null);
                     //printf("declaring parameter %s of type %s\n", v.toChars(), v.type.toChars());
                     stc |= STC.parameter;
                     if (f.parameterList.varargs == VarArg.typesafe && i + 1 == nparams)
@@ -484,7 +484,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     v.dsymbolSemantic(sc2);
                     if (!sc2.insert(v))
                     {
-                        funcdecl.error("parameter `%s.%s` is already defined", funcdecl.toChars(), v.toChars());
+                        .error(funcdecl.loc, "%s `%s` parameter `%s.%s` is already defined", funcdecl.kind, funcdecl.toPrettyChars, funcdecl.toChars(), v.toChars());
                         funcdecl.errors = true;
                     }
                     else
@@ -523,7 +523,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 //printf("declaring tuple %s\n", v.toChars());
                 v.isexp = true;
                 if (!sc2.insert(v))
-                    funcdecl.error("parameter `%s.%s` is already defined", funcdecl.toChars(), v.toChars());
+                    .error(funcdecl.loc, "%s `%s` parameter `%s.%s` is already defined", funcdecl.kind, funcdecl.toPrettyChars, funcdecl.toChars(), v.toChars());
                 funcdecl.localsymtab.insert(v);
                 v.parent = funcdecl;
             }
@@ -687,7 +687,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                                  *    as delegating calls to other constructors
                                  */
                                 if (v.isCtorinit() && !v.type.isMutable() && cd)
-                                    funcdecl.error("missing initializer for %s field `%s`", MODtoChars(v.type.mod), v.toChars());
+                                    .error(funcdecl.loc, "%s `%s` missing initializer for %s field `%s`", funcdecl.kind, funcdecl.toPrettyChars, MODtoChars(v.type.mod), v.toChars());
                                 else if (v.storage_class & STC.nodefaultctor)
                                     error(funcdecl.loc, "field `%s` must be initialized in constructor", v.toChars());
                                 else if (v.type.needsNested())
@@ -698,14 +698,14 @@ private extern(C++) final class Semantic3Visitor : Visitor
                                 bool mustInit = (v.storage_class & STC.nodefaultctor || v.type.needsNested());
                                 if (mustInit && !(sc2.ctorflow.fieldinit[i].csx & CSX.this_ctor))
                                 {
-                                    funcdecl.error("field `%s` must be initialized but skipped", v.toChars());
+                                    .error(funcdecl.loc, "%s `%s` field `%s` must be initialized but skipped", funcdecl.kind, funcdecl.toPrettyChars, v.toChars());
                                 }
                             }
                         }
                     }
                     sc2.ctorflow.freeFieldinit();
 
-                    if (cd && !(sc2.ctorflow.callSuper & CSX.any_ctor) && cd.baseClass && cd.baseClass.ctor)
+                    if (cd && !(sc2.ctorflow.callSuper & (CSX.any_ctor | CSX.halt)) && cd.baseClass && cd.baseClass.ctor)
                     {
                         sc2.ctorflow.callSuper = CSX.none;
 
@@ -714,11 +714,11 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         FuncDeclaration fd = resolveFuncCall(Loc.initial, sc2, cd.baseClass.ctor, null, tthis, ArgumentList(), FuncResolveFlag.quiet);
                         if (!fd)
                         {
-                            funcdecl.error("no match for implicit `super()` call in constructor");
+                            .error(funcdecl.loc, "%s `%s` no match for implicit `super()` call in constructor", funcdecl.kind, funcdecl.toPrettyChars);
                         }
                         else if (fd.storage_class & STC.disable)
                         {
-                            funcdecl.error("cannot call `super()` implicitly because it is annotated with `@disable`");
+                            .error(funcdecl.loc, "%s `%s` cannot call `super()` implicitly because it is annotated with `@disable`", funcdecl.kind, funcdecl.toPrettyChars);
                         }
                         else
                         {
@@ -749,7 +749,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 funcdecl.buildEnsureRequire();
 
                 // Check for errors related to 'nothrow'.
-                const blockexit = funcdecl.fbody.blockExit(funcdecl, f.isnothrow);
+                const blockexit = funcdecl.fbody.blockExit(funcdecl, f.isnothrow ? global.errorSink : null);
                 if (f.isnothrow && blockexit & BE.throw_)
                     error(funcdecl.loc, "%s `%s` may throw but is marked as `nothrow`", funcdecl.kind(), funcdecl.toPrettyChars());
 
@@ -802,7 +802,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     // Fallthrough despite being declared as noreturn? return is already rejected when evaluating the ReturnStatement
                     if (blockexit & BE.fallthru)
                     {
-                        funcdecl.error("is typed as `%s` but does return", f.next.toChars());
+                        .error(funcdecl.loc, "%s `%s` is typed as `%s` but does return", funcdecl.kind, funcdecl.toPrettyChars, f.next.toChars());
                         funcdecl.loc.errorSupplemental("`noreturn` functions must either throw, abort or loop indefinitely");
                     }
                 }
@@ -812,9 +812,9 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     if ((blockexit & BE.fallthru) && f.next.ty != Tvoid && !inlineAsm && !(sc.flags & SCOPE.Cfile))
                     {
                         if (!funcdecl.hasReturnExp)
-                            funcdecl.error("has no `return` statement, but is expected to return a value of type `%s`", f.next.toChars());
+                            .error(funcdecl.loc, "%s `%s` has no `return` statement, but is expected to return a value of type `%s`", funcdecl.kind, funcdecl.toPrettyChars, f.next.toChars());
                         else
-                            funcdecl.error("no `return exp;` or `assert(0);` at end of function");
+                            .error(funcdecl.loc, "%s `%s` no `return exp;` or `assert(0);` at end of function", funcdecl.kind, funcdecl.toPrettyChars);
                     }
                 }
 
@@ -993,7 +993,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 freq = freq.statementSemantic(sc2);
 
                 // @@@DEPRECATED_2.111@@@ - pass `isnothrow` instead of `false` to print a more detailed error msg`
-                const blockExit = freq.blockExit(funcdecl, false);
+                const blockExit = freq.blockExit(funcdecl, null);
                 if (blockExit & BE.throw_)
                 {
                     if (isnothrow)
@@ -1023,7 +1023,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     {
                         if (e.id)
                         {
-                            funcdecl.error(e.ensure.loc, "`void` functions have no result");
+                            .error(e.ensure.loc, "%s `%s` `void` functions have no result", funcdecl.kind, funcdecl.toPrettyChars);
                             //fens = null;
                         }
                     }
@@ -1040,7 +1040,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 fens = fens.statementSemantic(sc2);
 
                 // @@@DEPRECATED_2.111@@@ - pass `isnothrow` instead of `false` to print a more detailed error msg`
-                const blockExit = fens.blockExit(funcdecl, false);
+                const blockExit = fens.blockExit(funcdecl, null);
                 if (blockExit & BE.throw_)
                 {
                     if (isnothrow)
@@ -1075,7 +1075,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         {
                             if (!v._init)
                             {
-                                v.error("zero-length `out` parameters are not allowed.");
+                                .error(v.loc, "%s `%s` zero-length `out` parameters are not allowed.", v.kind, v.toPrettyChars);
                                 return;
                             }
                             ExpInitializer ie = v._init.isExpInitializer();
@@ -1177,7 +1177,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
 
                             s = s.statementSemantic(sc2);
 
-                            const blockexit = s.blockExit(funcdecl, isnothrow);
+                            const blockexit = s.blockExit(funcdecl, isnothrow ? global.errorSink : null);
                             if (blockexit & BE.throw_)
                             {
                                 funcdecl.hasNoEH = false;
@@ -1187,7 +1187,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                                     f.isnothrow = false;
                             }
 
-                            if (sbody.blockExit(funcdecl, f.isnothrow) == BE.fallthru)
+                            if (sbody.blockExit(funcdecl, f.isnothrow ? global.errorSink : null) == BE.fallthru)
                                 sbody = new CompoundStatement(Loc.initial, sbody, s);
                             else
                                 sbody = new TryFinallyStatement(Loc.initial, sbody, s);
@@ -1229,7 +1229,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     }
                     else
                     {
-                        funcdecl.error("synchronized function `%s` must be a member of a class", funcdecl.toChars());
+                        .error(funcdecl.loc, "%s `%s` synchronized function `%s` must be a member of a class", funcdecl.kind, funcdecl.toPrettyChars, funcdecl.toChars());
                     }
                 }
 
@@ -1246,7 +1246,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     LabelDsymbol label = cast(LabelDsymbol)keyValue.value;
                     if (!label.statement && (!label.deleted || label.iasm))
                     {
-                        funcdecl.error(label.loc, "label `%s` is undefined", label.toChars());
+                        .error(label.loc, "%s `%s` label `%s` is undefined", funcdecl.kind, funcdecl.toPrettyChars, label.toChars());
                     }
                 }
 
@@ -1260,7 +1260,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             }
 
             if (funcdecl.isNaked() && (funcdecl.fensures || funcdecl.frequires))
-                funcdecl.error("naked assembly functions with contracts are not supported");
+                .error(funcdecl.loc, "%s `%s` naked assembly functions with contracts are not supported", funcdecl.kind, funcdecl.toPrettyChars);
 
             sc2.ctorflow.callSuper = CSX.none;
             sc2.pop();
@@ -1366,14 +1366,16 @@ private extern(C++) final class Semantic3Visitor : Visitor
             }
             if (isCppNonMappableType(f.next.toBasetype()))
             {
-                funcdecl.error("cannot return type `%s` because its linkage is `extern(C++)`", f.next.toChars());
+                .error(funcdecl.loc, "%s `%s` cannot return type `%s` because its linkage is `extern(C++)`", funcdecl.kind, funcdecl.toPrettyChars, f.next.toChars());
+                if (f.next.isTypeDArray())
+                    errorSupplemental(funcdecl.loc, "slices are specific to D and do not have a counterpart representation in C++", f.next.toChars());
                 funcdecl.errors = true;
             }
             foreach (i, param; f.parameterList)
             {
                 if (isCppNonMappableType(param.type.toBasetype(), param))
                 {
-                    funcdecl.error("cannot have parameter of type `%s` because its linkage is `extern(C++)`", param.type.toChars());
+                    .error(funcdecl.loc, "%s `%s` cannot have parameter of type `%s` because its linkage is `extern(C++)`", funcdecl.kind, funcdecl.toPrettyChars, param.type.toChars());
                     if (param.type.toBasetype().isTypeSArray())
                         errorSupplemental(funcdecl.loc, "perhaps use a `%s*` type instead",
                                           param.type.nextOf().mutableOf().unSharedOf().toChars());
@@ -1420,7 +1422,8 @@ private extern(C++) final class Semantic3Visitor : Visitor
          * https://issues.dlang.org/show_bug.cgi?id=14246
          */
         AggregateDeclaration ad = ctor.isMemberDecl();
-        if (!ctor.fbody || !ad || !ad.fieldDtor || !global.params.dtorFields || global.params.betterC || ctor.type.toTypeFunction.isnothrow)
+        if (!ctor.fbody || !ad || !ad.fieldDtor ||
+            global.params.dtorFields == FeatureState.disabled || !global.params.useExceptions || ctor.type.toTypeFunction.isnothrow)
             return visit(cast(FuncDeclaration)ctor);
 
         /* Generate:
@@ -1450,7 +1453,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             {
                 // storage_class is apparently not set for dtor & ctor
                 OutBuffer ob;
-                stcToBuffer(&ob,
+                stcToBuffer(ob,
                     (ngErr ? STC.nogc : 0) |
                     (puErr ? STC.pure_ : 0) |
                     (saErr ? STC.system : 0)
@@ -1599,13 +1602,13 @@ private struct FuncDeclSem3
 
     // Scope of analysis
     Scope* sc;
-    this(FuncDeclaration fd,Scope* s) scope
+    this(FuncDeclaration fd,Scope* s) scope @safe
     {
         funcdecl = fd;
         sc = s;
     }
 
-    /* Checks that the overriden functions (if any) have in contracts if
+    /* Checks that the overridden functions (if any) have in contracts if
      * funcdecl has an in contract.
      */
     void checkInContractOverrides()
@@ -1617,7 +1620,7 @@ private struct FuncDeclSem3
                 FuncDeclaration fdv = funcdecl.foverrides[i];
                 if (fdv.fbody && !fdv.frequires)
                 {
-                    funcdecl.error("cannot have an in contract when overridden function `%s` does not have an in contract", fdv.toPrettyChars());
+                    .error(funcdecl.loc, "%s `%s` cannot have an in contract when overridden function `%s` does not have an in contract", funcdecl.kind, funcdecl.toPrettyChars, fdv.toPrettyChars());
                     break;
                 }
             }

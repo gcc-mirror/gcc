@@ -17,6 +17,8 @@
 /* { dg-additional-options "-mmacosx-version-min=010.015.06 -DCHECK=101506" { target *-*-darwin19* } } */
 /* { dg-additional-options "-mmacosx-version-min=011.000.00 -DCHECK=110000" { target *-*-darwin20* } } */
 /* { dg-additional-options "-mmacosx-version-min=012.000.00 -DCHECK=120000" { target *-*-darwin21* } } */
+/* { dg-additional-options "-mmacosx-version-min=013.000.00 -DCHECK=130000" { target *-*-darwin22* } } */
+/* { dg-additional-options "-mmacosx-version-min=014.000.00 -DCHECK=140000" { target *-*-darwin23* } } */
 
 int
 main ()

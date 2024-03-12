@@ -67,6 +67,7 @@ int main ()
       t2[i] = z1[i]; z1[i] = 1.0f;
     }
   foo2 (n);  /* scalar variant.  */
+#pragma GCC novector
   for (i=0; i<N; i++)
     if (x1[i] != t1[i] || z1[i] != t2[i])
       abort ();

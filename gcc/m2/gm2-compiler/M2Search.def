@@ -89,6 +89,4 @@ PROCEDURE SetDefExtension (ext: String) ;
 PROCEDURE SetModExtension (ext: String) ;
 
 
-
-
 END M2Search.

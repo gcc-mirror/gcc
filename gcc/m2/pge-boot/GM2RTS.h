@@ -29,9 +29,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_M2RTS_H)
 #   define _M2RTS_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -51,7 +54,7 @@ typedef struct M2RTS_ArgCVEnvP_p M2RTS_ArgCVEnvP;
 typedef void (*M2RTS_ArgCVEnvP_t) (int, void *, void *);
 struct M2RTS_ArgCVEnvP_p { M2RTS_ArgCVEnvP_t proc; };
 
-EXTERN void M2RTS_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
+EXTERN void M2RTS_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp);
 EXTERN void M2RTS_DeconstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
 
 /*
@@ -77,7 +80,7 @@ EXTERN void M2RTS_RequestDependant (void * modulename, void * libname, void * de
                                  procedure is installed.
 */
 
-EXTERN unsigned int M2RTS_InstallTerminationProcedure (PROC p);
+EXTERN bool M2RTS_InstallTerminationProcedure (PROC p);
 
 /*
    ExecuteInitialProcedures - executes the initial procedures installed
@@ -92,7 +95,7 @@ EXTERN void M2RTS_ExecuteInitialProcedures (void);
                              program module.
 */
 
-EXTERN unsigned int M2RTS_InstallInitialProcedure (PROC p);
+EXTERN bool M2RTS_InstallInitialProcedure (PROC p);
 
 /*
    ExecuteTerminationProcedures - calls each installed termination procedure
@@ -128,7 +131,7 @@ EXTERN void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
            to stderr and calls exit (1).
 */
 
-EXTERN void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+EXTERN void M2RTS_Halt (const char *description_, unsigned int _description_high, const char *filename_, unsigned int _filename_high, const char *function_, unsigned int _function_high, unsigned int line) __attribute__ ((noreturn));
 
 /*
    HaltC - provides a more user friendly version of HALT, which takes
@@ -136,7 +139,7 @@ EXTERN void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsi
            to stderr and calls exit (1).
 */
 
-EXTERN void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description) __attribute__ ((noreturn));
+EXTERN void M2RTS_HaltC (void * description, void * filename, void * function, unsigned int line) __attribute__ ((noreturn));
 
 /*
    ExitOnHalt - if HALT is executed then call exit with the exit code, e.

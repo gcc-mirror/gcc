@@ -91,9 +91,14 @@ package body Sem_Ch5 is
 
    function Has_Sec_Stack_Call (N : Node_Id) return Boolean;
    --  N is the node for an arbitrary construct. This function searches the
-   --  construct N to see if any expressions within it contain function
-   --  calls that use the secondary stack, returning True if any such call
-   --  is found, and False otherwise.
+   --  construct N to see if it contains a function call that returns on the
+   --  secondary stack, returning True if any such call is found, and False
+   --  otherwise.
+
+   --  ??? The implementation invokes Sem_Util.Requires_Transient_Scope so it
+   --  will return True if N contains a function call that needs finalization,
+   --  in addition to the above specification. See Analyze_Loop_Statement for
+   --  a similar comment about this entanglement.
 
    procedure Preanalyze_Range (R_Copy : Node_Id);
    --  Determine expected type of range or domain of iteration of Ada 2012
@@ -113,7 +118,7 @@ package body Sem_Ch5 is
 
    procedure Analyze_Assignment (N : Node_Id) is
       Lhs : constant Node_Id := Name (N);
-      Rhs : Node_Id          := Expression (N);
+      Rhs : constant Node_Id := Expression (N);
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
       --  N is the node for the left hand side of an assignment, and it is not
@@ -136,27 +141,6 @@ package body Sem_Ch5 is
       --  Opnd is either the Lhs or Rhs of the assignment, and Opnd_Type is the
       --  nominal subtype. This procedure is used to deal with cases where the
       --  nominal subtype must be replaced by the actual subtype.
-
-      procedure Transform_BIP_Assignment (Typ : Entity_Id);
-      function Should_Transform_BIP_Assignment
-        (Typ : Entity_Id) return Boolean;
-      --  If the right-hand side of an assignment statement is a build-in-place
-      --  call we cannot build in place, so we insert a temp initialized with
-      --  the call, and transform the assignment statement to copy the temp.
-      --  Transform_BIP_Assignment does the transformation, and
-      --  Should_Transform_BIP_Assignment determines whether we should.
-      --  The same goes for qualified expressions and conversions whose
-      --  operand is such a call.
-      --
-      --  This is only for nonlimited types; assignment statements are illegal
-      --  for limited types, but are generated internally for aggregates and
-      --  init procs. These limited-type are not really assignment statements
-      --  -- conceptually, they are initializations, so should not be
-      --  transformed.
-      --
-      --  Similarly, for nonlimited types, aggregates and init procs generate
-      --  assignment statements that are really initializations. These are
-      --  marked No_Ctrl_Actions.
 
       function Within_Function return Boolean;
       --  Determine whether the current scope is a function or appears within
@@ -324,10 +308,13 @@ package body Sem_Ch5 is
          then
             Opnd_Type := Get_Actual_Subtype (Opnd);
 
-         --  If assignment operand is a component reference, then we get the
-         --  actual subtype of the component for the unconstrained case.
+         --  If the assignment operand is a component reference, then we build
+         --  the actual subtype of the component for the unconstrained case,
+         --  unless there is already one or the type is an unchecked union.
 
-         elsif Nkind (Opnd) in N_Selected_Component | N_Explicit_Dereference
+         elsif (Nkind (Opnd) = N_Selected_Component
+                 or else (Nkind (Opnd) = N_Explicit_Dereference
+                           and then No (Actual_Designated_Subtype (Opnd))))
            and then not Is_Unchecked_Union (Opnd_Type)
          then
             Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
@@ -350,87 +337,6 @@ package body Sem_Ch5 is
             Opnd_Type := Etype (Opnd);
          end if;
       end Set_Assignment_Type;
-
-      -------------------------------------
-      -- Should_Transform_BIP_Assignment --
-      -------------------------------------
-
-      function Should_Transform_BIP_Assignment
-        (Typ : Entity_Id) return Boolean
-      is
-      begin
-         if Expander_Active
-           and then not Is_Limited_View (Typ)
-           and then Is_Build_In_Place_Result_Type (Typ)
-           and then not No_Ctrl_Actions (N)
-         then
-            --  This function is called early, before name resolution is
-            --  complete, so we have to deal with things that might turn into
-            --  function calls later. N_Function_Call and N_Op nodes are the
-            --  obvious case. An N_Identifier or N_Expanded_Name is a
-            --  parameterless function call if it denotes a function.
-            --  Finally, an attribute reference can be a function call.
-
-            declare
-               Unqual_Rhs : constant Node_Id := Unqual_Conv (Rhs);
-            begin
-               case Nkind (Unqual_Rhs) is
-                  when N_Function_Call
-                     | N_Op
-                  =>
-                     return True;
-
-                  when N_Expanded_Name
-                     | N_Identifier
-                  =>
-                     return
-                       Ekind (Entity (Unqual_Rhs)) in E_Function | E_Operator;
-
-                  --  T'Input will turn into a call whose result type is T
-
-                  when N_Attribute_Reference =>
-                     return Attribute_Name (Unqual_Rhs) = Name_Input;
-
-                  when others =>
-                     return False;
-               end case;
-            end;
-         else
-            return False;
-         end if;
-      end Should_Transform_BIP_Assignment;
-
-      ------------------------------
-      -- Transform_BIP_Assignment --
-      ------------------------------
-
-      procedure Transform_BIP_Assignment (Typ : Entity_Id) is
-
-         --  Tranform "X : [constant] T := F (...);" into:
-         --
-         --     Temp : constant T := F (...);
-         --     X := Temp;
-
-         Loc      : constant Source_Ptr := Sloc (N);
-         Def_Id   : constant Entity_Id  := Make_Temporary (Loc, 'Y', Rhs);
-         Obj_Decl : constant Node_Id    :=
-                      Make_Object_Declaration (Loc,
-                        Defining_Identifier => Def_Id,
-                        Constant_Present    => True,
-                        Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                        Expression          => Rhs,
-                        Has_Init_Expression => True);
-
-      begin
-         Set_Etype (Def_Id, Typ);
-         Set_Expression (N, New_Occurrence_Of (Def_Id, Loc));
-
-         --  At this point, Rhs is no longer equal to Expression (N), so:
-
-         Rhs := Expression (N);
-
-         Insert_Action (N, Obj_Decl);
-      end Transform_BIP_Assignment;
 
       ---------------------
       -- Within_Function --
@@ -606,56 +512,6 @@ package body Sem_Ch5 is
             goto Leave;
          end if;
       end if;
-
-      --  Deal with build-in-place calls for nonlimited types. We don't do this
-      --  later, because resolving the rhs tranforms it incorrectly for build-
-      --  in-place.
-
-      if Should_Transform_BIP_Assignment (Typ => T1) then
-
-         --  In certain cases involving user-defined concatenation operators,
-         --  we need to resolve the right-hand side before transforming the
-         --  assignment.
-
-         case Nkind (Unqual_Conv (Rhs)) is
-            when N_Function_Call =>
-               declare
-                  Actual     : Node_Id :=
-                    First (Parameter_Associations (Unqual_Conv (Rhs)));
-                  Actual_Exp : Node_Id;
-
-               begin
-                  while Present (Actual) loop
-                     if Nkind (Actual) = N_Parameter_Association then
-                        Actual_Exp := Explicit_Actual_Parameter (Actual);
-                     else
-                        Actual_Exp := Actual;
-                     end if;
-
-                     if Nkind (Actual_Exp) = N_Op_Concat then
-                        Resolve (Rhs, T1);
-                        exit;
-                     end if;
-
-                     Next (Actual);
-                  end loop;
-               end;
-
-            when N_Attribute_Reference
-               | N_Expanded_Name
-               | N_Identifier
-               | N_Op
-            =>
-               null;
-
-            when others =>
-               raise Program_Error;
-         end case;
-
-         Transform_BIP_Assignment (Typ => T1);
-      end if;
-
-      pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
 
       --  The resulting assignment type is T1, so now we will resolve the left
       --  hand side of the assignment using this determined type.
@@ -1300,8 +1156,6 @@ package body Sem_Ch5 is
             Full_Analysis := Save_Full_Analysis;
             Current_Assignment := Empty;
          end if;
-
-         pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
       end if;
    end Analyze_Assignment;
 
@@ -2371,6 +2225,7 @@ package body Sem_Ch5 is
       --  iterator name.
 
       Mutate_Ekind (Def_Id, E_Variable);
+      Set_Is_Not_Self_Hidden (Def_Id);
 
       --  Provide a link between the iterator variable and the container, for
       --  subsequent use in cross-reference and modification information.
@@ -2649,6 +2504,7 @@ package body Sem_Ch5 is
 
       else
          Mutate_Ekind (Def_Id, E_Loop_Parameter);
+         Set_Is_Not_Self_Hidden (Def_Id);
          Error_Msg_Ada_2012_Feature ("container iterator", Sloc (N));
 
          --  OF present
@@ -2702,6 +2558,7 @@ package body Sem_Ch5 is
 
                      if Has_Aspect (Typ, Aspect_Variable_Indexing) then
                         Mutate_Ekind (Def_Id, E_Variable);
+                        Set_Is_Not_Self_Hidden (Def_Id);
                      end if;
 
                      --  If the container is a constant, iterating over it
@@ -2853,10 +2710,10 @@ package body Sem_Ch5 is
          end if;
       end if;
 
-      if Present (Iterator_Filter (N)) then
-         --  Preanalyze the filter. Expansion will take place when enclosing
-         --  loop is expanded.
+      --  Preanalyze the filter. Expansion will take place when enclosing
+      --  loop is expanded.
 
+      if Present (Iterator_Filter (N)) then
          Preanalyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
       end if;
    end Analyze_Iterator_Specification;
@@ -2963,7 +2820,8 @@ package body Sem_Ch5 is
            and then Has_Predicates (T)
            and then (not Has_Static_Predicate (T)
                       or else not Is_Static_Subtype (T)
-                      or else Has_Dynamic_Predicate_Aspect (T))
+                      or else Has_Dynamic_Predicate_Aspect (T)
+                      or else Has_Ghost_Predicate_Aspect (T))
          then
             --  Seems a confusing message for the case of a static predicate
             --  with a non-static subtype???
@@ -3326,6 +3184,7 @@ package body Sem_Ch5 is
       end if;
 
       Mutate_Ekind (Id, E_Loop_Parameter);
+      Set_Is_Not_Self_Hidden (Id);
 
       --  A quantified expression which appears in a pre- or post-condition may
       --  be analyzed multiple times. The analysis of the range creates several
@@ -3570,8 +3429,11 @@ package body Sem_Ch5 is
          end;
       end if;
 
+      --  Preanalyze the filter. Expansion will take place when enclosing
+      --  loop is expanded.
+
       if Present (Iterator_Filter (N)) then
-         Analyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
+         Preanalyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
       end if;
 
       --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
@@ -3769,9 +3631,13 @@ package body Sem_Ch5 is
                Cont_Typ := Etype (Nam_Copy);
 
                --  The iterator loop is traversing an array. This case does not
-               --  require any transformation.
+               --  require any transformation, unless the name contains a call
+               --  that returns on the secondary stack since we need to release
+               --  the space allocated there.
 
-               if Is_Array_Type (Cont_Typ) then
+               if Is_Array_Type (Cont_Typ)
+                 and then not Has_Sec_Stack_Call (Nam_Copy)
+               then
                   null;
 
                --  Otherwise unconditionally wrap the loop statement within

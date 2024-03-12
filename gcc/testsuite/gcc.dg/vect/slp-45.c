@@ -23,11 +23,13 @@ foo_ ## T ## _ ## N (T * __restrict__ in_, T * __restrict__ out_, int s) \
 }
 
 #define TEST(T,N) \
+ _Pragma("GCC novector") \
  do { \
   memset (out, 0, 4096); \
   foo_ ## T ## _ ## N ((T *)in, (T *)out, 1); \
   if (memcmp (in, out, sizeof (T) * MAX_VEC_ELEMENTS * N) != 0) \
     __builtin_abort (); \
+  _Pragma("GCC novector") \
   for (int i = sizeof (T) * MAX_VEC_ELEMENTS * N; i < 4096; ++i) \
     if (out[i] != 0) \
       __builtin_abort (); \

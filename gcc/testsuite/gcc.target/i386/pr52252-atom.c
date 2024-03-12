@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -mssse3 -mtune=slm" } */
+/* { dg-options "-O2 -ftree-vectorize -mssse3 -mtune=slm -mprefer-vector-width=128" } */
 #define byte unsigned char
 
 void

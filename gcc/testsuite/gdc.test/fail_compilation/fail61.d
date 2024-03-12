@@ -1,10 +1,13 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail61.d(22): Error: no property `B` for type `fail61.A.B`
-fail_compilation/fail61.d(23): Error: no property `B` for type `fail61.A.B`
-fail_compilation/fail61.d(32): Error: no property `A2` for type `fail61.B2`
-fail_compilation/fail61.d(41): Error: need `this` for `foo` of type `void()`
+fail_compilation/fail61.d(25): Error: no property `B` for type `fail61.A.B`
+fail_compilation/fail61.d(16):        class `B` defined here
+fail_compilation/fail61.d(26): Error: no property `B` for type `fail61.A.B`
+fail_compilation/fail61.d(16):        class `B` defined here
+fail_compilation/fail61.d(35): Error: no property `A2` for type `fail61.B2`
+fail_compilation/fail61.d(30):        class `B2` defined here
+fail_compilation/fail61.d(44): Error: calling non-static function `foo` requires an instance of type `B3`
 ---
 */
 

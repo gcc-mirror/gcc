@@ -40,7 +40,7 @@ FROM M2Debug IMPORT Assert ;
 FROM Storage IMPORT ALLOCATE ;
 FROM StringConvert IMPORT ostoi, bstoi, stoi, hstoi ;
 FROM M2GCCDeclare IMPORT GetTypeMin, GetTypeMax, CompletelyResolved, DeclareConstant ;
-FROM M2GenGCC IMPORT DoCopyString, StringToChar ;
+FROM M2GenGCC IMPORT PrepareCopyString, StringToChar ;
 FROM M2Bitset IMPORT Bitset ;
 FROM SymbolConversion IMPORT Mod2Gcc, GccKnowsAbout ;
 FROM M2Printf IMPORT printf0, printf2 ;
@@ -2119,18 +2119,18 @@ VAR
    result: BOOLEAN ;
    res   : INTEGER ;
 BEGIN
-   v1 := Pop() ;
-   v2 := Pop() ;
-   IF (v1^.type=set) AND (v2^.type=set)
+   v1 := Pop () ;
+   v2 := Pop () ;
+   IF (v1^.type = set) AND (v2^.type = set)
    THEN
-      result := NOT IsSuperset(tokenno, v2, v1)
-   ELSIF (v1^.type=set) OR (v2^.type=set)
+      result := NOT IsSuperset (tokenno, v2, v1)
+   ELSIF (v1^.type = set) OR (v2^.type = set)
    THEN
       MetaErrorT0 (tokenno, 'cannot perform a comparison between a number and a set') ;
       result := FALSE
    ELSE
-      res := CompareTrees(v2^.numberValue, v1^.numberValue) ;
-      IF res=-1
+      res := CompareTrees (v2^.numberValue, v1^.numberValue) ;
+      IF res = -1
       THEN
          result := TRUE
       ELSE
@@ -2138,9 +2138,9 @@ BEGIN
       END ;
       (* result := (CompareTrees(v2^.numberValue, v1^.numberValue)=-1) *)
    END ;
-   Dispose(v1) ;
-   Dispose(v2) ;
-   RETURN( result )
+   Dispose (v1) ;
+   Dispose (v2) ;
+   RETURN result
 END Less ;
 
 
@@ -4528,8 +4528,13 @@ BEGIN
    IF IsConstString(init) AND IsArray(SkipType(GetType(field))) AND
       (SkipTypeAndSubrange(GetType(GetType(field)))=Char)
    THEN
-      DoCopyString(tokenno, nBytes, initT, GetType(field), init) ;
-      RETURN( initT )
+      IF NOT PrepareCopyString (tokenno, nBytes, initT, init, GetType (field))
+      THEN
+         MetaErrorT2 (tokenno,
+                      'string constant {%1Ea} is too large to be assigned to the {%2d} {%2a}',
+                      init, field)
+      END ;
+      RETURN initT
    ELSE
       RETURN( ConvertConstantAndCheck(TokenToLocation(tokenno), Mod2Gcc(GetType(field)), Mod2Gcc(init)) )
    END

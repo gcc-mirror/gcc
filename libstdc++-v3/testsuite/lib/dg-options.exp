@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
@@ -126,6 +126,15 @@ proc dg-require-cmath { args } {
 
 proc dg-require-thread-fence { args } {
     if { ![ check_v3_target_thread_fence ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
+proc dg-require-atomic-cmpxchg-word { args } {
+    if { ![ check_v3_target_atomic_cmpxchg_word ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 	return
@@ -269,8 +278,10 @@ proc dg-require-target-fs-lwt { args } {
 }
 
 proc add_options_for_no_pch { flags } {
+    # Remove any inclusion of bits/stdc++.h from the options.
+    regsub -all -- "-include bits/stdc...h" $flags "" flags
     # This forces any generated and possibly included PCH to be invalid.
-    return "-D__GLIBCXX__=99999999"
+    return "$flags -D__GLIBCXX__=99999999"
 }
 
 # Add to FLAGS all the target-specific flags needed for networking.
@@ -350,6 +361,13 @@ proc add_options_for_using-deprecated { flags } {
     return "$flags -U_GLIBCXX_USE_DEPRECATED -D_GLIBCXX_USE_DEPRECATED=1"
 }
 
+# Add options for strict -std=c++NN dialects.
+# This is a dummy option that does nothing, but it causes v3-dg-runtest
+# to alter its behaviour.
+proc add_options_for_strict_std { flags } {
+    return $flags
+}
+
 # Like dg-options, but adds to the default options rather than replacing them.
 
 proc dg-additional-options { args } {
@@ -370,4 +388,12 @@ proc dg-additional-options { args } {
     } else {
         eval lappend extra-tool-flags [lindex $args 1]
     }
+}
+
+set v3_additional_files ""
+
+# Process a { dg-additional-files "filelist" } directive in the test.
+proc dg-additional-files { line filelist } {
+    global v3_additional_files
+    set v3_additional_files $filelist
 }

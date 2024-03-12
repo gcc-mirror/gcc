@@ -55,8 +55,8 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected(?:(?!failed)(?!Re-trying).)*succeeded" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected(?:(?!failed)(?!Re-trying).)*succeeded" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_sdot_qi } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_widen_mult_qi_to_hi && vect_widen_sum_hi_to_si } } } } */
 

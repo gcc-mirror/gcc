@@ -173,6 +173,7 @@ static pthread_mutex_t plugin_lock;
 
 static char *arguments_file_name;
 static ld_plugin_register_claim_file register_claim_file;
+static ld_plugin_register_claim_file_v2 register_claim_file_v2;
 static ld_plugin_register_all_symbols_read register_all_symbols_read;
 static ld_plugin_get_symbols get_symbols, get_symbols_v2, get_symbols_v3;
 static ld_plugin_register_cleanup register_cleanup;
@@ -1191,10 +1192,15 @@ process_offload_section (void *data, const char *name, off_t offset, off_t len)
 }
 
 /* Callback used by a linker to check if the plugin will claim FILE. Writes
-   the result in CLAIMED. */
+   the result in CLAIMED.  If KNOWN_USED, the object is known by the linker
+   to be used, or an older API version is in use that does not provide that
+   information; otherwise, the linker is only determining whether this is
+   a plugin object and it should not be registered as having offload data if
+   not claimed by the plugin.  */
 
 static enum ld_plugin_status
-claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
+claim_file_handler_v2 (const struct ld_plugin_input_file *file, int *claimed,
+		       int known_used)
 {
   enum ld_plugin_status status;
   struct plugin_objfile obj;
@@ -1307,7 +1313,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   if (*claimed && !obj.offload && offload_files_last_lto == NULL)
     offload_files_last_lto = offload_files_last;
 
-  if (obj.offload)
+  if (obj.offload && (known_used || obj.found > 0))
     {
       /* Add file to the list.  The order must be exactly the same as the final
 	 order after recompilation and linking, otherwise host and target tables
@@ -1370,6 +1376,15 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
     simple_object_release_read (obj.objfile);
 
   return LDPS_OK;
+}
+
+/* Callback used by a linker to check if the plugin will claim FILE. Writes
+   the result in CLAIMED. */
+
+static enum ld_plugin_status
+claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
+{
+  return claim_file_handler_v2 (file, claimed, true);
 }
 
 /* Parse the plugin options. */
@@ -1496,6 +1511,9 @@ onload (struct ld_plugin_tv *tv)
 	case LDPT_REGISTER_CLAIM_FILE_HOOK:
 	  register_claim_file = p->tv_u.tv_register_claim_file;
 	  break;
+	case LDPT_REGISTER_CLAIM_FILE_HOOK_V2:
+	  register_claim_file_v2 = p->tv_u.tv_register_claim_file_v2;
+	  break;
 	case LDPT_ADD_SYMBOLS_V2:
 	  add_symbols_v2 = p->tv_u.tv_add_symbols;
 	  break;
@@ -1554,6 +1572,13 @@ onload (struct ld_plugin_tv *tv)
   status = register_claim_file (claim_file_handler);
   check (status == LDPS_OK, LDPL_FATAL,
 	 "could not register the claim_file callback");
+
+  if (register_claim_file_v2)
+    {
+      status = register_claim_file_v2 (claim_file_handler_v2);
+      check (status == LDPS_OK, LDPL_FATAL,
+	     "could not register the claim_file_v2 callback");
+    }
 
   if (register_cleanup)
     {

@@ -422,7 +422,12 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
 
      It's unclear if we need to do the same for other special registers.  */
   if (regno == STACK_POINTER_REGNUM)
-    return NULL_RTX;
+    {
+      if (orig_mode == new_mode && new_mode == GET_MODE (stack_pointer_rtx))
+	return stack_pointer_rtx;
+      else
+	return NULL_RTX;
+    }
 
   if (orig_mode == new_mode)
     return gen_raw_REG (new_mode, regno);
@@ -482,9 +487,14 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
       new_rtx = maybe_mode_change (oldmode, vd->e[regno].mode, mode, i, regno);
       if (new_rtx)
 	{
-	  ORIGINAL_REGNO (new_rtx) = ORIGINAL_REGNO (reg);
-	  REG_ATTRS (new_rtx) = REG_ATTRS (reg);
-	  REG_POINTER (new_rtx) = REG_POINTER (reg);
+	  /* NEW_RTX may be the global stack pointer rtx, in which case we
+	     must not modify it's attributes.  */
+	  if (new_rtx != stack_pointer_rtx)
+	    {
+	      ORIGINAL_REGNO (new_rtx) = ORIGINAL_REGNO (reg);
+	      REG_ATTRS (new_rtx) = REG_ATTRS (reg);
+	      REG_POINTER (new_rtx) = REG_POINTER (reg);
+	    }
 	  return new_rtx;
 	}
     }
@@ -960,9 +970,14 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
 		  if (validate_change (insn, &SET_SRC (set), new_rtx, 0))
 		    {
-		      ORIGINAL_REGNO (new_rtx) = ORIGINAL_REGNO (src);
-		      REG_ATTRS (new_rtx) = REG_ATTRS (src);
-		      REG_POINTER (new_rtx) = REG_POINTER (src);
+		      /* NEW_RTX may be the global stack pointer rtx, in which
+			 case we must not modify it's attributes.  */
+		      if (new_rtx != stack_pointer_rtx)
+			{
+			  ORIGINAL_REGNO (new_rtx) = ORIGINAL_REGNO (src);
+			  REG_ATTRS (new_rtx) = REG_ATTRS (src);
+			  REG_POINTER (new_rtx) = REG_POINTER (src);
+			}
 		      if (dump_file)
 			fprintf (dump_file,
 				 "insn %u: replaced reg %u with %u\n",

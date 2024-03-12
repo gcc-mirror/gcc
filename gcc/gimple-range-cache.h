@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "gimple-range-gori.h" 
 #include "gimple-range-infer.h"
+#include "gimple-range-phi.h"
 
 // This class manages a vector of pointers to ssa_block ranges.  It
 // provides the basis for the "range on entry" cache for all
@@ -52,19 +53,42 @@ private:
 // has been visited during this incarnation.  Once the ranger evaluates
 // a name, it is typically not re-evaluated again.
 
-class ssa_global_cache
+class ssa_cache : public range_query
 {
 public:
-  ssa_global_cache ();
-  ~ssa_global_cache ();
-  bool get_global_range (vrange &r, tree name) const;
-  bool set_global_range (tree name, const vrange &r);
-  void clear_global_range (tree name);
-  void clear ();
+  ssa_cache ();
+  ~ssa_cache ();
+  virtual bool has_range (tree name) const;
+  virtual bool get_range (vrange &r, tree name) const;
+  virtual bool set_range (tree name, const vrange &r);
+  virtual bool merge_range (tree name, const vrange &r);
+  virtual void clear_range (tree name);
+  virtual void clear ();
   void dump (FILE *f = stderr);
-private:
-  vec<vrange *> m_tab;
+  virtual bool range_of_expr (vrange &r, tree expr, gimple *stmt = NULL);
+protected:
+  vec<vrange_storage *> m_tab;
   vrange_allocator *m_range_allocator;
+};
+
+// This is the same as global cache, except it maintains an active bitmap
+// rather than depending on a zero'd out vector of pointers.  This is better
+// for sparsely/lightly used caches.
+
+class ssa_lazy_cache : public ssa_cache
+{
+public:
+  inline ssa_lazy_cache () { active_p = BITMAP_ALLOC (NULL); }
+  inline ~ssa_lazy_cache () { BITMAP_FREE (active_p); }
+  inline bool empty_p () const { return bitmap_empty_p (active_p); }
+  virtual bool has_range (tree name) const;
+  virtual bool set_range (tree name, const vrange &r);
+  virtual bool merge_range (tree name, const vrange &r);
+  virtual bool get_range (vrange &r, tree name) const;
+  virtual void clear_range (tree name);
+  virtual void clear ();
+protected:
+  bitmap active_p;
 };
 
 // This class provides all the caches a global ranger may need, and makes 
@@ -83,7 +107,8 @@ public:
 
   bool get_global_range (vrange &r, tree name) const;
   bool get_global_range (vrange &r, tree name, bool &current_p);
-  void set_global_range (tree name, const vrange &r);
+  void set_global_range (tree name, const vrange &r, bool changed = true);
+  range_query &const_query () { return m_globals; }
 
   void propagate_updated_value (tree name, basic_block bb);
 
@@ -95,7 +120,7 @@ public:
   void dump_bb (FILE *f, basic_block bb);
   virtual void dump (FILE *f) override;
 private:
-  ssa_global_cache m_globals;
+  ssa_cache m_globals;
   block_range_cache m_on_entry;
   class temporal_cache *m_temporal;
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);

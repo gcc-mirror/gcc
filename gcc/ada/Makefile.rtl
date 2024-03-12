@@ -137,6 +137,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-coboho$(objext) \
   a-cobove$(objext) \
   a-cogeso$(objext) \
+  a-cohama$(objext) \
+  a-cohase$(objext) \
   a-cohata$(objext) \
   a-coinho$(objext) \
   a-coinve$(objext) \
@@ -478,7 +480,6 @@ GNATRTL_NONTASKING_OBJS= \
   g-speche$(objext) \
   g-spipat$(objext) \
   g-spitbo$(objext) \
-  g-spogwa$(objext) \
   g-sptabo$(objext) \
   g-sptain$(objext) \
   g-sptavs$(objext) \
@@ -773,6 +774,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-vallli$(objext) \
   s-valllu$(objext) \
   s-valrea$(objext) \
+  s-valspe$(objext) \
   s-valued$(objext) \
   s-valuef$(objext) \
   s-valuei$(objext) \
@@ -786,6 +788,10 @@ GNATRTL_NONTASKING_OBJS= \
   s-veboop$(objext) \
   s-vector$(objext) \
   s-vercon$(objext) \
+  s-vs_int$(objext) \
+  s-vs_lli$(objext) \
+  s-vs_llu$(objext) \
+  s-vs_uns$(objext) \
   s-wchcnv$(objext) \
   s-wchcon$(objext) \
   s-wchjis$(objext) \
@@ -856,7 +862,7 @@ GNATLIB_SHARED = gnatlib
 # to LIBGNAT_TARGET_PAIRS.
 
 GNATRTL_SOCKETS_OBJS = g-soccon$(objext) g-socket$(objext) g-socthi$(objext) \
-  g-soliop$(objext) g-sothco$(objext) g-socpol$(objext)
+  g-soliop$(objext) g-sothco$(objext) g-socpol$(objext) g-spogwa$(objext)
 
 DUMMY_SOCKETS_TARGET_PAIRS = \
   g-socket.adb<libgnat/g-socket__dummy.adb \
@@ -1031,6 +1037,8 @@ GNATRTL_128BIT_OBJS = \
   s-vafi128$(objext) \
   s-valllli$(objext) \
   s-vallllu$(objext) \
+  s-vsllli$(objext) \
+  s-vslllu$(objext) \
   s-widllli$(objext) \
   s-widlllu$(objext)
 
@@ -1412,6 +1420,7 @@ ifeq ($(strip $(filter-out arm aarch64 %qnx,$(target_cpu) $(target_os))),)
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
   g-soliop.ads<libgnat/g-soliop__qnx.ads \
+  s-parame.adb<libgnat/s-parame__qnx.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-qnx-arm.ads
@@ -2111,6 +2120,55 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
+# LoongArch Linux
+ifeq ($(strip $(filter-out loongarch% linux%,$(target_cpu) $(target_os))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-exetim.adb<libgnarl/a-exetim__posix.adb \
+  a-exetim.ads<libgnarl/a-exetim__default.ads \
+  a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
+  a-synbar.adb<libgnarl/a-synbar__posix.adb \
+  a-synbar.ads<libgnarl/a-synbar__posix.ads \
+  s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
+  s-intman.adb<libgnarl/s-intman__posix.adb \
+  s-linux.ads<libgnarl/s-linux__loongarch.ads \
+  s-mudido.adb<libgnarl/s-mudido__affinity.adb \
+  s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-osinte.adb<libgnarl/s-osinte__posix.adb \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
+  s-taprop.adb<libgnarl/s-taprop__linux.adb \
+  s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
+  s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
+  s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
+  s-taspri.ads<libgnarl/s-taspri__posix.ads \
+  g-sercom.adb<libgnat/g-sercom__linux.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
+  $(GNATRTL_128BIT_PAIRS) \
+  s-tsmona.adb<libgnat/s-tsmona__linux.adb \
+  $(ATOMICS_TARGET_PAIRS) \
+  $(ATOMICS_BUILTINS_TARGET_PAIRS) \
+  system.ads<libgnat/system-linux-loongarch.ads
+
+  TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
+
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+  EXTRA_GNATRTL_TASKING_OBJS = s-linux.o a-exetim.o
+
+  EH_MECHANISM = -gcc
+  THREADSLIB = -lpthread
+  MISCLIB = -ldl
+  GNATLIB_SHARED = gnatlib-shared-dual
+  GMEM_LIB = gmemlib
+  LIBRARY_VERSION := $(LIB_VERSION)
+  # Temporarily disable strict alignment -- for some reason, it causes
+  # infinite loops during stack unwinding (libgcc) and indefinite hang
+  # in some futex system calls.
+  GNATLIBCFLAGS += -mno-strict-align
+  GNATLIBCFLAGS_FOR_C += -mno-strict-align
+endif
+
+
 # Mips Linux
 ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
@@ -2185,6 +2243,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
       EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
     endif
   else
+    LIBGNAT_TARGET_PAIRS += s-atopri.ads<libgnat/s-atopri__32.ads
     ifeq ($(strip $(MULTISUBDIR)),/64)
       LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
       EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
@@ -2249,6 +2308,7 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux.ads \
   $(TRASYM_DWARF_UNIX_PAIRS) \
+  s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
@@ -2271,6 +2331,7 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   EH_MECHANISM=-gcc
   THREADSLIB=-lpthread -lrt
   GNATLIB_SHARED=gnatlib-shared-dual
+  MISCLIB = -ldl
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif

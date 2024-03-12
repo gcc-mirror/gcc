@@ -43,9 +43,9 @@ test02()
 // { dg-error "expected initializer" "" { target *-*-* } 35 }
 // { dg-error "expected initializer" "" { target *-*-* } 37 }
 // { dg-error "overflow in addition" "" { target *-*-* } 0 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 98 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 100 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 102 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 101 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 103 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 105 }
 // { dg-error "overflow in constant expression" "" { target *-*-* } 0 }
 // { dg-error "narrowing conversion" "" { target *-*-* } 0 }
 // { dg-prune-output "out of range" }

@@ -170,7 +170,8 @@ static pad_direction iq2000_function_arg_padding (machine_mode, const_tree);
 static unsigned int iq2000_function_arg_boundary (machine_mode,
 						  const_tree);
 static void iq2000_va_start	      (tree, rtx);
-static bool iq2000_legitimate_address_p (machine_mode, rtx, bool);
+static bool iq2000_legitimate_address_p (machine_mode, rtx, bool,
+					 code_helper = ERROR_MARK);
 static bool iq2000_can_eliminate      (const int, const int);
 static void iq2000_asm_trampoline_template (FILE *);
 static void iq2000_trampoline_init    (rtx, tree, rtx);
@@ -241,9 +242,6 @@ static HOST_WIDE_INT iq2000_starting_frame_offset (void);
 #undef	TARGET_EXPAND_BUILTIN_VA_START
 #define	TARGET_EXPAND_BUILTIN_VA_START	iq2000_va_start
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
-
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	iq2000_legitimate_address_p
 
@@ -307,7 +305,8 @@ iq2000_reg_mode_ok_for_base_p (rtx reg,
    function is called during reload.  */
 
 bool
-iq2000_legitimate_address_p (machine_mode mode, rtx xinsn, bool strict)
+iq2000_legitimate_address_p (machine_mode mode, rtx xinsn, bool strict,
+			     code_helper)
 {
   if (TARGET_DEBUG_A_MODE)
     {
@@ -1229,9 +1228,7 @@ iq2000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   int bias = 0;
   unsigned int *arg_words = &cum->arg_words;
   int struct_p = (type != 0
-		  && (TREE_CODE (type) == RECORD_TYPE
-		      || TREE_CODE (type) == UNION_TYPE
-		      || TREE_CODE (type) == QUAL_UNION_TYPE));
+		  && RECORD_OR_UNION_TYPE_P (type));
 
   if (TARGET_DEBUG_D_MODE)
     {
@@ -1307,7 +1304,7 @@ iq2000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
 	  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	    if (TREE_CODE (field) == FIELD_DECL
-		&& TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		&& SCALAR_FLOAT_TYPE_P (TREE_TYPE (field))
 		&& TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
 		&& tree_fits_shwi_p (bit_position (field))
 		&& int_bit_position (field) % BITS_PER_WORD == 0)
@@ -1349,7 +1346,7 @@ iq2000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
 		  if (field
 		      && int_bit_position (field) == bitpos
-		      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		      && SCALAR_FLOAT_TYPE_P (TREE_TYPE (field))
 		      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
 		    reg = gen_rtx_REG (DFmode, regno++);
 		  else

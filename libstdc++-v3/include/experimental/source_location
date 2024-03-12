@@ -44,12 +44,6 @@ inline namespace fundamentals_v2 {
 
   struct source_location
   {
-#ifndef _GLIBCXX_USE_C99_STDINT_TR1
-  private:
-    using uint_least32_t = unsigned;
-  public:
-#endif
-
     // 14.1.2, source_location creation
     static constexpr source_location
     current(const char* __file = __builtin_FILE(),

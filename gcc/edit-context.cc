@@ -122,6 +122,32 @@ class added_line
   int m_len;
 };
 
+/* Class for representing edit events that have occurred on one line of
+   one file: the replacement of some text betweeen some columns
+   on the line.
+
+   Subsequent events will need their columns adjusting if they're
+   are on this line and their column is >= the start point.  */
+
+class line_event
+{
+ public:
+  line_event (int start, int next, int len) : m_start (start),
+    m_delta (len - (next - start)) {}
+
+  int get_effective_column (int orig_column) const
+  {
+    if (orig_column >= m_start)
+      return orig_column += m_delta;
+    else
+      return orig_column;
+  }
+
+ private:
+  int m_start;
+  int m_delta;
+};
+
 /* The state of one edited line within an edited_file.
    As well as the current content of the line, it contains a record of
    the changes, so that further changes can be applied in the correct
@@ -170,32 +196,6 @@ class edited_line
   int m_alloc_sz;
   auto_vec <line_event> m_line_events;
   auto_vec <added_line *> m_predecessors;
-};
-
-/* Class for representing edit events that have occurred on one line of
-   one file: the replacement of some text betweeen some columns
-   on the line.
-
-   Subsequent events will need their columns adjusting if they're
-   are on this line and their column is >= the start point.  */
-
-class line_event
-{
- public:
-  line_event (int start, int next, int len) : m_start (start),
-    m_delta (len - (next - start)) {}
-
-  int get_effective_column (int orig_column) const
-  {
-    if (orig_column >= m_start)
-      return orig_column += m_delta;
-    else
-      return orig_column;
-  }
-
- private:
-  int m_start;
-  int m_delta;
 };
 
 /* Forward decls.  */

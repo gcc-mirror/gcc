@@ -53,6 +53,10 @@ import dmd.target;
 import dmd.utils;
 import dmd.visitor;
 
+version (IN_GCC) {}
+else version (IN_LLVM) {}
+else version = MARS;
+
 // function used to call semantic3 on a module's dependencies
 void semantic3OnDependencies(Module m)
 {
@@ -464,7 +468,8 @@ extern (C++) final class Module : Package
                  !FileName.equalsExt(srcfilename, dd_ext))
         {
 
-            error("source file name '%.*s' must have .%.*s extension",
+            error(loc, "%s `%s` source file name '%.*s' must have .%.*s extension",
+                  kind, toPrettyChars,
                   cast(int)srcfilename.length, srcfilename.ptr,
                   cast(int)mars_ext.length, mars_ext.ptr);
             fatal();
@@ -524,7 +529,7 @@ extern (C++) final class Module : Package
 
         if (!m.read(loc))
             return null;
-        if (global.params.verbose)
+        if (global.params.v.verbose)
         {
             OutBuffer buf;
             foreach (pid; packages)
@@ -589,7 +594,8 @@ extern (C++) final class Module : Package
         }
         if (FileName.equals(docfilename, srcfile.toString()))
         {
-            error("source file and output file have same name '%s'", srcfile.toChars());
+            error(loc, "%s `%s` source file and output file have same name '%s'",
+                kind, toPrettyChars, srcfile.toChars());
             fatal();
         }
         return FileName(docfilename);
@@ -615,9 +621,18 @@ extern (C++) final class Module : Package
         if (FileName.equals(srcfile.toString(), "object.d"))
         {
             .error(loc, "cannot find source code for runtime library file 'object.d'");
-            errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
-            const dmdConfFile = global.inifilename.length ? FileName.canonicalName(global.inifilename) : "not found";
-            errorSupplemental(loc, "config file: %.*s", cast(int)dmdConfFile.length, dmdConfFile.ptr);
+            version (IN_LLVM)
+            {
+                errorSupplemental(loc, "ldc2 might not be correctly installed.");
+                errorSupplemental(loc, "Please check your ldc2.conf configuration file.");
+                errorSupplemental(loc, "Installation instructions can be found at http://wiki.dlang.org/LDC.");
+            }
+            version (MARS)
+            {
+                errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
+                const dmdConfFile = global.inifilename.length ? FileName.canonicalName(global.inifilename) : "not found";
+                errorSupplemental(loc, "config file: %.*s", cast(int)dmdConfFile.length, dmdConfFile.ptr);
+            }
         }
         else if (FileName.ext(this.arg) || !loc.isValid())
         {
@@ -767,7 +782,9 @@ extern (C++) final class Module : Package
         {
             filetype = FileType.c;
 
-            scope p = new CParser!AST(this, buf, cast(bool) docfile, global.errorSink, target.c, &defines);
+            global.compileEnv.masm = target.os == Target.OS.Windows && !target.omfobj; // Microsoft inline assembler format
+            scope p = new CParser!AST(this, buf, cast(bool) docfile, global.errorSink, target.c, &defines, &global.compileEnv);
+            global.compileEnv.masm = false;
             p.nextToken();
             checkCompiledImport();
             members = p.parseModule();
@@ -776,7 +793,9 @@ extern (C++) final class Module : Package
         }
         else
         {
-            scope p = new Parser!AST(this, buf, cast(bool) docfile, global.errorSink);
+            const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+            scope p = new Parser!AST(this, buf, cast(bool) docfile, global.errorSink, &global.compileEnv, doUnittests);
+            p.transitionIn = global.params.v.vin;
             p.nextToken();
             p.parseModuleDeclaration();
             md = p.md;
@@ -835,7 +854,7 @@ extern (C++) final class Module : Package
             /* Check to see if module name is a valid identifier
              */
             if (!Identifier.isValidIdentifier(this.ident.toChars()))
-                error("has non-identifier characters in filename, use module declaration instead");
+                error(loc, "%s `%s` has non-identifier characters in filename, use module declaration instead", kind, toPrettyChars);
         }
         // Insert module into the symbol table
         Dsymbol s = this;
@@ -888,11 +907,11 @@ extern (C++) final class Module : Package
             if (Module mprev = prev.isModule())
             {
                 if (!FileName.equals(srcname, mprev.srcfile.toChars()))
-                    error(loc, "from file %s conflicts with another module %s from file %s", srcname, mprev.toChars(), mprev.srcfile.toChars());
+                    error(loc, "%s `%s` from file %s conflicts with another module %s from file %s", kind, toPrettyChars, srcname, mprev.toChars(), mprev.srcfile.toChars());
                 else if (isRoot() && mprev.isRoot())
-                    error(loc, "from file %s is specified twice on the command line", srcname);
+                    error(loc, "%s `%s` from file %s is specified twice on the command line", kind, toPrettyChars, srcname);
                 else
-                    error(loc, "from file %s must be imported with 'import %s;'", srcname, toPrettyChars());
+                    error(loc, "%s `%s` from file %s must be imported with 'import %s;'", kind, toPrettyChars, srcname, toPrettyChars());
                 // https://issues.dlang.org/show_bug.cgi?id=14446
                 // Return previously parsed module to avoid AST duplication ICE.
                 return mprev;
@@ -903,7 +922,7 @@ extern (C++) final class Module : Package
                 if (isPackageFile)
                     amodules.push(this); // Add to global array of all modules
                 else
-                    error(md ? md.loc : loc, "from file %s conflicts with package name %s", srcname, pkg.toChars());
+                    error(md ? md.loc : loc, "%s `%s` from file %s conflicts with package name %s", kind, toPrettyChars, srcname, pkg.toChars());
             }
             else
                 assert(global.errors);
@@ -924,7 +943,7 @@ extern (C++) final class Module : Package
             return; // already done
         if (filetype == FileType.ddoc)
         {
-            error("is a Ddoc file, cannot import it");
+            error(loc, "%s `%s` is a Ddoc file, cannot import it", kind, toPrettyChars);
             return;
         }
 
@@ -933,7 +952,7 @@ extern (C++) final class Module : Package
          * gets imported, it is unaffected by context.
          * Ignore prevsc.
          */
-        Scope* sc = Scope.createGlobal(this); // create root scope
+        Scope* sc = Scope.createGlobal(this, global.errorSink); // create root scope
 
         if (md && md.msg)
             md.msg = semanticString(sc, md.msg, "deprecation message");
@@ -1009,11 +1028,11 @@ extern (C++) final class Module : Package
                 const slice = se.peekString();
                 if (slice.length)
                 {
-                    deprecation(loc, "is deprecated - %.*s", cast(int)slice.length, slice.ptr);
+                    deprecation(loc, "%s `%s` is deprecated - %.*s", kind, toPrettyChars, cast(int)slice.length, slice.ptr);
                     return;
                 }
             }
-            deprecation(loc, "is deprecated");
+            deprecation(loc, "%s `%s` is deprecated", kind, toPrettyChars);
         }
     }
 
@@ -1229,8 +1248,7 @@ extern (C++) final class Module : Package
         return this.importedFrom == this;
     }
 
-    // true if the module source file is directly
-    // listed in command line.
+    /// Returns: Whether this module is in the `core` package and has name `ident`
     bool isCoreModule(Identifier ident) nothrow
     {
         return this.ident == ident && parent && parent.ident == Id.core && !parent.parent;
@@ -1239,7 +1257,7 @@ extern (C++) final class Module : Package
     // Back end
     int doppelganger; // sub-module
     Symbol* cov; // private uint[] __coverage;
-    uint* covb; // bit array of valid code line numbers
+    uint[] covb; // bit array of valid code line numbers
     Symbol* sictor; // module order independent constructor
     Symbol* sctor; // module constructor
     Symbol* sdtor; // module destructor
@@ -1287,6 +1305,20 @@ extern (C++) final class Module : Package
     }
 
     /****************************
+     * A Singleton that loads core.stdc.config
+     * Returns:
+     *  Module of core.stdc.config, null if couldn't find it
+     */
+    extern (D) static Module loadCoreStdcConfig()
+    {
+        __gshared Module core_stdc_config;
+        auto pkgids = new Identifier[2];
+        pkgids[0] = Id.core;
+        pkgids[1] = Id.stdc;
+        return loadModuleFromLibrary(core_stdc_config, pkgids, Id.config);
+    }
+
+    /****************************
      * A Singleton that loads core.atomic
      * Returns:
      *  Module of core.atomic, null if couldn't find it
@@ -1294,7 +1326,9 @@ extern (C++) final class Module : Package
     extern (D) static Module loadCoreAtomic()
     {
         __gshared Module core_atomic;
-        return loadModuleFromLibrary(core_atomic, Id.core, Id.atomic);
+        auto pkgids = new Identifier[1];
+        pkgids[0] = Id.core;
+        return loadModuleFromLibrary(core_atomic, pkgids, Id.atomic);
     }
 
     /****************************
@@ -1305,26 +1339,26 @@ extern (C++) final class Module : Package
     extern (D) static Module loadStdMath()
     {
         __gshared Module std_math;
-        return loadModuleFromLibrary(std_math, Id.std, Id.math);
+        auto pkgids = new Identifier[1];
+        pkgids[0] = Id.std;
+        return loadModuleFromLibrary(std_math, pkgids, Id.math);
     }
 
     /**********************************
      * Load a Module from the library.
      * Params:
      *  mod = cached return value of this call
-     *  pkgid = package id
+     *  pkgids = package identifiers
      *  modid = module id
      * Returns:
      *  Module loaded, null if cannot load it
      */
-    private static Module loadModuleFromLibrary(ref Module mod, Identifier pkgid, Identifier modid)
+    extern (D) private static Module loadModuleFromLibrary(ref Module mod, Identifier[] pkgids, Identifier modid)
     {
         if (mod)
             return mod;
 
-        auto ids = new Identifier[1];
-        ids[0] = pkgid;
-        auto imp = new Import(Loc.initial, ids[], modid, null, true);
+        auto imp = new Import(Loc.initial, pkgids[], modid, null, true);
         // Module.load will call fatal() if there's no module available.
         // Gag the error here, pushing the error handling to the caller.
         const errors = global.startGagging();
@@ -1350,7 +1384,7 @@ extern (C++) struct ModuleDeclaration
     bool isdeprecated;      // if it is a deprecated module
     Expression msg;
 
-    extern (D) this(const ref Loc loc, Identifier[] packages, Identifier id, Expression msg, bool isdeprecated)
+    extern (D) this(const ref Loc loc, Identifier[] packages, Identifier id, Expression msg, bool isdeprecated) @safe
     {
         this.loc = loc;
         this.packages = packages;
@@ -1359,7 +1393,7 @@ extern (C++) struct ModuleDeclaration
         this.isdeprecated = isdeprecated;
     }
 
-    extern (C++) const(char)* toChars() const
+    extern (C++) const(char)* toChars() const @safe
     {
         OutBuffer buf;
         foreach (pid; packages)
@@ -1447,7 +1481,8 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
 
         if (buf.length & 3)
         {
-            mod.error("odd length of UTF-32 char source %llu", cast(ulong) buf.length);
+            .error(mod.loc, "%s `%s` odd length of UTF-32 char source %llu",
+                mod.kind, mod.toPrettyChars, cast(ulong) buf.length);
             return null;
         }
 
@@ -1463,7 +1498,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
             {
                 if (u > 0x10FFFF)
                 {
-                    mod.error("UTF-32 value %08x greater than 0x10FFFF", u);
+                    .error(mod.loc, "%s `%s` UTF-32 value %08x greater than 0x10FFFF", mod.kind, mod.toPrettyChars, u);
                     return null;
                 }
                 dbuf.writeUTF8(u);
@@ -1493,7 +1528,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
 
         if (buf.length & 1)
         {
-            mod.error("odd length of UTF-16 char source %llu", cast(ulong) buf.length);
+            .error(mod.loc, "%s `%s` odd length of UTF-16 char source %llu", mod.kind, mod.toPrettyChars, cast(ulong) buf.length);
             return null;
         }
 
@@ -1513,13 +1548,13 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
                     i++;
                     if (i >= eBuf.length)
                     {
-                        mod.error("surrogate UTF-16 high value %04x at end of file", u);
+                        .error(mod.loc, "%s `%s` surrogate UTF-16 high value %04x at end of file", mod.kind, mod.toPrettyChars, u);
                         return null;
                     }
                     const u2 = readNext(&eBuf[i]);
                     if (u2 < 0xDC00 || 0xE000 <= u2)
                     {
-                        mod.error("surrogate UTF-16 low value %04x out of range", u2);
+                        .error(mod.loc, "%s `%s` surrogate UTF-16 low value %04x out of range", mod.kind, mod.toPrettyChars, u2);
                         return null;
                     }
                     u = (u - 0xD7C0) << 10;
@@ -1527,12 +1562,12 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
                 }
                 else if (u >= 0xDC00 && u <= 0xDFFF)
                 {
-                    mod.error("unpaired surrogate UTF-16 value %04x", u);
+                    .error(mod.loc, "%s `%s` unpaired surrogate UTF-16 value %04x", mod.kind, mod.toPrettyChars, u);
                     return null;
                 }
                 else if (u == 0xFFFE || u == 0xFFFF)
                 {
-                    mod.error("illegal UTF-16 value %04x", u);
+                    .error(mod.loc, "%s `%s` illegal UTF-16 value %04x", mod.kind, mod.toPrettyChars, u);
                     return null;
                 }
                 dbuf.writeUTF8(u);
@@ -1591,7 +1626,8 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
     // It's UTF-8
     if (buf[0] >= 0x80)
     {
-        mod.error("source file must start with BOM or ASCII character, not \\x%02X", buf[0]);
+        auto loc = mod.getLoc();
+        .error(loc, "%s `%s` source file must start with BOM or ASCII character, not \\x%02X", mod.kind, mod.toPrettyChars, buf[0]);
         return null;
     }
 

@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include "tree-vect.h"
 
 int a[35] = { 1, 1, 3 };
@@ -21,6 +19,7 @@ int main()
 {
   check_vect ();
   foo ();
+#pragma GCC novector
   for (int d = 0; d < 25; d++)
     if (a[d] != 0)
       __builtin_abort ();

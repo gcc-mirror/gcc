@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 /* { dg-do compile } */
 
 int
@@ -55,3 +56,4 @@ f6 (int *x, int a)
   x[a] += 1;
   return res;
 }
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

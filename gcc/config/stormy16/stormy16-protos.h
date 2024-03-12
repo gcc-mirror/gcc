@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-
+#include "tree.h"  /* For ERROR_MARK.  */
 
 extern struct xstormy16_stack_layout xstormy16_compute_stack_layout (void);
 extern void xstormy16_expand_prologue (void);
@@ -65,6 +65,7 @@ extern const char * xstormy16_output_shift (machine_mode, enum rtx_code,
 					    rtx, rtx, rtx);
 extern bool  xstormy16_below100_symbol (rtx, machine_mode);
 extern bool  xstormy16_splittable_below100_operand (rtx, machine_mode);
-extern bool xstormy16_legitimate_address_p (machine_mode, rtx, bool);
+extern bool xstormy16_legitimate_address_p (machine_mode, rtx, bool,
+					    code_helper = ERROR_MARK);
 #endif
 
