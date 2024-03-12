@@ -1783,8 +1783,8 @@ pointers on devices. They have C linkage and do not throw exceptions.
 * omp_target_is_present:: Check whether storage is mapped
 * omp_target_is_accessible:: Check whether memory is device accessible
 * omp_target_memcpy:: Copy data between devices
-* omp_target_memcpy_rect:: Copy a subvolume of data between devices
 * omp_target_memcpy_async:: Copy data between devices asynchronously
+* omp_target_memcpy_rect:: Copy a subvolume of data between devices
 * omp_target_memcpy_rect_async:: Copy a subvolume of data between devices asynchronously
 @c * omp_target_memset:: <fixme>/TR12
 @c * omp_target_memset_async:: <fixme>/TR12
