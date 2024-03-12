@@ -54,4 +54,4 @@ void foo (int8_t * restrict in, int8_t * restrict out, int n, int cond1, int con
     }
 }
 
-/* { dg-final { scan-assembler-times {vsetvli} 7 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli} 13 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */

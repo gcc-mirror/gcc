@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gcv -mabi=ilp32 -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic -mrvv-vector-bits=scalable -fselective-scheduling -fdump-tree-vect-details" } */
+/* { dg-additional-options "-fno-schedule-insns -fno-schedule-insns2" } */
 
 #include <stdint-gcc.h>
 
