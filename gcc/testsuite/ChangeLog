@@ -1,3 +1,13 @@
+2024-03-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2024-03-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105437
+	PR libfortran/114304
+	* gfortran.dg/pr105473.f90: Add additional checks to address
+	the case of semicolon at the end of a line.
+
 2024-03-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
