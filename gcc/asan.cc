@@ -1372,7 +1372,12 @@ has_stmt_been_instrumented_p (gimple *stmt)
 	  return true;
 	}
     }
-  else if (is_gimple_call (stmt) && gimple_store_p (stmt))
+  else if (is_gimple_call (stmt)
+	   && gimple_store_p (stmt)
+	   && (gimple_call_builtin_p (stmt)
+	       || gimple_call_internal_p (stmt)
+	       || !aggregate_value_p (TREE_TYPE (gimple_call_lhs (stmt)),
+				      gimple_call_fntype (stmt))))
     {
       asan_mem_ref r;
       asan_mem_ref_init (&r, NULL, 1);
@@ -2751,7 +2756,9 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     return;
 
   poly_int64 decl_size;
-  if ((VAR_P (inner) || TREE_CODE (inner) == RESULT_DECL)
+  if ((VAR_P (inner)
+       || (TREE_CODE (inner) == RESULT_DECL
+	   && !aggregate_value_p (inner, current_function_decl)))
       && offset == NULL_TREE
       && DECL_SIZE (inner)
       && poly_int_tree_p (DECL_SIZE (inner), &decl_size)
@@ -3023,7 +3030,11 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
     }
 
   bool instrumented = false;
-  if (gimple_store_p (stmt))
+  if (gimple_store_p (stmt)
+      && (gimple_call_builtin_p (stmt)
+	  || gimple_call_internal_p (stmt)
+	  || !aggregate_value_p (TREE_TYPE (gimple_call_lhs (stmt)),
+				 gimple_call_fntype (stmt))))
     {
       tree ref_expr = gimple_call_lhs (stmt);
       instrument_derefs (iter, ref_expr,
