@@ -7767,11 +7767,12 @@ gnat_to_gnu (Node_Id gnat_node)
 		gnu_result = build2 (INIT_EXPR, void_type_node,
 				     gnu_ret_deref, gnu_ret_val);
 		/* Avoid a useless copy with __builtin_return_slot.  */
-		if (INDIRECT_REF_P (gnu_ret_val))
+		tree gnu_inner_val = remove_conversions (gnu_ret_val, false);
+		if (INDIRECT_REF_P (gnu_inner_val))
 		  gnu_result
 		    = build3 (COND_EXPR, void_type_node,
 			      fold_build2 (NE_EXPR, boolean_type_node,
-					   TREE_OPERAND (gnu_ret_val, 0),
+					   TREE_OPERAND (gnu_inner_val, 0),
 					   gnu_ret_obj),
 			      gnu_result, NULL_TREE);
 		add_stmt_with_node (gnu_result, gnat_node);
