@@ -2341,6 +2341,8 @@ strlen_pass::handle_builtin_strlen ()
 		  wide_int min = wi::to_wide (old);
 		  wide_int max
 		    = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node)) - 2;
+		  if (wi::gtu_p (min, max))
+		    max = wi::to_wide (TYPE_MAX_VALUE (TREE_TYPE (lhs)));
 		  set_strlen_range (lhs, min, max);
 		}
 	      else
