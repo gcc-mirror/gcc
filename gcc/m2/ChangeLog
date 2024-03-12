@@ -1,3 +1,49 @@
+2024-03-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114295
+	* gm2-compiler/M2Batch.mod (MakeProgramSource): Call PutDeclared
+	if the module is known.
+	(MakeDefinitionSource): Ditto.
+	(MakeImplementationSource): Ditto.
+	* gm2-compiler/M2Comp.mod (ExamineHeader): New procedure.
+	(ExamineCompilationUnit): Rewrite.
+	(PeepInto): Rewrite.
+	* gm2-compiler/M2Error.mod (NewError): Remove default call to
+	GetTokenNo.
+	* gm2-compiler/M2Quads.mod (callRequestDependant): Push tokno with
+	Adr.
+	(BuildStringAdrParam): Ditto.
+	(doBuildBinaryOp): Push OperatorPos on the bool stack.
+	(BuildRelOp): Ditto.
+	* gm2-compiler/P2Build.bnf (SetType): Pass set token pos to
+	BuildSetType.
+	(PointerType): Pass pointer token pos to BuildPointerType.
+	* gm2-compiler/P2SymBuild.def (BuildPointerType): Add parameter
+	pointerpos.
+	(BuildSetType): Add parameter setpos.
+	* gm2-compiler/P2SymBuild.mod (BuildPointerType): Add parameter
+	pointerpos.  Build combined token and use it when creating a
+	pointer type.
+	(BuildSetType): Add parameter setpos.  Build combined token and
+	use it when creating a set type.
+	* gm2-compiler/SymbolTable.mod (DebugUnknownToken): New constant.
+	(CheckTok): New procedure function.
+	(MakeProcedure): Call CheckTok.
+	(MakeRecord): Ditto.
+	(MakeVarient): Ditto.
+	(MakeEnumeration): Ditto.
+	(MakeHiddenType): Ditto.
+	(MakeConstant): Ditto.
+	(MakeConstStringCnul): Ditto.
+	(MakeSubrange): Ditto.
+	(MakeTemporary): Ditto.
+	(MakeVariableForParam): Ditto.
+	(MakeParameterHeapVar): Ditto.
+	(MakePointer): Ditto.
+	(MakeSet): Ditto.
+	(MakeUnbounded): Ditto.
+	(MakeProcType): Ditto.
+
 2024-03-08  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2Quads.mod (Init): Use InitIndexTuned with

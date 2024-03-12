@@ -1,3 +1,60 @@
+2024-03-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105437
+	PR libfortran/114304
+	* gfortran.dg/pr105473.f90: Add additional checks to address
+	the case of semicolon at the end of a line.
+
+2024-03-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR testsuite/113428
+	* gcc.dg/gomp/bad-array-section-c-3.c: Use signed char instead
+	of int.
+
+2024-03-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/98238
+	* gcc.dg/vect/vect-cost-model-1.c (scan-tree-dump): Also require
+	vect_hw_misalign.
+	* gcc.dg/vect/vect-cost-model-3.c: Likewise.
+	* gcc.dg/vect/vect-cost-model-5.c: Likewise.
+
+2024-03-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/114071
+	PR tree-optimization/113557
+	PR testsuite/96109
+	* gcc.dg/vect/pr37027.c: Require vect_perm.
+	* gcc.dg/vect/pr67790.c: Likewise.
+	* gcc.dg/vect/slp-reduc-1.c: Likewise.
+	* gcc.dg/vect/slp-reduc-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-7.c: Likewise.
+	* gcc.dg/vect/slp-reduc-8.c: Likewise.
+	* gcc.dg/vect/vect-multi-peel-gaps.c (scan-tree-dump): Also
+	require vect_perm.
+	* gcc.dg/vect/slp-47.c: Require vect_perm.
+	* gcc.dg/vect/slp-48.c: Likewise.
+
+2024-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114299
+	* gcc.target/i386/pr114299.c: New testcase.
+
+2024-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114278
+	* gcc.dg/bitint-99.c: New test.
+
+2024-03-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-20.c: New test.
+	* gcc.dg/sso-21.c: Likewise.
+
+2024-03-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/95351
+	* gcc.dg/float_opposite_arm-1.c: New test.
+
 2024-03-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/112285

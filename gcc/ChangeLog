@@ -1,3 +1,68 @@
+2024-03-11  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64.md: Rename aarch_ to aarch64_.
+	* config/aarch64/aarch64.opt: Likewise.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_expand_prologue): Likewise.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_post_cfi_startproc): Likewise.
+	(aarch64_handle_no_branch_protection): Copy and rename.
+	(aarch64_handle_standard_branch_protection): Likewise.
+	(aarch64_handle_pac_ret_protection): Likewise.
+	(aarch64_handle_pac_ret_leaf): Likewise.
+	(aarch64_handle_pac_ret_b_key): Likewise.
+	(aarch64_handle_bti_protection): Likewise.
+	(aarch64_override_options): Update branch protection validation.
+	(aarch64_handle_attr_branch_protection): Likewise.
+	* config/arm/aarch-common-protos.h (aarch_validate_mbranch_protection):
+	Pass branch protection type description as argument.
+	(struct aarch_branch_protect_type): Move from aarch-common.h.
+	* config/arm/aarch-common.cc (aarch_handle_no_branch_protection):
+	Remove.
+	(aarch_handle_standard_branch_protection): Remove.
+	(aarch_handle_pac_ret_protection): Remove.
+	(aarch_handle_pac_ret_leaf): Remove.
+	(aarch_handle_pac_ret_b_key): Remove.
+	(aarch_handle_bti_protection): Remove.
+	(aarch_validate_mbranch_protection): Pass branch protection type
+	description as argument.
+	* config/arm/aarch-common.h (enum aarch_key_type): Remove.
+	(struct aarch_branch_protect_type): Remove.
+	* config/arm/arm-c.cc (arm_cpu_builtins): Remove aarch_ra_sign_key.
+	* config/arm/arm.cc (arm_handle_no_branch_protection): Copy and rename.
+	(arm_handle_standard_branch_protection): Likewise.
+	(arm_handle_pac_ret_protection): Likewise.
+	(arm_handle_pac_ret_leaf): Likewise.
+	(arm_handle_bti_protection): Likewise.
+	(arm_configure_build_target): Update branch protection validation.
+	* config/arm/arm.opt: Remove aarch_ra_sign_key.
+
+2024-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114299
+	* gimplify.cc (internal_get_tmp_var): When gimplification
+	of VAL failed, return a decl.
+
+2024-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114278
+	* tree-ssa.cc (maybe_optimize_var): If large/huge _BitInt vars are no
+	longer addressable, set DECL_NOT_GIMPLE_REG_P on them.
+
+2024-03-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/113519
+	PR debug/113777
+	* dwarf2out.cc (gen_enumeration_type_die): In the reverse case,
+	generate the DIE with the same parent as in the regular case.
+
+2024-03-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/95351
+	* fold-const.cc (merge_truthop_with_opposite_arm): Use
+	the type of the operands of the comparison and not the type
+	of the comparison.
+
 2024-03-10  jlaw  <jeffreyalaw@gmail.com>
 
 	PR tree-optimization/110199
