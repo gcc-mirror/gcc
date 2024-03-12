@@ -2182,7 +2182,7 @@ Common Var(flag_move_loop_stores) Optimization
 Move stores out of loops.
 
 fmultiflags
-Common Driver
+Common Driver RejectNegative
 Building block for specs-based multilib-aware TFLAGS.
 
 fdce
