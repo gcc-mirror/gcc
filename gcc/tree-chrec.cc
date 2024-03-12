@@ -251,23 +251,27 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	  return chrec_fold_plus_poly_poly (code, type, op0, op1);
 
 	CASE_CONVERT:
-	  {
-	    /* We can strip sign-conversions to signed by performing the
-	       operation in unsigned.  */
-	    tree optype = TREE_TYPE (TREE_OPERAND (op1, 0));
-	    if (INTEGRAL_TYPE_P (type)
-		&& INTEGRAL_TYPE_P (optype)
-		&& tree_nop_conversion_p (type, optype)
-		&& TYPE_UNSIGNED (optype))
-	      return chrec_convert (type,
-				    chrec_fold_plus_1 (code, optype,
-						       chrec_convert (optype,
-								      op0, NULL),
-						       TREE_OPERAND (op1, 0)),
-				    NULL);
-	    if (tree_contains_chrecs (op1, NULL))
+	  if (tree_contains_chrecs (op1, NULL))
+	    {
+	      /* We can strip sign-conversions to signed by performing the
+		 operation in unsigned.  */
+	      tree optype = TREE_TYPE (TREE_OPERAND (op1, 0));
+	      if (INTEGRAL_TYPE_P (type)
+		  && INTEGRAL_TYPE_P (optype)
+		  && tree_nop_conversion_p (type, optype)
+		  && TYPE_UNSIGNED (optype))
+		{
+		  tree tem = chrec_convert (optype, op0, NULL);
+		  if (TREE_CODE (tem) == POLYNOMIAL_CHREC)
+		    return chrec_convert (type,
+					  chrec_fold_plus_1 (code, optype,
+							     tem,
+							     TREE_OPERAND
+							       (op1, 0)),
+					  NULL);
+		}
 	      return chrec_dont_know;
-	  }
+	    }
 	  /* FALLTHRU */
 
 	default:
@@ -284,26 +288,27 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	}
 
     CASE_CONVERT:
-      {
-	/* We can strip sign-conversions to signed by performing the
-	   operation in unsigned.  */
-	tree optype = TREE_TYPE (TREE_OPERAND (op0, 0));
-	if (INTEGRAL_TYPE_P (type)
-	    && INTEGRAL_TYPE_P (optype)
-	    && tree_nop_conversion_p (type, optype)
-	    && TYPE_UNSIGNED (optype))
-	  return chrec_convert (type,
-				chrec_fold_plus_1 (code, optype,
-						   TREE_OPERAND (op0, 0),
-						   chrec_convert (optype,
-								  op1, NULL)),
-				NULL);
-	if (tree_contains_chrecs (op0, NULL))
+      if (tree_contains_chrecs (op0, NULL))
+	{
+	  /* We can strip sign-conversions to signed by performing the
+	     operation in unsigned.  */
+	  tree optype = TREE_TYPE (TREE_OPERAND (op0, 0));
+	  if (INTEGRAL_TYPE_P (type)
+	      && INTEGRAL_TYPE_P (optype)
+	      && tree_nop_conversion_p (type, optype)
+	      && TYPE_UNSIGNED (optype))
+	    return chrec_convert (type,
+				  chrec_fold_plus_1 (code, optype,
+						     TREE_OPERAND (op0, 0),
+						     chrec_convert (optype,
+								    op1, NULL)),
+				  NULL);
 	  return chrec_dont_know;
-      }
+	}
       /* FALLTHRU */
 
     default:
+      gcc_checking_assert (!tree_contains_chrecs (op0, NULL));
       switch (TREE_CODE (op1))
 	{
 	case POLYNOMIAL_CHREC:
@@ -325,24 +330,24 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 				    : build_int_cst_type (type, -1)));
 
 	CASE_CONVERT:
-	  {
-	    /* We can strip sign-conversions to signed by performing the
-	       operation in unsigned.  */
-	    tree optype = TREE_TYPE (TREE_OPERAND (op1, 0));
-	    if (INTEGRAL_TYPE_P (type)
-		&& INTEGRAL_TYPE_P (optype)
-		&& tree_nop_conversion_p (type, optype)
-		&& TYPE_UNSIGNED (optype))
-	      return chrec_convert (type,
-				    chrec_fold_plus_1 (code, optype,
-						       chrec_convert (optype,
-								      op0, NULL),
-						       TREE_OPERAND (op1, 0)),
-				    NULL);
-	  }
-
 	  if (tree_contains_chrecs (op1, NULL))
-	    return chrec_dont_know;
+	    {
+	      /* We can strip sign-conversions to signed by performing the
+		 operation in unsigned.  */
+	      tree optype = TREE_TYPE (TREE_OPERAND (op1, 0));
+	      if (INTEGRAL_TYPE_P (type)
+		  && INTEGRAL_TYPE_P (optype)
+		  && tree_nop_conversion_p (type, optype)
+		  && TYPE_UNSIGNED (optype))
+		return chrec_convert (type,
+				      chrec_fold_plus_1 (code, optype,
+							 chrec_convert (optype,
+									op0,
+									NULL),
+							 TREE_OPERAND (op1, 0)),
+				      NULL);
+	      return chrec_dont_know;
+	    }
 	  /* FALLTHRU */
 
 	default:
@@ -440,24 +445,26 @@ chrec_fold_multiply (tree type,
 	  return chrec_fold_multiply_poly_poly (type, op0, op1);
 
 	CASE_CONVERT:
-	  {
-	    /* We can strip sign-conversions to signed by performing the
-	       operation in unsigned.  */
-	    tree optype = TREE_TYPE (TREE_OPERAND (op1, 0));
-	    if (INTEGRAL_TYPE_P (type)
-		&& INTEGRAL_TYPE_P (optype)
-		&& tree_nop_conversion_p (type, optype)
-		&& TYPE_UNSIGNED (optype))
-	      return chrec_convert (type,
-				    chrec_fold_multiply (optype,
-							 chrec_convert (optype,
-									op0, NULL),
-							 TREE_OPERAND (op1, 0)),
-				    NULL);
-	  }
-
 	  if (tree_contains_chrecs (op1, NULL))
-	    return chrec_dont_know;
+	    {
+	      /* We can strip sign-conversions to signed by performing the
+		 operation in unsigned.  */
+	      tree optype = TREE_TYPE (TREE_OPERAND (op1, 0));
+	      if (INTEGRAL_TYPE_P (type)
+		  && INTEGRAL_TYPE_P (optype)
+		  && tree_nop_conversion_p (type, optype)
+		  && TYPE_UNSIGNED (optype))
+		{
+		  tree tem = chrec_convert (optype, op0, NULL);
+		  if (TREE_CODE (tem) == POLYNOMIAL_CHREC)
+		    return chrec_convert (type,
+					  chrec_fold_multiply (optype, tem,
+							       TREE_OPERAND
+								 (op1, 0)),
+					  NULL);
+		}
+	      return chrec_dont_know;
+	    }
 	  /* FALLTHRU */
 
 	default:
@@ -506,27 +513,28 @@ chrec_fold_multiply (tree type,
 	}
 
     CASE_CONVERT:
-      {
-	/* We can strip sign-conversions to signed by performing the
-	   operation in unsigned.  */
-	tree optype = TREE_TYPE (TREE_OPERAND (op0, 0));
-	if (INTEGRAL_TYPE_P (type)
-	    && INTEGRAL_TYPE_P (optype)
-	    && tree_nop_conversion_p (type, optype)
-	    && TYPE_UNSIGNED (optype))
-	  return chrec_convert (type,
-				chrec_fold_multiply (optype,
-						     TREE_OPERAND (op0, 0),
-						     chrec_convert (optype,
-								    op1, NULL)),
-				NULL);
-      }
-
       if (tree_contains_chrecs (op0, NULL))
-	return chrec_dont_know;
+	{
+	  /* We can strip sign-conversions to signed by performing the
+	     operation in unsigned.  */
+	  tree optype = TREE_TYPE (TREE_OPERAND (op0, 0));
+	  if (INTEGRAL_TYPE_P (type)
+	      && INTEGRAL_TYPE_P (optype)
+	      && tree_nop_conversion_p (type, optype)
+	      && TYPE_UNSIGNED (optype))
+	    return chrec_convert (type,
+				  chrec_fold_multiply (optype,
+						       TREE_OPERAND (op0, 0),
+						       chrec_convert (optype,
+								      op1,
+								      NULL)),
+				  NULL);
+	  return chrec_dont_know;
+	}
       /* FALLTHRU */
 
     default:
+      gcc_checking_assert (!tree_contains_chrecs (op0, NULL));
       if (integer_onep (op0))
 	return op1;
 
@@ -540,7 +548,7 @@ chrec_fold_multiply (tree type,
 
 	CASE_CONVERT:
 	  if (tree_contains_chrecs (op1, NULL))
-	    return chrec_dont_know;
+	    return chrec_fold_multiply (type, op1, op0);
 	  /* FALLTHRU */
 
 	default:
