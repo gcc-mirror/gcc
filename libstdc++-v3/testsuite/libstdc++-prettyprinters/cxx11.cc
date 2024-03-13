@@ -63,6 +63,11 @@ struct datum
 
 std::unique_ptr<datum> global;
 
+struct custom_cat : std::error_category {
+  const char* name() const noexcept { return "miaow"; }
+  std::string message(int) const { return ""; }
+};
+
 int
 main()
 {
@@ -179,10 +184,7 @@ main()
   std::error_condition ecinval = std::make_error_condition(std::errc::invalid_argument);
   // { dg-final { note-test ecinval {std::error_condition = {"generic": EINVAL}} } }
 
-  struct custom_cat : std::error_category {
-    const char* name() const noexcept { return "miaow"; }
-    std::string message(int) const { return ""; }
-  } cat;
+  custom_cat cat;
   std::error_code emiaow(42, cat);
   // { dg-final { note-test emiaow {std::error_code = {custom_cat: 42}} } }
   std::error_condition ecmiaow(42, cat);
