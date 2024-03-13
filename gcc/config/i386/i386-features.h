@@ -147,6 +147,7 @@ class scalar_chain
   bitmap defs;
   /* Registers used in both vector and sclar modes.  */
   bitmap defs_conv;
+  auto_vec<rtx_insn *> control_flow_insns;
 
   void build (bitmap candidates, unsigned insn_uid);
   virtual int compute_convert_gain () = 0;
