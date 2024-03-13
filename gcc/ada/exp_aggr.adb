@@ -6693,9 +6693,9 @@ package body Exp_Aggr is
 
             --  If one or more of the associations is one of the iterated
             --  forms, and is either an association with nonstatic bounds
-            --  or is an iterator over an iterable object, then treat the
-            --  whole container aggregate as having a nonstatic number of
-            --  elements.
+            --  or is an iterator over an iterable object where the size
+            --  cannot be derived, then treat the whole container aggregate as
+            --  having a nonstatic number of elements.
 
             declare
                Has_Nonstatic_Length : Boolean := False;
@@ -6725,37 +6725,43 @@ package body Exp_Aggr is
             Comp := First (Component_Associations (N));
 
             while Present (Comp) loop
-               Choice := First (Choice_List (Comp));
+               if Present (Choice_List (Comp)) then
+                  Choice := First (Choice_List (Comp));
 
-               while Present (Choice) loop
-                  Analyze (Choice);
+                  while Present (Choice) loop
+                     Analyze (Choice);
 
-                  if Nkind (Choice) = N_Range then
-                     Lo := Low_Bound (Choice);
-                     Hi := High_Bound (Choice);
-                     Add_Range_Size;
+                     if Nkind (Choice) = N_Range then
+                        Lo := Low_Bound (Choice);
+                        Hi := High_Bound (Choice);
+                        Add_Range_Size;
 
-                  elsif Is_Entity_Name (Choice)
-                    and then Is_Type (Entity (Choice))
-                  then
-                     Lo := Type_Low_Bound (Entity (Choice));
-                     Hi := Type_High_Bound (Entity (Choice));
-                     Add_Range_Size;
+                     elsif Is_Entity_Name (Choice)
+                       and then Is_Type (Entity (Choice))
+                     then
+                        Lo := Type_Low_Bound (Entity (Choice));
+                        Hi := Type_High_Bound (Entity (Choice));
+                        Add_Range_Size;
 
-                     Rewrite (Choice,
-                       Make_Range (Loc,
-                         New_Copy_Tree (Lo),
-                         New_Copy_Tree (Hi)));
+                        Rewrite (Choice,
+                          Make_Range (Loc,
+                            New_Copy_Tree (Lo),
+                            New_Copy_Tree (Hi)));
 
-                  else
-                     --  Single choice (syntax excludes a subtype
-                     --  indication).
+                     else
+                        --  Single choice (syntax excludes a subtype
+                        --  indication).
 
-                     Siz := Siz + 1;
-                  end if;
+                        Siz := Siz + 1;
+                     end if;
 
-                  Next (Choice);
-               end loop;
+                     Next (Choice);
+                  end loop;
+
+               elsif Nkind (Comp) = N_Iterated_Component_Association then
+
+                  Siz := Siz + Build_Siz_Exp (Comp);
+               end if;
                Next (Comp);
             end loop;
          end if;
@@ -6770,6 +6776,7 @@ package body Exp_Aggr is
       function Build_Siz_Exp (Comp : Node_Id) return Int is
          Lo, Hi       : Node_Id;
          Temp_Siz_Exp : Node_Id;
+         It           : Node_Id;
 
       begin
          if Nkind (Comp) = N_Range then
@@ -6835,8 +6842,28 @@ package body Exp_Aggr is
             end if;
 
          elsif Nkind (Comp) = N_Iterated_Component_Association then
-            return Build_Siz_Exp (First (Discrete_Choices (Comp)));
+            if Present (Iterator_Specification (Comp)) then
 
+               --  If the static size of the iterable object is known,
+               --  attempt to return it.
+
+               It := Name (Iterator_Specification (Comp));
+               Preanalyze (It);
+
+               --  Handle the simplest cases for now where It denotes a
+               --  top-level one-dimensional array objects".
+
+               if Nkind (It) in N_Identifier
+                 and then Ekind (Etype (It)) = E_Array_Subtype
+                 and then No (Next_Index (First_Index (Etype (It))))
+               then
+                  return Build_Siz_Exp (First_Index (Etype (It)));
+               end if;
+
+               return -1;
+            else
+               return Build_Siz_Exp (First (Discrete_Choices (Comp)));
+            end if;
          elsif Nkind (Comp) = N_Iterated_Element_Association then
             return -1;
 
