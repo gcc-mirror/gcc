@@ -3051,7 +3051,10 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
 	return false;
       case 64:
 	if (builtin_decl_explicit_p (BUILT_IN_BSWAP64)
-	    && optab_handler (bswap_optab, DImode) != CODE_FOR_nothing)
+	    && (optab_handler (bswap_optab, DImode) != CODE_FOR_nothing
+		|| (word_mode == SImode
+		    && builtin_decl_explicit_p (BUILT_IN_BSWAP32)
+		    && optab_handler (bswap_optab, SImode) != CODE_FOR_nothing)))
 	  break;
 	return false;
       default:
