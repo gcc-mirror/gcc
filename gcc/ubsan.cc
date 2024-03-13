@@ -1458,7 +1458,7 @@ instrument_mem_ref (tree mem, tree base, gimple_stmt_iterator *iter,
   tree alignt = build_int_cst (pointer_sized_int_node, align);
   gcall *g = gimple_build_call_internal (IFN_UBSAN_NULL, 3, t, kind, alignt);
   gimple_set_location (g, gimple_location (gsi_stmt (*iter)));
-  gsi_insert_before (iter, g, GSI_SAME_STMT);
+  gsi_safe_insert_before (iter, g);
 }
 
 /* Perform the pointer instrumentation.  */
@@ -1485,7 +1485,7 @@ instrument_pointer_overflow (gimple_stmt_iterator *gsi, tree ptr, tree off)
     return;
   gcall *g = gimple_build_call_internal (IFN_UBSAN_PTR, 2, ptr, off);
   gimple_set_location (g, gimple_location (gsi_stmt (*gsi)));
-  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  gsi_safe_insert_before (gsi, g);
 }
 
 /* Instrument pointer arithmetics if any.  */
@@ -1577,10 +1577,11 @@ maybe_instrument_pointer_overflow (gimple_stmt_iterator *gsi, tree t)
       else
 	t = fold_convert (sizetype, moff);
     }
-  t = force_gimple_operand_gsi (gsi, t, true, NULL_TREE, true,
-				GSI_SAME_STMT);
-  base_addr = force_gimple_operand_gsi (gsi, base_addr, true, NULL_TREE, true,
-					GSI_SAME_STMT);
+  gimple_seq seq, this_seq;
+  t = force_gimple_operand (t, &seq, true, NULL_TREE);
+  base_addr = force_gimple_operand (base_addr, &this_seq, true, NULL_TREE);
+  gimple_seq_add_seq_without_update (&seq, this_seq);
+  gsi_safe_insert_seq_before (gsi, seq);
   instrument_pointer_overflow (gsi, base_addr, t);
 }
 
@@ -2035,7 +2036,7 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
 	    {
 	      g = gimple_build_assign (make_ssa_name (TREE_TYPE (arg)), arg);
 	      gimple_set_location (g, loc[0]);
-	      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	      gsi_safe_insert_before (gsi, g);
 	      arg = gimple_assign_lhs (g);
 	    }
 
@@ -2068,7 +2069,7 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
 	      g = gimple_build_call (fn, 1, data);
 	    }
 	  gimple_set_location (g, loc[0]);
-	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  gsi_safe_insert_before (gsi, g);
 	  ubsan_create_edge (g);
 	}
       *gsi = gsi_for_stmt (stmt);
@@ -2124,7 +2125,7 @@ instrument_nonnull_return (gimple_stmt_iterator *gsi)
 	  g = gimple_build_call (fn, 2, data, data2);
 	}
       gimple_set_location (g, loc[0]);
-      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      gsi_safe_insert_before (gsi, g);
       ubsan_create_edge (g);
       *gsi = gsi_for_stmt (stmt);
     }
@@ -2231,6 +2232,7 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
   tree sizet;
   tree base_addr = base;
   gimple *bos_stmt = NULL;
+  gimple_seq seq = NULL;
   if (decl_p)
     base_addr = build1 (ADDR_EXPR,
 			build_pointer_type (TREE_TYPE (base)), base);
@@ -2244,19 +2246,12 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
       sizet = builtin_decl_explicit (BUILT_IN_DYNAMIC_OBJECT_SIZE);
       sizet = build_call_expr_loc (loc, sizet, 2, base_addr,
 				   integer_zero_node);
-      sizet = force_gimple_operand_gsi (gsi, sizet, false, NULL_TREE, true,
-					GSI_SAME_STMT);
+      sizet = force_gimple_operand (sizet, &seq, false, NULL_TREE);
       /* If the call above didn't end up being an integer constant, go one
 	 statement back and get the __builtin_object_size stmt.  Save it,
 	 we might need it later.  */
       if (SSA_VAR_P (sizet))
-	{
-	  gsi_prev (gsi);
-	  bos_stmt = gsi_stmt (*gsi);
-
-	  /* Move on to where we were.  */
-	  gsi_next (gsi);
-	}
+	bos_stmt = gsi_stmt (gsi_last (seq));
     }
   else
     return;
@@ -2298,21 +2293,24 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
       && !TREE_ADDRESSABLE (base))
     mark_addressable (base);
 
+  /* We have to emit the check.  */
+  gimple_seq this_seq;
+  t = force_gimple_operand (t, &this_seq, true, NULL_TREE);
+  gimple_seq_add_seq_without_update (&seq, this_seq);
+  ptr = force_gimple_operand (ptr, &this_seq, true, NULL_TREE);
+  gimple_seq_add_seq_without_update (&seq, this_seq);
+  gsi_safe_insert_seq_before (gsi, seq);
+
   if (bos_stmt
       && gimple_call_builtin_p (bos_stmt, BUILT_IN_DYNAMIC_OBJECT_SIZE))
     ubsan_create_edge (bos_stmt);
 
-  /* We have to emit the check.  */
-  t = force_gimple_operand_gsi (gsi, t, true, NULL_TREE, true,
-				GSI_SAME_STMT);
-  ptr = force_gimple_operand_gsi (gsi, ptr, true, NULL_TREE, true,
-				  GSI_SAME_STMT);
   tree ckind = build_int_cst (unsigned_char_type_node,
 			      is_lhs ? UBSAN_STORE_OF : UBSAN_LOAD_OF);
   gimple *g = gimple_build_call_internal (IFN_UBSAN_OBJECT_SIZE, 4,
 					 ptr, t, sizet, ckind);
   gimple_set_location (g, loc);
-  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  gsi_safe_insert_before (gsi, g);
 }
 
 /* Instrument values passed to builtin functions.  */
