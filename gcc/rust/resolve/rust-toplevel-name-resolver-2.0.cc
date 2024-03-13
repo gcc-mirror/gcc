@@ -499,7 +499,7 @@ TopLevel::handle_use_dec (AST::SimplePath path)
 	  auto result = node_forwarding.find (def.get_node_id ());
 	  if (result != node_forwarding.cend ()
 	      && result->second != path.get_node_id ())
-	    rust_error_at (path.get_locus (), "%<%s%> defined multiple times",
+	    rust_error_at (path.get_locus (), "%qs defined multiple times",
 			   declared_name.c_str ());
 	  else // No previous thing has inserted this into our scope
 	    node_forwarding.insert ({def.get_node_id (), path.get_node_id ()});
