@@ -1047,7 +1047,9 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
       if (r.varying_p () && !cfun->after_inlining)
 	{
 	  gimple *s = SSA_NAME_DEF_STMT (name);
-	  if (gimple_get_lhs (s) == name)
+	  // Do not process PHIs as SCEV may be in use and it can
+	  // spawn cyclic lookups.
+	  if (gimple_get_lhs (s) == name && !is_a<gphi *> (s))
 	    {
 	      if (!fold_range (r, s, get_global_range_query ()))
 		gimple_range_global (r, name);
@@ -1413,7 +1415,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 
   // At this point we shouldn't be looking at the def, entry block.
   gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  gcc_checking_assert (m_workback.length () == 0);
+  unsigned start_length = m_workback.length ();
 
   // If the block cache is set, then we've already visited this block.
   if (m_on_entry.bb_range_p (name, bb))
@@ -1500,7 +1502,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	}
 
       m_on_entry.set_bb_range (name, bb, block_result);
-      gcc_checking_assert (m_workback.length () == 0);
+      gcc_checking_assert (m_workback.length () == start_length);
       return;
     }
 
@@ -1512,7 +1514,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   m_on_entry.set_bb_range (name, bb, undefined);
   gcc_checking_assert (m_update->empty_p ());
 
-  while (m_workback.length () > 0)
+  while (m_workback.length () > start_length)
     {
       basic_block node = m_workback.pop ();
       if (DEBUG_RANGE_CACHE)
