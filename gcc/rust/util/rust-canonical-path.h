@@ -51,6 +51,7 @@ public:
   CanonicalPath &operator= (const CanonicalPath &other)
   {
     segs = other.segs;
+    crate_num = other.crate_num;
     return *this;
   }
 
