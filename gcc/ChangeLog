@@ -1,3 +1,21 @@
+2024-03-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-03-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/95351
+	* fold-const.cc (merge_truthop_with_opposite_arm): Use
+	the type of the operands of the comparison and not the type
+	of the comparison.
+
+2024-03-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-03-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR driver/114314
+	* common.opt (fmultiflags): Add RejectNegative.
+
 2024-03-09  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

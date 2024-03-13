@@ -1,3 +1,144 @@
+2024-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (__get_leap_second_info): Update expiry
+	time for hardcoded list of leap seconds.
+	* testsuite/std/time/tzdb/leap_seconds.cc: Update comment.
+
+2024-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (basic_format_arg::handle::__maybe_const_t):
+	Fix condition to check if const type is formattable.
+	(basic_format_arg::handle::handle(T&)): Remove redundant
+	static_assert.
+	* testsuite/std/format/formatter/basic.cc: New test.
+
+2024-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono): Always use
+	lvalue arguments to make_format_args.
+	* include/std/format (make_format_args): Change parameter pack
+	from forwarding references to lvalue references. Remove use of
+	remove_reference_t which is now unnecessary.
+	(format_to, formatted_size): Remove incorrect forwarding of
+	arguments.
+	* testsuite/20_util/duration/io.cc: Use lvalues as arguments to
+	make_format_args.
+	* testsuite/std/format/arguments/args.cc: Likewise.
+	* testsuite/std/format/arguments/lwg3810.cc: Likewise.
+	* testsuite/std/format/functions/format.cc: Likewise.
+	* testsuite/std/format/functions/vformat_to.cc: Likewise.
+	* testsuite/std/format/string.cc: Likewise.
+	* testsuite/std/time/day/io.cc: Likewise.
+	* testsuite/std/time/month/io.cc: Likewise.
+	* testsuite/std/time/weekday/io.cc: Likewise.
+	* testsuite/std/time/year/io.cc: Likewise.
+	* testsuite/std/time/year_month_day/io.cc: Likewise.
+	* testsuite/std/format/arguments/args_neg.cc: New test.
+
+2024-03-12  Cassio Neri  <cassio.neri@gmail.com>
+
+	Backported from master:
+	2024-01-05  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono: Fix + and - for months and weekdays.
+	* testsuite/std/time/month/1.cc: Add constexpr tests against overflow.
+	* testsuite/std/time/month/2.cc: New test for extreme values.
+	* testsuite/std/time/weekday/1.cc: Add constexpr tests against overflow.
+	* testsuite/std/time/weekday/2.cc: New test for extreme values.
+
+2024-03-12  Cassio Neri  <cassio.neri@gmail.com>
+
+	Backported from master:
+	2023-11-14  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono (operator-(const weekday&, const weekday&)):
+	Optimize.
+
+2024-03-12  Cassio Neri  <cassio.neri@gmail.com>
+
+	Backported from master:
+	2023-11-14  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono (year::is_leap): Clear code.
+
+2024-03-12  Cassio Neri  <cassio.neri@gmail.com>
+
+	Backported from master:
+	2023-11-14  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono (year_month_day_last::day): Remove &1.
+
+2024-03-12  Cassio Neri  <cassio.neri@gmail.com>
+
+	Backported from master:
+	2023-11-14  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono (weekday::_S_from_days): Fix UB.
+	* testsuite/std/time/weekday/1.cc: Add test for overflow.
+
+2024-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (span, as_bytes, as_writable_bytes): Add
+	[[nodiscard]] attribute on all non-void functions.
+	* testsuite/23_containers/span/back_assert_neg.cc: Suppress
+	nodiscard warning.
+	* testsuite/23_containers/span/back_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_2_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_3_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_4_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_5_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_6_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_neg.cc: Likewise.
+	* testsuite/23_containers/span/nodiscard.cc: New test.
+
+2024-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/list.tcc (list::sort(Cmp)): Fix -Wsign-compare
+	warning for loop condition.
+
+2024-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110167
+	* include/std/array (to_array): Initialize arrays of trivial
+	types using memcpy. For non-trivial types, use lambda
+	expressions instead of a separate helper function.
+	(__to_array): Remove.
+	* testsuite/23_containers/array/creation/110167.cc: New test.
+
 2024-03-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
