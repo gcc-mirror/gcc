@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 --param=riscv-autovec-lmul=dynamic -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -mrvv-max-lmul=dynamic -fno-schedule-insns -fno-schedule-insns2" } */
 
 #include <stdint-gcc.h>
 

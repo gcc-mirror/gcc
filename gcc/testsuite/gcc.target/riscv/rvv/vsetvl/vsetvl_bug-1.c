@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mrvv-vector-bits=scalable -march=rv64gcv_zvl256b -mabi=lp64 --param=riscv-autovec-lmul=m8 -mrvv-vector-bits=zvl -O2" } */
+/* { dg-options "-mrvv-vector-bits=scalable -march=rv64gcv_zvl256b -mabi=lp64 -mrvv-max-lmul=m8 -mrvv-vector-bits=zvl -O2" } */
 
 struct a_struct
 {

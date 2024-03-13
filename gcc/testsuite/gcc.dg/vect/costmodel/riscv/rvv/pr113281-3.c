@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl4096b -mabi=lp64d -O3 -ftree-vectorize --param=riscv-autovec-lmul=m8" } */
+/* { dg-options "-march=rv64gcv_zvl4096b -mabi=lp64d -O3 -ftree-vectorize -mrvv-max-lmul=m8" } */
 
 unsigned char a;
 

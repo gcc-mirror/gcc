@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O2 --param=riscv-autovec-lmul=m8 -fno-vect-cost-model" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O2 -mrvv-max-lmul=m8 -fno-vect-cost-model" } */
 
 int a, b, d, e;
 short c;

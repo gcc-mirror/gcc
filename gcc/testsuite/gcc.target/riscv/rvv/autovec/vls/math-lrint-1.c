@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv_zvfh_zvl4096b -mabi=ilp32f -O3 --param=riscv-autovec-lmul=m8 -ffast-math -fdump-tree-optimized" } */
+/* { dg-options "-march=rv32gcv_zvfh_zvl4096b -mabi=ilp32f -O3 -mrvv-max-lmul=m8 -ffast-math -fdump-tree-optimized" } */
 
 #include "def.h"
 

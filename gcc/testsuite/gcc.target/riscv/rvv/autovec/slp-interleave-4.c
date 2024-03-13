@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zve32f_zvl1024b -mabi=lp64d -fno-vect-cost-model --param=riscv-autovec-lmul=m8 -O3 -fdump-tree-optimized-details" } */
+/* { dg-options "-march=rv64gc_zve32f_zvl1024b -mabi=lp64d -fno-vect-cost-model -mrvv-max-lmul=m8 -O3 -fdump-tree-optimized-details" } */
 
 struct S { int a, b; } s[8];
 

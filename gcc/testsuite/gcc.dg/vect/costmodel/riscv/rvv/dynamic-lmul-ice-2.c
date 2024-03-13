@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32 -Ofast -ftree-vectorize --param riscv-autovec-lmul=dynamic" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32 -Ofast -ftree-vectorize -mrvv-max-lmul=dynamic" } */
 
 typedef struct rtx_def *rtx;
 struct replacement {

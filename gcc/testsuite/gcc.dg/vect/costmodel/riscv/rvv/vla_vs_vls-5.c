@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 --param=riscv-autovec-lmul=dynamic" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -mrvv-max-lmul=dynamic" } */
 
 void
 foo (int *__restrict a, int *__restrict b, int *__restrict c)

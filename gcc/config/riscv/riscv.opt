@@ -531,27 +531,27 @@ Target RejectNegative Joined UInteger Var(riscv_strcmp_inline_limit) Init(64)
 Max number of bytes to compare as part of inlined strcmp/strncmp routines (default: 64).
 
 Enum
-Name(riscv_autovec_lmul) Type(enum riscv_autovec_lmul_enum)
-The RVV possible LMUL (-param=riscv-autovec-lmul=):
+Name(rvv_max_lmul) Type(enum rvv_max_lmul_enum)
+The RVV possible LMUL (-mrvv-max-lmul=):
 
 EnumValue
-Enum(riscv_autovec_lmul) String(m1) Value(RVV_M1)
+Enum(rvv_max_lmul) String(m1) Value(RVV_M1)
 
 EnumValue
-Enum(riscv_autovec_lmul) String(m2) Value(RVV_M2)
+Enum(rvv_max_lmul) String(m2) Value(RVV_M2)
 
 EnumValue
-Enum(riscv_autovec_lmul) String(m4) Value(RVV_M4)
+Enum(rvv_max_lmul) String(m4) Value(RVV_M4)
 
 EnumValue
-Enum(riscv_autovec_lmul) String(m8) Value(RVV_M8)
+Enum(rvv_max_lmul) String(m8) Value(RVV_M8)
 
 EnumValue
-Enum(riscv_autovec_lmul) String(dynamic) Value(RVV_DYNAMIC)
+Enum(rvv_max_lmul) String(dynamic) Value(RVV_DYNAMIC)
 
--param=riscv-autovec-lmul=
-Target RejectNegative Joined Enum(riscv_autovec_lmul) Var(riscv_autovec_lmul) Init(RVV_M1)
--param=riscv-autovec-lmul=<string>	Set the RVV LMUL of auto-vectorization in the RISC-V port.
+mrvv-max-lmul=
+Target RejectNegative Joined Enum(rvv_max_lmul) Var(rvv_max_lmul) Init(RVV_M1)
+-mrvv-max-lmul=<string>	Set the RVV LMUL of auto-vectorization.
 
 madjust-lmul-cost
 Target Var(TARGET_ADJUST_LMUL_COST) Init(0)

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv_zvfh_zfh_zvl512b -mabi=ilp32d -O3 --param=riscv-autovec-lmul=m8 -O3 -fno-vect-cost-model -ffast-math" } */
+/* { dg-options "-march=rv32gcv_zvfh_zfh_zvl512b -mabi=ilp32d -O3 -mrvv-max-lmul=m8 -O3 -fno-vect-cost-model -ffast-math" } */
 
 #include <stdint-gcc.h>
 #define TEST_UNARY_CALL_CVT(TYPE_IN, TYPE_OUT, CALL) \

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 --param=riscv-autovec-lmul=dynamic -fdump-tree-optimized-details" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -mrvv-max-lmul=dynamic -fdump-tree-optimized-details" } */
 
 #include "macro.h"
 

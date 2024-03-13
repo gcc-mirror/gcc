@@ -2338,7 +2338,7 @@ preferred_simd_mode (scalar_mode mode)
   if (autovec_use_vlmax_p ())
     {
       /* We use LMUL = 1 as base bytesize which is BYTES_PER_RISCV_VECTOR and
-	 riscv_autovec_lmul as multiply factor to calculate the the NUNITS to
+	 rvv_max_lmul as multiply factor to calculate the NUNITS to
 	 get the auto-vectorization mode.  */
       poly_uint64 nunits;
       poly_uint64 vector_size = BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL;

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zve32f -mabi=lp64d -O2 --param=riscv-autovec-lmul=m4 -mrvv-vector-bits=zvl" } */
+/* { dg-options "-march=rv64gc_zve32f -mabi=lp64d -O2 -mrvv-max-lmul=m4 -mrvv-vector-bits=zvl" } */
 
 typedef unsigned char u8;
 

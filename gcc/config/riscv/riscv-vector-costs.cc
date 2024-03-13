@@ -890,7 +890,7 @@ costs::record_potential_unexpected_spills (loop_vec_info loop_vinfo)
 {
   /* We only want to apply the heuristic if LOOP_VINFO is being
      vectorized for VLA and known NITERS VLS loop.  */
-  if (riscv_autovec_lmul == RVV_DYNAMIC
+  if (rvv_max_lmul == RVV_DYNAMIC
       && (m_cost_type == VLA_VECTOR_COST
 	  || (m_cost_type == VLS_VECTOR_COST
 	      && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))))
@@ -998,7 +998,7 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 	  return other_prefer_unrolled;
 	}
     }
-  else if (riscv_autovec_lmul == RVV_DYNAMIC)
+  else if (rvv_max_lmul == RVV_DYNAMIC)
     {
       if (other->m_has_unexpected_spills_p)
 	{

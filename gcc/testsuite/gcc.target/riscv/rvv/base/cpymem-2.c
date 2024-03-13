@@ -16,7 +16,7 @@ typedef struct { short s; char c[30]; } s16;
 */
 
 /*
-** f1: { target {  { any-opts "-mrvv-vector-bits=zvl" } && { no-opts "-march=rv64gcv_zvl1024b" "-march=rv64gcv_zvl256b" "-march=rv64gcv_zvl512b --param=riscv-autovec-lmul=dynamic" } } }
+** f1: { target {  { any-opts "-mrvv-vector-bits=zvl" } && { no-opts "-march=rv64gcv_zvl1024b" "-march=rv64gcv_zvl256b" "-march=rv64gcv_zvl512b -mrvv-max-lmul=dynamic" } } }
 **	vl1re8.v\s+v1,0\(a1\)
 **	vs1r.v\s+v1,0\(a0\)
 **	ret
@@ -37,7 +37,7 @@ void f1 (c16 *a, c16* b)
 */
 
 /*
-** f2: { target {  { any-opts "-mrvv-vector-bits=zvl" } && { no-opts "-march=rv64gcv_zvl1024b" "-march=rv64gcv_zvl256b" "-march=rv64gcv_zvl512b --param=riscv-autovec-lmul=dynamic" } } }
+** f2: { target {  { any-opts "-mrvv-vector-bits=zvl" } && { no-opts "-march=rv64gcv_zvl1024b" "-march=rv64gcv_zvl256b" "-march=rv64gcv_zvl512b -mrvv-max-lmul=dynamic" } } }
 **	vl2re8.v\s+v2,0\(a1\)
 **	vs2r.v\s+v2,0\(a0\)
 **	ret
@@ -57,7 +57,7 @@ void f2 (c32 *a, c32* b)
 */
 
 /*
-** f3: { target {  { any-opts "-mrvv-vector-bits=zvl" } && { no-opts "-march=rv64gcv_zvl1024b" "-march=rv64gcv_zvl256b" "-march=rv64gcv_zvl512b --param=riscv-autovec-lmul=dynamic" } } }
+** f3: { target {  { any-opts "-mrvv-vector-bits=zvl" } && { no-opts "-march=rv64gcv_zvl1024b" "-march=rv64gcv_zvl256b" "-march=rv64gcv_zvl512b -mrvv-max-lmul=dynamic" } } }
 **	vl2re16.v\s+v2,0\(a1\)
 **	vs2r.v\s+v2,0\(a0\)
 **	ret
