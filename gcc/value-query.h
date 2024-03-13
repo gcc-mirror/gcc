@@ -60,6 +60,8 @@ public:
   virtual tree value_of_expr (tree expr, gimple * = NULL);
   virtual tree value_on_edge (edge, tree expr);
   virtual tree value_of_stmt (gimple *, tree name = NULL);
+  virtual tree value_on_entry (basic_block, tree expr);
+  virtual tree value_on_exit (basic_block, tree expr);
 
   // These are the range equivalents of the value_* methods.  Instead
   // of returning a singleton, they calculate a range and return it in
@@ -70,6 +72,8 @@ public:
   virtual bool range_of_expr (vrange &r, tree expr, gimple * = NULL) = 0;
   virtual bool range_on_edge (vrange &r, edge, tree expr);
   virtual bool range_of_stmt (vrange &r, gimple *, tree name = NULL);
+  virtual bool range_on_entry (vrange &r, basic_block bb, tree expr);
+  virtual bool range_on_exit (vrange &r, basic_block bb, tree expr);
 
   // Query if there is any relation between SSA1 and SSA2.
   relation_kind query_relation (gimple *s, tree ssa1, tree ssa2,
@@ -82,7 +86,10 @@ public:
   virtual void dump (FILE *);
 
 protected:
-  bool get_tree_range (vrange &v, tree expr, gimple *stmt);
+  bool get_tree_range (vrange &v, tree expr, gimple *stmt,
+		       basic_block bbentry = NULL, basic_block bbexit = NULL);
+  bool invoke_range_of_expr (vrange &v, tree expr, gimple *stmt,
+			     basic_block bbentry, basic_block bbexit);
   bool get_arith_expr_range (vrange &r, tree expr, gimple *stmt);
   relation_oracle *m_oracle;
 };

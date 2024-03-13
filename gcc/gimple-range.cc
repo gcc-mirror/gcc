@@ -152,11 +152,13 @@ gimple_ranger::range_of_expr (vrange &r, tree expr, gimple *stmt)
 
 // Return the range of NAME on entry to block BB in R.
 
-void
+bool
 gimple_ranger::range_on_entry (vrange &r, basic_block bb, tree name)
 {
+  if (!gimple_range_ssa_p (name))
+    return get_tree_range (r, name, NULL, bb, NULL);
+
   Value_Range entry_range (TREE_TYPE (name));
-  gcc_checking_assert (gimple_range_ssa_p (name));
 
   unsigned idx;
   if ((idx = tracer.header ("range_on_entry (")))
@@ -174,16 +176,17 @@ gimple_ranger::range_on_entry (vrange &r, basic_block bb, tree name)
 
   if (idx)
     tracer.trailer (idx, "range_on_entry", true, name, r);
+  return true;
 }
 
 // Calculate the range for NAME at the end of block BB and return it in R.
 // Return false if no range can be calculated.
 
-void
+bool
 gimple_ranger::range_on_exit (vrange &r, basic_block bb, tree name)
 {
-  // on-exit from the exit block?
-  gcc_checking_assert (gimple_range_ssa_p (name));
+  if (!gimple_range_ssa_p (name))
+    return get_tree_range (r, name, NULL, NULL, bb);
 
   unsigned idx;
   if ((idx = tracer.header ("range_on_exit (")))
@@ -208,6 +211,7 @@ gimple_ranger::range_on_exit (vrange &r, basic_block bb, tree name)
   
   if (idx)
     tracer.trailer (idx, "range_on_exit", true, name, r);
+  return true;
 }
 
 // Calculate a range for NAME on edge E and return it in R.

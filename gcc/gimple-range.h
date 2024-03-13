@@ -52,8 +52,8 @@ public:
   virtual bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   virtual bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
   virtual bool range_on_edge (vrange &r, edge e, tree name) override;
-  void range_on_entry (vrange &r, basic_block bb, tree name);
-  void range_on_exit (vrange &r, basic_block bb, tree name);
+  virtual bool range_on_entry (vrange &r, basic_block bb, tree name) override;
+  virtual bool range_on_exit (vrange &r, basic_block bb, tree name) override;
   void export_global_ranges ();
   inline gori_compute &gori ()  { return m_cache.m_gori; }
   virtual void dump (FILE *f) override;
