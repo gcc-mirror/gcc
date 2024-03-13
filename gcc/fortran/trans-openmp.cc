@@ -343,6 +343,15 @@ gfc_omp_predetermined_mapping (tree decl)
 	    && GFC_DECL_SAVED_DESCRIPTOR (decl)))
     return OMP_CLAUSE_DEFAULTMAP_TO;
 
+  /* Dummy procedures aren't considered variables by OpenMP, thus are
+     disallowed in OpenMP clauses.  They are represented as PARM_DECLs
+     in the middle-end, so return OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE here
+     to avoid complaining about their uses with defaultmap(none).  */
+  if (TREE_CODE (decl) == PARM_DECL
+      && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == FUNCTION_TYPE)
+    return OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE;
+
   /* These are either array or derived parameters, or vtables.  */
   if (VAR_P (decl) && TREE_READONLY (decl)
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
