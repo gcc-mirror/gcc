@@ -507,6 +507,7 @@ static const int cond_expr_maps[3][5] = {
   { 4, -2, -1, 1, 2 },
   { 4, -1, -2, 2, 1 }
 };
+static const int no_arg_map[] = { 0 };
 static const int arg0_map[] = { 1, 0 };
 static const int arg1_map[] = { 1, 1 };
 static const int arg2_map[] = { 1, 2 };
@@ -586,6 +587,9 @@ vect_get_operand_map (const gimple *stmt, bool gather_scatter_p = false,
 	  case IFN_CLZ:
 	  case IFN_CTZ:
 	    return arg0_map;
+
+	  case IFN_GOMP_SIMD_LANE:
+	    return no_arg_map;
 
 	  default:
 	    break;
@@ -1175,6 +1179,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      ldst_p = true;
 	      rhs_code = CFN_MASK_STORE;
 	    }
+	  else if (cfn == CFN_GOMP_SIMD_LANE)
+	    ;
 	  else if ((cfn != CFN_LAST
 		    && cfn != CFN_MASK_CALL
 		    && internal_fn_p (cfn)
@@ -1269,6 +1275,11 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		}
 	    }
 	  else if (rhs_code == CFN_DIV_POW2)
+	    {
+	      need_same_oprnds = true;
+	      first_op1 = gimple_call_arg (call_stmt, 1);
+	    }
+	  else if (rhs_code == CFN_GOMP_SIMD_LANE)
 	    {
 	      need_same_oprnds = true;
 	      first_op1 = gimple_call_arg (call_stmt, 1);

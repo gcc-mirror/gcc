@@ -3392,7 +3392,7 @@ vectorizable_call (vec_info *vinfo,
   if (ifn == IFN_LAST && !fndecl)
     {
       if (cfn == CFN_GOMP_SIMD_LANE
-	  && !slp_node
+	  && (!slp_node || SLP_TREE_LANES (slp_node) == 1)
 	  && loop_vinfo
 	  && LOOP_VINFO_LOOP (loop_vinfo)->simduid
 	  && TREE_CODE (gimple_call_arg (stmt, 0)) == SSA_NAME
@@ -3538,8 +3538,30 @@ vectorizable_call (vec_info *vinfo,
 	  /* Build argument list for the vectorized call.  */
 	  if (slp_node)
 	    {
-	      vec<tree> vec_oprnds0;
+	      if (cfn == CFN_GOMP_SIMD_LANE)
+		{
+		  for (i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node); ++i)
+		    {
+		      /* ???  For multi-lane SLP we'd need to build
+			 { 0, 0, .., 1, 1, ... }.  */
+		      tree cst = build_index_vector (vectype_out,
+						     i * nunits_out, 1);
+		      tree new_var
+			  = vect_get_new_ssa_name (vectype_out, vect_simple_var,
+						   "cst_");
+		      gimple *init_stmt = gimple_build_assign (new_var, cst);
+		      vect_init_vector_1 (vinfo, stmt_info, init_stmt, NULL);
+		      new_temp = make_ssa_name (vec_dest);
+		      gimple *new_stmt
+			= gimple_build_assign (new_temp, new_var);
+		      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt,
+						   gsi);
+		      slp_node->push_vec_def (new_stmt);
+		    }
+		  continue;
+		}
 
+	      vec<tree> vec_oprnds0;
 	      vect_get_slp_defs (vinfo, slp_node, &vec_defs);
 	      vec_oprnds0 = vec_defs[0];
 
