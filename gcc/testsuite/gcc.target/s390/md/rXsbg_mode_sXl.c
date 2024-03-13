@@ -22,6 +22,8 @@
     { dg-skip-if "" { *-*-* } { "*" } { "-march=*" } }
 */
 
+unsigned int a, b;
+
 __attribute__ ((noinline)) unsigned int
 si_sll (unsigned int x)
 {
@@ -42,11 +44,11 @@ rosbg_si_sll (unsigned int a, unsigned int b)
 /* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,32,62,1" 1 } } */
 
 __attribute__ ((noinline)) unsigned int
-rosbg_si_srl (unsigned int a, unsigned int b)
+rosbg_si_srl (void)
 {
   return a | (b >> 2);
 }
-/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,32,63,62" 1 } } */
+/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,34,63,62" 1 } } */
 
 __attribute__ ((noinline)) unsigned int
 rxsbg_si_sll (unsigned int a, unsigned int b)
@@ -56,11 +58,11 @@ rxsbg_si_sll (unsigned int a, unsigned int b)
 /* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,32,62,1" 1 } } */
 
 __attribute__ ((noinline)) unsigned int
-rxsbg_si_srl (unsigned int a, unsigned int b)
+rxsbg_si_srl (void)
 {
   return a ^ (b >> 2);
 }
-/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,32,63,62" 1 } } */
+/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,34,63,62" 1 } } */
 
 __attribute__ ((noinline)) unsigned long long
 di_sll (unsigned long long x)
@@ -108,21 +110,21 @@ main (void)
   /* SIMode */
   {
     unsigned int r;
-    unsigned int a = 0x12488421u;
-    unsigned int b = 0x88881111u;
+    a = 0x12488421u;
+    b = 0x88881111u;
     unsigned int csll = si_sll (b);
     unsigned int csrl = si_srl (b);
 
     r = rosbg_si_sll (a, b);
     if (r != (a | csll))
       __builtin_abort ();
-    r = rosbg_si_srl (a, b);
+    r = rosbg_si_srl ();
     if (r != (a | csrl))
       __builtin_abort ();
     r = rxsbg_si_sll (a, b);
     if (r != (a ^ csll))
       __builtin_abort ();
-    r = rxsbg_si_srl (a, b);
+    r = rxsbg_si_srl ();
     if (r != (a ^ csrl))
       __builtin_abort ();
   }
