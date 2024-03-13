@@ -61,7 +61,7 @@ static inline enum obj_type obj_type(const enum obj_type *t)
 }
 static inline struct connection *__objt_conn(enum obj_type *t)
 {
- return ((struct connection *)(((char *)(t)) - ((long)&((struct connection *)0)->obj_type)));
+ return ((struct connection *)(((char *)(t)) - ((long)&((struct connection *)0)->obj_type))); /* { dg-bogus "may result in an unaligned pointer value" "Fixed in r14-6517-gb7e4a4c626e" { target short_enums } } */
 }
 static inline struct connection *objt_conn(enum obj_type *t)
 {
