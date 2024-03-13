@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-ssa.h"
 #include "value-prof.h"
+#include "gimplify.h"
 
 
 /* Mark the statement STMT as modified, and update it.  */
@@ -942,4 +943,138 @@ gsi_start_phis (basic_block bb)
   i.bb = i.ptr ? gimple_bb (i.ptr) : NULL;
 
   return i;
+}
+
+/* Helper function for gsi_safe_insert_before and gsi_safe_insert_seq_before.
+   Find edge to insert statements before returns_twice call at the start of BB,
+   if there isn't just one, split the bb and adjust PHIs to ensure that.  */
+
+static edge
+edge_before_returns_twice_call (basic_block bb)
+{
+  gimple_stmt_iterator gsi = gsi_start_nondebug_bb (bb);
+  gcc_checking_assert (is_gimple_call (gsi_stmt (gsi))
+		       && (gimple_call_flags (gsi_stmt (gsi))
+			   & ECF_RETURNS_TWICE) != 0);
+  edge_iterator ei;
+  edge e, ad_edge = NULL, other_edge = NULL;
+  bool split = false;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if ((e->flags & (EDGE_ABNORMAL | EDGE_EH)) == EDGE_ABNORMAL)
+	{
+	  gimple_stmt_iterator gsi
+	    = gsi_start_nondebug_after_labels_bb (e->src);
+	  gimple *ad = gsi_stmt (gsi);
+	  if (ad && gimple_call_internal_p (ad, IFN_ABNORMAL_DISPATCHER))
+	    {
+	      gcc_checking_assert (ad_edge == NULL);
+	      ad_edge = e;
+	      continue;
+	    }
+	}
+      if (other_edge || e->flags & (EDGE_ABNORMAL | EDGE_EH))
+	split = true;
+      other_edge = e;
+    }
+  gcc_checking_assert (ad_edge);
+  if (other_edge == NULL)
+    split = true;
+  if (split)
+    {
+      other_edge = split_block_after_labels (bb);
+      e = make_edge (ad_edge->src, other_edge->dest, EDGE_ABNORMAL);
+      for (gphi_iterator gsi = gsi_start_phis (other_edge->src);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  tree lhs = gimple_phi_result (phi);
+	  tree new_lhs = copy_ssa_name (lhs);
+	  gimple_phi_set_result (phi, new_lhs);
+	  gphi *new_phi = create_phi_node (lhs, other_edge->dest);
+	  add_phi_arg (new_phi, new_lhs, other_edge, UNKNOWN_LOCATION);
+	  add_phi_arg (new_phi, PHI_ARG_DEF_FROM_EDGE (phi, ad_edge),
+		       e, gimple_phi_arg_location_from_edge (phi, ad_edge));
+	}
+      remove_edge (ad_edge);
+    }
+  return other_edge;
+}
+
+/* Helper function for gsi_safe_insert_before and gsi_safe_insert_seq_before.
+   Replace SSA_NAME uses in G if they are PHI results of PHIs on E->dest
+   bb with the corresponding PHI argument from E edge.  */
+
+static void
+adjust_before_returns_twice_call (edge e, gimple *g)
+{
+  use_operand_p use_p;
+  ssa_op_iter iter;
+  bool m = false;
+  FOR_EACH_SSA_USE_OPERAND (use_p, g, iter, SSA_OP_USE)
+    {
+      tree s = USE_FROM_PTR (use_p);
+      if (SSA_NAME_DEF_STMT (s)
+	  && gimple_code (SSA_NAME_DEF_STMT (s)) == GIMPLE_PHI
+	  && gimple_bb (SSA_NAME_DEF_STMT (s)) == e->dest)
+	{
+	  tree r = PHI_ARG_DEF_FROM_EDGE (SSA_NAME_DEF_STMT (s), e);
+	  SET_USE (use_p, unshare_expr (r));
+	  m = true;
+	}
+    }
+  if (m)
+    update_stmt (g);
+}
+
+/* Insert G stmt before ITER and keep ITER pointing to the same statement
+   as before.  If ITER is a returns_twice call, insert it on an appropriate
+   edge instead.  */
+
+void
+gsi_safe_insert_before (gimple_stmt_iterator *iter, gimple *g)
+{
+  gimple *stmt = gsi_stmt (*iter);
+  if (stmt
+      && is_gimple_call (stmt)
+      && (gimple_call_flags (stmt) & ECF_RETURNS_TWICE) != 0)
+    {
+      edge e = edge_before_returns_twice_call (gsi_bb (*iter));
+      basic_block new_bb = gsi_insert_on_edge_immediate (e, g);
+      if (new_bb)
+	e = single_succ_edge (new_bb);
+      adjust_before_returns_twice_call (e, g);
+    }
+  else
+    gsi_insert_before (iter, g, GSI_SAME_STMT);
+}
+
+/* Similarly for sequence SEQ.  */
+
+void
+gsi_safe_insert_seq_before (gimple_stmt_iterator *iter, gimple_seq seq)
+{
+  if (gimple_seq_empty_p (seq))
+    return;
+  gimple *stmt = gsi_stmt (*iter);
+  if (stmt
+      && is_gimple_call (stmt)
+      && (gimple_call_flags (stmt) & ECF_RETURNS_TWICE) != 0)
+    {
+      edge e = edge_before_returns_twice_call (gsi_bb (*iter));
+      gimple *f = gimple_seq_first_stmt (seq);
+      gimple *l = gimple_seq_last_stmt (seq);
+      basic_block new_bb = gsi_insert_seq_on_edge_immediate (e, seq);
+      if (new_bb)
+	e = single_succ_edge (new_bb);
+      for (gimple_stmt_iterator gsi = gsi_for_stmt (f); ; gsi_next (&gsi))
+	{
+	  gimple *g = gsi_stmt (gsi);
+	  adjust_before_returns_twice_call (e, g);
+	  if (g == l)
+	    break;
+	}
+    }
+  else
+    gsi_insert_seq_before (iter, seq, GSI_SAME_STMT);
 }
