@@ -102,7 +102,15 @@ gimple_ranger::range_of_expr (vrange &r, tree expr, gimple *stmt)
   if (!stmt)
     {
       Value_Range tmp (TREE_TYPE (expr));
-      m_cache.get_global_range (r, expr);
+      // If there is no global range for EXPR yet, try to evaluate it.
+      // This call sets R to a global range regardless.
+      if (!m_cache.get_global_range (r, expr))
+	{
+	  gimple *s = SSA_NAME_DEF_STMT (expr);
+	  // Calculate a range for S if it is safe to do so.
+	  if (s && gimple_bb (s) && gimple_get_lhs (s) == expr)
+	    return range_of_stmt (r, s);
+	}
       // Pick up implied context information from the on-entry cache
       // if current_bb is set.  Do not attempt any new calculations.
       if (current_bb && m_cache.block_range (tmp, current_bb, expr, false))
