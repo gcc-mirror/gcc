@@ -1,3 +1,10 @@
+2024-03-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110826
+	* array.cc (gfc_array_dimen_size): When walking the ref chain of an
+	array and the ultimate component is a procedure pointer, do not try
+	to figure out its dimension even if it is a array-valued function.
+
 2024-03-06  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103707

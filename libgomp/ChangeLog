@@ -1,3 +1,8 @@
+2024-03-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (Device Memory Routines): Swap item order to match
+	the order of the '@node's of the '@subsection's.
+
 2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* plugin/plugin-gcn.c (GOMP_OFFLOAD_can_run): Don't consider

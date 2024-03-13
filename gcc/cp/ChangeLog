@@ -1,3 +1,18 @@
+2024-03-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98645
+	PR c++/98688
+	PR c++/111224
+	* module.cc (enum tree_tag): Add new tag for builtin types.
+	(trees_out::start): POLY_INT_CSTs can be emitted.
+	(trees_in::start): Likewise.
+	(trees_out::core_vals): Stream POLY_INT_CSTs.
+	(trees_in::core_vals): Likewise.
+	(trees_out::type_node): Handle vectors with multiple coeffs.
+	(trees_in::tree_node): Likewise.
+	(init_modules): Register target-specific builtin types. Bump
+	initial capacity slightly.
+
 2024-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* pt.cc (tsubst_expr): Handle MEM_REF.

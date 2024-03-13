@@ -1,3 +1,44 @@
+2024-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114121
+	* tree-chrec.cc (chrec_fold_plus_1): Guard recursion with
+	converted operand properly.
+	(chrec_fold_multiply): Likewise.  Handle missed recursion.
+
+2024-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112709
+	* asan.cc (has_stmt_been_instrumented_p): Don't instrument call
+	stores on the caller side unless it is a call to a builtin or
+	internal function or function doesn't return by hidden reference.
+	(maybe_instrument_call): Likewise.
+	(instrument_derefs): Instrument stores to RESULT_DECL if
+	returning by hidden reference.
+
+2024-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114293
+	* tree-ssa-strlen.cc (strlen_pass::handle_builtin_strlen): If
+	max is smaller than min, set max to ~(size_t)0.
+
+2024-03-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-c.cc (riscv_ext_version_value): Fix
+	code style greater than 80 chars.
+	(riscv_cpu_cpp_builtins): Fix useless empty line, indent
+	with 3 space(s) and argument unalignment.
+
+2024-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114297
+	* tree-vect-loop.cc (vectorizable_live_operation): Pass in the
+	live stmts SLP node to vect_create_epilog_for_reduction.
+
+2024-03-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR driver/114314
+	* common.opt (fmultiflags): Add RejectNegative.
+
 2024-03-11  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/aarch64/aarch64.md: Rename aarch_ to aarch64_.
