@@ -341,19 +341,20 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
       bool is_root = *offset == 0;
       NodeId ast_node_id = seg->get_mappings ().get_nodeid ();
 
-      auto nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
       // then lookup the reference_node_id
       NodeId ref_node_id = UNKNOWN_NODEID;
 
       // FIXME: HACK: ARTHUR: Remove this
       if (flag_name_resolution_2_0)
-	// assign the ref_node_id if we've found something
-	nr_ctx.lookup (path.get_mappings ().get_nodeid ())
-	  .map ([&ref_node_id, &path] (NodeId resolved) {
-	    ref_node_id = resolved;
-	  });
+	{
+	  auto nr_ctx
+	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+	  // assign the ref_node_id if we've found something
+	  nr_ctx.lookup (path.get_mappings ().get_nodeid ())
+	    .map ([&ref_node_id, &path] (NodeId resolved) {
+	      ref_node_id = resolved;
+	    });
+	}
       else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
 	resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
 
