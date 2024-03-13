@@ -640,7 +640,7 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
 					 TREE_TYPE (TREE_TYPE (var))))
 	{
 	  unsigned HOST_WIDE_INT nelts
-	    = CEIL (tree_to_uhwi (TYPE_SIZE (type)), limb_prec);
+	    = CEIL (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var))), limb_prec);
 	  tree atype = build_array_type_nelts (ltype, nelts);
 	  var = build1 (VIEW_CONVERT_EXPR, atype, var);
 	}
@@ -1854,7 +1854,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
 		m_gsi = gsi_after_labels (gsi_bb (m_gsi));
 	      else
 		gsi_next (&m_gsi);
-	      tree t = limb_access (rhs_type, nrhs1, size_int (bo_idx), true);
+	      tree t = limb_access (NULL_TREE, nrhs1, size_int (bo_idx), true);
 	      tree iv = make_ssa_name (m_limb_type);
 	      g = gimple_build_assign (iv, t);
 	      insert_before (g);
@@ -1941,7 +1941,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
       tree iv2 = NULL_TREE;
       if (nidx0)
 	{
-	  tree t = limb_access (rhs_type, nrhs1, nidx0, true);
+	  tree t = limb_access (NULL_TREE, nrhs1, nidx0, true);
 	  iv = make_ssa_name (m_limb_type);
 	  g = gimple_build_assign (iv, t);
 	  insert_before (g);
@@ -1966,7 +1966,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
 	      if_then (g, profile_probability::likely (),
 		       edge_true, edge_false);
 	    }
-	  tree t = limb_access (rhs_type, nrhs1, nidx1, true);
+	  tree t = limb_access (NULL_TREE, nrhs1, nidx1, true);
 	  if (m_upwards_2limb
 	      && !m_first
 	      && !m_bitfld_load
@@ -2728,8 +2728,8 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	      /* Otherwise, stores to any other lhs.  */
 	      if (!done)
 		{
-		  tree l = limb_access (lhs_type, nlhs ? nlhs : lhs,
-					nidx, true);
+		  tree l = limb_access (nlhs ? NULL_TREE : lhs_type,
+					nlhs ? nlhs : lhs, nidx, true);
 		  g = gimple_build_assign (l, rhs1);
 		}
 	      insert_before (g);
@@ -2873,7 +2873,8 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	  /* Otherwise, stores to any other lhs.  */
 	  if (!done)
 	    {
-	      tree l = limb_access (lhs_type, nlhs ? nlhs : lhs, nidx, true);
+	      tree l = limb_access (nlhs ? NULL_TREE : lhs_type,
+				    nlhs ? nlhs : lhs, nidx, true);
 	      g = gimple_build_assign (l, rhs1);
 	    }
 	  insert_before (g);
