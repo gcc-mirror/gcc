@@ -4091,6 +4091,7 @@ namespace __format
 	__sink_out = __sink.out();
 
       if constexpr (is_same_v<_CharT, char>)
+	// Fast path for "{}" format strings and simple format arg types.
 	if (__fmt.size() == 2 && __fmt[0] == '{' && __fmt[1] == '}')
 	  {
 	    bool __done = false;
@@ -4124,14 +4125,14 @@ namespace __format
 		    __uval = make_unsigned_t<_Tp>(~__arg) + 1u;
 		  else
 		    __uval = __arg;
-		  const auto __n = __detail::__to_chars_len(__uval) + __neg;
-		  if (auto __res = __sink_out._M_reserve(__n))
+		  const auto __n = __detail::__to_chars_len(__uval);
+		  if (auto __res = __sink_out._M_reserve(__n + __neg))
 		    {
 		      auto __ptr = __res.get();
 		      *__ptr = '-';
 		      __detail::__to_chars_10_impl(__ptr + (int)__neg, __n,
 						   __uval);
-		      __res._M_bump(__n);
+		      __res._M_bump(__n + __neg);
 		      __done = true;
 		    }
 		}
