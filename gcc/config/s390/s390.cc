@@ -4779,7 +4779,7 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       if (in_p
 	  && s390_loadrelative_operand_p (x, &symref, &offset)
 	  && mode == Pmode
-	  && !SYMBOL_FLAG_NOTALIGN2_P (symref)
+	  && (!SYMBOL_REF_P (symref) || !SYMBOL_FLAG_NOTALIGN2_P (symref))
 	  && (offset & 1) == 1)
 	sri->icode = ((mode == DImode) ? CODE_FOR_reloaddi_larl_odd_addend_z10
 		      : CODE_FOR_reloadsi_larl_odd_addend_z10);
