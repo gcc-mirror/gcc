@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -ffast-math" } */
+/* { dg-additional-options "-O3 -ffast-math" } */
 /* { dg-additional-options "-mavx2" { target { x86_64-*-* i?86-*-* } } } */
 
 extern __attribute__((__simd__)) float powf(float, float);

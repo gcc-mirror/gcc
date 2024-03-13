@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 --param max-loop-header-insns=2" } */
+/* { dg-additional-options "-O3 --param max-loop-header-insns=2" } */
 
 short int *ev;
 int l4;

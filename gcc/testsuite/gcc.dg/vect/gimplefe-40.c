@@ -1,5 +1,5 @@
 /* { dg-do compile { target { int128 && vect_float } } } */
-/* { dg-options "-fgimple -Wno-psabi -w" } */
+/* { dg-additional-options "-fgimple -Wno-psabi -w" } */
 /* { dg-additional-options "-maltivec" { target { powerpc*-*-* && powerpc_altivec_ok } } } */
 
 typedef float v4sf __attribute__((vector_size(16)));

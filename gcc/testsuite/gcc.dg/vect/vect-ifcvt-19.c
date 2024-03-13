@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fgimple -Ofast -fdump-tree-ifcvt-raw" } */
+/* { dg-additional-options "-fgimple -Ofast -fdump-tree-ifcvt-raw" } */
 
 void __GIMPLE (ssa,guessed_local(10737414), startwith ("fix_loops"))
 foo (int * f, int d, int e)

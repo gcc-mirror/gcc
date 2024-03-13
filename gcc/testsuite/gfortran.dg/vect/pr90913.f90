@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -ffast-math" }
+! { dg-additional-options "-O3 -ffast-math" }
 ! { dg-additional-options "-mavx -mveclibabi=svml" { target i?86-*-* x86_64-*-* } }
 subroutine foo (a, b, c, d, e, f, g, h, k, l)
   implicit none

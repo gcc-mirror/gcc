@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fno-vect-cost-model" } */
+/* { dg-additional-options "-O3 -fno-vect-cost-model" } */
 struct {
     float real;
     float img;

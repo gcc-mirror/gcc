@@ -1,5 +1,4 @@
 /* Make sure a -0 stays -0 when we perform a conditional reduction.  */
-/* { dg-do run } */
 /* { dg-require-effective-target vect_double } */
 /* { dg-add-options ieee } */
 /* { dg-additional-options "-std=gnu99 -fno-fast-math" } */

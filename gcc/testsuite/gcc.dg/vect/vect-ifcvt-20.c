@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fgimple -fopenmp-simd -Ofast -fdump-tree-ifcvt-raw" } */
+/* { dg-additional-options "-fgimple -fopenmp-simd -Ofast -fdump-tree-ifcvt-raw" } */
 
 void foo (int * restrict p, int * restrict q, int * restrict r, int * restrict s, int * restrict t, int * restrict u)
 {

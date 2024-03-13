@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target int128 } */
-/* { dg-options "-finline-stringops -Os" } */
+/* { dg-additional-options "-finline-stringops -Os" } */
 
 typedef __int128 v64u128 __attribute__((vector_size(64)));
 int c;

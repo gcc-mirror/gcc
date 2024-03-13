@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sink -ftree-vectorize" } */
+/* { dg-additional-options "-O -fno-tree-sink -ftree-vectorize" } */
 int buffer_ctrl_ctx_0, buffer_ctrl_p1, buffer_ctrl_cmd;
 
 int

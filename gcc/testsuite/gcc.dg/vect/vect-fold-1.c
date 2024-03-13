@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ccp1" } */
+/* { dg-additional-options "-O2 -fdump-tree-ccp1" } */
 
 typedef unsigned char v4qi __attribute__ ((vector_size (4)));
 

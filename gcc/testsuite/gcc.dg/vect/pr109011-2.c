@@ -1,6 +1,6 @@
 /* PR tree-optimization/109011 */
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-unroll-loops --param=vect-epilogues-nomask=0 -fdump-tree-optimized" } */
+/* { dg-additional-options "-O3 -fno-unroll-loops --param=vect-epilogues-nomask=0 -fdump-tree-optimized" } */
 /* { dg-additional-options "-mavx512cd -mbmi -mlzcnt -mno-avx512vpopcntdq" { target { { { { i?86-*-* x86_64-*-* } && avx512cd } && lzcnt } && bmi } } } */
 /* { dg-additional-options "-mvsx" { target { powerpc_vsx_ok && has_arch_pwr9 } } } */
 /* { dg-additional-options "-mdejagnu-cpu=power9 -mvsx" { target { powerpc_vsx_ok && { ! has_arch_pwr9 } } } } */
