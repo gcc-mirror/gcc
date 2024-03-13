@@ -155,6 +155,7 @@ class scalar_chain
   hash_map<rtx, rtx> defs_map;
   unsigned n_sse_to_integer;
   unsigned n_integer_to_sse;
+  auto_vec<rtx_insn *> control_flow_insns;
 
   bool build (bitmap candidates, unsigned insn_uid, bitmap disallowed);
   virtual int compute_convert_gain () = 0;

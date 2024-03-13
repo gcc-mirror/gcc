@@ -913,20 +913,36 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     }
   else if (MEM_P (*op))
     {
+      rtx_insn* eh_insn, *movabs = NULL;
       rtx tmp = gen_reg_rtx (GET_MODE (*op));
 
-      /* Handle movabs.  */
+      /* Emit MOVABS to load from a 64-bit absolute address to a GPR.  */
       if (!memory_operand (*op, GET_MODE (*op)))
 	{
 	  rtx tmp2 = gen_reg_rtx (GET_MODE (*op));
+	  movabs = emit_insn_before (gen_rtx_SET (tmp2, *op), insn);
 
-	  emit_insn_before (gen_rtx_SET (tmp2, *op), insn);
 	  *op = tmp2;
 	}
 
-      emit_insn_before (gen_rtx_SET (gen_rtx_SUBREG (vmode, tmp, 0),
-				     gen_gpr_to_xmm_move_src (vmode, *op)),
-			insn);
+      eh_insn
+	= emit_insn_before (gen_rtx_SET (gen_rtx_SUBREG (vmode, tmp, 0),
+					 gen_gpr_to_xmm_move_src (vmode, *op)),
+			    insn);
+
+      if (cfun->can_throw_non_call_exceptions)
+	{
+	  /* Handle REG_EH_REGION note.  */
+	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	  if (note)
+	    {
+	      if (movabs)
+		eh_insn = movabs;
+	      control_flow_insns.safe_push (eh_insn);
+	      add_reg_note (eh_insn, REG_EH_REGION, XEXP (note, 0));
+	    }
+	}
+
       *op = gen_rtx_SUBREG (vmode, tmp, 0);
 
       if (dump_file)
@@ -2215,6 +2231,7 @@ convert_scalars_to_vector (bool timode_p)
 {
   basic_block bb;
   int converted_insns = 0;
+  auto_vec<rtx_insn *> control_flow_insns;
 
   bitmap_obstack_initialize (NULL);
   const machine_mode cand_mode[3] = { SImode, DImode, TImode };
@@ -2296,6 +2313,11 @@ convert_scalars_to_vector (bool timode_p)
 			 chain->chain_id);
 	    }
 
+	  rtx_insn* iter_insn;
+	  unsigned int ii;
+	  FOR_EACH_VEC_ELT (chain->control_flow_insns, ii, iter_insn)
+	    control_flow_insns.safe_push (iter_insn);
+
 	  delete chain;
 	}
     }
@@ -2364,6 +2386,24 @@ convert_scalars_to_vector (bool timode_p)
 		  DECL_INCOMING_RTL (parm) = gen_rtx_SUBREG (TImode, r, 0);
 	      }
 	  }
+
+      if (!control_flow_insns.is_empty ())
+	{
+	  free_dominance_info (CDI_DOMINATORS);
+
+	  unsigned int i;
+	  rtx_insn* insn;
+	  FOR_EACH_VEC_ELT (control_flow_insns, i, insn)
+	    if (control_flow_insn_p (insn))
+	      {
+		/* Split the block after insn.  There will be a fallthru
+		   edge, which is OK so we keep it.  We have to create
+		   the exception edges ourselves.  */
+		bb = BLOCK_FOR_INSN (insn);
+		split_block (bb, insn);
+		rtl_make_eh_edge (NULL, bb, BB_END (bb));
+	      }
+	}
     }
 
   return 0;
