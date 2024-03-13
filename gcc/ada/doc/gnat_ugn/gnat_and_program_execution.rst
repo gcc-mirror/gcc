@@ -2072,37 +2072,36 @@ the following example:
 
   .. code-block:: ada
 
-     procedure R is
+     procedure M is
         type Int1 is new Integer;
+        I1 : Int1;
+
         type Int2 is new Integer;
-        type Int1A is access Int1;
-        type Int2A is access Int2;
-        Int1V : Int1A;
-        Int2V : Int2A;
+        type A2 is access Int2;
+        V2 : A2;
         ...
 
      begin
         ...
         for J in Data'Range loop
-           if Data (J) = Int1V.all then
-              Int2V.all := Int2V.all + 1;
+           if Data (J) = I1 then
+              V2.all := V2.all + 1;
            end if;
         end loop;
         ...
-     end R;
+     end;
 
-In this example, since the variable ``Int1V`` can only access objects
-of type ``Int1``, and ``Int2V`` can only access objects of type
-``Int2``, there is no possibility that the assignment to
-``Int2V.all`` affects the value of ``Int1V.all``. This means that
-the compiler optimizer can "know" that the value ``Int1V.all`` is constant
-for all iterations of the loop and avoid the extra memory reference
-required to dereference it each time through the loop.
+In this example, since ``V2`` can only access objects of type ``Int2``
+and ``I1`` is not one of them, there is no possibility that the assignment
+to ``V2.all`` affects the value of ``I1``. This means that the compiler
+optimizer can infer that the value ``I1`` is constant for all iterations
+of the loop and load it from memory only once, before entering the loop,
+instead of in every iteration (this is called load hoisting).
 
-This kind of optimization, called strict aliasing analysis, is
+This kind of optimizations, based on strict type-based aliasing, is
 triggered by specifying an optimization level of :switch:`-O2` or
-higher or :switch:`-Os` and allows GNAT to generate more efficient code
-when access values are involved.
+higher (or :switch:`-Os`) and allows the compiler to generate more
+efficient code.
 
 However, although this optimization is always correct in terms of
 the formal semantics of the Ada Reference Manual, difficulties can
@@ -2111,173 +2110,214 @@ the typing system. Consider the following complete program example:
 
   .. code-block:: ada
 
-      package p1 is
-         type int1 is new integer;
-         type int2 is new integer;
-         type a1 is access int1;
-         type a2 is access int2;
-      end p1;
+      package P1 is
+         type Int1 is new Integer;
+         type A1 is access Int1;
 
-      with p1; use p1;
-      package p2 is
-         function to_a2 (Input : a1) return a2;
+         type Int2 is new Integer;
+         type A2 is access Int2;
+      end P1;
+
+      with P1; use P1;
+      package P2 is
+         function To_A2 (Input : A1) return A2;
       end p2;
 
       with Ada.Unchecked_Conversion;
-      package body p2 is
-         function to_a2 (Input : a1) return a2 is
-            function to_a2u is
-              new Ada.Unchecked_Conversion (a1, a2);
+      package body P2 is
+         function To_A2 (Input : A1) return A2 is
+            function Conv is
+              new Ada.Unchecked_Conversion (A1, A2);
          begin
-            return to_a2u (Input);
-         end to_a2;
-      end p2;
+            return Conv (Input);
+         end To_A2;
+      end P2;
 
-      with p2; use p2;
-      with p1; use p1;
+      with P1; use P1;
+      with P2; use P2;
       with Text_IO; use Text_IO;
-      procedure m is
-         v1 : a1 := new int1;
-         v2 : a2 := to_a2 (v1);
+      procedure M is
+         V1 : A1 := new Int1;
+         V2 : A2 := To_A2 (V1);
       begin
-         v1.all := 1;
-         v2.all := 0;
-         put_line (int1'image (v1.all));
+         V1.all := 1;
+         V2.all := 0;
+         Put_Line (Int1'Image (V1.all));
       end;
 
-This program prints out 0 in :switch:`-O0` or :switch:`-O1`
-mode, but it prints out 1 in :switch:`-O2` mode. That's
-because in strict aliasing mode, the compiler can and
-does assume that the assignment to ``v2.all`` could not
-affect the value of ``v1.all``, since different types
-are involved.
+This program prints out ``0`` in :switch:`-O0` or :switch:`-O1` modes,
+but it prints out ``1`` in :switch:`-O2` mode. That's because in strict
+aliasing mode, the compiler may and does assume that the assignment to
+``V2.all`` could not affect the value of ``V1.all``, since different
+types are involved.
 
 This behavior is not a case of non-conformance with the standard, since
 the Ada RM specifies that an unchecked conversion where the resulting
 bit pattern is not a correct value of the target type can result in an
 abnormal value and attempting to reference an abnormal value makes the
 execution of a program erroneous.  That's the case here since the result
-does not point to an object of type ``int2``.  This means that the
-effect is entirely unpredictable.
+does not point to an object of type ``Int2``.  This means that the effect
+is entirely unpredictable.
 
-However, although that explanation may satisfy a language
-lawyer, in practice an applications programmer expects an
-unchecked conversion involving pointers to create true
-aliases and the behavior of printing 1 seems plain wrong.
-In this case, the strict aliasing optimization is unwelcome.
+However, although that explanation may satisfy a language lawyer, in
+practice an application programmer expects an unchecked conversion
+involving pointers to create true aliases and the behavior of printing
+``1`` is questionable. In this case, the strict type-based aliasing
+optimizations are clearly unwelcome.
 
-Indeed the compiler recognizes this possibility, and the
-unchecked conversion generates a warning:
+Indeed the compiler recognizes this possibility and the instantiation of
+Unchecked_Conversion generates a warning:
 
   ::
 
-     p2.adb:5:07: warning: possible aliasing problem with type "a2"
+     p2.adb:5:07: warning: possible aliasing problem with type "A2"
      p2.adb:5:07: warning: use -fno-strict-aliasing switch for references
-     p2.adb:5:07: warning:  or use "pragma No_Strict_Aliasing (a2);"
+     p2.adb:5:07: warning:  or use "pragma No_Strict_Aliasing (A2);"
 
-Unfortunately the problem is recognized when compiling the body of
-package ``p2``, but the actual "bad" code is generated while
-compiling the body of ``m`` and this latter compilation does not see
-the suspicious ``Unchecked_Conversion``.
+Unfortunately the problem is only recognized when compiling the body of
+package ``P2``, but the actual problematic code is generated while
+compiling the body of ``M`` and this latter compilation does not see
+the suspicious instance of ``Unchecked_Conversion``.
 
 As implied by the warning message, there are approaches you can use to
-avoid the unwanted strict aliasing optimization in a case like this.
+avoid the unwanted strict aliasing optimizations in a case like this.
 
 One possibility is to simply avoid the use of :switch:`-O2`, but
-that is a bit drastic, since it throws away a number of useful
+that is quite drastic, since it throws away a number of useful
 optimizations that do not involve strict aliasing assumptions.
 
 A less drastic approach is to compile the program using the
 option :switch:`-fno-strict-aliasing`. Actually it is only the
 unit containing the dereferencing of the suspicious pointer
 that needs to be compiled. So in this case, if we compile
-unit ``m`` with this switch, then we get the expected
+unit ``M`` with this switch, then we get the expected
 value of zero printed. Analyzing which units might need
 the switch can be painful, so a more reasonable approach
 is to compile the entire program with options :switch:`-O2`
 and :switch:`-fno-strict-aliasing`. If the performance is
 satisfactory with this combination of options, then the
-advantage is that the entire issue of possible "wrong"
-optimization due to strict aliasing is avoided.
+advantage is that the entire issue of possible problematic
+optimizations due to strict aliasing is avoided.
 
 To avoid the use of compiler switches, the configuration
 pragma ``No_Strict_Aliasing`` with no parameters may be
 used to specify that for all access types, the strict
-aliasing optimization should be suppressed.
+aliasing optimizations should be suppressed.
 
-However, these approaches are still overkill, in that they causes
+However, these approaches are still overkill, in that they cause
 all manipulations of all access values to be deoptimized. A more
 refined approach is to concentrate attention on the specific
 access type identified as problematic.
 
-First, if a careful analysis of uses of the pointer shows
-that there are no possible problematic references, then
-the warning can be suppressed by bracketing the
-instantiation of ``Unchecked_Conversion`` to turn
-the warning off:
-
-  .. code-block:: ada
-
-     pragma Warnings (Off);
-     function to_a2u is
-       new Ada.Unchecked_Conversion (a1, a2);
-     pragma Warnings (On);
-
-Of course that approach is not appropriate for this particular
-example, since indeed there is a problematic reference. In this
-case we can take one of two other approaches.
-
 The first possibility is to move the instantiation of unchecked
-conversion to the unit in which the type is declared. In
-this example, we would move the instantiation of
-``Unchecked_Conversion`` from the body of package
-``p2`` to the spec of package ``p1``. Now the
-warning disappears. That's because any use of the
-access type knows there is a suspicious unchecked
-conversion, and the strict aliasing optimization
-is automatically suppressed for the type.
+conversion to the unit in which the type is declared. In this
+example, we would move the instantiation of ``Unchecked_Conversion``
+from the body of package ``P2`` to the spec of package ``P1``.
+Now the warning disappears because any use of the access type
+knows there is a suspicious unchecked conversion, and the strict
+aliasing optimizations are automatically suppressed for it.
 
 If it is not practical to move the unchecked conversion to the same unit
 in which the destination access type is declared (perhaps because the
-source type is not visible in that unit), you may use pragma
-``No_Strict_Aliasing`` for the type. This pragma must occur in the
-same declarative sequence as the declaration of the access type:
+source type is not visible in that unit), the second possibiliy is to
+use pragma ``No_Strict_Aliasing`` for the type. This pragma must occur
+in the same declarative part as the declaration of the access type:
 
   .. code-block:: ada
 
-     type a2 is access int2;
-     pragma No_Strict_Aliasing (a2);
+     type A2 is access Int2;
+     pragma No_Strict_Aliasing (A2);
 
-Here again, the compiler now knows that the strict aliasing optimization
-should be suppressed for any reference to type ``a2`` and the
-expected behavior is obtained.
+Here again, the compiler now knows that strict aliasing optimizations
+should be suppressed for any dereference made through type ``A2`` and
+the expected behavior is obtained.
 
-Finally, note that although the compiler can generate warnings for
-simple cases of unchecked conversions, there are tricker and more
-indirect ways of creating type incorrect aliases which the compiler
-cannot detect. Examples are the use of address overlays and unchecked
-conversions involving composite types containing access types as
-components. In such cases, no warnings are generated, but there can
-still be aliasing problems. One safe coding practice is to forbid the
-use of address clauses for type overlaying, and to allow unchecked
-conversion only for primitive types. This is not really a significant
-restriction since any possible desired effect can be achieved by
-unchecked conversion of access values.
+The third possibility is to declare that one of the designated types
+involved, namely ``Int1`` or ``Int2``, is allowed to alias any other
+type in the universe, by using pragma ``Universal_Aliasing``:
 
-The aliasing analysis done in strict aliasing mode can certainly
-have significant benefits. We have seen cases of large scale
-application code where the time is increased by up to 5% by turning
-this optimization off. If you have code that includes significant
-usage of unchecked conversion, you might want to just stick with
-:switch:`-O1` and avoid the entire issue. If you get adequate
-performance at this level of optimization level, that's probably
-the safest approach. If tests show that you really need higher
-levels of optimization, then you can experiment with :switch:`-O2`
-and :switch:`-O2 -fno-strict-aliasing` to see how much effect this
+  .. code-block:: ada
+
+     type Int2 is new Integer;
+     pragma Universal_Aliasing (Int2);
+
+The effect is equivalent to applying pragma ``No_Strict_Aliasing`` to
+every access type designating ``Int2``, in particular ``A2``, and more
+generally to every reference made to an object of declared type ``Int2``,
+so it is very powerful and effectively takes ``Int2`` out of the alias
+analysis performed by the compiler in all circumstances.
+
+This pragma can also be used to deal with aliasing issues that arise
+again from the use of ``Unchecked_Conversion`` in the source code but
+without the presence of access types. The typical example is code
+that streams data by means of arrays of storage units (bytes):
+
+ .. code-block:: ada
+
+    type Byte is mod 2**System.Storage_Unit;
+    for Byte'Size use System.Storage_Unit;
+
+    type Chunk_Of_Bytes is array (1 .. 64) of Byte;
+
+    procedure Send (S : Chunk_Of_Bytes);
+
+    type Rec is record
+       ...
+    end record;
+
+    procedure Dump (R : Rec) is
+       function To_Stream is
+          new Ada.Unchecked_Conversion (Rec, Chunk_Of_Bytes);
+    begin
+       Send (To_Stream (R));
+    end;
+
+This generates the following warning for the call to ``Send``:
+
+  ::
+
+     dump.adb:8:25: warning: unchecked conversion implemented by copy
+     dump.adb:8:25: warning: use pragma Universal_Aliasing on either type
+     dump.adb:8:25: warning: to enable RM 13.9(12) implementation permission
+
+This occurs because the formal parameter ``S`` of ``Send`` is passed by
+reference by the compiler and it is not possible to pass a reference to
+``R`` directly in the call without violating strict type-based aliasing.
+That's why the compiler generates a temporary of type ``Chunk_Of_Bytes``
+just before the call and passes a reference to this temporary instead.
+
+As implied by the warning message, it is possible to avoid the temporary
+(and the warning) by means of pragma ``Universal_Aliasing``:
+
+ .. code-block:: ada
+
+    type Chunk_Of_Bytes is array (1 .. 64) of Byte;
+    pragma Universal_Aliasing (Chunk_Of_Bytes);
+
+The pragma can also be applied to the component type instead:
+
+ .. code-block:: ada
+
+    type Byte is mod 2**System.Storage_Unit;
+    for Byte'Size use System.Storage_Unit;
+    pragma Universal_Aliasing (Byte);
+
+and every array type whose component is ``Byte`` will inherit the pragma.
+
+To sum up, the alias analysis performed in strict aliasing mode by the
+compiler can have significant benefits. We have seen cases of large scale
+application code where the execution time is increased by up to 5% when
+these optimizations are turned off. However, if you have code that make
+significant use of unchecked conversion, you might want to just stick
+with :switch:`-O1` and avoid the entire issue. If you get adequate
+performance at this level of optimization, that's probably the safest
+approach. If tests show that you really need higher levels of
+optimization, then you can experiment with :switch:`-O2` and
+:switch:`-O2 -fno-strict-aliasing` to see how much effect this
 has on size and speed of the code. If you really need to use
 :switch:`-O2` with strict aliasing in effect, then you should
-review any uses of unchecked conversion of access types,
-particularly if you are getting the warnings described above.
+review any uses of unchecked conversion, particularly if you are
+getting the warnings described above.
 
 
 .. _Aliased_Variables_and_Optimization:

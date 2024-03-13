@@ -6949,10 +6949,9 @@ Syntax:
 
 ``type_LOCAL_NAME`` must refer to a type declaration in the current
 declarative part.  The effect is to inhibit strict type-based aliasing
-optimization for the given type.  In other words, the effect is as though
-access types designating this type were subject to pragma No_Strict_Aliasing.
-For a detailed description of the strict aliasing optimization, and the
-situations in which it must be suppressed, see the section on
+optimizations for the given type.  For a detailed description of the
+strict type-based aliasing optimizations and the situations in which
+they need to be suppressed, see the section on
 ``Optimization and Strict Aliasing`` in the :title:`GNAT User's Guide`.
 
 .. _Pragma-Unmodified:
