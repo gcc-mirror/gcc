@@ -38544,7 +38544,11 @@ cp_parser_omp_var_list (cp_parser *parser, enum omp_clause_code kind, tree list,
    OpenACC 2.6:
    no_create ( variable-list )
    attach ( variable-list )
-   detach ( variable-list ) */
+   detach ( variable-list )
+
+   OpenACC 2.7:
+   copyin (readonly : variable-list )
+ */
 
 static tree
 cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
@@ -38597,11 +38601,34 @@ cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
     default:
       gcc_unreachable ();
     }
-  tree nl, c;
-  nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_MAP, list, false);
 
-  for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
-    OMP_CLAUSE_SET_MAP_KIND (c, kind);
+  tree nl = list;
+  bool readonly = false;
+  if (cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+    {
+      /* Turn on readonly modifier parsing for copyin clause.  */
+      if (c_kind == PRAGMA_OACC_CLAUSE_COPYIN)
+	{
+	  cp_token *token = cp_lexer_peek_token (parser->lexer);
+	  if (token->type == CPP_NAME
+	      && !strcmp (IDENTIFIER_POINTER (token->u.value), "readonly")
+	      && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      cp_lexer_consume_token (parser->lexer);
+	      readonly = true;
+	    }
+	}
+      nl = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_MAP, list, NULL,
+					   false);
+    }
+
+  for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
+    {
+      OMP_CLAUSE_SET_MAP_KIND (c, kind);
+      if (readonly)
+	OMP_CLAUSE_MAP_READONLY (c) = 1;
+    }
 
   return nl;
 }
@@ -47178,6 +47205,9 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 
 /* OpenACC 2.0:
    # pragma acc cache (variable-list) new-line
+
+   OpenACC 2.7:
+   # pragma acc cache (readonly: variable-list) new-line
 */
 
 static tree
@@ -47187,9 +47217,28 @@ cp_parser_oacc_cache (cp_parser *parser, cp_token *pragma_tok)
      clauses.  */
   auto_suppress_location_wrappers sentinel;
 
-  tree stmt, clauses;
+  tree stmt, clauses = NULL_TREE;
+  bool readonly = false;
 
-  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE__CACHE_, NULL_TREE);
+  if (cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+    {
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      if (token->type == CPP_NAME
+	  && !strcmp (IDENTIFIER_POINTER (token->u.value), "readonly")
+	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	  readonly = true;
+	}
+      clauses = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE__CACHE_,
+						NULL, NULL);
+    }
+
+  if (readonly)
+    for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+      OMP_CLAUSE__CACHE__READONLY (c) = 1;
+
   clauses = finish_omp_clauses (clauses, C_ORT_ACC);
 
   cp_parser_require_pragma_eol (parser, cp_lexer_peek_token (parser->lexer));

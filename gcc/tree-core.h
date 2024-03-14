@@ -1344,6 +1344,12 @@ struct GTY(()) tree_base {
        TYPE_READONLY in
            all types
 
+       OMP_CLAUSE_MAP_READONLY in
+           OMP_CLAUSE_MAP
+
+       OMP_CLAUSE__CACHE__READONLY in
+           OMP_CLAUSE__CACHE_
+
    constant_flag:
 
        TREE_CONSTANT in

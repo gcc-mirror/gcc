@@ -1363,7 +1363,11 @@ typedef struct gfc_omp_namelist
     {
       gfc_omp_reduction_op reduction_op;
       gfc_omp_depend_doacross_op depend_doacross_op;
-      gfc_omp_map_op map_op;
+      struct
+        {
+	  ENUM_BITFIELD (gfc_omp_map_op) op:8;
+	  bool readonly;
+        } map;
       gfc_expr *align;
       struct
 	{

@@ -6744,7 +6744,7 @@ add_clause (gfc_symbol *sym, gfc_omp_map_op map_op)
 
   n = gfc_get_omp_namelist ();
   n->sym = sym;
-  n->u.map_op = map_op;
+  n->u.map.op = map_op;
 
   if (!module_oacc_clauses)
     module_oacc_clauses = gfc_get_omp_clauses ();
@@ -6846,10 +6846,10 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
 
   for (n = omp_clauses->lists[OMP_LIST_MAP]; n; n = n->next)
     {
-      switch (n->u.map_op)
+      switch (n->u.map.op)
 	{
 	  case OMP_MAP_DEVICE_RESIDENT:
-	    n->u.map_op = OMP_MAP_FORCE_ALLOC;
+	    n->u.map.op = OMP_MAP_FORCE_ALLOC;
 	    break;
 
 	  default:

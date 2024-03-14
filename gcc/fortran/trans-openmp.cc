@@ -3148,7 +3148,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      || (n->expr && gfc_expr_attr (n->expr).pointer)))
 		always_modifier = true;
 
-	      switch (n->u.map_op)
+	      if (n->u.map.readonly)
+		OMP_CLAUSE_MAP_READONLY (node) = 1;
+
+	      switch (n->u.map.op)
 		{
 		case OMP_MAP_ALLOC:
 		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALLOC);
@@ -3275,8 +3278,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      && n->sym->attr.omp_declare_target
 		      && (always_modifier || n->sym->attr.pointer)
 		      && op != EXEC_OMP_TARGET_EXIT_DATA
-		      && n->u.map_op != OMP_MAP_DELETE
-		      && n->u.map_op != OMP_MAP_RELEASE)
+		      && n->u.map.op != OMP_MAP_DELETE
+		      && n->u.map.op != OMP_MAP_RELEASE)
 		    {
 		      gcc_assert (n->sym->ts.u.cl->backend_decl);
 		      node5 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
@@ -3342,7 +3345,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			{
 			  enum gomp_map_kind gmk = GOMP_MAP_POINTER;
 			  if (op == EXEC_OMP_TARGET_EXIT_DATA
-			      && n->u.map_op == OMP_MAP_DELETE)
+			      && n->u.map.op == OMP_MAP_DELETE)
 			    gmk = GOMP_MAP_DELETE;
 			  else if (op == EXEC_OMP_TARGET_EXIT_DATA)
 			    gmk = GOMP_MAP_RELEASE;
@@ -3365,7 +3368,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			{
 			  enum gomp_map_kind gmk;
 			  if (op == EXEC_OMP_TARGET_EXIT_DATA
-			      && n->u.map_op == OMP_MAP_DELETE)
+			      && n->u.map.op == OMP_MAP_DELETE)
 			    gmk = GOMP_MAP_DELETE;
 			  else if (op == EXEC_OMP_TARGET_EXIT_DATA)
 			    gmk = GOMP_MAP_RELEASE;
@@ -3397,18 +3400,18 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      node2 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
 		      OMP_CLAUSE_DECL (node2) = decl;
 		      OMP_CLAUSE_SIZE (node2) = TYPE_SIZE_UNIT (type);
-		      if (n->u.map_op == OMP_MAP_DELETE)
+		      if (n->u.map.op == OMP_MAP_DELETE)
 			map_kind = GOMP_MAP_DELETE;
 		      else if (op == EXEC_OMP_TARGET_EXIT_DATA
-			       || n->u.map_op == OMP_MAP_RELEASE)
+			       || n->u.map.op == OMP_MAP_RELEASE)
 			map_kind = GOMP_MAP_RELEASE;
 		      else
 			map_kind = GOMP_MAP_TO_PSET;
 		      OMP_CLAUSE_SET_MAP_KIND (node2, map_kind);
 
 		      if (op != EXEC_OMP_TARGET_EXIT_DATA
-			  && n->u.map_op != OMP_MAP_DELETE
-			  && n->u.map_op != OMP_MAP_RELEASE)
+			  && n->u.map.op != OMP_MAP_DELETE
+			  && n->u.map.op != OMP_MAP_RELEASE)
 			{
 			  node3 = build_omp_clause (input_location,
 						    OMP_CLAUSE_MAP);
@@ -3426,7 +3429,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			      = gfc_conv_descriptor_data_get (decl);
 			  OMP_CLAUSE_SIZE (node3) = size_int (0);
 
-			  if (n->u.map_op == OMP_MAP_ATTACH)
+			  if (n->u.map.op == OMP_MAP_ATTACH)
 			    {
 			      /* Standalone attach clauses used with arrays with
 				 descriptors must copy the descriptor to the
@@ -3442,7 +3445,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			      node3 = NULL;
 			      goto finalize_map_clause;
 			    }
-			  else if (n->u.map_op == OMP_MAP_DETACH)
+			  else if (n->u.map.op == OMP_MAP_DETACH)
 			    {
 			      OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_DETACH);
 			      /* Similarly to above, we don't want to unmap PTR
@@ -3635,8 +3638,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			 to perform a single attach/detach operation, of the
 			 pointer itself, not of the pointed-to object.  */
 		      if (openacc
-			  && (n->u.map_op == OMP_MAP_ATTACH
-			      || n->u.map_op == OMP_MAP_DETACH))
+			  && (n->u.map.op == OMP_MAP_ATTACH
+			      || n->u.map.op == OMP_MAP_DETACH))
 			{
 			  OMP_CLAUSE_DECL (node)
 			    = build_fold_addr_expr (OMP_CLAUSE_DECL (node));
@@ -3665,7 +3668,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 					       se.string_length),
 					   TYPE_SIZE_UNIT (tmp));
 			  gomp_map_kind kind;
-			  if (n->u.map_op == OMP_MAP_DELETE)
+			  if (n->u.map.op == OMP_MAP_DELETE)
 			    kind = GOMP_MAP_DELETE;
 			  else if (op == EXEC_OMP_TARGET_EXIT_DATA)
 			    kind = GOMP_MAP_RELEASE;
@@ -3722,8 +3725,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			     to perform a single attach/detach operation, of the
 			     pointer itself, not of the pointed-to object.  */
 			  if (openacc
-			      && (n->u.map_op == OMP_MAP_ATTACH
-				  || n->u.map_op == OMP_MAP_DETACH))
+			      && (n->u.map.op == OMP_MAP_ATTACH
+				  || n->u.map.op == OMP_MAP_DETACH))
 			    {
 			      OMP_CLAUSE_DECL (node)
 				= build_fold_addr_expr (inner);
@@ -3815,8 +3818,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    {
 		      /* Bare attach and detach clauses don't want any
 			 additional nodes.  */
-		      if ((n->u.map_op == OMP_MAP_ATTACH
-			   || n->u.map_op == OMP_MAP_DETACH)
+		      if ((n->u.map.op == OMP_MAP_ATTACH
+			   || n->u.map.op == OMP_MAP_DETACH)
 			  && (POINTER_TYPE_P (TREE_TYPE (inner))
 			      || GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (inner))))
 			{
@@ -3849,8 +3852,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    map_kind = ((GOMP_MAP_ALWAYS_P (map_kind)
 					 || gfc_expr_attr (n->expr).pointer)
 					? GOMP_MAP_ALWAYS_TO : GOMP_MAP_TO);
-			  else if (n->u.map_op == OMP_MAP_RELEASE
-				   || n->u.map_op == OMP_MAP_DELETE)
+			  else if (n->u.map.op == OMP_MAP_RELEASE
+				   || n->u.map.op == OMP_MAP_DELETE)
 			    ;
 			  else if (op == EXEC_OMP_TARGET_EXIT_DATA
 				   || op == EXEC_OACC_EXIT_DATA)
@@ -4097,6 +4100,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		}
 	      if (n->u.present_modifier)
 		OMP_CLAUSE_MOTION_PRESENT (node) = 1;
+	      if (list == OMP_LIST_CACHE && n->u.map.readonly)
+		OMP_CLAUSE__CACHE__READONLY (node) = 1;
 	      omp_clauses = gfc_trans_add_clause (node, omp_clauses);
 	    }
 	  break;
@@ -6570,7 +6575,7 @@ gfc_add_clause_implicitly (gfc_omp_clauses *clauses_out,
 	  n2->where = n->where;
 	  n2->sym = n->sym;
 	  if (is_target)
-	    n2->u.map_op = OMP_MAP_TOFROM;
+	    n2->u.map.op = OMP_MAP_TOFROM;
 	  if (tail)
 	    {
 	      tail->next = n2;

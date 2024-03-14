@@ -1841,6 +1841,14 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.addressable_flag)
 
+/* Nonzero if OpenACC 'readonly' modifier set, used for 'copyin'.  */
+#define OMP_CLAUSE_MAP_READONLY(NODE) \
+  TREE_READONLY (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+
+/* Same as above, for use in OpenACC cache directives.  */
+#define OMP_CLAUSE__CACHE__READONLY(NODE) \
+  TREE_READONLY (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__CACHE_))
+
 /* True on an OMP_CLAUSE_USE_DEVICE_PTR with an OpenACC 'if_present'
    clause.  */
 #define OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT(NODE) \

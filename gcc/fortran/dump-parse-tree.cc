@@ -1400,6 +1400,9 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	    fputs (") ALLOCATE(", dumpfile);
 	  continue;
 	}
+      if ((list_type == OMP_LIST_MAP || list_type == OMP_LIST_CACHE)
+	  && n->u.map.readonly)
+	fputs ("readonly,", dumpfile);
       if (list_type == OMP_LIST_REDUCTION)
 	switch (n->u.reduction_op)
 	  {
@@ -1467,7 +1470,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  default: break;
 	  }
       else if (list_type == OMP_LIST_MAP)
-	switch (n->u.map_op)
+	switch (n->u.map.op)
 	  {
 	  case OMP_MAP_ALLOC: fputs ("alloc:", dumpfile); break;
 	  case OMP_MAP_TO: fputs ("to:", dumpfile); break;
