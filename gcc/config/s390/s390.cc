@@ -13802,10 +13802,19 @@ s390_encode_section_info (tree decl, rtx rtl, int first)
 	 that can go wrong (i.e. no FUNC_DECLs).
 	 All symbols without an explicit alignment are assumed to be 2
 	 byte aligned as mandated by our ABI.  This behavior can be
-	 overridden for external symbols with the -munaligned-symbols
-	 switch.  */
+	 overridden for external and weak symbols with the
+	 -munaligned-symbols switch.
+	 For all external symbols without explicit alignment
+	 DECL_ALIGN is already trimmed down to 8, however for weak
+	 symbols this does not happen.  These cases are catched by the
+	 type size check.  */
+      const_tree size = TYPE_SIZE (TREE_TYPE (decl));
+      unsigned HOST_WIDE_INT size_num = (tree_fits_uhwi_p (size)
+					 ? tree_to_uhwi (size) : 0);
       if ((DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) % 16)
-	  || (s390_unaligned_symbols_p && !decl_binds_to_current_def_p (decl)))
+	  || (s390_unaligned_symbols_p
+	      && !decl_binds_to_current_def_p (decl)
+	      && (DECL_USER_ALIGN (decl) ? DECL_ALIGN (decl) % 16 : size_num < 16)))
 	SYMBOL_FLAG_SET_NOTALIGN2 (XEXP (rtl, 0));
       else if (DECL_ALIGN (decl) % 32)
 	SYMBOL_FLAG_SET_NOTALIGN4 (XEXP (rtl, 0));
