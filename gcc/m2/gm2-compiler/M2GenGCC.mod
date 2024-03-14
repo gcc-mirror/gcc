@@ -510,14 +510,14 @@ BEGIN
    LogicalAndOp       : CodeSetAnd (q) |
    LogicalXorOp       : CodeSetSymmetricDifference (q) |
    LogicalDiffOp      : CodeSetLogicalDifference (q) |
-   IfLessOp           : CodeIfLess (q, op1, op2, op3) |
+   IfLessOp           : CodeIfLess (q) |
    IfEquOp            : CodeIfEqu (q) |
    IfNotEquOp         : CodeIfNotEqu (q) |
-   IfGreEquOp         : CodeIfGreEqu (q, op1, op2, op3) |
-   IfLessEquOp        : CodeIfLessEqu (q, op1, op2, op3) |
-   IfGreOp            : CodeIfGre (q, op1, op2, op3) |
-   IfInOp             : CodeIfIn (q, op1, op2, op3) |
-   IfNotInOp          : CodeIfNotIn (q, op1, op2, op3) |
+   IfGreEquOp         : CodeIfGreEqu (q) |
+   IfLessEquOp        : CodeIfLessEqu (q) |
+   IfGreOp            : CodeIfGre (q) |
+   IfInOp             : CodeIfIn (q) |
+   IfNotInOp          : CodeIfNotIn (q) |
    IndrXOp            : CodeIndrX (q, op1, op2, op3) |
    XIndrOp            : CodeXIndr (q) |
    CallOp             : CodeCall (CurrentQuadToken, op3) |
@@ -6831,49 +6831,66 @@ END CodeIfSetLess ;
 
 
 (*
-   CodeIfLess - codes the quadruple if op1 < op2 then goto op3
+   PerformCodeIfLess - codes the quadruple if op1 < op2 then goto op3
 *)
 
-PROCEDURE CodeIfLess (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE PerformCodeIfLess (quad: CARDINAL) ;
 VAR
    tl, tr  : Tree ;
-   location: location_t ;
+   location                   : location_t ;
+   left, right, dest, combined,
+   leftpos, rightpos, destpos : CARDINAL ;
+   overflow                   : BOOLEAN ;
+   op                         : QuadOperator ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
+   GetQuadOtok (quad, combined, op,
+                left, right, dest, overflow,
+                leftpos, rightpos, destpos) ;
+   location := TokenToLocation (combined) ;
 
-   (* firstly ensure that any constant literal is declared *)
-   DeclareConstant(CurrentQuadToken, op1) ;
-   DeclareConstant(CurrentQuadToken, op2) ;
-   IF IsConst(op1) AND IsConst(op2)
+   IF IsConst(left) AND IsConst(right)
    THEN
-      PushValue(op1) ;
-      PushValue(op2) ;
+      PushValue(left) ;
+      PushValue(right) ;
       IF Less(CurrentQuadToken)
       THEN
-         BuildGoto(location, string(CreateLabelName(op3)))
+         BuildGoto(location, string(CreateLabelName(dest)))
       ELSE
          (* fall through *)
       END
-   ELSIF IsConstSet(op1) OR (IsVar(op1) AND IsSet(SkipType(GetType(op1)))) OR
-         IsConstSet(op2) OR (IsVar(op2) AND IsSet(SkipType(GetType(op2))))
+   ELSIF IsConstSet(left) OR (IsVar(left) AND IsSet(SkipType(GetType(left)))) OR
+         IsConstSet(right) OR (IsVar(right) AND IsSet(SkipType(GetType(right))))
    THEN
-      CodeIfSetLess(quad, op1, op2, op3)
+      CodeIfSetLess(quad, left, right, dest)
    ELSE
-      IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
+      IF IsComposite(GetType(left)) OR IsComposite(GetType(right))
       THEN
-         MetaErrorT2 (CurrentQuadToken,
+         MetaErrorT2 (combined,
                       'comparison tests between composite types not allowed {%1Eatd} and {%2atd}',
-                      op1, op2)
+                      left, right)
       ELSE
-         ConvertBinaryOperands(location,
-                               tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (op1)),
-                                                   SkipType (GetType (op2)),
-                                                   CurrentQuadToken),
-                               op1, op2) ;
-         DoJump(location,
-                BuildLessThan(location, tl, tr), NIL, string(CreateLabelName(op3)))
+         ConvertBinaryOperands (location,
+                                tl, tr,
+                                ComparisonMixTypes (SkipType (GetType (left)),
+                                                    SkipType (GetType (right)),
+                                                    combined),
+                                left, right) ;
+         DoJump (location,
+                 BuildLessThan (location, tl, tr), NIL, string (CreateLabelName (dest)))
       END
+   END
+END PerformCodeIfLess ;
+
+
+(*
+   CodeIfLess - codes the quadruple if op1 < op2 then goto op3
+*)
+
+PROCEDURE CodeIfLess (quad: CARDINAL) ;
+BEGIN
+   IF IsValidExpressionRelOp (quad, FALSE)
+   THEN
+      PerformCodeIfLess (quad)
    END
 END CodeIfLess ;
 
@@ -6926,50 +6943,64 @@ END CodeIfSetGre ;
 
 
 (*
-   CodeIfGre - codes the quadruple if op1 > op2 then goto op3
+   PerformCodeIfGre - codes the quadruple if op1 > op2 then goto op3
 *)
 
-PROCEDURE CodeIfGre (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE PerformCodeIfGre (quad: CARDINAL) ;
 VAR
    tl, tr  : Tree ;
-   location: location_t ;
+   location                   : location_t ;
+   left, right, dest, combined,
+   leftpos, rightpos, destpos : CARDINAL ;
+   overflow                   : BOOLEAN ;
+   op                         : QuadOperator ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   (* firstly ensure that any constant literal is declared *)
-   DeclareConstant(CurrentQuadToken, op1) ;
-   DeclareConstant(CurrentQuadToken, op2) ;
-   DeclareConstructor(CurrentQuadToken, quad, op1) ;
-   DeclareConstructor(CurrentQuadToken, quad, op2) ;
-   IF IsConst(op1) AND IsConst(op2)
+   GetQuadOtok (quad, combined, op,
+                left, right, dest, overflow,
+                leftpos, rightpos, destpos) ;
+   location := TokenToLocation (combined) ;
+   IF IsConst(left) AND IsConst(right)
    THEN
-      PushValue(op1) ;
-      PushValue(op2) ;
-      IF Gre(CurrentQuadToken)
+      PushValue(left) ;
+      PushValue(right) ;
+      IF Gre(combined)
       THEN
-         BuildGoto(location, string(CreateLabelName(op3)))
+         BuildGoto(location, string(CreateLabelName(dest)))
       ELSE
          (* fall through *)
       END
-   ELSIF IsConstSet(op1) OR (IsVar(op1) AND IsSet(SkipType(GetType(op1)))) OR
-         IsConstSet(op2) OR (IsVar(op2) AND IsSet(SkipType(GetType(op2))))
+   ELSIF IsConstSet(left) OR (IsVar(left) AND IsSet(SkipType(GetType(left)))) OR
+         IsConstSet(right) OR (IsVar(right) AND IsSet(SkipType(GetType(right))))
    THEN
-      CodeIfSetGre(quad, op1, op2, op3)
+      CodeIfSetGre(quad, left, right, dest)
    ELSE
-      IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
+      IF IsComposite(GetType(left)) OR IsComposite(GetType(right))
       THEN
-         MetaErrorT2 (CurrentQuadToken,
+         MetaErrorT2 (combined,
                       'comparison tests between composite types not allowed {%1Eatd} and {%2atd}',
-                      op1, op2)
+                      left, right)
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (op1)),
-                                                   SkipType (GetType (op2)),
-                                                   CurrentQuadToken),
-                               op1, op2) ;
-         DoJump(location, BuildGreaterThan(location, tl, tr), NIL, string(CreateLabelName(op3)))
+                               ComparisonMixTypes (SkipType (GetType (left)),
+                                                   SkipType (GetType (right)),
+                                                   combined),
+                               left, right) ;
+         DoJump(location, BuildGreaterThan(location, tl, tr), NIL, string(CreateLabelName(dest)))
       END
+   END
+END PerformCodeIfGre ;
+
+
+(*
+   CodeIfGre - codes the quadruple if op1 > op2 then goto op3
+*)
+
+PROCEDURE CodeIfGre (quad: CARDINAL) ;
+BEGIN
+   IF IsValidExpressionRelOp (quad, FALSE)
+   THEN
+      PerformCodeIfGre (quad)
    END
 END CodeIfGre ;
 
@@ -7022,50 +7053,65 @@ END CodeIfSetLessEqu ;
 
 
 (*
-   CodeIfLessEqu - codes the quadruple if op1 <= op2 then goto op3
+   PerformCodeIfLessEqu - codes the quadruple if op1 <= op2 then goto op3
 *)
 
-PROCEDURE CodeIfLessEqu (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE PerformCodeIfLessEqu (quad: CARDINAL) ;
 VAR
    tl, tr  : Tree ;
-   location: location_t ;
+   location                   : location_t ;
+   left, right, dest, combined,
+   leftpos, rightpos, destpos : CARDINAL ;
+   overflow                   : BOOLEAN ;
+   op                         : QuadOperator ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   (* firstly ensure that any constant literal is declared *)
-   DeclareConstant(CurrentQuadToken, op1) ;
-   DeclareConstant(CurrentQuadToken, op2) ;
-   DeclareConstructor(CurrentQuadToken, quad, op1) ;
-   DeclareConstructor(CurrentQuadToken, quad, op2) ;
-   IF IsConst(op1) AND IsConst(op2)
+   GetQuadOtok (quad, combined, op,
+                left, right, dest, overflow,
+                leftpos, rightpos, destpos) ;
+   location := TokenToLocation (combined) ;
+   IF IsConst(left) AND IsConst(right)
    THEN
-      PushValue(op1) ;
-      PushValue(op2) ;
-      IF LessEqu(CurrentQuadToken)
+      PushValue(left) ;
+      PushValue(right) ;
+      IF LessEqu(combined)
       THEN
-         BuildGoto(location, string(CreateLabelName(op3)))
+         BuildGoto(location, string(CreateLabelName(dest)))
       ELSE
          (* fall through *)
       END
-   ELSIF IsConstSet(op1) OR (IsVar(op1) AND IsSet(SkipType(GetType(op1)))) OR
-         IsConstSet(op2) OR (IsVar(op2) AND IsSet(SkipType(GetType(op2))))
+   ELSIF IsConstSet (left) OR (IsVar (left) AND IsSet (SkipType (GetType (left)))) OR
+         IsConstSet (right) OR (IsVar (right) AND IsSet (SkipType (GetType (right))))
    THEN
-      CodeIfSetLessEqu(quad, op1, op2, op3)
+      CodeIfSetLessEqu (quad, left, right, dest)
    ELSE
-      IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
+      IF IsComposite (GetType (left)) OR IsComposite (GetType (right))
       THEN
-         MetaErrorT2 (CurrentQuadToken,
+         MetaErrorT2 (combined,
                       'comparison tests between composite types not allowed {%1Eatd} and {%2atd}',
-                      op1, op2)
+                      left, right)
       ELSE
-         ConvertBinaryOperands(location,
-                               tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (op1)),
-                                                   SkipType (GetType (op2)),
-                                                   CurrentQuadToken),
-                               op1, op2) ;
-         DoJump(location, BuildLessThanOrEqual(location, tl, tr), NIL, string(CreateLabelName(op3)))
+         ConvertBinaryOperands (location,
+                                tl, tr,
+                                ComparisonMixTypes (SkipType (GetType (left)),
+                                                    SkipType (GetType (right)),
+                                                    combined),
+                                left, right) ;
+         DoJump (location, BuildLessThanOrEqual (location, tl, tr),
+                 NIL, string (CreateLabelName (dest)))
       END
+   END
+END PerformCodeIfLessEqu ;
+
+
+(*
+   CodeIfLessEqu - codes the quadruple if op1 <= op2 then goto op3
+*)
+
+PROCEDURE CodeIfLessEqu (quad: CARDINAL) ;
+BEGIN
+   IF IsValidExpressionRelOp (quad, FALSE)
+   THEN
+      PerformCodeIfLessEqu (quad)
    END
 END CodeIfLessEqu ;
 
@@ -7118,50 +7164,64 @@ END CodeIfSetGreEqu ;
 
 
 (*
-   CodeIfGreEqu - codes the quadruple if op1 >= op2 then goto op3
+   PerformCodeIfGreEqu - codes the quadruple if op1 >= op2 then goto op3
 *)
 
-PROCEDURE CodeIfGreEqu (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE PerformCodeIfGreEqu (quad: CARDINAL) ;
 VAR
    tl, tr: Tree ;
-   location: location_t ;
+   location                   : location_t ;
+   left, right, dest, combined,
+   leftpos, rightpos, destpos : CARDINAL ;
+   overflow                   : BOOLEAN ;
+   op                         : QuadOperator ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   (* firstly ensure that any constant literal is declared *)
-   DeclareConstant(CurrentQuadToken, op1) ;
-   DeclareConstant(CurrentQuadToken, op2) ;
-   DeclareConstructor(CurrentQuadToken, quad, op1) ;
-   DeclareConstructor(CurrentQuadToken, quad, op2) ;
-   IF IsConst(op1) AND IsConst(op2)
+   GetQuadOtok (quad, combined, op,
+                left, right, dest, overflow,
+                leftpos, rightpos, destpos) ;
+   location := TokenToLocation (combined) ;
+   IF IsConst(left) AND IsConst(right)
    THEN
-      PushValue(op1) ;
-      PushValue(op2) ;
-      IF GreEqu(CurrentQuadToken)
+      PushValue(left) ;
+      PushValue(right) ;
+      IF GreEqu(combined)
       THEN
-         BuildGoto(location, string(CreateLabelName(op3)))
+         BuildGoto(location, string(CreateLabelName(dest)))
       ELSE
          (* fall through *)
       END
-   ELSIF IsConstSet(op1) OR (IsVar(op1) AND IsSet(SkipType(GetType(op1)))) OR
-         IsConstSet(op2) OR (IsVar(op2) AND IsSet(SkipType(GetType(op2))))
+   ELSIF IsConstSet(left) OR (IsVar(left) AND IsSet(SkipType(GetType(left)))) OR
+         IsConstSet(right) OR (IsVar(right) AND IsSet(SkipType(GetType(right))))
    THEN
-      CodeIfSetGreEqu(quad, op1, op2, op3)
+      CodeIfSetGreEqu(quad, left, right, dest)
    ELSE
-      IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
+      IF IsComposite(GetType(left)) OR IsComposite(GetType(right))
       THEN
-         MetaErrorT2 (CurrentQuadToken,
+         MetaErrorT2 (combined,
                       'comparison tests between composite types not allowed {%1Eatd} and {%2atd}',
-                      op1, op2)
+                      left, right)
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (op1)),
-                                                   SkipType (GetType (op2)),
-                                                   CurrentQuadToken),
-                               op1, op2) ;
-         DoJump(location, BuildGreaterThanOrEqual(location, tl, tr), NIL, string(CreateLabelName(op3)))
+                               ComparisonMixTypes (SkipType (GetType (left)),
+                                                   SkipType (GetType (right)),
+                                                   combined),
+                               left, right) ;
+         DoJump(location, BuildGreaterThanOrEqual(location, tl, tr), NIL, string(CreateLabelName(dest)))
       END
+   END
+END PerformCodeIfGreEqu ;
+
+
+(*
+   CodeIfGreEqu - codes the quadruple if op1 >= op2 then goto op3
+*)
+
+PROCEDURE CodeIfGreEqu (quad: CARDINAL) ;
+BEGIN
+   IF IsValidExpressionRelOp (quad, FALSE)
+   THEN
+      PerformCodeIfGreEqu (quad)
    END
 END CodeIfGreEqu ;
 
@@ -7302,7 +7362,6 @@ VAR
    overflow                   : BOOLEAN ;
    op                         : QuadOperator ;
 BEGIN
-   (* Ensure that any remaining undeclared constant literal is declared.  *)
    GetQuadOtok (quad, combined, op,
                 left, right, dest, overflow,
                 leftpos, rightpos, destpos) ;
@@ -7394,10 +7453,11 @@ END PerformCodeIfNotEqu ;
 
 
 (*
-   IsValidExpressionRelOp -
+   IsValidExpressionRelOp - declare left and right constants (if they are not already declared).
+                            Check whether left and right are expression compatible.
 *)
 
-PROCEDURE IsValidExpressionRelOp (quad: CARDINAL) : BOOLEAN ;
+PROCEDURE IsValidExpressionRelOp (quad: CARDINAL; isin: BOOLEAN) : BOOLEAN ;
 CONST
    Verbose = FALSE ;
 VAR
@@ -7418,7 +7478,7 @@ BEGIN
    lefttype := GetType (left) ;
    righttype := GetType (right) ;
    IF ExpressionTypeCompatible (combined, "", left, right,
-                                StrictTypeChecking, FALSE)
+                                StrictTypeChecking, isin)
    THEN
       RETURN TRUE
    ELSE
@@ -7439,7 +7499,7 @@ END IsValidExpressionRelOp ;
 
 PROCEDURE CodeIfEqu (quad: CARDINAL) ;
 BEGIN
-   IF IsValidExpressionRelOp (quad)
+   IF IsValidExpressionRelOp (quad, FALSE)
    THEN
       PerformCodeIfEqu (quad)
    END
@@ -7452,7 +7512,7 @@ END CodeIfEqu ;
 
 PROCEDURE CodeIfNotEqu (quad: CARDINAL) ;
 BEGIN
-   IF IsValidExpressionRelOp (quad)
+   IF IsValidExpressionRelOp (quad, FALSE)
    THEN
       PerformCodeIfNotEqu (quad)
    END
@@ -7541,10 +7601,10 @@ END BuildIfNotVarInConstValue ;
 
 
 (*
-   CodeIfIn - code the quadruple: if op1 in op2 then goto op3
+   PerformCodeIfIn - code the quadruple: if op1 in op2 then goto op3
 *)
 
-PROCEDURE CodeIfIn (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE PerformCodeIfIn (quad: CARDINAL) ;
 VAR
    low,
    high    : CARDINAL ;
@@ -7552,44 +7612,46 @@ VAR
    hightree,
    offset  : Tree ;
    fieldno : INTEGER ;
-   location: location_t ;
+   location                   : location_t ;
+   left, right, dest, combined,
+   leftpos, rightpos, destpos : CARDINAL ;
+   overflow                   : BOOLEAN ;
+   op                         : QuadOperator ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   (* firstly ensure that any constant literal is declared *)
-   DeclareConstant(CurrentQuadToken, op1) ;
-   DeclareConstant(CurrentQuadToken, op2) ;
-   DeclareConstructor(CurrentQuadToken, quad, op1) ;
-   DeclareConstructor(CurrentQuadToken, quad, op2) ;
-   IF IsConst(op1) AND IsConst(op2)
+   (* Ensure that any remaining undeclared constant literal is declared.  *)
+   GetQuadOtok (quad, combined, op,
+                left, right, dest, overflow,
+                leftpos, rightpos, destpos) ;
+   location := TokenToLocation (combined) ;
+   IF IsConst(left) AND IsConst(right)
    THEN
       InternalError ('should not get to here (if we do we should consider calling FoldIfIn)')
    ELSIF CheckElementSetTypes (quad)
    THEN
-      IF IsConst(op1)
+      IF IsConst(left)
       THEN
-         fieldno := GetFieldNo(CurrentQuadToken, op1, GetType(op2), offset) ;
+         fieldno := GetFieldNo(combined, left, GetType(right), offset) ;
          IF fieldno>=0
          THEN
-            PushValue(op1) ;
+            PushValue(left) ;
             PushIntegerTree(offset) ;
-            ConvertToType(GetType(op1)) ;
+            ConvertToType(GetType(left)) ;
             Sub ;
             BuildIfConstInVar(location,
-                              Mod2Gcc(SkipType(GetType(op2))),
-                              Mod2Gcc(op2), PopIntegerTree(),
-                              GetMode(op2)=LeftValue, fieldno,
-                              string(CreateLabelName(op3)))
+                              Mod2Gcc(SkipType(GetType(right))),
+                              Mod2Gcc(right), PopIntegerTree(),
+                              GetMode(right)=LeftValue, fieldno,
+                              string(CreateLabelName(dest)))
          ELSE
-            MetaErrorT1 (CurrentQuadToken, 'bit exceeded the range of set {%1Eatd}', op1)
+            MetaErrorT1 (combined, 'bit exceeded the range of set {%1Eatd}', left)
          END
-      ELSIF IsConst(op2)
+      ELSIF IsConst(right)
       THEN
          (* builds a cascaded list of if statements *)
-         PushValue(op2) ;
-         BuildIfVarInConstValue(location, CurrentQuadToken, GetValue(CurrentQuadToken), op1, op3)
+         PushValue(right) ;
+         BuildIfVarInConstValue(location, combined, GetValue(combined), left, dest)
       ELSE
-         GetSetLimits(SkipType(GetType(op2)), low, high) ;
+         GetSetLimits(SkipType(GetType(right)), low, high) ;
 
          PushValue(low) ;
          lowtree := PopIntegerTree() ;
@@ -7597,12 +7659,94 @@ BEGIN
          hightree := PopIntegerTree() ;
 
          BuildIfVarInVar(location,
-                         Mod2Gcc(SkipType(GetType(op2))),
-                         Mod2Gcc(op2), Mod2Gcc(op1),
-                         GetMode(op2)=LeftValue,
+                         Mod2Gcc(SkipType(GetType(right))),
+                         Mod2Gcc(right), Mod2Gcc(left),
+                         GetMode(right)=LeftValue,
                          lowtree, hightree,
-                         string(CreateLabelName(op3)))
+                         string(CreateLabelName(dest)))
       END
+   END
+END PerformCodeIfIn ;
+
+
+(*
+   PerformCodeIfNotIn - code the quadruple: if not (op1 in op2) then goto op3
+*)
+
+PROCEDURE PerformCodeIfNotIn (quad: CARDINAL) ;
+VAR
+   low,
+   high    : CARDINAL ;
+   lowtree,
+   hightree,
+   offset  : Tree ;
+   fieldno : INTEGER ;
+   location                   : location_t ;
+   left, right, dest, combined,
+   leftpos, rightpos, destpos : CARDINAL ;
+   overflow                   : BOOLEAN ;
+   op                         : QuadOperator ;
+BEGIN
+   (* Ensure that any remaining undeclared constant literal is declared.  *)
+   GetQuadOtok (quad, combined, op,
+                left, right, dest, overflow,
+                leftpos, rightpos, destpos) ;
+   location := TokenToLocation (combined) ;
+   IF IsConst(left) AND IsConst(right)
+   THEN
+      InternalError ('should not get to here (if we do we should consider calling FoldIfIn)')
+   ELSIF CheckElementSetTypes (quad)
+   THEN
+      IF IsConst(left)
+      THEN
+         fieldno := GetFieldNo(combined, left, SkipType(GetType(right)), offset) ;
+         IF fieldno>=0
+         THEN
+            PushValue(left) ;
+            PushIntegerTree(offset) ;
+            ConvertToType(GetType(left)) ;
+            Sub ;
+            BuildIfNotConstInVar(location,
+                                 Mod2Gcc(SkipType(GetType(right))),
+                                 Mod2Gcc(right), PopIntegerTree(),
+                                 GetMode(right)=LeftValue, fieldno,
+                                 string(CreateLabelName(dest)))
+         ELSE
+            MetaErrorT1 (combined, 'bit exceeded the range of set {%1Eatd}', right)
+         END
+      ELSIF IsConst(right)
+      THEN
+         (* builds a cascaded list of if statements *)
+         PushValue(right) ;
+         BuildIfNotVarInConstValue(quad, GetValue(combined), left, dest)
+      ELSE
+         GetSetLimits(SkipType(GetType(right)), low, high) ;
+
+         PushValue(low) ;
+         lowtree := PopIntegerTree() ;
+         PushValue(high) ;
+         hightree := PopIntegerTree() ;
+
+         BuildIfNotVarInVar(location,
+                            Mod2Gcc(SkipType(GetType(right))),
+                            Mod2Gcc(right), Mod2Gcc(left),
+                            GetMode(right)=LeftValue,
+                            lowtree, hightree,
+                            string(CreateLabelName(dest)))
+      END
+   END
+END PerformCodeIfNotIn ;
+
+
+(*
+   CodeIfIn - code the quadruple: if op1 in op2 then goto op3
+*)
+
+PROCEDURE CodeIfIn (quad: CARDINAL) ;
+BEGIN
+   IF IsValidExpressionRelOp (quad, TRUE)
+   THEN
+      PerformCodeIfIn (quad)
    END
 END CodeIfIn ;
 
@@ -7611,65 +7755,11 @@ END CodeIfIn ;
    CodeIfNotIn - code the quadruple: if not (op1 in op2) then goto op3
 *)
 
-PROCEDURE CodeIfNotIn (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
-VAR
-   low,
-   high    : CARDINAL ;
-   lowtree,
-   hightree,
-   offset  : Tree ;
-   fieldno : INTEGER ;
-   location: location_t ;
+PROCEDURE CodeIfNotIn (quad: CARDINAL) ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   (* firstly ensure that any constant literal is declared *)
-   DeclareConstant(CurrentQuadToken, op1) ;
-   DeclareConstant(CurrentQuadToken, op2) ;
-   DeclareConstructor(CurrentQuadToken, quad, op1) ;
-   DeclareConstructor(CurrentQuadToken, quad, op2) ;
-   IF IsConst(op1) AND IsConst(op2)
+   IF IsValidExpressionRelOp (quad, TRUE)
    THEN
-      InternalError ('should not get to here (if we do we should consider calling FoldIfIn)')
-   ELSIF CheckElementSetTypes (quad)
-   THEN
-      IF IsConst(op1)
-      THEN
-         fieldno := GetFieldNo(CurrentQuadToken, op1, SkipType(GetType(op2)), offset) ;
-         IF fieldno>=0
-         THEN
-            PushValue(op1) ;
-            PushIntegerTree(offset) ;
-            ConvertToType(GetType(op1)) ;
-            Sub ;
-            BuildIfNotConstInVar(location,
-                                 Mod2Gcc(SkipType(GetType(op2))),
-                                 Mod2Gcc(op2), PopIntegerTree(),
-                                 GetMode(op2)=LeftValue, fieldno,
-                                 string(CreateLabelName(op3)))
-         ELSE
-            MetaErrorT1 (CurrentQuadToken, 'bit exceeded the range of set {%1Eatd}', op2)
-         END
-      ELSIF IsConst(op2)
-      THEN
-         (* builds a cascaded list of if statements *)
-         PushValue(op2) ;
-         BuildIfNotVarInConstValue(quad, GetValue(CurrentQuadToken), op1, op3)
-      ELSE
-         GetSetLimits(SkipType(GetType(op2)), low, high) ;
-
-         PushValue(low) ;
-         lowtree := PopIntegerTree() ;
-         PushValue(high) ;
-         hightree := PopIntegerTree() ;
-
-         BuildIfNotVarInVar(location,
-                            Mod2Gcc(SkipType(GetType(op2))),
-                            Mod2Gcc(op2), Mod2Gcc(op1),
-                            GetMode(op2)=LeftValue,
-                            lowtree, hightree,
-                            string(CreateLabelName(op3)))
-      END
+      PerformCodeIfNotIn (quad)
    END
 END CodeIfNotIn ;
 
