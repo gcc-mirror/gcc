@@ -12898,7 +12898,7 @@ BEGIN
       PushBooltok (Merge (NextQuad-1, t1), Merge (NextQuad-2, f1), tokpos)
    ELSIF (OperandT (2) = HashTok) OR (OperandT (2) = LessGreaterTok)
    THEN
-      (* are the two boolean expressions the different? *)
+      (* are the two boolean expressions different? *)
       PopBool (t1, f1) ;
       PopT (Tok) ;
       PopBool (t2, f2) ;

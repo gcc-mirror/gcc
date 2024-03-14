@@ -511,8 +511,8 @@ BEGIN
    LogicalXorOp       : CodeSetSymmetricDifference (q) |
    LogicalDiffOp      : CodeSetLogicalDifference (q) |
    IfLessOp           : CodeIfLess (q, op1, op2, op3) |
-   IfEquOp            : CodeIfEqu (q, op1, op2, op3) |
-   IfNotEquOp         : CodeIfNotEqu (q, op1, op2, op3) |
+   IfEquOp            : CodeIfEqu (q) |
+   IfNotEquOp         : CodeIfNotEqu (q) |
    IfGreEquOp         : CodeIfGreEqu (q, op1, op2, op3) |
    IfLessEquOp        : CodeIfLessEqu (q, op1, op2, op3) |
    IfGreOp            : CodeIfGre (q, op1, op2, op3) |
@@ -2489,17 +2489,8 @@ END FoldBuiltinFunction ;
 
 (*
    CodeParam - builds a parameter list.
-
-               NOTE that we almost can treat VAR and NON VAR parameters the same, expect for
-                    some types:
-
-                    procedure parameters
-                    unbounded parameters
-
-                    these require special attention and thus it is easier to test individually
-                    for VAR and NON VAR parameters.
-
-               NOTE that we CAN ignore ModeOfAddr though
+               Note that we can ignore ModeOfAddr as any lvalue will
+               have been created in a preceeding quadruple.
 *)
 
 PROCEDURE CodeParam (quad: CARDINAL) ;
@@ -7299,50 +7290,158 @@ END ComparisonMixTypes ;
 
 
 (*
+   PerformCodeIfEqu -
+*)
+
+PROCEDURE PerformCodeIfEqu (quad: CARDINAL) ;
+VAR
+   tl, tr                     : Tree ;
+   location                   : location_t ;
+   left, right, dest, combined,
+   leftpos, rightpos, destpos : CARDINAL ;
+   overflow                   : BOOLEAN ;
+   op                         : QuadOperator ;
+BEGIN
+   (* Ensure that any remaining undeclared constant literal is declared.  *)
+   GetQuadOtok (quad, combined, op,
+                left, right, dest, overflow,
+                leftpos, rightpos, destpos) ;
+   location := TokenToLocation (combined) ;
+   IF IsConst (left) AND IsConst (right)
+   THEN
+      PushValue (left) ;
+      PushValue (right) ;
+      IF Equ (combined)
+      THEN
+         BuildGoto (location, string (CreateLabelName (dest)))
+      ELSE
+         (* Fall through.  *)
+      END
+   ELSIF IsConstSet (left) OR (IsVar (left) AND IsSet (SkipType (GetType (left)))) OR
+         IsConstSet (right) OR (IsVar (right) AND IsSet (SkipType (GetType (right))))
+   THEN
+      CodeIfSetEqu (quad, left, right, dest)
+   ELSE
+      IF IsComposite (GetType (left)) OR IsComposite (GetType (right))
+      THEN
+         MetaErrorT2 (combined,
+                      'equality tests between composite types not allowed {%1Eatd} and {%2atd}',
+                      left, right)
+      ELSE
+         ConvertBinaryOperands (location,
+                                tl, tr,
+                                ComparisonMixTypes (SkipType (GetType (left)),
+                                                    SkipType (GetType (right)),
+                                                    combined),
+                               left, right) ;
+         DoJump (location, BuildEqualTo (location, tl, tr), NIL,
+                 string (CreateLabelName (dest)))
+      END
+   END
+END PerformCodeIfEqu ;
+
+
+(*
+   PerformCodeIfNotEqu -
+*)
+
+PROCEDURE PerformCodeIfNotEqu (quad: CARDINAL) ;
+VAR
+   tl, tr                     : Tree ;
+   location                   : location_t ;
+   left, right, dest, combined,
+   leftpos, rightpos, destpos : CARDINAL ;
+   overflow                   : BOOLEAN ;
+   op                         : QuadOperator ;
+BEGIN
+   (* Ensure that any remaining undeclared constant literal is declared.  *)
+   GetQuadOtok (quad, combined, op,
+                left, right, dest, overflow,
+                leftpos, rightpos, destpos) ;
+   location := TokenToLocation (combined) ;
+   IF IsConst (left) AND IsConst (right)
+   THEN
+      PushValue (left) ;
+      PushValue (right) ;
+      IF NotEqu (combined)
+      THEN
+         BuildGoto (location, string (CreateLabelName (dest)))
+      ELSE
+         (* Fall through.  *)
+      END
+   ELSIF IsConstSet (left) OR (IsVar (left) AND IsSet (SkipType (GetType (left)))) OR
+         IsConstSet (right) OR (IsVar (right) AND IsSet (SkipType (GetType (right))))
+   THEN
+      CodeIfSetNotEqu (left, right, dest)
+   ELSE
+      IF IsComposite (GetType (left)) OR IsComposite (GetType (right))
+      THEN
+         MetaErrorT2 (combined,
+                      'inequality tests between composite types not allowed {%1Eatd} and {%2atd}',
+                      left, right)
+      ELSE
+         ConvertBinaryOperands (location,
+                                tl, tr,
+                                ComparisonMixTypes (SkipType (GetType (left)),
+                                                    SkipType (GetType (right)),
+                                                    combined),
+                                left, right) ;
+         DoJump (location, BuildNotEqualTo (location, tl, tr), NIL,
+                 string (CreateLabelName (dest)))
+      END
+   END
+END PerformCodeIfNotEqu ;
+
+
+(*
+   IsValidExpressionRelOp -
+*)
+
+PROCEDURE IsValidExpressionRelOp (quad: CARDINAL) : BOOLEAN ;
+CONST
+   Verbose = FALSE ;
+VAR
+   lefttype, righttype,
+   left, right, dest, combined,
+   leftpos, rightpos, destpos : CARDINAL ;
+   overflow                   : BOOLEAN ;
+   op                         : QuadOperator ;
+BEGIN
+   (* Ensure that any remaining undeclared constant literal is declared.  *)
+   GetQuadOtok (quad, combined, op,
+                left, right, dest, overflow,
+                leftpos, rightpos, destpos) ;
+   DeclareConstant (leftpos, left) ;
+   DeclareConstant (rightpos, right) ;
+   DeclareConstructor (leftpos, quad, left) ;
+   DeclareConstructor (rightpos, quad, right) ;
+   lefttype := GetType (left) ;
+   righttype := GetType (right) ;
+   IF ExpressionTypeCompatible (combined, "", left, right,
+                                StrictTypeChecking, FALSE)
+   THEN
+      RETURN TRUE
+   ELSE
+      IF Verbose
+      THEN
+         MetaErrorT2 (combined,
+                      'expression mismatch between {%1Etad} and {%2tad} seen during comparison',
+                      left, right)
+      END ;
+      RETURN FALSE
+   END
+END IsValidExpressionRelOp ;
+
+
+(*
    CodeIfEqu - codes the quadruple if op1 = op2 then goto op3
 *)
 
-PROCEDURE CodeIfEqu (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
-VAR
-   tl, tr: Tree ;
-   location  : location_t ;
+PROCEDURE CodeIfEqu (quad: CARDINAL) ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   (* firstly ensure that any constant literal is declared *)
-   DeclareConstant(CurrentQuadToken, op1) ;
-   DeclareConstant(CurrentQuadToken, op2) ;
-   DeclareConstructor(CurrentQuadToken, quad, op1) ;
-   DeclareConstructor(CurrentQuadToken, quad, op2) ;
-   IF IsConst(op1) AND IsConst(op2)
+   IF IsValidExpressionRelOp (quad)
    THEN
-      PushValue(op1) ;
-      PushValue(op2) ;
-      IF Equ(CurrentQuadToken)
-      THEN
-         BuildGoto(location, string(CreateLabelName(op3)))
-      ELSE
-         (* fall through *)
-      END
-   ELSIF IsConstSet(op1) OR (IsVar(op1) AND IsSet(SkipType(GetType(op1)))) OR
-         IsConstSet(op2) OR (IsVar(op2) AND IsSet(SkipType(GetType(op2))))
-   THEN
-      CodeIfSetEqu(quad, op1, op2, op3)
-   ELSE
-      IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
-      THEN
-         MetaErrorT2 (CurrentQuadToken,
-                      'equality tests between composite types not allowed {%1Eatd} and {%2atd}',
-                      op1, op2)
-      ELSE
-         ConvertBinaryOperands(location,
-                               tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (op1)),
-                                                   SkipType (GetType (op2)),
-                                                   CurrentQuadToken),
-                               op1, op2) ;
-         DoJump(location, BuildEqualTo(location, tl, tr), NIL, string(CreateLabelName(op3)))
-      END
+      PerformCodeIfEqu (quad)
    END
 END CodeIfEqu ;
 
@@ -7351,48 +7450,11 @@ END CodeIfEqu ;
    CodeIfNotEqu - codes the quadruple if op1 # op2 then goto op3
 *)
 
-PROCEDURE CodeIfNotEqu (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
-VAR
-   tl, tr  : Tree ;
-   location: location_t ;
+PROCEDURE CodeIfNotEqu (quad: CARDINAL) ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   (* firstly ensure that any constant literal is declared *)
-   DeclareConstant(CurrentQuadToken, op1) ;
-   DeclareConstant(CurrentQuadToken, op2) ;
-   DeclareConstructor(CurrentQuadToken, quad, op1) ;
-   DeclareConstructor(CurrentQuadToken, quad, op2) ;
-   IF IsConst(op1) AND IsConst(op2)
+   IF IsValidExpressionRelOp (quad)
    THEN
-      PushValue(op1) ;
-      PushValue(op2) ;
-      IF NotEqu(CurrentQuadToken)
-      THEN
-         BuildGoto(location, string(CreateLabelName(op3)))
-      ELSE
-         (* fall through *)
-      END
-   ELSIF IsConstSet(op1) OR (IsVar(op1) AND IsSet(SkipType(GetType(op1)))) OR
-         IsConstSet(op2) OR (IsVar(op2) AND IsSet(SkipType(GetType(op2))))
-   THEN
-      CodeIfSetNotEqu (op1, op2, op3)
-   ELSE
-      IF IsComposite(op1) OR IsComposite(op2)
-      THEN
-         MetaErrorT2 (CurrentQuadToken,
-                      'inequality tests between composite types not allowed {%1Eatd} and {%2atd}',
-                      op1, op2)
-      ELSE
-         ConvertBinaryOperands(location,
-                               tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (op1)),
-                                                   SkipType (GetType (op2)),
-                                                   CurrentQuadToken),
-                               op1, op2) ;
-         DoJump(location,
-                BuildNotEqualTo(location, tl, tr), NIL, string(CreateLabelName(op3)))
-      END
+      PerformCodeIfNotEqu (quad)
    END
 END CodeIfNotEqu ;
 
