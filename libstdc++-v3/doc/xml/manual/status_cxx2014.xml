@@ -1390,7 +1390,7 @@ not in any particular release.
       <entry>30.4.4.2</entry>
       <entry>Function <code>call_once</code></entry>
       <entry>Broken</entry>
-      <entry>Exception support is broken on non-Linux targets.
+      <entry>Exception support is broken.
 	See <link xmlns:xlink="http://www.w3.org/1999/xlink"
 	xlink:href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66146">PR
 	66146</link>.
