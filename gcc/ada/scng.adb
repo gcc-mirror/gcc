@@ -40,6 +40,7 @@ with Widechar; use Widechar;
 
 pragma Warnings (Off);
 --  This package is used also by gnatcoll
+with System.Case_Util;
 with System.CRC32;
 with System.UTF_32;  use System.UTF_32;
 with System.WCh_Con; use System.WCh_Con;
@@ -2250,86 +2251,146 @@ package body Scng is
 
          when Special_Preprocessor_Character =>
 
-            --  If Set_Special_Character has been called for this character,
-            --  set Scans.Special_Character and return a Special token.
+            declare
+               function Matches_After_Skipping_White_Space
+                 (S : String) return Boolean;
 
-            if Special_Characters (Source (Scan_Ptr)) then
-               Token_Ptr := Scan_Ptr;
-               Token := Tok_Special;
-               Special_Character := Source (Scan_Ptr);
-               Scan_Ptr := Scan_Ptr + 1;
-               return;
+               --  Return True iff after skipping past white space the
+               --  next Source characters match the given string.
 
-            --  Check for something looking like a preprocessor directive
+               ----------------------------------------
+               -- Matches_After_Skipping_White_Space --
+               ----------------------------------------
 
-            elsif Source (Scan_Ptr) = '#'
-              and then (Source (Scan_Ptr + 1 .. Scan_Ptr + 2) = "if"
+               function Matches_After_Skipping_White_Space
+                 (S : String) return Boolean
+               is
+                  function To_Lower_Case_String (Buff : Text_Buffer)
+                    return String;
+                  --  Convert a text buffer to a lower-case string.
+
+                  --------------------------
+                  -- To_Lower_Case_String --
+                  --------------------------
+
+                  function To_Lower_Case_String (Buff : Text_Buffer)
+                    return String
+                  is
+                     subtype One_Based is Text_Buffer (1 .. Buff'Length);
+                     Result : String := String (One_Based (Buff));
+                  begin
+                     --  The System.Case_Util.To_Lower function (the overload
+                     --  that takes a string parameter) cannot be called
+                     --  here due to bootstrapping problems. That function
+                     --  was added too recently.
+
+                     System.Case_Util.To_Lower (Result);
+                     return Result;
+                  end To_Lower_Case_String;
+
+                  pragma Assert (Source (Scan_Ptr) = '#');
+                  Local_Scan_Ptr : Source_Ptr := Scan_Ptr + 1;
+
+               --  Start of processing for Matches_After_Skipping_White_Space
+
+               begin
+                  while Local_Scan_Ptr in Source'Range
+                    and then Source (Local_Scan_Ptr) in ' ' | HT
+                  loop
+                     Local_Scan_Ptr := Local_Scan_Ptr + 1;
+                  end loop;
+
+                  return Local_Scan_Ptr in Source'Range
+                    and then Local_Scan_Ptr + (S'Length - 1) in Source'Range
+                    and then S = To_Lower_Case_String (
+                                   Source (Local_Scan_Ptr ..
+                                           Local_Scan_Ptr + (S'Length - 1)));
+               end Matches_After_Skipping_White_Space;
+
+            begin
+               --  If Set_Special_Character has been called for this character,
+               --  set Scans.Special_Character and return a Special token.
+
+               if Special_Characters (Source (Scan_Ptr)) then
+                  Token_Ptr := Scan_Ptr;
+                  Token := Tok_Special;
+                  Special_Character := Source (Scan_Ptr);
+                  Scan_Ptr := Scan_Ptr + 1;
+                  return;
+
+               --  Check for something looking like a preprocessor directive
+
+               elsif Source (Scan_Ptr) = '#'
+                 and then (Matches_After_Skipping_White_Space ("if")
+                             or else
+                           Matches_After_Skipping_White_Space ("elsif")
+                             or else
+                           Matches_After_Skipping_White_Space ("else")
+                             or else
+                           Matches_After_Skipping_White_Space ("end"))
+               then
+                  Error_Msg_S
+                    ("preprocessor directive ignored" &
+                     ", preprocessor not active");
+
+                  --  Skip to end of line
+
+                  loop
+                     if Source (Scan_Ptr) in Graphic_Character
                           or else
-                        Source (Scan_Ptr + 1 .. Scan_Ptr + 5) = "elsif"
-                          or else
-                        Source (Scan_Ptr + 1 .. Scan_Ptr + 4) = "else"
-                          or else
-                        Source (Scan_Ptr + 1 .. Scan_Ptr + 3) = "end")
-            then
-               Error_Msg_S
-                 ("preprocessor directive ignored, preprocessor not active");
+                        Source (Scan_Ptr) = HT
+                     then
+                        Scan_Ptr := Scan_Ptr + 1;
 
-               --  Skip to end of line
+                     --  Done if line terminator or EOF
 
-               loop
-                  if Source (Scan_Ptr) in Graphic_Character
-                       or else
-                     Source (Scan_Ptr) = HT
-                  then
-                     Scan_Ptr := Scan_Ptr + 1;
+                     elsif Source (Scan_Ptr) in Line_Terminator
+                             or else
+                           Source (Scan_Ptr) = EOF
+                     then
+                        exit;
 
-                  --  Done if line terminator or EOF
+                     --  If we have a wide character, we have to scan it out,
+                     --  because it might be a legitimate line terminator
 
-                  elsif Source (Scan_Ptr) in Line_Terminator
-                          or else
-                        Source (Scan_Ptr) = EOF
-                  then
-                     exit;
+                     elsif Start_Of_Wide_Character then
+                        declare
+                           Wptr : constant Source_Ptr := Scan_Ptr;
+                           Code : Char_Code;
+                           Err  : Boolean;
 
-                  --  If we have a wide character, we have to scan it out,
-                  --  because it might be a legitimate line terminator
+                        begin
+                           Scan_Wide (Source, Scan_Ptr, Code, Err);
 
-                  elsif Start_Of_Wide_Character then
-                     declare
-                        Wptr : constant Source_Ptr := Scan_Ptr;
-                        Code : Char_Code;
-                        Err  : Boolean;
+                           --  If not well formed wide character, then just
+                           --  skip past it and ignore it.
 
-                     begin
-                        Scan_Wide (Source, Scan_Ptr, Code, Err);
+                           if Err then
+                              Scan_Ptr := Wptr + 1;
 
-                        --  If not well formed wide character, then just skip
-                        --  past it and ignore it.
+                           --  If UTF_32 terminator, terminate comment scan
 
-                        if Err then
-                           Scan_Ptr := Wptr + 1;
+                           elsif Is_UTF_32_Line_Terminator (UTF_32 (Code)) then
+                              Scan_Ptr := Wptr;
+                              exit;
+                           end if;
+                        end;
 
-                        --  If UTF_32 terminator, terminate comment scan
+                     --  Else keep going (don't worry about bad comment chars
+                     --  in this context, we just want to find the end of line.
 
-                        elsif Is_UTF_32_Line_Terminator (UTF_32 (Code)) then
-                           Scan_Ptr := Wptr;
-                           exit;
-                        end if;
-                     end;
+                     else
+                        Scan_Ptr := Scan_Ptr + 1;
+                     end if;
+                  end loop;
 
-                  --  Else keep going (don't worry about bad comment chars
-                  --  in this context, we just want to find the end of line.
+               --  Otherwise, this is an illegal character
 
-                  else
-                     Scan_Ptr := Scan_Ptr + 1;
-                  end if;
-               end loop;
+               else
+                  Error_Illegal_Character;
+               end if;
 
-            --  Otherwise, this is an illegal character
-
-            else
-               Error_Illegal_Character;
-            end if;
+            end;
 
          --  End switch on non-blank character
 
