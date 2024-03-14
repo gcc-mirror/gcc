@@ -23081,6 +23081,8 @@ aarch64_expand_compare_and_swap (rtx operands[])
         rval = copy_to_mode_reg (r_mode, oldval);
       else
 	emit_move_insn (rval, gen_lowpart (r_mode, oldval));
+      if (mode == TImode)
+	newval = force_reg (mode, newval);
 
       emit_insn (gen_aarch64_compare_and_swap_lse (mode, rval, mem,
 						   newval, mod_s));
