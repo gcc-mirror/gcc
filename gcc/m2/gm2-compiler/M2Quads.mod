@@ -8400,6 +8400,7 @@ VAR
 BEGIN
    PopT (NoOfParam) ;
    ReturnVar := MakeTemporary (tok, ImmediateValue) ;
+   PutConst (ReturnVar, Cardinal) ;
    GenHigh (tok, ReturnVar, 1, OperandT (1)) ;
    PopN (NoOfParam+1) ;
    PushTtok (ReturnVar, tok)
