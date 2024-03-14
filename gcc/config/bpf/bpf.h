@@ -99,7 +99,7 @@
 
 #define SIG_ATOMIC_TYPE "char"
 
-#define INT8_TYPE "char"
+#define INT8_TYPE "signed char"
 #define INT16_TYPE "short int"
 #define INT32_TYPE "int"
 #define INT64_TYPE "long int"
