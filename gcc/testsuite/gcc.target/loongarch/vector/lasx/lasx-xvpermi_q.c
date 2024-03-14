@@ -27,7 +27,7 @@ main ()
   *((unsigned long*)& __m256i_result[2]) = 0x7fff7fff7fff0000;
   *((unsigned long*)& __m256i_result[1]) = 0x7fe37fe3001d001d;
   *((unsigned long*)& __m256i_result[0]) = 0x7fff7fff7fff0000;
-  __m256i_out = __lasx_xvpermi_q (__m256i_op0, __m256i_op1, 0x2a);
+  __m256i_out = __lasx_xvpermi_q (__m256i_op0, __m256i_op1, 0x22);
   ASSERTEQ_64 (__LINE__, __m256i_result, __m256i_out);
 
   *((unsigned long*)& __m256i_op0[3]) = 0x0000000000000000;
@@ -42,7 +42,7 @@ main ()
   *((unsigned long*)& __m256i_result[2]) = 0x000000000019001c;
   *((unsigned long*)& __m256i_result[1]) = 0x0000000000000000;
   *((unsigned long*)& __m256i_result[0]) = 0x00000000000001fe;
-  __m256i_out = __lasx_xvpermi_q (__m256i_op0, __m256i_op1, 0xb9);
+  __m256i_out = __lasx_xvpermi_q (__m256i_op0, __m256i_op1, 0x31);
   ASSERTEQ_64 (__LINE__, __m256i_result, __m256i_out);
 
   *((unsigned long*)& __m256i_op0[3]) = 0x00ff00ff00ff00ff;
@@ -57,7 +57,7 @@ main ()
   *((unsigned long*)& __m256i_result[2]) = 0xffff0000ffff0000;
   *((unsigned long*)& __m256i_result[1]) = 0x00ff00ff00ff00ff;
   *((unsigned long*)& __m256i_result[0]) = 0x00ff00ff00ff00ff;
-  __m256i_out = __lasx_xvpermi_q (__m256i_op0, __m256i_op1, 0xca);
+  __m256i_out = __lasx_xvpermi_q (__m256i_op0, __m256i_op1, 0x02);
   ASSERTEQ_64 (__LINE__, __m256i_result, __m256i_out);
 
   return 0;
