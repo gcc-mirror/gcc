@@ -1832,11 +1832,20 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2278r4.html" target="_top">
         P2278R4
         </a>
-      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_as_const &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">ranges::to</code> </td><td align="left">
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_as_const &gt;= 202207L</code> </td></tr><tr bgcolor="#B0B0B0"><td align="left"> <code class="code">ranges::to</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1206r7.pdf" target="_top">
         P1206R7
         </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_ranges_to_container &gt;= 202202L</code> </td></tr><tr><td align="left"> Pipe support for user-defined range adaptors </td><td align="left">
+      </td><td align="center"> 14.1 (<code class="code">ranges::to</code> function) </td><td align="left">
+	<code class="code">__cpp_lib_containers_ranges &gt;= 202202L</code>,
+	<code class="code">__cpp_lib_ranges_to_container &gt;= 202202L</code>
+      </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Ranges iterators as inputs to non-Ranges algorithms </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2408r5.html" target="_top">
+        P2408R5
+        </a>
+      </td><td align="center"> </td><td align="left">
+	<code class="code">__cpp_lib_algorithm_iterator_requirements &gt;= 202207L</code>
+      </td></tr><tr><td align="left"> Pipe support for user-defined range adaptors </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2387r3.html" target="_top">
         P2387R3
         </a>
@@ -1861,11 +1870,19 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2302r4.html" target="_top">
         P2302R4
         </a>
-      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_contains &gt;= 202207L</code> </td></tr><tr><td align="left"> <code class="code">ranges::fold</code> </td><td align="left">
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_contains &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Making multi-param constructors of views explicit </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2711r1.html" target="_top">
+        P2711R1
+        </a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left"> <code class="code">ranges::fold</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2322r6.html" target="_top">
         P2322R6
         </a>
-      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_fold &gt;= 202207L</code> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> 13.1 </td><td align="left"> <code class="code">__cpp_lib_ranges_fold &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Relaxing Ranges Just A Smidge</td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2609r3.html" target="_top">
+        P2609R3
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_ranges &gt;= 202302L</code> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Compile-time programming</strong></span>
       </td></tr><tr><td align="left"> A proposal for a type trait to detect scoped enumerations </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1048r1.pdf" target="_top">
@@ -1899,29 +1916,35 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1413r3.pdf" target="_top">
         P1413R3
         </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#B0B0B0"><td align="left"> A type trait to detect reference binding to temporary </td><td align="left">
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left"> A type trait to detect reference binding to temporary </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2255r2.html" target="_top">
         P2255R2
         </a>
-      </td><td align="center"> 13.1 (missing changes to <code class="code">std::tuple</code> </td><td align="left"> <code class="code">__cpp_lib_reference_from_temporary &gt;= 202202L</code> </td></tr><tr><td colspan="4" align="left">
-        <span class="bold"><strong>Strings and text</strong></span>
-      </td></tr><tr><td align="left"> string contains function </td><td align="left">
-        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html" target="_top">
-        P1679R3
+      </td><td align="center">
+	<div class="informaltable"><table class="informaltable" border="0"><colgroup><col /></colgroup><tbody><tr><td> 13.1 (missing changes to <code class="code">std::tuple</code>) </td></tr><tr><td> 14.1 (complete) </td></tr></tbody></table></div>
+      </td><td align="left"> <code class="code">__cpp_lib_reference_from_temporary &gt;= 202202L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+        Move-only types for equality_comparable_with, totally_ordered_with,
+	and three_way_comparable_with
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2404r3.pdf" target="_top">
+        P2404R3
         </a>
-      </td><td align="center"> 11.1 </td><td align="left"> <code class="code">__cpp_lib_string_contains &gt;= 202011L</code> </td></tr><tr><td align="left"> Prohibit std::basic_string and std::basic_string_view construction from nullptr </td><td align="left">
-        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2166r1.html" target="_top">
-        P2166R1
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_concepts &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> A trait for implicit lifetime types </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2674r1.pdf" target="_top">
+        P2674R1
         </a>
-      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left"> basic_string::resize_and_overwrite </td><td align="left">
-        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1072r10.html" target="_top">
-        P1072R10
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_is_implicit_lifetime &gt;= 202302L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+	<code class="code">common_reference_t</code> of <code class="code">reference_wrapper</code>
+	Should Be a Reference Type
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2655r3.html" target="_top">
+        P2655R3
         </a>
-      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_resize_and_overwrite &gt;= 202110L</code> </td></tr><tr><td align="left"> A strstream replacement using span&lt;charT&gt; as buffer </td><td align="left">
-        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0448r4.pdf" target="_top">
-        P0448R4
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_common_reference &gt;= 202302L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Deprecate <code class="code">numeric_limits::has_denorm</code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2614r2.pdf" target="_top">
+        P2614R2
         </a>
-      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_spanstream &gt;= 202106L</code> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Containers</strong></span>
       </td></tr><tr><td align="left"> Iterator pair constructors for stack and queue </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1425r4.pdf" target="_top">
@@ -1973,7 +1996,27 @@ or any notes about the implementation.
         </a>
       </td><td align="center"> </td><td align="left"> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Strings and text</strong></span>
-      </td></tr><tr><td align="left"> std::format improvements </td><td align="left">
+      </td></tr><tr><td align="left"> string contains function </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html" target="_top">
+        P1679R3
+        </a>
+      </td><td align="center"> 11.1 </td><td align="left"> <code class="code">__cpp_lib_string_contains &gt;= 202011L</code> </td></tr><tr><td align="left"> Prohibit std::basic_string and std::basic_string_view construction from nullptr </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2166r1.html" target="_top">
+        P2166R1
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left"> basic_string::resize_and_overwrite </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1072r10.html" target="_top">
+        P1072R10
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_resize_and_overwrite &gt;= 202110L</code> </td></tr><tr><td align="left"> A strstream replacement using span&lt;charT&gt; as buffer </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0448r4.pdf" target="_top">
+        P0448R4
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_spanstream &gt;= 202106L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code"> std::string::substr() &amp;&amp; </code> </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2438r2.html" target="_top">
+        P2438R2
+        </a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left"> std::format improvements </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html" target="_top">
         P2216R3
         </a>
@@ -1996,7 +2039,13 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2419r2.html" target="_top">
         P2419R2
         </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_format &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Formatting Ranges </td><td align="left">
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_format &gt;= 202207L</code> </td></tr><tr><td align="left">
+	Formatting pointers
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2510r3.pdf" target="_top">
+        P2510R3
+        </a>
+      </td><td align="center"> 13.2 (feature test macro not defined)</td><td align="left"> <code class="code">__cpp_lib_format &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Formatting Ranges </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html" target="_top">
         P2286R8
         </a>
@@ -2004,18 +2053,18 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2585r1.html" target="_top">
         P2585R1
         </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_format_ranges &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Formatted output </td><td align="left">
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_format_ranges &gt;= 202207L</code> </td></tr><tr><td align="left"> Formatted output </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html" target="_top">
         P2093R14
         </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_print &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+      </td><td align="center"> 14.1 </td><td align="left"> <code class="code">__cpp_lib_print &gt;= 202207L</code> </td></tr><tr><td align="left">
 	Should the output of std::print to a terminal be synchronized with
 	the underlying stream?
       </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2539r3.html" target="_top">
         P2539R3
         </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">
+      </td><td align="center"> 14.1 </td><td align="left"> </td></tr><tr><td align="left">
 	Formatting <code class="code">thread::id</code> and <code class="code">stacktrace</code>
       </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2693r1.pdf" target="_top">
@@ -2059,13 +2108,19 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0798r8.html" target="_top">
         P0798R8
         </a>
-      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_optional &gt;= 202110L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_optional &gt;= 202110L</code> </td></tr><tr><td align="left">
 	Compatibility between <code class="code">tuple</code>, <code class="code">pair</code>
 	and <span class="emphasis"><em>tuple-like</em></span> objects </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2165r4.pdf" target="_top">
         P2165R4
         </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_tuple_like &gt;= 202207L</code> </td></tr><tr><td align="left"> <code class="code">move_only_function</code> </td><td align="left">
+      </td><td align="center"> 14.1 </td><td align="left"> <code class="code">__cpp_lib_tuple_like &gt;= 202207L</code> </td></tr><tr><td align="left">
+	Default Arguments for <code class="code">pair</code>'s Forwarding Constructor
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1951r1.html" target="_top">
+        P1951R1
+        </a>
+      </td><td align="center"> 14.1 </td><td align="left"> </td></tr><tr><td align="left"> <code class="code">move_only_function</code> </td><td align="left">
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0288r9.html" target="_top">
         P0288R9
         </a>
@@ -2113,7 +2168,42 @@ or any notes about the implementation.
         <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1642r11.html" target="_top">
         P1642R11
         </a>
-      </td><td align="center"> 13.1 </td><td align="left"> </td></tr></tbody></table></div></div><br class="table-break" /></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="status.iso.tr1"></a>C++ TR1</h3></div></div></div><p>
+      </td><td align="center"> 13.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Providing size feedback in the Allocator interface </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0401r6.html" target="_top">
+        P0401R6
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_allocate_at_least &gt;= 202306L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+	Disallow User Specialization of <code class="code">allocator_traits</code>
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2652r2.html" target="_top">
+        P2652R2
+        </a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Explicit lifetime management </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2590r2.pdf" target="_top">
+        P2590R2
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_start_lifetime_as &gt;= 202207L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+	Fixing <code class="code">std::start_lifetime_as</code> and
+	<code class="code">std::start_lifetime_as_array</code>
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2679r2.pdf" target="_top">
+        P2679R2
+        </a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left"> out_ptr - a scalable output pointer abstraction </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1132r8.html" target="_top">
+        P1132R8
+        </a>
+      </td><td align="center"> 14.1 </td><td align="left"> <code class="code">__cpp_lib_out_ptr &gt;= 202106L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">barrier</code>'s phase completion guarantees </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2588r3.html" target="_top">
+        P2588R3
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_barrier &gt;= 202302L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">
+        Standard Library Modules <code class="code">std</code> and <code class="code">std.compat</code>
+      </td><td align="left">
+        <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2465r3.pdf" target="_top">
+        P2465R3
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_modules &gt;= 202207L</code> </td></tr></tbody></table></div></div><br class="table-break" /></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="status.iso.tr1"></a>C++ TR1</h3></div></div></div><p>
 This table is based on the table of contents of ISO/IEC DTR 19768,
 Doc No: N1836=05-0096, Date: 2005-06-24,
 "Draft Technical Report on C++ Library Extensions".
