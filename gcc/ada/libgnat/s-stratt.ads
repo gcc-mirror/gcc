@@ -74,6 +74,9 @@ package System.Stream_Attributes is
       P2 : System.Address;
    end record;
 
+   pragma Universal_Aliasing (Fat_Pointer);
+   --  This avoids a copy for the aforementioned unchecked conversions
+
    ------------------------------------
    -- Treatment of enumeration types --
    ------------------------------------
