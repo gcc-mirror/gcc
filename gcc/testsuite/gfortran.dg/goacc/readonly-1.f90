@@ -3,6 +3,9 @@
 subroutine foo (a, n)
   integer :: n, a(:)
   integer :: i, b(n), c(n)
+  !!$acc declare copyin(readonly: a(:), b(:n)) copyin(c(:))
+  !$acc declare copyin(readonly: b) copyin(c)
+
   !$acc parallel copyin(readonly: a(:), b(:n)) copyin(c(:))
   do i = 1,32
      !$acc cache (readonly: a(:), b(:n))
@@ -74,6 +77,9 @@ program main
 
 end program main
 
+! The front end turns OpenACC 'declare' into OpenACC 'data'.
+!   { dg-final { scan-tree-dump-times "(?n)#pragma acc data map\\(readonly,to:\\*b\\) map\\(alloc:b.+ map\\(to:\\*c\\) map\\(alloc:c.+" 1 "original" } }
+!   { dg-final { scan-tree-dump-times "(?n)#pragma acc data map\\(readonly,to:g\\) map\\(to:h\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "(?n)#pragma acc parallel map\\(readonly,to:\\*.+ map\\(alloc:a.+ map\\(readonly,to:\\*.+ map\\(alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "(?n)#pragma acc parallel map\\(readonly,to:a.+ map\\(alloc:a.+ map\\(readonly,to:b.+ map\\(alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "(?n)#pragma acc kernels map\\(readonly,to:\\*.+ map\\(alloc:a.+ map\\(readonly,to:\\*.+ map\\(alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
