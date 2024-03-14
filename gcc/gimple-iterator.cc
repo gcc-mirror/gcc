@@ -997,7 +997,18 @@ edge_before_returns_twice_call (basic_block bb)
 	  add_phi_arg (new_phi, gimple_phi_arg_def_from_edge (phi, ad_edge),
 		       e, gimple_phi_arg_location_from_edge (phi, ad_edge));
 	}
+      e->flags = ad_edge->flags;
+      e->probability = ad_edge->probability;
       remove_edge (ad_edge);
+      if (dom_info_available_p (CDI_DOMINATORS))
+	{
+	  set_immediate_dominator (CDI_DOMINATORS, other_edge->src,
+				   recompute_dominator (CDI_DOMINATORS,
+							other_edge->src));
+	  set_immediate_dominator (CDI_DOMINATORS, other_edge->dest,
+				   recompute_dominator (CDI_DOMINATORS,
+							other_edge->dest));
+	}
     }
   return other_edge;
 }
@@ -1045,6 +1056,7 @@ gsi_safe_insert_before (gimple_stmt_iterator *iter, gimple *g)
       if (new_bb)
 	e = single_succ_edge (new_bb);
       adjust_before_returns_twice_call (e, g);
+      *iter = gsi_for_stmt (stmt);
     }
   else
     gsi_insert_before (iter, g, GSI_SAME_STMT);
@@ -1075,6 +1087,7 @@ gsi_safe_insert_seq_before (gimple_stmt_iterator *iter, gimple_seq seq)
 	  if (g == l)
 	    break;
 	}
+      *iter = gsi_for_stmt (stmt);
     }
   else
     gsi_insert_seq_before (iter, seq, GSI_SAME_STMT);
