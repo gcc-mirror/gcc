@@ -1,3 +1,23 @@
+2024-03-13  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_Freeze_Point): fix format string,
+	use existing local Ident.
+
+2024-03-13  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): Call Record_Rep_Item.
+	(Check_Aspect_At_Freeze_Point): Check the aspect is specified on
+	non-array type only...
+	(Analyze_One_Aspect): ... instead of doing it too early here.
+	* sem_aggr.adb (Resolve_Container_Aggregate): Do nothing in case
+	the parameters failed to resolve.
+
+2024-03-13  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): Mark Aggregate aspect as
+	needing delayed resolution and reject the aspect on non-array
+	type.
+
 2024-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/113979

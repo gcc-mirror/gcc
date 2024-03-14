@@ -1,3 +1,8 @@
+2024-03-13  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
+	Added dg-bogus with xfail on offending line for short_enums.
+
 2024-03-12  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
