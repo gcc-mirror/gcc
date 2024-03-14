@@ -80,7 +80,7 @@ extern unsigned int gcn_local_sym_hash (const char *name);
    writes a new AMD GPU object file and the ABI version needs to be the
    same. - LLVM <= 17 defaults to 4 while LLVM >= 18 defaults to 5.
    GCC supports LLVM >= 13.0.1 and only LLVM >= 14 supports version 5.
-   Note that Fiji is only suppored with LLVM <= 17 as version 3 i no longer
+   Note that Fiji is only suppored with LLVM <= 17 as version 3 is no longer
    supported in LLVM >= 18.  */
 #define ABI_VERSION_SPEC "march=fiji:--amdhsa-code-object-version=3;" \
 			 "!march=*|march=*:--amdhsa-code-object-version=4"
