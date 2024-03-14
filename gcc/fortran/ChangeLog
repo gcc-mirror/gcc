@@ -1,3 +1,15 @@
+2024-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114001
+	* expr.cc (gfc_is_simply_contiguous): Adjust logic so that CLASS
+	symbols are also handled.
+
+2024-03-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/114283
+	* trans-openmp.cc (gfc_omp_predetermined_mapping): Map dummy
+	procedures as firstprivate.
+
 2024-03-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/110826

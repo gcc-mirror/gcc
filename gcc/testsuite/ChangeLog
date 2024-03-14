@@ -1,3 +1,39 @@
+2024-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114001
+	* gfortran.dg/is_contiguous_4.f90: New test.
+
+2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114319
+	* gcc.target/i386/pr114319.c: New test.
+
+2024-03-13  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
+	Added dg-bogus with target on offending line for short_enums.
+
+2024-03-13  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/md/rXsbg_mode_sXl.c: Fix tests rosbg_si_srl
+	and rxsbg_si_srl.
+
+2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114313
+	* gcc.dg/torture/bitint-62.c: New test.
+
+2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112709
+	* gcc.dg/asan/pr112709-2.c: New test.
+
+2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112709
+	* gcc.dg/ubsan/pr112709-1.c: New test.
+	* gcc.dg/ubsan/pr112709-2.c: New test.
+
 2024-03-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/110826

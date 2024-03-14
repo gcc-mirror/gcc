@@ -1,3 +1,22 @@
+2024-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Move custom_cat
+	to namespace scope.
+
+2024-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/debug.xml: Improve docs on debug builds and
+	using ASan. Mention _GLIBCXX_ASSERTIONS. Reorder sections to put
+	the most relevant ones first.
+	* doc/xml/manual/using.xml: Add comma.
+	* doc/html/*: Regenerate.
+
+2024-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/debug.xml: Document that concept checking might
+	be removed in future.
+	* doc/xml/manual/extensions.xml: Likewise.
+
 2024-03-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/114240

@@ -1,3 +1,68 @@
+2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114319
+	* gimple-ssa-store-merging.cc
+	(imm_store_chain_info::try_coalesce_bswap): For 32-bit targets
+	allow matching __builtin_bswap64 if there is bswapsi2 optab.
+
+2024-03-13  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_secondary_reload): Guard
+	SYMBOL_FLAG_NOTALIGN2_P.
+
+2024-03-13  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def: Update to reflect latest
+	changes.
+	* config/s390/s390-builtins.def: Streamline vector builtins with
+	LLVM.
+
+2024-03-13  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtins.def (vec_permi): Deprecate.
+	(vec_ctd): Deprecate.
+	(vec_ctd_s64): Deprecate.
+	(vec_ctd_u64): Deprecate.
+	(vec_ctsl): Deprecate.
+	(vec_ctul): Deprecate.
+	(vec_ld2f): Deprecate.
+	(vec_st2f): Deprecate.
+	(vec_insert): Deprecate overloads with bool vectors.
+
+2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114313
+	* gimple-lower-bitint.cc (bitint_large_huge::limb_access): Use
+	TYPE_SIZE of TREE_TYPE (var) rather than TYPE_SIZE of type.
+	(bitint_large_huge::handle_load): Pass NULL_TREE rather than
+	rhs_type to limb_access for the bitfield load cases.
+	(bitint_large_huge::lower_mergeable_stmt): Pass NULL_TREE rather than
+	lhs_type to limb_access if nlhs is non-NULL.
+
+2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112709
+	* asan.cc (maybe_create_ssa_name, maybe_cast_to_ptrmode,
+	build_check_stmt, maybe_instrument_call, asan_expand_mark_ifn): Use
+	gsi_safe_insert_before instead of gsi_insert_before.
+
+2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112709
+	* gimple-iterator.h (gsi_safe_insert_before,
+	gsi_safe_insert_seq_before): Declare.
+	* gimple-iterator.cc: Include gimplify.h.
+	(edge_before_returns_twice_call, adjust_before_returns_twice_call,
+	gsi_safe_insert_before, gsi_safe_insert_seq_before): New functions.
+	* ubsan.cc (instrument_mem_ref, instrument_pointer_overflow,
+	instrument_nonnull_arg, instrument_nonnull_return): Use
+	gsi_safe_insert_before instead of gsi_insert_before.
+	(maybe_instrument_pointer_overflow): Use force_gimple_operand,
+	gimple_seq_add_seq_without_update and gsi_safe_insert_seq_before
+	instead of force_gimple_operand_gsi.
+	(instrument_object_size): Likewise.  Use gsi_safe_insert_before
+	instead of gsi_insert_before.
+
 2024-03-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/114121
