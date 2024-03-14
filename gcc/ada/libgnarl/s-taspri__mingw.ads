@@ -31,6 +31,7 @@
 
 --  This is a NT (native) version of this package
 
+with System.OS_Interface;
 with System.OS_Locks;
 with System.Win32;
 
@@ -87,7 +88,7 @@ private
    end record;
 
    type Private_Data is limited record
-      Thread : aliased Win32.HANDLE;
+      Thread : aliased System.OS_Interface.Thread_Id;
       pragma Atomic (Thread);
       --  Thread field may be updated by two different threads of control.
       --  (See, Enter_Task and Create_Task in s-taprop.adb).
