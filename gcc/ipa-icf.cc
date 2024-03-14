@@ -3389,6 +3389,7 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count,
 	  continue;
 
 	sem_item *source = c->members[0];
+	bool this_merged_p = false;
 
 	if (DECL_NAME (source->decl)
 	    && MAIN_NAME_P (DECL_NAME (source->decl)))
@@ -3435,12 +3436,41 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count,
 	    if (dbg_cnt (merged_ipa_icf))
 	      {
 		bool merged = source->merge (alias);
-		merged_p |= merged;
+		this_merged_p |= merged;
 
 		if (merged && alias->type == VAR)
 		  {
 		    symtab_pair p = symtab_pair (source->node, alias->node);
 		    m_merged_variables.safe_push (p);
+		  }
+	      }
+	  }
+
+	merged_p |= this_merged_p;
+	if (this_merged_p
+	    && source->type == FUNC
+	    && (!flag_wpa || flag_checking))
+	  {
+	    unsigned i;
+	    tree name;
+	    FOR_EACH_SSA_NAME (i, name, DECL_STRUCT_FUNCTION (source->decl))
+	      {
+		/* We need to either merge or reset SSA_NAME_*_INFO.
+		   For merging we don't preserve the mapping between
+		   original and alias SSA_NAMEs from successful equals
+		   calls.  */
+		if (POINTER_TYPE_P (TREE_TYPE (name)))
+		  {
+		    if (SSA_NAME_PTR_INFO (name))
+		      {
+			gcc_checking_assert (!flag_wpa);
+			SSA_NAME_PTR_INFO (name) = NULL;
+		      }
+		  }
+		else if (SSA_NAME_RANGE_INFO (name))
+		  {
+		    gcc_checking_assert (!flag_wpa);
+		    SSA_NAME_RANGE_INFO (name) = NULL;
 		  }
 	      }
 	  }
