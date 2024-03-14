@@ -2505,7 +2505,7 @@ since C++14 and the implementation is complete.
       <entry>33.4.6.2</entry>
       <entry>Function <code>call_once</code></entry>
       <entry>Y</entry>
-      <entry>Exception support is broken on non-Linux targets.
+      <entry>Exception support is broken.
 	See <link xmlns:xlink="http://www.w3.org/1999/xlink"
 	xlink:href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66146">PR
 	66146</link>.
