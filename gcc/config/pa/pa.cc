@@ -10968,20 +10968,15 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 
 	  /* Long 14-bit displacements always okay for these cases.  */
 	  if (INT14_OK_STRICT
+	      || reload_completed
 	      || mode == QImode
 	      || mode == HImode)
 	    return true;
 
-	  /* A secondary reload may be needed to adjust the displacement
-	     of floating-point accesses when STRICT is nonzero.  */
-	  if (strict)
-	    return false;
-
-	  /* We get significantly better code if we allow long displacements
-	     before reload for all accesses.  Instructions must satisfy their
-	     constraints after reload, so we must have an integer access.
-	     Return true for both cases.  */
-	  return true;
+	  /* We have to limit displacements to those supported by
+	     both floating-point and integer accesses as reload can't
+	     fix invalid displacements.  See PR114288.  */
+	  return false;
 	}
 
       if (!TARGET_DISABLE_INDEXING
