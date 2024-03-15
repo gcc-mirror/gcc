@@ -819,14 +819,22 @@ package body Bindgen is
             WBI ("      pragma Import (C, XDR_Stream, ""__gl_xdr_stream"");");
          end if;
 
-         --  Import entry point for elaboration time signal handler
-         --  installation, and indication of if it's been called previously.
+         --  Import entry point for initialization of the runtime
 
          WBI ("");
          WBI ("      procedure Runtime_Initialize " &
               "(Install_Handler : Integer);");
          WBI ("      pragma Import (C, Runtime_Initialize, " &
               """__gnat_runtime_initialize"");");
+
+         --  Import entry point for initialization of the tasking runtime
+
+         if With_GNARL then
+            WBI ("");
+            WBI ("      procedure Tasking_Runtime_Initialize;");
+            WBI ("      pragma Import (C, Tasking_Runtime_Initialize, " &
+                 """__gnat_tasking_runtime_initialize"");");
+         end if;
 
          --  Import handlers attach procedure for sequential elaboration policy
 
@@ -1090,6 +1098,12 @@ package body Bindgen is
          --  Generate call to Runtime_Initialize
 
          WBI ("      Runtime_Initialize (1);");
+
+         --  Generate call to Tasking_Runtime_Initialize
+
+         if With_GNARL then
+            WBI ("      Tasking_Runtime_Initialize;");
+         end if;
       end if;
 
       --  Generate call to set Initialize_Scalar values if active

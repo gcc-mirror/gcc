@@ -258,12 +258,14 @@ package System.Soft_Links is
    procedure Null_Set_Address (Addr : Address) is null;
 
    --  Soft-Links are used for procedures that manipulate locks to avoid
-   --  dragging the tasking run time when using access-to-controlled types.
+   --  dragging the tasking runtime when using access-to-controlled types.
 
    Initialize_RTS_Lock : Set_Address_Call := Null_Set_Address'Access;
    Finalize_RTS_Lock   : Set_Address_Call := Null_Set_Address'Access;
    Acquire_RTS_Lock    : Set_Address_Call := Null_Set_Address'Access;
    Release_RTS_Lock    : Set_Address_Call := Null_Set_Address'Access;
+   --  The initialization of these variables must be static because the value
+   --  needs to be overridden very early when the tasking runtime is dragged.
 
    --------------------------
    -- Master_Id Soft-Links --

@@ -102,10 +102,6 @@ package body System.Tasking.Initialization is
    procedure Release_RTS_Lock (Addr : Address);
    --  Release the RTS lock at Addr
 
-   ------------------------
-   --  Local Subprograms --
-   ------------------------
-
    ----------------------------
    -- Tasking Initialization --
    ----------------------------
@@ -115,6 +111,15 @@ package body System.Tasking.Initialization is
    --  of the initialization is done in the body of System.Tasking. It consists
    --  of initializing global locks, and installing tasking versions of certain
    --  operations used by the compiler. Init_RTS is called during elaboration.
+
+   procedure Tasking_Runtime_Initialize;
+   pragma Export (Ada, Tasking_Runtime_Initialize,
+                  "__gnat_tasking_runtime_initialize");
+   --  This procedure starts the initialization of the GNARL. It installs the
+   --  tasking versions of the RTS_Lock manipulation routines. It is called
+   --  very early before the elaboration of all the Ada units of the program,
+   --  including those of the runtime, because this elaboration may require
+   --  the initialization of RTS_Lock objects.
 
    --------------------------
    -- Change_Base_Priority --
@@ -414,11 +419,6 @@ package body System.Tasking.Initialization is
       SSL.Task_Name          := Task_Name'Access;
       SSL.Get_Current_Excep  := Get_Current_Excep'Access;
 
-      SSL.Initialize_RTS_Lock := Initialize_RTS_Lock'Access;
-      SSL.Finalize_RTS_Lock   := Finalize_RTS_Lock'Access;
-      SSL.Acquire_RTS_Lock    := Acquire_RTS_Lock'Access;
-      SSL.Release_RTS_Lock    := Release_RTS_Lock'Access;
-
       --  Initialize the tasking soft links (if not done yet) that are common
       --  to the full and the restricted run times.
 
@@ -429,6 +429,18 @@ package body System.Tasking.Initialization is
 
       Undefer_Abort (Environment_Task);
    end Init_RTS;
+
+   --------------------------------
+   -- Tasking_Runtime_Initialize --
+   --------------------------------
+
+   procedure Tasking_Runtime_Initialize is
+   begin
+      SSL.Initialize_RTS_Lock := Initialize_RTS_Lock'Access;
+      SSL.Finalize_RTS_Lock   := Finalize_RTS_Lock'Access;
+      SSL.Acquire_RTS_Lock    := Acquire_RTS_Lock'Access;
+      SSL.Release_RTS_Lock    := Release_RTS_Lock'Access;
+   end Tasking_Runtime_Initialize;
 
    ---------------------------
    -- Locked_Abort_To_Level--
