@@ -15,4 +15,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "optimized: basic block part vectorized" 2 "slp1" { target vect_int } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block part vectorized" 2 "slp1" { target { vect_int && vect_hw_misalign } } } } */
