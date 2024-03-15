@@ -4690,7 +4690,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 		  rtx elt = CONST_VECTOR_ELT (cop1, i);
 		  if (!CONST_INT_P (elt))
 		    break;
-		  if (code == GE)
+		  if (code == LE)
 		    {
 		      /* For LE punt if some element is signed maximum.  */
 		      if ((INTVAL (elt) & (GET_MODE_MASK (eltmode) >> 1))
