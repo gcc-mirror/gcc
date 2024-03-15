@@ -65,7 +65,7 @@ EnumValue
 Enum(isa_ext_fpu) String(64) Value(ISA_EXT_FPU64)
 
 mfpu=
-Target RejectNegative Joined ToLower Enum(isa_ext_fpu) Var(la_opt_fpu) Init(M_OPTION_NOT_SEEN)
+Target RejectNegative Joined ToLower Enum(isa_ext_fpu) Var(la_opt_fpu) Init(M_OPTION_NOT_SEEN) Save
 -mfpu=FPU	Generate code for the given FPU.
 
 mfpu=0
@@ -99,11 +99,11 @@ EnumValue
 Enum(cpu_type) String(la464) Value(CPU_LA464)
 
 march=
-Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPTION_NOT_SEEN)
+Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPTION_NOT_SEEN) Save
 -march=PROCESSOR	Generate code for the given PROCESSOR ISA.
 
 mtune=
-Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_tune) Init(M_OPTION_NOT_SEEN)
+Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_tune) Init(M_OPTION_NOT_SEEN) Save
 -mtune=PROCESSOR	Generate optimized code for PROCESSOR.
 
 
@@ -134,31 +134,31 @@ int la_opt_abi_ext = M_OPTION_NOT_SEEN
 
 
 mbranch-cost=
-Target RejectNegative Joined UInteger Var(loongarch_branch_cost)
+Target RejectNegative Joined UInteger Var(loongarch_branch_cost) Save
 -mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
 
 mcheck-zero-division
-Target Mask(CHECK_ZERO_DIV)
+Target Mask(CHECK_ZERO_DIV) Save
 Trap on integer divide by zero.
 
 mcond-move-int
-Target Var(TARGET_COND_MOVE_INT) Init(1)
+Target Var(TARGET_COND_MOVE_INT) Init(1) Save
 Conditional moves for integral are enabled.
 
 mcond-move-float
-Target Var(TARGET_COND_MOVE_FLOAT) Init(1)
+Target Var(TARGET_COND_MOVE_FLOAT) Init(1) Save
 Conditional moves for float are enabled.
 
 mmemcpy
-Target Mask(MEMCPY)
+Target Mask(MEMCPY) Save
 Prevent optimizing block moves, which is also the default behavior of -Os.
 
 mstrict-align
-Target Var(TARGET_STRICT_ALIGN) Init(0)
+Target Var(TARGET_STRICT_ALIGN) Init(0) Save
 Do not generate unaligned memory accesses.
 
 mmax-inline-memcpy-size=
-Target Joined RejectNegative UInteger Var(loongarch_max_inline_memcpy_size) Init(1024)
+Target Joined RejectNegative UInteger Var(loongarch_max_inline_memcpy_size) Init(1024) Save
 -mmax-inline-memcpy-size=SIZE	Set the max size of memcpy to inline, default is 1024.
 
 mexplicit-relocs
@@ -189,11 +189,11 @@ EnumValue
 Enum(cmodel) String(extreme) Value(CMODEL_EXTREME)
 
 mcmodel=
-Target RejectNegative Joined Enum(cmodel) Var(la_opt_cmodel) Init(CMODEL_NORMAL)
+Target RejectNegative Joined Enum(cmodel) Var(la_opt_cmodel) Init(CMODEL_NORMAL) Save
 Specify the code model.
 
 mdirect-extern-access
-Target Var(TARGET_DIRECT_EXTERN_ACCESS) Init(0)
+Target Var(TARGET_DIRECT_EXTERN_ACCESS) Init(0) Save
 Avoid using the GOT to access external symbols.
 
 mrelax

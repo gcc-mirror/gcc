@@ -594,3 +594,25 @@ multilib_enabled_abi_list ()
 
   return XOBFINISH (&msg_obstack, const char *);
 }
+
+/* option status feedback for "gcc --help=target -Q" */
+void
+loongarch_update_gcc_opt_status (struct loongarch_target *target,
+				 struct gcc_options *opts,
+				 struct gcc_options *opts_set)
+{
+  (void) opts_set;
+
+  /* status of -mabi */
+  opts->x_la_opt_abi_base = target->abi.base;
+
+  /* status of -march and -mtune */
+  opts->x_la_opt_cpu_arch = target->cpu_arch;
+  opts->x_la_opt_cpu_tune = target->cpu_tune;
+
+  /* status of -mcmodel */
+  opts->x_la_opt_cmodel = target->cmodel;
+
+  /* status of -mfpu */
+  opts->x_la_opt_fpu = target->isa.fpu;
+}

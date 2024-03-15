@@ -39,6 +39,12 @@ loongarch_config_target (struct loongarch_target *target,
 			 int opt_arch, int opt_tune, int opt_fpu,
 			 int opt_abi_base, int opt_abi_ext,
 			 int opt_cmodel, int follow_multilib_list);
+
+/* option status feedback for "gcc --help=target -Q" */
+void
+loongarch_update_gcc_opt_status (struct loongarch_target *target,
+				 struct gcc_options *opts,
+				 struct gcc_options *opts_set);
 #endif
 
 

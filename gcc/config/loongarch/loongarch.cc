@@ -6144,7 +6144,8 @@ loongarch_init_machine_status (void)
 }
 
 static void
-loongarch_option_override_internal (struct gcc_options *opts)
+loongarch_option_override_internal (struct gcc_options *opts,
+				    struct gcc_options *opts_set)
 {
   int i, regno, mode;
 
@@ -6155,6 +6156,8 @@ loongarch_option_override_internal (struct gcc_options *opts)
   loongarch_config_target (&la_target, la_opt_switches,
 			   la_opt_cpu_arch, la_opt_cpu_tune, la_opt_fpu,
 			   la_opt_abi_base, la_opt_abi_ext, la_opt_cmodel, 0);
+
+  loongarch_update_gcc_opt_status (&la_target, opts, opts_set);
 
   if (TARGET_ABI_LP64)
     flag_pcc_struct_return = 0;
@@ -6270,7 +6273,30 @@ loongarch_option_override_internal (struct gcc_options *opts)
 static void
 loongarch_option_override (void)
 {
-  loongarch_option_override_internal (&global_options);
+  loongarch_option_override_internal (&global_options, &global_options_set);
+}
+
+/* Implement TARGET_OPTION_SAVE.  */
+static void
+loongarch_option_save (struct cl_target_option *,
+		       struct gcc_options *opts,
+		       struct gcc_options *opts_set)
+{
+  loongarch_update_gcc_opt_status (&la_target, opts, opts_set);
+}
+
+/* Implement TARGET_OPTION_RESTORE.  */
+static void
+loongarch_option_restore (struct gcc_options *,
+			  struct gcc_options *,
+			  struct cl_target_option *ptr)
+{
+  la_target.cpu_arch = ptr->x_la_opt_cpu_arch;
+  la_target.cpu_tune = ptr->x_la_opt_cpu_tune;
+
+  la_target.isa.fpu = ptr->x_la_opt_fpu;
+
+  la_target.cmodel = ptr->x_la_opt_cmodel;
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
@@ -6600,6 +6626,10 @@ loongarch_asan_shadow_offset (void)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE loongarch_option_override
+#define TARGET_OPTION_SAVE loongarch_option_save
+#undef TARGET_OPTION_RESTORE
+#define TARGET_OPTION_RESTORE loongarch_option_restore
+
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS loongarch_legitimize_address
