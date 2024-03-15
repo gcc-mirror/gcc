@@ -8664,10 +8664,13 @@ maybe_push_to_top_level (tree d)
 {
   /* Push if D isn't function-local, or is a lambda function, for which name
      resolution is already done.  */
-  bool push_to_top
-    = !(current_function_decl
-	&& !LAMBDA_FUNCTION_P (d)
-	&& decl_function_context (d) == current_function_decl);
+  const bool push_to_top
+    = (LAMBDA_FUNCTION_P (d)
+       || (TREE_CODE (d) == TYPE_DECL
+	   && TREE_TYPE (d)
+	   && LAMBDA_TYPE_P (TREE_TYPE (d)))
+       || !current_function_decl
+       || !decl_function_context (d));
 
   if (push_to_top)
     push_to_top_level ();

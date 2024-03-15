@@ -26855,7 +26855,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	}
       else if (push_tinst_level (fn))
 	{
-	  push_to_top_level ();
+	  const bool push_to_top = maybe_push_to_top_level (fn);
 	  push_access_scope (fn);
 	  push_deferring_access_checks (dk_no_deferred);
 	  input_location = DECL_SOURCE_LOCATION (fn);
@@ -26878,17 +26878,10 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  if (orig_fn)
 	    ++processing_template_decl;
 
-	  ++cp_unevaluated_operand;
-	  ++c_inhibit_evaluation_warnings;
-	  ++cp_noexcept_operand;
 	  /* Do deferred instantiation of the noexcept-specifier.  */
 	  noex = tsubst_expr (DEFERRED_NOEXCEPT_PATTERN (noex),
 			      DEFERRED_NOEXCEPT_ARGS (noex),
 			      tf_warning_or_error, fn);
-	  --cp_unevaluated_operand;
-	  --c_inhibit_evaluation_warnings;
-	  --cp_noexcept_operand;
-
 	  /* Build up the noexcept-specification.  */
 	  spec = build_noexcept_spec (noex, tf_warning_or_error);
 
@@ -26898,7 +26891,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  pop_deferring_access_checks ();
 	  pop_access_scope (fn);
 	  pop_tinst_level ();
-	  pop_from_top_level ();
+	  maybe_pop_from_top_level (push_to_top);
 	}
       else
 	spec = noexcept_false_spec;
