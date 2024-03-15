@@ -233,8 +233,14 @@ UrlSuffix(gcc/MIPS-Options.html#index-mmadd4)
 mtune=
 UrlSuffix(gcc/MIPS-Options.html#index-mtune-10)
 
+mstrict-align
+UrlSuffix(gcc/MIPS-Options.html#index-mstrict-align-3)
+
 munaligned-access
 UrlSuffix(gcc/MIPS-Options.html#index-munaligned-access-1)
+
+mno-unaligned-access
+UrlSuffix(gcc/MIPS-Options.html#index-mno-unaligned-access-1)
 
 muninit-const-in-rodata
 UrlSuffix(gcc/MIPS-Options.html#index-muninit-const-in-rodata)

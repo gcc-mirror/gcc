@@ -429,9 +429,17 @@ mtune=
 Target RejectNegative Joined Var(mips_tune_option) ToLower Enum(mips_arch_opt_value)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR.
 
+mstrict-align
+Target Var(TARGET_STRICT_ALIGN) Init(0)
+Don't generate code with unaligned load store, only valid for MIPS R6.
+
 munaligned-access
-Target Var(TARGET_UNALIGNED_ACCESS) Init(1)
-Generate code with unaligned load store, valid for MIPS R6.
+Target RejectNegative Alias(mstrict-align) NegativeAlias
+Generate code with unaligned load store for R6 (alias of -mno-strict-align).
+
+mno-unaligned-access
+Target RejectNegative Alias(mstrict-align)
+Don't generate code with unaligned load store for R6 (alias of -mstrict-align).
 
 muninit-const-in-rodata
 Target Var(TARGET_UNINIT_CONST_IN_RODATA)

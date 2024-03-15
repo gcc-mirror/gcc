@@ -1143,7 +1143,8 @@ Objective-C and Objective-C++ Dialects}.
 -mcheck-zero-division  -mno-check-zero-division
 -mdivide-traps  -mdivide-breaks
 -mload-store-pairs  -mno-load-store-pairs
--munaligned-access  -mno-unaligned-access
+-mstrict-align  -mno-strict-align
+-mno-unaligned-access  -munaligned-access
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls
 -mmad  -mno-mad  -mimadd  -mno-imadd  -mfused-madd  -mno-fused-madd  -nocpp
 -mfix-24k  -mno-fix-24k
@@ -28561,14 +28562,19 @@ instructions to enable load/store bonding.  This option is enabled by
 default but only takes effect when the selected architecture is known
 to support bonding.
 
+@opindex mstrict-align
+@opindex mno-strict-align
 @opindex munaligned-access
 @opindex mno-unaligned-access
-@item -munaligned-access
+@item -mstrict-align
+@itemx -mno-strict-align
+@itemx -munaligned-access
 @itemx -mno-unaligned-access
-Enable (disable) direct unaligned access for MIPS Release 6.
-MIPSr6 requires load/store unaligned-access support,
-by hardware or trap&emulate.
-So @option{-mno-unaligned-access} may be needed by kernel.
+Disable (enable) direct unaligned access for MIPS Release 6.
+MIPSr6 requires load/store unaligned-access support, by hardware or
+trap&emulate.  So @option{-mstrict-align} may be needed by kernel.  The
+options @option{-munaligned-access} and @option{-mno-unaligned-access}
+are obsoleted, and only for backward-compatible.
 
 @opindex mmemcpy
 @opindex mno-memcpy
