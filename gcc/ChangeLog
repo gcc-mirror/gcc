@@ -1,3 +1,14 @@
+2024-03-14  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-03-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-features.cc
+	(general_scalar_chain::convert_op): Handle REG_EH_REGION note.
+	(convert_scalars_to_vector): Ditto.
+	* config/i386/i386-features.h (class scalar_chain): New
+	memeber control_flow_insns.
+
 2024-03-12  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

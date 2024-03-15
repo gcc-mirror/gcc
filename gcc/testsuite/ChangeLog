@@ -1,3 +1,10 @@
+2024-03-14  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-03-14  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr111822.C: New test.
+
 2024-03-13  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* gcc.dg/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
