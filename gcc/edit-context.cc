@@ -129,7 +129,7 @@ class added_line
 };
 
 /* Class for representing edit events that have occurred on one line of
-   one file: the replacement of some text betweeen some columns
+   one file: the replacement of some text between some columns
    on the line.
 
    Subsequent events will need their columns adjusting if they're
