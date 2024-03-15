@@ -4188,6 +4188,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
    (float (fix_trunc @0))
    (if (!flag_trapping_math
+	&& !HONOR_SIGNED_ZEROS (type)
 	&& types_match (type, TREE_TYPE (@0))
 	&& direct_internal_fn_supported_p (IFN_TRUNC, type,
 					  OPTIMIZE_FOR_BOTH))
