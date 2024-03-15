@@ -1378,8 +1378,7 @@
 	   (match_operand:LASX 3 "register_operand")]))]
   "ISA_HAS_LASX"
 {
-  bool ok = loongarch_expand_vec_cmp (operands);
-  gcc_assert (ok);
+  loongarch_expand_vec_cmp (operands);
   DONE;
 })
 
@@ -1390,8 +1389,7 @@
 	   (match_operand:ILASX 3 "register_operand")]))]
   "ISA_HAS_LASX"
 {
-  bool ok = loongarch_expand_vec_cmp (operands);
-  gcc_assert (ok);
+  loongarch_expand_vec_cmp (operands);
   DONE;
 })
 

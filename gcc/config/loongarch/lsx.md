@@ -518,8 +518,7 @@
 	   (match_operand:LSX 3 "register_operand")]))]
   "ISA_HAS_LSX"
 {
-  bool ok = loongarch_expand_vec_cmp (operands);
-  gcc_assert (ok);
+  loongarch_expand_vec_cmp (operands);
   DONE;
 })
 
@@ -530,8 +529,7 @@
 	   (match_operand:ILSX 3 "register_operand")]))]
   "ISA_HAS_LSX"
 {
-  bool ok = loongarch_expand_vec_cmp (operands);
-  gcc_assert (ok);
+  loongarch_expand_vec_cmp (operands);
   DONE;
 })
 

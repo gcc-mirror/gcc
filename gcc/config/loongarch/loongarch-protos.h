@@ -95,7 +95,7 @@ extern void loongarch_split_lsx_fill_d (rtx, rtx);
 extern const char *loongarch_output_move (rtx, rtx);
 #ifdef RTX_CODE
 extern void loongarch_expand_scc (rtx *);
-extern bool loongarch_expand_vec_cmp (rtx *);
+extern void loongarch_expand_vec_cmp (rtx *);
 extern void loongarch_expand_conditional_branch (rtx *);
 extern void loongarch_expand_conditional_move (rtx *);
 extern void loongarch_expand_conditional_trap (rtx);
