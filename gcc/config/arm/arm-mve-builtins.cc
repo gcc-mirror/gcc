@@ -657,7 +657,7 @@ function_instance::reads_global_state_p () const
   if (flags & CP_READ_FPCR)
     return true;
 
-  return false;
+  return flags & CP_READ_MEMORY;
 }
 
 /* Return true if calls to the function could modify some form of
