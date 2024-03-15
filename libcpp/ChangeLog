@@ -1,3 +1,19 @@
+2024-03-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/110558
+	* macro.cc (builtin_has_include): Set
+	pfile->state.directive_wants_padding prior to lexing the
+	file name, in case it comes from macro expansion.
+
+2024-03-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/80755
+	* files.cc (search_path_head): Add SUPPRESS_DIAGNOSTIC argument
+	defaulting to false.
+	(_cpp_has_header): Silently return false if the search path has been
+	exhausted, rather than issuing a diagnostic and then hitting an
+	assert.
+
 2024-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/114007

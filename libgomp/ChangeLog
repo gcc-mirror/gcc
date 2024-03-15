@@ -1,3 +1,8 @@
+2024-03-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.oacc-fortran/acc-memcpy.f90: Fix 'char'
+	initialization, copy, check.
+
 2024-03-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/114283

@@ -1,3 +1,51 @@
+2024-03-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114294
+	* gm2-compiler/M2Quads.mod (BuildConstHighFromSym):
+	Call PutConst to assign the type Cardinal in the result
+	constant.
+
+2024-03-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114333
+	* gm2-compiler/M2GenGCC.mod (CodeStatement): Remove op1, op2 and
+	op3 parameters to CodeIfLess, CodeIfLessEqu, CodeIfGreEqu, CodeIfGre,
+	CodeIfIn, CodeIfNotIn.
+	(CodeIfLess): Rewrite.
+	(PerformCodeIfLess): New procedure.
+	(CodeIfLess): Rewrite.
+	(PerformCodeIfLess): New procedure.
+	(CodeIfLessEqu): Rewrite.
+	(PerformCodeIfLessEqu): New procedure.
+	(CodeIfGreEqu): Rewrite.
+	(PerformCodeIfGreEqu): New procedure.
+	(CodeIfGre): Rewrite.
+	(PerformCodeIfGre): New procedure.
+	(CodeIfIn): Rewrite.
+	(PerformCodeIfIn): New procedure.
+	(CodeIfNotIn): Rewrite.
+	(PerformCodeIfNotIn): New procedure.
+
+2024-03-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114333
+	* gm2-compiler/M2Check.mod (checkUnbounded): New procedure
+	function.
+	(checkArrayTypeEquivalence): Extend checking to cover unbounded
+	arrays, arrays and constants.
+	(IsTyped): Simplified the expression and corrected a test for
+	IsConstructor.
+	(checkTypeKindViolation): New procedure function.
+	(doCheckPair): Call checkTypeKindViolation.
+	* gm2-compiler/M2GenGCC.mod (CodeStatement): Remove parameters
+	to CodeEqu and CodeNotEqu.
+	(PerformCodeIfEqu): New procedure.
+	(CodeIfEqu): Rewrite.
+	(PerformCodeIfNotEqu): New procedure.
+	(CodeIfNotEqu): Rewrite.
+	* gm2-compiler/M2Quads.mod (BuildRelOpFromBoolean): Correct
+	comment.
+
 2024-03-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114295

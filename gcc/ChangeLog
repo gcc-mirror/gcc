@@ -1,3 +1,80 @@
+2024-03-14  Jason Merrill  <jason@redhat.com>
+
+	* tree-core.h (enum clobber_kind): Clarify CLOBBER_OBJECT_*
+	comments.
+
+2024-03-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/114288
+	* config/pa/pa.cc (pa_legitimate_address_p): Don't allow
+	14-bit displacements before reload for modes that may use
+	a floating-point load or store.
+
+2024-03-14  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.h (INT8_TYPE): Change to signed char.
+
+2024-03-14  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.md (movsi_internal): Move l32i and s32i
+	patterns ahead of the l32i.n and s32i.n.
+
+2024-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/gcn/gcn-hsa.h (ABI_VERSION_SPEC): Fix comment typo.
+
+2024-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113907
+	* ipa-icf.cc (sem_item_optimizer::merge_classes): Reset
+	SSA_NAME_RANGE_INFO and SSA_NAME_PTR_INFO on successfully ICF merged
+	functions.
+
+2024-03-14  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (any_ge): Remove.
+	(sge<u>_<X:mode><GPR:mode>): Remove.
+
+2024-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114310
+	* config/aarch64/aarch64.cc (aarch64_expand_compare_and_swap): For
+	TImode force newval into a register.
+
+2024-03-14  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* tree.h (OMP_CLAUSE_MAP_READONLY): New macro.
+	(OMP_CLAUSE__CACHE__READONLY): New macro.
+	* tree-core.h (struct GTY(()) tree_base): Adjust comments for new
+	uses of readonly_flag bit in OMP_CLAUSE_MAP_READONLY and
+	OMP_CLAUSE__CACHE__READONLY.
+	* tree-pretty-print.cc (dump_omp_clause): Add support for printing
+	OMP_CLAUSE_MAP_READONLY and OMP_CLAUSE__CACHE__READONLY.
+
+2024-03-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_encode_section_info): Adjust the check
+	for misaligned symbols.
+	* config/s390/s390.opt: Improve documentation.
+
+2024-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-iterator.cc (edge_before_returns_twice_call): Copy all
+	flags and probability from ad_edge to e edge.  If CDI_DOMINATORS
+	are computed, recompute immediate dominator of other_edge->src
+	and other_edge->dest.
+	(gsi_safe_insert_before, gsi_safe_insert_seq_before): Update *iter
+	for the returns_twice call case to the gsi_for_stmt (stmt) to deal
+	with update it for bb splitting.
+
+2024-03-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-features.cc
+	(general_scalar_chain::convert_op): Handle REG_EH_REGION note.
+	(convert_scalars_to_vector): Ditto.
+	* config/i386/i386-features.h (class scalar_chain): New
+	memeber control_flow_insns.
+
 2024-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/114319

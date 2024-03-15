@@ -1,3 +1,12 @@
+2024-03-14  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* parser.cc (cp_parser_oacc_data_clause): Add parsing support for
+	'readonly' modifier, set OMP_CLAUSE_MAP_READONLY if readonly modifier
+	found, update comments.
+	(cp_parser_oacc_cache): Add parsing support for 'readonly' modifier,
+	set OMP_CLAUSE__CACHE__READONLY if readonly modifier found, update
+	comments.
+
 2024-03-12  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/98645

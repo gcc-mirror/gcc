@@ -1,3 +1,34 @@
+2024-03-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Handle 'self_expr'.
+	* openmp.cc (gfc_free_omp_clauses): Likewise.
+	* trans-openmp.cc (gfc_split_omp_clauses): Don't handle 'self_expr'.
+
+2024-03-14  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): Print "readonly," for
+	OMP_LIST_MAP and OMP_LIST_CACHE if n->u.map.readonly is set.
+	Adjust 'n->u.map_op' to 'n->u.map.op'.
+	* gfortran.h (typedef struct gfc_omp_namelist): Adjust map_op as
+	'ENUM_BITFIELD (gfc_omp_map_op) op:8', add 'bool readonly' field,
+	change to named struct field 'map'.
+	* openmp.cc (gfc_match_omp_map_clause): Adjust 'n->u.map_op' to
+	'n->u.map.op'.
+	(gfc_match_omp_clause_reduction): Likewise.
+	(gfc_match_omp_clauses): Add readonly modifier parsing for OpenACC
+	copyin clause, set 'n->u.map.op' and 'n->u.map.readonly' for parsed
+	clause. Adjust 'n->u.map_op' to 'n->u.map.op'.
+	(gfc_match_oacc_declare): Adjust 'n->u.map_op' to 'n->u.map.op'.
+	(gfc_match_oacc_cache): Add readonly modifier parsing for OpenACC
+	cache directive.
+	(resolve_omp_clauses): Adjust 'n->u.map_op' to 'n->u.map.op'.
+	* trans-decl.cc (add_clause): Adjust 'n->u.map_op' to 'n->u.map.op'.
+	(finish_oacc_declare): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Set OMP_CLAUSE_MAP_READONLY,
+	OMP_CLAUSE__CACHE__READONLY to 1 when readonly is set. Adjust
+	'n->u.map_op' to 'n->u.map.op'.
+	(gfc_add_clause_implicitly): Adjust 'n->u.map_op' to 'n->u.map.op'.
+
 2024-03-13  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/114001

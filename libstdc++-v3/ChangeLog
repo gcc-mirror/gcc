@@ -1,3 +1,75 @@
+2024-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114325
+	* include/std/format (_Scanner::_M_scan): Pass correct length to
+	__to_chars_10_impl.
+	* testsuite/std/format/functions/format.cc: Check negative
+	integers with empty format-spec.
+
+2024-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (find_end, all_of, none_of, any_of)
+	(find_if_not, is_partitioned, partition_point, remove)
+	(remove_if, unique, lower_bound, upper_bound, equal_range)
+	(binary_search, includes, is_sorted, is_sorted_until, minmax)
+	(minmax_element, is_permutation, clamp, find_if, find_first_of)
+	(adjacent_find, count, count_if, search, search_n, min_element)
+	(max_element): Add nodiscard attribute.
+	* include/bits/stl_algobase.h (min, max, lower_bound, equal)
+	(lexicographical_compare, lexicographical_compare_three_way)
+	(mismatch): Likewise.
+	* include/bits/stl_heap.h (is_heap, is_heap_until): Likewise.
+	* testsuite/25_algorithms/equal/debug/1_neg.cc: Add dg-warning.
+	* testsuite/25_algorithms/equal/debug/2_neg.cc: Likewise.
+	* testsuite/25_algorithms/equal/debug/3_neg.cc: Likewise.
+	* testsuite/25_algorithms/find_first_of/concept_check_1.cc:
+	Likewise.
+	* testsuite/25_algorithms/is_permutation/2.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/71545.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/33613.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/irreflexive.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/partitioned_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/partitioned_pred_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/minmax/3.cc: Likewise.
+	* testsuite/25_algorithms/search/78346.cc: Likewise.
+	* testsuite/25_algorithms/search_n/58358.cc: Likewise.
+	* testsuite/25_algorithms/unique/1.cc: Likewise.
+	* testsuite/25_algorithms/unique/11480.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/33613.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/partitioned_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/partitioned_pred_neg.cc:
+	Likewise.
+	* testsuite/ext/concept_checks.cc: Likewise.
+	* testsuite/ext/is_heap/47709.cc: Likewise.
+	* testsuite/ext/is_sorted/cxx0x.cc: Likewise.
+
+2024-03-14  xndcn  <xndchn@gmail.com>
+
+	* include/bits/atomic_base.h (__atomic_float::__atomic_float(Fp)):
+	Clear padding.
+	* testsuite/29_atomics/atomic_float/compare_exchange_padding.cc:
+	New test.
+
+2024-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66146
+	* doc/xml/manual/status_cxx2011.xml: Remove mention of Linux in
+	note about std::call_once.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
+2024-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2023.xml: Update C++23 status table.
+	* doc/html/manual/status.html: Regenerate.
+	* include/bits/version.def: Fix typo in comment.
+
 2024-03-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/cxx11.cc: Move custom_cat
