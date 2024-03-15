@@ -140,6 +140,7 @@ gcn_option_override (void)
       : gcn_arch == PROCESSOR_GFX90a ? ISA_CDNA2
       : gcn_arch == PROCESSOR_GFX1030 ? ISA_RDNA2
       : gcn_arch == PROCESSOR_GFX1100 ? ISA_RDNA3
+      : gcn_arch == PROCESSOR_GFX1103 ? ISA_RDNA3
       : ISA_UNKNOWN);
   gcc_assert (gcn_isa != ISA_UNKNOWN);
 
@@ -164,13 +165,15 @@ gcn_option_override (void)
   /* gfx803 "Fiji", gfx1030 and gfx1100 do not support XNACK.  */
   if (gcn_arch == PROCESSOR_FIJI
       || gcn_arch == PROCESSOR_GFX1030
-      || gcn_arch == PROCESSOR_GFX1100)
+      || gcn_arch == PROCESSOR_GFX1100
+      || gcn_arch == PROCESSOR_GFX1103)
     {
       if (flag_xnack == HSACO_ATTR_ON)
 	error ("%<-mxnack=on%> is incompatible with %<-march=%s%>",
 	       (gcn_arch == PROCESSOR_FIJI ? "fiji"
 		: gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
 		: gcn_arch == PROCESSOR_GFX1100 ? "gfx1100"
+		: gcn_arch == PROCESSOR_GFX1103 ? "gfx1103"
 		: NULL));
       /* Allow HSACO_ATTR_ANY silently because that's the default.  */
       flag_xnack = HSACO_ATTR_OFF;
@@ -3048,6 +3051,8 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
 	return gcn_arch == PROCESSOR_GFX1030;
       if (strcmp (name, "gfx1100") == 0)
 	return gcn_arch == PROCESSOR_GFX1100;
+      if (strcmp (name, "gfx1103") == 0)
+	return gcn_arch == PROCESSOR_GFX1103;
       return 0;
     default:
       gcc_unreachable ();
@@ -6558,6 +6563,11 @@ output_file_start (void)
       xnack = "";
       sram_ecc = "";
       break;
+    case PROCESSOR_GFX1103:
+      cpu = "gfx1103";
+      xnack = "";
+      sram_ecc = "";
+      break;
     default: gcc_unreachable ();
     }
 
@@ -6705,7 +6715,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
 	   xnack_enabled,
 	   LDS_SIZE);
   /* Not supported with 'architected flat scratch'.  */
-  if (gcn_arch != PROCESSOR_GFX1100)
+  if (!TARGET_RDNA3)
     fprintf (file,
 	   "\t  .amdhsa_reserve_flat_scratch\t0\n");
   if (gcn_arch == PROCESSOR_GFX90a)

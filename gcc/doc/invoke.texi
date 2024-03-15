@@ -21795,6 +21795,9 @@ Compile for RDNA2 gfx1030 devices (GFX10 series).
 @item gfx1100
 Compile for RDNA3 gfx1100 devices (GFX11 series).
 
+@item gfx1103
+Compile for RDNA3 gfx1103 devices (GFX11 series).
+
 @end table
 
 @opindex msram-ecc

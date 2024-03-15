@@ -1266,11 +1266,11 @@ default set of libraries is selected based on the value of
 @item amdgcn*-*-*
 @var{list} is a comma separated list of ISA names (allowed values: @code{fiji},
 @code{gfx900}, @code{gfx906}, @code{gfx908}, @code{gfx90a}, @code{gfx1030},
-@code{gfx1100}).  It ought not include the name of the default ISA, specified
-via @option{--with-arch}.  If @var{list} is empty, then there will be no
-multilibs and only the default run-time library will be built.  If @var{list}
-is @code{default} or @option{--with-multilib-list=} is not specified, then
-the default set of libraries is selected.
+@code{gfx1100}, @code{gfx1103}).  It ought not include the name of the default
+ISA, specified via @option{--with-arch}.  If @var{list} is empty, then there
+will be no multilibs and only the default run-time library will be built.  If
+@var{list} is @code{default} or @option{--with-multilib-list=} is not
+specified, then the default set of libraries is selected.
 
 @item arm*-*-*
 @var{list} is a comma separated list of @code{aprofile} and
@@ -3940,7 +3940,8 @@ Instead of GNU Binutils, you will need to install LLVM 15, or later, and copy
 @file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
 @file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
 @file{bin/amdgcn-amdhsa-ranlib}.  Note that LLVM 13.0.1 or LLVM 14 can be used
-by specifying a @code{--with-multilib-list=} that does not list @code{gfx1100}.
+by specifying a @code{--with-multilib-list=} that does not list @code{gfx1100}
+and @code{gfx1103}.
 
 Use Newlib (4.3.0 or newer; 4.4.0 or later is recommended).
 

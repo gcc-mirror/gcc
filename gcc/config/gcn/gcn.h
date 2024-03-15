@@ -51,6 +51,8 @@
 	builtin_define ("__gfx1030");                                          \
       else if (TARGET_GFX1100)                                                 \
 	builtin_define ("__gfx1100__");                                        \
+      else if (TARGET_GFX1103)                                                 \
+	builtin_define ("__gfx1103__");                                        \
       else                                                                     \
 	gcc_unreachable ();                                                    \
   } while (0)

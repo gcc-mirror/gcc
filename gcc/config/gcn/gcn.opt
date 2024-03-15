@@ -46,6 +46,9 @@ Enum(gpu_type) String(gfx1030) Value(PROCESSOR_GFX1030)
 EnumValue
 Enum(gpu_type) String(gfx1100) Value(PROCESSOR_GFX1100)
 
+EnumValue
+Enum(gpu_type) String(gfx1103) Value(PROCESSOR_GFX1103)
+
 march=
 Target RejectNegative Negative(march=) Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_FIJI)
 Specify the name of the target GPU.
