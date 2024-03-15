@@ -419,7 +419,8 @@ struct bitint_large_huge
   bitint_large_huge ()
     : m_names (NULL), m_loads (NULL), m_preserved (NULL),
       m_single_use_names (NULL), m_map (NULL), m_vars (NULL),
-      m_limb_type (NULL_TREE), m_data (vNULL) {}
+      m_limb_type (NULL_TREE), m_data (vNULL),
+      m_returns_twice_calls (vNULL) {}
 
   ~bitint_large_huge ();
 
@@ -553,6 +554,7 @@ struct bitint_large_huge
   unsigned m_bitfld_load;
   vec<tree> m_data;
   unsigned int m_data_cnt;
+  vec<gimple *> m_returns_twice_calls;
 };
 
 bitint_large_huge::~bitint_large_huge ()
@@ -565,6 +567,7 @@ bitint_large_huge::~bitint_large_huge ()
     delete_var_map (m_map);
   XDELETEVEC (m_vars);
   m_data.release ();
+  m_returns_twice_calls.release ();
 }
 
 /* Insert gimple statement G before current location
@@ -5248,6 +5251,7 @@ bitint_large_huge::lower_call (tree obj, gimple *stmt)
       default:
 	break;
       }
+  bool returns_twice = (gimple_call_flags (stmt) & ECF_RETURNS_TWICE) != 0;
   for (unsigned int i = 0; i < nargs; ++i)
     {
       tree arg = gimple_call_arg (stmt, i);
@@ -5271,6 +5275,11 @@ bitint_large_huge::lower_call (tree obj, gimple *stmt)
 	  arg = make_ssa_name (TREE_TYPE (arg));
 	  gimple *g = gimple_build_assign (arg, v);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	  if (returns_twice)
+	    {
+	      m_returns_twice_calls.safe_push (stmt);
+	      returns_twice = false;
+	    }
 	}
       gimple_call_set_arg (stmt, i, arg);
       if (m_preserved == NULL)
@@ -7090,6 +7099,66 @@ gimple_lower_bitint (void)
 
   if (edge_insertions)
     gsi_commit_edge_inserts ();
+
+  /* Fix up arguments of ECF_RETURNS_TWICE calls.  Those were temporarily
+     inserted before the call, but that is invalid IL, so move them to the
+     right place and add corresponding PHIs.  */
+  if (!large_huge.m_returns_twice_calls.is_empty ())
+    {
+      auto_vec<gimple *, 16> arg_stmts;
+      while (!large_huge.m_returns_twice_calls.is_empty ())
+	{
+	  gimple *stmt = large_huge.m_returns_twice_calls.pop ();
+	  gimple_stmt_iterator gsi = gsi_after_labels (gimple_bb (stmt));
+	  while (gsi_stmt (gsi) != stmt)
+	    {
+	      arg_stmts.safe_push (gsi_stmt (gsi));
+	      gsi_remove (&gsi, false);
+	    }
+	  gimple *g;
+	  basic_block bb = NULL;
+	  edge e = NULL, ead = NULL;
+	  FOR_EACH_VEC_ELT (arg_stmts, i, g)
+	    {
+	      gsi_safe_insert_before (&gsi, g);
+	      if (i == 0)
+		{
+		  bb = gimple_bb (stmt);
+		  gcc_checking_assert (EDGE_COUNT (bb->preds) == 2);
+		  e = EDGE_PRED (bb, 0);
+		  ead = EDGE_PRED (bb, 1);
+		  if ((ead->flags & EDGE_ABNORMAL) == 0)
+		    std::swap (e, ead);
+		  gcc_checking_assert ((e->flags & EDGE_ABNORMAL) == 0
+				       && (ead->flags & EDGE_ABNORMAL));
+		}
+	      tree lhs = gimple_assign_lhs (g);
+	      tree arg = lhs;
+	      gphi *phi = create_phi_node (copy_ssa_name (arg), bb);
+	      add_phi_arg (phi, arg, e, UNKNOWN_LOCATION);
+	      tree var = create_tmp_reg (TREE_TYPE (arg));
+	      suppress_warning (var, OPT_Wuninitialized);
+	      arg = get_or_create_ssa_default_def (cfun, var);
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg) = 1;
+	      add_phi_arg (phi, arg, ead, UNKNOWN_LOCATION);
+	      arg = gimple_phi_result (phi);
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg) = 1;
+	      imm_use_iterator iter;
+	      gimple *use_stmt;
+	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+		{
+		  if (use_stmt == phi)
+		    continue;
+		  gcc_checking_assert (use_stmt == stmt);
+		  use_operand_p use_p;
+		  FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		    SET_USE (use_p, arg);
+		}
+	    }
+	  update_stmt (stmt);
+	  arg_stmts.truncate (0);
+	}
+    }
 
   return ret;
 }
