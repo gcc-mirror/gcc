@@ -6322,7 +6322,8 @@ gfc_match_select (void)
 /* Transfer the selector typespec to the associate name.  */
 
 static void
-copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
+copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector,
+				    bool select_type = false)
 {
   gfc_ref *ref;
   gfc_symbol *assoc_sym;
@@ -6405,12 +6406,30 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
     assoc_sym->as = NULL;
 
 build_class_sym:
-  if (selector->ts.type == BT_CLASS)
+  /* Deal with the very specific case of a SELECT_TYPE selector being an
+     associate_name whose type has been identified by component references.
+     It must be assumed that it will be identified as a CLASS expression,
+     so convert it now.  */
+  if (select_type
+      && IS_INFERRED_TYPE (selector)
+      && selector->ts.type == BT_DERIVED)
+    {
+      gfc_find_derived_vtab (selector->ts.u.derived);
+      /* The correct class container has to be available.  */
+      assoc_sym->ts.u.derived = selector->ts.u.derived;
+      assoc_sym->ts.type = BT_CLASS;
+      assoc_sym->attr.pointer = 1;
+      if (!selector->ts.u.derived->attr.is_class)
+	gfc_build_class_symbol (&assoc_sym->ts, &assoc_sym->attr, &assoc_sym->as);
+      associate->ts = assoc_sym->ts;
+    }
+  else if (selector->ts.type == BT_CLASS)
     {
       /* The correct class container has to be available.  */
       assoc_sym->ts.type = BT_CLASS;
       assoc_sym->ts.u.derived = CLASS_DATA (selector)
-	? CLASS_DATA (selector)->ts.u.derived : selector->ts.u.derived;
+				? CLASS_DATA (selector)->ts.u.derived
+				: selector->ts.u.derived;
       assoc_sym->attr.pointer = 1;
       gfc_build_class_symbol (&assoc_sym->ts, &assoc_sym->attr, &assoc_sym->as);
     }
@@ -6438,7 +6457,7 @@ build_associate_name (const char *name, gfc_expr **e1, gfc_expr **e2)
   if (expr2->ts.type == BT_UNKNOWN)
     sym->attr.untyped = 1;
   else
-    copy_ts_from_selector_to_associate (expr1, expr2);
+    copy_ts_from_selector_to_associate (expr1, expr2, true);
 
   sym->attr.flavor = FL_VARIABLE;
   sym->attr.referenced = 1;

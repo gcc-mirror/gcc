@@ -5866,6 +5866,18 @@ resolve_variable (gfc_expr *e)
       return false;
     }
 
+  /* Guessed type variables are associate_names whose selector had not been
+     parsed at the time that the construct was parsed. Now the namespace is
+     being resolved, the TKR of the selector will be available for fixup of
+     the associate_name.  */
+  if (IS_INFERRED_TYPE (e) && e->ref)
+    {
+      gfc_fixup_inferred_type_refs (e);
+      /* KIND inquiry ref returns the kind of the target.  */
+      if (e->expr_type == EXPR_CONSTANT)
+	return true;
+    }
+
   /* For variables that are used in an associate (target => object) where
      the object's basetype is array valued while the target is scalar,
      the ts' type of the component refs is still array valued, which
@@ -6168,6 +6180,159 @@ resolve_procedure:
     }
 
   return t;
+}
+
+
+/* 'sym' was initially guessed to be derived type but has been corrected
+   in resolve_assoc_var to be a class entity or the derived type correcting.
+   If a class entity it will certainly need the _data reference or the
+   reference derived type symbol correcting in the first component ref if
+   a derived type.  */
+
+void
+gfc_fixup_inferred_type_refs (gfc_expr *e)
+{
+  gfc_ref *ref, *new_ref;
+  gfc_symbol *sym, *derived;
+  gfc_expr *target;
+  sym = e->symtree->n.sym;
+
+  /* An associate_name whose selector is (i) a component ref of a selector
+     that is a inferred type associate_name; or (ii) an intrinsic type that
+     has been inferred from an inquiry ref.  */
+  if (sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
+    {
+      sym->attr.dimension = sym->assoc->target->rank ? 1 : 0;
+      if (!sym->attr.dimension && e->ref->type == REF_ARRAY)
+	{
+	  ref = e->ref;
+	  /* A substring misidentified as an array section.  */
+	  if (sym->ts.type == BT_CHARACTER
+	      && ref->u.ar.start[0] && ref->u.ar.end[0]
+	      && !ref->u.ar.stride[0])
+	    {
+	      new_ref = gfc_get_ref ();
+	      new_ref->type = REF_SUBSTRING;
+	      new_ref->u.ss.start = ref->u.ar.start[0];
+	      new_ref->u.ss.end = ref->u.ar.end[0];
+	      new_ref->u.ss.length = sym->ts.u.cl;
+	      *ref = *new_ref;
+	      free (new_ref);
+	    }
+	  else
+	  {
+	    e->ref = ref->next;
+	    free (ref);
+	  }
+	}
+
+      /* It is possible for an inquiry reference to be mistaken for a
+	 component reference. Correct this now.  */
+      ref = e->ref;
+      if (ref && ref->type == REF_ARRAY)
+	ref = ref->next;
+      if (ref && ref->type == REF_COMPONENT
+	  && is_inquiry_ref (ref->u.c.component->name, &new_ref))
+	{
+	  e->symtree->n.sym = sym;
+	  *ref = *new_ref;
+	  gfc_free_ref_list (new_ref);
+	}
+
+      /* The kind of the associate name is best evaluated directly from the
+	 selector because of the guesses made in primary.cc, when the type
+	 is still unknown.  */
+      if (ref && ref->type == REF_INQUIRY && ref->u.i == INQUIRY_KIND)
+	{
+	  gfc_expr *ne = gfc_get_int_expr (gfc_default_integer_kind, &e->where,
+					   sym->assoc->target->ts.kind);
+	  gfc_replace_expr (e, ne);
+	}
+
+      /* Now that the references are all sorted out, set the expression rank
+	 and return.  */
+      gfc_expression_rank (e);
+      return;
+    }
+
+  derived = sym->ts.type == BT_CLASS ? CLASS_DATA (sym)->ts.u.derived
+				     : sym->ts.u.derived;
+
+  /* Ensure that class symbols have an array spec and ensure that there
+     is a _data field reference following class type references.  */
+  if (sym->ts.type == BT_CLASS
+      && sym->assoc->target->ts.type == BT_CLASS)
+    {
+      e->rank = CLASS_DATA (sym)->as ? CLASS_DATA (sym)->as->rank : 0;
+      sym->attr.dimension = 0;
+      CLASS_DATA (sym)->attr.dimension = e->rank ? 1 : 0;
+      if (e->ref && (e->ref->type != REF_COMPONENT
+		     || e->ref->u.c.component->name[0] != '_'))
+	{
+	  ref = gfc_get_ref ();
+	  ref->type = REF_COMPONENT;
+	  ref->next = e->ref;
+	  e->ref = ref;
+	  ref->u.c.component = gfc_find_component (sym->ts.u.derived, "_data",
+						   true, true, NULL);
+	  ref->u.c.sym = sym->ts.u.derived;
+	}
+    }
+
+  /* Proceed as far as the first component reference and ensure that the
+     correct derived type is being used.  */
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT)
+      {
+	if (ref->u.c.component->name[0] != '_')
+	  ref->u.c.sym = derived;
+	else
+	  ref->u.c.sym = sym->ts.u.derived;
+	break;
+      }
+
+  /* Verify that the type inferrence mechanism has not introduced a spurious
+     array reference.  This can happen with an associate name, whose selector
+     is an element of another inferred type.  */
+  target = e->symtree->n.sym->assoc->target;
+  if (!(sym->ts.type == BT_CLASS ? CLASS_DATA (sym)->as : sym->as)
+      && e != target && !target->rank)
+    {
+      /* First case: array ref after the scalar class or derived
+	 associate_name.  */
+      if (e->ref && e->ref->type == REF_ARRAY
+	  && e->ref->u.ar.type != AR_ELEMENT)
+	{
+	  ref = e->ref;
+	  e->ref = ref->next;
+	  free (ref);
+
+	  /* If it hasn't a ref to the '_data' field supply one.  */
+	  if (sym->ts.type == BT_CLASS
+	      && !(e->ref->type == REF_COMPONENT
+		   && strcmp (e->ref->u.c.component->name, "_data")))
+	    {
+	      gfc_ref *new_ref;
+	      gfc_find_component (e->symtree->n.sym->ts.u.derived,
+				  "_data", true, true, &new_ref);
+	      new_ref->next = e->ref;
+	      e->ref = new_ref;
+	    }
+	}
+      /* 2nd case: a ref to the '_data' field followed by an array ref.  */
+      else if (e->ref && e->ref->type == REF_COMPONENT
+	       && strcmp (e->ref->u.c.component->name, "_data") == 0
+	       && e->ref->next && e->ref->next->type == REF_ARRAY
+	       && e->ref->next->u.ar.type != AR_ELEMENT)
+	{
+	  ref = e->ref->next;
+	  e->ref->next = e->ref->next->next;
+	  free (ref);
+	}
+    }
+
+  /* Now that all the references are OK, get the expression rank.  */
+  gfc_expression_rank (e);
 }
 
 
@@ -9263,6 +9428,53 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       return;
     }
 
+  if (sym->assoc->inferred_type || IS_INFERRED_TYPE (target))
+    {
+      /* By now, the type of the target has been fixed up.  */
+      symbol_attribute attr;
+
+      if (sym->ts.type == BT_DERIVED
+	  && target->ts.type == BT_CLASS
+	  && !UNLIMITED_POLY (target))
+	{
+	  /* Inferred to be derived type but the target has type class.  */
+	  sym->ts = CLASS_DATA (target)->ts;
+	  if (!sym->as)
+	    sym->as = gfc_copy_array_spec (CLASS_DATA (target)->as);
+	  attr = CLASS_DATA (sym) ? CLASS_DATA (sym)->attr : sym->attr;
+	  sym->attr.dimension = target->rank ? 1 : 0;
+	  gfc_change_class (&sym->ts, &attr, sym->as,
+			    target->rank, gfc_get_corank (target));
+	  sym->as = NULL;
+	}
+      else if (target->ts.type == BT_DERIVED
+	       && target->symtree && target->symtree->n.sym
+	       && target->symtree->n.sym->ts.type == BT_CLASS
+	       && IS_INFERRED_TYPE (target)
+	       && target->ref && target->ref->next
+	       && target->ref->next->type == REF_ARRAY
+	       && !target->ref->next->next)
+	{
+	  /* A inferred type selector whose symbol has been determined to be
+	     a class array but which only has an array reference. Change the
+	     associate name and the selector to class type.  */
+	  sym->ts = target->ts;
+	  attr = CLASS_DATA (sym) ? CLASS_DATA (sym)->attr : sym->attr;
+	  sym->attr.dimension = target->rank ? 1 : 0;
+	  gfc_change_class (&sym->ts, &attr, sym->as,
+			    target->rank, gfc_get_corank (target));
+	  sym->as = NULL;
+	  target->ts = sym->ts;
+	}
+      else if ((target->ts.type == BT_DERIVED)
+	       || (sym->ts.type == BT_CLASS && target->ts.type == BT_CLASS
+		   && CLASS_DATA (target)->as && !CLASS_DATA (sym)->as))
+	/* Confirmed to be either a derived type or misidentified to be a
+	   scalar class object, when the selector is a class array.  */
+	sym->ts = target->ts;
+    }
+
+
   if (target->expr_type == EXPR_NULL)
     {
       gfc_error ("Selector at %L cannot be NULL()", &target->where);
@@ -9289,15 +9501,50 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 			  || gfc_is_ptr_fcn (target));
 
   /* Finally resolve if this is an array or not.  */
+  if (target->expr_type == EXPR_FUNCTION
+      && (sym->ts.type == BT_CLASS || sym->ts.type == BT_DERIVED))
+    {
+      gfc_expression_rank (target);
+      if (target->ts.type == BT_DERIVED
+	  && !sym->as
+	  && target->symtree->n.sym->as)
+	{
+	  sym->as = gfc_copy_array_spec (target->symtree->n.sym->as);
+	  sym->attr.dimension = 1;
+	}
+      else if (target->ts.type == BT_CLASS
+	       && CLASS_DATA (target)->as)
+	{
+	  target->rank = CLASS_DATA (target)->as->rank;
+	  if (!(sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as))
+	    {
+	      sym->ts = target->ts;
+	      sym->attr.dimension = 0;
+	    }
+	}
+    }
+
+
   if (sym->attr.dimension && target->rank == 0)
     {
       /* primary.cc makes the assumption that a reference to an associate
 	 name followed by a left parenthesis is an array reference.  */
-      if (sym->ts.type != BT_CHARACTER)
-	gfc_error ("Associate-name %qs at %L is used as array",
-		   sym->name, &sym->declared_at);
-      sym->attr.dimension = 0;
-      return;
+      if (sym->assoc->inferred_type && sym->ts.type != BT_CLASS)
+	{
+	  gfc_expression_rank (sym->assoc->target);
+	  sym->attr.dimension = sym->assoc->target->rank ? 1 : 0;
+	  if (!sym->attr.dimension && sym->as)
+	    sym->as = NULL;
+	}
+
+      if (sym->attr.dimension && target->rank == 0)
+	{
+	  if (sym->ts.type != BT_CHARACTER)
+	    gfc_error ("Associate-name %qs at %L is used as array",
+		       sym->name, &sym->declared_at);
+	  sym->attr.dimension = 0;
+	  return;
+	}
     }
 
   /* We cannot deal with class selectors that need temporaries.  */
@@ -9356,7 +9603,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	     correct this now.  */
 	  gfc_typespec *ts = &target->ts;
 	  gfc_ref *ref;
-	  gfc_component *c;
+
 	  for (ref = target->ref; ref != NULL; ref = ref->next)
 	    {
 	      switch (ref->type)
@@ -9374,32 +9621,15 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	    }
 	  /* Create a scalar instance of the current class type.  Because the
 	     rank of a class array goes into its name, the type has to be
-	     rebuild.  The alternative of (re-)setting just the attributes
+	     rebuilt.  The alternative of (re-)setting just the attributes
 	     and as in the current type, destroys the type also in other
 	     places.  */
 	  as = NULL;
 	  sym->ts = *ts;
 	  sym->ts.type = BT_CLASS;
 	  attr = CLASS_DATA (sym) ? CLASS_DATA (sym)->attr : sym->attr;
-	  attr.class_ok = 0;
-	  attr.associate_var = 1;
-	  attr.dimension = attr.codimension = 0;
-	  attr.class_pointer = 1;
-	  if (!gfc_build_class_symbol (&sym->ts, &attr, &as))
-	    gcc_unreachable ();
-	  /* Make sure the _vptr is set.  */
-	  c = gfc_find_component (sym->ts.u.derived, "_vptr", true, true, NULL);
-	  if (c->ts.u.derived == NULL)
-	    c->ts.u.derived = gfc_find_derived_vtab (sym->ts.u.derived);
-	  CLASS_DATA (sym)->attr.pointer = 1;
-	  CLASS_DATA (sym)->attr.class_pointer = 1;
-	  gfc_set_sym_referenced (sym->ts.u.derived);
-	  gfc_commit_symbol (sym->ts.u.derived);
-	  /* _vptr now has the _vtab in it, change it to the _vtype.  */
-	  if (c->ts.u.derived->attr.vtab)
-	    c->ts.u.derived = c->ts.u.derived->ts.u.derived;
-	  c->ts.u.derived->ns->types_resolved = 0;
-	  resolve_types (c->ts.u.derived->ns);
+	  gfc_change_class (&sym->ts, &attr, as, 0, 0);
+	  sym->as = NULL;
 	}
     }
 
@@ -9442,6 +9672,14 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	  sym->attr.allocatable = 1;
 	}
     }
+
+  if (sym->ts.type == BT_CLASS
+      && IS_INFERRED_TYPE (target)
+      && target->ts.type == BT_DERIVED
+      && CLASS_DATA (sym)->ts.u.derived == target->ts.u.derived
+      && target->ref && target->ref->next && !target->ref->next->next
+      && target->ref->next->type == REF_ARRAY)
+    target->ts = target->symtree->n.sym->ts;
 
   /* If the target is a good class object, so is the associate variable.  */
   if (sym->ts.type == BT_CLASS && gfc_expr_attr (target).class_ok)

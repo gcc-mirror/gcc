@@ -2967,6 +2967,11 @@ typedef struct gfc_association_list
   locus where;
 
   gfc_expr *target;
+
+  /* Used for inferring the derived type of an associate name, whose selector
+     is a sibling derived type function that has not yet been parsed.  */
+  gfc_symbol *derived_types;
+  unsigned inferred_type:1;
 }
 gfc_association_list;
 #define gfc_get_association_list() XCNEW (gfc_association_list)
@@ -3533,6 +3538,8 @@ bool gfc_add_component (gfc_symbol *, const char *, gfc_component **);
 gfc_symbol *gfc_use_derived (gfc_symbol *);
 gfc_component *gfc_find_component (gfc_symbol *, const char *, bool, bool,
                                    gfc_ref **);
+int gfc_find_derived_types (gfc_symbol *, gfc_namespace *, const char *,
+			    bool stash = false);
 
 gfc_st_label *gfc_get_st_label (int);
 void gfc_free_st_label (gfc_st_label *);
@@ -3799,6 +3806,7 @@ void gfc_free_association_list (gfc_association_list *);
 void gfc_expression_rank (gfc_expr *);
 bool gfc_op_rank_conformable (gfc_expr *, gfc_expr *);
 bool gfc_resolve_ref (gfc_expr *);
+void gfc_fixup_inferred_type_refs (gfc_expr *);
 bool gfc_resolve_expr (gfc_expr *);
 void gfc_resolve (gfc_namespace *);
 void gfc_resolve_code (gfc_code *, gfc_namespace *);
@@ -3925,6 +3933,7 @@ const char *gfc_dt_upper_string (const char *);
 symbol_attribute gfc_variable_attr (gfc_expr *, gfc_typespec *);
 symbol_attribute gfc_expr_attr (gfc_expr *);
 symbol_attribute gfc_caf_attr (gfc_expr *, bool i = false, bool *r = NULL);
+bool is_inquiry_ref (const char *, gfc_ref **);
 match gfc_match_rvalue (gfc_expr **);
 match gfc_match_varspec (gfc_expr*, int, bool, bool);
 bool gfc_check_digit (char, int);
@@ -3992,6 +4001,8 @@ unsigned int gfc_hash_value (gfc_symbol *);
 gfc_expr *gfc_get_len_component (gfc_expr *e, int);
 bool gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,
 			     gfc_array_spec **);
+void gfc_change_class (gfc_typespec *, symbol_attribute *,
+		       gfc_array_spec *, int, int);
 gfc_symbol *gfc_find_derived_vtab (gfc_symbol *);
 gfc_symbol *gfc_find_vtab (gfc_typespec *);
 gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, bool*,
@@ -4022,6 +4033,10 @@ bool gfc_may_be_finalized (gfc_typespec);
 #define IS_PROC_POINTER(sym) \
 	(sym->ts.type == BT_CLASS && sym->attr.class_ok && CLASS_DATA (sym) \
 	 ? CLASS_DATA (sym)->attr.proc_pointer : sym->attr.proc_pointer)
+#define IS_INFERRED_TYPE(expr) \
+	(expr && expr->expr_type == EXPR_VARIABLE \
+	 && expr->symtree->n.sym->assoc \
+	 && expr->symtree->n.sym->assoc->inferred_type)
 
 /* frontend-passes.cc */
 

@@ -5150,6 +5150,17 @@ parse_associate (void)
       sym->declared_at = a->where;
       gfc_set_sym_referenced (sym);
 
+      /* If the selector is a inferred type then the associate_name had better
+	 be as well. Use array references, if present, to identify it as an
+	 array.  */
+      if (IS_INFERRED_TYPE (a->target))
+	{
+	  sym->assoc->inferred_type = 1;
+	  for (gfc_ref *r = a->target->ref; r; r = r->next)
+	    if (r->type == REF_ARRAY)
+	      sym->attr.dimension = 1;
+	}
+
       /* Initialize the typespec.  It is not available in all cases,
 	 however, as it may only be set on the target during resolution.
 	 Still, sometimes it helps to have it right now -- especially
@@ -5176,21 +5187,41 @@ parse_associate (void)
 	       && sym->ts.u.cl->length->expr_type == EXPR_CONSTANT))
 	sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
+      /* If the function has been parsed, go straight to the result to
+	 obtain the expression rank.  */
+      if (target->expr_type == EXPR_FUNCTION
+	  && target->symtree
+	  && target->symtree->n.sym)
+	{
+	  tsym = target->symtree->n.sym;
+	  if (!tsym->result)
+	    tsym->result = tsym;
+	  sym->ts = tsym->result->ts;
+	  if (sym->ts.type == BT_CLASS)
+	    {
+	      if (CLASS_DATA (sym)->as)
+		target->rank = CLASS_DATA (sym)->as->rank;
+	      sym->attr.class_ok = 1;
+	    }
+	  else
+	    target->rank = tsym->result->as ? tsym->result->as->rank : 0;
+	}
+
       /* Check if the target expression is array valued. This cannot be done
 	 by calling gfc_resolve_expr because the context is unavailable.
 	 However, the references can be resolved and the rank of the target
 	 expression set.  */
-      if (target->ref && gfc_resolve_ref (target)
+      if (!sym->assoc->inferred_type
+	  && target->ref && gfc_resolve_ref (target)
 	  && target->expr_type != EXPR_ARRAY
 	  && target->expr_type != EXPR_COMPCALL)
 	gfc_expression_rank (target);
 
       /* Determine whether or not function expressions with unknown type are
 	 structure constructors. If so, the function result can be converted
-	 to be a derived type.
-	 TODO: Deal with references to sibling functions that have not yet been
-	 parsed (PRs 89645 and 99065).  */
-      if (target->expr_type == EXPR_FUNCTION && target->ts.type == BT_UNKNOWN)
+	 to be a derived type.  */
+      if (target->expr_type == EXPR_FUNCTION
+	  && target->ts.type == BT_UNKNOWN)
 	{
 	  gfc_symbol *derived;
 	  /* The derived type has a leading uppercase character.  */
@@ -5200,16 +5231,7 @@ parse_associate (void)
 	    {
 	      sym->ts.type = BT_DERIVED;
 	      sym->ts.u.derived = derived;
-	    }
-	  else if (target->symtree && (tsym = target->symtree->n.sym))
-	    {
-	      sym->ts = tsym->result ? tsym->result->ts : tsym->ts;
-	      if (sym->ts.type == BT_CLASS)
-		{
-		  if (CLASS_DATA (sym)->as)
-		    target->rank = CLASS_DATA (sym)->as->rank;
-		  sym->attr.class_ok = 1;
-		}
+	      sym->assoc->inferred_type = 0;
 	    }
 	}
 
