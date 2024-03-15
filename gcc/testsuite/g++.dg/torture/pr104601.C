@@ -1,6 +1,6 @@
 // PR tree-optimization/104601
 // { dg-do run }
-// { dg-options "-std=c++17" }
+// { dg-options "-std=c++17 -Wno-unused-result" }
 
 #include <algorithm>
 #include <optional>
