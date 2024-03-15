@@ -5125,12 +5125,12 @@
 ;; because the native instructions read the full 128-bits.
 
 (define_insn "*andnot<mode>3"
-  [(set (match_operand:MODEF 0 "register_operand" "=x,x,v,v")
-	(and:MODEF
-	  (not:MODEF
-	    (match_operand:MODEF 1 "register_operand" "0,x,v,v"))
-	    (match_operand:MODEF 2 "register_operand" "x,x,v,v")))]
-  "SSE_FLOAT_MODE_P (<MODE>mode)"
+  [(set (match_operand:MODEF248 0 "register_operand" "=x,x,v,v")
+	(and:MODEF248
+	  (not:MODEF248
+	    (match_operand:MODEF248 1 "register_operand" "0,x,v,v"))
+	    (match_operand:MODEF248 2 "register_operand" "x,x,v,v")))]
+  "TARGET_SSE"
 {
   char buf[128];
   const char *ops;
@@ -5257,11 +5257,11 @@
 	      (const_string "TI")))])
 
 (define_insn "<code><mode>3"
-  [(set (match_operand:MODEF 0 "register_operand" "=x,x,v,v")
-	(any_logic:MODEF
-	  (match_operand:MODEF 1 "register_operand" "%0,x,v,v")
-	  (match_operand:MODEF 2 "register_operand" "x,x,v,v")))]
-  "SSE_FLOAT_MODE_P (<MODE>mode)"
+  [(set (match_operand:MODEF248 0 "register_operand" "=x,x,v,v")
+	(any_logic:MODEF248
+	  (match_operand:MODEF248 1 "register_operand" "%0,x,v,v")
+	  (match_operand:MODEF248 2 "register_operand" "x,x,v,v")))]
+  "TARGET_SSE"
 {
   char buf[128];
   const char *ops;
