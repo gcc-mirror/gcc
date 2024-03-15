@@ -6776,7 +6776,7 @@ loongarch_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
 	 and TRUNC.  There's no point allowing sizes smaller than a word,
 	 because the FPU has no appropriate load/store instructions.  */
       if (mclass == MODE_INT)
-	return size >= MIN_UNITS_PER_WORD && size <= UNITS_PER_FPREG;
+	return size >= MIN_UNITS_PER_WORD && size <= UNITS_PER_FP_REG;
     }
 
   return false;
@@ -6819,7 +6819,7 @@ loongarch_hard_regno_nregs (unsigned int regno, machine_mode mode)
       if (LASX_SUPPORTED_MODE_P (mode))
 	return 1;
 
-      return (GET_MODE_SIZE (mode) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG;
+      return (GET_MODE_SIZE (mode) + UNITS_PER_FP_REG - 1) / UNITS_PER_FP_REG;
     }
 
   /* All other registers are word-sized.  */
@@ -6854,7 +6854,7 @@ loongarch_class_max_nregs (enum reg_class rclass, machine_mode mode)
 	  else if (LSX_SUPPORTED_MODE_P (mode))
 	    size = MIN (size, UNITS_PER_LSX_REG);
 	  else
-	    size = MIN (size, UNITS_PER_FPREG);
+	    size = MIN (size, UNITS_PER_FP_REG);
 	}
       left &= ~reg_class_contents[FP_REGS];
     }
@@ -8228,7 +8228,7 @@ loongarch_get_separate_components (void)
 	if (IMM12_OPERAND (offset))
 	  bitmap_set_bit (components, regno);
 
-	offset -= UNITS_PER_FPREG;
+	offset -= UNITS_PER_FP_REG;
       }
 
   /* Don't mess with the hard frame pointer.  */
@@ -8307,7 +8307,7 @@ loongarch_process_components (sbitmap components, loongarch_save_restore_fn fn)
 	if (bitmap_bit_p (components, regno))
 	  loongarch_save_restore_reg (mode, regno, offset, fn);
 
-	offset -= UNITS_PER_FPREG;
+	offset -= UNITS_PER_FP_REG;
       }
 }
 
