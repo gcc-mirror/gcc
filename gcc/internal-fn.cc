@@ -245,6 +245,18 @@ expand_fn_using_insn (gcall *stmt, insn_code icode, unsigned int noutputs,
 	       && SSA_NAME_IS_DEFAULT_DEF (rhs)
 	       && VAR_P (SSA_NAME_VAR (rhs)))
 	create_undefined_input_operand (&ops[opno], TYPE_MODE (rhs_type));
+      else if (VECTOR_BOOLEAN_TYPE_P (rhs_type)
+	       && SCALAR_INT_MODE_P (TYPE_MODE (rhs_type))
+	       && maybe_ne (GET_MODE_PRECISION (TYPE_MODE (rhs_type)),
+			    TYPE_VECTOR_SUBPARTS (rhs_type).to_constant ()))
+	{
+	  /* Ensure that the vector bitmasks do not have excess bits.  */
+	  int nunits = TYPE_VECTOR_SUBPARTS (rhs_type).to_constant ();
+	  rtx tmp = expand_binop (TYPE_MODE (rhs_type), and_optab, rhs_rtx,
+				  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+				  NULL_RTX, true, OPTAB_WIDEN);
+	  create_input_operand (&ops[opno], tmp, TYPE_MODE (rhs_type));
+	}
       else
 	create_input_operand (&ops[opno], rhs_rtx, TYPE_MODE (rhs_type));
       opno += 1;
@@ -312,6 +324,20 @@ add_mask_and_len_args (expand_operand *ops, unsigned int opno, gcall *stmt)
     {
       tree mask = gimple_call_arg (stmt, mask_index);
       rtx mask_rtx = expand_normal (mask);
+
+      tree mask_type = TREE_TYPE (mask);
+      if (VECTOR_BOOLEAN_TYPE_P (mask_type)
+	  && SCALAR_INT_MODE_P (TYPE_MODE (mask_type))
+	  && maybe_ne (GET_MODE_PRECISION (TYPE_MODE (mask_type)),
+		       TYPE_VECTOR_SUBPARTS (mask_type).to_constant ()))
+	{
+	  /* Ensure that the vector bitmasks do not have excess bits.  */
+	  int nunits = TYPE_VECTOR_SUBPARTS (mask_type).to_constant ();
+	  mask_rtx = expand_binop (TYPE_MODE (mask_type), and_optab, mask_rtx,
+				   GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+				   NULL_RTX, true, OPTAB_WIDEN);
+	}
+
       create_input_operand (&ops[opno++], mask_rtx,
 			    TYPE_MODE (TREE_TYPE (mask)));
     }
