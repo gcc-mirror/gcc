@@ -491,7 +491,7 @@ or any notes about the implementation.
         P2255R2
         </link>
       </entry>
-      <entry align="center"> 13.1 (missing changes to <code>std::tuple</code> </entry>
+      <entry align="center"> 13.1 (missing changes to <code>std::tuple</code>) </entry>
       <entry> <code>__cpp_lib_reference_from_temporary &gt;= 202202L</code> </entry>
     </row>
 
