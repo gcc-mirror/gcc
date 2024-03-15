@@ -10816,23 +10816,6 @@ loongarch_expand_vec_cmp (rtx operands[])
   return true;
 }
 
-/* Implement TARGET_CASE_VALUES_THRESHOLD.  */
-
-unsigned int
-loongarch_case_values_threshold (void)
-{
-  return default_case_values_threshold ();
-}
-
-/* Implement TARGET_SPILL_CLASS.  */
-
-static reg_class_t
-loongarch_spill_class (reg_class_t rclass ATTRIBUTE_UNUSED,
-		       machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return NO_REGS;
-}
-
 /* Implement TARGET_PROMOTE_FUNCTION_MODE.  */
 
 /* This function is equivalent to default_promote_function_mode_always_promote
@@ -11287,9 +11270,6 @@ loongarch_asm_code_end (void)
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY loongarch_function_arg_boundary
 
-#undef TARGET_OPTAB_SUPPORTED_P
-#define TARGET_OPTAB_SUPPORTED_P loongarch_optab_supported_p
-
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P loongarch_vector_mode_supported_p
 
@@ -11359,17 +11339,11 @@ loongarch_asm_code_end (void)
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH loongarch_sched_reassociation_width
 
-#undef TARGET_CASE_VALUES_THRESHOLD
-#define TARGET_CASE_VALUES_THRESHOLD loongarch_case_values_threshold
-
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV loongarch_atomic_assign_expand_fenv
 
 #undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 #define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
-
-#undef TARGET_SPILL_CLASS
-#define TARGET_SPILL_CLASS loongarch_spill_class
 
 #undef TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS loongarch_hard_regno_nregs
