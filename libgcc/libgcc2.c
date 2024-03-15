@@ -1642,19 +1642,22 @@ __mulbitint3 (UBILtype *ret, SItype retprec,
 #ifdef L_divmodbitint4
 /* D = -S.  */
 
-static void
+static UWtype
 bitint_negate (UBILtype *d, const UBILtype *s, SItype n)
 {
   UWtype c = 1;
+  UWtype r = 0;
   do
     {
       UWtype sv = *s, lo;
+      r |= sv;
       s += BITINT_INC;
       c = __builtin_add_overflow (~sv, c, &lo);
       *d = lo;
       d += BITINT_INC;
     }
   while (--n);
+  return r;
 }
 
 /* D -= S * L.  */
@@ -1977,10 +1980,10 @@ __divmodbitint4 (UBILtype *q, SItype qprec,
 	    n = qn;
 	  else
 	    n = un - vn + 1;
-	  bitint_negate (q + BITINT_END (qn - 1, 0),
-			 q2 + BITINT_END (un - vn, 0), n);
+	  SItype c = bitint_negate (q + BITINT_END (qn - 1, 0),
+				    q2 + BITINT_END (un - vn, 0), n) ? -1 : 0;
 	  if (qn > n)
-	    __builtin_memset (q + BITINT_END (0, n), -1,
+	    __builtin_memset (q + BITINT_END (0, n), c,
 			      (qn - n) * sizeof (UWtype));
 	}
       else
@@ -1999,11 +2002,11 @@ __divmodbitint4 (UBILtype *q, SItype qprec,
       if (uprec < 0)
 	{
 	  /* Negative remainder.  */
-	  bitint_negate (r + BITINT_END (rn - 1, 0),
-			 r + BITINT_END (rn - 1, 0),
-			 rn > vn ? vn : rn);
+	  SItype c = bitint_negate (r + BITINT_END (rn - 1, 0),
+				    r + BITINT_END (rn - 1, 0),
+				    rn > vn ? vn : rn) ? -1 : 0;
 	  if (rn > vn)
-	    __builtin_memset (r + BITINT_END (0, vn), -1,
+	    __builtin_memset (r + BITINT_END (0, vn), c,
 			      (rn - vn) * sizeof (UWtype));
 	}
       else
