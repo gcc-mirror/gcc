@@ -427,6 +427,8 @@ struct bitint_large_huge
   void insert_before (gimple *);
   tree limb_access_type (tree, tree);
   tree limb_access (tree, tree, tree, bool);
+  tree build_bit_field_ref (tree, tree, unsigned HOST_WIDE_INT,
+			    unsigned HOST_WIDE_INT);
   void if_then (gimple *, profile_probability, edge &, edge &);
   void if_then_else (gimple *, profile_probability, edge &, edge &);
   void if_then_if_then_else (gimple *g, gimple *,
@@ -657,6 +659,31 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
       ret = build1 (NOP_EXPR, atype, ret);
     }
   return ret;
+}
+
+/* Build a BIT_FIELD_REF to access BITSIZE bits with FTYPE type at
+   offset BITPOS inside of OBJ.  */
+
+tree
+bitint_large_huge::build_bit_field_ref (tree ftype, tree obj,
+					unsigned HOST_WIDE_INT bitsize,
+					unsigned HOST_WIDE_INT bitpos)
+{
+  if (INTEGRAL_TYPE_P (TREE_TYPE (obj))
+      && !type_has_mode_precision_p (TREE_TYPE (obj)))
+    {
+      unsigned HOST_WIDE_INT nelts
+	= CEIL (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (obj))), limb_prec);
+      tree ltype = m_limb_type;
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (obj));
+      if (as != TYPE_ADDR_SPACE (ltype))
+	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
+				      | ENCODE_QUAL_ADDR_SPACE (as));
+      tree atype = build_array_type_nelts (ltype, nelts);
+      obj = build1 (VIEW_CONVERT_EXPR, atype, obj);
+    }
+  return build3 (BIT_FIELD_REF, ftype, obj, bitsize_int (bitsize),
+		 bitsize_int (bitpos));
 }
 
 /* Emit a half diamond,
@@ -2651,9 +2678,9 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		    }
 		  tree ftype
 		    = build_nonstandard_integer_type (limb_prec - bo_bit, 1);
-		  tree bfr = build3 (BIT_FIELD_REF, ftype, unshare_expr (nlhs),
-				     bitsize_int (limb_prec - bo_bit),
-				     bitsize_int (bo_idx * limb_prec + bo_bit));
+		  tree bfr = build_bit_field_ref (ftype, unshare_expr (nlhs),
+						  limb_prec - bo_bit,
+						  bo_idx * limb_prec + bo_bit);
 		  tree t = add_cast (ftype, rhs1);
 		  g = gimple_build_assign (bfr, t);
 		  insert_before (g);
@@ -2714,12 +2741,11 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		    {
 		      tree ftype
 			= build_nonstandard_integer_type (rprec + bo_bit, 1);
-		      tree bfr = build3 (BIT_FIELD_REF, ftype,
-					 unshare_expr (nlhs),
-					 bitsize_int (rprec + bo_bit),
-					 bitsize_int ((bo_idx
-						       + tprec / limb_prec)
-						      * limb_prec));
+		      tree bfr
+			= build_bit_field_ref (ftype, unshare_expr (nlhs),
+					       rprec + bo_bit,
+					       (bo_idx + tprec / limb_prec)
+					       * limb_prec);
 		      tree t = add_cast (ftype, rhs1);
 		      g = gimple_build_assign (bfr, t);
 		      done = true;
@@ -2860,11 +2886,11 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		{
 		  tree ftype
 		    = build_nonstandard_integer_type (rprec + bo_bit, 1);
-		  tree bfr = build3 (BIT_FIELD_REF, ftype,
-				     unshare_expr (nlhs),
-				     bitsize_int (rprec + bo_bit),
-				     bitsize_int ((bo_idx + tprec / limb_prec)
-						  * limb_prec));
+		  tree bfr
+		    = build_bit_field_ref (ftype, unshare_expr (nlhs),
+					   rprec + bo_bit,
+					   (bo_idx + tprec / limb_prec)
+					   * limb_prec);
 		  tree t = add_cast (ftype, rhs1);
 		  g = gimple_build_assign (bfr, t);
 		  done = true;
@@ -2909,10 +2935,10 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
       unsigned int tprec = TYPE_PRECISION (type);
       unsigned int rprec = tprec % limb_prec;
       tree ftype = build_nonstandard_integer_type (rprec + bo_bit, 1);
-      tree bfr = build3 (BIT_FIELD_REF, ftype, unshare_expr (nlhs),
-			 bitsize_int (rprec + bo_bit),
-			 bitsize_int ((bo_idx + tprec / limb_prec)
-				      * limb_prec));
+      tree bfr = build_bit_field_ref (ftype, unshare_expr (nlhs),
+				      rprec + bo_bit,
+				      (bo_idx + tprec / limb_prec)
+				      * limb_prec);
       rhs1 = bf_cur;
       if (bf_cur != ext)
 	{
