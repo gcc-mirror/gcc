@@ -1,3 +1,70 @@
+2024-03-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	PR fortran/89645
+	PR fortran/99065
+	PR fortran/114141
+	PR fortran/114280
+	* class.cc (gfc_change_class): New function needed for
+	associate names, when rank changes or a derived type is
+	produced by resolution
+	* dump-parse-tree.cc (show_code_node): Make output for SELECT
+	TYPE more comprehensible.
+	* expr.cc (find_inquiry_ref): Do not simplify expressions of
+	an inferred type.
+	* gfortran.h : Add 'gfc_association_list' to structure
+	'gfc_association_list'. Add prototypes for
+	'gfc_find_derived_types', 'gfc_fixup_inferred_type_refs' and
+	'gfc_change_class'. Add macro IS_INFERRED_TYPE.
+	* match.cc (copy_ts_from_selector_to_associate): Add bolean arg
+	'select_type' with default false. If this is a select type name
+	and the selector is a inferred type, build the class type and
+	apply it to the associate name.
+	(build_associate_name): Pass true to 'select_type' in call to
+	previous.
+	* parse.cc (parse_associate): If the selector is inferred type
+	the associate name is too. Make sure that function selector
+	class and rank, if known, are passed to the associate name. If
+	a function result exists, pass its typespec to the associate
+	name.
+	* primary.cc (resolvable_fcns): New function to check that all
+	the function references are resolvable.
+	(gfc_match_varspec): If a scalar derived type select type
+	temporary has an array reference, match the array reference,
+	treating this in the same way as an equivalence member. Do not
+	set 'inquiry' if applied to an unknown type the inquiry name
+	is ambiguous with the component of an accessible derived type.
+	Check that resolution of the target expression is OK by testing
+	if the symbol is declared or is an operator expression, then
+	using 'resolvable_fcns' recursively. If all is well, resolve
+	the expression. If this is an inferred type with a component
+	reference, call 'gfc_find_derived_types' to find a suitable
+	derived type. If there is an inquiry ref and the symbol either
+	is of unknown type or is inferred to be a derived type, set the
+	primary and symbol TKR appropriately.
+	* resolve.cc (resolve_variable): Call new function below.
+	(gfc_fixup_inferred_type_refs): New function to ensure that the
+	expression references for a inferred type are consistent with
+	the now fixed up selector.
+	(resolve_assoc_var): Ensure that derived type or class function
+	selectors transmit the correct arrayspec to the associate name.
+	(resolve_select_type): If the selector is an associate name of
+	inferred type and has no component references, the associate
+	name should have its typespec. Simplify the conversion of a
+	class array to class scalar by calling 'gfc_change_class'.
+	Make sure that a class, inferred type selector with an array
+	ref transfers the typespec from the symbol to the expression.
+	* symbol.cc (gfc_set_default_type): If an associate name with
+	unknown type has a selector expression, try resolving the expr.
+	(find_derived_types, gfc_find_derived_types): New functions
+	that search for a derived type with a given name.
+	* trans-expr.cc (gfc_conv_variable): Some inferred type exprs
+	escape resolution so call 'gfc_fixup_inferred_type_refs'.
+	* trans-stmt.cc (trans_associate_var): Tidy up expression for
+	'class_target'. Finalize and free class function results.
+	Correctly handle selectors that are class functions and class
+	array references, passed as derived types.
+
 2024-03-14  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_clauses): Handle 'self_expr'.

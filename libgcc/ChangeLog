@@ -1,3 +1,12 @@
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/114327
+	* libgcc2.c (bitint_negate): Return UWtype bitwise or of all the limbs
+	before negation rather than void.
+	(__divmodbitint4): Determine whether to fill in the upper limbs after
+	negation based on whether bitint_negate returned 0 or non-zero, rather
+	then always filling with -1.
+
 2024-02-22  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR target/109987

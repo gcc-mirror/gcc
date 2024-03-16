@@ -1,3 +1,63 @@
+2024-03-15  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/riscv/riscv.opt.urls: Regenerated.
+	* config/rs6000/sysv4.opt.urls: Likewise.
+	* config/xtensa/xtensa.opt.urls: Likewise.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* lower-subreg.cc (resolve_simple_move): Fix comment typo,
+	betwee -> between.
+	* edit-context.cc (class line_event): Fix comment typo,
+	betweeen -> between.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114339
+	* config/i386/i386-expand.cc (ix86_expand_int_sse_cmp) <case LE>: Fix
+	a pasto, compare code against LE rather than GE.
+
+2024-03-15  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	* match.pd: Fix truncation pattern for -fno-signed-zeroes
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114332
+	* expr.cc (expand_expr_real_1): EXTEND_BITINT also CALL_EXPR results.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113466
+	* gimple-lower-bitint.cc (bitint_large_huge): Add m_returns_twice_calls
+	member.
+	(bitint_large_huge::bitint_large_huge): Initialize it.
+	(bitint_large_huge::~bitint_large_huge): Release it.
+	(bitint_large_huge::lower_call): Remember ECF_RETURNS_TWICE call stmts
+	before which at least one statement has been inserted.
+	(gimple_lower_bitint): Move argument loads before ECF_RETURNS_TWICE
+	calls to a different block and add corresponding PHIs.
+
+2024-03-15  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.opt: Support -mstrict-align, and use
+	TARGET_STRICT_ALIGN as the flag; keep -m(no-)unaligned-access
+	as alias.
+	* config/mips/mips.h: Use TARGET_STRICT_ALIGN.
+	* config/mips/mips.opt.urls: Regenerate.
+	* doc/invoke.texi: Document -m(no-)strict-algin for MIPSr6.
+
+2024-03-15  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR middle-end/114108
+	* tree-vect-patterns.cc (vect_recog_abd_pattern): Call
+	vect_convert_output with the correct vecitype.
+
+2024-03-15  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* config/loongarch/lasx.md (lasx_xvpermi_q_<LASX:mode>):
+	Remove masking of operand 3.
+
 2024-03-14  Jason Merrill  <jason@redhat.com>
 
 	* tree-core.h (enum clobber_kind): Clarify CLOBBER_OBJECT_*
