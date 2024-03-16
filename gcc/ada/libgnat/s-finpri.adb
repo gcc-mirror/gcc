@@ -394,14 +394,14 @@ package body System.Finalization_Primitives is
      (Collection : in out Finalization_Collection)
    is
    begin
-      Collection.Finalization_Started := False;
-
       --  The dummy head must point to itself in both directions
 
       Collection.Head.Prev := Collection.Head'Unchecked_Access;
       Collection.Head.Next := Collection.Head'Unchecked_Access;
 
       Initialize_RTS_Lock (Collection.Lock'Address);
+
+      Collection.Finalization_Started := False;
    end Initialize;
 
    ---------------------

@@ -146,16 +146,6 @@ package System.Finalization_Primitives with Preelaborate is
    --  collection, in some arbitrary order. Calls to this procedure with
    --  a collection that has already been finalized have no effect.
 
-   type Collection_Node is private;
-   --  Each controlled object associated with a finalization collection has
-   --  an associated object of this type.
-
-   type Collection_Node_Ptr is access all Collection_Node;
-   for Collection_Node_Ptr'Storage_Size use 0;
-   pragma No_Strict_Aliasing (Collection_Node_Ptr);
-   --  A reference to a collection node. Since this type may not be used to
-   --  allocate objects, its storage size is zero.
-
    procedure Attach_Object_To_Collection
      (Object_Address   : System.Address;
       Finalize_Address : not null Finalize_Address_Ptr;
@@ -171,13 +161,13 @@ package System.Finalization_Primitives with Preelaborate is
    --  Calls to the procedure with an object that has already been detached
    --  have no effects.
 
-   function Header_Alignment return System.Storage_Elements.Storage_Count is
-     (Collection_Node'Alignment);
-   --  Return the alignment of type Collection_Node as Storage_Count
+   function Header_Alignment return System.Storage_Elements.Storage_Count;
+   --  Return the alignment of the header to be placed immediately in front of
+   --  a controlled object allocated for some access type, in storage units.
 
-   function Header_Size return System.Storage_Elements.Storage_Count is
-     (Collection_Node'Object_Size / Storage_Unit);
-   --  Return the object size of type Collection_Node as Storage_Count
+   function Header_Size return System.Storage_Elements.Storage_Count;
+  --  Return the size of the header to be placed immediately in front of a
+  --  controlled object allocated for some access type, in storage units.
 
 private
 
@@ -221,6 +211,16 @@ private
 
    --  Finalization collections:
 
+   type Collection_Node;
+   --  Each controlled object associated with a finalization collection has
+   --  an associated object of this type.
+
+   type Collection_Node_Ptr is access all Collection_Node;
+   for Collection_Node_Ptr'Storage_Size use 0;
+   pragma No_Strict_Aliasing (Collection_Node_Ptr);
+   --  A reference to a collection node. Since this type may not be used to
+   --  allocate objects, its storage size is zero.
+
    --  Collection node type structure. Finalize_Address comes first because it
    --  is an access-to-subprogram and, therefore, might be twice as large and
    --  as aligned as an access-to-object on some platforms.
@@ -237,7 +237,11 @@ private
       --  Collection nodes are managed as a circular doubly-linked list
    end record;
 
-   type Lock_Type is mod 2**8 with Size => 8;
+   function Header_Alignment return System.Storage_Elements.Storage_Count is
+     (Collection_Node'Alignment);
+
+   function Header_Size return System.Storage_Elements.Storage_Count is
+     (Collection_Node'Object_Size / Storage_Unit);
 
    --  Finalization collection type structure
 
@@ -245,15 +249,15 @@ private
      new Ada.Finalization.Limited_Controlled with
    record
       Head : aliased Collection_Node;
-      --  The head of the circular doubly-linked list of Collection_Nodes
-
-      Finalization_Started : Boolean := False;
-      --  A flag used to detect allocations which occur during the finalization
-      --  of a collection. The allocations must raise Program_Error. This may
-      --  arise in a multitask environment.
+      --  The head of the circular doubly-linked list of collection nodes
 
       Lock : aliased System.OS_Locks.RTS_Lock;
       --  A lock to synchronize concurrent accesses to the collection
+
+      Finalization_Started : Boolean;
+      --  A flag used to detect allocations which occur during the finalization
+      --  of a collection. The allocations must raise Program_Error. This may
+      --  arise in a multitask environment.
    end record;
 
    --  This operation is very simple and thus can be performed in line
