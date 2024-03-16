@@ -105,6 +105,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@BUILD_CORLIB_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -nodefaultrpaths -Wl,-rpath,@loader_path/
 subdir = libm2cor
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -475,8 +476,10 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_CORLIB_TRUE@    -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2cor \
 @BUILD_CORLIB_TRUE@    $(TARGET_LONGDOUBLE_ABI)
 
-@BUILD_CORLIB_TRUE@@TARGET_DARWIN_FALSE@libm2cor_la_link_flags = 
-@BUILD_CORLIB_TRUE@@TARGET_DARWIN_TRUE@libm2cor_la_link_flags = -Wl,-undefined,dynamic_lookup
+@BUILD_CORLIB_TRUE@@TARGET_DARWIN_FALSE@libm2cor_la_link_flags =  \
+@BUILD_CORLIB_TRUE@@TARGET_DARWIN_FALSE@	$(am__append_1)
+@BUILD_CORLIB_TRUE@@TARGET_DARWIN_TRUE@libm2cor_la_link_flags = -Wl,-undefined,dynamic_lookup \
+@BUILD_CORLIB_TRUE@@TARGET_DARWIN_TRUE@	$(am__append_1)
 @BUILD_CORLIB_TRUE@libm2cor_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2cor_la_link_flags)
 @BUILD_CORLIB_TRUE@BUILT_SOURCES = SYSTEM.def
 @BUILD_CORLIB_TRUE@CLEANFILES = SYSTEM.def

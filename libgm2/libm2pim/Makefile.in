@@ -105,6 +105,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@BUILD_PIMLIB_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -nodefaultrpaths -Wl,-rpath,@loader_path/
 subdir = libm2pim
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -544,8 +545,10 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@  -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2pim \
 @BUILD_PIMLIB_TRUE@  $(TARGET_LONGDOUBLE_ABI)
 
-@BUILD_PIMLIB_TRUE@@TARGET_DARWIN_FALSE@libm2pim_la_link_flags = 
-@BUILD_PIMLIB_TRUE@@TARGET_DARWIN_TRUE@libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup
+@BUILD_PIMLIB_TRUE@@TARGET_DARWIN_FALSE@libm2pim_la_link_flags =  \
+@BUILD_PIMLIB_TRUE@@TARGET_DARWIN_FALSE@	$(am__append_1)
+@BUILD_PIMLIB_TRUE@@TARGET_DARWIN_TRUE@libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup \
+@BUILD_PIMLIB_TRUE@@TARGET_DARWIN_TRUE@	$(am__append_1)
 @BUILD_PIMLIB_TRUE@libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2pim_la_link_flags)
 @BUILD_PIMLIB_TRUE@BUILT_SOURCES = SYSTEM.def
 @BUILD_PIMLIB_TRUE@CLEANFILES = SYSTEM.def

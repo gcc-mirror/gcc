@@ -1198,6 +1198,8 @@ LANG_MAKEFRAGS = @all_lang_makefrags@
 # Used by gcc/jit/Make-lang.in
 LD_VERSION_SCRIPT_OPTION = @ld_version_script_option@
 LD_SONAME_OPTION = @ld_soname_option@
+@ENABLE_DARWIN_AT_RPATH_TRUE@DARWIN_RPATH = @rpath
+@ENABLE_DARWIN_AT_RPATH_FALSE@DARWIN_RPATH = ${libdir}
 
 # Flags to pass to recursive makes.
 # CC is set by configure.
@@ -2027,9 +2029,12 @@ cs-tconfig.h: Makefile
 	$(SHELL) $(srcdir)/mkconfig.sh tconfig.h
 
 cs-tm.h: Makefile
-	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
-	HEADERS="$(tm_include_list)" DEFINES="$(tm_defines)" \
-	$(SHELL) $(srcdir)/mkconfig.sh tm.h
+@ENABLE_DARWIN_AT_RPATH_FALSE@	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
+@ENABLE_DARWIN_AT_RPATH_FALSE@	HEADERS="$(tm_include_list)" DEFINES="$(tm_defines)" \
+@ENABLE_DARWIN_AT_RPATH_FALSE@	$(SHELL) $(srcdir)/mkconfig.sh tm.h
+@ENABLE_DARWIN_AT_RPATH_TRUE@	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	HEADERS="$(tm_include_list)" DEFINES="$(tm_defines) DARWIN_AT_RPATH=1" \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	$(SHELL) $(srcdir)/mkconfig.sh tm.h
 
 cs-tm_p.h: Makefile
 	TARGET_CPU_DEFAULT="" \

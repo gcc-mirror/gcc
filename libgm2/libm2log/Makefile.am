@@ -144,6 +144,9 @@ libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
 libm2log_la_link_flags =
 endif
+if ENABLE_DARWIN_AT_RPATH
+libm2log_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
+endif
 libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags)
 BUILT_SOURCES = ../libm2pim/SYSTEM.def
 

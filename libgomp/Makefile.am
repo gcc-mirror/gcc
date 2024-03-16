@@ -53,9 +53,14 @@ else
 libgomp_version_script =
 libgomp_version_dep =
 endif
+
 libgomp_version_info = -version-info $(libtool_VERSION)
+if ENABLE_DARWIN_AT_RPATH
+libgomp_darwin_rpath = -Wc,-nodefaultrpaths
+libgomp_darwin_rpath += -Wl,-rpath,@loader_path
+endif
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
-        $(lt_host_flags)
+        $(lt_host_flags) $(libgomp_darwin_rpath)
 libgomp_la_LIBADD =
 libgomp_la_DEPENDENCIES = $(libgomp_version_dep)
 libgomp_la_LINK = $(LINK) $(libgomp_la_LDFLAGS)
