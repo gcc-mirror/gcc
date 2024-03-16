@@ -18,8 +18,9 @@
 
 
 GTM_H += loongarch-multilib.h
-OPTIONS_H_EXTRA += $(srcdir)/config/loongarch/loongarch-def.h \
-		   $(srcdir)/config/loongarch/loongarch-tune.h
+OPTIONS_H_EXTRA += $(srcdir)/config/loongarch/loongarch-def.h	\
+		   $(srcdir)/config/loongarch/loongarch-tune.h	\
+		   $(srcdir)/config/loongarch/loongarch-cpucfg-map.h
 
 # Canonical target triplet from config.gcc
 LA_MULTIARCH_TRIPLET = $(patsubst LA_MULTIARCH_TRIPLET=%,%,$\
@@ -31,7 +32,8 @@ LA_STR_H = $(srcdir)/config/loongarch/loongarch-str.h
 # String definition header
 $(LA_STR_H): s-loongarch-str ; @true
 s-loongarch-str: $(srcdir)/config/loongarch/genopts/genstr.sh \
-	$(srcdir)/config/loongarch/genopts/loongarch-strings
+	$(srcdir)/config/loongarch/genopts/loongarch-strings  \
+	$(srcdir)/config/loongarch/genopts/isa-evolution.in
 	$(SHELL) $(srcdir)/config/loongarch/genopts/genstr.sh header \
     $(srcdir)/config/loongarch/genopts/loongarch-strings > \
     tmp-loongarch-str.h
@@ -58,7 +60,8 @@ loongarch-driver.o : $(srcdir)/config/loongarch/loongarch-driver.cc $(LA_STR_H) 
 loongarch-opts.o: $(srcdir)/config/loongarch/loongarch-opts.cc $(LA_STR_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-loongarch-cpu.o: $(srcdir)/config/loongarch/loongarch-cpu.cc $(LA_STR_H)
+loongarch-cpu.o: $(srcdir)/config/loongarch/loongarch-cpu.cc $(LA_STR_H) \
+		 $(srcdir)/config/loongarch/loongarch-cpucfg-map.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 loongarch-def.o: $(srcdir)/config/loongarch/loongarch-def.c $(LA_STR_H)
@@ -67,6 +70,7 @@ loongarch-def.o: $(srcdir)/config/loongarch/loongarch-def.c $(LA_STR_H)
 $(srcdir)/config/loongarch/loongarch.opt: s-loongarch-opt ; @true
 s-loongarch-opt: $(srcdir)/config/loongarch/genopts/genstr.sh \
 	$(srcdir)/config/loongarch/genopts/loongarch.opt.in \
+	$(srcdir)/config/loongarch/genopts/isa-evolution.in \
 	$(srcdir)/config/loongarch/genopts/loongarch-strings $(LA_STR_H)
 	$(SHELL) $(srcdir)/config/loongarch/genopts/genstr.sh opt \
     $(srcdir)/config/loongarch/genopts/loongarch.opt.in \
@@ -74,3 +78,12 @@ s-loongarch-opt: $(srcdir)/config/loongarch/genopts/genstr.sh \
 	$(SHELL) $(srcdir)/../move-if-change tmp-loongarch.opt \
     $(srcdir)/config/loongarch/loongarch.opt
 	$(STAMP) s-loongarch-opt
+
+$(srcdir)/config/loongarch/loongarch-cpucfg-map.h: s-loongarch-cpucfg-map
+	@true
+s-loongarch-cpucfg-map: $(srcdir)/config/loongarch/genopts/genstr.sh \
+	$(srcdir)/config/loongarch/genopts/isa-evolution.in
+	$(SHELL) $< cpucfg-map > tmp-cpucfg.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-cpucfg.h \
+	    $(srcdir)/config/loongarch/loongarch-cpucfg-map.h
+	$(STAMP) $@

@@ -1350,9 +1350,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	  break;
 
 	if (arith_ops
-	    && global_dc->m_option_enabled (warnopt,
-					    global_dc->m_lang_mask,
-					    global_dc->m_option_state))
+	    && global_dc->option_enabled_p (warnopt))
 	  {
 	    for (int i = 0; i < arith_ops; ++i)
 	      {

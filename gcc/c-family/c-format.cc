@@ -4570,7 +4570,8 @@ get_corrected_substring (const substring_loc &fmt_loc,
   if (caret.column > finish.column)
     return NULL;
 
-  char_span line = location_get_source_line (start.file, start.line);
+  char_span line
+    = global_dc->get_file_cache ().get_source_line (start.file, start.line);
   if (!line)
     return NULL;
 

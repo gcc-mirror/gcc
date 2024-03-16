@@ -49,7 +49,9 @@ class impl_region_model_context : public region_model_context
 			     path_context *path_ctxt,
 
 			     const gimple *stmt,
-			     stmt_finder *stmt_finder = NULL);
+			     stmt_finder *stmt_finder = NULL,
+
+			     bool *out_could_have_done_work = nullptr);
 
   impl_region_model_context (program_state *state,
 			     const extrinsic_state &ext_state,
@@ -110,6 +112,10 @@ class impl_region_model_context : public region_model_context
   const gimple *get_stmt () const override { return m_stmt; }
   const exploded_graph *get_eg () const override { return m_eg; }
 
+  void maybe_did_work () override;
+  bool checking_for_infinite_loop_p () const override { return false; }
+  void on_unusable_in_infinite_loop () override {}
+
   exploded_graph *m_eg;
   log_user m_logger;
   exploded_node *m_enode_for_diag;
@@ -120,6 +126,7 @@ class impl_region_model_context : public region_model_context
   const extrinsic_state &m_ext_state;
   uncertainty_t *m_uncertainty;
   path_context *m_path_ctxt;
+  bool *m_out_could_have_done_work;
 };
 
 /* A <program_point, program_state> pair, used internally by
@@ -260,6 +267,7 @@ class exploded_node : public dnode<eg_traits>
 			 const gimple *stmt,
 			 program_state *state,
 			 uncertainty_t *uncertainty,
+			 bool *out_could_have_done_work,
 			 path_context *path_ctxt);
   void on_stmt_pre (exploded_graph &eg,
 		    const gimple *stmt,
@@ -373,7 +381,7 @@ class exploded_edge : public dedge<eg_traits>
 {
  public:
   exploded_edge (exploded_node *src, exploded_node *dest,
-		 const superedge *sedge,
+		 const superedge *sedge, bool could_do_work,
 		 std::unique_ptr<custom_edge_info> custom_info);
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const final override;
@@ -389,8 +397,25 @@ class exploded_edge : public dedge<eg_traits>
      a signal is delivered to a signal-handler.  */
   std::unique_ptr<custom_edge_info> m_custom_info;
 
+  bool could_do_work_p () const { return m_could_do_work_p; }
+
 private:
   DISABLE_COPY_AND_ASSIGN (exploded_edge);
+
+  /* For -Wanalyzer-infinite-loop.
+     Set to true during processing if any of the activity along
+     this edge is "externally-visible work" (and thus ruling this
+     out as being part of an infinite loop.
+
+     For example, given:
+
+     while (1)
+       do_something ();
+
+     although it is an infinite loop, presumably the point of the
+     program is the loop body, and thus reporting this as an infinite
+     loop is likely to be unhelpful to the user.  */
+  bool m_could_do_work_p;
 };
 
 /* Extra data for an exploded_edge that represents dynamic call info ( calls
@@ -804,7 +829,7 @@ public:
 				     const program_state &state,
 				     exploded_node *enode_for_diag);
   exploded_edge *add_edge (exploded_node *src, exploded_node *dest,
-			   const superedge *sedge,
+			   const superedge *sedge, bool could_do_work,
 			   std::unique_ptr<custom_edge_info> custom = NULL);
 
   per_program_point_data *
@@ -855,6 +880,9 @@ public:
   }
 
   void on_escaped_function (tree fndecl);
+
+  /* In infinite-loop.cc */
+  void detect_infinite_loops ();
 
   /* In infinite-recursion.cc */
   void detect_infinite_recursion (exploded_node *enode);
@@ -970,10 +998,15 @@ class feasibility_state
 public:
   feasibility_state (region_model_manager *manager,
 		     const supergraph &sg);
+  feasibility_state (const region_model &model,
+		     const supergraph &sg);
   feasibility_state (const feasibility_state &other);
+
+  feasibility_state &operator= (const feasibility_state &other);
 
   bool maybe_update_for_edge (logger *logger,
 			      const exploded_edge *eedge,
+			      region_model_context *ctxt,
 			      std::unique_ptr<rejected_constraint> *out_rc);
   void update_for_stmt (const gimple *stmt);
 

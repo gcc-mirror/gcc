@@ -156,6 +156,7 @@ struct cl_optimization;
 struct cl_option;
 struct cl_decoded_option;
 struct cl_option_handlers;
+class rich_location;
 class diagnostic_context;
 class pretty_printer;
 class diagnostic_event_id_t;

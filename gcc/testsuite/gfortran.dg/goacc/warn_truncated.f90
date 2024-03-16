@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-additional-options "-std=f2018" }
 ! PR fortran/97390
 !
 integer :: tempRbuffer, array, compactHaloInfo, dimsizes, nHaloLayers, gpu_nList_send, gpu_idx_send, gpu_bufferOffset_send, counter

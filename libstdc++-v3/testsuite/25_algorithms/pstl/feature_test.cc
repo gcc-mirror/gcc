@@ -17,6 +17,7 @@
 
 // { dg-do preprocess { target c++17 } }
 // { dg-require-effective-target tbb_backend }
+// { dg-add-options no_pch }
 
 #include <algorithm>
 

@@ -102,6 +102,13 @@ class object : public value
   void set (const char *key, value *v);
   value *get (const char *key) const;
 
+  void set_string (const char *key, const char *utf8_value);
+  void set_integer (const char *key, long v);
+  void set_float (const char *key, double v);
+
+  /* Set to literal true/false.  */
+  void set_bool (const char *key, bool v);
+
  private:
   typedef hash_map <char *, value *,
     simple_hashmap_traits<nofree_string_hash, value *> > map_t;

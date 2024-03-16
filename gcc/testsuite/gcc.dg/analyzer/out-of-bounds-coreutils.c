@@ -3,7 +3,7 @@
 void add_zero_terminator (char *buf)
 {
   char *end = buf;
-  while (end++);
+  while (end++); /* TODO: arguably we should report this.  */
   if (buf < end)
     end[-1] = '\0';
 }

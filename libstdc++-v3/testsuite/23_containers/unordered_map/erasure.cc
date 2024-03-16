@@ -1,4 +1,5 @@
 // { dg-do run { target c++20 } }
+// { dg-add-options no_pch }
 
 // Copyright (C) 2018-2023 Free Software Foundation, Inc.
 //
@@ -18,14 +19,15 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <unordered_map>
-#include <string>
-#include <testsuite_hooks.h>
 
 #ifndef __cpp_lib_erase_if
 # error "Feature-test macro for erase_if missing in <unordered_map>"
 #elif __cpp_lib_erase_if < 202002
 # error "Feature-test macro for erase_if has wrong value in <unordered_map>"
 #endif
+
+#include <string>
+#include <testsuite_hooks.h>
 
 auto is_odd_pair = [](const std::pair<const int, std::string>& p)
 {

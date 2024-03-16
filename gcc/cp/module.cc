@@ -8648,6 +8648,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
       tree_node (target);
       tree_node (DECL_NAME (decl));
+      if (DECL_VIRTUAL_P (decl))
+	tree_node (DECL_VINDEX (decl));
       int tag = insert (decl);
       if (streaming_p ())
 	dump (dumper::TREE)
@@ -9868,6 +9870,10 @@ trees_in::tree_node (bool is_use)
 		  break;
 		}
 	  }
+
+	/* A clone might have a different vtable entry.  */
+	if (res && DECL_VIRTUAL_P (res))
+	  DECL_VINDEX (res) = tree_node ();
 
 	if (!res)
 	  set_overrun ();

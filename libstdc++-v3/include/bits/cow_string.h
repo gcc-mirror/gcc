@@ -36,9 +36,6 @@
 
 #include <ext/atomicity.h> // _Atomic_word, __is_single_threaded
 
-#define __glibcxx_want_constexpr_string
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -965,7 +962,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic pop
 #endif
 
-#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+#ifdef __glibcxx_string_resize_and_overwrite // C++ >= 23
       /** Resize the string and call a function to fill it.
        *
        * @param __n   The maximum size requested.
@@ -998,7 +995,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Operation>
 	void
 	resize_and_overwrite(size_type __n, _Operation __op);
-#endif // __cpp_lib_string_resize_and_overwrite
+#endif // __glibcxx_string_resize_and_overwrite
 
 #if __cplusplus >= 201103L
       /// Non-standard version of resize_and_overwrite for C++11 and above.
@@ -3754,7 +3751,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __n;
     }
 
-#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+#ifdef __glibcxx_string_resize_and_overwrite // C++ >= 23
   template<typename _CharT, typename _Traits, typename _Alloc>
   template<typename _Operation>
     [[__gnu__::__always_inline__]]
@@ -3769,7 +3766,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Operation>
     void
     basic_string<_CharT, _Traits, _Alloc>::
-#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+#ifdef __glibcxx_string_resize_and_overwrite // C++ >= 23
     resize_and_overwrite(const size_type __n, _Operation __op)
 #else
     __resize_and_overwrite(const size_type __n, _Operation __op)

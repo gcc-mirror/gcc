@@ -3615,7 +3615,7 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
    as -Werror.  */
 
 char *
-option_name (diagnostic_context *context, int option_index,
+option_name (const diagnostic_context *context, int option_index,
 	     diagnostic_t orig_diag_kind, diagnostic_t diag_kind)
 {
   if (option_index)
@@ -3674,7 +3674,7 @@ get_option_html_page (int option_index)
    which enabled a diagnostic (context CONTEXT).  */
 
 char *
-get_option_url (diagnostic_context *, int option_index)
+get_option_url (const diagnostic_context *, int option_index)
 {
   if (option_index)
     return concat (/* DOCUMENTATION_ROOT_URL should be supplied via

@@ -43,8 +43,8 @@ f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
     abort ();
 }
 
-void
-main (int)
+int
+main (void)
 {
   struct tiny x[3];
   x[0].c = 10;

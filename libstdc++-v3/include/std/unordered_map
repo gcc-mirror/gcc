@@ -46,6 +46,13 @@
 # include <debug/unordered_map>
 #endif
 
+#define __glibcxx_want_erase_if
+#define __glibcxx_want_generic_unordered_lookup
+#define __glibcxx_want_node_extract
+#define __glibcxx_want_nonmember_container_access
+#define __glibcxx_want_unordered_map_try_emplace
+#include <bits/version.h>
+
 #if __cplusplus >= 201703L
 #include <bits/memory_resource.h>
 namespace std _GLIBCXX_VISIBILITY(default)

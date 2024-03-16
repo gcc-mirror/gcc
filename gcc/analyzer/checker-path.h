@@ -65,6 +65,7 @@ public:
   void dump (pretty_printer *pp) const;
   void debug () const;
 
+  logger *get_logger () const { return m_logger; }
   void maybe_log (logger *logger, const char *desc) const;
 
   void add_event (std::unique_ptr<checker_event> event);

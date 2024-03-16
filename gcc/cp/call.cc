@@ -6163,19 +6163,36 @@ build_conditional_expr (const op_location_t &loc,
 		  == DECL_CONTEXT (stripped_orig_arg3)))
 	    /* Two enumerators from the same enumeration can have different
 	       types when the enumeration is still being defined.  */;
-          else if (complain & tf_warning)
-	    warning_at (loc, OPT_Wenum_compare, "enumerated mismatch "
-			"in conditional expression: %qT vs %qT",
-			arg2_type, arg3_type);
+	  else if (complain & (cxx_dialect >= cxx26
+			       ? tf_warning_or_error : tf_warning))
+	    emit_diagnostic (cxx_dialect >= cxx26 ? DK_PEDWARN : DK_WARNING,
+			     loc, OPT_Wenum_compare, "enumerated mismatch "
+			     "in conditional expression: %qT vs %qT",
+			     arg2_type, arg3_type);
+	  else if (cxx_dialect >= cxx26)
+	    return error_mark_node;
         }
-      else if ((complain & tf_warning)
-	       && warn_deprecated_enum_float_conv
+      else if ((((complain & (cxx_dialect >= cxx26
+			      ? tf_warning_or_error : tf_warning))
+		 && warn_deprecated_enum_float_conv)
+		|| (cxx_dialect >= cxx26
+		    && (complain & tf_warning_or_error) == 0))
 	       && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE
 		    && SCALAR_FLOAT_TYPE_P (arg3_type))
 		   || (SCALAR_FLOAT_TYPE_P (arg2_type)
 		       && TREE_CODE (arg3_type) == ENUMERAL_TYPE)))
 	{
-	  if (TREE_CODE (arg2_type) == ENUMERAL_TYPE)
+	  if (cxx_dialect >= cxx26 && (complain & tf_warning_or_error) == 0)
+	    return error_mark_node;
+	  if (cxx_dialect >= cxx26 && TREE_CODE (arg2_type) == ENUMERAL_TYPE)
+	    pedwarn (loc, OPT_Wdeprecated_enum_float_conversion,
+		     "conditional expression between enumeration type "
+		     "%qT and floating-point type %qT", arg2_type, arg3_type);
+	  else if (cxx_dialect >= cxx26)
+	    pedwarn (loc, OPT_Wdeprecated_enum_float_conversion,
+		     "conditional expression between floating-point type "
+		     "%qT and enumeration type %qT", arg2_type, arg3_type);
+	  else if (TREE_CODE (arg2_type) == ENUMERAL_TYPE)
 	    warning_at (loc, OPT_Wdeprecated_enum_float_conversion,
 			"conditional expression between enumeration type "
 			"%qT and floating-point type %qT is deprecated",
@@ -7258,11 +7275,18 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	      if (TREE_CODE (arg1_type) == ENUMERAL_TYPE
 		  && TREE_CODE (arg2_type) == ENUMERAL_TYPE
 		  && (TYPE_MAIN_VARIANT (arg1_type)
-		      != TYPE_MAIN_VARIANT (arg2_type))
-		  && (complain & tf_warning))
-		warning_at (loc, OPT_Wenum_compare,
-			    "comparison between %q#T and %q#T",
-			    arg1_type, arg2_type);
+		      != TYPE_MAIN_VARIANT (arg2_type)))
+		{
+		  if (cxx_dialect >= cxx26
+		      && (complain & tf_warning_or_error) == 0)
+		    result = error_mark_node;
+		  else if (cxx_dialect >= cxx26 || (complain & tf_warning))
+		    emit_diagnostic (cxx_dialect >= cxx26
+				     ? DK_PEDWARN : DK_WARNING,
+				     loc, OPT_Wenum_compare,
+				     "comparison between %q#T and %q#T",
+				     arg1_type, arg2_type);
+		}
 	      break;
 	    default:
 	      break;
@@ -8303,15 +8327,17 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 							    totype))
 	  {
 	  case 2:
-	    if (pedwarn (loc, 0, "converting to %qH from %qI with greater "
-				 "conversion rank", totype, TREE_TYPE (expr)))
+	    if (pedwarn (loc, OPT_Wnarrowing, "ISO C++ does not allow "
+			 "converting to %qH from %qI with greater "
+			 "conversion rank", totype, TREE_TYPE (expr)))
 	      complained = 1;
 	    else if (!complained)
 	      complained = -1;
 	    break;
 	  case 3:
-	    if (pedwarn (loc, 0, "converting to %qH from %qI with unordered "
-				 "conversion ranks", totype, TREE_TYPE (expr)))
+	    if (pedwarn (loc, OPT_Wnarrowing, "ISO C++ does not allow "
+			 "converting to %qH from %qI with unordered "
+			 "conversion rank", totype, TREE_TYPE (expr)))
 	      complained = 1;
 	    else if (!complained)
 	      complained = -1;
@@ -9290,7 +9316,9 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
    This is true for some builtins which don't act like normal functions.
    Return 2 if just decay_conversion and removal of excess precision should
    be done, 1 if just decay_conversion.  Return 3 for special treatment of
-   the 3rd argument for __builtin_*_overflow_p.  */
+   the 3rd argument for __builtin_*_overflow_p.  Return 4 for special
+   treatment of the 1st argument for
+   __builtin_{clz,ctz,clrsb,ffs,parity,popcount}g.  */
 
 int
 magic_varargs_p (tree fn)
@@ -9316,6 +9344,14 @@ magic_varargs_p (tree fn)
       case BUILT_IN_ISNORMAL:
       case BUILT_IN_FPCLASSIFY:
 	return 2;
+
+      case BUILT_IN_CLZG:
+      case BUILT_IN_CTZG:
+      case BUILT_IN_CLRSBG:
+      case BUILT_IN_FFSG:
+      case BUILT_IN_PARITYG:
+      case BUILT_IN_POPCOUNTG:
+	return 4;
 
       default:
 	return lookup_attribute ("type generic",
@@ -10122,7 +10158,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   for (; arg_index < vec_safe_length (args); ++arg_index)
     {
       tree a = (*args)[arg_index];
-      if (magic == 3 && arg_index == 2)
+      if ((magic == 3 && arg_index == 2) || (magic == 4 && arg_index == 0))
 	{
 	  /* Do no conversions for certain magic varargs.  */
 	  a = mark_type_use (a);

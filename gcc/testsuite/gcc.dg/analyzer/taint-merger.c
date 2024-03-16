@@ -1,6 +1,3 @@
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
-// TODO: remove need for this option
-
 #include "analyzer-decls.h"
 
 int v_start;

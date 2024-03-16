@@ -1,3 +1,15 @@
+2023-11-15  Mark Wielaard  <mjw@redhat.com>
+
+	* aclocal.m4: Rebuild.
+
+2023-11-10  Brendan Shanks  <bshanks@codeweavers.com>
+
+	* configure.ac (AC_CHECK_HEADERS): Add spawn.h.
+	(checkfuncs): Add posix_spawn, posix_spawnp.
+	(AC_CHECK_FUNCS): Add posix_spawn, posix_spawnp.
+	* aclocal.m4, configure, config.in: Rebuild.
+	* pex-unix.c [HAVE_POSIX_SPAWN] (pex_unix_exec_child): New function.
+
 2023-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109751

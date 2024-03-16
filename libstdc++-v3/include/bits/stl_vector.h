@@ -66,9 +66,6 @@
 # include <compare>
 #endif
 
-#define __glibcxx_want_constexpr_vector
-#include <bits/version.h>
-
 #include <debug/assertions.h>
 
 #if _GLIBCXX_SANITIZE_STD_ALLOCATOR && _GLIBCXX_SANITIZE_VECTOR

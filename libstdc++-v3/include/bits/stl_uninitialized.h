@@ -67,9 +67,6 @@
 #include <bits/stl_pair.h>
 #endif
 
-#define __glibcxx_want_raw_memory_algorithms
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -966,7 +963,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @endcond
 #endif
 
-#ifdef __cpp_lib_raw_memory_algorithms // C++ >= 17
+#ifdef __glibcxx_raw_memory_algorithms // C++ >= 17
   /**
    *  @brief Default-initializes objects in the range [first,last).
    *  @param  __first  A forward iterator.
@@ -1059,7 +1056,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 __count, __result);
       return {__res.first.base(), __res.second};
     }
-#endif // __cpp_lib_raw_memory_algorithms
+#endif // __glibcxx_raw_memory_algorithms
 
 #if __cplusplus >= 201103L
   /// @cond undocumented

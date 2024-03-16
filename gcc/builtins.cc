@@ -9573,6 +9573,271 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
   return build2_loc (loc, COMPOUND_EXPR, boolean_type_node, store, ovfres);
 }
 
+/* Fold __builtin_{clz,ctz,clrsb,ffs,parity,popcount}g into corresponding
+   internal function.  */
+
+static tree
+fold_builtin_bit_query (location_t loc, enum built_in_function fcode,
+			tree arg0, tree arg1)
+{
+  enum internal_fn ifn;
+  enum built_in_function fcodei, fcodel, fcodell;
+  tree arg0_type = TREE_TYPE (arg0);
+  tree cast_type = NULL_TREE;
+  int addend = 0;
+
+  switch (fcode)
+    {
+    case BUILT_IN_CLZG:
+      if (arg1 && TREE_CODE (arg1) != INTEGER_CST)
+	return NULL_TREE;
+      ifn = IFN_CLZ;
+      fcodei = BUILT_IN_CLZ;
+      fcodel = BUILT_IN_CLZL;
+      fcodell = BUILT_IN_CLZLL;
+      break;
+    case BUILT_IN_CTZG:
+      if (arg1 && TREE_CODE (arg1) != INTEGER_CST)
+	return NULL_TREE;
+      ifn = IFN_CTZ;
+      fcodei = BUILT_IN_CTZ;
+      fcodel = BUILT_IN_CTZL;
+      fcodell = BUILT_IN_CTZLL;
+      break;
+    case BUILT_IN_CLRSBG:
+      ifn = IFN_CLRSB;
+      fcodei = BUILT_IN_CLRSB;
+      fcodel = BUILT_IN_CLRSBL;
+      fcodell = BUILT_IN_CLRSBLL;
+      break;
+    case BUILT_IN_FFSG:
+      ifn = IFN_FFS;
+      fcodei = BUILT_IN_FFS;
+      fcodel = BUILT_IN_FFSL;
+      fcodell = BUILT_IN_FFSLL;
+      break;
+    case BUILT_IN_PARITYG:
+      ifn = IFN_PARITY;
+      fcodei = BUILT_IN_PARITY;
+      fcodel = BUILT_IN_PARITYL;
+      fcodell = BUILT_IN_PARITYLL;
+      break;
+    case BUILT_IN_POPCOUNTG:
+      ifn = IFN_POPCOUNT;
+      fcodei = BUILT_IN_POPCOUNT;
+      fcodel = BUILT_IN_POPCOUNTL;
+      fcodell = BUILT_IN_POPCOUNTLL;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (TYPE_PRECISION (arg0_type)
+      <= TYPE_PRECISION (long_long_unsigned_type_node))
+    {
+      if (TYPE_PRECISION (arg0_type) <= TYPE_PRECISION (unsigned_type_node))
+
+	cast_type = (TYPE_UNSIGNED (arg0_type)
+		     ? unsigned_type_node : integer_type_node);
+      else if (TYPE_PRECISION (arg0_type)
+	       <= TYPE_PRECISION (long_unsigned_type_node))
+	{
+	  cast_type = (TYPE_UNSIGNED (arg0_type)
+		       ? long_unsigned_type_node : long_integer_type_node);
+	  fcodei = fcodel;
+	}
+      else
+	{
+	  cast_type = (TYPE_UNSIGNED (arg0_type)
+		       ? long_long_unsigned_type_node
+		       : long_long_integer_type_node);
+	  fcodei = fcodell;
+	}
+    }
+  else if (TYPE_PRECISION (arg0_type) <= MAX_FIXED_MODE_SIZE)
+    {
+      cast_type
+	= build_nonstandard_integer_type (MAX_FIXED_MODE_SIZE,
+					  TYPE_UNSIGNED (arg0_type));
+      gcc_assert (TYPE_PRECISION (cast_type)
+		  == 2 * TYPE_PRECISION (long_long_unsigned_type_node));
+      fcodei = END_BUILTINS;
+    }
+  else
+    fcodei = END_BUILTINS;
+  if (cast_type)
+    {
+      switch (fcode)
+	{
+	case BUILT_IN_CLZG:
+	case BUILT_IN_CLRSBG:
+	  addend = TYPE_PRECISION (arg0_type) - TYPE_PRECISION (cast_type);
+	  break;
+	default:
+	  break;
+	}
+      arg0 = fold_convert (cast_type, arg0);
+      arg0_type = cast_type;
+    }
+
+  if (arg1)
+    arg1 = fold_convert (integer_type_node, arg1);
+
+  tree arg2 = arg1;
+  if (fcode == BUILT_IN_CLZG && addend)
+    {
+      if (arg1)
+	arg0 = save_expr (arg0);
+      arg2 = NULL_TREE;
+    }
+  tree call = NULL_TREE, tem;
+  if (TYPE_PRECISION (arg0_type) == MAX_FIXED_MODE_SIZE
+      && (TYPE_PRECISION (arg0_type)
+	  == 2 * TYPE_PRECISION (long_long_unsigned_type_node)))
+    {
+      /* __int128 expansions using up to 2 long long builtins.  */
+      arg0 = save_expr (arg0);
+      tree type = (TYPE_UNSIGNED (arg0_type)
+		   ? long_long_unsigned_type_node
+		   : long_long_integer_type_node);
+      tree hi = fold_build2 (RSHIFT_EXPR, arg0_type, arg0,
+			     build_int_cst (integer_type_node,
+					    MAX_FIXED_MODE_SIZE / 2));
+      hi = fold_convert (type, hi);
+      tree lo = fold_convert (type, arg0);
+      switch (fcode)
+	{
+	case BUILT_IN_CLZG:
+	  call = fold_builtin_bit_query (loc, fcode, lo, NULL_TREE);
+	  call = fold_build2 (PLUS_EXPR, integer_type_node, call,
+			      build_int_cst (integer_type_node,
+					     MAX_FIXED_MODE_SIZE / 2));
+	  if (arg2)
+	    call = fold_build3 (COND_EXPR, integer_type_node,
+				fold_build2 (NE_EXPR, boolean_type_node,
+					     lo, build_zero_cst (type)),
+				call, arg2);
+	  call = fold_build3 (COND_EXPR, integer_type_node,
+			      fold_build2 (NE_EXPR, boolean_type_node,
+					   hi, build_zero_cst (type)),
+			      fold_builtin_bit_query (loc, fcode, hi,
+						      NULL_TREE),
+			      call);
+	  break;
+	case BUILT_IN_CTZG:
+	  call = fold_builtin_bit_query (loc, fcode, hi, NULL_TREE);
+	  call = fold_build2 (PLUS_EXPR, integer_type_node, call,
+			      build_int_cst (integer_type_node,
+					     MAX_FIXED_MODE_SIZE / 2));
+	  if (arg2)
+	    call = fold_build3 (COND_EXPR, integer_type_node,
+				fold_build2 (NE_EXPR, boolean_type_node,
+					     hi, build_zero_cst (type)),
+				call, arg2);
+	  call = fold_build3 (COND_EXPR, integer_type_node,
+			      fold_build2 (NE_EXPR, boolean_type_node,
+					   lo, build_zero_cst (type)),
+			      fold_builtin_bit_query (loc, fcode, lo,
+						      NULL_TREE),
+			      call);
+	  break;
+	case BUILT_IN_CLRSBG:
+	  tem = fold_builtin_bit_query (loc, fcode, lo, NULL_TREE);
+	  tem = fold_build2 (PLUS_EXPR, integer_type_node, tem,
+			     build_int_cst (integer_type_node,
+					    MAX_FIXED_MODE_SIZE / 2));
+	  tem = fold_build3 (COND_EXPR, integer_type_node,
+			     fold_build2 (LT_EXPR, boolean_type_node,
+					  fold_build2 (BIT_XOR_EXPR, type,
+						       lo, hi),
+					  build_zero_cst (type)),
+			     build_int_cst (integer_type_node,
+					    MAX_FIXED_MODE_SIZE / 2 - 1),
+			     tem);
+	  call = fold_builtin_bit_query (loc, fcode, hi, NULL_TREE);
+	  call = save_expr (call);
+	  call = fold_build3 (COND_EXPR, integer_type_node,
+			      fold_build2 (NE_EXPR, boolean_type_node,
+					   call,
+					   build_int_cst (integer_type_node,
+							  MAX_FIXED_MODE_SIZE
+							  / 2 - 1)),
+			      call, tem);
+	  break;
+	case BUILT_IN_FFSG:
+	  call = fold_builtin_bit_query (loc, fcode, hi, NULL_TREE);
+	  call = fold_build2 (PLUS_EXPR, integer_type_node, call,
+			      build_int_cst (integer_type_node,
+					     MAX_FIXED_MODE_SIZE / 2));
+	  call = fold_build3 (COND_EXPR, integer_type_node,
+			      fold_build2 (NE_EXPR, boolean_type_node,
+					   hi, build_zero_cst (type)),
+			      call, integer_zero_node);
+	  call = fold_build3 (COND_EXPR, integer_type_node,
+			      fold_build2 (NE_EXPR, boolean_type_node,
+					   lo, build_zero_cst (type)),
+			      fold_builtin_bit_query (loc, fcode, lo,
+						      NULL_TREE),
+			      call);
+	  break;
+	case BUILT_IN_PARITYG:
+	  call = fold_builtin_bit_query (loc, fcode,
+					 fold_build2 (BIT_XOR_EXPR, type,
+						      lo, hi), NULL_TREE);
+	  break;
+	case BUILT_IN_POPCOUNTG:
+	  call = fold_build2 (PLUS_EXPR, integer_type_node,
+			      fold_builtin_bit_query (loc, fcode, hi,
+						      NULL_TREE),
+			      fold_builtin_bit_query (loc, fcode, lo,
+						      NULL_TREE));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    {
+      /* Only keep second argument to IFN_CLZ/IFN_CTZ if it is the
+	 value defined at zero during GIMPLE, or for large/huge _BitInt
+	 (which are then lowered during bitint lowering).  */
+      if (arg2 && TREE_CODE (TREE_TYPE (arg0)) != BITINT_TYPE)
+	{
+	  int val;
+	  if (fcode == BUILT_IN_CLZG)
+	    {
+	      if (CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_TYPE_MODE (arg0_type),
+					     val) != 2
+		  || wi::to_widest (arg2) != val)
+		arg2 = NULL_TREE;
+	    }
+	  else if (CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_TYPE_MODE (arg0_type),
+					      val) != 2
+		   || wi::to_widest (arg2) != val)
+	    arg2 = NULL_TREE;
+	  if (!direct_internal_fn_supported_p (ifn, arg0_type,
+					       OPTIMIZE_FOR_BOTH))
+	    arg2 = NULL_TREE;
+	}
+      if (fcodei == END_BUILTINS || arg2)
+	call = build_call_expr_internal_loc (loc, ifn, integer_type_node,
+					     arg2 ? 2 : 1, arg0, arg2);
+      else
+	call = build_call_expr_loc (loc, builtin_decl_explicit (fcodei), 1,
+				    arg0);
+    }
+  if (addend)
+    call = fold_build2 (PLUS_EXPR, integer_type_node, call,
+			build_int_cst (integer_type_node, addend));
+  if (arg1 && arg2 == NULL_TREE)
+    call = fold_build3 (COND_EXPR, integer_type_node,
+			fold_build2 (NE_EXPR, boolean_type_node,
+				     arg0, build_zero_cst (arg0_type)),
+			call, arg1);
+
+  return call;
+}
+
 /* Fold __builtin_{add,sub}c{,l,ll} into pair of internal functions
    that return both result of arithmetics and overflowed boolean
    flag in a complex integer result.  */
@@ -9824,6 +10089,14 @@ fold_builtin_1 (location_t loc, tree expr, tree fndecl, tree arg0)
 	return build_empty_stmt (loc);
       break;
 
+    case BUILT_IN_CLZG:
+    case BUILT_IN_CTZG:
+    case BUILT_IN_CLRSBG:
+    case BUILT_IN_FFSG:
+    case BUILT_IN_PARITYG:
+    case BUILT_IN_POPCOUNTG:
+      return fold_builtin_bit_query (loc, fcode, arg0, NULL_TREE);
+
     default:
       break;
     }
@@ -9912,6 +10185,10 @@ fold_builtin_2 (location_t loc, tree expr, tree fndecl, tree arg0, tree arg1)
 
     case BUILT_IN_ATOMIC_IS_LOCK_FREE:
       return fold_builtin_atomic_is_lock_free (arg0, arg1);
+
+    case BUILT_IN_CLZG:
+    case BUILT_IN_CTZG:
+      return fold_builtin_bit_query (loc, fcode, arg0, arg1);
 
     default:
       break;

@@ -4908,6 +4908,9 @@ add_AT_die_ref (dw_die_ref die, enum dwarf_attribute attr_kind, dw_die_ref targ_
 {
   dw_attr_node attr;
   gcc_checking_assert (targ_die != NULL);
+  gcc_assert (targ_die != die
+	      || (attr_kind != DW_AT_abstract_origin
+		  && attr_kind != DW_AT_specification));
 
   /* With LTO we can end up trying to reference something we didn't create
      a DIE for.  Avoid crashing later on a NULL referenced DIE.  */

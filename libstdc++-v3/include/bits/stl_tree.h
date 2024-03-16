@@ -72,9 +72,6 @@
 # include <bits/node_handle.h>
 #endif
 
-#define __glibcxx_want_generic_associative_lookup
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

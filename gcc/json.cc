@@ -128,6 +128,42 @@ object::get (const char *key) const
     return NULL;
 }
 
+/* Set value of KEY within this object to a JSON
+   string value based on UTF8_VALUE.  */
+
+void
+object::set_string (const char *key, const char *utf8_value)
+{
+  set (key, new json::string (utf8_value));
+}
+
+/* Set value of KEY within this object to a JSON
+   integer value based on V.  */
+
+void
+object::set_integer (const char *key, long v)
+{
+  set (key, new json::integer_number (v));
+}
+
+/* Set value of KEY within this object to a JSON
+   floating point value based on V.  */
+
+void
+object::set_float (const char *key, double v)
+{
+  set (key, new json::float_number (v));
+}
+
+/* Set value of KEY within this object to the JSON
+   literal true or false, based on V.  */
+
+void
+object::set_bool (const char *key, bool v)
+{
+  set (key, new json::literal (v));
+}
+
 /* class json::array, a subclass of json::value, representing
    an ordered collection of values.  */
 
@@ -286,12 +322,15 @@ namespace selftest {
 /* Verify that JV->print () prints EXPECTED_JSON.  */
 
 static void
-assert_print_eq (const json::value &jv, const char *expected_json)
+assert_print_eq (const location &loc, const json::value &jv, const char *expected_json)
 {
   pretty_printer pp;
   jv.print (&pp);
-  ASSERT_STREQ (expected_json, pp_formatted_text (&pp));
+  ASSERT_STREQ_AT (loc, expected_json, pp_formatted_text (&pp));
 }
+
+#define ASSERT_PRINT_EQ(JV, EXPECTED_JSON) \
+  assert_print_eq (SELFTEST_LOCATION, JV, EXPECTED_JSON)
 
 /* Verify that object::get works as expected.  */
 
@@ -311,11 +350,11 @@ static void
 test_writing_objects ()
 {
   object obj;
-  obj.set ("foo", new json::string ("bar"));
-  obj.set ("baz", new json::string ("quux"));
+  obj.set_string ("foo", "bar");
+  obj.set_string ("baz", "quux");
   /* This test relies on json::object writing out key/value pairs
      in key-insertion order.  */
-  assert_print_eq (obj, "{\"foo\": \"bar\", \"baz\": \"quux\"}");
+  ASSERT_PRINT_EQ (obj, "{\"foo\": \"bar\", \"baz\": \"quux\"}");
 }
 
 /* Verify that JSON arrays are written correctly.  */
@@ -324,13 +363,13 @@ static void
 test_writing_arrays ()
 {
   array arr;
-  assert_print_eq (arr, "[]");
+  ASSERT_PRINT_EQ (arr, "[]");
 
   arr.append (new json::string ("foo"));
-  assert_print_eq (arr, "[\"foo\"]");
+  ASSERT_PRINT_EQ (arr, "[\"foo\"]");
 
   arr.append (new json::string ("bar"));
-  assert_print_eq (arr, "[\"foo\", \"bar\"]");
+  ASSERT_PRINT_EQ (arr, "[\"foo\", \"bar\"]");
 }
 
 /* Verify that JSON numbers are written correctly.  */
@@ -338,20 +377,20 @@ test_writing_arrays ()
 static void
 test_writing_float_numbers ()
 {
-  assert_print_eq (float_number (0), "0");
-  assert_print_eq (float_number (42), "42");
-  assert_print_eq (float_number (-100), "-100");
-  assert_print_eq (float_number (123456789), "1.23457e+08");
+  ASSERT_PRINT_EQ (float_number (0), "0");
+  ASSERT_PRINT_EQ (float_number (42), "42");
+  ASSERT_PRINT_EQ (float_number (-100), "-100");
+  ASSERT_PRINT_EQ (float_number (123456789), "1.23457e+08");
 }
 
 static void
 test_writing_integer_numbers ()
 {
-  assert_print_eq (integer_number (0), "0");
-  assert_print_eq (integer_number (42), "42");
-  assert_print_eq (integer_number (-100), "-100");
-  assert_print_eq (integer_number (123456789), "123456789");
-  assert_print_eq (integer_number (-123456789), "-123456789");
+  ASSERT_PRINT_EQ (integer_number (0), "0");
+  ASSERT_PRINT_EQ (integer_number (42), "42");
+  ASSERT_PRINT_EQ (integer_number (-100), "-100");
+  ASSERT_PRINT_EQ (integer_number (123456789), "123456789");
+  ASSERT_PRINT_EQ (integer_number (-123456789), "-123456789");
 }
 
 /* Verify that JSON strings are written correctly.  */
@@ -360,16 +399,16 @@ static void
 test_writing_strings ()
 {
   string foo ("foo");
-  assert_print_eq (foo, "\"foo\"");
+  ASSERT_PRINT_EQ (foo, "\"foo\"");
 
   string contains_quotes ("before \"quoted\" after");
-  assert_print_eq (contains_quotes, "\"before \\\"quoted\\\" after\"");
+  ASSERT_PRINT_EQ (contains_quotes, "\"before \\\"quoted\\\" after\"");
 
   const char data[] = {'a', 'b', 'c', 'd', '\0', 'e', 'f'};
   string not_terminated (data, 3);
-  assert_print_eq (not_terminated, "\"abc\"");
+  ASSERT_PRINT_EQ (not_terminated, "\"abc\"");
   string embedded_null (data, sizeof data);
-  assert_print_eq (embedded_null, "\"abcd\\0ef\"");
+  ASSERT_PRINT_EQ (embedded_null, "\"abcd\\0ef\"");
 }
 
 /* Verify that JSON literals are written correctly.  */
@@ -377,12 +416,12 @@ test_writing_strings ()
 static void
 test_writing_literals ()
 {
-  assert_print_eq (literal (JSON_TRUE), "true");
-  assert_print_eq (literal (JSON_FALSE), "false");
-  assert_print_eq (literal (JSON_NULL), "null");
+  ASSERT_PRINT_EQ (literal (JSON_TRUE), "true");
+  ASSERT_PRINT_EQ (literal (JSON_FALSE), "false");
+  ASSERT_PRINT_EQ (literal (JSON_NULL), "null");
 
-  assert_print_eq (literal (true), "true");
-  assert_print_eq (literal (false), "false");
+  ASSERT_PRINT_EQ (literal (true), "true");
+  ASSERT_PRINT_EQ (literal (false), "false");
 }
 
 /* Run all of the selftests within this file.  */

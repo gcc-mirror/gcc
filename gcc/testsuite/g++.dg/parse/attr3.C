@@ -10,5 +10,6 @@ int main () {
     S::F y;	// { dg-warning "'F' is deprecated" }
     y = S::f;
 
-    return x + y; // { dg-warning "arithmetic between different enumeration types" "" { target c++20 } }
+    return x + y; // { dg-warning "arithmetic between different enumeration types" "" { target { c++20 && c++23_down } } }
+		  // { dg-error "arithmetic between different enumeration types" "" { target c++26 } .-1 }
 }

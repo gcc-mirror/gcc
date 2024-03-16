@@ -115,6 +115,11 @@ riscv-v.o: $(srcdir)/config/riscv/riscv-v.cc \
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+riscv-target-attr.o: $(srcdir)/config/riscv/riscv-target-attr.cc $(CONFIG_H) \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(DIAGNOSTIC_CORE_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/riscv/riscv-target-attr.cc
+
 thead.o: $(srcdir)/config/riscv/thead.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) backend.h $(RTL_H) \
   memmodel.h $(EMIT_RTL_H) poly-int.h output.h

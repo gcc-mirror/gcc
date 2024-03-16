@@ -211,7 +211,7 @@ diagnostic_context::initialize (int n_opts)
   this->printer = XNEW (pretty_printer);
   new (this->printer) pretty_printer ();
 
-  m_file_cache = nullptr;
+  m_file_cache = new file_cache ();
   memset (m_diagnostic_count, 0, sizeof m_diagnostic_count);
   m_warning_as_error_requested = false;
   m_n_opts = n_opts;
@@ -235,13 +235,13 @@ diagnostic_context::initialize (int n_opts)
   m_warn_system_headers = false;
   m_max_errors = 0;
   m_internal_error = nullptr;
-  m_text_callbacks.begin_diagnostic = default_diagnostic_starter;
-  m_text_callbacks.start_span = default_diagnostic_start_span_fn;
-  m_text_callbacks.end_diagnostic = default_diagnostic_finalizer;
-  m_option_enabled = nullptr;
-  m_option_state = nullptr;
-  m_option_name = nullptr;
-  m_get_option_url = nullptr;
+  m_text_callbacks.m_begin_diagnostic = default_diagnostic_starter;
+  m_text_callbacks.m_start_span = default_diagnostic_start_span_fn;
+  m_text_callbacks.m_end_diagnostic = default_diagnostic_finalizer;
+  m_option_callbacks.m_option_enabled_cb = nullptr;
+  m_option_callbacks.m_option_state = nullptr;
+  m_option_callbacks.m_make_option_name_cb = nullptr;
+  m_option_callbacks.m_make_option_url_cb = nullptr;
   m_urlifier = nullptr;
   m_last_location = UNKNOWN_LOCATION;
   m_last_module = nullptr;
@@ -352,8 +352,6 @@ diagnostic_context::
 initialize_input_context (diagnostic_input_charset_callback ccb,
 			  bool should_skip_bom)
 {
-  if (!m_file_cache)
-    m_file_cache = new file_cache;
   m_file_cache->initialize_input_context (ccb, should_skip_bom);
 }
 
@@ -421,6 +419,21 @@ diagnostic_context::set_client_data_hooks (diagnostic_client_data_hooks *hooks)
 }
 
 void
+diagnostic_context::
+set_option_hooks (diagnostic_option_enabled_cb option_enabled_cb,
+		  void *option_state,
+		  diagnostic_make_option_name_cb make_option_name_cb,
+		  diagnostic_make_option_url_cb make_option_url_cb,
+		  unsigned lang_mask)
+{
+  m_option_callbacks.m_option_enabled_cb = option_enabled_cb;
+  m_option_callbacks.m_option_state = option_state;
+  m_option_callbacks.m_make_option_name_cb = make_option_name_cb;
+  m_option_callbacks.m_make_option_url_cb = make_option_url_cb;
+  m_option_callbacks.m_lang_mask = lang_mask;
+}
+
+void
 diagnostic_context::set_urlifier (urlifier *urlifier)
 {
   /* Ideally we'd use a std::unique_ptr here.  */
@@ -432,7 +445,8 @@ void
 diagnostic_context::create_edit_context ()
 {
   delete m_edit_context_ptr;
-  m_edit_context_ptr = new edit_context ();
+  gcc_assert (m_file_cache);
+  m_edit_context_ptr = new edit_context (*m_file_cache);
 }
 
 /* Initialize DIAGNOSTIC, where the message MSG has already been
@@ -485,7 +499,8 @@ diagnostic_get_color_for_kind (diagnostic_t kind)
    Return -1 if the column is invalid (<= 0).  */
 
 static int
-convert_column_unit (enum diagnostics_column_unit column_unit,
+convert_column_unit (file_cache &fc,
+		     enum diagnostics_column_unit column_unit,
 		     int tabstop,
 		     expanded_location s)
 {
@@ -500,7 +515,7 @@ convert_column_unit (enum diagnostics_column_unit column_unit,
     case DIAGNOSTICS_COLUMN_UNIT_DISPLAY:
       {
 	cpp_char_column_policy policy (tabstop, cpp_wcwidth);
-	return location_compute_display_column (s, policy);
+	return location_compute_display_column (fc, s, policy);
       }
 
     case DIAGNOSTICS_COLUMN_UNIT_BYTE:
@@ -514,7 +529,8 @@ convert_column_unit (enum diagnostics_column_unit column_unit,
 int
 diagnostic_context::converted_column (expanded_location s) const
 {
-  int one_based_col = convert_column_unit (m_column_unit, m_tabstop, s);
+  int one_based_col = convert_column_unit (get_file_cache (),
+					   m_column_unit, m_tabstop, s);
   if (one_based_col <= 0)
     return -1;
   return one_based_col + (m_column_origin - 1);
@@ -1123,9 +1139,7 @@ classify_diagnostic (const diagnostic_context *context,
       /* Record the command-line status, so we can reset it back on DK_POP. */
       if (old_kind == DK_UNSPECIFIED)
 	{
-	  old_kind = !context->m_option_enabled (option_index,
-						 context->m_lang_mask,
-						 context->m_option_state)
+	  old_kind = !context->option_enabled_p (option_index)
 	    ? DK_IGNORED : (context->warning_as_error_requested_p ()
 			    ? DK_ERROR : DK_WARNING);
 	  m_classify_diagnostic[option_index] = old_kind;
@@ -1205,7 +1219,8 @@ print_escaped_string (pretty_printer *pp, const char *text)
    Use TABSTOP when handling DIAGNOSTICS_COLUMN_UNIT_DISPLAY.  */
 
 static void
-print_parseable_fixits (pretty_printer *pp, rich_location *richloc,
+print_parseable_fixits (file_cache &fc,
+			pretty_printer *pp, rich_location *richloc,
 			enum diagnostics_column_unit column_unit,
 			int tabstop)
 {
@@ -1226,9 +1241,9 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc,
       location_t next_loc = hint->get_next_loc ();
       expanded_location next_exploc = expand_location (next_loc);
       int start_col
-	= convert_column_unit (column_unit, tabstop, start_exploc);
+	= convert_column_unit (fc, column_unit, tabstop, start_exploc);
       int next_col
-	= convert_column_unit (column_unit, tabstop, next_exploc);
+	= convert_column_unit (fc, column_unit, tabstop, next_exploc);
       pp_printf (pp, ":{%i:%i-%i:%i}:",
 		 start_exploc.line, start_col,
 		 next_exploc.line, next_col);
@@ -1410,18 +1425,12 @@ void
 diagnostic_context::print_option_information (const diagnostic_info &diagnostic,
 					      diagnostic_t orig_diag_kind)
 {
-  char *option_text;
-
-  option_text = m_option_name (this, diagnostic.option_index,
-			       orig_diag_kind, diagnostic.kind);
-
-  if (option_text)
+  if (char *option_text = make_option_name (diagnostic.option_index,
+					    orig_diag_kind, diagnostic.kind))
     {
-      char *option_url = NULL;
-      if (m_get_option_url
-	  && this->printer->url_format != URL_FORMAT_NONE)
-	option_url = m_get_option_url (this,
-				       diagnostic.option_index);
+      char *option_url = nullptr;
+      if (this->printer->url_format != URL_FORMAT_NONE)
+	option_url = make_option_url (diagnostic.option_index);
       pretty_printer * const pp = this->printer;
       pp_string (pp, " [");
       pp_string (pp, colorize_start (pp_show_color (pp),
@@ -1456,9 +1465,7 @@ diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
 
   /* This tests if the user provided the appropriate -Wfoo or
      -Wno-foo option.  */
-  if (! m_option_enabled (diagnostic->option_index,
-			  m_lang_mask,
-			  m_option_state))
+  if (!option_enabled_p (diagnostic->option_index))
     return false;
 
   /* This tests for #pragma diagnostic changes.  */
@@ -1613,13 +1620,15 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
     default:
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1:
-      print_parseable_fixits (this->printer, diagnostic->richloc,
+      print_parseable_fixits (get_file_cache (),
+			      this->printer, diagnostic->richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_BYTE,
 			      m_tabstop);
       pp_flush (this->printer);
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2:
-      print_parseable_fixits (this->printer, diagnostic->richloc,
+      print_parseable_fixits (get_file_cache (),
+			      this->printer, diagnostic->richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
 			      m_tabstop);
       pp_flush (this->printer);
@@ -2687,9 +2696,10 @@ static void
 test_print_parseable_fixits_none ()
 {
   pretty_printer pp;
+  file_cache fc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
 
-  print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
+  print_parseable_fixits (fc, &pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
   ASSERT_STREQ ("", pp_formatted_text (&pp));
 }
 
@@ -2700,6 +2710,7 @@ static void
 test_print_parseable_fixits_insert ()
 {
   pretty_printer pp;
+  file_cache fc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
 
   linemap_add (line_table, LC_ENTER, false, "test.c", 0);
@@ -2708,7 +2719,7 @@ test_print_parseable_fixits_insert ()
   location_t where = linemap_position_for_column (line_table, 10);
   richloc.add_fixit_insert_before (where, "added content");
 
-  print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
+  print_parseable_fixits (fc, &pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
   ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:10}:\"added content\"\n",
 		pp_formatted_text (&pp));
 }
@@ -2720,6 +2731,7 @@ static void
 test_print_parseable_fixits_remove ()
 {
   pretty_printer pp;
+  file_cache fc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
 
   linemap_add (line_table, LC_ENTER, false, "test.c", 0);
@@ -2730,7 +2742,7 @@ test_print_parseable_fixits_remove ()
   where.m_finish = linemap_position_for_column (line_table, 20);
   richloc.add_fixit_remove (where);
 
-  print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
+  print_parseable_fixits (fc, &pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
   ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:21}:\"\"\n",
 		pp_formatted_text (&pp));
 }
@@ -2742,6 +2754,7 @@ static void
 test_print_parseable_fixits_replace ()
 {
   pretty_printer pp;
+  file_cache fc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
 
   linemap_add (line_table, LC_ENTER, false, "test.c", 0);
@@ -2752,7 +2765,7 @@ test_print_parseable_fixits_replace ()
   where.m_finish = linemap_position_for_column (line_table, 20);
   richloc.add_fixit_replace (where, "replacement");
 
-  print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
+  print_parseable_fixits (fc, &pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
   ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:21}:\"replacement\"\n",
 		pp_formatted_text (&pp));
 }
@@ -2772,6 +2785,7 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
   const int tabstop = 8;
 
   temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  file_cache fc;
   const char *const fname = tmp.get_filename ();
 
   linemap_add (line_table, LC_ENTER, false, fname, 0);
@@ -2792,7 +2806,8 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
 
   {
     pretty_printer pp;
-    print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE,
+    print_parseable_fixits (fc, &pp, &richloc,
+			    DIAGNOSTICS_COLUMN_UNIT_BYTE,
 			    tabstop);
     snprintf (expected, buf_len,
 	      "fix-it:%s:{1:12-1:18}:\"color\"\n", escaped_fname);
@@ -2800,7 +2815,8 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
   }
   {
     pretty_printer pp;
-    print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
+    print_parseable_fixits (fc, &pp, &richloc,
+			    DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
 			    tabstop);
     snprintf (expected, buf_len,
 	      "fix-it:%s:{1:10-1:16}:\"color\"\n", escaped_fname);

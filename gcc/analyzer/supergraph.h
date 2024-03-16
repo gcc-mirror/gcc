@@ -532,6 +532,8 @@ class cfg_superedge : public superedge
   size_t get_phi_arg_idx () const;
   tree get_phi_arg (const gphi *phi) const;
 
+  location_t get_goto_locus () const { return m_cfg_edge->goto_locus; }
+
  private:
   const ::edge m_cfg_edge;
 };

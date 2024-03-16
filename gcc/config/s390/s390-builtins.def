@@ -708,7 +708,7 @@ OB_DEF_VAR (s390_vec_scatter_element_u32,s390_vscef,        0,                  
 OB_DEF_VAR (s390_vec_scatter_element_s64,s390_vsceg,        0,                  O4_U1,              BT_OV_VOID_V2DI_UV2DI_LONGLONGPTR_ULONGLONG)
 OB_DEF_VAR (s390_vec_scatter_element_b64,s390_vsceg,        0,                  O4_U1,              BT_OV_VOID_BV2DI_UV2DI_ULONGLONGPTR_ULONGLONG)
 OB_DEF_VAR (s390_vec_scatter_element_u64,s390_vsceg,        0,                  O4_U1,              BT_OV_VOID_UV2DI_UV2DI_ULONGLONGPTR_ULONGLONG)
-OB_DEF_VAR (s390_vec_scatter_element_flt,s390_vscef,        B_VXE,              O4_U2,              BT_OV_VOID_V4SF_V4SF_FLTPTR_ULONGLONG)
+OB_DEF_VAR (s390_vec_scatter_element_flt,s390_vscef,        B_VXE,              O4_U2,              BT_OV_VOID_V4SF_UV4SI_FLTPTR_ULONGLONG)
 OB_DEF_VAR (s390_vec_scatter_element_dbl,s390_vsceg,        0,                  O4_U1,              BT_OV_VOID_V2DF_UV2DI_DBLPTR_ULONGLONG)
 
 B_DEF      (s390_vscef,                 vec_scatter_elementv4si,0,              B_VX,               O4_U2,              BT_FN_VOID_UV4SI_UV4SI_UINTPTR_ULONGLONG)

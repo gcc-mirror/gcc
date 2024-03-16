@@ -15,6 +15,8 @@ void test_1 (const char *path, int flag)
   if (!fp) /* { dg-message "when 'fp' is non-NULL" } */
     return;
 
+  bar ();
+
   /* We shouldn't report this control flow.  */
   while (foo ()) /* { dg-bogus "" } */
     bar ();

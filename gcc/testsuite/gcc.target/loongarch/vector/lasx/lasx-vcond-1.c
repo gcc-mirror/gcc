@@ -52,13 +52,13 @@ TEST_VAR_ALL (DEF_VCOND_VAR)
 
 /* { dg-final { scan-assembler-times {\txvslt\.b} 4 } } */
 /* { dg-final { scan-assembler-times {\txvslt\.h} 4 } } */
-/* { dg-final { scan-assembler-times {\txvslt\.w} 4 } } */
-/* { dg-final { scan-assembler-times {\txvslt\.d} 4 } } */
+/* { dg-final { scan-assembler-times {\txvslt\.w} 8 } } */
+/* { dg-final { scan-assembler-times {\txvslt\.d} 8 } } */
 /* { dg-final { scan-assembler-times {\txvsle\.b} 4 } } */
 /* { dg-final { scan-assembler-times {\txvsle\.h} 4 } } */
-/* { dg-final { scan-assembler-times {\txvsle\.w} 4 } } */
-/* { dg-final { scan-assembler-times {\txvsle\.d} 4 } } */
+/* { dg-final { scan-assembler-times {\txvsle\.w} 8 } } */
+/* { dg-final { scan-assembler-times {\txvsle\.d} 8 } } */
 /* { dg-final { scan-assembler-times {\txvseq\.b} 4 } } */
 /* { dg-final { scan-assembler-times {\txvseq\.h} 4 } } */
-/* { dg-final { scan-assembler-times {\txvseq\.w} 4 } } */
-/* { dg-final { scan-assembler-times {\txvseq\.d} 4 } } */
+/* { dg-final { scan-assembler-times {\txvseq\.w} 8 } } */
+/* { dg-final { scan-assembler-times {\txvseq\.d} 8 } } */

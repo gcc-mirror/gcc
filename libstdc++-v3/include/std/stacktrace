@@ -425,7 +425,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       at(size_type __n) const
       {
 	if (__n >= size())
-	  __throw_out_of_range("basic_stack_trace::at: bad frame number");
+	  __throw_out_of_range("basic_stacktrace::at: bad frame number");
 	return begin()[__n];
       }
 
@@ -740,7 +740,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  std::ostringstream __os;
 	  __os << __x;
-	  return __format::__write(__fc.out(), __os.view());
+	  auto __str = __os.view();
+	  return __format::__write_padded_as_spec(__str, __str.size(),
+						  __fc, _M_spec);
 	}
 
     private:
@@ -797,7 +799,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t
       operator()(const basic_stacktrace<_Allocator>& __st) const noexcept
       {
-	hash<stacktrace_entry::native_handle_type> __h;
+	hash<stacktrace_entry> __h;
 	size_t __val = _Hash_impl::hash(__st.size());
 	for (const auto& __f : __st)
 	  __val = _Hash_impl::__hash_combine(__h(__f), __val);

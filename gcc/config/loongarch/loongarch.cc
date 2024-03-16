@@ -3006,12 +3006,16 @@ loongarch_legitimize_call_address (rtx addr)
 
   enum loongarch_symbol_type symbol_type = loongarch_classify_symbol (addr);
 
-  /* Split function call insn 'bl sym' or 'bl %plt(sym)' to :
-     pcalau12i $rd, %pc_hi20(sym)
-     jr $rd, %pc_lo12(sym).  */
+  /* If add the compilation option '-cmodel=medium', and the assembler does
+     not support call36.  The following sequence of instructions will be
+     used for the function call:
+	pcalau12i $rd, %pc_hi20(sym)
+	jr $rd, %pc_lo12(sym)
+  */
 
   if (TARGET_CMODEL_MEDIUM
-      && TARGET_EXPLICIT_RELOCS
+      && !HAVE_AS_SUPPORT_CALL36
+      && (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
       && (SYMBOL_REF_P (addr) || LABEL_REF_P (addr))
       && (symbol_type == SYMBOL_PCREL
 	  || (symbol_type == SYMBOL_GOT_DISP && flag_plt)))
@@ -3893,11 +3897,9 @@ loongarch_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       case scalar_stmt:
       case scalar_load:
       case vector_stmt:
-      case vector_load:
       case vec_to_scalar:
       case scalar_to_vec:
       case scalar_store:
-      case vector_store:
 	return 1;
 
       case vec_promote_demote:
@@ -3905,6 +3907,8 @@ loongarch_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	return LASX_SUPPORTED_MODE_P (mode)
 	  && !LSX_SUPPORTED_MODE_P (mode) ? 2 : 1;
 
+      case vector_load:
+      case vector_store:
       case unaligned_load:
       case unaligned_store:
 	return 2;
@@ -5813,16 +5817,12 @@ loongarch_print_operand_punct_valid_p (unsigned char code)
 static bool
 loongarch_memmodel_needs_rel_acq_fence (enum memmodel model)
 {
-  switch (model)
+  switch (memmodel_base (model))
     {
       case MEMMODEL_ACQ_REL:
       case MEMMODEL_SEQ_CST:
-      case MEMMODEL_SYNC_SEQ_CST:
       case MEMMODEL_RELEASE:
-      case MEMMODEL_SYNC_RELEASE:
       case MEMMODEL_ACQUIRE:
-      case MEMMODEL_CONSUME:
-      case MEMMODEL_SYNC_ACQUIRE:
 	return true;
 
       case MEMMODEL_RELAXED:
@@ -5833,27 +5833,27 @@ loongarch_memmodel_needs_rel_acq_fence (enum memmodel model)
     }
 }
 
-/* Return true if a FENCE should be emitted to before a memory access to
-   implement the release portion of memory model MODEL.  */
+/* Return true if a FENCE should be emitted after a failed CAS to
+   implement the acquire semantic of failure_memorder.  */
 
 static bool
-loongarch_memmodel_needs_release_fence (enum memmodel model)
+loongarch_cas_failure_memorder_needs_acquire (enum memmodel model)
 {
-  switch (model)
+  switch (memmodel_base (model))
     {
+    case MEMMODEL_ACQUIRE:
     case MEMMODEL_ACQ_REL:
     case MEMMODEL_SEQ_CST:
-    case MEMMODEL_SYNC_SEQ_CST:
-    case MEMMODEL_RELEASE:
-    case MEMMODEL_SYNC_RELEASE:
       return true;
 
-    case MEMMODEL_ACQUIRE:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_SYNC_ACQUIRE:
     case MEMMODEL_RELAXED:
+    case MEMMODEL_RELEASE:
       return false;
 
+    /* MEMMODEL_CONSUME is deliberately not handled because it's always
+       replaced by MEMMODEL_ACQUIRE as at now.  If you see an ICE caused by
+       MEMMODEL_CONSUME, read the change (re)introducing it carefully and
+       decide what to do.  See PR 59448 and get_memmodel in builtins.cc.  */
     default:
       gcc_unreachable ();
     }
@@ -5966,7 +5966,8 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
    'd'	Print CONST_INT OP in decimal.
    'E'	Print CONST_INT OP element 0 of a replicated CONST_VECTOR in decimal.
    'F'	Print the FPU branch condition for comparison OP.
-   'G'	Print a DBAR insn if the memory model requires a release.
+   'G'	Print a DBAR insn for CAS failure (with an acquire semantic if
+	needed, otherwise a simple load-load barrier).
    'H'  Print address 52-61bit relocation associated with OP.
    'h'  Print the high-part relocation associated with OP.
    'i'	Print i if the operand is not a register.
@@ -6057,8 +6058,11 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 'G':
-      if (loongarch_memmodel_needs_release_fence ((enum memmodel) INTVAL (op)))
-	fputs ("dbar\t0", file);
+      if (loongarch_cas_failure_memorder_needs_acquire (
+	    memmodel_from_int (INTVAL (op))))
+	fputs ("dbar\t0b10100", file);
+      else if (!TARGET_LD_SEQ_SA)
+	fputs ("dbar\t0x700", file);
       break;
 
     case 'h':
@@ -7432,7 +7436,7 @@ loongarch_option_override_internal (struct gcc_options *opts,
 
   if (la_opt_explicit_relocs == M_OPT_UNSET)
     la_opt_explicit_relocs = (HAVE_AS_EXPLICIT_RELOCS
-			      ? (HAVE_AS_MRELAX_OPTION
+			      ? (loongarch_mrelax
 				 ? EXPLICIT_RELOCS_AUTO
 				 : EXPLICIT_RELOCS_ALWAYS)
 			      : EXPLICIT_RELOCS_NONE);
@@ -7451,6 +7455,10 @@ loongarch_option_override_internal (struct gcc_options *opts,
   if (loongarch_branch_cost == 0)
     loongarch_branch_cost = loongarch_cost->branch_cost;
 
+  /* If the user hasn't disabled a feature added during ISA evolution,
+     use the processor's default.  */
+  isa_evolution |= (la_target.isa.evolution &
+		    ~global_options_set.x_isa_evolution);
 
   /* Enable sw prefetching at -O3 and higher.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
@@ -10169,6 +10177,7 @@ loongarch_cpu_sched_reassociation_width (struct loongarch_target *target,
     {
     case CPU_LOONGARCH64:
     case CPU_LA464:
+    case CPU_LA664:
       /* Vector part.  */
       if (LSX_SUPPORTED_MODE_P (mode) || LASX_SUPPORTED_MODE_P (mode))
 	{
@@ -11429,6 +11438,32 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
 						      is_packed);
 }
 
+/* If -fverbose-asm, dump some info for debugging.  */
+static void
+loongarch_asm_code_end (void)
+{
+#define DUMP_FEATURE(PRED) \
+  fprintf (asm_out_file, "%s %s: %s\n", ASM_COMMENT_START, #PRED, \
+	   (PRED) ? "enabled" : "disabled")
+
+  if (flag_verbose_asm)
+    {
+      fprintf (asm_out_file, "\n%s CPU: %s\n", ASM_COMMENT_START,
+	       loongarch_cpu_strings [la_target.cpu_arch]);
+      fprintf (asm_out_file, "%s Tune: %s\n", ASM_COMMENT_START,
+	       loongarch_cpu_strings [la_target.cpu_tune]);
+      fprintf (asm_out_file, "%s Base ISA: %s\n", ASM_COMMENT_START,
+	       loongarch_isa_base_strings [la_target.isa.base]);
+      DUMP_FEATURE (TARGET_DIV32);
+      DUMP_FEATURE (TARGET_LAM_BH);
+      DUMP_FEATURE (TARGET_LAMCAS);
+      DUMP_FEATURE (TARGET_LD_SEQ_SA);
+    }
+
+  fputs ("\n\n", asm_out_file);
+#undef DUMP_FEATURE
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -11447,6 +11482,9 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
 #define TARGET_ASM_SELECT_RTX_SECTION loongarch_select_rtx_section
 #undef TARGET_ASM_FUNCTION_RODATA_SECTION
 #define TARGET_ASM_FUNCTION_RODATA_SECTION loongarch_function_rodata_section
+
+#undef TARGET_ASM_CODE_END
+#define TARGET_ASM_CODE_END loongarch_asm_code_end
 
 #undef TARGET_SCHED_INIT
 #define TARGET_SCHED_INIT loongarch_sched_init

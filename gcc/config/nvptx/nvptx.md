@@ -34,8 +34,6 @@
    UNSPEC_FPINT_CEIL
    UNSPEC_FPINT_NEARBYINT
 
-   UNSPEC_BITREV
-
    UNSPEC_ALLOCA
 
    UNSPEC_SET_SOFTSTACK
@@ -636,8 +634,7 @@
 
 (define_insn "bitrev<mode>2"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
-	(unspec:SDIM [(match_operand:SDIM 1 "nvptx_register_operand" "R")]
-		     UNSPEC_BITREV))]
+	(bitreverse:SDIM (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
   ""
   "%.\\tbrev.b%T0\\t%0, %1;")
 

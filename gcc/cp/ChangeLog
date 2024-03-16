@@ -1,3 +1,136 @@
+2023-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112365
+	* class.cc (layout_class_type): Don't
+	SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD on FIELD_DECLs with
+	error_mark_node type.
+
+2023-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/107939
+	* constexpr.cc (potential_constant_expression_1) <case CALL_EXPR>:
+	Fix FUNCTION_POINTER_TYPE_P test.
+
+2023-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112410
+	* parser.cc (cp_parser_direct_declarator): Maybe call
+	abort_fully_implicit_template if it turned out the parameter list was
+	ill-formed.
+
+2023-11-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* tree.cc (build_cplus_array_type): Revert using the macro
+	CAN_HAVE_LOCATION_P.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112515
+	* decl.cc (is_direct_enum_init): Check type-dependence of the
+	single element.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101043
+	* tree.cc (strip_typedefs_expr) <case TREE_LIST>: Handle
+	non-empty TREE_PURPOSE.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112427
+	* tree.cc (build_min_non_dep): Propagate TREE_SIDE_EFFECTS from
+	the original arguments.
+	(build_min_non_dep_call_vec): Likewise.
+	* typeck2.cc (build_m_component_ref): Use cp_convert, build2 and
+	cp_fully_fold instead of fold_build_pointer_plus and fold_convert.
+	Don't build the POINTER_PLUS_EXPR in a template context.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/112269
+	* constexpr.cc (potential_constant_expression_1) <case VAR_DECL>:
+	Only consider var_in_maybe_constexpr_fn if 'now' is false.
+	<case INDIRECT_REF>: Likewise.
+
+2023-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.cc: Implement C++26 P2864R2 - Remove Deprecated Arithmetic
+	Conversion on Enumerations From C++26.
+	(do_warn_enum_conversions): Return bool rather than void, add COMPLAIN
+	argument.  Use pedwarn rather than warning_at for C++26 and remove
+	" is deprecated" part of the diagnostics in that case.  For SFINAE
+	in C++26 return true on newly erroneous cases.
+	(cp_build_binary_op): For C++26 call do_warn_enum_conversions
+	unconditionally, pass complain argument to it and if it returns true,
+	return error_mark_node.
+	* call.cc (build_conditional_expr): Use pedwarn rather than warning_at
+	for C++26 and remove " is deprecated" part of the diagnostics in that
+	case and check for complain & tf_warning_or_error.  Use emit_diagnostic
+	with cxx_dialect >= cxx26 ? DK_PEDWARN : DK_WARNING.  For SFINAE in
+	C++26 return error_mark_node on newly erroneous cases.
+	(build_new_op): Use emit_diagnostic with cxx_dialect >= cxx26
+	? DK_PEDWARN : DK_WARNING and complain & tf_warning_or_error check
+	for C++26.  For SFINAE in C++26 return error_mark_node on newly
+	erroneous cases.
+
+2023-11-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/103499
+	* module.cc (trees_out::decl_node): Write DECL_VINDEX for
+	virtual clones.
+	(trees_in::tree_node): Read DECL_VINDEX for virtual clones.
+
+2023-11-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/106849
+	* name-lookup.cc (do_nonmember_using_decl): Handle
+	TEMPLATE_DECLs when checking module attachment.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* decl.cc (finish_function): Update call to
+	global_dc->m_option_enabled to use option_enabled_p.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* contracts.cc (build_comment): Use global_dc's file_cache.
+
+2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/111842
+	PR c++/112498
+	* call.cc (convert_like_internal): Use OPT_Wnarrowing for
+	pedwarns about illformed conversions involving extended
+	floating-point types. Clarify that ISO C++ requires these
+	diagnostics.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/111309
+	* call.cc (magic_varargs_p): Return 4 for
+	BUILT_IN_{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT}G.
+	(build_over_call): Don't promote first argument of
+	BUILT_IN_{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT}G.
+	* cp-gimplify.cc (cp_gimplify_expr): For BUILT_IN_C{L,T}ZG use
+	c_gimplify_expr.
+
+2023-11-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79620
+	* cp-tree.h (STRIP_REFERENCE_REF): Define.
+	* semantics.cc (outer_var_p): Assert REFERENCE_REF_P is false.
+	(finish_decltype_type): Look through implicit INDIRECT_REF when
+	deciding whether to call capture_decltype.
+
+2023-11-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79378
+	PR c++/96917
+	* semantics.cc (finish_decltype_type): Handle an id-expression
+	naming a capture proxy specially.
+
 2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* cp-tree.h (cp_omp_declare_target_attr): Add indirect field.

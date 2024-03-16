@@ -10819,23 +10819,29 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 
       if (GET_CODE (index) == CONST_INT)
 	{
+	  /* Short 5-bit displacements always okay.  */
 	  if (INT_5_BITS (index))
 	    return true;
 
-	  /* When INT14_OK_STRICT is false, a secondary reload is needed
-	     to adjust the displacement of SImode and DImode floating point
-	     instructions but this may fail when the register also needs
-	     reloading.  So, we return false when STRICT is true.  We
-	     also reject long displacements for float mode addresses since
-	     the majority of accesses will use floating point instructions
-	     that don't support 14-bit offsets.  */
-	  if (!INT14_OK_STRICT
-	      && (strict || !(reload_in_progress || reload_completed))
-	      && mode != QImode
-	      && mode != HImode)
+	  if (!base14_operand (index, mode))
 	    return false;
 
-	  return base14_operand (index, mode);
+	  /* Long 14-bit displacements always okay for these cases.  */
+	  if (INT14_OK_STRICT
+	      || mode == QImode
+	      || mode == HImode)
+	    return true;
+
+	  /* A secondary reload may be needed to adjust the displacement
+	     of floating-point accesses when STRICT is nonzero.  */
+	  if (strict)
+	    return false;
+
+	  /* We get significantly better code if we allow long displacements
+	     before reload for all accesses.  Instructions must satisfy their
+	     constraints after reload, so we must have an integer access.
+	     Return true for both cases.  */
+	  return true;
 	}
 
       if (!TARGET_DISABLE_INDEXING

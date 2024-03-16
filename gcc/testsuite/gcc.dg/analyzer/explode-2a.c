@@ -14,7 +14,7 @@ void test (void)
      explode-2.c as this code.  */
   int a = get ();
   int b = get ();
-  while (a)
+  while (a) /* { dg-warning "infinite loop" } */
     {
       switch (b)
 	{

@@ -2381,6 +2381,7 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
       HOST_WIDE_INT type_size = tree_to_shwi (TYPE_SIZE (type));
       bool zero_ok
 	= CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type), ctz_val) == 2;
+      int nargs = 2;
 
       /* If the input value can't be zero, don't special case ctz (0).  */
       if (tree_expr_nonzero_p (res_ops[0]))
@@ -2388,6 +2389,7 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 	  zero_ok = true;
 	  zero_val = 0;
 	  ctz_val = 0;
+	  nargs = 1;
 	}
 
       /* Skip if there is no value defined at zero, or if we can't easily
@@ -2399,7 +2401,11 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 
       gimple_seq seq = NULL;
       gimple *g;
-      gcall *call = gimple_build_call_internal (IFN_CTZ, 1, res_ops[0]);
+      gcall *call
+	= gimple_build_call_internal (IFN_CTZ, nargs, res_ops[0],
+				      nargs == 1 ? NULL_TREE
+				      : build_int_cst (integer_type_node,
+						       ctz_val));
       gimple_set_location (call, gimple_location (stmt));
       gimple_set_lhs (call, make_ssa_name (integer_type_node));
       gimple_seq_add_stmt (&seq, call);

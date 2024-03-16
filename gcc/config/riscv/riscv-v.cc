@@ -416,7 +416,7 @@ public:
   bool repeating_sequence_use_merge_profitable_p ();
   bool combine_sequence_use_slideup_profitable_p ();
   bool combine_sequence_use_merge_profitable_p ();
-  rtx get_merge_scalar_mask (unsigned int) const;
+  rtx get_merge_scalar_mask (unsigned int, machine_mode) const;
 
   bool single_step_npatterns_p () const;
   bool npatterns_all_equal_p () const;
@@ -592,7 +592,8 @@ rvv_builder::get_merged_repeating_sequence ()
    To merge "b", the mask should be 0101....
 */
 rtx
-rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern) const
+rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern,
+				    machine_mode inner_mode) const
 {
   unsigned HOST_WIDE_INT mask = 0;
   unsigned HOST_WIDE_INT base_mask = (1ULL << index_in_pattern);
@@ -611,7 +612,7 @@ rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern) const
   for (int i = 0; i < limit; i++)
     mask |= base_mask << (i * npatterns ());
 
-  return gen_int_mode (mask, inner_int_mode ());
+  return gen_int_mode (mask, inner_mode);
 }
 
 /* Return true if the variable-length vector is single step.
@@ -919,17 +920,45 @@ emit_vlmax_decompress_insn (rtx target, rtx op0, rtx op1, rtx mask)
 /* Emit merge instruction.  */
 
 static machine_mode
-get_repeating_sequence_dup_machine_mode (const rvv_builder &builder)
+get_repeating_sequence_dup_machine_mode (const rvv_builder &builder,
+					 machine_mode mask_bit_mode)
 {
-  poly_uint64 dup_nunits = GET_MODE_NUNITS (builder.mode ());
+  unsigned mask_precision = GET_MODE_PRECISION (mask_bit_mode).to_constant ();
+  unsigned mask_scalar_size = mask_precision > builder.inner_bits_size ()
+    ? builder.inner_bits_size () : mask_precision;
 
-  if (known_ge (GET_MODE_SIZE (builder.mode ()), BYTES_PER_RISCV_VECTOR))
+  scalar_mode inner_mode;
+  unsigned minimal_bits_size;
+
+  switch (mask_scalar_size)
     {
-      dup_nunits = exact_div (BYTES_PER_RISCV_VECTOR,
-	builder.inner_bytes_size ());
+      case 8:
+	inner_mode = QImode;
+	minimal_bits_size = TARGET_MIN_VLEN / 8; /* AKA RVVMF8.  */
+	break;
+      case 16:
+	inner_mode = HImode;
+	minimal_bits_size = TARGET_MIN_VLEN / 4; /* AKA RVVMF4.  */
+	break;
+      case 32:
+	inner_mode = SImode;
+	minimal_bits_size = TARGET_MIN_VLEN / 2; /* AKA RVVMF2.  */
+	break;
+      case 64:
+	inner_mode = DImode;
+	minimal_bits_size = TARGET_MIN_VLEN / 1; /* AKA RVVM1.  */
+	break;
+      default:
+	gcc_unreachable ();
+	break;
     }
 
-  return get_vector_mode (builder.inner_int_mode (), dup_nunits).require ();
+  gcc_assert (mask_precision % mask_scalar_size == 0);
+
+  uint64_t dup_nunit = mask_precision > mask_scalar_size
+    ? mask_precision / mask_scalar_size : minimal_bits_size / mask_scalar_size;
+
+  return get_vector_mode (inner_mode, dup_nunit).require ();
 }
 
 /* Expand series const vector.  */
@@ -2004,6 +2033,10 @@ expand_tuple_move (rtx *ops)
 	  offset = ops[2];
 	}
 
+      /* Non-fractional LMUL has whole register moves that don't require a
+	 vsetvl for VLMAX.  */
+      if (fractional_p)
+	emit_vlmax_vsetvl (subpart_mode, ops[4]);
       if (MEM_P (ops[1]))
 	{
 	  /* Load operations.  */
@@ -2130,9 +2163,9 @@ expand_vector_init_merge_repeating_sequence (rtx target,
      since we don't have such instruction in RVV.
      Instead, we should use INT mode (QI/HI/SI/DI) with integer move
      instruction to generate the mask data we want.  */
-  machine_mode mask_int_mode
-    = get_repeating_sequence_dup_machine_mode (builder);
   machine_mode mask_bit_mode = get_mask_mode (builder.mode ());
+  machine_mode mask_int_mode
+    = get_repeating_sequence_dup_machine_mode (builder, mask_bit_mode);
   uint64_t full_nelts = builder.full_nelts ().to_constant ();
 
   /* Step 1: Broadcast the first pattern.  */
@@ -2143,7 +2176,8 @@ expand_vector_init_merge_repeating_sequence (rtx target,
   for (unsigned int i = 1; i < builder.npatterns (); i++)
     {
       /* Step 2-1: Generate mask register v0 for each merge.  */
-      rtx merge_mask = builder.get_merge_scalar_mask (i);
+      rtx merge_mask
+	= builder.get_merge_scalar_mask (i, GET_MODE_INNER (mask_int_mode));
       rtx mask = gen_reg_rtx (mask_bit_mode);
       rtx dup = gen_reg_rtx (mask_int_mode);
 
@@ -2238,6 +2272,47 @@ expand_vector_init_merge_combine_sequence (rtx target,
   emit_vlmax_insn (icode, MERGE_OP, merge_ops);
 }
 
+/* Subroutine of expand_vec_init to handle case
+   when all trailing elements of builder are same.
+   This works as follows:
+   (a) Use expand_insn interface to broadcast last vector element in TARGET.
+   (b) Insert remaining elements in TARGET using insr.
+
+   ??? The heuristic used is to do above if number of same trailing elements
+   is greater than leading_ndups, loosely based on
+   heuristic from mostly_zeros_p.  May need fine-tuning.  */
+
+static bool
+expand_vector_init_trailing_same_elem (rtx target,
+				       const rtx_vector_builder &builder,
+				       int nelts_reqd)
+{
+  int leading_ndups = builder.count_dups (0, nelts_reqd - 1, 1);
+  int trailing_ndups = builder.count_dups (nelts_reqd - 1, -1, -1);
+  machine_mode mode = GET_MODE (target);
+
+  if (trailing_ndups > leading_ndups)
+    {
+      rtx dup = expand_vector_broadcast (mode, builder.elt (nelts_reqd - 1));
+      for (int i = nelts_reqd - trailing_ndups - 1; i >= 0; i--)
+	{
+	  unsigned int unspec
+	    = FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
+	  insn_code icode = code_for_pred_slide (unspec, mode);
+	  rtx tmp = gen_reg_rtx (mode);
+	  rtx ops[] = {tmp, dup, builder.elt (i)};
+	  emit_vlmax_insn (icode, BINARY_OP, ops);
+	  /* slide1up need source and dest to be different REG.  */
+	  dup = tmp;
+	}
+
+      emit_move_insn (target, dup);
+      return true;
+    }
+
+  return false;
+}
+
 /* Initialize register TARGET from the elements in PARALLEL rtx VALS.  */
 
 void
@@ -2305,10 +2380,13 @@ expand_vec_init (rtx target, rtx vals)
 	}
     }
 
-  /* Handle common situation by vslide1down. This function can handle any
-     situation of vec_init<mode>. Only the cases that are not optimized above
-     will fall through here.  */
-  expand_vector_init_insert_elems (target, v, nelts);
+  /* Optimize trailing same elements sequence:
+      v = {y, y2, y3, y4, y5, x, x, x, x, x, x, x, x, x, x, x};  */
+  if (!expand_vector_init_trailing_same_elem (target, v, nelts))
+    /* Handle common situation by vslide1down. This function can handle any
+       situation of vec_init<mode>. Only the cases that are not optimized above
+       will fall through here.  */
+    expand_vector_init_insert_elems (target, v, nelts);
 }
 
 /* Get insn code for corresponding comparison.  */

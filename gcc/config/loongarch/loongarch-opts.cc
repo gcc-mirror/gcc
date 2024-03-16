@@ -284,6 +284,9 @@ config_target_isa:
   /* Get default ISA from "-march" or its default value.  */
   t.isa = loongarch_cpu_default_isa[t.cpu_arch];
 
+  if (t.cpu_arch != CPU_NATIVE)
+    t.isa.evolution |= loongarch_isa_base_features[t.isa.base];
+
   /* Apply incremental changes.  */
   /* "-march=native" overrides the default FPU type.  */
 
@@ -552,17 +555,17 @@ isa_default_abi (const struct loongarch_isa *isa)
   switch (isa->fpu)
     {
       case ISA_EXT_FPU64:
-	if (isa->base == ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64V100)
 	  abi.base = ABI_BASE_LP64D;
 	break;
 
       case ISA_EXT_FPU32:
-	if (isa->base == ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64V100)
 	  abi.base = ABI_BASE_LP64F;
 	break;
 
       case ISA_EXT_NONE:
-	if (isa->base == ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64V100)
 	  abi.base = ABI_BASE_LP64S;
 	break;
 
@@ -582,7 +585,7 @@ isa_base_compat_p (const struct loongarch_isa *set1,
   switch (set2->base)
     {
       case ISA_BASE_LA64V100:
-	return (set1->base == ISA_BASE_LA64V100);
+	return (set1->base >= ISA_BASE_LA64V100);
 
       default:
 	gcc_unreachable ();

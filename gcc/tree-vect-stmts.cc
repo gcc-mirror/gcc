@@ -3115,6 +3115,7 @@ vectorizable_call (vec_info *vinfo,
   enum { NARROW, NONE, WIDEN } modifier;
   size_t i, nargs;
   tree lhs;
+  tree clz_ctz_arg1 = NULL_TREE;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -3159,6 +3160,14 @@ vectorizable_call (vec_info *vinfo,
     {
       nargs = 0;
       rhs_type = unsigned_type_node;
+    }
+  /* Similarly pretend IFN_CLZ and IFN_CTZ only has one argument, the second
+     argument just says whether it is well-defined at zero or not and what
+     value should be returned for it.  */
+  if ((cfn == CFN_CLZ || cfn == CFN_CTZ) && nargs == 2)
+    {
+      nargs = 1;
+      clz_ctz_arg1 = gimple_call_arg (stmt, 1);
     }
 
   int mask_opno = -1;
@@ -3425,6 +3434,8 @@ vectorizable_call (vec_info *vinfo,
       ifn = cond_fn;
       vect_nargs += 2;
     }
+  if (clz_ctz_arg1)
+    ++vect_nargs;
 
   if (modifier == NONE || ifn != IFN_LAST)
     {
@@ -3462,6 +3473,9 @@ vectorizable_call (vec_info *vinfo,
 		    }
 		  if (masked_loop_p && reduc_idx >= 0)
 		    vargs[varg++] = vargs[reduc_idx + 1];
+		  if (clz_ctz_arg1)
+		    vargs[varg++] = clz_ctz_arg1;
+
 		  gimple *new_stmt;
 		  if (modifier == NARROW)
 		    {
@@ -3548,6 +3562,8 @@ vectorizable_call (vec_info *vinfo,
 	    }
 	  if (masked_loop_p && reduc_idx >= 0)
 	    vargs[varg++] = vargs[reduc_idx + 1];
+	  if (clz_ctz_arg1)
+	    vargs[varg++] = clz_ctz_arg1;
 
 	  if (len_opno >= 0 && len_loop_p)
 	    {

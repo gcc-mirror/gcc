@@ -1171,7 +1171,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
     }
 
   /* Avoid spurious warnings with VLAs (c++/54583).  */
-  if (CAN_HAVE_LOCATION_P (TYPE_SIZE (t)))
+  if (TYPE_SIZE (t) && EXPR_P (TYPE_SIZE (t)))
     suppress_warning (TYPE_SIZE (t), OPT_Wunused);
 
   /* Push these needs up to the ARRAY_TYPE so that initialization takes
@@ -1911,19 +1911,24 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
     case TREE_LIST:
       {
 	bool changed = false;
-	releasing_vec vec;
+	auto_vec<tree_pair, 4> vec;
 	r = t;
 	for (; t; t = TREE_CHAIN (t))
 	  {
-	    gcc_assert (!TREE_PURPOSE (t));
-	    tree elt = strip_typedefs (TREE_VALUE (t),
-				       remove_attributes, flags);
-	    if (elt != TREE_VALUE (t))
+	    tree purpose = strip_typedefs (TREE_PURPOSE (t),
+					   remove_attributes, flags);
+	    tree value = strip_typedefs (TREE_VALUE (t),
+					 remove_attributes, flags);
+	    if (purpose != TREE_PURPOSE (t) || value != TREE_VALUE (t))
 	      changed = true;
-	    vec_safe_push (vec, elt);
+	    vec.safe_push ({purpose, value});
 	  }
 	if (changed)
-	  r = build_tree_list_vec (vec);
+	  {
+	    r = NULL_TREE;
+	    for (int i = vec.length () - 1; i >= 0; i--)
+	      r = tree_cons (vec[i].first, vec[i].second, r);
+	  }
 	return r;
       }
 
@@ -3601,7 +3606,12 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
 
   for (i = 0; i < length; i++)
-    TREE_OPERAND (t, i) = va_arg (p, tree);
+    {
+      tree x = va_arg (p, tree);
+      TREE_OPERAND (t, i) = x;
+      if (x && !TYPE_P (x))
+	TREE_SIDE_EFFECTS (t) |= TREE_SIDE_EFFECTS (x);
+    }
 
   va_end (p);
   return convert_from_reference (t);
@@ -3636,6 +3646,10 @@ build_min_non_dep_call_vec (tree non_dep, tree fn, vec<tree, va_gc> *argvec)
     non_dep = TREE_OPERAND (non_dep, 0);
   TREE_TYPE (t) = TREE_TYPE (non_dep);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
+  if (argvec)
+    for (tree x : *argvec)
+      if (x && !TYPE_P (x))
+	TREE_SIDE_EFFECTS (t) |= TREE_SIDE_EFFECTS (x);
   return convert_from_reference (t);
 }
 

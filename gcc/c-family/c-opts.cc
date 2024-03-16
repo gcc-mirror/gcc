@@ -1174,6 +1174,9 @@ c_common_post_options (const char **pfilename)
 		       "the %qs debug info cannot be used with "
 		       "pre-compiled headers",
 		       debug_set_names (write_symbols & ~DWARF2_DEBUG));
+	  /* Let libcpp know that the main file is a header so it won't
+	     complain about things like #include_next and #pragma once.  */
+	  cpp_opts->main_search = CMS_header;
 	}
       else if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
 	c_common_no_more_pch ();

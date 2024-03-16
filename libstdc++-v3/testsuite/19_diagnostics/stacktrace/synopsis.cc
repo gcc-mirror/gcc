@@ -1,6 +1,7 @@
 // { dg-do compile { target c++23 } }
 // { dg-require-effective-target stacktrace }
 // { dg-require-normal-namespace "" }
+// { dg-add-options no_pch }
 
 #include <stacktrace>
 

@@ -1702,6 +1702,25 @@ isa_code(const char *isa) {
   return -1;
 }
 
+/* CDNA2 devices have twice as many VGPRs compared to older devices.  */
+
+static int
+max_isa_vgprs (int isa)
+{
+  switch (isa)
+    {
+    case EF_AMDGPU_MACH_AMDGCN_GFX803:
+    case EF_AMDGPU_MACH_AMDGCN_GFX900:
+    case EF_AMDGPU_MACH_AMDGCN_GFX906:
+    case EF_AMDGPU_MACH_AMDGCN_GFX908:
+    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+      return 256;
+    case EF_AMDGPU_MACH_AMDGCN_GFX90a:
+      return 512;
+    }
+  GOMP_PLUGIN_fatal ("unhandled ISA in max_isa_vgprs");
+}
+
 /* }}}  */
 /* {{{ Run  */
 
@@ -2143,6 +2162,7 @@ run_kernel (struct kernel_info *kernel, void *vars,
 	    struct GOMP_kernel_launch_attributes *kla,
 	    struct goacc_asyncqueue *aq, bool module_locked)
 {
+  struct agent_info *agent = kernel->agent;
   GCN_DEBUG ("SGPRs: %d, VGPRs: %d\n", kernel->description->sgpr_count,
 	     kernel->description->vpgr_count);
 
@@ -2150,8 +2170,9 @@ run_kernel (struct kernel_info *kernel, void *vars,
      VGPRs available to run the kernels together.  */
   if (kla->ndim == 3 && kernel->description->vpgr_count > 0)
     {
+      int max_vgprs = max_isa_vgprs (agent->device_isa);
       int granulated_vgprs = (kernel->description->vpgr_count + 3) & ~3;
-      int max_threads = (256 / granulated_vgprs) * 4;
+      int max_threads = (max_vgprs / granulated_vgprs) * 4;
       if (kla->gdims[2] > max_threads)
 	{
 	  GCN_WARNING ("Too many VGPRs required to support %d threads/workers"
@@ -2188,7 +2209,6 @@ run_kernel (struct kernel_info *kernel, void *vars,
   DEBUG_PRINT ("]\n");
   DEBUG_FLUSH ();
 
-  struct agent_info *agent = kernel->agent;
   if (!module_locked && pthread_rwlock_rdlock (&agent->module_rwlock))
     GOMP_PLUGIN_fatal ("Unable to read-lock a GCN agent rwlock");
 

@@ -2791,17 +2791,33 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
       *handled_ops_p = false;
       break;
     case GIMPLE_CALL:
+      static_cast<location_t *>(wi->info)[0] = UNKNOWN_LOCATION;
       if (gimple_call_internal_p (stmt, IFN_FALLTHROUGH))
 	{
+	  location_t loc = gimple_location (stmt);
 	  gsi_remove (gsi_p, true);
+	  wi->removed_stmt = true;
+
+	  /* nothrow flag is added by genericize_c_loop to mark fallthrough
+	     statement at the end of some loop's body.  Those should be
+	     always diagnosed, either because they indeed don't precede
+	     a case label or default label, or because the next statement
+	     is not within the same iteration statement.  */
+	  if ((stmt->subcode & GF_CALL_NOTHROW) != 0)
+	    {
+	      pedwarn (loc, 0, "attribute %<fallthrough%> not preceding "
+			       "a case label or default label");
+	      break;
+	    }
+
 	  if (gsi_end_p (*gsi_p))
 	    {
-	      *static_cast<location_t *>(wi->info) = gimple_location (stmt);
-	      return integer_zero_node;
+	      static_cast<location_t *>(wi->info)[0] = BUILTINS_LOCATION;
+	      static_cast<location_t *>(wi->info)[1] = loc;
+	      break;
 	    }
 
 	  bool found = false;
-	  location_t loc = gimple_location (stmt);
 
 	  gimple_stmt_iterator gsi2 = *gsi_p;
 	  stmt = gsi_stmt (gsi2);
@@ -2851,6 +2867,7 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	}
       break;
     default:
+      static_cast<location_t *>(wi->info)[0] = UNKNOWN_LOCATION;
       break;
     }
   return NULL_TREE;
@@ -2862,14 +2879,16 @@ static void
 expand_FALLTHROUGH (gimple_seq *seq_p)
 {
   struct walk_stmt_info wi;
-  location_t loc;
+  location_t loc[2];
   memset (&wi, 0, sizeof (wi));
-  wi.info = (void *) &loc;
+  loc[0] = UNKNOWN_LOCATION;
+  loc[1] = UNKNOWN_LOCATION;
+  wi.info = (void *) &loc[0];
   walk_gimple_seq_mod (seq_p, expand_FALLTHROUGH_r, NULL, &wi);
-  if (wi.callback_result == integer_zero_node)
+  if (loc[0] != UNKNOWN_LOCATION)
     /* We've found [[fallthrough]]; at the end of a switch, which the C++
        standard says is ill-formed; see [dcl.attr.fallthrough].  */
-    pedwarn (loc, 0, "attribute %<fallthrough%> not preceding "
+    pedwarn (loc[1], 0, "attribute %<fallthrough%> not preceding "
 	     "a case label or default label");
 }
 

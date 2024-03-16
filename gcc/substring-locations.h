@@ -116,6 +116,7 @@ class format_string_diagnostic_t
    LANG_HOOKS_GET_SUBSTRING_LOCATION.  */
 
 extern const char *get_location_within_string (cpp_reader *pfile,
+					       file_cache &fc,
 					       string_concat_db *concats,
 					       location_t strloc,
 					       enum cpp_ttype type,

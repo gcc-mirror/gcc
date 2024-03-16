@@ -3136,11 +3136,31 @@
 	  (match_operand:FLASX 1 "register_operand")))
    (set (match_dup 5)
 	(and:FLASX (match_dup 3)
-		   (match_operand:FLASX 2 "register_operand")))
+		   (match_operand:FLASX 2 "reg_or_vector_same_val_operand")))
    (set (match_operand:FLASX 0 "register_operand")
 	(ior:FLASX (match_dup 4) (match_dup 5)))]
   "ISA_HAS_LASX"
 {
+  /* copysign (x, -1) should instead be expanded as setting the sign
+     bit.  */
+  if (!REG_P (operands[2]))
+    {
+      rtx op2_elt = unwrap_const_vec_duplicate (operands[2]);
+      if (GET_CODE (op2_elt) == CONST_DOUBLE
+	  && real_isneg (CONST_DOUBLE_REAL_VALUE (op2_elt)))
+	{
+	  rtx n = GEN_INT (8 * GET_MODE_SIZE (<UNITMODE>mode) - 1);
+	  operands[0] = lowpart_subreg (<VIMODE256>mode, operands[0],
+					<MODE>mode);
+	  operands[1] = lowpart_subreg (<VIMODE256>mode, operands[1],
+					<MODE>mode);
+	  emit_insn (gen_lasx_xvbitseti_<lasxfmt> (operands[0],
+						   operands[1], n));
+	  DONE;
+	}
+    }
+
+  operands[2] = force_reg (<MODE>mode, operands[2]);
   operands[3] = loongarch_build_signbit_mask (<MODE>mode, 1, 0);
 
   operands[4] = gen_reg_rtx (<MODE>mode);

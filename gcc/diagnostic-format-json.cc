@@ -94,8 +94,8 @@ json_from_expanded_location (diagnostic_context *context, location_t loc)
   expanded_location exploc = expand_location (loc);
   json::object *result = new json::object ();
   if (exploc.file)
-    result->set ("file", new json::string (exploc.file));
-  result->set ("line", new json::integer_number (exploc.line));
+    result->set_string ("file", exploc.file);
+  result->set_integer ("line", exploc.line);
 
   const enum diagnostics_column_unit orig_unit = context->m_column_unit;
   struct
@@ -111,12 +111,12 @@ json_from_expanded_location (diagnostic_context *context, location_t loc)
     {
       context->m_column_unit = column_fields[i].unit;
       const int col = context->converted_column (exploc);
-      result->set (column_fields[i].name, new json::integer_number (col));
+      result->set_integer (column_fields[i].name, col);
       if (column_fields[i].unit == orig_unit)
 	the_column = col;
     }
   gcc_assert (the_column != INT_MIN);
-  result->set ("column", new json::integer_number (the_column));
+  result->set_integer ("column", the_column);
   context->m_column_unit = orig_unit;
   return result;
 }
@@ -148,7 +148,7 @@ json_from_location_range (diagnostic_context *context,
     {
       label_text text (loc_range->m_label->get_text (range_idx));
       if (text.get ())
-	result->set ("label", new json::string (text.get ()));
+	result->set_string ("label", text.get ());
     }
 
   return result;
@@ -165,7 +165,7 @@ json_from_fixit_hint (diagnostic_context *context, const fixit_hint *hint)
   fixit_obj->set ("start", json_from_expanded_location (context, start_loc));
   location_t next_loc = hint->get_next_loc ();
   fixit_obj->set ("next", json_from_expanded_location (context, next_loc));
-  fixit_obj->set ("string", new json::string (hint->get_string ()));
+  fixit_obj->set_string ("string", hint->get_string ());
 
   return fixit_obj;
 }
@@ -178,8 +178,7 @@ json_from_metadata (const diagnostic_metadata *metadata)
   json::object *metadata_obj = new json::object ();
 
   if (metadata->get_cwe ())
-    metadata_obj->set ("cwe",
-		       new json::integer_number (metadata->get_cwe ()));
+    metadata_obj->set_integer ("cwe", metadata->get_cwe ());
 
   return metadata_obj;
 }
@@ -210,33 +209,26 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
     gcc_assert (kind_text[len - 1] == ' ');
     char *rstrip = xstrdup (kind_text);
     rstrip[len - 2] = '\0';
-    diag_obj->set ("kind", new json::string (rstrip));
+    diag_obj->set_string ("kind", rstrip);
     free (rstrip);
   }
 
   // FIXME: encoding of the message (json::string requires UTF-8)
-  diag_obj->set ("message",
-		 new json::string (pp_formatted_text (m_context.printer)));
+  diag_obj->set_string ("message", pp_formatted_text (m_context.printer));
   pp_clear_output_area (m_context.printer);
 
-  char *option_text;
-  option_text = m_context.m_option_name (&m_context, diagnostic->option_index,
-					 orig_diag_kind, diagnostic->kind);
-  if (option_text)
+  if (char *option_text = m_context.make_option_name (diagnostic->option_index,
+						      orig_diag_kind,
+						      diagnostic->kind))
     {
-      diag_obj->set ("option", new json::string (option_text));
+      diag_obj->set_string ("option", option_text);
       free (option_text);
     }
 
-  if (m_context.m_get_option_url)
+  if (char *option_url = m_context.make_option_url (diagnostic->option_index))
     {
-      char *option_url = m_context.m_get_option_url (&m_context,
-						     diagnostic->option_index);
-      if (option_url)
-	{
-	  diag_obj->set ("option_url", new json::string (option_url));
-	  free (option_url);
-	}
+      diag_obj->set_string ("option_url", option_url);
+      free (option_url);
     }
 
   /* If we've already emitted a diagnostic within this auto_diagnostic_group,
@@ -254,8 +246,7 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
       m_cur_group = diag_obj;
       m_cur_children_array = new json::array ();
       diag_obj->set ("children", m_cur_children_array);
-      diag_obj->set ("column-origin",
-		     new json::integer_number (m_context.m_column_origin));
+      diag_obj->set_integer ("column-origin", m_context.m_column_origin);
     }
 
   const rich_location *richloc = diagnostic->richloc;

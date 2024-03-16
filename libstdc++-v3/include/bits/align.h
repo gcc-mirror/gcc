@@ -30,14 +30,10 @@
 #ifndef _GLIBCXX_ALIGN_H
 #define _GLIBCXX_ALIGN_H 1
 
-#include <bits/c++config.h>
-
-#define __glibcxx_want_assume_aligned
-#include <bits/version.h>
-
 #include <bit>          // std::has_single_bit
 #include <stdint.h>     // uintptr_t
 #include <debug/assertions.h> // _GLIBCXX_DEBUG_ASSERT
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -78,7 +74,7 @@ align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
     }
 }
 
-#ifdef __cpp_lib_assume_aligned // C++ >= 20
+#ifdef __glibcxx_assume_aligned // C++ >= 20
   /** @brief Inform the compiler that a pointer is aligned.
    *
    *  @tparam _Align An alignment value (i.e. a power of two)
@@ -105,7 +101,7 @@ align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
 	  return static_cast<_Tp*>(__builtin_assume_aligned(__ptr, _Align));
 	}
     }
-#endif // __cpp_lib_assume_aligned
+#endif // __glibcxx_assume_aligned
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

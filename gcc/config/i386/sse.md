@@ -12049,9 +12049,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_extract_hi_<mode>"
-  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=vm")
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=xjm,vm")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:VI8F_256 1 "register_operand" "v")
+	  (match_operand:VI8F_256 1 "register_operand" "x,v")
 	  (parallel [(const_int 2) (const_int 3)])))]
   "TARGET_AVX"
 {
@@ -12065,7 +12065,9 @@
   else
     return "vextract<i128>\t{$0x1, %1, %0|%0, %1, 0x1}";
 }
-  [(set_attr "type" "sselog1")
+  [(set_attr "isa" "noavx512vl,avx512vl")
+   (set_attr "addr" "gpr16,*")
+   (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
@@ -12132,7 +12134,7 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_extract_hi_<mode>"
-  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=xm, vm")
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=xjm, vm")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:VI4F_256 1 "register_operand" "x, v")
 	  (parallel [(const_int 4) (const_int 5)
@@ -12141,7 +12143,8 @@
   "@
     vextract<i128>\t{$0x1, %1, %0|%0, %1, 0x1}
     vextract<shuffletype>32x4\t{$0x1, %1, %0|%0, %1, 0x1}"
-  [(set_attr "isa" "*, avx512vl")
+  [(set_attr "isa" "noavx512vl, avx512vl")
+   (set_attr "addr" "gpr16,*")
    (set_attr "prefix" "vex, evex")
    (set_attr "type" "sselog1")
    (set_attr "length_immediate" "1")
@@ -12222,7 +12225,7 @@
   "operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);")
 
 (define_insn "@vec_extract_hi_<mode>"
-  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=xm,vm")
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=xjm,vm")
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:V16_256 1 "register_operand" "x,v")
 	  (parallel [(const_int 8) (const_int 9)
@@ -12236,7 +12239,8 @@
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "isa" "*,avx512vl")
+   (set_attr "isa" "noavx512vl,avx512vl")
+   (set_attr "addr" "gpr16,*")
    (set_attr "prefix" "vex,evex")
    (set_attr "mode" "OI")])
 
@@ -19235,11 +19239,11 @@
 })
 
 (define_insn "<mask_codefor>avx512dq_shuf_<shuffletype>64x2_1<mask_name>"
-  [(set (match_operand:VI8F_256 0 "register_operand" "=v")
+  [(set (match_operand:VI8F_256 0 "register_operand" "=x,v")
 	(vec_select:VI8F_256
 	  (vec_concat:<ssedoublemode>
-	    (match_operand:VI8F_256 1 "register_operand" "v")
-	    (match_operand:VI8F_256 2 "nonimmediate_operand" "vm"))
+	    (match_operand:VI8F_256 1 "register_operand" "x,v")
+	    (match_operand:VI8F_256 2 "nonimmediate_operand" "xjm,vm"))
 	  (parallel [(match_operand 3 "const_0_to_3_operand")
 		     (match_operand 4 "const_0_to_3_operand")
 		     (match_operand 5 "const_4_to_7_operand")
@@ -19254,7 +19258,7 @@
   mask = INTVAL (operands[3]) / 2;
   mask |= (INTVAL (operands[5]) - 4) / 2 << 1;
   operands[3] = GEN_INT (mask);
-  if (INTVAL (operands[3]) == 2 && !<mask_applied>)
+  if (INTVAL (operands[3]) == 2 && !<mask_applied> && which_alternative == 0)
     return "vblendps\t{$240, %2, %1, %0|%0, %1, %2, 240}";
   return "vshuf<shuffletype>64x2\t{%3, %2, %1, %0<mask_operand7>|%0<mask_operand7>, %1, %2, %3}";
 }
@@ -19386,11 +19390,11 @@
 })
 
 (define_insn "avx512vl_shuf_<shuffletype>32x4_1<mask_name>"
-  [(set (match_operand:VI4F_256 0 "register_operand" "=v")
+  [(set (match_operand:VI4F_256 0 "register_operand" "=x,v")
 	(vec_select:VI4F_256
 	  (vec_concat:<ssedoublemode>
-	    (match_operand:VI4F_256 1 "register_operand" "v")
-	    (match_operand:VI4F_256 2 "nonimmediate_operand" "vm"))
+	    (match_operand:VI4F_256 1 "register_operand" "x,v")
+	    (match_operand:VI4F_256 2 "nonimmediate_operand" "xjm,vm"))
 	  (parallel [(match_operand 3 "const_0_to_7_operand")
 		     (match_operand 4 "const_0_to_7_operand")
 		     (match_operand 5 "const_0_to_7_operand")
@@ -19414,7 +19418,7 @@
   mask |= (INTVAL (operands[7]) - 8) / 4 << 1;
   operands[3] = GEN_INT (mask);
 
-  if (INTVAL (operands[3]) == 2 && !<mask_applied>)
+  if (INTVAL (operands[3]) == 2 && !<mask_applied> && which_alternative == 0)
     return "vblendps\t{$240, %2, %1, %0|%0, %1, %2, 240}";
 
   return "vshuf<shuffletype>32x4\t{%3, %2, %1, %0<mask_operand11>|%0<mask_operand11>, %1, %2, %3}";
@@ -20465,7 +20469,7 @@
 })
 
 (define_insn "*vec_extractv2ti"
-  [(set (match_operand:TI 0 "nonimmediate_operand" "=xm,vm")
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=xjm,vm")
 	(vec_select:TI
 	  (match_operand:V2TI 1 "register_operand" "x,v")
 	  (parallel
@@ -20477,6 +20481,8 @@
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
+   (set_attr "isa" "noavx512vl,avx512vl")
+   (set_attr "addr" "gpr16,*")
    (set_attr "prefix" "vex,evex")
    (set_attr "mode" "OI")])
 
@@ -27556,12 +27562,12 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_set_hi_<mode><mask_name>"
-  [(set (match_operand:VI8F_256 0 "register_operand" "=v")
+  [(set (match_operand:VI8F_256 0 "register_operand" "=x,v")
 	(vec_concat:VI8F_256
 	  (vec_select:<ssehalfvecmode>
-	    (match_operand:VI8F_256 1 "register_operand" "v")
+	    (match_operand:VI8F_256 1 "register_operand" "x,v")
 	    (parallel [(const_int 0) (const_int 1)]))
-	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" "vm")))]
+	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" "xjm,vm")))]
   "TARGET_AVX && <mask_avx512dq_condition>"
 {
   if (TARGET_AVX512DQ)
@@ -27571,7 +27577,9 @@
   else
     return "vinsert<i128>\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}";
 }
-  [(set_attr "type" "sselog")
+  [(set_attr "isa" "noavx512vl,avx512vl")
+   (set_attr "addr" "gpr16,*")
+   (set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")

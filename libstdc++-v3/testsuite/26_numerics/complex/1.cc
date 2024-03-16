@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do preprocess { target c++20 } }
+// { dg-add-options no_pch }
 
 #include <complex>
 

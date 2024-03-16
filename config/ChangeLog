@@ -1,3 +1,11 @@
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* intlmacosx.m4: Import from gettext-0.22 (serial 8).
+	* gettext.m4: Sync with gettext-0.22 (serial 77).
+	* gettext-sister.m4 (ZW_GNU_GETTEXT_SISTER_DIR): Load gettext's
+	uninstalled-config.sh, or call AM_GNU_GETTEXT if missing.
+	* iconv.m4: Sync with gettext-0.22 (serial 26).
+
 2023-09-15  Yang Yujie  <yangyujie@loongson.cn>
 
 	* mt-loongarch-mlib: New file.  Pass -fmultiflags when building

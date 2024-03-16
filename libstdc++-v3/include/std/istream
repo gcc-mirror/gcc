@@ -1069,7 +1069,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 2328. Rvalue stream extraction should use perfect forwarding
   // 1203. More useful rvalue stream insertion
 
-#if __cpp_lib_concepts
+#if __cpp_concepts >= 201907L
   template<typename _Is, typename _Tp>
     requires __derived_from_ios_base<_Is>
       && requires (_Is& __is, _Tp&& __t) { __is >> std::forward<_Tp>(__t); }

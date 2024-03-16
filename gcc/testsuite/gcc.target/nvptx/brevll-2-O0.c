@@ -1,5 +1,9 @@
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O0" } */
+/* { dg-additional-options -save-temps } */
+/* { dg-final { check-function-bodies {**} {} } } */
+
+inline __attribute__((always_inline))
 unsigned long long bitreverse64(unsigned long long x)
 {
   return __builtin_nvptx_brevll(x);
@@ -149,6 +153,37 @@ int main(void)
     __builtin_abort();
   if (bitreverse64(0x7d5d7f53f77db57bll) != 0xdeadbeefcafebabell)
     __builtin_abort();
+
   return 0;
 }
+/*
+** main:
+**	...
+**	mov\.u64	(%r[0-9]+), 0;
+**	st\.u64	(\[%frame[+0-9]*\]), \1;
+**	ld\.u64	(%r[0-9]+), \2;
+**	brev\.b64	(%r[0-9]+), \3;
+**	setp\.[^.]+\.u64	%r[0-9]+, \4, 0;
+**	...
+**	mov\.u64	(%r[0-9]+), -1;
+**	st\.u64	(\[%frame[+0-9]*\]), \5;
+**	ld\.u64	(%r[0-9]+), \6;
+**	brev\.b64	(%r[0-9]+), \7;
+**	setp\.[^.]+\.u64	%r[0-9]+, \8, -1;
+**	...
+**	mov\.u64	(%r[0-9]+), 1;
+**	st\.u64	(\[%frame[+0-9]*\]), \9;
+**	ld\.u64	(%r[0-9]+), \10;
+**	brev\.b64	(%r[0-9]+), \11;
+**	setp\.[^.]+\.u64	%r[0-9]+, \12, -9223372036854775808;
+**	...
+**	mov\.u64	(%r[0-9]+), 2;
+**	st\.u64	(\[%frame[+0-9]*\]), \13;
+**	ld\.u64	(%r[0-9]+), \14;
+**	brev\.b64	(%r[0-9]+), \15;
+**	setp\.[^.]+\.u64	%r[0-9]+, \16, 4611686018427387904;
+**	...
+*/
 
+/* { dg-final { scan-assembler-times {\tbrev\.b64\t} 70 } } */
+/* { dg-final { scan-assembler {\mabort\M} } } */

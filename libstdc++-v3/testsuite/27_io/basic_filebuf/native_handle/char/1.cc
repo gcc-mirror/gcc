@@ -1,5 +1,6 @@
 // { dg-options "-fno-inline" }
 // { dg-do run { target c++26 } }
+// { dg-add-options no_pch }
 // { dg-additional-files "filebuf_members-1.txt" }
 
 #include <fstream>

@@ -76,7 +76,8 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 #define TARGET_DOUBLE_FLOAT	  (la_target.isa.fpu == ISA_EXT_FPU64)
 #define TARGET_DOUBLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64D)
 
-#define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64V100)
+#define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64V100 \
+				   || la_target.isa.base == ISA_BASE_LA64V110)
 #define TARGET_ABI_LP64		  (la_target.abi.base == ABI_BASE_LP64D	\
 				   || la_target.abi.base == ABI_BASE_LP64F \
 				   || la_target.abi.base == ABI_BASE_LP64S)
@@ -85,9 +86,10 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 				   || la_target.isa.simd == ISA_EXT_SIMD_LASX)
 #define ISA_HAS_LASX		  (la_target.isa.simd == ISA_EXT_SIMD_LASX)
 
-
 /* TARGET_ macros for use in *.md template conditionals */
 #define TARGET_uARCH_LA464	  (la_target.cpu_tune == CPU_LA464)
+#define TARGET_uARCH_LA664	  (la_target.cpu_tune == CPU_LA664)
+#define ISA_BASE_IS_LA64V110	  (la_target.isa.base == ISA_BASE_LA64V110)
 
 /* Note: optimize_size may vary across functions,
    while -m[no]-memcpy imposes a global constraint.  */
@@ -97,8 +99,16 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 #define HAVE_AS_EXPLICIT_RELOCS 0
 #endif
 
+#ifndef HAVE_AS_SUPPORT_CALL36
+#define HAVE_AS_SUPPORT_CALL36 0
+#endif
+
 #ifndef HAVE_AS_MRELAX_OPTION
 #define HAVE_AS_MRELAX_OPTION 0
+#endif
+
+#ifndef HAVE_AS_COND_BRANCH_RELAXATION
+#define HAVE_AS_COND_BRANCH_RELAXATION 0
 #endif
 
 #ifndef HAVE_AS_TLS

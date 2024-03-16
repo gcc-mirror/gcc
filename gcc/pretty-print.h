@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PRETTY_PRINT_H
 
 #include "obstack.h"
+#include "rich-location.h"
 #include "diagnostic-url.h"
 
 /* Maximum number of format string arguments.  */

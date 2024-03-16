@@ -16,19 +16,21 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++20 } }
+// { dg-add-options no_pch }
 
 #include <functional>
-#include <memory>
-#include <string>
-#include <testsuite_hooks.h>
 
 // P1651R0 bind_front should not unwrap reference_wrapper
 
 #ifndef __cpp_lib_bind_front
-# error "Feature test macro for bind_front is missing"
+# error "Feature test macro for bind_front is missing in <functional>"
 #elif __cpp_lib_bind_front < 201907L
-# error "Feature test macro for bind_front has wrong value"
+# error "Feature test macro for bind_front has wrong value in <functional>"
 #endif
+
+#include <memory>
+#include <string>
+#include <testsuite_hooks.h>
 
 void functionAcceptingStringView(std::string_view) { }
 

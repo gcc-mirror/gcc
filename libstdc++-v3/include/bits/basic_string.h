@@ -51,10 +51,6 @@
 # include <charconv>
 #endif
 
-#define __glibcxx_want_constexpr_string
-#define __glibcxx_want_string_resize_and_overwrite
-#define __glibcxx_want_string_udls
-#define __glibcxx_want_to_string
 #include <bits/version.h>
 
 #if ! _GLIBCXX_USE_CXX11_ABI
@@ -133,7 +129,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_allocate(_Char_alloc_type& __a, size_type __n)
       {
 	pointer __p = _Alloc_traits::allocate(__a, __n);
-#if __cpp_lib_constexpr_string >= 201907L
+#if __glibcxx_constexpr_string >= 201907L
 	// std::char_traits begins the lifetime of characters,
 	// but custom traits might not, so do it here.
 	if constexpr (!is_same_v<_Traits, char_traits<_CharT>>)
@@ -356,7 +352,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_init_local_buf() _GLIBCXX_NOEXCEPT
       {
-#if __cpp_lib_is_constant_evaluated
+#if __glibcxx_is_constant_evaluated
 	if (std::is_constant_evaluated())
 	  for (size_type __i = 0; __i <= _S_local_capacity; ++__i)
 	    _M_local_buf[__i] = _CharT();
@@ -1133,7 +1129,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #pragma GCC diagnostic pop
 #endif
 
-#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+#ifdef __glibcxx_string_resize_and_overwrite // C++ >= 23
       /** Resize the string and call a function to fill it.
        *
        * @param __n   The maximum size requested.
@@ -4339,7 +4335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __str;
   }
 
-#if __cpp_lib_to_string >= 202306L
+#if __glibcxx_to_string >= 202306L // C++ >= 26
 
   [[nodiscard]]
   inline string
@@ -4518,7 +4514,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
   }
 
-#if __cpp_lib_constexpr_string >= 201907L
+#if __glibcxx_constexpr_string >= 201907L
   constexpr
 #endif
   inline wstring
@@ -4575,7 +4571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   to_wstring(unsigned long long __val)
   { return std::__to_wstring_numeric(std::to_string(__val)); }
 
-#if __cpp_lib_to_string || _GLIBCXX_USE_C99_STDIO
+#if __glibcxx_to_string || _GLIBCXX_USE_C99_STDIO
   _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(float __val)
@@ -4678,7 +4674,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 #endif
 
-#ifdef __cpp_lib_string_udls // C++ >= 14
+#ifdef __glibcxx_string_udls // C++ >= 14
   inline namespace literals
   {
   inline namespace string_literals
@@ -4686,7 +4682,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wliteral-suffix"
 
-#if __cpp_lib_constexpr_string >= 201907L
+#if __glibcxx_constexpr_string >= 201907L
 # define _GLIBCXX_STRING_CONSTEXPR constexpr
 #else
 # define _GLIBCXX_STRING_CONSTEXPR
@@ -4723,7 +4719,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic pop
   } // inline namespace string_literals
   } // inline namespace literals
-#endif // __cpp_lib_string_udls
+#endif // __glibcxx_string_udls
 
 #if __cplusplus >= 201703L
   namespace __detail::__variant

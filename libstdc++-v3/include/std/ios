@@ -45,4 +45,7 @@
 #include <streambuf>
 #include <bits/basic_ios.h>
 
+#define __glibcxx_want_ios_noreplace
+#include <bits/version.h>
+
 #endif	/* _GLIBCXX_IOS */

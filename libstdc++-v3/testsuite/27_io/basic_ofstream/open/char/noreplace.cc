@@ -1,4 +1,5 @@
 // { dg-do run { xfail *-*-vxworks* } }
+// { dg-add-options no_pch }
 
 #include <ios>
 

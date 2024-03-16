@@ -19,12 +19,6 @@
 
 #include <type_traits>
 
-#ifndef __cpp_lib_is_swappable
-# error "Feature-test macro for is_swappable missing"
-#elif __cpp_lib_is_swappable != 201603
-# error "Feature-test macro for is_swappable has wrong value"
-#endif
-
 void test01()
 {
   // Check for required typedefs

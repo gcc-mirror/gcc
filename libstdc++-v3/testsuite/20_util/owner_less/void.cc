@@ -17,13 +17,14 @@
 
 // { dg-do compile { target c++11 } }
 // { dg-require-effective-target hosted }
+// { dg-add-options no_pch }
 
 #include <memory>
 
 #if __cplusplus >= 201402L
 // The feature-test macro is only defined for C++14 and later.
 # if __cpp_lib_transparent_operators < 201510
-#  error "__cpp_lib_transparent_operators < 201510"
+#  error "__cpp_lib_transparent_operators < 201510 in <memory>"
 # endif
 #endif
 

@@ -20,6 +20,7 @@
 // Class template day [time.cal.weekday]
 
 #include <chrono>
+#include <limits>
 
 constexpr void
 constexpr_weekday()
@@ -36,6 +37,14 @@ constexpr_weekday()
 
   static_assert(weekday{3}[2].weekday() == weekday{3});
   static_assert(weekday{3}[last].weekday() == weekday{3});
+
+  // Test for UB (overflow).
+  {
+    using rep = days::rep;
+    using std::numeric_limits;
+    constexpr weekday max{sys_days{days{numeric_limits<rep>::max()}}};
+    constexpr weekday min{sys_days{days{numeric_limits<rep>::min()}}};
+  }
 
   static_assert(weekday{sys_days{1900y/January/1}} == Monday);
   static_assert(weekday{sys_days{1970y/January/1}} == Thursday);

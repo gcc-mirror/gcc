@@ -32,10 +32,9 @@
 
 #pragma GCC system_header
 
-#define __glibcxx_want_atomic_wait
 #include <bits/version.h>
 
-#if __cpp_lib_atomic_wait
+#if __glibcxx_atomic_wait
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
 #include <ext/numeric_traits.h>
@@ -476,5 +475,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // __cpp_lib_atomic_wait
+#endif // __glibcxx_atomic_wait
 #endif // _GLIBCXX_ATOMIC_WAIT_H

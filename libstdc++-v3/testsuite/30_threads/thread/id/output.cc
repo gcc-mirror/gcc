@@ -80,8 +80,18 @@ test02()
   auto len = s1.size();
   out.str("");
 
-  auto s2 = std::format("{0:x^{1}}", j, len + 4);
-  VERIFY( s2 == ("xx" + s1 + "xx") );
+  std::string s2;
+  // with width
+  s2 = std::format("{0:{1}}", j, len + 2);
+  VERIFY( s2 == ("  " + s1) );
+  // with align + width
+  s2 = std::format("{0:>{1}}", j, len + 2);
+  VERIFY( s2 == ("  " + s1) );
+  s2 = std::format("{0:<{1}}", j, len + 2);
+  VERIFY( s2 == (s1 + "  ") );
+  // with fill-and-align + width
+  s2 = std::format("{0:x^{1}}", j, len + 5);
+  VERIFY( s2 == ("xx" + s1 + "xxx") );
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   static_assert( std::is_default_constructible_v<std::formatter<std::thread::id, wchar_t>> );

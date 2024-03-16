@@ -1,3 +1,26 @@
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* unicode/README: Adjust glibc git commit hash, number of Unicode
+	data files to be updated and latest Unicode version.
+	* unicode/from_glibc/utf8_gen.py: Update from glibc.
+	* unicode/UnicodeData.txt: Update from Unicode 15.1.
+	* unicode/EastAsianWidth.txt: Likewise.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+	* unicode/NameAliases.txt: Likewise.
+	* unicode/DerivedCoreProperties.txt: Likewise.
+	* unicode/PropList.txt: Likewise.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	040e5b0edbca861196d9e2ea2af5e805769c8d5d to ignored commits.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* prerequisites.sha512: Add gettext.
+	* prerequisites.md5: Add gettext.
+	* download_prerequisites: Add gettext.
+
 2023-10-05  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* mdcompact/mdcompact-testsuite.el: New file.

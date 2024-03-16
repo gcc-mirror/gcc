@@ -427,6 +427,7 @@ struct bitint_large_huge
   void lower_mul_overflow (tree, gimple *);
   void lower_cplxpart_stmt (tree, gimple *);
   void lower_complexexpr_stmt (gimple *);
+  void lower_bit_query (gimple *);
   void lower_call (tree, gimple *);
   void lower_asm (gimple *);
   void lower_stmt (gimple *);
@@ -4455,6 +4456,524 @@ bitint_large_huge::lower_complexexpr_stmt (gimple *stmt)
   insert_before (g);
 }
 
+/* Lower a .{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT} call with one large/huge _BitInt
+   argument.  */
+
+void
+bitint_large_huge::lower_bit_query (gimple *stmt)
+{
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = (gimple_call_num_args (stmt) == 2
+	       ? gimple_call_arg (stmt, 1) : NULL_TREE);
+  tree lhs = gimple_call_lhs (stmt);
+  gimple *g;
+
+  if (!lhs)
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gsi_remove (&gsi, true);
+      return;
+    }
+  tree type = TREE_TYPE (arg0);
+  gcc_assert (TREE_CODE (type) == BITINT_TYPE);
+  bitint_prec_kind kind = bitint_precision_kind (type);
+  gcc_assert (kind >= bitint_prec_large);
+  enum internal_fn ifn = gimple_call_internal_fn (stmt);
+  enum built_in_function fcode = END_BUILTINS;
+  gcc_assert (TYPE_PRECISION (unsigned_type_node) == limb_prec
+	      || TYPE_PRECISION (long_unsigned_type_node) == limb_prec
+	      || TYPE_PRECISION (long_long_unsigned_type_node) == limb_prec);
+  switch (ifn)
+    {
+    case IFN_CLZ:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CLZ;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CLZL;
+      else
+	fcode = BUILT_IN_CLZLL;
+      break;
+    case IFN_FFS:
+      /* .FFS (X) is .CTZ (X, -1) + 1, though under the hood
+	 we don't add the addend at the end.  */
+      arg1 = integer_zero_node;
+      /* FALLTHRU */
+    case IFN_CTZ:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CTZ;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CTZL;
+      else
+	fcode = BUILT_IN_CTZLL;
+      m_upwards = true;
+      break;
+    case IFN_CLRSB:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CLRSB;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CLRSBL;
+      else
+	fcode = BUILT_IN_CLRSBLL;
+      break;
+    case IFN_PARITY:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_PARITY;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_PARITYL;
+      else
+	fcode = BUILT_IN_PARITYLL;
+      m_upwards = true;
+      break;
+    case IFN_POPCOUNT:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_POPCOUNT;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_POPCOUNTL;
+      else
+	fcode = BUILT_IN_POPCOUNTLL;
+      m_upwards = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  tree fndecl = builtin_decl_explicit (fcode), res = NULL_TREE;
+  unsigned cnt = 0, rem = 0, end = 0, prec = TYPE_PRECISION (type);
+  struct bq_details { edge e; tree val, addend; } *bqp = NULL;
+  basic_block edge_bb = NULL;
+  if (m_upwards)
+    {
+      tree idx = NULL_TREE, idx_first = NULL_TREE, idx_next = NULL_TREE;
+      if (kind == bitint_prec_large)
+	cnt = CEIL (prec, limb_prec);
+      else
+	{
+	  rem = (prec % (2 * limb_prec));
+	  end = (prec - rem) / limb_prec;
+	  cnt = 2 + CEIL (rem, limb_prec);
+	  idx = idx_first = create_loop (size_zero_node, &idx_next);
+	}
+
+      if (ifn == IFN_CTZ || ifn == IFN_FFS)
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gsi_prev (&gsi);
+	  edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
+	  edge_bb = e->src;
+	  if (kind == bitint_prec_large)
+	    {
+	      m_gsi = gsi_last_bb (edge_bb);
+	      if (!gsi_end_p (m_gsi))
+		gsi_next (&m_gsi);
+	    }
+	  bqp = XALLOCAVEC (struct bq_details, cnt);
+	}
+      else
+	m_after_stmt = stmt;
+      if (kind != bitint_prec_large)
+	m_upwards_2limb = end;
+
+      for (unsigned i = 0; i < cnt; i++)
+	{
+	  m_data_cnt = 0;
+	  if (kind == bitint_prec_large)
+	    idx = size_int (i);
+	  else if (i >= 2)
+	    idx = size_int (end + (i > 2));
+
+	  tree rhs1 = handle_operand (arg0, idx);
+	  if (!useless_type_conversion_p (m_limb_type, TREE_TYPE (rhs1)))
+	    {
+	      if (!TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+		rhs1 = add_cast (unsigned_type_for (TREE_TYPE (rhs1)), rhs1);
+	      rhs1 = add_cast (m_limb_type, rhs1);
+	    }
+
+	  tree in, out, tem;
+	  if (ifn == IFN_PARITY)
+	    in = prepare_data_in_out (build_zero_cst (m_limb_type), idx, &out);
+	  else if (ifn == IFN_FFS)
+	    in = prepare_data_in_out (integer_one_node, idx, &out);
+	  else
+	    in = prepare_data_in_out (integer_zero_node, idx, &out);
+
+	  switch (ifn)
+	    {
+	    case IFN_CTZ:
+	    case IFN_FFS:
+	      g = gimple_build_cond (NE_EXPR, rhs1,
+				     build_zero_cst (m_limb_type),
+				     NULL_TREE, NULL_TREE);
+	      insert_before (g);
+	      edge e1, e2;
+	      e1 = split_block (gsi_bb (m_gsi), g);
+	      e1->flags = EDGE_FALSE_VALUE;
+	      e2 = make_edge (e1->src, gimple_bb (stmt), EDGE_TRUE_VALUE);
+	      e1->probability = profile_probability::unlikely ();
+	      e2->probability = e1->probability.invert ();
+	      if (i == 0)
+		set_immediate_dominator (CDI_DOMINATORS, e2->dest, e2->src);
+	      m_gsi = gsi_after_labels (e1->dest);
+	      bqp[i].e = e2;
+	      bqp[i].val = rhs1;
+	      if (tree_fits_uhwi_p (idx))
+		bqp[i].addend
+		  = build_int_cst (integer_type_node,
+				   tree_to_uhwi (idx) * limb_prec
+				   + (ifn == IFN_FFS));
+	      else
+		{
+		  bqp[i].addend = in;
+		  if (i == 1)
+		    res = out;
+		  else
+		    res = make_ssa_name (integer_type_node);
+		  g = gimple_build_assign (res, PLUS_EXPR, in,
+					   build_int_cst (integer_type_node,
+							  limb_prec));
+		  insert_before (g);
+		  m_data[m_data_cnt] = res;
+		}
+	      break;
+	    case IFN_PARITY:
+	      if (!integer_zerop (in))
+		{
+		  if (kind == bitint_prec_huge && i == 1)
+		    res = out;
+		  else
+		    res = make_ssa_name (m_limb_type);
+		  g = gimple_build_assign (res, BIT_XOR_EXPR, in, rhs1);
+		  insert_before (g);
+		}
+	      else
+		res = rhs1;
+	      m_data[m_data_cnt] = res;
+	      break;
+	    case IFN_POPCOUNT:
+	      g = gimple_build_call (fndecl, 1, rhs1);
+	      tem = make_ssa_name (integer_type_node);
+	      gimple_call_set_lhs (g, tem);
+	      insert_before (g);
+	      if (!integer_zerop (in))
+		{
+		  if (kind == bitint_prec_huge && i == 1)
+		    res = out;
+		  else
+		    res = make_ssa_name (integer_type_node);
+		  g = gimple_build_assign (res, PLUS_EXPR, in, tem);
+		  insert_before (g);
+		}
+	      else
+		res = tem;
+	      m_data[m_data_cnt] = res;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  m_first = false;
+	  if (kind == bitint_prec_huge && i <= 1)
+	    {
+	      if (i == 0)
+		{
+		  idx = make_ssa_name (sizetype);
+		  g = gimple_build_assign (idx, PLUS_EXPR, idx_first,
+					   size_one_node);
+		  insert_before (g);
+		}
+	      else
+		{
+		  g = gimple_build_assign (idx_next, PLUS_EXPR, idx_first,
+					   size_int (2));
+		  insert_before (g);
+		  g = gimple_build_cond (NE_EXPR, idx_next, size_int (end),
+					 NULL_TREE, NULL_TREE);
+		  insert_before (g);
+		  if (ifn == IFN_CTZ || ifn == IFN_FFS)
+		    m_gsi = gsi_after_labels (edge_bb);
+		  else
+		    m_gsi = gsi_for_stmt (stmt);
+		}
+	    }
+	}
+    }
+  else
+    {
+      tree idx = NULL_TREE, idx_next = NULL_TREE, first = NULL_TREE;
+      int sub_one = 0;
+      if (kind == bitint_prec_large)
+	cnt = CEIL (prec, limb_prec);
+      else
+	{
+	  rem = prec % limb_prec;
+	  if (rem == 0 && (!TYPE_UNSIGNED (type) || ifn == IFN_CLRSB))
+	    rem = limb_prec;
+	  end = (prec - rem) / limb_prec;
+	  cnt = 1 + (rem != 0);
+	  if (ifn == IFN_CLRSB)
+	    sub_one = 1;
+	}
+
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gsi_prev (&gsi);
+      edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
+      edge_bb = e->src;
+      m_gsi = gsi_last_bb (edge_bb);
+      if (!gsi_end_p (m_gsi))
+	gsi_next (&m_gsi);
+
+      if (ifn == IFN_CLZ)
+	bqp = XALLOCAVEC (struct bq_details, cnt);
+      else
+	{
+	  gsi = gsi_for_stmt (stmt);
+	  gsi_prev (&gsi);
+	  e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
+	  edge_bb = e->src;
+	  bqp = XALLOCAVEC (struct bq_details, 2 * cnt);
+	}
+
+      for (unsigned i = 0; i < cnt; i++)
+	{
+	  m_data_cnt = 0;
+	  if (kind == bitint_prec_large)
+	    idx = size_int (cnt - i - 1);
+	  else if (i == cnt - 1)
+	    idx = create_loop (size_int (end - 1), &idx_next);
+	  else
+	    idx = size_int (end);
+
+	  tree rhs1 = handle_operand (arg0, idx);
+	  if (!useless_type_conversion_p (m_limb_type, TREE_TYPE (rhs1)))
+	    {
+	      if (ifn == IFN_CLZ && !TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+		rhs1 = add_cast (unsigned_type_for (TREE_TYPE (rhs1)), rhs1);
+	      else if (ifn == IFN_CLRSB && TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+		rhs1 = add_cast (signed_type_for (TREE_TYPE (rhs1)), rhs1);
+	      rhs1 = add_cast (m_limb_type, rhs1);
+	    }
+
+	  if (ifn == IFN_CLZ)
+	    {
+	      g = gimple_build_cond (NE_EXPR, rhs1,
+				     build_zero_cst (m_limb_type),
+				     NULL_TREE, NULL_TREE);
+	      insert_before (g);
+	      edge e1 = split_block (gsi_bb (m_gsi), g);
+	      e1->flags = EDGE_FALSE_VALUE;
+	      edge e2 = make_edge (e1->src, gimple_bb (stmt), EDGE_TRUE_VALUE);
+	      e1->probability = profile_probability::unlikely ();
+	      e2->probability = e1->probability.invert ();
+	      if (i == 0)
+		set_immediate_dominator (CDI_DOMINATORS, e2->dest, e2->src);
+	      m_gsi = gsi_after_labels (e1->dest);
+	      bqp[i].e = e2;
+	      bqp[i].val = rhs1;
+	    }
+	  else
+	    {
+	      if (i == 0)
+		{
+		  first = rhs1;
+		  g = gimple_build_assign (make_ssa_name (m_limb_type),
+					   PLUS_EXPR, rhs1,
+					   build_int_cst (m_limb_type, 1));
+		  insert_before (g);
+		  g = gimple_build_cond (GT_EXPR, gimple_assign_lhs (g),
+					 build_int_cst (m_limb_type, 1),
+					 NULL_TREE, NULL_TREE);
+		  insert_before (g);
+		}
+	      else
+		{
+		  g = gimple_build_assign (make_ssa_name (m_limb_type),
+					   BIT_XOR_EXPR, rhs1, first);
+		  insert_before (g);
+		  tree stype = signed_type_for (m_limb_type);
+		  g = gimple_build_cond (LT_EXPR,
+					 add_cast (stype,
+						   gimple_assign_lhs (g)),
+					 build_zero_cst (stype),
+					 NULL_TREE, NULL_TREE);
+		  insert_before (g);
+		  edge e1 = split_block (gsi_bb (m_gsi), g);
+		  e1->flags = EDGE_FALSE_VALUE;
+		  edge e2 = make_edge (e1->src, gimple_bb (stmt),
+				       EDGE_TRUE_VALUE);
+		  e1->probability = profile_probability::unlikely ();
+		  e2->probability = e1->probability.invert ();
+		  if (i == 1)
+		    set_immediate_dominator (CDI_DOMINATORS, e2->dest,
+					     e2->src);
+		  m_gsi = gsi_after_labels (e1->dest);
+		  bqp[2 * i].e = e2;
+		  g = gimple_build_cond (NE_EXPR, rhs1, first,
+					 NULL_TREE, NULL_TREE);
+		  insert_before (g);
+		}
+	      edge e1 = split_block (gsi_bb (m_gsi), g);
+	      e1->flags = EDGE_FALSE_VALUE;
+	      edge e2 = make_edge (e1->src, edge_bb, EDGE_TRUE_VALUE);
+	      e1->probability = profile_probability::unlikely ();
+	      e2->probability = e1->probability.invert ();
+	      if (i == 0)
+		set_immediate_dominator (CDI_DOMINATORS, e2->dest, e2->src);
+	      m_gsi = gsi_after_labels (e1->dest);
+	      bqp[2 * i + 1].e = e2;
+	      bqp[i].val = rhs1;
+	    }
+	  if (tree_fits_uhwi_p (idx))
+	    bqp[i].addend
+	      = build_int_cst (integer_type_node,
+			       (int) prec
+			       - (((int) tree_to_uhwi (idx) + 1)
+				  * limb_prec) - sub_one);
+	  else
+	    {
+	      tree in, out;
+	      in = build_int_cst (integer_type_node, rem - sub_one);
+	      m_first = true;
+	      in = prepare_data_in_out (in, idx, &out);
+	      out = m_data[m_data_cnt + 1];
+	      bqp[i].addend = in;
+	      g = gimple_build_assign (out, PLUS_EXPR, in,
+				       build_int_cst (integer_type_node,
+						      limb_prec));
+	      insert_before (g);
+	      m_data[m_data_cnt] = out;
+	    }
+
+	  m_first = false;
+	  if (kind == bitint_prec_huge && i == cnt - 1)
+	    {
+	      g = gimple_build_assign (idx_next, PLUS_EXPR, idx,
+				       size_int (-1));
+	      insert_before (g);
+	      g = gimple_build_cond (NE_EXPR, idx, size_zero_node,
+				     NULL_TREE, NULL_TREE);
+	      insert_before (g);
+	      edge true_edge, false_edge;
+	      extract_true_false_edges_from_block (gsi_bb (m_gsi),
+						   &true_edge, &false_edge);
+	      m_gsi = gsi_after_labels (false_edge->dest);
+	    }
+	}
+    }
+  switch (ifn)
+    {
+    case IFN_CLZ:
+    case IFN_CTZ:
+    case IFN_FFS:
+      gphi *phi1, *phi2, *phi3;
+      basic_block bb;
+      bb = gsi_bb (m_gsi);
+      remove_edge (find_edge (bb, gimple_bb (stmt)));
+      phi1 = create_phi_node (make_ssa_name (m_limb_type),
+			      gimple_bb (stmt));
+      phi2 = create_phi_node (make_ssa_name (integer_type_node),
+			      gimple_bb (stmt));
+      for (unsigned i = 0; i < cnt; i++)
+	{
+	  add_phi_arg (phi1, bqp[i].val, bqp[i].e, UNKNOWN_LOCATION);
+	  add_phi_arg (phi2, bqp[i].addend, bqp[i].e, UNKNOWN_LOCATION);
+	}
+      if (arg1 == NULL_TREE)
+	{
+	  g = gimple_build_builtin_unreachable (m_loc);
+	  insert_before (g);
+	}
+      m_gsi = gsi_for_stmt (stmt);
+      g = gimple_build_call (fndecl, 1, gimple_phi_result (phi1));
+      gimple_call_set_lhs (g, make_ssa_name (integer_type_node));
+      insert_before (g);
+      if (arg1 == NULL_TREE)
+	g = gimple_build_assign (lhs, PLUS_EXPR,
+				 gimple_phi_result (phi2),
+				 gimple_call_lhs (g));
+      else
+	{
+	  g = gimple_build_assign (make_ssa_name (integer_type_node),
+				   PLUS_EXPR, gimple_phi_result (phi2),
+				   gimple_call_lhs (g));
+	  insert_before (g);
+	  edge e1 = split_block (gimple_bb (stmt), g);
+	  edge e2 = make_edge (bb, e1->dest, EDGE_FALLTHRU);
+	  e2->probability = profile_probability::always ();
+	  set_immediate_dominator (CDI_DOMINATORS, e1->dest,
+				   get_immediate_dominator (CDI_DOMINATORS,
+							    e1->src));
+	  phi3 = create_phi_node (make_ssa_name (integer_type_node), e1->dest);
+	  add_phi_arg (phi3, gimple_assign_lhs (g), e1, UNKNOWN_LOCATION);
+	  add_phi_arg (phi3, arg1, e2, UNKNOWN_LOCATION);
+	  m_gsi = gsi_for_stmt (stmt);
+	  g = gimple_build_assign (lhs, gimple_phi_result (phi3));
+	}
+      gsi_replace (&m_gsi, g, true);
+      break;
+    case IFN_CLRSB:
+      bb = gsi_bb (m_gsi);
+      remove_edge (find_edge (bb, edge_bb));
+      edge e;
+      e = make_edge (bb, gimple_bb (stmt), EDGE_FALLTHRU);
+      e->probability = profile_probability::always ();
+      set_immediate_dominator (CDI_DOMINATORS, gimple_bb (stmt),
+			       get_immediate_dominator (CDI_DOMINATORS,
+							edge_bb));
+      phi1 = create_phi_node (make_ssa_name (m_limb_type),
+			      edge_bb);
+      phi2 = create_phi_node (make_ssa_name (integer_type_node),
+			      edge_bb);
+      phi3 = create_phi_node (make_ssa_name (integer_type_node),
+			      gimple_bb (stmt));
+      for (unsigned i = 0; i < cnt; i++)
+	{
+	  add_phi_arg (phi1, bqp[i].val, bqp[2 * i + 1].e, UNKNOWN_LOCATION);
+	  add_phi_arg (phi2, bqp[i].addend, bqp[2 * i + 1].e,
+		       UNKNOWN_LOCATION);
+	  tree a = bqp[i].addend;
+	  if (i && kind == bitint_prec_large)
+	    a = int_const_binop (PLUS_EXPR, a, integer_minus_one_node);
+	  if (i)
+	    add_phi_arg (phi3, a, bqp[2 * i].e, UNKNOWN_LOCATION);
+	}
+      add_phi_arg (phi3, build_int_cst (integer_type_node, prec - 1), e,
+		   UNKNOWN_LOCATION);
+      m_gsi = gsi_after_labels (edge_bb);
+      g = gimple_build_call (fndecl, 1,
+			     add_cast (signed_type_for (m_limb_type),
+				       gimple_phi_result (phi1)));
+      gimple_call_set_lhs (g, make_ssa_name (integer_type_node));
+      insert_before (g);
+      g = gimple_build_assign (make_ssa_name (integer_type_node),
+			       PLUS_EXPR, gimple_call_lhs (g),
+			       gimple_phi_result (phi2));
+      insert_before (g);
+      if (kind != bitint_prec_large)
+	{
+	  g = gimple_build_assign (make_ssa_name (integer_type_node),
+				   PLUS_EXPR, gimple_assign_lhs (g),
+				   integer_one_node);
+	  insert_before (g);
+	}
+      add_phi_arg (phi3, gimple_assign_lhs (g),
+		   find_edge (edge_bb, gimple_bb (stmt)), UNKNOWN_LOCATION);
+      m_gsi = gsi_for_stmt (stmt);
+      g = gimple_build_assign (lhs, gimple_phi_result (phi3));
+      gsi_replace (&m_gsi, g, true);
+      break;
+    case IFN_PARITY:
+      g = gimple_build_call (fndecl, 1, res);
+      gimple_call_set_lhs (g, lhs);
+      gsi_replace (&m_gsi, g, true);
+      break;
+    case IFN_POPCOUNT:
+      g = gimple_build_assign (lhs, res);
+      gsi_replace (&m_gsi, g, true);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Lower a call statement with one or more large/huge _BitInt
    arguments or large/huge _BitInt return value.  */
 
@@ -4475,6 +4994,14 @@ bitint_large_huge::lower_call (tree obj, gimple *stmt)
       case IFN_MUL_OVERFLOW:
       case IFN_UBSAN_CHECK_MUL:
 	lower_mul_overflow (obj, stmt);
+	return;
+      case IFN_CLZ:
+      case IFN_CTZ:
+      case IFN_CLRSB:
+      case IFN_FFS:
+      case IFN_PARITY:
+      case IFN_POPCOUNT:
+	lower_bit_query (stmt);
 	return;
       default:
 	break;

@@ -35,7 +35,8 @@ enum memory_space
   MEMSPACE_STACK,
   MEMSPACE_HEAP,
   MEMSPACE_READONLY_DATA,
-  MEMSPACE_THREAD_LOCAL
+  MEMSPACE_THREAD_LOCAL,
+  MEMSPACE_PRIVATE
 };
 
 /* An enum for discriminating between the different concrete subclasses
@@ -65,6 +66,7 @@ enum region_kind
   RK_BIT_RANGE,
   RK_VAR_ARG,
   RK_ERRNO,
+  RK_PRIVATE,
   RK_UNKNOWN,
 };
 
@@ -108,6 +110,7 @@ enum region_kind
      var_arg_region (RK_VAR_ARG): a region for the N-th vararg within a
 				  frame_region for a variadic call
      errno_region (RK_ERRNO): a region for holding "errno"
+     private_region (RK_PRIVATE): a region for internal state of an API
      unknown_region (RK_UNKNOWN): for handling unimplemented tree codes.  */
 
 /* Abstract base class for representing ways of accessing chunks of memory.
@@ -1430,6 +1433,42 @@ inline bool
 is_a_helper <const errno_region *>::test (const region *reg)
 {
   return reg->get_kind () == RK_ERRNO;
+}
+
+namespace ana {
+
+/* Similar to a decl region, but we don't have the decl.
+   For implementing e.g. static buffers of known_functions,
+   or other internal state of an API.
+
+   These are owned by known_function instances, rather than the
+   region_model_manager.  */
+
+class private_region : public region
+{
+public:
+  private_region (unsigned id, const region *parent, tree type,
+		  const char *desc)
+  : region (complexity (parent), id, parent, type),
+    m_desc (desc)
+  {}
+
+  enum region_kind get_kind () const final override { return RK_PRIVATE; }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+private:
+  const char *m_desc;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const private_region *>::test (const region *reg)
+{
+  return reg->get_kind () == RK_PRIVATE;
 }
 
 namespace ana {

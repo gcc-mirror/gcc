@@ -141,7 +141,7 @@ void test_12 (void)
 
   while (1)
     {
-      free (ptr.value);
+      free (ptr.value); /* { dg-warning "infinite loop" } */
       free (ptr.value); /* { dg-warning "double-'free' of 'ptr.value'" } */
     }
 }

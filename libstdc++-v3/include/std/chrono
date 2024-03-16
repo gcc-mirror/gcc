@@ -50,6 +50,10 @@
 # include <bits/unique_ptr.h>
 #endif
 
+#define __glibcxx_want_chrono
+#define __glibcxx_want_chrono_udls
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -835,29 +839,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool
       is_leap() const noexcept
       {
-	// Testing divisibility by 100 first gives better performance, that is,
-	// return (_M_y % 100 != 0 || _M_y % 400 == 0) && _M_y % 4 == 0;
-
-	// It gets even faster if _M_y is in [-536870800, 536870999]
-	// (which is the case here) and _M_y % 100 is replaced by
-	// __is_multiple_of_100 below.
+	// Testing divisibility by 100 first gives better performance [1], i.e.,
+	//     return _M_y % 100 == 0 ? _M_y % 400 == 0 : _M_y % 16 == 0;
+	// Furthermore, if _M_y % 100 == 0, then _M_y % 400 == 0 is equivalent
+	// to _M_y % 16 == 0, so we can simplify it to
+	//     return _M_y % 100 == 0 ? _M_y % 16 == 0 : _M_y % 4 == 0.  // #1
+	// Similarly, we can replace 100 with 25 (which is good since
+	// _M_y % 25 == 0 requires one fewer instruction than _M_y % 100 == 0
+	// [2]):
+	//     return _M_y % 25 == 0 ? _M_y % 16 == 0 : _M_y % 4 == 0.  // #2
+	// Indeed, first assume _M_y % 4 != 0.  Then _M_y % 16 != 0 and hence,
+	// _M_y % 4 == 0 and _M_y % 16 == 0 are both false.  Therefore, #2
+	// returns false as it should (regardless of _M_y % 25.) Now assume
+	// _M_y % 4 == 0.  In this case, _M_y % 25 == 0 if, and only if,
+	// _M_y % 100 == 0, that is, #1 and #2 are equivalent.  Finally, #2 is
+	// equivalent to
+	//     return (_M_y & (_M_y % 25 == 0 ? 15 : 3)) == 0.
 
 	// References:
 	// [1] https://github.com/cassioneri/calendar
-	// [2] https://accu.org/journals/overload/28/155/overload155.pdf#page=16
+	// [2] https://godbolt.org/z/55G8rn77e
+	// [3] https://gcc.gnu.org/pipermail/libstdc++/2021-June/052815.html
 
-	// Furthermore, if y%100 == 0, then y%400==0 is equivalent to y%16==0,
-	// so we can simplify it to (!mult_100 && y % 4 == 0) || y % 16 == 0,
-	// which is equivalent to (y & (mult_100 ? 15 : 3)) == 0.
-	// See https://gcc.gnu.org/pipermail/libstdc++/2021-June/052815.html
-
-	constexpr uint32_t __multiplier   = 42949673;
-	constexpr uint32_t __bound        = 42949669;
-	constexpr uint32_t __max_dividend = 1073741799;
-	constexpr uint32_t __offset       = __max_dividend / 2 / 100 * 100;
-	const bool __is_multiple_of_100
-	  = __multiplier * (_M_y + __offset) < __bound;
-	return (_M_y & (__is_multiple_of_100 ? 15 : 3)) == 0;
+	return (_M_y & (_M_y % 25 == 0 ? 15 : 3)) == 0;
       }
 
       explicit constexpr
@@ -930,8 +934,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr weekday
       _S_from_days(const days& __d)
       {
-	auto __n = __d.count();
-	return weekday(__n >= -4 ? (__n + 4) % 7 : (__n + 5) % 7 + 6);
+	using _Rep = days::rep;
+	using _URep = make_unsigned_t<_Rep>;
+	const auto __n = __d.count();
+	const auto __m = static_cast<_URep>(__n);
+
+	// 1970-01-01 (__n =  0, __m = 0        ) -> Thursday (4)
+	// 1969-31-12 (__n = -1, __m = _URep(-1)) -> Wednesday (3)
+	const auto __offset = __n >= 0 ? _URep(4) : 3 - _URep(-1) % 7 - 7;
+	return weekday((__m + __offset) % 7);
       }
 
     public:
@@ -1036,8 +1047,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr days
       operator-(const weekday& __x, const weekday& __y) noexcept
       {
-	auto __n = static_cast<long long>(__x._M_wd) - __y._M_wd;
-	return days{__detail::__modulo(__n, 7)};
+	const auto __n = __x.c_encoding() - __y.c_encoding();
+	return static_cast<int>(__n) >= 0 ? days{__n} : days{__n + 7};
       }
     };
 
@@ -1800,22 +1811,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	const auto __m = static_cast<unsigned>(month());
 
-	// Excluding February, the last day of month __m is either 30 or 31 or,
-	// in another words, it is 30 + b = 30 | b, where b is in {0, 1}.
+	// The result is unspecified if __m < 1 or __m > 12.  Hence, assume
+	// 1 <= __m <= 12.  For __m != 2, day() == 30 or day() == 31 or, in
+	// other words, day () == 30 | b, where b is in {0, 1}.
 
-	// If __m in {1, 3, 4, 5, 6, 7}, then b is 1 if, and only if __m is odd.
-	// Hence, b = __m & 1 = (__m ^ 0) & 1.
+	// If __m in {1, 3, 4, 5, 6, 7}, then b is 1 if, and only if, __m is
+	// odd.  Hence, b = __m & 1 = (__m ^ 0) & 1.
 
-	// If __m in {8, 9, 10, 11, 12}, then b is 1 if, and only if __m is even.
-	// Hence, b = (__m ^ 1) & 1.
+	// If __m in {8, 9, 10, 11, 12}, then b is 1 if, and only if, __m is
+	// even.  Hence, b = (__m ^ 1) & 1.
 
 	// Therefore, b = (__m ^ c) & 1, where c = 0, if __m < 8, or c = 1 if
 	// __m >= 8, that is, c = __m >> 3.
 
-	// The above mathematically justifies this implementation whose
-	// performance does not depend on look-up tables being on the L1 cache.
-	return chrono::day{__m != 2 ? ((__m ^ (__m >> 3)) & 1) | 30
-				    : _M_y.is_leap() ? 29 : 28};
+	// Since 30 = (11110)_2 and __m <= 31 = (11111)_2, the "& 1" in b's
+	// calculation is unnecessary.
+
+	// The performance of this implementation does not depend on look-up
+	// tables being on the L1 cache.
+	return chrono::day{__m != 2 ? (__m ^ (__m >> 3)) | 30
+	  : _M_y.is_leap() ? 29 : 28};
       }
 
       constexpr

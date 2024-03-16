@@ -1261,7 +1261,8 @@ conjured_purge::purge (const conjured_svalue *sval) const
 }
 
 /* Return the svalue * of type TYPE for the value conjured for ID_REG
-   at STMT, creating it if necessary.
+   at STMT (using IDX for any further disambiguation),
+   creating it if necessary.
    Use P to purge existing state from the svalue, for the case where a
    conjured_svalue would be reused along an execution path.  */
 
@@ -1269,9 +1270,10 @@ const svalue *
 region_model_manager::get_or_create_conjured_svalue (tree type,
 						     const gimple *stmt,
 						     const region *id_reg,
-						     const conjured_purge &p)
+						     const conjured_purge &p,
+						     unsigned idx)
 {
-  conjured_svalue::key_t key (type, stmt, id_reg);
+  conjured_svalue::key_t key (type, stmt, id_reg, idx);
   if (conjured_svalue **slot = m_conjured_values_map.get (key))
     {
       const conjured_svalue *sval = *slot;
@@ -1283,7 +1285,7 @@ region_model_manager::get_or_create_conjured_svalue (tree type,
       return sval;
     }
   conjured_svalue *conjured_sval
-    = new conjured_svalue (alloc_symbol_id (), type, stmt, id_reg);
+    = new conjured_svalue (alloc_symbol_id (), type, stmt, id_reg, idx);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (conjured_sval);
   m_conjured_values_map.put (key, conjured_sval);
   return conjured_sval;

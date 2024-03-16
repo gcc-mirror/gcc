@@ -49,9 +49,6 @@
 #include <type_traits>
 #endif
 
-#define __glibcxx_want_incomplete_container_elements
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

@@ -14,6 +14,7 @@
 #ifndef LSAN_THREAD_H
 #define LSAN_THREAD_H
 
+#include "sanitizer_common/sanitizer_thread_arg_retval.h"
 #include "sanitizer_common/sanitizer_thread_registry.h"
 
 namespace __lsan {
@@ -43,10 +44,11 @@ class ThreadContextLsanBase : public ThreadContextBase {
 // This subclass of ThreadContextLsanBase is declared in an OS-specific header.
 class ThreadContext;
 
-void InitializeThreadRegistry();
+void InitializeThreads();
 void InitializeMainThread();
 
 ThreadRegistry *GetLsanThreadRegistryLocked();
+ThreadArgRetval &GetThreadArgRetval();
 
 u32 ThreadCreate(u32 tid, bool detached, void *arg = nullptr);
 void ThreadFinish();

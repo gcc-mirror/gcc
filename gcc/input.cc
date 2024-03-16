@@ -288,23 +288,6 @@ expand_location_1 (const line_maps *set,
   return xloc;
 }
 
-/* Initialize the set of cache used for files accessed by caret
-   diagnostic.  */
-
-static void
-diagnostic_file_cache_init (void)
-{
-  gcc_assert (global_dc);
-  global_dc->file_cache_init ();
-}
-
-void
-diagnostic_context::file_cache_init ()
-{
-  if (m_file_cache == nullptr)
-    m_file_cache = new file_cache ();
-}
-
 /* Return the total lines number that have been read so far by the
    line map (in the preprocessor) so far.  For languages like C++ that
    entirely preprocess the input file before starting to parse, this
@@ -356,17 +339,6 @@ file_cache::lookup_file (const char *file_path)
    with tempfiles.  */
 
 void
-diagnostics_file_cache_forcibly_evict_file (const char *file_path)
-{
-  gcc_assert (file_path);
-
-  auto file_cache = global_dc->get_file_cache ();
-  if (!file_cache)
-    return;
-  file_cache->forcibly_evict_file (file_path);
-}
-
-void
 file_cache::forcibly_evict_file (const char *file_path)
 {
   gcc_assert (file_path);
@@ -377,6 +349,19 @@ file_cache::forcibly_evict_file (const char *file_path)
     return;
 
   r->evict ();
+}
+
+/* Determine if FILE_PATH missing a trailing newline on its final line.
+   Only valid to call once all of the file has been loaded, by
+   requesting a line number beyond the end of the file.  */
+
+bool
+file_cache::missing_trailing_newline_p (const char *file_path)
+{
+  gcc_assert (file_path);
+
+  file_cache_slot *r = lookup_or_add_file (file_path);
+  return r->missing_trailing_newline_p ();
 }
 
 void
@@ -403,8 +388,6 @@ file_cache_slot::evict ()
 file_cache_slot*
 file_cache::evicted_cache_tab_entry (unsigned *highest_use_count)
 {
-  diagnostic_file_cache_init ();
-
   file_cache_slot *to_evict = &m_file_slots[0];
   unsigned huc = to_evict->get_use_count ();
   for (unsigned i = 1; i < num_file_slots; ++i)
@@ -968,19 +951,12 @@ file_cache::get_source_line (const char *file_path, int line)
   return char_span (buffer, len);
 }
 
-char_span
-location_get_source_line (const char *file_path, int line)
-{
-  diagnostic_file_cache_init ();
-  return global_dc->get_file_cache ()->get_source_line (file_path, line);
-}
-
 /* Return a NUL-terminated copy of the source text between two locations, or
    NULL if the arguments are invalid.  The caller is responsible for freeing
    the return value.  */
 
 char *
-get_source_text_between (location_t start, location_t end)
+get_source_text_between (file_cache &fc, location_t start, location_t end)
 {
   expanded_location expstart =
     expand_location_to_spelling_point (start, LOCATION_ASPECT_START);
@@ -1005,7 +981,7 @@ get_source_text_between (location_t start, location_t end)
   /* For a single line we need to trim both edges.  */
   if (expstart.line == expend.line)
     {
-      char_span line = location_get_source_line (expstart.file, expstart.line);
+      char_span line = fc.get_source_line (expstart.file, expstart.line);
       if (line.length () < 1)
 	return NULL;
       int s = expstart.column - 1;
@@ -1022,7 +998,7 @@ get_source_text_between (location_t start, location_t end)
      parts of the start and end lines off depending on column values.  */
   for (int lnum = expstart.line; lnum <= expend.line; ++lnum)
     {
-      char_span line = location_get_source_line (expstart.file, lnum);
+      char_span line = fc.get_source_line (expstart.file, lnum);
       if (line.length () < 1 && (lnum != expstart.line && lnum != expend.line))
 	continue;
 
@@ -1075,33 +1051,6 @@ file_cache::get_source_file_content (const char *file_path)
   if (c == nullptr)
     return char_span (nullptr, 0);
   return c->get_full_file_content ();
-}
-
-
-/* Get a borrowed char_span to the full content of FILE_PATH
-   as decoded according to the input charset, encoded as UTF-8.  */
-
-char_span
-get_source_file_content (const char *file_path)
-{
-  diagnostic_file_cache_init ();
-  return global_dc->get_file_cache ()->get_source_file_content (file_path);
-}
-
-/* Determine if FILE_PATH missing a trailing newline on its final line.
-   Only valid to call once all of the file has been loaded, by
-   requesting a line number beyond the end of the file.  */
-
-bool
-location_missing_trailing_newline (const char *file_path)
-{
-  diagnostic_file_cache_init ();
-
-  file_cache_slot *c = global_dc->get_file_cache ()->lookup_or_add_file (file_path);
-  if (c == NULL)
-    return false;
-
-  return c->missing_trailing_newline_p ();
 }
 
 /* Test if the location originates from the spelling location of a
@@ -1236,12 +1185,13 @@ make_location (location_t caret, source_range src_range)
    source line in order to calculate the display width.  If that cannot be done
    for any reason, then returns the byte column as a fallback.  */
 int
-location_compute_display_column (expanded_location exploc,
+location_compute_display_column (file_cache &fc,
+				 expanded_location exploc,
 				 const cpp_char_column_policy &policy)
 {
   if (!(exploc.file && *exploc.file && exploc.line && exploc.column))
     return exploc.column;
-  char_span line = location_get_source_line (exploc.file, exploc.line);
+  char_span line = fc.get_source_line (exploc.file, exploc.line);
   /* If line is NULL, this function returns exploc.column which is the
      desired fallback.  */
   return cpp_byte_column_to_display_column (line.get_buffer (), line.length (),
@@ -1386,6 +1336,8 @@ dump_labelled_location_range (FILE *stream,
 void
 dump_location_info (FILE *stream)
 {
+  file_cache fc;
+
   /* Visualize the reserved locations.  */
   dump_labelled_location_range (stream, "RESERVED LOCATIONS",
 				0, RESERVED_LOCATION_COUNT);
@@ -1456,8 +1408,8 @@ dump_location_info (FILE *stream)
 	    {
 	      /* Beginning of a new source line: draw the line.  */
 
-	      char_span line_text = location_get_source_line (exploc.file,
-							      exploc.line);
+	      char_span line_text = fc.get_source_line (exploc.file,
+							exploc.line);
 	      if (!line_text)
 		break;
 	      fprintf (stream,
@@ -1705,6 +1657,7 @@ class auto_cpp_string_vec :  public auto_vec <cpp_string>
 
 static const char *
 get_substring_ranges_for_loc (cpp_reader *pfile,
+			      file_cache &fc,
 			      string_concat_db *concats,
 			      location_t strloc,
 			      enum cpp_ttype type,
@@ -1784,7 +1737,7 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
       if (start.column > finish.column)
 	return "range endpoints are reversed";
 
-      char_span line = location_get_source_line (start.file, start.line);
+      char_span line = fc.get_source_line (start.file, start.line);
       if (!line)
 	return "unable to read source line";
 
@@ -1872,6 +1825,7 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
 
 const char *
 get_location_within_string (cpp_reader *pfile,
+			    file_cache &fc,
 			    string_concat_db *concats,
 			    location_t strloc,
 			    enum cpp_ttype type,
@@ -1885,7 +1839,7 @@ get_location_within_string (cpp_reader *pfile,
 
   cpp_substring_ranges ranges;
   const char *err
-    = get_substring_ranges_for_loc (pfile, concats, strloc, type, ranges);
+    = get_substring_ranges_for_loc (pfile, fc, concats, strloc, type, ranges);
   if (err)
     return err;
 
@@ -1954,6 +1908,7 @@ namespace selftest {
 
 static const char *
 get_source_range_for_char (cpp_reader *pfile,
+			   file_cache &fc,
 			   string_concat_db *concats,
 			   location_t strloc,
 			   enum cpp_ttype type,
@@ -1965,7 +1920,7 @@ get_source_range_for_char (cpp_reader *pfile,
 
   cpp_substring_ranges ranges;
   const char *err
-    = get_substring_ranges_for_loc (pfile, concats, strloc, type, ranges);
+    = get_substring_ranges_for_loc (pfile, fc, concats, strloc, type, ranges);
   if (err)
     return err;
 
@@ -1981,6 +1936,7 @@ get_source_range_for_char (cpp_reader *pfile,
 
 static const char *
 get_num_source_ranges_for_substring (cpp_reader *pfile,
+				     file_cache &fc,
 				     string_concat_db *concats,
 				     location_t strloc,
 				     enum cpp_ttype type,
@@ -1990,7 +1946,7 @@ get_num_source_ranges_for_substring (cpp_reader *pfile,
 
   cpp_substring_ranges ranges;
   const char *err
-    = get_substring_ranges_for_loc (pfile, concats, strloc, type, ranges);
+    = get_substring_ranges_for_loc (pfile, fc, concats, strloc, type, ranges);
 
   if (err)
     return err;
@@ -2313,23 +2269,24 @@ test_reading_source_line ()
 			"01234567890123456789\n"
 			"This is the test text\n"
 			"This is the 3rd line");
+  file_cache fc;
 
   /* Read back a specific line from the tempfile.  */
-  char_span source_line = location_get_source_line (tmp.get_filename (), 3);
+  char_span source_line = fc.get_source_line (tmp.get_filename (), 3);
   ASSERT_TRUE (source_line);
   ASSERT_TRUE (source_line.get_buffer () != NULL);
   ASSERT_EQ (20, source_line.length ());
   ASSERT_TRUE (!strncmp ("This is the 3rd line",
 			 source_line.get_buffer (), source_line.length ()));
 
-  source_line = location_get_source_line (tmp.get_filename (), 2);
+  source_line = fc.get_source_line (tmp.get_filename (), 2);
   ASSERT_TRUE (source_line);
   ASSERT_TRUE (source_line.get_buffer () != NULL);
   ASSERT_EQ (21, source_line.length ());
   ASSERT_TRUE (!strncmp ("This is the test text",
 			 source_line.get_buffer (), source_line.length ()));
 
-  source_line = location_get_source_line (tmp.get_filename (), 4);
+  source_line = fc.get_source_line (tmp.get_filename (), 4);
   ASSERT_FALSE (source_line);
   ASSERT_TRUE (source_line.get_buffer () == NULL);
 }
@@ -2490,6 +2447,7 @@ public:
   line_table_test m_ltt;
   cpp_reader_ptr m_parser;
   temp_source_file m_tempfile;
+  file_cache m_file_cache;
   string_concat_db m_concats;
   bool m_implicitly_expect_EOF;
 };
@@ -2681,7 +2639,8 @@ assert_char_at_range (const location &loc,
 
   source_range actual_range = source_range();
   const char *err
-    = get_source_range_for_char (pfile, concats, strloc, type, idx,
+    = get_source_range_for_char (pfile, test.m_file_cache,
+				 concats, strloc, type, idx,
 				 &actual_range);
   if (should_have_column_data_p (strloc))
     ASSERT_EQ_AT (loc, NULL, err);
@@ -2736,7 +2695,8 @@ assert_num_substring_ranges (const location &loc,
 
   int actual_num_ranges = -1;
   const char *err
-    = get_num_source_ranges_for_substring (pfile, concats, strloc, type,
+    = get_num_source_ranges_for_substring (pfile, test.m_file_cache,
+					   concats, strloc, type,
 					   &actual_num_ranges);
   if (should_have_column_data_p (strloc))
     ASSERT_EQ_AT (loc, NULL, err);
@@ -2773,7 +2733,7 @@ assert_has_no_substring_ranges (const location &loc,
   string_concat_db *concats = &test.m_concats;
   cpp_substring_ranges ranges;
   const char *actual_err
-    = get_substring_ranges_for_loc (pfile, concats, strloc,
+    = get_substring_ranges_for_loc (pfile, test.m_file_cache, concats, strloc,
 				    type, ranges);
   if (should_have_column_data_p (strloc))
     ASSERT_STREQ_AT (loc, expected_err, actual_err);
@@ -3542,7 +3502,8 @@ test_lexer_string_locations_concatenation_2 (const line_table_case &case_)
 	 this case.  */
       source_range actual_range;
       const char *err
-	= get_source_range_for_char (test.m_parser, &test.m_concats,
+	= get_source_range_for_char (test.m_parser, test.m_file_cache,
+				     &test.m_concats,
 				     initial_loc, type, 0, &actual_range);
       ASSERT_STREQ ("range starts after LINE_MAP_MAX_LOCATION_WITH_COLS", err);
       return;

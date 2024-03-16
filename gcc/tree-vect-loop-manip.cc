@@ -1792,6 +1792,10 @@ find_loop_location (class loop *loop)
   if (!loop)
     return dump_user_location_t ();
 
+  /* For the root of the loop tree return the function location.  */
+  if (!loop_outer (loop))
+    return dump_user_location_t::from_function_decl (cfun->decl);
+
   if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     {
       /* We only care about the loop location, so use any exit with location

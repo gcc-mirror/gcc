@@ -4210,6 +4210,7 @@ type_contains_placeholder_1 (const_tree type)
       return false;
 
     case INTEGER_TYPE:
+    case BITINT_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
       /* Here we just check the bounds.  */

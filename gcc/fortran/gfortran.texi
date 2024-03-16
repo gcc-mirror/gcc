@@ -3477,11 +3477,12 @@ standard.  Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
 @code{GFC_STD_F95} (8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU}
 (32), @code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128),
 @code{GFC_STD_F2008_OBS} (256), @code{GFC_STD_F2008_TS} (512),
-@code{GFC_STD_F2018} (1024), @code{GFC_STD_F2018_OBS} (2048), and
-@code{GFC_STD=F2018_DEL} (4096). Default: @code{GFC_STD_F95_OBS |
-GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003 | GFC_STD_F2008 |
-GFC_STD_F2008_TS | GFC_STD_F2008_OBS | GFC_STD_F77 | GFC_STD_F2018 |
-GFC_STD_F2018_OBS | GFC_STD_F2018_DEL | GFC_STD_GNU | GFC_STD_LEGACY}.
+@code{GFC_STD_F2018} (1024), @code{GFC_STD_F2018_OBS} (2048),
+@code{GFC_STD=F2018_DEL} (4096), and @code{GFC_STD=F2023} (8192).
+Default: @code{GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_F95 |
+GFC_STD_F2003 | GFC_STD_F2008 | GFC_STD_F2008_TS | GFC_STD_F2008_OBS
+| GFC_STD_F77 | GFC_STD_F2018 | GFC_STD_F2018_OBS | GFC_STD_F2018_DEL
+| GFC_STD_F2023 | GFC_STD_GNU | GFC_STD_LEGACY}.
 @item @var{option}[1] @tab Standard-warning flag; prints a warning to
 standard error.  Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
 @item @var{option}[2] @tab If non zero, enable pedantic checking.

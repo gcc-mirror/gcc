@@ -32,10 +32,9 @@
 
 #pragma GCC system_header
 
-#define __glibcxx_want_move_only_function
 #include <bits/version.h>
 
-#ifdef __cpp_lib_move_only_function // C++ >= 23 && HOSTED
+#ifdef __glibcxx_move_only_function // C++ >= 23 && HOSTED
 
 #include <bits/invoke.h>
 #include <bits/utility.h>
@@ -213,5 +212,5 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #define _GLIBCXX_MOF_REF &&
 #include "mofunc_impl.h"
 
-#endif // __cpp_lib_move_only_function
+#endif // __glibcxx_move_only_function
 #endif // _GLIBCXX_MOVE_ONLY_FUNCTION_H

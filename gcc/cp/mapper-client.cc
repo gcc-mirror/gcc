@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 
 #include "line-map.h"
+#include "rich-location.h"
 #include "diagnostic-core.h"
 #include "mapper-client.h"
 #include "intl.h"

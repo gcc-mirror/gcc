@@ -1017,15 +1017,24 @@ riscv_subset_list::parse_std_ext (const char *p)
       std_ext = *p;
 
       /* Checking canonical order.  */
+      const char *prior_std_exts = std_exts;
+
       while (*std_exts && std_ext != *std_exts)
 	std_exts++;
 
       subset[0] = std_ext;
       if (std_ext != *std_exts && standard_extensions_p (subset))
-	error_at (m_loc,
-		  "%<-march=%s%>: ISA string is not in canonical order. "
-		  "%<%c%>",
-		  m_arch, *p);
+	{
+	  error_at (m_loc,
+		    "%<-march=%s%>: ISA string is not in canonical order. "
+		    "%<%c%>",
+		    m_arch, *p);
+	  /* Extension ordering is invalid.  Ignore this extension and keep
+	     searching for other issues with remaining extensions.  */
+	  std_exts = prior_std_exts;
+	  p++;
+	  continue;
+	}
 
       std_exts++;
 

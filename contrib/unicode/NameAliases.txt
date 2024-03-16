@@ -1,6 +1,6 @@
-# NameAliases-15.0.0.txt
-# Date: 2022-07-26, 20:13:00 GMT [KW]
-# © 2022 Unicode®, Inc.
+# NameAliases-15.1.0.txt
+# Date: 2023-01-05
+# © 2023 Unicode®, Inc.
 # For terms of use, see https://www.unicode.org/terms_of_use.html
 #
 # Unicode Character Database

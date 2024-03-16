@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <stdbool.h>
 #include "config/riscv/riscv-opts.h"
 
+#define SWITCHABLE_TARGET 1
+
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() riscv_cpu_cpp_builtins (pfile)
 
@@ -1055,6 +1057,10 @@ while (0)
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)                             \
   riscv_declare_function_name (STR, NAME, DECL)
+
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)                           \
+  riscv_declare_function_size (FILE, FNAME, DECL)
 
 /* Add output .variant_cc directive for specific alias definition.  */
 #undef ASM_OUTPUT_DEF_FROM_DECLS

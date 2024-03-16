@@ -16,16 +16,18 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++14 } }
+// { dg-add-options no_pch }
 
 #include <experimental/iterator>
-#include <sstream>
-#include <testsuite_hooks.h>
 
 #ifndef __cpp_lib_experimental_ostream_joiner
 # error Feature-test macro is not defined.
 #elif __cpp_lib_experimental_ostream_joiner < 201411
 # error Feature-test macro has bad value.
 #endif
+
+#include <sstream>
+#include <testsuite_hooks.h>
 
 using std::experimental::ostream_joiner;
 

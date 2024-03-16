@@ -16,12 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_tr1.h>
-#include <utility>
-#include <array>
-#include <tuple>
-#include <queue>
-#include <stack>
 
 #if defined(test_std_is_swappable)
 #  ifndef __cpp_lib_is_swappable
@@ -40,6 +34,13 @@ using is_swappable = std::__is_swappable<T>;
 # error "Either test_std_is_swappable or test_std_is_swappable_ext" \
         "need to be defined"
 #endif
+
+#include <utility>
+#include <array>
+#include <tuple>
+#include <queue>
+#include <stack>
+#include <testsuite_tr1.h>
 
 namespace funny {
   struct F {};

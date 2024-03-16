@@ -167,7 +167,7 @@
 /* Define to 1 if you have the `hypotl' function. */
 #undef HAVE_HYPOTL
 
-/* Define if you have the iconv() function. */
+/* Define if you have the iconv() function and it works. */
 #undef HAVE_ICONV
 
 /* Define to 1 if you have the <ieeefp.h> header file. */

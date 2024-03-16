@@ -279,6 +279,7 @@ public:
 						       src_enode);
     if (dst_enode)
       eg->add_edge (src_enode, dst_enode, NULL, /*state_change (),*/
+		    true, /* assume does work  */
 		    make_unique<signal_delivery_edge_info_t> ());
   }
 

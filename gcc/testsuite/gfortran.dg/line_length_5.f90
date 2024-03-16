@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Wline-truncation" }
+! { dg-options "-std=f2018 -Wline-truncation" }
 print *, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 end 
 ! { dg-error "Line truncated" " " { target *-*-* } 3 }

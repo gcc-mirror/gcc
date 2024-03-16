@@ -91,8 +91,27 @@
 #  include <bits/uses_allocator_args.h>
 #endif
 
+#if __cplusplus > 202002L
+#  include <bits/out_ptr.h>
+#endif
+
+#define __glibcxx_want_allocator_traits_is_always_equal
+#define __glibcxx_want_assume_aligned
+#define __glibcxx_want_atomic_shared_ptr
 #define __glibcxx_want_atomic_value_initialization
+#define __glibcxx_want_constexpr_dynamic_alloc
+#define __glibcxx_want_constexpr_memory
+#define __glibcxx_want_enable_shared_from_this
+#define __glibcxx_want_make_unique
+#define __glibcxx_want_out_ptr
 #define __glibcxx_want_parallel_algorithm
+#define __glibcxx_want_ranges
+#define __glibcxx_want_raw_memory_algorithms
+#define __glibcxx_want_shared_ptr_arrays
+#define __glibcxx_want_shared_ptr_weak_type
+#define __glibcxx_want_smart_ptr_for_overwrite
+#define __glibcxx_want_to_address
+#define __glibcxx_want_transparent_operators
 #include <bits/version.h>
 
 #if __cplusplus >= 201103L && __cplusplus <= 202002L && _GLIBCXX_HOSTED

@@ -3689,6 +3689,9 @@ analyze_and_compute_bitop_with_inv_effect (class loop* loop, tree phidef,
   match_op[0] = gimple_assign_rhs1 (def);
   match_op[1] = gimple_assign_rhs2 (def);
 
+  if (expr_invariant_in_loop_p (loop, match_op[1]))
+    std::swap (match_op[0], match_op[1]);
+
   if (TREE_CODE (match_op[1]) != SSA_NAME
       || !expr_invariant_in_loop_p (loop, match_op[0])
       || !(header_phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (match_op[1])))

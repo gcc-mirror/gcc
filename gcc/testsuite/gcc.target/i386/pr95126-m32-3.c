@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ia32 } } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mno-accumulate-outgoing-args" } */
 
 struct small{ short a; };
 

@@ -45,9 +45,11 @@
 #endif
 
 #define __glibcxx_want_constexpr_tuple
+#define __glibcxx_want_tuple_element_t
 #define __glibcxx_want_tuples_by_type
 #define __glibcxx_want_apply
 #define __glibcxx_want_make_from_tuple
+#define __glibcxx_want_ranges_zip
 #include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

@@ -781,6 +781,9 @@ s390_fn_types_compatible (enum s390_builtin_ov_type_index typeindex,
       tree in_arg = (*arglist)[i];
       tree in_type = TREE_TYPE (in_arg);
 
+      if (in_type == error_mark_node)
+	goto mismatch;
+
       if (VECTOR_TYPE_P (b_arg_type))
 	{
 	  /* Vector types have to match precisely.  */

@@ -408,6 +408,10 @@
 ;; st.w.
 (define_mode_iterator ST_ANY [QHWD ANYF])
 
+;; A mode for anything legal as a input of a div or mod instruction.
+(define_mode_iterator DIV [(DI "TARGET_64BIT")
+			   (SI "!TARGET_64BIT || TARGET_DIV32")])
+
 ;; In GPR templates, a string like "mul.<d>" will expand to "mul.w" in the
 ;; 32-bit version and "mul.d" in the 64-bit version.
 (define_mode_attr d [(SI "w") (DI "d")])
@@ -914,7 +918,7 @@
 		     (match_operand:GPR 2 "register_operand")))]
   ""
 {
- if (GET_MODE (operands[0]) == SImode && TARGET_64BIT)
+ if (GET_MODE (operands[0]) == SImode && TARGET_64BIT && !TARGET_DIV32)
   {
     rtx reg1 = gen_reg_rtx (DImode);
     rtx reg2 = gen_reg_rtx (DImode);
@@ -934,15 +938,32 @@
 })
 
 (define_insn "*<optab><mode>3"
-  [(set (match_operand:X 0 "register_operand" "=r,&r,&r")
-	(any_div:X (match_operand:X 1 "register_operand" "r,r,0")
-		   (match_operand:X 2 "register_operand" "r,r,r")))]
+  [(set (match_operand:DIV 0 "register_operand" "=r,&r,&r")
+	(any_div:DIV (match_operand:DIV 1 "register_operand" "r,r,0")
+		     (match_operand:DIV 2 "register_operand" "r,r,r")))]
   ""
 {
   return loongarch_output_division ("<insn>.<d><u>\t%0,%1,%2", operands);
 }
   [(set_attr "type" "idiv")
    (set_attr "mode" "<MODE>")
+   (set (attr "enabled")
+      (if_then_else
+	(match_test "!!which_alternative == loongarch_check_zero_div_p()")
+	(const_string "yes")
+	(const_string "no")))])
+
+(define_insn "<optab>si3_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r,&r,&r")
+	(sign_extend
+	  (any_div:SI (match_operand:SI 1 "register_operand" "r,r,0")
+		      (match_operand:SI 2 "register_operand" "r,r,r"))))]
+  "TARGET_64BIT && TARGET_DIV32"
+{
+  return loongarch_output_division ("<insn>.w<u>\t%0,%1,%2", operands);
+}
+  [(set_attr "type" "idiv")
+   (set_attr "mode" "SI")
    (set (attr "enabled")
       (if_then_else
 	(match_test "!!which_alternative == loongarch_check_zero_div_p()")
@@ -957,7 +978,7 @@
 	     (any_div:DI (match_operand:DI 1 "register_operand" "r,r,0")
 			 (match_operand:DI 2 "register_operand" "r,r,r")) 0)]
 	  UNSPEC_FAKE_ANY_DIV)))]
-  "TARGET_64BIT"
+  "TARGET_64BIT && !TARGET_DIV32"
 {
   return loongarch_output_division ("<insn>.w<u>\t%0,%1,%2", operands);
 }
@@ -3274,7 +3295,13 @@
 					    XEXP (target, 1),
 					    operands[1]));
   else
-    emit_call_insn (gen_sibcall_internal (target, operands[1]));
+    {
+      rtx call = emit_call_insn (gen_sibcall_internal (target, operands[1]));
+
+      if (TARGET_CMODEL_MEDIUM && !REG_P (target))
+	clobber_reg (&CALL_INSN_FUNCTION_USAGE (call),
+		     gen_rtx_REG (Pmode, T0_REGNUM));
+    }
   DONE;
 })
 
@@ -3282,10 +3309,25 @@
   [(call (mem:SI (match_operand 0 "call_insn_operand" "j,c,b"))
 	 (match_operand 1 "" ""))]
   "SIBLING_CALL_P (insn)"
-  "@
-   jr\t%0
-   b\t%0
-   b\t%%plt(%0)"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "jr\t%0";
+    case 1:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r12,%%call36(%0)\n\tjirl\t$r0,$r12,0";
+      else
+	return "b\t%0";
+    case 2:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r12,%%call36(%0)\n\tjirl\t$r0,$r12,0";
+      else
+	return "b\t%%plt(%0)";
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_insn "@sibcall_internal_1<mode>"
@@ -3318,9 +3360,17 @@
 							   operands[2],
 							   arg2));
       else
-	emit_call_insn (gen_sibcall_value_multiple_internal (arg1, target,
-							   operands[2],
-							   arg2));
+	{
+	  rtx call
+	    = emit_call_insn (gen_sibcall_value_multiple_internal (arg1,
+								   target,
+								   operands[2],
+								   arg2));
+
+	  if (TARGET_CMODEL_MEDIUM && !REG_P (target))
+	    clobber_reg (&CALL_INSN_FUNCTION_USAGE (call),
+			gen_rtx_REG (Pmode, T0_REGNUM));
+	}
     }
    else
     {
@@ -3334,8 +3384,15 @@
 						  XEXP (target, 1),
 						  operands[2]));
       else
-	emit_call_insn (gen_sibcall_value_internal (operands[0], target,
-						  operands[2]));
+	{
+	  rtx call = emit_call_insn (gen_sibcall_value_internal (operands[0],
+								 target,
+								 operands[2]));
+
+	  if (TARGET_CMODEL_MEDIUM && !REG_P (target))
+	    clobber_reg (&CALL_INSN_FUNCTION_USAGE (call),
+			gen_rtx_REG (Pmode, T0_REGNUM));
+	}
     }
   DONE;
 })
@@ -3345,10 +3402,25 @@
 	(call (mem:SI (match_operand 1 "call_insn_operand" "j,c,b"))
 	      (match_operand 2 "" "")))]
   "SIBLING_CALL_P (insn)"
-  "@
-   jr\t%1
-   b\t%1
-   b\t%%plt(%1)"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "jr\t%1";
+    case 1:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r12,%%call36(%1)\n\tjirl\t$r0,$r12,0";
+      else
+	return "b\t%1";
+    case 2:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r12,%%call36(%1)\n\tjirl\t$r0,$r12,0";
+      else
+	return "b\t%%plt(%1)";
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_insn "@sibcall_value_internal_1<mode>"
@@ -3368,10 +3440,25 @@
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))]
   "SIBLING_CALL_P (insn)"
-  "@
-   jr\t%1
-   b\t%1
-   b\t%%plt(%1)"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "jr\t%1";
+    case 1:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r12,%%call36(%1)\n\tjirl\t$r0,$r12,0";
+      else
+	return "b\t%1";
+    case 2:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r12,%%call36(%1)\n\tjirl\t$r0,$r12,0";
+      else
+	return "b\t%%plt(%1)";
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_insn "@sibcall_value_multiple_internal_1<mode>"
@@ -3411,10 +3498,25 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
-  "@
-   jirl\t$r1,%0,0
-   bl\t%0
-   bl\t%%plt(%0)"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "jirl\t$r1,%0,0";
+    case 1:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r1,%%call36(%0)\n\tjirl\t$r1,$r1,0";
+      else
+	return "bl\t%0";
+    case 2:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r1,%%call36(%0)\n\tjirl\t$r1,$r1,0";
+      else
+	return "bl\t%%plt(%0)";
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_insn "@call_internal_1<mode>"
@@ -3473,10 +3575,25 @@
 	      (match_operand 2 "" "")))
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
-  "@
-   jirl\t$r1,%1,0
-   bl\t%1
-   bl\t%%plt(%1)"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "jirl\t$r1,%1,0";
+    case 1:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r1,%%call36(%1)\n\tjirl\t$r1,$r1,0";
+      else
+	return "bl\t%1";
+    case 2:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r1,%%call36(%1)\n\tjirl\t$r1,$r1,0";
+      else
+	return "bl\t%%plt(%1)";
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_insn "@call_value_internal_1<mode>"
@@ -3498,10 +3615,25 @@
 	      (match_dup 2)))
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
-  "@
-   jirl\t$r1,%1,0
-   bl\t%1
-   bl\t%%plt(%1)"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "jirl\t$r1,%1,0";
+    case 1:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r1,%%call36(%1)\n\tjirl\t$r1,$r1,0";
+      else
+	return "bl\t%1";
+    case 2:
+      if (TARGET_CMODEL_MEDIUM)
+	return "pcaddu18i\t$r1,%%call36(%1)\n\tjirl\t$r1,$r1,0";
+      else
+	return "bl\t%%plt(%1)";
+    default:
+      gcc_unreachable ();
+    }
+}
   [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_insn "@call_value_multiple_internal_1<mode>"

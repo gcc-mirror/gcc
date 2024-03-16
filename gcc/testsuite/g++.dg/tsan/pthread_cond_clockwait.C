@@ -4,6 +4,19 @@
 
 #include <pthread.h>
 
+// This overloaded version should only be selected on targets that
+// don't have a pthread_cond_clockwait in pthread.h, and it will wait
+// indefinitely for the cond_signal that, in this testcase, ought to
+// be delivered.
+static inline int
+pthread_cond_clockwait (pthread_cond_t *cv,
+			pthread_mutex_t *mtx,
+			__clockid_t,
+			void const /* struct timespec */ *)
+{
+  return pthread_cond_wait (cv, mtx);
+}		   
+
 pthread_cond_t cv;
 pthread_mutex_t mtx;
 

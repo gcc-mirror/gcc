@@ -505,6 +505,7 @@ static const int cond_expr_maps[3][5] = {
   { 4, -2, -1, 1, 2 },
   { 4, -1, -2, 2, 1 }
 };
+static const int arg0_map[] = { 1, 0 };
 static const int arg1_map[] = { 1, 1 };
 static const int arg2_map[] = { 1, 2 };
 static const int arg1_arg4_map[] = { 2, 1, 4 };
@@ -579,6 +580,10 @@ vect_get_operand_map (const gimple *stmt, bool gather_scatter_p = false,
 	      else
 		return nullptr;
 	    }
+
+	  case IFN_CLZ:
+	  case IFN_CTZ:
+	    return arg0_map;
 
 	  default:
 	    break;
@@ -7652,6 +7657,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 
 	  bb_vinfo->shared->check_datarefs ();
 
+	  bool force_clear = false;
 	  auto_vec<slp_instance> profitable_subgraphs;
 	  for (slp_instance instance : BB_VINFO_SLP_INSTANCES (bb_vinfo))
 	    {
@@ -7674,15 +7680,17 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 
 	      vect_location = saved_vect_location;
 	      if (!dbg_cnt (vect_slp))
-		continue;
+		{
+		  force_clear = true;
+		  continue;
+		}
 
 	      profitable_subgraphs.safe_push (instance);
 	    }
 
 	  /* When we're vectorizing an if-converted loop body make sure
 	     we vectorized all if-converted code.  */
-	  if (!profitable_subgraphs.is_empty ()
-	      && orig_loop)
+	  if ((!profitable_subgraphs.is_empty () || force_clear) && orig_loop)
 	    {
 	      gcc_assert (bb_vinfo->bbs.length () == 1);
 	      for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[0]);

@@ -52,13 +52,13 @@ TEST_VAR_ALL (DEF_VCOND_VAR)
 
 /* { dg-final { scan-assembler-times {\tvslt\.b} 4 } } */
 /* { dg-final { scan-assembler-times {\tvslt\.h} 4 } } */
-/* { dg-final { scan-assembler-times {\tvslt\.w} 4 } } */
-/* { dg-final { scan-assembler-times {\tvslt\.d} 4 } } */
+/* { dg-final { scan-assembler-times {\tvslt\.w} 8 } } */
+/* { dg-final { scan-assembler-times {\tvslt\.d} 8 } } */
 /* { dg-final { scan-assembler-times {\tvsle\.b} 4 } } */
 /* { dg-final { scan-assembler-times {\tvsle\.h} 4 } } */
-/* { dg-final { scan-assembler-times {\tvsle\.w} 4 } } */
-/* { dg-final { scan-assembler-times {\tvsle\.d} 4 } } */
+/* { dg-final { scan-assembler-times {\tvsle\.w} 8 } } */
+/* { dg-final { scan-assembler-times {\tvsle\.d} 8 } } */
 /* { dg-final { scan-assembler-times {\tvseq\.b} 4 } } */
 /* { dg-final { scan-assembler-times {\tvseq\.h} 4 } } */
-/* { dg-final { scan-assembler-times {\tvseq\.w} 4 } } */
-/* { dg-final { scan-assembler-times {\tvseq\.d} 4 } } */
+/* { dg-final { scan-assembler-times {\tvseq\.w} 8 } } */
+/* { dg-final { scan-assembler-times {\tvseq\.d} 8 } } */

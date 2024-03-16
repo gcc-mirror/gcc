@@ -2657,6 +2657,19 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
     = (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
        && need_peeling_or_partial_vectors_p);
 
+  /* We set LOOP_VINFO_USING_SELECT_VL_P as true before loop vectorization
+     analysis that we don't know whether the loop is vectorized by partial
+     vectors (More details see tree-vect-loop-manip.cc).
+
+     However, SELECT_VL vectorizaton style should only applied on partial
+     vectorization since SELECT_VL is the GIMPLE IR that calculates the
+     number of elements to be process for each iteration.
+
+     After loop vectorization analysis, Clear LOOP_VINFO_USING_SELECT_VL_P
+     if it is not partial vectorized loop.  */
+  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+    LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = false;
+
   return opt_result::success ();
 }
 
@@ -4105,9 +4118,9 @@ pop:
 	/* In case of a COND_OP (mask, op1, op2, op1) reduction we might have
 	   op1 twice (once as definition, once as else) in the same operation.
 	   Allow this.  */
-	  if (cond_fn_p)
+	  if (cond_fn_p && op_use_stmt == use_stmt)
 	    {
-	      gcall *call = dyn_cast<gcall *> (use_stmt);
+	      gcall *call = as_a<gcall *> (use_stmt);
 	      unsigned else_pos
 		= internal_fn_else_index (internal_fn (op.code));
 
@@ -8470,15 +8483,28 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 
   /* Get NCOPIES vector definitions for all operands except the reduction
      definition.  */
-  vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
-		     single_defuse_cycle && reduc_index == 0
-		     ? NULL_TREE : op.ops[0], &vec_oprnds0,
-		     single_defuse_cycle && reduc_index == 1
-		     ? NULL_TREE : op.ops[1], &vec_oprnds1,
-		     op.num_ops == 4
-		     || (op.num_ops == 3
-			 && !(single_defuse_cycle && reduc_index == 2))
-		     ? op.ops[2] : NULL_TREE, &vec_oprnds2);
+  if (!cond_fn_p)
+    {
+      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
+			 single_defuse_cycle && reduc_index == 0
+			 ? NULL_TREE : op.ops[0], &vec_oprnds0,
+			 single_defuse_cycle && reduc_index == 1
+			 ? NULL_TREE : op.ops[1], &vec_oprnds1,
+			 op.num_ops == 3
+			 && !(single_defuse_cycle && reduc_index == 2)
+			 ? op.ops[2] : NULL_TREE, &vec_oprnds2);
+    }
+  else
+    {
+      /* For a conditional operation pass the truth type as mask
+	 vectype.  */
+      gcc_assert (single_defuse_cycle && reduc_index == 1);
+      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
+			 op.ops[0], &vec_oprnds0,
+			 truth_type_for (vectype_in),
+			 NULL_TREE, &vec_oprnds1, NULL_TREE,
+			 op.ops[2], &vec_oprnds2, NULL_TREE);
+    }
 
   /* For single def-use cycles get one copy of the vectorized reduction
      definition.  */
@@ -9569,9 +9595,16 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
 
   if (TREE_CODE (init_expr) == INTEGER_CST)
     init_expr = fold_convert (TREE_TYPE (vectype), init_expr);
-  else
-    gcc_assert (tree_nop_conversion_p (TREE_TYPE (vectype),
-				       TREE_TYPE (init_expr)));
+  else if (!tree_nop_conversion_p (TREE_TYPE (vectype), TREE_TYPE (init_expr)))
+    {
+      /* INIT_EXPR could be a bit_field, bail out for such case.  */
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "nonlinear induction vectorization failed:"
+			 " component type of vectype is not a nop conversion"
+			 " from type of init_expr.\n");
+      return false;
+    }
 
   switch (induction_type)
     {

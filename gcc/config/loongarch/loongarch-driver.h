@@ -51,9 +51,23 @@ along with GCC; see the file COPYING3.  If not see
   "%{G*} %{,ada:-gnatea %{mabi=*} -gnatez} " \
   "%(subtarget_cc1_spec)"
 
+#if HAVE_AS_MRELAX_OPTION && HAVE_AS_COND_BRANCH_RELAXATION
+#define ASM_MRELAX_DEFAULT "%{!mrelax:%{!mno-relax:-mrelax}}"
+#else
+#define ASM_MRELAX_DEFAULT "%{!mrelax:%{!mno-relax:-mno-relax}}"
+#endif
+
+#if HAVE_AS_MRELAX_OPTION
+#define ASM_MRELAX_SPEC \
+  "%{!mno-pass-mrelax-to-as:%{mrelax} %{mno-relax} " ASM_MRELAX_DEFAULT "}"
+#else
+#define ASM_MRELAX_SPEC \
+  "%{mpass-mrelax-to-as:%{mrelax} %{mno-relax} " ASM_MRELAX_DEFAULT "}"
+#endif
+
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{mabi=*} %{mno-relax} %(subtarget_asm_spec)"
+  "%{mabi=*} " ASM_MRELAX_SPEC " %(subtarget_asm_spec)"
 
 
 extern const char*

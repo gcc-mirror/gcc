@@ -51,6 +51,7 @@
 #include <bits/ranges_util.h>
 #include <bits/refwrap.h>
 
+#define __glibcxx_want_ranges
 #define __glibcxx_want_ranges_as_const
 #define __glibcxx_want_ranges_as_rvalue
 #define __glibcxx_want_ranges_cartesian_product

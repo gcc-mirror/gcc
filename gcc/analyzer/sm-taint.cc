@@ -1,4 +1,4 @@
-/* An experimental state machine, for tracking "taint": unsanitized uses
+/* A state machine for tracking "taint": unsanitized uses
    of data potentially under an attacker's control.
 
    Copyright (C) 2019-2023 Free Software Foundation, Inc.

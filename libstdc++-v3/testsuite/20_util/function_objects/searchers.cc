@@ -16,21 +16,23 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++17 } }
+// { dg-add-options no_pch }
 
 #include <functional>
+
+#if __STDC_HOSTED__
+# ifndef __cpp_lib_boyer_moore_searcher
+#  error "Feature-test macro for searchers missing in <functional>"
+# elif __cpp_lib_boyer_moore_searcher < 201603
+#  error "Feature-test macro for searchers has wrong value in <functional>"
+# endif
+#endif // HOSTED
+
 #include <string_view>
 #include <cstring>
 #include <cctype>
 #include <algorithm>
 #include <testsuite_hooks.h>
-
-#if __STDC_HOSTED__
-# ifndef __cpp_lib_boyer_moore_searcher
-#  error "Feature-test macro for searchers missing"
-# elif __cpp_lib_boyer_moore_searcher < 201603
-#  error "Feature-test macro for searchers has wrong value"
-# endif
-#endif // HOSTED
 
 using std::default_searcher;
 #if __STDC_HOSTED__

@@ -2,6 +2,7 @@
 // { dg-require-effective-target gthreads }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-add-options libatomic }
+// { dg-add-options no_pch }
 
 #include <memory>
 

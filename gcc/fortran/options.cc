@@ -57,7 +57,7 @@ set_default_std_flags (void)
   gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
     | GFC_STD_F2003 | GFC_STD_F2008 | GFC_STD_F95 | GFC_STD_F77
     | GFC_STD_F2008_OBS | GFC_STD_GNU | GFC_STD_LEGACY
-    | GFC_STD_F2018 | GFC_STD_F2018_DEL | GFC_STD_F2018_OBS;
+    | GFC_STD_F2018 | GFC_STD_F2018_DEL | GFC_STD_F2018_OBS | GFC_STD_F2023;
   gfc_option.warn_std = GFC_STD_F2018_DEL | GFC_STD_F95_DEL | GFC_STD_LEGACY;
 }
 
@@ -143,8 +143,11 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_source_file = NULL;
   gfc_option.module_dir = NULL;
   gfc_option.source_form = FORM_UNKNOWN;
-  gfc_option.max_continue_fixed = 255;
-  gfc_option.max_continue_free = 255;
+  /* The following is not quite right as Fortran since 2023 has: "A statement
+      shall not have more than one million characters."  This can already be
+      reached by 'just' 100 lines with 10,000 characters each.  */
+  gfc_option.max_continue_fixed = 1000000;
+  gfc_option.max_continue_free = 1000000;
   gfc_option.max_identifier_length = GFC_MAX_SYMBOL_LEN;
   gfc_option.max_errors = 25;
 
@@ -265,6 +268,10 @@ gfc_post_options (const char **pfilename)
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       cpp_warn_missing_include_dirs, 1);
   gfc_check_include_dirs (verbose_missing_dir_warn);
+
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_free_line_length,
+		       (gfc_option.allow_std & GFC_STD_F2023) ? 10000 : 132);
 
   /* Finalize DEC flags.  */
   post_dec_flags (flag_dec);
@@ -769,6 +776,8 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_std_f2003:
       gfc_option.allow_std = GFC_STD_OPT_F03;
       gfc_option.warn_std = GFC_STD_F95_OBS;
+      gfc_option.max_continue_fixed = 255;
+      gfc_option.max_continue_free = 255;
       gfc_option.max_identifier_length = 63;
       warn_ampersand = 1;
       warn_tabs = 1;
@@ -777,6 +786,8 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_std_f2008:
       gfc_option.allow_std = GFC_STD_OPT_F08;
       gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F2008_OBS;
+      gfc_option.max_continue_free = 255;
+      gfc_option.max_continue_fixed = 255;
       gfc_option.max_identifier_length = 63;
       warn_ampersand = 1;
       warn_tabs = 1;
@@ -785,6 +796,17 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_std_f2008ts:
     case OPT_std_f2018:
       gfc_option.allow_std = GFC_STD_OPT_F18;
+      gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F2008_OBS
+	| GFC_STD_F2018_OBS;
+      gfc_option.max_continue_free = 255;
+      gfc_option.max_continue_fixed = 255;
+      gfc_option.max_identifier_length = 63;
+      warn_ampersand = 1;
+      warn_tabs = 1;
+      break;
+
+    case OPT_std_f2023:
+      gfc_option.allow_std = GFC_STD_OPT_F23;
       gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F2008_OBS
 	| GFC_STD_F2018_OBS;
       gfc_option.max_identifier_length = 63;

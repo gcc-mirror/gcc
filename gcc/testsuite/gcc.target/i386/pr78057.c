@@ -5,7 +5,7 @@
 extern void link_error (void);
 
 int
-foo (int x)
+foo (int x, long long y)
 {
   if (__builtin_ia32_tzcnt_u16 (16) != 4
       || __builtin_ia32_tzcnt_u16 (0) != 16
@@ -24,13 +24,14 @@ foo (int x)
      )
     link_error ();
   x += 2;
-  if (x == 0)
+  y += 2;
+  if (x == 0 || y == 0)
     return 5;
   return __builtin_ia32_tzcnt_u32 (x)
          + __builtin_ia32_lzcnt_u32 (x)
 #ifdef __x86_64__
-	 + __builtin_ia32_tzcnt_u64 (x)
-	 + __builtin_ia32_lzcnt_u64 (x)
+	 + __builtin_ia32_tzcnt_u64 (y)
+	 + __builtin_ia32_lzcnt_u64 (y)
 #endif
 	 ;
 }

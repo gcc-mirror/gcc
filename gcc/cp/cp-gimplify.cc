@@ -771,6 +771,10 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	      default:
 		break;
 	      }
+	  else if (decl
+		   && fndecl_built_in_p (decl, BUILT_IN_CLZG, BUILT_IN_CTZG))
+	    ret = (enum gimplify_status) c_gimplify_expr (expr_p, pre_p,
+							  post_p);
 	}
       break;
 

@@ -21,12 +21,6 @@
 #include <functional>
 #include <testsuite_api.h>
 
-#ifndef __cpp_lib_clamp
-# error "Feature-test macro for clamp missing"
-#elif __cpp_lib_clamp != 201603
-# error "Feature-test macro for clamp has wrong value"
-#endif
-
 namespace std
 {
   using __gnu_test::NonDefaultConstructible;

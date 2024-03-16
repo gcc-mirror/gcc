@@ -16,13 +16,14 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++20 } }
+// { dg-add-options no_pch }
 
 #include <functional>
 
 #ifndef __cpp_lib_constexpr_functional
-# error "Feature test macro for constexpr invoke is missing"
+# error "Feature test macro for constexpr invoke is missing in <functional>"
 #elif __cpp_lib_constexpr_functional < 201907L
-# error "Feature test macro for constexpr invoke has wrong value"
+# error "Feature test macro for constexpr invoke has wrong value in <functional>"
 #endif
 
 constexpr int inc(int i) { return i + 1; }

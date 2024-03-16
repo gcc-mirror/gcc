@@ -48,14 +48,6 @@
 #include <bits/c++config.h>
 #include <bits/stl_function.h> // std::equal_to, std::unary_function etc.
 
-#define __glibcxx_want_invoke
-#define __glibcxx_want_constexpr_functional
-#define __glibcxx_want_invoke_r
-#define __glibcxx_want_bind_front
-#define __glibcxx_want_not_fn
-#define __glibcxx_want_boyer_moore_searcher
-#include <bits/version.h>
-
 #if __cplusplus >= 201103L
 
 #include <tuple>
@@ -81,6 +73,17 @@
 #if __cplusplus > 202002L && _GLIBCXX_HOSTED
 # include <bits/move_only_function.h>
 #endif
+
+#define __glibcxx_want_boyer_moore_searcher
+#define __glibcxx_want_bind_front
+#define __glibcxx_want_constexpr_functional
+#define __glibcxx_want_invoke
+#define __glibcxx_want_invoke_r
+#define __glibcxx_want_move_only_function
+#define __glibcxx_want_not_fn
+#define __glibcxx_want_ranges
+#define __glibcxx_want_transparent_operators
+#include <bits/version.h>
 
 #endif // C++11
 

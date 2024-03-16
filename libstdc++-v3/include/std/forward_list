@@ -46,6 +46,9 @@
 #endif
 
 #define __glibcxx_want_erase_if
+#define __glibcxx_want_incomplete_container_elements
+#define __glibcxx_want_list_remove_return_type
+#define __glibcxx_want_nonmember_container_access
 #include <bits/version.h>
 
 #if __cplusplus >= 201703L
@@ -67,7 +70,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Alloc, typename _Predicate>
-    inline typename forward_list<_Tp, _Alloc>::size_type 
+    inline typename forward_list<_Tp, _Alloc>::size_type
     erase_if(forward_list<_Tp, _Alloc>& __cont, _Predicate __pred)
     { return __cont.remove_if(__pred); }
 

@@ -1,5 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-additional-options -save-temps } */
+
+inline __attribute__((always_inline))
 unsigned int bitreverse32(unsigned int x)
 {
   return __builtin_nvptx_brev(x);
@@ -89,6 +92,9 @@ int main(void)
     __builtin_abort();
   if (bitreverse32(0x7d5d7f53) != 0xcafebabe)
     __builtin_abort();
+
   return 0;
 }
 
+/* { dg-final { scan-assembler-not {\tbrev\.b32\t} } } */
+/* { dg-final { scan-assembler-not {\mabort\M} } } */

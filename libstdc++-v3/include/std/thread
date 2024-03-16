@@ -42,7 +42,7 @@
 # include <stop_token>	// std::stop_source, std::stop_token, std::nostopstate
 #endif
 
-#if __cplusplus >= 202302L
+#if __cplusplus > 202002L
 # include <format>
 #endif
 
@@ -335,7 +335,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __os << __id;
 	  auto __str = __os.view();
 	  return __format::__write_padded_as_spec(__str, __str.size(),
-						  __fc, _M_spec);
+						  __fc, _M_spec,
+						  __format::_Align_right);
 	}
 
     private:

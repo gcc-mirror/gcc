@@ -1637,7 +1637,7 @@ void
 gfc_diagnostics_init (void)
 {
   diagnostic_starter (global_dc) = gfc_diagnostic_starter;
-  global_dc->m_text_callbacks.start_span = gfc_diagnostic_start_span;
+  diagnostic_start_span (global_dc) = gfc_diagnostic_start_span;
   diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = gfc_format_decoder;
   global_dc->m_source_printing.caret_chars[0] = '1';

@@ -2022,9 +2022,26 @@ void f7_sinhcosh (f7_t *cc, const f7_t *aa, bool do_sinh)
 
 
 #ifdef F7MOD_sinh_
+
+#define ARRAY_NAME coeff_sinh
+#include "libf7-array.def"
+#undef ARRAY_NAME
+
 F7_WEAK
 void f7_sinh (f7_t *cc, const f7_t *aa)
 {
+  if (aa->expo <= -2)
+    {
+      // For small values, exp(A) - exp(-A) suffers from cancellation, hence
+      // use a MiniMax polynomial for |A| < 0.5.
+      f7_t xx7, *xx = &xx7;
+      f7_t hh7, *hh = &hh7;
+      f7_square (xx, aa);
+      f7_horner (hh, xx, n_coeff_sinh, coeff_sinh, NULL);
+      f7_mul (cc, aa, hh);
+      return;
+    }
+
   f7_sinhcosh (cc, aa, true);
 }
 #endif // F7MOD_sinh_

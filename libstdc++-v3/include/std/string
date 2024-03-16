@@ -54,7 +54,13 @@
 #include <bits/basic_string.h>
 #include <bits/basic_string.tcc>
 
+#define __glibcxx_want_constexpr_char_traits
+#define __glibcxx_want_constexpr_string
 #define __glibcxx_want_erase_if
+#define __glibcxx_want_nonmember_container_access
+#define __glibcxx_want_string_resize_and_overwrite
+#define __glibcxx_want_string_udls
+#define __glibcxx_want_to_string
 #include <bits/version.h>
 
 #if __cplusplus >= 201703L && _GLIBCXX_USE_CXX11_ABI

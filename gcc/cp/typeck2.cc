@@ -2378,7 +2378,11 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
       ptype = build_pointer_type (type);
-      datum = fold_build_pointer_plus (fold_convert (ptype, datum), component);
+      datum = cp_convert (ptype, datum, complain);
+      if (!processing_template_decl)
+	datum = build2 (POINTER_PLUS_EXPR, ptype,
+			datum, convert_to_ptrofftype (component));
+      datum = cp_fully_fold (datum);
       datum = cp_build_fold_indirect_ref (datum);
       if (datum == error_mark_node)
 	return error_mark_node;

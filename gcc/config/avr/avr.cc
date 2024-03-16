@@ -10873,7 +10873,12 @@ avr_asm_init_sections (void)
 static void
 avr_asm_named_section (const char *name, unsigned int flags, tree decl)
 {
-  if (flags & AVR_SECTION_PROGMEM)
+  if (flags & AVR_SECTION_PROGMEM
+      // Only use section .progmem*.data if there is no attribute section.
+      && ! (decl
+	    && DECL_SECTION_NAME (decl)
+	    && symtab_node::get (decl)
+	    && ! symtab_node::get (decl)->implicit_section))
     {
       addr_space_t as = (flags & AVR_SECTION_PROGMEM) / SECTION_MACH_DEP;
       const char *old_prefix = ".rodata";
@@ -10942,6 +10947,7 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
       flags |= as * SECTION_MACH_DEP;
       flags &= ~SECTION_WRITE;
       flags &= ~SECTION_BSS;
+      flags &= ~SECTION_NOTYPE;
     }
 
   return flags;

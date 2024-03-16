@@ -1,6 +1,3 @@
-// TODO: remove need for this option
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
-
 /* We need this, otherwise the warnings are emitted inside the macros, which
    makes it hard to write the DejaGnu directives.  */
 /* { dg-additional-options " -ftrack-macro-expansion=0" } */
