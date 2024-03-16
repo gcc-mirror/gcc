@@ -4696,8 +4696,19 @@ no_linkage_error (tree decl)
       bool d = false;
       auto_diagnostic_group grp;
       if (cxx_dialect >= cxx11)
-	d = permerror (DECL_SOURCE_LOCATION (decl), "%q#D, declared using "
-		       "unnamed type, is used but never defined", decl);
+	{
+	  /* If t is declared in a module CMI, then decl could actually
+	     be defined in a different TU, so don't warn since C++20.  */
+	  tree relaxed = no_linkage_check (t, /*relaxed_p=*/true);
+	  if (relaxed != NULL_TREE)
+	    d = permerror (DECL_SOURCE_LOCATION (decl),
+			   "%q#D, declared using an unnamed type, "
+			   "is used but never defined", decl);
+	  else if (cxx_dialect < cxx20)
+	    d = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wc__20_extensions,
+			 "%q#D, declared using an unnamed type, "
+			 "is used but not defined", decl);
+	}
       else if (DECL_EXTERN_C_P (decl))
 	/* Allow this; it's pretty common in C.  */;
       else if (VAR_P (decl))
@@ -4716,13 +4727,31 @@ no_linkage_error (tree decl)
 	inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)), "%q#D does not refer "
 		"to the unqualified type, so it is not used for linkage",
 		TYPE_NAME (t));
+      /* Suppress warning from check_global_declaration if needed.  */
+      if (d)
+	suppress_warning (decl, OPT_Wunused);
     }
   else if (cxx_dialect >= cxx11)
     {
       if (VAR_P (decl) || !DECL_PURE_VIRTUAL_P (decl))
-	permerror (DECL_SOURCE_LOCATION (decl),
-		   "%q#D, declared using local type "
-		   "%qT, is used but never defined", decl, t);
+	{
+	  /* Similarly for local types in a function with vague linkage or
+	     defined in a module CMI, then decl could actually be defined
+	     in a different TU, so don't warn since C++20.  */
+	  bool d = false;
+	  tree relaxed = no_linkage_check (t, /*relaxed_p=*/true);
+	  if (relaxed != NULL_TREE)
+	    d = permerror (DECL_SOURCE_LOCATION (decl),
+			   "%q#D, declared using local type "
+			   "%qT, is used but never defined", decl, t);
+	  else if (cxx_dialect < cxx20)
+	    d = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wc__20_extensions,
+			 "%q#D, declared using local type "
+			 "%qT, is used but not defined here", decl, t);
+	  /* Suppress warning from check_global_declaration if needed.  */
+	  if (d)
+	    suppress_warning (decl, OPT_Wunused);
+	}
     }
   else if (VAR_P (decl))
     warning_at (DECL_SOURCE_LOCATION (decl), 0, "type %qT with no linkage "
