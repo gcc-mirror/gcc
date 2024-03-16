@@ -28,6 +28,18 @@
 #if __cplusplus >= 201703L
 
 _GLIBCXX_SIMD_BEGIN_NAMESPACE
+
+template <typename _Arg, typename _Ret, typename _To, size_t _Np>
+  _Ret __converter_fallback(_Arg __a)
+  {
+    _Ret __ret{};
+    __execute_n_times<_Np>(
+      [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	__ret._M_set(__i, static_cast<_To>(__a[__i]));
+      });
+    return __ret;
+  }
+
 // _SimdConverter scalar -> scalar {{{
 template <typename _From, typename _To>
   struct _SimdConverter<_From, simd_abi::scalar, _To, simd_abi::scalar,
@@ -56,14 +68,15 @@ template <typename _From, typename _To, typename _Abi>
   };
 
 // }}}
-// _SimdConverter "native 1" -> "native 2" {{{
+// _SimdConverter "native non-sve 1" -> "native non-sve 2" {{{
 template <typename _From, typename _To, typename _AFrom, typename _ATo>
   struct _SimdConverter<
     _From, _AFrom, _To, _ATo,
     enable_if_t<!disjunction_v<
       __is_fixed_size_abi<_AFrom>, __is_fixed_size_abi<_ATo>,
       is_same<_AFrom, simd_abi::scalar>, is_same<_ATo, simd_abi::scalar>,
-      conjunction<is_same<_From, _To>, is_same<_AFrom, _ATo>>>>>
+      conjunction<is_same<_From, _To>, is_same<_AFrom, _ATo>>>
+		  && !(__is_sve_abi<_AFrom>() || __is_sve_abi<_ATo>())>>
   {
     using _Arg = typename _AFrom::template __traits<_From>::_SimdMember;
     using _Ret = typename _ATo::template __traits<_To>::_SimdMember;
@@ -73,6 +86,26 @@ template <typename _From, typename _To, typename _AFrom, typename _ATo>
       _GLIBCXX_SIMD_INTRINSIC constexpr _Ret
       operator()(_Arg __a, _More... __more) const noexcept
       { return __vector_convert<_V>(__a, __more...); }
+  };
+
+// }}}
+// _SimdConverter "native 1" -> "native 2" {{{
+template <typename _From, typename _To, typename _AFrom, typename _ATo>
+  struct _SimdConverter<
+	   _From, _AFrom, _To, _ATo,
+	   enable_if_t<!disjunction_v<
+			  __is_fixed_size_abi<_AFrom>, __is_fixed_size_abi<_ATo>,
+			  is_same<_AFrom, simd_abi::scalar>, is_same<_ATo, simd_abi::scalar>,
+			  conjunction<is_same<_From, _To>, is_same<_AFrom, _ATo>>>
+			 && (__is_sve_abi<_AFrom>() || __is_sve_abi<_ATo>())
+	 >>
+  {
+    using _Arg = typename _AFrom::template __traits<_From>::_SimdMember;
+    using _Ret = typename _ATo::template __traits<_To>::_SimdMember;
+
+    _GLIBCXX_SIMD_INTRINSIC constexpr _Ret
+    operator()(_Arg __x) const noexcept
+    { return __converter_fallback<_Arg, _Ret, _To, simd_size_v<_To, _ATo>>(__x); }
   };
 
 // }}}
@@ -110,6 +143,10 @@ template <typename _From, typename _To, int _Np>
     {
       if constexpr (is_same_v<_From, _To>)
 	return __x;
+
+      // fallback to sequential when sve is available
+      else if constexpr (__have_sve)
+	return __converter_fallback<_Arg, _Ret, _To, _Np>(__x);
 
       // special case (optimize) int signedness casts
       else if constexpr (sizeof(_From) == sizeof(_To)
@@ -275,11 +312,14 @@ template <typename _From, typename _Ap, typename _To, int _Np>
       "_SimdConverter to fixed_size only works for equal element counts");
 
     using _Ret = __fixed_size_storage_t<_To, _Np>;
+    using _Arg = typename _SimdTraits<_From, _Ap>::_SimdMember;
 
     _GLIBCXX_SIMD_INTRINSIC constexpr _Ret
-    operator()(typename _SimdTraits<_From, _Ap>::_SimdMember __x) const noexcept
+    operator()(_Arg __x) const noexcept
     {
-      if constexpr (_Ret::_S_tuple_size == 1)
+      if constexpr (__have_sve)
+	return __converter_fallback<_Arg, _Ret, _To, _Np>(__x);
+      else if constexpr (_Ret::_S_tuple_size == 1)
 	return {__vector_convert<typename _Ret::_FirstType::_BuiltinType>(__x)};
       else
 	{
@@ -316,12 +356,15 @@ template <typename _From, int _Np, typename _To, typename _Ap>
       "_SimdConverter to fixed_size only works for equal element counts");
 
     using _Arg = __fixed_size_storage_t<_From, _Np>;
+    using _Ret = typename _SimdTraits<_To, _Ap>::_SimdMember;
 
     _GLIBCXX_SIMD_INTRINSIC constexpr
-      typename _SimdTraits<_To, _Ap>::_SimdMember
-      operator()(const _Arg& __x) const noexcept
+    _Ret
+    operator()(const _Arg& __x) const noexcept
     {
-      if constexpr (_Arg::_S_tuple_size == 1)
+      if constexpr(__have_sve)
+	return __converter_fallback<_Arg, _Ret, _To, _Np>(__x);
+      else if constexpr (_Arg::_S_tuple_size == 1)
 	return __vector_convert<__vector_type_t<_To, _Np>>(__x.first);
       else if constexpr (_Arg::_S_is_homogeneous)
 	return __call_with_n_evaluations<_Arg::_S_tuple_size>(

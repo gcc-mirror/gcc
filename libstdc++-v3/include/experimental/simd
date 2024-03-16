@@ -80,6 +80,9 @@
 #include "bits/simd_x86.h"
 #elif _GLIBCXX_SIMD_HAVE_NEON
 #include "bits/simd_neon.h"
+#if _GLIBCXX_SIMD_HAVE_SVE
+#include "bits/simd_sve.h"
+#endif
 #elif __ALTIVEC__
 #include "bits/simd_ppc.h"
 #endif

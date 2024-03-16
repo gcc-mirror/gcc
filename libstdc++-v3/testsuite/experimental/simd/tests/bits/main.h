@@ -29,6 +29,9 @@ template <class T>
     invoke_test<simd<T, simd_abi::scalar>>(int());
     invoke_test<simd<T, simd_abi::_VecBuiltin<16>>>(int());
     invoke_test<simd<T, simd_abi::_VecBltnBtmsk<64>>>(int());
+    invoke_test<simd<T, simd_abi::_SveAbi<16>>>(int());
+    invoke_test<simd<T, simd_abi::_SveAbi<32>>>(int());
+    invoke_test<simd<T, simd_abi::_SveAbi<64>>>(int());
 #elif EXTENDEDTESTS == 0
     invoke_test<simd<T, simd_abi::_VecBuiltin<8>>>(int());
     invoke_test<simd<T, simd_abi::_VecBuiltin<12>>>(int());

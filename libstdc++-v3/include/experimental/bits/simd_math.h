@@ -652,6 +652,18 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
 	(*__exp)[0] = __tmp;
 	return __r;
       }
+    else if constexpr (__is_sve_abi<_Abi>())
+      {
+	simd<_Tp, _Abi> __r;
+	__execute_n_times<simd_size_v<_Tp, _Abi>>(
+	  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	    int __tmp;
+	    const auto __ri = std::frexp(__x[__i], &__tmp);
+	    (*__exp)[__i] = __tmp;
+	    __r[__i] = __ri;
+	  });
+	return __r;
+      }
     else if constexpr (__is_fixed_size_abi_v<_Abi>)
       return {__private_init, _Abi::_SimdImpl::_S_frexp(__data(__x), __data(*__exp))};
 #if _GLIBCXX_SIMD_X86INTRIN
@@ -1135,7 +1147,8 @@ _GLIBCXX_SIMD_CVTING2(hypot)
 	    _GLIBCXX_SIMD_USE_CONSTEXPR_API _V __inf(__infinity_v<_Tp>);
 
 #ifndef __FAST_MATH__
-	    if constexpr (_V::size() > 1 && __have_neon && !__have_neon_a32)
+	    if constexpr (_V::size() > 1
+			    && __is_neon_abi<_Abi>() && __have_neon && !__have_neon_a32)
 	      { // With ARMv7 NEON, we have no subnormals and must use slightly
 		// different strategy
 		const _V __hi_exp = __hi & __inf;

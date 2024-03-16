@@ -835,6 +835,7 @@ experimental_bits_headers = \
 	${experimental_bits_srcdir}/simd_neon.h \
 	${experimental_bits_srcdir}/simd_ppc.h \
 	${experimental_bits_srcdir}/simd_scalar.h \
+	${experimental_bits_srcdir}/simd_sve.h \
 	${experimental_bits_srcdir}/simd_x86.h \
 	${experimental_bits_srcdir}/simd_x86_conversions.h \
 	${experimental_bits_srcdir}/string_view.tcc \

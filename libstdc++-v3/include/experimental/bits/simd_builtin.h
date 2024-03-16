@@ -1614,7 +1614,7 @@ template <typename _Abi, typename>
 	    static_assert(_UW_size <= _TV_size);
 	    using _UW = _SimdWrapper<_Up, _UW_size>;
 	    using _UV = __vector_type_t<_Up, _UW_size>;
-	    using _UAbi = simd_abi::deduce_t<_Up, _UW_size>;
+	    using _UAbi = simd_abi::__no_sve_deduce_t<_Up, _UW_size>;
 	    if constexpr (_UW_size == _TV_size) // one convert+store
 	      {
 		const _UW __converted = __convert<_UW>(__v);
@@ -1857,7 +1857,7 @@ template <typename _Abi, typename>
 	    else if constexpr (is_same_v<__remove_cvref_t<_BinaryOperation>,
 					 plus<>>)
 	      {
-		using _Ap = simd_abi::deduce_t<_Tp, __full_size>;
+		using _Ap = simd_abi::__no_sve_deduce_t<_Tp, __full_size>;
 		return _Ap::_SimdImpl::_S_reduce(
 		  simd<_Tp, _Ap>(__private_init,
 				 _Abi::_S_masked(__as_vector(__x))),
@@ -1866,7 +1866,7 @@ template <typename _Abi, typename>
 	    else if constexpr (is_same_v<__remove_cvref_t<_BinaryOperation>,
 					 multiplies<>>)
 	      {
-		using _Ap = simd_abi::deduce_t<_Tp, __full_size>;
+		using _Ap = simd_abi::__no_sve_deduce_t<_Tp, __full_size>;
 		using _TW = _SimdWrapper<_Tp, __full_size>;
 		_GLIBCXX_SIMD_USE_CONSTEXPR auto __implicit_mask_full
 		  = _Abi::template _S_implicit_mask<_Tp>().__as_full_vector();
@@ -1882,7 +1882,7 @@ template <typename _Abi, typename>
 	      }
 	    else if constexpr (_Np & 1)
 	      {
-		using _Ap = simd_abi::deduce_t<_Tp, _Np - 1>;
+		using _Ap = simd_abi::__no_sve_deduce_t<_Tp, _Np - 1>;
 		return __binary_op(
 		  simd<_Tp, simd_abi::scalar>(_Ap::_SimdImpl::_S_reduce(
 		    simd<_Tp, _Ap>(
@@ -1936,7 +1936,7 @@ template <typename _Abi, typename>
 	  {
 	    static_assert(sizeof(__x) > __min_vector_size<_Tp>);
 	    static_assert((_Np & (_Np - 1)) == 0); // _Np must be a power of 2
-	    using _Ap = simd_abi::deduce_t<_Tp, _Np / 2>;
+	    using _Ap = simd_abi::__no_sve_deduce_t<_Tp, _Np / 2>;
 	    using _V = simd<_Tp, _Ap>;
 	    return _Ap::_SimdImpl::_S_reduce(
 	      __binary_op(_V(__private_init, __extract<0, 2>(__as_vector(__x))),
@@ -2376,83 +2376,95 @@ template <typename _Abi, typename>
       _GLIBCXX_SIMD_INTRINSIC static __fixed_size_storage_t<int, _Np>
       _S_fpclassify(_SimdWrapper<_Tp, _Np> __x)
       {
-	using _I = __int_for_sizeof_t<_Tp>;
-	const auto __xn
-	  = __vector_bitcast<_I>(__to_intrin(_SuperImpl::_S_abs(__x)));
-	constexpr size_t _NI = sizeof(__xn) / sizeof(_I);
-	_GLIBCXX_SIMD_USE_CONSTEXPR auto __minn
-	  = __vector_bitcast<_I>(__vector_broadcast<_NI>(__norm_min_v<_Tp>));
+	if constexpr(__have_sve)
+	  {
+	    __fixed_size_storage_t<int, _Np> __r{};
+	    __execute_n_times<_Np>(
+	      [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+		__r._M_set(__i, std::fpclassify(__x[__i]));
+	      });
+	    return __r;
+	  }
+	else
+	  {
+	    using _I = __int_for_sizeof_t<_Tp>;
+	    const auto __xn
+	      = __vector_bitcast<_I>(__to_intrin(_SuperImpl::_S_abs(__x)));
+	    constexpr size_t _NI = sizeof(__xn) / sizeof(_I);
+	    _GLIBCXX_SIMD_USE_CONSTEXPR auto __minn
+	      = __vector_bitcast<_I>(__vector_broadcast<_NI>(__norm_min_v<_Tp>));
 
-	_GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_normal
-	  = __vector_broadcast<_NI, _I>(FP_NORMAL);
+	    _GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_normal
+	      = __vector_broadcast<_NI, _I>(FP_NORMAL);
 #if !__FINITE_MATH_ONLY__
-	_GLIBCXX_SIMD_USE_CONSTEXPR auto __infn
-	  = __vector_bitcast<_I>(__vector_broadcast<_NI>(__infinity_v<_Tp>));
-	_GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_nan
-	  = __vector_broadcast<_NI, _I>(FP_NAN);
-	_GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_infinite
-	  = __vector_broadcast<_NI, _I>(FP_INFINITE);
+	    _GLIBCXX_SIMD_USE_CONSTEXPR auto __infn
+	      = __vector_bitcast<_I>(__vector_broadcast<_NI>(__infinity_v<_Tp>));
+	    _GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_nan
+	      = __vector_broadcast<_NI, _I>(FP_NAN);
+	    _GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_infinite
+	      = __vector_broadcast<_NI, _I>(FP_INFINITE);
 #endif
 #ifndef __FAST_MATH__
-	_GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_subnormal
-	  = __vector_broadcast<_NI, _I>(FP_SUBNORMAL);
+	    _GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_subnormal
+	      = __vector_broadcast<_NI, _I>(FP_SUBNORMAL);
 #endif
-	_GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_zero
-	  = __vector_broadcast<_NI, _I>(FP_ZERO);
+	    _GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_zero
+	      = __vector_broadcast<_NI, _I>(FP_ZERO);
 
-	__vector_type_t<_I, _NI>
-	  __tmp = __xn < __minn
-  #ifdef __FAST_MATH__
-		    ? __fp_zero
-  #else
-		    ? (__xn == 0 ? __fp_zero : __fp_subnormal)
-  #endif
-  #if __FINITE_MATH_ONLY__
-		    : __fp_normal;
-  #else
-		    : (__xn < __infn ? __fp_normal
-				     : (__xn == __infn ? __fp_infinite : __fp_nan));
-  #endif
+	    __vector_type_t<_I, _NI>
+	      __tmp = __xn < __minn
+#ifdef __FAST_MATH__
+			       ? __fp_zero
+#else
+			       ? (__xn == 0 ? __fp_zero : __fp_subnormal)
+#endif
+#if __FINITE_MATH_ONLY__
+			       : __fp_normal;
+#else
+			       : (__xn < __infn ? __fp_normal
+						: (__xn == __infn ? __fp_infinite : __fp_nan));
+#endif
 
-	if constexpr (sizeof(_I) == sizeof(int))
-	  {
-	    using _FixedInt = __fixed_size_storage_t<int, _Np>;
-	    const auto __as_int = __vector_bitcast<int, _Np>(__tmp);
-	    if constexpr (_FixedInt::_S_tuple_size == 1)
-	      return {__as_int};
-	    else if constexpr (_FixedInt::_S_tuple_size == 2
-				 && is_same_v<
-				      typename _FixedInt::_SecondType::_FirstAbi,
-				      simd_abi::scalar>)
-	      return {__extract<0, 2>(__as_int), __as_int[_Np - 1]};
-	    else if constexpr (_FixedInt::_S_tuple_size == 2)
-	      return {__extract<0, 2>(__as_int),
-		      __auto_bitcast(__extract<1, 2>(__as_int))};
+	    if constexpr (sizeof(_I) == sizeof(int))
+	      {
+		using _FixedInt = __fixed_size_storage_t<int, _Np>;
+		const auto __as_int = __vector_bitcast<int, _Np>(__tmp);
+		if constexpr (_FixedInt::_S_tuple_size == 1)
+		  return {__as_int};
+		else if constexpr (_FixedInt::_S_tuple_size == 2
+				     && is_same_v<
+					  typename _FixedInt::_SecondType::_FirstAbi,
+					  simd_abi::scalar>)
+		  return {__extract<0, 2>(__as_int), __as_int[_Np - 1]};
+		else if constexpr (_FixedInt::_S_tuple_size == 2)
+		  return {__extract<0, 2>(__as_int),
+			  __auto_bitcast(__extract<1, 2>(__as_int))};
+		else
+		  __assert_unreachable<_Tp>();
+	      }
+	    else if constexpr (_Np == 2 && sizeof(_I) == 8
+				 && __fixed_size_storage_t<int, _Np>::_S_tuple_size == 2)
+	      {
+		const auto __aslong = __vector_bitcast<_LLong>(__tmp);
+		return {int(__aslong[0]), {int(__aslong[1])}};
+	      }
+#if _GLIBCXX_SIMD_X86INTRIN
+	    else if constexpr (sizeof(_Tp) == 8 && sizeof(__tmp) == 32
+				 && __fixed_size_storage_t<int, _Np>::_S_tuple_size == 1)
+	      return {_mm_packs_epi32(__to_intrin(__lo128(__tmp)),
+				      __to_intrin(__hi128(__tmp)))};
+	    else if constexpr (sizeof(_Tp) == 8 && sizeof(__tmp) == 64
+				 && __fixed_size_storage_t<int, _Np>::_S_tuple_size == 1)
+	      return {_mm512_cvtepi64_epi32(__to_intrin(__tmp))};
+#endif // _GLIBCXX_SIMD_X86INTRIN
+	    else if constexpr (__fixed_size_storage_t<int, _Np>::_S_tuple_size == 1)
+	      return {__call_with_subscripts<_Np>(__vector_bitcast<_LLong>(__tmp),
+						  [](auto... __l) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+						    return __make_wrapper<int>(__l...);
+						  })};
 	    else
 	      __assert_unreachable<_Tp>();
 	  }
-	else if constexpr (_Np == 2 && sizeof(_I) == 8
-			     && __fixed_size_storage_t<int, _Np>::_S_tuple_size == 2)
-	  {
-	    const auto __aslong = __vector_bitcast<_LLong>(__tmp);
-	    return {int(__aslong[0]), {int(__aslong[1])}};
-	  }
-#if _GLIBCXX_SIMD_X86INTRIN
-	else if constexpr (sizeof(_Tp) == 8 && sizeof(__tmp) == 32
-			     && __fixed_size_storage_t<int, _Np>::_S_tuple_size == 1)
-	  return {_mm_packs_epi32(__to_intrin(__lo128(__tmp)),
-				  __to_intrin(__hi128(__tmp)))};
-	else if constexpr (sizeof(_Tp) == 8 && sizeof(__tmp) == 64
-			     && __fixed_size_storage_t<int, _Np>::_S_tuple_size == 1)
-	  return {_mm512_cvtepi64_epi32(__to_intrin(__tmp))};
-#endif // _GLIBCXX_SIMD_X86INTRIN
-	else if constexpr (__fixed_size_storage_t<int, _Np>::_S_tuple_size == 1)
-	  return {__call_with_subscripts<_Np>(__vector_bitcast<_LLong>(__tmp),
-					      [](auto... __l) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
-						return __make_wrapper<int>(__l...);
-					      })};
-	else
-	  __assert_unreachable<_Tp>();
       }
 
     // _S_increment & _S_decrement{{{2
@@ -2785,11 +2797,23 @@ template <typename _Abi, typename>
 	      return _R(_UAbi::_MaskImpl::_S_to_bits(__data(__x))._M_to_bits());
 	  }
 	else
-	  return _SuperImpl::template _S_to_maskvector<__int_for_sizeof_t<_Tp>,
-						       _S_size<_Tp>>(
-	    __data(__x));
-      }
-
+	  {
+	    if constexpr(__is_sve_abi<_UAbi>())
+	      {
+		simd_mask<_Tp> __r(false);
+		constexpr size_t __min_size = std::min(__r.size(), __x.size());
+		__execute_n_times<__min_size>(
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+		    __r[__i] = __x[__i];
+		  });
+		return __data(__r);
+	      }
+	    else
+	      return _SuperImpl::template _S_to_maskvector<__int_for_sizeof_t<_Tp>,
+							   _S_size<_Tp>>(
+		       __data(__x));
+	  }
+	}
     // }}}
     // _S_masked_load {{{2
     template <typename _Tp, size_t _Np>
