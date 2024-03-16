@@ -1,3 +1,8 @@
+2024-03-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2023.xml: Close parenthesis.
+	* doc/html/manual/status.html: Regenerate.
+
 2024-03-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

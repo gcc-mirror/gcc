@@ -1,3 +1,103 @@
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-iterator.cc (edge_before_returns_twice_call): Copy all
+	flags and probability from ad_edge to e edge.  If CDI_DOMINATORS
+	are computed, recompute immediate dominator of other_edge->src
+	and other_edge->dest.
+	(gsi_safe_insert_before, gsi_safe_insert_seq_before): Update *iter
+	for the returns_twice call case to the gsi_for_stmt (stmt) to deal
+	with update it for bb splitting.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112709
+	* asan.cc (maybe_create_ssa_name, maybe_cast_to_ptrmode,
+	build_check_stmt, maybe_instrument_call, asan_expand_mark_ifn): Use
+	gsi_safe_insert_before instead of gsi_insert_before.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112709
+	* gimple-iterator.h (gsi_safe_insert_before,
+	gsi_safe_insert_seq_before): Declare.
+	* gimple-iterator.cc: Include gimplify.h.
+	(edge_before_returns_twice_call, adjust_before_returns_twice_call,
+	gsi_safe_insert_before, gsi_safe_insert_seq_before): New functions.
+	* ubsan.cc (instrument_mem_ref, instrument_pointer_overflow,
+	instrument_nonnull_arg, instrument_nonnull_return): Use
+	gsi_safe_insert_before instead of gsi_insert_before.
+	(maybe_instrument_pointer_overflow): Use force_gimple_operand,
+	gimple_seq_add_seq_without_update and gsi_safe_insert_seq_before
+	instead of force_gimple_operand_gsi.
+	(instrument_object_size): Likewise.  Use gsi_safe_insert_before
+	instead of gsi_insert_before.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114339
+	* config/i386/i386-expand.cc (ix86_expand_int_sse_cmp) <case LE>: Fix
+	a pasto, compare code against LE rather than GE.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113907
+	* ipa-icf.cc (sem_item_optimizer::merge_classes): Reset
+	SSA_NAME_RANGE_INFO and SSA_NAME_PTR_INFO on successfully ICF merged
+	functions.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114310
+	* config/aarch64/aarch64.cc (aarch64_expand_compare_and_swap): For
+	TImode force newval into a register.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/110079
+	* bb-reorder.cc (fix_crossing_unconditional_branches): Don't adjust
+	asm goto.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114211
+	* lower-subreg.cc (resolve_simple_move): For double-word
+	rotates by BITS_PER_WORD if there is overlap between source
+	and destination use a temporary.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114184
+	* config/i386/i386-expand.cc (ix86_expand_move): If XFmode op1
+	is SUBREG of CONSTANT_P, force the SUBREG_REG into memory or
+	register.
+
 2024-03-14  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:

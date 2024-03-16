@@ -1,3 +1,114 @@
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112709
+	* gcc.dg/asan/pr112709-2.c: New test.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112709
+	* gcc.dg/ubsan/pr112709-1.c: New test.
+	* gcc.dg/ubsan/pr112709-2.c: New test.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114339
+	* gcc.target/i386/pr114339.c: New test.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113907
+	* gcc.dg/pr113907-1.c: New test.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114310
+	* gcc.dg/pr114310.c: New test.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/110079
+	* gcc.dg/pr110079.c: New test.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114211
+	* gcc.dg/pr114211.c: New test.
+
+2024-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114184
+	* gcc.target/i386/pr114184.c: New test.
+
+2024-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110826
+	* gfortran.dg/proc_ptr_comp_53.f90: New test.
+
+2024-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-12-05  Harald Anlauf  <anlauf@gmx.de>
+		    Tobias Burnus   <tobias@codesourcery.com>
+
+	PR fortran/100988
+	* gfortran.dg/coarray_poly_6.f90: Adjust pattern.
+	* gfortran.dg/coarray_poly_7.f90: Likewise.
+	* gfortran.dg/coarray_poly_8.f90: Likewise.
+	* gfortran.dg/missing_optional_dummy_6a.f90: Likewise.
+	* gfortran.dg/pr100988.f90: New test.
+
+2024-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104819
+	* gfortran.dg/assumed_rank_9.f90: Adjust testcase use of NULL().
+	* gfortran.dg/pr101329.f90: Adjust testcase to conform to interp.
+	* gfortran.dg/null_actual_4.f90: New test.
+
+2024-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104819
+	* gfortran.dg/assumed_rank_10.f90: Add MOLD argument to NULL().
+	* gfortran.dg/assumed_rank_8.f90: Likewise.
+
+2024-03-15  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/114343
+	* gcc.dg/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
+	Added missing } in the dg-bogus comment.
+
 2024-03-14  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
