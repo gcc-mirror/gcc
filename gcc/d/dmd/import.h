@@ -41,7 +41,6 @@ public:
     const char *kind() const override;
     Visibility visible() override;
     Import *syntaxCopy(Dsymbol *s) override; // copy only syntax trees
-    void load(Scope *sc);
     void importAll(Scope *sc) override;
     Dsymbol *toAlias() override;
     void addMember(Scope *sc, ScopeDsymbol *sds) override;

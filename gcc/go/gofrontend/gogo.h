@@ -1429,7 +1429,7 @@ class Block
 
   // Set final types for unspecified variables and constants.
   void
-  determine_types();
+  determine_types(Gogo*);
 
   // Return true if execution of this block may fall through to the
   // next block.
@@ -1760,7 +1760,7 @@ class Function
 
   // Determine types in the function.
   void
-  determine_types();
+  determine_types(Gogo*);
 
   // Return an expression for the function descriptor, given the named
   // object for this function.  This may only be called for functions
@@ -2365,7 +2365,7 @@ class Variable
 
   // Determine the type of the variable if necessary.
   void
-  determine_type();
+  determine_type(Gogo*);
 
   // Get the backend representation of the variable.
   Bvariable*
@@ -2620,7 +2620,7 @@ class Named_constant
 
   // Determine the type of the constant if necessary.
   void
-  determine_type();
+  determine_type(Gogo*);
 
   // Indicate that we found and reported an error for this constant.
   void
@@ -3687,7 +3687,7 @@ class Package
 
   // Determine types of constants.
   void
-  determine_types();
+  determine_types(Gogo*);
 
  private:
   // The package path for type reflection data.

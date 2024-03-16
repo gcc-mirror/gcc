@@ -878,7 +878,7 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
       fallthru = false;
       break;
     case GIMPLE_RESX:
-      make_eh_edges (last);
+      make_eh_edge (last);
       fallthru = false;
       break;
     case GIMPLE_EH_DISPATCH:
@@ -894,7 +894,7 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
 
       /* If this statement has reachable exception handlers, then
 	 create abnormal edges to them.  */
-      make_eh_edges (last);
+      make_eh_edge (last);
 
       /* BUILTIN_RETURN is really a return statement.  */
       if (gimple_call_builtin_p (last, BUILT_IN_RETURN))
@@ -911,7 +911,7 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
       /* A GIMPLE_ASSIGN may throw internally and thus be considered
 	 control-altering.  */
       if (is_ctrl_altering_stmt (last))
-	make_eh_edges (last);
+	make_eh_edge (last);
       fallthru = true;
       break;
 

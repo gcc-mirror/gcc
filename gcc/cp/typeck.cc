@@ -4820,7 +4820,7 @@ build_vec_cmp (tree_code code, tree type,
 {
   tree zero_vec = build_zero_cst (type);
   tree minus_one_vec = build_minus_one_cst (type);
-  tree cmp_type = truth_type_for (type);
+  tree cmp_type = truth_type_for (TREE_TYPE (arg0));
   tree cmp = build2 (code, cmp_type, arg0, arg1);
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
@@ -8405,6 +8405,13 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
 	return expr;
       if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
 	expr = TREE_OPERAND (expr, 0);
+      /* [expr.static.cast]: "If the value is not a bit-field, the result
+	 refers to the object or the specified base class subobject thereof;
+	 otherwise, the lvalue-to-rvalue conversion is applied to the
+	 bit-field and the resulting prvalue is used as the operand of the
+	 static_cast."  There are no prvalue bit-fields; the l-to-r conversion
+	 will give us an object of the underlying type of the bit-field.  */
+      expr = decay_conversion (expr, complain);
       return ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL, complain);
     }
 
@@ -10331,16 +10338,9 @@ convert_for_assignment (tree type, tree rhs,
 
   /* If -Wparentheses, warn about a = b = c when a has type bool and b
      does not.  */
-  if (warn_parentheses
-      && TREE_CODE (type) == BOOLEAN_TYPE
-      && TREE_CODE (rhs) == MODIFY_EXPR
-      && !warning_suppressed_p (rhs, OPT_Wparentheses)
-      && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
-      && (complain & tf_warning)
-      && warning_at (rhs_loc, OPT_Wparentheses,
-		     "suggest parentheses around assignment used as "
-		     "truth value"))
-    suppress_warning (rhs, OPT_Wparentheses);
+  if (TREE_CODE (type) == BOOLEAN_TYPE
+      && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE)
+    maybe_warn_unparenthesized_assignment (rhs, complain);
 
   if (complain & tf_warning)
     warn_for_address_or_pointer_of_packed_member (type, rhs);

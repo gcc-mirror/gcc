@@ -26,8 +26,8 @@ unsigned long foo(void *data)
  return 0;
 }
 
-/* { dg-final { scan-assembler-times "\t.4byte\t0x8\t; bpfcr_type \\(named_ue64\\)" 2 } } */
-/* { dg-final { scan-assembler-times "\t.4byte\t0x9\t; bpfcr_type \\(named_se64\\)" 2} } */
+/* { dg-final { scan-assembler-times "\t.4byte\t0x\[0-9a-f\]+\t; bpfcr_type \\(named_ue64\\)" 2 } } */
+/* { dg-final { scan-assembler-times "\t.4byte\t0x\[0-9a-f\]+\t; bpfcr_type \\(named_se64\\)" 2} } */
 /* { dg-final { scan-assembler-times "\t.4byte\t0xa\t; bpfcr_kind" 2 } } BPF_ENUMVAL_EXISTS */
 /* { dg-final { scan-assembler-times "\t.4byte\t0xb\t; bpfcr_kind" 2 } } BPF_ENUMVAL_VALUE */
 

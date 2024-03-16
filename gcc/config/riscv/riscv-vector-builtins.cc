@@ -2509,6 +2509,14 @@ static CONSTEXPR const rvv_op_info all_v_vcreate_tuple_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      tuple_vcreate_args /* Args */};
 
+/* A static operand information for vector_type func () function registration.
+ */
+static CONSTEXPR const rvv_op_info all_none_void_tuple_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_none,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     void_args /* Args */};
+
 /* A list of all RVV base function types.  */
 static CONSTEXPR const function_type_info function_types[] = {
 #define DEF_RVV_TYPE_INDEX(                                                    \

@@ -121,4 +121,8 @@ enum riscv_entity
 /* TODO: Enable RVV movmisalign by default for now.  */
 #define TARGET_VECTOR_MISALIGN_SUPPORTED 1
 
+/* The maximmum LMUL according to user configuration.  */
+#define TARGET_MAX_LMUL                                                        \
+  (int) (riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul)
+
 #endif /* ! GCC_RISCV_OPTS_H */

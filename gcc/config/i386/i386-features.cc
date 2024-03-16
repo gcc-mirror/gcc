@@ -752,11 +752,33 @@ general_scalar_chain::compute_convert_gain ()
     fprintf (dump_file, "  Instruction conversion gain: %d\n", gain);
 
   /* Cost the integer to sse and sse to integer moves.  */
-  cost += n_sse_to_integer * ix86_cost->sse_to_integer;
-  /* ???  integer_to_sse but we only have that in the RA cost table.
-     Assume sse_to_integer/integer_to_sse are the same which they
-     are at the moment.  */
-  cost += n_integer_to_sse * ix86_cost->sse_to_integer;
+  if (!optimize_function_for_size_p (cfun))
+    {
+      cost += n_sse_to_integer * ix86_cost->sse_to_integer;
+      /* ???  integer_to_sse but we only have that in the RA cost table.
+              Assume sse_to_integer/integer_to_sse are the same which they
+	      are at the moment.  */
+      cost += n_integer_to_sse * ix86_cost->sse_to_integer;
+    }
+  else if (TARGET_64BIT || smode == SImode)
+    {
+      cost += n_sse_to_integer * COSTS_N_BYTES (4);
+      cost += n_integer_to_sse * COSTS_N_BYTES (4);
+    }
+  else if (TARGET_SSE4_1)
+    {
+      /* vmovd (4 bytes) + vpextrd (6 bytes).  */
+      cost += n_sse_to_integer * COSTS_N_BYTES (10);
+      /* vmovd (4 bytes) + vpinsrd (6 bytes).  */
+      cost += n_integer_to_sse * COSTS_N_BYTES (10);
+    }
+  else
+    {
+      /* movd (4 bytes) + psrlq (5 bytes) + movd (4 bytes).  */
+      cost += n_sse_to_integer * COSTS_N_BYTES (13);
+      /* movd (4 bytes) + movd (4 bytes) + unpckldq (4 bytes).  */
+      cost += n_integer_to_sse * COSTS_N_BYTES (12);
+    }
 
   if (dump_file)
     fprintf (dump_file, "  Registers conversion cost: %d\n", cost);

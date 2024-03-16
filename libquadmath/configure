@@ -644,7 +644,6 @@ LIBQUAD_USE_SYMVER_GNU_FALSE
 LIBQUAD_USE_SYMVER_GNU_TRUE
 LIBQUAD_USE_SYMVER_FALSE
 LIBQUAD_USE_SYMVER_TRUE
-LIBM
 toolexeclibdir
 toolexecdir
 MAINT
@@ -10922,7 +10921,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10925 "configure"
+#line 10924 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11028,7 +11027,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11031 "configure"
+#line 11030 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12257,148 +12256,6 @@ case ${version_specific_libs} in
       *) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
     esac
     ;;
-esac
-
-
-
-LIBM=
-case $host in
-*-*-beos* | *-*-cegcc* | *-*-cygwin* | *-*-haiku* | *-*-pw32* | *-*-darwin*)
-  # These system don't have libm, or don't need it
-  ;;
-*-ncr-sysv4.3*)
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for _mwvalidcheckl in -lmw" >&5
-$as_echo_n "checking for _mwvalidcheckl in -lmw... " >&6; }
-if ${ac_cv_lib_mw__mwvalidcheckl+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lmw  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char _mwvalidcheckl ();
-int
-main ()
-{
-return _mwvalidcheckl ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_mw__mwvalidcheckl=yes
-else
-  ac_cv_lib_mw__mwvalidcheckl=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_mw__mwvalidcheckl" >&5
-$as_echo "$ac_cv_lib_mw__mwvalidcheckl" >&6; }
-if test "x$ac_cv_lib_mw__mwvalidcheckl" = xyes; then :
-  LIBM="-lmw"
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cos in -lm" >&5
-$as_echo_n "checking for cos in -lm... " >&6; }
-if ${ac_cv_lib_m_cos+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char cos ();
-int
-main ()
-{
-return cos ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_m_cos=yes
-else
-  ac_cv_lib_m_cos=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_cos" >&5
-$as_echo "$ac_cv_lib_m_cos" >&6; }
-if test "x$ac_cv_lib_m_cos" = xyes; then :
-  LIBM="$LIBM -lm"
-fi
-
-  ;;
-*)
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cos in -lm" >&5
-$as_echo_n "checking for cos in -lm... " >&6; }
-if ${ac_cv_lib_m_cos+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char cos ();
-int
-main ()
-{
-return cos ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_m_cos=yes
-else
-  ac_cv_lib_m_cos=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_cos" >&5
-$as_echo "$ac_cv_lib_m_cos" >&6; }
-if test "x$ac_cv_lib_m_cos" = xyes; then :
-  LIBM="-lm"
-fi
-
-  ;;
 esac
 
 

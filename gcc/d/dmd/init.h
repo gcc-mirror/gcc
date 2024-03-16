@@ -79,7 +79,6 @@ public:
     d_bool isCarray;      // C array semantics
 
     bool isAssociativeArray() const;
-    Expression *toAssocArrayLiteral();
 
     void accept(Visitor *v) override { v->visit(this); }
 };

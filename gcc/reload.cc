@@ -3077,12 +3077,6 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	      enum constraint_num cn;
 	      enum reg_class cl;
 
-	      /* If the predicate accepts a unary operator, it means that
-		 we need to reload the operand, but do not do this for
-		 match_operator and friends.  */
-	      if (UNARY_P (operand) && *p != 0)
-		operand = XEXP (operand, 0);
-
 	      /* If the operand is a SUBREG, extract
 		 the REG or MEM (or maybe even a constant) within.
 		 (Constants can occur as a result of reg_equiv_constant.)  */

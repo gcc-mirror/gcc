@@ -926,7 +926,7 @@ Objective-C and Objective-C++ Dialects}.
 -iframework
 -image_base  -init  -install_name  -keep_private_externs
 -multi_module  -multiply_defined  -multiply_defined_unused
--noall_load   -no_dead_strip_inits_and_terms
+-noall_load   -no_dead_strip_inits_and_terms -nodefaultrpaths
 -nofixprebinding  -nomultidefs  -noprebind  -noseglinkedit
 -pagezero_size  -prebind  -prebind_all_twolevel_modules
 -private_bundle  -read_only_relocs  -sectalign
@@ -1042,7 +1042,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcond-move-float  -mno-cond-move-float
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align
 -mmax-inline-memcpy-size=@var{n}
--mexplicit-relocs -mno-explicit-relocs
+-mexplicit-relocs=@var{style} -mexplicit-relocs -mno-explicit-relocs
 -mdirect-extern-access -mno-direct-extern-access
 -mcmodel=@var{code-model}}
 
@@ -8137,6 +8137,16 @@ is based on static detection and generally only warns about functions which
 always leads to a call to another @code{cold} function such as wrappers of
 C++ @code{throw} or fatal error reporting functions leading to @code{abort}.
 @end table
+
+@opindex Wno-alloc-size
+@opindex Walloc-size
+@item -Walloc-size
+Warn about calls to allocation functions decorated with attribute
+@code{alloc_size} that specify insufficient size for the target type of
+the pointer the result is assigned to, including those to the built-in
+forms of the functions @code{aligned_alloc}, @code{alloca},
+@code{calloc},
+@code{malloc}, and @code{realloc}.
 
 @opindex Wno-alloc-zero
 @opindex Walloc-zero
@@ -24484,6 +24494,14 @@ an executable when linking, using the Darwin @file{libtool} command.
 This causes GCC's output file to have the @samp{ALL} subtype, instead of
 one controlled by the @option{-mcpu} or @option{-march} option.
 
+@opindex nodefaultrpaths
+@item -nodefaultrpaths
+Do not add default run paths for the compiler library directories to
+executables, modules or dynamic libraries. On macOS 10.5 and later,
+the embedded runpath is added by default unless the user adds
+@option{-nodefaultrpaths} to the link line. Run paths are needed
+(and therefore enforced) to build on macOS version 10.11 or later.
+
 @item -allowable_client  @var{client_name}
 @itemx -client_name
 @itemx -compatibility_version
@@ -26302,25 +26320,38 @@ The text segment and data segment must be within 2GB addressing space.
 
 @item extreme
 This mode does not limit the size of the code segment and data segment.
-The @option{-mcmodel=extreme} option is incompatible with @option{-fplt} and
-@option{-mno-explicit-relocs}.
+The @option{-mcmodel=extreme} option is incompatible with @option{-fplt},
+and it requires @option{-mexplicit-relocs=always}.
 @end table
 The default code model is @code{normal}.
 
-@opindex mexplicit-relocs
-@opindex mno-explicit-relocs
-@item -mexplicit-relocs
-@itemx -mno-explicit-relocs
-Use or do not use assembler relocation operators when dealing with symbolic
+@item -mexplicit-relocs=@var{style}
+Set when to use assembler relocation operators when dealing with symbolic
 addresses.  The alternative is to use assembler macros instead, which may
-limit instruction scheduling but allow linker relaxation.  The default
+limit instruction scheduling but allow linker relaxation.
+with @option{-mexplicit-relocs=none} the assembler macros are always used,
+with @option{-mexplicit-relocs=always} the assembler relocation operators
+are always used, with @option{-mexplicit-relocs=auto} the compiler will
+use the relocation operators where the linker relaxation is impossible to
+improve the code quality, and macros elsewhere.  The default
 value for the option is determined during GCC build-time by detecting
 corresponding assembler support:
-@code{-mno-explicit-relocs} if the assembler supports relaxation or it
-does not support relocation operators at all,
-@code{-mexplicit-relocs} otherwise.  This option is mostly useful for
+@option{-mexplicit-relocs=none} if the assembler does not support
+relocation operators at all,
+@option{-mexplicit-relocs=always} if the assembler supports relocation
+operators but does not support relaxation,
+@option{-mexplicit-relocs=auto} if the assembler supports both relocation
+operators and relaxation.  This option is mostly useful for
 debugging, or interoperation with assemblers different from the build-time
 one.
+
+@opindex mexplicit-relocs
+@item -mexplicit-relocs
+An alias of @option{-mexplicit-relocs=always} for backward compatibility.
+
+@opindex mno-explicit-relocs
+@item -mno-explicit-relocs
+An alias of @option{-mexplicit-relocs=none} for backward compatibility.
 
 @opindex mdirect-extern-access
 @item -mdirect-extern-access
@@ -33291,6 +33322,12 @@ instruction set support.
 ZHAOXIN lujiazui CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
 SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
 ABM, BMI, BMI2, F16C, FXSR, RDSEED instruction set support.
+
+@item yongfeng
+ZHAOXIN yongfeng CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
+SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
+ABM, BMI, BMI2, F16C, FXSR, RDSEED, AVX2, FMA, SHA, LZCNT
+instruction set support.
 
 @item geode
 AMD Geode embedded processor with MMX and 3DNow!@: instruction set support.

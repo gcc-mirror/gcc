@@ -1,3 +1,49 @@
+2023-10-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111530
+	* gm2-libs-ch/cgetopt.c (cgetopt_cgetopt_long): Re-format.
+	(cgetopt_cgetopt_long_only): Re-format.
+	(cgetopt_SetOption):  Re-format and assign flag to NULL
+	if name is also NULL.
+	* gm2-libs/GetOpt.def (AddLongOption): Add index parameter
+	and change flag to be a VAR parameter rather than a pointer.
+	(GetOptLong): Re-format.
+	(GetOpt): Correct comment.
+	* gm2-libs/GetOpt.mod: Re-write to rely on cgetopt rather
+	than implement long option creation in GetOpt.
+	* gm2-libs/cgetopt.def (SetOption): has_arg type is INTEGER.
+
+2023-10-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111955
+	* gm2-gcc/m2builtins.cc (gm2_isnan_node): New tree.
+	(DoBuiltinIsnan): New function.
+	(m2builtins_BuiltInIsnan): New function.
+	(m2builtins_init): Initialize gm2_isnan_node.
+	(list_of_builtins): Add define for __builtin_isnan.
+	* gm2-libs-ch/wrapc.c (wrapc_isnan): New function.
+	(wrapc_isnanf): New function.
+	(wrapc_isnanl): New function.
+	* gm2-libs/Builtins.def (isnanf): New procedure function.
+	(isnan): New procedure function.
+	(isnanl): New procedure function.
+	* gm2-libs/Builtins.mod:
+	* gm2-libs/wrapc.def (isnan): New function.
+	(isnanf): New function.
+	(isnanl): New function.
+
+2023-10-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs/M2Dependent.mod (InitDependencyList): New
+	procedure.
+	(CreateModule): Call InitDependencyList to initialize
+	all fields of DependencyList.
+
+2023-10-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs/M2Dependent.mod (CreateModule): Initialize all
+	dependency fields for DependencyList.
+
 2023-10-17  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111756

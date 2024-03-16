@@ -1132,7 +1132,14 @@ cp_fold_immediate (tree *tp, mce_value manifestly_const_eval)
    Note:  The folding of non-omp cases is something to move into
      the middle-end.  As for now we have most foldings only on GENERIC
      in fold-const, we need to perform this before transformation to
-     GIMPLE-form.  */
+     GIMPLE-form.
+
+   ??? This is algorithmically weird because walk_tree works in pre-order, so
+   we see outer expressions before inner expressions.  This isn't as much of an
+   issue because cp_fold recurses into subexpressions in many cases, but then
+   walk_tree walks back into those subexpressions again.  We avoid the
+   resulting complexity problem by caching the result of cp_fold, but it's
+   inelegant.  */
 
 static tree
 cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)

@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -mcpu=v6.00.a -mno-xl-soft-mul -mxl-multiply-high" } */
+/* { dg-options "-O3 -mcpu=v10.0 -mno-xl-soft-mul -mxl-multiply-high" } */
 
 volatile int m1, m2, m3;
 volatile unsigned int u1, u2, u3;

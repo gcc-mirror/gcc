@@ -3368,7 +3368,7 @@ __m256i __lasx_xvftintrnel_l_s (__m256 _1)
 }
 
 /* Assembly instruction format:	xd, xj.  */
-/* Data types in instruction templates:  V8SI, V8SF.  */
+/* Data types in instruction templates:  V8SF, V8SF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m256 __lasx_xvfrintrne_s (__m256 _1)
 {
@@ -3376,7 +3376,7 @@ __m256 __lasx_xvfrintrne_s (__m256 _1)
 }
 
 /* Assembly instruction format:	xd, xj.  */
-/* Data types in instruction templates:  V4DI, V4DF.  */
+/* Data types in instruction templates:  V4DF, V4DF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m256d __lasx_xvfrintrne_d (__m256d _1)
 {
@@ -3384,7 +3384,7 @@ __m256d __lasx_xvfrintrne_d (__m256d _1)
 }
 
 /* Assembly instruction format:	xd, xj.  */
-/* Data types in instruction templates:  V8SI, V8SF.  */
+/* Data types in instruction templates:  V8SF, V8SF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m256 __lasx_xvfrintrz_s (__m256 _1)
 {
@@ -3392,7 +3392,7 @@ __m256 __lasx_xvfrintrz_s (__m256 _1)
 }
 
 /* Assembly instruction format:	xd, xj.  */
-/* Data types in instruction templates:  V4DI, V4DF.  */
+/* Data types in instruction templates:  V4DF, V4DF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m256d __lasx_xvfrintrz_d (__m256d _1)
 {
@@ -3400,7 +3400,7 @@ __m256d __lasx_xvfrintrz_d (__m256d _1)
 }
 
 /* Assembly instruction format:	xd, xj.  */
-/* Data types in instruction templates:  V8SI, V8SF.  */
+/* Data types in instruction templates:  V8SF, V8SF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m256 __lasx_xvfrintrp_s (__m256 _1)
 {
@@ -3408,7 +3408,7 @@ __m256 __lasx_xvfrintrp_s (__m256 _1)
 }
 
 /* Assembly instruction format:	xd, xj.  */
-/* Data types in instruction templates:  V4DI, V4DF.  */
+/* Data types in instruction templates:  V4DF, V4DF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m256d __lasx_xvfrintrp_d (__m256d _1)
 {
@@ -3416,7 +3416,7 @@ __m256d __lasx_xvfrintrp_d (__m256d _1)
 }
 
 /* Assembly instruction format:	xd, xj.  */
-/* Data types in instruction templates:  V8SI, V8SF.  */
+/* Data types in instruction templates:  V8SF, V8SF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m256 __lasx_xvfrintrm_s (__m256 _1)
 {
@@ -3424,7 +3424,7 @@ __m256 __lasx_xvfrintrm_s (__m256 _1)
 }
 
 /* Assembly instruction format:	xd, xj.  */
-/* Data types in instruction templates:  V4DI, V4DF.  */
+/* Data types in instruction templates:  V4DF, V4DF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m256d __lasx_xvfrintrm_d (__m256d _1)
 {

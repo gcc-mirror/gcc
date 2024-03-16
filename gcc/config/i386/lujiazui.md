@@ -137,7 +137,7 @@
 (define_insn_reservation "lua_lea" 1
 			 (and (eq_attr "cpu" "lujiazui")
 				  (eq_attr "type" "lea"))
-			 "hsw_decodern,lua_p45")
+			 "lua_decodern,lua_p45")
 
 (define_insn_reservation "lua_shift_rotate" 1
 			 (and (eq_attr "cpu" "lujiazui")

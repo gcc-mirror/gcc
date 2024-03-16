@@ -1,3 +1,10 @@
+2023-10-23  Andrew Pinski  <pinskia@gmail.com>
+
+	* objc-gnu-runtime-abi-01.cc (build_objc_method_call): Allow
+	for error_operand after call to build_c_cast.
+	* objc-next-runtime-abi-01.cc (build_objc_method_call): Likewise.
+	* objc-next-runtime-abi-02.cc (build_v2_build_objc_method_call): Likewise.
+
 2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* objc-act.cc: Change spelling to macOS.

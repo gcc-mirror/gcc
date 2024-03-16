@@ -5481,6 +5481,9 @@ ix86_standard_x87sse_constant_load_p (const rtx_insn *insn, rtx dst)
   if (src == NULL
       || (SSE_REGNO_P (REGNO (dst))
 	  && standard_sse_constant_p (src, GET_MODE (dst)) != 1)
+      || (!TARGET_AVX512VL
+	  && EXT_REX_SSE_REGNO_P (REGNO (dst))
+	  && standard_sse_constant_p (src, GET_MODE (dst)) == 1)
       || (STACK_REGNO_P (REGNO (dst))
 	   && standard_80387_constant_p (src) < 1))
     return false;
@@ -24360,7 +24363,11 @@ ix86_get_mask_mode (machine_mode data_mode)
 
   /* Scalar mask case.  */
   if ((TARGET_AVX512F && TARGET_EVEX512 && vector_size == 64)
-      || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
+      || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16))
+      /* AVX512FP16 only supports vector comparison
+	 to kmask for _Float16.  */
+      || (TARGET_AVX512VL && TARGET_AVX512FP16
+	  && GET_MODE_INNER (data_mode) == E_HFmode))
     {
       if (elem_size == 4
 	  || elem_size == 8

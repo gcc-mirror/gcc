@@ -13937,7 +13937,7 @@ ordinary_loc_of (line_maps *lmaps, location_t from)
 	  /* Find the ordinary location nearest FROM.  */
 	  const line_map *map = linemap_lookup (lmaps, from);
 	  const line_map_macro *mac_map = linemap_check_macro (map);
-	  from = MACRO_MAP_EXPANSION_POINT_LOCATION (mac_map);
+	  from = mac_map->get_expansion_point_location ();
 	}
     }
   return from;
@@ -15779,7 +15779,7 @@ module_state::note_location (location_t loc)
 	      slot->remap = 0;
 	      // Expansion locations could themselves be from a
 	      // macro, we need to note them all.
-	      note_location (mac_map->expansion);
+	      note_location (mac_map->m_expansion);
 	      gcc_checking_assert (mac_map->n_tokens);
 	      location_t tloc = UNKNOWN_LOCATION;
 	      for (unsigned ix = mac_map->n_tokens * 2; ix--;)
@@ -16375,7 +16375,7 @@ module_state::write_macro_maps (elf_out *to, range_t &info, unsigned *crc_p)
       sec.u (iter->remap);
       sec.u (mac->n_tokens);
       sec.cpp_node (mac->macro);
-      write_location (sec, mac->expansion);
+      write_location (sec, mac->m_expansion);
       const location_t *locs = mac->macro_locations;
       /* There are lots of identical runs.  */
       location_t prev = UNKNOWN_LOCATION;

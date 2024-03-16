@@ -1034,6 +1034,18 @@ bpf_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
 #undef TARGET_RESOLVE_OVERLOADED_BUILTIN
 #define TARGET_RESOLVE_OVERLOADED_BUILTIN bpf_resolve_overloaded_builtin
 
+static rtx
+bpf_delegitimize_address (rtx rtl)
+{
+  if (GET_CODE (rtl) == UNSPEC
+      && XINT (rtl, 1) == UNSPEC_CORE_RELOC)
+    return XVECEXP (rtl, 0, 0);
+
+  return rtl;
+}
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS bpf_delegitimize_address
 
 /* Initialize target-specific function library calls.  This is mainly
    used to call library-provided soft-fp operations, since eBPF

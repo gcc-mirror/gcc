@@ -18,6 +18,7 @@
 
 # Load support procs.
 load_lib gfortran-dg.exp
+load_lib atomic-dg.exp
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_FFLAGS
@@ -53,13 +54,38 @@ proc dg-compile-aux-modules { args } {
     }
 }
 
+# coarray tests might need libatomic.  Assume that it is either not needed or
+# provided by builtins if it's not available.
+set maybe_atomic_lib ""
+if [check_effective_target_libatomic_available] {
+    if ![is_remote host] {
+	if [info exists TOOL_OPTIONS] {
+	    set maybe_atomic_lib "[atomic_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	} else {
+	    set maybe_atomic_lib "[atomic_link_flags [get_multilibs]]"
+	}
+    } else {
+        set maybe_atomic_lib ""
+    }
+  set t [get_multilibs]
+  puts "dg set al $maybe_atomic_lib ml $t"
+}
+
+set all_flags $DEFAULT_FFLAGS
+if { $maybe_atomic_lib != "" } {
+   foreach f $maybe_atomic_lib {
+     lappend all_flags $f
+   }
+}
+
+puts "revised FFLAGS $all_flags"
+
 # Main loop.
 gfortran-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "" $DEFAULT_FFLAGS
+       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "" $all_flags
 
 gfortran-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/g77/*.\[fF\] ] ] "" $DEFAULT_FFLAGS
-
+       [glob -nocomplain $srcdir/$subdir/g77/*.\[fF\] ] ] "" $all_flags
 
 # All done.
 dg-finish

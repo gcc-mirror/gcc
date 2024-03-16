@@ -218,6 +218,7 @@ sem_item::target_supports_symbol_aliases_p (void)
 #if !defined (ASM_OUTPUT_DEF) || (!defined(ASM_OUTPUT_WEAK_ALIAS) && !defined (ASM_WEAKEN_DECL))
   return false;
 #else
+  gcc_checking_assert (TARGET_SUPPORTS_ALIASES);
   return true;
 #endif
 }

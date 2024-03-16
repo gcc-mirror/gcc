@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -mcpu=v6.00.a -mxl-pattern-compare" } */
+/* { dg-options "-O3 -mcpu=v10.0 -mxl-pattern-compare" } */
 
 volatile int m1, m2, m3;
 volatile long l1, l2;

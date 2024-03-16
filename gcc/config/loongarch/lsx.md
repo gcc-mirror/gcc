@@ -644,15 +644,15 @@
   DONE;
 })
 
-(define_expand "vcond_mask_<ILSX:mode><ILSX:mode>"
-  [(match_operand:ILSX 0 "register_operand")
-   (match_operand:ILSX 1 "reg_or_m1_operand")
-   (match_operand:ILSX 2 "reg_or_0_operand")
-   (match_operand:ILSX 3 "register_operand")]
+(define_expand "vcond_mask_<mode><mode_i>"
+  [(match_operand:LSX 0 "register_operand")
+   (match_operand:LSX 1 "reg_or_m1_operand")
+   (match_operand:LSX 2 "reg_or_0_operand")
+   (match_operand:<VIMODE> 3 "register_operand")]
   "ISA_HAS_LSX"
 {
-  loongarch_expand_vec_cond_mask_expr (<ILSX:MODE>mode,
-				      <ILSX:VIMODE>mode, operands);
+  loongarch_expand_vec_cond_mask_expr (<MODE>mode,
+				       <VIMODE>mode, operands);
   DONE;
 })
 

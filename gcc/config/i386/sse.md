@@ -2175,9 +2175,9 @@
    (set_attr "type" "msklog")
    (set_attr "prefix" "vex")])
 
-(define_insn "kortest<mode>"
-  [(set (reg:CC FLAGS_REG)
-	(unspec:CC
+(define_insn "*kortest<mode>"
+  [(set (reg FLAGS_REG)
+	(unspec
 	  [(match_operand:SWI1248_AVX512BWDQ 0 "register_operand" "k")
 	   (match_operand:SWI1248_AVX512BWDQ 1 "register_operand" "k")]
 	  UNSPEC_KORTEST))]
@@ -2186,6 +2186,30 @@
   [(set_attr "mode" "<MODE>")
    (set_attr "type" "msklog")
    (set_attr "prefix" "vex")])
+
+(define_insn "kortest<mode>_ccc"
+  [(set (reg:CCC FLAGS_REG)
+	(unspec:CCC
+	  [(match_operand:SWI1248_AVX512BWDQ 0 "register_operand")
+	   (match_operand:SWI1248_AVX512BWDQ 1 "register_operand")]
+	  UNSPEC_KORTEST))]
+  "TARGET_AVX512F")
+
+(define_insn "kortest<mode>_ccz"
+  [(set (reg:CCZ FLAGS_REG)
+	(unspec:CCZ
+	  [(match_operand:SWI1248_AVX512BWDQ 0 "register_operand")
+	   (match_operand:SWI1248_AVX512BWDQ 1 "register_operand")]
+	  UNSPEC_KORTEST))]
+  "TARGET_AVX512F")
+
+(define_expand "kortest<mode>"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_operand:SWI1248_AVX512BWDQ 0 "register_operand")
+	   (match_operand:SWI1248_AVX512BWDQ 1 "register_operand")]
+	  UNSPEC_KORTEST))]
+  "TARGET_AVX512F")
 
 (define_insn "kunpckhi"
   [(set (match_operand:HI 0 "register_operand" "=k")
@@ -4644,29 +4668,14 @@
   DONE;
 })
 
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:VHF_AVX512VL 0 "register_operand")
-	(if_then_else:VHF_AVX512VL
+(define_expand "vcond<VI2HFBF_AVX512VL:mode><VHF_AVX512VL:mode>"
+  [(set (match_operand:VI2HFBF_AVX512VL 0 "register_operand")
+	(if_then_else:VI2HFBF_AVX512VL
 	  (match_operator 3 ""
 	    [(match_operand:VHF_AVX512VL 4 "vector_operand")
 	     (match_operand:VHF_AVX512VL 5 "vector_operand")])
-	  (match_operand:VHF_AVX512VL 1 "general_operand")
-	  (match_operand:VHF_AVX512VL 2 "general_operand")))]
-  "TARGET_AVX512FP16"
-{
-  bool ok = ix86_expand_fp_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcond<sseintvecmodelower><mode>"
-  [(set (match_operand:<sseintvecmode> 0 "register_operand")
-	(if_then_else:<sseintvecmode>
-	  (match_operator 3 ""
-	    [(match_operand:VHF_AVX512VL 4 "vector_operand")
-	     (match_operand:VHF_AVX512VL 5 "vector_operand")])
-	  (match_operand:<sseintvecmode> 1 "general_operand")
-	  (match_operand:<sseintvecmode> 2 "general_operand")))]
+	  (match_operand:VI2HFBF_AVX512VL 1 "general_operand")
+	  (match_operand:VI2HFBF_AVX512VL 2 "general_operand")))]
   "TARGET_AVX512FP16"
 {
   bool ok = ix86_expand_fp_vcond (operands);
@@ -27840,14 +27849,14 @@
 
 (define_expand "cbranch<mode>4"
   [(set (reg:CC FLAGS_REG)
-	(compare:CC (match_operand:VI48_AVX 1 "register_operand")
-		    (match_operand:VI48_AVX 2 "nonimmediate_operand")))
+	(compare:CC (match_operand:VI48_AVX_AVX512F 1 "register_operand")
+		    (match_operand:VI48_AVX_AVX512F 2 "nonimmediate_operand")))
    (set (pc) (if_then_else
 	       (match_operator 0 "bt_comparison_operator"
 		[(reg:CC FLAGS_REG) (const_int 0)])
 	       (label_ref (match_operand 3))
 	       (pc)))]
-  "TARGET_SSE4_1"
+  "TARGET_SSE4_1 && (<MODE_SIZE> != 64 || !TARGET_PREFER_AVX256)"
 {
   ix86_expand_branch (GET_CODE (operands[0]),
 		      operands[1], operands[2], operands[3]);

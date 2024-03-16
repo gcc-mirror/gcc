@@ -8,3 +8,5 @@ coreout.o: $(srcdir)/config/bpf/coreout.cc
 core-builtins.o: $(srcdir)/config/bpf/core-builtins.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+PASSES_EXTRA += $(srcdir)/config/bpf/bpf-passes.def

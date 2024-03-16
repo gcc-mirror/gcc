@@ -3,7 +3,7 @@
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 /* { dg-final { scan-assembler-times "bcdadd\[.\] " 4 } } */
-/* { dg-final { scan-assembler-times "bcdsub\[.\] " 4 } } */
+/* { dg-final { scan-assembler-times "bcdsub\[.\] " 6 } } */
 /* { dg-final { scan-assembler-not   "bl __builtin"   } } */
 /* { dg-final { scan-assembler-not   "mtvsr"   	      } } */
 /* { dg-final { scan-assembler-not   "mfvsr"   	      } } */
@@ -88,6 +88,26 @@ do_sub_gt (vector_128_t a, vector_128_t b, int *p)
 {
   vector_128_t ret = __builtin_bcdsub (a, b, 0);
   if (__builtin_bcdsub_gt (a, b, 0))
+    *p = 1;
+
+  return ret;
+}
+
+vector_128_t
+do_sub_ge (vector_128_t a, vector_128_t b, int *p)
+{
+  vector_128_t ret = __builtin_bcdsub (a, b, 0);
+  if (__builtin_bcdsub_ge (a, b, 0))
+    *p = 1;
+
+  return ret;
+}
+
+vector_128_t
+do_sub_le (vector_128_t a, vector_128_t b, int *p)
+{
+  vector_128_t ret = __builtin_bcdsub (a, b, 0);
+  if (__builtin_bcdsub_le (a, b, 0))
     *p = 1;
 
   return ret;

@@ -4104,35 +4104,10 @@ mark_callers_calls_comdat_local (struct cgraph_node *node, void *)
 static void
 zap_useless_ipcp_results (const isra_func_summary *ifs, ipcp_transformation *ts)
 {
-  unsigned ts_len = vec_safe_length (ts->m_agg_values);
-
-  if (ts_len == 0)
-    return;
-
-  bool removed_item = false;
-  unsigned dst_index = 0;
-
-  for (unsigned i = 0; i < ts_len; i++)
-    {
-      ipa_argagg_value *v = &(*ts->m_agg_values)[i];
-      const isra_param_desc *desc = &(*ifs->m_parameters)[v->index];
-
-      if (!desc->locally_unused)
-	{
-	  if (removed_item)
-	    (*ts->m_agg_values)[dst_index] = *v;
-	  dst_index++;
-	}
-      else
-	removed_item = true;
-    }
-  if (dst_index == 0)
-    {
-      ggc_free (ts->m_agg_values);
-      ts->m_agg_values = NULL;
-    }
-  else if (removed_item)
-    ts->m_agg_values->truncate (dst_index);
+  ts->remove_argaggs_if ([ifs](const ipa_argagg_value &v)
+  {
+    return (*ifs->m_parameters)[v.index].locally_unused;
+  });
 
   bool useful_vr = false;
   unsigned count = vec_safe_length (ts->m_vr);

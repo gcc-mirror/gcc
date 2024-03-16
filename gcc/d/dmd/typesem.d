@@ -57,7 +57,7 @@ import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.root.rmem;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.root.stringtable;
 import dmd.safe;

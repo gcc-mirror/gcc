@@ -339,6 +339,7 @@ private:
   bool set_range_from_bitmask ();
 
   bool intersect (const wide_int& lb, const wide_int& ub);
+  bool union_append (const irange &r);
   unsigned char m_num_ranges;
   bool m_resizable;
   unsigned char m_max_ranges;

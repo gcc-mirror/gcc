@@ -544,7 +544,7 @@ pru-*-*)
 riscv*)
 	cpu_type=riscv
 	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o riscv-string.o"
-	extra_objs="${extra_objs} riscv-v.o riscv-vsetvl.o riscv-vector-costs.o"
+	extra_objs="${extra_objs} riscv-v.o riscv-vsetvl.o riscv-vector-costs.o riscv-avlprop.o"
 	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o"
 	extra_objs="${extra_objs} thead.o"
 	d_target_objs="riscv-d.o"
@@ -706,7 +706,7 @@ slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
 silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
 skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake \
 sapphirerapids alderlake rocketlake eden-x2 nano nano-1000 nano-2000 nano-3000 \
-nano-x2 eden-x4 nano-x4 lujiazui x86-64 x86-64-v2 x86-64-v3 x86-64-v4 \
+nano-x2 eden-x4 nano-x4 lujiazui yongfeng x86-64 x86-64-v2 x86-64-v3 x86-64-v4 \
 sierraforest graniterapids graniterapids-d grandridge arrowlake arrowlake-s \
 clearwaterforest pantherlake native"
 
@@ -3811,6 +3811,10 @@ case ${target} in
 	arch=lujiazui
 	cpu=lujiazui
 	;;
+      yongfeng-*)
+	arch=yongfeng
+	cpu=yongfeng
+	;;
       pentium2-*)
 	arch=pentium2
 	cpu=pentium2
@@ -3924,9 +3928,13 @@ case ${target} in
 	arch=k8
 	cpu=k8
 	;;
-    lujiazui-*)
+      lujiazui-*)
 	arch=lujiazui
 	cpu=lujiazui
+	;;
+      yongfeng-*)
+	arch=yongfeng
+	cpu=yongfeng
 	;;
       nocona-*)
 	arch=nocona
@@ -4199,8 +4207,8 @@ case "${target}" in
 		fi
 		for which in cpu arch tune; do
 			eval "val=\$with_$which"
-			base_val=`echo $val | sed -e 's/\+.*//'`
-			ext_val=`echo $val | sed -e 's/[a-z0-9.-]\+//'`
+			base_val=`echo $val | sed -E -e 's/\+.*//'`
+			ext_val=`echo $val | sed -E -e 's/[a-z0-9.-]+//'`
 
 			if [ $which = arch ]; then
 			  def=aarch64-arches.def
@@ -4232,9 +4240,9 @@ case "${target}" in
 
 			  while [ x"$ext_val" != x ]
 			  do
-				ext_val=`echo $ext_val | sed -e 's/\+//'`
-				ext=`echo $ext_val | sed -e 's/\+.*//'`
-				base_ext=`echo $ext | sed -e 's/^no//'`
+				ext_val=`echo $ext_val | sed -E -e 's/\+//'`
+				ext=`echo $ext_val | sed -E -e 's/\+.*//'`
+				base_ext=`echo $ext | sed -E -e 's/^no//'`
 				opt_line=`echo -e "$options_parsed" | \
 					grep "^\"$base_ext\""`
 
@@ -4245,7 +4253,7 @@ case "${target}" in
 				  echo "Unknown extension used in --with-$which=$val" 1>&2
 				  exit 1
 				fi
-				ext_val=`echo $ext_val | sed -e 's/[a-z0-9]\+//'`
+				ext_val=`echo $ext_val | sed -E -e 's/[a-z0-9]+//'`
 			  done
 
 			  true

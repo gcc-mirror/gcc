@@ -3615,13 +3615,11 @@ gcn_expand_epilogue (void)
       set_mem_addr_space (retptr_mem, ADDR_SPACE_SCALAR_FLAT);
       emit_move_insn (kernarg_reg, retptr_mem);
 
-      rtx retval_addr = gen_rtx_REG (DImode, FIRST_VPARM_REG);
+      rtx retval_addr = gen_rtx_REG (DImode, FIRST_VPARM_REG + 2);
       emit_move_insn (retval_addr, kernarg_reg);
       rtx retval_mem = gen_rtx_MEM (SImode, retval_addr);
-      rtx scalar_retval = gen_rtx_REG (SImode, FIRST_VPARM_REG + 2);
       set_mem_addr_space (retval_mem, ADDR_SPACE_FLAT);
-      emit_move_insn (scalar_retval, gen_rtx_REG (SImode, RETURN_VALUE_REG));
-      emit_move_insn (retval_mem, scalar_retval);
+      emit_move_insn (retval_mem, gen_rtx_REG (SImode, RETURN_VALUE_REG));
     }
 
   emit_jump_insn (gen_gcn_return ());

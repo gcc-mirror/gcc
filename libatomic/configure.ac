@@ -172,6 +172,8 @@ case "$target" in
     ;;
 esac
 
+AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)
+
 # Get target configury.
 . ${srcdir}/configure.tgt
 if test -n "$UNSUPPORTED"; then

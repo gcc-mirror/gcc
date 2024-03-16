@@ -28,7 +28,6 @@ DEFINITION MODULE cgetopt ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
-
 TYPE
    Options = ADDRESS ;
 
@@ -92,7 +91,7 @@ PROCEDURE KillOptions (o: Options) : Options ;
 *)
 
 PROCEDURE SetOption (o: Options; index: CARDINAL;
-                     name: ADDRESS; has_arg: BOOLEAN;
+                     name: ADDRESS; has_arg: INTEGER;
                      VAR flag: INTEGER; val: INTEGER) ;
 
 

@@ -225,6 +225,33 @@ wrapc_isfinitef (float x)
   return (fpclassify (x) != FP_NAN && fpclassify (x) != FP_INFINITE);
 }
 
+/* isnan - provide non builtin alternative to the gcc builtin isnan.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+int
+wrapc_isnan (double x)
+{
+  return isnan (x);
+}
+
+/* isnanf - provide non builtin alternative to the gcc builtin isnanf.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+int
+wrapc_isnanf (float x)
+{
+  return isnan (x);
+}
+
+/* isnanl - provide non builtin alternative to the gcc builtin isnanl.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+int
+wrapc_isnanl (long double x)
+{
+  return isnan (x);
+}
+
 /* init - init/finish functions for the module */
 
 void

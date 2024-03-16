@@ -1,5 +1,5 @@
 /* Control flow redundancy hardening
-   Copyright (C) 2022 Free Software Foundation, Inc.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <oliva@adacore.com>
 
 This file is part of GCC.

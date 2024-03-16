@@ -14061,8 +14061,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_SCHEDULE;
 	  else if (!strcmp ("sections", p))
 	    result = PRAGMA_OMP_CLAUSE_SECTIONS;
-	  else if (!strcmp ("self", p)) /* "self" is a synonym for "host".  */
-	    result = PRAGMA_OACC_CLAUSE_HOST;
+	  else if (!strcmp ("self", p))
+	    result = PRAGMA_OACC_CLAUSE_SELF;
 	  else if (!strcmp ("seq", p))
 	    result = PRAGMA_OACC_CLAUSE_SEQ;
 	  else if (!strcmp ("shared", p))
@@ -14583,9 +14583,6 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
     case PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT:
       kind = GOMP_MAP_DEVICE_RESIDENT;
       break;
-    case PRAGMA_OACC_CLAUSE_HOST:
-      kind = GOMP_MAP_FORCE_FROM;
-      break;
     case PRAGMA_OACC_CLAUSE_LINK:
       kind = GOMP_MAP_LINK;
       break;
@@ -14594,6 +14591,11 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
       break;
     case PRAGMA_OACC_CLAUSE_PRESENT:
       kind = GOMP_MAP_FORCE_PRESENT;
+      break;
+    case PRAGMA_OACC_CLAUSE_SELF:
+      /* "The 'host' clause is a synonym for the 'self' clause."  */
+    case PRAGMA_OACC_CLAUSE_HOST:
+      kind = GOMP_MAP_FORCE_FROM;
       break;
     default:
       gcc_unreachable ();
@@ -15923,6 +15925,41 @@ c_parser_oacc_clause_wait (c_parser *parser, tree list)
   return list;
 }
 
+/* OpenACC 2.7:
+   self [( expression )] */
+
+static tree
+c_parser_oacc_compute_clause_self (c_parser *parser, tree list)
+{
+  tree t;
+  location_t location = c_parser_peek_token (parser)->location;
+  if (c_parser_peek_token (parser)->type == CPP_OPEN_PAREN)
+    {
+      matching_parens parens;
+      parens.consume_open (parser);
+
+      location_t loc = c_parser_peek_token (parser)->location;
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+      expr = convert_lvalue_to_rvalue (loc, expr, true, true);
+      t = c_objc_common_truthvalue_conversion (loc, expr.value);
+      t = c_fully_fold (t, false, NULL);
+      parens.skip_until_found_close (parser);
+    }
+  else
+    t = truthvalue_true_node;
+
+  for (tree c = list; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SELF)
+      {
+	error_at (location, "too many %<self%> clauses");
+	return list;
+      }
+
+  tree c = build_omp_clause (location, OMP_CLAUSE_SELF);
+  OMP_CLAUSE_SELF_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+}
 
 /* OpenMP 5.0:
    order ( concurrent )
@@ -18196,6 +18233,15 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 					     false, clauses);
 	  c_name = "reduction";
 	  break;
+	case PRAGMA_OACC_CLAUSE_SELF:
+	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_HOST)) == 0)
+	    /* OpenACC compute construct */
+	    clauses = c_parser_oacc_compute_clause_self (parser, clauses);
+	  else
+	    /* OpenACC 'update' directive */
+	    clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
+	  c_name = "self";
+	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
 	  clauses = c_parser_oacc_simple_clause (here, OMP_CLAUSE_SEQ,
 						 clauses);
@@ -19032,6 +19078,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -19052,6 +19099,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -19070,6 +19118,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 static tree
@@ -19312,6 +19361,7 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_HOST)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF_PRESENT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 static void

@@ -256,7 +256,7 @@ private FuncDeclaration stripHookTraceImpl(FuncDeclaration fd)
 {
     import dmd.id : Id;
     import dmd.dsymbol : Dsymbol;
-    import dmd.root.rootobject : RootObject, DYNCAST;
+    import dmd.rootobject : RootObject, DYNCAST;
 
     if (fd.ident != Id._d_HookTraceImpl)
         return fd;

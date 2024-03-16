@@ -215,7 +215,7 @@ set_info::last_nondebug_insn_use () const
 inline use_info *
 set_info::first_any_insn_use () const
 {
-  if (m_first_use->is_in_any_insn ())
+  if (m_first_use && m_first_use->is_in_any_insn ())
     return m_first_use;
   return nullptr;
 }
@@ -914,6 +914,15 @@ inline iterator_range<def_iterator>
 function_info::reg_defs (unsigned int regno) const
 {
   return { m_defs[regno + 1], nullptr };
+}
+
+inline bool
+function_info::is_single_dominating_def (const set_info *set) const
+{
+  return (set->is_first_def ()
+	  && set->is_last_def ()
+	  && (!HARD_REGISTER_NUM_P (set->regno ())
+	      || !TEST_HARD_REG_BIT (m_clobbered_by_calls, set->regno ())));
 }
 
 inline set_info *

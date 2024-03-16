@@ -530,6 +530,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	case 7:
 	  if (model == 0x3b)
 	    processor = PROCESSOR_LUJIAZUI;
+	  else if (model >= 0x5b)
+	    processor = PROCESSOR_YONGFENG;
 	  break;
 	default:
 	  break;
@@ -816,6 +818,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     case PROCESSOR_LUJIAZUI:
       cpu = "lujiazui";
+      break;
+    case PROCESSOR_YONGFENG:
+      cpu = "yongfeng";
       break;
 
     default:

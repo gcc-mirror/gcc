@@ -145,6 +145,8 @@ static struct builtin_function_entry list_of_builtins[] = {
     BUILT_IN_NORMAL, "memcpy", NULL, NULL, bf_default_lib },
   { "__builtin_isfinite", BT_FN_INT_DOUBLE, BUILT_IN_ISFINITE, BUILT_IN_NORMAL,
     "isfinite", NULL, NULL, bf_gcc },
+  { "__builtin_isnan", BT_FN_INT_DOUBLE, BUILT_IN_ISNAN, BUILT_IN_NORMAL,
+    "isnan", NULL, NULL, bf_gcc },
   { "__builtin_sinf", BT_FN_FLOAT_FLOAT, BUILT_IN_SINF, BUILT_IN_NORMAL,
     "sinf", NULL, NULL, bf_c99_c90res },
   { "__builtin_sin", BT_FN_DOUBLE_DOUBLE, BUILT_IN_SIN, BUILT_IN_NORMAL, "sin",
@@ -408,6 +410,7 @@ static GTY (()) tree gm2_alloca_node;
 static GTY (()) tree gm2_memcpy_node;
 static GTY (()) tree gm2_memset_node;
 static GTY (()) tree gm2_isfinite_node;
+static GTY (()) tree gm2_isnan_node;
 static GTY (()) tree gm2_huge_valf_node;
 static GTY (()) tree gm2_huge_val_node;
 static GTY (()) tree gm2_huge_vall_node;
@@ -421,6 +424,7 @@ static tree DoBuiltinAlloca (location_t location, tree n);
 static tree DoBuiltinMemCopy (location_t location, tree dest, tree src,
                               tree n);
 static tree DoBuiltinIsfinite (location_t location, tree value);
+static tree DoBuiltinIsnan (location_t location, tree value);
 static void create_function_prototype (location_t location,
                                        struct builtin_function_entry *fe);
 static tree doradix (location_t location, tree type);
@@ -830,6 +834,15 @@ m2builtins_BuiltInIsfinite (location_t location, tree expression)
   return DoBuiltinIsfinite (location, expression);
 }
 
+/* BuiltInIsnan - return integer 1 if the real expression is
+   nan otherwise return integer 0.  */
+
+tree
+m2builtins_BuiltInIsnan (location_t location, tree expression)
+{
+  return DoBuiltinIsnan (location, expression);
+}
+
 
 /* do_target_support_exists returns true if the builting function
    is supported by the target.  */
@@ -964,6 +977,17 @@ DoBuiltinIsfinite (location_t location, tree value)
   tree functype = TREE_TYPE (gm2_isfinite_node);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_isfinite_node);
+  tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, value);
+
+  return call;
+}
+
+static tree
+DoBuiltinIsnan (location_t location, tree value)
+{
+  tree functype = TREE_TYPE (gm2_isnan_node);
+  tree funcptr
+      = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_isnan_node);
   tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, value);
 
   return call;
@@ -1404,6 +1428,7 @@ m2builtins_init (location_t location)
   gm2_huge_val_node = find_builtin_tree ("__builtin_huge_val");
   gm2_huge_vall_node = find_builtin_tree ("__builtin_huge_vall");
   gm2_isfinite_node = find_builtin_tree ("__builtin_isfinite");
+  gm2_isnan_node = find_builtin_tree ("__builtin_isnan");
   m2block_popGlobalScope ();
 }
 

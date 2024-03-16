@@ -4065,21 +4065,74 @@ remap_kills (vec <modref_access_node> &kills, const vec <int> &map)
       i++;
 }
 
+/* Return true if the V can overlap with KILL.  */
+
+static bool
+ipcp_argagg_and_kill_overlap_p (const ipa_argagg_value &v,
+				const modref_access_node &kill)
+{
+  if (kill.parm_index == v.index)
+    {
+      gcc_assert (kill.parm_offset_known);
+      gcc_assert (known_eq (kill.max_size, kill.size));
+      poly_int64 repl_size;
+      bool ok = poly_int_tree_p (TYPE_SIZE (TREE_TYPE (v.value)),
+				 &repl_size);
+      gcc_assert (ok);
+      poly_int64 repl_offset (v.unit_offset);
+      repl_offset <<= LOG2_BITS_PER_UNIT;
+      poly_int64 combined_offset
+	= (kill.parm_offset << LOG2_BITS_PER_UNIT) + kill.offset;
+      if (ranges_maybe_overlap_p (repl_offset, repl_size,
+				  combined_offset, kill.size))
+	return true;
+    }
+  return false;
+}
+
 /* If signature changed, update the summary.  */
 
 static void
 update_signature (struct cgraph_node *node)
 {
-  clone_info *info = clone_info::get (node);
-  if (!info || !info->param_adjustments)
-    return;
-
   modref_summary *r = optimization_summaries
 		      ? optimization_summaries->get (node) : NULL;
   modref_summary_lto *r_lto = summaries_lto
 			      ? summaries_lto->get (node) : NULL;
   if (!r && !r_lto)
     return;
+
+  /* Propagating constants in killed memory can lead to eliminated stores in
+     both callees (because they are considered redundant) and callers, leading
+     to missing them altogether.  */
+  ipcp_transformation *ipcp_ts = ipcp_get_transformation_summary (node);
+  if (ipcp_ts)
+    {
+    for (auto &v : ipcp_ts->m_agg_values)
+      {
+	if (!v.by_ref)
+	  continue;
+	if (r)
+	  for (const modref_access_node &kill : r->kills)
+	    if (ipcp_argagg_and_kill_overlap_p (v, kill))
+	      {
+		v.killed = true;
+		break;
+	      }
+	if (!v.killed && r_lto)
+	  for (const modref_access_node &kill : r_lto->kills)
+	    if (ipcp_argagg_and_kill_overlap_p (v, kill))
+	      {
+		v.killed = true;
+		break;
+	      }
+      }
+    }
+
+  clone_info *info = clone_info::get (node);
+  if (!info || !info->param_adjustments)
+    return;
+
   if (dump_file)
     {
       fprintf (dump_file, "Updating summary for %s from:\n",

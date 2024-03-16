@@ -17,7 +17,7 @@ import core.stdc.string;
 import dmd.id;
 import dmd.location;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.root.stringtable;
 import dmd.root.utf;

@@ -1289,24 +1289,16 @@ handle_pragma_pop_options (cpp_reader *)
   current_optimize_pragma = p->optimize_strings;
 }
 
-/* Handle #pragma GCC reset_options to restore the current target and
-   optimization options to the original options used on the command line.  */
+/* This is mostly a helper for handle_pragma_reset_options () to do the actual
+   work, but the C++ frontend, for example, needs an external interface to
+   perform this operation, since it processes target pragmas twice.  (Once for
+   preprocessing purposes, and then again during compilation.)  */
 
-static void
-handle_pragma_reset_options (cpp_reader *)
+void
+c_reset_target_pragmas ()
 {
-  enum cpp_ttype token;
-  tree x = 0;
   tree new_optimize = optimization_default_node;
   tree new_target = target_option_default_node;
-
-  token = pragma_lex (&x);
-  if (token != CPP_EOF)
-    {
-      warning (OPT_Wpragmas, "junk at end of %<#pragma reset_options%>");
-      return;
-    }
-
   if (new_target != target_option_current_node)
     {
       (void) targetm.target_option.pragma_parse (NULL_TREE, new_target);
@@ -1324,6 +1316,19 @@ handle_pragma_reset_options (cpp_reader *)
 
   current_target_pragma = NULL_TREE;
   current_optimize_pragma = NULL_TREE;
+}
+
+/* Handle #pragma GCC reset_options to restore the current target and
+   optimization options to the original options used on the command line.  */
+
+static void
+handle_pragma_reset_options (cpp_reader *)
+{
+  tree x;
+  if (pragma_lex (&x) != CPP_EOF)
+    warning (OPT_Wpragmas, "junk at end of %<#pragma reset_options%>");
+  else
+    c_reset_target_pragmas ();
 }
 
 /* Print a plain user-specified message.  */
@@ -1844,11 +1849,19 @@ init_pragma (void)
     c_register_pragma_with_early_handler ("GCC", "diagnostic",
 					  handle_pragma_diagnostic,
 					  handle_pragma_diagnostic_early);
-  c_register_pragma ("GCC", "target", handle_pragma_target);
+  c_register_pragma_with_early_handler ("GCC", "target",
+					handle_pragma_target,
+					handle_pragma_target);
   c_register_pragma ("GCC", "optimize", handle_pragma_optimize);
-  c_register_pragma ("GCC", "push_options", handle_pragma_push_options);
-  c_register_pragma ("GCC", "pop_options", handle_pragma_pop_options);
-  c_register_pragma ("GCC", "reset_options", handle_pragma_reset_options);
+  c_register_pragma_with_early_handler ("GCC", "push_options",
+					handle_pragma_push_options,
+					handle_pragma_push_options);
+  c_register_pragma_with_early_handler ("GCC", "pop_options",
+					handle_pragma_pop_options,
+					handle_pragma_pop_options);
+  c_register_pragma_with_early_handler ("GCC", "reset_options",
+					handle_pragma_reset_options,
+					handle_pragma_reset_options);
 
   c_register_pragma (0, "region", handle_pragma_ignore);
   c_register_pragma (0, "endregion", handle_pragma_ignore);

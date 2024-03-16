@@ -5527,7 +5527,8 @@ may_eliminate_iv (struct ivopts_data *data,
 
   /* It is unlikely that computing the number of iterations using division
      would be more profitable than keeping the original induction variable.  */
-  if (expression_expensive_p (*bound))
+  bool cond_overflow_p;
+  if (expression_expensive_p (*bound, &cond_overflow_p))
     return false;
 
   /* Sometimes, it is possible to handle the situation that the number of

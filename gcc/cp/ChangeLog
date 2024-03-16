@@ -1,3 +1,94 @@
+2023-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* module.cc (ordinary_loc_of): Update for removal of
+	MACRO_MAP_EXPANSION_POINT_LOCATION.
+	(module_state::note_location): Update for renaming of field.
+	(module_state::write_macro_maps): Likewise.
+
+2023-10-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111929
+	* init.cc (build_new_1): Remove unnecessary call to convert
+	on 'nelts'.  Use build2 instead of fold_build2 for
+	'outer_nelts_checks'.
+
+2023-10-27  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (maybe_warn_unparenthesized_assignment): Declare.
+	* semantics.cc (is_assignment_op_expr_p): Generalize to return
+	true for any assignment operator expression, not just one that
+	has been resolved to an operator overload.
+	(maybe_warn_unparenthesized_assignment): Factored out from ...
+	(maybe_convert_cond): ... here.
+	(finish_parenthesized_expr): Mention
+	maybe_warn_unparenthesized_assignment.
+	* typeck.cc (convert_for_assignment): Replace -Wparentheses
+	warning logic with maybe_warn_unparenthesized_assignment.
+
+2023-10-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/87299
+	* parser.cc (cp_lexer_new_main): Call c_reset_target_pragmas ()
+	after preprocessing is complete, before starting compilation.
+
+2023-10-26  liuhongt  <hongtao.liu@intel.com>
+
+	* typeck.cc (build_vec_cmp): Pass type of arg0 to
+	truth_type_for.
+
+2023-10-25  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.def: Improve OFFSET_REF comment.
+	* cp-gimplify.cc (cp_fold_immediate): Add to comment.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_name): Return
+	'PRAGMA_OACC_CLAUSE_SELF' for "self".
+	(cp_parser_oacc_data_clause, OACC_UPDATE_CLAUSE_MASK): Adjust.
+	(cp_parser_oacc_all_clauses): Remove 'bool compute_p' formal
+	parameter, and instead locally determine whether we're called for
+	an OpenACC compute construct or OpenACC 'update' directive.
+	(cp_parser_oacc_compute): Adjust.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.cc (cp_parser_oacc_compute_clause_self): New function.
+	(cp_parser_oacc_all_clauses): Add new 'bool compute_p = false'
+	parameter, add parsing of self clause when compute_p is true.
+	(OACC_KERNELS_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_SELF.
+	(OACC_PARALLEL_CLAUSE_MASK): Likewise,
+	(OACC_SERIAL_CLAUSE_MASK): Likewise.
+	(cp_parser_oacc_compute): Adjust call to c_parser_oacc_all_clauses to
+	set compute_p argument to true.
+	* pt.cc (tsubst_omp_clauses): Add OMP_CLAUSE_SELF case.
+	* semantics.cc (c_finish_omp_clauses): Add OMP_CLAUSE_SELF case, merged
+	with OMP_CLAUSE_IF case.
+
+2023-10-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111895
+	* typeck.cc (build_static_cast_1): Call decay_conversion.
+
+2023-10-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111929
+	* init.cc (build_new_1): Use convert, build2, build3 and
+	cp_fully_fold instead of fold_convert, size_binop and
+	fold_build3 when building up 'size'.
+
+2023-10-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111919
+	* tree.cc (cp_stabilize_reference): Do nothing when
+	processing_template_decl.
+
+2023-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR objc++/111920
+	* pt.cc (tsubst_expr) <case AT_ENCODE_EXPR>: Use tsubst instead
+	of tsubst_expr.
+
 2023-10-20  Jason Merrill  <jason@redhat.com>
 
 	* call.cc (implicit_conversion_1): Rename...

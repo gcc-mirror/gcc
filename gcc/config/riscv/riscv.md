@@ -1662,7 +1662,7 @@
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT && !TARGET_ZBA && !TARGET_XTHEADBB
+  "TARGET_64BIT && !TARGET_ZBA && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
    && !(register_operand (operands[1], SImode)
         && reg_or_subregno (operands[1]) == VL_REGNUM)"
   "@
@@ -1690,7 +1690,7 @@
   [(set (match_operand:GPR    0 "register_operand"     "=r,r")
 	(zero_extend:GPR
 	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB && !TARGET_XTHEADBB"
+  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
   "@
    #
    lhu\t%0,%1"
@@ -1709,11 +1709,17 @@
    (set_attr "type" "load")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "zero_extendqi<SUPERQI:mode>2"
+(define_expand "zero_extendqi<SUPERQI:mode>2"
+  [(set (match_operand:SUPERQI    0 "register_operand")
+	(zero_extend:SUPERQI
+	    (match_operand:QI 1 "nonimmediate_operand")))]
+  "")
+
+(define_insn "*zero_extendqi<SUPERQI:mode>2_internal"
   [(set (match_operand:SUPERQI 0 "register_operand"    "=r,r")
 	(zero_extend:SUPERQI
 	    (match_operand:QI 1 "nonimmediate_operand" " r,m")))]
-  ""
+  "!TARGET_XTHEADMEMIDX"
   "@
    andi\t%0,%1,0xff
    lbu\t%0,%1"
@@ -1728,11 +1734,17 @@
 ;;
 ;;  ....................
 
-(define_insn "extendsidi2"
+(define_expand "extendsidi2"
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(sign_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT"
+  "TARGET_64BIT")
+
+(define_insn "*extendsidi2_internal"
+  [(set (match_operand:DI     0 "register_operand"     "=r,r")
+	(sign_extend:DI
+	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
+  "TARGET_64BIT && !TARGET_XTHEADMEMIDX"
   "@
    sext.w\t%0,%1
    lw\t%0,%1"
@@ -1749,7 +1761,7 @@
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB && !TARGET_XTHEADBB"
+  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
   "@
    #
    l<SHORT:size>\t%0,%1"

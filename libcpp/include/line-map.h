@@ -461,6 +461,15 @@ struct cpp_hashnode;
    The offset from START_LOCATION is used to index into
    MACRO_LOCATIONS; this holds the original location of the token.  */
 struct GTY((tag ("2"))) line_map_macro : public line_map {
+
+  /* Get the location of the expansion point of this macro map.  */
+
+  location_t
+  get_expansion_point_location () const
+  {
+    return m_expansion;
+  }
+
   /* Base is 4 bytes.  */
 
   /* The number of tokens inside the replacement-list of MACRO.  */
@@ -535,7 +544,7 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
      by the map that was current right before the current one. It
      could have been either a macro or an ordinary map, depending on
      if we are in a nested expansion context not.  */
-  location_t expansion;
+  location_t m_expansion;
 
   /* Size is 20 or 32 (4 bytes padding on 64-bit).  */
 };
@@ -703,14 +712,6 @@ inline location_t *
 MACRO_MAP_LOCATIONS (const line_map_macro *macro_map)
 {
   return macro_map->macro_locations;
-}
-
-/* Get the location of the expansion point of the macro map MAP.  */
-
-inline location_t
-MACRO_MAP_EXPANSION_POINT_LOCATION (const line_map_macro *macro_map)
-{
-  return macro_map->expansion;
 }
 
 /* The abstraction of a set of location maps. There can be several

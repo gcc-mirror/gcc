@@ -2275,7 +2275,7 @@ make_eh_dispatch_edges (geh_dispatch *stmt)
    if there is such a landing pad within the current function.  */
 
 edge
-make_eh_edges (gimple *stmt)
+make_eh_edge (gimple *stmt)
 {
   basic_block src, dst;
   eh_landing_pad lp;
@@ -4921,7 +4921,7 @@ make_pass_cleanup_eh (gcc::context *ctxt)
 #endif
 
 /* Verify that BB containing STMT as the last statement, has precisely the
-   edge that make_eh_edges would create.  */
+   edge that make_eh_edge would create.  */
 
 DEBUG_FUNCTION bool
 verify_eh_edges (gimple *stmt)

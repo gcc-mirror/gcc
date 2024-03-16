@@ -766,6 +766,12 @@ cp_lexer_new_main (void)
 
   maybe_check_all_macros (parse_in);
 
+  /* If we processed any #pragma GCC target directives, we handled them early so
+     any macros they defined would be effective during preprocessing.  Now, we
+     need to reset to the default state to begin compilation, and we will
+     process them again at the correct time as needed.  */
+  c_reset_target_pragmas ();
+
   gcc_assert (!lexer->next_token->purged_p);
   return lexer;
 }
@@ -37566,8 +37572,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_SCHEDULE;
 	  else if (!strcmp ("sections", p))
 	    result = PRAGMA_OMP_CLAUSE_SECTIONS;
-	  else if (!strcmp ("self", p)) /* "self" is a synonym for "host".  */
-	    result = PRAGMA_OACC_CLAUSE_HOST;
+	  else if (!strcmp ("self", p))
+	    result = PRAGMA_OACC_CLAUSE_SELF;
 	  else if (!strcmp ("seq", p))
 	    result = PRAGMA_OACC_CLAUSE_SEQ;
 	  else if (!strcmp ("shared", p))
@@ -38004,9 +38010,6 @@ cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
     case PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT:
       kind = GOMP_MAP_DEVICE_RESIDENT;
       break;
-    case PRAGMA_OACC_CLAUSE_HOST:
-      kind = GOMP_MAP_FORCE_FROM;
-      break;
     case PRAGMA_OACC_CLAUSE_LINK:
       kind = GOMP_MAP_LINK;
       break;
@@ -38015,6 +38018,11 @@ cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
       break;
     case PRAGMA_OACC_CLAUSE_PRESENT:
       kind = GOMP_MAP_FORCE_PRESENT;
+      break;
+    case PRAGMA_OACC_CLAUSE_SELF:
+      /* "The 'host' clause is a synonym for the 'self' clause."  */
+    case PRAGMA_OACC_CLAUSE_HOST:
+      kind = GOMP_MAP_FORCE_FROM;
       break;
     default:
       gcc_unreachable ();
@@ -41192,6 +41200,44 @@ cp_parser_oacc_clause_async (cp_parser *parser, tree list)
   return list;
 }
 
+/* OpenACC 2.7:
+   self [( expression )] */
+
+static tree
+cp_parser_oacc_compute_clause_self (cp_parser *parser, tree list)
+{
+  tree t;
+  location_t location = cp_lexer_peek_token (parser->lexer)->location;
+  if (cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
+    {
+      matching_parens parens;
+      parens.consume_open (parser);
+      t = cp_parser_assignment_expression (parser);
+      if (t == error_mark_node
+	  || !parens.require_close (parser))
+	{
+	  cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
+	  return list;
+	}
+    }
+  else
+    t = truthvalue_true_node;
+
+  for (tree c = list; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SELF)
+      {
+	error_at (location, "too many %<self%> clauses");
+	return list;
+      }
+
+  tree c = build_omp_clause (location, OMP_CLAUSE_SELF);
+  OMP_CLAUSE_SELF_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+}
+
 /* Parse all OpenACC clauses.  The set clauses allowed by the directive
    is a bitmask in MASK.  Return the list of clauses found.  */
 
@@ -41351,6 +41397,15 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
 					      false, clauses);
 	  c_name = "reduction";
+	  break;
+	case PRAGMA_OACC_CLAUSE_SELF:
+	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_HOST)) == 0)
+	    /* OpenACC compute construct */
+	    clauses = cp_parser_oacc_compute_clause_self (parser, clauses);
+	  else
+	    /* OpenACC 'update' directive */
+	    clauses = cp_parser_oacc_data_clause (parser, c_kind, clauses);
+	  c_name = "self";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
 	  clauses = cp_parser_oacc_simple_clause (here, OMP_CLAUSE_SEQ,
@@ -46866,6 +46921,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -46886,6 +46942,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRIVATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)       \
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -46904,6 +46961,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 static tree
@@ -46968,6 +47026,7 @@ cp_parser_oacc_compute (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_HOST)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF_PRESENT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT))
 
 static tree

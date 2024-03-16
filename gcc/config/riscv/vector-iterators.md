@@ -82,6 +82,9 @@
 
   UNSPEC_VFFMA
 
+  UNSPEC_VFMAX
+  UNSPEC_VFMIN
+
   ;; Integer and Float Reduction
   UNSPEC_REDUC
   UNSPEC_REDUC_SUM
@@ -3478,6 +3481,11 @@
 
 (define_int_attr UNSPEC [(UNSPEC_VSLIDE1UP "UNSPEC_VSLIDE1UP")
 			 (UNSPEC_VSLIDE1DOWN "UNSPEC_VSLIDE1DOWN")])
+
+(define_int_iterator UNSPEC_VFMAXMIN [UNSPEC_VFMAX UNSPEC_VFMIN])
+
+(define_int_attr ieee_fmaxmin_op [(UNSPEC_VFMAX "fmax") (UNSPEC_VFMIN "fmin")])
+(define_int_attr IEEE_FMAXMIN_OP [(UNSPEC_VFMAX "UNSPEC_VFMAX") (UNSPEC_VFMIN "UNSPEC_VFMIN")])
 
 (define_code_iterator any_int_binop [plus minus and ior xor ashift ashiftrt lshiftrt
   smax umax smin umin mult div udiv mod umod

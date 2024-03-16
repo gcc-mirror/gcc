@@ -45,7 +45,7 @@ import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.root.port;
 import dmd.root.rmem;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.semantic2;
 import dmd.semantic3;
@@ -1095,7 +1095,7 @@ extern (C++) final class Module : Package
         return Package.symtabInsert(s);
     }
 
-    void deleteObjFile()
+    extern (D) void deleteObjFile()
     {
         if (global.params.obj)
             File.remove(objfile.toChars());

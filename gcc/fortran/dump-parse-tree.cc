@@ -1593,6 +1593,27 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       show_expr (omp_clauses->if_expr);
       fputc (')', dumpfile);
     }
+  for (i = 0; i < OMP_IF_LAST; i++)
+    if (omp_clauses->if_exprs[i])
+      {
+	static const char *ifs[] = {
+	  "CANCEL",
+	  "PARALLEL",
+	  "SIMD",
+	  "TASK",
+	  "TASKLOOP",
+	  "TARGET",
+	  "TARGET DATA",
+	  "TARGET UPDATE",
+	  "TARGET ENTER DATA",
+	  "TARGET EXIT DATA"
+	};
+      fputs (" IF(", dumpfile);
+      fputs (ifs[i], dumpfile);
+      fputs (": ", dumpfile);
+      show_expr (omp_clauses->if_exprs[i]);
+      fputc (')', dumpfile);
+    }
   if (omp_clauses->final_expr)
     {
       fputs (" FINAL(", dumpfile);
@@ -1997,27 +2018,6 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     {
       fputs (" DETACH(", dumpfile);
       show_expr (omp_clauses->detach);
-      fputc (')', dumpfile);
-    }
-  for (i = 0; i < OMP_IF_LAST; i++)
-    if (omp_clauses->if_exprs[i])
-      {
-	static const char *ifs[] = {
-	  "CANCEL",
-	  "PARALLEL",
-	  "SIMD",
-	  "TASK",
-	  "TASKLOOP",
-	  "TARGET",
-	  "TARGET DATA",
-	  "TARGET UPDATE",
-	  "TARGET ENTER DATA",
-	  "TARGET EXIT DATA"
-	};
-      fputs (" IF(", dumpfile);
-      fputs (ifs[i], dumpfile);
-      fputs (": ", dumpfile);
-      show_expr (omp_clauses->if_exprs[i]);
       fputc (')', dumpfile);
     }
   if (omp_clauses->destroy)

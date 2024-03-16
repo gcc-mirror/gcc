@@ -3027,6 +3027,7 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # ---------------------------
 # _LT_COMPILER_PIC
 
+enable_darwin_at_rpath_$1=no
 
 # _LT_LINKER_SHLIBS([TAGNAME])
 # ----------------------------
@@ -3048,7 +3049,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # defined.  These variables are subsequently used by _LT_CONFIG to write
 # the compiler configuration to `libtool'.
 # _LT_LANG_CXX_CONFIG
-
 
 # _LT_SYS_HIDDEN_LIBDEPS([TAGNAME])
 # ---------------------------------

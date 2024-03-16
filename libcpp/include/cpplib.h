@@ -1009,6 +1009,14 @@ struct GTY(()) cpp_hashnode {
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
 
+/* Extra information we may need to store per identifier, which is needed rarely
+   enough that it's not worth adding directly into the main identifier hash.  */
+struct GTY(()) cpp_hashnode_extra
+{
+  struct ht_identifier ident;
+  location_t poisoned_loc;
+};
+
 /* A class for iterating through the source locations within a
    string token (before escapes are interpreted, and before
    concatenation).  */
@@ -1055,12 +1063,15 @@ class cpp_substring_ranges
 
 /* Call this first to get a handle to pass to other functions.
 
-   If you want cpplib to manage its own hashtable, pass in a NULL
-   pointer.  Otherwise you should pass in an initialized hash table
-   that cpplib will share; this technique is used by the C front
-   ends.  */
+   The first hash table argument is for associating a struct cpp_hashnode
+   with each identifier.  The second hash table argument is for associating
+   a struct cpp_hashnode_extra with each identifier that needs one.  For
+   either, pass in a NULL pointer if you want cpplib to create and manage
+   the hash table itself, or else pass a suitably initialized hash table to
+   be managed external to libcpp, as is done by the C-family frontends.  */
 extern cpp_reader *cpp_create_reader (enum c_lang, struct ht *,
-				      class line_maps *);
+				      class line_maps *,
+				      struct ht * = nullptr);
 
 /* Reset the cpp_reader's line_map.  This is only used after reading a
    PCH file.  */

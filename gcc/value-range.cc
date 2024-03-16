@@ -1291,6 +1291,45 @@ irange::irange_single_pair_union (const irange &r)
   return true;
 }
 
+// Append R to this range, knowing that R occurs after all of these subranges.
+// Return TRUE as something must have changed.
+
+bool
+irange::union_append (const irange &r)
+{
+  // Check if the first range in R is an immmediate successor to the last
+  // range, ths requiring a merge.
+  signop sign = TYPE_SIGN (m_type);
+  wide_int lb = r.lower_bound ();
+  wide_int ub = upper_bound ();
+  unsigned start = 0;
+  if (widest_int::from (ub, sign) + 1
+      == widest_int::from (lb, sign))
+    {
+      m_base[m_num_ranges * 2 - 1] = r.m_base[1];
+      start = 1;
+    }
+  maybe_resize (m_num_ranges + r.m_num_ranges - start);
+  for ( ; start < r.m_num_ranges; start++)
+    {
+      // Merge the last ranges if it exceeds the maximum size.
+      if (m_num_ranges + 1 > m_max_ranges)
+	{
+	  m_base[m_max_ranges * 2 - 1] = r.m_base[r.m_num_ranges * 2 - 1];
+	  break;
+	}
+      m_base[m_num_ranges * 2] = r.m_base[start * 2];
+      m_base[m_num_ranges * 2 + 1] = r.m_base[start * 2 + 1];
+      m_num_ranges++;
+    }
+
+  if (!union_bitmask (r))
+    normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+  return true;
+}
+
 // Return TRUE if anything changes.
 
 bool
@@ -1322,6 +1361,11 @@ irange::union_ (const vrange &v)
   if (m_num_ranges == 1 && r.m_num_ranges == 1)
     return irange_single_pair_union (r);
 
+  signop sign = TYPE_SIGN (m_type);
+  // Check for an append to the end.
+  if (m_kind == VR_RANGE && wi::gt_p (r.lower_bound (), upper_bound (), sign))
+    return union_append (r);
+
   // If this ranges fully contains R, then we need do nothing.
   if (irange_contains_p (r))
     return union_bitmask (r);
@@ -1340,7 +1384,6 @@ irange::union_ (const vrange &v)
   // [Xi,Yi]..[Xn,Yn]  U  [Xj,Yj]..[Xm,Ym]   -->  [Xk,Yk]..[Xp,Yp]
   auto_vec<wide_int, 20> res (m_num_ranges * 2 + r.m_num_ranges * 2);
   unsigned i = 0, j = 0, k = 0;
-  signop sign = TYPE_SIGN (m_type);
 
   while (i < m_num_ranges * 2 && j < r.m_num_ranges * 2)
     {

@@ -337,8 +337,13 @@ proc libffi-init { args } {
     verbose "libffi_dir $libffi_dir"
     if { $libffi_dir != "" } {
 	set libffi_dir [file dirname ${libffi_dir}]
-	set libffi_link_flags "-L${libffi_dir}/.libs"
-	lappend libffi_link_flags "-L${blddircxx}/src/.libs"
+        if [istarget *-*-darwin*] {
+            set libffi_link_flags "-B${libffi_dir}/.libs"
+	    lappend libffi_link_flags "-B${blddircxx}/src/.libs"
+	} else {
+	    set libffi_link_flags "-L${libffi_dir}/.libs"
+	    lappend libffi_link_flags "-L${blddircxx}/src/.libs"
+	}
     }
 
     set_ld_library_path_env_vars
@@ -369,6 +374,13 @@ proc libffi_target_compile { source dest type options } {
 	lappend options "ldflags=$wrap_flags"
     }
 
+    if { $blddirffi != "" } {
+	# If '--with-build-sysroot=[...]' was specified, use it for build-tree
+	# testing.
+	global SYSROOT_CFLAGS_FOR_TARGET
+	lappend options "additional_flags=${SYSROOT_CFLAGS_FOR_TARGET}"
+    }
+
     # TOOL_OPTIONS must come first, so that it doesn't override testcase
     # specific options.
     if [info exists TOOL_OPTIONS] {
@@ -382,7 +394,7 @@ proc libffi_target_compile { source dest type options } {
     # Darwin needs a stack execution allowed flag.
 
     if { [istarget "*-*-darwin9*"] || [istarget "*-*-darwin1*"]
-	 || [istarget "*-*-darwin2*"] } {
+	 || [istarget "x86_64-*-darwin2*"] } {
 	lappend options "additional_flags=-Wl,-allow_stack_execute"
 	lappend options "additional_flags=-Wl,-search_paths_first"
     }

@@ -56,7 +56,7 @@
 /* This file should be included last.  */
 #include "target-def.h"
 
-#define MICROBLAZE_VERSION_COMPARE(VA,VB) strcasecmp (VA, VB)
+#define MICROBLAZE_VERSION_COMPARE(VA,VB) strverscmp (VA, VB)
 
 /* Classifies an address.
 

@@ -321,6 +321,8 @@ immutable Msgtable[] msgtable =
     { "_d_newclassTTrace" },
     { "_d_newitemT" },
     { "_d_newitemTTrace" },
+    { "_d_newarrayT" },
+    { "_d_newarrayTTrace" },
     { "_d_assert_fail" },
     { "dup" },
     { "_aaApply" },

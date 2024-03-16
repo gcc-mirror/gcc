@@ -1,3 +1,75 @@
+2023-10-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Add comment on recently
+	added emul TLS symbols.
+
+2023-10-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/experimental/contract.cc
+	[_GLIBCXX_INLINE_VERSION](handle_contract_violation): Rework comment.
+	Remove weak attribute.
+
+2023-10-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Add missing emul TLS
+	symbols.
+
+2023-10-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/experimental/contract.cc
+	[_GLIBCXX_INLINE_VERSION](handle_contract_violation): Provide symbol
+	without version namespace decoration for gcc.
+
+2023-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112089
+	* include/std/shared_mutex (shared_lock::unlock): Change errc
+	constant to operation_not_permitted.
+	* testsuite/30_threads/shared_lock/locking/112089.cc: New test.
+
+2023-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/io.cc: Double timeout using
+	dg-timeout-factor.
+	* testsuite/std/time/day/io.cc: Likewise.
+	* testsuite/std/time/format.cc: Likewise.
+	* testsuite/std/time/hh_mm_ss/io.cc: Likewise.
+	* testsuite/std/time/month/io.cc: Likewise.
+	* testsuite/std/time/month_day/io.cc: Likewise.
+	* testsuite/std/time/month_day_last/io.cc: Likewise.
+	* testsuite/std/time/month_weekday/io.cc: Likewise.
+	* testsuite/std/time/month_weekday_last/io.cc: Likewise.
+	* testsuite/std/time/weekday/io.cc: Likewise.
+	* testsuite/std/time/weekday_indexed/io.cc: Likewise.
+	* testsuite/std/time/weekday_last/io.cc: Likewise.
+	* testsuite/std/time/year/io.cc: Likewise.
+	* testsuite/std/time/year_month/io.cc: Likewise.
+	* testsuite/std/time/year_month_day/io.cc: Likewise.
+	* testsuite/std/time/year_month_day_last/io.cc: Likewise.
+	* testsuite/std/time/year_month_weekday/io.cc: Likewise.
+	* testsuite/std/time/year_month_weekday_last/io.cc: Likewise.
+	* testsuite/std/time/zoned_time/io.cc: Likewise.
+
+2023-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111936
+	* src/libbacktrace/Makefile.am: Add -prefer-pic to libtool
+	compile commands.
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2023-10-24  Paul M. Bendixen  <paulbendixen@gmail.com>
+
+	* include/Makefile.am: Move cstdarg, cstdalign and cstdbool to
+	freestanding.
+	* include/Makefile.in: Regenerate.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+	* src/Makefile.am: Handle Darwin rpaths.
+	* src/Makefile.in: Regenerate.
+
 2023-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h (_M_init_local_buf()): New

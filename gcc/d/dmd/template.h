@@ -96,12 +96,8 @@ public:
 
     Visibility visible() override;
 
-    MATCH leastAsSpecialized(Scope* sc, TemplateDeclaration* td2, ArgumentList argumentList);
-    RootObject *declareParameter(Scope *sc, TemplateParameter *tp, RootObject *o);
-
     TemplateDeclaration *isTemplateDeclaration() override { return this; }
 
-    TemplateTupleParameter *isVariadic();
     bool isDeprecated() const override;
     bool isOverloadable() const override;
 
@@ -298,7 +294,6 @@ public:
     const char *toChars() const override;
     const char* toPrettyCharsHelper() override final;
     Identifier *getIdent() override final;
-    hash_t toHash();
 
     bool isDiscardable();
     bool needsCodegen();

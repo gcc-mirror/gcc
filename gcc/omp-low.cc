@@ -1493,6 +1493,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_IF:
+	case OMP_CLAUSE_SELF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_THREAD_LIMIT:
@@ -1920,6 +1921,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_IF:
+	case OMP_CLAUSE_SELF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_THREAD_LIMIT:

@@ -566,6 +566,15 @@ class Expression
   is_constant() const
   { return this->do_is_constant(); }
 
+  // Return whether this expression is untyped.  This isn't quite the
+  // same as is_constant with an abstract type, as 1<<val is untyped
+  // even if val is a variable.  If this returns true, it sets *PTYPE
+  // to an abstract type, which is the type the expression will have
+  // if there is no context.
+  bool
+  is_untyped(Type** ptype) const
+  { return this->do_is_untyped(ptype); }
+
   // Return whether this is the zero value of its type.
   bool
   is_zero_value() const
@@ -589,19 +598,19 @@ class Expression
   // If this is not a numeric constant, return false.  If it is one,
   // return true, and set VAL to hold the value.
   bool
-  numeric_constant_value(Numeric_constant* val) const
+  numeric_constant_value(Numeric_constant* val)
   { return this->do_numeric_constant_value(val); }
 
   // If this is not a constant expression with string type, return
   // false.  If it is one, return true, and set VAL to the value.
   bool
-  string_constant_value(std::string* val) const
+  string_constant_value(std::string* val)
   { return this->do_string_constant_value(val); }
 
   // If this is not a constant expression with boolean type, return
   // false.  If it is one, return true, and set VAL to the value.
   bool
-  boolean_constant_value(bool* val) const
+  boolean_constant_value(bool* val)
   { return this->do_boolean_constant_value(val); }
 
   // If this is a const reference expression, return the named
@@ -1002,7 +1011,7 @@ class Expression
   // floating point, or complex type.  TYPE_CONTEXT describes the
   // expected type.
   void
-  determine_type(const Type_context*);
+  determine_type(Gogo*, const Type_context*);
 
   // Check types in an expression.
   void
@@ -1011,7 +1020,7 @@ class Expression
 
   // Determine the type when there is no context.
   void
-  determine_type_no_context();
+  determine_type_no_context(Gogo*);
 
   // Return the current type of the expression.  This may be changed
   // by determine_type.  This should not be called before the lowering
@@ -1081,7 +1090,7 @@ class Expression
   // interface type.  If FOR_TYPE_GUARD is true this is for a type
   // assertion.
   static Expression*
-  convert_interface_to_interface(Type* lhs_type,
+  convert_interface_to_interface(Gogo*, Type* lhs_type,
                                  Expression* rhs, bool for_type_guard,
                                  Location);
 
@@ -1116,9 +1125,9 @@ class Expression
 
   // Insert bounds checks for an index expression.
   static void
-  check_bounds(Expression* val, Operator, Expression* bound, Runtime::Function,
+  check_bounds(Gogo*, Expression* val, Operator, Expression* bound,
 	       Runtime::Function, Runtime::Function, Runtime::Function,
-	       Statement_inserter*, Location);
+	       Runtime::Function, Statement_inserter*, Location);
 
   // Return an expression for constructing a direct interface type from a
   // pointer.
@@ -1169,6 +1178,11 @@ class Expression
   do_is_constant() const
   { return false; }
 
+  // Return whether this expression is untyped.
+  virtual bool
+  do_is_untyped(Type**) const
+  { return false; }
+
   // Return whether this is the zero value of its type.
   virtual bool
   do_is_zero_value() const
@@ -1183,19 +1197,19 @@ class Expression
   // Return whether this is a constant expression of numeric type, and
   // set the Numeric_constant to the value.
   virtual bool
-  do_numeric_constant_value(Numeric_constant*) const
+  do_numeric_constant_value(Numeric_constant*)
   { return false; }
 
   // Return whether this is a constant expression of string type, and
   // set VAL to the value.
   virtual bool
-  do_string_constant_value(std::string*) const
+  do_string_constant_value(std::string*)
   { return false; }
 
   // Return whether this is a constant expression of boolean type, and
   // set VAL to the value.
   virtual bool
-  do_boolean_constant_value(bool*) const
+  do_boolean_constant_value(bool*)
   { return false; }
 
   // Called by the parser if the value is being discarded.
@@ -1208,7 +1222,7 @@ class Expression
 
   // Child class implements determining type information.
   virtual void
-  do_determine_type(const Type_context*) = 0;
+  do_determine_type(Gogo*, const Type_context*) = 0;
 
   // Child class implements type checking if needed.
   virtual void
@@ -1273,6 +1287,12 @@ class Expression
   // For children to call to report an error conveniently.
   void
   report_error(const char*);
+
+  // A convenience function for handling a type in do_is_untyped.  If
+  // TYPE is not abstract, return false.  Otherwise set *PTYPE to TYPE
+  // and return true.
+  static bool
+  is_untyped_type(Type* type, Type** ptype);
 
   // Write a name to export data.
   static void
@@ -1456,7 +1476,7 @@ class Parser_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { go_unreachable(); }
 
   void
@@ -1502,6 +1522,9 @@ class Const_expression : public Expression
   { return true; }
 
   bool
+  do_is_untyped(Type**) const;
+
+  bool
   do_is_zero_value() const;
 
   bool
@@ -1509,20 +1532,20 @@ class Const_expression : public Expression
   { return true; }
 
   bool
-  do_numeric_constant_value(Numeric_constant* nc) const;
+  do_numeric_constant_value(Numeric_constant* nc);
 
   bool
-  do_string_constant_value(std::string* val) const;
+  do_string_constant_value(std::string* val);
 
   bool
-  do_boolean_constant_value(bool* val) const;
+  do_boolean_constant_value(bool* val);
 
   Type*
   do_type();
 
   // The type of a const is set by the declaration, not the use.
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -1581,7 +1604,7 @@ class Var_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -1649,8 +1672,8 @@ class Enclosed_var_expression : public Expression
   { return this->reference_->type(); }
 
   void
-  do_determine_type(const Type_context* context)
-  { return this->reference_->determine_type(context); }
+  do_determine_type(Gogo* gogo, const Type_context* context)
+  { return this->reference_->determine_type(gogo, context); }
 
   Expression*
   do_copy()
@@ -1707,7 +1730,7 @@ class Temporary_reference_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -1772,7 +1795,7 @@ class Set_and_use_temporary_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -1831,6 +1854,9 @@ class String_expression : public Expression
   { return true; }
 
   bool
+  do_is_untyped(Type**) const;
+
+  bool
   do_is_zero_value() const
   { return this->val_ == ""; }
 
@@ -1839,7 +1865,7 @@ class String_expression : public Expression
   { return true; }
 
   bool
-  do_string_constant_value(std::string* val) const
+  do_string_constant_value(std::string* val)
   {
     *val = this->val_;
     return true;
@@ -1849,7 +1875,7 @@ class String_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -1941,20 +1967,20 @@ class Type_conversion_expression : public Expression
   do_is_static_initializer() const;
 
   bool
-  do_numeric_constant_value(Numeric_constant*) const;
+  do_numeric_constant_value(Numeric_constant*);
 
   bool
-  do_string_constant_value(std::string*) const;
+  do_string_constant_value(std::string*);
 
   bool
-  do_boolean_constant_value(bool*) const;
+  do_boolean_constant_value(bool*);
 
   Type*
   do_type()
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2021,8 +2047,8 @@ class Unsafe_type_conversion_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*)
-  { this->expr_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->expr_->determine_type_no_context(gogo); }
 
   Expression*
   do_copy();
@@ -2137,19 +2163,22 @@ class Unary_expression : public Expression
   do_is_constant() const;
 
   bool
+  do_is_untyped(Type**) const;
+
+  bool
   do_is_static_initializer() const;
 
   bool
-  do_numeric_constant_value(Numeric_constant*) const;
+  do_numeric_constant_value(Numeric_constant*);
 
   bool
-  do_boolean_constant_value(bool*) const;
+  do_boolean_constant_value(bool*);
 
   Type*
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2294,13 +2323,16 @@ class Binary_expression : public Expression
   { return this->left_->is_constant() && this->right_->is_constant(); }
 
   bool
+  do_is_untyped(Type**) const;
+
+  bool
   do_is_static_initializer() const;
 
   bool
-  do_numeric_constant_value(Numeric_constant*) const;
+  do_numeric_constant_value(Numeric_constant*);
 
   bool
-  do_boolean_constant_value(bool*) const;
+  do_boolean_constant_value(bool*);
 
   bool
   do_discarding_value();
@@ -2309,7 +2341,7 @@ class Binary_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2416,6 +2448,9 @@ class String_concat_expression : public Expression
   do_is_constant() const;
 
   bool
+  do_is_untyped(Type**) const;
+
+  bool
   do_is_zero_value() const;
 
   bool
@@ -2425,7 +2460,7 @@ class String_concat_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2599,7 +2634,7 @@ class Call_expression : public Expression
   do_type();
 
   virtual void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   virtual void
   do_check_types(Gogo*);
@@ -2768,7 +2803,10 @@ class Builtin_call_expression : public Call_expression
   do_is_constant() const;
 
   bool
-  do_numeric_constant_value(Numeric_constant*) const;
+  do_is_untyped(Type**) const;
+
+  bool
+  do_numeric_constant_value(Numeric_constant*);
 
   bool
   do_discarding_value();
@@ -2777,7 +2815,7 @@ class Builtin_call_expression : public Call_expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2815,7 +2853,7 @@ class Builtin_call_expression : public Call_expression
   complex_type(Type*);
 
   Expression*
-  lower_make(Statement_inserter*);
+  lower_make(Gogo*, Statement_inserter*);
 
   bool
   check_int_value(Expression*, bool is_length, bool* small);
@@ -2874,7 +2912,7 @@ class Call_result_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2955,10 +2993,10 @@ class Func_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo* gogo, const Type_context*)
   {
     if (this->closure_ != NULL)
-      this->closure_->determine_type_no_context();
+      this->closure_->determine_type_no_context(gogo);
   }
 
   Expression*
@@ -3015,7 +3053,7 @@ class Func_descriptor_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -3207,7 +3245,7 @@ class Array_index_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3312,7 +3350,7 @@ class String_index_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3408,7 +3446,7 @@ class Map_index_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3511,7 +3549,7 @@ class Bound_method_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3601,8 +3639,8 @@ class Field_reference_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
-  { this->expr_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->expr_->determine_type_no_context(gogo); }
 
   void
   do_check_types(Gogo*);
@@ -3697,7 +3735,7 @@ class Interface_field_reference_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3759,7 +3797,7 @@ class Allocation_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   void
@@ -3925,7 +3963,7 @@ class Struct_construction_expression : public Expression,
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3992,7 +4030,7 @@ protected:
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -4124,7 +4162,7 @@ class Map_construction_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -4187,8 +4225,8 @@ class Type_guard_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*)
-  { this->expr_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->expr_->determine_type_no_context(gogo); }
 
   void
   do_check_types(Gogo*);
@@ -4238,8 +4276,8 @@ class Heap_expression : public Expression
   Type*
   do_type();
   void
-  do_determine_type(const Type_context*)
-  { this->expr_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->expr_->determine_type_no_context(gogo); }
 
   Expression*
   do_copy()
@@ -4301,8 +4339,8 @@ class Receive_expression : public Expression
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
 
   void
-  do_determine_type(const Type_context*)
-  { this->channel_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->channel_->determine_type_no_context(gogo); }
 
   void
   do_check_types(Gogo*);
@@ -4364,7 +4402,7 @@ class Slice_value_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy();
@@ -4417,8 +4455,8 @@ class Slice_info_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
-  { this->slice_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->slice_->determine_type_no_context(gogo); }
 
   Expression*
   do_copy()
@@ -4475,7 +4513,7 @@ class Conditional_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -4524,7 +4562,7 @@ class Compound_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -4571,7 +4609,7 @@ class Backend_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*

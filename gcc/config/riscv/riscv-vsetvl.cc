@@ -255,26 +255,12 @@ policy_to_str (bool agnostic_p)
   return agnostic_p ? "agnostic" : "undisturbed";
 }
 
-static bool
-vlmax_avl_p (rtx x)
-{
-  return x && rtx_equal_p (x, RVV_VLMAX);
-}
-
 /* Return true if it is an RVV instruction depends on VTYPE global
    status register.  */
 static bool
 has_vtype_op (rtx_insn *rinsn)
 {
   return recog_memoized (rinsn) >= 0 && get_attr_has_vtype_op (rinsn);
-}
-
-/* Return true if it is an RVV instruction depends on VL global
-   status register.  */
-static bool
-has_vl_op (rtx_insn *rinsn)
-{
-  return recog_memoized (rinsn) >= 0 && get_attr_has_vl_op (rinsn);
 }
 
 /* Return true if the instruction ignores VLMUL field of VTYPE.  */
@@ -365,36 +351,10 @@ get_avl (rtx_insn *rinsn)
 
   if (!has_vl_op (rinsn))
     return NULL_RTX;
-  if (get_attr_avl_type (rinsn) == VLMAX)
+  if (vlmax_avl_type_p (rinsn))
     return RVV_VLMAX;
   extract_insn_cached (rinsn);
   return recog_data.operand[get_attr_vl_op_idx (rinsn)];
-}
-
-/* Helper function to get SEW operand. We always have SEW value for
-   all RVV instructions that have VTYPE OP.  */
-static uint8_t
-get_sew (rtx_insn *rinsn)
-{
-  return get_attr_sew (rinsn);
-}
-
-/* Helper function to get VLMUL operand. We always have VLMUL value for
-   all RVV instructions that have VTYPE OP. */
-static enum vlmul_type
-get_vlmul (rtx_insn *rinsn)
-{
-  return (enum vlmul_type) get_attr_vlmul (rinsn);
-}
-
-/* Get default tail policy.  */
-static bool
-get_default_ta ()
-{
-  /* For the instruction that doesn't require TA, we still need a default value
-     to emit vsetvl. We pick up the default value according to prefer policy. */
-  return (bool) (get_prefer_tail_policy () & 0x1
-		 || (get_prefer_tail_policy () >> 1 & 0x1));
 }
 
 /* Get default mask policy.  */
@@ -405,16 +365,6 @@ get_default_ma ()
      to emit vsetvl. We pick up the default value according to prefer policy. */
   return (bool) (get_prefer_mask_policy () & 0x1
 		 || (get_prefer_mask_policy () >> 1 & 0x1));
-}
-
-/* Helper function to get TA operand.  */
-static bool
-tail_agnostic_p (rtx_insn *rinsn)
-{
-  /* If it doesn't have TA, we return agnostic by default.  */
-  extract_insn_cached (rinsn);
-  int ta = get_attr_ta (rinsn);
-  return ta == INVALID_ATTRIBUTE ? get_default_ta () : IS_AGNOSTIC (ta);
 }
 
 /* Helper function to get MA operand.  */
@@ -474,18 +424,6 @@ get_max_float_sew ()
   else if (TARGET_VECTOR_ELEN_FP_16)
     return 16;
   gcc_unreachable ();
-}
-
-/* Count the number of REGNO in RINSN.  */
-static int
-count_regno_occurrences (rtx_insn *rinsn, unsigned int regno)
-{
-  int count = 0;
-  extract_insn (rinsn);
-  for (int i = 0; i < recog_data.n_operands; i++)
-    if (refers_to_regno_p (regno, recog_data.operand[i]))
-      count++;
-  return count;
 }
 
 enum def_type
@@ -696,14 +634,6 @@ has_no_uses (basic_block cfg_bb, rtx_insn *rinsn, int regno)
   return true;
 }
 
-/* Change insn and Assert the change always happens.  */
-static void
-validate_change_or_fail (rtx object, rtx *loc, rtx new_rtx, bool in_group)
-{
-  bool change_p = validate_change (object, loc, new_rtx, in_group);
-  gcc_assert (change_p);
-}
-
 /* This flags indicates the minimum demand of the vl and vtype values by the
    RVV instruction. For example, DEMAND_RATIO_P indicates that this RVV
    instruction only needs the SEW/LMUL ratio to remain the same, and does not
@@ -844,7 +774,7 @@ public:
   bb_info *get_bb () const { return m_bb; }
   uint8_t get_max_sew () const { return m_max_sew; }
   insn_info *get_read_vl_insn () const { return m_read_vl_insn; }
-  bool vl_use_by_non_rvv_insn_p () const { return m_vl_used_by_non_rvv_insn; }
+  bool vl_used_by_non_rvv_insn_p () const { return m_vl_used_by_non_rvv_insn; }
 
   bool has_imm_avl () const { return m_avl && CONST_INT_P (m_avl); }
   bool has_vlmax_avl () const { return vlmax_avl_p (m_avl); }
@@ -1270,7 +1200,7 @@ public:
     if (get_read_vl_insn ())
       fprintf (file, "%sread_vl_insn: insn %u\n", indent,
 	       get_read_vl_insn ()->uid ());
-    if (vl_use_by_non_rvv_insn_p ())
+    if (vl_used_by_non_rvv_insn_p ())
       fprintf (file, "%suse_by_non_rvv_insn=true\n", indent);
   }
 };
@@ -1552,7 +1482,7 @@ private:
     if (prev.get_ratio () != next.get_ratio ())
       return false;
 
-    if (next.has_vl () && next.vl_use_by_non_rvv_insn_p ())
+    if (next.has_vl () && next.vl_used_by_non_rvv_insn_p ())
       return false;
 
     if (vector_config_insn_p (prev.get_insn ()->rtl ()) && next.get_avl_def ()
@@ -1607,6 +1537,29 @@ private:
   inline bool can_use_next_avl_p (const vsetvl_info &prev,
 				  const vsetvl_info &next)
   {
+    /* Forbid the AVL/VL propagation if VL of NEXT is used
+       by non-RVV instructions.  This is because:
+
+	 bb 2:
+	   PREV: scalar move (no AVL)
+	 bb 3:
+	   NEXT: vsetvl a5(VL), a4(AVL) ...
+	   branch a5,zero
+
+       Since user vsetvl instruction is no side effect instruction
+       which should be placed in the correct and optimal location
+       of the program by the previous PASS, it is unreasonable that
+       VSETVL PASS tries to move it to another places if it used by
+       non-RVV instructions.
+
+       Note: We only forbid the cases that VL is used by the following
+       non-RVV instructions which will cause issues.  We don't forbid
+       other cases since it won't cause correctness issues and we still
+       more demand info are fused backward.  The later LCM algorithm
+       should know the optimal location of the vsetvl.  */
+    if (next.has_vl () && next.vl_used_by_non_rvv_insn_p ())
+      return false;
+
     if (!next.has_nonvlmax_reg_avl () && !next.has_vl ())
       return true;
 
@@ -2664,13 +2617,16 @@ pre_vsetvl::compute_lcm_local_properties ()
 	      if (!info.has_nonvlmax_reg_avl () && !info.has_vl ())
 		continue;
 
-	      unsigned int regno;
-	      sbitmap_iterator sbi;
-	      EXECUTE_IF_SET_IN_BITMAP (m_reg_def_loc[bb->index ()], 0, regno,
-					sbi)
+	      if (info.has_nonvlmax_reg_avl ())
 		{
-		  if (regno == REGNO (info.get_avl ()))
-		    bitmap_clear_bit (m_transp[bb->index ()], i);
+		  unsigned int regno;
+		  sbitmap_iterator sbi;
+		  EXECUTE_IF_SET_IN_BITMAP (m_reg_def_loc[bb->index ()], 0,
+					    regno, sbi)
+		    {
+		      if (regno == REGNO (info.get_avl ()))
+			bitmap_clear_bit (m_transp[bb->index ()], i);
+		    }
 		}
 
 	      for (const insn_info *insn : bb->real_nondebug_insns ())
@@ -2787,7 +2743,7 @@ pre_vsetvl::fuse_local_vsetvl_info ()
 		      curr_info.dump (dump_file, "        ");
 		      fprintf (dump_file, "\n");
 		    }
-		  if (!curr_info.vl_use_by_non_rvv_insn_p ()
+		  if (!curr_info.vl_used_by_non_rvv_insn_p ()
 		      && vsetvl_insn_p (curr_info.get_insn ()->rtl ()))
 		    m_delete_list.safe_push (curr_info);
 
@@ -3199,7 +3155,7 @@ pre_vsetvl::pre_global_vsetvl_info ()
 	    continue;
 	  curr_info = block_info.local_infos[0];
 	}
-      if (curr_info.valid_p () && !curr_info.vl_use_by_non_rvv_insn_p ()
+      if (curr_info.valid_p () && !curr_info.vl_used_by_non_rvv_insn_p ()
 	  && preds_has_same_avl_p (curr_info))
 	curr_info.set_change_vtype_only ();
 

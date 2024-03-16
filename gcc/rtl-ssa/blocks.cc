@@ -47,7 +47,8 @@ function_info::build_info::build_info (unsigned int num_regs,
     potential_phi_regs (num_regs),
     bb_phis (num_bb_indices),
     bb_mem_live_out (num_bb_indices),
-    bb_to_rpo (num_bb_indices)
+    bb_to_rpo (num_bb_indices),
+    exit_block_dominator (nullptr)
 {
   last_access.safe_grow_cleared (num_regs + 1);
 
@@ -103,21 +104,8 @@ function_info::bb_walker::bb_walker (function_info *function, build_info &bi)
   : dom_walker (CDI_DOMINATORS, ALL_BLOCKS, bi.bb_to_rpo.address ()),
     m_function (function),
     m_bi (bi),
-    m_exit_block_dominator (nullptr)
+    m_exit_block_dominator (bi.exit_block_dominator)
 {
-  // ??? There is no dominance information associated with the exit block,
-  // so work out its immediate dominator using predecessor blocks.  We then
-  // walk the exit block just before popping its immediate dominator.
-  edge e;
-  edge_iterator ei;
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (m_function->m_fn)->preds)
-    if (m_exit_block_dominator)
-      m_exit_block_dominator
-	= nearest_common_dominator (CDI_DOMINATORS,
-				    m_exit_block_dominator, e->src);
-    else
-      m_exit_block_dominator = e->src;
-
   // If the exit block is unreachable, process it last.
   if (!m_exit_block_dominator)
     m_exit_block_dominator = ENTRY_BLOCK_PTR_FOR_FN (m_function->m_fn);
@@ -525,6 +513,11 @@ function_info::create_phi (ebb_info *ebb, resource_info resource,
 phi_info *
 function_info::create_degenerate_phi (ebb_info *ebb, set_info *def)
 {
+  // Allow the function to be called twice in succession for the same def.
+  def_lookup dl = find_def (def->resource (), ebb->phi_insn ());
+  if (set_info *set = dl.matching_set ())
+    return as_a<phi_info *> (set);
+
   access_info *input = def;
   phi_info *phi = create_phi (ebb, def->resource (), &input, 1);
   if (def->is_reg ())
@@ -618,6 +611,19 @@ function_info::place_phis (build_info &bi)
   for (unsigned int i = 0; i < num_bb_indices; ++i)
     bitmap_initialize (&frontiers[i], &bitmap_default_obstack);
   compute_dominance_frontiers (frontiers.address ());
+
+  // The normal dominance information doesn't calculate dominators for
+  // the exit block, so we don't get dominance frontiers for them either.
+  // Calculate them by hand.
+  for (edge e : EXIT_BLOCK_PTR_FOR_FN (m_fn)->preds)
+    {
+      basic_block bb = e->src;
+      while (bb != bi.exit_block_dominator)
+	{
+	  bitmap_set_bit (&frontiers[bb->index], EXIT_BLOCK);
+	  bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+	}
+    }
 
   // In extreme cases, the number of live-in registers can be much
   // greater than the number of phi nodes needed in a block (see PR98863).
@@ -861,11 +867,14 @@ function_info::add_artificial_accesses (build_info &bi, df_ref_flags flags)
 
   start_insn_accesses ();
 
+  HARD_REG_SET added_regs = {};
   FOR_EACH_ARTIFICIAL_USE (ref, cfg_bb->index)
     if ((DF_REF_FLAGS (ref) & DF_REF_AT_TOP) == flags)
       {
 	unsigned int regno = DF_REF_REGNO (ref);
 	machine_mode mode = GET_MODE (DF_REF_REAL_REG (ref));
+	if (HARD_REGISTER_NUM_P (regno))
+	  SET_HARD_REG_BIT (added_regs, regno);
 
 	// A definition must be available.
 	gcc_checking_assert (bitmap_bit_p (&lr_info->in, regno)
@@ -874,10 +883,20 @@ function_info::add_artificial_accesses (build_info &bi, df_ref_flags flags)
 	m_temp_uses.safe_push (create_reg_use (bi, insn, { mode, regno }));
       }
 
-  // Track the return value of memory by adding an artificial use of
-  // memory at the end of the exit block.
-  if (flags == 0 && cfg_bb->index == EXIT_BLOCK)
+  // Ensure that global registers and memory are live at the end of any
+  // block that has no successors, such as the exit block and non-local gotos.
+  // Global registers have to be singled out because they are not part of
+  // the DF artifical use list (they are instead treated as used within
+  // every block).
+  if (flags == 0 && EDGE_COUNT (cfg_bb->succs) == 0)
     {
+      for (unsigned int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+	if (global_regs[i] && !TEST_HARD_REG_BIT (added_regs, i))
+	  {
+	    auto mode = reg_raw_mode[i];
+	    m_temp_uses.safe_push (create_reg_use (bi, insn, { mode, i }));
+	  }
+
       auto *use = allocate<use_info> (insn, memory, bi.current_mem_value ());
       add_use (use);
       m_temp_uses.safe_push (use);
@@ -1245,6 +1264,16 @@ function_info::process_all_blocks ()
   unsigned int num_bb_indices = last_basic_block_for_fn (m_fn);
 
   build_info bi (m_num_regs, num_bb_indices);
+
+  // ??? There is no dominance information associated with the exit block,
+  // so work out its immediate dominator using predecessor blocks.
+  for (edge e : EXIT_BLOCK_PTR_FOR_FN (m_fn)->preds)
+    if (bi.exit_block_dominator)
+      bi.exit_block_dominator
+	= nearest_common_dominator (CDI_DOMINATORS,
+				    bi.exit_block_dominator, e->src);
+    else
+      bi.exit_block_dominator = e->src;
 
   calculate_potential_phi_regs (bi);
   create_ebbs (bi);

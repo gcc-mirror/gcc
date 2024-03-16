@@ -694,7 +694,7 @@
 
 (define_insn "prologue_use"
   [(unspec_volatile [(match_operand 0 "register_operand")] UNSPECV_PROLOGUE_USE)]
-  ""
+  "1 /* This comment silences a warning for operands[2]. */"
   ""
   [(set_attr "length" "0")])
 

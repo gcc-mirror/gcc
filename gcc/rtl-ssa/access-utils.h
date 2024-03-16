@@ -33,6 +33,20 @@ accesses_include_hard_registers (const access_array &accesses)
   return accesses.size () && HARD_REGISTER_NUM_P (accesses.front ()->regno ());
 }
 
+// Return true if ACCESSES includes a reference to a non-fixed hard register.
+inline bool
+accesses_include_nonfixed_hard_registers (access_array accesses)
+{
+  for (access_info *access : accesses)
+    {
+      if (!HARD_REGISTER_NUM_P (access->regno ()))
+	break;
+      if (!fixed_regs[access->regno ()])
+	return true;
+    }
+  return false;
+}
+
 // Return true if sorted array ACCESSES includes an access to memory.
 inline bool
 accesses_include_memory (const access_array &accesses)
@@ -125,24 +139,6 @@ set_with_nondebug_insn_uses (access_info *access)
   if (access->is_set_with_nondebug_insn_uses ())
     return static_cast<set_info *> (access);
   return nullptr;
-}
-
-// Return true if SET is the only set of SET->resource () and if it
-// dominates all uses (excluding uses of SET->resource () at points
-// where SET->resource () is always undefined).
-inline bool
-is_single_dominating_def (const set_info *set)
-{
-  return set->is_first_def () && set->is_last_def ();
-}
-
-// SET is known to be available on entry to BB.  Return true if it is
-// also available on exit from BB.  (The value might or might not be live.)
-inline bool
-remains_available_on_exit (const set_info *set, bb_info *bb)
-{
-  return (set->is_last_def ()
-	  || *set->next_def ()->insn () > *bb->end_insn ());
 }
 
 // ACCESS is known to be associated with an instruction rather than
@@ -264,6 +260,22 @@ last_def (def_mux mux)
   return mux.last_def ();
 }
 
+// If INSN's definitions contain a single set, return that set, otherwise
+// return null.
+inline set_info *
+single_set_info (insn_info *insn)
+{
+  set_info *set = nullptr;
+  for (auto def : insn->defs ())
+    if (auto this_set = dyn_cast<set_info *> (def))
+      {
+	if (set)
+	  return nullptr;
+	set = this_set;
+      }
+  return set;
+}
+
 int lookup_use (splay_tree<use_info *> &, insn_info *);
 int lookup_def (def_splay_tree &, insn_info *);
 int lookup_clobber (clobber_tree &, insn_info *);
@@ -311,6 +323,15 @@ next_call_clobbers_ignoring (insn_call_clobbers_tree &tree, insn_info *insn,
       comparison = -1;
     }
   return tree->insn ();
+}
+
+// Search forwards from immediately after INSN for the first instruction
+// recorded in TREE.  Return null if no such instruction exists.
+inline insn_info *
+next_call_clobbers (insn_call_clobbers_tree &tree, insn_info *insn)
+{
+  auto ignore = [](const insn_info *) { return false; };
+  return next_call_clobbers_ignoring (tree, insn, ignore);
 }
 
 // If ACCESS is a set, return the first use of ACCESS by a nondebug insn I
@@ -548,6 +569,10 @@ insert_access (obstack_watermark &watermark,
   return T (insert_access_base (watermark, access1, accesses2));
 }
 
+// Return a copy of USES that drops any use of DEF.
+use_array remove_uses_of_def (obstack_watermark &, use_array uses,
+			      def_info *def);
+
 // The underlying non-template implementation of remove_note_accesses.
 access_array remove_note_accesses_base (obstack_watermark &, access_array);
 
@@ -562,5 +587,12 @@ remove_note_accesses (obstack_watermark &watermark, T accesses)
 {
   return T (remove_note_accesses_base (watermark, accesses));
 }
+
+// Return true if ACCESSES1 and ACCESSES2 have at least one resource in common.
+bool accesses_reference_same_resource (access_array accesses1,
+				       access_array accesses2);
+
+// Return true if INSN clobbers the value of any resources in ACCESSES.
+bool insn_clobbers_resources (insn_info *insn, access_array accesses);
 
 }

@@ -32,7 +32,7 @@ import dmd.init;
 import dmd.location;
 import dmd.mtype;
 import dmd.printast;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.tokens;
 import dmd.visitor;
 import dmd.arraytypes;

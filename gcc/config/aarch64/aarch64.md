@@ -4413,6 +4413,53 @@
   [(set_attr "type" "csel")]
 )
 
+;; There are two canonical forms for `cmp ? ~a : a`.
+;; This is the second form and is here to help combine.
+;; Support `-(cmp) ^ a` into `cmp ? ~a : a`
+;; The second pattern is to support the zero extend'ed version.
+
+(define_insn_and_split "*cmov<mode>_insn_insv"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (xor:GPI
+	 (neg:GPI
+	  (match_operator:GPI 1 "aarch64_comparison_operator"
+	   [(match_operand 2 "cc_register" "") (const_int 0)]))
+	 (match_operand:GPI 3 "general_operand" "r")))]
+  ""
+  "#"
+  "&& true"
+  [(set (match_dup 0)
+	(if_then_else:GPI (match_dup 1)
+			  (not:GPI (match_dup 3))
+			  (match_dup 3)))]
+  {
+    /* After reload this will be a nop due to the constraint.  */
+    operands[3] = force_reg (<MODE>mode, operands[3]);
+  }
+  [(set_attr "type" "csel")]
+)
+
+(define_insn_and_split "*cmov_uxtw_insn_insv"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI
+	 (xor:SI
+	  (neg:SI
+	   (match_operator:SI 1 "aarch64_comparison_operator"
+	    [(match_operand 2 "cc_register" "") (const_int 0)]))
+	  (match_operand:SI 3 "general_operand" "r"))))]
+  "can_create_pseudo_p ()"
+  "#"
+  "&& true"
+  [(set (match_dup 0)
+	(if_then_else:DI (match_dup 1)
+			  (zero_extend:DI (not:SI (match_dup 3)))
+			  (zero_extend:DI (match_dup 3))))]
+  {
+    operands[3] = force_reg (SImode, operands[3]);
+  }
+  [(set_attr "type" "csel")]
+)
+
 ;; If X can be loaded by a single CNT[BHWD] instruction,
 ;;
 ;;    A = UMAX (B, X)

@@ -81,8 +81,9 @@ extern int flag_rerun_cse_after_global_opts;
 
 extern void print_version (FILE *, const char *, bool);
 
-/* The hashtable, so that the C front ends can pass it to cpplib.  */
+/* The hashtables, so that the C front ends can pass them to cpplib.  */
 extern struct ht *ident_hash;
+extern struct ht *ident_hash_extra;
 
 /* Functions used to get and set GCC's notion of in what directory
    compilation was started.  */

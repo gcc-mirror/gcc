@@ -17,7 +17,7 @@ import dmd.parsetimevisitor;
 import dmd.tokens;
 import dmd.transitivevisitor;
 import dmd.expression;
-import dmd.root.rootobject;
+import dmd.rootobject;
 
 /**
  * Classic Visitor class which implements visit methods for all the AST

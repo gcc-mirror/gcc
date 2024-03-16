@@ -1626,12 +1626,31 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	  edge temp_e = redirect_edge_and_branch (exit, new_preheader);
 	  flush_pending_stmts (temp_e);
 	}
-
       /* Record the new SSA names in the cache so that we can skip materializing
 	 them again when we fill in the rest of the LCSSA variables.  */
       for (auto phi : new_phis)
 	{
 	  tree new_arg = gimple_phi_arg (phi, 0)->def;
+
+	  if (!SSA_VAR_P (new_arg))
+	    continue;
+	  /* If the PHI MEM node dominates the loop then we shouldn't create
+	      a new LC-SSSA PHI for it in the intermediate block.   */
+	  /* A MEM phi that consitutes a new DEF for the vUSE chain can either
+	     be a .VDEF or a PHI that operates on MEM. And said definition
+	     must not be inside the main loop.  Or we must be a parameter.
+	     In the last two cases we may remove a non-MEM PHI node, but since
+	     they dominate both loops the removal is unlikely to cause trouble
+	     as the exits must already be using them.  */
+	  if (virtual_operand_p (new_arg)
+	      && (SSA_NAME_IS_DEFAULT_DEF (new_arg)
+		  || !flow_bb_inside_loop_p (loop,
+				gimple_bb (SSA_NAME_DEF_STMT (new_arg)))))
+	    {
+	      auto gsi = gsi_for_stmt (phi);
+	      remove_phi_node (&gsi, true);
+	      continue;
+	    }
 	  new_phi_args.put (new_arg, gimple_phi_result (phi));
 
 	  if (TREE_CODE (new_arg) != SSA_NAME)
@@ -1904,8 +1923,10 @@ iv_phi_p (stmt_vec_info stmt_info)
 /* Return true if vectorizer can peel for nonlinear iv.  */
 static bool
 vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
-			      enum vect_induction_op_type induction_type)
+			      stmt_vec_info stmt_info)
 {
+  enum vect_induction_op_type induction_type
+    = STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info);
   tree niters_skip;
   /* Init_expr will be update by vect_update_ivs_after_vectorizer,
      if niters or vf is unkown:
@@ -1926,11 +1947,31 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
       return false;
     }
 
+  /* Avoid compile time hog on vect_peel_nonlinear_iv_init.  */
+  if (induction_type == vect_step_op_mul)
+    {
+      tree step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
+      tree type = TREE_TYPE (step_expr);
+
+      if (wi::exact_log2 (wi::to_wide (step_expr)) == -1
+	  && LOOP_VINFO_INT_NITERS(loop_vinfo) >= TYPE_PRECISION (type))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Avoid compile time hog on"
+			     " vect_peel_nonlinear_iv_init"
+			     " for nonlinear induction vec_step_op_mul"
+			     " when iteration count is too big.\n");
+	  return false;
+	}
+    }
+
   /* Also doens't support peel for neg when niter is variable.
      ??? generate something like niter_expr & 1 ? init_expr : -init_expr?  */
   niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
   if ((niters_skip != NULL_TREE
-       && TREE_CODE (niters_skip) != INTEGER_CST)
+       && (TREE_CODE (niters_skip) != INTEGER_CST
+	   || (HOST_WIDE_INT) TREE_INT_CST_LOW (niters_skip) < 0))
       || (!vect_use_loop_mask_for_alignment_p (loop_vinfo)
 	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0))
     {
@@ -1991,7 +2032,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       induction_type = STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (phi_info);
       if (induction_type != vect_step_op_add)
 	{
-	  if (!vect_can_peel_nonlinear_iv_p (loop_vinfo, induction_type))
+	  if (!vect_can_peel_nonlinear_iv_p (loop_vinfo, phi_info))
 	    return false;
 
 	  continue;

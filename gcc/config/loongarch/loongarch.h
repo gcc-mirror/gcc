@@ -1231,3 +1231,11 @@ struct GTY (()) machine_function
   (TARGET_HARD_FLOAT_ABI ? (TARGET_DOUBLE_FLOAT_ABI ? 8 : 4) : 0)
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN)
+
+/* LoongArch maintains ICache/DCache coherency by hardware,
+   we just need "ibar" to avoid instruction hazard here.  */
+#undef  CLEAR_INSN_CACHE
+#define CLEAR_INSN_CACHE(beg, end) __builtin_loongarch_ibar (0)
+
+#define TARGET_EXPLICIT_RELOCS \
+  (la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS)

@@ -1925,6 +1925,40 @@ loongarch_symbolic_constant_p (rtx x, enum loongarch_symbol_type *symbol_type)
   gcc_unreachable ();
 }
 
+/* If -mexplicit-relocs=auto, we use machine operations with reloc hints
+   for cases where the linker is unable to relax so we can schedule the
+   machine operations, otherwise use an assembler pseudo-op so the
+   assembler will generate R_LARCH_RELAX.  */
+
+bool
+loongarch_explicit_relocs_p (enum loongarch_symbol_type type)
+{
+  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_AUTO)
+    return la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS;
+
+  switch (type)
+    {
+      case SYMBOL_TLS_IE:
+      case SYMBOL_TLS_LE:
+      case SYMBOL_TLSGD:
+      case SYMBOL_TLSLDM:
+	/* The linker don't know how to relax TLS accesses.  */
+	return true;
+      case SYMBOL_GOT_DISP:
+	/* If we are performing LTO for a final link, and we have the
+	   linker plugin so we know the resolution of the symbols, then
+	   all GOT references are binding to external symbols or
+	   preemptable symbols.  So the linker cannot relax them.  */
+	return (in_lto_p
+		&& !flag_incremental_link
+		&& HAVE_LTO_PLUGIN == 2
+		&& (!global_options_set.x_flag_use_linker_plugin
+		    || global_options.x_flag_use_linker_plugin));
+      default:
+	return false;
+    }
+}
+
 /* Returns the number of instructions necessary to reference a symbol.  */
 
 static int
@@ -1940,7 +1974,7 @@ loongarch_symbol_insns (enum loongarch_symbol_type type, machine_mode mode)
     case SYMBOL_GOT_DISP:
       /* The constant will have to be loaded from the GOT before it
 	 is used in an address.  */
-      if (!TARGET_EXPLICIT_RELOCS && mode != MAX_MACHINE_MODE)
+      if (!loongarch_explicit_relocs_p (type) && mode != MAX_MACHINE_MODE)
 	return 0;
 
       return 3;
@@ -2730,7 +2764,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
   start_sequence ();
 
-  if (TARGET_EXPLICIT_RELOCS)
+  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
     {
       /* Split tls symbol to high and low.  */
       rtx high = gen_rtx_HIGH (Pmode, copy_rtx (loc));
@@ -2895,7 +2929,7 @@ loongarch_legitimize_tls_address (rtx loc)
 	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
 	  tmp1 = gen_reg_rtx (Pmode);
 	  dest = gen_reg_rtx (Pmode);
-	  if (TARGET_EXPLICIT_RELOCS)
+	  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
 	    {
 	      tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_IE);
 	      tmp3 = gen_reg_rtx (Pmode);
@@ -2932,7 +2966,7 @@ loongarch_legitimize_tls_address (rtx loc)
 	  tmp1 = gen_reg_rtx (Pmode);
 	  dest = gen_reg_rtx (Pmode);
 
-	  if (TARGET_EXPLICIT_RELOCS)
+	  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
 	    {
 	      tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_LE);
 	      tmp3 = gen_reg_rtx (Pmode);
@@ -3038,7 +3072,7 @@ loongarch_symbol_extreme_p (enum loongarch_symbol_type type)
    If so, and if LOW_OUT is nonnull, emit the high part and store the
    low part in *LOW_OUT.  Leave *LOW_OUT unchanged otherwise.
 
-   Return false if build with '-mno-explicit-relocs'.
+   Return false if build with '-mexplicit-relocs=none'.
 
    TEMP is as for loongarch_force_temporary and is used to load the high
    part into a register.
@@ -3052,12 +3086,9 @@ loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 {
   enum loongarch_symbol_type symbol_type;
 
-  /* If build with '-mno-explicit-relocs', don't split symbol.  */
-  if (!TARGET_EXPLICIT_RELOCS)
-    return false;
-
   if ((GET_CODE (addr) == HIGH && mode == MAX_MACHINE_MODE)
       || !loongarch_symbolic_constant_p (addr, &symbol_type)
+      || !loongarch_explicit_relocs_p (symbol_type)
       || loongarch_symbol_insns (symbol_type, mode) == 0
       || !loongarch_split_symbol_type (symbol_type))
     return false;
@@ -4797,7 +4828,7 @@ loongarch_output_move (rtx dest, rtx src)
 	}
     }
 
-  if (!TARGET_EXPLICIT_RELOCS
+  if (!loongarch_explicit_relocs_p (loongarch_classify_symbol (src))
       && dest_code == REG && symbolic_operand (src, VOIDmode))
     {
       if (loongarch_classify_symbol (src) == SYMBOL_PCREL)
@@ -7387,6 +7418,25 @@ loongarch_option_override_internal (struct gcc_options *opts,
   loongarch_update_gcc_opt_status (&la_target, opts, opts_set);
   loongarch_cpu_option_override (&la_target, opts, opts_set);
 
+  if (la_opt_explicit_relocs != M_OPT_UNSET
+      && la_opt_explicit_relocs_backward != M_OPT_UNSET)
+    error ("do not use %qs (with %qs) and %qs (without %qs) together",
+	   "-mexplicit-relocs=", "=",
+	   la_opt_explicit_relocs_backward ? "-mexplicit-relocs"
+					   : "-mno-explicit-relocs", "=");
+
+  if (la_opt_explicit_relocs_backward != M_OPT_UNSET)
+    la_opt_explicit_relocs = (la_opt_explicit_relocs_backward
+			      ? EXPLICIT_RELOCS_ALWAYS
+			      : EXPLICIT_RELOCS_NONE);
+
+  if (la_opt_explicit_relocs == M_OPT_UNSET)
+    la_opt_explicit_relocs = (HAVE_AS_EXPLICIT_RELOCS
+			      ? (HAVE_AS_MRELAX_OPTION
+				 ? EXPLICIT_RELOCS_AUTO
+				 : EXPLICIT_RELOCS_ALWAYS)
+			      : EXPLICIT_RELOCS_NONE);
+
   if (TARGET_ABI_LP64)
     flag_pcc_struct_return = 0;
 
@@ -7417,7 +7467,7 @@ loongarch_option_override_internal (struct gcc_options *opts,
       case CMODEL_EXTREME:
 	if (!TARGET_EXPLICIT_RELOCS)
 	  error ("code model %qs needs %s",
-		 "extreme", "-mexplicit-relocs");
+		 "extreme", "-mexplicit-relocs=always");
 
 	if (opts->x_flag_plt)
 	  {
@@ -7721,7 +7771,8 @@ loongarch_handle_model_attribute (tree *node, tree name, tree arg, int,
       if (!TARGET_EXPLICIT_RELOCS)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "%qE attribute requires %s", name, "-mexplicit-relocs");
+		    "%qE attribute requires %s", name,
+		    "-mexplicit-relocs=always");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}

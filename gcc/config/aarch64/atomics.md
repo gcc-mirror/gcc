@@ -224,7 +224,7 @@
       UNSPECV_ATOMIC_EXCHG))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 4 "=&r"))]
-  ""
+  "!TARGET_LSE"
   "#"
   "&& epilogue_completed"
   [(const_int 0)]

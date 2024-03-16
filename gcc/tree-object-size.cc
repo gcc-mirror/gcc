@@ -1575,8 +1575,8 @@ parm_object_size (struct object_size_info *osi, tree var)
   tree typesize = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (parm)));
   tree sz = NULL_TREE;
 
-  /* If we have an explicit access attribute with a usable size argument... */
-  if (access && access->sizarg != UINT_MAX && !access->internal_p
+  /* If we have an access attribute with a usable size argument... */
+  if (access && access->sizarg != UINT_MAX
       /* ... and either PARM is void * or has a type that is complete and has a
 	 constant size... */
       && ((typesize && poly_int_tree_p (typesize))
@@ -1587,10 +1587,14 @@ parm_object_size (struct object_size_info *osi, tree var)
       unsigned argpos = 0;
 
       /* ... then walk through the parameters to pick the size parameter and
-	 safely scale it by the type size if needed.  */
+	 safely scale it by the type size if needed.
+
+	 TODO: we could also compute the size of VLAs where the size is
+	 given by a function parameter.  */
       for (arg = fnargs; arg; arg = TREE_CHAIN (arg), ++argpos)
-	if (argpos == access->sizarg && INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+	if (argpos == access->sizarg)
 	  {
+	    gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (arg)));
 	    sz = get_or_create_ssa_default_def (cfun, arg);
 	    if (sz != NULL_TREE)
 	      {

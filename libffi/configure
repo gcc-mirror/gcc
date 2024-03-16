@@ -666,6 +666,7 @@ TESTSUBDIR_TRUE
 MAINT
 MAINTAINER_MODE_FALSE
 MAINTAINER_MODE_TRUE
+SYSROOT_CFLAGS_FOR_TARGET
 READELF
 ENABLE_DARWIN_AT_RPATH_FALSE
 ENABLE_DARWIN_AT_RPATH_TRUE
@@ -11687,7 +11688,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11690 "configure"
+#line 11691 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11793,7 +11794,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11796 "configure"
+#line 11797 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15249,9 +15250,10 @@ _ACEOF
 
 
 
+
+
 cat > local.exp <<EOF
-set CC_FOR_TARGET "$CC"
-set CXX_FOR_TARGET "$CXX"
+set SYSROOT_CFLAGS_FOR_TARGET "$SYSROOT_CFLAGS_FOR_TARGET"
 set compiler_vendor "$ax_cv_c_compiler_vendor"
 EOF
 

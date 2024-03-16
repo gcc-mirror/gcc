@@ -4300,6 +4300,8 @@ output_constant_pool_contents (struct rtx_constant_pool *pool)
     if (desc->mark < 0)
       {
 #ifdef ASM_OUTPUT_DEF
+	gcc_checking_assert (TARGET_SUPPORTS_ALIASES);
+
 	const char *name = XSTR (desc->sym, 0);
 	char label[256];
 	char buffer[256 + 32];
@@ -6280,6 +6282,10 @@ do_assemble_alias (tree decl, tree target)
 		  IDENTIFIER_POINTER (id),
 		  IDENTIFIER_POINTER (target));
 # endif
+  /* If symbol aliases aren't actually supported...  */
+  if (!TARGET_SUPPORTS_ALIASES)
+    /* ..., 'ASM_OUTPUT_DEF{,_FROM_DECLS}' better have raised an error.  */
+    gcc_checking_assert (seen_error ());
 #elif defined (ASM_OUTPUT_WEAK_ALIAS) || defined (ASM_WEAKEN_DECL)
   {
     const char *name;
@@ -6349,9 +6355,8 @@ assemble_alias (tree decl, tree target)
       if (TREE_PUBLIC (decl))
 	error ("%qs symbol %q+D must have static linkage", "weakref", decl);
     }
-  else
+  else if (!TARGET_SUPPORTS_ALIASES)
     {
-#if !defined (ASM_OUTPUT_DEF)
 # if !defined(ASM_OUTPUT_WEAK_ALIAS) && !defined (ASM_WEAKEN_DECL)
       error_at (DECL_SOURCE_LOCATION (decl),
 		"alias definitions not supported in this configuration");
@@ -6372,7 +6377,7 @@ assemble_alias (tree decl, tree target)
 	  return;
 	}
 # endif
-#endif
+      gcc_unreachable ();
     }
   TREE_USED (decl) = 1;
 
@@ -7461,6 +7466,8 @@ default_strip_name_encoding (const char *str)
 void
 default_asm_output_anchor (rtx symbol)
 {
+  gcc_checking_assert (TARGET_SUPPORTS_ALIASES);
+
   char buffer[100];
 
   sprintf (buffer, "*. + " HOST_WIDE_INT_PRINT_DEC,

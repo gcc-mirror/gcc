@@ -1,5 +1,8 @@
 /* Copyright The GNU Toolchain Authors. */
 
+/* libc is required to allocate trampolines.  */
+#ifndef inhibit_libc
+
 #include <unistd.h>
 #include <sys/mman.h>
 #include <stdint.h>
@@ -170,3 +173,5 @@ __builtin_nested_func_ptr_deleted (void)
       tramp_ctrl_curr = prev;
     }
 }
+
+#endif /* !inhibit_libc */

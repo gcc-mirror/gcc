@@ -25,7 +25,12 @@ extern machine_mode arc_select_cc_mode (enum rtx_code, rtx, rtx);
 extern struct rtx_def *gen_compare_reg (rtx, machine_mode);
 
 /* Declarations for various fns used in the .md file.  */
-extern const char *output_shift (rtx *);
+extern const char *output_shift_loop (enum rtx_code, rtx *);
+extern void arc_split_ashl (rtx *);
+extern void arc_split_ashr (rtx *);
+extern void arc_split_lshr (rtx *);
+extern void arc_split_rotl (rtx *);
+extern void arc_split_rotr (rtx *);
 extern bool compact_sda_memory_operand (rtx, machine_mode, bool);
 extern bool arc_double_limm_p (rtx);
 extern void arc_print_operand (FILE *, rtx, int);

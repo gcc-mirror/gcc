@@ -1530,9 +1530,9 @@ dump_location_info (FILE *stream)
 			   map->start_location,
 			   (map->start_location
 			    + MACRO_MAP_NUM_MACRO_TOKENS (map)));
-      inform (MACRO_MAP_EXPANSION_POINT_LOCATION (map),
+      inform (map->get_expansion_point_location (),
 	      "expansion point is location %i",
-	      MACRO_MAP_EXPANSION_POINT_LOCATION (map));
+	      map->get_expansion_point_location ());
       fprintf (stream, "  map->start_location: %u\n",
 	       map->start_location);
 

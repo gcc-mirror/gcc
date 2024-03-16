@@ -10,7 +10,7 @@
  */
 module dmd.ast_node;
 
-import dmd.root.rootobject : RootObject;
+import dmd.rootobject : RootObject;
 import dmd.visitor : Visitor;
 
 /// The base class of all AST nodes.

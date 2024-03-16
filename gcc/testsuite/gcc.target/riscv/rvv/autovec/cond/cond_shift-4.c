@@ -31,3 +31,4 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {vsll\.vi\s+v[0-9]+,v[0-9]+,3,v0.t} 8 } } */
 /* { dg-final { scan-assembler-times {vsra\.vi\s+v[0-9]+,v[0-9]+,3,v0.t} 4 } } */
 /* { dg-final { scan-assembler-times {vsrl\.vi\s+v[0-9]+,v[0-9]+,3,v0.t} 4 } } */
+/* { dg-final { scan-assembler-not {\tvf?merge\.v[vxi]m\t} } } */

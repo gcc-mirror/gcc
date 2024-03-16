@@ -1110,7 +1110,9 @@ ix86_split_mmx_pack (rtx operands[], enum rtx_code code)
   ix86_move_vector_high_sse_to_mmx (op0);
 }
 
-/* Split MMX punpcklXX/punpckhXX with SSE punpcklXX.  */
+/* Split MMX punpcklXX/punpckhXX with SSE punpcklXX.  This is also used
+   for a full unpack of OPERANDS[1] and OPERANDS[2] into a wider
+   OPERANDS[0].  */
 
 void
 ix86_split_mmx_punpck (rtx operands[], bool high_p)
@@ -1118,7 +1120,7 @@ ix86_split_mmx_punpck (rtx operands[], bool high_p)
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   rtx op2 = operands[2];
-  machine_mode mode = GET_MODE (op0);
+  machine_mode mode = GET_MODE (op1);
   rtx mask;
   /* The corresponding SSE mode.  */
   machine_mode sse_mode, double_sse_mode;
@@ -2411,30 +2413,53 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
   rtx tmp;
 
   /* Handle special case - vector comparsion with boolean result, transform
-     it using ptest instruction.  */
+     it using ptest instruction or vpcmpeq + kortest.  */
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
       || (mode == TImode && !TARGET_64BIT)
-      || mode == OImode)
+      || mode == OImode
+      || GET_MODE_SIZE (mode) == 64)
     {
-      rtx flag = gen_rtx_REG (CCZmode, FLAGS_REG);
-      machine_mode p_mode = GET_MODE_SIZE (mode) == 32 ? V4DImode : V2DImode;
+      unsigned msize = GET_MODE_SIZE (mode);
+      machine_mode p_mode
+	= msize == 64 ? V16SImode : msize == 32 ? V4DImode : V2DImode;
+      /* kortest set CF when result is 0xFFFF (op0 == op1).  */
+      rtx flag = gen_rtx_REG (msize == 64 ? CCCmode : CCZmode, FLAGS_REG);
 
       gcc_assert (code == EQ || code == NE);
 
-      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+      /* Using vpcmpeq zmm zmm k + kortest for 512-bit vectors.  */
+      if (msize == 64)
 	{
-	  op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
-	  op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
-	  mode = p_mode;
+	  if (mode != V16SImode)
+	    {
+	      op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
+	      op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
+	    }
+
+	  tmp = gen_reg_rtx (HImode);
+	  emit_insn (gen_avx512f_cmpv16si3 (tmp, op0, op1, GEN_INT (0)));
+	  emit_insn (gen_kortesthi_ccc (tmp, tmp));
 	}
-      /* Generate XOR since we can't check that one operand is zero vector.  */
-      tmp = gen_reg_rtx (mode);
-      emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
-      tmp = gen_lowpart (p_mode, tmp);
-      emit_insn (gen_rtx_SET (gen_rtx_REG (CCZmode, FLAGS_REG),
-			      gen_rtx_UNSPEC (CCZmode,
-					      gen_rtvec (2, tmp, tmp),
-					      UNSPEC_PTEST)));
+      /* Using ptest for 128/256-bit vectors.  */
+      else
+	{
+	  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+	    {
+	      op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
+	      op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
+	      mode = p_mode;
+	    }
+
+	  /* Generate XOR since we can't check that one operand is zero
+	     vector.  */
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
+	  tmp = gen_lowpart (p_mode, tmp);
+	  emit_insn (gen_rtx_SET (gen_rtx_REG (CCZmode, FLAGS_REG),
+				  gen_rtx_UNSPEC (CCZmode,
+						  gen_rtvec (2, tmp, tmp),
+						  UNSPEC_PTEST)));
+	}
       tmp = gen_rtx_fmt_ee (code, VOIDmode, flag, const0_rtx);
       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 				  gen_rtx_LABEL_REF (VOIDmode, label),
@@ -4198,6 +4223,8 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V8QImode:
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SImode:
       if (TARGET_SSE4_1)
 	{
@@ -4207,6 +4234,8 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V4QImode:
     case E_V2HImode:
+    case E_V2HFmode:
+    case E_V2BFmode:
       if (TARGET_SSE4_1)
 	{
 	  gen = gen_mmx_pblendvb_v4qi;
@@ -5660,7 +5689,7 @@ ix86_expand_sse_extend (rtx dest, rtx src, bool unsigned_p)
       gcc_unreachable ();
     }
 
-  ops[0] = gen_reg_rtx (imode);
+  ops[0] = dest;
 
   ops[1] = force_reg (imode, src);
 
@@ -5671,7 +5700,6 @@ ix86_expand_sse_extend (rtx dest, rtx src, bool unsigned_p)
 				  ops[1], pc_rtx, pc_rtx);
 
   ix86_split_mmx_punpck (ops, false);
-  emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), ops[0], imode));
 }
 
 /* Unpack SRC into the next wider integer vector type.  UNSIGNED_P is

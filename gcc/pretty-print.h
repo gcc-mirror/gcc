@@ -295,6 +295,10 @@ public:
 
   /* Whether URLs should be emitted, and which terminator to use.  */
   diagnostic_url_format url_format;
+
+  /* If true, then we've had a pp_begin_url (nullptr), and so the
+     next pp_end_url should be a no-op.  */
+  bool m_skipping_null_url;
 };
 
 inline const char *

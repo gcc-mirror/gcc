@@ -1,3 +1,7 @@
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gomp-constants.h (GOACC_FLAG_LOCAL_DEVICE): New flag bit value.
+
 2023-10-12  Zhang, Jun  <jun.zhang@intel.com>
 
 	PR target/109812

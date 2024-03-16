@@ -44,7 +44,7 @@ import dmd.root.rmem;
 import dmd.root.array;
 import dmd.root.ctfloat;
 import dmd.root.region;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.utf;
 import dmd.statement;
 import dmd.tokens;
@@ -2975,6 +2975,9 @@ public:
         }
     }
 
+    private alias fp_t = extern (D) UnionExp function(const ref Loc loc, Type, Expression, Expression);
+    private alias fp2_t = extern (D) bool function(const ref Loc loc, EXP, Expression, Expression);
+
     extern (D) private void interpretCommon(BinExp e, fp_t fp)
     {
         debug (LOG)
@@ -4965,6 +4968,22 @@ public:
 
     override void visit(CommaExp e)
     {
+        /****************************************
+         * Find the first non-comma expression.
+         * Params:
+         *      e = Expressions connected by commas
+         * Returns:
+         *      left-most non-comma expression
+         */
+        static inout(Expression) firstComma(inout Expression e)
+        {
+            Expression ex = cast()e;
+            while (ex.op == EXP.comma)
+                ex = (cast(CommaExp)ex).e1;
+            return cast(inout)ex;
+
+        }
+
         debug (LOG)
         {
             printf("%s CommaExp::interpret() %s\n", e.loc.toChars(), e.toChars());

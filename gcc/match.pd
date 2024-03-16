@@ -103,12 +103,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   IFN_COND_FMIN IFN_COND_FMAX
   IFN_COND_AND IFN_COND_IOR IFN_COND_XOR
   IFN_COND_SHL IFN_COND_SHR)
+(define_operator_list COND_LEN_BINARY
+  IFN_COND_LEN_ADD IFN_COND_LEN_SUB
+  IFN_COND_LEN_MUL IFN_COND_LEN_DIV
+  IFN_COND_LEN_MOD IFN_COND_LEN_RDIV
+  IFN_COND_LEN_MIN IFN_COND_LEN_MAX
+  IFN_COND_LEN_FMIN IFN_COND_LEN_FMAX
+  IFN_COND_LEN_AND IFN_COND_LEN_IOR IFN_COND_LEN_XOR
+  IFN_COND_LEN_SHL IFN_COND_LEN_SHR)
 
 /* Same for ternary operations.  */
 (define_operator_list UNCOND_TERNARY
   IFN_FMA IFN_FMS IFN_FNMA IFN_FNMS)
 (define_operator_list COND_TERNARY
   IFN_COND_FMA IFN_COND_FMS IFN_COND_FNMA IFN_COND_FNMS)
+(define_operator_list COND_LEN_TERNARY
+  IFN_COND_LEN_FMA IFN_COND_LEN_FMS IFN_COND_LEN_FNMA IFN_COND_LEN_FNMS)
 
 /* __atomic_fetch_or_*, __atomic_fetch_xor_*, __atomic_xor_fetch_*  */
 (define_operator_list ATOMIC_FETCH_OR_XOR_N
@@ -2707,6 +2717,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (TREE_INT_CST_LOW (@1) & 1)
    { constant_boolean_node (cmp == NE_EXPR, type); })))
 
+/*
+   U & N <= U  -> true
+   U & N >  U  -> false
+   U needs to be non-negative.
+
+   U | N <  U  -> false
+   U | N >= U  -> true
+   U and N needs to be non-negative
+
+   U | N <  U  -> true
+   U | N >= U  -> false
+   U needs to be non-negative and N needs to be a negative constant.
+   */
+(for cmp   (lt      ge      le      gt     )
+     bitop (bit_ior bit_ior bit_and bit_and)
+ (simplify
+  (cmp:c (bitop:c tree_expr_nonnegative_p@0 @1) @0)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+   (if (bitop == BIT_AND_EXPR || tree_expr_nonnegative_p (@1))
+    { constant_boolean_node (cmp == GE_EXPR || cmp == LE_EXPR, type); }
+    /* The sign is opposite now so the comparison is swapped around. */
+    (if (TREE_CODE (@1) == INTEGER_CST && wi::neg_p (wi::to_wide (@1)))
+     { constant_boolean_node (cmp == LT_EXPR, type); })))))
+
 /* Arguments on which one can call get_nonzero_bits to get the bits
    possibly set.  */
 (match with_possible_nonzero_bits
@@ -4120,6 +4154,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_PRECISION (type) > 1
        && (INTEGRAL_TYPE_P (TREE_TYPE (@0))))
        (op (mult (convert:type @0) @2) @1))))
+
+/* ?: Value replacement. */
+/* a == 0 ? b : b + a  -> b + a */
+(for op (plus bit_ior bit_xor)
+ (simplify
+  (cond (eq @0 integer_zerop) @1 (op:c@2 @1 @0))
+   @2))
+/* a == 0 ? b : b - a  -> b - a */
+/* a == 0 ? b : b ptr+ a  -> b ptr+ a */
+/* a == 0 ? b : b shift/rotate a -> b shift/rotate a */
+(for op (lrotate rrotate lshift rshift minus pointer_plus)
+ (simplify
+  (cond (eq @0 integer_zerop) @1 (op@2 @1 @0))
+   @2))
+
+/* a == 1 ? b : b / a  -> b / a */
+(for op (trunc_div ceil_div floor_div round_div exact_div)
+ (simplify
+  (cond (eq @0 integer_onep) @1 (op@2 @1 @0))
+   @2))
+
+/* a == 1 ? b : a * b -> a * b */
+(for op (mult)
+ (simplify
+  (cond (eq @0 integer_onep) @1 (op:c@2 @1 @0))
+   @2))
+
+/* a == -1 ? b : a & b -> a & b */
+(for op (bit_and)
+ (simplify
+  (cond (eq @0 integer_all_onesp) @1 (op:c@2 @1 @0))
+   @2))
 
 /* Simplifications of shift and rotates.  */
 
@@ -5611,6 +5677,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (wi::eq_p (wi::bit_not (wi::to_wide (@1)), wi::to_wide (@2)))
   @3))
 
+/* X != C1 ? abs(X) : C2 simplifies to abs(x) when abs(C1) == C2. */
+(for op (abs absu)
+ (simplify
+  (cond (ne @0 INTEGER_CST@1) (op@3 @0) INTEGER_CST@2)
+  (if (wi::abs (wi::to_wide (@1)) == wi::to_wide (@2))
+   (if (op != ABSU_EXPR && wi::only_sign_bit_p (wi::to_wide (@1)))
+    (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+     (convert (absu:utype @0)))
+    @3))))
+
 /* (X + 1) > Y ? -X : 1 simplifies to X >= Y ? -X : 1 when
    X is unsigned, as when X + 1 overflows, X is -1, so -X == 1.  */
 (simplify
@@ -5650,9 +5726,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cnd (logical_inverted_value truth_valued_p@0) @1 @2)
   (cnd @0 @2 @1)))
 
-/* abs/negative simplifications moved from fold_cond_expr_with_comparison,
-   Need to handle (A - B) case as fold_cond_expr_with_comparison does.
-   Need to handle UN* comparisons.
+/* abs/negative simplifications moved from fold_cond_expr_with_comparison.
 
    None of these transformations work for modes with signed
    zeros.  If A is +/-0, the first two transformations will
@@ -5716,6 +5790,48 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        }
        (convert (negate (absu:utype @0))))
        (negate (abs @0)))))
+ )
+
+ /* (A - B) == 0 ? (A - B) : (B - A)    same as (B - A) */
+ (for cmp (eq uneq)
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) zerop) @0 (minus@3 @2 @1))
+   (if (!HONOR_SIGNED_ZEROS (type))
+    @3))
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) integer_zerop) integer_zerop (minus@3 @2 @1))
+   @3)
+ )
+ /* (A - B) != 0 ? (A - B) : (B - A)    same as (A - B) */
+ (for cmp (ne ltgt)
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) zerop) @0 (minus @2 @1))
+   (if (!HONOR_SIGNED_ZEROS (type))
+    @0))
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) integer_zerop) @0 integer_zerop)
+   @0)
+ )
+ /* (A - B) >=/> 0 ? (A - B) : (B - A)    same as abs (A - B) */
+ (for cmp (ge gt)
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) zerop) @0 (minus @2 @1))
+   (if (!HONOR_SIGNED_ZEROS (type)
+	&& !TYPE_UNSIGNED (type))
+    (abs @0))))
+ /* (A - B) <=/< 0 ? (A - B) : (B - A)    same as -abs (A - B) */
+ (for cmp (le lt)
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) zerop) @0 (minus @2 @1))
+   (if (!HONOR_SIGNED_ZEROS (type)
+	&& !TYPE_UNSIGNED (type))
+    (if (ANY_INTEGRAL_TYPE_P (type)
+	 && !TYPE_OVERFLOW_WRAPS (type))
+     (with {
+        tree utype = unsigned_type_for (type);
+      }
+      (convert (negate (absu:utype @0))))
+      (negate (abs @0)))))
  )
 )
 
@@ -8560,7 +8676,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* popcount(X&Y) + popcount(X|Y) is popcount(x) + popcount(Y).  */
 (simplify
   (plus:c (POPCOUNT:s (bit_and:s @0 @1)) (POPCOUNT:s (bit_ior:cs @0 @1)))
-  (plus (POPCOUNT @0) (POPCOUNT @1)))
+  (plus (POPCOUNT:type @0) (POPCOUNT:type @1)))
 
 /* popcount(X) + popcount(Y) - popcount(X&Y) is popcount(X|Y).  */
 /* popcount(X) + popcount(Y) - popcount(X|Y) is popcount(X&Y).  */
@@ -8939,6 +9055,35 @@ and,
    (if (inverse_conditions_p (@0, @2)
         && element_precision (type) == element_precision (op_type))
     (view_convert (cond_op @2 @3 @4 @5 (view_convert:op_type @1)))))))
+
+/* Detect cases in which a VEC_COND_EXPR effectively replaces the
+   "else" value of an IFN_COND_LEN_*.  */
+(for cond_len_op (COND_LEN_BINARY)
+ (simplify
+  (vec_cond @0 (view_convert? (cond_len_op @0 @1 @2 @3 @4 @5)) @6)
+  (with { tree op_type = TREE_TYPE (@3); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_len_op @0 @1 @2 (view_convert:op_type @6) @4 @5)))))
+ (simplify
+  (vec_cond @0 @1 (view_convert? (cond_len_op @2 @3 @4 @5 @6 @7)))
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (inverse_conditions_p (@0, @2)
+        && element_precision (type) == element_precision (op_type))
+    (view_convert (cond_len_op @2 @3 @4 (view_convert:op_type @1) @6 @7))))))
+
+/* Same for ternary operations.  */
+(for cond_len_op (COND_LEN_TERNARY)
+ (simplify
+  (vec_cond @0 (view_convert? (cond_len_op @0 @1 @2 @3 @4 @5 @6)) @7)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_len_op @0 @1 @2 @3 (view_convert:op_type @7) @5 @6)))))
+ (simplify
+  (vec_cond @0 @1 (view_convert? (cond_len_op @2 @3 @4 @5 @6 @7 @8)))
+  (with { tree op_type = TREE_TYPE (@6); }
+   (if (inverse_conditions_p (@0, @2)
+        && element_precision (type) == element_precision (op_type))
+    (view_convert (cond_len_op @2 @3 @4 @5 (view_convert:op_type @1) @7 @8))))))
 
 /* Detect simplication for a conditional reduction where
 

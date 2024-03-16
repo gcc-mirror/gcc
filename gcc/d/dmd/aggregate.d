@@ -192,7 +192,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
      * Returns:
      *      The total number of fields minus the number of hidden fields.
      */
-    final size_t nonHiddenFields()
+    extern (D) final size_t nonHiddenFields()
     {
         return fields.length - isNested() - (vthis2 !is null);
     }
@@ -202,7 +202,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
      * Returns:
      *      false if failed to determine the size.
      */
-    final bool determineSize(const ref Loc loc)
+    extern (D) final bool determineSize(const ref Loc loc)
     {
         //printf("AggregateDeclaration::determineSize() %s, sizeok = %d\n", toChars(), sizeok);
 
@@ -609,7 +609,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     }
 
     /// Flag this aggregate as deprecated
-    final void setDeprecated()
+    extern (D) final void setDeprecated()
     {
         this.storage_class |= STC.deprecated_;
     }
@@ -745,7 +745,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     /*******************************************
      * Look for constructor declaration.
      */
-    final Dsymbol searchCtor()
+    extern (D) final Dsymbol searchCtor()
     {
         auto s = search(Loc.initial, Id.ctor);
         if (s)

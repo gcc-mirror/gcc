@@ -67,3 +67,12 @@ handle_contract_violation (const std::experimental::contract_violation &violatio
   std::cerr << std::endl;
 #endif
 }
+
+#if _GLIBCXX_INLINE_VERSION
+// The compiler expects the contract_violation class to be in an unversioned
+// namespace, so provide a forwarding function with the expected symbol name.
+extern "C" void
+_Z25handle_contract_violationRKNSt12experimental18contract_violationE
+(const std::experimental::contract_violation &violation)
+{ handle_contract_violation(violation); }
+#endif

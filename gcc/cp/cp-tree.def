@@ -24,13 +24,14 @@ along with GCC; see the file COPYING3.  If not see
 /* An OFFSET_REF is used in two situations:
 
    1. An expression of the form `A::m' where `A' is a class and `m' is
-      a non-static member.  In this case, operand 0 will be a TYPE
-      (corresponding to `A') and operand 1 will be a FIELD_DECL,
-      BASELINK, or TEMPLATE_ID_EXPR (corresponding to `m').
+      a non-static member or an overload set.  In this case, operand 0
+      will be a TYPE (corresponding to `A') and operand 1 will be a
+      FIELD_DECL, BASELINK, or TEMPLATE_ID_EXPR (corresponding to `m').
 
-      The expression is a pointer-to-member if its address is taken,
-      but simply denotes a member of the object if its address is not
-      taken.
+      The expression is a pointer-to-member if its address is taken (and
+      if, after any overload resolution, 'm' does not designate a
+      static or explicit object member function).  It simply denotes a
+      member of the object if its address is not taken.
 
       This form is only used during the parsing phase; once semantic
       analysis has taken place they are eliminated.

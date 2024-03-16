@@ -1,18 +1,17 @@
-// REQUIRED_ARGS: -w
-// PERMUTE_ARGS: -debug
+/*
+PERMUTE_ARGS: -debug
+TEST_OUTPUT:
+---
+fail_compilation/fail3882.d(32): Error: `@mustuse` on functions is reserved for future use
+fail_compilation/fail3882.d(33): Error: `@mustuse` on functions is reserved for future use
+---
+*/
+import core.attribute;
 
 /******************************************/
 // https://issues.dlang.org/show_bug.cgi?id=3882
 
-/*
-TEST_OUTPUT:
----
-fail_compilation/fail3882.d(23): Warning: calling `fail3882.strictlyPure!int.strictlyPure` without side effects discards return value of type `int`; prepend a `cast(void)` if intentional
-fail_compilation/fail3882.d(27): Warning: calling `fp` without side effects discards return value of type `int`; prepend a `cast(void)` if intentional
----
-*/
-
-@safe pure nothrow T strictlyPure(T)(T x)
+@mustuse @safe pure nothrow T strictlyPure(T)(T x)
 {
     return x*x;
 }
@@ -30,18 +29,8 @@ void main()
 /******************************************/
 // bugfix in TypeFunction::purityLevel
 
-/*
-TEST_OUTPUT:
----
-fail_compilation/fail3882.d(48): Warning: calling `fail3882.f1` without side effects discards return value of type `int`; prepend a `cast(void)` if intentional
-fail_compilation/fail3882.d(49): Warning: calling `fail3882.f2` without side effects discards return value of type `int`; prepend a `cast(void)` if intentional
-Error: warnings are treated as errors
-       Use -wi if you wish to treat warnings only as informational.
----
-*/
-
-nothrow pure int f1(immutable(int)[] a) { return 0; }
-nothrow pure int f2(immutable(int)*  p) { return 0; }
+@mustuse nothrow pure int f1(immutable(int)[] a) { return 0; }
+@mustuse nothrow pure int f2(immutable(int)*  p) { return 0; }
 
 void test_bug()
 {

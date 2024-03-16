@@ -317,7 +317,7 @@ Runtime::convert_types(Gogo* gogo)
       Type* t = runtime_function_types[i];
       if (t != NULL && t->named_type() != NULL)
 	{
-	  bool r = t->verify();
+	  bool r = t->verify(gogo);
 	  go_assert(r);
 	  t->named_type()->convert(gogo);
 	}
@@ -414,7 +414,7 @@ Runtime::runtime_declaration(Function code)
 // Make a call to a runtime function.
 
 Call_expression*
-Runtime::make_call(Runtime::Function code, Location loc,
+Runtime::make_call(Gogo*, Runtime::Function code, Location loc,
 		   int param_count, ...)
 {
   go_assert(code < Runtime::NUMBER_OF_FUNCTIONS);

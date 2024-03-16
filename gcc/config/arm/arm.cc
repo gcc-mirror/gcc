@@ -30464,6 +30464,62 @@ arm_output_iwmmxt_tinsr (rtx *operands)
   return "";
 }
 
+/* Output an arm casesi dispatch sequence.  Used by arm_casesi_internal insn.
+   Responsible for the handling of switch statements in arm.  */
+const char *
+arm_output_casesi (rtx *operands)
+{
+  char label[100];
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[2])));
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
+  output_asm_insn ("cmp\t%0, %1", operands);
+  output_asm_insn ("bhi\t%l3", operands);
+  ASM_GENERATE_INTERNAL_LABEL (label, "Lrtx", CODE_LABEL_NUMBER (operands[2]));
+  switch (GET_MODE (diff_vec))
+    {
+    case E_QImode:
+      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
+	output_asm_insn ("ldrb\t%4, [%5, %0]", operands);
+      else
+	output_asm_insn ("ldrsb\t%4, [%5, %0]", operands);
+      output_asm_insn ("add\t%|pc, %|pc, %4, lsl #2", operands);
+      break;
+    case E_HImode:
+      if (REGNO (operands[4]) != REGNO (operands[5]))
+	{
+	  output_asm_insn ("add\t%4, %0, %0", operands);
+	  if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
+	    output_asm_insn ("ldrh\t%4, [%5, %4]", operands);
+	  else
+	    output_asm_insn ("ldrsh\t%4, [%5, %4]", operands);
+	}
+      else
+	{
+	  output_asm_insn ("add\t%4, %5, %0", operands);
+	  if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
+	    output_asm_insn ("ldrh\t%4, [%4, %0]", operands);
+	  else
+	    output_asm_insn ("ldrsh\t%4, [%4, %0]", operands);
+	}
+      output_asm_insn ("add\t%|pc, %|pc, %4, lsl #2", operands);
+      break;
+    case E_SImode:
+      if (flag_pic)
+	{
+	  output_asm_insn ("ldr\t%4, [%5, %0, lsl #2]", operands);
+	  output_asm_insn ("add\t%|pc, %|pc, %4", operands);
+	}
+      else
+	output_asm_insn ("ldr\t%|pc, [%5, %0, lsl #2]", operands);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+    assemble_label (asm_out_file, label);
+    output_asm_insn ("nop", operands);
+  return "";
+}
+
 /* Output a Thumb-1 casesi dispatch sequence.  */
 const char *
 thumb1_output_casesi (rtx *operands)

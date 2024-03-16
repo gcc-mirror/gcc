@@ -1,3 +1,9 @@
+2023-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR objc++/111920
+	* objcp-lang.cc (objcp_tsubst_expr) <case CLASS_REFERENCE_EXPR>:
+	Use tsubst instead of tsubst_expr for type operands.
+
 2023-10-20  Patrick Palka  <ppalka@redhat.com>
 
 	* objcp-lang.cc (objcp_tsubst_copy_and_build): Rename to ...

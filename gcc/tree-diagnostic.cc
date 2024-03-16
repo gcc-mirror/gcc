@@ -217,7 +217,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
            This is the locus 2/ of the earlier comment.  */
         location_t resolved_exp_loc =
           linemap_resolve_location (line_table,
-                                    MACRO_MAP_EXPANSION_POINT_LOCATION (iter->map),
+                                    iter->map->get_expansion_point_location (),
                                     LRK_MACRO_DEFINITION_LOCATION, NULL);
 
         diagnostic_append_note (context, resolved_exp_loc, 

@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -mcmodel=large -mlarge-data-threshold=4" } */
+/* { dg-skip-if "PR90698" "*-*-darwin*" } */
 /* { dg-final { scan-assembler {\.lbss} } } */
 /* { dg-final { scan-assembler {\.bss} } } */
 /* { dg-final { scan-assembler {\.ldata} } } */

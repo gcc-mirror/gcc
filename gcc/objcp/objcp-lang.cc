@@ -66,8 +66,14 @@ objcp_tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 RECURSE (TREE_OPERAND (t, 2)), NULL);
 
     case CLASS_REFERENCE_EXPR:
-      return objc_get_class_reference
-	(RECURSE (TREE_OPERAND (t, 0)));
+      {
+	tree ident = TREE_OPERAND (t, 0);
+	if (TYPE_P (ident))
+	  ident = tsubst (ident, args, complain, in_decl);
+	else
+	  ident = RECURSE (ident);
+	return objc_get_class_reference (ident);
+      }
 
     default:
       break;

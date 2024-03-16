@@ -12,6 +12,7 @@ program test
   logical :: l = .true.
 
   !$acc kernels if(l) async num_gangs(i) num_workers(i) vector_length(i) &
+  !$acc self &
   !$acc copy(i), copyin(j), copyout(k), create(m) &
   !$acc no_create(n) &
   !$acc present(o), pcopy(p), pcopyin(r), pcopyout(s), pcreate(t) &
@@ -27,7 +28,7 @@ end program test
 ! { dg-final { scan-tree-dump-times "num_gangs" 1 "original" } } 
 ! { dg-final { scan-tree-dump-times "num_workers" 1 "original" } } 
 ! { dg-final { scan-tree-dump-times "vector_length" 1 "original" } } 
-
+! { dg-final { scan-tree-dump-times "self\\(1\\)" 1 "original" } } 
 ! { dg-final { scan-tree-dump-times "map\\(tofrom:i\\)" 1 "original" } } 
 ! { dg-final { scan-tree-dump-times "map\\(to:j\\)" 1 "original" } } 
 ! { dg-final { scan-tree-dump-times "map\\(from:k\\)" 1 "original" } } 
@@ -41,5 +42,5 @@ end program test
 
 ! { dg-final { scan-tree-dump-times "map\\(force_deviceptr:u\\)" 1 "original" } } 
 
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_data_kernels if\((?:D\.|_)[0-9]+\)$} 1 "omp_oacc_kernels_decompose" } }
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_parallel_kernels_gang_single num_gangs\(1\) if\((?:D\.|_)[0-9]+\) async\(-1\)$} 1 "omp_oacc_kernels_decompose" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_data_kernels if\((?:D\.|_)[0-9]+\) self\(1\)$} 1 "omp_oacc_kernels_decompose" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_parallel_kernels_gang_single num_gangs\(1\) if\((?:D\.|_)[0-9]+\) self\(1\) async\(-1\)$} 1 "omp_oacc_kernels_decompose" } }

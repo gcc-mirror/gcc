@@ -2260,6 +2260,7 @@
 	  || GET_CODE (SET_SRC (elt)) != UNSPEC_VOLATILE
 	  || GET_MODE (SET_SRC (elt)) != V2DImode
 	  || XVECLEN (SET_SRC (elt), 0) != 1
+	  || !REG_P (XVECEXP (SET_SRC (elt), 0, 0))
 	  || REGNO (XVECEXP (SET_SRC (elt), 0, 0)) != GET_SSE_REGNO (i))
 	return false;
     }

@@ -99,7 +99,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
             ScopeDsymbol.addMember(sc, sds);
         }
 
-        addEnumMembers(this, sc, sds);
+        addEnumMembersToSymtab(this, sc, sds);
     }
 
     override void setScope(Scope* sc)

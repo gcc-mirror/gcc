@@ -135,6 +135,10 @@ public:
   // The top of this stack records the start of the current block's
   // section in DEF_STACK.
   auto_vec<unsigned int> old_def_stack_limit;
+
+  // The block that dominates the exit block, or null if the exit block
+  // is unreachable.
+  basic_block exit_block_dominator;
 };
 
 }

@@ -1,3 +1,67 @@
+2023-10-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104555
+	* resolve.cc (resolve_select_type): If the selector expression
+	has no class component references and the expression is a
+	derived type, copy the typespec of the symbol to that of the
+	expression.
+
+2023-10-27  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104649
+	* decl.cc (gfc_match_formal_arglist): Handle conflicting declarations
+	of a MODULE PROCEDURE when one of the declarations is an alternate
+	return.
+
+2023-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104625
+	* expr.cc (gfc_check_vardef_context): Check that the target
+	does have a vector index before emitting the specific error.
+	* match.cc (copy_ts_from_selector_to_associate): Ensure that
+	class valued operator expressions set the selector rank and
+	use the rank to provide the associate variable with an
+	appropriate array spec.
+	* resolve.cc (resolve_operator): Reduce stacked parentheses to
+	a single pair.
+	(fixup_array_ref): Extract selector symbol from parentheses.
+
+2023-10-26  Paul-Antoine Arras  <pa@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* interface.cc (gfc_compare_types): Return true if one type is C_PTR
+	and the other is a compatible INTEGER(8).
+	* misc.cc (gfc_typename): Handle the case where an INTEGER(8) actually
+	holds a TYPE(C_PTR).
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.cc (omp_mask2): Split 'OMP_CLAUSE_HOST_SELF' into
+	'OMP_CLAUSE_SELF', 'OMP_CLAUSE_HOST'.
+	(gfc_match_omp_clauses, OACC_UPDATE_CLAUSES): Adjust.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gfortran.h (typedef struct gfc_omp_clauses): Add self_expr field.
+	* openmp.cc (enum omp_mask2): Add OMP_CLAUSE_SELF.
+	(gfc_match_omp_clauses): Add handling for OMP_CLAUSE_SELF.
+	(OACC_PARALLEL_CLAUSES): Add OMP_CLAUSE_SELF.
+	(OACC_KERNELS_CLAUSES): Likewise.
+	(OACC_SERIAL_CLAUSES): Likewise.
+	(resolve_omp_clauses): Add handling for omp_clauses->self_expr.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Add handling of
+	clauses->self_expr and building of OMP_CLAUSE_SELF tree clause.
+	(gfc_split_omp_clauses): Add handling of self_expr field copy.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Group handling of 'if'
+	clause without and with modifier.
+	* frontend-passes.cc (gfc_code_walker): Likewise.
+	* gfortran.h (gfc_omp_clauses): Likewise.
+	* openmp.cc (gfc_free_omp_clauses): Likewise.
+
 2023-10-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* intrinsic.texi (signal): Add 'intrinsic :: signal, sleep' to

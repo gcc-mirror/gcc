@@ -23647,10 +23647,10 @@ altivec_expand_vec_perm_const (rtx target, rtx op0, rtx op1,
 		      && GET_MODE (XEXP (op0, 0)) != V8HImode)))
 	    continue;
 
-          /* For little-endian, the two input operands must be swapped
-             (or swapped back) to ensure proper right-to-left numbering
-             from 0 to 2N-1.  */
-	  if (swapped ^ !BYTES_BIG_ENDIAN
+	  /* For little-endian, the two input operands must be swapped
+	     (or swapped back) to ensure proper right-to-left numbering
+	     from 0 to 2N-1.  */
+	  if (swapped == BYTES_BIG_ENDIAN
 	      && icode != CODE_FOR_vsx_xxpermdi_v16qi)
 	    std::swap (op0, op1);
 	  if (imode != V16QImode)

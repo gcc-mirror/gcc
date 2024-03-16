@@ -5748,6 +5748,26 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	    }
 	  return 2;
 	}
+
+      /* Try 2 bitmask immediates which are xor'd together. */
+      for (i = 0; i < 64; i += 16)
+	{
+	  val2 = (val >> i) & mask;
+	  val2 |= val2 << 16;
+	  val2 |= val2 << 32;
+	  if (aarch64_bitmask_imm (val2) && aarch64_bitmask_imm (val ^ val2))
+	    break;
+	}
+
+      if (i != 64)
+	{
+	  if (generate)
+	    {
+	      emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
+	      emit_insn (gen_xordi3 (dest, dest, GEN_INT (val ^ val2)));
+	    }
+	  return 2;
+	}
     }
 
   /* Try a bitmask plus 2 movk to generate the immediate in 3 instructions.  */
@@ -12346,6 +12366,11 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 
       switch (GET_CODE (x))
 	{
+	case CONST_STRING:
+	  {
+	    asm_fprintf (f, "%s", XSTR (x, 0));
+	    break;
+	  }
 	case REG:
 	  if (aarch64_sve_data_mode_p (GET_MODE (x)))
 	    {
@@ -15539,6 +15564,28 @@ aarch64_memory_move_cost (machine_mode mode, reg_class_t rclass_i, bool in)
   return (in
 	  ? aarch64_tune_params.memmov_cost.load_int
 	  : aarch64_tune_params.memmov_cost.store_int);
+}
+
+/* Implement TARGET_INSN_COST.  We have the opportunity to do something
+   much more productive here, such as using insn attributes to cost things.
+   But we don't, not yet.
+
+   The main point of this current definition is to make calling insn_cost
+   on one instruction equivalent to calling seq_cost on a sequence that
+   contains only that instruction.  The default definition would instead
+   only look at SET_SRCs, ignoring SET_DESTs.
+
+   This ensures that, for example, storing a 128-bit zero vector is more
+   expensive than storing a 128-bit vector register.  A move of zero
+   into a 128-bit vector register followed by multiple stores of that
+   register is then cheaper than multiple stores of zero (which would
+   use STP of XZR).  This in turn allows STP Qs to be formed.  */
+static int
+aarch64_insn_cost (rtx_insn *insn, bool speed)
+{
+  if (rtx set = single_set (insn))
+    return set_rtx_cost (set, speed);
+  return pattern_cost (PATTERN (insn), speed);
 }
 
 /* Implement TARGET_INIT_BUILTINS.  */
@@ -28398,6 +28445,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS aarch64_rtx_costs_wrapper
+
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST aarch64_insn_cost
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P aarch64_scalar_mode_supported_p

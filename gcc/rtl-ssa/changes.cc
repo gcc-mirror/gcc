@@ -34,6 +34,7 @@
 #include "emit-rtl.h"
 #include "cfghooks.h"
 #include "cfgrtl.h"
+#include "sreal.h"
 
 using namespace rtl_ssa;
 
@@ -171,18 +172,33 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 {
   unsigned int old_cost = 0;
   unsigned int new_cost = 0;
+  sreal weighted_old_cost = 0;
+  sreal weighted_new_cost = 0;
+  auto entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   for (insn_change *change : changes)
     {
       old_cost += change->old_cost ();
+      basic_block cfg_bb = change->bb ()->cfg_bb ();
+      bool for_speed = optimize_bb_for_speed_p (cfg_bb);
+      if (for_speed)
+	weighted_old_cost += (cfg_bb->count.to_sreal_scale (entry_count)
+			      * change->old_cost ());
       if (!change->is_deletion ())
 	{
-	  basic_block cfg_bb = change->bb ()->cfg_bb ();
-	  change->new_cost = insn_cost (change->rtl (),
-					optimize_bb_for_speed_p (cfg_bb));
+	  change->new_cost = insn_cost (change->rtl (), for_speed);
 	  new_cost += change->new_cost;
+	  if (for_speed)
+	    weighted_new_cost += (cfg_bb->count.to_sreal_scale (entry_count)
+				  * change->new_cost);
 	}
     }
-  bool ok_p = (strict_p ? new_cost < old_cost : new_cost <= old_cost);
+  bool ok_p;
+  if (weighted_new_cost != weighted_old_cost)
+    ok_p = weighted_new_cost < weighted_old_cost;
+  else if (strict_p)
+    ok_p = new_cost < old_cost;
+  else
+    ok_p = new_cost <= old_cost;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "original cost");
@@ -192,6 +208,8 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 	  fprintf (dump_file, " %c %d", sep, change->old_cost ());
 	  sep = '+';
 	}
+      if (weighted_old_cost != 0)
+	fprintf (dump_file, " (weighted: %f)", weighted_old_cost.to_double ());
       fprintf (dump_file, ", replacement cost");
       sep = '=';
       for (const insn_change *change : changes)
@@ -200,6 +218,8 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 	    fprintf (dump_file, " %c %d", sep, change->new_cost);
 	    sep = '+';
 	  }
+      if (weighted_new_cost != 0)
+	fprintf (dump_file, " (weighted: %f)", weighted_new_cost.to_double ());
       fprintf (dump_file, "; %s\n",
 	       ok_p ? "keeping replacement" : "rejecting replacement");
     }
@@ -207,6 +227,35 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
     return false;
 
   return true;
+}
+
+// SET has been deleted.  Clean up all remaining uses.  Such uses are
+// either dead phis or now-redundant live-out uses.
+void
+function_info::process_uses_of_deleted_def (set_info *set)
+{
+  if (!set->has_any_uses ())
+    return;
+
+  auto *use = *set->all_uses ().begin ();
+  do
+    {
+      auto *next_use = use->next_use ();
+      if (use->is_in_phi ())
+	{
+	  // This call will not recurse.
+	  process_uses_of_deleted_def (use->phi ());
+	  delete_phi (use->phi ());
+	}
+      else
+	{
+	  gcc_assert (use->is_live_out_use ());
+	  remove_use (use);
+	}
+      use = next_use;
+    }
+  while (use);
+  gcc_assert (!set->has_any_uses ());
 }
 
 // Update the REG_NOTES of INSN, whose pattern has just been changed.
@@ -429,8 +478,18 @@ function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
   // Also keep any explicitly-recorded call clobbers, which are deliberately
   // excluded from the vec_rtx_properties.  Calls shouldn't move, so we can
   // keep the definitions in their current position.
+  //
+  // If the change describes a set of memory, but the pattern doesn't
+  // reference memory, keep the set anyway.  This can happen if the
+  // old pattern was a parallel that contained a memory clobber, and if
+  // the new pattern was recognized without that clobber.  Keeping the
+  // set avoids a linear-complexity update to the set's users.
+  //
+  // ??? We could queue an update so that these bogus clobbers are
+  // removed later.
   for (def_info *def : change.new_defs)
-    if (def->m_has_been_superceded && def->is_call_clobber ())
+    if (def->m_has_been_superceded
+	&& (def->is_call_clobber () || def->is_mem ()))
       {
 	def->m_has_been_superceded = false;
 	def->set_insn (insn);
@@ -535,7 +594,7 @@ function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
 	}
     }
 
-  // Install the new list of definitions in CHANGE.
+  // Install the new list of uses in CHANGE.
   sort_accesses (m_temp_uses);
   change.new_uses = use_array (temp_access_array (m_temp_uses));
   m_temp_uses.truncate (0);
@@ -586,8 +645,6 @@ function_info::apply_changes_to_insn (insn_change &change)
 
       insn->set_accesses (builder.finish ().begin (), num_defs, num_uses);
     }
-
-  add_reg_unused_notes (insn);
 }
 
 // Add a temporary placeholder instruction after AFTER.
@@ -687,7 +744,8 @@ function_info::change_insns (array_slice<insn_change *> changes)
     }
 
   // Remove all definitions that are no longer needed.  After the above,
-  // such definitions should no longer have any registered users.
+  // the only uses of such definitions should be dead phis and now-redundant
+  // live-out uses.
   //
   // In particular, this means that consumers must handle debug
   // instructions before removing a set.
@@ -696,7 +754,8 @@ function_info::change_insns (array_slice<insn_change *> changes)
       if (def->m_has_been_superceded)
 	{
 	  auto *set = dyn_cast<set_info *> (def);
-	  gcc_assert (!set || !set->has_any_uses ());
+	  if (set && set->has_any_uses ())
+	    process_uses_of_deleted_def (set);
 	  remove_def (def);
 	}
 
@@ -733,9 +792,14 @@ function_info::change_insns (array_slice<insn_change *> changes)
 	}
     }
 
-  // Finally apply the changes to the underlying insn_infos.
+  // Apply the changes to the underlying insn_infos.
   for (insn_change *change : changes)
     apply_changes_to_insn (*change);
+
+  // Now that the insns and accesses are up to date, add any REG_UNUSED notes.
+  for (insn_change *change : changes)
+    if (!change->is_deletion ())
+      add_reg_unused_notes (change->insn ());
 }
 
 // See the comment above the declaration.
@@ -983,7 +1047,10 @@ function_info::perform_pending_updates ()
   for (insn_info *insn : m_queued_insn_updates)
     {
       rtx_insn *rtl = insn->rtl ();
-      if (JUMP_P (rtl))
+      if (NOTE_P (rtl))
+	// The insn was later optimized away, typically to a NOTE_INSN_DELETED.
+	;
+      else if (JUMP_P (rtl))
 	{
 	  if (INSN_CODE (rtl) == NOOP_MOVE_INSN_CODE)
 	    {

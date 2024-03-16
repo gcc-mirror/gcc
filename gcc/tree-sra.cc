@@ -4275,7 +4275,8 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 
   if (TREE_CODE (rhs) == REALPART_EXPR || TREE_CODE (lhs) == REALPART_EXPR
       || TREE_CODE (rhs) == IMAGPART_EXPR || TREE_CODE (lhs) == IMAGPART_EXPR
-      || TREE_CODE (rhs) == BIT_FIELD_REF || TREE_CODE (lhs) == BIT_FIELD_REF)
+      || (TREE_CODE (rhs) == BIT_FIELD_REF && !sra_handled_bf_read_p (rhs))
+      || TREE_CODE (lhs) == BIT_FIELD_REF)
     {
       modify_this_stmt = sra_modify_expr (gimple_assign_rhs1_ptr (stmt),
 					  gsi, false);

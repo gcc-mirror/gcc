@@ -1195,6 +1195,9 @@ c_base_builddir = .
 c_base_freestanding = \
 	${c_base_srcdir}/cfloat \
 	${c_base_srcdir}/climits \
+	${c_base_srcdir}/cstdalign \
+	${c_base_srcdir}/cstdarg \
+	${c_base_srcdir}/cstdbool \
 	${c_base_srcdir}/cstddef \
 	${c_base_srcdir}/cstdint \
 	${c_base_srcdir}/cstdlib
@@ -1213,9 +1216,6 @@ c_base_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${c_base_srcdir}/cmath \
 @GLIBCXX_HOSTED_TRUE@	${c_base_srcdir}/csetjmp \
 @GLIBCXX_HOSTED_TRUE@	${c_base_srcdir}/csignal \
-@GLIBCXX_HOSTED_TRUE@	${c_base_srcdir}/cstdalign \
-@GLIBCXX_HOSTED_TRUE@	${c_base_srcdir}/cstdarg \
-@GLIBCXX_HOSTED_TRUE@	${c_base_srcdir}/cstdbool \
 @GLIBCXX_HOSTED_TRUE@	${c_base_srcdir}/cstdio \
 @GLIBCXX_HOSTED_TRUE@	${c_base_srcdir}/cstring \
 @GLIBCXX_HOSTED_TRUE@	${c_base_srcdir}/ctgmath \

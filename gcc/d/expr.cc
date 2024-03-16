@@ -972,8 +972,7 @@ public:
 	Declaration *decl = e->e1->isVarExp ()->var;
 	if (decl->storage_class & (STCout | STCref))
 	  {
-	    tree t2 = convert_for_assignment (build_expr (e->e2),
-					      e->e2->type, e->e1->type);
+	    tree t2 = convert_for_assignment (e->e2, e->e1->type);
 	    tree t1 = build_expr (e->e1);
 	    /* Want reference to lhs, not indirect ref.  */
 	    t1 = TREE_OPERAND (t1, 0);
@@ -993,8 +992,7 @@ public:
     if (tb1->ty == TY::Tstruct)
       {
 	tree t1 = build_expr (e->e1);
-	tree t2 = convert_for_assignment (build_expr (e->e2, false, true),
-					  e->e2->type, e->e1->type);
+	tree t2 = convert_for_assignment (e->e2, e->e1->type, true);
 	StructDeclaration *sd = tb1->isTypeStruct ()->sym;
 
 	/* Look for struct = 0.  */
@@ -1073,8 +1071,7 @@ public:
 	    || (e->op == EXP::blit || e->e1->type->size () == 0))
 	  {
 	    tree t1 = build_expr (e->e1);
-	    tree t2 = convert_for_assignment (build_expr (e->e2),
-					      e->e2->type, e->e1->type);
+	    tree t2 = convert_for_assignment (e->e2, e->e1->type);
 
 	    this->result_ = build_assign (modifycode, t1, t2);
 	    return;
@@ -1088,8 +1085,7 @@ public:
 
     /* Simple assignment.  */
     tree t1 = build_expr (e->e1);
-    tree t2 = convert_for_assignment (build_expr (e->e2),
-				      e->e2->type, e->e1->type);
+    tree t2 = convert_for_assignment (e->e2, e->e1->type);
 
     this->result_ = build_assign (modifycode, t1, t2);
   }
@@ -1713,6 +1709,12 @@ public:
     /* Now we have the type, callee and maybe object reference,
        build the call expression.  */
     tree exp = d_build_call (tf, callee, object, e->arguments);
+
+    /* Record whether the call expression has no side effects, so we can check
+       for an unused return value later.  */
+    if (TREE_CODE (exp) == CALL_EXPR && CALL_EXPR_FN (exp) != NULL_TREE
+	&& call_side_effect_free_p (e->f, e->e1->type))
+      CALL_EXPR_WARN_IF_UNUSED (exp) = 1;
 
     if (returnvalue != NULL_TREE)
       exp = compound_expr (exp, returnvalue);
@@ -2338,7 +2340,12 @@ public:
 		new_call = d_save_expr (new_call);
 		se->type = sd->type;
 		se->sym = new_call;
-		result = compound_expr (build_expr (se), new_call);
+
+		/* Setting `se->sym' would mean that the result of the
+		   constructed struct literal expression is `*(new_call)'.
+		   Strip off the indirect reference, as we don't mean to
+		   compute the value yet.  */
+		result = build_address (build_expr (se));
 	      }
 	    else
 	      result = new_call;
@@ -2350,29 +2357,14 @@ public:
     else if (tb->ty == TY::Tarray)
       {
 	/* Allocating memory for a new D array.  */
-	tb = e->newtype->toBasetype ();
-	TypeDArray *tarray = tb->isTypeDArray ();
-
 	gcc_assert (e->arguments && e->arguments->length >= 1);
 
 	if (e->arguments->length == 1)
 	  {
-	    /* Single dimension array allocations.  */
-	    Expression *arg = (*e->arguments)[0];
-
-	    if (tarray->next->size () == 0)
-	      {
-		/* Array element size is unknown.  */
-		this->result_ = d_array_value (build_ctype (e->type),
-					       size_int (0), null_pointer_node);
-		return;
-	      }
-
-	    libcall_fn libcall = tarray->next->isZeroInit ()
-	      ? LIBCALL_NEWARRAYT : LIBCALL_NEWARRAYIT;
-	    result = build_libcall (libcall, tb, 2,
-				    build_typeinfo (e, e->type),
-				    build_expr (arg));
+	    /* Single dimension array allocations has already been handled by
+	       the front-end.  */
+	    gcc_assert (e->lowering);
+	    result = build_expr (e->lowering);
 	  }
 	else
 	  {
@@ -2408,7 +2400,8 @@ public:
 				       size_int (e->arguments->length),
 				       build_address (var));
 
-	    result = build_libcall (libcall, tb, 2, tinfo, dims);
+	    result = build_libcall (libcall, e->newtype->toBasetype (), 2,
+				    tinfo, dims);
 	  }
 
 	if (e->argprefix)

@@ -19,6 +19,10 @@
 
 namespace rtl_ssa {
 
+// Return true if INSN can in principle be moved around, and if RTL-SSA
+// has enough information to do that.
+bool can_move_insn_p (insn_info *);
+
 // Restrict movement range RANGE so that the instruction is placed later
 // than INSN.  (The movement range is the range of instructions after which
 // an instruction can be placed.)
@@ -61,7 +65,8 @@ move_earlier_than (insn_range_info range, insn_info *insn)
 inline bool
 can_insert_after (insn_info *insn)
 {
-  return insn->is_bb_head () || (insn->is_real () && !insn->is_jump ());
+  return (insn->is_bb_head ()
+	  || (insn->is_real () && !control_flow_insn_p (insn->rtl ())));
 }
 
 // Try to restrict move range MOVE_RANGE so that it is possible to

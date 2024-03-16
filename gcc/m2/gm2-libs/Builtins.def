@@ -30,6 +30,10 @@ FROM SYSTEM IMPORT ADDRESS ;
 
 (* floating point intrinsic procedure functions *)
 
+PROCEDURE __BUILTIN__ isnanf (x: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isnan (x: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isnanl (x: LONGREAL) : INTEGER ;
+
 PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : INTEGER ;
 PROCEDURE __BUILTIN__ isfinite (x: REAL) : INTEGER ;
 PROCEDURE __BUILTIN__ isfinitel (x: LONGREAL) : INTEGER ;

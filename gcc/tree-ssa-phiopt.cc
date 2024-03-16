@@ -310,7 +310,9 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 	return NULL;
       /* If arg1 is an INTEGER_CST, fold it to new type.  */
       if (INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
-	  && int_fits_type_p (arg1, TREE_TYPE (new_arg0)))
+	  && (int_fits_type_p (arg1, TREE_TYPE (new_arg0))
+	      || (TYPE_PRECISION (TREE_TYPE (new_arg0))
+		   == TYPE_PRECISION (TREE_TYPE (arg1)))))
 	{
 	  if (gimple_assign_cast_p (arg0_def_stmt))
 	    {
@@ -322,8 +324,12 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 		 if arg0_def_stmt is the only non-debug stmt in
 		 its basic block, because then it is possible this
 		 could enable further optimizations (minmax replacement
-		 etc.).  See PR71016.  */
-	      if (new_arg0 != gimple_cond_lhs (cond_stmt)
+		 etc.).  See PR71016.
+		 Note no-op conversions don't have this issue as
+		 it will not generate any zero/sign extend in that case.  */
+	      if ((TYPE_PRECISION (TREE_TYPE (new_arg0))
+		    != TYPE_PRECISION (TREE_TYPE (arg1)))
+	          && new_arg0 != gimple_cond_lhs (cond_stmt)
 		  && new_arg0 != gimple_cond_rhs (cond_stmt)
 		  && gimple_bb (arg0_def_stmt) == e0->src)
 		{
@@ -354,6 +360,10 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 		    return NULL;
 		}
 	      new_arg1 = fold_convert (TREE_TYPE (new_arg0), arg1);
+
+	      /* Drop the overlow that fold_convert might add. */
+	      if (TREE_OVERFLOW (new_arg1))
+		new_arg1 = drop_tree_overflow (new_arg1);
 	    }
 	  else
 	    return NULL;

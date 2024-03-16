@@ -729,4 +729,13 @@ PROCEDURE BuildAddAddress (location: location_t; op1, op2: Tree) : Tree ;
 PROCEDURE calcNbits (location: location_t; min, max: Tree) : Tree ;
 
 
+(*
+   OverflowZType - return TRUE if str exceeds the ZTYPE range.
+*)
+
+PROCEDURE OverflowZType (location: location_t;
+                         str: ADDRESS; base: CARDINAL;
+                         issueError: BOOLEAN) : BOOLEAN ;
+
+
 END m2expr.

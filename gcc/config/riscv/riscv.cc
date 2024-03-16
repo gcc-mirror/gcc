@@ -346,7 +346,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
   {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
   {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
-  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  {COSTS_N_INSNS (33), COSTS_N_INSNS (65)},	/* int_div */
   1,						/* issue_rate */
   3,						/* branch_cost */
   5,						/* memory_cost */
@@ -361,7 +361,7 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
   {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
   {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
-  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  {COSTS_N_INSNS (33), COSTS_N_INSNS (65)},	/* int_div */
   2,						/* issue_rate */
   4,						/* branch_cost */
   3,						/* memory_cost */
@@ -376,7 +376,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)}, /* fp_mul */
   {COSTS_N_INSNS (20), COSTS_N_INSNS (20)}, /* fp_div */
   {COSTS_N_INSNS (4), COSTS_N_INSNS (4)}, /* int_mul */
-  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)}, /* int_div */
+  {COSTS_N_INSNS (18), COSTS_N_INSNS (34)}, /* int_div */
   1,            /* issue_rate */
   3,            /* branch_cost */
   5,            /* memory_cost */
@@ -1084,6 +1084,9 @@ riscv_regno_mode_ok_for_base_p (int regno,
 enum reg_class
 riscv_index_reg_class ()
 {
+  if (TARGET_XTHEADMEMIDX || TARGET_XTHEADFMEMIDX)
+    return GR_REGS;
+
   return NO_REGS;
 }
 
@@ -1092,15 +1095,18 @@ riscv_index_reg_class ()
    but extensions might support that.  */
 
 int
-riscv_regno_ok_for_index_p (int)
+riscv_regno_ok_for_index_p (int regno)
 {
+  if (TARGET_XTHEADMEMIDX || TARGET_XTHEADFMEMIDX)
+    return riscv_regno_mode_ok_for_base_p (regno, VOIDmode, 1);
+
   return 0;
 }
 
 /* Return true if X is a valid base register for mode MODE.
    STRICT_P is true if REG_OK_STRICT is in effect.  */
 
-static bool
+bool
 riscv_valid_base_register_p (rtx x, machine_mode mode, bool strict_p)
 {
   if (!strict_p && GET_CODE (x) == SUBREG)
@@ -1342,6 +1348,9 @@ static bool
 riscv_classify_address (struct riscv_address_info *info, rtx x,
 			machine_mode mode, bool strict_p)
 {
+  if (th_classify_address (info, x, mode, strict_p))
+    return true;
+
   switch (GET_CODE (x))
     {
     case REG:
@@ -3386,6 +3395,10 @@ riscv_output_move (rtx dest, rtx src)
   machine_mode mode;
   bool dbl_p;
   unsigned width;
+  const char *insn;
+
+  if ((insn = th_output_move (dest, src)))
+    return insn;
 
   dest_code = GET_CODE (dest);
   src_code = GET_CODE (src);
@@ -5581,6 +5594,9 @@ riscv_print_operand_address (FILE *file, machine_mode mode ATTRIBUTE_UNUSED, rtx
 {
   struct riscv_address_info addr;
 
+  if (th_print_operand_address (file, mode, x))
+    return;
+
   if (riscv_classify_address (&addr, x, word_mode, true))
     switch (addr.type)
       {
@@ -5602,7 +5618,11 @@ riscv_print_operand_address (FILE *file, machine_mode mode ATTRIBUTE_UNUSED, rtx
       case ADDRESS_SYMBOLIC:
 	output_addr_const (file, riscv_strip_unspec_address (x));
 	return;
+
+      default:
+	gcc_unreachable ();
       }
+
   gcc_unreachable ();
 }
 
@@ -8610,9 +8630,10 @@ riscv_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
     return promote_mode (type, mode, punsignedp);
 
   unsignedp = *punsignedp;
-  PROMOTE_MODE (as_a <scalar_mode> (mode), unsignedp, type);
+  scalar_mode smode = as_a <scalar_mode> (mode);
+  PROMOTE_MODE (smode, unsignedp, type);
   *punsignedp = unsignedp;
-  return mode;
+  return smode;
 }
 
 /* Implement TARGET_MACHINE_DEPENDENT_REORG.  */

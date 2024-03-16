@@ -36,7 +36,7 @@ extern tree resolve_mixers (class loop *, tree, bool *);
 extern void gather_stats_on_scev_database (void);
 extern bool final_value_replacement_loop (class loop *);
 extern unsigned int scev_const_prop (void);
-extern bool expression_expensive_p (tree);
+extern bool expression_expensive_p (tree, bool *);
 extern bool simple_iv_with_niters (class loop *, class loop *, tree,
 				   struct affine_iv *, tree *, bool);
 extern bool simple_iv (class loop *, class loop *, tree, struct affine_iv *,

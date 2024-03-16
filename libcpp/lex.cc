@@ -2168,8 +2168,14 @@ identifier_diagnostics_on_lex (cpp_reader *pfile, cpp_hashnode *node)
 
   /* It is allowed to poison the same identifier twice.  */
   if ((node->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
-    cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned \"%s\"",
-	       NODE_NAME (node));
+    {
+      cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned \"%s\"",
+		 NODE_NAME (node));
+      const auto data = (cpp_hashnode_extra *)
+	ht_lookup (pfile->extra_hash_table, node->ident, HT_NO_INSERT);
+      if (data && data->poisoned_loc)
+	cpp_error_at (pfile, CPP_DL_NOTE, data->poisoned_loc, "poisoned here");
+    }
 
   /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
      replacement list of a variadic macro.  */

@@ -1923,7 +1923,12 @@ final class CParser(AST) : Parser!AST
                     }
                 }
                 if (isalias)
-                    s = new AST.AliasDeclaration(token.loc, id, dt);
+                {
+                    auto ad = new AST.AliasDeclaration(token.loc, id, dt);
+                    ad.adFlags |= ad.hidden; // do not print when generating .di files
+                    s = ad;
+                }
+
                 insertTypedefToTypedefTab(id, dt);       // remember typedefs
             }
             else if (id)
@@ -1960,7 +1965,9 @@ final class CParser(AST) : Parser!AST
                         error("no initializer for function declaration");
                     if (specifier.scw & SCW.x_Thread_local)
                         error("functions cannot be `_Thread_local`"); // C11 6.7.1-4
-                    auto fd = new AST.FuncDeclaration(token.loc, Loc.initial, id, specifiersToSTC(level, specifier), dt, specifier.noreturn);
+                    StorageClass stc = specifiersToSTC(level, specifier);
+                    stc &= ~STC.gshared;        // no gshared functions
+                    auto fd = new AST.FuncDeclaration(token.loc, Loc.initial, id, stc, dt, specifier.noreturn);
                     specifiersToFuncDeclaration(fd, specifier);
                     s = fd;
                 }
@@ -2136,7 +2143,9 @@ final class CParser(AST) : Parser!AST
         auto body = cparseStatement(ParseStatementFlags.curly);  // don't start a new scope; continue with parameter scope
         typedefTab.pop();                                        // end of function scope
 
-        auto fd = new AST.FuncDeclaration(locFunc, prevloc, id, specifiersToSTC(LVL.global, specifier), ft, specifier.noreturn);
+        StorageClass stc = specifiersToSTC(LVL.global, specifier);
+        stc &= ~STC.gshared;    // no gshared functions
+        auto fd = new AST.FuncDeclaration(locFunc, prevloc, id, stc, ft, specifier.noreturn);
         specifiersToFuncDeclaration(fd, specifier);
 
         if (addFuncName)
@@ -5289,7 +5298,7 @@ final class CParser(AST) : Parser!AST
             (*decls)[0] = s;
             s = new AST.AlignDeclaration(s.loc, specifier.alignExps, decls);
         }
-        else if (!specifier.packalign.isDefault())
+        else if (!specifier.packalign.isDefault() && !specifier.packalign.isUnknown())
         {
             //printf("  applying packalign %d\n", cast(int)specifier.packalign);
             // Wrap #pragma pack in an AlignDeclaration

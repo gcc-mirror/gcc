@@ -51,5 +51,4 @@ main_test (void)
     }
   if (chk_calls != 2)
     abort ();
-  return 0;
 }

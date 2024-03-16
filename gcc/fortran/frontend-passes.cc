@@ -5652,6 +5652,8 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 			OMP_LIST_MAP, OMP_LIST_TO, OMP_LIST_FROM };
 		  size_t idx;
 		  WALK_SUBEXPR (co->ext.omp_clauses->if_expr);
+		  for (idx = 0; idx < OMP_IF_LAST; idx++)
+		    WALK_SUBEXPR (co->ext.omp_clauses->if_exprs[idx]);
 		  WALK_SUBEXPR (co->ext.omp_clauses->final_expr);
 		  WALK_SUBEXPR (co->ext.omp_clauses->num_threads);
 		  WALK_SUBEXPR (co->ext.omp_clauses->chunk_size);
@@ -5667,8 +5669,6 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  WALK_SUBEXPR (co->ext.omp_clauses->num_tasks);
 		  WALK_SUBEXPR (co->ext.omp_clauses->priority);
 		  WALK_SUBEXPR (co->ext.omp_clauses->detach);
-		  for (idx = 0; idx < OMP_IF_LAST; idx++)
-		    WALK_SUBEXPR (co->ext.omp_clauses->if_exprs[idx]);
 		  for (idx = 0; idx < ARRAY_SIZE (list_types); idx++)
 		    for (n = co->ext.omp_clauses->lists[list_types[idx]];
 			 n; n = n->next)

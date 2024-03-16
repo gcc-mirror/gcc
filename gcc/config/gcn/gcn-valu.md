@@ -948,7 +948,8 @@
 	  (match_operand:V_1REG 1 "register_operand"   " 0,v")
 	  (match_operand 2 "ascending_zero_int_parallel" "")))]
   "MODE_VF (<V_1REG_ALT:MODE>mode) < MODE_VF (<V_1REG:MODE>mode)
-   && <V_1REG_ALT:SCALAR_MODE>mode == <V_1REG:SCALAR_MODE>mode"
+   && <V_1REG_ALT:SCALAR_MODE>mode == <V_1REG:SCALAR_MODE>mode
+   /* This comment silences a warning for operands[2]. */"
   "@
   ; in-place extract %0
   v_mov_b32\t%L0, %L1"
@@ -961,7 +962,8 @@
 	  (match_operand:V_2REG 1 "register_operand"   " 0,v")
 	  (match_operand 2 "ascending_zero_int_parallel" "")))]
   "MODE_VF (<V_2REG_ALT:MODE>mode) < MODE_VF (<V_2REG:MODE>mode)
-   && <V_2REG_ALT:SCALAR_MODE>mode == <V_2REG:SCALAR_MODE>mode"
+   && <V_2REG_ALT:SCALAR_MODE>mode == <V_2REG:SCALAR_MODE>mode
+   /* This comment silences a warning for operands[2]. */"
   "@
   ; in-place extract %0
   v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1"

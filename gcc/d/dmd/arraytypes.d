@@ -22,7 +22,7 @@ import dmd.identifier;
 import dmd.init;
 import dmd.mtype;
 import dmd.root.array;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.statement;
 
 alias Strings = Array!(const(char)*);

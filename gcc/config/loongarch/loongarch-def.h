@@ -99,6 +99,12 @@ extern const char* loongarch_cmodel_strings[];
 #define CMODEL_EXTREME	      5
 #define N_CMODEL_TYPES	      6
 
+/* enum explicit_relocs */
+#define EXPLICIT_RELOCS_AUTO	0
+#define EXPLICIT_RELOCS_NONE	1
+#define EXPLICIT_RELOCS_ALWAYS	2
+#define N_EXPLICIT_RELOCS_TYPES	3
+
 /* The common default value for variables whose assignments
    are triggered by command-line options.  */
 

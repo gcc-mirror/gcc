@@ -14,4 +14,4 @@
 /* { dg-final { scan-assembler-times {\tvncvt\.x\.x\.w\tv[0-9]+,v[0-9]+\n} 8 } } */
 
 /* { dg-final { scan-assembler {\tvsetvli\t[a-z0-9]+,[a-z0-9]+,e[0-9]+,m[f0-9]+,t[au],mu} } } */
-
+/* { dg-final { scan-assembler-not {\tvf?merge\.v[vxi]m\t} } } */

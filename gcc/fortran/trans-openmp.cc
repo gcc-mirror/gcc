@@ -3966,6 +3966,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       OMP_CLAUSE_IF_EXPR (c) = if_var;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
+
   for (ifc = 0; ifc < OMP_IF_LAST; ifc++)
     if (clauses->if_exprs[ifc])
       {
@@ -4016,6 +4017,21 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	OMP_CLAUSE_IF_EXPR (c) = if_var;
 	omp_clauses = gfc_trans_add_clause (c, omp_clauses);
       }
+
+  if (clauses->self_expr)
+    {
+      tree self_var;
+
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, clauses->self_expr);
+      gfc_add_block_to_block (block, &se.pre);
+      self_var = gfc_evaluate_now (se.expr, block);
+      gfc_add_block_to_block (block, &se.post);
+
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_SELF);
+      OMP_CLAUSE_SELF_EXPR (c) = self_var;
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
 
   if (clauses->final_expr)
     {
@@ -6615,6 +6631,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* And this is copied to all.  */
 	  clausesa[GFC_OMP_SPLIT_TARGET].if_expr
 	    = code->ext.omp_clauses->if_expr;
+	  clausesa[GFC_OMP_SPLIT_TARGET].self_expr
+	    = code->ext.omp_clauses->self_expr;
 	  clausesa[GFC_OMP_SPLIT_TARGET].nowait
 	    = code->ext.omp_clauses->nowait;
 	}

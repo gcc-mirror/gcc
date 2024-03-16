@@ -568,6 +568,8 @@ function_info::record_call_clobbers (build_info &bi, insn_info *insn,
       insn->add_note (insn_clobbers);
 
       ecc->insert_max_node (insn_clobbers);
+
+      m_clobbered_by_calls |= abi.full_and_partial_reg_clobbers ();
     }
   else
     for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)

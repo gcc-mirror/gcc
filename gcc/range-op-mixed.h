@@ -414,8 +414,7 @@ private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
 		const wide_int &rh_ub) const final override;
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-		bool &maybe_nan, tree type,
+  void rv_fold (frange &r, tree type,
 		const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub,
 		relation_kind) const final override;
@@ -483,8 +482,7 @@ private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
 		const wide_int &rh_ub) const final override;
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-		bool &maybe_nan, tree type,
+  void rv_fold (frange &r, tree type,
 		const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub,
 		relation_kind) const final override;
@@ -553,8 +551,7 @@ public:
   bool wi_op_overflows (wide_int &res, tree type, const wide_int &w0,
 			const wide_int &w1) const final override;
 
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-		bool &maybe_nan, tree type,
+  void rv_fold (frange &r, tree type,
 		const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub,
 		relation_kind kind) const final override;

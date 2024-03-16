@@ -132,9 +132,9 @@ md_reader::fprint_md_ptr_loc (FILE *outf, const void *ptr)
 
 /* Special fprint_md_ptr_loc for writing to STDOUT.  */
 void
-md_reader::print_md_ptr_loc (const void *ptr)
+md_reader::print_md_ptr_loc (const void *ptr, FILE *file)
 {
-  fprint_md_ptr_loc (stdout, ptr);
+  fprint_md_ptr_loc (file, ptr);
 }
 
 /* Return a condition that satisfies both COND1 and COND2.  Either string

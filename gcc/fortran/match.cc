@@ -6348,12 +6348,13 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
   else if (selector->ts.type == BT_CLASS
 	   && CLASS_DATA (selector)
 	   && CLASS_DATA (selector)->as
-	   && ref && ref->type == REF_ARRAY)
+	   && ((ref && ref->type == REF_ARRAY)
+	       || selector->expr_type == EXPR_OP))
     {
       /* Ensure that the array reference type is set.  We cannot use
 	 gfc_resolve_expr at this point, so the usable parts of
 	 resolve.cc(resolve_array_ref) are employed to do it.  */
-      if (ref->u.ar.type == AR_UNKNOWN)
+      if (ref && ref->u.ar.type == AR_UNKNOWN)
 	{
 	  ref->u.ar.type = AR_ELEMENT;
 	  for (int i = 0; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
@@ -6367,7 +6368,7 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
 	      }
 	}
 
-      if (ref->u.ar.type == AR_FULL)
+      if (!ref || ref->u.ar.type == AR_FULL)
 	selector->rank = CLASS_DATA (selector)->as->rank;
       else if (ref->u.ar.type == AR_SECTION)
 	selector->rank = ref->u.ar.dimen;
@@ -6379,12 +6380,15 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
 
   if (rank)
     {
-      for (int i = 0; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
-	if (ref->u.ar.dimen_type[i] == DIMEN_ELEMENT
-	    || (ref->u.ar.dimen_type[i] == DIMEN_UNKNOWN
-		&& ref->u.ar.end[i] == NULL
-		&& ref->u.ar.stride[i] == NULL))
-	  rank--;
+      if (ref)
+	{
+	  for (int i = 0; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
+	    if (ref->u.ar.dimen_type[i] == DIMEN_ELEMENT
+	      || (ref->u.ar.dimen_type[i] == DIMEN_UNKNOWN
+		  && ref->u.ar.end[i] == NULL
+		  && ref->u.ar.stride[i] == NULL))
+	      rank--;
+	}
 
       if (rank)
 	{
