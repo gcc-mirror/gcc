@@ -69,6 +69,7 @@ stamp-*
 /mpc*
 /gmp*
 /isl*
+/gettext*
 
 # ADDITIONS from GCCRS front-end
 .vscode/*

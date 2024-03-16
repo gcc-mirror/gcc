@@ -1124,9 +1124,11 @@ else
 BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
 endif
 
-# Dependencies on the intl and portability libraries.
-LIBDEPS= libcommon.a $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) \
-	$(LIBDECNUMBER) $(LIBBACKTRACE)
+# Dependencies on the intl and portability libraries.  The INTL dep might be
+# constructed with a ./ prefix, which GNU Make removes while processing
+# prerequisites, so we need to strip it off.
+LIBDEPS= libcommon.a $(CPPLIB) $(LIBIBERTY) $(LIBICONV_DEP) $(LIBDECNUMBER) \
+	$(LIBBACKTRACE) $(LIBINTL_DEP:./%=%)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
