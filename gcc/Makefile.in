@@ -1461,6 +1461,7 @@ OBJS = \
 	gimple-iterator.o \
 	gimple-fold.o \
 	gimple-harden-conditionals.o \
+	gimple-harden-control-flow.o \
 	gimple-laddress.o \
 	gimple-loop-interchange.o \
 	gimple-loop-jam.o \

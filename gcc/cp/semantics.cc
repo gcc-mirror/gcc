@@ -916,8 +916,7 @@ finish_expr_stmt (tree expr)
 	  expr = convert_to_void (expr, ICV_STATEMENT, tf_warning_or_error);
 	}
       else if (!type_dependent_expression_p (expr))
-	convert_to_void (build_non_dependent_expr (expr), ICV_STATEMENT,
-                         tf_warning_or_error);
+	convert_to_void (expr, ICV_STATEMENT, tf_warning_or_error);
 
       if (check_for_bare_parameter_packs (expr))
         expr = error_mark_node;
@@ -1396,8 +1395,7 @@ finish_for_expr (tree expr, tree for_stmt)
                               tf_warning_or_error);
     }
   else if (!type_dependent_expression_p (expr))
-    convert_to_void (build_non_dependent_expr (expr), ICV_THIRD_IN_FOR,
-                     tf_warning_or_error);
+    convert_to_void (expr, ICV_THIRD_IN_FOR, tf_warning_or_error);
   expr = maybe_cleanup_point_expr_void (expr);
   if (check_for_bare_parameter_packs (expr))
     expr = error_mark_node;
@@ -2795,18 +2793,19 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	     (c++/89780, c++/107363).  This also suppresses the
 	     -Wredundant-move warning.  */
 	  suppress_warning (result, OPT_Wpessimizing_move);
-	  if (is_overloaded_fn (fn))
-	    fn = get_fns (fn);
 
 	  if (cfun)
 	    {
 	      bool abnormal = true;
-	      for (lkp_iterator iter (fn); abnormal && iter; ++iter)
+	      for (lkp_iterator iter (maybe_get_fns (fn)); iter; ++iter)
 		{
 		  tree fndecl = STRIP_TEMPLATE (*iter);
 		  if (TREE_CODE (fndecl) != FUNCTION_DECL
 		      || !TREE_THIS_VOLATILE (fndecl))
-		    abnormal = false;
+		    {
+		      abnormal = false;
+		      break;
+		    }
 		}
 	      /* FIXME: Stop warning about falling off end of non-void
 		 function.   But this is wrong.  Even if we only see
@@ -2816,14 +2815,12 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      if (abnormal)
 		current_function_returns_abnormally = 1;
 	    }
+	  if (TREE_CODE (fn) == COMPONENT_REF)
+	    maybe_generic_this_capture (TREE_OPERAND (fn, 0),
+					TREE_OPERAND (fn, 1));
 	  return result;
 	}
       orig_args = make_tree_vector_copy (*args);
-      if (!BASELINK_P (fn)
-	  && TREE_CODE (fn) != PSEUDO_DTOR_EXPR
-	  && TREE_TYPE (fn) != unknown_type_node)
-	fn = build_non_dependent_expr (fn);
-      make_args_non_dependent (*args);
     }
 
   if (TREE_CODE (fn) == COMPONENT_REF)
@@ -11033,20 +11030,6 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	  if (type_dependent_expression_p (OMP_CLAUSE_HINT_EXPR (clauses))
 	      || TREE_CODE (OMP_CLAUSE_HINT_EXPR (clauses)) != INTEGER_CST)
 	    dependent_p = true;
-	}
-      if (!dependent_p)
-	{
-	  lhs = build_non_dependent_expr (lhs);
-	  if (rhs)
-	    rhs = build_non_dependent_expr (rhs);
-	  if (v)
-	    v = build_non_dependent_expr (v);
-	  if (lhs1)
-	    lhs1 = build_non_dependent_expr (lhs1);
-	  if (rhs1)
-	    rhs1 = build_non_dependent_expr (rhs1);
-	  if (r && r != void_list_node)
-	    r = build_non_dependent_expr (r);
 	}
     }
   if (!dependent_p)

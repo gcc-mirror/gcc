@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 static inline void
 foo (long long const v0, long long const v1)
 {

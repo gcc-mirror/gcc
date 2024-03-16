@@ -377,7 +377,8 @@ typedef enum {
   EF_AMDGPU_MACH_AMDGCN_GFX900 = 0x02c,
   EF_AMDGPU_MACH_AMDGCN_GFX906 = 0x02f,
   EF_AMDGPU_MACH_AMDGCN_GFX908 = 0x030,
-  EF_AMDGPU_MACH_AMDGCN_GFX90a = 0x03f
+  EF_AMDGPU_MACH_AMDGCN_GFX90a = 0x03f,
+  EF_AMDGPU_MACH_AMDGCN_GFX1030 = 0x036
 } EF_AMDGPU_MACH;
 
 const static int EF_AMDGPU_MACH_MASK = 0x000000ff;
@@ -1633,6 +1634,7 @@ const static char *gcn_gfx900_s = "gfx900";
 const static char *gcn_gfx906_s = "gfx906";
 const static char *gcn_gfx908_s = "gfx908";
 const static char *gcn_gfx90a_s = "gfx90a";
+const static char *gcn_gfx1030_s = "gfx1030";
 const static int gcn_isa_name_len = 6;
 
 /* Returns the name that the HSA runtime uses for the ISA or NULL if we do not
@@ -1652,6 +1654,8 @@ isa_hsa_name (int isa) {
       return gcn_gfx908_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX90a:
       return gcn_gfx90a_s;
+    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+      return gcn_gfx1030_s;
     }
   return NULL;
 }
@@ -1690,6 +1694,9 @@ isa_code(const char *isa) {
 
   if (!strncmp (isa, gcn_gfx90a_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX90a;
+
+  if (!strncmp (isa, gcn_gfx1030_s, gcn_isa_name_len))
+    return EF_AMDGPU_MACH_AMDGCN_GFX1030;
 
   return -1;
 }

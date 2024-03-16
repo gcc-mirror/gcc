@@ -1239,6 +1239,14 @@ function_info::add_use (use_info *use)
     insert_use_before (use, neighbor->value ());
 }
 
+void
+function_info::reparent_use (use_info *use, set_info *new_def)
+{
+  remove_use (use);
+  use->set_def (new_def);
+  add_use (use);
+}
+
 // If USE has a known definition, remove USE from that definition's list
 // of uses.  Also remove if it from the associated splay tree, if any.
 void

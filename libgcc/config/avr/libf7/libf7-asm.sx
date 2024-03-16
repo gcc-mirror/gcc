@@ -1067,6 +1067,100 @@ DEFUN mul_mant
 ENDF mul_mant
 #endif /* F7MOD_mul_mant_ && MUL */
 
+#if defined F7MOD_mul_mant_ && ! defined (__AVR_HAVE_MUL__)
+    #define     AA      TMP
+    #define     A0      13
+    #define     A1      A0+1
+    #define     A2      A0+2
+    #define     A3      A0+3
+    #define     A4      A0+4
+    #define     A5      r26
+    #define     A6      r27
+    #define     BB      ZERO
+    #define     Bits    r29
+    #define     Bytes   r28
+
+DEFUN mul_mant
+    do_prologue_saves 7
+    bst     r18,    0           ; T = 1: Don't round.
+    ;; Save result address for later.
+    push    r25
+    push    r24
+    ;; Load 1st operand mantissa.
+    wmov    r30,    r22
+    clr     AA
+    LDD     A0,     Z+0+Off
+    LDD     A1,     Z+1+Off
+    LDD     A2,     Z+2+Off
+    LDD     A3,     Z+3+Off
+    LDD     A4,     Z+4+Off
+    LDD     A5,     Z+5+Off
+    LDD     A6,     Z+6+Off
+    ;; Let Z point one past .mant of the 2nd input operand.
+    wmov    r30,    r20
+    adiw    r30,    Expo
+
+    ;; Clear the result mantissa.
+    .global __clr_8
+    XCALL   __clr_8
+
+    ;; Loop over the bytes of B's mantissa from highest to lowest.
+    ;; "+1" because we jump into the loop.
+    ldi     Bytes,  1 + F7_MANT_BYTES
+
+    ;; Divide one operand by 2 so that the result mantissa won't overflow.
+    ;; This is accounted for by "Carry = 1" below.
+    ldi     Bits,   1
+    rjmp    .Loop_entry
+
+.Loop_bytes:
+    ld      BB,     -Z
+    ;;  Loop over the bits of B's mantissa from highest to lowest.
+    ldi     Bits,   8
+.Loop_bits:
+    lsl     BB
+    brcc    .Lnext_bit
+
+    ADD     CA,     AA
+    adc     C0,     A0
+    adc     C1,     A1
+    adc     C2,     A2
+    adc     C3,     A3
+    adc     C4,     A4
+    adc     C5,     A5
+    adc     C6,     A6
+
+.Lnext_bit:
+.Loop_entry:
+    LSR     A6
+    ror     A5
+    ror     A4
+    ror     A3
+    ror     A2
+    ror     A1
+    ror     A0
+    ror     AA
+
+    dec     Bits
+    brne    .Loop_bits
+
+    dec     Bytes
+    brne    .Loop_bytes
+
+    ;; Finally...
+
+    pop     ZL
+    pop     ZH
+
+    ;; The result has to be left-shifted by one (multiplied by 2) in order
+    ;; to undo the division by 2 of the 1st operand.
+    ldi     Carry,  1
+    F7call  normalize.maybe_round.store_with_flags
+
+    do_epilogue_restores 7
+ENDF mul_mant
+#endif /* F7MOD_mul_mant_ && ! MUL */
+
 
 #if defined (F7MOD_div_)
 

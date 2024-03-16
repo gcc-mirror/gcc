@@ -1757,16 +1757,16 @@
   }
 )
 
-(define_insn "load_pair_dw_tftf"
-  [(set (match_operand:TF 0 "register_operand" "=w")
-	(match_operand:TF 1 "aarch64_mem_pair_operand" "Ump"))
-   (set (match_operand:TF 2 "register_operand" "=w")
-	(match_operand:TF 3 "memory_operand" "m"))]
+(define_insn "load_pair_dw_<TX:mode><TX2:mode>"
+  [(set (match_operand:TX 0 "register_operand" "=w")
+	(match_operand:TX 1 "aarch64_mem_pair_operand" "Ump"))
+   (set (match_operand:TX2 2 "register_operand" "=w")
+	(match_operand:TX2 3 "memory_operand" "m"))]
    "TARGET_SIMD
     && rtx_equal_p (XEXP (operands[3], 0),
 		    plus_constant (Pmode,
 				   XEXP (operands[1], 0),
-				   GET_MODE_SIZE (TFmode)))"
+				   GET_MODE_SIZE (<TX:MODE>mode)))"
   "ldp\\t%q0, %q2, %z1"
   [(set_attr "type" "neon_ldp_q")
    (set_attr "fp" "yes")]
@@ -1805,11 +1805,11 @@
   }
 )
 
-(define_insn "store_pair_dw_tftf"
-  [(set (match_operand:TF 0 "aarch64_mem_pair_operand" "=Ump")
-	(match_operand:TF 1 "register_operand" "w"))
-   (set (match_operand:TF 2 "memory_operand" "=m")
-	(match_operand:TF 3 "register_operand" "w"))]
+(define_insn "store_pair_dw_<TX:mode><TX2:mode>"
+  [(set (match_operand:TX 0 "aarch64_mem_pair_operand" "=Ump")
+	(match_operand:TX 1 "register_operand" "w"))
+   (set (match_operand:TX2 2 "memory_operand" "=m")
+	(match_operand:TX2 3 "register_operand" "w"))]
    "TARGET_SIMD &&
     rtx_equal_p (XEXP (operands[2], 0),
 		 plus_constant (Pmode,

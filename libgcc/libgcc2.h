@@ -29,6 +29,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #pragma GCC visibility push(default)
 #endif
 
+extern void __builtin_nested_func_ptr_created (void *, void *, void **);
+extern void __builtin_nested_func_ptr_deleted (void);
+
 extern int __gcc_bcmp (const unsigned char *, const unsigned char *, size_t);
 extern void __clear_cache (void *, void *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)

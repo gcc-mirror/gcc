@@ -1510,10 +1510,6 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       dump_decl (pp, BASELINK_FUNCTIONS (t), flags);
       break;
 
-    case NON_DEPENDENT_EXPR:
-      dump_expr (pp, t, flags);
-      break;
-
     case TEMPLATE_TYPE_PARM:
       if (flags & TFF_DECL_SPECIFIERS)
 	pp->declaration (t);
@@ -2940,10 +2936,6 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_type (pp, TREE_TYPE (t), flags);
       pp_cxx_left_paren (pp);
       pp_cxx_right_paren (pp);
-      break;
-
-    case NON_DEPENDENT_EXPR:
-      dump_expr (pp, TREE_OPERAND (t, 0), flags);
       break;
 
     case ARGUMENT_PACK_SELECT:

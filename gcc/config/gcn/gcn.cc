@@ -136,6 +136,7 @@ gcn_option_override (void)
       : gcn_arch == PROCESSOR_VEGA20 ? ISA_GCN5
       : gcn_arch == PROCESSOR_GFX908 ? ISA_CDNA1
       : gcn_arch == PROCESSOR_GFX90a ? ISA_CDNA2
+      : gcn_arch == PROCESSOR_GFX1030 ? ISA_RDNA2
       : ISA_UNKNOWN);
   gcc_assert (gcn_isa != ISA_UNKNOWN);
 
@@ -1616,6 +1617,7 @@ gcn_global_address_p (rtx addr)
     {
       rtx base = XEXP (addr, 0);
       rtx offset = XEXP (addr, 1);
+      int offsetbits = (TARGET_RDNA2 ? 11 : 12);
       bool immediate_p = (CONST_INT_P (offset)
 			  && INTVAL (offset) >= -(1 << 12)
 			  && INTVAL (offset) < (1 << 12));
@@ -1748,10 +1750,11 @@ gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
 	  rtx base = XEXP (x, 0);
 	  rtx offset = XEXP (x, 1);
 
+	  int offsetbits = (TARGET_RDNA2 ? 11 : 12);
 	  bool immediate_p = (GET_CODE (offset) == CONST_INT
-			      /* Signed 13-bit immediate.  */
-			      && INTVAL (offset) >= -(1 << 12)
-			      && INTVAL (offset) < (1 << 12)
+			      /* Signed 12/13-bit immediate.  */
+			      && INTVAL (offset) >= -(1 << offsetbits)
+			      && INTVAL (offset) < (1 << offsetbits)
 			      /* The low bits of the offset are ignored, even
 			         when they're meant to realign the pointer.  */
 			      && !(INTVAL (offset) & 0x3));
@@ -3029,6 +3032,8 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
 	return gcn_arch == PROCESSOR_GFX908;
       if (strcmp (name, "gfx90a") == 0)
 	return gcn_arch == PROCESSOR_GFX90a;
+      if (strcmp (name, "gfx1030") == 0)
+	return gcn_arch == PROCESSOR_GFX1030;
       return 0;
     default:
       gcc_unreachable ();
@@ -3610,9 +3615,11 @@ gcn_expand_epilogue (void)
       set_mem_addr_space (retptr_mem, ADDR_SPACE_SCALAR_FLAT);
       emit_move_insn (kernarg_reg, retptr_mem);
 
-      rtx retval_mem = gen_rtx_MEM (SImode, kernarg_reg);
-      rtx scalar_retval = gen_rtx_REG (SImode, FIRST_PARM_REG);
-      set_mem_addr_space (retval_mem, ADDR_SPACE_SCALAR_FLAT);
+      rtx retval_addr = gen_rtx_REG (DImode, FIRST_VPARM_REG);
+      emit_move_insn (retval_addr, kernarg_reg);
+      rtx retval_mem = gen_rtx_MEM (SImode, retval_addr);
+      rtx scalar_retval = gen_rtx_REG (SImode, FIRST_VPARM_REG + 2);
+      set_mem_addr_space (retval_mem, ADDR_SPACE_FLAT);
       emit_move_insn (scalar_retval, gen_rtx_REG (SImode, RETURN_VALUE_REG));
       emit_move_insn (retval_mem, scalar_retval);
     }
@@ -6453,6 +6460,11 @@ output_file_start (void)
       break;
     case PROCESSOR_GFX90a:
       cpu = "gfx90a";
+      break;
+    case PROCESSOR_GFX1030:
+      cpu = "gfx1030";
+      xnack = "";
+      sram_ecc = "";
       break;
     default: gcc_unreachable ();
     }

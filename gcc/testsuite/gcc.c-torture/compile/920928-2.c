@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 typedef struct{struct{char*d;int b;}*i;}*t;
 double f();
 g(p)t p;

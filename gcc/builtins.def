@@ -1074,6 +1074,8 @@ DEF_BUILTIN_STUB (BUILT_IN_ADJUST_TRAMPOLINE, "__builtin_adjust_trampoline")
 DEF_BUILTIN_STUB (BUILT_IN_INIT_DESCRIPTOR, "__builtin_init_descriptor")
 DEF_BUILTIN_STUB (BUILT_IN_ADJUST_DESCRIPTOR, "__builtin_adjust_descriptor")
 DEF_BUILTIN_STUB (BUILT_IN_NONLOCAL_GOTO, "__builtin_nonlocal_goto")
+DEF_BUILTIN_STUB (BUILT_IN_NESTED_PTR_CREATED, "__builtin_nested_func_ptr_created")
+DEF_BUILTIN_STUB (BUILT_IN_NESTED_PTR_DELETED, "__builtin_nested_func_ptr_deleted")
 
 /* Implementing __builtin_setjmp.  */
 DEF_BUILTIN_STUB (BUILT_IN_SETJMP_SETUP, "__builtin_setjmp_setup")
@@ -1178,6 +1180,9 @@ DEF_BUILTIN_STUB (BUILT_IN_EH_COPY_VALUES, "__builtin_eh_copy_values")
 DEF_GCC_BUILTIN (BUILT_IN_FILE, "FILE", BT_FN_CONST_STRING, ATTR_NOTHROW_LEAF_LIST)
 DEF_GCC_BUILTIN (BUILT_IN_FUNCTION, "FUNCTION", BT_FN_CONST_STRING, ATTR_NOTHROW_LEAF_LIST)
 DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
+
+/* Control Flow Redundancy hardening out-of-line checker.  */
+DEF_BUILTIN_STUB (BUILT_IN___HARDCFR_CHECK, "__builtin___hardcfr_check")
 
 /* Synchronization Primitives.  */
 #include "sync-builtins.def"

@@ -1,3 +1,42 @@
+2023-10-20  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/109827
+	PR other/44209
+	* c-typeck.cc (build_conditional_expr): Use OPT_Wint_conversion
+	for pointer/integer mismatch warnings.
+
+2023-10-20  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/109826
+	PR other/44209
+	* c-typeck.cc (build_conditional_expr): Use
+	OPT_Wincompatible_pointer_types for pointer mismatches.
+	Emit location information for the operand.
+
+2023-10-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/100532
+	* c-typeck.cc (convert_argument): After erroring out
+	about an incomplete type return error_mark_node.
+
+2023-10-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/104822
+	* c-typeck.cc (convert_for_assignment): Check for null pointer
+	before warning about an incompatible scalar storage order.
+
+2023-10-18  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/101364
+	* c-decl.cc (diagnose_arglist_conflict): Test for
+	error mark before calling of c_type_promotes_to.
+
+2023-10-18  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/101285
+	* c-typeck.cc (c_safe_arg_type_equiv_p): Return true for error
+	operands early.
+
 2023-10-17  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/111708

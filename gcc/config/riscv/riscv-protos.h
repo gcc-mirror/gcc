@@ -552,6 +552,7 @@ unsigned int autovectorize_vector_modes (vec<machine_mode> *, bool);
 bool cmp_lmul_le_one (machine_mode);
 bool cmp_lmul_gt_one (machine_mode);
 bool gather_scatter_valid_offset_mode_p (machine_mode);
+bool vls_mode_valid_p (machine_mode);
 }
 
 /* We classify builtin types into two classes:

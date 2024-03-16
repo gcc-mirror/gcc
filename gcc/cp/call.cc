@@ -2032,12 +2032,14 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
   return conv;
 }
 
-/* Most of the implementation of implicit_conversion, with the same
-   parameters.  */
+/* Returns the implicit conversion sequence (see [over.ics]) from type
+   FROM to type TO.  The optional expression EXPR may affect the
+   conversion.  FLAGS are the usual overloading flags.  If C_CAST_P is
+   true, this conversion is coming from a C-style cast.  */
 
 static conversion *
-implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
-		       int flags, tsubst_flags_t complain)
+implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
+		     int flags, tsubst_flags_t complain)
 {
   conversion *conv;
 
@@ -2165,26 +2167,6 @@ implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
     }
 
   return NULL;
-}
-
-/* Returns the implicit conversion sequence (see [over.ics]) from type
-   FROM to type TO.  The optional expression EXPR may affect the
-   conversion.  FLAGS are the usual overloading flags.  If C_CAST_P is
-   true, this conversion is coming from a C-style cast.  */
-
-static conversion *
-implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
-		     int flags, tsubst_flags_t complain)
-{
-  conversion *conv = implicit_conversion_1 (to, from, expr, c_cast_p,
-					    flags, complain);
-  if (!conv || conv->bad_p)
-    return conv;
-  if (conv_is_prvalue (conv)
-      && CLASS_TYPE_P (conv->type)
-      && CLASSTYPE_PURE_VIRTUALS (conv->type))
-    conv->bad_p = true;
-  return conv;
 }
 
 /* Like implicit_conversion, but return NULL if the conversion is bad.
@@ -10330,10 +10312,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	   && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR)
 	   && trivial_fn_p (fn))
     {
-      /* Don't use cp_build_fold_indirect_ref, op= returns an lvalue even if
-	 the object argument isn't one.  */
-      tree to = cp_build_indirect_ref (input_location, argarray[0],
-				       RO_ARROW, complain);
+      tree to = cp_build_fold_indirect_ref (argarray[0]);
       tree type = TREE_TYPE (to);
       tree as_base = CLASSTYPE_AS_BASE (type);
       tree arg = argarray[1];
@@ -10341,7 +10320,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       if (is_really_empty_class (type, /*ignore_vptr*/true))
 	{
-	  /* Avoid copying empty classes.  */
+	  /* Avoid copying empty classes, but ensure op= returns an lvalue even
+	     if the object argument isn't one. This isn't needed in other cases
+	     since MODIFY_EXPR is always considered an lvalue.  */
+	  to = cp_build_addr_expr (to, tf_none);
+	  to = cp_build_indirect_ref (input_location, to, RO_ARROW, complain);
 	  val = build2 (COMPOUND_EXPR, type, arg, to);
 	  suppress_warning (val, OPT_Wunused);
 	}
@@ -11430,12 +11413,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
     }
 
   if (processing_template_decl)
-    {
-      orig_args = args == NULL ? NULL : make_tree_vector_copy (*args);
-      instance = build_non_dependent_expr (instance);
-      if (args != NULL)
-	make_args_non_dependent (*args);
-    }
+    orig_args = args == NULL ? NULL : make_tree_vector_copy (*args);
 
   /* Process the argument list.  */
   if (args != NULL && *args != NULL)
@@ -13231,10 +13209,11 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
      been compared to.  */
 
   for (challenger = candidates;
-       challenger != champ
-	 && challenger != champ_compared_to_predecessor;
+       challenger != champ;
        challenger = challenger->next)
     {
+      if (challenger == champ_compared_to_predecessor)
+	continue;
       fate = joust (champ, challenger, 0, complain);
       if (fate != 1)
 	return NULL;

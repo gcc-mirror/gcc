@@ -1,5 +1,6 @@
 /* { dg-add-options stack_size } */
 /* { dg-require-stack-size "75*75*4" } */
+/* { dg-additional-options "-std=gnu89" } */
 
 #if defined(STACK_SIZE) && STACK_SIZE < 65536
 # define GITT_SIZE 75

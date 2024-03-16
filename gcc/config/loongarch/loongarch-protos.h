@@ -205,6 +205,7 @@ extern void loongarch_register_frame_header_opt (void);
 extern void loongarch_expand_vec_cond_expr (machine_mode, machine_mode, rtx *);
 extern void loongarch_expand_vec_cond_mask_expr (machine_mode, machine_mode,
 						 rtx *);
+extern void loongarch_expand_vec_widen_hilo (rtx, rtx, rtx, bool, bool, const char *);
 
 /* Routines implemented in loongarch-c.c.  */
 void loongarch_cpu_cpp_builtins (cpp_reader *);

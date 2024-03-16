@@ -95,6 +95,9 @@ struct die_struct;
 /* Nonzero if this is a cold function.  */
 #define ECF_COLD		  (1 << 15)
 
+/* Nonzero if this is a function expected to end with an exception.  */
+#define ECF_XTHROW		  (1 << 16)
+
 /* Call argument flags.  */
 
 /* Nonzero if the argument is not used by the function.  */

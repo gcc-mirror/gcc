@@ -37,6 +37,8 @@ package body System.Img_Util is
    -- Set_Decimal_Digits --
    ------------------------
 
+   pragma Annotate (Gnatcheck, Exempt_On, "Unassigned_OUT_Parameters",
+                    "the OUT parameter is assigned by component");
    procedure Set_Decimal_Digits
      (Digs  : in out String;
       NDigs : Natural;
@@ -47,6 +49,8 @@ package body System.Img_Util is
       Aft   : Natural;
       Exp   : Natural)
    is
+      pragma Annotate (Gnatcheck, Exempt_Off, "Unassigned_OUT_Parameters");
+
       pragma Assert (NDigs >= 1);
       pragma Assert (Digs'First = 1);
       pragma Assert (Digs'First < Digs'Last);
@@ -413,6 +417,8 @@ package body System.Img_Util is
    -- Set_Floating_Invalid_Value --
    --------------------------------
 
+   pragma Annotate (Gnatcheck, Exempt_On, "Unassigned_OUT_Parameters",
+                    "the OUT parameter is assigned by component");
    procedure Set_Floating_Invalid_Value
      (V    : Floating_Invalid_Value;
       S    : out String;
@@ -421,6 +427,8 @@ package body System.Img_Util is
       Aft  : Natural;
       Exp  : Natural)
    is
+      pragma Annotate (Gnatcheck, Exempt_Off, "Unassigned_OUT_Parameters");
+
       procedure Set (C : Character);
       --  Sets character C in output buffer
 

@@ -285,7 +285,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zvfhmin",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvfh",      ISA_SPEC_CLASS_NONE, 1, 0},
 
-  {"zfa",     ISA_SPEC_CLASS_NONE, 0, 1},
+  {"zfa",     ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zmmul", ISA_SPEC_CLASS_NONE, 1, 0},
 
@@ -1494,6 +1494,10 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   if (subset_list->lookup ("zfinx") && subset_list->lookup ("f"))
     error_at (loc, "%<-march=%s%>: z*inx conflicts with floating-point "
 		   "extensions", arch);
+
+  /* 'H' hypervisor extension requires base ISA with 32 registers.  */
+  if (subset_list->lookup ("e") && subset_list->lookup ("h"))
+    error_at (loc, "%<-march=%s%>: h extension requires i extension", arch);
 
   return subset_list;
 

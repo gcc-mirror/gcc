@@ -657,12 +657,13 @@ build_throw (location_t loc, tree exp)
 	  tree args[3] = {ptr_type_node, ptr_type_node, cleanup_type};
 
 	  throw_fn = declare_library_fn_1 ("__cxa_throw",
-					   ECF_NORETURN | ECF_COLD,
+					   ECF_NORETURN | ECF_XTHROW | ECF_COLD,
 					   void_type_node, 3, args);
 	  if (flag_tm && throw_fn != error_mark_node)
 	    {
 	      tree itm_fn = declare_library_fn_1 ("_ITM_cxa_throw",
-						  ECF_NORETURN | ECF_COLD,
+						  ECF_NORETURN | ECF_XTHROW
+						  | ECF_COLD,
 						  void_type_node, 3, args);
 	      if (itm_fn != error_mark_node)
 		{
@@ -797,7 +798,8 @@ build_throw (location_t loc, tree exp)
       if (!rethrow_fn)
 	{
 	  rethrow_fn = declare_library_fn_1 ("__cxa_rethrow",
-					     ECF_NORETURN | ECF_COLD,
+					     ECF_NORETURN | ECF_XTHROW
+					     | ECF_COLD,
 					     void_type_node, 0, NULL);
 	  if (flag_tm && rethrow_fn != error_mark_node)
 	    apply_tm_attr (rethrow_fn, get_identifier ("transaction_pure"));

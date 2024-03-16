@@ -783,6 +783,39 @@ pru_rtx_costs (rtx x, machine_mode mode,
       }
     }
 }
+
+/* Insn costs on PRU are straightforward because:
+     - Insns emit 0, 1 or more instructions.
+     - All instructions are 32-bit length.
+     - All instructions execute in 1 cycle (sans memory access delays).
+   The "length" attribute maps nicely to the insn cost.  */
+
+static int
+pru_insn_cost (rtx_insn *insn, bool speed)
+{
+  /* Use generic cost calculation for unrecognized insns.  */
+  if (recog_memoized (insn) < 0)
+    return pattern_cost (insn, speed);
+
+  unsigned int len = get_attr_length (insn);
+
+  gcc_assert ((len % 4) == 0);
+
+  int cost = COSTS_N_INSNS (len / 4);
+  /* Some insns have zero length (e.g. blockage, pruloop_end).
+     In such cases give the minimum cost, because a return of
+     0 would incorrectly indicate that the insn cost is unknown.  */
+  if (cost == 0)
+    cost = 1;
+
+  /* Writes are usually posted, so they take 1 cycle.  Reads
+     from DMEM usually take 3 cycles.
+     See TI document SPRACE8A, Device-Specific PRU Read Latency Values.  */
+  if (speed && get_attr_type (insn) == TYPE_LD)
+    cost += COSTS_N_INSNS (2);
+
+  return cost;
+}
 
 static GTY(()) rtx eqdf_libfunc;
 static GTY(()) rtx nedf_libfunc;
@@ -3174,6 +3207,9 @@ pru_unwind_word_mode (void)
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pru_rtx_costs
+
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST pru_insn_cost
 
 #undef TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND pru_print_operand

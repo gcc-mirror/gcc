@@ -1152,13 +1152,12 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	  auto then_fn = cp_fold_r, else_fn = cp_fold_r;
 	  /* See if we can figure out if either of the branches is dead.  If it
 	     is, we don't need to do everything that cp_fold_r does.  */
-	  tree cond = maybe_constant_value (TREE_OPERAND (stmt, 0));
-	  if (integer_zerop (cond))
+	  cp_walk_tree (&TREE_OPERAND (stmt, 0), cp_fold_r, data, nullptr);
+	  if (integer_zerop (TREE_OPERAND (stmt, 0)))
 	    then_fn = cp_fold_immediate_r;
-	  else if (TREE_CODE (cond) == INTEGER_CST)
+	  else if (integer_nonzerop (TREE_OPERAND (stmt, 0)))
 	    else_fn = cp_fold_immediate_r;
 
-	  cp_walk_tree (&TREE_OPERAND (stmt, 0), cp_fold_r, data, nullptr);
 	  if (TREE_OPERAND (stmt, 1))
 	    cp_walk_tree (&TREE_OPERAND (stmt, 1), then_fn, data,
 			  nullptr);

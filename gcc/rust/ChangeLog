@@ -1,3 +1,12 @@
+2023-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR rust/111899
+	* backend/rust-constexpr.cc (potential_constant_expression_1):
+	Remove NON_DEPENDENT_EXPR handling.
+	* backend/rust-tree.cc (mark_exp_read): Likewise.
+	(mark_use): Likewise.
+	(lvalue_kind): Likewise.
+
 2023-09-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* backend/rust-constexpr.cc (rs_fold_indirect_ref): Remove unused

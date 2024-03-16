@@ -128,6 +128,7 @@ vect_init_pattern_stmt (vec_info *vinfo, gimple *pattern_stmt,
   STMT_VINFO_RELATED_STMT (pattern_stmt_info) = orig_stmt_info;
   STMT_VINFO_DEF_TYPE (pattern_stmt_info)
     = STMT_VINFO_DEF_TYPE (orig_stmt_info);
+  STMT_VINFO_TYPE (pattern_stmt_info) = STMT_VINFO_TYPE (orig_stmt_info);
   if (!STMT_VINFO_VECTYPE (pattern_stmt_info))
     {
       gcc_assert (!vectype
@@ -2539,6 +2540,10 @@ vect_recog_widen_sum_pattern (vec_info *vinfo,
    bf_value = BIT_FIELD_REF (container, bitsize, bitpos);
    result = (type_out) bf_value;
 
+   or
+
+   if (BIT_FIELD_REF (container, bitsize, bitpos) `cmp` <constant>)
+
    where type_out is a non-bitfield type, that is to say, it's precision matches
    2^(TYPE_SIZE(type_out) - (TYPE_UNSIGNED (type_out) ? 1 : 2)).
 
@@ -2547,6 +2552,10 @@ vect_recog_widen_sum_pattern (vec_info *vinfo,
    * STMT_VINFO: The stmt from which the pattern search begins.
    here it starts with:
    result = (type_out) bf_value;
+
+   or
+
+   if (BIT_FIELD_REF (container, bitsize, bitpos) `cmp` <constant>)
 
    Output:
 
@@ -2589,33 +2598,45 @@ vect_recog_widen_sum_pattern (vec_info *vinfo,
 
    The shifting is always optional depending on whether bitpos != 0.
 
+   When the original bitfield was inside a gcond then an new gcond is also
+   generated with the newly `result` as the operand to the comparison.
+
 */
 
 static gimple *
 vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
 				 tree *type_out)
 {
-  gassign *first_stmt = dyn_cast <gassign *> (stmt_info->stmt);
-
-  if (!first_stmt)
-    return NULL;
-
-  gassign *bf_stmt;
-  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (first_stmt))
-      && TREE_CODE (gimple_assign_rhs1 (first_stmt)) == SSA_NAME)
+  gimple *bf_stmt = NULL;
+  tree lhs = NULL_TREE;
+  tree ret_type = NULL_TREE;
+  gimple *stmt = STMT_VINFO_STMT (stmt_info);
+  if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
-      gimple *second_stmt
-	= SSA_NAME_DEF_STMT (gimple_assign_rhs1 (first_stmt));
-      bf_stmt = dyn_cast <gassign *> (second_stmt);
-      if (!bf_stmt
-	  || gimple_assign_rhs_code (bf_stmt) != BIT_FIELD_REF)
+      tree op = gimple_cond_lhs (cond_stmt);
+      if (TREE_CODE (op) != SSA_NAME)
+	return NULL;
+      bf_stmt = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op));
+      if (TREE_CODE (gimple_cond_rhs (cond_stmt)) != INTEGER_CST)
 	return NULL;
     }
-  else
+  else if (is_gimple_assign (stmt)
+	   && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
+    {
+      gimple *second_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+      bf_stmt = dyn_cast <gassign *> (second_stmt);
+      lhs = gimple_assign_lhs (stmt);
+      ret_type = TREE_TYPE (lhs);
+    }
+
+  if (!bf_stmt
+      || gimple_assign_rhs_code (bf_stmt) != BIT_FIELD_REF)
     return NULL;
 
   tree bf_ref = gimple_assign_rhs1 (bf_stmt);
   tree container = TREE_OPERAND (bf_ref, 0);
+  ret_type = ret_type ? ret_type : TREE_TYPE (container);
 
   if (!bit_field_offset (bf_ref).is_constant ()
       || !bit_field_size (bf_ref).is_constant ()
@@ -2629,8 +2650,6 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
 
   gimple *use_stmt, *pattern_stmt;
   use_operand_p use_p;
-  tree ret = gimple_assign_lhs (first_stmt);
-  tree ret_type = TREE_TYPE (ret);
   bool shift_first = true;
   tree container_type = TREE_TYPE (container);
   tree vectype = get_vectype_for_scalar_type (vinfo, container_type);
@@ -2675,7 +2694,7 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
   /* If the only use of the result of this BIT_FIELD_REF + CONVERT is a
      PLUS_EXPR then do the shift last as some targets can combine the shift and
      add into a single instruction.  */
-  if (single_imm_use (gimple_assign_lhs (first_stmt), &use_p, &use_stmt))
+  if (lhs && single_imm_use (lhs, &use_p, &use_stmt))
     {
       if (gimple_code (use_stmt) == GIMPLE_ASSIGN
 	  && gimple_assign_rhs_code (use_stmt) == PLUS_EXPR)
@@ -2746,6 +2765,19 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
       pattern_stmt
 	= gimple_build_assign (vect_recog_temp_ssa_var (ret_type),
 			       NOP_EXPR, result);
+    }
+
+  if (!lhs)
+    {
+      append_pattern_def_seq (vinfo, stmt_info, pattern_stmt, vectype);
+      gcond *cond_stmt = dyn_cast <gcond *> (stmt_info->stmt);
+      tree cond_cst = gimple_cond_rhs (cond_stmt);
+      pattern_stmt
+	= gimple_build_cond (gimple_cond_code (cond_stmt),
+			     gimple_get_lhs (pattern_stmt),
+			     fold_convert (ret_type, cond_cst),
+			     gimple_cond_true_label (cond_stmt),
+			     gimple_cond_false_label (cond_stmt));
     }
 
   *type_out = STMT_VINFO_VECTYPE (stmt_info);

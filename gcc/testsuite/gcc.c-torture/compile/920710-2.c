@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 union u
 {
   struct {unsigned h, l;} i;

@@ -5688,6 +5688,14 @@ type_has_virtual_destructor (tree type)
   return (dtor && DECL_VIRTUAL_P (dtor));
 }
 
+/* True iff class TYPE has a non-deleted trivial default
+   constructor.  */
+
+bool type_has_non_deleted_trivial_default_ctor (tree type)
+{
+  return TYPE_HAS_TRIVIAL_DFLT (type) && locate_ctor (type);
+}
+
 /* Returns true iff T, a class, has a move-assignment or
    move-constructor.  Does not lazily declare either.
    If USER_P is false, any move function will do.  If it is true, the
@@ -8841,15 +8849,6 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t complain)
     {
       access_path = BASELINK_ACCESS_BINFO (rhs);
       rhs = BASELINK_FUNCTIONS (rhs);
-    }
-
-  /* If we are in a template, and have a NON_DEPENDENT_EXPR, we cannot
-     deduce any type information.  */
-  if (TREE_CODE (rhs) == NON_DEPENDENT_EXPR)
-    {
-      if (complain & tf_error)
-	error ("not enough type information");
-      return error_mark_node;
     }
 
   /* There are only a few kinds of expressions that may have a type

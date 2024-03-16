@@ -1314,6 +1314,8 @@ The type of the node specifies the alignment of the access.
 @tindex THROW_EXPR
 @tindex LSHIFT_EXPR
 @tindex RSHIFT_EXPR
+@tindex LROTATE_EXPR
+@tindex RROTATE_EXPR
 @tindex BIT_IOR_EXPR
 @tindex BIT_XOR_EXPR
 @tindex BIT_AND_EXPR
@@ -1480,16 +1482,18 @@ a fixed-point value to a floating-point value.
 
 @item LSHIFT_EXPR
 @itemx RSHIFT_EXPR
-These nodes represent left and right shifts, respectively.  The first
-operand is the value to shift; it will always be of integral type.  The
-second operand is an expression for the number of bits by which to
-shift.  Right shift should be treated as arithmetic, i.e., the
-high-order bits should be zero-filled when the expression has unsigned
-type and filled with the sign bit when the expression has signed type.
+@itemx LROTATE_EXPR
+@itemx RROTATE_EXPR
+These nodes represent left and right shifts and rotates, respectively.
+The first operand is the value to shift or rotate; it will always be of
+integral type.  The second operand is an expression for the number of bits
+by which to shift or rotate.  Right shift should be treated as arithmetic,
+i.e., the high-order bits should be zero-filled when the expression has
+unsigned type and filled with the sign bit when the expression has signed type.
+All other operations are logical, operating on the bit representation.
 Note that the result is undefined if the second operand is larger
 than or equal to the first operand's type size. Unlike most nodes, these
 can have a vector as first operand and a scalar as second operand.
-
 
 @item BIT_IOR_EXPR
 @itemx BIT_XOR_EXPR

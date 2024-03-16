@@ -255,16 +255,6 @@ ok_for_auto_simd_clone (struct cgraph_node *node)
   return true;
 }
 
-
-/* Return the number of elements in vector type VECTYPE, which is associated
-   with a SIMD clone.  At present these always have a constant length.  */
-
-static unsigned HOST_WIDE_INT
-simd_clone_subparts (tree vectype)
-{
-  return TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
-}
-
 /* Allocate a fresh `simd_clone' and return it.  NARGS is the number
    of arguments to reserve space for.  */
 
@@ -817,8 +807,14 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
     {
       ipa_adjusted_param adj;
       memset (&adj, 0, sizeof (adj));
-      tree parm = args[i];
-      tree parm_type = node->definition ? TREE_TYPE (parm) : parm;
+      tree parm = NULL_TREE;
+      tree parm_type = NULL_TREE;
+      if (i < args.length())
+	{
+	  parm = args[i];
+	  parm_type = node->definition ? TREE_TYPE (parm) : parm;
+	}
+
       adj.base_index = i;
       adj.prev_clone_index = i;
 
@@ -1028,7 +1024,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 	    }
 	  continue;
 	}
-      if (known_eq (simd_clone_subparts (TREE_TYPE (arg)),
+      if (known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg)),
 		    node->simdclone->simdlen))
 	{
 	  tree ptype = build_pointer_type (TREE_TYPE (TREE_TYPE (array)));
@@ -1040,7 +1036,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 	}
       else
 	{
-	  unsigned int simdlen = simd_clone_subparts (TREE_TYPE (arg));
+	  poly_uint64 simdlen = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg));
 	  unsigned int times = vector_unroll_factor (node->simdclone->simdlen,
 						     simdlen);
 	  tree ptype = build_pointer_type (TREE_TYPE (TREE_TYPE (array)));
@@ -1226,9 +1222,9 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 		  iter, NULL_TREE, NULL_TREE);
       adjustments->register_replacement (&(*adjustments->m_adj_params)[j], r);
 
-      if (multiple_p (node->simdclone->simdlen, simd_clone_subparts (vectype)))
+      if (multiple_p (node->simdclone->simdlen, TYPE_VECTOR_SUBPARTS (vectype)))
 	j += vector_unroll_factor (node->simdclone->simdlen,
-				   simd_clone_subparts (vectype)) - 1;
+				   TYPE_VECTOR_SUBPARTS (vectype)) - 1;
     }
   adjustments->sort_replacements ();
 
@@ -1557,7 +1553,7 @@ simd_clone_adjust (struct cgraph_node *node)
 	  mask = gimple_assign_lhs (g);
 	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (mask)),
 				   BIT_AND_EXPR, mask,
-				   build_int_cst (TREE_TYPE (mask), 1));
+				   build_one_cst (TREE_TYPE (mask)));
 	  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
 	  mask = gimple_assign_lhs (g);
 	}

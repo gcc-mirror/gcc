@@ -97,6 +97,34 @@ vect_lanes_optab_supported_p (const char *name, convert_optab optab,
   return true;
 }
 
+/* Helper function to identify a simd clone call.  If this is a call to a
+   function with simd clones then return the corresponding cgraph_node,
+   otherwise return NULL.  */
+
+static cgraph_node*
+simd_clone_call_p (gimple *stmt)
+{
+  gcall *call = dyn_cast <gcall *> (stmt);
+  if (!call)
+    return NULL;
+
+  tree fndecl = NULL_TREE;
+  if (gimple_call_internal_p (call, IFN_MASK_CALL))
+    fndecl = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
+  else
+    fndecl = gimple_call_fndecl (stmt);
+
+  if (fndecl == NULL_TREE)
+    return NULL;
+
+  cgraph_node *node = cgraph_node::get (fndecl);
+  if (node && node->simd_clones != NULL)
+    return node;
+
+  return NULL;
+}
+
+
 
 /* Return the smallest scalar part of STMT_INFO.
    This is used to determine the vectype of the stmt.  We generally set the
@@ -143,6 +171,23 @@ vect_get_smallest_scalar_type (stmt_vec_info stmt_info, tree scalar_type)
 	  rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (rhs_type));
 	  if (rhs < lhs)
 	    scalar_type = rhs_type;
+	}
+    }
+  else if (cgraph_node *node = simd_clone_call_p (stmt_info->stmt))
+    {
+      auto clone = node->simd_clones->simdclone;
+      for (unsigned int i = 0; i < clone->nargs; ++i)
+	{
+	  if (clone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
+	    {
+	      tree arg_scalar_type = TREE_TYPE (clone->args[i].vector_type);
+	      rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (arg_scalar_type));
+	      if (rhs < lhs)
+		{
+		  scalar_type = arg_scalar_type;
+		  lhs = rhs;
+		}
+	    }
 	}
     }
   else if (gcall *call = dyn_cast <gcall *> (stmt_info->stmt))

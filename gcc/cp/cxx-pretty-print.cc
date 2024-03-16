@@ -1207,7 +1207,6 @@ cxx_pretty_printer::expression (tree t)
       assignment_expression (t);
       break;
 
-    case NON_DEPENDENT_EXPR:
     case MUST_NOT_THROW_EXPR:
       expression (TREE_OPERAND (t, 0));
       break;

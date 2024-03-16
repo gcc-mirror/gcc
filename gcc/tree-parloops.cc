@@ -2203,6 +2203,11 @@ create_loop_fn (location_t loc)
   DECL_CONTEXT (t) = decl;
   TREE_USED (t) = 1;
   DECL_ARGUMENTS (decl) = t;
+  DECL_FUNCTION_SPECIFIC_TARGET (decl)
+    = DECL_FUNCTION_SPECIFIC_TARGET (act_cfun->decl);
+  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl)
+    = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (act_cfun->decl);
+
 
   allocate_struct_function (decl, false);
 
@@ -2526,14 +2531,15 @@ try_transform_to_exit_first_loop_alt (class loop *loop,
   tree nit_type = TREE_TYPE (nit);
 
   /* Figure out whether nit + 1 overflows.  */
-  if (TREE_CODE (nit) == INTEGER_CST)
+  if (poly_int_tree_p (nit))
     {
       if (!tree_int_cst_equal (nit, TYPE_MAX_VALUE (nit_type)))
 	{
 	  alt_bound = fold_build2_loc (UNKNOWN_LOCATION, PLUS_EXPR, nit_type,
 				       nit, build_one_cst (nit_type));
 
-	  gcc_assert (TREE_CODE (alt_bound) == INTEGER_CST);
+	  gcc_assert (TREE_CODE (alt_bound) == INTEGER_CST
+		      || TREE_CODE (alt_bound) == POLY_INT_CST);
 	  transform_to_exit_first_loop_alt (loop, reduction_list, alt_bound);
 	  return true;
 	}

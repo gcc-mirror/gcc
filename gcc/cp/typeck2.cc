@@ -1109,15 +1109,11 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
       else if (complain & tf_error)
 	{
 	  int savederrorcount = errorcount;
-	  if (!flag_permissive)
-	    global_dc->pedantic_errors = 1;
-	  auto s = make_temp_override (global_dc->dc_warn_system_headers, true);
-	  pedwarn (loc, OPT_Wnarrowing,
-		   "narrowing conversion of %qE from %qH to %qI",
-		   init, ftype, type);
+	  permerror_opt (loc, OPT_Wnarrowing,
+			 "narrowing conversion of %qE from %qH to %qI",
+			 init, ftype, type);
 	  if (errorcount == savederrorcount)
 	    ok = true;
-	  global_dc->pedantic_errors = flag_pedantic_errors;
 	}
     }
 
@@ -2218,7 +2214,6 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	  TREE_TYPE (expr) = ttype;
 	  return expr;
 	}
-      expr = build_non_dependent_expr (expr);
     }
 
   if (MAYBE_CLASS_TYPE_P (type))

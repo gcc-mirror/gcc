@@ -848,6 +848,9 @@ flags_from_decl_or_type (const_tree exp)
 	    flags |= ECF_TM_PURE;
 	}
 
+      if (lookup_attribute ("expected_throw", DECL_ATTRIBUTES (exp)))
+	flags |= ECF_XTHROW;
+
       flags = special_function_p (exp, flags);
     }
   else if (TYPE_P (exp))

@@ -1,3 +1,9 @@
+2023-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	* objcp-lang.cc (objcp_tsubst_copy_and_build): Rename to ...
+	(objcp_tsubst_expr): ... this.  Adjust tsubst_copy_and_build
+	uses.
+
 2022-11-15  Patrick Palka  <ppalka@redhat.com>
 
 	* objcp-lang.cc (objcp_tsubst_copy_and_build): Adjust calls to

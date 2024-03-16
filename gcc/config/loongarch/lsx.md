@@ -3581,6 +3581,84 @@
   DONE;
 })
 
+(define_expand "avg<mode>3_ceil"
+  [(match_operand:ILSX_WHB 0 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  emit_insn (gen_lsx_vavgr_s_<lsxfmt> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "uavg<mode>3_ceil"
+  [(match_operand:ILSX_WHB 0 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  emit_insn (gen_lsx_vavgr_u_<lsxfmt_u> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "avg<mode>3_floor"
+  [(match_operand:ILSX_WHB 0 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  emit_insn (gen_lsx_vavg_s_<lsxfmt> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "uavg<mode>3_floor"
+  [(match_operand:ILSX_WHB 0 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  emit_insn (gen_lsx_vavg_u_<lsxfmt_u> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "usadv16qi"
+  [(match_operand:V4SI 0 "register_operand")
+   (match_operand:V16QI 1 "register_operand")
+   (match_operand:V16QI 2 "register_operand")
+   (match_operand:V4SI 3 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  rtx t1 = gen_reg_rtx (V16QImode);
+  rtx t2 = gen_reg_rtx (V8HImode);
+  rtx t3 = gen_reg_rtx (V4SImode);
+  emit_insn (gen_lsx_vabsd_u_bu (t1, operands[1], operands[2]));
+  emit_insn (gen_lsx_vhaddw_h_b (t2, t1, t1));
+  emit_insn (gen_lsx_vhaddw_w_h (t3, t2, t2));
+  emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));
+  DONE;
+})
+
+(define_expand "ssadv16qi"
+  [(match_operand:V4SI 0 "register_operand")
+   (match_operand:V16QI 1 "register_operand")
+   (match_operand:V16QI 2 "register_operand")
+   (match_operand:V4SI 3 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  rtx t1 = gen_reg_rtx (V16QImode);
+  rtx t2 = gen_reg_rtx (V8HImode);
+  rtx t3 = gen_reg_rtx (V4SImode);
+  emit_insn (gen_lsx_vabsd_s_b (t1, operands[1], operands[2]));
+  emit_insn (gen_lsx_vhaddw_h_b (t2, t1, t1));
+  emit_insn (gen_lsx_vhaddw_w_h (t3, t2, t2));
+  emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));
+  DONE;
+})
+
 (define_insn "lsx_v<optab>wev_d_w<u>"
   [(set (match_operand:V2DI 0 "register_operand" "=f")
 	(addsubmul:V2DI

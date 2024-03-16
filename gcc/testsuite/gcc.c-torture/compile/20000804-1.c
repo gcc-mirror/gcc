@@ -8,6 +8,7 @@
 /* { dg-xfail-if "Inconsistent constraint on asm" { bpf-*-* } { "-O0" } { "" } } */
 /* { dg-xfail-if "" { h8300-*-* } } */
 /* { dg-require-stack-size "99*4+16" } */
+/* { dg-additional-options "-std=gnu89" } */
 
 /* Copyright (C) 2000, 2003 Free Software Foundation */
 __complex__ long long f ()

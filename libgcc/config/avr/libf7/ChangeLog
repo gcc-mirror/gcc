@@ -1,3 +1,9 @@
+2023-10-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7-asm.sx (mul_mant): Implement for devices without MUL.
+	* asm-defs.h (wmov) [!HAVE_MUL]: Fix regno computation.
+	* t-libf7 (F7_ASM_FLAGS): Add -g0.
+
 2023-10-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	* f7-renames.h: Re-renerate.

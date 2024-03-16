@@ -50,11 +50,10 @@ struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
    there should be very few (if any) routines below.  */
 
 tree
-objcp_tsubst_copy_and_build (tree t, tree args, tsubst_flags_t complain,
-			     tree in_decl)
+objcp_tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
 #define RECURSE(NODE)							\
-  tsubst_copy_and_build (NODE, args, complain, in_decl)
+  tsubst_expr (NODE, args, complain, in_decl)
 
   /* The following two can only occur in Objective-C++.  */
 

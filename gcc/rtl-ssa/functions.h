@@ -159,6 +159,9 @@ public:
   // Like change_insns, but for a single change CHANGE.
   void change_insn (insn_change &change);
 
+  // Given a use USE, re-parent it to get its def from NEW_DEF.
+  void reparent_use (use_info *use, set_info *new_def);
+
   // If the changes that have been made to instructions require updates
   // to the CFG, perform those updates now.  Return true if something changed.
   // If it did:
@@ -262,7 +265,7 @@ private:
 
   insn_info *add_placeholder_after (insn_info *);
   void possibly_queue_changes (insn_change &);
-  void finalize_new_accesses (insn_change &);
+  void finalize_new_accesses (insn_change &, insn_info *);
   void apply_changes_to_insn (insn_change &);
 
   void init_function_data ();

@@ -1351,9 +1351,6 @@ finish_co_return_stmt (location_t kw, tree expr)
 	 to undo it so we can try to treat it as an rvalue below.  */
       expr = maybe_undo_parenthesized_ref (expr);
 
-      if (processing_template_decl)
-	expr = build_non_dependent_expr (expr);
-
       if (error_operand_p (expr))
 	return error_mark_node;
     }
@@ -1421,8 +1418,7 @@ coro_validate_builtin_call (tree call, tsubst_flags_t)
 	location_t loc = EXPR_LOCATION (arg);
 
 	/* We expect alignof expressions in templates.  */
-	if (TREE_CODE (arg) == NON_DEPENDENT_EXPR
-	    && TREE_CODE (TREE_OPERAND (arg, 0)) == ALIGNOF_EXPR)
+	if (TREE_CODE (arg) == ALIGNOF_EXPR)
 	  ;
 	else if (!TREE_CONSTANT (arg))
 	  {

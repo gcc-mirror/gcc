@@ -2829,12 +2829,29 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       else if (integer_zerop (op0))
 	{
 	  if (code == MINUS_EXPR)
-	    expr = fold_build1 (NEGATE_EXPR, type, op1);
+	    {
+	      if (TYPE_OVERFLOW_UNDEFINED (type))
+		{
+		  type = unsigned_type_for (type);
+		  op1 = fold_convert (type, op1);
+		}
+	      expr = fold_build1 (NEGATE_EXPR, type, op1);
+	    }
 	  else
 	    expr = op1;
 	}
       else
-	expr = fold_build2 (code, type, op0, op1);
+	{
+	  if (TYPE_OVERFLOW_UNDEFINED (type))
+	    {
+	      type = unsigned_type_for (type);
+	      if (code == POINTER_PLUS_EXPR)
+		code = PLUS_EXPR;
+	      op0 = fold_convert (type, op0);
+	      op1 = fold_convert (type, op1);
+	    }
+	  expr = fold_build2 (code, type, op0, op1);
+	}
 
       return fold_convert (orig_type, expr);
 
@@ -2852,7 +2869,15 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       if (integer_zerop (op0))
 	expr = op0;
       else
-	expr = fold_build2 (MULT_EXPR, type, op0, op1);
+	{
+	  if (TYPE_OVERFLOW_UNDEFINED (type))
+	    {
+	      type = unsigned_type_for (type);
+	      op0 = fold_convert (type, op0);
+	      op1 = fold_convert (type, op1);
+	    }
+	  expr = fold_build2 (MULT_EXPR, type, op0, op1);
+	}
 
       return fold_convert (orig_type, expr);
 

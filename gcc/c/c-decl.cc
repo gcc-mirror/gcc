@@ -1899,7 +1899,8 @@ diagnose_arglist_conflict (tree newdecl, tree olddecl,
 	  break;
 	}
 
-      if (c_type_promotes_to (type) != type)
+      if (!error_operand_p (type)
+	  && c_type_promotes_to (type) != type)
 	{
 	  inform (input_location, "an argument type that has a default "
 		  "promotion cannot match an empty parameter name list "

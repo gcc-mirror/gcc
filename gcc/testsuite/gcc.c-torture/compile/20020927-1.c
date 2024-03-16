@@ -1,6 +1,7 @@
 /* PR optimization/7520 */
 /* ICE at -O3 on x86 due to register life problems caused by
    the return-without-value in bar.  */
+/* { dg-additional-options "-std=gnu89" } */
 
 int
 foo ()

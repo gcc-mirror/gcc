@@ -1048,7 +1048,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
     call = TARGET_EXPR_INITIAL (expr);
   location_t loc = cp_expr_loc_or_input_loc (call);
   tree callee = cp_get_callee (call);
-  if (!callee)
+  if (!callee || !TREE_TYPE (callee))
     return;
 
   tree type = TREE_TYPE (callee);
@@ -1056,6 +1056,8 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
     type = TYPE_PTRMEMFUNC_FN_TYPE (type);
   if (INDIRECT_TYPE_P (type))
     type = TREE_TYPE (type);
+  if (!FUNC_OR_METHOD_TYPE_P (type))
+    return;
 
   tree rettype = TREE_TYPE (type);
   tree fn = cp_get_fndecl_from_callee (callee);
