@@ -359,6 +359,9 @@ enum insn_type : unsigned int
   /* For vmerge, no mask operand, no mask policy operand.  */
   MERGE_OP = __NORMAL_OP_TA2 | TERNARY_OP_P,
 
+  /* For vmerge with TU policy.  */
+  MERGE_OP_TU = HAS_DEST_P | HAS_MERGE_P | TERNARY_OP_P | TU_POLICY_P,
+
   /* For vm<compare>, no tail policy operand.  */
   COMPARE_OP = __NORMAL_OP_MA | TERNARY_OP_P,
   COMPARE_OP_MU = __MASK_OP_MU | TERNARY_OP_P,
@@ -382,6 +385,11 @@ enum insn_type : unsigned int
   /* has merge operand but use ta.  */
   COMPRESS_OP_MERGE
   = HAS_DEST_P | HAS_MERGE_P | TDEFAULT_POLICY_P | BINARY_OP_P,
+
+  /* For vslideup.up has merge operand but use ta.  */
+  SLIDEUP_OP_MERGE = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P
+		     | HAS_MERGE_P | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P
+		     | BINARY_OP_P,
 
   /* For vreduce, no mask policy operand. */
   REDUCE_OP = __NORMAL_OP_TA | BINARY_OP_P | VTYPE_MODE_FROM_OP1_P,
@@ -451,6 +459,7 @@ gimple *gimple_fold_builtin (unsigned int, gimple_stmt_iterator *, gcall *);
 rtx expand_builtin (unsigned int, tree, rtx);
 bool check_builtin_call (location_t, vec<location_t>, unsigned int,
 			   tree, unsigned int, tree *);
+tree resolve_overloaded_builtin (unsigned int, vec<tree, va_gc> *);
 bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 bool legitimize_move (rtx, rtx *);
 void emit_vlmax_vsetvl (machine_mode, rtx);
@@ -505,8 +514,8 @@ void expand_vec_rint (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_round (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_trunc (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_roundeven (rtx, rtx, machine_mode, machine_mode);
-void expand_vec_lrint (rtx, rtx, machine_mode, machine_mode);
-void expand_vec_lround (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_lrint (rtx, rtx, machine_mode, machine_mode, machine_mode);
+void expand_vec_lround (rtx, rtx, machine_mode, machine_mode, machine_mode);
 void expand_vec_lceil (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_lfloor (rtx, rtx, machine_mode, machine_mode);
 #endif
@@ -592,6 +601,8 @@ bool vlmax_avl_p (rtx);
 uint8_t get_sew (rtx_insn *);
 enum vlmul_type get_vlmul (rtx_insn *);
 int count_regno_occurrences (rtx_insn *, unsigned int);
+bool imm_avl_p (machine_mode);
+bool can_be_broadcasted_p (rtx);
 }
 
 /* We classify builtin types into two classes:

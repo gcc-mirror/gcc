@@ -10,7 +10,7 @@
 #endif
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8-a+crc")
+#pragma GCC target ("arch=armv8-a+simd+crc")
 #ifndef __ARM_FEATURE_CRC32
 # error "__ARM_FEATURE_CRC32 is not defined in push 1."
 #endif
@@ -41,7 +41,7 @@ void test_crc_unknown_ok_attr_1 ()
 # error "__ARM_FEATURE_CRC32 is defined after attribute set 1."
 #endif
 
-__attribute__((target("arch=armv8-a+crc")))
+__attribute__((target("arch=armv8-a+simd+crc")))
 void test_crc_unknown_ok_attr_2 ()
 {
 	__crc32b (0, 0);

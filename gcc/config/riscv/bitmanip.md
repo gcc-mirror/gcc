@@ -290,7 +290,7 @@
 (define_insn "*zero_extendhi<GPR:mode>2_bitmanip"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
         (zero_extend:GPR (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_ZBB"
+  "TARGET_ZBB && !TARGET_XTHEADMEMIDX"
   "@
    zext.h\t%0,%1
    lhu\t%0,%1"
@@ -301,7 +301,7 @@
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_ZBB"
+  "TARGET_ZBB && !TARGET_XTHEADMEMIDX"
   "@
    sext.<SHORT:size>\t%0,%1
    l<SHORT:size>\t%0,%1"

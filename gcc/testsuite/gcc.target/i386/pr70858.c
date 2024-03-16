@@ -1,6 +1,6 @@
 /* PR target/70858 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlwp -mbmi -mtbm -mbmi2 -std=gnu11" } */
+/* { dg-options "-fpermissive -O2 -mlwp -mbmi -mtbm -mbmi2 -std=gnu11" } */
 
 void
 f1 (unsigned long long x, unsigned int y)

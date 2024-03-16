@@ -1831,6 +1831,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
 struct GTY(()) cp_omp_declare_target_attr {
   bool attr_syntax;
   int device_type;
+  bool indirect;
 };
 
 struct GTY(()) cp_omp_begin_assumes_data {
@@ -4082,6 +4083,10 @@ struct GTY(()) lang_decl {
   (INDIRECT_REF_P (NODE)				\
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
    && TYPE_REF_P (TREE_TYPE (TREE_OPERAND ((NODE), 0))))
+
+/* Look through an implicit INDIRECT_REF from convert_from_reference.  */
+#define STRIP_REFERENCE_REF(NODE)			\
+  (REFERENCE_REF_P (NODE) ? TREE_OPERAND (NODE, 0) : NODE)
 
 /* True iff this represents an lvalue being treated as an rvalue during return
    or throw as per [class.copy.elision].  */

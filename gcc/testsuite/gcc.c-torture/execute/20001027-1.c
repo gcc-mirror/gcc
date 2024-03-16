@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int x,*p=&x;
 
 int main()

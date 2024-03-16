@@ -3,6 +3,8 @@
 
 #include <stdarg.h>
 
+extern void abort (void);
+extern void exit (int);
 extern __SIZE_TYPE__ strlen (const char *);
 
 int
@@ -211,7 +213,8 @@ f15 (int a1, int a2, int a3, int a4, int a5,
   va_end(ap);
 }
 
-main ()
+int
+main (void)
 {
   char *f = "0123456789abcdef";
 

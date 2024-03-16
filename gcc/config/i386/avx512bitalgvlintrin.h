@@ -28,9 +28,9 @@
 #ifndef _AVX512BITALGVLINTRIN_H_INCLUDED
 #define _AVX512BITALGVLINTRIN_H_INCLUDED
 
-#if !defined(__AVX512BITALG__) || !defined(__AVX512VL__)
+#if !defined(__AVX512BITALG__) || !defined(__AVX512VL__) || defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512bitalg,avx512vl")
+#pragma GCC target("avx512bitalg,avx512vl,no-evex512")
 #define __DISABLE_AVX512BITALGVL__
 #endif /* __AVX512BITALGVL__ */
 
@@ -49,7 +49,7 @@ _mm256_maskz_popcnt_epi8 (__mmask32 __U, __m256i __A)
 {
   return (__m256i) __builtin_ia32_vpopcountb_v32qi_mask ((__v32qi) __A,
 						(__v32qi)
-						 _mm256_setzero_si256 (),
+						 _mm256_avx512_setzero_si256 (),
 						(__mmask32) __U);
 }
 
@@ -132,7 +132,7 @@ _mm256_maskz_popcnt_epi16 (__mmask16 __U, __m256i __A)
 {
   return (__m256i) __builtin_ia32_vpopcountw_v16hi_mask ((__v16hi) __A,
 						(__v16hi)
-						_mm256_setzero_si256 (),
+						_mm256_avx512_setzero_si256 (),
 						(__mmask16) __U);
 }
 
@@ -151,7 +151,7 @@ _mm_maskz_popcnt_epi8 (__mmask16 __U, __m128i __A)
 {
   return (__m128i) __builtin_ia32_vpopcountb_v16qi_mask ((__v16qi) __A,
 							 (__v16qi)
-							 _mm_setzero_si128 (),
+							 _mm_avx512_setzero_si128 (),
 							 (__mmask16) __U);
 }
 extern __inline __m128i
@@ -169,7 +169,7 @@ _mm_maskz_popcnt_epi16 (__mmask8 __U, __m128i __A)
 {
   return (__m128i) __builtin_ia32_vpopcountw_v8hi_mask ((__v8hi) __A,
 							(__v8hi)
-							_mm_setzero_si128 (),
+							_mm_avx512_setzero_si128 (),
 							(__mmask8) __U);
 }
 #ifdef __DISABLE_AVX512BITALGVL__

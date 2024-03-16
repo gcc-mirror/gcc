@@ -24,6 +24,7 @@ import dmd.canthrow;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dimport;
+import dmd.dinterpret;
 import dmd.dmangle;
 import dmd.dmodule;
 import dmd.dscope;

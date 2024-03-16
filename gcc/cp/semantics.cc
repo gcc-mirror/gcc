@@ -3932,6 +3932,9 @@ baselink_for_fns (tree fns)
 static bool
 outer_var_p (tree decl)
 {
+  /* These should have been stripped or otherwise handled by the caller.  */
+  gcc_checking_assert (!REFERENCE_REF_P (decl));
+
   return ((VAR_P (decl) || TREE_CODE (decl) == PARM_DECL)
 	  && DECL_FUNCTION_SCOPE_P (decl)
 	  /* Don't get confused by temporaries.  */
@@ -4980,8 +4983,9 @@ public:
 
   tree var;
   tree result;
-  hash_table<nofree_ptr_hash <tree_node> > visited;
+  hash_set<tree> visited;
   bool simple;
+  bool in_nrv_cleanup;
 };
 
 /* Helper function for walk_tree, used by finalize_nrv below.  */
@@ -4990,14 +4994,24 @@ static tree
 finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 {
   class nrv_data *dp = (class nrv_data *)data;
-  tree_node **slot;
 
   /* No need to walk into types.  There wouldn't be any need to walk into
      non-statements, except that we have to consider STMT_EXPRs.  */
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
+
+  /* Replace all uses of the NRV with the RESULT_DECL.  */
+  else if (*tp == dp->var)
+    *tp = dp->result;
+
+  /* Avoid walking into the same tree more than once.  Unfortunately, we
+     can't just use walk_tree_without duplicates because it would only call
+     us for the first occurrence of dp->var in the function body.  */
+  else if (dp->visited.add (*tp))
+    *walk_subtrees = 0;
+
   /* If there's a label, we might need to destroy the NRV on goto (92407).  */
-  else if (TREE_CODE (*tp) == LABEL_EXPR)
+  else if (TREE_CODE (*tp) == LABEL_EXPR && !dp->in_nrv_cleanup)
     dp->simple = false;
   /* Change NRV returns to just refer to the RESULT_DECL; this is a nop,
      but differs from using NULL_TREE in that it indicates that we care
@@ -5016,16 +5030,59 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
   else if (TREE_CODE (*tp) == CLEANUP_STMT
 	   && CLEANUP_DECL (*tp) == dp->var)
     {
+      dp->in_nrv_cleanup = true;
+      cp_walk_tree (&CLEANUP_BODY (*tp), finalize_nrv_r, data, 0);
+      dp->in_nrv_cleanup = false;
+      cp_walk_tree (&CLEANUP_EXPR (*tp), finalize_nrv_r, data, 0);
+      *walk_subtrees = 0;
+
       if (dp->simple)
+	/* For a simple NRV, just run it on the EH path.  */
 	CLEANUP_EH_ONLY (*tp) = true;
       else
 	{
+	  /* Not simple, we need to check current_retval_sentinel to decide
+	     whether to run it.  If it's set, we're returning normally and
+	     don't want to destroy the NRV.  If the sentinel is not set, we're
+	     leaving scope some other way, either by flowing off the end of its
+	     scope or throwing an exception.  */
 	  tree cond = build3 (COND_EXPR, void_type_node,
 			      current_retval_sentinel,
 			      void_node, CLEANUP_EXPR (*tp));
 	  CLEANUP_EXPR (*tp) = cond;
 	}
+
+      /* If a cleanup might throw, we need to clear current_retval_sentinel on
+	 the exception path, both so the check above succeeds and so an outer
+	 cleanup added by maybe_splice_retval_cleanup doesn't run.  */
+      if (cp_function_chain->throwing_cleanup)
+	{
+	  tree clear = build2 (MODIFY_EXPR, boolean_type_node,
+			       current_retval_sentinel,
+			       boolean_false_node);
+	  if (dp->simple)
+	    {
+	      /* We're already only on the EH path, just prepend it.  */
+	      tree &exp = CLEANUP_EXPR (*tp);
+	      exp = build2 (COMPOUND_EXPR, void_type_node, clear, exp);
+	    }
+	  else
+	    {
+	      /* The cleanup runs on both normal and EH paths, we need another
+		 CLEANUP_STMT to clear the flag only on the EH path.  */
+	      tree &bod = CLEANUP_BODY (*tp);
+	      bod = build_stmt (EXPR_LOCATION (*tp), CLEANUP_STMT,
+				bod, clear, current_retval_sentinel);
+	      CLEANUP_EH_ONLY (bod) = true;
+	    }
+	}
     }
+  /* Disable maybe_splice_retval_cleanup within the NRV cleanup scope, we don't
+     want to destroy the retval before the variable goes out of scope.  */
+  else if (TREE_CODE (*tp) == CLEANUP_STMT
+	   && dp->in_nrv_cleanup
+	   && CLEANUP_DECL (*tp) == dp->result)
+    CLEANUP_EXPR (*tp) = void_node;
   /* Replace the DECL_EXPR for the NRV with an initialization of the
      RESULT_DECL, if needed.  */
   else if (TREE_CODE (*tp) == DECL_EXPR
@@ -5042,18 +5099,6 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
       SET_EXPR_LOCATION (init, EXPR_LOCATION (*tp));
       *tp = init;
     }
-  /* And replace all uses of the NRV with the RESULT_DECL.  */
-  else if (*tp == dp->var)
-    *tp = dp->result;
-
-  /* Avoid walking into the same tree more than once.  Unfortunately, we
-     can't just use walk_tree_without duplicates because it would only call
-     us for the first occurrence of dp->var in the function body.  */
-  slot = dp->visited.find_slot (*tp, INSERT);
-  if (*slot)
-    *walk_subtrees = 0;
-  else
-    *slot = *tp;
 
   /* Keep iterating.  */
   return NULL_TREE;
@@ -5082,6 +5127,7 @@ finalize_nrv (tree fndecl, tree var)
 
   data.var = var;
   data.result = result;
+  data.in_nrv_cleanup = false;
 
   /* This is simpler for variables declared in the outer scope of
      the function so we know that their lifetime always ends with a
@@ -8845,6 +8891,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_NOHOST:
+	case OMP_CLAUSE_INDIRECT:
 	  break;
 
 	case OMP_CLAUSE_MERGEABLE:
@@ -11599,8 +11646,28 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
           /* Fall through for fields that aren't bitfields.  */
 	  gcc_fallthrough ();
 
-        case FUNCTION_DECL:
         case VAR_DECL:
+	  if (is_capture_proxy (expr))
+	    {
+	      if (is_normal_capture_proxy (expr))
+		{
+		  expr = DECL_CAPTURED_VARIABLE (expr);
+		  type = TREE_TYPE (expr);
+		  type = non_reference (type);
+		}
+	      else
+		{
+		  expr = DECL_VALUE_EXPR (expr);
+		  gcc_assert (TREE_CODE (expr) == COMPONENT_REF);
+		  expr = TREE_OPERAND (expr, 1);
+		  type = TREE_TYPE (expr);
+		}
+	      break;
+	    }
+	  /* Fall through for variables that aren't capture proxies.  */
+	  gcc_fallthrough ();
+
+	case FUNCTION_DECL:
         case CONST_DECL:
         case PARM_DECL:
         case RESULT_DECL:
@@ -11655,10 +11722,10 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	 transformed into an access to a corresponding data member
 	 of the closure type that would have been declared if x
 	 were a use of the denoted entity.  */
-      if (outer_automatic_var_p (expr)
+      if (outer_automatic_var_p (STRIP_REFERENCE_REF (expr))
 	  && current_function_decl
 	  && LAMBDA_FUNCTION_P (current_function_decl))
-	type = capture_decltype (expr);
+	type = capture_decltype (STRIP_REFERENCE_REF (expr));
       else if (error_operand_p (expr))
 	type = error_mark_node;
       else if (expr == current_class_ptr)

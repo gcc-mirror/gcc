@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 int gl;
 
 g (x)

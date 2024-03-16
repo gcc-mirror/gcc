@@ -1,3 +1,7 @@
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-lang.cc (flag_isoc2x): Rename to flag_isoc23.
+
 2023-09-30  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Make-lang.in: Make create_fdas_for_lto1 target not .PHONY

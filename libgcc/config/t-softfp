@@ -69,7 +69,9 @@ softfp_bid_list :=
 ifeq ($(decimal_float),yes)
 ifeq ($(enable_decimal_float),bid)
 softfp_bid_list += bitintpow10 \
-		   $(foreach m,sd dd td,fix$(m)bitint floatbitint$(m))
+		   $(foreach m,sd dd td,fix$(m)bitint floatbitint$(m) \
+					fix$(m)ti fixuns$(m)ti \
+					floatti$(m) floatunti$(m))
 endif
 endif
 

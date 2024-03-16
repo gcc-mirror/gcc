@@ -11894,16 +11894,18 @@ aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
 /* Return true if X is a CONST_INT, CONST_WIDE_INT or a constant vector
    duplicate of such constants.  If so, store in RET_WI the wide_int
    representation of the constant paired with the inner mode of the vector mode
-   or TImode for scalar X constants.  */
+   or MODE for scalar X constants.  If MODE is not provided then TImode is
+   used.  */
 
 static bool
-aarch64_extract_vec_duplicate_wide_int (rtx x, wide_int *ret_wi)
+aarch64_extract_vec_duplicate_wide_int (rtx x, wide_int *ret_wi,
+					scalar_mode mode = TImode)
 {
   rtx elt = unwrap_const_vec_duplicate (x);
   if (!CONST_SCALAR_INT_P (elt))
     return false;
   scalar_mode smode
-    = CONST_SCALAR_INT_P (x) ? TImode : GET_MODE_INNER (GET_MODE (x));
+    = CONST_SCALAR_INT_P (x) ? mode : GET_MODE_INNER (GET_MODE (x));
   *ret_wi = rtx_mode_t (elt, smode);
   return true;
 }
@@ -11950,6 +11952,49 @@ aarch64_const_vec_all_same_in_range_p (rtx x,
   return (const_vec_duplicate_p (x, &elt)
 	  && CONST_INT_P (elt)
 	  && IN_RANGE (INTVAL (elt), minval, maxval));
+}
+
+/* Some constants can't be made using normal mov instructions in Advanced SIMD
+   but we can still create them in various ways.  If the constant in VAL can be
+   created using alternate methods then if possible then return true and
+   additionally set TARGET to the rtx for the sequence if TARGET is not NULL.
+   Otherwise return false if sequence is not possible.  */
+
+bool
+aarch64_maybe_generate_simd_constant (rtx target, rtx val, machine_mode mode)
+{
+  wide_int wval;
+  auto smode = GET_MODE_INNER (mode);
+  if (!aarch64_extract_vec_duplicate_wide_int (val, &wval, smode))
+    return false;
+
+  /* For Advanced SIMD we can create an integer with only the top bit set
+     using fneg (0.0f).  */
+  if (TARGET_SIMD
+      && !TARGET_SVE
+      && smode == DImode
+      && wi::only_sign_bit_p (wval))
+    {
+      if (!target)
+	return true;
+
+      /* Use the same base type as aarch64_gen_shareable_zero.  */
+      rtx zero = CONST0_RTX (V4SImode);
+      emit_move_insn (lowpart_subreg (V4SImode, target, mode), zero);
+      rtx neg = lowpart_subreg (V2DFmode, target, mode);
+      emit_insn (gen_negv2df2 (neg, copy_rtx (neg)));
+      return true;
+    }
+
+  return false;
+}
+
+/* Check if the value in VAL with mode MODE can be created using special
+   instruction sequences.  */
+
+bool aarch64_simd_special_constant_p (rtx val, machine_mode mode)
+{
+  return aarch64_maybe_generate_simd_constant (NULL_RTX, val, mode);
 }
 
 bool
@@ -12091,6 +12136,10 @@ sizetochar (int size)
      'N':		Take the duplicated element in a vector constant
 			and print the negative of it in decimal.
      'b/h/s/d/q':	Print a scalar FP/SIMD register name.
+     'Z':		Same for SVE registers.  ('z' was already taken.)
+			Note that it is not necessary to use %Z for operands
+			that have SVE modes.  The convention is to use %Z
+			only for non-SVE (or potentially non-SVE) modes.
      'S/T/U/V':		Print a FP/SIMD register name for a register list.
 			The register printed is the FP/SIMD register name
 			of X + 0/1/2/3 for S/T/U/V.
@@ -12263,6 +12312,8 @@ aarch64_print_operand (FILE *f, rtx x, int code)
     case 's':
     case 'd':
     case 'q':
+    case 'Z':
+      code = TOLOWER (code);
       if (!REG_P (x) || !FP_REGNUM_P (REGNO (x)))
 	{
 	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
@@ -25215,53 +25266,131 @@ aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
   emit_set_insn (ops[0], gen_rtx_UNSPEC (data_mode, vec, UNSPEC_SEL));
 }
 
-/* Implement TARGET_MODES_TIEABLE_P.  In principle we should always return
-   true.  However due to issues with register allocation it is preferable
-   to avoid tieing integer scalar and FP scalar modes.  Executing integer
-   operations in general registers is better than treating them as scalar
-   vector operations.  This reduces latency and avoids redundant int<->FP
-   moves.  So tie modes if they are either the same class, or vector modes
-   with other vector modes, vector structs or any scalar mode.  */
+/* Return true if:
+
+   (a) MODE1 and MODE2 use the same layout for bytes that are common
+       to both modes;
+
+   (b) subregs involving the two modes behave as the target-independent
+       subreg rules require; and
+
+   (c) there is at least one register that can hold both modes.
+
+   Return false otherwise.  */
 
 static bool
-aarch64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+aarch64_modes_compatible_p (machine_mode mode1, machine_mode mode2)
 {
-  if ((aarch64_advsimd_partial_struct_mode_p (mode1)
-       != aarch64_advsimd_partial_struct_mode_p (mode2))
+  unsigned int flags1 = aarch64_classify_vector_mode (mode1);
+  unsigned int flags2 = aarch64_classify_vector_mode (mode2);
+
+  bool sve1_p = (flags1 & VEC_ANY_SVE);
+  bool sve2_p = (flags2 & VEC_ANY_SVE);
+
+  bool partial_sve1_p = sve1_p && (flags1 & VEC_PARTIAL);
+  bool partial_sve2_p = sve2_p && (flags2 & VEC_PARTIAL);
+
+  bool pred1_p = (flags1 & VEC_SVE_PRED);
+  bool pred2_p = (flags2 & VEC_SVE_PRED);
+
+  bool partial_advsimd_struct1_p = (flags1 == (VEC_ADVSIMD | VEC_STRUCT
+					       | VEC_PARTIAL));
+  bool partial_advsimd_struct2_p = (flags2 == (VEC_ADVSIMD | VEC_STRUCT
+					       | VEC_PARTIAL));
+
+  /* Don't allow changes between predicate modes and other modes.
+     Only predicate registers can hold predicate modes and only
+     non-predicate registers can hold non-predicate modes, so any
+     attempt to mix them would require a round trip through memory.  */
+  if (pred1_p != pred2_p)
+    return false;
+
+  /* The contents of partial SVE modes are distributed evenly across
+     the register, whereas GCC expects them to be clustered together.
+     We therefore need to be careful about mode changes involving them.  */
+  if (partial_sve1_p && partial_sve2_p)
+    {
+      /* Reject changes between partial SVE modes that have different
+	 patterns of significant and insignificant bits.  */
+      if ((aarch64_sve_container_bits (mode1)
+	   != aarch64_sve_container_bits (mode2))
+	  || GET_MODE_UNIT_SIZE (mode1) != GET_MODE_UNIT_SIZE (mode2))
+	return false;
+    }
+  else if (partial_sve1_p)
+    {
+      /* The first lane of MODE1 is where GCC expects it, but anything
+	 bigger than that is not.  */
+      if (maybe_gt (GET_MODE_SIZE (mode2), GET_MODE_UNIT_SIZE (mode1)))
+	return false;
+    }
+  else if (partial_sve2_p)
+    {
+      /* Similarly in reverse.  */
+      if (maybe_gt (GET_MODE_SIZE (mode1), GET_MODE_UNIT_SIZE (mode2)))
+	return false;
+    }
+
+  /* Don't allow changes between partial Advanced SIMD structure modes
+     and other modes that are bigger than 8 bytes.  E.g. V16QI and V2x8QI
+     are the same size, but the former occupies one Q register while the
+     latter occupies two D registers.  */
+  if (partial_advsimd_struct1_p != partial_advsimd_struct2_p
       && maybe_gt (GET_MODE_SIZE (mode1), 8)
       && maybe_gt (GET_MODE_SIZE (mode2), 8))
     return false;
 
-  if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
-    return true;
+  if (maybe_ne (BITS_PER_SVE_VECTOR, 128u))
+    {
+      /* Don't allow changes between SVE modes and other modes that might
+	 be bigger than 128 bits.  In particular, OImode, CImode and XImode
+	 divide into 128-bit quantities while SVE modes divide into
+	 BITS_PER_SVE_VECTOR quantities.  */
+      if (sve1_p && !sve2_p && maybe_gt (GET_MODE_BITSIZE (mode2), 128))
+	return false;
+      if (sve2_p && !sve1_p && maybe_gt (GET_MODE_BITSIZE (mode1), 128))
+	return false;
+    }
 
-  /* Allow changes between scalar modes if both modes fit within 64 bits.
-     This is because:
+  if (BYTES_BIG_ENDIAN)
+    {
+      /* Don't allow changes between SVE data modes and non-SVE modes.
+	 See the comment at the head of aarch64-sve.md for details.  */
+      if (sve1_p != sve2_p)
+	return false;
 
-     - We allow all such modes for both FPRs and GPRs.
-     - They occupy a single register for both FPRs and GPRs.
-     - We can reinterpret one mode as another in both types of register.  */
-  if (is_a<scalar_mode> (mode1)
-      && is_a<scalar_mode> (mode2)
-      && known_le (GET_MODE_SIZE (mode1), 8)
-      && known_le (GET_MODE_SIZE (mode2), 8))
-    return true;
+      /* Don't allow changes in element size: lane 0 of the new vector
+	 would not then be lane 0 of the old vector.  See the comment
+	 above aarch64_maybe_expand_sve_subreg_move for a more detailed
+	 description.
 
-  /* We specifically want to allow elements of "structure" modes to
-     be tieable to the structure.  This more general condition allows
-     other rarer situations too.  The reason we don't extend this to
-     predicate modes is that there are no predicate structure modes
-     nor any specific instructions for extracting part of a predicate
-     register.  */
-  if (aarch64_vector_data_mode_p (mode1)
-      && aarch64_vector_data_mode_p (mode2))
-    return true;
+	 In the worst case, this forces a register to be spilled in
+	 one mode and reloaded in the other, which handles the
+	 endianness correctly.  */
+      if (sve1_p && GET_MODE_UNIT_SIZE (mode1) != GET_MODE_UNIT_SIZE (mode2))
+	return false;
+    }
+  return true;
+}
 
-  /* Also allow any scalar modes with vectors.  */
-  if (aarch64_vector_mode_supported_p (mode1)
-      || aarch64_vector_mode_supported_p (mode2))
-    return true;
+/* Implement TARGET_MODES_TIEABLE_P.  In principle we should always defer
+   to aarch64_modes_compatible_p.  However due to issues with register
+   allocation it is preferable to avoid tieing integer scalar and FP
+   scalar modes.  Executing integer operations in general registers is
+   better than treating them as scalar vector operations.  This reduces
+   latency and avoids redundant int<->FP moves.  So tie modes if they
+   are either the same class, or one of them is a vector mode.  */
 
+static bool
+aarch64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  if (aarch64_modes_compatible_p (mode1, mode2))
+    {
+      if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
+	return true;
+      if (VECTOR_MODE_P (mode1) || VECTOR_MODE_P (mode2))
+	return true;
+    }
   return false;
 }
 
@@ -27294,80 +27423,7 @@ static bool
 aarch64_can_change_mode_class (machine_mode from,
 			       machine_mode to, reg_class_t)
 {
-  unsigned int from_flags = aarch64_classify_vector_mode (from);
-  unsigned int to_flags = aarch64_classify_vector_mode (to);
-
-  bool from_sve_p = (from_flags & VEC_ANY_SVE);
-  bool to_sve_p = (to_flags & VEC_ANY_SVE);
-
-  bool from_partial_sve_p = from_sve_p && (from_flags & VEC_PARTIAL);
-  bool to_partial_sve_p = to_sve_p && (to_flags & VEC_PARTIAL);
-
-  bool from_pred_p = (from_flags & VEC_SVE_PRED);
-  bool to_pred_p = (to_flags & VEC_SVE_PRED);
-
-  bool to_partial_advsimd_struct_p = (to_flags == (VEC_ADVSIMD | VEC_STRUCT
-						   | VEC_PARTIAL));
-  bool from_partial_advsimd_struct_p = (from_flags == (VEC_ADVSIMD | VEC_STRUCT
-						   | VEC_PARTIAL));
-
-  /* Don't allow changes between predicate modes and other modes.
-     Only predicate registers can hold predicate modes and only
-     non-predicate registers can hold non-predicate modes, so any
-     attempt to mix them would require a round trip through memory.  */
-  if (from_pred_p != to_pred_p)
-    return false;
-
-  /* Don't allow changes between partial SVE modes and other modes.
-     The contents of partial SVE modes are distributed evenly across
-     the register, whereas GCC expects them to be clustered together.  */
-  if (from_partial_sve_p != to_partial_sve_p)
-    return false;
-
-  /* Similarly reject changes between partial SVE modes that have
-     different patterns of significant and insignificant bits.  */
-  if (from_partial_sve_p
-      && (aarch64_sve_container_bits (from) != aarch64_sve_container_bits (to)
-	  || GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to)))
-    return false;
-
-  /* Don't allow changes between partial and other registers only if
-     one is a normal SIMD register, allow only if not larger than 64-bit.  */
-  if ((to_partial_advsimd_struct_p ^ from_partial_advsimd_struct_p)
-      && (known_gt (GET_MODE_SIZE (to), 8) || known_gt (GET_MODE_SIZE (to), 8)))
-    return false;
-
-  if (maybe_ne (BITS_PER_SVE_VECTOR, 128u))
-    {
-      /* Don't allow changes between SVE modes and other modes that might
-	 be bigger than 128 bits.  In particular, OImode, CImode and XImode
-	 divide into 128-bit quantities while SVE modes divide into
-	 BITS_PER_SVE_VECTOR quantities.  */
-      if (from_sve_p && !to_sve_p && maybe_gt (GET_MODE_BITSIZE (to), 128))
-	return false;
-      if (to_sve_p && !from_sve_p && maybe_gt (GET_MODE_BITSIZE (from), 128))
-	return false;
-    }
-
-  if (BYTES_BIG_ENDIAN)
-    {
-      /* Don't allow changes between SVE data modes and non-SVE modes.
-	 See the comment at the head of aarch64-sve.md for details.  */
-      if (from_sve_p != to_sve_p)
-	return false;
-
-      /* Don't allow changes in element size: lane 0 of the new vector
-	 would not then be lane 0 of the old vector.  See the comment
-	 above aarch64_maybe_expand_sve_subreg_move for a more detailed
-	 description.
-
-	 In the worst case, this forces a register to be spilled in
-	 one mode and reloaded in the other, which handles the
-	 endianness correctly.  */
-      if (from_sve_p && GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to))
-	return false;
-    }
-  return true;
+  return aarch64_modes_compatible_p (from, to);
 }
 
 /* Implement TARGET_EARLY_REMAT_MODES.  */

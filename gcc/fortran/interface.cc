@@ -4737,6 +4737,17 @@ gfc_extend_expr (gfc_expr *e)
 	  if (sym != NULL)
 	    break;
 	}
+
+      /* F2018(15.4.3.4.2) requires that the use of unlimited polymorphic
+	 formal arguments does not override the intrinsic uses.  */
+      gfc_push_suppress_errors ();
+      if (sym
+	  && (UNLIMITED_POLY (sym->formal->sym)
+	      || (sym->formal->next
+		  && UNLIMITED_POLY (sym->formal->next->sym)))
+	  && !gfc_check_operator_interface (sym, e->value.op.op, e->where))
+	sym = NULL;
+      gfc_pop_suppress_errors ();
     }
 
   /* TODO: Do an ambiguity-check and error if multiple matching interfaces are

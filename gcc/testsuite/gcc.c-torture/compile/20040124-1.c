@@ -1,3 +1,5 @@
+int f2 (int, int);
+int f3 (int);
 int
 f1 (int a, int b)
 {

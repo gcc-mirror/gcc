@@ -1,3 +1,5 @@
+void abort (void);
+
 int
 foo (int x, int y, int i, int j)
 {
@@ -7,7 +9,8 @@ foo (int x, int y, int i, int j)
   return tmp1 < tmp2;
 }
 
-main ()
+int
+main (void)
 {
   if (foo (2, 24, 3, 4) == 0)
     abort ();

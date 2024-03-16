@@ -7020,51 +7020,118 @@ DEFHOOK
  "Generate one or more insns to set @var{entity} to @var{mode}.\n\
 @var{hard_reg_live} is the set of hard registers live at the point where\n\
 the insn(s) are to be inserted. @var{prev_moxde} indicates the mode\n\
-to switch from. Sets of a lower numbered entity will be emitted before\n\
+to switch from, or is the number of modes if the previous mode is not\n\
+known.  Sets of a lower numbered entity will be emitted before\n\
 sets of a higher numbered entity to a mode of the same or lower priority.",
  void, (int entity, int mode, int prev_mode, HARD_REG_SET regs_live), NULL)
 
 DEFHOOK
 (needed,
  "@var{entity} is an integer specifying a mode-switched entity.\n\
-If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro\n\
-to return an integer value not larger than the corresponding element\n\
-in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity}\n\
-must be switched into prior to the execution of @var{insn}.",
- int, (int entity, rtx_insn *insn), NULL)
+If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this hook\n\
+to return the mode that @var{entity} must be switched into prior to the\n\
+execution of @var{insn}, or the number of modes if @var{insn} has no\n\
+such requirement.  @var{regs_live} contains the set of hard registers\n\
+that are live before @var{insn}.",
+ int, (int entity, rtx_insn *insn, HARD_REG_SET regs_live), NULL)
 
 DEFHOOK
 (after,
  "@var{entity} is an integer specifying a mode-switched entity.\n\
-If this macro is defined, it is evaluated for every @var{insn} during mode\n\
-switching.  It determines the mode that an insn results\n\
-in (if different from the incoming mode).",
- int, (int entity, int mode, rtx_insn *insn), NULL)
+If this hook is defined, it is evaluated for every @var{insn} during mode\n\
+switching.  It returns the mode that @var{entity} is in after @var{insn}\n\
+has been executed.  @var{mode} is the mode that @var{entity} was in\n\
+before @var{insn} was executed, taking account of @var{TARGET_MODE_NEEDED}.\n\
+@var{regs_live} is the set of hard registers that are live after @var{insn}\n\
+has been executed.\n\
+\n\
+@var{mode} is equal to the number of modes defined for @var{entity}\n\
+if the mode before @var{insn} is unknown.  The hook should likewise return\n\
+the number of modes if it does not know what mode @var{entity} has after\n\
+@var{insn}.\n\
+\n\
+Not defining the hook is equivalent to returning @var{mode}.",
+ int, (int entity, int mode, rtx_insn *insn, HARD_REG_SET regs_live), NULL)
+
+DEFHOOK
+(confluence,
+ "By default, the mode-switching pass assumes that a given entity's modes\n\
+are mutually exclusive.  This means that the pass can only tell\n\
+@code{TARGET_MODE_EMIT} about an entity's previous mode if all\n\
+incoming paths of execution leave the entity in the same state.\n\
+\n\
+However, some entities might have overlapping, non-exclusive modes,\n\
+so that it is sometimes possible to represent ``mode @var{mode1} or mode\n\
+@var{mode2}'' with something more specific than ``mode not known''.\n\
+If this is true for at least one entity, you should define this hook\n\
+and make it return a mode that includes @var{mode1} and @var{mode2}\n\
+as possibilities.  (The mode can include other possibilities too.)\n\
+The hook should return the number of modes if no suitable mode exists\n\
+for the given arguments.",
+ int, (int entity, int mode1, int mode2), NULL)
+
+DEFHOOK
+(backprop,
+ "If defined, the mode-switching pass uses this hook to back-propagate mode\n\
+requirements through blocks that have no mode requirements of their own.\n\
+Specifically, @var{mode1} is the mode that @var{entity} has on exit\n\
+from a block B1 (say) and @var{mode2} is the mode that the next block\n\
+requires @var{entity} to have.  B1 does not have any mode requirements\n\
+of its own.\n\
+\n\
+The hook should return the mode that it prefers or requires @var{entity}\n\
+to have in B1, or the number of modes if there is no such requirement.\n\
+If the hook returns a required mode for more than one of B1's outgoing\n\
+edges, those modes are combined as for @code{TARGET_MODE_CONFLUENCE}.\n\
+\n\
+For example, suppose there is a ``one-shot'' entity that,\n\
+for a given execution of a function, either stays off or makes exactly\n\
+one transition from off to on.  It is safe to make the transition at any\n\
+time, but it is better not to do so unnecessarily.  This hook allows the\n\
+function to manage such an entity without having to track its state at\n\
+runtime.  Specifically. the entity would have two modes, 0 for off and\n\
+1 for on, with 2 representing ``don't know''.  The system is forbidden from\n\
+transitioning from 2 to 1, since 2 represents the possibility that the\n\
+entity is already on (and the aim is to avoid having to emit code to\n\
+check for that case).  This hook would therefore return 1 when @var{mode1}\n\
+is 2 and @var{mode2} is 1, which would force the entity to be on in the\n\
+source block.  Applying this inductively would remove all transitions\n\
+in which the previous state is unknown.",
+ int, (int entity, int mode1, int mode2), NULL)
 
 DEFHOOK
 (entry,
- "If this macro is defined, it is evaluated for every @var{entity} that\n\
-needs mode switching.  It should evaluate to an integer, which is a mode\n\
-that @var{entity} is assumed to be switched to at function entry.\n\
+ "If this hook is defined, it is evaluated for every @var{entity} that\n\
+needs mode switching.  It should return the mode that @var{entity} is\n\
+guaranteed to be in on entry to the function, or the number of modes\n\
+if there is no such guarantee.\n\
 If @code{TARGET_MODE_ENTRY} is defined then @code{TARGET_MODE_EXIT}\n\
 must be defined.",
  int, (int entity), NULL)
 
 DEFHOOK
 (exit,
- "If this macro is defined, it is evaluated for every @var{entity} that\n\
-needs mode switching.  It should evaluate to an integer, which is a mode\n\
-that @var{entity} is assumed to be switched to at function exit.\n\
+ "If this hook is defined, it is evaluated for every @var{entity} that\n\
+needs mode switching.  It should return the mode that @var{entity} must\n\
+be in on return from the function, or the number of modes if there is no\n\
+such requirement.\n\
 If @code{TARGET_MODE_EXIT} is defined then @code{TARGET_MODE_ENTRY}\n\
 must be defined.",
  int, (int entity), NULL)
 
 DEFHOOK
+(eh_handler,
+ "If this hook is defined, it should return the mode that @var{entity} is\n\
+guaranteed to be in on entry to an exception handler, or the number of modes\n\
+if there is no such guarantee.",
+ int, (int entity), NULL)
+
+DEFHOOK
 (priority,
- "This macro specifies the order in which modes for @var{entity}\n\
+ "This hook specifies the order in which modes for @var{entity}\n\
 are processed. 0 is the highest priority,\n\
 @code{NUM_MODES_FOR_MODE_SWITCHING[@var{entity}] - 1} the lowest.\n\
-The value of the macro should be an integer designating a mode\n\
+The hook returns an integer designating a mode\n\
 for @var{entity}.  For any fixed @var{entity}, @code{mode_priority}\n\
 (@var{entity}, @var{n}) shall be a bijection in 0 @dots{}\n\
 @code{num_modes_for_mode_switching[@var{entity}] - 1}.",

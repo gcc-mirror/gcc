@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target bitint } } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 #define IB __SIZEOF_INT__ * __CHAR_BIT__
 typedef _BitInt(IB) V1 __attribute__((vector_size (sizeof (_BitInt(IB)))));		/* { dg-error "invalid vector type for attribute 'vector_size'" } */

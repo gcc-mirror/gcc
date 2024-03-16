@@ -1,3 +1,5 @@
+void bar (void);
+
 void foo(int x)
 {
   if (x > 3)
@@ -7,7 +9,8 @@ void foo(int x)
   x = 9;
 }
 
-main()
+int
+main(void)
 {
   int j;
 

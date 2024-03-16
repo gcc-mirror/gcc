@@ -479,7 +479,8 @@ copy_early_debug_info (const char *infile, const char *outfile)
 static void
 process_asm (FILE *in, FILE *out, FILE *cfile)
 {
-  int fn_count = 0, var_count = 0, dims_count = 0, regcount_count = 0;
+  int fn_count = 0, var_count = 0, ind_fn_count = 0;
+  int dims_count = 0, regcount_count = 0;
   struct obstack fns_os, dims_os, regcounts_os;
   obstack_init (&fns_os);
   obstack_init (&dims_os);
@@ -508,7 +509,8 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
     { IN_CODE,
       IN_METADATA,
       IN_VARS,
-      IN_FUNCS
+      IN_FUNCS,
+      IN_IND_FUNCS,
     } state = IN_CODE;
   while (fgets (buf, sizeof (buf), in))
     {
@@ -570,6 +572,17 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	      }
 	    break;
 	  }
+	case IN_IND_FUNCS:
+	  {
+	    char *funcname;
+	    if (sscanf (buf, "\t.8byte\t%ms\n", &funcname))
+	      {
+		fputs (buf, out);
+		ind_fn_count++;
+		continue;
+	      }
+	    break;
+	  }
 	}
 
       char dummy;
@@ -595,6 +608,15 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	  fputs ("\t.global .offload_func_table\n"
 		 "\t.type .offload_func_table, @object\n"
 		 ".offload_func_table:\n",
+		 out);
+	}
+      else if (sscanf (buf, " .section .gnu.offload_ind_funcs%c", &dummy) > 0)
+	{
+	  state = IN_IND_FUNCS;
+	  fputs (buf, out);
+	  fputs ("\t.global .offload_ind_func_table\n"
+		 "\t.type .offload_ind_func_table, @object\n"
+		 ".offload_ind_func_table:\n",
 		 out);
 	}
       else if (sscanf (buf, " .amdgpu_metadata%c", &dummy) > 0)
@@ -634,6 +656,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   fprintf (cfile, "#include <stdbool.h>\n\n");
 
   fprintf (cfile, "static const int gcn_num_vars = %d;\n\n", var_count);
+  fprintf (cfile, "static const int gcn_num_ind_funcs = %d;\n\n", ind_fn_count);
 
   /* Dump out function idents.  */
   fprintf (cfile, "static const struct hsa_kernel_description {\n"
@@ -728,12 +751,14 @@ process_obj (FILE *in, FILE *cfile, uint32_t omp_requires)
 	   "  const struct gcn_image *gcn_image;\n"
 	   "  unsigned kernel_count;\n"
 	   "  const struct hsa_kernel_description *kernel_infos;\n"
+	   "  unsigned ind_func_count;\n"
 	   "  unsigned global_variable_count;\n"
 	   "} gcn_data = {\n"
 	   "  %d,\n"
 	   "  &gcn_image,\n"
 	   "  sizeof (gcn_kernels) / sizeof (gcn_kernels[0]),\n"
 	   "  gcn_kernels,\n"
+	   "  gcn_num_ind_funcs,\n"
 	   "  gcn_num_vars\n"
 	   "};\n\n", omp_requires);
 

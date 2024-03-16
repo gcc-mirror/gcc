@@ -4392,7 +4392,7 @@ simplify_ashift:
 	  real_convert (&f1, mode, CONST_DOUBLE_REAL_VALUE (trueop1));
 	  rtx tmp = simplify_gen_unary (ABS, mode, op0, mode);
 	  if (REAL_VALUE_NEGATIVE (f1))
-	    tmp = simplify_gen_unary (NEG, mode, op0, mode);
+	    tmp = simplify_gen_unary (NEG, mode, tmp, mode);
 	  return tmp;
 	}
       if (GET_CODE (op0) == NEG || GET_CODE (op0) == ABS)

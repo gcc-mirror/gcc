@@ -215,7 +215,8 @@ class line_maps *saved_line_table;
    ASPECT controls which part of the location to use.  */
 
 static expanded_location
-expand_location_1 (location_t loc,
+expand_location_1 (const line_maps *set,
+		   location_t loc,
 		   bool expansion_point_p,
 		   enum location_aspect aspect)
 {
@@ -243,11 +244,11 @@ expand_location_1 (location_t loc,
 	     location for a built-in token), let's consider the first
 	     location (toward the expansion point) that is not reserved;
 	     that is, the first location that is in real source code.  */
-	  loc = linemap_unwind_to_first_non_reserved_loc (line_table,
+	  loc = linemap_unwind_to_first_non_reserved_loc (set,
 							  loc, NULL);
 	  lrk = LRK_SPELLING_LOCATION;
 	}
-      loc = linemap_resolve_location (line_table, loc, lrk, &map);
+      loc = linemap_resolve_location (set, loc, lrk, &map);
 
       /* loc is now either in an ordinary map, or is a reserved location.
 	 If it is a compound location, the caret is in a spelling location,
@@ -266,18 +267,18 @@ expand_location_1 (location_t loc,
 	  {
 	    location_t start = get_start (loc);
 	    if (start != loc)
-	      return expand_location_1 (start, expansion_point_p, aspect);
+	      return expand_location_1 (set, start, expansion_point_p, aspect);
 	  }
 	  break;
 	case LOCATION_ASPECT_FINISH:
 	  {
 	    location_t finish = get_finish (loc);
 	    if (finish != loc)
-	      return expand_location_1 (finish, expansion_point_p, aspect);
+	      return expand_location_1 (set, finish, expansion_point_p, aspect);
 	  }
 	  break;
 	}
-      xloc = linemap_expand_location (line_table, map, loc);
+      xloc = linemap_expand_location (set, map, loc);
     }
 
   xloc.data = block;
@@ -294,21 +295,14 @@ static void
 diagnostic_file_cache_init (void)
 {
   gcc_assert (global_dc);
-  if (global_dc->m_file_cache == NULL)
-    global_dc->m_file_cache = new file_cache ();
+  global_dc->file_cache_init ();
 }
 
-/* Free the resources used by the set of cache used for files accessed
-   by caret diagnostic.  */
-
 void
-diagnostic_file_cache_fini (void)
+diagnostic_context::file_cache_init ()
 {
-  if (global_dc->m_file_cache)
-    {
-      delete global_dc->m_file_cache;
-      global_dc->m_file_cache = NULL;
-    }
+  if (m_file_cache == nullptr)
+    m_file_cache = new file_cache ();
 }
 
 /* Return the total lines number that have been read so far by the
@@ -366,10 +360,10 @@ diagnostics_file_cache_forcibly_evict_file (const char *file_path)
 {
   gcc_assert (file_path);
 
-  if (!global_dc->m_file_cache)
+  auto file_cache = global_dc->get_file_cache ();
+  if (!file_cache)
     return;
-
-  global_dc->m_file_cache->forcibly_evict_file (file_path);
+  file_cache->forcibly_evict_file (file_path);
 }
 
 void
@@ -978,7 +972,7 @@ char_span
 location_get_source_line (const char *file_path, int line)
 {
   diagnostic_file_cache_init ();
-  return global_dc->m_file_cache->get_source_line (file_path, line);
+  return global_dc->get_file_cache ()->get_source_line (file_path, line);
 }
 
 /* Return a NUL-terminated copy of the source text between two locations, or
@@ -1091,7 +1085,7 @@ char_span
 get_source_file_content (const char *file_path)
 {
   diagnostic_file_cache_init ();
-  return global_dc->m_file_cache->get_source_file_content (file_path);
+  return global_dc->get_file_cache ()->get_source_file_content (file_path);
 }
 
 /* Determine if FILE_PATH missing a trailing newline on its final line.
@@ -1103,7 +1097,7 @@ location_missing_trailing_newline (const char *file_path)
 {
   diagnostic_file_cache_init ();
 
-  file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
+  file_cache_slot *c = global_dc->get_file_cache ()->lookup_or_add_file (file_path);
   if (c == NULL)
     return false;
 
@@ -1134,7 +1128,7 @@ is_location_from_builtin_token (location_t loc)
 expanded_location
 expand_location (location_t loc)
 {
-  return expand_location_1 (loc, /*expansion_point_p=*/true,
+  return expand_location_1 (line_table, loc, /*expansion_point_p=*/true,
 			    LOCATION_ASPECT_CARET);
 }
 
@@ -1148,7 +1142,8 @@ expanded_location
 expand_location_to_spelling_point (location_t loc,
 				   enum location_aspect aspect)
 {
-  return expand_location_1 (loc, /*expansion_point_p=*/false, aspect);
+  return expand_location_1 (line_table, loc, /*expansion_point_p=*/false,
+			    aspect);
 }
 
 /* The rich_location class within libcpp requires a way to expand
@@ -1161,10 +1156,11 @@ expand_location_to_spelling_point (location_t loc,
    which simply calls into expand_location_1.  */
 
 expanded_location
-linemap_client_expand_location_to_spelling_point (location_t loc,
+linemap_client_expand_location_to_spelling_point (const line_maps *set,
+						  location_t loc,
 						  enum location_aspect aspect)
 {
-  return expand_location_1 (loc, /*expansion_point_p=*/false, aspect);
+  return expand_location_1 (set, loc, /*expansion_point_p=*/false, aspect);
 }
 
 

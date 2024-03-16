@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 a, b, c;
 
 long long d;

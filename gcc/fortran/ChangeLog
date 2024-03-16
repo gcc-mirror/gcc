@@ -1,3 +1,49 @@
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gfortran.h (gfc_real_info): Refer to C23 instead of C2X in
+	comment.
+
+2023-11-06  Martin Jambor  <mjambor@suse.cz>
+
+	* trans-decl.cc (gfc_build_builtin_function_decls): Fix fnspec of
+	generate_error.
+
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.cc: Update for changes to diagnostic_context.
+	* error.cc: Likewise.
+	* options.cc: Likewise.
+
+2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97245
+	* match.cc (gfc_match_call): If a procedure pointer has already been
+	resolved, do not create a new symbol in a procedure reference of
+	the same name shadowing the first one if it is host-associated.
+
+2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92887
+	* trans-expr.cc (conv_cond_temp): Helper function for creation of a
+	conditional temporary.
+	(gfc_conv_procedure_call): Handle passing of allocatable or pointer
+	actual argument to dummy with OPTIONAL + VALUE attribute.  Actual
+	arguments that are not allocated or associated are treated as not
+	present.
+
+2023-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98498
+	* interface.cc (upoly_ok): Defined operators using unlimited
+	polymorphic formal arguments must not override the intrinsic
+	operator use.
+
+2023-11-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112316
+	* parse.cc (parse_associate): Remove condition that caused this
+	regression.
+
 2023-10-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/104555

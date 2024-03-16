@@ -43,4 +43,4 @@ DEF_INIT (v128uqi, uint8_t, 128, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
 	  113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126,
 	  127)
 
-/* { dg-final { scan-assembler-times {vslide1down\.vx} 494 } } */
+/* { dg-final { scan-assembler-times {vid\.v} 14 } } */

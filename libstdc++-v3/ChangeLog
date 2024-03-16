@@ -1,3 +1,68 @@
+2023-11-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Hashtable_alloc<>::_M_allocate_node): Add missing call to node destructor
+	on construct exception.
+
+2023-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR libstdc++/112351
+	* src/c++98/locale.cc (locale::facet::_S_initialize_once):
+	Check whether _S_c_locale is already initialized.
+	(locale::facet::_S_get_c_locale): Always perform non-threadsafe
+	init when threadsafe init failed.
+
+2023-11-06  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/111315
+	PR libbacktrace/112263
+	* acinclude.m4: Set -D_GNU_SOURCE in BACKTRACE_CPPFLAGS and when
+	grepping link.h for dl_iterate_phdr.
+	* configure: Regenerate.
+
+2023-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::and_then, expected::or_else):
+	Add string literals to static assertions.
+	* include/std/optional (optional::and_then, optional::or_else):
+	Likewise.
+
+2023-11-04  Feng Jisen  <J1senn@outlook.com>
+
+	* include/bits/utility.h (_Nth_type): Remove redundant partial
+	specialization.
+
+2023-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110133
+	* include/std/system_error (system_error::system_error): Group
+	arguments so that concatenation can reuse rvalue's capacity.
+	* src/c++11/system_error.cc (strerror_string): New function.
+	[_GLIBCXX_HAVE_STRERROR_R] (use_strerror_result): New functions.
+	(generic_error_category::message): Use strerror_string.
+	(system_error_category::message): Likewise.
+
+2023-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Replace example that
+	uses a BADNAME.
+	* doc/html/manual/source_code_style.html: Regenerate.
+
+2023-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112314
+	* include/std/string_view (string_view::remove_suffix): Add
+	debug assertion.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/debug.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/debug.cc:
+	New test.
+
+2023-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Fix snprintf checks.
+	* configure: Regenerate.
+
 2023-10-30  François Dumont  <fdumont@gcc.gnu.org>
 
 	* config/abi/pre/gnu-versioned-namespace.ver: Add comment on recently

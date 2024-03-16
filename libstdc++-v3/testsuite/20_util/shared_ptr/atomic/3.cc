@@ -1,6 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-gthreads "" }
+// { dg-additional-options "-Wno-deprecated" { target c++20 } }
 
 // Copyright (C) 2014-2023 Free Software Foundation, Inc.
 //

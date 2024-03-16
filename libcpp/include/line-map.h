@@ -1658,7 +1658,7 @@ class rich_location
   const location_range *get_range (unsigned int idx) const;
   location_range *get_range (unsigned int idx);
 
-  expanded_location get_expanded_location (unsigned int idx);
+  expanded_location get_expanded_location (unsigned int idx) const;
 
   void
   override_column (int column);
@@ -1762,6 +1762,8 @@ class rich_location
   bool escape_on_output_p () const { return m_escape_on_output; }
   void set_escape_on_output (bool flag) { m_escape_on_output = flag; }
 
+  const line_maps *get_line_table () const { return m_line_table; }
+
 private:
   bool reject_impossible_fixit (location_t where);
   void stop_supporting_fixits ();
@@ -1773,17 +1775,17 @@ public:
   static const int STATICALLY_ALLOCATED_RANGES = 3;
 
 protected:
-  line_maps *m_line_table;
+  line_maps * const m_line_table;
   semi_embedded_vec <location_range, STATICALLY_ALLOCATED_RANGES> m_ranges;
 
   int m_column_override;
 
-  bool m_have_expanded_location;
+  mutable bool m_have_expanded_location;
   bool m_seen_impossible_fixit;
   bool m_fixits_cannot_be_auto_applied;
   bool m_escape_on_output;
 
-  expanded_location m_expanded_location;
+  mutable expanded_location m_expanded_location;
 
   static const int MAX_STATIC_FIXIT_HINTS = 2;
   semi_embedded_vec <fixit_hint *, MAX_STATIC_FIXIT_HINTS> m_fixit_hints;
@@ -1916,7 +1918,9 @@ class fixit_hint
 	      const char *new_content);
   ~fixit_hint () { free (m_bytes); }
 
-  bool affects_line_p (const char *file, int line) const;
+  bool affects_line_p (const line_maps *set,
+		       const char *file,
+		       int line) const;
   location_t get_start_loc () const { return m_start; }
   location_t get_next_loc () const { return m_next_loc; }
   bool maybe_append (location_t start,
@@ -2103,7 +2107,8 @@ enum location_aspect
    Hence we require client code of libcpp to implement the following
    symbol.  */
 extern expanded_location
-linemap_client_expand_location_to_spelling_point (location_t,
+linemap_client_expand_location_to_spelling_point (const line_maps *,
+						  location_t,
 						  enum location_aspect);
 
 #endif /* !LIBCPP_LINE_MAP_H  */

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 char *
 f (char *p)
 {
@@ -5,7 +8,8 @@ f (char *p)
   return p;
 }
 
-main ()
+int
+main (void)
 {
   char *p = "";
   if (f (p) != p + 1)

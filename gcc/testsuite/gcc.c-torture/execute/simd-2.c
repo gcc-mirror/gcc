@@ -3,6 +3,9 @@
    regardless of if the target has SIMD instructions.
 */
 
+void abort (void);
+void exit (int);
+
 typedef short __attribute__((vector_size (16))) vecint;
 
 vecint i = { 150, 100, 150, 200, 0, 0, 0, 0 };

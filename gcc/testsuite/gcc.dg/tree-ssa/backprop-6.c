@@ -26,5 +26,6 @@ TEST_FUNCTION (float, f)
 TEST_FUNCTION (double, )
 TEST_FUNCTION (long double, l)
 
-/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -} 6 "backprop" } } */
-/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = ABS_EXPR <} 3 "backprop" } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -} 4 "backprop" } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = \.COPYSIGN} 2 "backprop" } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = ABS_EXPR <} 1 "backprop" } } */

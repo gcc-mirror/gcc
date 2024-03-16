@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"  /* For 'g'.  */
 #include "omp-general.h"
 #include "omp-offload.h"  /* For offload_vars.  */
+#include "c-parser.h"
 
 #include "tree-pretty-print.h"
 
@@ -157,9 +158,10 @@ static bool undef_nested_function;
    the attribute lists.  */
 vec<c_omp_declare_target_attr, va_gc> *current_omp_declare_target_attribute;
 
-/* If non-zero, we are inside of
-   #pragma omp begin assumes ... #pragma omp end assumes region.  */
-int current_omp_begin_assumes;
+/* Vector of
+   #pragma omp begin assumes ... #pragma omp end assumes regions
+   we are in.  */
+vec<c_omp_begin_assumes_data, va_gc> *current_omp_begin_assumes;
 
 /* Each c_binding structure describes one binding of an identifier to
    a decl.  All the decls in a scope - irrespective of namespace - are
@@ -323,16 +325,45 @@ i_label_binding (tree node)
 #define I_LABEL_DECL(node) \
  (I_LABEL_BINDING(node) ? I_LABEL_BINDING(node)->decl : 0)
 
+/* Used by C_TOKEN_VEC tree.  */
+struct GTY (()) c_tree_token_vec {
+  struct tree_base base;
+  vec<c_token, va_gc> *tokens;
+};
+
+STATIC_ASSERT (sizeof (c_tree_token_vec) == sizeof (c_tree_token_vec_struct));
+STATIC_ASSERT (offsetof (c_tree_token_vec, tokens)
+	       == offsetof (c_tree_token_vec_struct, tokens));
+
 /* The resulting tree type.  */
 
-union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
+union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE + 2 * (TREE_CODE (&%h.generic) == C_TOKEN_VEC)"),
        chain_next ("(union lang_tree_node *) c_tree_chain_next (&%h.generic)"))) lang_tree_node
  {
   union tree_node GTY ((tag ("0"),
 			desc ("tree_node_structure (&%h)")))
     generic;
   struct lang_identifier GTY ((tag ("1"))) identifier;
+  struct c_tree_token_vec GTY ((tag ("2"))) c_token_vec;
 };
+
+/* Langhook for tree_size.  */
+size_t
+c_tree_size (enum tree_code code)
+{
+  gcc_checking_assert (code >= NUM_TREE_CODES);
+  switch (code)
+    {
+    case C_TOKEN_VEC: return sizeof (c_tree_token_vec);
+    default:
+      switch (TREE_CODE_CLASS (code))
+	{
+	case tcc_declaration: return sizeof (tree_decl_non_common);
+	case tcc_type: return sizeof (tree_type_non_common);
+	default: gcc_unreachable ();
+	}
+    }
+}
 
 /* Track bindings and other things that matter for goto warnings.  For
    efficiency, we do not gather all the decls at the point of
@@ -1474,7 +1505,7 @@ pop_file_scope (void)
 }
 
 /* Whether we are curently inside the initializer for an
-   underspecified object definition (C2x auto or constexpr).  */
+   underspecified object definition (C23 auto or constexpr).  */
 static bool in_underspecified_init;
 
 /* Start an underspecified object definition for NAME at LOC.  This
@@ -2217,7 +2248,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	}
     }
   /* Warn about enum/integer type mismatches.  They are compatible types
-     (C2X 6.7.2.2/5), but may pose portability problems.  */
+     (C23 6.7.2.2/5), but may pose portability problems.  */
   else if (enum_and_int_p
 	   && TREE_CODE (newdecl) != TYPE_DECL
 	   /* Don't warn about about acc_on_device built-in redeclaration,
@@ -2439,16 +2470,16 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	}
 
       /* Multiple initialized definitions are not allowed (6.9p3,5).
-	 For this purpose, C2x makes it clear that thread-local
+	 For this purpose, C23 makes it clear that thread-local
 	 declarations without extern are definitions, not tentative
 	 definitions, whether or not they have initializers.  The
-	 wording before C2x was unclear; literally it would have made
+	 wording before C23 was unclear; literally it would have made
 	 uninitialized thread-local declarations into tentative
 	 definitions only if they also used static, but without saying
 	 explicitly whether or not other cases count as
 	 definitions at all.  */
       if ((DECL_INITIAL (newdecl) && DECL_INITIAL (olddecl))
-	  || (flag_isoc2x
+	  || (flag_isoc23
 	      && DECL_THREAD_LOCAL_P (newdecl)
 	      && !DECL_EXTERNAL (newdecl)
 	      && !DECL_EXTERNAL (olddecl)))
@@ -4603,7 +4634,7 @@ handle_std_noreturn_attribute (tree *node, tree name, tree args,
     }
 }
 
-/* Table of supported standard (C2x) attributes.  */
+/* Table of supported standard (C23) attributes.  */
 const struct attribute_spec std_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
@@ -5332,6 +5363,57 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 	    attributes
 	      = tree_cons (get_identifier ("omp declare target nohost"),
 			   NULL_TREE, attributes);
+
+	  int indirect
+	    = current_omp_declare_target_attribute->last ().indirect;
+	  if (indirect && !lookup_attribute ("omp declare target indirect",
+					     attributes))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target indirect"),
+			   NULL_TREE, attributes);
+	}
+    }
+
+  if (flag_openmp || flag_openmp_simd)
+    {
+      bool diagnosed = false;
+      for (tree *pa = &attributes; *pa; )
+	{
+	  if (is_attribute_namespace_p ("omp", *pa))
+	    {
+	      tree name = get_attribute_name (*pa);
+	      if (is_attribute_p ("directive", name)
+		  || is_attribute_p ("sequence", name)
+		  || is_attribute_p ("decl", name))
+		{
+		  const char *p = NULL;
+		  if (TREE_VALUE (*pa) == NULL_TREE)
+		    p = IDENTIFIER_POINTER (name);
+		  for (tree a = TREE_VALUE (*pa); a; a = TREE_CHAIN (a))
+		    {
+		      tree d = TREE_VALUE (a);
+		      gcc_assert (TREE_CODE (d) == C_TOKEN_VEC);
+		      if (TREE_PUBLIC (d)
+			  && (VAR_P (*node)
+			      || TREE_CODE (*node) == FUNCTION_DECL)
+			  && c_maybe_parse_omp_decl (*node, d))
+			continue;
+		      p = TREE_PUBLIC (d) ? "decl" : "directive";
+		    }
+		  if (p && !diagnosed)
+		    {
+		      error ("%<omp::%s%> not allowed to be specified in "
+			     "this context", p);
+		      diagnosed = true;
+		    }
+		  if (p)
+		    {
+		      *pa = TREE_CHAIN (*pa);
+		      continue;
+		    }
+		}
+	    }
+	  pa = &TREE_CHAIN (*pa);
 	}
     }
 
@@ -5736,12 +5818,12 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	      /* A static variable with an incomplete type
 		 is an error if it is initialized.
 		 Also if it is not file scope.
-		 Also if it is thread-local (in C2x).
+		 Also if it is thread-local (in C23).
 		 Otherwise, let it through, but if it is not `extern'
 		 then it may cause an error message later.  */
 	      ? (DECL_INITIAL (decl) != NULL_TREE
 		 || !DECL_FILE_SCOPE_P (decl)
-		 || (flag_isoc2x && DECL_THREAD_LOCAL_P (decl)))
+		 || (flag_isoc23 && DECL_THREAD_LOCAL_P (decl)))
 	      /* An automatic variable with an incomplete type
 		 is an error.  */
 	      : !DECL_EXTERNAL (decl)))
@@ -6231,7 +6313,7 @@ mark_forward_parm_decls (void)
    literal.  NON_CONST is true if the initializers contain something
    that cannot occur in a constant expression.  If ALIGNAS_ALIGN is nonzero,
    it is the (valid) alignment for this compound literal, as specified
-   with _Alignas.  SCSPECS are the storage class specifiers (C2x) from the
+   with _Alignas.  SCSPECS are the storage class specifiers (C23) from the
    compound literal.  */
 
 tree
@@ -6658,10 +6740,10 @@ grokdeclarator (const struct c_declarator *declarator,
 
   if (type == NULL_TREE)
     {
-      /* This can occur for auto on a parameter in C2X mode.  Set a
+      /* This can occur for auto on a parameter in C23 mode.  Set a
 	 dummy type here so subsequent code can give diagnostics for
 	 this case.  */
-      gcc_assert (declspecs->c2x_auto_p);
+      gcc_assert (declspecs->c23_auto_p);
       gcc_assert (decl_context == PARM);
       type = declspecs->type = integer_type_node;
     }
@@ -6897,12 +6979,12 @@ grokdeclarator (const struct c_declarator *declarator,
   else if (decl_context != NORMAL && (storage_class != csc_none
 				      || threadp
 				      || constexprp
-				      || declspecs->c2x_auto_p))
+				      || declspecs->c23_auto_p))
     {
       if (decl_context == PARM
 	  && storage_class == csc_register
 	  && !constexprp
-	  && !declspecs->c2x_auto_p)
+	  && !declspecs->c23_auto_p)
 	;
       else
 	{
@@ -7489,10 +7571,10 @@ grokdeclarator (const struct c_declarator *declarator,
 		   them for noreturn functions.  The resolution of C11
 		   DR#423 means qualifiers (other than _Atomic) are
 		   actually removed from the return type when
-		   determining the function type.  For C2X, _Atomic is
+		   determining the function type.  For C23, _Atomic is
 		   removed as well.  */
 		int quals_used = type_quals;
-		if (flag_isoc2x)
+		if (flag_isoc23)
 		  quals_used = 0;
 		else if (flag_isoc11)
 		  quals_used &= TYPE_QUAL_ATOMIC;
@@ -8261,7 +8343,7 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       error ("%<[*]%> not allowed in other than function prototype scope");
     }
 
-  if (arg_types == NULL_TREE && !funcdef_flag && !flag_isoc2x
+  if (arg_types == NULL_TREE && !funcdef_flag && !flag_isoc23
       && !in_system_header_at (input_location))
     warning (OPT_Wstrict_prototypes,
 	     "function declaration isn%'t a prototype");
@@ -8289,8 +8371,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       tree parm, type, typelt;
       unsigned int parmno;
 
-      /* In C2X, convert () to (void).  */
-      if (flag_isoc2x
+      /* In C23, convert () to (void).  */
+      if (flag_isoc23
 	  && !arg_types
 	  && !arg_info->parms
 	  && !arg_info->no_named_args_stdarg_p)
@@ -9595,7 +9677,7 @@ layout_array_type (tree t)
 /* Begin compiling the definition of an enumeration type.
    NAME is its name (or null if anonymous).
    LOC is the enum's location.
-   FIXED_UNDERLYING_TYPE is the (C2x) underlying type specified in the
+   FIXED_UNDERLYING_TYPE is the (C23) underlying type specified in the
    definition.
    Returns the type object, as yet incomplete.
    Also records info about it so that build_enumerator
@@ -9812,9 +9894,9 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
 	  TREE_TYPE (enu) = enumtype;
 
-	  /* Before C2X, the ISO C Standard mandates enumerators to
+	  /* Before C23, the ISO C Standard mandates enumerators to
 	     have type int, even though the underlying type of an enum
-	     type is unspecified.  However, C2X allows enumerators of
+	     type is unspecified.  However, C23 allows enumerators of
 	     any integer type, and if an enumeration has any
 	     enumerators wider than int, all enumerators have the
 	     enumerated type after it is parsed.  Any enumerators that
@@ -9957,7 +10039,7 @@ build_enumerator (location_t decl_loc, location_t loc,
     {
       /* Even though the underlying type of an enum is unspecified, the
 	 type of enumeration constants is explicitly defined as int
-	 (6.4.4.3/2 in the C99 Standard).  C2X allows any integer type, and
+	 (6.4.4.3/2 in the C99 Standard).  C23 allows any integer type, and
 	 GCC allows such types for older standards as an extension.  */
       bool warned_range = false;
       if (!int_fits_type_p (value,
@@ -9965,7 +10047,7 @@ build_enumerator (location_t decl_loc, location_t loc,
 			     ? uintmax_type_node
 			     : intmax_type_node)))
 	/* GCC does not consider its types larger than intmax_t to be
-	   extended integer types (although C2X would permit such types to
+	   extended integer types (although C23 would permit such types to
 	   be considered extended integer types if all the features
 	   required by <stdint.h> and <inttypes.h> macros, such as support
 	   for integer constants and I/O, were present), so diagnose if
@@ -9982,12 +10064,12 @@ build_enumerator (location_t decl_loc, location_t loc,
       if (!warned_range && !int_fits_type_p (value, integer_type_node))
 	pedwarn_c11 (loc, OPT_Wpedantic,
 		     "ISO C restricts enumerator values to range of %<int%> "
-		     "before C2X");
+		     "before C23");
 
       /* The ISO C Standard mandates enumerators to have type int before
-	 C2X, even though the underlying type of an enum type is
-	 unspecified.  C2X allows enumerators of any integer type.  During
-	 the parsing of the enumeration, C2X specifies that constants
+	 C23, even though the underlying type of an enum type is
+	 unspecified.  C23 allows enumerators of any integer type.  During
+	 the parsing of the enumeration, C23 specifies that constants
 	 representable in int have type int, constants not representable
 	 in int have the type of the given expression if any, and
 	 constants not representable in int and derived by adding 1 to the
@@ -10436,7 +10518,7 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
       else
 	pedwarn_c11 (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
 		     "ISO C does not support omitting parameter names in "
-		     "function definitions before C2X");
+		     "function definitions before C23");
     }
 
   /* Record the parameter list in the function declaration.  */
@@ -10473,7 +10555,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 
   if (!in_system_header_at (input_location))
     {
-      if (flag_isoc2x)
+      if (flag_isoc23)
 	pedwarn (DECL_SOURCE_LOCATION (fndecl),
 		 OPT_Wold_style_definition, "old-style function definition");
       else
@@ -10802,7 +10884,7 @@ store_parm_decls (void)
   struct c_arg_info *arg_info = current_function_arg_info;
   current_function_arg_info = 0;
 
-  /* True if this definition is written with a prototype.  In C2X, an
+  /* True if this definition is written with a prototype.  In C23, an
      empty argument list was converted to (void) in grokparms; in
      older C standard versions, it does not give the function a type
      with a prototype for future calls.  */
@@ -11115,7 +11197,7 @@ check_for_loop_decls (location_t loc, bool turn_off_iso_c99_error)
      interpretation, to avoid creating an extension which later causes
      problems.
 
-     This constraint was removed in C2X.  */
+     This constraint was removed in C23.  */
 
   for (b = current_scope->bindings; b; b = b->prev)
     {
@@ -11534,9 +11616,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 
   /* As a type specifier is present, "auto" must be used as a storage
      class specifier, not for type deduction.  */
-  if (specs->c2x_auto_p)
+  if (specs->c23_auto_p)
     {
-      specs->c2x_auto_p = false;
+      specs->c23_auto_p = false;
       if (specs->storage_class != csc_none)
 	error ("multiple storage classes in declaration specifiers");
       else if (specs->thread_p)
@@ -12190,7 +12272,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      if (!in_system_header_at (input_location))
 		pedwarn_c11 (loc, OPT_Wpedantic,
 			     "ISO C does not support the %<_Float%d%s%> type"
-			     " before C2X",
+			     " before C23",
 			     floatn_nx_types[specs->u.floatn_nx_idx].n,
 			     (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			      ? "x"
@@ -12312,7 +12394,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			   "for this target"));
 	      pedwarn_c11 (loc, OPT_Wpedantic,
 			   "ISO C does not support decimal floating-point "
-			   "before C2X");
+			   "before C23");
 	      return specs;
 	    case RID_FRACT:
 	    case RID_ACCUM:
@@ -12545,14 +12627,14 @@ declspecs_add_scspec (location_t loc,
 	}
       break;
     case RID_AUTO:
-      if (flag_isoc2x
+      if (flag_isoc23
 	  && specs->typespec_kind == ctsk_none
 	  && specs->storage_class != csc_typedef)
 	{
 	  /* "auto" potentially used for type deduction.  */
-	  if (specs->c2x_auto_p)
+	  if (specs->c23_auto_p)
 	    error ("duplicate %qE", scspec);
-	  specs->c2x_auto_p = true;
+	  specs->c23_auto_p = true;
 	  return specs;
 	}
       n = csc_auto;
@@ -12578,10 +12660,10 @@ declspecs_add_scspec (location_t loc,
       break;
     case RID_TYPEDEF:
       n = csc_typedef;
-      if (specs->c2x_auto_p)
+      if (specs->c23_auto_p)
 	{
 	  error ("%<typedef%> used with %<auto%>");
-	  specs->c2x_auto_p = false;
+	  specs->c23_auto_p = false;
 	}
       break;
     case RID_CONSTEXPR:
@@ -12691,7 +12773,7 @@ finish_declspecs (struct c_declspecs *specs)
     {
       gcc_assert (!specs->long_p && !specs->long_long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p
-		  && !specs->complex_p && !specs->c2x_auto_p);
+		  && !specs->complex_p && !specs->c23_auto_p);
 
       /* Set a dummy type.  */
       if (TREE_CODE (specs->type) == ERROR_MARK)
@@ -12727,16 +12809,16 @@ finish_declspecs (struct c_declspecs *specs)
 		   "ISO C does not support plain %<complex%> meaning "
 		   "%<double complex%>");
 	}
-      else if (specs->c2x_auto_p)
+      else if (specs->c23_auto_p)
 	{
 	  /* Type to be filled in later, including applying postfix
 	     attributes.  This warning only actually appears for
-	     -Wc11-c2x-compat in C2X mode; in older modes, there may
+	     -Wc11-c23-compat in C23 mode; in older modes, there may
 	     be a warning or pedwarn for implicit "int" instead, or
 	     other errors for use of auto at file scope.  */
 	  pedwarn_c11 (input_location, OPT_Wpedantic,
 		       "ISO C does not support %<auto%> type deduction "
-		       "before C2X");
+		       "before C23");
 	  return specs;
 	}
       else
@@ -12755,7 +12837,7 @@ finish_declspecs (struct c_declspecs *specs)
   specs->explicit_signed_p = specs->signed_p;
 
   /* Now compute the actual type.  */
-  gcc_assert (!specs->c2x_auto_p);
+  gcc_assert (!specs->c23_auto_p);
   switch (specs->typespec_word)
     {
     case cts_auto_type:
@@ -12984,7 +13066,7 @@ finish_declspecs (struct c_declspecs *specs)
       else
 	{
 	  pedwarn_c11 (specs->locations[cdw_typespec], OPT_Wpedantic,
-		       "ISO C does not support %<%s_BitInt(%d)%> before C2X",
+		       "ISO C does not support %<%s_BitInt(%d)%> before C23",
 		       specs->unsigned_p ? "unsigned "
 		       : specs->signed_p ? "signed " : "",
 		       specs->u.bitint_prec);

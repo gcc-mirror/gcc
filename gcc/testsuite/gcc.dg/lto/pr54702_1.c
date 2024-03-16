@@ -1,3 +1,4 @@
+/* { dg-options "-fpermissive" } */
 int *b;
 void *d;
 int c;

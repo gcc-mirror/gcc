@@ -351,7 +351,7 @@ build_attributes (Expressions *eattrs)
 
       /* Get the result of the attribute if it hasn't already been folded.  */
       if (attr->op == EXP::call)
-	attr = attr->ctfeInterpret ();
+	attr = ctfeInterpret (attr);
 
       if (attr->op != EXP::structLiteral)
 	{

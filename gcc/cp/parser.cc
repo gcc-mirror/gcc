@@ -2324,7 +2324,8 @@ static vec<tree, va_gc> *cp_parser_parenthesized_expression_list
   (cp_parser *, int, bool, bool, bool *, location_t * = NULL,
    bool = false);
 /* Values for the second parameter of cp_parser_parenthesized_expression_list.  */
-enum { non_attr = 0, normal_attr = 1, id_attr = 2, assume_attr = 3 };
+enum { non_attr = 0, normal_attr = 1, id_attr = 2, assume_attr = 3,
+       uneval_string_attr = 4 };
 static void cp_parser_pseudo_destructor_name
   (cp_parser *, tree, tree *, tree *);
 static cp_expr cp_parser_unary_expression
@@ -4467,7 +4468,8 @@ cp_parser_identifier (cp_parser* parser)
     return error_mark_node;
 }
 
-/* Worker for cp_parser_string_literal and cp_parser_userdef_string_literal.
+/* Worker for cp_parser_string_literal, cp_parser_userdef_string_literal
+   and cp_parser_unevaluated_string_literal.
    Do not call this directly; use either of the above.
 
    Parse a sequence of adjacent string constants.  Return a
@@ -4475,7 +4477,8 @@ cp_parser_identifier (cp_parser* parser)
    constant.  If TRANSLATE is true, translate the string to the
    execution character set.  If WIDE_OK is true, a wide string is
    valid here.  If UDL_OK is true, a string literal with user-defined
-   suffix can be used in this context.
+   suffix can be used in this context.  If UNEVAL is true, diagnose
+   numeric and conditional escape sequences in it if pedantic.
 
    C++98 [lex.string] says that if a narrow string literal token is
    adjacent to a wide string literal token, the behavior is undefined.
@@ -4489,7 +4492,7 @@ cp_parser_identifier (cp_parser* parser)
 static cp_expr
 cp_parser_string_literal_common (cp_parser *parser, bool translate,
 				 bool wide_ok, bool udl_ok,
-				 bool lookup_udlit)
+				 bool lookup_udlit, bool uneval)
 {
   tree value;
   size_t count;
@@ -4642,6 +4645,8 @@ cp_parser_string_literal_common (cp_parser *parser, bool translate,
       cp_parser_error (parser, "a wide string is invalid in this context");
       type = CPP_STRING;
     }
+  if (uneval)
+    type = CPP_UNEVAL_STRING;
 
   if ((translate ? cpp_interpret_string : cpp_interpret_string_notranslate)
       (parse_in, strs, count, &istr, type))
@@ -4716,7 +4721,8 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 {
   return cp_parser_string_literal_common (parser, translate, wide_ok,
 					  /*udl_ok=*/false,
-					  /*lookup_udlit=*/false);
+					  /*lookup_udlit=*/false,
+					  /*uneval=*/false);
 }
 
 /* Parse a string literal or user defined string literal.
@@ -4731,7 +4737,21 @@ cp_parser_userdef_string_literal (cp_parser *parser, bool lookup_udlit)
 {
   return cp_parser_string_literal_common (parser, /*translate=*/true,
 					  /*wide_ok=*/true, /*udl_ok=*/true,
-					  lookup_udlit);
+					  lookup_udlit, /*uneval=*/false);
+}
+
+/* Parse an unevaluated string literal.
+
+   unevaluated-string:
+     string-literal  */
+
+static inline cp_expr
+cp_parser_unevaluated_string_literal (cp_parser *parser)
+{
+  return cp_parser_string_literal_common (parser, /*translate=*/false,
+					  /*wide_ok=*/false, /*udl_ok=*/false,
+					  /*lookup_udlit=*/false,
+					  /*uneval=*/true);
 }
 
 /* Look up a literal operator with the name and the exact arguments.  */
@@ -8658,6 +8678,8 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	  expr = cp_lexer_consume_token (parser->lexer)->u.value;
 	else if (is_attribute_list == assume_attr)
 	  expr = cp_parser_conditional_expression (parser);
+	else if (is_attribute_list == uneval_string_attr)
+	  expr = cp_parser_unevaluated_string_literal (parser);
 	else
 	  expr
 	    = cp_parser_parenthesized_expression_list_elt (parser, cast_p,
@@ -16513,8 +16535,12 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
 
   /* Look for the string-literal.  */
   cp_token *string_token = cp_lexer_peek_token (parser->lexer);
-  tree linkage = cp_parser_string_literal (parser, /*translate=*/false,
-					   /*wide_ok=*/false);
+  tree linkage;
+  if (cxx_dialect >= cxx26)
+    linkage = cp_parser_unevaluated_string_literal (parser);
+  else
+    linkage = cp_parser_string_literal (parser, /*translate=*/false,
+					/*wide_ok=*/false);
 
   /* Transform the literal into an identifier.  If the literal is a
      wide-character string, or contains embedded NULs, then we can't
@@ -16643,8 +16669,11 @@ cp_parser_static_assert (cp_parser *parser, bool member_p)
       cp_parser_require (parser, CPP_COMMA, RT_COMMA);
 
       /* Parse the string-literal message.  */
-      message = cp_parser_string_literal (parser, /*translate=*/false,
-					  /*wide_ok=*/true);
+      if (cxx_dialect >= cxx26)
+	message = cp_parser_unevaluated_string_literal (parser);
+      else
+	message = cp_parser_string_literal (parser, /*translate=*/false,
+					    /*wide_ok=*/true);
 
       /* A `)' completes the static assertion.  */
       if (!parens.require_close (parser))
@@ -29650,6 +29679,11 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 	     && attribute_takes_identifier_p (attr_id))
       /* A GNU attribute that takes an identifier in parameter.  */
       attr_flag = id_attr;
+    else if (attr_ns == NULL_TREE
+	     && cxx_dialect >= cxx26
+	     && (is_attribute_p ("deprecated", attr_id)
+		 || is_attribute_p ("nodiscard", attr_id)))
+      attr_flag = uneval_string_attr;
 
     /* If this is a fake attribute created to handle -Wno-attributes,
        we must skip parsing the arguments.  */
@@ -37490,6 +37524,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_IN_REDUCTION;
 	  else if (!strcmp ("inbranch", p))
 	    result = PRAGMA_OMP_CLAUSE_INBRANCH;
+	  else if (!strcmp ("indirect", p))
+	    result = PRAGMA_OMP_CLAUSE_INDIRECT;
 	  else if (!strcmp ("independent", p))
 	    result = PRAGMA_OACC_CLAUSE_INDEPENDENT;
 	  else if (!strcmp ("is_device_ptr", p))
@@ -38519,6 +38555,46 @@ cp_parser_omp_clause_final (cp_parser *parser, tree list, location_t location)
 
   c = build_omp_clause (location, OMP_CLAUSE_FINAL);
   OMP_CLAUSE_FINAL_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+
+  return c;
+}
+
+/* OpenMP 5.1:
+   indirect [( expression )]
+*/
+
+static tree
+cp_parser_omp_clause_indirect (cp_parser *parser, tree list,
+			       location_t location)
+{
+  tree t;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+    {
+      matching_parens parens;
+      if (!parens.require_open (parser))
+	return list;
+
+      bool non_constant_p;
+      t = cp_parser_constant_expression (parser, true, &non_constant_p);
+
+      if (t != error_mark_node && non_constant_p)
+	error_at (location, "expected constant logical expression");
+
+      if (t == error_mark_node
+	  || !parens.require_close (parser))
+	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					       /*or_comma=*/false,
+					       /*consume_paren=*/true);
+    }
+  else
+    t = integer_one_node;
+
+  check_no_duplicate_clause (list, OMP_CLAUSE_INDIRECT, "indirect", location);
+
+  tree c = build_omp_clause (location, OMP_CLAUSE_INDIRECT);
+  OMP_CLAUSE_INDIRECT_EXPR (c) = t;
   OMP_CLAUSE_CHAIN (c) = list;
 
   return c;
@@ -41595,6 +41671,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 					      true, clauses);
 	  c_name = "in_reduction";
 	  break;
+	case PRAGMA_OMP_CLAUSE_INDIRECT:
+	  clauses = cp_parser_omp_clause_indirect (parser, clauses,
+						   token->location);
+	  c_name = "indirect";
+	  break;
 	case PRAGMA_OMP_CLAUSE_LASTPRIVATE:
 	  clauses = cp_parser_omp_clause_lastprivate (parser, clauses);
 	  c_name = "lastprivate";
@@ -43852,7 +43933,8 @@ cp_parser_omp_section_scan (cp_parser *parser, const char *directive,
       {
 	tree first = cp_lexer_peek_nth_token (parser->lexer, i)->u.value;
 	tree second = cp_lexer_peek_nth_token (parser->lexer, i + 2)->u.value;
-	if (strcmp (IDENTIFIER_POINTER (first), "directive"))
+	if (strcmp (IDENTIFIER_POINTER (first), "directive")
+	    && strcmp (IDENTIFIER_POINTER (first), "__directive__"))
 	  continue;
 	if (strcmp (IDENTIFIER_POINTER (second), directive) == 0)
 	  break;
@@ -48136,7 +48218,8 @@ cp_maybe_parse_omp_decl (tree decl, tree d)
    on #pragma omp declare target.  Return false if errors were reported.  */
 
 static bool
-handle_omp_declare_target_clause (tree c, tree t, int device_type)
+handle_omp_declare_target_clause (tree c, tree t, int device_type,
+				  bool indirect)
 {
   tree at1 = lookup_attribute ("omp declare target", DECL_ATTRIBUTES (t));
   tree at2 = lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (t));
@@ -48200,6 +48283,17 @@ handle_omp_declare_target_clause (tree c, tree t, int device_type)
 	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
 	}
     }
+  if (indirect)
+    {
+      tree at4 = lookup_attribute ("omp declare target indirect",
+				   DECL_ATTRIBUTES (t));
+      if (at4 == NULL_TREE)
+	{
+	  id = get_identifier ("omp declare target indirect");
+	  DECL_ATTRIBUTES (t)
+	    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	}
+    }
   return true;
 }
 
@@ -48217,14 +48311,16 @@ handle_omp_declare_target_clause (tree c, tree t, int device_type)
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TO)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ENTER)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LINK)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INDIRECT))
 
 static void
 cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
 {
   tree clauses = NULL_TREE;
   int device_type = 0;
-  bool only_device_type = true;
+  bool indirect = false;
+  bool only_device_type_or_indirect = true;
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
       || (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)))
@@ -48242,21 +48338,26 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
   else
     {
       cp_omp_declare_target_attr a
-	= { parser->lexer->in_omp_attribute_pragma, -1 };
+	= { parser->lexer->in_omp_attribute_pragma, -1, false };
       vec_safe_push (scope_chain->omp_declare_target_attribute, a);
       cp_parser_require_pragma_eol (parser, pragma_tok);
       return;
     }
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
-      device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
-  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
+	device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
+	indirect |= !integer_zerop (OMP_CLAUSE_INDIRECT_EXPR (c));
+    }
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE
+	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
 	continue;
       tree t = OMP_CLAUSE_DECL (c);
-      only_device_type = false;
-      if (!handle_omp_declare_target_clause (c, t, device_type))
+      only_device_type_or_indirect = false;
+      if (!handle_omp_declare_target_clause (c, t, device_type, indirect))
 	continue;
       if (VAR_OR_FUNCTION_DECL_P (t)
 	  && DECL_LOCAL_DECL_P (t)
@@ -48264,11 +48365,15 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
 	  && DECL_LOCAL_DECL_ALIAS (t)
 	  && DECL_LOCAL_DECL_ALIAS (t) != error_mark_node)
 	handle_omp_declare_target_clause (c, DECL_LOCAL_DECL_ALIAS (t),
-					  device_type);
+					  device_type, indirect);
     }
-  if (device_type && only_device_type)
+  if ((device_type || indirect) && only_device_type_or_indirect)
     error_at (OMP_CLAUSE_LOCATION (clauses),
-	      "directive with only %<device_type%> clause");
+	      "directive with only %<device_type%> or %<indirect%> clauses");
+  if (indirect && device_type && device_type != OMP_CLAUSE_DEVICE_TYPE_ANY)
+    error_at (OMP_CLAUSE_LOCATION (clauses),
+	      "%<device_type%> clause must specify 'any' when used with "
+	      "an %<indirect%> clause");
 }
 
 /* OpenMP 5.1
@@ -48277,7 +48382,8 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
    # pragma omp begin declare target clauses[optseq] new-line  */
 
 #define OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK			\
-	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INDIRECT))
 
 static void
 cp_parser_omp_begin (cp_parser *parser, cp_token *pragma_tok)
@@ -48307,11 +48413,16 @@ cp_parser_omp_begin (cp_parser *parser, cp_token *pragma_tok)
 					 "#pragma omp begin declare target",
 					 pragma_tok);
 	  int device_type = 0;
+	  bool indirect = 0;
 	  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
-	      device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
+	    {
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
+		device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
+		indirect |= !integer_zerop (OMP_CLAUSE_INDIRECT_EXPR (c));
+	    }
 	  cp_omp_declare_target_attr a
-	    = { in_omp_attribute_pragma, device_type };
+	    = { in_omp_attribute_pragma, device_type, indirect };
 	  vec_safe_push (scope_chain->omp_declare_target_attribute, a);
 	}
       else

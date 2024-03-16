@@ -38,6 +38,8 @@ with some exceptions, and possibly with some extensions.
 @cindex C1X
 @cindex ISO C17
 @cindex C17
+@cindex ISO C23
+@cindex C23
 @cindex ISO C2X
 @cindex C2X
 @cindex Technical Corrigenda
@@ -111,9 +113,11 @@ known as @dfn{C17} and is supported with @option{-std=c17} or
 @option{-std=c11}, and the only difference between the options is the
 value of @code{__STDC_VERSION__}.
 
-A further version of the C standard, known as @dfn{C2X}, is under
-development; experimental and incomplete support for this is enabled
-with @option{-std=c2x}.
+A further version of the C standard, known as @dfn{C23}, is under
+development and expected to be published in 2024 as ISO/IEC 9899:2024.
+(While in development, drafts of this standard version were referred
+to as @dfn{C2X}.)  Experimental and incomplete support for this is
+enabled with @option{-std=c23} or @option{-std=iso9899:2024}.
 
 By default, GCC provides some extensions to the C language that, on
 rare occasions conflict with the C standard.  @xref{C

@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 int a[251];
 __attribute__ ((noinline))
 t(int i)

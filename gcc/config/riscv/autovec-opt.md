@@ -194,6 +194,84 @@
 }
 [(set_attr "type" "vector")])
 
+;; Combine sign_extend/zero_extend(vf2) and vcond_mask_len
+(define_insn_and_split "*cond_len_<optab><v_double_trunc><mode>"
+  [(set (match_operand:VWEXTI 0 "register_operand")
+    (if_then_else:VWEXTI
+      (unspec:<VM>
+        [(match_operand 4 "vector_length_operand")
+         (match_operand 5 "const_int_operand")
+         (match_operand 6 "const_int_operand")
+         (reg:SI VL_REGNUM)
+         (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+      (vec_merge:VWEXTI
+        (any_extend:VWEXTI (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+        (match_operand:VWEXTI 1 "vector_merge_operand")
+	(match_operand:<VM> 3 "register_operand"))
+      (match_dup 1)))]
+  "TARGET_VECTOR"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  emit_insn (gen_pred_<optab><mode>_vf2 (operands[0], operands[3], operands[1], operands[2],
+                                         operands[4], operands[5], operands[6], CONST0_RTX (Pmode)));
+  DONE;
+}
+[(set_attr "type" "vector")])
+
+;; Combine sign_extend/zero_extend(vf4) and vcond_mask_len
+(define_insn_and_split "*cond_len_<optab><v_quad_trunc><mode>"
+  [(set (match_operand:VQEXTI 0 "register_operand")
+    (if_then_else:VQEXTI
+      (unspec:<VM>
+        [(match_operand 4 "vector_length_operand")
+         (match_operand 5 "const_int_operand")
+         (match_operand 6 "const_int_operand")
+         (reg:SI VL_REGNUM)
+         (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+      (vec_merge:VQEXTI
+        (any_extend:VQEXTI (match_operand:<V_QUAD_TRUNC> 2 "register_operand"))
+        (match_operand:VQEXTI 1 "vector_merge_operand")
+	(match_operand:<VM> 3 "register_operand"))
+      (match_dup 1)))]
+  "TARGET_VECTOR"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  emit_insn (gen_pred_<optab><mode>_vf4 (operands[0], operands[3], operands[1], operands[2],
+                                         operands[4], operands[5], operands[6], CONST0_RTX (Pmode)));
+  DONE;
+}
+[(set_attr "type" "vector")])
+
+;; Combine sign_extend/zero_extend(vf8) and vcond_mask_len
+(define_insn_and_split "*cond_len_<optab><v_oct_trunc><mode>"
+  [(set (match_operand:VOEXTI 0 "register_operand")
+    (if_then_else:VOEXTI
+      (unspec:<VM>
+        [(match_operand 4 "vector_length_operand")
+         (match_operand 5 "const_int_operand")
+         (match_operand 6 "const_int_operand")
+         (reg:SI VL_REGNUM)
+         (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+      (vec_merge:VOEXTI
+        (any_extend:VOEXTI (match_operand:<V_OCT_TRUNC> 2 "register_operand"))
+        (match_operand:VOEXTI 1 "vector_merge_operand")
+	(match_operand:<VM> 3 "register_operand"))
+      (match_dup 1)))]
+  "TARGET_VECTOR"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  emit_insn (gen_pred_<optab><mode>_vf8 (operands[0], operands[3], operands[1], operands[2],
+                                         operands[4], operands[5], operands[6], CONST0_RTX (Pmode)));
+  DONE;
+}
+[(set_attr "type" "vector")])
+
 ;; Combine trunc(vf2) + vcond_mask
 (define_insn_and_split "*cond_trunc<mode><v_double_trunc>"
   [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand")
@@ -231,6 +309,32 @@
   rtx ops[] = {operands[0], operands[1], operands[2], operands[3],
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
+  DONE;
+}
+[(set_attr "type" "vector")])
+
+;; Combine FP extend(vf2) and vcond_mask_len
+(define_insn_and_split "*cond_len_extend<v_double_trunc><mode>"
+  [(set (match_operand:VWEXTF_ZVFHMIN 0 "register_operand")
+    (if_then_else:VWEXTF_ZVFHMIN
+      (unspec:<VM>
+        [(match_operand 4 "vector_length_operand")
+         (match_operand 5 "const_int_operand")
+         (match_operand 6 "const_int_operand")
+         (reg:SI VL_REGNUM)
+         (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+      (vec_merge:VWEXTF_ZVFHMIN
+        (float_extend:VWEXTF_ZVFHMIN (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+        (match_operand:VWEXTF_ZVFHMIN 1 "vector_merge_operand")
+	(match_operand:<VM> 3 "register_operand"))
+      (match_dup 1)))]
+  "TARGET_VECTOR"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  emit_insn (gen_pred_extend<mode> (operands[0], operands[3], operands[1], operands[2],
+                                    operands[4], operands[5], operands[6], CONST0_RTX (Pmode)));
   DONE;
 }
 [(set_attr "type" "vector")])
@@ -379,28 +483,6 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-}
-[(set_attr "type" "vector")])
-
-;; Combine vfsgnj.vv + vcond_mask
-(define_insn_and_split "*cond_copysign<mode>"
-   [(set (match_operand:V_VLSF 0 "register_operand")
-    (if_then_else:V_VLSF
-      (match_operand:<VM> 1 "register_operand")
-      (unspec:V_VLSF
-       [(match_operand:V_VLSF 2 "register_operand")
-        (match_operand:V_VLSF 3 "register_operand")] UNSPEC_VCOPYSIGN)
-      (match_operand:V_VLSF 4 "register_operand")))]
-   "TARGET_VECTOR && can_create_pseudo_p ()"
-   "#"
-   "&& 1"
-   [(const_int 0)]
-{
-  insn_code icode = code_for_pred (UNSPEC_VCOPYSIGN, <MODE>mode);
-  rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[4],
-               gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
-  riscv_vector::expand_cond_len_binop (icode, ops);
-   DONE;
 }
 [(set_attr "type" "vector")])
 
@@ -1151,6 +1233,61 @@
 }
 [(set_attr "type" "vector")])
 
+;; Combine mask_len_extend + vredsum to mask_vwredsum[u]
+;; where the mrege of mask_len_extend is vector const 0
+(define_insn_and_split "*cond_len_widen_reduc_plus_scal_<mode>"
+  [(set (match_operand:<V_DOUBLE_EXTEND_VEL> 0 "register_operand")
+        (unspec:<V_DOUBLE_EXTEND_VEL> [
+          (if_then_else:<V_DOUBLE_EXTEND>
+            (unspec:<VM> [
+              (match_operand 2 "vector_length_operand")
+              (const_int 0)
+              (const_int 0)
+              (reg:SI VL_REGNUM)
+              (reg:SI VTYPE_REGNUM)
+            ] UNSPEC_VPREDICATE)
+            (vec_merge:<V_DOUBLE_EXTEND>
+              (any_extend:<V_DOUBLE_EXTEND>
+                (match_operand:VI_QHS_NO_M8 3 "register_operand"))
+              (if_then_else:<V_DOUBLE_EXTEND>
+                (unspec:<VM> [
+                  (match_operand:<VM> 4 "vector_all_trues_mask_operand")
+                  (match_operand 5 "vector_length_operand")
+                  (match_operand 6 "const_int_operand")
+                  (match_operand 7 "const_int_operand")
+                  (match_operand 8 "const_1_or_2_operand")
+                  (reg:SI VL_REGNUM)
+                  (reg:SI VTYPE_REGNUM)
+                ] UNSPEC_VPREDICATE)
+                (match_operand:<V_DOUBLE_EXTEND> 9 "vector_const_0_operand")
+                (match_operand:<V_DOUBLE_EXTEND> 10 "vector_merge_operand"))
+              (match_operand:<VM> 1 "register_operand"))
+            (if_then_else:<V_DOUBLE_EXTEND>
+              (unspec:<VM> [
+                (match_dup 4)
+                (match_dup 5)
+                (match_dup 6)
+                (match_dup 7)
+                (match_dup 8)
+                (reg:SI VL_REGNUM)
+                (reg:SI VTYPE_REGNUM)
+              ] UNSPEC_VPREDICATE)
+              (match_dup 9)
+              (match_dup 10)))
+        ] UNSPEC_REDUC_SUM))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx ops[] = {operands[0], operands[3], operands[1], operands[2]};
+  riscv_vector::expand_reduction (<WREDUC_UNSPEC>,
+                                  riscv_vector::REDUCE_OP_M,
+                                  ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
+  DONE;
+}
+[(set_attr "type" "vector")])
+
 ;; Combine mask_extend + vfredsum to mask_vfwredusum
 ;; where the mrege of mask_extend is vector const 0
 (define_insn_and_split "*cond_widen_reduc_plus_scal_<mode>"
@@ -1180,6 +1317,61 @@
 {
   rtx ops[] = {operands[0], operands[2], operands[1],
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
+                                  riscv_vector::REDUCE_OP_M_FRM_DYN,
+                                  ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
+  DONE;
+}
+[(set_attr "type" "vector")])
+
+;; Combine mask_len_extend + vredsum to mask_vwredsum[u]
+;; where the mrege of mask_len_extend is vector const 0
+(define_insn_and_split "*cond_len_widen_reduc_plus_scal_<mode>"
+  [(set (match_operand:<V_DOUBLE_EXTEND_VEL> 0 "register_operand")
+        (unspec:<V_DOUBLE_EXTEND_VEL> [
+          (if_then_else:<V_DOUBLE_EXTEND>
+            (unspec:<VM> [
+              (match_operand 2 "vector_length_operand")
+              (const_int 0)
+              (const_int 0)
+              (reg:SI VL_REGNUM)
+              (reg:SI VTYPE_REGNUM)
+            ] UNSPEC_VPREDICATE)
+            (vec_merge:<V_DOUBLE_EXTEND>
+              (float_extend:<V_DOUBLE_EXTEND>
+                (match_operand:VF_HS_NO_M8 3 "register_operand"))
+              (if_then_else:<V_DOUBLE_EXTEND>
+                (unspec:<VM> [
+                  (match_operand:<VM> 4 "vector_all_trues_mask_operand")
+                  (match_operand 5 "vector_length_operand")
+                  (match_operand 6 "const_int_operand")
+                  (match_operand 7 "const_int_operand")
+                  (match_operand 8 "const_1_or_2_operand")
+                  (reg:SI VL_REGNUM)
+                  (reg:SI VTYPE_REGNUM)
+                ] UNSPEC_VPREDICATE)
+                (match_operand:<V_DOUBLE_EXTEND> 9 "vector_const_0_operand")
+                (match_operand:<V_DOUBLE_EXTEND> 10 "vector_merge_operand"))
+              (match_operand:<VM> 1 "register_operand"))
+            (if_then_else:<V_DOUBLE_EXTEND>
+              (unspec:<VM> [
+                (match_dup 4)
+                (match_dup 5)
+                (match_dup 6)
+                (match_dup 7)
+                (match_dup 8)
+                (reg:SI VL_REGNUM)
+                (reg:SI VTYPE_REGNUM)
+              ] UNSPEC_VPREDICATE)
+              (match_dup 9)
+              (match_dup 10)))
+        ] UNSPEC_REDUC_SUM_UNORDERED))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx ops[] = {operands[0], operands[3], operands[1], operands[2]};
   riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
                                   riscv_vector::REDUCE_OP_M_FRM_DYN,
                                   ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));

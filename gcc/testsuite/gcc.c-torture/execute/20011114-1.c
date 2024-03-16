@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 char foo(char bar[])
 {
   return bar[1];

@@ -60,13 +60,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#if _GLIBCXX_HOSTED
+  // Included in freestanding as a libstdc++ extension.
   template<typename>
     class allocator;
 
   template<>
     class allocator<void>;
-#endif
 
 #if __cplusplus >= 201103L
   /// Declare uses_allocator so it can be specialized in `<queue>` etc.

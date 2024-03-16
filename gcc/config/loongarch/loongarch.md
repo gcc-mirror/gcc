@@ -400,6 +400,14 @@
    (DI "!TARGET_64BIT && TARGET_DOUBLE_FLOAT")
    (TF "TARGET_64BIT && TARGET_DOUBLE_FLOAT")])
 
+;; A mode for anything with 32 bits or more, and able to be loaded with
+;; the same addressing mode as ld.w.
+(define_mode_iterator LD_AT_LEAST_32_BIT [GPR ANYF])
+
+;; A mode for anything able to be stored with the same addressing mode as
+;; st.w.
+(define_mode_iterator ST_ANY [QHWD ANYF])
+
 ;; In GPR templates, a string like "mul.<d>" will expand to "mul.w" in the
 ;; 32-bit version and "mul.d" in the 64-bit version.
 (define_mode_attr d [(SI "w") (DI "d")])
@@ -3785,13 +3793,14 @@
 (define_peephole2
   [(set (match_operand:P 0 "register_operand")
 	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:GPR 2 "register_operand")
-	(mem:GPR (match_dup 0)))]
+   (set (match_operand:LD_AT_LEAST_32_BIT 2 "register_operand")
+	(mem:LD_AT_LEAST_32_BIT (match_dup 0)))]
   "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
    && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
    && (peep2_reg_dead_p (2, operands[0]) \
        || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2) (mem:GPR (lo_sum:P (match_dup 0) (match_dup 1))))]
+  [(set (match_dup 2)
+	(mem:LD_AT_LEAST_32_BIT (lo_sum:P (match_dup 0) (match_dup 1))))]
   {
     emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
   })
@@ -3799,14 +3808,15 @@
 (define_peephole2
   [(set (match_operand:P 0 "register_operand")
 	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:GPR 2 "register_operand")
-	(mem:GPR (plus (match_dup 0)
-		       (match_operand 3 "const_int_operand"))))]
+   (set (match_operand:LD_AT_LEAST_32_BIT 2 "register_operand")
+	(mem:LD_AT_LEAST_32_BIT (plus (match_dup 0)
+				(match_operand 3 "const_int_operand"))))]
   "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
    && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
    && (peep2_reg_dead_p (2, operands[0]) \
        || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2) (mem:GPR (lo_sum:P (match_dup 0) (match_dup 1))))]
+  [(set (match_dup 2)
+	(mem:LD_AT_LEAST_32_BIT (lo_sum:P (match_dup 0) (match_dup 1))))]
   {
     operands[1] = plus_constant (Pmode, operands[1], INTVAL (operands[3]));
     emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
@@ -3850,13 +3860,13 @@
 (define_peephole2
   [(set (match_operand:P 0 "register_operand")
 	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (mem:QHWD (match_dup 0))
-	(match_operand:QHWD 2 "register_operand"))]
+   (set (mem:ST_ANY (match_dup 0))
+	(match_operand:ST_ANY 2 "register_operand"))]
   "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
    && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
    && (peep2_reg_dead_p (2, operands[0])) \
    && REGNO (operands[0]) != REGNO (operands[2])"
-  [(set (mem:QHWD (lo_sum:P (match_dup 0) (match_dup 1))) (match_dup 2))]
+  [(set (mem:ST_ANY (lo_sum:P (match_dup 0) (match_dup 1))) (match_dup 2))]
   {
     emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
   })
@@ -3864,14 +3874,14 @@
 (define_peephole2
   [(set (match_operand:P 0 "register_operand")
 	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (mem:QHWD (plus (match_dup 0)
-			(match_operand 3 "const_int_operand")))
-	(match_operand:QHWD 2 "register_operand"))]
+   (set (mem:ST_ANY (plus (match_dup 0)
+			  (match_operand 3 "const_int_operand")))
+	(match_operand:ST_ANY 2 "register_operand"))]
   "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
    && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
    && (peep2_reg_dead_p (2, operands[0])) \
    && REGNO (operands[0]) != REGNO (operands[2])"
-  [(set (mem:QHWD (lo_sum:P (match_dup 0) (match_dup 1))) (match_dup 2))]
+  [(set (mem:ST_ANY (lo_sum:P (match_dup 0) (match_dup 1))) (match_dup 2))]
   {
     operands[1] = plus_constant (Pmode, operands[1], INTVAL (operands[3]));
     emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));

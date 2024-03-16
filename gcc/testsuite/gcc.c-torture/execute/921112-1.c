@@ -1,15 +1,20 @@
+void abort (void);
+void exit (int);
+
 union u {
   struct { int i1, i2; } t;
   double d;
 } x[2], v;
 
+void
 f (x, v)
      union u *x, v;
 {
   *++x = v;
 }
 
-main()
+int
+main(void)
 {
   x[1].t.i1 = x[1].t.i2 = 0;
   v.t.i1 = 1;

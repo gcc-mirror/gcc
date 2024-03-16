@@ -221,6 +221,8 @@ DEF_INTERNAL_OPTAB_FN (VCONDU, ECF_CONST | ECF_NOTHROW, vcondu, vec_cond)
 DEF_INTERNAL_OPTAB_FN (VCONDEQ, ECF_CONST | ECF_NOTHROW, vcondeq, vec_cond)
 DEF_INTERNAL_OPTAB_FN (VCOND_MASK, ECF_CONST | ECF_NOTHROW,
 		       vcond_mask, vec_cond_mask)
+DEF_INTERNAL_OPTAB_FN (VCOND_MASK_LEN, ECF_CONST | ECF_NOTHROW,
+		       vcond_mask_len, cond_len_unary)
 
 DEF_INTERNAL_OPTAB_FN (VEC_SET, ECF_CONST | ECF_NOTHROW, vec_set, vec_set)
 DEF_INTERNAL_OPTAB_FN (VEC_EXTRACT, ECF_CONST | ECF_NOTHROW,
@@ -268,6 +270,7 @@ DEF_INTERNAL_SIGNED_COND_FN (MOD, ECF_CONST, first, smod, umod, binary)
 DEF_INTERNAL_COND_FN (RDIV, ECF_CONST, sdiv, binary)
 DEF_INTERNAL_SIGNED_COND_FN (MIN, ECF_CONST, first, smin, umin, binary)
 DEF_INTERNAL_SIGNED_COND_FN (MAX, ECF_CONST, first, smax, umax, binary)
+DEF_INTERNAL_COND_FN (COPYSIGN, ECF_CONST, copysign, binary)
 DEF_INTERNAL_COND_FN (FMIN, ECF_CONST, fmin, binary)
 DEF_INTERNAL_COND_FN (FMAX, ECF_CONST, fmax, binary)
 DEF_INTERNAL_COND_FN (AND, ECF_CONST | ECF_NOTHROW, and, binary)
@@ -363,12 +366,12 @@ DEF_INTERNAL_FLT_FN (IRINT, ECF_CONST, lrint, unary_convert)
 DEF_INTERNAL_FLT_FN (IROUND, ECF_CONST, lround, unary_convert)
 DEF_INTERNAL_FLT_FN (LCEIL, ECF_CONST, lceil, unary_convert)
 DEF_INTERNAL_FLT_FN (LFLOOR, ECF_CONST, lfloor, unary_convert)
-DEF_INTERNAL_FLT_FN (LRINT, ECF_CONST, lrint, unary_convert)
-DEF_INTERNAL_FLT_FN (LROUND, ECF_CONST, lround, unary_convert)
+DEF_INTERNAL_FLT_FLOATN_FN (LRINT, ECF_CONST, lrint, unary_convert)
+DEF_INTERNAL_FLT_FLOATN_FN (LROUND, ECF_CONST, lround, unary_convert)
 DEF_INTERNAL_FLT_FN (LLCEIL, ECF_CONST, lceil, unary_convert)
 DEF_INTERNAL_FLT_FN (LLFLOOR, ECF_CONST, lfloor, unary_convert)
-DEF_INTERNAL_FLT_FN (LLRINT, ECF_CONST, lrint, unary_convert)
-DEF_INTERNAL_FLT_FN (LLROUND, ECF_CONST, lround, unary_convert)
+DEF_INTERNAL_FLT_FLOATN_FN (LLRINT, ECF_CONST, lrint, unary_convert)
+DEF_INTERNAL_FLT_FLOATN_FN (LLROUND, ECF_CONST, lround, unary_convert)
 
 /* FP rounding.  */
 DEF_INTERNAL_FLT_FLOATN_FN (CEIL, ECF_CONST, ceil, unary)

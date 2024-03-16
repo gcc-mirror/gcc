@@ -17532,40 +17532,86 @@ struct expand_vec_perm_d
 static bool
 expand_perm_with_merge (const struct expand_vec_perm_d &d)
 {
-  bool merge_lo_p = true;
-  bool merge_hi_p = true;
+  static const unsigned char hi_perm_di[2] = {0, 2};
+  static const unsigned char hi_perm_si[4] = {0, 4, 1, 5};
+  static const unsigned char hi_perm_hi[8] = {0, 8, 1, 9, 2, 10, 3, 11};
+  static const unsigned char hi_perm_qi[16]
+    = {0, 16, 1, 17, 2, 18, 3, 19, 4, 20, 5, 21, 6, 22, 7, 23};
 
-  if (d.nelt % 2)
-    return false;
+  static const unsigned char hi_perm_di_swap[2] = {2, 0};
+  static const unsigned char hi_perm_si_swap[4] = {4, 0, 6, 2};
+  static const unsigned char hi_perm_hi_swap[8] = {8, 0, 10, 2, 12, 4, 14, 6};
+  static const unsigned char hi_perm_qi_swap[16]
+    = {16, 0, 18, 2, 20, 4, 22, 6, 24, 8, 26, 10, 28, 12, 30, 14};
 
-  // For V4SI this checks for: { 0, 4, 1, 5 }
-  for (int telt = 0; telt < d.nelt; telt++)
-    if (d.perm[telt] != telt / 2 + (telt % 2) * d.nelt)
-      {
-	merge_hi_p = false;
-	break;
-      }
+  static const unsigned char lo_perm_di[2] = {1, 3};
+  static const unsigned char lo_perm_si[4] = {2, 6, 3, 7};
+  static const unsigned char lo_perm_hi[8] = {4, 12, 5, 13, 6, 14, 7, 15};
+  static const unsigned char lo_perm_qi[16]
+    = {8, 24, 9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30, 15, 31};
 
-  if (!merge_hi_p)
+  static const unsigned char lo_perm_di_swap[2] = {3, 1};
+  static const unsigned char lo_perm_si_swap[4] = {5, 1, 7, 3};
+  static const unsigned char lo_perm_hi_swap[8] = {9, 1, 11, 3, 13, 5, 15, 7};
+  static const unsigned char lo_perm_qi_swap[16]
+    = {17, 1, 19, 3, 21, 5, 23, 7, 25, 9, 27, 11, 29, 13, 31, 15};
+
+  bool merge_lo_p = false;
+  bool merge_hi_p = false;
+  bool swap_operands_p = false;
+
+  if ((d.nelt == 2 && memcmp (d.perm, hi_perm_di, 2) == 0)
+      || (d.nelt == 4 && memcmp (d.perm, hi_perm_si, 4) == 0)
+      || (d.nelt == 8 && memcmp (d.perm, hi_perm_hi, 8) == 0)
+      || (d.nelt == 16 && memcmp (d.perm, hi_perm_qi, 16) == 0))
     {
-      // For V4SI this checks for: { 2, 6, 3, 7 }
-      for (int telt = 0; telt < d.nelt; telt++)
-	if (d.perm[telt] != (telt + d.nelt) / 2 + (telt % 2) * d.nelt)
-	  {
-	    merge_lo_p = false;
-	    break;
-	  }
+      merge_hi_p = true;
     }
-  else
-    merge_lo_p = false;
+  else if ((d.nelt == 2 && memcmp (d.perm, hi_perm_di_swap, 2) == 0)
+	   || (d.nelt == 4 && memcmp (d.perm, hi_perm_si_swap, 4) == 0)
+	   || (d.nelt == 8 && memcmp (d.perm, hi_perm_hi_swap, 8) == 0)
+	   || (d.nelt == 16 && memcmp (d.perm, hi_perm_qi_swap, 16) == 0))
+    {
+      merge_hi_p = true;
+      swap_operands_p = true;
+    }
+  else if ((d.nelt == 2 && memcmp (d.perm, lo_perm_di, 2) == 0)
+	   || (d.nelt == 4 && memcmp (d.perm, lo_perm_si, 4) == 0)
+	   || (d.nelt == 8 && memcmp (d.perm, lo_perm_hi, 8) == 0)
+	   || (d.nelt == 16 && memcmp (d.perm, lo_perm_qi, 16) == 0))
+    {
+      merge_lo_p = true;
+    }
+  else if ((d.nelt == 2 && memcmp (d.perm, lo_perm_di_swap, 2) == 0)
+	   || (d.nelt == 4 && memcmp (d.perm, lo_perm_si_swap, 4) == 0)
+	   || (d.nelt == 8 && memcmp (d.perm, lo_perm_hi_swap, 8) == 0)
+	   || (d.nelt == 16 && memcmp (d.perm, lo_perm_qi_swap, 16) == 0))
+    {
+      merge_lo_p = true;
+      swap_operands_p = true;
+    }
+
+  if (!merge_lo_p && !merge_hi_p)
+    return false;
 
   if (d.testing_p)
     return merge_lo_p || merge_hi_p;
 
-  if (merge_lo_p || merge_hi_p)
-    s390_expand_merge (d.target, d.op0, d.op1, merge_hi_p);
+  rtx op0, op1;
+  if (swap_operands_p)
+    {
+      op0 = d.op1;
+      op1 = d.op0;
+    }
+  else
+    {
+      op0 = d.op0;
+      op1 = d.op1;
+    }
 
-  return merge_lo_p || merge_hi_p;
+  s390_expand_merge (d.target, op0, op1, merge_hi_p);
+
+  return true;
 }
 
 /* Try to expand the vector permute operation described by D using the
@@ -17582,6 +17628,7 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
 {
   bool vpdi1_p = false;
   bool vpdi4_p = false;
+  bool swap_operands_p = false;
   rtx op0_reg, op1_reg;
 
   // Only V2DI and V2DF are supported here.
@@ -17590,11 +17637,20 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
 
   if (d.perm[0] == 0 && d.perm[1] == 3)
     vpdi1_p = true;
-
-  if ((d.perm[0] == 1 && d.perm[1] == 2)
+  else if (d.perm[0] == 2 && d.perm[1] == 1)
+    {
+      vpdi1_p = true;
+      swap_operands_p = true;
+    }
+  else if ((d.perm[0] == 1 && d.perm[1] == 2)
       || (d.perm[0] == 1 && d.perm[1] == 0)
       || (d.perm[0] == 3 && d.perm[1] == 2))
     vpdi4_p = true;
+  else if (d.perm[0] == 3 && d.perm[1] == 0)
+    {
+      vpdi4_p = true;
+      swap_operands_p = true;
+    }
 
   if (!vpdi1_p && !vpdi4_p)
     return false;
@@ -17611,6 +17667,12 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
     op1_reg = op0_reg;
   else if (d.only_op1)
     op0_reg = op1_reg;
+  else if (swap_operands_p)
+    {
+      rtx tmp = op0_reg;
+      op0_reg = op1_reg;
+      op1_reg = tmp;
+    }
 
   if (vpdi1_p)
     emit_insn (gen_vpdi1 (d.vmode, d.target, op0_reg, op1_reg));
@@ -17631,78 +17693,28 @@ is_reverse_perm_mask (const struct expand_vec_perm_d &d)
   return true;
 }
 
-/* The case of reversing a four-element vector [0, 1, 2, 3]
-   can be handled by first permuting the doublewords
-   [2, 3, 0, 1] and subsequently rotating them by 32 bits.  */
 static bool
-expand_perm_with_rot (const struct expand_vec_perm_d &d)
+expand_perm_reverse_elements (const struct expand_vec_perm_d &d)
 {
-  if (d.nelt != 4)
+  if (d.op0 != d.op1 || !is_reverse_perm_mask (d))
     return false;
 
-  if (d.op0 == d.op1 && is_reverse_perm_mask (d))
+  if (d.testing_p)
+    return true;
+
+  switch (d.vmode)
     {
-      if (d.testing_p)
-	return true;
-
-      rtx tmp = gen_reg_rtx (d.vmode);
-      rtx op0_reg = force_reg (GET_MODE (d.op0), d.op0);
-
-      emit_insn (gen_vpdi4_2 (d.vmode, tmp, op0_reg, op0_reg));
-      if (d.vmode == V4SImode)
-	emit_insn (gen_rotlv4si3_di (d.target, tmp));
-      else if (d.vmode == V4SFmode)
-	emit_insn (gen_rotlv4sf3_di (d.target, tmp));
-
-      return true;
+    case V1TImode: emit_move_insn (d.target, d.op0); break;
+    case V2DImode: emit_insn (gen_eltswapv2di (d.target, d.op0)); break;
+    case V4SImode: emit_insn (gen_eltswapv4si (d.target, d.op0)); break;
+    case V8HImode: emit_insn (gen_eltswapv8hi (d.target, d.op0)); break;
+    case V16QImode: emit_insn (gen_eltswapv16qi (d.target, d.op0)); break;
+    case V2DFmode: emit_insn (gen_eltswapv2df (d.target, d.op0)); break;
+    case V4SFmode: emit_insn (gen_eltswapv4sf (d.target, d.op0)); break;
+    default: gcc_unreachable();
     }
 
-  return false;
-}
-
-/* If we just reverse the elements, emit an eltswap if we have
-   vler/vster.  */
-static bool
-expand_perm_with_vster (const struct expand_vec_perm_d &d)
-{
-  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
-      && (d.vmode == V2DImode || d.vmode == V2DFmode
-	  || d.vmode == V4SImode || d.vmode == V4SFmode
-	  || d.vmode == V8HImode))
-    {
-      if (d.testing_p)
-	return true;
-
-      if (d.vmode == V2DImode)
-	emit_insn (gen_eltswapv2di (d.target, d.op0));
-      else if (d.vmode == V2DFmode)
-	emit_insn (gen_eltswapv2df (d.target, d.op0));
-      else if (d.vmode == V4SImode)
-	emit_insn (gen_eltswapv4si (d.target, d.op0));
-      else if (d.vmode == V4SFmode)
-	emit_insn (gen_eltswapv4sf (d.target, d.op0));
-      else if (d.vmode == V8HImode)
-	emit_insn (gen_eltswapv8hi (d.target, d.op0));
-      return true;
-    }
-  return false;
-}
-
-/* If we reverse a byte-vector this is the same as
-   byte reversing it which can be done with vstbrq.  */
-static bool
-expand_perm_with_vstbrq (const struct expand_vec_perm_d &d)
-{
-  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
-      && d.vmode == V16QImode)
-    {
-      if (d.testing_p)
-	return true;
-
-      emit_insn (gen_eltswapv16qi (d.target, d.op0));
-      return true;
-    }
-  return false;
+  return true;
 }
 
 /* Try to emit vlbr/vstbr.  Note, this is only a candidate insn since
@@ -17764,19 +17776,13 @@ expand_perm_as_a_vlbr_vstbr_candidate (const struct expand_vec_perm_d &d)
 static bool
 vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
 {
+  if (expand_perm_reverse_elements (d))
+    return true;
+
   if (expand_perm_with_merge (d))
     return true;
 
-  if (expand_perm_with_vster (d))
-    return true;
-
-  if (expand_perm_with_vstbrq (d))
-    return true;
-
   if (expand_perm_with_vpdi (d))
-    return true;
-
-  if (expand_perm_with_rot (d))
     return true;
 
   if (expand_perm_as_a_vlbr_vstbr_candidate (d))

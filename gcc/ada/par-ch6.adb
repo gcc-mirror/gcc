@@ -935,7 +935,6 @@ package body Ch6 is
                   --  the body.
 
                   if Is_Non_Empty_List (Aspects) then
-                     Set_Parent (Aspects, Body_Node);
                      Set_Aspect_Specifications (Body_Node, Aspects);
                   end if;
 
@@ -974,7 +973,6 @@ package body Ch6 is
 
          else
             if Is_Non_Empty_List (Aspects) then
-               Set_Parent (Aspects, Decl_Node);
                Set_Aspect_Specifications (Decl_Node, Aspects);
             end if;
 

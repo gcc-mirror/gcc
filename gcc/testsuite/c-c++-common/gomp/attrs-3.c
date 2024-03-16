@@ -9,6 +9,10 @@
 #error omp::sequence supported even when -fno-openmp{,-simd}
 #endif
 
+#if __has_attribute(omp::decl)
+#error omp::decl supported even when -fno-openmp{,-simd}
+#endif
+
 #if __has_attribute(omp::unknown)
 #error omp::unknown supported
 #endif
@@ -19,6 +23,10 @@
 
 #if __has_cpp_attribute(omp::sequence)
 #error omp::sequence supported even when -fno-openmp{,-simd}
+#endif
+
+#if __has_cpp_attribute(omp::decl)
+#error omp::decl supported even when -fno-openmp{,-simd}
 #endif
 
 #if __has_cpp_attribute(omp::unknown)
@@ -33,6 +41,10 @@
 #error __omp__::__sequence__ supported even when -fno-openmp{,-simd}
 #endif
 
+#if __has_attribute(__omp__::__decl__)
+#error __omp__::__decl__ supported even when -fno-openmp{,-simd}
+#endif
+
 #if __has_attribute(__omp__::__unknown__)
 #error __omp__::__unknown__ supported
 #endif
@@ -43,6 +55,10 @@
 
 #if __has_cpp_attribute(__omp__::__sequence__)
 #error __omp__::__sequence__ supported even when -fno-openmp{,-simd}
+#endif
+
+#if __has_cpp_attribute(__omp__::__decl__)
+#error __omp__::__decl__ supported even when -fno-openmp{,-simd}
 #endif
 
 #if __has_cpp_attribute(__omp__::__unknown__)
@@ -57,6 +73,10 @@
 #error __omp__::sequence supported even when -fno-openmp{,-simd}
 #endif
 
+#if __has_attribute(omp::__decl__)
+#error omp::__decl__ supported even when -fno-openmp{,-simd}
+#endif
+
 #if __has_attribute(omp::__unknown__)
 #error omp::__unknown__ supported
 #endif
@@ -67,6 +87,10 @@
 
 #if __has_cpp_attribute(omp::__sequence__)
 #error omp::__sequence__ supported even when -fno-openmp{,-simd}
+#endif
+
+#if __has_cpp_attribute(__omp__::decl)
+#error __omp__::decl supported even when -fno-openmp{,-simd}
 #endif
 
 #if __has_cpp_attribute(__omp__::unknown)

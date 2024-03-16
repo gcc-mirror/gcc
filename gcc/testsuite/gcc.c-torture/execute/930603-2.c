@@ -1,6 +1,10 @@
+void abort (void);
+void exit (int);
+
 int w[2][2];
 
-f ()
+void
+f (void)
 {
   int i, j;
 
@@ -10,7 +14,8 @@ f ()
 	w[i][j] = 1;
 }
 
-main ()
+int
+main (void)
 {
   f ();
   if (w[0][0] != 1 || w[1][1] != 1 || w[1][0] != 0 || w[0][1] != 0)

@@ -19,11 +19,11 @@
 
 ;;; Unused letters:
 ;;;           H
-;;;           j               z
+;;;                             z
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
-(define_register_constraint "R" "LEGACY_REGS"
+(define_register_constraint "R" "LEGACY_GENERAL_REGS"
  "Legacy register---the eight integer registers available on all
   i386 processors (@code{a}, @code{b}, @code{c}, @code{d},
   @code{si}, @code{di}, @code{bp}, @code{sp}).")
@@ -187,11 +187,6 @@
   "@internal Vector memory operand."
   (match_operand 0 "vector_memory_operand"))
 
-(define_special_memory_constraint "Bc"
-  "@internal Constant memory operand."
-  (and (match_operand 0 "memory_operand")
-       (match_test "constant_address_p (XEXP (op, 0))")))
-
 (define_memory_constraint "Bk"
   "@internal TLS address that allows insn using non-integer registers."
   (and (match_operand 0 "memory_operand")
@@ -199,7 +194,8 @@
 
 (define_special_memory_constraint "Bn"
   "@internal Memory operand without REX prefix."
-  (match_operand 0 "norex_memory_operand"))
+  (and (match_operand 0 "memory_operand")
+       (not (match_test "x86_extended_reg_mentioned_p (op)"))))
 
 (define_special_memory_constraint "Br"
   "@internal bcst memory operand."
@@ -434,3 +430,6 @@
   (and (match_operand 0 "vsib_address_operand")
        (not (and (match_test "TARGET_APX_EGPR")
 		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
+
+(define_register_constraint  "jc"
+ "TARGET_APX_EGPR && !TARGET_AVX ? GENERAL_GPR16 : GENERAL_REGS")

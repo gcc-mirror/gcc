@@ -116,6 +116,7 @@ package Aspects is
       Aspect_Iterable,                      -- GNAT
       Aspect_Link_Name,
       Aspect_Linker_Section,                -- GNAT
+      Aspect_Local_Restrictions,            -- GNAT
       Aspect_Machine_Radix,
       Aspect_Max_Entry_Queue_Depth,         -- GNAT
       Aspect_Max_Entry_Queue_Length,
@@ -164,6 +165,7 @@ package Aspects is
       Aspect_Type_Invariant,
       Aspect_Unimplemented,                 -- GNAT
       Aspect_Unsuppress,
+      Aspect_User_Aspect,                   -- GNAT
       Aspect_Value_Size,                    -- GNAT
       Aspect_Variable_Indexing,
       Aspect_Volatile_Function,             -- GNAT
@@ -418,6 +420,7 @@ package Aspects is
       Aspect_Iterator_Element           => Name,
       Aspect_Link_Name                  => Expression,
       Aspect_Linker_Section             => Expression,
+      Aspect_Local_Restrictions         => Expression,
       Aspect_Machine_Radix              => Expression,
       Aspect_Max_Entry_Queue_Depth      => Expression,
       Aspect_Max_Entry_Queue_Length     => Expression,
@@ -466,6 +469,7 @@ package Aspects is
       Aspect_Type_Invariant             => Expression,
       Aspect_Unimplemented              => Optional_Expression,
       Aspect_Unsuppress                 => Name,
+      Aspect_User_Aspect                => Expression,
       Aspect_Value_Size                 => Expression,
       Aspect_Variable_Indexing          => Name,
       Aspect_Volatile_Function          => Optional_Expression,
@@ -530,6 +534,7 @@ package Aspects is
       Aspect_Iterator_Element             => False,
       Aspect_Link_Name                    => True,
       Aspect_Linker_Section               => True,
+      Aspect_Local_Restrictions           => False,
       Aspect_Machine_Radix                => True,
       Aspect_Max_Entry_Queue_Depth        => False,
       Aspect_Max_Entry_Queue_Length       => False,
@@ -578,6 +583,7 @@ package Aspects is
       Aspect_Type_Invariant               => False,
       Aspect_Unimplemented                => False,
       Aspect_Unsuppress                   => False,
+      Aspect_User_Aspect                  => False,
       Aspect_Value_Size                   => True,
       Aspect_Variable_Indexing            => False,
       Aspect_Volatile_Function            => False,
@@ -701,6 +707,7 @@ package Aspects is
       Aspect_Link_Name                    => Name_Link_Name,
       Aspect_Linker_Section               => Name_Linker_Section,
       Aspect_Lock_Free                    => Name_Lock_Free,
+      Aspect_Local_Restrictions           => Name_Local_Restrictions,
       Aspect_Machine_Radix                => Name_Machine_Radix,
       Aspect_Max_Entry_Queue_Depth        => Name_Max_Entry_Queue_Depth,
       Aspect_Max_Entry_Queue_Length       => Name_Max_Entry_Queue_Length,
@@ -774,6 +781,7 @@ package Aspects is
       Aspect_Unreferenced                 => Name_Unreferenced,
       Aspect_Unreferenced_Objects         => Name_Unreferenced_Objects,
       Aspect_Unsuppress                   => Name_Unsuppress,
+      Aspect_User_Aspect                  => Name_User_Aspect,
       Aspect_Value_Size                   => Name_Value_Size,
       Aspect_Variable_Indexing            => Name_Variable_Indexing,
       Aspect_Volatile                     => Name_Volatile,
@@ -1012,6 +1020,7 @@ package Aspects is
       Aspect_GNAT_Annotate                => Never_Delay,
       Aspect_Import                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
+      Aspect_Local_Restrictions           => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
       Aspect_Max_Entry_Queue_Depth        => Never_Delay,
       Aspect_Max_Entry_Queue_Length       => Never_Delay,
@@ -1036,6 +1045,7 @@ package Aspects is
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
       Aspect_Unimplemented                => Never_Delay,
+      Aspect_User_Aspect                  => Never_Delay,
       Aspect_Volatile_Function            => Never_Delay,
       Aspect_Warnings                     => Never_Delay,
       Aspect_Yield                        => Never_Delay,
@@ -1137,28 +1147,12 @@ package Aspects is
    --  implemented internally with a hash table in the body, that provides
    --  access to aspect specifications.
 
-   function Aspect_Specifications (N : Node_Id) return List_Id;
-   --  Given a node N, returns the list of N_Aspect_Specification nodes that
-   --  are attached to this declaration node. If the node is in the class of
-   --  declaration nodes that permit aspect specifications, as defined by the
-   --  predicate above, and if their Has_Aspects flag is set to True, then this
-   --  will always be a non-empty list. If this flag is set to False, then
-   --  No_List is returned. Normally, the only nodes that have Has_Aspects set
-   --  True are the nodes for which Permits_Aspect_Specifications would return
-   --  True (i.e. the declaration nodes defined in the RM as permitting the
-   --  presence of Aspect_Specifications). However, it is possible for the
-   --  flag Has_Aspects to be set on other nodes as a result of Rewrite and
-   --  Replace calls, and this function may be used to retrieve the aspect
-   --  specifications for the original rewritten node in such cases.
-
    function Aspects_On_Body_Or_Stub_OK (N : Node_Id) return Boolean;
    --  N denotes a body [stub] with aspects. Determine whether all aspects of N
    --  are allowed to appear on a body [stub].
 
-   procedure Exchange_Aspects (N1 : Node_Id; N2 : Node_Id);
-   --  Exchange the aspect specifications of two nodes. If either node lacks an
-   --  aspect specification list, the routine has no effect. It is assumed that
-   --  both nodes can support aspects.
+   procedure Copy_Aspects (From : Node_Id; To : Node_Id);
+   --  Create a copy of Aspect of From and add them to To.
 
    function Find_Aspect (Id            : Entity_Id;
                          A             : Aspect_Id;
@@ -1186,6 +1180,9 @@ package Aspects is
                         A             : Aspect_Id;
                         Class_Present : Boolean := False) return Boolean;
    --  Determine whether entity Id has aspect A (or A'Class, if Class_Present)
+
+   function Has_Aspects (N : Node_Id) return Boolean;
+   --  Returns whether the node has any aspect specifications
 
    procedure Move_Aspects (From : Node_Id; To : Node_Id);
    --  Relocate the aspect specifications of node From to node To. On entry it
@@ -1217,14 +1214,27 @@ package Aspects is
    --  a simple equality test because e.g. Post and Postcondition are the same.
    --  This is used for detecting duplicate aspects.
 
-   procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id);
-   --  The node N must be in the class of declaration nodes that permit aspect
-   --  specifications and the Has_Aspects flag must be False on entry. L must
-   --  be a non-empty list of N_Aspect_Specification nodes. This procedure sets
-   --  the Has_Aspects flag to True, and makes an entry that can be retrieved
-   --  by a subsequent Aspect_Specifications call. It is an error to call this
-   --  procedure with a node that does not permit aspect specifications, or a
-   --  node that has its Has_Aspects flag set True on entry, or with L being an
-   --  empty list or No_List.
+   package User_Aspect_Support is
+      procedure Register_UAD_Pragma (UAD_Pragma : Node_Id);
+      --  Argument is a User_Aspect_Definition pragma.
+
+      function Registered_UAD_Pragma (Aspect_Name : Name_Id) return Node_Id;
+      --  Returns the registered pragma, if any, for the given name.
+      --  Returns empty if no pragma with a matching first argument is
+      --  in the map.
+
+      --  In Find_Aspect we want to call
+      --  Sem_Ch13.Analyze_User_Aspect_Specification, but doing this in the
+      --  obvious way introduces problems (by pulling the bulk of semantics
+      --  into the closure of package Aspects). So we declare an
+      --  access-to-subp object here and call through it later if it happens
+      --  to be non-null; it is initialized in the body of package Sem_Ch13.
+
+      type Analyze_User_Aspect_Aspect_Specification_Ref is
+        access procedure (N : Node_Id);
+
+      Analyze_User_Aspect_Aspect_Specification_Hook :
+        Analyze_User_Aspect_Aspect_Specification_Ref;
+   end User_Aspect_Support;
 
 end Aspects;

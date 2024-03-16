@@ -1,5 +1,5 @@
-
 typedef __SIZE_TYPE__ Size_t;
+void abort(void);
 
 #if __SIZEOF_LONG__ < __SIZEOF_POINTER__
 #define bufsize ((1LL << (8 * sizeof(Size_t) - 2))-256)

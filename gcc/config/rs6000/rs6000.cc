@@ -25682,6 +25682,7 @@ rs6000_need_ipa_fn_target_info (const_tree decl,
 static bool
 rs6000_update_ipa_fn_target_info (unsigned int &info, const gimple *stmt)
 {
+#ifndef HAVE_AS_POWER10_HTM
   /* Assume inline asm can use any instruction features.  */
   if (gimple_code (stmt) == GIMPLE_ASM)
     {
@@ -25693,7 +25694,9 @@ rs6000_update_ipa_fn_target_info (unsigned int &info, const gimple *stmt)
 	info |= RS6000_FN_TARGET_INFO_HTM;
       return false;
     }
-  else if (gimple_code (stmt) == GIMPLE_CALL)
+#endif
+
+  if (gimple_code (stmt) == GIMPLE_CALL)
     {
       tree fndecl = gimple_call_fndecl (stmt);
       if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_MD))

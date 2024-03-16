@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target { bitint } } } */
-/* { dg-options "-std=c2x -Wint-in-bool-context -Waddress -Wpointer-to-int-cast -Wint-to-pointer-cast -Wint-conversion -Wshift-negative-value -Wshift-count-overflow -Wdiv-by-zero" } */
+/* { dg-options "-std=c23 -fpermissive -Wint-in-bool-context -Waddress -Wpointer-to-int-cast -Wint-to-pointer-cast -Wint-conversion -Wshift-negative-value -Wshift-count-overflow -Wdiv-by-zero" } */
 
 extern char *ax[];
 

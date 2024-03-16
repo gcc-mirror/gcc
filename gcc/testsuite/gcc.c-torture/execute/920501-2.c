@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned long
 gcd_ll (unsigned long long x, unsigned long long y)
 {
@@ -95,7 +98,8 @@ facts (t, a_int, x0, p)
     }
 }
 
-main ()
+int
+main (void)
 {
   unsigned long long t;
   unsigned x0, a;

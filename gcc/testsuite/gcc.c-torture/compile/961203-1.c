@@ -16,7 +16,7 @@ main ()
 
   p = (struct s*) 0;
   if (p->x == p->y)
-    exit (1);
+    __builtin_exit (1);
 }
 #else
 int g;

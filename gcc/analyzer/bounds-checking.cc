@@ -163,7 +163,7 @@ protected:
     if (op.get_valid_bits ().empty_p ())
       return;
 
-    if (const text_art::theme *theme = global_dc->m_diagrams.m_theme)
+    if (const text_art::theme *theme = global_dc->get_diagram_theme ())
       {
 	text_art::style_manager sm;
 	text_art::canvas canvas (make_access_diagram (op, sm, *theme, logger));
@@ -177,7 +177,7 @@ protected:
 	  (canvas,
 	   /* Alt text.  */
 	   _("Diagram visualizing the predicted out-of-bounds access"));
-	diagnostic_emit_diagram (global_dc, diagram);
+	global_dc->emit_diagram (diagram);
       }
   }
 

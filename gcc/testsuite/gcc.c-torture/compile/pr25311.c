@@ -13,6 +13,8 @@ struct w
 
 extern struct w *Qnil;
 
+void use (struct w *);
+
 void
 set_size (struct w *w, int new_size, int nodelete, int set_height)
 {

@@ -4,6 +4,9 @@ typedef struct
     double f;
   } T;
 
+extern int g(T *);
+
+int
 f (T *n1, T *n2)
 {
   if (g (n2))

@@ -131,19 +131,31 @@ public:
 
     tree type = builtin_types[e.type.index].vector;
     machine_mode mode = TYPE_MODE (type);
-    machine_mode inner_mode = GET_MODE_INNER (mode);
+    /* Normalize same RATO (SEW/LMUL) into same vsetvl instruction.
+
+	 - e8,mf8/e16,mf4/e32,mf2/e64,m1 --> e8mf8
+	 - e8,mf4/e16,mf2/e32,m1/e64,m2  --> e8mf4
+	 - e8,mf2/e16,m1/e32,m2/e64,m4   --> e8mf2
+	 - e8,m1/e16,m2/e32,m4/e64,m8    --> e8m1
+	 - e8,m2/e16,m4/e32,m8           --> e8m2
+	 - e8,m4/e16,m8                  --> e8m4
+	 - e8,m8                         --> e8m8
+    */
     /* SEW.  */
-    e.add_input_operand (Pmode,
-			 gen_int_mode (GET_MODE_BITSIZE (inner_mode), Pmode));
+    e.add_input_operand (Pmode, gen_int_mode (8, Pmode));
 
     /* LMUL.  */
-    e.add_input_operand (Pmode, gen_int_mode (get_vlmul (mode), Pmode));
+    machine_mode e8_mode
+      = get_vector_mode (QImode, GET_MODE_NUNITS (mode)).require ();
+    e.add_input_operand (Pmode, gen_int_mode (get_vlmul (e8_mode), Pmode));
 
     /* TAIL_ANY.  */
-    e.add_input_operand (Pmode, gen_int_mode (get_prefer_tail_policy (), Pmode));
+    e.add_input_operand (Pmode,
+			 gen_int_mode (get_prefer_tail_policy (), Pmode));
 
     /* MASK_ANY.  */
-    e.add_input_operand (Pmode, gen_int_mode (get_prefer_mask_policy (), Pmode));
+    e.add_input_operand (Pmode,
+			 gen_int_mode (get_prefer_mask_policy (), Pmode));
     return e.generate_insn (code_for_vsetvl_no_side_effects (Pmode));
   }
 };
@@ -262,7 +274,8 @@ public:
    vremu/vsadd/vsaddu/vssub/vssubu
    vfadd/vfsub/
 */
-template<rtx_code CODE, enum frm_op_type FRM_OP = NO_FRM>
+template <rtx_code CODE, bool MAY_REQUIRE_FRM = false,
+	  enum frm_op_type FRM_OP = NO_FRM>
 class binop : public function_base
 {
 public:
@@ -270,6 +283,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return MAY_REQUIRE_FRM; }
 
   rtx expand (function_expander &e) const override
   {
@@ -307,6 +322,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -396,6 +413,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -630,6 +649,8 @@ class sat_op : public function_base
 public:
   bool has_rounding_mode_operand_p () const override { return true; }
 
+  bool may_require_vxrm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     switch (e.op_info->op)
@@ -651,6 +672,8 @@ class vnclip : public function_base
 {
 public:
   bool has_rounding_mode_operand_p () const override { return true; }
+
+  bool may_require_vxrm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -1024,6 +1047,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (
@@ -1039,6 +1064,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1064,6 +1091,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1086,6 +1115,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1111,6 +1142,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1134,6 +1167,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1156,6 +1191,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1181,6 +1218,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1203,6 +1242,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1228,6 +1269,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1250,6 +1293,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1274,6 +1319,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1296,6 +1343,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1320,6 +1369,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -1392,6 +1443,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_pred_fcvt_x_f (UNSPEC, e.arg_mode (0)));
@@ -1418,6 +1471,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_x_v)
@@ -1438,6 +1493,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -1483,6 +1540,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (
@@ -1509,6 +1568,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -1554,6 +1615,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool apply_mask_policy_p () const override { return false; }
 
@@ -1798,6 +1861,10 @@ public:
   {
     unsigned int nargs = gimple_call_num_args (f.call);
     tree lhs_type = TREE_TYPE (f.lhs);
+    /* LMUL > 1 non-tuple vector types are not structure,
+   we can't use __val[index] to set the subpart.  */
+    if (!riscv_v_ext_tuple_mode_p (TYPE_MODE (lhs_type)))
+      return NULL;
 
     /* Replace the call with a clobber of the result (to prevent it from
        becoming upwards exposed) followed by stores into each individual
@@ -1823,9 +1890,22 @@ public:
     return clobber;
   }
 
-  rtx expand (function_expander &) const override
+  rtx expand (function_expander &e) const override
   {
-    gcc_unreachable ();
+    if (!e.target)
+      return NULL_RTX;
+    gcc_assert (riscv_v_ext_vector_mode_p (GET_MODE (e.target)));
+    unsigned int nargs = call_expr_nargs (e.exp);
+    for (unsigned int i = 0; i < nargs; i++)
+      {
+	rtx src = expand_normal (CALL_EXPR_ARG (e.exp, i));
+	poly_int64 offset = i * GET_MODE_SIZE (GET_MODE (src));
+	rtx subreg = simplify_gen_subreg (GET_MODE (src), e.target,
+					  GET_MODE (e.target), offset);
+	emit_move_insn (subreg, src);
+      }
+
+    return e.target;
   }
 };
 
@@ -2164,20 +2244,20 @@ static CONSTEXPR const mask_misc<UNSPEC_VMSIF> vmsif_obj;
 static CONSTEXPR const mask_misc<UNSPEC_VMSOF> vmsof_obj;
 static CONSTEXPR const viota viota_obj;
 static CONSTEXPR const vid vid_obj;
-static CONSTEXPR const binop<PLUS> vfadd_obj;
-static CONSTEXPR const binop<MINUS> vfsub_obj;
-static CONSTEXPR const binop<PLUS, HAS_FRM> vfadd_frm_obj;
-static CONSTEXPR const binop<MINUS, HAS_FRM> vfsub_frm_obj;
+static CONSTEXPR const binop<PLUS, true> vfadd_obj;
+static CONSTEXPR const binop<MINUS, true> vfsub_obj;
+static CONSTEXPR const binop<PLUS, true, HAS_FRM> vfadd_frm_obj;
+static CONSTEXPR const binop<MINUS, true, HAS_FRM> vfsub_frm_obj;
 static CONSTEXPR const reverse_binop<MINUS> vfrsub_obj;
 static CONSTEXPR const reverse_binop<MINUS, HAS_FRM> vfrsub_frm_obj;
 static CONSTEXPR const widen_binop_fp<PLUS> vfwadd_obj;
 static CONSTEXPR const widen_binop_fp<PLUS, HAS_FRM> vfwadd_frm_obj;
 static CONSTEXPR const widen_binop_fp<MINUS> vfwsub_obj;
 static CONSTEXPR const widen_binop_fp<MINUS, HAS_FRM> vfwsub_frm_obj;
-static CONSTEXPR const binop<MULT> vfmul_obj;
-static CONSTEXPR const binop<MULT, HAS_FRM> vfmul_frm_obj;
-static CONSTEXPR const binop<DIV> vfdiv_obj;
-static CONSTEXPR const binop<DIV, HAS_FRM> vfdiv_frm_obj;
+static CONSTEXPR const binop<MULT, true> vfmul_obj;
+static CONSTEXPR const binop<MULT,  true, HAS_FRM> vfmul_frm_obj;
+static CONSTEXPR const binop<DIV, true> vfdiv_obj;
+static CONSTEXPR const binop<DIV,  true, HAS_FRM> vfdiv_frm_obj;
 static CONSTEXPR const reverse_binop<DIV> vfrdiv_obj;
 static CONSTEXPR const reverse_binop<DIV, HAS_FRM> vfrdiv_frm_obj;
 static CONSTEXPR const widen_binop_fp<MULT> vfwmul_obj;

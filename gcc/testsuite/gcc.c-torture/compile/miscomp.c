@@ -1,12 +1,13 @@
 unsigned char foo(unsigned long);
-main()
+int
+main(void)
 {
     unsigned char AChar;
     unsigned long ALong = 0x12345678;
 
     AChar = foo(ALong);
 
-    printf("AChar = %x\n",(int)AChar);
+    __builtin_printf("AChar = %x\n",(int)AChar);
 }
 unsigned char
 foo( unsigned long TheLong)

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 void
 xnanosleep (_Bool overflow)
 {

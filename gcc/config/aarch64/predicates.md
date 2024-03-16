@@ -871,6 +871,11 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_sve_logical_immediate")))
 
+(define_predicate "aarch64_orr_imm_sve_advsimd"
+  (ior (match_operand 0 "aarch64_reg_or_orr_imm")
+       (and (match_test "TARGET_SVE")
+	    (match_operand 0 "aarch64_sve_logical_operand"))))
+
 (define_predicate "aarch64_sve_gather_offset_b"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_sve_gather_immediate_b")))

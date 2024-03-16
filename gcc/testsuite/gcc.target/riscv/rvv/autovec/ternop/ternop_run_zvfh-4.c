@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_v && riscv_zvfh_hw } } } */
+/* { dg-do run { target { riscv_v && riscv_zvfh } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -ffast-math" } */
 
 #include "ternop-4.c"
@@ -30,6 +30,6 @@ int __attribute__ ((optimize (0))) main ()
   TEST_LOOP (_Float16, 16)
   TEST_LOOP (_Float16, 77)
   TEST_LOOP (_Float16, 128)
-  TEST_LOOP (_Float16, 795)
+  TEST_LOOP (_Float16, 299)
   return 0;
 }

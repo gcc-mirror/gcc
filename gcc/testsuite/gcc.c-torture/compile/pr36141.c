@@ -1,4 +1,5 @@
 extern void ffi_closure_unix (void);
+void
 ffi_prep_closure_loc (void)
 {
   struct ia64_fd

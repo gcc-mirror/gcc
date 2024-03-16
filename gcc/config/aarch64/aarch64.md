@@ -1233,6 +1233,7 @@
   "(register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_zero (operands[1], <MODE>mode))"
   {@ [cons: =0, 1; attrs: type, arch]
+     [w, Z    ; neon_move      , simd  ] movi\t%0.<Vbtype>, #0
      [r, r    ; mov_reg        , *     ] mov\t%w0, %w1
      [r, M    ; mov_imm        , *     ] mov\t%w0, %1
      [w, D<hq>; neon_move      , simd  ] << aarch64_output_scalar_simd_mov_immediate (operands[1], <MODE>mode);
@@ -1290,6 +1291,7 @@
   "(register_operand (operands[0], SImode)
     || aarch64_reg_or_zero (operands[1], SImode))"
   {@ [cons: =0, 1; attrs: type, arch, length]
+     [w  , Z  ; neon_move, simd, 4] movi\t%0.2d, #0
      [r k, r  ; mov_reg  , *   , 4] mov\t%w0, %w1
      [r  , k  ; mov_reg  , *   , 4] ^
      [r  , M  ; mov_imm  , *   , 4] mov\t%w0, %1
@@ -1323,6 +1325,7 @@
   "(register_operand (operands[0], DImode)
     || aarch64_reg_or_zero (operands[1], DImode))"
   {@ [cons: =0, 1; attrs: type, arch, length]
+     [w, Z  ; neon_move, simd, 4] movi\t%0.2d, #0
      [r, r  ; mov_reg  , *   , 4] mov\t%x0, %x1
      [k, r  ; mov_reg  , *   , 4] mov\t%0, %x1
      [r, k  ; mov_reg  , *   , 4] mov\t%x0, %1
@@ -1341,13 +1344,21 @@
      [r, w  ; f_mrc    , fp  , 4] fmov\t%x0, %d1
      [w, w  ; fmov     , fp  , 4] fmov\t%d0, %d1
      [w, Dd ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
+     [w, Dx ; neon_move, simd, 8] #
   }
-  "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode)
-   && REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
+  "CONST_INT_P (operands[1])
+   && REG_P (operands[0])
+   && ((!aarch64_move_imm (INTVAL (operands[1]), DImode)
+	&& GP_REGNUM_P (REGNO (operands[0])))
+       || (aarch64_simd_special_constant_p (operands[1], DImode)
+	   && FP_REGNUM_P (REGNO (operands[0]))))"
   [(const_int 0)]
   {
+    if (GP_REGNUM_P (REGNO (operands[0])))
       aarch64_expand_mov_immediate (operands[0], operands[1]);
-      DONE;
+    else
+      aarch64_maybe_generate_simd_constant (operands[0], operands[1], DImode);
+    DONE;
   }
 )
 
@@ -4447,7 +4458,7 @@
 	   (match_operator:SI 1 "aarch64_comparison_operator"
 	    [(match_operand 2 "cc_register" "") (const_int 0)]))
 	  (match_operand:SI 3 "general_operand" "r"))))]
-  "can_create_pseudo_p ()"
+  ""
   "#"
   "&& true"
   [(set (match_dup 0)
@@ -4588,7 +4599,8 @@
   ""
   {@ [ cons: =0 , 1  , 2        ; attrs: type , arch  ]
      [ r        , %r , r        ; logic_reg   , *     ] <logical>\t%<w>0, %<w>1, %<w>2
-     [ rk       , r  , <lconst> ; logic_imm   , *     ] <logical>\t%<w>0, %<w>1, %2
+     [ rk       , ^r , <lconst> ; logic_imm   , *     ] <logical>\t%<w>0, %<w>1, %2
+     [ w        , 0  , <lconst> ; *           , sve   ] <logical>\t%Z0.<s>, %Z0.<s>, #%2
      [ w        , w  , w        ; neon_logic  , simd  ] <logical>\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
   }
 )
@@ -6965,12 +6977,26 @@
 (define_expand "copysign<GPF:mode>3"
   [(match_operand:GPF 0 "register_operand")
    (match_operand:GPF 1 "register_operand")
-   (match_operand:GPF 2 "register_operand")]
+   (match_operand:GPF 2 "nonmemory_operand")]
   "TARGET_SIMD"
 {
-  rtx bitmask = gen_reg_rtx (<V_INT_EQUIV>mode);
+  machine_mode int_mode = <V_INT_EQUIV>mode;
+  rtx bitmask = gen_reg_rtx (int_mode);
   emit_move_insn (bitmask, GEN_INT (HOST_WIDE_INT_M1U
 				    << (GET_MODE_BITSIZE (<MODE>mode) - 1)));
+  /* copysign (x, -1) should instead be expanded as orr with the sign
+     bit.  */
+  rtx op2_elt = unwrap_const_vec_duplicate (operands[2]);
+  if (GET_CODE (op2_elt) == CONST_DOUBLE
+      && real_isneg (CONST_DOUBLE_REAL_VALUE (op2_elt)))
+    {
+      emit_insn (gen_ior<v_int_equiv>3 (
+	lowpart_subreg (int_mode, operands[0], <MODE>mode),
+	lowpart_subreg (int_mode, operands[1], <MODE>mode), bitmask));
+      DONE;
+    }
+
+  operands[2] = force_reg (<MODE>mode, operands[2]);
   emit_insn (gen_copysign<mode>3_insn (operands[0], operands[1], operands[2],
 				       bitmask));
   DONE;

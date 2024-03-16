@@ -437,7 +437,7 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   void init_##TYPE1##_##TYPE2##_##NUM (VARS##NUM (TYPE2, __VA_ARGS__),         \
 				       TYPE2 *__restrict out)                  \
   {                                                                            \
-    TYPE1 v = {INIT##NUM (__VA_ARGS__)};                                       \
+    TYPE1 v = {__VA_ARGS__};                                                   \
     *(TYPE1 *) out = v;                                                        \
   }
 
@@ -844,4 +844,11 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   TYPE f##TYPE (TYPE a, TYPE b)                                                \
   {                                                                            \
     return __builtin_shufflevector (a, b, MASK_##NUM);                         \
+  }
+
+#define DEF_COMBINE(TYPE1, TYPE2, NUM, ...)                                    \
+  void combine_##TYPE1##_##TYPE2##_##NUM (TYPE2 *out, TYPE2 x, TYPE2 y)        \
+  {                                                                            \
+    v##NUM##TYPE1 v = {__VA_ARGS__};                                           \
+    *(v##NUM##TYPE1 *) out = v;                                                \
   }

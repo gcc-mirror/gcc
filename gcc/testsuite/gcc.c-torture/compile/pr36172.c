@@ -10,7 +10,7 @@ __SIZE_TYPE__ FcCharSetFreeze (int *fcs, int b)
     if (hash)
       a = b;
     if (!a)
-      return;
+      return 0;
   }
   return (__SIZE_TYPE__) fcs;
 }

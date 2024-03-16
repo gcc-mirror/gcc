@@ -7255,7 +7255,7 @@ package body Exp_Ch3 is
 
          else pragma Assert (Is_Definite_Subtype (Typ)
            or else (Has_Unknown_Discriminants (Typ)
-                     and then Is_Limited_View (Typ)));
+                     and then Is_Inherently_Limited_Type (Typ)));
 
             Alloc_Typ := Typ;
          end if;
@@ -7347,13 +7347,6 @@ package body Exp_Ch3 is
 
       Rewrite_As_Renaming : Boolean := False;
       --  Whether to turn the declaration into a renaming at the end
-
-      Nominal_Subtype_Is_Constrained_Array : constant Boolean :=
-        Comes_From_Source (Obj_Def)
-        and then Is_Array_Type (Typ) and then Is_Constrained (Typ);
-      --  Used to avoid rewriting as a renaming for constrained arrays,
-      --  which is only a problem for source arrays; others have the
-      --  correct bounds (see below).
 
    --  Start of processing for Expand_N_Object_Declaration
 
@@ -7692,7 +7685,7 @@ package body Exp_Ch3 is
                --  and attached to the finalization list.
 
                if Needs_Finalization (Typ)
-                 and then not Is_Limited_View (Typ)
+                 and then not Is_Inherently_Limited_Type (Typ)
                then
                   Adj_Call :=
                     Make_Adjust_Call (
@@ -8098,10 +8091,25 @@ package body Exp_Ch3 is
 
               Is_Entity_Name (Original_Node (Obj_Def))
 
-                --  Nor if it is effectively an unconstrained declaration
+                --  If we have "X : S := ...;", and S is a constrained array
+                --  subtype, then we cannot rename, because renamings ignore
+                --  the constraints of S, so that would change the semantics
+                --  (sliding would not occur on the initial value). This is
+                --  only a problem for source objects though, the others have
+                --  the correct bounds.
+
+                and then not (Comes_From_Source (Obj_Def)
+                               and then Is_Array_Type (Typ)
+                               and then Is_Constrained (Typ))
+
+                --  Moreover, if we have "X : aliased S := "...;" and S is an
+                --  unconstrained array type, then we can rename only if the
+                --  initialization expression has an unconstrained subtype too,
+                --  because the bounds must be present within X.
 
                 and then not (Is_Array_Type (Typ)
-                               and then Is_Constr_Subt_For_UN_Aliased (Typ))
+                               and then Is_Constr_Subt_For_UN_Aliased (Typ)
+                               and then Is_Constrained (Etype (Expr_Q)))
 
                 --  We may use a renaming if the initialization expression is a
                 --  captured function call that meets a few conditions.
@@ -8109,23 +8117,16 @@ package body Exp_Ch3 is
                 and then
                   (Is_Renamable_Function_Call (Expr_Q)
 
-                   --  Or else if it is a variable with OK_To_Rename set
+                    --  Or else if it is a variable with OK_To_Rename set
 
-                   or else (OK_To_Rename_Ref (Expr_Q)
-                             and then not Special_Ret_Obj)
+                    or else (OK_To_Rename_Ref (Expr_Q)
+                              and then not Special_Ret_Obj)
 
-                   --  Or else if it is a slice of such a variable
+                    --  Or else if it is a slice of such a variable
 
-                   or else (Nkind (Expr_Q) = N_Slice
-                             and then OK_To_Rename_Ref (Prefix (Expr_Q))
-                             and then not Special_Ret_Obj))
-
-                --  If we have "X : S := ...;", and S is a constrained array
-                --  subtype, then we cannot rename, because renamings ignore
-                --  the constraints of S, so that would change the semantics
-                --  (sliding would not occur on the initial value).
-
-                and then not Nominal_Subtype_Is_Constrained_Array;
+                    or else (Nkind (Expr_Q) = N_Slice
+                              and then OK_To_Rename_Ref (Prefix (Expr_Q))
+                              and then not Special_Ret_Obj));
 
             --  If the type needs finalization and is not inherently limited,
             --  then the target is adjusted after the copy and attached to the
@@ -8137,7 +8138,7 @@ package body Exp_Ch3 is
             --  the object declaration into a renaming declaration.
 
             if Needs_Finalization (Typ)
-              and then not Is_Limited_View (Typ)
+              and then not Is_Inherently_Limited_Type (Typ)
               and then Nkind (Expr_Q) /= N_Function_Call
               and then not Rewrite_As_Renaming
             then
@@ -8959,6 +8960,10 @@ package body Exp_Ch3 is
              Defining_Identifier => Def_Id,
              Subtype_Mark        => New_Occurrence_Of (Etype (Def_Id), Loc),
              Name                => Expr_Q));
+
+         --  Keep original aspects
+
+         Move_Aspects (Original_Node (N), N);
 
          --  We do not analyze this renaming declaration, because all its
          --  components have already been analyzed, and if we were to go

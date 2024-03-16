@@ -106,7 +106,7 @@
 (define_mode_iterator DREG [V8QI V4HI V4HF V2SI V2SF DF])
 
 ;; Copy of the above.
-(define_mode_iterator DREG2 [V8QI V4HI V4HF V2SI V2SF DF])
+(define_mode_iterator DREG2 [DREG])
 
 ;; Advanced SIMD modes for integer divides.
 (define_mode_iterator VQDIV [V4SI V2DI])
@@ -124,7 +124,7 @@
 (define_mode_iterator VQ [V16QI V8HI V4SI V2DI V8HF V4SF V2DF V8BF])
 
 ;; Copy of the above.
-(define_mode_iterator VQ2 [V16QI V8HI V4SI V2DI V8HF V8BF V4SF V2DF])
+(define_mode_iterator VQ2 [VQ])
 
 ;; Quad vector modes suitable for moving.  Includes BFmode.
 (define_mode_iterator VQMOV [V16QI V8HI V4SI V2DI V8HF V8BF V4SF V2DF])
@@ -320,20 +320,12 @@
 (define_mode_iterator TX [TI TF TD])
 
 ;; Duplicate of the above
-(define_mode_iterator TX2 [TI TF TD])
+(define_mode_iterator TX2 [TX])
 
 (define_mode_iterator VTX [TI TF TD V16QI V8HI V4SI V2DI V8HF V4SF V2DF V8BF])
 
 ;; Advanced SIMD opaque structure modes.
 (define_mode_iterator VSTRUCT [OI CI XI])
-
-;; Advanced SIMD 64-bit vector structure modes.
-(define_mode_iterator VSTRUCT_D [V2x8QI V2x4HI V2x2SI V2x1DI
-				 V2x4HF V2x2SF V2x1DF V2x4BF
-				 V3x8QI V3x4HI V3x2SI V3x1DI
-				 V3x4HF V3x2SF V3x1DF V3x4BF
-				 V4x8QI V4x4HI V4x2SI V4x1DI
-				 V4x4HF V4x2SF V4x1DF V4x4BF])
 
 ;; Advanced SIMD 64-bit 2-vector structure modes.
 (define_mode_iterator VSTRUCT_2D [V2x8QI V2x4HI V2x2SI V2x1DI
@@ -346,6 +338,9 @@
 ;; Advanced SIMD 64-bit 4-vector structure modes.
 (define_mode_iterator VSTRUCT_4D [V4x8QI V4x4HI V4x2SI V4x1DI
 				  V4x4HF V4x2SF V4x1DF V4x4BF])
+
+;; Advanced SIMD 64-bit vector structure modes.
+(define_mode_iterator VSTRUCT_D [VSTRUCT_2D VSTRUCT_3D VSTRUCT_4D])
 
 ;; Advanced SIMD 64-bit 2-vector structure modes minus V2x1DI and V2x1DF.
 (define_mode_iterator VSTRUCT_2DNX [V2x8QI V2x4HI V2x2SI V2x4HF
@@ -371,14 +366,6 @@
 ;; Advanced SIMD 64-bit 4-vector structure modes with 64-bit elements.
 (define_mode_iterator VSTRUCT_4DX [V4x1DI V4x1DF])
 
-;; Advanced SIMD 128-bit vector structure modes.
-(define_mode_iterator VSTRUCT_Q [V2x16QI V2x8HI V2x4SI V2x2DI
-				 V2x8HF V2x4SF V2x2DF V2x8BF
-				 V3x16QI V3x8HI V3x4SI V3x2DI
-				 V3x8HF V3x4SF V3x2DF V3x8BF
-				 V4x16QI V4x8HI V4x4SI V4x2DI
-				 V4x8HF V4x4SF V4x2DF V4x8BF])
-
 ;; Advanced SIMD 128-bit 2-vector structure modes.
 (define_mode_iterator VSTRUCT_2Q [V2x16QI V2x8HI V2x4SI V2x2DI
 				  V2x8HF V2x4SF V2x2DF V2x8BF])
@@ -391,49 +378,32 @@
 (define_mode_iterator VSTRUCT_4Q [V4x16QI V4x8HI V4x4SI V4x2DI
 				  V4x8HF V4x4SF V4x2DF V4x8BF])
 
+;; Advanced SIMD 128-bit vector structure modes.
+(define_mode_iterator VSTRUCT_Q [VSTRUCT_2Q VSTRUCT_3Q VSTRUCT_4Q])
+
 ;; Advanced SIMD 2-vector structure modes.
-(define_mode_iterator VSTRUCT_2QD [V2x8QI V2x4HI V2x2SI V2x1DI
-				   V2x4HF V2x2SF V2x1DF V2x4BF
-				   V2x16QI V2x8HI V2x4SI V2x2DI
-				   V2x8HF V2x4SF V2x2DF V2x8BF])
+(define_mode_iterator VSTRUCT_2QD [VSTRUCT_2D VSTRUCT_2Q])
 
 ;; Advanced SIMD 3-vector structure modes.
-(define_mode_iterator VSTRUCT_3QD [V3x8QI V3x4HI V3x2SI V3x1DI
-				   V3x4HF V3x2SF V3x1DF V3x4BF
-				   V3x16QI V3x8HI V3x4SI V3x2DI
-				   V3x8HF V3x4SF V3x2DF V3x8BF])
+(define_mode_iterator VSTRUCT_3QD [VSTRUCT_3D VSTRUCT_3Q])
 
 ;; Advanced SIMD 4-vector structure modes.
-(define_mode_iterator VSTRUCT_4QD [V4x8QI V4x4HI V4x2SI V4x1DI
-				   V4x4HF V4x2SF V4x1DF V4x4BF
-				   V4x16QI V4x8HI V4x4SI V4x2DI
-				   V4x8HF V4x4SF V4x2DF V4x8BF])
+(define_mode_iterator VSTRUCT_4QD [VSTRUCT_4D VSTRUCT_4Q])
 
 ;; Advanced SIMD vector structure modes.
-(define_mode_iterator VSTRUCT_QD [V2x8QI V2x4HI V2x2SI V2x1DI
-				  V2x4HF V2x2SF V2x1DF V2x4BF
-				  V3x8QI V3x4HI V3x2SI V3x1DI
-				  V3x4HF V3x2SF V3x1DF V3x4BF
-				  V4x8QI V4x4HI V4x2SI V4x1DI
-				  V4x4HF V4x2SF V4x1DF V4x4BF
-				  V2x16QI V2x8HI V2x4SI V2x2DI
-				  V2x8HF V2x4SF V2x2DF V2x8BF
-				  V3x16QI V3x8HI V3x4SI V3x2DI
-				  V3x8HF V3x4SF V3x2DF V3x8BF
-				  V4x16QI V4x8HI V4x4SI V4x2DI
-				  V4x8HF V4x4SF V4x2DF V4x8BF])
+(define_mode_iterator VSTRUCT_QD [VSTRUCT_D VSTRUCT_Q])
 
 ;; Double scalar modes
 (define_mode_iterator DX [DI DF DD])
 
 ;; Duplicate of the above
-(define_mode_iterator DX2 [DI DF DD])
+(define_mode_iterator DX2 [DX])
 
 ;; Single scalar modes
 (define_mode_iterator SX [SI SF])
 
 ;; Duplicate of the above
-(define_mode_iterator SX2 [SI SF])
+(define_mode_iterator SX2 [SX])
 
 ;; Single and double integer and float modes
 (define_mode_iterator DSX [DF DI SF SI])
@@ -1300,6 +1270,7 @@
 			  (V4SF "16b") (V2DF  "16b")
 			  (DI   "8b")  (DF    "8b")
 			  (SI   "8b")  (SF    "8b")
+			  (QI   "8b")  (HI    "8b")
 			  (V4BF "8b")  (V8BF  "16b")])
 
 ;; Advanced SIMD vector structure to element modes.

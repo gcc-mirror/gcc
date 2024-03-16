@@ -1,6 +1,7 @@
 /* { dg-require-effective-target label_values } */
 /* { dg-require-effective-target trampolines } */
 /* { dg-add-options stack_size } */
+/* { dg-additional-options "-std=gnu89" } */
 
 /* A slight variation of 920501-7.c.  */
 

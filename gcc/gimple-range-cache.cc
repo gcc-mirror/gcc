@@ -390,7 +390,7 @@ block_range_cache::set_bb_range (tree name, const_basic_block bb,
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_ssa_ranges.length ())
-    m_ssa_ranges.safe_grow_cleared (num_ssa_names + 1);
+    m_ssa_ranges.safe_grow_cleared (num_ssa_names);
 
   if (!m_ssa_ranges[v])
     {
@@ -465,7 +465,7 @@ void
 block_range_cache::dump (FILE *f)
 {
   unsigned x;
-  for (x = 0; x < m_ssa_ranges.length (); ++x)
+  for (x = 1; x < m_ssa_ranges.length (); ++x)
     {
       if (m_ssa_ranges[x])
 	{
@@ -487,11 +487,14 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
   bool summarize_varying = false;
   for (x = 1; x < m_ssa_ranges.length (); ++x)
     {
+      if (!m_ssa_ranges[x])
+	continue;
+
       if (!gimple_range_ssa_p (ssa_name (x)))
 	continue;
 
       Value_Range r (TREE_TYPE (ssa_name (x)));
-      if (m_ssa_ranges[x] && m_ssa_ranges[x]->get_bb_range (r, bb))
+      if (m_ssa_ranges[x]->get_bb_range (r, bb))
 	{
 	  if (!print_varying && r.varying_p ())
 	    {
@@ -508,13 +511,16 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
   if (summarize_varying)
     {
       fprintf (f, "VARYING_P on entry : ");
-      for (x = 1; x < num_ssa_names; ++x)
+      for (x = 1; x < m_ssa_ranges.length (); ++x)
 	{
+	  if (!m_ssa_ranges[x])
+	    continue;
+
 	  if (!gimple_range_ssa_p (ssa_name (x)))
 	    continue;
 
 	  Value_Range r (TREE_TYPE (ssa_name (x)));
-	  if (m_ssa_ranges[x] && m_ssa_ranges[x]->get_bb_range (r, bb))
+	  if (m_ssa_ranges[x]->get_bb_range (r, bb))
 	    {
 	      if (r.varying_p ())
 		{

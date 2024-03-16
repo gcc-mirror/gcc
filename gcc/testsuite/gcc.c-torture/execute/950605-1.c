@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 f (c)
     unsigned char c;
 {

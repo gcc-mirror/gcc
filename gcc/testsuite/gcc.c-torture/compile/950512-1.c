@@ -1,4 +1,6 @@
 typedef unsigned short uint16;
+int g (int);
+void
 f (unsigned char *w)
 {
   w[2] = (uint16) ((((g (0) % 10000 + 42) & 0xFF) << 8) | (((g (0) % 10000 + 42) >> 8) & 0xFF)) & 0xFF,

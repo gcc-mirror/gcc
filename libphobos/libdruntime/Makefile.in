@@ -327,6 +327,7 @@ am__objects_11 = core/sys/bionic/err.lo core/sys/bionic/fcntl.lo \
 @DRUNTIME_OS_ANDROID_TRUE@am__objects_12 = $(am__objects_11)
 am__objects_13 = core/sys/freebsd/config.lo core/sys/freebsd/dlfcn.lo \
 	core/sys/freebsd/err.lo core/sys/freebsd/execinfo.lo \
+	core/sys/freebsd/ifaddrs.lo core/sys/freebsd/net/if_dl.lo \
 	core/sys/freebsd/netinet/in_.lo core/sys/freebsd/pthread_np.lo \
 	core/sys/freebsd/stdlib.lo core/sys/freebsd/string.lo \
 	core/sys/freebsd/sys/_bitset.lo \
@@ -336,7 +337,8 @@ am__objects_13 = core/sys/freebsd/config.lo core/sys/freebsd/dlfcn.lo \
 	core/sys/freebsd/sys/elf_common.lo \
 	core/sys/freebsd/sys/event.lo core/sys/freebsd/sys/link_elf.lo \
 	core/sys/freebsd/sys/mman.lo core/sys/freebsd/sys/mount.lo \
-	core/sys/freebsd/sys/sysctl.lo core/sys/freebsd/time.lo \
+	core/sys/freebsd/sys/socket.lo core/sys/freebsd/sys/sysctl.lo \
+	core/sys/freebsd/sys/types.lo core/sys/freebsd/time.lo \
 	core/sys/freebsd/unistd.lo
 @DRUNTIME_OS_FREEBSD_TRUE@am__objects_14 = $(am__objects_13)
 am__objects_15 = core/sys/netbsd/dlfcn.lo core/sys/netbsd/err.lo \
@@ -366,6 +368,8 @@ am__objects_19 = core/sys/linux/config.lo core/sys/linux/dlfcn.lo \
 	core/sys/linux/fs.lo core/sys/linux/ifaddrs.lo \
 	core/sys/linux/input.lo core/sys/linux/input_event_codes.lo \
 	core/sys/linux/io_uring.lo core/sys/linux/link.lo \
+	core/sys/linux/linux/if_arp.lo \
+	core/sys/linux/linux/if_packet.lo \
 	core/sys/linux/netinet/in_.lo core/sys/linux/netinet/tcp.lo \
 	core/sys/linux/perf_event.lo core/sys/linux/sched.lo \
 	core/sys/linux/stdio.lo core/sys/linux/string.lo \
@@ -931,7 +935,8 @@ DRUNTIME_DSOURCES_DRAGONFLYBSD = core/sys/dragonflybsd/dlfcn.d \
 DRUNTIME_DSOURCES_ELF = core/sys/elf/package.d
 DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 	core/sys/freebsd/dlfcn.d core/sys/freebsd/err.d \
-	core/sys/freebsd/execinfo.d core/sys/freebsd/netinet/in_.d \
+	core/sys/freebsd/execinfo.d core/sys/freebsd/ifaddrs.d \
+	core/sys/freebsd/net/if_dl.d core/sys/freebsd/netinet/in_.d \
 	core/sys/freebsd/pthread_np.d core/sys/freebsd/stdlib.d \
 	core/sys/freebsd/string.d core/sys/freebsd/sys/_bitset.d \
 	core/sys/freebsd/sys/_cpuset.d core/sys/freebsd/sys/cdefs.d \
@@ -939,7 +944,8 @@ DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 	core/sys/freebsd/sys/elf64.d core/sys/freebsd/sys/elf_common.d \
 	core/sys/freebsd/sys/event.d core/sys/freebsd/sys/link_elf.d \
 	core/sys/freebsd/sys/mman.d core/sys/freebsd/sys/mount.d \
-	core/sys/freebsd/sys/sysctl.d core/sys/freebsd/time.d \
+	core/sys/freebsd/sys/socket.d core/sys/freebsd/sys/sysctl.d \
+	core/sys/freebsd/sys/types.d core/sys/freebsd/time.d \
 	core/sys/freebsd/unistd.d
 
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
@@ -948,6 +954,7 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/fcntl.d core/sys/linux/fs.d core/sys/linux/ifaddrs.d \
 	core/sys/linux/input.d core/sys/linux/input_event_codes.d \
 	core/sys/linux/io_uring.d core/sys/linux/link.d \
+	core/sys/linux/linux/if_arp.d core/sys/linux/linux/if_packet.d \
 	core/sys/linux/netinet/in_.d core/sys/linux/netinet/tcp.d \
 	core/sys/linux/perf_event.d core/sys/linux/sched.d \
 	core/sys/linux/stdio.d core/sys/linux/string.d \
@@ -1593,6 +1600,11 @@ core/sys/freebsd/config.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/dlfcn.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/err.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/execinfo.lo: core/sys/freebsd/$(am__dirstamp)
+core/sys/freebsd/ifaddrs.lo: core/sys/freebsd/$(am__dirstamp)
+core/sys/freebsd/net/$(am__dirstamp):
+	@$(MKDIR_P) core/sys/freebsd/net
+	@: > core/sys/freebsd/net/$(am__dirstamp)
+core/sys/freebsd/net/if_dl.lo: core/sys/freebsd/net/$(am__dirstamp)
 core/sys/freebsd/netinet/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/freebsd/netinet
 	@: > core/sys/freebsd/netinet/$(am__dirstamp)
@@ -1617,7 +1629,9 @@ core/sys/freebsd/sys/link_elf.lo:  \
 	core/sys/freebsd/sys/$(am__dirstamp)
 core/sys/freebsd/sys/mman.lo: core/sys/freebsd/sys/$(am__dirstamp)
 core/sys/freebsd/sys/mount.lo: core/sys/freebsd/sys/$(am__dirstamp)
+core/sys/freebsd/sys/socket.lo: core/sys/freebsd/sys/$(am__dirstamp)
 core/sys/freebsd/sys/sysctl.lo: core/sys/freebsd/sys/$(am__dirstamp)
+core/sys/freebsd/sys/types.lo: core/sys/freebsd/sys/$(am__dirstamp)
 core/sys/freebsd/time.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/unistd.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/netbsd/$(am__dirstamp):
@@ -1685,6 +1699,12 @@ core/sys/linux/input.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/input_event_codes.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/io_uring.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/link.lo: core/sys/linux/$(am__dirstamp)
+core/sys/linux/linux/$(am__dirstamp):
+	@$(MKDIR_P) core/sys/linux/linux
+	@: > core/sys/linux/linux/$(am__dirstamp)
+core/sys/linux/linux/if_arp.lo: core/sys/linux/linux/$(am__dirstamp)
+core/sys/linux/linux/if_packet.lo:  \
+	core/sys/linux/linux/$(am__dirstamp)
 core/sys/linux/netinet/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/linux/netinet
 	@: > core/sys/linux/netinet/$(am__dirstamp)
@@ -2055,12 +2075,16 @@ mostlyclean-compile:
 	-rm -f core/sys/elf/*.lo
 	-rm -f core/sys/freebsd/*.$(OBJEXT)
 	-rm -f core/sys/freebsd/*.lo
+	-rm -f core/sys/freebsd/net/*.$(OBJEXT)
+	-rm -f core/sys/freebsd/net/*.lo
 	-rm -f core/sys/freebsd/netinet/*.$(OBJEXT)
 	-rm -f core/sys/freebsd/netinet/*.lo
 	-rm -f core/sys/freebsd/sys/*.$(OBJEXT)
 	-rm -f core/sys/freebsd/sys/*.lo
 	-rm -f core/sys/linux/*.$(OBJEXT)
 	-rm -f core/sys/linux/*.lo
+	-rm -f core/sys/linux/linux/*.$(OBJEXT)
+	-rm -f core/sys/linux/linux/*.lo
 	-rm -f core/sys/linux/netinet/*.$(OBJEXT)
 	-rm -f core/sys/linux/netinet/*.lo
 	-rm -f core/sys/linux/sys/*.$(OBJEXT)
@@ -2231,9 +2255,11 @@ clean-libtool:
 	-rm -rf core/sys/dragonflybsd/sys/.libs core/sys/dragonflybsd/sys/_libs
 	-rm -rf core/sys/elf/.libs core/sys/elf/_libs
 	-rm -rf core/sys/freebsd/.libs core/sys/freebsd/_libs
+	-rm -rf core/sys/freebsd/net/.libs core/sys/freebsd/net/_libs
 	-rm -rf core/sys/freebsd/netinet/.libs core/sys/freebsd/netinet/_libs
 	-rm -rf core/sys/freebsd/sys/.libs core/sys/freebsd/sys/_libs
 	-rm -rf core/sys/linux/.libs core/sys/linux/_libs
+	-rm -rf core/sys/linux/linux/.libs core/sys/linux/linux/_libs
 	-rm -rf core/sys/linux/netinet/.libs core/sys/linux/netinet/_libs
 	-rm -rf core/sys/linux/sys/.libs core/sys/linux/sys/_libs
 	-rm -rf core/sys/netbsd/.libs core/sys/netbsd/_libs
@@ -2394,9 +2420,11 @@ distclean-generic:
 	-rm -f core/sys/dragonflybsd/sys/$(am__dirstamp)
 	-rm -f core/sys/elf/$(am__dirstamp)
 	-rm -f core/sys/freebsd/$(am__dirstamp)
+	-rm -f core/sys/freebsd/net/$(am__dirstamp)
 	-rm -f core/sys/freebsd/netinet/$(am__dirstamp)
 	-rm -f core/sys/freebsd/sys/$(am__dirstamp)
 	-rm -f core/sys/linux/$(am__dirstamp)
+	-rm -f core/sys/linux/linux/$(am__dirstamp)
 	-rm -f core/sys/linux/netinet/$(am__dirstamp)
 	-rm -f core/sys/linux/sys/$(am__dirstamp)
 	-rm -f core/sys/netbsd/$(am__dirstamp)

@@ -3,6 +3,7 @@ int a = 1;
 extern int b __attribute__ ((alias ("a")));
 int c = 1;
 extern int d __attribute__ ((alias ("c")));
+int
 main (int argc)
 {
   int *p;

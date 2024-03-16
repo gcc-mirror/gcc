@@ -293,7 +293,7 @@ See also 'help-gcc-hooks'.
 end
 
 define break-on-diagnostic
-break diagnostic_show_locus
+break diagnostic_context::maybe_show_locus
 end
 
 document break-on-diagnostic

@@ -638,6 +638,7 @@ package body Sem_Ch10 is
       Par_Spec_Name : Unit_Name_Type;
       Spec_Id       : Entity_Id;
       Unum          : Unit_Number_Type;
+      Options       : Style_Check_Options;
 
    --  Start of processing for Analyze_Compilation_Unit
 
@@ -716,6 +717,11 @@ package body Sem_Ch10 is
       else
          Set_Context_Pending (N);
       end if;
+
+      --  Store the style check options before analyzing context pragmas that
+      --  might change them for this compilation unit.
+
+      Save_Style_Check_Options (Options);
 
       Analyze_Context (N);
 
@@ -1395,6 +1401,10 @@ package body Sem_Ch10 is
          Pop_Scope;
       end if;
 
+      --  Finally restore all the original style check options
+
+      Set_Style_Check_Options (Options);
+
       --  If No_Elaboration_Code_All was encountered, this is where we do the
       --  transitive test of with'ed units to make sure they have the aspect.
       --  This is delayed till the end of analyzing the compilation unit to
@@ -1687,9 +1697,7 @@ package body Sem_Ch10 is
          Mutate_Ekind (Id, E_Package_Body);
          Set_Etype (Id, Standard_Void_Type);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Id);
 
          Set_Has_Completion (Nam);
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2029,9 +2037,7 @@ package body Sem_Ch10 is
          Mutate_Ekind (Id, E_Protected_Body);
          Set_Etype (Id, Standard_Void_Type);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Id);
 
          Set_Has_Completion (Etype (Nam));
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2683,9 +2689,7 @@ package body Sem_Ch10 is
          Mutate_Ekind (Id, E_Task_Body);
          Set_Etype (Id, Standard_Void_Type);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Id);
 
          Generate_Reference (Nam, Id, 'b');
          Set_Corresponding_Spec_Of_Stub (N, Nam);

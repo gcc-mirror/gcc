@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13116.d(14): Error: returning `this` escapes a reference to parameter `this`
+fail_compilation/fail13116.d(14): Error: `this` is not an lvalue and cannot be modified
 fail_compilation/fail13116.d(23): Error: `super` is not an lvalue and cannot be modified
 ---
 */

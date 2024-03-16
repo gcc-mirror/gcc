@@ -1,3 +1,4 @@
+void sdp_seq_alloc (void **);
 void add_opush(void)
 {
     unsigned char formats[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0xff };

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 void adjust_xy (short *, short *);
 
 struct adjust_template
@@ -8,7 +11,8 @@ struct adjust_template
 
 static struct adjust_template adjust = {1, 1};
 
-main ()
+int
+main (void)
 {
   short x = 1, y = 1;
 

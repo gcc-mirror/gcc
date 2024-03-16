@@ -6,6 +6,9 @@
 /* { dg-skip-if "asm requires register allocation" { nvptx-*-* } } */
 #include <limits.h>
 
+void abort (void);
+void exit (int);
+
 void
 ll_to_int (long long x, volatile int *p)
 {

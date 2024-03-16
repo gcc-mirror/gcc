@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 typedef struct interpreter {
   char Itokenbuf[256];
 } PerlInterpreter;

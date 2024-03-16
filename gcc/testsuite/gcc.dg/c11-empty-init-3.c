@@ -1,6 +1,6 @@
 /* Test C11 does not support empty initializers.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c11 -Wc11-c2x-compat" } */
+/* { dg-options "-std=c11 -Wc11-c23-compat" } */
 
 struct s { int a; };
 struct s s = {}; /* { dg-warning "empty initializer" } */

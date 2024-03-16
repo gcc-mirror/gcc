@@ -2,6 +2,9 @@
    Bug in code emitted by "return" pattern on CRIS: missing pop of
    forced return address on stack.  */
 /* { dg-require-effective-target return_address } */
+void abort (void);
+void exit (int);
+
 int calls = 0;
 
 void *f (int) __attribute__ ((__noinline__));

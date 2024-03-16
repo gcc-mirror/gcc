@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32 --param riscv-autovec-preference=scalable -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32 -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic -fdump-tree-vect-details" } */
 
 #include <stdint-gcc.h>
 

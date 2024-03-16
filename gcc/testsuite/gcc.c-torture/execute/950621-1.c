@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 struct s
 {
   int a;

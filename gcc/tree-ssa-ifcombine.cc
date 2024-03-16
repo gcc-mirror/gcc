@@ -882,7 +882,7 @@ pass_tree_ifcombine::execute (function *fun)
 		     || POINTER_TYPE_P (TREE_TYPE (lhs)))
 		    && arith_code_with_undefined_signed_overflow
 			 (gimple_assign_rhs_code (ass)))
-		  rewrite_to_defined_overflow (ass, true);
+		  rewrite_to_defined_overflow (&gsi);
 	      }
 	    cfg_changed |= true;
 	  }

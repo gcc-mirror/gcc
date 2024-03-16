@@ -12,7 +12,7 @@ void bar()
   {
     case one:
     case two:
-      printf ("one to two\n");
+      __builtin_printf ("one to two\n");
     break;
   }
 }

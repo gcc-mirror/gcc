@@ -1,4 +1,6 @@
 /* { dg-require-effective-target int32plus } */
+/* { dg-additional-options "-fpermissive" } */
+
 #define F 140
 #define T 13
 

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 #define w 20
 #define c 1
 

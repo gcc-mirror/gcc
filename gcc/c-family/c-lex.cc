@@ -367,15 +367,13 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		= get_identifier ((const char *)
 				  cpp_token_as_text (pfile, nxt_token));
 	      attr_id = canonicalize_attr_name (attr_id);
-	      if (c_dialect_cxx ())
-		{
-		  /* OpenMP attributes need special handling.  */
-		  if ((flag_openmp || flag_openmp_simd)
-		      && is_attribute_p ("omp", attr_ns)
-		      && (is_attribute_p ("directive", attr_id)
-			  || is_attribute_p ("sequence", attr_id)))
-		    result = 1;
-		}
+	      /* OpenMP attributes need special handling.  */
+	      if ((flag_openmp || flag_openmp_simd)
+		  && is_attribute_p ("omp", attr_ns)
+		  && (is_attribute_p ("directive", attr_id)
+		      || is_attribute_p ("sequence", attr_id)
+		      || is_attribute_p ("decl", attr_id)))
+		result = 1;
 	      if (result)
 		attr_name = NULL_TREE;
 	      else
@@ -1187,21 +1185,21 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	  }
 	else if (!c_dialect_cxx ())
 	  {
-	    if (warn_c11_c2x_compat > 0)
+	    if (warn_c11_c23_compat > 0)
 	      {
-		if (pedantic && !flag_isoc2x)
-		  pedwarn (input_location, OPT_Wc11_c2x_compat,
+		if (pedantic && !flag_isoc23)
+		  pedwarn (input_location, OPT_Wc11_c23_compat,
 			   "non-standard suffix on floating constant "
-			   "before C2X");
+			   "before C23");
 		else
-		  warning (OPT_Wc11_c2x_compat,
+		  warning (OPT_Wc11_c23_compat,
 			   "non-standard suffix on floating constant "
-			   "before C2X");
+			   "before C23");
 	      }
-	    else if (warn_c11_c2x_compat != 0 && pedantic && !flag_isoc2x)
+	    else if (warn_c11_c23_compat != 0 && pedantic && !flag_isoc23)
 	      pedwarn (input_location, OPT_Wpedantic,
 		       "non-standard suffix on floating constant "
-		       "before C2X");
+		       "before C23");
 	  }
 	else if (!extended)
 	  {
@@ -1273,7 +1271,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
     }
 
   copy = (char *) alloca (copylen + 1);
-  if (c_dialect_cxx () ? cxx_dialect > cxx11 : flag_isoc2x)
+  if (c_dialect_cxx () ? cxx_dialect > cxx11 : flag_isoc23)
     {
       size_t maxlen = 0;
       for (size_t i = 0; i < copylen; ++i)

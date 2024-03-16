@@ -16,6 +16,7 @@ import core.stdc.stdio;
 import dmd.astenums;
 import dmd.constfold;
 import dmd.ctfeexpr;
+import dmd.dcast;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dsymbol;

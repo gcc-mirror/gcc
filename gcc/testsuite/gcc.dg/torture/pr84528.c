@@ -3,14 +3,15 @@
 
 #define SIZE 8
 
-main()
+int
+main(void)
 {
   int a[SIZE] = {1};
   int i;
 
   for (i = 1; i < SIZE; i++)
     if (a[i] != 0)
-      abort();
+      __builtin_abort();
 
-  exit (0);
+  __builtin_exit (0);
 }

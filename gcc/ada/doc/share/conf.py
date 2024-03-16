@@ -138,10 +138,13 @@ tags.add(get_gnat_build_type())
 
 # Define figures to be included
 html_theme = 'sphinx_rtd_theme'
-if os.path.isfile('adacore_transparent.png'):
+html_theme_options = {
+    "style_nav_header_background": "#12284c",
+}
+if os.path.isfile('adacore-logo-white.png'):
     # split html and pdf logos to avoid 'same name' error in sphinx <5.2+
-    html_logo = 'adacore_transparent.png'
-    latex_logo = 'adacore_transparent.png'
+    html_logo = 'adacore-logo-white.png'
+    latex_logo = 'adacore-logo-white.png'
 if os.path.isfile('favicon.ico'):
     html_favicon = 'favicon.ico'
 

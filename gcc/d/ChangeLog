@@ -1,3 +1,10 @@
+2023-11-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 643b1261bb.
+	* d-attribs.cc (build_attributes): Update for new front-end interface.
+	* d-lang.cc (d_post_options): Likewise.
+	* decl.cc (layout_class_initializer): Likewise.
+
 2023-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* expr.cc (ExprVisitor::visit (NewExp *)): Remove unused assignments.

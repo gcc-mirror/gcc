@@ -346,11 +346,11 @@ __gnat_waitpid (int pid)
      return -1;
   }
 
-  if WIFEXITED (status) {
+  if (WIFEXITED (status)) {
      status = WEXITSTATUS (status);
-  } else if WIFSIGNALED (status) {
+  } else if (WIFSIGNALED (status)) {
      status = WTERMSIG (status);
-  } else if WIFSTOPPED (status) {
+  } else if (WIFSTOPPED (status)) {
      status = WSTOPSIG (status);
   }
 

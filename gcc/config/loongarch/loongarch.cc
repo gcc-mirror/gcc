@@ -11196,7 +11196,9 @@ loongarch_expand_vec_cond_mask_expr (machine_mode mode, machine_mode vimode,
 	  if (mode != vimode)
 	    {
 	      xop1 = gen_reg_rtx (vimode);
-	      emit_move_insn (xop1, gen_rtx_SUBREG (vimode, operands[1], 0));
+	      emit_move_insn (xop1,
+			      simplify_gen_subreg (vimode, operands[1],
+						   mode, 0));
 	    }
 	  emit_move_insn (src1, xop1);
 	}
@@ -11213,7 +11215,9 @@ loongarch_expand_vec_cond_mask_expr (machine_mode mode, machine_mode vimode,
 	  if (mode != vimode)
 	    {
 	      xop2 = gen_reg_rtx (vimode);
-	      emit_move_insn (xop2, gen_rtx_SUBREG (vimode, operands[2], 0));
+	      emit_move_insn (xop2,
+			      simplify_gen_subreg (vimode, operands[2],
+						   mode, 0));
 	    }
 	  emit_move_insn (src2, xop2);
 	}
@@ -11232,7 +11236,8 @@ loongarch_expand_vec_cond_mask_expr (machine_mode mode, machine_mode vimode,
 			  gen_rtx_AND (vimode, mask, src1));
       /* The result is placed back to a register with the mask.  */
       emit_insn (gen_rtx_SET (mask, bsel));
-      emit_move_insn (operands[0], gen_rtx_SUBREG (mode, mask, 0));
+      emit_move_insn (operands[0], simplify_gen_subreg (mode, mask,
+							vimode, 0));
     }
 }
 

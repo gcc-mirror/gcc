@@ -1,3 +1,19 @@
+2023-11-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/102989
+	* gm2-compiler/SymbolTable.mod (OverflowZType): Import from m2expr.
+	(ConstantStringExceedsZType): Remove import.
+	(GetConstLitType): Replace ConstantStringExceedsZType with OverflowZType.
+	* gm2-gcc/m2decl.cc (m2decl_ConstantStringExceedsZType): Remove.
+	(m2decl_BuildConstLiteralNumber): Re-write.
+	* gm2-gcc/m2decl.def (ConstantStringExceedsZType): Remove.
+	* gm2-gcc/m2decl.h (m2decl_ConstantStringExceedsZType): Remove.
+	* gm2-gcc/m2expr.cc (m2expr_StrToWideInt): Rewrite to check overflow.
+	(m2expr_OverflowZType): New function.
+	(ToWideInt): New function.
+	* gm2-gcc/m2expr.def (OverflowZType): New procedure function declaration.
+	* gm2-gcc/m2expr.h (m2expr_OverflowZType): New prototype.
+
 2023-10-27  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111530

@@ -1,5 +1,6 @@
 static unsigned char foo[256];
 
+void
 arc4_init(void)
 {
   int n;

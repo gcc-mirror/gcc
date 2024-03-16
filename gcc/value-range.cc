@@ -1857,6 +1857,35 @@ irange::get_bitmask_from_range () const
   return irange_bitmask (wi::zero (prec), min | xorv);
 }
 
+// Remove trailing ranges that this bitmask indicates can't exist.
+
+void
+irange_bitmask::adjust_range (irange &r) const
+{
+  if (unknown_p () || r.undefined_p ())
+    return;
+
+  int_range_max range;
+  tree type = r.type ();
+  int prec = TYPE_PRECISION (type);
+  // If there are trailing zeros, create a range representing those bits.
+  gcc_checking_assert (m_mask != 0);
+  int z = wi::ctz (m_mask);
+  if (z)
+    {
+      wide_int ub = (wi::one (prec) << z) - 1;
+      range = int_range<5> (type, wi::zero (prec), ub);
+      // Then remove the specific value these bits contain from the range.
+      wide_int value = m_value & ub;
+      range.intersect (int_range<2> (type, value, value, VR_ANTI_RANGE));
+      // Inverting produces a list of ranges which can be valid.
+      range.invert ();
+      // And finally select R from only those valid values.
+      r.intersect (range);
+      return;
+    }
+}
+
 // If the the mask can be trivially converted to a range, do so and
 // return TRUE.
 
@@ -2002,6 +2031,7 @@ irange::intersect_bitmask (const irange &r)
 
   if (!set_range_from_bitmask ())
     normalize_kind ();
+  m_bitmask.adjust_range (*this);
   if (flag_checking)
     verify_range ();
   return true;

@@ -1,4 +1,4 @@
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++11 } }
 
 typedef enum omp_allocator_handle_t
 : __UINTPTR_TYPE__
@@ -162,7 +162,11 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
     private (p),firstprivate (f),if (parallel: i2),default(shared),shared(s),copyin(t),reduction(+:r),num_threads (nth),proc_bind(spread),
     lastprivate (l),allocate (f))]]
   {
+#if __cplusplus >= 201703L
     [[using omp:directive (section)]]
+#else
+    [[omp::directive (section)]]
+#endif
     {}
     [[omp::sequence (omp::directive (section))]]
     {}
@@ -176,11 +180,20 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
     {}
   }
   [[omp::directive (barrier)]];
+#if __cplusplus >= 201703L
   [[using omp:sequence (omp::directive (single, private (p),firstprivate (f),allocate (f),nowait))]]
+#else
+  [[omp::sequence (omp::directive (single, private (p),firstprivate (f),allocate (f),nowait))]]
+#endif
     ;
   [[omp::sequence (directive (barrier))]];
+#if __cplusplus >= 201703L
   [[using omp:sequence (directive (parallel, private (p)),
     omp::directive (single, copyprivate (p),firstprivate (f),allocate (f)))]]
+#else
+  [[omp::sequence (directive (parallel, private (p)),
+    omp::directive (single, copyprivate (p),firstprivate (f),allocate (f)))]]
+#endif
     p = 6;
   [[omp::directive (target parallel,
     device(d),map (tofrom: m),if (target: i1),private (p),firstprivate (f),defaultmap(tofrom: scalar),is_device_ptr (idp),
@@ -194,7 +207,13 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
     allocate (omp_default_mem_alloc:f),in_reduction(+:r2),has_device_addr (hda))]]
   for (int i = 0; i < 64; i++)
     ll++;
-  [[using omp:directive (target parallel for,
+  [[
+#if __cplusplus >= 201703L
+    using omp:
+#else
+    omp::
+#endif
+    directive (target parallel for,
     device(d),map (tofrom: m),if (target: i1),private (p),firstprivate (f),defaultmap(tofrom: scalar),is_device_ptr (idp),
     if (parallel: i2),default(shared),shared(s),reduction(+:r),num_threads (nth),proc_bind(spread),
     lastprivate (l),linear (ll:1),schedule(static, 4),collapse(1),nowait depend(inout: dd[0]),order(concurrent),
@@ -209,12 +228,24 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
     allocate (omp_default_mem_alloc:f),in_reduction(+:r2),has_device_addr (hda)))]]
   for (int i = 0; i < 64; i++)
     ll++;
-  [[using omp:sequence (directive (target teams,
+  [[
+#if __cplusplus >= 201703L
+    using omp:
+#else
+    omp::
+#endif
+    sequence (directive (target teams,
     device(d),map (tofrom: m),if (target: i1),private (p),firstprivate (f),defaultmap(tofrom: scalar),is_device_ptr (idp),
     shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),nowait,depend(inout: dd[0]),
     allocate (omp_default_mem_alloc:f),in_reduction(+:r2),has_device_addr (hda)))]]
     ;
-  [[using omp:sequence (directive (target,
+  [[
+#if __cplusplus >= 201703L
+    using omp:
+#else
+    omp::
+#endif
+    sequence (directive (target,
     device(d),map (tofrom: m),if (target: i1),private (p),firstprivate (f),defaultmap(tofrom: scalar),is_device_ptr (idp),
     nowait depend(inout: dd[0]),allocate (omp_default_mem_alloc:f),in_reduction(+:r2),has_device_addr(hda)))]]
     ;
@@ -266,7 +297,13 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
     order(concurrent),allocate (f)))]]
   for (int i = 0; i < 64; i++)
     ll++;
-  [[using omp:sequence (omp::directive (taskgroup, task_reduction(+:r), allocate (r)),
+  [[
+#if __cplusplus >= 201703L
+    using omp:
+#else
+    omp::
+#endif
+    sequence (omp::directive (taskgroup, task_reduction(+:r), allocate (r)),
     directive (taskloop simd,
     private (p),firstprivate (f),lastprivate (l),shared (s),default(shared),grainsize (g),collapse(1),untied,if(i1),final(fi),mergeable,nogroup,priority (pp),
     safelen(8),simdlen(4),linear(ll: 1),aligned(q: 32),in_reduction(+:r),nontemporal(ntm),
@@ -321,7 +358,13 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
     lastprivate (l),schedule(static, 4),order(concurrent),allocate (omp_default_mem_alloc: f)))]]
   for (int i = 0; i < 64; i++)
     ll++;
-  [[using omp:sequence (directive (target),
+  [[
+#if __cplusplus >= 201703L
+    using omp:
+#else
+    omp::
+#endif
+    sequence (directive (target),
     directive (teams distribute parallel for simd,
     private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),
     collapse(1),dist_schedule(static, 16),
@@ -389,21 +432,39 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
     private (p),firstprivate (f),if (parallel: i2),default(shared),shared(s),reduction(+:r),
     num_threads (nth),proc_bind(spread),copyin(t),allocate (f))]]
     ;
-  [[using omp:sequence (directive (taskgroup, task_reduction (+:r2),allocate (r2)),
+  [[
+#if __cplusplus >= 201703L
+    using omp:
+#else
+    omp::
+#endif
+    sequence (directive (taskgroup, task_reduction (+:r2),allocate (r2)),
     omp::directive (master taskloop,
     private (p),firstprivate (f),lastprivate (l),shared (s),default(shared),grainsize (g),collapse(1),untied, if(taskloop: i1),final(fi),mergeable, priority (pp),
     reduction(default, +:r),in_reduction(+:r2),allocate (f)))]]
   for (int i = 0; i < 64; i++)
     ll++;
-  [[using omp:sequence (directive (taskgroup, task_reduction (+:r2),allocate (r2)),
+  [[
+#if __cplusplus >= 201703L
+    using omp:
+#else
+    omp::
+#endif
+    sequence (directive (taskgroup, task_reduction (+:r2),allocate (r2)),
     omp::directive (masked taskloop,
     private (p),firstprivate (f),lastprivate (l),shared (s),default(shared),grainsize (g),collapse(1),untied, if(taskloop: i1),final(fi),mergeable, priority (pp),
     reduction(default, +:r),in_reduction(+:r2),allocate (f),filter(d)))]]
   for (int i = 0; i < 64; i++)
     ll++;
+#if __cplusplus >= 201703L
   [[using omp:directive (master)]];
   [[using omp:directive (masked)]];
   [[using omp:directive (masked,filter(d))]];
+#else
+  [[omp::directive (master)]];
+  [[omp::directive (masked)]];
+  [[omp::directive (masked,filter(d))]];
+#endif
   [[omp::sequence (omp::directive (taskgroup task_reduction (+:r2),allocate (r2)),
     directive (master taskloop simd,
     private (p),firstprivate (f),lastprivate (l),shared (s),default(shared),grainsize (g),collapse(1),untied,if(taskloop: i1),if(simd: i2),final(fi),mergeable,priority (pp),
@@ -544,7 +605,11 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
   }
   [[omp::directive (critical (foobar),hint(omp_sync_hint_none))]]
   ;
+#if __cplusplus >= 201703L
   [[using omp:directive (taskwait, depend (inout: dd[0]))]]
+#else
+  [[omp::directive (taskwait, depend (inout: dd[0]))]]
+#endif
   ;
   [[omp::directive (taskgroup, task_reduction(+:r2),allocate (r2))]]
   ;
@@ -596,7 +661,13 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
   [[omp::directive (scope, private (p), firstprivate (f), reduction(+:r), nowait,
     allocate(omp_default_mem_alloc: r))]]
     ;
-  [[using omp:directive (scope, private (p), firstprivate (f), reduction(task, +:r),
+  [[
+#if __cplusplus >= 201703L
+    using omp:
+#else
+    omp ::
+#endif
+    directive (scope, private (p), firstprivate (f), reduction(task, +:r),
     allocate (omp_default_mem_alloc: f))]]
     ;
   extern int t2;
@@ -632,8 +703,13 @@ corge ()
   [[omp::directive (declare simd, simdlen(4),linear(l),aligned(p:4),uniform(p),inbranch),
     omp::directive (declare simd,simdlen(8),notinbranch)]]
   extern int corge3 (int l, int *p);
+#if __cplusplus >= 201703L
   [[using omp:directive (declare simd, simdlen(4),linear(l),aligned(p:4),uniform(p),inbranch),
     directive (declare simd, simdlen(8),notinbranch)]]
+#else
+  [[omp::directive (declare simd, simdlen(4),linear(l),aligned(p:4),uniform(p),inbranch),
+    omp :: directive (declare simd, simdlen(8),notinbranch)]]
+#endif
   extern int corge4 (int l, int *p);
   [[omp::sequence (directive (declare simd, simdlen(4),linear(l),aligned(p:4),uniform(p),inbranch),
     omp::directive (declare simd, simdlen(8),notinbranch))]]
@@ -658,7 +734,11 @@ garply (int a, int *c, int *d, int *e, int *f)
   for (i = 0; i < 64; i++)
     {
       a += c[i];
+#if __cplusplus >= 201703L
       [[using omp : sequence (sequence (directive (scan inclusive (a))))]]
+#else
+      [[omp:: sequence (sequence (directive (scan inclusive (a))))]]
+#endif
       d[i] = a;
     }
   return a;

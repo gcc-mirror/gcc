@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Werror=implicit" } */
+/* { dg-options "-fpermissive -Werror=implicit" } */
 int main() {
   return pippo(); /* { dg-error "" } */
 }

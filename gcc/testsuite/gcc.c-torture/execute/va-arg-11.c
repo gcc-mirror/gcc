@@ -2,6 +2,9 @@
    side effect is used.  */
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 static int
 foo (int a, ...)
 {

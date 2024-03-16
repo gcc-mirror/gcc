@@ -1,6 +1,6 @@
-/* Test C2x CR_DECIMAL_DIG: defined for __STDC_WANT_IEC_60559_EXT__.  */
+/* Test C23 CR_DECIMAL_DIG: defined for __STDC_WANT_IEC_60559_EXT__.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 #define __STDC_WANT_IEC_60559_EXT__
 #include <float.h>

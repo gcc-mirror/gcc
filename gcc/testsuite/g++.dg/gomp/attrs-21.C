@@ -20,7 +20,7 @@ foo ()
   [[omp::decl (declare target (v8))]] static int v9;		// { dg-error "expected end of line before '\\\(' token" }
   [[omp::decl (declare target enter (v8))]] static int v10;	// { dg-error "expected an OpenMP clause before '\\\(' token" }
   [[omp::decl (declare target, link (v9))]] static int v11;	// { dg-error "expected an OpenMP clause before '\\\(' token" }
-  [[omp::decl (declare target device_type (any))]] static int v12;	// { dg-error "directive with only 'device_type' clause" }
+  [[omp::decl (declare target device_type (any))]] static int v12;	// { dg-error "directive with only 'device_type' or 'indirect' clauses" }
 }
 
 int i;

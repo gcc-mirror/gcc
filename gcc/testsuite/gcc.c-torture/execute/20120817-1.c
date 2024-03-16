@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef unsigned long long u64;
 unsigned long foo = 0;
 u64 f() __attribute__((noinline));

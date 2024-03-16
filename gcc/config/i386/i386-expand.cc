@@ -5245,6 +5245,9 @@ ix86_expand_vec_perm_vpermt2 (rtx target, rtx mask, rtx op0, rtx op1,
   if (gen == NULL)
     return false;
 
+  if (d && d->testing_p)
+    return true;
+
   /* ix86_expand_vec_perm_vpermt2 is called from both const and non-const
      expander, so args are either in d, or in op0, op1 etc.  */
   if (d)
@@ -14262,7 +14265,7 @@ rdseed_step:
       if (ignore)
 	return const0_rtx;
 
-      emit_insn (gen_push (gen_rtx_REG (word_mode, FLAGS_REG)));
+      emit_insn (gen_pushfl ());
 
       if (optimize
 	  || target == NULL_RTX
@@ -14281,7 +14284,7 @@ rdseed_step:
 	op0 = copy_to_mode_reg (word_mode, op0);
 
       emit_insn (gen_push (op0));
-      emit_insn (gen_pop (gen_rtx_REG (word_mode, FLAGS_REG)));
+      emit_insn (gen_popfl ());
       return 0;
 
     case IX86_BUILTIN_KTESTC8:
@@ -15589,6 +15592,17 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	}
       goto widen;
 
+    case E_V4HFmode:
+    case E_V4BFmode:
+      if (TARGET_MMX_WITH_SSE)
+	{
+	  val = force_reg (GET_MODE_INNER (mode), val);
+	  rtx x = gen_rtx_VEC_DUPLICATE (mode, val);
+	  emit_insn (gen_rtx_SET (target, x));
+	  return true;
+	}
+      return false;
+
     case E_V2HImode:
       if (TARGET_SSE2)
 	{
@@ -15597,6 +15611,17 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	  val = gen_lowpart (SImode, val);
 	  x = gen_rtx_TRUNCATE (HImode, val);
 	  x = gen_rtx_VEC_DUPLICATE (mode, x);
+	  emit_insn (gen_rtx_SET (target, x));
+	  return true;
+	}
+      return false;
+
+    case E_V2HFmode:
+    case E_V2BFmode:
+      if (TARGET_SSE2)
+	{
+	  val = force_reg (GET_MODE_INNER (mode), val);
+	  rtx x = gen_rtx_VEC_DUPLICATE (mode, val);
 	  emit_insn (gen_rtx_SET (target, x));
 	  return true;
 	}
@@ -15812,6 +15837,8 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       use_vector_set = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
       break;
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
       use_vector_set = TARGET_SSE || TARGET_3DNOW_A;
       break;
     case E_V4QImode:
@@ -16048,6 +16075,8 @@ ix86_expand_vector_init_one_var (bool mmx_ok, machine_mode mode,
     case E_V4SImode:
     case E_V8HImode:
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
       break;
 
     case E_V16QImode:
@@ -16435,6 +16464,7 @@ ix86_expand_vector_init_general (bool mmx_ok, machine_mode mode,
   rtx ops[64], op0, op1, op2, op3, op4, op5;
   machine_mode half_mode = VOIDmode;
   machine_mode quarter_mode = VOIDmode;
+  machine_mode int_inner_mode = VOIDmode;
   int n, i;
 
   switch (mode)
@@ -16579,6 +16609,13 @@ quarter:
       ix86_expand_vector_init_interleave (mode, target, ops, n >> 1);
       return;
 
+    case E_V4HFmode:
+    case E_V4BFmode:
+    case E_V2HFmode:
+    case E_V2BFmode:
+      int_inner_mode = HImode;
+      break;
+
     case E_V4HImode:
     case E_V8QImode:
 
@@ -16610,6 +16647,16 @@ quarter:
 	  for (j = 0; j < n_elt_per_word; ++j)
 	    {
 	      rtx elt = XVECEXP (vals, 0, (i+1)*n_elt_per_word - j - 1);
+	      if (int_inner_mode != E_VOIDmode)
+		{
+		  gcc_assert (TARGET_SSE2 && int_inner_mode == HImode);
+		  rtx tmp = gen_reg_rtx (int_inner_mode);
+		  elt = lowpart_subreg (int_inner_mode,
+					force_reg (inner_mode, elt),
+					inner_mode);
+		  emit_move_insn (tmp, elt);
+		  elt = tmp;
+		}
 	      elt = convert_modes (tmp_mode, inner_mode, elt, true);
 
 	      if (j == 0)
@@ -16835,6 +16882,14 @@ ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
 	  break;
 	case E_V16SFmode:
 	  cmp_mode = V16SImode;
+	  break;
+	case E_V2HFmode:
+	case E_V2BFmode:
+	  cmp_mode = V2HImode;
+	  break;
+	case E_V4HFmode:
+	case E_V4BFmode:
+	  cmp_mode = V4HImode;
 	  break;
 	case E_V8HFmode:
 	  cmp_mode = V8HImode;
@@ -17082,9 +17137,13 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
     case E_V8HFmode:
     case E_V8BFmode:
     case E_V2HImode:
+    case E_V2HFmode:
+    case E_V2BFmode:
       use_vec_merge = TARGET_SSE2;
       break;
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
       use_vec_merge = mmx_ok && (TARGET_SSE || TARGET_3DNOW_A);
       break;
 
@@ -17425,9 +17484,13 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
     case E_V8HFmode:
     case E_V8BFmode:
     case E_V2HImode:
+    case E_V2HFmode:
+    case E_V2BFmode:
       use_vec_extr = TARGET_SSE2;
       break;
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
       use_vec_extr = mmx_ok && (TARGET_SSE || TARGET_3DNOW_A);
       break;
 

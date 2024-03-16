@@ -2942,8 +2942,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   .. index:: Conditionals, constant
 
-  This switch activates warnings for conditional expressions used in
-  tests that are known to be True or False at compile time. The default
+  This switch activates warnings for boolean expressions that are known to
+  be True or False at compile time. The default
   is that such warnings are not generated.
   Note that this warning does
   not get issued for the use of boolean constants whose

@@ -17,7 +17,7 @@ rc (__int128 *oi)
 
           for (;;)
             {
-              unsigned __int128 *ar = &cc;
+              unsigned __int128 *ar = (unsigned __int128 *) &cc;
               int y5;
 
               if (oi != 0)

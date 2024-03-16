@@ -1,3 +1,1791 @@
+2023-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82524
+	* gcc.target/i386/pr78904-1.c (test_sub): New test.
+	* gcc.target/i386/pr78904-1a.c (test_sub): Ditto.
+	* gcc.target/i386/pr78904-1b.c (test_sub): Ditto.
+	* gcc.target/i386/pr78904-2.c (test_sub): Ditto.
+	* gcc.target/i386/pr78904-2a.c (test_sub): Ditto.
+	* gcc.target/i386/pr78904-2b.c (test_sub): Ditto.
+	* gcc.target/i386/pr78952-4.c (test_sub): Ditto.
+	* gcc.target/i386/pr82524.c: New test.
+	* gcc.target/i386/pr82524-1.c: New test.
+	* gcc.target/i386/pr82524-2.c: New test.
+	* gcc.target/i386/pr82524-3.c: New test.
+
+2023-11-08  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_int.c: New test.
+
+2023-11-08  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/setjmp-7.c (_setjmp): Declare.
+
+2023-11-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vl-use-ice.c: New test.
+
+2023-11-08  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/112371
+	* gfortran.dg/bound_11.f90: New test.
+
+2023-11-08  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/112371
+	* gfortran.dg/bound_10.f90: New test.
+
+2023-11-08  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/112412
+	* gfortran.dg/allocated_4.f90: New test.
+
+2023-11-08  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/112394
+	* gcc.target/i386/pr112394.c: New test.
+
+2023-11-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-33.c: Rewrite the condition.
+
+2023-11-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112092
+	* gcc.target/riscv/rvv/vsetvl/pr109743-1.c: Adapt test.
+	* gcc.target/riscv/rvv/vsetvl/pr109743-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-22.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/pr112092-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr112092-2.c: New test.
+
+2023-11-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111907
+	* gcc.target/i386/pr111907.c: New test.
+
+2023-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/atomic/c2x-stdatomic-lockfree-char8_t.c: Move to ...
+	* gcc.dg/atomic/c23-stdatomic-lockfree-char8_t.c: ... here.
+	* gcc.dg/atomic/c2x-stdatomic-var-init-1.c: Move to ...
+	* gcc.dg/atomic/c23-stdatomic-var-init-1.c: ... here.
+	* gcc.dg/atomic/gnu2x-stdatomic-lockfree-char8_t.c: Move to ...
+	* gcc.dg/atomic/gnu23-stdatomic-lockfree-char8_t.c: ... here.
+	Update reference to moved file.
+	* gcc.dg/c2x-align-1.c: Move to ...
+	* gcc.dg/c23-align-1.c: ... here.
+	* gcc.dg/c2x-align-6.c: Move to ...
+	* gcc.dg/c23-align-6.c: ... here.
+	* gcc.dg/c2x-attr-deprecated-1.c: Move to ...
+	* gcc.dg/c23-attr-deprecated-1.c: ... here.  Update reference to
+	moved file.
+	* gcc.dg/c2x-attr-deprecated-2.c: Move to ...
+	* gcc.dg/c23-attr-deprecated-2.c: ... here.
+	* gcc.dg/c2x-attr-deprecated-3.c: Move to ...
+	* gcc.dg/c23-attr-deprecated-3.c: ... here.
+	* gcc.dg/c2x-attr-deprecated-4.c: Move to ...
+	* gcc.dg/c23-attr-deprecated-4.c: ... here.
+	* gcc.dg/c2x-attr-fallthrough-1.c: Move to ...
+	* gcc.dg/c23-attr-fallthrough-1.c: ... here.
+	* gcc.dg/c2x-attr-fallthrough-2.c: Move to ...
+	* gcc.dg/c23-attr-fallthrough-2.c: ... here.
+	* gcc.dg/c2x-attr-fallthrough-3.c: Move to ...
+	* gcc.dg/c23-attr-fallthrough-3.c: ... here.
+	* gcc.dg/c2x-attr-fallthrough-4.c: Move to ...
+	* gcc.dg/c23-attr-fallthrough-4.c: ... here.
+	* gcc.dg/c2x-attr-fallthrough-5.c: Move to ...
+	* gcc.dg/c23-attr-fallthrough-5.c: ... here.
+	* gcc.dg/c2x-attr-fallthrough-6.c: Move to ...
+	* gcc.dg/c23-attr-fallthrough-6.c: ... here.
+	* gcc.dg/c2x-attr-maybe_unused-1.c: Move to ...
+	* gcc.dg/c23-attr-maybe_unused-1.c: ... here.
+	* gcc.dg/c2x-attr-maybe_unused-2.c: Move to ...
+	* gcc.dg/c23-attr-maybe_unused-2.c: ... here.
+	* gcc.dg/c2x-attr-maybe_unused-3.c: Move to ...
+	* gcc.dg/c23-attr-maybe_unused-3.c: ... here.
+	* gcc.dg/c2x-attr-maybe_unused-4.c: Move to ...
+	* gcc.dg/c23-attr-maybe_unused-4.c: ... here.
+	* gcc.dg/c2x-attr-nodiscard-1.c: Move to ...
+	* gcc.dg/c23-attr-nodiscard-1.c: ... here.
+	* gcc.dg/c2x-attr-nodiscard-2.c: Move to ...
+	* gcc.dg/c23-attr-nodiscard-2.c: ... here.
+	* gcc.dg/c2x-attr-nodiscard-3.c: Move to ...
+	* gcc.dg/c23-attr-nodiscard-3.c: ... here.
+	* gcc.dg/c2x-attr-nodiscard-4.c: Move to ...
+	* gcc.dg/c23-attr-nodiscard-4.c: ... here.
+	* gcc.dg/c2x-attr-noreturn-1.c: Move to ...
+	* gcc.dg/c23-attr-noreturn-1.c: ... here.
+	* gcc.dg/c2x-attr-noreturn-2.c: Move to ...
+	* gcc.dg/c23-attr-noreturn-2.c: ... here.
+	* gcc.dg/c2x-attr-noreturn-3.c: Move to ...
+	* gcc.dg/c23-attr-noreturn-3.c: ... here.
+	* gcc.dg/c2x-attr-syntax-1.c: Move to ...
+	* gcc.dg/c23-attr-syntax-1.c: ... here.
+	* gcc.dg/c2x-attr-syntax-2.c: Move to ...
+	* gcc.dg/c23-attr-syntax-2.c: ... here.
+	* gcc.dg/c2x-attr-syntax-3.c: Move to ...
+	* gcc.dg/c23-attr-syntax-3.c: ... here.
+	* gcc.dg/c2x-attr-syntax-4.c: Move to ...
+	* gcc.dg/c23-attr-syntax-4.c: ... here.
+	* gcc.dg/c2x-attr-syntax-5.c: Move to ...
+	* gcc.dg/c23-attr-syntax-5.c: ... here.
+	* gcc.dg/c2x-attr-syntax-6.c: Move to ...
+	* gcc.dg/c23-attr-syntax-6.c: ... here.
+	* gcc.dg/c2x-attr-syntax-7.c: Move to ...
+	* gcc.dg/c23-attr-syntax-7.c: ... here.
+	* gcc.dg/c2x-auto-1.c: Move to ...
+	* gcc.dg/c23-auto-1.c: ... here.
+	* gcc.dg/c2x-auto-2.c: Move to ...
+	* gcc.dg/c23-auto-2.c: ... here.
+	* gcc.dg/c2x-auto-3.c: Move to ...
+	* gcc.dg/c23-auto-3.c: ... here.
+	* gcc.dg/c2x-auto-4.c: Move to ...
+	* gcc.dg/c23-auto-4.c: ... here.
+	* gcc.dg/c2x-binary-constants-1.c: Move to ...
+	* gcc.dg/c23-binary-constants-1.c: ... here.
+	* gcc.dg/c2x-binary-constants-2.c: Move to ...
+	* gcc.dg/c23-binary-constants-2.c: ... here.
+	* gcc.dg/c2x-binary-constants-3.c: Move to ...
+	* gcc.dg/c23-binary-constants-3.c: ... here.
+	* gcc.dg/c2x-bool-1.c: Move to ...
+	* gcc.dg/c23-bool-1.c: ... here.
+	* gcc.dg/c2x-bool-2.c: Move to ...
+	* gcc.dg/c23-bool-2.c: ... here.
+	* gcc.dg/c2x-bool-limits-1.c: Move to ...
+	* gcc.dg/c23-bool-limits-1.c: ... here.
+	* gcc.dg/c2x-builtins-1.c: Move to ...
+	* gcc.dg/c23-builtins-1.c: ... here.
+	* gcc.dg/c2x-complit-1.c: Move to ...
+	* gcc.dg/c23-complit-1.c: ... here.
+	* gcc.dg/c2x-complit-2.c: Move to ...
+	* gcc.dg/c23-complit-2.c: ... here.
+	* gcc.dg/c2x-complit-3.c: Move to ...
+	* gcc.dg/c23-complit-3.c: ... here.
+	* gcc.dg/c2x-complit-4.c: Move to ...
+	* gcc.dg/c23-complit-4.c: ... here.
+	* gcc.dg/c2x-complit-5.c: Move to ...
+	* gcc.dg/c23-complit-5.c: ... here.
+	* gcc.dg/c2x-complit-6.c: Move to ...
+	* gcc.dg/c23-complit-6.c: ... here.
+	* gcc.dg/c2x-complit-7.c: Move to ...
+	* gcc.dg/c23-complit-7.c: ... here.
+	* gcc.dg/c2x-complit-8.c: Move to ...
+	* gcc.dg/c23-complit-8.c: ... here.
+	* gcc.dg/c2x-concat-1.c: Move to ...
+	* gcc.dg/c23-concat-1.c: ... here.
+	* gcc.dg/c2x-constexpr-1.c: Move to ...
+	* gcc.dg/c23-constexpr-1.c: ... here.
+	* gcc.dg/c2x-constexpr-2a.c: Move to ...
+	* gcc.dg/c23-constexpr-2a.c: ... here.  Update reference to moved
+	file.
+	* gcc.dg/c2x-constexpr-2b.c: Move to ...
+	* gcc.dg/c23-constexpr-2b.c: ... here.
+	* gcc.dg/c2x-constexpr-3.c: Move to ...
+	* gcc.dg/c23-constexpr-3.c: ... here.
+	* gcc.dg/c2x-constexpr-4.c: Move to ...
+	* gcc.dg/c23-constexpr-4.c: ... here.
+	* gcc.dg/c2x-constexpr-5.c: Move to ...
+	* gcc.dg/c23-constexpr-5.c: ... here.
+	* gcc.dg/c2x-constexpr-6.c: Move to ...
+	* gcc.dg/c23-constexpr-6.c: ... here.
+	* gcc.dg/c2x-constexpr-7.c: Move to ...
+	* gcc.dg/c23-constexpr-7.c: ... here.
+	* gcc.dg/c2x-constexpr-8.c: Move to ...
+	* gcc.dg/c23-constexpr-8.c: ... here.
+	* gcc.dg/c2x-constexpr-9.c: Move to ...
+	* gcc.dg/c23-constexpr-9.c: ... here.
+	* gcc.dg/c2x-digit-separators-1.c: Move to ...
+	* gcc.dg/c23-digit-separators-1.c: ... here.
+	* gcc.dg/c2x-digit-separators-2.c: Move to ...
+	* gcc.dg/c23-digit-separators-2.c: ... here.
+	* gcc.dg/c2x-digit-separators-3.c: Move to ...
+	* gcc.dg/c23-digit-separators-3.c: ... here.
+	* gcc.dg/c2x-empty-init-1.c: Move to ...
+	* gcc.dg/c23-empty-init-1.c: ... here.
+	* gcc.dg/c2x-empty-init-2.c: Move to ...
+	* gcc.dg/c23-empty-init-2.c: ... here.
+	* gcc.dg/c2x-empty-init-3.c: Move to ...
+	* gcc.dg/c23-empty-init-3.c: ... here.
+	* gcc.dg/c2x-enum-1.c: Move to ...
+	* gcc.dg/c23-enum-1.c: ... here.
+	* gcc.dg/c2x-enum-2.c: Move to ...
+	* gcc.dg/c23-enum-2.c: ... here.
+	* gcc.dg/c2x-enum-3.c: Move to ...
+	* gcc.dg/c23-enum-3.c: ... here.
+	* gcc.dg/c2x-enum-4.c: Move to ...
+	* gcc.dg/c23-enum-4.c: ... here.
+	* gcc.dg/c2x-enum-5.c: Move to ...
+	* gcc.dg/c23-enum-5.c: ... here.
+	* gcc.dg/c2x-enum-6.c: Move to ...
+	* gcc.dg/c23-enum-6.c: ... here.
+	* gcc.dg/c2x-enum-7.c: Move to ...
+	* gcc.dg/c23-enum-7.c: ... here.
+	* gcc.dg/c2x-enum-8.c: Move to ...
+	* gcc.dg/c23-enum-8.c: ... here.
+	* gcc.dg/c2x-float-1.c: Move to ...
+	* gcc.dg/c23-float-1.c: ... here.
+	* gcc.dg/c2x-float-10.c: Move to ...
+	* gcc.dg/c23-float-10.c: ... here.
+	* gcc.dg/c2x-float-11.c: Move to ...
+	* gcc.dg/c23-float-11.c: ... here.
+	* gcc.dg/c2x-float-12.c: Move to ...
+	* gcc.dg/c23-float-12.c: ... here.
+	* gcc.dg/c2x-float-13.c: Move to ...
+	* gcc.dg/c23-float-13.c: ... here.
+	* gcc.dg/c2x-float-2.c: Move to ...
+	* gcc.dg/c23-float-2.c: ... here.
+	* gcc.dg/c2x-float-3.c: Move to ...
+	* gcc.dg/c23-float-3.c: ... here.
+	* gcc.dg/c2x-float-4.c: Move to ...
+	* gcc.dg/c23-float-4.c: ... here.
+	* gcc.dg/c2x-float-5.c: Move to ...
+	* gcc.dg/c23-float-5.c: ... here.
+	* gcc.dg/c2x-float-6.c: Move to ...
+	* gcc.dg/c23-float-6.c: ... here.
+	* gcc.dg/c2x-float-7a.c: Move to ...
+	* gcc.dg/c23-float-7a.c: ... here.
+	* gcc.dg/c2x-float-7b.c: Move to ...
+	* gcc.dg/c23-float-7b.c: ... here.
+	* gcc.dg/c2x-float-7c.c: Move to ...
+	* gcc.dg/c23-float-7c.c: ... here.
+	* gcc.dg/c2x-float-8.c: Move to ...
+	* gcc.dg/c23-float-8.c: ... here.
+	* gcc.dg/c2x-float-9.c: Move to ...
+	* gcc.dg/c23-float-9.c: ... here.
+	* gcc.dg/c2x-float-no-dfp-1.c: Move to ...
+	* gcc.dg/c23-float-no-dfp-1.c: ... here.
+	* gcc.dg/c2x-float-no-dfp-2.c: Move to ...
+	* gcc.dg/c23-float-no-dfp-2.c: ... here.  Update reference to
+	moved file.
+	* gcc.dg/c2x-float-no-dfp-3.c: Move to ...
+	* gcc.dg/c23-float-no-dfp-3.c: ... here.
+	* gcc.dg/c2x-float-no-dfp-4.c: Move to ...
+	* gcc.dg/c23-float-no-dfp-4.c: ... here.  Update reference to
+	moved file.
+	* gcc.dg/c2x-floatn-1.c: Move to ...
+	* gcc.dg/c23-floatn-1.c: ... here.
+	* gcc.dg/c2x-floatn-2.c: Move to ...
+	* gcc.dg/c23-floatn-2.c: ... here.
+	* gcc.dg/c2x-floatn-3.c: Move to ...
+	* gcc.dg/c23-floatn-3.c: ... here.
+	* gcc.dg/c2x-floatn-4.c: Move to ...
+	* gcc.dg/c23-floatn-4.c: ... here.
+	* gcc.dg/c2x-floatn-5.c: Move to ...
+	* gcc.dg/c23-floatn-5.c: ... here.
+	* gcc.dg/c2x-floatn-6.c: Move to ...
+	* gcc.dg/c23-floatn-6.c: ... here.
+	* gcc.dg/c2x-floatn-7.c: Move to ...
+	* gcc.dg/c23-floatn-7.c: ... here.
+	* gcc.dg/c2x-floatn-8.c: Move to ...
+	* gcc.dg/c23-floatn-8.c: ... here.
+	* gcc.dg/c2x-fordecl-1.c: Move to ...
+	* gcc.dg/c23-fordecl-1.c: ... here.
+	* gcc.dg/c2x-fordecl-2.c: Move to ...
+	* gcc.dg/c23-fordecl-2.c: ... here.
+	* gcc.dg/c2x-fordecl-3.c: Move to ...
+	* gcc.dg/c23-fordecl-3.c: ... here.
+	* gcc.dg/c2x-fordecl-4.c: Move to ...
+	* gcc.dg/c23-fordecl-4.c: ... here.
+	* gcc.dg/c2x-has-c-attribute-1.c: Move to ...
+	* gcc.dg/c23-has-c-attribute-1.c: ... here.
+	* gcc.dg/c2x-has-c-attribute-2.c: Move to ...
+	* gcc.dg/c23-has-c-attribute-2.c: ... here.
+	* gcc.dg/c2x-has-c-attribute-3.c: Move to ...
+	* gcc.dg/c23-has-c-attribute-3.c: ... here.
+	* gcc.dg/c2x-has-c-attribute-4.c: Move to ...
+	* gcc.dg/c23-has-c-attribute-4.c: ... here.
+	* gcc.dg/c2x-labels-1.c: Move to ...
+	* gcc.dg/c23-labels-1.c: ... here.
+	* gcc.dg/c2x-labels-2.c: Move to ...
+	* gcc.dg/c23-labels-2.c: ... here.
+	* gcc.dg/c2x-labels-3.c: Move to ...
+	* gcc.dg/c23-labels-3.c: ... here.
+	* gcc.dg/c2x-limits-1.c: Move to ...
+	* gcc.dg/c23-limits-1.c: ... here.
+	* gcc.dg/c2x-no-dfp-1.c: Move to ...
+	* gcc.dg/c23-no-dfp-1.c: ... here.
+	* gcc.dg/c2x-nullptr-1.c: Move to ...
+	* gcc.dg/c23-nullptr-1.c: ... here.
+	* gcc.dg/c2x-nullptr-2.c: Move to ...
+	* gcc.dg/c23-nullptr-2.c: ... here.
+	* gcc.dg/c2x-nullptr-3.c: Move to ...
+	* gcc.dg/c23-nullptr-3.c: ... here.
+	* gcc.dg/c2x-nullptr-4.c: Move to ...
+	* gcc.dg/c23-nullptr-4.c: ... here.
+	* gcc.dg/c2x-nullptr-5.c: Move to ...
+	* gcc.dg/c23-nullptr-5.c: ... here.
+	* gcc.dg/c2x-nullptr-6.c: Move to ...
+	* gcc.dg/c23-nullptr-6.c: ... here.
+	* gcc.dg/c2x-old-style-definition-1.c: Move to ...
+	* gcc.dg/c23-old-style-definition-1.c: ... here.
+	* gcc.dg/c2x-old-style-definition-2.c: Move to ...
+	* gcc.dg/c23-old-style-definition-2.c: ... here.
+	* gcc.dg/c2x-old-style-definition-3.c: Move to ...
+	* gcc.dg/c23-old-style-definition-3.c: ... here.
+	* gcc.dg/c2x-old-style-definition-4.c: Move to ...
+	* gcc.dg/c23-old-style-definition-4.c: ... here.
+	* gcc.dg/c2x-old-style-definition-5.c: Move to ...
+	* gcc.dg/c23-old-style-definition-5.c: ... here.
+	* gcc.dg/c2x-old-style-definition-6.c: Move to ...
+	* gcc.dg/c23-old-style-definition-6.c: ... here.
+	* gcc.dg/c2x-parm-omit-1.c: Move to ...
+	* gcc.dg/c23-parm-omit-1.c: ... here.
+	* gcc.dg/c2x-parm-omit-2.c: Move to ...
+	* gcc.dg/c23-parm-omit-2.c: ... here.
+	* gcc.dg/c2x-parm-omit-3.c: Move to ...
+	* gcc.dg/c23-parm-omit-3.c: ... here.
+	* gcc.dg/c2x-parm-omit-4.c: Move to ...
+	* gcc.dg/c23-parm-omit-4.c: ... here.
+	* gcc.dg/c2x-qual-1.c: Move to ...
+	* gcc.dg/c23-qual-1.c: ... here.
+	* gcc.dg/c2x-qual-2.c: Move to ...
+	* gcc.dg/c23-qual-2.c: ... here.
+	* gcc.dg/c2x-qual-3.c: Move to ...
+	* gcc.dg/c23-qual-3.c: ... here.
+	* gcc.dg/c2x-qual-4.c: Move to ...
+	* gcc.dg/c23-qual-4.c: ... here.
+	* gcc.dg/c2x-qual-5.c: Move to ...
+	* gcc.dg/c23-qual-5.c: ... here.
+	* gcc.dg/c2x-qual-6.c: Move to ...
+	* gcc.dg/c23-qual-6.c: ... here.
+	* gcc.dg/c2x-qual-7.c: Move to ...
+	* gcc.dg/c23-qual-7.c: ... here.
+	* gcc.dg/c2x-static-assert-1.c: Move to ...
+	* gcc.dg/c23-static-assert-1.c: ... here.
+	* gcc.dg/c2x-static-assert-2.c: Move to ...
+	* gcc.dg/c23-static-assert-2.c: ... here.
+	* gcc.dg/c2x-static-assert-3.c: Move to ...
+	* gcc.dg/c23-static-assert-3.c: ... here.
+	* gcc.dg/c2x-static-assert-4.c: Move to ...
+	* gcc.dg/c23-static-assert-4.c: ... here.
+	* gcc.dg/c2x-stdarg-1.c: Move to ...
+	* gcc.dg/c23-stdarg-1.c: ... here.
+	* gcc.dg/c2x-stdarg-2.c: Move to ...
+	* gcc.dg/c23-stdarg-2.c: ... here.
+	* gcc.dg/c2x-stdarg-3.c: Move to ...
+	* gcc.dg/c23-stdarg-3.c: ... here.
+	* gcc.dg/c2x-stdarg-4.c: Move to ...
+	* gcc.dg/c23-stdarg-4.c: ... here.
+	* gcc.dg/c2x-stdarg-5.c: Move to ...
+	* gcc.dg/c23-stdarg-5.c: ... here.
+	* gcc.dg/c2x-stdatomic-1.c: Move to ...
+	* gcc.dg/c23-stdatomic-1.c: ... here.
+	* gcc.dg/c2x-stddef-1.c: Move to ...
+	* gcc.dg/c23-stddef-1.c: ... here.
+	* gcc.dg/c2x-stdint-1.c: Move to ...
+	* gcc.dg/c23-stdint-1.c: ... here.
+	* gcc.dg/c2x-thread-local-1.c: Move to ...
+	* gcc.dg/c23-thread-local-1.c: ... here.
+	* gcc.dg/c2x-thread-local-2.c: Move to ...
+	* gcc.dg/c23-thread-local-2.c: ... here.
+	* gcc.dg/c2x-typeof-1.c: Move to ...
+	* gcc.dg/c23-typeof-1.c: ... here.
+	* gcc.dg/c2x-typeof-2.c: Move to ...
+	* gcc.dg/c23-typeof-2.c: ... here.
+	* gcc.dg/c2x-typeof-3.c: Move to ...
+	* gcc.dg/c23-typeof-3.c: ... here.
+	* gcc.dg/c2x-unproto-1.c: Move to ...
+	* gcc.dg/c23-unproto-1.c: ... here.
+	* gcc.dg/c2x-unproto-2.c: Move to ...
+	* gcc.dg/c23-unproto-2.c: ... here.
+	* gcc.dg/c2x-unproto-3.c: Move to ...
+	* gcc.dg/c23-unproto-3.c: ... here.
+	* gcc.dg/c2x-unproto-4.c: Move to ...
+	* gcc.dg/c23-unproto-4.c: ... here.
+	* gcc.dg/c2x-unreachable-1.c: Move to ...
+	* gcc.dg/c23-unreachable-1.c: ... here.
+	* gcc.dg/c2x-utf8char-1.c: Move to ...
+	* gcc.dg/c23-utf8char-1.c: ... here.
+	* gcc.dg/c2x-utf8char-2.c: Move to ...
+	* gcc.dg/c23-utf8char-2.c: ... here.
+	* gcc.dg/c2x-utf8char-3.c: Move to ...
+	* gcc.dg/c23-utf8char-3.c: ... here.
+	* gcc.dg/c2x-utf8str-type.c: Move to ...
+	* gcc.dg/c23-utf8str-type.c: ... here.
+	* gcc.dg/c2x-utf8str.c: Move to ...
+	* gcc.dg/c23-utf8str.c: ... here.
+	* gcc.dg/cpp/c2x-elifdef-1.c: Move to ...
+	* gcc.dg/cpp/c23-elifdef-1.c: ... here.
+	* gcc.dg/cpp/c2x-elifdef-2.c: Move to ...
+	* gcc.dg/cpp/c23-elifdef-2.c: ... here.
+	* gcc.dg/cpp/c2x-scope-1.c: Move to ...
+	* gcc.dg/cpp/c23-scope-1.c: ... here.
+	* gcc.dg/cpp/c2x-scope-2.c: Move to ...
+	* gcc.dg/cpp/c23-scope-2.c: ... here.  Update reference to moved
+	file.
+	* gcc.dg/cpp/c2x-trigraphs-1.c: Move to ...
+	* gcc.dg/cpp/c23-trigraphs-1.c: ... here.
+	* gcc.dg/cpp/c2x-trigraphs-2.c: Move to ...
+	* gcc.dg/cpp/c23-trigraphs-2.c: ... here.
+	* gcc.dg/cpp/c2x-ucn-1.c: Move to ...
+	* gcc.dg/cpp/c23-ucn-1.c: ... here.
+	* gcc.dg/cpp/c2x-ucnid-1-utf8.c: Move to ...
+	* gcc.dg/cpp/c23-ucnid-1-utf8.c: ... here.
+	* gcc.dg/cpp/c2x-ucnid-1.c: Move to ...
+	* gcc.dg/cpp/c23-ucnid-1.c: ... here.
+	* gcc.dg/cpp/c2x-va-opt-1.c: Move to ...
+	* gcc.dg/cpp/c23-va-opt-1.c: ... here.
+	* gcc.dg/cpp/c2x-warning-1.c: Move to ...
+	* gcc.dg/cpp/c23-warning-1.c: ... here.
+	* gcc.dg/cpp/c2x-warning-2.c: Move to ...
+	* gcc.dg/cpp/c23-warning-2.c: ... here.
+	* gcc.dg/cpp/gnu2x-warning-1.c: Move to ...
+	* gcc.dg/cpp/gnu23-warning-1.c: ... here.
+	* gcc.dg/cpp/gnu2x-warning-2.c: Move to ...
+	* gcc.dg/cpp/gnu23-warning-2.c: ... here.
+	* gcc.dg/dfp/c2x-builtins-dfp-1.c: Move to ...
+	* gcc.dg/dfp/c23-builtins-dfp-1.c: ... here.
+	* gcc.dg/dfp/c2x-constants-1.c: Move to ...
+	* gcc.dg/dfp/c23-constants-1.c: ... here.
+	* gcc.dg/dfp/c2x-constants-2.c: Move to ...
+	* gcc.dg/dfp/c23-constants-2.c: ... here.
+	* gcc.dg/dfp/c2x-constexpr-dfp-1.c: Move to ...
+	* gcc.dg/dfp/c23-constexpr-dfp-1.c: ... here.
+	* gcc.dg/dfp/c2x-constexpr-dfp-2.c: Move to ...
+	* gcc.dg/dfp/c23-constexpr-dfp-2.c: ... here.
+	* gcc.dg/dfp/c2x-float-dfp-1.c: Move to ...
+	* gcc.dg/dfp/c23-float-dfp-1.c: ... here.
+	* gcc.dg/dfp/c2x-float-dfp-2.c: Move to ...
+	* gcc.dg/dfp/c23-float-dfp-2.c: ... here.  Update reference to
+	moved file.
+	* gcc.dg/dfp/c2x-float-dfp-3.c: Move to ...
+	* gcc.dg/dfp/c23-float-dfp-3.c: ... here.
+	* gcc.dg/dfp/c2x-float-dfp-4.c: Move to ...
+	* gcc.dg/dfp/c23-float-dfp-4.c: ... here.
+	* gcc.dg/dfp/c2x-float-dfp-5.c: Move to ...
+	* gcc.dg/dfp/c23-float-dfp-5.c: ... here.
+	* gcc.dg/dfp/c2x-float-dfp-6.c: Move to ...
+	* gcc.dg/dfp/c23-float-dfp-6.c: ... here.
+	* gcc.dg/dfp/c2x-float-dfp-7.c: Move to ...
+	* gcc.dg/dfp/c23-float-dfp-7.c: ... here.
+	* gcc.dg/dfp/c2x-float-dfp-8.c: Move to ...
+	* gcc.dg/dfp/c23-float-dfp-8.c: ... here.
+	* gcc.dg/dfp/c2x-keywords-1.c: Move to ...
+	* gcc.dg/dfp/c23-keywords-1.c: ... here.
+	* gcc.dg/dfp/c2x-keywords-2.c: Move to ...
+	* gcc.dg/dfp/c23-keywords-2.c: ... here.
+	* gcc.dg/format/c2x-dfp-printf-1.c: Move to ...
+	* gcc.dg/format/c23-dfp-printf-1.c: ... here.
+	* gcc.dg/format/c2x-dfp-scanf-1.c: Move to ...
+	* gcc.dg/format/c23-dfp-scanf-1.c: ... here.
+	* gcc.dg/format/c2x-printf-1.c: Move to ...
+	* gcc.dg/format/c23-printf-1.c: ... here.
+	* gcc.dg/format/c2x-scanf-1.c: Move to ...
+	* gcc.dg/format/c23-scanf-1.c: ... here.
+	* gcc.dg/format/c2x-strftime-1.c: Move to ...
+	* gcc.dg/format/c23-strftime-1.c: ... here.
+	* gcc.dg/gnu2x-attr-syntax-1.c: Move to ...
+	* gcc.dg/gnu23-attr-syntax-1.c: ... here.
+	* gcc.dg/gnu2x-attr-syntax-2.c: Move to ...
+	* gcc.dg/gnu23-attr-syntax-2.c: ... here.
+	* gcc.dg/gnu2x-attrs-1.c: Move to ...
+	* gcc.dg/gnu23-attrs-1.c: ... here.
+	* gcc.dg/gnu2x-attrs-2.c: Move to ...
+	* gcc.dg/gnu23-attrs-2.c: ... here.
+	* gcc.dg/gnu2x-auto-1.c: Move to ...
+	* gcc.dg/gnu23-auto-1.c: ... here.
+	* gcc.dg/gnu2x-builtins-no-dfp-1.c: Move to ...
+	* gcc.dg/gnu23-builtins-no-dfp-1.c: ... here.
+	* gcc.dg/gnu2x-complit-1.c: Move to ...
+	* gcc.dg/gnu23-complit-1.c: ... here.
+	* gcc.dg/gnu2x-complit-2.c: Move to ...
+	* gcc.dg/gnu23-complit-2.c: ... here.
+	* gcc.dg/gnu2x-constexpr-1.c: Move to ...
+	* gcc.dg/gnu23-constexpr-1.c: ... here.
+	* gcc.dg/gnu2x-empty-init-1.c: Move to ...
+	* gcc.dg/gnu23-empty-init-1.c: ... here.
+	* gcc.dg/gnu2x-empty-init-2.c: Move to ...
+	* gcc.dg/gnu23-empty-init-2.c: ... here.
+	* gcc.dg/gnu2x-enum-1.c: Move to ...
+	* gcc.dg/gnu23-enum-1.c: ... here.
+	* gcc.dg/gnu2x-static-assert-1.c: Move to ...
+	* gcc.dg/gnu23-static-assert-1.c: ... here.
+	* gcc.dg/gnu2x-stdarg-1.c: Move to ...
+	* gcc.dg/gnu23-stdarg-1.c: ... here.
+	* gcc.dg/gnu2x-typeof-1.c: Move to ...
+	* gcc.dg/gnu23-typeof-1.c: ... here.
+	* gcc.dg/gnu2x-utf8char-1.c: Move to ...
+	* gcc.dg/gnu23-utf8char-1.c: ... here.  Update reference to moved
+	file.
+	* gcc.dg/gnu2x-utf8str-type.c: Move to ...
+	* gcc.dg/gnu23-utf8str-type.c: ... here.  Update reference to
+	moved file.
+	* gcc.dg/gnu2x-utf8str.c: Move to ...
+	* gcc.dg/gnu23-utf8str.c: ... here.
+	* gcc.dg/torture/builtin-fp-int-inexact-c2x.c: Move to ...
+	* gcc.dg/torture/builtin-fp-int-inexact-c23.c: ... here.
+	* gcc.dg/torture/c2x-stdarg-split-1a.c: Move to ...
+	* gcc.dg/torture/c23-stdarg-split-1a.c: ... here.  Update
+	reference to moved file.
+	* gcc.dg/torture/c2x-stdarg-split-1b.c: Move to ...
+	* gcc.dg/torture/c23-stdarg-split-1b.c: ... here.
+	* objc.dg/attributes/gnu2x-attr-syntax-1.m: Move to ...
+	* objc.dg/attributes/gnu23-attr-syntax-1.m: ... here.  Update
+	reference to moved file.
+	* g++.dg/cpp/elifdef-2.C: Update reference to moved file.
+	* g++.dg/cpp/elifdef-4.C: Likewise.
+	* gcc.dg/c11-float-dfp-1.c: Likewise.
+	* gcc.dg/c11-float-dfp-2.c: Likewise.
+	* gcc.dg/cpp/gnu11-elifdef-1.c: Likewise.
+	* gcc.dg/dfp/ts18661-2-float-dfp-1.c: Likewise.
+
+2023-11-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-ifloor-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-ifloor-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-rv32-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloorf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloorf-rv64-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llfloorf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llfloorf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-ifloor-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lfloor-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lfloorf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llfloorf-0.c: New test.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-c++-common/alias-1.c: Use "c23" or "gnu23" option names in
+	place of "c2x" or "gnu2x" names, and refer to C23 in comments in
+	place of C2X or C2x.
+	* gcc.dg/Wformat-overflow1.c: Likewise.
+	* gcc.dg/asm-scope-1.c: Likewise.
+	* gcc.dg/atomic/c2x-stdatomic-lockfree-char8_t.c: Likewise.
+	* gcc.dg/atomic/c2x-stdatomic-var-init-1.c: Likewise.
+	* gcc.dg/atomic/gnu2x-stdatomic-lockfree-char8_t.c: Likewise.
+	* gcc.dg/atomic/stdatomic-bitint-1.c: Likewise.
+	* gcc.dg/atomic/stdatomic-bitint-2.c: Likewise.
+	* gcc.dg/attr-assume-1.c: Likewise.
+	* gcc.dg/attr-assume-2.c: Likewise.
+	* gcc.dg/attr-assume-3.c: Likewise.
+	* gcc.dg/attr-assume-4.c: Likewise.
+	* gcc.dg/bitint-1.c: Likewise.
+	* gcc.dg/bitint-10.c: Likewise.
+	* gcc.dg/bitint-11.c: Likewise.
+	* gcc.dg/bitint-12.c: Likewise.
+	* gcc.dg/bitint-13.c: Likewise.
+	* gcc.dg/bitint-14.c: Likewise.
+	* gcc.dg/bitint-15.c: Likewise.
+	* gcc.dg/bitint-16.c: Likewise.
+	* gcc.dg/bitint-17.c: Likewise.
+	* gcc.dg/bitint-18.c: Likewise.
+	* gcc.dg/bitint-19.c: Likewise.
+	* gcc.dg/bitint-2.c: Likewise.
+	* gcc.dg/bitint-20.c: Likewise.
+	* gcc.dg/bitint-21.c: Likewise.
+	* gcc.dg/bitint-22.c: Likewise.
+	* gcc.dg/bitint-23.c: Likewise.
+	* gcc.dg/bitint-25.c: Likewise.
+	* gcc.dg/bitint-28.c: Likewise.
+	* gcc.dg/bitint-29.c: Likewise.
+	* gcc.dg/bitint-3.c: Likewise.
+	* gcc.dg/bitint-30.c: Likewise.
+	* gcc.dg/bitint-31.c: Likewise.
+	* gcc.dg/bitint-32.c: Likewise.
+	* gcc.dg/bitint-34.c: Likewise.
+	* gcc.dg/bitint-35.c: Likewise.
+	* gcc.dg/bitint-36.c: Likewise.
+	* gcc.dg/bitint-38.c: Likewise.
+	* gcc.dg/bitint-39.c: Likewise.
+	* gcc.dg/bitint-4.c: Likewise.
+	* gcc.dg/bitint-5.c: Likewise.
+	* gcc.dg/bitint-6.c: Likewise.
+	* gcc.dg/bitint-7.c: Likewise.
+	* gcc.dg/bitint-8.c: Likewise.
+	* gcc.dg/bitint-9.c: Likewise.
+	* gcc.dg/c11-attr-syntax-3.c: Likewise.
+	* gcc.dg/c11-builtins-1.c: Likewise.
+	* gcc.dg/c11-complit-1.c: Likewise.
+	* gcc.dg/c11-complit-2.c: Likewise.
+	* gcc.dg/c11-complit-3.c: Likewise.
+	* gcc.dg/c11-digit-separators-1.c: Likewise.
+	* gcc.dg/c11-empty-init-3.c: Likewise.
+	* gcc.dg/c11-enum-1.c: Likewise.
+	* gcc.dg/c11-enum-2.c: Likewise.
+	* gcc.dg/c11-enum-3.c: Likewise.
+	* gcc.dg/c11-enum-4.c: Likewise.
+	* gcc.dg/c11-enum-5.c: Likewise.
+	* gcc.dg/c11-enum-6.c: Likewise.
+	* gcc.dg/c11-floatn-5.c: Likewise.
+	* gcc.dg/c11-floatn-6.c: Likewise.
+	* gcc.dg/c11-floatn-7.c: Likewise.
+	* gcc.dg/c11-floatn-8.c: Likewise.
+	* gcc.dg/c11-fordecl-3.c: Likewise.
+	* gcc.dg/c11-fordecl-4.c: Likewise.
+	* gcc.dg/c11-keywords-1.c: Likewise.
+	* gcc.dg/c11-old-style-definition-1.c: Likewise.
+	* gcc.dg/c11-old-style-definition-2.c: Likewise.
+	* gcc.dg/c11-parm-omit-3.c: Likewise.
+	* gcc.dg/c11-qual-1.c: Likewise.
+	* gcc.dg/c11-static-assert-9.c: Likewise.
+	* gcc.dg/c11-stdarg-3.c: Likewise.
+	* gcc.dg/c11-unproto-1.c: Likewise.
+	* gcc.dg/c11-unproto-2.c: Likewise.
+	* gcc.dg/c11-utf8char-1.c: Likewise.
+	* gcc.dg/c17-nullptr-2.c: Likewise.
+	* gcc.dg/c2x-align-1.c: Likewise.
+	* gcc.dg/c2x-align-6.c: Likewise.
+	* gcc.dg/c2x-attr-deprecated-1.c: Likewise.
+	* gcc.dg/c2x-attr-deprecated-2.c: Likewise.
+	* gcc.dg/c2x-attr-deprecated-3.c: Likewise.
+	* gcc.dg/c2x-attr-deprecated-4.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-1.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-2.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-3.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-4.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-5.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-6.c: Likewise.
+	* gcc.dg/c2x-attr-maybe_unused-1.c: Likewise.
+	* gcc.dg/c2x-attr-maybe_unused-2.c: Likewise.
+	* gcc.dg/c2x-attr-maybe_unused-3.c: Likewise.
+	* gcc.dg/c2x-attr-maybe_unused-4.c: Likewise.
+	* gcc.dg/c2x-attr-nodiscard-1.c: Likewise.
+	* gcc.dg/c2x-attr-nodiscard-2.c: Likewise.
+	* gcc.dg/c2x-attr-nodiscard-3.c: Likewise.
+	* gcc.dg/c2x-attr-nodiscard-4.c: Likewise.
+	* gcc.dg/c2x-attr-noreturn-1.c: Likewise.
+	* gcc.dg/c2x-attr-noreturn-2.c: Likewise.
+	* gcc.dg/c2x-attr-noreturn-3.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-1.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-2.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-3.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-4.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-5.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-7.c: Likewise.
+	* gcc.dg/c2x-auto-1.c: Likewise.
+	* gcc.dg/c2x-auto-2.c: Likewise.
+	* gcc.dg/c2x-auto-3.c: Likewise.
+	* gcc.dg/c2x-auto-4.c: Likewise.
+	* gcc.dg/c2x-binary-constants-1.c: Likewise.
+	* gcc.dg/c2x-binary-constants-2.c: Likewise.
+	* gcc.dg/c2x-binary-constants-3.c: Likewise.
+	* gcc.dg/c2x-bool-1.c: Likewise.
+	* gcc.dg/c2x-bool-2.c: Likewise.
+	* gcc.dg/c2x-bool-limits-1.c: Likewise.
+	* gcc.dg/c2x-builtins-1.c: Likewise.
+	* gcc.dg/c2x-complit-1.c: Likewise.
+	* gcc.dg/c2x-complit-2.c: Likewise.
+	* gcc.dg/c2x-complit-3.c: Likewise.
+	* gcc.dg/c2x-complit-4.c: Likewise.
+	* gcc.dg/c2x-complit-5.c: Likewise.
+	* gcc.dg/c2x-complit-6.c: Likewise.
+	* gcc.dg/c2x-complit-7.c: Likewise.
+	* gcc.dg/c2x-complit-8.c: Likewise.
+	* gcc.dg/c2x-concat-1.c: Likewise.
+	* gcc.dg/c2x-constexpr-1.c: Likewise.
+	* gcc.dg/c2x-constexpr-2a.c: Likewise.
+	* gcc.dg/c2x-constexpr-2b.c: Likewise.
+	* gcc.dg/c2x-constexpr-3.c: Likewise.
+	* gcc.dg/c2x-constexpr-4.c: Likewise.
+	* gcc.dg/c2x-constexpr-5.c: Likewise.
+	* gcc.dg/c2x-constexpr-6.c: Likewise.
+	* gcc.dg/c2x-constexpr-7.c: Likewise.
+	* gcc.dg/c2x-constexpr-8.c: Likewise.
+	* gcc.dg/c2x-constexpr-9.c: Likewise.
+	* gcc.dg/c2x-digit-separators-1.c: Likewise.
+	* gcc.dg/c2x-digit-separators-2.c: Likewise.
+	* gcc.dg/c2x-digit-separators-3.c: Likewise.
+	* gcc.dg/c2x-empty-init-1.c: Likewise.
+	* gcc.dg/c2x-empty-init-2.c: Likewise.
+	* gcc.dg/c2x-empty-init-3.c: Likewise.
+	* gcc.dg/c2x-enum-1.c: Likewise.
+	* gcc.dg/c2x-enum-2.c: Likewise.
+	* gcc.dg/c2x-enum-3.c: Likewise.
+	* gcc.dg/c2x-enum-4.c: Likewise.
+	* gcc.dg/c2x-enum-5.c: Likewise.
+	* gcc.dg/c2x-enum-6.c: Likewise.
+	* gcc.dg/c2x-enum-7.c: Likewise.
+	* gcc.dg/c2x-enum-8.c: Likewise.
+	* gcc.dg/c2x-float-1.c: Likewise.
+	* gcc.dg/c2x-float-10.c: Likewise.
+	* gcc.dg/c2x-float-11.c: Likewise.
+	* gcc.dg/c2x-float-12.c: Likewise.
+	* gcc.dg/c2x-float-13.c: Likewise.
+	* gcc.dg/c2x-float-2.c: Likewise.
+	* gcc.dg/c2x-float-3.c: Likewise.
+	* gcc.dg/c2x-float-4.c: Likewise.
+	* gcc.dg/c2x-float-5.c: Likewise.
+	* gcc.dg/c2x-float-6.c: Likewise.
+	* gcc.dg/c2x-float-7a.c: Likewise.
+	* gcc.dg/c2x-float-7b.c: Likewise.
+	* gcc.dg/c2x-float-7c.c: Likewise.
+	* gcc.dg/c2x-float-8.c: Likewise.
+	* gcc.dg/c2x-float-9.c: Likewise.
+	* gcc.dg/c2x-float-no-dfp-1.c: Likewise.
+	* gcc.dg/c2x-float-no-dfp-2.c: Likewise.
+	* gcc.dg/c2x-float-no-dfp-3.c: Likewise.
+	* gcc.dg/c2x-float-no-dfp-4.c: Likewise.
+	* gcc.dg/c2x-floatn-1.c: Likewise.
+	* gcc.dg/c2x-floatn-2.c: Likewise.
+	* gcc.dg/c2x-floatn-3.c: Likewise.
+	* gcc.dg/c2x-floatn-4.c: Likewise.
+	* gcc.dg/c2x-floatn-5.c: Likewise.
+	* gcc.dg/c2x-floatn-6.c: Likewise.
+	* gcc.dg/c2x-floatn-7.c: Likewise.
+	* gcc.dg/c2x-floatn-8.c: Likewise.
+	* gcc.dg/c2x-fordecl-1.c: Likewise.
+	* gcc.dg/c2x-fordecl-2.c: Likewise.
+	* gcc.dg/c2x-fordecl-3.c: Likewise.
+	* gcc.dg/c2x-fordecl-4.c: Likewise.
+	* gcc.dg/c2x-has-c-attribute-1.c: Likewise.
+	* gcc.dg/c2x-has-c-attribute-2.c: Likewise.
+	* gcc.dg/c2x-has-c-attribute-3.c: Likewise.
+	* gcc.dg/c2x-has-c-attribute-4.c: Likewise.
+	* gcc.dg/c2x-labels-1.c: Likewise.
+	* gcc.dg/c2x-labels-2.c: Likewise.
+	* gcc.dg/c2x-labels-3.c: Likewise.
+	* gcc.dg/c2x-limits-1.c: Likewise.
+	* gcc.dg/c2x-no-dfp-1.c: Likewise.
+	* gcc.dg/c2x-nullptr-1.c: Likewise.
+	* gcc.dg/c2x-nullptr-2.c: Likewise.
+	* gcc.dg/c2x-nullptr-3.c: Likewise.
+	* gcc.dg/c2x-nullptr-4.c: Likewise.
+	* gcc.dg/c2x-nullptr-5.c: Likewise.
+	* gcc.dg/c2x-nullptr-6.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-1.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-2.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-3.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-4.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-5.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-6.c: Likewise.
+	* gcc.dg/c2x-parm-omit-1.c: Likewise.
+	* gcc.dg/c2x-parm-omit-2.c: Likewise.
+	* gcc.dg/c2x-parm-omit-3.c: Likewise.
+	* gcc.dg/c2x-parm-omit-4.c: Likewise.
+	* gcc.dg/c2x-qual-1.c: Likewise.
+	* gcc.dg/c2x-qual-2.c: Likewise.
+	* gcc.dg/c2x-qual-3.c: Likewise.
+	* gcc.dg/c2x-qual-4.c: Likewise.
+	* gcc.dg/c2x-qual-5.c: Likewise.
+	* gcc.dg/c2x-qual-6.c: Likewise.
+	* gcc.dg/c2x-qual-7.c: Likewise.
+	* gcc.dg/c2x-static-assert-1.c: Likewise.
+	* gcc.dg/c2x-static-assert-2.c: Likewise.
+	* gcc.dg/c2x-static-assert-3.c: Likewise.
+	* gcc.dg/c2x-static-assert-4.c: Likewise.
+	* gcc.dg/c2x-stdarg-1.c: Likewise.
+	* gcc.dg/c2x-stdarg-2.c: Likewise.
+	* gcc.dg/c2x-stdarg-3.c: Likewise.
+	* gcc.dg/c2x-stdarg-4.c: Likewise.
+	* gcc.dg/c2x-stdarg-5.c: Likewise.
+	* gcc.dg/c2x-stdatomic-1.c: Likewise.
+	* gcc.dg/c2x-stddef-1.c: Likewise.
+	* gcc.dg/c2x-stdint-1.c: Likewise.
+	* gcc.dg/c2x-thread-local-1.c: Likewise.
+	* gcc.dg/c2x-thread-local-2.c: Likewise.
+	* gcc.dg/c2x-typeof-1.c: Likewise.
+	* gcc.dg/c2x-typeof-2.c: Likewise.
+	* gcc.dg/c2x-typeof-3.c: Likewise.
+	* gcc.dg/c2x-unproto-1.c: Likewise.
+	* gcc.dg/c2x-unproto-2.c: Likewise.
+	* gcc.dg/c2x-unproto-3.c: Likewise.
+	* gcc.dg/c2x-unproto-4.c: Likewise.
+	* gcc.dg/c2x-unreachable-1.c: Likewise.
+	* gcc.dg/c2x-utf8char-1.c: Likewise.
+	* gcc.dg/c2x-utf8char-2.c: Likewise.
+	* gcc.dg/c2x-utf8char-3.c: Likewise.
+	* gcc.dg/c2x-utf8str-type.c: Likewise.
+	* gcc.dg/c2x-utf8str.c: Likewise.
+	* gcc.dg/c90-auto-1.c: Likewise.
+	* gcc.dg/c90-complit-2.c: Likewise.
+	* gcc.dg/cpp/c11-warning-3.c: Likewise.
+	* gcc.dg/cpp/c2x-elifdef-1.c: Likewise.
+	* gcc.dg/cpp/c2x-elifdef-2.c: Likewise.
+	* gcc.dg/cpp/c2x-scope-1.c: Likewise.
+	* gcc.dg/cpp/c2x-scope-2.c: Likewise.
+	* gcc.dg/cpp/c2x-trigraphs-1.c: Likewise.
+	* gcc.dg/cpp/c2x-trigraphs-2.c: Likewise.
+	* gcc.dg/cpp/c2x-ucn-1.c: Likewise.
+	* gcc.dg/cpp/c2x-ucnid-1-utf8.c: Likewise.
+	* gcc.dg/cpp/c2x-ucnid-1.c: Likewise.
+	* gcc.dg/cpp/c2x-va-opt-1.c: Likewise.
+	* gcc.dg/cpp/c2x-warning-1.c: Likewise.
+	* gcc.dg/cpp/c2x-warning-2.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-3.c: Likewise.
+	* gcc.dg/cpp/gnu2x-warning-1.c: Likewise.
+	* gcc.dg/cpp/gnu2x-warning-2.c: Likewise.
+	* gcc.dg/cr-decimal-dig-2.c: Likewise.
+	* gcc.dg/cr-decimal-dig-3.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-2.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-3.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-4.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d32-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d32-2.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d64-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d64-2.c: Likewise.
+	* gcc.dg/dfp/bitint-1.c: Likewise.
+	* gcc.dg/dfp/bitint-2.c: Likewise.
+	* gcc.dg/dfp/bitint-3.c: Likewise.
+	* gcc.dg/dfp/bitint-4.c: Likewise.
+	* gcc.dg/dfp/bitint-5.c: Likewise.
+	* gcc.dg/dfp/bitint-6.c: Likewise.
+	* gcc.dg/dfp/bitint-7.c: Likewise.
+	* gcc.dg/dfp/bitint-8.c: Likewise.
+	* gcc.dg/dfp/c2x-builtins-dfp-1.c: Likewise.
+	* gcc.dg/dfp/c2x-constants-1.c: Likewise.
+	* gcc.dg/dfp/c2x-constants-2.c: Likewise.
+	* gcc.dg/dfp/c2x-constexpr-dfp-1.c: Likewise.
+	* gcc.dg/dfp/c2x-constexpr-dfp-2.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-1.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-2.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-3.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-4.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-5.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-6.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-7.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-8.c: Likewise.
+	* gcc.dg/dfp/c2x-keywords-1.c: Likewise.
+	* gcc.dg/dfp/c2x-keywords-2.c: Likewise.
+	* gcc.dg/dfp/tr24732-float-dfp-1.c: Likewise.
+	* gcc.dg/dfp/ts18661-2-float-dfp-1.c: Likewise.
+	* gcc.dg/fixed-point/bitint-1.c: Likewise.
+	* gcc.dg/format/c11-printf-1.c: Likewise.
+	* gcc.dg/format/c11-scanf-1.c: Likewise.
+	* gcc.dg/format/c2x-dfp-printf-1.c: Likewise.
+	* gcc.dg/format/c2x-dfp-scanf-1.c: Likewise.
+	* gcc.dg/format/c2x-printf-1.c: Likewise.
+	* gcc.dg/format/c2x-scanf-1.c: Likewise.
+	* gcc.dg/format/c2x-strftime-1.c: Likewise.
+	* gcc.dg/format/ext-10.c: Likewise.
+	* gcc.dg/format/ext-9.c: Likewise.
+	* gcc.dg/gnu11-typeof-2.c: Likewise.
+	* gcc.dg/gnu2x-attr-syntax-1.c: Likewise.
+	* gcc.dg/gnu2x-attr-syntax-2.c: Likewise.
+	* gcc.dg/gnu2x-attrs-1.c: Likewise.
+	* gcc.dg/gnu2x-attrs-2.c: Likewise.
+	* gcc.dg/gnu2x-auto-1.c: Likewise.
+	* gcc.dg/gnu2x-builtins-no-dfp-1.c: Likewise.
+	* gcc.dg/gnu2x-complit-1.c: Likewise.
+	* gcc.dg/gnu2x-complit-2.c: Likewise.
+	* gcc.dg/gnu2x-constexpr-1.c: Likewise.
+	* gcc.dg/gnu2x-empty-init-1.c: Likewise.
+	* gcc.dg/gnu2x-empty-init-2.c: Likewise.
+	* gcc.dg/gnu2x-enum-1.c: Likewise.
+	* gcc.dg/gnu2x-static-assert-1.c: Likewise.
+	* gcc.dg/gnu2x-stdarg-1.c: Likewise.
+	* gcc.dg/gnu2x-typeof-1.c: Likewise.
+	* gcc.dg/gnu2x-utf8char-1.c: Likewise.
+	* gcc.dg/gnu2x-utf8str-type.c: Likewise.
+	* gcc.dg/gnu2x-utf8str.c: Likewise.
+	* gcc.dg/gomp/attrs-1.c: Likewise.
+	* gcc.dg/gomp/attrs-10.c: Likewise.
+	* gcc.dg/gomp/attrs-11.c: Likewise.
+	* gcc.dg/gomp/attrs-12.c: Likewise.
+	* gcc.dg/gomp/attrs-13.c: Likewise.
+	* gcc.dg/gomp/attrs-14.c: Likewise.
+	* gcc.dg/gomp/attrs-15.c: Likewise.
+	* gcc.dg/gomp/attrs-16.c: Likewise.
+	* gcc.dg/gomp/attrs-17.c: Likewise.
+	* gcc.dg/gomp/attrs-18.c: Likewise.
+	* gcc.dg/gomp/attrs-19.c: Likewise.
+	* gcc.dg/gomp/attrs-2.c: Likewise.
+	* gcc.dg/gomp/attrs-20.c: Likewise.
+	* gcc.dg/gomp/attrs-21.c: Likewise.
+	* gcc.dg/gomp/attrs-3.c: Likewise.
+	* gcc.dg/gomp/attrs-4.c: Likewise.
+	* gcc.dg/gomp/attrs-5.c: Likewise.
+	* gcc.dg/gomp/attrs-6.c: Likewise.
+	* gcc.dg/gomp/attrs-7.c: Likewise.
+	* gcc.dg/gomp/attrs-8.c: Likewise.
+	* gcc.dg/gomp/attrs-9.c: Likewise.
+	* gcc.dg/limits-width-2.c: Likewise.
+	* gcc.dg/qual-return-10.c: Likewise.
+	* gcc.dg/qual-return-9.c: Likewise.
+	* gcc.dg/sso-19.c: Likewise.
+	* gcc.dg/stdckdint-1.c: Likewise.
+	* gcc.dg/stdckdint-2.c: Likewise.
+	* gcc.dg/stdint-width-2.c: Likewise.
+	* gcc.dg/tm/attrs-1.c: Likewise.
+	* gcc.dg/torture/bitint-1.c: Likewise.
+	* gcc.dg/torture/bitint-10.c: Likewise.
+	* gcc.dg/torture/bitint-11.c: Likewise.
+	* gcc.dg/torture/bitint-12.c: Likewise.
+	* gcc.dg/torture/bitint-13.c: Likewise.
+	* gcc.dg/torture/bitint-14.c: Likewise.
+	* gcc.dg/torture/bitint-15.c: Likewise.
+	* gcc.dg/torture/bitint-16.c: Likewise.
+	* gcc.dg/torture/bitint-17.c: Likewise.
+	* gcc.dg/torture/bitint-18.c: Likewise.
+	* gcc.dg/torture/bitint-19.c: Likewise.
+	* gcc.dg/torture/bitint-2.c: Likewise.
+	* gcc.dg/torture/bitint-20.c: Likewise.
+	* gcc.dg/torture/bitint-21.c: Likewise.
+	* gcc.dg/torture/bitint-22.c: Likewise.
+	* gcc.dg/torture/bitint-23.c: Likewise.
+	* gcc.dg/torture/bitint-24.c: Likewise.
+	* gcc.dg/torture/bitint-25.c: Likewise.
+	* gcc.dg/torture/bitint-26.c: Likewise.
+	* gcc.dg/torture/bitint-27.c: Likewise.
+	* gcc.dg/torture/bitint-28.c: Likewise.
+	* gcc.dg/torture/bitint-29.c: Likewise.
+	* gcc.dg/torture/bitint-3.c: Likewise.
+	* gcc.dg/torture/bitint-30.c: Likewise.
+	* gcc.dg/torture/bitint-31.c: Likewise.
+	* gcc.dg/torture/bitint-32.c: Likewise.
+	* gcc.dg/torture/bitint-33.c: Likewise.
+	* gcc.dg/torture/bitint-34.c: Likewise.
+	* gcc.dg/torture/bitint-35.c: Likewise.
+	* gcc.dg/torture/bitint-36.c: Likewise.
+	* gcc.dg/torture/bitint-37.c: Likewise.
+	* gcc.dg/torture/bitint-38.c: Likewise.
+	* gcc.dg/torture/bitint-39.c: Likewise.
+	* gcc.dg/torture/bitint-4.c: Likewise.
+	* gcc.dg/torture/bitint-40.c: Likewise.
+	* gcc.dg/torture/bitint-41.c: Likewise.
+	* gcc.dg/torture/bitint-42.c: Likewise.
+	* gcc.dg/torture/bitint-5.c: Likewise.
+	* gcc.dg/torture/bitint-6.c: Likewise.
+	* gcc.dg/torture/bitint-7.c: Likewise.
+	* gcc.dg/torture/bitint-8.c: Likewise.
+	* gcc.dg/torture/bitint-9.c: Likewise.
+	* gcc.dg/torture/builtin-fp-int-inexact-c2x.c: Likewise.
+	* gcc.dg/torture/c2x-stdarg-split-1a.c: Likewise.
+	* gcc.dg/torture/c2x-stdarg-split-1b.c: Likewise.
+	* gcc.dg/torture/float128-nan-floath.c: Likewise.
+	* gcc.dg/torture/float128x-nan-floath.c: Likewise.
+	* gcc.dg/torture/float16-nan-floath.c: Likewise.
+	* gcc.dg/torture/float32-nan-floath.c: Likewise.
+	* gcc.dg/torture/float32x-nan-floath.c: Likewise.
+	* gcc.dg/torture/float64-nan-floath.c: Likewise.
+	* gcc.dg/torture/float64x-nan-floath.c: Likewise.
+	* gcc.target/i386/excess-precision-11.c: Likewise.
+	* gcc.target/i386/excess-precision-12.c: Likewise.
+	* lib/target-supports.exp: Likewise.
+	* objc.dg/attributes/gnu2x-attr-syntax-1.m: Likewise.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/vect-sdiv-pow2-1.c: Recover scan check.
+	* lib/target-supports.exp: Remove riscv.
+
+2023-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/pr112359.c: New test.
+
+2023-11-07  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp2a/nodiscard-reason-nonstring.C: Adjust dg-error.
+
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/gomp/declare-target-7.c: Update expected error message.
+	* c-c++-common/gomp/declare-target-indirect-1.c: New.
+	* c-c++-common/gomp/declare-target-indirect-2.c: New.
+	* g++.dg/gomp/attrs-21.C (v12): Update expected error message.
+	* g++.dg/gomp/declare-target-indirect-1.C: New.
+	* gcc.dg/gomp/attrs-21.c (v12): Update expected error message.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/binary-constants-2.c: Refer to C23 instead of C2X.
+	* gcc.dg/binary-constants-3.c: Likewise.
+	* gcc.dg/bitint-23.c: Likewise.
+	* gcc.dg/bitint-26.c: Likewise.
+	* gcc.dg/bitint-27.c: Likewise.
+	* gcc.dg/c11-attr-syntax-1.c: Likewise.
+	* gcc.dg/c11-attr-syntax-2.c: Likewise.
+	* gcc.dg/c11-floatn-1.c: Likewise.
+	* gcc.dg/c11-floatn-2.c: Likewise.
+	* gcc.dg/c11-floatn-3.c: Likewise.
+	* gcc.dg/c11-floatn-4.c: Likewise.
+	* gcc.dg/c11-floatn-5.c: Likewise.
+	* gcc.dg/c11-floatn-6.c: Likewise.
+	* gcc.dg/c11-floatn-7.c: Likewise.
+	* gcc.dg/c11-floatn-8.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-4.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-6.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-7.c: Likewise.
+	* gcc.dg/c2x-binary-constants-2.c: Likewise.
+	* gcc.dg/c2x-floatn-5.c: Likewise.
+	* gcc.dg/c2x-floatn-6.c: Likewise.
+	* gcc.dg/c2x-floatn-7.c: Likewise.
+	* gcc.dg/c2x-floatn-8.c: Likewise.
+	* gcc.dg/c2x-nullptr-4.c: Likewise.
+	* gcc.dg/c2x-qual-2.c: Likewise.
+	* gcc.dg/c2x-qual-3.c: Likewise.
+	* gcc.dg/c2x-qual-6.c: Likewise.
+	* gcc.dg/cpp/c11-warning-1.c: Likewise.
+	* gcc.dg/cpp/c11-warning-2.c: Likewise.
+	* gcc.dg/cpp/c11-warning-3.c: Likewise.
+	* gcc.dg/cpp/c2x-warning-2.c: Likewise.
+	* gcc.dg/cpp/gnu11-elifdef-3.c: Likewise.
+	* gcc.dg/cpp/gnu11-elifdef-4.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-1.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-2.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-3.c: Likewise.
+	* gcc.dg/cpp/gnu2x-warning-2.c: Likewise.
+	* gcc.dg/dfp/c11-constants-1.c: Likewise.
+	* gcc.dg/dfp/c11-constants-2.c: Likewise.
+	* gcc.dg/dfp/c2x-constants-2.c: Likewise.
+	* gcc.dg/dfp/constants-pedantic.c: Likewise.
+	* gcc.dg/pr30260.c: Likewise.
+	* gcc.dg/system-binary-constants-1.c: Likewise.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112420
+	* gcc.dg/vect/pr65518.c: Fix check for RVV.
+
+2023-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/vect-cond-reduc-4.c: Make check more accurate.
+
+2023-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/bb-slp-over-widen-1.c: Change test expectation.
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Ditto.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Add RISC-V.
+
+2023-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_opt_mstrict_align): New.
+	* gcc.dg/strlenopt-80.c: Add -mno-strict-align if supported.
+	* gcc.target/powerpc/prefix-ds-dq.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-8.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-8.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-8.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-8.c: Likewise.
+
+2023-11-07  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadmemidx-helpers.h:
+	Replace stdint.h with stdint-gcc.h.
+
+2023-11-07  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadfmemidx-index-update.c: Add ABI.
+	* gcc.target/riscv/xtheadfmemidx-index-xtheadbb-update.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-index-xtheadbb.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-index.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-uindex-update.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-uindex-xtheadbb-update.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-uindex-xtheadbb.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-uindex.c: Likewise.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Add riscv.
+
+2023-11-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/112340
+	* gcc.target/powerpc/pr106550_1.c: Add has_arch_ppc64 target require.
+
+2023-11-07  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_reduc-1.c:
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_reduc-2.c:
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/vect-sdiv-pow2-1.c: Fix dump check.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-reduc-sad.c: Fix check.
+	* gcc.dg/vect/vect-reduc-sad.c: Ditto.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-43.c: Fix XPASS for RVV.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112399
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-2.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/pr112399.c: New test.
+
+2023-11-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-iceil-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-iceil-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-rv32-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceilf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceilf-rv64-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llceilf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llceilf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-iceil-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lceil-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lceilf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llceilf-0.c: New test.
+
+2023-11-07  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Fix FAIL.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Fix FAIL.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-39.c: Add RISCV.
+
+2023-11-06  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/cpp/wchar-1.c (main): Call __builtin_abort instead of
+	abort.
+
+2023-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/dg-pch.exp (dg-flags-pch): Add -c when generating the
+	precompiled header.
+
+2023-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* g++.dg/init/array54.C: Require thread_fence.
+	* gcc.dg/c2x-nullptr-1.c: Likewise.
+	* gcc.dg/pr103721-2.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_thread_fence):
+	New.
+
+2023-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107954
+	* gcc.dg/c23-opts-1.c, gcc.dg/c23-opts-2.c, gcc.dg/c23-opts-3.c,
+	gcc.dg/c23-opts-4.c, gcc.dg/c23-opts-5.c, gcc.dg/gnu23-opts-1.c,
+	gcc.dg/gnu23-opts-2.c: New tests.
+
+2023-11-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-iround-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-iround-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llroundf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llroundf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-rv32-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lroundf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lroundf-rv64-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-iround-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llroundf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lround-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lroundf-rv64-0.c: New test.
+
+2023-11-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/unop/sew64-rv32.c: New test.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111950
+	* gcc.dg/torture/pr111950.c: New testcase.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112404
+	* gfortran.dg/pr112404.f90: New testcase.
+
+2023-11-06  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/compile/20000412-2.c (f): Call
+	__builtin_strlen	instead of strlen.
+	* gcc.c-torture/compile/20000427-1.c (FindNearestPowerOf2):
+	Declare.
+	* gcc.c-torture/compile/20000802-1.c (bar): Call
+	__builtin_memcpy	instead of memcpy.
+	* gcc.c-torture/compile/20010525-1.c (kind_varread): Likewise.
+	* gcc.c-torture/compile/20010706-1.c (foo): Add missing int
+	return type.
+	* gcc.c-torture/compile/20020314-1.c (add_output_space_event)
+	(del_tux_atom, add_req_to_workqueue): Declare.
+	* gcc.c-torture/compile/20020701-1.c (f): Call
+	__builtin_memcpy	instead of memcpy.
+	* gcc.c-torture/compile/20021015-2.c (f): Call __builtin_bcmp
+	instead of bcmo.
+	* gcc.c-torture/compile/20030110-1.c (inb): Declare.
+	* gcc.c-torture/compile/20030314-1.c (bar): Add missing
+	void return type.
+	* gcc.c-torture/compile/20030405-1.c (bar): Add missing int
+	return type.
+	* gcc.c-torture/compile/20030416-1.c (bar): Declare.
+	(main): Add missing int return type.
+	* gcc.c-torture/compile/20030503-1.c (bar): Declare.
+	* gcc.c-torture/compile/20030530-1.c: (bar): Declare.
+	* gcc.c-torture/compile/20031031-2.c (foo, bar, baz): Declare.
+	* gcc.c-torture/compile/20040101-1.c (test16): Call
+	__builtin_printf instead of printf.
+	* gcc.c-torture/compile/20040124-1.c (f2, f3): Declare.
+	* gcc.c-torture/compile/20040304-1.c (macarg): Declare.
+	* gcc.c-torture/compile/20040705-1.c (f): Call
+	__builtin_memcpy instead of memcpy.
+	* gcc.c-torture/compile/20040908-1.c (bar): Declare.
+	* gcc.c-torture/compile/20050510-1.c (dont_remove): Declare.
+	* gcc.c-torture/compile/20051228-1.c (bar): Declare.
+	* gcc.c-torture/compile/20060109-1.c (cpp_interpret_string):
+	Declare.
+	(int_c_lex, cb_ident): Add missing void return type.
+	(cb_ident): Define as static.
+	* gcc.c-torture/compile/20060202-1.c (sarray_get): Declare.
+	* gcc.c-torture/compile/20070129.c (regcurly)
+	(reguni): Declare.
+	* gcc.c-torture/compile/20070529-1.c (__fswab16): Declare.
+	* gcc.c-torture/compile/20070529-2.c (kmem_free): Declare.
+	* gcc.c-torture/compile/20070605-1.c (quantize_fs_dither):
+	Add missing void return type.
+	* gcc.c-torture/compile/20071107-1.c
+	(settings_install_property_parser): Declare.
+	* gcc.c-torture/compile/20090907-1.c (load_waveform): Call
+	__builtin_abort instead of abort.
+	* gcc.c-torture/compile/20100907.c (t): Add missing void
+	types.
+	* gcc.c-torture/compile/20120524-1.c (build_packet): Call
+	__builtin_memcpy instead of memcpy.
+	* gcc.c-torture/compile/20120830-2.c
+	(ubidi_writeReordered_49): Add missing void return type.
+	* gcc.c-torture/compile/20121010-1.c (read_long): Add missing
+	int return type.
+	* gcc.c-torture/compile/920301-1.c (f, g): Add missing void
+	types.
+	* gcc.c-torture/compile/920409-1.c (x): Likewise.
+	* gcc.c-torture/compile/920410-1.c (main): Add missing int
+	return type.  Call __builtin_printf instead of printf.
+	* gcc.c-torture/compile/920410-2.c (joe): Add missing void
+	types.
+	* gcc.c-torture/compile/920411-2.c (x): Likewise.
+	* gcc.c-torture/compile/920413-1.c (f): Add missing int return
+	type.
+	* gcc.c-torture/compile/920428-3.c (x): Add missing int types.
+	* gcc.c-torture/compile/920428-4.c (x): Add missing void
+	return type and int parameter type.
+	* gcc.c-torture/compile/920501-10.c (x): Add missing int
+	types.
+	* gcc.c-torture/compile/920501-12.c (x, a, b, A, B): Likewise.
+	* gcc.c-torture/compile/920501-17.c (x): Add missing void
+	types.
+	* gcc.c-torture/compile/920501-19.c (y): Likewise.
+	* gcc.c-torture/compile/920501-22.c (x): Likewise.
+	* gcc.c-torture/compile/920501-3.c (x): Likewise.
+	* gcc.c-torture/compile/920501-4.c (foo): Likewise.
+	* gcc.c-torture/compile/920529-1.c (f): Call __builtin_abort
+	instead of abort.
+	* gcc.c-torture/compile/920615-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/920623-1.c (g): Likewise.
+	* gcc.c-torture/compile/920624-1.c (f): Likewise.
+	* gcc.c-torture/compile/920711-1.c (f): Add missing int types.
+	* gcc.c-torture/compile/920729-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/920806-1.c (f): Likewise.
+	* gcc.c-torture/compile/920821-2.c (f): Likewise.
+	* gcc.c-torture/compile/920825-1.c (f): Likewise.
+	* gcc.c-torture/compile/920825-2.c (f, g): Add missing void
+	return type.
+	* gcc.c-torture/compile/920826-1.c (f): Likewise.
+	* gcc.c-torture/compile/920828-1.c (f): Add missing int types.
+	* gcc.c-torture/compile/920829-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/920928-3.c (f): Likewise.
+	* gcc.c-torture/compile/921012-2.c (f): Likewise.
+	* gcc.c-torture/compile/921013-1.c (f): Likewise.
+	* gcc.c-torture/compile/921019-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/921026-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/921126-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/921227-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/930109-2.c (f): Add missing int types.
+	* gcc.c-torture/compile/930210-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/930222-1.c (g): Declare.
+	(f): Add missing int return type.
+	* gcc.c-torture/compile/930421-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/930503-1.c (f): Likewise.
+	* gcc.c-torture/compile/930513-1.c (f): Add missing int return
+	type.
+	* gcc.c-torture/compile/930513-3.c (test): Add missing void
+	types.
+	* gcc.c-torture/compile/930523-1.c (f): Likewise.
+	* gcc.c-torture/compile/930527-1.c (f): Likewise.
+	* gcc.c-torture/compile/930603-1.c (f): Likewise.
+	* gcc.c-torture/compile/930607-1.c (g): Likewise.
+	* gcc.c-torture/compile/930702-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/931018-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/931031-1.c (f): Likewise.
+	* gcc.c-torture/compile/931102-1.c (xxx): Add missing void
+	types.
+	* gcc.c-torture/compile/940611-1.c (f): Likewise.
+	* gcc.c-torture/compile/940712-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/950512-1.c (g): Declare.
+	(f): Add missing void return type.
+	* gcc.c-torture/compile/950530-1.c (f): Add missing int
+	return type.
+	* gcc.c-torture/compile/950610-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/950613-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/950816-1.c (f): Add missing int return
+	type and missing void.
+	* gcc.c-torture/compile/950816-2.c (func): Declare.
+	(f): Add missing void types.
+	* gcc.c-torture/compile/950816-3.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/950919-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/950921-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/951004-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/951116-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/951128-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/951220-1.c (f): Add missing int return
+	type.
+	* gcc.c-torture/compile/960220-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/960221-1.c (foo): Add missing void
+	return type.
+	* gcc.c-torture/compile/960704-1.c (main): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/961031-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/961126-1.c (sub, sub2): Declare.
+	(main): Add missing int return type and missing void.
+	* gcc.c-torture/compile/961203-1.c (main): Call __builtin_exit
+	instead of exit.
+	* gcc.c-torture/compile/981001-1.c (main): Likewise.
+	* gcc.c-torture/compile/981107-1.c (call): Declare.
+	* gcc.c-torture/compile/990517-1.c (sdbm__splpage): Call
+	__builtin_memcpy instead of memcpy.
+	* gcc.c-torture/compile/990617-1.c (main): Call
+	__builtin_printf instead of printf.
+	* gcc.c-torture/compile/991026-2.c (detach): Add missing void
+	types.
+	* gcc.c-torture/compile/991229-1.c (ejEval): Likewise.
+	* gcc.c-torture/compile/991229-3.c (rand): Declare.
+
+2023-11-06  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/execute/builtins/fputs.c (_GNU_SOURCE):
+	Define.
+	(fputs_unlocked): Declare.
+
+2023-11-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/vect-cond-arith-2.c: No vect cost model for
+	riscv_v.
+
+2023-11-06  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr112393.c: New test.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112369
+	* gcc.dg/pr112369.c: New testcase.
+
+2023-11-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-irint-run-0.c: Adjust
+	test cases.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrintf-run-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-rv32-run-0.c: Ditto.
+
+2023-11-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111828
+	* lib/target-supports.exp
+	(check_effective_target_powerpc_as_p10_htm): New proc.
+	* g++.target/powerpc/pr111828-1.C: New test.
+	* g++.target/powerpc/pr111828-2.C: New test.
+
+2023-11-06  xuli  <xuli1@eswincomputing.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vadd.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vfadd.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vget_vset.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vloxseg2ei16.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vmv.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vreinterpret.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vadd.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vfadd.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vget_vset.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vloxseg2ei16.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vmv.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vreinterpret.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vadd.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vfadd.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vget_vset.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vloxseg2ei16.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vmv.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vreinterpret.h: New test.
+
+2023-11-06  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111889
+	* gcc.target/i386/pr111889.c: New test.
+
+2023-11-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr111753.c: Require dfp.
+
+2023-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/attrs-1.c: Adjust for omp::directive and
+	omp::sequence being supported also in C and add tests for omp::decl.
+	* c-c++-common/gomp/attrs-2.c: Likewise.
+	* c-c++-common/gomp/attrs-3.c: Add tests for omp::decl.
+
+2023-11-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112105
+	* gcc.target/aarch64/pr112105.c: New test.
+	* gcc.target/aarch64/sve/pcs/struct_3_128.c: Expect a 32-bit spill
+	rather than a 16-bit spill.
+
+2023-11-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-irint-run-0.c:
+	* gcc.target/riscv/rvv/autovec/unop/math-irint-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-irintf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrintf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrintf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-rv32-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrintf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrintf-rv64-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-irint-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llrintf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lrint-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lrintf-rv64-0.c: New test.
+
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/attrs-19.c: New test.
+	* gcc.dg/gomp/attrs-20.c: New test.
+	* gcc.dg/gomp/attrs-21.c: New test.
+
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/attrs-1.c: New test.
+	* gcc.dg/gomp/attrs-2.c: New test.
+	* gcc.dg/gomp/attrs-3.c: New test.
+	* gcc.dg/gomp/attrs-4.c: New test.
+	* gcc.dg/gomp/attrs-5.c: New test.
+	* gcc.dg/gomp/attrs-6.c: New test.
+	* gcc.dg/gomp/attrs-7.c: New test.
+	* gcc.dg/gomp/attrs-8.c: New test.
+	* gcc.dg/gomp/attrs-9.c: New test.
+	* gcc.dg/gomp/attrs-10.c: New test.
+	* gcc.dg/gomp/attrs-11.c: New test.
+	* gcc.dg/gomp/attrs-12.c: New test.
+	* gcc.dg/gomp/attrs-13.c: New test.
+	* gcc.dg/gomp/attrs-14.c: New test.
+	* gcc.dg/gomp/attrs-15.c: New test.
+	* gcc.dg/gomp/attrs-16.c: New test.
+	* gcc.dg/gomp/attrs-17.c: New test.
+	* gcc.dg/gomp/attrs-18.c: New test.
+	* g++.dg/gomp/attrs-2.C: Enable for c++11 rather than just
+	c++17.  Avoid using omp : syntax for c++11, c++14 and c.
+
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_group_plugin.c: Update for changes to
+	diagnostic_context.
+	* gcc.dg/plugin/diagnostic_plugin_test_text_art.c: Likewise.
+
+2023-11-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/98541
+	* gcc.dg/Wnonnull-4.c: Adapt test.
+	* gcc.dg/Wstringop-overflow-40.c: Adapt test.
+
+2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97245
+	* gfortran.dg/proc_ptr_53.f90: New test.
+
+2023-11-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-simd-clone-20.c: New file.
+	* gfortran.dg/simd-builtins-1.h: Adapt.
+	* gfortran.dg/simd-builtins-6.f90: Adapt.
+
+2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92887
+	* gfortran.dg/value_optional_1.f90: New test.
+
+2023-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111766
+	* gcc.dg/pr111766.c: New.
+
+2023-11-03  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/20231103-1.f90: New testcase.
+	* gfortran.dg/20231103-2.f90: Likewise.
+
+2023-11-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/adddi3-1.c: New test case.
+	* gcc.target/arc/ashldi3-1.c: Likewise.
+
+2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/tree-prof/indir-call-prof-2.C: Specify
+	'dg-require-effective-target exceptions_enabled'.
+	* g++.dg/tree-prof/partition1.C: Likewise.
+	* g++.dg/tree-prof/partition2.C: Likewise.
+	* g++.dg/tree-prof/partition3.C: Likewise.
+	* g++.dg/tree-prof/pr51719.C: Likewise.
+	* g++.dg/tree-prof/pr57451.C: Likewise.
+	* g++.dg/tree-prof/pr59255.C: Likewise.
+
+2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/lto/20081109-1_0.C: Specify
+	'dg-require-effective-target exceptions_enabled'.
+	* g++.dg/lto/20081109_0.C: Likewise.
+	* g++.dg/lto/20091026-1_0.C: Likewise.
+	* g++.dg/lto/pr87906_0.C: Likewise.
+	* g++.dg/lto/pr88046_0.C: Likewise.
+
+2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/compat/eh/ctor1_main.C: Specify
+	'dg-require-effective-target exceptions_enabled'.
+	* g++.dg/compat/eh/ctor2_main.C: Likewise.
+	* g++.dg/compat/eh/dtor1_main.C: Likewise.
+	* g++.dg/compat/eh/filter1_main.C: Likewise.
+	* g++.dg/compat/eh/filter2_main.C: Likewise.
+	* g++.dg/compat/eh/new1_main.C: Likewise.
+	* g++.dg/compat/eh/nrv1_main.C: Likewise.
+	* g++.dg/compat/eh/spec3_main.C: Likewise.
+	* g++.dg/compat/eh/template1_main.C: Likewise.
+	* g++.dg/compat/eh/unexpected1_main.C: Likewise.
+	* g++.dg/compat/init/array5_main.C: Likewise.
+
+2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/cpp0x/catch1.C: Specify
+	'dg-require-effective-target exceptions_enabled'.
+	* g++.dg/cpp0x/constexpr-throw.C: Likewise.
+	* g++.dg/cpp1y/constexpr-89785-2.C: Likewise.
+	* g++.dg/cpp1y/constexpr-throw.C: Likewise.
+	* g++.dg/cpp1y/pr79393-3.C: Likewise.
+	* g++.dg/cpp2a/consteval-memfn1.C: Likewise.
+	* g++.dg/cpp2a/consteval11.C: Likewise.
+	* g++.dg/cpp2a/consteval34.C: Likewise.
+	* g++.dg/cpp2a/consteval9.C: Likewise.
+	* g++.dg/cpp2a/explicit1.C: Likewise.
+	* g++.dg/cpp2a/explicit2.C: Likewise.
+	* g++.dg/cpp2a/explicit5.C: Likewise.
+	* g++.dg/eh/builtin10.C: Likewise.
+	* g++.dg/eh/builtin11.C: Likewise.
+	* g++.dg/eh/builtin6.C: Likewise.
+	* g++.dg/eh/builtin7.C: Likewise.
+	* g++.dg/eh/builtin9.C: Likewise.
+	* g++.dg/eh/dtor4.C: Likewise.
+	* g++.dg/eh/pr42859.C: Likewise.
+	* g++.dg/ext/stmtexpr25.C: Likewise.
+	* g++.dg/ext/vla4.C: Likewise.
+	* g++.dg/init/placement4.C: Likewise.
+	* g++.dg/other/error32.C: Likewise.
+	* g++.dg/parse/crash55.C: Likewise.
+	* g++.dg/parse/pr31952-2.C: Likewise.
+	* g++.dg/parse/pr31952-3.C: Likewise.
+	* g++.dg/tm/noexcept-7.C: Likewise.
+	* g++.dg/torture/pr43257.C: Likewise.
+	* g++.dg/torture/pr56694.C: Likewise.
+	* g++.dg/torture/pr81659.C: Likewise.
+	* g++.dg/warn/Wcatch-value-1.C: Likewise.
+	* g++.dg/warn/Wcatch-value-2.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3b.C: Likewise.
+	* g++.dg/warn/Wexceptions1.C: Likewise.
+	* g++.dg/warn/Wexceptions3.C: Likewise.
+	* g++.dg/warn/Winfinite-recursion-3.C: Likewise.
+	* g++.dg/warn/Wreturn-6.C: Likewise.
+	* g++.dg/warn/Wstringop-truncation-2.C: Likewise.
+	* g++.dg/warn/Wterminate1.C: Likewise.
+	* g++.old-deja/g++.eh/catch1.C: Likewise.
+	* g++.old-deja/g++.eh/catch10.C: Likewise.
+	* g++.old-deja/g++.eh/cond1.C: Likewise.
+	* g++.old-deja/g++.eh/ctor1.C: Likewise.
+	* g++.old-deja/g++.eh/throw2.C: Likewise.
+	* g++.old-deja/g++.other/cond5.C: Likewise.
+
+2023-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112310
+	* gcc.dg/torture/pr112310.c: New testcase.
+
+2023-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98498
+	* gfortran.dg/interface_50.f90: New test.
+
+2023-11-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112326
+	* gcc.target/riscv/rvv/autovec/pr112326.c: New test.
+
+2023-11-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112316
+	* gfortran.dg/pr112316.f90: New test.
+
+2023-11-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112301
+	PR c++/102191
+	PR c++/33799
+	* g++.dg/eh/return1.C: Add more cases.
+
+2023-11-02  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/112347
+	* gcc.dg/Walloc-size-3.c: New test.
+
+2023-11-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/vect-cond-reduc-in-order-2-signed-zero.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/pr111401.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-2.c: Adjust.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-4.c: Ditto.
+
+2023-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112320
+	* gcc.dg/pr112320.c: New testcase.
+
+2023-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_gather_load_ifn): True for GCN
+	target.
+
+2023-11-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/part-vect-complexhf.c: New test.
+
+2023-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110342
+	* g++.dg/cpp26/unevalstr1.C: New test.
+	* g++.dg/cpp26/unevalstr2.C: New test.
+	* g++.dg/cpp0x/udlit-error1.C (lol): Expect an error for C++26
+	about user-defined literal in deprecated attribute.
+
+2023-11-02  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/tuple_create.c: Rename to vcreate.c.
+	* gcc.target/riscv/rvv/base/vcreate.c: New test.
+
+2023-11-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112327
+	* gcc.target/riscv/rvv/base/pr112327-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr112327-2.c: New test.
+
+2023-11-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110551
+	* gcc.target/i386/pr110551-2.c: New test case.
+
+2023-11-01  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-ztso-amo-add-1.c: Add Ztso extension to
+	dg-options for dg-do compile.
+	* gcc.target/riscv/amo-table-ztso-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-6.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-7.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-load-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-load-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-load-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-store-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-store-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-store-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-5.c: Ditto.
+	* lib/target-supports.exp: Add testing infrastructure to require the
+	Ztso extension or add it to an existing -march.
+
+2023-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/71219
+	* gcc.dg/Walloc-size-1.c: New test.
+	* gcc.dg/Walloc-size-2.c: New test.
+
+2023-11-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/102989
+	* gm2/pim/fail/largeconst.mod: Updated foo to an outrageous value.
+	* gm2/pim/fail/largeconst2.mod: Duplicate test removed.
+
+2023-11-01  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/tuple_vundefined.c: New test.
+
 2023-10-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.dg/vect/vect-gather-6.c: New test.

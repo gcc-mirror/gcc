@@ -5,6 +5,11 @@
 
    Written by Roger Sayle, April 22, 2002.  */
 
+#include <string.h>
+
+void abort (void);
+void exit (int);
+
 #ifndef MAX_OFFSET
 #define MAX_OFFSET (sizeof (long long))
 #endif

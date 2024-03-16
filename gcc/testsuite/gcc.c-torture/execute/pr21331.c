@@ -9,7 +9,8 @@ foo ()
   if (retval == -1)  return 0;
   return 3;  }
 
-main ()
+int
+main (void)
 { if (foo () != 0)  abort ();
   return 0;  }
 

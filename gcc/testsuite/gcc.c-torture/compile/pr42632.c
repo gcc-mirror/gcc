@@ -1,3 +1,4 @@
+int ___pskb_trim(void);
 static inline __attribute__((always_inline)) int
 __pskb_trim(void)
 {

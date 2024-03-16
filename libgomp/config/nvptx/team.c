@@ -35,6 +35,7 @@ struct gomp_thread *nvptx_thrs __attribute__((shared,nocommon));
 int __gomp_team_num __attribute__((shared,nocommon));
 
 static void gomp_thread_start (struct gomp_thread_pool *);
+extern void build_indirect_map (void);
 
 
 /* This externally visible function handles target region entry.  It
@@ -52,6 +53,10 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
   int tid, ntids;
   asm ("mov.u32 %0, %%tid.y;" : "=r" (tid));
   asm ("mov.u32 %0, %%ntid.y;" : "=r" (ntids));
+
+  /* Initialize indirect function support.  */
+  build_indirect_map ();
+
   if (tid == 0)
     {
       gomp_global_icv.nthreads_var = ntids;

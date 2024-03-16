@@ -1,7 +1,11 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 struct s { int x, y; };
 
+void
 f (int attr, ...)
 {
   struct s va_values;
@@ -28,7 +32,8 @@ f (int attr, ...)
   va_end (va);
 }
 
-main ()
+int
+main (void)
 {
   struct s a, b;
 

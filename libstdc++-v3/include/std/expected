@@ -843,8 +843,12 @@ namespace __expected
 	and_then(_Fn&& __f) &
 	{
 	  using _Up = __expected::__result<_Fn, _Tp&>;
-	  static_assert(__expected::__is_expected<_Up>);
-	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+	  static_assert(__expected::__is_expected<_Up>,
+			"the function passed to std::expected<T, E>::and_then "
+			"must return a std::expected");
+	  static_assert(is_same_v<typename _Up::error_type, _Er>,
+			"the function passed to std::expected<T, E>::and_then "
+			"must return a std::expected with the same error_type");
 
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), _M_val);
@@ -857,8 +861,12 @@ namespace __expected
 	and_then(_Fn&& __f) const &
 	{
 	  using _Up = __expected::__result<_Fn, const _Tp&>;
-	  static_assert(__expected::__is_expected<_Up>);
-	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+	  static_assert(__expected::__is_expected<_Up>,
+			"the function passed to std::expected<T, E>::and_then "
+			"must return a std::expected");
+	  static_assert(is_same_v<typename _Up::error_type, _Er>,
+			"the function passed to std::expected<T, E>::and_then "
+			"must return a std::expected with the same error_type");
 
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), _M_val);
@@ -871,8 +879,12 @@ namespace __expected
 	and_then(_Fn&& __f) &&
 	{
 	  using _Up = __expected::__result<_Fn, _Tp&&>;
-	  static_assert(__expected::__is_expected<_Up>);
-	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+	  static_assert(__expected::__is_expected<_Up>,
+			"the function passed to std::expected<T, E>::and_then "
+			"must return a std::expected");
+	  static_assert(is_same_v<typename _Up::error_type, _Er>,
+			"the function passed to std::expected<T, E>::and_then "
+			"must return a std::expected with the same error_type");
 
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), std::move(_M_val));
@@ -886,8 +898,12 @@ namespace __expected
 	and_then(_Fn&& __f) const &&
 	{
 	  using _Up = __expected::__result<_Fn, const _Tp&&>;
-	  static_assert(__expected::__is_expected<_Up>);
-	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+	  static_assert(__expected::__is_expected<_Up>,
+			"the function passed to std::expected<T, E>::and_then "
+			"must return a std::expected");
+	  static_assert(is_same_v<typename _Up::error_type, _Er>,
+			"the function passed to std::expected<T, E>::and_then "
+			"must return a std::expected with the same error_type");
 
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), std::move(_M_val));
@@ -900,8 +916,12 @@ namespace __expected
 	or_else(_Fn&& __f) &
 	{
 	  using _Gr = __expected::__result<_Fn, _Er&>;
-	  static_assert(__expected::__is_expected<_Gr>);
-	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+	  static_assert(__expected::__is_expected<_Gr>,
+			"the function passed to std::expected<T, E>::or_else "
+			"must return a std::expected");
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>,
+			"the function passed to std::expected<T, E>::or_else "
+			"must return a std::expected with the same value_type");
 
 	  if (has_value())
 	    return _Gr(in_place, _M_val);
@@ -914,8 +934,12 @@ namespace __expected
 	or_else(_Fn&& __f) const &
 	{
 	  using _Gr = __expected::__result<_Fn, const _Er&>;
-	  static_assert(__expected::__is_expected<_Gr>);
-	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+	  static_assert(__expected::__is_expected<_Gr>,
+			"the function passed to std::expected<T, E>::or_else "
+			"must return a std::expected");
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>,
+			"the function passed to std::expected<T, E>::or_else "
+			"must return a std::expected with the same value_type");
 
 	  if (has_value())
 	    return _Gr(in_place, _M_val);
@@ -929,8 +953,12 @@ namespace __expected
 	or_else(_Fn&& __f) &&
 	{
 	  using _Gr = __expected::__result<_Fn, _Er&&>;
-	  static_assert(__expected::__is_expected<_Gr>);
-	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+	  static_assert(__expected::__is_expected<_Gr>,
+			"the function passed to std::expected<T, E>::or_else "
+			"must return a std::expected");
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>,
+			"the function passed to std::expected<T, E>::or_else "
+			"must return a std::expected with the same value_type");
 
 	  if (has_value())
 	    return _Gr(in_place, std::move(_M_val));
@@ -943,8 +971,12 @@ namespace __expected
 	or_else(_Fn&& __f) const &&
 	{
 	  using _Gr = __expected::__result<_Fn, const _Er&&>;
-	  static_assert(__expected::__is_expected<_Gr>);
-	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+	  static_assert(__expected::__is_expected<_Gr>,
+			"the function passed to std::expected<T, E>::or_else "
+			"must return a std::expected");
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>,
+			"the function passed to std::expected<T, E>::or_else "
+			"must return a std::expected with the same value_type");
 
 	  if (has_value())
 	    return _Gr(in_place, std::move(_M_val));

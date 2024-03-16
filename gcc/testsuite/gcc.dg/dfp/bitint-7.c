@@ -2,7 +2,7 @@
 /* Test non-canonical BID significands.  */
 /* { dg-do run { target bitint } } */
 /* { dg-require-effective-target dfp_bid } */
-/* { dg-options "-std=gnu2x -O2" } */
+/* { dg-options "-std=gnu23 -O2" } */
 
 union U32
 {

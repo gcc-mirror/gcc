@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32 --param riscv-autovec-preference=scalable -fselective-scheduling -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32 -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic -fselective-scheduling -fdump-tree-vect-details" } */
 
 #include <stdint-gcc.h>
 
@@ -22,7 +22,8 @@ foo (){
 }
 
 /* { dg-final { scan-assembler {e32,m4} } } */
-/* { dg-final { scan-assembler-times {csrr} 1 } } */
+/* { dg-final { scan-assembler-not {jr} } } */
+/* { dg-final { scan-assembler-times {ret} 1 } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 2" "vect" } } */

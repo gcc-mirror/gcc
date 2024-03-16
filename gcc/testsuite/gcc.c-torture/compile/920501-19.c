@@ -1,1 +1,1 @@
-long long x=0;y(){x=0;}
+long long x=0;void y(void){x=0;}

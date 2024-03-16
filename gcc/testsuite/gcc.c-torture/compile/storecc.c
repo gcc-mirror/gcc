@@ -1,3 +1,4 @@
+int
 foo (char *p, int a)
 {
   *p = a;

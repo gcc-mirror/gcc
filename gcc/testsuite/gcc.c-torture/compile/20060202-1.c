@@ -35,6 +35,7 @@ soffset_decode (sidx indx)
   x.idx = indx;
   return x.off.eoffset + (x.off.boffset * (1 << 5));
 }
+void *sarray_get (struct sarray *array, sidx indx);
 static __inline__ void *
 sarray_get_safe (struct sarray *array, sidx indx)
 {

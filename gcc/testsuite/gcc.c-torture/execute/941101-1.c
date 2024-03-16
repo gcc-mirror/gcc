@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 f ()
 {
   int var = 7;

@@ -2933,7 +2933,7 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 		    gimple_stmt_iterator gsin = gsi;
 		    gsi_prev (&gsip);
 		    gsi_next (&gsin);
-		    rewrite_to_defined_overflow (stmt, true);
+		    rewrite_to_defined_overflow (&gsi);
 		    unsigned uid = gimple_uid (stmt);
 		    if (gsi_end_p (gsip))
 		      gsip = gsi_after_labels (bb);

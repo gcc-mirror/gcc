@@ -10,7 +10,8 @@ g ()
   return sd;
 }
 
-f ()
+void
+f (void)
 {
   g ();
 }

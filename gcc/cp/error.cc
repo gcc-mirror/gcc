@@ -3636,7 +3636,7 @@ cp_print_error_function (diagnostic_context *context,
 		  pp_newline (context->printer);
 		  if (s.file != NULL)
 		    {
-		      if (context->show_column && s.column != 0)
+		      if (context->m_show_column && s.column != 0)
 			pp_printf (context->printer,
 				   _("    inlined from %qD at %r%s:%d:%d%R"),
 				   fndecl,
@@ -3737,7 +3737,7 @@ print_instantiation_partial_context_line (diagnostic_context *context,
 
   expanded_location xloc = expand_location (loc);
 
-  if (context->show_column)
+  if (context->m_show_column)
     pp_verbatim (context->printer, _("%r%s:%d:%d:%R   "),
 		 "locus", xloc.file, xloc.line, xloc.column);
   else
@@ -3816,7 +3816,7 @@ print_instantiation_partial_context (diagnostic_context *context,
 	{
 	  expanded_location xloc;
 	  xloc = expand_location (loc);
-	  if (context->show_column)
+	  if (context->m_show_column)
 	    pp_verbatim (context->printer,
 			 _("%r%s:%d:%d:%R   [ skipping %d instantiation "
 			   "contexts, use -ftemplate-backtrace-limit=0 to "
@@ -3876,7 +3876,7 @@ maybe_print_constexpr_context (diagnostic_context *context)
     {
       expanded_location xloc = expand_location (EXPR_LOCATION (t));
       const char *s = expr_as_string (t, 0);
-      if (context->show_column)
+      if (context->m_show_column)
 	pp_verbatim (context->printer,
 		     _("%r%s:%d:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, xloc.column, s);
@@ -3893,7 +3893,7 @@ static void
 print_location (diagnostic_context *context, location_t loc)
 {
   expanded_location xloc = expand_location (loc);
-  if (context->show_column)
+  if (context->m_show_column)
     pp_verbatim (context->printer, _("%r%s:%d:%d:%R   "),
                  "locus", xloc.file, xloc.line, xloc.column);
   else

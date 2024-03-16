@@ -1,4 +1,5 @@
 // PR tree-optimization/51719
+// Explicit { dg-require-effective-target exceptions_enabled } so that dependent tests don't turn UNRESOLVED for '-fno-exceptions'.
 // { dg-options "-O -fpartial-inlining" }
 
 int

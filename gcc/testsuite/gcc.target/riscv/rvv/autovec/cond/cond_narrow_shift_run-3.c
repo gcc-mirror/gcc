@@ -3,7 +3,7 @@
 
 #include "cond_narrow_shift-3.c"
 
-#define N 99
+#define N 61
 
 #define TEST_LOOP(TYPE1, TYPE2)                                                \
   {                                                                            \

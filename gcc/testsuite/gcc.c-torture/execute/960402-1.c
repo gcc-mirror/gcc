@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 f (signed long long int x)
 {
   return x > 0xFFFFFFFFLL || x < -0x80000000LL;

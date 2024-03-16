@@ -2,6 +2,9 @@
    postincrement.
    Origin: <hp@axis.com>.  */
 
+void abort (void);
+void exit (int);
+
 long int xb (long int *y) __attribute__ ((__noinline__));
 long int xw (long int *y) __attribute__ ((__noinline__));
 short int yb (short int *y) __attribute__ ((__noinline__));

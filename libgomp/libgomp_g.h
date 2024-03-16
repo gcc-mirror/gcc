@@ -357,6 +357,7 @@ extern void GOMP_target_enter_exit_data (int, size_t, void **, size_t *,
 					 void **);
 extern void GOMP_teams (unsigned int, unsigned int);
 extern bool GOMP_teams4 (unsigned int, unsigned int, unsigned int, bool);
+extern void *GOMP_target_map_indirect_ptr (void *);
 
 /* teams.c */
 

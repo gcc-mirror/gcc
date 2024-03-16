@@ -3,6 +3,8 @@
    Prefetch data using a variety of storage classes and address
    expressions with volatile variables and pointers.  */
 
+void exit (int);
+
 int glob_int_arr[100];
 int glob_int = 4;
 volatile int glob_vol_int_arr[100];
@@ -11,7 +13,7 @@ volatile int *glob_ptr_vol_int = glob_vol_int_arr;
 volatile int * volatile glob_vol_ptr_vol_int = glob_vol_int_arr;
 volatile int glob_vol_int;
 
-static stat_int_arr[100];
+static int stat_int_arr[100];
 static volatile int stat_vol_int_arr[100];
 static int * volatile stat_vol_ptr_int = stat_int_arr;
 static volatile int *stat_ptr_vol_int = stat_vol_int_arr;

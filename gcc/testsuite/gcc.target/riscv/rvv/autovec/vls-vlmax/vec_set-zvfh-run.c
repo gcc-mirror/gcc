@@ -1,5 +1,5 @@
-/* { dg-do run { target { riscv_zvfh_hw } } } */
-/* { dg-additional-options "-Wno-pedantic" } */
+/* { dg-do run { target { riscv_zvfh } } } */
+/* { dg-additional-options "-std=gnu99 -Wno-pedantic" } */
 
 #include <assert.h>
 

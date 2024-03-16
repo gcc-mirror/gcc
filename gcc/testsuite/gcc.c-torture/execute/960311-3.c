@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+void abort (void);
+void exit (int);
+
 #ifdef DEBUG
 #define abort() printf ("error, line %d\n", __LINE__)
 #endif
@@ -20,7 +23,8 @@ b (unsigned long data)
   if (data & 0x80000000) a1();
 }
 
-main ()
+int
+main (void)
 {
   count = 0;
   b (0);

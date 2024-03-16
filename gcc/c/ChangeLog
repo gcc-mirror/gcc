@@ -1,3 +1,135 @@
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-decl.cc (c_decl_attributes): Add attribute for indirect
+	functions.
+	* c-lang.h (c_omp_declare_target_attr): Add indirect field.
+	* c-parser.cc (c_parser_omp_clause_name): Handle indirect clause.
+	(c_parser_omp_clause_indirect): New.
+	(c_parser_omp_all_clauses): Handle indirect clause.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add indirect clause to mask.
+	(c_parser_omp_declare_target): Handle indirect clause.  Emit error
+	message if device_type or indirect clauses used alone.  Emit error
+	if indirect clause used with device_type that is not 'any'.
+	(OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK): Add indirect clause to mask.
+	(c_parser_omp_begin): Handle indirect clause.
+	* c-typeck.cc (c_finish_omp_clauses): Handle indirect clause.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc: Use flag_isoc23 instead of flag_isoc2x and c23_auto_p
+	instead of c2x_auto_p.  Refer to C23 instead of C2X in diagnostics
+	and comments.
+	* c-errors.cc: Use flag_isoc23 instead of flag_isoc2x and
+	warn_c11_c23_compat instead of warn_c11_c2x_compat.  Refer to C23
+	instead of C2X in comments.
+	* c-parser.cc: Use flag_isoc23 instead of flag_isoc2x,
+	warn_c11_c23_compat instead of warn_c11_c2x_compat, c23_auto_p
+	instead of c2x_auto_p and D_C23 instead of D_C2X.  Refer to C23
+	instead of C2X in diagnostics and comments.
+	* c-tree.h: Refer to C23 instead of C2X in comments.
+	(struct c_declspecs): Rename c2x_auto_p to c23_auto_p.
+	* c-typeck.cc: Use flag_isoc23 instead of flag_isoc2x and
+	warn_c11_c23_compat instead of warn_c11_c2x_compat.  Refer to C23
+	instead of C2X in diagnostics and comments.
+
+2023-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107954
+	* c-errors.cc (pedwarn_c11): Use OPT_Wc11_c23_compat instead of
+	OPT_Wc11_c2x_compat.
+	* c-typeck.cc (build_conditional_expr, convert_for_assignment):
+	Use OPT_Wc11_c23_compat instead of OPT_Wc11_c2x_compat.
+
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.h (c_maybe_parse_omp_decl): Declare.
+	* c-parser.cc (struct c_parser): Add in_omp_decl_attribute member.
+	(c_parser_std_attribute): Uncoment omp::decl handling.
+	(c_parser_omp_var_list_parens): If parser->in_omp_decl_attribute
+	don't expect any arguments, instead create clause or TREE_LIST for
+	that decl.
+	(c_maybe_parse_omp_decl): New function.
+	(c_parser_omp_declare_target): If parser->in_omp_decl_attribute and
+	first token isn't name or comma invoke c_parser_omp_var_list_parens.
+	* c-decl.cc (c_decl_attributes): Uncomment omp::decl handling and
+	use *node rather than non-existing *decl.
+
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-tree.def: New file.
+	* c-tree.h (struct c_tree_token_vec): Forward declare.
+	(c_tree_size): Declare.
+	* c-lang.h (struct c_omp_declare_target_attr): Add attr_syntax member.
+	(struct c_omp_begin_assumes_data): New type.
+	(current_omp_begin_assumes): Change type from int to
+	vec<c_omp_begin_assumes_data, va_gc> *.
+	* c-lang.cc: Include c-family/c-pragma.h and c-parser.h.
+	* c-parser.h (struct c_tree_token_vec_struct): New type.
+	(C_TOKEN_VEC_TOKENS): New macro.
+	* c-parser.cc (struct c_parser): Add omp_attrs_forbidden_p and
+	in_omp_attribute_pragma members.
+	(c_parser_skip_until_found): Handle CPP_PRAGMA_EOL when
+	parser->in_omp_attribute_pragma.
+	(c_parser_skip_to_pragma_eol): Likewise.
+	(c_parser_translation_unit): Adjust for current_omp_begin_assumes
+	being a vector rather than counter.
+	(c_parser_declaration_or_fndef): Handle omp::directive and
+	omp::sequence attributes on attribute declaration and declare simd
+	or declare variant directives in those on function declarations.
+	(c_parser_check_balanced_raw_token_sequence): Forward declare.
+	(c_parser_omp_directive_args, c_parser_omp_sequence_args): New
+	functions.
+	(c_parser_std_attribute): Handle omp::directive and omp::sequence
+	attributes.
+	(struct c_omp_attribute_data): New type.
+	(c_parser_handle_statement_omp_attributes,
+	c_parser_handle_directive_omp_attributes): New functions.
+	(c_parser_compound_statement_nostart): Handle omp::directive and
+	omp::sequence attributes on statements.  Formatting fix.
+	(c_parser_all_labels): Handle omp::directive and omp::sequence
+	attributes on statements.
+	(c_parser_statement): Clear parser->omp_attrs_forbidden_p.
+	(c_parser_omp_variable_list): Handle parser->tokens
+	!= &parser->tokens_buf[0] by saving/restoring it.
+	(c_parser_omp_structured_block): Set parser->omp_attrs_forbidden_p.
+	(c_parser_omp_section_scan): New function.
+	(c_parser_omp_structured_block_sequence, c_parser_omp_sections_scope):
+	Use it.
+	(c_parser_omp_parallel): Set parser->omp_attrs_forbidden_p.
+	(c_parser_omp_task): Likewise.
+	(c_parser_omp_declare_simd): Handle function declaration after
+	std attributes.
+	(c_finish_omp_declare_simd): Don't assert all kinds are the same.
+	(c_parser_omp_declare_target): Also push attr_syntax flag.
+	(c_parser_omp_begin): Likewise.  Adjust for current_omp_begin_assumes
+	type change.
+	(c_parser_omp_end): Adjust for current_omp_begin_assumes type
+	change.  Diagnose mixing of attribute vs. pragma syntax on end assumes
+	or end declare target.
+	(c_parser_omp_declare_reduction): Handle parser->tokens
+	!= &parser->tokens_buf[0] by saving/restoring it.
+	* c-decl.cc: Include c-parser.h.
+	(current_omp_begin_assumes): Change type from int to
+	vec<c_omp_begin_assumes_data, va_gc> *.
+	(struct c_tree_token_vec): New type.  Add static assertions
+	for sizeof and offsetof.
+	(union lang_tree_node): Add c_token_vec member and adjust GTY
+	desc for it.
+	(c_tree_size): New function.
+	(c_decl_attributes): Diagnose invalid omp::directive attribute
+	uses.
+	* c-objc-common.h (LANG_HOOKS_TREE_SIZE): Redefine.
+
+2023-11-02  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/112347
+	* c-typeck.cc (convert_for_assignment): Add missing check.
+
+2023-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/71219
+	* c-typeck.cc (convert_for_assignment): Add warning.
+
 2023-10-26  liuhongt  <hongtao.liu@intel.com>
 
 	* c-typeck.cc (build_vec_cmp): Pass type of arg0 to

@@ -579,9 +579,9 @@ attribute_ignored_p (tree attr)
     return false;
   if (tree ns = get_attribute_namespace (attr))
     {
-      if (attr_namespace_ignored_p (ns))
-	return true;
       const attribute_spec *as = lookup_attribute_spec (TREE_PURPOSE (attr));
+      if (as == NULL && attr_namespace_ignored_p (ns))
+	return true;
       if (as && as->max_length == -2)
 	return true;
     }
@@ -862,7 +862,10 @@ decl_attributes (tree *node, tree attributes, int flags,
 	    }
 	}
 
-      if (no_add_attrs)
+      if (no_add_attrs
+	  /* Don't add attributes registered just for -Wno-attributes=foo::bar
+	     purposes.  */
+	  || attribute_ignored_p (attr))
 	continue;
 
       if (spec->handler != NULL)

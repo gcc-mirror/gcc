@@ -6,6 +6,9 @@
 #define alignment 32
 #endif
 
+void abort (void);
+void exit (int);
+
 typedef struct x { int a; int b; } __attribute__((aligned(alignment))) X;
 typedef struct y { X x; X y[31]; int c; } Y;
 

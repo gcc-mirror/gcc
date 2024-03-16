@@ -877,10 +877,14 @@ ENDF ashldi3
 ;; R18.0 = 1: No rounding.
 
 DEFUN mul_mant
+    ;; 10 = Y, R17...R10
     do_prologue_saves 10
+    ;; T = R18.0: Skip rounding?
     bst     r18,    0
+    ;; Save result address for later.
     push    r25
     push    r24
+    ;; Load A's mantissa.
     movw    ZL,     r22
     LDD     A0,     Z+0+Off
     LDD     A1,     Z+1+Off
@@ -913,26 +917,15 @@ DEFUN mul_mant
     adc     C6, ZERO
     ;; Done B6
 
-    ;; 3 * 3 -> 0:a
-    ;; 4 * 4 -> 2:1
-    ;; 5 * 5 -> 4:3
-    ldd     BB, Z+3+Off $   mul     A3, BB      $   movw    TT0, r0
-    ldd     BB, Z+4+Off $   mul     A4, BB      $   movw    TT2, r0
-    ldd     BB, Z+5+Off $   mul     A5, BB
-
-    ADD     CA, TT0     $   adc     C0, TT1
-    adc     C1, TT2     $   adc     C2, TT3
-    adc     C3, r0      $   adc     C4, r1
-    brcc .+2
-    adiw    C5, 1
-
     ;; 6 * 5 -> 5:4
     ;; 4 * 5 -> 3:2
     ;; 2 * 5 -> 1:0
     ;; 0 * 5 -> a:-
+    ldd     BB, Z+5+Off
     mul     A0, BB
-    ;; A0 done
+    ;; Done A0
 #define Atmp A0
+#define Null A0
 
     mov     Atmp, r1
     mul     A6, BB      $   movw    TT2, r0
@@ -942,82 +935,127 @@ DEFUN mul_mant
     ADD     CA, Atmp
     adc     C0, r0      $   adc     C1, r1
     adc     C2, TT0     $   adc     C3, TT1
-    adc     C4, TT2     $   adc     C5, TT3     $   clr ZERO
-    adc     C6, ZERO
+    adc     C4, TT2     $   adc     C5, TT3     $   clr Null
+    adc     C6, Null
 
     ;; 1 * 5 -> 0:a
     ;; 3 * 5 -> 2:1
-    ;; 6 * 4 -> 4:3
+    ;; 5 * 5 -> 4:3
     mul     A1, BB      $   movw    TT0, r0
     mul     A3, BB      $   movw    TT2, r0
+    mul     A5, BB
+
+    ADD     CA, TT0     $   adc     C0, TT1
+    adc     C1, TT2     $   adc     C2, TT3
+    adc     C3, r0      $   adc     C4, r1
+    adc     C5, Null    $   adc     C6, Null
+    ;; Done B5
+
+    ;; 2 * 4 -> 0:a
+    ;; 4 * 4 -> 2:1
+    ;; 6 * 4 -> 4:3
     ldd     BB, Z+4+Off
+    mul     A2, BB      $   movw    TT0, r0
+    mul     A4, BB      $   movw    TT2, r0
     mul     A6, BB
 
     ADD     CA, TT0     $   adc     C0, TT1
     adc     C1, TT2     $   adc     C2, TT3
-    adc     C3, r0      $   adc     C4, r1      $   clr ZERO
-    adc     C5, ZERO    $   adc     C6, ZERO
-    ;; B5 done
+    adc     C3, r0      $   adc     C4, r1
+    adc     C5, Null    $   adc     C6, Null
 
-    ;; 6 * 3 -> 3:2
-    ;; 6 * 1 -> 1:0
-    ;; 4 * 1 -> a:-
-    mov     TT0, A6     $   ldd TMP,  Z+3+Off
-    mov     BB,  A4     $   ldd Atmp, Z+1+Off
-    rcall   .Lmul.help.3
-
-    ;; 5 * 4 -> 3:2
-    ;; 5 * 2 -> 1:0
-    ;; 3 * 2 -> a:-
-    mov     TT0, A5     $   ldd TMP,  Z+4+Off
-    mov     BB,  A3     $   ldd Atmp, Z+2+Off
-    rcall   .Lmul.help.3
-
-    ;; 4 *   -> 3:2 (=0)
-    ;; 4 * 3 -> 1:0
-    ;; 2 * 3 -> a:-
-    mov     TT0, A4     $   clr TMP
-    mov     BB,  A2     $   ldd Atmp, Z+3+Off
-    rcall   .Lmul.help.3
-
-    ;; 3 * . -> 3:2 (=0)
-    ;; 3 * 4 -> 1:0
     ;; 1 * 4 -> a:-
-    mov     TT0, A3     $   clr TMP
-    mov     BB,  A1     $   ldd Atmp, Z+4+Off
-    rcall   .Lmul.help.3
+    ;; 3 * 4 -> 1:0
+    ;; 5 * 4 -> 3:2
+    mul     A1, BB      $   mov     TT1, r1
+    mul     A3, BB      $   movw    TT2, r0
+    mul     A5, BB
+    ;; Done A1
+    ;; Done B4
+    ADD     CA, TT1
+    adc     C0, TT2     $   adc     C1, TT3
+    adc     C2, r0      $   adc     C3, r1
+    ;; Accumulate carry for C3 in TT1.
+    ;; Accumulate carry for C4 in A1.
+#define Cry3 TT1
+#define Cry4 A1
+    clr     Cry3
+    clr     Cry4
+    rol     Cry4
 
-    ;; . * ? -> 3:2 (=0)
-    ;; . * 0 -> 1:0 (=0)
-    ;; 5 * 0 -> a:-
-    clr     TT0
-    mov     BB,  A5     $   ldd Atmp, Z+0+Off
-    rcall   .Lmul.help.3
-
-    clr TT3  ;; Asserted by .Lmul.help.2
     ;; 6 * 2 -> 2:1
-    ;; 6 * 0 -> 0:a
-                        $   ldd TMP,  Z+2+Off
-    mov     BB, A6     ;$   ldd Atmp, Z+0+Off
-    rcall   .Lmul.help.2
-
+    ;; 6 * 3 -> 3:2
     ;; 5 * 3 -> 2:1
-    ;; 5 * 1 -> 0:a
-                        $   ldd TMP,  Z+3+Off
-    mov     BB, A5      $   ldd Atmp, Z+1+Off
-    rcall   .Lmul.help.2
+    ldd     BB, Z+2+Off
+    mul     A6, BB
+    add     C1, r0
+    adc     C2, r1
+    adc     Cry3, Null
 
-    ;; 4 * . -> 2:1 (=0)
+    ldd     BB, Z+3+Off
+    mul     A6, BB
+    add     C2, r0
+    adc     C3, r1
+    adc     Cry4, Null
+
+    mul     A5, BB
+    add     C1, r0
+    adc     C2, r1
+    adc     Cry3, Null
+
+    ;; Perform the remaining 11 multiplications in 4 loopings:
+    ;; 4 * 3 -> 1:0
+    ;; 3 * 3 -> 0:a
+    ;; 2 * 3 -> a:-
+    ;;
+    ;; 5 * 2 -> 1:0
     ;; 4 * 2 -> 0:a
-                        $   clr TMP
-    mov     BB, A4      $   ldd Atmp, Z+2+Off
-    rcall   .Lmul.help.2
+    ;; 3 * 2 -> a:-
+    ;;
+    ;; 6 * 1 -> 1:0
+    ;; 5 * 1 -> 0:a
+    ;; 4 * 1 -> a:-
+    ;;
+    ;; . * 0 -> 1:0  (=0)
+    ;; 6 * 0 -> 0:a
+    ;; 5 * 0 -> a:-
 
-    ;; 2 * . -> 2:1 (=0)
-    ;; 2 * 4 -> 0:a
-                        $   clr TMP
-    mov     BB, A2      $   ldd Atmp, Z+4+Off
-    rcall   .Lmul.help.2
+    ;; BB already contains B3, hence let Z point one past B2 so that
+    ;; the  LD *, -Z  below will pick up B2, B1, B0.
+    adiw    r30,    1 + Off+2
+
+    ;; Accumulate carry for C2 in TT2.
+#define Cry2 TT2
+    clr     Cry2
+
+    ;; TT3 is the loop counter, iterate over B3...B0.
+    ldi     TT3,    4
+    rjmp .Loop_start
+
+.Loop:
+    ;; We use A2...A4 below; so shift bytes of A into place.
+    mov     A2, A3
+    mov     A3, A4
+    mov     A4, A5
+    mov     A5, A6
+    clr     A6
+    ld      BB, -Z
+.Loop_start:
+    mul     A3, BB
+    ADD     CA, r0      $  adc  C0, r1  $  adc  C1, Null    $  adc  Cry2, Null
+    MUL     A2, BB
+    mov     TT0, r1
+    MUL     A4, BB
+    ADD     CA, TT0     $  adc  C0, r0  $  adc  C1, r1      $  adc  Cry2, Null
+    dec     TT3
+    brne .Loop
+
+    clr     ZERO
+    ADD     C2, Cry2
+    adc     C3, Cry3
+    adc     C4, Cry4
+    adc     C5, ZERO
+    adc     C6, ZERO
 
     ;; Finally...
 
@@ -1031,38 +1069,6 @@ DEFUN mul_mant
     F7call  normalize.maybe_round.store_with_flags
 
     do_epilogue_restores 10
-
-;; TT0 * Tmp  -> 3:2
-;; TT0 * Atmp -> 1:0
-;; BB  * Atmp -> a:-
-;;
-;; Clobbers : TMP, TT0...TT3.
-;; Sets     : ZERO = 0.
-.Lmul.help.3:
-    mul     TT0, TMP    $   movw    TT2, r0
-    mul     TT0, Atmp   $   movw    TT0, r0
-    mul     BB,  Atmp
-
-    ADD     CA, r1
-    adc     C0, TT0     $   adc     C1, TT1
-    adc     C2, TT2
-.Lmul.help.3.C3:        $   adc     C3, TT3     $ clr ZERO
-    adc     C4, ZERO    $   adc     C5, ZERO
-    adc     C6, ZERO
-    ret
-
-;; BB * TMP  -> 2:1
-;; BB * Atmp -> 0:a
-;;
-;; Asserts  : TT3 = 0
-;; Clobbers : TMP, TT0, TT1.
-;; Sets     : ZERO = 0.
-.Lmul.help.2:
-    mul     BB, TMP     $   movw    TT0, r0
-    mul     BB, Atmp
-    ADD     CA, r0      $   adc     C0, r1
-    adc     C1, TT0     $   adc     C2, TT1
-    rjmp .Lmul.help.3.C3
 
 ENDF mul_mant
 #endif /* F7MOD_mul_mant_ && MUL */
@@ -1281,6 +1287,189 @@ ENDF div
 #endif /* F7MOD_div_ */
 
 
+#ifdef F7MOD_sqrt_approx_
+;; ReMainder
+#define     MX      16
+#define     M0      17
+#define     M1      26
+#define     M2      27
+#define     M3      14
+#define     M4      15
+#define     M5      TMP
+#define     M6      r29
+
+#define     AA      ZERO
+#define     One     r13
+#define     Bits    r28
+#define     Bytes   M6
+
+;; Extend C[] by 0b01 at the low end.
+#define     CX      (0b01 << 6)
+
+;;; Compute square-root of const f7_t *R22 for a positive number.
+DEFUN sqrt_approx
+    ;; 7 = Y, R17...R13
+    do_prologue_saves 7
+
+    wmov    ZL,     r22         ; Input const f7_t*
+    wmov    YL,     r24         ; Output f7_t*
+    F7call load_mant
+    ldi     CA,     0xff
+
+    ;; The paper-pencil method for the mantissa consumes bits in pairs and
+    ;; expects the input as Q-format 2.*, but mant is in 1.*.  This means
+    ;; we have to shift one to the right.  If expo is odd, then we shift
+    ;; one to the left and subtract one from expo in order to compensate
+    ;; and to get an even exponent.
+
+    ;; Divide expo by 2 because we are doing sqrt.
+    ldd     XH,     Z+Expo+1
+    ldd     XL,     Z+Expo+0
+    asr     XH
+    ror     XL
+    ;; Store expo to result.
+    wmov    ZL,     YL
+    std     Z+Expo+0,   XL
+    std     Z+Expo+1,   XH
+
+    brcs 1f
+    ;; Expo was even.  Do >>=1 in order to get Q2.* as explained above.
+    LSR C6      $ ror C5    $ ror C4    $ ror C3
+    ror C2      $ ror C1    $ ror C0    $ ror CA
+1:
+    ;; For odd expo, >>=1 to get Q2.* and <<=1 to get an even expo cancel out.
+    ;; And the right-shift of the exponent implicitly subtracted 1 from it
+    ;; as needed.
+    F7call  store_mant.with_flags
+
+    ;; Let Z point one past the mantissa's MSB.
+    adiw    ZL,     Off + F7_MANT_BYTES
+
+    ;; Clear the result mantissa.
+    .global __clr_8
+    XCALL   __clr_8
+    ;; Clear ReMainder.  M6 === Bytes will be zero when Bytes is down to 0.
+    clr     M5
+    wmov    M3,     C3
+    wmov    M1,     C1
+    wmov    MX,     CA
+
+    clr     One
+    inc     One
+
+    ;; "+1" because .flags extends the mantissa at the low end.
+    ldi     Bytes,  1 + F7_MANT_BYTES
+.Loop_bytes:
+    ld      AA,     -Z
+    ldi     Bits,   8
+.Loop_bits:
+    ;; Shift top 2 bits of MX into M[].
+    LSL MX  $ rol M0    $ rol M1    $ rol M2    $ rol M3
+    LSL MX  $ rol M0    $ rol M1    $ rol M2    $ rol M3
+
+    ;; "Take down" 2 bits from A[] to MX.7 and MX.6
+    mov     MX,     AA
+    andi    MX,     0xc0
+    lsl     AA
+    lsl     AA
+
+    ;; Compare remainder against current result extended by 0b01.
+    CPI     MX,     CX
+    cpc     M0,     C0
+    cpc     M1,     C1
+    cpc     M2,     C2
+    cpc     M3,     C3
+    brcs 1f
+    ;; If the extended result fits, subtract it from M and set the
+    ;; next result bit to 1.
+    SUBI    MX,     CX
+    sbc     M0,     C0
+    sbc     M1,     C1
+    sbc     M2,     C2
+    sbc     M3,     C3
+1:
+    ;; If it doesn't fit, set the next result bit to 0 (and don't subtract).
+    rol     C0
+    eor     C0,     One
+    rol     C1
+    rol     C2
+    rol     C3
+
+    subi    Bits,   2
+    brne .Loop_bits
+    ;; AA (=== ZERO) is zero again.
+
+    dec     Bytes
+    brne .Loop_bytes
+    ;; B6 (=== Bytes) is zero now.
+
+    ;; Now we consumed all the 64 bits of the extended mantissa, but we
+    ;; only expanded 64 / 2 = 32 bits of the result, which is currently
+    ;; held in C3 ... C0.  Do the same like above, but on all bytes.
+    ;; Shift in 00's because the mantissa is exhausted.
+
+    ;; "-1" because flags is part of the mantissa, which is already consumed.
+    ldi     Bits,  8 * (F7_MANT_BYTES - 1)
+.Loop2_bits:
+    ;; Shift top 2 bits of MX into M[].
+.Ltwice:
+    LSL     MX
+    rol     M0
+    rol     M1
+    rol     M2
+    rol     M3
+    rol     M4
+    rol     M5
+    rol     M6
+    subi    Bits,   0x80
+    brmi .Ltwice
+
+    ;; "Take down" two 0's to MX.7 and MX.6
+    ; clr MX   ;; MX is already zero.
+
+    ;; Compare remainder against current result extended by 0b01.
+    CPI     MX,     CX
+    cpc     M0,     C0
+    cpc     M1,     C1
+    cpc     M2,     C2
+    cpc     M3,     C3
+    cpc     M4,     C4
+    cpc     M5,     C5
+    cpc     M6,     C6
+    brcs 1f
+    ;; If the extended result fits, subtract it from M and set the
+    ;; next result bit to 1.
+    SUBI    MX,     CX
+    sbc     M0,     C0
+    sbc     M1,     C1
+    sbc     M2,     C2
+    sbc     M3,     C3
+    sbc     M4,     C4
+    sbc     M5,     C5
+    sbc     M6,     C6
+1:
+    ;; If it doesn't fit, set the next result bit to 0 (and don't subtract).
+    rol     C0
+    eor     C0,     One
+    rol     C1
+    rol     C2
+    rol     C3
+    rol     C4
+    rol     C5
+    rol     C6
+
+    subi    Bits,   2
+    brne .Loop2_bits
+
+    ;; Set flags.
+    st      Z,      ZERO
+    F7call  store_mant
+
+    do_epilogue_restores 7
+ENDF sqrt_approx
+#endif /* F7MOD_sqrt_approx_ */
+
+
 #if defined (F7MOD_sqrt16_) && defined (__AVR_HAVE_MUL__)
 
 #define     Mask    C6
@@ -1341,74 +1530,6 @@ ENDF sqrt16_round
 #undef Q0
 #undef Q1
 #endif /* F7MOD_sqrt16_ && MUL */
-
-#ifdef F7MOD_sqrt_approx_
-DEFUN sqrt_approx
-    push    r17
-    push    r16
-    wmov    XL,     r24
-    wmov    ZL,     r22
-
-    ;; C[] = 0.
-    .global __clr_8
-    XCALL   __clr_8
-
-    ldd     C5,     Z+5+Off
-    ldd     C6,     Z+6+Off
-
-    ldd     Carry,  Z+0+Expo
-    ldd     TMP,    Z+1+Expo
-    wmov    ZL,     XL
-
-    st      Z,      ZERO
-
-    asr     TMP
-    ror     Carry
-    std     Z+1+Expo,   TMP
-    std     Z+0+Expo,   Carry
-
-    ;; Re-interpreting our Q-format 1.xx mantissa as Q2.yy, we have to shift
-    ;; the mantissa to the right by 1.  As we need an even exponent, multiply
-    ;; the mantissa by 2 for odd exponents, i.e. only right-shift if .expo
-    ;; is even.
-
-    brcs 1f
-    lsr     C6
-    ror     C5
-
-1:
-    F7call  sqrt16_round
-
-    ;; sqrt16_round() returns:   C = 0:  error in [0, -1/2 LSB).
-    ;;                           C = 1:  error in [1/2 LSB, 0)
-
-    brcc 2f
-    ;; Undo the round-up from sqrt16_round(); this will transform to
-    ;; error in [-1/2 LSB, -1 LSB).
-    sbiw    C5,     1
-    ;; Together with the correct bit C4.7, the error is in  [0, -1/2 LSB).
-    ori     C4,     1 << 7
-
-2:  ;; Setting C4.6 adds 1/4 LSB and the error is now in [1/4 LSB, -1/4 LSB)
-    ;; in either case.
-    ori     C4,     1 << 6
-
-    ;; ????????????
-    ;; sqrt16_round() runs on integers which means that it computes the
-    ;; square root of  mant * 2^14  if we regard  mant as Q-format 2.yy,
-    ;; i.e. 2 integral bits.  The result is  sqrt(mant) * 2^7,
-    ;; and in order to get the same scaling like the input, .expo has to
-    ;; be adjusted by 7. ???????????????
-
-    ldi     Carry,  8
-    F7call  normalize.store_with_flags
-
-    pop     r16
-    pop     r17
-    ret
-
-ENDF sqrt_approx
-#endif /* F7MOD_sqrt_approx_ */
 
 
 #undef CA

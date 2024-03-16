@@ -1943,6 +1943,16 @@ instantiate_decls (tree fndecl)
   vec_free (cfun->local_decls);
 }
 
+/* Return the value of STACK_DYNAMIC_OFFSET for the current function.
+   This is done through a function wrapper so that the macro sees a
+   predictable set of included files.  */
+
+poly_int64
+get_stack_dynamic_offset ()
+{
+  return STACK_DYNAMIC_OFFSET (current_function_decl);
+}
+
 /* Pass through the INSNS of function FNDECL and convert virtual register
    references to hard register references.  */
 
@@ -1954,7 +1964,7 @@ instantiate_virtual_regs (void)
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
   var_offset = targetm.starting_frame_offset ();
-  dynamic_offset = STACK_DYNAMIC_OFFSET (current_function_decl);
+  dynamic_offset = get_stack_dynamic_offset ();
   out_arg_offset = STACK_POINTER_OFFSET;
 #ifdef FRAME_POINTER_CFA_OFFSET
   cfa_offset = FRAME_POINTER_CFA_OFFSET (current_function_decl);

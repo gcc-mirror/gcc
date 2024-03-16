@@ -50,7 +50,6 @@ package Gen_IL.Fields is
       Error_Posted,
       Small_Paren_Count,
       Check_Actuals,
-      Has_Aspects,
       Is_Ignored_Ghost_Node,
       Link,
 
@@ -77,6 +76,7 @@ package Gen_IL.Fields is
       Array_Aggregate,
       Aspect_On_Partial_View,
       Aspect_Rep_Item,
+      Aspect_Specifications,
       Assignment_OK,
       Attribute_Name,
       At_End_Proc,
@@ -99,6 +99,7 @@ package Gen_IL.Fields is
       Comes_From_Check_Or_Contract,
       Comes_From_Extended_Return_Statement,
       Comes_From_Iterator,
+      Compare_Type,
       Compile_Time_Known_Aggregate,
       Component_Associations,
       Component_Clauses,

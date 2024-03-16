@@ -1,3 +1,5 @@
+void foo (void);
+void foo1 (int *);
 void *eintr_source (void *arg)
 {
   int ts = 0;

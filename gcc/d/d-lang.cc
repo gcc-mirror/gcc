@@ -936,7 +936,6 @@ d_post_options (const char ** fn)
      fields with params.  */
   global.compileEnv.previewIn = global.params.previewIn;
   global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
-  global.compileEnv.shortenedMethods = global.params.shortenedMethods;
 
   if (warn_return_type == -1)
     warn_return_type = 0;

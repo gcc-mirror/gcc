@@ -3,6 +3,6 @@
 
 int f (char *p, char *q, int i)
 {
-  return bcmp (p, q, i);
+  return __builtin_bcmp (p, q, i);
 }
 

@@ -488,6 +488,14 @@
  (and (match_code "const,const_vector")
       (match_test "aarch64_simd_shift_imm_p (op, GET_MODE (op),
 						 false)")))
+
+(define_constraint "Dx"
+  "@internal
+ A constraint that matches a vector of 64-bit immediates which we don't have a
+ single instruction to create but that we can create in creative ways."
+ (and (match_code "const_int,const,const_vector")
+      (match_test "aarch64_simd_special_constant_p (op, DImode)")))
+
 (define_constraint "Dz"
   "@internal
  A constraint that matches a vector of immediate zero."

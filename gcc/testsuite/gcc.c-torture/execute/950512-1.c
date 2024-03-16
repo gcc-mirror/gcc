@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 unsigned
 f1 (x)
 {

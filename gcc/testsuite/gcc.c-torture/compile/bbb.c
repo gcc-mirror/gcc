@@ -5,8 +5,8 @@ struct looksets
 
 struct looksets lkst[];
 
-flset( p )
-struct looksets *p;
+void
+flset( struct looksets *p )
 {
     p-- > lkst;
 }

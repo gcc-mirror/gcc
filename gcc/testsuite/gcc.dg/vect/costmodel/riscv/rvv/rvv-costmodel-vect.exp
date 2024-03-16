@@ -45,8 +45,8 @@ dg-init
 
 # Main loop.
 set CFLAGS "$DEFAULT_CFLAGS -march=$gcc_march -mabi=$gcc_mabi -O3"
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/dynamic-lmul*.\[cS\]]] \
-	"-O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic" $CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
+	"" $CFLAGS
 
 # All done.
 dg-finish

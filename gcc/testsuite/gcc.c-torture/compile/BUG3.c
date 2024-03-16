@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 BUG2 (p) char *p;
 {
   int a = 0;

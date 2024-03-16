@@ -1,3 +1,14 @@
+2023-11-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 643b1261bb.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_FREEBSD): Add
+	core/sys/freebsd/ifaddrs.d, core/sys/freebsd/net/if_dl.d,
+	core/sys/freebsd/sys/socket.d, core/sys/freebsd/sys/types.d.
+	(DRUNTIME_DSOURCES_LINUX): Add core/sys/linux/linux/if_arp.d,
+	core/sys/linux/linux/if_packet.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 1c98326e7.
+
 2023-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime e48bc0987d.

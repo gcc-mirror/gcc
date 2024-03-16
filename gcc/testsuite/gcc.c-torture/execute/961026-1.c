@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int
 test (arg)
      int arg;
@@ -7,7 +10,8 @@ test (arg)
   return -1;
 }
 
-main ()
+int
+main (void)
 {
   if (test (0) != 0)
     abort ();

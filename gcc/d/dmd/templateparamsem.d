@@ -12,6 +12,7 @@
 module dmd.templateparamsem;
 
 import dmd.arraytypes;
+import dmd.dinterpret;
 import dmd.dsymbol;
 import dmd.dscope;
 import dmd.dtemplate;

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 void longprint (x)
      long long x;
 {

@@ -1,6 +1,10 @@
 /* { dg-require-effective-target int32plus } */
 
 #include <stdio.h>
+
+void abort (void);
+void exit (int);
+
 typedef struct { int x; int y;} S;
 extern int foo(S*);
 int hi = 0, lo = 0;

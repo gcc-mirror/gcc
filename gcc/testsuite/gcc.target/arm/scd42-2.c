@@ -1,11 +1,8 @@
 /* Verify that mov is preferred on XScale for loading a 2 byte constant. */
 /* { dg-do compile } */
-/* { dg-skip-if "Test is specific to the Xscale" { arm*-*-* } { "-march=*" } { "-march=xscale" } } */
-/* { dg-skip-if "Test is specific to the Xscale" { arm*-*-* } { "-mcpu=*" } { "-mcpu=xscale" } } */
-/* { dg-skip-if "Test is specific to ARM mode" { arm*-*-* } { "-mthumb" } { "" } } */
-/* { dg-require-effective-target arm32 } */
-/* { dg-require-effective-target arm_arch_v5te_arm_ok } */
-/* { dg-options "-mcpu=xscale -O -marm" } */
+/* { dg-require-effective-target arm_arch_xscale_arm_ok } */
+/* { dg-options "-O" } */
+/* { dg-add-options arm_arch_xscale_arm } */
 
 unsigned load2(void) __attribute__ ((naked));
 unsigned load2(void)

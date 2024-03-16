@@ -1,3 +1,4 @@
+int
 foo (int *p)
 {
   int a = *p;

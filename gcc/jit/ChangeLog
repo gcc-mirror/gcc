@@ -1,3 +1,8 @@
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.cc: Update for changes to diagnostic_context.
+	* jit-playback.h: Likewise.
+
 2023-10-25  Vibhav Pant  <vibhavp@gmail.com>
 
 	* jit-recording.cc (recording::global::write_to_dump): Fix

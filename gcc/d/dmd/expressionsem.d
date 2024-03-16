@@ -41,6 +41,7 @@ import dmd.dstruct;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.escape;
 import dmd.expression;
 import dmd.file_manager;
@@ -59,6 +60,7 @@ import dmd.location;
 import dmd.mtype;
 import dmd.mustuse;
 import dmd.nspace;
+import dmd.objc;
 import dmd.opover;
 import dmd.optimize;
 import dmd.parse;
@@ -229,6 +231,226 @@ StringExp semanticString(Scope *sc, Expression exp, const char* s)
         return null;
     }
     return se;
+}
+
+/****************************************
+ * Convert string to char[].
+ */
+StringExp toUTF8(StringExp se, Scope* sc)
+{
+    if (se.sz != 1)
+    {
+        // Convert to UTF-8 string
+        se.committed = false;
+        Expression e = castTo(se, sc, Type.tchar.arrayOf());
+        e = e.optimize(WANTvalue);
+        auto result = e.isStringExp();
+        assert(result.sz == 1);
+        return result;
+    }
+    return se;
+}
+
+private Expression reorderSettingAAElem(BinExp exp, Scope* sc)
+{
+    BinExp be = exp;
+
+    auto ie = be.e1.isIndexExp();
+    if (!ie)
+        return be;
+    if (ie.e1.type.toBasetype().ty != Taarray)
+        return be;
+
+    /* Fix evaluation order of setting AA element
+     * https://issues.dlang.org/show_bug.cgi?id=3825
+     * Rewrite:
+     *     aa[k1][k2][k3] op= val;
+     * as:
+     *     auto ref __aatmp = aa;
+     *     auto ref __aakey3 = k1, __aakey2 = k2, __aakey1 = k3;
+     *     auto ref __aaval = val;
+     *     __aatmp[__aakey3][__aakey2][__aakey1] op= __aaval;  // assignment
+     */
+
+    Expression e0;
+    while (1)
+    {
+        Expression de;
+        ie.e2 = extractSideEffect(sc, "__aakey", de, ie.e2);
+        e0 = Expression.combine(de, e0);
+
+        auto ie1 = ie.e1.isIndexExp();
+        if (!ie1 ||
+            ie1.e1.type.toBasetype().ty != Taarray)
+        {
+            break;
+        }
+        ie = ie1;
+    }
+    assert(ie.e1.type.toBasetype().ty == Taarray);
+
+    Expression de;
+    ie.e1 = extractSideEffect(sc, "__aatmp", de, ie.e1);
+    e0 = Expression.combine(de, e0);
+
+    be.e2 = extractSideEffect(sc, "__aaval", e0, be.e2, true);
+
+    //printf("-e0 = %s, be = %s\n", e0.toChars(), be.toChars());
+    return Expression.combine(e0, be);
+}
+
+
+private Expression checkOpAssignTypes(BinExp binExp, Scope* sc)
+{
+    auto e1 = binExp.e1;
+    auto e2 = binExp.e2;
+    auto op = binExp.op;
+    auto type = binExp.type;
+    auto loc = binExp.loc;
+
+    // At that point t1 and t2 are the merged types. type is the original type of the lhs.
+    Type t1 = e1.type;
+    Type t2 = e2.type;
+
+    // T opAssign floating yields a floating. Prevent truncating conversions (float to int).
+    // See https://issues.dlang.org/show_bug.cgi?id=3841.
+    // Should we also prevent double to float (type.isfloating() && type.size() < t2.size()) ?
+    if (op == EXP.addAssign || op == EXP.minAssign ||
+        op == EXP.mulAssign || op == EXP.divAssign || op == EXP.modAssign ||
+        op == EXP.powAssign)
+    {
+        if ((type.isintegral() && t2.isfloating()))
+        {
+            warning(loc, "`%s %s %s` is performing truncating conversion", type.toChars(), EXPtoString(op).ptr, t2.toChars());
+        }
+    }
+
+    // generate an error if this is a nonsensical *=,/=, or %=, eg real *= imaginary
+    if (op == EXP.mulAssign || op == EXP.divAssign || op == EXP.modAssign)
+    {
+        // Any multiplication by an imaginary or complex number yields a complex result.
+        // r *= c, i*=c, r*=i, i*=i are all forbidden operations.
+        const(char)* opstr = EXPtoString(op).ptr;
+        if (t1.isreal() && t2.iscomplex())
+        {
+            error(loc, "`%s %s %s` is undefined. Did you mean `%s %s %s.re`?", t1.toChars(), opstr, t2.toChars(), t1.toChars(), opstr, t2.toChars());
+            return ErrorExp.get();
+        }
+        else if (t1.isimaginary() && t2.iscomplex())
+        {
+            error(loc, "`%s %s %s` is undefined. Did you mean `%s %s %s.im`?", t1.toChars(), opstr, t2.toChars(), t1.toChars(), opstr, t2.toChars());
+            return ErrorExp.get();
+        }
+        else if ((t1.isreal() || t1.isimaginary()) && t2.isimaginary())
+        {
+            error(loc, "`%s %s %s` is an undefined operation", t1.toChars(), opstr, t2.toChars());
+            return ErrorExp.get();
+        }
+    }
+
+    // generate an error if this is a nonsensical += or -=, eg real += imaginary
+    if (op == EXP.addAssign || op == EXP.minAssign)
+    {
+        // Addition or subtraction of a real and an imaginary is a complex result.
+        // Thus, r+=i, r+=c, i+=r, i+=c are all forbidden operations.
+        if ((t1.isreal() && (t2.isimaginary() || t2.iscomplex())) || (t1.isimaginary() && (t2.isreal() || t2.iscomplex())))
+        {
+            error(loc, "`%s %s %s` is undefined (result is complex)", t1.toChars(), EXPtoString(op).ptr, t2.toChars());
+            return ErrorExp.get();
+        }
+        if (type.isreal() || type.isimaginary())
+        {
+            assert(global.errors || t2.isfloating());
+            e2 = e2.castTo(sc, t1);
+        }
+    }
+    if (op == EXP.mulAssign)
+    {
+        if (t2.isfloating())
+        {
+            if (t1.isreal())
+            {
+                if (t2.isimaginary() || t2.iscomplex())
+                {
+                    e2 = e2.castTo(sc, t1);
+                }
+            }
+            else if (t1.isimaginary())
+            {
+                if (t2.isimaginary() || t2.iscomplex())
+                {
+                    switch (t1.ty)
+                    {
+                    case Timaginary32:
+                        t2 = Type.tfloat32;
+                        break;
+
+                    case Timaginary64:
+                        t2 = Type.tfloat64;
+                        break;
+
+                    case Timaginary80:
+                        t2 = Type.tfloat80;
+                        break;
+
+                    default:
+                        assert(0);
+                    }
+                    e2 = e2.castTo(sc, t2);
+                }
+            }
+        }
+    }
+    else if (op == EXP.divAssign)
+    {
+        if (t2.isimaginary())
+        {
+            if (t1.isreal())
+            {
+                // x/iv = i(-x/v)
+                // Therefore, the result is 0
+                e2 = new CommaExp(loc, e2, new RealExp(loc, CTFloat.zero, t1));
+                e2.type = t1;
+                Expression e = new AssignExp(loc, e1, e2);
+                e.type = t1;
+                return e;
+            }
+            else if (t1.isimaginary())
+            {
+                Type t3;
+                switch (t1.ty)
+                {
+                case Timaginary32:
+                    t3 = Type.tfloat32;
+                    break;
+
+                case Timaginary64:
+                    t3 = Type.tfloat64;
+                    break;
+
+                case Timaginary80:
+                    t3 = Type.tfloat80;
+                    break;
+
+                default:
+                    assert(0);
+                }
+                e2 = e2.castTo(sc, t3);
+                Expression e = new AssignExp(loc, e1, e2);
+                e.type = t1;
+                return e;
+            }
+        }
+    }
+    else if (op == EXP.modAssign)
+    {
+        if (t2.iscomplex())
+        {
+            error(loc, "cannot perform modulo complex arithmetic");
+            return ErrorExp.get();
+        }
+    }
+    return binExp;
 }
 
 private Expression extractOpDollarSideEffect(Scope* sc, UnaExp ue)
@@ -1364,7 +1586,10 @@ L1:
              var.isFuncDeclaration && var.isFuncDeclaration.isStatic &&
              var.isFuncDeclaration.objc.selector)
     {
-        return new ObjcClassReferenceExp(e1.loc, ad.isClassDeclaration());
+        auto cls = ad.isClassDeclaration();
+        auto classObj = new ObjcClassReferenceExp(e1.loc, cls);
+        classObj.type = objc.getRuntimeMetaclass(cls).getType();
+        return classObj;
     }
 
     /* Access of a member which is a template parameter in dual-scope scenario
@@ -2471,7 +2696,8 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             //printf("type: %s\n", arg.type.toChars());
             //printf("param: %s\n", p.toChars());
 
-            const pStc = tf.parameterStorageClass(tthis, p);
+            const indirect = (fd is null) || (fd.isVirtual() && !fd.isFinal());
+            const pStc = tf.parameterStorageClass(tthis, p, fd ? &fd.outerVars : null, indirect);
 
             if (firstArg && (pStc & STC.return_))
             {
@@ -5176,7 +5402,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     }
                     else
                         assert(0);
-                    e = new CallExp(exp.loc, e, exp.arguments);
+                    e = new CallExp(exp.loc, e, exp.arguments, exp.names);
                     e = e.expressionSemantic(sc);
                     result = e;
                     return;
@@ -13890,6 +14116,186 @@ Lerr:
     return errorExp();
 }
 
+MATCH matchType(FuncExp funcExp, Type to, Scope* sc, FuncExp* presult, ErrorSink eSink)
+{
+    auto loc = funcExp.loc;
+    auto tok = funcExp.tok;
+    auto td = funcExp.td;
+    auto fd = funcExp.fd;
+    auto type = funcExp.type;
+
+    MATCH cannotInfer()
+    {
+        eSink.error(loc, "cannot infer parameter types from `%s`", to.toChars());
+        return MATCH.nomatch;
+    }
+
+    //printf("FuncExp::matchType('%s'), to=%s\n", type ? type.toChars() : "null", to.toChars());
+    if (presult)
+        *presult = null;
+
+    TypeFunction tof = null;
+    if (to.ty == Tdelegate)
+    {
+        if (tok == TOK.function_)
+        {
+            eSink.error(loc, "cannot match function literal to delegate type `%s`", to.toChars());
+            return MATCH.nomatch;
+        }
+        tof = cast(TypeFunction)to.nextOf();
+    }
+    else if (to.ty == Tpointer && (tof = to.nextOf().isTypeFunction()) !is null)
+    {
+        if (tok == TOK.delegate_)
+        {
+            eSink.error(loc, "cannot match delegate literal to function pointer type `%s`", to.toChars());
+            return MATCH.nomatch;
+        }
+    }
+
+    if (td)
+    {
+        if (!tof)
+        {
+            return cannotInfer();
+        }
+
+        // Parameter types inference from 'tof'
+        assert(td._scope);
+        TypeFunction tf = fd.type.isTypeFunction();
+        //printf("\ttof = %s\n", tof.toChars());
+        //printf("\ttf  = %s\n", tf.toChars());
+        const dim = tf.parameterList.length;
+
+        if (tof.parameterList.length != dim || tof.parameterList.varargs != tf.parameterList.varargs)
+            return cannotInfer();
+
+        auto tiargs = new Objects();
+        tiargs.reserve(td.parameters.length);
+
+        foreach (tp; *td.parameters)
+        {
+            size_t u = 0;
+            foreach (i, p; tf.parameterList)
+            {
+                if (auto ti = p.type.isTypeIdentifier())
+                    if (ti && ti.ident == tp.ident)
+                        break;
+
+                ++u;
+            }
+            assert(u < dim);
+            Parameter pto = tof.parameterList[u];
+            Type t = pto.type;
+            if (t.ty == Terror)
+                return cannotInfer();
+            tf.parameterList[u].storageClass = tof.parameterList[u].storageClass;
+            tiargs.push(t);
+        }
+
+        // Set target of return type inference
+        if (!tf.next && tof.next)
+            fd.treq = to;
+
+        auto ti = new TemplateInstance(loc, td, tiargs);
+        Expression ex = (new ScopeExp(loc, ti)).expressionSemantic(td._scope);
+
+        // Reset inference target for the later re-semantic
+        fd.treq = null;
+
+        if (ex.op == EXP.error)
+            return MATCH.nomatch;
+        if (auto ef = ex.isFuncExp())
+            return ef.matchType(to, sc, presult, eSink);
+        else
+            return cannotInfer();
+    }
+
+    if (!tof || !tof.next)
+        return MATCH.nomatch;
+
+    assert(type && type != Type.tvoid);
+    if (fd.type.ty == Terror)
+        return MATCH.nomatch;
+    auto tfx = fd.type.isTypeFunction();
+    bool convertMatch = (type.ty != to.ty);
+
+    if (fd.inferRetType && tfx.next.implicitConvTo(tof.next) == MATCH.convert)
+    {
+        /* If return type is inferred and covariant return,
+         * tweak return statements to required return type.
+         *
+         * interface I {}
+         * class C : Object, I{}
+         *
+         * I delegate() dg = delegate() { return new class C(); }
+         */
+        convertMatch = true;
+
+        auto tfy = new TypeFunction(tfx.parameterList, tof.next,
+                    tfx.linkage, STC.undefined_);
+        tfy.mod = tfx.mod;
+        tfy.trust = tfx.trust;
+        tfy.isnothrow = tfx.isnothrow;
+        tfy.isnogc = tfx.isnogc;
+        tfy.purity = tfx.purity;
+        tfy.isproperty = tfx.isproperty;
+        tfy.isref = tfx.isref;
+        tfy.isInOutParam = tfx.isInOutParam;
+        tfy.isInOutQual = tfx.isInOutQual;
+        tfy.deco = tfy.merge().deco;
+
+        tfx = tfy;
+    }
+    Type tx;
+    if (tok == TOK.delegate_ ||
+        tok == TOK.reserved && (type.ty == Tdelegate || type.ty == Tpointer && to.ty == Tdelegate))
+    {
+        // Allow conversion from implicit function pointer to delegate
+        tx = new TypeDelegate(tfx);
+        tx.deco = tx.merge().deco;
+    }
+    else
+    {
+        assert(tok == TOK.function_ || tok == TOK.reserved && type.ty == Tpointer || fd.errors);
+        tx = tfx.pointerTo();
+    }
+    //printf("\ttx = %s, to = %s\n", tx.toChars(), to.toChars());
+
+    MATCH m = tx.implicitConvTo(to);
+    if (m > MATCH.nomatch)
+    {
+        // MATCH.exact:      exact type match
+        // MATCH.constant:      covairiant type match (eg. attributes difference)
+        // MATCH.convert:    context conversion
+        m = convertMatch ? MATCH.convert : tx.equals(to) ? MATCH.exact : MATCH.constant;
+
+        if (presult)
+        {
+            (*presult) = cast(FuncExp)funcExp.copy();
+            (*presult).type = to;
+
+            // https://issues.dlang.org/show_bug.cgi?id=12508
+            // Tweak function body for covariant returns.
+            (*presult).fd.modifyReturns(sc, tof.next);
+        }
+    }
+    else if (!cast(ErrorSinkNull)eSink)
+    {
+        auto ts = toAutoQualChars(tx, to);
+        eSink.error(loc, "cannot implicitly convert expression `%s` of type `%s` to `%s`",
+            funcExp.toChars(), ts[0], ts[1]);
+    }
+    return m;
+}
+
+private bool checkSharedAccessBin(BinExp binExp, Scope* sc)
+{
+    const r1 = binExp.e1.checkSharedAccess(sc);
+    const r2 = binExp.e2.checkSharedAccess(sc);
+    return (r1 || r2);
+}
+
 /***************************************
  * If expression is shared, check that we can access it.
  * Give error message if not.
@@ -14060,7 +14466,106 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
     return check(e, returnRef);
 }
 
+/************************************************
+ * Destructors are attached to VarDeclarations.
+ * Hence, if expression returns a temp that needs a destructor,
+ * make sure and create a VarDeclaration for that temp.
+ */
+Expression addDtorHook(Expression e, Scope* sc)
+{
+    Expression visit(Expression exp)
+    {
+        return exp;
+    }
 
+    Expression visitStructLiteral(StructLiteralExp exp)
+    {
+        auto sd = exp.sd;
+        /* If struct requires a destructor, rewrite as:
+         *    (S tmp = S()),tmp
+         * so that the destructor can be hung on tmp.
+         */
+        if (sd.dtor && sc.func)
+        {
+            /* Make an identifier for the temporary of the form:
+             *   __sl%s%d, where %s is the struct name
+             */
+            char[10] buf = void;
+            const prefix = "__sl";
+            const ident = sd.ident.toString;
+            const fullLen = prefix.length + ident.length;
+            const len = fullLen < buf.length ? fullLen : buf.length;
+            buf[0 .. prefix.length] = prefix;
+            buf[prefix.length .. len] = ident[0 .. len - prefix.length];
+
+            auto tmp = copyToTemp(0, buf[0 .. len], exp);
+            Expression ae = new DeclarationExp(exp.loc, tmp);
+            Expression e = new CommaExp(exp.loc, ae, new VarExp(exp.loc, tmp));
+            e = e.expressionSemantic(sc);
+            return e;
+        }
+
+        return exp;
+    }
+
+    Expression visitCall(CallExp exp)
+    {
+        auto e1 = exp.e1;
+        auto type = exp.type;
+        /* Only need to add dtor hook if it's a type that needs destruction.
+         * Use same logic as VarDeclaration::callScopeDtor()
+         */
+
+        if (auto tf = e1.type.isTypeFunction())
+        {
+            if (tf.isref)
+                return exp;
+        }
+
+        Type tv = type.baseElemOf();
+        if (auto ts = tv.isTypeStruct())
+        {
+            StructDeclaration sd = ts.sym;
+            if (sd.dtor)
+            {
+                /* Type needs destruction, so declare a tmp
+                 * which the back end will recognize and call dtor on
+                 */
+                auto tmp = copyToTemp(0, Id.__tmpfordtor.toString(), exp);
+                auto de = new DeclarationExp(exp.loc, tmp);
+                auto ve = new VarExp(exp.loc, tmp);
+                Expression e = new CommaExp(exp.loc, de, ve);
+                e = e.expressionSemantic(sc);
+                return e;
+            }
+        }
+
+        return exp;
+    }
+
+    Expression visitCast(CastExp exp)
+    {
+        if (exp.to.toBasetype().ty == Tvoid)        // look past the cast(void)
+            exp.e1 = exp.e1.addDtorHook(sc);
+        return exp;
+    }
+
+    Expression visitComma(CommaExp exp)
+    {
+        exp.e2 = exp.e2.addDtorHook(sc);
+        return exp;
+    }
+
+    switch(e.op)
+    {
+        default: return visit(e);
+
+        case EXP.structLiteral:    return visitStructLiteral(e.isStructLiteralExp());
+        case EXP.call:             return visitCall(e.isCallExp());
+        case EXP.cast_:            return visitCast(e.isCastExp());
+        case EXP.comma:            return visitComma(e.isCommaExp());
+    }
+}
 
 /****************************************************
  * Determine if `exp`, which gets its address taken, can do so safely.

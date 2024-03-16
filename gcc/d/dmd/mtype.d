@@ -24,6 +24,7 @@ import dmd.astenums;
 import dmd.ast_node;
 import dmd.gluelayer;
 import dmd.dclass;
+import dmd.dcast;
 import dmd.declaration;
 import dmd.denum;
 import dmd.dmangle;
@@ -4404,10 +4405,13 @@ extern (C++) final class TypeFunction : TypeNext
      * Params:
      *  tthis = type of `this` parameter, null if none
      *  p = parameter to this function
+     *  outerVars = context variables p could escape into, if any
+     *  indirect = is this for an indirect or virtual function call?
      * Returns:
      *  storage class with STC.scope_ or STC.return_ OR'd in
      */
-    StorageClass parameterStorageClass(Type tthis, Parameter p)
+    StorageClass parameterStorageClass(Type tthis, Parameter p, VarDeclarations* outerVars = null,
+        bool indirect = false)
     {
         //printf("parameterStorageClass(p: %s)\n", p.toChars());
         auto stc = p.storageClass;
@@ -4441,6 +4445,15 @@ extern (C++) final class TypeFunction : TypeNext
         // See if p can escape via any of the other parameters
         if (purity == PURE.weak)
         {
+            /*
+             * Indirect calls may escape p through a nested context
+             * See:
+             *   https://issues.dlang.org/show_bug.cgi?id=24212
+             *   https://issues.dlang.org/show_bug.cgi?id=24213
+             */
+            if (indirect)
+                return stc;
+
             // Check escaping through parameters
             foreach (i, fparam; parameterList)
             {
@@ -4473,6 +4486,16 @@ extern (C++) final class TypeFunction : TypeNext
             if (tthis && tthis.isMutable())
             {
                 foreach (VarDeclaration v; isAggregate(tthis).fields)
+                {
+                    if (v.hasPointers())
+                        return stc;
+                }
+            }
+
+            // Check escaping through nested context
+            if (outerVars && this.isMutable())
+            {
+                foreach (VarDeclaration v; *outerVars)
                 {
                     if (v.hasPointers())
                         return stc;

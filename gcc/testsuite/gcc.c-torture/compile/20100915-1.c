@@ -1,5 +1,6 @@
 /* PR rtl-optimization/45593 */
 /* Testcase by Arnaud Lacombe <lacombar@gmail.com> */
+/* { dg-additional-options "-fpermissive" } */
 
 typedef unsigned int __u32;
 typedef __u32 __be32;

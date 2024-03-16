@@ -3635,10 +3635,9 @@ do_hoist_insertion (basic_block block)
     return false;
 
   /* We have multiple successors, compute ANTIC_OUT by taking the intersection
-     of all of ANTIC_IN translating through PHI nodes.  Note we do not have to
-     worry about iteration stability here so just use the expression set
-     from the first set and prune that by sorted_array_from_bitmap_set.
-     This is a simplification of what we do in compute_antic_aux.  */
+     of all of ANTIC_IN translating through PHI nodes.  Track the union
+     of the expression sets so we can pick a representative that is
+     fully generatable out of hoistable expressions.  */
   bitmap_set_t ANTIC_OUT = bitmap_set_new ();
   bool first = true;
   FOR_EACH_EDGE (e, ei, block->succs)
@@ -3653,10 +3652,15 @@ do_hoist_insertion (basic_block block)
 	  bitmap_set_t tmp = bitmap_set_new ();
 	  phi_translate_set (tmp, ANTIC_IN (e->dest), e);
 	  bitmap_and_into (&ANTIC_OUT->values, &tmp->values);
+	  bitmap_ior_into (&ANTIC_OUT->expressions, &tmp->expressions);
 	  bitmap_set_free (tmp);
 	}
       else
-	bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (e->dest)->values);
+	{
+	  bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (e->dest)->values);
+	  bitmap_ior_into (&ANTIC_OUT->expressions,
+			   &ANTIC_IN (e->dest)->expressions);
+	}
     }
 
   /* Compute the set of hoistable expressions from ANTIC_OUT.  First compute
@@ -3697,14 +3701,12 @@ do_hoist_insertion (basic_block block)
       return false;
     }
 
-  /* Hack hoitable_set in-place so we can use sorted_array_from_bitmap_set.  */
+  /* Hack hoistable_set in-place so we can use sorted_array_from_bitmap_set.  */
   bitmap_move (&hoistable_set.values, &availout_in_some);
   hoistable_set.expressions = ANTIC_OUT->expressions;
 
   /* Now finally construct the topological-ordered expression set.  */
   vec<pre_expr> exprs = sorted_array_from_bitmap_set (&hoistable_set);
-
-  bitmap_clear (&hoistable_set.values);
 
   /* If there are candidate values for hoisting, insert expressions
      strategically to make the hoistable expressions fully redundant.  */
@@ -3735,6 +3737,13 @@ do_hoist_insertion (basic_block block)
       if (expr->kind == REFERENCE
 	  && PRE_EXPR_REFERENCE (expr)->punned
 	  && FLOAT_TYPE_P (get_expr_type (expr)))
+	continue;
+
+      /* Only hoist if the full expression is available for hoisting.
+	 This avoids hoisting values that are not common and for
+	 example evaluate an expression that's not valid to evaluate
+	 unconditionally (PR112310).  */
+      if (!valid_in_sets (&hoistable_set, AVAIL_OUT (block), expr))
 	continue;
 
       /* OK, we should hoist this value.  Perform the transformation.  */
@@ -3774,6 +3783,7 @@ do_hoist_insertion (basic_block block)
     }
 
   exprs.release ();
+  bitmap_clear (&hoistable_set.values);
   bitmap_set_free (ANTIC_OUT);
 
   return new_stuff;

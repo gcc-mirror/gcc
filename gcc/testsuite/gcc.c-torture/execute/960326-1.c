@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct s
 {
   int a;
@@ -8,7 +11,8 @@ struct s
 
 struct s s = { .b = 3, .d = {2,0,0} };
 
-main ()
+int
+main (void)
 {
   if (s.b != 3)
     abort ();

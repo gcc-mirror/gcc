@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512vbmi2 -mno-avx512f" } */
+/* { dg-options "-fpermissive -mavx512vbmi2 -mno-avx512f" } */
 
 typedef long long __v8di __attribute__((vector_size (64)));
 void

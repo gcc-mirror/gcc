@@ -1465,58 +1465,64 @@
 ;; {{{ ALU special case: add/sub
 
 (define_insn "add<mode>3<exec_clobber>"
-  [(set (match_operand:V_INT_1REG 0 "register_operand"   "=  v")
+  [(set (match_operand:V_INT_1REG 0 "register_operand")
 	(plus:V_INT_1REG
-	  (match_operand:V_INT_1REG 1 "register_operand" "%  v")
-	  (match_operand:V_INT_1REG 2 "gcn_alu_operand"  "vSvB")))
+	  (match_operand:V_INT_1REG 1 "register_operand")
+	  (match_operand:V_INT_1REG 2 "gcn_alu_operand")))
    (clobber (reg:DI VCC_REG))]
   ""
-  "v_add%^_u32\t%0, vcc, %2, %1"
-  [(set_attr "type" "vop2")
-   (set_attr "length" "8")])
+  {@ [cons: =0, %1, 2; attrs: type, length]
+  [v,v,vSvA;vop2,4] v_add%^_u32\t%0, vcc, %2, %1
+  [v,v,vSvB;vop2,8] ^
+  })
 
 (define_insn "add<mode>3_dup<exec_clobber>"
-  [(set (match_operand:V_INT_1REG 0 "register_operand"	     "= v")
+  [(set (match_operand:V_INT_1REG 0 "register_operand")
 	(plus:V_INT_1REG
 	  (vec_duplicate:V_INT_1REG
-	    (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand" "SvB"))
-	  (match_operand:V_INT_1REG 1 "register_operand"     "  v")))
+	    (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"))
+	  (match_operand:V_INT_1REG 1 "register_operand")))
    (clobber (reg:DI VCC_REG))]
   ""
-  "v_add%^_u32\t%0, vcc, %2, %1"
-  [(set_attr "type" "vop2")
-   (set_attr "length" "8")])
+  {@ [cons: =0, 1, 2; attrs: type, length]
+  [v,v,SvA;vop2,4] v_add%^_u32\t%0, vcc, %2, %1
+  [v,v,SvB;vop2,8] ^
+  })
 
 (define_insn "add<mode>3_vcc<exec_vcc>"
-  [(set (match_operand:V_SI 0 "register_operand"   "=  v,   v")
+  [(set (match_operand:V_SI 0 "register_operand")
 	(plus:V_SI
-	  (match_operand:V_SI 1 "register_operand" "%  v,   v")
-	  (match_operand:V_SI 2 "gcn_alu_operand"  "vSvB,vSvB")))
-   (set (match_operand:DI 3 "register_operand"	   "= cV,  Sg")
+	  (match_operand:V_SI 1 "register_operand")
+	  (match_operand:V_SI 2 "gcn_alu_operand")))
+   (set (match_operand:DI 3 "register_operand")
 	(ltu:DI (plus:V_SI (match_dup 1) (match_dup 2))
 		(match_dup 1)))]
   ""
-  "v_add%^_u32\t%0, %3, %2, %1"
-  [(set_attr "type" "vop2,vop3b")
-   (set_attr "length" "8")])
+  {@ [cons: =0, %1, 2, =3; attrs: type, length]
+  [v,v,vSvA,cV;vop2 ,4] v_add%^_u32\t%0, %3, %2, %1
+  [v,v,vSvB,cV;vop2 ,8] ^
+  [v,v,vSvA,Sg;vop3b,8] ^
+  })
 
 ; This pattern only changes the VCC bits when the corresponding lane is
 ; enabled, so the set must be described as an ior.
 
 (define_insn "add<mode>3_vcc_dup<exec_vcc>"
-  [(set (match_operand:V_SI 0 "register_operand"   "= v,  v")
+  [(set (match_operand:V_SI 0 "register_operand")
 	(plus:V_SI
 	  (vec_duplicate:V_SI
-	    (match_operand:SI 1 "gcn_alu_operand"  "SvB,SvB"))
-	  (match_operand:V_SI 2 "register_operand" "  v,  v")))
-   (set (match_operand:DI 3 "register_operand"	   "=cV, Sg")
+	    (match_operand:SI 1 "gcn_alu_operand"))
+	  (match_operand:V_SI 2 "register_operand")))
+   (set (match_operand:DI 3 "register_operand")
 	(ltu:DI (plus:V_SI (vec_duplicate:V_SI (match_dup 2))
 			   (match_dup 1))
 		(vec_duplicate:V_SI (match_dup 2))))]
   ""
-  "v_add%^_u32\t%0, %3, %2, %1"
-  [(set_attr "type" "vop2,vop3b")
-   (set_attr "length" "8,8")])
+  {@ [cons: =0, 1, 2, =3; attrs: type, length]
+  [v,SvA,v,cV;vop2 ,4] v_add%^_u32\t%0, %3, %1, %2
+  [v,SvB,v,cV;vop2 ,8] ^
+  [v,SvA,v,Sg;vop3b,8] ^
+  })
 
 ; v_addc does not accept an SGPR because the VCC read already counts as an
 ; SGPR use and the number of SGPR operands is limited to 1.  It does not
@@ -1820,19 +1826,22 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "add<mode>3_vcc_zext_dup"
-  [(set (match_operand:V_DI 0 "register_operand"    "=    v,    v")
+  [(set (match_operand:V_DI 0 "register_operand")
 	(plus:V_DI
 	  (zero_extend:V_DI
 	    (vec_duplicate:<VnSI>
-	      (match_operand:SI 1 "gcn_alu_operand" "   BSv,  ASv")))
-	  (match_operand:V_DI 2 "gcn_alu_operand"   "   vDA,  vDb")))
-   (set (match_operand:DI 3 "register_operand"	    "=&SgcV,&SgcV")
+	      (match_operand:SI 1 "gcn_alu_operand")))
+	  (match_operand:V_DI 2 "gcn_alu_operand")))
+   (set (match_operand:DI 3 "register_operand")
 	(ltu:DI (plus:V_DI 
 		  (zero_extend:V_DI (vec_duplicate:<VnSI> (match_dup 1)))
 		  (match_dup 2))
 		(match_dup 1)))]
   ""
-  "#"
+  {@ [cons: =0, 1, 2, =3]
+  [v,ASv,v,&Sg] #
+  [v,BSv,v,&cV] ^
+  }
   "gcn_can_split_p  (<MODE>mode, operands[0])
    && gcn_can_split_p (<MODE>mode, operands[2])"
   [(const_int 0)]
@@ -1864,16 +1873,16 @@
   })
 
 (define_insn_and_split "add<mode>3_vcc_zext_dup_exec"
-  [(set (match_operand:V_DI 0 "register_operand"	      "=    v,    v")
+  [(set (match_operand:V_DI 0 "register_operand")
 	(vec_merge:V_DI
 	  (plus:V_DI
 	    (zero_extend:V_DI
 	      (vec_duplicate:<VnSI>
-		(match_operand:SI 1 "gcn_alu_operand"	      "   ASv,  BSv")))
-	    (match_operand:V_DI 2 "gcn_alu_operand"	      "   vDb,  vDA"))
-	  (match_operand:V_DI 4 "gcn_register_or_unspec_operand" " U0,   U0")
-	  (match_operand:DI 5 "gcn_exec_reg_operand"	      "     e,    e")))
-   (set (match_operand:DI 3 "register_operand"		      "=&SgcV,&SgcV")
+		(match_operand:SI 1 "gcn_alu_operand")))
+	    (match_operand:V_DI 2 "gcn_alu_operand"))
+	  (match_operand:V_DI 4 "gcn_register_or_unspec_operand")
+	  (match_operand:DI 5 "gcn_exec_reg_operand")))
+   (set (match_operand:DI 3 "register_operand")
 	(and:DI
 	  (ltu:DI (plus:V_DI 
 		    (zero_extend:V_DI (vec_duplicate:<VnSI> (match_dup 1)))
@@ -1881,7 +1890,10 @@
 		  (match_dup 1))
 	  (match_dup 5)))]
   ""
-  "#"
+  {@ [cons: =0, 1, 2, =3, 4, 5]
+  [v,ASv,v,&Sg,U0,e] #
+  [v,BSv,v,&cV,U0,e] ^
+  }
   "gcn_can_split_p  (<MODE>mode, operands[0])
    && gcn_can_split_p (<MODE>mode, operands[2])
    && gcn_can_split_p (<MODE>mode, operands[4])"
@@ -1921,17 +1933,20 @@
   })
 
 (define_insn_and_split "add<mode>3_vcc_zext_dup2"
-  [(set (match_operand:V_DI 0 "register_operand"		   "=    v")
+  [(set (match_operand:V_DI 0 "register_operand")
 	(plus:V_DI
-	  (zero_extend:V_DI (match_operand:<VnSI> 1 "gcn_alu_operand" " vA"))
-	  (vec_duplicate:V_DI (match_operand:DI 2 "gcn_alu_operand" " DbSv"))))
-   (set (match_operand:DI 3 "register_operand"			   "=&SgcV")
+	  (zero_extend:V_DI (match_operand:<VnSI> 1 "gcn_alu_operand"))
+	  (vec_duplicate:V_DI (match_operand:DI 2 "gcn_alu_operand"))))
+   (set (match_operand:DI 3 "register_operand")
 	(ltu:DI (plus:V_DI 
 		  (zero_extend:V_DI (match_dup 1))
 		  (vec_duplicate:V_DI (match_dup 2)))
 		(match_dup 1)))]
   ""
-  "#"
+  {@ [cons: =0, 1, 2, =3]
+  [v,v,DbSv,&cV] #
+  [v,v,DASv,&Sg] ^
+  }
   "gcn_can_split_p (<MODE>mode, operands[0])"
   [(const_int 0)]
   {
@@ -1963,14 +1978,14 @@
   })
 
 (define_insn_and_split "add<mode>3_vcc_zext_dup2_exec"
-  [(set (match_operand:V_DI 0 "register_operand"		    "=    v")
+  [(set (match_operand:V_DI 0 "register_operand")
 	(vec_merge:V_DI
 	  (plus:V_DI
-	    (zero_extend:V_DI (match_operand:<VnSI> 1 "gcn_alu_operand" "vA"))
-	    (vec_duplicate:V_DI (match_operand:DI 2 "gcn_alu_operand"  "BSv")))
-	  (match_operand:V_DI 4 "gcn_register_or_unspec_operand"    "    U0")
-	  (match_operand:DI 5 "gcn_exec_reg_operand"		    "     e")))
-   (set (match_operand:DI 3 "register_operand"			    "=&SgcV")
+	    (zero_extend:V_DI (match_operand:<VnSI> 1 "gcn_alu_operand"))
+	    (vec_duplicate:V_DI (match_operand:DI 2 "gcn_alu_operand")))
+	  (match_operand:V_DI 4 "gcn_register_or_unspec_operand")
+	  (match_operand:DI 5 "gcn_exec_reg_operand")))
+   (set (match_operand:DI 3 "register_operand")
 	(and:DI
 	  (ltu:DI (plus:V_DI 
 		    (zero_extend:V_DI (match_dup 1))
@@ -1978,7 +1993,10 @@
 		  (match_dup 1))
 	  (match_dup 5)))]
   ""
-  "#"
+  {@ [cons: =0, 1, 2, =3, 4, 5]
+  [v,v,ASv,&Sg,U0,e] #
+  [v,v,BSv,&cV,U0,e] ^
+  }
   "gcn_can_split_p  (<MODE>mode, operands[0])
    && gcn_can_split_p (<MODE>mode, operands[4])"
   [(const_int 0)]

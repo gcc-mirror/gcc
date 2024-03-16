@@ -58,6 +58,9 @@ extern int errno;
 #ifdef HAVE_PROCESS_H
 #include <process.h>
 #endif
+#ifdef HAVE_SPAWN_H
+#include <spawn.h>
+#endif
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
 # define VFORK_STRING "fork"
@@ -559,6 +562,171 @@ pex_unix_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED,
   return (pid_t) -1;
 }
 
+#elif defined(HAVE_POSIX_SPAWN) && defined(HAVE_POSIX_SPAWNP)
+/* Implementation of pex->exec_child using posix_spawn.            */
+
+static pid_t
+pex_unix_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED,
+		     int flags, const char *executable,
+		     char * const * argv, char * const * env,
+		     int in, int out, int errdes,
+		     int toclose, const char **errmsg, int *err)
+{
+  int ret;
+  pid_t pid = -1;
+  posix_spawnattr_t attr;
+  posix_spawn_file_actions_t actions;
+  int attr_initialized = 0, actions_initialized = 0;
+
+  *err = 0;
+
+  ret = posix_spawnattr_init (&attr);
+  if (ret)
+    {
+      *err = ret;
+      *errmsg = "posix_spawnattr_init";
+      goto exit;
+    }
+  attr_initialized = 1;
+
+  /* Use vfork() on glibc <=2.24. */
+#ifdef POSIX_SPAWN_USEVFORK
+  ret = posix_spawnattr_setflags (&attr, POSIX_SPAWN_USEVFORK);
+  if (ret)
+    {
+      *err = ret;
+      *errmsg = "posix_spawnattr_setflags";
+      goto exit;
+    }
+#endif
+
+  ret = posix_spawn_file_actions_init (&actions);
+  if (ret)
+    {
+      *err = ret;
+      *errmsg = "posix_spawn_file_actions_init";
+      goto exit;
+    }
+  actions_initialized = 1;
+
+  if (in != STDIN_FILE_NO)
+    {
+      ret = posix_spawn_file_actions_adddup2 (&actions, in, STDIN_FILE_NO);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawn_file_actions_adddup2";
+	  goto exit;
+	}
+
+      ret = posix_spawn_file_actions_addclose (&actions, in);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawn_file_actions_addclose";
+	  goto exit;
+	}
+    }
+
+  if (out != STDOUT_FILE_NO)
+    {
+      ret = posix_spawn_file_actions_adddup2 (&actions, out, STDOUT_FILE_NO);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawn_file_actions_adddup2";
+	  goto exit;
+	}
+
+      ret = posix_spawn_file_actions_addclose (&actions, out);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawn_file_actions_addclose";
+	  goto exit;
+	}
+    }
+
+  if (errdes != STDERR_FILE_NO)
+    {
+      ret = posix_spawn_file_actions_adddup2 (&actions, errdes, STDERR_FILE_NO);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawn_file_actions_adddup2";
+	  goto exit;
+	}
+
+      ret = posix_spawn_file_actions_addclose (&actions, errdes);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawn_file_actions_addclose";
+	  goto exit;
+	}
+    }
+
+  if (toclose >= 0)
+    {
+      ret = posix_spawn_file_actions_addclose (&actions, toclose);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawn_file_actions_addclose";
+	  goto exit;
+	}
+    }
+
+  if ((flags & PEX_STDERR_TO_STDOUT) != 0)
+    {
+      ret = posix_spawn_file_actions_adddup2 (&actions, STDOUT_FILE_NO, STDERR_FILE_NO);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawn_file_actions_adddup2";
+	  goto exit;
+	}
+    }
+
+  if ((flags & PEX_SEARCH) != 0)
+    {
+      ret = posix_spawnp (&pid, executable, &actions, &attr, argv, env ? env : environ);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawnp";
+	  goto exit;
+	}
+    }
+  else
+    {
+      ret = posix_spawn (&pid, executable, &actions, &attr, argv, env ? env : environ);
+      if (ret)
+	{
+	  *err = ret;
+	  *errmsg = "posix_spawn";
+	  goto exit;
+	}
+    }
+
+exit:
+  if (actions_initialized)
+    posix_spawn_file_actions_destroy (&actions);
+  if (attr_initialized)
+    posix_spawnattr_destroy (&attr);
+
+  if (!*err && in != STDIN_FILE_NO)
+    if (close (in))
+      *errmsg = "close", *err = errno, pid = -1;
+  if (!*err && out != STDOUT_FILE_NO)
+    if (close (out))
+      *errmsg = "close", *err = errno, pid = -1;
+  if (!*err && errdes != STDERR_FILE_NO)
+    if (close (errdes))
+      *errmsg = "close", *err = errno, pid = -1;
+
+  return pid;
+}
 #else
 /* Implementation of pex->exec_child using standard vfork + exec.  */
 

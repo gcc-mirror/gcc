@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu89" } */
 
 cc1 (x, y)
      int x, y;

@@ -360,6 +360,7 @@ namespace gccjit
     type get_volatile ();
     type get_aligned (size_t alignment_in_bytes);
     type get_vector (size_t num_units);
+    type get_restrict ();
 
     // Shortcuts for getting values of numeric types:
     rvalue zero ();

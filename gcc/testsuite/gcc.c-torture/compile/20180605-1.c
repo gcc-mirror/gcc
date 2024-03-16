@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 void f (int *p, int n)
 {
     int j = 0, k;

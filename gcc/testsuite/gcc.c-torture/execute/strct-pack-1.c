@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef struct
 {
   short s __attribute__ ((aligned(2), packed));
@@ -12,7 +15,8 @@ check (TRIAL *t)
   return 0;
 }
 
-main ()
+int
+main (void)
 {
   TRIAL trial;
 

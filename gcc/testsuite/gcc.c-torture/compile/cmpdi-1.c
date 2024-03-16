@@ -1,3 +1,4 @@
+int
 f (long long d)
 {
   int i = 0;
@@ -6,6 +7,7 @@ f (long long d)
   return i;
 }
 
+int
 g (long long d)
 {
   int i = 0;

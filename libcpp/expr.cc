@@ -97,7 +97,7 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   f = d = l = w = q = i = fn = fnx = fn_bits = bf16 = 0;
 
   /* The following decimal float suffixes, from TR 24732:2009, TS
-     18661-2:2015 and C2X, are supported:
+     18661-2:2015 and C23, are supported:
 
      df, DF - _Decimal32.
      dd, DD - _Decimal64.
@@ -787,11 +787,11 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	{
 	  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, dfp_constants))
 	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-				 "decimal float constants are a C2X feature");
-	  else if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
-	    cpp_warning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+				 "decimal float constants are a C23 feature");
+	  else if (CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
+	    cpp_warning_with_line (pfile, CPP_W_C11_C23_COMPAT,
 				   virtual_location, 0,
-				   "decimal float constants are a C2X feature");
+				   "decimal float constants are a C23 feature");
 	}
 
       result |= CPP_N_FLOATING;
@@ -857,23 +857,23 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
        }
 
       if ((result & CPP_N_BITINT) != 0
-	  && CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) != 0)
+	  && CPP_OPTION (pfile, cpp_warn_c11_c23_compat) != 0)
 	{
-	  if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
+	  if (CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
 	    {
 	      const char *message = N_("ISO C does not support literal "
-				       "%<wb%> suffixes before C2X");
+				       "%<wb%> suffixes before C23");
 	      if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, true_false))
-		cpp_pedwarning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+		cpp_pedwarning_with_line (pfile, CPP_W_C11_C23_COMPAT,
 					  virtual_location, 0, message);
 	      else
-		cpp_warning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+		cpp_warning_with_line (pfile, CPP_W_C11_C23_COMPAT,
 				       virtual_location, 0, message);
 	    }
 	  else if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, true_false))
 	    {
 	      const char *message = N_("ISO C does not support literal "
-				       "%<wb%> suffixes before C2X");
+				       "%<wb%> suffixes before C23");
 	      cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
 				   message);
 	    }
@@ -894,12 +894,12 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 			     CPP_OPTION (pfile, cplusplus)
 			     ? N_("binary constants are a C++14 feature "
 				  "or GCC extension")
-			     : N_("binary constants are a C2X feature "
+			     : N_("binary constants are a C23 feature "
 				  "or GCC extension"));
-      else if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
-	cpp_warning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+      else if (CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
+	cpp_warning_with_line (pfile, CPP_W_C11_C23_COMPAT,
 			       virtual_location, 0,
-			       "binary constants are a C2X feature");
+			       "binary constants are a C23 feature");
     }
 
   if (radix == 10)

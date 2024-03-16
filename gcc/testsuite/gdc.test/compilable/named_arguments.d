@@ -20,9 +20,21 @@ string fun2(string x = "x", string y, string z = "z")
 
 static assert(fun2(y: "y") == "xyz");
 
-// The assumption that first parameter having a default implies all parameters have a default is no longer valid,
-// so this struct constructor shouldn't be mistaken for a default constructor.
-struct SD { this(int x = 1, int y) { } }
+struct SD
+{
+	int x;
+	int y;
+
+	// The assumption that first parameter having a default implies all parameters have a default is no longer valid,
+	// so this struct constructor shouldn't be mistaken for a default constructor.
+	this(int x = 10, int y)
+	{
+		this.x = x;
+		this.y = y;
+	}
+}
+
+static assert(SD(y: 20) == SD(10, 20));
 
 // UFCS
 static assert("x".fun("y", w: "w") == "xyZw");

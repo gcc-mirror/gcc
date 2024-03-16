@@ -931,8 +931,9 @@ operator_equal::fold_range (irange &r, tree type,
 
   // We can be sure the values are always equal or not if both ranges
   // consist of a single value, and then compare them.
-  if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
-      && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
+  bool op1_const = wi::eq_p (op1.lower_bound (), op1.upper_bound ());
+  bool op2_const = wi::eq_p (op2.lower_bound (), op2.upper_bound ());
+  if (op1_const && op2_const)
     {
       if (wi::eq_p (op1.lower_bound (), op2.upper_bound()))
 	r = range_true (type);
@@ -947,6 +948,11 @@ operator_equal::fold_range (irange &r, tree type,
       tmp.intersect (op2);
       if (tmp.undefined_p ())
 	r = range_false (type);
+      // Check if a constant cannot satisfy the bitmask requirements.
+      else if (op2_const && !op1.get_bitmask ().member_p (op2.lower_bound ()))
+	 r = range_false (type);
+      else if (op1_const && !op2.get_bitmask ().member_p (op1.lower_bound ()))
+	 r = range_false (type);
       else
 	r = range_true_and_false (type);
     }
@@ -1033,8 +1039,9 @@ operator_not_equal::fold_range (irange &r, tree type,
 
   // We can be sure the values are always equal or not if both ranges
   // consist of a single value, and then compare them.
-  if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
-      && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
+  bool op1_const = wi::eq_p (op1.lower_bound (), op1.upper_bound ());
+  bool op2_const = wi::eq_p (op2.lower_bound (), op2.upper_bound ());
+  if (op1_const && op2_const)
     {
       if (wi::ne_p (op1.lower_bound (), op2.upper_bound()))
 	r = range_true (type);
@@ -1049,6 +1056,11 @@ operator_not_equal::fold_range (irange &r, tree type,
       tmp.intersect (op2);
       if (tmp.undefined_p ())
 	r = range_true (type);
+      // Check if a constant cannot satisfy the bitmask requirements.
+      else if (op2_const && !op1.get_bitmask ().member_p (op2.lower_bound ()))
+	 r = range_true (type);
+      else if (op1_const && !op2.get_bitmask ().member_p (op1.lower_bound ()))
+	 r = range_true (type);
       else
 	r = range_true_and_false (type);
     }

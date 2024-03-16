@@ -1,6 +1,6 @@
 /* PR ipa/77677 */
 /* { dg-do compile } */
-/* { dg-options "-w" } */
+/* { dg-options "-fpermissive -w" } */
 
 enum machine_mode { MAX_MACHINE_MODE };
 

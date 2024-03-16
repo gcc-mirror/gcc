@@ -1,5 +1,9 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
+void
 va_double (int n, ...)
 {
   va_list args;
@@ -18,6 +22,7 @@ va_double (int n, ...)
   va_end (args);
 }
 
+void
 va_long_double (int n, ...)
 {
   va_list args;
@@ -36,7 +41,8 @@ va_long_double (int n, ...)
   va_end (args);
 }
 
-main ()
+int
+main (void)
 {
   va_double (4, 3.141592, 2.71827, 2.2360679, 2.1474836);
   va_long_double (4, 3.141592L, 2.71827L, 2.2360679L, 2.1474836L);

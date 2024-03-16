@@ -1,9 +1,14 @@
+void abort (void);
+void exit (int);
+
+void
 f(int *x)
 {
   *x = 0;
 }
 
-main()
+int
+main(void)
 {
   int s, c, x;
   char a[] = "c";

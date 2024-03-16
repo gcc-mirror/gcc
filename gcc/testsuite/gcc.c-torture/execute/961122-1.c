@@ -1,16 +1,22 @@
+void abort (void);
+void exit (int);
+
 long long acc;
 
+void
 addhi (short a)
 {
   acc += (long long) a << 32;
 }
 
+void
 subhi (short a)
 {
   acc -= (long long) a << 32;
 }
 
-main ()
+int
+main (void)
 {
   acc = 0xffff00000000ll;
   addhi (1);

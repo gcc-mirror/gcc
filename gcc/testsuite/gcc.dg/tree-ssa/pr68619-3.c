@@ -11,13 +11,15 @@ struct entry
   unsigned short len;
   const char *attrib;
 };
+hashval_t iterative_hash (const struct entry *, __SIZE_TYPE__, hashval_t);
+hashval_t
 e_hash (const void *a)
 {
   const struct entry *e = a;
   hashval_t ret = 0;
   int i;
   if (e[0].etype != ETYPE_STRUCT && e[0].etype != ETYPE_UNION)
-    abort ();
+    __builtin_abort ();
   for (i = 0; i <= e[0].len; ++i)
     {
       ret = iterative_hash (&e[i], __builtin_offsetof (struct entry, attrib), ret);

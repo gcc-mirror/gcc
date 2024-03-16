@@ -1,3 +1,5 @@
+void abort (void);
+void exit (int);
 
 int * foo (int *x, int b)
 {
@@ -9,16 +11,17 @@ int * foo (int *x, int b)
   return x;
 }
 
-main()
+int
+main(void)
 {
   int a[5];
 
-  memset (a, 1, sizeof (a));
+  __builtin_memset (a, 1, sizeof (a));
 
   if (foo(a, 0) - a != 1 || a[0] != 55 || a[1] != a[4])
     abort();
 
-  memset (a, 1, sizeof (a));
+  __builtin_memset (a, 1, sizeof (a));
 
   if (foo(a, 2) - a != 2 || a[0] != 55 || a[1] != 2)
     abort();

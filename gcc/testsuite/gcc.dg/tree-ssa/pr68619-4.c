@@ -56,6 +56,9 @@ struct cse_reg_info
 };
 static struct cse_reg_info *cse_reg_info_table;
 static unsigned int cse_reg_info_timestamp;
+int rhs_regno (rtx);
+void foop (void);
+void arf (void);
 
 static __inline__ struct cse_reg_info *
 get_cse_reg_info (unsigned int regno)

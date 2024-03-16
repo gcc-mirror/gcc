@@ -908,8 +908,8 @@ SEL2 (union, nonpst3)
 /*
 ** test_nonpst3:
 **	sub	sp, sp, #16
-**	strh	w0, \[sp, #?6\]
-**	ldr	p0, \[sp, #3, mul vl\]
+**	str	w0, \[sp, #?8\]
+**	ldr	p0, \[sp, #4, mul vl\]
 **	add	sp, sp, #?16
 **	ret
 */

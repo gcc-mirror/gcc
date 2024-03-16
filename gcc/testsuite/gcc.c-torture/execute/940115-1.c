@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu89" } */
 f (cp, end)
      char *cp;
      char *end;

@@ -2469,6 +2469,11 @@ package body Sem_Ch12 is
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => T,
           Type_Definition     => Def));
+
+      --  Keep the aspects from the original node
+
+      Move_Aspects (Original_Node (N), N);
+
       Analyze (N);
       Set_Is_Generic_Type (T);
    end Analyze_Formal_Derived_Interface_Type;
@@ -2519,6 +2524,11 @@ package body Sem_Ch12 is
       end if;
 
       Rewrite (N, New_N);
+
+      --  Keep the aspects from the original node
+
+      Move_Aspects (Original_Node (N), N);
+
       Analyze (N);
 
       if Unk_Disc then
@@ -2651,6 +2661,11 @@ package body Sem_Ch12 is
           Type_Definition     => Def);
 
       Rewrite (N, New_N);
+
+      --  Keep the aspects from the original node
+
+      Move_Aspects (Original_Node (N), N);
+
       Analyze (N);
       Set_Is_Generic_Type (T);
    end Analyze_Formal_Interface_Type;
@@ -2817,9 +2832,7 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
 
       if Parent_Installed then
          Remove_Parent;
@@ -3273,12 +3286,10 @@ package body Sem_Ch12 is
       Set_Has_Completion (Pack_Id, True);
 
    <<Leave>>
-      if Has_Aspects (N) then
-         --  Unclear that any other aspects may appear here, analyze them
-         --  for completion, given that the grammar allows their appearance.
+      --  Unclear that any other aspects may appear here, analyze them
+      --  for completion, given that the grammar allows their appearance.
 
-         Analyze_Aspect_Specifications (N, Pack_Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Pack_Id);
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
    end Analyze_Formal_Package_Declaration;
@@ -3593,9 +3604,7 @@ package body Sem_Ch12 is
       end if;
 
    <<Leave>>
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Nam);
-      end if;
+      Analyze_Aspect_Specifications (N, Nam);
 
       if Parent_Installed then
          Remove_Parent;
@@ -3689,9 +3698,7 @@ package body Sem_Ch12 is
          Validate_Formal_Type_Default (N);
       end if;
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, T);
-      end if;
+      Analyze_Aspect_Specifications (N, T);
 
       if Parent_Installed then
          Remove_Parent;
@@ -3839,11 +3846,6 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
-      --  Once the contents of the generic copy and the template are swapped,
-      --  do the same for their respective aspect specifications.
-
-      Exchange_Aspects (N, New_N);
-
       --  Collect all contract-related source pragmas found within the template
       --  and attach them to the contract of the package spec. This contract is
       --  used in the capture of global references within annotations.
@@ -3881,9 +3883,7 @@ package body Sem_Ch12 is
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
 
       Push_Scope (Id);
       Enter_Generic_Scope (Id);
@@ -4003,11 +4003,6 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
-      --  Once the contents of the generic copy and the template are swapped,
-      --  do the same for their respective aspect specifications.
-
-      Exchange_Aspects (N, New_N);
-
       --  Collect all contract-related source pragmas found within the template
       --  and attach them to the contract of the subprogram spec. This contract
       --  is used in the capture of global references within annotations.
@@ -4112,9 +4107,7 @@ package body Sem_Ch12 is
       --  Analyze the aspects of the generic copy to ensure that all generated
       --  pragmas (if any) perform their semantic effects.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
 
       --  For a library unit, we have reconstructed the entity for the unit,
       --  and must reset it in the library tables. We also make sure that
@@ -4950,9 +4943,7 @@ package body Sem_Ch12 is
             --  take into account categorization pragmas before analyzing the
             --  instance.
 
-            if Has_Aspects (N) then
-               Analyze_Aspect_Specifications (N, Act_Decl_Id);
-            end if;
+            Analyze_Aspect_Specifications (N, Act_Decl_Id);
 
             Analyze (Act_Decl);
             Set_Unit (Parent (N), N);
@@ -5065,7 +5056,7 @@ package body Sem_Ch12 is
       end if;
 
    <<Leave>>
-      if Has_Aspects (N) and then Nkind (Parent (N)) /= N_Compilation_Unit then
+      if Nkind (Parent (N)) /= N_Compilation_Unit then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
@@ -6354,14 +6345,6 @@ package body Sem_Ch12 is
       --  compilation unit of the instance, since this is the main unit.
 
       Rewrite (N, Act_Body);
-
-      --  Propagate the aspect specifications from the package body template to
-      --  the instantiated version of the package body.
-
-      if Has_Aspects (Act_Body) then
-         Set_Aspect_Specifications
-           (N, New_Copy_List_Tree (Aspect_Specifications (Act_Body)));
-      end if;
 
       Body_Cunit := Parent (N);
 
@@ -7702,7 +7685,9 @@ package body Sem_Ch12 is
    ------------------------
 
    procedure Check_Private_View (N : Node_Id) is
-      Typ : constant Entity_Id := Etype (N);
+      Comparison : constant Boolean := Nkind (N) in N_Op_Compare;
+      Typ        : constant Entity_Id :=
+        (if Comparison then Compare_Type (N) else Etype (N));
 
       procedure Check_Private_Type (T : Entity_Id; Private_View : Boolean);
       --  Check that the available view of T matches Private_View and, if not,
@@ -7766,10 +7751,16 @@ package body Sem_Ch12 is
            and then (not In_Open_Scopes (Scope (Typ))
                       or else Nkind (Parent (N)) = N_Subtype_Declaration)
          then
-            --  In the generic, only the private declaration was visible
+            declare
+               Assoc : constant Node_Id := Get_Associated_Node (N);
 
-            Prepend_Elmt (Typ, Exchanged_Views);
-            Exchange_Declarations (Etype (Get_Associated_Node (N)));
+            begin
+               --  In the generic, only the private declaration was visible
+
+               Prepend_Elmt (Typ, Exchanged_Views);
+               Exchange_Declarations
+                 (if Comparison then Compare_Type (Assoc) else Etype (Assoc));
+            end;
 
          --  Check that the available views of Typ match their respective flag.
          --  Note that the type of a visible discriminant is never private.
@@ -8081,14 +8072,6 @@ package body Sem_Ch12 is
 
       New_N := New_Copy (N);
 
-      --  Copy aspects if present
-
-      if Has_Aspects (N) then
-         Set_Has_Aspects (New_N, False);
-         Set_Aspect_Specifications
-           (New_N, Copy_Generic_List (Aspect_Specifications (N), Parent_Id));
-      end if;
-
       --  If we are instantiating, we want to adjust the sloc based on the
       --  current S_Adjustment. However, if this is the root node of a subunit,
       --  we need to defer that adjustment to below (see "elsif Instantiating
@@ -8190,36 +8173,6 @@ package body Sem_Ch12 is
                   if Nkind (Assoc) = Nkind (N) then
                      Set_Entity (New_N, Entity (Assoc));
                      Check_Private_View (N);
-
-                     --  For the comparison and equality operators, the Etype
-                     --  of the operator does not provide any information so,
-                     --  if one of the operands is of a universal type, we need
-                     --  to manually restore the full view of private types.
-
-                     if Nkind (N) in N_Op_Eq
-                                   | N_Op_Ge
-                                   | N_Op_Gt
-                                   | N_Op_Le
-                                   | N_Op_Lt
-                                   | N_Op_Ne
-                     then
-                        if Yields_Universal_Type (Left_Opnd (Assoc)) then
-                           if Present (Etype (Right_Opnd (Assoc)))
-                             and then
-                               Is_Private_Type (Etype (Right_Opnd (Assoc)))
-                           then
-                              Switch_View (Etype (Right_Opnd (Assoc)));
-                           end if;
-
-                        elsif Yields_Universal_Type (Right_Opnd (Assoc)) then
-                           if Present (Etype (Left_Opnd (Assoc)))
-                             and then
-                               Is_Private_Type (Etype (Left_Opnd (Assoc)))
-                           then
-                              Switch_View (Etype (Left_Opnd (Assoc)));
-                           end if;
-                        end if;
-                     end if;
 
                   --  The node is a reference to a global type and acts as the
                   --  subtype mark of a qualified expression created in order
@@ -16884,29 +16837,45 @@ package body Sem_Ch12 is
          elsif Nkind (N) = N_Pragma then
             Save_References_In_Pragma (N);
 
+         elsif Nkind (N) =  N_Aspect_Specification then
+            declare
+               P : constant Node_Id := Parent (N);
+               Expr : Node_Id;
+            begin
+
+               if Permits_Aspect_Specifications (P) then
+
+                  --  The capture of global references within aspects
+                  --  associated with generic packages, subprograms or
+                  --  their bodies must be delayed due to timing of
+                  --  annotation analysis. Global references are still
+                  --  captured in routine Save_Global_References_In_Contract.
+
+                  if Requires_Delayed_Save (Original_Node (P)) then
+                     null;
+
+                     --  Otherwise save all global references within the
+                     --  aspects
+
+                  else
+                     Expr := Expression (N);
+
+                     if Present (Expr) then
+                        Save_Global_References (Expr);
+                     end if;
+                  end if;
+               end if;
+            end;
+
+         --  Do not walk the node pointed to by Label_Construct twice
+
+         elsif Nkind (N) = N_Implicit_Label_Declaration then
+            null;
+
          else
             Save_References_In_Descendants (N);
          end if;
 
-         --  Save all global references found within the aspect specifications
-         --  of the related node.
-
-         if Permits_Aspect_Specifications (N) and then Has_Aspects (N) then
-
-            --  The capture of global references within aspects associated with
-            --  generic packages, subprograms or their bodies must be delayed
-            --  due to timing of annotation analysis. Global references are
-            --  still captured in routine Save_Global_References_In_Contract.
-
-            if Requires_Delayed_Save (N) then
-               null;
-
-            --  Otherwise save all global references within the aspects
-
-            else
-               Save_Global_References_In_Aspects (N);
-            end if;
-         end if;
       end Save_References;
 
       ---------------------
@@ -16914,10 +16883,27 @@ package body Sem_Ch12 is
       ---------------------
 
       procedure Set_Global_Type (N : Node_Id; N2 : Node_Id) is
-         Typ : constant Entity_Id := Etype (N2);
+         Comparison : constant Boolean   := Nkind (N2) in N_Op_Compare;
+         Typ        : constant Entity_Id :=
+           (if Comparison then Compare_Type (N2) else Etype (N2));
 
       begin
-         Set_Etype (N, Typ);
+         --  For a comparison (or equality) operator, the Etype is Boolean, so
+         --  it is always global. But the type subject to the Has_Private_View
+         --  processing is the Compare_Type, so we must specifically check it.
+
+         if Comparison then
+            Set_Etype (N, Etype (N2));
+
+            if not Is_Global (Typ) then
+               return;
+            end if;
+
+            Set_Compare_Type (N, Typ);
+
+         else
+            Set_Etype (N, Typ);
+         end if;
 
          --  If the entity of N is not the associated node, this is a
          --  nested generic and it has an associated node as well, whose
@@ -16959,7 +16945,11 @@ package body Sem_Ch12 is
             Set_Has_Private_View (N);
 
             if Present (Full_View (Typ)) then
-               Set_Etype (N2, Full_View (Typ));
+               if Comparison then
+                  Set_Compare_Type (N2, Full_View (Typ));
+               else
+                  Set_Etype (N2, Full_View (Typ));
+               end if;
             end if;
          end if;
 

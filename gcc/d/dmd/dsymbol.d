@@ -56,6 +56,8 @@ import dmd.staticassert;
 import dmd.tokens;
 import dmd.visitor;
 
+import dmd.common.outbuffer;
+
 /***************************************
  * Calls dg(Dsymbol *sym) for each Dsymbol.
  * If dg returns !=0, stops and returns that value else returns 0.
@@ -236,6 +238,15 @@ struct FieldState
     uint bitOffset;     /// bit offset for field
 
     bool inFlight;      /// bit field is in flight
+
+    void print() const
+    {
+        printf("FieldState.offset      = %d bytes\n",   offset);
+        printf("          .fieldOffset = %d bytes\n",   fieldOffset);
+        printf("          .bitOffset   = %d bits\n",    bitOffset);
+        printf("          .fieldSize   = %d bytes\n",   fieldSize);
+        printf("          .inFlight    = %d\n",         inFlight);
+    }
 }
 
 // 99.9% of Dsymbols don't have attributes (at least in druntime and Phobos),
@@ -684,7 +695,7 @@ extern (C++) class Dsymbol : ASTNode
     const(char)* toPrettyChars(bool QualifyTypes = false)
     {
         if (prettystring && !QualifyTypes)
-            return prettystring;
+            return prettystring; // value cached for speed
 
         //printf("Dsymbol::toPrettyChars() '%s'\n", toChars());
         if (!parent)
@@ -695,42 +706,22 @@ extern (C++) class Dsymbol : ASTNode
             return s;
         }
 
-        // Computer number of components
-        size_t complength = 0;
-        for (Dsymbol p = this; p; p = p.parent)
-            ++complength;
+        OutBuffer buf;
 
-        // Allocate temporary array comp[]
-        alias T = const(char)[];
-        auto compptr = cast(T*)Mem.check(malloc(complength * T.sizeof));
-        auto comp = compptr[0 .. complength];
-
-        // Fill in comp[] and compute length of final result
-        size_t length = 0;
-        int i;
-        for (Dsymbol p = this; p; p = p.parent)
+        void addQualifiers(Dsymbol p)
         {
+            if (p.parent)
+            {
+                addQualifiers(p.parent);
+                buf.writeByte('.');
+            }
             const s = QualifyTypes ? p.toPrettyCharsHelper() : p.toChars();
-            const len = strlen(s);
-            comp[i] = s[0 .. len];
-            ++i;
-            length += len + 1;
+            buf.writestring(s);
         }
 
-        auto s = cast(char*)mem.xmalloc_noscan(length);
-        auto q = s + length - 1;
-        *q = 0;
-        foreach (j; 0 .. complength)
-        {
-            const t = comp[j].ptr;
-            const len = comp[j].length;
-            q -= len;
-            memcpy(q, t, len);
-            if (q == s)
-                break;
-            *--q = '.';
-        }
-        free(comp.ptr);
+        addQualifiers(this);
+        auto s = buf.extractSlice(true).ptr;
+
         if (!QualifyTypes)
             prettystring = s;
         return s;
@@ -1734,8 +1725,8 @@ public:
                 Parameters* p = new Parameter(STC.in_, Type.tchar.constOf().arrayOf(), null, null);
                 parameters.push(p);
                 Type tret = null;
-                tfgetmembers = new TypeFunction(parameters, tret, VarArg.none, LINK.d);
-                tfgetmembers = cast(TypeFunction)tfgetmembers.dsymbolSemantic(Loc.initial, &sc);
+                TypeFunction tf = new TypeFunction(parameters, tret, VarArg.none, LINK.d);
+                tfgetmembers = tf.dsymbolSemantic(Loc.initial, &sc).isTypeFunction();
             }
             if (fdx)
                 fdx = fdx.overloadExactMatch(tfgetmembers);
@@ -1863,11 +1854,11 @@ extern (C++) final class WithScopeSymbol : ScopeDsymbol
         Expression eold = null;
         for (Expression e = withstate.exp; e && e != eold; e = resolveAliasThis(_scope, e, true))
         {
-            if (e.op == EXP.scope_)
+            if (auto se = e.isScopeExp())
             {
-                s = (cast(ScopeExp)e).sds;
+                s = se.sds;
             }
-            else if (e.op == EXP.type)
+            else if (e.isTypeExp())
             {
                 s = e.type.toDsymbol(null);
             }
@@ -2041,11 +2032,11 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                 if (TemplateDeclaration td = s.isTemplateDeclaration())
                 {
                     dinteger_t dim = 0;
-                    if (exp.op == EXP.array)
+                    if (auto ae = exp.isArrayExp())
                     {
-                        dim = (cast(ArrayExp)exp).currentDimension;
+                        dim = ae.currentDimension;
                     }
-                    else if (exp.op == EXP.slice)
+                    else if (exp.isSliceExp())
                     {
                         dim = 0; // slices are currently always one-dimensional
                     }
@@ -2066,7 +2057,8 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                      * Note that it's impossible to have both template & function opDollar,
                      * because both take no arguments.
                      */
-                    if (exp.op == EXP.array && (cast(ArrayExp)exp).arguments.length != 1)
+                    auto ae = exp.isArrayExp();
+                    if (ae && ae.arguments.length != 1)
                     {
                         error(exp.loc, "`%s` only defines opDollar for one dimension", ad.toChars());
                         return null;

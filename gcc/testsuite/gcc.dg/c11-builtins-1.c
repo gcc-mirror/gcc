@@ -1,4 +1,4 @@
-/* Test C11 built-in functions: test functions new in C2x are not
+/* Test C11 built-in functions: test functions new in C23 are not
    declared as built-in for C11.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c11" } */

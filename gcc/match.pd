@@ -87,20 +87,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   negate bit_not)
 (define_operator_list COND_UNARY
   IFN_COND_NEG IFN_COND_NOT)
+(define_operator_list COND_LEN_UNARY
+  IFN_COND_LEN_NEG IFN_COND_LEN_NOT)
 
 /* Binary operations and their associated IFN_COND_* function.  */
 (define_operator_list UNCOND_BINARY
   plus minus
   mult trunc_div trunc_mod rdiv
   min max
-  IFN_FMIN IFN_FMAX
+  IFN_FMIN IFN_FMAX IFN_COPYSIGN
   bit_and bit_ior bit_xor
   lshift rshift)
 (define_operator_list COND_BINARY
   IFN_COND_ADD IFN_COND_SUB
   IFN_COND_MUL IFN_COND_DIV IFN_COND_MOD IFN_COND_RDIV
   IFN_COND_MIN IFN_COND_MAX
-  IFN_COND_FMIN IFN_COND_FMAX
+  IFN_COND_FMIN IFN_COND_FMAX IFN_COND_COPYSIGN
   IFN_COND_AND IFN_COND_IOR IFN_COND_XOR
   IFN_COND_SHL IFN_COND_SHR)
 (define_operator_list COND_LEN_BINARY
@@ -108,7 +110,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   IFN_COND_LEN_MUL IFN_COND_LEN_DIV
   IFN_COND_LEN_MOD IFN_COND_LEN_RDIV
   IFN_COND_LEN_MIN IFN_COND_LEN_MAX
-  IFN_COND_LEN_FMIN IFN_COND_LEN_FMAX
+  IFN_COND_LEN_FMIN IFN_COND_LEN_FMAX IFN_COND_LEN_COPYSIGN
   IFN_COND_LEN_AND IFN_COND_LEN_IOR IFN_COND_LEN_XOR
   IFN_COND_LEN_SHL IFN_COND_LEN_SHR)
 
@@ -1084,45 +1086,49 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* cos(copysign(x, y)) -> cos(x).  Similarly for cosh.  */
 (for coss (COS COSH)
-     copysigns (COPYSIGN)
- (simplify
-  (coss (copysigns @0 @1))
-   (coss @0)))
+ (for copysigns (COPYSIGN)
+  (simplify
+   (coss (copysigns @0 @1))
+    (coss @0))))
 
 /* pow(copysign(x, y), z) -> pow(x, z) if z is an even integer.  */
 (for pows (POW)
-     copysigns (COPYSIGN)
- (simplify
-  (pows (copysigns @0 @2) REAL_CST@1)
-  (with { HOST_WIDE_INT n; }
-   (if (real_isinteger (&TREE_REAL_CST (@1), &n) && (n & 1) == 0)
-    (pows @0 @1)))))
+ (for copysigns (COPYSIGN)
+  (simplify
+   (pows (copysigns @0 @2) REAL_CST@1)
+   (with { HOST_WIDE_INT n; }
+    (if (real_isinteger (&TREE_REAL_CST (@1), &n) && (n & 1) == 0)
+     (pows @0 @1))))))
 /* Likewise for powi.  */
 (for pows (POWI)
-     copysigns (COPYSIGN)
- (simplify
-  (pows (copysigns @0 @2) INTEGER_CST@1)
-  (if ((wi::to_wide (@1) & 1) == 0)
-   (pows @0 @1))))
+ (for copysigns (COPYSIGN)
+  (simplify
+   (pows (copysigns @0 @2) INTEGER_CST@1)
+   (if ((wi::to_wide (@1) & 1) == 0)
+    (pows @0 @1)))))
 
 (for hypots (HYPOT)
-     copysigns (COPYSIGN)
- /* hypot(copysign(x, y), z) -> hypot(x, z).  */
- (simplify
-  (hypots (copysigns @0 @1) @2)
-  (hypots @0 @2))
- /* hypot(x, copysign(y, z)) -> hypot(x, y).  */
- (simplify
-  (hypots @0 (copysigns @1 @2))
-  (hypots @0 @1)))
+ (for copysigns (COPYSIGN)
+  /* hypot(copysign(x, y), z) -> hypot(x, z).  */
+  (simplify
+   (hypots (copysigns @0 @1) @2)
+   (hypots @0 @2))
+  /* hypot(x, copysign(y, z)) -> hypot(x, y).  */
+  (simplify
+   (hypots @0 (copysigns @1 @2))
+   (hypots @0 @1))))
 
-/* copysign(x, CST) -> [-]abs (x).  */
+/* copysign(x, CST) -> abs (x).  */
 (for copysigns (COPYSIGN_ALL)
  (simplify
   (copysigns @0 REAL_CST@1)
-  (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
-   (negate (abs @0))
+  (if (!REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
    (abs @0))))
+
+/* Transform fneg (fabs (X)) -> copysign (X, -1).  */
+(simplify
+ (negate (abs @0))
+ (IFN_COPYSIGN @0 { build_minus_one_cst (type); }))
 
 /* copysign(copysign(x, y), z) -> copysign(x, z).  */
 (for copysigns (COPYSIGN_ALL)
@@ -8953,13 +8959,28 @@ and,
    (with { tree op_type = TREE_TYPE (@3); }
     (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
         && is_truth_type_for (op_type, TREE_TYPE (@0)))
-     (cond_op @0 @1 @2))))
+     (cond_op @0 (view_convert @1) @2))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@3 @2)))
    (with { tree op_type = TREE_TYPE (@3); }
     (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
         && is_truth_type_for (op_type, TREE_TYPE (@0)))
-     (cond_op (bit_not @0) @2 @1)))))
+     (cond_op (bit_not @0) (view_convert @2) @1)))))
+
+(for uncond_op (UNCOND_UNARY)
+     cond_op (COND_LEN_UNARY)
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 (view_convert? (uncond_op@3 @1)) @2 @4 @5)
+   (with { tree op_type = TREE_TYPE (@3); }
+    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+        && is_truth_type_for (op_type, TREE_TYPE (@0)))
+     (cond_op @0 (view_convert @1) @2 @4 @5))))
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 @1 (view_convert? (uncond_op@3 @2)) @4 @5)
+   (with { tree op_type = TREE_TYPE (@3); }
+    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+        && is_truth_type_for (op_type, TREE_TYPE (@0)))
+     (cond_op (bit_not @0) (view_convert @2) @1 @4 @5)))))
 
 /* `(a ? -1 : 0) ^ b` can be converted into a conditional not.  */
 (simplify
@@ -9007,6 +9028,23 @@ and,
 	&& single_use (@4))
     (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1)))))))
 
+(for uncond_op (UNCOND_BINARY)
+     cond_op (COND_LEN_BINARY)
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 (view_convert? (uncond_op@4 @1 @2)) @3 @5 @6)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@4))
+    (view_convert (cond_op @0 @1 @2 (view_convert:op_type @3) @5 @6)))))
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 @1 (view_convert? (uncond_op@4 @2 @3)) @5 @6)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@4))
+    (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1) @5 @6))))))
+
 /* Same for ternary operations.  */
 (for uncond_op (UNCOND_TERNARY)
      cond_op (COND_TERNARY)
@@ -9025,6 +9063,23 @@ and,
 	&& single_use (@5))
     (view_convert (cond_op (bit_not @0) @2 @3 @4
 		  (view_convert:op_type @1)))))))
+
+(for uncond_op (UNCOND_TERNARY)
+     cond_op (COND_LEN_TERNARY)
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 (view_convert? (uncond_op@5 @1 @2 @3)) @4 @6 @7)
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@5))
+    (view_convert (cond_op @0 @1 @2 @3 (view_convert:op_type @4) @6 @7)))))
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 @1 (view_convert? (uncond_op@5 @2 @3 @4 @6 @7)))
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@5))
+    (view_convert (cond_op (bit_not @0) @2 @3 @4 (view_convert:op_type @1) @6 @7))))))
 #endif
 
 /* Detect cases in which a VEC_COND_EXPR effectively replaces the

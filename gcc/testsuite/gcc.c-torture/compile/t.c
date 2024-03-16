@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 #define B 95
 
 foo (a, b, p)

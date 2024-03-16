@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 void foo (), bar (), baz ();
 int main ()
 {

@@ -6387,7 +6387,7 @@
 (define_expand "copysign<mode>3"
   [(match_operand:SVE_FULL_F 0 "register_operand")
    (match_operand:SVE_FULL_F 1 "register_operand")
-   (match_operand:SVE_FULL_F 2 "register_operand")]
+   (match_operand:SVE_FULL_F 2 "nonmemory_operand")]
   "TARGET_SVE"
   {
     rtx sign = gen_reg_rtx (<V_INT_EQUIV>mode);
@@ -6398,17 +6398,83 @@
     rtx arg1 = lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
     rtx arg2 = lowpart_subreg (<V_INT_EQUIV>mode, operands[2], <MODE>mode);
 
-    emit_insn (gen_and<v_int_equiv>3
-	       (sign, arg2,
-		aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
-						   HOST_WIDE_INT_M1U
-						   << bits)));
+    rtx v_sign_bitmask
+      = aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+					   HOST_WIDE_INT_M1U << bits);
+
+    /* copysign (x, -1) should instead be expanded as orr with the sign
+       bit.  */
+    if (!REG_P (operands[2]))
+      {
+	rtx op2_elt = unwrap_const_vec_duplicate (operands[2]);
+	if (GET_CODE (op2_elt) == CONST_DOUBLE
+	    && real_isneg (CONST_DOUBLE_REAL_VALUE (op2_elt)))
+	  {
+	    emit_insn (gen_ior<v_int_equiv>3 (int_res, arg1, v_sign_bitmask));
+	    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, int_res));
+	    DONE;
+	  }
+      }
+
+    operands[2] = force_reg (<MODE>mode, operands[2]);
+    emit_insn (gen_and<v_int_equiv>3 (sign, arg2, v_sign_bitmask));
     emit_insn (gen_and<v_int_equiv>3
 	       (mant, arg1,
 		aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
 						   ~(HOST_WIDE_INT_M1U
 						     << bits))));
     emit_insn (gen_ior<v_int_equiv>3 (int_res, sign, mant));
+    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, int_res));
+    DONE;
+  }
+)
+
+(define_expand "cond_copysign<mode>"
+  [(match_operand:SVE_FULL_F 0 "register_operand")
+   (match_operand:<VPRED> 1 "register_operand")
+   (match_operand:SVE_FULL_F 2 "register_operand")
+   (match_operand:SVE_FULL_F 3 "nonmemory_operand")
+   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+  "TARGET_SVE"
+  {
+    rtx sign = gen_reg_rtx (<V_INT_EQUIV>mode);
+    rtx mant = gen_reg_rtx (<V_INT_EQUIV>mode);
+    rtx int_res = gen_reg_rtx (<V_INT_EQUIV>mode);
+    int bits = GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1;
+
+    rtx arg2 = lowpart_subreg (<V_INT_EQUIV>mode, operands[2], <MODE>mode);
+    rtx arg3 = lowpart_subreg (<V_INT_EQUIV>mode, operands[3], <MODE>mode);
+    rtx arg4 = lowpart_subreg (<V_INT_EQUIV>mode, operands[4], <MODE>mode);
+
+    rtx v_sign_bitmask
+      = aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+					   HOST_WIDE_INT_M1U << bits);
+
+    /* copysign (x, -1) should instead be expanded as orr with the sign
+       bit.  */
+    if (!REG_P (operands[3]))
+      {
+	rtx op2_elt = unwrap_const_vec_duplicate (operands[3]);
+	if (GET_CODE (op2_elt) == CONST_DOUBLE
+	    && real_isneg (CONST_DOUBLE_REAL_VALUE (op2_elt)))
+	  {
+	    arg3 = force_reg (<V_INT_EQUIV>mode, v_sign_bitmask);
+	    emit_insn (gen_cond_ior<v_int_equiv> (int_res, operands[1], arg2,
+						  arg3, arg4));
+	    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, int_res));
+	    DONE;
+	  }
+      }
+
+    operands[2] = force_reg (<MODE>mode, operands[3]);
+    emit_insn (gen_and<v_int_equiv>3 (sign, arg3, v_sign_bitmask));
+    emit_insn (gen_and<v_int_equiv>3
+	       (mant, arg2,
+		aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
+						   ~(HOST_WIDE_INT_M1U
+						     << bits))));
+    emit_insn (gen_cond_ior<v_int_equiv> (int_res, operands[1], sign, mant,
+					  arg4));
     emit_move_insn (operands[0], gen_lowpart (<MODE>mode, int_res));
     DONE;
   }

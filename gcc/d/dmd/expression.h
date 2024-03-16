@@ -45,7 +45,12 @@ typedef union tree_node Symbol;
 struct Symbol;          // back end symbol
 #endif
 
+// Entry point for CTFE.
+// A compile-time result is required. Give an error if not possible
+Expression *ctfeInterpret(Expression *e);
 void expandTuples(Expressions *exps, Identifiers *names = nullptr);
+StringExp *toUTF8(StringExp *se, Scope *sc);
+MATCH implicitConvTo(Expression *e, Type *t);
 
 typedef unsigned char OwnedBy;
 enum
@@ -96,19 +101,14 @@ public:
     virtual bool isLvalue();
     virtual Expression *toLvalue(Scope *sc, Expression *e);
     virtual Expression *modifiableLvalue(Scope *sc, Expression *e);
-    MATCH implicitConvTo(Type *t);
     virtual Expression *resolveLoc(const Loc &loc, Scope *sc);
     virtual bool checkType();
     virtual bool checkValue();
-    virtual Expression *addDtorHook(Scope *sc);
     Expression *addressOf();
     Expression *deref();
 
     Expression *optimize(int result, bool keepLvalue = false);
 
-    // Entry point for CTFE.
-    // A compile-time result is required. Give an error if not possible
-    Expression *ctfeInterpret();
     int isConst();
     virtual bool isIdentical(const Expression *e) const;
     virtual Optional<bool> toBool();
@@ -331,8 +331,8 @@ public:
 
     ThisExp *syntaxCopy() override;
     Optional<bool> toBool() override;
-    bool isLvalue() override;
-    Expression *toLvalue(Scope *sc, Expression *e) override;
+    bool isLvalue() override final;
+    Expression *toLvalue(Scope *sc, Expression *e) override final;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -340,8 +340,6 @@ public:
 class SuperExp final : public ThisExp
 {
 public:
-    bool isLvalue() override;
-    Expression* toLvalue(Scope* sc, Expression* e) final override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -370,7 +368,6 @@ public:
     bool equals(const RootObject * const o) const override;
     char32_t getCodeUnit(d_size_t i) const;
     StringExp *toStringExp() override;
-    StringExp *toUTF8(Scope *sc);
     Optional<bool> toBool() override;
     bool isLvalue() override;
     Expression *toLvalue(Scope *sc, Expression *e) override;
@@ -472,7 +469,6 @@ public:
     static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = NULL);
     bool equals(const RootObject * const o) const override;
     StructLiteralExp *syntaxCopy() override;
-    Expression *addDtorHook(Scope *sc) override;
     Expression *toLvalue(Scope *sc, Expression *e) override;
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -826,7 +822,6 @@ public:
     CallExp *syntaxCopy() override;
     bool isLvalue() override;
     Expression *toLvalue(Scope *sc, Expression *e) override;
-    Expression *addDtorHook(Scope *sc) override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -1005,7 +1000,6 @@ public:
     Expression *toLvalue(Scope *sc, Expression *e) override;
     Expression *modifiableLvalue(Scope *sc, Expression *e) override;
     Optional<bool> toBool() override;
-    Expression *addDtorHook(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 

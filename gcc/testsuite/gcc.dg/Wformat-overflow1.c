@@ -1,6 +1,6 @@
 /*
     { dg-do compile }
-    { dg-options "-Wformat-overflow -std=c2x" }
+    { dg-options "-Wformat-overflow -std=c23" }
 */
 
 extern int sprintf (char* restrict, const char* restrict, ...);

@@ -1188,40 +1188,6 @@ f7_t* f7_ldexp (f7_t *cc, const f7_t *aa, int delta)
 
 
 #ifdef F7MOD_sqrt_
-static void sqrt_worker (f7_t *cc, const f7_t *rr)
-{
-  f7_t tmp7, *tmp = &tmp7;
-  f7_t aa7, *aa = &aa7;
-
-  // aa in  [1/2, 2)  =>  aa->expo in { -1, 0 }.
-  int16_t a_expo = -(rr->expo & 1);
-  int16_t c_expo = (rr->expo - a_expo) >> 1;  // FIXME: r_expo = INT_MAX???
-
-  __asm ("" : "+r" (aa));
-
-  f7_copy (aa, rr);
-  aa->expo = a_expo;
-
-  // No use of rr or *cc past this point:  We may use cc as temporary.
-  // Approximate square-root of  A  by  X <-- (X + A / X) / 2.
-
-  f7_sqrt_approx_asm (cc, aa);
-
-  // Iterate  X <-- (X + A / X) / 2.
-  // 3 Iterations with 16, 32, 58 bits of precision for the quotient.
-
-  for (uint8_t prec = 16; (prec & 0x80) == 0; prec <<= 1)
-    {
-      f7_divx (tmp, aa, cc, (prec & 64) ? 2 + F7_MANT_BITS : prec);
-      f7_Iadd (cc, tmp);
-      // This will never underflow because |c_expo| is small.
-      cc->expo--;
-    }
-
-  // Similar: |c_expo| is small, hence no ldexp needed.
-  cc->expo += c_expo;
-}
-
 F7_WEAK
 void f7_sqrt (f7_t *cc, const f7_t *aa)
 {
@@ -1236,7 +1202,7 @@ void f7_sqrt (f7_t *cc, const f7_t *aa)
   if (f7_class_zero (a_class))
     return f7_clr (cc);
 
-  sqrt_worker (cc, aa);
+  f7_sqrt_approx_asm (cc, aa);
 }
 #endif // F7MOD_sqrt_
 

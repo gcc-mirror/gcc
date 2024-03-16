@@ -1,6 +1,6 @@
 /* PR target/85511 */
 /* { dg-do compile } */
-/* { dg-options "-Wimplicit-function-declaration" } */
+/* { dg-options "-fpermissive -Wimplicit-function-declaration" } */
 
 unsigned int
 foo (void)

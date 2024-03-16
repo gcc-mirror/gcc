@@ -12,6 +12,7 @@ static union c_insn c_stack[((0x100 + 4) * 4)];
 static struct c_ident *c_funcs;
 static void (*c_op_bz) ();
 static void c_direct (union c_insn *addr);
+void
 c_compile (int (*ext_getchar) (), void (*ext_rewind) (),
 	   struct c_ident *externs)
 {

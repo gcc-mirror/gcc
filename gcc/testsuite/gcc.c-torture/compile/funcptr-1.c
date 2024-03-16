@@ -3,17 +3,18 @@ extern int (*gp)(const char*);
 int
 g (const char* d)
 {
-  printf ("g");
+  __builtin_printf ("g");
   return 0;
 }
 
-f ()
+void
+f (void)
 {
   int errcnt=0;
 
   if (gp != g)
     {
-      printf ("f");
+      __builtin_printf ("f");
       errcnt++;
     }
 }

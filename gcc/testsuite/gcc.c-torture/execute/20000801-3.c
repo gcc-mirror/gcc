@@ -2,6 +2,9 @@
    to a testcase by Joseph Myers <jsm28@cam.ac.uk>.
 */
 
+void abort (void);
+void exit (int);
+
 typedef struct { } empty;
 
 typedef struct {

@@ -23,7 +23,7 @@ static void foo ()
     a[0]=0;
     memset( &a[0], 0xCD, STRLEN );
     a[STRLEN]=0;
-    if (strlen(a) != STRLEN)
+    if (__builtin_strlen(a) != STRLEN)
       abort ();
 }
 

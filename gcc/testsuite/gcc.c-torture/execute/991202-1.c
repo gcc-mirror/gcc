@@ -1,3 +1,5 @@
+void exit (int);
+
 int x, y;
 
 int

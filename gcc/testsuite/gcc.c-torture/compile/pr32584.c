@@ -51,7 +51,8 @@ typedef struct binbox {
 CHANGRDBOX ;
 extern int numcells ;
 extern int numterms ;
-sortpin()
+void
+sortpin(void)
 {
 int j , n , cell ;
 CBOXPTR ptr ;

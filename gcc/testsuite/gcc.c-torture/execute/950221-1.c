@@ -1,5 +1,8 @@
 /* { dg-add-options stack_size } */
 
+void abort (void);
+void exit (int);
+
 struct parsefile
 {
   long fd;
@@ -21,6 +24,7 @@ g1 (a, b)
 {
 }
 
+int
 g2 (a)
      long a;
 {
@@ -29,7 +33,8 @@ g2 (a)
   exit (0);
 }
 
-f ()
+void
+f (void)
 {
   register char *p, *q;
   register int i;
@@ -40,7 +45,7 @@ f ()
       const char *rl_cp;
       int len;
       rl_cp = g1 (el, &len);
-      strcpy (p, rl_cp);
+      __builtin_strcpy (p, rl_cp);
     }
   else
     {
@@ -49,7 +54,8 @@ f ()
     }
 }
 
-main ()
+int
+main (void)
 {
   el = 0;
   parsefile->fd = 0xdeadbeefL;

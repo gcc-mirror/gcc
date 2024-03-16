@@ -1,7 +1,7 @@
 /* Test for printf format extensions using formats from or recommended by
-   C2X.  */
+   C23.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x -Wformat" } */
+/* { dg-options "-std=gnu23 -Wformat" } */
 
 #include "format.h"
 

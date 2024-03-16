@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -w" } */
+/* { dg-options "-fpermissive -O2 -w" } */
 
 int **a;
 static void fn1(char **p1) {

@@ -10340,24 +10340,5 @@ objc_common_init_ts (void)
   MARK_TS_TYPED (PROPERTY_REF);
 }
 
-size_t
-objc_common_tree_size (enum tree_code code)
-{
-  switch (code)
-    {
-    case CLASS_METHOD_DECL:
-    case INSTANCE_METHOD_DECL:
-    case KEYWORD_DECL:
-    case PROPERTY_DECL:			return sizeof (tree_decl_non_common);
-    case CLASS_INTERFACE_TYPE:
-    case CLASS_IMPLEMENTATION_TYPE:
-    case CATEGORY_INTERFACE_TYPE:
-    case CATEGORY_IMPLEMENTATION_TYPE:
-    case PROTOCOL_INTERFACE_TYPE:	return sizeof (tree_type_non_common);
-    default:
-      gcc_unreachable ();
-    }
-}
-
 
 #include "gt-objc-objc-act.h"

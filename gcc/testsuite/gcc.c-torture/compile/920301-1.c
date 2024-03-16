@@ -1,4 +1,4 @@
 /* { dg-require-effective-target label_values } */
 
-f(){static void*t[]={&&x};x:;}
-g(){static unsigned p[5];}
+void f(void){static void*t[]={&&x};x:;}
+void g(void){static unsigned p[5];}

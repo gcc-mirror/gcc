@@ -1,6 +1,8 @@
 /* ifcvt accidentally deletes a referenced label while generating
    conditional traps on machines having such patterns */
 
+void exit (int);
+
 struct foo { int a; };
 
 void gcc_crash(struct foo *p)

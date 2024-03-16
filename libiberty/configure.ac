@@ -289,7 +289,7 @@ AC_SUBST_FILE(host_makefile_frag)
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h)
+AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h spawn.h)
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 
@@ -412,7 +412,8 @@ funcs="$funcs setproctitle"
 vars="sys_errlist sys_nerr sys_siglist"
 
 checkfuncs="__fsetlocking canonicalize_file_name dup3 getrlimit getrusage \
- getsysinfo gettimeofday on_exit pipe2 psignal pstat_getdynamic pstat_getstatic \
+ getsysinfo gettimeofday on_exit pipe2 posix_spawn posix_spawnp psignal \
+ pstat_getdynamic pstat_getstatic \
  realpath setrlimit spawnve spawnvpe strerror strsignal sysconf sysctl \
  sysmp table times wait3 wait4"
 
@@ -435,7 +436,8 @@ if test "x" = "y"; then
     index insque \
     memchr memcmp memcpy memmem memmove memset mkstemps \
     on_exit \
-    pipe2 psignal pstat_getdynamic pstat_getstatic putenv \
+    pipe2 posix_spawn posix_spawnp psignal \
+    pstat_getdynamic pstat_getstatic putenv \
     random realpath rename rindex \
     sbrk setenv setproctitle setrlimit sigsetmask snprintf spawnve spawnvpe \
      stpcpy stpncpy strcasecmp strchr strdup \

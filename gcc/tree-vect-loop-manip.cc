@@ -1392,58 +1392,6 @@ vect_set_loop_condition (class loop *loop, edge loop_e, loop_vec_info loop_vinfo
 		     (gimple *) cond_stmt);
 }
 
-/* Helper routine of slpeel_tree_duplicate_loop_to_edge_cfg.
-   For all PHI arguments in FROM->dest and TO->dest from those
-   edges ensure that TO->dest PHI arguments have current_def
-   to that in from.  */
-
-static void
-slpeel_duplicate_current_defs_from_edges (edge from, edge to)
-{
-  gimple_stmt_iterator gsi_from, gsi_to;
-
-  for (gsi_from = gsi_start_phis (from->dest),
-       gsi_to = gsi_start_phis (to->dest);
-       !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);)
-    {
-      gimple *from_phi = gsi_stmt (gsi_from);
-      gimple *to_phi = gsi_stmt (gsi_to);
-      tree from_arg = PHI_ARG_DEF_FROM_EDGE (from_phi, from);
-      tree to_arg = PHI_ARG_DEF_FROM_EDGE (to_phi, to);
-      if (virtual_operand_p (from_arg))
-	{
-	  gsi_next (&gsi_from);
-	  continue;
-	}
-      if (virtual_operand_p (to_arg))
-	{
-	  gsi_next (&gsi_to);
-	  continue;
-	}
-      if (TREE_CODE (from_arg) != SSA_NAME)
-	gcc_assert (operand_equal_p (from_arg, to_arg, 0));
-      else if (TREE_CODE (to_arg) == SSA_NAME
-	       && from_arg != to_arg)
-	{
-	  if (get_current_def (to_arg) == NULL_TREE)
-	    {
-	      gcc_assert (types_compatible_p (TREE_TYPE (to_arg),
-					      TREE_TYPE (get_current_def
-							   (from_arg))));
-	      set_current_def (to_arg, get_current_def (from_arg));
-	    }
-	}
-      gsi_next (&gsi_from);
-      gsi_next (&gsi_to);
-    }
-
-  gphi *from_phi = get_virtual_phi (from->dest);
-  gphi *to_phi = get_virtual_phi (to->dest);
-  if (from_phi)
-    set_current_def (PHI_ARG_DEF_FROM_EDGE (to_phi, to),
-		     get_current_def (PHI_ARG_DEF_FROM_EDGE (from_phi, from)));
-}
-
 /* Given LOOP this function generates a new copy of it and puts it
    on E which is either the entry or exit of LOOP.  If SCALAR_LOOP is
    non-NULL, assume LOOP and SCALAR_LOOP are equivalent and copy the
@@ -1577,21 +1525,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	  adjust_debug_stmts (orig_def, PHI_RESULT (gsi.phi ()), exit->dest);
       }
 
-  /* This condition happens when the loop has been versioned. e.g. due to ifcvt
-     versioning the loop.  */
-  if (scalar_loop != loop)
-    {
-      /* If we copied from SCALAR_LOOP rather than LOOP, SSA_NAMEs from
-	 SCALAR_LOOP will have current_def set to SSA_NAMEs in the new_loop,
-	 but LOOP will not.  slpeel_update_phi_nodes_for_guard{1,2} expects
-	 the LOOP SSA_NAMEs (on the exit edge and edge from latch to
-	 header) to have current_def set, so copy them over.  */
-      slpeel_duplicate_current_defs_from_edges (scalar_exit, exit);
-      slpeel_duplicate_current_defs_from_edges (EDGE_SUCC (scalar_loop->latch,
-							   0),
-						EDGE_SUCC (loop->latch, 0));
-    }
-
   auto loop_exits = get_loop_exit_edges (loop);
   auto_vec<basic_block> doms;
 
@@ -1655,18 +1588,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 
 	  if (TREE_CODE (new_arg) != SSA_NAME)
 	    continue;
-	  /* If the PHI node dominates the loop then we shouldn't create
-	      a new LC-SSSA PHI for it in the intermediate block.  Unless the
-	      the loop has been versioned.  If it has then we need the PHI
-	      node such that later when the loop guard is added the original
-	      dominating PHI can be found.  */
-	  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (new_arg));
-	  if (loop == scalar_loop
-	      && (!def_bb || !flow_bb_inside_loop_p (loop, def_bb)))
-	    {
-	      auto gsi = gsi_for_stmt (phi);
-	      remove_phi_node (&gsi, true);
-	    }
 	}
 
       /* Copy the current loop LC PHI nodes between the original loop exit
@@ -2711,40 +2632,6 @@ vect_gen_vector_loop_niters_mult_vf (loop_vec_info loop_vinfo,
   *niters_vector_mult_vf_ptr = niters_vector_mult_vf;
 }
 
-/* LCSSA_PHI is a lcssa phi of EPILOG loop which is copied from LOOP,
-   this function searches for the corresponding lcssa phi node in exit
-   bb of LOOP following the LCSSA_EDGE to the exit node.  If it is found,
-   return the phi result; otherwise return NULL.  */
-
-static tree
-find_guard_arg (class loop *loop ATTRIBUTE_UNUSED, const_edge loop_e,
-		class loop *epilog ATTRIBUTE_UNUSED, gphi *lcssa_phi,
-		int lcssa_edge = 0)
-{
-  gphi_iterator gsi;
-
-  for (gsi = gsi_start_phis (loop_e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gphi *phi = gsi.phi ();
-      /* Nested loops with multiple exits can have different no# phi node
-	arguments between the main loop and epilog as epilog falls to the
-	second loop.  */
-      if (gimple_phi_num_args (phi) > loop_e->dest_idx)
-	{
-	 tree var = PHI_ARG_DEF (phi, loop_e->dest_idx);
-	 if (TREE_CODE (var) != SSA_NAME)
-	    continue;
-	 tree def = get_current_def (var);
-	 if (!def)
-	   continue;
-	 if (operand_equal_p (def,
-			      PHI_ARG_DEF (lcssa_phi, lcssa_edge), 0))
-	   return PHI_RESULT (phi);
-	}
-    }
-  return NULL_TREE;
-}
-
 /* Function slpeel_add_loop_guard adds guard skipping from the beginning
    of SKIP_LOOP to the beginning of UPDATE_LOOP.  GUARD_EDGE and MERGE_EDGE
    are two pred edges of the merge point before UPDATE_LOOP.  The two loops
@@ -2824,107 +2711,6 @@ slpeel_update_phi_nodes_for_guard1 (class loop *skip_loop,
 
       /* Update phi in UPDATE_PHI.  */
       adjust_phi_and_debug_stmts (update_phi, update_e, new_res);
-    }
-}
-
-/* LOOP and EPILOG are two consecutive loops in CFG connected by LOOP_EXIT edge
-   and EPILOG is copied from LOOP.  Function slpeel_add_loop_guard adds guard
-   skipping from a point between the two loops to the end of EPILOG.  Edges
-   GUARD_EDGE and MERGE_EDGE are the two pred edges of merge_bb at the end of
-   EPILOG.  The CFG looks like:
-
-     loop:
-       header_a:
-	 i_1 = PHI<i_0, i_2>;
-	 ...
-	 i_2 = i_1 + 1;
-	 if (cond_a)
-	   goto latch_a;
-	 else
-	   goto exit_a;
-       latch_a:
-	 goto header_a;
-
-       exit_a:
-
-       guard_bb:
-	 if (cond)
-	   goto merge_bb;
-	 else
-	   goto epilog_loop;
-
-       ;; fall_through_bb
-
-     epilog_loop:
-       header_b:
-	 i_3 = PHI<i_2, i_4>;
-	 ...
-	 i_4 = i_3 + 1;
-	 if (cond_b)
-	   goto latch_b;
-	 else
-	   goto merge_bb;
-       latch_b:
-	 goto header_b;
-
-       merge_bb:
-	 ; PHI node (i_y = PHI<i_2, i_4>) to be created at merge point.
-
-       exit_bb:
-	 i_x = PHI<i_4>;  ;Use of i_4 to be replaced with i_y in merge_bb.
-
-   For each name used out side EPILOG (i.e - for each name that has a lcssa
-   phi in exit_bb) we create a new PHI in merge_bb.  The new PHI has two
-   args corresponding to GUARD_EDGE and MERGE_EDGE.  Arg for MERGE_EDGE is
-   the arg of the original PHI in exit_bb, arg for GUARD_EDGE is defined
-   by LOOP and is found in the exit bb of LOOP.  Arg of the original PHI
-   in exit_bb will also be updated.  */
-
-static void
-slpeel_update_phi_nodes_for_guard2 (class loop *loop, class loop *epilog,
-				    const_edge loop_exit,
-				    edge guard_edge, edge merge_edge)
-{
-  gphi_iterator gsi;
-  basic_block merge_bb = guard_edge->dest;
-
-  gcc_assert (single_succ_p (merge_bb));
-  edge e = single_succ_edge (merge_bb);
-  basic_block exit_bb = e->dest;
-
-  for (gsi = gsi_start_phis (exit_bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gphi *update_phi = gsi.phi ();
-      tree old_arg = PHI_ARG_DEF (update_phi, e->dest_idx);
-
-      tree merge_arg = NULL_TREE;
-
-      /* If the old argument is a SSA_NAME use its current_def.  */
-      if (TREE_CODE (old_arg) == SSA_NAME)
-	merge_arg = get_current_def (old_arg);
-      /* If it's a constant or doesn't have a current_def, just use the old
-	 argument.  */
-      if (!merge_arg)
-	merge_arg = old_arg;
-
-      tree guard_arg = find_guard_arg (loop, loop_exit, epilog,
-				       update_phi, e->dest_idx);
-      /* If the var is live after loop but not a reduction, we simply
-	 use the old arg.  */
-      if (!guard_arg)
-	guard_arg = old_arg;
-
-      /* Create new phi node in MERGE_BB:  */
-      tree new_res = copy_ssa_name (PHI_RESULT (update_phi));
-      gphi *merge_phi = create_phi_node (new_res, merge_bb);
-
-      /* MERGE_BB has two incoming edges: GUARD_EDGE and MERGE_EDGE, Set
-	 the two PHI args in merge_phi for these edges.  */
-      add_phi_arg (merge_phi, merge_arg, merge_edge, UNKNOWN_LOCATION);
-      add_phi_arg (merge_phi, guard_arg, guard_edge, UNKNOWN_LOCATION);
-
-      /* Update the original phi in exit_bb.  */
-      adjust_phi_and_debug_stmts (update_phi, e, new_res);
     }
 }
 
@@ -3435,7 +3221,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 				    niters, niters_vector_mult_vf);
 	  guard_bb = LOOP_VINFO_IV_EXIT (loop_vinfo)->dest;
 	  edge epilog_e = LOOP_VINFO_EPILOGUE_IV_EXIT (loop_vinfo);
-	  guard_to = split_edge (epilog_e);
+	  guard_to = epilog_e->dest;
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond, guard_to,
 					   skip_vector ? anchor : guard_bb,
 					   prob_epilog.invert (),
@@ -3443,8 +3229,30 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  if (vect_epilogues)
 	    epilogue_vinfo->skip_this_loop_edge = guard_e;
 	  edge main_iv = LOOP_VINFO_IV_EXIT (loop_vinfo);
-	  slpeel_update_phi_nodes_for_guard2 (loop, epilog, main_iv, guard_e,
-					      epilog_e);
+	  gphi_iterator gsi2 = gsi_start_phis (main_iv->dest);
+	  for (gphi_iterator gsi = gsi_start_phis (guard_to);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      /* We are expecting all of the PHIs we have on epilog_e
+		 to be also on the main loop exit.  But sometimes
+		 a stray virtual definition can appear at epilog_e
+		 which we can then take as the same on all exits,
+		 we've removed the LC SSA PHI on the main exit before
+		 so we wouldn't need to create a loop PHI for it.  */
+	      if (virtual_operand_p (gimple_phi_result (*gsi))
+		  && (gsi_end_p (gsi2)
+		      || !virtual_operand_p (gimple_phi_result (*gsi2))))
+		add_phi_arg (*gsi,
+			     gimple_phi_arg_def_from_edge (*gsi, epilog_e),
+			     guard_e, UNKNOWN_LOCATION);
+	      else
+		{
+		  add_phi_arg (*gsi, gimple_phi_result (*gsi2), guard_e,
+			       UNKNOWN_LOCATION);
+		  gsi_next (&gsi2);
+		}
+	    }
+
 	  /* Only need to handle basic block before epilog loop if it's not
 	     the guard_bb, which is the case when skip_vector is true.  */
 	  if (guard_bb != bb_before_epilog)

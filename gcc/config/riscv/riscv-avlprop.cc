@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-ssa.h"
 #include "cfgcleanup.h"
 #include "insn-attr.h"
+#include "tm-constrs.h"
 
 using namespace rtl_ssa;
 using namespace riscv_vector;
@@ -107,6 +108,48 @@ static bool
 vlmax_ta_p (rtx_insn *rinsn)
 {
   return vlmax_avl_type_p (rinsn) && tail_agnostic_p (rinsn);
+}
+
+static machine_mode
+get_insn_vtype_mode (rtx_insn *rinsn)
+{
+  extract_insn_cached (rinsn);
+  int mode_idx = get_attr_mode_idx (rinsn);
+  gcc_assert (mode_idx != INVALID_ATTRIBUTE);
+  return GET_MODE (recog_data.operand[mode_idx]);
+}
+
+static void
+simplify_replace_vlmax_avl (rtx_insn *rinsn, rtx new_avl)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "\nPropagating AVL: ");
+      print_rtl_single (dump_file, new_avl);
+      fprintf (dump_file, "into: ");
+      print_rtl_single (dump_file, rinsn);
+    }
+  /* Replace AVL operand.  */
+  extract_insn_cached (rinsn);
+  rtx avl = recog_data.operand[get_attr_vl_op_idx (rinsn)];
+  int count = count_regno_occurrences (rinsn, REGNO (avl));
+  gcc_assert (count == 1);
+  rtx new_pat = simplify_replace_rtx (PATTERN (rinsn), avl, new_avl);
+  validate_change_or_fail (rinsn, &PATTERN (rinsn), new_pat, false);
+
+  /* Change AVL TYPE into NONVLMAX if it is VLMAX.  */
+  if (vlmax_avl_type_p (rinsn))
+    {
+      int index = get_attr_avl_type_idx (rinsn);
+      gcc_assert (index != INVALID_ATTRIBUTE);
+      validate_change_or_fail (rinsn, recog_data.operand_loc[index],
+			       get_avl_type_rtx (avl_type::NONVLMAX), false);
+    }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Successfully to match this instruction: ");
+      print_rtl_single (dump_file, rinsn);
+    }
 }
 
 const pass_data pass_data_avlprop = {
@@ -243,8 +286,20 @@ pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 	  if (!use_insn->can_be_optimized () || use_insn->is_asm ()
 	      || use_insn->is_call () || use_insn->has_volatile_refs ()
 	      || use_insn->has_pre_post_modify ()
-	      || !has_vl_op (use_insn->rtl ())
-	      || !tail_agnostic_p (use_insn->rtl ()))
+	      || !has_vl_op (use_insn->rtl ()))
+	    return NULL_RTX;
+
+	  /* We should only propagate non-VLMAX AVL into VLMAX insn when
+	     such insn potential tail elements (after propagation) are
+	     not used.  So, we should make sure the outcome of VLMAX insn
+	     is not depend on.  */
+	  extract_insn_cached (use_insn->rtl ());
+	  int merge_op_idx = get_attr_merge_op_idx (use_insn->rtl ());
+	  if (merge_op_idx != INVALID_ATTRIBUTE
+	      && !satisfies_constraint_vu (recog_data.operand[merge_op_idx])
+	      && refers_to_regno_p (set->regno (),
+				    recog_data.operand[merge_op_idx])
+	      && !tail_agnostic_p (use_insn->rtl ()))
 	    return NULL_RTX;
 
 	  int new_sew = get_sew (use_insn->rtl ());
@@ -265,6 +320,13 @@ pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 	      def_info *def1 = dl.prev_def (insn);
 	      def_info *def2 = dl.prev_def (use_insn);
 	      if (!def1 || !def2 || def1 != def2)
+		return NULL_RTX;
+	      /* For vectorized codes, we always use SELECT_VL/MIN_EXPR to
+		 calculate the loop len at the header of the loop.
+		 We only allow AVL propagation for real instruction for now.
+		 TODO: We may enhance it for intrinsic codes if it is necessary.
+	      */
+	      if (!def1->insn ()->is_real ())
 		return NULL_RTX;
 
 	      /* FIXME: We only all AVL propation within a block which should
@@ -377,34 +439,35 @@ pass_avlprop::execute (function *fn)
   for (const auto prop : *m_avl_propagations)
     {
       rtx_insn *rinsn = prop.first->rtl ();
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "\nPropagating AVL: ");
-	  print_rtl_single (dump_file, prop.second);
-	  fprintf (dump_file, "into: ");
-	  print_rtl_single (dump_file, rinsn);
-	}
-      /* Replace AVL operand.  */
-      extract_insn_cached (rinsn);
-      rtx avl = recog_data.operand[get_attr_vl_op_idx (rinsn)];
-      int count = count_regno_occurrences (rinsn, REGNO (avl));
-      gcc_assert (count == 1);
-      rtx new_pat = simplify_replace_rtx (PATTERN (rinsn), avl, prop.second);
-      validate_change_or_fail (rinsn, &PATTERN (rinsn), new_pat, false);
+      simplify_replace_vlmax_avl (rinsn, prop.second);
+    }
 
-      /* Change AVL TYPE into NONVLMAX if it is VLMAX.  */
-      if (vlmax_avl_type_p (rinsn))
-	{
-	  int index = get_attr_avl_type_idx (rinsn);
-	  gcc_assert (index != INVALID_ATTRIBUTE);
-	  validate_change_or_fail (rinsn, recog_data.operand_loc[index],
-				   get_avl_type_rtx (avl_type::NONVLMAX),
-				   false);
-	}
+  if (riscv_autovec_preference == RVV_FIXED_VLMAX)
+    {
+      /* Simplify VLMAX AVL into immediate AVL.
+	 E.g. Simplify this following case:
+
+	      vsetvl a5, zero, e32, m1
+	      vadd.vv
+
+	    into:
+
+	      vsetvl zero, 4, e32, m1
+	      vadd.vv
+	 if GET_MODE_NUNITS (RVVM1SImode) == 4.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "\nSimplifying VLMAX AVL into IMM AVL\n\n");
+      for (auto &candidate : m_candidates)
 	{
-	  fprintf (dump_file, "Successfully to match this instruction: ");
-	  print_rtl_single (dump_file, rinsn);
+	  rtx_insn *rinsn = candidate.second->rtl ();
+	  machine_mode vtype_mode = get_insn_vtype_mode (rinsn);
+	  if (candidate.first == AVLPROP_VLMAX_TA
+	      && !m_avl_propagations->get (candidate.second)
+	      && imm_avl_p (vtype_mode))
+	    {
+	      rtx new_avl = gen_int_mode (GET_MODE_NUNITS (vtype_mode), Pmode);
+	      simplify_replace_vlmax_avl (rinsn, new_avl);
+	    }
 	}
     }
 

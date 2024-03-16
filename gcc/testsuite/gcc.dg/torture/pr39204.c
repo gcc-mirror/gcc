@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-w" } */
+/* { dg-options "-fpermissive -w" } */
 
 __extension__ typedef __SIZE_TYPE__ size_t;
 typedef unsigned char __u_char;

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 struct a
 {
   unsigned int bitfield : 3;

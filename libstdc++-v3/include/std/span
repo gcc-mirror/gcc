@@ -246,20 +246,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // observers
 
+      [[nodiscard]]
       constexpr size_type
       size() const noexcept
       { return this->_M_extent._M_extent(); }
 
+      [[nodiscard]]
       constexpr size_type
       size_bytes() const noexcept
       { return this->_M_extent._M_extent() * sizeof(element_type); }
 
-      [[nodiscard]] constexpr bool
+      [[nodiscard]]
+      constexpr bool
       empty() const noexcept
       { return size() == 0; }
 
       // element access
 
+      [[nodiscard]]
       constexpr reference
       front() const noexcept
       {
@@ -267,6 +271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this->_M_ptr;
       }
 
+      [[nodiscard]]
       constexpr reference
       back() const noexcept
       {
@@ -274,6 +279,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *(this->_M_ptr + (size() - 1));
       }
 
+      [[nodiscard]]
       constexpr reference
       operator[](size_type __idx) const noexcept
       {
@@ -281,41 +287,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *(this->_M_ptr + __idx);
       }
 
+      [[nodiscard]]
       constexpr pointer
       data() const noexcept
       { return this->_M_ptr; }
 
       // iterator support
 
+      [[nodiscard]]
       constexpr iterator
       begin() const noexcept
       { return iterator(this->_M_ptr); }
 
+      [[nodiscard]]
       constexpr iterator
       end() const noexcept
       { return iterator(this->_M_ptr + this->size()); }
 
+      [[nodiscard]]
       constexpr reverse_iterator
       rbegin() const noexcept
       { return reverse_iterator(this->end()); }
 
+      [[nodiscard]]
       constexpr reverse_iterator
       rend() const noexcept
       { return reverse_iterator(this->begin()); }
 
 #if __cplusplus > 202002L
+      [[nodiscard]]
       constexpr const_iterator
       cbegin() const noexcept
       { return begin(); }
 
+      [[nodiscard]]
       constexpr const_iterator
       cend() const noexcept
       { return end(); }
 
+      [[nodiscard]]
       constexpr const_reverse_iterator
       crbegin() const noexcept
       { return rbegin(); }
 
+      [[nodiscard]]
       constexpr const_reverse_iterator
       crend() const noexcept
       { return rend(); }
@@ -324,6 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // subviews
 
       template<size_t _Count>
+	[[nodiscard]]
 	constexpr span<element_type, _Count>
 	first() const noexcept
 	{
@@ -335,6 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return _Sp{ this->data(), _Count };
 	}
 
+      [[nodiscard]]
       constexpr span<element_type, dynamic_extent>
       first(size_type __count) const noexcept
       {
@@ -343,6 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<size_t _Count>
+	[[nodiscard]]
 	constexpr span<element_type, _Count>
 	last() const noexcept
 	{
@@ -354,6 +372,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return _Sp{ this->data() + (this->size() - _Count), _Count };
 	}
 
+      [[nodiscard]]
       constexpr span<element_type, dynamic_extent>
       last(size_type __count) const noexcept
       {
@@ -362,6 +381,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<size_t _Offset, size_t _Count = dynamic_extent>
+	[[nodiscard]]
 	constexpr auto
 	subspan() const noexcept
 	-> span<element_type, _S_subspan_extent<_Offset, _Count>()>
@@ -393,6 +413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 
+      [[nodiscard]]
       constexpr span<element_type, dynamic_extent>
       subspan(size_type __offset, size_type __count = dynamic_extent) const
       noexcept
@@ -434,6 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       -> span<remove_reference_t<ranges::range_reference_t<_Range&>>>;
 
   template<typename _Type, size_t _Extent>
+    [[nodiscard]]
     inline
     span<const byte, _Extent == dynamic_extent
 	? dynamic_extent : _Extent * sizeof(_Type)>
@@ -451,7 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline
     span<byte, _Extent == dynamic_extent
        ? dynamic_extent : _Extent * sizeof(_Type)>
-    as_writable_bytes(span<_Type, _Extent> __sp) noexcept
+    as_writable_bytes [[nodiscard]] (span<_Type, _Extent> __sp) noexcept
     {
       auto data = reinterpret_cast<byte*>(__sp.data());
       auto size = __sp.size_bytes();

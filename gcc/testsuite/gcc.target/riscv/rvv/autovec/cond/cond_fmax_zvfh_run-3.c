@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_zvfh } } } */
+/* { dg-do run { target { riscv_zvfh && riscv_zfh } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model -fno-signaling-nans" } */
 
 #include "cond_fmax_zvfh-3.c"

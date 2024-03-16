@@ -9122,7 +9122,7 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      auto ov = make_temp_override (global_dc->pedantic_errors);
+      auto ov = make_temp_override (global_dc->m_pedantic_errors);
       if (TREE_CODE (decl) == TYPE_DECL
 	  && TREE_CODE (olddecl) == TYPE_DECL
 	  && same_type_p (TREE_TYPE (decl), TREE_TYPE (olddecl)))
@@ -9131,7 +9131,7 @@ note_name_declared_in_class (tree name, tree decl)
 	/* Let -fpermissive make it a warning like past versions.  */;
       else
 	/* Make it an error.  */
-	global_dc->pedantic_errors = 1;
+	global_dc->m_pedantic_errors = 1;
       if (pedwarn (location_of (decl), OPT_Wchanges_meaning,
 		   "declaration of %q#D changes meaning of %qD",
 		   decl, OVL_NAME (decl)))

@@ -3477,41 +3477,18 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 
       if (integer_zerop (ptr))
 	{
-	  if (sizidx >= 0 && tree_int_cst_sgn (sizrng[0]) > 0)
+	  if (!access.second.internal_p
+	      && sizidx >= 0 && tree_int_cst_sgn (sizrng[0]) > 0)
 	    {
 	      /* Warn about null pointers with positive sizes.  This is
 		 different from also declaring the pointer argument with
 		 attribute nonnull when the function accepts null pointers
 		 only when the corresponding size is zero.  */
-	      if (access.second.internal_p)
-		{
-		  const std::string argtypestr
-		    = access.second.array_as_string (ptrtype);
-
-		  if (warning_at (loc, OPT_Wnonnull,
-				  "argument %i of variable length "
-				  "array %s is null but "
-				  "the corresponding bound argument "
-				  "%i value is %s",
-				  ptridx + 1, argtypestr.c_str (),
-				  sizidx + 1, sizstr))
-		    arg_warned = OPT_Wnonnull;
-		}
-	      else if (warning_at (loc, OPT_Wnonnull,
+	      if (warning_at (loc, OPT_Wnonnull,
 				   "argument %i is null but "
 				   "the corresponding size argument "
 				   "%i value is %s",
 				   ptridx + 1, sizidx + 1, sizstr))
-		arg_warned = OPT_Wnonnull;
-	    }
-	  else if (access_size && access.second.static_p)
-	    {
-	      /* Warn about null pointers for [static N] array arguments
-		 but do not warn for ordinary (i.e., nonstatic) arrays.  */
-	      if (warning_at (loc, OPT_Wnonnull,
-			      "argument %i to %<%T[static %E]%> "
-			      "is null where non-null expected",
-			      ptridx + 1, argtype, access_nelts))
 		arg_warned = OPT_Wnonnull;
 	    }
 

@@ -156,7 +156,7 @@ struct cl_optimization;
 struct cl_option;
 struct cl_decoded_option;
 struct cl_option_handlers;
-struct diagnostic_context;
+class diagnostic_context;
 class pretty_printer;
 class diagnostic_event_id_t;
 typedef const char * (*diagnostic_input_charset_callback)(const char *);
@@ -410,7 +410,7 @@ enum function_class {
   function_c99_math_complex,
   function_sincos,
   function_c11_misc,
-  function_c2x_misc
+  function_c23_misc
 };
 
 /* Enumerate visibility settings.  This is deliberately ordered from most

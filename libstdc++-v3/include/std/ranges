@@ -250,12 +250,20 @@ namespace ranges
 	{ return true; };
 
 	constexpr _Tp&
-	operator*() noexcept
+	operator*() & noexcept
 	{ return _M_value; }
 
 	constexpr const _Tp&
-	operator*() const noexcept
+	operator*() const & noexcept
 	{ return _M_value; }
+
+	constexpr _Tp&&
+	operator*() && noexcept
+	{ return std::move(_M_value); }
+
+	constexpr const _Tp&&
+	operator*() const && noexcept
+	{ return std::move(_M_value); }
 
 	constexpr _Tp*
 	operator->() noexcept
@@ -7799,9 +7807,10 @@ namespace views::__adaptor
 	  using _Tp = remove_cvref_t<_Range>;
 	  static_assert(__is_repeat_view<_Tp>);
 	  if constexpr (sized_range<_Tp>)
-	    return views::repeat(*__r._M_value, std::min(ranges::distance(__r), __n));
+	    return views::repeat(*std::forward<_Range>(__r)._M_value,
+				 std::min(ranges::distance(__r), __n));
 	  else
-	    return views::repeat(*__r._M_value, __n);
+	    return views::repeat(*std::forward<_Range>(__r)._M_value, __n);
 	}
 
       template<typename _Range>
@@ -7813,7 +7822,8 @@ namespace views::__adaptor
 	  if constexpr (sized_range<_Tp>)
 	    {
 	      auto __sz = ranges::distance(__r);
-	      return views::repeat(*__r._M_value, __sz - std::min(__sz, __n));
+	      return views::repeat(*std::forward<_Range>(__r)._M_value,
+				   __sz - std::min(__sz, __n));
 	    }
 	  else
 	    return __r;

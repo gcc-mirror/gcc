@@ -7,16 +7,15 @@
   TYPE __attribute__ ((noinline, noclone))                                     \
   reduc_##NAME##_##TYPE (TYPE *a, int n)                                       \
   {                                                                            \
-    TYPE r = -0.0;                                                              \
+    TYPE r = -0.0;                                                             \
     for (int i = 0; i < n; ++i)                                                \
       r = MAXMIN_OP (r, a[i]);                                                 \
     return r;                                                                  \
   }
 
 #define TEST_FMAXMIN(T)                                                        \
-  T (_Float16, max, __builtin_fmaxf16)                                              \
-  T (_Float16, min, __builtin_fminf16)                                              \
-
+  T (_Float16, max, __builtin_fmaxf16)                                         \
+  T (_Float16, min, __builtin_fminf16)
 
 TEST_FMAXMIN (DEF_REDUC_FMAXMIN)
 

@@ -522,6 +522,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_omp_declare_target_attribute, NULL },
   { "omp declare target implicit", 0, 0, true, false, false, false,
 			      handle_omp_declare_target_attribute, NULL },
+  { "omp declare target indirect", 0, 0, true, false, false, false,
+			      handle_omp_declare_target_attribute, NULL },
   { "omp declare target host", 0, 0, true, false, false, false,
 			      handle_omp_declare_target_attribute, NULL },
   { "omp declare target nohost", 0, 0, true, false, false, false,
@@ -5347,6 +5349,7 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
 	arg2pos.put (arg, argpos);
     }
 
+  tree nnlist = NULL_TREE;
   argpos = 0;
   for (tree arg = parms; arg; arg = TREE_CHAIN (arg), ++argpos)
     {
@@ -5379,6 +5382,11 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
       /* The attribute arg spec string.  */
       tree str = TREE_VALUE (argspec);
       const char *s = TREE_STRING_POINTER (str);
+
+      /* Collect the list of nonnull arguments which use "[static ..]".  */
+      if (s != NULL && s[0] == '[' && s[1] == 's')
+	nnlist = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
+						      argpos + 1), nnlist);
 
       /* Create the attribute access string from the arg spec string,
 	 optionally followed by position of the VLA bound argument if
@@ -5447,6 +5455,10 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
   if (!spec.length ())
     return NULL_TREE;
 
+  /* If we have nonnull arguments, synthesize an attribute.  */
+  if (nnlist != NULL_TREE)
+    nnlist = build_tree_list (get_identifier ("nonnull"), nnlist);
+
   /* Attribute access takes a two or three arguments.  Wrap VBLIST in
      another list in case it has more nodes than would otherwise fit.  */
   vblist = build_tree_list (NULL_TREE, vblist);
@@ -5457,7 +5469,7 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
   tree str = build_string (spec.length (), spec.c_str ());
   tree attrargs = tree_cons (NULL_TREE, str, vblist);
   tree name = get_identifier ("access");
-  return build_tree_list (name, attrargs);
+  return tree_cons (name, attrargs, nnlist);
 }
 
 /* Handle a "nothrow" attribute; arguments as in

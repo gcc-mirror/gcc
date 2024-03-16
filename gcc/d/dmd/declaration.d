@@ -818,6 +818,11 @@ extern (C++) final class AliasDeclaration : Declaration
                 return this._import && this.equals(s);
             }
 
+            // https://issues.dlang.org/show_bug.cgi?id=23865
+            // only insert if the symbol can be part of a set
+            const s1 = s.toAlias();
+            const isInsertCandidate = s1.isFuncDeclaration() || s1.isOverDeclaration() || s1.isTemplateDeclaration();
+
             /* When s is added in member scope by static if, mixin("code") or others,
              * aliassym is determined already. See the case in: test/compilable/test61.d
              */
@@ -832,7 +837,8 @@ extern (C++) final class AliasDeclaration : Declaration
                 fa.visibility = visibility;
                 fa.parent = parent;
                 aliassym = fa;
-                return aliassym.overloadInsert(s);
+                if (isInsertCandidate)
+                    return aliassym.overloadInsert(s);
             }
             if (auto td = sa.isTemplateDeclaration())
             {
@@ -840,7 +846,8 @@ extern (C++) final class AliasDeclaration : Declaration
                 od.visibility = visibility;
                 od.parent = parent;
                 aliassym = od;
-                return aliassym.overloadInsert(s);
+                if (isInsertCandidate)
+                    return aliassym.overloadInsert(s);
             }
             if (auto od = sa.isOverDeclaration())
             {
@@ -851,7 +858,8 @@ extern (C++) final class AliasDeclaration : Declaration
                     od.parent = parent;
                     aliassym = od;
                 }
-                return od.overloadInsert(s);
+                if (isInsertCandidate)
+                    return od.overloadInsert(s);
             }
             if (auto os = sa.isOverloadSet())
             {
@@ -877,8 +885,11 @@ extern (C++) final class AliasDeclaration : Declaration
                     os.parent = parent;
                     aliassym = os;
                 }
-                os.push(s);
-                return true;
+                if (isInsertCandidate)
+                {
+                    os.push(s);
+                    return true;
+                }
             }
             return false;
         }
@@ -1287,10 +1298,10 @@ extern (C++) class VarDeclaration : Declaration
         assert(sz != SIZE_INVALID && sz < uint.max);
         uint memsize = cast(uint)sz;                // size of member
         uint memalignsize = target.fieldalign(t);   // size of member for alignment purposes
-        offset = AggregateDeclaration.placeField(
-            &fieldState.offset,
+        offset = placeField(
+            fieldState.offset,
             memsize, memalignsize, alignment,
-            &ad.structsize, &ad.alignsize,
+            ad.structsize, ad.alignsize,
             isunion);
 
         //printf("\t%s: memalignsize = %d\n", toChars(), memalignsize);
@@ -1813,11 +1824,7 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
             printf("BitFieldDeclaration::setFieldOffset(ad: %s, field: %s)\n", ad.toChars(), toChars());
             void print(const ref FieldState fieldState)
             {
-                printf("FieldState.offset      = %d bytes\n",   fieldState.offset);
-                printf("          .fieldOffset = %d bytes\n",   fieldState.fieldOffset);
-                printf("          .bitOffset   = %d bits\n",    fieldState.bitOffset);
-                printf("          .fieldSize   = %d bytes\n",   fieldState.fieldSize);
-                printf("          .inFlight    = %d\n",         fieldState.inFlight);
+                fieldState.print();
                 printf("          fieldWidth   = %d bits\n",    fieldWidth);
             }
             print(fieldState);
@@ -1866,11 +1873,11 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
                 alignsize = memsize; // not memalignsize
 
             uint dummy;
-            offset = AggregateDeclaration.placeField(
-                &fieldState.offset,
+            offset = placeField(
+                fieldState.offset,
                 memsize, alignsize, alignment,
-                &ad.structsize,
-                (anon && style == TargetC.BitFieldStyle.Gcc_Clang) ? &dummy : &ad.alignsize,
+                ad.structsize,
+                (anon && style == TargetC.BitFieldStyle.Gcc_Clang) ? dummy : ad.alignsize,
                 isunion);
 
             fieldState.inFlight = true;
@@ -1989,7 +1996,14 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
             auto size = (pastField + 7) / 8;
             fieldState.fieldSize = size;
             //printf(" offset: %d, size: %d\n", offset, size);
-            ad.structsize = offset + size;
+            if (isunion)
+            {
+                const newstructsize = offset + size;
+                if (newstructsize > ad.structsize)
+                    ad.structsize = newstructsize;
+            }
+            else
+                ad.structsize = offset + size;
         }
         else
             fieldState.fieldSize = memsize;

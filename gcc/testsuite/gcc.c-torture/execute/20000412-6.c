@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned bug (unsigned short value, unsigned short *buffer,
               unsigned short *bufend);
 

@@ -62,12 +62,13 @@ static class line_maps *line_table;
    This is the implementation for genmatch.  */
 
 expanded_location
-linemap_client_expand_location_to_spelling_point (location_t loc,
+linemap_client_expand_location_to_spelling_point (const line_maps *set,
+						  location_t loc,
 						  enum location_aspect)
 {
   const struct line_map_ordinary *map;
-  loc = linemap_resolve_location (line_table, loc, LRK_SPELLING_LOCATION, &map);
-  return linemap_expand_location (line_table, map, loc);
+  loc = linemap_resolve_location (set, loc, LRK_SPELLING_LOCATION, &map);
+  return linemap_expand_location (set, map, loc);
 }
 
 static bool

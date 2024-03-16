@@ -1355,7 +1355,7 @@ void
 print_lto_docs_link ()
 {
   bool print_url = global_dc->printer->url_format != URL_FORMAT_NONE;
-  const char *url = global_dc->get_option_url (global_dc, OPT_flto);
+  const char *url = global_dc->m_get_option_url (global_dc, OPT_flto);
 
   pretty_printer pp;
   pp.url_format = URL_FORMAT_DEFAULT;
@@ -2146,7 +2146,7 @@ main (int argc, char *argv[])
   diagnostic_initialize (global_dc, 0);
   diagnostic_color_init (global_dc);
   diagnostic_urls_init (global_dc);
-  global_dc->get_option_url = get_option_url;
+  global_dc->m_get_option_url = get_option_url;
 
   if (atexit (lto_wrapper_cleanup) != 0)
     fatal_error (input_location, "%<atexit%> failed");

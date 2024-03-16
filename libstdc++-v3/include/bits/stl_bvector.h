@@ -56,6 +56,10 @@
 #ifndef _STL_BVECTOR_H
 #define _STL_BVECTOR_H 1
 
+#ifndef _GLIBCXX_ALWAYS_INLINE
+#define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
+#endif
+
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #include <bits/functional_hash.h>
@@ -177,6 +181,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _Bit_type * _M_p;
     unsigned int _M_offset;
 
+    _GLIBCXX20_CONSTEXPR _GLIBCXX_ALWAYS_INLINE
+    void
+    _M_assume_normalized() const
+    {
+#if __has_attribute(__assume__) && !defined(__clang__)
+      unsigned int __ofst = _M_offset;
+      __attribute__ ((__assume__ (__ofst < unsigned(_S_word_bit))));
+#endif
+    }
+
     _GLIBCXX20_CONSTEXPR
     _Bit_iterator_base(_Bit_type * __x, unsigned int __y)
     : _M_p(__x), _M_offset(__y) { }
@@ -185,6 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void
     _M_bump_up()
     {
+      _M_assume_normalized();
       if (_M_offset++ == int(_S_word_bit) - 1)
 	{
 	  _M_offset = 0;
@@ -196,6 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void
     _M_bump_down()
     {
+      _M_assume_normalized();
       if (_M_offset-- == 0)
 	{
 	  _M_offset = int(_S_word_bit) - 1;
@@ -207,6 +223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void
     _M_incr(ptrdiff_t __i)
     {
+      _M_assume_normalized();
       difference_type __n = __i + _M_offset;
       _M_p += __n / int(_S_word_bit);
       __n = __n % int(_S_word_bit);
@@ -221,7 +238,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _GLIBCXX_NODISCARD
     friend _GLIBCXX20_CONSTEXPR bool
     operator==(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
-    { return __x._M_p == __y._M_p && __x._M_offset == __y._M_offset; }
+    {
+      __x._M_assume_normalized();
+      __y._M_assume_normalized();
+      return __x._M_p == __y._M_p && __x._M_offset == __y._M_offset;
+    }
 
 #if __cpp_lib_three_way_comparison
     [[nodiscard]]
@@ -229,6 +250,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     operator<=>(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     noexcept
     {
+      __x._M_assume_normalized();
+      __y._M_assume_normalized();
       if (const auto __cmp = __x._M_p <=> __y._M_p; __cmp != 0)
 	return __cmp;
       return __x._M_offset <=> __y._M_offset;
@@ -238,6 +261,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     friend bool
     operator<(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     {
+      __x._M_assume_normalized();
+      __y._M_assume_normalized();
       return __x._M_p < __y._M_p
 	    || (__x._M_p == __y._M_p && __x._M_offset < __y._M_offset);
     }
@@ -266,6 +291,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     friend _GLIBCXX20_CONSTEXPR ptrdiff_t
     operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     {
+      __x._M_assume_normalized();
+      __y._M_assume_normalized();
       return (int(_S_word_bit) * (__x._M_p - __y._M_p)
 	      + __x._M_offset - __y._M_offset);
     }
@@ -297,7 +324,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     reference
     operator*() const
-    { return reference(_M_p, 1UL << _M_offset); }
+    {
+      _M_assume_normalized();
+      return reference(_M_p, 1UL << _M_offset);
+    }
 
     _GLIBCXX20_CONSTEXPR
     iterator&
@@ -408,7 +438,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     const_reference
     operator*() const
-    { return _Bit_reference(_M_p, 1UL << _M_offset); }
+    {
+      _M_assume_normalized();
+      return _Bit_reference(_M_p, 1UL << _M_offset);
+    }
 
     _GLIBCXX20_CONSTEXPR
     const_iterator&

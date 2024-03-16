@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 int a = 1, b;
 
 g () { return 0; }

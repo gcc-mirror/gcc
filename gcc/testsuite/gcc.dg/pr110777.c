@@ -2,6 +2,7 @@
 /* { dg-options "-O3 -w" } */
 
 void pm_message (int);
+void _setjmp (void);
 int *findOrAddBackgroundInPalette_palette_pnm;
 static void findOrAddBackgroundInPalette(unsigned *paletteSizeP,
                                     int *backgroundIndexP) {

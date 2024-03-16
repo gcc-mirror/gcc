@@ -3,6 +3,7 @@
 // Compile with -g to verify the warning deals properly with debug
 // statements.
 // { dg-do compile }
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
 // { dg-options "-O2 -Wstringop-truncation -g" }
 
 extern "C" char* strncpy (char*, const char*, __SIZE_TYPE__);

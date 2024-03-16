@@ -97,11 +97,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
       retarray->base_addr = xmallocarray (alloc_size, sizeof (index_type));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-	}
+	return;
     }
   else
     {
@@ -275,11 +271,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
       retarray->base_addr = xmallocarray (alloc_size, sizeof (index_type));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-	}
+	return;
     }
   else
     {
@@ -438,11 +430,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
       retarray->base_addr = xmallocarray (alloc_size, sizeof (index_type));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-	}
+	return;
     }
   else
     {

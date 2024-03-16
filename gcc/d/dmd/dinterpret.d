@@ -22,6 +22,7 @@ import dmd.attrib;
 import dmd.builtin;
 import dmd.constfold;
 import dmd.ctfeexpr;
+import dmd.dcast;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dstruct;
@@ -59,7 +60,7 @@ import dmd.visitor;
  * functions and may invoke a function that contains `ErrorStatement` in its body.
  * If that, the "CTFE failed because of previous errors" error is raised.
  */
-public Expression ctfeInterpret(Expression e)
+extern(C++) public Expression ctfeInterpret(Expression e)
 {
     switch (e.op)
     {

@@ -10,6 +10,7 @@ baz (char p1)
 }
 
 void func_65 ();
+void
 func_1 ()
 {
     func_65 ();

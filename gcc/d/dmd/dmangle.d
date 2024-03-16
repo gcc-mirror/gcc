@@ -139,6 +139,7 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.dclass;
 import dmd.declaration;
+import dmd.dinterpret;
 import dmd.dmodule;
 import dmd.dsymbol;
 import dmd.dtemplate;

@@ -4,7 +4,7 @@
  * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/typeinf.d, _typeinf.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/typinf.d, _typinf.d)
  * Documentation:  https://dlang.org/phobos/dmd_typinf.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/typinf.d
  */
@@ -20,10 +20,8 @@ import dmd.dstruct;
 import dmd.errors;
 import dmd.expression;
 import dmd.globals;
-import dmd.gluelayer;
 import dmd.location;
 import dmd.mtype;
-import dmd.visitor;
 import core.stdc.stdio;
 
 /****************************************************
@@ -34,9 +32,10 @@ import core.stdc.stdio;
  *      loc   = the location for reporting line numbers in errors
  *      torig = the type to generate the `TypeInfo` object for
  *      sc    = the scope
- *      genObjCode = if true, object code will be generated for the obtained TypeInfo
+ * Returns:
+ *      true if `TypeInfo` was generated and needs compiling to object file
  */
-extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc, bool genObjCode = true)
+extern (C++) bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
 {
     // printf("genTypeInfo() %s\n", torig.toChars());
 
@@ -67,6 +66,7 @@ extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope
     }
 
     Type t = torig.merge2(); // do this since not all Type's are merge'd
+    bool needsCodegen = false;
     if (!t.vtinfo)
     {
         if (t.isShared()) // does both 'shared' and 'shared const'
@@ -84,25 +84,13 @@ extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope
         // ClassInfos are generated as part of ClassDeclaration codegen
         const isUnqualifiedClassInfo = (t.ty == Tclass && !t.mod);
 
-        // generate a COMDAT for other TypeInfos not available as builtins in
-        // druntime
-        if (!isUnqualifiedClassInfo && !builtinTypeInfo(t) && genObjCode)
-        {
-            if (sc) // if in semantic() pass
-            {
-                // Find module that will go all the way to an object file
-                Module m = sc._module.importedFrom;
-                m.members.push(t.vtinfo);
-            }
-            else // if in obj generation pass
-            {
-                toObjFile(t.vtinfo, global.params.multiobj);
-            }
-        }
+        if (!isUnqualifiedClassInfo && !builtinTypeInfo(t))
+            needsCodegen = true;
     }
     if (!torig.vtinfo)
         torig.vtinfo = t.vtinfo; // Types aren't merged, but we can share the vtinfo's
     assert(torig.vtinfo);
+    return needsCodegen;
 }
 
 /****************************************************
@@ -158,7 +146,7 @@ private TypeInfoDeclaration getTypeInfoDeclaration(Type t)
  *      true if any part of type t is speculative.
  *      if t is null, returns false.
  */
-bool isSpeculativeType(Type t)
+extern (C++) bool isSpeculativeType(Type t)
 {
     static bool visitVector(TypeVector t)
     {

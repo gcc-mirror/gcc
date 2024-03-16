@@ -1,5 +1,8 @@
 /* Mis-aligned packed structures.  */
 
+void abort (void);
+void exit (int);
+
 typedef struct
 {
   char b0;

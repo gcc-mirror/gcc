@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -w -fdump-tree-dse1-vops" } */
+/* { dg-options "-fpermissive -O -w -fdump-tree-dse1-vops" } */
 
 __extension__ typedef __SIZE_TYPE__ size_t;
 typedef struct _IO_FILE FILE;

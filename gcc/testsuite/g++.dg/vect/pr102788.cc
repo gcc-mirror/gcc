@@ -1,4 +1,3 @@
-// { dg-do run }
 // { dg-additional-options "-O3" }
 
 unsigned long long int var_4 = 235;

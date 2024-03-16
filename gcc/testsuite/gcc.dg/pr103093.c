@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-fpermissive -O2" } */
 
 int i_0, c_4, uc_7, func_2_c_11;
 

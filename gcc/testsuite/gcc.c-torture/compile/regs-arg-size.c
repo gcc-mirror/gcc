@@ -1,4 +1,5 @@
 /* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
+/* { dg-additional-options "-fpermissive" } */
 
 int foo;
 typedef long unsigned int size_t;

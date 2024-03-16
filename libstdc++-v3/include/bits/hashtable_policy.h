@@ -173,6 +173,19 @@ namespace __detail
 	{ return __node_gen(std::forward<_Kt>(__k)); }
     };
 
+  template<typename _HashtableAlloc, typename _NodePtr>
+    struct _NodePtrGuard
+    {
+      _HashtableAlloc& _M_h;
+      _NodePtr _M_ptr;
+
+      ~_NodePtrGuard()
+      {
+	if (_M_ptr)
+	  _M_h._M_deallocate_node_ptr(_M_ptr);
+      }
+    };
+
   template<typename _NodeAlloc>
     struct _Hashtable_alloc;
 
@@ -201,26 +214,19 @@ namespace __detail
 	__node_ptr
 	operator()(_Args&&... __args) const
 	{
-	  if (_M_nodes)
-	    {
-	      __node_ptr __node = _M_nodes;
-	      _M_nodes = _M_nodes->_M_next();
-	      __node->_M_nxt = nullptr;
-	      auto& __a = _M_h._M_node_allocator();
-	      __node_alloc_traits::destroy(__a, __node->_M_valptr());
-	      __try
-		{
-		  __node_alloc_traits::construct(__a, __node->_M_valptr(),
-						 std::forward<_Args>(__args)...);
-		}
-	      __catch(...)
-		{
-		  _M_h._M_deallocate_node_ptr(__node);
-		  __throw_exception_again;
-		}
-	      return __node;
-	    }
-	  return _M_h._M_allocate_node(std::forward<_Args>(__args)...);
+	  if (!_M_nodes)
+	    return _M_h._M_allocate_node(std::forward<_Args>(__args)...);
+
+	  __node_ptr __node = _M_nodes;
+	  _M_nodes = _M_nodes->_M_next();
+	  __node->_M_nxt = nullptr;
+	  auto& __a = _M_h._M_node_allocator();
+	  __node_alloc_traits::destroy(__a, __node->_M_valptr());
+	  _NodePtrGuard<__hashtable_alloc, __node_ptr> __guard { _M_h, __node };
+	  __node_alloc_traits::construct(__a, __node->_M_valptr(),
+					 std::forward<_Args>(__args)...);
+	  __guard._M_ptr = nullptr;
+	  return __node;
 	}
 
     private:
@@ -715,6 +721,25 @@ namespace __detail
     std::size_t	_M_next_resize;
   };
 
+  template<typename _RehashPolicy>
+    struct _RehashStateGuard
+    {
+      _RehashPolicy* _M_guarded_obj;
+      typename _RehashPolicy::_State _M_prev_state;
+
+      _RehashStateGuard(_RehashPolicy& __policy)
+      : _M_guarded_obj(std::__addressof(__policy))
+      , _M_prev_state(__policy._M_state())
+      { }
+      _RehashStateGuard(const _RehashStateGuard&) = delete;
+
+      ~_RehashStateGuard()
+      {
+	if (_M_guarded_obj)
+	  _M_guarded_obj->_M_reset(_M_prev_state);
+      }
+    };
+
   // Base classes for std::_Hashtable.  We define these base classes
   // because in some cases we want to do different things depending on
   // the value of a policy class.  In some cases the policy class
@@ -1006,24 +1031,24 @@ namespace __detail
       _M_insert_range(_InputIterator __first, _InputIterator __last,
 		      const _NodeGetter& __node_gen, false_type __uks)
       {
-	using __rehash_type = typename __hashtable::__rehash_type;
-	using __rehash_state = typename __hashtable::__rehash_state;
-	using pair_type = std::pair<bool, std::size_t>;
+	using __rehash_guard_t = typename __hashtable::__rehash_guard_t;
+	using __pair_type = std::pair<bool, std::size_t>;
 
 	size_type __n_elt = __detail::__distance_fw(__first, __last);
 	if (__n_elt == 0)
 	  return;
 
 	__hashtable& __h = _M_conjure_hashtable();
-	__rehash_type& __rehash = __h._M_rehash_policy;
-	const __rehash_state& __saved_state = __rehash._M_state();
-	pair_type __do_rehash = __rehash._M_need_rehash(__h._M_bucket_count,
-							__h._M_element_count,
-							__n_elt);
+	__rehash_guard_t __rehash_guard(__h._M_rehash_policy);
+	__pair_type __do_rehash
+	  = __h._M_rehash_policy._M_need_rehash(__h._M_bucket_count,
+						__h._M_element_count,
+						__n_elt);
 
 	if (__do_rehash.first)
-	  __h._M_rehash(__do_rehash.second, __saved_state);
+	  __h._M_rehash(__do_rehash.second, __uks);
 
+	__rehash_guard._M_guarded_obj = nullptr;
 	for (; __first != __last; ++__first)
 	  __h._M_insert(*__first, __node_gen, __uks);
       }
@@ -1990,19 +2015,20 @@ namespace __detail
       _Hashtable_alloc<_NodeAlloc>::_M_allocate_node(_Args&&... __args)
       -> __node_ptr
       {
-	auto __nptr = __node_alloc_traits::allocate(_M_node_allocator(), 1);
+	auto& __alloc = _M_node_allocator();
+	auto __nptr = __node_alloc_traits::allocate(__alloc, 1);
 	__node_ptr __n = std::__to_address(__nptr);
 	__try
 	  {
 	    ::new ((void*)__n) __node_type;
-	    __node_alloc_traits::construct(_M_node_allocator(),
-					   __n->_M_valptr(),
+	    __node_alloc_traits::construct(__alloc, __n->_M_valptr(),
 					   std::forward<_Args>(__args)...);
 	    return __n;
 	  }
 	__catch(...)
 	  {
-	    __node_alloc_traits::deallocate(_M_node_allocator(), __nptr, 1);
+	    __n->~__node_type();
+	    __node_alloc_traits::deallocate(__alloc, __nptr, 1);
 	    __throw_exception_again;
 	  }
       }

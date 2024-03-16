@@ -962,6 +962,20 @@ package Sinfo is
    --    was constructed as part of the expansion of an iterator
    --    specification.
 
+   --  Compare_Type
+   --    Present in N_Op_Compare nodes. Set during resolution to the type of
+   --    the operands. It is used to propagate the type of the operands from
+   --    a N_Op_Compare node in a generic construct to the nodes created from
+   --    it in the various instances, when this type is global to the generic
+   --    construct. Resolution for global types cannot be redone in instances
+   --    because the instantiation can be done out of context, e.g. for bodies,
+   --    and the visibility of global types is incorrect in this case; that is
+   --    why the result of the resolution done in the generic construct needs
+   --    to be available in the instances but, unlike for arithmetic operators,
+   --    the Etype cannot be used to that effect for comparison operators. It
+   --    is also used as the type subject to the Has_Private_View processing on
+   --    the nodes instead of the Etype.
+
    --  Compile_Time_Known_Aggregate
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
    --    evaluated at compile time without raising constraint error. Such
@@ -4507,31 +4521,37 @@ package Sinfo is
 
       --  N_Op_Eq
       --  Sloc points to =
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Ne
       --  Sloc points to /=
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Lt
       --  Sloc points to <
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Le
       --  Sloc points to <=
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Gt
       --  Sloc points to >
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Ge
       --  Sloc points to >=
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 

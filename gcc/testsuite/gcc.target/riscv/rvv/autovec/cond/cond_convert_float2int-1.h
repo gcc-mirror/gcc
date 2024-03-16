@@ -15,8 +15,6 @@
 
 /* FP -> INT */
 #define TEST_ALL_F2X_SAME(T)                                                   \
-  T (_Float16, uint16_t)                                                       \
-  T (_Float16, int16_t)                                                        \
   T (float, uint32_t)                                                          \
   T (float, int32_t)                                                           \
   T (double, uint64_t)                                                         \
@@ -24,17 +22,11 @@
 
 /* FP -> wider-INT */
 #define TEST_ALL_F2X_WIDER(T)                                                  \
-  T (_Float16, uint32_t)                                                       \
-  T (_Float16, int32_t)                                                        \
-  T (_Float16, uint64_t)                                                       \
-  T (_Float16, int64_t)                                                        \
   T (float, uint64_t)                                                          \
   T (float, int64_t)
 
 /* FP -> narrower-INT */
 #define TEST_ALL_F2X_NARROWER(T)                                               \
-  T (_Float16, uint8_t)                                                        \
-  T (_Float16, int8_t)                                                         \
   T (float, uint8_t)                                                           \
   T (float, int8_t)                                                            \
   T (float, uint16_t)                                                          \

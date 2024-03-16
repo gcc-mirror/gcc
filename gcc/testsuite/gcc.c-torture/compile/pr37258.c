@@ -31,6 +31,11 @@ int64_t g_380;
 int32_t func_99 (int16_t p_100, int32_t p_101, int32_t p_102, int32_t p_103,
                  int64_t p_105, int32_t p_106, int32_t p_107, int16_t p_108,
                  int16_t p_109);
+int mod_rhs (int64_t);
+int lshift_s_s (int, int);
+int func_112 (long ing, unsigned int);
+void func_23 (int32_t, int);
+long int func_82 (int, int, int64_t, int, int16_t, int, int);
 int32_t
 func_77 (int64_t p_79)
 {

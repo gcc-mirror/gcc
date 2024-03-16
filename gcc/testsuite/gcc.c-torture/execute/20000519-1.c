@@ -1,3 +1,5 @@
+void abort (void);
+
 #include <stdarg.h>
 
 int

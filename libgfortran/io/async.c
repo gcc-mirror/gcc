@@ -262,7 +262,7 @@ init_async_unit (gfc_unit *u)
 void
 enqueue_transfer (async_unit *au, transfer_args *arg, enum aio_do type)
 {
-  transfer_queue *tq = calloc (sizeof (transfer_queue), 1);
+  transfer_queue *tq = calloc (1, sizeof (transfer_queue));
   tq->arg = *arg;
   tq->type = type;
   tq->has_id = 0;
@@ -284,7 +284,7 @@ int
 enqueue_done_id (async_unit *au, enum aio_do type)
 {
   int ret;
-  transfer_queue *tq = calloc (sizeof (transfer_queue), 1);
+  transfer_queue *tq = calloc (1, sizeof (transfer_queue));
 
   tq->type = type;
   tq->has_id = 1;
@@ -308,7 +308,7 @@ enqueue_done_id (async_unit *au, enum aio_do type)
 void
 enqueue_done (async_unit *au, enum aio_do type)
 {
-  transfer_queue *tq = calloc (sizeof (transfer_queue), 1);
+  transfer_queue *tq = calloc (1, sizeof (transfer_queue));
   tq->type = type;
   tq->has_id = 0;
   LOCK (&au->lock);
@@ -328,7 +328,7 @@ enqueue_done (async_unit *au, enum aio_do type)
 void
 enqueue_close (async_unit *au)
 {
-  transfer_queue *tq = calloc (sizeof (transfer_queue), 1);
+  transfer_queue *tq = calloc (1, sizeof (transfer_queue));
 
   tq->type = AIO_CLOSE;
   LOCK (&au->lock);

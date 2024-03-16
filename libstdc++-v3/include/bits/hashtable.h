@@ -234,6 +234,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					      _RehashPolicy, _Traits>;
       using __enable_default_ctor
 	= _Hashtable_enable_default_ctor<_Equal, _Hash, _Alloc>;
+      using __rehash_guard_t
+	= __detail::_RehashStateGuard<_RehashPolicy>;
 
     public:
       typedef _Key						key_type;
@@ -264,7 +266,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       using __rehash_type = _RehashPolicy;
-      using __rehash_state = typename __rehash_type::_State;
 
       using __unique_keys = typename __traits_type::__unique_keys;
 
@@ -1200,14 +1201,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       // Helper rehash method used when keys are unique.
-      void _M_rehash_aux(size_type __bkt_count, true_type __uks);
+      void _M_rehash(size_type __bkt_count, true_type __uks);
 
       // Helper rehash method used when keys can be non-unique.
-      void _M_rehash_aux(size_type __bkt_count, false_type __uks);
-
-      // Unconditionally change size of bucket array to n, restore
-      // hash policy state to __state on exception.
-      void _M_rehash(size_type __bkt_count, const __rehash_state& __state);
+      void _M_rehash(size_type __bkt_count, false_type __uks);
     };
 
   // Definitions of class template _Hashtable's out-of-line member functions.
@@ -1337,7 +1334,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__buckets_ptr __former_buckets = nullptr;
 	std::size_t __former_bucket_count = _M_bucket_count;
-	const __rehash_state& __former_state = _M_rehash_policy._M_state();
+	__rehash_guard_t __rehash_guard(_M_rehash_policy);
 
 	if (_M_bucket_count != __ht._M_bucket_count)
 	  {
@@ -1359,6 +1356,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_assign(std::forward<_Ht>(__ht), __roan);
 	    if (__former_buckets)
 	      _M_deallocate_buckets(__former_buckets, __former_bucket_count);
+	    __rehash_guard._M_guarded_obj = nullptr;
 	  }
 	__catch(...)
 	  {
@@ -1366,7 +1364,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      {
 		// Restore previous buckets.
 		_M_deallocate_buckets();
-		_M_rehash_policy._M_reset(__former_state);
 		_M_buckets = __former_buckets;
 		_M_bucket_count = __former_bucket_count;
 	      }
@@ -2142,17 +2139,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  __node_ptr __node, size_type __n_elt)
     -> iterator
     {
-      const __rehash_state& __saved_state = _M_rehash_policy._M_state();
+      __rehash_guard_t __rehash_guard(_M_rehash_policy);
       std::pair<bool, std::size_t> __do_rehash
 	= _M_rehash_policy._M_need_rehash(_M_bucket_count, _M_element_count,
 					  __n_elt);
 
       if (__do_rehash.first)
 	{
-	  _M_rehash(__do_rehash.second, __saved_state);
+	  _M_rehash(__do_rehash.second, true_type{});
 	  __bkt = _M_bucket_index(__code);
 	}
 
+      __rehash_guard._M_guarded_obj = nullptr;
       this->_M_store_code(*__node, __code);
 
       // Always insert at the beginning of the bucket.
@@ -2172,13 +2170,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 __hash_code __code, __node_ptr __node)
     -> iterator
     {
-      const __rehash_state& __saved_state = _M_rehash_policy._M_state();
+      __rehash_guard_t __rehash_guard(_M_rehash_policy);
       std::pair<bool, std::size_t> __do_rehash
 	= _M_rehash_policy._M_need_rehash(_M_bucket_count, _M_element_count, 1);
 
       if (__do_rehash.first)
-	_M_rehash(__do_rehash.second, __saved_state);
+	_M_rehash(__do_rehash.second, false_type{});
 
+      __rehash_guard._M_guarded_obj = nullptr;
       this->_M_store_code(*__node, __code);
       const key_type& __k = _ExtractKey{}(__node->_M_v());
       size_type __bkt = _M_bucket_index(__code);
@@ -2509,39 +2508,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
     rehash(size_type __bkt_count)
     {
-      const __rehash_state& __saved_state = _M_rehash_policy._M_state();
+      __rehash_guard_t __rehash_guard(_M_rehash_policy);
       __bkt_count
 	= std::max(_M_rehash_policy._M_bkt_for_elements(_M_element_count + 1),
 		   __bkt_count);
       __bkt_count = _M_rehash_policy._M_next_bkt(__bkt_count);
 
       if (__bkt_count != _M_bucket_count)
-	_M_rehash(__bkt_count, __saved_state);
-      else
-	// No rehash, restore previous state to keep it consistent with
-	// container state.
-	_M_rehash_policy._M_reset(__saved_state);
-    }
-
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    void
-    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-    _M_rehash(size_type __bkt_count, const __rehash_state& __state)
-    {
-      __try
 	{
-	  _M_rehash_aux(__bkt_count, __unique_keys{});
-	}
-      __catch(...)
-	{
-	  // A failure here means that buckets allocation failed.  We only
-	  // have to restore hash policy previous state.
-	  _M_rehash_policy._M_reset(__state);
-	  __throw_exception_again;
+	  _M_rehash(__bkt_count, __unique_keys{});
+	  __rehash_guard._M_guarded_obj = nullptr;
 	}
     }
 
@@ -2553,7 +2529,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-    _M_rehash_aux(size_type __bkt_count, true_type /* __uks */)
+    _M_rehash(size_type __bkt_count, true_type /* __uks */)
     {
       __buckets_ptr __new_buckets = _M_allocate_buckets(__bkt_count);
       __node_ptr __p = _M_begin();
@@ -2596,7 +2572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-    _M_rehash_aux(size_type __bkt_count, false_type /* __uks */)
+    _M_rehash(size_type __bkt_count, false_type /* __uks */)
     {
       __buckets_ptr __new_buckets = _M_allocate_buckets(__bkt_count);
       __node_ptr __p = _M_begin();

@@ -744,9 +744,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class scoped_lock
     {
     public:
+
+      [[nodiscard]]
       explicit scoped_lock(_MutexTypes&... __m) : _M_devices(std::tie(__m...))
       { std::lock(__m...); }
 
+      [[nodiscard]]
       explicit scoped_lock(adopt_lock_t, _MutexTypes&... __m) noexcept
       : _M_devices(std::tie(__m...))
       { } // calling thread owns mutex
@@ -779,9 +782,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using mutex_type = _Mutex;
 
+      [[nodiscard]]
       explicit scoped_lock(mutex_type& __m) : _M_device(__m)
       { _M_device.lock(); }
 
+      [[nodiscard]]
       explicit scoped_lock(adopt_lock_t, mutex_type& __m) noexcept
       : _M_device(__m)
       { } // calling thread owns mutex

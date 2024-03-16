@@ -1,4 +1,5 @@
 /* PR opt/7130 */
+void abort (void);
 #define TYPE long
 
 void

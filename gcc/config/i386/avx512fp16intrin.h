@@ -28,9 +28,9 @@
 #ifndef _AVX512FP16INTRIN_H_INCLUDED
 #define _AVX512FP16INTRIN_H_INCLUDED
 
-#ifndef __AVX512FP16__
+#if !defined (__AVX512FP16__) || defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512fp16")
+#pragma GCC target("avx512fp16,no-evex512")
 #define __DISABLE_AVX512FP16__
 #endif /* __AVX512FP16__ */
 
@@ -1449,7 +1449,7 @@ extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsi16_si128 (short __A)
 {
-  return _mm_set_epi16 (0, 0, 0, 0, 0, 0, 0, __A);
+  return _mm_avx512_set_epi16 (0, 0, 0, 0, 0, 0, 0, __A);
 }
 
 extern __inline short
@@ -1747,7 +1747,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsh_ss (__m128 __A, __m128h __B)
 {
   return __builtin_ia32_vcvtsh2ss_mask_round (__B, __A,
-					      _mm_setzero_ps (),
+					      _mm_avx512_setzero_ps (),
 					      (__mmask8) -1,
 					      _MM_FROUND_CUR_DIRECTION);
 }
@@ -1767,7 +1767,7 @@ _mm_maskz_cvtsh_ss (__mmask8 __A, __m128 __B,
 			  __m128h __C)
 {
   return __builtin_ia32_vcvtsh2ss_mask_round (__C, __B,
-					      _mm_setzero_ps (),
+					      _mm_avx512_setzero_ps (),
 					      __A, _MM_FROUND_CUR_DIRECTION);
 }
 
@@ -1776,7 +1776,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsh_sd (__m128d __A, __m128h __B)
 {
   return __builtin_ia32_vcvtsh2sd_mask_round (__B, __A,
-					      _mm_setzero_pd (),
+					      _mm_avx512_setzero_pd (),
 					      (__mmask8) -1,
 					      _MM_FROUND_CUR_DIRECTION);
 }
@@ -1795,7 +1795,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_cvtsh_sd (__mmask8 __A, __m128d __B, __m128h __C)
 {
   return __builtin_ia32_vcvtsh2sd_mask_round (__C, __B,
-					      _mm_setzero_pd (),
+					      _mm_avx512_setzero_pd (),
 					      __A, _MM_FROUND_CUR_DIRECTION);
 }
 
@@ -1805,7 +1805,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvt_roundsh_ss (__m128 __A, __m128h __B, const int __R)
 {
   return __builtin_ia32_vcvtsh2ss_mask_round (__B, __A,
-					      _mm_setzero_ps (),
+					      _mm_avx512_setzero_ps (),
 					      (__mmask8) -1, __R);
 }
 
@@ -1823,7 +1823,7 @@ _mm_maskz_cvt_roundsh_ss (__mmask8 __A, __m128 __B,
 			  __m128h __C, const int __R)
 {
   return __builtin_ia32_vcvtsh2ss_mask_round (__C, __B,
-					      _mm_setzero_ps (),
+					      _mm_avx512_setzero_ps (),
 					      __A, __R);
 }
 
@@ -1832,7 +1832,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvt_roundsh_sd (__m128d __A, __m128h __B, const int __R)
 {
   return __builtin_ia32_vcvtsh2sd_mask_round (__B, __A,
-					      _mm_setzero_pd (),
+					      _mm_avx512_setzero_pd (),
 					      (__mmask8) -1, __R);
 }
 
@@ -1849,14 +1849,14 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_cvt_roundsh_sd (__mmask8 __A, __m128d __B, __m128h __C, const int __R)
 {
   return __builtin_ia32_vcvtsh2sd_mask_round (__C, __B,
-					      _mm_setzero_pd (),
+					      _mm_avx512_setzero_pd (),
 					      __A, __R);
 }
 
 #else
 #define _mm_cvt_roundsh_ss(A, B, R)				\
   (__builtin_ia32_vcvtsh2ss_mask_round ((B), (A),		\
-					_mm_setzero_ps (),	\
+					_mm_avx512_setzero_ps (),	\
 					(__mmask8) -1, (R)))
 
 #define _mm_mask_cvt_roundsh_ss(A, B, C, D, R)				\
@@ -1864,12 +1864,12 @@ _mm_maskz_cvt_roundsh_sd (__mmask8 __A, __m128d __B, __m128h __C, const int __R)
 
 #define _mm_maskz_cvt_roundsh_ss(A, B, C, R)			\
   (__builtin_ia32_vcvtsh2ss_mask_round ((C), (B),		\
-					_mm_setzero_ps (),	\
+					_mm_avx512_setzero_ps (),	\
 					(A), (R)))
 
 #define _mm_cvt_roundsh_sd(A, B, R)				\
   (__builtin_ia32_vcvtsh2sd_mask_round ((B), (A),		\
-					_mm_setzero_pd (),	\
+					_mm_avx512_setzero_pd (),	\
 					(__mmask8) -1, (R)))
 
 #define _mm_mask_cvt_roundsh_sd(A, B, C, D, R)				\
@@ -1877,7 +1877,7 @@ _mm_maskz_cvt_roundsh_sd (__mmask8 __A, __m128d __B, __m128h __C, const int __R)
 
 #define _mm_maskz_cvt_roundsh_sd(A, B, C, R)			\
   (__builtin_ia32_vcvtsh2sd_mask_round ((C), (B),		\
-					_mm_setzero_pd (),	\
+					_mm_avx512_setzero_pd (),	\
 					(A), (R)))
 
 #endif /* __OPTIMIZE__ */

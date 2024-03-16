@@ -20550,6 +20550,8 @@ mips_option_override (void)
   /* Set NaN and ABS defaults.  */
   if (mips_nan == MIPS_IEEE_754_DEFAULT && !ISA_HAS_IEEE_754_LEGACY)
     mips_nan = MIPS_IEEE_754_2008;
+  if (mips_abs == MIPS_IEEE_754_DEFAULT && mips_nan == MIPS_IEEE_754_2008)
+    mips_abs = MIPS_IEEE_754_2008;
   if (mips_abs == MIPS_IEEE_754_DEFAULT && !ISA_HAS_IEEE_754_LEGACY)
     mips_abs = MIPS_IEEE_754_2008;
 

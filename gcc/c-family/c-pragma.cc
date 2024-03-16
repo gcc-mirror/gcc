@@ -1208,7 +1208,7 @@ handle_pragma_push_options (cpp_reader *)
   token = pragma_lex (&x);
   if (token != CPP_EOF)
     {
-      warning (OPT_Wpragmas, "junk at end of %<#pragma push_options%>");
+      warning (OPT_Wpragmas, "junk at end of %<#pragma GCC push_options%>");
       return;
     }
 
@@ -1245,7 +1245,7 @@ handle_pragma_pop_options (cpp_reader *)
   token = pragma_lex (&x);
   if (token != CPP_EOF)
     {
-      warning (OPT_Wpragmas, "junk at end of %<#pragma pop_options%>");
+      warning (OPT_Wpragmas, "junk at end of %<#pragma GCC pop_options%>");
       return;
     }
 

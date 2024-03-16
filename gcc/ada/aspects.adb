@@ -68,30 +68,6 @@ package body Aspects is
       Aspect_Variable_Indexing    => True,
       others                      => False);
 
-   ------------------------------------------
-   -- Hash Table for Aspect Specifications --
-   ------------------------------------------
-
-   type AS_Hash_Range is range 0 .. 510;
-   --  Size of hash table headers
-
-   function AS_Hash (F : Node_Id) return AS_Hash_Range;
-   --  Hash function for hash table
-
-   function AS_Hash (F : Node_Id) return AS_Hash_Range is
-   begin
-      return AS_Hash_Range (F mod 511);
-   end AS_Hash;
-
-   package Aspect_Specifications_Hash_Table is new
-     GNAT.HTable.Simple_HTable
-       (Header_Num => AS_Hash_Range,
-        Element    => List_Id,
-        No_Element => No_List,
-        Key        => Node_Id,
-        Hash       => AS_Hash,
-        Equal      => "=");
-
    -------------------------------------
    -- Hash Table for Aspect Id Values --
    -------------------------------------
@@ -115,19 +91,6 @@ package body Aspects is
         Key        => Name_Id,
         Hash       => AI_Hash,
         Equal      => "=");
-
-   ---------------------------
-   -- Aspect_Specifications --
-   ---------------------------
-
-   function Aspect_Specifications (N : Node_Id) return List_Id is
-   begin
-      if Has_Aspects (N) then
-         return Aspect_Specifications_Hash_Table.Get (N);
-      else
-         return No_List;
-      end if;
-   end Aspect_Specifications;
 
    --------------------------------
    -- Aspects_On_Body_Or_Stub_OK --
@@ -160,31 +123,6 @@ package body Aspects is
 
       return True;
    end Aspects_On_Body_Or_Stub_OK;
-
-   ----------------------
-   -- Exchange_Aspects --
-   ----------------------
-
-   procedure Exchange_Aspects (N1 : Node_Id; N2 : Node_Id) is
-   begin
-      pragma Assert
-        (Permits_Aspect_Specifications (N1)
-           and then Permits_Aspect_Specifications (N2));
-
-      --  Perform the exchange only when both nodes have lists to be swapped
-
-      if Has_Aspects (N1) and then Has_Aspects (N2) then
-         declare
-            L1 : constant List_Id := Aspect_Specifications (N1);
-            L2 : constant List_Id := Aspect_Specifications (N2);
-         begin
-            Set_Parent (L1, N2);
-            Set_Parent (L2, N1);
-            Aspect_Specifications_Hash_Table.Set (N1, L2);
-            Aspect_Specifications_Hash_Table.Set (N2, L1);
-         end;
-      end if;
-   end Exchange_Aspects;
 
    -----------------
    -- Find_Aspect --
@@ -261,6 +199,13 @@ package body Aspects is
       Decl := Parent (Owner);
       if not Permits_Aspect_Specifications (Decl) then
          Decl := Parent (Decl);
+
+         if No (Decl) then
+            --  Perhaps this happens because the tree is under construction
+            --  and Parent (Decl) has not been set yet?
+
+            return Empty;
+         end if;
       end if;
 
       --  Search the list of aspect specifications for the desired aspect
@@ -273,6 +218,18 @@ package body Aspects is
             then
                return Spec;
             end if;
+
+            declare
+               use User_Aspect_Support;
+            begin
+               if Get_Aspect_Id (Spec) = Aspect_User_Aspect
+                  and then not Analyzed (Spec)
+                  and then
+                    Analyze_User_Aspect_Aspect_Specification_Hook /= null
+               then
+                  Analyze_User_Aspect_Aspect_Specification_Hook.all (Spec);
+               end if;
+            end;
 
             Next (Spec);
          end loop;
@@ -339,6 +296,12 @@ package body Aspects is
       return Present (Find_Aspect (Id, A, Class_Present => Class_Present));
    end Has_Aspect;
 
+   function Has_Aspects (N : Node_Id) return Boolean
+   is (Atree.Present (N) and then
+       Permits_Aspect_Specifications (N) and then
+       Nlists.Present (Sinfo.Nodes.Aspect_Specifications (N)) and then
+       Nlists.Is_Non_Empty_List (Sinfo.Nodes.Aspect_Specifications (N)));
+
    ------------------
    -- Is_Aspect_Id --
    ------------------
@@ -358,8 +321,7 @@ package body Aspects is
    begin
       if Has_Aspects (From) then
          Set_Aspect_Specifications (To, Aspect_Specifications (From));
-         Aspect_Specifications_Hash_Table.Remove (From);
-         Set_Has_Aspects (From, False);
+         Set_Aspect_Specifications (From, No_List);
       end if;
    end Move_Aspects;
 
@@ -466,6 +428,21 @@ package body Aspects is
       end if;
    end Move_Or_Merge_Aspects;
 
+   -------------------
+   --  Copy_Aspects --
+   -------------------
+
+   procedure Copy_Aspects (From : Node_Id; To : Node_Id) is
+
+   begin
+      if not Has_Aspects (From) then
+         return;
+      end if;
+
+      Set_Aspect_Specifications
+         (To, New_Copy_List (Aspect_Specifications (From)));
+   end Copy_Aspects;
+
    -----------------------------------
    -- Permits_Aspect_Specifications --
    -----------------------------------
@@ -528,8 +505,7 @@ package body Aspects is
    procedure Remove_Aspects (N : Node_Id) is
    begin
       if Has_Aspects (N) then
-         Aspect_Specifications_Hash_Table.Remove (N);
-         Set_Has_Aspects (N, False);
+         Set_Aspect_Specifications (N, No_List);
       end if;
    end Remove_Aspects;
 
@@ -576,20 +552,41 @@ package body Aspects is
       return Canonical_Aspect (A1) = Canonical_Aspect (A2);
    end Same_Aspect;
 
-   -------------------------------
-   -- Set_Aspect_Specifications --
-   -------------------------------
+   package body User_Aspect_Support is
 
-   procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id) is
-   begin
-      pragma Assert (Permits_Aspect_Specifications (N));
-      pragma Assert (not Has_Aspects (N));
-      pragma Assert (L /= No_List);
+      --  This is similar to the way that user-defined check names are
+      --  managed via package Checks.Check_Names; simple global state.
 
-      Set_Has_Aspects (N);
-      Set_Parent (L, N);
-      Aspect_Specifications_Hash_Table.Set (N, L);
-   end Set_Aspect_Specifications;
+      UAD_Pragma_Map_Size : constant := 511;
+
+      subtype UAD_Pragma_Map_Header is
+        Integer range 0 .. UAD_Pragma_Map_Size - 1;
+
+      function UAD_Pragma_Map_Hash (Chars : Name_Id)
+        return UAD_Pragma_Map_Header
+      is (UAD_Pragma_Map_Header (Chars mod UAD_Pragma_Map_Size));
+
+      package UAD_Pragma_Map is new GNAT.Htable.Simple_Htable
+        (Header_Num => UAD_Pragma_Map_Header,
+         Key        => Name_Id,
+         Element    => Opt_N_Pragma_Id,
+         No_Element => Empty,
+         Hash       => UAD_Pragma_Map_Hash,
+         Equal      => "=");
+
+      procedure Register_UAD_Pragma (UAD_Pragma : Node_Id) is
+         Aspect_Name : constant Name_Id :=
+           Chars (Expression
+                    (First (Pragma_Argument_Associations (UAD_Pragma))));
+      begin
+         UAD_Pragma_Map.Set (Aspect_Name, UAD_Pragma);
+      end Register_UAD_Pragma;
+
+      function Registered_UAD_Pragma (Aspect_Name : Name_Id) return Node_Id is
+      begin
+         return UAD_Pragma_Map.Get (Aspect_Name);
+      end Registered_UAD_Pragma;
+   end User_Aspect_Support;
 
 --  Package initialization sets up Aspect Id hash table
 

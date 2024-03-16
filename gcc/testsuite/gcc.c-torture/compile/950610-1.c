@@ -1,1 +1,1 @@
-f (int n, int a[2][n]) {}
+void f (int n, int a[2][n]) {}

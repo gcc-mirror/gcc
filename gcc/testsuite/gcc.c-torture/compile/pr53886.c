@@ -1,4 +1,6 @@
 /* PR target/53886  */
+/* { dg-additional-options "-fpermissive" } */
+
 typedef struct asn1_string_st ASN1_BIT_STRING;
 typedef struct bignum_st BIGNUM;
 typedef struct ec_group_st EC_GROUP;

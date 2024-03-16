@@ -18,5 +18,5 @@ s2 (__int128 *qv)
 void
 lt (unsigned int vb)
 {
-  s2 (vb + 1);
+  s2 ((__int128 *) (vb + 1));
 }

@@ -1,3 +1,4 @@
+void print_wkb_bytes (unsigned char *, int, int);
 static void print_wkb_byte(unsigned char val) {
     print_wkb_bytes((unsigned char *)&val, 1, 1);
 }

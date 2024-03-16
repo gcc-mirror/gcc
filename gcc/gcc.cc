@@ -46,7 +46,7 @@ compilation is specified by a string called a "spec".  */
 #include "spellcheck.h"
 #include "opts-jobserver.h"
 #include "common/common-target.h"
-#include "diagnostic-text-art.h"
+#include "gcc-urlifier.h"
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
@@ -4355,8 +4355,7 @@ driver_handle_option (struct gcc_options *opts,
 	}
 
     case OPT_fdiagnostics_text_art_charset_:
-      diagnostics_text_art_charset_init (dc,
-					 (enum diagnostic_text_art_charset)value);
+      dc->set_text_art_charset ((enum diagnostic_text_art_charset)value);
       break;
 
     case OPT_Wa_:
@@ -8293,6 +8292,7 @@ driver::global_initializations ()
   diagnostic_initialize (global_dc, 0);
   diagnostic_color_init (global_dc);
   diagnostic_urls_init (global_dc);
+  global_dc->set_urlifier (make_gcc_urlifier ());
 
 #ifdef GCC_DRIVER_HOST_INITIALIZATION
   /* Perform host dependent initialization when needed.  */

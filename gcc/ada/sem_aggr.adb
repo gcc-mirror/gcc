@@ -4305,7 +4305,7 @@ package body Sem_Aggr is
                --  extensions, and maybe for nondiscriminated types.
                --  This is wrong for limited, but those were wrong already.
 
-               if not Is_Limited_View (A_Type)
+               if not Is_Inherently_Limited_Type (A_Type)
                  and then Is_Build_In_Place_Function_Call (A)
                then
                   Transform_BIP_Assignment (A_Type);

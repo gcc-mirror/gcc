@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wall" } */
 /* { dg-additional-options "-std=c++20" { target c++ } } */
-/* { dg-additional-options "-std=c2x" { target c } } */
+/* { dg-additional-options "-std=c23" { target c } } */
 
 int f(int i)
 {

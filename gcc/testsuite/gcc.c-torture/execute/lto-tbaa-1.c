@@ -9,13 +9,16 @@ struct c {
   float *b;
 } *c;
 int d;
+void
 use_a (struct a *a)
 {
 }
+void
 set_b (int **a)
 {
   *a=&d;
 }
+void
 use_c (struct c *a)
 {
 }
@@ -28,7 +31,8 @@ struct b b= {&e};
 struct b b2;
 struct b b3;
 int **ptr = &b2.b;
-main ()
+int
+main (void)
 {
   a= (void *)0;
   b.b=&e;

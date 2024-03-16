@@ -10,6 +10,7 @@ ieee_float_shape_type;
 static const float two23 = 8.3886080000e+06;
 static const float pi = 3.1415927410e+00;
 static const float zero = 0.0000000000e+00;
+float __kernel_sinf (float, float, int);
 static float
 sin_pif (float x)
 {

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct {
   int a:4;
   int :4;
@@ -5,7 +8,8 @@ struct {
   int c:4;
 } x = { 2,3,4 };
 
-main ()
+int
+main (void)
 {
   if (x.a != 2)
     abort ();

@@ -1,6 +1,9 @@
 /* PR 16341 */
 /* { dg-require-effective-target int32plus } */
 
+void abort (void);
+void exit (int);
+
 #define PART_PRECISION (sizeof (cpp_num_part) * 8)
 
 typedef unsigned int cpp_num_part;

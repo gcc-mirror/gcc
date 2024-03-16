@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 typedef a;
 b(void *c, a d) {
   if (c)

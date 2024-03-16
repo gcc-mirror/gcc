@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -w" } */
+/* { dg-options "-fpermissive -O2 -w" } */
 a[];
 b;
 c() {

@@ -509,6 +509,18 @@ package body Restrict is
          Update_Restrictions (Main_Restrictions);
       end if;
 
+      declare
+         use Local_Restrictions;
+      begin
+         if Local_Restriction_Checking_Hook /= null then
+            --  A given global restriction (which may or may not be in
+            --  effect) has been violated. Even if the global restriction
+            --  is not in effect, a corresponding local restriction may be
+            --  in effect (in which case the violation needs to be flagged).
+            Local_Restriction_Checking_Hook.all (R, N);
+         end if;
+      end;
+
       --  Nothing to do if restriction message suppressed
 
       if Suppress_Restriction_Message (N) then

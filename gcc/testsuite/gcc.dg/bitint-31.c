@@ -1,7 +1,7 @@
 /* PR c/102989 */
 /* { dg-do run } */
 /* { dg-require-effective-target fenv } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 /* { dg-add-options ieee } */
 
 #include <fenv.h>

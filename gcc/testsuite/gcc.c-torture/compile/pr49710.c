@@ -1,4 +1,5 @@
 int a, b, c, d;
+void baz (void);
 
 static void
 foo (int *x)
@@ -20,7 +21,7 @@ if (c)
 }
 
 static void
-bar ()
+bar (void)
 {
   foo (0);
   foo (0);
@@ -28,7 +29,8 @@ bar ()
     ;
 }
 
-baz ()
+void
+baz (void)
 {
   for (; a;)
     bar ();

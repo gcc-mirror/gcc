@@ -6465,6 +6465,24 @@ gen_push (rtx arg)
 		      arg);
 }
 
+rtx
+gen_pushfl (void)
+{
+  struct machine_function *m = cfun->machine;
+  rtx flags, mem;
+
+  if (m->fs.cfa_reg == stack_pointer_rtx)
+    m->fs.cfa_offset += UNITS_PER_WORD;
+  m->fs.sp_offset += UNITS_PER_WORD;
+
+  flags = gen_rtx_REG (CCmode, FLAGS_REG);
+
+  mem = gen_rtx_MEM (word_mode,
+		     gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx));
+
+  return gen_pushfl2 (word_mode, mem, flags);
+}
+
 /* Generate an "pop" pattern for input ARG.  */
 
 rtx
@@ -6477,6 +6495,19 @@ gen_pop (rtx arg)
 		      gen_rtx_MEM (word_mode,
 				   gen_rtx_POST_INC (Pmode,
 						     stack_pointer_rtx)));
+}
+
+rtx
+gen_popfl (void)
+{
+  rtx flags, mem;
+
+  flags = gen_rtx_REG (CCmode, FLAGS_REG);
+
+  mem = gen_rtx_MEM (word_mode,
+		     gen_rtx_POST_INC (Pmode, stack_pointer_rtx));
+
+  return gen_popfl1 (word_mode, flags, mem);
 }
 
 /* Generate a "push2" pattern for input ARG.  */
@@ -11357,93 +11388,115 @@ ix86_validate_address_register (rtx op)
   return NULL_RTX;
 }
 
-/* Return true if insn memory address can use any available reg
-   in BASE_REG_CLASS or INDEX_REG_CLASS, otherwise false.
-   For APX, some instruction can't be encoded with gpr32
-   which is BASE_REG_CLASS or INDEX_REG_CLASS, for that case
-   returns false.  */
-static bool
-ix86_memory_address_use_extended_reg_class_p (rtx_insn* insn)
+/* Determine which memory address register set insn can use.  */
+
+static enum attr_addr
+ix86_memory_address_reg_class (rtx_insn* insn)
 {
-  /* LRA will do some initialization with insn == NULL,
-     return the maximum reg class for that.
-     For other cases, real insn will be passed and checked.  */
-  bool ret = true;
-  if (TARGET_APX_EGPR && insn)
+  /* LRA can do some initialization with NULL insn,
+     return maximum register class in this case.  */
+  enum attr_addr addr_rclass = ADDR_GPR32;
+
+  if (!insn)
+    return addr_rclass;
+
+  if (asm_noperands (PATTERN (insn)) >= 0
+      || GET_CODE (PATTERN (insn)) == ASM_INPUT)
+    return ix86_apx_inline_asm_use_gpr32 ? ADDR_GPR32 : ADDR_GPR16;
+
+  /* Return maximum register class for unrecognized instructions.  */
+  if (INSN_CODE (insn) < 0)
+    return addr_rclass;
+
+  /* Try to recognize the insn before calling get_attr_addr.
+     Save current recog_data and current alternative.  */
+  struct recog_data_d saved_recog_data = recog_data;
+  int saved_alternative = which_alternative;
+
+  /* Update recog_data for processing of alternatives.  */
+  extract_insn_cached (insn);
+
+  /* If current alternative is not set, loop throught enabled
+     alternatives and get the most limited register class.  */
+  if (saved_alternative == -1)
     {
-      if (asm_noperands (PATTERN (insn)) >= 0
-	  || GET_CODE (PATTERN (insn)) == ASM_INPUT)
-	return ix86_apx_inline_asm_use_gpr32;
+      alternative_mask enabled = get_enabled_alternatives (insn);
 
-      if (INSN_CODE (insn) < 0)
-	return false;
-
-      /* Try recog the insn before calling get_attr_gpr32. Save
-	 the current recog_data first.  */
-      /* Also save which_alternative for current recog.  */
-
-      struct recog_data_d recog_data_save = recog_data;
-      int which_alternative_saved = which_alternative;
-
-      /* Update the recog_data for alternative check. */
-      if (recog_data.insn != insn)
-	extract_insn_cached (insn);
-
-      /* If alternative is not set, loop throught each alternative
-	 of insn and get gpr32 attr for all enabled alternatives.
-	 If any enabled alternatives has 0 value for gpr32, disallow
-	 gpr32 for addressing.  */
-      if (which_alternative_saved == -1)
+      for (int i = 0; i < recog_data.n_alternatives; i++)
 	{
-	  alternative_mask enabled = get_enabled_alternatives (insn);
-	  bool curr_insn_gpr32 = false;
-	  for (int i = 0; i < recog_data.n_alternatives; i++)
-	    {
-	      if (!TEST_BIT (enabled, i))
-		continue;
-	      which_alternative = i;
-	      curr_insn_gpr32 = get_attr_gpr32 (insn);
-	      if (!curr_insn_gpr32)
-		ret = false;
-	    }
-	}
-      else
-	{
-	  which_alternative = which_alternative_saved;
-	  ret = get_attr_gpr32 (insn);
-	}
+	  if (!TEST_BIT (enabled, i))
+	    continue;
 
-      recog_data = recog_data_save;
-      which_alternative = which_alternative_saved;
+	  which_alternative = i;
+	  addr_rclass = MIN (addr_rclass, get_attr_addr (insn));
+	}
+    }
+  else
+    {
+      which_alternative = saved_alternative;
+      addr_rclass = get_attr_addr (insn);
     }
 
-  return ret;
+  recog_data = saved_recog_data;
+  which_alternative = saved_alternative;
+
+  return addr_rclass;
 }
 
-/* For APX, some instructions can't be encoded with gpr32.  */
+/* Return memory address register class insn can use.  */
+
 enum reg_class
 ix86_insn_base_reg_class (rtx_insn* insn)
 {
-  if (ix86_memory_address_use_extended_reg_class_p (insn))
-    return BASE_REG_CLASS;
-  return GENERAL_GPR16;
+  switch (ix86_memory_address_reg_class (insn))
+    {
+    case ADDR_GPR8:
+      return LEGACY_GENERAL_REGS;
+    case ADDR_GPR16:
+      return GENERAL_GPR16;
+    case ADDR_GPR32:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return BASE_REG_CLASS;
 }
 
 bool
 ix86_regno_ok_for_insn_base_p (int regno, rtx_insn* insn)
 {
+  switch (ix86_memory_address_reg_class (insn))
+    {
+    case ADDR_GPR8:
+      return LEGACY_INT_REGNO_P (regno);
+    case ADDR_GPR16:
+      return GENERAL_GPR16_REGNO_P (regno);
+    case ADDR_GPR32:
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
-  if (ix86_memory_address_use_extended_reg_class_p (insn))
-    return GENERAL_REGNO_P (regno);
-  return GENERAL_GPR16_REGNO_P (regno);
+  return GENERAL_REGNO_P (regno);
 }
 
 enum reg_class
 ix86_insn_index_reg_class (rtx_insn* insn)
 {
-  if (ix86_memory_address_use_extended_reg_class_p (insn))
-    return INDEX_REG_CLASS;
-  return INDEX_GPR16;
+  switch (ix86_memory_address_reg_class (insn))
+    {
+    case ADDR_GPR8:
+      return LEGACY_INDEX_REGS;
+    case ADDR_GPR16:
+      return INDEX_GPR16;
+    case ADDR_GPR32:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return INDEX_REG_CLASS;
 }
 
 /* Recognizes RTL expressions that are valid memory addresses for an
@@ -15038,7 +15091,7 @@ ix86_i387_mode_needed (int entity, rtx_insn *insn)
    prior to the execution of insn.  */
 
 static int
-ix86_mode_needed (int entity, rtx_insn *insn)
+ix86_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET)
 {
   switch (entity)
     {
@@ -15087,7 +15140,7 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
 /* Return the mode that an insn results in.  */
 
 static int
-ix86_mode_after (int entity, int mode, rtx_insn *insn)
+ix86_mode_after (int entity, int mode, rtx_insn *insn, HARD_REG_SET)
 {
   switch (entity)
     {
@@ -16447,12 +16500,9 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	return CCNOmode;
       else
 	return CCGCmode;
-      /* strcmp pattern do (use flags) and combine may ask us for proper
-	 mode.  */
-    case USE:
-      return CCmode;
     default:
-      gcc_unreachable ();
+      /* CCmode should be used in all other cases.  */
+      return CCmode;
     }
 }
 
@@ -25176,11 +25226,40 @@ ix86_reloc_rw_mask (void)
 }
 #endif
 
-/* If MEM is in the form of [base+offset], extract the two parts
-   of address and set to BASE and OFFSET, otherwise return false.  */
+/* Return true iff ADDR can be used as a symbolic base address.  */
 
 static bool
-extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
+symbolic_base_address_p (rtx addr)
+{
+  if (GET_CODE (addr) == SYMBOL_REF)
+    return true;
+
+  if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_GOTOFF)
+    return true;
+
+  return false;
+}
+
+/* Return true iff ADDR can be used as a base address.  */
+
+static bool
+base_address_p (rtx addr)
+{
+  if (REG_P (addr))
+    return true;
+
+  if (symbolic_base_address_p (addr))
+    return true;
+
+  return false;
+}
+
+/* If MEM is in the form of [(base+symbase)+offset], extract the three
+   parts of address and set to BASE, SYMBASE and OFFSET, otherwise
+   return false.  */
+
+static bool
+extract_base_offset_in_addr (rtx mem, rtx *base, rtx *symbase, rtx *offset)
 {
   rtx addr;
 
@@ -25191,21 +25270,52 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
   if (GET_CODE (addr) == CONST)
     addr = XEXP (addr, 0);
 
-  if (REG_P (addr) || GET_CODE (addr) == SYMBOL_REF)
+  if (base_address_p (addr))
     {
       *base = addr;
+      *symbase = const0_rtx;
       *offset = const0_rtx;
       return true;
     }
 
   if (GET_CODE (addr) == PLUS
-      && (REG_P (XEXP (addr, 0))
-	  || GET_CODE (XEXP (addr, 0)) == SYMBOL_REF)
-      && CONST_INT_P (XEXP (addr, 1)))
+      && base_address_p (XEXP (addr, 0)))
     {
-      *base = XEXP (addr, 0);
-      *offset = XEXP (addr, 1);
-      return true;
+      rtx addend = XEXP (addr, 1);
+
+      if (GET_CODE (addend) == CONST)
+	addend = XEXP (addend, 0);
+
+      if (CONST_INT_P (addend))
+	{
+	  *base = XEXP (addr, 0);
+	  *symbase = const0_rtx;
+	  *offset = addend;
+	  return true;
+	}
+
+      /* Also accept REG + symbolic ref, with or without a CONST_INT
+	 offset.  */
+      if (REG_P (XEXP (addr, 0)))
+	{
+	  if (symbolic_base_address_p (addend))
+	    {
+	      *base = XEXP (addr, 0);
+	      *symbase = addend;
+	      *offset = const0_rtx;
+	      return true;
+	    }
+
+	  if (GET_CODE (addend) == PLUS
+	      && symbolic_base_address_p (XEXP (addend, 0))
+	      && CONST_INT_P (XEXP (addend, 1)))
+	    {
+	      *base = XEXP (addr, 0);
+	      *symbase = XEXP (addend, 0);
+	      *offset = XEXP (addend, 1);
+	      return true;
+	    }
+	}
     }
 
   return false;
@@ -25220,7 +25330,8 @@ ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
 				    machine_mode mode)
 {
   HOST_WIDE_INT offval_1, offval_2, msize;
-  rtx mem_1, mem_2, reg_1, reg_2, base_1, base_2, offset_1, offset_2;
+  rtx mem_1, mem_2, reg_1, reg_2, base_1, base_2,
+    symbase_1, symbase_2, offset_1, offset_2;
 
   if (load)
     {
@@ -25243,13 +25354,13 @@ ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
     return false;
 
   /* Check if the addresses are in the form of [base+offset].  */
-  if (!extract_base_offset_in_addr (mem_1, &base_1, &offset_1))
+  if (!extract_base_offset_in_addr (mem_1, &base_1, &symbase_1, &offset_1))
     return false;
-  if (!extract_base_offset_in_addr (mem_2, &base_2, &offset_2))
+  if (!extract_base_offset_in_addr (mem_2, &base_2, &symbase_2, &offset_2))
     return false;
 
   /* Check if the bases are the same.  */
-  if (!rtx_equal_p (base_1, base_2))
+  if (!rtx_equal_p (base_1, base_2) || !rtx_equal_p (symbase_1, symbase_2))
     return false;
 
   offval_1 = INTVAL (offset_1);

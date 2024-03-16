@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 char a[] = "12345";
 char b[] = "12345";
 
@@ -19,7 +22,8 @@ void loop (char * pz, char * pzDta)
     abort ();
 }
 
-main()
+int
+main(void)
 {
   loop (a, b);
   exit (0);

@@ -37,5 +37,6 @@ extern const char *section_name_prefix;
 
 #define OFFLOAD_VAR_TABLE_SECTION_NAME ".gnu.offload_vars"
 #define OFFLOAD_FUNC_TABLE_SECTION_NAME ".gnu.offload_funcs"
+#define OFFLOAD_IND_FUNC_TABLE_SECTION_NAME ".gnu.offload_ind_funcs"
 
 #endif /* GCC_LTO_SECTION_NAMES_H */

@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_v && riscv_zvfh_hw } } } */
+/* { dg-do run { target { riscv_zvfh } } } */
 /* { dg-additional-options "-std=c99 -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax -ffast-math" } */
 
 #include "vmul-template.h"
@@ -7,24 +7,24 @@
 
 #define SZ 512
 
-#define RUN(TYPE,VAL)				\
-  TYPE a##TYPE[SZ];				\
-  TYPE b##TYPE[SZ];	  			\
-  for (int i = 0; i < SZ; i++)			\
-  {                             		\
-    a##TYPE[i] = 2;				\
-    b##TYPE[i] = VAL;           		\
-  }                             		\
-  vadd_##TYPE (a##TYPE, a##TYPE, b##TYPE, SZ);	\
-  for (int i = 0; i < SZ; i++)			\
+#define RUN(TYPE, VAL)                                                         \
+  TYPE a##TYPE[SZ];                                                            \
+  TYPE b##TYPE[SZ];                                                            \
+  for (int i = 0; i < SZ; i++)                                                 \
+    {                                                                          \
+      a##TYPE[i] = 2;                                                          \
+      b##TYPE[i] = VAL;                                                        \
+    }                                                                          \
+  vmul_##TYPE (a##TYPE, a##TYPE, b##TYPE, SZ);                                 \
+  for (int i = 0; i < SZ; i++)                                                 \
     assert (a##TYPE[i] == 2 * VAL);
 
-#define RUN2(TYPE,VAL)				\
-  TYPE as##TYPE[SZ];				\
-  for (int i = 0; i < SZ; i++)			\
-    as##TYPE[i] = 3;            		\
-  vadds_##TYPE (as##TYPE, as##TYPE, VAL, SZ);	\
-  for (int i = 0; i < SZ; i++)			\
+#define RUN2(TYPE, VAL)                                                        \
+  TYPE as##TYPE[SZ];                                                           \
+  for (int i = 0; i < SZ; i++)                                                 \
+    as##TYPE[i] = 3;                                                           \
+  vmuls_##TYPE (as##TYPE, as##TYPE, VAL, SZ);                                  \
+  for (int i = 0; i < SZ; i++)                                                 \
     assert (as##TYPE[i] == 3 * VAL);
 
 #define RUN_ALL()	\

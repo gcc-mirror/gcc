@@ -26,5 +26,5 @@ int main()
 {
   int a[4];
   std::span<int, std::dynamic_extent> s(a);
-  s.subspan<5, 0>();
+  (void) s.subspan<5, 0>();
 }

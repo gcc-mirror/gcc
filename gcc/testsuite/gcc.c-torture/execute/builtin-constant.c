@@ -1,5 +1,8 @@
 /* PR optimization/8423.  */
 
+void abort (void);
+void exit (int);
+
 #define btest(x) __builtin_constant_p(x) ? "1" : "0"
 
 #ifdef __OPTIMIZE__

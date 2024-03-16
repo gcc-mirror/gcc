@@ -1,3 +1,5 @@
+void exit (int);
+
 struct decision
 {
   char enforce_mode;             
@@ -18,7 +20,8 @@ blah:
     goto foo;
 }
 
-main()
+int
+main(void)
 {
   struct decision *p = 0;
   clear_modes (p);

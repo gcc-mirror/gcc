@@ -1,6 +1,6 @@
-/* Test C2X width macros in <stdint.h>.  */
+/* Test C23 width macros in <stdint.h>.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -ffreestanding" } */
+/* { dg-options "-std=c23 -ffreestanding" } */
 /* { dg-additional-options "-DSIGNAL_SUPPRESS" { target { ! signal } } } */
 
 #include <stddef.h>

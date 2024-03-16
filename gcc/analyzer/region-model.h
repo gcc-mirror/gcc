@@ -890,7 +890,7 @@ class region_model_context_decorator : public region_model_context
 {
  public:
   bool warn (std::unique_ptr<pending_diagnostic> d,
-	     const stmt_finder *custom_finder)
+	     const stmt_finder *custom_finder) override
   {
     if (m_inner)
       return m_inner->warn (std::move (d), custom_finder);

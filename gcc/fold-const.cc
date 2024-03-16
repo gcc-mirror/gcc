@@ -3315,9 +3315,65 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 				flags | OEP_ADDRESS_OF
 				| OEP_MATCH_SIDE_EFFECTS);
       case CONSTRUCTOR:
-	/* In GIMPLE empty constructors are allowed in initializers of
-	   aggregates.  */
-	return !CONSTRUCTOR_NELTS (arg0) && !CONSTRUCTOR_NELTS (arg1);
+	{
+	  /* In GIMPLE empty constructors are allowed in initializers of
+	     aggregates.  */
+	  if (!CONSTRUCTOR_NELTS (arg0) && !CONSTRUCTOR_NELTS (arg1))
+	    return true;
+
+	  /* See sem_variable::equals in ipa-icf for a similar approach.  */
+	  tree typ0 = TREE_TYPE (arg0);
+	  tree typ1 = TREE_TYPE (arg1);
+
+	  if (TREE_CODE (typ0) != TREE_CODE (typ1))
+	    return false;
+	  else if (TREE_CODE (typ0) == ARRAY_TYPE)
+	    {
+	      /* For arrays, check that the sizes all match.  */
+	      const HOST_WIDE_INT siz0 = int_size_in_bytes (typ0);
+	      if (TYPE_MODE (typ0) != TYPE_MODE (typ1)
+		  || siz0 < 0
+		  || siz0 != int_size_in_bytes (typ1))
+		return false;
+	    }
+	  else if (!types_compatible_p (typ0, typ1))
+	    return false;
+
+	  vec<constructor_elt, va_gc> *v0 = CONSTRUCTOR_ELTS (arg0);
+	  vec<constructor_elt, va_gc> *v1 = CONSTRUCTOR_ELTS (arg1);
+	  if (vec_safe_length (v0) != vec_safe_length (v1))
+	    return false;
+
+	  /* Address of CONSTRUCTOR is defined in GENERIC to mean the value
+	     of the CONSTRUCTOR referenced indirectly.  */
+	  flags &= ~OEP_ADDRESS_OF;
+
+	  for (unsigned idx = 0; idx < vec_safe_length (v0); ++idx)
+	    {
+	      constructor_elt *c0 = &(*v0)[idx];
+	      constructor_elt *c1 = &(*v1)[idx];
+
+	      /* Check that the values are the same...  */
+	      if (c0->value != c1->value
+		  && !operand_equal_p (c0->value, c1->value, flags))
+		return false;
+
+	      /* ... and that they apply to the same field!  */
+	      if (c0->index != c1->index
+		  && (TREE_CODE (typ0) == ARRAY_TYPE
+		      ? !operand_equal_p (c0->index, c1->index, flags)
+		      : !operand_equal_p (DECL_FIELD_OFFSET (c0->index),
+					  DECL_FIELD_OFFSET (c1->index),
+					  flags)
+			|| !operand_equal_p (DECL_FIELD_BIT_OFFSET (c0->index),
+					     DECL_FIELD_BIT_OFFSET (c1->index),
+					     flags)))
+		return false;
+	    }
+
+	  return true;
+	}
+
       default:
 	break;
       }
@@ -3703,9 +3759,7 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	     elements.  Individual elements in the constructor must be
 	     indexed in increasing order and form an initial sequence.
 
-	     We make no effort to compare constructors in generic.
-	     (see sem_variable::equals in ipa-icf which can do so for
-	      constants).  */
+	     We make no effort to compare nonconstant ones in GENERIC.  */
 	  if (!VECTOR_TYPE_P (TREE_TYPE (arg0))
 	      || !VECTOR_TYPE_P (TREE_TYPE (arg1)))
 	    return false;
@@ -3887,7 +3941,13 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	    /* In GIMPLE the indexes can be either NULL or matching i.  */
 	    if (field == NULL_TREE)
 	      field = bitsize_int (idx);
-	    hash_operand (field, hstate, flags);
+	    if (TREE_CODE (field) == FIELD_DECL)
+	      {
+		hash_operand (DECL_FIELD_OFFSET (field), hstate, flags);
+		hash_operand (DECL_FIELD_BIT_OFFSET (field), hstate, flags);
+	      }
+	    else
+	      hash_operand (field, hstate, flags);
 	    hash_operand (value, hstate, flags);
 	  }
 	return;

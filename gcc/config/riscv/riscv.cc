@@ -6346,6 +6346,34 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	  && riscv_is_eh_return_data_register (regno))
 	continue;
 
+      /* In an interrupt function, save and restore some necessary CSRs in the stack
+	 to avoid changes in CSRs.  */
+      if (regno == RISCV_PROLOGUE_TEMP_REGNUM
+	  && cfun->machine->interrupt_handler_p
+	  && ((TARGET_HARD_FLOAT  && cfun->machine->frame.fmask)
+	      || (TARGET_ZFINX
+		  && (cfun->machine->frame.mask & ~(1 << RISCV_PROLOGUE_TEMP_REGNUM)))))
+	{
+	  unsigned int fcsr_size = GET_MODE_SIZE (SImode);
+	  if (!epilogue)
+	    {
+	      riscv_save_restore_reg (word_mode, regno, offset, fn);
+	      offset -= fcsr_size;
+	      emit_insn (gen_riscv_frcsr (RISCV_PROLOGUE_TEMP (SImode)));
+	      riscv_save_restore_reg (SImode, RISCV_PROLOGUE_TEMP_REGNUM,
+				      offset, riscv_save_reg);
+	    }
+	  else
+	    {
+	      riscv_save_restore_reg (SImode, RISCV_PROLOGUE_TEMP_REGNUM,
+				      offset - fcsr_size, riscv_restore_reg);
+	      emit_insn (gen_riscv_fscsr (RISCV_PROLOGUE_TEMP (SImode)));
+	      riscv_save_restore_reg (word_mode, regno, offset, fn);
+	      offset -= fcsr_size;
+	    }
+	  continue;
+	}
+
       if (TARGET_XTHEADMEMPAIR)
 	{
 	  /* Get the next reg/offset pair.  */
@@ -6374,34 +6402,6 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 		  continue;
 		}
 	    }
-	}
-
-      /* In an interrupt function, save and restore some necessary CSRs in the stack
-	 to avoid changes in CSRs.  */
-      if (regno == RISCV_PROLOGUE_TEMP_REGNUM
-	  && cfun->machine->interrupt_handler_p
-	  && ((TARGET_HARD_FLOAT  && cfun->machine->frame.fmask)
-	      || (TARGET_ZFINX
-		  && (cfun->machine->frame.mask & ~(1 << RISCV_PROLOGUE_TEMP_REGNUM)))))
-	{
-	  unsigned int fcsr_size = GET_MODE_SIZE (SImode);
-	  if (!epilogue)
-	    {
-	      riscv_save_restore_reg (word_mode, regno, offset, fn);
-	      offset -= fcsr_size;
-	      emit_insn (gen_riscv_frcsr (RISCV_PROLOGUE_TEMP (SImode)));
-	      riscv_save_restore_reg (SImode, RISCV_PROLOGUE_TEMP_REGNUM,
-				      offset, riscv_save_reg);
-	    }
-	  else
-	    {
-	      riscv_save_restore_reg (SImode, RISCV_PROLOGUE_TEMP_REGNUM,
-				      offset - fcsr_size, riscv_restore_reg);
-	      emit_insn (gen_riscv_fscsr (RISCV_PROLOGUE_TEMP (SImode)));
-	      riscv_save_restore_reg (word_mode, regno, offset, fn);
-	      offset -= fcsr_size;
-	    }
-	  continue;
 	}
 
       riscv_save_restore_reg (word_mode, regno, offset, fn);
@@ -7750,6 +7750,12 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
   /* If we ever encounter an insn with an unknown type, trip
      an assert so we can find and fix this problem.  */
   gcc_assert (get_attr_type (insn) != TYPE_UNKNOWN);
+
+  /* If we ever encounter an insn without an insn reservation, trip
+     an assert so we can find and fix this problem.  */
+#if 0
+  gcc_assert (insn_has_dfa_reservation_p (insn));
+#endif
 
   return more - 1;
 }
@@ -9342,20 +9348,33 @@ static void
 riscv_frm_emit_after_bb_end (rtx_insn *cur_insn)
 {
   edge eg;
+  bool abnormal_edge_p = false;
   edge_iterator eg_iterator;
   basic_block bb = BLOCK_FOR_INSN (cur_insn);
 
   FOR_EACH_EDGE (eg, eg_iterator, bb->succs)
+    {
+      if (eg->flags & EDGE_ABNORMAL)
+	abnormal_edge_p = true;
+      else
+	{
+	  start_sequence ();
+	  emit_insn (gen_frrmsi (DYNAMIC_FRM_RTL (cfun)));
+	  rtx_insn *backup_insn = get_insns ();
+	  end_sequence ();
+
+	  insert_insn_on_edge (backup_insn, eg);
+	}
+    }
+
+  if (abnormal_edge_p)
     {
       start_sequence ();
       emit_insn (gen_frrmsi (DYNAMIC_FRM_RTL (cfun)));
       rtx_insn *backup_insn = get_insns ();
       end_sequence ();
 
-      if (eg->flags & EDGE_ABNORMAL)
-	insert_insn_end_basic_block (backup_insn, bb);
-      else
-	insert_insn_on_edge (backup_insn, eg);
+      insert_insn_end_basic_block (backup_insn, bb);
     }
 
   commit_edge_insertions ();
@@ -9407,7 +9426,7 @@ riscv_frm_mode_needed (rtx_insn *cur_insn, int code)
    prior to the execution of insn.  */
 
 static int
-riscv_mode_needed (int entity, rtx_insn *insn)
+riscv_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET)
 {
   int code = recog_memoized (insn);
 
@@ -9508,7 +9527,7 @@ riscv_frm_mode_after (rtx_insn *insn, int mode)
 /* Return the mode that an insn results in.  */
 
 static int
-riscv_mode_after (int entity, int mode, rtx_insn *insn)
+riscv_mode_after (int entity, int mode, rtx_insn *insn, HARD_REG_SET)
 {
   switch (entity)
     {

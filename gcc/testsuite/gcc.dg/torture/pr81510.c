@@ -14,7 +14,7 @@ int e()
   for (;;)
     if (g)
       for (; b; b++) {
-	  g = c;
+	  g = (f *) c;
 	  if (a &= c) {
 	      d *j = &b;
 	      h k;

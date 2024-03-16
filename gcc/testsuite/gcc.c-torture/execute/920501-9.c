@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 #include <stdio.h>
 
 long long proc1(){return 1LL;}

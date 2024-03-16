@@ -2,6 +2,9 @@
    nodes.  These need to be treated like a COMPONENT_REF so their address can
    be taken.  */
 
+void abort (void);
+void exit (int);
+
 int main()
 {
   __complex double dc;

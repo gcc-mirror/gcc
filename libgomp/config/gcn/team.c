@@ -30,6 +30,7 @@
 #include <string.h>
 
 static void gomp_thread_start (struct gomp_thread_pool *);
+extern void build_indirect_map (void);
 
 /* This externally visible function handles target region entry.  It
    sets up a per-team thread pool and transfers control by returning to
@@ -44,6 +45,9 @@ void
 gomp_gcn_enter_kernel (void)
 {
   int threadid = __builtin_gcn_dim_pos (1);
+
+  /* Initialize indirect function support.  */
+  build_indirect_map ();
 
   if (threadid == 0)
     {

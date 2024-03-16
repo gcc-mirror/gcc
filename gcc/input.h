@@ -254,8 +254,6 @@ void dump_line_table_statistics (void);
 
 void dump_location_info (FILE *stream);
 
-void diagnostics_file_cache_fini (void);
-
 void diagnostics_file_cache_forcibly_evict_file (const char *file_path);
 
 class GTY(()) string_concat

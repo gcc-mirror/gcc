@@ -1,6 +1,8 @@
 /* Verify that flexible arrays can be initialized from STRING_CST
    constructors. */
 
+void abort(void);
+
 /* Baselines.  */
 struct {
   char a1c;
@@ -35,7 +37,8 @@ struct {
   { 'e', 'b' }
 };
 
-main()
+int
+main(void)
 {
   if (a1.a1c != '4')
     abort();

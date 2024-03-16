@@ -1292,9 +1292,7 @@ package body Sem_Ch9 is
 
       --  Analyze any aspect specifications that appear on the entry body
 
-      if Has_Aspects (N) then
-         Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
-      end if;
+      Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
 
       E := First_Entity (P_Type);
       while Present (E) loop
@@ -1729,9 +1727,7 @@ package body Sem_Ch9 is
 
       Generate_Reference_To_Formals (Def_Id);
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Def_Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Def_Id);
    end Analyze_Entry_Declaration;
 
    ---------------------------------------
@@ -1880,9 +1876,7 @@ package body Sem_Ch9 is
          Spec_Id := Etype (Spec_Id);
       end if;
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Body_Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Body_Id);
 
       Push_Scope (Spec_Id);
       Set_Corresponding_Spec (N, Spec_Id);
@@ -2046,9 +2040,7 @@ package body Sem_Ch9 is
       if No_Run_Time_Mode then
          Error_Msg_CRT ("protected type", N);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Def_Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Def_Id);
 
          return;
       end if;
@@ -2128,18 +2120,15 @@ package body Sem_Ch9 is
       --  If aspects are present, analyze them now. They can make references to
       --  the discriminants of the type, but not to any components.
 
-      if Has_Aspects (N) then
+      --  The protected type is the full view of a private type. Analyze the
+      --  aspects with the entity of the private type to ensure that after
+      --  both views are exchanged, the aspect are actually associated with
+      --  the full view.
 
-         --  The protected type is the full view of a private type. Analyze the
-         --  aspects with the entity of the private type to ensure that after
-         --  both views are exchanged, the aspect are actually associated with
-         --  the full view.
-
-         if T /= Def_Id and then Is_Private_Type (Def_Id) then
-            Analyze_Aspect_Specifications (N, T);
-         else
-            Analyze_Aspect_Specifications (N, Def_Id);
-         end if;
+      if T /= Def_Id and then Is_Private_Type (Def_Id) then
+         Analyze_Aspect_Specifications (N, T);
+      else
+         Analyze_Aspect_Specifications (N, Def_Id);
       end if;
 
       Analyze (Protected_Definition (N));
@@ -2873,6 +2862,10 @@ package body Sem_Ch9 is
 
       --    Obj : Typ;
 
+      --  Keep the aspects from the original node
+
+      Move_Aspects (Original_Node (N), N);
+
       Obj_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Obj_Id,
@@ -2915,9 +2908,7 @@ package body Sem_Ch9 is
 
       Analyze_Protected_Type_Declaration (N);
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Obj_Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Obj_Id);
    end Analyze_Single_Protected_Declaration;
 
    -------------------------------------
@@ -2958,6 +2949,10 @@ package body Sem_Ch9 is
       --  information from the entity (see Sprint). Generate:
 
       --    Obj : Typ;
+
+      --  Keep the aspects from the original node
+
+      Move_Aspects (Original_Node (N), N);
 
       Obj_Decl :=
         Make_Object_Declaration (Loc,
@@ -3011,9 +3006,7 @@ package body Sem_Ch9 is
 
       Analyze_Task_Type_Declaration (N);
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Obj_Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Obj_Id);
    end Analyze_Single_Task_Declaration;
 
    -----------------------
@@ -3094,9 +3087,7 @@ package body Sem_Ch9 is
       Set_SPARK_Pragma           (Body_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Body_Id);
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Body_Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Body_Id);
 
       Push_Scope (Spec_Id);
       Set_Corresponding_Spec (N, Spec_Id);
@@ -3325,18 +3316,15 @@ package body Sem_Ch9 is
 
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
-      if Has_Aspects (N) then
+      --  The task type is the full view of a private type. Analyze the
+      --  aspects with the entity of the private type to ensure that after
+      --  both views are exchanged, the aspect are actually associated with
+      --  the full view.
 
-         --  The task type is the full view of a private type. Analyze the
-         --  aspects with the entity of the private type to ensure that after
-         --  both views are exchanged, the aspect are actually associated with
-         --  the full view.
-
-         if T /= Def_Id and then Is_Private_Type (Def_Id) then
-            Analyze_Aspect_Specifications (N, T);
-         else
-            Analyze_Aspect_Specifications (N, Def_Id);
-         end if;
+      if T /= Def_Id and then Is_Private_Type (Def_Id) then
+         Analyze_Aspect_Specifications (N, T);
+      else
+         Analyze_Aspect_Specifications (N, Def_Id);
       end if;
 
       if Present (Task_Definition (N)) then

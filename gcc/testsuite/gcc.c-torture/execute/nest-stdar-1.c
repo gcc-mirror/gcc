@@ -1,6 +1,10 @@
 #include <stdarg.h>
 
-main ()
+void abort (void);
+void exit (int);
+
+int
+main (void)
 {
   double f (int x, ...)
     {

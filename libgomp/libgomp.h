@@ -1274,6 +1274,29 @@ reverse_splay_compare (reverse_splay_tree_key x, reverse_splay_tree_key y)
 #define splay_tree_prefix reverse
 #include "splay-tree.h"
 
+/* Indirect target function splay-tree handling.  */
+
+struct indirect_splay_tree_key_s {
+  uint64_t host_addr, target_addr;
+};
+
+typedef struct indirect_splay_tree_node_s *indirect_splay_tree_node;
+typedef struct indirect_splay_tree_s *indirect_splay_tree;
+typedef struct indirect_splay_tree_key_s *indirect_splay_tree_key;
+
+static inline int
+indirect_splay_compare (indirect_splay_tree_key x, indirect_splay_tree_key y)
+{
+  if (x->host_addr < y->host_addr)
+    return -1;
+  if (x->host_addr > y->host_addr)
+    return 1;
+  return 0;
+}
+
+#define splay_tree_prefix indirect
+#include "splay-tree.h"
+
 struct target_mem_desc {
   /* Reference count.  */
   uintptr_t refcount;

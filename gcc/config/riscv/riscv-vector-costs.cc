@@ -231,7 +231,9 @@ compute_local_live_ranges (
 
 		     TODO: We may elide the cases that the unnecessary IMM in
 		     the future.  */
-		  if (is_gimple_val (var) && !POINTER_TYPE_P (TREE_TYPE (var)))
+		  if (poly_int_tree_p (var)
+		      || (is_gimple_val (var)
+			  && !POINTER_TYPE_P (TREE_TYPE (var))))
 		    {
 		      biggest_mode
 			= get_biggest_mode (biggest_mode,
@@ -416,7 +418,8 @@ static void
 update_local_live_ranges (
   vec_info *vinfo,
   hash_map<basic_block, vec<stmt_point>> &program_points_per_bb,
-  hash_map<basic_block, hash_map<tree, pair>> &live_ranges_per_bb)
+  hash_map<basic_block, hash_map<tree, pair>> &live_ranges_per_bb,
+  machine_mode *biggest_mode)
 {
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
   if (!loop_vinfo)
@@ -501,6 +504,8 @@ update_local_live_ranges (
 			   : get_store_value (gsi_stmt (si));
 	      tree sel_type = build_nonstandard_integer_type (
 		TYPE_PRECISION (TREE_TYPE (var)), 1);
+	      *biggest_mode
+		= get_biggest_mode (*biggest_mode, TYPE_MODE (sel_type));
 	      tree sel = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 				     get_identifier ("vect_perm"), sel_type);
 	      pair &live_range = live_ranges->get_or_insert (sel, &existed_p);
@@ -572,7 +577,7 @@ costs::preferred_new_lmul_p (const vector_costs *uncast_other) const
 
   /* Update live ranges according to PHI.  */
   update_local_live_ranges (other->m_vinfo, program_points_per_bb,
-			    live_ranges_per_bb);
+			    live_ranges_per_bb, &biggest_mode);
 
   /* TODO: We calculate the maximum live vars base on current STMTS
      sequence.  We can support live range shrink if it can give us

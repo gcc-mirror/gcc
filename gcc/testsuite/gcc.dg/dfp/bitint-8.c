@@ -1,7 +1,7 @@
 /* PR c/102989 */
 /* { dg-do run { target bitint } } */
 /* { dg-require-effective-target fenv_exceptions } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 #include <fenv.h>
 

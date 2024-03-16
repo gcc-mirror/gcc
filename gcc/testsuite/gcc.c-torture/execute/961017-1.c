@@ -1,4 +1,7 @@
-main ()
+void exit (int);
+
+int
+main (void)
 {
   unsigned char z = 0;
 
