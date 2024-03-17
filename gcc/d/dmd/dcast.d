@@ -629,7 +629,7 @@ MATCH implicitConvTo(Expression e, Type t)
 
         TY tyn = e.type.nextOf().ty;
 
-        if (!tyn.isSomeChar)
+        if (!tyn.isSomeChar && !e.hexString)
             return visit(e);
 
         switch (t.ty)
@@ -703,6 +703,11 @@ MATCH implicitConvTo(Expression e, Type t)
                     return MATCH.nomatch;
                 m = MATCH.constant;
             }
+            if (e.hexString && tn.isintegral && (tn.size == e.sz || (!e.committed && (e.len % tn.size) == 0)))
+            {
+                m = MATCH.convert;
+                return m;
+            }
             if (!e.committed)
             {
                 switch (tn.ty)
@@ -719,9 +724,6 @@ MATCH implicitConvTo(Expression e, Type t)
                     if (e.postfix != 'd')
                         m = MATCH.convert;
                     return m;
-                case Tint8:
-                case Tuns8:
-                    break;
                 case Tenum:
                     if (tn.isTypeEnum().sym.isSpecial())
                     {
@@ -733,14 +735,6 @@ MATCH implicitConvTo(Expression e, Type t)
                     break;
                 default:
                     break;
-                }
-            }
-            if (e.hexString)
-            {
-                if (tn.isintegral && tn.size == e.sz)
-                {
-                    m = MATCH.convert;
-                    return m;
                 }
             }
             break;
@@ -1883,6 +1877,19 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 
         Type tb = t.toBasetype();
         Type typeb = e.type.toBasetype();
+
+        if (e.hexString && !e.committed)
+        {
+            const szx = cast(ubyte) tb.nextOf().size();
+            if (szx != se.sz && (e.len % szx) == 0)
+            {
+                import dmd.utils: arrayCastBigEndian;
+                const data = e.peekData();
+                se.setData(arrayCastBigEndian(data, szx).ptr, data.length / szx, szx);
+                se.type = t;
+                return se;
+            }
+        }
 
         //printf("\ttype = %s\n", e.type.toChars());
         if (tb.ty == Tdelegate && typeb.ty != Tdelegate)

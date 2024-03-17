@@ -800,6 +800,21 @@ public:
     void accept(Visitor *v) override { v->visit(this); }
 };
 
+struct ArgumentList final
+{
+    Expressions* arguments;
+    Identifiers* names;
+    ArgumentList() :
+        arguments(),
+        names()
+    {
+    }
+    ArgumentList(Expressions* arguments, Identifiers* names = nullptr) :
+        arguments(arguments),
+        names(names)
+        {}
+};
+
 class CallExp final : public UnaExp
 {
 public:

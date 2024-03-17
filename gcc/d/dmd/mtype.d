@@ -3073,7 +3073,7 @@ extern (C++) final class TypeFunction : TypeNext
     TRUST trust;                // level of trust
     PURE purity = PURE.impure;
     byte inuse;
-    Expressions* fargs;         // function arguments
+    ArgumentList inferenceArguments; // function arguments to determine `auto ref` in type semantic
 
     extern (D) this(ParameterList pl, Type treturn, LINK linkage, StorageClass stc = 0) @safe
     {
@@ -3146,7 +3146,7 @@ extern (C++) final class TypeFunction : TypeNext
         t.isInOutParam = isInOutParam;
         t.isInOutQual = isInOutQual;
         t.trust = trust;
-        t.fargs = fargs;
+        t.inferenceArguments = inferenceArguments;
         t.isctor = isctor;
         return t;
     }
@@ -3197,10 +3197,12 @@ extern (C++) final class TypeFunction : TypeNext
     {
         Expression[] args = argumentList.arguments ? (*argumentList.arguments)[] : null;
         Identifier[] names = argumentList.names ? (*argumentList.names)[] : null;
-        auto newArgs = new Expressions(parameterList.length);
+        const nParams = parameterList.length(); // cached because O(n)
+        auto newArgs = new Expressions(nParams);
         newArgs.zero();
         size_t ci = 0;
         bool hasNamedArgs = false;
+        const bool isVariadic = parameterList.varargs != VarArg.none;
         foreach (i, arg; args)
         {
             if (!arg)
@@ -3223,7 +3225,7 @@ extern (C++) final class TypeFunction : TypeNext
             }
             if (ci >= newArgs.length)
             {
-                if (!parameterList.varargs)
+                if (!isVariadic)
                 {
                     // Without named args, let the caller diagnose argument overflow
                     if (hasNamedArgs && pMessage)
@@ -3247,7 +3249,12 @@ extern (C++) final class TypeFunction : TypeNext
             if (arg || parameterList[i].defaultArg)
                 continue;
 
-            if (parameterList.varargs != VarArg.none && i + 1 == newArgs.length)
+            if (isVariadic && i + 1 == newArgs.length)
+                continue;
+
+            // dtemplate sets `defaultArg=null` to avoid semantic on default arguments,
+            // don't complain about missing arguments in that case
+            if (this.incomplete)
                 continue;
 
             if (pMessage)

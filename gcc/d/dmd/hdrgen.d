@@ -2281,7 +2281,8 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
         {
             buf.writeByte('x');
             buf.writeByte('"');
-            buf.writeHexString(e.peekData, true);
+            foreach (i; 0 .. e.len)
+                buf.printf("%0*llX", e.sz, e.getIndex(i));
             buf.writeByte('"');
             if (e.postfix)
                 buf.writeByte(e.postfix);

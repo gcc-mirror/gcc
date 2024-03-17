@@ -14,6 +14,7 @@
 
 #include "arraytypes.h"
 #include "ast_node.h"
+#include "expression.h"
 #include "globals.h"
 #include "visitor.h"
 
@@ -254,8 +255,6 @@ public:
     bool isSharedWild() const  { return (mod & (MODshared | MODwild)) == (MODshared | MODwild); }
     bool isNaked() const       { return mod == 0; }
     Type *nullAttributes() const;
-    Type *arrayOf();
-    Type *sarrayOf(dinteger_t dim);
     bool hasDeprecatedAliasThis();
     virtual Type *makeConst();
     virtual Type *makeImmutable();
@@ -567,7 +566,7 @@ public:
     TRUST trust;                 // level of trust
     PURE purity;                 // PURExxxx
     char inuse;
-    Expressions *fargs;          // function arguments
+    ArgumentList inferenceArguments; // function arguments
 
     static TypeFunction *create(Parameters *parameters, Type *treturn, VarArg varargs, LINK linkage, StorageClass stc = 0);
     const char *kind() override;

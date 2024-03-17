@@ -14,6 +14,7 @@ import dmd.aggregate : AggregateDeclaration;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.common.outbuffer : OutBuffer;
+import dmd.denum : EnumDeclaration;
 import dmd.dmodule /*: Module*/;
 import dmd.dscope : Scope;
 import dmd.dstruct /*: StructDeclaration*/;
@@ -211,6 +212,15 @@ void genCppHdrFiles(ref Modules ms)
 {
     import dmd.dtoh;
     return dmd.dtoh.genCppHdrFiles(ms);
+}
+
+/***********************************************************
+ * enumsem.d
+ */
+Expression getDefaultValue(EnumDeclaration ed, const ref Loc loc)
+{
+    import dmd.enumsem;
+    return dmd.enumsem.getDefaultValue(ed, loc);
 }
 
 /***********************************************************

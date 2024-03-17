@@ -2187,6 +2187,12 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 }
             }
 
+            Expressions* fargs = mtype.inferenceArguments.arguments;
+
+            // mtype.argumentList only provided for Implicit Function Template Instantiation
+            if (mtype.inferenceArguments.length > 0)
+                fargs = tf.resolveNamedArgs(mtype.inferenceArguments, null);
+
             // Now that we completed semantic for the argument types,
             // run semantic on their default values,
             // bearing in mind tuples have been expanded.
@@ -2236,8 +2242,10 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                  */
                 if (eparam.storageClass & STC.auto_)
                 {
-                    Expression farg = mtype.fargs && eidx < mtype.fargs.length ?
-                        (*mtype.fargs)[eidx] : eparam.defaultArg;
+                    Expression farg = (fargs && eidx < fargs.length) ? (*fargs)[eidx] : null;
+                    if (!farg)
+                        farg = eparam.defaultArg;
+
                     if (farg && (eparam.storageClass & STC.ref_))
                     {
                         if (!farg.isLvalue())
@@ -5681,7 +5689,7 @@ Type addStorageClass(Type type, StorageClass stc)
             // Klunky to change these
             auto tf = new TypeFunction(t.parameterList, t.next, t.linkage, 0);
             tf.mod = t.mod;
-            tf.fargs = tf_src.fargs;
+            tf.inferenceArguments = tf_src.inferenceArguments;
             tf.purity = t.purity;
             tf.isnothrow = t.isnothrow;
             tf.isnogc = t.isnogc;
@@ -6775,7 +6783,7 @@ Type substWildTo(Type type, uint mod)
     t.isInOutParam = false;
     t.isInOutQual = false;
     t.trust = tf.trust;
-    t.fargs = tf.fargs;
+    t.inferenceArguments = tf.inferenceArguments;
     t.isctor = tf.isctor;
     return t.merge();
 }

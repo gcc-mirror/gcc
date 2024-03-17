@@ -2984,6 +2984,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
                         foreach (u; 0 .. elements.length)
                         {
                             Expression a = (*arguments)[i + u];
+                            assert(a);
                             if (tret && a.implicitConvTo(tret))
                             {
                                 // p is a lazy array of delegates, tret is return type of the delegates
@@ -4245,18 +4246,21 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         if (e.hexString)
         {
-            const data = cast(const ubyte[]) e.peekString();
             switch (e.postfix)
             {
                 case 'd':
+                    e.committed = true;
                     e.sz = 4;
                     e.type = Type.tdstring;
                     break;
                 case 'w':
+                    e.committed = true;
                     e.sz = 2;
                     e.type = Type.twstring;
                     break;
                 case 'c':
+                    e.committed = true;
+                    goto default;
                 default:
                     e.type = Type.tstring;
                     e.sz = 1;
@@ -4266,8 +4270,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 error(e.loc, "hex string with `%s` type needs to be multiple of %d bytes, not %d",
                     e.type.toChars(), e.sz, cast(int) e.len);
 
-            e.setData(arrayCastBigEndian(data, e.sz).ptr, e.len / e.sz, e.sz);
-            e.committed = true;
+            e.setData(arrayCastBigEndian(e.peekData(), e.sz).ptr, e.len / e.sz, e.sz);
         }
         else switch (e.postfix)
         {

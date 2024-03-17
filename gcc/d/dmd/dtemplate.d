@@ -828,16 +828,24 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
     }
 
     /****************************************************
-     * Given a new instance tithis of this TemplateDeclaration,
+     * Given a new instance `tithis` of this TemplateDeclaration,
      * see if there already exists an instance.
-     * If so, return that existing instance.
+     *
+     * Params:
+     *   tithis = template instance to check
+     *   argumentList = For function templates, needed because different
+     *                  `auto ref` resolutions create different instances,
+     *                  even when template parameters are identical
+     *
+     * Returns: that existing instance, or `null` when it doesn't exist
      */
-    extern (D) TemplateInstance findExistingInstance(TemplateInstance tithis, Expressions* fargs)
+    extern (D) TemplateInstance findExistingInstance(TemplateInstance tithis, ArgumentList argumentList)
     {
         //printf("findExistingInstance() %s\n", tithis.toChars());
-        tithis.fargs = fargs;
+        tithis.fargs = argumentList.arguments;
+        tithis.fnames = argumentList.names;
         auto tibox = TemplateInstanceBox(tithis);
-        auto p = tibox in instances;
+        auto p = tibox in this.instances;
         debug (FindExistingInstance) ++(p ? nFound : nNotFound);
         //if (p) printf("\tfound %p\n", *p); else printf("\tnot found\n");
         return p ? *p : null;
@@ -3674,7 +3682,12 @@ extern (C++) class TemplateInstance : ScopeDsymbol
     TemplateInstance inst;      // refer to existing instance
     ScopeDsymbol argsym;        // argument symbol table
     size_t hash;                // cached result of toHash()
-    Expressions* fargs;         // for function template, these are the function arguments
+
+    /// For function template, these are the function names and arguments
+    /// Relevant because different resolutions of `auto ref` parameters
+    /// create different template instances even with the same template arguments
+    Expressions* fargs;
+    Identifiers* fnames;
 
     TemplateInstances* deferred;
 
@@ -3974,6 +3987,19 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         {
             if (!fd.errors)
             {
+                auto resolvedArgs = fd.type.isTypeFunction().resolveNamedArgs(
+                    ArgumentList(this.fargs, this.fnames), null);
+
+                // resolvedArgs can be null when there's an error: fail_compilation/fail14669.d
+                // In that case, equalsx returns true to prevent endless template instantiations
+                // However, it can also mean the function was explicitly instantiated
+                // without function arguments: fail_compilation/fail14669
+                // Hence the following check:
+                if (this.fargs && !resolvedArgs)
+                    return true;
+
+                Expression[] args = resolvedArgs ? (*resolvedArgs)[] : [];
+
                 auto fparameters = fd.getParameterList();
                 size_t nfparams = fparameters.length;   // Num function parameters
                 for (size_t j = 0; j < nfparams; j++)
@@ -3981,7 +4007,12 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                     Parameter fparam = fparameters[j];
                     if (fparam.storageClass & STC.autoref)       // if "auto ref"
                     {
-                        Expression farg = fargs && j < fargs.length ? (*fargs)[j] : fparam.defaultArg;
+                        Expression farg = (j < args.length) ? args[j] : fparam.defaultArg;
+                        // resolveNamedArgs strips trailing nulls / default params
+                        // when it doesn't anymore, the ternary can be replaced with:
+                        // assert(j < resolvedArgs.length);
+                        if (!farg)
+                            farg = fparam.defaultArg;
                         if (!farg)
                             goto Lnotequals;
                         if (farg.isLvalue())
@@ -5723,8 +5754,7 @@ extern (C++) final class TemplateMixin : TemplateInstance
 
 /************************************
  * This struct is needed for TemplateInstance to be the key in an associative array.
- * Fixing https://issues.dlang.org/show_bug.cgi?id=15812 and
- * https://issues.dlang.org/show_bug.cgi?id=15813 would make it unnecessary.
+ * Fixing https://issues.dlang.org/show_bug.cgi?id=15813 would make it unnecessary.
  */
 struct TemplateInstanceBox
 {

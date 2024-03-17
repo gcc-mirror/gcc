@@ -665,7 +665,7 @@ nothrow:
      * Returns:
      *  if found, filename combined with path, otherwise null
      */
-    extern (C++) static const(char)* searchPath(const ref Strings path, const char* name, bool cwd)
+    extern (C++) static const(char)* searchPath(const ref Strings path, const(char)* name, bool cwd)
     {
         return searchPath(path[], name.toDString, cwd).ptr;
     }

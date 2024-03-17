@@ -250,7 +250,7 @@ MATCH matchWithInstance(Scope* sc, TemplateDeclaration td, TemplateInstance ti, 
         return MATCH.nomatch;
 
     size_t parameters_dim = td.parameters.length;
-    int variadic = td.isVariadic() !is null;
+    const bool variadic = td.isVariadic() !is null;
 
     // If more arguments than parameters, no match
     if (ti.tiargs.length > parameters_dim && !variadic)
@@ -338,12 +338,6 @@ MATCH matchWithInstance(Scope* sc, TemplateDeclaration td, TemplateInstance ti, 
         if (fd)
         {
             TypeFunction tf = fd.type.isTypeFunction().syntaxCopy();
-            if (argumentList.hasNames)
-                return nomatch();
-            Expressions* fargs = argumentList.arguments;
-            // TODO: Expressions* fargs = tf.resolveNamedArgs(argumentList, null);
-            // if (!fargs)
-            //     return nomatch();
 
             fd = new FuncDeclaration(fd.loc, fd.endloc, fd.ident, fd.storage_class, tf);
             fd.parent = ti;
@@ -357,7 +351,7 @@ MATCH matchWithInstance(Scope* sc, TemplateDeclaration td, TemplateInstance ti, 
             tf.incomplete = true;
 
             // Resolve parameter types and 'auto ref's.
-            tf.fargs = fargs;
+            tf.inferenceArguments = argumentList;
             uint olderrors = global.startGagging();
             fd.type = tf.typeSemantic(td.loc, paramscope);
             global.endGagging(olderrors);
@@ -762,7 +756,7 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
     }
 
     size_t ntargs = 0; // array size of tiargs
-    size_t inferStart = 0; // index of first parameter to infer
+    size_t inferStart = 0; // index of first template parameter to infer from function argument
     const Loc instLoc = ti.loc;
     MATCH matchTiargs = MATCH.exact;
 
@@ -834,9 +828,6 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
 
     ParameterList fparameters = fd.getParameterList(); // function parameter list
     const nfparams = fparameters.length; // number of function parameters
-    if (argumentList.hasNames)
-        return matcherror(); // TODO: resolve named args
-    Expression[] fargs = argumentList.arguments ? (*argumentList.arguments)[] : null;
 
     /* Check for match of function arguments with variadic template
      * parameter, such as:
@@ -950,9 +941,14 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
     {
         //printf("%s\n\tnfargs = %d, nfparams = %d, tuple_dim = %d\n", toChars(), nfargs, nfparams, declaredTuple ? declaredTuple.objects.length : 0);
         //printf("\ttp = %p, fptupindex = %d, found = %d, declaredTuple = %s\n", tp, fptupindex, fptupindex != IDX_NOTFOUND, declaredTuple ? declaredTuple.toChars() : NULL);
-        size_t argi = 0;
-        size_t nfargs2 = fargs.length; // nfargs + supplied defaultArgs
+        enum DEFAULT_ARGI = size_t.max - 10; // pseudo index signifying the parameter is expected to be assigned its default argument
+        size_t argi = 0; // current argument index
+        size_t argsConsumed = 0; // to ensure no excess arguments
+        size_t nfargs2 = argumentList.length; // total number of arguments including applied defaultArgs
         uint inoutMatch = 0; // for debugging only
+        Expression[] fargs = argumentList.arguments ? (*argumentList.arguments)[] : null;
+        Identifier[] fnames = argumentList.names ? (*argumentList.names)[] : null;
+
         for (size_t parami = 0; parami < nfparams; parami++)
         {
             Parameter fparam = fparameters[parami];
@@ -961,11 +957,28 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
             Type prmtype = fparam.type.addStorageClass(fparam.storageClass);
 
             Expression farg;
+            Identifier fname = argi < fnames.length ? fnames[argi] : null;
+            bool foundName = false;
+            if (fparam.ident)
+            {
+                foreach (i; 0 .. fnames.length)
+                {
+                    if (fparam.ident == fnames[i])
+                    {
+                        argi = i;
+                        foundName = true;
+                    }
+                }
+            }
+            if (fname && !foundName)
+            {
+                argi = DEFAULT_ARGI;
+            }
 
             /* See function parameters which wound up
              * as part of a template tuple parameter.
              */
-            if (fptupindex != IDX_NOTFOUND && parami == fptupindex)
+            if (fptupindex != IDX_NOTFOUND && parami == fptupindex && argi != DEFAULT_ARGI)
             {
                 TypeIdentifier tid = prmtype.isTypeIdentifier();
                 assert(tid);
@@ -986,7 +999,12 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                         Parameter p = fparameters[j];
                         if (p.defaultArg)
                         {
-                           break;
+                            break;
+                        }
+                        foreach(name; fnames)
+                        {
+                            if (p.ident == name)
+                                break;
                         }
                         if (!reliesOnTemplateParameters(p.type, (*td.parameters)[inferStart .. td.parameters.length]))
                         {
@@ -1055,6 +1073,7 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                 }
                 assert(declaredTuple);
                 argi += declaredTuple.objects.length;
+                argsConsumed += declaredTuple.objects.length;
                 continue;
             }
 
@@ -1068,7 +1087,7 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                 if (TypeTuple tt = prmtype.isTypeTuple())
                 {
                     const tt_dim = tt.arguments.length;
-                    for (size_t j = 0; j < tt_dim; j++, ++argi)
+                    for (size_t j = 0; j < tt_dim; j++, ++argi, ++argsConsumed)
                     {
                         Parameter p = (*tt.arguments)[j];
                         if (j == tt_dim - 1 && fparameters.varargs == VarArg.typesafe &&
@@ -1171,7 +1190,9 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                         }
                     }
                 }
-                nfargs2 = argi + 1;
+
+                if (argi != DEFAULT_ARGI)
+                    nfargs2 = argi + 1;
 
                 /* If prmtype does not depend on any template parameters:
                  *
@@ -1189,7 +1210,11 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                  */
                 if (prmtype.deco || prmtype.syntaxCopy().trySemantic(td.loc, paramscope))
                 {
-                    ++argi;
+                    if (argi != DEFAULT_ARGI)
+                    {
+                        ++argi;
+                        ++argsConsumed;
+                    }
                     continue;
                 }
 
@@ -1203,6 +1228,7 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                 farg = fargs[argi];
             }
             {
+                assert(farg);
                 // Check invalid arguments to detect errors early.
                 if (farg.op == EXP.error || farg.type.ty == Terror)
                     return nomatch();
@@ -1350,7 +1376,11 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                 {
                     if (m < match)
                         match = m; // pick worst match
-                    argi++;
+                    if (argi != DEFAULT_ARGI)
+                    {
+                        argi++;
+                        argsConsumed++;
+                    }
                     continue;
                 }
             }
@@ -1490,8 +1520,8 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
             }
             assert(0);
         }
-        //printf(". argi = %d, nfargs = %d, nfargs2 = %d\n", argi, nfargs, nfargs2);
-        if (argi != nfargs2 && fparameters.varargs == VarArg.none)
+        // printf(". argi = %d, nfargs = %d, nfargs2 = %d, argsConsumed = %d\n", cast(int) argi, cast(int) nfargs, cast(int) nfargs2, cast(int) argsConsumed);
+        if (argsConsumed != nfargs2 && fparameters.varargs == VarArg.none)
             return nomatch();
     }
 
@@ -1618,7 +1648,7 @@ Lmatch:
         sc2.minst = sc.minst;
         sc2.stc |= fd.storage_class & STC.deprecated_;
 
-        fd = doHeaderInstantiation(td, ti, sc2, fd, tthis, argumentList.arguments);
+        fd = doHeaderInstantiation(td, ti, sc2, fd, tthis, argumentList);
         sc2 = sc2.pop();
         sc2 = sc2.pop();
 
@@ -1650,7 +1680,7 @@ Lmatch:
  * Limited function template instantiation for using fd.leastAsSpecialized()
  */
 private
-FuncDeclaration doHeaderInstantiation(TemplateDeclaration td, TemplateInstance ti, Scope* sc2, FuncDeclaration fd, Type tthis, Expressions* fargs)
+FuncDeclaration doHeaderInstantiation(TemplateDeclaration td, TemplateInstance ti, Scope* sc2, FuncDeclaration fd, Type tthis, ArgumentList inferenceArguments)
 {
     assert(fd);
     version (none)
@@ -1667,7 +1697,7 @@ FuncDeclaration doHeaderInstantiation(TemplateDeclaration td, TemplateInstance t
 
     assert(fd.type.ty == Tfunction);
     auto tf = fd.type.isTypeFunction();
-    tf.fargs = fargs;
+    tf.inferenceArguments = inferenceArguments;
 
     if (tthis)
     {
@@ -2084,11 +2114,6 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
         }
         //printf("td = %s\n", td.toChars());
 
-        if (argumentList.hasNames)
-        {
-            .error(loc, "named arguments with Implicit Function Template Instantiation are not supported yet");
-            goto Lerror;
-        }
         auto f = td.onemember ? td.onemember.isFuncDeclaration() : null;
         if (!f)
         {

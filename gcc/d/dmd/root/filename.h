@@ -38,7 +38,7 @@ public:
 
     bool equalsExt(const char *ext);
 
-    static const char *searchPath(Strings& path, const char *name, bool cwd);
+    static const char *searchPath(const Strings &path, const char *name, bool cwd);
     static int exists(const char *name);
     static bool ensurePathExists(const char *path);
     static const char *canonicalName(const char *name);

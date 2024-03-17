@@ -6118,7 +6118,7 @@ public:
                     return;
                 }
 
-                auto str = arrayCastBigEndian((cast(const ubyte[]) se.peekString()), sz);
+                auto str = arrayCastBigEndian(se.peekData(), sz);
                 emplaceExp!(StringExp)(pue, e1.loc, str, se.len / sz, cast(ubyte) sz);
                 result = pue.exp();
                 result.type = e.to;

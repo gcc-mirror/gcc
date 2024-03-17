@@ -12,6 +12,7 @@
 
 #include "arraytypes.h"
 #include "dsymbol.h"
+#include "expression.h"
 
 class Identifier;
 class TemplateInstance;
@@ -46,20 +47,6 @@ struct TemplatePrevious
     Objects *dedargs;
 };
 
-struct ArgumentList final
-{
-    Expressions* arguments;
-    Identifiers* names;
-    ArgumentList() :
-        arguments(),
-        names()
-    {
-    }
-    ArgumentList(Expressions* arguments, Identifiers* names = nullptr) :
-        arguments(arguments),
-        names(names)
-        {}
-};
 
 class TemplateDeclaration final : public ScopeDsymbol
 {
@@ -271,6 +258,7 @@ public:
     ScopeDsymbol *argsym;               // argument symbol table
     hash_t hash;                        // cached result of toHash()
     Expressions *fargs;                 // for function template, these are the function arguments
+    Identifiers *fnames;                // for function template, argument names
 
     TemplateInstances* deferred;
 

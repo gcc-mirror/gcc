@@ -1568,7 +1568,6 @@ class Lexer
                     stringbuffer.writeByte(v);
                 }
                 t.setString(stringbuffer);
-                t.postfix = 'h';
                 stringPostfix(t);
                 return TOK.hexadecimalString;
             default:
