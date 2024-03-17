@@ -700,12 +700,13 @@ ConstructorOrConstActualParameters := Constructor | ConstActualParameters  % Pus
 -- the entry to Constructor
 
 ConstSetOrQualidentOrFunction :=                                           % PushAutoOff %
-                                 (
+                                                                           % VAR tokpos: CARDINAL ; %
+                                 (                                         % tokpos := GetTokenNo () %
                                    PushQualident
                                    ( ConstructorOrConstActualParameters |  % PushConstType %
                                                                            % PopNothing %
                                                                           )
-                                   |                                       % BuildTypeForConstructor %
+                                   |                                       % BuildTypeForConstructor (tokpos) %
                                      Constructor )                         % PopAuto %
                                =:
 
@@ -1003,12 +1004,14 @@ ConstructorOrSimpleDes := Constructor |                                    % Pop
                         =:
 
 SetOrDesignatorOrFunction :=                                              % PushAutoOff %
-                             (
+                                                                          % VAR tokpos: CARDINAL ; %
+
+                             (                                            % tokpos := GetTokenNo () %
                                PushQualident
                                ( ConstructorOrSimpleDes |                 % PopNothing %
                                                           )
                                 |
-                                                                          % BuildTypeForConstructor %
+                                                                          % BuildTypeForConstructor (tokpos) %
                                   Constructor
                              )                                            % PopAuto %
                           =:

@@ -601,16 +601,22 @@ END PutRangeArraySubscript ;
 (*
    InitAssignmentRangeCheck - returns a range check node which
                               remembers the information necessary
-                              so that a range check for d := e
+                              so that a range check for des := expr
                               can be generated later on.
 *)
 
-PROCEDURE InitAssignmentRangeCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+PROCEDURE InitAssignmentRangeCheck (tokno: CARDINAL;
+                                    des, expr: CARDINAL;
+                                    destok, exprtok: CARDINAL) : CARDINAL ;
 VAR
    r: CARDINAL ;
+   p: Range ;
 BEGIN
    r := InitRange () ;
-   Assert (PutRange (tokno, GetIndice (RangeIndex, r), assignment, d, e) # NIL) ;
+   p := GetIndice (RangeIndex, r) ;
+   Assert (PutRange (tokno, p, assignment, des, expr) # NIL) ;
+   p^.destok := destok ;
+   p^.exprtok := exprtok ;
    RETURN r
 END InitAssignmentRangeCheck ;
 
@@ -1207,7 +1213,7 @@ VAR
 BEGIN
    p := GetIndice (RangeIndex, r) ;
    WITH p^ DO
-      TryDeclareConstant (tokenNo, expr) ;
+      TryDeclareConstant (exprtok, expr) ;
       IF desLowestType # NulSym
       THEN
          IF AssignmentTypeCompatible (tokenno, "", des, expr)

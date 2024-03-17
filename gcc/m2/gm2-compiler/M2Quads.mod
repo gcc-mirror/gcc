@@ -147,7 +147,7 @@ FROM M2Comp IMPORT CompilingImplementationModule,
                    CompilingProgramModule ;
 
 FROM M2LexBuf IMPORT currenttoken, UnknownTokenNo, BuiltinTokenNo,
-                     GetToken, MakeVirtualTok,
+                     GetToken, MakeVirtualTok, MakeVirtual2Tok,
                      GetFileName, TokenToLineNo, GetTokenName,
                      GetTokenNo, GetLineNo, GetPreviousTokenLineNo, PrintTokenNo ;
 
@@ -3702,7 +3702,7 @@ BEGIN
       THEN
          (* Tell code generator to test runtime values of assignment so ensure we
             catch overflow and underflow.  *)
-         BuildRange (InitAssignmentRangeCheck (combinedtok, Des, Exp))
+         BuildRange (InitAssignmentRangeCheck (combinedtok, Des, Exp, destok, exptok))
       END ;
       IF checkTypes
       THEN
@@ -11825,11 +11825,12 @@ END BuildAccessWithField ;
                         Empty             +------------+
                                           | NulSym     |
                                           |------------|
+   tokpos is the position of the RETURN token.
 *)
 
-PROCEDURE BuildNulExpression ;
+PROCEDURE BuildNulExpression (tokpos: CARDINAL) ;
 BEGIN
-   PushT(NulSym)
+   PushTtok (NulSym, tokpos)
 END BuildNulExpression ;
 
 
@@ -11839,25 +11840,25 @@ END BuildNulExpression ;
                              it Pushes a Bitset type.
 *)
 
-PROCEDURE BuildTypeForConstructor ;
+PROCEDURE BuildTypeForConstructor (tokpos: CARDINAL) ;
 VAR
    c: ConstructorFrame ;
 BEGIN
    IF NoOfItemsInStackAddress(ConstructorStack)=0
    THEN
-      PushT(Bitset)
+      PushTtok (Bitset, tokpos)
    ELSE
       c := PeepAddress(ConstructorStack, 1) ;
       WITH c^ DO
-         IF IsArray(type) OR IsSet(type)
+         IF IsArray (type) OR IsSet (type)
          THEN
-            PushT(GetSType(type))
-         ELSIF IsRecord(type)
+            PushTtok (GetSType (type), tokpos)
+         ELSIF IsRecord (type)
          THEN
-            PushT(GetSType(GetNth(type, index)))
+            PushTtok (GetSType (GetNth (type, index)), tokpos)
          ELSE
-            MetaError1('{%1ad} is not a set, record or array type which is expected when constructing an aggregate entity',
-                       type)
+            MetaError1 ('{%1ad} is not a set, record or array type which is expected when constructing an aggregate entity',
+                        type)
          END
       END
    END
@@ -11878,9 +11879,9 @@ END BuildTypeForConstructor ;
                                         |--------------|
 *)
 
-PROCEDURE BuildSetStart ;
+PROCEDURE BuildSetStart (tokpos: CARDINAL) ;
 BEGIN
-   PushT(Bitset)
+   PushTtok (Bitset, tokpos)
 END BuildSetStart ;
 
 
@@ -11900,12 +11901,15 @@ END BuildSetStart ;
 
 PROCEDURE BuildSetEnd ;
 VAR
-   v, t: CARDINAL ;
+   valuepos, typepos,
+   combined,
+   value, type      : CARDINAL ;
 BEGIN
-   PopT(v) ;
-   PopT(t) ;
-   PushTF(v, t) ;
-   Assert(IsSet(t))
+   PopTtok (value, valuepos) ;
+   PopTtok (type, typepos) ;
+   combined := MakeVirtual2Tok (typepos, valuepos) ;
+   PushTFtok (value, type, combined) ;
+   Assert (IsSet (type))
 END BuildSetEnd ;
 
 
@@ -11922,52 +11926,54 @@ END BuildSetEnd ;
       	       	   | SetType   |     | SetType     |
                    |-----------|     |-------------|
 
+   tokpos points to the opening '{'.
 *)
 
-PROCEDURE BuildEmptySet ;
+PROCEDURE BuildEmptySet (tokpos: CARDINAL) ;
 VAR
-   n     : Name ;
-   Type  : CARDINAL ;
-   NulSet: CARDINAL ;
-   tok   : CARDINAL ;
+   n      : Name ;
+   typepos,
+   Type   : CARDINAL ;
+   NulSet : CARDINAL ;
+   tok    : CARDINAL ;
 BEGIN
-   PopT(Type) ;  (* type of set we are building *)
-   tok := GetTokenNo () ;
-   IF (Type=NulSym) AND Pim
+   PopTtok (Type, typepos) ;  (* type of set we are building *)
+   IF (Type = NulSym) AND Pim
    THEN
       (* allowed generic {} in PIM Modula-2 *)
-   ELSIF IsUnknown(Type)
+      typepos := tokpos
+   ELSIF IsUnknown (Type)
    THEN
-      n := GetSymName(Type) ;
-      WriteFormat1('set type %a is undefined', n) ;
+      n := GetSymName (Type) ;
+      WriteFormat1 ('set type %a is undefined', n) ;
       Type := Bitset
-   ELSIF NOT IsSet(SkipType(Type))
+   ELSIF NOT IsSet (SkipType (Type))
    THEN
-      n := GetSymName(Type) ;
+      n := GetSymName (Type) ;
       WriteFormat1('expecting a set type %a', n) ;
       Type := Bitset
    ELSE
-      Type := SkipType(Type) ;
-      Assert((Type#NulSym))
+      Type := SkipType (Type) ;
+      Assert (Type # NulSym)
    END ;
-   NulSet := MakeTemporary(tok, ImmediateValue) ;
-   PutVar(NulSet, Type) ;
-   PutConstSet(NulSet) ;
+   NulSet := MakeTemporary (typepos, ImmediateValue) ;
+   PutVar (NulSet, Type) ;
+   PutConstSet (NulSet) ;
    IF CompilerDebugging
    THEN
-      n := GetSymName(Type) ;
-      printf1('set type = %a\n', n)
+      n := GetSymName (Type) ;
+      printf1 ('set type = %a\n', n)
    END ;
-   PushNulSet(Type) ;   (* onto the ALU stack  *)
-   PopValue(NulSet) ;   (* ALU -> symbol table *)
+   PushNulSet (Type) ;   (* onto the ALU stack  *)
+   PopValue (NulSet) ;   (* ALU -> symbol table *)
 
    (* and now construct the M2Quads stack as defined by the comments above *)
-   PushT(Type) ;
-   PushT(NulSet) ;
+   PushTtok (Type, typepos) ;
+   PushTtok (NulSet, typepos) ;
    IF CompilerDebugging
    THEN
-      n := GetSymName(Type) ;
-      printf2('Type = %a  (%d)  built empty set\n', n, Type) ;
+      n := GetSymName (Type) ;
+      printf2 ('Type = %a  (%d)  built empty set\n', n, Type) ;
       DisplayStack    (* Debugging info *)
    END
 END BuildEmptySet ;
@@ -12197,10 +12203,11 @@ END SilentBuildConstructorStart ;
 
 PROCEDURE BuildConstructorStart (cbratokpos: CARDINAL) ;
 VAR
+   typepos,
    constValue,
    type      : CARDINAL ;
 BEGIN
-   PopT (type) ;   (* we ignore the type as we already have the constructor symbol from pass C *)
+   PopTtok (type, typepos) ;   (* we ignore the type as we already have the constructor symbol from pass C *)
    GetConstructorFromFifoQueue (constValue) ;
    IF type # GetSType (constValue)
    THEN
@@ -12224,25 +12231,34 @@ END BuildConstructorStart ;
                          +------------+        +------------+
                          | const      |        | const      |
                          |------------|        |------------|
+
+   startpos is the start of the constructor, either the typename or '{'
+   cbratokpos is the '}'.
 *)
 
-PROCEDURE BuildConstructorEnd (cbratokpos: CARDINAL) ;
+PROCEDURE BuildConstructorEnd (startpos, cbratokpos: CARDINAL) ;
 VAR
    typetok,
    value, valtok: CARDINAL ;
 BEGIN
-   PopTtok (value, valtok) ;
-   IF IsBoolean (1)
+   IF DebugTokPos
    THEN
-      typetok := valtok
-   ELSE
-      typetok := OperandTtok (1)
+      WarnStringAt (InitString ('startpos'), startpos) ;
+      WarnStringAt (InitString ('cbratokpos'), cbratokpos)
    END ;
-   valtok := MakeVirtualTok (typetok, typetok, cbratokpos) ;
+   PopTtok (value, valtok) ;
+   IF DebugTokPos
+   THEN
+      WarnStringAt (InitString ('value valtok'), valtok)
+   END ;
+   valtok := MakeVirtual2Tok (startpos, cbratokpos) ;
    PutDeclared (valtok, value) ;
    PushTtok (value, valtok) ;   (* Use valtok as we now know it was a constructor.  *)
-   PopConstructor
-   (* ; ErrorStringAt (Mark (InitString ('aggregate constant')), valtok) *)
+   PopConstructor ;
+   IF DebugTokPos
+   THEN
+      WarnStringAt (InitString ('aggregate constant'), valtok)
+   END
 END BuildConstructorEnd ;
 
 

@@ -652,19 +652,23 @@ ArraySetRecordValue := ComponentValue                                      % Bui
                                                            }
                      =:
 
-Constructor := '{'                                                         % BuildConstructorStart (GetTokenNo() -1) %
-                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd (GetTokenNo())  %
+Constructor :=                                                             % VAR tokpos: CARDINAL ; %
+                                                                           % DisplayStack %
+               '{'                                                         % tokpos := GetTokenNo () -1 %
+                                                                           % BuildConstructorStart (tokpos) %
+                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd (tokpos, GetTokenNo())  %
                '}' =:
 
-ConstSetOrQualidentOrFunction :=                                            % PushAutoOn %
-                                 (
+ConstSetOrQualidentOrFunction :=                                           % PushAutoOn %
+                                                                           % VAR tokpos: CARDINAL ; %
+                                 (                                         % tokpos := GetTokenNo () %
                                     Qualident
                                     [ Constructor |
                                        ConstActualParameters               % BuildConstFunctionCall %
                                                                           ]
-                                      |                                    % BuildTypeForConstructor %
+                                      |                                    % BuildTypeForConstructor (tokpos) %
                                         Constructor
-                                 )                                          % PopAuto %
+                                 )                                         % PopAuto %
                                 =:
 
 ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" ConstAttributeExpression ")" ")" =:

@@ -48,6 +48,7 @@ CONST
    Tracing            = FALSE ;
    Debugging          = FALSE ;
    DebugRecover       = FALSE ;
+   BadTokenNo         = 32579 ;
    InitialSourceToken = 2 ;   (* 0 is unknown, 1 is builtin.  *)
 
 TYPE
@@ -79,6 +80,10 @@ VAR
    InsertionIndex   : CARDINAL ;
    SeenEof          : BOOLEAN ;  (* Have we seen eof since the last call
                                     to OpenSource.  *)
+
+
+PROCEDURE stop ;
+END stop ;
 
 
 (*
@@ -1060,9 +1065,13 @@ BEGIN
             AddTokToList (virtualrangetok, NulName, 0,
                           descLeft^.line, descLeft^.col, descLeft^.file,
                           GetLocationBinary (lc, ll, lr)) ;
-            RETURN HighIndice (ListOfTokens)
+            caret := HighIndice (ListOfTokens)
          END
       END
+   END ;
+   IF caret = BadTokenNo
+   THEN
+      stop
    END ;
    RETURN caret
 END MakeVirtualTok ;
@@ -1075,7 +1084,7 @@ END MakeVirtualTok ;
 
 PROCEDURE MakeVirtual2Tok (left, right: CARDINAL) : CARDINAL ;
 BEGIN
-   RETURN MakeVirtualTok (left, left, right)
+   RETURN MakeVirtualTok (left, left, right) ;
 END MakeVirtual2Tok ;
 
 

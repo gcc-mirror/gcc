@@ -2922,10 +2922,20 @@ END AddField ;
    ElementsSolved - returns TRUE if all ranges in the set have been solved.
 *)
 
-PROCEDURE ElementsSolved (r: listOfRange) : BOOLEAN ;
+PROCEDURE ElementsSolved (tokenno: CARDINAL; r: listOfRange) : BOOLEAN ;
 BEGIN
    WHILE r#NIL DO
       WITH r^ DO
+         IF NOT IsConst (low)
+         THEN
+            MetaErrorT1 (tokenno, 'a constant set can only contain constant set elements, {%1Ead} is not a constant',
+                         low)
+         END ;
+         IF (high # low) AND (NOT IsConst (high))
+         THEN
+            MetaErrorT1 (tokenno, 'a constant set can only contain constant set elements, {%1Ead} is not a constant',
+                         high)
+         END ;
          IF NOT (IsSolvedGCC(low) AND IsSolvedGCC(high))
          THEN
             RETURN( FALSE )
@@ -3088,7 +3098,7 @@ END CombineElements ;
 
 PROCEDURE EvalSetValues (tokenno: CARDINAL; r: listOfRange) : BOOLEAN ;
 BEGIN
-   IF ElementsSolved(r)
+   IF ElementsSolved (tokenno, r)
    THEN
       SortElements(tokenno, r) ;
       CombineElements(tokenno, r) ;

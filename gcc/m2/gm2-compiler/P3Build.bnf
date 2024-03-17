@@ -739,10 +739,15 @@ ComponentElement := ConstExpression ( ".." ConstExpression                 % Pus
                                     )
                   =:
 
-ComponentValue := ComponentElement ( 'BY' ConstExpression                  % PushTtok(ByTok, GetTokenNo() -1) %
+ComponentValue :=                                                          % VAR tokpos: CARDINAL ; %
+                  (
+                                                                           % tokpos := GetTokenNo () %
+                    ComponentElement (                                     % tokpos := GetTokenNo () %
+                                       'BY' ConstExpression                % PushTtok (ByTok, tokpos) %
 
-                                     |                                     % PushT(NulTok) %
-                                   )
+                                       |                                   % PushTtok (NulTok, tokpos) %
+                                     )
+                  )
                 =:
 
 ArraySetRecordValue := ComponentValue                                      % BuildComponentValue %
@@ -751,16 +756,22 @@ ArraySetRecordValue := ComponentValue                                      % Bui
                                                            }
                      =:
 
-Constructor :=                                                             % DisplayStack %
-               '{'                                                         % BuildConstructorStart (GetTokenNo() -1) %
-                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd (GetTokenNo())  %
+Constructor :=                                                             % VAR tokpos: CARDINAL ; %
+                                                                           % DisplayStack %
+               '{'                                                         % tokpos := GetTokenNo () -1 %
+                                                                           % BuildConstructorStart (tokpos) %
+                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd (tokpos, GetTokenNo())  %
                '}' =:
 
-ConstSetOrQualidentOrFunction := Qualident
-                                 [ Constructor | ConstActualParameters     % BuildConstFunctionCall %
-                                                                       ]
-                                   |                                       % BuildTypeForConstructor %
-                                     Constructor =:
+ConstSetOrQualidentOrFunction :=                                           % VAR tokpos: CARDINAL ; %
+                                                                           % tokpos := GetTokenNo () %
+                                 (
+                                   Qualident
+                                     [ Constructor | ConstActualParameters % BuildConstFunctionCall %
+                                                                         ]
+                                   |                                       % BuildTypeForConstructor (tokpos) %
+                                     Constructor
+                                 ) =:
 
 ConstActualParameters :=                                                   % PushInConstExpression %
                          ActualParameters                                  % PopInConstExpression %
@@ -1101,10 +1112,13 @@ Factor :=                                                                  % VAR
           | ConstAttribute
                                 ) =:
 
-SetOrDesignatorOrFunction := Qualident
-                                                                           % Assert (OperandTok(1) # UnknownTokenNo) %
+SetOrDesignatorOrFunction :=                                               % VAR tokpos: CARDINAL ; %
+                                                                           % tokpos := GetTokenNo () %
+                             (
+                               Qualident
+                                                                           % Assert (OperandTok (1) # UnknownTokenNo) %
                                                                            % CheckWithReference %
-                                                                           % Assert (OperandTok(1) # UnknownTokenNo) %
+                                                                           % Assert (OperandTok (1) # UnknownTokenNo) %
                               [ Constructor |
                                 SimpleDes                                  % (* Assert (OperandTok(1) # UnknownTokenNo) *) %
                                           [ ActualParameters               % IF IsInConstExpression()
@@ -1115,8 +1129,8 @@ SetOrDesignatorOrFunction := Qualident
                                                                              END %
                                                              ]
                               ]                                |
-                                                                           % BuildTypeForConstructor %
-                              Constructor =:
+                                                                           % BuildTypeForConstructor (tokpos) %
+                              Constructor ) =:
 
 -- SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
 SimpleDes := { SubDesignator } =:
@@ -1130,7 +1144,7 @@ ExitStatement := "EXIT"                                                    % Bui
 
 ReturnStatement := "RETURN"                                                % VAR tokno: CARDINAL ; %
                                                                            % tokno := GetTokenNo () -1 %
-                            ( Expression |                                 % BuildNulExpression (* in epsilon *) %
+                            ( Expression |                                 % BuildNulExpression (tokno) %
                                            )                               % BuildReturn (tokno) %
                 =:
 
