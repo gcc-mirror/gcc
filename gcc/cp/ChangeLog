@@ -1,3 +1,10 @@
+2024-03-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/112631
+	* cp-tree.h (named_module_attach_p): New function.
+	* decl.cc (start_decl): Check for attachment not purview.
+	(grokmethod): Likewise.
+
 2024-03-14  Chung-Lin Tang  <cltang@baylibre.com>
 
 	* parser.cc (cp_parser_oacc_data_clause): Add parsing support for

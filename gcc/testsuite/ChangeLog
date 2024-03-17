@@ -1,3 +1,21 @@
+2024-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* gcc.dg/c23-stdarg-7.c: New test.
+	* gcc.dg/c23-stdarg-8.c: New test.
+
+2024-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114329
+	* gcc.dg/bitint-101.c: New test.
+
+2024-03-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/112631
+	* g++.dg/modules/block-decl-1_a.C: New test.
+	* g++.dg/modules/block-decl-1_b.C: New test.
+	* g++.dg/modules/block-decl-2.C: New test.
+
 2024-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/114327

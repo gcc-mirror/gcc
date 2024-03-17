@@ -1,3 +1,9 @@
+2024-03-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/111632
+	* libcc1plugin.cc: Fix include.
+	* libcp1plugin.cc: Fix include.
+
 2024-02-29  Tom Tromey  <tom@tromey.com>
 
 	PR libcc1/113977

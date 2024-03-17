@@ -1,3 +1,18 @@
+2024-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/i386/i386.cc (ix86_setup_incoming_varargs): Only skip
+	ix86_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114329
+	* gimple-lower-bitint.cc (struct bitint_large_huge): Declare
+	build_bit_field_ref method.
+	(bitint_large_huge::build_bit_field_ref): New method.
+	(bitint_large_huge::lower_mergeable_stmt): Use it.
+
 2024-03-15  YunQiang Su  <syq@gcc.gnu.org>
 
 	* config/riscv/riscv.opt.urls: Regenerated.
