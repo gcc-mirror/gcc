@@ -1,3 +1,27 @@
+2024-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__units_suffix_misc): Remove.
+	(__units_suffix): Return a known suffix as string view, do not
+	write unknown suffixes to a buffer.
+	(__fmt_units_suffix): New function that formats the suffix using
+	std::format_to.
+	(operator<<, __chrono_formatter::_M_q): Use __fmt_units_suffix.
+	(__chrono_formatter::_M_Z): Correct lifetime of wstring.
+
+2024-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114147
+	* include/std/tuple (tuple::tuple(allocator_arg_t, const Alloc&)):
+	Add missing overload of allocator-extended default constructor.
+	(tuple<T1,T2>::tuple(allocator_arg_t, const Alloc&)): Likewise.
+	* testsuite/20_util/tuple/cons/114147.cc: New test.
+
 2024-03-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2023.xml: Close parenthesis.
