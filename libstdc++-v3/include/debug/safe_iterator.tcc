@@ -86,6 +86,9 @@ namespace __gnu_debug
     _Safe_iterator<_Iterator, _Sequence, _Category>::
     _M_can_advance(difference_type __n, bool __strict) const
     {
+      if (this->_M_value_initialized() && __n == 0)
+	return true;
+
       if (this->_M_singular())
 	return false;
 
