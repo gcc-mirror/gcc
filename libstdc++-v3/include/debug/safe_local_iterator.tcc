@@ -78,7 +78,13 @@ namespace __gnu_debug
     _M_valid_range(const _Safe_local_iterator& __rhs,
 		std::pair<difference_type, _Distance_precision>& __dist) const
     {
-      if (!_M_can_compare(__rhs))
+      if (_M_value_initialized() && __rhs._M_value_initialized())
+	{
+	  __dist = { 0, __dp_exact };
+	  return true;
+	}
+
+      if (_M_singular() || __rhs._M_singular() || !_M_can_compare(__rhs))
 	return false;
 
       if (bucket() != __rhs.bucket())
