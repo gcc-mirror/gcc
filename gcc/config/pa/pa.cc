@@ -10707,7 +10707,13 @@ pa_trampoline_adjust_address (rtx addr)
 static rtx
 pa_delegitimize_address (rtx orig_x)
 {
-  rtx x = delegitimize_mem_from_attrs (orig_x);
+  rtx x;
+
+  if (GET_CODE (orig_x) == UNSPEC
+      && XINT (orig_x, 1) == UNSPEC_TP)
+    orig_x = XVECEXP (orig_x, 0, 0);
+
+  x = delegitimize_mem_from_attrs (orig_x);
 
   if (GET_CODE (x) == LO_SUM
       && GET_CODE (XEXP (x, 1)) == UNSPEC
