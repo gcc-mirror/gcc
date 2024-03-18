@@ -222,19 +222,27 @@ region_model_manager::reject_if_too_complex (svalue *sval)
    of trees  */
 
 const svalue *
-region_model_manager::get_or_create_constant_svalue (tree cst_expr)
+region_model_manager::get_or_create_constant_svalue (tree type, tree cst_expr)
 {
   gcc_assert (cst_expr);
   gcc_assert (CONSTANT_CLASS_P (cst_expr));
+  gcc_assert (type == TREE_TYPE (cst_expr) || type == NULL_TREE);
 
-  constant_svalue **slot = m_constants_map.get (cst_expr);
+  constant_svalue::key_t key (type, cst_expr);
+  constant_svalue **slot = m_constants_map.get (key);
   if (slot)
     return *slot;
   constant_svalue *cst_sval
-    = new constant_svalue (alloc_symbol_id (), cst_expr);
+    = new constant_svalue (alloc_symbol_id (), type, cst_expr);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (cst_sval);
-  m_constants_map.put (cst_expr, cst_sval);
+  m_constants_map.put (key, cst_sval);
   return cst_sval;
+}
+
+const svalue *
+region_model_manager::get_or_create_constant_svalue (tree cst_expr)
+{
+  return get_or_create_constant_svalue (TREE_TYPE (cst_expr), cst_expr);
 }
 
 /* Return the svalue * for a constant_svalue for the INTEGER_CST
@@ -244,10 +252,13 @@ const svalue *
 region_model_manager::get_or_create_int_cst (tree type,
 					     const poly_wide_int_ref &cst)
 {
-  gcc_assert (type);
-  gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
-  tree tree_cst = wide_int_to_tree (type, cst);
-  return get_or_create_constant_svalue (tree_cst);
+  tree effective_type = type;
+  if (!type)
+    effective_type = ptrdiff_type_node;
+  gcc_assert (INTEGRAL_TYPE_P (effective_type)
+	      || POINTER_TYPE_P (effective_type));
+  tree tree_cst = wide_int_to_tree (effective_type, cst);
+  return get_or_create_constant_svalue (type, tree_cst);
 }
 
 /* Return the svalue * for the constant_svalue for the NULL pointer
@@ -432,6 +443,9 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
     case VIEW_CONVERT_EXPR:
     case NOP_EXPR:
       {
+	if (!type)
+	  return nullptr;
+
 	/* Handle redundant casts.  */
 	if (arg->get_type ()
 	    && useless_type_conversion_p (arg->get_type (), type))
@@ -442,13 +456,13 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
 	   unless INNER_TYPE is narrower than TYPE.  */
 	if (const svalue *innermost_arg = arg->maybe_undo_cast ())
 	  {
-	    tree inner_type = arg->get_type ();
-	    if (TYPE_SIZE (type)
-		&& TYPE_SIZE (inner_type)
-		&& (fold_binary (LE_EXPR, boolean_type_node,
-				 TYPE_SIZE (type), TYPE_SIZE (inner_type))
-		    == boolean_true_node))
-	      return maybe_fold_unaryop (type, op, innermost_arg);
+	    if (tree inner_type = arg->get_type ())
+	      if (TYPE_SIZE (type)
+		  && TYPE_SIZE (inner_type)
+		  && (fold_binary (LE_EXPR, boolean_type_node,
+				   TYPE_SIZE (type), TYPE_SIZE (inner_type))
+		      == boolean_true_node))
+		return maybe_fold_unaryop (type, op, innermost_arg);
 	  }
 	/* Avoid creating symbolic regions for pointer casts by
 	   simplifying (T*)(&REGION) to ((T*)&REGION).  */
@@ -546,7 +560,8 @@ region_model_manager::get_or_create_unaryop (tree type, enum tree_code op,
 static enum tree_code
 get_code_for_cast (tree dst_type, tree src_type)
 {
-  gcc_assert (dst_type);
+  if (!dst_type)
+    return NOP_EXPR;
   if (!src_type)
     return NOP_EXPR;
 
@@ -567,17 +582,16 @@ get_code_for_cast (tree dst_type, tree src_type)
 const svalue *
 region_model_manager::get_or_create_cast (tree type, const svalue *arg)
 {
-  gcc_assert (type);
-
   /* No-op if the types are the same.  */
   if (type == arg->get_type ())
     return arg;
 
   /* Don't attempt to handle casts involving vector types for now.  */
-  if (VECTOR_TYPE_P (type)
-      || (arg->get_type ()
-	  && VECTOR_TYPE_P (arg->get_type ())))
-    return get_or_create_unknown_svalue (type);
+  if (type)
+    if (VECTOR_TYPE_P (type)
+	|| (arg->get_type ()
+	    && VECTOR_TYPE_P (arg->get_type ())))
+      return get_or_create_unknown_svalue (type);
 
   enum tree_code op = get_code_for_cast (type, arg->get_type ());
   return get_or_create_unaryop (type, op, arg);
@@ -650,9 +664,17 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
   /* (CST OP CST).  */
   if (cst0 && cst1)
     {
-      if (tree result = fold_binary (op, type, cst0, cst1))
-	if (CONSTANT_CLASS_P (result))
-	  return get_or_create_constant_svalue (result);
+      if (type)
+	{
+	  if (tree result = fold_binary (op, type, cst0, cst1))
+	    if (CONSTANT_CLASS_P (result))
+	      return get_or_create_constant_svalue (result);
+	}
+      else
+	{
+	  if (tree result = int_const_binop (op, cst0, cst1, -1))
+	    return get_or_create_constant_svalue (NULL_TREE, result);
+	}
     }
 
   if ((type && FLOAT_TYPE_P (type))
@@ -685,20 +707,21 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       break;
     case MULT_EXPR:
       /* (VAL * 0).  */
-      if (cst1 && zerop (cst1) && INTEGRAL_TYPE_P (type))
-	return get_or_create_constant_svalue (build_int_cst (type, 0));
+      if (cst1
+	  && zerop (cst1)
+	  && (type == NULL_TREE || INTEGRAL_TYPE_P (type)))
+	return get_or_create_int_cst (type, 0);
       /* (VAL * 1) -> VAL.  */
       if (cst1 && integer_onep (cst1))
-	/* TODO: we ought to have a cast to TYPE here, but doing so introduces
-	   regressions; see PR analyzer/110902.  */
-	return arg0;
+	return get_or_create_cast (type, arg0);
       break;
     case BIT_AND_EXPR:
       if (cst1)
 	{
-	  if (zerop (cst1) && INTEGRAL_TYPE_P (type))
+	  if (zerop (cst1)
+	      && (type == NULL_TREE || INTEGRAL_TYPE_P (type)))
 	    /* "(ARG0 & 0)" -> "0".  */
-	    return get_or_create_constant_svalue (build_int_cst (type, 0));
+	    return get_or_create_int_cst (type, 0);
 
 	  if (const compound_svalue *compound_sval
 		= arg0->dyn_cast_compound_svalue ())
@@ -809,6 +832,80 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
 	     get_or_create_binop (type, op,
 				  binop->get_arg1 (), arg1));
 	}
+
+
+  /* Typeless operations, assumed to be effectively arbitrary sized
+     integers following normal arithmetic rules.  */
+  if (!type)
+    switch (op)
+      {
+      default:
+	break;
+      case MINUS_EXPR:
+	{
+	  /* (X - X) -> 0.  */
+	  if (arg0 == arg1)
+	    return get_or_create_int_cst (type, 0);
+
+	  /* (X + A) - (A + B) -> (A - B).  */
+	  if (const binop_svalue *binop0 = arg0->dyn_cast_binop_svalue ())
+	    if (const binop_svalue *binop1 = arg1->dyn_cast_binop_svalue ())
+	      if (binop0->get_op () == PLUS_EXPR
+		  && binop1->get_op () == PLUS_EXPR
+		  && binop0->get_arg0 () == binop1->get_arg0 ())
+		return get_or_create_binop (NULL_TREE, op,
+					    binop0->get_arg1 (),
+					    binop1->get_arg1 ());
+	}
+	break;
+
+      case EXACT_DIV_EXPR:
+	{
+	  if (const unaryop_svalue *unaryop0 = arg0->dyn_cast_unaryop_svalue ())
+	    {
+	      if (unaryop0->get_op () == NOP_EXPR)
+		if (const svalue *sval = maybe_fold_binop (NULL_TREE, op,
+							   unaryop0->get_arg (),
+							   arg1))
+		  return sval;
+	    }
+	  if (const binop_svalue *binop0 = arg0->dyn_cast_binop_svalue ())
+	    {
+	      switch (binop0->get_op ())
+		{
+		default:
+		  break;
+
+		case PLUS_EXPR:
+		case MINUS_EXPR:
+		  /* (A op B) / C -> (A / C) op (B / C).  */
+		  {
+		    if (const svalue *op_on_a
+			= maybe_fold_binop (NULL_TREE, op,
+					    binop0->get_arg0 (), arg1))
+		      if (const svalue *op_on_b
+			  = maybe_fold_binop (NULL_TREE, op,
+					      binop0->get_arg1 (), arg1))
+			return get_or_create_binop (NULL_TREE,
+						    binop0->get_op (),
+						    op_on_a, op_on_b);
+		  }
+		  break;
+
+		case MULT_EXPR:
+		  /* (A * B) / C -> A * (B / C) if C is a divisor of B.
+		     In particular, this should also handle the case
+		     (A * B) / B -> A.  */
+		  if (const svalue *b_div_c
+		      = maybe_fold_binop (NULL_TREE, op,
+					  binop0->get_arg1 (), arg1))
+		    return get_or_create_binop (NULL_TREE, binop0->get_op (),
+						binop0->get_arg0 (), b_div_c);
+		}
+	    }
+	}
+	break;
+      }
 
   /* etc.  */
 
@@ -1391,7 +1488,6 @@ get_or_create_const_fn_result_svalue (tree type,
 				      tree fndecl,
 				      const vec<const svalue *> &inputs)
 {
-  gcc_assert (type);
   gcc_assert (fndecl);
   gcc_assert (DECL_P (fndecl));
   gcc_assert (TREE_READONLY (fndecl));

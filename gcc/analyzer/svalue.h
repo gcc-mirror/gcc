@@ -177,6 +177,10 @@ public:
 
   const region *maybe_get_deref_base_region () const;
 
+  bool maybe_print_for_user (pretty_printer *pp,
+			     const region_model &model,
+			     const svalue *outer_sval = nullptr) const;
+
  protected:
   svalue (complexity c, symbol::id_t id, tree type)
   : symbol (c, id), m_type (type)
@@ -265,16 +269,49 @@ template <> struct default_hash_traits<region_svalue::key_t>
 
 namespace ana {
 
-/* Concrete subclass of svalue representing a specific constant value.  */
+/* Concrete subclass of svalue representing a specific constant value.
+   The type will either be the same as that of the underlying tree constant,
+   or NULL_TREE indicating the constant is intended to be "typeless".  */
 
 class constant_svalue : public svalue
 {
 public:
-  constant_svalue (symbol::id_t id, tree cst_expr)
-  : svalue (complexity (1, 1), id, TREE_TYPE (cst_expr)), m_cst_expr (cst_expr)
+  /* A support class for uniquifying instances of region_svalue.  */
+  struct key_t
+  {
+    key_t (tree type, tree cst)
+    : m_type (type), m_cst (cst)
+    {}
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_type);
+      hstate.add_ptr (m_cst);
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      return (m_type == other.m_type && m_cst == other.m_cst);
+    }
+
+    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
+    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
+
+    tree m_type;
+    tree m_cst;
+  };
+
+  constant_svalue (symbol::id_t id, tree type, tree cst_expr)
+  : svalue (complexity (1, 1), id, type),
+    m_cst_expr (cst_expr)
   {
     gcc_assert (cst_expr);
     gcc_assert (CONSTANT_CLASS_P (cst_expr));
+    gcc_assert (type == TREE_TYPE (cst_expr) || type == NULL_TREE);
   }
 
   enum svalue_kind get_kind () const final override { return SK_CONSTANT; }
@@ -311,6 +348,12 @@ is_a_helper <const constant_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_CONSTANT;
 }
+
+template <> struct default_hash_traits<constant_svalue::key_t>
+: public member_function_hash_traits<constant_svalue::key_t>
+{
+  static const bool empty_zero_p = false;
+};
 
 namespace ana {
 

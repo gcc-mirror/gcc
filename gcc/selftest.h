@@ -371,6 +371,18 @@ extern int num_passes;
     ::selftest::fail (SELFTEST_LOCATION, desc_);	       \
   SELFTEST_END_STMT
 
+/* Like ASSERT_NE, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_NE_AT(LOC, VAL1, VAL2)		       \
+  SELFTEST_BEGIN_STMT					       \
+  const char *desc_ = "ASSERT_NE (" #VAL1 ", " #VAL2 ")"; \
+  if ((VAL1) != (VAL2))				       \
+    ::selftest::pass ((LOC), desc_);			       \
+  else							       \
+    ::selftest::fail ((LOC), desc_);			       \
+  SELFTEST_END_STMT
+
 /* Evaluate VAL1 and VAL2 and compare them with maybe_ne, calling
    ::selftest::pass if they might be non-equal,
    ::selftest::fail if they are known to be equal.  */

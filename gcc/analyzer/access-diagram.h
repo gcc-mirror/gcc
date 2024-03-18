@@ -32,23 +32,24 @@ namespace ana {
 class bit_size_expr
 {
 public:
-  bit_size_expr () : m_num_bits (NULL) {}
-  bit_size_expr (tree num_bits) : m_num_bits (num_bits) {}
+  bit_size_expr (const svalue &num_bits) : m_num_bits (num_bits) {}
 
-  text_art::styled_string
-  get_formatted_str (text_art::style_manager &sm,
-		     const char *concrete_single_bit_fmt,
-		     const char *concrete_plural_bits_fmt,
-		     const char *concrete_single_byte_fmt,
-		     const char *concrete_plural_bytes_fmt,
-		     const char *symbolic_bits_fmt,
-		     const char *symbolic_bytes_fmt) const;
-  void print (pretty_printer *pp) const;
+  std::unique_ptr<text_art::styled_string>
+  maybe_get_formatted_str (text_art::style_manager &sm,
+			   const region_model &model,
+			   const char *concrete_single_bit_fmt,
+			   const char *concrete_plural_bits_fmt,
+			   const char *concrete_single_byte_fmt,
+			   const char *concrete_plural_bytes_fmt,
+			   const char *symbolic_bits_fmt,
+			   const char *symbolic_bytes_fmt) const;
+  bool maybe_print_for_user (pretty_printer *pp,
+			     const region_model &model) const;
 
-  tree maybe_get_as_bytes () const;
+  const svalue *maybe_get_as_bytes (region_model_manager &mgr) const;
 
 private:
-  tree m_num_bits;
+  const svalue &m_num_bits;
 };
 
 /* A range of bits within a base region, where each endpoint
@@ -60,8 +61,9 @@ struct access_range
   : m_start (), m_next ()
   {
   }
-  access_range (region_offset start, region_offset next)
-  : m_start (start), m_next (next)
+  access_range (region_offset start, region_offset next,
+		region_model_manager &mgr)
+  : m_start (strip_types (start, mgr)), m_next (strip_types (next, mgr))
   {}
   access_range (const region *base_region, const bit_range &bits);
   access_range (const region *base_region, const byte_range &bytes);
@@ -74,7 +76,7 @@ struct access_range
 
   bool empty_p () const;
 
-  bool get_size (const region_model &model, bit_size_expr *out) const;
+  bit_size_expr get_size (region_model_manager *mgr) const;
 
   bool get_size_in_bits (bit_size_t *out) const
   {

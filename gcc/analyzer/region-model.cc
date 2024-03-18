@@ -120,9 +120,27 @@ dump_quoted_tree (pretty_printer *pp, tree t)
 void
 print_quoted_type (pretty_printer *pp, tree t)
 {
+  if (!t)
+    return;
   pp_begin_quote (pp, pp_show_color (pp));
   dump_generic_node (pp, t, 0, TDF_SLIM, 0);
   pp_end_quote (pp, pp_show_color (pp));
+}
+
+/* Print EXPR to PP, without quotes.
+   For use within svalue::maybe_print_for_user
+   and region::maybe_print_for_user. */
+
+void
+print_expr_for_user (pretty_printer *pp, tree expr)
+{
+  /* Workaround for C++'s lang_hooks.decl_printable_name,
+     which unhelpfully (for us) prefixes the decl with its
+     type.  */
+  if (DECL_P (expr))
+    dump_generic_node (pp, expr, 0, TDF_SLIM, 0);
+  else
+    pp_printf (pp, "%E", expr);
 }
 
 /* class region_to_value_map.  */
@@ -8973,7 +8991,10 @@ test_array_2 ()
     const region *arr_i_reg = model.get_lvalue (arr_i, NULL);
     region_offset offset = arr_i_reg->get_offset (&mgr);
     ASSERT_EQ (offset.get_base_region (), model.get_lvalue (arr, NULL));
-    ASSERT_EQ (offset.get_symbolic_byte_offset ()->get_kind (), SK_BINOP);
+    const svalue *offset_sval = offset.get_symbolic_byte_offset ();
+    if (const svalue *cast = offset_sval->maybe_undo_cast ())
+      offset_sval = cast;
+    ASSERT_EQ (offset_sval->get_kind (), SK_BINOP);
   }
 
   /* "arr[i] = i;" - this should remove the earlier bindings.  */

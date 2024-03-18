@@ -95,6 +95,114 @@ svalue::to_json () const
   return sval_js;
 }
 
+/* Class for optionally adding open/close paren pairs within
+   svalue::maybe_print_for_user.  */
+
+class auto_add_parens
+{
+public:
+  auto_add_parens (pretty_printer *pp,
+		   const svalue *outer_sval,
+		   const svalue &inner_sval)
+  : m_pp (pp),
+    m_needs_parens (needs_parens_p (outer_sval, inner_sval))
+  {
+    if (m_needs_parens)
+      pp_string (m_pp, "(");
+  }
+  ~auto_add_parens ()
+  {
+    if (m_needs_parens)
+      pp_string (m_pp, ")");
+  }
+
+private:
+  static bool needs_parens_p (const svalue *outer_sval,
+			      const svalue &inner_sval)
+  {
+    if (!outer_sval)
+      return false;
+    if (inner_sval.get_kind () == SK_BINOP)
+      return true;
+    return false;
+  }
+
+  pretty_printer *m_pp;
+  bool m_needs_parens;
+};
+
+/* Attempt to print a user-facing description of this svalue to PP,
+   using MODEL for extracting representative tree values if necessary.
+   Use OUTER_SVAL (which can be null) to determine if we need to wrap
+   this value in parentheses.  */
+
+bool
+svalue::maybe_print_for_user (pretty_printer *pp,
+			      const region_model &model,
+			      const svalue *outer_sval) const
+{
+  auto_add_parens p (pp, outer_sval, *this);
+
+  switch (get_kind ())
+    {
+    default:
+      break;
+    case SK_CONSTANT:
+      {
+	const constant_svalue *sval = (const constant_svalue *)this;
+	pp_printf (pp, "%E", sval->get_constant ());
+	return true;
+      }
+    case SK_INITIAL:
+      {
+	const initial_svalue *sval = (const initial_svalue *)this;
+	return sval->get_region ()->maybe_print_for_user (pp, model);
+      }
+    case SK_UNARYOP:
+      {
+	const unaryop_svalue *sval = (const unaryop_svalue *)this;
+	if (sval->get_op () == NOP_EXPR)
+	  {
+	    if (!sval->get_arg ()->maybe_print_for_user (pp, model, outer_sval))
+	      return false;
+	    return true;
+	  }
+      }
+      break;
+    case SK_BINOP:
+      {
+	const binop_svalue *sval = (const binop_svalue *)this;
+	switch (sval->get_op ())
+	  {
+	  default:
+	    break;
+
+	  case PLUS_EXPR:
+	  case MINUS_EXPR:
+	  case MULT_EXPR:
+	    {
+	      if (!sval->get_arg0 ()->maybe_print_for_user (pp, model, this))
+		return false;
+	      pp_printf (pp, " %s ", op_symbol_code (sval->get_op ()));
+	      if (!sval->get_arg1 ()->maybe_print_for_user (pp, model, this))
+		return false;
+	      return true;
+	    }
+	  }
+      }
+      break;
+    }
+
+  if (tree expr = model.get_representative_tree (this))
+    {
+      expr = remove_ssa_names (expr);
+      print_expr_for_user (pp, expr);
+      return true;
+    }
+
+  return false;
+}
+
 /* If this svalue is a constant_svalue, return the underlying tree constant.
    Otherwise return NULL_TREE.  */
 
@@ -389,7 +497,9 @@ svalue::cmp_ptr (const svalue *sval1, const svalue *sval2)
 	const constant_svalue *constant_sval2 = (const constant_svalue *)sval2;
 	const_tree cst1 = constant_sval1->get_constant ();
 	const_tree cst2 = constant_sval2->get_constant ();
-	return cmp_csts_same_type (cst1, cst2);
+	/* The svalues have the same type, but the underlying trees
+	   might not (for the case where both svalues are typeless).  */
+	return cmp_csts_and_types (cst1, cst2);
       }
       break;
     case SK_UNKNOWN:
@@ -850,14 +960,31 @@ constant_svalue::implicitly_live_p (const svalue_set *,
   return true;
 }
 
+/* Given EXPR, a non-NULL expression of boolean type, convert to
+   a tristate based on whether this is known to be true, false,
+   or is not known.  */
+
+static tristate
+tristate_from_boolean_tree_node (tree expr)
+{
+  gcc_assert (TREE_TYPE (expr) == boolean_type_node);
+
+  if (expr == boolean_true_node)
+    return tristate (tristate::TS_TRUE);
+  else if (expr == boolean_false_node)
+    return tristate (tristate::TS_FALSE);
+  else
+    return tristate (tristate::TS_UNKNOWN);
+}
+
 /* Evaluate the condition LHS OP RHS.
    Subroutine of region_model::eval_condition for when we have a pair of
    constants.  */
 
 tristate
 constant_svalue::eval_condition (const constant_svalue *lhs,
-				  enum tree_code op,
-				  const constant_svalue *rhs)
+				 enum tree_code op,
+				 const constant_svalue *rhs)
 {
   tree lhs_const = lhs->get_constant ();
   tree rhs_const = rhs->get_constant ();
@@ -865,15 +992,28 @@ constant_svalue::eval_condition (const constant_svalue *lhs,
   gcc_assert (CONSTANT_CLASS_P (lhs_const));
   gcc_assert (CONSTANT_CLASS_P (rhs_const));
 
+  if ((lhs->get_type () == NULL_TREE || rhs->get_type () == NULL_TREE)
+      && TREE_CODE (lhs_const) == INTEGER_CST
+      && TREE_CODE (rhs_const) == INTEGER_CST
+      )
+    {
+     if (tree tree_cmp = const_binop (op, boolean_type_node,
+				      lhs_const, rhs_const))
+       {
+	 tristate ts = tristate_from_boolean_tree_node (tree_cmp);
+	 if (ts.is_known ())
+	   return ts;
+       }
+    }
+
   /* Check for comparable types.  */
   if (types_compatible_p (TREE_TYPE (lhs_const), TREE_TYPE (rhs_const)))
     {
-      tree comparison
+      tree tree_cmp
 	= fold_binary (op, boolean_type_node, lhs_const, rhs_const);
-      if (comparison == boolean_true_node)
-	return tristate (tristate::TS_TRUE);
-      if (comparison == boolean_false_node)
-	return tristate (tristate::TS_FALSE);
+      tristate ts = tristate_from_boolean_tree_node (tree_cmp);
+      if (ts.is_known ())
+	return ts;
     }
   return tristate::TS_UNKNOWN;
 }

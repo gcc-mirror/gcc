@@ -1154,6 +1154,149 @@ public:
   enum access_direction get_dir () const final override { return DIR_READ; }
 };
 
+const svalue *
+strip_types (const svalue *sval,
+	     region_model_manager &mgr)
+{
+  switch (sval->get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case SK_REGION:
+      {
+	const region_svalue *region_sval = (const region_svalue *)sval;
+	return mgr.get_ptr_svalue (NULL_TREE, region_sval->get_pointee ());
+      }
+    case SK_CONSTANT:
+      return sval;
+    case SK_UNKNOWN:
+      return mgr.get_or_create_unknown_svalue (NULL_TREE);
+    case SK_POISONED:
+      {
+	const poisoned_svalue *poisoned_sval = (const poisoned_svalue *)sval;
+	return mgr.get_or_create_poisoned_svalue
+	  (poisoned_sval->get_poison_kind (),
+	   NULL_TREE);
+      }
+    case SK_SETJMP:
+      return sval;
+    case SK_INITIAL:
+      return sval;
+    case SK_UNARYOP:
+      {
+	const unaryop_svalue *unaryop_sval = (const unaryop_svalue *)sval;
+	const enum tree_code op = unaryop_sval->get_op ();
+	if (op == VIEW_CONVERT_EXPR || op == NOP_EXPR)
+	  return strip_types (unaryop_sval->get_arg (), mgr);
+	return mgr.get_or_create_unaryop
+	  (NULL_TREE,
+	   op,
+	   strip_types (unaryop_sval->get_arg (), mgr));
+      }
+    case SK_BINOP:
+      {
+	const binop_svalue *binop_sval = (const binop_svalue *)sval;
+	const enum tree_code op = binop_sval->get_op ();
+	return mgr.get_or_create_binop
+	  (NULL_TREE,
+	   op,
+	   strip_types (binop_sval->get_arg0 (), mgr),
+	   strip_types (binop_sval->get_arg1 (), mgr));
+      }
+    case SK_SUB:
+      {
+	const sub_svalue *sub_sval = (const sub_svalue *)sval;
+	return mgr.get_or_create_sub_svalue
+	  (NULL_TREE,
+	   strip_types (sub_sval->get_parent (), mgr),
+	   sub_sval->get_subregion ());
+      }
+    case SK_REPEATED:
+      {
+	const repeated_svalue *repeated_sval = (const repeated_svalue *)sval;
+	return mgr.get_or_create_repeated_svalue
+	  (NULL_TREE,
+	   strip_types (repeated_sval->get_outer_size (), mgr),
+	   strip_types (repeated_sval->get_inner_svalue (), mgr));
+      }
+    case SK_BITS_WITHIN:
+      {
+	const bits_within_svalue *bits_within_sval
+	  = (const bits_within_svalue *)sval;
+	return mgr.get_or_create_bits_within
+	  (NULL_TREE,
+	   bits_within_sval->get_bits (),
+	   strip_types (bits_within_sval->get_inner_svalue (), mgr));
+      }
+    case SK_UNMERGEABLE:
+      {
+	const unmergeable_svalue *unmergeable_sval
+	  = (const unmergeable_svalue *)sval;
+	return mgr.get_or_create_unmergeable
+	  (strip_types (unmergeable_sval->get_arg (), mgr));
+      }
+    case SK_PLACEHOLDER:
+      return sval;
+    case SK_WIDENING:
+      {
+	const widening_svalue *widening_sval = (const widening_svalue *)sval;
+	return mgr.get_or_create_widening_svalue
+	  (NULL_TREE,
+	   widening_sval->get_point (),
+	   strip_types (widening_sval->get_base_svalue (), mgr),
+	   strip_types (widening_sval->get_iter_svalue (), mgr));
+      }
+    case SK_COMPOUND:
+      {
+	const compound_svalue *compound_sval = (const compound_svalue *)sval;
+	binding_map typeless_map;
+	for (auto iter : compound_sval->get_map ())
+	  {
+	    const binding_key *key = iter.first;
+	    const svalue *bound_sval = iter.second;
+	    typeless_map.put (key, strip_types (bound_sval, mgr));
+	  }
+	return mgr.get_or_create_compound_svalue (NULL_TREE, typeless_map);
+      }
+    case SK_CONJURED:
+      return sval;
+    case SK_ASM_OUTPUT:
+      {
+	const asm_output_svalue *asm_output_sval
+	  = (const asm_output_svalue *)sval;
+	auto_vec<const svalue *> typeless_inputs
+	  (asm_output_sval->get_num_inputs ());
+	for (unsigned idx = 0; idx < asm_output_sval->get_num_inputs (); idx++)
+	  typeless_inputs.quick_push
+	    (strip_types (asm_output_sval->get_input (idx),
+			  mgr));
+	return mgr.get_or_create_asm_output_svalue
+	  (NULL_TREE,
+	   asm_output_sval->get_asm_string (),
+	   asm_output_sval->get_output_idx (),
+	   asm_output_sval->get_num_outputs (),
+	   typeless_inputs);
+      }
+    case SK_CONST_FN_RESULT:
+      {
+	const const_fn_result_svalue *const_fn_result_sval
+	  = (const const_fn_result_svalue *)sval;
+	auto_vec<const svalue *> typeless_inputs
+	  (const_fn_result_sval->get_num_inputs ());
+	for (unsigned idx = 0;
+	     idx < const_fn_result_sval->get_num_inputs ();
+	     idx++)
+	  typeless_inputs.quick_push
+	    (strip_types (const_fn_result_sval->get_input (idx),
+			  mgr));
+	return mgr.get_or_create_const_fn_result_svalue
+	  (NULL_TREE,
+	   const_fn_result_sval->get_fndecl (),
+	   typeless_inputs);
+      }
+    }
+}
+
 /* Check whether an access is past the end of the BASE_REG.
   Return TRUE if the access was valid, FALSE otherwise.  */
 
@@ -1169,8 +1312,11 @@ region_model::check_symbolic_bounds (const region *base_reg,
   gcc_assert (ctxt);
 
   const svalue *next_byte
-    = m_mgr->get_or_create_binop (num_bytes_sval->get_type (), PLUS_EXPR,
+    = m_mgr->get_or_create_binop (NULL_TREE, PLUS_EXPR,
 				  sym_byte_offset, num_bytes_sval);
+
+  next_byte = strip_types (next_byte, *m_mgr);
+  capacity = strip_types (capacity, *m_mgr);
 
   if (eval_condition (next_byte, GT_EXPR, capacity).is_true ())
     {

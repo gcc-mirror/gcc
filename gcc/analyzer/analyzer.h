@@ -140,6 +140,7 @@ class known_function;
 extern void dump_tree (pretty_printer *pp, tree t);
 extern void dump_quoted_tree (pretty_printer *pp, tree t);
 extern void print_quoted_type (pretty_printer *pp, tree t);
+extern void print_expr_for_user (pretty_printer *pp, tree t);
 extern int readability_comparator (const void *p1, const void *p2);
 extern int tree_cmp (const void *p1, const void *p2);
 extern tree fixup_tree_for_diagnostic (tree);
@@ -236,7 +237,7 @@ public:
     return m_sym_offset;
   }
 
-  tree calc_symbolic_bit_offset (const region_model &model) const;
+  const svalue &calc_symbolic_bit_offset (region_model_manager *mgr) const;
   const svalue *calc_symbolic_byte_offset (region_model_manager *mgr) const;
 
   bool operator== (const region_offset &other) const
@@ -435,6 +436,14 @@ get_string_cst_size (const_tree string_cst);
 
 extern tree
 get_ssa_default_def (const function &fun, tree var);
+
+extern const svalue *
+strip_types (const svalue *sval, region_model_manager &mgr);
+
+extern region_offset
+strip_types (const region_offset &offset, region_model_manager &mgr);
+
+extern tree remove_ssa_names (tree expr);
 
 } // namespace ana
 

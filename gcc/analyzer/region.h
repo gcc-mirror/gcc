@@ -176,6 +176,9 @@ public:
 
   json::value *to_json () const;
 
+  bool maybe_print_for_user (pretty_printer *pp,
+			     const region_model &model) const;
+
   bool non_null_p () const;
 
   static int cmp_ptr_ptr (const void *, const void *);

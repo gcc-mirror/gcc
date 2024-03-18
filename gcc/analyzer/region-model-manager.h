@@ -44,6 +44,7 @@ public:
   }
 
   /* svalue consolidation.  */
+  const svalue *get_or_create_constant_svalue (tree type, tree cst_expr);
   const svalue *get_or_create_constant_svalue (tree cst_expr);
   const svalue *get_or_create_int_cst (tree type, const poly_wide_int_ref &cst);
   const svalue *get_or_create_null_ptr (tree pointer_type);
@@ -170,14 +171,14 @@ public:
 
   void dump_untracked_regions () const;
 
+  const svalue *maybe_fold_binop (tree type, enum tree_code op,
+				  const svalue *arg0, const svalue *arg1);
 private:
   bool too_complex_p (const complexity &c) const;
   bool reject_if_too_complex (svalue *sval);
 
   const svalue *maybe_fold_unaryop (tree type, enum tree_code op,
 				    const svalue *arg);
-  const svalue *maybe_fold_binop (tree type, enum tree_code op,
-				  const svalue *arg0, const svalue *arg1);
   const svalue *maybe_fold_sub_svalue (tree type,
 				       const svalue *parent_svalue,
 				       const region *subregion);
@@ -204,7 +205,7 @@ private:
   heap_region m_heap_region;
 
   /* svalue consolidation.  */
-  typedef hash_map<tree, constant_svalue *> constants_map_t;
+  typedef hash_map<constant_svalue::key_t, constant_svalue *> constants_map_t;
   constants_map_t m_constants_map;
 
   typedef hash_map<tree, unknown_svalue *> unknowns_map_t;
