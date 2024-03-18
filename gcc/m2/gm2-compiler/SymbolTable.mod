@@ -6154,7 +6154,7 @@ BEGIN
       SubrangeSym         : type := Subrange.Type |
       ArraySym            : type := Array.Type |
       SubscriptSym        : type := Subscript.Type |
-      SetSym              : type := Set.Type |
+      SetSym              : type := Sym |    (* Stop at the set type.  *)
       UnboundedSym        : type := Unbounded.Type |
       UndefinedSym        : type := NulSym |
       DummySym            : type := NulSym
