@@ -1243,7 +1243,7 @@ Supported Aspect                     Source
 
   RM References:  B.01 (17)   B.03 (62)   B.03 (71.1/2)
 
-.. index:: AI05-0216 (Ada 2012 feature)
+.. index:: AI-0216 (Ada 2012 feature)
 
 * *AI-0216 No_Task_Hierarchy forbids local tasks (0000-00-00)*
 

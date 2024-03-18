@@ -28603,7 +28603,7 @@ non-portable.
 RM References:  B.01 (17)   B.03 (62)   B.03 (71.1/2)
 @end itemize
 
-@geindex AI05-0216 (Ada 2012 feature)
+@geindex AI-0216 (Ada 2012 feature)
 
 
 @itemize *
