@@ -14931,6 +14931,9 @@ assignments).  This option is enabled by default for C or C++ if a strict
 conformance option such as @option{-std=c99} or @option{-std=c++17} is used.
 @option{-ffast-math} enables @option{-fexcess-precision=fast} by default
 regardless of whether a strict conformance option is used.
+If @option{-fexcess-precision=16} is specified, constants and the
+results of expressions with types @code{_Float16} and @code{__bf16}
+are computed without excess precision.
 
 @opindex mfpmath
 @option{-fexcess-precision=standard} is not implemented for languages
