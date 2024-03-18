@@ -281,6 +281,31 @@ avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
 }
 
 
+/* Constraint helper function.  XVAL is a CONST_INT.  Return true if we
+   can perform XOR without a clobber reg, provided the operation is on
+   a d-register.  This means each byte is in { 0, 0xff, 0x80 }.  */
+
+bool
+avr_xor_noclobber_dconst (rtx xval, int n_bytes)
+{
+  machine_mode mode = GET_MODE (xval);
+
+  if (VOIDmode == mode)
+    mode = SImode;
+
+  for (int i = 0; i < n_bytes; ++i)
+    {
+      rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
+      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
+
+      if (val8 != 0 && val8 != 0xff && val8 != 0x80)
+	return false;
+    }
+
+  return true;
+}
+
+
 /* Access some RTX as INT_MODE.  If X is a CONST_FIXED we can get
    the bit representation of X by "casting" it to CONST_INT.  */
 

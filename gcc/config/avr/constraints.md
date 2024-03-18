@@ -169,7 +169,7 @@
        (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<7) | (1<<8))")))
 
 (define_constraint "Co1"
-  "Constant 1-byte integer that allows AND by means of SET + BLD."
+  "Constant 1-byte integer that allows OR by means of SET + BLD."
   (and (match_code "const_int")
        (match_test "avr_popcount_each_byte (op, 1, 1<<1)")))
 
@@ -217,6 +217,21 @@
   "Constant 4-byte integer that allows XOR without clobber register."
   (and (match_code "const_int")
        (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<8))")))
+
+(define_constraint "CX2"
+  "Constant 2-byte integer that allows XOR without clobber register but requires a d-register."
+  (and (match_code "const_int")
+       (match_test "avr_xor_noclobber_dconst (op, 2)")))
+
+(define_constraint "CX3"
+  "Constant 3-byte integer that allows XOR without clobber register but requires a d-register."
+  (and (match_code "const_int")
+       (match_test "avr_xor_noclobber_dconst (op, 3)")))
+
+(define_constraint "CX4"
+  "Constant 4-byte integer that allows XOR without clobber register but requires a d-register."
+  (and (match_code "const_int")
+       (match_test "avr_xor_noclobber_dconst (op, 4)")))
 
 (define_constraint "Csp"
   "Integer constant in the range -11 @dots{} 6."
