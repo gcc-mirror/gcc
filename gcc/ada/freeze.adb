@@ -303,8 +303,12 @@ package body Freeze is
       if Known_Esize (Typ) and then Known_Alignment (Typ) then
          Align := Alignment_In_Bits (Typ);
 
-         if Align > Esize (Typ) and then Align <= System_Max_Integer_Size then
-            Set_Esize (Typ, Align);
+         if Align > Esize (Typ) then
+            if Align > System_Max_Integer_Size then
+               pragma Assert (Serious_Errors_Detected > 0);
+            else
+               Set_Esize (Typ, Align);
+            end if;
          end if;
       end if;
    end Adjust_Esize_For_Alignment;
