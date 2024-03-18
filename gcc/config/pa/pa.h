@@ -828,19 +828,8 @@ extern int may_call_alloca;
 
 /* Nonzero if 14-bit offsets can be used for all loads and stores.
    This is not possible when generating PA 1.x code as floating point
-   accesses only support 5-bit offsets.  Note that we do not forbid
-   the use of 14-bit offsets prior to reload.  Instead, we use secondary
-   reloads to fix REG+D memory addresses for floating-point accesses.
-
-   FIXME: the GNU ELF linker clobbers the LSB of the FP register number
-   in PA 2.0 floating-point insns with long displacements.  This is
-   because R_PARISC_DPREL14WR and other relocations like it are not
-   yet supported by GNU ld.  For now, we reject long displacements
-   on this target.  */
-
-#define INT14_OK_STRICT \
-  (TARGET_SOFT_FLOAT                                                   \
-   || (TARGET_PA_20 && !TARGET_ELF32 && !TARGET_ELF64))
+   accesses only support 5-bit offsets.  */
+#define INT14_OK_STRICT (TARGET_SOFT_FLOAT || TARGET_PA_20)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.

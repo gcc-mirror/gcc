@@ -2039,7 +2039,8 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	      op1 = replace_equiv_address (op1, scratch_reg);
 	    }
 	}
-      else if ((!INT14_OK_STRICT && symbolic_memory_operand (op1, VOIDmode))
+      else if (((TARGET_ELF32 || !TARGET_PA_20)
+		&& symbolic_memory_operand (op1, VOIDmode))
 	       || IS_LO_SUM_DLT_ADDR_P (XEXP (op1, 0))
 	       || IS_INDEX_ADDR_P (XEXP (op1, 0)))
 	{
@@ -2088,7 +2089,8 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	      op0 = replace_equiv_address (op0, scratch_reg);
 	    }
 	}
-      else if ((!INT14_OK_STRICT && symbolic_memory_operand (op0, VOIDmode))
+      else if (((TARGET_ELF32 || !TARGET_PA_20)
+		&& symbolic_memory_operand (op0, VOIDmode))
 	       || IS_LO_SUM_DLT_ADDR_P (XEXP (op0, 0))
 	       || IS_INDEX_ADDR_P (XEXP (op0, 0)))
 	{
@@ -11038,18 +11040,22 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	  && (strict ? STRICT_REG_OK_FOR_BASE_P (y)
 		     : REG_OK_FOR_BASE_P (y)))
 	{
+	  y = XEXP (x, 1);
+
 	  /* Needed for -fPIC */
 	  if (mode == Pmode
-	      && GET_CODE (XEXP (x, 1)) == UNSPEC)
+	      && GET_CODE (y) == UNSPEC)
 	    return true;
 
-	  if (!INT14_OK_STRICT
-	      && (strict || !(reload_in_progress || reload_completed))
+	  /* Before reload, we need support for 14-bit floating
+	     point loads and stores, and associated relocations.  */
+	  if ((TARGET_ELF32 || !INT14_OK_STRICT)
+	      && !reload_completed
 	      && mode != QImode
 	      && mode != HImode)
 	    return false;
 
-	  if (CONSTANT_P (XEXP (x, 1)))
+	  if (CONSTANT_P (y))
 	    return true;
 	}
       return false;

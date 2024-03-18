@@ -331,12 +331,16 @@
 	  && !IS_INDEX_ADDR_P (XEXP (op, 0)));
 })
 
-;; True iff the operand OP can be used as the destination operand of
-;; a floating point store.  This also implies the operand could be used as
+;; True iff the operand OP can be used as the destination operand of a
+;; floating point store.  This also implies the operand could be used as
 ;; the source operand of a floating point load.  LO_SUM DLT and indexed
-;; memory operands are not allowed.  Symbolic operands are accepted if
-;; INT14_OK_STRICT is true.  We accept reloading pseudos and other memory
-;; operands.
+;; memory operands are not allowed.  Symbolic operands are accepted for
+;; PA 2.0 when TARGET_ELF32 is not true.  We accept reloading pseudos
+;; and other memory; operands.
+
+;; FIXME: The GNU ELF32 linker clobbers the LSB of the FP register number
+;; in PA 2.0 {fldw,fstw} insns with long displacements.  This is because
+;; R_PARISC_DPREL14WR and other relocations like it are not supported.
 
 (define_predicate "floating_point_store_memory_operand"
   (match_code "reg,mem")
@@ -362,7 +366,8 @@
     return false;
 
   return ((reload_in_progress || memory_address_p (mode, XEXP (op, 0)))
-	  && (INT14_OK_STRICT || !symbolic_memory_operand (op, VOIDmode))
+	  && !((TARGET_ELF32 || !TARGET_PA_20)
+	       && symbolic_memory_operand (op, VOIDmode))
 	  && !IS_LO_SUM_DLT_ADDR_P (XEXP (op, 0))
 	  && !IS_INDEX_ADDR_P (XEXP (op, 0)));
 })
