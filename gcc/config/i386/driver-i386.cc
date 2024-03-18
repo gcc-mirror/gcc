@@ -492,6 +492,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	processor = PROCESSOR_GEODE;
       else if (has_feature (FEATURE_MOVBE) && family == 22)
 	processor = PROCESSOR_BTVER2;
+      else if (has_feature (FEATURE_AVX512VP2INTERSECT))
+	processor = PROCESSOR_ZNVER5;
       else if (has_feature (FEATURE_AVX512F))
 	processor = PROCESSOR_ZNVER4;
       else if (has_feature (FEATURE_VAES))
@@ -833,6 +835,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     case PROCESSOR_ZNVER4:
       cpu = "znver4";
+      break;
+    case PROCESSOR_ZNVER5:
+      cpu = "znver5";
       break;
     case PROCESSOR_BTVER1:
       cpu = "btver1";

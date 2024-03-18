@@ -26194,6 +26194,9 @@ AMD Family 19h Zen version 3.
 
 @item znver4
 AMD Family 19h Zen version 4.
+
+@item znver5
+AMD Family 1ah Zen version 5.
 @end table
 
 Here is an example:
