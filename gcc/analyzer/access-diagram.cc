@@ -311,7 +311,8 @@ remove_ssa_names (tree expr)
     return SSA_NAME_VAR (expr);
   tree t = copy_node (expr);
   for (int i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
-    TREE_OPERAND (t, i) = remove_ssa_names (TREE_OPERAND (expr, i));
+    if (TREE_OPERAND (expr, i))
+      TREE_OPERAND (t, i) = remove_ssa_names (TREE_OPERAND (expr, i));
   return t;
 }
 
