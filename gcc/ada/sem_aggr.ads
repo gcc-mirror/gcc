@@ -27,6 +27,7 @@
 --  part of Sem_Res, but is split off since the aggregate code is so complex.
 
 with Einfo.Entities; use Einfo.Entities;
+with Sinfo.Nodes;    use Sinfo.Nodes;
 with Types;          use Types;
 
 package Sem_Aggr is
@@ -43,6 +44,21 @@ package Sem_Aggr is
    --  Returns True if aggregate Aggr consists of a single choice
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
+   function Is_Indexed_Aggregate
+     (N           : N_Aggregate_Id;
+      Add_Unnamed : Node_Id;
+      New_Indexed : Node_Id) return Boolean;
+   --  Returns True if N satisfies the criteria for being an indexed aggregate,
+   --  that is, N is a container aggregate whose type has an Aggregate aspect
+   --  that specifies a New_Indexed operation (it's Present), the aggregate
+   --  is not a null aggregate, and either the type doesn't specify Add_Unnamed
+   --  or there is a component association that is an N_Component_Association
+   --  or is an N_Iterated_Component_Association with a Defining_Identifier.
+   --  Returns False otherwise. The actuals for the Add_Unnamed and New_Indexed
+   --  formals must be nodes that are names denoting the subprograms specified
+   --  for those operations in the Aggregate aspect of the aggregate's type,
+   --  or else Empty if the operation was not specified.
 
    function Is_Null_Aggregate (N : Node_Id) return Boolean;
    --  Returns True for a "[]" aggregate (an Ada 2022 feature), even after

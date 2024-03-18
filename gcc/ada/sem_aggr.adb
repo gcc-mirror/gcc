@@ -49,6 +49,7 @@ with Sem_Aux;        use Sem_Aux;
 with Sem_Case;       use Sem_Case;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch5;        use Sem_Ch5;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch13;       use Sem_Ch13;
 with Sem_Dim;        use Sem_Dim;
@@ -58,7 +59,6 @@ with Sem_Util;       use Sem_Util;
 with Sem_Type;       use Sem_Type;
 with Sem_Warn;       use Sem_Warn;
 with Sinfo;          use Sinfo;
-with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stringt;        use Stringt;
@@ -780,6 +780,102 @@ package body Sem_Aggr is
          return Pref /= Choice;
       end if;
    end Is_Deep_Choice;
+
+   --------------------------
+   -- Is_Indexed_Aggregate --
+   --------------------------
+
+   function Is_Indexed_Aggregate
+     (N           : N_Aggregate_Id;
+      Add_Unnamed : Node_Id;
+      New_Indexed : Node_Id) return Boolean
+   is
+   begin
+      if Present (New_Indexed)
+        and then not Is_Null_Aggregate (N)
+      then
+         if No (Add_Unnamed) then
+            return True;
+
+         else
+            declare
+               Comp_Assns : constant List_Id := Component_Associations (N);
+               Comp_Assn  : Node_Id;
+
+            begin
+               if not Is_Empty_List (Comp_Assns) then
+
+                  --  It suffices to look at the first association to determine
+                  --  whether the aggregate is an indexed aggregate.
+
+                  Comp_Assn := First (Comp_Assns);
+
+                  --  Test for the component association being either:
+                  --
+                  --    1) an N_Component_Association node, in which case there
+                  --       is a list of choices (the "key choices");
+                  --
+                  --  or else:
+                  --
+                  --    2) an N_Iterated_Component_Association node that has
+                  --       a Defining_Identifier, in which case it has
+                  --       Discrete_Choices that effectively make it
+                  --       equivalent to a Loop_Parameter_Specification;
+                  --
+                  --  or else:
+                  --
+                  --    3) an N_Iterated_Element_Association node with
+                  --       a Loop_Parameter_Specification with a discrete
+                  --       subtype or range.
+                  --
+                  --  This basically corresponds to the definition of indexed
+                  --  aggregates (in RM22 4.3.5(25/5)), but the GNAT tree
+                  --  representation doesn't always directly match the RM
+                  --  syntax for various reasons.
+
+                  if Nkind (Comp_Assn) = N_Component_Association
+                    or else
+                      (Nkind (Comp_Assn) = N_Iterated_Component_Association
+                        and then Present (Defining_Identifier (Comp_Assn)))
+                  then
+                     return True;
+
+                  --  In the case of an iterated_element_association with a
+                  --  loop_parameter_specification, we have to look deeper to
+                  --  confirm that it is not actually an iterator_specification
+                  --  masquerading as a loop_parameter_specification. Those can
+                  --  share syntax (for example, having the iterator of form
+                  --  "for C in <function-call>") and a rewrite into an
+                  --  iterator_specification can happen later.
+
+                  elsif Nkind (Comp_Assn) = N_Iterated_Element_Association
+                    and then Present (Loop_Parameter_Specification (Comp_Assn))
+                  then
+                     declare
+                        Loop_Parm_Spec  : constant Node_Id :=
+                          Loop_Parameter_Specification (Comp_Assn);
+                        Discr_Subt_Defn : constant Node_Id :=
+                          Discrete_Subtype_Definition (Loop_Parm_Spec);
+                     begin
+                        if Nkind (Discr_Subt_Defn) = N_Range
+                          or else
+                            Nkind (Discr_Subt_Defn) = N_Subtype_Indication
+                          or else
+                            (Is_Entity_Name (Discr_Subt_Defn)
+                              and then
+                             Is_Type (Entity (Discr_Subt_Defn)))
+                        then
+                           return True;
+                        end if;
+                     end;
+                  end if;
+               end if;
+            end;
+         end if;
+      end if;
+
+      return False;
+   end Is_Indexed_Aggregate;
 
    -------------------------
    -- Is_Others_Aggregate --
@@ -3227,22 +3323,23 @@ package body Sem_Aggr is
         Key_Type  : Entity_Id;
         Elmt_Type : Entity_Id)
       is
-         Loc      : constant Source_Ptr := Sloc (N);
-         Choice   : Node_Id;
-         Copy     : Node_Id;
-         Ent      : Entity_Id;
-         Expr     : Node_Id;
-         Key_Expr : Node_Id;
-         Id       : Entity_Id;
-         Id_Name  : Name_Id;
-         Typ      : Entity_Id := Empty;
+         Loc           : constant Source_Ptr := Sloc (N);
+         Choice        : Node_Id;
+         Copy          : Node_Id;
+         Ent           : Entity_Id;
+         Expr          : Node_Id;
+         Key_Expr      : Node_Id := Empty;
+         Id            : Entity_Id;
+         Id_Name       : Name_Id;
+         Typ           : Entity_Id := Empty;
+         Loop_Param_Id : Entity_Id := Empty;
 
       begin
          Error_Msg_Ada_2022_Feature ("iterated component", Loc);
 
          --  If this is an Iterated_Element_Association then either a
          --  an Iterator_Specification or a Loop_Parameter specification
-         --  is present. In both cases a Key_Expression is present.
+         --  is present.
 
          if Nkind (Comp) = N_Iterated_Element_Association then
 
@@ -3258,18 +3355,27 @@ package body Sem_Aggr is
 
             if Present (Loop_Parameter_Specification (Comp)) then
                Copy := Copy_Separate_Tree (Comp);
+               Set_Parent (Copy, Parent (Comp));
 
                Analyze
                  (Loop_Parameter_Specification (Copy));
 
-               Id_Name := Chars (Defining_Identifier
-                            (Loop_Parameter_Specification (Comp)));
+               if Present (Iterator_Specification (Copy)) then
+                  Loop_Param_Id :=
+                    Defining_Identifier (Iterator_Specification (Copy));
+               else
+                  Loop_Param_Id :=
+                    Defining_Identifier (Loop_Parameter_Specification (Copy));
+               end if;
+
+               Id_Name := Chars (Loop_Param_Id);
             else
                Copy := Copy_Separate_Tree (Iterator_Specification (Comp));
                Analyze (Copy);
 
-               Id_Name := Chars (Defining_Identifier
-                            (Iterator_Specification (Comp)));
+               Loop_Param_Id := Defining_Identifier (Copy);
+
+               Id_Name := Chars (Loop_Param_Id);
             end if;
 
             --  Key expression must have the type of the key. We preanalyze
@@ -3278,10 +3384,12 @@ package body Sem_Aggr is
             --  corresponding loop.
 
             Key_Expr := Key_Expression (Comp);
-            Preanalyze_And_Resolve (New_Copy_Tree (Key_Expr), Key_Type);
+            if Present (Key_Expr) then
+               Preanalyze_And_Resolve (New_Copy_Tree (Key_Expr), Key_Type);
+            end if;
             End_Scope;
 
-            Typ := Key_Type;
+            Typ := Etype (Loop_Param_Id);
 
          elsif Present (Iterator_Specification (Comp)) then
             --  Create a temporary scope to avoid some modifications from
@@ -3294,9 +3402,12 @@ package body Sem_Aggr is
             Set_Parent (Ent, Parent (Comp));
             Push_Scope (Ent);
 
-            Copy    := Copy_Separate_Tree (Iterator_Specification (Comp));
-            Id_Name :=
-              Chars (Defining_Identifier (Iterator_Specification (Comp)));
+            Copy := Copy_Separate_Tree (Iterator_Specification (Comp));
+
+            Loop_Param_Id :=
+              Defining_Identifier (Iterator_Specification (Comp));
+
+            Id_Name := Chars (Loop_Param_Id);
 
             Preanalyze (Copy);
 
@@ -3307,28 +3418,58 @@ package body Sem_Aggr is
          else
             Choice := First (Discrete_Choices (Comp));
 
-            while Present (Choice) loop
-               Analyze (Choice);
+            --  This is an N_Component_Association with a Defining_Identifier
+            --  and Discrete_Choice_List, but the latter can only have a single
+            --  choice, as it's a stand-in for a Loop_Parameter_Specification
+            --  (or possibly even an Iterator_Specification, see below).
 
-               --  Choice can be a subtype name, a range, or an expression
+            pragma Assert (No (Next (Choice)));
 
-               if Is_Entity_Name (Choice)
-                 and then Is_Type (Entity (Choice))
-                 and then Base_Type (Entity (Choice)) = Base_Type (Key_Type)
-               then
-                  null;
+            Analyze (Choice);
 
-               elsif Present (Key_Type) then
-                  Analyze_And_Resolve (Choice, Key_Type);
-                  Typ := Key_Type;
-               else
-                  Typ := Etype (Choice);  --  assume unique for now
-               end if;
+            --  Choice can be a subtype name, a range, or an expression
 
-               Next (Choice);
-            end loop;
+            if Is_Entity_Name (Choice)
+              and then Is_Type (Entity (Choice))
+              and then Base_Type (Entity (Choice)) = Base_Type (Key_Type)
+            then
+               null;
 
-            Id_Name := Chars (Defining_Identifier (Comp));
+            elsif Nkind (Choice) = N_Function_Call then
+               declare
+                  I_Spec : constant Node_Id :=
+                    Make_Iterator_Specification (Sloc (N),
+                      Defining_Identifier =>
+                        Relocate_Node (Defining_Identifier (Comp)),
+                      Name                => New_Copy_Tree (Choice),
+                      Reverse_Present     => False,
+                      Iterator_Filter     => Empty,
+                      Subtype_Indication  => Empty);
+               begin
+                  Set_Iterator_Specification (Comp, I_Spec);
+                  Set_Defining_Identifier (Comp, Empty);
+
+                  Analyze_Iterator_Specification
+                    (Iterator_Specification (Comp));
+
+                  Resolve_Iterated_Association (Comp, Key_Type, Elmt_Type);
+                  --  Recursive call to expand association as iterator_spec
+
+                  return;
+               end;
+
+            elsif Present (Key_Type) then
+               Analyze_And_Resolve (Choice, Key_Type);
+               Typ := Key_Type;
+
+            else
+               Typ := Etype (Choice);  --  assume unique for now
+            end if;
+
+            Loop_Param_Id :=
+              Defining_Identifier (Comp);
+
+            Id_Name := Chars (Loop_Param_Id);
          end if;
 
          --  Create a scope in which to introduce an index, which is usually
@@ -3357,6 +3498,21 @@ package body Sem_Aggr is
          Set_Is_Not_Self_Hidden (Id);
          Set_Scope (Id, Ent);
          Set_Referenced (Id);
+
+         --  Check for violation of 4.3.5(27/5)
+
+         if No (Key_Expr)
+           and then Present (Key_Type)
+           and then
+             (Is_Indexed_Aggregate (N, Add_Unnamed_Subp, New_Indexed_Subp)
+               or else Present (Add_Named_Subp))
+           and then Base_Type (Key_Type) /= Base_Type (Typ)
+         then
+            Error_Msg_Node_2 := Key_Type;
+            Error_Msg_NE
+              ("loop parameter type & must be same as key type & " &
+               "(RM22 4.3.5(27))", Loop_Param_Id, Typ);
+         end if;
 
          --  Analyze a copy of the expression, to verify legality. We use
          --  a copy because the expression will be analyzed anew when the
@@ -3409,15 +3565,16 @@ package body Sem_Aggr is
                   Comp : Node_Id := First (Component_Associations (N));
                begin
                   while Present (Comp) loop
-                     if Nkind (Comp) /=
-                       N_Iterated_Component_Association
+                     if Nkind (Comp) in
+                       N_Iterated_Component_Association |
+                       N_Iterated_Element_Association
                      then
+                        Resolve_Iterated_Association
+                          (Comp, Empty, Elmt_Type);
+                     else
                         Error_Msg_N ("illegal component association "
                           & "for unnamed container aggregate", Comp);
                         return;
-                     else
-                        Resolve_Iterated_Association
-                          (Comp, Empty, Elmt_Type);
                      end if;
 
                      Next (Comp);
@@ -3463,10 +3620,6 @@ package body Sem_Aggr is
 
                   while Present (Choice) loop
                      Analyze_And_Resolve (Choice, Key_Type);
-                     if not Is_Static_Expression (Choice) then
-                        Error_Msg_N ("choice must be static", Choice);
-                     end if;
-
                      Next (Choice);
                   end loop;
 
@@ -3535,7 +3688,9 @@ package body Sem_Aggr is
                         Next (Choice);
                      end loop;
 
-                     Analyze_And_Resolve (Expression (Comp), Comp_Type);
+                     if not Box_Present (Comp) then
+                        Analyze_And_Resolve (Expression (Comp), Comp_Type);
+                     end if;
 
                   elsif Nkind (Comp) in
                     N_Iterated_Component_Association |
@@ -3543,6 +3698,56 @@ package body Sem_Aggr is
                   then
                      Resolve_Iterated_Association
                        (Comp, Index_Type, Comp_Type);
+
+                     --  Check the legality rule of RM22 4.3.5(28/5). Note that
+                     --  Is_Indexed_Aggregate can change its status (to False)
+                     --  as a result of calling Resolve_Iterated_Association,
+                     --  due to possible expansion of iterator_specifications
+                     --  there.
+
+                     if Is_Indexed_Aggregate
+                          (N, Add_Unnamed_Subp, New_Indexed_Subp)
+                     then
+                        if Nkind (Comp) = N_Iterated_Element_Association then
+                           if Present (Loop_Parameter_Specification (Comp))
+                           then
+                              if Present (Iterator_Filter
+                                   (Loop_Parameter_Specification (Comp)))
+                              then
+                                 Error_Msg_N
+                                   ("iterator filter not allowed " &
+                                    "in indexed aggregate (RM22 4.3.5(28))",
+                                    Iterator_Filter
+                                      (Loop_Parameter_Specification (Comp)));
+                                 return;
+
+                              elsif Present (Key_Expression (Comp)) then
+                                 Error_Msg_N
+                                   ("key expression not allowed " &
+                                    "in indexed aggregate (RM22 4.3.5(28))",
+                                    Key_Expression (Comp));
+                                 return;
+                              end if;
+
+                           elsif Present (Iterator_Specification (Comp)) then
+                              Error_Msg_N
+                                ("iterator specification not allowed " &
+                                 "in indexed aggregate (RM22 4.3.5(28))",
+                                 Iterator_Specification (Comp));
+                              return;
+                           end if;
+
+                        elsif Nkind (Comp) = N_Iterated_Component_Association
+                          and then Present (Iterator_Specification (Comp))
+                        then
+                           Error_Msg_N
+                             ("iterator specification not allowed " &
+                              "in indexed aggregate (RM22 4.3.5(28))",
+                              Iterator_Specification (Comp));
+                           return;
+                        end if;
+                     end if;
+
                      Num_Choices := Num_Choices + 1;
                   end if;
 
@@ -3569,67 +3774,44 @@ package body Sem_Aggr is
                   begin
                      Comp := First (Component_Associations (N));
                      while Present (Comp) loop
-                        if Nkind (Comp) = N_Iterated_Element_Association then
-                           if Present
-                             (Loop_Parameter_Specification (Comp))
-                           then
-                              if Present (Iterator_Filter
-                                (Loop_Parameter_Specification (Comp)))
-                              then
-                                 Error_Msg_N
-                                   ("iterator filter not allowed " &
-                                     "in indexed aggregate", Comp);
-                                 return;
 
-                              elsif Present (Key_Expression
-                                (Loop_Parameter_Specification (Comp)))
-                              then
-                                 Error_Msg_N
-                                   ("key expression not allowed " &
-                                     "in indexed aggregate", Comp);
-                                 return;
-                              end if;
-                           end if;
+                        --  If Nkind is N_Iterated_Component_Association,
+                        --  this corresponds to an iterator_specification
+                        --  with a loop_parameter_specification, and we
+                        --  have to pick up Discrete_Choices. In this case
+                        --  there will be just one "choice", which will
+                        --  typically be a range.
+
+                        if Nkind (Comp) = N_Iterated_Component_Association
+                        then
+                           Choice := First (Discrete_Choices (Comp));
+
+                        --  Case where there's a list of choices
+
                         else
+                           Choice := First (Choices (Comp));
+                        end if;
 
-                           --  If Nkind is N_Iterated_Component_Association,
-                           --  this corresponds to an iterator_specification
-                           --  with a loop_parameter_specification, and we
-                           --  have to pick up Discrete_Choices. In this case
-                           --  there will be just one "choice", which will
-                           --  typically be a range.
+                        while Present (Choice) loop
+                           Get_Index_Bounds (Choice, Lo, Hi);
+                           Table (No_Choice).Choice := Choice;
+                           Table (No_Choice).Lo := Lo;
+                           Table (No_Choice).Hi := Hi;
 
-                           if Nkind (Comp) = N_Iterated_Component_Association
+                           --  Verify staticness of value or range
+
+                           if not Is_Static_Expression (Lo)
+                             or else not Is_Static_Expression (Hi)
                            then
-                              Choice := First (Discrete_Choices (Comp));
-
-                           --  Case where there's a list of choices
-
-                           else
-                              Choice := First (Choices (Comp));
+                              Error_Msg_N
+                                ("nonstatic expression for index " &
+                                  "for indexed aggregate", Choice);
+                              return;
                            end if;
 
-                           while Present (Choice) loop
-                              Get_Index_Bounds (Choice, Lo, Hi);
-                              Table (No_Choice).Choice := Choice;
-                              Table (No_Choice).Lo := Lo;
-                              Table (No_Choice).Hi := Hi;
-
-                              --  Verify staticness of value or range
-
-                              if not Is_Static_Expression (Lo)
-                                or else not Is_Static_Expression (Hi)
-                              then
-                                 Error_Msg_N
-                                   ("nonstatic expression for index " &
-                                     "for indexed aggregate", Choice);
-                                 return;
-                              end if;
-
-                              No_Choice := No_Choice + 1;
-                              Next (Choice);
-                           end loop;
-                        end if;
+                           No_Choice := No_Choice + 1;
+                           Next (Choice);
+                        end loop;
 
                         Next (Comp);
                      end loop;
