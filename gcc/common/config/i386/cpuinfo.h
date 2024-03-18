@@ -310,6 +310,22 @@ get_amd_cpu (struct __processor_model *cpu_model,
 	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER3;
 	}
       break;
+    case 0x1a:
+      cpu_model->__cpu_type = AMDFAM1AH;
+      if (model <= 0x77)
+	{
+	  cpu = "znver5";
+	  CHECK___builtin_cpu_is ("znver5");
+	  cpu_model->__cpu_subtype = AMDFAM1AH_ZNVER5;
+	}
+      else if (has_cpu_feature (cpu_model, cpu_features2,
+				FEATURE_AVX512VP2INTERSECT))
+	{
+	  cpu = "znver5";
+	  CHECK___builtin_cpu_is ("znver5");
+	  cpu_model->__cpu_subtype = AMDFAM1AH_ZNVER5;
+	}
+      break;
     default:
       break;
     }
