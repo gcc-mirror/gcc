@@ -711,9 +711,10 @@ package body Exp_Aggr is
             return True;
          end if;
 
-         --  One-component aggregates are suspicious, and if the context type
-         --  is an object declaration with nonstatic bounds it will trip gcc;
-         --  such an aggregate must be expanded into a single assignment.
+         --  One-component named aggregates where the index constraint is not
+         --  known at compile time are suspicious as the user might have
+         --  intended to write a subtype name but wrote the name of an object
+         --  instead. We emit a warning if we're in such a case.
 
          if Hiv = Lov and then Nkind (Parent (N)) = N_Object_Declaration then
             declare
@@ -741,8 +742,6 @@ package body Exp_Aggr is
                         Error_Msg_N ("\maybe subtype name was meant??", Indx);
                      end if;
                   end if;
-
-                  return False;
                end if;
             end;
          end if;
