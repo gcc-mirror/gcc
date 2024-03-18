@@ -1503,7 +1503,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // sqrt(pi / 2)
 	  const double __spi_2 = 1.2533141373155002512078826424055226L;
 	  _M_s1 = std::sqrt(__np * __1p) * (1 + _M_d1 / (4 * __np));
-	  _M_s2 = std::sqrt(__np * __1p) * (1 + _M_d2 / (4 * _M_t * __1p));
+	  _M_s2 = std::sqrt(__np * __1p) * (1 + _M_d2 / (4 * (_M_t * __1p)));
 	  _M_c = 2 * _M_d1 / __np;
 	  _M_a1 = std::exp(_M_c) * _M_s1 * __spi_2;
 	  const double __a12 = _M_a1 + _M_s2 * __spi_2;
