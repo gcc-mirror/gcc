@@ -1428,16 +1428,7 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   if (p == NULL)
     goto fail;
 
-  for (itr = subset_list->m_head; itr != NULL; itr = itr->next)
-    {
-      subset_list->handle_implied_ext (itr->name.c_str ());
-    }
-
-  /* Make sure all implied extensions are included. */
-  gcc_assert (subset_list->check_implied_ext ());
-
-  subset_list->handle_combine_ext ();
-  subset_list->check_conflict_ext ();
+  subset_list->finalize ();
 
   return subset_list;
 
@@ -1465,6 +1456,26 @@ void
 riscv_subset_list::set_loc (location_t loc)
 {
   m_loc = loc;
+}
+
+/* Make sure the implied or combined extension is included after add
+   a new std extension to subset list or likewise.  For exmaple as below,
+
+   void __attribute__((target("arch=+v"))) func () with -march=rv64gc.
+
+   The implied zvl128b and zve64d of the std v should be included.  */
+void
+riscv_subset_list::finalize ()
+{
+  riscv_subset_t *subset;
+
+  for (subset = m_head; subset != NULL; subset = subset->next)
+    handle_implied_ext (subset->name.c_str ());
+
+  gcc_assert (check_implied_ext ());
+
+  handle_combine_ext ();
+  check_conflict_ext ();
 }
 
 /* Return the current arch string.  */

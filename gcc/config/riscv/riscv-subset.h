@@ -105,6 +105,8 @@ public:
   int match_score (riscv_subset_list *) const;
 
   void set_loc (location_t);
+
+  void finalize ();
 };
 
 extern const riscv_subset_list *riscv_current_subset_list (void);

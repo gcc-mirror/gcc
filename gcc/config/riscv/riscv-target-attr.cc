@@ -136,6 +136,8 @@ riscv_target_attr_parser::parse_arch (const char *str)
 	    }
 	  token = strtok_r (NULL, ",", &str_to_check);
 	}
+
+      m_subset_list->finalize ();
       return true;
     }
 fail:

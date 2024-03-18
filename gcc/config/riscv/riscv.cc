@@ -9492,6 +9492,10 @@ riscv_set_current_function (tree decl)
   cl_target_option_restore (&global_options, &global_options_set,
 			    TREE_TARGET_OPTION (new_tree));
 
+  /* The ISA extension can vary based on the function extension like target.
+     Thus, make sure that the machine modes are reflected correctly here.  */
+  init_adjust_machine_modes ();
+
   riscv_save_restore_target_globals (new_tree);
 }
 
