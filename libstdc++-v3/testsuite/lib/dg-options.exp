@@ -314,7 +314,7 @@ proc atomic_link_flags { paths } {
       if { [file exists "${gccpath}/libatomic/.libs/libatomic.a"]
            || [file exists "${gccpath}/libatomic/.libs/libatomic.${shlib_ext}"] } {
           append flags " -B${gccpath}/libatomic/ "
-          append flags " -L${gccpath}/libatomic/.libs"
+          append flags " -B${gccpath}/libatomic/.libs"
           append ld_library_path ":${gccpath}/libatomic/.libs"
       }
     } else {
