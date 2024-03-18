@@ -1,3 +1,44 @@
+2024-03-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114296
+	* gm2-compiler/M2ALU.mod (ElementsSolved): Add tokenno parameter.
+	Add constant checks and generate error messages.
+	(EvalSetValues): Pass tokenno parameter to ElementsSolved.
+	* gm2-compiler/M2LexBuf.mod (stop): New procedure.
+	(MakeVirtualTok): Call stop if caret = BadTokenNo.
+	* gm2-compiler/M2Quads.def (BuildNulExpression): Add tokpos
+	parameter.
+	(BuildSetStart): Ditto.
+	(BuildEmptySet): Ditto.
+	(BuildConstructorEnd): Add startpos parameter.
+	(BuildTypeForConstructor): Add tokpos parameter.
+	* gm2-compiler/M2Quads.mod (BuildNulExpression): Add tokpos
+	parameter and push tokpos to the quad stack.
+	(BuildSetStart): Add tokpos parameter and push tokpos.
+	(BuildSetEnd): Rewrite.
+	(BuildEmptySet): Add tokpos parameter and push tokpos with
+	the set	type.
+	(BuildConstructorStart): Pop typepos.
+	(BuildConstructorEnd): Add startpos parameter.
+	Create valtok from startpos and cbratokpos.
+	(BuildTypeForConstructor): Add tokpos parameter.
+	* gm2-compiler/M2Range.def (InitAssignmentRangeCheck): Rename
+	d to des and e to expr.
+	Add destok and exprtok parameters.
+	* gm2-compiler/M2Range.mod (InitAssignmentRangeCheck): Rename
+	d to des and e to expr.
+	Add destok and exprtok parameters.
+	Save destok and exprtok into range record.
+	(FoldAssignment): Pass exprtok to TryDeclareConstant.
+	* gm2-compiler/P3Build.bnf (ComponentValue): Rewrite.
+	(Constructor): Rewrite.
+	(ConstSetOrQualidentOrFunction): Rewrite.
+	(SetOrQualidentOrFunction): Rewrite.
+	* gm2-compiler/PCBuild.bnf (ConstSetOrQualidentOrFunction): Rewrite.
+	(SetOrQualidentOrFunction): Rewrite.
+	* gm2-compiler/PHBuild.bnf (Constructor): Rewrite.
+	(ConstSetOrQualidentOrFunction): Rewrite.
+
 2024-03-14  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114294

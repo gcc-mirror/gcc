@@ -1,3 +1,9 @@
+2024-03-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101135
+	* trans-array.cc (gfc_get_dataptr_offset): Check for optional
+	arguments being present before dereferencing data pointer.
+
 2024-03-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87477

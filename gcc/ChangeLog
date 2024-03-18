@@ -1,3 +1,7 @@
+2024-03-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_delegitimize_address): Delegitimize UNSPEC_TP.
+
 2024-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/114175

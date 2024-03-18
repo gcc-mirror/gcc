@@ -1,3 +1,14 @@
+2024-03-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101135
+	* gfortran.dg/missing_optional_dummy_6a.f90: Adjust diagnostic pattern.
+	* gfortran.dg/ubsan/missing_optional_dummy_8.f90: New test.
+
+2024-03-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114296
+	* gm2/pim/fail/badtype2.mod: New test.
+
 2024-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/114175
