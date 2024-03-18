@@ -5807,6 +5807,9 @@ check_externals_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
   if (e->expr_type != EXPR_FUNCTION)
     return 0;
 
+  if (e->symtree && e->symtree->n.sym->attr.subroutine)
+    return 0;
+
   sym = e->value.function.esym;
   if (sym == NULL)
     return 0;
