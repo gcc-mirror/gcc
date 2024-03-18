@@ -90,11 +90,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_constexpr_dynamic_alloc // >= C++20
   template<typename _Tp, typename... _Args>
-    constexpr auto
+    requires (!is_unbounded_array_v<_Tp>)
+      && requires { ::new((void*)0) _Tp(std::declval<_Args>()...); }
+    constexpr _Tp*
     construct_at(_Tp* __location, _Args&&... __args)
     noexcept(noexcept(::new((void*)0) _Tp(std::declval<_Args>()...)))
-    -> decltype(::new((void*)0) _Tp(std::declval<_Args>()...))
-    { return ::new((void*)__location) _Tp(std::forward<_Args>(__args)...); }
+    {
+      void* __loc = const_cast<remove_cv_t<_Tp>*>(__location);
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3436. std::construct_at should support arrays
+      if constexpr (is_array_v<_Tp>)
+	{
+	  static_assert(sizeof...(_Args) == 0, "std::construct_at for array "
+		       "types must not use any arguments to initialize the "
+		       "array");
+	  return ::new(__loc) _Tp[1]();
+	}
+      else
+	return ::new(__loc) _Tp(std::forward<_Args>(__args)...);
+    }
 #endif // C++20
 #endif// C++17
 
