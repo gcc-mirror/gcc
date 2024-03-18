@@ -255,7 +255,7 @@ http://www.ada-auth.org/ai05-summary.html.
 
 * *AI-0039 Stream attributes cannot be dynamic (0000-00-00)*
 
-  The RM permitted the use of dynamic expressions (such as ``ptr.all``)`
+  The RM permitted the use of dynamic expressions (such as ``ptr.all``)
   for stream attributes, but these were never useful and are now illegal. GNAT
   has always regarded such expressions as illegal.
 
@@ -555,7 +555,7 @@ http://www.ada-auth.org/ai05-summary.html.
   This AI clarifies that 'needs finalization' is part of dynamic semantics,
   and therefore depends on the run-time characteristics of an object (i.e. its
   tag) and not on its nominal type. As the AI indicates: "we do not expect
-  this to affect any implementation''.
+  this to affect any implementation".
 
   RM References:  7.06.01 (6)   7.06.01 (7)   7.06.01 (8)   7.06.01 (9/2)
 
@@ -812,7 +812,7 @@ http://www.ada-auth.org/ai05-summary.html.
 
   The new syntax for iterating over arrays and containers is now implemented.
   Iteration over containers is for now limited to read-only iterators. Only
-  default iterators are supported, with the syntax:  ``for Elem of C``.
+  default iterators are supported, with the syntax: ``for Elem of C``.
 
   RM References:  5.05
 
