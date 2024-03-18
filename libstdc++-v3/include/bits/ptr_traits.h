@@ -200,36 +200,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Ptr, typename _Tp>
     using __ptr_rebind = typename pointer_traits<_Ptr>::template rebind<_Tp>;
 
+#ifndef __glibcxx_to_address // C++ < 20
   template<typename _Tp>
+    [[__gnu__::__always_inline__]]
     constexpr _Tp*
     __to_address(_Tp* __ptr) noexcept
     {
-      static_assert(!std::is_function<_Tp>::value, "not a function pointer");
+      static_assert(!std::is_function<_Tp>::value, "std::to_address argument "
+		    "must not be a function pointer");
       return __ptr;
     }
 
-#ifndef __glibcxx_to_address // C++ < 20
   template<typename _Ptr>
     constexpr typename std::pointer_traits<_Ptr>::element_type*
     __to_address(const _Ptr& __ptr)
     { return std::__to_address(__ptr.operator->()); }
 #else
-  template<typename _Ptr>
-    constexpr auto
-    __to_address(const _Ptr& __ptr) noexcept
-    -> decltype(std::pointer_traits<_Ptr>::to_address(__ptr))
-    { return std::pointer_traits<_Ptr>::to_address(__ptr); }
-
-  template<typename _Ptr, typename... _None>
-    constexpr auto
-    __to_address(const _Ptr& __ptr, _None...) noexcept
-    {
-      if constexpr (is_base_of_v<__gnu_debug::_Safe_iterator_base, _Ptr>)
-	return std::__to_address(__ptr.base().operator->());
-      else
-	return std::__to_address(__ptr.operator->());
-    }
-
   /**
    * @brief Obtain address referenced by a pointer to an object
    * @param __ptr A pointer to an object
@@ -237,9 +223,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @ingroup pointer_abstractions
   */
   template<typename _Tp>
+    [[__gnu__::__always_inline__]]
     constexpr _Tp*
     to_address(_Tp* __ptr) noexcept
-    { return std::__to_address(__ptr); }
+    {
+      static_assert(!is_function_v<_Tp>, "std::to_address argument "
+		    "must not be a function pointer");
+      return __ptr;
+    }
 
   /**
    * @brief Obtain address referenced by a pointer to an object
@@ -251,7 +242,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Ptr>
     constexpr auto
     to_address(const _Ptr& __ptr) noexcept
-    { return std::__to_address(__ptr); }
+    {
+      if constexpr (requires { pointer_traits<_Ptr>::to_address(__ptr); })
+	return pointer_traits<_Ptr>::to_address(__ptr);
+      else if constexpr (is_base_of_v<__gnu_debug::_Safe_iterator_base, _Ptr>)
+	return std::to_address(__ptr.base().operator->());
+      else
+	return std::to_address(__ptr.operator->());
+    }
+
+  /// @cond undocumented
+  /// Compatibility for use in code that is also compiled as pre-C++20.
+  template<typename _Ptr>
+    [[__gnu__::__always_inline__]]
+    constexpr auto
+    __to_address(const _Ptr& __ptr) noexcept
+    { return std::to_address(__ptr); }
+  /// @endcond
 #endif // __glibcxx_to_address
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++20 } }
-// { dg-error "not a function pointer" "" { target *-*-* } 0 }
+// { dg-error "must not be a function pointer" "" { target *-*-* } 0 }
 
 #include <memory>
 
