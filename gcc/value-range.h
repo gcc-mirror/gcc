@@ -972,16 +972,16 @@ irange::contains_p (tree cst) const
 }
 
 inline bool
-range_includes_zero_p (const irange *vr)
+range_includes_zero_p (const irange &vr)
 {
-  if (vr->undefined_p ())
+  if (vr.undefined_p ())
     return false;
 
-  if (vr->varying_p ())
+  if (vr.varying_p ())
     return true;
 
-  wide_int zero = wi::zero (TYPE_PRECISION (vr->type ()));
-  return vr->contains_p (zero);
+  wide_int zero = wi::zero (TYPE_PRECISION (vr.type ()));
+  return vr.contains_p (zero);
 }
 
 // Constructors for irange

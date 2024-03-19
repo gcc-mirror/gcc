@@ -1657,7 +1657,7 @@ operator_plus::lhs_op1_relation (const irange &lhs,
     }
 
   // If op2 does not contain 0, then LHS and OP1 can never be equal.
-  if (!range_includes_zero_p (&op2))
+  if (!range_includes_zero_p (op2))
     return VREL_NE;
 
   return VREL_VARYING;

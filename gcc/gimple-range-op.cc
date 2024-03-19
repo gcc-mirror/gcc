@@ -853,7 +853,7 @@ public:
     // __builtin_ffs* and __builtin_popcount* return [0, prec].
     int prec = TYPE_PRECISION (lh.type ());
     // If arg is non-zero, then ffs or popcount are non-zero.
-    int mini = range_includes_zero_p (&lh) ? 0 : 1;
+    int mini = range_includes_zero_p (lh) ? 0 : 1;
     int maxi = prec;
 
     // If some high bits are known to be zero, decrease the maximum.
@@ -945,7 +945,7 @@ cfn_clz::fold_range (irange &r, tree type, const irange &lh,
       if (mini == -2)
 	mini = 0;
     }
-  else if (!range_includes_zero_p (&lh))
+  else if (!range_includes_zero_p (lh))
     {
       mini = 0;
       maxi = prec - 1;
@@ -1007,7 +1007,7 @@ cfn_ctz::fold_range (irange &r, tree type, const irange &lh,
 	mini = -2;
     }
   // If arg is non-zero, then use [0, prec - 1].
-  if (!range_includes_zero_p (&lh))
+  if (!range_includes_zero_p (lh))
     {
       mini = 0;
       maxi = prec - 1;
