@@ -399,6 +399,7 @@ gfc_expr *gfc_simplify_scale (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_scan (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_selected_char_kind (gfc_expr *);
 gfc_expr *gfc_simplify_selected_int_kind (gfc_expr *);
+gfc_expr *gfc_simplify_selected_logical_kind (gfc_expr *);
 gfc_expr *gfc_simplify_selected_real_kind (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_set_exponent (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_sign (gfc_expr *, gfc_expr *);

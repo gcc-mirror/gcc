@@ -281,6 +281,7 @@ Some basic guidelines for editing this document:
 * @code{SECOND}:        SECOND,    CPU time function
 * @code{SELECTED_CHAR_KIND}: SELECTED_CHAR_KIND,  Choose character kind
 * @code{SELECTED_INT_KIND}: SELECTED_INT_KIND,  Choose integer kind
+* @code{SELECTED_LOGICAL_KIND}: SELECTED_LOGICAL_KIND,  Choose logical kind
 * @code{SELECTED_REAL_KIND}: SELECTED_REAL_KIND,  Choose real kind
 * @code{SET_EXPONENT}:  SET_EXPONENT, Set the exponent of the model
 * @code{SHAPE}:         SHAPE,     Determine the shape of an array
@@ -12783,6 +12784,48 @@ program large_integers
   print *, huge(i5) >= 10_k5**5-1
   print *, huge(i15) >= 10_k15**15-1
 end program large_integers
+@end smallexample
+@end table
+
+
+
+@node SELECTED_LOGICAL_KIND
+@section @code{SELECTED_LOGICAL_KIND} --- Choose logical kind
+@fnindex SELECTED_LOGICAL_KIND
+@cindex logical kind
+@cindex kind, logical
+
+@table @asis
+@item @emph{Description}:
+@code{SELECTED_LOGICAL_KIND(BITS)} return the kind value of the smallest
+logical type whose storage size in bits is at least @var{BITS}. If there
+is no such logical kind, @code{SELECTED_LOGICAL_KIND} returns @math{-1}.
+
+@item @emph{Standard}:
+Fortran 2023 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@code{RESULT = SELECTED_LOGICAL_KIND(BITS)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{BITS} @tab Shall be a scalar and of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program logical_kinds
+  integer, parameter :: k1 = selected_logical_kind(1)
+  integer, parameter :: k40 = selected_logical_kind(40)
+  logical(kind=k1) :: l1    ! At least one bit
+  logical(kind=k40) :: l40  ! At least 40 bits
+
+  ! What is their actual size?
+  print *, storage_size(l1), storage_size(l40)
+end program logical_kinds
 @end smallexample
 @end table
 

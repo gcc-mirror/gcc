@@ -2952,6 +2952,12 @@ add_functions (void)
 
   make_generic ("selected_int_kind", GFC_ISYM_SI_KIND, GFC_STD_F95);
 
+  add_sym_1 ("selected_logical_kind", GFC_ISYM_SL_KIND, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_F2023, /* it has the same requirements */ gfc_check_selected_int_kind,
+	     gfc_simplify_selected_logical_kind, NULL, r, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("selected_logical_kind", GFC_ISYM_SL_KIND, GFC_STD_F2023);
+
   add_sym_3 ("selected_real_kind", GFC_ISYM_SR_KIND, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
 	     GFC_STD_F95, gfc_check_selected_real_kind,
 	     gfc_simplify_selected_real_kind, NULL,
@@ -5003,7 +5009,8 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
       gfc_isym_id id = isym->id;
       if (id != GFC_ISYM_REPEAT && id != GFC_ISYM_RESHAPE
 	  && id != GFC_ISYM_SI_KIND && id != GFC_ISYM_SR_KIND
-	  && id != GFC_ISYM_TRANSFER && id != GFC_ISYM_TRIM
+	  && id != GFC_ISYM_SL_KIND && id != GFC_ISYM_TRANSFER
+	  && id != GFC_ISYM_TRIM
 	  && !gfc_notify_std (GFC_STD_F2003, "Transformational function %qs "
 			      "at %L is invalid in an initialization "
 			      "expression", sym->name, &expr->where))

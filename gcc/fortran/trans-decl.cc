@@ -221,6 +221,7 @@ tree gfor_fndecl_is_contiguous0;
 /* Intrinsic functions implemented in Fortran.  */
 tree gfor_fndecl_sc_kind;
 tree gfor_fndecl_si_kind;
+tree gfor_fndecl_sl_kind;
 tree gfor_fndecl_sr_kind;
 
 /* BLAS gemm functions.  */
@@ -3604,6 +3605,12 @@ gfc_build_intrinsic_function_decls (void)
 	gfc_int4_type_node, 1, pvoid_type_node);
   DECL_PURE_P (gfor_fndecl_si_kind) = 1;
   TREE_NOTHROW (gfor_fndecl_si_kind) = 1;
+
+  gfor_fndecl_sl_kind = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("selected_logical_kind")), ". R ",
+	gfc_int4_type_node, 1, pvoid_type_node);
+  DECL_PURE_P (gfor_fndecl_sl_kind) = 1;
+  TREE_NOTHROW (gfor_fndecl_sl_kind) = 1;
 
   gfor_fndecl_sr_kind = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("selected_real_kind2008")), ". R R ",

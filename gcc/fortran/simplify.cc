@@ -7333,6 +7333,28 @@ gfc_simplify_selected_int_kind (gfc_expr *e)
 
 
 gfc_expr *
+gfc_simplify_selected_logical_kind (gfc_expr *e)
+{
+  int i, kind, bits;
+
+  if (e->expr_type != EXPR_CONSTANT || gfc_extract_int (e, &bits))
+    return NULL;
+
+  kind = INT_MAX;
+
+  for (i = 0; gfc_logical_kinds[i].kind != 0; i++)
+    if (gfc_logical_kinds[i].bit_size >= bits
+	&& gfc_logical_kinds[i].kind < kind)
+      kind = gfc_logical_kinds[i].kind;
+
+  if (kind == INT_MAX)
+    kind = -1;
+
+  return gfc_get_int_expr (gfc_default_integer_kind, &e->where, kind);
+}
+
+
+gfc_expr *
 gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q, gfc_expr *rdx)
 {
   int range, precision, radix, i, kind, found_precision, found_range,

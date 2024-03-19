@@ -862,8 +862,8 @@ data types are:
 The @code{KIND} value matches the storage size in bytes, except for
 @code{COMPLEX} where the storage size is twice as much (or both real and
 imaginary part are a real value of the given size).  It is recommended to use
-the @ref{SELECTED_CHAR_KIND}, @ref{SELECTED_INT_KIND} and
-@ref{SELECTED_REAL_KIND} intrinsics or the @code{INT8}, @code{INT16},
+the @ref{SELECTED_CHAR_KIND}, @ref{SELECTED_INT_KIND}, @ref{SELECTED_LOGICAL_KIND}
+and @ref{SELECTED_REAL_KIND} intrinsics or the @code{INT8}, @code{INT16},
 @code{INT32}, @code{INT64}, @code{REAL32}, @code{REAL64}, and @code{REAL128}
 parameters of the @code{ISO_FORTRAN_ENV} module instead of the concrete values.
 The available kind parameters can be found in the constant arrays
@@ -1272,8 +1272,9 @@ equivalent to the standard-conforming declaration
 @noindent
 where @code{k} is the kind parameter suitable for the intended precision.  As
 kind parameters are implementation-dependent, use the @code{KIND},
-@code{SELECTED_INT_KIND} and @code{SELECTED_REAL_KIND} intrinsics to retrieve
-the correct value, for instance @code{REAL*8 x} can be replaced by:
+@code{SELECTED_INT_KIND}, @code{SELECTED_LOGICAL_KIND} and
+@code{SELECTED_REAL_KIND} intrinsics to retrieve the correct value, for
+instance @code{REAL*8 x} can be replaced by:
 @smallexample
 INTEGER, PARAMETER :: dbl = KIND(1.0d0)
 REAL(KIND=dbl) :: x

@@ -2885,6 +2885,13 @@ check_transformational (gfc_expr *e)
     "trim", "unpack", "findloc", NULL
   };
 
+  static const char * const trans_func_f2023[] =  {
+    "all", "any", "count", "dot_product", "matmul", "null", "pack",
+    "product", "repeat", "reshape", "selected_char_kind", "selected_int_kind",
+    "selected_logical_kind", "selected_real_kind", "spread", "sum", "transfer",
+    "transpose", "trim", "unpack", "findloc", NULL
+  };
+
   int i;
   const char *name;
   const char *const *functions;
@@ -2895,7 +2902,9 @@ check_transformational (gfc_expr *e)
 
   name = e->symtree->n.sym->name;
 
-  if (gfc_option.allow_std & GFC_STD_F2008)
+  if (gfc_option.allow_std & GFC_STD_F2023)
+    functions = trans_func_f2023;
+  else if (gfc_option.allow_std & GFC_STD_F2008)
     functions = trans_func_f2008;
   else if (gfc_option.allow_std & GFC_STD_F2003)
     functions = trans_func_f2003;

@@ -978,6 +978,7 @@ extern GTY(()) tree gfor_fndecl_is_contiguous0;
 /* Implemented in Fortran.  */
 extern GTY(()) tree gfor_fndecl_sc_kind;
 extern GTY(()) tree gfor_fndecl_si_kind;
+extern GTY(()) tree gfor_fndecl_sl_kind;
 extern GTY(()) tree gfor_fndecl_sr_kind;
 
 /* IEEE-related.  */

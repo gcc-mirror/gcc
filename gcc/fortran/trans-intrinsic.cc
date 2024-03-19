@@ -9187,6 +9187,27 @@ gfc_conv_intrinsic_si_kind (gfc_se *se, gfc_expr *expr)
 }
 
 
+/* Generate code for SELECTED_LOGICAL_KIND (BITS) intrinsic function.  */
+
+static void
+gfc_conv_intrinsic_sl_kind (gfc_se *se, gfc_expr *expr)
+{
+  tree arg, type;
+
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+
+  /* The argument to SELECTED_LOGICAL_KIND is INTEGER(4).  */
+  type = gfc_get_int_type (4);
+  arg = gfc_build_addr_expr (NULL_TREE, fold_convert (type, arg));
+
+  /* Convert it to the required type.  */
+  type = gfc_typenode_for_spec (&expr->ts);
+  se->expr = build_call_expr_loc (input_location,
+			      gfor_fndecl_sl_kind, 1, arg);
+  se->expr = fold_convert (type, se->expr);
+}
+
+
 /* Generate code for SELECTED_REAL_KIND (P, R, RADIX) intrinsic function.  */
 
 static void
@@ -10616,6 +10637,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_SI_KIND:
       gfc_conv_intrinsic_si_kind (se, expr);
+      break;
+
+    case GFC_ISYM_SL_KIND:
+      gfc_conv_intrinsic_sl_kind (se, expr);
       break;
 
     case GFC_ISYM_SR_KIND:
