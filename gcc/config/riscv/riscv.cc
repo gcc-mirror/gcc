@@ -498,6 +498,23 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   NULL,						/* vector cost */
 };
 
+/* Costs to use when optimizing for xiangshan nanhu.  */
+static const struct riscv_tune_param xiangshan_nanhu_tune_info = {
+  {COSTS_N_INSNS (3), COSTS_N_INSNS (3)},	/* fp_add */
+  {COSTS_N_INSNS (3), COSTS_N_INSNS (3)},	/* fp_mul */
+  {COSTS_N_INSNS (10), COSTS_N_INSNS (20)},	/* fp_div */
+  {COSTS_N_INSNS (3), COSTS_N_INSNS (3)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  6,						/* issue_rate */
+  3,						/* branch_cost */
+  3,						/* memory_cost */
+  3,						/* fmv_cost */
+  true,						/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
+  RISCV_FUSE_ZEXTW | RISCV_FUSE_ZEXTH,          /* fusible_ops */
+  NULL,						/* vector cost */
+};
+
 /* Costs to use when optimizing for a generic ooo profile.  */
 static const struct riscv_tune_param generic_ooo_tune_info = {
   {COSTS_N_INSNS (2), COSTS_N_INSNS (2)},	/* fp_add */
