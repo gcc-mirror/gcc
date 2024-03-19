@@ -3967,9 +3967,10 @@ static tree
 get_tree_for_byte_offset (tree ptr_expr, byte_offset_t byte_offset)
 {
   gcc_assert (ptr_expr);
+  tree ptype = build_pointer_type_for_mode (char_type_node, ptr_mode, true);
   return fold_build2 (MEM_REF,
 		      char_type_node,
-		      ptr_expr, wide_int_to_tree (size_type_node, byte_offset));
+		      ptr_expr, wide_int_to_tree (ptype, byte_offset));
 }
 
 /* Simulate a series of reads of REG until we find a 0 byte
@@ -5360,9 +5361,10 @@ region_model::get_representative_path_var_1 (const region *reg,
 	tree addr_parent = build1 (ADDR_EXPR,
 				   build_pointer_type (reg->get_type ()),
 				   parent_pv.m_tree);
-	return path_var (build2 (MEM_REF,
-				 reg->get_type (),
-				 addr_parent, offset_pv.m_tree),
+	tree ptype = build_pointer_type_for_mode (char_type_node, ptr_mode,
+						  true);
+	return path_var (build2 (MEM_REF, reg->get_type (), addr_parent,
+				 fold_convert (ptype, offset_pv.m_tree)),
 			 parent_pv.m_stack_depth);
       }
 
@@ -9024,7 +9026,8 @@ test_mem_ref ()
 
   tree int_17 = build_int_cst (integer_type_node, 17);
   tree addr_of_x = build1 (ADDR_EXPR, int_star, x);
-  tree offset_0 = build_int_cst (integer_type_node, 0);
+  tree ptype = build_pointer_type_for_mode (char_type_node, ptr_mode, true);
+  tree offset_0 = build_int_cst (ptype, 0);
   tree star_p = build2 (MEM_REF, integer_type_node, p, offset_0);
 
   region_model_manager mgr;
@@ -9074,7 +9077,8 @@ test_POINTER_PLUS_EXPR_then_MEM_REF ()
   tree a = build_global_decl ("a", int_star);
   tree offset_12 = build_int_cst (size_type_node, 12);
   tree pointer_plus_expr = build2 (POINTER_PLUS_EXPR, int_star, a, offset_12);
-  tree offset_0 = build_int_cst (integer_type_node, 0);
+  tree ptype = build_pointer_type_for_mode (char_type_node, ptr_mode, true);
+  tree offset_0 = build_int_cst (ptype, 0);
   tree mem_ref = build2 (MEM_REF, integer_type_node,
 			 pointer_plus_expr, offset_0);
   region_model_manager mgr;
