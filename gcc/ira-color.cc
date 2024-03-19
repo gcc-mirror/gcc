@@ -2163,6 +2163,9 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
       if (! check_hard_reg_p (a, hard_regno,
 			      conflicting_regs, profitable_hard_regs))
 	continue;
+      if (NUM_REGISTER_FILTERS
+	  && !test_register_filters (ALLOCNO_REGISTER_FILTERS (a), hard_regno))
+	continue;
       cost = costs[i];
       full_cost = full_costs[i];
       if (!HONOR_REG_ALLOC_ORDER)
@@ -3204,6 +3207,9 @@ improve_allocation (void)
 	  hregno = ira_class_hard_regs[aclass][j];
 	  if (! check_hard_reg_p (a, hregno,
 				  conflicting_regs, profitable_hard_regs))
+	    continue;
+	  if (NUM_REGISTER_FILTERS
+	      && !test_register_filters (ALLOCNO_REGISTER_FILTERS (a), hregno))
 	    continue;
 	  ira_assert (ira_class_hard_reg_index[aclass][hregno] == j);
 	  k = allocno_costs == NULL ? 0 : j;
@@ -5274,6 +5280,10 @@ fast_allocation (void)
 	  if (ira_hard_reg_set_intersection_p (hard_regno, mode, conflict_hard_regs)
 	      || (TEST_HARD_REG_BIT
 		  (ira_prohibited_class_mode_regs[aclass][mode], hard_regno)))
+	    continue;
+	  if (NUM_REGISTER_FILTERS
+	      && !test_register_filters (ALLOCNO_REGISTER_FILTERS (a),
+					 hard_regno))
 	    continue;
 	  if (costs == NULL)
 	    {

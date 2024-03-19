@@ -263,23 +263,6 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         return sd;
     }
 
-    override final Dsymbol search(const ref Loc loc, Identifier ident, int flags = SearchLocalsOnly)
-    {
-        //printf("%s.StructDeclaration::search('%s', flags = x%x)\n", toChars(), ident.toChars(), flags);
-        if (_scope && !symtab)
-            dsymbolSemantic(this, _scope);
-
-        if (!members || !symtab) // opaque or semantic() is not yet called
-        {
-            // .stringof is always defined (but may be hidden by some other symbol)
-            if(ident != Id.stringof && !(flags & IgnoreErrors) && semanticRun < PASS.semanticdone)
-                .error(loc, "%s `%s` is forward referenced when looking for `%s`", kind, toPrettyChars, ident.toChars());
-            return null;
-        }
-
-        return ScopeDsymbol.search(loc, ident, flags);
-    }
-
     override const(char)* kind() const
     {
         return "struct";

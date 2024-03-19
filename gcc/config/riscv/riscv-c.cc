@@ -51,7 +51,7 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("__riscv_compressed");
 
   if (TARGET_RVE)
-    builtin_define ("__riscv_32e");
+    builtin_define (TARGET_64BIT ? "__riscv_64e" : "__riscv_32e");
 
   if (TARGET_ATOMIC)
     builtin_define ("__riscv_atomic");
@@ -76,6 +76,7 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   switch (riscv_abi)
     {
     case ABI_ILP32E:
+    case ABI_LP64E:
       builtin_define ("__riscv_abi_rve");
       gcc_fallthrough ();
 

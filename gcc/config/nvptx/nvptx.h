@@ -209,8 +209,8 @@ struct GTY(()) machine_function
 {
   rtx_expr_list *call_args;  /* Arg list for the current call.  */
   bool doing_call; /* Within a CALL_ARGS ... CALL_ARGS_END sequence.  */
-  bool is_varadic;  /* This call is varadic  */
-  bool has_varadic;  /* Current function has a varadic call.  */
+  bool is_variadic;  /* This call is variadic  */
+  bool has_variadic;  /* Current function has a variadic call.  */
   bool has_chain; /* Current function has outgoing static chain.  */
   bool has_softstack; /* Current function has a soft stack frame.  */
   bool has_simtreg; /* Current function has an OpenMP SIMD region.  */

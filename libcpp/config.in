@@ -24,12 +24,9 @@
    language is requested. */
 #undef ENABLE_NLS
 
-/* Define to get calls to the valgrind runtime enabled. */
-#undef ENABLE_VALGRIND_ANNOTATIONS
-
-/* Define if you want to workaround valgrind (a memory checker) warnings about
-   possible memory leaks because of libcpp use of interior pointers. */
-#undef ENABLE_VALGRIND_CHECKING
+/* Define if you want to workaround Valgrind warnings about possible memory
+   leaks because of libcpp use of interior pointers. */
+#undef ENABLE_VALGRIND_WORKAROUNDS
 
 /* Define to 1 if you have `alloca', as a function or macro. */
 #undef HAVE_ALLOCA
@@ -201,9 +198,6 @@
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
-/* Define if valgrind's memcheck.h header is installed. */
-#undef HAVE_MEMCHECK_H
-
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -251,9 +245,6 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* Define if valgrind's valgrind/memcheck.h header is installed. */
-#undef HAVE_VALGRIND_MEMCHECK_H
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST

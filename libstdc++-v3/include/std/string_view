@@ -36,8 +36,9 @@
 #pragma GCC system_header
 
 #define __glibcxx_want_constexpr_char_traits
-#define __glibcxx_want_string_view
 #define __glibcxx_want_constexpr_string_view
+#define __glibcxx_want_freestanding_string_view
+#define __glibcxx_want_string_view
 #define __glibcxx_want_starts_ends_with
 #define __glibcxx_want_string_contains
 #include <bits/version.h>

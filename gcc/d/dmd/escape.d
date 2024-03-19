@@ -25,7 +25,7 @@ import dmd.dsymbol;
 import dmd.errors;
 import dmd.expression;
 import dmd.func;
-import dmd.globals;
+import dmd.globals : FeatureState;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
@@ -169,7 +169,7 @@ bool checkMutableArguments(Scope* sc, FuncDeclaration fd, TypeFunction tf,
         if (!(eb.isMutable || eb2.isMutable))
             return;
 
-        if (!tf.islive && !(global.params.useDIP1000 == FeatureState.enabled && sc.func && sc.func.setUnsafe()))
+        if (!tf.islive && !(sc.useDIP1000 == FeatureState.enabled && sc.func && sc.func.setUnsafe()))
             return;
 
         if (!gag)
@@ -377,7 +377,7 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Identifier parId, 
             sc.setUnsafeDIP1000(gag, arg.loc, msg, v, parId ? parId : fdc, fdc))
         {
             result = true;
-            printScopeFailure(previewSupplementalFunc(sc.isDeprecated(), global.params.useDIP1000), vPar, 10);
+            printScopeFailure(previewSupplementalFunc(sc.isDeprecated(), sc.useDIP1000), vPar, 10);
         }
     }
 
@@ -1094,7 +1094,7 @@ bool checkNewEscape(Scope* sc, Expression e, bool gag)
         {
             if (p == sc.func)
             {
-                result |= escapingRef(v, global.params.useDIP1000);
+                result |= escapingRef(v, sc.useDIP1000);
                 continue;
             }
         }
@@ -1110,7 +1110,7 @@ bool checkNewEscape(Scope* sc, Expression e, bool gag)
         {
             //printf("escaping reference to local ref variable %s\n", v.toChars());
             //printf("storage class = x%llx\n", v.storage_class);
-            result |= escapingRef(v, global.params.useDIP25);
+            result |= escapingRef(v, sc.useDIP25);
             continue;
         }
         // Don't need to be concerned if v's parent does not return a ref
@@ -1125,12 +1125,12 @@ bool checkNewEscape(Scope* sc, Expression e, bool gag)
             const(char)* msg = "storing reference to outer local variable `%s` into allocated memory causes it to escape";
             if (!gag)
             {
-                previewErrorFunc(sc.isDeprecated(), global.params.useDIP25)(e.loc, msg, v.toChars());
+                previewErrorFunc(sc.isDeprecated(), sc.useDIP25)(e.loc, msg, v.toChars());
             }
 
             // If -preview=dip25 is used, the user wants an error
             // Otherwise, issue a deprecation
-            result |= (global.params.useDIP25 == FeatureState.enabled);
+            result |= (sc.useDIP25 == FeatureState.enabled);
         }
     }
 
@@ -1264,7 +1264,7 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
                     // https://issues.dlang.org/show_bug.cgi?id=23191
                     if (!gag)
                     {
-                        previewErrorFunc(sc.isDeprecated(), global.params.useDIP1000)(e.loc,
+                        previewErrorFunc(sc.isDeprecated(), sc.useDIP1000)(e.loc,
                             "scope parameter `%s` may not be returned", v.toChars()
                         );
                         result = true;
@@ -1403,7 +1403,7 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
                 {
                     //printf("escaping reference to local ref variable %s\n", v.toChars());
                     //printf("storage class = x%llx\n", v.storage_class);
-                    escapingRef(v, global.params.useDIP25);
+                    escapingRef(v, sc.useDIP25);
                     continue;
                 }
                 // Don't need to be concerned if v's parent does not return a ref
@@ -1415,7 +1415,7 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
                     {
                         const(char)* msg = "escaping reference to outer local variable `%s`";
                         if (!gag)
-                            previewErrorFunc(sc.isDeprecated(), global.params.useDIP25)(e.loc, msg, v.toChars());
+                            previewErrorFunc(sc.isDeprecated(), sc.useDIP25)(e.loc, msg, v.toChars());
                         result = true;
                         continue;
                     }
@@ -2588,7 +2588,7 @@ public
 bool setUnsafeDIP1000(Scope* sc, bool gag, Loc loc, const(char)* msg,
     RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
 {
-    return setUnsafePreview(sc, global.params.useDIP1000, gag, loc, msg, arg0, arg1, arg2);
+    return setUnsafePreview(sc, sc.useDIP1000, gag, loc, msg, arg0, arg1, arg2);
 }
 
 /***************************************

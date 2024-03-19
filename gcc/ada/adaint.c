@@ -747,15 +747,19 @@ __gnat_os_filename (char *filename ATTRIBUTE_UNUSED,
 /* Delete a file.  */
 
 int
-__gnat_unlink (char *path)
+__gnat_unlink (char *path, int encoding ATTRIBUTE_UNUSED)
 {
 #if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (IS_CROSS)
-  {
-    TCHAR wpath[GNAT_MAX_PATH_LEN];
+  TCHAR wpath[GNAT_MAX_PATH_LEN];
 
+  if (encoding == Encoding_Unspecified)
     S2WSC (wpath, path, GNAT_MAX_PATH_LEN);
-    return _tunlink (wpath);
-  }
+  else if (encoding == Encoding_UTF8)
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
+  else
+    S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+
+  return _tunlink (wpath);
 #else
   return unlink (path);
 #endif

@@ -32,7 +32,7 @@ foo (void)
   __builtin_clzg (0U, 2LL);	/* { dg-error "does not have 'int' type" } */
   __builtin_clzg (0U, 2U);	/* { dg-error "does not have 'int' type" } */
   __builtin_clzg (0U, true);
-  __builtin_clzg (0U, E0);	/* { dg-error "does not have 'int' type" "" { target c++ } } */
+  __builtin_clzg (0U, E0);	/* { dg-error "does not have 'int' type" "" { target { c++ && { ! short_enums } } } } */
   __builtin_ctzg ();		/* { dg-error "too few arguments" } */
   __builtin_ctzg (0U, 1, 2);	/* { dg-error "too many arguments" } */
   __builtin_ctzg (0);		/* { dg-error "has signed type" } */
@@ -51,7 +51,7 @@ foo (void)
   __builtin_ctzg (0U, 2LL);	/* { dg-error "does not have 'int' type" } */
   __builtin_ctzg (0U, 2U);	/* { dg-error "does not have 'int' type" } */
   __builtin_ctzg (0U, true);
-  __builtin_ctzg (0U, E0);	/* { dg-error "does not have 'int' type" "" { target c++ } } */
+  __builtin_ctzg (0U, E0);	/* { dg-error "does not have 'int' type" "" { target { c++ && { ! short_enums } } } } */
   __builtin_clrsbg ();		/* { dg-error "too few arguments" } */
   __builtin_clrsbg (0, 1);	/* { dg-error "too many arguments" } */
   __builtin_clrsbg (0U);	/* { dg-error "has unsigned type" } */

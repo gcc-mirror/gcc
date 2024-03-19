@@ -5732,7 +5732,7 @@
 
 (define_insn "rdhwr_synci_step_<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
-        (unspec_volatile [(const_int 1)]
+        (unspec_volatile:P [(const_int 1)]
         UNSPEC_RDHWR))]
   "ISA_HAS_SYNCI"
   "rdhwr\t%0,$1")

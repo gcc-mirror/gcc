@@ -68,6 +68,16 @@ public:
   // Return the SSA information for CFG_BB.
   bb_info *bb (basic_block cfg_bb) const { return m_bbs[cfg_bb->index]; }
 
+  // Create a temporary def.
+  set_info *create_set (obstack_watermark &watermark,
+			insn_info *insn,
+			resource_info resource);
+
+  // Create a temporary insn with code INSN_CODE and pattern PAT.
+  insn_info *create_insn (obstack_watermark &watermark,
+			  rtx_code insn_code,
+			  rtx pat);
+
   // Return a list of all the instructions in the function, in reverse
   // postorder.  The list includes both real and artificial instructions.
   //
@@ -194,6 +204,10 @@ public:
 
   // Print the contents of the function to PP.
   void print (pretty_printer *pp) const;
+
+  // Allocate an object of type T above the obstack watermark WM.
+  template<typename T, typename... Ts>
+  T *change_alloc (obstack_watermark &wm, Ts... args);
 
 private:
   class bb_phi_info;

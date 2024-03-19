@@ -2629,6 +2629,54 @@ cgraph_node::set_malloc_flag (bool malloc_p)
   return changed;
 }
 
+/* Worker to set malloc flag.  */
+static void
+add_detected_attribute_1 (cgraph_node *node, const char *attr, bool *changed)
+{
+  if (!lookup_attribute (attr, DECL_ATTRIBUTES (node->decl)))
+    {
+      DECL_ATTRIBUTES (node->decl) = tree_cons (get_identifier (attr),
+					 NULL_TREE, DECL_ATTRIBUTES (node->decl));
+      *changed = true;
+    }
+
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (node, ref)
+    {
+      cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+      if (alias->get_availability () > AVAIL_INTERPOSABLE)
+	add_detected_attribute_1 (alias, attr, changed);
+    }
+
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk
+	&& (e->caller->get_availability () > AVAIL_INTERPOSABLE))
+      add_detected_attribute_1 (e->caller, attr, changed);
+}
+
+/* Add attribyte ATTR to function and its aliases.  */
+
+bool
+cgraph_node::add_detected_attribute (const char *attr)
+{
+  bool changed = false;
+
+  if (get_availability () > AVAIL_INTERPOSABLE)
+    add_detected_attribute_1 (this, attr, &changed);
+  else
+    {
+      ipa_ref *ref;
+
+      FOR_EACH_ALIAS (this, ref)
+	{
+	  cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+	  if (alias->get_availability () > AVAIL_INTERPOSABLE)
+	    add_detected_attribute_1 (alias, attr, &changed);
+	}
+    }
+  return changed;
+}
+
 /* Worker to set noreturng flag.  */
 static void
 set_noreturn_flag_1 (cgraph_node *node, bool noreturn_p, bool *changed)

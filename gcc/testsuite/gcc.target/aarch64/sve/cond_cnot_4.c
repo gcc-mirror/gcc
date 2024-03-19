@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -moverride=sve_width=256" } */
+/* { dg-options "-O2 -ftree-vectorize -moverride=sve_width=256 --param=aarch64-autovec-preference=2" } */
 
 #include <stdint.h>
 

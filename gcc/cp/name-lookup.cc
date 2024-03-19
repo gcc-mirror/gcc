@@ -4802,6 +4802,49 @@ pushdecl_outermost_localscope (tree x)
   return b ? do_pushdecl_with_scope (x, b) : error_mark_node;
 }
 
+/* Checks if BINDING is a binding that we can export.  */
+
+static bool
+check_can_export_using_decl (tree binding)
+{
+  tree decl = STRIP_TEMPLATE (binding);
+
+  /* Linkage is determined by the owner of an enumerator.  */
+  if (TREE_CODE (decl) == CONST_DECL)
+    decl = TYPE_NAME (DECL_CONTEXT (decl));
+
+  /* If the using decl is exported, the things it refers
+     to must also be exported (or not have module attachment).  */
+  if (!DECL_MODULE_EXPORT_P (decl)
+      && (DECL_LANG_SPECIFIC (decl)
+	  && DECL_MODULE_ATTACH_P (decl)))
+    {
+      bool internal_p = !TREE_PUBLIC (decl);
+
+      /* A template in an anonymous namespace doesn't constrain TREE_PUBLIC
+	 until it's instantiated, so double-check its context.  */
+      if (!internal_p && TREE_CODE (binding) == TEMPLATE_DECL)
+	internal_p = decl_internal_context_p (decl);
+
+      auto_diagnostic_group d;
+      error ("exporting %q#D that does not have external linkage",
+	     binding);
+      if (TREE_CODE (decl) == TYPE_DECL && !DECL_IMPLICIT_TYPEDEF_P (decl))
+	/* An un-exported explicit type alias has no linkage.  */
+	inform (DECL_SOURCE_LOCATION (binding),
+		"%q#D declared here with no linkage", binding);
+      else if (internal_p)
+	inform (DECL_SOURCE_LOCATION (binding),
+		"%q#D declared here with internal linkage", binding);
+      else
+	inform (DECL_SOURCE_LOCATION (binding),
+		"%q#D declared here with module linkage", binding);
+      return false;
+    }
+
+  return true;
+}
+
 /* Process a local-scope or namespace-scope using declaration.  LOOKUP
    is the result of qualified lookup (both value & type are
    significant).  FN_SCOPE_P indicates if we're at function-scope (as
@@ -4845,23 +4888,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	  tree new_fn = *usings;
 	  bool exporting = revealing_p && module_exporting_p ();
 	  if (exporting)
-	    {
-	      /* Module flags for templates are on the template_result.  */
-	      tree decl = STRIP_TEMPLATE (new_fn);
-
-	      /* If the using decl is exported, the things it refers
-		 to must also be exported (or not have module attachment).  */
-	      if (!DECL_MODULE_EXPORT_P (decl)
-		  && (DECL_LANG_SPECIFIC (decl)
-		      && DECL_MODULE_ATTACH_P (decl)))
-		{
-		  auto_diagnostic_group d;
-		  error ("%q#D does not have external linkage", new_fn);
-		  inform (DECL_SOURCE_LOCATION (new_fn),
-			  "%q#D declared here", new_fn);
-		  exporting = false;
-		}
-	    }
+	    exporting = check_can_export_using_decl (new_fn);
 
 	  /* [namespace.udecl]
 
@@ -4939,20 +4966,26 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       failed = true;
     }
   else if (insert_p)
-    // FIXME:what if we're newly exporting lookup.value
-    value = lookup.value;
+    {
+      value = lookup.value;
+      if (revealing_p && module_exporting_p ())
+	check_can_export_using_decl (value);
+    }
   
   /* Now the type binding.  */
   if (lookup.type && lookup.type != type)
     {
-      // FIXME: What if we're exporting lookup.type?
       if (type && !decls_match (lookup.type, type))
 	{
 	  diagnose_name_conflict (lookup.type, type);
 	  failed = true;
 	}
       else if (insert_p)
-	type = lookup.type;
+	{
+	  type = lookup.type;
+	  if (revealing_p && module_exporting_p ())
+	    check_can_export_using_decl (type);
+	}
     }
 
   if (insert_p)

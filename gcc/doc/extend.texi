@@ -7341,6 +7341,21 @@ Enable/disable the generation of the SM4 instructions.
 @itemx no-usermsr
 Enable/disable the generation of the USER_MSR instructions.
 
+@cindex @code{target("avx10.1")} function attribute, x86
+@item avx10.1
+@itemx no-avx10.1
+Enable/disable the generation of the AVX10.1 instructions.
+
+@cindex @code{target("avx10.1-256")} function attribute, x86
+@item avx10.1-256
+@itemx no-avx10.1-256
+Enable/disable the generation of the AVX10.1 instructions.
+
+@cindex @code{target("avx10.1-512")} function attribute, x86
+@item avx10.1-512
+@itemx no-avx10.1-512
+Enable/disable the generation of the AVX10.1 512 bit instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld
@@ -10913,6 +10928,11 @@ sign flag set
 @itemx nz
 ``not'' @var{flag}, or inverted versions of those above
 @end table
+
+@item s390
+The flag output constraint for s390 is @samp{=@@cc}.  Only one such
+constraint is allowed.  The variable has to be stored in a @samp{int}
+variable.
 
 @end table
 
@@ -14731,11 +14751,11 @@ The @code{__builtin_classify_type} returns a small integer with a category
 of @var{arg} argument's type, like void type, integer type, enumeral type,
 boolean type, pointer type, reference type, offset type, real type, complex
 type, function type, method type, record type, union type, array type,
-string type, etc.  When the argument is an expression, for
-backwards compatibility reason the argument is promoted like arguments
-passed to @code{...} in varargs function, so some classes are never returned
-in certain languages.  Alternatively, the argument of the built-in
-function can be a typename, such as the @code{typeof} specifier.
+string type, bit-precise integer type, vector type, etc.  When the argument
+is an expression, for backwards compatibility reason the argument is promoted
+like arguments passed to @code{...} in varargs function, so some classes are
+never returned in certain languages.  Alternatively, the argument of the
+built-in function can be a typename, such as the @code{typeof} specifier.
 
 @smallexample
 int a[2];
@@ -15058,6 +15078,125 @@ promotions are performed on the argument.
 Similar to @code{__builtin_parity}, except the argument is type-generic
 unsigned integer (standard, extended or bit-precise).  No integral argument
 promotions are performed on the argument.
+@enddefbuiltin
+
+@defbuiltin{@var{type} __builtin_stdc_bit_ceil (@var{type} @var{arg})}
+The @code{__builtin_stdc_bit_ceil} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{@var{arg} <= 1 ? (@var{type}) 1
+: (@var{type}) 2 << (@var{prec} - 1 - __builtin_clzg ((@var{type}) (@var{arg} - 1)))}
+where @var{prec} is bit width of @var{type}, except that side-effects
+in @var{arg} are evaluated just once.
+@enddefbuiltin
+
+@defbuiltin{@var{type} __builtin_stdc_bit_floor (@var{type} @var{arg})}
+The @code{__builtin_stdc_bit_floor} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{@var{arg} == 0 ? (@var{type}) 0
+: (@var{type}) 1 << (@var{prec} - 1 - __builtin_clzg (@var{arg}))}
+where @var{prec} is bit width of @var{type}, except that side-effects
+in @var{arg} are evaluated just once.
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_bit_width (@var{type} @var{arg})}
+The @code{__builtin_stdc_bit_width} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) (@var{prec} - __builtin_clzg (@var{arg}, @var{prec}))}
+where @var{prec} is bit width of @var{type}.
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_count_ones (@var{type} @var{arg})}
+The @code{__builtin_stdc_count_ones} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_popcountg (@var{arg})}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_count_zeros (@var{type} @var{arg})}
+The @code{__builtin_stdc_count_zeros} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_popcountg ((@var{type}) ~@var{arg})}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_first_leading_one (@var{type} @var{arg})}
+The @code{__builtin_stdc_first_leading_one} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{__builtin_clzg (@var{arg}, -1) + 1U}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_first_leading_zero (@var{type} @var{arg})}
+The @code{__builtin_stdc_first_leading_zero} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{__builtin_clzg ((@var{type}) ~@var{arg}, -1) + 1U}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_first_trailing_one (@var{type} @var{arg})}
+The @code{__builtin_stdc_first_trailing_one} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{__builtin_ctzg (@var{arg}, -1) + 1U}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_first_trailing_zero (@var{type} @var{arg})}
+The @code{__builtin_stdc_first_trailing_zero} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{__builtin_ctzg ((@var{type}) ~@var{arg}, -1) + 1U}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_has_single_bit (@var{type} @var{arg})}
+The @code{__builtin_stdc_has_single_bit} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(_Bool) (__builtin_popcountg (@var{arg}) == 1)}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_leading_ones (@var{type} @var{arg})}
+The @code{__builtin_stdc_leading_ones} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_clzg ((@var{type}) ~@var{arg}, @var{prec})}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_leading_zeros (@var{type} @var{arg})}
+The @code{__builtin_stdc_leading_zeros} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_clzg (@var{arg}, @var{prec})}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_trailing_ones (@var{type} @var{arg})}
+The @code{__builtin_stdc_trailing_ones} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_ctzg ((@var{type}) ~@var{arg}, @var{prec})}
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_stdc_trailing_zeros (@var{type} @var{arg})}
+The @code{__builtin_stdc_trailing_zeros} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_ctzg (@var{arg}, @var{prec})}
 @enddefbuiltin
 
 @defbuiltin{double __builtin_powi (double, int)}

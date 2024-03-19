@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-Wuninitialized -O2" } */
+/* The param shuts up a bogus uninitialized warning at line 21.  */
+/* { dg-options "-Wuninitialized -O2 --param=logical-op-non-short-circuit=0" } */
 
 int g;
 void bar();
@@ -17,10 +18,10 @@ int foo (int n, int l, int m, int r)
 
   if (l > 100)
     if ( (n <= 9) &&  (m < 100)  && (r < 19) )
-      blah(v); /* { dg-bogus "uninitialized" "bogus warning" { xfail *-*-* } } */
+      blah(v); /* { dg-bogus "uninitialized" "bogus warning" } */
 
   if ( (n <= 8) &&  (m < 99)  && (r < 19) )
-      blah(v); /* { dg-bogus "uninitialized" "pr101674" { xfail mmix-*-* } } */
+      blah(v); /* { dg-bogus "uninitialized" "pr101674" } */
 
   return 0;
 }

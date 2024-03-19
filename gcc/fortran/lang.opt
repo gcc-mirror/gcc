@@ -289,6 +289,10 @@ Wopenacc-parallelism
 Fortran
 ; Documented in C
 
+Wopenmp
+Fortran
+; Documented in C
+
 Wopenmp-simd
 Fortran
 ; Documented in C

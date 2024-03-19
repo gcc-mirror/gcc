@@ -64,6 +64,7 @@
 #define __glibcxx_want_ranges_repeat
 #define __glibcxx_want_ranges_slide
 #define __glibcxx_want_ranges_stride
+#define __glibcxx_want_ranges_to_container
 #define __glibcxx_want_ranges_zip
 #include <bits/version.h>
 
@@ -9213,8 +9214,366 @@ namespace views::__adaptor
 
   namespace views = ranges::views;
 
+#if __cpp_lib_ranges_to_container // C++ >= 23
+namespace ranges
+{
+/// @cond undocumented
+namespace __detail
+{
+  template<typename _Container>
+    constexpr bool __reservable_container
+      = sized_range<_Container>
+      && requires(_Container& __c, range_size_t<_Container> __n) {
+	__c.reserve(__n);
+	{ __c.capacity() } -> same_as<decltype(__n)>;
+	{ __c.max_size() } -> same_as<decltype(__n)>;
+      };
+
+  template<typename _Container, typename _Ref>
+    constexpr bool __container_insertable
+      = requires(_Container& __c, _Ref&& __ref) {
+	typename _Container::value_type;
+	requires (
+	  requires { __c.push_back(std::forward<_Ref>(__ref)); }
+	  || requires { __c.insert(__c.end(), std::forward<_Ref>(__ref)); }
+	);
+      };
+
+  template<typename _Ref, typename _Container>
+    constexpr auto
+    __container_inserter(_Container& __c)
+    {
+      if constexpr (requires { __c.push_back(std::declval<_Ref>()); })
+	return std::back_inserter(__c);
+      else
+	return std::inserter(__c, __c.end());
+    }
+
+  template<typename _Cont, typename _Range>
+    constexpr bool __toable = requires {
+      requires (!input_range<_Range>
+		  || convertible_to<range_reference_t<_Range>,
+				    range_value_t<_Cont>>);
+    };
+} // namespace __detail
+/// @endcond
+
+  /// Convert a range to a container.
+  /**
+   * @tparam _Cont A container type.
+   * @param __r A range that models the `input_range` concept.
+   * @param __args... Arguments to pass to the container constructor.
+   * @since C++23
+   *
+   * This function converts a range to the `_Cont` type.
+   *
+   * For example, `std::ranges::to<std::vector<int>>(some_view)`
+   * will convert the view to `std::vector<int>`.
+   *
+   * Additional constructor arguments for the container can be supplied after
+   * the input range argument, e.g.
+   * `std::ranges::to<std::vector<int, Alloc<int>>>(a_range, an_allocator)`.
+   */
+  template<typename _Cont, input_range _Rg, typename... _Args>
+    requires (!view<_Cont>)
+    constexpr _Cont
+    to [[nodiscard]] (_Rg&& __r, _Args&&... __args)
+    {
+      static_assert(!is_const_v<_Cont> && !is_volatile_v<_Cont>);
+      static_assert(is_class_v<_Cont>);
+
+      if constexpr (__detail::__toable<_Cont, _Rg>)
+	{
+	  if constexpr (constructible_from<_Cont, _Rg, _Args...>)
+	    return _Cont(std::forward<_Rg>(__r),
+			 std::forward<_Args>(__args)...);
+	  else if constexpr (constructible_from<_Cont, from_range_t, _Rg, _Args...>)
+	    return _Cont(from_range, std::forward<_Rg>(__r),
+			 std::forward<_Args>(__args)...);
+	  else if constexpr (requires { common_range<_Rg>;
+		typename __iter_category_t<iterator_t<_Rg>>;
+		requires derived_from<__iter_category_t<iterator_t<_Rg>>,
+				      input_iterator_tag>;
+		requires constructible_from<_Cont, iterator_t<_Rg>,
+					    sentinel_t<_Rg>, _Args...>;
+	      })
+	    return _Cont(ranges::begin(__r), ranges::end(__r),
+			 std::forward<_Args>(__args)...);
+	  else
+	    {
+	      using __detail::__container_insertable;
+	      using __detail::__reservable_container;
+	      using _RefT = range_reference_t<_Rg>;
+	      static_assert(constructible_from<_Cont, _Args...>);
+	      static_assert(__container_insertable<_Cont, _RefT>);
+	      _Cont __c(std::forward<_Args>(__args)...);
+	      if constexpr (sized_range<_Rg> && __reservable_container<_Cont>)
+		__c.reserve(static_cast<range_size_t<_Cont>>(ranges::size(__r)));
+	      auto __ins = __detail::__container_inserter<_RefT>(__c);
+	      for (auto&& __e : __r)
+		*__ins++ = std::forward<decltype(__e)>(__e);
+	      return __c;
+	    }
+	}
+      else
+	{
+	  static_assert(input_range<range_reference_t<_Rg>>);
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3984. ranges::to's recursion branch may be ill-formed
+	  return ranges::to<_Cont>(ref_view(__r) | views::transform(
+		[]<typename _Elt>(_Elt&& __elem) {
+		  using _ValT = range_value_t<_Cont>;
+		  return ranges::to<_ValT>(std::forward<_Elt>(__elem));
+		}), std::forward<_Args>(__args)...);
+	}
+    }
+
+/// @cond undocumented
+namespace __detail
+{
+  template<typename _Rg>
+    struct _InputIter
+    {
+      using iterator_category = input_iterator_tag;
+      using value_type = range_value_t<_Rg>;
+      using difference_type = ptrdiff_t;
+      using pointer = add_pointer_t<range_reference_t<_Rg>>;
+      using reference = range_reference_t<_Rg>;
+      reference operator*() const;
+      pointer operator->() const;
+      _InputIter& operator++();
+      _InputIter operator++(int);
+      bool operator==(const _InputIter&) const;
+    };
+
+#if 0
+  template<template<typename...> typename _Cont, typename _Rg,
+	   typename... _Args>
+    concept __deduce_expr_1 = requires {
+      _Cont(std::declval<_Rg>(), std::declval<_Args>()...);
+    };
+
+  template<template<typename...> typename _Cont, typename _Rg,
+	   typename... _Args>
+    concept __deduce_expr_2 = requires {
+      _Cont(from_range, std::declval<_Rg>(), std::declval<_Args>()...);
+    };
+
+  template<template<typename...> typename _Cont, typename _Rg,
+	   typename... _Args>
+    concept __deduce_expr_3 = requires(_InputIter<_Rg> __i) {
+      _Cont(std::move(__i), std::move(__i), std::declval<_Args>()...);
+    };
+#endif
+
+  template<template<typename...> typename _Cont, input_range _Rg,
+	   typename... _Args>
+    using _DeduceExpr1
+      = decltype(_Cont(std::declval<_Rg>(), std::declval<_Args>()...));
+
+  template<template<typename...> typename _Cont, input_range _Rg,
+	   typename... _Args>
+    using _DeduceExpr2
+      = decltype(_Cont(from_range, std::declval<_Rg>(),
+		       std::declval<_Args>()...));
+
+  template<template<typename...> typename _Cont, input_range _Rg,
+	   typename... _Args>
+    using _DeduceExpr3
+      = decltype(_Cont(std::declval<_InputIter<_Rg>>(),
+		       std::declval<_InputIter<_Rg>>(),
+		       std::declval<_Args>()...));
+
+} // namespace __detail
+/// @endcond
+
+  template<template<typename...> typename _Cont, input_range _Rg,
+	   typename... _Args>
+    constexpr auto
+    to [[nodiscard]] (_Rg&& __r, _Args&&... __args)
+    {
+      using __detail::_DeduceExpr1;
+      using __detail::_DeduceExpr2;
+      using __detail::_DeduceExpr3;
+      if constexpr (requires { typename _DeduceExpr1<_Cont, _Rg, _Args...>; })
+	return ranges::to<_DeduceExpr1<_Cont, _Rg, _Args...>>(
+	    std::forward<_Rg>(__r), std::forward<_Args>(__args)...);
+      else if constexpr (requires { typename _DeduceExpr2<_Cont, _Rg, _Args...>; })
+	return ranges::to<_DeduceExpr2<_Cont, _Rg, _Args...>>(
+	    std::forward<_Rg>(__r), std::forward<_Args>(__args)...);
+      else if constexpr (requires { typename _DeduceExpr3<_Cont, _Rg, _Args...>; })
+	return ranges::to<_DeduceExpr3<_Cont, _Rg, _Args...>>(
+	    std::forward<_Rg>(__r), std::forward<_Args>(__args)...);
+      else
+	static_assert(false); // Cannot deduce container specialization.
+    }
+
+/// @cond undocumented
+namespace __detail
+{
+  template<typename _Cont, typename... _Args>
+    class _ToClosure
+    : public views::__adaptor::_RangeAdaptorClosure<_ToClosure<_Cont, _Args...>>
+    {
+      tuple<decay_t<_Args>...> _M_bound_args;
+
+    public:
+      _ToClosure(_Args&&... __args)
+      : _M_bound_args(std::forward<_Args>(__args)...)
+      { }
+
+      // TODO: use explicit object functions ("deducing this").
+
+      template<typename _Rg>
+	constexpr auto
+	operator()(_Rg&& __r) &
+	{
+	  return std::apply([&__r]<typename... _Tp>(_Tp&&... __args) {
+	    return ranges::to<_Cont>(std::forward<_Rg>(__r),
+				     std::forward<_Tp>(__args)...);
+	  }, _M_bound_args);
+	}
+
+      template<typename _Rg>
+	constexpr auto
+	operator()(_Rg&& __r) const &
+	{
+	  return std::apply([&__r]<typename... _Tp>(_Tp&&... __args) {
+	    return ranges::to<_Cont>(std::forward<_Rg>(__r),
+				     std::forward<_Tp>(__args)...);
+	  }, _M_bound_args);
+	}
+
+      template<typename _Rg>
+	constexpr auto
+	operator()(_Rg&& __r) &&
+	{
+	  return std::apply([&__r]<typename... _Tp>(_Tp&&... __args) {
+	    return ranges::to<_Cont>(std::forward<_Rg>(__r),
+				     std::forward<_Tp>(__args)...);
+	  }, std::move(_M_bound_args));
+	}
+
+      template<typename _Rg>
+	constexpr auto
+	operator()(_Rg&& __r) const &&
+	{
+	  return std::apply([&__r]<typename... _Tp>(_Tp&&... __args) {
+	    return ranges::to<_Cont>(std::forward<_Rg>(__r),
+				     std::forward<_Tp>(__args)...);
+	  }, std::move(_M_bound_args));
+	}
+    };
+} // namespace __detail
+/// @endcond
+
+  /// ranges::to adaptor for converting a range to a container type
+  /**
+   * @tparam _Cont A container type.
+   * @param __args... Arguments to pass to the container constructor.
+   * @since C++23
+   *
+   * This range adaptor returns a range adaptor closure object that converts
+   * a range to the `_Cont` type.
+   *
+   * For example, `some_view | std::ranges::to<std::vector<int>>()`
+   * will convert the view to `std::vector<int>`.
+   *
+   * Additional constructor arguments for the container can be supplied, e.g.
+   * `r | std::ranges::to<std::vector<int, Alloc<int>>>(an_allocator)`.
+   */
+  template<typename _Cont, typename... _Args>
+    requires (!view<_Cont>)
+    constexpr __detail::_ToClosure<_Cont, _Args...>
+    to [[nodiscard]] (_Args&&... __args)
+    { return {std::forward<_Args>(__args)...}; }
+
+/// @cond undocumented
+namespace __detail
+{
+  template<template<typename...> typename _Cont, typename... _Args>
+    class _ToClosure2
+    : public views::__adaptor::_RangeAdaptorClosure<_ToClosure2<_Cont, _Args...>>
+    {
+      tuple<decay_t<_Args>...> _M_bound_args;
+
+    public:
+      _ToClosure2(_Args&&... __args)
+      : _M_bound_args(std::forward<_Args>(__args)...)
+      { }
+
+      // TODO: use explicit object functions ("deducing this").
+
+      template<typename _Rg>
+	constexpr auto
+	operator()(_Rg&& __r) &
+	{
+	  return std::apply([&__r]<typename... _Tp>(_Tp&&... __args) {
+	    return ranges::to<_Cont>(std::forward<_Rg>(__r),
+				     std::forward<_Tp>(__args)...);
+	  }, _M_bound_args);
+	}
+
+      template<typename _Rg>
+	constexpr auto
+	operator()(_Rg&& __r) const &
+	{
+	  return std::apply([&__r]<typename... _Tp>(_Tp&&... __args) {
+	    return ranges::to<_Cont>(std::forward<_Rg>(__r),
+				     std::forward<_Tp>(__args)...);
+	  }, _M_bound_args);
+	}
+
+      template<typename _Rg>
+	constexpr auto
+	operator()(_Rg&& __r) &&
+	{
+	  return std::apply([&__r]<typename... _Tp>(_Tp&&... __args) {
+	    return ranges::to<_Cont>(std::forward<_Rg>(__r),
+				     std::forward<_Tp>(__args)...);
+	  }, std::move(_M_bound_args));
+	}
+
+      template<typename _Rg>
+	constexpr auto
+	operator()(_Rg&& __r) const &&
+	{
+	  return std::apply([&__r]<typename... _Tp>(_Tp&&... __args) {
+	    return ranges::to<_Cont>(std::forward<_Rg>(__r),
+				     std::forward<_Tp>(__args)...);
+	  }, std::move(_M_bound_args));
+	}
+    };
+} // namespace __detail
+/// @endcond
+
+  /// ranges::to adaptor for converting a range to a deduced container type.
+  /**
+   * @tparam _Cont A container template.
+   * @param __args... Arguments to pass to the container constructor.
+   * @since C++23
+   *
+   * This range adaptor returns a range adaptor closure object that converts
+   * a range to a specialization of the `_Cont` class template. The specific
+   * specialization of `_Cont` to be used is deduced automatically.
+   *
+   * For example, `some_view | std::ranges::to<std::vector>(Alloc<int>{})`
+   * will convert the view to `std::vector<T, Alloc<T>>`, where `T` is the
+   * view's value type, i.e. `std::ranges::range_value_t<decltype(some_view)>`.
+   *
+   * Additional constructor arguments for the container can be supplied, e.g.
+   * `r | std::ranges::to<std::vector>(an_allocator)`.
+   */
+  template<template<typename...> typename _Cont, typename... _Args>
+    constexpr __detail::_ToClosure2<_Cont, _Args...>
+    to [[nodiscard]] (_Args&&... __args)
+    { return {std::forward<_Args>(__args)...}; }
+
+} // namespace ranges
+#endif // __cpp_lib_ranges_to_container
+
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 #endif // library concepts
 #endif // C++2a
 #endif /* _GLIBCXX_RANGES */

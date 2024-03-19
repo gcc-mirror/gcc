@@ -44,9 +44,9 @@ void ix86_emit_binop (enum rtx_code code, machine_mode mode, rtx dst, rtx src);
 enum calling_abi ix86_function_abi (const_tree fndecl);
 bool ix86_function_ms_hook_prologue (const_tree fn);
 void warn_once_call_ms2sysv_xlogues (const char *feature);
-rtx gen_push (rtx arg);
+rtx gen_push (rtx arg, bool = false);
 rtx gen_pushfl (void);
-rtx gen_pop (rtx arg);
+rtx gen_pop (rtx arg, bool = false);
 rtx gen_popfl (void);
 rtx ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 			 machine_mode mode, int ignore);

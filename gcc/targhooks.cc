@@ -1906,6 +1906,14 @@ bsd_libc_has_function (enum function_class fn_class,
   return false;
 }
 
+/* By default, -fhardened will add -D_FORTIFY_SOURCE=2.  */
+
+unsigned
+default_fortify_source_default_level ()
+{
+  return 2;
+}
+
 unsigned
 default_libm_function_max_error (unsigned, machine_mode, bool)
 {

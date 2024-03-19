@@ -105,6 +105,7 @@ tree prevailing_odr_type (tree type);
 void enable_odr_based_tbaa (tree type);
 bool odr_based_tbaa_p (const_tree type);
 void set_type_canonical_for_odr_type (tree type, tree canonical);
+void warn_function_returns_nonnull (tree);
 
 void register_odr_enum (tree type);
 

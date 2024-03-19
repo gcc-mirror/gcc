@@ -281,10 +281,13 @@ gen_assign_counter_update (gimple_stmt_iterator *gsi, gcall *call, tree func,
   if (result)
     {
       tree result_type = TREE_TYPE (TREE_TYPE (func));
-      tree tmp = make_temp_ssa_name (result_type, NULL, name);
-      gimple_set_lhs (call, tmp);
+      tree tmp1 = make_temp_ssa_name (result_type, NULL, name);
+      gimple_set_lhs (call, tmp1);
       gsi_insert_after (gsi, call, GSI_NEW_STMT);
-      gassign *assign = gimple_build_assign (result, tmp);
+      tree tmp2 = make_temp_ssa_name (TREE_TYPE (result), NULL, name);
+      gassign *assign = gimple_build_assign (tmp2, NOP_EXPR, tmp1);
+      gsi_insert_after (gsi, assign, GSI_NEW_STMT);
+      assign = gimple_build_assign (result, tmp2);
       gsi_insert_after (gsi, assign, GSI_NEW_STMT);
     }
   else
@@ -304,18 +307,18 @@ gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
   tree one = build_int_cst (type, 1);
   tree relaxed = build_int_cst (integer_type_node, MEMMODEL_RELAXED);
 
-  if (counter_update == COUNTER_UPDATE_ATOMIC_BUILTIN ||
-      (result && counter_update == COUNTER_UPDATE_ATOMIC_SPLIT))
+  if (counter_update == COUNTER_UPDATE_ATOMIC_BUILTIN
+      || (result && counter_update == COUNTER_UPDATE_ATOMIC_SPLIT))
     {
       /* __atomic_fetch_add (&counter, 1, MEMMODEL_RELAXED); */
       tree f = builtin_decl_explicit (TYPE_PRECISION (type) > 32
-				      ? BUILT_IN_ATOMIC_ADD_FETCH_8:
-				      BUILT_IN_ATOMIC_ADD_FETCH_4);
+				      ? BUILT_IN_ATOMIC_ADD_FETCH_8
+				      : BUILT_IN_ATOMIC_ADD_FETCH_4);
       gcall *call = gimple_build_call (f, 3, addr, one, relaxed);
       gen_assign_counter_update (gsi, call, f, result, name);
     }
-  else if (!result && (counter_update == COUNTER_UPDATE_ATOMIC_SPLIT ||
-		       counter_update == COUNTER_UPDATE_ATOMIC_PARTIAL))
+  else if (!result && (counter_update == COUNTER_UPDATE_ATOMIC_SPLIT
+		       || counter_update == COUNTER_UPDATE_ATOMIC_PARTIAL))
     {
       /* low = __atomic_add_fetch_4 (addr, 1, MEMMODEL_RELAXED);
 	 high_inc = low == 0 ? 1 : 0;
@@ -354,7 +357,7 @@ gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
       tree tmp2 = make_temp_ssa_name (type, NULL, name);
       gassign *assign2 = gimple_build_assign (tmp2, PLUS_EXPR, tmp1, one);
       gsi_insert_after (gsi, assign2, GSI_NEW_STMT);
-      gassign *assign3 = gimple_build_assign (counter, tmp2);
+      gassign *assign3 = gimple_build_assign (unshare_expr (counter), tmp2);
       gsi_insert_after (gsi, assign3, GSI_NEW_STMT);
       if (result)
 	{
@@ -764,6 +767,7 @@ tree_profiling (void)
     = HAVE_sync_compare_and_swapsi || HAVE_atomic_compare_and_swapsi;
   bool have_atomic_8
     = HAVE_sync_compare_and_swapdi || HAVE_atomic_compare_and_swapdi;
+  bool needs_split = gcov_type_size == 8 && !have_atomic_8 && have_atomic_4;
   if (!can_support_atomic)
     {
       if (gcov_type_size == 4)
@@ -771,6 +775,9 @@ tree_profiling (void)
       else if (gcov_type_size == 8)
 	can_support_atomic = have_atomic_8;
     }
+
+  if (flag_profile_update != PROFILE_UPDATE_SINGLE && needs_split)
+    counter_update = COUNTER_UPDATE_ATOMIC_PARTIAL;
 
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC
       && !can_support_atomic)
@@ -780,18 +787,16 @@ tree_profiling (void)
       flag_profile_update = PROFILE_UPDATE_SINGLE;
     }
   else if (flag_profile_update == PROFILE_UPDATE_PREFER_ATOMIC)
-    flag_profile_update = can_support_atomic
-      ? PROFILE_UPDATE_ATOMIC : PROFILE_UPDATE_SINGLE;
+    flag_profile_update
+      = can_support_atomic ? PROFILE_UPDATE_ATOMIC : PROFILE_UPDATE_SINGLE;
 
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
     {
-      if (gcov_type_size == 8 && !have_atomic_8 && have_atomic_4)
+      if (needs_split)
 	counter_update = COUNTER_UPDATE_ATOMIC_SPLIT;
       else
 	counter_update = COUNTER_UPDATE_ATOMIC_BUILTIN;
     }
-  else if (gcov_type_size == 8 && have_atomic_4)
-      counter_update = COUNTER_UPDATE_ATOMIC_PARTIAL;
 
   /* This is a small-ipa pass that gets called only once, from
      cgraphunit.cc:ipa_passes().  */

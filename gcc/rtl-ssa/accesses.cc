@@ -1456,6 +1456,16 @@ function_info::make_uses_available (obstack_watermark &watermark,
   return use_array (new_uses, num_uses);
 }
 
+set_info *
+function_info::create_set (obstack_watermark &watermark,
+			   insn_info *insn,
+			   resource_info resource)
+{
+  auto set = change_alloc<set_info> (watermark, insn, resource);
+  set->m_is_temp = true;
+  return set;
+}
+
 // Return true if ACCESS1 can represent ACCESS2 and if ACCESS2 can
 // represent ACCESS1.
 static bool
@@ -1587,16 +1597,14 @@ access_array
 rtl_ssa::remove_note_accesses_base (obstack_watermark &watermark,
 				    access_array accesses)
 {
+  auto predicate = [](access_info *a) {
+    return !a->only_occurs_in_notes ();
+  };
+
   for (access_info *access : accesses)
     if (access->only_occurs_in_notes ())
-      {
-	access_array_builder builder (watermark);
-	builder.reserve (accesses.size ());
-	for (access_info *access2 : accesses)
-	  if (!access2->only_occurs_in_notes ())
-	    builder.quick_push (access2);
-	return builder.finish ();
-      }
+      return filter_accesses (watermark, accesses, predicate);
+
   return accesses;
 }
 

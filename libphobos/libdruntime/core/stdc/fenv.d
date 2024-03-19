@@ -797,7 +797,7 @@ else
     }
     else version (LoongArch64)
     {
-        // Define bits representing exceptions in the FPSR status word.
+        // Define bits representing exceptions in the Flags field in FCSR{0,2}.
         enum
         {
             FE_INEXACT      = 0x010000, ///
@@ -808,13 +808,13 @@ else
             FE_ALL_EXCEPT   = 0x1f0000, ///
         }
 
-        // Define bits representing rounding modes in the FPCR Rmode field.
+        // Define bits representing rounding modes in the RM field in FCSR{0,3}.
         enum
         {
             FE_TONEAREST    = 0x000, ///
             FE_TOWARDZERO   = 0x100, ///
-            FE_DOWNWARD     = 0x200, ///
-            FE_UPWARD       = 0x300, ///
+            FE_UPWARD       = 0x200, ///
+            FE_DOWNWARD     = 0x300, ///
         }
     }
     else

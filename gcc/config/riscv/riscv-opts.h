@@ -27,6 +27,7 @@ enum riscv_abi_type {
   ABI_ILP32F,
   ABI_ILP32D,
   ABI_LP64,
+  ABI_LP64E,
   ABI_LP64F,
   ABI_LP64D
 };
@@ -100,6 +101,18 @@ enum riscv_entity
   RISCV_VXRM = 0,
   RISCV_FRM,
   MAX_RISCV_ENTITIES
+};
+
+/* RISC-V stringop strategy. */
+enum riscv_stringop_strategy_enum {
+  /* Use scalar or vector instructions. */
+  USE_AUTO,
+  /* Always use a library call. */
+  USE_LIBCALL,
+  /* Only use scalar instructions. */
+  USE_SCALAR,
+  /* Only use vector instructions. */
+  USE_VECTOR
 };
 
 #define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))

@@ -1,3 +1,10 @@
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112562
+	* sanitizer_common/sanitizer_asm.h: Cherry-pick llvm-project revision
+	a855a16a02e76a0f4192c038bb64f3773947a2f7.
+	* interception/interception.h: Likewise.
+
 2023-11-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* asan/asan_mac.cpp: Protect Apple blocks behind the

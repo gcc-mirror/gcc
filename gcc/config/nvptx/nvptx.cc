@@ -721,7 +721,7 @@ nvptx_function_arg_advance (cumulative_args_t cum_v, const function_arg_info &)
 
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.
 
-   For nvptx This is only used for varadic args.  The type has already
+   For nvptx This is only used for variadic args.  The type has already
    been promoted and/or converted to invisible reference.  */
 
 static unsigned
@@ -1549,7 +1549,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   if (!TARGET_SOFT_STACK)
     {
       /* Declare a local var for outgoing varargs.  */
-      if (cfun->machine->has_varadic)
+      if (cfun->machine->has_variadic)
 	init_frame (file, STACK_POINTER_REGNUM,
 		    UNITS_PER_WORD, crtl->outgoing_args_size);
 
@@ -1559,7 +1559,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 	init_frame (file, FRAME_POINTER_REGNUM, alignment,
 		    ROUND_UP (sz, GET_MODE_SIZE (DImode)));
     }
-  else if (need_frameptr || cfun->machine->has_varadic || cfun->calls_alloca
+  else if (need_frameptr || cfun->machine->has_variadic || cfun->calls_alloca
 	   || (cfun->machine->has_simtreg && !crtl->is_leaf))
     init_softstack_frame (file, alignment, sz);
 
@@ -1796,13 +1796,13 @@ nvptx_call_args (rtx arg, tree fntype)
   if (!cfun->machine->doing_call)
     {
       cfun->machine->doing_call = true;
-      cfun->machine->is_varadic = false;
+      cfun->machine->is_variadic = false;
       cfun->machine->num_args = 0;
 
       if (fntype && stdarg_p (fntype))
 	{
-	  cfun->machine->is_varadic = true;
-	  cfun->machine->has_varadic = true;
+	  cfun->machine->is_variadic = true;
+	  cfun->machine->has_variadic = true;
 	  cfun->machine->num_args++;
 	}
     }
@@ -1872,7 +1872,7 @@ nvptx_expand_call (rtx retval, rtx address)
     }
 
   unsigned nargs = cfun->machine->num_args;
-  if (cfun->machine->is_varadic)
+  if (cfun->machine->is_variadic)
     {
       varargs = gen_reg_rtx (Pmode);
       emit_move_insn (varargs, stack_pointer_rtx);

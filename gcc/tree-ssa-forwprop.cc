@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "cfganal.h"
 #include "optabs-tree.h"
+#include "insn-config.h"
+#include "recog.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
 #include "internal-fn.h"
@@ -2978,6 +2980,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  /* Only few targets implement direct conversion patterns so try
 	     some simple special cases via VEC_[UN]PACK[_FLOAT]_LO_EXPR.  */
 	  optab optab;
+	  insn_code icode;
 	  tree halfvectype, dblvectype;
 	  enum tree_code unpack_op;
 
@@ -3015,8 +3018,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	      && (optab = optab_for_tree_code (unpack_op,
 					       dblvectype,
 					       optab_default))
-	      && (optab_handler (optab, TYPE_MODE (dblvectype))
-		  != CODE_FOR_nothing))
+	      && ((icode = optab_handler (optab, TYPE_MODE (dblvectype)))
+		  != CODE_FOR_nothing)
+	      && (insn_data[icode].operand[0].mode == TYPE_MODE (type)))
 	    {
 	      gimple_seq stmts = NULL;
 	      tree dbl;
@@ -3054,8 +3058,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 		   && (optab = optab_for_tree_code (VEC_PACK_TRUNC_EXPR,
 						    halfvectype,
 						    optab_default))
-		   && (optab_handler (optab, TYPE_MODE (halfvectype))
-		       != CODE_FOR_nothing))
+		   && ((icode = optab_handler (optab, TYPE_MODE (halfvectype)))
+		       != CODE_FOR_nothing)
+		   && (insn_data[icode].operand[0].mode == TYPE_MODE (type)))
 	    {
 	      gimple_seq stmts = NULL;
 	      tree low = gimple_build (&stmts, BIT_FIELD_REF, halfvectype,

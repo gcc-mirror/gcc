@@ -1,3 +1,46 @@
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h: Include "rich-location.h".
+
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107573
+	* analyzer.h (register_known_functions): Add region_model_manager
+	param.
+	* analyzer.opt (Wanalyzer-undefined-behavior-strtok): New.
+	* call-summary.cc
+	(call_summary_replay::convert_region_from_summary_1): Handle
+	RK_PRIVATE.
+	* engine.cc (impl_run_checkers): Pass model manager to
+	register_known_functions.
+	* kf.cc (class undefined_function_behavior): New.
+	(class kf_strtok): New.
+	(register_known_functions): Add region_model_manager param.
+	Use it to register "strtok".
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_conjured_svalue): Add "idx"
+	param.
+	* region-model-manager.h
+	(region_model_manager::get_or_create_conjured_svalue): Add "idx"
+	param.
+	(region_model_manager::get_root_region): New accessor.
+	* region-model.cc (region_model::scan_for_null_terminator): Handle
+	"expr" being null.
+	(region_model::get_representative_path_var_1): Handle RK_PRIVATE.
+	* region-model.h (region_model::called_from_main_p): Make public.
+	* region.cc (region::get_memory_space): Handle RK_PRIVATE.
+	(region::can_have_initial_svalue_p): Handle MEMSPACE_PRIVATE.
+	(private_region::dump_to_pp): New.
+	* region.h (MEMSPACE_PRIVATE): New.
+	(RK_PRIVATE): New.
+	(class private_region): New.
+	(is_a_helper <const private_region *>::test): New.
+	* store.cc (store::replay_call_summary_cluster): Handle
+	RK_PRIVATE.
+	* svalue.h (struct conjured_svalue::key_t): Add "idx" param to
+	ctor and "m_idx" field.
+	(class conjured_svalue::conjured_svalue): Likewise.
+
 2023-11-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106147

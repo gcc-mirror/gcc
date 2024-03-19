@@ -10936,7 +10936,7 @@
 
 ;; Switch to a new stack with its address in sp_switch (a SYMBOL_REF).
 (define_insn "sp_switch_1"
-  [(set (reg:SI SP_REG) (unspec_volatile [(match_operand:SI 0 "" "")]
+  [(set (reg:SI SP_REG) (unspec_volatile:SI [(match_operand:SI 0 "" "")]
     UNSPECV_SP_SWITCH_B))]
   "TARGET_SH1"
 {

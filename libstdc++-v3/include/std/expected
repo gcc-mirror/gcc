@@ -32,6 +32,7 @@
 #pragma GCC system_header
 
 #define __glibcxx_want_expected
+#define __glibcxx_want_freestanding_expected
 #include <bits/version.h>
 
 #ifdef __cpp_lib_expected // C++ >= 23 && __cpp_concepts >= 202002L

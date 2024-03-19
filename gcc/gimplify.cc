@@ -14382,7 +14382,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 					       OMP_CLAUSE_LASTPRIVATE))
 		  if (OMP_CLAUSE_DECL (c3) == decl)
 		    {
-		      warning_at (OMP_CLAUSE_LOCATION (c3), 0,
+		      warning_at (OMP_CLAUSE_LOCATION (c3), OPT_Wopenmp,
 				  "conditional %<lastprivate%> on loop "
 				  "iterator %qD ignored", decl);
 		      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c3) = 0;
@@ -14490,7 +14490,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 					   OMP_CLAUSE_LASTPRIVATE))
 	      if (OMP_CLAUSE_DECL (c3) == decl)
 		{
-		  warning_at (OMP_CLAUSE_LOCATION (c3), 0,
+		  warning_at (OMP_CLAUSE_LOCATION (c3), OPT_Wopenmp,
 			      "conditional %<lastprivate%> on loop "
 			      "iterator %qD ignored", decl);
 		  OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c3) = 0;

@@ -1015,12 +1015,27 @@ See_Also:
 enum bool isForwardRange(R) = isInputRange!R
     && is(typeof((R r) { return r.save; } (R.init)) == R);
 
+/// ditto
+enum bool isForwardRange(R, E) =
+    .isForwardRange!R && isQualifierConvertible!(ElementType!R, E);
+
 ///
 @safe unittest
 {
     static assert(!isForwardRange!(int));
     static assert( isForwardRange!(int[]));
     static assert( isForwardRange!(inout(int)[]));
+
+    static assert( isForwardRange!(int[], const int));
+    static assert(!isForwardRange!(int[], immutable int));
+
+    static assert(!isForwardRange!(const(int)[], int));
+    static assert( isForwardRange!(const(int)[], const int));
+    static assert(!isForwardRange!(const(int)[], immutable int));
+
+    static assert(!isForwardRange!(immutable(int)[], int));
+    static assert( isForwardRange!(immutable(int)[], const int));
+    static assert( isForwardRange!(immutable(int)[], immutable int));
 }
 
 @safe unittest

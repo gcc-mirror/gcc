@@ -10,4 +10,4 @@ smin (double x, double y)
 
 /* { dg-final { scan-assembler-not "\t(call|tail)\tfmin\t" } } */
 /* { dg-final { scan-assembler-not "\tfmin\\.d\t" } } */
-/* { dg-final { scan-assembler "\tfle\\.d\t" } } */
+/* { dg-final { scan-assembler "\t(fgt\\.d|fle\\.d)\t" } } */

@@ -3010,6 +3010,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    TREE_TYPE (TYPE_FIELDS (gnu_type)) = gnu_inner;
 		}
 	    }
+
+	  /* Otherwise, if an alignment is specified, use it if valid and, if
+	     the alignment was requested with an explicit clause, state so.  */
+	  else if (Known_Alignment (gnat_entity))
+	    {
+	      SET_TYPE_ALIGN (gnu_type,
+			      validate_alignment (Alignment (gnat_entity),
+						  gnat_entity,
+						  TYPE_ALIGN (gnu_type)));
+	      if (Present (Alignment_Clause (gnat_entity)))
+		TYPE_USER_ALIGN (gnu_type) = 1;
+	    }
 	}
       break;
 

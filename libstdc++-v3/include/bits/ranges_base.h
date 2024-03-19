@@ -37,6 +37,7 @@
 #include <bits/stl_iterator.h>
 #include <ext/numeric_traits.h>
 #include <bits/max_size_type.h>
+#include <bits/version.h>
 
 #ifdef __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -1056,8 +1057,13 @@ namespace ranges
     using borrowed_iterator_t = __conditional_t<borrowed_range<_Range>,
 						iterator_t<_Range>,
 						dangling>;
-
 } // namespace ranges
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+  struct from_range_t { explicit from_range_t() = default; };
+  inline constexpr from_range_t from_range{};
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // library concepts

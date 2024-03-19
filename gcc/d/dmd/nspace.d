@@ -85,33 +85,6 @@ extern (C++) final class Nspace : ScopeDsymbol
         return ns;
     }
 
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        ScopeDsymbol.addMember(sc, sds);
-
-        if (members)
-        {
-            if (!symtab)
-                symtab = new DsymbolTable();
-            // The namespace becomes 'imported' into the enclosing scope
-            for (Scope* sce = sc; 1; sce = sce.enclosing)
-            {
-                ScopeDsymbol sds2 = sce.scopesym;
-                if (sds2)
-                {
-                    sds2.importScope(this, Visibility(Visibility.Kind.public_));
-                    break;
-                }
-            }
-            assert(sc);
-            sc = sc.push(this);
-            sc.linkage = LINK.cpp; // namespaces default to C++ linkage
-            sc.parent = this;
-            members.foreachDsymbol(s => s.addMember(sc, this));
-            sc.pop();
-        }
-    }
-
     override void setScope(Scope* sc)
     {
         ScopeDsymbol.setScope(sc);
@@ -124,22 +97,6 @@ extern (C++) final class Nspace : ScopeDsymbol
             members.foreachDsymbol(s => s.setScope(sc));
             sc.pop();
         }
-    }
-
-    override Dsymbol search(const ref Loc loc, Identifier ident, int flags = SearchLocalsOnly)
-    {
-        //printf("%s.Nspace.search('%s')\n", toChars(), ident.toChars());
-        if (_scope && !symtab)
-            dsymbolSemantic(this, _scope);
-
-        if (!members || !symtab) // opaque or semantic() is not yet called
-        {
-            if (!(flags & IgnoreErrors))
-                .error(loc, "%s `%s` is forward referenced when looking for `%s`", kind, toPrettyChars, ident.toChars());
-            return null;
-        }
-
-        return ScopeDsymbol.search(loc, ident, flags);
     }
 
     override bool hasPointers()

@@ -13023,8 +13023,8 @@ package body Exp_Util is
             --  Finalization of transient objects are treated separately in
             --  order to handle sensitive cases. These include:
 
-            --    * Aggregate expansion
-            --    * If, case, and expression with actions expansion
+            --    * Conditional expressions
+            --    * Expressions with actions
             --    * Transient scopes
 
             --  If one of those contexts has marked the transient object as
@@ -13231,27 +13231,6 @@ package body Exp_Util is
             elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package
               and then Requires_Cleanup_Actions (Decl, Lib_Level)
             then
-               return True;
-            end if;
-
-         elsif Nkind (Decl) = N_Block_Statement
-           and then
-
-           --  Handle a rare case caused by a controlled transient object
-           --  created as part of a record init proc. The variable is wrapped
-           --  in a block, but the block is not associated with a transient
-           --  scope.
-
-           (Inside_Init_Proc
-
-           --  Handle the case where the original context has been wrapped in
-           --  a block to avoid interference between exception handlers and
-           --  At_End handlers. Treat the block as transparent and process its
-           --  contents.
-
-             or else Is_Finalization_Wrapper (Decl))
-         then
-            if Requires_Cleanup_Actions (Decl, Lib_Level) then
                return True;
             end if;
          end if;

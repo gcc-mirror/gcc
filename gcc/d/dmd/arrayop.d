@@ -172,7 +172,7 @@ Expression arrayOp(BinAssignExp e, Scope* sc)
     }
     if (e.e1.op == EXP.arrayLiteral)
     {
-        return e.e1.modifiableLvalue(sc, e.e1);
+        return e.e1.modifiableLvalue(sc);
     }
 
     return arrayOp(e.isBinExp(), sc);

@@ -1568,6 +1568,13 @@ process_options ()
       flag_associative_math = 0;
     }
 
+  if (flag_hardened && !HAVE_FHARDENED_SUPPORT)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fhardened%> not supported for this target");
+      flag_hardened = 0;
+    }
+
   /* -fstack-clash-protection is not currently supported on targets
      where the stack grows up.  */
   if (flag_stack_clash_protection && !STACK_GROWS_DOWNWARD)
@@ -1576,6 +1583,19 @@ process_options ()
 		  "%<-fstack-clash-protection%> is not supported on targets "
 		  "where the stack grows from lower to higher addresses");
       flag_stack_clash_protection = 0;
+    }
+  else if (flag_hardened)
+    {
+      if (!flag_stack_clash_protection
+	   /* Don't enable -fstack-clash-protection when -fstack-check=
+	      is used: it would result in confusing errors.  */
+	   && flag_stack_check == NO_STACK_CHECK)
+	flag_stack_clash_protection = 1;
+      else if (flag_stack_check != NO_STACK_CHECK)
+	warning_at (UNKNOWN_LOCATION, OPT_Whardened,
+		    "%<-fstack-clash-protection%> is not enabled by "
+		    "%<-fhardened%> because %<-fstack-check%> was "
+		    "specified on the command line");
     }
 
   /* We cannot support -fstack-check= and -fstack-clash-protection at
@@ -1592,8 +1612,9 @@ process_options ()
      target already uses a soft frame pointer, the transition is trivial.  */
   if (!FRAME_GROWS_DOWNWARD && flag_stack_protect)
     {
-      warning_at (UNKNOWN_LOCATION, 0,
-		  "%<-fstack-protector%> not supported for this target");
+      if (!flag_stack_protector_set_by_fhardened_p)
+	warning_at (UNKNOWN_LOCATION, 0,
+		    "%<-fstack-protector%> not supported for this target");
       flag_stack_protect = 0;
     }
   if (!flag_stack_protect)

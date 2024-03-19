@@ -83,6 +83,62 @@ class vuninitializedq_impl : public quiet<function_base>
   }
 };
 
+class vld1_impl : public full_width_access
+{
+public:
+  unsigned int
+  call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY;
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code icode;
+    if (e.type_suffix (0).float_p)
+      icode = code_for_mve_vld1q_f(e.vector_mode (0));
+    else
+      {
+	if (e.type_suffix (0).unsigned_p)
+	  icode = code_for_mve_vld1q(VLD1Q_U,
+				     e.vector_mode (0));
+	else
+	  icode = code_for_mve_vld1q(VLD1Q_S,
+				     e.vector_mode (0));
+      }
+    return e.use_contiguous_load_insn (icode);
+  }
+};
+
+class vst1_impl : public full_width_access
+{
+public:
+  unsigned int
+  call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_MEMORY;
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code icode;
+    if (e.type_suffix (0).float_p)
+      icode = code_for_mve_vst1q_f(e.vector_mode (0));
+    else
+      {
+	if (e.type_suffix (0).unsigned_p)
+	  icode = code_for_mve_vst1q(VST1Q_U,
+				     e.vector_mode (0));
+	else
+	  icode = code_for_mve_vst1q(VST1Q_S,
+				     e.vector_mode (0));
+      }
+    return e.use_contiguous_store_insn (icode);
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -290,6 +346,7 @@ FUNCTION (vfmasq, unspec_mve_function_exact_insn, (-1, -1, -1, -1, -1, VFMASQ_N_
 FUNCTION (vfmsq, unspec_mve_function_exact_insn, (-1, -1, VFMSQ_F, -1, -1, -1, -1, -1, VFMSQ_M_F, -1, -1, -1))
 FUNCTION_WITH_M_N_NO_F (vhaddq, VHADDQ)
 FUNCTION_WITH_M_N_NO_F (vhsubq, VHSUBQ)
+FUNCTION (vld1q, vld1_impl,)
 FUNCTION_PRED_P_S (vmaxavq, VMAXAVQ)
 FUNCTION_WITHOUT_N_NO_U_F (vmaxaq, VMAXAQ)
 FUNCTION_ONLY_F (vmaxnmaq, VMAXNMAQ)
@@ -405,6 +462,7 @@ FUNCTION_ONLY_N_NO_F (vshrntq, VSHRNTQ)
 FUNCTION_ONLY_N_NO_F (vshrq, VSHRQ)
 FUNCTION_ONLY_N_NO_F (vsliq, VSLIQ)
 FUNCTION_ONLY_N_NO_F (vsriq, VSRIQ)
+FUNCTION (vst1q, vst1_impl,)
 FUNCTION_WITH_RTX_M_N (vsubq, MINUS, VSUBQ)
 FUNCTION (vuninitializedq, vuninitializedq_impl,)
 

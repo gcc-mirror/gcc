@@ -1983,6 +1983,17 @@ proc check_effective_target_riscv_ztso { } {
     }]
 }
 
+# Return 1 if the target arch supports the Zbb extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zbb { } {
+    return [check_no_compiler_messages riscv_ext_zbb assembly {
+       #ifndef __riscv_zbb
+       #error "Not __riscv_zbb"
+       #endif
+    }]
+}
+
 # Return 1 if we can execute code when using dg-add-options riscv_v
 
 proc check_effective_target_riscv_v_ok { } {
@@ -3805,7 +3816,7 @@ proc check_effective_target___float128 { } {
 }
 
 proc add_options_for___float128 { flags } {
-    if { [istarget powerpc*-*-*] } {
+    if { [istarget powerpc*-*-linux*] } {
 	return "$flags -mfloat128 -mvsx"
     }
     return "$flags"
@@ -5592,7 +5603,7 @@ proc check_effective_target_arm_thumb1_movt_ok {} {
 
 proc check_effective_target_arm_thumb1_cbz_ok {} {
     if [check_effective_target_arm_thumb1_ok] {
-	return [check_no_compiler_messages arm_movt object {
+	return [check_no_compiler_messages arm_cbz object {
 	    int
 	    foo (void)
 	    {
@@ -7178,7 +7189,7 @@ proc check_effective_target_powerpc_vsx_ok { } {
 	    return 0
 	}
 	# Darwin doesn't have VSX, even if it's used with an assembler
-	# which recognises the insns.
+	# which recognises the insns.
 	if { [istarget *-*-darwin*] } {
 	    return 0
 	}
@@ -9257,7 +9268,8 @@ proc check_effective_target_vect_call_roundf { } {
 proc check_effective_target_vect_logical_reduc { } {
     return [expr { [check_effective_target_aarch64_sve]
 	           || [istarget amdgcn-*-*]
-		   || [check_effective_target_riscv_v] }]
+		   || [check_effective_target_riscv_v]
+		   || [istarget i?86-*-*] || [istarget x86_64-*-*]}]
 }
 
 # Return 1 if the target supports the fold_extract_last optab.
@@ -11090,7 +11102,7 @@ proc check_effective_target_gas { } {
 	if { [ string first "GNU" $as_output ] >= 0 } {
 	    # Some Darwin versions have an assembler which is based on an old
 	    # version of GAS (and reports GNU assembler in its -v output) but
-	    # but doesn't support many of the modern GAS features.
+	    # but doesn't support many of the modern GAS features.
 	    if { [ string first "cctools" $as_output ] >= 0 } {
 	        set use_gas_saved 0
 	    } else {
@@ -11563,7 +11575,6 @@ proc check_vect_support_and_set_flags { } {
         set dg-do-what-default run
     } elseif [istarget riscv64-*-*] {
 	if [check_effective_target_riscv_vector_hw] {
-	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-autovec-preference=scalable"
 	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-vector-abi"
 	    set dg-do-what-default run
 	} else {

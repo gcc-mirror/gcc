@@ -228,10 +228,8 @@ public:
     virtual const char *kind() const;
     virtual Dsymbol *toAlias();                 // resolve real symbol
     virtual Dsymbol *toAlias2();
-    virtual void addMember(Scope *sc, ScopeDsymbol *sds);
     virtual void setScope(Scope *sc);
     virtual void importAll(Scope *sc);
-    virtual Dsymbol *search(const Loc &loc, Identifier *ident, int flags = IgnoreNone);
     virtual bool overloadInsert(Dsymbol *s);
     virtual uinteger_t size(const Loc &loc);
     virtual bool isforwardRef();
@@ -331,16 +329,14 @@ public:
     Dsymbols *members;          // all Dsymbol's in this scope
     DsymbolTable *symtab;       // members[] sorted into table
     unsigned endlinnum;         // the linnumber of the statement after the scope (0 if unknown)
-
-private:
     Dsymbols *importedScopes;   // imported Dsymbol's
     Visibility::Kind *visibilities;   // array of `Visibility.Kind`, one for each import
 
+private:
     BitArray accessiblePackages, privateAccessiblePackages;
 
 public:
     ScopeDsymbol *syntaxCopy(Dsymbol *s) override;
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
     virtual void importScope(Dsymbol *s, Visibility visibility);
     virtual bool isPackageAccessible(Package *p, Visibility visibility, int flags = 0);
     bool isforwardRef() override final;
@@ -362,7 +358,6 @@ class WithScopeSymbol final : public ScopeDsymbol
 public:
     WithStatement *withstate;
 
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
 
     WithScopeSymbol *isWithScopeSymbol() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
@@ -372,12 +367,8 @@ public:
 
 class ArrayScopeSymbol final : public ScopeDsymbol
 {
-private:
-    RootObject *arrayContent;
 public:
-    Scope *sc;
-
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = IgnoreNone) override;
+    RootObject *arrayContent;
 
     ArrayScopeSymbol *isArrayScopeSymbol() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
@@ -437,3 +428,6 @@ public:
     // Number of symbols in symbol table
     size_t length() const;
 };
+
+void addMember(Dsymbol *dsym, Scope *sc, ScopeDsymbol *sds);
+Dsymbol *search(Dsymbol *d, const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);

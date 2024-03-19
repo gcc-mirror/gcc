@@ -763,18 +763,6 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	{
 	  tree type = TREE_TYPE (oprnd);
 	  dt = dts[i];
-	  if ((dt == vect_constant_def
-	       || dt == vect_external_def)
-	      && !GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
-	      && TREE_CODE (type) != BOOLEAN_TYPE
-	      && !can_duplicate_and_interleave_p (vinfo, stmts.length (), type))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: invalid type of def "
-				 "for variable-length SLP %T\n", oprnd);
-	      return -1;
-	    }
 
 	  /* For the swapping logic below force vect_reduction_def
 	     for the reduction op in a SLP reduction group.  */
@@ -2395,7 +2383,7 @@ out:
   /* Create SLP_TREE nodes for the definition node/s.  */
   FOR_EACH_VEC_ELT (oprnds_info, i, oprnd_info)
     {
-      slp_tree child;
+      slp_tree child = nullptr;
       unsigned int j;
 
       /* We're skipping certain operands from processing, for example
@@ -2443,6 +2431,29 @@ out:
       if (oprnd_info->first_dt == vect_external_def
 	  || oprnd_info->first_dt == vect_constant_def)
 	{
+	  if (!GET_MODE_SIZE (vinfo->vector_mode).is_constant ())
+	    {
+	      tree op0;
+	      tree uniform_val = op0 = oprnd_info->ops[0];
+	      for (j = 1; j < oprnd_info->ops.length (); ++j)
+		if (!operand_equal_p (uniform_val, oprnd_info->ops[j]))
+		  {
+		    uniform_val = NULL_TREE;
+		    break;
+		  }
+	      if (!uniform_val
+		  && !can_duplicate_and_interleave_p (vinfo,
+						      oprnd_info->ops.length (),
+						      TREE_TYPE (op0)))
+		{
+		  matches[j] = false;
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: invalid type of def "
+				     "for variable-length SLP %T\n", op0);
+		  goto fail;
+		}
+	    }
 	  slp_tree invnode = vect_create_new_slp_node (oprnd_info->ops);
 	  SLP_TREE_DEF_TYPE (invnode) = oprnd_info->first_dt;
 	  oprnd_info->ops = vNULL;
@@ -8157,6 +8168,7 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
 
   number_of_places_left_in_vector = nunits;
   constant_p = true;
+  tree uniform_elt = NULL_TREE;
   tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
   stmt_vec_info insert_after = NULL;
@@ -8166,8 +8178,14 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
       for (i = group_size - 1; op_node->ops.iterate (i, &op); i--)
         {
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
-          number_of_places_left_in_vector--;
 	  tree orig_op = op;
+	  if (number_of_places_left_in_vector == nunits)
+	    uniform_elt = op;
+	  else if (uniform_elt && operand_equal_p (uniform_elt, op))
+	    op = elts[number_of_places_left_in_vector];
+	  else
+	    uniform_elt = NULL_TREE;
+	  number_of_places_left_in_vector--;
 	  if (!types_compatible_p (TREE_TYPE (vector_type), TREE_TYPE (op)))
 	    {
 	      if (CONSTANT_CLASS_P (op))
@@ -8236,9 +8254,13 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
 
           if (number_of_places_left_in_vector == 0)
             {
-	      if (constant_p
-		  ? multiple_p (TYPE_VECTOR_SUBPARTS (vector_type), nunits)
-		  : known_eq (TYPE_VECTOR_SUBPARTS (vector_type), nunits))
+	      auto type_nunits = TYPE_VECTOR_SUBPARTS (vector_type);
+	      if (uniform_elt)
+		vec_cst = gimple_build_vector_from_val (&ctor_seq, vector_type,
+							elts[0]);
+	      else if (constant_p
+		       ? multiple_p (type_nunits, nunits)
+		       : known_eq (type_nunits, nunits))
 		vec_cst = gimple_build_vector (&ctor_seq, &elts);
 	      else
 		{

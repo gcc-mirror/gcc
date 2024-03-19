@@ -1310,3 +1310,7 @@ do {									     \
 
 /* Output default function prologue for hpux.  */
 #define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue
+
+/* An integer expression for the size in bits of the largest integer machine
+   mode that should actually be used.  We allow pairs of registers.  */
+#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)

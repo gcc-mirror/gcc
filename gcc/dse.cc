@@ -1900,8 +1900,11 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
   else
     gap = read_offset - store_info->offset;
 
-  if (gap.is_constant () && maybe_ne (gap, 0))
+  if (maybe_ne (gap, 0))
     {
+      if (!gap.is_constant ())
+	return NULL_RTX;
+
       poly_int64 shift = gap * BITS_PER_UNIT;
       poly_int64 access_size = GET_MODE_SIZE (read_mode) + gap;
       read_reg = find_shift_sequence (access_size, store_info, read_mode,
@@ -1940,6 +1943,10 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
 	       || GET_MODE_CLASS (read_mode) != GET_MODE_CLASS (store_mode)))
     read_reg = extract_low_bits (read_mode, store_mode,
 				 copy_rtx (store_info->const_rhs));
+  else if (VECTOR_MODE_P (read_mode) && VECTOR_MODE_P (store_mode)
+    && known_le (GET_MODE_BITSIZE (read_mode), GET_MODE_BITSIZE (store_mode))
+    && targetm.modes_tieable_p (read_mode, store_mode))
+    read_reg = gen_lowpart (read_mode, copy_rtx (store_info->rhs));
   else
     read_reg = extract_low_bits (read_mode, store_mode,
 				 copy_rtx (store_info->rhs));

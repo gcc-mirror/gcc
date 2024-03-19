@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_v } } } */
 
 
-#include "gather_load-5.c"
+#include "gather_load_64-5.c"
 #include <assert.h>
 
 int

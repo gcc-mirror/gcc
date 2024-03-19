@@ -311,6 +311,44 @@ const struct fname_var_t fname_vars[] =
   {NULL, 0, 0},
 };
 
+/* Flags to restrict availability of generic features that
+   are known to __has_{feature,extension}.  */
+
+enum
+{
+  HF_FLAG_NONE = 0,
+  HF_FLAG_EXT = 1,	/* Available only as an extension.  */
+  HF_FLAG_SANITIZE = 2, /* Availability depends on sanitizer flags.  */
+};
+
+/* Info for generic features which can be queried through
+   __has_{feature,extension}.  */
+
+struct hf_feature_info
+{
+  const char *ident;
+  unsigned flags;
+  unsigned mask;
+};
+
+/* Table of generic features which can be queried through
+   __has_{feature,extension}.  */
+
+static constexpr hf_feature_info has_feature_table[] =
+{
+  { "address_sanitizer",	    HF_FLAG_SANITIZE, SANITIZE_ADDRESS },
+  { "thread_sanitizer",		    HF_FLAG_SANITIZE, SANITIZE_THREAD },
+  { "leak_sanitizer",		    HF_FLAG_SANITIZE, SANITIZE_LEAK },
+  { "hwaddress_sanitizer",	    HF_FLAG_SANITIZE, SANITIZE_HWADDRESS },
+  { "undefined_behavior_sanitizer", HF_FLAG_SANITIZE, SANITIZE_UNDEFINED },
+  { "attribute_deprecated_with_message",  HF_FLAG_NONE, 0 },
+  { "attribute_unavailable_with_message", HF_FLAG_NONE, 0 },
+  { "enumerator_attributes",		  HF_FLAG_NONE, 0 },
+  { "tls",				  HF_FLAG_NONE, 0 },
+  { "gnu_asm_goto_with_outputs",	  HF_FLAG_EXT, 0 },
+  { "gnu_asm_goto_with_outputs_full",	  HF_FLAG_EXT, 0 }
+};
+
 /* Global visibility options.  */
 struct visibility_flags visibility_options;
 
@@ -380,6 +418,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__attribute__",	RID_ATTRIBUTE,	0 },
   { "__auto_type",	RID_AUTO_TYPE,	D_CONLY },
   { "__builtin_addressof", RID_ADDRESSOF, D_CXXONLY },
+  { "__builtin_assoc_barrier", RID_BUILTIN_ASSOC_BARRIER, 0 },
   { "__builtin_bit_cast", RID_BUILTIN_BIT_CAST, D_CXXONLY },
   { "__builtin_call_with_static_chain",
     RID_BUILTIN_CALL_WITH_STATIC_CHAIN, D_CONLY },
@@ -388,9 +427,22 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_convertvector", RID_BUILTIN_CONVERTVECTOR, 0 },
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
-  { "__builtin_assoc_barrier", RID_BUILTIN_ASSOC_BARRIER, 0 },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
   { "__builtin_shufflevector", RID_BUILTIN_SHUFFLEVECTOR, 0 },
+  { "__builtin_stdc_bit_ceil", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_bit_floor", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_bit_width", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_count_ones", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_count_zeros", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_first_leading_one", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_first_leading_zero", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_first_trailing_one", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_first_trailing_zero", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_has_single_bit", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_leading_ones", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_leading_zeros", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_trailing_ones", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_trailing_zeros", RID_BUILTIN_STDC, D_CONLY },
   { "__builtin_tgmath", RID_BUILTIN_TGMATH, D_CONLY },
   { "__builtin_offsetof", RID_OFFSETOF, 0 },
   { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, D_CONLY },
@@ -9875,6 +9927,65 @@ c_strict_flex_array_level_of (tree array_field)
       strict_flex_array_level = attr_strict_flex_array_level;
     }
   return strict_flex_array_level;
+}
+
+/* Map from identifiers to booleans.  Value is true for features, and
+   false for extensions.  Used to implement __has_{feature,extension}.  */
+
+using feature_map_t = hash_map <tree, bool>;
+static feature_map_t *feature_map;
+
+/* Register a feature for __has_{feature,extension}.  FEATURE_P is true
+   if the feature identified by NAME is a feature (as opposed to an
+   extension).  */
+
+void
+c_common_register_feature (const char *name, bool feature_p)
+{
+  bool dup = feature_map->put (get_identifier (name), feature_p);
+  gcc_checking_assert (!dup);
+}
+
+/* Lazily initialize hash table for __has_{feature,extension},
+   dispatching to the appropriate front end to register language-specific
+   features.  */
+
+static void
+init_has_feature ()
+{
+  gcc_checking_assert (!feature_map);
+  feature_map = new feature_map_t;
+
+  for (unsigned i = 0; i < ARRAY_SIZE (has_feature_table); i++)
+    {
+      const hf_feature_info *info = has_feature_table + i;
+
+      if ((info->flags & HF_FLAG_SANITIZE) && !(flag_sanitize & info->mask))
+	continue;
+
+      const bool feature_p = !(info->flags & HF_FLAG_EXT);
+      c_common_register_feature (info->ident, feature_p);
+    }
+
+  /* Register language-specific features.  */
+  c_family_register_lang_features ();
+}
+
+/* If STRICT_P is true, evaluate __has_feature (IDENT).
+   Otherwise, evaluate __has_extension (IDENT).  */
+
+bool
+has_feature_p (const char *ident, bool strict_p)
+{
+  if (!feature_map)
+    init_has_feature ();
+
+  tree name = canonicalize_attr_name (get_identifier (ident));
+  bool *feat_p = feature_map->get (name);
+  if (!feat_p)
+    return false;
+
+  return !strict_p || *feat_p;
 }
 
 #include "gt-c-family-c-common.h"

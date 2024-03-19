@@ -986,8 +986,8 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
 
       /* gfc_add_in_common may have been called before, but the reported errors
 	 have been ignored to continue parsing.
-	 We do the checks again here.  */
-      if (!csym->attr.use_assoc)
+	 We do the checks again here, unless the symbol is USE associated.  */
+      if (!csym->attr.use_assoc && !csym->attr.used_in_submodule)
 	{
 	  gfc_add_in_common (&csym->attr, csym->name, &common_block->where);
 	  gfc_notify_std (GFC_STD_F2018_OBS, "COMMON block at %L",

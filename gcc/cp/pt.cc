@@ -3274,52 +3274,39 @@ check_explicit_specialization (tree declarator,
 int
 comp_template_parms (const_tree parms1, const_tree parms2)
 {
-  const_tree p1;
-  const_tree p2;
-
   if (parms1 == parms2)
     return 1;
 
-  for (p1 = parms1, p2 = parms2;
-       p1 != NULL_TREE && p2 != NULL_TREE;
-       p1 = TREE_CHAIN (p1), p2 = TREE_CHAIN (p2))
+  tree t1 = TREE_VALUE (parms1);
+  tree t2 = TREE_VALUE (parms2);
+  int i;
+
+  gcc_assert (TREE_CODE (t1) == TREE_VEC);
+  gcc_assert (TREE_CODE (t2) == TREE_VEC);
+
+  if (TREE_VEC_LENGTH (t1) != TREE_VEC_LENGTH (t2))
+    return 0;
+
+  for (i = 0; i < TREE_VEC_LENGTH (t2); ++i)
     {
-      tree t1 = TREE_VALUE (p1);
-      tree t2 = TREE_VALUE (p2);
-      int i;
+      tree parm1 = TREE_VALUE (TREE_VEC_ELT (t1, i));
+      tree parm2 = TREE_VALUE (TREE_VEC_ELT (t2, i));
 
-      gcc_assert (TREE_CODE (t1) == TREE_VEC);
-      gcc_assert (TREE_CODE (t2) == TREE_VEC);
+      /* If either of the template parameters are invalid, assume
+	 they match for the sake of error recovery. */
+      if (error_operand_p (parm1) || error_operand_p (parm2))
+	return 1;
 
-      if (TREE_VEC_LENGTH (t1) != TREE_VEC_LENGTH (t2))
+      if (TREE_CODE (parm1) != TREE_CODE (parm2))
 	return 0;
 
-      for (i = 0; i < TREE_VEC_LENGTH (t2); ++i)
-	{
-          tree parm1 = TREE_VALUE (TREE_VEC_ELT (t1, i));
-          tree parm2 = TREE_VALUE (TREE_VEC_ELT (t2, i));
-
-          /* If either of the template parameters are invalid, assume
-             they match for the sake of error recovery. */
-          if (error_operand_p (parm1) || error_operand_p (parm2))
-            return 1;
-
-	  if (TREE_CODE (parm1) != TREE_CODE (parm2))
-	    return 0;
-
-	  if (TREE_CODE (parm1) == TEMPLATE_TYPE_PARM
-              && (TEMPLATE_TYPE_PARAMETER_PACK (parm1)
-                  == TEMPLATE_TYPE_PARAMETER_PACK (parm2)))
-	    continue;
-	  else if (!same_type_p (TREE_TYPE (parm1), TREE_TYPE (parm2)))
-	    return 0;
-	}
+      if (TREE_CODE (parm1) == TYPE_DECL
+	  && (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm1))
+	      == TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm2))))
+	continue;
+      else if (!same_type_p (TREE_TYPE (parm1), TREE_TYPE (parm2)))
+	return 0;
     }
-
-  if ((p1 != NULL_TREE) != (p2 != NULL_TREE))
-    /* One set of parameters has more parameters lists than the
-       other.  */
-    return 0;
 
   return 1;
 }
@@ -3359,7 +3346,8 @@ template_parameters_equivalent_p (const_tree parm1, const_tree parm2)
   /* ... one parameter was introduced by a parameter declaration, then
      both are. This case arises as a result of eagerly rewriting declarations
      during parsing.  */
-  if (DECL_VIRTUAL_P (decl1) != DECL_VIRTUAL_P (decl2))
+  if (DECL_IMPLICIT_TEMPLATE_PARM_P (decl1)
+      != DECL_IMPLICIT_TEMPLATE_PARM_P (decl2))
     return false;
 
   /* ... if either declares a pack, they both do.  */
@@ -3402,30 +3390,19 @@ template_parameter_lists_equivalent_p (const_tree parms1, const_tree parms2)
   if (parms1 == parms2)
     return true;
 
-  const_tree p1 = parms1;
-  const_tree p2 = parms2;
-  while (p1 != NULL_TREE && p2 != NULL_TREE)
+  tree list1 = TREE_VALUE (parms1);
+  tree list2 = TREE_VALUE (parms2);
+
+  if (TREE_VEC_LENGTH (list1) != TREE_VEC_LENGTH (list2))
+    return 0;
+
+  for (int i = 0; i < TREE_VEC_LENGTH (list2); ++i)
     {
-      tree list1 = TREE_VALUE (p1);
-      tree list2 = TREE_VALUE (p2);
-
-      if (TREE_VEC_LENGTH (list1) != TREE_VEC_LENGTH (list2))
-	return 0;
-
-      for (int i = 0; i < TREE_VEC_LENGTH (list2); ++i)
-	{
-	  tree parm1 = TREE_VEC_ELT (list1, i);
-	  tree parm2 = TREE_VEC_ELT (list2, i);
-	  if (!template_parameters_equivalent_p (parm1, parm2))
-	    return false;
-	}
-
-      p1 = TREE_CHAIN (p1);
-      p2 = TREE_CHAIN (p2);
+      tree parm1 = TREE_VEC_ELT (list1, i);
+      tree parm2 = TREE_VEC_ELT (list2, i);
+      if (!template_parameters_equivalent_p (parm1, parm2))
+	return false;
     }
-
-  if ((p1 != NULL_TREE) != (p2 != NULL_TREE))
-    return false;
 
   return true;
 }
@@ -13999,6 +13976,7 @@ tsubst_aggr_type (tree t,
       if (entering_scope
 	  && CLASS_TYPE_P (t)
 	  && dependent_type_p (t)
+	  && TYPE_TEMPLATE_INFO (t)
 	  && TYPE_CANONICAL (t) == TREE_TYPE (TYPE_TI_TEMPLATE (t)))
 	t = TYPE_CANONICAL (t);
 
@@ -18724,15 +18702,20 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case STATIC_ASSERT:
       {
-	tree condition;
+	tree condition, message;
 
 	++c_inhibit_evaluation_warnings;
 	condition = tsubst_expr (STATIC_ASSERT_CONDITION (t), args,
 				 complain, in_decl);
+	message = tsubst_expr (STATIC_ASSERT_MESSAGE (t), args,
+			       complain, in_decl);
+	if (TREE_CODE (STATIC_ASSERT_MESSAGE (t)) != STRING_CST
+	    && TREE_CODE (message) == STRING_CST)
+	  message = build1_loc (STATIC_ASSERT_SOURCE_LOCATION (t),
+				PAREN_EXPR, TREE_TYPE (message), message);
 	--c_inhibit_evaluation_warnings;
 
-        finish_static_assert (condition,
-                              STATIC_ASSERT_MESSAGE (t),
+	finish_static_assert (condition, message,
                               STATIC_ASSERT_SOURCE_LOCATION (t),
 			      /*member_p=*/false, /*show_expr_p=*/true);
       }

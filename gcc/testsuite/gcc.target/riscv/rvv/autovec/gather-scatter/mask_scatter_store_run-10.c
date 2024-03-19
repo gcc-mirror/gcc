@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_v } } } */
 
 
-#include "mask_scatter_store-10.c"
+#include "mask_scatter_store_64-10.c"
 #include <assert.h>
 
 int

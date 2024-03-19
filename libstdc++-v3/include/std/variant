@@ -31,6 +31,7 @@
 
 #pragma GCC system_header
 
+#define __glibcxx_want_freestanding_variant
 #define __glibcxx_want_variant
 #include <bits/version.h>
 

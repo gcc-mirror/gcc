@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13336a.d(28): Error: `choose(true)` is not an lvalue and cannot be modified
+fail_compilation/fail13336a.d(28): Error: cannot modify expression `choose(true)` because it is not an lvalue
 ---
 */
 

@@ -2844,12 +2844,13 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 	      tree_code outer_op = OMP_CLAUSE_REDUCTION_CODE (outer_clause);
 	      if (outer_var == local_var && outer_op != local_op)
 		{
-		  warning_at (OMP_CLAUSE_LOCATION (local_clause), 0,
-			      "conflicting reduction operations for %qE",
-			      local_var);
-		  inform (OMP_CLAUSE_LOCATION (outer_clause),
-			  "location of the previous reduction for %qE",
-			  outer_var);
+		  if (warning_at (OMP_CLAUSE_LOCATION (local_clause),
+				  OPT_Wopenmp, "conflicting reduction "
+					       "operations for %qE",
+				  local_var))
+		    inform (OMP_CLAUSE_LOCATION (outer_clause),
+			    "location of the previous reduction for %qE",
+			    outer_var);
 		}
 	      if (outer_var == local_var)
 		{
@@ -2880,7 +2881,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 			}
 		    }
 		  if (!found)
-		    warning_at (gimple_location (curr_loop->stmt), 0,
+		    warning_at (gimple_location (curr_loop->stmt), OPT_Wopenmp,
 				"nested loop in reduction needs "
 				"reduction clause for %qE",
 				local_var);
@@ -3427,12 +3428,12 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		  ctx->cancellable = true;
 		  if (omp_find_clause (gimple_omp_for_clauses (ctx->stmt),
 				       OMP_CLAUSE_NOWAIT))
-		    warning_at (gimple_location (stmt), 0,
+		    warning_at (gimple_location (stmt), OPT_Wopenmp,
 				"%<cancel for%> inside "
 				"%<nowait%> for construct");
 		  if (omp_find_clause (gimple_omp_for_clauses (ctx->stmt),
 				       OMP_CLAUSE_ORDERED))
-		    warning_at (gimple_location (stmt), 0,
+		    warning_at (gimple_location (stmt), OPT_Wopenmp,
 				"%<cancel for%> inside "
 				"%<ordered%> for construct");
 		}
@@ -3452,7 +3453,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		      if (omp_find_clause (gimple_omp_sections_clauses
 								(ctx->stmt),
 					   OMP_CLAUSE_NOWAIT))
-			warning_at (gimple_location (stmt), 0,
+			warning_at (gimple_location (stmt), OPT_Wopenmp,
 				    "%<cancel sections%> inside "
 				    "%<nowait%> sections construct");
 		    }
@@ -3465,7 +3466,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		      if (omp_find_clause (gimple_omp_sections_clauses
 							(ctx->outer->stmt),
 					   OMP_CLAUSE_NOWAIT))
-			warning_at (gimple_location (stmt), 0,
+			warning_at (gimple_location (stmt), OPT_Wopenmp,
 				    "%<cancel sections%> inside "
 				    "%<nowait%> sections construct");
 		    }
@@ -3928,7 +3929,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		      if (c && OMP_CLAUSE_DEVICE_ANCESTOR (c))
 			break;
 		    }
-		  warning_at (gimple_location (stmt), 0,
+		  warning_at (gimple_location (stmt), OPT_Wopenmp,
 			      "%qs construct inside of %qs region",
 			      stmt_name, ctx_stmt_name);
 		}
@@ -9783,8 +9784,8 @@ lower_omp_ordered_clauses (gimple_stmt_iterator *gsi_p, gomp_ordered *ord_stmt,
 				  wi::abs (wi::to_wide (fd.loops[i].step)),
 				  UNSIGNED))
 	    {
-	      warning_at (OMP_CLAUSE_LOCATION (c), 0,
-			  "ignoring sink clause with offset that is not "
+	      warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
+			  "ignoring %<sink%> clause with offset that is not "
 			  "a multiple of the loop step");
 	      remove = true;
 	      goto next_ordered_clause;

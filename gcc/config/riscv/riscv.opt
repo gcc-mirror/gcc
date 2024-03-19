@@ -65,6 +65,9 @@ EnumValue
 Enum(abi_type) String(lp64) Value(ABI_LP64)
 
 EnumValue
+Enum(abi_type) String(lp64e) Value(ABI_LP64E)
+
+EnumValue
 Enum(abi_type) String(lp64f) Value(ABI_LP64F)
 
 EnumValue
@@ -460,6 +463,10 @@ misa-spec=
 Target RejectNegative Joined Enum(isa_spec_class) Var(riscv_isa_spec) Init(TARGET_DEFAULT_ISA_SPEC)
 Set the version of RISC-V ISA spec.
 
+mmovcc
+Target Var(TARGET_MOVCC)
+Enable conditional moves unconditionally.
+
 minline-atomics
 Target Var(TARGET_INLINE_SUBWORD_ATOMIC) Init(1)
 Always inline subword atomic operations.
@@ -527,3 +534,23 @@ Target Var(TARGET_ADJUST_LMUL_COST) Init(0)
 Target Undocumented Bool Var(riscv_vector_abi) Init(0)
 Enable the use of vector registers for function arguments and return value.
 This is an experimental switch and may be subject to change in the future.
+
+Enum
+Name(riscv_stringop_strategy) Type(enum riscv_stringop_strategy_enum)
+Valid arguments to -mmemcpy-strategy=:
+
+EnumValue
+Enum(riscv_stringop_strategy) String(auto) Value(USE_AUTO)
+
+EnumValue
+Enum(riscv_stringop_strategy) String(libcall) Value(USE_LIBCALL)
+
+EnumValue
+Enum(riscv_stringop_strategy) String(scalar) Value(USE_SCALAR)
+
+EnumValue
+Enum(riscv_stringop_strategy) String(vector) Value(USE_VECTOR)
+
+mmemcpy-strategy=
+Target RejectNegative Joined Enum(riscv_stringop_strategy) Var(riscv_memcpy_strategy) Init(USE_AUTO)
+Specify memcpy expansion strategy.

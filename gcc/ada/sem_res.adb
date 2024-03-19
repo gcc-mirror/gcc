@@ -4017,12 +4017,20 @@ package body Sem_Res is
                   Analyze_And_Resolve (Actval, Base_Type (Etype (Actval)));
 
                --  Resolve entities with their own type, which may differ from
-               --  the type of a reference in a generic context (the view
-               --  swapping mechanism did not anticipate the re-analysis of
-               --  default values in calls).
+               --  the type of a reference in a generic context because of the
+               --  trick used in Save_Global_References.Set_Global_Type to set
+               --  full views forcefully, which did not anticipate the need to
+               --  re-analyze default values in calls.
 
                elsif Is_Entity_Name (Actval) then
                   Analyze_And_Resolve (Actval, Etype (Entity (Actval)));
+
+               --  Ditto for calls whose name is an entity, for the same reason
+
+               elsif Nkind (Actval) = N_Function_Call
+                 and then Is_Entity_Name (Name (Actval))
+               then
+                  Analyze_And_Resolve (Actval, Etype (Entity (Name (Actval))));
 
                else
                   Analyze_And_Resolve (Actval, Etype (Actval));

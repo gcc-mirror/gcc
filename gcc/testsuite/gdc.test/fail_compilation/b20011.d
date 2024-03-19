@@ -1,10 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/b20011.d(25): Error: `S1(cast(ubyte)0u).member` is not an lvalue and cannot be modified
-fail_compilation/b20011.d(28): Error: `S2(null).member` is not an lvalue and cannot be modified
-fail_compilation/b20011.d(29): Error: `S2(null).member` is not an lvalue and cannot be modified
-fail_compilation/b20011.d(32): Error: `U1(cast(ubyte)0u, ).m2` is not an lvalue and cannot be modified
+fail_compilation/b20011.d(25): Error: cannot modify expression `S1(cast(ubyte)0u).member` because it is not an lvalue
+fail_compilation/b20011.d(28): Error: cannot modify expression `S2(null).member` because it is not an lvalue
+fail_compilation/b20011.d(29): Error: cannot modify expression `S2(null).member` because it is not an lvalue
+fail_compilation/b20011.d(32): Error: cannot modify expression `U1(cast(ubyte)0u, ).m2` because it is not an lvalue
 fail_compilation/b20011.d(37): Error: function `b20011.main.assignableByRef(ref ubyte p)` is not callable using argument types `(ubyte)`
 fail_compilation/b20011.d(37):        cannot pass rvalue argument `S1(cast(ubyte)0u).member` of type `ubyte` to parameter `ref ubyte p`
 fail_compilation/b20011.d(38): Error: function `b20011.main.assignableByOut(out ubyte p)` is not callable using argument types `(ubyte)`

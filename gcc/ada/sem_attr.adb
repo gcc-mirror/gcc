@@ -12119,9 +12119,7 @@ package body Sem_Attr is
                Note_Possible_Modification (P, Sure => False);
             end if;
 
-            if Nkind (P) in N_Subexpr
-              and then Is_Overloaded (P)
-            then
+            if Nkind (P) in N_Subexpr and then Is_Overloaded (P) then
                Get_First_Interp (P, Index, It);
                Get_Next_Interp (Index, It);
 
@@ -12135,11 +12133,7 @@ package body Sem_Attr is
             if not Is_Entity_Name (P)
               or else not Is_Overloadable (Entity (P))
             then
-               if not Is_Task_Type (Etype (P))
-                 or else Nkind (P) = N_Explicit_Dereference
-               then
-                  Resolve (P);
-               end if;
+               Resolve (P);
             end if;
 
             --  If this is the name of a derived subprogram, or that of a

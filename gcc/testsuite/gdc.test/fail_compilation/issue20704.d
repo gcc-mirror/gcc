@@ -1,12 +1,12 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/issue20704.d(17): Error: cannot modify constant `0`
+fail_compilation/issue20704.d(17): Error: cannot create default argument for `ref` / `out` parameter from constant `0`
 fail_compilation/issue20704.d(28): Error: template instance `issue20704.f2!int` error instantiating
-fail_compilation/issue20704.d(19): Error: cannot modify constant `0`
+fail_compilation/issue20704.d(19): Error: cannot create default argument for `ref` / `out` parameter from constant `0`
 fail_compilation/issue20704.d(30): Error: template instance `issue20704.f4!int` error instantiating
-fail_compilation/issue20704.d(17): Error: `S(0)` is not an lvalue and cannot be modified
+fail_compilation/issue20704.d(17): Error: cannot create default argument for `ref` / `out` parameter from expression `S(0)` because it is not an lvalue
 fail_compilation/issue20704.d(36): Error: template instance `issue20704.f2!(S)` error instantiating
-fail_compilation/issue20704.d(17): Error: `null` is not an lvalue and cannot be modified
+fail_compilation/issue20704.d(17): Error: cannot create default argument for `ref` / `out` parameter from expression `null` because it is not an lvalue
 fail_compilation/issue20704.d(38): Error: template instance `issue20704.f2!(C)` error instantiating
 ---
 */

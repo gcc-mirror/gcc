@@ -418,7 +418,7 @@ namespace __gnu_test
 	operator==(const uneq_allocator& a,
 		   const uneq_allocator<Tp1,
 		   typename AllocTraits::template rebind<Tp1>::other>& b)
-	{ return a.personality == b.personality; }
+	{ return a.personality == b.get_personality(); }
 
       template<typename Tp1>
 	friend inline bool

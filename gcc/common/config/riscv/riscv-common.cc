@@ -169,9 +169,9 @@ struct riscv_ext_version
 static const struct riscv_ext_version riscv_ext_version_table[] =
 {
   /* name, ISA spec, major version, minor_version.  */
-  {"e", ISA_SPEC_CLASS_20191213, 1, 9},
-  {"e", ISA_SPEC_CLASS_20190608, 1, 9},
-  {"e", ISA_SPEC_CLASS_2P2,      1, 9},
+  {"e", ISA_SPEC_CLASS_20191213, 2, 0},
+  {"e", ISA_SPEC_CLASS_20190608, 2, 0},
+  {"e", ISA_SPEC_CLASS_2P2,      2, 0},
 
   {"i", ISA_SPEC_CLASS_20191213, 2, 1},
   {"i", ISA_SPEC_CLASS_20190608, 2, 1},
@@ -963,7 +963,7 @@ riscv_subset_list::parse_std_ext (const char *p)
 
       add ("e", major_version, minor_version, explicit_version_p, false);
 
-      if (m_xlen > 32)
+      if (m_xlen > 64)
 	{
 	  error_at (m_loc, "%<-march=%s%>: rv%de is not a valid base ISA",
 		    m_arch, m_xlen);

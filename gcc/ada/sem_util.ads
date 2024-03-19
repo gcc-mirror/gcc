@@ -2480,6 +2480,13 @@ package Sem_Util is
    --  Calls Handle_Parameter for each pair of formal and actual parameters of
    --  a function, procedure, or entry call.
 
+   function Iterator_Interface_Ancestor (Typ : Entity_Id) return Entity_Id;
+   --  If Typ has an ancestor that is an iterator interface type declared in
+   --  an instance of Ada.Iterator_Interfaces, then returns that interface
+   --  type. Otherwise returns Empty. (It's not clear what it means if there
+   --  is more than one such ancestor, perhaps coming from multiple instances,
+   --  but this function returns the first such ancestor it finds. ???)
+
    procedure Kill_Current_Values (Last_Assignment_Only : Boolean := False);
    --  This procedure is called to clear all constant indications from all
    --  entities in the current scope and in any parent scopes if the current

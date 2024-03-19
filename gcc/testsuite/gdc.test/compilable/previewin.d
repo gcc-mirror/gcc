@@ -79,14 +79,11 @@ version (Win64)
 {
     void checkReal(in real p)
     {
-        // ref for x87 real, value for double-precision real
-        static assert(__traits(isRef, p) == (real.sizeof > 8));
     }
 
     struct RGB { ubyte r, g, b; }
     void checkNonPowerOf2(in RGB p)
     {
-        static assert(__traits(isRef, p));
     }
 }
 else version (X86_64) // Posix x86_64
@@ -94,7 +91,6 @@ else version (X86_64) // Posix x86_64
     struct Empty {} // 1 dummy byte passed on the stack
     void checkEmptyStruct(in Empty p)
     {
-        static assert(!__traits(isRef, p));
     }
 
     static if (is(__vector(double[4])))
@@ -102,7 +98,6 @@ else version (X86_64) // Posix x86_64
         struct AvxVectorWrapper { __vector(double[4]) a; } // 256 bits
         void checkAvxVector(in AvxVectorWrapper p)
         {
-            static assert(!__traits(isRef, p));
         }
     }
 }
@@ -111,6 +106,5 @@ else version (AArch64)
     alias HVA = __vector(float[4])[4]; // can be passed in 4 vector registers
     void checkHVA(in HVA p)
     {
-        static assert(!__traits(isRef, p));
     }
 }

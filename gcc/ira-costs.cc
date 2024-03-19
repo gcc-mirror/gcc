@@ -1662,16 +1662,16 @@ scan_one_insn (rtx_insn *insn)
 
 
 
-/* Print allocnos costs to file F.  */
+/* Print allocnos costs to the dump file.  */
 static void
-print_allocno_costs (FILE *f)
+print_allocno_costs (void)
 {
   int k;
   ira_allocno_t a;
   ira_allocno_iterator ai;
 
   ira_assert (allocno_p);
-  fprintf (f, "\n");
+  fprintf (ira_dump_file, "\n");
   FOR_EACH_ALLOCNO (a, ai)
     {
       int i, rclass;
@@ -1681,32 +1681,34 @@ print_allocno_costs (FILE *f)
       enum reg_class *cost_classes = cost_classes_ptr->classes;
 
       i = ALLOCNO_NUM (a);
-      fprintf (f, "  a%d(r%d,", i, regno);
+      fprintf (ira_dump_file, "  a%d(r%d,", i, regno);
       if ((bb = ALLOCNO_LOOP_TREE_NODE (a)->bb) != NULL)
-	fprintf (f, "b%d", bb->index);
+	fprintf (ira_dump_file, "b%d", bb->index);
       else
-	fprintf (f, "l%d", ALLOCNO_LOOP_TREE_NODE (a)->loop_num);
-      fprintf (f, ") costs:");
+	fprintf (ira_dump_file, "l%d", ALLOCNO_LOOP_TREE_NODE (a)->loop_num);
+      fprintf (ira_dump_file, ") costs:");
       for (k = 0; k < cost_classes_ptr->num; k++)
 	{
 	  rclass = cost_classes[k];
-	  fprintf (f, " %s:%d", reg_class_names[rclass],
+	  fprintf (ira_dump_file, " %s:%d", reg_class_names[rclass],
 		   COSTS (costs, i)->cost[k]);
 	  if (flag_ira_region == IRA_REGION_ALL
 	      || flag_ira_region == IRA_REGION_MIXED)
-	    fprintf (f, ",%d", COSTS (total_allocno_costs, i)->cost[k]);
+	    fprintf (ira_dump_file, ",%d",
+		     COSTS (total_allocno_costs, i)->cost[k]);
 	}
-      fprintf (f, " MEM:%i", COSTS (costs, i)->mem_cost);
+      fprintf (ira_dump_file, " MEM:%i", COSTS (costs, i)->mem_cost);
       if (flag_ira_region == IRA_REGION_ALL
 	  || flag_ira_region == IRA_REGION_MIXED)
-	fprintf (f, ",%d", COSTS (total_allocno_costs, i)->mem_cost);
-      fprintf (f, "\n");
+	fprintf (ira_dump_file, ",%d",
+		 COSTS (total_allocno_costs, i)->mem_cost);
+      fprintf (ira_dump_file, "\n");
     }
 }
 
-/* Print pseudo costs to file F.  */
+/* Print pseudo costs to the dump file.  */
 static void
-print_pseudo_costs (FILE *f)
+print_pseudo_costs (void)
 {
   int regno, k;
   int rclass;
@@ -1714,21 +1716,21 @@ print_pseudo_costs (FILE *f)
   enum reg_class *cost_classes;
 
   ira_assert (! allocno_p);
-  fprintf (f, "\n");
+  fprintf (ira_dump_file, "\n");
   for (regno = max_reg_num () - 1; regno >= FIRST_PSEUDO_REGISTER; regno--)
     {
       if (REG_N_REFS (regno) <= 0)
 	continue;
       cost_classes_ptr = regno_cost_classes[regno];
       cost_classes = cost_classes_ptr->classes;
-      fprintf (f, "  r%d costs:", regno);
+      fprintf (ira_dump_file, "  r%d costs:", regno);
       for (k = 0; k < cost_classes_ptr->num; k++)
 	{
 	  rclass = cost_classes[k];
-	  fprintf (f, " %s:%d", reg_class_names[rclass],
+	  fprintf (ira_dump_file, " %s:%d", reg_class_names[rclass],
 		   COSTS (costs, regno)->cost[k]);
 	}
-      fprintf (f, " MEM:%i\n", COSTS (costs, regno)->mem_cost);
+      fprintf (ira_dump_file, " MEM:%i\n", COSTS (costs, regno)->mem_cost);
     }
 }
 
@@ -1939,7 +1941,7 @@ calculate_equiv_gains (void)
    and their best costs.  Set up preferred, alternative and allocno
    classes for pseudos.  */
 static void
-find_costs_and_classes (FILE *dump_file)
+find_costs_and_classes (void)
 {
   int i, k, start, max_cost_classes_num;
   int pass;
@@ -1991,8 +1993,8 @@ find_costs_and_classes (FILE *dump_file)
      classes to guide the selection.  */
   for (pass = start; pass <= flag_expensive_optimizations; pass++)
     {
-      if ((!allocno_p || internal_flag_ira_verbose > 0) && dump_file)
-	fprintf (dump_file,
+      if ((!allocno_p || internal_flag_ira_verbose > 0) && ira_dump_file)
+	fprintf (ira_dump_file,
 		 "\nPass %i for finding pseudo/allocno costs\n\n", pass);
 
       if (pass != start)
@@ -2244,8 +2246,8 @@ find_costs_and_classes (FILE *dump_file)
 		alt_class = NO_REGS;
 	      setup_reg_classes (i, best, alt_class, regno_aclass[i]);
 	      if ((!allocno_p || internal_flag_ira_verbose > 2)
-		  && dump_file != NULL)
-		fprintf (dump_file,
+		  && ira_dump_file != NULL)
+		fprintf (ira_dump_file,
 			 "    r%d: preferred %s, alternative %s, allocno %s\n",
 			 i, reg_class_names[best], reg_class_names[alt_class],
 			 reg_class_names[regno_aclass[i]]);
@@ -2295,16 +2297,16 @@ find_costs_and_classes (FILE *dump_file)
 		    }
 		  ALLOCNO_CLASS_COST (a) = allocno_cost;
 		}
-	      if (internal_flag_ira_verbose > 2 && dump_file != NULL
+	      if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL
 		  && (pass == 0 || pref[a_num] != best))
 		{
-		  fprintf (dump_file, "    a%d (r%d,", a_num, i);
+		  fprintf (ira_dump_file, "    a%d (r%d,", a_num, i);
 		  if ((bb = ALLOCNO_LOOP_TREE_NODE (a)->bb) != NULL)
-		    fprintf (dump_file, "b%d", bb->index);
+		    fprintf (ira_dump_file, "b%d", bb->index);
 		  else
-		    fprintf (dump_file, "l%d",
+		    fprintf (ira_dump_file, "l%d",
 			     ALLOCNO_LOOP_TREE_NODE (a)->loop_num);
-		  fprintf (dump_file, ") best %s, allocno %s\n",
+		  fprintf (ira_dump_file, ") best %s, allocno %s\n",
 			   reg_class_names[best],
 			   reg_class_names[aclass]);
 		}
@@ -2329,13 +2331,13 @@ find_costs_and_classes (FILE *dump_file)
 	    }
 	}
 
-      if (internal_flag_ira_verbose > 4 && dump_file)
+      if (internal_flag_ira_verbose > 4 && ira_dump_file)
 	{
 	  if (allocno_p)
-	    print_allocno_costs (dump_file);
+	    print_allocno_costs ();
 	  else
-	    print_pseudo_costs (dump_file);
-	  fprintf (dump_file,"\n");
+	    print_pseudo_costs ();
+	  fprintf (ira_dump_file,"\n");
 	}
     }
   ira_free (regno_best_class);
@@ -2594,7 +2596,7 @@ ira_costs (void)
     /* Process equivs in reload to update costs through hook
        ira_adjust_equiv_reg_cost.  */
     calculate_elim_costs_all_insns ();
-  find_costs_and_classes (ira_dump_file);
+  find_costs_and_classes ();
   setup_allocno_class_and_costs ();
   finish_regno_cost_classes ();
   finish_costs ();
@@ -2606,17 +2608,20 @@ ira_costs (void)
 void
 ira_set_pseudo_classes (bool define_pseudo_classes, FILE *dump_file)
 {
+  FILE *saved_file = ira_dump_file;
   allocno_p = false;
   internal_flag_ira_verbose = flag_ira_verbose;
+  ira_dump_file = dump_file;
   cost_elements_num = max_reg_num ();
   init_costs ();
   initiate_regno_cost_classes ();
-  find_costs_and_classes (dump_file);
+  find_costs_and_classes ();
   finish_regno_cost_classes ();
   if (define_pseudo_classes)
     pseudo_classes_defined_p = true;
 
   finish_costs ();
+  ira_dump_file = saved_file;
 }
 
 

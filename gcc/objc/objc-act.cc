@@ -10340,5 +10340,51 @@ objc_common_init_ts (void)
   MARK_TS_TYPED (PROPERTY_REF);
 }
 
+/* Information for Objective-C-specific features known to __has_feature.  */
+
+struct objc_feature_info
+{
+  typedef bool (*predicate_t) ();
+
+  const char *ident;
+  predicate_t predicate;
+
+  constexpr objc_feature_info (const char *name)
+    : ident (name), predicate (nullptr) {}
+  constexpr objc_feature_info (const char *name, predicate_t p)
+    : ident (name), predicate (p) {}
+
+  bool has_feature () const
+    {
+      return predicate ? predicate () : true;
+    }
+};
+
+static bool objc_nonfragile_abi_p ()
+{
+  return flag_next_runtime && flag_objc_abi >= 2;
+}
+
+static constexpr objc_feature_info objc_features[] =
+{
+  { "objc_default_synthesize_properties" },
+  { "objc_instancetype" },
+  { "objc_nonfragile_abi", objc_nonfragile_abi_p }
+};
+
+/* Register Objective-C-specific features for __has_feature.  */
+
+void
+objc_common_register_features ()
+{
+  for (unsigned i = 0; i < ARRAY_SIZE (objc_features); i++)
+    {
+      const objc_feature_info *info = objc_features + i;
+      if (!info->has_feature ())
+	continue;
+
+      c_common_register_feature (info->ident, true);
+    }
+}
 
 #include "gt-objc-objc-act.h"

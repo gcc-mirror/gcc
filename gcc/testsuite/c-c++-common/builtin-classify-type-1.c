@@ -22,6 +22,10 @@ main ()
   const char *p = (const char *) 0;
   float f = 0.0;
   _Complex double c = 0.0;
+  typedef int VI __attribute__((vector_size (4 * sizeof (int))));
+  typedef float VF __attribute__((vector_size (4 * sizeof (int))));
+  VI vi = { 0, 0, 0, 0 };
+  VF vf = { 0.0f, 0.0f, 0.0f, 0.0f };
 #ifdef __cplusplus
   struct T { void foo (); };
   int &r = a[0];
@@ -43,6 +47,8 @@ main ()
   static_assert (__builtin_classify_type (struct S) == 12, "");
   static_assert (__builtin_classify_type (union U) == 13, "");
   static_assert (__builtin_classify_type (int [2]) == 14, "");
+  static_assert (__builtin_classify_type (VI) == 19, "");
+  static_assert (__builtin_classify_type (VF) == 19, "");
   static_assert (__builtin_classify_type (__typeof__ (a[0])) == 1, "");
   static_assert (__builtin_classify_type (__typeof__ (e)) == 3, "");
   static_assert (__builtin_classify_type (__typeof__ (b)) == 4, "");
@@ -57,6 +63,8 @@ main ()
   static_assert (__builtin_classify_type (__typeof__ (s)) == 12, "");
   static_assert (__builtin_classify_type (__typeof__ (u)) == 13, "");
   static_assert (__builtin_classify_type (__typeof__ (a)) == 14, "");
+  static_assert (__builtin_classify_type (__typeof__ (vi)) == 19, "");
+  static_assert (__builtin_classify_type (__typeof__ (vf)) == 19, "");
 #ifndef __cplusplus
   static_assert (__builtin_classify_type (a[0]) == 1, "");
   static_assert (__builtin_classify_type (e) == 1, "");
@@ -101,5 +109,9 @@ main ()
   if (__builtin_classify_type (u) != 13)
     abort ();
   if (__builtin_classify_type (a) != 5)
+    abort ();
+  if (__builtin_classify_type (vi) != 19)
+    abort ();
+  if (__builtin_classify_type (vf) != 19)
     abort ();
 }

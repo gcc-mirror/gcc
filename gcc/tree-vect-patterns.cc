@@ -5830,7 +5830,8 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
   tree rhs1_op0 = NULL_TREE, rhs1_op1 = NULL_TREE;
   tree rhs1_op0_type = NULL_TREE, rhs1_op1_type = NULL_TREE;
 
-  /* Check for MASK_LOAD ans MASK_STORE calls requiring mask conversion.  */
+  /* Check for MASK_LOAD and MASK_STORE as well as COND_OP calls requiring mask
+     conversion.  */
   if (is_gimple_call (last_stmt)
       && gimple_call_internal_p (last_stmt))
     {
@@ -5842,6 +5843,7 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
 	return NULL;
 
       bool store_p = internal_store_fn_p (ifn);
+      bool load_p = internal_store_fn_p (ifn);
       if (store_p)
 	{
 	  int rhs_index = internal_fn_stored_value_index (ifn);
@@ -5856,15 +5858,21 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
 	  vectype1 = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
 	}
 
+      if (!vectype1)
+	return NULL;
+
       tree mask_arg = gimple_call_arg (last_stmt, mask_argno);
       tree mask_arg_type = integer_type_for_mask (mask_arg, vinfo);
-      if (!mask_arg_type)
-	return NULL;
-      vectype2 = get_mask_type_for_scalar_type (vinfo, mask_arg_type);
+      if (mask_arg_type)
+	{
+	  vectype2 = get_mask_type_for_scalar_type (vinfo, mask_arg_type);
 
-      if (!vectype1 || !vectype2
-	  || known_eq (TYPE_VECTOR_SUBPARTS (vectype1),
-		       TYPE_VECTOR_SUBPARTS (vectype2)))
+	  if (!vectype2
+	      || known_eq (TYPE_VECTOR_SUBPARTS (vectype1),
+			   TYPE_VECTOR_SUBPARTS (vectype2)))
+	    return NULL;
+	}
+      else if (store_p || load_p)
 	return NULL;
 
       tmp = build_mask_conversion (vinfo, mask_arg, vectype1, stmt_vinfo);
@@ -5883,7 +5891,9 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
 	  lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
 	  gimple_call_set_lhs (pattern_stmt, lhs);
 	}
-      gimple_call_set_nothrow (pattern_stmt, true);
+
+      if (load_p || store_p)
+	gimple_call_set_nothrow (pattern_stmt, true);
 
       pattern_stmt_info = vinfo->add_stmt (pattern_stmt);
       if (STMT_VINFO_DATA_REF (stmt_vinfo))

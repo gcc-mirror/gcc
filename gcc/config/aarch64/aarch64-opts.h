@@ -32,8 +32,6 @@ enum aarch64_processor
 #define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   INTERNAL_IDENT,
 #include "aarch64-cores.def"
-  /* Used to indicate that no processor has been specified.  */
-  generic,
   /* Used to mark the end of the processor table.  */
   aarch64_none
 };

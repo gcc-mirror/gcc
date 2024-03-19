@@ -2149,6 +2149,7 @@ process_alt_operands (int only_alternative)
   int reload_nregs, reload_sum;
   bool costly_p;
   enum reg_class cl;
+  const HARD_REG_SET *cl_filter;
 
   /* Calculate some data common for all alternatives to speed up the
      function.	*/
@@ -2514,6 +2515,7 @@ process_alt_operands (int only_alternative)
 		      || spilled_pseudo_p (op))
 		    win = true;
 		  cl = GENERAL_REGS;
+		  cl_filter = nullptr;
 		  goto reg;
 
 		default:
@@ -2523,7 +2525,10 @@ process_alt_operands (int only_alternative)
 		    case CT_REGISTER:
 		      cl = reg_class_for_constraint (cn);
 		      if (cl != NO_REGS)
-			goto reg;
+			{
+			  cl_filter = get_register_filter (cn);
+			  goto reg;
+			}
 		      break;
 
 		    case CT_CONST_INT:
@@ -2567,6 +2572,7 @@ process_alt_operands (int only_alternative)
 			win = true;
 		      cl = base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 					   ADDRESS, SCRATCH);
+		      cl_filter = nullptr;
 		      badop = false;
 		      goto reg;
 
@@ -2600,6 +2606,8 @@ process_alt_operands (int only_alternative)
 		    this_alternative_exclude_start_hard_regs
 		      |= ira_exclude_class_mode_regs[cl][mode];
 		  this_alternative_set |= reg_class_contents[cl];
+		  if (cl_filter)
+		    this_alternative_exclude_start_hard_regs |= ~*cl_filter;
 		  if (costly_p)
 		    {
 		      this_costly_alternative
@@ -2613,6 +2621,9 @@ process_alt_operands (int only_alternative)
 		      if (hard_regno[nop] >= 0
 			  && in_hard_reg_set_p (this_alternative_set,
 						mode, hard_regno[nop])
+			  && (!cl_filter
+			      || TEST_HARD_REG_BIT (*cl_filter,
+						    hard_regno[nop]))
 			  && ((REG_ATTRS (op) && (decl = REG_EXPR (op)) != NULL
 			       && VAR_P (decl) && DECL_HARD_REGISTER (decl))
 			      || !(TEST_HARD_REG_BIT

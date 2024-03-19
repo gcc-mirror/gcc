@@ -132,8 +132,10 @@ riscv_zcmp_valid_stack_adj_bytes_p (HOST_WIDE_INT, int);
 
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
-extern void riscv_expand_float_scc (rtx, enum rtx_code, rtx, rtx);
+extern void riscv_expand_float_scc (rtx, enum rtx_code, rtx, rtx,
+				    bool *invert_ptr = nullptr);
 extern void riscv_expand_conditional_branch (rtx, enum rtx_code, rtx, rtx);
+extern rtx riscv_emit_unary (enum rtx_code code, rtx dest, rtx x);
 extern rtx riscv_emit_binary (enum rtx_code code, rtx dest, rtx x, rtx y);
 #endif
 extern bool riscv_expand_conditional_move (rtx, rtx, rtx, rtx);
@@ -556,6 +558,7 @@ void expand_cond_binop (unsigned, rtx *);
 void expand_cond_ternop (unsigned, rtx *);
 void expand_popcount (rtx *);
 void expand_rawmemchr (machine_mode, rtx, rtx, rtx);
+void emit_vec_extract (rtx, rtx, poly_int64);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode
@@ -591,7 +594,6 @@ opt_machine_mode vectorize_related_mode (machine_mode, scalar_mode,
 unsigned int autovectorize_vector_modes (vec<machine_mode> *, bool);
 bool cmp_lmul_le_one (machine_mode);
 bool cmp_lmul_gt_one (machine_mode);
-bool gather_scatter_valid_offset_mode_p (machine_mode);
 bool vls_mode_valid_p (machine_mode);
 bool vlmax_avl_type_p (rtx_insn *);
 bool has_vl_op (rtx_insn *);
@@ -626,6 +628,7 @@ extern bool riscv_expand_strcmp (rtx, rtx, rtx, rtx, rtx);
 extern bool riscv_expand_strlen (rtx, rtx, rtx, rtx);
 
 /* Routines implemented in thead.cc.  */
+extern bool extract_base_offset_in_addr (rtx, rtx *, rtx *);
 extern bool th_mempair_operands_p (rtx[4], bool, machine_mode);
 extern void th_mempair_order_operands (rtx[4], bool, machine_mode);
 extern void th_mempair_prepare_save_restore_operands (rtx[4], bool,

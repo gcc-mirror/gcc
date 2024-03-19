@@ -69,6 +69,7 @@ import dmd.initsem;
 import dmd.location;
 import dmd.mtype;
 import dmd.opover;
+import dmd.optimize;
 import dmd.root.array;
 import dmd.common.outbuffer;
 import dmd.rootobject;
@@ -745,7 +746,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
         OutBuffer buf;
         HdrGenState hgs;
 
-        buf.writestring(ident.toString());
+        buf.writestring(ident == Id.ctor ? "this" : ident.toString());
         buf.writeByte('(');
         foreach (i, const tp; *parameters)
         {
@@ -762,6 +763,11 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             {
                 TypeFunction tf = cast(TypeFunction)fd.type;
                 buf.writestring(parametersTypeToChars(tf.parameterList));
+                if (tf.mod)
+                {
+                    buf.writeByte(' ');
+                    buf.MODtoBuffer(tf.mod);
+                }
             }
         }
 

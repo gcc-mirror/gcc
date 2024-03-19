@@ -5,7 +5,7 @@
    compiles properly.  */
 /* { dg-additional-options "-mcmodel=medany" } */
 
-#include "gather_load-7.c"
+#include "gather_load_64-7.c"
 #include <assert.h>
 
 int

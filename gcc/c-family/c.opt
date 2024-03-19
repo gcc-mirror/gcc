@@ -498,6 +498,10 @@ Wc++23-extensions
 C++ ObjC++ Var(warn_cxx23_extensions) Warning Init(1)
 Warn about C++23 constructs in code compiled with an older standard.
 
+Wc++26-extensions
+C++ ObjC++ Var(warn_cxx26_extensions) Warning Init(1)
+Warn about C++26 constructs in code compiled with an older standard.
+
 Wcast-function-type
 C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)
 Warn about casts between incompatible function types.
@@ -1170,6 +1174,10 @@ Warn if an old-style parameter definition is used.
 Wopenacc-parallelism
 C C++ Var(warn_openacc_parallelism) Warning
 Warn about potentially suboptimal choices related to OpenACC parallelism.
+
+Wopenmp
+C ObjC C++ ObjC++ Warning Var(warn_openmp) Init(1)
+Warn about suspicious OpenMP code.
 
 Wopenmp-simd
 C C++ Var(warn_openmp_simd) Warning LangEnabledBy(C C++,Wall)

@@ -2,7 +2,9 @@
 /* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
-#include <bpf-helpers.h>
+
+int bpf_bind (void *ctx, void *addr, int addr_len)
+  __attribute__((kernel_helper(64)));
 
 void
 foo ()

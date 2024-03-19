@@ -337,6 +337,9 @@ static bitmap should_scalarize_away_bitmap, cannot_scalarize_away_bitmap;
    because this would produce non-constant expressions (e.g. Ada).  */
 static bitmap disqualified_constants;
 
+/* Bitmap of candidates which are passed by reference in call arguments.  */
+static bitmap passed_by_ref_in_call;
+
 /* Obstack for creation of fancy names.  */
 static struct obstack name_obstack;
 
@@ -717,6 +720,7 @@ sra_initialize (void)
   should_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
   cannot_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
   disqualified_constants = BITMAP_ALLOC (NULL);
+  passed_by_ref_in_call = BITMAP_ALLOC (NULL);
   gcc_obstack_init (&name_obstack);
   base_access_vec = new hash_map<tree, auto_vec<access_p> >;
   memset (&sra_stats, 0, sizeof (sra_stats));
@@ -733,6 +737,7 @@ sra_deinitialize (void)
   BITMAP_FREE (should_scalarize_away_bitmap);
   BITMAP_FREE (cannot_scalarize_away_bitmap);
   BITMAP_FREE (disqualified_constants);
+  BITMAP_FREE (passed_by_ref_in_call);
   access_pool.release ();
   assign_link_pool.release ();
   obstack_free (&name_obstack, NULL);
@@ -905,9 +910,9 @@ create_access (tree expr, gimple *stmt, bool write)
 				  &reverse);
 
   /* For constant-pool entries, check we can substitute the constant value.  */
-  if (constant_decl_p (base))
+  if (constant_decl_p (base)
+      && !bitmap_bit_p (disqualified_constants, DECL_UID (base)))
     {
-      gcc_assert (!bitmap_bit_p (disqualified_constants, DECL_UID (base)));
       if (expr != base
 	  && !is_gimple_reg_type (TREE_TYPE (expr))
 	  && dump_file && (dump_flags & TDF_DETAILS))
@@ -1135,6 +1140,17 @@ sra_handled_bf_read_p (tree expr)
 static struct access *
 build_access_from_expr_1 (tree expr, gimple *stmt, bool write)
 {
+  /* We only allow ADDR_EXPRs in arguments of function calls and those must
+     have been dealt with in build_access_from_call_arg.  Any other address
+     taking should have been caught by scan_visit_addr.   */
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    {
+      tree base = get_base_address (TREE_OPERAND (expr, 0));
+      gcc_assert (!DECL_P (base)
+		  || !bitmap_bit_p (candidate_bitmap, DECL_UID (base)));
+      return NULL;
+    }
+
   struct access *ret = NULL;
   bool partial_ref;
 
@@ -1222,6 +1238,77 @@ build_access_from_expr (tree expr, gimple *stmt, bool write)
     }
   return false;
 }
+
+enum out_edge_check { SRA_OUTGOING_EDGES_UNCHECKED, SRA_OUTGOING_EDGES_OK,
+		      SRA_OUTGOING_EDGES_FAIL };
+
+/* Return true if STMT terminates BB and there is an abnormal edge going out of
+   the BB and remember the decision in OE_CHECK.  */
+
+static bool
+abnormal_edge_after_stmt_p (gimple *stmt, enum out_edge_check *oe_check)
+{
+  if (*oe_check == SRA_OUTGOING_EDGES_OK)
+    return false;
+  if (*oe_check == SRA_OUTGOING_EDGES_FAIL)
+    return true;
+  if (stmt_ends_bb_p (stmt))
+    {
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
+	if (e->flags & EDGE_ABNORMAL)
+	  {
+	    *oe_check = SRA_OUTGOING_EDGES_FAIL;
+	    return true;
+	  }
+    }
+  *oe_check = SRA_OUTGOING_EDGES_OK;
+  return false;
+}
+
+/* Scan expression EXPR which is an argument of a call and create access
+   structures for all accesses to candidates for scalarization.  Return true if
+   any access has been inserted.  STMT must be the statement from which the
+   expression is taken.  */
+
+static bool
+build_access_from_call_arg (tree expr, gimple *stmt,
+			    enum out_edge_check *oe_check)
+{
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    {
+      tree base = get_base_address (TREE_OPERAND (expr, 0));
+
+      if (abnormal_edge_after_stmt_p (stmt, oe_check))
+	{
+	  disqualify_base_of_expr (base, "May lead to need to add statements "
+				   "to abnormal edge.");
+	  return false;
+	}
+
+      bool read =  build_access_from_expr (base, stmt, false);
+      bool write =  build_access_from_expr (base, stmt, true);
+      if (read || write)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Allowed ADDR_EXPR of ");
+	      print_generic_expr (dump_file, base);
+	      fprintf (dump_file, " because of ");
+	      print_gimple_stmt (dump_file, stmt, 0);
+	      fprintf (dump_file, "\n");
+	    }
+	  bitmap_set_bit (passed_by_ref_in_call, DECL_UID (base));
+	  return true;
+	}
+      else
+	return false;
+    }
+
+  return build_access_from_expr (expr, stmt, false);
+}
+
 
 /* Return the single non-EH successor edge of BB or NULL if there is none or
    more than one.  */
@@ -1364,16 +1451,18 @@ build_accesses_from_assign (gimple *stmt)
   return lacc || racc;
 }
 
-/* Callback of walk_stmt_load_store_addr_ops visit_addr used to determine
-   GIMPLE_ASM operands with memory constrains which cannot be scalarized.  */
+/* Callback of walk_stmt_load_store_addr_ops visit_addr used to detect taking
+   addresses of candidates a places which are not call arguments.  Such
+   candidates are disqalified from SRA.  This also applies to GIMPLE_ASM
+   operands with memory constrains which cannot be scalarized.  */
 
 static bool
-asm_visit_addr (gimple *, tree op, tree, void *)
+scan_visit_addr (gimple *, tree op, tree, void *)
 {
   op = get_base_address (op);
   if (op
       && DECL_P (op))
-    disqualify_candidate (op, "Non-scalarizable GIMPLE_ASM operand.");
+    disqualify_candidate (op, "Address taken in a non-call-argument context.");
 
   return false;
 }
@@ -1390,11 +1479,19 @@ scan_function (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), NULL, NULL, NULL,
+				       scan_visit_addr);
+
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  tree t;
 	  unsigned i;
+
+	  if (gimple_code (stmt) != GIMPLE_CALL)
+	    walk_stmt_load_store_addr_ops (stmt, NULL, NULL, NULL,
+					   scan_visit_addr);
 
 	  switch (gimple_code (stmt))
 	    {
@@ -1409,9 +1506,15 @@ scan_function (void)
 	      break;
 
 	    case GIMPLE_CALL:
-	      for (i = 0; i < gimple_call_num_args (stmt); i++)
-		ret |= build_access_from_expr (gimple_call_arg (stmt, i),
-					       stmt, false);
+	      {
+		enum out_edge_check oe_check = SRA_OUTGOING_EDGES_UNCHECKED;
+		for (i = 0; i < gimple_call_num_args (stmt); i++)
+		  ret |= build_access_from_call_arg (gimple_call_arg (stmt, i),
+						     stmt, &oe_check);
+		if (gimple_call_chain(stmt))
+		  ret |= build_access_from_call_arg (gimple_call_chain(stmt),
+						     stmt, &oe_check);
+	      }
 
 	      t = gimple_call_lhs (stmt);
 	      if (t && !disqualify_if_bad_bb_terminating_stmt (stmt, t, NULL))
@@ -1428,8 +1531,6 @@ scan_function (void)
 	    case GIMPLE_ASM:
 	      {
 		gasm *asm_stmt = as_a <gasm *> (stmt);
-		walk_stmt_load_store_addr_ops (asm_stmt, NULL, NULL, NULL,
-					       asm_visit_addr);
 		for (i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
 		  {
 		    t = TREE_VALUE (gimple_asm_input_op (asm_stmt, i));
@@ -1920,10 +2021,19 @@ maybe_add_sra_candidate (tree var)
       reject (var, "not aggregate");
       return false;
     }
-  /* Allow constant-pool entries that "need to live in memory".  */
-  if (needs_to_live_in_memory (var) && !constant_decl_p (var))
+
+  if ((is_global_var (var)
+       /* There are cases where non-addressable variables fail the
+	  pt_solutions_check test, e.g in gcc.dg/uninit-40.c. */
+       || (TREE_ADDRESSABLE (var)
+	   && pt_solution_includes (&cfun->gimple_df->escaped, var))
+       || (TREE_CODE (var) == RESULT_DECL
+	   && !DECL_BY_REFERENCE (var)
+	   && aggregate_value_p (var, current_function_decl)))
+      /* Allow constant-pool entries that "need to live in memory".  */
+      && !constant_decl_p (var))
     {
-      reject (var, "needs to live in memory");
+      reject (var, "needs to live in memory and escapes or global");
       return false;
     }
   if (TREE_THIS_VOLATILE (var))
@@ -2121,6 +2231,23 @@ sort_and_splice_var_accesses (tree var)
       else
 	gcc_assert (access->offset >= low
 		    && access->offset + access->size <= high);
+
+      if (INTEGRAL_TYPE_P (access->type)
+	  && TYPE_PRECISION (access->type) != access->size
+	  && bitmap_bit_p (passed_by_ref_in_call, DECL_UID (access->base)))
+	{
+	  /* This can lead to performance regressions because we can generate
+	     excessive zero extensions.  */
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Won't scalarize ");
+	      print_generic_expr (dump_file, access->base);
+	      fprintf (dump_file, "(%d), it is passed by reference to a call "
+		       "and there are accesses with precision not covering "
+		       "their type size.", DECL_UID (access->base));
+	    }
+	  return NULL;
+	}
 
       grp_same_access_path = path_comparable_for_same_access (access->expr);
 
@@ -3774,12 +3901,18 @@ get_access_for_expr (tree expr)
 
 /* Replace the expression EXPR with a scalar replacement if there is one and
    generate other statements to do type conversion or subtree copying if
-   necessary.  GSI is used to place newly created statements, WRITE is true if
-   the expression is being written to (it is on a LHS of a statement or output
-   in an assembly statement).  */
+   necessary.  WRITE is true if the expression is being written to (it is on a
+   LHS of a statement or output in an assembly statement).  STMT_GSI is used to
+   place newly created statements before the processed statement, REFRESH_GSI
+   is used to place them afterwards - unless the processed statement must end a
+   BB in which case it is placed on the outgoing non-EH edge.  REFRESH_GSI and
+   is then used to continue iteration over the BB.  If sra_modify_expr is
+   called only once with WRITE equal to true on a given statement, both
+   iterator parameters can point to the same one.  */
 
 static bool
-sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
+sra_modify_expr (tree *expr, bool write, gimple_stmt_iterator *stmt_gsi,
+		 gimple_stmt_iterator *refresh_gsi)
 {
   location_t loc;
   struct access *access;
@@ -3806,12 +3939,12 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
   type = TREE_TYPE (*expr);
   orig_expr = *expr;
 
-  loc = gimple_location (gsi_stmt (*gsi));
+  loc = gimple_location (gsi_stmt (*stmt_gsi));
   gimple_stmt_iterator alt_gsi = gsi_none ();
-  if (write && stmt_ends_bb_p (gsi_stmt (*gsi)))
+  if (write && stmt_ends_bb_p (gsi_stmt (*stmt_gsi)))
     {
-      alt_gsi = gsi_start_edge (single_non_eh_succ (gsi_bb (*gsi)));
-      gsi = &alt_gsi;
+      alt_gsi = gsi_start_edge (single_non_eh_succ (gsi_bb (*stmt_gsi)));
+      refresh_gsi = &alt_gsi;
     }
 
   if (access->grp_to_be_replaced)
@@ -3831,7 +3964,8 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 	{
 	  tree ref;
 
-	  ref = build_ref_for_model (loc, orig_expr, 0, access, gsi, false);
+	  ref = build_ref_for_model (loc, orig_expr, 0, access, stmt_gsi,
+				     false);
 
 	  if (partial_cplx_access)
 	    {
@@ -3847,7 +3981,7 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 		  tree tmp = make_ssa_name (type);
 		  gassign *stmt = gimple_build_assign (tmp, t);
 		  /* This is always a read. */
-		  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+		  gsi_insert_before (stmt_gsi, stmt, GSI_SAME_STMT);
 		  t = tmp;
 		}
 	      *expr = t;
@@ -3857,22 +3991,23 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 	      gassign *stmt;
 
 	      if (access->grp_partial_lhs)
-		ref = force_gimple_operand_gsi (gsi, ref, true, NULL_TREE,
-						 false, GSI_NEW_STMT);
+		ref = force_gimple_operand_gsi (refresh_gsi, ref, true,
+						NULL_TREE, false, GSI_NEW_STMT);
 	      stmt = gimple_build_assign (repl, ref);
 	      gimple_set_location (stmt, loc);
-	      gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
+	      gsi_insert_after (refresh_gsi, stmt, GSI_NEW_STMT);
 	    }
 	  else
 	    {
 	      gassign *stmt;
 
 	      if (access->grp_partial_lhs)
-		repl = force_gimple_operand_gsi (gsi, repl, true, NULL_TREE,
-						 true, GSI_SAME_STMT);
+		repl = force_gimple_operand_gsi (stmt_gsi, repl, true,
+						 NULL_TREE, true,
+						 GSI_SAME_STMT);
 	      stmt = gimple_build_assign (ref, repl);
 	      gimple_set_location (stmt, loc);
-	      gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+	      gsi_insert_before (stmt_gsi, stmt, GSI_SAME_STMT);
 	    }
 	}
       else
@@ -3899,8 +4034,8 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
     {
       gdebug *ds = gimple_build_debug_bind (get_access_replacement (access),
 					    NULL_TREE,
-					    gsi_stmt (*gsi));
-      gsi_insert_after (gsi, ds, GSI_NEW_STMT);
+					    gsi_stmt (*stmt_gsi));
+      gsi_insert_after (stmt_gsi, ds, GSI_NEW_STMT);
     }
 
   if (access->first_child && !TREE_READONLY (access->base))
@@ -3918,8 +4053,57 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 	start_offset = chunk_size = 0;
 
       generate_subtree_copies (access->first_child, orig_expr, access->offset,
-			       start_offset, chunk_size, gsi, write, write,
-			       loc);
+			       start_offset, chunk_size,
+			       write ? refresh_gsi : stmt_gsi,
+			       write, write, loc);
+    }
+  return true;
+}
+
+/* If EXPR, which must be a call argument, is an ADDR_EXPR, generate writes and
+   reads from its base before and after the call statement given in CALL_GSI
+   and return true if any copying took place.  Otherwise call sra_modify_expr
+   on EXPR and return its value.  FLAGS is what the gimple_call_arg_flags
+   return for the given parameter.  */
+
+static bool
+sra_modify_call_arg (tree *expr, gimple_stmt_iterator *call_gsi,
+		     gimple_stmt_iterator *refresh_gsi, int flags)
+{
+  if (TREE_CODE (*expr) != ADDR_EXPR)
+    return sra_modify_expr (expr, false, call_gsi, refresh_gsi);
+
+  if (flags & EAF_UNUSED)
+    return false;
+
+  tree base = get_base_address (TREE_OPERAND (*expr, 0));
+  if (!DECL_P (base))
+    return false;
+  struct access *access = get_access_for_expr (base);
+  if (!access)
+    return false;
+
+  gimple *stmt = gsi_stmt (*call_gsi);
+  location_t loc = gimple_location (stmt);
+  generate_subtree_copies (access, base, 0, 0, 0, call_gsi, false, false,
+			   loc);
+
+  if (flags & EAF_NO_DIRECT_CLOBBER)
+    return true;
+
+  if (!stmt_ends_bb_p (stmt))
+    generate_subtree_copies (access, base, 0, 0, 0, refresh_gsi, true,
+			     true, loc);
+  else
+    {
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, gsi_bb (*call_gsi)->succs)
+	{
+	  gimple_stmt_iterator alt_gsi = gsi_start_edge (e);
+	  generate_subtree_copies (access, base, 0, 0, 0, &alt_gsi, true,
+				   true, loc);
+	}
     }
   return true;
 }
@@ -4279,9 +4463,9 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       || TREE_CODE (lhs) == BIT_FIELD_REF)
     {
       modify_this_stmt = sra_modify_expr (gimple_assign_rhs1_ptr (stmt),
-					  gsi, false);
+					  false, gsi, gsi);
       modify_this_stmt |= sra_modify_expr (gimple_assign_lhs_ptr (stmt),
-					   gsi, true);
+					   true, gsi, gsi);
       return modify_this_stmt ? SRA_AM_MODIFIED : SRA_AM_NONE;
     }
 
@@ -4603,7 +4787,7 @@ sra_modify_function_body (void)
 	    case GIMPLE_RETURN:
 	      t = gimple_return_retval_ptr (as_a <greturn *> (stmt));
 	      if (*t != NULL_TREE)
-		modified |= sra_modify_expr (t, &gsi, false);
+		modified |= sra_modify_expr (t, false, &gsi, &gsi);
 	      break;
 
 	    case GIMPLE_ASSIGN:
@@ -4622,33 +4806,44 @@ sra_modify_function_body (void)
 		}
 	      else
 		{
-		  /* Operands must be processed before the lhs.  */
-		  for (i = 0; i < gimple_call_num_args (stmt); i++)
-		    {
-		      t = gimple_call_arg_ptr (stmt, i);
-		      modified |= sra_modify_expr (t, &gsi, false);
-		    }
+		  gcall *call = as_a <gcall *> (stmt);
+		  gimple_stmt_iterator call_gsi = gsi;
 
-	      	  if (gimple_call_lhs (stmt))
+		  /* Operands must be processed before the lhs.  */
+		  for (i = 0; i < gimple_call_num_args (call); i++)
 		    {
-		      t = gimple_call_lhs_ptr (stmt);
-		      modified |= sra_modify_expr (t, &gsi, true);
+		      int flags = gimple_call_arg_flags (call, i);
+		      t = gimple_call_arg_ptr (call, i);
+		      modified |= sra_modify_call_arg (t, &call_gsi, &gsi, flags);
+		    }
+		  if (gimple_call_chain (call))
+		    {
+		      t = gimple_call_chain_ptr (call);
+		      int flags = gimple_call_static_chain_flags (call);
+		      modified |= sra_modify_call_arg (t, &call_gsi, &gsi,
+						       flags);
+		    }
+		  if (gimple_call_lhs (call))
+		    {
+		      t = gimple_call_lhs_ptr (call);
+		      modified |= sra_modify_expr (t, true, &call_gsi, &gsi);
 		    }
 		}
 	      break;
 
 	    case GIMPLE_ASM:
 	      {
+		gimple_stmt_iterator stmt_gsi = gsi;
 		gasm *asm_stmt = as_a <gasm *> (stmt);
 		for (i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
 		  {
 		    t = &TREE_VALUE (gimple_asm_input_op (asm_stmt, i));
-		    modified |= sra_modify_expr (t, &gsi, false);
+		    modified |= sra_modify_expr (t, false, &stmt_gsi, &gsi);
 		  }
 		for (i = 0; i < gimple_asm_noutputs (asm_stmt); i++)
 		  {
 		    t = &TREE_VALUE (gimple_asm_output_op (asm_stmt, i));
-		    modified |= sra_modify_expr (t, &gsi, true);
+		    modified |= sra_modify_expr (t, true, &stmt_gsi, &gsi);
 		  }
 	      }
 	      break;

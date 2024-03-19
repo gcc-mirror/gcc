@@ -531,12 +531,14 @@
          (match_operand:V        1 "nonmemory_operand"  "v,v")
          (parallel
           [(match_operand:SI     2 "nonmemory_operand" "an,I")])))]
-  "TARGET_VX
-   && (!CONST_INT_P (operands[2])
-       || UINTVAL (operands[2]) < GET_MODE_NUNITS (<V:MODE>mode))"
-  "@
-   vlgv<bhfgq>\t%0,%v1,%Y2
-   vste<bhfgq>\t%v1,%0,%2"
+  "TARGET_VX"
+  {
+    if (CONST_INT_P (operands[2]))
+	  operands[2] = GEN_INT (UINTVAL (operands[2]) & (GET_MODE_NUNITS (<V:MODE>mode) - 1));
+    if (which_alternative == 0)
+      return "vlgv<bhfgq>\t%0,%v1,%Y2";
+	return "vste<bhfgq>\t%v1,%0,%2";
+  }
   [(set_attr "op_type" "VRS,VRX")])
 
 ; vlgvb, vlgvh, vlgvf, vlgvg

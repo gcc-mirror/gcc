@@ -1,3 +1,1413 @@
+2023-11-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/uninit-pred-9_b.c: Remove xfail for line 20.  Pass
+	--param=logical-op-non-short-circuit=0.  Comment why.
+
+2023-11-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/uninit-pred-9_b.c: Remove xfail for MMIX from line 23.
+
+2023-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111880
+	* gfortran.dg/pr111880.f90: New test.
+
+2023-11-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/analyzer/strndup-1.c: Skip on hppa*-*-hpux*.
+
+2023-11-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/analyzer/fd-glibc-datagram-client.c: Skip on hppa*-*-hpux*.
+	* gcc.dg/analyzer/fd-glibc-datagram-socket.c: Likewise.
+
+2023-11-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/pr104869.C: Add attribute visibility default to
+	main prototype.
+
+2023-11-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/modules/bad-mapper-1.C: Add hppa*-*-hpux* to dg-error
+	"this-will-not-work" targets.
+
+2023-11-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/cf_check-6.c: Only run on Linux.
+
+2023-11-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr112686.c: Add a requirement for split_stack.
+
+2023-11-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112599
+	* gcc.target/riscv/rvv/base/vf_avl-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/pr112599-3.c: New test.
+
+2023-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/112691
+	* gcc.dg/vla-1.c: Add -fno-ipa-vrp.
+	Remove noipa from f1.
+
+2023-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/112688
+	* gcc.target/aarch64/simd/vmulx.x (foo32): Mark as noipa rather
+	than noinline.
+	(foo4): Likewise.
+
+2023-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/108321
+	* g++.dg/contracts/contracts-tmpl-spec2.C: Add -fsigned-char
+	to options.
+
+2023-11-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/112688
+	* gcc.target/aarch64/movk.c: Add noipa on dummy_number_generator
+	and remove -fno-inline option.
+
+2023-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111408
+	* gcc.c-torture/execute/pr111408.c: New test.
+
+2023-11-25  Andrew Pinski  <pinskia@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109977
+	* gcc.dg/pr109977.c: New test.
+
+2023-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/using-10.C: New test.
+	* g++.dg/modules/using-enum-2.C: New test.
+
+2023-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/102341
+	* g++.dg/modules/export-1.C: Adjust test.
+	* g++.dg/modules/export-2_a.C: New test.
+	* g++.dg/modules/export-2_b.C: New test.
+
+2023-11-24  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR pch/112319
+	* g++.dg/pch/pr112319.C: New test.
+	* g++.dg/pch/pr112319.Hs: New test.
+	* gcc.dg/pch/pr112319.c: New test.
+	* gcc.dg/pch/pr112319.hs: New test.
+
+2023-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/109849
+	* g++.dg/tree-ssa/pr109849.C: New test.
+	* g++.dg/tree-ssa/sra-eh-1.C: Likewise.
+	* gcc.dg/tree-ssa/pr109849.c: Likewise.
+	* gcc.dg/tree-ssa/sra-longjmp-1.c: Likewise.
+	* gfortran.dg/pr43984.f90: Added -fno-tree-sra to dg-options.
+
+2023-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112686
+	* gcc.target/i386/pr112686.c: New test.
+
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/depobj-3.c: New test.
+	* gfortran.dg/gomp/depobj-3.f90: New test.
+
+2023-11-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99232
+	* g++.dg/modules/pr99232_a.C: New test.
+	* g++.dg/modules/pr99232_b.C: New test.
+
+2023-11-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112694
+	* gcc.target/riscv/rvv/autovec/pr112694-1.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112681
+	* gcc.target/i386/sse4-pr112681.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112673
+	* gcc.dg/pr112673.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112679
+	* gcc.dg/bitint-42.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112668
+	* gcc.dg/bitint-40.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112619
+	* g++.dg/eh/pr112619.C: New test.
+
+2023-11-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112599
+	* gcc.target/riscv/rvv/autovec/pr112599-2.c: New test.
+
+2023-11-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-4.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/vls/perm-4.c: Ditto.
+
+2023-11-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107398
+	* g++.dg/modules/lambda-6_a.C: New test.
+	* g++.dg/modules/lambda-6_b.C: New test.
+
+2023-11-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98885
+	* g++.dg/modules/export-1.C: Adjust error messages. Remove
+	xfails for working case. Add new test case.
+
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/modules/bad-mapper-1.C: Add hppa*-*-hpux* to dg-error
+	"-:failed mapper handshake communication" targets.
+
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/analyzer/fd-4.c: Define _MODE_T on hpux.
+
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/pr104869.C: Export main on hpux.
+
+2023-11-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/scanasm.exp: Allow multiple function start symbols,
+	taking the last as the function name.
+
+2023-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104819
+	* gfortran.dg/assumed_rank_10.f90: Add MOLD argument to NULL().
+	* gfortran.dg/assumed_rank_8.f90: Likewise.
+
+2023-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112609
+	* gfortran.dg/system_clock_1.f90: Add option -std=f2003.
+	* gfortran.dg/system_clock_3.f08: Add option -std=f2008.
+	* gfortran.dg/system_clock_4.f90: New test.
+
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/cpp0x/initlist-const1.C: xfail scan-assembler-not
+	check on hppa*-*-hpux*.
+
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* c-c++-common/Wattributes.c: Don't skip check for warning
+	at line 411 in Wattributes.c on hppa*64*-*-*.
+
+2023-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.misc-tests/help.exp: Test -fhardened.
+	* c-c++-common/fhardened-1.S: New test.
+	* c-c++-common/fhardened-1.c: New test.
+	* c-c++-common/fhardened-10.c: New test.
+	* c-c++-common/fhardened-11.c: New test.
+	* c-c++-common/fhardened-12.c: New test.
+	* c-c++-common/fhardened-13.c: New test.
+	* c-c++-common/fhardened-14.c: New test.
+	* c-c++-common/fhardened-15.c: New test.
+	* c-c++-common/fhardened-2.c: New test.
+	* c-c++-common/fhardened-3.c: New test.
+	* c-c++-common/fhardened-4.c: New test.
+	* c-c++-common/fhardened-5.c: New test.
+	* c-c++-common/fhardened-6.c: New test.
+	* c-c++-common/fhardened-7.c: New test.
+	* c-c++-common/fhardened-8.c: New test.
+	* c-c++-common/fhardened-9.c: New test.
+	* gcc.target/i386/cf_check-6.c: New test.
+
+2023-11-23  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* lib/scanasm.exp (scan-assembler-times): Remove the `-inline'
+	option to `regexp' and the wrapping `llength' call.
+
+2023-11-23  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/aarch64/ccmp_1.c: Use non-capturing parentheses
+	with `scan-assembler-times'.
+
+2023-11-23  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/arm/pr53447-5.c: Use non-capturing parentheses with
+	`scan-assembler-times'.
+
+2023-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112672
+	* gcc.target/i386/pr112672.c: New test.
+
+2023-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/89316
+	* g++.target/i386/pr89316.C: New test.
+	* gcc.target/i386/pr112605-1.c: New test.
+	* gcc.target/i386/pr112605-2.c: New test.
+	* gcc.target/i386/pr112605.c: New test.
+
+2023-11-23  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/ccor.c: New test.
+
+2023-11-23  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/int128load.c: New test.
+
+2023-11-23  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	* gcc.dg/pr110279-1.c: New test.
+
+2023-11-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112599
+	PR target/112670
+	* gcc.target/riscv/rvv/autovec/pr112599-1.c: New test.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112336
+	* gcc.dg/bitint-41.c: New test.
+
+2023-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110879
+	* g++.dg/opt/pr110879.C: Require C++11 or later.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-stdc-bit-1.c: New test.
+	* gcc.dg/builtin-stdc-bit-2.c: New test.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110348
+	* g++.dg/cpp26/static_assert1.C: New test.
+	* g++.dg/cpp26/feat-cxx26.C (__cpp_static_assert): Expect
+	202306L rather than 201411L.
+	* g++.dg/cpp0x/udlit-error1.C: Expect different diagnostics for
+	static_assert with user-defined literal.
+
+2023-11-23  Pan Li  <pan2.li@intel.com>
+
+	PR target/111720
+	* gcc.target/riscv/rvv/base/pr111720-0.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-10.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-3.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-5.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-6.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-7.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-8.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-9.c: New test.
+
+2023-11-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/106120
+	* g++.dg/warn/Wstringop-overflow-4.C:144 XFAIL bogus warning for
+	lp64 targets with c++98.
+
+2023-11-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112633
+	* g++.dg/cpp0x/alias-decl-75.C: New test.
+
+2023-11-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/plugin-support.exp: Update the expected path to an
+	in-tree build of libintl.
+
+2023-11-22  Iain Sandoe  <iain@sandoe.co.uk>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanasm.exp: Initial handling for Mach-O function body scans.
+
+2023-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112344
+	* gcc.dg/torture/pr112344.c: New testcase.
+
+2023-11-22  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.misc-tests/linkage-y.c (puts): Declare.
+	(main): Add int return type and return 0.
+
+2023-11-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112598
+	* gcc.target/riscv/rvv/autovec/pr112598-3.c: New test.
+
+2023-11-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/uxtl-combine-4.c: Fix typo.
+	* gcc.target/aarch64/uxtl-combine-5.c: Likewise.
+	* gcc.target/aarch64/uxtl-combine-6.c: Likewise.
+
+2023-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112518
+	* gcc.target/i386/bmi2-pr112518.c: New test.
+
+2023-11-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-shuf-fp.c: New test.
+
+2023-11-22  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-push2pop2-1.c: Adjust output scan.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+
+2023-11-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112598
+	* gcc.target/riscv/rvv/autovec/pr112598-2.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	PR target/111815
+	* gcc.dg/torture/pr111815.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddifne.c: New test.
+	* gcc.target/riscv/addsifne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddibfne.c: New test.
+	* gcc.target/riscv/addsibfne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdifeq-sfb.c: New test.
+	* gcc.target/riscv/movdifeq-thead.c: New test.
+	* gcc.target/riscv/movdifeq-ventana.c: New test.
+	* gcc.target/riscv/movdifeq-zicond.c: New test.
+	* gcc.target/riscv/movdifeq.c: New test.
+	* gcc.target/riscv/movsifeq-sfb.c: New test.
+	* gcc.target/riscv/movsifeq-thead.c: New test.
+	* gcc.target/riscv/movsifeq-ventana.c: New test.
+	* gcc.target/riscv/movsifeq-zicond.c: New test.
+	* gcc.target/riscv/movsifeq.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibfeq-ventana.c: New test.
+	* gcc.target/riscv/movdibfeq-zicond.c: New test.
+	* gcc.target/riscv/movdibfeq.c: New test.
+	* gcc.target/riscv/movsibfeq-ventana.c: New test.
+	* gcc.target/riscv/movsibfeq-zicond.c: New test.
+	* gcc.target/riscv/movsibfeq.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddifeq.c: New test.
+	* gcc.target/riscv/adddifge.c: New test.
+	* gcc.target/riscv/adddifgt.c: New test.
+	* gcc.target/riscv/adddifle.c: New test.
+	* gcc.target/riscv/adddiflt.c: New test.
+	* gcc.target/riscv/addsifeq.c: New test.
+	* gcc.target/riscv/addsifge.c: New test.
+	* gcc.target/riscv/addsifgt.c: New test.
+	* gcc.target/riscv/addsifle.c: New test.
+	* gcc.target/riscv/addsiflt.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddibfeq.c: New test.
+	* gcc.target/riscv/adddibfge.c: New test.
+	* gcc.target/riscv/adddibfgt.c: New test.
+	* gcc.target/riscv/adddibfle.c: New test.
+	* gcc.target/riscv/adddibflt.c: New test.
+	* gcc.target/riscv/addsibfeq.c: New test.
+	* gcc.target/riscv/addsibfge.c: New test.
+	* gcc.target/riscv/addsibfgt.c: New test.
+	* gcc.target/riscv/addsibfle.c: New test.
+	* gcc.target/riscv/addsibflt.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdifge.c: New test.
+	* gcc.target/riscv/movdifgt.c: New test.
+	* gcc.target/riscv/movdifle.c: New test.
+	* gcc.target/riscv/movdiflt.c: New test.
+	* gcc.target/riscv/movdifne.c: New test.
+	* gcc.target/riscv/movsifge.c: New test.
+	* gcc.target/riscv/movsifgt.c: New test.
+	* gcc.target/riscv/movsifle.c: New test.
+	* gcc.target/riscv/movsiflt.c: New test.
+	* gcc.target/riscv/movsifne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibfge.c: New test.
+	* gcc.target/riscv/movdibfgt.c: New test.
+	* gcc.target/riscv/movdibfle.c: New test.
+	* gcc.target/riscv/movdibflt.c: New test.
+	* gcc.target/riscv/movdibfne.c: New test.
+	* gcc.target/riscv/movsibfge.c: New test.
+	* gcc.target/riscv/movsibfgt.c: New test.
+	* gcc.target/riscv/movsibfle.c: New test.
+	* gcc.target/riscv/movsibflt.c: New test.
+	* gcc.target/riscv/movsibfne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdifge-sfb.c: Reject "if-conversion
+	succeeded through" rather than accepting it.
+	* gcc.target/riscv/movdifge-thead.c: Likewise.
+	* gcc.target/riscv/movdifge-ventana.c: Likewise.
+	* gcc.target/riscv/movdifge-zicond.c: Likewise.
+	* gcc.target/riscv/movdifgt-sfb.c: Likewise.
+	* gcc.target/riscv/movdifgt-thead.c: Likewise.
+	* gcc.target/riscv/movdifgt-ventana.c: Likewise.
+	* gcc.target/riscv/movdifgt-zicond.c: Likewise.
+	* gcc.target/riscv/movdifle-sfb.c: Likewise.
+	* gcc.target/riscv/movdifle-thead.c: Likewise.
+	* gcc.target/riscv/movdifle-ventana.c: Likewise.
+	* gcc.target/riscv/movdifle-zicond.c: Likewise.
+	* gcc.target/riscv/movdiflt-sfb.c: Likewise.
+	* gcc.target/riscv/movdiflt-thead.c: Likewise.
+	* gcc.target/riscv/movdiflt-ventana.c: Likewise.
+	* gcc.target/riscv/movdiflt-zicond.c: Likewise.
+	* gcc.target/riscv/movsifge-sfb.c: Likewise.
+	* gcc.target/riscv/movsifge-thead.c: Likewise.
+	* gcc.target/riscv/movsifge-ventana.c: Likewise.
+	* gcc.target/riscv/movsifge-zicond.c: Likewise.
+	* gcc.target/riscv/movsifgt-sfb.c: Likewise.
+	* gcc.target/riscv/movsifgt-thead.c: Likewise.
+	* gcc.target/riscv/movsifgt-ventana.c: Likewise.
+	* gcc.target/riscv/movsifgt-zicond.c: Likewise.
+	* gcc.target/riscv/movsifle-sfb.c: Likewise.
+	* gcc.target/riscv/movsifle-thead.c: Likewise.
+	* gcc.target/riscv/movsifle-ventana.c: Likewise.
+	* gcc.target/riscv/movsifle-zicond.c: Likewise.
+	* gcc.target/riscv/movsiflt-sfb.c: Likewise.
+	* gcc.target/riscv/movsiflt-thead.c: Likewise.
+	* gcc.target/riscv/movsiflt-ventana.c: Likewise.
+	* gcc.target/riscv/movsiflt-zicond.c: Likewise.
+	* gcc.target/riscv/smax-ieee.c: Also accept FLT.D.
+	* gcc.target/riscv/smaxf-ieee.c: Also accept FLT.S.
+	* gcc.target/riscv/smin-ieee.c: Also accept FGT.D.
+	* gcc.target/riscv/sminf-ieee.c: Also accept FGT.S.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddieq.c: New test.
+	* gcc.target/riscv/adddige.c: New test.
+	* gcc.target/riscv/adddigeu.c: New test.
+	* gcc.target/riscv/adddigt.c: New test.
+	* gcc.target/riscv/adddigtu.c: New test.
+	* gcc.target/riscv/adddile.c: New test.
+	* gcc.target/riscv/adddileu.c: New test.
+	* gcc.target/riscv/adddilt.c: New test.
+	* gcc.target/riscv/adddiltu.c: New test.
+	* gcc.target/riscv/adddine.c: New test.
+	* gcc.target/riscv/addsieq.c: New test.
+	* gcc.target/riscv/addsige.c: New test.
+	* gcc.target/riscv/addsigeu.c: New test.
+	* gcc.target/riscv/addsigt.c: New test.
+	* gcc.target/riscv/addsigtu.c: New test.
+	* gcc.target/riscv/addsile.c: New test.
+	* gcc.target/riscv/addsileu.c: New test.
+	* gcc.target/riscv/addsilt.c: New test.
+	* gcc.target/riscv/addsiltu.c: New test.
+	* gcc.target/riscv/addsine.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddibeq.c: New test.
+	* gcc.target/riscv/adddibge.c: New test.
+	* gcc.target/riscv/adddibgeu.c: New test.
+	* gcc.target/riscv/adddibgt.c: New test.
+	* gcc.target/riscv/adddibgtu.c: New test.
+	* gcc.target/riscv/adddible.c: New test.
+	* gcc.target/riscv/adddibleu.c: New test.
+	* gcc.target/riscv/adddiblt.c: New test.
+	* gcc.target/riscv/adddibltu.c: New test.
+	* gcc.target/riscv/adddibne.c: New test.
+	* gcc.target/riscv/addsibeq.c: New test.
+	* gcc.target/riscv/addsibge.c: New test.
+	* gcc.target/riscv/addsibgeu.c: New test.
+	* gcc.target/riscv/addsibgt.c: New test.
+	* gcc.target/riscv/addsibgtu.c: New test.
+	* gcc.target/riscv/addsible.c: New test.
+	* gcc.target/riscv/addsibleu.c: New test.
+	* gcc.target/riscv/addsiblt.c: New test.
+	* gcc.target/riscv/addsibltu.c: New test.
+	* gcc.target/riscv/addsibne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdieq.c: New test.
+	* gcc.target/riscv/movdige.c: New test.
+	* gcc.target/riscv/movdigeu.c: New test.
+	* gcc.target/riscv/movdigt.c: New test.
+	* gcc.target/riscv/movdigtu.c: New test.
+	* gcc.target/riscv/movdile.c: New test.
+	* gcc.target/riscv/movdileu.c: New test.
+	* gcc.target/riscv/movdilt.c: New test.
+	* gcc.target/riscv/movdiltu.c: New test.
+	* gcc.target/riscv/movdine.c: New test.
+	* gcc.target/riscv/movsieq.c: New test.
+	* gcc.target/riscv/movsige.c: New test.
+	* gcc.target/riscv/movsigeu.c: New test.
+	* gcc.target/riscv/movsigt.c: New test.
+	* gcc.target/riscv/movsigtu.c: New test.
+	* gcc.target/riscv/movsile.c: New test.
+	* gcc.target/riscv/movsileu.c: New test.
+	* gcc.target/riscv/movsilt.c: New test.
+	* gcc.target/riscv/movsiltu.c: New test.
+	* gcc.target/riscv/movsine.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibeq.c: New test.
+	* gcc.target/riscv/movdibge.c: New test.
+	* gcc.target/riscv/movdibgeu.c: New test.
+	* gcc.target/riscv/movdibgt.c: New test.
+	* gcc.target/riscv/movdibgtu.c: New test.
+	* gcc.target/riscv/movdible.c: New test.
+	* gcc.target/riscv/movdibleu.c: New test.
+	* gcc.target/riscv/movdiblt.c: New test.
+	* gcc.target/riscv/movdibltu.c: New test.
+	* gcc.target/riscv/movdibne.c: New test.
+	* gcc.target/riscv/movsibeq.c: New test.
+	* gcc.target/riscv/movsibge.c: New test.
+	* gcc.target/riscv/movsibgeu.c: New test.
+	* gcc.target/riscv/movsibgt.c: New test.
+	* gcc.target/riscv/movsibgtu.c: New test.
+	* gcc.target/riscv/movsible.c: New test.
+	* gcc.target/riscv/movsibleu.c: New test.
+	* gcc.target/riscv/movsiblt.c: New test.
+	* gcc.target/riscv/movsibltu.c: New test.
+	* gcc.target/riscv/movsibne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/zbs-bext-02.c: Adjust to reject SLL rather
+	than AND.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdige-thead.c: New test.
+	* gcc.target/riscv/movdigeu-thead.c: New test.
+	* gcc.target/riscv/movdigt-thead.c: New test.
+	* gcc.target/riscv/movdigtu-thead.c: New test.
+	* gcc.target/riscv/movdile-thead.c: New test.
+	* gcc.target/riscv/movdileu-thead.c: New test.
+	* gcc.target/riscv/movdilt-thead.c: New test.
+	* gcc.target/riscv/movdiltu-thead.c: New test.
+	* gcc.target/riscv/movsige-thead.c: New test.
+	* gcc.target/riscv/movsigeu-thead.c: New test.
+	* gcc.target/riscv/movsigt-thead.c: New test.
+	* gcc.target/riscv/movsigtu-thead.c: New test.
+	* gcc.target/riscv/movsile-thead.c: New test.
+	* gcc.target/riscv/movsileu-thead.c: New test.
+	* gcc.target/riscv/movsilt-thead.c: New test.
+	* gcc.target/riscv/movsiltu-thead.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibge-thead.c: New test.
+	* gcc.target/riscv/movdibgeu-thead.c: New test.
+	* gcc.target/riscv/movdibgt-thead.c: New test.
+	* gcc.target/riscv/movdibgtu-thead.c: New test.
+	* gcc.target/riscv/movdible-thead.c: New test.
+	* gcc.target/riscv/movdibleu-thead.c: New test.
+	* gcc.target/riscv/movdiblt-thead.c: New test.
+	* gcc.target/riscv/movdibltu-thead.c: New test.
+	* gcc.target/riscv/movsibge-thead.c: New test.
+	* gcc.target/riscv/movsibgeu-thead.c: New test.
+	* gcc.target/riscv/movsibgt-thead.c: New test.
+	* gcc.target/riscv/movsibgtu-thead.c: New test.
+	* gcc.target/riscv/movsible-thead.c: New test.
+	* gcc.target/riscv/movsibleu-thead.c: New test.
+	* gcc.target/riscv/movsiblt-thead.c: New test.
+	* gcc.target/riscv/movsibltu-thead.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdieq-ventana.c: New test.
+	* gcc.target/riscv/movdieq-zicond.c: New test.
+	* gcc.target/riscv/movdine-ventana.c: New test.
+	* gcc.target/riscv/movdine-zicond.c: New test.
+	* gcc.target/riscv/movsieq-ventana.c: New test.
+	* gcc.target/riscv/movsieq-zicond.c: New test.
+	* gcc.target/riscv/movsine-ventana.c: New test.
+	* gcc.target/riscv/movsine-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibeq-ventana.c: New test.
+	* gcc.target/riscv/movdibeq-zicond.c: New test.
+	* gcc.target/riscv/movdibne-ventana.c: New test.
+	* gcc.target/riscv/movdibne-zicond.c: New test.
+	* gcc.target/riscv/movsibeq-ventana.c: New test.
+	* gcc.target/riscv/movsibeq-zicond.c: New test.
+	* gcc.target/riscv/movsibne-ventana.c: New test.
+	* gcc.target/riscv/movsibne-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_imm.c:
+	Lower `-mbranch-cost=' setting.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_reg_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_imm.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_reg_reg.c:
+	Likewise.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdigtu-ventana.c: New test.
+	* gcc.target/riscv/movdigtu-zicond.c: New test.
+	* gcc.target/riscv/movdiltu-ventana.c: New test.
+	* gcc.target/riscv/movdiltu-zicond.c: New test.
+	* gcc.target/riscv/movsigtu-ventana.c: New test.
+	* gcc.target/riscv/movsigtu-zicond.c: New test.
+	* gcc.target/riscv/movsiltu-ventana.c: New test.
+	* gcc.target/riscv/movsiltu-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibgtu-ventana.c: New test.
+	* gcc.target/riscv/movdibgtu-zicond.c: New test.
+	* gcc.target/riscv/movdibltu-ventana.c: New test.
+	* gcc.target/riscv/movdibltu-zicond.c: New test.
+	* gcc.target/riscv/movsibgtu-ventana.c: New test.
+	* gcc.target/riscv/movsibgtu-zicond.c: New test.
+	* gcc.target/riscv/movsibltu-ventana.c: New test.
+	* gcc.target/riscv/movsibltu-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdifge-sfb.c: New test.
+	* gcc.target/riscv/movdifge-thead.c: New test.
+	* gcc.target/riscv/movdifge-ventana.c: New test.
+	* gcc.target/riscv/movdifge-zicond.c: New test.
+	* gcc.target/riscv/movdifgt-sfb.c: New test.
+	* gcc.target/riscv/movdifgt-thead.c: New test.
+	* gcc.target/riscv/movdifgt-ventana.c: New test.
+	* gcc.target/riscv/movdifgt-zicond.c: New test.
+	* gcc.target/riscv/movdifle-sfb.c: New test.
+	* gcc.target/riscv/movdifle-thead.c: New test.
+	* gcc.target/riscv/movdifle-ventana.c: New test.
+	* gcc.target/riscv/movdifle-zicond.c: New test.
+	* gcc.target/riscv/movdiflt-sfb.c: New test.
+	* gcc.target/riscv/movdiflt-thead.c: New test.
+	* gcc.target/riscv/movdiflt-ventana.c: New test.
+	* gcc.target/riscv/movdiflt-zicond.c: New test.
+	* gcc.target/riscv/movdifne-sfb.c: New test.
+	* gcc.target/riscv/movdifne-thead.c: New test.
+	* gcc.target/riscv/movdifne-ventana.c: New test.
+	* gcc.target/riscv/movdifne-zicond.c: New test.
+	* gcc.target/riscv/movsifge-sfb.c: New test.
+	* gcc.target/riscv/movsifge-thead.c: New test.
+	* gcc.target/riscv/movsifge-ventana.c: New test.
+	* gcc.target/riscv/movsifge-zicond.c: New test.
+	* gcc.target/riscv/movsifgt-sfb.c: New test.
+	* gcc.target/riscv/movsifgt-thead.c: New test.
+	* gcc.target/riscv/movsifgt-ventana.c: New test.
+	* gcc.target/riscv/movsifgt-zicond.c: New test.
+	* gcc.target/riscv/movsifle-sfb.c: New test.
+	* gcc.target/riscv/movsifle-thead.c: New test.
+	* gcc.target/riscv/movsifle-ventana.c: New test.
+	* gcc.target/riscv/movsifle-zicond.c: New test.
+	* gcc.target/riscv/movsiflt-sfb.c: New test.
+	* gcc.target/riscv/movsiflt-thead.c: New test.
+	* gcc.target/riscv/movsiflt-ventana.c: New test.
+	* gcc.target/riscv/movsiflt-zicond.c: New test.
+	* gcc.target/riscv/movsifne-sfb.c: New test.
+	* gcc.target/riscv/movsifne-thead.c: New test.
+	* gcc.target/riscv/movsifne-ventana.c: New test.
+	* gcc.target/riscv/movsifne-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibfge-ventana.c: New test.
+	* gcc.target/riscv/movdibfge-zicond.c: New test.
+	* gcc.target/riscv/movdibfgt-ventana.c: New test.
+	* gcc.target/riscv/movdibfgt-zicond.c: New test.
+	* gcc.target/riscv/movdibfle-ventana.c: New test.
+	* gcc.target/riscv/movdibfle-zicond.c: New test.
+	* gcc.target/riscv/movdibflt-ventana.c: New test.
+	* gcc.target/riscv/movdibflt-zicond.c: New test.
+	* gcc.target/riscv/movdibfne-ventana.c: New test.
+	* gcc.target/riscv/movdibfne-zicond.c: New test.
+	* gcc.target/riscv/movsibfge-ventana.c: New test.
+	* gcc.target/riscv/movsibfge-zicond.c: New test.
+	* gcc.target/riscv/movsibfgt-ventana.c: New test.
+	* gcc.target/riscv/movsibfgt-zicond.c: New test.
+	* gcc.target/riscv/movsibfle-ventana.c: New test.
+	* gcc.target/riscv/movsibfle-zicond.c: New test.
+	* gcc.target/riscv/movsibflt-ventana.c: New test.
+	* gcc.target/riscv/movsibflt-zicond.c: New test.
+	* gcc.target/riscv/movsibfne-ventana.c: New test.
+	* gcc.target/riscv/movsibfne-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdieq-thead.c: New test.
+	* gcc.target/riscv/movdige-ventana.c: New test.
+	* gcc.target/riscv/movdige-zicond.c: New test.
+	* gcc.target/riscv/movdigeu-ventana.c: New test.
+	* gcc.target/riscv/movdigeu-zicond.c: New test.
+	* gcc.target/riscv/movdigt-ventana.c: New test.
+	* gcc.target/riscv/movdigt-zicond.c: New test.
+	* gcc.target/riscv/movdile-ventana.c: New test.
+	* gcc.target/riscv/movdile-zicond.c: New test.
+	* gcc.target/riscv/movdileu-ventana.c: New test.
+	* gcc.target/riscv/movdileu-zicond.c: New test.
+	* gcc.target/riscv/movdilt-ventana.c: New test.
+	* gcc.target/riscv/movdilt-zicond.c: New test.
+	* gcc.target/riscv/movdine-thead.c: New test.
+	* gcc.target/riscv/movsieq-thead.c: New test.
+	* gcc.target/riscv/movsige-ventana.c: New test.
+	* gcc.target/riscv/movsige-zicond.c: New test.
+	* gcc.target/riscv/movsigeu-ventana.c: New test.
+	* gcc.target/riscv/movsigeu-zicond.c: New test.
+	* gcc.target/riscv/movsigt-ventana.c: New test.
+	* gcc.target/riscv/movsigt-zicond.c: New test.
+	* gcc.target/riscv/movsile-ventana.c: New test.
+	* gcc.target/riscv/movsile-zicond.c: New test.
+	* gcc.target/riscv/movsileu-ventana.c: New test.
+	* gcc.target/riscv/movsileu-zicond.c: New test.
+	* gcc.target/riscv/movsilt-ventana.c: New test.
+	* gcc.target/riscv/movsilt-zicond.c: New test.
+	* gcc.target/riscv/movsine-thead.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibeq-thead.c: New test.
+	* gcc.target/riscv/movdibge-ventana.c: New test.
+	* gcc.target/riscv/movdibge-zicond.c: New test.
+	* gcc.target/riscv/movdibgeu-ventana.c: New test.
+	* gcc.target/riscv/movdibgeu-zicond.c: New test.
+	* gcc.target/riscv/movdibgt-ventana.c: New test.
+	* gcc.target/riscv/movdibgt-zicond.c: New test.
+	* gcc.target/riscv/movdible-ventana.c: New test.
+	* gcc.target/riscv/movdible-zicond.c: New test.
+	* gcc.target/riscv/movdibleu-ventana.c: New test.
+	* gcc.target/riscv/movdibleu-zicond.c: New test.
+	* gcc.target/riscv/movdiblt-ventana.c: New test.
+	* gcc.target/riscv/movdiblt-zicond.c: New test.
+	* gcc.target/riscv/movdibne-thead.c: New test.
+	* gcc.target/riscv/movsibeq-thead.c: New test.
+	* gcc.target/riscv/movsibge-ventana.c: New test.
+	* gcc.target/riscv/movsibge-zicond.c: New test.
+	* gcc.target/riscv/movsibgeu-ventana.c: New test.
+	* gcc.target/riscv/movsibgeu-zicond.c: New test.
+	* gcc.target/riscv/movsibgt-ventana.c: New test.
+	* gcc.target/riscv/movsibgt-zicond.c: New test.
+	* gcc.target/riscv/movsible-ventana.c: New test.
+	* gcc.target/riscv/movsible-zicond.c: New test.
+	* gcc.target/riscv/movsibleu-ventana.c: New test.
+	* gcc.target/riscv/movsibleu-zicond.c: New test.
+	* gcc.target/riscv/movsiblt-ventana.c: New test.
+	* gcc.target/riscv/movsiblt-zicond.c: New test.
+	* gcc.target/riscv/movsibne-thead.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_imm.c:
+	Explicitly set the branch cost.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_reg_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_imm.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_reg_reg.c:
+	Likewise.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdieq-sfb.c: New test.
+	* gcc.target/riscv/movdige-sfb.c: New test.
+	* gcc.target/riscv/movdigeu-sfb.c: New test.
+	* gcc.target/riscv/movdigt-sfb.c: New test.
+	* gcc.target/riscv/movdigtu-sfb.c: New test.
+	* gcc.target/riscv/movdile-sfb.c: New test.
+	* gcc.target/riscv/movdileu-sfb.c: New test.
+	* gcc.target/riscv/movdilt-sfb.c: New test.
+	* gcc.target/riscv/movdiltu-sfb.c: New test.
+	* gcc.target/riscv/movdine-sfb.c: New test.
+	* gcc.target/riscv/movsieq-sfb.c: New test.
+	* gcc.target/riscv/movsige-sfb.c: New test.
+	* gcc.target/riscv/movsigeu-sfb.c: New test.
+	* gcc.target/riscv/movsigt-sfb.c: New test.
+	* gcc.target/riscv/movsigtu-sfb.c: New test.
+	* gcc.target/riscv/movsile-sfb.c: New test.
+	* gcc.target/riscv/movsileu-sfb.c: New test.
+	* gcc.target/riscv/movsilt-sfb.c: New test.
+	* gcc.target/riscv/movsiltu-sfb.c: New test.
+	* gcc.target/riscv/movsine-sfb.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.dg/torture/addieq.c: New test.
+	* gcc.dg/torture/addifeq.c: New test.
+	* gcc.dg/torture/addifge.c: New test.
+	* gcc.dg/torture/addifgt.c: New test.
+	* gcc.dg/torture/addifle.c: New test.
+	* gcc.dg/torture/addiflt.c: New test.
+	* gcc.dg/torture/addifne.c: New test.
+	* gcc.dg/torture/addige.c: New test.
+	* gcc.dg/torture/addigeu.c: New test.
+	* gcc.dg/torture/addigt.c: New test.
+	* gcc.dg/torture/addigtu.c: New test.
+	* gcc.dg/torture/addile.c: New test.
+	* gcc.dg/torture/addileu.c: New test.
+	* gcc.dg/torture/addilt.c: New test.
+	* gcc.dg/torture/addiltu.c: New test.
+	* gcc.dg/torture/addine.c: New test.
+	* gcc.dg/torture/addleq.c: New test.
+	* gcc.dg/torture/addlfeq.c: New test.
+	* gcc.dg/torture/addlfge.c: New test.
+	* gcc.dg/torture/addlfgt.c: New test.
+	* gcc.dg/torture/addlfle.c: New test.
+	* gcc.dg/torture/addlflt.c: New test.
+	* gcc.dg/torture/addlfne.c: New test.
+	* gcc.dg/torture/addlge.c: New test.
+	* gcc.dg/torture/addlgeu.c: New test.
+	* gcc.dg/torture/addlgt.c: New test.
+	* gcc.dg/torture/addlgtu.c: New test.
+	* gcc.dg/torture/addlle.c: New test.
+	* gcc.dg/torture/addlleu.c: New test.
+	* gcc.dg/torture/addllt.c: New test.
+	* gcc.dg/torture/addlltu.c: New test.
+	* gcc.dg/torture/addlne.c: New test.
+	* gcc.dg/torture/movieq.c: New test.
+	* gcc.dg/torture/movifeq.c: New test.
+	* gcc.dg/torture/movifge.c: New test.
+	* gcc.dg/torture/movifgt.c: New test.
+	* gcc.dg/torture/movifle.c: New test.
+	* gcc.dg/torture/moviflt.c: New test.
+	* gcc.dg/torture/movifne.c: New test.
+	* gcc.dg/torture/movige.c: New test.
+	* gcc.dg/torture/movigeu.c: New test.
+	* gcc.dg/torture/movigt.c: New test.
+	* gcc.dg/torture/movigtu.c: New test.
+	* gcc.dg/torture/movile.c: New test.
+	* gcc.dg/torture/movileu.c: New test.
+	* gcc.dg/torture/movilt.c: New test.
+	* gcc.dg/torture/moviltu.c: New test.
+	* gcc.dg/torture/movine.c: New test.
+	* gcc.dg/torture/movleq.c: New test.
+	* gcc.dg/torture/movlfeq.c: New test.
+	* gcc.dg/torture/movlfge.c: New test.
+	* gcc.dg/torture/movlfgt.c: New test.
+	* gcc.dg/torture/movlfle.c: New test.
+	* gcc.dg/torture/movlflt.c: New test.
+	* gcc.dg/torture/movlfne.c: New test.
+	* gcc.dg/torture/movlge.c: New test.
+	* gcc.dg/torture/movlgeu.c: New test.
+	* gcc.dg/torture/movlgt.c: New test.
+	* gcc.dg/torture/movlgtu.c: New test.
+	* gcc.dg/torture/movlle.c: New test.
+	* gcc.dg/torture/movlleu.c: New test.
+	* gcc.dg/torture/movllt.c: New test.
+	* gcc.dg/torture/movlltu.c: New test.
+	* gcc.dg/torture/movlne.c: New test.
+
+2023-11-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/tree-ssa/return-value-range-1.c: Fix.
+
+2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/aarch64/pr112406-2.c: New test.
+
+2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/popcount.c: Adjust check.
+	* lib/target-supports.exp: Add riscv_zbb.
+
+2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* g++.target/riscv/rvv/base/bug-14.C: Add
+	dg-require-effective-target rv64.
+	* g++.target/riscv/rvv/base/bug-9.C: Ditto.
+
+2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/rvv.exp:  Remove -march and -mabi from
+	default CFLAGS.
+
+2023-11-21  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gfortran.dg/vect/pr107254.f90: Remove dg-do run directive.
+	* gfortran.dg/vect/pr85853.f90: Ditto.
+	* gfortran.dg/vect/vect-alias-check-1.F90: Ditto.
+
+2023-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112623
+	* gcc.target/i386/pr112623.c: New testcase.
+
+2023-11-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm1.d: Adjust expected diagnostic.
+
+2023-11-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112598
+	* gcc.target/riscv/rvv/autovec/pr112598-1.c: New test.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/111370
+	* gcc.target/aarch64/sve/cond_asrd_1.c: Updated.
+	* gcc.target/aarch64/sve/cond_cnot_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_5.c: Likewise.
+	* gcc.target/aarch64/target_attr_13.c: Likewise.
+	* gcc.target/aarch64/target_attr_15.c: Likewise.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/simd/vmovl_high_1.c: Update codegen.
+	* gcc.target/aarch64/uxtl-combine-1.c: New test.
+	* gcc.target/aarch64/uxtl-combine-2.c: New test.
+	* gcc.target/aarch64/uxtl-combine-3.c: New test.
+	* gcc.target/aarch64/uxtl-combine-4.c: New test.
+	* gcc.target/aarch64/uxtl-combine-5.c: New test.
+	* gcc.target/aarch64/uxtl-combine-6.c: New test.
+
+2023-11-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/pr112438.c: Add missing dump check.
+
+2023-11-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/tree-ssa/return-value-range-1.c: Fix.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn25.adb: Add xfail.
+
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/111309
+	* c-c++-common/pr111309-2.c (foo): Don't expect errors for C++ with
+	-fshort-enums if second argument is E0.
+
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112639
+	* gcc.dg/torture/pr112639.c: New test.
+
+2023-11-21  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-interrupt-1.c: Adjust option to restrict them
+	under certain subfeatures.
+	* gcc.target/i386/apx-push2pop2-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2_interrupt-1.c: Likewise.
+	* gcc.target/i386/apx-ppx-1.c: New test.
+
+2023-11-21  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/arm/bfloat16_vector_typecheck_1.c: Adjust.
+	* gcc.target/arm/bfloat16_vector_typecheck_2.c: Likewise.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_1.c: Likewise.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_2.c: Likewise.
+
+2023-11-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-9.c: Fix bug.
+
+2023-11-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr112325-mmx-1.c: New test.
+
+2023-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-2.C: Add noipa attribute to prevent ipa-vrp.
+	* g++.dg/ipa/devirt-7.C: Disable ipa-vrp.
+	* g++.dg/ipa/ipa-icf-2.C: Disable ipa-vrp.
+	* g++.dg/ipa/ipa-icf-3.C: Disable ipa-vrp.
+	* g++.dg/ipa/ivinline-1.C: Disable ipa-vrp.
+	* g++.dg/ipa/ivinline-3.C: Disable ipa-vrp.
+	* g++.dg/ipa/ivinline-5.C: Disable ipa-vrp.
+	* g++.dg/ipa/ivinline-8.C: Disable ipa-vrp.
+	* g++.dg/ipa/nothrow-1.C: Disable ipa-vrp.
+	* g++.dg/ipa/pure-const-1.C: Disable ipa-vrp.
+	* g++.dg/ipa/pure-const-2.C: Disable ipa-vrp.
+	* g++.dg/lto/inline-crossmodule-1_0.C: Disable ipa-vrp.
+	* gcc.c-torture/compile/pr106433.c: Add noipa attribute to prevent ipa-vrp.
+	* gcc.c-torture/execute/frame-address.c: Likewise.
+	* gcc.dg/vla-1.c: Add noipa attribute to prevent ipa-vrp.
+	* gcc.dg/ipa/fopt-info-inline-1.c: Disable ipa-vrp.
+	* gcc.dg/ipa/ipa-icf-25.c: Disable ipa-vrp.
+	* gcc.dg/ipa/ipa-icf-38.c: Disable ipa-vrp.
+	* gcc.dg/ipa/pure-const-1.c: Disable ipa-vrp.
+	* gcc.dg/ipa/remref-0.c: Add noipa attribute to prevent ipa-vrp.
+	* gcc.dg/tree-prof/time-profiler-1.c: Disable ipa-vrp.
+	* gcc.dg/tree-prof/time-profiler-2.c: Disable ipa-vrp.
+	* gcc.dg/tree-ssa/pr110269.c: Disable ipa-vrp.
+	* gcc.dg/tree-ssa/pr20701.c: Disable ipa-vrp.
+	* gcc.dg/tree-ssa/vrp05.c: Disable ipa-vrp.
+	* gcc.dg/tree-ssa/return-value-range-1.c: New test.
+	* gcc.dg/nonnull-7.c: New file.
+
+2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112618
+	* gcc.dg/pr112618.c: New testcase.
+
+2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* gcc.dg/torture/pr112281-1.c: New testcase.
+	* gcc.dg/torture/pr112281-2.c: Likewise.
+
+2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112622
+	* gcc.dg/pr112622.c: New testcase.
+	* gcc.dg/simd-2.c: Adjust.
+	* gcc.target/i386/vect-bfloat16-typecheck_1.c: Likewise.
+	* gcc.target/i386/vect-bfloat16-typecheck_2.c: Likewise.
+
+2023-11-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112597
+	* gcc.target/riscv/rvv/autovec/pr112597-1.c: New test.
+
+2023-11-20  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-10.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-10.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-11.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-11.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-12.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-12.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-3.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-6.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-6.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-7.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-7.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-8.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-9.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-9.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-1.c:
+	Adjust include.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-10.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-10.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-11.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-11.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-3.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-6.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-6.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-7.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-7.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-8.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-9.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-9.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-1.c:
+	Adjust include.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-10.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-10.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-3.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-6.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-6.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-7.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-7.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-8.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-9.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-9.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-1.c:
+	Adjust include.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-10.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-10.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-6.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-6.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-7.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-7.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-8.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-9.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-9.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-1.c:
+	Adjust include.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-9.c: New test.
+
+2023-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/vst1q_f16.c: Remove 'return'.
+	* gcc.target/arm/mve/intrinsics/vst1q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_u8.c: Likewise.
+
+2023-11-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Remove scalable compile option.
+
+2023-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/builtin-classify-type-1.c (main): Add tests for vector
+	types.
+
+2023-11-20  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gfortran.dg/pr112406.f90: New test.
+
+2023-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90693
+	* gcc.target/i386/pr90693.c: New test.
+
+2023-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_thumb1_cbz_ok): Fix prop name
+	cut&pasto.
+
+2023-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
+	Expect "unaligned pointer value" warning on short_enums
+	targets, but not in c++.
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early.c:
+	Likewise.
+
+2023-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tree-ssa/scev-3.c: xfail on all ilp32 targets,
+	though some of these do pass.
+	* gcc.dg/tree-ssa/scev-4.c: Likewise.
+	* gcc.dg/tree-ssa/scev-5.c: Likewise.
+
+2023-11-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-1.c: New test.
+	* gcc.target/i386/avx10_1-10.c: Ditto.
+	* gcc.target/i386/avx10_1-11.c: Ditto.
+	* gcc.target/i386/avx10_1-12.c: Ditto.
+	* gcc.target/i386/avx10_1-13.c: Ditto.
+	* gcc.target/i386/avx10_1-14.c: Ditto.
+	* gcc.target/i386/avx10_1-15.c: Ditto.
+	* gcc.target/i386/avx10_1-16.c: Ditto.
+	* gcc.target/i386/avx10_1-17.c: Ditto.
+	* gcc.target/i386/avx10_1-18.c: Ditto.
+	* gcc.target/i386/avx10_1-19.c: Ditto.
+	* gcc.target/i386/avx10_1-2.c: Ditto.
+	* gcc.target/i386/avx10_1-20.c: Ditto.
+	* gcc.target/i386/avx10_1-21.c: Ditto.
+	* gcc.target/i386/avx10_1-22.c: Ditto.
+	* gcc.target/i386/avx10_1-23.c: Ditto.
+	* gcc.target/i386/avx10_1-3.c: Ditto.
+	* gcc.target/i386/avx10_1-4.c: Ditto.
+	* gcc.target/i386/avx10_1-5.c: Ditto.
+	* gcc.target/i386/avx10_1-6.c: Ditto.
+	* gcc.target/i386/avx10_1-7.c: Ditto.
+	* gcc.target/i386/avx10_1-8.c: Ditto.
+	* gcc.target/i386/avx10_1-9.c: Ditto.
+
+2023-11-20  liuhongt  <hongtao.liu@intel.com>
+
+	* lib/target-supports.exp (vect_logical_reduc): Add i?86-*-*
+	and x86_64-*-*.
+
+2023-11-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr112325-1.c: New test.
+	* gcc.target/i386/pr112325-2.c: New test.
+
+2023-11-20  xuli  <xuli1@eswincomputing.com>
+
+	PR target/112537
+	* gcc.target/riscv/rvv/base/cpymem-strategy-1.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-2.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-3.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-4.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-5.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy.h: New test.
+
+2023-11-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/post-ra-avl.c: New test.
+
+2023-11-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99187
+	* g++.dg/modules/pr99187.C: New test.
+
+2023-11-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* lib/target-supports.exp (add_options_for___float128): Only add
+	-mfloat128 to powerpc*-*-linux*.
+
+2023-11-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/pr112561.c: New test.
+
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107573
+	* c-c++-common/analyzer/strtok-1.c: New test.
+	* c-c++-common/analyzer/strtok-2.c: New test.
+	* c-c++-common/analyzer/strtok-3.c: New test.
+	* c-c++-common/analyzer/strtok-4.c: New test.
+	* c-c++-common/analyzer/strtok-cppreference.c: New test.
+
 2023-11-18  Xi Ruoyao  <xry111@xry111.site>
 
 	* gcc.target/loongarch/div-div32.c: New test.

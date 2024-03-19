@@ -16616,6 +16616,7 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
    static_assert-declaration:
      static_assert ( constant-expression , string-literal ) ;
      static_assert ( constant-expression ) ; (C++17)
+     static_assert ( constant-expression, conditional-expression ) ; (C++26)
 
    If MEMBER_P, this static_assert is a class member.  */
 
@@ -16646,10 +16647,10 @@ cp_parser_static_assert (cp_parser *parser, bool member_p)
 
   /* Parse the constant-expression.  Allow a non-constant expression
      here in order to give better diagnostics in finish_static_assert.  */
-  condition =
-    cp_parser_constant_expression (parser,
-                                   /*allow_non_constant_p=*/true,
-				   /*non_constant_p=*/nullptr);
+  condition
+    = cp_parser_constant_expression (parser,
+				     /*allow_non_constant_p=*/true,
+				     /*non_constant_p=*/nullptr);
 
   if (cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
     {
@@ -16668,8 +16669,32 @@ cp_parser_static_assert (cp_parser *parser, bool member_p)
       /* Parse the separating `,'.  */
       cp_parser_require (parser, CPP_COMMA, RT_COMMA);
 
-      /* Parse the string-literal message.  */
-      if (cxx_dialect >= cxx26)
+      /* Parse the message expression.  */
+      bool string_lit = true;
+      for (unsigned int i = 1; ; ++i)
+	{
+	  cp_token *tok = cp_lexer_peek_nth_token (parser->lexer, i);
+	  if (cp_parser_is_pure_string_literal (tok))
+	    continue;
+	  else if (tok->type == CPP_CLOSE_PAREN)
+	    break;
+	  string_lit = false;
+	  break;
+	}
+      if (!string_lit)
+	{
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	  if (cxx_dialect < cxx26)
+	    pedwarn (loc, OPT_Wc__26_extensions,
+		     "%<static_assert%> with non-string message only "
+		     "available with %<-std=c++2c%> or %<-std=gnu++2c%>");
+
+	  message = cp_parser_conditional_expression (parser);
+	  if (TREE_CODE (message) == STRING_CST)
+	    message = build1_loc (loc, PAREN_EXPR, TREE_TYPE (message),
+				  message);
+	}
+      else if (cxx_dialect >= cxx26)
 	message = cp_parser_unevaluated_string_literal (parser);
       else
 	message = cp_parser_string_literal (parser, /*translate=*/false,
@@ -41136,7 +41161,7 @@ cp_parser_omp_clause_dist_schedule (cp_parser *parser, tree list,
   /* check_no_duplicate_clause (list, OMP_CLAUSE_DIST_SCHEDULE,
 				"dist_schedule", location); */
   if (omp_find_clause (list, OMP_CLAUSE_DIST_SCHEDULE))
-    warning_at (location, 0, "too many %qs clauses", "dist_schedule");
+    warning_at (location, OPT_Wopenmp, "too many %qs clauses", "dist_schedule");
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 
@@ -43148,6 +43173,9 @@ cp_parser_omp_critical (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
      destroy
      update (dependence-type)
 
+   OpenMP 5.2 additionally:
+     destroy ( depobj )
+
    dependence-type:
      in
      out
@@ -43194,7 +43222,27 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 	    clause = error_mark_node;
 	}
       else if (!strcmp ("destroy", p))
-	kind = OMP_CLAUSE_DEPEND_LAST;
+	{
+	  kind = OMP_CLAUSE_DEPEND_LAST;
+	  matching_parens c_parens;
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN)
+	      && c_parens.require_open (parser))
+	    {
+	      tree destobj = cp_parser_assignment_expression (parser);
+	      if (depobj != error_mark_node
+		  && destobj != error_mark_node
+		  && !operand_equal_p (destobj, depobj, OEP_MATCH_SIDE_EFFECTS
+							| OEP_LEXICOGRAPHIC))
+		warning_at (EXPR_LOC_OR_LOC (destobj, c_loc), OPT_Wopenmp,
+			    "the %<destroy%> expression %qE should be the same "
+			    "as the %<depobj%> argument %qE", destobj, depobj);
+	      if (!c_parens.require_close (parser))
+		cp_parser_skip_to_closing_parenthesis (parser,
+						       /*recovering=*/true,
+						       /*or_comma=*/false,
+						       /*consume_paren=*/true);
+	    }
+	}
       else if (!strcmp ("update", p))
 	{
 	  matching_parens c_parens;
@@ -44058,8 +44106,9 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
     substmt = cp_parser_omp_structured_block_sequence (parser, PRAGMA_OMP_SCAN);
   else
     {
-      warning_at (tok->location, 0, "%<#pragma omp scan%> with zero preceding "
-				    "executable statements");
+      warning_at (tok->location, OPT_Wopenmp,
+		  "%<#pragma omp scan%> with zero preceding executable "
+		  "statements");
       substmt = build_empty_stmt (tok->location);
     }
   substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
@@ -44105,8 +44154,9 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
   else
     {
       if (found_scan)
-	warning_at (tok->location, 0, "%<#pragma omp scan%> with zero "
-				      "succeeding executable statements");
+	warning_at (tok->location, OPT_Wopenmp,
+		    "%<#pragma omp scan%> with zero succeeding executable "
+		    "statements");
       substmt = build_empty_stmt (tok->location);
     }
   substmt = build2_loc (tok->location, OMP_SCAN, void_type_node, substmt,
@@ -47803,7 +47853,7 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 	}
       else if (startswith (p, "ext_"))
 	{
-	  warning_at (cloc, 0, "unknown assumption clause %qs", p);
+	  warning_at (cloc, OPT_Wopenmp, "unknown assumption clause %qs", p);
 	  cp_lexer_consume_token (parser->lexer);
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
 	    for (size_t n = cp_parser_skip_balanced_tokens (parser, 1) - 1;
@@ -50895,7 +50945,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
      Note that DECL_ARTIFICIAL is used elsewhere for template
      parameters.  */
   if (TREE_VALUE (new_parm) != error_mark_node)
-    DECL_VIRTUAL_P (TREE_VALUE (new_parm)) = true;
+    DECL_IMPLICIT_TEMPLATE_PARM_P (TREE_VALUE (new_parm)) = true;
 
   tree new_decl = get_local_decls ();
   if (non_type)

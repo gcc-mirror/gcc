@@ -52,6 +52,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "tree-dfa.h"
 #include "tree-ssa-dce.h"
+#include "alloc-pool.h"
+#include "cgraph.h"
+#include "symbol-summary.h"
+#include "ipa-utils.h"
+#include "ipa-prop.h"
+#include "attribs.h"
 
 // This class is utilized by VRP and ranger to remove __builtin_unreachable
 // calls, and reflect any resulting global ranges.
@@ -1079,6 +1085,51 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
       scev_reset ();
       array_bounds_checker array_checker (fun, ranger);
       array_checker.check ();
+    }
+
+
+  if (Value_Range::supports_type_p (TREE_TYPE
+				     (TREE_TYPE (current_function_decl)))
+      && flag_ipa_vrp
+      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
+    {
+      edge e;
+      edge_iterator ei;
+      bool found = false;
+      Value_Range return_range (TREE_TYPE (TREE_TYPE (current_function_decl)));
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+	if (greturn *ret = dyn_cast <greturn *> (*gsi_last_bb (e->src)))
+	  {
+	    tree retval = gimple_return_retval (ret);
+	    if (!retval)
+	      {
+		return_range.set_varying (TREE_TYPE (TREE_TYPE (current_function_decl)));
+		found = true;
+		continue;
+	      }
+	    Value_Range r (TREE_TYPE (retval));
+	    if (ranger->range_of_expr (r, retval, ret)
+		&& !r.undefined_p ()
+		&& !r.varying_p ())
+	      {
+		if (!found)
+		  return_range = r;
+		else
+		  return_range.union_ (r);
+	      }
+	    else
+	      return_range.set_varying (TREE_TYPE (retval));
+	    found = true;
+	  }
+      if (found && !return_range.varying_p ())
+	{
+	  ipa_record_return_value_range (return_range);
+	  if (POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl)))
+	      && return_range.nonzero_p ()
+	      && cgraph_node::get (current_function_decl)
+			->add_detected_attribute ("returns_nonnull"))
+	    warn_function_returns_nonnull (current_function_decl);
+	}
     }
 
   phi_analysis_finalize ();

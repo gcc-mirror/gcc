@@ -1440,7 +1440,7 @@
 
 (define_insn "mvilc"
   [(set (reg:SI REG_ILC)
-	(unspec [(match_operand:SI 0 "register_operand" "a,b")] UNSPEC_MVILC))]
+	(unspec:SI [(match_operand:SI 0 "register_operand" "a,b")] UNSPEC_MVILC))]
   "TARGET_INSNS_64PLUS"
   "%|%.\\tmvc\\t%$\\t%0, ILC"
   [(set_attr "predicable" "no")

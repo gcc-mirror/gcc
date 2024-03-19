@@ -837,7 +837,7 @@
  [(match_operand:LSX 0 "register_operand")
   (match_operand:LSX 1 "register_operand")
   (match_operand:LSX 2 "register_operand")
-  (match_operand:LSX 3 "register_operand")]
+  (match_operand:<VIMODE> 3 "register_operand")]
   "ISA_HAS_LSX"
 {
   loongarch_expand_vec_perm (operands[0], operands[1],

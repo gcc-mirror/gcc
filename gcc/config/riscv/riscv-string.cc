@@ -710,6 +710,10 @@ riscv_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
 bool
 riscv_expand_block_move (rtx dest, rtx src, rtx length)
 {
+  if (riscv_memcpy_strategy == USE_LIBCALL
+      || riscv_memcpy_strategy == USE_VECTOR)
+    return false;
+
   if (CONST_INT_P (length))
     {
       unsigned HOST_WIDE_INT hwi_length = UINTVAL (length);
@@ -773,7 +777,8 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	bnez a2, loop                   # Any more?
 	ret                             # Return
   */
-  if (!TARGET_VECTOR)
+  if (!TARGET_VECTOR || riscv_memcpy_strategy == USE_LIBCALL
+      || riscv_memcpy_strategy == USE_SCALAR)
     return false;
   HOST_WIDE_INT potential_ew
     = (MIN (MIN (MEM_ALIGN (src_in), MEM_ALIGN (dst_in)), BITS_PER_WORD)

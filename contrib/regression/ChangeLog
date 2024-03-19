@@ -1,3 +1,16 @@
+2023-11-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* btest-gcc.sh (--handle-xpass-as-fail): New option.
+
+2023-11-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* btest-gcc.sh (Option handling): Break out shifts from each
+	option alternative.
+
+2023-11-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* btest-gcc.sh (Option handling): Handle multiple options.
+
 2023-02-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* objs-gcc.sh: Only bootstrap if source-directory contains gcc.

@@ -622,7 +622,7 @@ namespace tr2
 	  // Watch for npos.
 	  this->_M_Nb = (__n > __str.size() ? __str.size() - __pos : __n);
 	  this->resize(this->_M_Nb);
-	  this->_M_copy_from_string(__str, __pos, __n);
+	  this->_M_copy_from_string(__str, __pos, __n, __zero, __one);
 	}
 
       /**

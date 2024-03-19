@@ -1485,7 +1485,14 @@ canonicalize_pad_type (tree type)
    IS_COMPONENT_TYPE is true if this is being done for the component type of
    an array.  DEFINITION is true if this type is being defined.  SET_RM_SIZE
    is true if the RM size of the resulting type is to be set to SIZE too; in
-   this case, the padded type is canonicalized before being returned.  */
+   this case, the padded type is canonicalized before being returned.
+
+   Note that, if TYPE is an array, then we pad it even if it has already got
+   an alignment of ALIGN, provided that it's larger than the alignment of the
+   element type.  This ensures that the size of the type is a multiple of its
+   alignment as required by the GCC type system, and alleviates the oddity of
+   the larger alignment, which is used to implement alignment clauses present
+   on unconstrained array types.  */
 
 tree
 maybe_pad_type (tree type, tree size, unsigned int align,
@@ -1493,7 +1500,10 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 		bool definition, bool set_rm_size)
 {
   tree orig_size = TYPE_SIZE (type);
-  unsigned int orig_align = TYPE_ALIGN (type);
+  unsigned int orig_align
+    = TREE_CODE (type) == ARRAY_TYPE
+      ? TYPE_ALIGN (TREE_TYPE (type))
+      : TYPE_ALIGN (type);
   tree record, field;
 
   /* If TYPE is a padded type, see if it agrees with any size and alignment
@@ -1515,7 +1525,10 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
       type = TREE_TYPE (TYPE_FIELDS (type));
       orig_size = TYPE_SIZE (type);
-      orig_align = TYPE_ALIGN (type);
+      orig_align
+	= TREE_CODE (type) == ARRAY_TYPE
+	  ? TYPE_ALIGN (TREE_TYPE (type))
+	  : TYPE_ALIGN (type);
     }
 
   /* If the size is either not being changed or is being made smaller (which

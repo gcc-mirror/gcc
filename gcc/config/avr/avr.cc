@@ -15309,6 +15309,12 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 #undef  TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON avr_canonicalize_comparison
 
+/* According to the opening comment in PR86772, the following applies:
+  "If the port does not (and never will in the future) need to mitigate
+   against unsafe speculation."  */
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 

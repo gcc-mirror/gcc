@@ -120,7 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    _GLIBCXX_ASAN_ANNOTATE_GREW(1);
 	  }
 	else
-	  _M_realloc_insert(end(), std::forward<_Args>(__args)...);
+	  _M_realloc_append(std::forward<_Args>(__args)...);
 #if __cplusplus > 201402L
 	return back();
 #endif
@@ -459,6 +459,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
     {
       const size_type __len = _M_check_len(1u, "vector::_M_realloc_insert");
+      if (__len <= 0)
+	__builtin_unreachable ();
       pointer __old_start = this->_M_impl._M_start;
       pointer __old_finish = this->_M_impl._M_finish;
       const size_type __elems_before = __position - begin();
@@ -555,6 +557,127 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    __new_finish = std::__uninitialized_move_if_noexcept_a(
 			      __position.base(), __old_finish,
 			      __new_finish, _M_get_Tp_allocator());
+
+	    // New storage has been fully initialized, destroy the old elements.
+	    __guard_elts._M_first = __old_start;
+	    __guard_elts._M_last = __old_finish;
+	  }
+	__guard._M_storage = __old_start;
+	__guard._M_len = this->_M_impl._M_end_of_storage - __old_start;
+      }
+      // deallocate should be called before assignments to _M_impl,
+      // to avoid call-clobbering
+
+      this->_M_impl._M_start = __new_start;
+      this->_M_impl._M_finish = __new_finish;
+      this->_M_impl._M_end_of_storage = __new_start + __len;
+    }
+
+#if __cplusplus >= 201103L
+  template<typename _Tp, typename _Alloc>
+    template<typename... _Args>
+      _GLIBCXX20_CONSTEXPR
+      void
+      vector<_Tp, _Alloc>::
+      _M_realloc_append(_Args&&... __args)
+#else
+  template<typename _Tp, typename _Alloc>
+    void
+    vector<_Tp, _Alloc>::
+    _M_realloc_append(const _Tp& __x)
+#endif
+    {
+      const size_type __len = _M_check_len(1u, "vector::_M_realloc_append");
+      if (__len <= 0)
+	__builtin_unreachable ();
+      pointer __old_start = this->_M_impl._M_start;
+      pointer __old_finish = this->_M_impl._M_finish;
+      const size_type __elems = end() - begin();
+      pointer __new_start(this->_M_allocate(__len));
+      pointer __new_finish(__new_start);
+
+      // RAII guard for allocated storage.
+      struct _Guard
+      {
+	pointer _M_storage;	    // Storage to deallocate
+	size_type _M_len;
+	_Tp_alloc_type& _M_alloc;
+
+	_GLIBCXX20_CONSTEXPR
+	_Guard(pointer __s, size_type __l, _Tp_alloc_type& __a)
+	: _M_storage(__s), _M_len(__l), _M_alloc(__a)
+	{ }
+
+	_GLIBCXX20_CONSTEXPR
+	~_Guard()
+	{
+	  if (_M_storage)
+	    __gnu_cxx::__alloc_traits<_Tp_alloc_type>::
+	      deallocate(_M_alloc, _M_storage, _M_len);
+	}
+
+      private:
+	_Guard(const _Guard&);
+      };
+
+      {
+	_Guard __guard(__new_start, __len, _M_impl);
+
+	// The order of the three operations is dictated by the C++11
+	// case, where the moves could alter a new element belonging
+	// to the existing vector.  This is an issue only for callers
+	// taking the element by lvalue ref (see last bullet of C++11
+	// [res.on.arguments]).
+
+	// If this throws, the existing elements are unchanged.
+#if __cplusplus >= 201103L
+	_Alloc_traits::construct(this->_M_impl,
+				 std::__to_address(__new_start + __elems),
+				 std::forward<_Args>(__args)...);
+#else
+	_Alloc_traits::construct(this->_M_impl,
+				 __new_start + __elems,
+				 __x);
+#endif
+
+#if __cplusplus >= 201103L
+	if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
+	  {
+	    // Relocation cannot throw.
+	    __new_finish = _S_relocate(__old_start, __old_finish,
+				       __new_start, _M_get_Tp_allocator());
+	    ++__new_finish;
+	  }
+	else
+#endif
+	  {
+	    // RAII type to destroy initialized elements.
+	    struct _Guard_elts
+	    {
+	      pointer _M_first, _M_last;  // Elements to destroy
+	      _Tp_alloc_type& _M_alloc;
+
+	      _GLIBCXX20_CONSTEXPR
+	      _Guard_elts(pointer __elt, _Tp_alloc_type& __a)
+	      : _M_first(__elt), _M_last(__elt + 1), _M_alloc(__a)
+	      { }
+
+	      _GLIBCXX20_CONSTEXPR
+	      ~_Guard_elts()
+	      { std::_Destroy(_M_first, _M_last, _M_alloc); }
+
+	    private:
+	      _Guard_elts(const _Guard_elts&);
+	    };
+
+	    // Guard the new element so it will be destroyed if anything throws.
+	    _Guard_elts __guard_elts(__new_start + __elems, _M_impl);
+
+	    __new_finish = std::__uninitialized_move_if_noexcept_a(
+			     __old_start, __old_finish,
+			     __new_start, _M_get_Tp_allocator());
+
+	    ++__new_finish;
 
 	    // New storage has been fully initialized, destroy the old elements.
 	    __guard_elts._M_first = __old_start;

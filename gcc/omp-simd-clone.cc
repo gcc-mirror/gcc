@@ -387,13 +387,13 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
 		  step = fold_convert (ssizetype, step);
 		if (!tree_fits_shwi_p (step))
 		  {
-		    warning_at (OMP_CLAUSE_LOCATION (t), 0,
+		    warning_at (OMP_CLAUSE_LOCATION (t), OPT_Wopenmp,
 				"ignoring large linear step");
 		    return NULL;
 		  }
 		else if (integer_zerop (step))
 		  {
-		    warning_at (OMP_CLAUSE_LOCATION (t), 0,
+		    warning_at (OMP_CLAUSE_LOCATION (t), OPT_Wopenmp,
 				"ignoring zero linear step");
 		    return NULL;
 		  }
@@ -455,7 +455,7 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
  out:
   if (TYPE_ATOMIC (TREE_TYPE (TREE_TYPE (node->decl))))
     {
-      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+      warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wopenmp,
 		  "ignoring %<#pragma omp declare simd%> on function "
 		  "with %<_Atomic%> qualified return type");
       return NULL;
@@ -465,7 +465,7 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
     if (TYPE_ATOMIC (args[argno])
 	&& clone_info->args[argno].arg_type != SIMD_CLONE_ARG_TYPE_UNIFORM)
       {
-	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+	warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wopenmp,
 		    "ignoring %<#pragma omp declare simd%> on function "
 		    "with %<_Atomic%> qualified non-%<uniform%> argument");
 	args.release ();

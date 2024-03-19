@@ -2640,7 +2640,7 @@
 (define_insn "*branch<mode>"
   [(set (pc)
 	(if_then_else
-	 (match_operator 1 "order_operator"
+	 (match_operator 1 "ordered_comparison_operator"
 			 [(match_operand:X 2 "register_operand" "r")
 			  (match_operand:X 3 "reg_or_0_operand" "rJ")])
 	 (label_ref (match_operand 0 "" ""))
@@ -2655,14 +2655,15 @@
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
-;; Patterns for implementations that optimize short forward branches.
+;; Conditional move and add patterns.
 
 (define_expand "mov<mode>cc"
   [(set (match_operand:GPR 0 "register_operand")
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
-			  (match_operand:GPR 2 "sfb_alu_operand")
-			  (match_operand:GPR 3 "sfb_alu_operand")))]
-  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND_LIKE"
+			  (match_operand:GPR 2 "movcc_operand")
+			  (match_operand:GPR 3 "movcc_operand")))]
+  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND_LIKE
+   || TARGET_MOVCC"
 {
   if (riscv_expand_conditional_move (operands[0], operands[1],
 				     operands[2], operands[3]))
@@ -2671,10 +2672,51 @@
     FAIL;
 })
 
+(define_expand "add<mode>cc"
+  [(match_operand:GPR 0 "register_operand")
+   (match_operand     1 "comparison_operator")
+   (match_operand:GPR 2 "arith_operand")
+   (match_operand:GPR 3 "arith_operand")]
+  "TARGET_MOVCC"
+{
+  rtx cmp = operands[1];
+  rtx cmp0 = XEXP (cmp, 0);
+  rtx cmp1 = XEXP (cmp, 1);
+  machine_mode mode0 = GET_MODE (cmp0);
+
+  /* We only handle word mode integer compares for now.  */
+  if (INTEGRAL_MODE_P (mode0) && mode0 != word_mode)
+    FAIL;
+
+  enum rtx_code code = GET_CODE (cmp);
+  rtx reg0 = gen_reg_rtx (<MODE>mode);
+  rtx reg1 = gen_reg_rtx (<MODE>mode);
+  rtx reg2 = gen_reg_rtx (<MODE>mode);
+  bool invert = false;
+
+  if (INTEGRAL_MODE_P (mode0))
+    riscv_expand_int_scc (reg0, code, cmp0, cmp1, &invert);
+  else if (FLOAT_MODE_P (mode0) && fp_scc_comparison (cmp, GET_MODE (cmp)))
+    riscv_expand_float_scc (reg0, code, cmp0, cmp1, &invert);
+  else
+    FAIL;
+
+  if (invert)
+    riscv_emit_binary (PLUS, reg1, reg0, constm1_rtx);
+  else
+    riscv_emit_unary (NEG, reg1, reg0);
+  riscv_emit_binary (AND, reg2, reg1, operands[3]);
+  riscv_emit_binary (PLUS, operands[0], reg2, operands[2]);
+
+  DONE;
+})
+
+;; Patterns for implementations that optimize short forward branches.
+
 (define_insn "*mov<GPR:mode><X:mode>cc"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
 	(if_then_else:GPR
-	 (match_operator 5 "order_operator"
+	 (match_operator 5 "ordered_comparison_operator"
 		[(match_operand:X 1 "register_operand" "r,r")
 		 (match_operand:X 2 "reg_or_0_operand" "rJ,rJ")])
 	 (match_operand:GPR 3 "register_operand" "0,0")
@@ -2708,19 +2750,88 @@
   DONE;
 })
 
-(define_expand "@cbranch<mode>4"
-  [(set (pc)
-	(if_then_else (match_operator 0 "fp_branch_comparison"
-		       [(match_operand:ANYF 1 "register_operand")
-			(match_operand:ANYF 2 "register_operand")])
-		      (label_ref (match_operand 3 ""))
-		      (pc)))]
+(define_expand "@cbranch<ANYF:mode>4"
+  [(parallel [(set (pc)
+		   (if_then_else (match_operator 0 "fp_branch_comparison"
+				  [(match_operand:ANYF 1 "register_operand")
+				   (match_operand:ANYF 2 "register_operand")])
+				 (label_ref (match_operand 3 ""))
+				 (pc)))
+	      (clobber (match_operand 4 ""))])]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
 {
-  riscv_expand_conditional_branch (operands[3], GET_CODE (operands[0]),
-				   operands[1], operands[2]);
-  DONE;
+  if (!signed_order_operator (operands[0], GET_MODE (operands[0])))
+    {
+      riscv_expand_conditional_branch (operands[3], GET_CODE (operands[0]),
+				       operands[1], operands[2]);
+      DONE;
+    }
+  operands[4] = gen_reg_rtx (TARGET_64BIT ? DImode : SImode);
 })
+
+(define_insn_and_split "*cbranch<ANYF:mode>4"
+  [(set (pc)
+	(if_then_else (match_operator 1 "fp_native_comparison"
+		       [(match_operand:ANYF 2 "register_operand" "f")
+			(match_operand:ANYF 3 "register_operand" "f")])
+		      (label_ref (match_operand 0 ""))
+		      (pc)))
+   (clobber (match_operand:X 4 "register_operand" "=r"))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+	(match_op_dup:X 1 [(match_dup 2) (match_dup 3)]))
+   (set (pc)
+	(if_then_else (ne:X (match_dup 4) (const_int 0))
+		      (label_ref (match_operand 0))
+		      (pc)))]
+  ""
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (le (minus (match_dup 0) (pc))
+			       (const_int 4084))
+			   (le (minus (pc) (match_dup 0))
+			       (const_int 4096)))
+		      (const_int 8)
+		      (if_then_else (and (le (minus (match_dup 0) (pc))
+					     (const_int 1048564))
+					 (le (minus (pc) (match_dup 0))
+					     (const_int 1048576)))
+				    (const_int 12)
+				    (const_int 16))))])
+
+(define_insn_and_split "*cbranch<ANYF:mode>4"
+  [(set (pc)
+	(if_then_else (match_operator 1 "ne_operator"
+		       [(match_operand:ANYF 2 "register_operand" "f")
+			(match_operand:ANYF 3 "register_operand" "f")])
+		      (label_ref (match_operand 0 ""))
+		      (pc)))
+   (clobber (match_operand:X 4 "register_operand" "=r"))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+	(eq:X (match_dup 2) (match_dup 3)))
+   (set (pc)
+	(if_then_else (eq:X (match_dup 4) (const_int 0))
+		      (label_ref (match_operand 0))
+		      (pc)))]
+  ""
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (le (minus (match_dup 0) (pc))
+			       (const_int 4084))
+			   (le (minus (pc) (match_dup 0))
+			       (const_int 4096)))
+		      (const_int 8)
+		      (if_then_else (and (le (minus (match_dup 0) (pc))
+					     (const_int 1048564))
+					 (le (minus (pc) (match_dup 0))
+					     (const_int 1048576)))
+				    (const_int 12)
+				    (const_int 16))))])
 
 (define_insn_and_split "*branch_on_bit<X:mode>"
   [(set (pc)
@@ -2791,7 +2902,7 @@
 
 (define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "register_operand")
-	(match_operator:SI 1 "order_operator"
+	(match_operator:SI 1 "ordered_comparison_operator"
 	    [(match_operand:GPR 2 "register_operand")
 	     (match_operand:GPR 3 "nonmemory_operand")]))]
   ""
@@ -3301,7 +3412,7 @@
 
 (define_insn "riscv_frcsr"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec_volatile [(const_int 0)] UNSPECV_FRCSR))]
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_FRCSR))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "frcsr\t%0"
   [(set_attr "type" "fmove")])
@@ -3314,7 +3425,7 @@
 
 (define_insn "riscv_frflags"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec_volatile [(const_int 0)] UNSPECV_FRFLAGS))]
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_FRFLAGS))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "frflags\t%0"
   [(set_attr "type" "fmove")])

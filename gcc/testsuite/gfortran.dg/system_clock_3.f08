@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=f2008" }
 ! PR64432
 program countem
   implicit none

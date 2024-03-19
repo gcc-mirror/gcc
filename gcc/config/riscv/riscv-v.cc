@@ -294,8 +294,6 @@ public:
 	       "vsetvl zero, rs1/imm".  */
 	    poly_uint64 nunits = GET_MODE_NUNITS (vtype_mode);
 	    len = gen_int_mode (nunits, Pmode);
-	    if (!satisfies_constraint_K (len))
-	      len = force_reg (Pmode, len);
 	    vls_p = true;
 	  }
 	else if (can_create_pseudo_p ())
@@ -374,10 +372,24 @@ void
 emit_vlmax_insn_lra (unsigned icode, unsigned insn_flags, rtx *ops, rtx vl)
 {
   gcc_assert (!can_create_pseudo_p ());
+  machine_mode mode = GET_MODE (ops[0]);
 
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true);
-  e.set_vl (vl);
-  e.emit_insn ((enum insn_code) icode, ops);
+  if (imm_avl_p (mode))
+    {
+      /* Even though VL is a real hardreg already allocated since
+	 it is post-RA now, we still gain benefits that we emit
+	 vsetivli zero, imm instead of vsetvli VL, zero which is
+	 we can be more flexible in post-RA instruction scheduling.  */
+      insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, false);
+      e.set_vl (gen_int_mode (GET_MODE_NUNITS (mode), Pmode));
+      e.emit_insn ((enum insn_code) icode, ops);
+    }
+  else
+    {
+      insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true);
+      e.set_vl (vl);
+      e.emit_insn ((enum insn_code) icode, ops);
+    }
 }
 
 /* Emit an RVV insn with a predefined vector length.  Contrary to
@@ -825,31 +837,13 @@ emit_vlmax_gather_insn (rtx target, rtx op, rtx sel)
   insn_code icode;
   machine_mode data_mode = GET_MODE (target);
   machine_mode sel_mode = GET_MODE (sel);
-  if (maybe_ne (GET_MODE_SIZE (data_mode), GET_MODE_SIZE (sel_mode)))
-    icode = code_for_pred_gatherei16 (data_mode);
-  else if (const_vec_duplicate_p (sel, &elt))
+  if (const_vec_duplicate_p (sel, &elt))
     {
       icode = code_for_pred_gather_scalar (data_mode);
       sel = elt;
     }
-  else if (CONST_VECTOR_P (sel)
-           && GET_MODE_BITSIZE (GET_MODE_INNER (sel_mode)) > 16
-           && riscv_get_v_regno_alignment (data_mode) > 1)
-    {
-      /* If the inner mode of data is not QI or HI and data_lmul > 1,
-         emitting vrgatherei16.vv instruction will lower register
-         pressure.
-         data_mode  sel_mode  ei16
-         RVVM1QI    RVVM1QI   RVVM2HI  not needed
-         RVVM2QI    RVVM2QI   RVVM4HI  not needed
-         RVVM2HI    RVVM2HI   RVVM2HI  not needed
-         RVVM2SI    RVVM2SI   RVVM1HI  need
-         RVVM4SI    RVVM4SI   RVVM2HI  need
-         RVVM8DI    RVVM8DI   RVVM2HI  need */
-      PUT_MODE (sel, get_vector_mode (HImode,
-                GET_MODE_NUNITS (data_mode)).require ());
-      icode = code_for_pred_gatherei16 (data_mode);
-    }
+  else if (maybe_ne (GET_MODE_SIZE (data_mode), GET_MODE_SIZE (sel_mode)))
+    icode = code_for_pred_gatherei16 (data_mode);
   else
     icode = code_for_pred_gather (data_mode);
   rtx ops[] = {target, op, sel};
@@ -863,13 +857,13 @@ emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
   insn_code icode;
   machine_mode data_mode = GET_MODE (target);
   machine_mode sel_mode = GET_MODE (sel);
-  if (maybe_ne (GET_MODE_SIZE (data_mode), GET_MODE_SIZE (sel_mode)))
-    icode = code_for_pred_gatherei16 (data_mode);
-  else if (const_vec_duplicate_p (sel, &elt))
+  if (const_vec_duplicate_p (sel, &elt))
     {
       icode = code_for_pred_gather_scalar (data_mode);
       sel = elt;
     }
+  else if (maybe_ne (GET_MODE_SIZE (data_mode), GET_MODE_SIZE (sel_mode)))
+    icode = code_for_pred_gatherei16 (data_mode);
   else
     icode = code_for_pred_gather (data_mode);
   rtx ops[] = {target, mask, target, op, sel};
@@ -2094,32 +2088,23 @@ expand_tuple_move (rtx *ops)
 machine_mode
 preferred_simd_mode (scalar_mode mode)
 {
-  /* We will disable auto-vectorization when TARGET_MIN_VLEN < 128 &&
-     riscv_autovec_lmul < RVV_M2. Since GCC loop vectorizer report ICE when we
-     enable -march=rv64gc_zve32* and -march=rv32gc_zve64*. in the
-     'can_duplicate_and_interleave_p' of tree-vect-slp.cc. Since both
-     RVVM1SImode in -march=*zve32*_zvl32b and RVVM1DImode in
-     -march=*zve64*_zvl64b are NUNITS = poly (1, 1), they will cause ICE in loop
-     vectorizer when we enable them in this target hook. Currently, we can
-     support auto-vectorization in -march=rv32_zve32x_zvl128b. Wheras,
-     -march=rv32_zve32x_zvl32b or -march=rv32_zve32x_zvl64b are disabled.  */
   if (autovec_use_vlmax_p ())
     {
-      if (TARGET_MIN_VLEN < 128 && TARGET_MAX_LMUL < RVV_M2)
-	return word_mode;
       /* We use LMUL = 1 as base bytesize which is BYTES_PER_RISCV_VECTOR and
 	 riscv_autovec_lmul as multiply factor to calculate the the NUNITS to
 	 get the auto-vectorization mode.  */
       poly_uint64 nunits;
       poly_uint64 vector_size = BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL;
       poly_uint64 scalar_size = GET_MODE_SIZE (mode);
-      gcc_assert (multiple_p (vector_size, scalar_size, &nunits));
+      /* Disable vectorization when we can't find a RVV mode for it.
+	 E.g. -march=rv64gc_zve32x doesn't have a vector mode to vectorize
+	 a double (DFmode) type.  */
+      if (!multiple_p (vector_size, scalar_size, &nunits))
+	return word_mode;
       machine_mode rvv_mode;
       if (get_vector_mode (mode, nunits).exists (&rvv_mode))
 	return rvv_mode;
     }
-  /* TODO: We will support minimum length VLS auto-vectorization in
-     the future.  */
   return word_mode;
 }
 
@@ -2689,15 +2674,21 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
   return false;
 }
 
-/* Modulo all SEL indices to ensure they are all in range if [0, MAX_SEL].  */
+/* Modulo all SEL indices to ensure they are all in range if [0, MAX_SEL].
+   MAX_SEL is nunits - 1 if rtx_equal_p (op0, op1). Otherwise, it is
+   2 * nunits - 1.  */
 static rtx
-modulo_sel_indices (rtx sel, poly_uint64 max_sel)
+modulo_sel_indices (rtx op0, rtx op1, rtx sel)
 {
   rtx sel_mod;
   machine_mode sel_mode = GET_MODE (sel);
   poly_uint64 nunits = GET_MODE_NUNITS (sel_mode);
-  /* If SEL is variable-length CONST_VECTOR, we don't need to modulo it.  */
-  if (!nunits.is_constant () && CONST_VECTOR_P (sel))
+  poly_uint64 max_sel = rtx_equal_p (op0, op1) ? nunits - 1 : 2 * nunits - 1;
+  /* If SEL is variable-length CONST_VECTOR, we don't need to modulo it.
+     Or if SEL is constant-length within [0, MAX_SEL], no need to modulo the
+     indice.  */
+  if (CONST_VECTOR_P (sel)
+      && (!nunits.is_constant () || const_vec_all_in_range_p (sel, 0, max_sel)))
     sel_mod = sel;
   else
     {
@@ -2747,9 +2738,7 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
      out-of-range indices, so we need to modulo all the vec_perm indices
      to ensure they are all in range of [0, nunits - 1] when op0 == op1
      or all in range of [0, 2 * nunits - 1] when op0 != op1.  */
-  rtx sel_mod
-    = modulo_sel_indices (sel,
-			  rtx_equal_p (op0, op1) ? nunits - 1 : 2 * nunits - 1);
+  rtx sel_mod = modulo_sel_indices (op0, op1, sel);
 
   /* Check if the two values vectors are the same.  */
   if (rtx_equal_p (op0, op1))
@@ -2758,15 +2747,13 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
       return;
     }
 
-  rtx max_sel = gen_const_vector_dup (sel_mode, 2 * nunits - 1);
-
   /* This following sequence is handling the case that:
      __builtin_shufflevector (vec1, vec2, index...), the index can be any
      value in range of [0, 2 * nunits - 1].  */
   machine_mode mask_mode;
   mask_mode = get_mask_mode (data_mode);
   rtx mask = gen_reg_rtx (mask_mode);
-  max_sel = gen_const_vector_dup (sel_mode, nunits);
+  rtx max_sel = gen_const_vector_dup (sel_mode, nunits);
 
   /* Step 1: generate a mask that should select everything >= nunits into the
    * mask.  */
@@ -2991,14 +2978,15 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
   if (compress_point < 0)
     return false;
 
-  /* It must be series increasing from compress point.  */
-  if (!d->perm.series_p (compress_point, 1, d->perm[compress_point], 1))
-    return false;
-
   /* We can only apply compress approach when all index values from 0 to
      compress point are increasing.  */
   for (int i = 1; i < compress_point; i++)
-    if (known_le (d->perm[i], d->perm[i - 1]))
+    if (maybe_le (d->perm[i], d->perm[i - 1]))
+      return false;
+
+  /* It must be series increasing from compress point.  */
+  for (int i = 1 + compress_point; i < vlen; i++)
+    if (maybe_ne (d->perm[i], d->perm[i - 1] + 1))
       return false;
 
   /* Success!  */
@@ -3066,10 +3054,10 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
   if (need_slideup_p)
     {
       int slideup_cnt = vlen - (d->perm[vlen - 1].to_constant () % vlen) - 1;
-      rtx ops[] = {d->target, d->op1, gen_int_mode (slideup_cnt, Pmode)};
+      merge = gen_reg_rtx (vmode);
+      rtx ops[] = {merge, d->op1, gen_int_mode (slideup_cnt, Pmode)};
       insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
       emit_vlmax_insn (icode, BINARY_OP, ops);
-      merge = d->target;
     }
 
   insn_code icode = code_for_pred_compress (vmode);
@@ -3204,6 +3192,11 @@ shuffle_bswap_pattern (struct expand_vec_perm_d *d)
     if (!d->perm.series_p (i, step, diff - i, step))
       return false;
 
+  /* Disable when nunits < 4 since the later generic approach
+     is more profitable on BSWAP.  */
+  if (!known_gt (GET_MODE_NUNITS (d->vmode), 2))
+    return false;
+
   if (d->testing_p)
     return true;
 
@@ -3235,6 +3228,42 @@ shuffle_bswap_pattern (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize the pattern that can be shuffled by vec_extract and slide1up
+   approach.  */
+
+static bool
+shuffle_extract_and_slide1up_patterns (struct expand_vec_perm_d *d)
+{
+  poly_int64 nunits = GET_MODE_NUNITS (d->vmode);
+
+  /* Recognize { nunits - 1, nunits, nunits + 1, ... }.  */
+  if (!d->perm.series_p (0, 2, nunits - 1, 2)
+      || !d->perm.series_p (1, 2, nunits, 2))
+    return false;
+
+  /* Disable when nunits < 4 since the later generic approach
+     is more profitable on indice = { nunits - 1, nunits }.  */
+  if (!known_gt (nunits, 2))
+    return false;
+
+  /* Success! */
+  if (d->testing_p)
+    return true;
+
+  /* Extract the last element of the first vector.  */
+  scalar_mode smode = GET_MODE_INNER (d->vmode);
+  rtx tmp = gen_reg_rtx (smode);
+  emit_vec_extract (tmp, d->op0, nunits - 1);
+
+  /* Insert the scalar into element 0.  */
+  unsigned int unspec
+    = FLOAT_MODE_P (d->vmode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
+  insn_code icode = code_for_pred_slide (unspec, d->vmode);
+  rtx ops[] = {d->target, d->op1, tmp};
+  emit_vlmax_insn (icode, BINARY_OP, ops);
+  return true;
+}
+
 /* Recognize the pattern that can be shuffled by generic approach.  */
 
 static bool
@@ -3247,20 +3276,35 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
   if (!pow2p_hwi (d->perm.encoding().npatterns ()))
     return false;
 
-  /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
-     Otherwise, it could overflow the index range.  */
-  if (!nunits.is_constant () && GET_MODE_INNER (d->vmode) == QImode
-      && !get_vector_mode (HImode, nunits).exists (&sel_mode))
-    return false;
+  if (GET_MODE_INNER (d->vmode) == QImode)
+    {
+      if (nunits.is_constant ())
+	{
+	  /* If indice is LMUL8 CONST_VECTOR and any element value
+	     exceed the range of 0 ~ 255, Forbid such permutation
+	     since we need vector HI mode to hold such indice and
+	     we don't have it.  */
+	  if (!d->perm.all_in_range_p (0, 255)
+	      && !get_vector_mode (HImode, nunits).exists (&sel_mode))
+	    return false;
+	}
+      else
+	{
+	  /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
+	     Otherwise, it could overflow the index range.  */
+	  if (!get_vector_mode (HImode, nunits).exists (&sel_mode))
+	    return false;
+	}
+    }
+  else if (riscv_get_v_regno_alignment (sel_mode) > 1
+	   && GET_MODE_INNER (sel_mode) != HImode)
+    sel_mode = get_vector_mode (HImode, nunits).require ();
 
   /* Success! */
   if (d->testing_p)
     return true;
 
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
-  /* 'mov<mode>' generte interleave vector.  */
-  if (!nunits.is_constant ())
-    sel = force_reg (sel_mode, sel);
   /* Some FIXED-VLMAX/VLS vector permutation situations call targethook
      instead of expand vec_perm<mode>, we handle it directly.  */
   expand_vec_perm (d->target, d->op0, d->op1, sel);
@@ -3297,6 +3341,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  if (shuffle_decompress_patterns (d))
 	    return true;
 	  if (shuffle_bswap_pattern (d))
+	    return true;
+	  if (shuffle_extract_and_slide1up_patterns (d))
 	    return true;
 	  if (shuffle_generic_patterns (d))
 	    return true;
@@ -3630,7 +3676,7 @@ expand_gather_scatter (rtx *ops, bool is_load)
 	 offset elements.
 
 	 RVV spec only refers to the scale_log == 0 case.  */
-      if (!zero_extend_p || (zero_extend_p && scale_log2 != 0))
+      if (!zero_extend_p || scale_log2 != 0)
 	{
 	  if (zero_extend_p)
 	    inner_idx_mode
@@ -4003,14 +4049,6 @@ vls_mode_valid_p (machine_mode vls_mode)
     }
 
   return false;
-}
-
-/* Return true if the gather/scatter offset mode is valid.  */
-bool
-gather_scatter_valid_offset_mode_p (machine_mode mode)
-{
-  machine_mode new_mode;
-  return get_vector_mode (Pmode, GET_MODE_NUNITS (mode)).exists (&new_mode);
 }
 
 /* We don't have to convert the floating point to integer when the
@@ -4615,6 +4653,28 @@ can_be_broadcasted_p (rtx op)
     return true;
 
   return can_create_pseudo_p () && nonmemory_operand (op, mode);
+}
+
+/* Helper function to emit vec_extract_optab.  */
+void
+emit_vec_extract (rtx target, rtx src, poly_int64 index)
+{
+  machine_mode vmode = GET_MODE (src);
+  machine_mode smode = GET_MODE (target);
+  class expand_operand ops[3];
+  enum insn_code icode
+    = convert_optab_handler (vec_extract_optab, vmode, smode);
+  gcc_assert (icode != CODE_FOR_nothing);
+  create_output_operand (&ops[0], target, smode);
+  ops[0].target = 1;
+  create_input_operand (&ops[1], src, vmode);
+  if (index.is_constant ())
+    create_integer_operand (&ops[2], index);
+  else
+    create_input_operand (&ops[2], gen_int_mode (index, Pmode), Pmode);
+  expand_insn (icode, 3, ops);
+  if (ops[0].value != target)
+    emit_move_insn (target, ops[0].value);
 }
 
 } // namespace riscv_vector

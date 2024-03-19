@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_C_OBJC_COMMON
 #define GCC_C_OBJC_COMMON
 
+/* Implemented in c-objc-common.cc.  */
+extern void c_register_features ();
+
 /* Lang hooks that are shared between C and ObjC are defined here.  Hooks
    specific to C or ObjC go in c-lang.cc and objc/objc-lang.cc, respectively.  */
 

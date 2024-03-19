@@ -204,6 +204,10 @@ public:
   // in the main instruction pattern.
   bool only_occurs_in_notes () const { return m_only_occurs_in_notes; }
 
+  // Return true if this is a temporary access, e.g. one created for
+  // an insn that is about to be inserted.
+  bool is_temporary () const { return m_is_temp; }
+
 protected:
   access_info (resource_info, access_kind);
 

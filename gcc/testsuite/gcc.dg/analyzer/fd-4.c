@@ -1,4 +1,4 @@
-#ifdef _AIX
+#if defined(_AIX) || defined(__hpux)
 #define _MODE_T
 #endif
 #include <stdio.h>

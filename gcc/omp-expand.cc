@@ -3416,8 +3416,9 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 	      forward = tree_int_cst_sgn (step) != -1;
 	    }
 	  if (forward ^ OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
-	    warning_at (loc, 0, "%qs clause with %<sink%> modifier "
-				"waiting for lexically later iteration",
+	    warning_at (loc, OPT_Wopenmp,
+			"%qs clause with %<sink%> modifier "
+			"waiting for lexically later iteration",
 			OMP_CLAUSE_DOACROSS_DEPEND (c)
 			? "depend" : "doacross");
 	  break;
@@ -3555,9 +3556,9 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 			       build_int_cst (itype, 0));
 	  if (integer_zerop (t) && !warned_step)
 	    {
-	      warning_at (loc, 0, "%qs clause with %<sink%> modifier "
-				  "refers to iteration never in the iteration "
-				  "space",
+	      warning_at (loc, OPT_Wopenmp,
+			  "%qs clause with %<sink%> modifier refers to "
+			  "iteration never in the iteration space",
 			  OMP_CLAUSE_DOACROSS_DEPEND (c)
 			  ? "depend" : "doacross");
 	      warned_step = true;

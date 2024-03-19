@@ -142,12 +142,16 @@ struct loongarch_address_info
 
    METHOD_LU52I:
      Load 52-63 bit of the immediate number.
+
+   METHOD_MIRROR:
+     Copy 0-31 bit of the immediate number to 32-63bit.
 */
 enum loongarch_load_imm_method
 {
   METHOD_NORMAL,
   METHOD_LU32I,
-  METHOD_LU52I
+  METHOD_LU52I,
+  METHOD_MIRROR
 };
 
 struct loongarch_integer_op
@@ -1556,11 +1560,23 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
 
       int sign31 = (value & (HOST_WIDE_INT_1U << 31)) >> 31;
       int sign51 = (value & (HOST_WIDE_INT_1U << 51)) >> 51;
+
+      uint32_t hival = (uint32_t) (value >> 32);
+      uint32_t loval = (uint32_t) value;
+
       /* Determine whether the upper 32 bits are sign-extended from the lower
 	 32 bits. If it is, the instructions to load the high order can be
 	 ommitted.  */
       if (lu32i[sign31] && lu52i[sign31])
 	return cost;
+      /* If the lower 32 bits are the same as the upper 32 bits, just copy
+	 the lower 32 bits to the upper 32 bits.  */
+      else if (loval == hival)
+	{
+	  codes[cost].method = METHOD_MIRROR;
+	  codes[cost].curr_value = value;
+	  return cost + 1;
+	}
       /* Determine whether bits 32-51 are sign-extended from the lower 32
 	 bits. If so, directly load 52-63 bits.  */
       else if (lu32i[sign31])
@@ -3234,6 +3250,10 @@ loongarch_move_integer (rtx temp, rtx dest, unsigned HOST_WIDE_INT value)
 			   gen_rtx_AND (DImode, x, GEN_INT (0xfffffffffffff)),
 			   GEN_INT (codes[i].value));
 	  break;
+	case METHOD_MIRROR:
+	  gcc_assert (mode == DImode);
+	  emit_insn (gen_insvdi (x, GEN_INT (32), GEN_INT (32), x));
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -4249,7 +4269,7 @@ loongarch_split_plus_constant (rtx *op, machine_mode mode)
   else if (loongarch_addu16i_imm12_operand_p (v, mode))
     a = (v & ~HWIT_UC_0xFFF) + ((v & 0x800) << 1);
   else if (mode == DImode && DUAL_ADDU16I_OPERAND (v))
-    a = (v > 0 ? 0x7fff : -0x8000) << 16;
+    a = (v > 0 ? 0x7fff0000 : ~0x7fffffff);
   else
     gcc_unreachable ();
 
@@ -8607,8 +8627,9 @@ void
 loongarch_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 {
   machine_mode vmode = GET_MODE (target);
+  machine_mode vimode = GET_MODE (sel);
   auto nelt = GET_MODE_NUNITS (vmode);
-  auto round_reg = gen_reg_rtx (vmode);
+  auto round_reg = gen_reg_rtx (vimode);
   rtx round_data[MAX_VECT_LEN];
 
   for (int i = 0; i < nelt; i += 1)
@@ -8616,8 +8637,15 @@ loongarch_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
       round_data[i] = GEN_INT (0x1f);
     }
 
-  rtx round_data_rtx = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, round_data));
+  rtx round_data_rtx = gen_rtx_CONST_VECTOR (vimode, gen_rtvec_v (nelt, round_data));
   emit_move_insn (round_reg, round_data_rtx);
+
+  if (vmode != vimode)
+    {
+      target = lowpart_subreg (vimode, target, vmode);
+      op0 = lowpart_subreg (vimode, op0, vmode);
+      op1 = lowpart_subreg (vimode, op1, vmode);
+    }
 
   switch (vmode)
     {
@@ -8626,17 +8654,11 @@ loongarch_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
       emit_insn (gen_lsx_vshuf_b (target, op1, op0, sel));
       break;
     case E_V2DFmode:
-      emit_insn (gen_andv2di3 (sel, sel, round_reg));
-      emit_insn (gen_lsx_vshuf_d_f (target, sel, op1, op0));
-      break;
     case E_V2DImode:
       emit_insn (gen_andv2di3 (sel, sel, round_reg));
       emit_insn (gen_lsx_vshuf_d (target, sel, op1, op0));
       break;
     case E_V4SFmode:
-      emit_insn (gen_andv4si3 (sel, sel, round_reg));
-      emit_insn (gen_lsx_vshuf_w_f (target, sel, op1, op0));
-      break;
     case E_V4SImode:
       emit_insn (gen_andv4si3 (sel, sel, round_reg));
       emit_insn (gen_lsx_vshuf_w (target, sel, op1, op0));

@@ -566,10 +566,10 @@
 	(match_operand:V_4REG 1 "general_operand"))]
   ""
   {@ [cons: =0, 1; attrs: type, length, gcn_version]
-  [v,vDB;vmult,16,*    ]           v_mov_b32\t%L0, %L1\;          v_mov_b32\t%H0, %H1\;          v_mov_b32\t%J0, %J1\;          v_mov_b32\t%K0, %K1
-  [v,a  ;vmult,32,*    ]  v_accvgpr_read_b32\t%L0, %L1\; v_accvgpr_read_b32\t%H0, %H1\; v_accvgpr_read_b32\t%J0, %J1\; v_accvgpr_read_b32\t%K0, %K1
-  [a,v  ;vmult,32,*    ] v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1\;v_accvgpr_write_b32\t%J0, %J1\;v_accvgpr_write_b32\t%K0, %K1
-  [a,a  ;vmult,32,cdna2]   v_accvgpr_mov_b32\t%L0, %L1\;  v_accvgpr_mov_b32\t%H0, %H1\;  v_accvgpr_mov_b32\t%J0, %J1\;  v_accvgpr_mov_b32\t%K0, %K1
+  [v ,vDB;vmult,16,*    ]           v_mov_b32\t%L0, %L1\;          v_mov_b32\t%H0, %H1\;          v_mov_b32\t%J0, %J1\;          v_mov_b32\t%K0, %K1
+  [v ,a  ;vmult,32,*    ]  v_accvgpr_read_b32\t%L0, %L1\; v_accvgpr_read_b32\t%H0, %H1\; v_accvgpr_read_b32\t%J0, %J1\; v_accvgpr_read_b32\t%K0, %K1
+  [$a,v  ;vmult,32,*    ] v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1\;v_accvgpr_write_b32\t%J0, %J1\;v_accvgpr_write_b32\t%K0, %K1
+  [a ,a  ;vmult,32,cdna2]   v_accvgpr_mov_b32\t%L0, %L1\;  v_accvgpr_mov_b32\t%H0, %H1\;  v_accvgpr_mov_b32\t%J0, %J1\;  v_accvgpr_mov_b32\t%K0, %K1
   })
 
 (define_insn "mov<mode>_exec"

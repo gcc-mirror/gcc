@@ -12573,6 +12573,24 @@ try_catch_may_fallthru (const_tree stmt)
   if (block_may_fallthru (TREE_OPERAND (stmt, 0)))
     return true;
 
+  switch (TREE_CODE (TREE_OPERAND (stmt, 1)))
+    {
+    case CATCH_EXPR:
+      /* See below.  */
+      return block_may_fallthru (CATCH_BODY (TREE_OPERAND (stmt, 1)));
+
+    case EH_FILTER_EXPR:
+      /* See below.  */
+      return block_may_fallthru (EH_FILTER_FAILURE (TREE_OPERAND (stmt, 1)));
+
+    case STATEMENT_LIST:
+      break;
+
+    default:
+      /* See below.  */
+      return false;
+    }
+
   i = tsi_start (TREE_OPERAND (stmt, 1));
   switch (TREE_CODE (tsi_stmt (i)))
     {

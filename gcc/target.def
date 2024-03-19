@@ -2671,6 +2671,13 @@ DEFHOOK
  default_libc_has_fast_function)
 
 DEFHOOK
+(fortify_source_default_level,
+ "This hook determines what value _FORTIFY_SOURCE will be set to when using\n\
+the command-line option -fhardened.",
+ unsigned, (void),
+ default_fortify_source_default_level)
+
+DEFHOOK
 (libm_function_max_error,
  "This hook determines expected maximum errors for math functions measured\n\
 in ulps (units of the last place).  0 means 0.5ulps precision (correctly\n\

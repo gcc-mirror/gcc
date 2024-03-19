@@ -96,9 +96,9 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #endif
 
 /* Detect whether target can support atomic update of profilers.  */
-#if (__SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4) || \
-    (__SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8) || \
-    defined (__LIBGCC_HAVE_LIBATOMIC)
+#if (__SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4) \
+    || (__SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8) \
+    || defined (__LIBGCC_HAVE_LIBATOMIC)
 #define GCOV_SUPPORTS_ATOMIC 1
 #else
 #define GCOV_SUPPORTS_ATOMIC 0

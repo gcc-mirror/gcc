@@ -216,3 +216,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define TARGET_LIBM_FUNCTION_MAX_ERROR linux_libm_function_max_error
 
 #endif
+
+#undef TARGET_FORTIFY_SOURCE_DEFAULT_LEVEL
+#define TARGET_FORTIFY_SOURCE_DEFAULT_LEVEL linux_fortify_source_default_level

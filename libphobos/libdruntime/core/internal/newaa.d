@@ -50,6 +50,7 @@ struct Impl
     immutable uint valsz;
     immutable uint valoff;
     Flags flags;
+    size_t delegate(scope const void*) nothrow hashFn;
 
     enum Flags : ubyte
     {
@@ -76,15 +77,19 @@ private size_t mix(size_t h) @safe pure nothrow @nogc
 
 struct Entry(K, V)
 {
-    /*const*/ K key; // this really should be const, but legacy issues.
+    // can make this const, because we aren't really going to use it aside from
+    // construction.
+    const K key;
     V value;
 }
 
 
 // create a binary-compatible AA structure that can be used directly as an
 // associative array.
-AAShell makeAA(K, V)(V[K] src)
+// NOTE: this must only be called during CTFE
+AAShell makeAA(K, V)(V[K] src) @trusted
 {
+    assert(__ctfe, "makeAA Must only be called at compile time");
     immutable srclen = src.length;
     assert(srclen <= uint.max);
     alias E = Entry!(K, V);
@@ -95,6 +100,12 @@ AAShell makeAA(K, V)(V[K] src)
     size_t dim = INIT_NUM_BUCKETS;
     while (srclen * GROW_DEN > dim * GROW_NUM)
         dim = dim * GROW_FAC;
+
+    // used during runtime.
+    size_t delegate(scope const void *) nothrow hashFn = (scope const void* val) {
+        auto x = cast(K*)val;
+        return hashOf(*x);
+    };
 
     Bucket[] buckets;
     // Allocate and fill the buckets
@@ -140,5 +151,19 @@ AAShell makeAA(K, V)(V[K] src)
     } ();
     // return the new implementation
     return AAShell(new Impl(buckets, cast(uint)srclen, 0, typeid(E), firstUsed,
-            K.sizeof, V.sizeof, E.value.offsetof, flags));
+            K.sizeof, V.sizeof, E.value.offsetof, flags, hashFn));
+}
+
+unittest
+{
+    static struct Foo
+    {
+        ubyte x;
+        double d;
+    }
+    static int[Foo] utaa = [Foo(1, 2.0) : 5];
+    auto k = Foo(1, 2.0);
+    // verify that getHash doesn't match hashOf for Foo
+    assert(typeid(Foo).getHash(&k) != hashOf(k));
+    assert(utaa[Foo(1, 2.0)] == 5);
 }

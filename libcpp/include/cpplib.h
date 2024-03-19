@@ -764,6 +764,9 @@ struct cpp_callbacks
   /* Callback to determine whether a built-in function is recognized.  */
   int (*has_builtin) (cpp_reader *);
 
+  /* Callback to determine whether a feature is available.  */
+  int (*has_feature) (cpp_reader *, bool);
+
   /* Callback that can change a user lazy into normal macro.  */
   void (*user_lazy_macro) (cpp_reader *, cpp_macro *, unsigned);
 
@@ -968,7 +971,9 @@ enum cpp_builtin_type
   BT_HAS_STD_ATTRIBUTE,		/* `__has_c_attribute(x)' */
   BT_HAS_BUILTIN,		/* `__has_builtin(x)' */
   BT_HAS_INCLUDE,		/* `__has_include(x)' */
-  BT_HAS_INCLUDE_NEXT		/* `__has_include_next(x)' */
+  BT_HAS_INCLUDE_NEXT,		/* `__has_include_next(x)' */
+  BT_HAS_FEATURE,		/* `__has_feature(x)' */
+  BT_HAS_EXTENSION		/* `__has_extension(x)' */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))

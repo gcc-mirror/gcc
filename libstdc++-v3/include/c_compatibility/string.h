@@ -50,7 +50,9 @@ using std::strpbrk;
 using std::strrchr;
 using std::strspn;
 using std::strstr;
+#if _GLIBCXX_HOSTED || __cplusplus <= 202302L
 using std::strtok;
+#endif
 using std::memset;
 using std::strerror;
 using std::strlen;

@@ -1029,7 +1029,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Cleanup_Actions, List_Id),
         Sm (Exception_Junk, Flag),
         Sm (Is_Abort_Block, Flag),
-        Sm (Is_Finalization_Wrapper, Flag),
         Sm (Is_Initialization_Block, Flag),
         Sm (Is_Task_Master, Flag)));
 

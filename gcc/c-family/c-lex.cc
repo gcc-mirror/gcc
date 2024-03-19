@@ -83,6 +83,7 @@ init_c_lex (void)
   cb->read_pch = c_common_read_pch;
   cb->has_attribute = c_common_has_attribute;
   cb->has_builtin = c_common_has_builtin;
+  cb->has_feature = c_common_has_feature;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
   cb->get_suggestion = cb_get_suggestion;
   cb->remap_filename = remap_macro_filename;
@@ -452,16 +453,16 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
   return result;
 }
 
-/* Callback for has_builtin.  */
+/* Helper for __has_{builtin,feature,extension}.  */
 
-int
-c_common_has_builtin (cpp_reader *pfile)
+static const char *
+c_common_lex_availability_macro (cpp_reader *pfile, const char *builtin)
 {
   const cpp_token *token = get_token_no_padding (pfile);
   if (token->type != CPP_OPEN_PAREN)
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "missing '(' after \"__has_builtin\"");
+		 "missing '(' after \"__has_%s\"", builtin);
       return 0;
     }
 
@@ -481,7 +482,7 @@ c_common_has_builtin (cpp_reader *pfile)
   else
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "macro \"__has_builtin\" requires an identifier");
+		 "macro \"__has_%s\" requires an identifier", builtin);
       if (token->type == CPP_CLOSE_PAREN)
 	return 0;
     }
@@ -500,7 +501,36 @@ c_common_has_builtin (cpp_reader *pfile)
 	break;
     }
 
+  return name;
+}
+
+/* Callback for has_builtin.  */
+
+int
+c_common_has_builtin (cpp_reader *pfile)
+{
+  const char *name = c_common_lex_availability_macro (pfile, "builtin");
+  if (!name)
+    return 0;
+
   return names_builtin_p (name);
+}
+
+/* Callback for has_feature.  STRICT_P is true for has_feature and false
+   for has_extension.  */
+
+int
+c_common_has_feature (cpp_reader *pfile, bool strict_p)
+{
+  const char *builtin = strict_p ? "feature" : "extension";
+  const char *name = c_common_lex_availability_macro (pfile, builtin);
+  if (!name)
+    return 0;
+
+  /* If -pedantic-errors is given, __has_extension is equivalent to
+     __has_feature.  */
+  strict_p |= flag_pedantic_errors;
+  return has_feature_p (name, strict_p);
 }
 
 

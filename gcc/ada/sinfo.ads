@@ -1723,12 +1723,6 @@ package Sinfo is
    --    Present in N_Contract nodes. Set if the contract has already undergone
    --    expansion activities.
 
-   --  Is_Finalization_Wrapper
-   --    This flag is present in N_Block_Statement nodes. It is set when the
-   --    block acts as a wrapper of a handled construct which has controlled
-   --    objects. The wrapper prevents interference between exception handlers
-   --    and At_End handlers.
-
    --  Is_Generic_Contract_Pragma
    --    This flag is present in N_Pragma nodes. It is set when the pragma is
    --    a source construct, applies to a generic unit or its body, and denotes
@@ -5238,7 +5232,6 @@ package Sinfo is
       --  Is_Task_Allocation_Block
       --  Exception_Junk
       --  Is_Abort_Block
-      --  Is_Finalization_Wrapper
       --  Is_Initialization_Block
       --  Is_Task_Master
       --  At_End_Proc (set to Empty if no clean up procedure)

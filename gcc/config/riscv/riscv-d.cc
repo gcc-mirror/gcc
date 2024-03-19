@@ -52,6 +52,7 @@ riscv_d_handle_target_float_abi (void)
     {
     case ABI_ILP32E:
     case ABI_ILP32:
+    case ABI_LP64E:
     case ABI_LP64:
       abi = "soft";
       break;

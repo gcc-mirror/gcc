@@ -120,13 +120,15 @@
   [(V2SI "SI") (V2SF "SF")
    (V4HF "HF") (V4BF "BF")
    (V2HF "HF") (V2BF "BF")
-   (V4HI "HI") (V2HI "HI")])
+   (V4HI "HI") (V2HI "HI")
+   (V8QI "QI")])
 
 (define_mode_attr mmxscalarmodelower
   [(V2SI "si") (V2SF "sf")
    (V4HF "hf") (V4BF "bf")
    (V2HF "hf") (V2BF "bf")
-   (V4HI "hi") (V2HI "hi")])
+   (V4HI "hi") (V2HI "hi")
+   (V8QI "qi")])
 
 (define_mode_attr Yv_Yw
   [(V8QI "Yw") (V4HI "Yw") (V2SI "Yv") (V1DI "Yv") (V2SF "Yv")])
@@ -6093,6 +6095,31 @@
    (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxshft,sseiadd,sseiadd")
    (set_attr "mode" "DI,TI,TI")])
+
+(define_expand "reduc_<code>_scal_<mode>"
+ [(any_logic:MMXMODE12
+    (match_operand:<mmxscalarmode> 0 "register_operand")
+    (match_operand:MMXMODE12 1 "register_operand"))]
+ "TARGET_MMX_WITH_SSE"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
+  emit_insn (gen_vec_extract<mode><mmxscalarmodelower> (operands[0],
+						       tmp, const0_rtx));
+  DONE;
+})
+
+(define_expand "reduc_<code>_scal_v4qi"
+ [(any_logic:V4QI
+    (match_operand:QI 0 "register_operand")
+    (match_operand:V4QI 1 "register_operand"))]
+ "TARGET_SSE2"
+{
+  rtx tmp = gen_reg_rtx (V4QImode);
+  ix86_expand_reduc (gen_<code>v4qi3, tmp, operands[1]);
+  emit_insn (gen_vec_extractv4qiqi (operands[0], tmp, const0_rtx));
+  DONE;
+})
 
 (define_expand "reduc_plus_scal_v8qi"
  [(plus:V8QI

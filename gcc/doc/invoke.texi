@@ -366,7 +366,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-y2k  -Wframe-address
 -Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object
 -Wno-if-not-aligned  -Wno-ignored-attributes
--Wignored-qualifiers  -Wno-incompatible-pointer-types
+-Wignored-qualifiers  -Wno-incompatible-pointer-types  -Whardened
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n}
 -Wno-implicit-function-declaration  -Wno-implicit-int
 -Winfinite-recursion
@@ -383,7 +383,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
 -Wnull-dereference  -Wno-odr
 -Wopenacc-parallelism
--Wopenmp-simd
+-Wopenmp -Wopenmp-simd
 -Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects
 -Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded
 -Wparentheses  -Wno-pedantic-ms-format
@@ -644,7 +644,7 @@ Objective-C and Objective-C++ Dialects}.
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},...
 -fsanitize-undefined-trap-on-error  -fbounds-check
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
--fharden-compares -fharden-conditional-branches
+-fharden-compares -fharden-conditional-branches  -fhardened
 -fharden-control-flow-redundancy  -fhardcfr-skip-leaf
 -fhardcfr-check-exceptions  -fhardcfr-check-returning-calls
 -fhardcfr-check-noreturn-calls=@r{[}always@r{|}no-xthrow@r{|}nothrow@r{|}never@r{]}
@@ -1245,6 +1245,7 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg}
 -mstack-protector-guard-offset=@var{offset}
 -mcsr-check -mno-csr-check
+-mmovcc  -mno-movcc
 -minline-atomics  -mno-inline-atomics
 -minline-strlen  -mno-inline-strlen
 -minline-strcmp  -mno-inline-strcmp
@@ -1453,7 +1454,7 @@ See RS/6000 and PowerPC Options.
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni
 -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16
 -mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mapxf
--musermsr
+-musermsr -mavx10.1 -mavx10.1-256 -mavx10.1-512
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg}
 -mkl -mwidekl
@@ -6872,6 +6873,18 @@ This warning is upgraded to an error by @option{-pedantic-errors}.
 Same as @option{-Wimplicit-int} and @option{-Wimplicit-function-declaration}.
 This warning is enabled by @option{-Wall}.
 
+@opindex Whardened
+@opindex Wno-hardened
+@item -Whardened
+Warn when @option{-fhardened} did not enable an option from its set (for
+which see @option{-fhardened}).  For instance, using @option{-fhardened}
+and @option{-fstack-protector} at the same time on the command line causes
+@option{-Whardened} to warn because @option{-fstack-protector-strong} is
+not enabled by @option{-fhardened}.
+
+This warning is enabled by default and has effect only when @option{-fhardened}
+is enabled.
+
 @opindex Wimplicit-fallthrough
 @opindex Wno-implicit-fallthrough
 @item -Wimplicit-fallthrough
@@ -8093,7 +8106,7 @@ if the array is referenced as a flexible array member.
 
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}
+@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}returns_nonnull@r{|}
 Warn for cases where adding an attribute may be beneficial. The
 attributes currently supported are listed below.
 
@@ -8113,9 +8126,11 @@ attributes currently supported are listed below.
 @itemx -Wsuggest-attribute=noreturn
 @itemx -Wmissing-noreturn
 @itemx -Wsuggest-attribute=malloc
+@itemx -Wsuggest-attribute=returns_nonnull
+@itemx -Wno-suggest-attribute=returns_nonnull
 
 Warn about functions that might be candidates for attributes
-@code{pure}, @code{const} or @code{noreturn} or @code{malloc}. The compiler
+@code{pure}, @code{const}, @code{noreturn}, @code{malloc} or @code{returns_nonnull}. The compiler
 only warns for functions visible in other compilation units or (in the case of
 @code{pure} and @code{const}) if it cannot prove that the function returns
 normally. A function returns normally if it doesn't contain an infinite loop or
@@ -9104,6 +9119,13 @@ Do not warn about C++23 constructs in code being compiled using
 an older C++ standard.  Even without this option, some C++23 constructs
 will only be diagnosed if @option{-Wpedantic} is used.
 
+@opindex Wc++26-extensions
+@opindex Wno-c++26-extensions
+@item -Wno-c++26-extensions @r{(C++ and Objective-C++ only)}
+Do not warn about C++26 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++26 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
 @opindex Wcast-qual
 @opindex Wno-cast-qual
 @item -Wcast-qual
@@ -9934,6 +9956,11 @@ Enabled by default.
 @cindex OpenACC accelerator programming
 @item -Wopenacc-parallelism
 Warn about potentially suboptimal choices related to OpenACC parallelism.
+
+@opindex Wopenmp
+@opindex Wno-openmp
+@item -Wno-openmp
+Warn about suspicious OpenMP code.
 
 @opindex Wopenmp-simd
 @opindex Wno-openmp-simd
@@ -17627,6 +17654,39 @@ frequently amounts to implicitly calling @code{noreturn} functions, have
 made @option{no-xthrow} the default setting for this option: it excludes
 from the @code{noreturn} treatment only internal functions used to
 (re)raise exceptions, that are not affected by these optimizations.
+
+@opindex fhardened
+@item -fhardened
+Enable a set of flags for C and C++ that improve the security of the
+generated code without affecting its ABI.  The precise flags enabled
+may change between major releases of GCC, but are currently:
+
+@c Keep this in sync with print_help_hardened!
+@gccoptlist{
+-D_FORTIFY_SOURCE=3
+-D_GLIBCXX_ASSERTIONS
+-ftrivial-auto-var-init=zero
+-fPIE  -pie  -Wl,-z,relro,-z,now
+-fstack-protector-strong
+-fstack-clash-protection
+-fcf-protection=full @r{(x86 GNU/Linux only)}
+}
+
+The list of options enabled by @option{-fhardened} can be generated using
+the @option{--help=hardened} option.
+
+When the system glibc is older than 2.35, @option{-D_FORTIFY_SOURCE=2}
+is used instead.
+
+This option is intended to be used in production builds, not merely
+in debug builds.
+
+Currently, @option{-fhardened} is only supported on GNU/Linux targets.
+
+@option{-fhardened} only enables a particular option if it wasn't
+already specified anywhere on the command line.  For instance,
+@option{-fhardened} @option{-fstack-protector} will only enable
+@option{-fstack-protector}, but not @option{-fstack-protector-strong}.
 
 @opindex fstack-protector
 @item -fstack-protector
@@ -29587,9 +29647,10 @@ conventions are: @samp{ilp32}, @samp{ilp32f}, @samp{ilp32d}, @samp{lp64},
 @samp{lp64f}, and @samp{lp64d}.  Some calling conventions are impossible to
 implement on some ISAs: for example, @samp{-march=rv32if -mabi=ilp32d} is
 invalid because the ABI requires 64-bit values be passed in F registers, but F
-registers are only 32 bits wide.  There is also the @samp{ilp32e} ABI that can
-only be used with the @samp{rv32e} architecture.  This ABI is not well
-specified at present, and is subject to change.
+registers are only 32 bits wide.  There are also the @samp{ilp32e} ABI that can
+only be used with the @samp{rv32e} architecture and the @samp{lp64e} ABI that
+can only be used with the @samp{rv64e}.  Those ABIs are not well specified at
+present, and are subject to change.
 
 @opindex mfdiv
 @item -mfdiv
@@ -29678,6 +29739,14 @@ Put global and static data smaller than @var{n} bytes into a special section
 Do or don't use smaller but slower prologue and epilogue code that uses
 library function calls.  The default is to use fast inline prologues and
 epilogues.
+
+@opindex mmovcc
+@item -mmovcc
+@itemx -mno-movcc
+Do or don't produce branchless conditional-move code sequences even with
+targets that do not have specific instructions for conditional operations.
+If enabled, sequences of ALU operations are produced using base integer
+ISA instructions where profitable.
 
 @opindex minline-atomics
 @item -minline-atomics
@@ -34123,6 +34192,15 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @opindex musermsr
 @itemx -musermsr
+@need 200
+@opindex mavx10.1
+@itemx -mavx10.1
+@need 200
+@opindex mavx10.1-256
+@itemx -mavx10.1-256
+@need 200
+@opindex mavx10.1-512
+@itemx -mavx10.1-512
 These switches enable the use of instructions in the MMX, SSE,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
 AES, PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
@@ -34133,9 +34211,9 @@ GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
 ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
 UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI, AVX512-FP16,
 AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AMX-FP16, PREFETCHI, RAOINT,
-AMX-COMPLEX, AVXVNNIINT16, SM3, SHA512, SM4, APX_F, USER_MSR or CLDEMOTE
-extended instruction sets.  Each has a corresponding @option{-mno-} option
-to disable use of these instructions.
+AMX-COMPLEX, AVXVNNIINT16, SM3, SHA512, SM4, APX_F, USER_MSR, AVX10.1 or
+CLDEMOTE extended instruction sets.  Each has a corresponding @option{-mno-}
+option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and

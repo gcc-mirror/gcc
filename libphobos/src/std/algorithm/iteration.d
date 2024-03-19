@@ -4809,26 +4809,41 @@ private template ReduceSeedType(E)
 /++
 Implements the homonym function (also known as `accumulate`, $(D
 compress), `inject`, or `foldl`) present in various programming
-languages of functional flavor. The call `fold!(fun)(range, seed)`
-first assigns `seed` to an internal variable `result`,
-also called the accumulator. Then, for each element `x` in $(D
-range), `result = fun(result, x)` gets evaluated. Finally, $(D
-result) is returned. The one-argument version `fold!(fun)(range)`
+languages of functional flavor, iteratively calling one or more predicates.
+
+$(P Each predicate in `fun` must take two arguments:)
+* An accumulator value
+* An element of the range `r`
+$(P Each predicate must return a value which implicitly converts to the
+type of the accumulator.)
+
+$(P For a single predicate,
+the call `fold!(fun)(range, seed)` will:)
+
+* Use `seed` to initialize an internal variable `result` (also called
+  the accumulator).
+* For each element `e` in $(D range), evaluate `result = fun(result, e)`.
+* Return $(D result).
+
+$(P The one-argument version `fold!(fun)(range)`
 works similarly, but it uses the first element of the range as the
-seed (the range must be non-empty).
+seed (the range must be non-empty) and iterates over the remaining
+elements.)
+
+Multiple results are produced when using multiple predicates.
 
 Params:
     fun = the predicate function(s) to apply to the elements
 
 See_Also:
-    $(HTTP en.wikipedia.org/wiki/Fold_(higher-order_function), Fold (higher-order function))
+    * $(HTTP en.wikipedia.org/wiki/Fold_(higher-order_function), Fold (higher-order function))
 
-    $(LREF sum) is similar to `fold!((a, b) => a + b)` that offers
-    precise summing of floating point numbers.
+    * $(LREF sum) is similar to `fold!((a, b) => a + b)` that offers
+      precise summing of floating point numbers.
 
-    This is functionally equivalent to $(LREF reduce) with the argument order
-    reversed, and without the need to use $(REF_ALTTEXT `tuple`,tuple,std,typecons)
-    for multiple seeds.
+    * `fold` is functionally equivalent to $(LREF reduce) with the argument order
+      reversed, and without the need to use $(REF_ALTTEXT `tuple`,tuple,std,typecons)
+      for multiple seeds.
 +/
 template fold(fun...)
 if (fun.length >= 1)
@@ -4836,20 +4851,21 @@ if (fun.length >= 1)
     /**
     Params:
         r = the $(REF_ALTTEXT input range, isInputRange, std,range,primitives) to fold
-        seed = the initial value of the accumulator
+        seeds = the initial values of each accumulator (optional), one for each predicate
     Returns:
-        the accumulated `result`
+        Either the accumulated result for a single predicate, or a
+        $(REF_ALTTEXT `Tuple`,Tuple,std,typecons) of results.
      */
-    auto fold(R, S...)(R r, S seed)
+    auto fold(R, S...)(R r, S seeds)
     {
         static if (S.length < 2)
         {
-            return reduce!fun(seed, r);
+            return reduce!fun(seeds, r);
         }
         else
         {
             import std.typecons : tuple;
-            return reduce!fun(tuple(seed), r);
+            return reduce!fun(tuple(seeds), r);
         }
     }
 }
@@ -4860,10 +4876,10 @@ if (fun.length >= 1)
     immutable arr = [1, 2, 3, 4, 5];
 
     // Sum all elements
-    assert(arr.fold!((a, b) => a + b) == 15);
+    assert(arr.fold!((a, e) => a + e) == 15);
 
     // Sum all elements with explicit seed
-    assert(arr.fold!((a, b) => a + b)(6) == 21);
+    assert(arr.fold!((a, e) => a + e)(6) == 21);
 
     import std.algorithm.comparison : min, max;
     import std.typecons : tuple;
@@ -4875,10 +4891,10 @@ if (fun.length >= 1)
     assert(arr.fold!(min, max)(0, 7) == tuple(0, 7));
 
     // Can be used in a UFCS chain
-    assert(arr.map!(a => a + 1).fold!((a, b) => a + b) == 20);
+    assert(arr.map!(a => a + 1).fold!((a, e) => a + e) == 20);
 
     // Return the last element of any range
-    assert(arr.fold!((a, b) => b) == 5);
+    assert(arr.fold!((a, e) => e) == 5);
 }
 
 @safe @nogc pure nothrow unittest

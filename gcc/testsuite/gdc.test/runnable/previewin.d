@@ -154,27 +154,25 @@ struct WithDtor
 @safe pure nothrow @nogc:
 
 // By value
-void testin1(in uint p) { static assert(!__traits(isRef, p)); }
+void testin1(in uint p) { }
 // By ref because of size
-void testin2(in ulong[64] p) { static assert(__traits(isRef, p)); }
+void testin2(in ulong[64] p) { }
 // By value or ref depending on size (or structs always passed by reference)
-void testin3(in ValueT p) { static assert(!__traits(isRef, p) || true); }
-void testin3(in RefT p) { static assert(__traits(isRef, p)); }
+void testin3(in ValueT p) { }
+void testin3(in RefT p) { }
 // By ref because of size (or arrays always passed by reference)
-void testin4(in ValueT[64] p) { static assert(__traits(isRef, p)); }
-void testin4(in RefT[4] p) { static assert(__traits(isRef, p)); }
+void testin4(in ValueT[64] p) { }
+void testin4(in RefT[4] p) { }
 
 // By ref because of non-copyability
-void testin5(in NonCopyable noncopy) { static assert(__traits(isRef, noncopy)); }
-static assert(testin5.mangleof == "_D9previewin7testin5FNaNbNiNfIKSQBe11NonCopyableZv"); // incl. `ref`
+void testin5(in NonCopyable noncopy) { }
 //  By ref because of postblit
-void testin6(in WithPostblit withpostblit) { static assert(__traits(isRef, withpostblit)); }
+void testin6(in WithPostblit withpostblit) { }
 //  By ref because of copy ctor
-void testin7(in WithCopyCtor withcopy) { static assert(__traits(isRef, withcopy)); }
+void testin7(in WithCopyCtor withcopy) { }
 //  By ref because of dtor
 void testin8(in WithDtor withdtor, scope bool* isTestOver)
 {
-    static assert(__traits(isRef, withdtor));
     if (isTestOver)
         *isTestOver = true;
 }

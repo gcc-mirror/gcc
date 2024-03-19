@@ -277,6 +277,8 @@ public:
   bool could_trap_p () const;
 
   unsigned int vectors_per_tuple () const;
+  tree memory_scalar_type () const;
+  machine_mode memory_vector_mode () const;
 
   const mode_suffix_info &mode_suffix () const;
 
@@ -382,6 +384,7 @@ public:
 		   type_suffix_index = NUM_TYPE_SUFFIXES,
 		   type_suffix_index = NUM_TYPE_SUFFIXES);
 
+  type_suffix_index infer_pointer_type (unsigned int);
   type_suffix_index infer_vector_or_tuple_type (unsigned int, unsigned int);
   type_suffix_index infer_vector_type (unsigned int);
 
@@ -393,8 +396,9 @@ public:
 				    type_suffix_index,
 				    type_class_index = SAME_TYPE_CLASS,
 				    unsigned int = SAME_SIZE);
-  bool require_integer_immediate (unsigned int);
   bool require_scalar_type (unsigned int, const char *);
+  bool require_pointer_type (unsigned int);
+  bool require_integer_immediate (unsigned int);
   bool require_derived_scalar_type (unsigned int, type_class_index,
 				    unsigned int = SAME_SIZE);
   
@@ -475,18 +479,23 @@ public:
 
   insn_code direct_optab_handler (optab, unsigned int = 0);
 
+  rtx get_contiguous_base ();
   rtx get_fallback_value (machine_mode, unsigned int, unsigned int &);
   rtx get_reg_target ();
 
   void add_output_operand (insn_code);
   void add_input_operand (insn_code, rtx);
   void add_integer_operand (HOST_WIDE_INT);
+  void add_mem_operand (machine_mode, rtx);
+  void add_fixed_operand (rtx);
   rtx generate_insn (insn_code);
 
   rtx use_exact_insn (insn_code);
   rtx use_unpred_insn (insn_code);
   rtx use_pred_x_insn (insn_code);
   rtx use_cond_insn (insn_code, unsigned int = DEFAULT_MERGE_ARGNO);
+  rtx use_contiguous_load_insn (insn_code);
+  rtx use_contiguous_store_insn (insn_code);
 
   rtx map_to_rtx_codes (rtx_code, rtx_code, rtx_code);
 
@@ -518,6 +527,23 @@ public:
   /* If the function operates on tuples of vectors, return the number
      of vectors in the tuples, otherwise return 1.  */
   virtual unsigned int vectors_per_tuple () const { return 1; }
+
+  /* If the function addresses memory, return the type of a single
+     scalar memory element.  */
+  virtual tree
+  memory_scalar_type (const function_instance &) const
+  {
+    gcc_unreachable ();
+  }
+
+  /* If the function addresses memory, return a vector mode whose
+     GET_MODE_NUNITS is the number of elements addressed and whose
+     GET_MODE_INNER is the mode of a single scalar memory element.  */
+  virtual machine_mode
+  memory_vector_mode (const function_instance &) const
+  {
+    gcc_unreachable ();
+  }
 
   /* Try to fold the given gimple call.  Return the new gimple statement
      on success, otherwise return null.  */
@@ -642,6 +668,23 @@ inline unsigned int
 function_instance::vectors_per_tuple () const
 {
   return base->vectors_per_tuple ();
+}
+
+/* If the function addresses memory, return the type of a single
+   scalar memory element.  */
+inline tree
+function_instance::memory_scalar_type () const
+{
+  return base->memory_scalar_type (*this);
+}
+
+/* If the function addresses memory, return a vector mode whose
+   GET_MODE_NUNITS is the number of elements addressed and whose
+   GET_MODE_INNER is the mode of a single scalar memory element.  */
+inline machine_mode
+function_instance::memory_vector_mode () const
+{
+  return base->memory_vector_mode (*this);
 }
 
 /* Return information about the function's mode suffix.  */

@@ -3199,6 +3199,8 @@ directive}: @samp{#if}, @samp{#ifdef} or @samp{#ifndef}.
 * @code{__has_cpp_attribute}::
 * @code{__has_c_attribute}::
 * @code{__has_builtin}::
+* @code{__has_feature}::
+* @code{__has_extension}::
 * @code{__has_include}::
 @end menu
 
@@ -3560,6 +3562,45 @@ the operator is as follows:
 #  define builtin_object_size(ptr)   ((size_t)-1)
 #endif
 @end smallexample
+
+@node @code{__has_feature}
+@subsection @code{__has_feature}
+@cindex @code{__has_feature}
+
+The special operator @code{__has_feature (@var{operand})} may be used in
+constant integer contexts and in preprocessor @samp{#if} and @samp{#elif}
+expressions to test whether the identifier given in @var{operand} is recognized
+as a feature supported by GCC given the current options and, in the case of
+standard language features, whether the feature is available in the chosen
+version of the language standard.
+
+Note that @code{__has_feature} and @code{__has_extension} are not recommended
+for use in new code, and are only provided for compatibility with Clang.  For
+details of which identifiers are accepted by these function-like macros, see
+@w{@uref{https://clang.llvm.org/docs/LanguageExtensions.html#has-feature-and-has-extension,
+the Clang documentation}}.
+
+@node @code{__has_extension}
+@subsection @code{__has_extension}
+@cindex @code{__has_extension}
+
+The special operator @code{__has_extension (@var{operand})} may be used in
+constant integer contexts and in preprocessor @samp{#if} and @samp{#elif}
+expressions to test whether the identifier given in @var{operand} is recognized
+as an extension supported by GCC given the current options.  In any given
+context, the features accepted by @code{__has_extension} are a strict superset
+of those accepted by @code{__has_feature}.  Unlike @code{__has_feature},
+@code{__has_extension} tests whether a given feature is available regardless of
+strict language standards conformance.
+
+If the @option{-pedantic-errors} flag is given, @code{__has_extension} is
+equivalent to @code{__has_feature}.
+
+Note that @code{__has_feature} and @code{__has_extension} are not recommended
+for use in new code, and are only provided for compatibility with Clang.  For
+details of which identifiers are accepted by these function-like macros, see
+@w{@uref{https://clang.llvm.org/docs/LanguageExtensions.html#has-feature-and-has-extension,
+the Clang documentation}}.
 
 @node @code{__has_include}
 @subsection @code{__has_include}

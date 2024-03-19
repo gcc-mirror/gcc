@@ -1575,19 +1575,10 @@ package body Exp_Ch7 is
             Prepend_To (Decls, Counter_Typ_Decl);
 
             --  The counter and its associated type must be manually analyzed
-            --  since N has already been analyzed. Use the scope of the spec
-            --  when inserting in a package.
+            --  since N has already been analyzed.
 
-            if For_Package then
-               Push_Scope (Spec_Id);
-               Analyze (Counter_Typ_Decl);
-               Analyze (Counter_Decl);
-               Pop_Scope;
-
-            else
-               Analyze (Counter_Typ_Decl);
-               Analyze (Counter_Decl);
-            end if;
+            Analyze (Counter_Typ_Decl);
+            Analyze (Counter_Decl);
 
             Jump_Alts := New_List;
          end if;
@@ -1933,12 +1924,8 @@ package body Exp_Ch7 is
                Append_To (Decls, Fin_Body);
             end if;
 
-            --  Push the name of the package
-
-            Push_Scope (Spec_Id);
             Analyze (Fin_Spec);
             Analyze (Fin_Body);
-            Pop_Scope;
 
          --  Non-package case
 
@@ -2248,8 +2235,8 @@ package body Exp_Ch7 is
                --  Finalization of transient objects are treated separately in
                --  order to handle sensitive cases. These include:
 
-               --    * Aggregate expansion
-               --    * If, case, and expression with actions expansion
+               --    * Conditional expressions
+               --    * Expressions with actions
                --    * Transient scopes
 
                --  If one of those contexts has marked the transient object as
@@ -2479,51 +2466,6 @@ package body Exp_Ch7 is
               and then Present (Library_Unit (Decl))
             then
                Process_Package_Body (Proper_Body (Unit (Library_Unit (Decl))));
-
-            --  Handle a rare case caused by a controlled transient object
-            --  created as part of a record init proc. The variable is wrapped
-            --  in a block, but the block is not associated with a transient
-            --  scope.
-
-            elsif Nkind (Decl) = N_Block_Statement
-              and then Inside_Init_Proc
-            then
-               Old_Counter_Val := Counter_Val;
-
-               if Present (Handled_Statement_Sequence (Decl)) then
-                  Process_Declarations
-                    (Statements (Handled_Statement_Sequence (Decl)),
-                     Preprocess);
-               end if;
-
-               Process_Declarations (Declarations (Decl), Preprocess);
-
-               --  Either the declaration or statement list of the block has a
-               --  controlled object.
-
-               if Preprocess
-                 and then Top_Level
-                 and then No (Last_Top_Level_Ctrl_Construct)
-                 and then Counter_Val > Old_Counter_Val
-               then
-                  Last_Top_Level_Ctrl_Construct := Decl;
-               end if;
-
-            --  Handle the case where the original context has been wrapped in
-            --  a block to avoid interference between exception handlers and
-            --  At_End handlers. Treat the block as transparent and process its
-            --  contents.
-
-            elsif Nkind (Decl) = N_Block_Statement
-              and then Is_Finalization_Wrapper (Decl)
-            then
-               if Present (Handled_Statement_Sequence (Decl)) then
-                  Process_Declarations
-                    (Statements (Handled_Statement_Sequence (Decl)),
-                     Preprocess);
-               end if;
-
-               Process_Declarations (Declarations (Decl), Preprocess);
             end if;
 
             Prev_Non_Pragma (Decl);
@@ -3464,6 +3406,10 @@ package body Exp_Ch7 is
       --  Step 2: Object [pre]processing
 
       if For_Package then
+         --  For package specs and bodies, we are invoked from the Standard
+         --  scope, so we need to push the specs onto the scope stack first.
+
+         Push_Scope (Spec_Id);
 
          --  Preprocess the visible declarations now in order to obtain the
          --  correct number of controlled object by the time the private
@@ -3540,6 +3486,12 @@ package body Exp_Ch7 is
 
       if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
          Create_Finalizer;
+      end if;
+
+      --  Pop the scope that was pushed above for package specs and bodies
+
+      if For_Package then
+         Pop_Scope;
       end if;
    end Build_Finalizer;
 

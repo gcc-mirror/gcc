@@ -2478,7 +2478,8 @@ When a value occupying several consecutive registers is expected in a
 certain class, all the registers used must belong to that class.
 Therefore, register classes cannot be used to enforce a requirement for
 a register pair to start with an even-numbered register.  The way to
-specify this requirement is with @code{TARGET_HARD_REGNO_MODE_OK}.
+specify this requirement is with @code{TARGET_HARD_REGNO_MODE_OK},
+or with a filter expression in a @code{define_register_constraint}.
 
 Register classes used for input-operands of bitwise-and or shift
 instructions have a special requirement: each such class must have, for
@@ -5820,6 +5821,11 @@ specific type.
 @deftypefn {Target Hook} bool TARGET_LIBC_HAS_FAST_FUNCTION (int @var{fcode})
 This hook determines whether a function from a class of functions
 @code{(enum function_class)}@var{fcode} has a fast implementation.
+@end deftypefn
+
+@deftypefn {Target Hook} unsigned TARGET_FORTIFY_SOURCE_DEFAULT_LEVEL (void)
+This hook determines what value _FORTIFY_SOURCE will be set to when using
+the command-line option -fhardened.
 @end deftypefn
 
 @deftypefn {Target Hook} unsigned TARGET_LIBM_FUNCTION_MAX_ERROR (unsigned @var{cfn}, machine_mode @var{mode}, bool @var{boundary_p})

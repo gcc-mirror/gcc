@@ -5431,16 +5431,19 @@ get_required_cycles (int ops_num, int cpu_width)
 }
 
 /* Returns an optimal number of registers to use for computation of
-   given statements.  */
+   given statements.
+
+   LHS is the result ssa name of OPS.  */
 
 static int
-get_reassociation_width (int ops_num, enum tree_code opc,
-			 machine_mode mode)
+get_reassociation_width (vec<operand_entry *> *ops, tree lhs,
+			 enum tree_code opc, machine_mode mode)
 {
   int param_width = param_tree_reassoc_width;
   int width;
   int width_min;
   int cycles_best;
+  int ops_num = ops->length ();
 
   if (param_width > 0)
     width = param_width;
@@ -5469,6 +5472,61 @@ get_reassociation_width (int ops_num, enum tree_code opc,
 	width_min = width_mid;
       else
 	break;
+    }
+
+  /* If there's loop dependent FMA result, return width=2 to avoid it.  This is
+     better than skipping these FMA candidates in widening_mul.  */
+  if (width == 1
+      && maybe_le (tree_to_poly_int64 (TYPE_SIZE (TREE_TYPE (lhs))),
+		   param_avoid_fma_max_bits))
+    {
+      /* Look for cross backedge dependency:
+	1. LHS is a phi argument in the same basic block it is defined.
+	2. And the result of the phi node is used in OPS.  */
+      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (lhs));
+
+      use_operand_p use_p;
+      imm_use_iterator iter;
+      FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
+	if (gphi *phi = dyn_cast<gphi *> (USE_STMT (use_p)))
+	  {
+	    if (gimple_phi_arg_edge (phi, phi_arg_index_from_use (use_p))->src
+		!= bb)
+	      continue;
+	    tree phi_result = gimple_phi_result (phi);
+	    operand_entry *oe;
+	    unsigned int j;
+	    FOR_EACH_VEC_ELT (*ops, j, oe)
+	      {
+		if (TREE_CODE (oe->op) != SSA_NAME)
+		  continue;
+
+		/* Result of phi is operand of PLUS_EXPR.  */
+		if (oe->op == phi_result)
+		  return 2;
+
+		/* Check is result of phi is operand of MULT_EXPR.  */
+		gimple *def_stmt = SSA_NAME_DEF_STMT (oe->op);
+		if (is_gimple_assign (def_stmt)
+		    && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR)
+		  {
+		    tree rhs = gimple_assign_rhs1 (def_stmt);
+		    if (TREE_CODE (rhs) == SSA_NAME)
+		      {
+			if (rhs == phi_result)
+			  return 2;
+			def_stmt = SSA_NAME_DEF_STMT (rhs);
+		      }
+		  }
+		if (is_gimple_assign (def_stmt)
+		    && gimple_assign_rhs_code (def_stmt) == MULT_EXPR)
+		  {
+		    if (gimple_assign_rhs1 (def_stmt) == phi_result
+			|| gimple_assign_rhs2 (def_stmt) == phi_result)
+		      return 2;
+		  }
+	      }
+	  }
     }
 
   return width;
@@ -7031,8 +7089,9 @@ reassociate_bb (basic_block bb)
 		     with initial linearization.  */
 		  if (!reassoc_insert_powi_p
 		      && ops.length () > 3
-		      && (width = get_reassociation_width (ops_num, rhs_code,
-							   mode)) > 1)
+		      && (width
+			  = get_reassociation_width (&ops, lhs, rhs_code, mode))
+			   > 1)
 		    {
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			fprintf (dump_file,
@@ -7049,7 +7108,13 @@ reassociate_bb (basic_block bb)
 			 to make sure the ones that get the double
 			 binary op are chosen wisely.  */
 		      int len = ops.length ();
-		      if (len >= 3 && !has_fma)
+		      if (len >= 3
+			  && (!has_fma
+			      /* width > 1 means ranking ops results in better
+				 parallelism.  */
+			      || get_reassociation_width (&ops, lhs, rhs_code,
+							  mode)
+				   > 1))
 			swap_ops_for_binary_stmt (ops, len - 3);
 
 		      new_lhs = rewrite_expr_tree (stmt, rhs_code, 0, ops,

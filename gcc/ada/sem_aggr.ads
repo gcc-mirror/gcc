@@ -26,7 +26,8 @@
 --  This package contains the resolution code for aggregates. It is logically
 --  part of Sem_Res, but is split off since the aggregate code is so complex.
 
-with Types; use Types;
+with Einfo.Entities; use Einfo.Entities;
+with Types;          use Types;
 
 package Sem_Aggr is
 
@@ -49,5 +50,16 @@ package Sem_Aggr is
 
    function Is_Null_Array_Aggregate_High_Bound (N : Node_Id) return Boolean;
    --  Returns True for the high bound of a null array aggregate.
+
+   function Is_Deep_Choice
+     (Choice    : Node_Id;
+      Aggr_Type : Type_Kind_Id) return Boolean;
+   --  Returns whether Choice from a delta aggregate of type Aggr_Type is a
+   --  deep choice.
+
+   function Is_Root_Prefix_Of_Deep_Choice (Pref : Node_Id) return Boolean;
+   --  Returns whether prefix Pref of a deep choice is its root prefix. Except
+   --  for its use in Is_Deep_Choice, this function should only be called on
+   --  prefixes of a deep choice as identified by Is_Deep_Choice.
 
 end Sem_Aggr;

@@ -106,10 +106,10 @@ enum rid
   /* C extensions */
   RID_ASM,       RID_TYPEOF,   RID_TYPEOF_UNQUAL, RID_ALIGNOF,  RID_ATTRIBUTE,
   RID_VA_ARG,
-  RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
-  RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
-  RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
-  RID_BUILTIN_HAS_ATTRIBUTE,   RID_BUILTIN_ASSOC_BARRIER,
+  RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,    RID_CHOOSE_EXPR,
+  RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	   RID_BUILTIN_SHUFFLE,
+  RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,  RID_BUILTIN_TGMATH,
+  RID_BUILTIN_HAS_ATTRIBUTE,   RID_BUILTIN_ASSOC_BARRIER,  RID_BUILTIN_STDC,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
   /* TS 18661-3 keywords, in the same sequence as the TI_* values.  */
@@ -1126,6 +1126,14 @@ extern bool c_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
      ATTRIBUTE_GCC_DIAG(5,0);
 extern int c_common_has_attribute (cpp_reader *, bool);
 extern int c_common_has_builtin (cpp_reader *);
+extern int c_common_has_feature (cpp_reader *, bool);
+
+/* Implemented by each front end in *-lang.cc.  */
+extern void c_family_register_lang_features ();
+
+/* Implemented in c-family/c-common.cc.  */
+extern void c_common_register_feature (const char *, bool);
+extern bool has_feature_p (const char *, bool);
 
 extern bool parse_optimize_options (tree, bool);
 

@@ -41,6 +41,12 @@
   (ior (match_operand 0 "arith_operand")
        (match_operand 0 "lui_operand")))
 
+(define_predicate "movcc_operand"
+  (if_then_else (match_test "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV
+			     || TARGET_ZICOND_LIKE")
+		(match_operand 0 "sfb_alu_operand")
+		(match_operand 0 "arith_operand")))
+
 (define_predicate "const_csr_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
@@ -77,6 +83,10 @@
 (define_predicate "const_1_or_4_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 1 || INTVAL (op) == 4")))
+
+(define_predicate "const_1_or_8_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 8")))
 
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "const_0_operand")
@@ -327,11 +337,11 @@
 (define_predicate "modular_operator"
   (match_code "plus,minus,mult,ashift"))
 
+(define_predicate "ne_operator"
+  (match_code "ne"))
+
 (define_predicate "equality_operator"
   (match_code "eq,ne"))
-
-(define_predicate "order_operator"
-  (match_code "eq,ne,lt,ltu,le,leu,ge,geu,gt,gtu"))
 
 (define_predicate "signed_order_operator"
   (match_code "eq,ne,lt,le,ge,gt"))
@@ -479,10 +489,6 @@
 (define_predicate "vector_perm_operand"
   (ior (match_operand 0 "register_operand")
        (match_code "const_vector")))
-
-(define_predicate "vector_gs_scale_operand_64"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) == 1 || (INTVAL (op) == 8 && Pmode == DImode)")))
 
 (define_predicate "vector_gs_extension_operand"
   (ior (match_operand 0 "const_1_operand")
