@@ -563,7 +563,7 @@ struct ggc_root_tab jit_root_tab[] =
 
 static void
 jit_begin_diagnostic (diagnostic_context */*context*/,
-		      diagnostic_info */*diagnostic*/)
+		      const diagnostic_info */*diagnostic*/)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
   JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
@@ -576,7 +576,7 @@ jit_begin_diagnostic (diagnostic_context */*context*/,
 
 static void
 jit_end_diagnostic (diagnostic_context *context,
-		    diagnostic_info *diagnostic,
+		    const diagnostic_info *diagnostic,
 		    diagnostic_t)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
@@ -584,7 +584,8 @@ jit_end_diagnostic (diagnostic_context *context,
 
   /* Delegate to the playback context (and thence to the
      recording context).  */
-  gcc::jit::active_playback_ctxt->add_diagnostic (context, diagnostic);
+  gcc_assert (diagnostic);
+  gcc::jit::active_playback_ctxt->add_diagnostic (context, *diagnostic);
 }
 
 /* Language hooks.  */

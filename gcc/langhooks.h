@@ -516,7 +516,7 @@ struct lang_hooks
 
   /* Called by report_error_function to print out function name.  */
   void (*print_error_function) (diagnostic_context *, const char *,
-				struct diagnostic_info *);
+				const struct diagnostic_info *);
 
   /* Convert a character from the host's to the target's character
      set.  The character should be in what C calls the "basic source

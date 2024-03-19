@@ -171,13 +171,13 @@ struct diagnostic_info
 
 /*  Forward declarations.  */
 typedef void (*diagnostic_starter_fn) (diagnostic_context *,
-				       diagnostic_info *);
+				       const diagnostic_info *);
 
 typedef void (*diagnostic_start_span_fn) (diagnostic_context *,
 					  expanded_location);
 
 typedef void (*diagnostic_finalizer_fn) (diagnostic_context *,
-					 diagnostic_info *,
+					 const diagnostic_info *,
 					 diagnostic_t);
 
 typedef int (*diagnostic_option_enabled_cb) (int, unsigned, void *);
@@ -205,8 +205,8 @@ public:
 
   virtual void on_begin_group () = 0;
   virtual void on_end_group () = 0;
-  virtual void on_begin_diagnostic (diagnostic_info *) = 0;
-  virtual void on_end_diagnostic (diagnostic_info *,
+  virtual void on_begin_diagnostic (const diagnostic_info &) = 0;
+  virtual void on_end_diagnostic (const diagnostic_info &,
 				  diagnostic_t orig_diag_kind) = 0;
   virtual void on_diagram (const diagnostic_diagram &diagram) = 0;
 
@@ -233,8 +233,8 @@ public:
   ~diagnostic_text_output_format ();
   void on_begin_group () override {}
   void on_end_group () override {}
-  void on_begin_diagnostic (diagnostic_info *) override;
-  void on_end_diagnostic (diagnostic_info *,
+  void on_begin_diagnostic (const diagnostic_info &) override;
+  void on_end_diagnostic (const diagnostic_info &,
 			  diagnostic_t orig_diag_kind) override;
   void on_diagram (const diagnostic_diagram &diagram) override;
 };
@@ -985,10 +985,11 @@ extern void diagnostic_append_note (diagnostic_context *, location_t,
                                     const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 #endif
 extern char *diagnostic_build_prefix (diagnostic_context *, const diagnostic_info *);
-void default_diagnostic_starter (diagnostic_context *, diagnostic_info *);
+void default_diagnostic_starter (diagnostic_context *, const diagnostic_info *);
 void default_diagnostic_start_span_fn (diagnostic_context *,
 				       expanded_location);
-void default_diagnostic_finalizer (diagnostic_context *, diagnostic_info *,
+void default_diagnostic_finalizer (diagnostic_context *,
+				   const diagnostic_info *,
 				   diagnostic_t);
 void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
 

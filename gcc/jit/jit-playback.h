@@ -248,7 +248,7 @@ public:
 
   void
   add_diagnostic (diagnostic_context *context,
-		  struct diagnostic_info *diagnostic);
+		  const diagnostic_info &diagnostic);
 
   void
   set_tree_location (tree t, location *loc);

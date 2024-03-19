@@ -131,8 +131,8 @@ ResolveExpr::visit (AST::AssignmentExpr &expr)
    the default bug reporting instructions, as there is no bug to report.  */
 
 static void ATTRIBUTE_NORETURN
-funny_ice_finalizer (diagnostic_context *context, diagnostic_info *diagnostic,
-		     diagnostic_t diag_kind)
+funny_ice_finalizer (diagnostic_context *context,
+		     const diagnostic_info *diagnostic, diagnostic_t diag_kind)
 {
   gcc_assert (diag_kind == DK_ICE_NOBT);
   default_diagnostic_finalizer (context, diagnostic, diag_kind);

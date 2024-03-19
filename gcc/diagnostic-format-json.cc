@@ -43,12 +43,12 @@ public:
     m_cur_children_array = nullptr;
   }
   void
-  on_begin_diagnostic (diagnostic_info *) final override
+  on_begin_diagnostic (const diagnostic_info &) final override
   {
     /* No-op.  */
   }
   void
-  on_end_diagnostic (diagnostic_info *diagnostic,
+  on_end_diagnostic (const diagnostic_info &diagnostic,
 		     diagnostic_t orig_diag_kind) final override;
   void on_diagram (const diagnostic_diagram &) final override
   {
@@ -188,7 +188,7 @@ json_from_metadata (const diagnostic_metadata *metadata)
    within current diagnostic group.  */
 
 void
-json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
+json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
 				       diagnostic_t orig_diag_kind)
 {
   json::object *diag_obj = new json::object ();
@@ -202,7 +202,7 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
       "must-not-happen"
     };
     /* Lose the trailing ": ".  */
-    const char *kind_text = diagnostic_kind_text[diagnostic->kind];
+    const char *kind_text = diagnostic_kind_text[diagnostic.kind];
     size_t len = strlen (kind_text);
     gcc_assert (len > 2);
     gcc_assert (kind_text[len - 2] == ':');
@@ -217,15 +217,15 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
   diag_obj->set_string ("message", pp_formatted_text (m_context.printer));
   pp_clear_output_area (m_context.printer);
 
-  if (char *option_text = m_context.make_option_name (diagnostic->option_index,
+  if (char *option_text = m_context.make_option_name (diagnostic.option_index,
 						      orig_diag_kind,
-						      diagnostic->kind))
+						      diagnostic.kind))
     {
       diag_obj->set_string ("option", option_text);
       free (option_text);
     }
 
-  if (char *option_url = m_context.make_option_url (diagnostic->option_index))
+  if (char *option_url = m_context.make_option_url (diagnostic.option_index))
     {
       diag_obj->set_string ("option_url", option_url);
       free (option_url);
@@ -249,7 +249,7 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
       diag_obj->set_integer ("column-origin", m_context.m_column_origin);
     }
 
-  const rich_location *richloc = diagnostic->richloc;
+  const rich_location *richloc = diagnostic.richloc;
 
   json::array *loc_array = new json::array ();
   diag_obj->set ("locations", loc_array);
@@ -280,9 +280,9 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
      TODO: inlining information
      TODO: macro expansion information.  */
 
-  if (diagnostic->metadata)
+  if (diagnostic.metadata)
     {
-      json::object *metadata_obj = json_from_metadata (diagnostic->metadata);
+      json::object *metadata_obj = json_from_metadata (diagnostic.metadata);
       diag_obj->set ("metadata", metadata_obj);
     }
 

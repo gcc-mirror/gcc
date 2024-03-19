@@ -1207,7 +1207,7 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 */
 static void
 gfc_diagnostic_starter (diagnostic_context *context,
-			diagnostic_info *diagnostic)
+			const diagnostic_info *diagnostic)
 {
   char * kind_prefix = gfc_diagnostic_build_kind_prefix (context, diagnostic);
 
@@ -1283,7 +1283,7 @@ gfc_diagnostic_start_span (diagnostic_context *context,
 
 static void
 gfc_diagnostic_finalizer (diagnostic_context *context,
-			  diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
+			  const diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
 			  diagnostic_t orig_diag_kind ATTRIBUTE_UNUSED)
 {
   pp_destroy_prefix (context->printer);

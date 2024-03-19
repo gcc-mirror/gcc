@@ -8083,7 +8083,7 @@ extern void cxx_print_type			(FILE *, tree, int);
 extern void cxx_print_identifier		(FILE *, tree, int);
 extern void cxx_print_error_function		(diagnostic_context *,
 						 const char *,
-						 struct diagnostic_info *);
+						 const diagnostic_info *);
 
 /* in typeck.cc */
 /* Says how we should behave when comparing two arrays one of which

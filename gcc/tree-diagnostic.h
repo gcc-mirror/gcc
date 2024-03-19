@@ -49,9 +49,9 @@ along with GCC; see the file COPYING3.  If not see
        : current_function_decl)
 
 void diagnostic_report_current_function (diagnostic_context *,
-					 diagnostic_info *);
+					 const diagnostic_info *);
 void virt_loc_aware_diagnostic_finalizer (diagnostic_context *,
-					  diagnostic_info *);
+					  const diagnostic_info *);
 
 void tree_diagnostics_defaults (diagnostic_context *context);
 bool default_tree_printer (pretty_printer *, text_info *, const char *,

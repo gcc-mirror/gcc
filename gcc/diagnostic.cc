@@ -1077,7 +1077,7 @@ diagnostic_path::interprocedural_p () const
 
 void
 default_diagnostic_starter (diagnostic_context *context,
-			    diagnostic_info *diagnostic)
+			    const diagnostic_info *diagnostic)
 {
   diagnostic_report_current_module (context, diagnostic_location (diagnostic));
   pp_set_prefix (context->printer, diagnostic_build_prefix (context,
@@ -1095,7 +1095,7 @@ default_diagnostic_start_span_fn (diagnostic_context *context,
 
 void
 default_diagnostic_finalizer (diagnostic_context *context,
-			      diagnostic_info *diagnostic,
+			      const diagnostic_info *diagnostic,
 			      diagnostic_t)
 {
   char *saved_prefix = pp_take_prefix (context->printer);
@@ -1602,7 +1602,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
   m_diagnostic_groups.m_emission_count++;
 
   pp_format (this->printer, &diagnostic->message, m_urlifier);
-  m_output_format->on_begin_diagnostic (diagnostic);
+  m_output_format->on_begin_diagnostic (*diagnostic);
   pp_output_formatted_text (this->printer);
   if (m_show_cwe)
     print_any_cwe (*diagnostic);
@@ -1610,7 +1610,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
     print_any_rules (*diagnostic);
   if (m_show_option_requested)
     print_option_information (*diagnostic, orig_diag_kind);
-  m_output_format->on_end_diagnostic (diagnostic, orig_diag_kind);
+  m_output_format->on_end_diagnostic (*diagnostic, orig_diag_kind);
   switch (m_extra_output_kind)
     {
     default:
@@ -2396,16 +2396,17 @@ diagnostic_text_output_format::~diagnostic_text_output_format ()
 }
 
 void
-diagnostic_text_output_format::on_begin_diagnostic (diagnostic_info *diagnostic)
+diagnostic_text_output_format::on_begin_diagnostic (const diagnostic_info &diagnostic)
 {
-  (*diagnostic_starter (&m_context)) (&m_context, diagnostic);
+  (*diagnostic_starter (&m_context)) (&m_context, &diagnostic);
 }
 
 void
-diagnostic_text_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
+diagnostic_text_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
 						  diagnostic_t orig_diag_kind)
 {
-  (*diagnostic_finalizer (&m_context)) (&m_context, diagnostic, orig_diag_kind);
+  (*diagnostic_finalizer (&m_context)) (&m_context, &diagnostic,
+					orig_diag_kind);
 }
 
 void

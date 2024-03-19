@@ -50,7 +50,8 @@ extern const char *lhd_decl_printable_name (tree, int);
 extern const char *lhd_dwarf_name (tree, int);
 extern int lhd_types_compatible_p (tree, tree);
 extern void lhd_print_error_function (diagnostic_context *,
-				      const char *, struct diagnostic_info *);
+				      const char *,
+				      const struct diagnostic_info *);
 extern void lhd_set_decl_assembler_name (tree decl);
 extern void lhd_overwrite_decl_assembler_name (tree decl, tree name);
 extern bool lhd_warn_unused_global_decl (const_tree);

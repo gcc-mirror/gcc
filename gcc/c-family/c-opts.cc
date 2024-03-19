@@ -168,7 +168,7 @@ c_common_option_lang_mask (void)
 /* Diagnostic finalizer for C/C++/Objective-C/Objective-C++.  */
 static void
 c_diagnostic_finalizer (diagnostic_context *context,
-			diagnostic_info *diagnostic,
+			const diagnostic_info *diagnostic,
 			diagnostic_t)
 {
   char *saved_prefix = pp_take_prefix (context->printer);
