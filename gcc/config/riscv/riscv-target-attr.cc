@@ -54,6 +54,10 @@ public:
     m_loc = loc;
   }
 
+  riscv_subset_list* get_riscv_subset_list () {
+    return m_subset_list;
+  }
+
   void update_settings (struct gcc_options *opts) const;
 private:
   const char *m_raw_attr_str;
@@ -109,7 +113,7 @@ riscv_target_attr_parser::parse_arch (const char *str)
       char *str_to_check = buf.get ();
       strcpy (str_to_check, str);
       const char *token = strtok_r (str_to_check, ",", &str_to_check);
-      m_subset_list = riscv_current_subset_list ()->clone ();
+      m_subset_list = riscv_cmdline_subset_list ()->clone ();
       m_subset_list->set_loc (m_loc);
       while (token)
 	{
@@ -297,7 +301,8 @@ num_occurences_in_str (char c, char *str)
    and update the global target options space.  */
 
 static bool
-riscv_process_target_attr (tree args, location_t loc, struct gcc_options *opts)
+riscv_process_target_attr (tree fndecl, tree args, location_t loc,
+			   struct gcc_options *opts)
 {
   if (TREE_CODE (args) == TREE_LIST)
     {
@@ -306,7 +311,7 @@ riscv_process_target_attr (tree args, location_t loc, struct gcc_options *opts)
 	  tree head = TREE_VALUE (args);
 	  if (head)
 	    {
-	      if (!riscv_process_target_attr (head, loc, opts))
+	      if (!riscv_process_target_attr (fndecl, head, loc, opts))
 		return false;
 	    }
 	  args = TREE_CHAIN (args);
@@ -359,6 +364,11 @@ riscv_process_target_attr (tree args, location_t loc, struct gcc_options *opts)
   /* Apply settings from target attribute.  */
   attr_parser.update_settings (opts);
 
+  /* Add the string of the target attribute to the fndecl hash table.  */
+  riscv_subset_list *subset_list = attr_parser.get_riscv_subset_list ();
+  if (subset_list)
+    riscv_func_target_put (fndecl, subset_list->to_string (true));
+
   return true;
 }
 
@@ -376,7 +386,7 @@ riscv_option_valid_attribute_p (tree fndecl, tree, tree args, int)
   /* Save the current target options to restore at the end.  */
   cl_target_option_save (&cur_target, &global_options, &global_options_set);
 
-  ret = riscv_process_target_attr (args, loc, &global_options);
+  ret = riscv_process_target_attr (fndecl, args, loc, &global_options);
 
   if (ret)
     {

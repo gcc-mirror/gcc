@@ -8691,8 +8691,13 @@ riscv_declare_function_name (FILE *stream, const char *name, tree fndecl)
   if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl))
     {
       fprintf (stream, "\t.option push\n");
-      std::string isa = riscv_current_subset_list ()->to_string (true);
+
+      std::string *target_name = riscv_func_target_get (fndecl);
+      std::string isa = target_name != NULL
+	? *target_name
+	: riscv_cmdline_subset_list ()->to_string (true);
       fprintf (stream, "\t.option arch, %s\n", isa.c_str ());
+      riscv_func_target_remove_and_destory (fndecl);
 
       struct cl_target_option *local_cl_target =
 	TREE_TARGET_OPTION (DECL_FUNCTION_SPECIFIC_TARGET (fndecl));
