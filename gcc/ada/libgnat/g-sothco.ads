@@ -123,10 +123,13 @@ package GNAT.Sockets.Thin_Common is
 
    type In_Addr is record
       S_B1, S_B2, S_B3, S_B4 : C.unsigned_char;
-   end record with Convention => C, Alignment => C.int'Alignment;
+   end record
+     with Convention => C, Alignment  => C.int'Alignment, Universal_Aliasing;
    --  IPv4 address, represented as a network-order C.int. Note that the
    --  underlying operating system may assume that values of this type have
-   --  C.int alignment, so we need to provide a suitable alignment clause here.
+   --  C.int's alignment, so we need to provide a suitable alignment clause.
+   --  We also need to inhibit strict type-based aliasing optimizations in
+   --  order to implement the following unchecked conversions efficiently.
 
    function To_In_Addr is new Ada.Unchecked_Conversion (C.int, In_Addr);
    function To_Int     is new Ada.Unchecked_Conversion (In_Addr, C.int);
