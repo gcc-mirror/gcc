@@ -1,3 +1,757 @@
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/feat-cxx14.cc: Remove dependency on
+	_GLIBCXX_USE_C99_STDINT_TR1.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Remove
+	dependency on _GLIBCXX_USE_C99_STDINT_TR1.
+	* testsuite/experimental/string_view/typedefs.cc: Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Add new file.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/debug.cc (__glibcxx_assert_fail): Move to ...
+	* src/c++11/assert_fail.cc: New file.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (projected): Replace class
+	template with alias template denoting an ADL-proofed helper.
+	(incremental_traits<projected<Iter, Proj>>): Remove.
+	* testsuite/24_iterators/indirect_callable/projected-adl.cc:
+	New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/40380
+	* include/bits/basic_string.h: Improve doxygen comments.
+	* include/bits/cow_string.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/fs_dir.h: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/bits/quoted_string.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/std/filesystem: Likewise.
+	* include/std/iomanip: Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ptr_traits.h (pointer_traits::pointer_to): Rename
+	parameter.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple: Add better Doxygen comments.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/new_nothrow.cc: Add missing noexcept
+	to operator delete replacements.
+	* testsuite/20_util/any/cons/92156.cc: Disable
+	-Winit-list-lifetime warnings from instantiating invalid
+	specialization of manager function.
+	* testsuite/20_util/any/modifiers/92156.cc: Likewise.
+	* testsuite/20_util/default_delete/void_neg.cc: Prune additional
+	diagnostics.
+	* testsuite/20_util/headers/memory/synopsis.cc: Add missing
+	noexcept.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Prune
+	additional diagnostic.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite.cc: Add
+	missing noexcept to operator delete replacements.
+	* testsuite/21_strings/basic_string/cons/char/103919.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/emplace/92300.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/insert/92300.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++11.cc:
+	Add missing noexcept to synopsis declarations.
+	* testsuite/24_iterators/headers/iterator/range_access_c++14.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++17.cc:
+	Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/headers/memory/synopsis.cc: Add declarations
+	from C++11 and later.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tempbuf.h (_Temporary_buffer): Disable
+	warnings about get_temporary_buffer being deprecated.
+	* include/ext/functional (mem_fun1, mem_fun1_ref): Disable
+	warnings about mem_fun1_t, const_mem_fun1_t, mem_fun1_ref_t and
+	const_mem_fun1_ref_t being deprecated.
+	* include/std/spanstream (basic_spanbuf::setbuf): Add assertion
+	and adjust to avoid narrowing warning.
+	* libsupc++/exception_ptr.h [!__cpp_rtti && !__cpp_exceptions]
+	(make_exception_ptr): Add missing inline specifier.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Define
+	_GTHREAD_USE_MUTEX_TIMEDLOCK macro.
+	* include/bits/std_mutex.h (mutex, lock_guard): Use @since and
+	@headerfile.
+	* include/bits/unique_lock.h (unique_lock): Likewise.
+	* include/std/mutex (recursive_mutex, timed_mutex)
+	(recursive_timed_mutex, scoped_lock): Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Define
+	_GLIBCXX23_CONSTEXPR macro.
+	* include/backward/auto_ptr.h (auto_ptr): Use @deprecated.
+	* include/bits/unique_ptr.h (default_delete): Use @since and
+	@headerfile.
+	* include/std/scoped_allocator: Remove @ingroup from @file
+	block.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ostream_insert.h: Mark helper functions as
+	undocumented by Doxygen.
+	* include/bits/stl_algo.h: Use markdown for formatting and mark
+	helper functions as undocumented.
+	* include/bits/stl_numeric.h:  Likewise.
+	* include/bits/stl_pair.h (pair): Add @headerfile.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Define __allocator_base
+	so that Doxygen shows the right base-class for std::allocator.
+	* include/bits/alloc_traits.h: Improve doxygen docs.
+	* include/bits/allocator.h: Likewise.
+	* include/bits/new_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Define macro
+	_GLIBCXX_DOXYGEN_ONLY to expand its argument.
+	* include/bits/c++config (_GLIBCXX_DOXYGEN_ONLY): Define.
+	* include/bits/regex.h: Improve doxygen docs.
+	* include/bits/regex_constants.h: Likewise.
+	* include/bits/regex_error.h: Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic: Suppress doxygen docs for
+	implementation details.
+	* include/bits/atomic_base.h: Likewise.
+	* include/bits/shared_ptr_atomic.h: Use markdown. Fix grouping
+	so that std::atomic is not added to the pointer abstractions
+	group.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/Makefile.am [ENABLE_SYMVERS_GNU_NAMESPACE] (cxx11_sources):
+	Do not build the compatibility*-c++0x.cc objects.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/compatibility-c++0x.cc [_GLIBCXX_INLINE_VERSION]:
+	Refuse to build for the versioned namespace.
+	* src/c++11/compatibility-chrono.cc: Likewise.
+	* src/c++11/compatibility-condvar.cc: Likewise.
+	* src/c++11/compatibility-thread-c++0x.cc: Likewise.
+	* src/c++11/chrono.cc (system_clock, steady_clock):
+	Use macros to define in inline namespace _V2, matching the
+	declarations in <system_error>.
+	* src/c++11/system_error.cc (system_category, generic_category):
+	Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Expand new macros to
+	nothing.
+	* include/bits/c++config (_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE)
+	(_GLIBCXX_END_INLINE_ABI_NAMESPACE): Define new macros.
+	* include/bits/algorithmfwd.h (_V2::__rotate): Use new macros
+	for the namespace.
+	* include/bits/chrono.h (chrono::_V2::system_clock): Likewise.
+	* include/bits/stl_algo.h (_V2::__rotate): Likewise.
+	* include/std/condition_variable (_V2::condition_variable_any):
+	Likewise.
+	* include/std/system_error (_V2::error_category): Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (GROUP_NESTED_COMPOUNDS): Set to NO.
+	(CLASS_DIAGRAMS): Remove obsolete option.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (__is_path_iter_src): Replace class
+	template with variable template.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ptr_traits.h (__ptr_traits_elem) [__cpp_concepts]:
+	Also define the __ptr_traits_elem class template for the
+	concepts case.
+	(pointer_traits<Ptr>): Remove constrained partial
+	specialization.
+	* testsuite/20_util/pointer_traits/lwg3545.cc: Check for
+	ambiguitiy with program-defined partial specialization.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits::is_always_equal):
+	Only instantiate is_empty if needed.
+	* include/bits/ptr_traits.h (__ptr_traits_impl::difference_type)
+	(__ptr_traits_impl::rebind): Use __detected_or.
+	* include/experimental/type_traits (is_same_v): Add a partial
+	specialization instead of instantiating the std::is_same class
+	template.
+	(detected_t): Redefine in terms of detected_or_t.
+	(is_detected, is_detected_v): Redefine in terms of detected_t.
+	* include/std/type_traits [__cpp_concepts] (__detected_or): Add
+	new definition using concepts.
+	(__detector::value_t): Rename to __is_detected.
+	* testsuite/17_intro/names.cc: Check value_t isn't used.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ptr_traits.h: Add some doxygen comments.
+
+2024-03-18  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2022-06-24  Xi Ruoyao  <xry111@xry111.site>
+
+	* scripts/extract_symvers.in: Use grep -E instead of egrep.
+	* scripts/run_doxygen: Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107376
+	* include/bits/regex_executor.h (_Executor::_Executor): Use same
+	allocator for _M_cur_results and _M_results.
+	* include/bits/regex_executor.tcc (_Executor::_M_main_dispatch):
+	Prevent possibly incorrect allocator propagating to
+	_M_cur_results.
+	* testsuite/28_regex/algorithms/regex_match/107376.cc: New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream  (basic_stringbuf::view): Define for old
+	std::string ABI.
+	(basic_istringstream::view, basic_stringstream::view)
+	(basic_stringstream::view): Likewise.
+	* testsuite/27_io/basic_istringstream/view/char/1.cc: Remove
+	{ dg-require-effective-target cxx11_abi }.
+	* testsuite/27_io/basic_istringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/view/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/view/wchar_t/1.cc:
+	Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for mkdir,
+	chmod, chdir, and getcwd.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/c++17/fs_ops.cc (create_dir): Use USE_MKDIR macro.
+	(fs::current_path): Use USE_GETCWD and USE_CHDIR macros.
+	(fs::permissions): Use USE_CHMOD macro.
+	* src/filesystem/ops-common.h [FILESYSTEM_IS_WINDOWS]
+	(chmod, mkdir, getcwd, chdir): Define new macros.
+	[FILESYSTEM_IS_WINDOWS] (chmod, mkdir, getcwd, chdir): Use
+	new macros.
+	* src/filesystem/ops.cc (create_dir): Use USE_MKDIR macro.
+	(fs::current_path): Use USE_GETCWD and USE_CHDIR macros.
+	(fs::permissions): Use USE_CHMOD macro.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/new_allocator.h (__new_allocator): Define copy
+	assignment operator as defaulted.
+	* include/std/complex (complex<float>, complex<double>)
+	(complex<long double>): Define copy constructor as defaulted.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112473
+	* include/bits/utility.h (integer_sequence): Add static_assert.
+	* testsuite/20_util/integer_sequence/112473.cc: New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111172
+	* include/std/variant (get<T>): Remove !is_void static
+	assertions.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112089
+	* include/std/shared_mutex (shared_lock::unlock): Change errc
+	constant to operation_not_permitted.
+	* testsuite/30_threads/shared_lock/locking/112089.cc: New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113960
+	* include/bits/stl_algobase.h (__is_byte_iter): Replace with ...
+	(__memcmp_ordered_with): New concept.
+	(lexicographical_compare_three_way): Use __memcmp_ordered_with
+	instead of __is_byte_iter. Use correct length for memcmp.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/113960.cc:
+	New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108846
+	* include/bits/stl_algobase.h (__copy_move<false, false, RA>)
+	Add __assign_one static member function.
+	(__copy_move<true, false, RA>): Likewise.
+	(__copy_move<IsMove, true, RA>): Do not use memmove for a single
+	value.
+	(__copy_move_backward<IsMove, true, RA>): Likewise.
+	* testsuite/25_algorithms/copy/108846.cc: New test.
+	* testsuite/25_algorithms/copy_backward/108846.cc: New test.
+	* testsuite/25_algorithms/copy_n/108846.cc: New test.
+	* testsuite/25_algorithms/move/108846.cc: New test.
+	* testsuite/25_algorithms/move_backward/108846.cc: New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stream_iterator.h (istream_iterator): Add
+	constexpr to copy constructor, as per LWG 3600.
+	* testsuite/24_iterators/istream_iterator/cons/constexpr.cc:
+	Check copy construction.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (match_results): Add allocator-extended
+	copy and move constructors, as per LWG 2195.
+	* testsuite/28_regex/match_results/ctors/char/alloc.cc: New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/codecvt.cc: Add [[likely]] and [[unlikely]]
+	attributes.
+
+2024-03-18  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	Backported from master:
+	2023-01-13  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	PR libstdc++/86419
+	* src/c++11/codecvt.cc (read_utf8_code_point): Correctly detect
+	errors in incomplete multibyte sequences.
+	(utf16_in): Remove surrogates parameter. Fix conditions for
+	returning partial.
+	(utf16_out): Fix condition for returning partial.
+	(ucs2_in): Do not pass surrogates argument to utf16_in.
+	* testsuite/22_locale/codecvt/codecvt_unicode.cc: New test.
+	* testsuite/22_locale/codecvt/codecvt_unicode.h: New header for
+	tests.
+	* testsuite/22_locale/codecvt/codecvt_unicode_wchar_t.cc: New
+	test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/algorithmfwd.h (random_shuffle): Add deprecated
+	attribute.
+	* include/bits/stl_algo.h (random_shuffle): Correct comments.
+	* testsuite/25_algorithms/random_shuffle/1.cc: Disable
+	deprecated warnings.
+	* testsuite/25_algorithms/random_shuffle/59603.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/deprecated.cc: New
+	test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109758
+	* include/bits/std_abs.h (abs(__float128)): Handle negative NaN
+	and negative zero correctly.
+	* testsuite/26_numerics/headers/cmath/109758.cc: New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_C99_TR1): Use a non-null pointer
+	to check for nan, nanf, and nanl.
+	* configure: Regenerate.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/scoped_allocator (scoped_allocator_adaptor): Add
+	noexcept to all constructors except the default constructor.
+	(scoped_allocator_adaptor::inner_allocator): Add noexcept.
+	(scoped_allocator_adaptor::outer_allocator): Likewise.
+	* testsuite/20_util/scoped_allocator/noexcept.cc: New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/pstl/numeric_ops/transform_reduce.cc:
+	Add const to equality operator.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/modifiers/emplace/52799.cc:
+	Removed.
+	* testsuite/23_containers/deque/modifiers/emplace/const_iterator.cc:
+	Removed.
+	* testsuite/23_containers/list/modifiers/emplace/52799.cc:
+	Removed.
+	* testsuite/23_containers/list/modifiers/emplace/const_iterator.cc:
+	Removed.
+	* testsuite/23_containers/vector/modifiers/emplace/52799.cc:
+	Removed.
+	* testsuite/23_containers/vector/modifiers/emplace/const_iterator.cc:
+	Removed.
+	* testsuite/23_containers/deque/modifiers/emplace/1.cc: New
+	test.
+	* testsuite/23_containers/list/modifiers/emplace/1.cc: New
+	test.
+	* testsuite/23_containers/vector/modifiers/emplace/1.cc: New
+	test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (_Destroy): Qualify call.
+	* include/bits/stl_construct.h (_Destroy, _Destroy_n): Likewise.
+	* testsuite/23_containers/vector/cons/destroy-adl.cc: New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110593
+	* include/bits/chrono.h (duration): Improve static assert
+	messages.
+	(__is_ratio): Move to ...
+	* include/std/ratio (__is_ratio): ... here.
+	(__is_ratio_v): New variable template and partial
+	specialization.
+	(__are_both_ratios): New function template.
+	(__ratio_multiply, ratio_equal, ratio_less, __ratio_add):
+	Add static assertion.
+	* testsuite/20_util/ratio/requirements/type_constraints.cc:
+	New test.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc:
+	Adjust expected error.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc:
+	Likewise.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/debug.cc (acquire_sequence_ptr_for_lock): New
+	function.
+	(reset_sequence_ptr): New function.
+	(_Safe_iterator_base::_M_detach)
+	(_Safe_local_iterator_base::_M_detach): Replace bare atomic_load
+	with acquire_sequence_ptr_for_lock.
+	(_Safe_iterator_base::_M_reset): Replace bare atomic_store with
+	reset_sequence_ptr.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc (resize_and_overwrite): Invoke
+	the callable with the same size as resize_and_overwrite was
+	called with.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	Check with small values for the new size.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc (basic_string::resize_and_overwrite):
+	Pass rvalues to the callback, as now allowed by LWG 3645.
+	Enforce preconditions on the return value.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	Adjust.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (atomic): Change class-head
+	to struct.
+	* include/bits/stl_tree.h (_Rb_tree_merge_helper): Change
+	class-head to struct in friend declaration.
+	* include/std/future (_Task_state_base, _Task_state): Likewise.
+	* include/std/scoped_allocator (__inner_type_impl): Likewise.
+	* include/std/valarray (_BinClos, _SClos, _GClos, _IClos)
+	(_ValFunClos, _RefFunClos): Change class-head to struct.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Update reference to -std=gnu++14 as
+	the default.
+	* doc/html/manual/test.html: Regenerate.
+
+2024-03-18  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	Backported from master:
+	2023-09-08  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	* src/libbacktrace/Makefile.am: Remove -Werror.
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2024-03-18  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2023-09-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* include/bits/basic_string.h: (basic_string(basic_string&&)):
+	Activate _M_local_buf when needed.
+	(basic_string(basic_string&&, const _Alloc&)): Likewise.
+	* include/bits/basic_string.tcc: (basic_string::swap): Likewise.
+	* include/std/variant: (__detail::__variant::__construct_n): New.
+	(__detail::__variant::__emplace): Use __construct_n.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Fix snprintf checks.
+	* configure: Regenerate.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr2/dynamic_bitset (dynamic_bitset): Pass zero and one
+	characters to _M_copy_from_string.
+	* testsuite/tr2/dynamic_bitset/string.cc: New test.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__from_chars_pow2_base): Convert base to
+	unsigned for call to __countr_zero.
+	(__from_chars_alnum): Likewise for call to __bit_width.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (uneq_allocator): Fix
+	equality operator for heterogeneous comparisons.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66146
+	* doc/xml/manual/status_cxx2011.xml: Remove mention of Linux in
+	note about std::call_once.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Move custom_cat
+	to namespace scope.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Change URLs to use
+	https.
+	* doc/html/manual/*: Regenerate.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Replace outdated
+	info on ChangeLog entries.
+	* doc/html/manual/appendix_contributing.html: Regenerate.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107500
+	* libsupc++/eh_globals.cc (eh_globals): Remove immortalizing
+	wrapper.
+	(__cxxabiv1::__cxa_get_globals_fast): Adjust.
+	(__cxxabiv1::__cxa_get_globals): Adjust.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114147
+	* include/std/tuple (tuple::tuple(allocator_arg_t, const Alloc&)):
+	Add missing overload of allocator-extended default constructor.
+	(tuple<T1,T2>::tuple(allocator_arg_t, const Alloc&)): Likewise.
+	* testsuite/20_util/tuple/cons/114147.cc: New test.
+
 2024-03-13  Cassio Neri  <cassio.neri@gmail.com>
 
 	Backported from master:
