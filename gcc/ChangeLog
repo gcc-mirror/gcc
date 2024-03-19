@@ -1,3 +1,12 @@
+2024-03-18  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/114160
+	* config/riscv/thead.cc (th_mempair_save_regs):
+	Emit REG_FRAME_RELATED_EXPR notes in prologue.
+
 2024-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

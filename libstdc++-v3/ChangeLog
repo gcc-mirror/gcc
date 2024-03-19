@@ -1,3 +1,23 @@
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66146
+	* doc/xml/manual/status_cxx2011.xml: Remove mention of Linux in
+	note about std::call_once.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Move custom_cat
+	to namespace scope.
+
 2024-03-17  François Dumont  <fdumont@gcc.gnu.org>
 
 	Backported from master:
