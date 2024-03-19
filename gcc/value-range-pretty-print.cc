@@ -30,6 +30,44 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "value-range-pretty-print.h"
 
+static void
+print_int_bound (pretty_printer *pp, const wide_int &bound, tree type)
+{
+  wide_int type_min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+  wide_int type_max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+
+  if (INTEGRAL_TYPE_P (type)
+      && !TYPE_UNSIGNED (type)
+      && bound == type_min
+      && TYPE_PRECISION (type) != 1)
+    pp_string (pp, "-INF");
+  else if (bound == type_max && TYPE_PRECISION (type) != 1)
+    pp_string (pp, "+INF");
+  else
+    pp_wide_int (pp, bound, TYPE_SIGN (type));
+}
+
+static void
+print_irange_bitmasks (pretty_printer *pp, const irange_bitmask &bm)
+{
+  if (bm.unknown_p ())
+    return;
+
+  pp_string (pp, " MASK ");
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p;
+  unsigned len_mask, len_val;
+  if (print_hex_buf_size (bm.mask (), &len_mask)
+      | print_hex_buf_size (bm.value (), &len_val))
+    p = XALLOCAVEC (char, MAX (len_mask, len_val));
+  else
+    p = buf;
+  print_hex (bm.mask (), p);
+  pp_string (pp, p);
+  pp_string (pp, " VALUE ");
+  print_hex (bm.value (), p);
+  pp_string (pp, p);
+}
+
 void
 vrange_printer::visit (const unsupported_range &r) const
 {
@@ -66,51 +104,12 @@ vrange_printer::visit (const irange &r) const
   for (unsigned i = 0; i < r.num_pairs (); ++i)
     {
       pp_character (pp, '[');
-      print_irange_bound (r.lower_bound (i), r.type ());
+      print_int_bound (pp, r.lower_bound (i), r.type ());
       pp_string (pp, ", ");
-      print_irange_bound (r.upper_bound (i), r.type ());
+      print_int_bound (pp, r.upper_bound (i), r.type ());
       pp_character (pp, ']');
     }
- print_irange_bitmasks (r);
-}
-
-void
-vrange_printer::print_irange_bound (const wide_int &bound, tree type) const
-{
-  wide_int type_min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-  wide_int type_max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-
-  if (INTEGRAL_TYPE_P (type)
-      && !TYPE_UNSIGNED (type)
-      && bound == type_min
-      && TYPE_PRECISION (type) != 1)
-    pp_string (pp, "-INF");
-  else if (bound == type_max && TYPE_PRECISION (type) != 1)
-    pp_string (pp, "+INF");
-  else
-    pp_wide_int (pp, bound, TYPE_SIGN (type));
-}
-
-void
-vrange_printer::print_irange_bitmasks (const irange &r) const
-{
-  irange_bitmask bm = r.m_bitmask;
-  if (bm.unknown_p ())
-    return;
-
-  pp_string (pp, " MASK ");
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p;
-  unsigned len_mask, len_val;
-  if (print_hex_buf_size (bm.mask (), &len_mask)
-      | print_hex_buf_size (bm.value (), &len_val))
-    p = XALLOCAVEC (char, MAX (len_mask, len_val));
-  else
-    p = buf;
-  print_hex (bm.mask (), p);
-  pp_string (pp, p);
-  pp_string (pp, " VALUE ");
-  print_hex (bm.value (), p);
-  pp_string (pp, p);
+  print_irange_bitmasks (pp, r.m_bitmask);
 }
 
 void

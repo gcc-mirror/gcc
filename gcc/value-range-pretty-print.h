@@ -29,8 +29,6 @@ public:
   void visit (const irange &) const override;
   void visit (const frange &) const override;
 private:
-  void print_irange_bound (const wide_int &w, tree type) const;
-  void print_irange_bitmasks (const irange &) const;
   void print_frange_nan (const frange &) const;
   void print_real_value (tree type, const REAL_VALUE_TYPE &r) const;
 
