@@ -5213,7 +5213,7 @@ lra_constraints (bool first_p)
   bool changed_p;
   int i, hard_regno, new_insns_num;
   unsigned int min_len, new_min_len, uid;
-  rtx set, x, reg, dest_reg;
+  rtx set, x, reg, nosubreg_dest;
   rtx_insn *original_insn;
   basic_block last_bb;
   bitmap_iterator bi;
@@ -5377,14 +5377,14 @@ lra_constraints (bool first_p)
 	{
 	  if ((set = single_set (curr_insn)) != NULL_RTX)
 	    {
-	      dest_reg = SET_DEST (set);
+	      nosubreg_dest = SET_DEST (set);
 	      /* The equivalence pseudo could be set up as SUBREG in a
 		 case when it is a call restore insn in a mode
 		 different from the pseudo mode.  */
-	      if (GET_CODE (dest_reg) == SUBREG)
-		dest_reg = SUBREG_REG (dest_reg);
-	      if ((REG_P (dest_reg)
-		   && (x = get_equiv (dest_reg)) != dest_reg
+	      if (GET_CODE (nosubreg_dest) == SUBREG)
+		nosubreg_dest = SUBREG_REG (nosubreg_dest);
+	      if ((REG_P (nosubreg_dest)
+		   && (x = get_equiv (nosubreg_dest)) != nosubreg_dest
 		   /* Remove insns which set up a pseudo whose value
 		      cannot be changed.  Such insns might be not in
 		      init_insns because we don't update equiv data
@@ -5403,11 +5403,21 @@ lra_constraints (bool first_p)
 			  up the equivalence.  */
 		       || in_list_p (curr_insn,
 				     ira_reg_equiv
-				     [REGNO (dest_reg)].init_insns)))
+				     [REGNO (nosubreg_dest)].init_insns)))
 		  || (((x = get_equiv (SET_SRC (set))) != SET_SRC (set))
 		      && in_list_p (curr_insn,
 				    ira_reg_equiv
-				    [REGNO (SET_SRC (set))].init_insns)))
+				    [REGNO (SET_SRC (set))].init_insns)
+		      /* This is a reverse equivalence to memory (see ira.cc)
+			 in store insn.  We can reload all the destination and
+			 have an output reload which is a store to memory.  If
+			 we just remove the insn, we will have the output
+			 reload storing an undefined value to the memory.
+			 Check that we did not reload the memory to prevent a
+			 wrong code generation.  We could implement using the
+			 equivalence still in such case but doing this is not
+			 worth the efforts as such case is very rare.  */
+		      && MEM_P (nosubreg_dest)))
 		{
 		  /* This is equiv init insn of pseudo which did not get a
 		     hard register -- remove the insn.	*/
