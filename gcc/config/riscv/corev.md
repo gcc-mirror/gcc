@@ -2614,3 +2614,40 @@
 	 cv.subrotmj.div8\t%0,%1,%2"
 	[(set_attr "type" "arith")
 	(set_attr "mode" "SI")])
+
+;; XCVBI Instructions
+(define_insn "*cv_branch<mode>"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 1 "equality_operator"
+			 [(match_operand:X 2 "register_operand" "r")
+			  (match_operand:X 3 "const_int5s_operand" "CV_bi_sign5")])
+	 (label_ref (match_operand 0 "" ""))
+	 (pc)))]
+  "TARGET_XCVBI"
+{
+  if (get_attr_length (insn) == 12)
+    return "cv.b%N1\t%2,%z3,1f; jump\t%l0,ra; 1:";
+
+  return "cv.b%C1imm\t%2,%3,%0";
+}
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")])
+
+(define_insn "*branch<mode>"
+  [(set (pc)
+        (if_then_else
+         (match_operator 1 "ordered_comparison_operator"
+                         [(match_operand:X 2 "register_operand" "r")
+                          (match_operand:X 3 "reg_or_0_operand" "rJ")])
+         (label_ref (match_operand 0 "" ""))
+         (pc)))]
+  "TARGET_XCVBI"
+{
+  if (get_attr_length (insn) == 12)
+    return "b%N1\t%2,%z3,1f; jump\t%l0,ra; 1:";
+
+  return "b%C1\t%2,%z3,%l0";
+}
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")])

@@ -2756,7 +2756,7 @@
 			  (match_operand:X 3 "reg_or_0_operand" "rJ")])
 	 (label_ref (match_operand 0 "" ""))
 	 (pc)))]
-  ""
+  "!TARGET_XCVBI"
 {
   if (get_attr_length (insn) == 12)
     return "b%N1\t%2,%z3,1f; jump\t%l0,ra; 1:";

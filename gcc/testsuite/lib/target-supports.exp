@@ -13375,6 +13375,19 @@ proc check_effective_target_cv_simd { } {
     } "-march=rv32i_xcvsimd" ]
 }
 
+# Return 1 if the CORE-V BI extension is available
+proc check_effective_target_cv_bi { } {
+    if { !([istarget riscv*-*-*]) } {
+         return 0
+     }
+    return [check_no_compiler_messages cv_bi object {
+        void foo (void)
+        {
+          asm ("cv.beqimm t0, -16, foo");
+        }
+    } "-march=rv32i_xcvbi" ]
+}
+
 proc check_effective_target_loongarch_sx { } {
     return [check_no_compiler_messages loongarch_lsx assembly {
        #if !defined(__loongarch_sx)

@@ -268,6 +268,12 @@
        (and (match_test "IN_RANGE (ival, 0, 1073741823)")
             (match_test "exact_log2 (ival + 1) != -1"))))
 
+(define_constraint "CV_bi_sign5"
+  "@internal
+   A 5-bit signed immediate for CORE-V Immediate Branch."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -16, 15)")))
+
 (define_constraint "CV_simd_si6"
   "A 6-bit signed immediate for SIMD."
   (and (match_code "const_int")

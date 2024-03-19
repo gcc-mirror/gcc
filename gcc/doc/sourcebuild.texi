@@ -2507,6 +2507,9 @@ Test system has an integer register width of 32 bits.
 @item rv64
 Test system has an integer register width of 64 bits.
 
+@item cv_bi
+Test system has support for the CORE-V BI extension.
+
 @end table
 
 @subsubsection CORE-V specific attributes
