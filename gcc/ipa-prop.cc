@@ -2500,7 +2500,9 @@ static tree
 ipa_get_stmt_member_ptr_load_param (gimple *stmt, bool use_delta,
 				    HOST_WIDE_INT *offset_p)
 {
-  tree rhs, rec, ref_field, ref_offset, fld, ptr_field, delta_field;
+  tree rhs, fld, ptr_field, delta_field;
+  tree ref_field = NULL_TREE;
+  tree ref_offset = NULL_TREE;
 
   if (!gimple_assign_single_p (stmt))
     return NULL_TREE;
@@ -2511,35 +2513,53 @@ ipa_get_stmt_member_ptr_load_param (gimple *stmt, bool use_delta,
       ref_field = TREE_OPERAND (rhs, 1);
       rhs = TREE_OPERAND (rhs, 0);
     }
+
+  if (TREE_CODE (rhs) == MEM_REF)
+    {
+      ref_offset = TREE_OPERAND (rhs, 1);
+      if (ref_field && integer_nonzerop (ref_offset))
+	return NULL_TREE;
+    }
+  else if (!ref_field)
+    return NULL_TREE;
+
+  if (TREE_CODE (rhs) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (rhs, 0)))
+    {
+      rhs = TREE_OPERAND (rhs, 0);
+      if (TREE_CODE (SSA_NAME_VAR (rhs)) != PARM_DECL
+	  || !type_like_member_ptr_p (TREE_TYPE (TREE_TYPE (rhs)), &ptr_field,
+				      &delta_field))
+	return NULL_TREE;
+    }
   else
-    ref_field = NULL_TREE;
-  if (TREE_CODE (rhs) != MEM_REF)
-    return NULL_TREE;
-  rec = TREE_OPERAND (rhs, 0);
-  if (TREE_CODE (rec) != ADDR_EXPR)
-    return NULL_TREE;
-  rec = TREE_OPERAND (rec, 0);
-  if (TREE_CODE (rec) != PARM_DECL
-      || !type_like_member_ptr_p (TREE_TYPE (rec), &ptr_field, &delta_field))
-    return NULL_TREE;
-  ref_offset = TREE_OPERAND (rhs, 1);
+    {
+      if (TREE_CODE (rhs) == MEM_REF
+	  && TREE_CODE (TREE_OPERAND (rhs, 0)) == ADDR_EXPR)
+	rhs = TREE_OPERAND (TREE_OPERAND (rhs, 0), 0);
+      if (TREE_CODE (rhs) != PARM_DECL
+	  || !type_like_member_ptr_p (TREE_TYPE (rhs), &ptr_field,
+				      &delta_field))
+	return NULL_TREE;
+    }
 
   if (use_delta)
     fld = delta_field;
   else
     fld = ptr_field;
-  if (offset_p)
-    *offset_p = int_bit_position (fld);
 
   if (ref_field)
     {
-      if (integer_nonzerop (ref_offset))
+      if (ref_field != fld)
 	return NULL_TREE;
-      return ref_field == fld ? rec : NULL_TREE;
     }
-  else
-    return tree_int_cst_equal (byte_position (fld), ref_offset) ? rec
-      : NULL_TREE;
+  else if (!tree_int_cst_equal (byte_position (fld), ref_offset))
+    return NULL_TREE;
+
+  if (offset_p)
+    *offset_p = int_bit_position (fld);
+  return rhs;
 }
 
 /* Returns true iff T is an SSA_NAME defined by a statement.  */
@@ -2585,8 +2605,9 @@ ipa_note_param_call (struct cgraph_node *node, int param_index,
    describing the call is created.  This is very simple for ordinary pointers
    represented in SSA but not-so-nice when it comes to member pointers.  The
    ugly part of this function does nothing more than trying to match the
-   pattern of such a call.  An example of such a pattern is the gimple dump
-   below, the call is on the last line:
+   pattern of such a call.  Look up the documentation of macro
+   TARGET_PTRMEMFUNC_VBIT_LOCATION for details.  An example of such a pattern
+   is the gimple dump below, the call is on the last line:
 
      <bb 2>:
        f$__delta_5 = f.__delta;
@@ -2710,9 +2731,22 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
      corresponding to the pattern. */
 
   if (!single_pred_p (virt_bb) || !single_succ_p (virt_bb)
-      || single_pred (virt_bb) != bb
       || single_succ (virt_bb) != join)
     return;
+
+
+  if (single_pred (virt_bb) != bb)
+    {
+      /* In cases when the distinction between a normal and a virtual
+	 function is encoded in the delta field, the load of the
+	 actual non-virtual function pointer can be in its own BB.  */
+
+      if (!single_pred_p (bb) || !single_succ_p (bb))
+	return;
+      bb = single_pred (bb);
+      if (bb != single_pred (virt_bb))
+	return;
+    }
 
   /* Third, let's see that the branching is done depending on the least
      significant bit of the pfn. */
@@ -2759,17 +2793,31 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
   if (rec != rec2)
     return;
 
-  index = ipa_get_param_decl_index (info, rec);
-  if (index >= 0
-      && parm_preserved_before_stmt_p (fbi, index, call, rec))
+  if (TREE_CODE (rec) == SSA_NAME)
     {
-      struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index,
-	 					    call, false);
-      cs->indirect_info->offset = offset;
-      cs->indirect_info->agg_contents = 1;
-      cs->indirect_info->member_ptr = 1;
-      cs->indirect_info->guaranteed_unmodified = 1;
+      index = ipa_get_param_decl_index (info, SSA_NAME_VAR (rec));
+      if (index < 0
+	  || !parm_ref_data_preserved_p (fbi, index, call,
+					 gimple_assign_rhs1 (def)))
+	return;
+      by_ref = true;
     }
+  else
+    {
+      index = ipa_get_param_decl_index (info, rec);
+      if (index < 0
+	  || !parm_preserved_before_stmt_p (fbi, index, call, rec))
+	return;
+      by_ref = false;
+    }
+
+  struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index,
+						call, false);
+  cs->indirect_info->offset = offset;
+  cs->indirect_info->agg_contents = 1;
+  cs->indirect_info->member_ptr = 1;
+  cs->indirect_info->by_ref = by_ref;
+  cs->indirect_info->guaranteed_unmodified = 1;
 
   return;
 }
