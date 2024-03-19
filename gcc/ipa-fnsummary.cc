@@ -515,7 +515,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		    }
 		  else if (!op->val[1])
 		    {
-		      Value_Range op0 (op->type);
+		      Value_Range op0 (TREE_TYPE (op->val[0]));
 		      range_op_handler handler (op->code);
 
 		      ipa_range_set_and_normalize (op0, op->val[0]);

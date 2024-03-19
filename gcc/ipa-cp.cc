@@ -1649,7 +1649,7 @@ ipa_vr_operation_and_type_effects (vrange &dst_vr,
 				   enum tree_code operation,
 				   tree dst_type, tree src_type)
 {
-  if (!irange::supports_p (dst_type) || !irange::supports_p (src_type))
+  if (!ipa_supports_p (dst_type) || !ipa_supports_p (src_type))
     return false;
 
   range_op_handler handler (operation);
@@ -1720,7 +1720,7 @@ ipa_value_range_from_jfunc (vrange &vr,
 
       if (TREE_CODE_CLASS (operation) == tcc_unary)
 	{
-	  Value_Range res (vr_type);
+	  Value_Range res (parm_type);
 
 	  if (ipa_vr_operation_and_type_effects (res,
 						 srcvr,
@@ -1733,7 +1733,7 @@ ipa_value_range_from_jfunc (vrange &vr,
 	  Value_Range op_res (vr_type);
 	  Value_Range res (vr_type);
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
-	  Value_Range op_vr (vr_type);
+	  Value_Range op_vr (TREE_TYPE (op));
 	  range_op_handler handler (operation);
 
 	  ipa_range_set_and_normalize (op_vr, op);
@@ -2527,7 +2527,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
       if (src_lats->m_value_range.bottom_p ())
 	return dest_lat->set_to_bottom ();
 
-      Value_Range vr (operand_type);
+      Value_Range vr (param_type);
       if (TREE_CODE_CLASS (operation) == tcc_unary)
 	ipa_vr_operation_and_type_effects (vr,
 					   src_lats->m_value_range.m_vr,
@@ -2540,16 +2540,16 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	{
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
 	  Value_Range op_vr (TREE_TYPE (op));
-	  Value_Range op_res (operand_type);
+	  Value_Range op_res (param_type);
 	  range_op_handler handler (operation);
 
 	  ipa_range_set_and_normalize (op_vr, op);
 
 	  if (!handler
-	      || !op_res.supports_type_p (operand_type)
+	      || !ipa_supports_p (operand_type)
 	      || !handler.fold_range (op_res, operand_type,
 				      src_lats->m_value_range.m_vr, op_vr))
-	    op_res.set_varying (operand_type);
+	    op_res.set_varying (param_type);
 
 	  ipa_vr_operation_and_type_effects (vr,
 					     op_res,
