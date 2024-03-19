@@ -281,7 +281,6 @@ irange_bitmask::intersect (const irange_bitmask &orig_src)
 
 class irange : public vrange
 {
-  friend value_range_kind get_legacy_range (const irange &, tree &, tree &);
   friend class irange_storage;
   friend class vrange_printer;
 public:
@@ -886,7 +885,7 @@ Value_Range::supports_type_p (const_tree type)
   return irange::supports_p (type) || frange::supports_p (type);
 }
 
-extern value_range_kind get_legacy_range (const irange &, tree &min, tree &max);
+extern value_range_kind get_legacy_range (const vrange &, tree &min, tree &max);
 extern void dump_value_range (FILE *, const vrange *);
 extern bool vrp_operand_equal_p (const_tree, const_tree);
 inline REAL_VALUE_TYPE frange_val_min (const_tree type);

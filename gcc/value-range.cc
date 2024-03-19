@@ -1004,7 +1004,7 @@ irange::operator= (const irange &src)
   return *this;
 }
 
-value_range_kind
+static value_range_kind
 get_legacy_range (const irange &r, tree &min, tree &max)
 {
   if (r.undefined_p ())
@@ -1039,6 +1039,21 @@ get_legacy_range (const irange &r, tree &min, tree &max)
   min = wide_int_to_tree (type, r.lower_bound ());
   max = wide_int_to_tree (type, r.upper_bound ());
   return VR_RANGE;
+}
+
+// Given a range in V, return an old-style legacy range consisting of
+// a value_range_kind with a MIN/MAX.  This is to maintain
+// compatibility with passes that still depend on VR_ANTI_RANGE, and
+// only works for integers and pointers.
+
+value_range_kind
+get_legacy_range (const vrange &v, tree &min, tree &max)
+{
+  if (is_a <irange> (v))
+    return get_legacy_range (as_a <irange> (v), min, max);
+
+  gcc_unreachable ();
+  return VR_UNDEFINED;
 }
 
 /* Set value range to the canonical form of {VRTYPE, MIN, MAX, EQUIV}.
