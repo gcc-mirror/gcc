@@ -69,6 +69,21 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
+/* The following #include is for strub_make_callable.
+
+   This function marks a function as safe to call from strub contexts.  We mark
+   Ada subprograms that may be called implicitly by the compiler, and that won't
+   leave on the stack caller data passed to them.  This stops implicit calls
+   introduced in subprograms that have their stack scrubbed from being flagged
+   as unsafe, even in -fstrub=strict mode.
+
+   These subprograms are also marked with the strub(callable) attribute in Ada
+   sources, but their declarations aren't necessarily imported by GNAT, or made
+   visible to gigi, in units that end up relying on them.  So when gigi
+   introduces their declarations on its own, it must also add the attribute, by
+   calling strub_make_callable.  */
+#include "ipa-strub.h"
+
 /* We should avoid allocating more than ALLOCA_THRESHOLD bytes via alloca,
    for fear of running out of stack space.  If we need more, we use xmalloc
    instead.  */
@@ -454,6 +469,7 @@ gigi (Node_Id gnat_root,
 						     int64_type, NULL_TREE),
 			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
+  strub_make_callable (mulv64_decl);
 
   if (Enable_128bit_Types)
     {
@@ -466,6 +482,7 @@ gigi (Node_Id gnat_root,
 							 NULL_TREE),
 			       NULL_TREE, is_default, true, true, true, false,
 			       false, NULL, Empty);
+      strub_make_callable (mulv128_decl);
     }
 
   /* Name of the _Parent field in tagged record types.  */
@@ -722,6 +739,7 @@ build_raise_check (int check, enum exception_info_kind kind)
     = create_subprog_decl (get_identifier (Name_Buffer), NULL_TREE, ftype,
 			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
+  strub_make_callable (result);
   set_call_expr_flags (result, ECF_NORETURN | ECF_XTHROW);
 
   return result;

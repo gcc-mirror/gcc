@@ -91,6 +91,7 @@ package body Sem_SCIL is
             elsif Nkind (Ctrl_Tag) in N_Object_Renaming_Declaration
                                     | N_Object_Declaration
                                     | N_Parameter_Specification
+                                    | N_Discriminant_Specification
             then
                Ctrl_Typ := Etype (Defining_Identifier (Ctrl_Tag));
 

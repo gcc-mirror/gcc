@@ -1241,6 +1241,7 @@ typedef struct frv_stack {
 #if ! __FRV_FDPIC__
 #define TRANSFER_FROM_TRAMPOLINE					\
 extern int Twrite (int, const void *, unsigned);			\
+extern void exit (int);							\
 									\
 void									\
 __trampoline_setup (short * addr, int size, int fnaddr, int sc)		\
@@ -1284,6 +1285,7 @@ __asm__("\n"								\
 #else
 #define TRANSFER_FROM_TRAMPOLINE					\
 extern int Twrite (int, const void *, unsigned);			\
+extern void exit (int);							\
 									\
 void									\
 __trampoline_setup (addr, size, fnaddr, sc)				\

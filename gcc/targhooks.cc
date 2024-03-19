@@ -781,8 +781,18 @@ hook_int_CUMULATIVE_ARGS_arg_info_0 (cumulative_args_t,
 }
 
 void
+hook_void_CUMULATIVE_ARGS (cumulative_args_t)
+{
+}
+
+void
 hook_void_CUMULATIVE_ARGS_tree (cumulative_args_t ca ATTRIBUTE_UNUSED,
 				tree ATTRIBUTE_UNUSED)
+{
+}
+
+void
+hook_void_CUMULATIVE_ARGS_rtx_tree (cumulative_args_t, rtx, tree)
 {
 }
 

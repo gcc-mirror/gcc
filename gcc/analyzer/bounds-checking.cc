@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "diagnostic-core.h"
-#include "diagnostic-metadata.h"
 #include "diagnostic-diagram.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
@@ -119,10 +118,10 @@ protected:
   }
 
   void
-  maybe_show_notes (location_t loc, logger *logger) const
+  maybe_show_notes (diagnostic_emission_context &ctxt) const
   {
-    maybe_describe_array_bounds (loc);
-    maybe_show_diagram (logger);
+    maybe_describe_array_bounds (ctxt.get_location ());
+    maybe_show_diagram (ctxt.get_logger ());
   }
 
   /* Potentially add a note about valid ways to index this array, such
@@ -281,27 +280,22 @@ public:
     return "concrete_buffer_overflow";
   }
 
-  bool emit (rich_location *rich_loc,
-	     logger *logger) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     bool warned;
     switch (get_memory_space ())
       {
       default:
-	m.add_cwe (787);
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "buffer overflow");
+	ctxt.add_cwe (787);
+	warned = ctxt.warn ("buffer overflow");
 	break;
       case MEMSPACE_STACK:
-	m.add_cwe (121);
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "stack-based buffer overflow");
+	ctxt.add_cwe (121);
+	warned = ctxt.warn ("stack-based buffer overflow");
 	break;
       case MEMSPACE_HEAP:
-	m.add_cwe (122);
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "heap-based buffer overflow");
+	ctxt.add_cwe (122);
+	warned = ctxt.warn ("heap-based buffer overflow");
 	break;
       }
 
@@ -312,25 +306,25 @@ public:
 	    unsigned HOST_WIDE_INT num_bad_bytes
 	      = m_out_of_bounds_range.m_size_in_bytes.to_uhwi ();
 	    if (m_diag_arg)
-	      inform_n (rich_loc->get_loc (),
+	      inform_n (ctxt.get_location (),
 			num_bad_bytes,
 			"write of %wu byte to beyond the end of %qE",
 			"write of %wu bytes to beyond the end of %qE",
 			num_bad_bytes,
 			m_diag_arg);
 	    else
-	      inform_n (rich_loc->get_loc (),
+	      inform_n (ctxt.get_location (),
 			num_bad_bytes,
 			"write of %wu byte to beyond the end of the region",
 			"write of %wu bytes to beyond the end of the region",
 			num_bad_bytes);
 	  }
 	else if (m_diag_arg)
-	  inform (rich_loc->get_loc (),
+	  inform (ctxt.get_location (),
 		  "write to beyond the end of %qE",
 		  m_diag_arg);
 
-	maybe_show_notes (rich_loc->get_loc (), logger);
+	maybe_show_notes (ctxt);
       }
 
     return warned;
@@ -388,24 +382,20 @@ public:
     return "concrete_buffer_over_read";
   }
 
-  bool emit (rich_location *rich_loc, logger *logger) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     bool warned;
-    m.add_cwe (126);
+    ctxt.add_cwe (126);
     switch (get_memory_space ())
       {
       default:
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "buffer over-read");
+	warned = ctxt.warn ("buffer over-read");
 	break;
       case MEMSPACE_STACK:
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "stack-based buffer over-read");
+	warned = ctxt.warn ("stack-based buffer over-read");
 	break;
       case MEMSPACE_HEAP:
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "heap-based buffer over-read");
+	warned = ctxt.warn ("heap-based buffer over-read");
 	break;
       }
 
@@ -416,25 +406,25 @@ public:
 	    unsigned HOST_WIDE_INT num_bad_bytes
 	      = m_out_of_bounds_range.m_size_in_bytes.to_uhwi ();
 	    if (m_diag_arg)
-	      inform_n (rich_loc->get_loc (),
+	      inform_n (ctxt.get_location (),
 			num_bad_bytes,
 			"read of %wu byte from after the end of %qE",
 			"read of %wu bytes from after the end of %qE",
 			num_bad_bytes,
 			m_diag_arg);
 	    else
-	      inform_n (rich_loc->get_loc (),
+	      inform_n (ctxt.get_location (),
 			num_bad_bytes,
 			"read of %wu byte from after the end of the region",
 			"read of %wu bytes from after the end of the region",
 			num_bad_bytes);
 	  }
 	else if (m_diag_arg)
-	  inform (rich_loc->get_loc (),
+	  inform (ctxt.get_location (),
 		  "read from after the end of %qE",
 		  m_diag_arg);
 
-	maybe_show_notes (rich_loc->get_loc (), logger);
+	maybe_show_notes (ctxt);
       }
 
     return warned;
@@ -493,28 +483,24 @@ public:
     return "concrete_buffer_underwrite";
   }
 
-  bool emit (rich_location *rich_loc, logger *logger) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     bool warned;
-    m.add_cwe (124);
+    ctxt.add_cwe (124);
     switch (get_memory_space ())
       {
       default:
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "buffer underwrite");
+	warned = ctxt.warn ("buffer underwrite");
 	break;
       case MEMSPACE_STACK:
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "stack-based buffer underwrite");
+	warned = ctxt.warn ("stack-based buffer underwrite");
 	break;
       case MEMSPACE_HEAP:
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "heap-based buffer underwrite");
+	warned = ctxt.warn ("heap-based buffer underwrite");
 	break;
       }
     if (warned)
-      maybe_show_notes (rich_loc->get_loc (), logger);
+      maybe_show_notes (ctxt);
     return warned;
   }
 
@@ -568,28 +554,24 @@ public:
     return "concrete_buffer_under_read";
   }
 
-  bool emit (rich_location *rich_loc, logger *logger) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     bool warned;
-    m.add_cwe (127);
+    ctxt.add_cwe (127);
     switch (get_memory_space ())
       {
       default:
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "buffer under-read");
+	warned = ctxt.warn ("buffer under-read");
 	break;
       case MEMSPACE_STACK:
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "stack-based buffer under-read");
+	warned = ctxt.warn ("stack-based buffer under-read");
 	break;
       case MEMSPACE_HEAP:
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "heap-based buffer under-read");
+	warned = ctxt.warn ("heap-based buffer under-read");
 	break;
       }
     if (warned)
-      maybe_show_notes (rich_loc->get_loc (), logger);
+      maybe_show_notes (ctxt);
     return warned;
   }
 
@@ -679,30 +661,26 @@ public:
     return "symbolic_buffer_overflow";
   }
 
-  bool emit (rich_location *rich_loc, logger *logger) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     bool warned;
     switch (get_memory_space ())
       {
       default:
-	m.add_cwe (787);
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "buffer overflow");
+	ctxt.add_cwe (787);
+	warned = ctxt.warn ("buffer overflow");
 	break;
       case MEMSPACE_STACK:
-	m.add_cwe (121);
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "stack-based buffer overflow");
+	ctxt.add_cwe (121);
+	warned = ctxt.warn ("stack-based buffer overflow");
 	break;
       case MEMSPACE_HEAP:
-	m.add_cwe (122);
-	warned =  warning_meta (rich_loc, m, get_controlling_option (),
-				"heap-based buffer overflow");
+	ctxt.add_cwe (122);
+	warned =  ctxt.warn ("heap-based buffer overflow");
 	break;
       }
     if (warned)
-      maybe_show_notes (rich_loc->get_loc (), logger);
+      maybe_show_notes (ctxt);
     return warned;
   }
 
@@ -796,31 +774,27 @@ public:
     return "symbolic_buffer_over_read";
   }
 
-  bool emit (rich_location *rich_loc, logger *logger) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
-    m.add_cwe (126);
+    ctxt.add_cwe (126);
     bool warned;
     switch (get_memory_space ())
       {
       default:
-	m.add_cwe (787);
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "buffer over-read");
+	ctxt.add_cwe (787);
+	warned = ctxt.warn ("buffer over-read");
 	break;
       case MEMSPACE_STACK:
-	m.add_cwe (121);
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "stack-based buffer over-read");
+	ctxt.add_cwe (121);
+	warned = ctxt.warn ("stack-based buffer over-read");
 	break;
       case MEMSPACE_HEAP:
-	m.add_cwe (122);
-	warned = warning_meta (rich_loc, m, get_controlling_option (),
-			       "heap-based buffer over-read");
+	ctxt.add_cwe (122);
+	warned = ctxt.warn ("heap-based buffer over-read");
 	break;
       }
     if (warned)
-      maybe_show_notes (rich_loc->get_loc (), logger);
+      maybe_show_notes (ctxt);
     return warned;
   }
 

@@ -8693,6 +8693,26 @@ package body Sem_Attr is
             Set_Raises_Constraint_Error (N);
          end if;
 
+         --  RM 13.14(8/4): a nonstatic expression in a spec expression does
+         --  not cause freezing, so the representation attributes cannot be
+         --  evaluated at this point if the type is not already frozen.
+
+         if not Static
+           and then In_Spec_Expression
+           and then Id in Attribute_Alignment
+                       |  Attribute_Component_Size
+                       |  Attribute_Max_Alignment_For_Allocation
+                       |  Attribute_Max_Size_In_Storage_Elements
+                       |  Attribute_Object_Size
+                       |  Attribute_Size
+                       |  Attribute_Small
+                       |  Attribute_VADS_Size
+                       |  Attribute_Value_Size
+           and then not Is_Frozen (P_Type)
+         then
+            return;
+         end if;
+
       --  Array case. We enforce the constrained requirement of (RM 4.9(7-8))
       --  since we can't do anything with unconstrained arrays. In addition,
       --  only the First, Last and Length attributes are possibly static.

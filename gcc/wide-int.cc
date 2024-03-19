@@ -1477,10 +1477,10 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
   if (UNLIKELY (prec > WIDE_INT_MAX_INL_PRECISION))
     {
       unsigned HOST_HALF_WIDE_INT *buf
-	= XALLOCAVEC (unsigned HOST_HALF_WIDE_INT, 4 * 4 * blocks_needed);
+	= XALLOCAVEC (unsigned HOST_HALF_WIDE_INT, 4 * half_blocks_needed);
       u = buf;
-      v = u + 4 * blocks_needed;
-      r = v + 4 * blocks_needed;
+      v = u + half_blocks_needed;
+      r = v + half_blocks_needed;
     }
 
   /* We do unsigned mul and then correct it.  */
@@ -1675,8 +1675,9 @@ wi::sub_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
    Delight by Warren, which itself is a small modification of Knuth's
    algorithm.  M is the number of significant elements of U however
    there needs to be at least one extra element of B_DIVIDEND
-   allocated, N is the number of elements of B_DIVISOR.  */
-static void
+   allocated, N is the number of elements of B_DIVISOR.
+   Return new value for N.  */
+static int
 divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
 		   unsigned HOST_HALF_WIDE_INT *b_remainder,
 		   unsigned HOST_HALF_WIDE_INT *b_dividend,
@@ -1707,7 +1708,7 @@ divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
 		  * (unsigned HOST_WIDE_INT)b_divisor[0]));
 	}
       b_remainder[0] = k;
-      return;
+      return 1;
     }
 
   s = clz_hwi (b_divisor[n-1]) - HOST_BITS_PER_HALF_WIDE_INT; /* CHECK clz */
@@ -1770,6 +1771,10 @@ divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
 	  b_dividend[j+n] += k;
 	}
     }
+  /* If N > M, the main loop was skipped, quotient will be 0 and
+     we can't copy more than M half-limbs into the remainder, as they
+     aren't present in b_dividend (which has .  */
+  n = MIN (n, m);
   if (s)
     for (i = 0; i < n; i++)
       b_remainder[i] = (b_dividend[i] >> s)
@@ -1777,6 +1782,7 @@ divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
   else
     for (i = 0; i < n; i++)
       b_remainder[i] = b_dividend[i];
+  return n;
 }
 
 
@@ -1943,14 +1949,14 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
     {
       unsigned HOST_HALF_WIDE_INT *buf
 	= XALLOCAVEC (unsigned HOST_HALF_WIDE_INT,
-		      12 * dividend_blocks_needed
-		      + 4 * divisor_blocks_needed + 1);
+		      3 * dividend_blocks_needed + 1
+		      + divisor_blocks_needed);
       b_quotient = buf;
-      b_remainder = b_quotient + 4 * dividend_blocks_needed;
-      b_dividend = b_remainder + 4 * dividend_blocks_needed;
-      b_divisor = b_dividend + 4 * dividend_blocks_needed + 1;
+      b_remainder = b_quotient + dividend_blocks_needed;
+      b_dividend = b_remainder + dividend_blocks_needed;
+      b_divisor = b_dividend + dividend_blocks_needed + 1;
       memset (b_quotient, 0,
-	      4 * dividend_blocks_needed * sizeof (HOST_HALF_WIDE_INT));
+	      dividend_blocks_needed * sizeof (HOST_HALF_WIDE_INT));
     }
   wi_unpack (b_dividend, dividend.get_val (), dividend.get_len (),
 	     dividend_blocks_needed, dividend_prec, UNSIGNED);
@@ -1969,7 +1975,7 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
   if (b_quotient == b_quotient_buf)
     memset (b_quotient_buf, 0, sizeof (b_quotient_buf));
 
-  divmod_internal_2 (b_quotient, b_remainder, b_dividend, b_divisor, m, n);
+  n = divmod_internal_2 (b_quotient, b_remainder, b_dividend, b_divisor, m, n);
 
   unsigned int quotient_len = 0;
   if (quotient)
@@ -2673,6 +2679,9 @@ wide_int_cc_tests ()
 	     wi::shifted_mask (0, 128, false, 128));
   ASSERT_EQ (wi::mask (128, true, 128),
 	     wi::shifted_mask (0, 128, true, 128));
+  ASSERT_EQ (wi::multiple_of_p (from_int <widest_int> (1),
+				from_int <widest_int> (-128), UNSIGNED),
+	     false);
 }
 
 } // namespace selftest

@@ -50,6 +50,7 @@ if { [info exists gcc_runtest_parallelize_limit_minor] } {
 torture-init
 set-torture-options {
     "-std=c90 -O0 -g"
+    "-std=c90 -O0 -DSTREAMING_COMPATIBLE"
     "-std=c90 -O1 -g"
     "-std=c99 -O2 -g"
     "-std=c11 -O3 -g"

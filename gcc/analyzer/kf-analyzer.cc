@@ -255,9 +255,9 @@ public:
     return 0;
   }
 
-  bool emit (rich_location *richloc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    inform (richloc, "path");
+    ctxt.inform ("path");
     return true;
   }
 

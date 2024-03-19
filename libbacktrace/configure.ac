@@ -379,6 +379,8 @@ if test "$have_loadquery" = "yes"; then
   AC_DEFINE(HAVE_LOADQUERY, 1, [Define if AIX loadquery is available.])
 fi
 
+AC_CHECK_HEADERS(windows.h)
+
 # Check for the fcntl function.
 if test -n "${with_target_subdir}"; then
    case "${host}" in

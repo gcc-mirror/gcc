@@ -2263,10 +2263,10 @@ void vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree, unsigned,
 			tree = NULL, vec<tree> * = NULL,
 			tree = NULL, vec<tree> * = NULL);
 void vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree, unsigned,
-			tree, vec<tree> *, tree,
-			tree = NULL, vec<tree> * = NULL, tree = NULL,
-			tree = NULL, vec<tree> * = NULL, tree = NULL,
-			tree = NULL, vec<tree> * = NULL, tree = NULL);
+			tree, tree, vec<tree> *,
+			tree = NULL, tree = NULL, vec<tree> * = NULL,
+			tree = NULL, tree = NULL, vec<tree> * = NULL,
+			tree = NULL, tree = NULL, vec<tree> * = NULL);
 extern tree vect_init_vector (vec_info *, stmt_vec_info, tree, tree,
                               gimple_stmt_iterator *);
 extern tree vect_get_slp_vect_def (slp_tree, unsigned);

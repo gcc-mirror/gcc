@@ -149,20 +149,20 @@
    && (register_operand (operands[0], <MODE>mode)
        || aarch64_simd_reg_or_zero (operands[1], <MODE>mode))"
   {@ [cons: =0, 1; attrs: type, arch, length]
-     [w , m ; neon_load1_1reg<q> , *   , *] ldr\t%d0, %1
-     [r , m ; load_8             , *   , *] ldr\t%x0, %1
-     [m , Dz; store_8            , *   , *] str\txzr, %0
-     [m , w ; neon_store1_1reg<q>, *   , *] str\t%d1, %0
-     [m , r ; store_8            , *   , *] str\t%x1, %0
-     [w , w ; neon_logic<q>      , simd, *] mov\t%0.<Vbtype>, %1.<Vbtype>
-     [w , w ; neon_logic<q>      , *   , *] fmov\t%d0, %d1
-     [?r, w ; neon_to_gp<q>      , simd, *] umov\t%0, %1.d[0]
-     [?r, w ; neon_to_gp<q>      , *   , *] fmov\t%x0, %d1
-     [?w, r ; f_mcr              , *   , *] fmov\t%d0, %1
-     [?r, r ; mov_reg            , *   , *] mov\t%0, %1
-     [w , Dn; neon_move<q>       , simd, *] << aarch64_output_simd_mov_immediate (operands[1], 64);
-     [w , Dz; f_mcr              , *   , *] fmov\t%d0, xzr
-     [w , Dx; neon_move          , simd, 8] #
+     [w , m ; neon_load1_1reg<q> , *        , *] ldr\t%d0, %1
+     [r , m ; load_8             , *        , *] ldr\t%x0, %1
+     [m , Dz; store_8            , *        , *] str\txzr, %0
+     [m , w ; neon_store1_1reg<q>, *        , *] str\t%d1, %0
+     [m , r ; store_8            , *        , *] str\t%x1, %0
+     [w , w ; neon_logic<q>      , simd     , *] mov\t%0.<Vbtype>, %1.<Vbtype>
+     [w , w ; neon_logic<q>      , *        , *] fmov\t%d0, %d1
+     [?r, w ; neon_to_gp<q>      , base_simd, *] umov\t%0, %1.d[0]
+     [?r, w ; neon_to_gp<q>      , *        , *] fmov\t%x0, %d1
+     [?w, r ; f_mcr              , *        , *] fmov\t%d0, %1
+     [?r, r ; mov_reg            , *        , *] mov\t%0, %1
+     [w , Dn; neon_move<q>       , simd     , *] << aarch64_output_simd_mov_immediate (operands[1], 64);
+     [w , Dz; f_mcr              , *        , *] fmov\t%d0, xzr
+     [w , Dx; neon_move          , simd     , 8] #
   }
   "CONST_INT_P (operands[1])
    && aarch64_simd_special_constant_p (operands[1], <MODE>mode)
@@ -185,6 +185,7 @@
      [Umn, Dz; store_16           , *   , 4] stp\txzr, xzr, %0
      [m  , w ; neon_store1_1reg<q>, *   , 4] str\t%q1, %0
      [w  , w ; neon_logic<q>      , simd, 4] mov\t%0.<Vbtype>, %1.<Vbtype>
+     [w  , w ; *                  , sve , 4] mov\t%Z0.d, %Z1.d
      [?r , w ; multiple           , *   , 8] #
      [?w , r ; multiple           , *   , 8] #
      [?r , r ; multiple           , *   , 8] #
@@ -225,7 +226,7 @@
   [(set (match_operand:<VEL> 0 "memory_operand" "=m")
 	(vec_select:<VEL> (match_operand:VALL_F16 1 "register_operand" "w")
 			(parallel [(match_operand 2 "const_int_operand" "n")])))]
-  "TARGET_SIMD
+  "TARGET_FLOAT
    && ENDIAN_LANE_N (<nunits>, INTVAL (operands[2])) == 0"
   "str\\t%<Vetype>1, %0"
   [(set_attr "type" "neon_store1_1reg<q>")]
@@ -374,18 +375,18 @@
         (vec_select:<VHALF>
           (match_operand:VQMOV_NO2E 1 "register_operand")
           (match_operand:VQMOV_NO2E 2 "vect_par_cnst_lo_half")))]
-  "TARGET_SIMD"
-  {@ [ cons: =0 , 1 ; attrs: type    ]
-     [ w        , w ; mov_reg        ] #
-     [ ?r       , w ; neon_to_gp<q>  ] umov\t%0, %1.d[0]
+  "TARGET_FLOAT"
+  {@ [ cons: =0 , 1 ; attrs: type   , arch      ]
+     [ w        , w ; mov_reg       , simd      ] #
+     [ ?r       , w ; neon_to_gp<q> , base_simd ] umov\t%0, %1.d[0]
+     [ ?r       , w ; f_mrc         , *         ] fmov\t%0, %d1
   }
   "&& reload_completed && aarch64_simd_register (operands[0], <VHALF>mode)"
   [(set (match_dup 0) (match_dup 1))]
   {
     operands[1] = aarch64_replace_reg_mode (operands[1], <VHALF>mode);
   }
-  [
-   (set_attr "length" "4")]
+  [(set_attr "length" "4")]
 )
 
 (define_insn "aarch64_simd_mov_from_<mode>high"
@@ -396,12 +397,11 @@
   "TARGET_FLOAT"
   {@ [ cons: =0 , 1 ; attrs: type   , arch  ]
      [ w        , w ; neon_dup<q>   , simd  ] dup\t%d0, %1.d[1]
+     [ w        , w ; *             , sve   ] ext\t%Z0.b, %Z0.b, %Z0.b, #8
      [ ?r       , w ; neon_to_gp<q> , simd  ] umov\t%0, %1.d[1]
      [ ?r       , w ; f_mrc         , *     ] fmov\t%0, %1.d[1]
   }
-  [
-   
-   (set_attr "length" "4")]
+  [(set_attr "length" "4")]
 )
 
 (define_insn "orn<mode>3<vczle><vczbe>"

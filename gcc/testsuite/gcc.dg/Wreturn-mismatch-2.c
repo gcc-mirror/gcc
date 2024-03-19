@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wall" } */
+/* { dg-options "-fpermissive -Wall" } */
 
 void f1 (void);
 

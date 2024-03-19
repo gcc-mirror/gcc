@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "tree-inline.h"
+#include "ipa-strub.h"
 #include "toplev.h"
 #include "tree-iterator.h"
 #include "opts.h"
@@ -69,6 +70,7 @@ static tree handle_asan_odr_indicator_attribute (tree *, tree, tree, int,
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_stack_protector_function_attribute (tree *, tree,
 							tree, int, bool *);
+static tree handle_strub_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocf_check_attribute (tree *, tree, tree, int, bool *);
@@ -176,6 +178,7 @@ static tree handle_objc_root_class_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_nullability_attribute (tree *, tree, tree, int, bool *);
 static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
 						    bool *);
+static tree handle_hardbool_attribute (tree *, tree, tree, int, bool *);
 static tree handle_retain_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fd_arg_attribute (tree *, tree, tree, int, bool *);
 static tree handle_null_terminated_string_arg_attribute (tree *, tree, tree, int, bool *);
@@ -288,12 +291,14 @@ static const struct attribute_spec::exclusions attr_stack_protect_exclusions[] =
 /* Table of machine-independent attributes common to all C-like languages.
 
    Current list of processed common attributes: nonnull.  */
-const struct attribute_spec c_common_attribute_table[] =
+const struct attribute_spec c_common_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "signed_bool_precision",  1, 1, false, true, false, true,
 			      handle_signed_bool_precision_attribute, NULL },
+  { "hardbool",               0, 2, false, true, false, true,
+			      handle_hardbool_attribute, NULL },
   { "packed",                 0, 0, false, false, false, false,
 			      handle_packed_attribute,
 	                      attr_aligned_exclusions },
@@ -319,6 +324,8 @@ const struct attribute_spec c_common_attribute_table[] =
   { "no_stack_protector",     0, 0, true, false, false, false,
 			      handle_no_stack_protector_function_attribute,
 			      attr_stack_protect_exclusions },
+  { "strub",		      0, 1, false, true, false, true,
+			      handle_strub_attribute, NULL },
   { "noinline",               0, 0, true,  false, false, false,
 			      handle_noinline_attribute,
 	                      attr_noinline_exclusions },
@@ -576,23 +583,31 @@ const struct attribute_spec c_common_attribute_table[] =
   { "fd_arg_write",       1, 1, false, true, true, false,
             handle_fd_arg_attribute, NULL},         
   { "null_terminated_string_arg", 1, 1, false, true, true, false,
-			      handle_null_terminated_string_arg_attribute, NULL},
-  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
+			      handle_null_terminated_string_arg_attribute, NULL}
+};
+
+const struct scoped_attribute_specs c_common_gnu_attribute_table =
+{
+  "gnu", { c_common_gnu_attributes }
 };
 
 /* Give the specifications for the format attributes, used by C and all
    descendants.
 
    Current list of processed format attributes: format, format_arg.  */
-const struct attribute_spec c_common_format_attribute_table[] =
+const struct attribute_spec c_common_format_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "format",                 3, 3, false, true,  true, false,
 			      handle_format_attribute, NULL },
   { "format_arg",             1, 1, false, true,  true, false,
-			      handle_format_arg_attribute, NULL },
-  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
+			      handle_format_arg_attribute, NULL }
+};
+
+const struct scoped_attribute_specs c_common_format_attribute_table =
+{
+  "gnu", { c_common_format_attributes }
 };
 
 /* Returns TRUE iff the attribute indicated by ATTR_ID takes a plain
@@ -997,6 +1012,96 @@ handle_signed_bool_precision_attribute (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
+/* Handle a "hardbool" attribute; arguments as in struct
+   attribute_spec.handler.  */
+
+static tree
+handle_hardbool_attribute (tree *node, tree name, tree args,
+			   int /* flags */, bool *no_add_attrs)
+{
+  if (c_language != clk_c)
+    {
+      error ("%qE attribute only supported in C", name);
+      *no_add_attrs = TRUE;
+      return NULL_TREE;
+    }
+
+  if (!TYPE_P (*node) || TREE_CODE (*node) != INTEGER_TYPE)
+    {
+      error ("%qE attribute only supported on "
+	     "integral types", name);
+      *no_add_attrs = TRUE;
+      return NULL_TREE;
+    }
+
+  tree orig = *node;
+  *node = build_duplicate_type (orig);
+
+  TREE_SET_CODE (*node, ENUMERAL_TYPE);
+  ENUM_UNDERLYING_TYPE (*node) = orig;
+
+  tree false_value;
+  if (args)
+    false_value = fold_convert (*node, TREE_VALUE (args));
+  else
+    false_value = fold_convert (*node, integer_zero_node);
+
+  if (TREE_OVERFLOW_P (false_value))
+    {
+      warning (OPT_Wattributes,
+	       "overflows in conversion from %qT to %qT "
+	       "changes value from %qE to %qE",
+	       TREE_TYPE (TREE_VALUE (args)), *node,
+	       TREE_VALUE (args), false_value);
+      TREE_OVERFLOW (false_value) = false;
+    }
+
+  tree true_value;
+  if (args && TREE_CHAIN (args))
+    true_value = fold_convert (*node, TREE_VALUE (TREE_CHAIN (args)));
+  else
+    true_value = fold_build1 (BIT_NOT_EXPR, *node, false_value);
+
+  if (TREE_OVERFLOW_P (true_value))
+    {
+      warning (OPT_Wattributes,
+	       "overflows in conversion from %qT to %qT "
+	       "changes value from %qE to %qE",
+	       TREE_TYPE (TREE_VALUE (TREE_CHAIN (args))), *node,
+	       TREE_VALUE (TREE_CHAIN (args)), true_value);
+      TREE_OVERFLOW (true_value) = false;
+    }
+
+  if (tree_int_cst_compare (false_value, true_value) == 0)
+    {
+      error ("%qE attribute requires different values for"
+	     " %<false%> and %<true%> for type %qT",
+	     name, *node);
+      *no_add_attrs = TRUE;
+      return NULL_TREE;
+    }
+
+  tree values = build_tree_list (get_identifier ("false"),
+				 false_value);
+  TREE_CHAIN (values) = build_tree_list (get_identifier ("true"),
+					 true_value);
+
+  /* Do *not* set TYPE_MIN_VALUE, TYPE_MAX_VALUE, nor TYPE_PRECISION according
+     to the false and true values.  That might cause the constants to be the
+     only acceptable values, which would drop the very hardening checks this
+     attribute is supposed to add.  */
+
+  TYPE_ATTRIBUTES (*node) = tree_cons (name, args,
+				       TYPE_ATTRIBUTES (*node));
+  *no_add_attrs = TRUE;
+
+  gcc_checking_assert (!TYPE_CACHED_VALUES_P (*node));
+  TYPE_VALUES (*node) = values;
+  TYPE_NAME (*node) = orig;
+
+  return NULL_TREE;
+}
+
 /* Handle a "packed" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -1384,6 +1489,84 @@ handle_noipa_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
+
+  return NULL_TREE;
+}
+
+/* Handle a "strub" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_strub_attribute (tree *node, tree name,
+			tree args,
+			int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  bool enable = true;
+
+  if (args && FUNCTION_POINTER_TYPE_P (*node))
+    *node = TREE_TYPE (*node);
+
+  if (args && FUNC_OR_METHOD_TYPE_P (*node))
+    {
+      switch (strub_validate_fn_attr_parm (TREE_VALUE (args)))
+	{
+	case 1:
+	case 2:
+	  enable = true;
+	  break;
+
+	case 0:
+	  warning (OPT_Wattributes,
+		   "%qE attribute ignored because of argument %qE",
+		   name, TREE_VALUE (args));
+	  *no_add_attrs = true;
+	  enable = false;
+	  break;
+
+	case -1:
+	case -2:
+	  enable = false;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      args = TREE_CHAIN (args);
+    }
+
+  if (args)
+    {
+      warning (OPT_Wattributes,
+	       "ignoring attribute %qE because of excess arguments"
+	       " starting at %qE",
+	       name, TREE_VALUE (args));
+      *no_add_attrs = true;
+      enable = false;
+    }
+
+  /* Warn about unmet expectations that the strub attribute works like a
+     qualifier.  ??? Could/should we extend it to the element/field types
+     here?  */
+  if (TREE_CODE (*node) == ARRAY_TYPE
+      || VECTOR_TYPE_P (*node)
+      || TREE_CODE (*node) == COMPLEX_TYPE)
+    warning (OPT_Wattributes,
+	     "attribute %qE does not apply to elements"
+	     " of non-scalar type %qT",
+	     name, *node);
+  else if (RECORD_OR_UNION_TYPE_P (*node))
+    warning (OPT_Wattributes,
+	     "attribute %qE does not apply to fields"
+	     " of aggregate type %qT",
+	     name, *node);
+
+  /* If we see a strub-enabling attribute, and we're at the default setting,
+     implicitly or explicitly, note that the attribute was seen, so that we can
+     reduce the compile-time overhead to nearly zero when the strub feature is
+     not used.  */
+  if (enable && flag_strub < -2)
+    flag_strub += 2;
 
   return NULL_TREE;
 }
@@ -4408,7 +4591,8 @@ static tree
 type_valid_for_vector_size (tree type, tree atname, tree args,
 			    unsigned HOST_WIDE_INT *ptrnunits)
 {
-  bool error_p = ptrnunits != NULL;
+  bool hardbool_p = c_hardbool_type_attr (type);
+  bool error_p = ptrnunits != NULL || hardbool_p;
 
   /* Get the mode of the type being modified.  */
   machine_mode orig_mode = TYPE_MODE (type);
@@ -4421,6 +4605,7 @@ type_valid_for_vector_size (tree type, tree atname, tree args,
 	  && !ALL_SCALAR_FIXED_POINT_MODE_P (orig_mode))
       || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
       || TREE_CODE (type) == BOOLEAN_TYPE
+      || hardbool_p
       || TREE_CODE (type) == BITINT_TYPE)
     {
       if (error_p)

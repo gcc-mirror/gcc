@@ -3012,9 +3012,9 @@ value.
 @item omp_const_mem_alloc       @tab omp_const_mem_space
 @item omp_high_bw_mem_alloc     @tab omp_high_bw_mem_space
 @item omp_low_lat_mem_alloc     @tab omp_low_lat_mem_space
-@item omp_cgroup_mem_alloc      @tab --
-@item omp_pteam_mem_alloc       @tab --
-@item omp_thread_mem_alloc      @tab --
+@item omp_cgroup_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
+@item omp_pteam_mem_alloc       @tab omp_low_lat_mem_space (implementation defined)
+@item omp_thread_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
 @end multitable
 
 The predefined allocators use the default values for the traits,
@@ -3060,7 +3060,7 @@ OMP_ALLOCATOR=omp_low_lat_mem_space:pinned=true,partition=nearest
 
 @item @emph{See also}:
 @ref{Memory allocation}, @ref{omp_get_default_allocator},
-@ref{omp_set_default_allocator}
+@ref{omp_set_default_allocator}, @ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.21
@@ -5710,7 +5710,8 @@ For the memory spaces, the following applies:
 @itemize
 @item @code{omp_default_mem_space} is supported
 @item @code{omp_const_mem_space} maps to @code{omp_default_mem_space}
-@item @code{omp_low_lat_mem_space} maps to @code{omp_default_mem_space}
+@item @code{omp_low_lat_mem_space} is only available on supported devices,
+      and maps to @code{omp_default_mem_space} otherwise.
 @item @code{omp_large_cap_mem_space} maps to @code{omp_default_mem_space},
       unless the memkind library is available
 @item @code{omp_high_bw_mem_space} maps to @code{omp_default_mem_space},
@@ -5765,6 +5766,9 @@ Additional notes regarding the traits:
       accessible by all threads.
 @item The @code{sync_hint} trait has no effect.
 @end itemize
+
+See also:
+@ref{Offload-Target Specifics}
 
 @c ---------------------------------------------------------------------
 @c Offload-Target Specifics
@@ -5832,6 +5836,19 @@ The implementation remark:
       available devices (``host fallback'').
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
       environment variable; the default is 32 kiB per thread.
+@item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
+      the @code{access} trait is set to @code{cgroup}.  The default pool size
+      is automatically scaled to share the 64 kiB LDS memory between the number
+      of teams configured to run on each compute-unit, but may be adjusted at
+      runtime by setting environment variable
+      @code{GOMP_GCN_LOWLAT_POOL=@var{bytes}}.
+@item @code{omp_low_lat_mem_alloc} cannot be used with true low-latency memory
+      because the definition implies the @code{omp_atv_all} trait; main
+      graphics memory is used instead.
+@item @code{omp_cgroup_mem_alloc}, @code{omp_pteam_mem_alloc}, and
+      @code{omp_thread_mem_alloc}, all use low-latency memory as first
+      preference, and fall back to main graphics memory when the low-latency
+      pool is exhausted.
 @end itemize
 
 
@@ -5899,6 +5916,21 @@ The implementation remark:
       directive for non-contiguous list items will use the 2D and 3D
       memory-copy functions of the CUDA library.  Higher dimensions will
       call those functions in a loop and are therefore supported.
+@item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
+      the @code{access} trait is set to @code{cgroup}, the ISA is at least
+      @code{sm_53}, and the PTX version is at least 4.1.  The default pool size
+      is 8 kiB per team, but may be adjusted at runtime by setting environment
+      variable @code{GOMP_NVPTX_LOWLAT_POOL=@var{bytes}}.  The maximum value is
+      limited by the available hardware, and care should be taken that the
+      selected pool size does not unduly limit the number of teams that can
+      run simultaneously.
+@item @code{omp_low_lat_mem_alloc} cannot be used with true low-latency memory
+      because the definition implies the @code{omp_atv_all} trait; main
+      graphics memory is used instead.
+@item @code{omp_cgroup_mem_alloc}, @code{omp_pteam_mem_alloc}, and
+      @code{omp_thread_mem_alloc}, all use low-latency memory as first
+      preference, and fall back to main graphics memory when the low-latency
+      pool is exhausted.
 @end itemize
 
 

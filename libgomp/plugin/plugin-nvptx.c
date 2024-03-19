@@ -341,6 +341,11 @@ struct ptx_device
 
 static struct ptx_device **ptx_devices;
 
+/* OpenMP kernels reserve a small amount of ".shared" space for use by
+   omp_alloc.  The size is configured using GOMP_NVPTX_LOWLAT_POOL, but the
+   default is set here.  */
+static unsigned lowlat_pool_size = 8 * 1024;
+
 static inline struct nvptx_thread *
 nvptx_thread (void)
 {
@@ -1217,6 +1222,22 @@ GOMP_OFFLOAD_init_device (int n)
     {
       ptx_devices[n] = dev;
       instantiated_devices++;
+    }
+
+  const char *var_name = "GOMP_NVPTX_LOWLAT_POOL";
+  const char *env_var = secure_getenv (var_name);
+  notify_var (var_name, env_var);
+
+  if (env_var != NULL)
+    {
+      char *endptr;
+      unsigned long val = strtoul (env_var, &endptr, 10);
+      if (endptr == NULL || *endptr != '\0'
+	  || errno == ERANGE || errno == EINVAL
+	  || val > UINT_MAX)
+	GOMP_PLUGIN_error ("Error parsing %s", var_name);
+      else
+	lowlat_pool_size = val;
     }
 
   pthread_mutex_unlock (&ptx_dev_lock);
@@ -2178,7 +2199,7 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 		     " [(teams: %u), 1, 1] [(lanes: 32), (threads: %u), 1]\n",
 		     __FUNCTION__, fn_name, teams, threads);
   r = CUDA_CALL_NOCHECK (cuLaunchKernel, function, teams, 1, 1,
-			 32, threads, 1, 0, NULL, NULL, config);
+			 32, threads, 1, lowlat_pool_size, NULL, NULL, config);
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuLaunchKernel error: %s", cuda_error (r));
   if (reverse_offload)

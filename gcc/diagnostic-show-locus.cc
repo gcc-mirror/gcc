@@ -1295,6 +1295,15 @@ layout::maybe_add_location_range (const location_range *loc_range,
 	   sanely relative to the primary location.  */
 	return false;
 
+  /* If there's no column information, then don't try to print
+     annotation lines for this range.  */
+  enum range_display_kind range_display_kind
+    = loc_range->m_range_display_kind;
+  if (start.column == 0
+      || finish.column == 0
+      || caret.column == 0)
+    range_display_kind = SHOW_LINES_WITHOUT_RANGE;
+
   /* Everything is now known to be in the correct source file,
      but it may require further sanitization.  */
   layout_range ri (exploc_with_display_col (m_file_cache,
@@ -1303,7 +1312,7 @@ layout::maybe_add_location_range (const location_range *loc_range,
 		   exploc_with_display_col (m_file_cache,
 					    finish, m_policy,
 					    LOCATION_ASPECT_FINISH),
-		   loc_range->m_range_display_kind,
+		   range_display_kind,
 		   exploc_with_display_col (m_file_cache,
 					    caret, m_policy,
 					    LOCATION_ASPECT_CARET),
@@ -3297,6 +3306,20 @@ test_one_liner_simple_caret ()
 		pp_formatted_text (dc.printer));
 }
 
+/* No column information (column == 0).
+   No annotation line should be printed.  */
+
+static void
+test_one_liner_no_column ()
+{
+  test_diagnostic_context dc;
+  location_t caret = linemap_position_for_column (line_table, 0);
+  rich_location richloc (line_table, caret);
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ (" foo = bar.field;\n",
+		pp_formatted_text (dc.printer));
+}
+
 /* Caret and range.  */
 
 static void
@@ -3848,6 +3871,7 @@ test_diagnostic_show_locus_one_liner (const line_table_case &case_)
   ASSERT_EQ (16, LOCATION_COLUMN (line_end));
 
   test_one_liner_simple_caret ();
+  test_one_liner_no_column ();
   test_one_liner_caret_and_range ();
   test_one_liner_multiple_carets_and_ranges ();
   test_one_liner_fixit_insert_before ();

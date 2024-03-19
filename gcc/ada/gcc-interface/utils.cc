@@ -39,6 +39,7 @@
 #include "varasm.h"
 #include "toplev.h"
 #include "opts.h"
+#include "ipa-strub.h"
 #include "output.h"
 #include "debug.h"
 #include "convert.h"
@@ -136,7 +137,7 @@ static tree fake_attribute_handler (tree *, tree, tree, int, bool *);
 
 /* Table of machine-independent internal attributes for Ada.  We support
    this minimal set of attributes to accommodate the needs of builtins.  */
-const struct attribute_spec gnat_internal_attribute_table[] =
+static const attribute_spec gnat_internal_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -217,9 +218,11 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   /* This is handled entirely in the front end.  */
   { "hardbool",     0, 0,  false, true, false, true,
     fake_attribute_handler, NULL },
+};
 
-  { NULL,           0, 0,  false, false, false, false,
-    NULL, NULL }
+const scoped_attribute_specs gnat_internal_attribute_table =
+{
+  "gnu", { gnat_internal_attributes }
 };
 
 /* Associates a GNAT tree node to a GCC tree node. It is used in
@@ -6740,9 +6743,77 @@ handle_no_stack_protector_attribute (tree *node, tree name, tree, int,
    struct attribute_spec.handler.  */
 
 static tree
-handle_strub_attribute (tree *, tree, tree, int, bool *no_add_attrs)
+handle_strub_attribute (tree *node, tree name,
+			tree args,
+			int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  *no_add_attrs = true;
+  bool enable = true;
+
+  if (args && FUNCTION_POINTER_TYPE_P (*node))
+    *node = TREE_TYPE (*node);
+
+  if (args && FUNC_OR_METHOD_TYPE_P (*node))
+    {
+      switch (strub_validate_fn_attr_parm (TREE_VALUE (args)))
+	{
+	case 1:
+	case 2:
+	  enable = true;
+	  break;
+
+	case 0:
+	  warning (OPT_Wattributes,
+		   "%qE attribute ignored because of argument %qE",
+		   name, TREE_VALUE (args));
+	  *no_add_attrs = true;
+	  enable = false;
+	  break;
+
+	case -1:
+	case -2:
+	  enable = false;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      args = TREE_CHAIN (args);
+    }
+
+  if (args)
+    {
+      warning (OPT_Wattributes,
+	       "ignoring attribute %qE because of excess arguments"
+	       " starting at %qE",
+	       name, TREE_VALUE (args));
+      *no_add_attrs = true;
+      enable = false;
+    }
+
+  /* Warn about unmet expectations that the strub attribute works like a
+     qualifier.  ??? Could/should we extend it to the element/field types
+     here?  */
+  if (TREE_CODE (*node) == ARRAY_TYPE
+      || VECTOR_TYPE_P (*node)
+      || TREE_CODE (*node) == COMPLEX_TYPE)
+    warning (OPT_Wattributes,
+	     "attribute %qE does not apply to elements"
+	     " of non-scalar type %qT",
+	     name, *node);
+  else if (RECORD_OR_UNION_TYPE_P (*node))
+    warning (OPT_Wattributes,
+	     "attribute %qE does not apply to fields"
+	     " of aggregate type %qT",
+	     name, *node);
+
+  /* If we see a strub-enabling attribute, and we're at the default setting,
+     implicitly or explicitly, note that the attribute was seen, so that we can
+     reduce the compile-time overhead to nearly zero when the strub feature is
+     not used.  */
+  if (enable && flag_strub < -2)
+    flag_strub += 2;
+
   return NULL_TREE;
 }
 

@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/supergraph.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/call-details.h"
 
 #if ENABLE_ANALYZER
@@ -403,11 +402,9 @@ public:
 	    && 0 == strcmp (m_usage_fnname, other.m_usage_fnname));
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
-    return warning_at (rich_loc, get_controlling_option (),
-		       "%qs after %qs", m_usage_fnname, "va_end");
+    return ctxt.warn ("%qs after %qs", m_usage_fnname, "va_end");
   }
 
   const char *get_kind () const final override
@@ -478,11 +475,9 @@ public:
     return va_list_sm_diagnostic::subclass_equal_p (other);
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
-    return warning_at (rich_loc, get_controlling_option (),
-		       "missing call to %qs", "va_end");
+    return ctxt.warn ("missing call to %qs", "va_end");
   }
 
   const char *get_kind () const final override { return "va_list_leak"; }
@@ -892,18 +887,15 @@ public:
     return OPT_Wanalyzer_va_arg_type_mismatch;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
-    diagnostic_metadata m;
     /* "CWE-686: Function Call With Incorrect Argument Type".  */
-    m.add_cwe (686);
+    ctxt.add_cwe (686);
     bool warned
-      = warning_meta (rich_loc, m, get_controlling_option (),
-		      "%<va_arg%> expected %qT but received %qT"
-		      " for variadic argument %i of %qE",
-		      m_expected_type, m_actual_type,
-		      get_variadic_index_for_diagnostic (), m_va_list_tree);
+      = ctxt.warn ("%<va_arg%> expected %qT but received %qT"
+		   " for variadic argument %i of %qE",
+		   m_expected_type, m_actual_type,
+		   get_variadic_index_for_diagnostic (), m_va_list_tree);
     return warned;
   }
 
@@ -942,15 +934,12 @@ public:
     return OPT_Wanalyzer_va_list_exhausted;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
-    diagnostic_metadata m;
     /* CWE-685: Function Call With Incorrect Number of Arguments.  */
-    m.add_cwe (685);
-    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
-				"%qE has no more arguments (%i consumed)",
-				m_va_list_tree, get_num_consumed ());
+    ctxt.add_cwe (685);
+    bool warned = ctxt.warn ("%qE has no more arguments (%i consumed)",
+			     m_va_list_tree, get_num_consumed ());
     return warned;
   }
 

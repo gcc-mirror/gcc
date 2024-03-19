@@ -10442,7 +10442,7 @@ avr_eval_addr_attrib (rtx x)
 
 
 /* AVR attributes.  */
-static const struct attribute_spec avr_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (avr_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -10467,9 +10467,8 @@ static const struct attribute_spec avr_attribute_table[] =
   { "address",   1, 1, true, false, false,  false,
     avr_handle_addr_attribute, NULL },
   { "absdata",   0, 0, true, false, false,  false,
-    avr_handle_absdata_attribute, NULL },
-  { NULL,        0, 0, false, false, false, false, NULL, NULL }
-};
+    avr_handle_absdata_attribute, NULL }
+});
 
 
 /* Return true if we support address space AS for the architecture in effect
@@ -15086,6 +15085,7 @@ static rtx_insn *
 avr_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
                    vec<machine_mode> & /*input_modes*/,
                    vec<const char *> &/*constraints*/,
+		   vec<rtx> &/*uses*/,
                    vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
 		   location_t /*loc*/)
 {

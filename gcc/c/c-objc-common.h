@@ -75,11 +75,15 @@ extern void c_register_features ();
 #undef LANG_HOOKS_FINALIZE_EARLY_DEBUG
 #define LANG_HOOKS_FINALIZE_EARLY_DEBUG c_common_finalize_early_debug
 
-/* Attribute hooks.  */
-#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
-#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE c_common_attribute_table
-#undef LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
-#define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE c_common_format_attribute_table
+static const scoped_attribute_specs *const c_objc_attribute_table[] =
+{
+  &std_attribute_table,
+  &c_common_gnu_attribute_table,
+  &c_common_format_attribute_table
+};
+
+#undef LANG_HOOKS_ATTRIBUTE_TABLE
+#define LANG_HOOKS_ATTRIBUTE_TABLE c_objc_attribute_table
 
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN c_dump_tree

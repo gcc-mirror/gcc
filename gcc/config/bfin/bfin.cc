@@ -4896,7 +4896,7 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 }
 
 /* Table of valid machine attributes.  */
-static const struct attribute_spec bfin_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (bfin_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -4921,9 +4921,8 @@ static const struct attribute_spec bfin_attribute_table[] =
     bfin_handle_l1_data_attribute, NULL },
   { "l1_data_B", 0, 0, true, false, false, false,
     bfin_handle_l1_data_attribute, NULL },
-  { "l2", 0, 0, true, false, false, false, bfin_handle_l2_attribute, NULL },
-  { NULL, 0, 0, false, false, false, false, NULL, NULL }
-};
+  { "l2", 0, 0, true, false, false, false, bfin_handle_l2_attribute, NULL }
+});
 
 /* Implementation of TARGET_ASM_INTEGER.  When using FD-PIC, we need to
    tell the assembler to generate pointers to function descriptors in

@@ -121,3 +121,21 @@ TEST_CREATE (create2_u64, svuint64x2_t, svuint64_t,
 TEST_CREATE (create2_f64, svfloat64x2_t, svfloat64_t,
 	     z0 = svcreate2_f64 (z5, z4),
 	     z0 = svcreate2 (z5, z4))
+
+/*
+** create2_b_0:
+**	ret
+*/
+TEST_CREATE_B (create2_b_0, svboolx2_t,
+	       p0_res = svcreate2_b (p0, p1),
+	       p0_res = svcreate2 (p0, p1))
+
+/*
+** create2_b_1:
+**	mov	p0\.b, p2\.b
+**	mov	p1\.b, p3\.b
+**	ret
+*/
+TEST_CREATE_B (create2_b_1, svboolx2_t,
+	       p0_res = svcreate2_b (p2, p3),
+	       p0_res = svcreate2 (p2, p3))

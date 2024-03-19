@@ -110,7 +110,8 @@ gcn_init_machine_status (void)
 
   f = ggc_cleared_alloc<machine_function> ();
 
-  if (TARGET_GCN3)
+  // FIXME: re-enable global addressing with safety for LDS-flat addresses
+  //if (TARGET_GCN3)
     f->use_flat_addressing = true;
 
   return f;
@@ -358,14 +359,12 @@ gcn_handle_amdgpu_hsa_kernel_attribute (tree *node, tree name,
  
    Create target-specific __attribute__ types.  */
 
-static const struct attribute_spec gcn_attribute_table[] = {
+TARGET_GNU_ATTRIBUTES (gcn_attribute_table, {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
      affects_type_identity } */
   {"amdgpu_hsa_kernel", 0, GCN_KERNEL_ARG_TYPES, false, true,
-   true, true, gcn_handle_amdgpu_hsa_kernel_attribute, NULL},
-  /* End element.  */
-  {NULL, 0, 0, false, false, false, false, NULL, NULL}
-};
+   true, true, gcn_handle_amdgpu_hsa_kernel_attribute, NULL}
+});
 
 /* }}}  */
 /* {{{ Registers and modes.  */
@@ -4874,6 +4873,19 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	if (cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG] >= 0)
 	   ptr = gen_rtx_REG (DImode,
 			      cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG]);
+	else
+	  {
+	    ptr = gen_reg_rtx (DImode);
+	    emit_move_insn (ptr, const0_rtx);
+	  }
+	return ptr;
+      }
+    case GCN_BUILTIN_DISPATCH_PTR:
+      {
+	rtx ptr;
+	if (cfun->machine->args.reg[DISPATCH_PTR_ARG] >= 0)
+	   ptr = gen_rtx_REG (DImode,
+			      cfun->machine->args.reg[DISPATCH_PTR_ARG]);
 	else
 	  {
 	    ptr = gen_reg_rtx (DImode);

@@ -157,6 +157,10 @@ public:
 
   virtual bool overflow_free_p (const irange &lh, const irange &rh,
 				relation_trio = TRIO_VARYING) const;
+
+  // Compatability check for operands.
+  virtual bool operand_check_p (tree, tree, tree) const;
+
 protected:
   // Perform an integral operation between 2 sub-ranges and return it.
   virtual void wi_fold (irange &r, tree type,
@@ -226,6 +230,7 @@ public:
 				  const vrange &op2) const;
   bool overflow_free_p (const vrange &lh, const vrange &rh,
 			relation_trio = TRIO_VARYING) const;
+  bool operand_check_p (tree, tree, tree) const;
 protected:
   unsigned dispatch_kind (const vrange &lhs, const vrange &op1,
 			  const vrange& op2) const;

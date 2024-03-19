@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-path.h"
 #include "analyzer/reachability.h"
 #include "make-unique.h"
+#include "diagnostic-format-sarif.h"
 
 #if ENABLE_ANALYZER
 
@@ -1018,6 +1019,31 @@ saved_diagnostic::emit_any_notes () const
     pn->emit ();
 }
 
+/* For SARIF output, add additional properties to the "result" object
+   for this diagnostic.
+   This extra data is intended for use when debugging the analyzer.  */
+
+void
+saved_diagnostic::maybe_add_sarif_properties (sarif_object &result_obj) const
+{
+  sarif_property_bag &props = result_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/saved_diagnostic/"
+  if (m_sm)
+    props.set_string (PROPERTY_PREFIX "sm", m_sm->get_name ());
+  props.set_integer (PROPERTY_PREFIX "enode", m_enode->m_index);
+  props.set_integer (PROPERTY_PREFIX "snode", m_snode->m_index);
+  if (m_sval)
+    props.set (PROPERTY_PREFIX "sval", m_sval->to_json ());
+  if (m_state)
+    props.set (PROPERTY_PREFIX "state", m_state->to_json ());
+  if (m_best_epath)
+  props.set (PROPERTY_PREFIX "idx", new json::integer_number (m_idx));
+#undef PROPERTY_PREFIX
+
+  /* Potentially add pending_diagnostic-specific properties.  */
+  m_d->maybe_add_sarif_properties (result_obj);
+}
+
 /* State for building a checker_path from a particular exploded_path.
    In particular, this precomputes reachability information: the set of
    source enodes for which a path be found to the diagnostic enode.  */
@@ -1498,6 +1524,29 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   best_candidates.emit_best (this, eg);
 }
 
+/* Custom subclass of diagnostic_metadata which, for SARIF output,
+   populates the property bag of the diagnostic's "result" object
+   with information from the saved_diagnostic and the
+   pending_diagnostic.  */
+
+class pending_diagnostic_metadata : public diagnostic_metadata
+{
+public:
+  pending_diagnostic_metadata (const saved_diagnostic &sd)
+  : m_sd (sd)
+  {
+  }
+
+  void
+  maybe_add_sarif_properties (sarif_object &result_obj) const override
+  {
+    m_sd.maybe_add_sarif_properties (result_obj);
+  }
+
+private:
+  const saved_diagnostic &m_sd;
+};
+
 /* Given a saved_diagnostic SD with m_best_epath through EG,
    create an checker_path of suitable events and use it to call
    SD's underlying pending_diagnostic "emit" vfunc to emit a diagnostic.  */
@@ -1563,7 +1612,9 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   auto_diagnostic_group d;
   auto_cfun sentinel (sd.m_snode->m_fun);
-  if (sd.m_d->emit (&rich_loc, get_logger ()))
+  pending_diagnostic_metadata m (sd);
+  diagnostic_emission_context diag_ctxt (sd, rich_loc, m, get_logger ());
+  if (sd.m_d->emit (diag_ctxt))
     {
       sd.emit_any_notes ();
 

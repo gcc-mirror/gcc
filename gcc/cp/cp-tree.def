@@ -446,8 +446,7 @@ DEFTREECODE (TRAIT_TYPE, "trait_type", tcc_type, 0)
    LAMBDA_EXPR_CAPTURE_LIST holds the capture-list, including `this'.
    LAMBDA_EXPR_THIS_CAPTURE goes straight to the capture of `this', if it exists.
    LAMBDA_EXPR_PENDING_PROXIES is a vector of capture proxies which need to
-   be pushed once scope returns to the lambda.
-   LAMBDA_EXPR_MUTABLE_P signals whether this lambda was declared mutable.  */
+   be pushed once scope returns to the lambda.  */
 DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)
 
 /* The declared type of an expression.  This is a C++0x extension.

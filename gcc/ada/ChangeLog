@@ -1,3 +1,284 @@
+2023-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/trans.cc: Include ipa-strub.h.
+	(gigi): Make internal decls for targets of compiler-generated
+	calls strub-callable too.
+	(build_raise_check): Likewise.
+	* gcc-interface/utils.cc: Include ipa-strub.h.
+	(handle_strub_attribute): New.
+	(gnat_internal_attribute_table): Add strub.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc-interface/utils.cc (gnat_internal_attribute_table): Add extra
+	braces to work around PR 16333 in older compilers.
+
+2023-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* adaint.c: Include <signal.h>.
+	* expect.c: Include <string.h>.
+
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc-interface/gigi.h (gnat_internal_attribute_table): Change
+	type to scoped_attribute_specs.
+	* gcc-interface/utils.cc (gnat_internal_attribute_table): Likewise,
+	using...
+	(gnat_internal_attributes): ...this as the underlying array.
+	* gcc-interface/misc.cc (gnat_attribute_table): New global.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Use it.
+
+2023-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* adaint.c [__APPLE__]: Include <signal.h>, <sys/time.h>.
+	* terminals.c [!_WIN32]: Include <signal.h>.
+	[__APPLE__]: Include <util.h>.
+	Fix typos.
+
+2023-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.ads (Apply_Predicate_Check): Add Deref boolean parameter.
+	* checks.adb (Apply_Predicate_Check): Revert latest change. Use
+	Loc local variable to hold the source location. Use a common code
+	path for the generic processing and make a dereference if Deref is
+	True.
+	* exp_ch4.adb (Expand_Allocator_Expression): Compute Aggr_In_Place
+	earlier. If it is true, do not call Apply_Predicate_Check on the
+	expression on entry but on the temporary on exit with a
+	dereference.
+	* sem_res.adb (Resolve_Actuals): Add explicit parameter
+	association in call to Apply_Predicate_Check.
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* exp_put_image.adb (Put_Image_Enabled): Return True in more
+	cases. In particular, when testing to see if a type occurs in a
+	predefined unit, test the type's code unit
+	(obtained by calling Get_Code_Unit). In the case of type within a
+	user-defined instance of a predefined generic, Is_Predefined_Unit
+	will return True for the type and False for the type's code unit.
+
+2023-11-30  Yannick Moy  <moy@adacore.com>
+
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Body_Contract):
+	Remove checking on volatility. Remove handling of SPARK_Mode, not
+	needed anymore.
+	(Analyze_Entry_Or_Subprogram_Contract): Remove checking on
+	volatility.
+	(Check_Type_Or_Object_External_Properties): Same.
+	(Analyze_Object_Contract): Same.
+	* freeze.adb (Freeze_Record_Type): Same. Also remove checking on
+	synchronized types and ghost types.
+	* sem_ch12.adb (Instantiate_Object): Remove checking on
+	volatility.
+	(Instantiate_Type): Same.
+	* sem_ch3.adb (Access_Type_Declaration): Same.
+	(Derived_Type_Declaration): Remove checking related to untagged
+	partial view.
+	(Process_Discriminants): Remove checking on volatility.
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Same.
+	* sem_ch6.adb (Analyze_Procedure_Call): Fix use of SPARK_Mode
+	where GNATprove_Mode was intended.
+	* sem_disp.adb (Inherited_Subprograms): Protect against Empty
+	node.
+	* sem_prag.adb (Analyze_Global_In_Decl_Part): Remove checking on
+	volatility.
+	(Analyze_Pragma): Same.
+	* sem_res.adb (Flag_Effectively_Volatile_Objects): Remove.
+	(Resolve_Actuals): Remove checking on volatility.
+	(Resolve_Entity_Name): Same.
+	* sem_util.adb (Check_Nonvolatile_Function_Profile): Remove.
+	(Check_Volatility_Compatibility): Remove.
+	* sem_util.ads: Same.
+
+2023-11-30  Sheri Bernstein  <bernstein@adacore.com>
+
+	* libgnat/i-cstrin.adb (Free): Rewrite code so there is only one
+	return, to remove Improper_Returns violation.
+	(Position_Of_Nul): Add pragma to exempt Improper_Returns
+	violation.
+	(To_Chars_Ptr): Likewise.
+	(Value): Likewise
+
+2023-11-30  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Validate_Compile_Time_Warning_Errors): Avoid
+	checking compile time warnings and errors if backend has not been
+	activated.
+
+2023-11-30  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb, exp_aggr.adb, exp_ch4.ads, exp_ch5.adb,
+	exp_util.adb, exp_util.ads, inline.adb, sem_ch13.adb,
+	sem_ch6.adb, sem_ch8.adb, sem_prag.adb, sem_util.ads: Fix comments
+	and typos.
+
+2023-11-30  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Declared_In_Expanded_Body): New subprogram.
+	(In_Expanded_Body): Minor code cleanup.
+	(Freeze_Expression): Code cleanup plus factorize in a new function
+	the code that identifies entities declared in the body of expander
+	generated subprograms, since such case must be checked also for
+	other node kinds when climbing the tree to locate the place to
+	insert the freezing node.
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): In the case of a resolving a
+	name that occurs within an instantiation, add code to detect and
+	filter out unwanted candidate resolutions. The filtering is
+	performed via a call to Remove_Interp.
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* libgnarl/a-rttiev.ads: add a comment
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* sem_ch12.adb (Validate_Discriminated_Formal_Type): Replace
+	Entity_Id equality test with a call to Subtypes_Match. Distinct
+	subtypes which are statically matching should pass this test.
+	(Check_Discriminated_Formal): Replace Entity_Id equality test with
+	a call to Subtypes_Statically_Match (preceded by a check that the
+	preconditions for the call are satisfied).
+
+2023-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Add Special_Return
+	boolean constant to hold the value of For_Special_Return_Object
+	for the allocator and use it throughout the procedure.
+
+2023-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Also deal specifically with
+	an expression that is a qualified aggregate in an allocator.
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* sem_ch4.adb (Constant_Indexing_OK): As a temporary stopgap,
+	return False in the case of an unanalyzed prefixed-view call.
+
+2023-11-28  Simon Wright  <simon@pushface.org>
+
+	PR ada/111909
+	* adaint.c
+	(__gnat_get_file_names_case_sensitive): Split out the __APPLE__
+	check and remove the checks for __arm__, __arm64__. For Apple,
+	file names are by default case-insensitive unless TARGET_OS_IOS is
+	set.
+
+2023-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (annotate_value): Apply the same processing
+	for parameters as for variables.
+
+2023-11-28  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/utils2.cc (build_simple_component_ref): Add
+	comment on assertion.
+
+2023-11-28  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): In the case of a
+	Reduce attribute reference, fix bugs in initializing Accum_Typ.
+	The previous version was incorrect in the case where E1 refers to
+	the first of multiple possible overload resolution candidates and
+	that candidate does not turn out to be the right one. The previous
+	version also had code to compute Accum_Typ via a different method
+	if the initial computation turned out to yield a universal numeric
+	type. Delete that initial computation and use the second method in
+	all cases.
+
+2023-11-28  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Add_Discriminant_Values): Remove this procedure.
+	(Propagate_Discriminants): Remove this procedure.
+	(Resolve_Record_Aggregate): Remove code (the Capture_Discriminants
+	block statement) related to propagating discriminants and
+	generating initializations for subcomponents of a
+	discriminant-dependent box-defaulted subcomponent of a nonprivate
+	record type with discriminants, and handle all top-level
+	components that have a non-null base init proc directly, by
+	calling Add_Association with "Is_Box_Present => True". Also,
+	combine that elsif clause with the immediately preceding elsif
+	clause, since they now both contain the same statement (calls to
+	Add_Association with the same actuals).
+
+2023-11-28  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Check_Result_And_Post_State): Disable this when
+	we're in an instance. Misc cleanup.
+
+2023-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.ads (Expand_Cleanup_Actions): Move declaration to the
+	Finalization Management section.
+	* exp_ch7.adb (Transient Scope Management): Move description down to
+	after that of the general finalization and make a few changes.
+	(Insert_Actions_In_Scope_Around): Call Process_Transients_In_Scope
+	only if cleanups are being handled.
+	(Process_Transients_In_Scope): Remove redundant test on Clean.
+	* exp_util.ads (Within_Case_Or_If_Expression): Adjust description.
+	* exp_util.adb (Within_Case_Or_If_Expression): Only return true if
+	within the dependent expressions of the conditional expressions.
+
+2023-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/the_implementation_of_standard_i_o.rst: Fix a couple
+	occurrences of incorrect quoting.
+	* gnat_rm.texi: Regenerate.
+
+2023-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Build_Flag_For_Function): New function made up of the
+	code building the special flag for return object present...
+	(Expand_N_Extended_Return_Statement): ...in there.  Replace the code
+	with a call to Build_Flag_For_Function.  Add assertion for the flag.
+	(Expand_Non_Function_Return): For a nested return, if the return
+	object needs finalization actions, update the special flag.
+
+2023-11-28  Sebastian Poeplau  <poeplau@adacore.com>
+
+	* einfo-utils.ads, einfo-utils.adb (Is_Address_Compatible_Type):
+	New function.
+
+2023-11-28  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Apply a conversion to the
+	size temp object passed as the second actual parameter on the call to
+	the New_Indexed_Subp function, to convert it to the index type of the
+	container type (taken from the first formal parameter of the function).
+
+2023-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Do not proceed in a spec expression
+	for nonstatic representation attributes of a scalar subtype when the
+	subtype is not frozen.
+	* sem_ch3.adb (Analyze_Object_Declaration): Do not freeze the type
+	of the object in a spec expression.
+
+2023-11-28  Richard Kenner  <kenner@adacore.com>
+
+	* exp_unst.adb (Note_Uplevel_Bound): Treat
+	N_Unchecked_Type_Conversion like N_Type_Conversion.
+
+2023-11-28  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-imgboo.adb: Remove with_clause now in spec file.
+	* libgnat/s-imgboo.ads: Remove dependency on System.Val_Bool.
+	(Image_Boolean): Replace call to Value_Boolean by passing value V
+	to updated ghost function Is_Boolean_Image_Ghost.
+	* libgnat/s-valboo.ads (Is_Boolean_Image_Ghost): Move to other
+	unit.
+	(Value_Boolean.): Update precondition.
+	* libgnat/s-valspe.ads (Is_Boolean_Image_Ghost): Move here. Add
+	new parameter for expected boolean value.
+
+2023-11-28  Tucker Taft  <taft@adacore.com>
+
+	* sem_scil.adb: Handle discriminant specification.
+
 2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (Loop_Statement_to_gnu): Always use the

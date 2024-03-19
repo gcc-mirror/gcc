@@ -577,45 +577,40 @@ namespace std
 #undef _GLIBCXX_VERBOSE_ASSERT
 
 // Assert.
-#if defined(_GLIBCXX_ASSERTIONS) \
-  || defined(_GLIBCXX_PARALLEL) || defined(_GLIBCXX_PARALLEL_ASSERTIONS)
-# ifdef _GLIBCXX_VERBOSE_ASSERT
+#ifdef _GLIBCXX_VERBOSE_ASSERT
 namespace std
 {
 #pragma GCC visibility push(default)
-  // Avoid the use of assert, because we're trying to keep the <cassert>
-  // include out of the mix.
+  // Don't use <cassert> because this should be unaffected by NDEBUG.
   extern "C++" _GLIBCXX_NORETURN
   void
-  __glibcxx_assert_fail(const char* __file, int __line,
-			const char* __function, const char* __condition)
+  __glibcxx_assert_fail /* Called when a precondition violation is detected. */
+    (const char* __file, int __line, const char* __function,
+     const char* __condition)
   _GLIBCXX_NOEXCEPT;
 #pragma GCC visibility pop
 }
-#define __glibcxx_assert_impl(_Condition)				\
-  if (__builtin_expect(!bool(_Condition), false))			\
-  {									\
-    __glibcxx_constexpr_assert(false);					\
-    std::__glibcxx_assert_fail(__FILE__, __LINE__, __PRETTY_FUNCTION__,	\
-			       #_Condition);				\
-  }
-# else // ! VERBOSE_ASSERT
-# define __glibcxx_assert_impl(_Condition)		\
-  if (__builtin_expect(!bool(_Condition), false))	\
-  {							\
-    __glibcxx_constexpr_assert(false);			\
-    __builtin_abort();					\
-  }
-# endif
+# define _GLIBCXX_ASSERT_FAIL(_Condition)				\
+  std::__glibcxx_assert_fail(__FILE__, __LINE__, __PRETTY_FUNCTION__,	\
+			     #_Condition)
+#else // ! VERBOSE_ASSERT
+# define _GLIBCXX_ASSERT_FAIL(_Condition) __builtin_abort()
 #endif
 
 #if defined(_GLIBCXX_ASSERTIONS)
-# define __glibcxx_assert(cond) \
-  do { __glibcxx_assert_impl(cond); } while (false)
+# define _GLIBCXX_DO_ASSERT true
+#elif _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
+# define _GLIBCXX_DO_ASSERT std::__is_constant_evaluated()
 #else
-# define __glibcxx_assert(cond) \
-  do { __glibcxx_constexpr_assert(cond); } while (false)
+# define _GLIBCXX_DO_ASSERT false
 #endif
+
+# define __glibcxx_assert(cond)						\
+  do {									\
+    if _GLIBCXX17_CONSTEXPR (_GLIBCXX_DO_ASSERT)			\
+      if (__builtin_expect(!bool(cond), false))				\
+	_GLIBCXX_ASSERT_FAIL(cond);					\
+  } while (false)
 
 // Macro indicating that TSAN is in use.
 #if __SANITIZE_THREAD__

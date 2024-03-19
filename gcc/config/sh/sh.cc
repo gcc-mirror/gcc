@@ -329,7 +329,7 @@ static bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool sh_modes_tieable_p (machine_mode, machine_mode);
 static bool sh_can_change_mode_class (machine_mode, machine_mode, reg_class_t);
 
-static const struct attribute_spec sh_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (sh_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -348,9 +348,8 @@ static const struct attribute_spec sh_attribute_table[] =
   { "resbank",           0, 0, true,  false, false, false,
     sh_handle_resbank_handler_attribute, NULL },
   { "function_vector",   1, 1, true,  false, false, false,
-    sh2a_handle_function_vector_handler_attribute, NULL },
-  { NULL,                0, 0, false, false, false, false, NULL, NULL }
-};
+    sh2a_handle_function_vector_handler_attribute, NULL }
+});
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE

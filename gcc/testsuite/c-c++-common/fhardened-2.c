@@ -4,7 +4,7 @@
 #ifdef __SSP_STRONG__
 # error "-fstack-protector-strong enabled when it should not be"
 #endif
-#ifndef __SSP__
+#if !defined(__SSP__) && !defined(__hppa__)
 # error "-fstack-protector not enabled"
 #endif
 

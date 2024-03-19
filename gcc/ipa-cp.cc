@@ -1926,7 +1926,8 @@ ipa_vr_operation_and_type_effects (vrange &dst_vr,
   Value_Range varying (dst_type);
   varying.set_varying (dst_type);
 
-  return (handler.fold_range (dst_vr, dst_type, src_vr, varying)
+  return (handler.operand_check_p (dst_type, src_type, dst_type)
+	  && handler.fold_range (dst_vr, dst_type, src_vr, varying)
 	  && !dst_vr.varying_p ()
 	  && !dst_vr.undefined_p ());
 }

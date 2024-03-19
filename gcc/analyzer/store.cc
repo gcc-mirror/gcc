@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
-#include "diagnostic-metadata.h"
 #include "bitmap.h"
 #include "selftest.h"
 #include "analyzer/analyzer.h"

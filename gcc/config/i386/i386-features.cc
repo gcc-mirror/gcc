@@ -2627,10 +2627,11 @@ convert_scalars_to_vector (bool timode_p)
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
-  /* vzeroupper instructions are inserted immediately after reload to
-     account for possible spills from 256bit or 512bit registers.  The pass
-     reuses mode switching infrastructure by re-running mode insertion
-     pass, so disable entities that have already been processed.  */
+  /* vzeroupper instructions are inserted immediately after reload and
+     postreload_cse to clean up after it a little bit to account for possible
+     spills from 256bit or 512bit registers.  The pass reuses mode switching
+     infrastructure by re-running mode insertion pass, so disable entities
+     that have already been processed.  */
   for (int i = 0; i < MAX_386_ENTITIES; i++)
     ix86_optimize_mode_switching[i] = 0;
 

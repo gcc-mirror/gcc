@@ -569,16 +569,20 @@ sarif_builder::make_result_object (diagnostic_context *context,
       free (rule_id);
     }
 
-  /* "taxa" property (SARIF v2.1.0 section 3.27.8).  */
   if (diagnostic->metadata)
-    if (int cwe_id = diagnostic->metadata->get_cwe ())
-      {
-	json::array *taxa_arr = new json::array ();
-	json::object *cwe_id_obj
-	  = make_reporting_descriptor_reference_object_for_cwe_id (cwe_id);
-	taxa_arr->append (cwe_id_obj);
-	result_obj->set ("taxa", taxa_arr);
-      }
+    {
+      /* "taxa" property (SARIF v2.1.0 section 3.27.8).  */
+      if (int cwe_id = diagnostic->metadata->get_cwe ())
+	{
+	  json::array *taxa_arr = new json::array ();
+	  json::object *cwe_id_obj
+	    = make_reporting_descriptor_reference_object_for_cwe_id (cwe_id);
+	  taxa_arr->append (cwe_id_obj);
+	  result_obj->set ("taxa", taxa_arr);
+	}
+
+      diagnostic->metadata->maybe_add_sarif_properties (*result_obj);
+    }
 
   /* "level" property (SARIF v2.1.0 section 3.27.10).  */
   if (const char *sarif_level = maybe_get_sarif_level (diagnostic->kind))

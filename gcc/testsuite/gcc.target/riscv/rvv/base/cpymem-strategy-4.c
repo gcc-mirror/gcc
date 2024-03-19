@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32d -mmemcpy-strategy=auto" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32d -mstringop-strategy=auto" } */
 
 #include "cpymem-strategy.h"
 

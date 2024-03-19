@@ -5,7 +5,7 @@
    are not permitted.  PR c/11234.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "-pedantic" } */
+/* { dg-options "-fpermissive -pedantic" } */
 
 void f(void);
 

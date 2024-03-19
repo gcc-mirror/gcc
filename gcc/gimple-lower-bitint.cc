@@ -1963,7 +1963,7 @@ range_to_prec (tree op, gimple *stmt)
       if (TYPE_UNSIGNED (type))
 	return prec;
       else
-	return -prec;
+	return MIN ((int) -prec, -2);
     }
 
   if (!TYPE_UNSIGNED (TREE_TYPE (op)))
@@ -2179,6 +2179,8 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	  *prec = MIN ((int) -min_prec, -2);
 	}
       mp = CEIL (min_prec, limb_prec) * limb_prec;
+      if (mp == 0)
+	mp = 1;
       if (mp >= (unsigned) TYPE_PRECISION (TREE_TYPE (op)))
 	type = TREE_TYPE (op);
       else
@@ -2622,7 +2624,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	{
 	  if (kind == bitint_prec_large || (i == 0 && bo_bit != 0))
 	    idx = size_int (start + i);
-	  else if (i == cnt - 1)
+	  else if (i == cnt - 1 && (rem != 0))
 	    idx = size_int (end);
 	  else if (i == (bo_bit != 0))
 	    idx = create_loop (size_int (start + i), &idx_next);
@@ -3682,6 +3684,8 @@ bitint_large_huge::finish_arith_overflow (tree var, tree obj, tree type,
 	      else
 		g = gimple_build_assign (lhs2, NOP_EXPR, ovf);
 	      gsi_replace (&gsi, g, true);
+	      if (gsi_stmt (m_gsi) == use_stmt)
+		m_gsi = gsi_for_stmt (g);
 	      break;
 	    }
 	}
@@ -3790,11 +3794,45 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
   int prec = TYPE_PRECISION (type);
   int prec0 = range_to_prec (arg0, stmt);
   int prec1 = range_to_prec (arg1, stmt);
-  int prec2 = ((prec0 < 0) == (prec1 < 0)
-	       ? MAX (prec0 < 0 ? -prec0 : prec0,
-		      prec1 < 0 ? -prec1 : prec1) + 1
-	       : MAX (prec0 < 0 ? -prec0 : prec0 + 1,
-		      prec1 < 0 ? -prec1 : prec1 + 1) + 1);
+  /* If PREC0 >= 0 && PREC1 >= 0 and CODE is not MINUS_EXPR, PREC2 is
+     the be minimum unsigned precision of any possible operation's
+     result, otherwise it is minimum signed precision.
+     Some examples:
+     If PREC0 or PREC1 is 8, it means that argument is [0, 0xff],
+     if PREC0 or PREC1 is 10, it means that argument is [0, 0x3ff],
+     if PREC0 or PREC1 is -8, it means that argument is [-0x80, 0x7f],
+     if PREC0 or PREC1 is -10, it means that argument is [-0x200, 0x1ff].
+     PREC0  CODE  PREC1  RESULT          PREC2  SIGNED vs. UNSIGNED
+       8      +     8    [0, 0x1fe]        9    UNSIGNED
+       8      +    10    [0, 0x4fe]       11    UNSIGNED
+      -8      +    -8    [-0x100, 0xfe]    9    SIGNED
+      -8      +   -10    [-0x280, 0x27e]  11    SIGNED
+       8      +    -8    [-0x80, 0x17e]   10    SIGNED
+       8      +   -10    [-0x200, 0x2fe]  11    SIGNED
+      10      +    -8    [-0x80, 0x47e]   12    SIGNED
+       8      -     8    [-0xff, 0xff]     9    SIGNED
+       8      -    10    [-0x3ff, 0xff]   11    SIGNED
+      10      -     8    [-0xff, 0x3ff]   11    SIGNED
+      -8      -    -8    [-0xff, 0xff]     9    SIGNED
+      -8      -   -10    [-0x27f, 0x27f]  11    SIGNED
+     -10      -    -8    [-0x27f, 0x27f]  11    SIGNED
+       8      -    -8    [-0x7f, 0x17f]   10    SIGNED
+       8      -   -10    [-0x1ff, 0x2ff]  11    SIGNED
+      10      -    -8    [-0x7f, 0x47f]   12    SIGNED
+      -8      -     8    [-0x17f, 0x7f]   10    SIGNED
+      -8      -    10    [-0x47f, 0x7f]   12    SIGNED
+     -10      -     8    [-0x2ff, 0x1ff]  11    SIGNED  */
+  int prec2 = MAX (prec0 < 0 ? -prec0 : prec0,
+		   prec1 < 0 ? -prec1 : prec1);
+	    /* If operands are either both signed or both unsigned,
+	       we need just one additional bit.  */
+  prec2 = (((prec0 < 0) == (prec1 < 0)
+	       /* If one operand is signed and one unsigned and
+		  the signed one has larger precision, we need
+		  just one extra bit, otherwise two.  */
+	    || (prec0 < 0 ? (prec2 == -prec0 && prec2 != prec1)
+			  : (prec2 == -prec1 && prec2 != prec0)))
+	   ? prec2 + 1 : prec2 + 2);
   int prec3 = MAX (prec0 < 0 ? -prec0 : prec0,
 		   prec1 < 0 ? -prec1 : prec1);
   prec3 = MAX (prec3, prec);
@@ -3873,15 +3911,18 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 
   tree type0 = TREE_TYPE (arg0);
   tree type1 = TREE_TYPE (arg1);
-  if (TYPE_PRECISION (type0) < prec3)
+  int prec5 = prec3;
+  if (bitint_precision_kind (prec5) < bitint_prec_large)
+    prec5 = MAX (TYPE_PRECISION (type0), TYPE_PRECISION (type1));
+  if (TYPE_PRECISION (type0) < prec5)
     {
-      type0 = build_bitint_type (prec3, TYPE_UNSIGNED (type0));
+      type0 = build_bitint_type (prec5, TYPE_UNSIGNED (type0));
       if (TREE_CODE (arg0) == INTEGER_CST)
 	arg0 = fold_convert (type0, arg0);
     }
-  if (TYPE_PRECISION (type1) < prec3)
+  if (TYPE_PRECISION (type1) < prec5)
     {
-      type1 = build_bitint_type (prec3, TYPE_UNSIGNED (type1));
+      type1 = build_bitint_type (prec5, TYPE_UNSIGNED (type1));
       if (TREE_CODE (arg1) == INTEGER_CST)
 	arg1 = fold_convert (type1, arg1);
     }
@@ -4028,11 +4069,11 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 		  edge edge_true_true, edge_true_false, edge_false;
 		  gimple *g2 = NULL;
 		  if (!single_comparison)
-		    g2 = gimple_build_cond (EQ_EXPR, idx,
+		    g2 = gimple_build_cond (NE_EXPR, idx,
 					    size_int (startlimb), NULL_TREE,
 					    NULL_TREE);
 		  if_then_if_then_else (g, g2, profile_probability::likely (),
-					profile_probability::unlikely (),
+					profile_probability::likely (),
 					edge_true_true, edge_true_false,
 					edge_false);
 		  unsigned tidx = startlimb + (cmp_code == GT_EXPR);
@@ -4199,8 +4240,9 @@ bitint_large_huge::lower_mul_overflow (tree obj, gimple *stmt)
   arg0 = handle_operand_addr (arg0, stmt, NULL, &prec0);
   arg1 = handle_operand_addr (arg1, stmt, NULL, &prec1);
   int prec2 = ((prec0 < 0 ? -prec0 : prec0)
-	       + (prec1 < 0 ? -prec1 : prec1)
-	       + ((prec0 < 0) != (prec1 < 0)));
+	       + (prec1 < 0 ? -prec1 : prec1));
+  if (prec0 == 1 || prec1 == 1)
+    --prec2;
   tree var = NULL_TREE;
   tree orig_obj = obj;
   bool force_var = false;
@@ -6287,21 +6329,9 @@ gimple_lower_bitint (void)
 	      tree type = NULL_TREE;
 	      /* Middle _BitInt(N) is rewritten to casts to INTEGER_TYPEs
 		 with the same precision and back.  */
-	      if (tree lhs = gimple_get_lhs (stmt))
-		if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
-		    && (bitint_precision_kind (TREE_TYPE (lhs))
-			== bitint_prec_middle))
-		  {
-		    int prec = TYPE_PRECISION (TREE_TYPE (lhs));
-		    int uns = TYPE_UNSIGNED (TREE_TYPE (lhs));
-		    type = build_nonstandard_integer_type (prec, uns);
-		    tree lhs2 = make_ssa_name (type);
-		    gimple *g = gimple_build_assign (lhs, NOP_EXPR, lhs2);
-		    gsi_insert_after (&gsi, g, GSI_SAME_STMT);
-		    gimple_set_lhs (stmt, lhs2);
-		  }
 	      unsigned int nops = gimple_num_ops (stmt);
-	      for (unsigned int i = 0; i < nops; ++i)
+	      for (unsigned int i = is_gimple_assign (stmt) ? 1 : 0;
+		   i < nops; ++i)
 		if (tree op = gimple_op (stmt, i))
 		  {
 		    tree nop = maybe_cast_middle_bitint (&gsi, op, type);
@@ -6327,6 +6357,25 @@ gimple_lower_bitint (void)
 			  = maybe_cast_middle_bitint (&gsi, CASE_HIGH (op),
 						      type);
 		      }
+		  }
+	      if (tree lhs = gimple_get_lhs (stmt))
+		if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
+		    && (bitint_precision_kind (TREE_TYPE (lhs))
+			== bitint_prec_middle))
+		  {
+		    int prec = TYPE_PRECISION (TREE_TYPE (lhs));
+		    int uns = TYPE_UNSIGNED (TREE_TYPE (lhs));
+		    type = build_nonstandard_integer_type (prec, uns);
+		    tree lhs2 = make_ssa_name (type);
+		    gimple_set_lhs (stmt, lhs2);
+		    gimple *g = gimple_build_assign (lhs, NOP_EXPR, lhs2);
+		    if (stmt_ends_bb_p (stmt))
+		      {
+			edge e = find_fallthru_edge (gsi_bb (gsi)->succs);
+			gsi_insert_on_edge_immediate (e, g);
+		      }
+		    else
+		      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
 		  }
 	      update_stmt (stmt);
 	      continue;

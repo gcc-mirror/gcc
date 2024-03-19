@@ -1,6 +1,8 @@
 // C++26 P2741R3 - user-generated static_assert messages
 // { dg-do compile { target c++11 } }
 // { dg-options "" }
+// Override any default-'-fno-exceptions':
+// { dg-additional-options -fexceptions }
 
 static_assert (true, "");
 static_assert (true, (""));	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }

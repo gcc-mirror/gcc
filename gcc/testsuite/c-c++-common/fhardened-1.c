@@ -1,7 +1,7 @@
 /* { dg-do compile { target *-*-linux* *-*-gnu* } } */
 /* { dg-options "-fhardened -O" } */
 
-#ifndef __SSP_STRONG__
+#if !defined(__SSP_STRONG__) && !defined(__hppa__)
 # error "-fstack-protector-strong not enabled"
 #endif
 

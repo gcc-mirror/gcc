@@ -1,3 +1,25 @@
+2023-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* LOCAL_PATCHES: Update.
+
+2023-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/112563
+	* sanitizer_common/sanitizer_redefine_builtins.h: Check
+	HAVE_AS_SYM_ASSIGN.
+
+2023-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/112563
+	* configure.ac (libsanitizer_cv_as_sym_assign): Check for
+	assembler symbol assignment support.
+	* configure: Regenerate.
+	* asan/Makefile.am (DEFS): Add @AS_SYM_ASSIGN_DEFS@.
+	* Makefile.in, asan/Makefile.in, hwasan/Makefile.in,
+	interception/Makefile.in, libbacktrace/Makefile.in,
+	lsan/Makefile.in, sanitizer_common/Makefile.in, tsan/Makefile.in,
+	ubsan/Makefile.in: Regenerate.
+
 2023-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/112562

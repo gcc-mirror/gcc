@@ -20,7 +20,10 @@
 
 TM_H += $(srcdir)/config/aarch64/aarch64-fusion-pairs.def \
 	$(srcdir)/config/aarch64/aarch64-tuning-flags.def \
-	$(srcdir)/config/aarch64/aarch64-option-extensions.def
+	$(srcdir)/config/aarch64/aarch64-option-extensions.def \
+	$(srcdir)/config/aarch64/aarch64-cores.def \
+	$(srcdir)/config/aarch64/aarch64-isa-modes.def \
+	$(srcdir)/config/aarch64/aarch64-arches.def
 OPTIONS_H_EXTRA += $(srcdir)/config/aarch64/aarch64-cores.def \
 		   $(srcdir)/config/aarch64/aarch64-arches.def
 
@@ -60,6 +63,7 @@ aarch64-sve-builtins.o: $(srcdir)/config/aarch64/aarch64-sve-builtins.cc \
   $(srcdir)/config/aarch64/aarch64-sve-builtins.def \
   $(srcdir)/config/aarch64/aarch64-sve-builtins-base.def \
   $(srcdir)/config/aarch64/aarch64-sve-builtins-sve2.def \
+  $(srcdir)/config/aarch64/aarch64-sve-builtins-sme.def \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
   $(TM_P_H) memmodel.h insn-codes.h $(OPTABS_H) $(RECOG_H) $(DIAGNOSTIC_H) \
   $(EXPR_H) $(BASIC_BLOCK_H) $(FUNCTION_H) fold-const.h $(GIMPLE_H) \
@@ -69,7 +73,8 @@ aarch64-sve-builtins.o: $(srcdir)/config/aarch64/aarch64-sve-builtins.cc \
   $(srcdir)/config/aarch64/aarch64-sve-builtins.h \
   $(srcdir)/config/aarch64/aarch64-sve-builtins-shapes.h \
   $(srcdir)/config/aarch64/aarch64-sve-builtins-base.h \
-  $(srcdir)/config/aarch64/aarch64-sve-builtins-sve2.h
+  $(srcdir)/config/aarch64/aarch64-sve-builtins-sve2.h \
+  $(srcdir)/config/aarch64/aarch64-sve-builtins-sme.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/aarch64/aarch64-sve-builtins.cc
 
@@ -109,6 +114,19 @@ aarch64-sve-builtins-sve2.o: \
   $(srcdir)/config/aarch64/aarch64-sve-builtins-functions.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/aarch64/aarch64-sve-builtins-sve2.cc
+
+aarch64-sve-builtins-sme.o: \
+  $(srcdir)/config/aarch64/aarch64-sve-builtins-sme.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
+  $(TM_P_H) memmodel.h insn-codes.h $(OPTABS_H) $(RECOG_H) \
+  $(EXPR_H) $(BASIC_BLOCK_H) $(FUNCTION_H) fold-const.h $(GIMPLE_H) \
+  gimple-iterator.h gimplify.h explow.h $(EMIT_RTL_H) \
+  $(srcdir)/config/aarch64/aarch64-sve-builtins.h \
+  $(srcdir)/config/aarch64/aarch64-sve-builtins-shapes.h \
+  $(srcdir)/config/aarch64/aarch64-sve-builtins-sme.h \
+  $(srcdir)/config/aarch64/aarch64-sve-builtins-functions.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/aarch64/aarch64-sve-builtins-sme.cc
 
 aarch64-builtin-iterators.h: $(srcdir)/config/aarch64/geniterators.sh \
 	$(srcdir)/config/aarch64/iterators.md
@@ -183,9 +201,12 @@ MULTILIB_DIRNAMES   = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
 insn-conditions.md: s-check-sve-md
 s-check-sve-md: $(srcdir)/config/aarch64/check-sve-md.awk \
 		$(srcdir)/config/aarch64/aarch64-sve.md \
-		$(srcdir)/config/aarch64/aarch64-sve2.md
+		$(srcdir)/config/aarch64/aarch64-sve2.md \
+		$(srcdir)/config/aarch64/aarch64-sme.md
 	$(AWK) -f $(srcdir)/config/aarch64/check-sve-md.awk \
 	  $(srcdir)/config/aarch64/aarch64-sve.md
 	$(AWK) -f $(srcdir)/config/aarch64/check-sve-md.awk \
 	  $(srcdir)/config/aarch64/aarch64-sve2.md
+	$(AWK) -f $(srcdir)/config/aarch64/check-sve-md.awk \
+	  $(srcdir)/config/aarch64/aarch64-sme.md
 	$(STAMP) s-check-sve-md

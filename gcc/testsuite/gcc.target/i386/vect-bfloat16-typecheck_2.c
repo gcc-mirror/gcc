@@ -214,8 +214,8 @@ __m256bf16 footest (__m256bf16 vector0)
   0 ? 0.1 : vector0; /* { dg-error {type mismatch in conditional expression} } */
   0 ? vector0 : 0.1; /* { dg-error {type mismatch in conditional expression} } */
   0 ? bfloat_ptr : bfloat_ptr2;
-  0 ? bfloat_ptr : float_ptr; /* { dg-warning {pointer type mismatch in conditional expression} } */
-  0 ? float_ptr : bfloat_ptr; /* { dg-warning {pointer type mismatch in conditional expression} } */
+  0 ? bfloat_ptr : float_ptr; /* { dg-error {pointer type mismatch in conditional expression} } */
+  0 ? float_ptr : bfloat_ptr; /* { dg-error {pointer type mismatch in conditional expression} } */
 
   vector0 ? vector0 : vector0; /* { dg-error {used vector type where scalar is required} } */
   vector0 ? is_a_float16_vec : vector0; /* { dg-error {used vector type where scalar is required} } */

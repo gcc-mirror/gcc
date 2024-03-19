@@ -898,7 +898,7 @@ rl78_handle_vector_attribute (tree * node,
 #define TARGET_ATTRIBUTE_TABLE		rl78_attribute_table
 
 /* Table of RL78-specific attributes.  */
-const struct attribute_spec rl78_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (rl78_attribute_table,
 {
   /* Name, min_len, max_len, decl_req, type_req, fn_type_req,
      affects_type_identity, handler, exclude.  */
@@ -911,9 +911,8 @@ const struct attribute_spec rl78_attribute_table[] =
   { "saddr",          0, 0, true, false, false, false,
     rl78_handle_saddr_attribute, NULL },
   { "vector",         1, -1, true, false, false, false,
-	rl78_handle_vector_attribute, NULL },
-  { NULL,             0, 0, false, false, false, false, NULL, NULL }
-};
+	rl78_handle_vector_attribute, NULL }
+});
 
 
 

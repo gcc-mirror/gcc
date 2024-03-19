@@ -21,6 +21,12 @@
 (define_register_constraint "k" "STACK_REG"
   "@internal The stack register.")
 
+(define_register_constraint "Uci" "W8_W11_REGS"
+  "@internal r8-r11, which can be used to index ZA.")
+
+(define_register_constraint "Ucj" "W12_W15_REGS"
+  "@internal r12-r15, which can be used to index ZA.")
+
 (define_register_constraint "Ucs" "TAILCALL_ADDR_REGS"
   "@internal Registers suitable for an indirect tail call")
 
@@ -36,17 +42,32 @@
 (define_register_constraint "w" "FP_REGS"
   "Floating point and SIMD vector registers.")
 
-(define_register_constraint "Upa" "PR_REGS"
-  "SVE predicate registers p0 - p15.")
-
-(define_register_constraint "Upl" "PR_LO_REGS"
-  "SVE predicate registers p0 - p7.")
-
 (define_register_constraint "x" "FP_LO_REGS"
   "Floating point and SIMD vector registers V0 - V15.")
 
 (define_register_constraint "y" "FP_LO8_REGS"
   "Floating point and SIMD vector registers V0 - V7.")
+
+(define_register_constraint "Uw2" "FP_REGS"
+  "Even floating point and SIMD vector registers."
+  "regno % 2 == 0")
+
+(define_register_constraint "Uw4" "FP_REGS"
+  "4-tuple-aligned floating point and SIMD vector registers."
+  "regno % 4 == 0")
+
+(define_register_constraint "Upa" "PR_REGS"
+  "SVE predicate registers p0 - p15.")
+
+(define_register_constraint "Up2" "PR_REGS"
+  "An even SVE predicate register, p0 - p14."
+  "regno % 2 == 0")
+
+(define_register_constraint "Upl" "PR_LO_REGS"
+  "SVE predicate registers p0 - p7.")
+
+(define_register_constraint "Uph" "PR_HI_REGS"
+  "SVE predicate registers p8 - p15.")
 
 (define_constraint "c"
  "@internal The condition code register."
@@ -73,6 +94,12 @@
    A constraint that matches a VG-based constant that can be added by
    a single ADDVL or ADDPL."
  (match_operand 0 "aarch64_sve_addvl_addpl_immediate"))
+
+(define_constraint "UaV"
+  "@internal
+   A constraint that matches a VG-based constant that can be added by
+   a single ADDSVL or ADDSPL."
+ (match_operand 0 "aarch64_addsvl_addspl_immediate"))
 
 (define_constraint "Uat"
   "@internal
@@ -219,6 +246,18 @@
  (and (match_code "const_int")
       (match_test "aarch64_high_bits_all_ones_p (ival)")))
 
+(define_constraint "Usr"
+  "@internal
+   A constraint that matches a value produced by RDVL."
+ (and (match_code "const_poly_int")
+      (match_test "aarch64_sve_rdvl_immediate_p (op)")))
+
+(define_constraint "UsR"
+  "@internal
+   A constraint that matches a value produced by RDSVL."
+ (and (match_code "const")
+      (match_test "aarch64_rdsvl_immediate_p (op)")))
+
 (define_constraint "Usv"
   "@internal
    A constraint that matches a VG-based constant that can be loaded by
@@ -260,7 +299,7 @@
   (and (match_code "const_int")
        (match_test "(unsigned) exact_log2 (ival) <= 4")))
 
-(define_constraint "Uph"
+(define_constraint "Uih"
   "@internal
   A constraint that matches HImode integers zero extendable to
   SImode plus_operand."

@@ -3450,6 +3450,25 @@ in DWARF 2 debug information.  The default is zero.  A different value
 may reduce the size of debug information on some ports.
 @end defmac
 
+@defmac TARGET_STRUB_USE_DYNAMIC_ARRAY
+If defined to nonzero, @code{__strub_leave} will allocate a dynamic
+array covering the stack range that needs scrubbing before clearing it.
+Allocating the array tends to make scrubbing slower, but it enables the
+scrubbing to be safely implemented with a @code{memset} call, which
+could make up for the difference.
+@end defmac
+
+@defmac TARGET_STRUB_MAY_USE_MEMSET
+If defined to nonzero, enable @code{__strub_leave} to be optimized so as
+to call @code{memset} for stack scrubbing.  This is only enabled by
+default if @code{TARGET_STRUB_USE_DYNAMIC_ARRAY} is enabled; it's not
+advisable to enable it otherwise, since @code{memset} would then likely
+overwrite its own stack frame, but it might work if the target ABI
+enables @code{memset} to not use the stack at all, not even for
+arguments or its return address, and its implementation is trivial
+enough that it doesn't use a stack frame.
+@end defmac
+
 @node Exception Handling
 @subsection Exception Handling Support
 @cindex exception handling
@@ -3505,6 +3524,18 @@ the @code{eh_return} instruction pattern should be used instead.
 
 If you want to support call frame exception handling, you must
 define either this macro or the @code{eh_return} instruction pattern.
+@end defmac
+
+@defmac EH_RETURN_TAKEN_RTX
+A C expression whose value is RTL representing a location in which
+to store if the EH return path was taken instead of a normal return.
+This macro allows conditionally executing different code in the
+epilogue for the EH and normal return cases.
+
+When this macro is defined, the macros @code{EH_RETURN_STACKADJ_RTX}
+and @code{EH_RETURN_HANDLER_RTX} are only meaningful in the epilogue
+when 1 is stored to the specified location. The value 0 means normal
+return.
 @end defmac
 
 @defmac RETURN_ADDR_OFFSET
@@ -5491,26 +5522,59 @@ except the last are treated as named.
 You need not define this hook if it always returns @code{false}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_CALL_ARGS (rtx, @var{tree})
+@deftypefn {Target Hook} void TARGET_START_CALL_ARGS (cumulative_args_t @var{complete_args})
+This target hook is invoked while generating RTL for a function call,
+after the argument values have been computed, and after stack arguments
+have been initialized, but before register arguments have been moved into
+their ABI-defined hard register locations.  It precedes calls to the related
+hooks @code{TARGET_CALL_ARGS} and @code{TARGET_END_CALL_ARGS}.
+The significance of this position in the call expansion is that:
+
+@itemize @bullet
+@item
+No argument registers are live.
+@item
+Although a call sequence can in general involve subcalls (such as using
+@code{memcpy} to copy large arguments), no such subcall will occur between
+the call to this hook and the generation of the main call instruction.
+@end itemize
+
+The single argument @var{complete_args} is the state of the target
+function's cumulative argument information after the final call to
+@code{TARGET_FUNCTION_ARG}.
+
+The hook can be used for things like switching processor mode, in cases
+where different calls need different processor modes.  Most ports do not
+need to implement anything for this hook.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_CALL_ARGS (cumulative_args_t @var{complete_args}, rtx @var{loc}, tree @var{type})
 While generating RTL for a function call, this target hook is invoked once
 for each argument passed to the function, either a register returned by
 @code{TARGET_FUNCTION_ARG} or a memory location.  It is called just
-before the point where argument registers are stored.  The type of the
-function to be called is also passed as the second argument; it is
-@code{NULL_TREE} for libcalls.  The @code{TARGET_END_CALL_ARGS} hook is
-invoked just after the code to copy the return reg has been emitted.
-This functionality can be used to perform special setup of call argument
-registers if a target needs it.
+before the point where argument registers are stored.
+
+@var{complete_args} is the state of the target function's cumulative
+argument information after the final call to @code{TARGET_FUNCTION_ARG}.
+@var{loc} is the location of the argument.  @var{type} is the type of
+the function being called, or @code{NULL_TREE} for libcalls.
+
 For functions without arguments, the hook is called once with @code{pc_rtx}
 passed instead of an argument register.
-Most ports do not need to implement anything for this hook.
+
+This functionality can be used to perform special setup of call argument
+registers, if a target needs it.  Most ports do not need to implement
+anything for this hook.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_END_CALL_ARGS (void)
+@deftypefn {Target Hook} void TARGET_END_CALL_ARGS (cumulative_args_t @var{complete_args})
 This target hook is invoked while generating RTL for a function call,
 just after the point where the return reg is copied into a pseudo.  It
 signals that all the call argument and return registers for the just
-emitted call are now no longer in use.
+emitted call are now no longer in use.  @var{complete_args} is the
+state of the target function's cumulative argument information after
+the final call to @code{TARGET_FUNCTION_ARG}.
+
 Most ports do not need to implement anything for this hook.
 @end deftypefn
 
@@ -10534,12 +10598,33 @@ Target-specific attributes may be defined for functions, data and types.
 These are described using the following target hooks; they also need to
 be documented in @file{extend.texi}.
 
-@deftypevr {Target Hook} {const struct attribute_spec *} TARGET_ATTRIBUTE_TABLE
-If defined, this target hook points to an array of @samp{struct
-attribute_spec} (defined in @file{tree-core.h}) specifying the machine
-specific attributes for this target and some of the restrictions on the
-entities to which these attributes are applied and the arguments they
-take.
+@deftypevr {Target Hook} {array_slice<const struct scoped_attribute_specs *const>} TARGET_ATTRIBUTE_TABLE
+If defined, this target hook provides an array of
+@samp{scoped_attribute_spec}s (defined in @file{attribs.h}) that specify the
+machine-specific attributes for this target.  The information includes some
+of the restrictions on the entities to which these attributes are applied
+and the arguments that the attributes take.
+
+In C and C++, these attributes are associated with two syntaxes:
+the traditional GNU @code{__attribute__} syntax and the standard
+@samp{[[]]} syntax.  Attributes that support the GNU syntax must be
+placed in the @code{gnu} namespace.  Such attributes can then also be
+written @samp{[[gnu::@dots{}]]}.  Attributes that use only the standard
+syntax should be placed in whichever namespace the attribute specification
+requires.  For example, a target might choose to support vendor-specific
+@samp{[[]]} attributes that the vendor places in their own namespace.
+
+Targets that only define attributes in the @code{gnu} namespace
+can uase the following shorthand to define the table:
+
+@smallexample
+TARGET_GNU_ATTRIBUTES (@var{cpu_attribute_table}, @{
+  @{ "@var{attribute1}", @dots{} @},
+  @{ "@var{attribute2}", @dots{} @},
+  @dots{},
+  @{ "@var{attributen}", @dots{} @},
+@});
+@end smallexample
 @end deftypevr
 
 @deftypefn {Target Hook} bool TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P (const_tree @var{name})
@@ -11755,10 +11840,11 @@ from shared libraries (DLLs).
 You need not define this macro if it would always evaluate to zero.
 @end defmac
 
-@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs}, location_t @var{loc})
+@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{usess}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs}, location_t @var{loc})
 This target hook may add @dfn{clobbers} to @var{clobbers} and
 @var{clobbered_regs} for any hard regs the port wishes to automatically
-clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected
+clobber for an asm.  It can also add hard registers that are used by the
+asm to @var{uses}.  The @var{outputs} and @var{inputs} may be inspected
 to avoid clobbering a register that is already used by the asm.  @var{loc}
 is the source location of the asm.
 
@@ -11845,6 +11931,33 @@ A C expression to initialize any machine specific data for if-conversion
 of the if-block in the @code{struct ce_if_block} structure that is pointed
 to by @var{ce_info}.
 @end defmac
+
+@deftypefn {Target Hook} bool TARGET_USE_LATE_PROLOGUE_EPILOGUE ()
+Return true if the current function's prologue and epilogue should
+be emitted late in the pass pipeline, instead of at the usual point.
+
+Normally, the prologue and epilogue sequences are introduced soon after
+register allocation is complete.  The advantage of this approach is that
+it allows the prologue and epilogue instructions to be optimized and
+scheduled with other code in the function.  However, some targets
+require the prologue and epilogue to be the first and last sequences
+executed by the function, with no variation allowed.  This hook should
+return true on such targets.
+
+The default implementation returns false, which is correct for most
+targets.  The hook should only return true if there is a specific
+target limitation that cannot be described in RTL.  For example,
+the hook might return true if the prologue and epilogue need to switch
+between instruction sets.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_EMIT_EPILOGUE_FOR_SIBCALL (rtx_call_insn *@var{call})
+If defined, this hook emits an epilogue sequence for sibling (tail)
+call instruction @var{call}.  Another way of providing epilogues
+for sibling calls is to define the @code{sibcall_epilogue} instruction
+pattern; the main advantage of this hook over the pattern is that it
+has access to the call instruction.
+@end deftypefn
 
 @deftypefn {Target Hook} void TARGET_MACHINE_DEPENDENT_REORG (void)
 If non-null, this hook performs a target-specific pass over the

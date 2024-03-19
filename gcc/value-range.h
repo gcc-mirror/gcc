@@ -1550,4 +1550,15 @@ void frange_arithmetic (enum tree_code, tree, REAL_VALUE_TYPE &,
 			const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
 			const REAL_VALUE_TYPE &);
 
+// Return true if TYPE1 and TYPE2 are compatible range types.
+
+inline bool
+range_compatible_p (tree type1, tree type2)
+{
+  // types_compatible_p requires conversion in both directions to be useless.
+  // GIMPLE only requires a cast one way in order to be compatible.
+  // Ranges really only need the sign and precision to be the same.
+  return (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
+	  && TYPE_SIGN (type1) == TYPE_SIGN (type2));
+}
 #endif // GCC_VALUE_RANGE_H

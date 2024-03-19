@@ -478,7 +478,7 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 
   /* Don't try to do this once cgraph starts throwing away front-end
      information.  */
-  if (at_eof >= 2)
+  if (at_eof >= 3)
     return;
 
   FOR_EACH_VEC_SAFE_ELT (typenames, i, t)

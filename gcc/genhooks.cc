@@ -304,7 +304,12 @@ emit_init_macros (const char *docname)
 		      name, name, hook_array[i].init);
 	    }
 	  if (nest == print_nest)
-	    printf ("    %s, \\\n", name);
+	    {
+	      if (strcmp (name, "TARGET_ATTRIBUTE_TABLE") == 0)
+		printf ("    { %s }, \\\n", name);
+	      else
+		printf ("    %s, \\\n", name);
+	    }
 	}
     }
 }

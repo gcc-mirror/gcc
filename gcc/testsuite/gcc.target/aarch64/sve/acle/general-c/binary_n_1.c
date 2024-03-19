@@ -7,7 +7,7 @@ f1 (svbool_t pg, svuint8_t u8, svfloat16_t f16, int i, float f)
 {
   svinsr (u8); /* { dg-error {too few arguments to function 'svinsr'} } */
   svinsr (u8, 0, 0); /* { dg-error {too many arguments to function 'svinsr'} } */
-  svinsr (0, 0); /* { dg-error {passing 'int' to argument 1 of 'svinsr', which expects an SVE vector type} } */
+  svinsr (0, 0); /* { dg-error {passing 'int' to argument 1 of 'svinsr', which expects an SVE type rather than a scalar} } */
   svinsr (u8, 0);
   svinsr (u8, -1);
   svinsr (u8, i);

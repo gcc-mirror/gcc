@@ -2218,15 +2218,36 @@ merging.",
  merge_type_attributes)
 
 /* Table of machine attributes and functions to handle them.
-   Ignored if NULL.  */
+   Ignored if empty.  */
 DEFHOOKPOD
 (attribute_table,
- "If defined, this target hook points to an array of @samp{struct\n\
-attribute_spec} (defined in @file{tree-core.h}) specifying the machine\n\
-specific attributes for this target and some of the restrictions on the\n\
-entities to which these attributes are applied and the arguments they\n\
-take.",
- const struct attribute_spec *, NULL)
+ "If defined, this target hook provides an array of\n\
+@samp{scoped_attribute_spec}s (defined in @file{attribs.h}) that specify the\n\
+machine-specific attributes for this target.  The information includes some\n\
+of the restrictions on the entities to which these attributes are applied\n\
+and the arguments that the attributes take.\n\
+\n\
+In C and C++, these attributes are associated with two syntaxes:\n\
+the traditional GNU @code{__attribute__} syntax and the standard\n\
+@samp{[[]]} syntax.  Attributes that support the GNU syntax must be\n\
+placed in the @code{gnu} namespace.  Such attributes can then also be\n\
+written @samp{[[gnu::@dots{}]]}.  Attributes that use only the standard\n\
+syntax should be placed in whichever namespace the attribute specification\n\
+requires.  For example, a target might choose to support vendor-specific\n\
+@samp{[[]]} attributes that the vendor places in their own namespace.\n\
+\n\
+Targets that only define attributes in the @code{gnu} namespace\n\
+can uase the following shorthand to define the table:\n\
+\n\
+@smallexample\n\
+TARGET_GNU_ATTRIBUTES (@var{cpu_attribute_table}, @{\n\
+  @{ \"@var{attribute1}\", @dots{} @},\n\
+  @{ \"@var{attribute2}\", @dots{} @},\n\
+  @dots{},\n\
+  @{ \"@var{attributen}\", @dots{} @},\n\
+@});\n\
+@end smallexample",
+ array_slice<const struct scoped_attribute_specs *const>,)
 
 /* Return true iff attribute NAME expects a plain identifier as its first
    argument.  */
@@ -4132,6 +4153,36 @@ returns @code{VOIDmode}.",
  machine_mode, (machine_mode m1, machine_mode m2),
  default_cc_modes_compatible)
 
+DEFHOOK
+(use_late_prologue_epilogue,
+ "Return true if the current function's prologue and epilogue should\n\
+be emitted late in the pass pipeline, instead of at the usual point.\n\
+\n\
+Normally, the prologue and epilogue sequences are introduced soon after\n\
+register allocation is complete.  The advantage of this approach is that\n\
+it allows the prologue and epilogue instructions to be optimized and\n\
+scheduled with other code in the function.  However, some targets\n\
+require the prologue and epilogue to be the first and last sequences\n\
+executed by the function, with no variation allowed.  This hook should\n\
+return true on such targets.\n\
+\n\
+The default implementation returns false, which is correct for most\n\
+targets.  The hook should only return true if there is a specific\n\
+target limitation that cannot be described in RTL.  For example,\n\
+the hook might return true if the prologue and epilogue need to switch\n\
+between instruction sets.",
+ bool, (),
+ hook_bool_void_false)
+
+DEFHOOK
+(emit_epilogue_for_sibcall,
+ "If defined, this hook emits an epilogue sequence for sibling (tail)\n\
+call instruction @var{call}.  Another way of providing epilogues\n\
+for sibling calls is to define the @code{sibcall_epilogue} instruction\n\
+pattern; the main advantage of this hook over the pattern is that it\n\
+has access to the call instruction.",
+ void, (rtx_call_insn *call), NULL)
+
 /* Do machine-dependent code transformations.  Called just before
      delayed-branch scheduling.  */
 DEFHOOK
@@ -4291,7 +4342,8 @@ DEFHOOK
 (md_asm_adjust,
  "This target hook may add @dfn{clobbers} to @var{clobbers} and\n\
 @var{clobbered_regs} for any hard regs the port wishes to automatically\n\
-clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected\n\
+clobber for an asm.  It can also add hard registers that are used by the\n\
+asm to @var{uses}.  The @var{outputs} and @var{inputs} may be inspected\n\
 to avoid clobbering a register that is already used by the asm.  @var{loc}\n\
 is the source location of the asm.\n\
 \n\
@@ -4302,7 +4354,7 @@ changes to @var{inputs} must be accompanied by the corresponding changes\n\
 to @var{input_modes}.",
  rtx_insn *,
  (vec<rtx>& outputs, vec<rtx>& inputs, vec<machine_mode>& input_modes,
-  vec<const char *>& constraints, vec<rtx>& clobbers,
+  vec<const char *>& constraints, vec<rtx>& usess, vec<rtx>& clobbers,
   HARD_REG_SET& clobbered_regs, location_t loc),
  NULL)
 
@@ -4769,31 +4821,66 @@ not generate any instructions in this case.",
  default_setup_incoming_varargs)
 
 DEFHOOK
+(start_call_args,
+ "This target hook is invoked while generating RTL for a function call,\n\
+after the argument values have been computed, and after stack arguments\n\
+have been initialized, but before register arguments have been moved into\n\
+their ABI-defined hard register locations.  It precedes calls to the related\n\
+hooks @code{TARGET_CALL_ARGS} and @code{TARGET_END_CALL_ARGS}.\n\
+The significance of this position in the call expansion is that:\n\
+\n\
+@itemize @bullet\n\
+@item\n\
+No argument registers are live.\n\
+@item\n\
+Although a call sequence can in general involve subcalls (such as using\n\
+@code{memcpy} to copy large arguments), no such subcall will occur between\n\
+the call to this hook and the generation of the main call instruction.\n\
+@end itemize\n\
+\n\
+The single argument @var{complete_args} is the state of the target\n\
+function's cumulative argument information after the final call to\n\
+@code{TARGET_FUNCTION_ARG}.\n\
+\n\
+The hook can be used for things like switching processor mode, in cases\n\
+where different calls need different processor modes.  Most ports do not\n\
+need to implement anything for this hook.",
+ void, (cumulative_args_t complete_args),
+ hook_void_CUMULATIVE_ARGS)
+
+DEFHOOK
 (call_args,
  "While generating RTL for a function call, this target hook is invoked once\n\
 for each argument passed to the function, either a register returned by\n\
 @code{TARGET_FUNCTION_ARG} or a memory location.  It is called just\n\
-before the point where argument registers are stored.  The type of the\n\
-function to be called is also passed as the second argument; it is\n\
-@code{NULL_TREE} for libcalls.  The @code{TARGET_END_CALL_ARGS} hook is\n\
-invoked just after the code to copy the return reg has been emitted.\n\
-This functionality can be used to perform special setup of call argument\n\
-registers if a target needs it.\n\
+before the point where argument registers are stored.\n\
+\n\
+@var{complete_args} is the state of the target function's cumulative\n\
+argument information after the final call to @code{TARGET_FUNCTION_ARG}.\n\
+@var{loc} is the location of the argument.  @var{type} is the type of\n\
+the function being called, or @code{NULL_TREE} for libcalls.\n\
+\n\
 For functions without arguments, the hook is called once with @code{pc_rtx}\n\
 passed instead of an argument register.\n\
-Most ports do not need to implement anything for this hook.",
- void, (rtx, tree),
- hook_void_rtx_tree)
+\n\
+This functionality can be used to perform special setup of call argument\n\
+registers, if a target needs it.  Most ports do not need to implement\n\
+anything for this hook.",
+ void, (cumulative_args_t complete_args, rtx loc, tree type),
+ hook_void_CUMULATIVE_ARGS_rtx_tree)
 
 DEFHOOK
 (end_call_args,
  "This target hook is invoked while generating RTL for a function call,\n\
 just after the point where the return reg is copied into a pseudo.  It\n\
 signals that all the call argument and return registers for the just\n\
-emitted call are now no longer in use.\n\
+emitted call are now no longer in use.  @var{complete_args} is the\n\
+state of the target function's cumulative argument information after\n\
+the final call to @code{TARGET_FUNCTION_ARG}.\n\
+\n\
 Most ports do not need to implement anything for this hook.",
- void, (void),
- hook_void_void)
+ void, (cumulative_args_t complete_args),
+ hook_void_CUMULATIVE_ARGS)
 
 DEFHOOK
 (push_argument,

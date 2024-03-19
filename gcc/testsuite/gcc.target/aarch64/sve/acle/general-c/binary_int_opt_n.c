@@ -11,7 +11,7 @@ f1 (svbool_t pg, svfloat16_t f16, svint16_t s16, svuint16_t u16,
   svscale_x (s32, f16, s32); /* { dg-error {passing 'svint32_t' to argument 1 of 'svscale_x', which expects 'svbool_t'} } */
   svscale_x (1, f16, s32); /* { dg-error {passing 'int' to argument 1 of 'svscale_x', which expects 'svbool_t'} } */
   svscale_x (pg, pg, s16); /* { dg-error {'svscale_x' has no form that takes 'svbool_t' arguments} } */
-  svscale_x (pg, 1, s16); /* { dg-error {passing 'int' to argument 2 of 'svscale_x', which expects an SVE vector type} } */
+  svscale_x (pg, 1, s16); /* { dg-error {passing 'int' to argument 2 of 'svscale_x', which expects an SVE type rather than a scalar} } */
   svscale_x (pg, f16, s16);
   svscale_x (pg, f16, u16); /* { dg-error {passing 'svuint16_t' to argument 3 of 'svscale_x', which expects a vector of signed integers} } */
   svscale_x (pg, f16, f16); /* { dg-error {passing 'svfloat16_t' to argument 3 of 'svscale_x', which expects a vector of signed integers} } */

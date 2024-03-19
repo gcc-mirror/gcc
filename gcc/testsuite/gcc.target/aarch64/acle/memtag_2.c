@@ -2,7 +2,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O3 -march=armv8.5-a+memtag" } */
+/* { dg-options "-fpermissive -O3 -march=armv8.5-a+memtag" } */
 
 #include "arm_acle.h"
 

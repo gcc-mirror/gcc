@@ -9,7 +9,7 @@ f1 (svbool_t pg, svuint8_t u8, svint8_t s8, svint64_t s64, svuint64_t u64,
   svcmpeq_wide (pg, s8); /* { dg-error {too few arguments to function 'svcmpeq_wide'} } */
   svcmpeq_wide (pg, s8, s64, s8); /* { dg-error {too many arguments to function 'svcmpeq_wide'} } */
   svcmpeq_wide (s8, s8, s64); /* { dg-error {passing 'svint8_t' to argument 1 of 'svcmpeq_wide', which expects 'svbool_t'} } */
-  svcmpeq_wide (pg, 0, s64); /* { dg-error {passing 'int' to argument 2 of 'svcmpeq_wide', which expects an SVE vector type} } */
+  svcmpeq_wide (pg, 0, s64); /* { dg-error {passing 'int' to argument 2 of 'svcmpeq_wide', which expects an SVE type rather than a scalar} } */
   svcmpeq_wide (pg, s8, 0);
   svcmpeq_wide (pg, s8, x);
   svcmpeq_wide (pg, s8, s8); /* { dg-error {passing 'svint8_t' to argument 3 of 'svcmpeq_wide', which expects a vector of 64-bit elements} } */

@@ -1,3 +1,112 @@
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-decl.cc (std_attribute_table): Add extra braces to work
+	around PR 16333 in older compilers.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/86869
+	* c-typeck.cc (c_build_qualified_type): Preserve address-space
+	info for ARRAY_TYPE.
+
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (std_attribute_table): Declare.
+	* c-decl.cc (std_attribute_table): Change type to
+	scoped_attribute_specs, using...
+	(std_attributes): ...this as the underlying array.
+	(c_init_decl_processing): Remove call to register_scoped_attributes.
+	* c-objc-common.h (c_objc_attribute_table): New global.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Use it.
+	(LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Delete.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Delete.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR other/44209
+	* c-decl.cc (grokparms): Issue permerror for
+	OPT_Wdeclaration_missing_parameter_type instead of a pedwarn.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/96284
+	* c-typeck.cc (build_conditional_expr): Upgrade most pointer
+	type mismatches to a permerror.
+	(convert_for_assignment): Use permerror_opt and
+	permerror_init for OPT_Wincompatible_pointer_types warnings.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/96284
+	* c-typeck.cc (c_finish_return): Use permerrors
+	for OPT_Wreturn_mismatch diagnostics.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* c-decl.cc (grokdeclarator): Do not skip -Wimplicit-int
+	warnings or errors in system headers.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* c-decl.cc (warn_defaults_to): Remove.
+	(grok_declarator, start_function): Call permerror_opt
+	instead of warn_defaults_to.
+	(store_parm_decls_oldstyle): Call permerror_opt for
+	OPT_Wimplicit_int.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/91092
+	PR c/96284
+	* c-decl.cc (implicit_decl_permerror): Rename from
+	implicit_decl_warning.  Call permerror_opt instead of
+	pedwarn and warning_at.
+	(implicitly_declare): Adjust callers.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/96284
+	PR c/106416
+	* c-typeck.cc (build_conditional_expr): Use permerror_opt for
+	pointer/integer type mismatches, based on -Wint-conversion.
+	(pedwarn_permerror_init, permerror_init): New function.
+	(pedwarn_init): Call pedwarn_permerror_init.
+	(convert_for_assignment): Use permerror_opt and
+	permerror_init for -Wint-conversion warnings.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-typeck.cc (convert_lvalue_to_rvalue): Decay hardbools.
+	* c-convert.cc (convert): Convert to hardbool through
+	truthvalue.
+	* c-decl.cc (check_bitfield_type_and_width): Skip enumeral
+	truncation warnings for hardbool.
+	(finish_struct): Propagate hardbool attribute to bitfield
+	types.
+	(digest_init): Convert to hardbool.
+
+2023-11-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94264
+	PR c++/53220
+	* c-typeck.cc (array_to_pointer_conversion): Adjust -Wc++-compat
+	diagnostic.
+
+2023-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112741
+	* gimple-parser.cc (c_parser_parse_gimple_body): Also
+	set DECL_SEEN_IN_BIND_EXPR_Pfor locals.
+
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* c-lang.cc (c_family_register_lang_features): New.
+	* c-objc-common.cc (struct c_feature_info): New.
+	(c_register_features): New.
+	* c-objc-common.h (c_register_features): New.
+
 2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_clause_num_threads,

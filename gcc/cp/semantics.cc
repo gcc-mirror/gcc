@@ -871,8 +871,7 @@ is_assignment_op_expr_p (tree t)
 void
 maybe_warn_unparenthesized_assignment (tree t, tsubst_flags_t complain)
 {
-  if (REFERENCE_REF_P (t))
-    t = TREE_OPERAND (t, 0);
+  t = STRIP_REFERENCE_REF (t);
 
   if ((complain & tf_warning)
       && warn_parentheses
@@ -1167,7 +1166,7 @@ begin_while_stmt (void)
 
 void
 finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep,
-			unsigned short unroll, bool novector)
+			tree unroll, bool novector)
 {
   cond = maybe_convert_cond (cond);
   finish_cond (&WHILE_COND (while_stmt), cond);
@@ -1185,8 +1184,7 @@ finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep,
 				      WHILE_COND (while_stmt),
 				      build_int_cst (integer_type_node,
 						     annot_expr_unroll_kind),
-				      build_int_cst (integer_type_node,
-						     unroll));
+				      unroll);
   if (novector && cond != error_mark_node)
     WHILE_COND (while_stmt) = build3 (ANNOTATE_EXPR,
 				      TREE_TYPE (WHILE_COND (while_stmt)),
@@ -1238,7 +1236,7 @@ finish_do_body (tree do_stmt)
    COND is as indicated.  */
 
 void
-finish_do_stmt (tree cond, tree do_stmt, bool ivdep, unsigned short unroll,
+finish_do_stmt (tree cond, tree do_stmt, bool ivdep, tree unroll,
 		bool novector)
 {
   cond = maybe_convert_cond (cond);
@@ -1255,7 +1253,7 @@ finish_do_stmt (tree cond, tree do_stmt, bool ivdep, unsigned short unroll,
   if (unroll && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_unroll_kind),
-		   build_int_cst (integer_type_node, unroll));
+		   unroll);
   if (novector && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_no_vector_kind),
@@ -1358,7 +1356,8 @@ finish_init_stmt (tree for_stmt)
    FOR_STMT.  */
 
 void
-finish_for_cond (tree cond, tree for_stmt, bool ivdep, unsigned short unroll, bool novector)
+finish_for_cond (tree cond, tree for_stmt, bool ivdep, tree unroll,
+		 bool novector)
 {
   cond = maybe_convert_cond (cond);
   finish_cond (&FOR_COND (for_stmt), cond);
@@ -1376,8 +1375,7 @@ finish_for_cond (tree cond, tree for_stmt, bool ivdep, unsigned short unroll, bo
 				  FOR_COND (for_stmt),
 				  build_int_cst (integer_type_node,
 						 annot_expr_unroll_kind),
-				  build_int_cst (integer_type_node,
-						 unroll));
+				  unroll);
   if (novector && cond != error_mark_node)
     FOR_COND (for_stmt) = build3 (ANNOTATE_EXPR,
 				  TREE_TYPE (FOR_COND (for_stmt)),
@@ -2176,8 +2174,7 @@ finish_parenthesized_expr (cp_expr expr)
     {
       /* This inhibits warnings in maybe_warn_unparenthesized_assignment
 	 and c_common_truthvalue_conversion.  */
-      tree inner = REFERENCE_REF_P (expr) ? TREE_OPERAND (expr, 0) : *expr;
-      suppress_warning (inner, OPT_Wparentheses);
+      suppress_warning (STRIP_REFERENCE_REF (*expr), OPT_Wparentheses);
     }
 
   if (TREE_CODE (expr) == OFFSET_REF
@@ -2263,6 +2260,16 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
 	/* Quals on the object don't matter.  */;
       else if (PACK_EXPANSION_P (type))
 	/* Don't bother trying to represent this.  */
+	type = NULL_TREE;
+      else if (WILDCARD_TYPE_P (TREE_TYPE (object)))
+	/* We don't know what the eventual quals will be, so punt until
+	   instantiation time.
+
+	   This can happen when called from build_capture_proxy for an explicit
+	   object lambda.  It's a bit marginal to call this function in that
+	   case, since this function is for references to members of 'this',
+	   but the deduced type is required to be derived from the closure
+	   type, so it works.  */
 	type = NULL_TREE;
       else
 	{
@@ -11582,6 +11589,7 @@ finish_static_assert (tree condition, tree message, location_t location,
 			  error_at (location,
 				    "%<static_assert%> message %<data()[%d]%> "
 				    "must be a constant expression", i);
+			  XDELETEVEC (buf);
 			  return;
 			}
 		      if (msg == NULL)
@@ -11683,6 +11691,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
      A<decltype(sizeof(T))>::U doesn't require 'typename'.  */
   if (instantiation_dependent_uneval_expression_p (expr))
     {
+    dependent:
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type)
@@ -11857,7 +11866,11 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (outer_automatic_var_p (STRIP_REFERENCE_REF (expr))
 	  && current_function_decl
 	  && LAMBDA_FUNCTION_P (current_function_decl))
-	type = capture_decltype (STRIP_REFERENCE_REF (expr));
+	{
+	  type = capture_decltype (STRIP_REFERENCE_REF (expr));
+	  if (!type)
+	    goto dependent;
+	}
       else if (error_operand_p (expr))
 	type = error_mark_node;
       else if (expr == current_class_ptr)
@@ -12755,7 +12768,8 @@ apply_deduced_return_type (tree fco, tree return_type)
 
 /* DECL is a local variable or parameter from the surrounding scope of a
    lambda-expression.  Returns the decltype for a use of the capture field
-   for DECL even if it hasn't been captured yet.  */
+   for DECL even if it hasn't been captured yet.  Or NULL_TREE if we can't give
+   a correct answer at this point and we should build a DECLTYPE_TYPE.  */
 
 static tree
 capture_decltype (tree decl)
@@ -12793,9 +12807,14 @@ capture_decltype (tree decl)
 
   if (!TYPE_REF_P (type))
     {
-      if (!LAMBDA_EXPR_MUTABLE_P (lam))
-	type = cp_build_qualified_type (type, (cp_type_quals (type)
-					       |TYPE_QUAL_CONST));
+      tree obtype = TREE_TYPE (DECL_ARGUMENTS (current_function_decl));
+      if (WILDCARD_TYPE_P (non_reference (obtype)))
+	/* We don't know what the eventual obtype quals will be.  */
+	return NULL_TREE;
+      int quals = cp_type_quals (type);
+      if (INDIRECT_TYPE_P (obtype))
+	quals |= cp_type_quals (TREE_TYPE (obtype));
+      type = cp_build_qualified_type (type, quals);
       type = build_reference_type (type);
     }
   return type;
@@ -12995,6 +13014,35 @@ cp_build_bit_cast (location_t loc, tree type, tree arg,
     ret = get_target_expr (ret, complain);
 
   return ret;
+}
+
+/* Diagnose invalid #pragma GCC unroll argument and adjust
+   it if needed.  */
+
+tree
+cp_check_pragma_unroll (location_t loc, tree unroll)
+{
+  HOST_WIDE_INT lunroll = 0;
+  if (type_dependent_expression_p (unroll))
+    ;
+  else if (!INTEGRAL_TYPE_P (TREE_TYPE (unroll))
+	   || (!value_dependent_expression_p (unroll)
+	       && (!tree_fits_shwi_p (unroll)
+		   || (lunroll = tree_to_shwi (unroll)) < 0
+		   || lunroll >= USHRT_MAX)))
+    {
+      error_at (loc, "%<#pragma GCC unroll%> requires an"
+		" assignment-expression that evaluates to a non-negative"
+		" integral constant less than %u", USHRT_MAX);
+      unroll = integer_one_node;
+    }
+  else if (TREE_CODE (unroll) == INTEGER_CST)
+    {
+      unroll = fold_convert (integer_type_node, unroll);
+      if (integer_zerop (unroll))
+	unroll = integer_one_node;
+    }
+  return unroll;
 }
 
 #include "gt-cp-semantics.h"

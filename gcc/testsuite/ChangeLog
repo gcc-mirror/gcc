@@ -1,3 +1,3455 @@
+2023-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/strub-O0.c: New.
+	* c-c++-common/strub-O1.c: New.
+	* c-c++-common/strub-O2.c: New.
+	* c-c++-common/strub-O2fni.c: New.
+	* c-c++-common/strub-O3.c: New.
+	* c-c++-common/strub-O3fni.c: New.
+	* c-c++-common/strub-Og.c: New.
+	* c-c++-common/strub-Os.c: New.
+	* c-c++-common/strub-all1.c: New.
+	* c-c++-common/strub-all2.c: New.
+	* c-c++-common/strub-apply1.c: New.
+	* c-c++-common/strub-apply2.c: New.
+	* c-c++-common/strub-apply3.c: New.
+	* c-c++-common/strub-apply4.c: New.
+	* c-c++-common/strub-at-calls1.c: New.
+	* c-c++-common/strub-at-calls2.c: New.
+	* c-c++-common/strub-defer-O1.c: New.
+	* c-c++-common/strub-defer-O2.c: New.
+	* c-c++-common/strub-defer-O3.c: New.
+	* c-c++-common/strub-defer-Os.c: New.
+	* c-c++-common/strub-internal1.c: New.
+	* c-c++-common/strub-internal2.c: New.
+	* c-c++-common/strub-parms1.c: New.
+	* c-c++-common/strub-parms2.c: New.
+	* c-c++-common/strub-parms3.c: New.
+	* c-c++-common/strub-relaxed1.c: New.
+	* c-c++-common/strub-relaxed2.c: New.
+	* c-c++-common/strub-short-O0-exc.c: New.
+	* c-c++-common/strub-short-O0.c: New.
+	* c-c++-common/strub-short-O1.c: New.
+	* c-c++-common/strub-short-O2.c: New.
+	* c-c++-common/strub-short-O3.c: New.
+	* c-c++-common/strub-short-Os.c: New.
+	* c-c++-common/strub-strict1.c: New.
+	* c-c++-common/strub-strict2.c: New.
+	* c-c++-common/strub-tail-O1.c: New.
+	* c-c++-common/strub-tail-O2.c: New.
+	* c-c++-common/torture/strub-callable1.c: New.
+	* c-c++-common/torture/strub-callable2.c: New.
+	* c-c++-common/torture/strub-const1.c: New.
+	* c-c++-common/torture/strub-const2.c: New.
+	* c-c++-common/torture/strub-const3.c: New.
+	* c-c++-common/torture/strub-const4.c: New.
+	* c-c++-common/torture/strub-data1.c: New.
+	* c-c++-common/torture/strub-data2.c: New.
+	* c-c++-common/torture/strub-data3.c: New.
+	* c-c++-common/torture/strub-data4.c: New.
+	* c-c++-common/torture/strub-data5.c: New.
+	* c-c++-common/torture/strub-indcall1.c: New.
+	* c-c++-common/torture/strub-indcall2.c: New.
+	* c-c++-common/torture/strub-indcall3.c: New.
+	* c-c++-common/torture/strub-inlinable1.c: New.
+	* c-c++-common/torture/strub-inlinable2.c: New.
+	* c-c++-common/torture/strub-ptrfn1.c: New.
+	* c-c++-common/torture/strub-ptrfn2.c: New.
+	* c-c++-common/torture/strub-ptrfn3.c: New.
+	* c-c++-common/torture/strub-ptrfn4.c: New.
+	* c-c++-common/torture/strub-pure1.c: New.
+	* c-c++-common/torture/strub-pure2.c: New.
+	* c-c++-common/torture/strub-pure3.c: New.
+	* c-c++-common/torture/strub-pure4.c: New.
+	* c-c++-common/torture/strub-run1.c: New.
+	* c-c++-common/torture/strub-run2.c: New.
+	* c-c++-common/torture/strub-run3.c: New.
+	* c-c++-common/torture/strub-run4.c: New.
+	* c-c++-common/torture/strub-run4c.c: New.
+	* c-c++-common/torture/strub-run4d.c: New.
+	* c-c++-common/torture/strub-run4i.c: New.
+	* g++.dg/strub-run1.C: New.
+	* g++.dg/torture/strub-init1.C: New.
+	* g++.dg/torture/strub-init2.C: New.
+	* g++.dg/torture/strub-init3.C: New.
+	* gnat.dg/strub_attr.adb, gnat.dg/strub_attr.ads: New.
+	* gnat.dg/strub_ind.adb, gnat.dg/strub_ind.ads: New.
+	* c-c++-common/strub-var1.c: New file.
+	* gnat.dg/strub_access.adb: New file.
+	* gnat.dg/strub_access1.adb: New file.
+	* gnat.dg/strub_disp.adb: New file.
+	* gnat.dg/strub_disp1.adb: New file.
+	* gnat.dg/strub_ind1.adb: New file.
+	* gnat.dg/strub_ind1.ads: New file.
+	* gnat.dg/strub_ind2.adb: New file.
+	* gnat.dg/strub_ind2.ads: New file.
+	* gnat.dg/strub_intf.adb: New file.
+	* gnat.dg/strub_intf1.adb: New file.
+	* gnat.dg/strub_intf2.adb: New file.
+	* gnat.dg/strub_renm.adb: New file.
+	* gnat.dg/strub_renm1.adb: New file.
+	* gnat.dg/strub_renm2.adb: New file.
+	* gnat.dg/strub_var.adb: New file.
+	* gnat.dg/strub_var1.adb: New file.
+
+2023-12-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112851
+	PR target/112852
+	* gcc.target/riscv/rvv/autovec/vls/consecutive-1.c: Add LMUL = 8 option.
+	* gcc.target/riscv/rvv/autovec/vls/consecutive-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mod-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-13.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-14.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-15.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-17.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/spill-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/spill-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/spill-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/spill-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/spill-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32f-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/pr112851.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr112852.c: New test.
+
+2023-12-05  David Faust  <david.faust@oracle.com>
+
+	PR debug/112849
+	* gcc.dg/debug/btf/btf-datasec-3.c: New test.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112795
+	* g++.dg/ext/unroll-2.C: Use { target c++11 } instead of dg-skip-if for
+	-std=gnu++98.
+	* g++.dg/ext/unroll-3.C: Likewise.
+	* g++.dg/ext/unroll-7.C: New test.
+	* g++.dg/ext/unroll-8.C: New test.
+
+2023-12-05  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus   <tobias@codesourcery.com>
+
+	PR fortran/100988
+	* gfortran.dg/coarray_poly_6.f90: Adjust pattern.
+	* gfortran.dg/coarray_poly_7.f90: Likewise.
+	* gfortran.dg/coarray_poly_8.f90: Likewise.
+	* gfortran.dg/missing_optional_dummy_6a.f90: Likewise.
+	* gfortran.dg/pr100988.f90: New test.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110734
+	* g++.dg/DRs/dr2262.C: New test.
+	* g++.dg/cpp0x/gen-attrs-76.C (foo, bar): Don't expect errors
+	on attributes on asm definitions.
+	* g++.dg/gomp/attrs-11.C: Remove 2 expected errors.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112830
+	* gcc.target/avr/pr112830.c: New testcase.
+	* gcc.target/i386/pr112830.c: Likewise.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109689
+	PR tree-optimization/112856
+	* gcc.dg/torture/pr109689.c: New testcase.
+	* gcc.dg/torture/pr112856.c: Likewise.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112845
+	* gcc.dg/pr112845.c: New file.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h: Provide a way
+	for test functions to share ZT0.
+	(ATTR): Update accordingly.
+	(TEST_LOAD_COUNT, TEST_STORE_COUNT, TEST_PN, TEST_COUNT_PN)
+	(TEST_EXTRACT_PN, TEST_SELECT_P, TEST_COMPARE_S_X2, TEST_COMPARE_S_C)
+	(TEST_CREATE_B, TEST_GET_B, TEST_SET_B, TEST_XN, TEST_XN_SINGLE)
+	(TEST_XN_SINGLE_Z15, TEST_XN_SINGLE_AWKWARD, TEST_X2_NARROW)
+	(TEST_X4_NARROW): New macros.
+	* gcc.target/aarch64/sve/acle/asm/create2_1.c: Add _b tests.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_m_1.c: Remove
+	test for svmopa that becomes valid with SME2.
+	* gcc.target/aarch64/sve/acle/general-c/create_1.c: Adjust for
+	existence of svboolx2_t version of svcreate2.
+	* gcc.target/aarch64/sve/acle/general-c/store_1.c: Adjust error
+	messages to account for svcount_t predication.
+	* gcc.target/aarch64/sve/acle/general-c/store_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_qq_lane_1.c: Adjust
+	error messages to account for new SME2 variants.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_qq_opt_n_2.c: Likewise.
+	* g++.target/aarch64/sme2/aarch64-sme2-acle-asm.exp: New file.
+	* gcc.target/aarch64/sme/acle-asm/clamp_s16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/clamp_s32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/clamp_s64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/clamp_s8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/clamp_u16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/clamp_u32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/clamp_u64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/clamp_u8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_bf16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_f16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_f32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_f64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_s16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_s32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_s64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_s8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_u16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_u32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_u64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/revd_u8.c: New file.
+	* gcc.target/aarch64/sme/clamp_1.c: New file.
+	* gcc.target/aarch64/sme/clamp_2.c: New file.
+	* gcc.target/aarch64/sme/clamp_3.c: New file.
+	* gcc.target/aarch64/sme/clamp_4.c: New file.
+	* gcc.target/aarch64/sme2/aarch64-sme2-acle-asm.exp: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_write_za32_s32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_write_za32_s32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_write_za32_u32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_write_za32_u32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_write_za64_s64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_write_za64_s64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_write_za64_u64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_write_za64_u64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za32_f32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za32_f32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za32_s32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za32_s32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za32_u32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za32_u32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za64_f64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za64_f64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za64_s64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za64_s64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za64_u64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/add_za64_u64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/bfmlslb_f32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/bfmlslb_lane_f32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/bfmlslt_f32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/bfmlslt_lane_f32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/bmopa_za32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/bmops_za32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_f16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_f32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_f64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/clamp_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cntp_c16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cntp_c32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cntp_c64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cntp_c8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_bf16_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_f16_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_f32_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_f32_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_f32_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_f32_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_s32_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_s32_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_u32_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_u32_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_bf16_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_f16_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_f32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_f32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_s32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_u32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_bf16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_bf16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_f16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_f16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_s16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_s16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_s8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_s8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_u16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_u16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_u8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_u8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za64_s16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za64_s16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za64_u16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za64_u16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_s32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_u32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_bf16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_bf16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_f16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_f16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_s16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_s16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_s8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_s8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_u16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_u16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_u8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_u8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za64_s16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za64_s16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za64_u16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za64_u16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ldr_zt.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_bf16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_f16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_f32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_s16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_s32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_s8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_u16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_u32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_u8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_bf16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_f16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_f32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_s16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_s32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_s8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_u16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_u32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_u8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/max_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/maxnm_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/maxnm_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/maxnm_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/maxnm_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/maxnm_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/maxnm_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/min_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/minnm_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/minnm_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/minnm_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/minnm_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/minnm_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/minnm_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_bf16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_bf16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_bf16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_f16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_f16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_f16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_f32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_f32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_s16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_s16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_s16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_s8_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_s8_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_s8_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_u16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_u16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_u16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_u8_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_u8_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_u8_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za64_f64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za64_f64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za64_s16_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za64_s16_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za64_s16_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za64_u16_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za64_u16_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za64_u16_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_bf16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_bf16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_bf16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_f16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_f16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_f16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_f32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_f32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_s16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_s16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_s16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_s8_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_s8_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_s8_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_u16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_u16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_u16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_u8_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_u8_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_u8_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za64_f64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za64_f64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za64_s16_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za64_s16_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za64_s16_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za64_u16_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za64_u16_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za64_u16_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_bf16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_bf16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_bf16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_f16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_f16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_f16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_f32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_f32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_s16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_s16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_s16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_s8_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_s8_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_s8_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_u16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_u16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_u16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_u8_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_u8_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za32_u8_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za64_f64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za64_f64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za64_s16_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za64_s16_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za64_s16_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za64_u16_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za64_u16_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_lane_za64_u16_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_bf16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_bf16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_bf16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_f16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_f16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_f16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_f32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_f32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_s16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_s16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_s16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_s8_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_s8_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_s8_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_u16_vg2x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_u16_vg2x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_u16_vg2x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_u8_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_u8_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za32_u8_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za64_f64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za64_f64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za64_s16_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za64_s16_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za64_s16_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za64_u16_vg4x1.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za64_u16_vg4x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mls_za64_u16_vg4x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mopa_za32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/mops_za32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/pext_c16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/pext_c16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/pext_c32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/pext_c32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/pext_c64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/pext_c64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/pext_c8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/pext_c8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/pfalse_c.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/psel_b16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/psel_b32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/psel_b64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/psel_b8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/psel_c16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/psel_c32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/psel_c64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/psel_c8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ptrue_c16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ptrue_c32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ptrue_c64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/ptrue_c8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvt_s16_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvt_s16_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvt_s8_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvt_u16_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvt_u16_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvt_u16_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvt_u16_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvt_u8_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvt_u8_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvtn_s16_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvtn_s16_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvtn_s8_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvtn_u16_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvtn_u16_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvtn_u16_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvtn_u16_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvtn_u8_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qcvtn_u8_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qdmulh_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qdmulh_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qdmulh_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qdmulh_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qdmulh_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qdmulh_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qdmulh_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qdmulh_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshr_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshr_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshr_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshr_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshr_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshr_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrn_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrn_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrn_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrn_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrn_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrn_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshru_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshru_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshru_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrun_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrun_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrun_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za16_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za16_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za32_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za32_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za64_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za64_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za8_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za8_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za16_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za16_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za32_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za32_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za64_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za64_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za8_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za8_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_za16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_za16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_za32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_za32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_za64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_za64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_za8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/read_za8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rinta_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rinta_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rintm_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rintm_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rintn_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rintn_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rintp_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rintp_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/rshl_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sel_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/st1_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/str_zt.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_write_za32_s32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_write_za32_s32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_write_za32_u32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_write_za32_u32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_write_za64_s64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_write_za64_s64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_write_za64_u64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_write_za64_u64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za32_f32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za32_f32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za32_s32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za32_s32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za32_u32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za32_u32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za64_f64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za64_f64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za64_s64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za64_s64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za64_u64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sub_za64_u64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sudot_lane_za32_s8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sudot_lane_za32_s8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sudot_za32_s8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/sudot_za32_s8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/suvdot_lane_za32_s8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/test_sme2_acle.h: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/unpk_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/usdot_lane_za32_u8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/usdot_lane_za32_u8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/usdot_za32_u8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/usdot_za32_u8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/usvdot_lane_za32_u8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/vdot_lane_za32_bf16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/vdot_lane_za32_f16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/vdot_lane_za32_s16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/vdot_lane_za32_s8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/vdot_lane_za32_u16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/vdot_lane_za32_u8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/vdot_lane_za64_s16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/vdot_lane_za64_u16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilege_b16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilege_b32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilege_b64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilege_b8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilege_c16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilege_c32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilege_c64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilege_c8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilegt_b16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilegt_b32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilegt_b64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilegt_b8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilegt_c16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilegt_c32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilegt_c64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilegt_c8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilele_b16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilele_b32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilele_b64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilele_b8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilele_c16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilele_c32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilele_c64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilele_c8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilelt_b16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilelt_b32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilelt_b64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilelt_b8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilelt_c16.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilelt_c32.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilelt_c64.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/whilelt_c8.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za16_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za16_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za32_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za32_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za64_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za64_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za8_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za8_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za16_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za16_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za32_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za32_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za64_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za64_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za8_vg2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za8_vg4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_za16_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_za16_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_za32_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_za32_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_za64_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_za64_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_za8_vg1x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/write_za8_vg1x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zero_zt.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_bf16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_bf16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_f16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_f16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_f32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_f32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_f64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_f64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s8_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u16_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u16_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u32_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u32_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u64_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u64_x4.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u8_x2.c: New file.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u8_x4.c: New file.
+	* gcc.target/aarch64/sve/acle/asm/get2_b.c: New file.
+	* gcc.target/aarch64/sve/acle/asm/set2_b.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_int_opt_single_n_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_int_opt_single_n_2.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_opt_single_n_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_opt_single_n_2.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_single_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_int_opt_single_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_lane_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_lane_2.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_lane_3.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_lane_4.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_opt_single_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_opt_single_2.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_opt_single_3.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_uint_opt_single_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binaryxn_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/binaryxn_2.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/clamp_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/compare_scalar_count_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/dot_za_slice_int_lane_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/dot_za_slice_lane_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/dot_za_slice_lane_2.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/dot_za_slice_uint_lane_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowxn_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/storexn_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_qq_or_011_lane_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/unary_convertxn_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/unary_za_slice_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/unary_za_slice_2.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/unary_za_slice_3.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/unaryxn_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/write_za_1.c: New file.
+	* gcc.target/aarch64/sve/acle/general-c/write_za_slice_1.c: New file.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/zt0_state_1.c: New test.
+	* gcc.target/aarch64/sme/zt0_state_2.c: Likewise.
+	* gcc.target/aarch64/sme/zt0_state_3.c: Likewise.
+	* gcc.target/aarch64/sme/zt0_state_4.c: Likewise.
+	* gcc.target/aarch64/sme/zt0_state_5.c: Likewise.
+	* gcc.target/aarch64/sme/zt0_state_6.c: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/struct_3_128.c (test_nonpst3): Adjust
+	stack offsets.
+	(ret_nonpst3): Remove XFAIL.
+	* gcc.target/aarch64/sve/acle/general-c/svboolx2_1.c: New test.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mangle_1.C: Add test
+	for svcount_t.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_2.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/svcount_1.C: New test.
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h (TEST_DUAL_P)
+	(TEST_DUAL_P_REV): New macros.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_b.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/load_1.c: Test passing
+	an svcount_t.
+	* gcc.target/aarch64/sve/acle/general-c/svcount_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/unary_convert_1.c: Test
+	reinterprets involving svcount_t.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c: Test svcount_t.
+	* gcc.target/aarch64/sve/pcs/annotate_1.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_2.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_12.c: New test.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_aarch64_sme2): New
+	target test.
+	(check_effective_target_aarch64_asm_sme2_ok): Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/sibcall_1.c: New test.
+	* gcc.target/aarch64/sme/sibcall_2.c: Likewise.
+	* gcc.target/aarch64/sme/sibcall_3.c: Likewise.
+	* gcc.target/aarch64/sme/sibcall_4.c: Likewise.
+	* gcc.target/aarch64/sme/sibcall_5.c: Likewise.
+	* gcc.target/aarch64/sme/sibcall_6.c: Likewise.
+	* gcc.target/aarch64/sme/sibcall_7.c: Likewise.
+	* gcc.target/aarch64/sme/sibcall_8.c: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/inlining_1.c: New test.
+	* gcc.target/aarch64/sme/inlining_2.c: Likewise.
+	* gcc.target/aarch64/sme/inlining_3.c: Likewise.
+	* gcc.target/aarch64/sme/inlining_4.c: Likewise.
+	* gcc.target/aarch64/sme/inlining_5.c: Likewise.
+	* gcc.target/aarch64/sme/inlining_6.c: Likewise.
+	* gcc.target/aarch64/sme/inlining_7.c: Likewise.
+	* gcc.target/aarch64/sme/inlining_8.c: Likewise.
+	* gcc.target/aarch64/sme/inlining_10.c: New file.
+	* gcc.target/aarch64/sme/inlining_11.c: New file.
+	* gcc.target/aarch64/sme/inlining_12.c: New file.
+	* gcc.target/aarch64/sme/inlining_13.c: New file.
+	* gcc.target/aarch64/sme/inlining_14.c: New file.
+	* gcc.target/aarch64/sme/inlining_15.c: New file.
+	* gcc.target/aarch64/sme/inlining_9.c: New file.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sme/exceptions_2.C: New test.
+	* gcc.target/aarch64/sme/nonlocal_goto_1.c: Likewise.
+	* gcc.target/aarch64/sme/nonlocal_goto_2.c: Likewise.
+	* gcc.target/aarch64/sme/nonlocal_goto_3.c: Likewise.
+	* gcc.target/aarch64/sme/nonlocal_goto_4.c: Likewise.
+	* gcc.target/aarch64/sme/nonlocal_goto_5.c: Likewise.
+	* gcc.target/aarch64/sme/nonlocal_goto_6.c: Likewise.
+	* gcc.target/aarch64/sme/nonlocal_goto_7.c: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/locally_streaming_1.c: New test.
+	* gcc.target/aarch64/sme/locally_streaming_2.c: Likewise.
+	* gcc.target/aarch64/sme/locally_streaming_3.c: Likewise.
+	* gcc.target/aarch64/sme/locally_streaming_4.c: Likewise.
+	* gcc.target/aarch64/sme/keyword_macros_1.c: Add
+	__arm_locally_streaming.
+	* g++.target/aarch64/sme/keyword_macros_1.C: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp: Add sme and sme-i16i64 features.
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Test __ARM_FEATURE_SME*
+	macros.
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h: Allow functions
+	to be marked as __arm_streaming, __arm_streaming_compatible, and
+	__arm_inout("za").
+	* g++.target/aarch64/sve/acle/general-c++/func_redef_4.c: Mark the
+	function as __arm_streaming_compatible.
+	* g++.target/aarch64/sve/acle/general-c++/func_redef_5.c: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/func_redef_7.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/func_redef_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/func_redef_5.c: Likewise.
+	* g++.target/aarch64/sme/aarch64-sme-acle-asm.exp: New test harness.
+	* gcc.target/aarch64/sme/aarch64-sme-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_int_m_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_m_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_m_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_uint_m_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/read_za_m_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/unary_za_m_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/write_za_m_1.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/addha_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/addha_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/addva_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/addva_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/arm_has_sme_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/arm_in_streaming_mode_ns.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/arm_in_streaming_mode_s.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/arm_in_streaming_mode_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/cntsb_s.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/cntsb_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/cntsd_s.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/cntsd_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/cntsh_s.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/cntsh_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/cntsw_s.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/cntsw_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_vnum_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_vnum_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_vnum_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_vnum_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_vnum_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_hor_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_vnum_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_vnum_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_vnum_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_vnum_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_vnum_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ld1_ver_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ldr_vnum_za_s.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ldr_vnum_za_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ldr_za_s.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/ldr_za_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/mopa_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/mopa_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/mops_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/mops_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_hor_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_hor_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_hor_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_hor_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_hor_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_ver_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_ver_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_ver_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_ver_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/read_ver_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_vnum_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_vnum_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_vnum_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_vnum_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_vnum_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_hor_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_vnum_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_vnum_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_vnum_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_vnum_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_vnum_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/st1_ver_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/str_vnum_za_s.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/str_vnum_za_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/str_za_s.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/str_za_sc.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/sumopa_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/sumopa_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/sumops_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/sumops_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/test_sme_acle.h: New file.
+	* gcc.target/aarch64/sme/acle-asm/undef_za.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/usmopa_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/usmopa_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/usmops_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/usmops_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_hor_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_hor_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_hor_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_hor_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_hor_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_ver_za128.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_ver_za16.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_ver_za32.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_ver_za64.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/write_ver_za8.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/zero_mask_za.c: New file.
+	* gcc.target/aarch64/sme/acle-asm/zero_za.c: New file.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/za_state_1.c: New test.
+	* gcc.target/aarch64/sme/za_state_2.c: Likewise.
+	* gcc.target/aarch64/sme/za_state_3.c: Likewise.
+	* gcc.target/aarch64/sme/za_state_4.c: Likewise.
+	* gcc.target/aarch64/sme/za_state_5.c: Likewise.
+	* gcc.target/aarch64/sme/za_state_6.c: Likewise.
+	* g++.target/aarch64/sme/exceptions_1.C: Likewise.
+	* gcc.target/aarch64/sme/keyword_macros_1.c: Add ZA macros.
+	* g++.target/aarch64/sme/keyword_macros_1.C: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/call_sm_switch_1.c: New test.
+	* gcc.target/aarch64/sme/call_sm_switch_2.c: Likewise.
+	* gcc.target/aarch64/sme/call_sm_switch_3.c: Likewise.
+	* gcc.target/aarch64/sme/call_sm_switch_4.c: Likewise.
+	* gcc.target/aarch64/sme/call_sm_switch_5.c: Likewise.
+	* gcc.target/aarch64/sme/call_sm_switch_6.c: Likewise.
+	* gcc.target/aarch64/sme/call_sm_switch_7.c: Likewise.
+	* gcc.target/aarch64/sme/call_sm_switch_8.c: Likewise.
+	* gcc.target/aarch64/sme/call_sm_switch_9.c: Likewise.
+	* gcc.target/aarch64/sme/call_sm_switch_10.c: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/aarch64-ssve.exp: New harness.
+	* g++.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: Add
+	-DSTREAMING_COMPATIBLE to the list of options.
+	* g++.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Likewise.
+	Fix pasto in variable name.
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h: Mark functions
+	as streaming-compatible if STREAMING_COMPATIBLE is defined.
+	* gcc.target/aarch64/sve/acle/asm/adda_f16.c: Disable for
+	streaming-compatible code.
+	* gcc.target/aarch64/sve/acle/asm/adda_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/adda_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/adrb.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/adrd.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/adrh.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/adrw.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bfmmla_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/compact_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/compact_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/compact_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/compact_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/compact_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/compact_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/expa_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/expa_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/expa_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sb_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1sw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ub_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1uw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sb_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1sw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1ub_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1uw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sb_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1sw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1ub_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uw_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1uw_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mmla_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mmla_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mmla_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mmla_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfb_gather.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfd_gather.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfh_gather.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfw_gather.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/rdffr_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1b_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1h_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1w_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1w_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tmad_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tmad_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tmad_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tsmul_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tsmul_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tsmul_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tssel_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tssel_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tssel_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/usmmla_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/aesd_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/aese_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/aesimc_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/aesmc_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bdep_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bdep_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bdep_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bdep_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bext_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bext_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bext_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bext_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bgrp_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bgrp_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bgrp_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bgrp_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/histcnt_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/histcnt_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/histcnt_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/histcnt_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/histseg_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/histseg_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_f32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_f64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sb_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sb_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sb_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sb_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1ub_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1ub_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1ub_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1ub_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uw_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uw_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/match_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/match_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/match_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/match_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/nmatch_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/nmatch_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/nmatch_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/nmatch_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/pmullb_pair_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/pmullt_pair_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rax1_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rax1_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sm4e_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sm4ekey_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_f32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_f64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1b_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1b_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1b_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1b_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1w_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1w_scatter_u64.c: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/movdf_2.c: New test.
+	* gcc.target/aarch64/movdi_3.c: Likewise.
+	* gcc.target/aarch64/movhf_2.c: Likewise.
+	* gcc.target/aarch64/movhi_2.c: Likewise.
+	* gcc.target/aarch64/movqi_2.c: Likewise.
+	* gcc.target/aarch64/movsf_2.c: Likewise.
+	* gcc.target/aarch64/movsi_2.c: Likewise.
+	* gcc.target/aarch64/movtf_3.c: Likewise.
+	* gcc.target/aarch64/movtf_4.c: Likewise.
+	* gcc.target/aarch64/movti_3.c: Likewise.
+	* gcc.target/aarch64/movti_4.c: Likewise.
+	* gcc.target/aarch64/movv16qi_4.c: Likewise.
+	* gcc.target/aarch64/movv16qi_5.c: Likewise.
+	* gcc.target/aarch64/movv8qi_4.c: Likewise.
+	* gcc.target/aarch64/sme/arm_neon_1.c: Likewise.
+	* gcc.target/aarch64/sme/arm_neon_2.c: Likewise.
+	* gcc.target/aarch64/sme/arm_neon_3.c: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_aarch64_sme): New
+	target test.
+	* gcc.target/aarch64/sme/aarch64-sme.exp: Force SME to be enabled
+	if it isn't by default.
+	* g++.target/aarch64/sme/aarch64-sme.exp: Likewise.
+	* gcc.target/aarch64/sme/streaming_mode_3.c: New test.
+	* gcc.target/aarch64/sme/streaming_mode_4.c: New file.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/aarch64-sme.exp: New harness.
+	* gcc.target/aarch64/sme/streaming_mode_1.c: New test.
+	* gcc.target/aarch64/sme/streaming_mode_2.c: Likewise.
+	* gcc.target/aarch64/sme/keyword_macros_1.c: Likewise.
+	* g++.target/aarch64/sme/aarch64-sme.exp: New harness.
+	* g++.target/aarch64/sme/streaming_mode_1.C: New test.
+	* g++.target/aarch64/sme/streaming_mode_2.C: Likewise.
+	* g++.target/aarch64/sme/keyword_macros_1.C: Likewise.
+	* gcc.target/aarch64/auto-init-1.c: Only expect the call insn
+	to contain 1 (const_int 0), not 2.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h (TEST_DUAL_XN):
+	New macro.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_bf16.c: Add tests for
+	tuple forms.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u8.c: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/set_1.c: Tweak expected
+	error message.
+	* gcc.target/aarch64/sve/acle/general-c/set_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/set_5.c: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/*: Replace "but previous
+	arguments had" with "but argument N had".
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/*: Update expected error
+	messages.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/cntb.c: Tweak expected output.
+	* gcc.target/aarch64/sve/acle/asm/cnth.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/cntw.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/cntd.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfb.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfh.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfw.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfd.c: Likewise.
+	* gcc.target/aarch64/sve/loop_add_4.c: Expect RDVL to be used
+	to calculate the -17 and 17 factors.
+	* gcc.target/aarch64/sve/pcs/stack_clash_1.c: Likewise the 18 factor.
+
+2023-12-05  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/eh_return-3.c: Fix when retaa is available.
+
+2023-12-05  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/gnu23-builtins-no-dfp-1.c: Remove '-fpermissive'.
+	'dg-error "implicit"' instead of 'dg-warning "implicit"'.
+
+2023-12-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-29.c: New test.
+	* gcc.target/riscv/arch-30.c: New test.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/112278
+	* gcc.target/aarch64/sve/pr112278.c: New test.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112843
+	* gcc.dg/bitint-47.c: New test.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112816
+	* gcc.target/i386/pr112816.c: New test.
+
+2023-12-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/autovec/bug-2.C: New test.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/89270
+	* gcc.target/avr/pr89270.c: New testcase.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/86869
+	* gcc.target/avr/pr86869.c: New testcase.
+
+2023-12-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/udotprodint8_emulate.c: New test.
+
+2023-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107687
+	PR c++/110997
+	* g++.dg/cpp23/consteval-if10.C: Remove dg-error.
+	* g++.dg/cpp23/consteval-if2.C: Likewise.
+	* g++.dg/cpp23/feat-cxx2b.C: Adjust expected value of __cpp_consteval.
+	* g++.dg/cpp26/feat-cxx26.C: Likewise.
+	* g++.dg/cpp2a/consteval-memfn1.C: Add dg-error.
+	* g++.dg/cpp2a/consteval11.C: Likewise.
+	* g++.dg/cpp2a/consteval3.C: Adjust dg-error.
+	* g++.dg/cpp2a/consteval34.C: Add dg-error.
+	* g++.dg/cpp2a/consteval36.C: Likewise.
+	* g++.dg/cpp2a/consteval9.C: Likewise.
+	* g++.dg/cpp2a/feat-cxx2a.C: Adjust expected value of __cpp_consteval.
+	* g++.dg/cpp2a/spaceship-synth9.C: Adjust dg-error.
+	* g++.dg/cpp2a/consteval-prop1.C: New test.
+	* g++.dg/cpp2a/consteval-prop10.C: New test.
+	* g++.dg/cpp2a/consteval-prop11.C: New test.
+	* g++.dg/cpp2a/consteval-prop12.C: New test.
+	* g++.dg/cpp2a/consteval-prop13.C: New test.
+	* g++.dg/cpp2a/consteval-prop14.C: New test.
+	* g++.dg/cpp2a/consteval-prop15.C: New test.
+	* g++.dg/cpp2a/consteval-prop16.C: New test.
+	* g++.dg/cpp2a/consteval-prop17.C: New test.
+	* g++.dg/cpp2a/consteval-prop18.C: New test.
+	* g++.dg/cpp2a/consteval-prop19.C: New test.
+	* g++.dg/cpp2a/consteval-prop20.C: New test.
+	* g++.dg/cpp2a/consteval-prop2.C: New test.
+	* g++.dg/cpp2a/consteval-prop3.C: New test.
+	* g++.dg/cpp2a/consteval-prop4.C: New test.
+	* g++.dg/cpp2a/consteval-prop5.C: New test.
+	* g++.dg/cpp2a/consteval-prop6.C: New test.
+	* g++.dg/cpp2a/consteval-prop7.C: New test.
+	* g++.dg/cpp2a/consteval-prop8.C: New test.
+	* g++.dg/cpp2a/consteval-prop9.C: New test.
+
+2023-12-04  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-noreturn1.C: New test.
+
+2023-12-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/copysign-zvfh-run.c:
+	Replace riscv_zvfh_hw with riscv_zvfh.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-10.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-6.c: Allow
+	overriding N.
+	* gcc.target/riscv/rvv/autovec/unop/abs-zvfh-run.c: Replace
+	riscv zvfh_hw with riscv_zvfh.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-8.c: Ditto.
+	* lib/target-supports.exp: Remove riscv_vector_hw and
+	riscv_zvfh_hw.
+
+2023-12-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr112552.c: Add
+	-Wno-incompatible-pointer-types.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-10.c:
+	Add -std=gnu99.
+
+2023-12-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/cpymem-strategy-1.c: Change to
+	-mstringop-strategy.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-5.c: Ditto.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-34.c: New test.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-37.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-38.c: New test.
+
+2023-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112818
+	* gcc.dg/vect/pr112818.c: New testcase.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/autovec/bug-01.C: Moved to...
+	* g++.target/riscv/rvv/autovec/bug-1.C: ...here.
+
+2023-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112827
+	* gcc.dg/torture/pr112827-1.c: New testcase.
+	* gcc.dg/torture/pr112827-2.c: Likewise.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-35.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-36.c: New test.
+
+2023-12-04  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/112656
+	* gcc.dg/debug/btf/btf-function-7.c: New test.
+
+2023-12-04  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/112768
+	* gcc.dg/debug/btf/btf-function-6.c: Empty string expected with
+	BTF_KIND_FUNC_PROTO.
+
+2023-12-04  Pan Li  <pan2.li@intel.com>
+
+	PR target/112813
+	* gcc.target/riscv/rvv/vsetvl/pr112813-1.c: New test.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112837
+	* gcc.dg/pr112837.c: New test.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112816
+	* gcc.target/i386/sse2-pr112816.c: New test.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112795
+	* g++.dg/ext/unroll-5.C: New test.
+	* g++.dg/ext/unroll-6.C: New test.
+
+2023-12-04  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* gcc.target/riscv/zvkn-1.c: Replace zvbb with zvkb.
+	* gcc.target/riscv/zvkn.c:   Ditto.
+	* gcc.target/riscv/zvknc-1.c:Ditto.
+	* gcc.target/riscv/zvknc-2.c:Ditto.
+	* gcc.target/riscv/zvknc.c:  Ditto.
+	* gcc.target/riscv/zvkng-1.c:Ditto.
+	* gcc.target/riscv/zvkng-2.c:Ditto.
+	* gcc.target/riscv/zvkng.c:  Ditto.
+	* gcc.target/riscv/zvks-1.c: Ditto.
+	* gcc.target/riscv/zvks.c:   Ditto.
+	* gcc.target/riscv/zvksc-1.c:Ditto.
+	* gcc.target/riscv/zvksc-2.c:Ditto.
+	* gcc.target/riscv/zvksc.c:  Ditto.
+	* gcc.target/riscv/zvksg-1.c:Ditto.
+	* gcc.target/riscv/zvksg-2.c:Ditto.
+	* gcc.target/riscv/zvksg.c:  Ditto.
+
+2023-12-04  Fei Gao  <gaofei@eswincomputing.com>
+	    Xiao Zeng <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/zicond-sfb-primitiveSemantics.c: New test.
+
+2023-12-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/mcpu-sifive-x280.c: New test.
+
+2023-12-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/user_msr-1.c: Correct the MSR index for give the user
+	an proper example.
+
+2023-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112406
+	* gcc.target/aarch64/pr112406.c (MagickPixelPacket): Add missing
+	semicolon.
+	(GetImageChannelMoments_image): Avoid using implicit int.
+	(SetMagickPixelPacket): Use void return type instead of implicit int.
+	(GetImageChannelMoments): Likewise.  Use __builtin_atan instead of
+	atan.
+
+2023-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112807
+	* gcc.dg/bitint-46.c: New test.
+
+2023-12-03  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* gcc.target/arm/mve/pr112337.c: Use int32_t instead of int.
+
+2023-12-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112743-1.c: Fix typo.
+	* gcc.target/riscv/rvv/base/pr112743-2.c: Ditto.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.dg/gnu23-builtins-no-dfp-1.c: Add -fpermissive.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.c-torture/execute/pr65369.c: Fix type mismatch.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.c-torture/execute/comp-goto-1.c: Fix return value of main for
+	16 bit targets.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/arc/lra-1.c: Fix missing prototypes and implicit
+	types in variable definitions.
+	* gcc.target/arc/pic-1.c: Similarly.
+	* gcc.target/arc/pr9001191897.c: Similarly.
+	* gcc.target/arc/pr9001195952.c: Add -fpermissive.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/nios2/cdx-ldstwm-1.c: Add -fpermissive.
+	* gcc.target/nios2/cdx-ldstwm-2.c: Add prototypes fro abort and exit.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/h8300/pr58400.c: Add -fpermissive.
+	* gcc.target/h8300/pr17306-2.c: Add missing prototype.
+
+2023-12-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93762
+	PR fortran/100651
+	* gfortran.dg/optional_deferred_char_1.f90: New test.
+
+2023-12-02  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/libcall-1.c: Skip on darwin.
+
+2023-12-02  Li Wei  <liwei@loongson.cn>
+
+	* gcc.target/loongarch/lasx-extract-even_odd-opt.c: New test.
+
+2023-12-02  Li Wei  <liwei@loongson.cn>
+
+	* gcc.target/loongarch/popcnt.c: New test.
+	* gcc.target/loongarch/popcount.c: New test.
+
+2023-12-02  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xvabsd-1.c:Remove
+	the default Settings to run the behavior.
+	* gcc.target/loongarch/vector/lasx/lasx-xvabsd-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvadd.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvadda.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddi.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwev-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwev-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwev-3.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwod-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwod-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvaddwod-3.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvand.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvandi.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvandn.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvavg-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvavg-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvavgr-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvavgr-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitclr.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitclri.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitrev.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitrevi.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitsel.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitseli.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitset.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbitseti.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbsll_v.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvbsrl_v.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvclo.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvclz.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvdiv-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvdiv-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvext2xv-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvext2xv-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvexth-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvexth-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvextl-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvextl-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvextrins.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfadd_d.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfadd_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfclass_d.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfclass_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_caf_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_ceq_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_cle_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_clt_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_cne_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_cor_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_cun_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_saf_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_seq_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_sle_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_slt_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_sne_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_sor_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcmp_sun_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcvt.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfcvth.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvffint-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvffint-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvffinth.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvflogb_d.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvflogb_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmadd_d.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmadd_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmax_d.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmax_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmaxa_d.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfmaxa_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfnmadd_d.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfnmadd_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfrint_d.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfrint_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfrstp.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfrstpi.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfsqrt_d.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvfsqrt_s.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvftint-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvftint-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvftint-3.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvftintl.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvhaddw-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvhaddw-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvhsubw-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvhsubw-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvilvh.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvilvl.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvinsgr2vr.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvinsve0.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvld.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvldi.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmadd.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwev-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwev-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwev-3.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwod-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwod-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaddwod-3.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmax-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmax-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaxi-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmaxi-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmin-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmin-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmini-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmini-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmod-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmod-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmskgez.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmskltz.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmsknz.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmsub.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmuh-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmuh-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmul.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwev-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwev-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwev-3.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwod-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwod-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvmulwod-3.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvneg.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvnor.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvnori.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvor.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvori.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvorn.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpackev.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpackod.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpcnt.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpickev.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpickod.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpickve.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpickve2gr.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvprem.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpremi.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvreplgr2vr.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvreplve.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvreplve0.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvreplvei.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvrotr.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvrotri.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsadd-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsadd-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsat-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsat-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvseq.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvseqi.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvshuf4i_b.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvshuf_b.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsigncov.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsle-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsle-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslei-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslei-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsll.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslli.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsllwil-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsllwil-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslt-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslt-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslti-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvslti-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsra.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrai.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsran.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrani.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrar.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrari.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrarn.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrarni.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrl.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrli.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrln.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlni.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlr.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlri.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlrn.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsrlrni.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssran.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrani.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrarn.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrarni.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrln.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrlni.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrlrn.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssrlrni.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssub-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvssub-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvst.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsub.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubi.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubwev-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubwev-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubwod-1.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvsubwod-2.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvxor.c:Dito.
+	* gcc.target/loongarch/vector/lasx/lasx-xvxori.c:Dito.
+	* gcc.target/loongarch/vector/loongarch-vector.exp:Added hardware
+	detection to set the behavior of program execution based on the
+	characteristics of the hardware.
+	* gcc.target/loongarch/vector/lsx/lsx-vabsd-1.c:Remove the default
+	Settings to run the behavior.
+	* gcc.target/loongarch/vector/lsx/lsx-vabsd-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vadd.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vadda.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddi.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwev-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwev-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwev-3.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwod-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwod-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vaddwod-3.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vand.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vandi.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vandn.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vavg-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vavg-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vavgr-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vavgr-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitclr.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitclri.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitrev.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitrevi.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitsel.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitseli.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitset.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbitseti.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbsll.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vbsrl.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vclo.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vclz.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vdiv-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vdiv-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vexth-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vexth-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vextl-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vextl-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vextrins.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfadd_d.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfadd_s.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfclass_d.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfclass_s.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_caf.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_ceq.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_cle.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_clt.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_cne.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_cor.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_cun.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_saf.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_seq.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_sle.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_slt.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_sne.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_sor.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcmp_sun.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcvt-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfcvt-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vffint-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vffint-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vffint-3.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vflogb_d.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vflogb_s.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmadd_d.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmadd_s.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmax_d.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmax_s.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmaxa_d.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfmaxa_s.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfnmadd_d.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfnmadd_s.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfrint_d.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfrint_s.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfrstp.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfrstpi.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfsqrt_d.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vfsqrt_s.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vftint-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vftint-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vftint-3.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vftint-4.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vhaddw-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vhaddw-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vhsubw-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vhsubw-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vilvh.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vilvl.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vinsgr2vr.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vld.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vldi.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmadd.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwev-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwev-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwev-3.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwod-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwod-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaddwod-3.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmax-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmax-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaxi-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmaxi-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmin-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmin-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmini-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmini-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmod-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmod-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmskgez.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmskltz.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmsknz.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmsub.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmuh-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmuh-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmul.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwev-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwev-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwev-3.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwod-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwod-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vmulwod-3.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vneg.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vnor.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vnori.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vor.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vori.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vorn.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vpackev.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vpackod.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vpcnt.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vpickev.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vpickod.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vpickve2gr.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vpremi.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vreplgr2vr.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vreplve.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vreplvei.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vrotr.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vrotri.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsadd-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsadd-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsat-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsat-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vseq.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vseqi.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vshuf.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vshuf4i.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsigncov.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsle-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsle-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vslei-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vslei-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsll.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vslli.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsllwil-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsllwil-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vslt-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vslt-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vslti-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vslti-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsra.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrai.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsran.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrani.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrar.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrari.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrarn.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrarni.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrl.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrli.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrln.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlni.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlr.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlri.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlrn.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsrlrni.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssran.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrani.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrarn.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrarni.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrln.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrlni.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrlrn.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssrlrni.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssub-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vssub-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vst.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsub.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubi.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubwev-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubwev-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubwod-1.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vsubwod-2.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vxor.c:Dito.
+	* gcc.target/loongarch/vector/lsx/lsx-vxori.c:Dito.
+
+2023-12-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112801
+	* gcc.target/riscv/rvv/autovec/pr112801.c: New test.
+
+2023-12-02  Pan Li  <pan2.li@intel.com>
+
+	PR target/112743
+	* gcc.target/riscv/rvv/base/pr112743-2.c: New test.
+
+2023-12-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112772
+	* gfortran.dg/missing_optional_dummy_7.f90: New test.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/nontype-class4.C: Specify ABI v18.
+	* g++.dg/cpp2a/nontype-class4a.C: New test.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle10.C: Disable compat aliases.
+	* g++.dg/abi/mangle52.C: Specify ABI 18.
+	* g++.dg/cpp2a/class-deduction-alias3.C
+	* g++.dg/cpp2a/class-deduction-alias8.C:
+	Avoid builtins in requires-clauses.
+	* g++.dg/abi/mangle-concepts1.C: New test.
+	* g++.dg/abi/mangle-ttp1.C: New test.
+
+2023-12-01  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/112334
+	* c-c++-common/torture/harden-cfr-bret.c: Rework for stricter
+	untyped_return requirements.  Require untyped_assembly.
+	* c-c++-common/torture/harden-cfr-bret-except.c: New.
+	* c-c++-common/torture/harden-cfr-bret-always.c: Require
+	untyped_assembly.
+	* c-c++-common/torture/harden-cfr-bret-never.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-noopt.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-noret.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-no-xthrow.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-nothrow.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-retcl.c: Likewise.
+
+2023-12-01  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/112445
+	* gcc.target/i386/pr112445.c: New test.
+
+2023-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/fd-accept.c: Update for fix to missing CWE
+	metadata for -Wanalyzer-fd-phase-mismatch.
+	* gcc.dg/analyzer/fd-bind.c: Likewise.
+	* gcc.dg/analyzer/fd-socket-misuse.c: Likewise.
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Update for changes to
+	pending_diagnostic::emit.
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Likewise.
+
+2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-22.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-23.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-24.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-25.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-26.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-27.c: New test.
+
+2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-28.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-29.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-30.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-31.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-32.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-33.c: New test.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/x86_64/abi/avx512fp16/m512h/test_passing_m512.c
+	(fun_check_passing_m512_8_values, fun_check_passing_m512h_8_values):
+	Add missing void return type.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/test_passing_m256.c
+	(fun_check_passing_m256_8_values, fun_check_passing_m256h_8_values):
+	Likewise.
+	* gcc.dg/graphite/pr83126.c (ew): Add missing casts to __INTPTR_TYPE__
+	and then to int *.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112770
+	* gcc.dg/bitint-45.c: New test.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112771
+	* gcc.dg/bitint-44.c: New test.
+
+2023-12-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/section-name-quoting-1.c: New test.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112750
+	* gcc.dg/bitint-41.c: Use -std=c23 rather than -std=c2x.
+	* gcc.dg/torture/bitint-43.c: Likewise.
+	* gcc.dg/torture/bitint-44.c: Likewise.
+	* gcc.dg/torture/bitint-45.c: New test.
+
+2023-12-01  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/pr112753.c: New test.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (missing_parameter_type):
+	Expect error.
+	* gcc.dg/permerror-fpermissive.c (missing_parameter_type):
+	Expect -Wdeclaration-missing-parameter-type warning.
+	* gcc.dg/permerror-gnu89-nopermissive.c (missing_parameter_type):
+	Expect -Wdeclaration-missing-parameter-type error.
+	* gcc.dg/permerror-gnu89-pedantic.c (missing_parameter_type):
+	Likewise.
+	* gcc.dg/permerror-gnu89.c (missing_parameter_type):
+	Expect -Wdeclaration-missing-parameter-type warning.
+	* gcc.dg/permerror-noerror.c: Add
+	-Wno-error=declaration-missing-parameter-type to build flags.
+	(missing_parameter_type): Expect
+	-Wdeclaration-missing-parameter-type warning.
+	* gcc.dg/permerror-nowarning.c: Build with
+	-Wno-declaration-missing-parameter-type.  Remove previously
+	expected warning.
+	* gcc.dg/permerror-fpermissive-nowarning.c: Likewise.
+	* gcc.dg/permerror-pedantic.c (missing_parameter_type):
+	Expect -Wdeclaration-missing-parameter-type error.
+	* gcc.dg/permerror-system.c (missing_parameter_type):
+	Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (incompatible_pointer_types):
+	Expect new permerror.
+	* gcc.dg/permerror-gnu89-nopermissive.c
+	(incompatible_pointer_types): Likewise.
+	* gcc.dg/permerror-pedantic.c (incompatible_pointer_types):
+	Likewise.
+	* gcc.dg/permerror-system.c: Likewise.
+	* gcc.dg/Wincompatible-pointer-types-2.c: Compile with
+	-fpermissive due to expected errors.
+	* gcc.dg/Wincompatible-pointer-types-5.c: New test.  Copied
+	from gcc.dg/Wincompatible-pointer-types-2.c.  Expect errors.
+	* gcc.dg/anon-struct-11.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/anon-struct-11a.c: New test.  Copied from
+	gcc.dg/anon-struct-11.c.  Expect errors.
+	* gcc.dg/anon-struct-13.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/anon-struct-13a.c: New test.  Copied from
+	gcc.dg/anon-struct-13.c.  Expect errors.
+	* gcc.dg/builtin-arith-overflow-4.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/builtin-arith-overflow-4a.c: New test.  Copied from
+	gcc.dg/builtin-arith-overflow-4.c.  Expect errors.
+	* gcc.dg/c23-qual-4.c: Expect -Wincompatible-pointer-types errors.
+	* gcc.dg/dfp/composite-type.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/dfp/composite-type-2.c: New test.  Copied from
+	gcc.dg/dfp/composite-type.c.  Expect errors.
+	* gcc.dg/diag-aka-1.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/diag-aka-1a.c: New test.  Copied from
+	gcc.dg/diag-aka-1a.c.  Expect errors.
+	* gcc.dg/enum-compat-1.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/enum-compat-2.c: New test.  Copied from
+	gcc.dg/enum-compat-1.c.  Expect errors.
+	* gcc.dg/func-ptr-conv-1.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/func-ptr-conv-2.c: New test.  Copied from
+	gcc.dg/func-ptr-conv-1.c.  Expect errors.
+	* gcc.dg/init-bad-7.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/init-bad-7a.c: New test.  Copied from gcc.dg/init-bad-7.c.
+	Expect errors.
+	* gcc.dg/noncompile/incomplete-3.c (foo): Expect
+	-Wincompatible-pointer-types error.
+	* gcc.dg/param-type-mismatch-2.c (test8): Likewise.
+	* gcc.dg/pointer-array-atomic.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/pointer-array-atomic-2.c: New test.  Copied from
+	gcc.dg/pointer-array-atomic.c.  Expect errors.
+	* gcc.dg/pointer-array-quals-1.c (test): Expect
+	-Wincompatible-pointer-types errors.
+	* gcc.dg/transparent-union-1.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/transparent-union-1a.c: New test.  Copied from
+	gcc.dg/transparent-union-1.c.  Expect errors.
+	* gcc.target/aarch64/acle/memtag_2a.c
+	(test_memtag_warning_return_qualifier): Expect additional
+	errors.
+	* gcc.target/aarch64/sve/acle/general-c/load_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_3.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_4.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_5.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_3.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_4.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_1.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c
+	(f1): Likewise.
+	* gcc.target/i386/sse2-bfloat16-scalar-typecheck.c (footest):
+	Expect -Wincompatible-pointer-types errors.
+	* gcc.target/i386/vect-bfloat16-typecheck_1.c (footest): Likewise.
+	* gcc.target/i386/vect-bfloat16-typecheck_2.c (footest): Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (return_mismatch_1)
+	(return_mismatch_2): Expect new permerror.
+	* gcc.dg/permerror-gnu89-nopermissive.c (return_mismatch_1):
+	Likewise.
+	* gcc.dg/permerror-system.c: Likewise.
+	* gcc.dg/20030906-1.c: Compile with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/20030906-1a.c: New test.  Copied from
+	gcc.dg/20030906-1.c.  Expect the error.
+	* gcc.dg/20030906-2.c: Compile with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/20030906-2a.c: New test.  Copied from
+	gcc.dg/20030906-2.c.  Expect the error.
+	* gcc.dg/Wreturn-mismatch-1.c: Compile with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/Wreturn-mismatch-1a.c: New test.  Copied from
+	gcc.dg/Wreturn-mismatch-1.c.  Expect the error.
+	* gcc.dg/Wreturn-mismatch-2.c: Compile with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/Wreturn-mismatch-2a.c: New test.  Copied from
+	gcc.dg/Wreturn-mismatch-2.c.  Expect the error.
+	* gcc.dg/diagnostic-range-bad-return.c: Compile with
+	-fpermissive due to expected -Wreturn-mismatch error.
+	* gcc.dg/diagnostic-range-bad-return-2.c: New test.
+	Copied from gcc.dg/diagnostic-range-bad-return.c.  Expect the
+	error.
+	* gcc.dg/pr105635-2.c: Expect -Wreturn-mismatch error.
+	* gcc.dg/pr23075.c: Build with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/pr23075-2.c: New test.  Copied from gcc.dg/pr23075.c.
+	Expect the error.
+	* gcc.dg/pr29521.c: Compile with -fpermissive due to expected
+	-Wreturn-mismatch error.
+	* gcc.dg/pr29521-a.c: New test. Copied from gcc.dg/pr29521.c.
+	Expect error.
+	* gcc.dg/pr67730.c: Compile with -fpermissive due to expected
+	-Wreturn-mismatch error.
+	* gcc.dg/pr67730-a.c: New test.  Copied from
+	gcc.dg/pr67730-a.c.  Expect error.
+	* gcc.target/powerpc/conditional-return.c: Compile with
+	-fpermissive due to expected -Wreturn-mismatch error.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-system.c: Expect all -Wimplicit-int
+	permerrors.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (implicit_int_1, implicit_int_2)
+	(implicit_int_3, implicit_int_4): Expect new permerror.
+	* gcc.dg/permerror-system.c: Expect a single new permerror.
+	* gcc.dg/Wimplicit-int-1.c: Compile with -fpermissive due to
+	expected warning.
+	* gcc.dg/Wimplicit-int-4.c: Likewise.
+	* gcc.dg/Wimplicit-int-1a.c: New test.  Copied from
+	gcc.dg/Wimplicit-int-1.c, but expect errors.
+	* gcc.dg/Wimplicit-int-4a.c: New test.  Copied from
+	gcc.dg/Wimplicit-int-4.c, but expect errors.
+	* gcc.dg/gnu23-attr-syntax-2.c: Compile with -fpermissive
+	due to expected implicit-int error.
+	* gcc.dg/gnu23-attr-syntax-3.c: New test.  Copied from
+	gcc.dg/gnu23-attr-syntax-2.c, but expect an error.
+	* gcc.dg/pr105635.c: Build with -fpermissive due to implicit
+	int.
+	* gcc.dg/pr105635-2.c: New test.  Copied from
+	gcc.dg/pr105635.c.  Expect implicit int error.
+	* gcc.dg/noncompile/pr79758.c: Build with -fpermissive due to
+	implicit int.
+	* gcc.dg/noncompile/pr79758-2.c: New test.  Copied from
+	gcc.dg/noncompile/pr79758.c.  Expect implicit int error.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (implicit_function_declaration):
+	Expect the new permerror.
+	* gcc.dg/permerror-system.c: Likewise.
+	* c-c++-common/spellcheck-reserved.c (test, test_2): Expect
+	error instead of warning.
+	(f): Expect error instead of warning.
+	* gcc.dg/Wimplicit-function-declaration-c99.c: Compile with
+	-fpermissive due to expected warning.
+	* gcc.dg/Wimplicit-function-declaration-c99-2.c: New test.
+	Copied from gcc.dg/Wimplicit-function-declaration-c99.c.
+	Expect error.
+	* gcc.dg/missing-header-fixit-1.c: Compile with -fpermissive
+	due to expect error.
+	* gcc.dg/missing-header-fixit-1a.c: New test.  Copied from
+	gcc.dg/missing-header-fixit-1.c, but expect error.
+	* gcc.dg/missing-header-fixit-2.c: Compile with -fpermissive
+	due to expect error.
+	* gcc.dg/missing-header-fixit-2a.c: New test.  Copied from
+	gcc.dg/missing-header-fixit-2.c, but expect error.
+	* gcc.dg/missing-header-fixit-4.c: Compile with -fpermissive
+	due to expect error.
+	* gcc.dg/missing-header-fixit-4a.c: New test.  Copied from
+	gcc.dg/missing-header-fixit-4.c, but expect error.
+	* gcc.dg/missing-header-fixit-5.c: Compile with -fpermissive
+	due to expect error.
+	* gcc.dg/missing-header-fixit-5a.c: New test.  Copied from
+	gcc.dg/missing-header-fixit-5.c, but expect error.
+	* gcc.dg/pr61852.c: Expect implicit-function-declaration
+	error instead of warning.
+	* gcc.dg/spellcheck-identifiers-2.c: Compile with
+	-fpermissive due to expected warnings.
+	* gcc.dg/spellcheck-identifiers-2a.c: New test.  Copied
+	from gcc.dg/spellcheck-identifiers-2a.c.  Expect errors.
+	* gcc.dg/spellcheck-identifiers-3.c: Compile with
+	-fpermissive due to expected warnings.
+	* gcc.dg/spellcheck-identifiers-3a.c: New test.  Copied
+	from gcc.dg/spellcheck-identifiers-2a.c.  Expect errors.
+	* gcc.dg/spellcheck-identifiers-4.c: Compile with
+	-fpermissive due to expected warnings.
+	* gcc.dg/spellcheck-identifiers-4a.c: New test.  Copied
+	from gcc.dg/spellcheck-identifiers-2a.c.  Expect error.
+	* gcc.dg/spellcheck-identifiers.c: Compile with
+	-fpermissive due to expected warnings.
+	* gcc.dg/spellcheck-identifiers-1a.c: New test.  Copied
+	from gcc.dg/spellcheck-identifiers.c.  Expect errors.
+	* gcc.target/aarch64/sve/acle/general-c/ld1sh_gather_1.c (f1):
+	Expect error.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_index_1.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_index_restricted_1.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_1.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_2.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_3.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_4.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_5.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_1.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_2.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_3.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_4.c:
+	(f1): Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (int_conversion_1)
+	(int_conversion_2): Expect the new permerrors.
+	* gcc.dg/permerror-gnu89-nopermissive.c (int_conversion_1)
+	(int_conversion_2): Likewise.
+	* gcc.dg/permerror-system.c: Likewise.
+	* c-c++-common/pr77624-1.c (foo, bar): Expect
+	error instead of warning.
+	* gcc.dg/Wint-conversion-2.c: Compile with -fpermissive due
+	to expected int-conversion warning.
+	* gcc.dg/Wint-conversion-3.c: Likewise.
+	* gcc.dg/Wint-conversion-4.c: New test.  Based on
+	gcc.dg/Wint-conversion-3.c.  Expect int-conversion errors.
+	* gcc.dg/assign-warn-1.c: Compile with -fpermissive.
+	* gcc.dg/assign-warn-4.c: New file.  Extracted from
+	assign-warn1.c.  Expect int-conversion errors.
+	* gcc.dg/diagnostic-types-1.c: Compile with -fpermissive.
+	* gcc.dg/diagnostic-types-2.c: New file.  Extracted from
+	gcc.dg/diagnostic-types-1.c.  Expect some errors instead of
+	warnings.
+	* gcc.dg/gomp/pr35738.c: Compile with -fpermissive due to
+	expected int-conversion error.
+	* gcc.dg/gomp/pr35738-2.c: New test.  Based on
+	gcc.dg/gomp/pr35738.c.  Expect int-converison errors.
+	* gcc.dg/init-excess-3.c: Expect int-converison errors.
+	* gcc.dg/overflow-warn-1.c: Likewise.
+	* gcc.dg/overflow-warn-3.c: Likewise.
+	* gcc.dg/param-type-mismatch.c: Compile with -fpermissive.
+	* gcc.dg/param-type-mismatch-2.c: New test.  Copied from
+	gcc.dg/param-type-mismatch.c.  Expect errors.
+	* gcc.dg/pr61162-2.c: Compile with -fpermissive.
+	* gcc.dg/pr61162-3.c: New test. Extracted from
+	gcc.dg/pr61162-2.c.  Expect int-conversion errors.
+	* gcc.dg/spec-barrier-3.c: Use -fpermissive due to expected
+	int-conversion error.
+	* gcc.dg/spec-barrier-3a.c: New test.  Based on
+	gcc.dg/spec-barrier-3.c.  Expect int-conversion errors.
+	* gcc.target/aarch64/acle/memtag_2.c: Use -fpermissive due to expected
+	int-conversion error.
+	* gcc.target/aarch64/acle/memtag_2a.c: New test.  Copied from
+	gcc.target/aarch64/acle/memtag_2.c.  Expect error.
+	* gcc.target/aarch64/sve/acle/general-c/load_3.c (f1): Expect
+	error.
+	* gcc.target/aarch64/sve/acle/general-c/store_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_restricted_1.c
+	(f1): Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c: New test.
+	* gcc.dg/permerror-fpermissive.c: Likewise.
+	* gcc.dg/permerror-fpermissive-nowarning.c: Likewise.
+	* gcc.dg/permerror-gnu89-nopermissive.c: Likewise.
+	No permerrors yet, so this matches gcc.dg/permerror-gnu89.c
+	for now.
+	* gcc.dg/permerror-gnu89-pedantic.c: New test.
+	* gcc.dg/permerror-gnu89.c: Likewise.
+	* gcc.dg/permerror-noerror.c: Likewise.
+	* gcc.dg/permerror-nowarning.c: Likewise.
+	* gcc.dg/permerror-pedantic.c: Likewise.
+	* gcc.dg/permerror-system.c: Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gm2/link/externalscaffold/pass/scaffold.c (m2pim_M2RTS_Terminate):
+	Declare.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.target/aarch64/aapcs64/ice_1.c (foo): Call named.
+
+2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112776
+	* gcc.target/riscv/rvv/vsetvl/avl_single-84.c: Adapt test.
+	* gcc.target/riscv/rvv/vsetvl/pr111037-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/pr112776.c: New test.
+
+2023-11-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112744
+	* g++.dg/lookup/scoped11.C: New test.
+	* g++.dg/lookup/scoped12.C: New test.
+	* g++.dg/lookup/scoped13.C: New test.
+	* g++.dg/lookup/scoped14.C: New test.
+	* g++.dg/lookup/scoped15.C: New test.
+
+2023-11-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/112698
+	* gcc.target/arm/bfloat16_vector_typecheck_1.c: Update expected
+	error message.
+	* gcc.target/arm/bfloat16_vector_typecheck_2.c: Likewise.
+
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.target/gcn/avgpr-mem-double.c: Remove
+	'dg-skip-if "incompatible ISA" [...]'.
+	* gcc.target/gcn/avgpr-mem-int.c: Likewise.
+	* gcc.target/gcn/avgpr-mem-long.c: Likewise.
+	* gcc.target/gcn/avgpr-mem-short.c: Likewise.
+	* gcc.target/gcn/avgpr-spill-double.c: Likewise.
+	* gcc.target/gcn/avgpr-spill-int.c: Likewise.
+	* gcc.target/gcn/avgpr-spill-long.c: Likewise.
+	* gcc.target/gcn/avgpr-spill-short.c: Likewise.
+
+2023-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112764
+	* gfortran.dg/associate_62.f90: New test.
+
+2023-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112767
+	* gcc.dg/tree-ssa/pr112767.c: New testcase.
+	* gcc.dg/graphite/pr83255.c: Disable SCCP.
+
+2023-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112766
+	* g++.dg/torture/uninit-pr112766.C: New testcase.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-16.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-17.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-18.c: New test.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-19.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-20.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-21.c: New test.
+
+2023-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110349
+	* g++.dg/cpp26/name-independent-decl1.C: New test.
+	* g++.dg/cpp26/name-independent-decl2.C: New test.
+	* g++.dg/cpp26/name-independent-decl3.C: New test.
+	* g++.dg/cpp26/name-independent-decl4.C: New test.
+	* g++.dg/cpp26/name-independent-decl5.C: New test.
+	* g++.dg/cpp26/name-independent-decl6.C: New test.
+	* g++.dg/cpp26/feat-cxx26.C: Add __cpp_placeholder_variables test.
+
+2023-11-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/sdotprodint8_emulate.c: New test.
+
+2023-11-30  Alexandre Oliva  <oliva@gnu.org>
+
+	Revert:
+	2023-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
+	Expect "unaligned pointer value" warning on short_enums
+	targets, but not in c++.
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early.c:
+	Likewise.
+
+2023-11-30  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/predef-13.c: Fix 'E' extension version to test.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-10.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-11.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-12.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-13.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-14.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-15.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-7.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-8.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-9.c: New test.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/unop_v_constraint-2.c: Adapt test.
+	* gcc.target/riscv/rvv/base/pr112431-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-5.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-6.c: New test.
+
+2023-11-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106650
+	* g++.dg/cpp0x/constexpr-array-ptr6.C: Remove dg-error.
+	* g++.dg/cpp0x/constexpr-ref12.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ref2.C: Adjust dg-error.
+	* g++.dg/cpp0x/noexcept34.C: Remove dg-error.
+	* g++.dg/cpp1y/lambda-generic-const10.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ref13.C: New test.
+	* g++.dg/cpp1z/constexpr-ref1.C: New test.
+	* g++.dg/cpp1z/constexpr-ref2.C: New test.
+	* g++.dg/cpp2a/constexpr-ref1.C: New test.
+
+2023-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112765
+	* g++.dg/warn/Wparentheses-33.C: Compile with -Wparentheses.
+
+2023-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112765
+	* g++.dg/warn/Wparentheses-33.C: New test.
+
+2023-11-29  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/core-builtin-enumvalue-opt.c: Change dg-final
+	scans to not assume a specific comment character.
+	* gcc.target/bpf/core-builtin-enumvalue.c: Likewise.
+	* gcc.target/bpf/core-builtin-type-based.c: Likewise.
+	* gcc.target/bpf/core-builtin-type-id.c: Likewise.
+
+2023-11-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111922
+	* gcc.dg/pr111922.c: New.
+
+2023-11-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/112711
+	PR tree-optimization/112721
+	* g++.dg/tree-ssa/pr112711.C: New test.
+	* gcc.dg/tree-ssa/pr112721.c: Likewise.
+
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/scanoffload.exp (only_for_offload_target): New 'proc'.
+
+2023-11-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/112729
+	* lib/target-supports.exp (check_effective_target_cfi): New proc.
+	* gcc.target/i386/apx-interrupt-1.c: Require cfi instead of
+	skipping on *-*-darwin*.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2-1.c: Likewise.
+
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/cpp26/static_assert1.C: Fix for '-fno-exceptions'
+	configurations.
+
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/ext/has-feature.C: Adjust for default-'-fno-exceptions',
+	'-fno-rtti' configurations.
+
+2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112733
+	* gcc.dg/pr112733.c: New test.
+
+2023-11-29  Iain Sandoe  <iains.gcc@gmail.com>
+
+	* lib/target-supports.exp: Test an asm line that fails on broken
+	Darwin assembler versions.
+
+2023-11-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/opt/devirt2.C: Adjust scan-assembler-count on sparc for
+	removal of -inline from regexp.  Update comment.
+
+2023-11-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+	    kito-cheng  <kito.cheng@gmail.com>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-3.c: New test.
+
+2023-11-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/112728
+	* lib/scanasm.exp (dg-scan): Allow for double-quoted LTO section names.
+	(scan-assembler-times): Likewise.
+	(scan-assembler-dem-not): Likewise.
+
+2023-11-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.c-torture/compile/libcall-2.c: Remove.
+	* gcc.target/i386/libcall-1.c: Moved from
+	gcc.c-torture/compile/libcall-2.c and adapted to use
+	effective-target for int128_t.
+
+2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/111601
+	* g++.dg/opt/pr111601.C: New test.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-frint-scalar.c: New test.
+	* gcc.target/loongarch/vect-frint-scalar-no-inexact.c: New test.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-rotr.c: New test.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-muh.c: New test.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/112578
+	* gcc.target/loongarch/vect-frint.c: New test.
+	* gcc.target/loongarch/vect-frint-no-inexact.c: New test.
+	* gcc.target/loongarch/vect-ftint.c: New test.
+	* gcc.target/loongarch/vect-ftint-no-inexact.c: New test.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/hardbool-err.c: New.
+	* gcc.dg/hardbool-trap.c: New.
+	* gcc.dg/torture/hardbool.c: New.
+	* gcc.dg/torture/hardbool-s.c: New.
+	* gcc.dg/torture/hardbool-us.c: New.
+	* gcc.dg/torture/hardbool-i.c: New.
+	* gcc.dg/torture/hardbool-ul.c: New.
+	* gcc.dg/torture/hardbool-ll.c: New.
+	* gcc.dg/torture/hardbool-5a.c: New.
+	* gcc.dg/torture/hardbool-s-5a.c: New.
+	* gcc.dg/torture/hardbool-us-5a.c: New.
+	* gcc.dg/torture/hardbool-i-5a.c: New.
+	* gcc.dg/torture/hardbool-ul-5a.c: New.
+	* gcc.dg/torture/hardbool-ll-5a.c: New.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/warn/Wuse-after-free3.C: xfail on arm_eabi.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/torture/inline-mem-cmp-1.c: New.
+	* gcc.dg/torture/inline-mem-cpy-1.c: New.
+	* gcc.dg/torture/inline-mem-cpy-cmp-1.c: New.
+	* gcc.dg/torture/inline-mem-move-1.c: New.
+	* gcc.dg/torture/inline-mem-set-1.c: New.
+
+2023-11-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/112743
+	* gcc.target/riscv/rvv/base/pr112743-1.c: New test.
+
+2023-11-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.c-torture/compile/libcall-2.c: Skip test in -m32.
+
+2023-11-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/112729
+	* gcc.target/i386/apx-interrupt-1.c: Add -fomit-frame-pointer.
+	* gcc.target/i386/apx-push2pop2-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+
+2023-11-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94264
+	PR c++/53220
+	* c-c++-common/array-lit.c: Adjust.
+	* g++.dg/cpp1z/array-prvalue1.C: New test.
+	* g++.dg/ext/complit17.C: New test.
+
+2023-11-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/jli-1.c: Update dg-final whitespace.
+	* gcc.target/arc/jli-2.c: Likewise.
+	* gcc.target/arc/naked-1.c: Likewise.
+	* gcc.target/arc/naked-2.c: Likewise.
+	* gcc.target/arc/tmac-1.c: Likewise.
+	* gcc.target/arc/tmac-2.c: Likewise.
+
+2023-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112741
+	* gcc.dg/ubsan/pr112741.c: New testcase.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	Revert:
+	2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/atomic-cmpxchg-2.c: Adapted.
+	* gcc.target/bpf/atomic-fetch-op-3.c: Adapted.
+	* gcc.target/bpf/atomic-op-3.c: Adapted.
+	* gcc.target/bpf/atomic-xchg-2.c: Adapted.
+	* gcc.target/bpf/diag-sdiv.c: Adapted.
+	* gcc.target/bpf/diag-smod.c: Adapted.
+
+2023-11-28  Andrew Jenner  <andrew@codesourcery.com>
+	    Tobias Burnus   <tobias@codesourcery.com>
+
+	PR fortran/110415
+	* gfortran.dg/pr110415.f90: New test.
+	* gfortran.dg/asan/pr110415-2.f90: New test.
+	* gfortran.dg/asan/pr110415-3.f90: New test.
+
+2023-11-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/109253
+	* gcc.target/bpf/divmod-libcall-1.c: New test.
+	* gcc.target/bpf/divmod-libcall-2.c: Likewise.
+	* gcc.c-torture/compile/libcall-2.c: Likewise.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.dg/debug/btf/btf-enum-small.c: Added test.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/atomic-cmpxchg-2.c: Adapted.
+	* gcc.target/bpf/atomic-fetch-op-3.c: Adapted.
+	* gcc.target/bpf/atomic-op-3.c: Adapted.
+	* gcc.target/bpf/atomic-xchg-2.c: Adapted.
+	* gcc.target/bpf/diag-sdiv.c: Adapted.
+	* gcc.target/bpf/diag-smod.c: Adapted.
+
+2023-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pr111409.c: Allow for " before .debug_macro.
+	Quote literals dots.
+
+2023-11-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112694
+	* gcc.target/riscv/rvv/autovec/pr112694-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr112694-3.c: New test.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111754
+	* gcc.dg/vect/pr111754.c: Use dg-additional-options rather than
+	dg-options, add -Wno-psabi and use -fdump-tree-forwprop1 rather than
+	-fdump-tree-optimized.  Scan forwprop1 dump rather than optimized and
+	scan for either direct return or setting of <retval> to the vector.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112719
+	* gcc.dg/bitint-43.c: New test.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112719
+	* gcc.dg/pr112719.c: New file.
+
+2023-11-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/112701
+	* gcc.dg/cpp/expr.c: Add additional tests to cover divide by 0 in an
+	unevaluated context, where the unsignedness still matters.
+
+2023-11-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112713
+	* gcc.target/riscv/rvv/vsetvl/pr112713-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr112713-2.c: New test.
+
+2023-11-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.target/aarch64/csinc-3.c: New test.
+
+2023-11-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/112689
+	* gcc.dg/tree-prof/time-profiler-3.c: Add -fno-ipa-vrp.
+
+2023-11-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/111754
+	* gcc.target/aarch64/sve/slp_3.c: Adjust code-gen.
+	* gcc.target/aarch64/sve/slp_4.c: Likewise.
+	* gcc.dg/vect/pr111754.c: New test.
+
+2023-11-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/aapcs64/func-ret-1.c: Disable branch-protection.
+	* gcc.target/aarch64/aapcs64/func-ret-2.c: Likewise.
+	* gcc.target/aarch64/aapcs64/func-ret-3.c: Likewise.
+	* gcc.target/aarch64/aapcs64/func-ret-4.c: Likewise.
+	* gcc.target/aarch64/aapcs64/func-ret-64x1_1.c: Likewise.
+
+2023-11-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/eh_return-2.c: New test.
+	* gcc.target/aarch64/eh_return-3.c: New test.
+
+2023-11-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/return_address_sign_1.c: Move func4 to ...
+	* gcc.target/aarch64/return_address_sign_2.c: ... here and fix the
+	scan asm check.
+	* gcc.target/aarch64/return_address_sign_b_1.c: Move func4 to ...
+	* gcc.target/aarch64/return_address_sign_b_2.c: ... here and fix the
+	scan asm check.
+
+2023-11-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106326
+	* gcc.target/aarch64/sve/acle/general/pr106326_1.c: New test.
+
+2023-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112653
+	* gcc.dg/tree-ssa/pta-return-1.c: New testcase.
+
+2023-11-27  Richard Biener  <rguenther@suse.de>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/vect/pr36648.cc: Remove XFAIL for VLA load-lanes.
+
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* c-c++-common/has-feature-common.c: New test.
+	* c-c++-common/has-feature-pedantic.c: New test.
+	* g++.dg/ext/has-feature.C: New test.
+	* gcc.dg/asan/has-feature-asan.c: New test.
+	* gcc.dg/has-feature.c: New test.
+	* gcc.dg/ubsan/has-feature-ubsan.c: New test.
+	* obj-c++.dg/has-feature.mm: New test.
+	* objc.dg/has-feature.m: New test.
+
+2023-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112706
+	* gcc.dg/tree-ssa/pr112706.c: New testcase.
+
+2023-11-27  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-nnpa-fp16-convert.c: Replace V8HI
+	types with UV8HI.
+	* gcc.target/s390/zvector/vec-nnpa-fp32-convert-1.c: Dito.
+	* gcc.target/s390/zvector/vec_convert_from_fp16.c: Dito.
+	* gcc.target/s390/zvector/vec_convert_to_fp16.c: Dito.
+	* gcc.target/s390/zvector/vec_extend_to_fp32_hi.c: Dito.
+	* gcc.target/s390/zvector/vec_extend_to_fp32_lo.c: Dito.
+	* gcc.target/s390/zvector/vec_round_from_fp32.c: Dito.
+
+2023-11-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-9.c: Ditto.
+
+2023-11-27  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/predef-1.c: Test for __riscv_64e.
+	* gcc.target/riscv/predef-2.c: Ditto.
+	* gcc.target/riscv/predef-3.c: Ditto.
+	* gcc.target/riscv/predef-4.c: Ditto.
+	* gcc.target/riscv/predef-5.c: Ditto.
+	* gcc.target/riscv/predef-6.c: Ditto.
+	* gcc.target/riscv/predef-7.c: Ditto.
+	* gcc.target/riscv/predef-8.c: Ditto.
+	* gcc.target/riscv/predef-9.c: New test for RV64E and LP64E,
+	based on predef-7.c.
+
+2023-11-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/helper-bind.c: Do not include bpf-helpers.h.
+	* gcc.target/bpf/helper-skb-ancestor-cgroup-id.c: Likewise, and
+	renamed from skb-ancestor-cgroup-id.c.
+	* gcc.target/bpf/helper-bpf-redirect.c: Remove.
+	* gcc.target/bpf/helper-clone-redirect.c: Likewise.
+	* gcc.target/bpf/helper-csum-diff.c: Likewise.
+	* gcc.target/bpf/helper-csum-update.c: Likewise.
+	* gcc.target/bpf/helper-current-task-under-cgroup.c: Likewise.
+	* gcc.target/bpf/helper-fib-lookup.c: Likewise.
+	* gcc.target/bpf/helper-get-cgroup-classid.c: Likewise.
+	* gcc.target/bpf/helper-get-current-cgroup-id.c: Likewise.
+	* gcc.target/bpf/helper-get-current-comm.c: Likewise.
+	* gcc.target/bpf/helper-get-current-pid-tgid.c: Likewise.
+	* gcc.target/bpf/helper-get-current-task.c: Likewise.
+	* gcc.target/bpf/helper-get-current-uid-gid.c: Likewise.
+	* gcc.target/bpf/helper-get-hash-recalc.c: Likewise.
+	* gcc.target/bpf/helper-get-listener-sock.c: Likewise.
+	* gcc.target/bpf/helper-get-local-storage.c: Likewise.
+	* gcc.target/bpf/helper-get-numa-node-id.c: Likewise.
+	* gcc.target/bpf/helper-get-prandom-u32.c: Likewise.
+	* gcc.target/bpf/helper-get-route-realm.c: Likewise.
+	* gcc.target/bpf/helper-get-smp-processor-id.c: Likewise.
+	* gcc.target/bpf/helper-get-socket-cookie.c: Likewise.
+	* gcc.target/bpf/helper-get-socket-uid.c: Likewise.
+	* gcc.target/bpf/helper-get-stack.c: Likewise.
+	* gcc.target/bpf/helper-get-stackid.c: Likewise.
+	* gcc.target/bpf/helper-getsockopt.c: Likewise.
+	* gcc.target/bpf/helper-ktime-get-ns.c: Likewise.
+	* gcc.target/bpf/helper-l3-csum-replace.c: Likewise.
+	* gcc.target/bpf/helper-l4-csum-replace.c: Likewise.
+	* gcc.target/bpf/helper-lwt-push-encap.c: Likewise.
+	* gcc.target/bpf/helper-lwt-seg6-action.c: Likewise.
+	* gcc.target/bpf/helper-lwt-seg6-adjust-srh.c: Likewise.
+	* gcc.target/bpf/helper-lwt-seg6-store-bytes.c: Likewise.
+	* gcc.target/bpf/helper-map-delete-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-lookup-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-peek-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-pop-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-push-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-update-elem.c: Likewise.
+	* gcc.target/bpf/helper-msg-apply-bytes.c: Likewise.
+	* gcc.target/bpf/helper-msg-cork-bytes.c: Likewise.
+	* gcc.target/bpf/helper-msg-pop-data.c: Likewise.
+	* gcc.target/bpf/helper-msg-pull-data.c: Likewise.
+	* gcc.target/bpf/helper-msg-push-data.c: Likewise.
+	* gcc.target/bpf/helper-msg-redirect-hash.c: Likewise.
+	* gcc.target/bpf/helper-msg-redirect-map.c: Likewise.
+	* gcc.target/bpf/helper-override-return.c: Likewise.
+	* gcc.target/bpf/helper-perf-event-output.c: Likewise.
+	* gcc.target/bpf/helper-perf-event-read-value.c: Likewise.
+	* gcc.target/bpf/helper-perf-event-read.c: Likewise.
+	* gcc.target/bpf/helper-perf-prog-read-value.c: Likewise.
+	* gcc.target/bpf/helper-probe-read-str.c: Likewise.
+	* gcc.target/bpf/helper-probe-read.c: Likewise.
+	* gcc.target/bpf/helper-probe-write-user.c: Likewise.
+	* gcc.target/bpf/helper-rc-keydown.c: Likewise.
+	* gcc.target/bpf/helper-rc-pointer-rel.c: Likewise.
+	* gcc.target/bpf/helper-rc-repeat.c: Likewise.
+	* gcc.target/bpf/helper-redirect-map.c: Likewise.
+	* gcc.target/bpf/helper-set-hash-invalid.c: Likewise.
+	* gcc.target/bpf/helper-set-hash.c: Likewise.
+	* gcc.target/bpf/helper-setsockopt.c: Likewise.
+	* gcc.target/bpf/helper-sk-fullsock.c: Likewise.
+	* gcc.target/bpf/helper-sk-lookup-tcp.c: Likewise.
+	* gcc.target/bpf/helper-sk-lookup-upd.c: Likewise.
+	* gcc.target/bpf/helper-sk-redirect-hash.c: Likewise.
+	* gcc.target/bpf/helper-sk-redirect-map.c: Likewise.
+	* gcc.target/bpf/helper-sk-release.c: Likewise.
+	* gcc.target/bpf/helper-sk-select-reuseport.c: Likewise.
+	* gcc.target/bpf/helper-sk-storage-delete.c: Likewise.
+	* gcc.target/bpf/helper-sk-storage-get.c: Likewise.
+	* gcc.target/bpf/helper-skb-adjust-room.c: Likewise.
+	* gcc.target/bpf/helper-skb-cgroup-id.c: Likewise.
+	* gcc.target/bpf/helper-skb-change-head.c: Likewise.
+	* gcc.target/bpf/helper-skb-change-proto.c: Likewise.
+	* gcc.target/bpf/helper-skb-change-tail.c: Likewise.
+	* gcc.target/bpf/helper-skb-change-type.c: Likewise.
+	* gcc.target/bpf/helper-skb-ecn-set-ce.c: Likewise.
+	* gcc.target/bpf/helper-skb-get-tunnel-key.c: Likewise.
+	* gcc.target/bpf/helper-skb-get-tunnel-opt.c: Likewise.
+	* gcc.target/bpf/helper-skb-get-xfrm-state.c: Likewise.
+	* gcc.target/bpf/helper-skb-load-bytes-relative.c: Likewise.
+	* gcc.target/bpf/helper-skb-load-bytes.c: Likewise.
+	* gcc.target/bpf/helper-skb-pull-data.c: Likewise.
+	* gcc.target/bpf/helper-skb-set-tunnel-key.c: Likewise.
+	* gcc.target/bpf/helper-skb-set-tunnel-opt.c: Likewise.
+	* gcc.target/bpf/helper-skb-store-bytes.c: Likewise.
+	* gcc.target/bpf/helper-skb-under-cgroup.c: Likewise.
+	* gcc.target/bpf/helper-skb-vlan-pop.c: Likewise.
+	* gcc.target/bpf/helper-skb-vlan-push.c: Likewise.
+	* gcc.target/bpf/helper-skc-lookup-tcp.c: Likewise.
+	* gcc.target/bpf/helper-sock-hash-update.c: Likewise.
+	* gcc.target/bpf/helper-sock-map-update.c: Likewise.
+	* gcc.target/bpf/helper-sock-ops-cb-flags-set.c: Likewise.
+	* gcc.target/bpf/helper-spin-lock.c: Likewise.
+	* gcc.target/bpf/helper-spin-unlock.c: Likewise.
+	* gcc.target/bpf/helper-strtol.c: Likewise.
+	* gcc.target/bpf/helper-strtoul.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-get-current-value.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-get-name.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-get-new-value.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-set-new-value.c: Likewise.
+	* gcc.target/bpf/helper-tail-call.c: Likewise.
+	* gcc.target/bpf/helper-tcp-check-syncookie.c: Likewise.
+	* gcc.target/bpf/helper-tcp-sock.c: Likewise.
+	* gcc.target/bpf/helper-trace-printk.c: Likewise.
+	* gcc.target/bpf/helper-xdp-adjust-head.c: Likewise.
+	* gcc.target/bpf/helper-xdp-adjust-meta.c: Likewise.
+	* gcc.target/bpf/helper-xdp-adjust-tail.c: Likewise.
+	* gcc.target/bpf/skb-ancestor-cgroup-id.c: Likewise.
+
+2023-11-27  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/imm-load1.c: Change old check.
+
 2023-11-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/uninit-pred-9_b.c: Remove xfail for line 20.  Pass

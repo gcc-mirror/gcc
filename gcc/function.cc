@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function-abi.h"
 #include "value-range.h"
 #include "gimple-range.h"
+#include "insn-attr.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -6207,7 +6208,17 @@ thread_prologue_and_epilogue_insns (void)
       if (!(CALL_P (insn) && SIBLING_CALL_P (insn)))
 	continue;
 
-      if (rtx_insn *ep_seq = targetm.gen_sibcall_epilogue ())
+      rtx_insn *ep_seq;
+      if (targetm.emit_epilogue_for_sibcall)
+	{
+	  start_sequence ();
+	  targetm.emit_epilogue_for_sibcall (as_a<rtx_call_insn *> (insn));
+	  ep_seq = get_insns ();
+	  end_sequence ();
+	}
+      else
+	ep_seq = targetm.gen_sibcall_epilogue ();
+      if (ep_seq)
 	{
 	  start_sequence ();
 	  emit_note (NOTE_INSN_EPILOGUE_BEG);
@@ -6267,7 +6278,8 @@ reposition_prologue_and_epilogue_notes (void)
 {
   if (!targetm.have_prologue ()
       && !targetm.have_epilogue ()
-      && !targetm.have_sibcall_epilogue ())
+      && !targetm.have_sibcall_epilogue ()
+      && !targetm.emit_epilogue_for_sibcall)
     return;
 
   /* Since the hash table is created on demand, the fact that it is
@@ -6629,6 +6641,11 @@ public:
   {}
 
   /* opt_pass methods: */
+  bool gate (function *) final override
+    {
+      return !targetm.use_late_prologue_epilogue ();
+    }
+
   unsigned int execute (function * fun) final override
     {
       rest_of_handle_thread_prologue_and_epilogue (fun);
@@ -6637,12 +6654,56 @@ public:
 
 }; // class pass_thread_prologue_and_epilogue
 
+const pass_data pass_data_late_thread_prologue_and_epilogue =
+{
+  RTL_PASS, /* type */
+  "late_pro_and_epilogue", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_THREAD_PROLOGUE_AND_EPILOGUE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_verify | TODO_df_finish ), /* todo_flags_finish */
+};
+
+class pass_late_thread_prologue_and_epilogue : public rtl_opt_pass
+{
+public:
+  pass_late_thread_prologue_and_epilogue (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_late_thread_prologue_and_epilogue, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *) final override
+    {
+      return targetm.use_late_prologue_epilogue ();
+    }
+
+  unsigned int execute (function *fn) final override
+    {
+      /* It's not currently possible to have both delay slots and
+	 late prologue/epilogue, since the latter has to run before
+	 the former, and the former won't honor whatever restrictions
+	 the latter is trying to enforce.  */
+      gcc_assert (!DELAY_SLOTS);
+      rest_of_handle_thread_prologue_and_epilogue (fn);
+      return 0;
+    }
+}; // class pass_late_thread_prologue_and_epilogue
+
 } // anon namespace
 
 rtl_opt_pass *
 make_pass_thread_prologue_and_epilogue (gcc::context *ctxt)
 {
   return new pass_thread_prologue_and_epilogue (ctxt);
+}
+
+rtl_opt_pass *
+make_pass_late_thread_prologue_and_epilogue (gcc::context *ctxt)
+{
+  return new pass_late_thread_prologue_and_epilogue (ctxt);
 }
 
 namespace {

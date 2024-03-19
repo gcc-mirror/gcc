@@ -2021,7 +2021,10 @@ build_simple_component_ref (tree record, tree field, bool no_fold)
 
   /* The failure of this assertion will very likely come from a missing
      insertion of an explicit dereference.  */
-  gcc_assert (RECORD_OR_UNION_TYPE_P (type) && COMPLETE_TYPE_P (type));
+  gcc_assert (RECORD_OR_UNION_TYPE_P (type));
+
+  /* The type must be frozen at this point.  */
+  gcc_assert (COMPLETE_TYPE_P (type));
 
   /* Try to fold a conversion from another record or union type unless the type
      contains a placeholder as it might be needed for a later substitution.  */

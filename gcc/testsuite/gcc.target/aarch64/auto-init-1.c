@@ -29,4 +29,5 @@ void foo()
   return;
 }
 
-/* { dg-final { scan-rtl-dump-times "const_int 0" 11 "expand" } } */
+/* Includes 1 for the call instruction and 1 for a nop.  */
+/* { dg-final { scan-rtl-dump-times "const_int 0" 10 "expand" } } */

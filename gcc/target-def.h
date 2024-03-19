@@ -118,6 +118,20 @@
 #define TARGET_FUNCTION_INCOMING_ARG TARGET_FUNCTION_ARG
 #endif
 
+/* Declare a target attribute table called NAME that only has GNU attributes.
+   There should be no null trailing element.  E.g.:
+
+     TARGET_GNU_ATTRIBUTES (aarch64_attribute_table,
+     {
+       { "aarch64_vector_pcs", ... },
+       ...
+     });  */
+
+#define TARGET_GNU_ATTRIBUTES(NAME, ...) \
+  static const attribute_spec NAME##_2[] = __VA_ARGS__; \
+  static const scoped_attribute_specs NAME##_1 = { "gnu", { NAME##_2 } }; \
+  static const scoped_attribute_specs *const NAME[] = { &NAME##_1 }
+
 #include "target-hooks-def.h"
 
 #include "hooks.h"

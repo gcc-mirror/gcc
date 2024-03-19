@@ -590,10 +590,6 @@ package body Contracts is
       Items     : constant Node_Id   := Contract (Body_Id);
       Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
 
-      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
-      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
-      --  Save the SPARK_Mode-related data to restore on exit
-
    begin
       --  When a subprogram body declaration is illegal, its defining entity is
       --  left unanalyzed. There is nothing left to do in this case because the
@@ -628,38 +624,10 @@ package body Contracts is
          Analyze_Entry_Or_Subprogram_Contract (Corresponding_Spec (Body_Decl));
       end if;
 
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related subprogram body.
-
-      Set_SPARK_Mode (Body_Id);
-
       --  Ensure that the contract cases or postconditions mention 'Result or
       --  define a post-state.
 
       Check_Result_And_Post_State (Body_Id);
-
-      --  A stand-alone nonvolatile function body cannot have an effectively
-      --  volatile formal parameter or return type (SPARK RM 7.1.3(9)). This
-      --  check is relevant only when SPARK_Mode is on, as it is not a standard
-      --  legality rule. The check is performed here because Volatile_Function
-      --  is processed after the analysis of the related subprogram body. The
-      --  check only applies to source subprograms and not to generated TSS
-      --  subprograms.
-
-      if SPARK_Mode = On
-        and then Ekind (Body_Id) in E_Function | E_Generic_Function
-        and then Comes_From_Source (Spec_Id)
-        and then not Is_Volatile_Function (Body_Id)
-      then
-         Check_Nonvolatile_Function_Profile (Body_Id);
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
 
       --  Capture all global references in a generic subprogram body now that
       --  the contract has been analyzed.
@@ -865,20 +833,6 @@ package body Contracts is
          Check_Result_And_Post_State (Subp_Id);
       end if;
 
-      --  A nonvolatile function cannot have an effectively volatile formal
-      --  parameter or return type (SPARK RM 7.1.3(9)). This check is relevant
-      --  only when SPARK_Mode is on, as it is not a standard legality rule.
-      --  The check is performed here because pragma Volatile_Function is
-      --  processed after the analysis of the related subprogram declaration.
-
-      if SPARK_Mode = On
-        and then Ekind (Subp_Id) in E_Function | E_Generic_Function
-        and then Comes_From_Source (Subp_Id)
-        and then not Is_Volatile_Function (Subp_Id)
-      then
-         Check_Nonvolatile_Function_Profile (Subp_Id);
-      end if;
-
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
@@ -902,19 +856,16 @@ package body Contracts is
      (Type_Or_Obj_Id : Entity_Id)
    is
       Is_Type_Id : constant Boolean := Is_Type (Type_Or_Obj_Id);
-      Decl_Kind  : constant String :=
-        (if Is_Type_Id then "type" else "object");
 
       --  Local variables
 
-      AR_Val  : Boolean := False;
-      AW_Val  : Boolean := False;
-      ER_Val  : Boolean := False;
-      EW_Val  : Boolean := False;
-      NC_Val  : Boolean;
-      Seen    : Boolean := False;
-      Prag    : Node_Id;
-      Obj_Typ : Entity_Id;
+      AR_Val : Boolean := False;
+      AW_Val : Boolean := False;
+      ER_Val : Boolean := False;
+      EW_Val : Boolean := False;
+      NC_Val : Boolean;
+      Seen   : Boolean := False;
+      Prag   : Node_Id;
 
    --  Start of processing for Check_Type_Or_Object_External_Properties
 
@@ -922,8 +873,6 @@ package body Contracts is
       --  Analyze all external properties
 
       if Is_Type_Id then
-         Obj_Typ := Type_Or_Obj_Id;
-
          --  If the parent type of a derived type is volatile
          --  then the derived type inherits volatility-related flags.
 
@@ -940,8 +889,6 @@ package body Contracts is
                end if;
             end;
          end if;
-      else
-         Obj_Typ := Etype (Type_Or_Obj_Id);
       end if;
 
       Prag := Get_Pragma (Type_Or_Obj_Id, Pragma_Async_Readers);
@@ -1026,96 +973,6 @@ package body Contracts is
 
       if Present (Prag) then
          Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
-      end if;
-
-      --  The following checks are relevant only when SPARK_Mode is on, as
-      --  they are not standard Ada legality rules. Internally generated
-      --  temporaries are ignored, as well as return objects.
-
-      if SPARK_Mode = On
-        and then Comes_From_Source (Type_Or_Obj_Id)
-        and then not Is_Return_Object (Type_Or_Obj_Id)
-      then
-         if Is_Effectively_Volatile (Type_Or_Obj_Id) then
-
-            --  The declaration of an effectively volatile object or type must
-            --  appear at the library level (SPARK RM 7.1.3(3), C.6(6)).
-
-            if not Is_Library_Level_Entity (Type_Or_Obj_Id) then
-               Error_Msg_Code := GEC_Volatile_At_Library_Level;
-               Error_Msg_N
-                 ("effectively volatile "
-                    & Decl_Kind
-                    & " & must be declared at library level '[[]']",
-                    Type_Or_Obj_Id);
-
-            --  An object of a discriminated type cannot be effectively
-            --  volatile except for protected objects (SPARK RM 7.1.3(5)).
-
-            elsif Has_Discriminants (Obj_Typ)
-              and then not Is_Protected_Type (Obj_Typ)
-            then
-               Error_Msg_N
-                ("discriminated " & Decl_Kind & " & cannot be volatile",
-                 Type_Or_Obj_Id);
-            end if;
-
-            --  An object decl shall be compatible with respect to volatility
-            --  with its type (SPARK RM 7.1.3(2)).
-
-            if not Is_Type_Id then
-               if Is_Effectively_Volatile (Obj_Typ) then
-                  Check_Volatility_Compatibility
-                    (Type_Or_Obj_Id, Obj_Typ,
-                     "volatile object", "its type",
-                     Srcpos_Bearer => Type_Or_Obj_Id);
-               end if;
-
-            --  A component of a composite type (in this case, the composite
-            --  type is an array type) shall be compatible with respect to
-            --  volatility with the composite type (SPARK RM 7.1.3(6)).
-
-            elsif Is_Array_Type (Obj_Typ) then
-               Check_Volatility_Compatibility
-                 (Component_Type (Obj_Typ), Obj_Typ,
-                  "component type", "its enclosing array type",
-                  Srcpos_Bearer => Obj_Typ);
-
-            --  A component of a composite type (in this case, the composite
-            --  type is a record type) shall be compatible with respect to
-            --  volatility with the composite type (SPARK RM 7.1.3(6)).
-
-            elsif Is_Record_Type (Obj_Typ) then
-               declare
-                  Comp : Entity_Id := First_Component (Obj_Typ);
-               begin
-                  while Present (Comp) loop
-                     Check_Volatility_Compatibility
-                       (Etype (Comp), Obj_Typ,
-                        "record component " & Get_Name_String (Chars (Comp)),
-                        "its enclosing record type",
-                        Srcpos_Bearer => Comp);
-                     Next_Component (Comp);
-                  end loop;
-               end;
-            end if;
-
-         --  The type or object is not effectively volatile
-
-         else
-            --  A non-effectively volatile type cannot have effectively
-            --  volatile components (SPARK RM 7.1.3(6)).
-
-            if Is_Type_Id
-              and then not Is_Effectively_Volatile (Type_Or_Obj_Id)
-              and then Has_Effectively_Volatile_Component (Type_Or_Obj_Id)
-            then
-               Error_Msg_N
-                 ("non-volatile type & cannot have effectively volatile"
-                    & " components",
-                  Type_Or_Obj_Id);
-            end if;
-         end if;
       end if;
    end Check_Type_Or_Object_External_Properties;
 
@@ -1262,12 +1119,6 @@ package body Contracts is
 
          if Yields_Synchronized_Object (Obj_Typ) then
             Error_Msg_N ("ghost object & cannot be synchronized", Obj_Id);
-
-         --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(7) and
-         --  SPARK RM 6.9(19)).
-
-         elsif SPARK_Mode = On and then Is_Effectively_Volatile (Obj_Id) then
-            Error_Msg_N ("ghost object & cannot be volatile", Obj_Id);
 
          --  A Ghost object cannot be imported or exported (SPARK RM 6.9(7)).
          --  One exception to this is the object that represents the dispatch

@@ -8578,8 +8578,6 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	    array = finish_compound_literal (array, new_ctor, complain);
 	    /* This is dubious now, should be blessed by P2752.  */
 	    DECL_MERGEABLE (TARGET_EXPR_SLOT (array)) = true;
-	    /* Take the address explicitly rather than via decay_conversion
-	       to avoid the error about taking the address of a temporary.  */
 	    array = cp_build_addr_expr (array, complain);
 	  }
 	else
@@ -9744,7 +9742,7 @@ in_immediate_context ()
 /* Return true if a call to FN with number of arguments NARGS
    is an immediate invocation.  */
 
-static bool
+bool
 immediate_invocation_p (tree fn)
 {
   return (TREE_CODE (fn) == FUNCTION_DECL

@@ -466,6 +466,8 @@ enum demangle_component_type
   DEMANGLE_COMPONENT_TEMPLATE_TEMPLATE_PARM,
   DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM,
 
+  DEMANGLE_COMPONENT_CONSTRAINTS,
+
   /* A builtin type with argument.  This holds the builtin type
      information.  */
   DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE

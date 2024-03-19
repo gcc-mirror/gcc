@@ -415,10 +415,6 @@ package Sem_Util is
    --  In the error case, error message is associate with Inheritor;
    --  Inheritor parameter is otherwise unused.
 
-   procedure Check_Nonvolatile_Function_Profile (Func_Id : Entity_Id);
-   --  Verify that the profile of nonvolatile function Func_Id does not contain
-   --  effectively volatile parameters or return type for reading.
-
    function Check_Parents (N : Node_Id; List : Elist_Id) return Boolean;
    --  Return True if all the occurrences of subtree N referencing entities in
    --  the given List have the right value in their Parent field.
@@ -466,19 +462,6 @@ package Sem_Util is
    --  Check whether the expression is a pointer to a protected component,
    --  and the context is external to the protected operation, to warn against
    --  a possible unlocked access to data.
-
-   procedure Check_Volatility_Compatibility
-     (Id1, Id2                     : Entity_Id;
-      Description_1, Description_2 : String;
-      Srcpos_Bearer                : Node_Id);
-   --  Id1 and Id2 should each be the entity of a state abstraction, a
-   --  variable, or a type (i.e., something suitable for passing to
-   --  Async_Readers_Enabled and similar functions).
-   --  Does nothing if SPARK_Mode /= On. Otherwise, flags a legality violation
-   --  if one or more of the four volatility-related aspects is False for Id1
-   --  and True for Id2. The two descriptions are included in the error message
-   --  text; the source position for the generated message is determined by
-   --  Srcpos_Bearer.
 
    function Choice_List (N : Node_Id) return List_Id;
    --  Utility to retrieve the choices of a Component_Association or the
@@ -1480,7 +1463,7 @@ package Sem_Util is
    --  Is the given expression a container aggregate?
 
    function Is_Function_With_Side_Effects (Subp : Entity_Id) return Boolean;
-   --  Return True if Subp is a function with side-effects, ie. it has a
+   --  Return True if Subp is a function with side effects, ie. it has a
    --  (direct or inherited) pragma Side_Effects with static value True.
 
    function Is_Newly_Constructed
@@ -2199,7 +2182,7 @@ package Sem_Util is
       Obj_Ref       : Node_Id;
       Check_Actuals : Boolean) return Boolean;
    --  Determine whether node Context denotes a "non-interfering context" (as
-   --  defined in SPARK RM 7.1.3(10)) where volatile reference Obj_Ref can
+   --  defined in SPARK RM 7.1.3(9)) where volatile reference Obj_Ref can
    --  safely reside. When examining references that might be located within
    --  actual parameters of a subprogram call that has not been resolved yet,
    --  Check_Actuals should be False; such references will be assumed to be

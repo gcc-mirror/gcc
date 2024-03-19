@@ -218,15 +218,14 @@ int break_handler;
 int fast_interrupt;
 int save_volatiles;
 
-const struct attribute_spec microblaze_attribute_table[] = {
+TARGET_GNU_ATTRIBUTES (microblaze_attribute_table, {
   /* name         min_len, max_len, decl_req, type_req, fn_type_req,
      affects_type_identity, handler, exclude */
   {"interrupt_handler",	0,       0,    true, false, false, false, NULL, NULL },
   {"break_handler",	0,       0,    true, false, false, false, NULL, NULL },
   {"fast_interrupt",	0,       0,    true, false, false, false, NULL, NULL },
-  {"save_volatiles",	0,       0,    true, false, false, false, NULL, NULL },
-  { NULL,        	0,       0,   false, false, false, false, NULL, NULL }
-};
+  {"save_volatiles",	0,       0,    true, false, false, false, NULL, NULL }
+});
 
 static int microblaze_interrupt_function_p (tree);
 

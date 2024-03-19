@@ -861,8 +861,6 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_IBT);
       if (edx & bit_UINTR)
 	set_feature (FEATURE_UINTR);
-      if (edx & bit_USER_MSR)
-	set_feature (FEATURE_USER_MSR);
       if (amx_usable)
 	{
 	  if (edx & bit_AMX_TILE)
@@ -921,6 +919,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_PREFETCHI);
 	  if (eax & bit_RAOINT)
 	    set_feature (FEATURE_RAOINT);
+	  if (edx & bit_USER_MSR)
+	    set_feature (FEATURE_USER_MSR);
 	  if (avx_usable)
 	    {
 	      if (eax & bit_AVXVNNI)

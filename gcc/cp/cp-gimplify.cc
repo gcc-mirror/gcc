@@ -43,6 +43,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "opts.h"
 
+/* Keep track of forward references to immediate-escalating functions in
+   case they become consteval.  This vector contains ADDR_EXPRs and
+   PTRMEM_CSTs; it also stores FUNCTION_DECLs that had an escalating
+   function call in them, to check that they can be evaluated to a constant,
+   and immediate-escalating functions that may become consteval.  */
+static GTY(()) hash_set<tree> *deferred_escalating_exprs;
+
+static void
+remember_escalating_expr (tree t)
+{
+  if (!deferred_escalating_exprs)
+    deferred_escalating_exprs = hash_set<tree>::create_ggc (37);
+  deferred_escalating_exprs->add (t);
+}
+
 /* Flags for cp_fold and cp_fold_r.  */
 
 enum fold_flags {
@@ -53,8 +68,6 @@ enum fold_flags {
      definitely not in a manifestly constant-evaluated
      context.  */
   ff_mce_false = 1 << 1,
-  /* Whether we're being called from cp_fold_immediate.  */
-  ff_fold_immediate = 1 << 2,
 };
 
 using fold_flags_t = int;
@@ -72,6 +85,7 @@ static tree cp_genericize_r (tree *, int *, void *);
 static tree cp_fold_r (tree *, int *, void *);
 static void cp_genericize_tree (tree*, bool);
 static tree cp_fold (tree, fold_flags_t);
+static tree cp_fold_immediate_r (tree *, int *, void *);
 
 /* Genericize a TRY_BLOCK.  */
 
@@ -428,6 +442,104 @@ lvalue_has_side_effects (tree e)
     return TREE_SIDE_EFFECTS (e);
 }
 
+/* Return true if FN is an immediate-escalating function.  */
+
+static bool
+immediate_escalating_function_p (tree fn)
+{
+  if (!fn || !flag_immediate_escalation)
+    return false;
+
+  gcc_checking_assert (TREE_CODE (fn) == FUNCTION_DECL);
+
+  if (DECL_IMMEDIATE_FUNCTION_P (fn))
+    return false;
+
+  /* An immediate-escalating function is
+      -- the call operator of a lambda that is not declared with the consteval
+	 specifier  */
+  if (LAMBDA_FUNCTION_P (fn))
+    return true;
+  /* -- a defaulted special member function that is not declared with the
+	consteval specifier  */
+  special_function_kind sfk = special_memfn_p (fn);
+  if (sfk != sfk_none && DECL_DEFAULTED_FN (fn))
+    return true;
+  /* -- a function that results from the instantiation of a templated entity
+	defined with the constexpr specifier.  */
+  return is_instantiation_of_constexpr (fn);
+}
+
+/* Return true if FN is an immediate-escalating function that has not been
+   checked for escalating expressions..  */
+
+static bool
+unchecked_immediate_escalating_function_p (tree fn)
+{
+  return (immediate_escalating_function_p (fn)
+	  && !DECL_ESCALATION_CHECKED_P (fn));
+}
+
+/* Promote FN to an immediate function, including its clones.  */
+
+static void
+promote_function_to_consteval (tree fn)
+{
+  SET_DECL_IMMEDIATE_FUNCTION_P (fn);
+  DECL_ESCALATION_CHECKED_P (fn) = true;
+  tree clone;
+  FOR_EACH_CLONE (clone, fn)
+    {
+      SET_DECL_IMMEDIATE_FUNCTION_P (clone);
+      DECL_ESCALATION_CHECKED_P (clone) = true;
+    }
+}
+
+/* A wrapper around cp_fold_immediate_r.  Return a non-null tree if
+   we found a non-constant immediate function, or taking the address
+   of an immediate function.  */
+
+tree
+cp_fold_immediate (tree *tp, mce_value manifestly_const_eval,
+		   tree decl /*= current_function_decl*/)
+{
+  if (cxx_dialect <= cxx17)
+    return NULL_TREE;
+
+  temp_override<tree> cfd (current_function_decl, decl);
+
+  fold_flags_t flags = ff_none;
+  if (manifestly_const_eval == mce_false)
+    flags |= ff_mce_false;
+
+  cp_fold_data data (flags);
+  int save_errorcount = errorcount;
+  tree r = cp_walk_tree_without_duplicates (tp, cp_fold_immediate_r, &data);
+  if (errorcount > save_errorcount)
+    return integer_one_node;
+  return r;
+}
+
+/* Maybe say that FN (a function decl with DECL_IMMEDIATE_FUNCTION_P set)
+   was initially not an immediate function, but was promoted to one because
+   its body contained an immediate-escalating expression or conversion.  */
+
+static void
+maybe_explain_promoted_consteval (location_t loc, tree fn)
+{
+  if (DECL_ESCALATION_CHECKED_P (fn))
+    {
+      /* See if we can figure out what made the function consteval.  */
+      tree x = cp_fold_immediate (&DECL_SAVED_TREE (fn), mce_unknown, NULL_TREE);
+      if (x)
+	inform (cp_expr_loc_or_loc (x, loc),
+		"%qD was promoted to an immediate function because its "
+		"body contains an immediate-escalating expression %qE", fn, x);
+      else
+	inform (loc, "%qD was promoted to an immediate function", fn);
+    }
+}
+
 /* Gimplify *EXPR_P as rvalue into an expression that can't be modified
    by expressions with side-effects in other operands.  */
 
@@ -746,7 +858,9 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (ret != GS_ERROR)
 	{
 	  tree decl = cp_get_callee_fndecl_nofold (*expr_p);
-	  if (decl && fndecl_built_in_p (decl, BUILT_IN_FRONTEND))
+	  if (!decl)
+	    break;
+	  if (fndecl_built_in_p (decl, BUILT_IN_FRONTEND))
 	    switch (DECL_FE_FUNCTION_CODE (decl))
 	      {
 	      case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
@@ -771,10 +885,12 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	      default:
 		break;
 	      }
-	  else if (decl
-		   && fndecl_built_in_p (decl, BUILT_IN_CLZG, BUILT_IN_CTZG))
+	  else if (fndecl_built_in_p (decl, BUILT_IN_CLZG, BUILT_IN_CTZG))
 	    ret = (enum gimplify_status) c_gimplify_expr (expr_p, pre_p,
 							  post_p);
+	  else
+	    /* All consteval functions should have been processed by now.  */
+	    gcc_checking_assert (!immediate_invocation_p (decl));
 	}
       break;
 
@@ -1035,6 +1151,20 @@ struct cp_genericize_data
   bool handle_invisiref_parm_p;
 };
 
+/* Emit an error about taking the address of an immediate function.
+   EXPR is the whole expression; DECL is the immediate function.  */
+
+static void
+taking_address_of_imm_fn_error (tree expr, tree decl)
+{
+  auto_diagnostic_group d;
+  const location_t loc = (TREE_CODE (expr) == PTRMEM_CST
+			  ? PTRMEM_CST_LOCATION (expr)
+			  : EXPR_LOCATION (expr));
+  error_at (loc, "taking address of an immediate function %qD", decl);
+  maybe_explain_promoted_consteval (loc, decl);
+}
+
 /* A subroutine of cp_fold_r to handle immediate functions.  */
 
 static tree
@@ -1045,90 +1175,128 @@ cp_fold_immediate_r (tree *stmt_p, int *walk_subtrees, void *data_)
   /* The purpose of this is not to emit errors for mce_unknown.  */
   const tsubst_flags_t complain = (data->flags & ff_mce_false
 				   ? tf_error : tf_none);
+  const tree_code code = TREE_CODE (stmt);
 
   /* No need to look into types or unevaluated operands.
      NB: This affects cp_fold_r as well.  */
-  if (TYPE_P (stmt) || unevaluated_p (TREE_CODE (stmt)))
+  if (TYPE_P (stmt) || unevaluated_p (code) || in_immediate_context ())
     {
       *walk_subtrees = 0;
       return NULL_TREE;
     }
 
-  switch (TREE_CODE (stmt))
-    {
-    case PTRMEM_CST:
-      if (TREE_CODE (PTRMEM_CST_MEMBER (stmt)) == FUNCTION_DECL
-	  && DECL_IMMEDIATE_FUNCTION_P (PTRMEM_CST_MEMBER (stmt)))
-	{
-	  if (!data->pset.add (stmt) && (complain & tf_error))
-	    {
-	      error_at (PTRMEM_CST_LOCATION (stmt),
-			"taking address of an immediate function %qD",
-			PTRMEM_CST_MEMBER (stmt));
-	      *stmt_p = build_zero_cst (TREE_TYPE (stmt));
-	    }
-	  return error_mark_node;
-	}
-      break;
+  tree decl = NULL_TREE;
+  bool call_p = false;
 
-    /* Expand immediate invocations.  */
+  /* We are looking for &fn or fn().  */
+  switch (code)
+    {
     case CALL_EXPR:
     case AGGR_INIT_EXPR:
       if (tree fn = cp_get_callee (stmt))
 	if (TREE_CODE (fn) != ADDR_EXPR || ADDR_EXPR_DENOTES_CALL_P (fn))
-	  if (tree fndecl = cp_get_fndecl_from_callee (fn, /*fold*/false))
-	    if (DECL_IMMEDIATE_FUNCTION_P (fndecl))
-	      {
-		stmt = cxx_constant_value (stmt, complain);
-		if (stmt == error_mark_node)
-		  {
-		    if (complain & tf_error)
-		      *stmt_p = error_mark_node;
-		    return error_mark_node;
-		  }
-		*stmt_p = stmt;
-	      }
+	  decl = cp_get_fndecl_from_callee (fn, /*fold*/false);
+      call_p = true;
       break;
-
+    case PTRMEM_CST:
+      decl = PTRMEM_CST_MEMBER (stmt);
+      break;
     case ADDR_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 0)) == FUNCTION_DECL
-	  && DECL_IMMEDIATE_FUNCTION_P (TREE_OPERAND (stmt, 0))
-	  && !ADDR_EXPR_DENOTES_CALL_P (stmt))
-	{
-	  if (complain & tf_error)
-	    {
-	      error_at (EXPR_LOCATION (stmt),
-			"taking address of an immediate function %qD",
-			TREE_OPERAND (stmt, 0));
-	      *stmt_p = build_zero_cst (TREE_TYPE (stmt));
-	    }
-	  return error_mark_node;
-	}
+      if (!ADDR_EXPR_DENOTES_CALL_P (stmt))
+	decl = TREE_OPERAND (stmt, 0);
       break;
-
     default:
-      break;
+      return NULL_TREE;
+    }
+
+  if (!decl || TREE_CODE (decl) != FUNCTION_DECL)
+    return NULL_TREE;
+
+  /* Fully escalate once all templates have been instantiated.  What we're
+     calling is not a consteval function but it may become one.  This
+     requires recursing; DECL may be promoted to consteval because it
+     contains an escalating expression E, but E itself may have to be
+     promoted first, etc.  */
+  if (at_eof > 1 && unchecked_immediate_escalating_function_p (decl))
+    {
+      /* Set before the actual walk to avoid endless recursion.  */
+      DECL_ESCALATION_CHECKED_P (decl) = true;
+      /* We're only looking for the first escalating expression.  Let us not
+	 walk more trees than necessary, hence mce_unknown.  */
+      cp_fold_immediate (&DECL_SAVED_TREE (decl), mce_unknown, decl);
+    }
+
+  /* [expr.const]p16 "An expression or conversion is immediate-escalating if
+     it is not initially in an immediate function context and it is either
+     -- an immediate invocation that is not a constant expression and is not
+     a subexpression of an immediate invocation."
+
+     If we are in an immediate-escalating function, the immediate-escalating
+     expression or conversion makes it an immediate function.  So STMT does
+     not need to produce a constant expression.  */
+  if (DECL_IMMEDIATE_FUNCTION_P (decl))
+    {
+      tree e = cxx_constant_value (stmt, tf_none);
+      if (e == error_mark_node)
+	{
+	  /* This takes care of, e.g.,
+	      template <typename T>
+	      constexpr int f(T t)
+	      {
+		return id(t);
+	      }
+	    where id (consteval) causes f<int> to be promoted.  */
+	  if (immediate_escalating_function_p (current_function_decl))
+	    promote_function_to_consteval (current_function_decl);
+	  else if (complain & tf_error)
+	    {
+	      if (call_p)
+		{
+		  auto_diagnostic_group d;
+		  location_t loc = cp_expr_loc_or_input_loc (stmt);
+		  error_at (loc, "call to consteval function %qE is "
+			    "not a constant expression", stmt);
+		  /* Explain why it's not a constant expression.  */
+		  *stmt_p = cxx_constant_value (stmt, complain);
+		  maybe_explain_promoted_consteval (loc, decl);
+		}
+	      else if (!data->pset.add (stmt))
+		{
+		  taking_address_of_imm_fn_error (stmt, decl);
+		  *stmt_p = build_zero_cst (TREE_TYPE (stmt));
+		}
+	      /* If we're giving hard errors, continue the walk rather than
+		 bailing out after the first error.  */
+	      return NULL_TREE;
+	    }
+	  *walk_subtrees = 0;
+	  return stmt;
+	}
+      /* We've evaluated the consteval function call.  */
+      if (call_p)
+	*stmt_p = e;
+    }
+  /* We've encountered a function call that may turn out to be consteval
+     later.  Store its caller so that we can ensure that the call is
+     a constant expression.  */
+  else if (unchecked_immediate_escalating_function_p (decl))
+    {
+      /* Make sure we're not inserting new elements while walking
+	 the deferred_escalating_exprs hash table; if we are, it's
+	 likely that a function wasn't properly marked checked for
+	 i-e expressions.  */
+      gcc_checking_assert (at_eof <= 1);
+      if (current_function_decl)
+	remember_escalating_expr (current_function_decl);
+      /* auto p = &f<int>; in the global scope won't be ensconced in
+	 a function we could store for later at this point.  (If there's
+	 no c_f_d at this point and we're dealing with a call, we should
+	 see the call when cp_fold_function __static_i_and_d.)  */
+      else if (!call_p)
+	remember_escalating_expr (stmt);
     }
 
   return NULL_TREE;
-}
-
-/* A wrapper around cp_fold_immediate_r.  Return true if we found
-   a non-constant immediate function, or taking the address of an
-   immediate function.  */
-
-bool
-cp_fold_immediate (tree *tp, mce_value manifestly_const_eval)
-{
-  if (cxx_dialect <= cxx17)
-    return false;
-
-  fold_flags_t flags = ff_fold_immediate;
-  if (manifestly_const_eval == mce_false)
-    flags |= ff_mce_false;
-
-  cp_fold_data data (flags);
-  return !!cp_walk_tree_without_duplicates (tp, cp_fold_immediate_r, &data);
 }
 
 /* Perform any pre-gimplification folding of C++ front end trees to
@@ -1178,10 +1346,18 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	  *walk_subtrees = 0;
 	  /* Don't return yet, still need the cp_fold below.  */
 	}
-      cp_fold_immediate_r (stmt_p, walk_subtrees, data);
+      else
+	cp_fold_immediate_r (stmt_p, walk_subtrees, data);
     }
 
   *stmt_p = stmt = cp_fold (*stmt_p, data->flags);
+
+  /* For certain trees, like +foo(), the cp_fold above will remove the +,
+     and the subsequent tree walk would go straight down to the CALL_EXPR's
+     operands, meaning that cp_fold_immediate_r would never see the
+     CALL_EXPR.  Ew :(.  */
+  if (TREE_CODE (stmt) == CALL_EXPR && code != CALL_EXPR)
+    cp_fold_immediate_r (stmt_p, walk_subtrees, data);
 
   if (data->pset.add (stmt))
     {
@@ -1304,6 +1480,44 @@ cp_fold_function (tree fndecl)
      pass ff_mce_false.  */
   cp_fold_data data (ff_genericize | ff_mce_false);
   cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &data, NULL);
+
+  /* This is merely an optimization: if FNDECL has no i-e expressions,
+     we'll not save c_f_d, and we can safely say that FNDECL will not
+     be promoted to consteval.  */
+  if (deferred_escalating_exprs
+      && !deferred_escalating_exprs->contains (current_function_decl))
+    DECL_ESCALATION_CHECKED_P (fndecl) = true;
+}
+
+/* We've stashed immediate-escalating functions.  Now see if they indeed
+   ought to be promoted to consteval.  */
+
+void
+process_and_check_pending_immediate_escalating_fns ()
+{
+  /* This will be null for -fno-immediate-escalation.  */
+  if (!deferred_escalating_exprs)
+    return;
+
+  for (auto e : *deferred_escalating_exprs)
+    if (TREE_CODE (e) == FUNCTION_DECL && !DECL_ESCALATION_CHECKED_P (e))
+      cp_fold_immediate (&DECL_SAVED_TREE (e), mce_false, e);
+
+  /* We've escalated every function that could have been promoted to
+     consteval.  Check that we are not taking the address of a consteval
+     function.  */
+  for (auto e : *deferred_escalating_exprs)
+    {
+      if (TREE_CODE (e) == FUNCTION_DECL)
+	continue;
+      tree decl = (TREE_CODE (e) == PTRMEM_CST
+		   ? PTRMEM_CST_MEMBER (e)
+		   : TREE_OPERAND (e, 0));
+      if (DECL_IMMEDIATE_FUNCTION_P (decl))
+	taking_address_of_imm_fn_error (e, decl);
+    }
+
+  deferred_escalating_exprs = nullptr;
 }
 
 /* Turn SPACESHIP_EXPR EXPR into GENERIC.  */

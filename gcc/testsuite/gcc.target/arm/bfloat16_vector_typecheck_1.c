@@ -119,9 +119,9 @@ bfloat16x4_t footest (bfloat16x4_t vector0)
   (bfloat16x4_t) { is_a_short_vec }; /* { dg-error {incompatible types when initializing type '__bf16' using type 'int16x4_t'} } */
 
   (bfloat16x4_t) { glob_bfloat_vec }; /* { dg-error {incompatible types when initializing type '__bf16' using type 'bfloat16x4_t'} } */
-  (int32x4_t) { glob_bfloat_vec }; /* { dg-error {incompatible types when initializing type 'int' using type 'bfloat16x4_t'} } */
+  (int32x4_t) { glob_bfloat_vec }; /* { dg-error {incompatible types when initializing type '(?:long )?int' using type 'bfloat16x4_t'} } */
   (float32x4_t) { glob_bfloat_vec }; /* { dg-error {incompatible types when initializing type 'float' using type 'bfloat16x4_t'} } */
-  (int32x2_t) { glob_bfloat_vec }; /* { dg-error {incompatible types when initializing type 'int' using type 'bfloat16x4_t'} } */
+  (int32x2_t) { glob_bfloat_vec }; /* { dg-error {incompatible types when initializing type '(?:long )?int' using type 'bfloat16x4_t'} } */
   (float16x4_t) { glob_bfloat_vec }; /* { dg-error {incompatible types when initializing type '__fp16' using type 'bfloat16x4_t'} } */
   (int16x4_t) { glob_bfloat_vec }; /* { dg-error {incompatible types when initializing type 'short int' using type 'bfloat16x4_t'} } */
 

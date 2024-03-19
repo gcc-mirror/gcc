@@ -1728,7 +1728,12 @@ sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
     }
 
   if (CONST_INT_P (*scalar_op))
-    *scalar_op = force_reg (scalar_mode, *scalar_op);
+    {
+      if (maybe_gt (GET_MODE_SIZE (scalar_mode), GET_MODE_SIZE (Pmode)))
+	*scalar_op = force_const_mem (scalar_mode, *scalar_op);
+      else
+	*scalar_op = force_reg (scalar_mode, *scalar_op);
+    }
 
   rtx tmp = gen_reg_rtx (vector_mode);
   rtx ops[] = {tmp, *scalar_op};
@@ -3364,6 +3369,15 @@ expand_vec_perm_const (machine_mode vmode, machine_mode op_mode, rtx target,
      mask to do the iteration loop control. Just disable it directly.  */
   if (GET_MODE_CLASS (vmode) == MODE_VECTOR_BOOL)
     return false;
+  /* FIXME: Explicitly disable VLA interleave SLP vectorization when we
+     may encounter ICE for poly size (1, 1) vectors in loop vectorizer.
+     Ideally, middle-end loop vectorizer should be able to disable it
+     itself, We can remove the codes here when middle-end code is able
+     to disable VLA SLP vectorization for poly size (1, 1) VF.  */
+  if (!BYTES_PER_RISCV_VECTOR.is_constant ()
+      && maybe_lt (BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL,
+		   poly_int64 (16, 16)))
+    return false;
 
   struct expand_vec_perm_d d;
 
@@ -4037,7 +4051,21 @@ vls_mode_valid_p (machine_mode vls_mode)
     return false;
 
   if (riscv_autovec_preference == RVV_SCALABLE)
-    return true;
+    {
+      if (GET_MODE_CLASS (vls_mode) != MODE_VECTOR_BOOL
+	  && !ordered_p (TARGET_MAX_LMUL * BITS_PER_RISCV_VECTOR,
+			 GET_MODE_PRECISION (vls_mode)))
+	/* We enable VLS modes which are aligned with TARGET_MAX_LMUL and
+	   BITS_PER_RISCV_VECTOR.
+
+	   e.g. When TARGET_MAX_LMUL = 1 and BITS_PER_RISCV_VECTOR = (128,128).
+	   We enable VLS modes have fixed size <= 128bit.  Since ordered_p is
+	   false between VLA modes with size = (128, 128) bits and VLS mode
+	   with size = 128 bits, we will end up with multiple ICEs in
+	   middle-end generic codes.  */
+	return false;
+      return true;
+    }
 
   if (riscv_autovec_preference == RVV_FIXED_VLMAX)
     {
@@ -4675,6 +4703,24 @@ emit_vec_extract (rtx target, rtx src, poly_int64 index)
   expand_insn (icode, 3, ops);
   if (ops[0].value != target)
     emit_move_insn (target, ops[0].value);
+}
+
+/* Return true if the offset mode is valid mode that we use for gather/scatter
+   autovectorization.  */
+bool
+gather_scatter_valid_offset_p (machine_mode mode)
+{
+  /* If the element size of offset mode is already >= Pmode size,
+     we don't need any extensions.  */
+  if (known_ge (GET_MODE_SIZE (GET_MODE_INNER (mode)), UNITS_PER_WORD))
+    return true;
+
+  /* Since we are very likely extend the offset mode into vector Pmode,
+     Disable gather/scatter autovectorization if we can't extend the offset
+     mode into vector Pmode.  */
+  if (!get_vector_mode (Pmode, GET_MODE_NUNITS (mode)).exists ())
+    return false;
+  return true;
 }
 
 } // namespace riscv_vector

@@ -96,7 +96,22 @@ test_unique_ptr()
   VERIFY( upbd->id == 2 );
 }
 
+void
+test_lwg3897()
+{
+  // Verify that implementation handles LWG Issue 3897
+  auto nuller = [](int** p) {
+    delete *p;
+    *p = nullptr;
+  };
+  int* i = new int{5};
+  nuller(std::inout_ptr(i));
+
+  VERIFY( i == nullptr );
+}
+
 int main()
 {
   test_unique_ptr();
+  test_lwg3897();
 }

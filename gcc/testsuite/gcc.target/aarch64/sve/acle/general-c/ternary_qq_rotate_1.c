@@ -11,13 +11,13 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8, svint16_t s16, svuint16_t u16,
 {
   svcdot (u32, u8, u8); /* { dg-error {too few arguments to function 'svcdot'} } */
   svcdot (u32, u8, u8, 0, 0); /* { dg-error {too many arguments to function 'svcdot'} } */
-  svcdot (0, u8, u8, 0); /* { dg-error {passing 'int' to argument 1 of 'svcdot', which expects an SVE vector type} } */
+  svcdot (0, u8, u8, 0); /* { dg-error {passing 'int' to argument 1 of 'svcdot', which expects an SVE type rather than a scalar} } */
   svcdot (pg, u8, u8, 0); /* { dg-error {'svcdot' has no form that takes 'svbool_t' arguments} } */
   svcdot (s8, s8, s8, 0); /* { dg-error {'svcdot' has no form that takes 'svint8_t' arguments} } */
   svcdot (f32, s8, s8, 0); /* { dg-error {'svcdot' has no form that takes 'svfloat32_t' arguments} } */
   svcdot (s32, s8, s8, 0);
-  svcdot (s32, 0, s8, 0); /* { dg-error {passing 'int' to argument 2 of 'svcdot', which expects an SVE vector type} } */
-  svcdot (s32, s8, 0, 0); /* { dg-error {passing 'int' to argument 3 of 'svcdot', which expects an SVE vector type} } */
+  svcdot (s32, 0, s8, 0); /* { dg-error {passing 'int' to argument 2 of 'svcdot', which expects an SVE type rather than a scalar} } */
+  svcdot (s32, s8, 0, 0); /* { dg-error {passing 'int' to argument 3 of 'svcdot', which expects an SVE type rather than a scalar} } */
 
   svcdot (s32, s8, s8, 0);
   svcdot (s32, u8, s8, 0); /* { dg-error {arguments 1 and 2 of 'svcdot' must have the same signedness, but the values passed here have type 'svint32_t' and 'svuint8_t' respectively} } */

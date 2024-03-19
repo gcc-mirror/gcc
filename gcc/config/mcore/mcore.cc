@@ -151,16 +151,15 @@ static bool	  mcore_modes_tieable_p		(machine_mode, machine_mode);
 
 /* MCore specific attributes.  */
 
-static const struct attribute_spec mcore_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (mcore_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "dllexport", 0, 0, true,  false, false, false, NULL, NULL },
   { "dllimport", 0, 0, true,  false, false, false, NULL, NULL },
   { "naked",     0, 0, true,  false, false, false,
-    mcore_handle_naked_attribute, NULL },
-  { NULL,        0, 0, false, false, false, false, NULL, NULL }
-};
+    mcore_handle_naked_attribute, NULL }
+});
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_EXTERNAL_LIBCALL

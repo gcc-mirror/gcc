@@ -11107,7 +11107,7 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
   if (tinst_depth >= max_tinst_depth)
     {
       /* Tell error.cc not to try to instantiate any templates.  */
-      at_eof = 2;
+      at_eof = 3;
       fatal_error (input_location,
 		   "template instantiation depth exceeds maximum of %d"
 		   " (use %<-ftemplate-depth=%> to increase the maximum)",
@@ -18407,23 +18407,24 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 					complain, in_decl, decomp);
 	  }
 
+	tree unroll = RECUR (RANGE_FOR_UNROLL (t));
+	if (unroll)
+	  unroll
+	    = cp_check_pragma_unroll (EXPR_LOCATION (RANGE_FOR_UNROLL (t)),
+				      unroll);
 	if (processing_template_decl)
 	  {
 	    RANGE_FOR_IVDEP (stmt) = RANGE_FOR_IVDEP (t);
-	    RANGE_FOR_UNROLL (stmt) = RANGE_FOR_UNROLL (t);
+	    RANGE_FOR_UNROLL (stmt) = unroll;
 	    RANGE_FOR_NOVECTOR (stmt) = RANGE_FOR_NOVECTOR (t);
 	    finish_range_for_decl (stmt, decl, expr);
 	    if (decomp && decl != error_mark_node)
 	      cp_finish_decomp (decl, decomp);
 	  }
 	else
-	  {
-	    unsigned short unroll = (RANGE_FOR_UNROLL (t)
-				     ? tree_to_uhwi (RANGE_FOR_UNROLL (t)) : 0);
-	    stmt = cp_convert_range_for (stmt, decl, expr, decomp,
-					 RANGE_FOR_IVDEP (t), unroll,
-					 RANGE_FOR_NOVECTOR (t));
-	  }
+	  stmt = cp_convert_range_for (stmt, decl, expr, decomp,
+				       RANGE_FOR_IVDEP (t), unroll,
+				       RANGE_FOR_NOVECTOR (t));
 
 	bool prev = note_iteration_stmt_body_start ();
         RECUR (RANGE_FOR_BODY (t));
@@ -19341,7 +19342,6 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     = LAMBDA_EXPR_LOCATION (t);
   LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (r)
     = LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (t);
-  LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
   if (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
     LAMBDA_EXPR_REGEN_INFO (r)
       = build_template_info (t, add_to_template_args (TI_ARGS (ti),
@@ -19354,7 +19354,7 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
 
   vec<tree,va_gc>* field_packs = NULL;
-
+  unsigned name_independent_cnt = 0;
   for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (t); cap;
        cap = TREE_CHAIN (cap))
     {
@@ -19384,7 +19384,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  bool by_ref = (TYPE_REF_P (ftype)
 			 || (TREE_CODE (ftype) == DECLTYPE_TYPE
 			     && DECLTYPE_FOR_REF_CAPTURE (ftype)));
-	  add_capture (r, name, init, by_ref, !DECL_NORMAL_CAPTURE_P (ofield));
+	  add_capture (r, name, init, by_ref, !DECL_NORMAL_CAPTURE_P (ofield),
+		       &name_independent_cnt);
 	  continue;
 	}
 
@@ -20279,7 +20280,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	   build_x_modify_expr sets it and it must not be reset
 	   here.  */
 	if (warning_suppressed_p (t, OPT_Wparentheses))
-	  suppress_warning (r, OPT_Wparentheses);
+	  suppress_warning (STRIP_REFERENCE_REF (r), OPT_Wparentheses);
 
 	RETURN (r);
       }
@@ -21501,11 +21502,17 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
 
     case ANNOTATE_EXPR:
-      op1 = RECUR (TREE_OPERAND (t, 0));
-      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
-			  TREE_TYPE (op1), op1,
-			  RECUR (TREE_OPERAND (t, 1)),
-			  RECUR (TREE_OPERAND (t, 2))));
+      {
+	op1 = RECUR (TREE_OPERAND (t, 0));
+	tree op2 = RECUR (TREE_OPERAND (t, 1));
+	tree op3 = RECUR (TREE_OPERAND (t, 2));
+	if (TREE_CODE (op2) == INTEGER_CST
+	    && wi::to_widest (op2) == (int) annot_expr_unroll_kind)
+	  op3 = cp_check_pragma_unroll (EXPR_LOCATION (TREE_OPERAND (t, 2)),
+					op3);
+	RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
+			    TREE_TYPE (op1), op1, op2, op3));
+      }
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
@@ -25191,27 +25198,61 @@ more_specialized_fn (tree pat1, tree pat2, int len)
   bool lose1 = false;
   bool lose2 = false;
 
-  /* Remove the this parameter from non-static member functions.  If
-     one is a non-static member function and the other is not a static
-     member function, remove the first parameter from that function
-     also.  This situation occurs for operator functions where we
-     locate both a member function (with this pointer) and non-member
-     operator (with explicit first operand).  */
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1))
+  /* C++17 [temp.func.order]/3 (CWG532)
+
+     If only one of the function templates M is a non-static member of some
+     class A, M is considered to have a new first parameter inserted in its
+     function parameter list. Given cv as the cv-qualifiers of M (if any), the
+     new parameter is of type "rvalue reference to cv A" if the optional
+     ref-qualifier of M is && or if M has no ref-qualifier and the first
+     parameter of the other template has rvalue reference type. Otherwise, the
+     new parameter is of type "lvalue reference to cv A".  */
+
+  if (DECL_STATIC_FUNCTION_P (decl1) || DECL_STATIC_FUNCTION_P (decl2))
     {
-      len--; /* LEN is the number of significant arguments for DECL1 */
-      args1 = TREE_CHAIN (args1);
-      if (!DECL_STATIC_FUNCTION_P (decl2))
-	args2 = TREE_CHAIN (args2);
-    }
-  else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2))
-    {
-      args2 = TREE_CHAIN (args2);
-      if (!DECL_STATIC_FUNCTION_P (decl1))
+      /* Note C++20 DR2445 extended the above to static member functions, but
+	 I think think the old G++ behavior of just skipping the object
+	 parameter when comparing to a static member function was better, so
+	 let's stick with that for now.  This is CWG2834.  --jason 2023-12 */
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1)) /* FIXME or explicit */
 	{
-	  len--;
+	  len--; /* LEN is the number of significant arguments for DECL1 */
 	  args1 = TREE_CHAIN (args1);
 	}
+      else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2)) /* FIXME or explicit */
+	args2 = TREE_CHAIN (args2);
+    }
+  else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1) /* FIXME implicit only */
+	   && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2))
+    {
+      /* Note DR2445 also (IMO wrongly) removed the "only one" above, which
+	 would break e.g.  cpp1y/lambda-generic-variadic5.C.  */
+      len--;
+      args1 = TREE_CHAIN (args1);
+      args2 = TREE_CHAIN (args2);
+    }
+  else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1) /* FIXME implicit only */
+	   || DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2))
+    {
+      /* The other is a non-member or explicit object member function;
+	 rewrite the implicit object parameter to a reference.  */
+      tree ns = DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2) ? decl2 : decl1;
+      tree &nsargs = ns == decl2 ? args2 : args1;
+      tree obtype = TREE_TYPE (TREE_VALUE (nsargs));
+
+      nsargs = TREE_CHAIN (nsargs);
+
+      cp_ref_qualifier rqual = type_memfn_rqual (TREE_TYPE (ns));
+      if (rqual == REF_QUAL_NONE)
+	{
+	  tree otherfirst = ns == decl1 ? args2 : args1;
+	  otherfirst = TREE_VALUE (otherfirst);
+	  if (TREE_CODE (otherfirst) == REFERENCE_TYPE
+	      && TYPE_REF_IS_RVALUE (otherfirst))
+	    rqual = REF_QUAL_RVALUE;
+	}
+      obtype = cp_build_reference_type (obtype, rqual == REF_QUAL_RVALUE);
+      nsargs = tree_cons (NULL_TREE, obtype, nsargs);
     }
 
   /* If only one is a conversion operator, they are unordered.  */
@@ -30951,7 +30992,9 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
 	{
 	  tree id = unpack_concept_check (constr);
 	  TREE_VEC_ELT (TREE_OPERAND (id, 1), 0) = t;
-	  location_t loc = DECL_SOURCE_LOCATION (TYPE_NAME (t));
+	  /* Use UNKNOWN_LOCATION so write_template_args can tell the
+	     difference between this and a fold the user wrote.  */
+	  location_t loc = UNKNOWN_LOCATION;
 	  tree fold = finish_left_unary_fold_expr (loc, constr,
 						   TRUTH_ANDIF_EXPR);
 	  TEMPLATE_PARM_CONSTRAINTS (node) = fold;

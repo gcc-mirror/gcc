@@ -1,6 +1,6 @@
 /* PR c/23075 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wreturn-type" } */
+/* { dg-options "-O2 -fpermissive -Wreturn-type" } */
 
 int
 foo (void)

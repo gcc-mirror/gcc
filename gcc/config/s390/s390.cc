@@ -1303,7 +1303,7 @@ s390_handle_string_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
-static const struct attribute_spec s390_attribute_table[] = {
+TARGET_GNU_ATTRIBUTES (s390_attribute_table, {
   { "hotpatch", 2, 2, true, false, false, false,
     s390_handle_hotpatch_attribute, NULL },
   { "s390_vector_bool", 0, 0, false, true, false, true,
@@ -1319,11 +1319,8 @@ static const struct attribute_spec s390_attribute_table[] = {
   { "function_return_reg", 1, 1, true, false, false, false,
     s390_handle_string_attribute, NULL },
   { "function_return_mem", 1, 1, true, false, false, false,
-    s390_handle_string_attribute, NULL },
-
-  /* End element.  */
-  { NULL,        0, 0, false, false, false, false, NULL, NULL }
-};
+    s390_handle_string_attribute, NULL }
+});
 
 /* Return the alignment for LABEL.  We default to the -falign-labels
    value except for the literal pool base label.  */
@@ -12650,7 +12647,8 @@ s390_invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, 
 	   && VECTOR_TYPE_P (TREE_TYPE (val))
 	   && (funcdecl == NULL_TREE
 	       || (TREE_CODE (funcdecl) == FUNCTION_DECL
-		   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))
+		   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD
+		   && !fndecl_built_in_p (funcdecl, BUILT_IN_CLASSIFY_TYPE))))
 	  ? N_("vector argument passed to unprototyped function")
 	  : NULL);
 }
@@ -17515,7 +17513,8 @@ s390_hard_fp_reg_p (rtx x)
 static rtx_insn *
 s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 		    vec<machine_mode> &input_modes,
-		    vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
+		    vec<const char *> &constraints,
+		    vec<rtx> &/*uses*/, vec<rtx> &/*clobbers*/,
 		    HARD_REG_SET &clobbered_regs, location_t loc)
 {
 
@@ -17603,6 +17602,10 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
       end_sequence ();
       outputs[i] = fprx2;
     }
+
+  if (!TARGET_VXE)
+    /* Long doubles are stored in FPR pairs - nothing left to do.  */
+    return after_md_seq;
 
   for (unsigned i = 0; i < ninputs; i++)
     {

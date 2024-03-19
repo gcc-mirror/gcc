@@ -29,11 +29,35 @@
 #define DEF_SVE_TYPE_SUFFIX(A, B, C, D, E)
 #endif
 
+#ifndef DEF_SME_ZA_SUFFIX
+#define DEF_SME_ZA_SUFFIX(A, B, C)
+#endif
+
+#ifndef DEF_SVE_GROUP_SUFFIX
+#define DEF_SVE_GROUP_SUFFIX(A, B, C)
+#endif
+
+#ifndef DEF_SVE_FUNCTION_GS
+#define DEF_SVE_FUNCTION_GS(A, B, C, D, E)
+#endif
+
 #ifndef DEF_SVE_FUNCTION
-#define DEF_SVE_FUNCTION(A, B, C, D)
+#define DEF_SVE_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
+  DEF_SVE_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
+#endif
+
+#ifndef DEF_SME_ZA_FUNCTION_GS
+#define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUP, PREDS) \
+  DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUP, PREDS)
+#endif
+
+#ifndef DEF_SME_ZA_FUNCTION
+#define DEF_SME_ZA_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
+  DEF_SME_ZA_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
 #endif
 
 DEF_SVE_MODE (n, none, none, none)
+DEF_SVE_MODE (single, none, none, none)
 DEF_SVE_MODE (index, none, none, elements)
 DEF_SVE_MODE (offset, none, none, bytes)
 DEF_SVE_MODE (s32index, none, svint32_t, elements)
@@ -61,6 +85,7 @@ DEF_SVE_MODE (u64offset, none, svuint64_t, bytes)
 DEF_SVE_MODE (vnum, none, none, vectors)
 
 DEF_SVE_TYPE (svbool_t, 10, __SVBool_t, boolean_type_node)
+DEF_SVE_TYPE (svcount_t, 11, __SVCount_t, boolean_type_node)
 DEF_SVE_TYPE (svbfloat16_t, 14, __SVBfloat16_t, bfloat16_type_node)
 DEF_SVE_TYPE (svfloat16_t, 13, __SVFloat16_t, aarch64_fp16_type_node)
 DEF_SVE_TYPE (svfloat32_t, 13, __SVFloat32_t, float_type_node)
@@ -83,6 +108,11 @@ DEF_SVE_TYPE_SUFFIX (b16, svbool_t, bool, 16, VNx8BImode)
 DEF_SVE_TYPE_SUFFIX (b32, svbool_t, bool, 32, VNx4BImode)
 DEF_SVE_TYPE_SUFFIX (b64, svbool_t, bool, 64, VNx2BImode)
 DEF_SVE_TYPE_SUFFIX (bf16, svbfloat16_t, bfloat, 16, VNx8BFmode)
+DEF_SVE_TYPE_SUFFIX (c, svcount_t, count, 8, VNx16BImode)
+DEF_SVE_TYPE_SUFFIX (c8, svcount_t, count, 8, VNx16BImode)
+DEF_SVE_TYPE_SUFFIX (c16, svcount_t, count, 16, VNx16BImode)
+DEF_SVE_TYPE_SUFFIX (c32, svcount_t, count, 32, VNx16BImode)
+DEF_SVE_TYPE_SUFFIX (c64, svcount_t, count, 64, VNx16BImode)
 DEF_SVE_TYPE_SUFFIX (f16, svfloat16_t, float, 16, VNx8HFmode)
 DEF_SVE_TYPE_SUFFIX (f32, svfloat32_t, float, 32, VNx4SFmode)
 DEF_SVE_TYPE_SUFFIX (f64, svfloat64_t, float, 64, VNx2DFmode)
@@ -95,10 +125,40 @@ DEF_SVE_TYPE_SUFFIX (u16, svuint16_t, unsigned, 16, VNx8HImode)
 DEF_SVE_TYPE_SUFFIX (u32, svuint32_t, unsigned, 32, VNx4SImode)
 DEF_SVE_TYPE_SUFFIX (u64, svuint64_t, unsigned, 64, VNx2DImode)
 
+/* Associate _za with bytes.  This is needed for svldr_vnum_za and
+   svstr_vnum_za, whose ZA offset can be in the range [0, 15], as for za8.  */
+DEF_SME_ZA_SUFFIX (za, 8, VNx16QImode)
+
+DEF_SME_ZA_SUFFIX (za8, 8, VNx16QImode)
+DEF_SME_ZA_SUFFIX (za16, 16, VNx8HImode)
+DEF_SME_ZA_SUFFIX (za32, 32, VNx4SImode)
+DEF_SME_ZA_SUFFIX (za64, 64, VNx2DImode)
+DEF_SME_ZA_SUFFIX (za128, 128, VNx1TImode)
+
+DEF_SVE_GROUP_SUFFIX (x2, 0, 2)
+DEF_SVE_GROUP_SUFFIX (x3, 0, 3)
+DEF_SVE_GROUP_SUFFIX (x4, 0, 4)
+DEF_SVE_GROUP_SUFFIX (vg1x2, 1, 2)
+DEF_SVE_GROUP_SUFFIX (vg1x4, 1, 4)
+DEF_SVE_GROUP_SUFFIX (vg2, 2, 2)
+DEF_SVE_GROUP_SUFFIX (vg2x1, 2, 1)
+DEF_SVE_GROUP_SUFFIX (vg2x2, 2, 2)
+DEF_SVE_GROUP_SUFFIX (vg2x4, 2, 4)
+DEF_SVE_GROUP_SUFFIX (vg4, 4, 4)
+DEF_SVE_GROUP_SUFFIX (vg4x1, 4, 1)
+DEF_SVE_GROUP_SUFFIX (vg4x2, 4, 2)
+DEF_SVE_GROUP_SUFFIX (vg4x4, 4, 4)
+
 #include "aarch64-sve-builtins-base.def"
 #include "aarch64-sve-builtins-sve2.def"
+#include "aarch64-sve-builtins-sme.def"
 
+#undef DEF_SME_ZA_FUNCTION
 #undef DEF_SVE_FUNCTION
+#undef DEF_SME_ZA_FUNCTION_GS
+#undef DEF_SVE_FUNCTION_GS
+#undef DEF_SVE_GROUP_SUFFIX
+#undef DEF_SME_ZA_SUFFIX
 #undef DEF_SVE_TYPE_SUFFIX
 #undef DEF_SVE_TYPE
 #undef DEF_SVE_MODE

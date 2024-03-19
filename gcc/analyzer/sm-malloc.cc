@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "bitmap.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -840,23 +839,20 @@ public:
     return OPT_Wanalyzer_mismatching_deallocation;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     auto_diagnostic_group d;
-    diagnostic_metadata m;
-    m.add_cwe (762); /* CWE-762: Mismatched Memory Management Routines.  */
+    ctxt.add_cwe (762); /* CWE-762: Mismatched Memory Management Routines.  */
     if (const deallocator *expected_dealloc
 	  = m_expected_deallocators->maybe_get_single ())
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "%qE should have been deallocated with %qs"
-			   " but was deallocated with %qs",
-			   m_arg, expected_dealloc->m_name,
-			   m_actual_dealloc->m_name);
+      return ctxt.warn ("%qE should have been deallocated with %qs"
+			" but was deallocated with %qs",
+			m_arg, expected_dealloc->m_name,
+			m_actual_dealloc->m_name);
     else
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "%qs called on %qE returned from a mismatched"
-			   " allocation function",
-			   m_actual_dealloc->m_name, m_arg);
+      return ctxt.warn ("%qs called on %qE returned from a mismatched"
+			" allocation function",
+			m_actual_dealloc->m_name, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -919,13 +915,11 @@ public:
     return OPT_Wanalyzer_double_free;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     auto_diagnostic_group d;
-    diagnostic_metadata m;
-    m.add_cwe (415); /* CWE-415: Double Free.  */
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "double-%qs of %qE", m_funcname, m_arg);
+    ctxt.add_cwe (415); /* CWE-415: Double Free.  */
+    return ctxt.warn ("double-%qs of %qE", m_funcname, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -1015,13 +1009,11 @@ public:
     return OPT_Wanalyzer_possible_null_dereference;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     /* CWE-690: Unchecked Return Value to NULL Pointer Dereference.  */
-    diagnostic_metadata m;
-    m.add_cwe (690);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "dereference of possibly-NULL %qE", m_arg);
+    ctxt.add_cwe (690);
+    return ctxt.warn ("dereference of possibly-NULL %qE", m_arg);
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) final override
@@ -1104,16 +1096,14 @@ public:
     return OPT_Wanalyzer_possible_null_argument;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     /* CWE-690: Unchecked Return Value to NULL Pointer Dereference.  */
     auto_diagnostic_group d;
-    diagnostic_metadata m;
-    m.add_cwe (690);
+    ctxt.add_cwe (690);
     bool warned
-      = warning_meta (rich_loc, m, get_controlling_option (),
-		      "use of possibly-NULL %qE where non-null expected",
-		      m_arg);
+      = ctxt.warn ("use of possibly-NULL %qE where non-null expected",
+		   m_arg);
     if (warned)
       inform_nonnull_attribute (m_fndecl, m_arg_idx);
     return warned;
@@ -1157,13 +1147,11 @@ public:
 
   bool terminate_path_p () const final override { return true; }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     /* CWE-476: NULL Pointer Dereference.  */
-    diagnostic_metadata m;
-    m.add_cwe (476);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "dereference of NULL %qE", m_arg);
+    ctxt.add_cwe (476);
+    return ctxt.warn ("dereference of NULL %qE", m_arg);
   }
 
   label_text describe_return_of_state (const evdesc::return_of_state &info)
@@ -1227,21 +1215,18 @@ public:
 
   bool terminate_path_p () const final override { return true; }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     /* CWE-476: NULL Pointer Dereference.  */
     auto_diagnostic_group d;
-    diagnostic_metadata m;
-    m.add_cwe (476);
+    ctxt.add_cwe (476);
 
     bool warned;
     if (zerop (m_arg))
-      warned = warning_meta (rich_loc, m, get_controlling_option (),
-			     "use of NULL where non-null expected");
+      warned = ctxt.warn ("use of NULL where non-null expected");
     else
-      warned = warning_meta (rich_loc, m, get_controlling_option (),
-			     "use of NULL %qE where non-null expected",
-			     m_arg);
+      warned = ctxt.warn ("use of NULL %qE where non-null expected",
+			  m_arg);
     if (warned)
       inform_nonnull_attribute (m_fndecl, m_arg_idx);
     return warned;
@@ -1284,14 +1269,12 @@ public:
     return OPT_Wanalyzer_use_after_free;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     /* CWE-416: Use After Free.  */
-    diagnostic_metadata m;
-    m.add_cwe (416);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "use after %<%s%> of %qE",
-			 m_deallocator->m_name, m_arg);
+    ctxt.add_cwe (416);
+    return ctxt.warn ("use after %<%s%> of %qE",
+		      m_deallocator->m_name, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -1378,17 +1361,14 @@ public:
     return OPT_Wanalyzer_malloc_leak;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     /* "CWE-401: Missing Release of Memory after Effective Lifetime".  */
-    diagnostic_metadata m;
-    m.add_cwe (401);
+    ctxt.add_cwe (401);
     if (m_arg)
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "leak of %qE", m_arg);
+      return ctxt.warn ("leak of %qE", m_arg);
     else
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "leak of %qs", "<unknown>");
+      return ctxt.warn ("leak of %qs", "<unknown>");
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -1452,11 +1432,10 @@ public:
     return OPT_Wanalyzer_free_of_non_heap;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     auto_diagnostic_group d;
-    diagnostic_metadata m;
-    m.add_cwe (590); /* CWE-590: Free of Memory not on the Heap.  */
+    ctxt.add_cwe (590); /* CWE-590: Free of Memory not on the Heap.  */
     switch (get_memory_space ())
       {
       default:
@@ -1466,16 +1445,14 @@ public:
       case MEMSPACE_CODE:
       case MEMSPACE_GLOBALS:
       case MEMSPACE_READONLY_DATA:
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "%<%s%> of %qE which points to memory"
-			     " not on the heap",
-			     m_funcname, m_arg);
+	return ctxt.warn ("%<%s%> of %qE which points to memory"
+			  " not on the heap",
+			  m_funcname, m_arg);
 	break;
       case MEMSPACE_STACK:
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "%<%s%> of %qE which points to memory"
-			     " on the stack",
-			     m_funcname, m_arg);
+	return ctxt.warn ("%<%s%> of %qE which points to memory"
+			  " on the stack",
+			  m_funcname, m_arg);
 	break;
       }
   }
@@ -1531,7 +1508,7 @@ public:
     return OPT_Wanalyzer_deref_before_check;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     /* Don't emit the warning if we can't show where the deref
        and the check occur.  */
@@ -1605,10 +1582,9 @@ public:
 			 m_deref_enode->get_supernode ()->m_bb))
       return false;
 
-    return warning_at (rich_loc, get_controlling_option (),
-		       "check of %qE for NULL after already"
-		       " dereferencing it",
-		       m_arg);
+    return ctxt.warn ("check of %qE for NULL after already"
+		      " dereferencing it",
+		      m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)

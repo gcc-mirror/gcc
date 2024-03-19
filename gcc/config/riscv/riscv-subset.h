@@ -79,6 +79,7 @@ private:
   void handle_implied_ext (const char *);
   bool check_implied_ext ();
   void handle_combine_ext ();
+  void check_conflict_ext ();
 
 public:
   ~riscv_subset_list ();

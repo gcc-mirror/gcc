@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-pretty-print.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -92,11 +91,10 @@ public:
     return 0;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    return warning_at (rich_loc, get_controlling_option (),
-		       "pattern match on %<%E %s %E%>",
-		       m_lhs, op_symbol_code (m_op), m_rhs);
+    return ctxt.warn ("pattern match on %<%E %s %E%>",
+		      m_lhs, op_symbol_code (m_op), m_rhs);
   }
 
 private:

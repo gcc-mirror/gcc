@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O -floop-nest-optimize -fdump-tree-graphite-details" } */
+/* { dg-options "-O -floop-nest-optimize -fno-tree-scev-cprop -fdump-tree-graphite-details" } */
 
 int rx, in;
 

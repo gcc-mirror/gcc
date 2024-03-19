@@ -7,7 +7,7 @@ f1 (svbool_t pg, svuint8_t u8, int i, float f)
 {
   svdupq_lane (u8); /* { dg-error {too few arguments to function 'svdupq_lane'} } */
   svdupq_lane (u8, 0, 0); /* { dg-error {too many arguments to function 'svdupq_lane'} } */
-  svdupq_lane (0, 0); /* { dg-error {passing 'int' to argument 1 of 'svdupq_lane', which expects an SVE vector type} } */
+  svdupq_lane (0, 0); /* { dg-error {passing 'int' to argument 1 of 'svdupq_lane', which expects an SVE type rather than a scalar} } */
   svdupq_lane (u8, 0);
   svdupq_lane (u8, -1);
   svdupq_lane (u8, i);

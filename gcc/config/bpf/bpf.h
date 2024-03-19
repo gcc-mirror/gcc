@@ -393,7 +393,7 @@ enum reg_class
 
 /*** The Overall Framework of an Assembler File.  */
 
-#define ASM_COMMENT_START ";"
+#define ASM_COMMENT_START "#"
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
@@ -488,6 +488,11 @@ enum reg_class
    quickly between memory and registers or between two memory
    locations.  */
 #define MOVE_MAX 8
+
+/* Allow upto 1024 bytes moves to occur using by_pieces
+   infrastructure.  This mimics clang behaviour when using
+   __builtin_memcmp.  */
+#define COMPARE_MAX_PIECES 1024
 
 /* An alias for the machine mode for pointers.  */
 #define Pmode DImode

@@ -581,9 +581,8 @@ new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
   lra_insn_reg *ir = lra_insn_reg_pool.allocate ();
   ir->type = type;
   ir->biggest_mode = mode;
-  if (NONDEBUG_INSN_P (insn)
-      && partial_subreg_p (lra_reg_info[regno].biggest_mode, mode))
-    lra_reg_info[regno].biggest_mode = mode;
+  if (NONDEBUG_INSN_P (insn))
+    lra_update_biggest_mode (regno, mode);
   ir->subreg_p = subreg_p;
   ir->early_clobber_alts = early_clobber_alts;
   ir->regno = regno;
@@ -1879,6 +1878,24 @@ setup_sp_offset (rtx_insn *from, rtx_insn *last)
   return offset;
 }
 
+/* Dump all func insns in a slim form.  */ 
+void
+lra_dump_insns (FILE *f)
+{
+  dump_rtl_slim (f, get_insns (), NULL, -1, 0);
+}
+
+/* Dump all func insns in a slim form with TITLE when the dump file is open and
+   lra_verbose >=7.  */ 
+void
+lra_dump_insns_if_possible (const char *title)
+{
+  if (lra_dump_file == NULL || lra_verbose < 7)
+    return;
+  fprintf (lra_dump_file, "%s:", title);
+  lra_dump_insns (lra_dump_file);
+}
+
 /* Emit insns BEFORE before INSN and insns AFTER after INSN.  Put the
    insns onto the stack.  Print about emitting the insns with
    TITLE.  */
@@ -2297,6 +2314,9 @@ bitmap_head lra_subreg_reload_pseudos;
 /* File used for output of LRA debug information.  */
 FILE *lra_dump_file;
 
+/* How verbose should be the debug information. */
+int lra_verbose;
+
 /* True if we split hard reg after the last constraint sub-pass.  */
 bool lra_hard_reg_split_p;
 
@@ -2332,14 +2352,15 @@ setup_reg_spill_flag (void)
 bool lra_simple_p;
 
 /* Major LRA entry function.  F is a file should be used to dump LRA
-   debug info.  */
+   debug info with given verbosity.  */
 void
-lra (FILE *f)
+lra (FILE *f, int verbose)
 {
   int i;
   bool live_p, inserted_p;
 
   lra_dump_file = f;
+  lra_verbose = verbose;
   lra_asm_error_p = false;
   lra_pmode_pseudo = gen_reg_rtx (Pmode);
   

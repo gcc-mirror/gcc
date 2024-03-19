@@ -4887,6 +4887,8 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value,
 
   to = TREE_OPERAND (*expr_p, 0);
   from = TREE_OPERAND (*expr_p, 1);
+  gcc_assert (ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (to)))
+	      && ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (from))));
 
   /* Mark the RHS addressable.  Beware that it may not be possible to do so
      directly if a temporary has been created by the gimplification.  */
@@ -4945,6 +4947,7 @@ gimplify_modify_expr_to_memset (tree *expr_p, tree size, bool want_value,
 
   /* Now proceed.  */
   to = TREE_OPERAND (*expr_p, 0);
+  gcc_assert (ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (to))));
 
   to_ptr = build_fold_addr_expr_loc (loc, to);
   gimplify_arg (&to_ptr, seq_p, loc);
@@ -6466,8 +6469,9 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
       if (TREE_CODE (from) == CONSTRUCTOR)
 	return gimplify_modify_expr_to_memset (expr_p, size, want_value, pre_p);
-
-      if (is_gimple_addressable (from))
+      else if (is_gimple_addressable (from)
+	       && ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (*to_p)))
+	       && ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (from))))
 	{
 	  *from_p = from;
 	  return gimplify_modify_expr_to_memcpy (expr_p, size, want_value,

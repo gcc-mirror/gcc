@@ -30,8 +30,8 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8,
   svadalp_m (pg, s16, s8);
   svadalp_m (pg, f32, f16); /* { dg-error {'svadalp_m' has no form that takes 'svfloat32_t' arguments} } */
   svadalp_m (pg, f16, f32); /* { dg-error {'svadalp_m' has no form that takes 'svfloat16_t' arguments} } */
-  svadalp_m (pg, 0, u32); /* { dg-error {passing 'int' to argument 2 of 'svadalp_m', which expects an SVE vector type} } */
-  svadalp_m (pg, 0, u64); /* { dg-error {passing 'int' to argument 2 of 'svadalp_m', which expects an SVE vector type} } */
-  svadalp_m (pg, u8, 0); /* { dg-error {passing 'int' to argument 3 of 'svadalp_m', which expects an SVE vector type} } */
-  svadalp_m (pg, u16, 0); /* { dg-error {passing 'int' to argument 3 of 'svadalp_m', which expects an SVE vector type} } */
+  svadalp_m (pg, 0, u32); /* { dg-error {passing 'int' to argument 2 of 'svadalp_m', which expects an SVE type rather than a scalar} } */
+  svadalp_m (pg, 0, u64); /* { dg-error {passing 'int' to argument 2 of 'svadalp_m', which expects an SVE type rather than a scalar} } */
+  svadalp_m (pg, u8, 0); /* { dg-error {passing 'int' to argument 3 of 'svadalp_m', which expects an SVE type rather than a scalar} } */
+  svadalp_m (pg, u16, 0); /* { dg-error {passing 'int' to argument 3 of 'svadalp_m', which expects an SVE type rather than a scalar} } */
 }

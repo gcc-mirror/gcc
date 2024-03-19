@@ -25,12 +25,24 @@
 ;; ---- Non-temporal gather loads
 ;; ---- Non-temporal scatter stores
 ;;
+;; == Predicate manipulation
+;; ---- [PRED] Predicate-as-counter PTRUE
+;; ---- [PRED] Predicate extraction
+;; ---- [PRED] Predicate selection
+;; ---- [PRED] Predicate count
+;;
+;; == Uniform unary arithmnetic
+;; ---- [FP] Multi-register unary operations
+;;
 ;; == Uniform binary arithmnetic
+;; ---- [INT] Multi-register operations
+;; ---- [INT] Clamp to minimum/maximum
 ;; ---- [INT] Multiplication
 ;; ---- [INT] Scaled high-part multiplication
 ;; ---- [INT] General binary arithmetic that maps to unspecs
 ;; ---- [INT] Saturating binary arithmetic
 ;; ---- [INT] Saturating left shifts
+;; ---- [FP] Clamp to minimum/maximum
 ;;
 ;; == Uniform ternary arithmnetic
 ;; ---- [INT] General ternary arithmetic that maps to unspecs
@@ -42,16 +54,20 @@
 ;; ---- [INT] Sum of absolute differences
 ;;
 ;; == Extending arithmetic
+;; ---- [INT] Multi-register widening conversions
 ;; ---- [INT] Wide binary arithmetic
 ;; ---- [INT] Long binary arithmetic
 ;; ---- [INT] Long left shifts
 ;; ---- [INT] Long binary arithmetic with accumulation
+;; ---- [FP] Multi-register operations
 ;; ---- [FP] Long multiplication with accumulation
 ;;
 ;; == Narrowing arithnetic
 ;; ---- [INT] Narrowing unary arithmetic
+;; ---- [INT] Multi-vector narrowing unary arithmetic
 ;; ---- [INT] Narrowing binary arithmetic
 ;; ---- [INT] Narrowing right shifts
+;; ---- [INT] Multi-vector narrowing right shifts
 ;;
 ;; == Pairwise arithmetic
 ;; ---- [INT] Pairwise arithmetic
@@ -66,14 +82,23 @@
 ;; == Conversions
 ;; ---- [FP<-FP] Widening conversions
 ;; ---- [FP<-FP] Narrowing conversions
+;; ---- [FP<-FP] Multi-vector narrowing conversions
+;; ---- [FP<-INT] Multi-vector conversions
+;; ---- [INT<-FP] Multi-vector conversions
 ;;
 ;; == Other arithmetic
 ;; ---- [INT] Reciprocal approximation
 ;; ---- [INT<-FP] Base-2 logarithm
 ;; ---- [INT] Polynomial multiplication
 ;;
+;; == Comparisons and selects
+;; ---- [INT,FP] Select based on predicates as counters
+;; ---- [INT] While tests
+;;
 ;; == Permutation
+;; ---- [INT,FP] Reversal
 ;; ---- [INT,FP] General permutes
+;; ---- [INT,FP] Multi-register permutes
 ;; ---- [INT] Optional bit-permute extensions
 ;;
 ;; == General
@@ -109,7 +134,7 @@
 	   (match_operand:<V_INT_EQUIV> 3 "register_operand")
 	   (mem:BLK (scratch))]
 	  UNSPEC_LDNT1_GATHER))]
-  "TARGET_SVE2"
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
   {@ [cons: =0, 1, 2, 3]
      [&w, Upl, Z, w    ] ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>]
      [?w, Upl, Z, 0    ] ^
@@ -132,6 +157,7 @@
 	       UNSPEC_LDNT1_GATHER))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2
+   && TARGET_NON_STREAMING
    && (~<SVE_FULL_SDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
   {@ [cons: =0, 1, 2, 3, 4]
      [&w, Upl, Z, w, UplDnm] ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>]
@@ -165,7 +191,7 @@
 	   (match_operand:SVE_FULL_SD 3 "register_operand")]
 
 	  UNSPEC_STNT1_SCATTER))]
-  "TARGET_SVE"
+  "TARGET_SVE && TARGET_NON_STREAMING"
   {@ [ cons: 0 , 1 , 2 , 3  ]
      [ Upl     , Z , w , w  ] stnt1<Vesize>\t%3.<Vetype>, %0, [%2.<Vetype>]
      [ Upl     , r , w , w  ] stnt1<Vesize>\t%3.<Vetype>, %0, [%2.<Vetype>, %1]
@@ -183,6 +209,7 @@
 	     (match_operand:SVE_FULL_SDI 3 "register_operand"))]
 	  UNSPEC_STNT1_SCATTER))]
   "TARGET_SVE2
+   && TARGET_NON_STREAMING
    && (~<SVE_FULL_SDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
   {@ [ cons: 0 , 1 , 2 , 3  ]
      [ Upl     , Z , w , w  ] stnt1<SVE_PARTIAL_I:Vesize>\t%3.<SVE_FULL_SDI:Vetype>, %0, [%2.<SVE_FULL_SDI:Vetype>]
@@ -191,8 +218,254 @@
 )
 
 ;; =========================================================================
+;; == Predicate manipulation
+;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [PRED] Predicate-as-counter PTRUE
+;; -------------------------------------------------------------------------
+;; - PTRUE (predicate-as-counter form)
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_ptrue_c<BHSD_BITS>"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Uph")
+	(unspec:VNx16BI [(const_int BHSD_BITS)] UNSPEC_PTRUE_C))]
+  "TARGET_STREAMING_SME2"
+  "ptrue\t%K0.<bits_etype>"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [PRED] Predicate extraction
+;; -------------------------------------------------------------------------
+;; Includes
+;; - PEXT
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_pext<BHSD_BITS>"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(unspec:VNx16BI
+	  [(match_operand:VNx16BI 1 "register_operand" "Uph")
+	   (match_operand:DI 2 "const_int_operand")
+	   (const_int BHSD_BITS)]
+	  UNSPEC_PEXT))]
+  "TARGET_STREAMING_SME2"
+  "pext\t%0.<bits_etype>, %K1[%2]"
+)
+
+(define_insn "@aarch64_sve_pext<BHSD_BITS>x2"
+  [(set (match_operand:VNx32BI 0 "register_operand" "=Up2")
+	(unspec:VNx32BI
+	  [(match_operand:VNx16BI 1 "register_operand" "Uph")
+	   (match_operand:DI 2 "const_int_operand")
+	   (const_int BHSD_BITS)]
+	  UNSPEC_PEXTx2))]
+  "TARGET_STREAMING_SME2"
+  "pext\t{%S0.<bits_etype>, %T0.<bits_etype>}, %K1[%2]"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [PRED] Predicate selection
+;; -------------------------------------------------------------------------
+;; Includes
+;; - PSEL
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_psel<BHSD_BITS>"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(unspec:VNx16BI
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
+	   (match_operand:VNx16BI 2 "register_operand" "Upa")
+	   (match_operand:SI 3 "register_operand" "Ucj")
+	   (const_int BHSD_BITS)]
+	  UNSPEC_PSEL))]
+  "TARGET_STREAMING_SME2"
+  "psel\t%0, %1, %2.<bits_etype>[%w3, 0]"
+)
+
+(define_insn "*aarch64_sve_psel<BHSD_BITS>_plus"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(unspec:VNx16BI
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
+	   (match_operand:VNx16BI 2 "register_operand" "Upa")
+	   (plus:SI
+	     (match_operand:SI 3 "register_operand" "Ucj")
+	     (match_operand:SI 4 "const_int_operand"))
+	   (const_int BHSD_BITS)]
+	  UNSPEC_PSEL))]
+  "TARGET_STREAMING_SME2
+   && UINTVAL (operands[4]) < 128 / <BHSD_BITS>"
+  "psel\t%0, %1, %2.<bits_etype>[%w3, %4]"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [PRED] Predicate count
+;; -------------------------------------------------------------------------
+;; Includes
+;; - CNTP (predicate as counter)
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_cntp_c<BHSD_BITS>"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
+	   (match_operand:DI 2 "const_int_operand")
+	   (const_int BHSD_BITS)]
+	  UNSPEC_CNTP_C))]
+  "TARGET_STREAMING_SME2"
+  "cntp\t%x0, %K1.<bits_etype>, vlx%2"
+)
+
+;; =========================================================================
+;; == Uniform unary arithmnetic
+;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Multi-register unary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FRINTA
+;; - FRINTM
+;; - FRINTN
+;; - FRINTP
+;; -------------------------------------------------------------------------
+
+(define_insn "<frint_pattern><mode>2"
+  [(set (match_operand:SVE_SFx24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(unspec:SVE_SFx24
+	  [(match_operand:SVE_SFx24 1 "aligned_register_operand" "Uw<vector_count>")]
+	  SVE2_SFx24_UNARY))]
+  "TARGET_STREAMING_SME2"
+  "frint<frint_suffix>\t%0, %1"
+)
+
+;; =========================================================================
 ;; == Uniform binary arithmnetic
 ;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Multi-register operations
+;; -------------------------------------------------------------------------
+;; Includes the multi-register forms of:
+;; - ADD
+;; - SMAX
+;; - SMIN
+;; - SQMULH
+;; - SRSHL
+;; - UMAX
+;; - UMIN
+;; - URSHL
+;; -------------------------------------------------------------------------
+
+(define_expand "<optab><mode>3"
+  [(set (match_operand:SVE_Ix24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(SVE_INT_BINARY_MULTI:SVE_Ix24
+	  (match_operand:SVE_Ix24 1 "aligned_register_operand" "Uw<vector_count>")
+	  (match_operand:SVE_Ix24 2 "aligned_register_operand" "Uw<vector_count>")))]
+  "TARGET_STREAMING_SME2"
+)
+
+(define_insn "*<optab><mode>3"
+  [(set (match_operand:SVE_Ix24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(SVE_INT_BINARY_MULTI:SVE_Ix24
+	  (match_operand:SVE_Ix24 1 "aligned_register_operand" "%0")
+	  (match_operand:SVE_Ix24 2 "aligned_register_operand" "Uw<vector_count>")))]
+  "TARGET_STREAMING_SME2"
+  "<sve_int_op>\t%0, %0, %2"
+)
+
+(define_insn "@aarch64_sve_single_<optab><mode>"
+  [(set (match_operand:SVE_Ix24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(SVE_INT_BINARY_SINGLE:SVE_Ix24
+	  (match_operand:SVE_Ix24 1 "aligned_register_operand" "0")
+	  (vec_duplicate:SVE_Ix24
+	    (match_operand:<VSINGLE> 2 "register_operand" "x"))))]
+  "TARGET_STREAMING_SME2"
+  "<sve_int_op>\t%0, %0, %2.<Vetype>"
+)
+
+(define_insn "@aarch64_sve_<sve_int_op><mode>"
+  [(set (match_operand:SVE_Ix24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Ix24
+	  [(match_operand:SVE_Ix24 1 "aligned_register_operand" "%0")
+	   (match_operand:SVE_Ix24 2 "aligned_register_operand" "Uw<vector_count>")]
+	  SVE_INT_BINARY_MULTI))]
+  "TARGET_STREAMING_SME2"
+  "<sve_int_op>\t%0, %0, %2"
+)
+
+(define_insn "@aarch64_sve_single_<sve_int_op><mode>"
+  [(set (match_operand:SVE_Ix24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Ix24
+	  [(match_operand:SVE_Ix24 1 "aligned_register_operand" "0")
+	   (vec_duplicate:SVE_Ix24
+	     (match_operand:<VSINGLE> 2 "register_operand" "x"))]
+	  SVE_INT_BINARY_MULTI))]
+  "TARGET_STREAMING_SME2"
+  "<sve_int_op>\t%0, %0, %2.<Vetype>"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Clamp to minimum/maximum
+;; -------------------------------------------------------------------------
+;; - SCLAMP
+;; - UCLAMP
+;; -------------------------------------------------------------------------
+
+;; The minimum is applied after the maximum, which matters if the maximum
+;; bound is (unexpectedly) less than the minimum bound.
+(define_insn "@aarch64_sve_<su>clamp<mode>"
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(<max_opp>:SVE_FULL_I
+	  (USMAX:SVE_FULL_I
+	    (match_operand:SVE_FULL_I 1 "register_operand")
+	    (match_operand:SVE_FULL_I 2 "register_operand"))
+	  (match_operand:SVE_FULL_I 3 "register_operand")))]
+  "TARGET_STREAMING_SME"
+  {@ [cons: =0,  1, 2, 3; attrs: movprfx]
+     [       w, %0, w, w; *             ] <su>clamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+     [     ?&w,  w, w, w; yes           ] movprfx\t%0, %1\;<su>clamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+  }
+)
+
+(define_insn_and_split "*aarch64_sve_<su>clamp<mode>_x"
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(unspec:SVE_FULL_I
+	  [(match_operand 4)
+	   (<max_opp>:SVE_FULL_I
+	     (unspec:SVE_FULL_I
+	       [(match_operand 5)
+		(USMAX:SVE_FULL_I
+		  (match_operand:SVE_FULL_I 1 "register_operand")
+		  (match_operand:SVE_FULL_I 2 "register_operand"))]
+	       UNSPEC_PRED_X)
+	     (match_operand:SVE_FULL_I 3 "register_operand"))]
+	  UNSPEC_PRED_X))]
+  "TARGET_STREAMING_SME"
+  {@ [cons: =0,  1, 2, 3; attrs: movprfx]
+     [       w, %0, w, w; *             ] #
+     [     ?&w,  w, w, w; yes           ] #
+  }
+  "&& true"
+  [(set (match_dup 0)
+	(<max_opp>:SVE_FULL_I
+	  (USMAX:SVE_FULL_I
+	    (match_dup 1)
+	    (match_dup 2))
+	  (match_dup 3)))]
+)
+
+(define_insn "@aarch64_sve_<su>clamp_single<mode>"
+  [(set (match_operand:SVE_Ix24 0 "register_operand" "=Uw<vector_count>")
+	(<max_opp>:SVE_Ix24
+	  (USMAX:SVE_Ix24
+	    (match_operand:SVE_Ix24 1 "register_operand" "0")
+	    (vec_duplicate:SVE_Ix24
+	      (match_operand:<VSINGLE> 2 "register_operand" "w")))
+	  (vec_duplicate:SVE_Ix24
+	    (match_operand:<VSINGLE> 3 "register_operand" "w"))))]
+  "TARGET_STREAMING_SME2"
+  "<su>clamp\t%0, %2.<Vetype>, %3.<Vetype>"
+)
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Multiplication
@@ -685,6 +958,74 @@
       FAIL;
   }
   [(set_attr "movprfx" "yes")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Clamp to minimum/maximum
+;; -------------------------------------------------------------------------
+;; - FCLAMP
+;; -------------------------------------------------------------------------
+
+;; The minimum is applied after the maximum, which matters if the maximum
+;; bound is (unexpectedly) less than the minimum bound.
+(define_insn "@aarch64_sve_fclamp<mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(unspec:SVE_FULL_F
+	     [(match_operand:SVE_FULL_F 1 "register_operand")
+	      (match_operand:SVE_FULL_F 2 "register_operand")]
+	     UNSPEC_FMAXNM)
+	   (match_operand:SVE_FULL_F 3 "register_operand")]
+	  UNSPEC_FMINNM))]
+  "TARGET_STREAMING_SME"
+  {@ [cons: =0,  1, 2, 3; attrs: movprfx]
+     [       w, %0, w, w; *             ] fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+     [     ?&w,  w, w, w; yes           ] movprfx\t%0, %1\;fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+  }
+)
+
+(define_insn_and_split "*aarch64_sve_fclamp<mode>_x"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_operand 4)
+	   (const_int SVE_RELAXED_GP)
+	   (unspec:SVE_FULL_F
+	     [(match_operand 5)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_FULL_F 1 "register_operand")
+	      (match_operand:SVE_FULL_F 2 "register_operand")]
+	     UNSPEC_COND_FMAXNM)
+	   (match_operand:SVE_FULL_F 3 "register_operand")]
+	  UNSPEC_COND_FMINNM))]
+  "TARGET_STREAMING_SME"
+  {@ [cons: =0,  1, 2, 3; attrs: movprfx]
+     [       w, %0, w, w; *             ] #
+     [     ?&w,  w, w, w; yes           ] #
+  }
+  "&& true"
+  [(set (match_dup 0)
+	(unspec:SVE_FULL_F
+	  [(unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (match_dup 2)]
+	     UNSPEC_FMAXNM)
+	   (match_dup 3)]
+	  UNSPEC_FMINNM))]
+)
+
+(define_insn "@aarch64_sve_fclamp_single<mode>"
+  [(set (match_operand:SVE_Fx24 0 "register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Fx24
+	  [(unspec:SVE_Fx24
+	     [(match_operand:SVE_Fx24 1 "register_operand" "0")
+	      (vec_duplicate:SVE_Fx24
+		(match_operand:<VSINGLE> 2 "register_operand" "w"))]
+	     UNSPEC_FMAXNM)
+	   (vec_duplicate:SVE_Fx24
+	     (match_operand:<VSINGLE> 3 "register_operand" "w"))]
+	  UNSPEC_FMINNM))]
+  "TARGET_STREAMING_SME2"
+  "fclamp\t%0, %2.<Vetype>, %3.<Vetype>"
 )
 
 ;; =========================================================================
@@ -1255,6 +1596,30 @@
 ;; =========================================================================
 
 ;; -------------------------------------------------------------------------
+;; ---- [INT] Multi-register widening conversions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - SUNPK
+;; - UUNPK
+;; -------------------------------------------------------------------------
+
+(define_insn "<optab><mode><v2xwide>2"
+  [(set (match_operand:<V2XWIDE> 0 "aligned_register_operand" "=Uw2")
+	(ANY_EXTEND:<V2XWIDE>
+	  (match_operand:SVE_FULL_BHSI 1 "register_operand" "w")))]
+  "TARGET_STREAMING_SME2"
+  "<su>unpk\t%0, %1.<Vetype>"
+)
+
+(define_insn "<optab><mode><v2xwide>2"
+  [(set (match_operand:<V2XWIDE> 0 "aligned_register_operand" "=Uw4")
+	(ANY_EXTEND:<V2XWIDE>
+	  (match_operand:SVE_FULL_BHSIx2 1 "aligned_register_operand" "Uw2")))]
+  "TARGET_STREAMING_SME2"
+  "<su>unpk\t%0, %1"
+)
+
+;; -------------------------------------------------------------------------
 ;; ---- [INT] Wide binary arithmetic
 ;; -------------------------------------------------------------------------
 ;; Includes:
@@ -1355,6 +1720,7 @@
 ;; Includes:
 ;; - SABALB
 ;; - SABALT
+;; - SDOT (SME2 or SVE2p1)
 ;; - SMLALB
 ;; - SMLALT
 ;; - SMLSLB
@@ -1367,6 +1733,7 @@
 ;; - SQDMLSLT
 ;; - UABALB
 ;; - UABALT
+;; - UDOT (SME2 or SVE2p1)
 ;; - UMLALB
 ;; - UMLALT
 ;; - UMLSLB
@@ -1512,10 +1879,68 @@
      [ ?&w      , w , w , <sve_lane_con> ; yes            ] movprfx\t%0, %1\;<sve_int_qsub_op>\t%0.<Vetype>, %2.<Ventype>, %3.<Ventype>[%4]
   }
 )
+
+;; Two-way dot-product.
+(define_insn "@aarch64_sve_<sur>dotvnx4sivnx8hi"
+  [(set (match_operand:VNx4SI 0 "register_operand")
+	(plus:VNx4SI
+	  (unspec:VNx4SI
+	    [(match_operand:VNx8HI 1 "register_operand")
+	     (match_operand:VNx8HI 2 "register_operand")]
+	    DOTPROD)
+	  (match_operand:VNx4SI 3 "register_operand")))]
+  "TARGET_STREAMING_SME2"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , w , w , 0 ; *              ] <sur>dot\t%0.s, %1.h, %2.h
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %3\;<sur>dot\t%0.s, %1.h, %2.h
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Multi-register operations
+;; -------------------------------------------------------------------------
+;; Includes the multi-register forms of:
+;; - FMAX
+;; - FMAXNM
+;; - FMIN
+;; - FMINNM
+;; -------------------------------------------------------------------------
+
+(define_expand "@aarch64_sve_<maxmin_uns_op><mode>"
+  [(set (match_operand:SVE_Fx24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Fx24
+	  [(match_operand:SVE_Fx24 1 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:SVE_Fx24 2 "aligned_register_operand" "Uw<vector_count>")]
+	  SVE_FP_BINARY_MULTI))]
+  "TARGET_STREAMING_SME2"
+)
+
+(define_insn "*aarch64_sve_<maxmin_uns_op><mode>"
+  [(set (match_operand:SVE_Fx24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Fx24
+	  [(match_operand:SVE_Fx24 1 "aligned_register_operand" "%0")
+	   (match_operand:SVE_Fx24 2 "aligned_register_operand" "Uw<vector_count>")]
+	  SVE_FP_BINARY_MULTI))]
+  "TARGET_STREAMING_SME2"
+  "<maxmin_uns_op>\t%0, %0, %2"
+)
+
+(define_insn "@aarch64_sve_single_<maxmin_uns_op><mode>"
+  [(set (match_operand:SVE_Fx24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Fx24
+	  [(match_operand:SVE_Fx24 1 "aligned_register_operand" "0")
+	   (vec_duplicate:SVE_Fx24
+	     (match_operand:<VSINGLE> 2 "register_operand" "x"))]
+	  SVE_FP_BINARY_MULTI))]
+  "TARGET_STREAMING_SME2"
+  "<maxmin_uns_op>\t%0, %0, %2.<Vetype>"
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Long multiplication with accumulation
 ;; -------------------------------------------------------------------------
 ;; Includes:
+;; - FDOT (SME2 or SVE2p1)
 ;; - FMLALB
 ;; - FMLALT
 ;; - FMLSLB
@@ -1553,6 +1978,40 @@
   }
 )
 
+;; Two-way dot-product.
+(define_insn "aarch64_sve_fdotvnx4sfvnx8hf"
+  [(set (match_operand:VNx4SF 0 "register_operand")
+	(plus:VNx4SF
+	  (unspec:VNx4SF
+	    [(match_operand:VNx8HF 1 "register_operand")
+	     (match_operand:VNx8HF 2 "register_operand")]
+	    UNSPEC_FDOT)
+	  (match_operand:VNx4SF 3 "register_operand")))]
+  "TARGET_STREAMING_SME2"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , w , w , 0 ; *              ] fdot\t%0.s, %1.h, %2.h
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %3\;fdot\t%0.s, %1.h, %2.h
+  }
+)
+
+(define_insn "aarch64_fdot_prod_lanevnx4sfvnx8hf"
+  [(set (match_operand:VNx4SF 0 "register_operand")
+	(plus:VNx4SF
+	  (unspec:VNx4SF
+	    [(match_operand:VNx8HF 1 "register_operand")
+	     (unspec:VNx8HF
+	       [(match_operand:VNx8HF 2 "register_operand")
+		(match_operand:SI 3 "const_int_operand")]
+	       UNSPEC_SVE_LANE_SELECT)]
+	    UNSPEC_FDOT)
+	  (match_operand:VNx4SF 4 "register_operand")))]
+  "TARGET_STREAMING_SME2"
+  {@ [ cons: =0 , 1 , 2 , 4 ; attrs: movprfx ]
+     [ w        , w , y , 0 ; *              ] fdot\t%0.s, %1.h, %2.h[%3]
+     [ ?&w      , w , y , w ; yes            ] movprfx\t%0, %4\;fdot\t%0.s, %1.h, %2.h[%3]
+  }
+)
+
 ;; =========================================================================
 ;; == Narrowing arithnetic
 ;; =========================================================================
@@ -1587,6 +2046,43 @@
 	  SVE2_INT_UNARY_NARROWT))]
   "TARGET_SVE2"
   "<sve_int_op>\t%0.<Ventype>, %2.<Vetype>"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Multi-vector narrowing unary arithmetic
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - SQCVT
+;; - SQCVTN
+;; - UQCVT
+;; - UQCVTN
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_<optab><VNx16QI_ONLY:mode><VNx16SI_ONLY:mode>"
+  [(set (match_operand:VNx16QI_ONLY 0 "register_operand" "=w")
+	(unspec:VNx16QI_ONLY
+	  [(match_operand:VNx16SI_ONLY 1 "aligned_register_operand" "Uw<vector_count>")]
+	  SVE_QCVTxN))]
+  "TARGET_SME2 && TARGET_STREAMING"
+  "<optab>\t%0.b, %1"
+)
+
+(define_insn "@aarch64_sve_<optab><VNx8HI_ONLY:mode><VNx8SI_ONLY:mode>"
+  [(set (match_operand:VNx8HI_ONLY 0 "register_operand" "=w")
+	(unspec:VNx8HI_ONLY
+	  [(match_operand:VNx8SI_ONLY 1 "aligned_register_operand" "Uw<vector_count>")]
+	  SVE_QCVTxN))]
+  "TARGET_SME2 && TARGET_STREAMING"
+  "<optab>\t%0.h, %1"
+)
+
+(define_insn "@aarch64_sve_<optab><VNx8HI_ONLY:mode><VNx8DI_ONLY:mode>"
+  [(set (match_operand:VNx8HI_ONLY 0 "register_operand" "=w")
+	(unspec:VNx8HI_ONLY
+	  [(match_operand:VNx8DI_ONLY 1 "aligned_register_operand" "Uw<vector_count>")]
+	  SVE_QCVTxN))]
+  "TARGET_SME2 && TARGET_STREAMING"
+  "<optab>\t%0.h, %1"
 )
 
 ;; -------------------------------------------------------------------------
@@ -1685,6 +2181,20 @@
 	  SVE2_INT_SHIFT_IMM_NARROWT))]
   "TARGET_SVE2"
   "<sve_int_op>\t%0.<Ventype>, %2.<Vetype>, #%3"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Multi-vector narrowing right shifts
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_<sve_int_op><mode>"
+  [(set (match_operand:<VNARROW> 0 "register_operand" "=w")
+	(unspec:<VNARROW>
+	  [(match_operand:SVE_FULL_SIx2_SDIx4 1 "register_operand" "Uw<vector_count>")
+	   (match_operand:DI 2 "const_int_operand")]
+	  SVE2_INT_SHIFT_IMM_NARROWxN))]
+  "TARGET_STREAMING_SME2"
+  "<sve_int_op>\t%0.<Ventype>, %1, #%2"
 )
 
 ;; =========================================================================
@@ -2160,6 +2670,57 @@
   "fcvtxnt\t%0.<Ventype>, %2/m, %3.<Vetype>"
 )
 
+;; -------------------------------------------------------------------------
+;; ---- [FP<-FP] Multi-vector narrowing conversions
+;; -------------------------------------------------------------------------
+;; Includes the multi-register forms of:
+;; - BFCVT
+;; - BFCVTN
+;; - FCVT
+;; - FCVTN
+;; -------------------------------------------------------------------------
+
+(define_insn "truncvnx8sf<mode>2"
+  [(set (match_operand:SVE_FULL_HF 0 "register_operand" "=w")
+	(float_truncate:SVE_FULL_HF
+	  (match_operand:VNx8SF 1 "aligned_register_operand" "Uw2")))]
+  "TARGET_STREAMING_SME2"
+  "<b>fcvt\t%0.h, %1"
+)
+
+(define_insn "@aarch64_sve_cvtn<mode>"
+  [(set (match_operand:SVE_FULL_HF 0 "register_operand" "=w")
+	(unspec:SVE_FULL_HF
+	  [(match_operand:VNx8SF 1 "aligned_register_operand" "Uw2")]
+	  UNSPEC_FCVTN))]
+  "TARGET_STREAMING_SME2"
+  "<b>fcvtn\t%0.h, %1"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP<-INT] Multi-vector conversions
+;; -------------------------------------------------------------------------
+
+(define_insn "<optab><v_int_equiv><mode>2"
+  [(set (match_operand:SVE_SFx24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(FLOATUORS:SVE_SFx24
+	  (match_operand:<V_INT_EQUIV> 1 "aligned_register_operand" "Uw<vector_count>")))]
+  "TARGET_STREAMING_SME2"
+  "<su_optab>cvtf\t%0, %1"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT<-FP] Multi-vector conversions
+;; -------------------------------------------------------------------------
+
+(define_insn "<optab><mode><v_int_equiv>2"
+  [(set (match_operand:<V_INT_EQUIV> 0 "aligned_register_operand" "=Uw<vector_count>")
+	(FIXUORS:<V_INT_EQUIV>
+	  (match_operand:SVE_SFx24 1 "aligned_register_operand" "Uw<vector_count>")))]
+  "TARGET_STREAMING_SME2"
+  "fcvtz<su>\t%0, %1"
+)
+
 ;; =========================================================================
 ;; == Other arithmetic
 ;; =========================================================================
@@ -2356,8 +2917,106 @@
 )
 
 ;; =========================================================================
+;; == Comparisons and selects
+;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Select based on predicates as counters
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_sel<mode>"
+  [(set (match_operand:SVE_FULLx24 0 "register_operand" "=Uw<vector_count>")
+	(unspec:SVE_FULLx24
+	  [(match_operand:<VPRED> 3 "register_operand" "Uph")
+	   (match_operand:SVE_FULLx24 1 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:SVE_FULLx24 2 "aligned_register_operand" "Uw<vector_count>")]
+	  UNSPEC_SEL))]
+  "TARGET_STREAMING_SME2"
+  "sel\t%0, %K3, %1, %2"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] While tests
+;; -------------------------------------------------------------------------
+;; Includes the x2 and count versions of:
+;; - WHILEGE
+;; - WHILEGT
+;; - WHILEHI
+;; - WHILEHS
+;; - WHILELE
+;; - WHILELO
+;; - WHILELS
+;; - WHILELT
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_while<while_optab_cmp>_b<BHSD_BITS>_x2"
+  [(set (match_operand:VNx32BI 0 "register_operand" "=Up2")
+	(unspec:VNx32BI
+	  [(const_int SVE_WHILE_B_X2)
+	   (match_operand:DI 1 "aarch64_reg_or_zero" "rZ")
+	   (match_operand:DI 2 "aarch64_reg_or_zero" "rZ")
+	   (const_int BHSD_BITS)]
+	  SVE_WHILE_ORDER))
+   (clobber (reg:CC_NZC CC_REGNUM))]
+  "TARGET_STREAMING_SME2"
+  "while<cmp_op>\t{%S0.<bits_etype>, %T0.<bits_etype>}, %x1, %x2"
+)
+
+(define_insn "@aarch64_sve_while<while_optab_cmp>_c<BHSD_BITS>"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Uph")
+	(unspec:VNx16BI
+	  [(const_int SVE_WHILE_C)
+	   (match_operand:DI 1 "aarch64_reg_or_zero" "rZ")
+	   (match_operand:DI 2 "aarch64_reg_or_zero" "rZ")
+	   (const_int BHSD_BITS)
+	   (match_operand:DI 3 "const_int_operand")]
+	  SVE_WHILE_ORDER))
+   (clobber (reg:CC_NZC CC_REGNUM))]
+  "TARGET_STREAMING_SME2"
+  "while<cmp_op>\t%K0.<bits_etype>, %x1, %x2, vlx%3"
+)
+
+;; =========================================================================
 ;; == Permutation
 ;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Reversal
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - REVD
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_pred_<optab><mode>"
+  [(set (match_operand:SVE_FULL 0 "register_operand")
+	(unspec:SVE_FULL
+	  [(match_operand:VNx2BI 1 "register_operand")
+	   (unspec:SVE_FULL
+	     [(match_operand:SVE_FULL 2 "register_operand")]
+	     UNSPEC_REVD_ONLY)]
+	  UNSPEC_PRED_X))]
+  "TARGET_STREAMING_SME"
+  {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
+     [ w        , Upl , 0 ; *              ] revd\t%0.q, %1/m, %2.q
+     [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;revd\t%0.q, %1/m, %2.q
+  }
+)
+
+(define_insn "@cond_<optab><mode>"
+  [(set (match_operand:SVE_FULL 0 "register_operand")
+	(unspec:SVE_FULL
+	  [(match_operand:VNx2BI 1 "register_operand")
+	   (unspec:SVE_FULL
+	     [(match_operand:SVE_FULL 2 "register_operand")]
+	     UNSPEC_REVD_ONLY)
+	   (match_operand:SVE_FULL 3 "register_operand")]
+	  UNSPEC_SEL))]
+  "TARGET_STREAMING_SME"
+  {@ [ cons: =0 , 1   , 2 , 3  ; attrs: movprfx ]
+     [ w        , Upl , w , 0  ; *              ] revd\t%0.q, %1/m, %2.q
+     [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;revd\t%0.q, %1/m, %2.q
+  }
+)
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT,FP] General permutes
@@ -2388,6 +3047,52 @@
 	  UNSPEC_TBX))]
   "TARGET_SVE2"
   "tbx\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Multi-register permutes
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - ZIP
+;; - UZP
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_<optab><mode>"
+  [(set (match_operand:SVE_FULLx2 0 "aligned_register_operand" "=Uw2")
+	(unspec:SVE_FULLx2
+	  [(match_operand:<VSINGLE> 1 "register_operand" "w")
+	   (match_operand:<VSINGLE> 2 "register_operand" "w")]
+	  SVE2_x24_PERMUTE))]
+  "TARGET_STREAMING_SME2"
+  "<perm_insn>\t%0, %1.<Vetype>, %2.<Vetype>"
+)
+
+(define_insn "@aarch64_sve_<optab><mode>"
+  [(set (match_operand:SVE_FULLx2 0 "aligned_register_operand" "=Uw2")
+	(unspec:SVE_FULLx2
+	  [(match_operand:<VSINGLE> 1 "register_operand" "w")
+	   (match_operand:<VSINGLE> 2 "register_operand" "w")]
+	  SVE2_x24_PERMUTEQ))]
+  "TARGET_STREAMING_SME2"
+  "<perm_insn>\t{%S0.q - %T0.q}, %1.q, %2.q"
+)
+
+(define_insn "@aarch64_sve_<optab><mode>"
+  [(set (match_operand:SVE_FULLx4 0 "aligned_register_operand" "=Uw4")
+	(unspec:SVE_FULLx4
+	  [(match_operand:SVE_FULLx4 1 "aligned_register_operand" "Uw4")]
+	  SVE2_x24_PERMUTE))]
+  "TARGET_STREAMING_SME2"
+  "<perm_insn>\t%0, %1"
+)
+
+(define_insn "@aarch64_sve_<optab><mode>"
+  [(set (match_operand:SVE_FULLx4 0 "aligned_register_operand" "=Uw4")
+	(unspec:SVE_FULLx4
+	  [(match_operand:SVE_FULLx4 1 "aligned_register_operand" "Uw4")]
+	  SVE2_x24_PERMUTEQ))]
+  "TARGET_STREAMING_SME2"
+  "<perm_insn>\t{%S0.q - %V0.q}, {%S1.q - %V1.q}"
 )
 
 ;; -------------------------------------------------------------------------
@@ -2469,7 +3174,7 @@
 	   (match_operand:SVE_FULL_SDI 2 "register_operand" "w")
 	   (match_operand:SVE_FULL_SDI 3 "register_operand" "w")]
 	  UNSPEC_HISTCNT))]
-  "TARGET_SVE2"
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
   "histcnt\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
 
@@ -2479,7 +3184,7 @@
 	  [(match_operand:VNx16QI_ONLY 1 "register_operand" "w")
 	   (match_operand:VNx16QI_ONLY 2 "register_operand" "w")]
 	  UNSPEC_HISTSEG))]
-  "TARGET_SVE2"
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
   "histseg\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
 )
 
@@ -2503,7 +3208,7 @@
 	     SVE2_MATCH)]
 	  UNSPEC_PRED_Z))
    (clobber (reg:CC_NZC CC_REGNUM))]
-  "TARGET_SVE2"
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
   "<sve_int_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>"
 )
 
@@ -2534,6 +3239,7 @@
 	     SVE2_MATCH)]
 	  UNSPEC_PRED_Z))]
   "TARGET_SVE2
+   && TARGET_NON_STREAMING
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
   "<sve_int_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
   "&& !rtx_equal_p (operands[4], operands[6])"
@@ -2561,6 +3267,7 @@
 	  UNSPEC_PTEST))
    (clobber (match_scratch:<VPRED> 0 "=Upa"))]
   "TARGET_SVE2
+   && TARGET_NON_STREAMING
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
   "<sve_int_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
   "&& !rtx_equal_p (operands[4], operands[6])"

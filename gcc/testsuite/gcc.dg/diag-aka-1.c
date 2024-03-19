@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wc++-compat" } */
+/* { dg-options "-fpermissive -Wc++-compat" } */
 
 typedef struct A { int i; } B;
 typedef struct T { int i; } *T; /* { dg-warning "using 'T' as both a typedef and a tag is invalid" } */

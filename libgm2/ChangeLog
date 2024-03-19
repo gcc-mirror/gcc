@@ -1,3 +1,8 @@
+2023-11-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* configure: Regenerate.
+	* configure.ac:(libtool_VERSION): Bump to 19:0:0.
+
 2023-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110779

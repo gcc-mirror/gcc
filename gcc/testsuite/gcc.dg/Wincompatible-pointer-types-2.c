@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-fpermissive" } */
 
 void *
 f1 (int flag, int *a, long *b)

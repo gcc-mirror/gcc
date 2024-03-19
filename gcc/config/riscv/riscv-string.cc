@@ -707,51 +707,68 @@ riscv_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
 /* Expand a cpymemsi instruction, which copies LENGTH bytes from
    memory reference SRC to memory reference DEST.  */
 
+static bool
+riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
+{
+  if (!CONST_INT_P (length))
+    return false;
+
+  unsigned HOST_WIDE_INT hwi_length = UINTVAL (length);
+  unsigned HOST_WIDE_INT factor, align;
+
+  align = MIN (MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), BITS_PER_WORD);
+  factor = BITS_PER_WORD / align;
+
+  if (optimize_function_for_size_p (cfun)
+      && hwi_length * factor * UNITS_PER_WORD > MOVE_RATIO (false))
+    return false;
+
+  if (hwi_length <= (RISCV_MAX_MOVE_BYTES_STRAIGHT / factor))
+    {
+      riscv_block_move_straight (dest, src, INTVAL (length));
+      return true;
+    }
+  else if (optimize && align >= BITS_PER_WORD)
+    {
+      unsigned min_iter_words
+	= RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD;
+      unsigned iter_words = min_iter_words;
+      unsigned HOST_WIDE_INT bytes = hwi_length;
+      unsigned HOST_WIDE_INT words = bytes / UNITS_PER_WORD;
+
+      /* Lengthen the loop body if it shortens the tail.  */
+      for (unsigned i = min_iter_words; i < min_iter_words * 2 - 1; i++)
+	{
+	  unsigned cur_cost = iter_words + words % iter_words;
+	  unsigned new_cost = i + words % i;
+	  if (new_cost <= cur_cost)
+	    iter_words = i;
+	}
+
+      riscv_block_move_loop (dest, src, bytes, iter_words * UNITS_PER_WORD);
+      return true;
+    }
+
+  return false;
+}
+
+/* This function delegates block-move expansion to either the vector
+   implementation or the scalar one.  Return TRUE if successful or FALSE
+   otherwise.  */
+
 bool
 riscv_expand_block_move (rtx dest, rtx src, rtx length)
 {
-  if (riscv_memcpy_strategy == USE_LIBCALL
-      || riscv_memcpy_strategy == USE_VECTOR)
-    return false;
-
-  if (CONST_INT_P (length))
+  if (TARGET_VECTOR && stringop_strategy & STRATEGY_VECTOR)
     {
-      unsigned HOST_WIDE_INT hwi_length = UINTVAL (length);
-      unsigned HOST_WIDE_INT factor, align;
-
-      align = MIN (MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), BITS_PER_WORD);
-      factor = BITS_PER_WORD / align;
-
-      if (optimize_function_for_size_p (cfun)
-	  && hwi_length * factor * UNITS_PER_WORD > MOVE_RATIO (false))
-	return false;
-
-      if (hwi_length <= (RISCV_MAX_MOVE_BYTES_STRAIGHT / factor))
-	{
-	  riscv_block_move_straight (dest, src, INTVAL (length));
-	  return true;
-	}
-      else if (optimize && align >= BITS_PER_WORD)
-	{
-	  unsigned min_iter_words
-	    = RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD;
-	  unsigned iter_words = min_iter_words;
-	  unsigned HOST_WIDE_INT bytes = hwi_length;
-	  unsigned HOST_WIDE_INT words = bytes / UNITS_PER_WORD;
-
-	  /* Lengthen the loop body if it shortens the tail.  */
-	  for (unsigned i = min_iter_words; i < min_iter_words * 2 - 1; i++)
-	    {
-	      unsigned cur_cost = iter_words + words % iter_words;
-	      unsigned new_cost = i + words % i;
-	      if (new_cost <= cur_cost)
-		iter_words = i;
-	    }
-
-	  riscv_block_move_loop (dest, src, bytes, iter_words * UNITS_PER_WORD);
-	  return true;
-	}
+      bool ok = riscv_vector::expand_block_move (dest, src, length);
+      if (ok)
+	return true;
     }
+
+  if (stringop_strategy & STRATEGY_SCALAR)
+    return riscv_expand_block_move_scalar (dest, src, length);
+
   return false;
 }
 
@@ -777,9 +794,8 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	bnez a2, loop                   # Any more?
 	ret                             # Return
   */
-  if (!TARGET_VECTOR || riscv_memcpy_strategy == USE_LIBCALL
-      || riscv_memcpy_strategy == USE_SCALAR)
-    return false;
+  gcc_assert (TARGET_VECTOR);
+
   HOST_WIDE_INT potential_ew
     = (MIN (MIN (MEM_ALIGN (src_in), MEM_ALIGN (dst_in)), BITS_PER_WORD)
        / BITS_PER_UNIT);
@@ -866,6 +882,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 		if (TARGET_MIN_VLEN * lmul <= nunits * BITS_PER_UNIT
 		    /* Avoid loosing the option of using vsetivli .  */
 		    && (nunits <= 31 * lmul || nunits > 31 * 8)
+		    && multiple_p (BYTES_PER_RISCV_VECTOR * lmul, potential_ew)
 		    && (riscv_vector::get_vector_mode
 			 (elem_mode, exact_div (BYTES_PER_RISCV_VECTOR * lmul,
 				     potential_ew)).exists (&vmode)))
@@ -1000,6 +1017,8 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
   machine_mode mask_mode = riscv_vector::get_mask_mode (vmode);
 
   rtx cnt = gen_reg_rtx (Pmode);
+  emit_move_insn (cnt, CONST0_RTX (Pmode));
+
   rtx end = gen_reg_rtx (Pmode);
   rtx vec = gen_reg_rtx (vmode);
   rtx mask = gen_reg_rtx (mask_mode);
@@ -1015,6 +1034,11 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
   emit_label (loop);
 
   rtx vsrc = change_address (src, vmode, src_addr);
+
+  /* Bump the pointer.  */
+  rtx step = gen_reg_rtx (Pmode);
+  emit_insn (gen_rtx_SET (step, gen_rtx_ASHIFT (Pmode, cnt, GEN_INT (shift))));
+  emit_insn (gen_rtx_SET (src_addr, gen_rtx_PLUS (Pmode, src_addr, step)));
 
   /* Emit a first-fault load.  */
   rtx vlops[] = {vec, vsrc};
@@ -1038,15 +1062,9 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
   emit_nonvlmax_insn (code_for_pred_ffs (mask_mode, Pmode),
 		      riscv_vector::CPOP_OP, vfops, cnt);
 
-  /* Bump the pointer.  */
-  emit_insn (gen_rtx_SET (src_addr, gen_rtx_PLUS (Pmode, src_addr, cnt)));
-
   /* Emit the loop condition.  */
   rtx test = gen_rtx_LT (VOIDmode, end, const0_rtx);
   emit_jump_insn (gen_cbranch4 (Pmode, test, end, const0_rtx, loop));
-
-  /*  We overran by CNT, subtract it.  */
-  emit_insn (gen_rtx_SET (src_addr, gen_rtx_MINUS (Pmode, src_addr, cnt)));
 
   /*  We found something at SRC + END * [1,2,4,8].  */
   emit_insn (gen_rtx_SET (end, gen_rtx_ASHIFT (Pmode, end, GEN_INT (shift))));

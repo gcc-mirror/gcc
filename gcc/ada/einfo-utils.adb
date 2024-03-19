@@ -201,6 +201,11 @@ package body Einfo.Utils is
         and then Ekind (Directly_Designated_Type (Id)) = E_Subprogram_Type;
    end Is_Access_Subprogram_Type;
 
+   function Is_Address_Compatible_Type          (Id : E) return B is
+   begin
+      return Is_Descendant_Of_Address (Id) or else Id = Standard_Address;
+   end Is_Address_Compatible_Type;
+
    function Is_Aggregate_Type                   (Id : E) return B is
    begin
       return Ekind (Id) in Aggregate_Kind;

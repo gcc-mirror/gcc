@@ -1753,11 +1753,11 @@ package body Sem_Ch6 is
         and then Ekind (Entity (Selector_Name (P)))
                    in E_Entry | E_Function | E_Procedure
       then
-         --  When front-end inlining is enabled, as with SPARK_Mode, a call
+         --  When front-end inlining is enabled, as with GNATprove mode, a call
          --  in prefix notation may still be missing its controlling argument,
          --  so perform the transformation now.
 
-         if SPARK_Mode = On and then In_Inlined_Body then
+         if GNATprove_Mode and then In_Inlined_Body then
             declare
                Subp : constant Entity_Id := Entity (Selector_Name (P));
                Typ  : constant Entity_Id := Etype (Prefix (P));
@@ -4612,7 +4612,7 @@ package body Sem_Ch6 is
 
       Analyze_SPARK_Subprogram_Specification (Specification (N));
 
-      --  A function with side-effects shall not be an expression function
+      --  A function with side effects shall not be an expression function
       --  (SPARK RM 6.1.11(6)).
 
       if Present (Spec_Id)
@@ -5240,7 +5240,7 @@ package body Sem_Ch6 is
       Analyze_Aspect_Specifications (N, Designator);
 
       --  The legality of a function specification in SPARK depends on whether
-      --  the function is a function with or without side-effects. Analyze the
+      --  the function is a function with or without side effects. Analyze the
       --  pragma in advance if present, before specific SPARK legality checks.
 
       Analyze_Pragmas_If_Present (N, Pragma_SPARK_Mode);

@@ -1,7 +1,7 @@
 /* Test C23 attribute syntax.  Invalid uses of attributes with GNU C
    features.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu23 -w" } */
+/* { dg-options "-fpermissive -std=gnu23 -w" } */
 
 /* Attributes cannot be used as prefix attributes on old-style
    parameter declarations or on function declarators with identifier

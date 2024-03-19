@@ -3114,7 +3114,7 @@ v850_adjust_insn_length (rtx_insn *insn, int length)
 
 /* V850 specific attributes.  */
 
-static const struct attribute_spec v850_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (v850_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -3127,9 +3127,8 @@ static const struct attribute_spec v850_attribute_table[] =
   { "tda",               0, 0, true,  false, false, false,
     v850_handle_data_area_attribute, NULL },
   { "zda",               0, 0, true,  false, false, false,
-    v850_handle_data_area_attribute, NULL },
-  { NULL,                0, 0, false, false, false, false, NULL, NULL }
-};
+    v850_handle_data_area_attribute, NULL }
+});
 
 static void
 v850_option_override (void)

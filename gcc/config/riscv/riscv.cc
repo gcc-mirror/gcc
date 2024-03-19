@@ -434,7 +434,7 @@ static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 static void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
 
 /* Defining target-specific uses of __attribute__.  */
-static const struct attribute_spec riscv_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (riscv_attribute_table,
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
 	       function_type_required, affects_type_identity, handler,
@@ -450,11 +450,8 @@ static const struct attribute_spec riscv_attribute_table[] =
   /* The following two are used for the built-in properties of the Vector type
      and are not used externally */
   {"RVV sizeless type", 4, 4, false, true, false, true, NULL, NULL},
-  {"RVV type", 0, 0, false, true, false, true, NULL, NULL},
-
-  /* The last attribute spec is set to be NULL.  */
-  { NULL,	0,  0, false, false, false, false, NULL, NULL }
-};
+  {"RVV type", 0, 0, false, true, false, true, NULL, NULL}
+});
 
 /* Order for the CLOBBERs/USEs of gpr_save.  */
 static const unsigned gpr_save_reg_order[] = {
@@ -2605,41 +2602,64 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       unsigned int nunits = vmode_size > mode_size ? vmode_size / mode_size : 1;
       scalar_mode smode = as_a<scalar_mode> (mode);
       unsigned int index = SUBREG_BYTE (src).to_constant () / mode_size;
-      unsigned int num = smode == DImode && !TARGET_VECTOR_ELEN_64 ? 2 : 1;
+      unsigned int num = known_eq (GET_MODE_SIZE (smode), 8)
+	&& !TARGET_VECTOR_ELEN_64 ? 2 : 1;
+      bool need_int_reg_p = false;
 
       if (num == 2)
 	{
 	  /* If we want to extract 64bit value but ELEN < 64,
 	     we use RVV vector mode with EEW = 32 to extract
 	     the highpart and lowpart.  */
+	  need_int_reg_p = smode == DFmode;
 	  smode = SImode;
 	  nunits = nunits * 2;
 	}
-      vmode = riscv_vector::get_vector_mode (smode, nunits).require ();
-      rtx v = gen_lowpart (vmode, SUBREG_REG (src));
 
-      for (unsigned int i = 0; i < num; i++)
+      if (riscv_vector::get_vector_mode (smode, nunits).exists (&vmode))
 	{
-	  rtx result;
-	  if (num == 1)
-	    result = dest;
-	  else if (i == 0)
-	    result = gen_lowpart (smode, dest);
-	  else
-	    result = gen_reg_rtx (smode);
-	  riscv_vector::emit_vec_extract (result, v, index + i);
+	  rtx v = gen_lowpart (vmode, SUBREG_REG (src));
+	  rtx int_reg = dest;
 
-	  if (i == 1)
+	  if (need_int_reg_p)
 	    {
-	      rtx tmp
-		= expand_binop (Pmode, ashl_optab, gen_lowpart (Pmode, result),
-				gen_int_mode (32, Pmode), NULL_RTX, 0,
-				OPTAB_DIRECT);
-	      rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, dest, NULL_RTX, 0,
-				       OPTAB_DIRECT);
-	      emit_move_insn (dest, tmp2);
+	      int_reg = gen_reg_rtx (DImode);
+	      emit_move_insn (int_reg, gen_lowpart (GET_MODE (int_reg), dest));
 	    }
+
+	  for (unsigned int i = 0; i < num; i++)
+	    {
+	      rtx result;
+	      if (num == 1)
+		result = int_reg;
+	      else if (i == 0)
+		result = gen_lowpart (smode, int_reg);
+	      else
+		result = gen_reg_rtx (smode);
+
+	      riscv_vector::emit_vec_extract (result, v, index + i);
+
+	      if (i == 1)
+		{
+		  rtx tmp = expand_binop (Pmode, ashl_optab,
+					  gen_lowpart (Pmode, result),
+					  gen_int_mode (32, Pmode), NULL_RTX, 0,
+					  OPTAB_DIRECT);
+		  rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, int_reg,
+					   NULL_RTX, 0,
+					   OPTAB_DIRECT);
+		  emit_move_insn (int_reg, tmp2);
+		}
+	    }
+
+	  if (need_int_reg_p)
+	    emit_move_insn (dest, gen_lowpart (GET_MODE (dest), int_reg));
+	  else
+	    emit_move_insn (dest, int_reg);
 	}
+      else
+	gcc_unreachable ();
+
       return true;
     }
   /* Expand
@@ -8671,10 +8691,12 @@ riscv_option_override (void)
 
   /* RVE requires specific ABI.  */
   if (TARGET_RVE)
-    if (!TARGET_64BIT && riscv_abi != ABI_ILP32E)
-      error ("rv32e requires ilp32e ABI");
-    else if (TARGET_64BIT && riscv_abi != ABI_LP64E)
-      error ("rv64e requires lp64e ABI");
+    {
+      if (!TARGET_64BIT && riscv_abi != ABI_ILP32E)
+	error ("rv32e requires ilp32e ABI");
+      else if (TARGET_64BIT && riscv_abi != ABI_LP64E)
+	error ("rv64e requires lp64e ABI");
+    }
 
   /* Zfinx require abi ilp32, ilp32e, lp64 or lp64e.  */
   if (TARGET_ZFINX

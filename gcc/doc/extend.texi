@@ -77,6 +77,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Function Names::      Printable strings which are the name of the current
                         function.
 * Return Address::      Getting the return or frame address of a function.
+* Stack Scrubbing::     Stack scrubbing internal interfaces.
 * Vector Extensions::   Using vector instructions through built-in functions.
 * Offsetof::            Special syntax for implementing @code{offsetof}.
 * __sync Builtins::     Legacy built-in functions for atomic memory access.
@@ -4204,9 +4205,8 @@ pointers.  In the latter case, any function used as an initializer of
 such a callback field will be treated as being called with tainted
 arguments.
 
-The analyzer will pay particular attention to such functions when both
-@option{-fanalyzer} and @option{-fanalyzer-checker=taint} are supplied,
-potentially issuing warnings guarded by
+The analyzer will pay particular attention to such functions when
+@option{-fanalyzer} is supplied, potentially issuing warnings guarded by
 @option{-Wanalyzer-tainted-allocation-size},
 @option{-Wanalyzer-tainted-array-index},
 @option{-Wanalyzer-tainted-divisor},
@@ -8962,6 +8962,71 @@ initialization will result in future breakage.
 GCC emits warnings based on this attribute by default; use
 @option{-Wno-designated-init} to suppress them.
 
+@cindex @code{hardbool} type attribute
+@item hardbool
+@itemx hardbool (@var{false_value})
+@itemx hardbool (@var{false_value}, @var{true_value})
+This attribute may only be applied to integral types in C, to introduce
+hardened boolean types.  It turns the integral type into a boolean-like
+type with the same size and precision, that uses the specified values as
+representations for @code{false} and @code{true}.  Underneath, it is
+actually an enumerate type, but its observable behavior is like that of
+@code{_Bool}, except for the strict internal representations, verified
+by runtime checks.
+
+If @var{true_value} is omitted, the bitwise negation of
+@var{false_value} is used.  If @var{false_value} is omitted, zero is
+used.  The named representation values must be different when converted
+to the original integral type.  Narrower bitfields are rejected if the
+representations become indistinguishable.
+
+Values of such types automatically decay to @code{_Bool}, at which
+point, the selected representation values are mapped to the
+corresponding @code{_Bool} values.  When the represented value is not
+determined, at compile time, to be either @var{false_value} or
+@var{true_value}, runtime verification calls @code{__builtin_trap} if it
+is neither.  This is what makes them hardened boolean types.
+
+When converting scalar types to such hardened boolean types, implicitly
+or explicitly, behavior corresponds to a conversion to @code{_Bool},
+followed by a mapping from @code{false} and @code{true} to
+@var{false_value} and @var{true_value}, respectively.
+
+@smallexample
+typedef char __attribute__ ((__hardbool__ (0x5a))) hbool;
+hbool first = 0;       /* False, stored as (char)0x5a.  */
+hbool second = !first; /* True, stored as ~(char)0x5a.  */
+
+static hbool zeroinit; /* False, stored as (char)0x5a.  */
+auto hbool uninit;     /* Undefined, may trap.  */
+@end smallexample
+
+When zero-initializing a variable or field of hardened boolean type
+(presumably held in static storage) the implied zero initializer gets
+converted to @code{_Bool}, and then to the hardened boolean type, so
+that the initial value is the hardened representation for @code{false}.
+Using that value is well defined.  This is @emph{not} the case when
+variables and fields of such types are uninitialized (presumably held in
+automatic or dynamic storage): their values are indeterminate, and using
+them invokes undefined behavior.  Using them may trap or not, depending
+on the bits held in the storage (re)used for the variable, if any, and
+on optimizations the compiler may perform on the grounds that using
+uninitialized values invokes undefined behavior.
+
+Users of @option{-ftrivial-auto-var-init} should be aware that the bit
+patterns used as initializers are @emph{not} converted to
+@code{hardbool} types, so using a @code{hardbool} variable that is
+implicitly initialized by the @option{-ftrivial-auto-var-init} may trap
+if the representations values chosen for @code{false} and @code{true} do
+not match the initializer.
+
+Since this is a language extension only available in C, interoperation
+with other languages may pose difficulties.  It should interoperate with
+Ada Booleans defined with the same size and equivalent representation
+clauses, and with enumerations or other languages' integral types that
+correspond to C's chosen integral type.
+
+
 @cindex @code{may_alias} type attribute
 @item may_alias
 Accesses through pointers to types with this attribute are not subject
@@ -9159,6 +9224,268 @@ pid_t wait (wait_status_ptr_t p)
 @{
   return waitpid (-1, p.__ip, 0);
 @}
+@end smallexample
+
+@cindex @code{strub} type attribute
+@item strub
+This attribute defines stack-scrubbing properties of functions and
+variables, so that functions that access sensitive data can have their
+stack frames zeroed-out upon returning or propagating exceptions.  This
+may be enabled explicitly, by selecting certain @code{strub} modes for
+specific functions, or implicitly, by means of @code{strub} variables.
+
+Being a type attribute, it attaches to types, even when specified in
+function and variable declarations.  When applied to function types, it
+takes an optional string argument.  When applied to a
+pointer-to-function type, if the optional argument is given, it gets
+propagated to the function type.
+
+@smallexample
+/* A strub variable.  */
+int __attribute__ ((strub)) var;
+/* A strub variable that happens to be a pointer.  */
+__attribute__ ((strub)) int *strub_ptr_to_int;
+/* A pointer type that may point to a strub variable.  */
+typedef int __attribute__ ((strub)) *ptr_to_strub_int_type;
+
+/* A declaration of a strub function.  */
+extern int __attribute__ ((strub)) foo (void);
+/* A pointer to that strub function.  */
+int __attribute__ ((strub ("at-calls"))) (*ptr_to_strub_fn)(void) = foo;
+@end smallexample
+
+A function associated with @code{at-calls} @code{strub} mode
+(@code{strub("at-calls")}, or just @code{strub}) undergoes interface
+changes.  Its callers are adjusted to match the changes, and to scrub
+(overwrite with zeros) the stack space used by the called function after
+it returns.  The interface change makes the function type incompatible
+with an unadorned but otherwise equivalent type, so @emph{every}
+declaration and every type that may be used to call the function must be
+associated with this strub mode.
+
+A function associated with @code{internal} @code{strub} mode
+(@code{strub("internal")}) retains an unmodified, type-compatible
+interface, but it may be turned into a wrapper that calls the wrapped
+body using a custom interface.  The wrapper then scrubs the stack space
+used by the wrapped body.  Though the wrapped body has its stack space
+scrubbed, the wrapper does not, so arguments and return values may
+remain unscrubbed even when such a function is called by another
+function that enables @code{strub}.  This is why, when compiling with
+@option{-fstrub=strict}, a @code{strub} context is not allowed to call
+@code{internal} @code{strub} functions.
+
+@smallexample
+/* A declaration of an internal-strub function.  */
+extern int __attribute__ ((strub ("internal"))) bar (void);
+
+int __attribute__ ((strub))
+baz (void)
+@{
+  /* Ok, foo was declared above as an at-calls strub function.  */
+  foo ();
+  /* Not allowed in strict mode, otherwise allowed.  */
+  bar ();
+@}
+@end smallexample
+
+An automatically-allocated variable associated with the @code{strub}
+attribute causes the (immediately) enclosing function to have
+@code{strub} enabled.
+
+A statically-allocated variable associated with the @code{strub}
+attribute causes functions that @emph{read} it, through its @code{strub}
+data type, to have @code{strub} enabled.  Reading data by dereferencing
+a pointer to a @code{strub} data type has the same effect.  Note: The
+attribute does not carry over from a composite type to the types of its
+components, so the intended effect may not be obtained with non-scalar
+types.
+
+When selecting a @code{strub}-enabled mode for a function that is not
+explicitly associated with one, because of @code{strub} variables or
+data pointers, the function must satisfy @code{internal} mode viability
+requirements (see below), even when @code{at-calls} mode is also viable
+and, being more efficient, ends up selected as an optimization.
+
+@smallexample
+/* zapme is implicitly strub-enabled because of strub variables.
+   Optimization may change its strub mode, but not the requirements.  */
+static int
+zapme (int i)
+@{
+  /* A local strub variable enables strub.  */
+  int __attribute__ ((strub)) lvar;
+  /* Reading strub data through a pointer-to-strub enables strub.  */
+  lvar = * (ptr_to_strub_int_type) &i;
+  /* Writing to a global strub variable does not enable strub.  */
+  var = lvar;
+  /* Reading from a global strub variable enables strub.  */
+  return var;
+@}
+@end smallexample
+
+A @code{strub} context is the body (as opposed to the interface) of a
+function that has @code{strub} enabled, be it explicitly, by
+@code{at-calls} or @code{internal} mode, or implicitly, due to
+@code{strub} variables or command-line options.
+
+A function of a type associated with the @code{disabled} @code{strub}
+mode (@code{strub("disabled")} will not have its own stack space
+scrubbed.  Such functions @emph{cannot} be called from within
+@code{strub} contexts.
+
+In order to enable a function to be called from within @code{strub}
+contexts without having its stack space scrubbed, associate it with the
+@code{callable} @code{strub} mode (@code{strub("callable")}).
+
+When a function is not assigned a @code{strub} mode, explicitly or
+implicitly, the mode defaults to @code{callable}, except when compiling
+with @option{-fstrub=strict}, that causes @code{strub} mode to default
+to @code{disabled}.
+
+@example
+extern int __attribute__ ((strub ("callable"))) bac (void);
+extern int __attribute__ ((strub ("disabled"))) bad (void);
+ /* Implicitly disabled with -fstrub=strict, otherwise callable.  */
+extern int bah (void);
+
+int __attribute__ ((strub))
+bal (void)
+@{
+  /* Not allowed, bad is not strub-callable.  */
+  bad ();
+  /* Ok, bac is strub-callable.  */
+  bac ();
+  /* Not allowed with -fstrub=strict, otherwise allowed.  */
+  bah ();
+@}
+@end example
+
+Function types marked @code{callable} and @code{disabled} are not
+mutually compatible types, but the underlying interfaces are compatible,
+so it is safe to convert pointers between them, and to use such pointers
+or alternate declarations to call them.  Interfaces are also
+interchangeable between them and @code{internal} (but not
+@code{at-calls}!), but adding @code{internal} to a pointer type will not
+cause the pointed-to function to perform stack scrubbing.
+
+@example
+void __attribute__ ((strub))
+bap (void)
+@{
+  /* Assign a callable function to pointer-to-disabled.
+     Flagged as not quite compatible with -Wpedantic.  */
+  int __attribute__ ((strub ("disabled"))) (*d_p) (void) = bac;
+  /* Not allowed: calls disabled type in a strub context.  */
+  d_p ();
+
+  /* Assign a disabled function to pointer-to-callable.
+     Flagged as not quite compatible with -Wpedantic.  */
+  int __attribute__ ((strub ("callable"))) (*c_p) (void) = bad;
+  /* Ok, safe.  */
+  c_p ();
+
+  /* Assign an internal function to pointer-to-callable.
+     Flagged as not quite compatible with -Wpedantic.  */
+  c_p = bar;
+  /* Ok, safe.  */
+  c_p ();
+
+  /* Assign an at-calls function to pointer-to-callable.
+     Flaggged as incompatible.  */
+  c_p = bal;
+  /* The call through an interface-incompatible type will not use the
+     modified interface expected by the at-calls function, so it is
+     likely to misbehave at runtime.  */
+  c_p ();
+@}
+@end example
+
+@code{Strub} contexts are never inlined into non-@code{strub} contexts.
+When an @code{internal}-strub function is split up, the wrapper can
+often be inlined, but the wrapped body @emph{never} is.  A function
+marked as @code{always_inline}, even if explicitly assigned
+@code{internal} strub mode, will not undergo wrapping, so its body gets
+inlined as required.
+
+@example
+inline int __attribute__ ((strub ("at-calls")))
+inl_atc (void)
+@{
+  /* This body may get inlined into strub contexts.  */
+@}
+
+inline int __attribute__ ((strub ("internal")))
+inl_int (void)
+@{
+  /* This body NEVER gets inlined, though its wrapper may.  */
+@}
+
+inline int __attribute__ ((strub ("internal"), always_inline))
+inl_int_ali (void)
+@{
+  /* No internal wrapper, so this body ALWAYS gets inlined,
+     but it cannot be called from non-strub contexts.  */
+@}
+
+void __attribute__ ((strub ("disabled")))
+bat (void)
+@{
+  /* Not allowed, cannot inline into a non-strub context.  */
+  inl_int_ali ();
+@}
+@end example
+
+@cindex strub eligibility and viability
+Some @option{-fstrub=*} command line options enable @code{strub} modes
+implicitly where viable.  A @code{strub} mode is only viable for a
+function if the function is eligible for that mode, and if other
+conditions, detailed below, are satisfied.  If it's not eligible for a
+mode, attempts to explicitly associate it with that mode are rejected
+with an error message.  If it is eligible, that mode may be assigned
+explicitly through this attribute, but implicit assignment through
+command-line options may involve additional viability requirements.
+
+A function is ineligible for @code{at-calls} @code{strub} mode if a
+different @code{strub} mode is explicitly requested, if attribute
+@code{noipa} is present, or if it calls @code{__builtin_apply_args}.
+@code{At-calls} @code{strub} mode, if not requested through the function
+type, is only viable for an eligible function if the function is not
+visible to other translation units, if it doesn't have its address
+taken, and if it is never called with a function type overrider.
+
+@smallexample
+/* bar is eligible for at-calls strub mode,
+   but not viable for that mode because it is visible to other units.
+   It is eligible and viable for internal strub mode.  */
+void bav () @{@}
+
+/* setp is eligible for at-calls strub mode,
+   but not viable for that mode because its address is taken.
+   It is eligible and viable for internal strub mode.  */
+void setp (void) @{ static void (*p)(void); = setp; @}
+@end smallexample
+
+A function is ineligible for @code{internal} @code{strub} mode if a
+different @code{strub} mode is explicitly requested, or if attribute
+@code{noipa} is present.  For an @code{always_inline} function, meeting
+these requirements is enough to make it eligible.  Any function that has
+attribute @code{noclone}, that uses such extensions as non-local labels,
+computed gotos, alternate variable argument passing interfaces,
+@code{__builtin_next_arg}, or @code{__builtin_return_address}, or that
+takes too many (about 64Ki) arguments is ineligible, unless it is
+@code{always_inline}.  For @code{internal} @code{strub} mode, all
+eligible functions are viable.
+
+@smallexample
+/* flop is not eligible, thus not viable, for at-calls strub mode.
+   Likewise for internal strub mode.  */
+__attribute__ ((noipa)) void flop (void) @{@}
+
+/* flip is eligible and viable for at-calls strub mode.
+   It would be ineligible for internal strub mode, because of noclone,
+   if it weren't for always_inline.  With always_inline, noclone is not
+   an obstacle, so it is also eligible and viable for internal strub mode.  */
+inline __attribute__ ((noclone, always_inline)) void flip (void) @{@}
 @end smallexample
 
 @cindex @code{unused} type attribute
@@ -12311,6 +12638,55 @@ option is in effect.  Such calls should only be made in debugging
 situations.
 @enddefbuiltin
 
+@deftypefn {Built-in Function} {void *} __builtin_stack_address ()
+This function returns the value of the stack pointer register.
+@end deftypefn
+
+@node Stack Scrubbing
+@section Stack scrubbing internal interfaces
+
+Stack scrubbing involves cooperation between a @code{strub} context,
+i.e., a function whose stack frame is to be zeroed-out, and its callers.
+The caller initializes a stack watermark, the @code{strub} context
+updates the watermark according to its stack use, and the caller zeroes
+it out once it regains control, whether by the callee's returning or by
+an exception.
+
+Each of these steps is performed by a different builtin function call.
+Calls to these builtins are introduced automatically, in response to
+@code{strub} attributes and command-line options; they are not expected
+to be explicitly called by source code.
+
+The functions that implement the builtins are available in libgcc but,
+depending on optimization levels, they are expanded internally, adjusted
+to account for inlining, and sometimes combined/deferred (e.g. passing
+the caller-supplied watermark on to callees, refraining from erasing
+stack areas that the caller will) to enable tail calls and to optimize
+for code size.
+
+@deftypefn {Built-in Function} {void} __builtin___strub_enter (void **@var{wmptr})
+This function initializes a stack @var{watermark} variable with the
+current top of the stack.  A call to this builtin function is introduced
+before entering a @code{strub} context.  It remains as a function call
+if optimization is not enabled.
+@end deftypefn
+
+@deftypefn {Built-in Function} {void} __builtin___strub_update (void **@var{wmptr})
+This function updates a stack @var{watermark} variable with the current
+top of the stack, if it tops the previous watermark.  A call to this
+builtin function is inserted within @code{strub} contexts, whenever
+additional stack space may have been used.  It remains as a function
+call at optimization levels lower than 2.
+@end deftypefn
+
+@deftypefn {Built-in Function} {void} __builtin___strub_leave (void **@var{wmptr})
+This function overwrites the memory area between the current top of the
+stack, and the @var{watermark}ed address.  A call to this builtin
+function is inserted after leaving a @code{strub} context.  It remains
+as a function call at optimization levels lower than 3, and it is guarded by
+a condition at level 2.
+@end deftypefn
+
 @node Vector Extensions
 @section Using Vector Instructions through Built-in Functions
 
@@ -13173,9 +13549,9 @@ after addition, conditional jump on carry etc.
  
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_addc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
-@defbuiltinx{unsigned long int __builtin_addcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
-@defbuiltinx{unsigned long long int __builtin_addcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+@defbuiltin{{unsigned int} __builtin_addc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
+@defbuiltinx{{unsigned long int} __builtin_addcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
+@defbuiltinx{{unsigned long long int} __builtin_addcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
 
 These built-in functions are equivalent to:
 @smallexample
@@ -13195,9 +13571,9 @@ emitted if one of them (preferrably the third one) has only values
 
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_subc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
-@defbuiltinx{unsigned long int __builtin_subcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
-@defbuiltinx{unsigned long long int __builtin_subcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+@defbuiltin{{unsigned int} __builtin_subc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
+@defbuiltinx{{unsigned long int} __builtin_subcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
+@defbuiltinx{{unsigned long long int} __builtin_subcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
 
 These built-in functions are equivalent to:
 @smallexample
@@ -15102,7 +15478,7 @@ where @var{prec} is bit width of @var{type}, except that side-effects
 in @var{arg} are evaluated just once.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_bit_width (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_bit_width (@var{type} @var{arg})}
 The @code{__builtin_stdc_bit_width} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15111,7 +15487,7 @@ performed on the argument.  It is equivalent to
 where @var{prec} is bit width of @var{type}.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_count_ones (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_count_ones (@var{type} @var{arg})}
 The @code{__builtin_stdc_count_ones} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15119,7 +15495,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_popcountg (@var{arg})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_count_zeros (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_count_zeros (@var{type} @var{arg})}
 The @code{__builtin_stdc_count_zeros} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15127,7 +15503,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_popcountg ((@var{type}) ~@var{arg})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_first_leading_one (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_first_leading_one (@var{type} @var{arg})}
 The @code{__builtin_stdc_first_leading_one} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15135,7 +15511,7 @@ performed on the argument.  It is equivalent to
 @code{__builtin_clzg (@var{arg}, -1) + 1U}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_first_leading_zero (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_first_leading_zero (@var{type} @var{arg})}
 The @code{__builtin_stdc_first_leading_zero} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15143,7 +15519,7 @@ performed on the argument.  It is equivalent to
 @code{__builtin_clzg ((@var{type}) ~@var{arg}, -1) + 1U}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_first_trailing_one (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_first_trailing_one (@var{type} @var{arg})}
 The @code{__builtin_stdc_first_trailing_one} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15151,7 +15527,7 @@ performed on the argument.  It is equivalent to
 @code{__builtin_ctzg (@var{arg}, -1) + 1U}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_first_trailing_zero (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_first_trailing_zero (@var{type} @var{arg})}
 The @code{__builtin_stdc_first_trailing_zero} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15159,7 +15535,7 @@ performed on the argument.  It is equivalent to
 @code{__builtin_ctzg ((@var{type}) ~@var{arg}, -1) + 1U}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_has_single_bit (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_has_single_bit (@var{type} @var{arg})}
 The @code{__builtin_stdc_has_single_bit} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15167,7 +15543,7 @@ performed on the argument.  It is equivalent to
 @code{(_Bool) (__builtin_popcountg (@var{arg}) == 1)}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_leading_ones (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_leading_ones (@var{type} @var{arg})}
 The @code{__builtin_stdc_leading_ones} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15175,7 +15551,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_clzg ((@var{type}) ~@var{arg}, @var{prec})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_leading_zeros (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_leading_zeros (@var{type} @var{arg})}
 The @code{__builtin_stdc_leading_zeros} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15183,7 +15559,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_clzg (@var{arg}, @var{prec})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_trailing_ones (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_trailing_ones (@var{type} @var{arg})}
 The @code{__builtin_stdc_trailing_ones} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15191,7 +15567,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_ctzg ((@var{type}) ~@var{arg}, @var{prec})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_trailing_zeros (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_trailing_zeros (@var{type} @var{arg})}
 The @code{__builtin_stdc_trailing_zeros} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15268,6 +15644,8 @@ instructions, but allow the compiler to schedule those calls.
 * BPF Built-in Functions::
 * FR-V Built-in Functions::
 * LoongArch Base Built-in Functions::
+* LoongArch SX Vector Intrinsics::
+* LoongArch ASX Vector Intrinsics::
 * MIPS DSP Built-in Functions::
 * MIPS Paired-Single Support::
 * MIPS Loongson Built-in Functions::
@@ -17052,6 +17430,1666 @@ Returns the value that is currently set in the @samp{tp} register.
     void * __builtin_thread_pointer (void)
 @end smallexample
 
+@node LoongArch SX Vector Intrinsics
+@subsection LoongArch SX Vector Intrinsics
+
+GCC provides intrinsics to access the LSX (Loongson SIMD Extension) instructions.
+The interface is made available by including @code{<lsxintrin.h>} and using
+@option{-mlsx}.
+
+The following vectors typedefs are included in @code{lsxintrin.h}:
+
+@itemize
+@item @code{__m128i}, a 128-bit vector of fixed point;
+@item @code{__m128}, a 128-bit vector of single precision floating point;
+@item @code{__m128d}, a 128-bit vector of double precision floating point.
+@end itemize
+
+Instructions and corresponding built-ins may have additional restrictions and/or
+input/output values manipulated:
+@itemize
+@item @code{imm0_1}, an integer literal in range 0 to 1;
+@item @code{imm0_3}, an integer literal in range 0 to 3;
+@item @code{imm0_7}, an integer literal in range 0 to 7;
+@item @code{imm0_15}, an integer literal in range 0 to 15;
+@item @code{imm0_31}, an integer literal in range 0 to 31;
+@item @code{imm0_63}, an integer literal in range 0 to 63;
+@item @code{imm0_127}, an integer literal in range 0 to 127;
+@item @code{imm0_255}, an integer literal in range 0 to 255;
+@item @code{imm_n16_15}, an integer literal in range -16 to 15;
+@item @code{imm_n128_127}, an integer literal in range -128 to 127;
+@item @code{imm_n256_255}, an integer literal in range -256 to 255;
+@item @code{imm_n512_511}, an integer literal in range -512 to 511;
+@item @code{imm_n1024_1023}, an integer literal in range -1024 to 1023;
+@item @code{imm_n2048_2047}, an integer literal in range -2048 to 2047.
+@end itemize
+
+For convenience, GCC defines functions @code{__lsx_vrepli_@{b/h/w/d@}} and
+@code{__lsx_b[n]z_@{v/b/h/w/d@}}, which are implemented as follows:
+
+@smallexample
+a. @code{__lsx_vrepli_@{b/h/w/d@}}: Implemented the case where the highest
+   bit of @code{vldi} instruction @code{i13} is 1.
+
+   i13[12] == 1'b0
+   case i13[11:10] of :
+     2'b00: __lsx_vrepli_b (imm_n512_511)
+     2'b01: __lsx_vrepli_h (imm_n512_511)
+     2'b10: __lsx_vrepli_w (imm_n512_511)
+     2'b11: __lsx_vrepli_d (imm_n512_511)
+
+b. @code{__lsx_b[n]z_@{v/b/h/w/d@}}: Since the @code{vseteqz} class directive
+   cannot be used on its own, this function is defined.
+
+   _lsx_bz_v  => vseteqz.v + bcnez
+   _lsx_bnz_v => vsetnez.v + bcnez
+   _lsx_bz_b  => vsetanyeqz.b + bcnez
+   _lsx_bz_h  => vsetanyeqz.h + bcnez
+   _lsx_bz_w  => vsetanyeqz.w + bcnez
+   _lsx_bz_d  => vsetanyeqz.d + bcnez
+   _lsx_bnz_b => vsetallnez.b + bcnez
+   _lsx_bnz_h => vsetallnez.h + bcnez
+   _lsx_bnz_w => vsetallnez.w + bcnez
+   _lsx_bnz_d => vsetallnez.d + bcnez
+@end smallexample
+
+@smallexample
+eg:
+  #include <lsxintrin.h>
+
+  extern __m128i @var{a};
+
+  void
+  test (void)
+  @{
+    if (__lsx_bz_v (@var{a}))
+      printf ("1\n");
+    else
+      printf ("2\n");
+  @}
+@end smallexample
+
+@emph{Note:} For directives where the intent operand is also the source operand
+(modifying only part of the bitfield of the intent register), the first parameter
+in the builtin call function is used as the intent operand.
+
+@smallexample
+eg:
+  #include <lsxintrin.h>
+
+  extern __m128i @var{dst};
+  extern int @var{src};
+
+  void
+  test (void)
+  @{
+    @var{dst} = __lsx_vinsgr2vr_b (@var{dst}, @var{src}, 3);
+  @}
+@end smallexample
+
+The intrinsics provided are listed below:
+@smallexample
+int __lsx_bnz_b (__m128i);
+int __lsx_bnz_d (__m128i);
+int __lsx_bnz_h (__m128i);
+int __lsx_bnz_v (__m128i);
+int __lsx_bnz_w (__m128i);
+int __lsx_bz_b (__m128i);
+int __lsx_bz_d (__m128i);
+int __lsx_bz_h (__m128i);
+int __lsx_bz_v (__m128i);
+int __lsx_bz_w (__m128i);
+__m128i __lsx_vabsd_b (__m128i, __m128i);
+__m128i __lsx_vabsd_bu (__m128i, __m128i);
+__m128i __lsx_vabsd_di (__m128i, __m128i);
+__m128i __lsx_vabsd_du (__m128i, __m128i);
+__m128i __lsx_vabsd_h (__m128i, __m128i);
+__m128i __lsx_vabsd_hu (__m128i, __m128i);
+__m128i __lsx_vabsd_w (__m128i, __m128i);
+__m128i __lsx_vabsd_wu (__m128i, __m128i);
+__m128i __lsx_vadda_b (__m128i, __m128i);
+__m128i __lsx_vadda_d (__m128i, __m128i);
+__m128i __lsx_vadda_h (__m128i, __m128i);
+__m128i __lsx_vadda_w (__m128i, __m128i);
+__m128i __lsx_vadd_b (__m128i, __m128i);
+__m128i __lsx_vadd_d (__m128i, __m128i);
+__m128i __lsx_vadd_h (__m128i, __m128i);
+__m128i __lsx_vaddi_bu (__m128i, imm0_31);
+__m128i __lsx_vaddi_du (__m128i, imm0_31);
+__m128i __lsx_vaddi_hu (__m128i, imm0_31);
+__m128i __lsx_vaddi_wu (__m128i, imm0_31);
+__m128i __lsx_vadd_q (__m128i, __m128i);
+__m128i __lsx_vadd_w (__m128i, __m128i);
+__m128i __lsx_vaddwev_d_w (__m128i, __m128i);
+__m128i __lsx_vaddwev_d_wu (__m128i, __m128i);
+__m128i __lsx_vaddwev_d_wu_w (__m128i, __m128i);
+__m128i __lsx_vaddwev_h_b (__m128i, __m128i);
+__m128i __lsx_vaddwev_h_bu (__m128i, __m128i);
+__m128i __lsx_vaddwev_h_bu_b (__m128i, __m128i);
+__m128i __lsx_vaddwev_q_d (__m128i, __m128i);
+__m128i __lsx_vaddwev_q_du (__m128i, __m128i);
+__m128i __lsx_vaddwev_q_du_d (__m128i, __m128i);
+__m128i __lsx_vaddwev_w_h (__m128i, __m128i);
+__m128i __lsx_vaddwev_w_hu (__m128i, __m128i);
+__m128i __lsx_vaddwev_w_hu_h (__m128i, __m128i);
+__m128i __lsx_vaddwod_d_w (__m128i, __m128i);
+__m128i __lsx_vaddwod_d_wu (__m128i, __m128i);
+__m128i __lsx_vaddwod_d_wu_w (__m128i, __m128i);
+__m128i __lsx_vaddwod_h_b (__m128i, __m128i);
+__m128i __lsx_vaddwod_h_bu (__m128i, __m128i);
+__m128i __lsx_vaddwod_h_bu_b (__m128i, __m128i);
+__m128i __lsx_vaddwod_q_d (__m128i, __m128i);
+__m128i __lsx_vaddwod_q_du (__m128i, __m128i);
+__m128i __lsx_vaddwod_q_du_d (__m128i, __m128i);
+__m128i __lsx_vaddwod_w_h (__m128i, __m128i);
+__m128i __lsx_vaddwod_w_hu (__m128i, __m128i);
+__m128i __lsx_vaddwod_w_hu_h (__m128i, __m128i);
+__m128i __lsx_vandi_b (__m128i, imm0_255);
+__m128i __lsx_vandn_v (__m128i, __m128i);
+__m128i __lsx_vand_v (__m128i, __m128i);
+__m128i __lsx_vavg_b (__m128i, __m128i);
+__m128i __lsx_vavg_bu (__m128i, __m128i);
+__m128i __lsx_vavg_d (__m128i, __m128i);
+__m128i __lsx_vavg_du (__m128i, __m128i);
+__m128i __lsx_vavg_h (__m128i, __m128i);
+__m128i __lsx_vavg_hu (__m128i, __m128i);
+__m128i __lsx_vavgr_b (__m128i, __m128i);
+__m128i __lsx_vavgr_bu (__m128i, __m128i);
+__m128i __lsx_vavgr_d (__m128i, __m128i);
+__m128i __lsx_vavgr_du (__m128i, __m128i);
+__m128i __lsx_vavgr_h (__m128i, __m128i);
+__m128i __lsx_vavgr_hu (__m128i, __m128i);
+__m128i __lsx_vavgr_w (__m128i, __m128i);
+__m128i __lsx_vavgr_wu (__m128i, __m128i);
+__m128i __lsx_vavg_w (__m128i, __m128i);
+__m128i __lsx_vavg_wu (__m128i, __m128i);
+__m128i __lsx_vbitclr_b (__m128i, __m128i);
+__m128i __lsx_vbitclr_d (__m128i, __m128i);
+__m128i __lsx_vbitclr_h (__m128i, __m128i);
+__m128i __lsx_vbitclri_b (__m128i, imm0_7);
+__m128i __lsx_vbitclri_d (__m128i, imm0_63);
+__m128i __lsx_vbitclri_h (__m128i, imm0_15);
+__m128i __lsx_vbitclri_w (__m128i, imm0_31);
+__m128i __lsx_vbitclr_w (__m128i, __m128i);
+__m128i __lsx_vbitrev_b (__m128i, __m128i);
+__m128i __lsx_vbitrev_d (__m128i, __m128i);
+__m128i __lsx_vbitrev_h (__m128i, __m128i);
+__m128i __lsx_vbitrevi_b (__m128i, imm0_7);
+__m128i __lsx_vbitrevi_d (__m128i, imm0_63);
+__m128i __lsx_vbitrevi_h (__m128i, imm0_15);
+__m128i __lsx_vbitrevi_w (__m128i, imm0_31);
+__m128i __lsx_vbitrev_w (__m128i, __m128i);
+__m128i __lsx_vbitseli_b (__m128i, __m128i, imm0_255);
+__m128i __lsx_vbitsel_v (__m128i, __m128i, __m128i);
+__m128i __lsx_vbitset_b (__m128i, __m128i);
+__m128i __lsx_vbitset_d (__m128i, __m128i);
+__m128i __lsx_vbitset_h (__m128i, __m128i);
+__m128i __lsx_vbitseti_b (__m128i, imm0_7);
+__m128i __lsx_vbitseti_d (__m128i, imm0_63);
+__m128i __lsx_vbitseti_h (__m128i, imm0_15);
+__m128i __lsx_vbitseti_w (__m128i, imm0_31);
+__m128i __lsx_vbitset_w (__m128i, __m128i);
+__m128i __lsx_vbsll_v (__m128i, imm0_31);
+__m128i __lsx_vbsrl_v (__m128i, imm0_31);
+__m128i __lsx_vclo_b (__m128i);
+__m128i __lsx_vclo_d (__m128i);
+__m128i __lsx_vclo_h (__m128i);
+__m128i __lsx_vclo_w (__m128i);
+__m128i __lsx_vclz_b (__m128i);
+__m128i __lsx_vclz_d (__m128i);
+__m128i __lsx_vclz_h (__m128i);
+__m128i __lsx_vclz_w (__m128i);
+__m128i __lsx_vdiv_b (__m128i, __m128i);
+__m128i __lsx_vdiv_bu (__m128i, __m128i);
+__m128i __lsx_vdiv_d (__m128i, __m128i);
+__m128i __lsx_vdiv_du (__m128i, __m128i);
+__m128i __lsx_vdiv_h (__m128i, __m128i);
+__m128i __lsx_vdiv_hu (__m128i, __m128i);
+__m128i __lsx_vdiv_w (__m128i, __m128i);
+__m128i __lsx_vdiv_wu (__m128i, __m128i);
+__m128i __lsx_vexth_du_wu (__m128i);
+__m128i __lsx_vexth_d_w (__m128i);
+__m128i __lsx_vexth_h_b (__m128i);
+__m128i __lsx_vexth_hu_bu (__m128i);
+__m128i __lsx_vexth_q_d (__m128i);
+__m128i __lsx_vexth_qu_du (__m128i);
+__m128i __lsx_vexth_w_h (__m128i);
+__m128i __lsx_vexth_wu_hu (__m128i);
+__m128i __lsx_vextl_q_d (__m128i);
+__m128i __lsx_vextl_qu_du (__m128i);
+__m128i __lsx_vextrins_b (__m128i, __m128i, imm0_255);
+__m128i __lsx_vextrins_d (__m128i, __m128i, imm0_255);
+__m128i __lsx_vextrins_h (__m128i, __m128i, imm0_255);
+__m128i __lsx_vextrins_w (__m128i, __m128i, imm0_255);
+__m128d __lsx_vfadd_d (__m128d, __m128d);
+__m128 __lsx_vfadd_s (__m128, __m128);
+__m128i __lsx_vfclass_d (__m128d);
+__m128i __lsx_vfclass_s (__m128);
+__m128i __lsx_vfcmp_caf_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_caf_s (__m128, __m128);
+__m128i __lsx_vfcmp_ceq_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_ceq_s (__m128, __m128);
+__m128i __lsx_vfcmp_cle_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_cle_s (__m128, __m128);
+__m128i __lsx_vfcmp_clt_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_clt_s (__m128, __m128);
+__m128i __lsx_vfcmp_cne_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_cne_s (__m128, __m128);
+__m128i __lsx_vfcmp_cor_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_cor_s (__m128, __m128);
+__m128i __lsx_vfcmp_cueq_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_cueq_s (__m128, __m128);
+__m128i __lsx_vfcmp_cule_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_cule_s (__m128, __m128);
+__m128i __lsx_vfcmp_cult_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_cult_s (__m128, __m128);
+__m128i __lsx_vfcmp_cun_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_cune_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_cune_s (__m128, __m128);
+__m128i __lsx_vfcmp_cun_s (__m128, __m128);
+__m128i __lsx_vfcmp_saf_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_saf_s (__m128, __m128);
+__m128i __lsx_vfcmp_seq_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_seq_s (__m128, __m128);
+__m128i __lsx_vfcmp_sle_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_sle_s (__m128, __m128);
+__m128i __lsx_vfcmp_slt_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_slt_s (__m128, __m128);
+__m128i __lsx_vfcmp_sne_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_sne_s (__m128, __m128);
+__m128i __lsx_vfcmp_sor_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_sor_s (__m128, __m128);
+__m128i __lsx_vfcmp_sueq_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_sueq_s (__m128, __m128);
+__m128i __lsx_vfcmp_sule_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_sule_s (__m128, __m128);
+__m128i __lsx_vfcmp_sult_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_sult_s (__m128, __m128);
+__m128i __lsx_vfcmp_sun_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_sune_d (__m128d, __m128d);
+__m128i __lsx_vfcmp_sune_s (__m128, __m128);
+__m128i __lsx_vfcmp_sun_s (__m128, __m128);
+__m128d __lsx_vfcvth_d_s (__m128);
+__m128i __lsx_vfcvt_h_s (__m128, __m128);
+__m128 __lsx_vfcvth_s_h (__m128i);
+__m128d __lsx_vfcvtl_d_s (__m128);
+__m128 __lsx_vfcvtl_s_h (__m128i);
+__m128 __lsx_vfcvt_s_d (__m128d, __m128d);
+__m128d __lsx_vfdiv_d (__m128d, __m128d);
+__m128 __lsx_vfdiv_s (__m128, __m128);
+__m128d __lsx_vffint_d_l (__m128i);
+__m128d __lsx_vffint_d_lu (__m128i);
+__m128d __lsx_vffinth_d_w (__m128i);
+__m128d __lsx_vffintl_d_w (__m128i);
+__m128 __lsx_vffint_s_l (__m128i, __m128i);
+__m128 __lsx_vffint_s_w (__m128i);
+__m128 __lsx_vffint_s_wu (__m128i);
+__m128d __lsx_vflogb_d (__m128d);
+__m128 __lsx_vflogb_s (__m128);
+__m128d __lsx_vfmadd_d (__m128d, __m128d, __m128d);
+__m128 __lsx_vfmadd_s (__m128, __m128, __m128);
+__m128d __lsx_vfmaxa_d (__m128d, __m128d);
+__m128 __lsx_vfmaxa_s (__m128, __m128);
+__m128d __lsx_vfmax_d (__m128d, __m128d);
+__m128 __lsx_vfmax_s (__m128, __m128);
+__m128d __lsx_vfmina_d (__m128d, __m128d);
+__m128 __lsx_vfmina_s (__m128, __m128);
+__m128d __lsx_vfmin_d (__m128d, __m128d);
+__m128 __lsx_vfmin_s (__m128, __m128);
+__m128d __lsx_vfmsub_d (__m128d, __m128d, __m128d);
+__m128 __lsx_vfmsub_s (__m128, __m128, __m128);
+__m128d __lsx_vfmul_d (__m128d, __m128d);
+__m128 __lsx_vfmul_s (__m128, __m128);
+__m128d __lsx_vfnmadd_d (__m128d, __m128d, __m128d);
+__m128 __lsx_vfnmadd_s (__m128, __m128, __m128);
+__m128d __lsx_vfnmsub_d (__m128d, __m128d, __m128d);
+__m128 __lsx_vfnmsub_s (__m128, __m128, __m128);
+__m128d __lsx_vfrecip_d (__m128d);
+__m128 __lsx_vfrecip_s (__m128);
+__m128d __lsx_vfrint_d (__m128d);
+__m128i __lsx_vfrintrm_d (__m128d);
+__m128i __lsx_vfrintrm_s (__m128);
+__m128i __lsx_vfrintrne_d (__m128d);
+__m128i __lsx_vfrintrne_s (__m128);
+__m128i __lsx_vfrintrp_d (__m128d);
+__m128i __lsx_vfrintrp_s (__m128);
+__m128i __lsx_vfrintrz_d (__m128d);
+__m128i __lsx_vfrintrz_s (__m128);
+__m128 __lsx_vfrint_s (__m128);
+__m128d __lsx_vfrsqrt_d (__m128d);
+__m128 __lsx_vfrsqrt_s (__m128);
+__m128i __lsx_vfrstp_b (__m128i, __m128i, __m128i);
+__m128i __lsx_vfrstp_h (__m128i, __m128i, __m128i);
+__m128i __lsx_vfrstpi_b (__m128i, __m128i, imm0_31);
+__m128i __lsx_vfrstpi_h (__m128i, __m128i, imm0_31);
+__m128d __lsx_vfsqrt_d (__m128d);
+__m128 __lsx_vfsqrt_s (__m128);
+__m128d __lsx_vfsub_d (__m128d, __m128d);
+__m128 __lsx_vfsub_s (__m128, __m128);
+__m128i __lsx_vftinth_l_s (__m128);
+__m128i __lsx_vftint_l_d (__m128d);
+__m128i __lsx_vftintl_l_s (__m128);
+__m128i __lsx_vftint_lu_d (__m128d);
+__m128i __lsx_vftintrmh_l_s (__m128);
+__m128i __lsx_vftintrm_l_d (__m128d);
+__m128i __lsx_vftintrml_l_s (__m128);
+__m128i __lsx_vftintrm_w_d (__m128d, __m128d);
+__m128i __lsx_vftintrm_w_s (__m128);
+__m128i __lsx_vftintrneh_l_s (__m128);
+__m128i __lsx_vftintrne_l_d (__m128d);
+__m128i __lsx_vftintrnel_l_s (__m128);
+__m128i __lsx_vftintrne_w_d (__m128d, __m128d);
+__m128i __lsx_vftintrne_w_s (__m128);
+__m128i __lsx_vftintrph_l_s (__m128);
+__m128i __lsx_vftintrp_l_d (__m128d);
+__m128i __lsx_vftintrpl_l_s (__m128);
+__m128i __lsx_vftintrp_w_d (__m128d, __m128d);
+__m128i __lsx_vftintrp_w_s (__m128);
+__m128i __lsx_vftintrzh_l_s (__m128);
+__m128i __lsx_vftintrz_l_d (__m128d);
+__m128i __lsx_vftintrzl_l_s (__m128);
+__m128i __lsx_vftintrz_lu_d (__m128d);
+__m128i __lsx_vftintrz_w_d (__m128d, __m128d);
+__m128i __lsx_vftintrz_w_s (__m128);
+__m128i __lsx_vftintrz_wu_s (__m128);
+__m128i __lsx_vftint_w_d (__m128d, __m128d);
+__m128i __lsx_vftint_w_s (__m128);
+__m128i __lsx_vftint_wu_s (__m128);
+__m128i __lsx_vhaddw_du_wu (__m128i, __m128i);
+__m128i __lsx_vhaddw_d_w (__m128i, __m128i);
+__m128i __lsx_vhaddw_h_b (__m128i, __m128i);
+__m128i __lsx_vhaddw_hu_bu (__m128i, __m128i);
+__m128i __lsx_vhaddw_q_d (__m128i, __m128i);
+__m128i __lsx_vhaddw_qu_du (__m128i, __m128i);
+__m128i __lsx_vhaddw_w_h (__m128i, __m128i);
+__m128i __lsx_vhaddw_wu_hu (__m128i, __m128i);
+__m128i __lsx_vhsubw_du_wu (__m128i, __m128i);
+__m128i __lsx_vhsubw_d_w (__m128i, __m128i);
+__m128i __lsx_vhsubw_h_b (__m128i, __m128i);
+__m128i __lsx_vhsubw_hu_bu (__m128i, __m128i);
+__m128i __lsx_vhsubw_q_d (__m128i, __m128i);
+__m128i __lsx_vhsubw_qu_du (__m128i, __m128i);
+__m128i __lsx_vhsubw_w_h (__m128i, __m128i);
+__m128i __lsx_vhsubw_wu_hu (__m128i, __m128i);
+__m128i __lsx_vilvh_b (__m128i, __m128i);
+__m128i __lsx_vilvh_d (__m128i, __m128i);
+__m128i __lsx_vilvh_h (__m128i, __m128i);
+__m128i __lsx_vilvh_w (__m128i, __m128i);
+__m128i __lsx_vilvl_b (__m128i, __m128i);
+__m128i __lsx_vilvl_d (__m128i, __m128i);
+__m128i __lsx_vilvl_h (__m128i, __m128i);
+__m128i __lsx_vilvl_w (__m128i, __m128i);
+__m128i __lsx_vinsgr2vr_b (__m128i, int, imm0_15);
+__m128i __lsx_vinsgr2vr_d (__m128i, long int, imm0_1);
+__m128i __lsx_vinsgr2vr_h (__m128i, int, imm0_7);
+__m128i __lsx_vinsgr2vr_w (__m128i, int, imm0_3);
+__m128i __lsx_vld (void *, imm_n2048_2047)
+__m128i __lsx_vldi (imm_n1024_1023)
+__m128i __lsx_vldrepl_b (void *, imm_n2048_2047)
+__m128i __lsx_vldrepl_d (void *, imm_n256_255)
+__m128i __lsx_vldrepl_h (void *, imm_n1024_1023)
+__m128i __lsx_vldrepl_w (void *, imm_n512_511)
+__m128i __lsx_vldx (void *, long int);
+__m128i __lsx_vmadd_b (__m128i, __m128i, __m128i);
+__m128i __lsx_vmadd_d (__m128i, __m128i, __m128i);
+__m128i __lsx_vmadd_h (__m128i, __m128i, __m128i);
+__m128i __lsx_vmadd_w (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_d_w (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_d_wu (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_d_wu_w (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_h_b (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_h_bu (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_h_bu_b (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_q_d (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_q_du (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_q_du_d (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_w_h (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_w_hu (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwev_w_hu_h (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_d_w (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_d_wu (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_d_wu_w (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_h_b (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_h_bu (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_h_bu_b (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_q_d (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_q_du (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_q_du_d (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_w_h (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_w_hu (__m128i, __m128i, __m128i);
+__m128i __lsx_vmaddwod_w_hu_h (__m128i, __m128i, __m128i);
+__m128i __lsx_vmax_b (__m128i, __m128i);
+__m128i __lsx_vmax_bu (__m128i, __m128i);
+__m128i __lsx_vmax_d (__m128i, __m128i);
+__m128i __lsx_vmax_du (__m128i, __m128i);
+__m128i __lsx_vmax_h (__m128i, __m128i);
+__m128i __lsx_vmax_hu (__m128i, __m128i);
+__m128i __lsx_vmaxi_b (__m128i, imm_n16_15)
+__m128i __lsx_vmaxi_bu (__m128i, imm0_31);
+__m128i __lsx_vmaxi_d (__m128i, imm_n16_15)
+__m128i __lsx_vmaxi_du (__m128i, imm0_31);
+__m128i __lsx_vmaxi_h (__m128i, imm_n16_15)
+__m128i __lsx_vmaxi_hu (__m128i, imm0_31);
+__m128i __lsx_vmaxi_w (__m128i, imm_n16_15)
+__m128i __lsx_vmaxi_wu (__m128i, imm0_31);
+__m128i __lsx_vmax_w (__m128i, __m128i);
+__m128i __lsx_vmax_wu (__m128i, __m128i);
+__m128i __lsx_vmin_b (__m128i, __m128i);
+__m128i __lsx_vmin_bu (__m128i, __m128i);
+__m128i __lsx_vmin_d (__m128i, __m128i);
+__m128i __lsx_vmin_du (__m128i, __m128i);
+__m128i __lsx_vmin_h (__m128i, __m128i);
+__m128i __lsx_vmin_hu (__m128i, __m128i);
+__m128i __lsx_vmini_b (__m128i, imm_n16_15)
+__m128i __lsx_vmini_bu (__m128i, imm0_31);
+__m128i __lsx_vmini_d (__m128i, imm_n16_15)
+__m128i __lsx_vmini_du (__m128i, imm0_31);
+__m128i __lsx_vmini_h (__m128i, imm_n16_15)
+__m128i __lsx_vmini_hu (__m128i, imm0_31);
+__m128i __lsx_vmini_w (__m128i, imm_n16_15)
+__m128i __lsx_vmini_wu (__m128i, imm0_31);
+__m128i __lsx_vmin_w (__m128i, __m128i);
+__m128i __lsx_vmin_wu (__m128i, __m128i);
+__m128i __lsx_vmod_b (__m128i, __m128i);
+__m128i __lsx_vmod_bu (__m128i, __m128i);
+__m128i __lsx_vmod_d (__m128i, __m128i);
+__m128i __lsx_vmod_du (__m128i, __m128i);
+__m128i __lsx_vmod_h (__m128i, __m128i);
+__m128i __lsx_vmod_hu (__m128i, __m128i);
+__m128i __lsx_vmod_w (__m128i, __m128i);
+__m128i __lsx_vmod_wu (__m128i, __m128i);
+__m128i __lsx_vmskgez_b (__m128i);
+__m128i __lsx_vmskltz_b (__m128i);
+__m128i __lsx_vmskltz_d (__m128i);
+__m128i __lsx_vmskltz_h (__m128i);
+__m128i __lsx_vmskltz_w (__m128i);
+__m128i __lsx_vmsknz_b (__m128i);
+__m128i __lsx_vmsub_b (__m128i, __m128i, __m128i);
+__m128i __lsx_vmsub_d (__m128i, __m128i, __m128i);
+__m128i __lsx_vmsub_h (__m128i, __m128i, __m128i);
+__m128i __lsx_vmsub_w (__m128i, __m128i, __m128i);
+__m128i __lsx_vmuh_b (__m128i, __m128i);
+__m128i __lsx_vmuh_bu (__m128i, __m128i);
+__m128i __lsx_vmuh_d (__m128i, __m128i);
+__m128i __lsx_vmuh_du (__m128i, __m128i);
+__m128i __lsx_vmuh_h (__m128i, __m128i);
+__m128i __lsx_vmuh_hu (__m128i, __m128i);
+__m128i __lsx_vmuh_w (__m128i, __m128i);
+__m128i __lsx_vmuh_wu (__m128i, __m128i);
+__m128i __lsx_vmul_b (__m128i, __m128i);
+__m128i __lsx_vmul_d (__m128i, __m128i);
+__m128i __lsx_vmul_h (__m128i, __m128i);
+__m128i __lsx_vmul_w (__m128i, __m128i);
+__m128i __lsx_vmulwev_d_w (__m128i, __m128i);
+__m128i __lsx_vmulwev_d_wu (__m128i, __m128i);
+__m128i __lsx_vmulwev_d_wu_w (__m128i, __m128i);
+__m128i __lsx_vmulwev_h_b (__m128i, __m128i);
+__m128i __lsx_vmulwev_h_bu (__m128i, __m128i);
+__m128i __lsx_vmulwev_h_bu_b (__m128i, __m128i);
+__m128i __lsx_vmulwev_q_d (__m128i, __m128i);
+__m128i __lsx_vmulwev_q_du (__m128i, __m128i);
+__m128i __lsx_vmulwev_q_du_d (__m128i, __m128i);
+__m128i __lsx_vmulwev_w_h (__m128i, __m128i);
+__m128i __lsx_vmulwev_w_hu (__m128i, __m128i);
+__m128i __lsx_vmulwev_w_hu_h (__m128i, __m128i);
+__m128i __lsx_vmulwod_d_w (__m128i, __m128i);
+__m128i __lsx_vmulwod_d_wu (__m128i, __m128i);
+__m128i __lsx_vmulwod_d_wu_w (__m128i, __m128i);
+__m128i __lsx_vmulwod_h_b (__m128i, __m128i);
+__m128i __lsx_vmulwod_h_bu (__m128i, __m128i);
+__m128i __lsx_vmulwod_h_bu_b (__m128i, __m128i);
+__m128i __lsx_vmulwod_q_d (__m128i, __m128i);
+__m128i __lsx_vmulwod_q_du (__m128i, __m128i);
+__m128i __lsx_vmulwod_q_du_d (__m128i, __m128i);
+__m128i __lsx_vmulwod_w_h (__m128i, __m128i);
+__m128i __lsx_vmulwod_w_hu (__m128i, __m128i);
+__m128i __lsx_vmulwod_w_hu_h (__m128i, __m128i);
+__m128i __lsx_vneg_b (__m128i);
+__m128i __lsx_vneg_d (__m128i);
+__m128i __lsx_vneg_h (__m128i);
+__m128i __lsx_vneg_w (__m128i);
+__m128i __lsx_vnori_b (__m128i, imm0_255);
+__m128i __lsx_vnor_v (__m128i, __m128i);
+__m128i __lsx_vori_b (__m128i, imm0_255);
+__m128i __lsx_vorn_v (__m128i, __m128i);
+__m128i __lsx_vor_v (__m128i, __m128i);
+__m128i __lsx_vpackev_b (__m128i, __m128i);
+__m128i __lsx_vpackev_d (__m128i, __m128i);
+__m128i __lsx_vpackev_h (__m128i, __m128i);
+__m128i __lsx_vpackev_w (__m128i, __m128i);
+__m128i __lsx_vpackod_b (__m128i, __m128i);
+__m128i __lsx_vpackod_d (__m128i, __m128i);
+__m128i __lsx_vpackod_h (__m128i, __m128i);
+__m128i __lsx_vpackod_w (__m128i, __m128i);
+__m128i __lsx_vpcnt_b (__m128i);
+__m128i __lsx_vpcnt_d (__m128i);
+__m128i __lsx_vpcnt_h (__m128i);
+__m128i __lsx_vpcnt_w (__m128i);
+__m128i __lsx_vpermi_w (__m128i, __m128i, imm0_255);
+__m128i __lsx_vpickev_b (__m128i, __m128i);
+__m128i __lsx_vpickev_d (__m128i, __m128i);
+__m128i __lsx_vpickev_h (__m128i, __m128i);
+__m128i __lsx_vpickev_w (__m128i, __m128i);
+__m128i __lsx_vpickod_b (__m128i, __m128i);
+__m128i __lsx_vpickod_d (__m128i, __m128i);
+__m128i __lsx_vpickod_h (__m128i, __m128i);
+__m128i __lsx_vpickod_w (__m128i, __m128i);
+int __lsx_vpickve2gr_b (__m128i, imm0_15);
+unsinged int __lsx_vpickve2gr_bu (__m128i, imm0_15);
+long int __lsx_vpickve2gr_d (__m128i, imm0_1);
+unsigned long int __lsx_vpickve2gr_du (__m128i, imm0_1);
+int __lsx_vpickve2gr_h (__m128i, imm0_7);
+unsinged int __lsx_vpickve2gr_hu (__m128i, imm0_7);
+int __lsx_vpickve2gr_w (__m128i, imm0_3);
+unsigned int __lsx_vpickve2gr_wu (__m128i, imm0_3);
+__m128i __lsx_vreplgr2vr_b (int);
+__m128i __lsx_vreplgr2vr_d (long int);
+__m128i __lsx_vreplgr2vr_h (int);
+__m128i __lsx_vreplgr2vr_w (int);
+__m128i __lsx_vrepli_b (imm_n512_511);
+__m128i __lsx_vrepli_d (imm_n512_511);
+__m128i __lsx_vrepli_h (imm_n512_511);
+__m128i __lsx_vrepli_w (imm_n512_511);
+__m128i __lsx_vreplve_b (__m128i, int);
+__m128i __lsx_vreplve_d (__m128i, int);
+__m128i __lsx_vreplve_h (__m128i, int);
+__m128i __lsx_vreplvei_b (__m128i, imm0_15);
+__m128i __lsx_vreplvei_d (__m128i, imm0_1);
+__m128i __lsx_vreplvei_h (__m128i, imm0_7);
+__m128i __lsx_vreplvei_w (__m128i, imm0_3);
+__m128i __lsx_vreplve_w (__m128i, int);
+__m128i __lsx_vrotr_b (__m128i, __m128i);
+__m128i __lsx_vrotr_d (__m128i, __m128i);
+__m128i __lsx_vrotr_h (__m128i, __m128i);
+__m128i __lsx_vrotri_b (__m128i, imm0_7);
+__m128i __lsx_vrotri_d (__m128i, imm0_63);
+__m128i __lsx_vrotri_h (__m128i, imm0_15);
+__m128i __lsx_vrotri_w (__m128i, imm0_31);
+__m128i __lsx_vrotr_w (__m128i, __m128i);
+__m128i __lsx_vsadd_b (__m128i, __m128i);
+__m128i __lsx_vsadd_bu (__m128i, __m128i);
+__m128i __lsx_vsadd_d (__m128i, __m128i);
+__m128i __lsx_vsadd_du (__m128i, __m128i);
+__m128i __lsx_vsadd_h (__m128i, __m128i);
+__m128i __lsx_vsadd_hu (__m128i, __m128i);
+__m128i __lsx_vsadd_w (__m128i, __m128i);
+__m128i __lsx_vsadd_wu (__m128i, __m128i);
+__m128i __lsx_vsat_b (__m128i, imm0_7);
+__m128i __lsx_vsat_bu (__m128i, imm0_7);
+__m128i __lsx_vsat_d (__m128i, imm0_63);
+__m128i __lsx_vsat_du (__m128i, imm0_63);
+__m128i __lsx_vsat_h (__m128i, imm0_15);
+__m128i __lsx_vsat_hu (__m128i, imm0_15);
+__m128i __lsx_vsat_w (__m128i, imm0_31);
+__m128i __lsx_vsat_wu (__m128i, imm0_31);
+__m128i __lsx_vseq_b (__m128i, __m128i);
+__m128i __lsx_vseq_d (__m128i, __m128i);
+__m128i __lsx_vseq_h (__m128i, __m128i);
+__m128i __lsx_vseqi_b (__m128i, imm_n16_15);
+__m128i __lsx_vseqi_d (__m128i, imm_n16_15);
+__m128i __lsx_vseqi_h (__m128i, imm_n16_15);
+__m128i __lsx_vseqi_w (__m128i, imm_n16_15);
+__m128i __lsx_vseq_w (__m128i, __m128i);
+__m128i __lsx_vshuf4i_b (__m128i, imm0_255);
+__m128i __lsx_vshuf4i_d (__m128i, __m128i, imm0_255);
+__m128i __lsx_vshuf4i_h (__m128i, imm0_255);
+__m128i __lsx_vshuf4i_w (__m128i, imm0_255);
+__m128i __lsx_vshuf_b (__m128i, __m128i, __m128i);
+__m128i __lsx_vshuf_d (__m128i, __m128i, __m128i);
+__m128i __lsx_vshuf_h (__m128i, __m128i, __m128i);
+__m128i __lsx_vshuf_w (__m128i, __m128i, __m128i);
+__m128i __lsx_vsigncov_b (__m128i, __m128i);
+__m128i __lsx_vsigncov_d (__m128i, __m128i);
+__m128i __lsx_vsigncov_h (__m128i, __m128i);
+__m128i __lsx_vsigncov_w (__m128i, __m128i);
+__m128i __lsx_vsigncov_b (__m128i, __m128i);
+__m128i __lsx_vsigncov_d (__m128i, __m128i);
+__m128i __lsx_vsigncov_h (__m128i, __m128i);
+__m128i __lsx_vsigncov_w (__m128i, __m128i);
+__m128i __lsx_vsle_b (__m128i, __m128i);
+__m128i __lsx_vsle_bu (__m128i, __m128i);
+__m128i __lsx_vsle_d (__m128i, __m128i);
+__m128i __lsx_vsle_du (__m128i, __m128i);
+__m128i __lsx_vsle_h (__m128i, __m128i);
+__m128i __lsx_vsle_hu (__m128i, __m128i);
+__m128i __lsx_vslei_b (__m128i, imm_n16_15);
+__m128i __lsx_vslei_bu (__m128i, imm0_31);
+__m128i __lsx_vslei_d (__m128i, imm_n16_15);
+__m128i __lsx_vslei_du (__m128i, imm0_31);
+__m128i __lsx_vslei_h (__m128i, imm_n16_15);
+__m128i __lsx_vslei_hu (__m128i, imm0_31);
+__m128i __lsx_vslei_w (__m128i, imm_n16_15);
+__m128i __lsx_vslei_wu (__m128i, imm0_31);
+__m128i __lsx_vsle_w (__m128i, __m128i);
+__m128i __lsx_vsle_wu (__m128i, __m128i);
+__m128i __lsx_vsll_b (__m128i, __m128i);
+__m128i __lsx_vsll_d (__m128i, __m128i);
+__m128i __lsx_vsll_h (__m128i, __m128i);
+__m128i __lsx_vslli_b (__m128i, imm0_7);
+__m128i __lsx_vslli_d (__m128i, imm0_63);
+__m128i __lsx_vslli_h (__m128i, imm0_15);
+__m128i __lsx_vslli_w (__m128i, imm0_31);
+__m128i __lsx_vsll_w (__m128i, __m128i);
+__m128i __lsx_vsllwil_du_wu (__m128i, imm0_31);
+__m128i __lsx_vsllwil_d_w (__m128i, imm0_31);
+__m128i __lsx_vsllwil_h_b (__m128i, imm0_7);
+__m128i __lsx_vsllwil_hu_bu (__m128i, imm0_7);
+__m128i __lsx_vsllwil_w_h (__m128i, imm0_15);
+__m128i __lsx_vsllwil_wu_hu (__m128i, imm0_15);
+__m128i __lsx_vslt_b (__m128i, __m128i);
+__m128i __lsx_vslt_bu (__m128i, __m128i);
+__m128i __lsx_vslt_d (__m128i, __m128i);
+__m128i __lsx_vslt_du (__m128i, __m128i);
+__m128i __lsx_vslt_h (__m128i, __m128i);
+__m128i __lsx_vslt_hu (__m128i, __m128i);
+__m128i __lsx_vslti_b (__m128i, imm_n16_15);
+__m128i __lsx_vslti_bu (__m128i, imm0_31);
+__m128i __lsx_vslti_d (__m128i, imm_n16_15);
+__m128i __lsx_vslti_du (__m128i, imm0_31);
+__m128i __lsx_vslti_h (__m128i, imm_n16_15);
+__m128i __lsx_vslti_hu (__m128i, imm0_31);
+__m128i __lsx_vslti_w (__m128i, imm_n16_15);
+__m128i __lsx_vslti_wu (__m128i, imm0_31);
+__m128i __lsx_vslt_w (__m128i, __m128i);
+__m128i __lsx_vslt_wu (__m128i, __m128i);
+__m128i __lsx_vsra_b (__m128i, __m128i);
+__m128i __lsx_vsra_d (__m128i, __m128i);
+__m128i __lsx_vsra_h (__m128i, __m128i);
+__m128i __lsx_vsrai_b (__m128i, imm0_7);
+__m128i __lsx_vsrai_d (__m128i, imm0_63);
+__m128i __lsx_vsrai_h (__m128i, imm0_15);
+__m128i __lsx_vsrai_w (__m128i, imm0_31);
+__m128i __lsx_vsran_b_h (__m128i, __m128i);
+__m128i __lsx_vsran_h_w (__m128i, __m128i);
+__m128i __lsx_vsrani_b_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vsrani_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vsrani_h_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vsrani_w_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vsran_w_d (__m128i, __m128i);
+__m128i __lsx_vsrar_b (__m128i, __m128i);
+__m128i __lsx_vsrar_d (__m128i, __m128i);
+__m128i __lsx_vsrar_h (__m128i, __m128i);
+__m128i __lsx_vsrari_b (__m128i, imm0_7);
+__m128i __lsx_vsrari_d (__m128i, imm0_63);
+__m128i __lsx_vsrari_h (__m128i, imm0_15);
+__m128i __lsx_vsrari_w (__m128i, imm0_31);
+__m128i __lsx_vsrarn_b_h (__m128i, __m128i);
+__m128i __lsx_vsrarn_h_w (__m128i, __m128i);
+__m128i __lsx_vsrarni_b_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vsrarni_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vsrarni_h_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vsrarni_w_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vsrarn_w_d (__m128i, __m128i);
+__m128i __lsx_vsrar_w (__m128i, __m128i);
+__m128i __lsx_vsra_w (__m128i, __m128i);
+__m128i __lsx_vsrl_b (__m128i, __m128i);
+__m128i __lsx_vsrl_d (__m128i, __m128i);
+__m128i __lsx_vsrl_h (__m128i, __m128i);
+__m128i __lsx_vsrli_b (__m128i, imm0_7);
+__m128i __lsx_vsrli_d (__m128i, imm0_63);
+__m128i __lsx_vsrli_h (__m128i, imm0_15);
+__m128i __lsx_vsrli_w (__m128i, imm0_31);
+__m128i __lsx_vsrln_b_h (__m128i, __m128i);
+__m128i __lsx_vsrln_h_w (__m128i, __m128i);
+__m128i __lsx_vsrlni_b_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vsrlni_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vsrlni_h_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vsrlni_w_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vsrln_w_d (__m128i, __m128i);
+__m128i __lsx_vsrlr_b (__m128i, __m128i);
+__m128i __lsx_vsrlr_d (__m128i, __m128i);
+__m128i __lsx_vsrlr_h (__m128i, __m128i);
+__m128i __lsx_vsrlri_b (__m128i, imm0_7);
+__m128i __lsx_vsrlri_d (__m128i, imm0_63);
+__m128i __lsx_vsrlri_h (__m128i, imm0_15);
+__m128i __lsx_vsrlri_w (__m128i, imm0_31);
+__m128i __lsx_vsrlrn_b_h (__m128i, __m128i);
+__m128i __lsx_vsrlrn_h_w (__m128i, __m128i);
+__m128i __lsx_vsrlrni_b_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vsrlrni_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vsrlrni_h_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vsrlrni_w_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vsrlrn_w_d (__m128i, __m128i);
+__m128i __lsx_vsrlr_w (__m128i, __m128i);
+__m128i __lsx_vsrl_w (__m128i, __m128i);
+__m128i __lsx_vssran_b_h (__m128i, __m128i);
+__m128i __lsx_vssran_bu_h (__m128i, __m128i);
+__m128i __lsx_vssran_hu_w (__m128i, __m128i);
+__m128i __lsx_vssran_h_w (__m128i, __m128i);
+__m128i __lsx_vssrani_b_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vssrani_bu_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vssrani_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrani_du_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrani_hu_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vssrani_h_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vssrani_w_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vssrani_wu_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vssran_w_d (__m128i, __m128i);
+__m128i __lsx_vssran_wu_d (__m128i, __m128i);
+__m128i __lsx_vssrarn_b_h (__m128i, __m128i);
+__m128i __lsx_vssrarn_bu_h (__m128i, __m128i);
+__m128i __lsx_vssrarn_hu_w (__m128i, __m128i);
+__m128i __lsx_vssrarn_h_w (__m128i, __m128i);
+__m128i __lsx_vssrarni_b_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vssrarni_bu_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vssrarni_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrarni_du_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrarni_hu_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vssrarni_h_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vssrarni_w_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vssrarni_wu_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vssrarn_w_d (__m128i, __m128i);
+__m128i __lsx_vssrarn_wu_d (__m128i, __m128i);
+__m128i __lsx_vssrln_b_h (__m128i, __m128i);
+__m128i __lsx_vssrln_bu_h (__m128i, __m128i);
+__m128i __lsx_vssrln_hu_w (__m128i, __m128i);
+__m128i __lsx_vssrln_h_w (__m128i, __m128i);
+__m128i __lsx_vssrlni_b_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vssrlni_bu_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vssrlni_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrlni_du_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrlni_hu_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vssrlni_h_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vssrlni_w_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vssrlni_wu_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vssrln_w_d (__m128i, __m128i);
+__m128i __lsx_vssrln_wu_d (__m128i, __m128i);
+__m128i __lsx_vssrlrn_b_h (__m128i, __m128i);
+__m128i __lsx_vssrlrn_bu_h (__m128i, __m128i);
+__m128i __lsx_vssrlrn_hu_w (__m128i, __m128i);
+__m128i __lsx_vssrlrn_h_w (__m128i, __m128i);
+__m128i __lsx_vssrlrni_b_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vssrlrni_bu_h (__m128i, __m128i, imm0_15);
+__m128i __lsx_vssrlrni_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrlrni_du_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrlrni_hu_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vssrlrni_h_w (__m128i, __m128i, imm0_31);
+__m128i __lsx_vssrlrni_w_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vssrlrni_wu_d (__m128i, __m128i, imm0_63);
+__m128i __lsx_vssrlrn_w_d (__m128i, __m128i);
+__m128i __lsx_vssrlrn_wu_d (__m128i, __m128i);
+__m128i __lsx_vssub_b (__m128i, __m128i);
+__m128i __lsx_vssub_bu (__m128i, __m128i);
+__m128i __lsx_vssub_d (__m128i, __m128i);
+__m128i __lsx_vssub_du (__m128i, __m128i);
+__m128i __lsx_vssub_h (__m128i, __m128i);
+__m128i __lsx_vssub_hu (__m128i, __m128i);
+__m128i __lsx_vssub_w (__m128i, __m128i);
+__m128i __lsx_vssub_wu (__m128i, __m128i);
+void __lsx_vst (__m128i, void *, imm_n2048_2047)
+void __lsx_vstelm_b (__m128i, void *, imm_n128_127, idx);
+void __lsx_vstelm_d (__m128i, void *, imm_n128_127, idx);
+void __lsx_vstelm_h (__m128i, void *, imm_n128_127, idx);
+void __lsx_vstelm_w (__m128i, void *, imm_n128_127, idx);
+void __lsx_vstx (__m128i, void *, long int)
+__m128i __lsx_vsub_b (__m128i, __m128i);
+__m128i __lsx_vsub_d (__m128i, __m128i);
+__m128i __lsx_vsub_h (__m128i, __m128i);
+__m128i __lsx_vsubi_bu (__m128i, imm0_31);
+__m128i __lsx_vsubi_du (__m128i, imm0_31);
+__m128i __lsx_vsubi_hu (__m128i, imm0_31);
+__m128i __lsx_vsubi_wu (__m128i, imm0_31);
+__m128i __lsx_vsub_q (__m128i, __m128i);
+__m128i __lsx_vsub_w (__m128i, __m128i);
+__m128i __lsx_vsubwev_d_w (__m128i, __m128i);
+__m128i __lsx_vsubwev_d_wu (__m128i, __m128i);
+__m128i __lsx_vsubwev_h_b (__m128i, __m128i);
+__m128i __lsx_vsubwev_h_bu (__m128i, __m128i);
+__m128i __lsx_vsubwev_q_d (__m128i, __m128i);
+__m128i __lsx_vsubwev_q_du (__m128i, __m128i);
+__m128i __lsx_vsubwev_w_h (__m128i, __m128i);
+__m128i __lsx_vsubwev_w_hu (__m128i, __m128i);
+__m128i __lsx_vsubwod_d_w (__m128i, __m128i);
+__m128i __lsx_vsubwod_d_wu (__m128i, __m128i);
+__m128i __lsx_vsubwod_h_b (__m128i, __m128i);
+__m128i __lsx_vsubwod_h_bu (__m128i, __m128i);
+__m128i __lsx_vsubwod_q_d (__m128i, __m128i);
+__m128i __lsx_vsubwod_q_du (__m128i, __m128i);
+__m128i __lsx_vsubwod_w_h (__m128i, __m128i);
+__m128i __lsx_vsubwod_w_hu (__m128i, __m128i);
+__m128i __lsx_vxori_b (__m128i, imm0_255);
+__m128i __lsx_vxor_v (__m128i, __m128i);
+@end smallexample
+
+@node LoongArch ASX Vector Intrinsics
+@subsection LoongArch ASX Vector Intrinsics
+
+GCC provides intrinsics to access the LASX (Loongson Advanced SIMD Extension)
+instructions. The interface is made available by including @code{<lasxintrin.h>}
+and using @option{-mlasx}.
+
+The following vectors typedefs are included in @code{lasxintrin.h}:
+
+@itemize
+@item @code{__m256i}, a 256-bit vector of fixed point;
+@item @code{__m256}, a 256-bit vector of single precision floating point;
+@item @code{__m256d}, a 256-bit vector of double precision floating point.
+@end itemize
+
+Instructions and corresponding built-ins may have additional restrictions and/or
+input/output values manipulated:
+
+@itemize
+@item @code{imm0_1}, an integer literal in range 0 to 1.
+@item @code{imm0_3}, an integer literal in range 0 to 3.
+@item @code{imm0_7}, an integer literal in range 0 to 7.
+@item @code{imm0_15}, an integer literal in range 0 to 15.
+@item @code{imm0_31}, an integer literal in range 0 to 31.
+@item @code{imm0_63}, an integer literal in range 0 to 63.
+@item @code{imm0_127}, an integer literal in range 0 to 127.
+@item @code{imm0_255}, an integer literal in range 0 to 255.
+@item @code{imm_n16_15}, an integer literal in range -16 to 15.
+@item @code{imm_n128_127}, an integer literal in range -128 to 127.
+@item @code{imm_n256_255}, an integer literal in range -256 to 255.
+@item @code{imm_n512_511}, an integer literal in range -512 to 511.
+@item @code{imm_n1024_1023}, an integer literal in range -1024 to 1023.
+@item @code{imm_n2048_2047}, an integer literal in range -2048 to 2047.
+@end itemize
+
+For convenience, GCC defines functions @code{__lasx_xvrepli_@{b/h/w/d@}} and
+@code{__lasx_b[n]z_@{v/b/h/w/d@}}, which are implemented as follows:
+
+@smallexample
+a. @code{__lasx_xvrepli_@{b/h/w/d@}}: Implemented the case where the highest
+   bit of @code{xvldi} instruction @code{i13} is 1.
+
+   i13[12] == 1'b0
+   case i13[11:10] of :
+     2'b00: __lasx_xvrepli_b (imm_n512_511)
+     2'b01: __lasx_xvrepli_h (imm_n512_511)
+     2'b10: __lasx_xvrepli_w (imm_n512_511)
+     2'b11: __lasx_xvrepli_d (imm_n512_511)
+
+b. @code{__lasx_b[n]z_@{v/b/h/w/d@}}: Since the @code{xvseteqz} class directive
+   cannot be used on its own, this function is defined.
+
+   __lasx_xbz_v  => xvseteqz.v + bcnez
+   __lasx_xbnz_v => xvsetnez.v + bcnez
+   __lasx_xbz_b  => xvsetanyeqz.b + bcnez
+   __lasx_xbz_h  => xvsetanyeqz.h + bcnez
+   __lasx_xbz_w  => xvsetanyeqz.w + bcnez
+   __lasx_xbz_d  => xvsetanyeqz.d + bcnez
+   __lasx_xbnz_b => xvsetallnez.b + bcnez
+   __lasx_xbnz_h => xvsetallnez.h + bcnez
+   __lasx_xbnz_w => xvsetallnez.w + bcnez
+   __lasx_xbnz_d => xvsetallnez.d + bcnez
+@end smallexample
+
+@smallexample
+eg:
+  #include <lasxintrin.h>
+
+  extern __m256i @var{a};
+
+  void
+  test (void)
+  @{
+    if (__lasx_xbz_v (@var{a}))
+      printf ("1\n");
+    else
+      printf ("2\n");
+  @}
+@end smallexample
+
+@emph{Note:} For directives where the intent operand is also the source operand
+(modifying only part of the bitfield of the intent register), the first parameter
+in the builtin call function is used as the intent operand.
+
+@smallexample
+eg:
+  #include <lasxintrin.h>
+  extern __m256i @var{dst};
+  int @var{src};
+
+  void
+  test (void)
+  @{
+    @var{dst} = __lasx_xvinsgr2vr_w (@var{dst}, @var{src}, 3);
+  @}
+@end smallexample
+
+
+The intrinsics provided are listed below:
+
+@smallexample
+__m256i __lasx_vext2xv_d_b (__m256i);
+__m256i __lasx_vext2xv_d_h (__m256i);
+__m256i __lasx_vext2xv_du_bu (__m256i);
+__m256i __lasx_vext2xv_du_hu (__m256i);
+__m256i __lasx_vext2xv_du_wu (__m256i);
+__m256i __lasx_vext2xv_d_w (__m256i);
+__m256i __lasx_vext2xv_h_b (__m256i);
+__m256i __lasx_vext2xv_hu_bu (__m256i);
+__m256i __lasx_vext2xv_w_b (__m256i);
+__m256i __lasx_vext2xv_w_h (__m256i);
+__m256i __lasx_vext2xv_wu_bu (__m256i);
+__m256i __lasx_vext2xv_wu_hu (__m256i);
+int __lasx_xbnz_b (__m256i);
+int __lasx_xbnz_d (__m256i);
+int __lasx_xbnz_h (__m256i);
+int __lasx_xbnz_v (__m256i);
+int __lasx_xbnz_w (__m256i);
+int __lasx_xbz_b (__m256i);
+int __lasx_xbz_d (__m256i);
+int __lasx_xbz_h (__m256i);
+int __lasx_xbz_v (__m256i);
+int __lasx_xbz_w (__m256i);
+__m256i __lasx_xvabsd_b (__m256i, __m256i);
+__m256i __lasx_xvabsd_bu (__m256i, __m256i);
+__m256i __lasx_xvabsd_d (__m256i, __m256i);
+__m256i __lasx_xvabsd_du (__m256i, __m256i);
+__m256i __lasx_xvabsd_h (__m256i, __m256i);
+__m256i __lasx_xvabsd_hu (__m256i, __m256i);
+__m256i __lasx_xvabsd_w (__m256i, __m256i);
+__m256i __lasx_xvabsd_wu (__m256i, __m256i);
+__m256i __lasx_xvadda_b (__m256i, __m256i);
+__m256i __lasx_xvadda_d (__m256i, __m256i);
+__m256i __lasx_xvadda_h (__m256i, __m256i);
+__m256i __lasx_xvadda_w (__m256i, __m256i);
+__m256i __lasx_xvadd_b (__m256i, __m256i);
+__m256i __lasx_xvadd_d (__m256i, __m256i);
+__m256i __lasx_xvadd_h (__m256i, __m256i);
+__m256i __lasx_xvaddi_bu (__m256i, imm0_31);
+__m256i __lasx_xvaddi_du (__m256i, imm0_31);
+__m256i __lasx_xvaddi_hu (__m256i, imm0_31);
+__m256i __lasx_xvaddi_wu (__m256i, imm0_31);
+__m256i __lasx_xvadd_q (__m256i, __m256i);
+__m256i __lasx_xvadd_w (__m256i, __m256i);
+__m256i __lasx_xvaddwev_d_w (__m256i, __m256i);
+__m256i __lasx_xvaddwev_d_wu (__m256i, __m256i);
+__m256i __lasx_xvaddwev_d_wu_w (__m256i, __m256i);
+__m256i __lasx_xvaddwev_h_b (__m256i, __m256i);
+__m256i __lasx_xvaddwev_h_bu (__m256i, __m256i);
+__m256i __lasx_xvaddwev_h_bu_b (__m256i, __m256i);
+__m256i __lasx_xvaddwev_q_d (__m256i, __m256i);
+__m256i __lasx_xvaddwev_q_du (__m256i, __m256i);
+__m256i __lasx_xvaddwev_q_du_d (__m256i, __m256i);
+__m256i __lasx_xvaddwev_w_h (__m256i, __m256i);
+__m256i __lasx_xvaddwev_w_hu (__m256i, __m256i);
+__m256i __lasx_xvaddwev_w_hu_h (__m256i, __m256i);
+__m256i __lasx_xvaddwod_d_w (__m256i, __m256i);
+__m256i __lasx_xvaddwod_d_wu (__m256i, __m256i);
+__m256i __lasx_xvaddwod_d_wu_w (__m256i, __m256i);
+__m256i __lasx_xvaddwod_h_b (__m256i, __m256i);
+__m256i __lasx_xvaddwod_h_bu (__m256i, __m256i);
+__m256i __lasx_xvaddwod_h_bu_b (__m256i, __m256i);
+__m256i __lasx_xvaddwod_q_d (__m256i, __m256i);
+__m256i __lasx_xvaddwod_q_du (__m256i, __m256i);
+__m256i __lasx_xvaddwod_q_du_d (__m256i, __m256i);
+__m256i __lasx_xvaddwod_w_h (__m256i, __m256i);
+__m256i __lasx_xvaddwod_w_hu (__m256i, __m256i);
+__m256i __lasx_xvaddwod_w_hu_h (__m256i, __m256i);
+__m256i __lasx_xvandi_b (__m256i, imm0_255);
+__m256i __lasx_xvandn_v (__m256i, __m256i);
+__m256i __lasx_xvand_v (__m256i, __m256i);
+__m256i __lasx_xvavg_b (__m256i, __m256i);
+__m256i __lasx_xvavg_bu (__m256i, __m256i);
+__m256i __lasx_xvavg_d (__m256i, __m256i);
+__m256i __lasx_xvavg_du (__m256i, __m256i);
+__m256i __lasx_xvavg_h (__m256i, __m256i);
+__m256i __lasx_xvavg_hu (__m256i, __m256i);
+__m256i __lasx_xvavgr_b (__m256i, __m256i);
+__m256i __lasx_xvavgr_bu (__m256i, __m256i);
+__m256i __lasx_xvavgr_d (__m256i, __m256i);
+__m256i __lasx_xvavgr_du (__m256i, __m256i);
+__m256i __lasx_xvavgr_h (__m256i, __m256i);
+__m256i __lasx_xvavgr_hu (__m256i, __m256i);
+__m256i __lasx_xvavgr_w (__m256i, __m256i);
+__m256i __lasx_xvavgr_wu (__m256i, __m256i);
+__m256i __lasx_xvavg_w (__m256i, __m256i);
+__m256i __lasx_xvavg_wu (__m256i, __m256i);
+__m256i __lasx_xvbitclr_b (__m256i, __m256i);
+__m256i __lasx_xvbitclr_d (__m256i, __m256i);
+__m256i __lasx_xvbitclr_h (__m256i, __m256i);
+__m256i __lasx_xvbitclri_b (__m256i, imm0_7);
+__m256i __lasx_xvbitclri_d (__m256i, imm0_63);
+__m256i __lasx_xvbitclri_h (__m256i, imm0_15);
+__m256i __lasx_xvbitclri_w (__m256i, imm0_31);
+__m256i __lasx_xvbitclr_w (__m256i, __m256i);
+__m256i __lasx_xvbitrev_b (__m256i, __m256i);
+__m256i __lasx_xvbitrev_d (__m256i, __m256i);
+__m256i __lasx_xvbitrev_h (__m256i, __m256i);
+__m256i __lasx_xvbitrevi_b (__m256i, imm0_7);
+__m256i __lasx_xvbitrevi_d (__m256i, imm0_63);
+__m256i __lasx_xvbitrevi_h (__m256i, imm0_15);
+__m256i __lasx_xvbitrevi_w (__m256i, imm0_31);
+__m256i __lasx_xvbitrev_w (__m256i, __m256i);
+__m256i __lasx_xvbitseli_b (__m256i, __m256i, imm0_255);
+__m256i __lasx_xvbitsel_v (__m256i, __m256i, __m256i);
+__m256i __lasx_xvbitset_b (__m256i, __m256i);
+__m256i __lasx_xvbitset_d (__m256i, __m256i);
+__m256i __lasx_xvbitset_h (__m256i, __m256i);
+__m256i __lasx_xvbitseti_b (__m256i, imm0_7);
+__m256i __lasx_xvbitseti_d (__m256i, imm0_63);
+__m256i __lasx_xvbitseti_h (__m256i, imm0_15);
+__m256i __lasx_xvbitseti_w (__m256i, imm0_31);
+__m256i __lasx_xvbitset_w (__m256i, __m256i);
+__m256i __lasx_xvbsll_v (__m256i, imm0_31);
+__m256i __lasx_xvbsrl_v (__m256i, imm0_31);
+__m256i __lasx_xvclo_b (__m256i);
+__m256i __lasx_xvclo_d (__m256i);
+__m256i __lasx_xvclo_h (__m256i);
+__m256i __lasx_xvclo_w (__m256i);
+__m256i __lasx_xvclz_b (__m256i);
+__m256i __lasx_xvclz_d (__m256i);
+__m256i __lasx_xvclz_h (__m256i);
+__m256i __lasx_xvclz_w (__m256i);
+__m256i __lasx_xvdiv_b (__m256i, __m256i);
+__m256i __lasx_xvdiv_bu (__m256i, __m256i);
+__m256i __lasx_xvdiv_d (__m256i, __m256i);
+__m256i __lasx_xvdiv_du (__m256i, __m256i);
+__m256i __lasx_xvdiv_h (__m256i, __m256i);
+__m256i __lasx_xvdiv_hu (__m256i, __m256i);
+__m256i __lasx_xvdiv_w (__m256i, __m256i);
+__m256i __lasx_xvdiv_wu (__m256i, __m256i);
+__m256i __lasx_xvexth_du_wu (__m256i);
+__m256i __lasx_xvexth_d_w (__m256i);
+__m256i __lasx_xvexth_h_b (__m256i);
+__m256i __lasx_xvexth_hu_bu (__m256i);
+__m256i __lasx_xvexth_q_d (__m256i);
+__m256i __lasx_xvexth_qu_du (__m256i);
+__m256i __lasx_xvexth_w_h (__m256i);
+__m256i __lasx_xvexth_wu_hu (__m256i);
+__m256i __lasx_xvextl_q_d (__m256i);
+__m256i __lasx_xvextl_qu_du (__m256i);
+__m256i __lasx_xvextrins_b (__m256i, __m256i, imm0_255);
+__m256i __lasx_xvextrins_d (__m256i, __m256i, imm0_255);
+__m256i __lasx_xvextrins_h (__m256i, __m256i, imm0_255);
+__m256i __lasx_xvextrins_w (__m256i, __m256i, imm0_255);
+__m256d __lasx_xvfadd_d (__m256d, __m256d);
+__m256 __lasx_xvfadd_s (__m256, __m256);
+__m256i __lasx_xvfclass_d (__m256d);
+__m256i __lasx_xvfclass_s (__m256);
+__m256i __lasx_xvfcmp_caf_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_caf_s (__m256, __m256);
+__m256i __lasx_xvfcmp_ceq_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_ceq_s (__m256, __m256);
+__m256i __lasx_xvfcmp_cle_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_cle_s (__m256, __m256);
+__m256i __lasx_xvfcmp_clt_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_clt_s (__m256, __m256);
+__m256i __lasx_xvfcmp_cne_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_cne_s (__m256, __m256);
+__m256i __lasx_xvfcmp_cor_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_cor_s (__m256, __m256);
+__m256i __lasx_xvfcmp_cueq_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_cueq_s (__m256, __m256);
+__m256i __lasx_xvfcmp_cule_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_cule_s (__m256, __m256);
+__m256i __lasx_xvfcmp_cult_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_cult_s (__m256, __m256);
+__m256i __lasx_xvfcmp_cun_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_cune_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_cune_s (__m256, __m256);
+__m256i __lasx_xvfcmp_cun_s (__m256, __m256);
+__m256i __lasx_xvfcmp_saf_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_saf_s (__m256, __m256);
+__m256i __lasx_xvfcmp_seq_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_seq_s (__m256, __m256);
+__m256i __lasx_xvfcmp_sle_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_sle_s (__m256, __m256);
+__m256i __lasx_xvfcmp_slt_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_slt_s (__m256, __m256);
+__m256i __lasx_xvfcmp_sne_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_sne_s (__m256, __m256);
+__m256i __lasx_xvfcmp_sor_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_sor_s (__m256, __m256);
+__m256i __lasx_xvfcmp_sueq_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_sueq_s (__m256, __m256);
+__m256i __lasx_xvfcmp_sule_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_sule_s (__m256, __m256);
+__m256i __lasx_xvfcmp_sult_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_sult_s (__m256, __m256);
+__m256i __lasx_xvfcmp_sun_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_sune_d (__m256d, __m256d);
+__m256i __lasx_xvfcmp_sune_s (__m256, __m256);
+__m256i __lasx_xvfcmp_sun_s (__m256, __m256);
+__m256d __lasx_xvfcvth_d_s (__m256);
+__m256i __lasx_xvfcvt_h_s (__m256, __m256);
+__m256 __lasx_xvfcvth_s_h (__m256i);
+__m256d __lasx_xvfcvtl_d_s (__m256);
+__m256 __lasx_xvfcvtl_s_h (__m256i);
+__m256 __lasx_xvfcvt_s_d (__m256d, __m256d);
+__m256d __lasx_xvfdiv_d (__m256d, __m256d);
+__m256 __lasx_xvfdiv_s (__m256, __m256);
+__m256d __lasx_xvffint_d_l (__m256i);
+__m256d __lasx_xvffint_d_lu (__m256i);
+__m256d __lasx_xvffinth_d_w (__m256i);
+__m256d __lasx_xvffintl_d_w (__m256i);
+__m256 __lasx_xvffint_s_l (__m256i, __m256i);
+__m256 __lasx_xvffint_s_w (__m256i);
+__m256 __lasx_xvffint_s_wu (__m256i);
+__m256d __lasx_xvflogb_d (__m256d);
+__m256 __lasx_xvflogb_s (__m256);
+__m256d __lasx_xvfmadd_d (__m256d, __m256d, __m256d);
+__m256 __lasx_xvfmadd_s (__m256, __m256, __m256);
+__m256d __lasx_xvfmaxa_d (__m256d, __m256d);
+__m256 __lasx_xvfmaxa_s (__m256, __m256);
+__m256d __lasx_xvfmax_d (__m256d, __m256d);
+__m256 __lasx_xvfmax_s (__m256, __m256);
+__m256d __lasx_xvfmina_d (__m256d, __m256d);
+__m256 __lasx_xvfmina_s (__m256, __m256);
+__m256d __lasx_xvfmin_d (__m256d, __m256d);
+__m256 __lasx_xvfmin_s (__m256, __m256);
+__m256d __lasx_xvfmsub_d (__m256d, __m256d, __m256d);
+__m256 __lasx_xvfmsub_s (__m256, __m256, __m256);
+__m256d __lasx_xvfmul_d (__m256d, __m256d);
+__m256 __lasx_xvfmul_s (__m256, __m256);
+__m256d __lasx_xvfnmadd_d (__m256d, __m256d, __m256d);
+__m256 __lasx_xvfnmadd_s (__m256, __m256, __m256);
+__m256d __lasx_xvfnmsub_d (__m256d, __m256d, __m256d);
+__m256 __lasx_xvfnmsub_s (__m256, __m256, __m256);
+__m256d __lasx_xvfrecip_d (__m256d);
+__m256 __lasx_xvfrecip_s (__m256);
+__m256d __lasx_xvfrint_d (__m256d);
+__m256i __lasx_xvfrintrm_d (__m256d);
+__m256i __lasx_xvfrintrm_s (__m256);
+__m256i __lasx_xvfrintrne_d (__m256d);
+__m256i __lasx_xvfrintrne_s (__m256);
+__m256i __lasx_xvfrintrp_d (__m256d);
+__m256i __lasx_xvfrintrp_s (__m256);
+__m256i __lasx_xvfrintrz_d (__m256d);
+__m256i __lasx_xvfrintrz_s (__m256);
+__m256 __lasx_xvfrint_s (__m256);
+__m256d __lasx_xvfrsqrt_d (__m256d);
+__m256 __lasx_xvfrsqrt_s (__m256);
+__m256i __lasx_xvfrstp_b (__m256i, __m256i, __m256i);
+__m256i __lasx_xvfrstp_h (__m256i, __m256i, __m256i);
+__m256i __lasx_xvfrstpi_b (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvfrstpi_h (__m256i, __m256i, imm0_31);
+__m256d __lasx_xvfsqrt_d (__m256d);
+__m256 __lasx_xvfsqrt_s (__m256);
+__m256d __lasx_xvfsub_d (__m256d, __m256d);
+__m256 __lasx_xvfsub_s (__m256, __m256);
+__m256i __lasx_xvftinth_l_s (__m256);
+__m256i __lasx_xvftint_l_d (__m256d);
+__m256i __lasx_xvftintl_l_s (__m256);
+__m256i __lasx_xvftint_lu_d (__m256d);
+__m256i __lasx_xvftintrmh_l_s (__m256);
+__m256i __lasx_xvftintrm_l_d (__m256d);
+__m256i __lasx_xvftintrml_l_s (__m256);
+__m256i __lasx_xvftintrm_w_d (__m256d, __m256d);
+__m256i __lasx_xvftintrm_w_s (__m256);
+__m256i __lasx_xvftintrneh_l_s (__m256);
+__m256i __lasx_xvftintrne_l_d (__m256d);
+__m256i __lasx_xvftintrnel_l_s (__m256);
+__m256i __lasx_xvftintrne_w_d (__m256d, __m256d);
+__m256i __lasx_xvftintrne_w_s (__m256);
+__m256i __lasx_xvftintrph_l_s (__m256);
+__m256i __lasx_xvftintrp_l_d (__m256d);
+__m256i __lasx_xvftintrpl_l_s (__m256);
+__m256i __lasx_xvftintrp_w_d (__m256d, __m256d);
+__m256i __lasx_xvftintrp_w_s (__m256);
+__m256i __lasx_xvftintrzh_l_s (__m256);
+__m256i __lasx_xvftintrz_l_d (__m256d);
+__m256i __lasx_xvftintrzl_l_s (__m256);
+__m256i __lasx_xvftintrz_lu_d (__m256d);
+__m256i __lasx_xvftintrz_w_d (__m256d, __m256d);
+__m256i __lasx_xvftintrz_w_s (__m256);
+__m256i __lasx_xvftintrz_wu_s (__m256);
+__m256i __lasx_xvftint_w_d (__m256d, __m256d);
+__m256i __lasx_xvftint_w_s (__m256);
+__m256i __lasx_xvftint_wu_s (__m256);
+__m256i __lasx_xvhaddw_du_wu (__m256i, __m256i);
+__m256i __lasx_xvhaddw_d_w (__m256i, __m256i);
+__m256i __lasx_xvhaddw_h_b (__m256i, __m256i);
+__m256i __lasx_xvhaddw_hu_bu (__m256i, __m256i);
+__m256i __lasx_xvhaddw_q_d (__m256i, __m256i);
+__m256i __lasx_xvhaddw_qu_du (__m256i, __m256i);
+__m256i __lasx_xvhaddw_w_h (__m256i, __m256i);
+__m256i __lasx_xvhaddw_wu_hu (__m256i, __m256i);
+__m256i __lasx_xvhsubw_du_wu (__m256i, __m256i);
+__m256i __lasx_xvhsubw_d_w (__m256i, __m256i);
+__m256i __lasx_xvhsubw_h_b (__m256i, __m256i);
+__m256i __lasx_xvhsubw_hu_bu (__m256i, __m256i);
+__m256i __lasx_xvhsubw_q_d (__m256i, __m256i);
+__m256i __lasx_xvhsubw_qu_du (__m256i, __m256i);
+__m256i __lasx_xvhsubw_w_h (__m256i, __m256i);
+__m256i __lasx_xvhsubw_wu_hu (__m256i, __m256i);
+__m256i __lasx_xvilvh_b (__m256i, __m256i);
+__m256i __lasx_xvilvh_d (__m256i, __m256i);
+__m256i __lasx_xvilvh_h (__m256i, __m256i);
+__m256i __lasx_xvilvh_w (__m256i, __m256i);
+__m256i __lasx_xvilvl_b (__m256i, __m256i);
+__m256i __lasx_xvilvl_d (__m256i, __m256i);
+__m256i __lasx_xvilvl_h (__m256i, __m256i);
+__m256i __lasx_xvilvl_w (__m256i, __m256i);
+__m256i __lasx_xvinsgr2vr_d (__m256i, long int, imm0_3);
+__m256i __lasx_xvinsgr2vr_w (__m256i, int, imm0_7);
+__m256i __lasx_xvinsve0_d (__m256i, __m256i, imm0_3);
+__m256i __lasx_xvinsve0_w (__m256i, __m256i, imm0_7);
+__m256i __lasx_xvld (void *, imm_n2048_2047);
+__m256i __lasx_xvldi (imm_n1024_1023);
+__m256i __lasx_xvldrepl_b (void *, imm_n2048_2047);
+__m256i __lasx_xvldrepl_d (void *, imm_n256_255);
+__m256i __lasx_xvldrepl_h (void *, imm_n1024_1023);
+__m256i __lasx_xvldrepl_w (void *, imm_n512_511);
+__m256i __lasx_xvldx (void *, long int);
+__m256i __lasx_xvmadd_b (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmadd_d (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmadd_h (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmadd_w (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_d_w (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_d_wu (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_d_wu_w (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_h_b (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_h_bu (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_h_bu_b (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_q_d (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_q_du (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_q_du_d (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_w_h (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_w_hu (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwev_w_hu_h (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_d_w (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_d_wu (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_d_wu_w (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_h_b (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_h_bu (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_h_bu_b (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_q_d (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_q_du (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_q_du_d (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_w_h (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_w_hu (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmaddwod_w_hu_h (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmax_b (__m256i, __m256i);
+__m256i __lasx_xvmax_bu (__m256i, __m256i);
+__m256i __lasx_xvmax_d (__m256i, __m256i);
+__m256i __lasx_xvmax_du (__m256i, __m256i);
+__m256i __lasx_xvmax_h (__m256i, __m256i);
+__m256i __lasx_xvmax_hu (__m256i, __m256i);
+__m256i __lasx_xvmaxi_b (__m256i, imm_n16_15);
+__m256i __lasx_xvmaxi_bu (__m256i, imm0_31);
+__m256i __lasx_xvmaxi_d (__m256i, imm_n16_15);
+__m256i __lasx_xvmaxi_du (__m256i, imm0_31);
+__m256i __lasx_xvmaxi_h (__m256i, imm_n16_15);
+__m256i __lasx_xvmaxi_hu (__m256i, imm0_31);
+__m256i __lasx_xvmaxi_w (__m256i, imm_n16_15);
+__m256i __lasx_xvmaxi_wu (__m256i, imm0_31);
+__m256i __lasx_xvmax_w (__m256i, __m256i);
+__m256i __lasx_xvmax_wu (__m256i, __m256i);
+__m256i __lasx_xvmin_b (__m256i, __m256i);
+__m256i __lasx_xvmin_bu (__m256i, __m256i);
+__m256i __lasx_xvmin_d (__m256i, __m256i);
+__m256i __lasx_xvmin_du (__m256i, __m256i);
+__m256i __lasx_xvmin_h (__m256i, __m256i);
+__m256i __lasx_xvmin_hu (__m256i, __m256i);
+__m256i __lasx_xvmini_b (__m256i, imm_n16_15);
+__m256i __lasx_xvmini_bu (__m256i, imm0_31);
+__m256i __lasx_xvmini_d (__m256i, imm_n16_15);
+__m256i __lasx_xvmini_du (__m256i, imm0_31);
+__m256i __lasx_xvmini_h (__m256i, imm_n16_15);
+__m256i __lasx_xvmini_hu (__m256i, imm0_31);
+__m256i __lasx_xvmini_w (__m256i, imm_n16_15);
+__m256i __lasx_xvmini_wu (__m256i, imm0_31);
+__m256i __lasx_xvmin_w (__m256i, __m256i);
+__m256i __lasx_xvmin_wu (__m256i, __m256i);
+__m256i __lasx_xvmod_b (__m256i, __m256i);
+__m256i __lasx_xvmod_bu (__m256i, __m256i);
+__m256i __lasx_xvmod_d (__m256i, __m256i);
+__m256i __lasx_xvmod_du (__m256i, __m256i);
+__m256i __lasx_xvmod_h (__m256i, __m256i);
+__m256i __lasx_xvmod_hu (__m256i, __m256i);
+__m256i __lasx_xvmod_w (__m256i, __m256i);
+__m256i __lasx_xvmod_wu (__m256i, __m256i);
+__m256i __lasx_xvmskgez_b (__m256i);
+__m256i __lasx_xvmskltz_b (__m256i);
+__m256i __lasx_xvmskltz_d (__m256i);
+__m256i __lasx_xvmskltz_h (__m256i);
+__m256i __lasx_xvmskltz_w (__m256i);
+__m256i __lasx_xvmsknz_b (__m256i);
+__m256i __lasx_xvmsub_b (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmsub_d (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmsub_h (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmsub_w (__m256i, __m256i, __m256i);
+__m256i __lasx_xvmuh_b (__m256i, __m256i);
+__m256i __lasx_xvmuh_bu (__m256i, __m256i);
+__m256i __lasx_xvmuh_d (__m256i, __m256i);
+__m256i __lasx_xvmuh_du (__m256i, __m256i);
+__m256i __lasx_xvmuh_h (__m256i, __m256i);
+__m256i __lasx_xvmuh_hu (__m256i, __m256i);
+__m256i __lasx_xvmuh_w (__m256i, __m256i);
+__m256i __lasx_xvmuh_wu (__m256i, __m256i);
+__m256i __lasx_xvmul_b (__m256i, __m256i);
+__m256i __lasx_xvmul_d (__m256i, __m256i);
+__m256i __lasx_xvmul_h (__m256i, __m256i);
+__m256i __lasx_xvmul_w (__m256i, __m256i);
+__m256i __lasx_xvmulwev_d_w (__m256i, __m256i);
+__m256i __lasx_xvmulwev_d_wu (__m256i, __m256i);
+__m256i __lasx_xvmulwev_d_wu_w (__m256i, __m256i);
+__m256i __lasx_xvmulwev_h_b (__m256i, __m256i);
+__m256i __lasx_xvmulwev_h_bu (__m256i, __m256i);
+__m256i __lasx_xvmulwev_h_bu_b (__m256i, __m256i);
+__m256i __lasx_xvmulwev_q_d (__m256i, __m256i);
+__m256i __lasx_xvmulwev_q_du (__m256i, __m256i);
+__m256i __lasx_xvmulwev_q_du_d (__m256i, __m256i);
+__m256i __lasx_xvmulwev_w_h (__m256i, __m256i);
+__m256i __lasx_xvmulwev_w_hu (__m256i, __m256i);
+__m256i __lasx_xvmulwev_w_hu_h (__m256i, __m256i);
+__m256i __lasx_xvmulwod_d_w (__m256i, __m256i);
+__m256i __lasx_xvmulwod_d_wu (__m256i, __m256i);
+__m256i __lasx_xvmulwod_d_wu_w (__m256i, __m256i);
+__m256i __lasx_xvmulwod_h_b (__m256i, __m256i);
+__m256i __lasx_xvmulwod_h_bu (__m256i, __m256i);
+__m256i __lasx_xvmulwod_h_bu_b (__m256i, __m256i);
+__m256i __lasx_xvmulwod_q_d (__m256i, __m256i);
+__m256i __lasx_xvmulwod_q_du (__m256i, __m256i);
+__m256i __lasx_xvmulwod_q_du_d (__m256i, __m256i);
+__m256i __lasx_xvmulwod_w_h (__m256i, __m256i);
+__m256i __lasx_xvmulwod_w_hu (__m256i, __m256i);
+__m256i __lasx_xvmulwod_w_hu_h (__m256i, __m256i);
+__m256i __lasx_xvneg_b (__m256i);
+__m256i __lasx_xvneg_d (__m256i);
+__m256i __lasx_xvneg_h (__m256i);
+__m256i __lasx_xvneg_w (__m256i);
+__m256i __lasx_xvnori_b (__m256i, imm0_255);
+__m256i __lasx_xvnor_v (__m256i, __m256i);
+__m256i __lasx_xvori_b (__m256i, imm0_255);
+__m256i __lasx_xvorn_v (__m256i, __m256i);
+__m256i __lasx_xvor_v (__m256i, __m256i);
+__m256i __lasx_xvpackev_b (__m256i, __m256i);
+__m256i __lasx_xvpackev_d (__m256i, __m256i);
+__m256i __lasx_xvpackev_h (__m256i, __m256i);
+__m256i __lasx_xvpackev_w (__m256i, __m256i);
+__m256i __lasx_xvpackod_b (__m256i, __m256i);
+__m256i __lasx_xvpackod_d (__m256i, __m256i);
+__m256i __lasx_xvpackod_h (__m256i, __m256i);
+__m256i __lasx_xvpackod_w (__m256i, __m256i);
+__m256i __lasx_xvpcnt_b (__m256i);
+__m256i __lasx_xvpcnt_d (__m256i);
+__m256i __lasx_xvpcnt_h (__m256i);
+__m256i __lasx_xvpcnt_w (__m256i);
+__m256i __lasx_xvpermi_d (__m256i, imm0_255);
+__m256i __lasx_xvpermi_q (__m256i, __m256i, imm0_255);
+__m256i __lasx_xvpermi_w (__m256i, __m256i, imm0_255);
+__m256i __lasx_xvperm_w (__m256i, __m256i);
+__m256i __lasx_xvpickev_b (__m256i, __m256i);
+__m256i __lasx_xvpickev_d (__m256i, __m256i);
+__m256i __lasx_xvpickev_h (__m256i, __m256i);
+__m256i __lasx_xvpickev_w (__m256i, __m256i);
+__m256i __lasx_xvpickod_b (__m256i, __m256i);
+__m256i __lasx_xvpickod_d (__m256i, __m256i);
+__m256i __lasx_xvpickod_h (__m256i, __m256i);
+__m256i __lasx_xvpickod_w (__m256i, __m256i);
+long int __lasx_xvpickve2gr_d (__m256i, imm0_3);
+unsigned long int __lasx_xvpickve2gr_du (__m256i, imm0_3);
+int __lasx_xvpickve2gr_w (__m256i, imm0_7);
+unsigned int __lasx_xvpickve2gr_wu (__m256i, imm0_7);
+__m256i __lasx_xvpickve_d (__m256i, imm0_3);
+__m256d __lasx_xvpickve_d_f (__m256d, imm0_3);
+__m256i __lasx_xvpickve_w (__m256i, imm0_7);
+__m256 __lasx_xvpickve_w_f (__m256, imm0_7);
+__m256i __lasx_xvrepl128vei_b (__m256i, imm0_15);
+__m256i __lasx_xvrepl128vei_d (__m256i, imm0_1);
+__m256i __lasx_xvrepl128vei_h (__m256i, imm0_7);
+__m256i __lasx_xvrepl128vei_w (__m256i, imm0_3);
+__m256i __lasx_xvreplgr2vr_b (int);
+__m256i __lasx_xvreplgr2vr_d (long int);
+__m256i __lasx_xvreplgr2vr_h (int);
+__m256i __lasx_xvreplgr2vr_w (int);
+__m256i __lasx_xvrepli_b (imm_n512_511);
+__m256i __lasx_xvrepli_d (imm_n512_511);
+__m256i __lasx_xvrepli_h (imm_n512_511);
+__m256i __lasx_xvrepli_w (imm_n512_511);
+__m256i __lasx_xvreplve0_b (__m256i);
+__m256i __lasx_xvreplve0_d (__m256i);
+__m256i __lasx_xvreplve0_h (__m256i);
+__m256i __lasx_xvreplve0_q (__m256i);
+__m256i __lasx_xvreplve0_w (__m256i);
+__m256i __lasx_xvreplve_b (__m256i, int);
+__m256i __lasx_xvreplve_d (__m256i, int);
+__m256i __lasx_xvreplve_h (__m256i, int);
+__m256i __lasx_xvreplve_w (__m256i, int);
+__m256i __lasx_xvrotr_b (__m256i, __m256i);
+__m256i __lasx_xvrotr_d (__m256i, __m256i);
+__m256i __lasx_xvrotr_h (__m256i, __m256i);
+__m256i __lasx_xvrotri_b (__m256i, imm0_7);
+__m256i __lasx_xvrotri_d (__m256i, imm0_63);
+__m256i __lasx_xvrotri_h (__m256i, imm0_15);
+__m256i __lasx_xvrotri_w (__m256i, imm0_31);
+__m256i __lasx_xvrotr_w (__m256i, __m256i);
+__m256i __lasx_xvsadd_b (__m256i, __m256i);
+__m256i __lasx_xvsadd_bu (__m256i, __m256i);
+__m256i __lasx_xvsadd_d (__m256i, __m256i);
+__m256i __lasx_xvsadd_du (__m256i, __m256i);
+__m256i __lasx_xvsadd_h (__m256i, __m256i);
+__m256i __lasx_xvsadd_hu (__m256i, __m256i);
+__m256i __lasx_xvsadd_w (__m256i, __m256i);
+__m256i __lasx_xvsadd_wu (__m256i, __m256i);
+__m256i __lasx_xvsat_b (__m256i, imm0_7);
+__m256i __lasx_xvsat_bu (__m256i, imm0_7);
+__m256i __lasx_xvsat_d (__m256i, imm0_63);
+__m256i __lasx_xvsat_du (__m256i, imm0_63);
+__m256i __lasx_xvsat_h (__m256i, imm0_15);
+__m256i __lasx_xvsat_hu (__m256i, imm0_15);
+__m256i __lasx_xvsat_w (__m256i, imm0_31);
+__m256i __lasx_xvsat_wu (__m256i, imm0_31);
+__m256i __lasx_xvseq_b (__m256i, __m256i);
+__m256i __lasx_xvseq_d (__m256i, __m256i);
+__m256i __lasx_xvseq_h (__m256i, __m256i);
+__m256i __lasx_xvseqi_b (__m256i, imm_n16_15);
+__m256i __lasx_xvseqi_d (__m256i, imm_n16_15);
+__m256i __lasx_xvseqi_h (__m256i, imm_n16_15);
+__m256i __lasx_xvseqi_w (__m256i, imm_n16_15);
+__m256i __lasx_xvseq_w (__m256i, __m256i);
+__m256i __lasx_xvshuf4i_b (__m256i, imm0_255);
+__m256i __lasx_xvshuf4i_d (__m256i, __m256i, imm0_255);
+__m256i __lasx_xvshuf4i_h (__m256i, imm0_255);
+__m256i __lasx_xvshuf4i_w (__m256i, imm0_255);
+__m256i __lasx_xvshuf_b (__m256i, __m256i, __m256i);
+__m256i __lasx_xvshuf_d (__m256i, __m256i, __m256i);
+__m256i __lasx_xvshuf_h (__m256i, __m256i, __m256i);
+__m256i __lasx_xvshuf_w (__m256i, __m256i, __m256i);
+__m256i __lasx_xvsigncov_b (__m256i, __m256i);
+__m256i __lasx_xvsigncov_d (__m256i, __m256i);
+__m256i __lasx_xvsigncov_h (__m256i, __m256i);
+__m256i __lasx_xvsigncov_w (__m256i, __m256i);
+__m256i __lasx_xvsle_b (__m256i, __m256i);
+__m256i __lasx_xvsle_bu (__m256i, __m256i);
+__m256i __lasx_xvsle_d (__m256i, __m256i);
+__m256i __lasx_xvsle_du (__m256i, __m256i);
+__m256i __lasx_xvsle_h (__m256i, __m256i);
+__m256i __lasx_xvsle_hu (__m256i, __m256i);
+__m256i __lasx_xvslei_b (__m256i, imm_n16_15);
+__m256i __lasx_xvslei_bu (__m256i, imm0_31);
+__m256i __lasx_xvslei_d (__m256i, imm_n16_15);
+__m256i __lasx_xvslei_du (__m256i, imm0_31);
+__m256i __lasx_xvslei_h (__m256i, imm_n16_15);
+__m256i __lasx_xvslei_hu (__m256i, imm0_31);
+__m256i __lasx_xvslei_w (__m256i, imm_n16_15);
+__m256i __lasx_xvslei_wu (__m256i, imm0_31);
+__m256i __lasx_xvsle_w (__m256i, __m256i);
+__m256i __lasx_xvsle_wu (__m256i, __m256i);
+__m256i __lasx_xvsll_b (__m256i, __m256i);
+__m256i __lasx_xvsll_d (__m256i, __m256i);
+__m256i __lasx_xvsll_h (__m256i, __m256i);
+__m256i __lasx_xvslli_b (__m256i, imm0_7);
+__m256i __lasx_xvslli_d (__m256i, imm0_63);
+__m256i __lasx_xvslli_h (__m256i, imm0_15);
+__m256i __lasx_xvslli_w (__m256i, imm0_31);
+__m256i __lasx_xvsll_w (__m256i, __m256i);
+__m256i __lasx_xvsllwil_du_wu (__m256i, imm0_31);
+__m256i __lasx_xvsllwil_d_w (__m256i, imm0_31);
+__m256i __lasx_xvsllwil_h_b (__m256i, imm0_7);
+__m256i __lasx_xvsllwil_hu_bu (__m256i, imm0_7);
+__m256i __lasx_xvsllwil_w_h (__m256i, imm0_15);
+__m256i __lasx_xvsllwil_wu_hu (__m256i, imm0_15);
+__m256i __lasx_xvslt_b (__m256i, __m256i);
+__m256i __lasx_xvslt_bu (__m256i, __m256i);
+__m256i __lasx_xvslt_d (__m256i, __m256i);
+__m256i __lasx_xvslt_du (__m256i, __m256i);
+__m256i __lasx_xvslt_h (__m256i, __m256i);
+__m256i __lasx_xvslt_hu (__m256i, __m256i);
+__m256i __lasx_xvslti_b (__m256i, imm_n16_15);
+__m256i __lasx_xvslti_bu (__m256i, imm0_31);
+__m256i __lasx_xvslti_d (__m256i, imm_n16_15);
+__m256i __lasx_xvslti_du (__m256i, imm0_31);
+__m256i __lasx_xvslti_h (__m256i, imm_n16_15);
+__m256i __lasx_xvslti_hu (__m256i, imm0_31);
+__m256i __lasx_xvslti_w (__m256i, imm_n16_15);
+__m256i __lasx_xvslti_wu (__m256i, imm0_31);
+__m256i __lasx_xvslt_w (__m256i, __m256i);
+__m256i __lasx_xvslt_wu (__m256i, __m256i);
+__m256i __lasx_xvsra_b (__m256i, __m256i);
+__m256i __lasx_xvsra_d (__m256i, __m256i);
+__m256i __lasx_xvsra_h (__m256i, __m256i);
+__m256i __lasx_xvsrai_b (__m256i, imm0_7);
+__m256i __lasx_xvsrai_d (__m256i, imm0_63);
+__m256i __lasx_xvsrai_h (__m256i, imm0_15);
+__m256i __lasx_xvsrai_w (__m256i, imm0_31);
+__m256i __lasx_xvsran_b_h (__m256i, __m256i);
+__m256i __lasx_xvsran_h_w (__m256i, __m256i);
+__m256i __lasx_xvsrani_b_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvsrani_d_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvsrani_h_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvsrani_w_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvsran_w_d (__m256i, __m256i);
+__m256i __lasx_xvsrar_b (__m256i, __m256i);
+__m256i __lasx_xvsrar_d (__m256i, __m256i);
+__m256i __lasx_xvsrar_h (__m256i, __m256i);
+__m256i __lasx_xvsrari_b (__m256i, imm0_7);
+__m256i __lasx_xvsrari_d (__m256i, imm0_63);
+__m256i __lasx_xvsrari_h (__m256i, imm0_15);
+__m256i __lasx_xvsrari_w (__m256i, imm0_31);
+__m256i __lasx_xvsrarn_b_h (__m256i, __m256i);
+__m256i __lasx_xvsrarn_h_w (__m256i, __m256i);
+__m256i __lasx_xvsrarni_b_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvsrarni_d_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvsrarni_h_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvsrarni_w_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvsrarn_w_d (__m256i, __m256i);
+__m256i __lasx_xvsrar_w (__m256i, __m256i);
+__m256i __lasx_xvsra_w (__m256i, __m256i);
+__m256i __lasx_xvsrl_b (__m256i, __m256i);
+__m256i __lasx_xvsrl_d (__m256i, __m256i);
+__m256i __lasx_xvsrl_h (__m256i, __m256i);
+__m256i __lasx_xvsrli_b (__m256i, imm0_7);
+__m256i __lasx_xvsrli_d (__m256i, imm0_63);
+__m256i __lasx_xvsrli_h (__m256i, imm0_15);
+__m256i __lasx_xvsrli_w (__m256i, imm0_31);
+__m256i __lasx_xvsrln_b_h (__m256i, __m256i);
+__m256i __lasx_xvsrln_h_w (__m256i, __m256i);
+__m256i __lasx_xvsrlni_b_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvsrlni_d_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvsrlni_h_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvsrlni_w_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvsrln_w_d (__m256i, __m256i);
+__m256i __lasx_xvsrlr_b (__m256i, __m256i);
+__m256i __lasx_xvsrlr_d (__m256i, __m256i);
+__m256i __lasx_xvsrlr_h (__m256i, __m256i);
+__m256i __lasx_xvsrlri_b (__m256i, imm0_7);
+__m256i __lasx_xvsrlri_d (__m256i, imm0_63);
+__m256i __lasx_xvsrlri_h (__m256i, imm0_15);
+__m256i __lasx_xvsrlri_w (__m256i, imm0_31);
+__m256i __lasx_xvsrlrn_b_h (__m256i, __m256i);
+__m256i __lasx_xvsrlrn_h_w (__m256i, __m256i);
+__m256i __lasx_xvsrlrni_b_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvsrlrni_d_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvsrlrni_h_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvsrlrni_w_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvsrlrn_w_d (__m256i, __m256i);
+__m256i __lasx_xvsrlr_w (__m256i, __m256i);
+__m256i __lasx_xvsrl_w (__m256i, __m256i);
+__m256i __lasx_xvssran_b_h (__m256i, __m256i);
+__m256i __lasx_xvssran_bu_h (__m256i, __m256i);
+__m256i __lasx_xvssran_hu_w (__m256i, __m256i);
+__m256i __lasx_xvssran_h_w (__m256i, __m256i);
+__m256i __lasx_xvssrani_b_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvssrani_bu_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvssrani_d_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvssrani_du_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvssrani_hu_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvssrani_h_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvssrani_w_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvssrani_wu_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvssran_w_d (__m256i, __m256i);
+__m256i __lasx_xvssran_wu_d (__m256i, __m256i);
+__m256i __lasx_xvssrarn_b_h (__m256i, __m256i);
+__m256i __lasx_xvssrarn_bu_h (__m256i, __m256i);
+__m256i __lasx_xvssrarn_hu_w (__m256i, __m256i);
+__m256i __lasx_xvssrarn_h_w (__m256i, __m256i);
+__m256i __lasx_xvssrarni_b_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvssrarni_bu_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvssrarni_d_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvssrarni_du_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvssrarni_hu_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvssrarni_h_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvssrarni_w_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvssrarni_wu_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvssrarn_w_d (__m256i, __m256i);
+__m256i __lasx_xvssrarn_wu_d (__m256i, __m256i);
+__m256i __lasx_xvssrln_b_h (__m256i, __m256i);
+__m256i __lasx_xvssrln_bu_h (__m256i, __m256i);
+__m256i __lasx_xvssrln_hu_w (__m256i, __m256i);
+__m256i __lasx_xvssrln_h_w (__m256i, __m256i);
+__m256i __lasx_xvssrlni_b_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvssrlni_bu_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvssrlni_d_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvssrlni_du_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvssrlni_hu_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvssrlni_h_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvssrlni_w_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvssrlni_wu_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvssrln_w_d (__m256i, __m256i);
+__m256i __lasx_xvssrln_wu_d (__m256i, __m256i);
+__m256i __lasx_xvssrlrn_b_h (__m256i, __m256i);
+__m256i __lasx_xvssrlrn_bu_h (__m256i, __m256i);
+__m256i __lasx_xvssrlrn_hu_w (__m256i, __m256i);
+__m256i __lasx_xvssrlrn_h_w (__m256i, __m256i);
+__m256i __lasx_xvssrlrni_b_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvssrlrni_bu_h (__m256i, __m256i, imm0_15);
+__m256i __lasx_xvssrlrni_d_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvssrlrni_du_q (__m256i, __m256i, imm0_127);
+__m256i __lasx_xvssrlrni_hu_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvssrlrni_h_w (__m256i, __m256i, imm0_31);
+__m256i __lasx_xvssrlrni_w_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvssrlrni_wu_d (__m256i, __m256i, imm0_63);
+__m256i __lasx_xvssrlrn_w_d (__m256i, __m256i);
+__m256i __lasx_xvssrlrn_wu_d (__m256i, __m256i);
+__m256i __lasx_xvssub_b (__m256i, __m256i);
+__m256i __lasx_xvssub_bu (__m256i, __m256i);
+__m256i __lasx_xvssub_d (__m256i, __m256i);
+__m256i __lasx_xvssub_du (__m256i, __m256i);
+__m256i __lasx_xvssub_h (__m256i, __m256i);
+__m256i __lasx_xvssub_hu (__m256i, __m256i);
+__m256i __lasx_xvssub_w (__m256i, __m256i);
+__m256i __lasx_xvssub_wu (__m256i, __m256i);
+void __lasx_xvst (__m256i, void *, imm_n2048_2047);
+void __lasx_xvstelm_b (__m256i, void *, imm_n128_127, idx);
+void __lasx_xvstelm_d (__m256i, void *, imm_n128_127, idx);
+void __lasx_xvstelm_h (__m256i, void *, imm_n128_127, idx);
+void __lasx_xvstelm_w (__m256i, void *, imm_n128_127, idx);
+void __lasx_xvstx (__m256i, void *, long int);
+__m256i __lasx_xvsub_b (__m256i, __m256i);
+__m256i __lasx_xvsub_d (__m256i, __m256i);
+__m256i __lasx_xvsub_h (__m256i, __m256i);
+__m256i __lasx_xvsubi_bu (__m256i, imm0_31);
+__m256i __lasx_xvsubi_du (__m256i, imm0_31);
+__m256i __lasx_xvsubi_hu (__m256i, imm0_31);
+__m256i __lasx_xvsubi_wu (__m256i, imm0_31);
+__m256i __lasx_xvsub_q (__m256i, __m256i);
+__m256i __lasx_xvsub_w (__m256i, __m256i);
+__m256i __lasx_xvsubwev_d_w (__m256i, __m256i);
+__m256i __lasx_xvsubwev_d_wu (__m256i, __m256i);
+__m256i __lasx_xvsubwev_h_b (__m256i, __m256i);
+__m256i __lasx_xvsubwev_h_bu (__m256i, __m256i);
+__m256i __lasx_xvsubwev_q_d (__m256i, __m256i);
+__m256i __lasx_xvsubwev_q_du (__m256i, __m256i);
+__m256i __lasx_xvsubwev_w_h (__m256i, __m256i);
+__m256i __lasx_xvsubwev_w_hu (__m256i, __m256i);
+__m256i __lasx_xvsubwod_d_w (__m256i, __m256i);
+__m256i __lasx_xvsubwod_d_wu (__m256i, __m256i);
+__m256i __lasx_xvsubwod_h_b (__m256i, __m256i);
+__m256i __lasx_xvsubwod_h_bu (__m256i, __m256i);
+__m256i __lasx_xvsubwod_q_d (__m256i, __m256i);
+__m256i __lasx_xvsubwod_q_du (__m256i, __m256i);
+__m256i __lasx_xvsubwod_w_h (__m256i, __m256i);
+__m256i __lasx_xvsubwod_w_hu (__m256i, __m256i);
+__m256i __lasx_xvxori_b (__m256i, imm0_255);
+__m256i __lasx_xvxor_v (__m256i, __m256i);
+@end smallexample
+
 @node MIPS DSP Built-in Functions
 @subsection MIPS DSP Built-in Functions
 
@@ -18666,11 +20704,11 @@ Disable global interrupt.
 
 These built-in functions are available for the Nvidia PTX target:
 
-@defbuiltin{unsigned int __builtin_nvptx_brev (unsigned int @var{x})}
+@defbuiltin{{unsigned int} __builtin_nvptx_brev (unsigned int @var{x})}
 Reverse the bit order of a 32-bit unsigned integer.
 @enddefbuiltin
 
-@defbuiltin{unsigned long long __builtin_nvptx_brevll (unsigned long long @var{x})}
+@defbuiltin{{unsigned long long} __builtin_nvptx_brevll (unsigned long long @var{x})}
 Reverse the bit order of a 64-bit unsigned integer.
 @enddefbuiltin
 
@@ -19167,8 +21205,8 @@ round to odd as the rounding mode.
 The following additional built-in functions are also available for the
 PowerPC family of processors, starting with ISA 3.0 or later:
 
-@defbuiltin{long long __builtin_darn (void)}
-@defbuiltinx{long long __builtin_darn_raw (void)}
+@defbuiltin{{long long} __builtin_darn (void)}
+@defbuiltinx{{long long} __builtin_darn_raw (void)}
 @defbuiltinx{int __builtin_darn_32 (void)}
 The @code{__builtin_darn} and @code{__builtin_darn_raw}
 functions require a
@@ -22252,12 +24290,12 @@ multiplying the bottom 16 bits of the two arguments into the
 accumulator.
 @enddefbuiltin
 
-@defbuiltin{int  __builtin_rx_mvfachi (void)}
+@defbuiltin{int __builtin_rx_mvfachi (void)}
 Generates the @code{mvfachi} machine instruction to read the top
 32 bits of the accumulator.
 @enddefbuiltin
 
-@defbuiltin{int  __builtin_rx_mvfacmi (void)}
+@defbuiltin{int __builtin_rx_mvfacmi (void)}
 Generates the @code{mvfacmi} machine instruction to read the middle
 32 bits of the accumulator.
 @enddefbuiltin
@@ -23626,7 +25664,7 @@ Generates the @code{extractps} machine instruction.
 Generates the @code{pextrd} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{long long __builtin_ia32_vec_ext_v2di (v2di, const int)}
+@defbuiltin{{long long} __builtin_ia32_vec_ext_v2di (v2di, const int)}
 Generates the @code{pextrq} machine instruction in 64bit mode.
 @enddefbuiltin
 
@@ -23655,19 +25693,19 @@ v2di __builtin_ia32_pcmpgtq (v2di, v2di);
 The following built-in functions are available when @option{-msse4.2} is
 used.
 
-@defbuiltin{unsigned int __builtin_ia32_crc32qi (unsigned int, unsigned char)}
+@defbuiltin{{unsigned int} __builtin_ia32_crc32qi (unsigned int, unsigned char)}
 Generates the @code{crc32b} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_ia32_crc32hi (unsigned int, unsigned short)}
+@defbuiltin{{unsigned int} __builtin_ia32_crc32hi (unsigned int, unsigned short)}
 Generates the @code{crc32w} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_ia32_crc32si (unsigned int, unsigned int)}
+@defbuiltin{{unsigned int} __builtin_ia32_crc32si (unsigned int, unsigned int)}
 Generates the @code{crc32l} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{unsigned long long __builtin_ia32_crc32di (unsigned long long, unsigned long long)}
+@defbuiltin{{unsigned long long} __builtin_ia32_crc32di (unsigned long long, unsigned long long)}
 Generates the @code{crc32q} machine instruction.
 @enddefbuiltin
 

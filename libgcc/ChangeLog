@@ -1,3 +1,52 @@
+2023-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (LIB2ADD): Add strub.c.
+	* libgcc2.h (__strub_enter, __strub_update, __strub_leave):
+	Declare.
+	* strub.c: New.
+	* libgcc-std.ver.in (__strub_enter): Add to GCC_14.0.0.
+	(__strub_update, __strub_leave): Likewise.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* unwind-pe.h (_Unwind_gnu_Find_got): Add prototype.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/rx/rx-abi-functions.c (__ltdf2, __gtdf2): Add prototype.
+	(__ledf2, __gedf2, __eqdf2, __nedf2): Likewise.
+	(__ltsf2, __gtsf2, __lesf2, __gesf2, __eqsf2, __nesf2): Likewise.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/frv/frvbegin.c (atexit): Add prototype.
+
+2023-12-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* libgcc-std.ver.in (__hardcfr_check): Add to GCC_14.0.0.
+
+2023-12-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/112777
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC):  Honor that __LIBGCC_HAVE_LIBATOMIC is
+	always defined as either 0 or 1.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* config/aarch64/linux-unwind.h
+	(aarch64_fallback_frame_state): Add cast to the expected type
+	in sc assignment.
+
+2023-11-30  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/111404
+	* config/aarch64/lse.S (__aarch64_cas16_acq_rel): Execute STLXP using
+	either new value or loaded value.
+
+2023-11-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/lib1funcs.S (__sync_synchronize): Adjust warning message.
+
 2023-11-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config.host (arm*-*-eabi* | arm*-*-rtems*):

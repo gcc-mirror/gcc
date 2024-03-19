@@ -1,6 +1,5 @@
-/* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-mapx-features=egpr -m64 -O2 -mgeneral-regs-only -mno-cld -mno-push-args -maccumulate-outgoing-args" } */
-/* { dg-skip-if "does not emit .cfi_xxx" "*-*-darwin*" } */
+/* { dg-do compile { target { { ! ia32 } && cfi } } } */
+/* { dg-options "-mapx-features=egpr -m64 -O2 -mgeneral-regs-only -mno-cld -mno-push-args -maccumulate-outgoing-args -fomit-frame-pointer" } */
 
 extern void foo (void *) __attribute__ ((interrupt));
 extern int bar (int);

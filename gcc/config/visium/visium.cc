@@ -145,14 +145,13 @@ static inline bool current_function_has_lr_slot (void);
 
 /* Supported attributes:
    interrupt -- specifies this function is an interrupt handler.   */
-static const struct attribute_spec visium_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (visium_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "interrupt", 0, 0, true, false, false, false, visium_handle_interrupt_attr,
-    NULL},
-  { NULL, 0, 0, false, false, false, false, NULL, NULL },
-};
+    NULL}
+});
 
 static struct machine_function *visium_init_machine_status (void);
 
@@ -190,7 +189,7 @@ static tree visium_build_builtin_va_list (void);
 static rtx_insn *visium_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				       vec<machine_mode> &,
 				       vec<const char *> &, vec<rtx> &,
-				       HARD_REG_SET &, location_t);
+				       vec<rtx> &, HARD_REG_SET &, location_t);
 
 static bool visium_legitimate_constant_p (machine_mode, rtx);
 
@@ -795,7 +794,8 @@ visium_conditional_register_usage (void)
 static rtx_insn *
 visium_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
 		      vec<machine_mode> & /*input_modes*/,
-		      vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
+		      vec<const char *> & /*constraints*/,
+		      vec<rtx> &/*uses*/, vec<rtx> &clobbers,
 		      HARD_REG_SET &clobbered_regs, location_t /*loc*/)
 {
   clobbers.safe_push (gen_rtx_REG (CCmode, FLAGS_REGNUM));

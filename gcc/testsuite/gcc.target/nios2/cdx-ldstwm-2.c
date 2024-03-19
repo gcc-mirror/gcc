@@ -1,6 +1,9 @@
 /* { dg-do assemble } */
 /* { dg-options "-O3 -fomit-frame-pointer -funroll-loops -march=r2 -mcdx -w" } */
 
+extern void abort (void);
+extern int exit (int);
+
 /* Based on gcc.c-torture/execute/20021120-1.c.
    This test used to result in assembler errors with R2 CDX because of
    a bug in regrename; it wasn't re-validating insns after renaming, so

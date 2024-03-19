@@ -1936,7 +1936,7 @@ package body Exp_Aggr is
 
       Aggr_Low  : constant Node_Id := Duplicate_Subexpr_No_Checks (Aggr_L);
       Aggr_High : constant Node_Id := Duplicate_Subexpr_No_Checks (Aggr_H);
-      --  After Duplicate_Subexpr these are side-effect free
+      --  After Duplicate_Subexpr these are side-effect-free
 
       Assoc  : Node_Id;
       Choice : Node_Id;
@@ -6984,8 +6984,14 @@ package body Exp_Aggr is
                   Parameter_Associations =>
                     New_List (
                       Make_Integer_Literal (Loc, 1),
-                      New_Occurrence_Of
-                        (Defining_Identifier (Siz_Decl), Loc))));
+                      Make_Type_Conversion (Loc,
+                        Subtype_Mark =>
+                          New_Occurrence_Of
+                            (Etype (First_Formal (Entity (New_Indexed_Subp))),
+                             Loc),
+                        Expression => New_Occurrence_Of
+                                        (Defining_Identifier (Siz_Decl),
+                                         Loc)))));
          end if;
 
          Append (Init_Stat, Aggr_Code);

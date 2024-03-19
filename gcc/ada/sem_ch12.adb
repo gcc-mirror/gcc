@@ -11526,19 +11526,6 @@ package body Sem_Ch12 is
                Actual);
          end if;
 
-         --  Check actual/formal compatibility with respect to the four
-         --  volatility refinement aspects.
-
-         declare
-            Actual_Obj : constant Entity_Id :=
-              Get_Enclosing_Deep_Object (Actual);
-         begin
-            Check_Volatility_Compatibility
-              (Actual_Obj, A_Gen_Obj, "actual object",
-               "its corresponding formal object of mode in out",
-               Srcpos_Bearer => Actual);
-         end;
-
          --  The actual for a ghost generic formal IN OUT parameter should be a
          --  ghost object (SPARK RM 6.9(14)).
 
@@ -11744,22 +11731,6 @@ package body Sem_Ch12 is
          Error_Msg_Sloc := Sloc (Analyzed_Formal);
          Error_Msg_N
            ("actual must exclude null to match generic formal#", Actual);
-      end if;
-
-      --  An effectively volatile object cannot be used as an actual in a
-      --  generic instantiation (SPARK RM 7.1.3(7)). The following check is
-      --  relevant only when SPARK_Mode is on as it is not a standard Ada
-      --  legality rule, and also verifies that the actual is an object.
-
-      if SPARK_Mode = On
-        and then Present (Actual)
-        and then Is_Object_Reference (Actual)
-        and then Is_Effectively_Volatile_Object (Actual)
-        and then not Is_Effectively_Volatile (A_Gen_Obj)
-      then
-         Error_Msg_N
-           ("volatile object cannot act as actual in generic instantiation",
-            Actual);
       end if;
 
       return List;
@@ -12944,14 +12915,6 @@ package body Sem_Ch12 is
                  ("actual for& must have Independent_Components specified",
                      Actual, A_Gen_T);
             end if;
-
-            --  Check actual/formal compatibility with respect to the four
-            --  volatility refinement aspects.
-
-            Check_Volatility_Compatibility
-              (Act_T, A_Gen_T,
-               "actual type", "its corresponding formal type",
-               Srcpos_Bearer => Actual);
          end if;
       end Check_Shared_Variable_Control_Aspects;
 
@@ -14001,9 +13964,10 @@ package body Sem_Ch12 is
                     and then (Ekind (Base_Type (Etype (Actual_Discr)))) =
                                 E_Anonymous_Access_Type
                     and then
-                      Get_Instance_Of
-                        (Designated_Type (Base_Type (Formal_Subt))) =
-                           Designated_Type (Base_Type (Etype (Actual_Discr)))
+                      Subtypes_Match
+                        (Get_Instance_Of
+                           (Designated_Type (Base_Type (Formal_Subt))),
+                         Designated_Type (Base_Type (Etype (Actual_Discr))))
                   then
                      null;
 
@@ -17322,8 +17286,14 @@ package body Sem_Ch12 is
                     and then (Ekind (Base_Type (Etype (Actual_Discr)))) =
                                 E_Anonymous_Access_Type
                     and then
-                        Designated_Type (Base_Type (Formal_Subt)) =
-                           Designated_Type (Base_Type (Etype (Actual_Discr)))
+                        Base_Type
+                          (Designated_Type (Base_Type (Formal_Subt))) =
+                        Base_Type
+                          (Designated_Type (Base_Type (Etype (Actual_Discr))))
+                    and then
+                        Subtypes_Statically_Match
+                         (Designated_Type (Base_Type (Formal_Subt)),
+                          Designated_Type (Base_Type (Etype (Actual_Discr))))
                   then
                      null;
 

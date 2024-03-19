@@ -44,11 +44,11 @@ EnumValue
 Enum(gpu_type) String(gfx1030) Value(PROCESSOR_GFX1030)
 
 march=
-Target RejectNegative Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_FIJI)
+Target RejectNegative Negative(march=) Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_FIJI)
 Specify the name of the target GPU.
 
 mtune=
-Target RejectNegative Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_FIJI)
+Target RejectNegative Negative(mtune=) Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_FIJI)
 Specify the name of the target GPU.
 
 m32

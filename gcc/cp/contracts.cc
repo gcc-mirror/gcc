@@ -636,7 +636,11 @@ make_postcondition_variable (cp_expr id)
 bool
 check_postcondition_result (tree decl, tree type, location_t loc)
 {
-  if (VOID_TYPE_P (type))
+  /* Do not be confused by targetm.cxx.cdtor_return_this ();
+     conceptually, cdtors have no return value.  */
+  if (VOID_TYPE_P (type)
+      || DECL_CONSTRUCTOR_P (decl)
+      || DECL_DESTRUCTOR_P (decl))
     {
       error_at (loc,
 		DECL_CONSTRUCTOR_P (decl)

@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_METADATA_H
 #define GCC_DIAGNOSTIC_METADATA_H
 
+class sarif_object;
+
 /* A bundle of additional metadata that can be associated with a
    diagnostic.
 
@@ -63,6 +65,14 @@ class diagnostic_metadata
   };
 
   diagnostic_metadata () : m_cwe (0) {}
+  virtual ~diagnostic_metadata () {}
+
+  /* Hook for SARIF output to allow for adding diagnostic-specific
+     properties to  the result object's property bag.  */
+  virtual void
+  maybe_add_sarif_properties (sarif_object &/*result_obj*/) const
+  {
+  }
 
   void add_cwe (int cwe) { m_cwe = cwe; }
   int get_cwe () const { return m_cwe; }

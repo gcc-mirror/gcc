@@ -1,3 +1,8 @@
+2023-11-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* hwcaps.m4 (GCC_CHECK_ASSEMBLER_HWCAP): Require
+	AC_CANONICAL_TARGET.
+
 2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
 
 	* intlmacosx.m4: Import from gettext-0.22 (serial 8).

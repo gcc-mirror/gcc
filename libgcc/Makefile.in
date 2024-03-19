@@ -433,6 +433,9 @@ LIB2ADD += enable-execute-stack.c
 # Control Flow Redundancy hardening out-of-line checker.
 LIB2ADD += $(srcdir)/hardcfr.c
 
+# Stack scrubbing infrastructure.
+LIB2ADD += $(srcdir)/strub.c
+
 # While emutls.c has nothing to do with EH, it is in LIB2ADDEH*
 # instead of LIB2ADD because that's the way to be sure on some targets
 # (e.g. *-*-darwin*) only one copy of it is linked.

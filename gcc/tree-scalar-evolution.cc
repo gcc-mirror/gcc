@@ -3739,7 +3739,6 @@ final_value_replacement_loop (class loop *loop)
     split_loop_exit_edge (exit);
 
   /* Set stmt insertion pointer.  All stmts are inserted before this point.  */
-  gimple_stmt_iterator gsi = gsi_after_labels (exit->dest);
 
   class loop *ex_loop
     = superloop_at_depth (loop,
@@ -3841,10 +3840,16 @@ final_value_replacement_loop (class loop *loop)
 	  print_gimple_stmt (dump_file, phi, 0);
 	  fprintf (dump_file, " with expr: ");
 	  print_generic_expr (dump_file, def);
+	  fprintf (dump_file, "\n");
 	}
       any = true;
       def = unshare_expr (def);
       remove_phi_node (&psi, false);
+
+      /* Propagate constants immediately, but leave an unused initialization
+	 around to avoid invalidating the SCEV cache.  */
+      if (CONSTANT_CLASS_P (def))
+	replace_uses_by (rslt, def);
 
       /* Create the replacement statements.  */
       gimple_seq stmts;
@@ -3874,10 +3879,11 @@ final_value_replacement_loop (class loop *loop)
 	      gsi_next (&gsi2);
 	    }
 	}
+      gimple_stmt_iterator gsi = gsi_after_labels (exit->dest);
       gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n final stmt:\n  ");
+	  fprintf (dump_file, " final stmt:\n  ");
 	  print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (rslt), 0);
 	  fprintf (dump_file, "\n");
 	}

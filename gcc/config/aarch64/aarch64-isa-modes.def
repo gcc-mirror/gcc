@@ -1,0 +1,40 @@
+/* Copyright (C) 2023 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This file defines a set of "ISA modes"; in other words, it defines
+   various bits of runtime state that control the set of available
+   instructions or that affect the semantics of instructions in some way.
+
+   Before using #include to read this file, define a macro:
+
+      DEF_AARCH64_ISA_MODE(NAME)
+
+   where NAME is the name of the mode.  */
+
+/* Indicates that PSTATE.SM is known to be 1 or 0 respectively.  These
+   modes are mutually exclusive.  If neither mode is active then the state
+   of PSTATE.SM is not known at compile time.  */
+DEF_AARCH64_ISA_MODE(SM_ON)
+DEF_AARCH64_ISA_MODE(SM_OFF)
+
+/* Indicates that PSTATE.ZA is known to be 1.  The converse is that
+   PSTATE.ZA might be 0 or 1, depending on whether there is an uncommitted
+   lazy save.  */
+DEF_AARCH64_ISA_MODE(ZA_ON)
+
+#undef DEF_AARCH64_ISA_MODE

@@ -2691,7 +2691,7 @@ package body Sem_Ch8 is
                --  Each attempt to find a suitable primitive of a particular
                --  type operates on its own copy of the original renaming.
                --  As a result the original renaming is kept decoration and
-               --  side-effect free.
+               --  side-effect-free.
 
                --  Inherit the overloaded status of the renamed subprogram name
 
@@ -6472,6 +6472,344 @@ package body Sem_Ch8 is
            and then (Present (Homonym (E)) or else Current_Entity (N) /= E)
          then
             Collect_Interps (N);
+
+            --  Background: for an instance of a generic, expansion sets
+            --  entity fields on names that refer to things declared
+            --  outside of the instance, but leaves the entity field
+            --  unset on names that should end up referring to things
+            --  declared within the instance. These will instead be set by
+            --  analysis - the idea is that if a name resolves a certain
+            --  way in the generic, then we should get corresponding results
+            --  if we resolve the corresponding name in an instance. For this
+            --  to work, we have to prevent unrelated declarations that
+            --  happen to be visible at the point of the instantiation from
+            --  participating in resolution and causing problems (typically
+            --  ambiguities, but incorrect resolutions are also probably
+            --  possible). So here we filter out such unwanted interpretations.
+            --
+            --  Note that there are other problems with this approach to
+            --  implementing generic instances that are not addressed here.
+            --  Inside a generic, we might have no trouble resolving a call
+            --  where the two candidates are a function that returns a
+            --  formal type and a function that returns Standard.Integer.
+            --  If we instantiate that generic and the corresponding actual
+            --  type is Standard.Integer, then we may incorrectly reject the
+            --  corresponding call in the instance as ambiguous (or worse,
+            --  we may quietly choose the wrong resolution).
+            --
+            --  Another such problem can occur with a type derived from a
+            --  formal derived type. In an instance, such a type may have
+            --  inherited subprograms that are not present in the generic.
+            --  These can then interfere with name resolution (e.g., if
+            --  some declaration is visible via a use-clause in the generic
+            --  and some name in the generic refers to it, then the
+            --  corresponding declaration in an instance may be hidden by
+            --  a directly visible inherited subprogram and the corresponding
+            --  name in the instance may then incorrectly refer to the
+            --  inherited subprogram).
+
+            if In_Instance then
+               declare
+                  function Is_Actual_Subp_Of_Inst
+                    (E : Entity_Id; Inst : Entity_Id) return Boolean;
+                  --  Return True if E is an actual parameter
+                  --  corresponding to a formal subprogram of the
+                  --  instantiation Inst.
+
+                  function Is_Extraneously_Visible
+                    (E : Entity_Id; Inst : Entity_Id) return Boolean;
+                  --  Return True if E is an interpretation that should
+                  --  be filtered out. That is, if E is an "unwanted"
+                  --  resolution candidate as described in the
+                  --  preceding "Background:" commment.
+
+                  function Is_Generic_Actual_Subp_Name
+                    (N : Node_Id) return Boolean;
+                  --  Return True if N is the name of a subprogram
+                  --  renaming generated for a generic actual.
+
+                  ----------------------------
+                  -- Is_Actual_Subp_Of_Inst --
+                  ----------------------------
+
+                  function Is_Actual_Subp_Of_Inst
+                    (E : Entity_Id; Inst : Entity_Id) return Boolean
+                  is
+                     Decl                              : Node_Id;
+                     Generic_From_E, Generic_From_Inst : Entity_Id;
+                  begin
+                     --  ???
+                     --  Why is Is_Generic_Actual_Subprogram undefined
+                     --  in the E_Operator case?
+
+                     if Ekind (E) not in E_Function | E_Procedure
+                       or else not Is_Generic_Actual_Subprogram (E)
+                     then
+                        return False;
+                     end if;
+
+                     Decl := Enclosing_Declaration (E);
+
+                     --  Look for the suprogram renaming declaration built
+                     --  for a generic actual subprogram. Unclear why
+                     --  Original_Node call is needed, but sometimes it is.
+
+                     if Decl not in N_Subprogram_Renaming_Declaration_Id then
+                        Decl := Original_Node (Decl);
+                     end if;
+
+                     if Decl in N_Subprogram_Renaming_Declaration_Id then
+                        Generic_From_E :=
+                          Scope (Corresponding_Formal_Spec (Decl));
+                     else
+                        --  ??? In the case of a generic formal subprogram
+                        --  which has a pre/post condition, it is unclear how
+                        --  to find the Corresponding_Formal_Spec-bearing node.
+
+                        Generic_From_E := Empty;
+                     end if;
+
+                     declare
+                        Inst_Parent : Node_Id := Parent (Inst);
+                     begin
+                        if Nkind (Inst_Parent) = N_Defining_Program_Unit_Name
+                        then
+                           Inst_Parent := Parent (Inst_Parent);
+                        end if;
+
+                        Generic_From_Inst := Generic_Parent (Inst_Parent);
+                     end;
+
+                     return Generic_From_E = Generic_From_Inst
+                       and then Present (Generic_From_E);
+                  end Is_Actual_Subp_Of_Inst;
+
+                  -----------------------------
+                  -- Is_Extraneously_Visible --
+                  -----------------------------
+
+                  function Is_Extraneously_Visible
+                    (E : Entity_Id; Inst : Entity_Id) return Boolean is
+                  begin
+                     --  Return False in various non-extraneous cases.
+                     --  If none of those apply, then return True.
+
+                     if Within_Scope (E, Inst) then
+                        --  return False if E declared within Inst
+                        return False;
+
+                     elsif Is_Actual_Subp_Of_Inst (E, Inst) then
+                        --  Return False if E is an actual subprogram,
+                        --  and therefore may be referenced within Inst.
+                        return False;
+
+                     elsif Nkind (Parent (E)) = N_Subtype_Declaration
+                        and then Defining_Identifier (Parent (E)) /= E
+                     then
+                        --  Return False for a primitive subp of an
+                        --  actual corresponding to a formal type.
+
+                        return False;
+
+                     elsif not In_Open_Scopes (Scope (E)) then
+                        --  Return False if this candidate is not
+                        --  declared in a currently open scope.
+
+                        return False;
+
+                     else
+                        declare
+                           --  We want to know whether the declaration of
+                           --  E comes textually after the declaration of
+                           --  the generic that Inst is an instance of
+                           --  (and after the generic body if there is one).
+                           --  To compare, we climb up the deeper of the two
+                           --  scope chains until we the levels match.
+                           --  There is a separate loop for each starting
+                           --  point, but we will execute zero iterations
+                           --  for at least one of the two loops.
+                           --  For each Xxx_Scope, we have a corresponding
+                           --  Xxx_Trailer; the latter is the predecessor of
+                           --  the former in the scope traversal.
+
+                           E_Trailer : Entity_Id := E;
+                           E_Scope : Entity_Id := Scope (E);
+                           pragma Assert (Present (E_Scope));
+
+                           --  the generic that Inst is an instance of
+                           Gen_Trailer : Entity_Id :=
+                             Generic_Parent (Specification
+                               (Unit_Declaration_Node (Inst)));
+                           Gen_Scope : Entity_Id;
+
+                           function Has_Formal_Package_Parameter
+                             (Generic_Id : Entity_Id) return Boolean;
+                           --  Return True iff given generic has at least one
+                           --  formal package parameter.
+
+                           ----------------------------------
+                           -- Has_Formal_Package_Parameter --
+                           ----------------------------------
+
+                           function Has_Formal_Package_Parameter
+                             (Generic_Id : Entity_Id) return Boolean is
+                              Formal_Decl : Node_Id :=
+                                First (Generic_Formal_Declarations
+                                  (Enclosing_Generic_Unit (Generic_Id)));
+                           begin
+                              while Present (Formal_Decl) loop
+                                 if Nkind (Original_Node (Formal_Decl)) =
+                                   N_Formal_Package_Declaration
+                                 then
+                                    return True;
+                                 end if;
+
+                                 Next (Formal_Decl);
+                              end loop;
+                              return False;
+                           end Has_Formal_Package_Parameter;
+
+                        begin
+                           if No (Gen_Trailer) then
+                              --  Dunno how this can happen, but it can.
+                              return False;
+                           else
+                              if Has_Formal_Package_Parameter (Gen_Trailer)
+                              then
+                                 --  Punt on sorting out what is visible via a
+                                 --  formal package.
+
+                                 return False;
+                              end if;
+
+                              if Is_Child_Unit (Gen_Trailer)
+                                and then Is_Generic_Unit
+                                           (Entity (Name
+                                             (Parent (Gen_Trailer))))
+                              then
+                                 --  Punt on dealing with how the FE fails
+                                 --  to build a tree for a "sprouted" generic
+                                 --  so that what should be a reference to
+                                 --  I1.G2 instead points into G1.G2 .
+
+                                 return False;
+                              end if;
+
+                              Gen_Scope := Scope (Gen_Trailer);
+
+                              while Scope_Depth (E_Scope)
+                                      > Scope_Depth (Gen_Scope)
+                              loop
+                                 E_Trailer := E_Scope;
+                                 E_Scope := Scope (E_Scope);
+                              end loop;
+                              while Scope_Depth (E_Scope)
+                                      < Scope_Depth (Gen_Scope)
+                              loop
+                                 Gen_Trailer := Gen_Scope;
+                                 Gen_Scope := Scope (Gen_Scope);
+                              end loop;
+                           end if;
+
+                           if Gen_Scope = E_Scope then
+                              --  if Gen_Trailer and E_Trailer are declared
+                              --  in the same declarative part and E_Trailer
+                              --  occurs after the declaration (and body, if
+                              --  there is one) of Gen_Trailer, then
+                              --  return True because E was declared after
+                              --  the generic that Inst is an instance of
+                              --  (and also after that generic's body, if it
+                              --  has one).
+
+                              if Is_Package_Or_Generic_Package (Gen_Trailer)
+                                and then Present (Package_Body (Gen_Trailer))
+                              then
+                                 Gen_Trailer :=
+                                   Corresponding_Body
+                                     (Package_Spec (Gen_Trailer));
+                              end if;
+
+                              declare
+                                 Id : Entity_Id := Gen_Trailer;
+                              begin
+                                 loop
+                                    if not Present (Id) then
+                                       --  E_Trailer presumably occurred
+                                       --  earlier on the entity list than
+                                       --  Gen_Trailer. So E preceded the
+                                       --  generic that Inst is an instance
+                                       --  of (or the body of that generic if
+                                       --  it has one) and so could have
+                                       --  been referenced within the generic.
+                                       return False;
+                                    end if;
+                                    exit when Id = E_Trailer;
+                                    Next_Entity (Id);
+                                 end loop;
+                              end;
+                           end if;
+                        end;
+                     end if;
+
+                     if Present (Nearest_Enclosing_Instance (Inst)) then
+                        return Is_Extraneously_Visible
+                          (E => E, Inst => Nearest_Enclosing_Instance (Inst));
+
+                     --  The preceding Nearest_Enclosing_Instance test
+                     --  doesn't handle the case of an instance of a
+                     --  "sprouted" generic. For example, if Inst=I2 in
+                     --    generic package G1
+                     --    generic package G1.G2;
+                     --    package I1 is new G1;
+                     --    package I2 is new I1.G2;
+                     --  then N_E_I (Inst) = Empty. So deal with that case.
+
+                     elsif Present (Nearest_Enclosing_Instance (E)) then
+                        return Is_Extraneously_Visible
+                          (E => Nearest_Enclosing_Instance (E),
+                           Inst => Inst);
+                     end if;
+
+                     return True;
+                  end Is_Extraneously_Visible;
+
+                  ---------------------------------
+                  -- Is_Generic_Actual_Subp_Name --
+                  ---------------------------------
+
+                  function Is_Generic_Actual_Subp_Name
+                    (N : Node_Id) return Boolean
+                  is
+                     Decl : constant Node_Id := Enclosing_Declaration (N);
+                  begin
+                     return Nkind (Decl) = N_Subprogram_Renaming_Declaration
+                       and then Present (Corresponding_Formal_Spec (Decl));
+                  end Is_Generic_Actual_Subp_Name;
+
+                  I    : Interp_Index;
+                  It   : Interp;
+                  Inst : Entity_Id := Current_Scope;
+
+               begin
+                  while Present (Inst)
+                    and then not Is_Generic_Instance (Inst)
+                  loop
+                     Inst := Scope (Inst);
+                  end loop;
+
+                  if Present (Inst) then
+                     Get_First_Interp (N, I, It);
+                     while Present (It.Nam) loop
+                        if Is_Extraneously_Visible (E => It.Nam, Inst => Inst)
+                          and then not Is_Generic_Actual_Subp_Name (N)
+                        then
+                           Remove_Interp (I);
+                        end if;
+                        Get_Next_Interp (I, It);
+                     end loop;
+                  end if;
+               end;
+            end if;
 
             --  If no homonyms were visible, the entity is unambiguous
 

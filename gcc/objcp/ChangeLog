@@ -1,3 +1,9 @@
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* objcp-lang.cc (c_family_register_lang_features): New.
+
 2023-10-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR objc++/111920

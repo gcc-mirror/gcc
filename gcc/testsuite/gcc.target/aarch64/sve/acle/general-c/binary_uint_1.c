@@ -11,7 +11,7 @@ f1 (svbool_t pg, svuint8_t u8, svint8_t s8, svuint16_t u16, svint16_t s16,
   svtbl (pg, pg); /* { dg-error {passing 'svbool_t' to argument 2 of 'svtbl', which expects a vector of unsigned integers} } */
   svtbl (pg, u8); /* { dg-error {'svtbl' has no form that takes 'svbool_t' arguments} } */
 
-  svtbl (u8, 0); /* { dg-error {passing 'int' to argument 2 of 'svtbl', which expects an SVE vector type} } */
+  svtbl (u8, 0); /* { dg-error {passing 'int' to argument 2 of 'svtbl', which expects an SVE type rather than a scalar} } */
   svtbl (u8, u8);
   svtbl (u8, s8); /* { dg-error {passing 'svint8_t' to argument 2 of 'svtbl', which expects a vector of unsigned integers} } */
   svtbl (u8, u16); /* { dg-error {arguments 1 and 2 of 'svtbl' must have the same element size, but the values passed here have type 'svuint8_t' and 'svuint16_t' respectively} } */

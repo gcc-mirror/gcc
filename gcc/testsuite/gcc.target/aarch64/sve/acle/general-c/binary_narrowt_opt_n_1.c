@@ -26,12 +26,12 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8,
   svaddhnt (u32, u64, u64);
   svaddhnt (s32, s64, s64);
   svaddhnt (f16, f32, f32); /* { dg-error {'svaddhnt' has no form that takes 'svfloat32_t' arguments} } */
-  svaddhnt (1, u16, u16); /* { dg-error {passing 'int' to argument 1 of 'svaddhnt', which expects an SVE vector type} } */
-  svaddhnt (u8, 1, u16); /* { dg-error {passing 'int' to argument 2 of 'svaddhnt', which expects an SVE vector type} } */
-  svaddhnt (u8, u16, s8); /* { dg-error {passing 'svint8_t' to argument 3 of 'svaddhnt', but previous arguments had type 'svuint16_t'} } */
-  svaddhnt (u8, u16, s16); /* { dg-error {passing 'svint16_t' to argument 3 of 'svaddhnt', but previous arguments had type 'svuint16_t'} } */
-  svaddhnt (u8, u16, u32); /* { dg-error {passing 'svuint32_t' to argument 3 of 'svaddhnt', but previous arguments had type 'svuint16_t'} } */
-  svaddhnt (u8, u16, pg); /* { dg-error {passing 'svbool_t' to argument 3 of 'svaddhnt', but previous arguments had type 'svuint16_t'} } */
+  svaddhnt (1, u16, u16); /* { dg-error {passing 'int' to argument 1 of 'svaddhnt', which expects an SVE type rather than a scalar} } */
+  svaddhnt (u8, 1, u16); /* { dg-error {passing 'int' to argument 2 of 'svaddhnt', which expects an SVE type rather than a scalar} } */
+  svaddhnt (u8, u16, s8); /* { dg-error {passing 'svint8_t' to argument 3 of 'svaddhnt', but argument 2 had type 'svuint16_t'} } */
+  svaddhnt (u8, u16, s16); /* { dg-error {passing 'svint16_t' to argument 3 of 'svaddhnt', but argument 2 had type 'svuint16_t'} } */
+  svaddhnt (u8, u16, u32); /* { dg-error {passing 'svuint32_t' to argument 3 of 'svaddhnt', but argument 2 had type 'svuint16_t'} } */
+  svaddhnt (u8, u16, pg); /* { dg-error {passing 'svbool_t' to argument 3 of 'svaddhnt', but argument 2 had type 'svuint16_t'} } */
   svaddhnt (u8, u8, 0); /* { dg-error {'svaddhnt' has no form that takes 'svuint8_t' arguments} } */
   svaddhnt (u16, u16, 0); /* { dg-error {passing 'svuint16_t' instead of the expected 'svuint8_t' to argument 1 of 'svaddhnt', after passing 'svuint16_t' to argument 2} } */
   svaddhnt (s8, u16, 0); /* { dg-error {arguments 1 and 2 of 'svaddhnt' must have the same signedness, but the values passed here have type 'svint8_t' and 'svuint16_t' respectively} } */

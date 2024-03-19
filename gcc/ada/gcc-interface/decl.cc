@@ -8897,6 +8897,7 @@ annotate_value (tree gnu_size)
 	return No_Uint;
       break;
 
+    case PARM_DECL:
     case VAR_DECL:
       tcode = Dynamic_Val;
       ops[0] = UI_From_Int (++var_count);

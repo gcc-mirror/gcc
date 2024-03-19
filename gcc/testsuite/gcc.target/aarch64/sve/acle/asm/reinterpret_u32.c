@@ -205,3 +205,65 @@ TEST_DUAL_Z_REV (reinterpret_u32_u64_tied1, svuint32_t, svuint64_t,
 TEST_DUAL_Z (reinterpret_u32_u64_untied, svuint32_t, svuint64_t,
 	     z0 = svreinterpret_u32_u64 (z4),
 	     z0 = svreinterpret_u32 (z4))
+
+/*
+** reinterpret_u32_bf16_x2_tied1:
+**	ret
+*/
+TEST_DUAL_Z_REV (reinterpret_u32_bf16_x2_tied1, svuint32x2_t, svbfloat16x2_t,
+		 z0_res = svreinterpret_u32_bf16_x2 (z0),
+		 z0_res = svreinterpret_u32 (z0))
+
+/*
+** reinterpret_u32_f32_x2_untied:
+** (
+**	mov	z0\.d, z4\.d
+**	mov	z1\.d, z5\.d
+** |
+**	mov	z0\.d, z4\.d
+**	mov	z1\.d, z5\.d
+** )
+**	ret
+*/
+TEST_DUAL_XN (reinterpret_u32_f32_x2_untied, svuint32x2_t, svfloat32x2_t, z0,
+	      svreinterpret_u32_f32_x2 (z4),
+	      svreinterpret_u32 (z4))
+
+/*
+** reinterpret_u32_s64_x3_tied1:
+**	ret
+*/
+TEST_DUAL_Z_REV (reinterpret_u32_s64_x3_tied1, svuint32x3_t, svint64x3_t,
+		 z0_res = svreinterpret_u32_s64_x3 (z0),
+		 z0_res = svreinterpret_u32 (z0))
+
+/*
+** reinterpret_u32_u8_x3_untied:
+**	mov	(z18|z19|z20)\.d, (z23|z24|z25)\.d
+**	mov	(z18|z19|z20)\.d, (z23|z24|z25)\.d
+**	mov	(z18|z19|z20)\.d, (z23|z24|z25)\.d
+**	ret
+*/
+TEST_DUAL_XN (reinterpret_u32_u8_x3_untied, svuint32x3_t, svuint8x3_t, z18,
+	      svreinterpret_u32_u8_x3 (z23),
+	      svreinterpret_u32 (z23))
+
+/*
+** reinterpret_u32_u32_x4_tied1:
+**	ret
+*/
+TEST_DUAL_Z_REV (reinterpret_u32_u32_x4_tied1, svuint32x4_t, svuint32x4_t,
+		 z0_res = svreinterpret_u32_u32_x4 (z0),
+		 z0_res = svreinterpret_u32 (z0))
+
+/*
+** reinterpret_u32_f64_x4_untied:
+**	mov	(z28|z29|z30|z31)\.d, z[4-7]\.d
+**	mov	(z28|z29|z30|z31)\.d, z[4-7]\.d
+**	mov	(z28|z29|z30|z31)\.d, z[4-7]\.d
+**	mov	(z28|z29|z30|z31)\.d, z[4-7]\.d
+**	ret
+*/
+TEST_DUAL_XN (reinterpret_u32_f64_x4_untied, svuint32x4_t, svfloat64x4_t, z28,
+	      svreinterpret_u32_f64_x4 (z4),
+	      svreinterpret_u32 (z4))

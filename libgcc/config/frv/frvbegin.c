@@ -119,6 +119,7 @@ __do_global_dtors (void)
     }
 }
 
+int atexit (void (*)(void));
 /* Run the global constructors.  */
 void
 __do_global_ctors (void)

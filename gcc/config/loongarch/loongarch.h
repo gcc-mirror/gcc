@@ -288,9 +288,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
-/* The clz.{w/d} instructions have the natural values at 0.  */
+/* The clz.{w/d}, ctz.{w/d} instructions have the natural values at 0.  */
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
 
 /* Standard register usage.  */
@@ -1239,8 +1241,3 @@ struct GTY (()) machine_function
 
 #define TARGET_EXPLICIT_RELOCS \
   (la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS)
-
-#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
-#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)

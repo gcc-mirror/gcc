@@ -37,6 +37,51 @@
 
 #define omp_max_predefined_alloc omp_thread_mem_alloc
 
+/* These macros may be overridden in config/<target>/allocator.c.
+   The following definitions (ab)use comma operators to avoid unused
+   variable errors.  */
+#ifndef MEMSPACE_ALLOC
+#define MEMSPACE_ALLOC(MEMSPACE, SIZE) \
+  malloc (((void)(MEMSPACE), (SIZE)))
+#endif
+#ifndef MEMSPACE_CALLOC
+#define MEMSPACE_CALLOC(MEMSPACE, SIZE) \
+  calloc (1, (((void)(MEMSPACE), (SIZE))))
+#endif
+#ifndef MEMSPACE_REALLOC
+#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE) \
+  realloc (ADDR, (((void)(MEMSPACE), (void)(OLDSIZE), (SIZE))))
+#endif
+#ifndef MEMSPACE_FREE
+#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE) \
+  free (((void)(MEMSPACE), (void)(SIZE), (ADDR)))
+#endif
+#ifndef MEMSPACE_VALIDATE
+#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS) \
+  (((void)(MEMSPACE), (void)(ACCESS), 1))
+#endif
+
+/* Map the predefined allocators to the correct memory space.
+   The index to this table is the omp_allocator_handle_t enum value.
+   When the user calls omp_alloc with a predefined allocator this
+   table determines what memory they get.  */
+static const omp_memspace_handle_t predefined_alloc_mapping[] = {
+  omp_default_mem_space,   /* omp_null_allocator doesn't actually use this. */
+  omp_default_mem_space,   /* omp_default_mem_alloc. */
+  omp_large_cap_mem_space, /* omp_large_cap_mem_alloc. */
+  omp_const_mem_space,     /* omp_const_mem_alloc. */
+  omp_high_bw_mem_space,   /* omp_high_bw_mem_alloc. */
+  omp_low_lat_mem_space,   /* omp_low_lat_mem_alloc. */
+  omp_low_lat_mem_space,   /* omp_cgroup_mem_alloc (implementation defined). */
+  omp_low_lat_mem_space,   /* omp_pteam_mem_alloc (implementation defined). */
+  omp_low_lat_mem_space,   /* omp_thread_mem_alloc (implementation defined). */
+};
+
+#define ARRAY_SIZE(A) (sizeof (A) / sizeof ((A)[0]))
+_Static_assert (ARRAY_SIZE (predefined_alloc_mapping)
+		== omp_max_predefined_alloc + 1,
+		"predefined_alloc_mapping must match omp_memspace_handle_t");
+
 enum gomp_numa_memkind_kind
 {
   GOMP_MEMKIND_NONE = 0,
@@ -398,6 +443,10 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
   if (data.pinned)
     return omp_null_allocator;
 
+  /* Reject unsupported memory spaces.  */
+  if (!MEMSPACE_VALIDATE (data.memspace, data.access))
+    return omp_null_allocator;
+
   ret = gomp_malloc (sizeof (struct omp_allocator_data));
   *ret = data;
 #ifndef HAVE_SYNC_BUILTINS
@@ -481,6 +530,10 @@ retry:
     new_size += new_alignment - sizeof (void *);
   if (__builtin_add_overflow (size, new_size, &new_size))
     goto fail;
+#ifdef OMP_LOW_LAT_MEM_ALLOC_INVALID
+  if (allocator == omp_low_lat_mem_alloc)
+    goto fail;
+#endif
 
   if (__builtin_expect (allocator_data
 			&& allocator_data->pool_size < ~(uintptr_t) 0, 0))
@@ -533,7 +586,7 @@ retry:
 	}
       else
 #endif
-	ptr = malloc (new_size);
+	ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size);
       if (ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -565,7 +618,13 @@ retry:
 	}
       else
 #endif
-	ptr = malloc (new_size);
+	{
+	  omp_memspace_handle_t memspace;
+	  memspace = (allocator_data
+		      ? allocator_data->memspace
+		      : predefined_alloc_mapping[allocator]);
+	  ptr = MEMSPACE_ALLOC (memspace, new_size);
+	}
       if (ptr == NULL)
 	goto fail;
     }
@@ -582,36 +641,26 @@ retry:
   ((struct omp_mem_header *) ret)[-1].allocator = allocator;
   return ret;
 
-fail:
-  if (allocator_data)
+fail:;
+  int fallback = (allocator_data
+		  ? allocator_data->fallback
+		  : allocator == omp_default_mem_alloc
+		  ? omp_atv_null_fb
+		  : omp_atv_default_mem_fb);
+  switch (fallback)
     {
-      switch (allocator_data->fallback)
-	{
-	case omp_atv_default_mem_fb:
-	  if ((new_alignment > sizeof (void *) && new_alignment > alignment)
-#if defined(LIBGOMP_USE_MEMKIND) || defined(LIBGOMP_USE_LIBNUMA)
-	      || memkind
-#endif
-	      || (allocator_data
-		  && allocator_data->pool_size < ~(uintptr_t) 0))
-	    {
-	      allocator = omp_default_mem_alloc;
-	      goto retry;
-	    }
-	  /* Otherwise, we've already performed default mem allocation
-	     and if that failed, it won't succeed again (unless it was
-	     intermittent.  Return NULL then, as that is the fallback.  */
-	  break;
-	case omp_atv_null_fb:
-	  break;
-	default:
-	case omp_atv_abort_fb:
-	  gomp_fatal ("Out of memory allocating %lu bytes",
-		      (unsigned long) size);
-	case omp_atv_allocator_fb:
-	  allocator = allocator_data->fb_data;
-	  goto retry;
-	}
+    case omp_atv_default_mem_fb:
+      allocator = omp_default_mem_alloc;
+      goto retry;
+    case omp_atv_null_fb:
+      break;
+    default:
+    case omp_atv_abort_fb:
+      gomp_fatal ("Out of memory allocating %lu bytes",
+		  (unsigned long) size);
+    case omp_atv_allocator_fb:
+      allocator = allocator_data->fb_data;
+      goto retry;
     }
   return NULL;
 }
@@ -644,6 +693,7 @@ void
 omp_free (void *ptr, omp_allocator_handle_t allocator)
 {
   struct omp_mem_header *data;
+  omp_memspace_handle_t memspace = omp_default_mem_space;
 
   if (ptr == NULL)
     return;
@@ -683,10 +733,12 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 	  return;
 	}
 #endif
+
+      memspace = allocator_data->memspace;
     }
-#ifdef LIBGOMP_USE_MEMKIND
   else
     {
+#ifdef LIBGOMP_USE_MEMKIND
       enum gomp_numa_memkind_kind memkind = GOMP_MEMKIND_NONE;
       if (data->allocator == omp_high_bw_mem_alloc)
 	memkind = GOMP_MEMKIND_HBW_PREFERRED;
@@ -702,9 +754,12 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 	      return;
 	    }
 	}
-    }
 #endif
-  free (data->ptr);
+
+      memspace = predefined_alloc_mapping[data->allocator];
+    }
+
+  MEMSPACE_FREE (memspace, data->ptr, data->size);
 }
 
 ialias (omp_free)
@@ -777,6 +832,10 @@ retry:
     goto fail;
   if (__builtin_add_overflow (size_temp, new_size, &new_size))
     goto fail;
+#ifdef OMP_LOW_LAT_MEM_ALLOC_INVALID
+  if (allocator == omp_low_lat_mem_alloc)
+    goto fail;
+#endif
 
   if (__builtin_expect (allocator_data
 			&& allocator_data->pool_size < ~(uintptr_t) 0, 0))
@@ -831,7 +890,7 @@ retry:
 	}
       else
 #endif
-	ptr = calloc (1, new_size);
+	ptr = MEMSPACE_CALLOC (allocator_data->memspace, new_size);
       if (ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -865,7 +924,13 @@ retry:
 	}
       else
 #endif
-	ptr = calloc (1, new_size);
+	{
+	  omp_memspace_handle_t memspace;
+	  memspace = (allocator_data
+		      ? allocator_data->memspace
+		      : predefined_alloc_mapping[allocator]);
+	  ptr = MEMSPACE_CALLOC (memspace, new_size);
+	}
       if (ptr == NULL)
 	goto fail;
     }
@@ -882,36 +947,26 @@ retry:
   ((struct omp_mem_header *) ret)[-1].allocator = allocator;
   return ret;
 
-fail:
-  if (allocator_data)
+fail:;
+  int fallback = (allocator_data
+		  ? allocator_data->fallback
+		  : allocator == omp_default_mem_alloc
+		  ? omp_atv_null_fb
+		  : omp_atv_default_mem_fb);
+  switch (fallback)
     {
-      switch (allocator_data->fallback)
-	{
-	case omp_atv_default_mem_fb:
-	  if ((new_alignment > sizeof (void *) && new_alignment > alignment)
-#if defined(LIBGOMP_USE_MEMKIND) || defined(LIBGOMP_USE_LIBNUMA)
-	      || memkind
-#endif
-	      || (allocator_data
-		  && allocator_data->pool_size < ~(uintptr_t) 0))
-	    {
-	      allocator = omp_default_mem_alloc;
-	      goto retry;
-	    }
-	  /* Otherwise, we've already performed default mem allocation
-	     and if that failed, it won't succeed again (unless it was
-	     intermittent.  Return NULL then, as that is the fallback.  */
-	  break;
-	case omp_atv_null_fb:
-	  break;
-	default:
-	case omp_atv_abort_fb:
-	  gomp_fatal ("Out of memory allocating %lu bytes",
-		      (unsigned long) (size * nmemb));
-	case omp_atv_allocator_fb:
-	  allocator = allocator_data->fb_data;
-	  goto retry;
-	}
+    case omp_atv_default_mem_fb:
+      allocator = omp_default_mem_alloc;
+      goto retry;
+    case omp_atv_null_fb:
+      break;
+    default:
+    case omp_atv_abort_fb:
+      gomp_fatal ("Out of memory allocating %lu bytes",
+		  (unsigned long) (size * nmemb));
+    case omp_atv_allocator_fb:
+      allocator = allocator_data->fb_data;
+      goto retry;
     }
   return NULL;
 }
@@ -1015,6 +1070,10 @@ retry:
   if (__builtin_add_overflow (size, new_size, &new_size))
     goto fail;
   old_size = data->size;
+#ifdef OMP_LOW_LAT_MEM_ALLOC_INVALID
+  if (allocator == omp_low_lat_mem_alloc)
+    goto fail;
+#endif
 
   if (__builtin_expect (allocator_data
 			&& allocator_data->pool_size < ~(uintptr_t) 0, 0))
@@ -1101,9 +1160,10 @@ retry:
       else
 #endif
       if (prev_size)
-	new_ptr = realloc (data->ptr, new_size);
+	new_ptr = MEMSPACE_REALLOC (allocator_data->memspace, data->ptr,
+				    data->size, new_size);
       else
-	new_ptr = malloc (new_size);
+	new_ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size);
       if (new_ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -1151,7 +1211,13 @@ retry:
 	}
       else
 #endif
-	new_ptr = realloc (data->ptr, new_size);
+	{
+	  omp_memspace_handle_t memspace;
+	  memspace = (allocator_data
+		      ? allocator_data->memspace
+		      : predefined_alloc_mapping[allocator]);
+	  new_ptr = MEMSPACE_REALLOC (memspace, data->ptr, data->size, new_size);
+	}
       if (new_ptr == NULL)
 	goto fail;
       ret = (char *) new_ptr + sizeof (struct omp_mem_header);
@@ -1178,7 +1244,13 @@ retry:
 	}
       else
 #endif
-	new_ptr = malloc (new_size);
+	{
+	  omp_memspace_handle_t memspace;
+	  memspace = (allocator_data
+		      ? allocator_data->memspace
+		      : predefined_alloc_mapping[allocator]);
+	  new_ptr = MEMSPACE_ALLOC (memspace, new_size);
+	}
       if (new_ptr == NULL)
 	goto fail;
     }
@@ -1227,39 +1299,35 @@ retry:
       return ret;
     }
 #endif
-  free (data->ptr);
+  {
+    omp_memspace_handle_t was_memspace;
+    was_memspace = (free_allocator_data
+		    ? free_allocator_data->memspace
+		    : predefined_alloc_mapping[free_allocator]);
+    MEMSPACE_FREE (was_memspace, data->ptr, data->size);
+  }
   return ret;
 
-fail:
-  if (allocator_data)
+fail:;
+  int fallback = (allocator_data
+		  ? allocator_data->fallback
+		  : allocator == omp_default_mem_alloc
+		  ? omp_atv_null_fb
+		  : omp_atv_default_mem_fb);
+  switch (fallback)
     {
-      switch (allocator_data->fallback)
-	{
-	case omp_atv_default_mem_fb:
-	  if (new_alignment > sizeof (void *)
-#if defined(LIBGOMP_USE_MEMKIND) || defined(LIBGOMP_USE_LIBNUMA)
-	      || memkind
-#endif
-	      || (allocator_data
-		  && allocator_data->pool_size < ~(uintptr_t) 0))
-	    {
-	      allocator = omp_default_mem_alloc;
-	      goto retry;
-	    }
-	  /* Otherwise, we've already performed default mem allocation
-	     and if that failed, it won't succeed again (unless it was
-	     intermittent.  Return NULL then, as that is the fallback.  */
-	  break;
-	case omp_atv_null_fb:
-	  break;
-	default:
-	case omp_atv_abort_fb:
-	  gomp_fatal ("Out of memory allocating %lu bytes",
-		      (unsigned long) size);
-	case omp_atv_allocator_fb:
-	  allocator = allocator_data->fb_data;
-	  goto retry;
-	}
+    case omp_atv_default_mem_fb:
+      allocator = omp_default_mem_alloc;
+      goto retry;
+    case omp_atv_null_fb:
+      break;
+    default:
+    case omp_atv_abort_fb:
+      gomp_fatal ("Out of memory allocating %lu bytes",
+		  (unsigned long) size);
+    case omp_atv_allocator_fb:
+      allocator = allocator_data->fb_data;
+      goto retry;
     }
   return NULL;
 }

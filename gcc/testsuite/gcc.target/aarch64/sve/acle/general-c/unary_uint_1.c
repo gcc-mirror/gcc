@@ -8,7 +8,7 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8,
 {
   svexpa (); /* { dg-error {too few arguments to function 'svexpa'} } */
   svexpa (u16, u16); /* { dg-error {too many arguments to function 'svexpa'} } */
-  svexpa (1); /* { dg-error {passing 'int' to argument 1 of 'svexpa', which expects an SVE vector type} } */
+  svexpa (1); /* { dg-error {passing 'int' to argument 1 of 'svexpa', which expects an SVE type rather than a scalar} } */
   svexpa (pg); /* { dg-error {passing 'svbool_t' to argument 1 of 'svexpa', which expects a vector of unsigned integers} } */
   svexpa (s8); /* { dg-error {passing 'svint8_t' to argument 1 of 'svexpa', which expects a vector of unsigned integers} } */
   svexpa (s16); /* { dg-error {passing 'svint16_t' to argument 1 of 'svexpa', which expects a vector of unsigned integers} } */

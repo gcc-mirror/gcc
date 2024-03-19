@@ -667,6 +667,7 @@ static bitmap peeled_loops;
 void
 unloop_loops (vec<class loop *> &loops_to_unloop,
 	      vec<int> &loops_to_unloop_nunroll,
+	      vec<edge> &edges_to_remove,
 	      bitmap loop_closed_ssa_invalidated,
 	      bool *irred_invalidated)
 {
@@ -1361,7 +1362,7 @@ canonicalize_induction_variables (void)
     }
   gcc_assert (!need_ssa_update_p (cfun));
 
-  unloop_loops (loops_to_unloop, loops_to_unloop_nunroll,
+  unloop_loops (loops_to_unloop, loops_to_unloop_nunroll, edges_to_remove,
 		loop_closed_ssa_invalidated, &irred_invalidated);
   loops_to_unloop.release ();
   loops_to_unloop_nunroll.release ();
@@ -1511,9 +1512,8 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	{
 	  unsigned i;
 
-	  unloop_loops (loops_to_unloop,
-			loops_to_unloop_nunroll,
-			loop_closed_ssa_invalidated,
+	  unloop_loops (loops_to_unloop, loops_to_unloop_nunroll,
+			edges_to_remove, loop_closed_ssa_invalidated,
 			&irred_invalidated);
 	  loops_to_unloop.release ();
 	  loops_to_unloop_nunroll.release ();

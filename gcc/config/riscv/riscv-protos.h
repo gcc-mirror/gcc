@@ -606,6 +606,7 @@ enum vlmul_type get_vlmul (rtx_insn *);
 int count_regno_occurrences (rtx_insn *, unsigned int);
 bool imm_avl_p (machine_mode);
 bool can_be_broadcasted_p (rtx);
+bool gather_scatter_valid_offset_p (machine_mode);
 }
 
 /* We classify builtin types into two classes:

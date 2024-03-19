@@ -4008,6 +4008,9 @@ bool gfc_may_be_finalized (gfc_typespec);
 #define IS_POINTER(sym) \
 	(sym->ts.type == BT_CLASS && sym->attr.class_ok && CLASS_DATA (sym) \
 	 ? CLASS_DATA (sym)->attr.class_pointer : sym->attr.pointer)
+#define IS_PROC_POINTER(sym) \
+	(sym->ts.type == BT_CLASS && sym->attr.class_ok && CLASS_DATA (sym) \
+	 ? CLASS_DATA (sym)->attr.proc_pointer : sym->attr.proc_pointer)
 
 /* frontend-passes.cc */
 

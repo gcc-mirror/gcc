@@ -1666,6 +1666,10 @@ sem_variable::equals_wpa (sem_item *item,
   if (DECL_IN_TEXT_SECTION (decl) != DECL_IN_TEXT_SECTION (item->decl))
     return return_false_with_msg ("text section");
 
+  if (TYPE_ADDR_SPACE (TREE_TYPE (decl))
+      != TYPE_ADDR_SPACE (TREE_TYPE (item->decl)))
+    return return_false_with_msg ("address-space");
+
   ipa_ref *ref = NULL, *ref2 = NULL;
   for (unsigned i = 0; node->iterate_reference (i, ref); i++)
     {

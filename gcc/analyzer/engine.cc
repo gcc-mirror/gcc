@@ -1811,13 +1811,11 @@ public:
     return OPT_Wanalyzer_stale_setjmp_buffer;
   }
 
-  bool emit (rich_location *richloc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    return warning_at
-      (richloc, get_controlling_option (),
-       "%qs called after enclosing function of %qs has returned",
-       get_user_facing_name (m_longjmp_call),
-       get_user_facing_name (m_setjmp_call));
+    return ctxt.warn ("%qs called after enclosing function of %qs has returned",
+		      get_user_facing_name (m_longjmp_call),
+		      get_user_facing_name (m_setjmp_call));
   }
 
   const char *get_kind () const final override
@@ -3982,10 +3980,9 @@ public:
     return OPT_Wanalyzer_jump_through_null;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    return warning_at (rich_loc, get_controlling_option (),
-		       "jump through null pointer");
+    return ctxt.warn ("jump through null pointer");
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) final override

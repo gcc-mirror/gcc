@@ -510,8 +510,9 @@ extern gimple_opt_pass *make_pass_adjust_alignment (gcc::context *ctxt);
 
 /* IPA Passes */
 extern simple_ipa_opt_pass *make_pass_ipa_lower_emutls (gcc::context *ctxt);
-extern simple_ipa_opt_pass
-							      *make_pass_ipa_function_and_variable_visibility (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_function_and_variable_visibility (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_strub_mode (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_strub (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_tree_profile (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_auto_profile (gcc::context *ctxt);
 
@@ -616,6 +617,8 @@ extern rtl_opt_pass *make_pass_gcse2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_split_after_reload (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_thread_prologue_and_epilogue (gcc::context
 							     *ctxt);
+extern rtl_opt_pass *make_pass_late_thread_prologue_and_epilogue (gcc::context
+								  *ctxt);
 extern rtl_opt_pass *make_pass_zero_call_used_regs (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_stack_adjustments (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_sched_fusion (gcc::context *ctxt);

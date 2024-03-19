@@ -142,6 +142,7 @@ void test_fda_n_5 (int r_m1)
   T (  1);          // { dg-bogus "argument 2 of variable length array 'double\\\[n]\\\[5]' is null but the corresponding bound argument 1 value is 1" }
   T (  9);          // { dg-bogus "argument 2 of variable length array 'double\\\[n]\\\[5]' is null but the corresponding bound argument 1 value is 9" }
   T (max);          // { dg-bogus "argument 2 of variable length array 'double\\\[n]\\\[5]' is null but the corresponding bound argument 1 value is \\d+" }
+// { dg-warning "size 4294967256 exceeds maximum object size" "" { target ilp32 } .-1 }
 }
 
 

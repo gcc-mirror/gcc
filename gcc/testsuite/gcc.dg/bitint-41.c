@@ -1,6 +1,6 @@
 /* PR middle-end/112336 */
 /* { dg-do compile { target bitint } } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 unsigned _BitInt(1) v1;
 unsigned _BitInt(1) *p1 = &v1;

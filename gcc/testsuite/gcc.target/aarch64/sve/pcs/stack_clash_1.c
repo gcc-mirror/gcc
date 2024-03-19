@@ -6,8 +6,7 @@
 
 /*
 ** test_1:
-**	cntd	x12, all, mul #9
-**	lsl	x12, x12, #?4
+**	rdvl	x12, #18
 **	mov	x11, sp
 **	...
 **	sub	sp, sp, x12

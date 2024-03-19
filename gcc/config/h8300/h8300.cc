@@ -4909,7 +4909,7 @@ h8300_insert_attributes (tree node, tree *attributes)
    tiny_data: This variable lives in the tiny data area and can be
    referenced with 16-bit absolute memory references.  */
 
-static const struct attribute_spec h8300_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (h8300_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -4926,9 +4926,8 @@ static const struct attribute_spec h8300_attribute_table[] =
   { "eightbit_data",     0, 0, true,  false, false, false,
     h8300_handle_eightbit_data_attribute, NULL },
   { "tiny_data",         0, 0, true,  false, false, false,
-    h8300_handle_tiny_data_attribute, NULL },
-  { NULL,                0, 0, false, false, false, false, NULL, NULL }
-};
+    h8300_handle_tiny_data_attribute, NULL }
+});
 
 
 /* Handle an attribute requiring a FUNCTION_DECL; arguments as in

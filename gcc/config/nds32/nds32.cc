@@ -288,7 +288,7 @@ static const int nds32_reg_alloc_order_for_speed[] =
 };
 
 /* Defining target-specific uses of __attribute__.  */
-static const struct attribute_spec nds32_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (nds32_attribute_table,
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
 	       function_type_required, affects_type_identity, handler,
@@ -326,11 +326,8 @@ static const struct attribute_spec nds32_attribute_table[] =
 
   /* FOR BACKWARD COMPATIBILITY,
      this attribute also tells no prologue/epilogue.  */
-  { "no_prologue",  0,  0, false, false, false, false, NULL, NULL },
-
-  /* The last attribute spec is set to be NULL.  */
-  { NULL,           0,  0, false, false, false, false, NULL, NULL }
-};
+  { "no_prologue",  0,  0, false, false, false, false, NULL, NULL }
+});
 
 
 /* ------------------------------------------------------------------------ */
@@ -4203,8 +4200,8 @@ nds32_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
 		     vec<rtx> &inputs ATTRIBUTE_UNUSED,
 		     vec<machine_mode> &input_modes ATTRIBUTE_UNUSED,
 		     vec<const char *> &constraints ATTRIBUTE_UNUSED,
-		     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
-		     location_t /*loc*/)
+		     vec<rtx> &/*uses*/, vec<rtx> &clobbers,
+		     HARD_REG_SET &clobbered_regs, location_t /*loc*/)
 {
   if (!flag_inline_asm_r15)
     {

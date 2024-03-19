@@ -5683,6 +5683,8 @@ trees_out::lang_decl_bools (tree t)
       WB (lang->u.fn.has_dependent_explicit_spec_p);
       WB (lang->u.fn.immediate_fn_p);
       WB (lang->u.fn.maybe_deleted);
+      WB (lang->u.fn.escalated_p);
+      /* We do not stream lang->u.fn.implicit_constexpr.  */
       goto lds_min;
 
     case lds_decomp:  /* lang_decl_decomp.  */
@@ -5751,6 +5753,8 @@ trees_in::lang_decl_bools (tree t)
       RB (lang->u.fn.has_dependent_explicit_spec_p);
       RB (lang->u.fn.immediate_fn_p);
       RB (lang->u.fn.maybe_deleted);
+      RB (lang->u.fn.escalated_p);
+      /* We do not stream lang->u.fn.implicit_constexpr.  */
       goto lds_min;
 
     case lds_decomp:  /* lang_decl_decomp.  */

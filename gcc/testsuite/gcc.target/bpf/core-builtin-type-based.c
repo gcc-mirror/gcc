@@ -52,7 +52,7 @@ int foo(void *data)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "\t.4byte\t0x0\t; bpfcr_type" 0 } } */
-/* { dg-final { scan-assembler-times "\t.4byte\t0x8\t; bpfcr_kind" 13 } } BPF_TYPE_EXISTS */
-/* { dg-final { scan-assembler-times "\t.4byte\t0x9\t; bpfcr_kind" 11 } } BPF_TYPE_SIZE */
-/* { dg-final { scan-assembler-times "\t.4byte\t0xc\t; bpfcr_kind" 13 } } BPF_TYPE_MATCHES */
+/* { dg-final { scan-assembler-times "0x0\[\t \]+\[^\n\]*bpfcr_type" 0 } } */
+/* { dg-final { scan-assembler-times "0x8\[\t \]+\[^\n\]*bpfcr_kind" 13 } } BPF_TYPE_EXISTS */
+/* { dg-final { scan-assembler-times "0x9\[\t \]+\[^\n\]*bpfcr_kind" 11 } } BPF_TYPE_SIZE */
+/* { dg-final { scan-assembler-times "0xc\[\t \]+\[^\n\]*bpfcr_kind" 13 } } BPF_TYPE_MATCHES */

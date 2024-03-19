@@ -105,8 +105,8 @@ statements (int n)
 
   /* Pointer assignment.  */
 
-  gnu_sc_ptr = sve_sc_ptr; /* { dg-warning {incompatible pointer type} } */
-  sve_sc_ptr = gnu_sc_ptr; /* { dg-warning {incompatible pointer type} } */
+  gnu_sc_ptr = sve_sc_ptr; /* { dg-error {incompatible pointer type} } */
+  sve_sc_ptr = gnu_sc_ptr; /* { dg-error {incompatible pointer type} } */
 
   /* Pointer arithmetic.  */
 
@@ -153,8 +153,8 @@ statements (int n)
   0 ? 0 : sve_sc1; /* { dg-error {type mismatch in conditional expression} } */
   0 ?: sve_sc1; /* { dg-error {type mismatch in conditional expression} } */
   0 ? sve_sc_ptr : sve_sc_ptr;
-  0 ? sve_sc_ptr : gnu_sc_ptr; /* { dg-warning {pointer type mismatch} } */
-  0 ? gnu_sc_ptr : sve_sc_ptr; /* { dg-warning {pointer type mismatch} } */
+  0 ? sve_sc_ptr : gnu_sc_ptr; /* { dg-error {pointer type mismatch} } */
+  0 ? gnu_sc_ptr : sve_sc_ptr; /* { dg-error {pointer type mismatch} } */
 
   /* Generic associations.  */
 

@@ -1,3 +1,43 @@
+2023-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class saved_diagnostic): New forward decl.
+	* bounds-checking.cc: Update for changes to
+	pending_diagnostic::emit.
+	* call-details.cc: Likewise.
+	* diagnostic-manager.cc: Include "diagnostic-format-sarif.h".
+	(saved_diagnostic::maybe_add_sarif_properties): New.
+	(class pending_diagnostic_metadata): New.
+	(diagnostic_manager::emit_saved_diagnostic): Create a
+	pending_diagnostic_metadata and a diagnostic_emission_context.
+	Pass the latter to the pending_diagnostic::emit vfunc.
+	* diagnostic-manager.h
+	(saved_diagnostic::maybe_add_sarif_properties): New decl.
+	* engine.cc: Update for changes to pending_diagnostic::emit.
+	* infinite-loop.cc: Likewise.
+	* infinite-recursion.cc: Likewise.
+	* kf-analyzer.cc: Likewise.
+	* kf.cc: Likewise.
+	* pending-diagnostic.cc
+	(diagnostic_emission_context::get_pending_diagnostic): New.
+	(diagnostic_emission_context::warn): New.
+	(diagnostic_emission_context::inform): New.
+	* pending-diagnostic.h (class diagnostic_emission_context): New.
+	(pending_diagnostic::emit): Update params.
+	(pending_diagnostic::maybe_add_sarif_properties): New vfunc.
+	* region.cc: Don't include "diagnostic-metadata.h".
+	* region-model.cc: Include "diagnostic-format-sarif.h".  Update
+	for changes to pending_diagnostic::emit.
+	(exposure_through_uninit_copy::maybe_add_sarif_properties): New.
+	* sm-fd.cc: Update for changes to pending_diagnostic::emit.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* store.cc: Don't include "diagnostic-metadata.h".
+	* varargs.cc: Update for changes to pending_diagnostic::emit.
+
 2023-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h: Include "rich-location.h".

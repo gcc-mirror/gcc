@@ -770,9 +770,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	{
 	  int regno = reg->regno;
 
-	  if (partial_subreg_p (lra_reg_info[regno].biggest_mode,
-				reg->biggest_mode))
-	    lra_reg_info[regno].biggest_mode = reg->biggest_mode;
+	  lra_update_biggest_mode (regno, reg->biggest_mode);
 	  if (HARD_REGISTER_NUM_P (regno))
 	    lra_hard_reg_usage[regno] += freq;
 	}

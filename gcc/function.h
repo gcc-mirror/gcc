@@ -518,6 +518,17 @@ set_loops_for_fn (struct function *fn, struct loops *loops)
   fn->x_current_loops = loops;
 }
 
+/* Get a new unique dependence clique or zero if none is left.  */
+
+inline unsigned short
+get_new_clique (function *fn)
+{
+  unsigned short clique = fn->last_clique + 1;
+  if (clique != 0)
+    fn->last_clique = clique;
+  return clique;
+}
+
 /* For backward compatibility... eventually these should all go away.  */
 #define current_function_funcdef_no (cfun->funcdef_no)
 

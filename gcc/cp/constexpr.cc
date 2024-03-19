@@ -3128,11 +3128,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	/* OK */;
       else if (!DECL_SAVED_TREE (fun))
 	{
-	  /* When at_eof >= 2, cgraph has started throwing away
+	  /* When at_eof >= 3, cgraph has started throwing away
 	     DECL_SAVED_TREE, so fail quietly.  FIXME we get here because of
 	     late code generation for VEC_INIT_EXPR, which needs to be
 	     completely reconsidered.  */
-	  gcc_assert (at_eof >= 2 && ctx->quiet);
+	  gcc_assert (at_eof >= 3 && ctx->quiet);
 	  *non_constant_p = true;
 	}
       else if (tree copy = get_fundef_copy (new_call.fundef))
@@ -7336,7 +7336,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (TREE_CODE (r) == TARGET_EXPR
 	  && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
 	r = TARGET_EXPR_INITIAL (r);
-      if (DECL_P (r))
+      if (DECL_P (r)
+	  /* P2280 allows references to unknown.  */
+	  && !(VAR_P (t) && TYPE_REF_P (TREE_TYPE (t))))
 	{
 	  if (!ctx->quiet)
 	    non_const_var_error (loc, r, /*fundef_p*/false);
@@ -7378,6 +7380,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  r = build_constructor (TREE_TYPE (t), NULL);
 	  TREE_CONSTANT (r) = true;
 	}
+      else if (TYPE_REF_P (TREE_TYPE (t)))
+	/* P2280 allows references to unknown...  */;
+      else if (is_this_parameter (t))
+	/* ...as well as the this pointer.  */;
       else
 	{
 	  if (!ctx->quiet)
@@ -9381,7 +9387,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
        available, so we don't bother with switch tracking.  */
     return true;
 
-  if (TREE_THIS_VOLATILE (t) && want_rval)
+  if (TREE_THIS_VOLATILE (t) && want_rval
+      && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (t)))
     {
       if (flags & tf_error)
 	constexpr_error (loc, fundef_p, "lvalue-to-rvalue conversion of "

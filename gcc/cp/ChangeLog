@@ -1,3 +1,270 @@
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112795
+	* cp-tree.h (cp_check_pragma_unroll): Declare.
+	* semantics.cc (cp_check_pragma_unroll): New function.
+	* parser.cc (cp_parser_pragma_unroll): Use cp_check_pragma_unroll.
+	* pt.cc (tsubst_expr) <case ANNOTATE_EXPR>: Likewise.
+	(tsubst_stmt) <case RANGE_FOR_STMT>: Likwsie.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree.cc (cxx_gnu_attribute_table): Add extra braces to work
+	around PR 16333 in older compilers.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110734
+	* parser.cc (cp_parser_block_declaration): Implement C++ DR 2262
+	- Attributes for asm-definition.  Call cp_parser_asm_definition
+	even if RID_ASM token is only seen after sequence of standard
+	attributes.
+	(cp_parser_asm_definition): Parse standard attributes before
+	RID_ASM token and warn for them with -Wattributes.
+
+2023-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107687
+	PR c++/110997
+	* call.cc (in_immediate_context): No longer static.
+	* constexpr.cc (cxx_eval_call_expression): Adjust assert.
+	* cp-gimplify.cc (deferred_escalating_exprs): New vec.
+	(remember_escalating_expr): New.
+	(enum fold_flags): Remove ff_fold_immediate.
+	(immediate_escalating_function_p): New.
+	(unchecked_immediate_escalating_function_p): New.
+	(promote_function_to_consteval): New.
+	(cp_fold_immediate): Move above.  Return non-null if any errors were
+	emitted.
+	(maybe_explain_promoted_consteval): New.
+	(cp_gimplify_expr) <case CALL_EXPR>: Assert we've handled all
+	immediate invocations.
+	(taking_address_of_imm_fn_error): New.
+	(cp_fold_immediate_r): Merge ADDR_EXPR and PTRMEM_CST cases.  Implement
+	P2564 - promoting functions to consteval.
+	<case CALL_EXPR>: Implement P2564 - promoting functions to consteval.
+	(cp_fold_r): If an expression turns into a CALL_EXPR after cp_fold,
+	call cp_fold_immediate_r on the CALL_EXPR.
+	(cp_fold_function): Set DECL_ESCALATION_CHECKED_P if
+	deferred_escalating_exprs does not contain current_function_decl.
+	(process_and_check_pending_immediate_escalating_fns): New.
+	* cp-tree.h (struct lang_decl_fn): Add escalated_p bit-field.
+	(DECL_ESCALATION_CHECKED_P): New.
+	(immediate_invocation_p): Declare.
+	(process_pending_immediate_escalating_fns): Likewise.
+	* decl2.cc (c_parse_final_cleanups): Set at_eof to 2 after all
+	templates have been instantiated; and to 3 at the end of the function.
+	Call process_pending_immediate_escalating_fns.
+	* error.cc (dump_template_bindings): Check at_eof against an updated
+	value.
+	* module.cc (trees_out::lang_decl_bools): Stream escalated_p.
+	(trees_in::lang_decl_bools): Likewise.
+	* pt.cc (push_tinst_level_loc): Set at_eof to 3, not 2.
+	* typeck.cc (cp_build_addr_expr_1): Don't check
+	DECL_IMMEDIATE_FUNCTION_P.
+
+2023-12-04  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (potential_constant_expression_1): Fix
+	check for loading volatile lvalue.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112795
+	* cp-tree.h (cp_convert_range_for): Change UNROLL type from
+	unsigned short to tree.
+	(finish_while_stmt_cond, finish_do_stmt, finish_for_cond): Likewise.
+	* parser.cc (cp_parser_statement): Pass NULL_TREE rather than 0 to
+	cp_parser_iteration_statement UNROLL argument.
+	(cp_parser_for, cp_parser_c_for): Change UNROLL type from
+	unsigned short to tree.
+	(cp_parser_range_for): Likewise.  Set RANGE_FOR_UNROLL to just UNROLL
+	rather than build_int_cst from it.
+	(cp_convert_range_for, cp_parser_iteration_statement): Change UNROLL
+	type from unsigned short to tree.
+	(cp_parser_omp_loop_nest): Pass NULL_TREE rather than 0 to
+	cp_parser_range_for UNROLL argument.
+	(cp_parser_pragma_unroll): Return tree rather than unsigned short.
+	If parsed expression is type dependent, just return it, don't diagnose
+	issues with value if it is value dependent.
+	(cp_parser_pragma): Change UNROLL type from unsigned short to tree.
+	* semantics.cc (finish_while_stmt_cond): Change UNROLL type from
+	unsigned short to tree.  Build ANNOTATE_EXPR with UNROLL as its last
+	operand rather than build_int_cst from it.
+	(finish_do_stmt, finish_for_cond): Likewise.
+	* pt.cc (tsubst_stmt) <case RANGE_FOR_STMT>: Change UNROLL type from
+	unsigned short to tree and set it to RECUR on RANGE_FOR_UNROLL (t).
+	(tsubst_expr) <case ANNOTATE_EXPR>: For annot_expr_unroll_kind repeat
+	checks on UNROLL value from cp_parser_pragma_unroll.
+
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cp-tree.h (cxx_attribute_table): Delete.
+	(cxx_gnu_attribute_table, std_attribute_table): Declare.
+	* cp-objcp-common.h (LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Delete.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Delete.
+	(cp_objcp_attribute_table): New table.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Redefine.
+	* tree.cc (cxx_attribute_table): Replace with...
+	(cxx_gnu_attributes, cxx_gnu_attribute_table): ...these globals.
+	(std_attribute_table): Change type to scoped_attribute_specs, using...
+	(std_attributes): ...this as the underlying array.
+	(init_tree): Remove call to register_scoped_attributes.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* mangle.cc (write_type): Mangle placeholder as its template.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (TEMPLATE_ARGS_TYPE_CONSTRAINT_P): New.
+	(get_concept_check_template): Declare.
+	* constraint.cc (combine_constraint_expressions)
+	(finish_shorthand_constraint): Use UNKNOWN_LOCATION.
+	* pt.cc (convert_generic_types_to_packs): Likewise.
+	* mangle.cc (write_constraint_expression)
+	(write_tparms_constraints, write_type_constraint)
+	(template_parm_natural_p, write_requirement)
+	(write_requires_expr): New.
+	(write_encoding): Mangle trailing requires-clause.
+	(write_name): Pass parms to write_template_args.
+	(write_template_param_decl): Factor out from...
+	(write_closure_template_head): ...here.
+	(write_template_args): Mangle non-natural parms
+	and requires-clause.
+	(write_expression): Handle REQUIRES_EXPR.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* semantics.cc (finish_non_static_data_member)
+	(finish_decltype_type, capture_decltype):
+	Handle deduced closure parameter.
+
+2023-11-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112744
+	* typeck.cc (finish_class_member_access_expr): When accessing
+	a static data member, use ba_any for lookup_base.
+
+2023-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110349
+	* cp-tree.h: Implement C++26 P2169R4 - Placeholder variables with no
+	name.
+	(OVL_NAME_INDEPENDENT_DECL_P): Define.
+	(add_capture): Add unsigned * argument.
+	(name_independent_decl_p): New inline function.
+	* name-lookup.cc (class name_lookup): Make ambiguous and
+	add_value members public.
+	(name_independent_linear_search): New function.
+	(get_class_binding_direct): Handle member_vec_binary_search
+	returning OVL_NAME_INDEPENDENT_DECL_P OVERLOAD.  Use
+	name_independent_linear_search rather than fields_linear_search
+	for linear lookup of _ name if !want_type.
+	(member_name_cmp): Sort name-independent declarations first.
+	(member_vec_dedup): Handle name-independent declarations.
+	(pop_local_binding): Handle binding->value being a TREE_LIST for
+	ambiguous name-independent declarations.
+	(supplement_binding): Handle name-independent declarations.
+	(update_binding): Likewise.
+	(check_local_shadow): Return tree rather than void, normally
+	NULL_TREE but old for name-independent declarations which used
+	to conflict with outer scope declaration.  Don't emit -Wshadow*
+	warnings for name-independent declarations.
+	(pushdecl): Handle name-independent declarations.
+	* search.cc (lookup_field_r): Handle nval being a TREE_LIST.
+	* lambda.cc (build_capture_proxy): Adjust for ___.<number>
+	names of members.
+	(add_capture): Add NAME_INDEPENDENT_CNT argument.  Use ___.<number>
+	name rather than ___ for second and following capture with
+	_ name.
+	(add_default_capture): Adjust add_capture caller.
+	* decl.cc (poplevel): Don't warn about name-independent declarations.
+	(duplicate_decls): If in C++26 a _ named declaration conflicts with
+	earlier declarations, emit explaining note why the new declaration
+	is not name-independent.
+	(reshape_init_class): If field is a TREE_LIST, emit an ambiguity
+	error with list of candidates rather than error about non-existing
+	non-static data member.
+	* parser.cc (cp_parser_lambda_introducer): Adjust add_capture callers.
+	Allow name-independent capture redeclarations.
+	(cp_parser_decomposition_declaration): Set decl_specs.storage_class
+	to sc_static for static structured bindings.
+	* pt.cc (tsubst_lambda_expr): Adjust add_capture caller.
+
+2023-11-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* decl.cc (finish_enum_value_list): Set TYPE_PACKED if
+	use_short_enum, and propagate it to variants.
+
+2023-11-30  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (LAMBDA_EXPR_MUTABLE_P): Remove.
+	* cp-tree.def: Remove documentation.
+	* lambda.cc (build_lambda_expr): Remove reference.
+	* parser.cc (cp_parser_lambda_declarator_opt): Likewise.
+	* pt.cc (tsubst_lambda_expr): Likewise.
+	* ptree.cc (cxx_print_lambda_node): Likewise.
+	* semantics.cc (capture_decltype): Get the object quals
+	from the object instead.
+
+2023-11-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106650
+	* constexpr.cc (cxx_eval_constant_expression) <case PARM_DECL>: Allow
+	reference to unknown/this as per P2280.
+	<case VAR_DECL>: Allow reference to unknown as per P2280.
+
+2023-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112765
+	* pt.cc (tsubst_expr) <case MODOP_EXPR>: Look through implicit
+	INDIRECT_REF when propagating -Wparentheses warning suppression.
+	* semantics.cc (maybe_warn_unparenthesized_assignment): Replace
+	REFERENCE_REF_P handling with STRIP_REFERENCE_REF.
+	(finish_parenthesized_expr): Likewise.
+
+2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.cc (finish_static_assert): Free buf on error return.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* decl.cc (maybe_prepare_return_this): Split out of...
+	(maybe_return_this): ... this.
+	* cp-tree.h (maybe_prepare_return_this): Declare.
+	* class.cc (build_clone): Call it.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* contracts.cc (check_postcondition_result): Cope with
+	cdtor_return_this.
+
+2023-11-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94264
+	PR c++/53220
+	* call.cc (convert_like_internal): Remove obsolete comment.
+	* typeck.cc (decay_conversion): Allow array prvalue.
+	(maybe_warn_about_returning_address_of_local): Check
+	for returning pointer to temporary.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-objcp-common.cc (cp_feature_table): Evaluate
+	__has_extension (cxx_init_captures) to 1 even for -std=c++11.
+
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* cp-lang.cc (c_family_register_lang_features): New.
+	* cp-objcp-common.cc (struct cp_feature_selector): New.
+	(cp_feature_selector::has_feature): New.
+	(struct cp_feature_info): New.
+	(cp_register_features): New.
+	* cp-objcp-common.h (cp_register_features): New.
+
 2023-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* name-lookup.cc (check_can_export_using_decl): New.

@@ -1748,7 +1748,7 @@ array_to_pointer_conversion (location_t loc, tree exp)
       if (!TREE_READONLY (decl) && !TREE_STATIC (decl))
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
 		    "converting an array compound literal to a pointer "
-		    "is ill-formed in C++");
+		    "leads to a dangling pointer in C++");
     }
 
   adr = build_unary_op (loc, ADDR_EXPR, exp, true);
@@ -2065,6 +2065,35 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
     exp.value = convert (build_qualified_type (TREE_TYPE (exp.value), TYPE_UNQUALIFIED), exp.value);
   if (force_non_npc)
     exp.value = build1 (NOP_EXPR, TREE_TYPE (exp.value), exp.value);
+
+  {
+    tree false_value, true_value;
+    if (convert_p && !error_operand_p (exp.value)
+	&& c_hardbool_type_attr (TREE_TYPE (exp.value),
+				 &false_value, &true_value))
+      {
+	tree t = save_expr (exp.value);
+
+	mark_exp_read (exp.value);
+
+	tree trapfn = builtin_decl_explicit (BUILT_IN_TRAP);
+	tree expr = build_call_expr_loc (loc, trapfn, 0);
+	expr = build_compound_expr (loc, expr, boolean_true_node);
+	expr = fold_build3_loc (loc, COND_EXPR, boolean_type_node,
+				fold_build2_loc (loc, NE_EXPR,
+						 boolean_type_node,
+						 t, true_value),
+				expr, boolean_true_node);
+	expr = fold_build3_loc (loc, COND_EXPR, boolean_type_node,
+				fold_build2_loc (loc, NE_EXPR,
+						 boolean_type_node,
+						 t, false_value),
+				expr, boolean_false_node);
+
+	exp.value = expr;
+      }
+  }
+
   return exp;
 }
 
@@ -5434,8 +5463,15 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       else
 	{
 	  int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
-	  if (emit_diagnostic (bltin1 && bltin2 ? DK_WARNING : DK_PEDWARN,
-			       colon_loc, OPT_Wincompatible_pointer_types,
+	  diagnostic_t kind = DK_PERMERROR;
+	  if (!flag_isoc99)
+	    /* This downgrade to a warning ensures that -std=gnu89
+	       -pedantic-errors does not flag these mismatches between
+	       builtins as errors (as DK_PERMERROR would).  ISO C99
+	       and later do not have implicit function declarations,
+	       so the mismatch cannot occur naturally there.  */
+	    kind = bltin1 && bltin2 ? DK_WARNING : DK_PEDWARN;
+	  if (emit_diagnostic (kind, colon_loc, OPT_Wincompatible_pointer_types,
 			       "pointer type mismatch "
 			       "in conditional expression"))
 	    {
@@ -5450,8 +5486,9 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	   && (code2 == INTEGER_TYPE || code2 == BITINT_TYPE))
     {
       if (!null_pointer_constant_p (orig_op2))
-	pedwarn (colon_loc, OPT_Wint_conversion,
-		 "pointer/integer type mismatch in conditional expression");
+	permerror_opt (colon_loc, OPT_Wint_conversion,
+		       "pointer/integer type mismatch "
+		       "in conditional expression");
       else
 	{
 	  op2 = null_pointer_node;
@@ -5462,8 +5499,9 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	   && (code1 == INTEGER_TYPE || code1 == BITINT_TYPE))
     {
       if (!null_pointer_constant_p (orig_op1))
-	pedwarn (colon_loc, OPT_Wint_conversion,
-		 "pointer/integer type mismatch in conditional expression");
+	permerror_opt (colon_loc, OPT_Wint_conversion,
+		       "pointer/integer type mismatch "
+		       "in conditional expression");
       else
 	{
 	  op1 = null_pointer_node;
@@ -6559,6 +6597,23 @@ error_init (location_t loc, const char *gmsgid, ...)
     inform (loc, "(near initialization for %qs)", ofwhat);
 }
 
+/* Used to implement pedwarn_init and permerror_init.  */
+
+static void ATTRIBUTE_GCC_DIAG (3,0)
+pedwarn_permerror_init (location_t loc, int opt, const char *gmsgid,
+			va_list *ap, diagnostic_t kind)
+{
+  /* Use the location where a macro was expanded rather than where
+     it was defined to make sure macros defined in system headers
+     but used incorrectly elsewhere are diagnosed.  */
+  location_t exploc = expansion_point_location_if_in_system_header (loc);
+  auto_diagnostic_group d;
+  bool warned = emit_diagnostic_valist (kind, exploc, opt, gmsgid, ap);
+  char *ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  if (*ofwhat && warned)
+    inform (exploc, "(near initialization for %qs)", ofwhat);
+}
+
 /* Issue a pedantic warning for a bad initializer component.  OPT is
    the option OPT_* (from options.h) controlling this warning or 0 if
    it is unconditionally given.  GMSGID identifies the message.  The
@@ -6567,18 +6622,21 @@ error_init (location_t loc, const char *gmsgid, ...)
 static void ATTRIBUTE_GCC_DIAG (3,0)
 pedwarn_init (location_t loc, int opt, const char *gmsgid, ...)
 {
-  /* Use the location where a macro was expanded rather than where
-     it was defined to make sure macros defined in system headers
-     but used incorrectly elsewhere are diagnosed.  */
-  location_t exploc = expansion_point_location_if_in_system_header (loc);
-  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = emit_diagnostic_valist (DK_PEDWARN, exploc, opt, gmsgid, &ap);
+  pedwarn_permerror_init (loc, opt, gmsgid, &ap, DK_PEDWARN);
   va_end (ap);
-  char *ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat && warned)
-    inform (exploc, "(near initialization for %qs)", ofwhat);
+}
+
+/* Like pedwarn_init, but issue a permerror.  */
+
+static void ATTRIBUTE_GCC_DIAG (3,0)
+permerror_init (location_t loc, int opt, const char *gmsgid, ...)
+{
+  va_list ap;
+  va_start (ap, gmsgid);
+  pedwarn_permerror_init (loc, opt, gmsgid, &ap, DK_PERMERROR);
+  va_end (ap);
 }
 
 /* Issue a warning for a bad initializer component.
@@ -7551,46 +7609,47 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		auto_diagnostic_group d;
 		range_label_for_type_mismatch rhs_label (rhstype, type);
 		gcc_rich_location richloc (expr_loc, &rhs_label);
-		if (pedwarn (&richloc, OPT_Wincompatible_pointer_types,
-			     "passing argument %d of %qE from incompatible "
-			     "pointer type", parmnum, rname))
+		if (permerror_opt (&richloc, OPT_Wincompatible_pointer_types,
+				   "passing argument %d of %qE from "
+				   "incompatible pointer type",
+				   parmnum, rname))
 		  inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	      }
 	      break;
 	    case ic_assign:
 	      if (bltin)
-		pedwarn (location, OPT_Wincompatible_pointer_types,
-			 "assignment to %qT from pointer to "
-			 "%qD with incompatible type %qT",
-			 type, bltin, rhstype);
+		permerror_opt (location, OPT_Wincompatible_pointer_types,
+			       "assignment to %qT from pointer to "
+			       "%qD with incompatible type %qT",
+			       type, bltin, rhstype);
 	      else
-		pedwarn (location, OPT_Wincompatible_pointer_types,
-			 "assignment to %qT from incompatible pointer type %qT",
-			 type, rhstype);
+		permerror_opt (location, OPT_Wincompatible_pointer_types,
+			       "assignment to %qT from incompatible pointer "
+			       "type %qT", type, rhstype);
 	      break;
 	    case ic_init:
 	    case ic_init_const:
 	      if (bltin)
-		pedwarn_init (location, OPT_Wincompatible_pointer_types,
-			      "initialization of %qT from pointer to "
-			      "%qD with incompatible type %qT",
-			      type, bltin, rhstype);
+		permerror_init (location, OPT_Wincompatible_pointer_types,
+				"initialization of %qT from pointer to "
+				"%qD with incompatible type %qT",
+				type, bltin, rhstype);
 	      else
-		pedwarn_init (location, OPT_Wincompatible_pointer_types,
-			      "initialization of %qT from incompatible "
-			      "pointer type %qT",
-			      type, rhstype);
+		permerror_init (location, OPT_Wincompatible_pointer_types,
+				"initialization of %qT from incompatible "
+				"pointer type %qT",
+				type, rhstype);
 	      break;
 	    case ic_return:
 	      if (bltin)
-		pedwarn (location, OPT_Wincompatible_pointer_types,
-			 "returning pointer to %qD of type %qT from "
-			 "a function with incompatible type %qT",
-			 bltin, rhstype, type);
+		permerror_opt (location, OPT_Wincompatible_pointer_types,
+			       "returning pointer to %qD of type %qT from "
+			       "a function with incompatible type %qT",
+			       bltin, rhstype, type);
 	      else
-		pedwarn (location, OPT_Wincompatible_pointer_types,
-			 "returning %qT from a function with incompatible "
-			 "return type %qT", rhstype, type);
+		permerror_opt (location, OPT_Wincompatible_pointer_types,
+			       "returning %qT from a function with "
+			       "incompatible return type %qT", rhstype, type);
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -7630,27 +7689,28 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      auto_diagnostic_group d;
 	      range_label_for_type_mismatch rhs_label (rhstype, type);
 	      gcc_rich_location richloc (expr_loc, &rhs_label);
-	      if (pedwarn (&richloc, OPT_Wint_conversion,
-			   "passing argument %d of %qE makes pointer from "
-			   "integer without a cast", parmnum, rname))
+	      if (permerror_opt (&richloc, OPT_Wint_conversion,
+				 "passing argument %d of %qE makes pointer "
+				 "from integer without a cast", parmnum, rname))
 		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	    }
 	    break;
 	  case ic_assign:
-	    pedwarn (location, OPT_Wint_conversion,
-		     "assignment to %qT from %qT makes pointer from integer "
-		     "without a cast", type, rhstype);
+	    permerror_opt (location, OPT_Wint_conversion,
+			   "assignment to %qT from %qT makes pointer from "
+			   "integer without a cast", type, rhstype);
 	    break;
 	  case ic_init:
 	  case ic_init_const:
-	    pedwarn_init (location, OPT_Wint_conversion,
-			  "initialization of %qT from %qT makes pointer from "
-			  "integer without a cast", type, rhstype);
+	    permerror_init (location, OPT_Wint_conversion,
+			    "initialization of %qT from %qT makes pointer "
+			    "from integer without a cast", type, rhstype);
 	    break;
 	  case ic_return:
-	    pedwarn (location, OPT_Wint_conversion, "returning %qT from a "
-		     "function with return type %qT makes pointer from "
-		     "integer without a cast", rhstype, type);
+	    permerror_init (location, OPT_Wint_conversion,
+			    "returning %qT from a function with return type "
+			    "%qT makes pointer from integer without a cast",
+			    rhstype, type);
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -7668,27 +7728,27 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	    auto_diagnostic_group d;
 	    range_label_for_type_mismatch rhs_label (rhstype, type);
 	    gcc_rich_location richloc (expr_loc, &rhs_label);
-	    if (pedwarn (&richloc, OPT_Wint_conversion,
-			 "passing argument %d of %qE makes integer from "
-			 "pointer without a cast", parmnum, rname))
+	    if (permerror_opt (&richloc, OPT_Wint_conversion,
+			       "passing argument %d of %qE makes integer from "
+			       "pointer without a cast", parmnum, rname))
 	      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	  }
 	  break;
 	case ic_assign:
-	  pedwarn (location, OPT_Wint_conversion,
-		   "assignment to %qT from %qT makes integer from pointer "
-		   "without a cast", type, rhstype);
+	  permerror_opt (location, OPT_Wint_conversion,
+			 "assignment to %qT from %qT makes integer from "
+			 "pointer without a cast", type, rhstype);
 	  break;
 	case ic_init:
 	case ic_init_const:
-	  pedwarn_init (location, OPT_Wint_conversion,
-			"initialization of %qT from %qT makes integer from "
-			"pointer without a cast", type, rhstype);
+	  permerror_init (location, OPT_Wint_conversion,
+			  "initialization of %qT from %qT makes integer "
+			  "from pointer without a cast", type, rhstype);
 	  break;
 	case ic_return:
-	  pedwarn (location, OPT_Wint_conversion, "returning %qT from a "
-		   "function with return type %qT makes integer from "
-		   "pointer without a cast", rhstype, type);
+	  permerror_opt (location, OPT_Wint_conversion, "returning %qT from a "
+			 "function with return type %qT makes integer from "
+			 "pointer without a cast", rhstype, type);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -8396,7 +8456,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	    }
 	}
 
-      if (code == VECTOR_TYPE)
+      if (code == VECTOR_TYPE || c_hardbool_type_attr (type))
 	/* Although the types are compatible, we may require a
 	   conversion.  */
 	inside_init = convert (type, inside_init);
@@ -11182,7 +11242,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	  && valtype != NULL_TREE && TREE_CODE (valtype) != VOID_TYPE)
 	{
 	  no_warning = true;
-	  if (emit_diagnostic (flag_isoc99 ? DK_PEDWARN : DK_WARNING,
+	  if (emit_diagnostic (flag_isoc99 ? DK_PERMERROR : DK_WARNING,
 			       loc, OPT_Wreturn_mismatch,
 			       "%<return%> with no value,"
 			       " in function returning non-void"))
@@ -11195,7 +11255,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
       current_function_returns_null = 1;
       bool warned_here;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
-	warned_here = pedwarn
+	warned_here = permerror_opt
 	  (xloc, OPT_Wreturn_mismatch,
 	   "%<return%> with a value, in function returning void");
       else
@@ -16203,6 +16263,7 @@ c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
 
 	  t = build_variant_type_copy (type);
 	  TREE_TYPE (t) = element_type;
+	  TYPE_ADDR_SPACE (t) = TYPE_ADDR_SPACE (element_type);
 
           if (TYPE_STRUCTURAL_EQUALITY_P (element_type)
               || (domain && TYPE_STRUCTURAL_EQUALITY_P (domain)))

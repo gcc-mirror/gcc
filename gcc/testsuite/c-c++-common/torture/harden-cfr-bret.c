@@ -1,14 +1,27 @@
 /* { dg-do compile } */
-/* { dg-options "-fharden-control-flow-redundancy -fdump-tree-hardcfr -ffat-lto-objects" } */
+/* { dg-options "-fharden-control-flow-redundancy -fno-exceptions -fdump-tree-hardcfr -ffat-lto-objects" } */
+/* { dg-require-effective-target untyped_assembly } */
 
-int f(int i) {
+extern int foobar (void);
+
+#if __cplusplus
+typedef void (*fnt)(...);
+#else
+typedef void (*fnt)();
+#endif
+
+int i;
+
+int f(void) {
   if (i)
-    __builtin_return (&i);
+    __builtin_return (__builtin_apply ((fnt)foobar,
+				       __builtin_apply_args (), 0));
   return i;
 }
 
-int g(int i) {
-  __builtin_return (&i);
+int g(void) {
+  __builtin_return (__builtin_apply ((fnt)foobar,
+				     __builtin_apply_args (), 0));
 }
 
 /* Out-of-line checking, before both builtin_return and return in f.  */

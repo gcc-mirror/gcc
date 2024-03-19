@@ -541,6 +541,8 @@ public:
     return m_option_callbacks.m_lang_mask;
   }
 
+  label_text get_location_text (const expanded_location &s) const;
+
 private:
   bool includes_seen_p (const line_map_ordinary *map);
 

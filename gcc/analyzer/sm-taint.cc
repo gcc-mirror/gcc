@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "options.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "gimple-iterator.h"
@@ -211,33 +210,29 @@ public:
     return OPT_Wanalyzer_tainted_array_index;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     /* CWE-129: "Improper Validation of Array Index".  */
-    m.add_cwe (129);
+    ctxt.add_cwe (129);
     if (m_arg)
       switch (m_has_bounds)
 	{
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value %qE"
-			       " in array lookup without bounds checking",
-			       m_arg);
+	  return ctxt.warn ("use of attacker-controlled value %qE"
+			    " in array lookup without bounds checking",
+			    m_arg);
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value %qE"
-			       " in array lookup without checking for negative",
-			       m_arg);
+	  return ctxt.warn ("use of attacker-controlled value %qE"
+			    " in array lookup without checking for negative",
+			    m_arg);
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value %qE"
-			       " in array lookup without upper-bounds checking",
-			       m_arg);
+	  return ctxt.warn ("use of attacker-controlled value %qE"
+			    " in array lookup without upper-bounds checking",
+			    m_arg);
 	  break;
 	}
     else
@@ -246,21 +241,18 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value"
-			       " in array lookup without bounds checking");
+	  return ctxt.warn ("use of attacker-controlled value"
+			    " in array lookup without bounds checking");
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value"
-			       " in array lookup without checking for"
-			       " negative");
+	  return ctxt.warn ("use of attacker-controlled value"
+			    " in array lookup without checking for"
+			    " negative");
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value"
-			       " in array lookup without upper-bounds"
-			       " checking");
+	  return ctxt.warn ("use of attacker-controlled value"
+			    " in array lookup without upper-bounds"
+			    " checking");
 	  break;
 	}
   }
@@ -327,33 +319,29 @@ public:
     return OPT_Wanalyzer_tainted_offset;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     /* CWE-823: "Use of Out-of-range Pointer Offset".  */
-    m.add_cwe (823);
+    ctxt.add_cwe (823);
     if (m_arg)
       switch (m_has_bounds)
 	{
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value %qE as offset"
-			       " without bounds checking",
-			       m_arg);
+	  return ctxt.warn ("use of attacker-controlled value %qE as offset"
+			    " without bounds checking",
+			    m_arg);
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value %qE as offset"
-			       " without lower-bounds checking",
-			       m_arg);
+	  return ctxt.warn ("use of attacker-controlled value %qE as offset"
+			    " without lower-bounds checking",
+			    m_arg);
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value %qE as offset"
-			       " without upper-bounds checking",
-			       m_arg);
+	  return ctxt.warn ("use of attacker-controlled value %qE as offset"
+			    " without upper-bounds checking",
+			    m_arg);
 	  break;
 	}
     else
@@ -362,19 +350,16 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value as offset"
-			       " without bounds checking");
+	  return ctxt.warn ("use of attacker-controlled value as offset"
+			    " without bounds checking");
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value as offset"
-			       " without lower-bounds checking");
+	  return ctxt.warn ("use of attacker-controlled value as offset"
+			    " without lower-bounds checking");
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value as offset"
-			       " without upper-bounds checking");
+	  return ctxt.warn ("use of attacker-controlled value as offset"
+			    " without upper-bounds checking");
 	  break;
 	}
   }
@@ -437,33 +422,29 @@ public:
     return OPT_Wanalyzer_tainted_size;
   }
 
-  bool emit (rich_location *rich_loc, logger *) override
+  bool emit (diagnostic_emission_context &ctxt) override
   {
     /* "CWE-129: Improper Validation of Array Index".  */
-    diagnostic_metadata m;
-    m.add_cwe (129);
+    ctxt.add_cwe (129);
     if (m_arg)
       switch (m_has_bounds)
 	{
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value %qE as size"
-			       " without bounds checking",
-			       m_arg);
+	  return ctxt.warn ("use of attacker-controlled value %qE as size"
+			    " without bounds checking",
+			    m_arg);
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value %qE as size"
-			       " without lower-bounds checking",
-			       m_arg);
+	  return ctxt.warn ("use of attacker-controlled value %qE as size"
+			    " without lower-bounds checking",
+			    m_arg);
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value %qE as size"
-			       " without upper-bounds checking",
-			       m_arg);
+	  return ctxt.warn ("use of attacker-controlled value %qE as size"
+			    " without upper-bounds checking",
+			    m_arg);
 	  break;
 	}
     else
@@ -472,19 +453,16 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value as size"
-			       " without bounds checking");
+	  return ctxt.warn ("use of attacker-controlled value as size"
+			    " without bounds checking");
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value as size"
-			       " without lower-bounds checking");
+	  return ctxt.warn ("use of attacker-controlled value as size"
+			    " without lower-bounds checking");
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m, get_controlling_option (),
-			       "use of attacker-controlled value as size"
-			       " without upper-bounds checking");
+	  return ctxt.warn ("use of attacker-controlled value as size"
+			    " without upper-bounds checking");
 	  break;
 	}
   }
@@ -547,9 +525,9 @@ public:
     return "tainted_access_attrib_size";
   }
 
-  bool emit (rich_location *rich_loc, logger *logger) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    bool warned = tainted_size::emit (rich_loc, logger);
+    bool warned = tainted_size::emit (ctxt);
     if (warned)
       {
 	inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
@@ -583,20 +561,17 @@ public:
     return OPT_Wanalyzer_tainted_divisor;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     /* CWE-369: "Divide By Zero".  */
-    m.add_cwe (369);
+    ctxt.add_cwe (369);
     if (m_arg)
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "use of attacker-controlled value %qE as divisor"
-			   " without checking for zero",
-			   m_arg);
+      return ctxt.warn ("use of attacker-controlled value %qE as divisor"
+			" without checking for zero",
+			m_arg);
     else
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "use of attacker-controlled value as divisor"
-			   " without checking for zero");
+      return ctxt.warn ("use of attacker-controlled value as divisor"
+			" without checking for zero");
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) final override
@@ -645,11 +620,10 @@ public:
     return OPT_Wanalyzer_tainted_allocation_size;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     /* "CWE-789: Memory Allocation with Excessive Size Value".  */
-    m.add_cwe (789);
+    ctxt.add_cwe (789);
 
     bool warned;
     if (m_arg)
@@ -658,24 +632,21 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  warned = warning_meta (rich_loc, m, get_controlling_option (),
-				 "use of attacker-controlled value %qE as"
-				 " allocation size without bounds checking",
-				 m_arg);
+	  warned = ctxt.warn ("use of attacker-controlled value %qE as"
+			      " allocation size without bounds checking",
+			      m_arg);
 	  break;
 	case BOUNDS_UPPER:
-	  warned = warning_meta (rich_loc, m, get_controlling_option (),
-				 "use of attacker-controlled value %qE as"
-				 " allocation size without"
-				 " lower-bounds checking",
-				 m_arg);
+	  warned = ctxt.warn ("use of attacker-controlled value %qE as"
+			      " allocation size without"
+			      " lower-bounds checking",
+			      m_arg);
 	  break;
 	case BOUNDS_LOWER:
-	  warned = warning_meta (rich_loc, m, get_controlling_option (),
-				 "use of attacker-controlled value %qE as"
-				 " allocation size without"
-				 " upper-bounds checking",
-				 m_arg);
+	  warned = ctxt.warn ("use of attacker-controlled value %qE as"
+			      " allocation size without"
+			      " upper-bounds checking",
+			      m_arg);
 	  break;
 	}
     else
@@ -684,27 +655,24 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  warned = warning_meta (rich_loc, m, get_controlling_option (),
-				 "use of attacker-controlled value as"
-				 " allocation size without bounds"
-				 " checking");
+	  warned = ctxt.warn ("use of attacker-controlled value as"
+			      " allocation size without bounds"
+			      " checking");
 	  break;
 	case BOUNDS_UPPER:
-	  warned = warning_meta (rich_loc, m, get_controlling_option (),
-				 "use of attacker-controlled value as"
-				 " allocation size without"
-				 " lower-bounds checking");
+	  warned = ctxt.warn ("use of attacker-controlled value as"
+			      " allocation size without"
+			      " lower-bounds checking");
 	  break;
 	case BOUNDS_LOWER:
-	  warned = warning_meta (rich_loc, m, get_controlling_option (),
-				 "use of attacker-controlled value as"
-				 " allocation size without"
-				 " upper-bounds checking");
+	  warned = ctxt.warn ("use of attacker-controlled value as"
+			      " allocation size without"
+			      " upper-bounds checking");
 	  break;
 	}
     if (warned)
       {
-	location_t loc = rich_loc->get_loc ();
+	const location_t loc = ctxt.get_location ();
 	switch (m_mem_space)
 	  {
 	  default:
@@ -800,15 +768,13 @@ public:
     return OPT_Wanalyzer_tainted_assertion;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     /* "CWE-617: Reachable Assertion".  */
-    m.add_cwe (617);
+    ctxt.add_cwe (617);
 
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "use of attacked-controlled value in"
-			 " condition for assertion");
+    return ctxt.warn ("use of attacked-controlled value in"
+		      " condition for assertion");
   }
 
   location_t fixup_location (location_t loc,

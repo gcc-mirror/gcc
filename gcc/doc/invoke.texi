@@ -219,6 +219,7 @@ in the following sections.
 -fno-elide-constructors
 -fno-enforce-eh-specs
 -fno-gnu-keywords
+-fno-immediate-escalation
 -fno-implicit-templates
 -fno-implicit-inline-templates
 -fno-implement-inlines
@@ -505,7 +506,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations
--Wmissing-parameter-type -Wmissing-prototypes -Wmissing-variable-declarations
+-Wmissing-parameter-type -Wdeclaration-missing-parameter-type
+-Wmissing-prototypes -Wmissing-variable-declarations
 -Wnested-externs -Wold-style-declaration  -Wold-style-definition
 -Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion
 -Wdeclaration-after-statement  -Wpointer-sign}
@@ -560,6 +562,7 @@ Objective-C and Objective-C++ Dialects}.
 -fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion
 -fif-conversion2  -findirect-inlining
+-finline-stringops[=@var{fn}]
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n}
 -finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
@@ -652,6 +655,8 @@ Objective-C and Objective-C++ Dialects}.
 -fstack-protector-explicit  -fstack-check
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym}
 -fno-stack-limit  -fsplit-stack
+-fstrub=disable  -fstrub=strict  -fstrub=relaxed
+-fstrub=all  -fstrub=at-calls  -fstrub=internal
 -fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]}
 -fvtv-counts  -fvtv-debug
 -finstrument-functions  -finstrument-functions-once
@@ -3383,6 +3388,39 @@ Do not recognize @code{typeof} as a keyword, so that code can use this
 word as an identifier.  You can use the keyword @code{__typeof__} instead.
 This option is implied by the strict ISO C++ dialects: @option{-ansi},
 @option{-std=c++98}, @option{-std=c++11}, etc.
+
+@opindex fno-immediate-escalation
+@opindex fimmediate-escalation
+@item -fno-immediate-escalation
+Do not enable immediate function escalation whereby certain functions
+can be promoted to consteval, as specified in P2564R3.  For example:
+
+@example
+consteval int id(int i) @{ return i; @}
+
+constexpr int f(auto t)
+@{
+  return t + id(t); // id causes f<int> to be promoted to consteval
+@}
+
+void g(int i)
+@{
+  f (3);
+@}
+@end example
+
+compiles in C++20: @code{f} is an immediate-escalating function (due to
+the @code{auto} it is a function template and is declared @code{constexpr})
+and @code{id(t)} is an immediate-escalating expression, so @code{f} is
+promoted to @code{consteval}.  Consequently, the call to @code{id(t)}
+is in an immediate context, so doesn't have to produce a constant (that
+is the mechanism allowing consteval function composition).  However,
+with @option{-fno-immediate-escalation}, @code{f} is not promoted to
+@code{consteval}, and since the call to consteval function @code{id(t)}
+is not a constant expression, the compiler rejects the code.
+
+This option is turned on by default; it is only effective in C++20 mode
+or later.
 
 @opindex fimplicit-constexpr
 @item -fimplicit-constexpr
@@ -6183,7 +6221,13 @@ only by this flag, but it also downgrades some C and C++ diagnostics
 that have their own flag:
 
 @gccoptlist{
+-Wdeclaration-missing-parameter-type @r{(C and Objective-C only)}
+-Wimplicit-function-declaration @r{(C and Objective-C only)}
+-Wimplicit-int @r{(C and Objective-C only)}
+-Wincompatible-pointer-types @r{(C and Objective-C only)}
+-Wint-conversion @r{(C and Objective-C only)}
 -Wnarrowing @r{(C++)}
+-Wreturn-mismatch @r{(C and Objective-C only)}
 }
 
 The @option{-fpermissive} option is the default for historic C language
@@ -6853,8 +6897,10 @@ This warning is enabled by @option{-Wall} in C++.
 @opindex Wno-implicit-int
 @item -Wno-implicit-int @r{(C and Objective-C only)}
 This option controls warnings when a declaration does not specify a type.
-This warning is enabled by default in C99 and later dialects of C,
-and also by @option{-Wall}.
+This warning is enabled by default, as an error, in C99 and later
+dialects of C, and also by @option{-Wall}.  The error can be downgraded
+to a warning using @option{-fpermissive} (along with certain other
+errors), or for this error alone, with @option{-Wno-error=implicit-int}.
 
 This warning is upgraded to an error by @option{-pedantic-errors}.
 
@@ -6862,8 +6908,11 @@ This warning is upgraded to an error by @option{-pedantic-errors}.
 @opindex Wno-implicit-function-declaration
 @item -Wno-implicit-function-declaration @r{(C and Objective-C only)}
 This option controls warnings when a function is used before being declared.
-This warning is enabled by default in C99 and later dialects of C,
-and also by @option{-Wall}.
+This warning is enabled by default, as an error, in C99 and later
+dialects of C, and also by @option{-Wall}.  The error can be downgraded
+to a warning using @option{-fpermissive} (along with certain other
+errors), or for this error alone, with
+@option{-Wno-error=implicit-function-declaration}.
 
 This warning is upgraded to an error by @option{-pedantic-errors}.
 
@@ -7381,7 +7430,10 @@ Attempting to use the return value of a non-@code{void} function other
 than @code{main} that flows off the end by reaching the closing curly
 brace that terminates the function is undefined.
 
-This warning is specific to C and enabled by default.
+This warning is specific to C and enabled by default.  In C99 and later
+language dialects, it is treated as an error.  It can be downgraded
+to a warning using @option{-fpermissive} (along with other warnings),
+or for just this warning, with @option{-Wno-error=return-mismatch}.
 
 @opindex Wreturn-type
 @opindex Wno-return-type
@@ -8553,6 +8605,11 @@ types.  This warning is for cases not covered by @option{-Wno-pointer-sign},
 which warns for pointer argument passing or assignment with different
 signedness.
 
+By default, in C99 and later dialects of C, GCC treats this issue as an
+error.  The error can be downgraded to a warning using
+@option{-fpermissive} (along with certain other errors), or for this
+error alone, with @option{-Wno-error=incompatible-pointer-types}.
+
 This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wno-int-conversion
@@ -8562,6 +8619,11 @@ Do not warn about incompatible integer to pointer and pointer to integer
 conversions.  This warning is about implicit conversions; for explicit
 conversions the warnings @option{-Wno-int-to-pointer-cast} and
 @option{-Wno-pointer-to-int-cast} may be used.
+
+By default, in C99 and later dialects of C, GCC treats this issue as an
+error.  The error can be downgraded to a warning using
+@option{-fpermissive} (along with certain other errors), or for this
+error alone, with @option{-Wno-error=int-conversion}.
 
 This warning is upgraded to an error by @option{-pedantic-errors}.
 
@@ -9733,6 +9795,20 @@ void foo(bar) @{ @}
 @end smallexample
 
 This warning is also enabled by @option{-Wextra}.
+
+@opindex Wno-declaration-missing-parameter-type
+@opindex Wdeclaration-missing-parameter-type
+@item -Wno-declaration-missing-parameter-type @r{(C and Objective-C only)}
+Do not warn if a function declaration contains a parameter name without
+a type.  Such function declarations do not provide a function prototype
+and prevent most type checking in function calls.
+
+This warning is enabled by default.  In C99 and later dialects of C, it
+is treated as an error.  The error can be downgraded to a warning using
+@option{-fpermissive} (along with certain other errors), or for this
+error alone, with @option{-Wno-error=declaration-missing-parameter-type}.
+
+This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wmissing-prototypes
 @opindex Wno-missing-prototypes
@@ -12373,6 +12449,20 @@ their @code{_FORTIFY_SOURCE} counterparts into faster alternatives.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
+@opindex finline-stringops
+@item -finline-stringops[=@var{fn}]
+Expand memory and string operations (for now, only @code{memset})
+inline, even when the length is variable or big enough as to require
+looping.  This is most useful along with @option{-ffreestanding} and
+@option{-fno-builtin}.
+
+In some circumstances, it enables the compiler to generate code that
+takes advantage of known alignment and length multipliers, but even then
+it may be less efficient than optimized runtime implementations, and
+grow code size so much that even a less performant but shared
+implementation runs faster due to better use of code caches.  This
+option is disabled by default.
+
 @opindex fno-inline
 @opindex finline
 @item -fno-inline
@@ -13728,6 +13818,27 @@ The values used for pattern initialization might be changed in the future.
 @end itemize
 
 The default is @samp{uninitialized}.
+
+Note that the initializer values, whether @samp{zero} or @samp{pattern},
+refer to data representation (in memory or machine registers), rather
+than to their interpretation as numerical values.  This distinction may
+be important in languages that support types with biases or implicit
+multipliers, and with such extensions as @samp{hardbool} (@pxref{Type
+Attributes}).  For example, a variable that uses 8 bits to represent
+(biased) quantities in the @code{range 160..400} will be initialized
+with the bit patterns @code{0x00} or @code{0xFE}, depending on
+@var{choice}, whether or not these representations stand for values in
+that range, and even if they do, the interpretation of the value held by
+the variable will depend on the bias.  A @samp{hardbool} variable that
+uses say @code{0X5A} and @code{0xA5} for @code{false} and @code{true},
+respectively, will trap with either @samp{choice} of trivial
+initializer, i.e., @samp{zero} initialization will not convert to the
+representation for @code{false}, even if it would for a @code{static}
+variable of the same type.  This means the initializer pattern doesn't
+generally depend on the type of the initialized variable.  One notable
+exception is that (non-hardened) boolean variables that fit in registers
+are initialized with @code{false} (zero), even when @samp{pattern} is
+requested.
 
 You can control this behavior for a specific variable by using the variable
 attribute @code{uninitialized} (@pxref{Variable Attributes}).
@@ -17815,6 +17926,56 @@ without @option{-fsplit-stack} always has a large stack.  Support for
 this is implemented in the gold linker in GNU binutils release 2.21
 and later.
 
+@opindex -fstrub=disable
+@item -fstrub=disable
+Disable stack scrubbing entirely, ignoring any @code{strub} attributes.
+See @xref{Common Type Attributes}.
+
+@opindex fstrub=strict
+@item -fstrub=strict
+Functions default to @code{strub} mode @code{disabled}, and apply
+@option{strict}ly the restriction that only functions associated with
+@code{strub}-@code{callable} modes (@code{at-calls}, @code{callable} and
+@code{always_inline} @code{internal}) are @code{callable} by functions
+with @code{strub}-enabled modes (@code{at-calls} and @code{internal}).
+
+@opindex fstrub=relaxed
+@item -fstrub=relaxed
+Restore the default stack scrub (@code{strub}) setting, namely,
+@code{strub} is only enabled as required by @code{strub} attributes
+associated with function and data types.  @code{Relaxed} means that
+strub contexts are only prevented from calling functions explicitly
+associated with @code{strub} mode @code{disabled}.  This option is only
+useful to override other @option{-fstrub=*} options that precede it in
+the command line.
+
+@opindex fstrub=at-calls
+@item -fstrub=at-calls
+Enable @code{at-calls} @code{strub} mode where viable.  The primary use
+of this option is for testing.  It exercises the @code{strub} machinery
+in scenarios strictly local to a translation unit.  This @code{strub}
+mode modifies function interfaces, so any function that is visible to
+other translation units, or that has its address taken, will @emph{not}
+be affected by this option.  Optimization options may also affect
+viability.  See the @code{strub} attribute documentation for details on
+viability and eligibility requirements.
+
+@opindex fstrub=internal
+@item -fstrub=internal
+Enable @code{internal} @code{strub} mode where viable.  The primary use
+of this option is for testing.  This option is intended to exercise
+thoroughly parts of the @code{strub} machinery that implement the less
+efficient, but interface-preserving @code{strub} mode.  Functions that
+would not be affected by this option are quite uncommon.
+
+@opindex fstrub=all
+@item -fstrub=all
+Enable some @code{strub} mode where viable.  When both strub modes are
+viable, @code{at-calls} is preferred.  @option{-fdump-ipa-strubm} adds
+function attributes that tell which mode was selected for each function.
+The primary use of this option is for testing, to exercise thoroughly
+the @code{strub} machinery.
+
 @opindex fvtable-verify
 @item -fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]}
 This option is only available when compiling C++ code.
@@ -19734,6 +19895,14 @@ and inlining decisions.
 @item inline
 Dump after function inlining.
 
+@item strubm
+Dump after selecting @code{strub} modes, and recording the selections as
+function attributes.
+
+@item strub
+Dump @code{strub} transformations: interface changes, function wrapping,
+and insertion of builtin calls for stack scrubbing and watermarking.
+
 @end table
 
 Additionally, the options @option{-optimized}, @option{-missed},
@@ -20908,7 +21077,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x1c}, @samp{cortex-x2},
 @samp{cortex-x3}, @samp{cortex-x4}, @samp{cortex-a510}, @samp{cortex-a520},
 @samp{cortex-a710}, @samp{cortex-a715}, @samp{cortex-a720}, @samp{ampere1},
-@samp{ampere1a}, and @samp{native}.
+@samp{ampere1a}, @samp{ampere1b}, and @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -21164,7 +21333,14 @@ Enable the Flag Manipulation instructions Extension.
 Enable the Pointer Authentication Extension.
 @item cssc
 Enable the Common Short Sequence Compression instructions.
-
+@item sme
+Enable the Scalable Matrix Extension.
+@item sme-i16i64
+Enable the FEAT_SME_I16I64 extension to SME.
+@item sme-f64f64
+Enable the FEAT_SME_F64F64 extension to SME.
++@item sme2
+Enable the Scalable Matrix Extension 2.  This also enables SME instructions.
 @end table
 
 Feature @option{crypto} implies @option{aes}, @option{sha2}, and @option{simd},
@@ -29701,7 +29877,7 @@ by particular CPU name.
 Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
 @samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34}, @samp{sifive-e76},
 @samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54}, @samp{sifive-s76},
-@samp{sifive-u54}, and @samp{sifive-u74}.
+@samp{sifive-u54}, @samp{sifive-u74}, and @samp{sifive-x280}.
 
 @opindex mtune
 @item -mtune=@var{processor-string}
@@ -29771,6 +29947,10 @@ Inlining will only be done if the strings are properly aligned
 and instructions for accelerated processing are available.
 The default is to not inline strcmp calls.
 
+The @option{--param riscv-strcmp-inline-limit=@var{n}} parameter controls
+the maximum number of bytes compared by the inlined code.
+The default value is 64.
+
 @opindex minline-strncmp
 @item -minline-strncmp
 @itemx -mno-inline-strncmp
@@ -29778,6 +29958,10 @@ Do or do not attempt to inline strncmp calls if possible.
 Inlining will only be done if the strings are properly aligned
 and instructions for accelerated processing are available.
 The default is to not inline strncmp calls.
+
+The @option{--param riscv-strcmp-inline-limit=@var{n}} parameter controls
+the maximum number of bytes compared by the inlined code.
+The default value is 64.
 
 @opindex mshorten-memrefs
 @item -mshorten-memrefs

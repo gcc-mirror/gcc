@@ -104,6 +104,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "cfgloop.h"
 #include "attribs.h"
+#include "ipa-strub.h"
 
 /* Per basic block info.  */
 
@@ -1809,6 +1810,12 @@ execute_split_functions (void)
       if (dump_file)
 	fprintf (dump_file, "Not splitting: function is in user defined "
 		 "section.\n");
+      return 0;
+    }
+  if (!strub_splittable_p (node))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not splitting: function is a strub context.\n");
       return 0;
     }
 

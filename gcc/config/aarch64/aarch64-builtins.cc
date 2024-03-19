@@ -47,6 +47,7 @@
 #include "stringpool.h"
 #include "attribs.h"
 #include "gimple-fold.h"
+#include "builtins.h"
 
 #define v8qi_UP  E_V8QImode
 #define v8di_UP  E_V8DImode
@@ -808,6 +809,17 @@ enum aarch64_builtins
   AARCH64_RBIT,
   AARCH64_RBITL,
   AARCH64_RBITLL,
+  /* System register builtins.  */
+  AARCH64_RSR,
+  AARCH64_RSRP,
+  AARCH64_RSR64,
+  AARCH64_RSRF,
+  AARCH64_RSRF64,
+  AARCH64_WSR,
+  AARCH64_WSRP,
+  AARCH64_WSR64,
+  AARCH64_WSRF,
+  AARCH64_WSRF64,
   AARCH64_BUILTIN_MAX
 };
 
@@ -1798,6 +1810,65 @@ aarch64_init_rng_builtins (void)
 				   AARCH64_BUILTIN_RNG_RNDRRS);
 }
 
+/* Add builtins for reading system register.  */
+static void
+aarch64_init_rwsr_builtins (void)
+{
+  tree fntype = NULL;
+  tree const_char_ptr_type
+    = build_pointer_type (build_type_variant (char_type_node, true, false));
+
+#define AARCH64_INIT_RWSR_BUILTINS_DECL(F, N, T) \
+  aarch64_builtin_decls[AARCH64_##F] \
+    = aarch64_general_add_builtin ("__builtin_aarch64_"#N, T, AARCH64_##F);
+
+  fntype
+    = build_function_type_list (uint32_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSR, rsr, fntype);
+
+  fntype
+    = build_function_type_list (ptr_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSRP, rsrp, fntype);
+
+  fntype
+    = build_function_type_list (uint64_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSR64, rsr64, fntype);
+
+  fntype
+    = build_function_type_list (float_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSRF, rsrf, fntype);
+
+  fntype
+    = build_function_type_list (double_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSRF64, rsrf64, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				uint32_type_node, NULL);
+
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSR, wsr, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				const_ptr_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSRP, wsrp, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				uint64_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSR64, wsr64, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				float_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSRF, wsrf, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				double_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSRF64, wsrf64, fntype);
+}
+
 /* Initialize the memory tagging extension (MTE) builtins.  */
 struct
 {
@@ -2019,6 +2090,8 @@ aarch64_general_init_builtins (void)
   aarch64_init_rng_builtins ();
   aarch64_init_data_intrinsics ();
 
+  aarch64_init_rwsr_builtins ();
+
   tree ftype_jcvt
     = build_function_type_list (intSI_type_node, double_type_node, NULL);
   aarch64_builtin_decls[AARCH64_JSCVT]
@@ -2052,6 +2125,37 @@ aarch64_general_builtin_decl (unsigned code, bool)
     return error_mark_node;
 
   return aarch64_builtin_decls[code];
+}
+
+bool
+aarch64_general_check_builtin_call (location_t location, vec<location_t>,
+			    unsigned int code, tree fndecl,
+			    unsigned int nargs ATTRIBUTE_UNUSED, tree *args)
+{
+  switch (code)
+    {
+    case AARCH64_RSR:
+    case AARCH64_RSRP:
+    case AARCH64_RSR64:
+    case AARCH64_RSRF:
+    case AARCH64_RSRF64:
+    case AARCH64_WSR:
+    case AARCH64_WSRP:
+    case AARCH64_WSR64:
+    case AARCH64_WSRF:
+    case AARCH64_WSRF64:
+      tree addr = STRIP_NOPS (args[0]);
+      if (TREE_CODE (TREE_TYPE (addr)) != POINTER_TYPE
+	  || TREE_CODE (addr) != ADDR_EXPR
+	  || TREE_CODE (TREE_OPERAND (addr, 0)) != STRING_CST)
+	{
+	  error_at (location, "first argument to %qD must be a string literal",
+		    fndecl);
+	  return false;
+	}
+    }
+  /* Default behavior.  */
+  return true;
 }
 
 typedef enum
@@ -2599,6 +2703,109 @@ aarch64_expand_rng_builtin (tree exp, rtx target, int fcode, int ignore)
   return target;
 }
 
+/* Expand the read/write system register builtin EXPs.  */
+rtx
+aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
+{
+  tree arg0, arg1;
+  rtx const_str, input_val, subreg;
+  enum machine_mode mode;
+  class expand_operand ops[2];
+
+  arg0 = CALL_EXPR_ARG (exp, 0);
+
+  bool write_op = (fcode == AARCH64_WSR
+		   || fcode == AARCH64_WSRP
+		   || fcode == AARCH64_WSR64
+		   || fcode == AARCH64_WSRF
+		   || fcode == AARCH64_WSRF64);
+
+  /* Argument 0 (system register name) must be a string literal.  */
+  gcc_assert (TREE_CODE (arg0) == ADDR_EXPR
+	      && TREE_CODE (TREE_TYPE (arg0)) == POINTER_TYPE
+	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == STRING_CST);
+
+  const char *name_input = TREE_STRING_POINTER (TREE_OPERAND (arg0, 0));
+
+  tree len_tree = c_strlen (arg0, 1);
+  if (len_tree == NULL_TREE)
+    {
+      error_at (EXPR_LOCATION (exp), "invalid system register name provided");
+      return const0_rtx;
+    }
+
+  size_t len = TREE_INT_CST_LOW (len_tree);
+  char *sysreg_name = xstrdup (name_input);
+
+  for (unsigned pos = 0; pos <= len; pos++)
+    sysreg_name[pos] = TOLOWER (sysreg_name[pos]);
+
+  const char *name_output = aarch64_retrieve_sysreg (sysreg_name, write_op);
+  if (name_output == NULL)
+    {
+      error_at (EXPR_LOCATION (exp), "invalid system register name %qs",
+		sysreg_name);
+      return const0_rtx;
+    }
+
+  /* Assign the string corresponding to the system register name to an RTX.  */
+  const_str = rtx_alloc (CONST_STRING);
+  PUT_CODE (const_str, CONST_STRING);
+  XSTR (const_str, 0) = ggc_strdup (name_output);
+
+  /* Set up expander operands and call instruction expansion.  */
+  if (write_op)
+    {
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      mode = TYPE_MODE (TREE_TYPE (arg1));
+      input_val = copy_to_mode_reg (mode, expand_normal (arg1));
+
+      switch (fcode)
+	{
+	case AARCH64_WSR:
+	case AARCH64_WSRP:
+	case AARCH64_WSR64:
+	case AARCH64_WSRF64:
+	  subreg = lowpart_subreg (DImode, input_val, mode);
+	  break;
+	case AARCH64_WSRF:
+	  subreg = gen_lowpart_SUBREG (SImode, input_val);
+	  subreg = gen_lowpart_SUBREG (DImode, subreg);
+	  break;
+	}
+
+      create_fixed_operand (&ops[0], const_str);
+      create_input_operand (&ops[1], subreg, DImode);
+      expand_insn (CODE_FOR_aarch64_write_sysregdi, 2, ops);
+
+      return target;
+    }
+
+  /* Read operations are implied by !write_op.  */
+  gcc_assert (call_expr_nargs (exp) == 1);
+
+  /* Emit the initial read_sysregdi rtx.  */
+  create_output_operand (&ops[0], target, DImode);
+  create_fixed_operand (&ops[1], const_str);
+  expand_insn (CODE_FOR_aarch64_read_sysregdi, 2, ops);
+  target = ops[0].value;
+
+  /* Do any necessary post-processing on the result.  */
+  switch (fcode)
+    {
+    case AARCH64_RSR:
+    case AARCH64_RSRP:
+    case AARCH64_RSR64:
+    case AARCH64_RSRF64:
+      return lowpart_subreg (TYPE_MODE (TREE_TYPE (exp)), target, DImode);
+    case AARCH64_RSRF:
+      subreg = gen_lowpart_SUBREG (SImode, target);
+      return gen_lowpart_SUBREG (SFmode, subreg);
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Expand an expression EXP that calls a MEMTAG built-in FCODE
    with result going to TARGET.  */
 static rtx
@@ -2832,6 +3039,17 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_BUILTIN_RNG_RNDR:
     case AARCH64_BUILTIN_RNG_RNDRRS:
       return aarch64_expand_rng_builtin (exp, target, fcode, ignore);
+    case AARCH64_RSR:
+    case AARCH64_RSRP:
+    case AARCH64_RSR64:
+    case AARCH64_RSRF:
+    case AARCH64_RSRF64:
+    case AARCH64_WSR:
+    case AARCH64_WSRP:
+    case AARCH64_WSR64:
+    case AARCH64_WSRF:
+    case AARCH64_WSRF64:
+      return aarch64_expand_rwsr_builtin (exp, target, fcode);
     }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)

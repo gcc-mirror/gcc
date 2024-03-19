@@ -35,7 +35,7 @@ lra_get_allocno_class (int regno)
 }
 
 extern rtx lra_eliminate_regs (rtx, machine_mode, rtx);
-extern void lra (FILE *);
+extern void lra (FILE *, int);
 extern void lra_init_once (void);
 extern void lra_finish_once (void);
 

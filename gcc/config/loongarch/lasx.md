@@ -53,7 +53,6 @@
   UNSPEC_LASX_XVFCMP_SULT
   UNSPEC_LASX_XVFCMP_SUN
   UNSPEC_LASX_XVFCMP_SUNE
-  UNSPEC_LASX_XVFTINT_S
   UNSPEC_LASX_XVFTINT_U
   UNSPEC_LASX_XVCLO
   UNSPEC_LASX_XVSAT_S
@@ -69,8 +68,6 @@
   UNSPEC_LASX_BRANCH
   UNSPEC_LASX_BRANCH_V
 
-  UNSPEC_LASX_XVMUH_S
-  UNSPEC_LASX_XVMUH_U
   UNSPEC_LASX_MXVEXTW_U
   UNSPEC_LASX_XVSLLWIL_S
   UNSPEC_LASX_XVSLLWIL_U
@@ -92,12 +89,6 @@
   UNSPEC_LASX_XVEXTRINS
   UNSPEC_LASX_XVMSKLTZ
   UNSPEC_LASX_XVSIGNCOV
-  UNSPEC_LASX_XVFTINTRNE_W_S
-  UNSPEC_LASX_XVFTINTRNE_L_D
-  UNSPEC_LASX_XVFTINTRP_W_S
-  UNSPEC_LASX_XVFTINTRP_L_D
-  UNSPEC_LASX_XVFTINTRM_W_S
-  UNSPEC_LASX_XVFTINTRM_L_D
   UNSPEC_LASX_XVFTINT_W_D
   UNSPEC_LASX_XVFFINT_S_L
   UNSPEC_LASX_XVFTINTRZ_W_D
@@ -116,14 +107,6 @@
   UNSPEC_LASX_XVFTINTRML_L_S
   UNSPEC_LASX_XVFTINTRNEL_L_S
   UNSPEC_LASX_XVFTINTRNEH_L_S
-  UNSPEC_LASX_XVFRINTRNE_S
-  UNSPEC_LASX_XVFRINTRNE_D
-  UNSPEC_LASX_XVFRINTRZ_S
-  UNSPEC_LASX_XVFRINTRZ_D
-  UNSPEC_LASX_XVFRINTRP_S
-  UNSPEC_LASX_XVFRINTRP_D
-  UNSPEC_LASX_XVFRINTRM_S
-  UNSPEC_LASX_XVFRINTRM_D
   UNSPEC_LASX_XVREPLVE0_Q
   UNSPEC_LASX_XVPERM_W
   UNSPEC_LASX_XVPERMI_Q
@@ -155,7 +138,6 @@
   UNSPEC_LASX_XVHSUBW_Q_D
   UNSPEC_LASX_XVHADDW_QU_DU
   UNSPEC_LASX_XVHSUBW_QU_DU
-  UNSPEC_LASX_XVROTR
   UNSPEC_LASX_XVADD_Q
   UNSPEC_LASX_XVSUB_Q
   UNSPEC_LASX_XVREPLVE
@@ -206,9 +188,6 @@
 ;; Only used for copy256_{u,s}.w.
 (define_mode_iterator LASX_W    [V8SI V8SF])
 
-;; Only integer modes in LASX.
-(define_mode_iterator ILASX [V4DI V8SI V16HI V32QI])
-
 ;; As ILASX but excludes V32QI.
 (define_mode_iterator ILASX_DWH [V4DI V8SI V16HI])
 
@@ -223,9 +202,6 @@
 
 ;; Only integer modes smaller than a word.
 (define_mode_iterator ILASX_HB  [V16HI V32QI])
-
-;; Only floating-point modes in LASX.
-(define_mode_iterator FLASX  [V4DF V8SF])
 
 ;; Only used for immediate set shuffle elements instruction.
 (define_mode_iterator LASX_WHB_W [V8SI V16HI V32QI V8SF])
@@ -499,37 +475,6 @@
    (V8SI "w")
    (V16HI "w")
    (V32QI "w")])
-
-(define_int_iterator FRINT256_S [UNSPEC_LASX_XVFRINTRP_S
-			       UNSPEC_LASX_XVFRINTRZ_S
-			       UNSPEC_LASX_XVFRINT
-			       UNSPEC_LASX_XVFRINTRM_S])
-
-(define_int_iterator FRINT256_D [UNSPEC_LASX_XVFRINTRP_D
-			       UNSPEC_LASX_XVFRINTRZ_D
-			       UNSPEC_LASX_XVFRINT
-			       UNSPEC_LASX_XVFRINTRM_D])
-
-(define_int_attr frint256_pattern_s
-  [(UNSPEC_LASX_XVFRINTRP_S  "ceil")
-   (UNSPEC_LASX_XVFRINTRZ_S  "btrunc")
-   (UNSPEC_LASX_XVFRINT	     "rint")
-   (UNSPEC_LASX_XVFRINTRM_S  "floor")])
-
-(define_int_attr frint256_pattern_d
-  [(UNSPEC_LASX_XVFRINTRP_D  "ceil")
-   (UNSPEC_LASX_XVFRINTRZ_D  "btrunc")
-   (UNSPEC_LASX_XVFRINT	     "rint")
-   (UNSPEC_LASX_XVFRINTRM_D  "floor")])
-
-(define_int_attr frint256_suffix
-  [(UNSPEC_LASX_XVFRINTRP_S  "rp")
-   (UNSPEC_LASX_XVFRINTRP_D  "rp")
-   (UNSPEC_LASX_XVFRINTRZ_S  "rz")
-   (UNSPEC_LASX_XVFRINTRZ_D  "rz")
-   (UNSPEC_LASX_XVFRINT	     "")
-   (UNSPEC_LASX_XVFRINTRM_S  "rm")
-   (UNSPEC_LASX_XVFRINTRM_D  "rm")])
 
 (define_expand "vec_init<mode><unitmode>"
   [(match_operand:LASX 0 "register_operand")
@@ -1688,15 +1633,6 @@
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lasx_xvfrint_<flasxfmt>"
-  [(set (match_operand:FLASX 0 "register_operand" "=f")
-	(unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
-		      UNSPEC_LASX_XVFRINT))]
-  "ISA_HAS_LASX"
-  "xvfrint.<flasxfmt>\t%u0,%u1"
-  [(set_attr "type" "simd_fcvt")
-   (set_attr "mode" "<MODE>")])
-
 (define_insn "lasx_xvfrsqrt_<flasxfmt>"
   [(set (match_operand:FLASX 0 "register_operand" "=f")
 	(unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
@@ -1704,16 +1640,6 @@
   "ISA_HAS_LASX"
   "xvfrsqrt.<flasxfmt>\t%u0,%u1"
   [(set_attr "type" "simd_fdiv")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lasx_xvftint_s_<ilasxfmt>_<flasxfmt>"
-  [(set (match_operand:<VIMODE256> 0 "register_operand" "=f")
-	(unspec:<VIMODE256> [(match_operand:FLASX 1 "register_operand" "f")]
-			    UNSPEC_LASX_XVFTINT_S))]
-  "ISA_HAS_LASX"
-  "xvftint.<ilasxfmt>.<flasxfmt>\t%u0,%u1"
-  [(set_attr "type" "simd_fcvt")
-   (set_attr "cnv_mode" "<FINTCNV256_2>")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "lasx_xvftint_u_<ilasxfmt_u>_<flasxfmt>"
@@ -1725,18 +1651,6 @@
   [(set_attr "type" "simd_fcvt")
    (set_attr "cnv_mode" "<FINTCNV256_2>")
    (set_attr "mode" "<MODE>")])
-
-
-
-(define_insn "fix_trunc<FLASX:mode><mode256_i>2"
-  [(set (match_operand:<VIMODE256> 0 "register_operand" "=f")
-	(fix:<VIMODE256> (match_operand:FLASX 1 "register_operand" "f")))]
-  "ISA_HAS_LASX"
-  "xvftintrz.<ilasxfmt>.<flasxfmt>\t%u0,%u1"
-  [(set_attr "type" "simd_fcvt")
-   (set_attr "cnv_mode" "<FINTCNV256_2>")
-   (set_attr "mode" "<MODE>")])
-
 
 (define_insn "fixuns_trunc<FLASX:mode><mode256_i>2"
   [(set (match_operand:<VIMODE256> 0 "register_operand" "=f")
@@ -2906,26 +2820,6 @@
   [(set_attr "type" "simd_logic")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lasx_xvmuh_s_<lasxfmt>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand:ILASX 2 "register_operand" "f")]
-		      UNSPEC_LASX_XVMUH_S))]
-  "ISA_HAS_LASX"
-  "xvmuh.<lasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lasx_xvmuh_u_<lasxfmt_u>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand:ILASX 2 "register_operand" "f")]
-		      UNSPEC_LASX_XVMUH_U))]
-  "ISA_HAS_LASX"
-  "xvmuh.<lasxfmt_u>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
 (define_insn "lasx_xvsllwil_s_<dlasxfmt>_<lasxfmt>"
   [(set (match_operand:<VDMODE256> 0 "register_operand" "=f")
 	(unspec:<VDMODE256> [(match_operand:ILASX_WHB 1 "register_operand" "f")
@@ -3245,60 +3139,6 @@
   [(set_attr "type" "simd_fmadd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lasx_xvftintrne_w_s"
-  [(set (match_operand:V8SI 0 "register_operand" "=f")
-	(unspec:V8SI [(match_operand:V8SF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFTINTRNE_W_S))]
-  "ISA_HAS_LASX"
-  "xvftintrne.w.s\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "lasx_xvftintrne_l_d"
-  [(set (match_operand:V4DI 0 "register_operand" "=f")
-	(unspec:V4DI [(match_operand:V4DF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFTINTRNE_L_D))]
-  "ISA_HAS_LASX"
-  "xvftintrne.l.d\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4DF")])
-
-(define_insn "lasx_xvftintrp_w_s"
-  [(set (match_operand:V8SI 0 "register_operand" "=f")
-	(unspec:V8SI [(match_operand:V8SF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFTINTRP_W_S))]
-  "ISA_HAS_LASX"
-  "xvftintrp.w.s\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "lasx_xvftintrp_l_d"
-  [(set (match_operand:V4DI 0 "register_operand" "=f")
-	(unspec:V4DI [(match_operand:V4DF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFTINTRP_L_D))]
-  "ISA_HAS_LASX"
-  "xvftintrp.l.d\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4DF")])
-
-(define_insn "lasx_xvftintrm_w_s"
-  [(set (match_operand:V8SI 0 "register_operand" "=f")
-	(unspec:V8SI [(match_operand:V8SF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFTINTRM_W_S))]
-  "ISA_HAS_LASX"
-  "xvftintrm.w.s\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "lasx_xvftintrm_l_d"
-  [(set (match_operand:V4DI 0 "register_operand" "=f")
-	(unspec:V4DI [(match_operand:V4DF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFTINTRM_L_D))]
-  "ISA_HAS_LASX"
-  "xvftintrm.l.d\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4DF")])
-
 (define_insn "lasx_xvftint_w_d"
   [(set (match_operand:V8SI 0 "register_operand" "=f")
 	(unspec:V8SI [(match_operand:V4DF 1 "register_operand" "f")
@@ -3466,108 +3306,6 @@
   "xvftintrnel.l.s\t%u0,%u1"
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "V8SF")])
-
-(define_insn "lasx_xvfrintrne_s"
-  [(set (match_operand:V8SF 0 "register_operand" "=f")
-	(unspec:V8SF [(match_operand:V8SF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFRINTRNE_S))]
-  "ISA_HAS_LASX"
-  "xvfrintrne.s\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "lasx_xvfrintrne_d"
-  [(set (match_operand:V4DF 0 "register_operand" "=f")
-	(unspec:V4DF [(match_operand:V4DF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFRINTRNE_D))]
-  "ISA_HAS_LASX"
-  "xvfrintrne.d\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4DF")])
-
-(define_insn "lasx_xvfrintrz_s"
-  [(set (match_operand:V8SF 0 "register_operand" "=f")
-	(unspec:V8SF [(match_operand:V8SF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFRINTRZ_S))]
-  "ISA_HAS_LASX"
-  "xvfrintrz.s\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "lasx_xvfrintrz_d"
-  [(set (match_operand:V4DF 0 "register_operand" "=f")
-	(unspec:V4DF [(match_operand:V4DF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFRINTRZ_D))]
-  "ISA_HAS_LASX"
-  "xvfrintrz.d\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4DF")])
-
-(define_insn "lasx_xvfrintrp_s"
-  [(set (match_operand:V8SF 0 "register_operand" "=f")
-	(unspec:V8SF [(match_operand:V8SF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFRINTRP_S))]
-  "ISA_HAS_LASX"
-  "xvfrintrp.s\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "lasx_xvfrintrp_d"
-  [(set (match_operand:V4DF 0 "register_operand" "=f")
-	(unspec:V4DF [(match_operand:V4DF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFRINTRP_D))]
-  "ISA_HAS_LASX"
-  "xvfrintrp.d\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4DF")])
-
-(define_insn "lasx_xvfrintrm_s"
-  [(set (match_operand:V8SF 0 "register_operand" "=f")
-	(unspec:V8SF [(match_operand:V8SF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFRINTRM_S))]
-  "ISA_HAS_LASX"
-  "xvfrintrm.s\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "lasx_xvfrintrm_d"
-  [(set (match_operand:V4DF 0 "register_operand" "=f")
-	(unspec:V4DF [(match_operand:V4DF 1 "register_operand" "f")]
-		     UNSPEC_LASX_XVFRINTRM_D))]
-  "ISA_HAS_LASX"
-  "xvfrintrm.d\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4DF")])
-
-;; Vector versions of the floating-point frint patterns.
-;; Expands to btrunc, ceil, floor, rint.
-(define_insn "<FRINT256_S:frint256_pattern_s>v8sf2"
- [(set (match_operand:V8SF 0 "register_operand" "=f")
-	(unspec:V8SF [(match_operand:V8SF 1 "register_operand" "f")]
-			 FRINT256_S))]
-  "ISA_HAS_LASX"
-  "xvfrint<FRINT256_S:frint256_suffix>.s\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "<FRINT256_D:frint256_pattern_d>v4df2"
- [(set (match_operand:V4DF 0 "register_operand" "=f")
-	(unspec:V4DF [(match_operand:V4DF 1 "register_operand" "f")]
-			 FRINT256_D))]
-  "ISA_HAS_LASX"
-  "xvfrint<FRINT256_D:frint256_suffix>.d\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4DF")])
-
-;; Expands to round.
-(define_insn "round<mode>2"
- [(set (match_operand:FLASX 0 "register_operand" "=f")
-	(unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
-			 UNSPEC_LASX_XVFRINT))]
-  "ISA_HAS_LASX"
-  "xvfrint.<flasxfmt>\t%u0,%u1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "<MODE>")])
 
 ;; Offset load and broadcast
 (define_expand "lasx_xvldrepl_<lasxfmt_f>"
@@ -4493,18 +4231,6 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "V4DI")])
 
-;;XVROTR.B   XVROTR.H   XVROTR.W   XVROTR.D
-;;TODO-478
-(define_insn "lasx_xvrotr_<lasxfmt>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand:ILASX 2 "register_operand" "f")]
-		      UNSPEC_LASX_XVROTR))]
-  "ISA_HAS_LASX"
-  "xvrotr.<lasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
 ;;XVADD.Q
 ;;TODO2
 (define_insn "lasx_xvadd_q"
@@ -4686,15 +4412,6 @@
   "xvexth.qu.du\t%u0,%u1"
   [(set_attr "type" "simd_fcvt")
    (set_attr "mode" "V4DI")])
-
-(define_insn "lasx_xvrotri_<lasxfmt>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(rotatert:ILASX (match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand 2 "const_<bitimm256>_operand" "")))]
-  "ISA_HAS_LASX"
-  "xvrotri.<lasxfmt>\t%u0,%u1,%2"
-  [(set_attr "type" "simd_shf")
-   (set_attr "mode" "<MODE>")])
 
 (define_insn "lasx_xvextl_q_d"
   [(set (match_operand:V4DI 0 "register_operand" "=f")
