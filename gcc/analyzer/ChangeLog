@@ -1,3 +1,119 @@
+2024-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110902
+	PR analyzer/110928
+	PR analyzer/111305
+	PR analyzer/111441
+	* access-diagram.cc: Include "analyzer/analyzer-selftests.h".
+	(get_access_size_str): Reimplement for conversion of
+	implmementation of bit_size_expr from tree to const svalue &.  Use
+	svalue::maybe_print_for_user rather than tree printing routines.
+	(remove_ssa_names): Make non-static.
+	(bit_size_expr::get_formatted_str): Rename to...
+	(bit_size_expr::maybe_get_formatted_str): ...this, adding "model"
+	param and converting return type to a unique_ptr.  Update for
+	conversion of implementation of bit_size_expr from tree to
+	const svalue &.  Use svalue::maybe_print_for_user rather than tree
+	printing routines.
+	(bit_size_expr::print): Rename to...
+	(bit_size_expr::maybe_print_for_user): ...this, adding "model"
+	param and converting return type to bool.  Update for
+	conversion of implementation of bit_size_expr from tree to
+	const svalue &.  Use svalue::maybe_print_for_user rather than tree
+	printing routines.
+	(bit_size_expr::maybe_get_as_bytes): Add "mgr" param and convert
+	return type from tree to const svalue *; reimplement.
+	(access_range::access_range): Call strip_types when on region_offset
+	intializations.
+	(access_range::get_size): Update for conversion of implementation
+	of bit_size_expr from tree to const svalue &.
+	(access_operation::get_valid_bits): Pass manager to access_range
+	ctor.
+	(access_operation::maybe_get_invalid_before_bits): Likewise.
+	(access_operation::maybe_get_invalid_after_bits): Likewise.
+	(boundaries::add): Likewise.
+	(bit_to_table_map::populate): Add "mgr" param and pass it to
+	access_range ctor.
+	(access_diagram_impl::access_diagram_impl): Pass manager to
+	bit_to_table_map::populate.
+	(access_diagram_impl::maybe_add_gap): Use svalue rather than tree
+	for symbolic bit offsets.  Port to new bit_size_expr
+	representation.
+	(access_diagram_impl::add_valid_vs_invalid_ruler): Port to new
+	bit_size_expr representation.
+	(selftest::assert_eq_typeless_integer): New.
+	(ASSERT_EQ_TYPELESS_INTEGER): New.
+	(selftest::test_bit_size_expr_to_bytes): New.
+	(selftest::analyzer_access_diagram_cc_tests): New.
+	* access-diagram.h (class bit_size_expr): Reimplement, converting
+	implementation from tree to const svalue &.
+	(access_range::access_range): Add "mgr" param.  Call strip_types
+	on region_offset initializations.
+	(access_range::get_size): Update decl for reimplementation.
+	* analyzer-selftests.cc (selftest::run_analyzer_selftests): Call
+	selftest::analyzer_access_diagram_cc_tests.
+	* analyzer-selftests.h
+	(selftest::analyzer_checker_script_cc_tests): Delete this stray
+	typo.
+	(selftest::analyzer_access_diagram_cc_tests): New decl.
+	* analyzer.h (print_expr_for_user): New decl.
+	(calc_symbolic_bit_offset): Update decl for reimplementation.
+	(strip_types): New decls.
+	(remove_ssa_names): New decl.
+	* bounds-checking.cc (strip_types): New.
+	(region_model::check_symbolic_bounds): Use typeless svalues.
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_constant_svalue): Add "type"
+	param.  Add overload with old signature.
+	(region_model_manager::get_or_create_int_cst): Support type being
+	NULL_TREE.
+	(region_model_manager::maybe_fold_unaryop): Gracefully reject folding
+	of casts to NULL_TREE type.
+	(get_code_for_cast): Use NOP_EXPR for "casting" svalues to
+	NULL_TREE type.
+	(region_model_manager::get_or_create_cast): Support "casting"
+	svalues to NULL_TREE type.
+	(region_model_manager::maybe_fold_binop): Don't crash on inputs
+	with NULL_TREE type.  Handle folding of binops on constants with
+	NULL_TREE type.  Add missing cast from PR analyzer/110902.
+	Support enough folding of other ops on NULL_TREE type to support
+	bounds checking.
+	(region_model_manager::get_or_create_const_fn_result_svalue):
+	Remove assertion that type is nonnull.
+	* region-model-manager.h
+	(region_model_manager::get_or_create_constant_svalue): Add
+	overloaded decl taking a type.
+	(region_model_manager::maybe_fold_binop): Make public.
+	(region_model_manager::constants_map_t): Use
+	constant_svalue::key_t for the key, rather than just tree.
+	* region-model.cc (print_expr_for_user): New.
+	(selftest::test_array_2): Handle casts.
+	* region.cc (region_offset::calc_symbolic_bit_offset): Return
+	const svalue & rather than tree, and reimplement accordingly.
+	(region::calc_offset): Use ptrdiff_type_node for types of byte
+	offsets.
+	(region::maybe_print_for_user): New.
+	(element_region::get_relative_symbolic_offset): Use NULL_TREE for
+	types of bit offsets.
+	(offset_region::get_bit_offset): Likewise.
+	(sized_region::get_bit_size_sval): Likewise for bit sizes.
+	* region.h (region::maybe_print_for_user): New decl.
+	* svalue.cc (class auto_add_parens): New.
+	(svalue::maybe_print_for_user): New.
+	(svalue::cmp_ptr): Support typeless constant svalues.
+	(tristate_from_boolean_tree_node): New, taken from...
+	(constant_svalue::eval_condition): ...here.  Handle comparison of
+	typeless integer svalue constants.
+	* svalue.h (svalue::maybe_print_for_user): New decl.
+	(class constant_svalue): Support the type of the svalue being
+	NULL_TREE.
+	(struct default_hash_traits<constant_svalue::key_t>): New.
+
+2024-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc (remove_ssa_names): Support operands being
+	NULL_TREE, such as e.g. for COMPONENT_REF's operand 2.
+
 2024-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* access-diagram.cc: Include diagnostic-core.h before including

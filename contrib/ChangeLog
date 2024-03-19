@@ -1,3 +1,8 @@
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc_update: Add more generated files in libcc1, lto-plugin,
+	fixincludes, and libstdc++-v3.
+
 2024-03-08  Sam James  <sam@gentoo.org>
 
 	PR other/109668

@@ -1,3 +1,93 @@
+2024-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110902
+	PR analyzer/110928
+	PR analyzer/111305
+	PR analyzer/111441
+	* selftest.h (ASSERT_NE_AT): New macro.
+
+2024-03-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111822
+	* config/i386/i386-features.cc (smode_convert_cst): New function
+	to handle SImode, DImode and TImode immediates, generalized from
+	timode_convert_cst.
+	(timode_convert_cst): Remove.
+	(scalar_chain::convert_op): Unify from
+	general_scalar_chain::convert_op and timode_scalar_chain::convert_op.
+	(general_scalar_chain::convert_op): Remove.
+	(timode_scalar_chain::convert_op): Remove.
+	(timode_scalar_chain::convert_insn): Update the call to
+	renamed timode_convert_cst.
+	* config/i386/i386-features.h (class scalar_chain):
+	Redeclare convert_op as protected class member.
+	(class general_calar_chain): Remove convert_op.
+	(class timode_scalar_chain): Ditto.
+
+2024-03-18  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/zn4zn5.md: Add file missed in the previous commit.
+
+2024-03-18  Jan Hubicka  <jh@suse.cz>
+	    Karthiban Anbazhagan  <Karthiban.Anbazhagan@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_amd_cpu): Recognize znver5.
+	* common/config/i386/i386-common.cc (processor_names): Add znver5.
+	(processor_alias_table): Likewise.
+	* common/config/i386/i386-cpuinfo.h (processor_types): Add new zen
+	family.
+	(processor_subtypes): Add znver5.
+	* config.gcc (x86_64-*-* |...): Likewise.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Let
+	march=native detect znver5 cpu's.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add
+	znver5.
+	* config/i386/i386-options.cc (m_ZNVER5): New definition
+	(processor_cost_table): Add znver5.
+	* config/i386/i386.cc (ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (processor_type): Add PROCESSOR_ZNVER5
+	(PTA_ZNVER5): New definition.
+	* config/i386/i386.md (define_attr "cpu"): Add znver5.
+	(Scheduling descriptions) Add znver5.md.
+	* config/i386/x86-tune-costs.h (znver5_cost): New definition.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Add znver5.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/x86-tune.def (avx512_move_by_pieces): Add m_ZNVER5.
+	(avx512_store_by_pieces): Add m_ZNVER5.
+	* doc/extend.texi: Add znver5.
+	* doc/invoke.texi: Likewise.
+	* config/i386/znver4.md: Rename to zn4zn5.md; combine znver4 and znver5 Scheduler.
+
+2024-03-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/constraints.md (CX2, CX3, CX4): New constraints.
+	* config/avr/avr-protos.h (avr_xor_noclobber_dconst): New proto.
+	* config/avr/avr.cc (avr_xor_noclobber_dconst): New function.
+	* config/avr/avr.md (xorhi3, *xorhi3): Add "d,0,CX2,X" alternative.
+	(xorpsi3, *xorpsi3): Add "d,0,CX3,X" alternative.
+	(xorsi3, *xorsi3): Add "d,0,CX4,X" alternative.
+
+2024-03-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/114334
+	* config/i386/i386.md (mode): Add new number V8BF,V16BF,V32BF.
+	(MODEF248): New mode iterator.
+	(ssevecmodesuffix): Hanlde BF and HF.
+	* config/i386/sse.md (andnot<mode>3): Extend to HF/BF.
+	(<code><mode>3): Ditto.
+
+2024-03-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/112415
+	* config/pa/pa.cc (pa_emit_move_sequence): Revise condition
+	for symbolic memory operands.
+	(pa_legitimate_address_p): Revise LO_SUM condition.
+	* config/pa/pa.h (INT14_OK_STRICT): Revise define.  Move
+	comment about GNU linker to predicates.md.
+	* config/pa/predicates.md (floating_point_store_memory_operand):
+	Revise condition for symbolic memory operands.  Update
+	comment.
+
 2024-03-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_delegitimize_address): Delegitimize UNSPEC_TP.

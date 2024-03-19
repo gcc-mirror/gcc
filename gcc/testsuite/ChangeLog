@@ -1,3 +1,62 @@
+2024-03-18  Jonathan Yong  <10walls@gmail.com>
+
+	* c-c++-common/Wrestrict.c: Fix typos in comments and
+	enable for LLP64 testing.
+
+2024-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110902
+	PR analyzer/110928
+	PR analyzer/111305
+	PR analyzer/111441
+	* c-c++-common/analyzer/out-of-bounds-const-fn.c: New test.
+	* c-c++-common/analyzer/out-of-bounds-diagram-11.c: Update
+	expected diagram output.
+	* c-c++-common/analyzer/out-of-bounds-diagram-pr110928.c: New test.
+	* c-c++-common/analyzer/out-of-bounds-diagram-pr111305.c: New test.
+	* c-c++-common/analyzer/out-of-bounds-diagram-pr111441.c: New test.
+
+2024-03-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111822
+	* g++.target/i386/pr111822.C (dg-do): Compile only for ia32 targets.
+	(dg-options): Add -march=x86-64.
+
+2024-03-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103715
+	* gfortran.dg/pr103715.f90: New test.
+
+2024-03-18  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	* gcc.target/arm/acle/cde-mve-error-2.c: Add -fpermissive.  Use
+	relative offsets for line numbers.
+
+2024-03-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114380
+	* gm2/pim/fail/badset7.mod: New test.
+
+2024-03-18  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR testsuite/114320
+	* g++.dg/modules/target-powerpc-1_a.C: Suppress -Wpsabi.
+	* g++.dg/modules/target-powerpc-1_b.C: Likewise.
+
+2024-03-18  Jan Hubicka  <jh@suse.cz>
+	    Karthiban Anbazhagan  <Karthiban.Anbazhagan@amd.com>
+
+	* g++.target/i386/mv29.C: Handle znver5 arch.
+	* gcc.target/i386/funcspec-56.inc:Likewise.
+
+2024-03-18  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* c-c++-common/analyzer/strndup-1.c: Define _POSIX_C_SOURCE.
+
+2024-03-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr114334.c: New test.
+
 2024-03-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/101135
