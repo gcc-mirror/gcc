@@ -12912,7 +12912,9 @@ package body Exp_Ch3 is
         and then No (No_Tagged_Streams_Pragma (Typ))
         and then not No_Run_Time_Mode
         and then RTE_Available (RE_Tag)
-        and then No (Type_Without_Stream_Operation (Typ))
+        and then
+          (not Restriction_Active (No_Default_Stream_Attributes)
+             or else No (Type_Without_Stream_Operation (Typ)))
         and then RTE_Available (RE_Root_Stream_Type);
    end Stream_Operation_OK;
 

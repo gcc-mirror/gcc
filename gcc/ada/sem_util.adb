@@ -28557,10 +28557,6 @@ package body Sem_Util is
       Op_Missing : Boolean;
 
    begin
-      if not Restriction_Active (No_Default_Stream_Attributes) then
-         return Empty;
-      end if;
-
       if Is_Elementary_Type (T) then
          if Op = TSS_Null then
             Op_Missing :=
