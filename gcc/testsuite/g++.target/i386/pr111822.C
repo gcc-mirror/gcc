@@ -1,6 +1,6 @@
 /* PR target/111822 */
-/* { dg-do compile } */
-/* { dg-options "-O2 -flive-range-shrinkage -fno-dce -fnon-call-exceptions" } */
+/* { dg-do compile { target ia32 } } */
+/* { dg-options "-O2 -flive-range-shrinkage -fno-dce -fnon-call-exceptions -march=x86-64" } */
 
 typedef union {
   int *pNativeClosure;

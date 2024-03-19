@@ -896,14 +896,35 @@ scalar_chain::convert_reg (rtx_insn *insn, rtx dst, rtx src)
 	     REGNO (src), REGNO (dst), INSN_UID (insn));
 }
 
+/* Helper function to convert immediate constant X to vmode.  */
+static rtx
+smode_convert_cst (rtx x, enum machine_mode vmode)
+{
+  /* Prefer all ones vector in case of -1.  */
+  if (constm1_operand (x, GET_MODE (x)))
+    return CONSTM1_RTX (vmode);
+
+  unsigned n = GET_MODE_NUNITS (vmode);
+  rtx *v = XALLOCAVEC (rtx, n);
+  v[0] = x;
+  for (unsigned i = 1; i < n; ++i)
+    v[i] = const0_rtx;
+  return gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (n, v));
+}
+
 /* Convert operand OP in INSN.  We should handle
    memory operands and uninitialized registers.
    All other register uses are converted during
    registers conversion.  */
 
 void
-general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
+scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 {
+  rtx tmp;
+
+  if (GET_MODE (*op) == V1TImode)
+    return;
+
   *op = copy_rtx_if_shared (*op);
 
   if (GET_CODE (*op) == NOT)
@@ -913,20 +934,21 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     }
   else if (MEM_P (*op))
     {
-      rtx_insn* eh_insn, *movabs = NULL;
-      rtx tmp = gen_reg_rtx (GET_MODE (*op));
+      rtx_insn *movabs = NULL;
 
       /* Emit MOVABS to load from a 64-bit absolute address to a GPR.  */
       if (!memory_operand (*op, GET_MODE (*op)))
 	{
-	  rtx tmp2 = gen_reg_rtx (GET_MODE (*op));
-	  movabs = emit_insn_before (gen_rtx_SET (tmp2, *op), insn);
+	  tmp = gen_reg_rtx (GET_MODE (*op));
+	  movabs = emit_insn_before (gen_rtx_SET (tmp, *op), insn);
 
-	  *op = tmp2;
+	  *op = tmp;
 	}
 
-      eh_insn
-	= emit_insn_before (gen_rtx_SET (gen_rtx_SUBREG (vmode, tmp, 0),
+      tmp = gen_rtx_SUBREG (vmode, gen_reg_rtx (GET_MODE (*op)), 0);
+
+      rtx_insn *eh_insn
+	= emit_insn_before (gen_rtx_SET (copy_rtx (tmp),
 					 gen_gpr_to_xmm_move_src (vmode, *op)),
 			    insn);
 
@@ -943,33 +965,17 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 	    }
 	}
 
-      *op = gen_rtx_SUBREG (vmode, tmp, 0);
+      *op = tmp;
 
       if (dump_file)
 	fprintf (dump_file, "  Preloading operand for insn %d into r%d\n",
 		 INSN_UID (insn), REGNO (tmp));
     }
   else if (REG_P (*op))
+    *op = gen_rtx_SUBREG (vmode, *op, 0);
+  else if (CONST_SCALAR_INT_P (*op))
     {
-      *op = gen_rtx_SUBREG (vmode, *op, 0);
-    }
-  else if (CONST_INT_P (*op))
-    {
-      rtx vec_cst;
-      rtx tmp = gen_rtx_SUBREG (vmode, gen_reg_rtx (smode), 0);
-
-      /* Prefer all ones vector in case of -1.  */
-      if (constm1_operand (*op, GET_MODE (*op)))
-	vec_cst = CONSTM1_RTX (vmode);
-      else
-	{
-	  unsigned n = GET_MODE_NUNITS (vmode);
-	  rtx *v = XALLOCAVEC (rtx, n);
-	  v[0] = *op;
-	  for (unsigned i = 1; i < n; ++i)
-	    v[i] = const0_rtx;
-	  vec_cst = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (n, v));
-	}
+      rtx vec_cst = smode_convert_cst (*op, vmode);
 
       if (!standard_sse_constant_p (vec_cst, vmode))
 	{
@@ -979,6 +985,8 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 	  end_sequence ();
 	  emit_insn_before (seq, insn);
 	}
+
+      tmp = gen_rtx_SUBREG (vmode, gen_reg_rtx (smode), 0);
 
       emit_insn_before (gen_move_insn (copy_rtx (tmp), vec_cst), insn);
       *op = tmp;
@@ -1525,61 +1533,6 @@ timode_scalar_chain::fix_debug_reg_uses (rtx reg)
 	  if (changed)
 	    df_insn_rescan (insn);
 	}
-    }
-}
-
-/* Convert operand OP in INSN from TImode to V1TImode.  */
-
-void
-timode_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
-{
-  *op = copy_rtx_if_shared (*op);
-
-  if (REG_P (*op))
-    *op = gen_rtx_SUBREG (V1TImode, *op, 0);
-  else if (MEM_P (*op))
-    {
-      rtx tmp = gen_reg_rtx (V1TImode);
-      emit_insn_before (gen_rtx_SET (gen_rtx_SUBREG (V1TImode, tmp, 0),
-				     gen_gpr_to_xmm_move_src (V1TImode, *op)),
-			insn);
-      *op = gen_rtx_SUBREG (V1TImode, tmp, 0);
-
-      if (dump_file)
-	fprintf (dump_file, "  Preloading operand for insn %d into r%d\n",
-		 INSN_UID (insn), REGNO (tmp));
-    }
-  else if (CONST_INT_P (*op))
-    {
-      rtx vec_cst;
-      rtx tmp = gen_rtx_SUBREG (V1TImode, gen_reg_rtx (TImode), 0);
-
-      /* Prefer all ones vector in case of -1.  */
-      if (constm1_operand (*op, TImode))
-	vec_cst = CONSTM1_RTX (V1TImode);
-      else
-	{
-	  rtx *v = XALLOCAVEC (rtx, 1);
-	  v[0] = *op;
-	  vec_cst = gen_rtx_CONST_VECTOR (V1TImode, gen_rtvec_v (1, v));
-	}
-
-      if (!standard_sse_constant_p (vec_cst, V1TImode))
-	{
-	  start_sequence ();
-	  vec_cst = validize_mem (force_const_mem (V1TImode, vec_cst));
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
-	  emit_insn_before (seq, insn);
-	}
-
-      emit_insn_before (gen_move_insn (copy_rtx (tmp), vec_cst), insn);
-      *op = tmp;
-    }
-  else
-    {
-      gcc_assert (SUBREG_P (*op));
-      gcc_assert (GET_MODE (*op) == vmode);
     }
 }
 
