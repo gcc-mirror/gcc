@@ -2664,6 +2664,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Functor, _ArgTypes...
       >::type
     { };
+
+  // __invoke_result_t (std::invoke_result_t for C++11)
+  template<typename _Fn, typename... _Args>
+    using __invoke_result_t = typename __invoke_result<_Fn, _Args...>::type;
   /// @endcond
 
   template<typename _Functor, typename... _ArgTypes>
