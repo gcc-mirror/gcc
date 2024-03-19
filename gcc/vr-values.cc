@@ -310,7 +310,8 @@ tree
 simplify_using_ranges::fold_cond_with_ops (enum tree_code code,
 					   tree op0, tree op1, gimple *s)
 {
-  int_range_max r0, r1;
+  Value_Range r0 (TREE_TYPE (op0));
+  Value_Range r1 (TREE_TYPE (op1));
   if (!query->range_of_expr (r0, op0, s)
       || !query->range_of_expr (r1, op1, s))
     return NULL_TREE;

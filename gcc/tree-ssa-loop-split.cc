@@ -144,18 +144,18 @@ split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv,
 	   value range.  */
 	else
 	  {
-	    int_range<2> r;
+	    Value_Range r (TREE_TYPE (op0));
 	    get_global_range_query ()->range_of_expr (r, op0, stmt);
 	    if (!r.varying_p () && !r.undefined_p ()
 		&& TREE_CODE (op1) == INTEGER_CST)
 	      {
 		wide_int val = wi::to_wide (op1);
-		if (known_eq (val, r.lower_bound ()))
+		if (known_eq (val, wi::to_wide (r.lbound ())))
 		  {
 		    code = (code == EQ_EXPR) ? LE_EXPR : GT_EXPR;
 		    break;
 		  }
-		else if (known_eq (val, r.upper_bound ()))
+		else if (known_eq (val, wi::to_wide (r.ubound ())))
 		  {
 		    code = (code == EQ_EXPR) ? GE_EXPR : LT_EXPR;
 		    break;

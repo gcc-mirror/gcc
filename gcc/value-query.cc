@@ -156,11 +156,9 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
     {
     case INTEGER_CST:
       {
-	irange &i = as_a <irange> (r);
 	if (TREE_OVERFLOW_P (expr))
 	  expr = drop_tree_overflow (expr);
-	wide_int w = wi::to_wide (expr);
-	i.set (TREE_TYPE (expr), w, w);
+	r.set (expr, expr);
 	return true;
       }
 
