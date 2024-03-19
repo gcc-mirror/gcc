@@ -31,6 +31,30 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-range.h"
 
+// Return the bitmask inherent in a range.
+
+static irange_bitmask
+get_bitmask_from_range (tree type,
+			const wide_int &min, const wide_int &max)
+{
+  unsigned prec = TYPE_PRECISION (type);
+
+  // All the bits of a singleton are known.
+  if (min == max)
+    {
+      wide_int mask = wi::zero (prec);
+      wide_int value = min;
+      return irange_bitmask (value, mask);
+    }
+
+  wide_int xorv = min ^ max;
+
+  if (xorv != 0)
+    xorv = wi::mask (prec - wi::clz (xorv), false, prec);
+
+  return irange_bitmask (wi::zero (prec), min | xorv);
+}
+
 void
 irange::accept (const vrange_visitor &v) const
 {
@@ -1881,31 +1905,6 @@ irange::invert ()
     verify_range ();
 }
 
-// Return the bitmask inherent in the range.
-
-irange_bitmask
-irange::get_bitmask_from_range () const
-{
-  unsigned prec = TYPE_PRECISION (type ());
-  wide_int min = lower_bound ();
-  wide_int max = upper_bound ();
-
-  // All the bits of a singleton are known.
-  if (min == max)
-    {
-      wide_int mask = wi::zero (prec);
-      wide_int value = lower_bound ();
-      return irange_bitmask (value, mask);
-    }
-
-  wide_int xorv = min ^ max;
-
-  if (xorv != 0)
-    xorv = wi::mask (prec - wi::clz (xorv), false, prec);
-
-  return irange_bitmask (wi::zero (prec), min | xorv);
-}
-
 // Remove trailing ranges that this bitmask indicates can't exist.
 
 void
@@ -2027,7 +2026,8 @@ irange::get_bitmask () const
   // in the mask.
   //
   // See also the note in irange_bitmask::intersect.
-  irange_bitmask bm = get_bitmask_from_range ();
+  irange_bitmask bm
+    = get_bitmask_from_range (type (), lower_bound (), upper_bound ());
   if (!m_bitmask.unknown_p ())
     bm.intersect (m_bitmask);
   return bm;

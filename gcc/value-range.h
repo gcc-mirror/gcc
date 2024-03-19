@@ -352,7 +352,6 @@ private:
   bool varying_compatible_p () const;
   bool intersect_bitmask (const irange &r);
   bool union_bitmask (const irange &r);
-  irange_bitmask get_bitmask_from_range () const;
   bool set_range_from_bitmask ();
 
   bool intersect (const wide_int& lb, const wide_int& ub);
