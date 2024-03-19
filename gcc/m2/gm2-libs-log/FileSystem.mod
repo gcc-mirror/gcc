@@ -28,9 +28,9 @@ IMPLEMENTATION MODULE FileSystem ;
 
 FROM M2RTS IMPORT InstallTerminationProcedure ;
 FROM Storage IMPORT ALLOCATE ;
-FROM SYSTEM IMPORT WORD, BYTE, ADDRESS, ADR ;
-IMPORT FIO, SFIO, libc, wrapc ;
-FROM DynamicStrings IMPORT String, InitString, ConCat, ConCatChar, KillString, string ;
+FROM SYSTEM IMPORT ADR ;
+IMPORT SFIO, libc, wrapc ;
+FROM DynamicStrings IMPORT InitString, ConCat, ConCatChar, KillString, string ;
 FROM FormatStrings IMPORT Sprintf2 ;
 
 CONST

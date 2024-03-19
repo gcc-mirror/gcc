@@ -17,13 +17,13 @@ module dmd.common.file;
 import core.stdc.errno : errno;
 import core.stdc.stdio : fprintf, remove, rename, stderr;
 import core.stdc.stdlib : exit;
-import core.stdc.string : strerror;
+import core.stdc.string : strerror, strlen;
 import core.sys.windows.winbase;
 import core.sys.windows.winnt;
 import core.sys.posix.fcntl;
 import core.sys.posix.unistd;
 
-import dmd.common.string;
+import dmd.common.smallbuffer;
 
 nothrow:
 
@@ -129,7 +129,8 @@ struct FileMapping(Datum)
                 enum openFlags = CREATE_ALWAYS;
             }
 
-            handle = filename.asDString.extendedPathThen!(p => CreateFileW(p.ptr, createFileMode, 0, null, openFlags, FILE_ATTRIBUTE_NORMAL, null));
+            handle = filename[0 .. strlen(filename)].
+                extendedPathThen!(p => CreateFileW(p.ptr, createFileMode, 0, null, openFlags, FILE_ATTRIBUTE_NORMAL, null));
             if (handle == invalidHandle)
             {
                 static if (is(Datum == const))
@@ -312,7 +313,7 @@ struct FileMapping(Datum)
         else version(Windows)
         {
             import core.sys.windows.winbase;
-            if (deleteme.asDString.extendedPathThen!(p => DeleteFileW(p.ptr)) == 0)
+            if (deleteme[0 .. strlen(deleteme)].extendedPathThen!(p => DeleteFileW(p.ptr)) == 0)
             {
                 fprintf(stderr, "DeleteFileW error %d\n", GetLastError());
                 return false;
@@ -447,8 +448,8 @@ struct FileMapping(Datum)
         else version(Windows)
         {
             import core.sys.windows.winbase;
-            auto r = oldname.asDString.extendedPathThen!(
-                p1 => filename.asDString.extendedPathThen!(p2 => MoveFileExW(p1.ptr, p2.ptr, MOVEFILE_REPLACE_EXISTING))
+            auto r = oldname[0 .. strlen(oldname)].extendedPathThen!(
+                p1 => filename[0 .. strlen(filename)].extendedPathThen!(p2 => MoveFileExW(p1.ptr, p2.ptr, MOVEFILE_REPLACE_EXISTING))
             );
             if (r == 0)
             {
@@ -483,7 +484,7 @@ extern(D) static bool writeFile(const(char)* name, const void[] data) nothrow
     else version (Windows)
     {
         DWORD numwritten; // here because of the gotos
-        const nameStr = name.asDString;
+        const nameStr = name[0 .. strlen(name)];
         // work around Windows file path length limitation
         // (see documentation for extendedPathThen).
         HANDLE h = nameStr.extendedPathThen!

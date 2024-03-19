@@ -1,5 +1,6 @@
 --  { dg-do compile }
 --  { dg-options "-fstrub=relaxed -fdump-ipa-strubm" }
+--  { dg-require-effective-target strub }
 
 --  The main subprogram doesn't read from the automatic variable, but
 --  being an automatic variable, its presence should be enough for the

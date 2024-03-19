@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=all" } */
+/* { dg-require-effective-target strub } */
 
 #include "strub-inlinable1.c"
 

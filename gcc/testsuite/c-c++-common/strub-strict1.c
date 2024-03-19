@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=strict -fdump-ipa-strubm" } */
+/* { dg-require-effective-target strub } */
 
 static int __attribute__ ((__strub__)) var;
 

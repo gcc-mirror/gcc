@@ -16,7 +16,7 @@ foo (int *x, int n, int res)
 
 /* { dg-final { scan-assembler {e32,m8} } } */
 /* { dg-final { scan-assembler-times {csrr} 1 } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
+/* { dg-final { scan-tree-dump "Maximum lmul = 8" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 4" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 2" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 1" "vect" } } */

@@ -17,6 +17,9 @@
  */
 
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
+
+/* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
+
 typedef __SIZE_TYPE__ size_t;
 
 #ifndef __cplusplus

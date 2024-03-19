@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fstrub=strict -fdump-rtl-expand" } */
+/* { dg-require-effective-target strub } */
 
 int __attribute__ ((__strub__)) var;
 

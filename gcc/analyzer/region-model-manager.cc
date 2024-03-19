@@ -185,6 +185,16 @@ region_model_manager::reject_if_too_complex (svalue *sval)
       return false;
     }
 
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  sval->dump_to_pp (&pp, true);
+  if (warning_at (input_location, OPT_Wanalyzer_symbol_too_complex,
+		  "symbol too complicated: %qs",
+		  pp_formatted_text (&pp)))
+    inform (input_location,
+	    "max_depth %i exceeds --param=analyzer-max-svalue-depth=%i",
+	    c.m_max_depth, param_analyzer_max_svalue_depth);
+
   delete sval;
   return true;
 }
@@ -586,9 +596,6 @@ maybe_undo_optimize_bit_field_compare (tree type,
 				       tree cst,
 				       const svalue *arg1)
 {
-  if (type != unsigned_char_type_node)
-    return NULL;
-
   const binding_map &map = compound_sval->get_map ();
   unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (cst);
   /* If "mask" is a contiguous range of set bits, see if the

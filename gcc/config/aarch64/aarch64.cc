@@ -351,8 +351,6 @@ bool aarch64_pcrelative_literal_loads;
 /* Global flag for whether frame pointer is enabled.  */
 bool aarch64_use_frame_pointer;
 
-char *accepted_branch_protection_string = NULL;
-
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
 struct aarch64_flag_desc
@@ -498,6 +496,8 @@ typedef struct {
 #define F_ARCHEXT		   (1 << 4)
 /* Flag indicating register name is alias for another system register.  */
 #define F_REG_ALIAS		   (1 << 5)
+/* Flag indicatinig registers which may be implemented with 128-bits.  */
+#define F_REG_128		   (1 << 6)
 
 /* Database of system registers, their encodings and architectural
    requirements.  */
@@ -3224,6 +3224,28 @@ aarch64_split_simd_move (rtx dst, rtx src)
     }
 }
 
+/* Return a register that contains SVE value X reinterpreted as SVE mode MODE.
+   The semantics of those of svreinterpret rather than those of subregs;
+   see the comment at the head of aarch64-sve.md for details about the
+   difference.  */
+
+rtx
+aarch64_sve_reinterpret (machine_mode mode, rtx x)
+{
+  if (GET_MODE (x) == mode)
+    return x;
+
+  /* can_change_mode_class must only return true if subregs and svreinterprets
+     have the same semantics.  */
+  if (targetm.can_change_mode_class (GET_MODE (x), mode, FP_REGS))
+    return lowpart_subreg (mode, x, GET_MODE (x));
+
+  rtx res = gen_reg_rtx (mode);
+  x = force_reg (GET_MODE (x), x);
+  emit_insn (gen_aarch64_sve_reinterpret (mode, res, x));
+  return res;
+}
+
 bool
 aarch64_zero_extend_const_eq (machine_mode xmode, rtx x,
 			      machine_mode ymode, rtx y)
@@ -4954,14 +4976,17 @@ aarch64_sme_mode_switch_regs::add_reg (machine_mode mode, unsigned int regno)
   gcc_assert ((vec_flags & VEC_STRUCT) || end_regno == regno + 1);
   for (; regno < end_regno; regno++)
     {
+      /* Force the mode of SVE saves and restores even for single registers.
+	 This is necessary because big-endian targets only allow LDR Z and
+	 STR Z to be used with byte modes.  */
       machine_mode submode = mode;
-      if (vec_flags & VEC_STRUCT)
+      if (vec_flags & VEC_SVE_PRED)
+	submode = VNx16BImode;
+      else if (vec_flags & VEC_SVE_DATA)
+	submode = SVE_BYTE_MODE;
+      else if (vec_flags & VEC_STRUCT)
 	{
-	  if (vec_flags & VEC_SVE_PRED)
-	    submode = VNx16BImode;
-	  else if (vec_flags & VEC_SVE_DATA)
-	    submode = SVE_BYTE_MODE;
-	  else if (vec_flags & VEC_PARTIAL)
+	  if (vec_flags & VEC_PARTIAL)
 	    submode = V8QImode;
 	  else
 	    submode = V16QImode;
@@ -17972,12 +17997,6 @@ aarch64_adjust_generic_arch_tuning (struct tune_params &current_tune)
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
 {
-  if (accepted_branch_protection_string)
-    {
-      opts->x_aarch64_branch_protection_string
-	= xstrdup (accepted_branch_protection_string);
-    }
-
   /* PR 70044: We have to be careful about being called multiple times for the
      same function.  This means all changes should be repeatable.  */
 
@@ -18544,7 +18563,8 @@ aarch64_override_options (void)
     aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
 
   if (aarch64_branch_protection_string)
-    aarch_validate_mbranch_protection (aarch64_branch_protection_string);
+    aarch_validate_mbranch_protection (aarch64_branch_protection_string,
+				       "-mbranch-protection=");
 
   /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
      If either of -march or -mtune is given, they override their
@@ -18620,7 +18640,7 @@ aarch64_override_options (void)
   /* Return address signing is currently not supported for ILP32 targets.  For
      LP64 targets use the configured option in the absence of a command-line
      option for -mbranch-protection.  */
-  if (!TARGET_ILP32 && accepted_branch_protection_string == NULL)
+  if (!TARGET_ILP32 && aarch64_branch_protection_string == NULL)
     {
 #ifdef TARGET_ENABLE_PAC_RET
       aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
@@ -18978,34 +18998,12 @@ aarch64_handle_attr_cpu (const char *str)
 
 /* Handle the argument STR to the branch-protection= attribute.  */
 
- static bool
- aarch64_handle_attr_branch_protection (const char* str)
- {
-  char *err_str = (char *) xmalloc (strlen (str) + 1);
-  enum aarch_parse_opt_result res = aarch_parse_branch_protection (str,
-								   &err_str);
-  bool success = false;
-  switch (res)
-    {
-     case AARCH_PARSE_MISSING_ARG:
-       error ("missing argument to %<target(\"branch-protection=\")%> pragma or"
-	      " attribute");
-       break;
-     case AARCH_PARSE_INVALID_ARG:
-       error ("invalid protection type %qs in %<target(\"branch-protection"
-	      "=\")%> pragma or attribute", err_str);
-       break;
-     case AARCH_PARSE_OK:
-       success = true;
-      /* Fall through.  */
-     case AARCH_PARSE_INVALID_FEATURE:
-       break;
-     default:
-       gcc_unreachable ();
-    }
-  free (err_str);
-  return success;
- }
+static bool
+aarch64_handle_attr_branch_protection (const char* str)
+{
+  return aarch_validate_mbranch_protection (str,
+					    "target(\"branch-protection=\")");
+}
 
 /* Handle the argument STR to the tune= target attribute.  */
 
@@ -22111,6 +22109,19 @@ aarch64_stepped_int_parallel_p (rtx op, int step)
   return true;
 }
 
+/* Return true if OPERANDS[0] to OPERANDS[NUM_OPERANDS - 1] form a
+   sequence of strided registers, with the stride being equal STRIDE.
+   The operands are already known to be FPRs.  */
+bool
+aarch64_strided_registers_p (rtx *operands, unsigned int num_operands,
+			     unsigned int stride)
+{
+  for (unsigned int i = 1; i < num_operands; ++i)
+    if (REGNO (operands[i]) != REGNO (operands[0]) + i * stride)
+      return false;
+  return true;
+}
+
 /* Bounds-check lanes.  Ensure OPERAND lies between LOW (inclusive) and
    HIGH (exclusive).  */
 void
@@ -23895,6 +23906,10 @@ aarch64_float_const_representable_p (rtx x)
   if (REAL_VALUE_ISINF (r) || REAL_VALUE_ISNAN (r)
       || REAL_VALUE_MINUS_ZERO (r))
     return false;
+
+  /* For BFmode, only handle 0.0. */
+  if (GET_MODE (x) == BFmode)
+    return real_iszero (&r, false);
 
   /* Extract exponent.  */
   r = real_value_abs (&r);
@@ -27512,33 +27527,61 @@ supported_simd_type (tree t)
   return false;
 }
 
-/* Return true for types that currently are supported as SIMD return
-   or argument types.  */
+/* Determine the lane size for the clone argument/return type.  This follows
+   the LS(P) rule in the VFABIA64.  */
 
-static bool
-currently_supported_simd_type (tree t, tree b)
+static unsigned
+lane_size (cgraph_simd_clone_arg_type clone_arg_type, tree type)
 {
-  if (COMPLEX_FLOAT_TYPE_P (t))
-    return false;
+  gcc_assert (clone_arg_type != SIMD_CLONE_ARG_TYPE_MASK);
 
-  if (TYPE_SIZE (t) != TYPE_SIZE (b))
-    return false;
+  /* For non map-to-vector types that are pointers we use the element type it
+     points to.  */
+  if (POINTER_TYPE_P (type))
+    switch (clone_arg_type)
+      {
+      default:
+	break;
+      case SIMD_CLONE_ARG_TYPE_UNIFORM:
+      case SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP:
+      case SIMD_CLONE_ARG_TYPE_LINEAR_VARIABLE_STEP:
+	type = TREE_TYPE (type);
+	break;
+      }
 
-  return supported_simd_type (t);
+  /* For types (or pointers of non map-to-vector types point to) that are
+     integers or floating point, we use their size if they are 1, 2, 4 or 8.
+   */
+  if (INTEGRAL_TYPE_P (type)
+      || SCALAR_FLOAT_TYPE_P (type))
+    switch (TYPE_PRECISION (type) / BITS_PER_UNIT)
+      {
+      default:
+	break;
+      case 1:
+      case 2:
+      case 4:
+      case 8:
+	return TYPE_PRECISION (type);
+      }
+  /* For any other we use the size of uintptr_t.  For map-to-vector types that
+     are pointers, using the size of uintptr_t is the same as using the size of
+     their type, seeing all pointers are the same size as uintptr_t.  */
+  return POINTER_SIZE;
 }
+
 
 /* Implement TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN.  */
 
 static int
 aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					struct cgraph_simd_clone *clonei,
-					tree base_type, int num,
-					bool explicit_p)
+					tree base_type ATTRIBUTE_UNUSED,
+					int num, bool explicit_p)
 {
   tree t, ret_type;
-  unsigned int elt_bits, count;
+  unsigned int nds_elt_bits;
   unsigned HOST_WIDE_INT const_simdlen;
-  poly_uint64 vec_bits;
 
   if (!TARGET_SIMD)
     return 0;
@@ -27558,80 +27601,132 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
     }
 
   ret_type = TREE_TYPE (TREE_TYPE (node->decl));
+  /* According to AArch64's Vector ABI the type that determines the simdlen is
+     the narrowest of types, so we ignore base_type for AArch64.  */
   if (TREE_CODE (ret_type) != VOID_TYPE
-      && !currently_supported_simd_type (ret_type, base_type))
+      && !supported_simd_type (ret_type))
     {
       if (!explicit_p)
 	;
-      else if (TYPE_SIZE (ret_type) != TYPE_SIZE (base_type))
-	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		    "GCC does not currently support mixed size types "
-		    "for %<simd%> functions");
-      else if (supported_simd_type (ret_type))
+      else if (COMPLEX_FLOAT_TYPE_P (ret_type))
 	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 		    "GCC does not currently support return type %qT "
-		    "for %<simd%> functions", ret_type);
+		    "for simd", ret_type);
       else
 	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		    "unsupported return type %qT for %<simd%> functions",
+		    "unsupported return type %qT for simd",
 		    ret_type);
       return 0;
     }
 
+  auto_vec<std::pair <tree, unsigned int>> vec_elts (clonei->nargs + 1);
+
+  /* We are looking for the NDS type here according to the VFABIA64.  */
+  if (TREE_CODE (ret_type) != VOID_TYPE)
+    {
+      nds_elt_bits = lane_size (SIMD_CLONE_ARG_TYPE_VECTOR, ret_type);
+      vec_elts.safe_push (std::make_pair (ret_type, nds_elt_bits));
+    }
+  else
+    nds_elt_bits = POINTER_SIZE;
+
   int i;
   tree type_arg_types = TYPE_ARG_TYPES (TREE_TYPE (node->decl));
   bool decl_arg_p = (node->definition || type_arg_types == NULL_TREE);
-
   for (t = (decl_arg_p ? DECL_ARGUMENTS (node->decl) : type_arg_types), i = 0;
        t && t != void_list_node; t = TREE_CHAIN (t), i++)
     {
       tree arg_type = decl_arg_p ? TREE_TYPE (t) : TREE_VALUE (t);
-
       if (clonei->args[i].arg_type != SIMD_CLONE_ARG_TYPE_UNIFORM
-	  && !currently_supported_simd_type (arg_type, base_type))
+	  && !supported_simd_type (arg_type))
 	{
 	  if (!explicit_p)
 	    ;
-	  else if (TYPE_SIZE (arg_type) != TYPE_SIZE (base_type))
-	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-			"GCC does not currently support mixed size types "
-			"for %<simd%> functions");
-	  else
+	  else if (COMPLEX_FLOAT_TYPE_P (ret_type))
 	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 			"GCC does not currently support argument type %qT "
-			"for %<simd%> functions", arg_type);
+			"for simd", arg_type);
+	  else
+	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			"unsupported argument type %qT for simd",
+			arg_type);
 	  return 0;
 	}
+      unsigned lane_bits = lane_size (clonei->args[i].arg_type, arg_type);
+      if (clonei->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
+	vec_elts.safe_push (std::make_pair (arg_type, lane_bits));
+      if (nds_elt_bits > lane_bits)
+	nds_elt_bits = lane_bits;
     }
 
   clonei->vecsize_mangle = 'n';
   clonei->mask_mode = VOIDmode;
-  elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
+  poly_uint64 simdlen;
+  auto_vec<poly_uint64> simdlens (2);
+  /* Keep track of the possible simdlens the clones of this function can have,
+     and check them later to see if we support them.  */
   if (known_eq (clonei->simdlen, 0U))
     {
-      count = 2;
-      vec_bits = (num == 0 ? 64 : 128);
-      clonei->simdlen = exact_div (vec_bits, elt_bits);
+      simdlen = exact_div (poly_uint64 (64), nds_elt_bits);
+      simdlens.safe_push (simdlen);
+      simdlens.safe_push (simdlen * 2);
     }
   else
+    simdlens.safe_push (clonei->simdlen);
+
+  clonei->vecsize_int = 0;
+  clonei->vecsize_float = 0;
+
+  /* We currently do not support generating simdclones where vector arguments
+     do not fit into a single vector register, i.e. vector types that are more
+     than 128-bits large.  This is because of how we currently represent such
+     types in ACLE, where we use a struct to allow us to pass them as arguments
+     and return.
+     Hence why we have to check whether the simdlens available for this
+     simdclone would cause a vector type to be larger than 128-bits, and reject
+     such a clone.  */
+  unsigned j = 0;
+  while (j < simdlens.length ())
     {
-      count = 1;
-      vec_bits = clonei->simdlen * elt_bits;
-      /* For now, SVE simdclones won't produce illegal simdlen, So only check
-	 const simdlens here.  */
-      if (clonei->simdlen.is_constant (&const_simdlen)
-	  && maybe_ne (vec_bits, 64U) && maybe_ne (vec_bits, 128U))
-	{
-	  if (explicit_p)
-	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-			"GCC does not currently support simdlen %wd for "
-			"type %qT",
-			const_simdlen, base_type);
-	  return 0;
-	}
+      bool remove_simdlen = false;
+      for (auto elt : vec_elts)
+	if (known_gt (simdlens[j] * elt.second, 128U))
+	  {
+	    /* Don't issue a warning for every simdclone when there is no
+	       specific simdlen clause.  */
+	    if (explicit_p && maybe_ne (clonei->simdlen, 0U))
+	      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			  "GCC does not currently support simdlen %wd for "
+			  "type %qT",
+			  constant_lower_bound (simdlens[j]), elt.first);
+	    remove_simdlen = true;
+	    break;
+	  }
+      if (remove_simdlen)
+	simdlens.ordered_remove (j);
+      else
+	j++;
     }
-  clonei->vecsize_int = vec_bits;
-  clonei->vecsize_float = vec_bits;
+
+
+  int count = simdlens.length ();
+  if (count == 0)
+    {
+      if (explicit_p && known_eq (clonei->simdlen, 0U))
+	{
+	  /* Warn the user if we can't generate any simdclone.  */
+	  simdlen = exact_div (poly_uint64 (64), nds_elt_bits);
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		      "GCC does not currently support a simdclone with simdlens"
+		      " %wd and %wd for these types.",
+		      constant_lower_bound (simdlen),
+		      constant_lower_bound (simdlen*2));
+	}
+      return 0;
+    }
+
+  gcc_assert (num < count);
+  clonei->simdlen = simdlens[num];
   return count;
 }
 
@@ -29083,9 +29178,10 @@ aarch64_valid_sysreg_name_p (const char *regname)
 
 /* Return the generic sysreg specification for a valid system register
    name, otherwise NULL.  WRITE_P is true iff the register is being
-   written to.  */
+   written to.  IS128OP indicates the requested system register should
+   be checked for a 128-bit implementation.  */
 const char *
-aarch64_retrieve_sysreg (const char *regname, bool write_p)
+aarch64_retrieve_sysreg (const char *regname, bool write_p, bool is128op)
 {
   const sysreg_t *sysreg = aarch64_lookup_sysreg_map (regname);
   if (sysreg == NULL)
@@ -29095,6 +29191,8 @@ aarch64_retrieve_sysreg (const char *regname, bool write_p)
       else
 	return NULL;
     }
+  if (is128op && !(sysreg->properties & F_REG_128))
+    return NULL;
   if ((write_p && (sysreg->properties & F_REG_READ))
       || (!write_p && (sysreg->properties & F_REG_WRITE)))
     return NULL;

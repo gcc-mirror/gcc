@@ -930,12 +930,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@0)))
   (bit_and @0 (negate @1))))
 
-/* Simplify (t * 2) / 2) -> t.  */
 (for div (trunc_div ceil_div floor_div round_div exact_div)
+ /* Simplify (t * u) / u -> t.  */
  (simplify
   (div (mult:c @0 @1) @1)
   (if (ANY_INTEGRAL_TYPE_P (type))
-   (if (TYPE_OVERFLOW_UNDEFINED (type))
+   (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
     @0
 #if GIMPLE
     (with {value_range vr0, vr1;}
@@ -944,6 +944,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && get_range_query (cfun)->range_of_expr (vr1, @1)
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
       @0))
+#endif
+   )))
+#if GIMPLE
+ /* Simplify (t * u) / v -> t * (u / v) if u is multiple of v.  */
+ (simplify
+  (div (mult @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (INTEGRAL_TYPE_P (type)
+       && wi::multiple_of_p (wi::to_widest (@1), wi::to_widest (@2), SIGNED))
+   (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
+    (mult @0 (div! @1 @2))
+    (with {value_range vr0, vr1;}
+     (if (get_range_query (cfun)->range_of_expr (vr0, @0)
+	  && get_range_query (cfun)->range_of_expr (vr1, @1)
+	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
+      (mult @0 (div! @1 @2))))
+   )))
+#endif
+ /* Simplify (t * u) / (t * v) -> (u / v) if u is multiple of v.  */
+ (simplify
+  (div (mult @0 INTEGER_CST@1) (mult @0 INTEGER_CST@2))
+  (if (INTEGRAL_TYPE_P (type)
+       && wi::multiple_of_p (wi::to_widest (@1), wi::to_widest (@2), SIGNED))
+   (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
+    (div @1 @2)
+#if GIMPLE
+    (with {value_range vr0, vr1, vr2;}
+     (if (get_range_query (cfun)->range_of_expr (vr0, @0)
+	  && get_range_query (cfun)->range_of_expr (vr1, @1)
+	  && get_range_query (cfun)->range_of_expr (vr2, @2)
+	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1)
+	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr2))
+      (div @1 @2)))
 #endif
    ))))
 
@@ -3332,6 +3364,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
     (rcmp @0 @1))))
 
+/* (type)([0,1]@a != 0) -> (type)a
+   (type)([0,1]@a == 1) -> (type)a
+   (type)([0,1]@a == 0) -> a ^ 1
+   (type)([0,1]@a != 1) -> a ^ 1.  */
+(for eqne (eq ne)
+ (simplify
+  (convert (eqne zero_one_valued_p@0 INTEGER_CST@1))
+  (if ((integer_zerop (@1) || integer_onep (@1)))
+   (if ((eqne == EQ_EXPR) ^ integer_zerop (@1))
+    (convert @0)
+    /* Only do this if the types match as (type)(a == 0) is
+       canonical form normally, while `a ^ 1` is canonical when
+       there is no type change. */
+    (if (types_match (type, TREE_TYPE (@0)))
+     (bit_xor @0 { build_one_cst (type); } ))))))
+
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
 
@@ -5189,6 +5237,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (vec_cond (vec_cond:s @0 @3 integer_all_onesp) @1 @2)
  (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_and @0 (bit_not @3)) @2 @1)))
+
+/*  ((VCE (a cmp b ? -1 : 0)) < 0) ? c : d is just
+    (VCE ((a cmp b) ? (VCE c) : (VCE d))) when TYPE_PRECISION of the
+    component type of the outer vec_cond is greater equal the inner one.  */
+(for cmp (simple_comparison)
+ (simplify
+  (vec_cond
+    (lt (view_convert@5 (vec_cond@6 (cmp@4 @0 @1)
+				    integer_all_onesp
+				    integer_zerop))
+	  integer_zerop) @2 @3)
+  (if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0))
+       && VECTOR_INTEGER_TYPE_P (TREE_TYPE (@5))
+       && !TYPE_UNSIGNED (TREE_TYPE (@5))
+       && VECTOR_TYPE_P (TREE_TYPE (@6))
+       && VECTOR_TYPE_P (type)
+       && tree_int_cst_le (TYPE_SIZE (TREE_TYPE (type)),
+			   TYPE_SIZE (TREE_TYPE (TREE_TYPE (@6))))
+       && TYPE_SIZE (type) == TYPE_SIZE (TREE_TYPE (@6)))
+   (with { tree vtype = TREE_TYPE (@6);}
+     (view_convert:type
+       (vec_cond @4 (view_convert:vtype @2) (view_convert:vtype @3)))))))
 
 /* c1 ? c2 ? a : b : b  -->  (c1 & c2) ? a : b  */
 (simplify
@@ -8467,6 +8537,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_insert @0 (BIT_FIELD_REF@2 @1 @rsize @rpos) @ipos)
  (if (VECTOR_TYPE_P (type)
+      && (VECTOR_MODE_P (TYPE_MODE (type))
+	  || optimize_vectors_before_lowering_p ())
       && types_match (@0, @1)
       && types_match (TREE_TYPE (TREE_TYPE (@0)), TREE_TYPE (@2))
       && TYPE_VECTOR_SUBPARTS (type).is_constant ())

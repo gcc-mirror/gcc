@@ -511,11 +511,18 @@ riscv_expand_strcmp (rtx result, rtx src1, rtx src2,
     return false;
   alignment = UINTVAL (align_rtx);
 
-  if (TARGET_ZBB || TARGET_XTHEADBB)
+  if (TARGET_VECTOR && stringop_strategy & STRATEGY_VECTOR)
     {
-      return riscv_expand_strcmp_scalar (result, src1, src2, nbytes, alignment,
-					 ncompare);
+      bool ok = riscv_vector::expand_strcmp (result, src1, src2,
+					     bytes_rtx, alignment,
+					     ncompare);
+      if (ok)
+	return true;
     }
+
+  if ((TARGET_ZBB || TARGET_XTHEADBB) && stringop_strategy & STRATEGY_SCALAR)
+    return riscv_expand_strcmp_scalar (result, src1, src2, nbytes, alignment,
+				       ncompare);
 
   return false;
 }
@@ -588,9 +595,16 @@ riscv_expand_strlen_scalar (rtx result, rtx src, rtx align)
 bool
 riscv_expand_strlen (rtx result, rtx src, rtx search_char, rtx align)
 {
+  if (TARGET_VECTOR && stringop_strategy & STRATEGY_VECTOR)
+    {
+      riscv_vector::expand_rawmemchr (E_QImode, result, src, search_char,
+				      /* strlen */ true);
+      return true;
+    }
+
   gcc_assert (search_char == const0_rtx);
 
-  if (TARGET_ZBB || TARGET_XTHEADBB)
+  if ((TARGET_ZBB || TARGET_XTHEADBB) && stringop_strategy & STRATEGY_SCALAR)
     return riscv_expand_strlen_scalar (result, src, align);
 
   return false;
@@ -979,12 +993,13 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 }
 
 
-/* Implement rawmemchr<mode> using vector instructions.
+/* Implement rawmemchr<mode> and strlen using vector instructions.
    It can be assumed that the needle is in the haystack, otherwise the
    behavior is undefined.  */
 
 void
-expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
+expand_rawmemchr (machine_mode mode, rtx dst, rtx haystack, rtx needle,
+		  bool strlen)
 {
   /*
     rawmemchr:
@@ -1004,6 +1019,9 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
        ret
   */
   gcc_assert (TARGET_VECTOR);
+
+  if (strlen)
+    gcc_assert (mode == E_QImode);
 
   unsigned int isize = GET_MODE_SIZE (mode).to_constant ();
   int lmul = TARGET_MAX_LMUL;
@@ -1028,12 +1046,13 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
      return a pointer to the matching byte.  */
   unsigned int shift = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
 
-  rtx src_addr = copy_addr_to_reg (XEXP (src, 0));
+  rtx src_addr = copy_addr_to_reg (XEXP (haystack, 0));
+  rtx start_addr = copy_addr_to_reg (XEXP (haystack, 0));
 
   rtx loop = gen_label_rtx ();
   emit_label (loop);
 
-  rtx vsrc = change_address (src, vmode, src_addr);
+  rtx vsrc = change_address (haystack, vmode, src_addr);
 
   /* Bump the pointer.  */
   rtx step = gen_reg_rtx (Pmode);
@@ -1052,8 +1071,8 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
     emit_insn (gen_read_vldi_zero_extend (cnt));
 
   /* Compare needle with haystack and store in a mask.  */
-  rtx eq = gen_rtx_EQ (mask_mode, gen_const_vec_duplicate (vmode, pat), vec);
-  rtx vmsops[] = {mask, eq, vec, pat};
+  rtx eq = gen_rtx_EQ (mask_mode, gen_const_vec_duplicate (vmode, needle), vec);
+  rtx vmsops[] = {mask, eq, vec, needle};
   emit_nonvlmax_insn (code_for_pred_eqne_scalar (vmode),
 		      riscv_vector::COMPARE_OP, vmsops, cnt);
 
@@ -1066,9 +1085,166 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
   rtx test = gen_rtx_LT (VOIDmode, end, const0_rtx);
   emit_jump_insn (gen_cbranch4 (Pmode, test, end, const0_rtx, loop));
 
-  /*  We found something at SRC + END * [1,2,4,8].  */
-  emit_insn (gen_rtx_SET (end, gen_rtx_ASHIFT (Pmode, end, GEN_INT (shift))));
-  emit_insn (gen_rtx_SET (dst, gen_rtx_PLUS (Pmode, src_addr, end)));
+  if (strlen)
+    {
+      /* For strlen, return the length.  */
+      emit_insn (gen_rtx_SET (dst, gen_rtx_PLUS (Pmode, src_addr, end)));
+      emit_insn (gen_rtx_SET (dst, gen_rtx_MINUS (Pmode, dst, start_addr)));
+    }
+  else
+    {
+      /*  For rawmemchr, return the position at SRC + END * [1,2,4,8].  */
+      emit_insn (gen_rtx_SET (end, gen_rtx_ASHIFT (Pmode, end, GEN_INT (shift))));
+      emit_insn (gen_rtx_SET (dst, gen_rtx_PLUS (Pmode, src_addr, end)));
+    }
+}
+
+/* Implement cmpstr<mode> using vector instructions.  The ALIGNMENT and
+   NCOMPARE parameters are unused for now.  */
+
+bool
+expand_strcmp (rtx result, rtx src1, rtx src2, rtx nbytes,
+	       unsigned HOST_WIDE_INT, bool)
+{
+  gcc_assert (TARGET_VECTOR);
+
+  /* We don't support big endian.  */
+  if (BYTES_BIG_ENDIAN)
+    return false;
+
+  bool with_length = nbytes != NULL_RTX;
+
+  if (with_length
+      && (!REG_P (nbytes) && !SUBREG_P (nbytes) && !CONST_INT_P (nbytes)))
+    return false;
+
+  if (with_length && CONST_INT_P (nbytes))
+    nbytes = force_reg (Pmode, nbytes);
+
+  machine_mode mode = E_QImode;
+  unsigned int isize = GET_MODE_SIZE (mode).to_constant ();
+  int lmul = TARGET_MAX_LMUL;
+  poly_int64 nunits = exact_div (BYTES_PER_RISCV_VECTOR * lmul, isize);
+
+  machine_mode vmode;
+  if (!riscv_vector::get_vector_mode (GET_MODE_INNER (mode), nunits)
+	 .exists (&vmode))
+    gcc_unreachable ();
+
+  machine_mode mask_mode = riscv_vector::get_mask_mode (vmode);
+
+  /* Prepare addresses.  */
+  rtx src_addr1 = copy_addr_to_reg (XEXP (src1, 0));
+  rtx vsrc1 = change_address (src1, vmode, src_addr1);
+
+  rtx src_addr2 = copy_addr_to_reg (XEXP (src2, 0));
+  rtx vsrc2 = change_address (src2, vmode, src_addr2);
+
+  /* Set initial pointer bump to 0.  */
+  rtx cnt = gen_reg_rtx (Pmode);
+  emit_move_insn (cnt, CONST0_RTX (Pmode));
+
+  rtx sub = gen_reg_rtx (Pmode);
+  emit_move_insn (sub, CONST0_RTX (Pmode));
+
+  /* Create source vectors.  */
+  rtx vec1 = gen_reg_rtx (vmode);
+  rtx vec2 = gen_reg_rtx (vmode);
+
+  rtx done = gen_label_rtx ();
+  rtx loop = gen_label_rtx ();
+  emit_label (loop);
+
+  /* Bump the pointers.  */
+  emit_insn (gen_rtx_SET (src_addr1, gen_rtx_PLUS (Pmode, src_addr1, cnt)));
+  emit_insn (gen_rtx_SET (src_addr2, gen_rtx_PLUS (Pmode, src_addr2, cnt)));
+
+  rtx vlops1[] = {vec1, vsrc1};
+  rtx vlops2[] = {vec2, vsrc2};
+
+  if (!with_length)
+    {
+      emit_vlmax_insn (code_for_pred_fault_load (vmode),
+		       riscv_vector::UNARY_OP, vlops1);
+
+      emit_vlmax_insn (code_for_pred_fault_load (vmode),
+		       riscv_vector::UNARY_OP, vlops2);
+    }
+  else
+    {
+      nbytes = gen_lowpart (Pmode, nbytes);
+      emit_nonvlmax_insn (code_for_pred_fault_load (vmode),
+			  riscv_vector::UNARY_OP, vlops1, nbytes);
+
+      emit_nonvlmax_insn (code_for_pred_fault_load (vmode),
+			  riscv_vector::UNARY_OP, vlops2, nbytes);
+    }
+
+  /* Read the vl for the next pointer bump.  */
+  if (Pmode == SImode)
+    emit_insn (gen_read_vlsi (cnt));
+  else
+    emit_insn (gen_read_vldi_zero_extend (cnt));
+
+  if (with_length)
+    {
+      rtx test_done = gen_rtx_EQ (VOIDmode, cnt, const0_rtx);
+      emit_jump_insn (gen_cbranch4 (Pmode, test_done, cnt, const0_rtx, done));
+      emit_insn (gen_rtx_SET (nbytes, gen_rtx_MINUS (Pmode, nbytes, cnt)));
+    }
+
+  /* Look for a \0 in the first string.  */
+  rtx mask0 = gen_reg_rtx (mask_mode);
+  rtx eq0
+    = gen_rtx_EQ (mask_mode, gen_const_vec_duplicate (vmode, CONST0_RTX (mode)),
+		  vec1);
+  rtx vmsops1[] = {mask0, eq0, vec1, CONST0_RTX (mode)};
+  emit_nonvlmax_insn (code_for_pred_eqne_scalar (vmode),
+		      riscv_vector::COMPARE_OP, vmsops1, cnt);
+
+  /* Look for vec1 != vec2 (includes vec2[i] == 0).  */
+  rtx maskne = gen_reg_rtx (mask_mode);
+  rtx ne = gen_rtx_NE (mask_mode, vec1, vec2);
+  rtx vmsops[] = {maskne, ne, vec1, vec2};
+  emit_nonvlmax_insn (code_for_pred_cmp (vmode), riscv_vector::COMPARE_OP,
+		      vmsops, cnt);
+
+  /* Combine both masks into one.  */
+  rtx mask = gen_reg_rtx (mask_mode);
+  rtx vmorops[] = {mask, mask0, maskne};
+  emit_nonvlmax_insn (code_for_pred (IOR, mask_mode),
+		      riscv_vector::BINARY_MASK_OP, vmorops, cnt);
+
+  /* Find the first bit in the mask (the first unequal element).  */
+  rtx found_at = gen_reg_rtx (Pmode);
+  rtx vfops[] = {found_at, mask};
+  emit_nonvlmax_insn (code_for_pred_ffs (mask_mode, Pmode),
+		      riscv_vector::CPOP_OP, vfops, cnt);
+
+  /* Emit the loop condition.  */
+  rtx test = gen_rtx_LT (VOIDmode, found_at, const0_rtx);
+  emit_jump_insn (gen_cbranch4 (Pmode, test, found_at, const0_rtx, loop));
+
+  /* Walk up to the difference point.  */
+  emit_insn (
+    gen_rtx_SET (src_addr1, gen_rtx_PLUS (Pmode, src_addr1, found_at)));
+  emit_insn (
+    gen_rtx_SET (src_addr2, gen_rtx_PLUS (Pmode, src_addr2, found_at)));
+
+  /* Load the respective byte and compute the difference.  */
+  rtx c1 = gen_reg_rtx (Pmode);
+  rtx c2 = gen_reg_rtx (Pmode);
+
+  do_load_from_addr (mode, c1, src_addr1, src1);
+  do_load_from_addr (mode, c2, src_addr2, src2);
+
+  do_sub3 (sub, c1, c2);
+
+  if (with_length)
+    emit_label (done);
+
+  emit_insn (gen_movsi (result, gen_lowpart (SImode, sub)));
+  return true;
 }
 
 }

@@ -157,7 +157,8 @@ private:
 class sarif_builder
 {
 public:
-  sarif_builder (diagnostic_context *context);
+  sarif_builder (diagnostic_context *context,
+		 bool formatted);
 
   void end_diagnostic (diagnostic_context *context,
 		       const diagnostic_info &diagnostic,
@@ -250,6 +251,8 @@ private:
   hash_set <int_hash <int, 0, 1> > m_cwe_id_set;
 
   int m_tabstop;
+
+  bool m_formatted;
 };
 
 /* class sarif_object : public json::object.  */
@@ -401,7 +404,8 @@ sarif_thread_flow::sarif_thread_flow (const diagnostic_thread &thread)
 
 /* sarif_builder's ctor.  */
 
-sarif_builder::sarif_builder (diagnostic_context *context)
+sarif_builder::sarif_builder (diagnostic_context *context,
+			      bool formatted)
 : m_context (context),
   m_invocation_obj (new sarif_invocation ()),
   m_results_array (new json::array ()),
@@ -409,7 +413,8 @@ sarif_builder::sarif_builder (diagnostic_context *context)
   m_seen_any_relative_paths (false),
   m_rule_id_set (),
   m_rules_arr (new json::array ()),
-  m_tabstop (context->m_tabstop)
+  m_tabstop (context->m_tabstop),
+  m_formatted (formatted)
 {
 }
 
@@ -472,7 +477,7 @@ sarif_builder::flush_to_file (FILE *outf)
 {
   m_invocation_obj->prepare_to_flush (m_context);
   json::object *top = make_top_level_object (m_invocation_obj, m_results_array);
-  top->dump (outf);
+  top->dump (outf, m_formatted);
   m_invocation_obj = NULL;
   m_results_array = NULL;
   fprintf (outf, "\n");
@@ -1721,9 +1726,10 @@ public:
   }
 
 protected:
-  sarif_output_format (diagnostic_context &context)
+  sarif_output_format (diagnostic_context &context,
+		       bool formatted)
   : diagnostic_output_format (context),
-    m_builder (&context)
+    m_builder (&context, formatted)
   {}
 
   sarif_builder m_builder;
@@ -1732,8 +1738,10 @@ protected:
 class sarif_stream_output_format : public sarif_output_format
 {
 public:
-  sarif_stream_output_format (diagnostic_context &context, FILE *stream)
-  : sarif_output_format (context),
+  sarif_stream_output_format (diagnostic_context &context,
+			      bool formatted,
+			      FILE *stream)
+  : sarif_output_format (context, formatted),
     m_stream (stream)
   {
   }
@@ -1749,8 +1757,9 @@ class sarif_file_output_format : public sarif_output_format
 {
 public:
   sarif_file_output_format (diagnostic_context &context,
-			   const char *base_file_name)
-  : sarif_output_format (context),
+			    bool formatted,
+			    const char *base_file_name)
+  : sarif_output_format (context, formatted),
     m_base_file_name (xstrdup (base_file_name))
   {
   }
@@ -1801,10 +1810,12 @@ diagnostic_output_format_init_sarif (diagnostic_context *context)
 /* Populate CONTEXT in preparation for SARIF output to stderr.  */
 
 void
-diagnostic_output_format_init_sarif_stderr (diagnostic_context *context)
+diagnostic_output_format_init_sarif_stderr (diagnostic_context *context,
+					    bool formatted)
 {
   diagnostic_output_format_init_sarif (context);
   context->set_output_format (new sarif_stream_output_format (*context,
+							      formatted,
 							      stderr));
 }
 
@@ -1813,10 +1824,12 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context *context)
 
 void
 diagnostic_output_format_init_sarif_file (diagnostic_context *context,
+					  bool formatted,
 					  const char *base_file_name)
 {
   diagnostic_output_format_init_sarif (context);
   context->set_output_format (new sarif_file_output_format (*context,
+							    formatted,
 							    base_file_name));
 }
 
@@ -1824,9 +1837,11 @@ diagnostic_output_format_init_sarif_file (diagnostic_context *context,
 
 void
 diagnostic_output_format_init_sarif_stream (diagnostic_context *context,
+					    bool formatted,
 					    FILE *stream)
 {
   diagnostic_output_format_init_sarif (context);
   context->set_output_format (new sarif_stream_output_format (*context,
+							      formatted,
 							      stream));
 }

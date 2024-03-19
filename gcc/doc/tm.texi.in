@@ -2686,6 +2686,8 @@ in DWARF 2 debug information.  The default is zero.  A different value
 may reduce the size of debug information on some ports.
 @end defmac
 
+@hook TARGET_HAVE_STRUB_SUPPORT_FOR
+
 @defmac TARGET_STRUB_USE_DYNAMIC_ARRAY
 If defined to nonzero, @code{__strub_leave} will allocate a dynamic
 array covering the stack range that needs scrubbing before clearing it.

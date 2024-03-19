@@ -2983,6 +2983,9 @@ Target supports statically linking @samp{libgfortran}.
 @item string_merging
 Target supports merging string constants at link time.
 
+@item strub
+Target supports attribute @code{strub} for stack scrubbing.
+
 @item ucn
 Target supports compiling and assembling UCN.
 

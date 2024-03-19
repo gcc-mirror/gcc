@@ -18,4 +18,4 @@ foo (int a, int b)
   return aa + bb;
 }
 
-/* { dg-final { scan-tree-dump "Replaced \\\(int\\\) aa_.*with a_" "fre1" { xfail { riscv*-*-* && lp64 } } } } */
+/* { dg-final { scan-tree-dump "Replaced \\\(int\\\) aa_.*with a_" "fre1" } } */

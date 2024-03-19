@@ -4350,7 +4350,7 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
 
 
 /* Initialize INTENT(OUT) derived type dummies.  As well as giving
-   them their default initializer, if they do not have allocatable
+   them their default initializer, if they have allocatable
    components, they have their allocatable components deallocated.  */
 
 static void

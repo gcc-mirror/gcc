@@ -120,4 +120,15 @@ enum aarch64_ldp_stp_policy {
   AARCH64_LDP_STP_POLICY_NEVER
 };
 
+/* An enum specifying when the early-ra pass should be run:
+   - AARCH64_EARLY_RA_ALL: for all functions
+   - AARCH64_EARLY_RA_STRIDED: for functions that have access to strided
+     multi-register instructions
+   - AARCH64_EARLY_RA_NONE: for no functions.  */
+enum aarch64_early_ra_scope {
+  AARCH64_EARLY_RA_ALL,
+  AARCH64_EARLY_RA_STRIDED,
+  AARCH64_EARLY_RA_NONE
+};
+
 #endif

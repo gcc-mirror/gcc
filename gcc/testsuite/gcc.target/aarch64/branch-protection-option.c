@@ -1,4 +1,4 @@
 /* { dg-do "compile" } */
 /* { dg-options "-mbranch-protection=leaf -mbranch-protection=none+pac-ret" } */
 
-/* { dg-error "unexpected 'pac-ret' after 'none'"  "" { target *-*-* } 0 } */
+/* { dg-error "argument 'none' can only appear alone in '-mbranch-protection='" "" { target *-*-* } 0 } */

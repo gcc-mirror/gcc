@@ -314,6 +314,12 @@
 ;; All byte modes.
 (define_mode_iterator VB [V8QI V16QI])
 
+;; 1 and 2 lane DI and DF modes.
+(define_mode_iterator V12DIF [V1DI V1DF V2DI V2DF])
+
+;; 1 and 2 lane DI mode.
+(define_mode_iterator V12DI [V1DI V2DI])
+
 ;; 2 and 4 lane SI modes.
 (define_mode_iterator VS [V2SI V4SI])
 
@@ -800,6 +806,7 @@
     UNSPEC_FTSMUL	; Used in aarch64-sve.md.
     UNSPEC_FTSSEL	; Used in aarch64-sve.md.
     UNSPEC_SMATMUL	; Used in aarch64-sve.md.
+    UNSPEC_SET_NEONQ	; Used in aarch64-sve.md.
     UNSPEC_UMATMUL	; Used in aarch64-sve.md.
     UNSPEC_USMATMUL	; Used in aarch64-sve.md.
     UNSPEC_TRN1Q	; Used in aarch64-sve.md.
@@ -920,6 +927,8 @@
     UNSPEC_FMLSLT	; Used in aarch64-sve2.md.
     UNSPEC_HISTCNT	; Used in aarch64-sve2.md.
     UNSPEC_HISTSEG	; Used in aarch64-sve2.md.
+    UNSPEC_LD1_COUNT	; Used in aarch64-sve2.md.
+    UNSPEC_LDNT1_COUNT	; Used in aarch64-sve2.md.
     UNSPEC_MATCH	; Used in aarch64-sve2.md.
     UNSPEC_NMATCH	; Used in aarch64-sve2.md.
     UNSPEC_PEXT		; Used in aarch64-sve2.md.
@@ -988,6 +997,8 @@
     UNSPEC_SSUBLTB	; Used in aarch64-sve2.md.
     UNSPEC_SSUBWB	; Used in aarch64-sve2.md.
     UNSPEC_SSUBWT	; Used in aarch64-sve2.md.
+    UNSPEC_ST1_COUNT	; Used in aarch64-sve2.md.
+    UNSPEC_STNT1_COUNT	; Used in aarch64-sve2.md.
     UNSPEC_SUBHNB	; Used in aarch64-sve2.md.
     UNSPEC_SUBHNT	; Used in aarch64-sve2.md.
     UNSPEC_TBL2		; Used in aarch64-sve2.md.
@@ -1324,10 +1335,10 @@
 (define_mode_attr Vetype [(V8QI "b") (V16QI "b")
 			  (V4HI "h") (V8HI  "h")
 			  (V2SI "s") (V4SI  "s")
-			  (V2DI "d")
+			  (V2DI "d") (V1DI  "d")
 			  (V4HF "h") (V8HF  "h")
 			  (V2SF "s") (V4SF  "s")
-			  (V2DF "d")
+			  (V2DF "d") (V1DF  "d")
 			  (V2x8QI "b") (V2x4HI "h")
 			  (V2x2SI "s") (V2x1DI "d")
 			  (V2x4HF "h") (V2x2SF "s")
@@ -1498,10 +1509,12 @@
 (define_mode_attr VEL [(V8QI  "QI") (V16QI "QI")
 		       (V4HI "HI") (V8HI  "HI")
 		       (V2SI "SI") (V4SI  "SI")
-		       (DI   "DI") (V2DI  "DI")
+		       (DI   "DI") (V1DI  "DI")
+		       (V2DI "DI")
 		       (V4HF "HF") (V8HF  "HF")
 		       (V2SF "SF") (V4SF  "SF")
-		       (DF   "DF") (V2DF  "DF")
+		       (DF   "DF") (V1DF  "DF")
+		       (V2DF "DF")
 		       (SI   "SI") (HI    "HI")
 		       (QI   "QI")
 		       (V4BF "BF") (V8BF "BF")
@@ -1518,12 +1531,13 @@
 (define_mode_attr Vel [(V8QI "qi") (V16QI "qi")
 		       (V4HI "hi") (V8HI "hi")
 		       (V2SI "si") (V4SI "si")
-		       (DI   "di") (V2DI "di")
+		       (DI   "di") (V1DI "si")
+		       (V2DI "di")
 		       (V4HF "hf") (V8HF "hf")
 		       (V2SF "sf") (V4SF "sf")
-		       (V2DF "df") (DF   "df")
-		       (SI   "si") (HI   "hi")
-		       (QI   "qi")
+		       (V1DF "df") (V2DF "df")
+		       (DF   "df") (SI   "si")
+		       (HI   "hi") (QI   "qi")
 		       (V4BF "bf") (V8BF "bf")
 		       (VNx16QI "qi") (VNx8QI "qi") (VNx4QI "qi") (VNx2QI "qi")
 		       (VNx8HI "hi") (VNx4HI "hi") (VNx2HI "hi")
@@ -3154,6 +3168,10 @@
 
 (define_int_attr pred_load [(UNSPEC_PRED_X "_x") (UNSPEC_LD1_SVE "")])
 
+(define_int_iterator LD1_COUNT [UNSPEC_LD1_COUNT UNSPEC_LDNT1_COUNT])
+
+(define_int_iterator ST1_COUNT [UNSPEC_ST1_COUNT UNSPEC_STNT1_COUNT])
+
 (define_int_iterator SVE2_U32_UNARY [UNSPEC_URECPE UNSPEC_RSQRTE])
 
 (define_int_iterator SVE2_INT_UNARY_NARROWB [UNSPEC_SQXTNB
@@ -3569,6 +3587,8 @@
 			(UNSPEC_FEXPA "fexpa")
 			(UNSPEC_FTSMUL "ftsmul")
 			(UNSPEC_FTSSEL "ftssel")
+			(UNSPEC_LD1_COUNT "ld1")
+			(UNSPEC_LDNT1_COUNT "ldnt1")
 			(UNSPEC_PMULLB "pmullb")
 			(UNSPEC_PMULLB_PAIR "pmullb_pair")
 			(UNSPEC_PMULLT "pmullt")
@@ -3632,6 +3652,8 @@
 			(UNSPEC_SQRDCMLAH90 "sqrdcmlah90")
 			(UNSPEC_SQRDCMLAH180 "sqrdcmlah180")
 			(UNSPEC_SQRDCMLAH270 "sqrdcmlah270")
+			(UNSPEC_ST1_COUNT "st1")
+			(UNSPEC_STNT1_COUNT "stnt1")
 			(UNSPEC_TRN1Q "trn1q")
 			(UNSPEC_TRN2Q "trn2q")
 			(UNSPEC_UMATMUL "umatmul")

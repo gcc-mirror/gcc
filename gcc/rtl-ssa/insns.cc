@@ -520,9 +520,14 @@ function_info::record_use (build_info &bi, insn_info *insn,
       // the instruction (unusually) references the same register in two
       // different but equal-sized modes.
       gcc_checking_assert (use->insn () == insn);
-      if (HARD_REGISTER_NUM_P (regno)
-	  && partial_subreg_p (use->mode (), mode))
-	use->set_mode (mode);
+      if (HARD_REGISTER_NUM_P (regno))
+	{
+	  if (!ordered_p (GET_MODE_PRECISION (use->mode ()),
+			  GET_MODE_PRECISION (mode)))
+	    use->set_mode (reg_raw_mode[regno]);
+	  else if (partial_subreg_p (use->mode (), mode))
+	    use->set_mode (mode);
+	}
       use->record_reference (ref, false);
     }
 }

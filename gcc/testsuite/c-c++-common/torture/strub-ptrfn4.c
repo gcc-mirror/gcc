@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=relaxed" } */
+/* { dg-require-effective-target strub } */
 
 /* This is strub-ptrfn2.c without -Wpedantic.
 

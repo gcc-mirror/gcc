@@ -1,4 +1,5 @@
 --  { dg-do compile }
+--  { dg-require-effective-target strub }
 
 --  Check that strub mode mismatches between overrider and overridden
 --  subprograms are reported even when the overriders for an

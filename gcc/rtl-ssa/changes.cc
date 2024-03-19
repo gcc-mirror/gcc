@@ -986,8 +986,10 @@ recog_level2 (insn_change &change, add_regno_clobber_fn add_regno_clobber)
       pat = newpat;
     }
 
+  // check_asm_operands checks the constraints after RA, so we don't
+  // need to do it again.
   INSN_CODE (rtl) = icode;
-  if (reload_completed)
+  if (reload_completed && !asm_p)
     {
       extract_insn (rtl);
       if (!constrain_operands (1, get_preferred_alternatives (rtl)))

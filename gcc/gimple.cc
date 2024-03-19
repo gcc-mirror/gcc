@@ -2988,6 +2988,8 @@ nonfreeing_call_p (gimple *call)
 	case BUILT_IN_TM_FREE:
 	case BUILT_IN_REALLOC:
 	case BUILT_IN_STACK_RESTORE:
+	case BUILT_IN_GOMP_FREE:
+	case BUILT_IN_GOMP_REALLOC:
 	  return false;
 	default:
 	  return true;

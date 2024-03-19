@@ -1,3 +1,13 @@
+2023-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_FRONTEND_OBJS): Rename d/common-string.o to
+	d/common-smallbuffer.o.
+	* dmd/MERGE: Merge upstream dmd 2bbf64907c.
+	* dmd/VERSION: Bump version to v2.106.0.
+	* modules.cc (layout_moduleinfo_fields): Update for new front-end
+	interface.
+	(layout_moduleinfo): Likewise.
+
 2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* d-attribs.cc (d_langhook_common_attribute_table): Add extra braces

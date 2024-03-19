@@ -43,8 +43,11 @@ test_format()
   s = std::format("{}", --year::min()); // formatted via ostream
   VERIFY( s == "-32768 is not a valid year" );
 
-  s = std::format("{:%y} {:%y}", 1976y, -1976y);
-  VERIFY( s == "76 76" ); // LWG 3831
+  s = std::format("{:%C %y} {:%C %y}", 1976y, -1976y);
+  VERIFY( s == "19 76 -20 76" ); // LWG 3831
+
+  s = std::format("{:%C %y} {:%C %y} {:%C %y}", -9y, -900y, -555y);
+  VERIFY( s == "-01 09 -09 00 -06 55" ); // LWG 4022
 
   s = std::format("{0:%EC}{0:%Ey} = {0:%EY}", 1642y);
   VERIFY( s == "1642 = 1642" );

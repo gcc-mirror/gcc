@@ -1,5 +1,6 @@
 --  { dg-do compile }
 --  { dg-options "-fstrub=strict -fdump-ipa-strubm -fdump-ipa-strub" }
+--  { dg-require-effective-target strub }
 
 package body Strub_Attr is
    E : exception;

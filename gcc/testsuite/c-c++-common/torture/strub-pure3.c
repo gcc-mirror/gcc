@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=strict -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 /* Check that, along with a strub pure wrapping call, we issue an asm statement
    to make sure the watermark passed to it is not assumed to be unchanged.  */

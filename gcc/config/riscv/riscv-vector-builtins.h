@@ -212,6 +212,14 @@ class function_shape;
 /* Static information about a set of functions.  */
 struct function_group_info
 {
+  constexpr function_group_info (const char *base_name,\
+                                 const function_base *const *base,\
+                                 const function_shape *const *shape,\
+                                 const predication_type_index *preds,\
+                                 const rvv_op_info ops_infos,\
+                                 unsigned int (*avail)() = nullptr)
+  : base_name (base_name), base (base), shape (shape), preds (preds),\
+    ops_infos (ops_infos), avail (avail){};
   /* The base name, as a string.  */
   const char *base_name;
 
@@ -232,6 +240,8 @@ struct function_group_info
      on the index value.  */
   const predication_type_index *preds;
   const rvv_op_info ops_infos;
+  /* Whether the function is available.  */
+  unsigned int (*avail) (void);
 };
 
 class GTY ((user)) function_instance

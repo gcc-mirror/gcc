@@ -2906,7 +2906,14 @@ cp_fold (tree x, fold_flags_t flags)
     fold_cache = hash_map<tree, tree>::create_ggc (101);
 
   if (tree *cached = fold_cache->get (x))
-    return *cached;
+    {
+      /* unshare_expr doesn't recurse into SAVE_EXPRs.  If SAVE_EXPR's
+	 argument has been folded into a tree invariant, make sure it is
+	 unshared.  See PR112727.  */
+      if (TREE_CODE (x) == SAVE_EXPR && *cached != x)
+	return unshare_expr (*cached);
+      return *cached;
+    }
 
   uid_sensitive_constexpr_evaluation_checker c;
 

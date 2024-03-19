@@ -37,7 +37,7 @@ version (Windows)
     import core.sys.windows.windef;
     import core.sys.windows.winnls;
 
-    import dmd.common.string : extendedPathThen;
+    import dmd.common.smallbuffer : extendedPathThen;
 
     extern (Windows) DWORD GetFullPathNameW(LPCWSTR, DWORD, LPWSTR, LPWSTR*) nothrow @nogc;
     extern (Windows) void SetLastError(DWORD) nothrow @nogc;
@@ -1177,7 +1177,7 @@ version(Windows)
      */
     private auto toWStringzThen(alias F)(const(char)[] str) nothrow
     {
-        import dmd.common.string : SmallBuffer, toWStringz;
+        import dmd.common.smallbuffer : SmallBuffer, toWStringz;
 
         if (!str.length) return F(""w.ptr);
 

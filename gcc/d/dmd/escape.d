@@ -2343,7 +2343,7 @@ void finishScopeParamInference(FuncDeclaration funcdecl, ref TypeFunction f)
         VarDeclaration[10] tmp = void;
         size_t dim = (funcdecl.vthis !is null) + (funcdecl.parameters ? funcdecl.parameters.length : 0);
 
-        import dmd.common.string : SmallBuffer;
+        import dmd.common.smallbuffer : SmallBuffer;
         auto sb = SmallBuffer!VarDeclaration(dim, tmp[]);
         VarDeclaration[] array = sb[];
 

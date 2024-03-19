@@ -43,6 +43,13 @@
    help describe the attributes (for example, pure) for the intrinsic
    function.  */
 
+  BUILTIN_V12DIF (LOADSTRUCT_LANE, vec_ldap1_lane, 0, ALL)
+  BUILTIN_V12DI (LOADSTRUCT_LANE_U, vec_ldap1_lane, 0, ALL)
+  BUILTIN_V12DI (LOADSTRUCT_LANE_P, vec_ldap1_lane, 0, ALL)
+  BUILTIN_V12DIF (STORESTRUCT_LANE, vec_stl1_lane, 0, ALL)
+  BUILTIN_V12DI (STORESTRUCT_LANE_U, vec_stl1_lane, 0, ALL)
+  BUILTIN_V12DI (STORESTRUCT_LANE_P, vec_stl1_lane, 0, ALL)
+
   BUILTIN_VDC (BINOP, combine, 0, AUTO_FP)
   BUILTIN_VD_I (BINOPU, combine, 0, NONE)
   BUILTIN_VDC_P (BINOPP, combine, 0, NONE)

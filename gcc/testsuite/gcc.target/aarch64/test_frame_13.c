@@ -5,7 +5,7 @@
      * Use a single stack adjustment, no writeback.  */
 
 /* { dg-do run } */
-/* { dg-options "-O2 --save-temps" } */
+/* { dg-options "-O2 --save-temps -fno-stack-protector" } */
 
 #include "test_frame_common.h"
 

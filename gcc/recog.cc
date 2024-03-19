@@ -3199,13 +3199,17 @@ constrain_operands (int strict, alternative_mask alternatives)
 		   strictly valid, i.e., that all pseudos requiring hard regs
 		   have gotten them.  We also want to make sure we have a
 		   valid mode.  */
-		if ((GET_MODE (op) == VOIDmode
-		     || SCALAR_INT_MODE_P (GET_MODE (op)))
-		    && (strict <= 0
-			|| (strict_memory_address_p
-			     (recog_data.operand_mode[opno], op))))
-		  win = true;
-		break;
+		{
+		  auto mem_mode = (recog_data.is_asm
+				   ? VOIDmode
+				   : recog_data.operand_mode[opno]);
+		  if ((GET_MODE (op) == VOIDmode
+		       || SCALAR_INT_MODE_P (GET_MODE (op)))
+		      && (strict <= 0
+			  || strict_memory_address_p (mem_mode, op)))
+		    win = true;
+		  break;
+		}
 
 		/* No need to check general_operand again;
 		   it was done in insn-recog.cc.  Well, except that reload

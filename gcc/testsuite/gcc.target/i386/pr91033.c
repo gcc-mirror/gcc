@@ -1,6 +1,7 @@
 /* PR tree-optimization/91033 */
 /* { dg-do compile { target pthread } } */
 /* { dg-options "-march=knl -O2 -fopenmp-simd -ftree-parallelize-loops=2" } */
+/* { dg-warning "'-march=knl' support will be removed in GCC 15" "" { target *-*-* } 0 } */
 
 #define N 1024
 int a[N];

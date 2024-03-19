@@ -109,6 +109,9 @@ test_format_spec()
   VERIFY( ! is_format_string_for("{:#?}", "str") );
   VERIFY( ! is_format_string_for("{:#?}", 'c') );
 
+  VERIFY( ! is_format_string_for("{:0c}", 'c') );
+  VERIFY( ! is_format_string_for("{:0s}", true) );
+
   // Precision only valid for string and floating-point types.
   VERIFY( ! is_format_string_for("{:.3d}", 1) );
   VERIFY( ! is_format_string_for("{:3.3d}", 1) );

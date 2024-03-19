@@ -6251,14 +6251,15 @@ gfc_omp_requires_add_clause (gfc_omp_requires_kind clause,
 	 != (int) clause)
     {
       const char *other;
-      if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST)
-	other = "seq_cst";
-      else if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL)
-	other = "acq_rel";
-      else if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
-	other = "relaxed";
-      else
-	gcc_unreachable ();
+      switch (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	{
+	case OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST: other = "seq_cst"; break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL: other = "acq_rel"; break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE: other = "acquire"; break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED: other = "relaxed"; break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_RELEASE: other = "release"; break;
+	default: gcc_unreachable ();
+	}
 
       if (module_name)
 	gfc_error ("!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> "
@@ -6372,15 +6373,25 @@ gfc_match_omp_requires (void)
 	      clause = "acq_rel";
 	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL;
 	    }
+	  else if (gfc_match (" acquire )") == MATCH_YES)
+	    {
+	      clause = "acquire";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE;
+	    }
 	  else if (gfc_match (" relaxed )") == MATCH_YES)
 	    {
 	      clause = "relaxed";
 	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_RELAXED;
 	    }
+	  else if (gfc_match (" release )") == MATCH_YES)
+	    {
+	      clause = "release";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_RELEASE;
+	    }
 	  else
 	    {
-	      gfc_error ("Expected SEQ_CST, ACQ_REL or RELAXED for "
-			 "ATOMIC_DEFAULT_MEM_ORDER clause at %C");
+	      gfc_error ("Expected ACQ_REL, ACQUIRE, RELAXED, RELEASE or "
+			 "SEQ_CST for ATOMIC_DEFAULT_MEM_ORDER clause at %C");
 	      goto error;
 	    }
 	}
@@ -6824,6 +6835,28 @@ gfc_match_omp_atomic (void)
 	    c->memorder = OMP_MEMORDER_ACQ_REL;
 	  else if (c->atomic_op == GFC_OMP_ATOMIC_READ)
 	    c->memorder = OMP_MEMORDER_ACQUIRE;
+	  else
+	    c->memorder = OMP_MEMORDER_RELEASE;
+	  break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE:
+	  if (c->atomic_op == GFC_OMP_ATOMIC_WRITE)
+	    {
+	      gfc_error ("!$OMP ATOMIC WRITE at %L incompatible with "
+			 "ACQUIRES clause implicitly provided by a "
+			 "REQUIRES directive", &loc);
+	      c->memorder = OMP_MEMORDER_SEQ_CST;
+	    }
+	  else
+	    c->memorder = OMP_MEMORDER_ACQUIRE;
+	  break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_RELEASE:
+	  if (c->atomic_op == GFC_OMP_ATOMIC_READ)
+	    {
+	      gfc_error ("!$OMP ATOMIC READ at %L incompatible with "
+			 "RELEASE clause implicitly provided by a "
+			 "REQUIRES directive", &loc);
+	      c->memorder = OMP_MEMORDER_SEQ_CST;
+	    }
 	  else
 	    c->memorder = OMP_MEMORDER_RELEASE;
 	  break;
@@ -7424,6 +7457,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses == NULL)
     return;
 
+  if (ns == NULL)
+    ns = gfc_current_ns;
+
   if (omp_clauses->orderedc && omp_clauses->orderedc < omp_clauses->collapse)
     gfc_error ("ORDERED clause parameter is less than COLLAPSE at %L",
 	       &code->loc);
@@ -7657,23 +7693,22 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    && n->sym->result == n->sym
 	    && n->sym->attr.function)
 	  {
-	    if (gfc_current_ns->proc_name == n->sym
-		|| (gfc_current_ns->parent
-		    && gfc_current_ns->parent->proc_name == n->sym))
+	    if (ns->proc_name == n->sym
+		|| (ns->parent && ns->parent->proc_name == n->sym))
 	      continue;
-	    if (gfc_current_ns->proc_name->attr.entry_master)
+	    if (ns->proc_name->attr.entry_master)
 	      {
-		gfc_entry_list *el = gfc_current_ns->entries;
+		gfc_entry_list *el = ns->entries;
 		for (; el; el = el->next)
 		  if (el->sym == n->sym)
 		    break;
 		if (el)
 		  continue;
 	      }
-	    if (gfc_current_ns->parent
-		&& gfc_current_ns->parent->proc_name->attr.entry_master)
+	    if (ns->parent
+		&& ns->parent->proc_name->attr.entry_master)
 	      {
-		gfc_entry_list *el = gfc_current_ns->parent->entries;
+		gfc_entry_list *el = ns->parent->entries;
 		for (; el; el = el->next)
 		  if (el->sym == n->sym)
 		    break;
@@ -7973,24 +8008,120 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  && code->block->next->op == EXEC_ALLOCATE)
 	{
 	  gfc_alloc *a;
+	  gfc_omp_namelist *n_null = NULL;
+	  bool missing_allocator = false;
+	  gfc_symbol *missing_allocator_sym = NULL;
 	  for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
 	    {
+	      if (n->u2.allocator == NULL)
+		{
+		  if (!missing_allocator_sym)
+		    missing_allocator_sym = n->sym;
+		  missing_allocator = true;
+		}
 	      if (n->sym == NULL)
-		continue;
+		{
+		  n_null = n;
+		  continue;
+		}
 	      if (n->sym->attr.codimension)
 		gfc_error ("Unexpected coarray %qs in %<allocate%> at %L",
 			   n->sym->name, &n->where);
 	      for (a = code->block->next->ext.alloc.list; a; a = a->next)
 		if (a->expr->expr_type == EXPR_VARIABLE
 		    && a->expr->symtree->n.sym == n->sym)
-		  break;
+		  {
+		    gfc_ref *ref;
+		    for (ref = a->expr->ref; ref; ref = ref->next)
+		      if (ref->type == REF_COMPONENT)
+			break;
+		    if (ref == NULL)
+		      break;
+		  }
 	      if (a == NULL)
 		gfc_error ("%qs specified in %<allocate%> at %L but not "
 			   "in the associated ALLOCATE statement",
 			   n->sym->name, &n->where);
 	    }
-	}
+	  /* If there is an ALLOCATE directive without list argument, a
+	     namelist with its allocator/align clauses and n->sym = NULL is
+	     created during parsing; here, we add all not otherwise specified
+	     items from the Fortran allocate to that list.
+	     For an ALLOCATORS directive, not listed items use the normal
+	     Fortran way.
+	     The behavior of an ALLOCATE directive that does not list all
+	     arguments but there is no directive without list argument is not
+	     well specified.  Thus, we reject such code below. In OpenMP 5.2
+	     the executable ALLOCATE directive is deprecated and in 6.0
+	     deleted such that no spec clarification is to be expected.  */
+	  for (a = code->block->next->ext.alloc.list; a; a = a->next)
+	    if (a->expr->expr_type == EXPR_VARIABLE)
+	      {
+		for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
+		  if (a->expr->symtree->n.sym == n->sym)
+		    {
+		      gfc_ref *ref;
+		      for (ref = a->expr->ref; ref; ref = ref->next)
+			if (ref->type == REF_COMPONENT)
+			  break;
+		      if (ref == NULL)
+			break;
+		    }
+		if (n == NULL && n_null == NULL)
+		  {
+		    /* OK for ALLOCATORS but for ALLOCATE: Unspecified whether
+		       that should use the default allocator of OpenMP or the
+		       Fortran allocator. Thus, just reject it.  */
+		    if (code->op == EXEC_OMP_ALLOCATE)
+		      gfc_error ("%qs listed in %<allocate%> statement at %L "
+				 "but it is neither explicitly in listed in "
+				 "the %<!$OMP ALLOCATE%> directive nor exists"
+				 " a directive without argument list",
+				 a->expr->symtree->n.sym->name,
+				 &a->expr->where);
+		    break;
+		  }
+		if (n == NULL)
+		  {
+		    if (a->expr->symtree->n.sym->attr.codimension)
+		      gfc_error ("Unexpected coarray %qs in %<allocate%> at "
+				 "%L, implicitly listed in %<!$OMP ALLOCATE%>"
+				 " at %L", a->expr->symtree->n.sym->name,
+				 &a->expr->where, &n_null->where);
+		    break;
+		  }
+	    }
+	  gfc_namespace *prog_unit = ns;
+	  while (prog_unit->parent)
+	    prog_unit = prog_unit->parent;
+	  gfc_namespace *fn_ns = ns;
+	  while (fn_ns)
+	    {
+	      if (ns->proc_name
+		  && (ns->proc_name->attr.subroutine
+		      || ns->proc_name->attr.function))
+		break;
+	      fn_ns = fn_ns->parent;
+	    }
+	  if (missing_allocator
+	      && !(prog_unit->omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
+	      && ((fn_ns && fn_ns->proc_name->attr.omp_declare_target)
+		  || omp_clauses->contained_in_target_construct))
+	    {
+	      if (code->op == EXEC_OMP_ALLOCATORS)
+		gfc_error ("ALLOCATORS directive at %L inside a target region "
+			   "must specify an ALLOCATOR modifier for %qs",
+			   &code->loc, missing_allocator_sym->name);
+	      else if (missing_allocator_sym)
+		gfc_error ("ALLOCATE directive at %L inside a target region "
+			   "must specify an ALLOCATOR clause for %qs",
+			   &code->loc, missing_allocator_sym->name);
+	      else
+		gfc_error ("ALLOCATE directive at %L inside a target region "
+			   "must specify an ALLOCATOR clause", &code->loc);
+	    }
 
+	}
     }
 
   /* OpenACC reductions.  */

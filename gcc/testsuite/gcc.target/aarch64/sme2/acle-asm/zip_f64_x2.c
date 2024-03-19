@@ -59,7 +59,7 @@ TEST_XN (zip_z28_z0, svfloat64x2_t, z28,
 	 svzip (z0))
 
 /*
-** zip_z28_z0_z23:
+** zip_z28_z0_z23:	{ xfail aarch64_big_endian }
 **	zip	{z28\.d - z29\.d}, z0\.d, z23\.d
 **	ret
 */

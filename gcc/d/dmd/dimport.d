@@ -305,22 +305,6 @@ extern (C++) final class Import : Dsymbol
         return this;
     }
 
-    override void setScope(Scope* sc)
-    {
-        Dsymbol.setScope(sc);
-        if (aliasdecls.length)
-        {
-            if (!mod)
-                importAll(sc);
-
-            sc = sc.push(mod);
-            sc.visibility = visibility;
-            foreach (ad; aliasdecls)
-                ad.setScope(sc);
-            sc = sc.pop();
-        }
-    }
-
     override bool overloadInsert(Dsymbol s)
     {
         /* Allow multiple imports with the same package base, but disallow

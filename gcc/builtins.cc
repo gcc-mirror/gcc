@@ -1403,8 +1403,16 @@ get_memory_rtx (tree exp, tree len)
 
 /* Built-in functions to perform an untyped call and return.  */
 
+#define set_apply_args_size(x) \
+  (this_target_builtins->x_apply_args_size_plus_one = 1 + (x))
+#define get_apply_args_size() \
+  (this_target_builtins->x_apply_args_size_plus_one - 1)
 #define apply_args_mode \
   (this_target_builtins->x_apply_args_mode)
+#define set_apply_result_size(x) \
+  (this_target_builtins->x_apply_result_size_plus_one = 1 + (x))
+#define get_apply_result_size() \
+  (this_target_builtins->x_apply_result_size_plus_one - 1)
 #define apply_result_mode \
   (this_target_builtins->x_apply_result_mode)
 
@@ -1414,7 +1422,7 @@ get_memory_rtx (tree exp, tree len)
 static int
 apply_args_size (void)
 {
-  static int size = -1;
+  int size = get_apply_args_size ();
   int align;
   unsigned int regno;
 
@@ -1447,6 +1455,8 @@ apply_args_size (void)
 	  }
 	else
 	  apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
+
+      set_apply_args_size (size);
     }
   return size;
 }
@@ -1457,7 +1467,7 @@ apply_args_size (void)
 static int
 apply_result_size (void)
 {
-  static int size = -1;
+  int size = get_apply_result_size ();
   int align, regno;
 
   /* The values computed by this function never change.  */
@@ -1489,6 +1499,8 @@ apply_result_size (void)
 #ifdef APPLY_RESULT_SIZE
       size = APPLY_RESULT_SIZE;
 #endif
+
+      set_apply_result_size (size);
     }
   return size;
 }
@@ -4284,6 +4296,40 @@ expand_builtin_memset (tree exp, rtx target, machine_mode mode)
   return expand_builtin_memset_args (dest, val, len, target, mode, exp);
 }
 
+/* Check that store_by_pieces allows BITS + LEN (so that we don't
+   expand something too unreasonably long), and every power of 2 in
+   BITS.  It is assumed that LEN has already been tested by
+   itself.  */
+static bool
+can_store_by_multiple_pieces (unsigned HOST_WIDE_INT bits,
+			      by_pieces_constfn constfun,
+			      void *constfundata, unsigned int align,
+			      bool memsetp,
+			      unsigned HOST_WIDE_INT len)
+{
+  if (bits
+      && !can_store_by_pieces (bits + len, constfun, constfundata,
+			       align, memsetp))
+    return false;
+
+  /* BITS set are expected to be generally in the low range and
+     contiguous.  We do NOT want to repeat the test above in case BITS
+     has a single bit set, so we terminate the loop when BITS == BIT.
+     In the unlikely case that BITS has the MSB set, also terminate in
+     case BIT gets shifted out.  */
+  for (unsigned HOST_WIDE_INT bit = 1; bit < bits && bit; bit <<= 1)
+    {
+      if ((bits & bit) == 0)
+	continue;
+
+      if (!can_store_by_pieces (bit, constfun, constfundata,
+				align, memsetp))
+	return false;
+    }
+
+  return true;
+}
+
 /* Try to store VAL (or, if NULL_RTX, VALC) in LEN bytes starting at TO.
    Return TRUE if successful, FALSE otherwise.  TO is assumed to be
    aligned at an ALIGN-bits boundary.  LEN must be a multiple of
@@ -4341,7 +4387,11 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
   else
     /* Huh, max_len < min_len?  Punt.  See pr100843.c.  */
     return false;
-  if (min_len >= blksize)
+  if (min_len >= blksize
+      /* ??? Maybe try smaller fixed-prefix blksizes before
+	 punting?  */
+      && can_store_by_pieces (blksize, builtin_memset_read_str,
+			      &valc, align, true))
     {
       min_len -= blksize;
       min_bits = floor_log2 (min_len);
@@ -4367,8 +4417,9 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
      happen because of the way max_bits and blksize are related, but
      it doesn't hurt to test.  */
   if (blksize > xlenest
-      || !can_store_by_pieces (xlenest, builtin_memset_read_str,
-			       &valc, align, true))
+      || !can_store_by_multiple_pieces (xlenest - blksize,
+					builtin_memset_read_str,
+					&valc, align, true, blksize))
     {
       if (!(flag_inline_stringops & ILSOP_MEMSET))
 	return false;
@@ -4386,17 +4437,17 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
 	     of overflow.  */
 	  if (max_bits < orig_max_bits
 	      && xlenest + blksize >= xlenest
-	      && can_store_by_pieces (xlenest + blksize,
-				      builtin_memset_read_str,
-				      &valc, align, true))
+	      && can_store_by_multiple_pieces (xlenest,
+					       builtin_memset_read_str,
+					       &valc, align, true, blksize))
 	    {
 	      max_loop = true;
 	      break;
 	    }
 	  if (blksize
-	      && can_store_by_pieces (xlenest,
-				      builtin_memset_read_str,
-				      &valc, align, true))
+	      && can_store_by_multiple_pieces (xlenest,
+					       builtin_memset_read_str,
+					       &valc, align, true, 0))
 	    {
 	      max_len += blksize;
 	      min_len += blksize;
@@ -4519,7 +4570,7 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
 	  to = change_address (to, QImode, 0);
 	  emit_move_insn (to, val);
 	  if (update_needed)
-	    next_ptr = plus_constant (ptr_mode, ptr, blksize);
+	    next_ptr = plus_constant (GET_MODE (ptr), ptr, blksize);
 	}
       else
 	{
@@ -12410,6 +12461,7 @@ builtin_fnspec (tree callee)
 	return ".cO ";
       /* Realloc serves both as allocation point and deallocation point.  */
       case BUILT_IN_REALLOC:
+      case BUILT_IN_GOMP_REALLOC:
 	return ".Cw ";
       case BUILT_IN_GAMMA_R:
       case BUILT_IN_GAMMAF_R:

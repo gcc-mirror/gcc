@@ -31,6 +31,9 @@ config/loongarch/loongarch-opts.h
 HeaderInclude
 config/loongarch/loongarch-str.h
 
+TargetVariable
+unsigned int recip_mask = 0
+
 ; ISA related options
 ;; Base ISA
 Enum
@@ -39,9 +42,6 @@ Basic ISAs of LoongArch:
 
 EnumValue
 Enum(isa_base) String(la64) Value(ISA_BASE_LA64V100)
-
-EnumValue
-Enum(isa_base) String(la64v1.1) Value(ISA_BASE_LA64V110)
 
 ;; ISA extensions / adjustments
 Enum
@@ -205,6 +205,14 @@ mexplicit-relocs
 Target Var(la_opt_explicit_relocs_backward) Init(M_OPT_UNSET)
 Use %reloc() assembly operators (for backward compatibility).
 
+mrecip
+Target RejectNegative Var(loongarch_recip)
+Generate approximate reciprocal divide and square root for better throughput.
+
+mrecip=
+Target RejectNegative Joined Var(loongarch_recip_name)
+Control generation of reciprocal estimates.
+
 ; The code model option names for -mcmodel.
 Enum
 Name(cmodel) Type(int)
@@ -262,6 +270,10 @@ default value is 4.
 ; CPUCFG independantly, so we use bit flags to specify them.
 Variable
 HOST_WIDE_INT isa_evolution = 0
+
+mfrecipe
+Target Mask(ISA_FRECIPE) Var(isa_evolution)
+Support frecipe.{s/d} and frsqrte.{s/d} instructions.
 
 mdiv32
 Target Mask(ISA_DIV32) Var(isa_evolution)

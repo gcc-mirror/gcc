@@ -579,6 +579,8 @@ extract_single_source (set_info *set)
   if (!set->insn ()->is_phi ())
     return nullptr;
   hash_set<set_info *> sets = get_all_sets (set, true, false, true);
+  if (sets.is_empty ())
+    return nullptr;
 
   insn_info *first_insn = (*sets.begin ())->insn ();
   if (first_insn->is_artificial ())
@@ -594,6 +596,14 @@ extract_single_source (set_info *set)
     }
 
   return first_insn;
+}
+
+static insn_info *
+extract_single_source (def_info *def)
+{
+  if (!def)
+    return nullptr;
+  return extract_single_source (dyn_cast<set_info *> (def));
 }
 
 static bool
@@ -2692,9 +2702,7 @@ pre_vsetvl::compute_lcm_local_properties ()
 			  def_lookup dl = crtl->ssa->find_def (resource, insn);
 			  def_info *def
 			    = dl.matching_set_or_last_def_of_prev_group ();
-			  gcc_assert (def);
-			  insn_info *def_insn = extract_single_source (
-			    dyn_cast<set_info *> (def));
+			  insn_info *def_insn = extract_single_source (def);
 			  if (def_insn && vsetvl_insn_p (def_insn->rtl ()))
 			    {
 			      vsetvl_info def_info = vsetvl_info (def_insn);
@@ -2715,8 +2723,7 @@ pre_vsetvl::compute_lcm_local_properties ()
       vsetvl_info &header_info = block_info.get_entry_info ();
       vsetvl_info &footer_info = block_info.get_exit_info ();
 
-      if (header_info.valid_p ()
-	  && (anticipated_exp_p (header_info) || block_info.full_available))
+      if (header_info.valid_p () && anticipated_exp_p (header_info))
 	bitmap_set_bit (m_antloc[bb_index],
 			get_expr_index (m_exprs, header_info));
 
@@ -3213,6 +3220,17 @@ pre_vsetvl::pre_global_vsetvl_info ()
       gcc_assert (info.get_bb () == bb);
       const vsetvl_block_info &block_info = get_block_info (info.get_bb ());
       gcc_assert (block_info.get_entry_info () == info);
+      info.set_delete ();
+    }
+
+  /* Remove vsetvl infos if all precessors are available to the block.  */
+  for (const bb_info *bb : crtl->ssa->bbs ())
+    {
+      vsetvl_block_info &block_info = get_block_info (bb);
+      if (block_info.empty_p () || !block_info.full_available)
+	continue;
+
+      vsetvl_info &info = block_info.get_entry_info ();
       info.set_delete ();
     }
 

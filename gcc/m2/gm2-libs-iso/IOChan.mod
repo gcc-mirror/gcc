@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE IOChan ;
 
-IMPORT FIO, EXCEPTIONS, M2EXCEPTION, RTio, IOConsts,
+IMPORT FIO, EXCEPTIONS, M2EXCEPTION, RTio,
        RTentity, errno, ErrnoCategory, IOLink, StdChans, M2RTS ;
 
 FROM EXCEPTIONS IMPORT ExceptionSource, RAISE, AllocateSource,

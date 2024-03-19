@@ -25,7 +25,7 @@ end
 
 
 ! { dg-final { scan-tree-dump "parm...span = 4;" "original" } }
-! { dg-final { scan-tree-dump "parm...dtype = {.elem_len=4, .rank=2, .type=1};" "original" } }
+! { dg-final { scan-tree-dump "parm...dtype = {.elem_len=4, .version=0, .rank=2, .type=1};" "original" } }
 ! { dg-final { scan-tree-dump "parm...dim\\\[0\\\].lbound = 1;" "original" } }
 ! { dg-final { scan-tree-dump "parm...dim\\\[0\\\].ubound = 4;" "original" } }
 ! { dg-final { scan-tree-dump "parm...dim\\\[0\\\].stride = 1;" "original" } }

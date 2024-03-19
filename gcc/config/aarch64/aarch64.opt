@@ -238,6 +238,24 @@ precision of division results to about 16 bits for
 single precision and to 32 bits for double precision.
 
 Enum
+Name(early_ra_scope) Type(enum aarch64_early_ra_scope)
+
+EnumValue
+Enum(early_ra_scope) String(all) Value(AARCH64_EARLY_RA_ALL)
+
+EnumValue
+Enum(early_ra_scope) String(strided) Value(AARCH64_EARLY_RA_STRIDED)
+
+EnumValue
+Enum(early_ra_scope) String(none) Value(AARCH64_EARLY_RA_NONE)
+
+mearly-ra=
+Target RejectNegative Joined Enum(early_ra_scope) Var(aarch64_early_ra) Init(AARCH64_EARLY_RA_NONE) Save
+Specify when to enable an early register allocation pass.  The possibilities
+are: all functions, functions that have access to strided multi-register
+instructions, and no functions.
+
+Enum
 Name(sve_vector_bits) Type(enum aarch64_sve_vector_bits_enum)
 The possible SVE vector lengths:
 

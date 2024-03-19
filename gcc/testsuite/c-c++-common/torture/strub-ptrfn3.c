@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=relaxed -Wpedantic -fpermissive" } */
 /* { dg-prune-output "command-line option .-fpermissive." } */
+/* { dg-require-effective-target strub } */
 
 /* See strub-ptrfn2.c.  */
 

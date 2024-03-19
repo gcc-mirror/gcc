@@ -1,5 +1,5 @@
 /* { dg-require-effective-target int32plus } */
-/* { dg-additional-options "-Wno-analyzer-too-complex -O2" } */
+/* { dg-additional-options "-Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex -O2" } */
 
 typedef long int ptrdiff_t;
 typedef long int EMACS_INT;

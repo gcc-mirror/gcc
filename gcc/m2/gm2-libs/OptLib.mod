@@ -28,7 +28,6 @@ IMPLEMENTATION MODULE OptLib ;
 
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM libc IMPORT memcpy ;
-FROM DynamicStrings IMPORT String ;
 
 IMPORT DynamicStrings ;
 

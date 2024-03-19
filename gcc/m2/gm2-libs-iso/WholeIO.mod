@@ -41,7 +41,6 @@ FROM TextUtil IMPORT SkipSpaces ;
      type IOConsts.ReadResults.
 *)
 
-IMPORT IOChan ;
 
 (* The text form of a signed whole number is
      ["+" | "-"], decimal digit, {decimal digit}

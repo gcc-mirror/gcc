@@ -3891,6 +3891,12 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
       combine_blocks (loop, loop_versioned);
     }
 
+  std::pair <tree, tree> *name_pair;
+  unsigned ssa_names_idx;
+  FOR_EACH_VEC_ELT (redundant_ssa_names, ssa_names_idx, name_pair)
+    replace_uses_by (name_pair->first, name_pair->second);
+  redundant_ssa_names.release ();
+
   /* Perform local CSE, this esp. helps the vectorizer analysis if loads
      and stores are involved.  CSE only the loop body, not the entry
      PHIs, those are to be kept in sync with the non-if-converted copy.
@@ -3898,15 +3904,8 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   exit_bbs = BITMAP_ALLOC (NULL);
   for (edge exit : get_loop_exit_edges (loop))
     bitmap_set_bit (exit_bbs, exit->dest->index);
-  bitmap_set_bit (exit_bbs, loop->latch->index);
-
-  std::pair <tree, tree> *name_pair;
-  unsigned ssa_names_idx;
-  FOR_EACH_VEC_ELT (redundant_ssa_names, ssa_names_idx, name_pair)
-    replace_uses_by (name_pair->first, name_pair->second);
-  redundant_ssa_names.release ();
-
-  todo |= do_rpo_vn (cfun, loop_preheader_edge (loop), exit_bbs);
+  todo |= do_rpo_vn (cfun, loop_preheader_edge (loop), exit_bbs,
+		     false, true, true);
 
   /* Delete dead predicate computations.  */
   ifcvt_local_dce (loop);

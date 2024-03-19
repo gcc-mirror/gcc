@@ -18,6 +18,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+INSERT_PASS_BEFORE (pass_sched, 1, pass_aarch64_early_ra);
 INSERT_PASS_AFTER (pass_regrename, 1, pass_fma_steering);
 INSERT_PASS_BEFORE (pass_reorder_blocks, 1, pass_track_speculation);
 INSERT_PASS_BEFORE (pass_late_thread_prologue_and_epilogue, 1, pass_switch_pstate_sm);

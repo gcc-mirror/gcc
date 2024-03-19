@@ -2528,13 +2528,13 @@ BEGIN
          THEN
             IF IsVarParam (procedure, nth) AND
                (NOT ParameterTypeCompatible (CurrentQuadToken,
-                                             'parameter incompatibility when attempting to pass actual parameter {%3Ead} to a {%kVAR} formal parameter {%2ad} during call to procedure {%1ad}',
+                                             'parameter incompatibility when attempting to pass actual parameter {%2ad} to a {%kVAR} formal parameter {%3Ead} during call to procedure {%1ad}',
                                              procedure, GetNthParam (procedure, nth), parameter, nth, TRUE))
             THEN
 
             ELSIF (NOT IsVarParam (procedure, nth)) AND
                (NOT ParameterTypeCompatible (CurrentQuadToken,
-                                             'parameter incompatibility when attempting to pass actual parameter {%3Ead} to a formal parameter {%2ad} during call to procedure {%1ad}',
+                                             'parameter incompatibility when attempting to pass actual parameter {%3Ead} to the {%4EN} formal parameter {%2ad} during call to procedure {%1ad}',
                                              procedure, GetNthParam (procedure, nth), parameter, nth, FALSE))
             THEN
                (* use the AssignmentTypeCompatible as the rules are for assignment for non var parameters.  *)

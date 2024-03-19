@@ -6127,6 +6127,26 @@ archs4x, archs4xd"
   ""
   [(set_attr "length" "8")])
 
+(define_insn_and_split "*extvsi_n_0"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "0")
+			 (match_operand:QI 2 "const_int_operand")
+			 (const_int 0)))]
+  "!TARGET_BARREL_SHIFTER
+   && IN_RANGE (INTVAL (operands[2]), 2,
+		(optimize_insn_for_size_p () ? 28 : 30))"
+  "#"
+  "&& 1"
+[(set (match_dup 0) (and:SI (match_dup 0) (match_dup 3)))
+ (set (match_dup 0) (xor:SI (match_dup 0) (match_dup 4)))
+ (set (match_dup 0) (minus:SI (match_dup 0) (match_dup 4)))]
+{
+  int tmp = INTVAL (operands[2]);
+  operands[3] = GEN_INT (~(HOST_WIDE_INT_M1U << tmp));
+  operands[4] = GEN_INT (HOST_WIDE_INT_1U << (tmp - 1));
+}
+  [(set_attr "length" "14")])
+
 (define_insn_and_split "rotlsi3_cnt1"
   [(set (match_operand:SI 0 "dest_reg_operand"            "=r")
 	(rotate:SI (match_operand:SI 1 "register_operand" "r")

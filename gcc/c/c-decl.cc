@@ -6618,12 +6618,10 @@ smallest_type_quals_location (const location_t *locations,
    the size evaluation prior to the side effects.  We therefore
    use BIND_EXPRs in TYPENAME contexts too.  */
 static void
-add_decl_expr (location_t loc, enum decl_context decl_context, tree type,
-	       tree *expr)
+add_decl_expr (location_t loc, tree type, tree *expr, bool set_name_p)
 {
   tree bind = NULL_TREE;
-  if (decl_context == TYPENAME || decl_context == PARM
-      || decl_context == FIELD)
+  if (expr)
     {
       bind = build3 (BIND_EXPR, void_type_node, NULL_TREE, NULL_TREE,
 		     NULL_TREE);
@@ -6636,7 +6634,8 @@ add_decl_expr (location_t loc, enum decl_context decl_context, tree type,
   pushdecl (decl);
   DECL_ARTIFICIAL (decl) = 1;
   add_stmt (build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl));
-  TYPE_NAME (type) = decl;
+  if (set_name_p)
+    TYPE_NAME (type) = decl;
 
   if (bind)
     {
@@ -7635,7 +7634,12 @@ grokdeclarator (const struct c_declarator *declarator,
 	       type has a name/declaration of it's own, but special attention
 	       is required if the type is anonymous. */
 	    if (!TYPE_NAME (type) && c_type_variably_modified_p (type))
-	      add_decl_expr (loc, decl_context, type, expr);
+	      {
+		bool bind_p = decl_context == TYPENAME
+			      || decl_context == FIELD
+			      || decl_context == PARM;
+		add_decl_expr (loc, type, bind_p ? expr : NULL, true);
+	      }
 
 	    type = c_build_pointer_type (type);
 
@@ -7900,7 +7904,12 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	    /* The pointed-to type may need a decl expr (see above).  */
 	    if (!TYPE_NAME (type) && c_type_variably_modified_p (type))
-	      add_decl_expr (loc, decl_context, type, expr);
+	      {
+		bool bind_p = decl_context == TYPENAME
+			      || decl_context == FIELD
+			      || decl_context == PARM;
+		add_decl_expr (loc, type, bind_p ? expr : NULL, true);
+	      }
 
 	    type = c_build_pointer_type (type);
 	    type_quals = array_ptr_quals;
@@ -9257,7 +9266,8 @@ is_flexible_array_member_p (bool is_last_field,
 
 tree
 finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
-	       class c_struct_parse_info *enclosing_struct_parse_info)
+	       class c_struct_parse_info *enclosing_struct_parse_info,
+	       tree *expr)
 {
   tree x;
   bool toplevel = file_scope == current_scope;
@@ -9594,6 +9604,13 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   rest_of_type_compilation (t, toplevel);
 
   finish_incomplete_vars (incomplete_vars, toplevel);
+
+  /* Make sure a DECL_EXPR is created for structs with VLA members.
+     Because we do not know the context, we always pass expr
+     to force creation of a BIND_EXPR which is required in some
+     contexts.  */
+  if (c_type_variably_modified_p (t))
+    add_decl_expr (loc, t, expr, false);
 
   if (warn_cxx_compat)
     warn_cxx_compat_finish_struct (fieldlist, TREE_CODE (t), loc);

@@ -1,7 +1,11 @@
 // { dg-do run }
 // { dg-options "-O -fopenmp-simd -ftree-loop-if-convert -fno-ssa-phiopt" }
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(2) notinbranch
+#else
 #pragma omp declare simd simdlen(4) notinbranch
+#endif
 __attribute__((noinline)) int
 foo (double c1, double c2)
 {
@@ -18,7 +22,6 @@ foo (double c1, double c2)
     }
   return res;
 }
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-15 }
 
 __attribute__((noinline, noclone)) void
 bar (double *x, double *y)

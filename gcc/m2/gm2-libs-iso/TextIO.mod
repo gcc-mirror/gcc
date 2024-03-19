@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE TextIO ;
 
 
-IMPORT IOChan, IOConsts, CharClass, ASCII ;
+IMPORT IOConsts, CharClass, ASCII ;
 FROM SYSTEM IMPORT ADR ;
 FROM FIO IMPORT FlushOutErr ;
 FROM libc IMPORT printf ;

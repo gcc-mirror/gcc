@@ -779,7 +779,7 @@ Common Joined UInteger Var(param_min_loop_cond_split_prob) Init(30) IntegerRange
 The minimum threshold for probability of semi-invariant condition statement to trigger loop split.
 
 -param=min-nondebug-insn-uid=
-Common Joined UInteger Var(param_min_nondebug_insn_uid) Param
+Common Joined UInteger Var(param_min_nondebug_insn_uid) Param IntegerRange(0, 1073741824)
 The minimum UID to be used for a nondebug insn.
 
 -param=min-size-for-stack-sharing=

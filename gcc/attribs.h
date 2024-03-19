@@ -48,6 +48,7 @@ extern void apply_tm_attr (tree, tree);
 extern tree make_attribute (const char *, const char *, tree);
 extern bool attribute_ignored_p (tree);
 extern bool attribute_ignored_p (const attribute_spec *const);
+extern bool any_nonignored_attribute_p (tree);
 
 extern struct scoped_attributes *
   register_scoped_attributes (const scoped_attribute_specs &, bool = false);

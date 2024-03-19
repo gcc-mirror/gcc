@@ -1380,6 +1380,7 @@ typedef struct gfc_omp_namelist
       gfc_namespace *ns;
       gfc_expr *allocator;
       struct gfc_symbol *traits_sym;
+      struct gfc_omp_namelist *duplicate_of;
     } u2;
   struct gfc_omp_namelist *next;
   locus where;
@@ -1496,19 +1497,23 @@ enum gfc_omp_atomic_op
 enum gfc_omp_requires_kind
 {
   /* Keep in sync with gfc_namespace, esp. with omp_req_mem_order.  */
-  OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST = 1,  /* 01 */
-  OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL = 2,  /* 10 */
-  OMP_REQ_ATOMIC_MEM_ORDER_RELAXED = 3,  /* 11 */
-  OMP_REQ_REVERSE_OFFLOAD = (1 << 2),
-  OMP_REQ_UNIFIED_ADDRESS = (1 << 3),
-  OMP_REQ_UNIFIED_SHARED_MEMORY = (1 << 4),
-  OMP_REQ_DYNAMIC_ALLOCATORS = (1 << 5),
+  OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST = 1,  /* 001 */
+  OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL = 2,  /* 010 */
+  OMP_REQ_ATOMIC_MEM_ORDER_RELAXED = 3,  /* 011 */
+  OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE = 4,  /* 100 */
+  OMP_REQ_ATOMIC_MEM_ORDER_RELEASE = 5,  /* 101 */
+  OMP_REQ_REVERSE_OFFLOAD = (1 << 3),
+  OMP_REQ_UNIFIED_ADDRESS = (1 << 4),
+  OMP_REQ_UNIFIED_SHARED_MEMORY = (1 << 5),
+  OMP_REQ_DYNAMIC_ALLOCATORS = (1 << 6),
   OMP_REQ_TARGET_MASK = (OMP_REQ_REVERSE_OFFLOAD
 			 | OMP_REQ_UNIFIED_ADDRESS
 			 | OMP_REQ_UNIFIED_SHARED_MEMORY),
   OMP_REQ_ATOMIC_MEM_ORDER_MASK = (OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST
 				   | OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL
-				   | OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
+				   | OMP_REQ_ATOMIC_MEM_ORDER_RELAXED
+				   | OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE
+				   | OMP_REQ_ATOMIC_MEM_ORDER_RELEASE)
 };
 
 enum gfc_omp_memorder
@@ -1579,6 +1584,7 @@ typedef struct gfc_omp_clauses
   unsigned grainsize_strict:1, num_tasks_strict:1, compare:1, weak:1;
   unsigned non_rectangular:1, order_concurrent:1;
   unsigned contains_teams_construct:1, target_first_st_is_teams:1;
+  unsigned contained_in_target_construct:1;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
   ENUM_BITFIELD (gfc_omp_device_type) device_type:2;
   ENUM_BITFIELD (gfc_omp_memorder) memorder:3;
@@ -2257,7 +2263,7 @@ typedef struct gfc_namespace
   unsigned implicit_interface_calls:1;
 
   /* OpenMP requires. */
-  unsigned omp_requires:6;
+  unsigned omp_requires:7;
   unsigned omp_target_seen:1;
 
   /* Set to 1 if this is an implicit OMP structured block.  */

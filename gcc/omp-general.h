@@ -153,4 +153,73 @@ get_openacc_privatization_dump_flags ()
 
 extern tree omp_build_component_ref (tree obj, tree field);
 
+namespace omp_addr_tokenizer {
+
+/* These are the ways of accessing a variable that have special-case handling
+   in the middle end (gimplify, omp-lower, etc.).  */
+
+/* These are the kinds of access that an ACCESS_METHOD token can represent.  */
+
+enum access_method_kinds
+{
+  ACCESS_DIRECT,
+  ACCESS_REF,
+  ACCESS_POINTER,
+  ACCESS_REF_TO_POINTER,
+  ACCESS_POINTER_OFFSET,
+  ACCESS_REF_TO_POINTER_OFFSET,
+  ACCESS_INDEXED_ARRAY,
+  ACCESS_INDEXED_REF_TO_ARRAY
+};
+
+/* These are the kinds that a STRUCTURE_BASE or ARRAY_BASE (except
+   BASE_COMPONENT_EXPR) can represent.  */
+
+enum structure_base_kinds
+{
+  BASE_DECL,
+  BASE_COMPONENT_EXPR,
+  BASE_ARBITRARY_EXPR
+};
+
+/* The coarse type for an address token.  These can have subtypes for
+   ARRAY_BASE or STRUCTURE_BASE (structure_base_kinds) or ACCESS_METHOD
+   (access_method_kinds).  */
+
+enum token_type
+{
+  ARRAY_BASE,
+  STRUCTURE_BASE,
+  COMPONENT_SELECTOR,
+  ACCESS_METHOD
+};
+
+/* The struct that forms a single token of an address expression as parsed by
+   omp_parse_expr.  These are typically held in a vec after parsing.  */
+
+struct omp_addr_token
+{
+  enum token_type type;
+  tree expr;
+
+  union
+  {
+    access_method_kinds access_kind;
+    structure_base_kinds structure_base_kind;
+  } u;
+
+  omp_addr_token (token_type, tree);
+  omp_addr_token (access_method_kinds, tree);
+  omp_addr_token (token_type, structure_base_kinds, tree);
+};
+
+extern bool omp_access_chain_p (vec<omp_addr_token *> &, unsigned);
+extern tree omp_accessed_addr (vec<omp_addr_token *> &, unsigned, tree);
+
+}
+
+typedef omp_addr_tokenizer::omp_addr_token omp_addr_token;
+
+extern bool omp_parse_expr (vec<omp_addr_token *> &, tree);
+
 #endif /* GCC_OMP_GENERAL_H */

@@ -1,3 +1,8 @@
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* context.cc (plugin_print_error_function): Make diagnostic_info
+	param const.
+
 2023-11-16  Tom Tromey  <tom@tromey.com>
 
 	* libcc1plugin.cc (plugin_build_enum_type): Set

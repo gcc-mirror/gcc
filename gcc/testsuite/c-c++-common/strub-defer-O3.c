@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fstrub=strict -O3" } */
+/* { dg-require-effective-target strub } */
 
 /* Check that a strub function called by another strub function defers the
    strubbing to its caller at -O3.  */

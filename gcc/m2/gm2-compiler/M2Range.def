@@ -43,42 +43,6 @@ FROM m2tree IMPORT Tree ;
 FROM m2linemap IMPORT location_t ;
 FROM DynamicStrings IMPORT String ;
 
-EXPORT QUALIFIED InitAssignmentRangeCheck,
-                 InitReturnRangeCheck,
-                 InitSubrangeRangeCheck,
-                 InitStaticArraySubscriptRangeCheck,
-                 InitDynamicArraySubscriptRangeCheck,
-                 InitIncRangeCheck,
-                 InitDecRangeCheck,
-                 InitInclCheck,
-                 InitExclCheck,
-                 InitRotateCheck,
-                 InitShiftCheck,
-                 InitTypesExpressionCheck,
-                 InitTypesAssignmentCheck,
-                 InitTypesParameterCheck,
-                 InitParameterRangeCheck,
-                 InitForLoopBeginRangeCheck,
-                 InitForLoopToRangeCheck,
-                 InitForLoopEndRangeCheck,
-                 InitPointerRangeCheck,
-                 InitNoReturnRangeCheck,
-                 InitNoElseRangeCheck,
-                 InitCaseBounds,
-                 InitWholeNonPosDivCheck,
-                 InitWholeNonPosModCheck,
-                 InitWholeZeroDivisionCheck,
-                 InitWholeZeroRemainderCheck,
-                 CodeRangeCheck, FoldRangeCheck, CodeErrorCheck,
-                 (* CheckRangeAddVariableRead,  *)
-                 (* CheckRangeRemoveVariableRead,  *)
-                 WriteRangeCheck,
-                 OverlapsRange,
-                 IsEqual, IsGreaterOrEqual, IsGreater,
-		 BuildIfCallRealHandlerLoc,
-                 BuildIfCallWholeHandlerLoc,
-		 GetMinMax ;
-
 
 (*
    InitAssignmentRangeCheck - returns a range check node which
@@ -286,7 +250,8 @@ PROCEDURE InitTypesAssignmentCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL 
                              are parameter compatible.
 *)
 
-PROCEDURE InitTypesParameterCheck (proc: CARDINAL; i: CARDINAL;
+PROCEDURE InitTypesParameterCheck (tokno: CARDINAL;
+                                   proc: CARDINAL; i: CARDINAL;
                                    formal, actual: CARDINAL) : CARDINAL ;
 
 
@@ -295,7 +260,8 @@ PROCEDURE InitTypesParameterCheck (proc: CARDINAL; i: CARDINAL;
                              are parameter compatible.
 *)
 
-PROCEDURE InitParameterRangeCheck (proc: CARDINAL; i: CARDINAL;
+PROCEDURE InitParameterRangeCheck (tokno: CARDINAL;
+                                   proc: CARDINAL; i: CARDINAL;
                                    formal, actual: CARDINAL) : CARDINAL ;
 
 

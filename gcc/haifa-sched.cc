@@ -9044,7 +9044,7 @@ extend_h_i_d (void)
   if (reserve > 0
       && ! h_i_d.space (reserve))
     {
-      h_i_d.safe_grow_cleared (3 * get_max_uid () / 2, true);
+      h_i_d.safe_grow_cleared (3U * get_max_uid () / 2, true);
       sched_extend_target ();
     }
 }

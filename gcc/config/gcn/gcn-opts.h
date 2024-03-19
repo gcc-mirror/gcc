@@ -65,7 +65,8 @@ enum hsaco_attr_type
 {
   HSACO_ATTR_OFF,
   HSACO_ATTR_ON,
-  HSACO_ATTR_ANY
+  HSACO_ATTR_ANY,
+  HSACO_ATTR_DEFAULT
 };
 
 #endif

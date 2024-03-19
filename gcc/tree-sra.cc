@@ -1843,8 +1843,11 @@ build_reconstructed_reference (location_t, tree base, struct access *model)
 /* Construct a memory reference to a part of an aggregate BASE at the given
    OFFSET and of the same type as MODEL.  In case this is a reference to a
    bit-field, the function will replicate the last component_ref of model's
-   expr to access it.  GSI and INSERT_AFTER have the same meaning as in
-   build_ref_for_offset.  */
+   expr to access it.  INSERT_AFTER and GSI have the same meaning as in
+   build_ref_for_offset, furthermore, when GSI is NULL, the function expects
+   that it re-builds the entire reference from a DECL to the final access and
+   so will create a MEM_REF when OFFSET does not exactly match offset of
+   MODEL.  */
 
 static tree
 build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
@@ -1874,7 +1877,8 @@ build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 	  && !TREE_THIS_VOLATILE (base)
 	  && (TYPE_ADDR_SPACE (TREE_TYPE (base))
 	      == TYPE_ADDR_SPACE (TREE_TYPE (model->expr)))
-	  && offset == model->offset
+	  && (offset == model->offset
+	      || (gsi && offset <= model->offset))
 	  /* build_reconstructed_reference can still fail if we have already
 	     massaged BASE because of another type incompatibility.  */
 	  && (res = build_reconstructed_reference (loc, base, model)))
@@ -4219,11 +4223,15 @@ load_assign_lhs_subreplacements (struct access *lacc,
 	  if (racc && racc->grp_to_be_replaced)
 	    {
 	      rhs = get_access_replacement (racc);
+	      bool vce = false;
 	      if (!useless_type_conversion_p (lacc->type, racc->type))
-		rhs = fold_build1_loc (sad->loc, VIEW_CONVERT_EXPR,
-				       lacc->type, rhs);
+		{
+		  rhs = fold_build1_loc (sad->loc, VIEW_CONVERT_EXPR,
+					 lacc->type, rhs);
+		  vce = true;
+		}
 
-	      if (racc->grp_partial_lhs && lacc->grp_partial_lhs)
+	      if (lacc->grp_partial_lhs && (vce || racc->grp_partial_lhs))
 		rhs = force_gimple_operand_gsi (&sad->old_gsi, rhs, true,
 						NULL_TREE, true, GSI_SAME_STMT);
 	    }

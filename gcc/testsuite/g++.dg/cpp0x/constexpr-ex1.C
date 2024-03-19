@@ -88,7 +88,7 @@ struct resource {
 };
 constexpr resource f(resource d)
 { return d; }                  // { dg-error "non-.constexpr." "" { target { { { ! implicit_constexpr } && c++20_down } || c++11_only } } }
-// { dg-error "non-.constexpr." "" { target { c++23 && { ! implicit_constexpr } } } .-2 }
+// { dg-error "non-.constexpr." "" { target { c++23 && { ! implicit_constexpr } } } .-1 }
 constexpr resource d = f(9);   // { dg-message ".constexpr." "" { target { { ! implicit_constexpr } || c++11_only } } }
 
 // 4.4 floating-point constant expressions

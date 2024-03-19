@@ -2949,7 +2949,8 @@ common_handle_option (struct gcc_options *opts,
 	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
 				  : opts->x_main_input_basename);
 	  diagnostic_output_format_init (dc, basename,
-					 (enum diagnostics_output_format)value);
+					 (enum diagnostics_output_format)value,
+					 opts->x_flag_diagnostics_json_formatting);
 	  break;
 	}
 

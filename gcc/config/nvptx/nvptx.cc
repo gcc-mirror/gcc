@@ -7789,6 +7789,9 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name, tree value)
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION nvptx_libc_has_function
 
+#undef TARGET_HAVE_STRUB_SUPPORT_FOR
+#define TARGET_HAVE_STRUB_SUPPORT_FOR hook_bool_tree_false
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-nvptx.h"

@@ -1805,6 +1805,10 @@ fdiagnostics-show-template-tree
 C++ ObjC++ Var(flag_diagnostics_show_template_tree) Init(0)
 Print hierarchical comparisons when template types are mismatched.
 
+fdiagnostics-all-candidates
+C++ ObjC++ Var(flag_diagnostics_all_candidates)
+Note all candidates during overload resolution failure.
+
 fdirectives-only
 C ObjC C++ ObjC++
 Preprocess directives only.

@@ -37,6 +37,13 @@ struct target_builtins {
      register windows, this gives only the outbound registers.
      INCOMING_REGNO gives the corresponding inbound register.  */
   fixed_size_mode_pod x_apply_result_mode[FIRST_PSEUDO_REGISTER];
+
+  /* Nonzero iff the arrays above have been initialized.  The _plus_one suffix
+     is for zero initialization to make it an unreasonable size, used to signal
+     that the size and the corresponding mode array has not been
+     initialized.  */
+  int x_apply_args_size_plus_one;
+  int x_apply_result_size_plus_one;
 };
 
 extern struct target_builtins default_target_builtins;

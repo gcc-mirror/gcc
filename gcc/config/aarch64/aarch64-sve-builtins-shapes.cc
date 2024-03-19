@@ -29,6 +29,7 @@
 #include "optabs.h"
 #include "aarch64-sve-builtins.h"
 #include "aarch64-sve-builtins-shapes.h"
+#include "aarch64-builtins.h"
 
 /* In the comments below, _t0 represents the first type suffix and _t1
    represents the second.  Square brackets enclose characters that are
@@ -178,6 +179,8 @@ parse_element_type (const function_instance &instance, const char *&format)
    s<elt>  - a scalar type with the given element suffix
    t<elt>  - a vector or tuple type with given element suffix [*1]
    v<elt>  - a vector with the given element suffix
+   D<elt>  - a 64 bit neon vector
+   Q<elt>  - a 128 bit neon vector
 
    where <elt> has the format described above parse_element_type
 
@@ -259,6 +262,20 @@ parse_type (const function_instance &instance, const char *&format)
     {
       type_suffix_index suffix = parse_element_type (instance, format);
       return acle_vector_types[0][type_suffixes[suffix].vector_type];
+    }
+
+  if (ch == 'D')
+    {
+      type_suffix_index suffix = parse_element_type (instance, format);
+      int neon_index = type_suffixes[suffix].neon64_type;
+      return aarch64_simd_types[neon_index].itype;
+    }
+
+  if (ch == 'Q')
+    {
+      type_suffix_index suffix = parse_element_type (instance, format);
+      int neon_index = type_suffixes[suffix].neon128_type;
+      return aarch64_simd_types[neon_index].itype;
     }
 
   gcc_unreachable ();
@@ -2475,6 +2492,67 @@ struct get_def : public overloaded_base<0>
   }
 };
 SHAPE (get)
+
+/* <t0>xN_t svfoo[_t0](sv<t0>_t).  */
+struct get_neonq_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "Q0,v0", group, MODE_none);
+  }
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_unary ();
+  }
+};
+SHAPE (get_neonq)
+
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, <t0>xN_t).  */
+struct set_neonq_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,Q0", group, MODE_none);
+  }
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_neon128_vector_type (i + 1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (set_neonq)
+
+/* sv<t0>_t svfoo[_t0](<t0>xN_t).  */
+struct dup_neonq_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,Q0", group, MODE_none);
+  }
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (1, i, nargs)
+	|| (type = r.infer_neon128_vector_type (i)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (dup_neonq)
 
 /* sv<t0>_t svfoo[_t0](sv<t0>_t, uint64_t)
    <t0>_t svfoo[_n_t0](<t0>_t, uint64_t)

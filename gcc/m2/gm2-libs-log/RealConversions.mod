@@ -33,7 +33,7 @@ FROM DynamicStrings IMPORT String, InitString, KillString, CopyOut, Length,
                            InitStringCharDB, MultDB, DupDB, SliceDB ;
 
 FROM StringConvert IMPORT LongrealToString, StringToLongreal,
-                          StringToLongreal, StringToInteger, itos ;
+                          StringToInteger, itos ;
 
 FROM ASCII IMPORT nul ;
 FROM Builtins IMPORT logl, log10l ;

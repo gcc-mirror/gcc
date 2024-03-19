@@ -51,6 +51,7 @@
 #include "riscv-vector-builtins.h"
 #include "riscv-vector-builtins-shapes.h"
 #include "riscv-vector-builtins-bases.h"
+#include "riscv-vector-builtins-avail.h"
 
 using namespace riscv_vector;
 
@@ -2684,8 +2685,9 @@ static CONSTEXPR const function_type_info function_types[] = {
 
 /* A list of all RVV intrinsic functions.  */
 static function_group_info function_groups[] = {
-#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
-  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO},
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO, ...)                         \
+  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO,\
+   __VA_ARGS__},
 #include "riscv-vector-builtins-functions.def"
 };
 

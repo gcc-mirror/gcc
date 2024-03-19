@@ -68,7 +68,6 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
     Expression visit(Expression e)
     {
         // printf("Expression.implicitCastTo(%s of type %s) => %s\n", e.toChars(), e.type.toChars(), t.toChars());
-
         if (const match = (sc && sc.flags & SCOPE.Cfile) ? e.cimplicitConvTo(t) : e.implicitConvTo(t))
         {
             // no need for an extra cast when matching is exact
@@ -802,8 +801,8 @@ extern(C++) MATCH implicitConvTo(Expression e, Type t)
 
             return result;
         }
-        else if (tb.ty == Tvector && (typeb.ty == Tarray || typeb.ty == Tsarray))
-        {
+        else if (tb.ty == Tvector && (typeb.ty == Tarray || typeb.ty == Tsarray || typeb.ty == Tpointer))
+        {   // Tpointer because ImportC eagerly converts Tsarray to Tpointer
             result = MATCH.exact;
             // Convert array literal to vector type
             TypeVector tv = tb.isTypeVector();
@@ -1487,6 +1486,10 @@ MATCH cimplicitConvTo(Expression e, Type t)
 
     if (tb.equals(typeb))
         return MATCH.exact;
+
+    if (tb.isTypeVector() || typeb.isTypeVector())
+        return implicitConvTo(e, t);    // permissive checking doesn't apply to vectors
+
     if ((typeb.isintegral() || typeb.isfloating()) &&
         (tb.isintegral() || tb.isfloating()))
         return MATCH.convert;
@@ -2298,9 +2301,10 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 ae.type = tp;
             }
         }
-        else if (tb.ty == Tvector && (typeb.ty == Tarray || typeb.ty == Tsarray))
+        else if (tb.ty == Tvector && (typeb.ty == Tarray || typeb.ty == Tsarray || typeb.ty == Tpointer))
         {
             // Convert array literal to vector type
+            // The Tpointer case comes from C eagerly converting Tsarray to Tpointer
             TypeVector tv = tb.isTypeVector();
             TypeSArray tbase = tv.basetype.isTypeSArray();
             assert(tbase.ty == Tsarray);

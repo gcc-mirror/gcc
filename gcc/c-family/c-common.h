@@ -168,11 +168,6 @@ enum rid
   RID_BUILTIN_LAUNDER,
   RID_BUILTIN_BIT_CAST,
 
-#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
-  RID_##CODE,
-#include "cp/cp-trait.def"
-#undef DEFTRAIT
-
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
 
@@ -1284,8 +1279,11 @@ enum c_omp_region_type
   C_ORT_ACC			= 1 << 1,
   C_ORT_DECLARE_SIMD		= 1 << 2,
   C_ORT_TARGET			= 1 << 3,
+  C_ORT_EXIT_DATA		= 1 << 4,
   C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD,
-  C_ORT_OMP_TARGET		= C_ORT_OMP | C_ORT_TARGET
+  C_ORT_OMP_TARGET		= C_ORT_OMP | C_ORT_TARGET,
+  C_ORT_OMP_EXIT_DATA		= C_ORT_OMP | C_ORT_EXIT_DATA,
+  C_ORT_ACC_TARGET		= C_ORT_ACC | C_ORT_TARGET
 };
 
 extern tree c_finish_omp_master (location_t, tree);
@@ -1321,6 +1319,72 @@ extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern void c_omp_adjust_map_clauses (tree, bool);
+
+namespace omp_addr_tokenizer { struct omp_addr_token; }
+typedef omp_addr_tokenizer::omp_addr_token omp_addr_token;
+
+class c_omp_address_inspector
+{
+  location_t loc;
+  tree root_term;
+  bool indirections;
+  int map_supported;
+
+protected:
+  tree orig;
+
+public:
+  c_omp_address_inspector (location_t loc, tree t)
+    : loc (loc), root_term (NULL_TREE), indirections (false),
+      map_supported (-1), orig (t)
+    {
+    }
+
+  ~c_omp_address_inspector ()
+    {
+    }
+
+  virtual bool processing_template_decl_p ()
+    {
+      return false;
+    }
+
+  virtual void emit_unmappable_type_notes (tree)
+    {
+    }
+
+  virtual tree convert_from_reference (tree)
+    {
+      gcc_unreachable ();
+    }
+
+  virtual tree build_array_ref (location_t loc, tree arr, tree idx)
+    {
+      tree eltype = TREE_TYPE (TREE_TYPE (arr));
+      return build4_loc (loc, ARRAY_REF, eltype, arr, idx, NULL_TREE,
+			 NULL_TREE);
+    }
+
+  virtual bool check_clause (tree);
+  tree get_root_term (bool);
+
+  tree unconverted_ref_origin ();
+  bool component_access_p ();
+
+  bool map_supported_p ();
+
+  static tree get_origin (tree);
+  static tree maybe_unconvert_ref (tree);
+
+  bool maybe_zero_length_array_section (tree);
+
+  tree expand_array_base (tree, vec<omp_addr_token *> &, tree, unsigned *,
+			  c_omp_region_type);
+  tree expand_component_selector (tree, vec<omp_addr_token *> &, tree,
+				  unsigned *, c_omp_region_type);
+  tree expand_map_clause (tree, tree, vec<omp_addr_token *> &,
+			  c_omp_region_type);
+};
 
 enum c_omp_directive_kind {
   C_OMP_DIR_STANDALONE,
@@ -1508,7 +1572,7 @@ extern void warnings_for_convert_and_check (location_t, tree, tree, tree);
 extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool);
 extern void warn_for_omitted_condop (location_t, tree);
 extern bool warn_for_restrict (unsigned, tree *, unsigned);
-extern void warn_for_address_or_pointer_of_packed_member (tree, tree);
+extern void warn_for_address_of_packed_member (tree, tree);
 extern void warn_parm_array_mismatch (location_t, tree, tree);
 extern void maybe_warn_sizeof_array_div (location_t, tree, tree, tree, tree);
 extern void do_warn_array_compare (location_t, tree_code, tree, tree);

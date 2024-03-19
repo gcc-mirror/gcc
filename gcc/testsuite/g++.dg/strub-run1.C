@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options "-fstrub=internal" }
+// { dg-require-effective-target strub }
 
 // Check that we don't get extra copies.
 

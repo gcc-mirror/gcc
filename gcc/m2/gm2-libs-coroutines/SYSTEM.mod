@@ -35,7 +35,7 @@ IMPORT RTint ;
 
 FROM Storage IMPORT ALLOCATE ;
 FROM M2RTS IMPORT Halt ;
-FROM libc IMPORT printf, memcpy, memcpy, memset ;
+FROM libc IMPORT printf, memcpy, memset ;
 
 
 CONST
@@ -51,7 +51,7 @@ TYPE
 
 VAR
    initMain,
-   initGTh        : BOOLEAN ;
+   initGTh : BOOLEAN ;
 
 
 (*

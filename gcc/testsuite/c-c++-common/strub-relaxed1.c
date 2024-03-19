@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=relaxed -fdump-ipa-strubm -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 /* The difference between relaxed and strict in this case is that we accept the
    call from one internal-strub function to another.  Without the error,

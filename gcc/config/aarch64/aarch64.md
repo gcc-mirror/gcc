@@ -290,13 +290,9 @@
     UNSPEC_NZCV
     UNSPEC_XPACLRI
     UNSPEC_LD1_SVE
-    UNSPEC_LD1_SVE_COUNT
     UNSPEC_ST1_SVE
-    UNSPEC_ST1_SVE_COUNT
     UNSPEC_LDNT1_SVE
-    UNSPEC_LDNT1_SVE_COUNT
     UNSPEC_STNT1_SVE
-    UNSPEC_STNT1_SVE_COUNT
     UNSPEC_LD1RQ
     UNSPEC_LD1_GATHER
     UNSPEC_LDFF1_GATHER
@@ -339,7 +335,10 @@
     UNSPEC_RDFFR
     UNSPEC_WRFFR
     UNSPEC_SYSREG_RDI
+    UNSPEC_SYSREG_RTI
     UNSPEC_SYSREG_WDI
+    UNSPEC_SYSREG_WTI
+    UNSPEC_PLDX
     ;; Represents an SVE-style lane index, in which the indexing applies
     ;; within the containing 128-bit block.
     UNSPEC_SVE_LANE_SELECT
@@ -356,6 +355,8 @@
     UNSPEC_SAVE_NZCV
     UNSPEC_RESTORE_NZCV
     UNSPECV_PATCHABLE_AREA
+    UNSPEC_LDAP1_LANE
+    UNSPEC_STL1_LANE
     ;; Wraps a constant integer that should be multiplied by the number
     ;; of quadwords in an SME vector.
     UNSPEC_SME_VQ
@@ -527,6 +528,26 @@
 ;; may chose to hold the tracking state encoded in SP.
 (define_attr "speculation_barrier" "true,false" (const_string "false"))
 
+;; This attribute is attached to multi-register instructions that have
+;; two forms: one in which the registers are consecutive and one in
+;; which they are strided.  The consecutive and strided forms have
+;; different define_insns, with different operands.  The mapping between
+;; the RTL of the consecutive form and the RTL of the strided form varies
+;; from one type of instruction to another.
+;;
+;; The attribute gives two pieces of information:
+;; - does the current instruction have consecutive or strided registers?
+;; - what kind of RTL rewrite is needed to move between forms?
+;;
+;; For example, all consecutive LD*1 instructions have the same basic
+;; RTL structure.  The same applies to all strided LD*1 instructions.
+;; The RTL mapping therefore applies at LD1 granularity, rather than
+;; being broken down into individual types of load.
+(define_attr "stride_type"
+  "none,ld1_consecutive,ld1_strided,st1_consecutive,st1_strided,
+   luti_consecutive,luti_strided"
+  (const_string "none"))
+
 ;; -------------------------------------------------------------------
 ;; Pipeline descriptions and scheduling
 ;; -------------------------------------------------------------------
@@ -558,12 +579,28 @@
   "mrs\t%x0, %1"
 )
 
+(define_insn "aarch64_read_sysregti"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+    (unspec_volatile:TI [(match_operand 1 "aarch64_sysreg_string" "")]
+			UNSPEC_SYSREG_RTI))]
+ "TARGET_D128"
+ "mrrs\t%x0, %H0, %x1"
+)
+
 (define_insn "aarch64_write_sysregdi"
   [(unspec_volatile:DI [(match_operand 0 "aarch64_sysreg_string" "")
 			(match_operand:DI 1 "register_operand" "rZ")]
 		       UNSPEC_SYSREG_WDI)]
   ""
   "msr\t%0, %x1"
+)
+
+(define_insn "aarch64_write_sysregti"
+ [(unspec_volatile:TI [(match_operand 0 "aarch64_sysreg_string" "")
+		       (match_operand:TI 1 "register_operand" "r")]
+		      UNSPEC_SYSREG_WTI)]
+ "TARGET_D128"
+ "msrr\t%x0, %x1, %H1"
 )
 
 (define_insn "indirect_jump"
@@ -930,6 +967,17 @@
        how to print it.  */
     operands[0] = gen_rtx_MEM (DImode, operands[0]);
     return pftype[INTVAL(operands[1])][locality];
+  }
+  [(set_attr "type" "load_4")]
+)
+
+(define_insn "aarch64_pldx"
+  [(unspec [(match_operand 0 "" "")
+	    (match_operand:DI 1 "aarch64_prefetch_operand" "Dp")] UNSPEC_PLDX)]
+  ""
+  {
+    operands[1] = gen_rtx_MEM (DImode, operands[1]);
+    return "prfm\\t%0, %1";
   }
   [(set_attr "type" "load_4")]
 )

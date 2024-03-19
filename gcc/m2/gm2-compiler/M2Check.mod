@@ -221,11 +221,11 @@ BEGIN
       result := checkPair (result, tinfo, GetType (left), GetType (right)) ;
       IF (lSub # NulSym) AND (rSub # NulSym)
       THEN
-         result := checkSubrange (result, tinfo, GetSType (lSub), GetSType (rSub))
+         result := checkSubrange (result, tinfo, getSType (lSub), getSType (rSub))
       END
    ELSIF IsUnbounded (left) AND (IsArray (right) OR IsUnbounded (right))
    THEN
-      IF IsGenericSystemType (GetSType (left)) OR IsGenericSystemType (GetSType (right))
+      IF IsGenericSystemType (getSType (left)) OR IsGenericSystemType (getSType (right))
       THEN
          RETURN true
       ELSE
@@ -296,9 +296,12 @@ BEGIN
       THEN
          (* need to create top level error message first.  *)
          tinfo^.error := NewError (tinfo^.token) ;
+         (* The parameters to MetaString4 in buildError4 must match the order
+            of paramters passed to ParameterTypeCompatible.  *)
          s := MetaString4 (tinfo^.format,
+                           tinfo^.procedure,
                            tinfo^.left, tinfo^.right,
-                           tinfo^.procedure, tinfo^.nth) ;
+                           tinfo^.nth) ;
          ErrorString (tinfo^.error, s)
       END ;
       (* and also generate a sub error containing detail.  *)
@@ -396,7 +399,7 @@ BEGIN
                    THEN
                       IF IsVar (right) OR IsConst (right)
                       THEN
-                         right := GetSType (right)
+                         right := getSType (right)
                       END
                    END ;
                    IF tinfo^.strict
@@ -1179,13 +1182,31 @@ END checkRecordEquivalence ;
 
 PROCEDURE getType (sym: CARDINAL) : CARDINAL ;
 BEGIN
-   IF IsTyped (sym)
+   IF (sym # NulSym) AND IsProcedure (sym)
+   THEN
+      RETURN Address
+   ELSIF IsTyped (sym)
    THEN
       RETURN GetDType (sym)
    ELSE
       RETURN sym
    END
 END getType ;
+
+
+(*
+   getSType -
+*)
+
+PROCEDURE getSType (sym: CARDINAL) : CARDINAL ;
+BEGIN
+   IF IsProcedure (sym)
+   THEN
+      RETURN Address
+   ELSE
+      RETURN GetSType (sym)
+   END
+END getSType ;
 
 
 (*
@@ -1459,8 +1480,8 @@ VAR
    tinfo           : tInfo ;
 BEGIN
    tinfo := newtInfo () ;
-   formalT := GetSType (formal) ;
-   actualT := GetSType (actual) ;
+   formalT := getSType (formal) ;
+   actualT := getSType (actual) ;
    tinfo^.format := collapseString (format) ;
    tinfo^.token := token ;
    tinfo^.kind := parameter ;
@@ -1545,11 +1566,11 @@ BEGIN
       THEN
          IF IsConst (right) OR IsVar (right)
          THEN
-            right := GetSType (right)
+            right := getSType (right)
          END ;
          IF IsSet (right)
          THEN
-            right := GetSType (right)
+            right := getSType (right)
          END
       END
    END ;

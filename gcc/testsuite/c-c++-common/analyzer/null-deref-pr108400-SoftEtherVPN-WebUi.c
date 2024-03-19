@@ -1,4 +1,6 @@
 /* Reduced from SoftEtherVPN's src/Cedar/WebUI.c.   */
+/* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
+
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 typedef int (COMPARE)(void *p1, void *p2);
 typedef unsigned int UINT;

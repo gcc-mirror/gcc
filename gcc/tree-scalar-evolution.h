@@ -43,6 +43,8 @@ extern bool simple_iv (class loop *, class loop *, tree, struct affine_iv *,
 		       bool);
 extern bool iv_can_overflow_p (class loop *, tree, tree, tree);
 extern tree compute_overall_effect_of_inner_loop (class loop *, tree);
+extern void record_nonwrapping_chrec (tree);
+extern bool nonwrapping_chrec_p (tree);
 
 /* Returns the basic block preceding LOOP, or the CFG entry block when
    the loop is function's body.  */

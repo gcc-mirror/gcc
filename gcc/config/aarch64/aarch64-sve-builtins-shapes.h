@@ -126,10 +126,12 @@ namespace aarch64_sve
     extern const function_shape *const dot_za_slice_lane;
     extern const function_shape *const dot_za_slice_uint_lane;
     extern const function_shape *const dupq;
+    extern const function_shape *const dup_neonq;
     extern const function_shape *const ext;
     extern const function_shape *const extract_pred;
     extern const function_shape *const fold_left;
     extern const function_shape *const get;
+    extern const function_shape *const get_neonq;
     extern const function_shape *const inc_dec;
     extern const function_shape *const inc_dec_pat;
     extern const function_shape *const inc_dec_pred;
@@ -170,6 +172,7 @@ namespace aarch64_sve
     extern const function_shape *const select_pred;
     extern const function_shape *const set;
     extern const function_shape *const setffr;
+    extern const function_shape *const set_neonq;
     extern const function_shape *const shift_left_imm_long;
     extern const function_shape *const shift_left_imm_to_uint;
     extern const function_shape *const shift_right_imm;

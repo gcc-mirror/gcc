@@ -66,6 +66,7 @@ extern bool x86_extended_QIreg_mentioned_p (rtx_insn *);
 extern bool x86_extended_reg_mentioned_p (rtx);
 extern bool x86_extended_rex2reg_mentioned_p (rtx);
 extern bool x86_evex_reg_mentioned_p (rtx [], int);
+extern bool x86_poff_operand_p (rtx);
 extern bool x86_maybe_negate_const_int (rtx *, machine_mode);
 extern machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 
@@ -108,14 +109,14 @@ extern void ix86_expand_move (machine_mode, rtx[]);
 extern void ix86_expand_vector_move (machine_mode, rtx[]);
 extern void ix86_expand_vector_move_misalign (machine_mode, rtx[]);
 extern rtx ix86_fixup_binary_operands (enum rtx_code,
-				       machine_mode, rtx[]);
+				       machine_mode, rtx[], bool = false);
 extern void ix86_fixup_binary_operands_no_copy (enum rtx_code,
-						machine_mode, rtx[]);
+						machine_mode, rtx[], bool = false);
 extern void ix86_expand_binary_operator (enum rtx_code,
-					 machine_mode, rtx[]);
+					 machine_mode, rtx[], bool = false);
 extern void ix86_expand_vector_logical_operator (enum rtx_code,
 						 machine_mode, rtx[]);
-extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[3]);
+extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[3], bool = false);
 extern bool ix86_avoid_lea_for_add (rtx_insn *, rtx[]);
 extern bool ix86_use_lea_for_mov (rtx_insn *, rtx[]);
 extern bool ix86_avoid_lea_for_addr (rtx_insn *, rtx[]);
@@ -126,7 +127,7 @@ extern bool ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high);
 extern bool ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn);
 extern bool ix86_agi_dependent (rtx_insn *set_insn, rtx_insn *use_insn);
 extern void ix86_expand_unary_operator (enum rtx_code, machine_mode,
-					rtx[]);
+					rtx[], bool = false);
 extern rtx ix86_build_const_vector (machine_mode, bool, rtx);
 extern rtx ix86_build_signbit_mask (machine_mode, bool, bool);
 extern HOST_WIDE_INT ix86_convert_const_vector_to_integer (rtx,
@@ -146,7 +147,8 @@ extern void ix86_split_fp_absneg_operator (enum rtx_code, machine_mode,
 					   rtx[]);
 extern void ix86_expand_copysign (rtx []);
 extern void ix86_expand_xorsign (rtx []);
-extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[2]);
+extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[2],
+				    bool = false);
 extern bool ix86_match_ccmode (rtx, machine_mode);
 extern bool ix86_match_ptest_ccmode (rtx);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);
@@ -172,8 +174,10 @@ extern void x86_initialize_trampoline (rtx, rtx, rtx);
 extern rtx ix86_zero_extend_to_Pmode (rtx);
 extern void ix86_split_long_move (rtx[]);
 extern void ix86_split_ashl (rtx *, rtx, machine_mode);
+extern void ix86_split_ashl_ndd (rtx *, rtx);
 extern void ix86_split_ashr (rtx *, rtx, machine_mode);
 extern void ix86_split_lshr (rtx *, rtx, machine_mode);
+extern void ix86_split_rshift_ndd (enum rtx_code, rtx *, rtx);
 extern void ix86_expand_v1ti_shift (enum rtx_code, rtx[]);
 extern void ix86_expand_v1ti_rotate (enum rtx_code, rtx[]);
 extern void ix86_expand_v1ti_ashiftrt (rtx[]);

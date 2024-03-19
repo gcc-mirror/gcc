@@ -1,5 +1,6 @@
 --  { dg-do compile }
 --  { dg-options "-fdump-ipa-strub" }
+--  { dg-require-effective-target strub }
 
 -- Check that at-calls dispatching calls are transformed.
 

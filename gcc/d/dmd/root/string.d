@@ -69,7 +69,7 @@ The return value of `T`
 auto toCStringThen(alias dg)(const(char)[] src) nothrow
 {
     import dmd.root.rmem : mem;
-    import dmd.common.string : SmallBuffer;
+    import dmd.common.smallbuffer : SmallBuffer;
 
     const len = src.length + 1;
     char[512] small = void;

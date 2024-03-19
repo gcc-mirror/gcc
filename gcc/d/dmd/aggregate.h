@@ -113,7 +113,6 @@ public:
     Sizeok sizeok;              // set when structsize contains valid data
 
     virtual Scope *newScope(Scope *sc);
-    void setScope(Scope *sc) override final;
     virtual void finalizeSize() = 0;
     uinteger_t size(const Loc &loc) override final;
     bool fill(const Loc &loc, Expressions &elements, bool ctorinit);

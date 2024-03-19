@@ -1160,14 +1160,12 @@ ftms = {
   // TODO: #define __cpp_lib_format_ranges 202207L
   name = format;
   values = {
-    v = 202106;
+    v = 202110;
     cxxmin = 20;
     hosted = yes;
   };
 };
 
-// #undef __glibcxx_chrono
-// #define __glibcxx_chrono 201907L
 // FIXME: #define __glibcxx_execution 201902L
 
 ftms = {

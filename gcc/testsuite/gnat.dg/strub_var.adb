@@ -1,5 +1,6 @@
 --  { dg-do compile }
 --  { dg-options "-fstrub=strict -fdump-ipa-strubm" }
+--  { dg-require-effective-target strub }
 
 -- We don't read from the automatic variable, but being an automatic
 --  variable, its presence should be enough for the procedure to get

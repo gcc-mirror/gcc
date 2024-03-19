@@ -46,7 +46,6 @@ public:
     bool inuse(bool v);
 
     EnumDeclaration *syntaxCopy(Dsymbol *s) override;
-    void setScope(Scope *sc) override;
     bool oneMember(Dsymbol **ps, Identifier *ident) override;
     Type *getType() override;
     const char *kind() const override;

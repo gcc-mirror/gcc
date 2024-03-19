@@ -13,7 +13,7 @@ foo (size_t *__restrict a, size_t *__restrict b, int n)
 
 /* { dg-final { scan-assembler {e64,m8} } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
+/* { dg-final { scan-tree-dump "Maximum lmul = 8" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 4" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 2" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 1" "vect" } } */

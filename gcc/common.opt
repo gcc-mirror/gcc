@@ -1020,6 +1020,7 @@ Driver Undocumented
 ;
 ; 19: Emits ABI tags if needed in structured binding mangled names.
 ;     Ignores cv-quals on [[no_unique_object]] members.
+;     Mangles constraints on function templates.
 ;     Default in G++ 14.
 ;
 ; Additional positive integers will be assigned as new versions of
@@ -1390,6 +1391,10 @@ Enum(diagnostic_color_rule) String(always) Value(DIAGNOSTICS_COLOR_YES)
 
 EnumValue
 Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
+
+fdiagnostics-json-formatting
+Common Var(flag_diagnostics_json_formatting) Init(1)
+Enable formatting of JSON output.
 
 fdiagnostics-urls=
 Driver Common Joined RejectNegative Var(flag_diagnostics_show_urls) Enum(diagnostic_url_rule) Init(DIAGNOSTICS_URL_AUTO)

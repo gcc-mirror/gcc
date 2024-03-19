@@ -1981,4 +1981,74 @@
   "TARGET_STREAMING_SME2
    && !(<LUTI_BITS> == 4 && <vector_count> == 4 && <elem_bits> == 8)"
   "luti<LUTI_BITS>\t%0, zt0, %1[%2]"
+  [(set_attr "stride_type" "luti_consecutive")]
+)
+
+(define_insn "@aarch64_sme_lut<LUTI_BITS><mode>_strided2"
+  [(set (match_operand:SVE_FULL_BHS 0 "aarch64_simd_register" "=Uwd")
+	(unspec:SVE_FULL_BHS
+	  [(reg:V8DI ZT0_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:VNx16QI 2 "register_operand" "w")
+	   (match_operand:DI 3 "const_int_operand")
+	   (const_int LUTI_BITS)
+	   (const_int 0)]
+	  UNSPEC_SME_LUTI))
+   (set (match_operand:SVE_FULL_BHS 1 "aarch64_simd_register" "=w")
+	(unspec:SVE_FULL_BHS
+	  [(reg:V8DI ZT0_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_dup 2)
+	   (match_dup 3)
+	   (const_int LUTI_BITS)
+	   (const_int 1)]
+	  UNSPEC_SME_LUTI))]
+  "TARGET_STREAMING_SME2
+   && aarch64_strided_registers_p (operands, 2, 8)"
+  "luti<LUTI_BITS>\t{%0.<Vetype>, %1.<Vetype>}, zt0, %2[%3]"
+  [(set_attr "stride_type" "luti_strided")]
+)
+
+(define_insn "@aarch64_sme_lut<LUTI_BITS><mode>_strided4"
+  [(set (match_operand:SVE_FULL_BHS 0 "aarch64_simd_register" "=Uwt")
+	(unspec:SVE_FULL_BHS
+	  [(reg:V8DI ZT0_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:VNx16QI 4 "register_operand" "w")
+	   (match_operand:DI 5 "const_int_operand")
+	   (const_int LUTI_BITS)
+	   (const_int 0)]
+	  UNSPEC_SME_LUTI))
+   (set (match_operand:SVE_FULL_BHS 1 "aarch64_simd_register" "=w")
+	(unspec:SVE_FULL_BHS
+	  [(reg:V8DI ZT0_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_dup 4)
+	   (match_dup 5)
+	   (const_int LUTI_BITS)
+	   (const_int 1)]
+	  UNSPEC_SME_LUTI))
+   (set (match_operand:SVE_FULL_BHS 2 "aarch64_simd_register" "=w")
+	(unspec:SVE_FULL_BHS
+	  [(reg:V8DI ZT0_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_dup 4)
+	   (match_dup 5)
+	   (const_int LUTI_BITS)
+	   (const_int 2)]
+	  UNSPEC_SME_LUTI))
+   (set (match_operand:SVE_FULL_BHS 3 "aarch64_simd_register" "=w")
+	(unspec:SVE_FULL_BHS
+	  [(reg:V8DI ZT0_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_dup 4)
+	   (match_dup 5)
+	   (const_int LUTI_BITS)
+	   (const_int 3)]
+	  UNSPEC_SME_LUTI))]
+  "TARGET_STREAMING_SME2
+   && !(<LUTI_BITS> == 4 && <elem_bits> == 8)
+   && aarch64_strided_registers_p (operands, 4, 4)"
+  "luti<LUTI_BITS>\t{%0.<Vetype>, %1.<Vetype>, %2.<Vetype>, %3.<Vetype>}, zt0, %4[%5]"
+  [(set_attr "stride_type" "luti_strided")]
 )

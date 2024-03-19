@@ -1269,6 +1269,7 @@ reverse_splay_compare (reverse_splay_tree_key x, reverse_splay_tree_key y)
 }
 
 #define splay_tree_prefix reverse
+#define splay_tree_static
 #include "splay-tree.h"
 
 /* Indirect target function splay-tree handling.  */

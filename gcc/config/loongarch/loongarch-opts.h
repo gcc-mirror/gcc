@@ -21,19 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LOONGARCH_OPTS_H
 #define LOONGARCH_OPTS_H
 
+/* The loongarch-def.h file is a C++ header and it shouldn't be used by
+   target libraries.  Exclude it and everything using the C++ structs
+   (struct loongarch_target and gcc_options) from target libraries.  */
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 #include "loongarch-def.h"
 
 /* Target configuration */
 extern struct loongarch_target la_target;
-
-/* Flag status */
-struct loongarch_flags {
-    int flt; const char* flt_str;
-#define SX_FLAG_TYPE(x) ((x) < 0 ? -(x) : (x))
-    int sx[2];
-};
-
-#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 
 /* Initialize loongarch_target from separate option variables.  */
 void
@@ -56,6 +51,12 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 				 struct gcc_options *opts_set);
 #endif
 
+/* Flag status */
+struct loongarch_flags {
+    int flt; const char* flt_str;
+#define SX_FLAG_TYPE(x) ((x) < 0 ? -(x) : (x))
+    int sx[2];
+};
 
 /* Macros for common conditional expressions used in loongarch.{c,h,md} */
 #define TARGET_CMODEL_NORMAL	    (la_target.cmodel == CMODEL_NORMAL)
@@ -76,8 +77,7 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 #define TARGET_DOUBLE_FLOAT	  (la_target.isa.fpu == ISA_EXT_FPU64)
 #define TARGET_DOUBLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64D)
 
-#define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64V100 \
-				   || la_target.isa.base == ISA_BASE_LA64V110)
+#define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64V100)
 #define TARGET_ABI_LP64		  (la_target.abi.base == ABI_BASE_LP64D	\
 				   || la_target.abi.base == ABI_BASE_LP64F \
 				   || la_target.abi.base == ABI_BASE_LP64S)
@@ -89,7 +89,6 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 /* TARGET_ macros for use in *.md template conditionals */
 #define TARGET_uARCH_LA464	  (la_target.cpu_tune == CPU_LA464)
 #define TARGET_uARCH_LA664	  (la_target.cpu_tune == CPU_LA664)
-#define ISA_BASE_IS_LA64V110	  (la_target.isa.base == ISA_BASE_LA64V110)
 
 /* Note: optimize_size may vary across functions,
    while -m[no]-memcpy imposes a global constraint.  */

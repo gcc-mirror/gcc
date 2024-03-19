@@ -5387,10 +5387,10 @@ has_nondefault_case_for_value_p (const gswitch *switch_stmt, tree int_cst)
    has nondefault cases handling all values in the enum.  */
 
 static bool
-has_nondefault_cases_for_all_enum_values_p (const gswitch *switch_stmt)
+has_nondefault_cases_for_all_enum_values_p (const gswitch *switch_stmt,
+					    tree type)
 {
   gcc_assert (switch_stmt);
-  tree type = TREE_TYPE (gimple_switch_index (switch_stmt));
   gcc_assert (TREE_CODE (type) == ENUMERAL_TYPE);
 
   for (tree enum_val_iter = TYPE_VALUES (type);
@@ -5426,6 +5426,23 @@ apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 {
   tree index  = gimple_switch_index (switch_stmt);
   const svalue *index_sval = get_rvalue (index, ctxt);
+  bool check_index_type = true;
+
+  /* With -fshort-enum, there may be a type cast.  */
+  if (ctxt && index_sval->get_kind () == SK_UNARYOP
+      && TREE_CODE (index_sval->get_type ()) == INTEGER_TYPE)
+    {
+      const unaryop_svalue *unaryop = as_a <const unaryop_svalue *> (index_sval);
+      if (unaryop->get_op () == NOP_EXPR
+	  && is_a <const initial_svalue *> (unaryop->get_arg ()))
+	if (const initial_svalue *initvalop = (as_a <const initial_svalue *>
+					       (unaryop->get_arg ())))
+	  if (TREE_CODE (initvalop->get_type ()) == ENUMERAL_TYPE)
+	    {
+	      index_sval = initvalop;
+	      check_index_type = false;
+	    }
+    }
 
   /* If we're switching based on an enum type, assume that the user is only
      working with values from the enum.  Hence if this is an
@@ -5437,12 +5454,14 @@ apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
       ctxt
       /* Must be an enum value.  */
       && index_sval->get_type ()
-      && TREE_CODE (TREE_TYPE (index)) == ENUMERAL_TYPE
+      && (!check_index_type
+	  || TREE_CODE (TREE_TYPE (index)) == ENUMERAL_TYPE)
       && TREE_CODE (index_sval->get_type ()) == ENUMERAL_TYPE
       /* If we have a constant, then we can check it directly.  */
       && index_sval->get_kind () != SK_CONSTANT
       && edge.implicitly_created_default_p ()
-      && has_nondefault_cases_for_all_enum_values_p (switch_stmt)
+      && has_nondefault_cases_for_all_enum_values_p (switch_stmt,
+						     index_sval->get_type ())
       /* Don't do this if there's a chance that the index is
 	 attacker-controlled.  */
       && !ctxt->possibly_tainted_p (index_sval))
@@ -6557,22 +6576,33 @@ private:
 static bool
 contains_uninit_p (const svalue *sval)
 {
-  struct uninit_finder : public visitor
-  {
-  public:
-    uninit_finder () : m_found_uninit (false) {}
-    void visit_poisoned_svalue (const poisoned_svalue *sval)
+  switch (sval->get_kind ())
     {
-      if (sval->get_poison_kind () == POISON_KIND_UNINIT)
-	m_found_uninit = true;
+    default:
+      return false;
+    case SK_POISONED:
+      {
+	const poisoned_svalue *psval
+	  = as_a <const poisoned_svalue *> (sval);
+	return psval->get_poison_kind () == POISON_KIND_UNINIT;
+      }
+    case SK_COMPOUND:
+      {
+	const compound_svalue *compound_sval
+	  = as_a <const compound_svalue *> (sval);
+
+	for (auto iter : *compound_sval)
+	  {
+	    const svalue *sval = iter.second;
+	    if (const poisoned_svalue *psval
+		= sval->dyn_cast_poisoned_svalue ())
+	      if (psval->get_poison_kind () == POISON_KIND_UNINIT)
+		return true;
+	  }
+
+	return false;
+      }
     }
-    bool m_found_uninit;
-  };
-
-  uninit_finder v;
-  sval->accept (&v);
-
-  return v.m_found_uninit;
 }
 
 /* Function for use by plugins when simulating writing data through a

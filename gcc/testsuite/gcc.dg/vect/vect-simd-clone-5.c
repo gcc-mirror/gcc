@@ -10,7 +10,11 @@
 
 int d[N], e[N];
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(2) notinbranch uniform(b) linear(c:3)
+#else
 #pragma omp declare simd simdlen(4) notinbranch uniform(b) linear(c:3)
+#endif
 __attribute__((noinline)) long long int
 foo (int a, int b, int c)
 {

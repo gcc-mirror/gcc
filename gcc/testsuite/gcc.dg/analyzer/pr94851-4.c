@@ -1,4 +1,4 @@
-/* { dg-additional-options "-O2" } */
+/* { dg-additional-options "-O2 -Wno-analyzer-symbol-too-complex" } */
 
 #include <stdlib.h>
 

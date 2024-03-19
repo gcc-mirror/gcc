@@ -3,7 +3,7 @@
    conjured_svalues whilst handling a long chain of external
    function calls.  */
 
-/* { dg-additional-options "-Wno-implicit-function-declaration -Wno-int-conversion -Wno-analyzer-too-complex" } */
+/* { dg-additional-options "-Wno-implicit-function-declaration -Wno-int-conversion -Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
 
 #define NULL ((void *)0)
 typedef unsigned char uint8_t;

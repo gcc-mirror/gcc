@@ -29,7 +29,7 @@ IMPLEMENTATION MODULE M2Dependent ;
 
 FROM libc IMPORT abort, exit, write, getenv, printf, snprintf, strncpy ;
 FROM ASCII IMPORT nul, nl ;
-FROM SYSTEM IMPORT ADR, SIZE ;
+FROM SYSTEM IMPORT ADR ;
 FROM Storage IMPORT ALLOCATE ;
 FROM StrLib IMPORT StrCopy, StrLen, StrEqual ;
 

@@ -786,7 +786,13 @@ add_partitioned_vars_to_ptset (struct pt_solution *pt,
 /* Update points-to sets based on partition info, so we can use them on RTL.
    The bitmaps representing stack partitions will be saved until expand,
    where partitioned decls used as bases in memory expressions will be
-   rewritten.  */
+   rewritten.
+
+   It is not necessary to update TBAA info on accesses to the coalesced
+   storage since our memory model doesn't allow TBAA to be used for
+   WAW or WAR dependences.  For RAW when the write is to an old object
+   the new object would not have been initialized at the point of the
+   read, invoking undefined behavior.  */
 
 static void
 update_alias_info_with_stack_vars (void)

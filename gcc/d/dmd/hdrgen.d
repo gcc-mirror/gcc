@@ -1968,6 +1968,10 @@ private void visitVarDecl(VarDeclaration v, bool anywritten, ref OutBuffer buf, 
             v._init.initializerToBuffer(buf, &hgs);
     }
 
+    const commentIt = hgs.importcHdr && isSpecialCName(v.ident);
+    if (commentIt)
+        buf.writestring("/+");
+
     if (anywritten)
     {
         buf.writestring(", ");
@@ -2000,8 +2004,31 @@ private void visitVarDecl(VarDeclaration v, bool anywritten, ref OutBuffer buf, 
         buf.writestring(" = ");
         vinit(v);
     }
+    if (commentIt)
+        buf.writestring("+/");
 }
 
+/*************************************
+ * The names __DATE__, __TIME__,__EOF__, __VENDOR__, __TIMESTAMP__, __VERSION__
+ * are special to the D lexer and cannot be used as D source variable names.
+ * Params:
+ *      id = name to check
+ * Returns:
+ *      true if special C name
+ */
+private bool isSpecialCName(Identifier id)
+{
+    auto s = id.toString();
+    if (s.length >= 7 && s[0] == '_' && s[1] == '_' &&
+        (id == Id.DATE ||
+         id == Id.TIME ||
+         id == Id.EOFX ||
+         id == Id.VENDOR ||
+         id == Id.TIMESTAMP ||
+         id == Id.VERSIONX))
+        return true;
+    return false;
+}
 
 /*********************************************
  * Print expression to buffer.

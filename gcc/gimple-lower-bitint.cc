@@ -405,7 +405,7 @@ struct bitint_large_huge
 			     profile_probability, profile_probability,
 			     edge &, edge &, edge &);
   tree handle_operand (tree, tree);
-  tree prepare_data_in_out (tree, tree, tree *);
+  tree prepare_data_in_out (tree, tree, tree *, tree = NULL_TREE);
   tree add_cast (tree, tree);
   tree handle_plus_minus (tree_code, tree, tree, tree);
   tree handle_lshift (tree, tree, tree);
@@ -806,7 +806,8 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 	  && m_after_stmt
 	  && bitmap_bit_p (m_single_use_names, SSA_NAME_VERSION (op)))
 	{
-	  tree clobber = build_clobber (TREE_TYPE (m_vars[p]), CLOBBER_EOL);
+	  tree clobber = build_clobber (TREE_TYPE (m_vars[p]),
+					CLOBBER_STORAGE_END);
 	  g = gimple_build_assign (m_vars[p], clobber);
 	  gimple_stmt_iterator gsi = gsi_for_stmt (m_after_stmt);
 	  gsi_insert_after (&gsi, g, GSI_SAME_STMT);
@@ -872,11 +873,8 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 	      gcc_assert (m_first);
 	      m_data.pop ();
 	      m_data.pop ();
-	      prepare_data_in_out (fold_convert (m_limb_type, op), idx, &out);
-	      g = gimple_build_assign (m_data[m_data_cnt + 1],
-				       build_int_cst (m_limb_type, ext));
-	      insert_before (g);
-	      m_data[m_data_cnt + 1] = gimple_assign_rhs1 (g);
+	      prepare_data_in_out (fold_convert (m_limb_type, op), idx, &out,
+				   build_int_cst (m_limb_type, ext));
 	    }
 	  else if (min_prec > prec - rem - 2 * limb_prec)
 	    {
@@ -1008,10 +1006,13 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 
 /* Helper method, add a PHI node with VAL from preheader edge if
    inside of a loop and m_first.  Keep state in a pair of m_data
-   elements.  */
+   elements.  If VAL_OUT is non-NULL, use that as PHI argument from
+   the latch edge, otherwise create a new SSA_NAME for it and let
+   caller initialize it.  */
 
 tree
-bitint_large_huge::prepare_data_in_out (tree val, tree idx, tree *data_out)
+bitint_large_huge::prepare_data_in_out (tree val, tree idx, tree *data_out,
+					tree val_out)
 {
   if (!m_first)
     {
@@ -1034,7 +1035,7 @@ bitint_large_huge::prepare_data_in_out (tree val, tree idx, tree *data_out)
   if (e1 == e2)
     e2 = EDGE_PRED (m_bb, 1);
   add_phi_arg (phi, val, e1, UNKNOWN_LOCATION);
-  tree out = make_ssa_name (TREE_TYPE (val));
+  tree out = val_out ? val_out : make_ssa_name (TREE_TYPE (val));
   add_phi_arg (phi, out, e2, UNKNOWN_LOCATION);
   m_data.safe_push (in);
   m_data.safe_push (out);
@@ -1541,14 +1542,10 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	  if (m_first)
 	    {
 	      tree out1, out2;
-	      prepare_data_in_out (r1, idx, &out1);
-	      g = gimple_build_assign (m_data[m_data_cnt + 1], rext);
-	      insert_before (g);
+	      prepare_data_in_out (r1, idx, &out1, rext);
 	      if (TYPE_PRECISION (rhs_type) > limb_prec)
 		{
-		  prepare_data_in_out (r2, idx, &out2);
-		  g = gimple_build_assign (m_data[m_data_cnt + 3], rext);
-		  insert_before (g);
+		  prepare_data_in_out (r2, idx, &out2, rext);
 		  m_data.pop ();
 		  t = m_data.pop ();
 		  m_data[m_data_cnt + 1] = t;
@@ -2063,7 +2060,7 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
       tree ret = build_fold_addr_expr (var);
       if (!stmt_ends_bb_p (gsi_stmt (m_gsi)))
 	{
-	  tree clobber = build_clobber (atype, CLOBBER_EOL);
+	  tree clobber = build_clobber (atype, CLOBBER_STORAGE_END);
 	  g = gimple_build_assign (var, clobber);
 	  gsi_insert_after (&m_gsi, g, GSI_SAME_STMT);
 	}
@@ -2100,7 +2097,8 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	      ret = build_fold_addr_expr (var);
 	      if (!stmt_ends_bb_p (gsi_stmt (m_gsi)))
 		{
-		  tree clobber = build_clobber (m_limb_type, CLOBBER_EOL);
+		  tree clobber = build_clobber (m_limb_type,
+						CLOBBER_STORAGE_END);
 		  g = gimple_build_assign (var, clobber);
 		  gsi_insert_after (&m_gsi, g, GSI_SAME_STMT);
 		}
@@ -3707,7 +3705,7 @@ bitint_large_huge::finish_arith_overflow (tree var, tree obj, tree type,
     }
   if (var)
     {
-      tree clobber = build_clobber (TREE_TYPE (var), CLOBBER_EOL);
+      tree clobber = build_clobber (TREE_TYPE (var), CLOBBER_STORAGE_END);
       g = gimple_build_assign (var, clobber);
       gsi_insert_after (&m_gsi, g, GSI_SAME_STMT);
     }
@@ -5989,10 +5987,11 @@ gimple_lower_bitint (void)
 		    {
 		      if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
 			  || (bitint_precision_kind (TREE_TYPE (rhs1))
-			      < bitint_prec_large)
-			  || (TYPE_PRECISION (TREE_TYPE (rhs1))
-			      >= TYPE_PRECISION (TREE_TYPE (s)))
-			  || mergeable_op (SSA_NAME_DEF_STMT (s)))
+			      < bitint_prec_large))
+			continue;
+		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
+			   >= TYPE_PRECISION (TREE_TYPE (s)))
+			  && mergeable_op (use_stmt))
 			continue;
 		      /* Prevent merging a widening non-mergeable cast
 			 on result of some narrower mergeable op
@@ -6011,7 +6010,9 @@ gimple_lower_bitint (void)
 			  || !mergeable_op (SSA_NAME_DEF_STMT (rhs1))
 			  || gimple_store_p (use_stmt))
 			continue;
-		      if (gimple_assign_cast_p (SSA_NAME_DEF_STMT (rhs1)))
+		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
+			   < TYPE_PRECISION (TREE_TYPE (s)))
+			  && gimple_assign_cast_p (SSA_NAME_DEF_STMT (rhs1)))
 			{
 			  /* Another exception is if the widening cast is
 			     from mergeable same precision cast from something

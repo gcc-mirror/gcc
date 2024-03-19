@@ -49,4 +49,5 @@ main (void)
 
 /* { dg-final { scan-tree-dump {#pragma omp target num_teams.* map\(tofrom:a \[len: [0-9]+\]\[implicit\]\)} "gimple" } } */
 
-/* { dg-final { scan-tree-dump {#pragma omp target num_teams.* map\(tofrom:a \[len: [0-9]+\]\[implicit\]\) map\(tofrom:\*_[0-9]+ \[len: [0-9]+\]\) map\(attach:a\.ptr \[bias: 0\]\)} "gimple" } } */
+/* { dg-final { scan-tree-dump {#pragma omp target num_teams.* map\(struct:a \[len: 1\]\) map\(alloc:a\.ptr \[len: [0-9]+\]\) map\(tofrom:\*_[0-9]+ \[len: [0-9]+\]\) map\(attach:a\.ptr \[bias: 0\]\)} "gimple" } } */
+/* { dg-final { scan-tree-dump-not {map\(struct:a \[len: 1\]\) map\(alloc:a\.ptr \[len: 0\]\)} "gimple" } } */

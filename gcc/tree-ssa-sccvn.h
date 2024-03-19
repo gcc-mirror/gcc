@@ -298,6 +298,7 @@ tree vn_nary_simplify (vn_nary_op_t);
 unsigned do_rpo_vn (function *, edge, bitmap,
 		    /* iterate */ bool = false,
 		    /* eliminate */ bool = true,
+		    /* skip_entry_phis */ bool = false,
 		    vn_lookup_kind = VN_WALKREWRITE);
 
 /* Private interface for PRE.  */

@@ -433,3 +433,8 @@
 
 (define_register_constraint  "jc"
  "TARGET_APX_EGPR && !TARGET_AVX ? GENERAL_GPR16 : GENERAL_REGS")
+
+(define_constraint  "je"
+  "@internal constant that do not allow any unspec global offsets"
+  (and (match_operand 0 "x86_64_immediate_operand")
+       (match_test "!x86_poff_operand_p (op)")))

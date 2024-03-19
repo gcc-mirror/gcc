@@ -56,11 +56,13 @@ public:
   }
 
 protected:
-  json_output_format (diagnostic_context &context)
+  json_output_format (diagnostic_context &context,
+		      bool formatted)
   : diagnostic_output_format (context),
     m_toplevel_array (new json::array ()),
     m_cur_group (nullptr),
-    m_cur_children_array (nullptr)
+    m_cur_children_array (nullptr),
+    m_formatted (formatted)
   {
   }
 
@@ -68,7 +70,7 @@ protected:
   void
   flush_to_file (FILE *outf)
   {
-    m_toplevel_array->dump (outf);
+    m_toplevel_array->dump (outf, m_formatted);
     fprintf (outf, "\n");
     delete m_toplevel_array;
     m_toplevel_array = nullptr;
@@ -84,6 +86,8 @@ private:
   /* The JSON array for the "children" array within the current diagnostic
      group.  */
   json::array *m_cur_children_array;
+
+  bool m_formatted;
 };
 
 /* Generate a JSON object for LOC.  */
@@ -301,8 +305,9 @@ json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
 class json_stderr_output_format : public json_output_format
 {
 public:
-  json_stderr_output_format (diagnostic_context &context)
-  : json_output_format (context)
+  json_stderr_output_format (diagnostic_context &context,
+			     bool formatted)
+    : json_output_format (context, formatted)
   {
   }
   ~json_stderr_output_format ()
@@ -315,8 +320,9 @@ class json_file_output_format : public json_output_format
 {
 public:
   json_file_output_format (diagnostic_context &context,
+			   bool formatted,
 			   const char *base_file_name)
-  : json_output_format (context),
+  : json_output_format (context, formatted),
     m_base_file_name (xstrdup (base_file_name))
   {
   }
@@ -367,10 +373,12 @@ diagnostic_output_format_init_json (diagnostic_context *context)
 /* Populate CONTEXT in preparation for JSON output to stderr.  */
 
 void
-diagnostic_output_format_init_json_stderr (diagnostic_context *context)
+diagnostic_output_format_init_json_stderr (diagnostic_context *context,
+					   bool formatted)
 {
   diagnostic_output_format_init_json (context);
-  context->set_output_format (new json_stderr_output_format (*context));
+  context->set_output_format (new json_stderr_output_format (*context,
+							     formatted));
 }
 
 /* Populate CONTEXT in preparation for JSON output to a file named
@@ -378,10 +386,12 @@ diagnostic_output_format_init_json_stderr (diagnostic_context *context)
 
 void
 diagnostic_output_format_init_json_file (diagnostic_context *context,
+					 bool formatted,
 					 const char *base_file_name)
 {
   diagnostic_output_format_init_json (context);
   context->set_output_format (new json_file_output_format (*context,
+							   formatted,
 							   base_file_name));
 }
 

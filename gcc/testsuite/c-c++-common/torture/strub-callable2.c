@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=strict" } */
+/* { dg-require-effective-target strub } */
 
 /* Check that impermissible (cross-strub-context) calls are reported.  */
 

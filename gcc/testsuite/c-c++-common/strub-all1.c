@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=all -fdump-ipa-strubm -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 /* h becomes STRUB_CALLABLE, rather than STRUB_INLINABLE, because of the
    strub-enabling -fstrub flag, and gets inlined before pass_ipa_strub.  */

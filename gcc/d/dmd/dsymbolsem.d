@@ -212,6 +212,39 @@ const(char)* getMessage(DeprecatedDeclaration dd)
     return dd.msgstr;
 }
 
+bool checkDeprecated(Dsymbol d, const ref Loc loc, Scope* sc)
+{
+    if (global.params.useDeprecated == DiagnosticReporting.off)
+        return false;
+    if (!d.isDeprecated())
+        return false;
+    // Don't complain if we're inside a deprecated symbol's scope
+    if (sc.isDeprecated())
+        return false;
+    // Don't complain if we're inside a template constraint
+    // https://issues.dlang.org/show_bug.cgi?id=21831
+    if (sc.flags & SCOPE.constraint)
+        return false;
+
+    const(char)* message = null;
+    for (Dsymbol p = d; p; p = p.parent)
+    {
+        message = p.depdecl ? p.depdecl.getMessage() : null;
+        if (message)
+            break;
+    }
+    if (message)
+        deprecation(loc, "%s `%s` is deprecated - %s", d.kind, d.toPrettyChars, message);
+    else
+        deprecation(loc, "%s `%s` is deprecated", d.kind, d.toPrettyChars);
+
+    if (auto ti = sc.parent ? sc.parent.isInstantiated() : null)
+        ti.printInstantiationTrace(Classification.deprecation);
+    else if (auto ti = sc.parent ? sc.parent.isTemplateInstance() : null)
+        ti.printInstantiationTrace(Classification.deprecation);
+
+    return true;
+}
 
 // Returns true if a contract can appear without a function body.
 package bool allowsContractWithoutBody(FuncDeclaration funcdecl)
@@ -7811,6 +7844,37 @@ extern(C++) Dsymbol search(Dsymbol d, const ref Loc loc, Identifier ident, int f
     return v.result;
 }
 
+Dsymbol search_correct(Dsymbol d, Identifier ident)
+{
+    /***************************************************
+     * Search for symbol with correct spelling.
+     */
+    Dsymbol symbol_search_fp(const(char)[] seed, out int cost)
+    {
+        /* If not in the lexer's string table, it certainly isn't in the symbol table.
+         * Doing this first is a lot faster.
+         */
+        if (!seed.length)
+            return null;
+        Identifier id = Identifier.lookup(seed);
+        if (!id)
+            return null;
+        cost = 0;   // all the same cost
+        Dsymbol s = d;
+        Module.clearCache();
+        return s.search(Loc.initial, id, IgnoreErrors);
+    }
+
+    if (global.gag)
+        return null; // don't do it for speculative compiles; too time consuming
+    // search for exact name first
+    if (auto s = d.search(Loc.initial, ident, IgnoreErrors))
+        return s;
+
+    import dmd.root.speller : speller;
+    return speller!symbol_search_fp(ident.toString());
+}
+
 private extern(C++) class SearchVisitor : Visitor
 {
     alias visit = Visitor.visit;
@@ -8405,5 +8469,155 @@ private extern(C++) class SearchVisitor : Visitor
         }
 
         return setResult(s);
+    }
+}
+/*************************************
+ * Set scope for future semantic analysis so we can
+ * deal better with forward references.
+ *
+ * Params:
+ *   d = dsymbol for which the scope is set
+ *   sc = scope that is used to set the value
+ */
+extern(C++) void setScope(Dsymbol d, Scope* sc)
+{
+    scope setScopeVisitor = new SetScopeVisitor(sc);
+    d.accept(setScopeVisitor);
+}
+
+private extern(C++) class SetScopeVisitor : Visitor
+{
+    alias visit = typeof(super).visit;
+    Scope* sc;
+
+    this(Scope* sc)
+    {
+        this.sc = sc;
+    }
+
+    override void visit(Dsymbol d)
+    {
+        //printf("Dsymbol::setScope() %p %s, %p stc = %llx\n", d, d.toChars(), sc, sc.stc);
+        if (!sc.nofree)
+            sc.setNoFree(); // may need it even after semantic() finishes
+        d._scope = sc;
+        if (sc.depdecl)
+            d.depdecl = sc.depdecl;
+        if (!d.userAttribDecl)
+            d.userAttribDecl = sc.userAttribDecl;
+    }
+
+    override void visit(Import i)
+    {
+        visit(cast(Dsymbol)i);
+        if (i.aliasdecls.length)
+        {
+            if (!i.mod)
+                i.importAll(sc);
+
+            sc = sc.push(i.mod);
+            sc.visibility = i.visibility;
+            foreach (ad; i.aliasdecls)
+                ad.setScope(sc);
+            sc = sc.pop();
+        }
+    }
+
+    override void visit(Nspace ns)
+    {
+        visit(cast(Dsymbol)ns);
+        if (ns.members)
+        {
+            assert(sc);
+            sc = sc.push(ns);
+            sc.linkage = LINK.cpp; // namespaces default to C++ linkage
+            sc.parent = ns;
+            ns.members.foreachDsymbol(s => s.setScope(sc));
+            sc.pop();
+        }
+    }
+
+    override void visit(EnumDeclaration ed)
+    {
+        if (ed.semanticRun > PASS.initial)
+            return;
+        visit(cast(Dsymbol)ed);
+    }
+
+    override void visit(AggregateDeclaration ad)
+    {
+        // Might need a scope to resolve forward references. The check for
+        // semanticRun prevents unnecessary setting of _scope during deferred
+        // setScope phases for aggregates which already finished semantic().
+        // See https://issues.dlang.org/show_bug.cgi?id=16607
+        if (ad.semanticRun < PASS.semanticdone)
+            visit(cast(Dsymbol)ad);
+    }
+
+    override void visit(AttribDeclaration atr)
+    {
+        Dsymbols* d = atr.include(sc);
+        //printf("\tAttribDeclaration::setScope '%s', d = %p\n",toChars(), d);
+        if (d)
+        {
+            Scope* sc2 = atr.newScope(sc);
+            d.foreachDsymbol( s => s.setScope(sc2) );
+            if (sc2 != sc)
+                sc2.pop();
+        }
+    }
+
+    override void visit(DeprecatedDeclaration dd)
+    {
+        //printf("DeprecatedDeclaration::setScope() %p\n", this);
+        if (dd.decl)
+            visit(cast(Dsymbol)dd); // for forward reference
+        visit(cast(AttribDeclaration)dd);
+    }
+
+    override void visit(CPPMangleDeclaration cppmd)
+    {
+        if (cppmd.decl)
+            visit(cast(Dsymbol)cppmd); // for forward reference
+        visit(cast(AttribDeclaration)cppmd);
+    }
+
+    override void visit(AnonDeclaration anond)
+    {
+        if (anond.decl)
+            visit(cast(Dsymbol)anond); // for forward reference
+        visit(cast(AttribDeclaration)anond);
+    }
+
+    override void visit(ConditionalDeclaration condd)
+    {
+        condd.include(sc).foreachDsymbol( s => s.setScope(sc) );
+    }
+
+    override void visit(StaticIfDeclaration sid)
+    {
+        // do not evaluate condition before semantic pass
+        // But do set the scope, in case we need it for forward referencing
+        visit(cast(Dsymbol)sid); // for forward reference
+    }
+
+    override void visit(StaticForeachDeclaration sfd)
+    {
+        // do not evaluate condition before semantic pass
+        // But do set the scope, in case we need it for forward referencing
+        visit(cast(Dsymbol)sfd); // for forward reference
+    }
+
+    override void visit(MixinDeclaration md)
+    {
+        visit(cast(Dsymbol)md);
+    }
+
+    override void visit(UserAttributeDeclaration uad)
+    {
+        //printf("UserAttributeDeclaration::setScope() %p\n", this);
+        if (uad.decl)
+            visit(cast(Dsymbol)uad);
+        visit(cast(AttribDeclaration)uad);
     }
 }

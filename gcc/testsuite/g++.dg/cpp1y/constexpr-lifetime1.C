@@ -10,4 +10,4 @@ constexpr const int& test() {
   auto local = S{};  // { dg-message "note: declared here" }
   return local.get();
 }
-constexpr int x = test();  // { dg-error "accessing object outside its lifetime" }
+constexpr int x = test();  // { dg-error "accessing .local. outside its lifetime" }

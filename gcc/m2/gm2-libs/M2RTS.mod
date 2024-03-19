@@ -31,7 +31,7 @@ FROM libc IMPORT abort, exit, write, getenv, printf, strlen ;
 (* FROM Builtins IMPORT strncmp, strcmp ;  not available during bootstrap.  *)
 FROM NumberIO IMPORT CardToStr ;
 FROM StrLib IMPORT StrCopy, StrLen, StrEqual ;
-FROM SYSTEM IMPORT ADDRESS, ADR ;
+FROM SYSTEM IMPORT ADR ;
 FROM ASCII IMPORT nl, nul ;
 FROM Storage IMPORT ALLOCATE ;
 

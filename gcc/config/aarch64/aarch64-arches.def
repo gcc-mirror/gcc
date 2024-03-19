@@ -39,10 +39,12 @@ AARCH64_ARCH("armv8.5-a",     generic_armv8_a,   V8_5A,     8,  (V8_4A, SB, SSBS
 AARCH64_ARCH("armv8.6-a",     generic_armv8_a,   V8_6A,     8,  (V8_5A, I8MM, BF16))
 AARCH64_ARCH("armv8.7-a",     generic_armv8_a,   V8_7A,     8,  (V8_6A, LS64))
 AARCH64_ARCH("armv8.8-a",     generic_armv8_a,   V8_8A,     8,  (V8_7A, MOPS))
+AARCH64_ARCH("armv8.9-a",     generic_armv8_a,   V8_9A,     8,  (V8_8A))
 AARCH64_ARCH("armv8-r",       generic_armv8_a,   V8R  ,     8,  (V8_4A))
 AARCH64_ARCH("armv9-a",       generic_armv9_a,   V9A  ,     9,  (V8_5A, SVE2))
 AARCH64_ARCH("armv9.1-a",     generic_armv9_a,   V9_1A,     9,  (V8_6A, V9A))
 AARCH64_ARCH("armv9.2-a",     generic_armv9_a,   V9_2A,     9,  (V8_7A, V9_1A))
 AARCH64_ARCH("armv9.3-a",     generic_armv9_a,   V9_3A,     9,  (V8_8A, V9_2A))
+AARCH64_ARCH("armv9.4-a",     generic_armv9_a,   V9_4A,     9,  (V8_9A, V9_3A))
 
 #undef AARCH64_ARCH

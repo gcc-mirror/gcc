@@ -1,3 +1,43 @@
+2023-12-11  Lipeng Zhu  <lipeng.zhu@intel.com>
+
+	* io/async.c (DEBUG_LINE): New macro.
+	* io/async.h (RWLOCK_DEBUG_ADD): New macro.
+	(CHECK_RDLOCK): New macro.
+	(CHECK_WRLOCK): New macro.
+	(TAIL_RWLOCK_DEBUG_QUEUE): New macro.
+	(IN_RWLOCK_DEBUG_QUEUE): New macro.
+	(RDLOCK): New macro.
+	(WRLOCK): New macro.
+	(RWUNLOCK): New macro.
+	(RD_TO_WRLOCK): New macro.
+	(INTERN_RDLOCK): New macro.
+	(INTERN_WRLOCK): New macro.
+	(INTERN_RWUNLOCK): New macro.
+	* io/io.h (struct gfc_unit): Change UNIT_LOCK to UNIT_RWLOCK in
+	a comment.
+	(unit_lock): Remove including associated internal_proto.
+	(unit_rwlock): New declarations including associated internal_proto.
+	(dec_waiting_unlocked): Use WRLOCK and RWUNLOCK on unit_rwlock
+	instead of __gthread_mutex_lock and __gthread_mutex_unlock on
+	unit_lock.
+	* io/transfer.c (st_read_done_worker): Use WRLOCK and RWUNLOCK on
+	unit_rwlock instead of LOCK and UNLOCK on unit_lock.
+	(st_write_done_worker): Likewise.
+	* io/unit.c: Change UNIT_LOCK to UNIT_RWLOCK in 'IO locking rules'
+	comment. Use unit_rwlock variable instead of unit_lock variable.
+	(get_gfc_unit_from_unit_root): New function.
+	(get_gfc_unit): Use RDLOCK, WRLOCK and RWUNLOCK on unit_rwlock
+	instead of LOCK and UNLOCK on unit_lock.
+	(close_unit_1): Use WRLOCK and RWUNLOCK on unit_rwlock instead of
+	LOCK and UNLOCK on unit_lock.
+	(close_units): Likewise.
+	(newunit_alloc): Use RWUNLOCK on unit_rwlock instead of UNLOCK on
+	unit_lock.
+	* io/unix.c (find_file): Use RDLOCK and RWUNLOCK on unit_rwlock
+	instead of LOCK and UNLOCK on unit_lock.
+	(flush_all_units): Use WRLOCK and RWUNLOCK on unit_rwlock instead
+	of LOCK and UNLOCK on unit_lock.
+
 2023-12-05  Florian Weimer  <fweimer@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

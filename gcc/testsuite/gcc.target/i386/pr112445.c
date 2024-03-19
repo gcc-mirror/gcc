@@ -1,4 +1,5 @@
 /* { dg-do compile { target int128 } } */
+/* { dg-require-effective-target dfp } */
 /* { dg-options "-O -march=cascadelake -fwrapv" } */
 
 typedef _Decimal64 d64;

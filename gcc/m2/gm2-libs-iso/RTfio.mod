@@ -26,11 +26,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE RTfio ;
 
-FROM IOLink IMPORT DeviceTablePtr ;
 FROM RTio IMPORT GetFile ;
 FROM errno IMPORT geterrno ;
 
-FROM FIO IMPORT File, ReadChar, UnReadChar, WriteChar, ReadNBytes, WriteNBytes, IsActive,
+FROM FIO IMPORT File, ReadChar, UnReadChar, WriteChar, ReadNBytes,
+                WriteNBytes, IsActive,
                 WriteLine, EOF, WasEOLN, IsNoError ;
 
 
@@ -97,7 +97,7 @@ END dorbytes ;
 
 
 (*
-   dowbytes - 
+   dowbytes -
 *)
 
 PROCEDURE dowbytes (g: GenDevIF; d: DeviceTablePtr;

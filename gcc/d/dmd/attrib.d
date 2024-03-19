@@ -123,19 +123,6 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
         return sc;
     }
 
-    override void setScope(Scope* sc)
-    {
-        Dsymbols* d = include(sc);
-        //printf("\tAttribDeclaration::setScope '%s', d = %p\n",toChars(), d);
-        if (d)
-        {
-            Scope* sc2 = newScope(sc);
-            d.foreachDsymbol( s => s.setScope(sc2) );
-            if (sc2 != sc)
-                sc2.pop();
-        }
-    }
-
     override void importAll(Scope* sc)
     {
         Dsymbols* d = include(sc);
@@ -338,14 +325,6 @@ extern (C++) final class DeprecatedDeclaration : StorageClassDeclaration
         return scx;
     }
 
-    override void setScope(Scope* sc)
-    {
-        //printf("DeprecatedDeclaration::setScope() %p\n", this);
-        if (decl)
-            Dsymbol.setScope(sc); // for forward reference
-        return AttribDeclaration.setScope(sc);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -431,13 +410,6 @@ extern (C++) final class CPPMangleDeclaration : AttribDeclaration
     {
         return createNewScope(sc, sc.stc, LINK.cpp, cppmangle, sc.visibility, sc.explicitVisibility,
             sc.aligndecl, sc.inlining);
-    }
-
-    override void setScope(Scope* sc)
-    {
-        if (decl)
-            Dsymbol.setScope(sc); // for forward reference
-        return AttribDeclaration.setScope(sc);
     }
 
     override const(char)* toChars() const
@@ -703,13 +675,6 @@ extern (C++) final class AnonDeclaration : AttribDeclaration
         return new AnonDeclaration(loc, isunion, Dsymbol.arraySyntaxCopy(decl));
     }
 
-    override void setScope(Scope* sc)
-    {
-        if (decl)
-            Dsymbol.setScope(sc);
-        return AttribDeclaration.setScope(sc);
-    }
-
     override void setFieldOffset(AggregateDeclaration ad, ref FieldState fieldState, bool isunion)
     {
         //printf("\tAnonDeclaration::setFieldOffset %s %p\n", isunion ? "union" : "struct", this);
@@ -913,11 +878,6 @@ extern (C++) class ConditionalDeclaration : AttribDeclaration
         }
     }
 
-    override void setScope(Scope* sc)
-    {
-        include(sc).foreachDsymbol( s => s.setScope(sc) );
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -981,13 +941,6 @@ extern (C++) final class StaticIfDeclaration : ConditionalDeclaration
         {
             return ConditionalDeclaration.include(sc);
         }
-    }
-
-    override void setScope(Scope* sc)
-    {
-        // do not evaluate condition before semantic pass
-        // But do set the scope, in case we need it for forward referencing
-        Dsymbol.setScope(sc);
     }
 
     override void importAll(Scope* sc)
@@ -1104,13 +1057,6 @@ extern (C++) final class StaticForeachDeclaration : AttribDeclaration
         // change this to give semantics to documentation comments on static foreach declarations
     }
 
-    override void setScope(Scope* sc)
-    {
-        // do not evaluate condition before semantic pass
-        // But do set the scope, in case we need it for forward referencing
-        Dsymbol.setScope(sc);
-    }
-
     override void importAll(Scope* sc)
     {
         // do not evaluate aggregate before semantic pass
@@ -1209,11 +1155,6 @@ extern (C++) final class MixinDeclaration : AttribDeclaration
         return new MixinDeclaration(loc, Expression.arraySyntaxCopy(exps));
     }
 
-    override void setScope(Scope* sc)
-    {
-        Dsymbol.setScope(sc);
-    }
-
     override const(char)* kind() const
     {
         return "mixin";
@@ -1262,14 +1203,6 @@ extern (C++) final class UserAttributeDeclaration : AttribDeclaration
             sc2.userAttribDecl = this;
         }
         return sc2;
-    }
-
-    override void setScope(Scope* sc)
-    {
-        //printf("UserAttributeDeclaration::setScope() %p\n", this);
-        if (decl)
-            Dsymbol.setScope(sc); // for forward reference of UDAs
-        return AttribDeclaration.setScope(sc);
     }
 
     extern (D) static Expressions* concat(Expressions* udas1, Expressions* udas2)

@@ -109,16 +109,17 @@ gcn_memspace_validate (omp_memspace_handle_t memspace, unsigned access)
 	  || access != omp_atv_all);
 }
 
-#define MEMSPACE_ALLOC(MEMSPACE, SIZE) \
-  gcn_memspace_alloc (MEMSPACE, SIZE)
-#define MEMSPACE_CALLOC(MEMSPACE, SIZE) \
-  gcn_memspace_calloc (MEMSPACE, SIZE)
-#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE) \
-  gcn_memspace_realloc (MEMSPACE, ADDR, OLDSIZE, SIZE)
-#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE) \
-  gcn_memspace_free (MEMSPACE, ADDR, SIZE)
-#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS) \
-  gcn_memspace_validate (MEMSPACE, ACCESS)
+#define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \
+  gcn_memspace_alloc (MEMSPACE, ((void)(PIN), (SIZE)))
+#define MEMSPACE_CALLOC(MEMSPACE, SIZE, PIN) \
+  gcn_memspace_calloc (MEMSPACE, ((void)(PIN), (SIZE)))
+#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE, OLDPIN, PIN) \
+  gcn_memspace_realloc (MEMSPACE, ADDR, OLDSIZE, \
+			((void)(PIN), (void)(OLDPIN), (SIZE)))
+#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE, PIN) \
+  gcn_memspace_free (MEMSPACE, ADDR, ((void)(PIN), (SIZE)))
+#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS, PIN) \
+  gcn_memspace_validate (MEMSPACE, ((void)(PIN), (ACCESS)))
 
 /* The default low-latency memspace implies omp_atv_all, which is incompatible
    with the LDS memory space.  */

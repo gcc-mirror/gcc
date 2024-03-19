@@ -123,16 +123,17 @@ nvptx_memspace_validate (omp_memspace_handle_t memspace, unsigned access)
 #endif
 }
 
-#define MEMSPACE_ALLOC(MEMSPACE, SIZE) \
-  nvptx_memspace_alloc (MEMSPACE, SIZE)
-#define MEMSPACE_CALLOC(MEMSPACE, SIZE) \
-  nvptx_memspace_calloc (MEMSPACE, SIZE)
-#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE) \
-  nvptx_memspace_realloc (MEMSPACE, ADDR, OLDSIZE, SIZE)
-#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE) \
-  nvptx_memspace_free (MEMSPACE, ADDR, SIZE)
-#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS) \
-  nvptx_memspace_validate (MEMSPACE, ACCESS)
+#define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \
+  nvptx_memspace_alloc (MEMSPACE, ((void)(PIN), (SIZE)))
+#define MEMSPACE_CALLOC(MEMSPACE, SIZE, PIN) \
+  nvptx_memspace_calloc (MEMSPACE, ((void)(PIN), (SIZE)))
+#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE, OLDPIN, PIN) \
+  nvptx_memspace_realloc (MEMSPACE, ADDR, OLDSIZE, \
+			  ((void)(OLDPIN), (void)(PIN), (SIZE)))
+#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE, PIN) \
+  nvptx_memspace_free (MEMSPACE, ADDR, ((void)(PIN), (SIZE)))
+#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS, PIN) \
+  nvptx_memspace_validate (MEMSPACE, ((void)(PIN), (ACCESS)))
 
 /* The default low-latency memspace implies omp_atv_all, which is incompatible
    with the .shared memory space.  */

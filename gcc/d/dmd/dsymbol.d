@@ -31,7 +31,6 @@ import dmd.dmodule;
 import dmd.dversion;
 import dmd.dscope;
 import dmd.dstruct;
-import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
@@ -44,11 +43,9 @@ import dmd.lexer;
 import dmd.location;
 import dmd.mtype;
 import dmd.nspace;
-import dmd.opover;
 import dmd.root.aav;
 import dmd.root.rmem;
 import dmd.rootobject;
-import dmd.root.speller;
 import dmd.root.string;
 import dmd.statement;
 import dmd.staticassert;
@@ -386,40 +383,6 @@ extern (C++) class Dsymbol : ASTNode
         return '`' ~ cstr.toDString() ~ "`\0";
     }
 
-    final bool checkDeprecated(const ref Loc loc, Scope* sc)
-    {
-        if (global.params.useDeprecated == DiagnosticReporting.off)
-            return false;
-        if (!this.isDeprecated())
-            return false;
-        // Don't complain if we're inside a deprecated symbol's scope
-        if (sc.isDeprecated())
-            return false;
-        // Don't complain if we're inside a template constraint
-        // https://issues.dlang.org/show_bug.cgi?id=21831
-        if (sc.flags & SCOPE.constraint)
-            return false;
-
-        const(char)* message = null;
-        for (Dsymbol p = this; p; p = p.parent)
-        {
-            message = p.depdecl ? p.depdecl.getMessage() : null;
-            if (message)
-                break;
-        }
-        if (message)
-            deprecation(loc, "%s `%s` is deprecated - %s", kind, toPrettyChars, message);
-        else
-            deprecation(loc, "%s `%s` is deprecated", kind, toPrettyChars);
-
-        if (auto ti = sc.parent ? sc.parent.isInstantiated() : null)
-            ti.printInstantiationTrace(Classification.deprecation);
-        else if (auto ti = sc.parent ? sc.parent.isTemplateInstance() : null)
-            ti.printInstantiationTrace(Classification.deprecation);
-
-        return true;
-    }
-
     /**********************************
      * Determine which Module a Dsymbol is in.
      */
@@ -749,111 +712,8 @@ extern (C++) class Dsymbol : ASTNode
         return toAlias();
     }
 
-    /*************************************
-     * Set scope for future semantic analysis so we can
-     * deal better with forward references.
-     */
-    void setScope(Scope* sc)
-    {
-        //printf("Dsymbol::setScope() %p %s, %p stc = %llx\n", this, toChars(), sc, sc.stc);
-        if (!sc.nofree)
-            sc.setNoFree(); // may need it even after semantic() finishes
-        _scope = sc;
-        if (sc.depdecl)
-            depdecl = sc.depdecl;
-        if (!userAttribDecl)
-            userAttribDecl = sc.userAttribDecl;
-    }
-
     void importAll(Scope* sc)
     {
-    }
-
-    extern (D) final Dsymbol search_correct(Identifier ident)
-    {
-        /***************************************************
-         * Search for symbol with correct spelling.
-         */
-        extern (D) Dsymbol symbol_search_fp(const(char)[] seed, out int cost)
-        {
-            /* If not in the lexer's string table, it certainly isn't in the symbol table.
-             * Doing this first is a lot faster.
-             */
-            if (!seed.length)
-                return null;
-            Identifier id = Identifier.lookup(seed);
-            if (!id)
-                return null;
-            cost = 0;   // all the same cost
-            Dsymbol s = this;
-            Module.clearCache();
-            return s.search(Loc.initial, id, IgnoreErrors);
-        }
-
-        if (global.gag)
-            return null; // don't do it for speculative compiles; too time consuming
-        // search for exact name first
-        if (auto s = this.search(Loc.initial, ident, IgnoreErrors))
-            return s;
-        return speller!symbol_search_fp(ident.toString());
-    }
-
-    /***************************************
-     * Search for identifier id as a member of `this`.
-     * `id` may be a template instance.
-     *
-     * Params:
-     *  loc = location to print the error messages
-     *  sc = the scope where the symbol is located
-     *  id = the id of the symbol
-     *  flags = the search flags which can be `SearchLocalsOnly` or `IgnorePrivateImports`
-     *
-     * Returns:
-     *      symbol found, NULL if not
-     */
-    extern (D) final Dsymbol searchX(const ref Loc loc, Scope* sc, RootObject id, int flags)
-    {
-        //printf("Dsymbol::searchX(this=%p,%s, ident='%s')\n", this, toChars(), ident.toChars());
-        Dsymbol s = toAlias();
-        Dsymbol sm;
-        if (Declaration d = s.isDeclaration())
-        {
-            if (d.inuse)
-            {
-                .error(loc, "circular reference to `%s`", d.toPrettyChars());
-                return null;
-            }
-        }
-        switch (id.dyncast())
-        {
-        case DYNCAST.identifier:
-            sm = s.search(loc, cast(Identifier)id, flags);
-            break;
-        case DYNCAST.dsymbol:
-            {
-                // It's a template instance
-                //printf("\ttemplate instance id\n");
-                Dsymbol st = cast(Dsymbol)id;
-                TemplateInstance ti = st.isTemplateInstance();
-                sm = s.search(loc, ti.name);
-                if (!sm)
-                    return null;
-                sm = sm.toAlias();
-                TemplateDeclaration td = sm.isTemplateDeclaration();
-                if (!td)
-                    return null; // error but handled later
-                ti.tempdecl = td;
-                if (!ti.semanticRun)
-                    ti.dsymbolSemantic(sc);
-                sm = ti.toAlias();
-                break;
-            }
-        case DYNCAST.type:
-        case DYNCAST.expression:
-        default:
-            assert(0);
-        }
-        return sm;
     }
 
     bool overloadInsert(Dsymbol s)
@@ -1466,38 +1326,6 @@ public:
     override const(char)* kind() const
     {
         return "ScopeDsymbol";
-    }
-
-    /*******************************************
-     * Look for member of the form:
-     *      const(MemberInfo)[] getMembers(string);
-     * Returns NULL if not found
-     */
-    final FuncDeclaration findGetMembers()
-    {
-        Dsymbol s = search_function(this, Id.getmembers);
-        FuncDeclaration fdx = s ? s.isFuncDeclaration() : null;
-        version (none)
-        {
-            // Finish
-            __gshared TypeFunction tfgetmembers;
-            if (!tfgetmembers)
-            {
-                Scope sc;
-                sc.eSink = global.errorSink;
-                auto parameters = new Parameters();
-                Parameters* p = new Parameter(STC.in_, Type.tchar.constOf().arrayOf(), null, null);
-                parameters.push(p);
-                Type tret = null;
-                TypeFunction tf = new TypeFunction(parameters, tret, VarArg.none, LINK.d);
-                tfgetmembers = tf.dsymbolSemantic(Loc.initial, &sc).isTypeFunction();
-            }
-            if (fdx)
-                fdx = fdx.overloadExactMatch(tfgetmembers);
-        }
-        if (fdx && fdx.isVirtual())
-            fdx = null;
-        return fdx;
     }
 
     /********************************

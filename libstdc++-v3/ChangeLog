@@ -1,3 +1,97 @@
+2023-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_C_y_Y): Do
+	not round century down for %Y formats.
+
+2023-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__do_vformat_to): Handle char separately
+	from other integral types.
+	* testsuite/std/format/functions/format.cc: Check for expected
+	output for char and bool arguments.
+	* testsuite/std/format/string.cc: Check that 0 filling is
+	rejected for character and string formats.
+
+2023-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_C_y_Y): Fix
+	rounding for negative centuries.
+	* testsuite/std/time/year/io.cc: Check %C for negative years.
+
+2023-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Remove redundant -std=gnu++11 flags.
+	* src/c++11/Makefile.in: Regenerate.
+
+2023-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111826
+	* include/bits/version.def (format): Update value.
+	* include/bits/version.h: Regenerate.
+	* testsuite/std/format/functions/format.cc:
+
+2023-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112876
+	* include/std/ranges (ranges::to): Do not try to use an iterator
+	returned by the container's emplace or insert member functions.
+	* testsuite/std/ranges/conv/1.cc (Cont4::emplace, Cont4::insert):
+	Use the iterator parameter. Do not return an iterator.
+
+2023-12-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::_ToClosure): Replace with ...
+	(__detail::_To): ... this.
+	(__detail::_ToClosure2): Replace with ...
+	(__detail::To2): ... this.
+	(to): Simplify using the existing _Partial range adaptor
+	closure object.
+
+2023-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (_Iter_sink<charT, contiguous_iterator>):
+	Remove uint64_t local type.
+
+2023-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h: Include <cstdint> instead of
+	<stdint.h>.
+
+2023-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112882
+	* include/bits/c++config (__is_constant_evaluated): Add
+	always_inline attribute.
+	(_GLIBCXX_DO_ASSERT): Remove macro.
+	(__glibcxx_assert): Define separately for assertions-enabled and
+	constexpr-only cases.
+
+2023-12-07  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/112858
+	* config/os/gnu-linux/os_defines.h
+	(_GLIBCXX_MAY_HAVE___CXA_THREAD_ATEXIT_IMPL): Define.
+	* libsupc++/atexit_thread.cc [__GXX_WEAK__ &&
+	_GLIBCXX_MAY_HAVE___CXA_THREAD_ATEXIT_IMPL]
+	(__cxa_thread_atexit): Add dynamic detection of
+	__cxa_thread_atexit_impl.
+
+2023-12-06  Jason Merrill  <jason@redhat.com>
+
+	DR 532
+	PR c++/53499
+	* testsuite/23_containers/vector/ext_pointer/types/1.cc
+	* testsuite/23_containers/vector/ext_pointer/types/2.cc
+	(N::operator-): Make less specialized.
+
+2023-12-06  Alexandre Oliva  <oliva@gnu.org>
+
+	Revert:
+	2023-12-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* libsupc++/atexit_thread.cc [__GXX_WEAK__]: Add dynamic
+	detection of __cxa_thread_atexit_impl.
+
 2023-12-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/111948

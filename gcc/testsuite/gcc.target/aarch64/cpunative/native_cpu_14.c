@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+dotprod} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+dotprod\n} } } */
 
 /* Test one where valid feature bits are at a boundary > buffer size.   */

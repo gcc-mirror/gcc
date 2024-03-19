@@ -591,7 +591,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	CASE_FLT_FN (BUILT_IN_TRUNC):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_TRUNC):
 	  if (call_expr_nargs (s_expr) != 1
-	      || !SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (s_expr, 0))))
+	      || !SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (s_expr, 0)))
+	      || (!flag_fp_int_builtin_inexact && flag_trapping_math))
 	    break;
 	  return convert_to_integer_1 (type, CALL_EXPR_ARG (s_expr, 0),
 				       dofold);

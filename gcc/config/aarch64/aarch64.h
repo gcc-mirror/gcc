@@ -250,17 +250,23 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_F64MM	   (aarch64_isa_flags & AARCH64_FL_F64MM)
 #define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
 #define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
+#define AARCH64_ISA_RCPC3	   (aarch64_isa_flags & AARCH64_FL_RCPC3)
 #define AARCH64_ISA_V8R		   (aarch64_isa_flags & AARCH64_FL_V8R)
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
 #define AARCH64_ISA_V8_7A	   (aarch64_isa_flags & AARCH64_FL_V8_7A)
 #define AARCH64_ISA_V8_8A	   (aarch64_isa_flags & AARCH64_FL_V8_8A)
+#define AARCH64_ISA_V8_9A	   (aarch64_isa_flags & AARCH64_FL_V8_9A)
 #define AARCH64_ISA_V9A		   (aarch64_isa_flags & AARCH64_FL_V9A)
 #define AARCH64_ISA_V9_1A          (aarch64_isa_flags & AARCH64_FL_V9_1A)
 #define AARCH64_ISA_V9_2A          (aarch64_isa_flags & AARCH64_FL_V9_2A)
 #define AARCH64_ISA_V9_3A          (aarch64_isa_flags & AARCH64_FL_V9_3A)
+#define AARCH64_ISA_V9_4A	   (aarch64_isa_flags & AARCH64_FL_V9_4A)
 #define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 #define AARCH64_ISA_CSSC	   (aarch64_isa_flags & AARCH64_FL_CSSC)
+#define AARCH64_ISA_D128	   (aarch64_isa_flags & AARCH64_FL_D128)
+#define AARCH64_ISA_THE		   (aarch64_isa_flags & AARCH64_FL_THE)
+#define AARCH64_ISA_GCS		   (aarch64_isa_flags & AARCH64_FL_GCS)
 
 /* The current function is a normal non-streaming function.  */
 #define TARGET_NON_STREAMING (AARCH64_ISA_SM_OFF)
@@ -428,6 +434,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
    and sign-extending versions.*/
 #define TARGET_RCPC2 (AARCH64_ISA_RCPC8_4)
 
+/* RCPC3 (Release Consistency) extensions, optional from Armv8.2-a.  */
+#define TARGET_RCPC3 (AARCH64_ISA_RCPC3)
+
 /* Apply the workaround for Cortex-A53 erratum 835769.  */
 #define TARGET_FIX_ERR_A53_835769	\
   ((aarch64_fix_a53_err835769 == 2)	\
@@ -449,6 +458,22 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 /* ARMv8.1-A Adv.SIMD support.  */
 #define TARGET_SIMD_RDMA (TARGET_SIMD && AARCH64_ISA_RDMA)
+
+/* Armv9.4-A features.  */
+#define TARGET_ARMV9_4 (AARCH64_ISA_V9_4A)
+
+/*  128-bit System Registers and Instructions from Armv9.4-a are enabled
+    through +d128.  */
+#define TARGET_D128 (AARCH64_ISA_D128)
+
+/*  Armv8.9-A/9.4-A Translation Hardening Extension system registers are
+    enabled through +the.  */
+#define TARGET_THE (AARCH64_ISA_THE)
+
+/*  Armv9.4-A Guarded Control Stack extension system registers are
+    enabled through +gcs.  */
+#define TARGET_GCS (AARCH64_ISA_GCS)
+
 
 /* Standard register usage.  */
 

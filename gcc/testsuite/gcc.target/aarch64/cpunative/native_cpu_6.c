@@ -7,7 +7,7 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+fp16\+crypto} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+fp16\+crypto\n} } } */
 
 /* Test one where the feature bits for crypto and fp16 are given in
    same order as declared in options file.  */

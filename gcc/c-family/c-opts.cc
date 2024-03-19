@@ -532,7 +532,7 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdebug_cpp:
-      cpp_opts->debug = 1;
+      cpp_opts->debug = value;
       break;
 
     case OPT_ftrack_macro_expansion:

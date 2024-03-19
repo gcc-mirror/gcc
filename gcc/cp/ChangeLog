@@ -1,3 +1,360 @@
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (print_z_candidates): Only print ignored candidates
+	when -fdiagnostics-all-candidates is set, otherwise suggest
+	the flag.
+	(build_over_call): When diagnosing deletedness, note
+	other candidates only if -fdiagnostics-all-candidates is
+	set, otherwise suggest the flag.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (enum rejection_reason_code): Add rr_ignored.
+	(add_ignored_candidate): Define.
+	(ignored_candidate_p): Define.
+	(add_template_candidate_real): Do add_ignored_candidate
+	instead of returning NULL.
+	(splice_viable): Put ignored (non-viable) candidates last.
+	(print_z_candidate): Handle ignored candidates.
+	(build_new_function_call): Refine shortcut that calls
+	cp_build_function_call_vec now that non-templates can
+	appear in the candidate list for a template-id call.
+	(add_candidates): Replace 'bad_fns' overload with 'bad_cands'
+	candidate list.  When not considering a candidate, add it
+	to the list as an ignored candidate.  Add all 'bad_cands'
+	to the overload set as well.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc: Include "tristate.h".
+	(splice_viable): Sort the candidate list according to viability.
+	Don't remove non-viable candidates from the list.
+	(print_z_candidates): Add defaulted only_viable_p parameter.
+	By default only print non-viable candidates if there is no
+	viable candidate.
+	(tourney): Ignore non-viable candidates.  Move the true champ to
+	the front of the candidates list, and update 'candidates' to
+	point to the front.  Rename champ_compared_to_predecessor to
+	previous_worse_champ.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99186
+	PR c++/104867
+	* pt.cc (unify) <case INTEGER_CST>: Compare types as well.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93740
+	* pt.cc (unify) <case FUNCTION_DECL>: Handle it like FIELD_DECL
+	and TEMPLATE_DECL.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (convert_for_arg_passing)
+	* typeck.cc (convert_for_assignment): Adjust call to
+	warn_for_address_of_packed_member.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* parser.cc (cp_parser_oacc_all_clauses): Add TARGET_P parameter. Use
+	to select region type for finish_omp_clauses call.
+	(cp_parser_omp_target_data, cp_parser_omp_target_enter_data): Support
+	GOMP_MAP_ATTACH kind.
+	(cp_parser_omp_target_exit_data): Support GOMP_MAP_DETACH kind.
+	(cp_parser_oacc_declare): Update call to cp_parser_oacc_all_clauses.
+	(cp_parser_oacc_loop): Update calls to cp_parser_oacc_all_clauses.
+	(cp_parser_oacc_compute): Likewise.
+	* pt.cc (tsubst_expr): Use C_ORT_ACC_TARGET for call to
+	tsubst_omp_clauses for OpenACC compute regions.
+	* semantics.cc (cp_omp_address_inspector): New class, derived from
+	c_omp_address_inspector.
+	(handle_omp_array_sections_1, handle_omp_array_sections,
+	finish_omp_clauses): Use cp_omp_address_inspector class and OMP address
+	tokenizer to analyze and expand OpenMP map clause expressions.  Fix
+	some diagnostics.  Support C_ORT_ACC_TARGET.
+	(finish_omp_target): Handle GOMP_MAP_POINTER.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* semantics.cc (finish_omp_clause): Add braces and reindent
+	OMP_CLAUSE_TO/OMP_CLAUSE_FROM/OMP_CLAUSE__CACHE_ stanza.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96997
+	* tree.cc (bot_manip): Check data.clear_location for TARGET_EXPR.
+
+2023-12-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/71093
+	* constexpr.cc (constexpr_global_ctx::get_value_ptr): Don't
+	return NULL_TREE for objects we're initializing.
+	(constexpr_global_ctx::destroy_value): Rename from remove_value.
+	Only mark real variables as outside lifetime.
+	(constexpr_global_ctx::clear_value): New function.
+	(destroy_value_checked): New function.
+	(cxx_eval_call_expression): Defer complaining about non-constant
+	arg0 for operator delete. Use remove_value_safe.
+	(cxx_fold_indirect_ref_1): Handle conversion to 'as base' type.
+	(outside_lifetime_error): Include name of object we're
+	accessing.
+	(cxx_eval_store_expression): Handle clobbers. Improve error
+	messages.
+	(cxx_eval_constant_expression): Use remove_value_safe. Clear
+	bind variables before entering body.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_call_expression): Handle missing in-charge
+	argument.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108243
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Turn
+	a constructor CALL_EXPR into a TARGET_EXPR.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (build_aggr_init_expr): Copy EXPR_LOCATION.
+
+2023-12-12  Jason Merrill  <jason@redhat.com>
+	    Jason Xu  <rxu@DRWHoldings.com>
+
+	* class.cc (propagate_class_warmth_attribute): Handle
+	member templates.
+
+2023-12-12  Jason Merrill  <jason@redhat.com>
+	    Nathaniel Shead   <nathanieloshead@gmail.com>
+
+	* call.cc (build_trivial_dtor_call): Use CLOBBER_OBJECT_END.
+	* decl.cc (build_clobber_this): Take clobber_kind argument.
+	(start_preparsed_function): Pass CLOBBER_OBJECT_BEGIN.
+	(begin_destructor_body): Pass CLOBBER_OBJECT_END.
+
+2023-12-11  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (alias_ctad_tweaks): Pass use_spec_table=false to
+	tsubst_decl.
+
+2023-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_requires): Handle acquires/release
+	in atomic_default_mem_order clause.
+	(cp_parser_omp_atomic): Update.
+
+2023-12-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/96090
+	PR c++/100470
+	* call.cc (build_over_call): Prevent folding of trivial special
+	members when checking for noexcept.
+	* method.cc (constructible_expr): Perform value-initialisation
+	for empty parameter lists.
+	(is_nothrow_xible): Treat as noexcept operator.
+
+2023-12-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/104234
+	PR c++/112580
+	* pt.cc (tsubst_template_decl): Clear
+	DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __remove_pointer.
+	* semantics.cc (finish_trait_type): Handle CPTK_REMOVE_POINTER.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_object.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_OBJECT.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_function.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_FUNCTION.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_reference.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_REFERENCE.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_member_object_pointer.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_MEMBER_OBJECT_POINTER.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_member_function_pointer.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_MEMBER_FUNCTION_POINTER.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_member_pointer.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_MEMBER_POINTER.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_scoped_enum.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_SCOPED_ENUM.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_bounded_array.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_BOUNDED_ARRAY.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_array.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_ARRAY.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_simple_type_specifier): Move trait
+	handling to default label.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* parser.cc (cp_lexer_lookup_trait): Rename to ...
+	(cp_lexer_peek_trait): ... this.  Handle a subsequent token for
+	the corresponding built-in trait.
+	(cp_lexer_lookup_trait_expr): Rename to ...
+	(cp_lexer_peek_trait_expr): ... this.
+	(cp_lexer_lookup_trait_type): Rename to ...
+	(cp_lexer_peek_trait_type): ... this.
+	(cp_lexer_next_token_is_decl_specifier_keyword): Call
+	cp_lexer_peek_trait_type.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_primary_expression): Call cp_lexer_peek_trait_expr.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	* cp-objcp-common.cc (names_builtin_p): Remove all RID value
+	cases for built-in traits.  Check for built-in traits via
+	the new cik_trait kind.
+	* cp-tree.h (enum cp_trait_kind): Set its underlying type to
+	addr_space_t.
+	(struct cp_trait): New struct to hold trait information.
+	(cp_traits): New array to hold a mapping to all traits.
+	(cik_reserved_for_udlit): Rename to ...
+	(cik_trait): ... this.
+	(IDENTIFIER_ANY_OP_P): Exclude cik_trait.
+	(IDENTIFIER_TRAIT_P): New macro to detect cik_trait.
+	* lex.cc (cp_traits): Define its values, declared in cp-tree.h.
+	(init_cp_traits): New function to set cik_trait and
+	IDENTIFIER_CP_INDEX for all built-in trait identifiers.
+	(cxx_init): Call init_cp_traits function.
+	* parser.cc (cp_lexer_lookup_trait): New function to look up a
+	built-in trait by IDENTIFIER_CP_INDEX.
+	(cp_lexer_lookup_trait_expr): Likewise, look up an
+	expression-yielding built-in trait.
+	(cp_lexer_lookup_trait_type): Likewise, look up a type-yielding
+	built-in trait.
+	(cp_keyword_starts_decl_specifier_p): Remove all RID value cases
+	for built-in traits.
+	(cp_lexer_next_token_is_decl_specifier_keyword): Handle
+	type-yielding built-in traits.
+	(cp_parser_primary_expression): Remove all RID value cases for
+	built-in traits.  Handle expression-yielding built-in traits.
+	(cp_parser_trait): Handle cp_trait instead of enum rid.
+	(cp_parser_simple_type_specifier): Remove all RID value cases
+	for built-in traits.  Handle type-yielding built-in traits.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* constraint.cc (diagnose_trait_expr): Sort built-in traits
+	alphabetically.
+	* cp-trait.def: Likewise.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+	(finish_trait_type): Likewise.
+
+2023-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_statement, cp_parser_expression_statement,
+	cp_parser_declaration, cp_parser_asm_definition): Don't diagnose
+	ignored attributes if !any_nonignored_attribute_p.
+	* decl.cc (grokdeclarator): Likewise.
+	* name-lookup.cc (handle_namespace_attrs, finish_using_directive):
+	Don't diagnose ignoring of attr_ignored_p attributes.
+
+2023-12-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/83167
+	* semantics.cc (capture_decltype): Inline into its only caller ...
+	(finish_decltype_type): ... here.  Update nearby comment to refer
+	to recent standard.  Add FIXME.  Restrict uncaptured variable type
+	transformation to happen only for lambdas with a by-copy
+	capture-default.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_std_attribute_spec): Return void_list_node
+	rather than NULL_TREE if token is neither CPP_OPEN_SQUARE nor
+	RID_ALIGNAS CPP_KEYWORD.
+	(cp_parser_std_attribute_spec_seq): For attr_spec == void_list_node
+	break, for attr_spec == NULL_TREE continue.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112727
+	* cp-gimplify.cc (cp_fold): If SAVE_EXPR has been previously
+	folded, unshare_expr what is returned.
+
+2023-12-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112658
+	* parser.cc (cp_parser_expression_statement): If the statement
+	is error_mark_node, make sure we've seen_error().
+
+2023-12-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112658
+	PR c++/94264
+	* typeck.cc (cp_build_c_cast): If we're committed to a const_cast
+	and the result is erroneous, call build_const_cast_1 a second
+	time to issue errors.  Use complain=tf_none instead of =false.
+
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h (cxx_print_error_function): Make diagnostic_info param
+	const.
+	* error.cc (cxx_print_error_function): Likewise.
+	(cp_diagnostic_starter): Likewise.
+	(cp_print_error_function): Likewise.
+
+2023-12-06  Jason Merrill  <jason@redhat.com>
+
+	DR 532
+	PR c++/53499
+	* pt.cc (more_specialized_fn): Fix object parameter handling.
+
 2023-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/112795

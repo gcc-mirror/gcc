@@ -1,3 +1,14 @@
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.cc (jit_begin_diagnostic): Make diagnostic_info
+	param const.
+	(jit_end_diagnostic): Likewise.  Pass to add_diagnostic by
+	reference.
+	* jit-playback.cc (jit::playback::context::add_diagnostic):
+	Convert diagnostic_info to const reference.
+	* jit-playback.h (jit::playback::context::add_diagnostic):
+	Likewise.
+
 2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* dummy-frontend.cc (jit_gnu_attribute_table): Add extra braces

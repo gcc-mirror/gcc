@@ -7466,6 +7466,11 @@ expand_field_assignment (const_rtx x)
       if (!targetm.scalar_mode_supported_p (compute_mode))
 	break;
 
+      /* gen_lowpart_for_combine returns CLOBBER on failure.  */
+      rtx lowpart = gen_lowpart (compute_mode, SET_SRC (x));
+      if (GET_CODE (lowpart) == CLOBBER)
+	break;
+
       /* Now compute the equivalent expression.  Make a copy of INNER
 	 for the SET_DEST in case it is a MEM into which we will substitute;
 	 we don't want shared RTL in that case.  */
@@ -7480,9 +7485,7 @@ expand_field_assignment (const_rtx x)
 				     inner);
       masked = simplify_gen_binary (ASHIFT, compute_mode,
 				    simplify_gen_binary (
-				      AND, compute_mode,
-				      gen_lowpart (compute_mode, SET_SRC (x)),
-				      mask),
+				      AND, compute_mode, lowpart, mask),
 				    pos);
 
       x = gen_rtx_SET (copy_rtx (inner),

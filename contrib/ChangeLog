@@ -1,3 +1,10 @@
+2023-12-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* download_prerequisites
+	<arg parse>: Parse --only-gettext.
+	(echo_archives): Check only_gettext and stop early if true.
+	(helptext): Document --only-gettext.
+
 2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config-list.mk (OPT_IN_LANGUAGES): New variable.

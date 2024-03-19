@@ -265,7 +265,7 @@ n_ls_vector_pcs ()
 }
 
 /*
-** n_ls_sve_pcs:
+** n_ls_sve_pcs:	{ target aarch64_little_endian }
 **	sub	sp, sp, #?16
 **	cntd	x16
 **	str	x16, \[sp\]

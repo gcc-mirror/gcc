@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=strict" } */
+/* { dg-require-effective-target strub } */
 
 /* It would be desirable to issue at least warnings for these.  */
 

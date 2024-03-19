@@ -85,20 +85,6 @@ extern (C++) final class Nspace : ScopeDsymbol
         return ns;
     }
 
-    override void setScope(Scope* sc)
-    {
-        ScopeDsymbol.setScope(sc);
-        if (members)
-        {
-            assert(sc);
-            sc = sc.push(this);
-            sc.linkage = LINK.cpp; // namespaces default to C++ linkage
-            sc.parent = this;
-            members.foreachDsymbol(s => s.setScope(sc));
-            sc.pop();
-        }
-    }
-
     override bool hasPointers()
     {
         //printf("Nspace::hasPointers() %s\n", toChars());

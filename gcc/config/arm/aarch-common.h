@@ -55,16 +55,10 @@ struct aarch_branch_protect_type
   /* The type's name that the user passes to the branch-protection option
      string.  */
   const char* name;
-  /* Function to handle the protection type and set global variables.
-     First argument is the string token corresponding with this type and the
-     second argument is the next token in the option string.
-     Return values:
-     * AARCH_PARSE_OK: Handling was sucessful.
-     * AARCH_INVALID_ARG: The type is invalid in this context and the caller
-     should print an error.
-     * AARCH_INVALID_FEATURE: The type is invalid and the handler prints its
-     own error.  */
-  enum aarch_parse_opt_result (*handler)(char*, char*);
+  /* The type can only appear alone, other types should be rejected.  */
+  int alone;
+  /* Function to handle the protection type and set global variables.  */
+  void (*handler)(void);
   /* A list of types that can follow this type in the option string.  */
   const struct aarch_branch_protect_type* subtypes;
   unsigned int num_subtypes;

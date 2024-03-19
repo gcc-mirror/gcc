@@ -59,7 +59,7 @@ TEST_XN (uzp_z28_z0, svint32x2_t, z28,
 	 svuzp (z0))
 
 /*
-** uzp_z28_z0_z23:
+** uzp_z28_z0_z23:	{ xfail aarch64_big_endian }
 **	uzp	{z28\.s - z29\.s}, z0\.s, z23\.s
 **	ret
 */

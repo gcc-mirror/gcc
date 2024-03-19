@@ -28,7 +28,7 @@ IMPLEMENTATION MODULE ClientSocket ;
 
 
 FROM ASCII IMPORT nul, lf, cr ;
-FROM ChanConsts IMPORT OpenResults, ChanFlags ;
+FROM ChanConsts IMPORT ChanFlags ;
 FROM RTio IMPORT GetDeviceId ;
 FROM RTgenif IMPORT GenDevIF, InitGenDevIF ;
 FROM RTdata IMPORT ModuleId, MakeModuleId, InitData, GetData, KillData ;

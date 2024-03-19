@@ -2093,6 +2093,7 @@ enum ab_attribute
   AB_OMP_REQ_REVERSE_OFFLOAD, AB_OMP_REQ_UNIFIED_ADDRESS,
   AB_OMP_REQ_UNIFIED_SHARED_MEMORY, AB_OMP_REQ_DYNAMIC_ALLOCATORS,
   AB_OMP_REQ_MEM_ORDER_SEQ_CST, AB_OMP_REQ_MEM_ORDER_ACQ_REL,
+  AB_OMP_REQ_MEM_ORDER_ACQUIRE, AB_OMP_REQ_MEM_ORDER_RELEASE,
   AB_OMP_REQ_MEM_ORDER_RELAXED, AB_OMP_DEVICE_TYPE_NOHOST,
   AB_OMP_DEVICE_TYPE_HOST, AB_OMP_DEVICE_TYPE_ANY
 };
@@ -2175,7 +2176,9 @@ static const mstring attr_bits[] =
     minit ("OMP_REQ_DYNAMIC_ALLOCATORS", AB_OMP_REQ_DYNAMIC_ALLOCATORS),
     minit ("OMP_REQ_MEM_ORDER_SEQ_CST", AB_OMP_REQ_MEM_ORDER_SEQ_CST),
     minit ("OMP_REQ_MEM_ORDER_ACQ_REL", AB_OMP_REQ_MEM_ORDER_ACQ_REL),
+    minit ("OMP_REQ_MEM_ORDER_ACQUIRE", AB_OMP_REQ_MEM_ORDER_ACQUIRE),
     minit ("OMP_REQ_MEM_ORDER_RELAXED", AB_OMP_REQ_MEM_ORDER_RELAXED),
+    minit ("OMP_REQ_MEM_ORDER_RELEASE", AB_OMP_REQ_MEM_ORDER_RELEASE),
     minit ("OMP_DEVICE_TYPE_HOST", AB_OMP_DEVICE_TYPE_HOST),
     minit ("OMP_DEVICE_TYPE_NOHOST", AB_OMP_DEVICE_TYPE_NOHOST),
     minit ("OMP_DEVICE_TYPE_ANYHOST", AB_OMP_DEVICE_TYPE_ANY),
@@ -2443,8 +2446,14 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      == OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL)
 	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_ACQ_REL, attr_bits);
 	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	      == OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_ACQUIRE, attr_bits);
+	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
 	      == OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
 	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_RELAXED, attr_bits);
+	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	      == OMP_REQ_ATOMIC_MEM_ORDER_RELEASE)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_RELEASE, attr_bits);
 	}
       switch (attr->omp_device_type)
 	{
@@ -2724,9 +2733,19 @@ mio_symbol_attribute (symbol_attribute *attr)
 					   "acq_rel", &gfc_current_locus,
 					   module_name);
 	      break;
+	    case AB_OMP_REQ_MEM_ORDER_ACQUIRE:
+	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE,
+					   "acquires", &gfc_current_locus,
+					   module_name);
+	      break;
 	    case AB_OMP_REQ_MEM_ORDER_RELAXED:
 	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_RELAXED,
 					   "relaxed", &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_MEM_ORDER_RELEASE:
+	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_RELEASE,
+					   "release", &gfc_current_locus,
 					   module_name);
 	      break;
 	    case AB_OMP_DEVICE_TYPE_HOST:

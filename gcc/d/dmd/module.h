@@ -169,3 +169,4 @@ struct ModuleDeclaration
 };
 
 extern void getLocalClasses(Module* mod, Array<ClassDeclaration* >& aclasses);
+FuncDeclaration *findGetMembers(ScopeDsymbol *dsym);

@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target avx512er } */
 /* { dg-options "-O2 -mavx512er" } */
+/* { dg-warning "AVX512ER support will be removed in GCC 15" "" { target *-*-* } 0 } */
 
 #include "avx512er-check.h"
 #include "avx512f-mask-type.h"

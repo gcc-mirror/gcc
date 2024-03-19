@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fstrub=strict -fno-exceptions -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 /* Check that the expected strub calls are issued.  */
 

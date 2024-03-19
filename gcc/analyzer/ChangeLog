@@ -1,3 +1,69 @@
+2023-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112955
+	* engine.cc (feasibility_state::feasibility_state): Initialize
+	m_snodes_visited.
+
+2023-12-11  Andrew Pinski  <apinski@marvell.com>
+
+	* region-model-manager.cc (maybe_undo_optimize_bit_field_compare): Remove
+	the check for type being unsigned_char_type_node.
+
+2023-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc (taint_state_machine::alt_get_inherited_state): Fix
+	handling of TRUNC_MOD_EXPR.
+
+2023-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (contains_uninit_p): Only check for
+	svalues that the infoleak warning can handle.
+
+2023-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112889
+	* store.h (concrete_binding::concrete_binding): Strengthen
+	assertion to require size to be be positive, rather than just
+	non-zero.
+	(concrete_binding::mark_deleted): Use size rather than start bit
+	offset.
+	(concrete_binding::mark_empty): Likewise.
+	(concrete_binding::is_deleted): Likewise.
+	(concrete_binding::is_empty): Likewise.
+
+2023-12-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* region-model.cc (has_nondefault_case_for_value_p): Take
+	enumerate type as a parameter.
+	(region_model::apply_constraints_for_gswitch): Cope with
+	integral promotion type casts.
+
+2023-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	PR analyzer/112850
+	* analyzer.opt (-param=analyzer-max-svalue-depth=): Increase from
+	12 to 18.
+	(Wanalyzer-symbol-too-complex): New.
+	* diagnostic-manager.cc
+	(null_assignment_sm_context::clear_all_per_svalue_state): New.
+	* engine.cc (impl_sm_context::clear_all_per_svalue_state): New.
+	* program-state.cc (sm_state_map::clear_all_per_svalue_state):
+	New.
+	* program-state.h (sm_state_map::clear_all_per_svalue_state): New
+	decl.
+	* region-model-manager.cc
+	(region_model_manager::reject_if_too_complex): Add
+	-Wanalyzer-symbol-too-complex.
+	* sm-taint.cc (taint_state_machine::on_condition): Handle
+	comparisons against UNKNOWN.
+	* sm.h (sm_context::clear_all_per_svalue_state): New.
+
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (dump_analyzer_json): Use
+	flag_diagnostics_json_formatting.
+
 2023-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (class saved_diagnostic): New forward decl.

@@ -4206,11 +4206,15 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
 
   /* If access is not executed on every iteration, we must ensure that overlow
      may not make the access valid later.  */
-  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (data->stmt))
-      && scev_probably_wraps_p (NULL_TREE,
-				initial_condition_in_loop_num (ev, loop->num),
-				step, data->stmt, loop, true))
-    upper = false;
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (data->stmt)))
+    {
+      if (scev_probably_wraps_p (NULL_TREE,
+				 initial_condition_in_loop_num (ev, loop->num),
+				 step, data->stmt, loop, true))
+	upper = false;
+    }
+  else
+    record_nonwrapping_chrec (ev);
 
   record_nonwrapping_iv (loop, init, step, data->stmt, low, high, false, upper);
   return true;
@@ -4324,6 +4328,7 @@ infer_loop_bounds_from_pointer_arith (class loop *loop, gimple *stmt)
   if (flag_delete_null_pointer_checks && int_cst_value (low) == 0)
     low = build_int_cstu (TREE_TYPE (low), TYPE_ALIGN_UNIT (TREE_TYPE (type)));
 
+  record_nonwrapping_chrec (scev);
   record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
 }
 
@@ -4371,6 +4376,7 @@ infer_loop_bounds_from_signedness (class loop *loop, gimple *stmt)
       high = wide_int_to_tree (type, r.upper_bound ());
     }
 
+  record_nonwrapping_chrec (scev);
   record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
 }
 
@@ -5503,6 +5509,11 @@ scev_probably_wraps_p (tree var, tree base, tree step,
     return false;
 
   if (loop_exits_before_overflow (base, step, at_stmt, loop))
+    return false;
+
+  /* Check the nonwrapping flag, which may be set by niter analysis (e.g., the
+     above loop exits before overflow).  */
+  if (var && nonwrapping_chrec_p (analyze_scalar_evolution (loop, var)))
     return false;
 
   /* At this point we still don't have a proof that the iv does not

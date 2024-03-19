@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fomit-frame-pointer" } */
+/* { dg-options "-O2 -fomit-frame-pointer -fno-stack-protector" } */
 
 /* Check that we split unaligned LDP/STP into base and aligned offset.  */
 

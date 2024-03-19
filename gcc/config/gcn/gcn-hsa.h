@@ -75,16 +75,15 @@ extern unsigned int gcn_local_sym_hash (const char *name);
    supported for gcn.  */
 #define GOMP_SELF_SPECS ""
 
-#define NO_XNACK "!march=*:;march=fiji:;march=gfx1030:;"
+#define NO_XNACK "march=fiji:;march=gfx1030:;" \
+    /* These match the defaults set in gcn.cc.  */ \
+    "!mxnack*|mxnack=default:%{march=gfx900|march=gfx906|march=gfx908:-mattr=-xnack};"
 #define NO_SRAM_ECC "!march=*:;march=fiji:;march=gfx900:;march=gfx906:;"
 
 /* In HSACOv4 no attribute setting means the binary supports "any" hardware
    configuration.  The name of the attribute also changed.  */
 #define SRAMOPT "msram-ecc=on:-mattr=+sramecc;msram-ecc=off:-mattr=-sramecc"
-
-/* Replace once XNACK is supported:
-   #define XNACKOPT "mxnack=on:-mattr=+xnack;mxnack=off:-mattr=-xnack"  */
-#define XNACKOPT "!mnack=*:-mattr=-xnack;mnack=*:-mattr=-xnack"
+#define XNACKOPT "mxnack=on:-mattr=+xnack;mxnack=off:-mattr=-xnack"
 
 /* Use LLVM assembler and linker options.  */
 #define ASM_SPEC  "-triple=amdgcn--amdhsa "  \

@@ -3702,7 +3702,8 @@
 			  (match_operand:BLK 2)))
 	      (use (match_operand:SI 3))
 	      (use (match_operand:SI 4))])]
-  "riscv_inline_strncmp && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+  "riscv_inline_strncmp && !optimize_size
+    && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_VECTOR)"
 {
   if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
                            operands[3], operands[4]))
@@ -3722,7 +3723,8 @@
 	      (compare:SI (match_operand:BLK 1)
 			  (match_operand:BLK 2)))
 	      (use (match_operand:SI 3))])]
-  "riscv_inline_strcmp && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+  "riscv_inline_strcmp && !optimize_size
+    && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_VECTOR)"
 {
   if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
                            NULL_RTX, operands[3]))
@@ -3743,7 +3745,8 @@
 		     (match_operand:SI 2 "const_int_operand")
 		     (match_operand:SI 3 "const_int_operand")]
 		  UNSPEC_STRLEN))]
-  "riscv_inline_strlen && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+  "riscv_inline_strlen && !optimize_size
+    && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_VECTOR)"
 {
   rtx search_char = operands[2];
 

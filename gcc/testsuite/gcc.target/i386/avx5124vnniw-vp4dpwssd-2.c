@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx5124vnniw" } */
 /* { dg-require-effective-target avx5124vnniw } */
+/* { dg-warning "AVX5124VNNIW support will be removed in GCC 15" "" { target *-*-* } 0 } */
 
 #define AVX5124VNNIW
 #include "avx512f-helper.h"

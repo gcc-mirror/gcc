@@ -12,8 +12,13 @@ int array[N];
 
 #pragma omp declare simd simdlen(4) notinbranch
 #pragma omp declare simd simdlen(4) notinbranch uniform(b) linear(c:3)
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(2) notinbranch
+#pragma omp declare simd simdlen(2) notinbranch uniform(b) linear(c:3)
+#else
 #pragma omp declare simd simdlen(8) notinbranch
 #pragma omp declare simd simdlen(8) notinbranch uniform(b) linear(c:3)
+#endif
 __attribute__((noinline)) int
 foo (int a, int b, int c)
 {

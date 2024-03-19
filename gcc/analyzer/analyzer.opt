@@ -43,7 +43,7 @@ Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
 The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
 
 -param=analyzer-max-svalue-depth=
-Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(12) Param
+Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(18) Param
 The maximum depth of a symbolic value, before approximating the value as unknown.
 
 -param=analyzer-min-snodes-for-call-summary=
@@ -261,6 +261,10 @@ Warn about code paths which attempt to write to a string literal.
 Wanalyzer-use-of-uninitialized-value
 Common Var(warn_analyzer_use_of_uninitialized_value) Init(1) Warning
 Warn about code paths in which an uninitialized value is used.
+
+Wanalyzer-symbol-too-complex
+Common Var(warn_analyzer_symbol_too_complex) Init(0) Warning
+Warn if expressions are too complicated for the analyzer to fully track.
 
 Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning

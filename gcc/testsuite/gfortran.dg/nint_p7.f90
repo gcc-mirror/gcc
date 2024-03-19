@@ -2,6 +2,7 @@
 ! { dg-do compile { target { powerpc*-*-* } } }
 ! { dg-require-effective-target powerpc_vsx_ok } 
 ! { dg-options "-O2 -mdejagnu-cpu=power7 -ffast-math" } 
+! { dg-require-effective-target has_arch_ppc64 } 
 ! { dg-final { scan-assembler-times "xsrdpi" 2 } } 
 
 	subroutine test_nint(x4,x8)

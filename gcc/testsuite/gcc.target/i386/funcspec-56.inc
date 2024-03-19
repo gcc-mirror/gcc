@@ -1,8 +1,6 @@
 /* Common 32-bit and 64-bit function specific options.  */
 
 extern void test_sgx (void)			__attribute__((__target__("sgx")));
-extern void test_avx5124fmaps(void)		__attribute__((__target__("avx5124fmaps")));
-extern void test_avx5124vnniw(void)		__attribute__((__target__("avx5124vnniw")));
 extern void test_avx512vpopcntdq(void)		__attribute__((__target__("avx512vpopcntdq")));
 
 extern void test_avx512vbmi (void)		__attribute__((__target__("avx512vbmi")));
@@ -10,8 +8,6 @@ extern void test_avx512ifma (void)		__attribute__((__target__("avx512ifma")));
 extern void test_avx512vl (void)		__attribute__((__target__("avx512vl")));
 extern void test_avx512bw (void)		__attribute__((__target__("avx512bw")));
 extern void test_avx512dq (void)		__attribute__((__target__("avx512dq")));
-extern void test_avx512er (void)		__attribute__((__target__("avx512er")));
-extern void test_avx512pf (void)		__attribute__((__target__("avx512pf")));
 extern void test_avx512cd (void)		__attribute__((__target__("avx512cd")));
 extern void test_avx512f  (void)		__attribute__((__target__("avx512f")));
 extern void test_avx2 (void)			__attribute__((__target__("avx2")));
@@ -38,7 +34,6 @@ extern void test_rtm (void)			__attribute__((__target__("rtm")));
 extern void test_prfchw (void)			__attribute__((__target__("prfchw")));
 extern void test_rdseed (void)			__attribute__((__target__("rdseed")));
 extern void test_adx (void)			__attribute__((__target__("adx")));
-extern void test_prefetchwt1 (void)		__attribute__((__target__("prefetchwt1")));
 extern void test_clflushopt (void)		__attribute__((__target__("clflushopt")));
 extern void test_xsaves (void)			__attribute__((__target__("xsaves")));
 extern void test_xsavec (void)			__attribute__((__target__("xsavec")));
@@ -95,8 +90,6 @@ extern void test_sm4 (void)                     __attribute__((__target__("sm4")
 extern void test_user_msr (void)		__attribute__((__target__("usermsr")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
-extern void test_no_avx5124fmaps(void)		__attribute__((__target__("no-avx5124fmaps")));
-extern void test_no_avx5124vnniw(void)		__attribute__((__target__("no-avx5124vnniw")));
 extern void test_no_avx512vpopcntdq(void)	__attribute__((__target__("no-avx512vpopcntdq")));
 
 extern void test_no_avx512vbmi (void)		__attribute__((__target__("no-avx512vbmi")));
@@ -104,8 +97,6 @@ extern void test_no_avx512ifma (void)		__attribute__((__target__("no-avx512ifma"
 extern void test_no_avx512vl (void)		__attribute__((__target__("no-avx512vl")));
 extern void test_no_avx512bw (void)		__attribute__((__target__("no-avx512bw")));
 extern void test_no_avx512dq (void)		__attribute__((__target__("no-avx512dq")));
-extern void test_no_avx512er (void)		__attribute__((__target__("no-avx512er")));
-extern void test_no_avx512pf (void)		__attribute__((__target__("no-avx512pf")));
 extern void test_no_avx512cd (void)		__attribute__((__target__("no-avx512cd")));
 extern void test_no_avx512f  (void)		__attribute__((__target__("no-avx512f")));
 extern void test_no_avx2 (void)			__attribute__((__target__("no-avx2")));
@@ -132,7 +123,6 @@ extern void test_no_rtm (void)			__attribute__((__target__("no-rtm")));
 extern void test_no_prfchw (void)		__attribute__((__target__("no-prfchw")));
 extern void test_no_rdseed (void)		__attribute__((__target__("no-rdseed")));
 extern void test_no_adx (void)			__attribute__((__target__("no-adx")));
-extern void test_no_prefetchwt1 (void)		__attribute__((__target__("no-prefetchwt1")));
 extern void test_no_clflushopt (void)		__attribute__((__target__("no-clflushopt")));
 extern void test_no_xsaves (void)		__attribute__((__target__("no-xsaves")));
 extern void test_no_xsavec (void)		__attribute__((__target__("no-xsavec")));
@@ -200,8 +190,6 @@ extern void test_arch_tremont (void)		__attribute__((__target__("arch=tremont"))
 extern void test_arch_sierraforest (void)       __attribute__((__target__("arch=sierraforest")));
 extern void test_arch_grandridge (void)		__attribute__((__target__("arch=grandridge")));
 extern void test_arch_clearwaterforest (void)	__attribute__((__target__("arch=clearwaterforest")));
-extern void test_arch_knl (void)		__attribute__((__target__("arch=knl")));
-extern void test_arch_knm (void)		__attribute__((__target__("arch=knm")));
 extern void test_arch_skylake (void)		__attribute__((__target__("arch=skylake")));
 extern void test_arch_skylake_avx512 (void)	__attribute__((__target__("arch=skylake-avx512")));
 extern void test_arch_cannonlake (void)		__attribute__((__target__("arch=cannonlake")));

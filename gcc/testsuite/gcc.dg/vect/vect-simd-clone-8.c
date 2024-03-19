@@ -12,14 +12,22 @@ int a[N], b[N];
 long int c[N];
 unsigned char d[N];
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(2) notinbranch
+#else
 #pragma omp declare simd simdlen(8) notinbranch
+#endif
 __attribute__((noinline)) int
 foo (long int a, int b, int c)
 {
   return a + b + c;
 }
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(2) notinbranch
+#else
 #pragma omp declare simd simdlen(8) notinbranch
+#endif
 __attribute__((noinline)) long int
 bar (int a, int b, long int c)
 {

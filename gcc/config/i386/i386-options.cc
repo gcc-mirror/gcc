@@ -2098,6 +2098,18 @@ ix86_option_override_internal (bool main_args_p,
 		 : G_("%<target(\"tune=x86-64\")%> is deprecated; use "
 		      "%<target(\"tune=k8\")%> or %<target(\"tune=generic\")%>"
 		      " instead as appropriate"));
+      else if (!strcmp (opts->x_ix86_tune_string, "knl"))
+	warning (OPT_Wdeprecated,
+		 main_args_p
+		 ? G_("%<-mtune=knl%> support will be removed in GCC 15")
+		 : G_("%<target(\"tune=knl\")%> support will be removed in "
+		      "GCC 15"));
+      else if (!strcmp (opts->x_ix86_tune_string, "knm"))
+	warning (OPT_Wdeprecated,
+		 main_args_p
+		 ? G_("%<-mtune=knm%> support will be removed in GCC 15")
+		 : G_("%<target(\"tune=knm\")%> support will be removed in "
+		      "GCC 15"));
     }
   else
     {
@@ -2129,6 +2141,8 @@ ix86_option_override_internal (bool main_args_p,
 
   if (TARGET_APX_F && !TARGET_64BIT)
     error ("%<-mapxf%> is not supported for 32-bit code");
+  else if (opts->x_ix86_apx_features != apx_none && !TARGET_64BIT)
+    error ("%<-mapx-features=%> option is not supported for 32-bit code");
 
   if (TARGET_UINTR && !TARGET_64BIT)
     error ("%<-muintr%> not supported for 32-bit code");
@@ -2297,6 +2311,19 @@ ix86_option_override_internal (bool main_args_p,
 		   "instruction set");
 	    return false;
 	  }
+
+	if (!strcmp (opts->x_ix86_arch_string, "knl"))
+	  warning (OPT_Wdeprecated,
+		   main_args_p
+		   ? G_("%<-march=knl%> support will be removed in GCC 15")
+		   : G_("%<target(\"arch=knl\")%> support will be removed in "
+			"GCC 15"));
+	else if (!strcmp (opts->x_ix86_arch_string, "knm"))
+	  warning (OPT_Wdeprecated,
+		   main_args_p
+		   ? G_("%<-march=knm%> support will be removed in GCC 15")
+		   : G_("%<target(\"arch=knm\")%> support will be removed in "
+			"GCC 15"));
 
 	ix86_schedule = processor_alias_table[i].schedule;
 	ix86_arch = processor_alias_table[i].processor;

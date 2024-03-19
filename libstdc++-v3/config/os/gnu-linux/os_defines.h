@@ -60,6 +60,11 @@
 # define _GLIBCXX_HAVE_FLOAT128_MATH 1
 #endif
 
+// Enable __cxa_thread_atexit to rely on a (presumably libc-provided)
+// __cxa_thread_atexit_impl, if it happens to be defined, even if
+// configure couldn't find it during the build.
+#define _GLIBCXX_MAY_HAVE___CXA_THREAD_ATEXIT_IMPL 1
+
 #ifdef __linux__
 // The following libpthread properties only apply to Linux, not GNU/Hurd.
 

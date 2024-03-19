@@ -1,4 +1,4 @@
-// { dg-options "-O -fomit-frame-pointer -fno-optimize-sibling-calls" }
+// { dg-options "-O -fomit-frame-pointer -fno-optimize-sibling-calls -funwind-tables" }
 // { dg-final { check-function-bodies "**" "" } }
 
 #include <arm_sve.h>
@@ -14,7 +14,7 @@ struct callbacks {
 };
 
 /*
-** n_caller:	{ target lp64 }
+** n_caller:	{ target { lp64 && aarch64_little_endian } }
 **	stp	x30, (x19|x2[0-8]), \[sp, #?-32\]!
 **	cntd	x16
 **	str	x16, \[sp, #?16\]
@@ -114,7 +114,7 @@ n_caller (struct callbacks *c)
 }
 
 /*
-** s_caller:	{ target lp64 }
+** s_caller:	{ target { lp64 && aarch64_little_endian } }
 **	stp	x30, (x19|x2[0-8]), \[sp, #?-32\]!
 **	cntd	x16
 **	str	x16, \[sp, #?16\]
@@ -214,7 +214,7 @@ s_caller (struct callbacks *c) [[arm::streaming]]
 }
 
 /*
-** sc_caller:
+** sc_caller:	{ target aarch64_little_endian }
 **	stp	x29, x30, \[sp, #?-32\]!
 **	mov	x29, sp
 **	cntd	x16

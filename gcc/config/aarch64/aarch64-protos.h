@@ -789,6 +789,7 @@ bool aarch64_mask_and_shift_for_ubfiz_p (scalar_int_mode, rtx, rtx);
 bool aarch64_masks_and_shift_for_bfi_p (scalar_int_mode, unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT);
+rtx aarch64_sve_reinterpret (machine_mode, rtx);
 bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (unsigned HOST_WIDE_INT, machine_mode);
 machine_mode aarch64_sve_int_mode (machine_mode);
@@ -840,7 +841,7 @@ bool aarch64_sve_ptrue_svpattern_p (rtx, struct simd_immediate_info *);
 bool aarch64_simd_valid_immediate (rtx, struct simd_immediate_info *,
 			enum simd_immediate_check w = AARCH64_CHECK_MOV);
 bool aarch64_valid_sysreg_name_p (const char *);
-const char *aarch64_retrieve_sysreg (const char *, bool);
+const char *aarch64_retrieve_sysreg (const char *, bool, bool);
 rtx aarch64_check_zero_based_sve_index_immediate (rtx);
 bool aarch64_maybe_generate_simd_constant (rtx, rtx, machine_mode);
 bool aarch64_simd_special_constant_p (rtx, machine_mode);
@@ -891,6 +892,7 @@ bool aarch64_sme_ldr_vnum_offset_p (rtx, rtx);
 rtx aarch64_simd_vect_par_cnst_half (machine_mode, int, bool);
 rtx aarch64_gen_stepped_int_parallel (unsigned int, int, int);
 bool aarch64_stepped_int_parallel_p (rtx, int);
+bool aarch64_strided_registers_p (rtx *, unsigned int, unsigned int);
 rtx aarch64_tls_get_addr (void);
 unsigned aarch64_debugger_regno (unsigned);
 unsigned aarch64_trampoline_size (void);
@@ -1010,6 +1012,7 @@ namespace aarch64_sve {
   void init_builtins ();
   void handle_arm_sve_h ();
   void handle_arm_sme_h ();
+  void handle_arm_neon_sve_bridge_h ();
   tree builtin_decl (unsigned, bool);
   bool builtin_type_p (const_tree);
   bool builtin_type_p (const_tree, unsigned int *, unsigned int *);
@@ -1063,6 +1066,7 @@ void aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates);
 std::string aarch64_get_extension_string_for_isa_flags (aarch64_feature_flags,
 							aarch64_feature_flags);
 
+rtl_opt_pass *make_pass_aarch64_early_ra (gcc::context *);
 rtl_opt_pass *make_pass_fma_steering (gcc::context *);
 rtl_opt_pass *make_pass_track_speculation (gcc::context *);
 rtl_opt_pass *make_pass_tag_collision_avoidance (gcc::context *);

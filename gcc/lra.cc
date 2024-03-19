@@ -768,7 +768,9 @@ check_and_expand_insn_recog_data (int index)
   if (lra_insn_recog_data_len > index)
     return;
   old = lra_insn_recog_data_len;
-  lra_insn_recog_data_len = index * 3 / 2 + 1;
+  lra_insn_recog_data_len = index * 3U / 2;
+  if (lra_insn_recog_data_len <= index)
+    lra_insn_recog_data_len = index + 1;
   lra_insn_recog_data = XRESIZEVEC (lra_insn_recog_data_t,
 				    lra_insn_recog_data,
 				    lra_insn_recog_data_len);

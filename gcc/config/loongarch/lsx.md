@@ -42,8 +42,10 @@
   UNSPEC_LSX_VFCVTL
   UNSPEC_LSX_VFLOGB
   UNSPEC_LSX_VFRECIP
+  UNSPEC_LSX_VFRECIPE
   UNSPEC_LSX_VFRINT
   UNSPEC_LSX_VFRSQRT
+  UNSPEC_LSX_VFRSQRTE
   UNSPEC_LSX_VFCMP_SAF
   UNSPEC_LSX_VFCMP_SEQ
   UNSPEC_LSX_VFCMP_SLE
@@ -957,10 +959,10 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "xor<mode>3"
-  [(set (match_operand:ILSX 0 "register_operand" "=f,f,f")
-	(xor:ILSX
-	  (match_operand:ILSX 1 "register_operand" "f,f,f")
-	  (match_operand:ILSX 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
+  [(set (match_operand:LSX 0 "register_operand" "=f,f,f")
+	(xor:LSX
+	  (match_operand:LSX 1 "register_operand" "f,f,f")
+	  (match_operand:LSX 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
   "ISA_HAS_LSX"
   "@
    vxor.v\t%w0,%w1,%w2
@@ -1081,7 +1083,25 @@
   [(set_attr "type" "simd_fmul")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "div<mode>3"
+(define_expand "div<mode>3"
+  [(set (match_operand:FLSX 0 "register_operand")
+    (div:FLSX (match_operand:FLSX 1 "reg_or_vecotr_1_operand")
+	      (match_operand:FLSX 2 "register_operand")))]
+  "ISA_HAS_LSX"
+{
+  if (<MODE>mode == V4SFmode
+    && TARGET_RECIP_VEC_DIV
+    && optimize_insn_for_speed_p ()
+    && flag_finite_math_only && !flag_trapping_math
+    && flag_unsafe_math_optimizations)
+  {
+    loongarch_emit_swdivsf (operands[0], operands[1],
+	operands[2], V4SFmode);
+    DONE;
+  }
+})
+
+(define_insn "*div<mode>3"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
 	(div:FLSX (match_operand:FLSX 1 "register_operand" "f")
 		  (match_operand:FLSX 2 "register_operand" "f")))]
@@ -1110,7 +1130,23 @@
   [(set_attr "type" "simd_fmadd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "sqrt<mode>2"
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:FLSX 0 "register_operand")
+    (sqrt:FLSX (match_operand:FLSX 1 "register_operand")))]
+  "ISA_HAS_LSX"
+{
+  if (<MODE>mode == V4SFmode
+      && TARGET_RECIP_VEC_SQRT
+      && flag_unsafe_math_optimizations
+      && optimize_insn_for_speed_p ()
+      && flag_finite_math_only && !flag_trapping_math)
+    {
+      loongarch_emit_swrsqrtsf (operands[0], operands[1], V4SFmode, 0);
+      DONE;
+    }
+})
+
+(define_insn "*sqrt<mode>2"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
 	(sqrt:FLSX (match_operand:FLSX 1 "register_operand" "f")))]
   "ISA_HAS_LSX"
@@ -1537,21 +1573,56 @@
   [(set_attr "type" "simd_fminmax")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vfrecip_<flsxfmt>"
+(define_insn "recip<mode>3"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
-	(unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRECIP))]
+       (div:FLSX (match_operand:FLSX 1 "const_vector_1_operand" "")
+		 (match_operand:FLSX 2 "register_operand" "f")))]
   "ISA_HAS_LSX"
-  "vfrecip.<flsxfmt>\t%w0,%w1"
+  "vfrecip.<flsxfmt>\t%w0,%w2"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vfrsqrt_<flsxfmt>"
+;; Approximate Reciprocal Instructions.
+
+(define_insn "lsx_vfrecipe_<flsxfmt>"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
-	(unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRSQRT))]
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+		 UNSPEC_LSX_VFRECIPE))]
+  "ISA_HAS_LSX && TARGET_FRECIPE"
+  "vfrecipe.<flsxfmt>\t%w0,%w1"
+  [(set_attr "type" "simd_fdiv")
+   (set_attr "mode" "<MODE>")])
+
+(define_expand "rsqrt<mode>2"
+  [(set (match_operand:FLSX 0 "register_operand" "=f")
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+	     UNSPEC_LSX_VFRSQRT))]
+ "ISA_HAS_LSX"
+{
+ if (<MODE>mode == V4SFmode && TARGET_RECIP_VEC_RSQRT)
+   {
+     loongarch_emit_swrsqrtsf (operands[0], operands[1], V4SFmode, 1);
+     DONE;
+   }
+})
+
+(define_insn "*rsqrt<mode>2"
+  [(set (match_operand:FLSX 0 "register_operand" "=f")
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+		 UNSPEC_LSX_VFRSQRT))]
   "ISA_HAS_LSX"
   "vfrsqrt.<flsxfmt>\t%w0,%w1"
+  [(set_attr "type" "simd_fdiv")
+   (set_attr "mode" "<MODE>")])
+
+;; Approximate Reciprocal Square Root Instructions.
+
+(define_insn "lsx_vfrsqrte_<flsxfmt>"
+  [(set (match_operand:FLSX 0 "register_operand" "=f")
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+		 UNSPEC_LSX_VFRSQRTE))]
+  "ISA_HAS_LSX && TARGET_FRECIPE"
+  "vfrsqrte.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
@@ -2785,6 +2856,21 @@
   operands[4] = gen_reg_rtx (<MODE>mode);
   operands[5] = gen_reg_rtx (<MODE>mode);
 })
+
+(define_expand "@xorsign<mode>3"
+  [(set (match_dup 4)
+    (and:FLSX (match_dup 3)
+        (match_operand:FLSX 2 "register_operand")))
+   (set (match_operand:FLSX 0 "register_operand")
+    (xor:FLSX (match_dup 4)
+         (match_operand:FLSX 1 "register_operand")))]
+  "ISA_HAS_LSX"
+{
+  operands[3] = loongarch_build_signbit_mask (<MODE>mode, 1, 0);
+
+  operands[4] = gen_reg_rtx (<MODE>mode);
+})
+
 
 (define_insn "absv2df2"
   [(set (match_operand:V2DF 0 "register_operand" "=f")

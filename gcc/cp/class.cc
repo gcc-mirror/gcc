@@ -7805,8 +7805,8 @@ propagate_class_warmth_attribute (tree t)
 
   if (class_has_cold_attr || class_has_hot_attr)
     for (tree f = TYPE_FIELDS (t); f; f = DECL_CHAIN (f))
-      if (TREE_CODE (f) == FUNCTION_DECL)
-	maybe_propagate_warmth_attributes (f, t);
+      if (DECL_DECLARES_FUNCTION_P (f))
+	maybe_propagate_warmth_attributes (STRIP_TEMPLATE (f), t);
 }
 
 tree

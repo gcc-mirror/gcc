@@ -593,6 +593,7 @@ asm_hidden_op
 extra_parts
 cpu_type
 get_gcc_base_ver
+HAVE_STRUB_SUPPORT
 thread_header
 tm_defines
 tm_file
@@ -5618,6 +5619,71 @@ $as_echo "#define HAVE_AS_LSE 1" >>confdefs.h
   ;;
 esac
 
+
+
+case "${target}" in
+aarch64*-*-*)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if as supports .variant_pcs" >&5
+$as_echo_n "checking if as supports .variant_pcs... " >&6; }
+if ${libgcc_cv_as_variant_pcs+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm (".variant_pcs foobar");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgcc_cv_as_variant_pcs=yes
+else
+  libgcc_cv_as_variant_pcs=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_as_variant_pcs" >&5
+$as_echo "$libgcc_cv_as_variant_pcs" >&6; }
+  if test x$libgcc_cv_as_variant_pcs = xyes; then
+
+$as_echo "#define HAVE_AS_VARIANT_PCS 1" >>confdefs.h
+
+  fi
+  ;;
+esac
+
+# Check __getauxval ABI symbol for CPU feature detection.
+case ${target} in
+aarch64*-linux-*)
+  # No link check because the libc may not be present.
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __getauxval" >&5
+$as_echo_n "checking for __getauxval... " >&6; }
+if ${libgcc_cv_have___getauxval+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case ${target} in
+		  *-linux-gnu*)
+		    libgcc_cv_have___getauxval=yes
+		    ;;
+		  *)
+		    libgcc_cv_have___getauxval=no
+		  esac
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_have___getauxval" >&5
+$as_echo "$libgcc_cv_have___getauxval" >&6; }
+  if test x$libgcc_cv_have___getauxval = xyes; then
+
+$as_echo "#define HAVE___GETAUXVAL 1" >>confdefs.h
+
+  fi
+esac
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for init priority support" >&5
 $as_echo_n "checking for init priority support... " >&6; }
 if ${libgcc_cv_init_priority+:} false; then :
@@ -5700,6 +5766,31 @@ case $target_thread_file in
     mcf)	thread_header=config/i386/gthr-mcf.h ;;
 esac
 
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for strub support" >&5
+$as_echo_n "checking for strub support... " >&6; }
+if ${libgcc_cv_strub_support+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+void __attribute__ ((__strub__)) fn (void) {}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgcc_cv_strub_support=yes
+else
+  libgcc_cv_strub_support=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_strub_support" >&5
+$as_echo "$libgcc_cv_strub_support" >&6; }
+if test "x$libgcc_cv_strub_support" != xno; then
+  HAVE_STRUB_SUPPORT=
+else
+  HAVE_STRUB_SUPPORT='# '
+fi
 
 
 # Determine what GCC version number to use in filesystem paths.

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -fstrub=strict -fdump-rtl-expand" } */
+/* { dg-require-effective-target strub } */
 
 /* At -O0, none of the strub builtins are expanded inline.  */
 

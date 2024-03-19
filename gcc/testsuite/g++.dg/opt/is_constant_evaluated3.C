@@ -17,7 +17,7 @@ int main() {
 }
 
 // { dg-final { scan-tree-dump "a1 = {\\.n=42, \\.m=0}" "original" } }
-// { dg-final { scan-tree-dump "a2 = {\\.n=42, \\.m=0}" "original" { xfail *-*-* } } }
-// { dg-final { scan-tree-dump "a3 = {\\.n=42, \\.m=0}" "original" { xfail *-*-* } } }
-// { dg-final { scan-tree-dump "a4 = {\\.n=42, \\.m=0}" "original" { xfail *-*-* } } }
-// { dg-final { scan-tree-dump "a5 = {\\.n=42, \\.m=0}" "original" { xfail *-*-* } } }
+// { dg-final { scan-tree-dump "a2 = {\\.n=42, \\.m=0}" "original" } }
+// { dg-final { scan-tree-dump "a3 = {\\.n=42, \\.m=0}" "original" } }
+// { dg-final { scan-tree-dump "a4 = {\\.n=42, \\.m=0}" "original" } }
+// { dg-final { scan-tree-dump "a5 = {\\.n=42, \\.m=0}" "original" } }

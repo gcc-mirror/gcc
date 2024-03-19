@@ -80,8 +80,17 @@ host_modules= { module= gettext; bootstrap=true; no_install=true;
 		// need it in some configuratons, which is determined via nontrivial tests.
 		// Always enabling pic seems to make sense for something tied to
 		// user-facing output.
-                extra_configure_flags='--disable-shared --disable-java --disable-csharp --with-pic';
-                lib_path=intl/.libs; };
+		extra_configure_flags='--disable-shared --disable-threads --disable-java --disable-csharp --with-pic --disable-libasprintf';
+		missing= pdf;
+		missing= html;
+		missing= info;
+		missing= dvi;
+		missing= install-pdf;
+		missing= install-html;
+		missing= install-info;
+		missing= install-dvi;
+		missing= TAGS;
+		no_install= true; };
 host_modules= { module= tcl;
                 missing=mostlyclean; };
 host_modules= { module= itcl; };

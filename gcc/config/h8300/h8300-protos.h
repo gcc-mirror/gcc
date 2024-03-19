@@ -111,5 +111,6 @@ extern const char *    output_h8sx_shift (rtx *, int, int);
 extern bool            h8300_operands_match_p (rtx *);
 extern bool            h8sx_mergeable_memrefs_p (rtx, rtx);
 extern poly_int64      h8300_push_rounding (poly_int64);
+extern bool            use_extvsi (int, int);
 
 #endif /* ! GCC_H8300_PROTOS_H */

@@ -8428,7 +8428,12 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 AST.TemplateParameters* tpl = null;
 
                 nextToken();
-                if (token.value == TOK.leftParenthesis)
+                if (token.value != TOK.leftParenthesis)
+                {
+                    error("expected `(` following `is`, not `%s`", token.toChars());
+                    goto Lerr;
+                }
+                else
                 {
                     nextToken();
                     if (token.value == TOK.identifier && peekNext() == TOK.leftParenthesis)
@@ -8475,11 +8480,6 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     }
                     else
                         check(TOK.rightParenthesis);
-                }
-                else
-                {
-                    error("`type identifier : specialization` expected following `is`");
-                    goto Lerr;
                 }
                 e = new AST.IsExp(loc, targ, ident, tok, tspec, tok2, tpl);
                 break;

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=strict -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 typedef void __attribute__ ((__strub__)) fntype ();
 fntype (*ptr);

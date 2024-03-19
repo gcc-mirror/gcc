@@ -71,9 +71,9 @@ DO_IMMEDIATE_OPS (0, int64_t, 0);
 DO_IMMEDIATE_OPS (5, int64_t, 5);
 DO_IMMEDIATE_OPS (63, int64_t, 63);
 
-/* { dg-final { scan-assembler-times {\tasr\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tlsr\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tlsl\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tasrr?\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tlsrr?\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tlslr?\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
 
 /* { dg-final { scan-assembler-times {\tasrr?\tz[0-9]+\.d, p[0-7]/m, z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tlsrr?\tz[0-9]+\.d, p[0-7]/m, z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */

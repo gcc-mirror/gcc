@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=strict -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 /* Check that, along with a strub const wrapping call, we issue an asm statement
    to make sure the watermark passed to it is held in memory before the call,

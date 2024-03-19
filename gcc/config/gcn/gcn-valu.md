@@ -1145,13 +1145,13 @@
     {})
 
 (define_insn "gather<mode>_insn_1offset<exec>"
-  [(set (match_operand:V_MOV 0 "register_operand"		   "=v,a")
+  [(set (match_operand:V_MOV 0 "register_operand"		   "=v,a,&v,&a")
 	(unspec:V_MOV
-	  [(plus:<VnDI> (match_operand:<VnDI> 1 "register_operand" " v,v")
+	  [(plus:<VnDI> (match_operand:<VnDI> 1 "register_operand" " v,v, v, v")
 			(vec_duplicate:<VnDI>
-			  (match_operand 2 "immediate_operand"	   " n,n")))
-	   (match_operand 3 "immediate_operand"			   " n,n")
-	  (match_operand 4 "immediate_operand"			   " n,n")
+			  (match_operand 2 "immediate_operand"	   " n,n, n, n")))
+	   (match_operand 3 "immediate_operand"			   " n,n, n, n")
+	   (match_operand 4 "immediate_operand"			   " n,n, n, n")
 	   (mem:BLK (scratch))]
 	  UNSPEC_GATHER))]
   "(AS_FLAT_P (INTVAL (operands[3]))
@@ -1182,7 +1182,8 @@
   }
   [(set_attr "type" "flat")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "*,cdna2")])
+   (set_attr "gcn_version" "*,cdna2,*,cdna2")
+   (set_attr "xnack" "off,off,on,on")])
 
 (define_insn "gather<mode>_insn_1offset_ds<exec>"
   [(set (match_operand:V_MOV 0 "register_operand"		   "=v,a")
@@ -1208,18 +1209,18 @@
    (set_attr "gcn_version" "*,cdna2")])
 
 (define_insn "gather<mode>_insn_2offsets<exec>"
-  [(set (match_operand:V_MOV 0 "register_operand"		      "=v,a")
+  [(set (match_operand:V_MOV 0 "register_operand"		"=v,a,&v,&a")
 	(unspec:V_MOV
 	  [(plus:<VnDI>
 	     (plus:<VnDI>
 	       (vec_duplicate:<VnDI>
-		 (match_operand:DI 1 "register_operand"		      "Sv,Sv"))
+		 (match_operand:DI 1 "register_operand"		"Sv,Sv,Sv,Sv"))
 	       (sign_extend:<VnDI>
-		 (match_operand:<VnSI> 2 "register_operand"	      " v,v")))
+		 (match_operand:<VnSI> 2 "register_operand"	" v, v, v, v")))
 	     (vec_duplicate:<VnDI> (match_operand 3 "immediate_operand"
-								      " n,n")))
-	   (match_operand 4 "immediate_operand"			      " n,n")
-	   (match_operand 5 "immediate_operand"			      " n,n")
+								" n, n, n, n")))
+	   (match_operand 4 "immediate_operand"			" n, n, n, n")
+	   (match_operand 5 "immediate_operand"			" n, n, n, n")
 	   (mem:BLK (scratch))]
 	  UNSPEC_GATHER))]
   "(AS_GLOBAL_P (INTVAL (operands[4]))
@@ -1239,7 +1240,8 @@
   }
   [(set_attr "type" "flat")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "*,cdna2")])
+   (set_attr "gcn_version" "*,cdna2,*,cdna2")
+   (set_attr "xnack" "off,off,on,on")])
 
 (define_expand "scatter_store<mode><vnsi>"
   [(match_operand:DI 0 "register_operand")

@@ -28,7 +28,7 @@ IMPLEMENTATION MODULE IO ;
 
 
 FROM StrLib IMPORT StrCopy ;
-FROM SYSTEM IMPORT ADR, SIZE ;
+FROM SYSTEM IMPORT ADR ;
 FROM libc IMPORT read, write, system, isatty ;
 
 FROM FIO IMPORT File, StdIn, StdOut, StdErr, WriteChar, ReadChar,

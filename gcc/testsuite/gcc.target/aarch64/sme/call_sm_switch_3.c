@@ -1,4 +1,4 @@
-// { dg-options "-O -fomit-frame-pointer -fno-optimize-sibling-calls" }
+// { dg-options "-O -fomit-frame-pointer -fno-optimize-sibling-calls -funwind-tables" }
 // { dg-final { check-function-bodies "**" "" } }
 
 __attribute__((aarch64_vector_pcs)) void ns_callee ();

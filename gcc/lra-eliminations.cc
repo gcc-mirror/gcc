@@ -666,6 +666,10 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
       return x;
 
     case CLOBBER:
+    case ASM_OPERANDS:
+      gcc_assert (insn && DEBUG_INSN_P (insn));
+      break;
+
     case SET:
       gcc_unreachable ();
 

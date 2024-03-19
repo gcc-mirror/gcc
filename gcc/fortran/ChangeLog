@@ -1,3 +1,113 @@
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* dependency.cc (gfc_omp_expr_prefix_same): New function.
+	* dependency.h (gfc_omp_expr_prefix_same): Add prototype.
+	* gfortran.h (gfc_omp_namelist): Add "duplicate_of" field to "u2"
+	union.
+	* trans-openmp.cc (dependency.h): Include.
+	(gfc_trans_omp_array_section): Adjust mapping node arrangement for
+	array descriptors.  Use GOMP_MAP_TO_PSET or
+	GOMP_MAP_RELEASE/GOMP_MAP_DELETE with the OMP_CLAUSE_RELEASE_DESCRIPTOR
+	flag set.
+	(gfc_symbol_rooted_namelist): New function.
+	(gfc_trans_omp_clauses): Check subcomponent and subarray/element
+	accesses elsewhere in the clause list for pointers to derived types or
+	array descriptors, and adjust or drop mapping nodes appropriately.
+	Adjust for changes to mapping node arrangement.
+	(gfc_trans_oacc_executable_directive): Pass code op through.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_array_section): Add OPENMP parameter.
+	Use GOMP_MAP_ATTACH_DETACH instead of GOMP_MAP_ALWAYS_POINTER for
+	derived type components.
+	(gfc_trans_omp_clauses): Update calls to gfc_trans_omp_array_section.
+
+2023-12-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* trans-openmp.cc (gfc_omp_call_is_alloc): Resolve ICE.
+
+2023-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_requires_kind): Add
+	OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE and OMP_REQ_ATOMIC_MEM_ORDER_RELEASE.
+	(gfc_namespace): Add a 7th bit to omp_requires.
+	* module.cc (enum ab_attribute): Add AB_OMP_REQ_MEM_ORDER_ACQUIRE
+	and AB_OMP_REQ_MEM_ORDER_RELEASE
+	(mio_symbol_attribute): Handle it.
+	* openmp.cc (gfc_omp_requires_add_clause): Update for acquire/release.
+	(gfc_match_omp_requires): Likewise.
+	(gfc_match_omp_atomic): Handle them for atomic_default_mem_order.
+	* parse.cc: Likewise.
+
+2023-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_omp_call_add_alloc,
+	gfc_omp_call_is_alloc): Set 'fn spec'.
+
+2023-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111503
+	* expr.cc (gfc_is_simply_contiguous): Determine characteristics of
+	NULL() from optional MOLD argument, otherwise treat as contiguous.
+	* primary.cc (gfc_variable_attr): Derive attributes of NULL(MOLD)
+	from MOLD.
+
+2023-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105543
+	* resolve.cc (resolve_symbol): For a CLASS-valued function having a
+	RESULT clause, ensure that attr.class_ok is set for its symbol as
+	well as for its resolved result variable.
+
+2023-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_node): Handle EXEC_OMP_ALLOCATE
+	and EXEC_OMP_ALLOCATORS.
+	* f95-lang.cc (ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LIST):
+	Add 'ECF_LEAF | ECF_MALLOC' to existing 'ECF_NOTHROW'.
+	(ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LEAF_LIST): Define.
+	* gfortran.h (gfc_omp_clauses): Add contained_in_target_construct.
+	* invoke.texi (-fopenacc, -fopenmp): Update based on C version.
+	(-fopenmp-simd): New, based on C version.
+	(-fopenmp-allocators): New.
+	* lang.opt (fopenmp-allocators): Add.
+	* openmp.cc (resolve_omp_clauses): For allocators/allocate directive,
+	add target and no dynamic_allocators diagnostic and more invalid
+	diagnostic.
+	* parse.cc (decode_omp_directive): Set contains_teams_construct.
+	* trans-array.h (gfc_array_allocate): Update prototype.
+	(gfc_conv_descriptor_version): New prototype.
+	* trans-decl.cc (gfc_init_default_dt): Fix comment.
+	* trans-array.cc (gfc_conv_descriptor_version): New.
+	(gfc_array_allocate): Support GOMP_alloc allocation.
+	(gfc_alloc_allocatable_for_assignment, structure_alloc_comps):
+	Handle GOMP_free/omp_realloc as needed.
+	* trans-expr.cc (gfc_conv_procedure_call): Likewise.
+	(alloc_scalar_allocatable_for_assignment): Likewise.
+	* trans-intrinsic.cc (conv_intrinsic_move_alloc): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_allocators,
+	gfc_trans_omp_directive): Handle allocators/allocate directive.
+	(gfc_omp_call_add_alloc, gfc_omp_call_is_alloc): New.
+	* trans-stmt.h (gfc_trans_allocate): Update prototype.
+	* trans-stmt.cc (gfc_trans_allocate): Support GOMP_alloc.
+	* trans-types.cc (gfc_get_dtype_rank_type): Set version field.
+	* trans.cc (gfc_allocate_using_malloc, gfc_allocate_allocatable):
+	Update to handle GOMP_alloc.
+	(gfc_deallocate_with_status, gfc_deallocate_scalar_with_status):
+	Handle GOMP_free.
+	(trans_code): Update call.
+	* trans.h (gfc_allocate_allocatable, gfc_allocate_using_malloc):
+	Update prototype.
+	(gfc_omp_call_add_alloc, gfc_omp_call_is_alloc): New prototype.
+	* types.def (BT_FN_PTR_PTR_SIZE_PTRMODE_PTRMODE): New.
+
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_diagnostic_starter): Make diagnostic_info param
+	const.
+	(gfc_diagnostic_finalizer): Likewise.
+
 2023-12-05  Harald Anlauf  <anlauf@gmx.de>
 	    Tobias Burnus   <tobias@codesourcery.com>
 

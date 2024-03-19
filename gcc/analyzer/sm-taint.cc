@@ -891,11 +891,18 @@ taint_state_machine::alt_get_inherited_state (const sm_state_map &map,
 	  case MULT_EXPR:
 	  case POINTER_PLUS_EXPR:
 	  case TRUNC_DIV_EXPR:
-	  case TRUNC_MOD_EXPR:
 	    {
 	      state_t arg0_state = map.get_state (arg0, ext_state);
 	      state_t arg1_state = map.get_state (arg1, ext_state);
 	      return combine_states (arg0_state, arg1_state);
+	    }
+	    break;
+
+	  case TRUNC_MOD_EXPR:
+	    {
+	      /* The left-hand side of X % Y can be sanitized by
+		 the operation.  */
+	      return map.get_state (arg1, ext_state);
 	    }
 	    break;
 
@@ -1037,6 +1044,20 @@ taint_state_machine::on_condition (sm_context *sm_ctxt,
 {
   if (stmt == NULL)
     return;
+
+  if (lhs->get_kind () == SK_UNKNOWN
+      || rhs->get_kind () == SK_UNKNOWN)
+    {
+      /* If we have a comparison against UNKNOWN, then
+	 we've presumably hit the svalue complexity limit,
+	 and we don't know what is being sanitized.
+	 Give up on any taint already found on this execution path.  */
+      // TODO: warn about this
+      if (get_logger ())
+	get_logger ()->log ("comparison against UNKNOWN; removing all taint");
+      sm_ctxt->clear_all_per_svalue_state ();
+      return;
+    }
 
   // TODO
   switch (op)

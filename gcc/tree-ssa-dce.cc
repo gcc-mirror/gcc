@@ -1241,9 +1241,7 @@ maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
   tree arg1 = gimple_call_arg (stmt, 1);
   location_t loc = gimple_location (stmt);
   tree type = TREE_TYPE (TREE_TYPE (lhs));
-  tree utype = type;
-  if (!TYPE_UNSIGNED (type))
-    utype = build_nonstandard_integer_type (TYPE_PRECISION (type), 1);
+  tree utype = unsigned_type_for (type);
   tree result = fold_build2_loc (loc, subcode, utype,
 				 fold_convert_loc (loc, utype, arg0),
 				 fold_convert_loc (loc, utype, arg1));

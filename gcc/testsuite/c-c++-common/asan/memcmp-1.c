@@ -21,4 +21,4 @@ main ()
 /* { dg-output "    #\[2-9\] 0x\[0-9a-f\]+ +(in _*main|\[(\])\[^\n\r]*(\n|\r\n|\r)" { target { ! *-*-darwin* } } } */
 
 /* { dg-output "    #\[0-9\] 0x\[0-9a-f\]+ +(in MemcmpInterceptorCommon|\[(\])\[^\n\r]*(\n|\r\n|\r)" { target *-*-darwin* } } */
-/* { dg-output "    #\[1-9\] 0x\[0-9a-f\]+ +(in wrap_(memcmp|bcmp)|\[(\])\[^\n\r]*(\n|\r\n|\r)" { target *-*-darwin* } } */
+/* { dg-output "    #\[1-9\] 0x\[0-9a-f\]+ +(in (memcmp|bcmp)|\[(\])\[^\n\r]*(\n|\r\n|\r)" { target *-*-darwin* } } */

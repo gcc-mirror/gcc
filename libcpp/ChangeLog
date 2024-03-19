@@ -1,3 +1,10 @@
+2023-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/112956
+	* lex.cc (_cpp_lex_direct): Initialize c to 0.
+	For CPP_PRAGMA_EOL tokens and if c == 0 also for CPP_EOF
+	set result->src_loc to highest locus.
+
 2023-11-28  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/112701

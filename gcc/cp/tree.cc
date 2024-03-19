@@ -689,6 +689,7 @@ build_aggr_init_expr (tree type, tree init)
       CALL_EXPR_OPERATOR_SYNTAX (rval) = CALL_EXPR_OPERATOR_SYNTAX (init);
       CALL_EXPR_ORDERED_ARGS (rval) = CALL_EXPR_ORDERED_ARGS (init);
       CALL_EXPR_REVERSE_ARGS (rval) = CALL_EXPR_REVERSE_ARGS (init);
+      SET_EXPR_LOCATION (rval, EXPR_LOCATION (init));
     }
   else
     rval = init;
@@ -3168,6 +3169,9 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
 						    data.clear_location);
       if (TREE_OPERAND (u, 1) == error_mark_node)
 	return error_mark_node;
+
+      if (data.clear_location)
+	SET_EXPR_LOCATION (u, input_location);
 
       /* Replace the old expression with the new version.  */
       *tp = u;

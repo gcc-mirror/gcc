@@ -174,6 +174,39 @@ static assert(test7s() == -1);
 static assert(test7s2() == -2);
 
 /******************************************/
+// https://issues.dlang.org/show_bug.cgi?id=24257
+
+struct S24257
+{
+    uint : 15;
+    bool done : 1;
+}
+
+bool advance()
+{
+    S24257 n;
+    n.done = false;
+    n.done = true;
+    return n.done;
+}
+
+bool retard()
+{
+    S24257 n;
+    n.done = true;
+    n.done = false;
+    return n.done;
+}
+
+static assert(advance() == true);
+
+void test24257()
+{
+    assert(advance() == true);
+    assert(retard() == false);
+}
+
+/******************************************/
 
 int main()
 {
@@ -184,6 +217,7 @@ int main()
     test5();
     test6();
     test7();
+    test24257();
 
     return 0;
 }

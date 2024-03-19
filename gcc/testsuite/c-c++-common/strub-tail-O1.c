@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fstrub=strict -fno-exceptions -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 #include "strub-tail-O2.c"
 

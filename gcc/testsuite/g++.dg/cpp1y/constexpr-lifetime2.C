@@ -8,7 +8,7 @@ struct S {
 
 constexpr int error() {
   const auto& local = S{}.get();  // { dg-message "note: declared here" }
-  return local;  // { dg-error "accessing object outside its lifetime" }
+  return local;  // { dg-error "accessing '\[^'\]+' outside its lifetime" }
 }
 constexpr int x = error();  // { dg-message "in .constexpr. expansion" }
 

@@ -1050,6 +1050,15 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
 	      pp_string (pp, " [bias: ");
 	      break;
+	    case GOMP_MAP_RELEASE:
+	    case GOMP_MAP_DELETE:
+	      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
+		  && OMP_CLAUSE_RELEASE_DESCRIPTOR (clause))
+		{
+		  pp_string (pp, " [pointer set, len: ");
+		  break;
+		}
+	      /* Fallthrough.  */
 	    default:
 	      pp_string (pp, " [len: ");
 	      break;
@@ -2624,8 +2633,23 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	if (TREE_CLOBBER_P (node))
 	  {
 	    pp_string (pp, "CLOBBER");
-	    if (CLOBBER_KIND (node) == CLOBBER_EOL)
-	      pp_string (pp, "(eol)");
+	    switch (CLOBBER_KIND (node))
+	      {
+	      case CLOBBER_STORAGE_BEGIN:
+		pp_string (pp, "(bos)");
+		break;
+	      case CLOBBER_STORAGE_END:
+		pp_string (pp, "(eos)");
+		break;
+	      case CLOBBER_OBJECT_BEGIN:
+		pp_string (pp, "(bob)");
+		break;
+	      case CLOBBER_OBJECT_END:
+		pp_string (pp, "(eob)");
+		break;
+	      default:
+		break;
+	      }
 	  }
 	else if (TREE_CODE (TREE_TYPE (node)) == RECORD_TYPE
 		 || TREE_CODE (TREE_TYPE (node)) == UNION_TYPE)
@@ -3488,7 +3512,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_generic_node (pp, CHREC_LEFT (node), spc, flags, false);
       pp_string (pp, ", +, ");
       dump_generic_node (pp, CHREC_RIGHT (node), spc, flags, false);
-      pp_string (pp, "}_");
+      pp_string (pp, !CHREC_NOWRAP (node) ? "}_" : "}<nw>_");
       pp_scalar (pp, "%u", CHREC_VARIABLE (node));
       is_stmt = false;
       break;
