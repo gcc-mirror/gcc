@@ -507,11 +507,15 @@ proc v3_target_compile { source dest type options } {
 	}
     }
 
+    # For Windows and Darwin we might want to create a temporary file.
+    # Note that it needs deleting.
+    set file_to_delete ""
     # Small adjustment for Windows hosts.
     if { $dest == "/dev/null"
 	  && [info exists ::env(OS)] && [string match "Windows*" $::env(OS)] } {
 	if { $type == "executable" } {
 	    set dest "x.exe"
+	    set file_to_delete ${dest}
 	} else {
 	    # Windows uses special file named "nul" as a substitute for
 	    # /dev/null
@@ -519,11 +523,25 @@ proc v3_target_compile { source dest type options } {
 	}
     }
 
+    # Using /dev/null as the executable name does not work on Darwin when
+    # debug is enabled, since the debug linker does not accept /dev/null as
+    # a valid executable name.
+    if { $dest == "/dev/null" && [istarget *-*-darwin*]
+         && $type == "executable" } {
+	set dest dev-null-[pid].exe
+	set file_to_delete ${dest}
+    }
+
     lappend options "compiler=$cxx_final"
     lappend options "timeout=[timeout_value]"
 
     set comp_output [target_compile $source $dest $type $options]
-
+    if { $type == "executable" && $file_to_delete != "" } {
+	file delete $file_to_delete
+	if { [istarget *-*-darwin*] && [file exists $file_to_delete.dSYM] } {
+	    file delete -force $file_to_delete.dSYM
+	}
+    }
     return $comp_output
 }
 
