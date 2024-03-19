@@ -2253,7 +2253,8 @@ setup_incoming_varargs (cumulative_args_t cum,
 
   /* Skip the last named argument.  */
   next_cum = *get_cumulative_args (cum);
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
     rs6000_function_arg_advance_1 (&next_cum, arg.mode, arg.type, arg.named,
 				   0);
 
