@@ -727,7 +727,7 @@ private:
   {}
 
   MacroInvocation (const MacroInvocation &other)
-    : TraitItem (other.locus), ExternalItem (Expr::node_id),
+    : TraitItem (other.locus), ExternalItem (other.node_id),
       outer_attrs (other.outer_attrs), locus (other.locus),
       node_id (other.node_id), invoc_data (other.invoc_data),
       is_semi_coloned (other.is_semi_coloned), kind (other.kind),
