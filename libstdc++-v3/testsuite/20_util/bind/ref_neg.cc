@@ -50,7 +50,7 @@ void test02()
 
 // Ignore the reasons for deduction/substitution failure in the headers.
 // Arrange for the match to work on installed trees as well as build trees.
-// { dg-prune-output "no type named 'type' in 'struct std::result_of" }
+// { dg-prune-output "no type named 'type' in 'struct std::__invoke_result" }
 
 int main()
 {
