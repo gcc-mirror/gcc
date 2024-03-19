@@ -314,6 +314,10 @@ public:
   {
     flush_to_file (stderr);
   }
+  bool machine_readable_stderr_p () const final override
+  {
+    return true;
+  }
 };
 
 class json_file_output_format : public json_output_format
@@ -344,6 +348,10 @@ public:
     flush_to_file (outf);
     fclose (outf);
     free (filename);
+  }
+  bool machine_readable_stderr_p () const final override
+  {
+    return false;
   }
 
 private:

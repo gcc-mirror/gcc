@@ -1750,6 +1750,10 @@ public:
   {
     m_builder.flush_to_file (m_stream);
   }
+  bool machine_readable_stderr_p () const final override
+  {
+    return m_stream == stderr;
+  }
 private:
   FILE *m_stream;
 };
@@ -1781,6 +1785,10 @@ public:
     m_builder.flush_to_file (outf);
     fclose (outf);
     free (filename);
+  }
+  bool machine_readable_stderr_p () const final override
+  {
+    return false;
   }
 
 private:

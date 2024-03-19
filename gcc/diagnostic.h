@@ -210,6 +210,7 @@ public:
   virtual void on_end_diagnostic (const diagnostic_info &,
 				  diagnostic_t orig_diag_kind) = 0;
   virtual void on_diagram (const diagnostic_diagram &diagram) = 0;
+  virtual bool machine_readable_stderr_p () const = 0;
 
 protected:
   diagnostic_output_format (diagnostic_context &context)
@@ -238,6 +239,10 @@ public:
   void on_end_diagnostic (const diagnostic_info &,
 			  diagnostic_t orig_diag_kind) override;
   void on_diagram (const diagnostic_diagram &diagram) override;
+  bool machine_readable_stderr_p () const final override
+  {
+    return false;
+  }
 };
 
 /* A stack of sets of classifications: each entry in the stack is
@@ -431,6 +436,11 @@ public:
 			 pretty_printer *pp);
 
   void emit_diagram (const diagnostic_diagram &diagram);
+
+  const diagnostic_output_format *get_output_format () const
+  {
+    return m_output_format;
+  }
 
   /* Various setters for use by option-handling logic.  */
   void set_output_format (diagnostic_output_format *output_format);

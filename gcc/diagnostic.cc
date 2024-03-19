@@ -802,8 +802,8 @@ diagnostic_context::action_after_output (diagnostic_t diag_kind)
     case DK_FATAL:
       if (m_abort_on_error)
 	real_abort ();
-      finish ();
       fnotice (stderr, "compilation terminated.\n");
+      finish ();
       exit (FATAL_EXIT_CODE);
 
     default:
@@ -2264,6 +2264,16 @@ diagnostic_context::emit_diagram (const diagnostic_diagram &diagram)
 void
 fnotice (FILE *file, const char *cmsgid, ...)
 {
+  /* If the user requested one of the machine-readable diagnostic output
+     formats on stderr (e.g. -fdiagnostics-format=sarif-stderr), then
+     emitting free-form text on stderr will lead to corrupt output.
+     Skip the message for such cases.  */
+  if (file == stderr && global_dc)
+    if (const diagnostic_output_format *output_format
+	  = global_dc->get_output_format ())
+      if (output_format->machine_readable_stderr_p ())
+	return;
+
   va_list ap;
 
   va_start (ap, cmsgid);
