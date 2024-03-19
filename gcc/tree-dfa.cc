@@ -550,7 +550,8 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 		    /* Try to constrain maxsize with range information.  */
 		    offset_int omax
 		      = offset_int::from (max, TYPE_SIGN (TREE_TYPE (index)));
-		    if (known_lt (lbound, omax))
+		    if (wi::get_precision (max) <= ADDR_MAX_BITSIZE
+			&& known_lt (lbound, omax))
 		      {
 			poly_offset_int rmaxsize;
 			rmaxsize = (omax - lbound + 1)
@@ -568,7 +569,8 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 		    /* Try to adjust bit_offset with range information.  */
 		    offset_int omin
 		      = offset_int::from (min, TYPE_SIGN (TREE_TYPE (index)));
-		    if (known_le (lbound, omin))
+		    if (wi::get_precision (min) <= ADDR_MAX_BITSIZE
+			&& known_le (lbound, omin))
 		      {
 			poly_offset_int woffset
 			  = wi::sext (omin - lbound,
