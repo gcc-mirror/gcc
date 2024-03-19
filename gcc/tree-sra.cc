@@ -2735,7 +2735,8 @@ analyze_access_subtree (struct access *root, struct access *parent,
     {
       hole |= covered_to < child->offset;
       sth_created |= analyze_access_subtree (child, root,
-					     allow_replacements && !scalar,
+					     allow_replacements && !scalar
+					     && !root->grp_partial_lhs,
 					     totally);
 
       root->grp_unscalarized_data |= child->grp_unscalarized_data;
