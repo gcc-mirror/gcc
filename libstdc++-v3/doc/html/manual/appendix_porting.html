@@ -7,7 +7,7 @@
 </th><td width="20%" align="right"> <a accesskey="n" href="documentation_hacking.html">Next</a></td></tr></table><hr /></div><div class="appendix"><div class="titlepage"><div><div><h1 class="title"><a id="appendix.porting"></a>
   Porting and Maintenance
   <a id="id-1.3.6.3.1.1.1" class="indexterm"></a>
-</h1></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="section"><a href="appendix_porting.html#appendix.porting.build_hacking">Configure and Build Hacking</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview">Overview</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview.basic">General Process</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview.map">What Comes from Where</a></span></dt></dl></dd><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure">Configure</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.scripts">Storing Information in non-AC files (like configure.host)</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.conventions">Coding and Commenting Conventions</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.acinclude">The acinclude.m4 layout</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.enable"><code class="constant">GLIBCXX_ENABLE</code>, the <code class="literal">--enable</code> maker</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.version">Shared Library Versioning</a></span></dt></dl></dd><dt><span class="section"><a href="appendix_porting.html#build_hacking.make">Make</a></span></dt></dl></dd><dt><span class="section"><a href="documentation_hacking.html">Writing and Generating Documentation</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#doc.intro">Introduction</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doc.generation">Generating Documentation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doc.doxygen">Doxygen</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#doxygen.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.rules">Generating the Doxygen Files</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.debug">Debugging Generation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.markup">Markup</a></span></dt></dl></dd><dt><span class="section"><a href="documentation_hacking.html#doc.docbook">Docbook</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#docbook.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.rules">Generating the DocBook Files</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.debug">Debugging Generation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.validation">Editing and Validation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.examples">File Organization and Basics</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.markup">Markup By Example</a></span></dt></dl></dd></dl></dd><dt><span class="section"><a href="internals.html">Porting to New Hardware or Operating Systems</a></span></dt><dd><dl><dt><span class="section"><a href="internals.html#internals.os">Operating System</a></span></dt><dt><span class="section"><a href="internals.html#internals.cpu">CPU</a></span></dt><dt><span class="section"><a href="internals.html#internals.char_types">Character Types</a></span></dt><dt><span class="section"><a href="internals.html#internals.thread_safety">Thread Safety</a></span></dt><dt><span class="section"><a href="internals.html#internals.numeric_limits">Numeric Limits</a></span></dt><dt><span class="section"><a href="internals.html#internals.libtool">Libtool</a></span></dt></dl></dd><dt><span class="section"><a href="test.html">Testing</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.organization">Test Organization</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.organization.layout">Directory Layout</a></span></dt><dt><span class="section"><a href="test.html#test.organization.naming">Naming Conventions</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.run">Running the Testsuite</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.run.basic">Basic</a></span></dt><dt><span class="section"><a href="test.html#test.run.variations">Variations</a></span></dt><dt><span class="section"><a href="test.html#test.run.permutations">Permutations</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.new_tests">Writing a new test case</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#tests.dg.examples">Examples of Test Directives</a></span></dt><dt><span class="section"><a href="test.html#tests.dg.directives">Directives Specific to Libstdc++ Tests</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.harness">Test Harness and Utilities</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.harness.dejagnu">DejaGnu Harness Details</a></span></dt><dt><span class="section"><a href="test.html#test.harness.utils">Utilities</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.special">Special Topics</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.exception.safety">
+</h1></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="section"><a href="appendix_porting.html#appendix.porting.build_hacking">Configure and Build Hacking</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview">Overview</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview.basic">General Process</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview.map">What Comes from Where</a></span></dt></dl></dd><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure">Configure</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.scripts">Storing Information in non-AC files (like configure.host)</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.conventions">Coding and Commenting Conventions</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.acinclude">The acinclude.m4 layout</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.enable"><code class="constant">GLIBCXX_ENABLE</code>, the <code class="literal">--enable</code> maker</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.version">Shared Library Versioning</a></span></dt></dl></dd><dt><span class="section"><a href="appendix_porting.html#build_hacking.make">Make</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.generated">Generated files</a></span></dt></dl></dd><dt><span class="section"><a href="documentation_hacking.html">Writing and Generating Documentation</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#doc.intro">Introduction</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doc.generation">Generating Documentation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doc.doxygen">Doxygen</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#doxygen.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.rules">Generating the Doxygen Files</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.debug">Debugging Generation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.markup">Markup</a></span></dt></dl></dd><dt><span class="section"><a href="documentation_hacking.html#doc.docbook">Docbook</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#docbook.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.rules">Generating the DocBook Files</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.debug">Debugging Generation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.validation">Editing and Validation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.examples">File Organization and Basics</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.markup">Markup By Example</a></span></dt></dl></dd></dl></dd><dt><span class="section"><a href="internals.html">Porting to New Hardware or Operating Systems</a></span></dt><dd><dl><dt><span class="section"><a href="internals.html#internals.os">Operating System</a></span></dt><dt><span class="section"><a href="internals.html#internals.cpu">CPU</a></span></dt><dt><span class="section"><a href="internals.html#internals.char_types">Character Types</a></span></dt><dt><span class="section"><a href="internals.html#internals.thread_safety">Thread Safety</a></span></dt><dt><span class="section"><a href="internals.html#internals.numeric_limits">Numeric Limits</a></span></dt><dt><span class="section"><a href="internals.html#internals.libtool">Libtool</a></span></dt></dl></dd><dt><span class="section"><a href="test.html">Testing</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.organization">Test Organization</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.organization.layout">Directory Layout</a></span></dt><dt><span class="section"><a href="test.html#test.organization.naming">Naming Conventions</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.run">Running the Testsuite</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.run.basic">Basic</a></span></dt><dt><span class="section"><a href="test.html#test.run.variations">Variations</a></span></dt><dt><span class="section"><a href="test.html#test.run.permutations">Permutations</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.new_tests">Writing a new test case</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#tests.dg.examples">Examples of Test Directives</a></span></dt><dt><span class="section"><a href="test.html#tests.dg.directives">Directives Specific to Libstdc++ Tests</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.harness">Test Harness and Utilities</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.harness.dejagnu">DejaGnu Harness Details</a></span></dt><dt><span class="section"><a href="test.html#test.harness.utils">Utilities</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.special">Special Topics</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.exception.safety">
   Qualifying Exception Safety Guarantees
   
 </a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.exception.safety.overview">Overview</a></span></dt><dt><span class="section"><a href="test.html#test.exception.safety.status">
@@ -377,22 +377,74 @@ baseline file.
    </p></li><li class="listitem"><p>
      make src
    </p><p>
-     Generates two convenience libraries, one for C++98 and one for
-     C++11, various compatibility files for shared and static
-     libraries, and then collects all the generated bits and creates
+     Generates several convenience libraries,
+     various compatibility files for shared and static libraries,
+     and then collects all the generated bits and creates
      the final libstdc++ libraries.
   </p><div class="orderedlist"><ol class="orderedlist" type="a"><li class="listitem"><p>
      make src/c++98
    </p><p>
      Generates a libtool convenience library,
-     <code class="filename">libc++98convenience</code> with language-support
-     routines. Uses the <code class="option">-std=gnu++98</code> dialect.
+     <code class="filename">libc++98convenience</code> with the library components
+     defined by C++98. Uses the <code class="option">-std=gnu++98</code> dialect.
    </p></li><li class="listitem"><p>
      make src/c++11
    </p><p>
      Generates a libtool convenience library,
-     <code class="filename">libc++11convenience</code> with language-support
-     routines. Uses the <code class="option">-std=gnu++11</code> dialect.
+     <code class="filename">libc++11convenience</code> with the library components
+     that were added or changed in C++11.
+     Uses the <code class="option">-std=gnu++11</code> dialect.
+   </p></li><li class="listitem"><p>
+     make src/c++17
+   </p><p>
+     Generates a libtool convenience library,
+     <code class="filename">libc++17convenience</code> with the library components
+     that were added or changed in C++17.
+     Uses the <code class="option">-std=gnu++17</code> dialect.
+   </p></li><li class="listitem"><p>
+     make src/c++20
+   </p><p>
+     Generates a libtool convenience library,
+     <code class="filename">libc++20convenience</code> with the library components
+     that were added or changed in C++20.
+     Uses the <code class="option">-std=gnu++20</code> dialect.
+   </p></li><li class="listitem"><p>
+     make src/c++23
+   </p><p>
+     Generates a libtool convenience library,
+     <code class="filename">libc++23convenience</code> with the library components
+     that were added or changed in C++23.
+     At the time of writing (GCC 14) this convenience library is included
+     in <code class="filename">libstdc++exp.a</code> and not in the final
+     <code class="filename">libstdc++</code> libraries.
+     Uses the <code class="option">-std=gnu++23</code> dialect.
+   </p></li><li class="listitem"><p>
+     make src/filesystem
+   </p><p>
+     Generates a libtool convenience library,
+     <code class="filename">libstdc++fsconvenience</code>,
+     and a standalone static library,
+     <code class="filename">libstdc++fs.a</code>.
+     These contain definitions of the Filesystem TS extensions.
+     Uses the <code class="option">-std=gnu++17</code> dialect.
+   </p></li><li class="listitem"><p>
+     make src/libbacktrace
+   </p><p>
+     Generates a libtool convenience library,
+     <code class="filename">libstdc++_libbacktrace</code>,
+     containing the libbacktrace definitions used by the C++23
+     <code class="classname">std::stacktrace</code> feature.
+   </p></li><li class="listitem"><p>
+     make src/experimental
+   </p><p>
+     Generates a standalone static library,
+     <code class="filename">libstdc++exp.a</code>, containing the symbol definitions
+     for experimental features and extensions. This collects the convenience
+     libraries <code class="filename">libstdc++fsconvenience</code>,
+     <code class="filename">libstdc++_libbacktrace</code>, and
+     (at the time of writing) <code class="filename">libc++23convenience</code>
+     and combines them into one.
+     Uses the <code class="option">-std=gnu++17</code> dialect.
    </p></li><li class="listitem"><p>
      make src
    </p><p>
@@ -400,8 +452,49 @@ baseline file.
      libraries. Shared-only code is seggregated at compile-time via
      the macro <code class="literal">_GLIBCXX_SHARED</code>.
    </p><p>
-     Then, collects all the generated convenience libraries, adds in
-     any required compatibility objects, and creates the final shared
-     and static libraries: <code class="filename">libstdc++.so</code> and
-     <code class="filename">libstdc++.a</code>.
-   </p></li></ol></div></li></ol></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="source_design_notes.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="documentation_hacking.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Design Notes </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Writing and Generating Documentation</td></tr></table></div></body></html>
+     Then, collects all the generated convenience libraries that weren't
+     added to <code class="filename">libstdc++exp.a</code>,
+     adds in any required compatibility objects,
+     and creates the final shared and static libraries:
+     <code class="filename">libstdc++.so</code> and <code class="filename">libstdc++.a</code>.
+   </p></li></ol></div></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.generated"></a>Generated files</h3></div></div></div><p>
+  Some files in the libstdc++ source tree are auto-generated from other files.
+  In general, these are not regenerated automatically, so it must be done
+  manually when the files they depend on are updated.
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+   The header file
+   <code class="filename">include/bits/version.h</code>
+   is generated from <code class="filename">version.def</code> and
+   <code class="filename">version.tpl</code> in the same directory.
+   After editing those files, either run <span class="command"><strong>autogen version.def</strong></span>
+   in the <code class="filename">include</code> directory of the
+   source tree, or run <span class="command"><strong>make update-version</strong></span> in the
+   <code class="filename">include</code> directory of the build tree.
+   </p></li><li class="listitem"><p>
+   The header file
+   <code class="filename">include/bits/unicode-data.h</code>
+   is generated by the Python script
+   <code class="filename">../contrib/unicode/gen_libstdcxx_unicode_data.py</code>
+   using data files in the same directory. The script contains information
+   on which data files it uses and how to update them.
+   </p></li><li class="listitem"><p>
+   The header file
+   <code class="filename">include/bits/text_encoding-data.h</code>
+   is generated by the Python script
+   <code class="filename">scripts/gen_text_encoding_data.py</code>
+   using the CSV file <a class="link" href="https://www.iana.org/assignments/character-sets/character-sets-1.csv" target="_top">https://www.iana.org/assignments/character-sets/character-sets-1.csv</a>
+   from the <a class="link" href="https://www.iana.org/time-zones" target="_top">IANA Character Sets</a>
+   registry.
+   </p></li><li class="listitem"><p>
+   The data file <code class="filename">src/c++20/tzdata.zi</code> is copied verbatim
+   from the
+   <a class="link" href="https://www.iana.org/time-zones" target="_top">IANA Time Zone Database</a>
+   (the latest version can be downloaded from
+   <a class="link" href="https://data.iana.org/time-zones/tzdb/tzdata.zi" target="_top">https://data.iana.org/time-zones/tzdb/tzdata.zi</a>).
+   Libstdc++ uses this data file to populate a
+   <code class="classname">std::chrono::tzdb</code> object in case the system does not
+   provide a copy of the file.
+   See <a class="xref" href="configure.html" title="Configure">Configuring</a> for the
+   <code class="code">--with-libstdcxx-zoneinfo</code> option that determines whether
+   this file is used.
+   </p></li></ul></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="source_design_notes.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="documentation_hacking.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Design Notes </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Writing and Generating Documentation</td></tr></table></div></body></html>
