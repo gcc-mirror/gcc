@@ -68,10 +68,20 @@ NAMED_INTCST (ISOFORTRANENV_IOSTAT_EOR, "iostat_eor", LIBERROR_EOR, \
 NAMED_INTCST (ISOFORTRANENV_IOSTAT_INQUIRE_INTERNAL_UNIT, \
               "iostat_inquire_internal_unit", LIBERROR_INQUIRE_INTERNAL_UNIT, \
               GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_LOGICAL8, "logical8", \
+              gfc_get_int_kind_from_width_isofortranenv (8), GFC_STD_F2023)
+NAMED_INTCST (ISOFORTRANENV_LOGICAL16, "logical16", \
+              gfc_get_int_kind_from_width_isofortranenv (16), GFC_STD_F2023)
+NAMED_INTCST (ISOFORTRANENV_LOGICAL32, "logical32", \
+              gfc_get_int_kind_from_width_isofortranenv (32), GFC_STD_F2023)
+NAMED_INTCST (ISOFORTRANENV_LOGICAL64, "logical64", \
+              gfc_get_int_kind_from_width_isofortranenv (64), GFC_STD_F2023)
 NAMED_INTCST (ISOFORTRANENV_NUMERIC_STORAGE_SIZE, "numeric_storage_size", \
               gfc_numeric_storage_size, GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_OUTPUT_UNIT, "output_unit", GFC_STDOUT_UNIT_NUMBER, \
               GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_REAL16, "real16", \
+              gfc_get_real_kind_from_width_isofortranenv (16), GFC_STD_F2023)
 NAMED_INTCST (ISOFORTRANENV_REAL32, "real32", \
               gfc_get_real_kind_from_width_isofortranenv (32), GFC_STD_F2008)
 NAMED_INTCST (ISOFORTRANENV_REAL64, "real64", \
