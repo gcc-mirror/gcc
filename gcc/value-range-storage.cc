@@ -165,6 +165,19 @@ vrange_storage::set_vrange (const vrange &r)
     }
   else
     gcc_unreachable ();
+
+  // Verify that reading back from the cache didn't drop bits.
+  if (flag_checking
+      // FIXME: Avoid checking frange, as it currently pessimizes some ranges:
+      //
+      // gfortran.dg/pr49472.f90 pessimizes [0.0, 1.0] into [-0.0, 1.0].
+      && !is_a <frange> (r)
+      && !r.undefined_p ())
+    {
+      Value_Range tmp (r);
+      get_vrange (tmp, r.type ());
+      gcc_checking_assert (tmp == r);
+    }
 }
 
 // Restore R from storage.
@@ -306,13 +319,6 @@ irange_storage::set_irange (const irange &r)
   irange_bitmask bm = r.m_bitmask;
   write_wide_int (val, len, bm.value ());
   write_wide_int (val, len, bm.mask ());
-
-  if (flag_checking)
-    {
-      int_range_max tmp;
-      get_irange (tmp, r.type ());
-      gcc_checking_assert (tmp == r);
-    }
 }
 
 static inline void
