@@ -3506,6 +3506,7 @@ sem_item_optimizer::fixup_points_to_sets (void)
 	    && SSA_NAME_PTR_INFO (name))
 	  fixup_pt_set (&SSA_NAME_PTR_INFO (name)->pt);
       fixup_pt_set (&fn->gimple_df->escaped);
+      fixup_pt_set (&fn->gimple_df->escaped_return);
 
        /* The above gets us to 99% I guess, at least catching the
 	  address compares.  Below also gets us aliasing correct

@@ -5147,7 +5147,10 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 
   /* Reset the escaped solution.  */
   if (cfun->gimple_df)
-    pt_solution_reset (&cfun->gimple_df->escaped);
+    {
+      pt_solution_reset (&cfun->gimple_df->escaped);
+      pt_solution_reset (&cfun->gimple_df->escaped_return);
+    }
 
   /* Add new automatic variables to IFN_GOMP_SIMT_ENTER arguments.  */
   if (id->dst_simt_vars && id->dst_simt_vars->length () > 0)

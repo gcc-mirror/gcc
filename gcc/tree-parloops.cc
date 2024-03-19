@@ -4147,7 +4147,10 @@ parallelize_loops (bool oacc_kernels_p)
      which local variables will escape.  Reset the points-to solution
      for ESCAPED.  */
   if (changed)
-    pt_solution_reset (&cfun->gimple_df->escaped);
+    {
+      pt_solution_reset (&cfun->gimple_df->escaped);
+      pt_solution_reset (&cfun->gimple_df->escaped_return);
+    }
 
   return changed;
 }
