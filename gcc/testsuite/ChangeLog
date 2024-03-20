@@ -1,3 +1,25 @@
+2024-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114001
+	* gfortran.dg/is_contiguous_4.f90: New test.
+
+2024-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103715
+	* gfortran.dg/pr103715.f90: New test.
+
+2024-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111822
+	* g++.target/i386/pr111822.C (dg-do): Compile only for ia32 targets.
+	(dg-options): Add -march=x86-64.
+
 2024-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

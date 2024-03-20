@@ -1,3 +1,17 @@
+2024-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111822
+	* config/i386/i386-features.cc (smode_convert_cst): New function
+	to handle SImode, DImode and TImode immediates.
+	(scalar_chain::convert_op): Unify from
+	general_scalar_chain::convert_op and timode_scalar_chain::convert_op.
+	(general_scalar_chain::convert_op): Remove.
+	(timode_scalar_chain::convert_op): Remove.
+	* config/i386/i386-features.h (class scalar_chain):
+	Redeclare convert_op as protected class member.
+	(class general_calar_chain): Remove convert_op.
+	(class timode_scalar_chain): Ditto.
+
 2024-03-18  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	Backported from master:
