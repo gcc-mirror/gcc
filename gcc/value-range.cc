@@ -346,6 +346,22 @@ add_vrange (const vrange &v, inchash::hash &hstate,
       hstate.add_wide_int (bm.mask ());
       return;
     }
+  if (is_a <prange> (v))
+    {
+      const prange &r = as_a <prange> (v);
+      if (r.varying_p ())
+	hstate.add_int (VR_VARYING);
+      else
+	{
+	  hstate.add_int (VR_RANGE);
+	  hstate.add_wide_int (r.lower_bound ());
+	  hstate.add_wide_int (r.upper_bound ());
+	  irange_bitmask bm = r.get_bitmask ();
+	  hstate.add_wide_int (bm.value ());
+	  hstate.add_wide_int (bm.mask ());
+	}
+      return;
+    }
   if (is_a <frange> (v))
     {
       const frange &r = as_a <frange> (v);
