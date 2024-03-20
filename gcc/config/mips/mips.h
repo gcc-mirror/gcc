@@ -694,6 +694,9 @@ struct mips_cpu_info {
 	builtin_define ("__mips_compact_branches_always");		\
       else 								\
 	builtin_define ("__mips_compact_branches_optimal");		\
+									\
+      if (STRICT_ALIGNMENT)						\
+	builtin_define ("__mips_strict_alignment");			\
     }									\
   while (0)
 
