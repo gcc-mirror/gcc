@@ -1231,6 +1231,123 @@ operator_bitwise_or::pointers_handled_p (range_op_dispatch_type,
 }
 
 bool
+operator_equal::fold_range (irange &r, tree type,
+			    const prange &op1,
+			    const prange &op2,
+			    relation_trio rel) const
+{
+  if (relop_early_resolve (r, type, op1, op2, rel, VREL_EQ))
+    return true;
+
+  // We can be sure the values are always equal or not if both ranges
+  // consist of a single value, and then compare them.
+  bool op1_const = wi::eq_p (op1.lower_bound (), op1.upper_bound ());
+  bool op2_const = wi::eq_p (op2.lower_bound (), op2.upper_bound ());
+  if (op1_const && op2_const)
+    {
+      if (wi::eq_p (op1.lower_bound (), op2.upper_bound()))
+	r = range_true ();
+      else
+	r = range_false ();
+    }
+  else
+    {
+      // If ranges do not intersect, we know the range is not equal,
+      // otherwise we don't know anything for sure.
+      prange tmp = op1;
+      tmp.intersect (op2);
+      if (tmp.undefined_p ())
+	r = range_false ();
+      // Check if a constant cannot satisfy the bitmask requirements.
+      else if (op2_const && !op1.get_bitmask ().member_p (op2.lower_bound ()))
+	 r = range_false ();
+      else if (op1_const && !op2.get_bitmask ().member_p (op1.lower_bound ()))
+	 r = range_false ();
+      else
+	r = range_true_and_false ();
+    }
+
+  //update_known_bitmask (r, EQ_EXPR, op1, op2);
+  return true;
+}
+
+bool
+operator_equal::op1_range (prange &r, tree type,
+			   const irange &lhs,
+			   const prange &op2,
+			   relation_trio) const
+{
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_TRUE:
+      // If it's true, the result is the same as OP2.
+      r = op2;
+      break;
+
+    case BRS_FALSE:
+      // If the result is false, the only time we know anything is
+      // if OP2 is a constant.
+      if (!op2.undefined_p ()
+	  && wi::eq_p (op2.lower_bound(), op2.upper_bound()))
+	{
+	  r = op2;
+	  r.invert ();
+	}
+      else
+	r.set_varying (type);
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
+bool
+operator_equal::op2_range (prange &r, tree type,
+			   const irange &lhs,
+			   const prange &op1,
+			   relation_trio rel) const
+{
+  return operator_equal::op1_range (r, type, lhs, op1, rel.swap_op1_op2 ());
+}
+
+relation_kind
+operator_equal::op1_op2_relation (const irange &lhs, const prange &,
+				  const prange &) const
+{
+  if (lhs.undefined_p ())
+    return VREL_UNDEFINED;
+
+  // FALSE = op1 == op2 indicates NE_EXPR.
+  if (lhs.zero_p ())
+    return VREL_NE;
+
+  // TRUE = op1 == op2 indicates EQ_EXPR.
+  if (!range_includes_zero_p (lhs))
+    return VREL_EQ;
+  return VREL_VARYING;
+}
+
+bool
+operator_equal::pointers_handled_p (range_op_dispatch_type type,
+				    unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+      return dispatch == RO_IPP;
+    case DISPATCH_OP1_RANGE:
+    case DISPATCH_OP2_RANGE:
+      return dispatch == RO_PIP;
+    case DISPATCH_OP1_OP2_RELATION:
+      return dispatch == RO_IPP;
+    default:
+      return true;
+    }
+}
+
+bool
 operator_not_equal::fold_range (irange &r, tree type,
 				const prange &op1,
 				const prange &op2,
