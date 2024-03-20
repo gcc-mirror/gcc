@@ -755,7 +755,13 @@ main (int argc, char *argv[])
 
   /* Clean shut down.  */
   XHSA (hsa_fns.hsa_memory_free_fn (kernargs),
-	"Clean up device memory");
+	"Clean up device kernargs memory");
+  XHSA (hsa_fns.hsa_memory_free_fn (args),
+	"Clean up device args memory");
+  XHSA (hsa_fns.hsa_memory_free_fn (heap),
+	"Clean up device heap memory");
+  XHSA (hsa_fns.hsa_memory_free_fn (stack),
+	"Clean up device stack memory");
   XHSA (hsa_fns.hsa_executable_destroy_fn (executable),
 	"Clean up GCN executable");
   XHSA (hsa_fns.hsa_queue_destroy_fn (queue),
