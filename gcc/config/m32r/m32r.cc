@@ -1290,7 +1290,8 @@ m32r_setup_incoming_varargs (cumulative_args_t cum,
   if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
     gcc_assert (arg.mode != BLKmode);
 
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
     first_anon_arg = (ROUND_ADVANCE_CUM (*get_cumulative_args (cum),
 					 arg.mode, arg.type)
 		      + ROUND_ADVANCE_ARG (arg.mode, arg.type));
