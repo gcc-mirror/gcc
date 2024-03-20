@@ -2026,6 +2026,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
 	      add_phi_arg (phi, build_zero_cst (m_limb_type),
 			   edge_false, UNKNOWN_LOCATION);
 	      m_gsi = gsi_after_labels (edge_true->dest);
+	      iv2 = iv3;
 	    }
 	}
       g = gimple_build_assign (make_ssa_name (m_limb_type), RSHIFT_EXPR,
