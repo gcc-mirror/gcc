@@ -111,6 +111,7 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
@@ -150,6 +151,7 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
@@ -189,6 +191,7 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
@@ -225,6 +228,7 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
@@ -264,6 +268,7 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
@@ -302,6 +307,7 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
@@ -376,6 +382,7 @@ public:
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::lhs_op1_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio rel = TRIO_VARYING) const final override;
@@ -402,6 +409,7 @@ public:
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
   using range_operator::lhs_op2_relation;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio) const final override;
@@ -445,6 +453,7 @@ class operator_abs : public range_operator
  public:
   using range_operator::fold_range;
   using range_operator::op1_range;
+  using range_operator::update_bitmask;
   bool fold_range (frange &r, tree type,
 		   const frange &op1, const frange &,
 		   relation_trio = TRIO_VARYING) const final override;
@@ -473,6 +482,8 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
+  using range_operator::op1_op2_relation_effect;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio) const final override;
@@ -556,6 +567,7 @@ class operator_mult : public cross_product_operator
 public:
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio) const final override;
@@ -608,6 +620,7 @@ class operator_bitwise_not : public range_operator
 public:
   using range_operator::fold_range;
   using range_operator::op1_range;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &lh, const irange &rh,
 		   relation_trio rel = TRIO_VARYING) const final override;
@@ -626,6 +639,8 @@ class operator_bitwise_xor : public range_operator
 public:
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation_effect;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
@@ -654,6 +669,7 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const override;
@@ -682,6 +698,7 @@ class operator_bitwise_or : public range_operator
 public:
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const override;
@@ -702,6 +719,7 @@ protected:
 class operator_min : public range_operator
 {
 public:
+  using range_operator::update_bitmask;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const override;
   // Check compatibility of all operands.
@@ -716,6 +734,7 @@ protected:
 class operator_max : public range_operator
 {
 public:
+  using range_operator::update_bitmask;
   void update_bitmask (irange &r, const irange &lh,
       const irange &rh) const override;
   // Check compatibility of all operands.

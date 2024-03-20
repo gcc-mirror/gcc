@@ -22,6 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_OP_H
 #define GCC_RANGE_OP_H
 
+enum range_op_dispatch_type
+{
+  DISPATCH_FOLD_RANGE,
+  DISPATCH_OP1_RANGE,
+  DISPATCH_OP2_RANGE,
+  DISPATCH_LHS_OP1_RELATION,
+  DISPATCH_LHS_OP2_RELATION,
+  DISPATCH_OP1_OP2_RELATION
+};
+
 // This class is implemented for each kind of operator supported by
 // the range generator.  It serves various purposes.
 //
@@ -76,6 +86,26 @@ public:
 			   const irange &lh,
 			   const irange &rh,
 			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (prange &r, tree type,
+			   const prange &lh,
+			   const prange &rh,
+			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (prange &r, tree type,
+			   const prange &lh,
+			   const irange &rh,
+			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const prange &lh,
+			   const prange &rh,
+			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (prange &r, tree type,
+			   const irange &lh,
+			   const prange &rh,
+			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const prange &lh,
+			   const irange &rh,
+			   relation_trio = TRIO_VARYING) const;
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
@@ -92,6 +122,22 @@ public:
 			  const irange &lhs,
 			  const irange &op2,
 			  relation_trio = TRIO_VARYING) const;
+  virtual bool op1_range (prange &r, tree type,
+			  const prange &lhs,
+			  const prange &op2,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op1_range (prange &r, tree type,
+			  const irange &lhs,
+			  const prange &op2,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op1_range (prange &r, tree type,
+			  const prange &lhs,
+			  const irange &op2,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const prange &lhs,
+			  const irange &op2,
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op1_range (frange &r, tree type,
 			  const frange &lhs,
 			  const frange &op2,
@@ -105,6 +151,14 @@ public:
   virtual bool op2_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op1,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op2_range (prange &r, tree type,
+			  const irange &lhs,
+			  const prange &op1,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const prange &lhs,
+			  const prange &op1,
 			  relation_trio = TRIO_VARYING) const;
   virtual bool op2_range (frange &r, tree type,
 			  const frange &lhs,
@@ -122,6 +176,18 @@ public:
   virtual relation_kind lhs_op1_relation (const irange &lhs,
 					  const irange &op1,
 					  const irange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op1_relation (const prange &lhs,
+					  const prange &op1,
+					  const prange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op1_relation (const prange &lhs,
+					  const irange &op1,
+					  const irange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op1_relation (const irange &lhs,
+					  const prange &op1,
+					  const prange &op2,
 					  relation_kind = VREL_VARYING) const;
   virtual relation_kind lhs_op1_relation (const frange &lhs,
 					  const frange &op1,
@@ -149,6 +215,9 @@ public:
 					  const irange &op1,
 					  const irange &op2) const;
   virtual relation_kind op1_op2_relation (const irange &lhs,
+					  const prange &op1,
+					  const prange &op2) const;
+  virtual relation_kind op1_op2_relation (const irange &lhs,
 					  const frange &op1,
 					  const frange &op2) const;
   virtual relation_kind op1_op2_relation (const frange &lhs,
@@ -160,6 +229,7 @@ public:
 
   // Compatability check for operands.
   virtual bool operand_check_p (tree, tree, tree) const;
+  virtual bool pointers_handled_p (enum range_op_dispatch_type, unsigned) const;
 
 protected:
   // Perform an integral operation between 2 sub-ranges and return it.
@@ -171,6 +241,26 @@ protected:
   // Effect of relation for generic fold_range clients.
   virtual bool op1_op2_relation_effect (irange &lhs_range, tree type,
 					const irange &op1_range,
+					const irange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (prange &lhs_range, tree type,
+					const prange &op1_range,
+					const prange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (prange &lhs_range, tree type,
+					const prange &op1_range,
+					const irange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (irange &lhs_range, tree type,
+					const prange &op1_range,
+					const prange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (prange &lhs_range, tree type,
+					const irange &op1_range,
+					const prange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (irange &lhs_range, tree type,
+					const prange &op1_range,
 					const irange &op2_range,
 					relation_kind rel) const;
   // Called by fold range to split small subranges into parts.
@@ -187,6 +277,7 @@ protected:
 			       unsigned limit) const;
   // Apply any bitmasks implied by these ranges.
   virtual void update_bitmask (irange &, const irange &, const irange &) const;
+  virtual void update_bitmask (irange &, const prange &, const prange &) const;
 
   // Perform an float operation between 2 ranges and return it.
   virtual void rv_fold (frange &r, tree type,
@@ -234,6 +325,9 @@ public:
 protected:
   unsigned dispatch_kind (const vrange &lhs, const vrange &op1,
 			  const vrange& op2) const;
+  void discriminator_fail (const vrange &,
+			   const vrange &,
+			   const vrange &) const;
   range_operator *m_operator;
 };
 
@@ -316,4 +410,21 @@ protected:
   void initialize_pointer_ops ();
   void initialize_float_ops ();
 };
+
+// Temporary exports so the pointers_handled_p() sanity code can see
+// which pointer combination is being attempted.  This will be deleted
+// once pointers_handled_p is gone.
+extern const unsigned RO_III;
+extern const unsigned RO_IFI;
+extern const unsigned RO_IFF;
+extern const unsigned RO_FFF;
+extern const unsigned RO_FIF;
+extern const unsigned RO_FII;
+extern const unsigned RO_PPP;
+extern const unsigned RO_PPI;
+extern const unsigned RO_IPP;
+extern const unsigned RO_IPI;
+extern const unsigned RO_PIP;
+extern const unsigned RO_PII;
+
 #endif // GCC_RANGE_OP_H

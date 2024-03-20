@@ -49,8 +49,222 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-ccp.h"
 #include "range-op-mixed.h"
 
+// Return TRUE if a range-op folder TYPE either handles or can safely
+// ignore the dispatch pattern in DISPATCH.  Return FALSE for any
+// combination not handled, which will result in a hard fail up the
+// chain.
+
+bool
+range_operator::pointers_handled_p (range_op_dispatch_type ATTRIBUTE_UNUSED,
+				    unsigned dispatch ATTRIBUTE_UNUSED) const
+{
+  return false;
+}
+
+bool
+range_operator::fold_range (prange &r, tree type,
+			    const prange &op1,
+			    const prange &op2,
+			    relation_trio trio) const
+{
+  relation_kind rel = trio.op1_op2 ();
+  r.set_varying (type);
+  op1_op2_relation_effect (r, type, op1, op2, rel);
+  return true;
+}
+
+bool
+range_operator::fold_range (prange &r, tree type,
+			    const prange &op1,
+			    const irange &op2,
+			    relation_trio trio) const
+{
+  relation_kind rel = trio.op1_op2 ();
+  r.set_varying (type);
+  op1_op2_relation_effect (r, type, op1, op2, rel);
+  return true;
+}
+
+bool
+range_operator::fold_range (irange &r, tree type,
+			    const prange &op1,
+			    const prange &op2,
+			    relation_trio trio) const
+{
+  relation_kind rel = trio.op1_op2 ();
+  r.set_varying (type);
+  op1_op2_relation_effect (r, type, op1, op2, rel);
+  return true;
+}
+
+bool
+range_operator::fold_range (prange &r, tree type,
+			    const irange &op1,
+			    const prange &op2,
+			    relation_trio trio) const
+{
+  relation_kind rel = trio.op1_op2 ();
+  r.set_varying (type);
+  op1_op2_relation_effect (r, type, op1, op2, rel);
+  return true;
+}
+
+bool
+range_operator::fold_range (irange &r, tree type,
+			    const prange &op1,
+			    const irange &op2,
+			    relation_trio trio) const
+{
+  relation_kind rel = trio.op1_op2 ();
+  r.set_varying (type);
+  op1_op2_relation_effect (r, type, op1, op2, rel);
+  return true;
+}
+
+bool
+range_operator::op1_op2_relation_effect (prange &, tree,
+					 const prange &,
+					 const prange &,
+					 relation_kind) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_op2_relation_effect (prange &, tree,
+					 const prange &,
+					 const irange &,
+					 relation_kind) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_op2_relation_effect (irange &, tree,
+					 const prange &,
+					 const prange &,
+					 relation_kind) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_op2_relation_effect (prange &, tree,
+					 const irange &,
+					 const prange &,
+					 relation_kind) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_op2_relation_effect (irange &, tree,
+					 const prange &,
+					 const irange &,
+					 relation_kind) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_range (prange &, tree,
+			   const prange &lhs ATTRIBUTE_UNUSED,
+			   const prange &op2 ATTRIBUTE_UNUSED,
+			   relation_trio) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_range (prange &, tree,
+			   const irange &lhs ATTRIBUTE_UNUSED,
+			   const prange &op2 ATTRIBUTE_UNUSED,
+			   relation_trio) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_range (prange &, tree,
+			   const prange &lhs ATTRIBUTE_UNUSED,
+			   const irange &op2 ATTRIBUTE_UNUSED,
+			   relation_trio) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_range (irange &, tree,
+			   const prange &lhs ATTRIBUTE_UNUSED,
+			   const irange &op2 ATTRIBUTE_UNUSED,
+			   relation_trio) const
+{
+  return false;
+}
+
+bool
+range_operator::op2_range (prange &, tree,
+			   const irange &lhs ATTRIBUTE_UNUSED,
+			   const prange &op1 ATTRIBUTE_UNUSED,
+			   relation_trio) const
+{
+  return false;
+}
+
+bool
+range_operator::op2_range (irange &, tree,
+			   const prange &lhs ATTRIBUTE_UNUSED,
+			   const prange &op1 ATTRIBUTE_UNUSED,
+			   relation_trio) const
+{
+  return false;
+}
+
+relation_kind
+range_operator::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
+				  const prange &op1 ATTRIBUTE_UNUSED,
+				  const prange &op2 ATTRIBUTE_UNUSED) const
+{
+  return VREL_VARYING;
+}
+
+relation_kind
+range_operator::lhs_op1_relation (const prange &lhs ATTRIBUTE_UNUSED,
+				  const irange &op1 ATTRIBUTE_UNUSED,
+				  const irange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind rel ATTRIBUTE_UNUSED) const
+{
+  return VREL_VARYING;
+}
+
+relation_kind
+range_operator::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
+				  const prange &op1 ATTRIBUTE_UNUSED,
+				  const prange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind rel ATTRIBUTE_UNUSED) const
+{
+  return VREL_VARYING;
+}
+
+relation_kind
+range_operator::lhs_op1_relation (const prange &lhs ATTRIBUTE_UNUSED,
+				  const prange &op1 ATTRIBUTE_UNUSED,
+				  const prange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind rel ATTRIBUTE_UNUSED) const
+{
+  return VREL_VARYING;
+}
+
+void
+range_operator::update_bitmask (irange &,
+				const prange &,
+				const prange &) const
+{
+}
+
 class pointer_plus_operator : public range_operator
 {
+  using range_operator::update_bitmask;
   using range_operator::op2_range;
 public:
   virtual void wi_fold (irange &r, tree type,
@@ -245,6 +459,8 @@ pointer_or_operator::wi_fold (irange &r, tree type,
 
 class operator_pointer_diff : public range_operator
 {
+  using range_operator::update_bitmask;
+  using range_operator::op1_op2_relation_effect;
   virtual bool op1_op2_relation_effect (irange &lhs_range,
 					tree type,
 					const irange &op1_range,
@@ -274,6 +490,7 @@ operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
 class hybrid_and_operator : public operator_bitwise_and
 {
 public:
+  using range_operator::update_bitmask;
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
@@ -330,6 +547,7 @@ public:
 class hybrid_or_operator : public operator_bitwise_or
 {
 public:
+  using range_operator::update_bitmask;
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
@@ -376,6 +594,7 @@ public:
 
 class hybrid_min_operator : public operator_min
 {
+  using range_operator::update_bitmask;
 public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override
@@ -397,6 +616,7 @@ public:
 
 class hybrid_max_operator : public operator_max
 {
+  using range_operator::update_bitmask;
 public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override
