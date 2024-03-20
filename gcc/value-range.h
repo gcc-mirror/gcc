@@ -47,6 +47,8 @@ enum value_range_discriminator
 {
   // Range holds an integer or pointer.
   VR_IRANGE,
+  // Pointer range.
+  VR_PRANGE,
   // Floating point range.
   VR_FRANGE,
   // Range holds an unsupported type.
@@ -380,32 +382,49 @@ private:
 
 class prange : public vrange
 {
+  friend class prange_storage;
+  friend class vrange_printer;
 public:
-  static bool supports_p (const_tree) { return false; }
-  virtual bool supports_type_p (const_tree) const final override { return false; }
-  virtual void accept (const vrange_visitor &) const final override {}
-  virtual void set_undefined () final override {}
-  virtual void set_varying (tree) final override {}
-  virtual void set_nonzero (tree) final override {}
-  virtual void set_zero (tree) final override;
-  virtual void set_nonnegative (tree) final override {}
-  virtual bool contains_p (tree) const final override { return false; }
-  virtual bool fits_p (const vrange &) const final override { return false; }
-  virtual bool singleton_p (tree * = NULL) const final override { return false; }
-  virtual bool zero_p () const final override { return false; }
-  virtual bool nonzero_p () const final override { return false; }
-  virtual void set (tree, tree, value_range_kind = VR_RANGE) final override {}
-  virtual tree type () const final override { return NULL; }
-  virtual bool union_ (const vrange &) final override { return false; }
-  virtual bool intersect (const vrange &) final override { return false; }
-  virtual tree lbound () const final override { return NULL; }
-  virtual tree ubound () const final override { return NULL; }
+  prange ();
+  prange (const prange &);
+  prange (tree type);
+  prange (tree type, const wide_int &, const wide_int &,
+	  value_range_kind = VR_RANGE);
+  static bool supports_p (const_tree type);
+  virtual bool supports_type_p (const_tree type) const final override;
+  virtual void accept (const vrange_visitor &v) const final override;
+  virtual void set_undefined () final override;
+  virtual void set_varying (tree type) final override;
+  virtual void set_nonzero (tree type) final override;
+  virtual void set_zero (tree type) final override;
+  virtual void set_nonnegative (tree type) final override;
+  virtual bool contains_p (tree cst) const final override;
+  virtual bool fits_p (const vrange &v) const final override;
+  virtual bool singleton_p (tree *result = NULL) const final override;
+  virtual bool zero_p () const final override;
+  virtual bool nonzero_p () const final override;
+  virtual void set (tree, tree, value_range_kind = VR_RANGE) final override;
+  virtual tree type () const final override;
+  virtual bool union_ (const vrange &v) final override;
+  virtual bool intersect (const vrange &v) final override;
+  virtual tree lbound () const final override;
+  virtual tree ubound () const final override;
 
+  prange& operator= (const prange &);
+  bool operator== (const prange &) const;
+  void set (tree type, const wide_int &, const wide_int &,
+	    value_range_kind = VR_RANGE);
+  void invert ();
+  bool contains_p (const wide_int &) const;
   wide_int lower_bound () const;
   wide_int upper_bound () const;
+  void verify_range () const;
   irange_bitmask get_bitmask () const final override;
-  void update_bitmask (const irange_bitmask &) final override {}
-private:
+  void update_bitmask (const irange_bitmask &) final override;
+protected:
+  bool varying_compatible_p () const;
+
+  tree m_type;
   wide_int m_min;
   wide_int m_max;
   irange_bitmask m_bitmask;
@@ -658,6 +677,13 @@ is_a <irange> (vrange &v)
 
 template <>
 inline bool
+is_a <prange> (vrange &v)
+{
+  return v.m_discriminator == VR_PRANGE;
+}
+
+template <>
+inline bool
 is_a <frange> (vrange &v)
 {
   return v.m_discriminator == VR_FRANGE;
@@ -708,6 +734,7 @@ class vrange_visitor
 {
 public:
   virtual void visit (const irange &) const { }
+  virtual void visit (const prange &) const { }
   virtual void visit (const frange &) const { }
   virtual void visit (const unsupported_range &) const { }
 };
@@ -775,6 +802,7 @@ private:
   vrange *m_vrange;
   // The buffer must be at least the size of the largest range.
   static_assert (sizeof (int_range_max) > sizeof (frange), "");
+  static_assert (sizeof (int_range_max) > sizeof (prange), "");
   char m_buffer[sizeof (int_range_max)];
 };
 
@@ -850,6 +878,8 @@ Value_Range::init (tree type)
 
   if (irange::supports_p (type))
     m_vrange = new (&m_buffer) int_range_max ();
+  else if (prange::supports_p (type))
+    m_vrange = new (&m_buffer) prange ();
   else if (frange::supports_p (type))
     m_vrange = new (&m_buffer) frange ();
   else
@@ -863,6 +893,8 @@ Value_Range::init (const vrange &r)
 {
   if (is_a <irange> (r))
     m_vrange = new (&m_buffer) int_range_max (as_a <irange> (r));
+  else if (is_a <prange> (r))
+    m_vrange = new (&m_buffer) prange (as_a <prange> (r));
   else if (is_a <frange> (r))
     m_vrange = new (&m_buffer) frange (as_a <frange> (r));
   else
@@ -920,7 +952,9 @@ Value_Range::operator const vrange &() const
 inline bool
 Value_Range::supports_type_p (const_tree type)
 {
-  return irange::supports_p (type) || frange::supports_p (type);
+  return irange::supports_p (type)
+    || prange::supports_p (type)
+    || frange::supports_p (type);
 }
 
 extern value_range_kind get_legacy_range (const vrange &, tree &min, tree &max);
@@ -1220,24 +1254,136 @@ irange_val_max (const_tree type)
   return wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
 }
 
+inline
+prange::prange ()
+  : vrange (VR_PRANGE)
+{
+  set_undefined ();
+}
+
+inline
+prange::prange (const prange &r)
+  : vrange (VR_PRANGE)
+{
+  *this = r;
+}
+
+inline
+prange::prange (tree type)
+  : vrange (VR_PRANGE)
+{
+  set_varying (type);
+}
+
+inline
+prange::prange (tree type, const wide_int &lb, const wide_int &ub,
+		value_range_kind kind)
+  : vrange (VR_PRANGE)
+{
+  set (type, lb, ub, kind);
+}
+
+inline bool
+prange::supports_p (const_tree type)
+{
+  return POINTER_TYPE_P (type);
+}
+
+inline bool
+prange::supports_type_p (const_tree type) const
+{
+  return POINTER_TYPE_P (type);
+}
+
+inline void
+prange::set_undefined ()
+{
+  m_kind = VR_UNDEFINED;
+}
+
+inline void
+prange::set_varying (tree type)
+{
+  m_kind = VR_VARYING;
+  m_type = type;
+  m_min = wi::zero (TYPE_PRECISION (type));
+  m_max = wi::max_value (TYPE_PRECISION (type), UNSIGNED);
+  m_bitmask.set_unknown (TYPE_PRECISION (type));
+
+  if (flag_checking)
+    verify_range ();
+}
+
+inline void
+prange::set_nonzero (tree type)
+{
+  m_kind = VR_RANGE;
+  m_type = type;
+  m_min = wi::one (TYPE_PRECISION (type));
+  m_max = wi::max_value (TYPE_PRECISION (type), UNSIGNED);
+  m_bitmask.set_unknown (TYPE_PRECISION (type));
+
+  if (flag_checking)
+    verify_range ();
+}
+
 inline void
 prange::set_zero (tree type)
 {
+  m_kind = VR_RANGE;
+  m_type = type;
   wide_int zero = wi::zero (TYPE_PRECISION (type));
   m_min = m_max = zero;
   m_bitmask = irange_bitmask (zero, zero);
+
+  if (flag_checking)
+    verify_range ();
+}
+
+inline bool
+prange::contains_p (tree cst) const
+{
+  return contains_p (wi::to_wide (cst));
+}
+
+inline bool
+prange::zero_p () const
+{
+  return m_kind == VR_RANGE && m_min == 0 && m_max == 0;
+}
+
+inline bool
+prange::nonzero_p () const
+{
+  return m_kind == VR_RANGE && m_min == 1 && m_max == -1;
+}
+
+inline tree
+prange::type () const
+{
+  gcc_checking_assert (!undefined_p ());
+  return m_type;
 }
 
 inline wide_int
 prange::lower_bound () const
 {
+  gcc_checking_assert (!undefined_p ());
   return m_min;
 }
 
 inline wide_int
 prange::upper_bound () const
 {
+  gcc_checking_assert (!undefined_p ());
   return m_max;
+}
+
+inline bool
+prange::varying_compatible_p () const
+{
+  return (!undefined_p ()
+	  && m_min == 0 && m_max == -1 && get_bitmask ().unknown_p ());
 }
 
 inline irange_bitmask
@@ -1245,6 +1391,13 @@ prange::get_bitmask () const
 {
   return m_bitmask;
 }
+
+inline bool
+prange::fits_p (const vrange &) const
+{
+  return true;
+}
+
 
 inline
 frange::frange ()

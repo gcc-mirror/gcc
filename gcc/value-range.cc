@@ -251,6 +251,8 @@ vrange::operator= (const vrange &src)
 {
   if (is_a <irange> (src))
     as_a <irange> (*this) = as_a <irange> (src);
+  else if (is_a <prange> (src))
+    as_a <prange> (*this) = as_a <prange> (src);
   else if (is_a <frange> (src))
     as_a <frange> (*this) = as_a <frange> (src);
   else
@@ -268,6 +270,8 @@ vrange::operator== (const vrange &src) const
 {
   if (is_a <irange> (src))
     return as_a <irange> (*this) == as_a <irange> (src);
+  if (is_a <prange> (src))
+    return as_a <prange> (*this) == as_a <prange> (src);
   if (is_a <frange> (src))
     return as_a <frange> (*this) == as_a <frange> (src);
   gcc_unreachable ();
@@ -396,6 +400,294 @@ irange::set_nonnegative (tree type)
        wi::zero (TYPE_PRECISION (type)),
        wi::to_wide (TYPE_MAX_VALUE (type)));
 }
+
+// Prange implementation.
+
+void
+prange::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
+
+void
+prange::set_nonnegative (tree type)
+{
+  set (type,
+       wi::zero (TYPE_PRECISION (type)),
+       wi::max_value (TYPE_PRECISION (type), UNSIGNED));
+}
+
+void
+prange::set (tree min, tree max, value_range_kind kind)
+{
+  return set (TREE_TYPE (min), wi::to_wide (min), wi::to_wide (max), kind);
+}
+
+void
+prange::set (tree type, const wide_int &min, const wide_int &max,
+	     value_range_kind kind)
+{
+  if (kind == VR_UNDEFINED)
+    {
+      set_undefined ();
+      return;
+    }
+  if (kind == VR_VARYING)
+    {
+      set_varying (type);
+      return;
+    }
+  if (kind == VR_ANTI_RANGE)
+    {
+      gcc_checking_assert (min == 0 && max == 0);
+      set_nonzero (type);
+      return;
+    }
+  m_type = type;
+  m_min = min;
+  m_max = max;
+  if (m_min == 0 && m_max == -1)
+    {
+      m_kind = VR_VARYING;
+      m_bitmask.set_unknown (TYPE_PRECISION (type));
+      if (flag_checking)
+	verify_range ();
+      return;
+    }
+
+  m_kind = VR_RANGE;
+  m_bitmask = get_bitmask_from_range (type, min, max);
+  if (flag_checking)
+    verify_range ();
+}
+
+bool
+prange::contains_p (const wide_int &w) const
+{
+  if (undefined_p ())
+    return false;
+
+  if (varying_p ())
+    return true;
+
+  return (wi::le_p (lower_bound (), w, UNSIGNED)
+	  && wi::ge_p (upper_bound (), w, UNSIGNED));
+}
+
+bool
+prange::singleton_p (tree *result) const
+{
+  if (m_kind == VR_RANGE && lower_bound () == upper_bound ())
+    {
+      if (result)
+	*result = wide_int_to_tree (type (), m_min);
+      return true;
+    }
+  return false;
+}
+
+tree
+prange::lbound () const
+{
+  return wide_int_to_tree (type (), m_min);
+}
+
+tree
+prange::ubound () const
+{
+  return wide_int_to_tree (type (), m_max);
+}
+
+bool
+prange::union_ (const vrange &v)
+{
+  const prange &r = as_a <prange> (v);
+
+  if (r.undefined_p ())
+    return false;
+  if (undefined_p ())
+    {
+      *this = r;
+      if (flag_checking)
+	verify_range ();
+      return true;
+    }
+  if (varying_p ())
+    return false;
+  if (r.varying_p ())
+    {
+      set_varying (type ());
+      return true;
+    }
+
+  wide_int new_lb = wi::min (r.lower_bound (), lower_bound (), UNSIGNED);
+  wide_int new_ub = wi::max (r.upper_bound (), upper_bound (), UNSIGNED);
+  prange new_range (type (), new_lb, new_ub);
+  new_range.m_bitmask.union_ (m_bitmask);
+  new_range.m_bitmask.union_ (r.m_bitmask);
+  if (new_range.varying_compatible_p ())
+    {
+      set_varying (type ());
+      return true;
+    }
+  if (flag_checking)
+    new_range.verify_range ();
+  if (new_range == *this)
+    return false;
+  *this = new_range;
+  return true;
+}
+
+bool
+prange::intersect (const vrange &v)
+{
+  const prange &r = as_a <prange> (v);
+  gcc_checking_assert (undefined_p () || r.undefined_p ()
+		       || range_compatible_p (type (), r.type ()));
+
+  if (undefined_p ())
+    return false;
+  if (r.undefined_p ())
+    {
+      set_undefined ();
+      return true;
+    }
+  if (r.varying_p ())
+    return false;
+  if (varying_p ())
+    {
+      *this = r;
+      return true;
+    }
+
+  prange save = *this;
+  m_min = wi::max (r.lower_bound (), lower_bound (), UNSIGNED);
+  m_max = wi::min (r.upper_bound (), upper_bound (), UNSIGNED);
+  if (wi::gt_p (m_min, m_max, UNSIGNED))
+    {
+      set_undefined ();
+      return true;
+    }
+
+  // Intersect all bitmasks: the old one, the new one, and the other operand's.
+  irange_bitmask new_bitmask = get_bitmask_from_range (m_type, m_min, m_max);
+  m_bitmask.intersect (new_bitmask);
+  m_bitmask.intersect (r.m_bitmask);
+
+  if (flag_checking)
+    verify_range ();
+  if (*this == save)
+    return false;
+  return true;
+}
+
+prange &
+prange::operator= (const prange &src)
+{
+  m_type = src.m_type;
+  m_kind = src.m_kind;
+  m_min = src.m_min;
+  m_max = src.m_max;
+  m_bitmask = src.m_bitmask;
+  if (flag_checking)
+    verify_range ();
+  return *this;
+}
+
+bool
+prange::operator== (const prange &src) const
+{
+  if (m_kind == src.m_kind)
+    {
+      if (undefined_p ())
+	return true;
+
+      if (varying_p ())
+	return types_compatible_p (type (), src.type ());
+
+      return (m_min == src.m_min && m_max == src.m_max
+	      && m_bitmask == src.m_bitmask);
+    }
+  return false;
+}
+
+void
+prange::invert ()
+{
+  gcc_checking_assert (!undefined_p () && !varying_p ());
+
+  wide_int new_lb, new_ub;
+  unsigned prec = TYPE_PRECISION (type ());
+  wide_int type_min = wi::zero (prec);
+  wide_int type_max = wi::max_value (prec, UNSIGNED);
+  wi::overflow_type ovf;
+
+  if (lower_bound () == type_min)
+    {
+      new_lb = wi::add (upper_bound (), 1, UNSIGNED, &ovf);
+      if (ovf)
+	new_lb = type_min;
+      new_ub = type_max;
+      set (type (), new_lb, new_ub);
+    }
+  else if (upper_bound () == type_max)
+    {
+      wi::overflow_type ovf;
+      new_lb = type_min;
+      new_ub = wi::sub (lower_bound (), 1, UNSIGNED, &ovf);
+      if (ovf)
+	new_ub = type_max;
+      set (type (), new_lb, new_ub);
+    }
+  else
+    set_varying (type ());
+}
+
+void
+prange::verify_range () const
+{
+  gcc_checking_assert (m_discriminator == VR_PRANGE);
+
+  if (m_kind == VR_UNDEFINED)
+    return;
+
+  gcc_checking_assert (supports_p (type ()));
+
+  if (m_kind == VR_VARYING)
+    {
+      gcc_checking_assert (varying_compatible_p ());
+      return;
+    }
+  gcc_checking_assert (!varying_compatible_p ());
+  gcc_checking_assert (m_kind == VR_RANGE);
+}
+
+void
+prange::update_bitmask (const irange_bitmask &bm)
+{
+  gcc_checking_assert (!undefined_p ());
+
+  // If all the bits are known, this is a singleton.
+  if (bm.mask () == 0)
+    {
+      set (type (), m_bitmask.value (), m_bitmask.value ());
+      return;
+    }
+
+  // Drop VARYINGs with known bits to a plain range.
+  if (m_kind == VR_VARYING && !bm.unknown_p ())
+    m_kind = VR_RANGE;
+
+  m_bitmask = bm;
+  if (varying_compatible_p ())
+    m_kind = VR_VARYING;
+
+  if (flag_checking)
+    verify_range ();
+}
+
+
+// Frange implementation.
 
 void
 frange::accept (const vrange_visitor &v) const
@@ -2542,11 +2834,12 @@ range_tests_misc ()
   // Make sure NULL and non-NULL of pointer types work, and that
   // inverses of them are consistent.
   tree voidp = build_pointer_type (void_type_node);
-  r0.set_zero (voidp);
-  r1 = r0;
-  r0.invert ();
-  r0.invert ();
-  ASSERT_TRUE (r0 == r1);
+  prange p0;
+  p0.set_zero (voidp);
+  prange p1 = p0;
+  p0.invert ();
+  p0.invert ();
+  ASSERT_TRUE (p0 == p1);
 
   // [10,20] U [15, 30] => [10, 30].
   r0 = range_int (10, 20);

@@ -27,6 +27,7 @@ public:
   vrange_printer (pretty_printer *pp_) : pp (pp_) { }
   void visit (const unsupported_range &) const override;
   void visit (const irange &) const override;
+  void visit (const prange &) const override;
   void visit (const frange &) const override;
 private:
   void print_frange_nan (const frange &) const;

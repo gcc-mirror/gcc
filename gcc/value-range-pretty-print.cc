@@ -113,6 +113,31 @@ vrange_printer::visit (const irange &r) const
 }
 
 void
+vrange_printer::visit (const prange &r) const
+{
+  pp_string (pp, "[prange] ");
+  if (r.undefined_p ())
+    {
+      pp_string (pp, "UNDEFINED");
+      return;
+    }
+  dump_generic_node (pp, r.type (), 0, TDF_NONE | TDF_NOUID, false);
+  pp_character (pp, ' ');
+  if (r.varying_p ())
+    {
+      pp_string (pp, "VARYING");
+      return;
+    }
+
+  pp_character (pp, '[');
+  print_int_bound (pp, r.lower_bound (), r.type ());
+  pp_string (pp, ", ");
+  print_int_bound (pp, r.upper_bound (), r.type ());
+  pp_character (pp, ']');
+  print_irange_bitmasks (pp, r.m_bitmask);
+}
+
+void
 vrange_printer::print_real_value (tree type, const REAL_VALUE_TYPE &r) const
 {
   char s[100];
