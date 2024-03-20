@@ -349,11 +349,17 @@ public:
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1, const prange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
   bool fold_range (frange &r, tree type ATTRIBUTE_UNUSED,
 		   const frange &op1, const frange &op2 ATTRIBUTE_UNUSED,
 		   relation_trio = TRIO_VARYING) const final override;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const prange &lhs, const prange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
   bool op1_range (frange &r, tree type ATTRIBUTE_UNUSED,
 		  const frange &lhs, const frange &op2 ATTRIBUTE_UNUSED,
@@ -361,6 +367,10 @@ public:
   relation_kind lhs_op1_relation (const irange &lhs,
 				  const irange &op1, const irange &op2,
 				  relation_kind rel) const final override;
+  relation_kind lhs_op1_relation (const prange &lhs,
+				  const prange &op1, const prange &op2,
+				  relation_kind rel) const final override;
+  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 };
 
 class operator_cst : public range_operator

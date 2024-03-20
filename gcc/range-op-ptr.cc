@@ -636,6 +636,53 @@ public:
     }
 } op_hybrid_max;
 
+bool
+operator_identity::fold_range (prange &r, tree type ATTRIBUTE_UNUSED,
+			       const prange &lh ATTRIBUTE_UNUSED,
+			       const prange &rh ATTRIBUTE_UNUSED,
+			       relation_trio) const
+{
+  r = lh;
+  return true;
+}
+
+relation_kind
+operator_identity::lhs_op1_relation (const prange &lhs,
+				     const prange &op1 ATTRIBUTE_UNUSED,
+				     const prange &op2 ATTRIBUTE_UNUSED,
+				     relation_kind) const
+{
+  if (lhs.undefined_p ())
+    return VREL_VARYING;
+  // Simply a copy, so they are equivalent.
+  return VREL_EQ;
+}
+
+bool
+operator_identity::op1_range (prange &r, tree type ATTRIBUTE_UNUSED,
+			      const prange &lhs,
+			      const prange &op2 ATTRIBUTE_UNUSED,
+			      relation_trio) const
+{
+  r = lhs;
+  return true;
+}
+
+bool
+operator_identity::pointers_handled_p (range_op_dispatch_type type,
+				       unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+    case DISPATCH_OP1_RANGE:
+    case DISPATCH_LHS_OP1_RELATION:
+      return dispatch == RO_PPP;
+    default:
+      return true;
+    }
+}
+
 // Initialize any pointer operators to the primary table
 
 void
