@@ -655,6 +655,10 @@ public:
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const prange &lhs, const prange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 };
 
 class operator_bitwise_not : public range_operator

@@ -1021,6 +1021,44 @@ operator_max::pointers_handled_p (range_op_dispatch_type type,
     }
 }
 
+bool
+operator_addr_expr::op1_range (prange &r, tree type,
+			       const prange &lhs,
+			       const prange &op2,
+			       relation_trio) const
+{
+  if (empty_range_varying (r, type, lhs, op2))
+    return true;
+
+  // Return a non-null pointer of the LHS type (passed in op2), but only
+  // if we cant overflow, eitherwise a no-zero offset could wrap to zero.
+  // See PR 111009.
+  if (!lhs.undefined_p ()
+      && !range_includes_zero_p (lhs)
+      && TYPE_OVERFLOW_UNDEFINED (type))
+    r.set_nonzero (type);
+  else
+    r.set_varying (type);
+  return true;
+}
+
+bool
+operator_addr_expr::pointers_handled_p (range_op_dispatch_type type,
+					unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+      // NOTE: It looks like we never generate this combination.
+      gcc_unreachable ();
+      return false;
+    case DISPATCH_OP1_RANGE:
+      return dispatch == RO_PPP;
+    default:
+      return true;
+    }
+}
+
 // Initialize any pointer operators to the primary table
 
 void
