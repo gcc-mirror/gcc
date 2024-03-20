@@ -8312,7 +8312,8 @@ proc check_effective_target_vect_hw_misalign { } {
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
 	     || ([istarget riscv*-*-*])
-	     || ([istarget loongarch*-*-*]) } {
+	     || ([istarget loongarch*-*-*])
+	     || [istarget amdgcn*-*-*] } {
 	  return 1
 	}
 	if { [istarget arm*-*-*]
@@ -8876,8 +8877,7 @@ proc check_effective_target_vect_element_align { } {
     return [check_cached_effective_target_indexed vect_element_align {
       expr { ([istarget arm*-*-*]
 	      && ![check_effective_target_arm_vect_no_misalign])
-	     || [check_effective_target_vect_hw_misalign]
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_vect_hw_misalign] }}]
 }
 
 # Return 1 if we expect to see unaligned accesses in at least some
