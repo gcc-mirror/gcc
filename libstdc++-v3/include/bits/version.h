@@ -214,7 +214,7 @@
 #undef __glibcxx_want_make_reverse_iterator
 
 #if !defined(__cpp_lib_null_iterators)
-# if (__cplusplus >= 201402L) && (!defined(_GLIBCXX_DEBUG))
+# if (__cplusplus >= 201402L)
 #  define __glibcxx_null_iterators 201304L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_null_iterators)
 #   define __cpp_lib_null_iterators 201304L

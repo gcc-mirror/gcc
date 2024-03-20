@@ -209,7 +209,6 @@ ftms = {
   values = {
     v = 201304;
     cxxmin = 14;
-    extra_cond = "!defined(_GLIBCXX_DEBUG)";
   };
 };
 
