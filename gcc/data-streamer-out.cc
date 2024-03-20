@@ -450,6 +450,16 @@ streamer_write_vrange (struct output_block *ob, const vrange &v)
 	}
       return;
     }
+  if (is_a <prange> (v))
+    {
+      const prange &r = as_a <prange> (v);
+      streamer_write_wide_int (ob, r.lower_bound ());
+      streamer_write_wide_int (ob, r.upper_bound ());
+      irange_bitmask bm = r.get_bitmask ();
+      streamer_write_wide_int (ob, bm.value ());
+      streamer_write_wide_int (ob, bm.mask ());
+      return;
+    }
   gcc_unreachable ();
 }
 

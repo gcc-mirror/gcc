@@ -268,6 +268,18 @@ streamer_read_value_range (class lto_input_block *ib, data_in *data_in,
 	}
       return;
     }
+  if (is_a <prange> (vr))
+    {
+      prange &r = as_a <prange> (vr);
+      wide_int lb = streamer_read_wide_int (ib);
+      wide_int ub = streamer_read_wide_int (ib);
+      r.set (type, lb, ub);
+      wide_int value = streamer_read_wide_int (ib);
+      wide_int mask = streamer_read_wide_int (ib);
+      irange_bitmask bm (value, mask);
+      r.update_bitmask (bm);
+      return;
+    }
   gcc_unreachable ();
 }
 
