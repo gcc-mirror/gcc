@@ -2447,7 +2447,8 @@ range_tests_misc ()
   ASSERT_TRUE (not_255 == range_uchar (0, 254));
 
   // Test that NOT(0) is [1..255] in 8-bit land.
-  int_range<2> not_zero = range_nonzero (unsigned_char_type_node);
+  int_range<2> not_zero;
+  not_zero.set_nonzero (unsigned_char_type_node);
   ASSERT_TRUE (not_zero == range_uchar (1, 255));
 
   // Check that [0,127][0x..ffffff80,0x..ffffff]
@@ -2526,7 +2527,7 @@ range_tests_misc ()
   ASSERT_TRUE (r0 == r2);
 
   // Test that booleans and their inverse work as expected.
-  r0 = range_zero (boolean_type_node);
+  r0.set_zero (boolean_type_node);
   ASSERT_TRUE (r0 == range_false ());
   r0.invert ();
   ASSERT_TRUE (r0 == range_true ());
@@ -2534,7 +2535,7 @@ range_tests_misc ()
   // Make sure NULL and non-NULL of pointer types work, and that
   // inverses of them are consistent.
   tree voidp = build_pointer_type (void_type_node);
-  r0 = range_zero (voidp);
+  r0.set_zero (voidp);
   r1 = r0;
   r0.invert ();
   r0.invert ();

@@ -101,10 +101,10 @@ pointer_plus_operator::wi_fold (irange &r, tree type,
       && !TYPE_OVERFLOW_WRAPS (type)
       && (flag_delete_null_pointer_checks
 	  || !wi::sign_mask (rh_ub)))
-    r = range_nonzero (type);
+    r.set_nonzero (type);
   else if (lh_lb == lh_ub && lh_lb == 0
 	   && rh_lb == rh_ub && rh_lb == 0)
-    r = range_zero (type);
+    r.set_zero (type);
   else
    r.set_varying (type);
 }
@@ -150,9 +150,9 @@ pointer_min_max_operator::wi_fold (irange &r, tree type,
   // are varying.
   if (!wi_includes_zero_p (type, lh_lb, lh_ub)
       && !wi_includes_zero_p (type, rh_lb, rh_ub))
-    r = range_nonzero (type);
+    r.set_nonzero (type);
   else if (wi_zero_p (type, lh_lb, lh_ub) && wi_zero_p (type, rh_lb, rh_ub))
-    r = range_zero (type);
+    r.set_zero (type);
   else
     r.set_varying (type);
 }
@@ -175,7 +175,7 @@ pointer_and_operator::wi_fold (irange &r, tree type,
   // For pointer types, we are really only interested in asserting
   // whether the expression evaluates to non-NULL.
   if (wi_zero_p (type, lh_lb, lh_ub) || wi_zero_p (type, lh_lb, lh_ub))
-    r = range_zero (type);
+    r.set_zero (type);
   else
     r.set_varying (type);
 }
@@ -236,9 +236,9 @@ pointer_or_operator::wi_fold (irange &r, tree type,
   // whether the expression evaluates to non-NULL.
   if (!wi_includes_zero_p (type, lh_lb, lh_ub)
       && !wi_includes_zero_p (type, rh_lb, rh_ub))
-    r = range_nonzero (type);
+    r.set_nonzero (type);
   else if (wi_zero_p (type, lh_lb, lh_ub) && wi_zero_p (type, rh_lb, rh_ub))
-    r = range_zero (type);
+    r.set_zero (type);
   else
     r.set_varying (type);
 }

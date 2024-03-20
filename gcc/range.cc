@@ -30,20 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 
 value_range
-range_zero (tree type)
-{
-  wide_int zero = wi::zero (TYPE_PRECISION (type));
-  return value_range (type, zero, zero);
-}
-
-value_range
-range_nonzero (tree type)
-{
-  wide_int zero = wi::zero (TYPE_PRECISION (type));
-  return value_range (type, zero, zero, VR_ANTI_RANGE);
-}
-
-value_range
 range_positives (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
