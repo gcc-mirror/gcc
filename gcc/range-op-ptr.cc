@@ -706,6 +706,251 @@ operator_cst::pointers_handled_p (range_op_dispatch_type type,
     }
 }
 
+// Cast between pointers.
+
+bool
+operator_cast::fold_range (prange &r, tree type,
+			   const prange &inner,
+			   const prange &outer,
+			   relation_trio) const
+{
+  if (empty_range_varying (r, type, inner, outer))
+    return true;
+
+  r.set (type, inner.lower_bound (), inner.upper_bound ());
+  r.update_bitmask (inner.get_bitmask ());
+  return true;
+}
+
+// Cast a pointer to an integer.
+
+bool
+operator_cast::fold_range (irange &r, tree type,
+			   const prange &inner,
+			   const irange &outer,
+			   relation_trio) const
+{
+  if (empty_range_varying (r, type, inner, outer))
+    return true;
+
+  // Represent INNER as an integer of the same size, and then cast it
+  // to the resulting integer type.
+  tree pointer_uint_type = make_unsigned_type (TYPE_PRECISION (inner.type ()));
+  r.set (pointer_uint_type, inner.lower_bound (), inner.upper_bound ());
+  r.update_bitmask (inner.get_bitmask ());
+  range_cast (r, type);
+  return true;
+}
+
+// Cast an integer to a pointer.
+
+bool
+operator_cast::fold_range (prange &r, tree type,
+			   const irange &inner,
+			   const prange &outer,
+			   relation_trio) const
+{
+  if (empty_range_varying (r, type, inner, outer))
+    return true;
+
+  // Cast INNER to an integer of the same size as the pointer we want,
+  // and then copy the bounds to the resulting pointer range.
+  int_range<2> tmp = inner;
+  tree pointer_uint_type = make_unsigned_type (TYPE_PRECISION (type));
+  range_cast (tmp, pointer_uint_type);
+  r.set (type, tmp.lower_bound (), tmp.upper_bound ());
+  r.update_bitmask (tmp.get_bitmask ());
+  return true;
+}
+
+bool
+operator_cast::op1_range (prange &r, tree type,
+			  const prange &lhs,
+			  const prange &op2,
+			  relation_trio trio) const
+{
+  if (lhs.undefined_p ())
+    return false;
+  gcc_checking_assert (types_compatible_p (op2.type(), type));
+
+  // Conversion from other pointers or a constant (including 0/NULL)
+  // are straightforward.
+  if (POINTER_TYPE_P (lhs.type ())
+      || (lhs.singleton_p ()
+	  && TYPE_PRECISION (lhs.type ()) >= TYPE_PRECISION (type)))
+    fold_range (r, type, lhs, op2, trio);
+  else
+    {
+      // If the LHS is not a pointer nor a singleton, then it is
+      // either VARYING or non-zero.
+      if (!lhs.undefined_p () && !range_includes_zero_p (lhs))
+	r.set_nonzero (type);
+      else
+	r.set_varying (type);
+    }
+  r.intersect (op2);
+  return true;
+}
+
+bool
+operator_cast::op1_range (irange &r, tree type,
+			  const prange &lhs,
+			  const irange &op2,
+			  relation_trio trio) const
+{
+  if (lhs.undefined_p ())
+    return false;
+  gcc_checking_assert (types_compatible_p (op2.type(), type));
+
+  // Conversion from other pointers or a constant (including 0/NULL)
+  // are straightforward.
+  if (POINTER_TYPE_P (lhs.type ())
+      || (lhs.singleton_p ()
+	  && TYPE_PRECISION (lhs.type ()) >= TYPE_PRECISION (type)))
+    fold_range (r, type, lhs, op2, trio);
+  else
+    {
+      // If the LHS is not a pointer nor a singleton, then it is
+      // either VARYING or non-zero.
+      if (!lhs.undefined_p () && !range_includes_zero_p (lhs))
+	r.set_nonzero (type);
+      else
+	r.set_varying (type);
+    }
+  r.intersect (op2);
+  return true;
+}
+
+bool
+operator_cast::op1_range (prange &r, tree type,
+			  const irange &lhs,
+			  const prange &op2,
+			  relation_trio trio) const
+{
+  if (lhs.undefined_p ())
+    return false;
+  gcc_checking_assert (types_compatible_p (op2.type(), type));
+
+  // Conversion from other pointers or a constant (including 0/NULL)
+  // are straightforward.
+  if (POINTER_TYPE_P (lhs.type ())
+      || (lhs.singleton_p ()
+	  && TYPE_PRECISION (lhs.type ()) >= TYPE_PRECISION (type)))
+    fold_range (r, type, lhs, op2, trio);
+  else
+    {
+      // If the LHS is not a pointer nor a singleton, then it is
+      // either VARYING or non-zero.
+      if (!lhs.undefined_p () && !range_includes_zero_p (lhs))
+	r.set_nonzero (type);
+      else
+	r.set_varying (type);
+    }
+  r.intersect (op2);
+  return true;
+}
+
+relation_kind
+operator_cast::lhs_op1_relation (const prange &lhs,
+				 const prange &op1,
+				 const prange &op2 ATTRIBUTE_UNUSED,
+				 relation_kind) const
+{
+  if (lhs.undefined_p () || op1.undefined_p ())
+    return VREL_VARYING;
+  unsigned lhs_prec = TYPE_PRECISION (lhs.type ());
+  unsigned op1_prec = TYPE_PRECISION (op1.type ());
+  // If the result gets sign extended into a larger type check first if this
+  // qualifies as a partial equivalence.
+  if (TYPE_SIGN (op1.type ()) == SIGNED && lhs_prec > op1_prec)
+    {
+      // If the result is sign extended, and the LHS is larger than op1,
+      // check if op1's range can be negative as the sign extension will
+      // cause the upper bits to be 1 instead of 0, invalidating the PE.
+      int_range<3> negs = range_negatives (op1.type ());
+      negs.intersect (op1);
+      if (!negs.undefined_p ())
+	return VREL_VARYING;
+    }
+
+  unsigned prec = MIN (lhs_prec, op1_prec);
+  return bits_to_pe (prec);
+}
+
+relation_kind
+operator_cast::lhs_op1_relation (const prange &lhs,
+				 const irange &op1,
+				 const irange &op2 ATTRIBUTE_UNUSED,
+				 relation_kind) const
+{
+  if (lhs.undefined_p () || op1.undefined_p ())
+    return VREL_VARYING;
+  unsigned lhs_prec = TYPE_PRECISION (lhs.type ());
+  unsigned op1_prec = TYPE_PRECISION (op1.type ());
+  // If the result gets sign extended into a larger type check first if this
+  // qualifies as a partial equivalence.
+  if (TYPE_SIGN (op1.type ()) == SIGNED && lhs_prec > op1_prec)
+    {
+      // If the result is sign extended, and the LHS is larger than op1,
+      // check if op1's range can be negative as the sign extension will
+      // cause the upper bits to be 1 instead of 0, invalidating the PE.
+      int_range<3> negs = range_negatives (op1.type ());
+      negs.intersect (op1);
+      if (!negs.undefined_p ())
+	return VREL_VARYING;
+    }
+
+  unsigned prec = MIN (lhs_prec, op1_prec);
+  return bits_to_pe (prec);
+}
+
+relation_kind
+operator_cast::lhs_op1_relation (const irange &lhs,
+				 const prange &op1,
+				 const prange &op2 ATTRIBUTE_UNUSED,
+				 relation_kind) const
+{
+  if (lhs.undefined_p () || op1.undefined_p ())
+    return VREL_VARYING;
+  unsigned lhs_prec = TYPE_PRECISION (lhs.type ());
+  unsigned op1_prec = TYPE_PRECISION (op1.type ());
+  // If the result gets sign extended into a larger type check first if this
+  // qualifies as a partial equivalence.
+  if (TYPE_SIGN (op1.type ()) == SIGNED && lhs_prec > op1_prec)
+    {
+      // If the result is sign extended, and the LHS is larger than op1,
+      // check if op1's range can be negative as the sign extension will
+      // cause the upper bits to be 1 instead of 0, invalidating the PE.
+      int_range<3> negs = range_negatives (op1.type ());
+      negs.intersect (op1);
+      if (!negs.undefined_p ())
+	return VREL_VARYING;
+    }
+
+  unsigned prec = MIN (lhs_prec, op1_prec);
+  return bits_to_pe (prec);
+}
+
+bool
+operator_cast::pointers_handled_p (range_op_dispatch_type type,
+				   unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+    case DISPATCH_OP1_RANGE:
+      return (dispatch == RO_PPP
+	      || dispatch == RO_IPI
+	      || dispatch == RO_PIP);
+    case DISPATCH_LHS_OP1_RELATION:
+      return (dispatch == RO_PPP
+	      || dispatch == RO_PII
+	      || dispatch == RO_IPP);
+    default:
+      return true;
+    }
+}
+
 // Initialize any pointer operators to the primary table
 
 void

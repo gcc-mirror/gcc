@@ -400,14 +400,42 @@ public:
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1, const prange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const prange &op1, const irange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (prange &r, tree type,
+		   const irange &op1, const prange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const prange &lhs, const prange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (irange &r, tree type,
+		  const prange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const irange &lhs, const prange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
   relation_kind lhs_op1_relation (const irange &lhs,
 				  const irange &op1, const irange &op2,
 				  relation_kind) const final override;
+  relation_kind lhs_op1_relation (const prange &lhs,
+				  const prange &op1, const prange &op2,
+				  relation_kind) const final override;
+  relation_kind lhs_op1_relation (const prange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const prange &op1, const prange &op2,
+				  relation_kind) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 private:
   bool truncating_cast_p (const irange &inner, const irange &outer) const;
   bool inside_domain_p (const wide_int &min, const wide_int &max,
