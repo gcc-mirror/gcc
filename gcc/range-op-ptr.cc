@@ -1639,6 +1639,114 @@ operator_lt::pointers_handled_p (range_op_dispatch_type type,
     }
 }
 
+bool
+operator_le::fold_range (irange &r, tree type,
+			 const prange &op1,
+			 const prange &op2,
+			 relation_trio rel) const
+{
+  if (relop_early_resolve (r, type, op1, op2, rel, VREL_LE))
+    return true;
+
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
+
+  if (wi::le_p (op1.upper_bound (), op2.lower_bound (), sign))
+    r = range_true ();
+  else if (!wi::le_p (op1.lower_bound (), op2.upper_bound (), sign))
+    r = range_false ();
+  else
+    r = range_true_and_false ();
+
+  //update_known_bitmask (r, LE_EXPR, op1, op2);
+  return true;
+}
+
+bool
+operator_le::op1_range (prange &r, tree type,
+			const irange &lhs,
+			const prange &op2,
+			relation_trio) const
+{
+  if (op2.undefined_p ())
+    return false;
+
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_TRUE:
+      build_le (r, type, op2);
+      break;
+
+    case BRS_FALSE:
+      build_gt (r, type, op2);
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
+bool
+operator_le::op2_range (prange &r, tree type,
+			const irange &lhs,
+			const prange &op1,
+			relation_trio) const
+{
+  if (op1.undefined_p ())
+    return false;
+
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_TRUE:
+      build_ge (r, type, op1);
+      break;
+
+    case BRS_FALSE:
+      build_lt (r, type, op1);
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
+relation_kind
+operator_le::op1_op2_relation (const irange &lhs, const prange &,
+			       const prange &) const
+{
+  if (lhs.undefined_p ())
+    return VREL_UNDEFINED;
+
+  // FALSE = op1 <= op2 indicates GT_EXPR.
+  if (lhs.zero_p ())
+    return VREL_GT;
+
+  // TRUE = op1 <= op2 indicates LE_EXPR.
+  if (!range_includes_zero_p (lhs))
+    return VREL_LE;
+  return VREL_VARYING;
+}
+
+bool
+operator_le::pointers_handled_p (range_op_dispatch_type type,
+				 unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+      return dispatch == RO_IPP;
+    case DISPATCH_OP1_RANGE:
+    case DISPATCH_OP2_RANGE:
+      return dispatch == RO_PIP;
+    case DISPATCH_OP1_OP2_RELATION:
+      return dispatch == RO_IPP;
+    default:
+      return true;
+    }
+}
+
 // Initialize any pointer operators to the primary table
 
 void
