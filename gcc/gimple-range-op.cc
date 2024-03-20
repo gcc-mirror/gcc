@@ -311,11 +311,36 @@ public:
     r = lh;
     return true;
   }
+  virtual bool fold_range (prange &r, tree, const prange &lh,
+			   const prange &, relation_trio) const
+  {
+    r = lh;
+    return true;
+  }
   virtual bool op1_range (irange &r, tree, const irange &lhs,
 			  const irange &, relation_trio) const
   {
     r = lhs;
     return true;
+  }
+  virtual bool op1_range (prange &r, tree, const prange &lhs,
+			  const prange &, relation_trio) const
+  {
+    r = lhs;
+    return true;
+  }
+  virtual bool pointers_handled_p (range_op_dispatch_type type,
+				   unsigned dispatch) const
+  {
+    switch (type)
+      {
+      case DISPATCH_FOLD_RANGE:
+	return dispatch == RO_PPP;
+      case DISPATCH_OP1_RANGE:
+	return dispatch == RO_PPP;
+      default:
+	return true;
+      }
   }
 } op_cfn_pass_through_arg1;
 
@@ -1106,6 +1131,17 @@ public:
     // FIXME: Use max_object_size() - 1 here.
     r.set (type, wi::zero (TYPE_PRECISION (type)), max - 2);
     return true;
+  }
+  virtual bool pointers_handled_p (range_op_dispatch_type type,
+				   unsigned dispatch) const
+  {
+    switch (type)
+      {
+      case DISPATCH_FOLD_RANGE:
+	return dispatch == RO_IPI;
+      default:
+	return true;
+      }
   }
 } op_cfn_strlen;
 
