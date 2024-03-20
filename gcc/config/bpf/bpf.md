@@ -281,8 +281,8 @@
   ""
   "@
    {and\t%0,0xffff|%0 &= 0xffff}
-   {mov\t%0,%1\;and\t%0,0xffff|%0 = %1;%0 &= 0xffff}
-   {ldxh\t%0,%1|%0 = *(u16 *) (%1)}"
+   *return bpf_output_move (operands, \"{mov\t%0,%1\;and\t%0,0xffff|%0 = %1;%0 &= 0xffff}\");
+   *return bpf_output_move (operands, \"{ldxh\t%0,%1|%0 = *(u16 *) (%1)}\");"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendqidi2"
@@ -291,8 +291,8 @@
   ""
   "@
    {and\t%0,0xff|%0 &= 0xff}
-   {mov\t%0,%1\;and\t%0,0xff|%0 = %1;%0 &= 0xff}
-   {ldxb\t%0,%1|%0 = *(u8 *) (%1)}"
+   *return bpf_output_move (operands, \"{mov\t%0,%1\;and\t%0,0xff|%0 = %1;%0 &= 0xff}\");
+   *return bpf_output_move (operands, \"{ldxb\t%0,%1|%0 = *(u8 *) (%1)}\");"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendsidi2"
@@ -301,8 +301,8 @@
 	  (match_operand:SI 1 "nonimmediate_operand" "r,q")))]
   ""
   "@
-   * return bpf_has_alu32 ? \"{mov32\t%0,%1|%0 = %1}\" : \"{mov\t%0,%1\;and\t%0,0xffffffff|%0 = %1;%0 &= 0xffffffff}\";
-   {ldxw\t%0,%1|%0 = *(u32 *) (%1)}"
+   *return bpf_output_move (operands, bpf_has_alu32 ? \"{mov32\t%0,%1|%0 = %1}\" : \"{mov\t%0,%1\;and\t%0,0xffffffff|%0 = %1;%0 &= 0xffffffff}\");
+   *return bpf_output_move (operands, \"{ldxw\t%0,%1|%0 = *(u32 *) (%1)}\");"
   [(set_attr "type" "alu,ldx")])
 
 ;;; Sign-extension
@@ -328,8 +328,8 @@
         (sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,q")))]
   "bpf_has_smov"
   "@
-   {movs\t%0,%1,32|%0 = (s32) %1}
-   {ldxsw\t%0,%1|%0 = *(s32 *) (%1)}"
+   *return bpf_output_move (operands, \"{movs\t%0,%1,32|%0 = (s32) %1}\");
+   *return bpf_output_move (operands, \"{ldxsw\t%0,%1|%0 = *(s32 *) (%1)}\");"
   [(set_attr "type" "alu,ldx")])
 
 (define_insn "extendhidi2"
@@ -337,8 +337,8 @@
         (sign_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,q")))]
   "bpf_has_smov"
   "@
-   {movs\t%0,%1,16|%0 = (s16) %1}
-   {ldxsh\t%0,%1|%0 = *(s16 *) (%1)}"
+   *return bpf_output_move (operands, \"{movs\t%0,%1,16|%0 = (s16) %1}\");
+   *return bpf_output_move (operands, \"{ldxsh\t%0,%1|%0 = *(s16 *) (%1)}\");"
   [(set_attr "type" "alu,ldx")])
 
 (define_insn "extendqidi2"
@@ -346,22 +346,22 @@
         (sign_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,q")))]
   "bpf_has_smov"
   "@
-   {movs\t%0,%1,8|%0 = (s8) %1}
-   {ldxsb\t%0,%1|%0 = *(s8 *) (%1)}"
+   *return bpf_output_move (operands, \"{movs\t%0,%1,8|%0 = (s8) %1}\");
+   *return bpf_output_move (operands, \"{ldxsb\t%0,%1|%0 = *(s8 *) (%1)}\");"
   [(set_attr "type" "alu,ldx")])
 
 (define_insn "extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
   "bpf_has_smov"
-  "{movs32\t%0,%1,16|%w0 = (s16) %w1}"
+  "*return bpf_output_move (operands, \"{movs32\t%0,%1,16|%w0 = (s16) %w1}\");"
   [(set_attr "type" "alu")])
 
 (define_insn "extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   "bpf_has_smov"
-  "{movs32\t%0,%1,8|%w0 = (s8) %w1}"
+  "*return bpf_output_move (operands, \"{movs32\t%0,%1,8|%w0 = (s8) %w1}\");"
   [(set_attr "type" "alu")])
 
 ;;;; Data movement
@@ -380,30 +380,16 @@
 }")
 
 (define_insn "*mov<MM:mode>"
-  [(set (match_operand:MM 0 "nonimmediate_operand" "=r, r,r,q,q")
-        (match_operand:MM 1 "mov_src_operand"      " q,rI,B,r,I"))]
+  [(set (match_operand:MM 0 "nonimmediate_operand" "=r,  r, r,q,q")
+        (match_operand:MM 1 "mov_src_operand"      " q,rIc,BC,r,I"))]
   ""
   "@
-   {ldx<mop>\t%0,%1|%0 = *(<smop> *) (%1)}
-   {mov\t%0,%1|%0 = %1}
-   {lddw\t%0,%1|%0 = %1 ll}
-   {stx<mop>\t%0,%1|*(<smop> *) (%0) = %1}
-   {st<mop>\t%0,%1|*(<smop> *) (%0) = %1}"
+   *return bpf_output_move (operands, \"{ldx<mop>\t%0,%1|%0 = *(<smop> *) (%1)}\");
+   *return bpf_output_move (operands, \"{mov\t%0,%1|%0 = %1}\");
+   *return bpf_output_move (operands, \"{lddw\t%0,%1|%0 = %1 ll}\");
+   *return bpf_output_move (operands, \"{stx<mop>\t%0,%1|*(<smop> *) (%0) = %1}\");
+   *return bpf_output_move (operands, \"{st<mop>\t%0,%1|*(<smop> *) (%0) = %1}\");"
 [(set_attr "type" "ldx,alu,alu,stx,st")])
-
-(define_insn "*mov_reloc_core<MM:mode>"
-  [(set (match_operand:MM 0 "nonimmediate_operand" "=r,q,r")
-	(unspec:MM [
-	  (match_operand:MM 1 "immediate_operand"  " I,I,B")
-	  (match_operand:SI 2 "immediate_operand"  " I,I,I")
-	 ] UNSPEC_CORE_RELOC)
-   )]
-  ""
-  "@
-   *return bpf_add_core_reloc (operands, \"{mov\t%0,%1|%0 = %1}\");
-   *return bpf_add_core_reloc (operands, \"{st<mop>\t%0,%1|*(<smop> *) (%0) = %1}\");
-   *return bpf_add_core_reloc (operands, \"{lddw\t%0,%1|%0 = %1 ll}\");"
-  [(set_attr "type" "alu,st,alu")])
 
 ;;;; Shifts
 

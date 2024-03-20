@@ -34,6 +34,26 @@
   "Register r0")
 
 ;;
+;; BPF CO-RE immediate constraints.
+;; This constraints are used to match with the immediate operand that is
+;; represented with an UNSPEC_CORE_RELOC. This unspec is the result of using the
+;; BPF CO-RE infrastructure.
+;; It differentiates from a normal immediate constraints, as the instruction
+;; will also emit a BTF based specific relocation, i.e. a CO-RE relocation.
+;;
+
+(define_constraint "c"
+  "A 32-bit CO-RE signed immediate."
+  (and (match_code "unspec")
+       (match_test "XINT (op, 1) == UNSPEC_CORE_RELOC")
+       (match_test "IN_RANGE (XVECEXP (op, 0, 0), -1 - 0x7fffffff, 0x7fffffff)")))
+
+(define_constraint "C"
+  "For 64-bit CO-RE signed immediate."
+  (and (match_code "unspec")
+       (match_test "XINT (op, 1) == UNSPEC_CORE_RELOC")))
+
+;;
 ;; Memory constraints.
 ;;
 

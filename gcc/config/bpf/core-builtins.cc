@@ -1561,6 +1561,7 @@ bpf_expand_core_builtin (tree exp, enum bpf_builtins code)
   return NULL_RTX;
 }
 
+
 /* This function is called in the final assembly output for the
    unspec:UNSPEC_CORE_RELOC.  It recovers the vec index kept as the third
    operand and collects the data from the vec.  With that it calls the process
@@ -1568,27 +1569,63 @@ bpf_expand_core_builtin (tree exp, enum bpf_builtins code)
    Also it creates a label pointing to the unspec instruction and uses it in
    the CO-RE relocation creation.  */
 
-const char *
-bpf_add_core_reloc (rtx *operands, const char *templ)
+void
+bpf_output_core_reloc (rtx *operands, int nr_ops)
 {
-  struct cr_builtins *data = get_builtin_data (INTVAL (operands[2]));
-  builtin_helpers helper;
-  helper = core_builtin_helpers[data->orig_builtin_code];
+  /* Search for an UNSPEC_CORE_RELOC within the operands of the emitting
+     intructions.  */
+  rtx unspec_exp = NULL_RTX;
+  for (int i = 0; i < nr_ops; i++)
+    {
+      rtx op = operands[i];
 
-  rtx_code_label * tmp_label = gen_label_rtx ();
-  output_asm_label (tmp_label);
-  assemble_name (asm_out_file, ":\n");
+      /* An immediate CO-RE reloc.  */
+      if (GET_CODE (op) == UNSPEC
+	  && XINT (op, 1) == UNSPEC_CORE_RELOC)
+	unspec_exp = op;
 
-  gcc_assert (helper.process != NULL);
-  struct cr_final reloc_data = helper.process (data);
-  make_core_relo (&reloc_data, tmp_label);
+      /* In case of a MEM operation with an offset resolved in CO-RE.  */
+      if (GET_CODE (op) == MEM
+	  && (op = XEXP (op, 0)) != NULL_RTX
+	  && (GET_CODE (op) == PLUS))
+	{
+	  rtx x0 = XEXP (op, 0);
+	  rtx x1 = XEXP (op, 1);
 
-  /* Replace default value for later processing builtin types.
-     Example if the type id builtins.  */
-  if (data->rtx_default_value != NULL_RTX)
-    operands[1] = data->rtx_default_value;
+	  if (GET_CODE (x0) == UNSPEC
+	      && XINT (x0, 1) == UNSPEC_CORE_RELOC)
+	    unspec_exp = x0;
+	  if (GET_CODE (x1) == UNSPEC
+	      && XINT (x1, 1) == UNSPEC_CORE_RELOC)
+	    unspec_exp = x1;
+	}
+      if (unspec_exp != NULL_RTX)
+	break;
+    }
 
-  return templ;
+  if (unspec_exp != NULL_RTX)
+    {
+      int index = INTVAL (XVECEXP (unspec_exp, 0, 1));
+      struct cr_builtins *data = get_builtin_data (index);
+      builtin_helpers helper;
+      helper = core_builtin_helpers[data->orig_builtin_code];
+
+      rtx_code_label * tmp_label = gen_label_rtx ();
+      output_asm_label (tmp_label);
+      assemble_name (asm_out_file, ":\n");
+
+      rtx orig_default_value = data->rtx_default_value;
+
+      gcc_assert (helper.process != NULL);
+      struct cr_final reloc_data = helper.process (data);
+      make_core_relo (&reloc_data, tmp_label);
+
+      /* Replace default value for later processing builtin types.
+	 An example are the type id builtins.  */
+      if (data->rtx_default_value != NULL_RTX
+	  && orig_default_value != data->rtx_default_value)
+	XVECEXP (unspec_exp, 0, 0) = data->rtx_default_value;
+    }
 }
 
 static tree

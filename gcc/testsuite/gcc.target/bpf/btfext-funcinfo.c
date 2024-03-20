@@ -35,8 +35,6 @@ int bar_func (struct T *t)
 /* { dg-final { scan-assembler-times "label for function foo_func" 1 } } */
 /* { dg-final { scan-assembler-times "label for function bar_func" 1 } } */
 
-/* { dg-final { scan-assembler-times "ascii \"0:2:1:1:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
-/* { dg-final { scan-assembler-times "ascii \"0:2:1:2.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"foo_sec.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"bar_sec.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "FuncInfo entry size" 1 } } */

@@ -27,6 +27,10 @@
             (match_test "IN_RANGE (INTVAL (op), 0, 0xffffffff)"))
        (match_code "symbol_ref,label_ref,const")))
 
+(define_predicate "core_imm_operand"
+  (and (match_code "unspec")
+       (match_test "XINT (op, 1) == UNSPEC_CORE_RELOC")))
+
 (define_predicate "lddw_operand"
   (match_code "symbol_ref,label_ref,const,const_double,const_int"))
 
@@ -57,7 +61,8 @@
 (define_predicate "mov_src_operand"
   (ior (match_operand 0 "memory_operand")
        (match_operand 0 "reg_or_imm_operand")
-       (match_operand 0 "lddw_operand")))
+       (match_operand 0 "lddw_operand")
+       (match_operand 0 "core_imm_operand")))
 
 (define_predicate "register_compare_operator"
   (match_code "eq,ne,geu,gtu,ge,gt"))

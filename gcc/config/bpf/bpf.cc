@@ -584,6 +584,16 @@ bpf_legitimate_address_p (machine_mode mode,
 	if (bpf_address_base_p (x0, strict) && GET_CODE (x1) == CONST_INT)
 	  return IN_RANGE (INTVAL (x1), -1 - 0x7fff, 0x7fff);
 
+	/* Check if any of the PLUS operation operands is a CORE unspec, and at
+	   least the local value for the offset fits in the 16 bits available
+	   in the encoding.  */
+	if (bpf_address_base_p (x1, strict)
+	    && GET_CODE (x0) == UNSPEC && XINT (x0, 1) == UNSPEC_CORE_RELOC)
+	      return IN_RANGE (INTVAL (XVECEXP (x0, 0, 0)), -1 - 0x7fff, 0x7fff);
+	if (bpf_address_base_p (x0, strict)
+	    && GET_CODE (x1) == UNSPEC && XINT (x1, 1) == UNSPEC_CORE_RELOC)
+	      return IN_RANGE (INTVAL (XVECEXP (x1, 0, 0)), -1 - 0x7fff, 0x7fff);
+
 	break;
       }
     default:
@@ -614,6 +624,21 @@ bpf_rtx_costs (rtx x ATTRIBUTE_UNUSED,
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS bpf_rtx_costs
+
+static int
+bpf_insn_cost (rtx_insn *insn, bool speed ATTRIBUTE_UNUSED)
+{
+  rtx pat = PATTERN (insn);
+  if(GET_CODE (pat) == SET
+     && GET_CODE (XEXP (pat, 1)) == UNSPEC
+     && XINT (XEXP (pat, 1), 1) == UNSPEC_CORE_RELOC)
+    return COSTS_N_INSNS (100);
+
+  return COSTS_N_INSNS (1);
+}
+
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST bpf_insn_cost
 
 /* Return true if an argument at the position indicated by CUM should
    be passed by reference.  If the hook returns true, a copy of that
@@ -771,6 +796,13 @@ bpf_output_call (rtx target)
   return "";
 }
 
+const char *
+bpf_output_move (rtx *operands, const char *templ)
+{
+  bpf_output_core_reloc (operands, 2);
+  return templ;
+}
+
 /* Print register name according to assembly dialect.  In normal
    syntax registers are printed like %rN where N is the register
    number.
@@ -852,6 +884,12 @@ bpf_print_operand (FILE *file, rtx op, int code)
 	    gcc_unreachable ();
 	}
       break;
+    case UNSPEC:
+      if (XINT (op, 1) == UNSPEC_CORE_RELOC)
+	bpf_print_operand (file, XVECEXP (op, 0, 0), code);
+      else
+	gcc_unreachable ();
+      break;
     default:
       output_addr_const (file, op);
     }
@@ -880,13 +918,24 @@ bpf_print_operand_address (FILE *file, rtx addr)
 	rtx op0 = XEXP (addr, 0);
 	rtx op1 = XEXP (addr, 1);
 
-	if (GET_CODE (op0) == REG && GET_CODE (op1) == CONST_INT)
+	if (GET_CODE (op1) == REG) {
+	  op0 = op1;
+	  op1 = XEXP (addr, 0);
+	}
+
+	if (GET_CODE (op0) == REG
+	    && (GET_CODE (op1) == CONST_INT
+		|| (GET_CODE (op1) == UNSPEC
+		    && XINT (op1, 1) == UNSPEC_CORE_RELOC)))
 	  {
 	    if (asm_dialect == ASM_NORMAL)
 	      fprintf (file, "[");
 	    bpf_print_register (file, op0, 0);
 	    fprintf (file, "+");
-	    output_addr_const (file, op1);
+	    if (GET_CODE (op1) == UNSPEC)
+	      output_addr_const (file, XVECEXP (op1, 0, 0));
+	    else
+	      output_addr_const (file, op1);
 	    if (asm_dialect == ASM_NORMAL)
 	      fprintf (file, "]");
 	  }
@@ -962,6 +1011,7 @@ bpf_init_builtins (void)
 	       build_function_type_list (integer_type_node,integer_type_node,
 					 0));
   DECL_PURE_P (bpf_builtins[BPF_BUILTIN_CORE_RELOC]) = 1;
+  TREE_NOTHROW (bpf_builtins[BPF_BUILTIN_CORE_RELOC]) = 1;
 
   bpf_init_core_builtins ();
 }

@@ -46,12 +46,12 @@ unsigned int foo (struct T *t)
   return s0a1 + s0a4 + s0x + s1a1 + s1a4 + s1x + c + d + e1 + e2 + f1;
 }
 
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],4" 2 } } */
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],8" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],12" 3 } } */
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],16" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],20" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],21" 2 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],4" 2 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],8" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],12" 3 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],16" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],20" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],21" 2 } } */
 
 /* { dg-final { scan-assembler-times "ascii \"0:1:0:0.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:1:0:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
