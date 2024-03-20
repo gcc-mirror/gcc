@@ -564,9 +564,41 @@ class operator_pointer_diff : public range_operator
 					const irange &op1_range,
 					const irange &op2_range,
 					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (irange &lhs_range,
+					tree type,
+					const prange &op1_range,
+					const prange &op2_range,
+					relation_kind rel) const final override;
   void update_bitmask (irange &r, const irange &lh, const irange &rh) const
     { update_known_bitmask (r, POINTER_DIFF_EXPR, lh, rh); }
+  void update_bitmask (irange &r,
+		       const prange &lh, const prange &rh) const final override
+  { update_known_bitmask (r, POINTER_DIFF_EXPR, lh, rh); }
+  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 } op_pointer_diff;
+
+bool
+operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
+						const prange &op1_range,
+						const prange &op2_range,
+						relation_kind rel) const
+{
+  int_range<2> op1, op2, tmp;
+  range_op_handler cast (CONVERT_EXPR);
+
+  if (!cast.fold_range (op1, type, op1_range, tmp)
+      || !cast.fold_range (op2, type, op2_range, tmp))
+    return false;
+
+  return minus_op1_op2_relation_effect (lhs_range, type, op1, op2, rel);
+}
+
+bool
+operator_pointer_diff::pointers_handled_p (range_op_dispatch_type,
+					   unsigned) const
+{
+  return true;
+}
 
 bool
 operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
