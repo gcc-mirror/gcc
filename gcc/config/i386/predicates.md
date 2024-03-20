@@ -1056,6 +1056,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 28, 31)")))
 
+(define_predicate "cmpps_imm_operand"
+  (ior (match_operand 0 "const_0_to_7_operand")
+       (and (match_test "TARGET_AVX")
+	    (match_operand 0 "const_0_to_31_operand"))))
+
 ;; True if this is a constant appropriate for an increment or decrement.
 (define_predicate "incdec_operand"
   (match_code "const_int")

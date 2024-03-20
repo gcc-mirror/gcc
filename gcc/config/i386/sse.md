@@ -3734,18 +3734,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "avx_cmp<mode>3"
-  [(set (match_operand:VF_128_256 0 "register_operand" "=x")
+  [(set (match_operand:VF_128_256 0 "register_operand" "=x,x")
 	(unspec:VF_128_256
-	  [(match_operand:VF_128_256 1 "register_operand" "x")
-	   (match_operand:VF_128_256 2 "nonimmediate_operand" "xjm")
-	   (match_operand:SI 3 "const_0_to_31_operand")]
+	  [(match_operand:VF_128_256 1 "register_operand" "0,x")
+	   (match_operand:VF_128_256 2 "nonimmediate_operand" "xm,xjm")
+	   (match_operand:SI 3 "cmpps_imm_operand")]
 	  UNSPEC_PCMP))]
-  "TARGET_AVX"
-  "vcmp<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
-  [(set_attr "type" "ssecmp")
-   (set_attr "addr" "gpr16")
+  "TARGET_SSE"
+  "@
+  cmp<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
+  vcmp<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "ssecmp")
+   (set_attr "addr" "*,gpr16")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn_and_split "*avx_cmp<mode>3_1"
@@ -3945,21 +3948,24 @@
 })
 
 (define_insn "avx_vmcmp<mode>3"
-  [(set (match_operand:VF_128 0 "register_operand" "=x")
+  [(set (match_operand:VF_128 0 "register_operand" "=x,x")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "register_operand" "x")
-	     (match_operand:VF_128 2 "nonimmediate_operand" "xjm")
-	     (match_operand:SI 3 "const_0_to_31_operand")]
+	    [(match_operand:VF_128 1 "register_operand" "0,x")
+	     (match_operand:VF_128 2 "nonimmediate_operand" "xm,xjm")
+	     (match_operand:SI 3 "cmpps_imm_operand")]
 	    UNSPEC_PCMP)
 	 (match_dup 1)
 	 (const_int 1)))]
-  "TARGET_AVX"
-  "vcmp<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}"
-  [(set_attr "type" "ssecmp")
-   (set_attr "addr" "gpr16")
+  "TARGET_SSE"
+  "@
+  cmp<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %3}
+  vcmp<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "ssecmp")
+   (set_attr "addr" "*,gpr16")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "*<sse>_maskcmp<mode>3_comm"

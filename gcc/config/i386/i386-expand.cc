@@ -11835,6 +11835,12 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx_vmcmpv4sf3:
 	      case CODE_FOR_avx_cmpv2df3:
 	      case CODE_FOR_avx_cmpv4sf3:
+		if (CONST_INT_P (op) && IN_RANGE (INTVAL (op), 8, 31))
+		  {
+		    error ("'%s' needs isa option %s", d->name, "-mavx");
+		    return const0_rtx;
+		  }
+		/* FALLTHRU */
 	      case CODE_FOR_avx_cmpv4df3:
 	      case CODE_FOR_avx_cmpv8sf3:
 	      case CODE_FOR_avx512f_cmpv8df3_mask:
