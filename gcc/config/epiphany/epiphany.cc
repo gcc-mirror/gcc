@@ -731,7 +731,8 @@ epiphany_setup_incoming_varargs (cumulative_args_t cum,
     gcc_assert (arg.mode != BLKmode);
 
   next_cum = *get_cumulative_args (cum);
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
     next_cum = (ROUND_ADVANCE_CUM (next_cum, arg.mode, arg.type)
 		+ ROUND_ADVANCE_ARG (arg.mode, arg.type));
   first_anon_arg = next_cum;
