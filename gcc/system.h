@@ -1310,6 +1310,12 @@ void gcc_stablesort_r (void *, size_t, size_t, sort_r_cmp_fn *, void *data);
 #define NULL nullptr
 #endif
 
+/* Workaround clang on PowerPC which has vec_step as reserved keyword
+   rather than function-like macro defined in <altivec.h>.  See PR114369.  */
+#if defined(__clang__) && defined(__powerpc__)
+#define vec_step vec_step_
+#endif
+
 /* Return true if STR string starts with PREFIX.  */
 
 inline bool
