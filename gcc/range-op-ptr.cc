@@ -1219,6 +1219,17 @@ operator_bitwise_and::pointers_handled_p (range_op_dispatch_type type,
     }
 }
 
+bool
+operator_bitwise_or::pointers_handled_p (range_op_dispatch_type,
+					 unsigned) const
+{
+  // NOTE: It looks like we never generate bitwise OR with pointers.
+  // If this is indeed the case, we can move operator_bitwise_or from
+  // range-op-mixed.h to range-op.h.
+  gcc_unreachable ();
+  return false;
+}
+
 // Initialize any pointer operators to the primary table
 
 void
