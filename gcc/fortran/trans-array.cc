@@ -10397,7 +10397,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		  gfc_add_expr_to_block (&tblock, t);
 		  if (c->attr.pdt_array)
 		    gfc_add_modify (&tblock, gfc_conv_descriptor_version (comp),
-				    build_zero_cst (integer_type_node));
+				    integer_zero_node);
 		  tmp = build3_loc (input_location, COND_EXPR, void_type_node,
 				    cd, gfc_finish_block (&tblock),
 				    gfc_call_free (tmp));

@@ -764,7 +764,7 @@ gfc_trans_form_team (gfc_code *code)
       tmp = build_call_expr_loc (input_location,
 				 gfor_fndecl_caf_form_team, 3,
 				 team_id, team_type,
-				 build_int_cst (integer_type_node, 0));
+				 integer_zero_node);
       gfc_add_expr_to_block (&se.pre, tmp);
       gfc_add_block_to_block (&se.pre, &argse1.post);
       gfc_add_block_to_block (&se.pre, &argse2.post);
@@ -795,7 +795,7 @@ gfc_trans_change_team (gfc_code *code)
 
       tmp = build_call_expr_loc (input_location,
 				 gfor_fndecl_caf_change_team, 2, team_type,
-				 build_int_cst (integer_type_node, 0));
+				 integer_zero_node);
       gfc_add_expr_to_block (&argse.pre, tmp);
       gfc_add_block_to_block (&argse.pre, &argse.post);
       return gfc_finish_block (&argse.pre);
@@ -846,7 +846,7 @@ gfc_trans_sync_team (gfc_code *code)
       tmp = build_call_expr_loc (input_location,
 				 gfor_fndecl_caf_sync_team, 2,
 				 team_type,
-				 build_int_cst (integer_type_node, 0));
+				 integer_zero_node);
       gfc_add_expr_to_block (&argse.pre, tmp);
       gfc_add_block_to_block (&argse.pre, &argse.post);
       return gfc_finish_block (&argse.pre);
@@ -1357,7 +1357,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 	}
       else if (code->expr1->rank == 0)
 	{
-	  len = build_int_cst (integer_type_node, 1);
+	  len = integer_one_node;
 	  images = gfc_build_addr_expr (NULL_TREE, images);
 	}
       else

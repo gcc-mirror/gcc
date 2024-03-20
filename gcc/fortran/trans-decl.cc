@@ -6636,7 +6636,7 @@ create_main_function (tree fndecl)
   /* "return 0".  */
   tmp = fold_build2_loc (input_location, MODIFY_EXPR, integer_type_node,
 			 DECL_RESULT (ftn_main),
-			 build_int_cst (integer_type_node, 0));
+			 integer_zero_node);
   tmp = build1_v (RETURN_EXPR, tmp);
   gfc_add_expr_to_block (&body, tmp);
 

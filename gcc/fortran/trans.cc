@@ -900,7 +900,7 @@ gfc_allocate_using_caf_lib (stmtblock_t * block, tree pointer, tree size,
     {
       gcc_assert(errlen == NULL_TREE);
       errmsg = null_pointer_node;
-      errlen = build_int_cst (integer_type_node, 0);
+      errlen = integer_zero_node;
     }
 
   size = fold_convert (size_type_node, size);
@@ -1903,7 +1903,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 	  if (descr)
 	    cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
 				    gfc_conv_descriptor_version (descr),
-				    build_int_cst (integer_type_node, 1));
+				    integer_one_node);
 	  else
 	    cond = gfc_omp_call_is_alloc (pointer);
 	  omp_tmp = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
@@ -1917,7 +1917,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 							 0));
       if (flag_openmp_allocators && descr)
 	gfc_add_modify (&non_null, gfc_conv_descriptor_version (descr),
-			build_zero_cst (integer_type_node));
+			integer_zero_node);
 
       if (status != NULL_TREE && !integer_zerop (status))
 	{
@@ -1946,7 +1946,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 	{
 	  gcc_assert (errlen == NULL_TREE);
 	  errmsg = null_pointer_node;
-	  errlen = build_zero_cst (integer_type_node);
+	  errlen = integer_zero_node;
 	}
       else
 	{

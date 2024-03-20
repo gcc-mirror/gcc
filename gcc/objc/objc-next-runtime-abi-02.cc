@@ -3244,7 +3244,7 @@ build_v2_class_ro_t_initializer (tree type, tree name,
      explicitly declare the alignment padding.  */
   /* reserved, pads alignment.  */
   CONSTRUCTOR_APPEND_ELT (initlist, NULL_TREE,
-			    build_int_cst (integer_type_node, 0));
+			    integer_zero_node);
 
   /* ivarLayout */
   unsigned_char_star = build_pointer_type (unsigned_char_type_node);

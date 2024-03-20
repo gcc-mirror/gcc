@@ -2562,7 +2562,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   gfc_add_modify (&loop, loop_var,
                   fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
 				   loop_var,
-				   build_int_cst (integer_type_node, 1)));
+				   integer_one_node));
 
   /* Making the loop... actually loop!  */
   tmp = gfc_finish_block (&loop);
@@ -12815,7 +12815,7 @@ conv_intrinsic_move_alloc (gfc_code *code)
 					    null_pointer_node));
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
 				 3, null_pointer_node, null_pointer_node,
-				 build_int_cst (integer_type_node, 0));
+				 integer_zero_node);
 
       tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond,
 			     tmp, build_empty_stmt (input_location));

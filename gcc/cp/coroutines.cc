@@ -1750,7 +1750,7 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
 				    data->coro_fp);
   r = cp_build_init_expr (cond, r);
   finish_switch_cond (r, sw);
-  r = build_case_label (build_int_cst (integer_type_node, 0), NULL_TREE,
+  r = build_case_label (integer_zero_node, NULL_TREE,
 			create_anon_label_with_ctx (loc, actor));
   add_stmt (r); /* case 0: */
   /* Implement the suspend, a scope exit without clean ups.  */
@@ -1758,7 +1758,7 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
 				    is_cont ? cont : susp);
   r = coro_build_cvt_void_expr_stmt (r, loc);
   add_stmt (r); /*   goto ret;  */
-  r = build_case_label (build_int_cst (integer_type_node, 1), NULL_TREE,
+  r = build_case_label (integer_one_node, NULL_TREE,
 			create_anon_label_with_ctx (loc, actor));
   add_stmt (r); /* case 1:  */
   r = build1_loc (loc, GOTO_EXPR, void_type_node, resume_label);

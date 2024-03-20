@@ -3374,8 +3374,8 @@ namespace selftest {
 static void
 test_range ()
 {
-  tree int_0 = build_int_cst (integer_type_node, 0);
-  tree int_1 = build_int_cst (integer_type_node, 1);
+  tree int_0 = integer_zero_node;
+  tree int_1 = integer_one_node;
   tree int_2 = build_int_cst (integer_type_node, 2);
   tree int_5 = build_int_cst (integer_type_node, 5);
 
@@ -3419,7 +3419,7 @@ static void
 test_constraint_conditions ()
 {
   tree int_42 = build_int_cst (integer_type_node, 42);
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
 
   tree x = build_global_decl ("x", integer_type_node);
   tree y = build_global_decl ("y", integer_type_node);
@@ -3874,7 +3874,7 @@ test_transitivity ()
 static void
 test_constant_comparisons ()
 {
-  tree int_1 = build_int_cst (integer_type_node, 1);
+  tree int_1 = integer_one_node;
   tree int_3 = build_int_cst (integer_type_node, 3);
   tree int_4 = build_int_cst (integer_type_node, 4);
   tree int_5 = build_int_cst (integer_type_node, 5);
@@ -4058,7 +4058,7 @@ static void
 test_constraint_impl ()
 {
   tree int_42 = build_int_cst (integer_type_node, 42);
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
 
   tree x = build_global_decl ("x", integer_type_node);
   tree y = build_global_decl ("y", integer_type_node);
@@ -4220,7 +4220,7 @@ test_many_constants ()
 static void
 test_purging (void)
 {
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
   tree a = build_global_decl ("a", integer_type_node);
   tree b = build_global_decl ("b", integer_type_node);
 
@@ -4654,7 +4654,7 @@ test_bits (void)
 {
   region_model_manager mgr;
 
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
   tree int_0x80 = build_int_cst (integer_type_node, 0x80);
   tree int_0xff = build_int_cst (integer_type_node, 0xff);
   tree x = build_global_decl ("x", integer_type_node);

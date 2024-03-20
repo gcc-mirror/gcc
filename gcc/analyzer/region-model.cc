@@ -2724,7 +2724,7 @@ region_model::get_store_value (const region *reg,
 	= cast_reg->get_original_region ()->dyn_cast_string_region ())
       {
 	tree string_cst = str_reg->get_string_cst ();
-	tree byte_offset_cst = build_int_cst (integer_type_node, 0);
+	tree byte_offset_cst = integer_zero_node;
 	if (const svalue *char_sval
 	    = m_mgr->maybe_get_char_from_string_cst (string_cst,
 						     byte_offset_cst))
@@ -7168,7 +7168,7 @@ build_real_cst_from_string (tree type, const char *str)
 static void
 append_interesting_constants (auto_vec<tree> *out)
 {
-  out->safe_push (build_int_cst (integer_type_node, 0));
+  out->safe_push (integer_zero_node);
   out->safe_push (build_int_cst (integer_type_node, 42));
   out->safe_push (build_int_cst (unsigned_type_node, 0));
   out->safe_push (build_int_cst (unsigned_type_node, 42));
@@ -7393,7 +7393,7 @@ test_array_1 ()
 
   region_model_manager mgr;
   region_model model (&mgr);
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
   tree a_0 = build4 (ARRAY_REF, char_type_node,
 		     a, int_0, NULL_TREE, NULL_TREE);
   tree char_A = build_int_cst (char_type_node, 'A');
@@ -7450,7 +7450,7 @@ test_get_representative_tree ()
     {
       test_region_model_context ctxt;
       region_model model (&mgr);
-      tree idx = build_int_cst (integer_type_node, 0);
+      tree idx = integer_zero_node;
       tree a_0 = build4 (ARRAY_REF, char_type_node,
 			 a, idx, NULL_TREE, NULL_TREE);
       const region *a_0_reg = model.get_lvalue (a_0, &ctxt);
@@ -7502,7 +7502,7 @@ test_get_representative_tree ()
 static void
 test_unique_constants ()
 {
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
   tree int_42 = build_int_cst (integer_type_node, 42);
 
   test_region_model_context ctxt;
@@ -7885,7 +7885,7 @@ test_bit_range_regions ()
 static void
 test_assignment ()
 {
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
   tree x = build_global_decl ("x", integer_type_node);
   tree y = build_global_decl ("y", integer_type_node);
 
@@ -7944,7 +7944,7 @@ test_stack_frames ()
   tree int_42 = build_int_cst (integer_type_node, 42);
   tree int_10 = build_int_cst (integer_type_node, 10);
   tree int_5 = build_int_cst (integer_type_node, 5);
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
 
   auto_vec <tree> param_types;
   tree parent_fndecl = make_fndecl (integer_type_node,
@@ -8627,7 +8627,7 @@ test_state_merging ()
 static void
 test_constraint_merging ()
 {
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
   tree int_5 = build_int_cst (integer_type_node, 5);
   tree x = build_global_decl ("x", integer_type_node);
   tree y = build_global_decl ("y", integer_type_node);
@@ -8674,9 +8674,9 @@ test_widening_constraints ()
 {
   region_model_manager mgr;
   function_point point (program_point::origin (mgr).get_function_point ());
-  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_0 = integer_zero_node;
   tree int_m1 = build_int_cst (integer_type_node, -1);
-  tree int_1 = build_int_cst (integer_type_node, 1);
+  tree int_1 = integer_one_node;
   tree int_256 = build_int_cst (integer_type_node, 256);
   test_region_model_context ctxt;
   const svalue *int_0_sval = mgr.get_or_create_constant_svalue (int_0);
@@ -8790,8 +8790,8 @@ test_iteration_1 ()
   region_model_manager mgr;
   program_point point (program_point::origin (mgr));
 
-  tree int_0 = build_int_cst (integer_type_node, 0);
-  tree int_1 = build_int_cst (integer_type_node, 1);
+  tree int_0 = integer_zero_node;
+  tree int_1 = integer_one_node;
   tree int_256 = build_int_cst (integer_type_node, 256);
   tree i = build_global_decl ("i", integer_type_node);
 
@@ -8944,8 +8944,8 @@ test_array_2 ()
   /* "int i;"  */
   tree i = build_global_decl ("i", integer_type_node);
 
-  tree int_0 = build_int_cst (integer_type_node, 0);
-  tree int_1 = build_int_cst (integer_type_node, 1);
+  tree int_0 = integer_zero_node;
+  tree int_1 = integer_one_node;
 
   tree arr_0 = build4 (ARRAY_REF, integer_type_node,
 		       arr, int_0, NULL_TREE, NULL_TREE);
