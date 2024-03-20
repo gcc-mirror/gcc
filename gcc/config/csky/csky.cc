@@ -2091,7 +2091,8 @@ csky_setup_incoming_varargs (cumulative_args_t pcum_v,
 
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *pcum;
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
     csky_function_arg_advance (local_cum_v, arg);
   regs_to_push = CSKY_NPARM_REGS - local_cum.reg;
   if (regs_to_push)
