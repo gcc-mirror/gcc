@@ -951,6 +951,76 @@ operator_cast::pointers_handled_p (range_op_dispatch_type type,
     }
 }
 
+bool
+operator_min::fold_range (prange &r, tree type,
+			  const prange &op1,
+			  const prange &op2,
+			  relation_trio) const
+{
+  // For MIN/MAX expressions with pointers, we only care about
+  // nullness.  If both are non null, then the result is nonnull.
+  // If both are null, then the result is null.  Otherwise they
+  // are varying.
+  if (!range_includes_zero_p (op1)
+      && !range_includes_zero_p (op2))
+    r.set_nonzero (type);
+  else if (op1.zero_p () && op2.zero_p ())
+    r.set_zero (type);
+  else
+    r.set_varying (type);
+
+  update_known_bitmask (r, MIN_EXPR, op1, op2);
+  return true;
+}
+
+bool
+operator_min::pointers_handled_p (range_op_dispatch_type type,
+				  unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+      return dispatch == RO_PPP;
+    default:
+      return true;
+    }
+}
+
+bool
+operator_max::fold_range (prange &r, tree type,
+			  const prange &op1,
+			  const prange &op2,
+			  relation_trio) const
+{
+  // For MIN/MAX expressions with pointers, we only care about
+  // nullness.  If both are non null, then the result is nonnull.
+  // If both are null, then the result is null.  Otherwise they
+  // are varying.
+  if (!range_includes_zero_p (op1)
+      && !range_includes_zero_p (op2))
+    r.set_nonzero (type);
+  else if (op1.zero_p () && op2.zero_p ())
+    r.set_zero (type);
+  else
+    r.set_varying (type);
+
+  update_known_bitmask (r, MAX_EXPR, op1, op2);
+  return true;
+}
+
+bool
+operator_max::pointers_handled_p (range_op_dispatch_type type,
+				  unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+      return dispatch == RO_PPP;
+    default:
+      return true;
+    }
+}
+
 // Initialize any pointer operators to the primary table
 
 void

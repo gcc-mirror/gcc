@@ -761,12 +761,18 @@ protected:
 class operator_min : public range_operator
 {
 public:
+  using range_operator::fold_range;
   using range_operator::update_bitmask;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1,
+		   const prange &op2,
+		   relation_trio) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
+  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -776,12 +782,18 @@ protected:
 class operator_max : public range_operator
 {
 public:
+  using range_operator::fold_range;
   using range_operator::update_bitmask;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1,
+		   const prange &op2,
+		   relation_trio) const final override;
   void update_bitmask (irange &r, const irange &lh,
       const irange &rh) const override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
+  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
