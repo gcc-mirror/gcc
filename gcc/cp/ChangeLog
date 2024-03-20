@@ -1,3 +1,14 @@
+2024-03-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* cp-tree.h (module_maybe_has_cmi_p): New function.
+	* decl.cc (grokfndecl): Mark block-scope functions as public if
+	they could be visible in other TUs.
+	* decl2.cc (no_linkage_error): Don't error for declarations that
+	could be defined in other TUs since C++20. Suppress duplicate
+	errors from 'check_global_declaration'.
+	* tree.cc (no_linkage_check): In relaxed mode, don't consider
+	types in a module CMI to have no linkage.
+
 2024-03-16  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/112631

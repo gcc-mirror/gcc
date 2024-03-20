@@ -1,3 +1,20 @@
+2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR analyzer/113505
+	* region-model.cc (get_tree_for_byte_offset,
+	region_model::get_representative_path_var_1,
+	test_mem_ref, test_POINTER_PLUS_EXPR_then_MEM_REF): Use
+	char __attribute__((may_alias)) * as type of MEM_REF second argument.
+
+2024-03-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114286
+	* kf.cc (class kf_atomic_exchange): Reimplement based on signature
+	seen in gimple, rather than user-facing signature.
+	(class kf_atomic_load): Likewise.
+	(class kf_atomic_store): New.
+	(register_atomic_builtins): Register kf_atomic_store.
+
 2024-03-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/110902

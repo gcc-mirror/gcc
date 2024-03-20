@@ -1,3 +1,12 @@
+2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114364
+	* c-omp.cc (enum check_loop_binding_expr_ctx): New type.
+	(check_loop_binding_expr): Remove context argument, add ctx
+	argument with check_loop_binding_expr_ctx type at the end.  Don't
+	create diagnostic message from multiple pieces.
+	(c_omp_check_loop_binding_exprs): Adjust callers.
+
 2024-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.cc (resolve_overloaded_atomic_exchange): Instead of setting

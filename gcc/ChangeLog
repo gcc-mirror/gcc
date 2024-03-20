@@ -1,3 +1,133 @@
+2024-03-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108802
+	PR ipa/114254
+	* ipa-prop.cc (ipa_get_stmt_member_ptr_load_param): Fix case looking
+	at COMPONENT_REFs directly from a PARM_DECL, also recognize loads from
+	a pointer parameter.
+	(ipa_analyze_indirect_call_uses): Also recognize loads from a pointer
+	parameter, also recognize the case when pfn pointer is loaded in its
+	own BB.
+
+2024-03-19  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99829
+	* lra-constraints.cc (lra_constraints): Prevent removing insn
+	with reverse equivalence to memory if the memory was reloaded.
+
+2024-03-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/114348
+	* diagnostic-format-json.cc
+	(json_stderr_output_format::machine_readable_stderr_p): New.
+	(json_file_output_format::machine_readable_stderr_p): New.
+	* diagnostic-format-sarif.cc
+	(sarif_stream_output_format::machine_readable_stderr_p): New.
+	(sarif_file_output_format::machine_readable_stderr_p): New.
+	* diagnostic.cc (diagnostic_context::action_after_output): Move
+	"fnotice" to before "finish" call, so that we still have the
+	diagnostic_context.
+	(fnotice): Bail out if the user requested one of the
+	machine-readable diagnostic output formats on stderr.
+	* diagnostic.h
+	(diagnostic_output_format::machine_readable_stderr_p): New pure
+	virtual function.
+	(diagnostic_text_output_format::machine_readable_stderr_p): New.
+	(diagnostic_context::get_output_format): New accessor.
+
+2024-03-19  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/114175
+	* config/riscv/riscv.cc (riscv_setup_incoming_varargs): Only skip
+	riscv_funciton_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL
+
+2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/install.texi (Prerequisites): Document use of autogen for
+	libstdc++.
+
+2024-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114151
+	PR tree-optimization/114269
+	PR tree-optimization/114322
+	PR tree-optimization/114074
+	* tree-chrec.cc (chrec_fold_multiply): Restrict the use of
+	unsigned arithmetic when actual overflow on constant operands
+	is observed.
+
+2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/arc/arc.cc (arc_setup_incoming_varargs): Only skip
+	arc_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-19  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/114175
+	* config/loongarch/loongarch.cc
+	(loongarch_setup_incoming_varargs): Only skip
+	loongarch_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P
+	functions if arg.type is NULL.
+
+2024-03-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/114323
+	* config/arm/arm-mve-builtins.cc
+	(function_instance::reads_global_state_p): Take CP_READ_MEMORY
+	into account.
+
+2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/alpha/alpha.cc (alpha_setup_incoming_varargs): Only skip
+	function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/rs6000/rs6000-call.cc (setup_incoming_varargs): Only skip
+	rs6000_function_arg_advance_1 for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114375
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Compute the
+	load permutation for masked loads but reject it when any
+	such is necessary.
+	* tree-vect-stmts.cc (vectorizable_load): Reject masked
+	VMAT_ELEMENTWISE and VMAT_STRIDED_SLP as those are not
+	supported.
+
+2024-03-19  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* common/config/riscv/riscv-common.cc: Create XCVbi extension
+	support.
+	* config/riscv/riscv.opt: Likewise.
+	* config/riscv/corev.md: Implement cv_branch<mode> pattern
+	for cv.beqimm and cv.bneimm.
+	* config/riscv/riscv.md: Add CORE-V branch immediate to RISC-V
+	branch instruction pattern.
+	* config/riscv/constraints.md: Implement constraints
+	cv_bi_s5 - signed 5-bit immediate.
+	* config/riscv/predicates.md: Implement predicate
+	const_int5s_operand - signed 5 bit immediate.
+	* doc/sourcebuild.texi: Add XCVbi documentation.
+
+2024-03-19  Chen Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): New def.
+	(RISCV_CORE): Ditto.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type): New
+	option.
+	* config/riscv/riscv.cc: New def.
+	* config/riscv/riscv.md: New include.
+	* config/riscv/xiangshan.md: New file.
+
 2024-03-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/110902

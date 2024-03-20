@@ -1,3 +1,56 @@
+2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114359
+	* include/bits/random.tcc (binomial_distribution::param_type):
+	Ensure arithmetic is done as type double.
+	* testsuite/26_numerics/random/binomial_distribution/114359.cc: New test.
+
+2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101228
+	* include/pstl/parallel_backend_tbb.h (TBB_SUPPRESS_DEPRECATED_MESSAGES):
+	Define before including <tbb/task.h> then undef afterwards.
+
+2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am [MAINTAINER_MODE]: Add target to
+	automatically update <bits/version.h>.
+	* include/Makefile.in: Regenerate.
+
+2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/build_hacking.xml: Document generated files.
+	Update list of convenience libraries and sub-directories under
+	the src directory.
+	* doc/html/*: Regenerate.
+
+2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/text_encoding-data.h: Regenerate.
+	* include/bits/unicode-data.h: Regenerate.
+	* scripts/gen_text_encoding_data.py: Fix header of generated
+	file to name the correct script.
+
+2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/pstl/test_utils.h: Fix typos in comments.
+
+2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114367
+	* include/bits/stl_bvector.h (_M_allocate): Use allocator's
+	construct function to begin lifetime of words.
+
+2024-03-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/dg-options.exp (atomic_link_flags): Emit a -B
+	option for the path to the uninstalled libatomic.
+
+2024-03-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Instead of
+	/dev/null, use a temporary file for test executables on Darwin.
+
 2024-03-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_iterator.tcc (_Safe_iterator<>::_M_can_advance):

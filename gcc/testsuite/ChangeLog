@@ -1,3 +1,106 @@
+2024-03-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108802
+	PR ipa/114254
+	* g++.dg/ipa/iinline-4.C: New test.
+	* g++.dg/ipa/pr108802.C: Likewise.
+
+2024-03-19  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp2a/linkage-1.C: Use target c++14.
+
+2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR analyzer/113505
+	* gcc.dg/analyzer/pr113505.c: New test.
+
+2024-03-19  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-6.c: Disable scheduling
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-8.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-1.c: Update test expectancies
+	* gcc.target/riscv/rvv/base/pr108185-2.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-3.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-4.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-5.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-6.c: Ditto
+	* gcc.target/riscv/rvv/base/pr108185-7.c: Ditto
+	* gcc.target/riscv/rvv/base/vcreate.c: Disable scheduling and update
+	test expectancies
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-30.c: Disable scheduling
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-31.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-17.c: Update test
+	expectancies
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-18.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-10.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-11.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-12.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-4.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-5.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-6.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-7.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-8.c: Ditto
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-9.c: Ditto
+
+2024-03-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114286
+	* c-c++-common/analyzer/atomic-builtins-pr114286.c: New test.
+
+2024-03-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/114049
+	* gcc.dg/framework-1.c: Use an IOKit header instead of a
+	Kernel one.
+
+2024-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114151
+	PR tree-optimization/114269
+	PR tree-optimization/114322
+	PR tree-optimization/114074
+	* gcc.dg/pr68317.c: Revert last change.
+
+2024-03-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/114323
+	* gcc.target/arm/mve/pr114323.c: New.
+
+2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* gcc.dg/c23-stdarg-9.c: New test.
+
+2024-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114375
+	* gcc.dg/vect/vect-pr114375.c: New testcase.
+
+2024-03-19  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* gcc.target/riscv/cv-bi-beqimm-compile-1.c: New test.
+	* gcc.target/riscv/cv-bi-beqimm-compile-2.c: New test.
+	* gcc.target/riscv/cv-bi-bneimm-compile-1.c: New test.
+	* gcc.target/riscv/cv-bi-bneimm-compile-2.c: New test.
+	* lib/target-supports.exp: Add proc for XCVbi.
+
+2024-03-19  Chen Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/mcpu-xiangshan-nanhu.c: New test.
+	Co-Authored by: Lin Jiawei <jiawei.lin@epfl.ch>
+
+2024-03-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp2a/linkage-1.C: New test.
+	* g++.dg/modules/block-decl-3.h: New test.
+	* g++.dg/modules/block-decl-3_a.C: New test.
+	* g++.dg/modules/block-decl-3_b.C: New test.
+	* g++.dg/modules/block-decl-3_c.C: New test.
+	* g++.dg/modules/linkage-1_a.C: New test.
+	* g++.dg/modules/linkage-1_b.C: New test.
+	* g++.dg/modules/linkage-1_c.C: New test.
+	* g++.dg/modules/linkage-2.C: New test.
+
 2024-03-18  Jonathan Yong  <10walls@gmail.com>
 
 	* c-c++-common/Wrestrict.c: Fix typos in comments and
