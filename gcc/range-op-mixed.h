@@ -380,9 +380,13 @@ public:
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1, const prange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
   bool fold_range (frange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
+  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 };
 
 

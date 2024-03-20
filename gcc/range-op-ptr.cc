@@ -683,6 +683,29 @@ operator_identity::pointers_handled_p (range_op_dispatch_type type,
     }
 }
 
+bool
+operator_cst::fold_range (prange &r, tree type ATTRIBUTE_UNUSED,
+			  const prange &lh,
+			  const prange & ATTRIBUTE_UNUSED,
+			  relation_trio) const
+{
+  r = lh;
+  return true;
+}
+
+bool
+operator_cst::pointers_handled_p (range_op_dispatch_type type,
+				  unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+      return dispatch == RO_PPP;
+    default:
+      return true;
+    }
+}
+
 // Initialize any pointer operators to the primary table
 
 void
