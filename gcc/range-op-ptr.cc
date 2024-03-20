@@ -265,8 +265,17 @@ range_operator::update_bitmask (irange &,
 class pointer_plus_operator : public range_operator
 {
   using range_operator::update_bitmask;
+  using range_operator::fold_range;
   using range_operator::op2_range;
 public:
+  virtual bool fold_range (prange &r, tree type,
+			   const prange &op1,
+			   const irange &op2,
+			   relation_trio) const final override;
+  virtual bool op2_range (irange &r, tree type,
+			  const prange &lhs,
+			  const prange &op1,
+			  relation_trio = TRIO_VARYING) const final override;
   virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb,
 			const wide_int &lh_ub,
@@ -276,9 +285,98 @@ public:
 			  const irange &lhs,
 			  const irange &op1,
 			  relation_trio = TRIO_VARYING) const;
+  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
   void update_bitmask (irange &r, const irange &lh, const irange &rh) const
     { update_known_bitmask (r, POINTER_PLUS_EXPR, lh, rh); }
 } op_pointer_plus;
+
+bool
+pointer_plus_operator::fold_range (prange &r, tree type,
+				   const prange &op1,
+				   const irange &op2,
+				   relation_trio) const
+{
+  if (empty_range_varying (r, type, op1, op2))
+    return true;
+
+  const wide_int lh_lb = op1.lower_bound ();
+  const wide_int lh_ub = op1.upper_bound ();
+  const wide_int rh_lb = op2.lower_bound ();
+  const wide_int rh_ub = op2.upper_bound ();
+
+  // Check for [0,0] + const, and simply return the const.
+  if (lh_lb == 0 && lh_ub == 0 && rh_lb == rh_ub)
+    {
+      r.set (type, rh_lb, rh_lb);
+      return true;
+    }
+
+  // For pointer types, we are really only interested in asserting
+  // whether the expression evaluates to non-NULL.
+  //
+  // With -fno-delete-null-pointer-checks we need to be more
+  // conservative.  As some object might reside at address 0,
+  // then some offset could be added to it and the same offset
+  // subtracted again and the result would be NULL.
+  // E.g.
+  // static int a[12]; where &a[0] is NULL and
+  // ptr = &a[6];
+  // ptr -= 6;
+  // ptr will be NULL here, even when there is POINTER_PLUS_EXPR
+  // where the first range doesn't include zero and the second one
+  // doesn't either.  As the second operand is sizetype (unsigned),
+  // consider all ranges where the MSB could be set as possible
+  // subtractions where the result might be NULL.
+  if ((!wi_includes_zero_p (type, lh_lb, lh_ub)
+       || !wi_includes_zero_p (type, rh_lb, rh_ub))
+      && !TYPE_OVERFLOW_WRAPS (type)
+      && (flag_delete_null_pointer_checks
+	  || !wi::sign_mask (rh_ub)))
+    r.set_nonzero (type);
+  else if (lh_lb == lh_ub && lh_lb == 0
+	   && rh_lb == rh_ub && rh_lb == 0)
+    r.set_zero (type);
+  else
+   r.set_varying (type);
+
+  update_known_bitmask (r, POINTER_PLUS_EXPR, op1, op2);
+  return true;
+}
+
+bool
+pointer_plus_operator::op2_range (irange &r, tree type,
+				  const prange &lhs ATTRIBUTE_UNUSED,
+				  const prange &op1 ATTRIBUTE_UNUSED,
+				  relation_trio trio) const
+{
+  relation_kind rel = trio.lhs_op1 ();
+  r.set_varying (type);
+
+  // If the LHS and OP1 are equal, the op2 must be zero.
+  if (rel == VREL_EQ)
+    r.set_zero (type);
+  // If the LHS and OP1 are not equal, the offset must be non-zero.
+  else if (rel == VREL_NE)
+    r.set_nonzero (type);
+  else
+    return false;
+  return true;
+}
+
+bool
+pointer_plus_operator::pointers_handled_p (range_op_dispatch_type type,
+					   unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+      return dispatch == RO_PPI;
+    case DISPATCH_OP2_RANGE:
+      return dispatch == RO_IPP;
+    default:
+      return true;
+    }
+}
 
 void
 pointer_plus_operator::wi_fold (irange &r, tree type,
