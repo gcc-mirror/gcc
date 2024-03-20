@@ -1481,7 +1481,8 @@ visium_setup_incoming_varargs (cumulative_args_t pcum_v,
   /* The caller has advanced ARGS_SO_FAR up to, but not beyond, the last named
      argument.  Advance a local copy of ARGS_SO_FAR past the last "real" named
      argument, to find out how many registers are left over.  */
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
     TARGET_FUNCTION_ARG_ADVANCE (local_args_so_far, arg);
 
   /* Find how many registers we need to save.  */
