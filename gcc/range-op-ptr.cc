@@ -262,6 +262,69 @@ range_operator::update_bitmask (irange &,
 {
 }
 
+// Return the upper limit for a type.
+
+static inline wide_int
+max_limit (const_tree type)
+{
+  return wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+}
+
+// Return the lower limit for a type.
+
+static inline wide_int
+min_limit (const_tree type)
+{
+  return wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+}
+
+// Build a range that is < VAL and store it in R.
+
+static void
+build_lt (prange &r, tree type, const prange &val)
+{
+  wi::overflow_type ov;
+  wide_int lim = wi::sub (val.upper_bound (), 1, UNSIGNED, &ov);
+
+  // If val - 1 underflows, check if X < MIN, which is an empty range.
+  if (ov)
+    r.set_undefined ();
+  else
+    r.set (type, min_limit (type), lim);
+}
+
+// Build a range that is <= VAL and store it in R.
+
+static void
+build_le (prange &r, tree type, const prange &val)
+{
+  r.set (type, min_limit (type), val.upper_bound ());
+}
+
+// Build a range that is > VAL and store it in R.
+
+static void
+build_gt (prange &r, tree type, const prange &val)
+{
+  wi::overflow_type ov;
+  wide_int lim = wi::add (val.lower_bound (), 1, UNSIGNED, &ov);
+
+  // If val + 1 overflows, check is for X > MAX, which is an empty range.
+  if (ov)
+    r.set_undefined ();
+  else
+    r.set (type, lim, max_limit (type));
+
+}
+
+// Build a range that is >= VAL and store it in R.
+
+static void
+build_ge (prange &r, tree type, const prange &val)
+{
+  r.set (type, val.lower_bound (), max_limit (type));
+}
+
 class pointer_plus_operator : public range_operator
 {
   using range_operator::update_bitmask;
@@ -1450,6 +1513,117 @@ operator_not_equal::op1_op2_relation (const irange &lhs, const prange &,
 bool
 operator_not_equal::pointers_handled_p (range_op_dispatch_type type,
 					unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+      return dispatch == RO_IPP;
+    case DISPATCH_OP1_RANGE:
+    case DISPATCH_OP2_RANGE:
+      return dispatch == RO_PIP;
+    case DISPATCH_OP1_OP2_RELATION:
+      return dispatch == RO_IPP;
+    default:
+      return true;
+    }
+}
+
+bool
+operator_lt::fold_range (irange &r, tree type,
+			 const prange &op1,
+			 const prange &op2,
+			 relation_trio rel) const
+{
+  if (relop_early_resolve (r, type, op1, op2, rel, VREL_LT))
+    return true;
+
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
+
+  if (wi::lt_p (op1.upper_bound (), op2.lower_bound (), sign))
+    r = range_true ();
+  else if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
+    r = range_false ();
+  // Use nonzero bits to determine if < 0 is false.
+  else if (op2.zero_p () && !wi::neg_p (op1.get_nonzero_bits (), sign))
+    r = range_false ();
+  else
+    r = range_true_and_false ();
+
+  //update_known_bitmask (r, LT_EXPR, op1, op2);
+  return true;
+}
+
+bool
+operator_lt::op1_range (prange &r, tree type,
+			const irange &lhs,
+			const prange &op2,
+			relation_trio) const
+{
+  if (op2.undefined_p ())
+    return false;
+
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_TRUE:
+      build_lt (r, type, op2);
+      break;
+
+    case BRS_FALSE:
+      build_ge (r, type, op2);
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
+bool
+operator_lt::op2_range (prange &r, tree type,
+			const irange &lhs,
+			const prange &op1,
+			relation_trio) const
+{
+  if (op1.undefined_p ())
+    return false;
+
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_TRUE:
+      build_gt (r, type, op1);
+      break;
+
+    case BRS_FALSE:
+      build_le (r, type, op1);
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
+relation_kind
+operator_lt::op1_op2_relation (const irange &lhs, const prange &,
+			       const prange &) const
+{
+  if (lhs.undefined_p ())
+    return VREL_UNDEFINED;
+
+  // FALSE = op1 < op2 indicates GE_EXPR.
+  if (lhs.zero_p ())
+    return VREL_GE;
+
+  // TRUE = op1 < op2 indicates LT_EXPR.
+  if (!range_includes_zero_p (lhs))
+    return VREL_LT;
+  return VREL_VARYING;
+}
+
+bool
+operator_lt::pointers_handled_p (range_op_dispatch_type type,
+				 unsigned dispatch) const
 {
   switch (type)
     {
