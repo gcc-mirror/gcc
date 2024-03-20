@@ -712,10 +712,15 @@ private:
 class operator_bitwise_and : public range_operator
 {
 public:
+  using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
   using range_operator::update_bitmask;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1,
+		   const prange &op2,
+		   relation_trio) const final override;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const override;
@@ -730,6 +735,7 @@ public:
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
+  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,

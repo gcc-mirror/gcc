@@ -1189,6 +1189,36 @@ operator_addr_expr::pointers_handled_p (range_op_dispatch_type type,
     }
 }
 
+bool
+operator_bitwise_and::fold_range (prange &r, tree type,
+				  const prange &op1,
+				  const prange &op2 ATTRIBUTE_UNUSED,
+				  relation_trio) const
+{
+  // For pointer types, we are really only interested in asserting
+  // whether the expression evaluates to non-NULL.
+  if (op1.zero_p () || op2.zero_p ())
+    r.set_zero (type);
+  else
+    r.set_varying (type);
+
+  update_known_bitmask (r, BIT_AND_EXPR, op1, op2);
+  return true;
+}
+
+bool
+operator_bitwise_and::pointers_handled_p (range_op_dispatch_type type,
+					  unsigned dispatch) const
+{
+  switch (type)
+    {
+    case DISPATCH_FOLD_RANGE:
+      return dispatch == RO_PPP;
+    default:
+      return true;
+    }
+}
+
 // Initialize any pointer operators to the primary table
 
 void
