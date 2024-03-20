@@ -23,4 +23,4 @@ z(i)%y(j)%x(k)=0
 
 END
 
-! { dg-output "At line 22 of file .*bounds_check_17.f90.*Fortran runtime error: Index '11' of dimension 1 of array 'z%y%x' above upper bound of 10" }
+! { dg-output "At line 22 of file .*bounds_check_17.f90.*Fortran runtime error: Index '11' of dimension 1 of array 'z\.\.\.%x' above upper bound of 10" }

@@ -3485,6 +3485,78 @@ gfc_conv_array_ubound (tree descriptor, int dim)
 }
 
 
+/* Generate abridged name of a part-ref for use in bounds-check message.
+   Cases:
+   (1) for an ordinary array variable x return "x"
+   (2) for z a DT scalar and array component x (at level 1) return "z%%x"
+   (3) for z a DT scalar and array component x (at level > 1) or
+       for z a DT array and array x (at any number of levels): "z...%%x"
+ */
+
+static char *
+abridged_ref_name (gfc_expr * expr, gfc_array_ref * ar)
+{
+  gfc_ref *ref;
+  gfc_symbol *sym;
+  char *ref_name = NULL;
+  const char *comp_name = NULL;
+  int len_sym, last_len = 0, level = 0;
+  bool sym_is_array;
+
+  gcc_assert (expr->expr_type == EXPR_VARIABLE && expr->ref != NULL);
+
+  sym = expr->symtree->n.sym;
+  sym_is_array = (sym->ts.type != BT_CLASS
+		  ? sym->as != NULL
+		  : IS_CLASS_ARRAY (sym));
+  len_sym = strlen (sym->name);
+
+  /* Scan ref chain to get name of the array component (when ar != NULL) or
+     array section, determine depth and remember its component name.  */
+  for (ref = expr->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_COMPONENT
+	  && strcmp (ref->u.c.component->name, "_data") != 0)
+	{
+	  level++;
+	  comp_name = ref->u.c.component->name;
+	  continue;
+	}
+
+      if (ref->type != REF_ARRAY)
+	continue;
+
+      if (ar)
+	{
+	  if (&ref->u.ar == ar)
+	    break;
+	}
+      else if (ref->u.ar.type == AR_SECTION)
+	break;
+    }
+
+  if (level > 0)
+    last_len = strlen (comp_name);
+
+  /* Provide a buffer sufficiently large to hold "x...%%z".  */
+  ref_name = XNEWVEC (char, len_sym + last_len + 6);
+  strcpy (ref_name, sym->name);
+
+  if (level == 1 && !sym_is_array)
+    {
+      strcat (ref_name, "%%");
+      strcat (ref_name, comp_name);
+    }
+  else if (level > 0)
+    {
+      strcat (ref_name, "...%%");
+      strcat (ref_name, comp_name);
+    }
+
+  return ref_name;
+}
+
+
 /* Generate code to perform an array index bound check.  */
 
 static tree
@@ -3496,7 +3568,9 @@ trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
   tree tmp_lo, tmp_up;
   tree descriptor;
   char *msg;
+  char *ref_name = NULL;
   const char * name = NULL;
+  gfc_expr *expr;
 
   if (!(gfc_option.rtcheck & GFC_RTCHECK_BOUNDS))
     return index;
@@ -3508,6 +3582,12 @@ trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
   /* We find a name for the error message.  */
   name = ss->info->expr->symtree->n.sym->name;
   gcc_assert (name != NULL);
+
+  /* When we have a component ref, get name of the array section.
+     Note that there can only be one part ref.  */
+  expr = ss->info->expr;
+  if (expr->ref && !compname)
+    name = ref_name = abridged_ref_name (expr, NULL);
 
   if (VAR_P (descriptor))
     name = IDENTIFIER_POINTER (DECL_NAME (descriptor));
@@ -3562,6 +3642,7 @@ trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
       free (msg);
     }
 
+  free (ref_name);
   return index;
 }
 
@@ -3573,36 +3654,17 @@ array_bound_check_elemental (gfc_se * se, gfc_ss * ss, gfc_expr * expr)
 {
   gfc_array_ref *ar;
   gfc_ref *ref;
-  gfc_symbol *sym;
   char *var_name = NULL;
-  size_t len;
   int dim;
 
   if (expr->expr_type == EXPR_VARIABLE)
     {
-      sym = expr->symtree->n.sym;
-      len = strlen (sym->name) + 1;
-
-      for (ref = expr->ref; ref; ref = ref->next)
-	if (ref->type == REF_COMPONENT)
-	  len += 2 + strlen (ref->u.c.component->name);
-
-      var_name = XALLOCAVEC (char, len);
-      strcpy (var_name, sym->name);
-
       for (ref = expr->ref; ref; ref = ref->next)
 	{
-	  /* Append component name.  */
-	  if (ref->type == REF_COMPONENT)
-	    {
-	      strcat (var_name, "%%");
-	      strcat (var_name, ref->u.c.component->name);
-	      continue;
-	    }
-
 	  if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION)
 	    {
 	      ar = &ref->u.ar;
+	      var_name = abridged_ref_name (expr, ar);
 	      for (dim = 0; dim < ar->dimen; dim++)
 		{
 		  if (ar->dimen_type[dim] == DIMEN_ELEMENT)
@@ -3618,6 +3680,7 @@ array_bound_check_elemental (gfc_se * se, gfc_ss * ss, gfc_expr * expr)
 					       var_name);
 		    }
 		}
+	      free (var_name);
 	    }
 	}
     }
@@ -4034,33 +4097,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
     }
 
   if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
-    {
-      size_t len;
-      gfc_ref *ref;
-
-      len = strlen (sym->name) + 1;
-      for (ref = expr->ref; ref; ref = ref->next)
-	{
-	  if (ref->type == REF_ARRAY && &ref->u.ar == ar)
-	    break;
-	  if (ref->type == REF_COMPONENT)
-	    len += 2 + strlen (ref->u.c.component->name);
-	}
-
-      var_name = XALLOCAVEC (char, len);
-      strcpy (var_name, sym->name);
-
-      for (ref = expr->ref; ref; ref = ref->next)
-	{
-	  if (ref->type == REF_ARRAY && &ref->u.ar == ar)
-	    break;
-	  if (ref->type == REF_COMPONENT)
-	    {
-	      strcat (var_name, "%%");
-	      strcat (var_name, ref->u.c.component->name);
-	    }
-	}
-    }
+    var_name = abridged_ref_name (expr, ar);
 
   decl = se->expr;
   if (UNLIMITED_POLY(sym)
@@ -4195,6 +4232,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	decl = NULL_TREE;
     }
 
+  free (var_name);
   se->expr = build_array_ref (se->expr, offset, decl, se->class_vptr);
 }
 
