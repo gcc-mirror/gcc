@@ -568,7 +568,7 @@ do_while_loop_p (class loop *loop)
 	       <body>
        // region start
      loop_header:
-	       if (cond1)   <- we need to update probabbility here
+	       if (cond1)   <- we need to update probability here
 		 goto loop_exit;
 	       if (cond2)   <- and determine scaling factor here.
 			       moreover cond2 is now always true
@@ -1049,7 +1049,7 @@ ch_base::copy_headers (function *fun)
 	  fprintf (dump_file, "\n");
 	}
 
-      /* We possibly decreased number of itrations by 1.  */
+      /* We possibly decreased number of iterations by 1.  */
       auto_vec<edge> exits = get_loop_exit_edges (loop);
       bool precise = (nexits == (int) exits.length ());
       /* Check that loop may not terminate in other way than via
