@@ -10906,9 +10906,10 @@ package body Sem_Attr is
                      --  that accommodates the Pos of the largest value, which
                      --  is the high bound of the range + one for the space.
 
-                     W := 1;
-                     T := Hi;
-                     while T /= 0 loop
+                     W := 1;      --  one character for the leading space
+                     W := W + 1;  --  one character for the 0 .. 9 digit
+                     T := Hi;     --  one character for every decimal digit
+                     while T >= 10 loop
                         T := T / 10;
                         W := W + 1;
                      end loop;
