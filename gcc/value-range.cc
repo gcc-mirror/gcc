@@ -1377,6 +1377,38 @@ get_legacy_range (const irange &r, tree &min, tree &max)
   return VR_RANGE;
 }
 
+static value_range_kind
+get_legacy_range (const prange &r, tree &min, tree &max)
+{
+  if (r.undefined_p ())
+    {
+      min = NULL_TREE;
+      max = NULL_TREE;
+      return VR_UNDEFINED;
+    }
+
+  tree type = r.type ();
+  if (r.varying_p ())
+    {
+      min = r.lbound ();
+      max = r.ubound ();
+      return VR_VARYING;
+    }
+  if (r.zero_p ())
+    {
+      min = max = r.lbound ();
+      return VR_RANGE;
+    }
+  if (r.nonzero_p ())
+    {
+      min = max = build_zero_cst (type);
+      return VR_ANTI_RANGE;
+    }
+  min = r.lbound ();
+  max = r.ubound ();
+  return VR_RANGE;
+}
+
 // Given a range in V, return an old-style legacy range consisting of
 // a value_range_kind with a MIN/MAX.  This is to maintain
 // compatibility with passes that still depend on VR_ANTI_RANGE, and
@@ -1388,8 +1420,7 @@ get_legacy_range (const vrange &v, tree &min, tree &max)
   if (is_a <irange> (v))
     return get_legacy_range (as_a <irange> (v), min, max);
 
-  gcc_unreachable ();
-  return VR_UNDEFINED;
+  return get_legacy_range (as_a <prange> (v), min, max);
 }
 
 /* Set value range to the canonical form of {VRTYPE, MIN, MAX, EQUIV}.
