@@ -81,9 +81,7 @@
 #define __cpp_lib_integral_constant_callable 201304L
 #define __cpp_lib_is_final 201402L
 #define __cpp_lib_make_reverse_iterator 201402L
-#ifndef _GLIBCXX_DEBUG // PR libstdc++/70303
-# define __cpp_lib_null_iterators 201304L
-#endif
+#define __cpp_lib_null_iterators 201304L
 #define __cpp_lib_robust_nonmodifying_seq_ops 201304L
 #define __cpp_lib_transformation_trait_aliases 201304L
 #define __cpp_lib_transparent_operators 201510L
