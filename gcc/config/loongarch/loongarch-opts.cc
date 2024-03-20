@@ -362,7 +362,7 @@ config_target_isa:
 	  gcc_assert (constrained.simd);
 
 	  inform (UNKNOWN_LOCATION,
-		  "enabing %qs promotes %<%s%s%> to %<%s%s%>",
+		  "enabling %qs promotes %<%s%s%> to %<%s%s%>",
 		  loongarch_isa_ext_strings[t.isa.simd],
 		  OPTSTR_ISA_EXT_FPU, loongarch_isa_ext_strings[t.isa.fpu],
 		  OPTSTR_ISA_EXT_FPU, loongarch_isa_ext_strings[ISA_EXT_FPU64]);
