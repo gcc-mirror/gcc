@@ -602,15 +602,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // deduction and the other argument gets implicitly converted to the deduced
   // type (see N3766).
 
+#if __cpp_lib_three_way_comparison
   template<typename _CharT, typename _Traits>
     [[nodiscard]]
     constexpr bool
     operator==(basic_string_view<_CharT, _Traits> __x,
-               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+	       type_identity_t<basic_string_view<_CharT, _Traits>> __y)
     noexcept
     { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
-#if __cpp_lib_three_way_comparison
   template<typename _CharT, typename _Traits>
     [[nodiscard]]
     constexpr auto
@@ -620,6 +620,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
     { return __detail::__char_traits_cmp_cat<_Traits>(__x.compare(__y)); }
 #else
+  template<typename _CharT, typename _Traits>
+    [[nodiscard]]
+    constexpr bool
+    operator==(basic_string_view<_CharT, _Traits> __x,
+	       __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
+    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
+
   template<typename _CharT, typename _Traits>
     [[nodiscard]]
     constexpr bool
