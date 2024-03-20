@@ -1,3 +1,9 @@
+2024-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111822
+	* g++.target/i386/pr111822.C (dg-do): Compile only for ia32 targets.
+	(dg-options): Add -march=x86-64.
+
 2024-03-14  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
