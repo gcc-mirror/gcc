@@ -75,9 +75,10 @@ package body System.Pool_Global is
 
          --  Realign the returned address
 
-         Aligned_Address := To_Address
-           (To_Integer (Allocated) + Integer_Address (Alignment)
-              - (To_Integer (Allocated) mod Integer_Address (Alignment)));
+         Aligned_Address :=
+           Allocated + Alignment
+           - Storage_Offset (To_Integer (Allocated)
+                             mod Integer_Address (Alignment));
 
          --  Save the block address
 
