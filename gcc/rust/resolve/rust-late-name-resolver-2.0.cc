@@ -228,5 +228,26 @@ Late::visit (AST::TypePath &type)
 		 Definition (resolved->get_node_id ()));
 }
 
+void
+Late::visit (AST::StructExprStructBase &s)
+{
+  auto resolved = ctx.types.get (s.get_struct_name ().as_string ());
+
+  ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
+		 Definition (resolved->get_node_id ()));
+  DefaultResolver::visit (s);
+}
+
+void
+Late::visit (AST::StructExprStructFields &s)
+{
+  auto resolved = ctx.types.get (s.get_struct_name ().as_string ());
+
+  ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
+		 Definition (resolved->get_node_id ()));
+
+  DefaultResolver::visit (s);
+}
+
 } // namespace Resolver2_0
 } // namespace Rust
