@@ -1969,6 +1969,15 @@ ftms = {
   };
 };
 
+ftms = {
+  name = indirect;
+  values = {
+    v = 202502;
+    cxxmin = 26;
+    hosted = yes;
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";

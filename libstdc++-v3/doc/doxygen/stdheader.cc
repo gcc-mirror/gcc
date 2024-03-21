@@ -106,6 +106,7 @@ void init_map()
     headers["uses_allocator.h"]         = "memory";
     headers["uses_allocator_args.h"]    = "memory";
     headers["out_ptr.h"]                = "memory";
+    headers["indirect.h"]               = "memory";
     headers["memory_resource.h"]        = "memory_resource";
     headers["unique_lock.h"]            = "mutex";
     headers["sat_arith.h"]              = "numeric";

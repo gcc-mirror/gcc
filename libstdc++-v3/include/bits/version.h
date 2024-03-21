@@ -2203,4 +2203,14 @@
 #endif /* !defined(__cpp_lib_modules) && defined(__glibcxx_want_modules) */
 #undef __glibcxx_want_modules
 
+#if !defined(__cpp_lib_indirect)
+# if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
+#  define __glibcxx_indirect 202502L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_indirect)
+#   define __cpp_lib_indirect 202502L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_indirect) && defined(__glibcxx_want_indirect) */
+#undef __glibcxx_want_indirect
+
 #undef __glibcxx_want_all

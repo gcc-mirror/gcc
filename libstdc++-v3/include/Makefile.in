@@ -564,6 +564,7 @@ bits_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/gslice_array.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/hashtable.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/hashtable_policy.h \
+@GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/indirect.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/indirect_array.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/ios_base.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/istream.tcc \

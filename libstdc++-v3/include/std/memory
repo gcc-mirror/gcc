@@ -97,6 +97,10 @@
 #  include <bits/out_ptr.h>
 #endif
 
+#if __cplusplus > 202302L
+#  include <bits/indirect.h>
+#endif
+
 #define __glibcxx_want_addressof_constexpr
 #define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_assume_aligned
@@ -105,6 +109,7 @@
 #define __glibcxx_want_constexpr_dynamic_alloc
 #define __glibcxx_want_constexpr_memory
 #define __glibcxx_want_enable_shared_from_this
+#define __glibcxx_want_indirect
 #define __glibcxx_want_make_unique
 #define __glibcxx_want_out_ptr
 #define __glibcxx_want_parallel_algorithm
