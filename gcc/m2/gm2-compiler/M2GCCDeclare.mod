@@ -35,11 +35,11 @@ FROM ASCII IMPORT nul ;
 FROM Storage IMPORT ALLOCATE ;
 FROM M2Debug IMPORT Assert ;
 FROM M2Quads IMPORT DisplayQuadRange ;
+FROM m2pp IMPORT DumpGimpleFd ;
 
 IMPORT FIO ;
 
-FROM M2Options IMPORT DisplayQuadruples,
-                      GenerateDebugging, GenerateLineDebug, Iso, Optimizing, WholeProgram,
+FROM M2Options IMPORT GenerateDebugging, GenerateLineDebug, Iso, Optimizing, WholeProgram,
                       ScaffoldStatic, GetRuntimeModuleOverride ;
 
 FROM M2AsmUtil IMPORT GetFullSymName, GetFullScopeAsmName ;
@@ -52,7 +52,10 @@ FROM FormatStrings IMPORT Sprintf1 ;
 FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, UnknownTokenNo, BuiltinTokenNo ;
 FROM M2MetaError IMPORT MetaError1, MetaError2, MetaError3 ;
 FROM M2Error IMPORT FlushErrors, InternalError ;
-FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
+FROM M2LangDump IMPORT GetDumpFile ;
+
+FROM M2Printf IMPORT printf0, printf1, printf2, printf3,
+                     fprintf0, fprintf1, fprintf2, fprintf3 ;
 
 FROM Indexing IMPORT Index, InitIndex, PutIndice, GetIndice, InBounds,
                      IncludeIndiceIntoIndex, HighIndice,
@@ -206,14 +209,12 @@ TYPE
                      tobesolvedbyquads, finishedsetarray) ;
    doDeclareProcedure = PROCEDURE (CARDINAL, CARDINAL) ;
 
-
-
 CONST
-   Debugging   = FALSE ;
-   Progress    = FALSE ;
-   EnableSSA   = FALSE ;
-   EnableWatch = FALSE ;
-
+   Debugging       = FALSE ;
+   Progress        = FALSE ;
+   EnableSSA       = FALSE ;
+   EnableWatch     = TRUE ;
+   TraceQuadruples = FALSE ;
 
 TYPE
    Group = POINTER TO RECORD
@@ -255,6 +256,7 @@ VAR
 
 
 PROCEDURE mystop ; BEGIN END mystop ;
+
 
 (* *************************************************** *)
 (*
@@ -340,8 +342,7 @@ BEGIN
    THEN
       IncludeElementIntoSet (WatchList, sym) ;
       WalkDependants (sym, AddSymToWatch) ;
-      printf1 ("watching symbol %d\n", sym) ;
-      FIO.FlushBuffer (FIO.StdOut)
+      fprintf1 (GetDumpFile (), "%d, ", sym)
    END
 END AddSymToWatch ;
 
@@ -377,12 +378,11 @@ PROCEDURE doInclude (l: Set; a: ARRAY OF CHAR; sym: CARDINAL) ;
 BEGIN
    IF NOT IsElementInSet(l, sym)
    THEN
-      printf0('rule: ') ;
+      fprintf0 (GetDumpFile (), 'rule: ') ;
       WriteRule ;
-      printf0('  ') ;
-      printf1(a, sym) ;
-      FIO.FlushBuffer(FIO.StdOut) ;
-      IncludeElementIntoSet(l, sym)
+      fprintf0 (GetDumpFile (), '  ') ;
+      fprintf1 (GetDumpFile (), a, sym) ;
+      IncludeElementIntoSet (l, sym)
    END
 END doInclude ;
 
@@ -420,11 +420,7 @@ BEGIN
       partiallydeclared :  IncludeElementIntoSet (GlobalGroup^.PartiallyDeclared, sym) |
       heldbyalignment   :  IncludeElementIntoSet (GlobalGroup^.HeldByAlignment, sym) |
       finishedalignment :  IncludeElementIntoSet (GlobalGroup^.FinishedAlignment, sym) |
-      todolist          :  IncludeElementIntoSet (GlobalGroup^.ToDoList, sym) ;
-                           IF EnableWatch AND (sym = 919)
-                           THEN
-                              IncludeElementIntoSet (WatchList, 919)
-                           END |
+      todolist          :  IncludeElementIntoSet (GlobalGroup^.ToDoList, sym) |
       niltypedarrays    :  IncludeElementIntoSet (GlobalGroup^.NilTypedArrays, sym) |
       finishedsetarray  :  IncludeElementIntoSet (GlobalGroup^.FinishedSetArray, sym)
 
@@ -443,11 +439,10 @@ PROCEDURE doExclude (l: Set; a: ARRAY OF CHAR; sym: CARDINAL) ;
 BEGIN
    IF IsElementInSet (l, sym)
    THEN
-      printf0 ('rule: ') ;
+      fprintf0 (GetDumpFile (), 'rule: ') ;
       WriteRule ;
-      printf0 ('  ') ;
-      printf1 (a, sym) ;
-      FIO.FlushBuffer (FIO.StdOut) ;
+      fprintf0 (GetDumpFile (), '  ') ;
+      fprintf1 (GetDumpFile (), a, sym) ;
       ExcludeElementFromSet (l, sym)
    END
 END doExclude ;
@@ -2784,7 +2779,7 @@ VAR
    copy: Group ;
    loop: CARDINAL ;
 BEGIN
-   IF DisplayQuadruples
+   IF TraceQuadruples
    THEN
       DisplayQuadRange (scope, start, end)
    END ;
@@ -2800,7 +2795,7 @@ BEGIN
       END ;
       IF loop = DebugLoop
       THEN
-         IF DisplayQuadruples
+         IF TraceQuadruples
          THEN
             DisplayQuadRange (scope, start, end)
          END ;
@@ -3052,41 +3047,6 @@ PROCEDURE StartDeclareScope (scope: CARDINAL) ;
 VAR
    n: Name ;
 BEGIN
-   (* AddSymToWatch (8821) ;  *)
-   (* AddSymToWatch (1157) ;  *)  (* watch goes here *)
-   (* AddSymToWatch(TryFindSymbol('IOLink', 'DeviceId')) ; *)
-   (* AddSymToWatch(819) ; *)
-   (*
-   AddSymToWatch(2125) ;  (* watch goes here *)
-   DebugSets ;
-    *)
-   (*
-   AddSymToWatch(2125) ;  (* watch goes here *)
-   *)
-   (*
-   IncludeElementIntoSet(WatchList, 369) ;
-   IncludeElementIntoSet(WatchList, 709) ;
-   *)
-   (*
-   IncludeElementIntoSet(WatchList, 1006) ;
-    *)
-   (* AddSymToWatch(8) ; *)
-   (* IncludeElementIntoSet(WatchList, 4188) ; *)
-   (* AddSymToWatch(1420) ; *)
-   (* AddSymToWatch(5889) ; *)
-   (* IncludeElementIntoSet(WatchList, 717) ; *)
-   (* IncludeElementIntoSet(WatchList, 829) ; *)
-   (* IncludeElementIntoSet(WatchList, 2714) ; *)
-   (* IncludeElementIntoSet(WatchList, 23222) ; *)
-   (* IncludeElementIntoSet(WatchList, 1104) ; *)
-   (* IncludeElementIntoSet(WatchList, 859) ; *)
-   (* IncludeElementIntoSet(WatchList, 858) ; *)
-
-   (* IncludeElementIntoSet(WatchList, 720) ; *)
-   (* IncludeElementIntoSet(WatchList, 706) ; *)
-   (* IncludeElementIntoSet(WatchList, 1948) ; *)
-   (* IncludeElementIntoSet(WatchList, 865) ; *)
-
    IF Debugging
    THEN
       n := GetSymName (scope) ;
@@ -3117,15 +3077,83 @@ END EndDeclareScope ;
 
 
 (*
-   PreAddModGcc - adds a relationship between sym and t.
-                  It also determines whether an unbounded
-                  for sym is required and if so this is also
-                  created.
+   IncludeDumpSymbol - include sym into the watch list and all syms dependants.
 *)
 
-PROCEDURE PreAddModGcc (sym: CARDINAL; t: Tree) ;
+PROCEDURE IncludeDumpSymbol (sym: CARDINAL) ;
 BEGIN
-   AddModGcc(sym, t)
+   IF sym # NulSym
+   THEN
+      AddSymToWatch (sym)
+      (*
+      fprintf0 (GetDumpFile (), "\n") ;
+      PrintVerbose (sym) ;
+      fprintf0 (GetDumpFile (), "\n")
+      *)
+   END
+END IncludeDumpSymbol ;
+
+
+(*
+   DumpResolver - dumps the m2 representation of sym.
+*)
+
+PROCEDURE DumpResolver (sym: CARDINAL) ;
+BEGIN
+   fprintf1 (GetDumpFile (), "dump filtered symbol %d and dependants\n", sym) ;
+   PrintVerbose (sym) ;
+END DumpResolver ;
+
+
+(*
+   DumpFilteredResolver - dumps the gimple or tree representation of all watched symbols.
+*)
+
+PROCEDURE DumpFilteredResolver ;
+BEGIN
+   ForeachElementInSetDo (WatchList, DumpResolver)
+END DumpFilteredResolver ;
+
+
+(*
+   DumpDefinitive - dumps the m2 and m2 gimple representation of sym.
+*)
+
+PROCEDURE DumpDefinitive (sym: CARDINAL) ;
+VAR
+   fd: INTEGER ;
+BEGIN
+   fprintf1 (GetDumpFile (), "\nm2 symbol synopsis: %d\n", sym) ;
+   PrintVerbose (sym) ;
+   IF GccKnowsAbout (sym)
+   THEN
+      fprintf1 (GetDumpFile (), "\nm2 gimple: %d", sym) ;
+      FIO.FlushBuffer (GetDumpFile ()) ;
+      fd := FIO.GetUnixFileDescriptor (GetDumpFile ()) ;
+      DumpGimpleFd (fd, Mod2Gcc (sym))
+   ELSE
+      fprintf1 (GetDumpFile (), "\nno m2 gimple for %d\n", sym)
+   END
+END DumpDefinitive ;
+
+
+(*
+   DumpFilteredDefinitive - dumps the gimple or tree representation of all watched symbols.
+*)
+
+PROCEDURE DumpFilteredDefinitive ;
+BEGIN
+   ForeachElementInSetDo (WatchList, DumpDefinitive)
+END DumpFilteredDefinitive ;
+
+
+(*
+   PreAddModGcc - adds a relationship between sym and tree.
+*)
+
+PROCEDURE PreAddModGcc (sym: CARDINAL; tree: Tree) ;
+BEGIN
+   AddModGcc (sym, tree)
 END PreAddModGcc ;
 
 
@@ -3829,18 +3857,18 @@ PROCEDURE IncludeGetNth (l: List; sym: CARDINAL) ;
 VAR
    i: CARDINAL ;
 BEGIN
-   printf0 (' ListOfSons [') ;
+   fprintf0 (GetDumpFile (), ' ListOfSons [') ;
    i := 1 ;
    WHILE GetNth (sym, i) # NulSym DO
       IF i>1
       THEN
-         printf0 (', ')
+         fprintf0 (GetDumpFile (), ', ')
       END ;
       IncludeItemIntoList (l, GetNth(sym, i)) ;
       PrintTerse (GetNth (sym, i)) ;
       INC (i)
    END ;
-   printf0 (']')
+   fprintf0 (GetDumpFile (), ']')
 END IncludeGetNth ;
 
 
@@ -3855,17 +3883,17 @@ BEGIN
    t := GetSType(sym) ;
    IF t#NulSym
    THEN
-      printf0(' type [') ;
+      fprintf0 (GetDumpFile(), ' type [') ;
       PrintTerse(t) ;
       IncludeItemIntoList(l, t) ;
-      printf0(']') ;
+      fprintf0 (GetDumpFile(), ']') ;
       t := GetVarBackEndType(sym) ;
       IF t#NulSym
       THEN
-         printf0(' gcc type [') ;
+         fprintf0 (GetDumpFile(), ' gcc type [') ;
          PrintTerse(t) ;
          IncludeItemIntoList(l, t) ;
-         printf0(']')
+         fprintf0 (GetDumpFile(), ']')
       END
    END
 END IncludeType ;
@@ -3882,10 +3910,10 @@ BEGIN
    t := GetArraySubscript(sym) ;
    IF t#NulSym
    THEN
-      printf0(' subrange [') ;
+      fprintf0 (GetDumpFile(), ' subrange [') ;
       PrintTerse(t) ;
       IncludeItemIntoList(l, t) ;
-      printf0(']') ;
+      fprintf0 (GetDumpFile(), ']') ;
    END
 END IncludeSubscript ;
 
@@ -3896,7 +3924,7 @@ END IncludeSubscript ;
 
 PROCEDURE PrintLocalSymbol (sym: CARDINAL) ;
 BEGIN
-   PrintTerse(sym) ; printf0(', ')
+   PrintTerse(sym) ; fprintf0 (GetDumpFile(), ', ')
 END PrintLocalSymbol ;
 
 
@@ -3906,9 +3934,9 @@ END PrintLocalSymbol ;
 
 PROCEDURE PrintLocalSymbols (sym: CARDINAL) ;
 BEGIN
-   printf0('Local Symbols {') ;
+   fprintf0 (GetDumpFile(), 'Local Symbols {') ;
    ForeachLocalSymDo(sym, PrintLocalSymbol) ;
-   printf0('}')
+   fprintf0 (GetDumpFile(), '}')
 END PrintLocalSymbols ;
 
 
@@ -3920,9 +3948,9 @@ PROCEDURE IncludeGetVarient (l: List; sym: CARDINAL) ;
 BEGIN
    IF GetVarient(sym)#NulSym
    THEN
-      printf0(' Varient [') ;
+      fprintf0 (GetDumpFile(), ' Varient [') ;
       PrintTerse(GetVarient(sym)) ;
-      printf0(']') ;
+      fprintf0 (GetDumpFile(), ']') ;
       IncludeItemIntoList(l, GetVarient(sym))
    END
 END IncludeGetVarient ;
@@ -3967,7 +3995,7 @@ BEGIN
    tokenno := GetDeclaredMod(sym) ;
    filename := FindFileNameFromToken(tokenno, 0) ;
    lineno := TokenToLineNo(tokenno, 0) ;
-   printf2(" declared in %s:%d", filename, lineno)
+   fprintf2 (GetDumpFile (), " declared in %s:%d", filename, lineno)
 END PrintDeclared ;
 
 
@@ -3984,7 +4012,7 @@ BEGIN
       align := GetAlignment(sym) ;
       IF align#NulSym
       THEN
-         printf1(" aligned [%d]", align)
+         fprintf1 (GetDumpFile(), " aligned [%d]", align)
       END
    END
 END PrintAlignment ;
@@ -3996,10 +4024,10 @@ END PrintAlignment ;
 
 PROCEDURE IncludeGetParent (l: List; sym: CARDINAL) ;
 BEGIN
-   printf0(' Parent [') ;
+   fprintf0 (GetDumpFile(), ' Parent [') ;
    IncludeItemIntoList(l, GetParent(sym)) ;
    PrintTerse(GetParent(sym)) ;
-   printf0(']')
+   fprintf0 (GetDumpFile(), ']')
 END IncludeGetParent ;
 
 
@@ -4013,12 +4041,12 @@ BEGIN
    THEN
       IF IsDeclaredPacked(sym)
       THEN
-         printf0(' packed')
+         fprintf0 (GetDumpFile(), ' packed')
       ELSE
-         printf0(' unpacked')
+         fprintf0 (GetDumpFile(), ' unpacked')
       END
    ELSE
-      printf0(' unknown if packed')
+      fprintf0 (GetDumpFile(), ' unknown if packed')
    END
 END PrintDecl ;
 
@@ -4036,7 +4064,7 @@ BEGIN
    line := TokenToLineNo (GetDeclaredMod (sym), 0) ;
    scope := GetScope (sym) ;
    name := GetSymName (scope) ;
-   printf3 (' scope %a:%d %d', name, line, scope)
+   fprintf3 (GetDumpFile (), ' scope %a:%d %d', name, line, scope)
 END PrintScope ;
 
 
@@ -4049,23 +4077,23 @@ VAR
    n: Name ;
 BEGIN
    n := GetSymName (sym) ;
-   printf2('sym %d IsProcedure (%a)', sym, n);
+   fprintf2 (GetDumpFile (), 'sym %d IsProcedure (%a)', sym, n);
    IF IsProcedureReachable(sym)
    THEN
-      printf0(' IsProcedureReachable')
+      fprintf0 (GetDumpFile(), ' IsProcedureReachable')
    END ;
    PrintScope (sym) ;
    IF IsExtern (sym)
    THEN
-      printf0 (' extern')
+      fprintf0 (GetDumpFile (), ' extern')
    END ;
    IF IsPublic (sym)
    THEN
-      printf0 (' public')
+      fprintf0 (GetDumpFile (), ' public')
    END ;
    IF IsCtor (sym)
    THEN
-      printf0 (' ctor')
+      fprintf0 (GetDumpFile (), ' ctor')
    END ;
    PrintDeclared(sym)
 END PrintProcedure ;
@@ -4084,22 +4112,22 @@ BEGIN
    THEN
       IF IsConstStringM2 (sym)
       THEN
-         printf0 ('a Modula-2 string')
+         fprintf0 (GetDumpFile (), 'a Modula-2 string')
       ELSIF IsConstStringC (sym)
       THEN
-         printf0 (' a C string')
+         fprintf0 (GetDumpFile (), ' a C string')
       ELSIF IsConstStringM2nul (sym)
       THEN
-         printf0 (' a nul terminated Modula-2 string')
+         fprintf0 (GetDumpFile (), ' a nul terminated Modula-2 string')
       ELSIF IsConstStringCnul (sym)
       THEN
-         printf0 (' a nul terminated C string')
+         fprintf0 (GetDumpFile (), ' a nul terminated C string')
       END ;
       tokenno := GetDeclaredMod (sym) ;
       len := GetStringLength (tokenno, sym) ;
-      printf1 (' length %d', len)
+      fprintf1 (GetDumpFile (), ' length %d', len)
    ELSE
-      printf0 ('is not currently known')
+      fprintf0 (GetDumpFile (), 'is not currently known')
    END
 END PrintString ;
 
@@ -4120,35 +4148,35 @@ BEGIN
    n := GetSymName(sym) ;
    IF IsError(sym)
    THEN
-      printf2('sym %d IsError (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsError (%a)', sym, n)
    ELSIF IsDefImp(sym)
    THEN
-      printf2('sym %d IsDefImp (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsDefImp (%a)', sym, n) ;
       IF IsDefinitionForC(sym)
       THEN
-         printf0('and IsDefinitionForC')
+         fprintf0 (GetDumpFile(), 'and IsDefinitionForC')
       END ;
       IF IsHiddenTypeDeclared(sym)
       THEN
-         printf0(' IsHiddenTypeDeclared')
+         fprintf0 (GetDumpFile(), ' IsHiddenTypeDeclared')
       END ;
       ForeachProcedureDo (sym, PrintProcedure)
    ELSIF IsModule(sym)
    THEN
-      printf2('sym %d IsModule (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsModule (%a)', sym, n) ;
       IF IsModuleWithinProcedure(sym)
       THEN
-         printf0(' and IsModuleWithinProcedure')
+         fprintf0 (GetDumpFile(), ' and IsModuleWithinProcedure')
       END
    ELSIF IsInnerModule(sym)
    THEN
-      printf2('sym %d IsInnerModule (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsInnerModule (%a)', sym, n)
    ELSIF IsUnknown(sym)
    THEN
-      printf2('sym %d IsUnknown (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsUnknown (%a)', sym, n)
    ELSIF IsType(sym)
    THEN
-      printf2('sym %d IsType (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsType (%a)', sym, n) ;
       IncludeType(l, sym) ;
       PrintAlignment(sym)
    ELSIF IsProcedure(sym)
@@ -4156,72 +4184,72 @@ BEGIN
       PrintProcedure (sym)
    ELSIF IsParameter(sym)
    THEN
-      printf2('sym %d IsParameter (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsParameter (%a)', sym, n) ;
       IF GetParameterShadowVar(sym)=NulSym
       THEN
-         printf0(' no shadow local variable')
+         fprintf0 (GetDumpFile(), ' no shadow local variable')
       ELSE
-         printf0(' shadow ') ;
+         fprintf0 (GetDumpFile(), ' shadow ') ;
          IncludeType(l, GetParameterShadowVar(sym))
          (* PrintVerboseFromList(l, GetParameterShadowVar(sym)) *)
       END ;
       IncludeType(l, sym)
    ELSIF IsPointer(sym)
    THEN
-      printf2('sym %d IsPointer (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsPointer (%a)', sym, n) ;
       IncludeType(l, sym) ;
       PrintAlignment(sym)
    ELSIF IsRecord(sym)
    THEN
-      printf2('sym %d IsRecord (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsRecord (%a)', sym, n) ;
       PrintLocalSymbols(sym) ;
       IncludeGetNth(l, sym) ;
       PrintAlignment(sym) ;
       PrintDecl(sym)
    ELSIF IsVarient(sym)
    THEN
-      printf2('sym %d IsVarient (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsVarient (%a)', sym, n) ;
       PrintDecl(sym) ;
       IncludeGetNth(l, sym) ;
       IncludeGetVarient(l, sym) ;
       IncludeGetParent(l, sym)
    ELSIF IsFieldVarient(sym)
    THEN
-      printf2('sym %d IsFieldVarient (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsFieldVarient (%a)', sym, n) ;
       PrintDecl(sym) ;
       IncludeGetNth(l, sym) ;
       IncludeGetVarient(l, sym) ;
       IncludeGetParent(l, sym)
    ELSIF IsFieldEnumeration(sym)
    THEN
-      printf2('sym %d IsFieldEnumeration (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsFieldEnumeration (%a)', sym, n)
    ELSIF IsArray(sym)
    THEN
-      printf2('sym %d IsArray (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsArray (%a)', sym, n) ;
       IncludeSubscript(l, sym) ;
       IncludeType(l, sym) ;
       PrintAlignment(sym)
    ELSIF IsEnumeration(sym)
    THEN
-      printf2('sym %d IsEnumeration (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsEnumeration (%a)', sym, n)
    ELSIF IsSet(sym)
    THEN
-      printf2('sym %d IsSet (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsSet (%a)', sym, n) ;
       IncludeType(l, sym)
    ELSIF IsUnbounded(sym)
    THEN
-      printf2('sym %d IsUnbounded (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsUnbounded (%a)', sym, n) ;
       IncludeUnbounded(l, sym)
    ELSIF IsPartialUnbounded(sym)
    THEN
-      printf2('sym %d IsPartialUnbounded (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsPartialUnbounded (%a)', sym, n) ;
       IncludePartialUnbounded(l, sym)
    ELSIF IsRecordField(sym)
    THEN
-      printf2('sym %d IsRecordField (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsRecordField (%a)', sym, n) ;
       IF IsRecordFieldAVarientTag(sym)
       THEN
-         printf0(' variant tag')
+         fprintf0 (GetDumpFile(), ' variant tag')
       END ;
       IncludeType(l, sym) ;
       IncludeGetVarient(l, sym) ;
@@ -4230,76 +4258,76 @@ BEGIN
       PrintDecl(sym)
    ELSIF IsProcType(sym)
    THEN
-      printf2('sym %d IsProcType (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsProcType (%a)', sym, n)
    ELSIF IsVar(sym)
    THEN
-      printf2('sym %d IsVar (%a) declared in ', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsVar (%a) declared in ', sym, n) ;
       PrintScope (sym) ;
-      printf0 ('mode ') ;
+      fprintf0 (GetDumpFile (), 'mode ') ;
       CASE GetMode(sym) OF
 
-      LeftValue     : printf0('l ') |
-      RightValue    : printf0('r ') |
-      ImmediateValue: printf0('i ') |
-      NoValue       : printf0('n ')
+      LeftValue     : fprintf0 (GetDumpFile(), 'l ') |
+      RightValue    : fprintf0 (GetDumpFile(), 'r ') |
+      ImmediateValue: fprintf0 (GetDumpFile(), 'i ') |
+      NoValue       : fprintf0 (GetDumpFile(), 'n ')
 
       END ;
       IF IsTemporary(sym)
       THEN
-         printf0('temporary ')
+         fprintf0 (GetDumpFile(), 'temporary ')
       END ;
       IF IsComponent(sym)
       THEN
-         printf0('component ')
+         fprintf0 (GetDumpFile(), 'component ')
       END ;
       IF IsVarHeap (sym)
       THEN
-         printf0('heap ')
+         fprintf0 (GetDumpFile(), 'heap ')
       END ;
-      printf0 ('\n') ;
+      fprintf0 (GetDumpFile (), '\n') ;
       PrintInitialized (sym) ;
       IncludeType(l, sym)
    ELSIF IsConst(sym)
    THEN
-      printf2('sym %d IsConst (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsConst (%a)', sym, n) ;
       IF IsConstString(sym)
       THEN
-         printf1 (' also IsConstString (%a) ', n) ;
+         fprintf1 (GetDumpFile(), '  also IsConstString (%a)', n) ;
          PrintString (sym)
       ELSIF IsConstructor(sym)
       THEN
-         printf0(' constant constructor ') ;
+         fprintf0 (GetDumpFile(), ' constant constructor ') ;
          IncludeType(l, sym)
       ELSIF IsConstSet(sym)
       THEN
-         printf0(' constant constructor set ') ;
+         fprintf0 (GetDumpFile(), ' constant constructor set ') ;
          IncludeType(l, sym)
       ELSE
          IncludeType(l, sym)
       END
    ELSIF IsConstructor(sym)
    THEN
-      printf2('sym %d IsConstructor (non constant) (%a)', sym, n) ;
+      fprintf2 (GetDumpFile(), 'sym %d IsConstructor (non constant) (%a)', sym, n) ;
       IncludeType(l, sym)
    ELSIF IsConstLit(sym)
    THEN
-      printf2('sym %d IsConstLit (%a)', sym, n)
+      fprintf2 (GetDumpFile(), 'sym %d IsConstLit (%a)', sym, n)
    ELSIF IsDummy(sym)
    THEN
-      printf2('sym %d IsDummy (%a)', sym, n)
+      fprintf2 (GetDumpFile(), 'sym %d IsDummy (%a)', sym, n)
    ELSIF IsTemporary(sym)
    THEN
-      printf2('sym %d IsTemporary (%a)', sym, n)
+      fprintf2 (GetDumpFile(), 'sym %d IsTemporary (%a)', sym, n)
    ELSIF IsVarAParam(sym)
    THEN
-      printf2('sym %d IsVarAParam (%a)', sym, n)
+      fprintf2 (GetDumpFile(), 'sym %d IsVarAParam (%a)', sym, n)
    ELSIF IsSubscript(sym)
    THEN
-      printf2('sym %d IsSubscript (%a)', sym, n)
+      fprintf2 (GetDumpFile(), 'sym %d IsSubscript (%a)', sym, n)
    ELSIF IsSubrange(sym)
    THEN
       GetSubrange(sym, high, low) ;
-      printf2('sym %d IsSubrange (%a)', sym, n) ;
+      fprintf2 (GetDumpFile(), 'sym %d IsSubrange (%a)', sym, n) ;
       IF (low#NulSym) AND (high#NulSym)
       THEN
          type := GetSType(sym) ;
@@ -4307,41 +4335,41 @@ BEGIN
          THEN
             IncludeType(l, sym) ;
             n := GetSymName(type) ;
-            printf1(' %a', n)
+            fprintf1 (GetDumpFile(), ' %a', n)
          END ;
          n := GetSymName(low) ;
          n2 := GetSymName(high) ;
-         printf2('[%a..%a]', n, n2)
+         fprintf2 (GetDumpFile (), '[%a..%a]', n, n2)
       END
    ELSIF IsProcedureVariable(sym)
    THEN
-      printf2('sym %d IsProcedureVariable (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsProcedureVariable (%a)', sym, n)
    ELSIF IsProcedureNested(sym)
    THEN
-      printf2('sym %d IsProcedureNested (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsProcedureNested (%a)', sym, n)
    ELSIF IsAModula2Type(sym)
    THEN
-      printf2('sym %d IsAModula2Type (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsAModula2Type (%a)', sym, n)
    ELSIF IsObject(sym)
    THEN
-      printf2('sym %d IsObject (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsObject (%a)', sym, n)
    ELSIF IsTuple(sym)
    THEN
-      printf2('sym %d IsTuple (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsTuple (%a)', sym, n) ;
       low := GetNth(sym, 1) ;
       high := GetNth(sym, 2) ;
-      printf2('%d, %d\n', low, high)
+      fprintf2 (GetDumpFile (), '%d, %d\n', low, high)
    ELSIF IsGnuAsm(sym)
    THEN
       IF IsGnuAsmVolatile(sym)
       THEN
-         printf2('sym %d IsGnuAsmVolatile (%a)', sym, n)
+         fprintf2 (GetDumpFile (), 'sym %d IsGnuAsmVolatile (%a)', sym, n)
       ELSE
-         printf2('sym %d IsGnuAsm (%a)', sym, n)
+         fprintf2 (GetDumpFile (), 'sym %d IsGnuAsm (%a)', sym, n)
       END
    ELSIF IsComponent(sym)
    THEN
-      printf2('sym %d IsComponent (%a) ', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsComponent (%a) ', sym, n) ;
       i := 1 ;
       REPEAT
          type := GetNth(sym, i) ;
@@ -4349,7 +4377,7 @@ BEGIN
          THEN
             IncludeItemIntoList(l, type) ;
             n := GetSymName(type) ;
-            printf2("[%a %d] ", n, type) ;
+            fprintf2 (GetDumpFile (), "[%a %d] ", n, type) ;
             INC(i)
          END ;
       UNTIL type=NulSym
@@ -4357,9 +4385,9 @@ BEGIN
 
    IF IsHiddenType(sym)
    THEN
-      printf0(' IsHiddenType')
+      fprintf0 (GetDumpFile(), ' IsHiddenType')
    END ;
-   printf0('\n')
+   fprintf0 (GetDumpFile(), '\n')
 END PrintVerboseFromList ;
 
 
@@ -4391,7 +4419,7 @@ END PrintVerbose ;
 PROCEDURE PrintSym (sym: CARDINAL) ;
 BEGIN
    printf1 ('information about symbol: %d\n', sym) ;
-   printf0 ('==============================\n') ;
+   fprintf0 (GetDumpFile (), '==============================\n') ;
    PrintVerbose (sym)
 END PrintSym ;
 
@@ -4404,7 +4432,7 @@ END PrintSym ;
 PROCEDURE PrintSymbol (sym: CARDINAL) ;
 BEGIN
    PrintTerse(sym) ;
-   printf0('\n')
+   fprintf0 (GetDumpFile(), '\n')
 END PrintSymbol ;
   ******************************************* *)
 
@@ -4419,127 +4447,127 @@ BEGIN
    n := GetSymName(sym) ;
    IF IsError(sym)
    THEN
-      printf2('sym %d IsError (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsError (%a)', sym, n)
    ELSIF IsDefImp(sym)
    THEN
-      printf2('sym %d IsDefImp (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsDefImp (%a)', sym, n) ;
       IF IsDefinitionForC(sym)
       THEN
-         printf0('and IsDefinitionForC')
+         fprintf0 (GetDumpFile(), 'and IsDefinitionForC')
       END ;
       IF IsHiddenTypeDeclared(sym)
       THEN
-         printf0(' IsHiddenTypeDeclared')
+         fprintf0 (GetDumpFile(), ' IsHiddenTypeDeclared')
       END
    ELSIF IsModule(sym)
    THEN
-      printf2('sym %d IsModule (%a)', sym, n) ;
+      fprintf2 (GetDumpFile (), 'sym %d IsModule (%a)', sym, n) ;
       IF IsModuleWithinProcedure(sym)
       THEN
-         printf0(' and IsModuleWithinProcedure')
+         fprintf0 (GetDumpFile(), ' and IsModuleWithinProcedure')
       END
    ELSIF IsInnerModule(sym)
    THEN
-      printf2('sym %d IsInnerModule (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsInnerModule (%a)', sym, n)
    ELSIF IsUnknown(sym)
    THEN
-      printf2('sym %d IsUnknown (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsUnknown (%a)', sym, n)
    ELSIF IsType(sym)
    THEN
-      printf2('sym %d IsType (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsType (%a)', sym, n)
    ELSIF IsProcedure(sym)
    THEN
-      printf2('sym %d IsProcedure (%a)', sym, n);
+      fprintf2 (GetDumpFile (), 'sym %d IsProcedure (%a)', sym, n);
       IF IsProcedureReachable(sym)
       THEN
-         printf0(' and IsProcedureReachable')
+         fprintf0 (GetDumpFile(), ' and IsProcedureReachable')
       END
    ELSIF IsParameter(sym)
    THEN
-      printf2('sym %d IsParameter (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsParameter (%a)', sym, n)
    ELSIF IsPointer(sym)
    THEN
-      printf2('sym %d IsPointer (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsPointer (%a)', sym, n)
    ELSIF IsRecord(sym)
    THEN
-      printf2('sym %d IsRecord (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsRecord (%a)', sym, n)
    ELSIF IsVarient(sym)
    THEN
-      printf2('sym %d IsVarient (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsVarient (%a)', sym, n)
    ELSIF IsFieldVarient(sym)
    THEN
-      printf2('sym %d IsFieldVarient (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsFieldVarient (%a)', sym, n)
    ELSIF IsFieldEnumeration(sym)
    THEN
-      printf2('sym %d IsFieldEnumeration (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsFieldEnumeration (%a)', sym, n)
    ELSIF IsArray(sym)
    THEN
-      printf2('sym %d IsArray (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsArray (%a)', sym, n)
    ELSIF IsEnumeration(sym)
    THEN
-      printf2('sym %d IsEnumeration (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsEnumeration (%a)', sym, n)
    ELSIF IsSet(sym)
    THEN
-      printf2('sym %d IsSet (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsSet (%a)', sym, n)
    ELSIF IsUnbounded(sym)
    THEN
-      printf2('sym %d IsUnbounded (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsUnbounded (%a)', sym, n)
    ELSIF IsRecordField(sym)
    THEN
-      printf2('sym %d IsRecordField (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsRecordField (%a)', sym, n)
    ELSIF IsProcType(sym)
    THEN
-      printf2('sym %d IsProcType (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsProcType (%a)', sym, n)
    ELSIF IsVar(sym)
    THEN
-      printf2('sym %d IsVar (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsVar (%a)', sym, n)
    ELSIF IsConstString(sym)
    THEN
-      printf2('sym %d IsConstString (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsConstString (%a)', sym, n)
    ELSIF IsConst(sym)
    THEN
-      printf2('sym %d IsConst (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsConst (%a)', sym, n)
    ELSIF IsConstLit(sym)
    THEN
-      printf2('sym %d IsConstLit (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsConstLit (%a)', sym, n)
    ELSIF IsDummy(sym)
    THEN
-      printf2('sym %d IsDummy (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsDummy (%a)', sym, n)
    ELSIF IsTemporary(sym)
    THEN
-      printf2('sym %d IsTemporary (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsTemporary (%a)', sym, n)
    ELSIF IsVarAParam(sym)
    THEN
-      printf2('sym %d IsVarAParam (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsVarAParam (%a)', sym, n)
    ELSIF IsSubscript(sym)
    THEN
-      printf2('sym %d IsSubscript (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsSubscript (%a)', sym, n)
    ELSIF IsSubrange(sym)
    THEN
-      printf2('sym %d IsSubrange (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsSubrange (%a)', sym, n)
    ELSIF IsProcedureVariable(sym)
    THEN
-      printf2('sym %d IsProcedureVariable (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsProcedureVariable (%a)', sym, n)
    ELSIF IsProcedureNested(sym)
    THEN
-      printf2('sym %d IsProcedureNested (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsProcedureNested (%a)', sym, n)
    ELSIF IsAModula2Type(sym)
    THEN
-      printf2('sym %d IsAModula2Type (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsAModula2Type (%a)', sym, n)
    ELSIF IsGnuAsm(sym)
    THEN
-      printf2('sym %d IsGnuAsm (%a)', sym, n)
+      fprintf2 (GetDumpFile (), 'sym %d IsGnuAsm (%a)', sym, n)
    ELSIF IsImport (sym)
    THEN
-      printf1('sym %d IsImport', sym)
+      fprintf1 (GetDumpFile(), 'sym %d IsImport', sym)
    ELSIF IsImportStatement (sym)
    THEN
-      printf1('sym %d IsImportStatement', sym)
+      fprintf1 (GetDumpFile(), 'sym %d IsImportStatement', sym)
    END ;
 
    IF IsHiddenType(sym)
    THEN
-      printf0(' IsHiddenType')
+      fprintf0 (GetDumpFile(), ' IsHiddenType')
    END
 END PrintTerse ;
 

@@ -519,7 +519,7 @@ SO=-O0 -g -fPIC
 # Language-specific object files for the gm2 compiler.
 
 GM2_C_OBJS        = m2/gm2-lang.o \
-                    m2/m2pp.o \
+                    m2/gm2-gcc/m2pp.o \
                     m2/gm2-gcc/m2assert.o \
                     m2/gm2-gcc/m2block.o \
                     m2/gm2-gcc/m2builtins.o \
@@ -605,11 +605,6 @@ m2/gm2-gcc/m2configure.o: $(srcdir)/m2/gm2-gcc/m2configure.cc \
 m2/gm2-lang.o: $(srcdir)/m2/gm2-lang.cc gt-m2-gm2-lang.h $(GCC_HEADER_DEPENDENCIES_FOR_M2)
 	$(COMPILER) $(CM2DEP) -c -g $(GM2GCC) $(ALL_COMPILERFLAGS) \
 	    -DLIBSUBDIR=\"$(libsubdir)\" \
-            $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-	$(POSTCOMPILE)
-
-m2/m2pp.o : $(srcdir)/m2/m2pp.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
-	$(COMPILER) $(CM2DEP) -c -g -DGM2 $(ALL_COMPILERFLAGS) \
             $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 	$(POSTCOMPILE)
 
@@ -761,6 +756,7 @@ GM2-COMP-BOOT-DEFS = \
    M2GCCDeclare.def \
    M2GenGCC.def \
    M2Graph.def \
+   M2LangDump.def \
    M2LexBuf.def \
    M2MetaError.def \
    M2Optimize.def \
@@ -834,6 +830,7 @@ GM2-COMP-BOOT-MODS = \
    M2GCCDeclare.mod \
    M2GenGCC.mod \
    M2Graph.mod \
+   M2LangDump.mod \
    M2LexBuf.mod \
    M2MetaError.mod \
    M2Optimize.mod \
@@ -886,6 +883,7 @@ GM2-GCC-DEFS = \
    m2expr.def \
    m2linemap.def \
    m2misc.def \
+   m2pp.def \
    m2statement.def \
    m2top.def \
    m2tree.def \
@@ -1040,6 +1038,7 @@ GM2-COMP-DEFS = \
    M2GCCDeclare.def \
    M2GenGCC.def \
    M2Graph.def \
+   M2LangDump.def \
    M2LexBuf.def \
    M2MetaError.def \
    M2Optimize.def \
@@ -1110,6 +1109,7 @@ GM2-COMP-MODS = \
    M2GCCDeclare.mod \
    M2GenGCC.mod \
    M2Graph.mod \
+   M2LangDump.mod \
    M2LexBuf.mod \
    M2MetaError.mod \
    M2Optimize.mod \

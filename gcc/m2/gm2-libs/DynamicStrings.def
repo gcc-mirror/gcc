@@ -29,7 +29,7 @@ DEFINITION MODULE DynamicStrings ;
 FROM SYSTEM IMPORT ADDRESS ;
 EXPORT QUALIFIED String,
                  InitString, KillString, Fin, InitStringCharStar,
-                 InitStringChar, Index, RIndex,
+                 InitStringChar, Index, RIndex, ReverseIndex,
                  Mark, Length, ConCat, ConCatChar, Assign, Dup, Add,
                  Equal, EqualCharStar, EqualArray, ToUpper, ToLower,
                  CopyOut, Mult, Slice, ReplaceChar,
@@ -201,11 +201,25 @@ PROCEDURE Index (s: String; ch: CHAR; o: CARDINAL) : INTEGER ;
 
 (*
    RIndex - returns the indice of the last occurance of, ch,
-            in String, s. The search starts at position, o.
-            -1 is returned if, ch, is not found.
+            in String, s.  The search starts at position, o.
+            -1 is returned if ch is not found.  The search
+            is performed left to right.
 *)
 
 PROCEDURE RIndex (s: String; ch: CHAR; o: CARDINAL) : INTEGER ;
+
+
+(*
+   ReverseIndex - returns the indice of the last occurance of ch
+                  in String s.  The search starts at position o
+                  and searches from right to left.  The start position
+                  may be indexed negatively from the right (-1 is the
+                  last index).
+                  The return value if ch is found will always be positive.
+                  -1 is returned if ch is not found.
+*)
+
+PROCEDURE ReverseIndex (s: String; ch: CHAR; o: INTEGER) : INTEGER ;
 
 
 (*

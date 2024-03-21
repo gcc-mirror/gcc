@@ -1,0 +1,102 @@
+(* M2LangDump.def provides support routines for the -flang-dump.
+
+Copyright (C) 2024 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2LangDump ;
+
+FROM m2tree IMPORT Tree ;
+FROM DynamicStrings IMPORT String ;
+FROM FIO IMPORT File ;
+
+
+(*
+   IsDumpRequiredTree - return TRUE if the gcc tree should be dumped.
+                        If no filter is specified it will always return default.
+*)
+
+PROCEDURE IsDumpRequiredTree (tree: Tree; default: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   IsDumpRequired - return TRUE if symbol sym should be dumped
+                    according to the rules of the filter.
+                    If no filter is specified it will always return default.
+                    The filter is a comma separated list.  Each element
+                    of the list can specify a symbol three ways.
+                    Firstly by DECL name for example: m2pim_NumberIO_HexToStr
+                    Secondly by qualified scope: [pathname.]NumberIO.HexToStr
+                    Thirdly by filename and scope: NumberIO.mod:HexToStr
+*)
+
+PROCEDURE IsDumpRequired (sym: CARDINAL; default: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   MakeQuadTemplate - return a template for the quad dump file.
+*)
+
+PROCEDURE MakeQuadTemplate () : String ;
+
+
+(*
+   MakeGimpleTemplate - return a template for the gimple dump file and assign
+                        len to the max number of characters required to complete
+                        a template.
+*)
+
+PROCEDURE MakeGimpleTemplate (VAR len: CARDINAL) : String ;
+
+
+(*
+   GetDumpFile - return the dump output file.
+*)
+
+PROCEDURE GetDumpFile () : File ;
+
+
+(*
+   CreateDumpQuad - create the dump file for a quad dump.
+*)
+
+PROCEDURE CreateDumpQuad (title: ARRAY OF CHAR) ;
+
+
+(*
+   CloseDumpQuad - close the dump output file.
+*)
+
+PROCEDURE CloseDumpQuad ;
+
+
+(*
+   CreateDumpDecl - create the dump file for a decl dump.
+*)
+
+PROCEDURE CreateDumpDecl (title: ARRAY OF CHAR) ;
+
+
+(*
+   CloseDumpDecl - close the dump output file.
+*)
+
+PROCEDURE CloseDumpDecl ;
+
+
+END M2LangDump.

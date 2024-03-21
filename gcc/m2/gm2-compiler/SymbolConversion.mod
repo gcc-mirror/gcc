@@ -24,10 +24,10 @@ IMPLEMENTATION MODULE SymbolConversion ;
 FROM NameKey IMPORT Name ;
 
 FROM Indexing IMPORT Index, InitIndex, PutIndice, GetIndice, InBounds,
-                     DebugIndex, InitIndexTuned ;
+                     DebugIndex, InitIndexTuned, HighIndice ;
 
 FROM SymbolTable IMPORT IsConst, PopValue, IsValueSolved, GetSymName,
-                        GetType, SkipType ;
+                        GetType, SkipType, NulSym ;
 
 FROM M2Error IMPORT InternalError ;
 FROM M2ALU IMPORT PushTypeOfTree ;
@@ -85,6 +85,27 @@ BEGIN
       RETURN( NIL )
    END
 END Mod2Gcc ;
+
+
+(*
+   Gcc2Mod - given a gcc tree return the modula-2 symbol.
+*)
+
+PROCEDURE Gcc2Mod (tree: Tree) : CARDINAL ;
+VAR
+   high, i: CARDINAL ;
+BEGIN
+   i := 1 ;
+   high := HighIndice (mod2gcc) ;
+   WHILE i <= high DO
+      IF GetIndice (mod2gcc, i) = tree
+      THEN
+         RETURN i
+      END ;
+      INC (i)
+   END ;
+   RETURN NulSym
+END Gcc2Mod ;
 
 
 (*

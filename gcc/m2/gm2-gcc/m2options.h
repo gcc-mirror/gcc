@@ -152,6 +152,15 @@ EXTERN void M2Options_SetIBMLongDouble (bool value);
 EXTERN bool M2Options_GetIBMLongDouble (void);
 EXTERN void M2Options_SetIEEELongDouble (bool value);
 EXTERN bool M2Options_GetIEEELongDouble (void);
+EXTERN bool M2Options_GetDumpLangDeclFilename (void);
+EXTERN void M2Options_SetDumpLangDeclFilename (bool value, const char *arg);
+EXTERN bool M2Options_GetDumpLangQuadFilename (void);
+EXTERN void M2Options_SetDumpLangQuadFilename (bool value, const char *arg);
+EXTERN bool M2Options_GetDumpLangGimpleFilename (void);
+EXTERN void M2Options_SetDumpLangGimpleFilename (bool value, const char *arg);
+EXTERN bool M2Options_GetDumpLangGimple (void);
+EXTERN void M2Options_SetM2DumpFilter (bool value, const char *args);
+EXTERN char *M2Options_GetM2DumpFilter (void);
 
 #undef EXTERN
 #endif /* m2options_h.  */

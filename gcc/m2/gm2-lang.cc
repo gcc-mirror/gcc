@@ -42,6 +42,8 @@ Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "convert.h"
 #include "rtegraph.h"
 
+#undef ENABLE_QUAD_DUMP_ALL
+
 static void write_globals (void);
 
 static int insideCppArgs = FALSE;
@@ -214,8 +216,7 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 	  M2Options_Setc (value);
 	  break;
 	case OPT_dumpdir:
-	  if (building_cpp_command)
-	    M2Options_SetDumpDir (arg);
+	  M2Options_SetDumpDir (arg);
 	  break;
 	case OPT_save_temps:
 	  if (building_cpp_command)
@@ -407,6 +408,9 @@ gm2_langhook_handle_option (
 
   switch (code)
     {
+    case OPT_dumpdir:
+      M2Options_SetDumpDir (arg);
+      return 1;
     case OPT_I:
       push_back_Ipath (arg);
       return 1;
@@ -479,6 +483,31 @@ gm2_langhook_handle_option (
     case OPT_fdebug_function_line_numbers:
       M2Options_SetDebugFunctionLineNumbers (value);
       return 1;
+#ifdef ENABLE_QUAD_DUMP_ALL
+    case OPT_fdump_lang_all:
+      M2Options_SetDumpLangDeclFilename (value, NULL);
+      M2Options_SetDumpLangGimpleFilename (value, NULL);
+      M2Options_SetDumpLangQuadFilename (value, NULL);
+      return 1;
+    case OPT_fdump_lang_decl:
+      M2Options_SetDumpLangDeclFilename (value, NULL);
+      return 1;
+    case OPT_fdump_lang_decl_:
+      M2Options_SetDumpLangDeclFilename (value, arg);
+      return 1;
+    case OPT_fdump_lang_gimple:
+      M2Options_SetDumpLangGimpleFilename (value, NULL);
+      return 1;
+    case OPT_fdump_lang_gimple_:
+      M2Options_SetDumpLangGimpleFilename (value, arg);
+      return 1;
+    case OPT_fdump_lang_quad:
+      M2Options_SetDumpLangQuadFilename (value, NULL);
+      return 1;
+    case OPT_fdump_lang_quad_:
+      M2Options_SetDumpLangQuadFilename (value, arg);
+      return 1;
+#endif
     case OPT_fauto_init:
       M2Options_SetAutoInit (value);
       return 1;
@@ -519,6 +548,11 @@ gm2_langhook_handle_option (
     case OPT_fm2_strict_type:
       M2Options_SetStrictTypeChecking (value);
       return 1;
+#ifdef ENABLE_QUAD_DUMP_ALL
+    case OPT_fm2_dump_filter_:
+      M2Options_SetM2DumpFilter (value, arg);
+      return 1;
+#endif
     case OPT_Wall:
       M2Options_SetWall (value);
       return 1;

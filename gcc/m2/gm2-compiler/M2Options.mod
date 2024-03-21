@@ -34,7 +34,6 @@ FROM m2linemap IMPORT location_t ;
 FROM m2configure IMPORT FullPathCPP, TargetIEEEQuadDefault ;
 FROM M2Error IMPORT InternalError ;
 
-
 FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
                            InitStringCharStar, ConCatChar, ConCat, KillString,
                            Dup, string, char,
@@ -56,6 +55,10 @@ CONST
    DefaultRuntimeModuleOverride = "m2iso:RTentity,m2iso:Storage,m2iso:SYSTEM,m2iso:M2RTS,m2iso:RTExceptions,m2iso:IOLink" ;
 
 VAR
+   DumpLangDeclFilename,
+   DumpLangQuadFilename,
+   DumpLangGimpleFilename,
+   M2DumpFilter,
    M2Prefix,
    M2PathName,
    Barg,
@@ -1049,7 +1052,9 @@ END SetSwig ;
 
 PROCEDURE SetQuadDebugging (value: BOOLEAN) ;
 BEGIN
-   DisplayQuadruples := value
+   DumpLangQuad := value ;
+   DumpLangQuadFilename := KillString (DumpLangQuadFilename) ;
+   DumpLangQuadFilename := InitString ('-')
 END SetQuadDebugging ;
 
 
@@ -1670,6 +1675,121 @@ BEGIN
 END InitializeLongDoubleFlags ;
 
 
+(*
+   GetDumpLangDeclFilename - returns the DumpLangDeclFilename.
+*)
+
+PROCEDURE GetDumpLangDeclFilename () : String ;
+BEGIN
+   RETURN DumpLangDeclFilename
+END GetDumpLangDeclFilename ;
+
+
+(*
+   SetDumpLangDeclFilename -
+*)
+
+PROCEDURE SetDumpLangDeclFilename (value: BOOLEAN; filename: ADDRESS) ;
+BEGIN
+   DumpLangDecl := value ;
+   DumpLangDeclFilename := KillString (DumpLangDeclFilename) ;
+   IF filename # NIL
+   THEN
+      DumpLangDeclFilename := InitStringCharStar (filename)
+   END
+END SetDumpLangDeclFilename ;
+
+
+(*
+   GetDumpLangQuadFilename - returns the DumpLangQuadFilename.
+*)
+
+PROCEDURE GetDumpLangQuadFilename () : String ;
+BEGIN
+   RETURN DumpLangQuadFilename
+END GetDumpLangQuadFilename ;
+
+
+(*
+   SetDumpLangQuadFilename -
+*)
+
+PROCEDURE SetDumpLangQuadFilename (value: BOOLEAN; filename: ADDRESS) ;
+BEGIN
+   DumpLangQuad := value ;
+   DumpLangQuadFilename := KillString (DumpLangQuadFilename) ;
+   IF filename # NIL
+   THEN
+      DumpLangQuadFilename := InitStringCharStar (filename)
+   END
+END SetDumpLangQuadFilename ;
+
+
+(*
+   GetDumpLangGimpleFilename - returns the DumpLangGimpleFilename.
+*)
+
+PROCEDURE GetDumpLangGimpleFilename () : String ;
+BEGIN
+   RETURN DumpLangGimpleFilename
+END GetDumpLangGimpleFilename ;
+
+
+(*
+   SetDumpLangGimpleFilename - set DumpLangGimpleFilename to filename.
+*)
+
+PROCEDURE SetDumpLangGimpleFilename (value: BOOLEAN; filename: ADDRESS) ;
+BEGIN
+   DumpLangGimple := value ;
+   DumpLangGimpleFilename := KillString (DumpLangGimpleFilename) ;
+   IF value AND (filename # NIL)
+   THEN
+      DumpLangGimpleFilename := InitStringCharStar (filename)
+   END
+END SetDumpLangGimpleFilename ;
+
+
+(*
+   SetM2DumpFilter - sets the filter to a comma separated list of procedures
+                     and modules.
+*)
+
+PROCEDURE SetM2DumpFilter (value: BOOLEAN; filter: ADDRESS) ;
+BEGIN
+   M2DumpFilter := KillString (M2DumpFilter) ;
+   IF value AND (filter # NIL)
+   THEN
+      M2DumpFilter := InitStringCharStar (filter)
+   END
+END SetM2DumpFilter ;
+
+
+(*
+   GetM2DumpFilter - returns the dump filter.
+*)
+
+PROCEDURE GetM2DumpFilter () : ADDRESS ;
+BEGIN
+   IF M2DumpFilter = NIL
+   THEN
+      RETURN NIL
+   ELSE
+      RETURN string (M2DumpFilter)
+   END
+END GetM2DumpFilter ;
+
+
+(*
+   GetDumpLangGimple - return TRUE if -fdump-lang-gimple is set.
+*)
+
+PROCEDURE GetDumpLangGimple () : BOOLEAN ;
+BEGIN
+   RETURN DumpLangGimple
+END GetDumpLangGimple ;
+
+
 BEGIN
    cflag                             := FALSE ;  (* -c.  *)
    RuntimeModuleOverride             := InitString (DefaultRuntimeModuleOverride) ;
@@ -1691,7 +1811,7 @@ BEGIN
    Quiet                             :=  TRUE ;
    CC1Quiet                          :=  TRUE ;
    Profiling                         := FALSE ;
-   DisplayQuadruples                 := FALSE ;
+   DumpLangQuad                      := FALSE ;
    OptimizeBasicBlock                := FALSE ;
    OptimizeUncalledProcedures        := FALSE ;
    OptimizeCommonSubExpressions      := FALSE ;
@@ -1751,5 +1871,12 @@ BEGIN
    MQFlag                            := NIL ;
    InitializeLongDoubleFlags ;
    M2Prefix                          := InitString ('') ;
-   M2PathName                        := InitString ('')
+   M2PathName                        := InitString ('') ;
+   DumpLangQuadFilename              := NIL ;
+   DumpLangGimpleFilename            := NIL ;
+   DumpLangDeclFilename              := NIL ;
+   DumpLangDecl                      := FALSE ;
+   DumpLangQuad                      := FALSE ;
+   DumpLangGimple                    := FALSE ;
+   M2DumpFilter                      := NIL
 END M2Options.

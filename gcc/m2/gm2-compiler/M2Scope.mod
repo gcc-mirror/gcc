@@ -29,7 +29,6 @@ FROM SymbolTable IMPORT IsProcedure, IsDefImp, GetProcedureQuads, GetScope,
                         GetProcedureScope, IsModule, IsModuleWithinProcedure,
                         GetSymName, GetErrorScope, NulSym ;
 
-FROM M2Options IMPORT DisplayQuadruples ;
 FROM M2Printf IMPORT printf0, printf1 ;
 FROM M2Quads IMPORT QuadOperator, GetFirstQuad, GetNextQuad, GetQuad, DisplayQuadRange ;
 FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord,
@@ -38,7 +37,8 @@ IMPORT M2Error ;
 
 
 CONST
-   Debugging = FALSE ;
+   Debugging       = FALSE ;
+   TraceQuadruples = FALSE ;
 
 TYPE
    scopeKind = (unsetscope, ignorescope, procedurescope, modulescope, definitionscope, implementationscope, programscope) ;
@@ -381,7 +381,7 @@ BEGIN
          ELSE
             sb := GetGlobalQuads (sb, scope) ;
          END ;
-         IF DisplayQuadruples
+         IF TraceQuadruples
          THEN
             DisplayScope (sb)
          END
@@ -416,13 +416,13 @@ END KillScopeBlock ;
 
 PROCEDURE ForeachScopeBlockDo2 (sb: ScopeBlock; p: ScopeProcedure2) ;
 BEGIN
-   IF DisplayQuadruples
+   IF TraceQuadruples
    THEN
       printf0 ("ForeachScopeBlockDo\n")
    END ;
    WHILE sb#NIL DO
       WITH sb^ DO
-         IF DisplayQuadruples
+         IF TraceQuadruples
          THEN
             DisplayScope (sb)
          END ;
@@ -435,7 +435,7 @@ BEGIN
       END ;
       sb := sb^.next
    END ;
-   IF DisplayQuadruples
+   IF TraceQuadruples
    THEN
       printf0 ("end ForeachScopeBlockDo\n\n")
    END ;
@@ -449,13 +449,13 @@ END ForeachScopeBlockDo2 ;
 
 PROCEDURE ForeachScopeBlockDo3 (sb: ScopeBlock; p: ScopeProcedure3) ;
 BEGIN
-   IF DisplayQuadruples
+   IF TraceQuadruples
    THEN
       printf0 ("ForeachScopeBlockDo\n")
    END ;
    WHILE sb#NIL DO
       WITH sb^ DO
-         IF DisplayQuadruples
+         IF TraceQuadruples
          THEN
             DisplayScope (sb)
          END ;
@@ -468,7 +468,7 @@ BEGIN
       END ;
       sb := sb^.next
    END ;
-   IF DisplayQuadruples
+   IF TraceQuadruples
    THEN
       printf0 ("end ForeachScopeBlockDo\n\n")
    END ;

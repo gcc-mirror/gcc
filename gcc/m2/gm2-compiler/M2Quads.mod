@@ -27,6 +27,7 @@ FROM M2Debug IMPORT Assert, WriteDebug ;
 FROM NameKey IMPORT Name, NulName, MakeKey, GetKey, makekey, KeyToCharStar, WriteKey ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM M2DebugStack IMPORT DebugStack ;
+FROM StrLib IMPORT StrLen ;
 FROM M2Scaffold IMPORT DeclareScaffold, mainFunction, initFunction,
                        finiFunction, linkFunction, PopulateCtorArray,
                        ForeachModuleCallInit, ForeachModuleCallFinish ;
@@ -160,7 +161,8 @@ FROM M2Error IMPORT Error,
                     ErrorStringAt, ErrorStringAt2, ErrorStringsAt2,
                     WarnStringAt, WarnStringAt2, WarnStringsAt2 ;
 
-FROM M2Printf IMPORT printf0, printf1, printf2, printf3, printf4 ;
+FROM M2Printf IMPORT fprintf0, fprintf1, fprintf2, fprintf3, fprintf4,
+                     printf0, printf1, printf2, printf3, printf4 ;
 
 FROM M2Reserved IMPORT PlusTok, MinusTok, TimesTok, DivTok, ModTok,
                        DivideTok, RemTok,
@@ -218,8 +220,11 @@ FROM M2Options IMPORT NilChecking,
                       UninitVariableChecking,
                       ScaffoldDynamic, ScaffoldStatic, cflag,
                       ScaffoldMain, SharedFlag, WholeProgram,
-                      GetRuntimeModuleOverride ;
+                      GetDumpDir, GetM2DumpFilter,
+                      GetRuntimeModuleOverride,
+                      DumpLangQuad ;
 
+FROM M2LangDump IMPORT CreateDumpQuad, CloseDumpQuad, GetDumpFile ;
 FROM M2Pass IMPORT IsPassCodeGeneration, IsNoPass ;
 
 FROM M2StackAddress IMPORT StackOfAddress, InitStackAddress, KillStackAddress,
@@ -263,8 +268,9 @@ FROM M2Range IMPORT InitAssignmentRangeCheck,
 FROM M2CaseList IMPORT PushCase, PopCase, AddRange, BeginCaseList, EndCaseList, ElseCase ;
 FROM PCSymBuild IMPORT SkipConst ;
 FROM m2builtins IMPORT GetBuiltinTypeInfoType ;
+FROM M2LangDump IMPORT IsDumpRequired ;
 
-IMPORT M2Error ;
+IMPORT M2Error, FIO, SFIO, DynamicStrings, StdIO ;
 
 
 CONST
@@ -5567,9 +5573,9 @@ BEGIN
       THEN
          IF i<=ParamTotal
          THEN
-            printf0('; ')
+            printf0 ('; ')
          ELSE
-            printf0(' ) ; \n')
+            printf0 (' ) ; \n')
          END
       END
    END
@@ -13324,22 +13330,124 @@ END GenQuadOTypetok ;
 
 
 (*
-   DisplayQuadList - displays all quads.
+   DumpUntil - dump all quadruples until we seen the ending quadruple
+               with procsym in the third operand.
+               Return the quad number containing the match.
 *)
 
-PROCEDURE DisplayQuadList ;
+PROCEDURE DumpUntil (ending: QuadOperator;
+                     procsym: CARDINAL; quad: CARDINAL) : CARDINAL ;
 VAR
-   i: CARDINAL ;
-   f: QuadFrame ;
+   op           : QuadOperator ;
+   op1, op2, op3: CARDINAL ;
+   f            : QuadFrame ;
 BEGIN
-   printf0('Quadruples:\n') ;
+   fprintf0 (GetDumpFile (), '\n...\n\n');
+   REPEAT
+      GetQuad (quad, op, op1, op2, op3) ;
+      DisplayQuad (quad) ;
+      f := GetQF (quad) ;
+      quad := f^.Next
+   UNTIL (op = ending) AND (op3 = procsym) ;
+   RETURN quad
+END DumpUntil ;
+
+
+(*
+   GetCtorInit - return the init procedure for the module.
+*)
+
+PROCEDURE GetCtorInit (sym: CARDINAL) : CARDINAL ;
+VAR
+   ctor, init, fini, dep: CARDINAL ;
+BEGIN
+   GetModuleCtors (sym, ctor, init, fini, dep) ;
+   RETURN init
+END GetCtorInit ;
+
+
+(*
+   GetCtorFini - return the fini procedure for the module.
+*)
+
+PROCEDURE GetCtorFini (sym: CARDINAL) : CARDINAL ;
+VAR
+   ctor, init, fini, dep: CARDINAL ;
+BEGIN
+   GetModuleCtors (sym, ctor, init, fini, dep) ;
+   RETURN fini
+END GetCtorFini ;
+
+
+(*
+   DumpQuadrupleFilter -
+*)
+
+PROCEDURE DumpQuadrupleFilter ;
+VAR
+   f            : QuadFrame ;
+   i            : CARDINAL ;
+   op           : QuadOperator ;
+   op1, op2, op3: CARDINAL ;
+BEGIN
    i := Head ;
-   WHILE i#0 DO
-      DisplayQuad(i) ;
-      f := GetQF(i) ;
+   WHILE i # 0 DO
+      GetQuad (i, op, op1, op2, op3) ;
+      IF (op = ProcedureScopeOp) AND IsDumpRequired (op3, TRUE)
+      THEN
+         i := DumpUntil (KillLocalVarOp, op3, i)
+      ELSIF (op = InitStartOp) AND IsDumpRequired (GetCtorInit (op3), TRUE)
+      THEN
+         i := DumpUntil (InitEndOp, op3, i)
+      ELSIF (op = FinallyStartOp) AND IsDumpRequired (GetCtorFini (op3), TRUE)
+      THEN
+         i := DumpUntil (FinallyEndOp, op3, i)
+      ELSE
+         f := GetQF (i) ;
+         i := f^.Next
+      END
+   END
+END DumpQuadrupleFilter ;
+
+
+(*
+   DumpQuadrupleAll - dump all quadruples.
+*)
+
+PROCEDURE DumpQuadrupleAll ;
+VAR
+   f: QuadFrame ;
+   i: CARDINAL ;
+BEGIN
+   i := Head ;
+   WHILE i # 0 DO
+      DisplayQuad (i) ;
+      f := GetQF (i) ;
       i := f^.Next
    END
-END DisplayQuadList ;
+END DumpQuadrupleAll ;
+
+
+(*
+   DumpQuadruples - dump all quadruples providing the -fq, -fdump-lang-quad,
+                    -fdump-lang-quad= or -fdump-lang-all were issued to the
+                    command line.
+*)
+
+PROCEDURE DumpQuadruples (title: ARRAY OF CHAR) ;
+BEGIN
+   IF DumpLangQuad
+   THEN
+      CreateDumpQuad (title) ;
+      IF GetM2DumpFilter () = NIL
+      THEN
+         DumpQuadrupleAll
+      ELSE
+         DumpQuadrupleFilter
+      END ;
+      CloseDumpQuad
+   END
+END DumpQuadruples ;
 
 
 (*
@@ -13350,7 +13458,7 @@ PROCEDURE DisplayQuadRange (scope: CARDINAL; start, end: CARDINAL) ;
 VAR
    f: QuadFrame ;
 BEGIN
-   printf1 ('Quadruples for scope: %d\n', scope) ;
+   fprintf1 (GetDumpFile (), 'Quadruples for scope: %d\n', scope) ;
    WHILE (start <= end) AND (start # 0) DO
       DisplayQuad (start) ;
       f := GetQF (start) ;
@@ -13482,7 +13590,7 @@ END ds ;
 PROCEDURE DisplayQuad (QuadNo: CARDINAL) ;
 BEGIN
    DSdbEnter ;
-   printf1('%4d  ', QuadNo) ; WriteQuad(QuadNo) ; printf0('\n') ;
+   fprintf1 (GetDumpFile (), '%4d  ', QuadNo) ; WriteQuad(QuadNo) ; fprintf0 (GetDumpFile (), '\n') ;
    DSdbExit
 END DisplayQuad ;
 
@@ -13495,19 +13603,19 @@ PROCEDURE DisplayProcedureAttributes (proc: CARDINAL) ;
 BEGIN
    IF IsCtor (proc)
    THEN
-      printf0 (" (ctor)")
+      fprintf0 (GetDumpFile (), " (ctor)")
    END ;
    IF IsPublic (proc)
    THEN
-      printf0 (" (public)")
+      fprintf0 (GetDumpFile (), " (public)")
    END ;
    IF IsExtern (proc)
    THEN
-      printf0 (" (extern)")
+      fprintf0 (GetDumpFile (), " (extern)")
    END ;
    IF IsMonoName (proc)
    THEN
-      printf0 (" (mononame)")
+      fprintf0 (GetDumpFile (), " (mononame)")
    END
 END DisplayProcedureAttributes ;
 
@@ -13526,11 +13634,11 @@ BEGIN
    f := GetQF(BufferQuad) ;
    WITH f^ DO
       WriteOperator(Operator) ;
-      printf1('  [%d]    ', NoOfTimesReferenced) ;
+      fprintf1 (GetDumpFile (), '  [%d]    ', NoOfTimesReferenced) ;
       CASE Operator OF
 
       HighOp           : WriteOperand(Operand1) ;
-                         printf1('  %4d  ', Operand2) ;
+                         fprintf1 (GetDumpFile (), '  %4d  ', Operand2) ;
                          WriteOperand(Operand3) |
       InitAddressOp,
       SavePriorityOp,
@@ -13548,7 +13656,7 @@ BEGIN
       StringConvertCnulOp,
       StringConvertM2nulOp,
       StringLengthOp    : WriteOperand(Operand1) ;
-                          printf0('  ') ;
+                          fprintf0 (GetDumpFile (), '  ') ;
                           WriteOperand(Operand3) |
       ElementSizeOp,
       IfInOp,
@@ -13559,22 +13667,22 @@ BEGIN
       IfGreOp,
       IfLessEquOp,
       IfGreEquOp        : WriteOperand(Operand1) ;
-                          printf0('  ') ;
+                          fprintf0 (GetDumpFile (), '  ') ;
                           WriteOperand(Operand2) ;
-                          printf1('  %4d', Operand3) |
+                          fprintf1 (GetDumpFile (), '  %4d', Operand3) |
 
       InlineOp,
       RetryOp,
       TryOp,
-      GotoOp            : printf1('%4d', Operand3) |
+      GotoOp            : fprintf1 (GetDumpFile (), '%4d', Operand3) |
 
       StatementNoteOp   : l := TokenToLineNo(Operand3, 0) ;
                           n := GetTokenName (Operand3) ;
-                          printf4('%a:%d:%a (tokenno %d)', Operand1, l, n, Operand3) |
-      LineNumberOp      : printf2('%a:%d', Operand1, Operand3) |
+                          fprintf4 (GetDumpFile (), '%a:%d:%a (tokenno %d)', Operand1, l, n, Operand3) |
+      LineNumberOp      : fprintf2 (GetDumpFile (), '%a:%d', Operand1, Operand3) |
 
       EndFileOp         : n1 := GetSymName(Operand3) ;
-                          printf1('%a', n1) |
+                          fprintf1 (GetDumpFile (), '%a', n1) |
 
       ThrowOp,
       ReturnOp,
@@ -13583,7 +13691,7 @@ BEGIN
 
       ProcedureScopeOp  : n1 := GetSymName(Operand2) ;
                           n2 := GetSymName(Operand3) ;
-                          printf3('  %4d  %a  %a', Operand1, n1, n2) ;
+                          fprintf3 (GetDumpFile (), '  %4d  %a  %a', Operand1, n1, n2) ;
                           DisplayProcedureAttributes (Operand3) |
       NewLocalVarOp,
       FinallyStartOp,
@@ -13591,19 +13699,19 @@ BEGIN
       InitEndOp,
       InitStartOp       : n1 := GetSymName(Operand2) ;
                           n2 := GetSymName(Operand3) ;
-                          printf3('  %4d  %a  %a', Operand1, n1, n2) |
+                          fprintf3 (GetDumpFile (), '  %4d  %a  %a', Operand1, n1, n2) |
 
       ModuleScopeOp,
       StartModFileOp    : n1 := GetSymName(Operand3) ;
-                          printf4('%a:%d  %a(%d)', Operand2, Operand1, n1, Operand3) |
+                          fprintf4 (GetDumpFile (), '%a:%d  %a(%d)', Operand2, Operand1, n1, Operand3) |
 
       StartDefFileOp    : n1 := GetSymName(Operand3) ;
-                          printf2('  %4d  %a', Operand1, n1) |
+                          fprintf2 (GetDumpFile (), '  %4d  %a', Operand1, n1) |
 
       OptParamOp,
-      ParamOp           : printf1('%4d  ', Operand1) ;
+      ParamOp           : fprintf1 (GetDumpFile (), '%4d  ', Operand1) ;
                           WriteOperand(Operand2) ;
-                          printf0('  ') ;
+                          fprintf0 (GetDumpFile (), '  ') ;
                           WriteOperand(Operand3) |
       SizeOp,
       RecordFieldOp,
@@ -13631,9 +13739,9 @@ BEGIN
       DivFloorOp,
       ModTruncOp,
       DivTruncOp        : WriteOperand(Operand1) ;
-                          printf0('  ') ;
+                          fprintf0 (GetDumpFile (), '  ') ;
                           WriteOperand(Operand2) ;
-                          printf0('  ') ;
+                          fprintf0 (GetDumpFile (), '  ') ;
                           WriteOperand(Operand3) |
       DummyOp,
       CodeOnOp,
@@ -13643,23 +13751,23 @@ BEGIN
       OptimizeOnOp,
       OptimizeOffOp     : |
       BuiltinConstOp    : WriteOperand(Operand1) ;
-                          printf1('   %a', Operand3) |
+                          fprintf1 (GetDumpFile (), '   %a', Operand3) |
       BuiltinTypeInfoOp : WriteOperand(Operand1) ;
-                          printf1('   %a', Operand2) ;
-                          printf1('   %a', Operand3) |
+                          fprintf1 (GetDumpFile (), '   %a', Operand2) ;
+                          fprintf1 (GetDumpFile (), '   %a', Operand3) |
       StandardFunctionOp: WriteOperand(Operand1) ;
-                          printf0('  ') ;
+                          fprintf0 (GetDumpFile (), '  ') ;
                           WriteOperand(Operand2) ;
-                          printf0('  ') ;
+                          fprintf0 (GetDumpFile (), '  ') ;
                           WriteOperand(Operand3) |
       CatchBeginOp,
       CatchEndOp        : |
 
       RangeCheckOp,
-      ErrorOp           : WriteRangeCheck(Operand3) |
+      ErrorOp           : WriteRangeCheck (Operand3) |
       SaveExceptionOp,
       RestoreExceptionOp: WriteOperand(Operand1) ;
-                          printf0('  ') ;
+                          fprintf0 (GetDumpFile (), '  ') ;
                           WriteOperand(Operand3)
 
       ELSE
@@ -13677,96 +13785,96 @@ PROCEDURE WriteOperator (Operator: QuadOperator) ;
 BEGIN
    CASE Operator OF
 
-   ArithAddOp               : printf0('Arith +           ') |
-   InitAddressOp            : printf0('InitAddress       ') |
-   LogicalOrOp              : printf0('Or                ') |
-   LogicalAndOp             : printf0('And               ') |
-   LogicalXorOp             : printf0('Xor               ') |
-   LogicalDiffOp            : printf0('Ldiff             ') |
-   LogicalShiftOp           : printf0('Shift             ') |
-   LogicalRotateOp          : printf0('Rotate            ') |
-   BecomesOp                : printf0('Becomes           ') |
-   IndrXOp                  : printf0('IndrX             ') |
-   XIndrOp                  : printf0('XIndr             ') |
-   ArrayOp                  : printf0('Array             ') |
-   ElementSizeOp            : printf0('ElementSize       ') |
-   RecordFieldOp            : printf0('RecordField       ') |
-   AddrOp                   : printf0('Addr              ') |
-   SizeOp                   : printf0('Size              ') |
-   IfInOp                   : printf0('If IN             ') |
-   IfNotInOp                : printf0('If NOT IN         ') |
-   IfNotEquOp               : printf0('If <>             ') |
-   IfEquOp                  : printf0('If =              ') |
-   IfLessEquOp              : printf0('If <=             ') |
-   IfGreEquOp               : printf0('If >=             ') |
-   IfGreOp                  : printf0('If >              ') |
-   IfLessOp                 : printf0('If <              ') |
-   GotoOp                   : printf0('Goto              ') |
-   DummyOp                  : printf0('Dummy             ') |
-   ModuleScopeOp            : printf0('ModuleScopeOp     ') |
-   StartDefFileOp           : printf0('StartDefFile      ') |
-   StartModFileOp           : printf0('StartModFile      ') |
-   EndFileOp                : printf0('EndFileOp         ') |
-   InitStartOp              : printf0('InitStart         ') |
-   InitEndOp                : printf0('InitEnd           ') |
-   FinallyStartOp           : printf0('FinallyStart      ') |
-   FinallyEndOp             : printf0('FinallyEnd        ') |
-   RetryOp                  : printf0('Retry             ') |
-   TryOp                    : printf0('Try               ') |
-   ThrowOp                  : printf0('Throw             ') |
-   CatchBeginOp             : printf0('CatchBegin        ') |
-   CatchEndOp               : printf0('CatchEnd          ') |
-   AddOp                    : printf0('+                 ') |
-   SubOp                    : printf0('-                 ') |
-   DivM2Op                  : printf0('DIV M2            ') |
-   ModM2Op                  : printf0('MOD M2            ') |
-   DivCeilOp                : printf0('DIV ceil          ') |
-   ModCeilOp                : printf0('MOD ceil          ') |
-   DivFloorOp               : printf0('DIV floor         ') |
-   ModFloorOp               : printf0('MOD floor         ') |
-   DivTruncOp               : printf0('DIV trunc         ') |
-   ModTruncOp               : printf0('MOD trunc         ') |
-   MultOp                   : printf0('*                 ') |
-   NegateOp                 : printf0('Negate            ') |
-   InclOp                   : printf0('Incl              ') |
-   ExclOp                   : printf0('Excl              ') |
-   ReturnOp                 : printf0('Return            ') |
-   ReturnValueOp            : printf0('ReturnValue       ') |
-   FunctValueOp             : printf0('FunctValue        ') |
-   CallOp                   : printf0('Call              ') |
-   ParamOp                  : printf0('Param             ') |
-   OptParamOp               : printf0('OptParam          ') |
-   NewLocalVarOp            : printf0('NewLocalVar       ') |
-   KillLocalVarOp           : printf0('KillLocalVar      ') |
-   ProcedureScopeOp         : printf0('ProcedureScope    ') |
-   UnboundedOp              : printf0('Unbounded         ') |
-   CoerceOp                 : printf0('Coerce            ') |
-   ConvertOp                : printf0('Convert           ') |
-   CastOp                   : printf0('Cast              ') |
-   HighOp                   : printf0('High              ') |
-   CodeOnOp                 : printf0('CodeOn            ') |
-   CodeOffOp                : printf0('CodeOff           ') |
-   ProfileOnOp              : printf0('ProfileOn         ') |
-   ProfileOffOp             : printf0('ProfileOff        ') |
-   OptimizeOnOp             : printf0('OptimizeOn        ') |
-   OptimizeOffOp            : printf0('OptimizeOff       ') |
-   InlineOp                 : printf0('Inline            ') |
-   StatementNoteOp          : printf0('StatementNote     ') |
-   LineNumberOp             : printf0('LineNumber        ') |
-   BuiltinConstOp           : printf0('BuiltinConst      ') |
-   BuiltinTypeInfoOp        : printf0('BuiltinTypeInfo   ') |
-   StandardFunctionOp       : printf0('StandardFunction  ') |
-   SavePriorityOp           : printf0('SavePriority      ') |
-   RestorePriorityOp        : printf0('RestorePriority   ') |
-   RangeCheckOp             : printf0('RangeCheck        ') |
-   ErrorOp                  : printf0('Error             ') |
-   SaveExceptionOp          : printf0('SaveException     ') |
-   RestoreExceptionOp       : printf0('RestoreException  ') |
-   StringConvertCnulOp      : printf0('StringConvertCnul ') |
-   StringConvertM2nulOp     : printf0('StringConvertM2nul') |
-   StringLengthOp           : printf0('StringLength      ') |
-   SubrangeHighOp           : printf0('SubrangeHigh      ') |
-   SubrangeLowOp            : printf0('SubrangeLow       ')
+   ArithAddOp               : fprintf0 (GetDumpFile (), 'Arith +           ') |
+   InitAddressOp            : fprintf0 (GetDumpFile (), 'InitAddress       ') |
+   LogicalOrOp              : fprintf0 (GetDumpFile (), 'Or                ') |
+   LogicalAndOp             : fprintf0 (GetDumpFile (), 'And               ') |
+   LogicalXorOp             : fprintf0 (GetDumpFile (), 'Xor               ') |
+   LogicalDiffOp            : fprintf0 (GetDumpFile (), 'Ldiff             ') |
+   LogicalShiftOp           : fprintf0 (GetDumpFile (), 'Shift             ') |
+   LogicalRotateOp          : fprintf0 (GetDumpFile (), 'Rotate            ') |
+   BecomesOp                : fprintf0 (GetDumpFile (), 'Becomes           ') |
+   IndrXOp                  : fprintf0 (GetDumpFile (), 'IndrX             ') |
+   XIndrOp                  : fprintf0 (GetDumpFile (), 'XIndr             ') |
+   ArrayOp                  : fprintf0 (GetDumpFile (), 'Array             ') |
+   ElementSizeOp            : fprintf0 (GetDumpFile (), 'ElementSize       ') |
+   RecordFieldOp            : fprintf0 (GetDumpFile (), 'RecordField       ') |
+   AddrOp                   : fprintf0 (GetDumpFile (), 'Addr              ') |
+   SizeOp                   : fprintf0 (GetDumpFile (), 'Size              ') |
+   IfInOp                   : fprintf0 (GetDumpFile (), 'If IN             ') |
+   IfNotInOp                : fprintf0 (GetDumpFile (), 'If NOT IN         ') |
+   IfNotEquOp               : fprintf0 (GetDumpFile (), 'If <>             ') |
+   IfEquOp                  : fprintf0 (GetDumpFile (), 'If =              ') |
+   IfLessEquOp              : fprintf0 (GetDumpFile (), 'If <=             ') |
+   IfGreEquOp               : fprintf0 (GetDumpFile (), 'If >=             ') |
+   IfGreOp                  : fprintf0 (GetDumpFile (), 'If >              ') |
+   IfLessOp                 : fprintf0 (GetDumpFile (), 'If <              ') |
+   GotoOp                   : fprintf0 (GetDumpFile (), 'Goto              ') |
+   DummyOp                  : fprintf0 (GetDumpFile (), 'Dummy             ') |
+   ModuleScopeOp            : fprintf0 (GetDumpFile (), 'ModuleScopeOp     ') |
+   StartDefFileOp           : fprintf0 (GetDumpFile (), 'StartDefFile      ') |
+   StartModFileOp           : fprintf0 (GetDumpFile (), 'StartModFile      ') |
+   EndFileOp                : fprintf0 (GetDumpFile (), 'EndFileOp         ') |
+   InitStartOp              : fprintf0 (GetDumpFile (), 'InitStart         ') |
+   InitEndOp                : fprintf0 (GetDumpFile (), 'InitEnd           ') |
+   FinallyStartOp           : fprintf0 (GetDumpFile (), 'FinallyStart      ') |
+   FinallyEndOp             : fprintf0 (GetDumpFile (), 'FinallyEnd        ') |
+   RetryOp                  : fprintf0 (GetDumpFile (), 'Retry             ') |
+   TryOp                    : fprintf0 (GetDumpFile (), 'Try               ') |
+   ThrowOp                  : fprintf0 (GetDumpFile (), 'Throw             ') |
+   CatchBeginOp             : fprintf0 (GetDumpFile (), 'CatchBegin        ') |
+   CatchEndOp               : fprintf0 (GetDumpFile (), 'CatchEnd          ') |
+   AddOp                    : fprintf0 (GetDumpFile (), '+                 ') |
+   SubOp                    : fprintf0 (GetDumpFile (), '-                 ') |
+   DivM2Op                  : fprintf0 (GetDumpFile (), 'DIV M2            ') |
+   ModM2Op                  : fprintf0 (GetDumpFile (), 'MOD M2            ') |
+   DivCeilOp                : fprintf0 (GetDumpFile (), 'DIV ceil          ') |
+   ModCeilOp                : fprintf0 (GetDumpFile (), 'MOD ceil          ') |
+   DivFloorOp               : fprintf0 (GetDumpFile (), 'DIV floor         ') |
+   ModFloorOp               : fprintf0 (GetDumpFile (), 'MOD floor         ') |
+   DivTruncOp               : fprintf0 (GetDumpFile (), 'DIV trunc         ') |
+   ModTruncOp               : fprintf0 (GetDumpFile (), 'MOD trunc         ') |
+   MultOp                   : fprintf0 (GetDumpFile (), '*                 ') |
+   NegateOp                 : fprintf0 (GetDumpFile (), 'Negate            ') |
+   InclOp                   : fprintf0 (GetDumpFile (), 'Incl              ') |
+   ExclOp                   : fprintf0 (GetDumpFile (), 'Excl              ') |
+   ReturnOp                 : fprintf0 (GetDumpFile (), 'Return            ') |
+   ReturnValueOp            : fprintf0 (GetDumpFile (), 'ReturnValue       ') |
+   FunctValueOp             : fprintf0 (GetDumpFile (), 'FunctValue        ') |
+   CallOp                   : fprintf0 (GetDumpFile (), 'Call              ') |
+   ParamOp                  : fprintf0 (GetDumpFile (), 'Param             ') |
+   OptParamOp               : fprintf0 (GetDumpFile (), 'OptParam          ') |
+   NewLocalVarOp            : fprintf0 (GetDumpFile (), 'NewLocalVar       ') |
+   KillLocalVarOp           : fprintf0 (GetDumpFile (), 'KillLocalVar      ') |
+   ProcedureScopeOp         : fprintf0 (GetDumpFile (), 'ProcedureScope    ') |
+   UnboundedOp              : fprintf0 (GetDumpFile (), 'Unbounded         ') |
+   CoerceOp                 : fprintf0 (GetDumpFile (), 'Coerce            ') |
+   ConvertOp                : fprintf0 (GetDumpFile (), 'Convert           ') |
+   CastOp                   : fprintf0 (GetDumpFile (), 'Cast              ') |
+   HighOp                   : fprintf0 (GetDumpFile (), 'High              ') |
+   CodeOnOp                 : fprintf0 (GetDumpFile (), 'CodeOn            ') |
+   CodeOffOp                : fprintf0 (GetDumpFile (), 'CodeOff           ') |
+   ProfileOnOp              : fprintf0 (GetDumpFile (), 'ProfileOn         ') |
+   ProfileOffOp             : fprintf0 (GetDumpFile (), 'ProfileOff        ') |
+   OptimizeOnOp             : fprintf0 (GetDumpFile (), 'OptimizeOn        ') |
+   OptimizeOffOp            : fprintf0 (GetDumpFile (), 'OptimizeOff       ') |
+   InlineOp                 : fprintf0 (GetDumpFile (), 'Inline            ') |
+   StatementNoteOp          : fprintf0 (GetDumpFile (), 'StatementNote     ') |
+   LineNumberOp             : fprintf0 (GetDumpFile (), 'LineNumber        ') |
+   BuiltinConstOp           : fprintf0 (GetDumpFile (), 'BuiltinConst      ') |
+   BuiltinTypeInfoOp        : fprintf0 (GetDumpFile (), 'BuiltinTypeInfo   ') |
+   StandardFunctionOp       : fprintf0 (GetDumpFile (), 'StandardFunction  ') |
+   SavePriorityOp           : fprintf0 (GetDumpFile (), 'SavePriority      ') |
+   RestorePriorityOp        : fprintf0 (GetDumpFile (), 'RestorePriority   ') |
+   RangeCheckOp             : fprintf0 (GetDumpFile (), 'RangeCheck        ') |
+   ErrorOp                  : fprintf0 (GetDumpFile (), 'Error             ') |
+   SaveExceptionOp          : fprintf0 (GetDumpFile (), 'SaveException     ') |
+   RestoreExceptionOp       : fprintf0 (GetDumpFile (), 'RestoreException  ') |
+   StringConvertCnulOp      : fprintf0 (GetDumpFile (), 'StringConvertCnul ') |
+   StringConvertM2nulOp     : fprintf0 (GetDumpFile (), 'StringConvertM2nul') |
+   StringLengthOp           : fprintf0 (GetDumpFile (), 'StringLength      ') |
+   SubrangeHighOp           : fprintf0 (GetDumpFile (), 'SubrangeHigh      ') |
+   SubrangeLowOp            : fprintf0 (GetDumpFile (), 'SubrangeLow       ')
 
    ELSE
       InternalError ('operator not expected')
@@ -13784,15 +13892,15 @@ VAR
 BEGIN
    IF Sym = NulSym
    THEN
-      printf0 ('<nulsym>')
+      fprintf0 (GetDumpFile (), '<nulsym>')
    ELSE
       n := GetSymName (Sym) ;
-      printf1 ('%a', n) ;
+      fprintf1 (GetDumpFile (), '%a', n) ;
       IF IsVar (Sym) OR IsConst (Sym)
       THEN
-         printf0 ('[') ; WriteMode (GetMode (Sym)) ; printf0(']')
+         fprintf0 (GetDumpFile (), '[') ; WriteMode (GetMode (Sym)) ; fprintf0 (GetDumpFile (), ']')
       END ;
-      printf1 ('(%d)', Sym)
+      fprintf1 (GetDumpFile (), '(%d)', Sym)
    END
 END WriteOperand ;
 
@@ -13801,10 +13909,10 @@ PROCEDURE WriteMode (Mode: ModeOfAddr) ;
 BEGIN
    CASE Mode OF
 
-   ImmediateValue: printf0('i') |
-   NoValue       : printf0('n') |
-   RightValue    : printf0('r') |
-   LeftValue     : printf0('l')
+   ImmediateValue: fprintf0 (GetDumpFile (), 'i') |
+   NoValue       : fprintf0 (GetDumpFile (), 'n') |
+   RightValue    : fprintf0 (GetDumpFile (), 'r') |
+   LeftValue     : fprintf0 (GetDumpFile (), 'l')
 
    ELSE
       InternalError ('unrecognised mode')
@@ -15506,7 +15614,7 @@ BEGIN
    FreeLineList := NIL ;
    InitList(VarientFields) ;
    VarientFieldNo := 0 ;
-   NoOfQuads := 0
+   NoOfQuads := 0 ;
 END Init ;
 
 

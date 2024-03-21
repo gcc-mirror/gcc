@@ -55,7 +55,9 @@ VAR
    PedanticCast,                 (* -Wpedantic-cast warns if sizes differ.   *)
    Statistics,                   (* -fstatistics information about code      *)
    StyleChecking,                (* -Wstudents checks for common student errs*)
-   DisplayQuadruples,            (* -Wq option will display quadruples.      *)
+   DumpLangDecl,                 (* -fdump-lang-decl.                        *)
+   DumpLangGimple,               (* -fdump-lang-gimple.                      *)
+   DumpLangQuad,                 (* -fq, -fdump-lang-quad dump quadruples.   *)
    UnboundedByReference,         (* -funbounded-by-reference                 *)
    VerboseUnbounded,             (* -Wverbose-unbounded                      *)
    OptimizeUncalledProcedures,   (* -Ouncalled removes uncalled procedures   *)
@@ -1000,6 +1002,70 @@ PROCEDURE SetIEEELongDouble (value: BOOLEAN) ;
 *)
 
 PROCEDURE GetIEEELongDouble () : BOOLEAN ;
+
+
+(*
+   GetDumpLangDeclFilename - returns the DumpLangDeclFilename.
+*)
+
+PROCEDURE GetDumpLangDeclFilename () : String ;
+
+
+(*
+   SetDumpLangDeclFilename - set DumpLangDeclFilename to filename.
+*)
+
+PROCEDURE SetDumpLangDeclFilename (value: BOOLEAN; filename: ADDRESS) ;
+
+
+(*
+   GetDumpLangQuadFilename - returns the DumpLangQuadFilename.
+*)
+
+PROCEDURE GetDumpLangQuadFilename () : String ;
+
+
+(*
+   SetDumpLangQuadFilename - set DumpLangQuadFilename to filename.
+*)
+
+PROCEDURE SetDumpLangQuadFilename (value: BOOLEAN; filename: ADDRESS) ;
+
+
+(*
+   GetDumpLangGimpleFilename - returns the DumpLangGimpleFilename.
+*)
+
+PROCEDURE GetDumpLangGimpleFilename () : String ;
+
+
+(*
+   SetDumpLangGimpleFilename - set DumpLangGimpleFilename to filename.
+*)
+
+PROCEDURE SetDumpLangGimpleFilename (value: BOOLEAN; filename: ADDRESS) ;
+
+
+(*
+   SetM2DumpFilter - sets the filter to a comma separated list of procedures
+                     and modules.
+*)
+
+PROCEDURE SetM2DumpFilter (value: BOOLEAN; filter: ADDRESS) ;
+
+
+(*
+   GetM2DumpFilter - returns the dump filter.
+*)
+
+PROCEDURE GetM2DumpFilter () : ADDRESS ;
+
+
+(*
+   GetDumpLangGimple - return TRUE if -fdump-lang-gimple is set.
+*)
+
+PROCEDURE GetDumpLangGimple () : BOOLEAN ;
 
 
 (*

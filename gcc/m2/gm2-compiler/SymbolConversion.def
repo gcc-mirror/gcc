@@ -31,8 +31,6 @@ DEFINITION MODULE SymbolConversion ;
 
 FROM m2tree IMPORT Tree ;
 FROM SYSTEM IMPORT WORD ;
-EXPORT QUALIFIED Mod2Gcc, AddModGcc, GccKnowsAbout, AddTemporaryKnown,
-                 RemoveTemporaryKnown, Poison, RemoveMod2Gcc ;
 
 
 (*
@@ -40,6 +38,13 @@ EXPORT QUALIFIED Mod2Gcc, AddModGcc, GccKnowsAbout, AddTemporaryKnown,
 *)
 
 PROCEDURE Mod2Gcc (sym: CARDINAL) : Tree ;
+
+
+(*
+   Gcc2Mod - given a gcc tree return the modula-2 symbol.
+*)
+
+PROCEDURE Gcc2Mod (tree: Tree) : CARDINAL ;
 
 
 (*

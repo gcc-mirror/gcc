@@ -125,7 +125,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsDefOrModFile,
                  IsInitialisingConst,
 
-                 DisplayQuadList, DisplayQuadRange, DisplayQuad,
+                 DumpQuadruples, DisplayQuadRange, DisplayQuad,
                  WriteOperator, BackPatchSubrangesAndOptParam,
 
                  GetQuad, GetFirstQuad, GetNextQuad, PutQuad,
@@ -440,10 +440,12 @@ PROCEDURE IsDefOrModFile (QuadNo: CARDINAL) : BOOLEAN ;
 
 
 (*
-   DisplayQuadList - displays all quads.
+   DumpQuadruples - dump all quadruples providing the -fq, -fdump-lang-quad,
+                    -fdump-lang-quad= or -fdump-lang-all were issued to the
+                    command line.
 *)
 
-PROCEDURE DisplayQuadList ;
+PROCEDURE DumpQuadruples (title: ARRAY OF CHAR) ;
 
 
 (*

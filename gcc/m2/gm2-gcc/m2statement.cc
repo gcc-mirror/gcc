@@ -36,6 +36,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2treelib.h"
 #include "m2type.h"
 #include "m2convert.h"
+#include "m2pp.h"
 
 static GTY (()) tree param_list = NULL_TREE; /* Ready for the next time we
                                                 call/define a function.  */
@@ -102,11 +103,15 @@ m2statement_BuildEndFunctionCode (location_t location, tree fndecl, bool nested)
   m2block_finishFunctionCode (fndecl);
   m2statement_SetEndLocation (location);
 
+  m2pp_dump_gimple (M2PP_DUMP_PRE_GENERICIZE, fndecl);
   gm2_genericize (fndecl);
   if (nested)
     (void)cgraph_node::get_create (fndecl);
   else
-    cgraph_node::finalize_function (fndecl, false);
+    {
+      m2pp_dump_gimple (M2PP_DUMP_POST_GENERICIZE, fndecl);
+      cgraph_node::finalize_function (fndecl, false);
+    }
 
   m2block_popFunctionScope ();
 

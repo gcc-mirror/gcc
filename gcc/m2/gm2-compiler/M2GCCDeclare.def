@@ -224,6 +224,27 @@ PROCEDURE PrintSym (sym: CARDINAL) ;
 
 
 (*
+   IncludeDumpSymbol - include sym into the watch list and all syms dependants.
+*)
+
+PROCEDURE IncludeDumpSymbol (sym: CARDINAL) ;
+
+
+(*
+   DumpFilteredResolver - dumps the gimple or tree representation of all watched symbols.
+*)
+
+PROCEDURE DumpFilteredResolver ;
+
+
+(*
+   DumpFilteredDefinitive - dumps the gimple or tree representation of all watched symbols.
+*)
+
+PROCEDURE DumpFilteredDefinitive ;
+
+
+(*
    InitDeclarations - initializes default types and the source filename.
 *)
 

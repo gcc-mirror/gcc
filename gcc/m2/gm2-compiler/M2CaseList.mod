@@ -39,8 +39,8 @@ FROM m2type IMPORT GetMinFrom ;
 FROM m2expr IMPORT GetIntegerOne, CSTIntToString, CSTIntToChar ;
 FROM Storage IMPORT ALLOCATE ;
 FROM M2Base IMPORT IsExpressionCompatible, Char ;
-FROM M2Printf IMPORT printf1 ;
 FROM M2LexBuf IMPORT TokenToLocation ;
+FROM NumberIO IMPORT WriteCard ;
 
 FROM SymbolTable IMPORT NulSym, IsConst, IsFieldVarient, IsRecord, IsRecordField, GetVarientTag, GetType,
                         ForeachLocalSymDo, GetSymName, IsEnumeration, SkipType, NoOfElements, GetNth,
@@ -1191,7 +1191,7 @@ end InRangeList ;
 PROCEDURE WriteCase (c: CARDINAL) ;
 BEGIN
    (* this debugging PROCEDURE should be finished.  *)
-   printf1 ("%d", c)
+   WriteCard (c, 0)
 END WriteCase ;
 
 

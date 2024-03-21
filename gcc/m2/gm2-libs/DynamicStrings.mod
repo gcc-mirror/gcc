@@ -1466,8 +1466,9 @@ END Index ;
 
 (*
    RIndex - returns the indice of the last occurance of, ch,
-            in String, s. The search starts at position, o.
-            -1 is returned if, ch, is not found.
+            in String, s.  The search starts at position, o.
+            -1 is returned if, ch, is not found.  The search
+            is performed left to right.
 *)
 
 PROCEDURE RIndex (s: String; ch: CHAR; o: CARDINAL) : INTEGER ;
@@ -1507,6 +1508,47 @@ BEGIN
    END ;
    RETURN j
 END RIndex ;
+
+
+(*
+   ReverseIndex - returns the indice of the last occurance of ch
+                  in String s.  The search starts at position o
+                  and searches from right to left.  The start position
+                  may be indexed negatively from the right (-1 is the
+                  last index).
+                  The return value if ch is found will always be positive.
+                  -1 is returned if ch is not found.
+*)
+
+PROCEDURE ReverseIndex (s: String; ch: CHAR; o: INTEGER) : INTEGER ;
+VAR
+   c: CARDINAL ;
+BEGIN
+   IF PoisonOn
+   THEN
+      s := CheckPoisoned (s)
+   END ;
+   IF o < 0
+   THEN
+      o := VAL (INTEGER, Length (s)) + o ;
+      IF o < 0
+      THEN
+         RETURN -1
+      END
+   END ;
+   IF VAL (CARDINAL, o) < Length (s)
+   THEN
+      WHILE o >= 0 DO
+         IF char (s, o) = ch
+         THEN
+            RETURN o
+         ELSE
+            DEC (o)
+         END
+      END
+   END ;
+   RETURN -1
+END ReverseIndex ;
 
 
 (*
