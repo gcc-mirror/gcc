@@ -1,3 +1,11 @@
+2024-03-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103715
+	* gfortran.dg/pr103715.f90: New test.
+
 2024-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/predicate15.adb: New test.
