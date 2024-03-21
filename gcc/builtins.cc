@@ -10461,7 +10461,7 @@ fold_builtin_1 (location_t loc, tree expr, tree fndecl, tree arg0)
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
 
-  if (TREE_CODE (arg0) == ERROR_MARK)
+  if (error_operand_p (arg0))
     return NULL_TREE;
 
   if (tree ret = fold_const_call (as_combined_fn (fcode), type, arg0))
@@ -10601,8 +10601,8 @@ fold_builtin_2 (location_t loc, tree expr, tree fndecl, tree arg0, tree arg1)
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
 
-  if (TREE_CODE (arg0) == ERROR_MARK
-      || TREE_CODE (arg1) == ERROR_MARK)
+  if (error_operand_p (arg0)
+      || error_operand_p (arg1))
     return NULL_TREE;
 
   if (tree ret = fold_const_call (as_combined_fn (fcode), type, arg0, arg1))
@@ -10693,9 +10693,9 @@ fold_builtin_3 (location_t loc, tree fndecl,
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
 
-  if (TREE_CODE (arg0) == ERROR_MARK
-      || TREE_CODE (arg1) == ERROR_MARK
-      || TREE_CODE (arg2) == ERROR_MARK)
+  if (error_operand_p (arg0)
+      || error_operand_p (arg1)
+      || error_operand_p (arg2))
     return NULL_TREE;
 
   if (tree ret = fold_const_call (as_combined_fn (fcode), type,
