@@ -4704,17 +4704,27 @@ region_model::eval_condition (const svalue *lhs,
     if (lhs_un_op && CONVERT_EXPR_CODE_P (lhs_un_op->get_op ())
 	&& rhs_un_op && CONVERT_EXPR_CODE_P (rhs_un_op->get_op ())
 	&& lhs_type == rhs_type)
-      return eval_condition (lhs_un_op->get_arg (),
-			     op,
-			     rhs_un_op->get_arg ());
-
+      {
+	tristate res = eval_condition (lhs_un_op->get_arg (),
+				       op,
+				       rhs_un_op->get_arg ());
+	if (res.is_known ())
+	  return res;
+      }
     else if (lhs_un_op && CONVERT_EXPR_CODE_P (lhs_un_op->get_op ())
 	     && lhs_type == rhs_type)
-      return eval_condition (lhs_un_op->get_arg (), op, rhs);
-
+      {
+	tristate res = eval_condition (lhs_un_op->get_arg (), op, rhs);
+	if (res.is_known ())
+	  return res;
+      }
     else if (rhs_un_op && CONVERT_EXPR_CODE_P (rhs_un_op->get_op ())
 	     && lhs_type == rhs_type)
-      return eval_condition (lhs, op, rhs_un_op->get_arg ());
+      {
+	tristate res = eval_condition (lhs, op, rhs_un_op->get_arg ());
+	if (res.is_known ())
+	  return res;
+      }
   }
 
   /* Otherwise, try constraints.
