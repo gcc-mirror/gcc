@@ -1,3 +1,28 @@
+2024-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/iterator (__cpp_lib_null_iterators): Define regardless of
+	_GLIBCXX_DEBUG.
+	* include/std/version (__cpp_lib_null_iterators): Likewise.
+
+2024-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2024-03-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.tcc (_Safe_iterator<>::_M_can_advance):
+	Accept 0 offset advance on value-initialized iterator.
+	* testsuite/23_containers/vector/debug/n3644.cc: New test case.
+
+2024-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2024-03-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_local_iterator.tcc
+	(_Safe_local_iterator::_M_valid_range): Add _M_value_initialized and
+	_M_singular checks.
+	* testsuite/23_containers/unordered_set/debug/114316.cc: New test case.
+
 2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
