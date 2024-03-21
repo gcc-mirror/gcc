@@ -4,7 +4,6 @@
 
 #include <print>
 #include <cstdio>
-#include <spanstream>
 #include <testsuite_hooks.h>
 #include <testsuite_fs.h>
 

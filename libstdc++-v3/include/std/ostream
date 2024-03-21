@@ -995,6 +995,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::print(__os, "{}\n",
 		 std::format(__fmt, std::forward<_Args>(__args)...));
     }
+
+  // Defined for C++26, supported as an extension to C++23.
+  inline void println(ostream& __os)
+  {
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    if constexpr (__unicode::__literal_encoding_is_utf8())
+      std::vprint_unicode(__os, "\n", std::make_format_args());
+    else
+#endif
+      __os.put('\n');
+  }
+
 #endif // __cpp_lib_print
 
 #endif // C++11
