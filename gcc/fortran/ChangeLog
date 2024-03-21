@@ -1,3 +1,12 @@
+2024-03-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103715
+	* frontend-passes.cc (check_externals_expr): Prevent invalid read
+	in case of mismatch of external subroutine with function.
+
 2024-02-09  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
