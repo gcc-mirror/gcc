@@ -2752,6 +2752,10 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   if (VAR_P (inner) && DECL_HARD_REGISTER (inner))
     return;
 
+  /* Accesses to non-generic address-spaces should not be instrumented.  */
+  if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (inner))))
+    return;
+
   poly_int64 decl_size;
   if ((VAR_P (inner) || TREE_CODE (inner) == RESULT_DECL)
       && offset == NULL_TREE
