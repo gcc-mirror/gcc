@@ -1707,44 +1707,67 @@ __divmodbitint4 (UBILtype *q, SItype qprec,
   USItype vp = avprec % W_TYPE_SIZE;
   if (__builtin_expect (un < vn, 0))
     {
-      /* If abs(v) > abs(u), then q is 0 and r is u.  */
-      if (q)
-	__builtin_memset (q, 0, qn * sizeof (UWtype));
-      if (r == NULL)
-	return;
+      /* If abs(v) > abs(u), then q is 0 and r is u.
+	 Unfortunately un < vn doesn't always mean abs(v) > abs(u).
+	 If uprec > 0 and vprec < 0 and vn == un + 1, if the
+	 top limb of v is all ones and the second most significant
+	 limb has most significant bit clear, then just decrease
+	 vn/avprec/vp and continue, after negation both numbers
+	 will have the same number of limbs.  */
+      if (un + 1 == vn
+	  && uprec >= 0
+	  && vprec < 0
+	  && ((v[BITINT_END (0, vn - 1)] | (vp ? ((UWtype) -1 << vp) : 0))
+	      == (UWtype) -1)
+	  && (Wtype) v[BITINT_END (1, vn - 2)] >= 0)
+	{
+	  vp = 0;
+	  --vn;
 #if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
-      r += rn - 1;
-      u += un - 1;
+	  ++v;
 #endif
-      if (up)
-	--un;
-      if (rn < un)
-	un = rn;
-      for (rn -= un; un; --un)
-	{
-	  *r = *u;
-	  r += BITINT_INC;
-	  u += BITINT_INC;
 	}
-      if (!rn)
-	return;
-      if (up)
+      else
 	{
-	  if (uprec > 0)
-	    *r = *u & (((UWtype) 1 << up) - 1);
-	  else
-	    *r = *u | ((UWtype) -1 << up);
-	  r += BITINT_INC;
-	  if (!--rn)
+	  /* q is 0 and r is u.  */
+	  if (q)
+	    __builtin_memset (q, 0, qn * sizeof (UWtype));
+	  if (r == NULL)
 	    return;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+	  r += rn - 1;
+	  u += un - 1;
+#endif
+	  if (up)
+	    --un;
+	  if (rn < un)
+	    un = rn;
+	  for (rn -= un; un; --un)
+	    {
+	      *r = *u;
+	      r += BITINT_INC;
+	      u += BITINT_INC;
+	    }
+	  if (!rn)
+	    return;
+	  if (up)
+	    {
+	      if (uprec > 0)
+		*r = *u & (((UWtype) 1 << up) - 1);
+	      else
+		*r = *u | ((UWtype) -1 << up);
+	      r += BITINT_INC;
+	      if (!--rn)
+		return;
+	    }
+	  UWtype c = uprec < 0 ? (UWtype) -1 : (UWtype) 0;
+	  for (; rn; --rn)
+	    {
+	      *r = c;
+	      r += BITINT_INC;
+	    }
+	  return;
 	}
-      UWtype c = uprec < 0 ? (UWtype) -1 : (UWtype) 0;
-      for (; rn; --rn)
-	{
-	  *r = c;
-	  r += BITINT_INC;
-	}
-      return;
     }
   USItype qn2 = un - vn + 1;
   if (qn >= qn2)
