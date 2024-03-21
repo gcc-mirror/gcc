@@ -1413,6 +1413,38 @@ END buildConstFunction ;
 
 
 (*
+   ErrorConstFunction - generate an error message at functok using func in the
+                        error message providing it is not NulSym.
+*)
+
+PROCEDURE ErrorConstFunction (func: CARDINAL; functok: CARDINAL) ;
+BEGIN
+   IF func = NulSym
+   THEN
+      IF Iso
+      THEN
+         ErrorFormat0 (NewError (functok),
+                       'the only functions permissible in a constant expression are: CAP, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
+      ELSE
+         ErrorFormat0 (NewError (functok),
+                       'the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
+      END
+   ELSE
+      IF Iso
+      THEN
+         MetaErrorT1 (functok,
+                      'the only functions permissible in a constant expression are: CAP, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
+                      func)
+      ELSE
+         MetaErrorT1 (functok,
+                      'the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
+                      func)
+      END
+   END
+END ErrorConstFunction ;
+
+
+(*
    PushConstFunctionType -
 *)
 
@@ -1426,7 +1458,10 @@ BEGIN
    PopTtok (func, functok) ;
    IF inDesignator
    THEN
-      IF (func#Convert) AND
+      IF func = NulSym
+      THEN
+         ErrorConstFunction (func, functok)
+      ELSIF (func#Convert) AND
          (IsPseudoBaseFunction(func) OR
           IsPseudoSystemFunctionConstExpression(func) OR
           (IsProcedure(func) AND IsProcedureBuiltin(func)))
@@ -1442,16 +1477,7 @@ BEGIN
             WriteFormat0('a constant type conversion can only have one argument')
          END
       ELSE
-         IF Iso
-         THEN
-            MetaErrorT1 (functok,
-                         'the only functions permissible in a constant expression are: CAP, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
-                        func)
-         ELSE
-            MetaErrorT1 (functok,
-                         'the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
-                        func)
-         END
+         ErrorConstFunction (func, functok)
       END
    END ;
    PushTtok (func, functok)
