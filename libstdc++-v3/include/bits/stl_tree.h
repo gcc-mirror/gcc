@@ -1431,7 +1431,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_move_assign(_Rb_tree&, false_type);
 #endif
 
-#if __cplusplus > 201402L
+#if __glibcxx_node_extract // >= C++17
     public:
       /// Re-insert an extracted node.
       insert_return_type
@@ -1449,7 +1449,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      {
 		__ret.position
 		  = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
-		__nh._M_ptr = nullptr;
+		__nh.release();
 		__ret.inserted = true;
 	      }
 	    else
@@ -1477,7 +1477,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __ret = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
 	    else
 	      __ret = _M_insert_equal_lower_node(__nh._M_ptr);
-	    __nh._M_ptr = nullptr;
+	    __nh.release();
 	  }
 	return __ret;
       }
@@ -1496,7 +1496,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (__res.second)
 	      {
 		__ret = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
-		__nh._M_ptr = nullptr;
+		__nh.release();
 	      }
 	    else
 	      __ret = iterator(__res.first);
@@ -1519,7 +1519,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __ret = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
 	    else
 	      __ret = _M_insert_equal_lower_node(__nh._M_ptr);
-	    __nh._M_ptr = nullptr;
+	    __nh.release();
 	  }
 	return __ret;
       }
@@ -1595,7 +1595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		}
 	    }
 	}
-#endif // C++17
+#endif // C++17 node_extract
 
       friend bool
       operator==(const _Rb_tree& __x, const _Rb_tree& __y)
