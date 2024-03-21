@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-toplevel-name-resolver-2.0.h"
+#include "input.h"
 #include "optional.h"
 #include "rust-ast-full.h"
 #include "rust-hir-map.h"
@@ -434,7 +435,7 @@ TopLevel::visit (AST::ConstantItem &const_item)
 }
 
 bool
-TopLevel::handle_use_glob (AST::SimplePath glob)
+TopLevel::handle_use_glob (AST::SimplePath &glob)
 {
   auto resolved = ctx.types.resolve_path (glob.get_segments ());
   if (!resolved.has_value ())
@@ -453,7 +454,7 @@ TopLevel::handle_use_glob (AST::SimplePath glob)
 }
 
 bool
-TopLevel::handle_use_dec (AST::SimplePath path)
+TopLevel::handle_use_dec (AST::SimplePath &path)
 {
   auto locus = path.get_final_segment ().get_locus ();
   auto declared_name = path.get_final_segment ().as_string ();
@@ -508,6 +509,97 @@ TopLevel::handle_use_dec (AST::SimplePath path)
 	});
       };
 
+  resolve_and_insert (Namespace::Values, path);
+  resolve_and_insert (Namespace::Types, path);
+  resolve_and_insert (Namespace::Macros, path);
+
+  return found;
+}
+
+bool
+TopLevel::handle_rebind (std::pair<AST::SimplePath, AST::UseTreeRebind> &rebind)
+{
+  auto &path = rebind.first;
+
+  location_t locus = UNKNOWN_LOCATION;
+  std::string declared_name;
+
+  switch (rebind.second.get_new_bind_type ())
+    {
+    case AST::UseTreeRebind::NewBindType::IDENTIFIER:
+      declared_name = rebind.second.get_identifier ().as_string ();
+      locus = rebind.second.get_identifier ().get_locus ();
+      break;
+    case AST::UseTreeRebind::NewBindType::NONE:
+      declared_name = path.get_final_segment ().as_string ();
+      locus = path.get_final_segment ().get_locus ();
+      break;
+    case AST::UseTreeRebind::NewBindType::WILDCARD:
+      rust_unreachable ();
+      break;
+    }
+
+  // in what namespace do we perform path resolution? All
+  // of them? see which one matches? Error out on
+  // ambiguities? so, apparently, for each one that
+  // matches, add it to the proper namespace
+  // :(
+  auto found = false;
+
+  auto resolve_and_insert = [this, &found, &declared_name,
+			     locus] (Namespace ns,
+				     const AST::SimplePath &path) {
+    tl::optional<Rib::Definition> resolved = tl::nullopt;
+    tl::optional<Rib::Definition> resolved_bind = tl::nullopt;
+
+    std::vector<AST::SimplePathSegment> declaration_v
+      = {AST::SimplePathSegment (declared_name, locus)};
+    // FIXME: resolve_path needs to return an `expected<NodeId, Error>` so
+    // that we can improve it with hints or location or w/ever. and maybe
+    // only emit it the first time.
+    switch (ns)
+      {
+      case Namespace::Values:
+	resolved = ctx.values.resolve_path (path.get_segments ());
+	resolved_bind = ctx.values.resolve_path (declaration_v);
+	break;
+      case Namespace::Types:
+	resolved = ctx.types.resolve_path (path.get_segments ());
+	resolved_bind = ctx.types.resolve_path (declaration_v);
+	break;
+      case Namespace::Macros:
+	resolved = ctx.macros.resolve_path (path.get_segments ());
+	resolved_bind = ctx.macros.resolve_path (declaration_v);
+	break;
+      case Namespace::Labels:
+	// TODO: Is that okay?
+	rust_unreachable ();
+      }
+
+    resolved.map ([this, &found, &declared_name, locus, ns, path,
+		   &resolved_bind] (Rib::Definition def) {
+      found = true;
+
+      insert_or_error_out (declared_name, locus, def.get_node_id (), ns);
+      if (resolved_bind.has_value ())
+	{
+	  auto bind_def = resolved_bind.value ();
+	  // what do we do with the id?
+	  auto result = node_forwarding.find (bind_def.get_node_id ());
+	  if (result != node_forwarding.cend ()
+	      && result->second != path.get_node_id ())
+	    rust_error_at (path.get_locus (), "%qs defined multiple times",
+			   declared_name.c_str ());
+	}
+      else
+	{
+	  // No previous thing has inserted this into our scope
+	  node_forwarding.insert ({def.get_node_id (), path.get_node_id ()});
+	}
+      return def.get_node_id ();
+    });
+  };
+
   // do this for all namespaces (even Labels?)
 
   resolve_and_insert (Namespace::Values, path);
@@ -520,31 +612,38 @@ TopLevel::handle_use_dec (AST::SimplePath path)
 }
 
 static void
-flatten_rebind (const AST::UseTreeRebind &glob,
-		std::vector<AST::SimplePath> &paths);
+flatten_rebind (
+  const AST::UseTreeRebind &glob,
+  std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> &rebind_paths);
+
 static void
-flatten_list (const AST::UseTreeList &glob, std::vector<AST::SimplePath> &paths,
-	      std::vector<AST::SimplePath> &glob_paths,
-	      NameResolutionContext &ctx);
+flatten_list (
+  const AST::UseTreeList &glob, std::vector<AST::SimplePath> &paths,
+  std::vector<AST::SimplePath> &glob_paths,
+  std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> &rebind_paths,
+  NameResolutionContext &ctx);
 static void
 flatten_glob (const AST::UseTreeGlob &glob,
 	      std::vector<AST::SimplePath> &glob_paths,
 	      NameResolutionContext &ctx);
 
 static void
-flatten (const AST::UseTree *tree, std::vector<AST::SimplePath> &paths,
-	 std::vector<AST::SimplePath> &glob_paths, NameResolutionContext &ctx)
+flatten (
+  const AST::UseTree *tree, std::vector<AST::SimplePath> &paths,
+  std::vector<AST::SimplePath> &glob_paths,
+  std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> &rebind_paths,
+  NameResolutionContext &ctx)
 {
   switch (tree->get_kind ())
     {
       case AST::UseTree::Rebind: {
 	auto rebind = static_cast<const AST::UseTreeRebind *> (tree);
-	flatten_rebind (*rebind, paths);
+	flatten_rebind (*rebind, rebind_paths);
 	break;
       }
       case AST::UseTree::List: {
 	auto list = static_cast<const AST::UseTreeList *> (tree);
-	flatten_list (*list, paths, glob_paths, ctx);
+	flatten_list (*list, paths, glob_paths, rebind_paths, ctx);
 	break;
       }
       case AST::UseTree::Glob: {
@@ -557,27 +656,11 @@ flatten (const AST::UseTree *tree, std::vector<AST::SimplePath> &paths,
 }
 
 static void
-flatten_rebind (const AST::UseTreeRebind &rebind,
-		std::vector<AST::SimplePath> &paths)
+flatten_rebind (
+  const AST::UseTreeRebind &rebind,
+  std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> &rebind_paths)
 {
-  auto path = rebind.get_path ();
-
-  // FIXME: Do we want to emplace the rebind here as well?
-  if (rebind.has_identifier ())
-    {
-      auto rebind_path = path;
-      auto new_seg = rebind.get_identifier ();
-
-      // Add the identifier as a new path
-      rebind_path.get_segments ().back ()
-	= AST::SimplePathSegment (new_seg.as_string (), UNDEF_LOCATION);
-
-      paths.emplace_back (rebind_path);
-    }
-  else
-    {
-      paths.emplace_back (path);
-    }
+  rebind_paths.emplace_back (rebind.get_path (), rebind);
 }
 
 /** Prefix a list of subpath
@@ -599,9 +682,27 @@ prefix_subpaths (AST::SimplePath prefix, std::vector<AST::SimplePath> subs,
 }
 
 static void
-flatten_list (const AST::UseTreeList &list, std::vector<AST::SimplePath> &paths,
-	      std::vector<AST::SimplePath> &glob_paths,
-	      NameResolutionContext &ctx)
+prefix_rebinds (
+  AST::SimplePath prefix,
+  std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> subs,
+  std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> &results)
+{
+  for (auto &sub : subs)
+    {
+      auto new_path = prefix;
+      std::copy (sub.first.get_segments ().begin (),
+		 sub.first.get_segments ().end (),
+		 std::back_inserter (new_path.get_segments ()));
+      results.emplace_back (std::make_pair (new_path, sub.second));
+    }
+}
+
+static void
+flatten_list (
+  const AST::UseTreeList &list, std::vector<AST::SimplePath> &paths,
+  std::vector<AST::SimplePath> &glob_paths,
+  std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> &rebind_paths,
+  NameResolutionContext &ctx)
 {
   auto prefix = AST::SimplePath::create_empty ();
   if (list.has_path ())
@@ -611,10 +712,13 @@ flatten_list (const AST::UseTreeList &list, std::vector<AST::SimplePath> &paths,
     {
       auto sub_paths = std::vector<AST::SimplePath> ();
       auto sub_globs = std::vector<AST::SimplePath> ();
-      flatten (tree.get (), sub_paths, sub_globs, ctx);
+      auto sub_rebinds
+	= std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> ();
+      flatten (tree.get (), sub_paths, sub_globs, sub_rebinds, ctx);
 
       prefix_subpaths (prefix, sub_paths, paths);
       prefix_subpaths (prefix, sub_globs, glob_paths);
+      prefix_rebinds (prefix, sub_rebinds, rebind_paths);
     }
 }
 
@@ -624,16 +728,6 @@ flatten_glob (const AST::UseTreeGlob &glob, std::vector<AST::SimplePath> &paths,
 {
   if (glob.has_path ())
     paths.emplace_back (glob.get_path ());
-
-  // (PE): Get path rib
-  auto rib = ctx.values.resolve_path (glob.get_path ().get_segments ())
-	       .and_then ([&] (Rib::Definition def) {
-		 return ctx.values.to_rib (def.get_node_id ());
-	       });
-  if (rib.has_value ())
-    {
-      auto value = rib.value ().get_values ();
-    }
 }
 
 void
@@ -641,13 +735,15 @@ TopLevel::visit (AST::UseDeclaration &use)
 {
   auto paths = std::vector<AST::SimplePath> ();
   auto glob_path = std::vector<AST::SimplePath> ();
+  auto rebind_path
+    = std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> ();
 
   // FIXME: How do we handle `use foo::{self}` imports? Some beforehand cleanup?
   // How do we handle module imports in general? Should they get added to all
   // namespaces?
 
   const auto &tree = use.get_tree ();
-  flatten (tree.get (), paths, glob_path, this->ctx);
+  flatten (tree.get (), paths, glob_path, rebind_path, this->ctx);
 
   for (auto &path : paths)
     if (!handle_use_dec (path))
@@ -658,6 +754,12 @@ TopLevel::visit (AST::UseDeclaration &use)
     if (!handle_use_glob (glob))
       rust_error_at (glob.get_final_segment ().get_locus (), ErrorCode::E0433,
 		     "unresolved import %qs", glob.as_string ().c_str ());
+
+  for (auto &rebind : rebind_path)
+    if (!handle_rebind (rebind))
+      rust_error_at (rebind.first.get_final_segment ().get_locus (),
+		     ErrorCode::E0433, "unresolved import %qs",
+		     rebind.first.as_string ().c_str ());
 }
 
 } // namespace Resolver2_0

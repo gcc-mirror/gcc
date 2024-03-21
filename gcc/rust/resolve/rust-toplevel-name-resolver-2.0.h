@@ -108,8 +108,9 @@ private:
   // Call this on all the paths of a UseDec - so each flattened path in a
   // UseTreeList for example
   // FIXME: Should that return `found`?
-  bool handle_use_dec (AST::SimplePath path);
-  bool handle_use_glob (AST::SimplePath glob);
+  bool handle_use_dec (AST::SimplePath &path);
+  bool handle_use_glob (AST::SimplePath &glob);
+  bool handle_rebind (std::pair<AST::SimplePath, AST::UseTreeRebind> &pair);
 
   void visit (AST::UseDeclaration &use) override;
 };
