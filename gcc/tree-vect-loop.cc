@@ -8730,7 +8730,7 @@ vect_peel_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
 	wi::to_mpz (skipn, exp, UNSIGNED);
 	mpz_ui_pow_ui (mod, 2, TYPE_PRECISION (type));
 	mpz_powm (res, base, exp, mod);
-	begin = wi::from_mpz (type, res, TYPE_SIGN (type));
+	begin = wi::from_mpz (utype, res, true);
 	tree mult_expr = wide_int_to_tree (utype, begin);
 	init_expr = gimple_build (stmts, MULT_EXPR, utype,
 				  init_expr, mult_expr);
