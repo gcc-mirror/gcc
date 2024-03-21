@@ -985,7 +985,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // DR 1189.
       // reserve, if present, comes from _Rehash_base.
 
-#if __cplusplus > 201402L
+#if __cplusplus > 201404L
       /// Re-insert an extracted node into a container with unique keys.
       insert_return_type
       _M_reinsert_node(node_type&& __nh)
@@ -1010,7 +1010,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      {
 		__ret.position
 		  = _M_insert_unique_node(__bkt, __code, __nh._M_ptr);
-		__nh._M_ptr = nullptr;
+		__nh.release();
 		__ret.inserted = true;
 	      }
 	  }
@@ -1030,7 +1030,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto __code = this->_M_hash_code(__k);
 	auto __ret
 	  = _M_insert_multi_node(__hint._M_cur, __code, __nh._M_ptr);
-	__nh._M_ptr = nullptr;
+	__nh.release();
 	return __ret;
       }
 
@@ -1112,7 +1112,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		{
 		  auto __nh = __src.extract(__pos);
 		  _M_insert_unique_node(__bkt, __code, __nh._M_ptr, __n_elt);
-		  __nh._M_ptr = nullptr;
+		  __nh.release();
 		  __n_elt = 1;
 		}
 	      else if (__n_elt != 1)
@@ -1139,7 +1139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		= _M_src_hash_code(__src.hash_function(), __k, *__pos._M_cur);
 	      auto __nh = __src.extract(__pos);
 	      __hint = _M_insert_multi_node(__hint, __code, __nh._M_ptr)._M_cur;
-	      __nh._M_ptr = nullptr;
+	      __nh.release();
 	    }
 	}
 #endif // C++17
