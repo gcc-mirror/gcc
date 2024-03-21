@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* Verify that atomic op mappings match the Ztso suggested mapping.  */
 /* { dg-options "-O3" } */
+/* { dg-add-options riscv_a } */
 /* { dg-add-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
 /* { dg-final { check-function-bodies "**" "" } } */

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* Verify that subword atomic op mappings match the Ztso suggested mapping.  */
+/* { dg-add-options riscv_a } */
 /* { dg-add-options riscv_ztso } */
 /* { dg-final { scan-assembler-times "lr.w.aqrl\t" 1 } } */
 /* { dg-final { scan-assembler-times "sc.w.rl\t" 1 } } */
