@@ -3850,6 +3850,8 @@ void gfc_module_done_2 (void);
 void gfc_dump_module (const char *, int);
 bool gfc_check_symbol_access (gfc_symbol *);
 void gfc_free_use_stmts (gfc_use_list *);
+void gfc_save_module_list ();
+void gfc_restore_old_module_list ();
 const char *gfc_dt_lower_string (const char *);
 const char *gfc_dt_upper_string (const char *);
 

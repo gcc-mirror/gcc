@@ -1609,6 +1609,7 @@ next_statement (void)
   locus old_locus;
 
   gfc_enforce_clean_symbol_state ();
+  gfc_save_module_list ();
 
   gfc_new_block = NULL;
 
@@ -2900,6 +2901,9 @@ reject_statement (void)
   gfc_current_ns->equiv = gfc_current_ns->old_equiv;
 
   gfc_reject_data (gfc_current_ns);
+
+  /* Don't queue use-association of a module if we reject the use statement.  */
+  gfc_restore_old_module_list ();
 
   gfc_new_block = NULL;
   gfc_undo_symbols ();

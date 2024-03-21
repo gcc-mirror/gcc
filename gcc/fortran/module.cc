@@ -195,7 +195,12 @@ static const char *module_name;
 /* The name of the .smod file that the submodule will write to.  */
 static const char *submodule_name;
 
+/* The list of use statements to apply to the current namespace
+   before parsing the non-use statements.  */
 static gfc_use_list *module_list;
+/* The end of the MODULE_LIST list above at the time the recognition
+   of the current statement started.  */
+static gfc_use_list **old_module_list_tail;
 
 /* If we're reading an intrinsic module, this is its ID.  */
 static intmod_id current_intmod;
@@ -7542,6 +7547,8 @@ gfc_use_modules (void)
       gfc_use_module (module_list);
       free (module_list);
     }
+  module_list = NULL;
+  old_module_list_tail = &module_list;
   gfc_rename_list = NULL;
 }
 
@@ -7562,6 +7569,30 @@ gfc_free_use_stmts (gfc_use_list *use_stmts)
       next = use_stmts->next;
       free (use_stmts);
     }
+}
+
+
+/* Remember the end of the MODULE_LIST list, so that the list can be restored
+   to its previous state if the current statement is erroneous.  */
+
+void
+gfc_save_module_list ()
+{
+  gfc_use_list **tail = &module_list;
+  while (*tail != NULL)
+    tail = &(*tail)->next;
+  old_module_list_tail = tail;
+}
+
+
+/* Restore the MODULE_LIST list to its previous value and free the use
+   statements that are no longer part of the list.  */
+
+void
+gfc_restore_old_module_list ()
+{
+  gfc_free_use_stmts (*old_module_list_tail);
+  *old_module_list_tail = NULL;
 }
 
 
