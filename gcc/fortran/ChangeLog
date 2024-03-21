@@ -1,3 +1,18 @@
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-array.cc (structure_alloc_comps): Use integer_zero_node
+	instead of build_zero_cst (integer_type_node) or
+	build_int_cst (integer_type_node, 0) and integer_one_node instead of
+	build_int_cst (integer_type_node, 1).
+	* trans-expr.cc (conv_scalar_char_value): Likewise.
+	* trans-stmt.cc (gfc_trans_form_team, gfc_trans_change_team,
+	gfc_trans_sync_team, gfc_trans_sync): Likewise.
+	* trans-decl.cc (create_main_function): Likewise.
+	* trans-intrinsic.cc (trans_this_image, conv_intrinsic_move_alloc):
+	Likewise.
+	* trans.cc (gfc_allocate_using_caf_lib, gfc_deallocate_with_status):
+	Likewise.
+
 2024-03-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103715

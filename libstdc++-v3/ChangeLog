@@ -1,3 +1,8 @@
+2024-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/version.def (null_iterators): Remove extra_cond.
+	* include/bits/version.h: Regenerate.
+
 2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/114359

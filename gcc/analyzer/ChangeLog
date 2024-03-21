@@ -1,3 +1,24 @@
+2024-03-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109251
+	* sm-malloc.cc (deref_before_check::emit): Reject cases where the
+	check is in a loop header within a macro expansion.
+	(deref_before_check::loop_header_p): New.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* constraint-manager.cc (test_range, test_constraint_conditions,
+	test_constant_comparisons, test_constraint_impl, test_purging,
+	test_bits): Use integer_zero_node instead of
+	build_zero_cst (integer_type_node) or
+	build_int_cst (integer_type_node, 0) and integer_one_node instead of
+	build_int_cst (integer_type_node, 1).
+	* region-model.cc (region_model::get_store_value,
+	append_interesting_constants, test_array_1,
+	test_get_representative_tree, test_unique_constants, test_assignment,
+	test_stack_frames, test_constraint_merging, test_widening_constraints,
+	test_iteration_1, test_array_2): Likewise.
+
 2024-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR analyzer/113505

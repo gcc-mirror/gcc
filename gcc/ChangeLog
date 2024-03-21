@@ -1,3 +1,169 @@
+2024-03-20  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/core-builtins.cc (bpf_core_get_index): Check if
+	field contains a DECL_NAME.
+
+2024-03-20  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/btfext-out.cc (cpf_core_reloc_add): Correct for new code.
+	Add assert to validate the string is set.
+	* config/bpf/core-builtins.cc (cr_final): Make string struct
+	field as const.
+	(process_enum_value): Correct for field type change.
+	(process_type): Set access string to "0".
+
+2024-03-20  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/core-builtins.cc (core_field_info): Add
+	support for POINTER_PLUS_EXPR in the root of the field expression.
+	(bpf_core_get_index): Likewise.
+	(pack_field_expr): Make the BTF type to point to the structure
+	related node, instead of its pointer type.
+	(make_core_safe_access_index): Correct to new code.
+
+2024-03-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/114407
+	* config/loongarch/loongarch-opts.cc (loongarch_config_target):
+	Fix typo in diagnostic message, enabing -> enabling.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/visium/visium.cc (visium_setup_incoming_varargs): Only skip
+	TARGET_FUNCTION_ARG_ADVANCE for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/nios2/nios2.cc (nios2_setup_incoming_varargs): Only skip
+	nios2_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/nds32/nds32.cc (nds32_setup_incoming_varargs): Only skip
+	function arg advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/m32r/m32r.cc (m32r_setup_incoming_varargs): Only skip
+	function arg advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/ft32/ft32.cc (ft32_setup_incoming_varargs): Only skip
+	function arg advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/epiphany/epiphany.cc (epiphany_setup_incoming_varargs): Only
+	skip function arg advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/csky/csky.cc (csky_setup_incoming_varargs): Only skip
+	csky_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-20  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: Copy from Binutils.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114365
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_load): When adding
+	a PHI node, set iv2 to its result afterwards.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-loop-ch.cc (update_profile_after_ch): Fix comment typo:
+	probabbility -> probability.
+	(ch_base::copy_headers): Fix comment typo: itrations -> iterations.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/114369
+	* system.h (vec_step): Define to vec_step_ when compiling
+	with clang on PowerPC.
+
+2024-03-20  demin.han  <demin.han@starfivetech.com>
+
+	PR target/112651
+	* config/riscv/riscv-opts.h (enum riscv_autovec_lmul_enum): Rename
+	(enum rvv_max_lmul_enum): Ditto
+	(TARGET_MAX_LMUL): Ditto
+	* config/riscv/riscv-v.cc (preferred_simd_mode): Ditto
+	* config/riscv/riscv-vector-costs.cc (costs::record_potential_unexpected_spills): Ditto
+	(costs::better_main_loop_than_p): Ditto
+	* config/riscv/riscv.opt: Replace -param=riscv-autovec-lmul with -mrvv-max-lmul
+
+2024-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113396
+	* tree-dfa.cc (get_ref_base_and_extent): Use index range
+	bounds only if they fit within the address-range constraints
+	of offset_int.
+
+2024-03-20  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_hard_regno_mode_ok_uncached): Combine UNITS_PER_FP_REG and
+	UNITS_PER_FPREG macros.
+	(loongarch_hard_regno_nregs): Ditto.
+	(loongarch_class_max_nregs): Ditto.
+	(loongarch_get_separate_components): Ditto.
+	(loongarch_process_components): Ditto.
+	* config/loongarch/loongarch.h (UNITS_PER_FPREG): Ditto.
+	(UNITS_PER_HWFPVALUE): Ditto.
+	(UNITS_PER_FPVALUE): Ditto.
+
+2024-03-20  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_cmp<mode><mode256_i>): Remove checking
+	of loongarch_expand_vec_cmp()'s return value.
+	(vec_cmpu<ILASX:mode><mode256_i>): Ditto.
+	* config/loongarch/lsx.md (vec_cmp<mode><mode_i>): Ditto.
+	(vec_cmpu<ILSX:mode><mode_i>): Ditto.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_expand_vec_cmp): Change loongarch_expand_vec_cmp()'s return
+	type from bool to void.
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_cmp): Ditto.
+
+2024-03-20  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* config/loongarch/loongarch-protos.h
+	(loongarch_cfun_has_cprestore_slot_p): Delete.
+	(loongarch_adjust_insn_length): Delete.
+	(current_section_name): Delete.
+	(loongarch_split_symbol_type): Delete.
+	* config/loongarch/loongarch.cc
+	(loongarch_case_values_threshold): Delete.
+	(loongarch_spill_class): Delete.
+	(TARGET_OPTAB_SUPPORTED_P): Delete.
+	(TARGET_CASE_VALUES_THRESHOLD): Delete.
+	(TARGET_SPILL_CLASS): Delete.
+
+2024-03-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/111918
+	* diagnostic-core.h (enum diagnostic_t): Add DK_ANY special flag.
+	* diagnostic.cc (diagnostic_option_classifier::classify_diagnostic):
+	Make use of DK_ANY to indicate a diagnostic was initially enabled.
+	(diagnostic_context::diagnostic_enabled): Do not change the type of
+	a diagnostic if the saved classification is type DK_ANY.
+
 2024-03-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/108802

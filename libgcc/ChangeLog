@@ -1,3 +1,7 @@
+2024-03-20  Flavio Cruz  <flaviocruz@gmail.com>
+
+	* config/i386/gnu-unwind.h: Support unwinding x86_64 signal frames.
+
 2024-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/114327

@@ -1,3 +1,9 @@
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* coroutines.cc (expand_one_await_expression): Use
+	integer_zero_node instead of build_int_cst (integer_type_node, 0)
+	and integer_one_node instead of build_int_cst (integer_type_node, 1).
+
 2024-03-19  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* cp-tree.h (module_maybe_has_cmi_p): New function.
