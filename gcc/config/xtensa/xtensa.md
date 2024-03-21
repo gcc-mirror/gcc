@@ -194,6 +194,20 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
+(define_split
+  [(set (match_operand:SI 0 "register_operand")
+	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand")
+			    (match_operand:SI 3 "addsubx_operand"))
+		 (match_operand:SI 2 "const_int_operand")))]
+  "TARGET_ADDX && can_create_pseudo_p ()"
+  [(set (match_dup 0)
+	(plus:SI (ashift:SI (match_dup 1)
+			    (match_dup 3))
+		 (match_dup 2)))]
+{
+  operands[2] = force_reg (SImode, operands[2]);
+})
+
 (define_expand "adddi3"
   [(set (match_operand:DI 0 "register_operand")
 	(plus:DI (match_operand:DI 1 "register_operand")
