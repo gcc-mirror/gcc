@@ -140,6 +140,9 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__riscv_vector");
       builtin_define_with_int_value ("__riscv_v_intrinsic",
 				     riscv_ext_version_value (0, 12));
+
+      if (rvv_vector_bits == RVV_VECTOR_BITS_ZVL)
+	builtin_define_with_int_value ("__riscv_v_fixed_vlen", TARGET_MIN_VLEN);
     }
 
   if (TARGET_XTHEADVECTOR)

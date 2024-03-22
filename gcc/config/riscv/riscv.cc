@@ -552,6 +552,8 @@ static const struct riscv_tune_param optimize_size_tune_info = {
 static bool riscv_avoid_shrink_wrapping_separate ();
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
+static tree riscv_handle_rvv_vector_bits_attribute (tree *, tree, tree, int,
+						    bool *);
 
 /* Defining target-specific uses of __attribute__.  */
 static const attribute_spec riscv_gnu_attributes[] =
@@ -574,7 +576,17 @@ static const attribute_spec riscv_gnu_attributes[] =
   /* This attribute is used to declare a function, forcing it to use the
     standard vector calling convention variant. Syntax:
     __attribute__((riscv_vector_cc)). */
-  {"riscv_vector_cc", 0, 0, false, true, true, true, NULL, NULL}
+  {"riscv_vector_cc", 0, 0, false, true, true, true, NULL, NULL},
+  /* This attribute is used to declare a new type, to appoint the exactly
+     bits size of the type.  For example:
+
+     typedef vint8m1_t f_vint8m1_t __attribute__((riscv_rvv_vector_bits(256)));
+
+     The new created type f_vint8m1_t will be exactly 256 bits.  It can be
+     be used in globals, structs, unions, and arrays instead of sizeless
+     types.  */
+  {"riscv_rvv_vector_bits", 1, 1, false, true, false, true,
+   riscv_handle_rvv_vector_bits_attribute, NULL},
 };
 
 static const scoped_attribute_specs riscv_gnu_attribute_table  =
@@ -587,7 +599,17 @@ static const attribute_spec riscv_attributes[] =
   /* This attribute is used to declare a function, forcing it to use the
      standard vector calling convention variant. Syntax:
      [[riscv::vector_cc]]. */
-  {"vector_cc", 0, 0, false, true, true, true, NULL, NULL}
+  {"vector_cc", 0, 0, false, true, true, true, NULL, NULL},
+  /* This attribute is used to declare a new type, to appoint the exactly
+     bits size of the type.  For example:
+
+     typedef vint8m1_t f_vint8m1_t __attribute__((riscv_rvv_vector_bits(256)));
+
+     The new created type f_vint8m1_t will be exactly 256 bits.  It can be
+     be used in globals, structs, unions, and arrays instead of sizeless
+     types.  */
+  {"rvv_vector_bits", 1, 1, false, true, false, true,
+   riscv_handle_rvv_vector_bits_attribute, NULL},
 };
 
 static const scoped_attribute_specs riscv_nongnu_attribute_table =
@@ -5569,6 +5591,67 @@ riscv_handle_type_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 	    }
 	}
     }
+
+  return NULL_TREE;
+}
+
+static tree
+riscv_handle_rvv_vector_bits_attribute (tree *node, tree name, tree args,
+					ATTRIBUTE_UNUSED int flags,
+					bool *no_add_attrs)
+{
+  if (!is_attribute_p ("riscv_rvv_vector_bits", name))
+    return NULL_TREE;
+
+  *no_add_attrs = true;
+
+  if (rvv_vector_bits != RVV_VECTOR_BITS_ZVL)
+    {
+      error (
+	"%qs is only supported when %<-mrvv-vector-bits=zvl%> is specified",
+	"riscv_rvv_vector_bits");
+      return NULL_TREE;
+    }
+
+  tree type = *node;
+
+  if (!VECTOR_TYPE_P (type) || !riscv_vector::builtin_type_p (type))
+    {
+      error ("%qs applied to non-RVV type %qT", "riscv_rvv_vector_bits", type);
+      return NULL_TREE;
+    }
+
+  tree size = TREE_VALUE (args);
+
+  if (TREE_CODE (size) != INTEGER_CST)
+    {
+      error ("%qs requires an integer constant", "riscv_rvv_vector_bits");
+      return NULL_TREE;
+    }
+
+  unsigned HOST_WIDE_INT args_in_bits = tree_to_uhwi (size);
+  unsigned HOST_WIDE_INT type_mode_bits
+    = GET_MODE_PRECISION (TYPE_MODE (type)).to_constant ();
+
+  if (args_in_bits != type_mode_bits)
+    {
+      error ("invalid RVV vector size %qd, "
+	     "expected size is %qd based on LMUL of type and %qs",
+	     (int)args_in_bits, (int)type_mode_bits, "-mrvv-vector-bits=zvl");
+      return NULL_TREE;
+    }
+
+  type = build_distinct_type_copy (type);
+  TYPE_ATTRIBUTES (type)
+    = remove_attribute ("RVV sizeless type",
+			copy_list (TYPE_ATTRIBUTES (type)));
+
+  /* The operations like alu/cmp on vbool*_t is not well defined,
+     continue to treat vbool*_t as indivisible.  */
+  if (!VECTOR_BOOLEAN_TYPE_P (type))
+    TYPE_INDIVISIBLE_P (type) = 0;
+
+  *node = type;
 
   return NULL_TREE;
 }
