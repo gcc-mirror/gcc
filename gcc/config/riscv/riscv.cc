@@ -5393,7 +5393,15 @@ riscv_expand_prologue (void)
       /* Second step for constant frame.  */
       HOST_WIDE_INT constant_frame = size.to_constant ();
       if (constant_frame == 0)
-	return;
+	{
+	  /* We must have allocated stack space for the scalable frame.
+	     Emit a stack tie if we have a frame pointer so that the
+	     allocation is ordered WRT fp setup and subsequent writes
+	     into the frame.  */
+	  if (frame_pointer_needed)
+	    riscv_emit_stack_tie ();
+	  return;
+	}
 
       if (SMALL_OPERAND (-constant_frame))
 	{
@@ -5413,6 +5421,13 @@ riscv_expand_prologue (void)
 	  insn = gen_rtx_SET (stack_pointer_rtx, insn);
 	  riscv_set_frame_expr (insn);
 	}
+
+      /* We must have allocated the remainder of the stack frame.
+	 Emit a stack tie if we have a frame pointer so that the
+	 allocation is ordered WRT fp setup and subsequent writes
+	 into the frame.  */
+      if (frame_pointer_needed)
+	riscv_emit_stack_tie ();
     }
 }
 
