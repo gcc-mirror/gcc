@@ -12172,7 +12172,7 @@ BEGIN
    IF type = NulSym
    THEN
       MetaErrorT0 (tokcbrpos,
-                   '{%E}constructor requires a type before the opening {')
+                   '{%E}constructor requires a type before the opening %{')
    ELSE
       ChangeToConstructor (tok, type) ;
       PutConstructorFrom (constValue, type) ;
