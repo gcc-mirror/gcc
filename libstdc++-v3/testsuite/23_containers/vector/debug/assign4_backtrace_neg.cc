@@ -1,6 +1,6 @@
 // { dg-do run { xfail *-*-* } }
 // { dg-options "-D_GLIBCXX_DEBUG_BACKTRACE -lstdc++exp" }
-// { dg-require-effective-target stacktrace }
+// { dg-require-cpp-feature-test __cpp_lib_stacktrace }
 
 #include <debug/vector>
 #include <debug/checks.h>
