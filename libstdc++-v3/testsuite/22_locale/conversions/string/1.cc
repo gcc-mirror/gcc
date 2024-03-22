@@ -29,6 +29,7 @@ struct cvt : std::codecvt<Elem, char, std::mbstate_t> { };
 
 template<typename Elem>
 using str_conv = std::wstring_convert<cvt<Elem>, Elem>;
+// { dg-warning "deprecated" "" { target c++17 } 31 }
 
 using std::string;
 using std::wstring;

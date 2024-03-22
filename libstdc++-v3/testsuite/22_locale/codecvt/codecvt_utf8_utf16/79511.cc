@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// { dg-additional-options "-Wno-deprecated-declarations" { target c++17 } }
 
 #include <locale>
 #include <codecvt>
