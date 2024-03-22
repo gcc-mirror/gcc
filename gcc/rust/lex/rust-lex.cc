@@ -128,13 +128,13 @@ is_non_decimal_int_literal_separator (uint32_t character)
 bool
 is_identifier_start (uint32_t codepoint)
 {
-  return (check_xid_property (codepoint) & XID_START) || codepoint == '_';
+  return (cpp_check_xid_property (codepoint) & CPP_XID_START) || codepoint == '_';
 }
 
 bool
 is_identifier_continue (uint32_t codepoint)
 {
-  return check_xid_property (codepoint) & XID_CONTINUE;
+  return cpp_check_xid_property (codepoint) & CPP_XID_CONTINUE;
 }
 
 Lexer::Lexer (const std::string &input, Linemap *linemap)

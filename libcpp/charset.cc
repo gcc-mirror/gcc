@@ -1334,16 +1334,16 @@ _cpp_uname2c_uax44_lm2 (const char *name, size_t len, char *canon_name)
 
 /* Returns flags representing the XID properties of the given codepoint.  */
 unsigned int
-check_xid_property (cppchar_t c)
+cpp_check_xid_property (cppchar_t c)
 {
   // fast path for ASCII
   if (c < 0x80)
-  {
-    if (('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z'))
-  return XID_START | XID_CONTINUE;
-    if (('0' <= c && c <= '9') || c == '_')
-  return XID_CONTINUE;
-  }
+    {
+      if (('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z'))
+	return CPP_XID_START | CPP_XID_CONTINUE;
+      if (('0' <= c && c <= '9') || c == '_')
+	return CPP_XID_CONTINUE;
+    }
 
   if (c > UCS_LIMIT)
     return 0;
@@ -1355,17 +1355,17 @@ check_xid_property (cppchar_t c)
     {
       md = (mn + mx) / 2;
       if (c <= ucnranges[md].end)
-  mx = md;
+	mx = md;
       else
-  mn = md + 1;
+	mn = md + 1;
     }
 
   unsigned short flags = ucnranges[mn].flags;
 
   if (flags & CXX23)
-    return XID_START | XID_CONTINUE;
+    return CPP_XID_START | CPP_XID_CONTINUE;
   if (flags & NXX23)
-    return XID_CONTINUE;
+    return CPP_XID_CONTINUE;
   return 0;
 }
 

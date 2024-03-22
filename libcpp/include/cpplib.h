@@ -1631,11 +1631,11 @@ bool cpp_valid_utf8_p (const char *data, size_t num_bytes);
 bool cpp_is_combining_char (cppchar_t c);
 bool cpp_is_printable_char (cppchar_t c);
 
-enum {
-   XID_START = 1,
-   XID_CONTINUE = 2
+enum cpp_xid_property {
+  CPP_XID_START = 1,
+  CPP_XID_CONTINUE = 2
 };
 
-unsigned int check_xid_property (cppchar_t c);
+unsigned int cpp_check_xid_property (cppchar_t c);
 
 #endif /* ! LIBCPP_CPPLIB_H */
