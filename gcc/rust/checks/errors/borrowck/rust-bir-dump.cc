@@ -1,4 +1,4 @@
-#include <numeric>
+#include "rust-system.h"
 #include "rust-bir-dump.h"
 #include "rust-diagnostics.h"
 

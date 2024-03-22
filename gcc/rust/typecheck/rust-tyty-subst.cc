@@ -18,7 +18,7 @@
 
 #include "rust-tyty-subst.h"
 
-#include <utility>
+#include "rust-system.h"
 #include "rust-tyty.h"
 #include "rust-hir-type-check.h"
 #include "rust-substitution-mapper.h"
