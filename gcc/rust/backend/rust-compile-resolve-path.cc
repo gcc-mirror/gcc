@@ -17,14 +17,17 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-resolve-path.h"
+#include "options.h"
 #include "rust-compile-intrinsic.h"
 #include "rust-compile-item.h"
 #include "rust-compile-implitem.h"
 #include "rust-compile-expr.h"
+#include "rust-hir-map.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
 #include "rust-compile-extern.h"
 #include "rust-constexpr.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Compile {
@@ -44,6 +47,50 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 }
 
 tree
+ResolvePathRef::attempt_constructor_expression_lookup (
+  TyTy::BaseType *lookup, Context *ctx, const Analysis::NodeMapping &mappings,
+  location_t expr_locus)
+{
+  // it might be an enum data-less enum variant
+  if (lookup->get_kind () != TyTy::TypeKind::ADT)
+    return error_mark_node;
+
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
+  if (adt->is_unit ())
+    return unit_expression (ctx, expr_locus);
+
+  if (!adt->is_enum ())
+    return error_mark_node;
+
+  HirId variant_id;
+  if (!ctx->get_tyctx ()->lookup_variant_definition (mappings.get_hirid (),
+						     &variant_id))
+    return error_mark_node;
+
+  int union_disriminator = -1;
+  TyTy::VariantDef *variant = nullptr;
+  if (!adt->lookup_variant_by_id (variant_id, &variant, &union_disriminator))
+    return error_mark_node;
+
+  // this can only be for discriminant variants the others are built up
+  // using call-expr or struct-init
+  rust_assert (variant->get_variant_type ()
+	       == TyTy::VariantDef::VariantType::NUM);
+
+  // we need the actual gcc type
+  tree compiled_adt_type = TyTyResolveCompile::compile (ctx, adt);
+
+  // make the ctor for the union
+  HIR::Expr *discrim_expr = variant->get_discriminant ();
+  tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
+  tree folded_discrim_expr = fold_expr (discrim_expr_node);
+  tree qualifier = folded_discrim_expr;
+
+  return Backend::constructor_expression (compiled_adt_type, true, {qualifier},
+					  union_disriminator, expr_locus);
+}
+
+tree
 ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 			 const Analysis::NodeMapping &mappings,
 			 location_t expr_locus, bool is_qualified_path)
@@ -53,52 +100,29 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
   rust_assert (ok);
 
   // need to look up the reference for this identifier
+
+  // this can fail because it might be a Constructor for something
+  // in that case the caller should attempt ResolvePathType::Compile
   NodeId ref_node_id = UNKNOWN_NODEID;
-  if (!ctx->get_resolver ()->lookup_resolved_name (mappings.get_nodeid (),
-						   &ref_node_id))
+  if (flag_name_resolution_2_0)
     {
-      // this can fail because it might be a Constructor for something
-      // in that case the caller should attempt ResolvePathType::Compile
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      // it might be an enum data-less enum variant
-      if (lookup->get_kind () != TyTy::TypeKind::ADT)
-	return error_mark_node;
+      auto resolved = nr_ctx.lookup (mappings.get_nodeid ());
 
-      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
-      if (adt->is_unit ())
-	return unit_expression (ctx, expr_locus);
+      if (!resolved)
+	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
+						      expr_locus);
 
-      if (!adt->is_enum ())
-	return error_mark_node;
-
-      HirId variant_id;
-      if (!ctx->get_tyctx ()->lookup_variant_definition (mappings.get_hirid (),
-							 &variant_id))
-	return error_mark_node;
-
-      int union_disriminator = -1;
-      TyTy::VariantDef *variant = nullptr;
-      if (!adt->lookup_variant_by_id (variant_id, &variant,
-				      &union_disriminator))
-	return error_mark_node;
-
-      // this can only be for discriminant variants the others are built up
-      // using call-expr or struct-init
-      rust_assert (variant->get_variant_type ()
-		   == TyTy::VariantDef::VariantType::NUM);
-
-      // we need the actual gcc type
-      tree compiled_adt_type = TyTyResolveCompile::compile (ctx, adt);
-
-      // make the ctor for the union
-      HIR::Expr *discrim_expr = variant->get_discriminant ();
-      tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
-      tree folded_discrim_expr = fold_expr (discrim_expr_node);
-      tree qualifier = folded_discrim_expr;
-
-      return Backend::constructor_expression (compiled_adt_type, true,
-					      {qualifier}, union_disriminator,
-					      expr_locus);
+      ref_node_id = *resolved;
+    }
+  else
+    {
+      if (!ctx->get_resolver ()->lookup_resolved_name (mappings.get_nodeid (),
+						       &ref_node_id))
+	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
+						      expr_locus);
     }
 
   HirId ref;
