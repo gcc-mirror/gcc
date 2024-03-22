@@ -1823,6 +1823,16 @@
 #endif /* !defined(__cpp_lib_forward_like) && defined(__glibcxx_want_forward_like) */
 #undef __glibcxx_want_forward_like
 
+#if !defined(__cpp_lib_generator)
+# if (__cplusplus >= 202100L) && (__glibcxx_coroutine)
+#  define __glibcxx_generator 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_generator)
+#   define __cpp_lib_generator 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_generator) && defined(__glibcxx_want_generator) */
+#undef __glibcxx_want_generator
+
 #if !defined(__cpp_lib_ios_noreplace)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_ios_noreplace 202207L
@@ -1913,6 +1923,16 @@
 #endif /* !defined(__cpp_lib_to_underlying) && defined(__glibcxx_want_to_underlying) */
 #undef __glibcxx_want_to_underlying
 
+#if !defined(__cpp_lib_tuple_like)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_tuple_like 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_tuple_like)
+#   define __cpp_lib_tuple_like 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_tuple_like) && defined(__glibcxx_want_tuple_like) */
+#undef __glibcxx_want_tuple_like
+
 #if !defined(__cpp_lib_unreachable)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_unreachable 202202L
@@ -1972,25 +1992,5 @@
 # endif
 #endif /* !defined(__cpp_lib_to_string) && defined(__glibcxx_want_to_string) */
 #undef __glibcxx_want_to_string
-
-#if !defined(__cpp_lib_generator)
-# if (__cplusplus >= 202100L) && (__glibcxx_coroutine)
-#  define __glibcxx_generator 202207L
-#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_generator)
-#   define __cpp_lib_generator 202207L
-#  endif
-# endif
-#endif /* !defined(__cpp_lib_generator) && defined(__glibcxx_want_generator) */
-#undef __glibcxx_want_generator
-
-#if !defined(__cpp_lib_tuple_like)
-# if (__cplusplus >= 202100L)
-#  define __glibcxx_tuple_like 202207L
-#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_tuple_like)
-#   define __cpp_lib_tuple_like 202207L
-#  endif
-# endif
-#endif /* !defined(__cpp_lib_tuple_like) && defined(__glibcxx_want_tuple_like) */
-#undef __glibcxx_want_tuple_like
 
 #undef __glibcxx_want_all
