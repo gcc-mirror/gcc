@@ -1,5 +1,5 @@
-/* { dg-do run } */
-/* { dg-options "-O1 -fwrapv -fno-vect-cost-model" } */
+/* PR tree-optimization/114396 */
+/* { dg-additional-options "-fwrapv -fno-vect-cost-model" } */
 
 short a = 0xF;
 short b[16];
@@ -88,7 +88,7 @@ int main() {
 
   exp = foo1 (a);
   res = foo1_o3 (a);
-  if (uexp != ures)
+  if (exp != res)
     __builtin_abort ();
 
   uexp = foou (a);
