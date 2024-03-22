@@ -277,6 +277,15 @@ proc dg-require-target-fs-lwt { args } {
     return
 }
 
+proc dg-require-cpp-feature-test { n args } {
+    if { ![ check_v3_target_cpp_feature_test $args ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
 proc add_options_for_no_pch { flags } {
     # Remove any inclusion of bits/stdc++.h from the options.
     regsub -all -- "-include bits/stdc...h" $flags "" flags

@@ -1,4 +1,5 @@
 // { dg-do run { target c++26 } }
+// { dg-require-cpp-feature-test "__cpp_lib_text_encoding" }
 
 #include <text_encoding>
 #include <string_view>

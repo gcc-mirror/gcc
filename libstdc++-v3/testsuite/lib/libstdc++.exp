@@ -1134,6 +1134,21 @@ proc v3_check_preprocessor_condition { name cond { inc "" } } {
     return [v3_try_preprocess name $code $flags]
 }
 
+# Return 1 if libstdc++ defines macro for the current target, 0 otherwise.
+proc check_v3_target_cpp_feature_test { cond } {
+    global cxxflags
+    set cxxflags_saved $cxxflags
+    # Use the latest standard, so that all feature test macros are defined.
+    # We need to do it here, because this check happens before v3-dg-runtest
+    # runs its loop to test multiple times with different -std options.
+    # This should be updated when a new -std is added.
+    set cxxflags "$cxxflags -std=gnu++26"
+    set inc "#include <version>"
+    set result [v3_check_preprocessor_condition cpp_feature_test "$cond" $inc]
+    set cxxflags $cxxflags_saved
+    return $result
+}
+
 # Return 1 if Debug Mode is active, 0 otherwise.
 proc check_v3_target_debug_mode { } {
     global cxxflags

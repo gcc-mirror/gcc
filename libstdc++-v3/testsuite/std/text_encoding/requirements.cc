@@ -1,4 +1,5 @@
 // { dg-do compile { target c++26 } }
+// { dg-require-cpp-feature-test __cpp_lib_text_encoding }
 // { dg-add-options no_pch }
 
 #include <text_encoding>
