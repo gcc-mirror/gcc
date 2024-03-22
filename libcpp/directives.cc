@@ -2424,9 +2424,11 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
      until we've read all of the tokens that we want.  */
   cpp_push_buffer (pfile, (const uchar *) result, dest - result,
 		   /* from_stage3 */ true);
-  /* ??? Antique Disgusting Hack.  What does this do?  */
-  if (pfile->buffer->prev)
-    pfile->buffer->file = pfile->buffer->prev->file;
+
+  /* This is needed for _Pragma("once") and _Pragma("GCC system_header") to work
+     properly.  */
+  pfile->buffer->file = pfile->buffer->prev->file;
+  pfile->buffer->sysp = pfile->buffer->prev->sysp;
 
   start_directive (pfile);
   _cpp_clean_line (pfile);
@@ -2491,6 +2493,9 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
 
   /* Finish inlining run_directive.  */
   pfile->buffer->file = NULL;
+  /* If the system header state changed due to #pragma GCC system_header, then
+     make that applicable to the real buffer too.  */
+  pfile->buffer->prev->sysp = pfile->buffer->sysp;
   _cpp_pop_buffer (pfile);
 
   /* Reset the old macro state before ...  */
