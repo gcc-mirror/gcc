@@ -1,7 +1,7 @@
 ! { dg-do compile }
 ! { dg-additional-options "-O1" }
 
-subroutine ni (ps)
+subroutine ni (ps, inout)
     type vector
        real  x, y
     end type 

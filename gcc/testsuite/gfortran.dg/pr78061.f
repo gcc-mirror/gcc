@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-O3 -fsplit-loops" }
-      SUBROUTINE SSYMM(C)
+      SUBROUTINE SSYMM(C,LDC)
       REAL C(LDC,*)
       LOGICAL LSAME
       LOGICAL UPPER

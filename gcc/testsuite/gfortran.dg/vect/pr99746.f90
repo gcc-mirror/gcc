@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-additional-options "-march=armv8.3-a" { target aarch64-*-* } }
-SUBROUTINE CLAREF(A, WANTZ, Z, ICOL1, ITMP1, ITMP2, T1, T2, V2)
+SUBROUTINE CLAREF(A, WANTZ, Z, ICOL1, ITMP1, ITMP2, T1, T2, V2, LDA)
 LOGICAL            BLOCK, WANTZ
 COMPLEX            T1, T2, V2
 COMPLEX            A(LDA, *), VECS, Z(LDA, *)

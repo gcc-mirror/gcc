@@ -1,7 +1,7 @@
 ! { dg-do compile }
 ! { dg-options "-Ofast" }
 ! { dg-additional-options "-mavx2" { target avx2 } }
-   SUBROUTINE sfddagd( regime, znt, ite, jte )
+   SUBROUTINE sfddagd( regime, znt, ite, jte, ime, IN )
    REAL, DIMENSION( ime, IN) :: regime, znt
    REAL, DIMENSION( ite, jte) :: wndcor_u 
    LOGICAL wrf_dm_on_monitor
