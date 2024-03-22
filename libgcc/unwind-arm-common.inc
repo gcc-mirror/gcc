@@ -248,7 +248,7 @@ __gnu_personality_sigframe_fdpic (_Unwind_State state,
 	  + ARM_SIGCONTEXT_R0;
     /* Restore regs saved on stack by the kernel.  */
     for (i = 0; i < 16; i++)
-	_Unwind_VRS_Set (context, _UVRSC_CORE, i, _UVRSD_UINT32, sp + 4 * i);
+	_Unwind_VRS_Set (context, _UVRSC_CORE, i, _UVRSD_UINT32, (void *)(sp + 4 * i));
 
     return _URC_CONTINUE_UNWIND;
 }
