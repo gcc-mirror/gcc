@@ -66,6 +66,12 @@ public:
 		bool is_qualified_path);
 
   tree resolved;
+
+private:
+  tree
+  attempt_constructor_expression_lookup (TyTy::BaseType *lookup, Context *ctx,
+					 const Analysis::NodeMapping &mappings,
+					 location_t expr_locus);
 };
 
 } // namespace Compile
