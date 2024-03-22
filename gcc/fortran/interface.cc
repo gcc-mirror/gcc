@@ -3392,6 +3392,10 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       if (f->sym->ts.type == BT_CLASS)
 	goto skip_size_check;
 
+      /* Skip size check for NULL() actual without MOLD argument.  */
+      if (a->expr->expr_type == EXPR_NULL && a->expr->ts.type == BT_UNKNOWN)
+	goto skip_size_check;
+
       actual_size = get_expr_storage_size (a->expr);
       formal_size = get_sym_storage_size (f->sym);
       if (actual_size != 0 && actual_size < formal_size
