@@ -25,60 +25,73 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <assert.h>
+#include <string.h>
 #include "libgomp.h"
 
-#define splay_tree_prefix indirect
-#define splay_tree_c
-#include "splay-tree.h"
+struct indirect_map_t
+{
+  void *host_addr;
+  void *target_addr;
+};
 
-volatile void **GOMP_INDIRECT_ADDR_MAP = NULL;
+typedef struct indirect_map_t *hash_entry_type;
 
-/* Use a splay tree to lookup the target address instead of using a
-   linear search.  */
-#define USE_SPLAY_TREE_LOOKUP
+static inline void * htab_alloc (size_t size) { return gomp_malloc (size); }
+static inline void htab_free (void *ptr) { free (ptr); }
 
-#ifdef USE_SPLAY_TREE_LOOKUP
+#include "hashtab.h"
 
-static struct indirect_splay_tree_s indirect_map;
-static indirect_splay_tree_node indirect_array = NULL;
+static inline hashval_t
+htab_hash (hash_entry_type element)
+{
+  return hash_pointer (element->host_addr);
+}
 
-/* Build the splay tree used for host->target address lookups.  */
+static inline bool
+htab_eq (hash_entry_type x, hash_entry_type y)
+{
+  return x->host_addr == y->host_addr;
+}
+
+void **GOMP_INDIRECT_ADDR_MAP = NULL;
+
+/* Use a hashtab to lookup the target address instead of using a linear
+   search.  */
+#define USE_HASHTAB_LOOKUP
+
+#ifdef USE_HASHTAB_LOOKUP
+
+static htab_t indirect_htab = NULL;
+
+/* Build the hashtab used for host->target address lookups.  */
 
 void
 build_indirect_map (void)
 {
   size_t num_ind_funcs = 0;
-  volatile void **map_entry;
-  static int lock = 0; /* == gomp_mutex_t lock; gomp_mutex_init (&lock); */
+  void **map_entry;
 
   if (!GOMP_INDIRECT_ADDR_MAP)
     return;
 
-  gomp_mutex_lock (&lock);
-
-  if (!indirect_array)
+  if (!indirect_htab)
     {
       /* Count the number of entries in the NULL-terminated address map.  */
       for (map_entry = GOMP_INDIRECT_ADDR_MAP; *map_entry;
 	   map_entry += 2, num_ind_funcs++);
 
-      /* Build splay tree for address lookup.  */
-      indirect_array = gomp_malloc (num_ind_funcs * sizeof (*indirect_array));
-      indirect_splay_tree_node array = indirect_array;
+      /* Build hashtab for address lookup.  */
+      indirect_htab = htab_create (num_ind_funcs);
       map_entry = GOMP_INDIRECT_ADDR_MAP;
 
-      for (int i = 0; i < num_ind_funcs; i++, array++)
+      for (int i = 0; i < num_ind_funcs; i++, map_entry += 2)
 	{
-	  indirect_splay_tree_key k = &array->key;
-	  k->host_addr = (uint64_t) *map_entry++;
-	  k->target_addr = (uint64_t) *map_entry++;
-	  array->left = NULL;
-	  array->right = NULL;
-	  indirect_splay_tree_insert (&indirect_map, array);
+	  struct indirect_map_t element = { *map_entry, NULL };
+	  hash_entry_type *slot = htab_find_slot (&indirect_htab, &element,
+						  INSERT);
+	  *slot = (hash_entry_type) map_entry;
 	}
     }
-
-  gomp_mutex_unlock (&lock);
 }
 
 void *
@@ -88,15 +101,11 @@ GOMP_target_map_indirect_ptr (void *ptr)
   if (!ptr)
     return ptr;
 
-  assert (indirect_array);
+  assert (indirect_htab);
 
-  struct indirect_splay_tree_key_s k;
-  indirect_splay_tree_key node = NULL;
-
-  k.host_addr = (uint64_t) ptr;
-  node = indirect_splay_tree_lookup (&indirect_map, &k);
-
-  return node ? (void *) node->target_addr : ptr;
+  struct indirect_map_t element = { ptr, NULL };
+  hash_entry_type entry = htab_find (indirect_htab, &element);
+  return entry ? entry->target_addr : ptr;
 }
 
 #else
@@ -115,7 +124,7 @@ GOMP_target_map_indirect_ptr (void *ptr)
 
   assert (GOMP_INDIRECT_ADDR_MAP);
 
-  for (volatile void **map_entry = GOMP_INDIRECT_ADDR_MAP; *map_entry;
+  for (void **map_entry = GOMP_INDIRECT_ADDR_MAP; *map_entry;
        map_entry += 2)
     if (*map_entry == ptr)
       return (void *) *(map_entry + 1);

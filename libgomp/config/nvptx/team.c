@@ -60,9 +60,6 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
   asm ("mov.u32 %0, %%tid.y;" : "=r" (tid));
   asm ("mov.u32 %0, %%ntid.y;" : "=r" (ntids));
 
-  /* Initialize indirect function support.  */
-  build_indirect_map ();
-
   if (tid == 0)
     {
       gomp_global_icv.nthreads_var = ntids;
@@ -73,6 +70,12 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
       __gomp_team_num = 0;
       nvptx_thrs = alloca (ntids * sizeof (*nvptx_thrs));
       memset (nvptx_thrs, 0, ntids * sizeof (*nvptx_thrs));
+
+      /* Initialize indirect function support.  */
+      unsigned int block_id;
+      asm ("mov.u32 %0, %%ctaid.x;" : "=r" (block_id));
+      if (block_id == 0)
+	build_indirect_map ();
 
       /* Find the low-latency heap details ....  */
       uint32_t *shared_pool;

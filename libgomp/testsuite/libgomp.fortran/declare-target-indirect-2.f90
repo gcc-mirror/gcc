@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-xfail-run-if "Requires libgomp bug fix pending review" { offload_device } }
 
 module m
 contains

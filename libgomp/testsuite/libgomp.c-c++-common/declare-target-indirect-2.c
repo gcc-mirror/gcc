@@ -17,17 +17,17 @@ int main (void)
     {
       switch (i % 3)
 	{
-	case 0: fn_ptr[i] = &foo;
-	case 1: fn_ptr[i] = &bar;
-	case 2: fn_ptr[i] = &baz;
+	case 0: fn_ptr[i] = &foo; break;
+	case 1: fn_ptr[i] = &bar; break;
+	case 2: fn_ptr[i] = &baz; break;
 	}
       expected += (*fn_ptr[i]) ();
     }
 
-#pragma omp target teams distribute parallel for reduction(+: x) \
-		map (to: fn_ptr) map (tofrom: x)
-  for (int i = 0; i < N; i++)
-    x += (*fn_ptr[i]) ();
+  #pragma omp target teams distribute parallel for \
+	reduction (+: x) map (to: fn_ptr) map (tofrom: x)
+    for (int i = 0; i < N; i++)
+      x += (*fn_ptr[i]) ();
 
   return x - expected;
 }
