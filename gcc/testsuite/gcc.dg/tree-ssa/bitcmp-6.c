@@ -6,6 +6,10 @@
    of `(a & b) CMP a` and `(a | b) CMP a`
    which can be optimized to 0. */
 
+#if __SIZEOF_INT__ < 4
+#define int __INT32_TYPE__
+#endif
+
 /* For `&`, the non-negativeness of b is not taken into account. */
 int f_and_gt(int len) {
   len &= 0xfffff;

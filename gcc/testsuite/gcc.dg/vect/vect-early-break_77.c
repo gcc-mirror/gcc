@@ -3,7 +3,7 @@
 /* { dg-require-effective-target vect_int } */
 
 /* { dg-additional-options "-O3" } */
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { ! "arm*-*-*" } } } } */
 
 #include "tree-vect.h"
 

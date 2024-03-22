@@ -1,5 +1,11 @@
 /* { dg-do run } */
 
+#if __SIZEOF_INT__ < 4
+#define Xint __INT32_TYPE__
+#else
+#define Xint int
+#endif
+
 int printf(const char *, ...);
 void abort ();
 /* We need an abort that isn't noreturn.  */
@@ -10,8 +16,8 @@ void __attribute__((noipa)) my_abort ()
 int a, g, h, i, v, w = 2, x, y, ab, ac, ad, ae, af, ag;
 static int f, j, m, n, p, r, u, aa;
 struct b {
-  int c : 20;
-  int d : 20;
+  Xint c : 20;
+  Xint d : 20;
   int e : 10;
 };
 static struct b l, o, q = {3, 3, 5};

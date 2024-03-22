@@ -408,6 +408,55 @@
   [(set_attr "type" "neon_store1_one_lane<q>,neon_to_gp<q>")]
 )
 
+;; Patterns comparing two vectors and conditionally jump.
+;; Avdanced SIMD lacks a vector != comparison, but this is a quite common
+;; operation.  To not pay the penalty for inverting == we can map our any
+;; comparisons to all i.e. any(~x) => all(x).
+;;
+;; However unlike the AArch64 version, we can't optimize this further as the
+;; chain is too long for combine due to these being unspecs so it doesn't fold
+;; the operation to something simpler.
+(define_expand "cbranch<mode>4"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "expandable_comparison_operator"
+	       [(match_operand:VDQI 1 "register_operand")
+	        (match_operand:VDQI 2 "reg_or_zero_operand")])
+	      (label_ref (match_operand 3 "" ""))
+	      (pc)))]
+  "TARGET_NEON"
+{
+  rtx mask = operands[1];
+
+  /* If comparing against a non-zero vector we have to do a comparison first
+     so we can have a != 0 comparison with the result.  */
+  if (operands[2] != CONST0_RTX (<MODE>mode))
+    {
+      mask = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_xor<mode>3 (mask, operands[1], operands[2]));
+    }
+
+  /* For 128-bit vectors we need an additional reductions.  */
+  if (known_eq (128, GET_MODE_BITSIZE (<MODE>mode)))
+    {
+      /* Always reduce using a V4SI.  */
+      rtx op1 = lowpart_subreg (V4SImode, mask, <MODE>mode);
+      mask = gen_reg_rtx (V2SImode);
+      rtx low = gen_reg_rtx (V2SImode);
+      rtx high = gen_reg_rtx (V2SImode);
+      emit_insn (gen_neon_vget_lowv4si (low, op1));
+      emit_insn (gen_neon_vget_highv4si (high, op1));
+      emit_insn (gen_neon_vpumaxv2si (mask, low, high));
+    }
+
+  rtx op1 = lowpart_subreg (V2SImode, mask, GET_MODE (mask));
+  emit_insn (gen_neon_vpumaxv2si (op1, op1, op1));
+
+  rtx val = gen_reg_rtx (SImode);
+  emit_move_insn (val, gen_lowpart (SImode, mask));
+  emit_jump_insn (gen_cbranch_cc (operands[0], val, const0_rtx, operands[3]));
+  DONE;
+})
+
 ;; This pattern is renamed from "vec_extract<mode><V_elem_l>" to
 ;; "neon_vec_extract<mode><V_elem_l>" and this pattern is called
 ;; by define_expand in vec-common.md file.

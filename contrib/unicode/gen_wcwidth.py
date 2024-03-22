@@ -16,13 +16,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
-# <http://www.gnu.org/licenses/>.  */
+# <http://www.gnu.org/licenses/>.
 
 import sys
 import os
 
 if len(sys.argv) != 2:
-    print("usage: %s <unicode version>", file=sys.stderr)
+    print("usage: %s <unicode version>" % sys.argv[0], file=sys.stderr)
     sys.exit(1)
 unicode_version = sys.argv[1]
 

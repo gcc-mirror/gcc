@@ -5194,12 +5194,14 @@ match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
   tree type = TREE_TYPE (arg);
   if (!INTEGRAL_TYPE_P (type))
     return;
+  bool nonzero_arg = tree_expr_nonzero_p (arg);
   if (direct_internal_fn_supported_p (IFN_POPCOUNT, type, OPTIMIZE_FOR_BOTH))
     {
       /* Tell expand_POPCOUNT the popcount result is only used in equality
 	 comparison with one, so that it can decide based on rtx costs.  */
       gimple *g = gimple_build_call_internal (IFN_POPCOUNT, 2, arg,
-					      integer_one_node);
+					      nonzero_arg ? integer_zero_node
+					      : integer_one_node);
       gimple_call_set_lhs (g, gimple_call_lhs (call));
       gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
       gsi_replace (&gsi2, g, true);
@@ -5209,19 +5211,29 @@ match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
   gimple *g = gimple_build_assign (argm1, PLUS_EXPR, arg,
 				   build_int_cst (type, -1));
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
-  g = gimple_build_assign (make_ssa_name (type), BIT_XOR_EXPR, arg, argm1);
+  g = gimple_build_assign (make_ssa_name (type),
+			   nonzero_arg ? BIT_AND_EXPR : BIT_XOR_EXPR,
+			   arg, argm1);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  tree_code cmpcode;
+  if (nonzero_arg)
+    {
+      argm1 = build_zero_cst (type);
+      cmpcode = code;
+    }
+  else
+    cmpcode = code == EQ_EXPR ? GT_EXPR : LE_EXPR;
   if (gcond *cond = dyn_cast <gcond *> (stmt))
     {
       gimple_cond_set_lhs (cond, gimple_assign_lhs (g));
       gimple_cond_set_rhs (cond, argm1);
-      gimple_cond_set_code (cond, code == EQ_EXPR ? GT_EXPR : LE_EXPR);
+      gimple_cond_set_code (cond, cmpcode);
     }
   else
     {
       gimple_assign_set_rhs1 (stmt, gimple_assign_lhs (g));
       gimple_assign_set_rhs2 (stmt, argm1);
-      gimple_assign_set_rhs_code (stmt, code == EQ_EXPR ? GT_EXPR : LE_EXPR);
+      gimple_assign_set_rhs_code (stmt, cmpcode);
     }
   update_stmt (stmt);
   gimple_stmt_iterator gsi2 = gsi_for_stmt (call);

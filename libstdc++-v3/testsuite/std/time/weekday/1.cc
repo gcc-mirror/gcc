@@ -42,8 +42,20 @@ constexpr_weekday()
   {
     using rep = days::rep;
     using std::numeric_limits;
-    constexpr weekday max{sys_days{days{numeric_limits<rep>::max()}}};
-    constexpr weekday min{sys_days{days{numeric_limits<rep>::min()}}};
+
+    auto constexpr days_min = days{numeric_limits<rep>::min()};
+    auto constexpr weekday_from_sysdays_min   = weekday{sys_days{days_min}};
+    auto constexpr weekday_000_plus_days_min  = weekday{ 0 } + days_min;
+    auto constexpr weekday_255_plus_days_min  = weekday{255} + days_min;
+    auto constexpr weekday_000_minus_days_min = weekday{ 0 } - days_min;
+    auto constexpr weekday_255_minus_days_min = weekday{255} - days_min;
+
+    auto constexpr days_max = days{numeric_limits<rep>::max()};
+    auto constexpr weekday_from_sysdays_max   = weekday{sys_days{days_max}};
+    auto constexpr weekday_000_plus_days_max  = weekday{ 0 } + days_max;
+    auto constexpr weekday_255_plus_days_max  = weekday{255} + days_max;
+    auto constexpr weekday_000_minus_days_max = weekday{ 0 } - days_max;
+    auto constexpr weekday_255_minus_days_max = weekday{255} - days_max;
   }
 
   static_assert(weekday{sys_days{1900y/January/1}} == Monday);

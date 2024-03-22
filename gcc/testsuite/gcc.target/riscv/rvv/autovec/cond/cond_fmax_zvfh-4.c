@@ -2,7 +2,6 @@
 /* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d --param=riscv-autovec-preference=scalable -fno-vect-cost-model -fno-signaling-nans" } */
 
 #include <stdint-gcc.h>
-#include <math.h>
 
 #ifndef FN
 #define FN(X) __builtin_fmax##X

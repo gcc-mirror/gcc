@@ -230,9 +230,24 @@ get_biggest_mode (machine_mode mode1, machine_mode mode2)
   return mode1_size >= mode2_size ? mode1 : mode2;
 }
 
+/* Return true if OP is invariant.  */
+
+static bool
+loop_invariant_op_p (class loop *loop,
+		     tree op)
+{
+  if (is_gimple_constant (op))
+    return true;
+  if (SSA_NAME_IS_DEFAULT_DEF (op)
+      || !flow_bb_inside_loop_p (loop, gimple_bb (SSA_NAME_DEF_STMT (op))))
+    return true;
+  return gimple_uid (SSA_NAME_DEF_STMT (op)) & 1;
+}
+
 /* Return true if the variable should be counted into liveness.  */
 static bool
-variable_vectorized_p (stmt_vec_info stmt_info, tree var, bool lhs_p)
+variable_vectorized_p (class loop *loop, stmt_vec_info stmt_info, tree var,
+		       bool lhs_p)
 {
   if (!var)
     return false;
@@ -255,6 +270,35 @@ variable_vectorized_p (stmt_vec_info stmt_info, tree var, bool lhs_p)
 	    return false;
 	}
     }
+  else if (is_gimple_assign (stmt))
+    {
+      tree_code tcode = gimple_assign_rhs_code (stmt);
+      /* vi variant doesn't need to allocate such statement.
+	 E.g. tmp_15 = _4 + 1; will be transformed into vadd.vi
+	 so the INTEGER_CST '1' doesn't need a vector register.  */
+      switch (tcode)
+	{
+	case PLUS_EXPR:
+	case BIT_IOR_EXPR:
+	case BIT_XOR_EXPR:
+	case BIT_AND_EXPR:
+	  return TREE_CODE (var) != INTEGER_CST
+		 || !tree_fits_shwi_p (var)
+		 || !IN_RANGE (tree_to_shwi (var), -16, 15);
+	case MINUS_EXPR:
+	  return TREE_CODE (var) != INTEGER_CST
+		 || !tree_fits_shwi_p (var)
+		 || !IN_RANGE (tree_to_shwi (var), -16, 15)
+		 || gimple_assign_rhs1 (stmt) != var;
+	case LSHIFT_EXPR:
+	case RSHIFT_EXPR:
+	  return gimple_assign_rhs2 (stmt) != var
+		 || !loop_invariant_op_p (loop, var);
+	default:
+	  break;
+	}
+    }
+
   if (lhs_p)
     return is_gimple_reg (var)
 	   && (!POINTER_TYPE_P (TREE_TYPE (var))
@@ -287,10 +331,12 @@ variable_vectorized_p (stmt_vec_info stmt_info, tree var, bool lhs_p)
    The live range of SSA 2 is [0, 4] in bb 3.  */
 static machine_mode
 compute_local_live_ranges (
+  loop_vec_info loop_vinfo,
   const hash_map<basic_block, vec<stmt_point>> &program_points_per_bb,
   hash_map<basic_block, hash_map<tree, pair>> &live_ranges_per_bb)
 {
   machine_mode biggest_mode = QImode;
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   if (!program_points_per_bb.is_empty ())
     {
       auto_vec<tree> visited_vars;
@@ -314,7 +360,8 @@ compute_local_live_ranges (
 	      unsigned int point = program_point.point;
 	      gimple *stmt = program_point.stmt;
 	      tree lhs = gimple_get_lhs (stmt);
-	      if (variable_vectorized_p (program_point.stmt_info, lhs, true))
+	      if (variable_vectorized_p (loop, program_point.stmt_info, lhs,
+					 true))
 		{
 		  biggest_mode = get_biggest_mode (biggest_mode,
 						   TYPE_MODE (TREE_TYPE (lhs)));
@@ -331,14 +378,7 @@ compute_local_live_ranges (
 	      for (i = 0; i < gimple_num_args (stmt); i++)
 		{
 		  tree var = gimple_arg (stmt, i);
-		  /* Both IMM and REG are included since a VECTOR_CST may be
-		     potentially held in a vector register.  However, it's not
-		     accurate, since a PLUS_EXPR can be vectorized into vadd.vi
-		     if IMM is -16 ~ 15.
-
-		     TODO: We may elide the cases that the unnecessary IMM in
-		     the future.  */
-		  if (variable_vectorized_p (program_point.stmt_info, var,
+		  if (variable_vectorized_p (loop, program_point.stmt_info, var,
 					     false))
 		    {
 		      biggest_mode
@@ -763,7 +803,8 @@ has_unexpected_spills_p (loop_vec_info loop_vinfo)
   /* Compute local live ranges.  */
   hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
   machine_mode biggest_mode
-    = compute_local_live_ranges (program_points_per_bb, live_ranges_per_bb);
+    = compute_local_live_ranges (loop_vinfo, program_points_per_bb,
+				 live_ranges_per_bb);
 
   /* Update live ranges according to PHI.  */
   update_local_live_ranges (loop_vinfo, program_points_per_bb,

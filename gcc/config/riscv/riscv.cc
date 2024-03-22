@@ -8519,7 +8519,7 @@ riscv_declare_function_name (FILE *stream, const char *name, tree fndecl)
 {
   riscv_asm_output_variant_cc (stream, fndecl, name);
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
-  ASM_OUTPUT_LABEL (stream, name);
+  ASM_OUTPUT_FUNCTION_LABEL (stream, name, fndecl);
   if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl))
     {
       fprintf (stream, "\t.option push\n");

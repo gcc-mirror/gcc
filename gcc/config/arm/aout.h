@@ -152,7 +152,7 @@
   do							\
     {							\
       ARM_DECLARE_FUNCTION_NAME (STREAM, NAME, DECL);   \
-      ASM_OUTPUT_LABEL (STREAM, NAME);			\
+      ASM_OUTPUT_FUNCTION_LABEL (STREAM, NAME, DECL);	\
     }							\
   while (0)
 #endif

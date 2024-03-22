@@ -3,7 +3,7 @@
 
 #define PREC (__CHAR_BIT__)
 
-int count1 (unsigned char b) {
+__INT32_TYPE__ count1 (unsigned char b) {
     int c = 0;
 
     while (b) {
@@ -16,7 +16,7 @@ int count1 (unsigned char b) {
       return 34567;
 }
 
-int count2 (unsigned char b) {
+__INT32_TYPE__ count2 (unsigned char b) {
     int c = 0;
 
     while (b) {

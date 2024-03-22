@@ -16,7 +16,12 @@ ftp://ftp.unicode.org/Public/UNIDATA/DerivedNormalizationProps.txt
 ftp://ftp.unicode.org/Public/UNIDATA/DerivedCoreProperties.txt
 ftp://ftp.unicode.org/Public/UNIDATA/NameAliases.txt
 
-These files have been added to source control in this directory;
+Two additional files are needed for lookup tables in libstdc++:
+
+ftp://ftp.unicode.org/Public/UNIDATA/auxiliary/GraphemeBreakProperty.txt
+ftp://ftp.unicode.org/Public/UNIDATA/emoji/emoji-data.txt
+
+All these files have been added to source control in this directory;
 please see unicode-license.txt for the relevant copyright information.
 
 In order to keep in sync with glibc's wcwidth as much as possible, it is
@@ -24,7 +29,7 @@ desirable for the logic that processes the Unicode data to be the same as
 glibc's.  To that end, we also put in this directory, in the from_glibc/
 directory, the glibc python code that implements their logic.  This code was
 copied verbatim from glibc, and it can be updated at any time from the glibc
-source code repository.  The files copied from that respository are:
+source code repository.  The files copied from that repository are:
 
 localedata/unicode-gen/unicode_utils.py
 localedata/unicode-gen/utf8_gen.py
@@ -71,3 +76,6 @@ The procedure to update GCC's Unicode support is the following:
 9:  Generate uname2c.h as follows:
       ../../libcpp/makeuname2c UnicodeData.txt NameAliases.txt \
 	> ../../libcpp/uname2c.h
+
+See gen_libstdcxx_unicode_data.py for instructions on updating the lookup
+tables in libstdc++.

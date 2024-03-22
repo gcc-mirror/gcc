@@ -84,6 +84,7 @@
 			    == EF_AMDGPU_FEATURE_XNACK_ON_V4)
 #define TEST_XNACK_OFF(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) \
 			     == EF_AMDGPU_FEATURE_XNACK_OFF_V4)
+#define TEST_XNACK_UNSET(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) == 0)
 
 #define SET_SRAM_ECC_ON(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_SRAMECC_V4) \
 				    | EF_AMDGPU_FEATURE_SRAMECC_ON_V4)
@@ -122,8 +123,7 @@ static struct obstack files_to_cleanup;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX803;  // Default GPU architecture.
-uint32_t elf_flags =
-    (EF_AMDGPU_FEATURE_XNACK_ANY_V4 | EF_AMDGPU_FEATURE_SRAMECC_ANY_V4);
+uint32_t elf_flags = EF_AMDGPU_FEATURE_SRAMECC_ANY_V4;
 
 static int gcn_stack_size = 0;  /* Zero means use default.  */
 
@@ -471,26 +471,6 @@ copy_early_debug_info (const char *infile, const char *outfile)
   return true;
 }
 
-/* CDNA2 devices have twice as many VGPRs compared to older devices,
-   but the AVGPRS are allocated from the same pool.  */
-
-static int
-isa_has_combined_avgprs (int isa)
-{
-  switch (isa)
-    {
-    case EF_AMDGPU_MACH_AMDGCN_GFX803:
-    case EF_AMDGPU_MACH_AMDGCN_GFX900:
-    case EF_AMDGPU_MACH_AMDGCN_GFX906:
-    case EF_AMDGPU_MACH_AMDGCN_GFX908:
-    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
-      return false;
-    case EF_AMDGPU_MACH_AMDGCN_GFX90a:
-      return true;
-    }
-  fatal_error (input_location, "unhandled ISA in isa_has_combined_avgprs");
-}
-
 /* Parse an input assembler file, extract the offload tables etc.,
    and output (1) the assembler code, minus the tables (which can contain
    problematic relocations), and (2) a C file with the offload tables
@@ -516,7 +496,6 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   {
     int sgpr_count;
     int vgpr_count;
-    int avgpr_count;
     char *kernel_name;
   } regcount = { -1, -1, NULL };
 
@@ -560,12 +539,6 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	      }
 	    else if (sscanf (buf, " .vgpr_count: %d\n",
 			     &regcount.vgpr_count) == 1)
-	      {
-		gcc_assert (regcount.kernel_name);
-		break;
-	      }
-	    else if (sscanf (buf, " .agpr_count: %d\n",
-			     &regcount.avgpr_count) == 1)
 	      {
 		gcc_assert (regcount.kernel_name);
 		break;
@@ -712,8 +685,6 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	  {
 	    sgpr_count = regcounts[j].sgpr_count;
 	    vgpr_count = regcounts[j].vgpr_count;
-	    if (isa_has_combined_avgprs (elf_arch))
-	      vgpr_count += regcounts[j].avgpr_count;
 	    break;
 	  }
 
@@ -1032,6 +1003,25 @@ main (int argc, char **argv)
       break;
     default:
       gcc_unreachable ();
+    }
+
+  /* Disable XNACK mode on architectures where it doesn't work (well).
+     Set default to "any" otherwise.  */
+  switch (elf_arch)
+    {
+    case EF_AMDGPU_MACH_AMDGCN_GFX803:
+    case EF_AMDGPU_MACH_AMDGCN_GFX900:
+    case EF_AMDGPU_MACH_AMDGCN_GFX906:
+    case EF_AMDGPU_MACH_AMDGCN_GFX908:
+    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+      SET_XNACK_OFF (elf_flags);
+      break;
+    case EF_AMDGPU_MACH_AMDGCN_GFX90a:
+      if (TEST_XNACK_UNSET (elf_flags))
+	SET_XNACK_ANY (elf_flags);
+      break;
+    default:
+      fatal_error (input_location, "unhandled architecture");
     }
 
   /* Build arguments for compiler pass.  */

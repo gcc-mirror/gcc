@@ -97,8 +97,8 @@ test_format()
     char fmt[] = { '{', ':', '%', c, '}' };
     try
     {
-      (void) std::vformat(std::string_view(fmt, 5),
-			  std::make_format_args(2022y/December/19));
+      year_month_day ymd = 2022y/December/19;
+      (void) std::vformat(std::string_view(fmt, 5), std::make_format_args(ymd));
       // The call above should throw for any conversion-spec not in my_specs:
       VERIFY(my_specs.find(c) != my_specs.npos);
     }

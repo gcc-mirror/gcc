@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "toplev.h"
 #include "opts.h"
+#include "asan.h"
 
 /* The (assembler) name of the first globally-visible object output.  */
 extern GTY(()) const char *first_global_object_name;
@@ -1833,6 +1834,19 @@ get_fnname_from_decl (tree decl)
   x = XEXP (x, 0);
   gcc_assert (GET_CODE (x) == SYMBOL_REF);
   return XSTR (x, 0);
+}
+
+/* Output function label, possibly with accompanying metadata.  No additional
+   code or data is output after the label.  */
+
+void
+assemble_function_label_raw (FILE *file, const char *name)
+{
+  ASM_OUTPUT_LABEL (file, name);
+  if ((flag_sanitize & SANITIZE_ADDRESS)
+      /* Notify ASAN only about the first function label.  */
+      && (in_cold_section_p == first_function_block_is_cold))
+    asan_function_start ();
 }
 
 /* Output assembler code for the constant pool of a function and associated

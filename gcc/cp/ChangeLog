@@ -1,3 +1,25 @@
+2024-01-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_out::write_var_def): Only write initializers
+	in header modules.
+
+2024-01-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/109679
+	* module.cc (depset::hash::add_binding_entity): Don't skip names
+	in the GMF if they've been exported with a using declaration.
+
+2024-01-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/110808
+	* parser.cc (cp_parser_module_name): Rewrite to handle
+	module-names and module-partitions independently.
+	(cp_parser_module_partition): New function.
+	(cp_parser_module_declaration): Parse module partitions
+	explicitly. Don't change state if parsing module decl failed.
+	(cp_parser_import_declaration): Handle different kinds of
+	import-declarations locally.
+
 2024-01-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/113064

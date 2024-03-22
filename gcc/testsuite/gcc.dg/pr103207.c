@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-O2 --param case-values-threshold=1 -w" }
 
-int f (int i)
+int f (__INT32_TYPE__ i)
 {
   switch (i) {
   case 2147483647:

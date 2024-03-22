@@ -501,7 +501,7 @@ Technical Report (TR) 12 is the second preview for OpenMP 6.0.
       modifiers of the @code{init} clause
       @tab N @tab
 @item @code{interop} clause to @code{dispatch} @tab N @tab
-@item @code{message} and @code{severity} calauses to @code{parallel} directive
+@item @code{message} and @code{severity} clauses to @code{parallel} directive
       @tab N @tab
 @item @code{self} clause to @code{requires} directive @tab N @tab
 @item @code{no_openmp_constructs} assumptions clause @tab N @tab
@@ -570,7 +570,7 @@ specification in version 5.2.
 @c * Interoperability Routines::
 * Memory Management Routines::
 @c * Tool Control Routine::
-@c * Environment Display Routine::
+* Environment Display Routine::
 @end menu
 
 
@@ -1719,7 +1719,7 @@ pointers on devices. They have C linkage and do not throw exceptions.
 * omp_target_alloc:: Allocate device memory
 * omp_target_free:: Free device memory
 * omp_target_is_present:: Check whether storage is mapped
-@c * omp_target_is_accessible:: <fixme>
+* omp_target_is_accessible:: Check whether memory is device accessible
 @c * omp_target_memcpy:: <fixme>
 @c * omp_target_memcpy_rect:: <fixme>
 @c * omp_target_memcpy_async:: <fixme>
@@ -1768,7 +1768,7 @@ is not supported.
 @ref{omp_target_free}, @ref{omp_target_associate_ptr}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.1
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.1
 @end table
 
 
@@ -1802,7 +1802,7 @@ is not supported.
 @ref{omp_target_alloc}, @ref{omp_target_disassociate_ptr}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.2
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.2
 @end table
 
 
@@ -1813,7 +1813,7 @@ is not supported.
 @item @emph{Description}:
 This routine tests whether storage, identified by the host pointer @var{ptr}
 is mapped to the device specified by @var{device_num}.  If so, it returns
-@emph{true} and otherwise @emph{false}.
+a nonzero value and otherwise zero.
 
 In GCC, this includes self mapping such that @code{omp_target_is_present}
 returns @emph{true} when @var{device_num} specifies the host or when the host
@@ -1848,7 +1848,53 @@ is not supported.
 @ref{omp_target_associate_ptr}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.3
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.3
+@end table
+
+
+
+@node omp_target_is_accessible
+@subsection @code{omp_target_is_accessible} -- Check whether memory is device accessible
+@table @asis
+@item @emph{Description}:
+This routine tests whether memory, starting at the address given by @var{ptr}
+and extending @var{size} bytes, is accessibly on the device specified by
+@var{device_num}.  If so, it returns a nonzero value and otherwise zero.
+
+The address given by @var{ptr} is interpreted to be in the address space of
+the device and @var{size} must be positive.
+
+Note that GCC's current implementation assumes that @var{ptr} is a valid host
+pointer. Therefore, all addresses given by @var{ptr} are assumed to be
+accessible on the initial device. And, to err on the safe side, this memory
+is only available on a non-host device that can access all host memory
+([uniform] shared memory access).
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_is_accessible(const void *ptr,}
+@item                   @tab @code{                             size_t size,}
+@item                   @tab @code{                             int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_is_accessible(ptr, &}
+@item                   @tab @code{    size, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_size_t), value :: size}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_associate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.4
 @end table
 
 
@@ -1911,7 +1957,7 @@ is not supported.
 @ref{omp_target_alloc}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.9
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.9
 @end table
 
 
@@ -1957,7 +2003,7 @@ is not supported.
 @ref{omp_target_associate_ptr}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.10
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.10
 @end table
 
 
@@ -1997,7 +2043,7 @@ is not supported.
 @ref{omp_target_associate_ptr}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.11
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.11
 @end table
 
 
@@ -2919,18 +2965,90 @@ was already deallocated or when the used allocator has already been destroyed.
 
 
 @c @node Tool Control Routine
+@c @section Tool Control Routine
 @c
 @c FIXME
 
-@c @node Environment Display Routine
-@c @section Environment Display Routine
-@c
-@c Routine to display the OpenMP number and the initial value of ICVs.
-@c It has C linkage and do not throw exceptions.
-@c
-@c menu
-@c * omp_display_env:: <fixme>
-@c end menu
+@node Environment Display Routine
+@section Environment Display Routine
+
+Routine to display the OpenMP version number and the initial value of ICVs.
+It has C linkage and does not throw exceptions.
+
+@menu
+* omp_display_env:: print the initial ICV values
+@end menu
+
+@node omp_display_env
+@subsection @code{omp_display_env} -- print the initial ICV values
+@table @asis
+@item @emph{Description}:
+Each time this routine is invoked, the OpenMP version number and initial value
+of internal control variables (ICVs) is printed on @code{stderr}.  The displayed
+values are those at startup after evaluating the environment variables; later
+calls to API routines or clauses used in enclosing constructs do not affect
+the output.
+
+If the @var{verbose} argument is @code{false}, only the OpenMP version and
+standard OpenMP ICVs are shown; if it is @code{true}, additionally, the
+GCC-specific ICVs are shown.
+
+The output consists of multiple lines and starts with
+@samp{OPENMP DISPLAY ENVIRONMENT BEGIN} followed by the name-value lines and
+ends with @samp{OPENMP DISPLAY ENVIRONMENT END}.  The @var{name} is followed by
+an equal sign and the @var{value} is enclosed in single quotes.
+
+The first line has as @var{name} either @samp{_OPENMP} or @samp{openmp_version}
+and shows as value the supported OpenMP version number (4-digit year, 2-digit
+month) of the implementation, matching the value of the @code{_OPENMP} macro
+and, in Fortran, the named constant @code{openmp_version}.
+
+In each of the succeeding lines, the @var{name} matches the environment-variable
+name of an ICV and shows its value.  Those line are might be prefixed by pair of
+brackets and a space, where the brackets enclose a comma-separated list of
+devices to which the ICV-value combination applies to; the value can either be a
+numeric device number or an abstract name denoting all devices (@code{all}), the
+initial host device (@code{host}) or all devices but the host (@code{device}).
+Note that the same ICV might be printed multiple times for multiple devices,
+even if all have the same value.
+
+The effect when invoked from within a @code{target} region is unspecified.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_display_env(int verbose)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_display_env(vebose)}
+@item                   @tab @code{logical, intent(in) :: verbose}
+@end multitable
+
+@item @emph{Example}:
+Note that the GCC-specific ICVs, such as the shown @code{GOMP_SPINCOUNT},
+are only printed when @var{varbose} set to @code{true}.
+
+@smallexample
+OPENMP DISPLAY ENVIRONMENT BEGIN
+  _OPENMP = '201511'
+  [host] OMP_DYNAMIC = 'FALSE'
+  [host] OMP_NESTED = 'FALSE'
+  [all] OMP_CANCELLATION = 'FALSE'
+  ...
+  [host] GOMP_SPINCOUNT = '300000'
+OPENMP DISPLAY ENVIRONMENT END
+@end smallexample
+
+
+@item @emph{See also}:
+@ref{OMP_DISPLAY_ENV}, @ref{Environment Variables},
+@ref{Implementation-defined ICV Initialization}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.15
+@end table
+
 
 @c ---------------------------------------------------------------------
 @c OpenMP Environment Variables
@@ -3182,12 +3300,15 @@ any change occurs.
 @item @emph{ICV:} none
 @item @emph{Scope:} not applicable
 @item @emph{Description}:
-If set to @code{TRUE}, the OpenMP version number and the values
-associated with the OpenMP environment variables are printed to @code{stderr}.
-If set to @code{VERBOSE}, it additionally shows the value of the environment
-variables which are GNU extensions.  If undefined or set to @code{FALSE},
-this information is not shown.
+If set to @code{TRUE}, the runtime displays the same information to
+@code{stderr} as shown by the @code{omp_display_env} routine invoked with
+@var{verbose} argument set to @code{false}.  If set to @code{VERBOSE}, the same
+information is shown as invoking the routine with @var{verbose} set to
+@code{true}. If unset or set to @code{FALSE}, this information is not shown.
+The result for any other value is unspecified.
 
+@item @emph{See also}:
+@ref{omp_display_env}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.12

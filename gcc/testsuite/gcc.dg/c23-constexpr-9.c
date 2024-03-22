@@ -3,6 +3,7 @@
 /* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target inff } */
+/* { dg-require-effective-target large_double } */
 
 /* A conversion from signaling NaN to quiet NaN in a different format or type
    is not valid for constexpr.  */

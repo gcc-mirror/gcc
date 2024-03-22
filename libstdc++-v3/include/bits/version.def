@@ -1166,6 +1166,15 @@ ftms = {
   };
 };
 
+ftms = {
+  name = format_uchar;
+  values = {
+    v = 202311;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
 // FIXME: #define __glibcxx_execution 201902L
 
 ftms = {

@@ -1,6 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fno-inline-functions-called-once -fno-inline-small-functions -fno-tree-dce -fno-tree-forwprop -fno-tree-fre" } */
 
+#if __SIZEOF_INT__ < 4
+#define int __INT32_TYPE__
+#endif
+
 int h(void);
 void l(int);
 void func_56(int p_57, unsigned p_58) {

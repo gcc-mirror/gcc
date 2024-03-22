@@ -995,14 +995,14 @@ typedef enum directives {
         fputc ('\n',FILE);			\
       } while (0)
 
-#define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL) \
-  do {					\
-    fputs (".type ", FILE);           	\
-    assemble_name (FILE, NAME);         \
-    fputs (", STT_FUNC", FILE);         \
-    fputc (';',FILE);                   \
-    fputc ('\n',FILE);			\
-    ASM_OUTPUT_LABEL(FILE, NAME);	\
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)	\
+  do {							\
+    fputs (".type ", FILE);				\
+    assemble_name (FILE, NAME);				\
+    fputs (", STT_FUNC", FILE);				\
+    fputc (';', FILE);					\
+    fputc ('\n', FILE);					\
+    ASM_OUTPUT_FUNCTION_LABEL (FILE, NAME, DECL);	\
   } while (0)
 
 #define ASM_OUTPUT_LABEL(FILE, NAME)    \

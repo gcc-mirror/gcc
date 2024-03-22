@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdint-gcc.h>
 
 #define N 777
@@ -25,9 +24,13 @@
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond_##TYPE[i] && i < 8)                                             \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+	  if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+	}                                                                      \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+	  if (b_##TYPE[i] != 0) __builtin_abort();                             \
+	}                                                                      \
     }
 
 #define TEST_ALL(T)                                                            \

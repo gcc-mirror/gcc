@@ -1686,9 +1686,6 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
 
   high_block_linenum = high_function_linenum = last_linenum;
 
-  if (flag_sanitize & SANITIZE_ADDRESS)
-    asan_function_start ();
-
   rtx_insn *first = *firstp;
   if (in_initial_view_p (first))
     {

@@ -14894,58 +14894,64 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 
 /* Modules */
 
-/* Parse a module-name,
-   identifier
-   module-name . identifier
-   header-name
+/* Parse a module-name or module-partition.
 
-   Returns a pointer to module object, NULL.   */
+   module-name:
+     module-name-qualifier [opt] identifier
+
+   module-partition:
+     : module-name-qualifier [opt] identifier
+
+   module-name-qualifier:
+     identifier .
+     module-name-qualifier identifier .
+
+   Returns a pointer to the module object, or NULL on failure.
+   For PARTITION_P, PARENT is the module this is a partition of.  */
 
 static module_state *
-cp_parser_module_name (cp_parser *parser)
+cp_parser_module_name (cp_parser *parser, bool partition_p = false,
+		       module_state *parent = NULL)
 {
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
-  if (token->type == CPP_HEADER_NAME)
-    {
-      cp_lexer_consume_token (parser->lexer);
-
-      return get_module (token->u.value);
-    }
-
-  module_state *parent = NULL;
-  bool partitioned = false;
-  if (token->type == CPP_COLON && named_module_p ())
-    {
-      partitioned = true;
-      cp_lexer_consume_token (parser->lexer);
-    }
+  if (partition_p
+      && cp_lexer_consume_token (parser->lexer)->type != CPP_COLON)
+    return NULL;
 
   for (;;)
     {
       if (cp_lexer_peek_token (parser->lexer)->type != CPP_NAME)
 	{
-	  cp_parser_error (parser, "expected module-name");
-	  break;
+	  if (partition_p)
+	    cp_parser_error (parser, "expected module-partition");
+	  else
+	    cp_parser_error (parser, "expected module-name");
+	  return NULL;
 	}
 
       tree name = cp_lexer_consume_token (parser->lexer)->u.value;
-      parent = get_module (name, parent, partitioned);
-      token = cp_lexer_peek_token (parser->lexer);
-      if (!partitioned && token->type == CPP_COLON)
-	partitioned = true;
-      else if (token->type != CPP_DOT)
+      parent = get_module (name, parent, partition_p);
+      if (cp_lexer_peek_token (parser->lexer)->type != CPP_DOT)
 	break;
 
       cp_lexer_consume_token (parser->lexer);
-   }
+    }
 
   return parent;
 }
 
+/* Parse a module-partition.  Defers to cp_parser_module_name.  */
+
+static module_state *
+cp_parser_module_partition (cp_parser *parser, module_state *parent = NULL)
+{
+  return cp_parser_module_name (parser, /*partition_p=*/true, parent);
+}
+
 /* Named module-declaration
      __module ; PRAGMA_EOL
-     __module private ; PRAGMA_EOL (unimplemented)
-     [__export] __module module-name attr-spec-seq-opt ; PRAGMA_EOL
+     __module : private ; PRAGMA_EOL (unimplemented)
+     [__export] __module module-name module-partition [opt]
+	 attr-spec-seq-opt ; PRAGMA_EOL
 */
 
 static module_parse
@@ -15003,9 +15009,12 @@ cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
   else
     {
       module_state *mod = cp_parser_module_name (parser);
+      if (mod && cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
+	mod = cp_parser_module_partition (parser, mod);
       tree attrs = cp_parser_attributes_opt (parser);
 
-      mp_state = MP_PURVIEW_IMPORTS;
+      if (mod)
+	mp_state = MP_PURVIEW_IMPORTS;
       if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
 	goto skip_eol;
 
@@ -15017,7 +15026,10 @@ cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
 }
 
 /* Import-declaration
-   [__export] __import module-name attr-spec-seq-opt ; PRAGMA_EOL */
+   __import module-name attr-spec-seq-opt ; PRAGMA_EOL
+   __import module-partition attr-spec-seq-opt ; PRAGMA_EOL
+   __import header-name attr-spec-seq-opt ; PRAGMA_EOL
+*/
 
 static void
 cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
@@ -15045,7 +15057,27 @@ cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
     }
   else
     {
-      module_state *mod = cp_parser_module_name (parser);
+      module_state *mod = NULL;
+      cp_token *next = cp_lexer_peek_token (parser->lexer);
+      if (next->type == CPP_HEADER_NAME)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  mod = get_module (next->u.value);
+	}
+      else if (next->type == CPP_COLON)
+	{
+	  /* An import specifying a module-partition shall only appear after the
+	     module-declaration in a module unit: [module.import]/4.  */
+	  if (named_module_p ()
+	      && (mp_state == MP_PURVIEW_IMPORTS
+		  || mp_state == MP_PRIVATE_IMPORTS))
+	    mod = cp_parser_module_partition (parser);
+	  else
+	    error_at (next->location, "import specifying a module-partition"
+		      " must appear after a named module-declaration");
+	}
+      else
+	mod = cp_parser_module_name (parser);
       tree attrs = cp_parser_attributes_opt (parser);
 
       if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))

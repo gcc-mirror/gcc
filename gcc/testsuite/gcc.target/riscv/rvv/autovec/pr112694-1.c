@@ -16,8 +16,6 @@
 
 TEST_ALL()
 
-#include <assert.h>
-
 #define SZ 512
 
 #define RUN(TYPE, VAL)                                                         \
@@ -30,7 +28,7 @@ TEST_ALL()
     }                                                                          \
   vmul_##TYPE (a##TYPE, a##TYPE, b##TYPE, SZ);                                 \
   for (int i = 0; i < SZ; i++)                                                 \
-    assert (a##TYPE[i] == 2 * VAL);
+    if (a##TYPE[i] != 2 * VAL) __builtin_abort ();
 
 #define RUN_ALL()	\
  RUN(_Float16, 4)	\

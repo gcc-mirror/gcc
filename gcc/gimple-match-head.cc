@@ -333,9 +333,23 @@ gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, bool &wascmp, tree (*va
   if (!operand_equal_p (op11, op21))
     return false;
   wascmp = true;
-  if (invert_tree_comparison (gimple_assign_rhs_code (a1),
-			      HONOR_NANS (op10))
-	== gimple_assign_rhs_code (a2))
+  tree_code ac1 = gimple_assign_rhs_code (a1);
+  tree_code ac2 = gimple_assign_rhs_code (a2);
+  /* Match `^` against `==` but this should only
+     happen when the type is a 1bit precision integer.  */
+  if (ac1 == BIT_XOR_EXPR)
+    {
+      tree type = TREE_TYPE (newexpr1);
+      gcc_assert (INTEGRAL_TYPE_P (type) && TYPE_PRECISION (type) == 1);
+      return ac2 == EQ_EXPR;
+    }
+  if (ac2 == BIT_XOR_EXPR)
+    {
+      tree type = TREE_TYPE (newexpr1);
+      gcc_assert (INTEGRAL_TYPE_P (type) && TYPE_PRECISION (type) == 1);
+      return ac1 == EQ_EXPR;
+    }
+  if (invert_tree_comparison (ac1, HONOR_NANS (op10)) == ac2)
     return true;
   return false;
 }

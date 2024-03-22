@@ -516,6 +516,8 @@ bits_freestanding = \
 	${bits_srcdir}/stl_uninitialized.h \
 	${bits_srcdir}/version.h \
 	${bits_srcdir}/string_view.tcc \
+	${bits_srcdir}/unicode.h \
+	${bits_srcdir}/unicode-data.h \
 	${bits_srcdir}/uniform_int_dist.h \
 	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/uses_allocator.h \

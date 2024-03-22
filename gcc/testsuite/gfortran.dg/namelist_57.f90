@@ -6,7 +6,7 @@
   n = 123
   line = ""
   write(line,nml=stuff)
-  if (line(1) .ne. "&STUFF") STOP 1
+  if (line(1) .ne. " &STUFF") STOP 1
   if (line(2) .ne. " N=123        ,") STOP 2
   if (line(3) .ne. " /") STOP 3
   end 

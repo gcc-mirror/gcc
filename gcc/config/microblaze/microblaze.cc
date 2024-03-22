@@ -2792,8 +2792,7 @@ microblaze_function_prologue (FILE * file)
 	ASM_OUTPUT_TYPE_DIRECTIVE (file, fnname, "function");
     }
 
-  assemble_name (file, fnname);
-  fputs (":\n", file);
+  ASM_OUTPUT_FUNCTION_LABEL (file, fnname, current_function_decl);
 
   if (interrupt_handler && strcmp (INTERRUPT_HANDLER_NAME, fnname))
     fputs ("_interrupt_handler:\n", file);

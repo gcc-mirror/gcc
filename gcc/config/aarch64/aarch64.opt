@@ -332,9 +332,10 @@ moutline-atomics
 Target Var(aarch64_flag_outline_atomics) Init(2) Save
 Generate local calls to out-of-line atomic operations.
 
--param=aarch64-sve-compare-costs=
-Target Joined UInteger Var(aarch64_sve_compare_costs) Init(1) IntegerRange(0, 1) Param
-When vectorizing for SVE, consider using unpacked vectors for smaller elements and use the cost model to pick the cheapest approach.  Also use the cost model to choose between SVE and Advanced SIMD vectorization.
+-param=aarch64-vect-compare-costs=
+Target Joined UInteger Var(aarch64_vect_compare_costs) Init(1) IntegerRange(0, 1) Param
+When vectorizing, consider using multiple different approaches and use
+the cost model to choose the cheapest one.
 
 -param=aarch64-float-recp-precision=
 Target Joined UInteger Var(aarch64_float_recp_precision) Init(1) IntegerRange(1, 5) Param

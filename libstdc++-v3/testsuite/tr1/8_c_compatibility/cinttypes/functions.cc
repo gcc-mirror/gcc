@@ -29,10 +29,10 @@ void test01()
 #if _GLIBCXX_USE_C99_INTTYPES_TR1
 
   std::tr1::intmax_t i = 0, numer = 0, denom = 0, base = 0;
-  const char* s = 0;
+  const char* s = "0";
   char** endptr = 0;
 #if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1
-  const wchar_t* ws = 0;
+  const wchar_t* ws = L"0";
   wchar_t** wendptr = 0;
 #endif
 

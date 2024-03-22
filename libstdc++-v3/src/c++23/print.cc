@@ -162,7 +162,7 @@ namespace
 		    }
 		  continue;
 		}
-	      else if (byte < 0xC2)
+	      else if (byte < 0xC2) [[unlikely]]
 		{
 		  if constexpr (transcode)
 		    out.push_back(0xFFFD);

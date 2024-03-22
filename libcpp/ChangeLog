@@ -1,3 +1,10 @@
+2024-01-04  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* charset.cc (cpp_check_xid_property): New.
+	* include/cpplib.h
+	(cpp_check_xid_property): New.
+	(enum cpp_xid_property): New.
+
 2023-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/112956

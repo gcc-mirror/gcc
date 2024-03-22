@@ -650,7 +650,7 @@ struct cum_arg
 #define GLOBAL_ASM_OP "\t.global "
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
-   ASM_OUTPUT_LABEL (FILE, NAME)
+   ASM_OUTPUT_FUNCTION_LABEL (FILE, NAME, DECL)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where

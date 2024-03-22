@@ -687,6 +687,7 @@ bool imm_avl_p (machine_mode);
 bool can_be_broadcasted_p (rtx);
 bool gather_scatter_valid_offset_p (machine_mode);
 HOST_WIDE_INT estimated_poly_value (poly_int64, unsigned int);
+bool whole_reg_to_reg_move_p (rtx *, machine_mode, int);
 }
 
 /* We classify builtin types into two classes:

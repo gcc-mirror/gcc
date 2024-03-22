@@ -2126,19 +2126,9 @@ loongarch_valid_offset_p (rtx x, machine_mode mode)
 
   /* We may need to split multiword moves, so make sure that every word
      is accessible.  */
-  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+  if (!(LSX_SUPPORTED_MODE_P (mode) || LASX_SUPPORTED_MODE_P (mode))
+      && GET_MODE_SIZE (mode) > UNITS_PER_WORD
       && !IMM12_OPERAND (INTVAL (x) + GET_MODE_SIZE (mode) - UNITS_PER_WORD))
-    return false;
-
-  /* LSX LD.* and ST.* supports 10-bit signed offsets.  */
-  if (LSX_SUPPORTED_MODE_P (mode)
-      && !loongarch_signed_immediate_p (INTVAL (x), 10,
-					loongarch_ldst_scaled_shift (mode)))
-    return false;
-
-  /* LASX XVLD.B and XVST.B supports 10-bit signed offsets without shift.  */
-  if (LASX_SUPPORTED_MODE_P (mode)
-      && !loongarch_signed_immediate_p (INTVAL (x), 10, 0))
     return false;
 
   return true;
@@ -2376,9 +2366,8 @@ loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
       case ADDRESS_REG:
 	if (lsx_p)
 	  {
-	    /* LSX LD.* and ST.* supports 10-bit signed offsets.  */
-	    if (loongarch_signed_immediate_p (INTVAL (addr.offset), 10,
-					      loongarch_ldst_scaled_shift (mode)))
+	    /* LSX LD.* and ST.* supports 12-bit signed offsets.  */
+	    if (IMM12_OPERAND (INTVAL (addr.offset)))
 	      return 1;
 	    else
 	      return 0;

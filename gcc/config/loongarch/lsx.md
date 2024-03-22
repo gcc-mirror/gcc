@@ -812,32 +812,6 @@
   DONE;
 })
 
-;; Offset load
-(define_expand "lsx_ld_<lsxfmt_f>"
-  [(match_operand:LSX 0 "register_operand")
-   (match_operand 1 "pmode_register_operand")
-   (match_operand 2 "aq10<lsxfmt>_operand")]
-  "ISA_HAS_LSX"
-{
-  rtx addr = plus_constant (GET_MODE (operands[1]), operands[1],
-			    INTVAL (operands[2]));
-  loongarch_emit_move (operands[0], gen_rtx_MEM (<MODE>mode, addr));
-  DONE;
-})
-
-;; Offset store
-(define_expand "lsx_st_<lsxfmt_f>"
-  [(match_operand:LSX 0 "register_operand")
-   (match_operand 1 "pmode_register_operand")
-   (match_operand 2 "aq10<lsxfmt>_operand")]
-  "ISA_HAS_LSX"
-{
-  rtx addr = plus_constant (GET_MODE (operands[1]), operands[1],
-			    INTVAL (operands[2]));
-  loongarch_emit_move (gen_rtx_MEM (<MODE>mode, addr), operands[0]);
-  DONE;
-})
-
 ;; Integer operations
 (define_insn "add<mode>3"
   [(set (match_operand:ILSX 0 "register_operand" "=f,f,f")

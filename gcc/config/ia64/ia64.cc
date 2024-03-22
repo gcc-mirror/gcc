@@ -3886,8 +3886,7 @@ ia64_expand_prologue (void)
 /* Output the textual info surrounding the prologue.  */
 
 void
-ia64_start_function (FILE *file, const char *fnname,
-		     tree decl ATTRIBUTE_UNUSED)
+ia64_start_function (FILE *file, const char *fnname, tree decl)
 {
 #if TARGET_ABI_OPEN_VMS
   vms_start_function (fnname);
@@ -3896,7 +3895,7 @@ ia64_start_function (FILE *file, const char *fnname,
   fputs ("\t.proc ", file);
   assemble_name (file, fnname);
   fputc ('\n', file);
-  ASM_OUTPUT_LABEL (file, fnname);
+  ASM_OUTPUT_FUNCTION_LABEL (file, fnname, decl);
 }
 
 /* Called after register allocation to add any instructions needed for the

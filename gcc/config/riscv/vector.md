@@ -864,9 +864,9 @@
 			  vnclip,vicmp,vfalu,vfmul,vfminmax,vfdiv,vfwalu,vfwmul,\
 			  vfsgnj,vfcmp,vslideup,vslidedown,vislide1up,\
 			  vislide1down,vfslide1up,vfslide1down,vgather,viwmuladd,vfwmuladd,\
-			  vlsegds,vlsegdux,vlsegdox,vandn,vrol,vror,vwsll")
+			  vlsegds,vlsegdux,vlsegdox,vandn,vrol,vror,vclmul,vclmulh,vwsll")
 	   (const_int 8)
-	 (eq_attr "type" "vstux,vstox,vssegts,vssegtux,vssegtox,vclmul,vclmulh")
+	 (eq_attr "type" "vstux,vstox,vssegts,vssegtux,vssegtox")
 	   (const_int 5)
 
 	 (eq_attr "type" "vimuladd,vfmuladd")
@@ -1724,10 +1724,7 @@
    vse<sew>.v\t%3,%0%p1
    vmv.v.v\t%0,%3
    vmv.v.v\t%0,%3"
-  "&& register_operand (operands[0], <MODE>mode)
-   && register_operand (operands[3], <MODE>mode)
-   && satisfies_constraint_vu (operands[2])
-   && INTVAL (operands[7]) == riscv_vector::VLMAX"
+  "&& riscv_vector::whole_reg_to_reg_move_p (operands, <MODE>mode, 7)"
   [(set (match_dup 0) (match_dup 3))]
   ""
   [(set_attr "type" "vlde,vlde,vlde,vste,vimov,vimov")
@@ -1776,9 +1773,7 @@
    vmmv.m\t%0,%3
    vmclr.m\t%0
    vmset.m\t%0"
-  "&& register_operand (operands[0], <MODE>mode)
-   && register_operand (operands[3], <MODE>mode)
-   && INTVAL (operands[5]) == riscv_vector::VLMAX"
+  "&& riscv_vector::whole_reg_to_reg_move_p (operands, <MODE>mode, 5)"
   [(set (match_dup 0) (match_dup 3))]
   ""
   [(set_attr "type" "vldm,vstm,vmalu,vmalu,vmalu")

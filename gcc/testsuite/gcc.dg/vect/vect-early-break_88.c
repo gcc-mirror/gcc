@@ -3,7 +3,7 @@
 /* { dg-require-effective-target vect_int } */
 
 /* { dg-additional-options "-Ofast --param vect-partial-vector-usage=2" } */
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { ! "arm*-*-*" } } } } */
 
 #include "tree-vect.h"
 
