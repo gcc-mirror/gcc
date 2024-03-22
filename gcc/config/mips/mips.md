@@ -312,6 +312,10 @@
 ;; "11" specifies MEMMODEL_ACQUIRE.
 (define_attr "sync_memmodel" "" (const_int 10))
 
+;; Performance ratio.  Add this attr to the slow INSNs.
+;; Used by mips_insn_cost.
+(define_attr "perf_ratio" "" (const_int 0))
+
 ;; Accumulator operand for madd patterns.
 (define_attr "accum_in" "none,0,1,2,3,4,5" (const_string "none"))
 
@@ -4415,6 +4419,30 @@
   [(set_attr "type"     "arith")
    (set_attr "mode"     "SI")])
 
+(define_insn "*insqisi_extended"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+    (sign_extend:DI
+      (ior:SI (and:SI (subreg:SI (match_dup 0) 0)
+		(const_int 16777215))
+	      (ashift:SI
+		(subreg:SI (match_operand:QI 1 "register_operand" "d") 0)
+		(const_int 24)))))]
+  "TARGET_64BIT && !TARGET_MIPS16 && ISA_HAS_EXT_INS"
+  "ins\t%0,%1,24,8"
+  [(set_attr "mode" "SI")
+   (set_attr "perf_ratio" "1")])
+
+(define_insn "*inshisi_extended"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+    (sign_extend:DI
+      (ior:SI
+	(ashift:SI (subreg:SI (match_operand:HI 1 "register_operand" "d") 0)
+	  (const_int 16))
+	(zero_extend:SI (subreg:HI (match_dup 0) 0)))))]
+  "TARGET_64BIT && !TARGET_MIPS16 && ISA_HAS_EXT_INS"
+  "ins\t%0,%1,16,16"
+  [(set_attr "mode" "SI")
+   (set_attr "perf_ratio" "1")])
 
 (define_expand "insvmisalign<mode>"
   [(set (zero_extract:GPR (match_operand:BLK 0 "memory_operand")

@@ -350,9 +350,6 @@ enum omp_clause_code {
   /* OpenMP clause: doacross ({source,sink}:vec).  */
   OMP_CLAUSE_DOACROSS,
 
-  /* OpenMP clause: indirect [(constant-integer-expression)].  */
-  OMP_CLAUSE_INDIRECT,
-
   /* Internal structure to hold OpenACC cache directive's variable-list.
      #pragma acc cache (variable-list).  */
   OMP_CLAUSE__CACHE_,
@@ -496,6 +493,9 @@ enum omp_clause_code {
 
   /* OpenMP clause: filter (integer-expression).  */
   OMP_CLAUSE_FILTER,
+
+  /* OpenMP clause: indirect [(constant-integer-expression)].  */
+  OMP_CLAUSE_INDIRECT,
 
   /* Internally used only clause, holding SIMD uid.  */
   OMP_CLAUSE__SIMDUID_,

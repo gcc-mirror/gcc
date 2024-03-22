@@ -1,3 +1,7 @@
+2024-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
 2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* Makefile.am: Allow overriding EXEPCT.

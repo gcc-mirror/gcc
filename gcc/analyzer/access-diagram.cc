@@ -1334,7 +1334,7 @@ public:
 	    logger->log ("showing first and final element in array type");
 	  region_model_manager *mgr = m_op.m_model.get_manager ();
 	  tree domain = TYPE_DOMAIN (base_type);
-	  if (TYPE_MIN_VALUE (domain) && TYPE_MAX_VALUE (domain))
+	  if (domain && TYPE_MIN_VALUE (domain) && TYPE_MAX_VALUE (domain))
 	    {
 	      const svalue *min_idx_sval
 		= mgr->get_or_create_constant_svalue (TYPE_MIN_VALUE (domain));
@@ -1364,7 +1364,7 @@ public:
     gcc_assert (m_boundaries != nullptr);
 
     tree domain = TYPE_DOMAIN (base_type);
-    if (!(TYPE_MIN_VALUE (domain) && TYPE_MAX_VALUE (domain)))
+    if (!(domain && TYPE_MIN_VALUE (domain) && TYPE_MAX_VALUE (domain)))
       return;
 
     const int table_y = 0;

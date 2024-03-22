@@ -6272,19 +6272,32 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		  && known_eq (bitpos, 0)
 		  && known_eq (bitsize, GET_MODE_BITSIZE (GET_MODE (to_rtx))))
 		result = store_expr (from, to_rtx, 0, nontemporal, false);
-	      else
+	      /* Check if the field overlaps the MSB, requiring extension.  */
+	      else if (maybe_eq (bitpos + bitsize,
+				 GET_MODE_BITSIZE (GET_MODE (to_rtx))))
 		{
-		  rtx to_rtx1
-		    = lowpart_subreg (subreg_unpromoted_mode (to_rtx),
-				      SUBREG_REG (to_rtx),
-				      subreg_promoted_mode (to_rtx));
+		  scalar_int_mode imode = subreg_unpromoted_mode (to_rtx);
+		  scalar_int_mode omode = subreg_promoted_mode (to_rtx);
+		  rtx to_rtx1 = lowpart_subreg (imode, SUBREG_REG (to_rtx),
+						omode);
 		  result = store_field (to_rtx1, bitsize, bitpos,
 					bitregion_start, bitregion_end,
 					mode1, from, get_alias_set (to),
 					nontemporal, reversep);
+		  /* If the target usually keeps IMODE appropriately
+		     extended in OMODE it's unsafe to refer to it using
+		     a SUBREG whilst this invariant doesn't hold.  */
+		  if (targetm.mode_rep_extended (imode, omode) != UNKNOWN)
+		    to_rtx1 = simplify_gen_unary (TRUNCATE, imode,
+						  SUBREG_REG (to_rtx), omode);
 		  convert_move (SUBREG_REG (to_rtx), to_rtx1,
 				SUBREG_PROMOTED_SIGN (to_rtx));
 		}
+	      else
+		result = store_field (to_rtx, bitsize, bitpos,
+				      bitregion_start, bitregion_end,
+				      mode1, from, get_alias_set (to),
+				      nontemporal, reversep);
 	    }
 	  else
 	    result = store_field (to_rtx, bitsize, bitpos,

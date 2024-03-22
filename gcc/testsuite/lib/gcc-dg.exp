@@ -46,6 +46,12 @@ if { [ishost "*-*-cygwin*"] } {
   setenv LANG C.ASCII
 }
 
+# Set TERM to xterm to ensure that URL escapes are disabled.
+# This avoids issues where a diagnostic which could embed a URL
+# is emitted before -fdiagnostics-plain-output is handled, where
+# otherwise the output could be affected by the environment.
+setenv TERM xterm
+
 # Avoid sporadic data-losses with expect
 match_max -d 10000
 

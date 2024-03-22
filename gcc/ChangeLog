@@ -1,3 +1,45 @@
+2024-01-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* tree-core.h (enum omp_clause_code): Move OMP_CLAUSE_INDIRECT to before
+	OMP_CLAUSE__SIMDUID_.
+	* tree.cc (omp_clause_num_ops): Update position of entry for
+	OMP_CLAUSE_INDIRECT to correspond with omp_clause_code.
+	(omp_clause_code_name): Likewise.
+
+2024-01-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_record_offload_symbol): Restucture
+	printing of FUNC_MAP/IND_FUNC_MAP labels.
+
+2024-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.cc (process_command): Update copyright notice dates.
+	* gcov-dump.cc (print_version): Ditto.
+	* gcov.cc (print_version): Ditto.
+	* gcov-tool.cc (print_version): Ditto.
+	* gengtype.cc (create_file): Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
+2024-01-03  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/simd.md (fmax<mode>3): New define_insn.
+	(fmin<mode>3): Likewise.
+	(reduc_fmax_scal_<mode>3): New define_expand.
+	(reduc_fmin_scal_<mode>3): Likewise.
+
+2024-01-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113112
+	* config/riscv/riscv-vector-costs.cc (compute_nregs_for_mode): Add rgroup info.
+	(max_number_of_live_regs): Ditto.
+	(has_unexpected_spills_p): Ditto.
+
 2024-01-02  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
 	    Jin Ma  <jinma@linux.alibaba.com>
 	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>

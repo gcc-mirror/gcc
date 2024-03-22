@@ -597,4 +597,30 @@ This warning option corresponds to @code{cpplib.h} warning reason code
 @var{CPP_W_Enum}.  This should only be used for warning options of the
 C-family front-ends.
 
+@item UrlSuffix(@var{url_suffix})
+Adjacent to each human-written @code{.opt} file in the source tree is
+a corresponding file with a @code{.opt.urls} extension.  These files
+contain @code{UrlSuffix} directives giving the ending part of the URL
+for the documentation of the option, such as:
+
+@smallexample
+Wabi-tag
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wabi-tag)
+@end smallexample
+
+These URL suffixes are relative to @code{DOCUMENTATION_ROOT_URL}.
+
+There files are generated from the @code{.opt} files and the generated
+HTML documentation by @code{regenerate-opt-urls.py}, and should be
+regenerated when adding new options, via manually invoking
+@code{make regenerate-opt-urls}.
+
+@item LangUrlSuffix_@var{lang}(@var{url_suffix})
+In addition to @code{UrlSuffix} directives, @code{regenerate-opt-urls.py}
+can generate language-specific URLs, such as:
+
+@smallexample
+LangUrlSuffix_D(gdc/Code-Generation.html#index-MMD)
+@end smallexample
+
 @end table

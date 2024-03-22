@@ -193,6 +193,21 @@ function var_name(flags)
 	return nth_arg(0, opt_args("Var", flags))
 }
 
+# If FLAGS includes a UrlSuffix flag, return the value it specifies.
+# Return the empty string otherwise.
+function url_suffix(flags)
+{
+	return nth_arg(0, opt_args("UrlSuffix", flags))
+}
+
+# If FLAGS includes a LangUrlSuffix_LANG flag, return the
+# value it specifies.
+# Return the empty string otherwise.
+function lang_url_suffix(flags, lang)
+{
+	return nth_arg(0, opt_args("LangUrlSuffix_" lang, flags))
+}
+
 # Return the name of the variable if FLAGS has a HOST_WIDE_INT variable. 
 # Return the empty string otherwise.
 function host_wide_int_var_name(flags)

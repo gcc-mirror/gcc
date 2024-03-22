@@ -184,8 +184,6 @@ private:
   void set_any_logical_locs_arr (json::object *location_obj,
 				 const logical_location *logical_loc);
   json::object *make_location_object (const diagnostic_event &event);
-  json::object *
-  make_logical_location_object (const logical_location &logical_loc) const;
   json::object *make_code_flow_object (const diagnostic_path &path);
   json::object *
   make_thread_flow_location_object (const diagnostic_event &event,
@@ -754,7 +752,7 @@ set_any_logical_locs_arr (json::object *location_obj,
 {
   if (!logical_loc)
     return;
-  json::object *logical_loc_obj = make_logical_location_object (*logical_loc);
+  json::object *logical_loc_obj = make_sarif_logical_location_object (*logical_loc);
   json::array *location_locs_arr = new json::array ();
   location_locs_arr->append (logical_loc_obj);
   location_obj->set ("logicalLocations", location_locs_arr);
@@ -1092,8 +1090,7 @@ maybe_get_sarif_kind (enum logical_location_kind kind)
    or return NULL.  */
 
 json::object *
-sarif_builder::
-make_logical_location_object (const logical_location &logical_loc) const
+make_sarif_logical_location_object (const logical_location &logical_loc)
 {
   json::object *logical_loc_obj = new json::object ();
 
@@ -1163,7 +1160,11 @@ json::object *
 sarif_builder::make_thread_flow_location_object (const diagnostic_event &ev,
 						 int path_event_idx)
 {
-  json::object *thread_flow_loc_obj = new json::object ();
+  sarif_object *thread_flow_loc_obj = new sarif_object ();
+
+  /* Give diagnostic_event subclasses a chance to add custom properties
+     via a property bag.  */
+  ev.maybe_add_sarif_properties (*thread_flow_loc_obj);
 
   /* "location" property (SARIF v2.1.0 section 3.38.3).  */
   json::object *location_obj = make_location_object (ev);

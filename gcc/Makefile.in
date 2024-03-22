@@ -1273,6 +1273,8 @@ FLAGS_TO_PASS = \
 # All option source files
 ALL_OPT_FILES=$(lang_opt_files) $(extra_opt_files)
 
+ALL_OPT_URL_FILES=$(patsubst %, %.urls, $(ALL_OPT_FILES))
+
 # Target specific, C specific object file
 C_TARGET_OBJS=@c_target_objs@
 
@@ -1289,7 +1291,7 @@ FORTRAN_TARGET_OBJS=@fortran_target_objs@
 RUST_TARGET_OBJS=@rust_target_objs@
 
 # Object files for gcc many-languages driver.
-GCC_OBJS = gcc.o gcc-main.o ggc-none.o gcc-urlifier.o
+GCC_OBJS = gcc.o gcc-main.o ggc-none.o gcc-urlifier.o options-urls.o
 
 c-family-warn = $(STRICT_WARN)
 
@@ -1612,6 +1614,7 @@ OBJS = \
 	optinfo.o \
 	optinfo-emit-json.o \
 	options-save.o \
+	options-urls.o \
 	opts-global.o \
 	ordered-hash-map-tests.o \
 	passes.o \
@@ -1838,7 +1841,8 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
-	hash-table.o file-find.o spellcheck.o selftest.o opt-suggestions.o
+	hash-table.o file-find.o spellcheck.o selftest.o opt-suggestions.o \
+	options-urls.o
 
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
@@ -2441,9 +2445,9 @@ s-specs : Makefile
 	$(STAMP) s-specs
 
 optionlist: s-options ; @true
-s-options: $(ALL_OPT_FILES) Makefile $(srcdir)/opt-gather.awk
+s-options: $(ALL_OPT_FILES) $(ALL_OPT_URL_FILES) Makefile $(srcdir)/opt-gather.awk
 	LC_ALL=C ; export LC_ALL ; \
-	$(AWK) -f $(srcdir)/opt-gather.awk $(ALL_OPT_FILES) > tmp-optionlist
+	$(AWK) -f $(srcdir)/opt-gather.awk $(ALL_OPT_FILES) $(ALL_OPT_URL_FILES) > tmp-optionlist
 	$(SHELL) $(srcdir)/../move-if-change tmp-optionlist optionlist
 	$(STAMP) s-options
 
@@ -2457,6 +2461,12 @@ options-save.cc: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
     $(srcdir)/optc-save-gen.awk
 	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
 	       -f $(srcdir)/optc-save-gen.awk \
+	       -v header_name="config.h system.h coretypes.h tm.h" < $< > $@
+
+options-urls.cc: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
+    $(srcdir)/options-urls-cc-gen.awk
+	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
+	       -f $(srcdir)/options-urls-cc-gen.awk \
 	       -v header_name="config.h system.h coretypes.h tm.h" < $< > $@
 
 options.h: s-options-h ; @true
@@ -3611,6 +3621,22 @@ $(build_htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
 	SOURCEDIR=$(abs_docdir) \
 	DESTDIR=$(@D) \
 	$(SHELL) $(srcdir)/doc/install.texi2html
+
+# Regenerate the .opt.urls files from the generated html, and from the .opt
+# files.  Doing so requires all languages that have their own HTML manuals
+# to be enabled.
+.PHONY: regenerate-opt-urls
+OPT_URLS_HTML_DEPS = $(build_htmldir)/gcc/Option-Index.html \
+	$(build_htmldir)/gdc/Option-Index.html \
+	$(build_htmldir)/gfortran/Option-Index.html
+
+regenerate-opt-urls: $(srcdir)/regenerate-opt-urls.py $(OPT_URLS_HTML_DEPS)
+	$(srcdir)/regenerate-opt-urls.py $(build_htmldir) $(shell dirname $(srcdir))
+
+# Run the unit tests for regenerate-opt-urls.py
+.PHONY: regenerate-opt-urls-unit-test
+regenerate-opt-urls-unit-test: $(OPT_URLS_HTML_DEPS)
+	$(srcdir)/regenerate-opt-urls.py $(build_htmldir) $(shell dirname $(srcdir)) --unit-test
 
 MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 \
            doc/fsf-funding.7 doc/gcov-tool.1 doc/gcov-dump.1 \
