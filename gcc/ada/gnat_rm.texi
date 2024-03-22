@@ -5535,6 +5535,12 @@ applied to a tagged type its Expanded_Name and External_Tag are initialized
 with empty strings. This is useful to avoid exposing entity names at binary
 level but has a negative impact on the debuggability of tagged types.
 
+Alternatively, when pragmas @code{Discard_Names} and @code{Restrictions (No_Streams)}
+simultanously apply to a tagged type, its Expanded_Name and External_Tag are
+also initialized with empty strings. In particular, both these pragmas can be
+applied as configuration pragmas to avoid exposing entity names at binary
+level for the entire parition.
+
 @node Pragma Normalize_Scalars,Pragma Obsolescent,Pragma No_Tagged_Streams,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-normalize-scalars}@anchor{b0}
 @section Pragma Normalize_Scalars

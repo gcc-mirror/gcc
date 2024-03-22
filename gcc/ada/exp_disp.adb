@@ -4600,8 +4600,9 @@ package body Exp_Disp is
       --        streams.
 
       Discard_Names : constant Boolean :=
-                        Present (No_Tagged_Streams_Pragma (Typ))
-                          and then
+        (Present (No_Tagged_Streams_Pragma (Typ))
+           or else Restriction_Active (No_Streams))
+          and then
         (Global_Discard_Names or else Einfo.Entities.Discard_Names (Typ));
 
       --  The following name entries are used by Make_DT to generate a number

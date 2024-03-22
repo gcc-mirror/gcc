@@ -44,6 +44,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;
+with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
@@ -825,14 +826,31 @@ package body Exp_Put_Image is
               Make_Raise_Program_Error (Loc,
               Reason => PE_Explicit_Raise));
          else
-            Append_To (Stms,
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (RTE (RE_Put_Image_Unknown), Loc),
-                Parameter_Associations => New_List
-                  (Make_Identifier (Loc, Name_S),
-                   Make_String_Literal (Loc,
-                     Fully_Qualified_Name_String
-                       (Btyp, Append_NUL => False)))));
+            declare
+               Type_Name : String_Id;
+            begin
+               --  If aspect Discard_Names is enabled the intention is to
+               --  prevent type names from leaking into object file. Instead,
+               --  we emit string that is different from the ones from the
+               --  default implementations of the Put_Image attribute.
+
+               if Global_Discard_Names or else Discard_Names (Typ) then
+                  Start_String;
+                  Store_String_Chars ("(DISCARDED TYPE NAME)");
+                  Type_Name := End_String;
+               else
+                  Type_Name :=
+                    Fully_Qualified_Name_String (Btyp, Append_NUL => False);
+               end if;
+
+               Append_To (Stms,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Occurrence_Of (RTE (RE_Put_Image_Unknown), Loc),
+                   Parameter_Associations => New_List
+                     (Make_Identifier (Loc, Name_S),
+                        Make_String_Literal (Loc,
+                          Type_Name))));
+            end;
          end if;
       elsif Is_Null_Record_Type (Btyp, Ignore_Privacy => True) then
 
