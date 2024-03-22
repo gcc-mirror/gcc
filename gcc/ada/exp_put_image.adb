@@ -44,7 +44,6 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;
-with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
@@ -832,9 +831,8 @@ package body Exp_Put_Image is
                 Parameter_Associations => New_List
                   (Make_Identifier (Loc, Name_S),
                    Make_String_Literal (Loc,
-                     To_String
-                       (Fully_Qualified_Name_String
-                          (Btyp, Append_NUL => False))))));
+                     Fully_Qualified_Name_String
+                       (Btyp, Append_NUL => False)))));
          end if;
       elsif Is_Null_Record_Type (Btyp, Ignore_Privacy => True) then
 
