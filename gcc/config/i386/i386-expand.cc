@@ -22587,6 +22587,7 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
 {
   rtx op, dop0, dop1, t;
   unsigned i, odd, c, s, nelt = d->nelt;
+  int pblendw_i = 0;
   bool end_perm = false;
   machine_mode half_mode;
   rtx (*gen_and) (rtx, rtx, rtx);
@@ -22608,6 +22609,7 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
       gen_and = gen_andv2si3;
       gen_pack = gen_mmx_packusdw;
       gen_shift = gen_lshrv2si3;
+      pblendw_i = 0x5;
       break;
     case E_V8HImode:
       /* Required for "pack".  */
@@ -22619,6 +22621,7 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
       gen_and = gen_andv4si3;
       gen_pack = gen_sse4_1_packusdw;
       gen_shift = gen_lshrv4si3;
+      pblendw_i = 0x55;
       break;
     case E_V8QImode:
       /* No check as all instructions are SSE2.  */
@@ -22647,6 +22650,7 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
       gen_and = gen_andv8si3;
       gen_pack = gen_avx2_packusdw;
       gen_shift = gen_lshrv8si3;
+      pblendw_i = 0x5555;
       end_perm = true;
       break;
     case E_V32QImode:
@@ -22682,10 +22686,32 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
   dop1 = gen_reg_rtx (half_mode);
   if (odd == 0)
     {
-      t = gen_const_vec_duplicate (half_mode, GEN_INT (c));
-      t = force_reg (half_mode, t);
-      emit_insn (gen_and (dop0, t, gen_lowpart (half_mode, d->op0)));
-      emit_insn (gen_and (dop1, t, gen_lowpart (half_mode, d->op1)));
+      /* Use pblendw since const_vector 0 should be cheaper than
+	 const_vector 0xffff.  */
+      if (d->vmode == V4HImode
+	  || d->vmode == E_V8HImode
+	  || d->vmode == E_V16HImode)
+	{
+	  rtx dop0_t = gen_reg_rtx (d->vmode);
+	  rtx dop1_t = gen_reg_rtx (d->vmode);
+	  t = gen_reg_rtx (d->vmode);
+	  emit_move_insn (t, CONST0_RTX (d->vmode));
+
+	  emit_move_insn (dop0_t, gen_rtx_VEC_MERGE (d->vmode, d->op0, t,
+						     GEN_INT (pblendw_i)));
+	  emit_move_insn (dop1_t, gen_rtx_VEC_MERGE (d->vmode, d->op1, t,
+						     GEN_INT (pblendw_i)));
+
+	  emit_move_insn (dop0, gen_lowpart (half_mode, dop0_t));
+	  emit_move_insn (dop1, gen_lowpart (half_mode, dop1_t));
+	}
+      else
+	{
+	  t = gen_const_vec_duplicate (half_mode, GEN_INT (c));
+	  t = force_reg (half_mode, t);
+	  emit_insn (gen_and (dop0, t, gen_lowpart (half_mode, d->op0)));
+	  emit_insn (gen_and (dop1, t, gen_lowpart (half_mode, d->op1)));
+	}
     }
   else
     {
