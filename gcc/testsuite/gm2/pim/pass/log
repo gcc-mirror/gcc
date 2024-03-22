@@ -1,7 +1,7 @@
 =====================================================
 Stabs setchar3
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -18,7 +18,7 @@ type = SET ['A'..'Z']
 =====================================================
 Dwarf2 setchar3
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -35,7 +35,7 @@ type = SET ['A'..'Z']
 =====================================================
 Stabs subrange15
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -52,7 +52,7 @@ type = [20..40]
 =====================================================
 Dwarf2 subrange15
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -69,7 +69,7 @@ type = [20..40]
 =====================================================
 Stabs subrange16
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -86,7 +86,7 @@ type = ['A'..'Z']
 =====================================================
 Dwarf2 subrange16
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -103,7 +103,7 @@ type = ['A'..'Z']
 =====================================================
 Stabs subrange17
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -120,7 +120,7 @@ type = [blue..yellow]
 =====================================================
 Dwarf2 subrange17
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -137,7 +137,7 @@ type = [blue..yellow]
 =====================================================
 Stabs array4
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -154,7 +154,7 @@ type = ARRAY [1..5] OF <invalid type code 7>
 =====================================================
 Dwarf2 array4
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -171,7 +171,7 @@ type = ARRAY [1..5] OF CARDINAL
 =====================================================
 Stabs array5
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -188,7 +188,7 @@ type = POINTER TO ARRAY [1..5] OF <invalid type code 7>
 =====================================================
 Dwarf2 array5
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -205,7 +205,7 @@ type = POINTER TO ARRAY [1..5] OF CARDINAL
 =====================================================
 Stabs char
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -222,7 +222,7 @@ type = <invalid type code 18>
 =====================================================
 Dwarf2 char
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -239,7 +239,7 @@ type = CHAR
 =====================================================
 Stabs int
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -256,7 +256,7 @@ type = <invalid type code 7>
 =====================================================
 Dwarf2 int
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -273,7 +273,7 @@ type = INTEGER
 =====================================================
 Stabs ptrarray
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -290,7 +290,7 @@ type = POINTER TO ARRAY [0..9] OF <invalid type code 18>
 =====================================================
 Dwarf2 ptrarray
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -307,7 +307,7 @@ type = POINTER TO ARRAY [0..9] OF CHAR
 =====================================================
 Stabs variant9
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -327,7 +327,7 @@ END
 =====================================================
 Dwarf2 variant9
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -347,7 +347,7 @@ END
 =====================================================
 Stabs setenum
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -364,7 +364,7 @@ type = set = SET OF enum
 =====================================================
 Dwarf2 setenum
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -381,7 +381,7 @@ type = set = SET OF enum
 =====================================================
 Stabs record7
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -402,7 +402,7 @@ END
 =====================================================
 Dwarf2 record7
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -423,7 +423,7 @@ END
 =====================================================
 Stabs setchar4
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
@@ -440,7 +440,7 @@ type = charset = SET OF [200C..177C]
 =====================================================
 Dwarf2 setchar4
 GNU gdb 6.3
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 GDB is free software, covered by the GNU General Public License, and you are
 welcome to change it and/or distribute copies of it under certain conditions.
 Type "show copying" to see the conditions.
