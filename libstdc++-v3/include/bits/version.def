@@ -1761,6 +1761,14 @@ ftms = {
 };
 
 ftms = {
+  name = reference_wrapper;
+  values = {
+    v = 202403;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = saturation_arithmetic;
   values = {
     v = 202311;

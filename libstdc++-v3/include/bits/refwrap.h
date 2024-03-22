@@ -38,6 +38,10 @@
 #include <bits/invoke.h>
 #include <bits/stl_function.h> // for unary_function and binary_function
 
+#if __glibcxx_reference_wrapper >= 202403L // >= C++26
+# include <compare>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -358,6 +362,47 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
 #endif
 	  return std::__invoke(get(), std::forward<_Args>(__args)...);
 	}
+
+#if __glibcxx_reference_wrapper >= 202403L // >= C++26
+      // [refwrap.comparisons], comparisons
+      [[nodiscard]]
+      friend constexpr bool
+      operator==(reference_wrapper __x, reference_wrapper __y)
+      requires requires { { __x.get() == __y.get() } -> convertible_to<bool>; }
+      { return __x.get() == __y.get(); }
+
+      [[nodiscard]]
+      friend constexpr bool
+      operator==(reference_wrapper __x, const _Tp& __y)
+      requires requires { { __x.get() == __y } -> convertible_to<bool>; }
+      { return __x.get() == __y; }
+
+      [[nodiscard]]
+      friend constexpr bool
+      operator==(reference_wrapper __x, reference_wrapper<const _Tp> __y)
+      requires (!is_const_v<_Tp>)
+	&& requires { { __x.get() == __y.get() } -> convertible_to<bool>; }
+      { return __x.get() == __y.get(); }
+
+      [[nodiscard]]
+      friend constexpr auto
+      operator<=>(reference_wrapper __x, reference_wrapper<_Tp> __y)
+      requires requires { __detail::__synth3way(__x.get(), __y.get()); }
+      { return __detail::__synth3way(__x.get(), __y.get()); }
+
+      [[nodiscard]]
+      friend constexpr auto
+      operator<=>(reference_wrapper __x, const _Tp& __y)
+      requires requires { __detail::__synth3way(__x.get(), __y); }
+      { return __detail::__synth3way(__x.get(), __y); }
+
+      [[nodiscard]]
+      friend constexpr auto
+      operator<=>(reference_wrapper __x, reference_wrapper<const _Tp> __y)
+      requires (!is_const_v<_Tp>)
+	&& requires { __detail::__synth3way(__x.get(), __y.get()); }
+      { return __detail::__synth3way(__x.get(), __y.get()); }
+#endif
     };
 
 #if __cpp_deduction_guides

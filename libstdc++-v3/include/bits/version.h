@@ -1963,6 +1963,16 @@
 #endif /* !defined(__cpp_lib_ratio) && defined(__glibcxx_want_ratio) */
 #undef __glibcxx_want_ratio
 
+#if !defined(__cpp_lib_reference_wrapper)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_reference_wrapper 202403L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_reference_wrapper)
+#   define __cpp_lib_reference_wrapper 202403L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_reference_wrapper) && defined(__glibcxx_want_reference_wrapper) */
+#undef __glibcxx_want_reference_wrapper
+
 #if !defined(__cpp_lib_saturation_arithmetic)
 # if (__cplusplus >  202302L)
 #  define __glibcxx_saturation_arithmetic 202311L
