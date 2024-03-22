@@ -200,6 +200,7 @@ extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
 rtl_opt_pass * make_pass_avlprop (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
+rtl_opt_pass * make_pass_insert_landing_pad (gcc::context *ctxt);
 
 /* Routines implemented in riscv-string.c.  */
 extern bool riscv_expand_block_compare (rtx, rtx, rtx, rtx);

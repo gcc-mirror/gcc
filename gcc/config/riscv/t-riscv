@@ -145,6 +145,15 @@ thead.o: $(srcdir)/config/riscv/thead.cc \
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+riscv-zicfilp.o: $(srcdir)/config/riscv/riscv-zicfilp.cc \
+    $(CONFIG_H) $(SYSTEM_H) $(TM_H) $(REGS_H) insn-config.h $(RTL_BASE_H) \
+    dominance.h cfg.h cfganal.h $(BASIC_BLOCK_H) $(INSN_ATTR_H) $(RECOG_H) \
+    output.h hash-map.h $(DF_H) $(OBSTACK_H) $(TARGET_H) $(RTL_H) \
+    $(CONTEXT_H) $(TREE_PASS_H) regrename.h \
+    $(srcdir)/config/riscv/riscv-protos.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/riscv/riscv-zicfilp.cc
+
 PASSES_EXTRA += $(srcdir)/config/riscv/riscv-passes.def
 
 $(common_out_file): $(srcdir)/config/riscv/riscv-cores.def \

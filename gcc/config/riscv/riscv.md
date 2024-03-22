@@ -143,6 +143,12 @@
   UNSPECV_SSRDP
   UNSPECV_SSP
 
+  ;; ZICFILP
+  UNSPECV_LPAD
+  UNSPECV_SETLPL
+  UNSPECV_LPAD_ALIGN
+  UNSPECV_SET_GUARDED
+
   ;; XTheadInt unspec
   UNSPECV_XTHEADINT_PUSH
   UNSPECV_XTHEADINT_POP
@@ -155,6 +161,7 @@
    (TP_REGNUM			4)
    (T0_REGNUM			5)
    (T1_REGNUM			6)
+   (T2_REGNUM			7)
    (S0_REGNUM			8)
    (S1_REGNUM			9)
    (A0_REGNUM			10)
@@ -3704,11 +3711,18 @@
   [(set (pc) (match_operand 0 "register_operand"))]
   ""
 {
+  if (TARGET_ZICFILP)
+    emit_insn (gen_set_lpl (Pmode, const0_rtx));
+
   operands[0] = force_reg (Pmode, operands[0]);
+  if (TARGET_ZICFILP)
+    emit_use (gen_rtx_REG (Pmode, T2_REGNUM));
+
   if (Pmode == SImode)
     emit_jump_insn (gen_indirect_jumpsi (operands[0]));
   else
     emit_jump_insn (gen_indirect_jumpdi (operands[0]));
+
   DONE;
 })
 
@@ -3729,18 +3743,39 @@
 					 gen_rtx_LABEL_REF (Pmode, operands[1]),
 					 NULL_RTX, 0, OPTAB_DIRECT);
 
-  if (CASE_VECTOR_PC_RELATIVE && Pmode == DImode)
-    emit_jump_insn (gen_tablejumpdi (operands[0], operands[1]));
+  if (TARGET_ZICFILP)
+    {
+      rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
+      emit_move_insn (t2, operands[0]);
+
+      if (CASE_VECTOR_PC_RELATIVE && Pmode == DImode)
+	emit_jump_insn (gen_tablejump_cfidi (operands[1]));
+      else
+	emit_jump_insn (gen_tablejump_cfisi (operands[1]));
+    }
   else
-    emit_jump_insn (gen_tablejumpsi (operands[0], operands[1]));
+    {
+      if (CASE_VECTOR_PC_RELATIVE && Pmode == DImode)
+	emit_jump_insn (gen_tablejumpdi (operands[0], operands[1]));
+      else
+	emit_jump_insn (gen_tablejumpsi (operands[0], operands[1]));
+    }
   DONE;
 })
 
 (define_insn "tablejump<mode>"
   [(set (pc) (match_operand:GPR 0 "register_operand" "l"))
    (use (label_ref (match_operand 1 "" "")))]
-  ""
+  "!TARGET_ZICFILP"
   "jr\t%0"
+  [(set_attr "type" "jalr")
+   (set_attr "mode" "none")])
+
+(define_insn "tablejump_cfi<mode>"
+  [(set (pc) (reg:GPR T2_REGNUM))
+   (use (label_ref (match_operand 0 "")))]
+  "TARGET_ZICFILP"
+  "jr\tt2"
   [(set_attr "type" "jalr")
    (set_attr "mode" "none")])
 
@@ -4711,6 +4746,36 @@
   "TARGET_ZICFISS"
   "csrw\tssp, %0"
   [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
+;; Lading pad.
+
+(define_insn "lpad"
+  [(unspec_volatile [(match_operand 0 "immediate_operand" "i")] UNSPECV_LPAD)]
+  "TARGET_ZICFILP"
+  "lpad\t%0"
+  [(set_attr "type" "auipc")])
+
+(define_insn "@set_lpl<mode>"
+  [(set (reg:GPR T2_REGNUM)
+	(unspec_volatile [(match_operand:GPR 0 "immediate_operand" "i")] UNSPECV_SETLPL))]
+   "TARGET_ZICFILP"
+   "lui\tt2,%0"
+  [(set_attr "type" "const")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "lpad_align"
+  [(unspec_volatile [(const_int 0)] UNSPECV_LPAD_ALIGN)]
+  "TARGET_ZICFILP"
+  ".align 2"
+  [(set_attr "type" "nop")])
+
+(define_insn "@set_guarded<mode>"
+  [(set (reg:GPR T2_REGNUM)
+	(unspec_volatile [(match_operand:GPR 0 "register_operand" "r")] UNSPECV_SET_GUARDED))]
+  "TARGET_ZICFILP"
+  "mv\tt2,%0"
+  [(set_attr "type" "move")
    (set_attr "mode" "<MODE>")])
 
 (include "bitmanip.md")

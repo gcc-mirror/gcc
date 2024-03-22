@@ -20,3 +20,4 @@
 INSERT_PASS_AFTER (pass_rtl_store_motion, 1, pass_shorten_memrefs);
 INSERT_PASS_AFTER (pass_split_all_insns, 1, pass_avlprop);
 INSERT_PASS_BEFORE (pass_fast_rtl_dce, 1, pass_vsetvl);
+INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_insert_landing_pad);
