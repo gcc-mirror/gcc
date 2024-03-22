@@ -858,6 +858,13 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
 	}
     }
   check_null = sanitize_flags_p (SANITIZE_NULL);
+  if (check_null && POINTER_TYPE_P (TREE_TYPE (ptr)))
+    {
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (ptr)));
+      if (!ADDR_SPACE_GENERIC_P (as)
+	  && targetm.addr_space.zero_address_valid (as))
+	check_null = false;
+    }
 
   if (check_align == NULL_TREE && !check_null)
     {
@@ -1447,8 +1454,15 @@ instrument_mem_ref (tree mem, tree base, gimple_stmt_iterator *iter,
       if (align <= 1)
 	align = 0;
     }
-  if (align == 0 && !sanitize_flags_p (SANITIZE_NULL))
-    return;
+  if (align == 0)
+    {
+      if (!sanitize_flags_p (SANITIZE_NULL))
+	return;
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (base));
+      if (!ADDR_SPACE_GENERIC_P (as)
+	  && targetm.addr_space.zero_address_valid (as))
+	return;
+    }
   tree t = TREE_OPERAND (base, 0);
   if (!POINTER_TYPE_P (TREE_TYPE (t)))
     return;
