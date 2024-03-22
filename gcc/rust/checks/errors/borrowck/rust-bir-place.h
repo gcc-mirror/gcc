@@ -19,7 +19,6 @@
 #ifndef RUST_BIR_PLACE_H
 #define RUST_BIR_PLACE_H
 
-#include <limits>
 #include "rust-mapping-common.h"
 #include "rust-system.h"
 #include "rust-tyty.h"

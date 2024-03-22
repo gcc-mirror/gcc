@@ -25,8 +25,7 @@
 #include "rust-autoderef.h"
 #include "rust-tyty-region.h"
 #include "rust-tyty-variance-analysis.h"
-
-#include <stack>
+#include "rust-system.h"
 
 namespace Rust {
 namespace Resolver {

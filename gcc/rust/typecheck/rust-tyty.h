@@ -27,8 +27,7 @@
 #include "rust-tyty-util.h"
 #include "rust-tyty-subst.h"
 #include "rust-tyty-region.h"
-
-#include <limits>
+#include "rust-system.h"
 
 namespace Rust {
 

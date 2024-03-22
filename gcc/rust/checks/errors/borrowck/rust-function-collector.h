@@ -22,8 +22,7 @@
 #include "rust-hir-item.h"
 #include "rust-hir-visitor.h"
 #include "rust-hir.h"
-
-#include <vector>
+#include "rust-system.h"
 
 namespace Rust {
 

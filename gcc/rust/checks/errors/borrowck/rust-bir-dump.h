@@ -19,8 +19,7 @@
 #ifndef RUST_BIR_DUMP_H
 #define RUST_BIR_DUMP_H
 
-#include <ostream>
-#include <utility>
+#include "rust-system.h"
 #include "rust-bir-place.h"
 #include "rust-bir-visitor.h"
 #include "rust-bir.h"
