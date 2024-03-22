@@ -137,6 +137,7 @@ FUNC_BEGIN (__riscv_save_2)
   # CFA info is not correct in next 2 instruction since t1's
   # value is depend on how may register really save.
   add sp, sp, t1
+  SET_LPAD
   jr t0
   .cfi_endproc
 FUNC_END (__riscv_save_12)
@@ -162,6 +163,7 @@ FUNC_BEGIN (__riscv_save_0)
   .cfi_offset 8, -16
   sd ra, 8(sp)
   .cfi_offset 1, -8
+  SET_LPAD
   jr t0
   .cfi_endproc
 FUNC_END (__riscv_save_1)
@@ -310,6 +312,7 @@ FUNC_BEGIN(__riscv_save_0)
   .cfi_offset 8, -8
   sw ra, 8(sp)
   .cfi_offset 1, -4
+  SET_LPAD
   jr t0
   .cfi_endproc
 FUNC_END(__riscv_save_2)
@@ -399,6 +402,7 @@ FUNC_BEGIN (__riscv_save_4)
   # CFA info is not correct in next 2 instruction since t1's
   # value is depend on how may register really save.
   sub sp, sp, t1
+  SET_LPAD
   jr t0
   .cfi_endproc
 FUNC_END (__riscv_save_12)
@@ -428,6 +432,7 @@ FUNC_BEGIN (__riscv_save_0)
   .cfi_offset 8, -8
   sw ra, 12(sp)
   .cfi_offset 1, -4
+  SET_LPAD
   jr t0
   .cfi_endproc
 FUNC_END (__riscv_save_3)

@@ -10333,6 +10333,56 @@ riscv_file_start (void)
     riscv_emit_attribute ();
 }
 
+void
+riscv_file_end ()
+{
+  file_end_indicate_exec_stack ();
+  long GNU_PROPERTY_RISCV_FEATURE_1_AND  = 0;
+  unsigned long feature_1_and = 0;
+
+  if (TARGET_ZICFISS)
+    feature_1_and |= 0x1 << 0;
+
+  if (TARGET_ZICFILP)
+    feature_1_and |= 0x1 << 1;
+
+  if (feature_1_and)
+    {
+      /* Generate .note.gnu.property section.  */
+      switch_to_section (get_section (".note.gnu.property",
+				      SECTION_NOTYPE, NULL));
+
+      /* The program property descriptor is aligned to 4 bytes in 32-bit
+	 objects and 8 bytes in 64-bit objects.  */
+      unsigned p2align = TARGET_64BIT ? 3 : 2;
+
+      fprintf (asm_out_file, "\t.p2align\t%u\n", p2align);
+      /* name length.  */
+      fprintf (asm_out_file, "\t.long\t1f - 0f\n");
+      /* data length.  */
+      fprintf (asm_out_file, "\t.long\t5f - 2f\n");
+      /* note type.  */
+      fprintf (asm_out_file, "\t.long\t5\n");
+      fprintf (asm_out_file, "0:\n");
+      /* vendor name: "GNU".  */
+      fprintf (asm_out_file, "\t.asciz\t\"GNU\"\n");
+      fprintf (asm_out_file, "1:\n");
+
+      /* pr_type.  */
+      fprintf (asm_out_file, "\t.p2align\t3\n");
+      fprintf (asm_out_file, "2:\n");
+      fprintf (asm_out_file, "\t.long\t0xc0000000\n");
+      /* pr_datasz.  */
+      fprintf (asm_out_file, "\t.long\t4f - 3f\n");
+      fprintf (asm_out_file, "3:\n");
+      /* zicfiss, zicfilp.  */
+      fprintf (asm_out_file, "\t.long\t%x\n", feature_1_and);
+      fprintf (asm_out_file, "4:\n");
+      fprintf (asm_out_file, "\t.p2align\t%u\n", p2align);
+      fprintf (asm_out_file, "5:\n");
+    }
+}
+
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
    in order to avoid duplicating too much logic from elsewhere.  */
 
@@ -13974,7 +14024,7 @@ bool need_shadow_stack_push_pop_p ()
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 #undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+#define TARGET_ASM_FILE_END riscv_file_end
 
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START riscv_va_start
