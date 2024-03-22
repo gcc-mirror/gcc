@@ -1109,6 +1109,14 @@ taint_state_machine::on_condition (sm_context *sm_ctxt,
       return;
     }
 
+  /* Strip away casts before considering LHS and RHS, to increase the
+     chance of detecting places where sanitization of a value may have
+     happened.  */
+  if (const svalue *inner = lhs->maybe_undo_cast ())
+    lhs = inner;
+  if (const svalue *inner = rhs->maybe_undo_cast ())
+    rhs = inner;
+
   // TODO
   switch (op)
     {

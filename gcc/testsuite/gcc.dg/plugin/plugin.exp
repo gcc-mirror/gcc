@@ -172,6 +172,8 @@ set plugin_test_list [list \
 	  taint-pr112850-too-complex.c \
 	  taint-pr112850-unsanitized.c \
 	  taint-pr112927.c \
+	  taint-pr112974.c \
+	  taint-pr112975.c \
 	  taint-pr112977.c } \
     { analyzer_cpython_plugin.c \
 	  cpython-plugin-test-no-Python-h.c \
