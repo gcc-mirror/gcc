@@ -1,3 +1,11 @@
+2024-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/114397
+	* libgcc2.c (__divmodbitint4): Don't assume un < vn always means
+	abs(v) > abs(u), check for a special case of un + 1 == vn where
+	u is non-negative and v negative and after v's negation vn could
+	be reduced by 1.
+
 2024-03-20  Flavio Cruz  <flaviocruz@gmail.com>
 
 	* config/i386/gnu-unwind.h: Support unwinding x86_64 signal frames.

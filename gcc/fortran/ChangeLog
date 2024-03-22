@@ -1,3 +1,11 @@
+2024-03-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/30802
+	* trans-array.cc (abridged_ref_name): New helper function.
+	(trans_array_bound_check): Use it.
+	(array_bound_check_elemental): Likewise.
+	(gfc_conv_array_ref): Likewise.
+
 2024-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-array.cc (structure_alloc_comps): Use integer_zero_node

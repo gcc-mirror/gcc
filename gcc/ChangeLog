@@ -1,3 +1,39 @@
+2024-03-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Comment correction.
+
+2024-03-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-hsa.h (ASM_SPEC): Pass -mattr=+cumode.
+
+2024-03-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-run.cc (main): Add an hsa_memory_free calls for each
+	device_malloc call.
+
+2024-03-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/114396
+	* tree-vect-loop.cc (vect_peel_nonlinear_iv_init): Pass utype
+	and true to wi::from_mpz.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111736
+	* asan.cc (instrument_derefs): Do not instrument accesses
+	to non-generic address-spaces.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113727
+	* tree-sra.cc (analyze_access_subtree): Do not allow
+	replacements in subtrees when grp_partial_lhs.
+
+2024-03-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/114347
+	* doc/invoke.texi: Document -fexcess-precision=16.
+
 2024-03-20  Cupertino Miranda  <cupertino.miranda@oracle.com>
 
 	* config/bpf/core-builtins.cc (bpf_core_get_index): Check if

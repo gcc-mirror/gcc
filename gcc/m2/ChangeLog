@@ -1,3 +1,121 @@
+2024-03-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113836
+	* Make-lang.in (GM2_C_OBJS): Add m2/gm2-gcc/m2pp.o.
+	(m2/m2pp.o): Remove rule.
+	(GM2-COMP-BOOT-DEFS): Add M2LangDump.def.
+	(GM2-COMP-BOOT-MODS): Add M2LangDump.mod.
+	(GM2-GCC-DEFS): Add M2LangDump.def.
+	(GM2-GCC-MODS): Add M2LangDump.mod.
+	* gm2-compiler/M2CaseList.mod (WriteCase): Rewrite.
+	* gm2-compiler/M2Code.mod (DoModuleDeclare): Call
+	DumpFilteredResolver depending upon DumpLangDecl.
+	(DoCodeBlock): Call CreateDumpGimple depending upon
+	DumpLangGimple.
+	(Code): Replace DisplayQuadList blocks with DumpQuadruples.
+	(DisplayQuadsInScope): Remove.
+	(DisplayQuadNumbers): Remove.
+	(CodeBlock): Rewrite.
+	* gm2-compiler/M2GCCDeclare.def (IncludeDumpSymbol): New procedure.
+	(DumpFilteredResolver): New procedure.
+	(DumpFilteredDefinitive): New procedure.
+	* gm2-compiler/M2GCCDeclare.mod (IncludeDumpSymbol): New procedure.
+	(DumpFilteredResolver): New procedure.
+	(DumpFilteredDefinitive): New procedure.
+	(doInclude): Rewrite to use GetDumpFile.
+	(WatchIncludeList): Remove fixed debugging value.
+	(doExclude): Rewrite to use GetDumpFile.
+	(DeclareTypesConstantsProceduresInRange): Remove fixed debugging
+	values.
+	(PreAddModGcc): Rename parameter t as tree.
+	(IncludeGetNth): Rewrite to use GetDumpFile.
+	(IncludeType): Ditto.
+	(IncludeSubscript): Ditto.
+	(PrintLocalSymbol): Ditto.
+	(PrintLocalSymbols): Ditto.
+	(IncludeGetVarient): Ditto.
+	(PrintDeclared): Ditto.
+	(PrintAlignment): Ditto.
+	(PrintDecl): Ditto.
+	(PrintScope): Ditto.
+	(PrintProcedure): Ditto.
+	(PrintSym): Ditto.
+	(PrintSymbol): Ditto.
+	(PrintTerse): Ditto.
+	* gm2-compiler/M2Options.def (GetDumpLangDeclFilename): New
+	procedure function.
+	(SetDumpLangDeclFilename): New procedure.
+	(GetDumpLangQuadFilename): New procedure function.
+	(SetDumpLangQuadFilename): New procedure.
+	(GetDumpLangGimpleFilename): New procedure function.
+	(SetDumpLangGimpleFilename): New procedure.
+	(SetM2DumpFilter): New procedure.
+	(GetM2DumpFilter): New procedure function.
+	(GetDumpLangGimple): New procedure function.
+	* gm2-compiler/M2Options.mod (GetDumpLangDeclFilename): New
+	procedure function.
+	(SetDumpLangDeclFilename): New procedure.
+	(GetDumpLangQuadFilename): New procedure function.
+	(SetDumpLangQuadFilename): New procedure.
+	(GetDumpLangGimpleFilename): New procedure function.
+	(SetDumpLangGimpleFilename): New procedure.
+	(SetM2DumpFilter): New procedure.
+	(GetM2DumpFilter): New procedure function.
+	(GetDumpLangGimple): New procedure function.
+	* gm2-compiler/M2Quads.def (DumpQuadruples): New procedure.
+	* gm2-compiler/M2Quads.mod (DumpUntil): New procedure.
+	(GetCtorInit): New procedure function.
+	(GetCtorFini): New procedure function.
+	(DumpQuadrupleFilter): New procedure function.
+	(DumpQuadrupleAll): New procedure.
+	(DisplayQuadList): Remove procedure.
+	(DumpQuadruples): New procedure.
+	(DisplayQuadRange): Rewrite.
+	(DisplayQuad): Ditto.
+	(DisplayProcedureAttributes): Ditto.
+	(WriteOperator): Ditto.
+	(WriteMode): Ditto.
+	* gm2-compiler/M2Scope.mod (ForeachScopeBlockDo2): Replace
+	DisplayQuadruples with TraceQuadruples.
+	(ForeachScopeBlockDo3): Replace	DisplayQuadruples with
+	TraceQuadruples.
+	* gm2-compiler/SymbolConversion.def (Gcc2Mod): New procedure function.
+	* gm2-compiler/SymbolConversion.mod: New procedure function.
+	* gm2-gcc/m2misc.cc (m2misc_DebugTree): New function.
+	(m2misc_DebugTreeChain): New function.
+	* gm2-gcc/m2options.h (M2Options_GetDumpLangDeclFilename): New
+	prototype.
+	(M2Options_SetDumpLangDeclFilename): New prototype.
+	(M2Options_GetDumpLangQuadFilename): New prototype.
+	(M2Options_SetDumpLangQuadFilename): New prototype.
+	(M2Options_GetDumpLangGimpleFilename): New prototype.
+	(M2Options_SetDumpLangGimpleFilename): New prototype.
+	(M2Options_GetDumpLangGimple): New prototype.
+	(M2Options_SetM2DumpFilter): New prototype.
+	(M2Options_GetM2DumpFilter): New prototype.
+	* m2pp.cc: Move to...
+	* gm2-gcc/m2pp.cc: ...here.
+	* m2pp.h: Move to...
+	* gm2-gcc/m2pp.h: ...here.
+	* gm2-gcc/m2statement.cc (m2statement_BuildEndFunctionCode): Call
+	m2pp_dump_gimple.
+	* gm2-lang.cc (ENABLE_QUAD_DUMP_ALL): New define.
+	(gm2_langhook_init_options): Add switch cases for proposed new
+	command line options.
+	* gm2-libs/DynamicStrings.def (ReverseIndex): New procedure
+	function.
+	* gm2-libs/DynamicStrings.mod: New procedure function.
+	* gm2-compiler/M2LangDump.def: New file.
+	* gm2-compiler/M2LangDump.mod: New file.
+	* gm2-gcc/m2langdump.h: New file.
+	* gm2-gcc/m2pp.def: New file.
+
+2024-03-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114418
+	* gm2-compiler/PCSymBuild.mod (PushConstFunctionType): Check
+	func against NulSym and issue an error.
+
 2024-03-18  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114380

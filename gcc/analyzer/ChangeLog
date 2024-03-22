@@ -1,3 +1,10 @@
+2024-03-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113619
+	* region-model.cc (region_model::eval_condition): Fix
+	cast-handling from r14-3632-ge7b267444045c5 so that if those give
+	an unknown result, we continue trying the constraint manager.
+
 2024-03-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109251

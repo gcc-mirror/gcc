@@ -1,3 +1,45 @@
+2024-03-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113619
+	* c-c++-common/analyzer/taint-divisor-pr113619.c: New test.
+
+2024-03-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114418
+	* gm2/pim/fail/missingtsize.mod: New test.
+	* gm2/pim/fail/missingtsize2.mod: New test.
+
+2024-03-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/30802
+	* gfortran.dg/bounds_check_17.f90: Adjust pattern.
+	* gfortran.dg/bounds_check_fail_8.f90: New test.
+
+2024-03-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110323
+	* g++.dg/template/explicit-instantiation6.C: New test.
+	* g++.dg/template/explicit-instantiation7.C: New test.
+
+2024-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/114397
+	* gcc.dg/torture/bitint-65.c: New test.
+
+2024-03-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr114396.c: New test.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111736
+	* gcc.target/i386/pr111736.c: New testcase.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113727
+	* gcc.dg/torture/pr113727.c: New testcase.
+
 2024-03-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109251

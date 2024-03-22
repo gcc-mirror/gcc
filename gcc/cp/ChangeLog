@@ -1,3 +1,9 @@
+2024-03-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110323
+	* decl2.cc (min_vis_expr_r) <case VAR_DECL>: Do nothing for
+	decl_constant_var_p VAR_DECLs.
+
 2024-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* coroutines.cc (expand_one_await_expression): Use
