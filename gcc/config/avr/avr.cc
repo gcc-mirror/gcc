@@ -1495,12 +1495,18 @@ avr_set_current_function (tree decl)
   // Common problem is using "ISR" without first including avr/interrupt.h.
   const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
   name = default_strip_name_encoding (name);
-  if (strcmp ("ISR", name) == 0
-      || strcmp ("INTERRUPT", name) == 0
-      || strcmp ("SIGNAL", name) == 0)
+  if (strcmp ("ISR", name) == 0)
     {
       warning_at (loc, OPT_Wmisspelled_isr, "%qs is a reserved identifier"
 		  " in AVR-LibC.  Consider %<#include <avr/interrupt.h>%>"
+		  " before using the %qs macro", name, name);
+    }
+  if (strcmp ("INTERRUPT", name) == 0
+      || strcmp ("SIGNAL", name) == 0)
+    {
+      warning_at (loc, OPT_Wmisspelled_isr, "%qs is a deprecated identifier"
+		  " in AVR-LibC.  Consider %<#include <avr/interrupt.h>%>"
+		  " or %<#include <compat/deprecated.h>%>"
 		  " before using the %qs macro", name, name);
     }
 #endif // AVR-LibC naming conventions
