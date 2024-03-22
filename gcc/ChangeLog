@@ -1,3 +1,122 @@
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114231
+	* tree-vect-slp.cc (vect_analyze_slp): Lookup patterns when
+	processing a BB SLP root.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112793
+	* tree-vect-slp.cc (vect_schedule_slp_node): Already
+	code-generated constant/external nodes are OK.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113670
+	* tree-vect-data-refs.cc (vect_check_gather_scatter):
+	Make sure we can take the address of the reference base.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113622
+	* gimple-isel.cc (gimple_expand_vec_set_extract_expr):
+	Also allow DECL_HARD_REGISTER variables.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114203
+	* tree-ssa-loop-niter.cc (build_cltz_expr): Apply CTZ->CLZ
+	adjustment before making the result defined at zero.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114070
+	* match.pd ((c ? a : b) op d  -->  c ? (a op d) : (b op d)):
+	Allow the folding if before lowering and the current IL
+	isn't supported with vcond_mask.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114070
+	* genmatch.cc (parser::parse_c_expr): Do not record operand
+	lists but only mark operators used.
+	* match.pd ((c ? a : b) op (c ? d : e)  -->  c ? (a op d) : (b op e)):
+	Properly guard the case of tcc_comparison changing the VEC_COND
+	value operand type.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114027
+	* tree-vect-loop.cc (vecctorizable_reduction): Use optimized
+	condition reduction classification only for single-element
+	chains.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113910
+	* bitmap.cc (bitmap_hash): Mix the full element "hash" to
+	the hashval_t hash.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/112718
+	* dwarf2out.cc (dwarf2out_finish): Reset all type units
+	for the fat part of an LTO compile.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111736
+	* asan.cc (instrument_derefs): Do not instrument accesses
+	to non-generic address-spaces.
+
+2024-03-21  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-03-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/114396
+	* tree-vect-loop.cc (vect_peel_nonlinear_iv_init): Pass utype
+	and true to wi::from_mpz.
+
+2024-03-21  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2024-03-07  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/113950
+	* config/rs6000/vsx.md (vsx_splat_<mode>): Correct assignment to operand1
+	and simplify else if with else.
+
 2024-03-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/111822

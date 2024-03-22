@@ -1,3 +1,87 @@
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114231
+	* gcc.dg/vect/pr114231.c: New testcase.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112793
+	* g++.dg/vect/pr112793.cc: New testcase.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113670
+	* gcc.target/i386/pr113670.c: New testcase.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113622
+	* gcc.target/i386/pr113622-1.c: New testcase.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114203
+	* gcc.dg/torture/pr114203.c: New testcase.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114070
+	* gcc.dg/torture/pr114070.c: New testcase.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114027
+	* gcc.dg/vect/pr114027.c: New testcase.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/112718
+	* gcc.dg/debug/pr112718.c: New testcase.
+
+2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111736
+	* gcc.target/i386/pr111736.c: New testcase.
+
+2024-03-21  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-03-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr114396.c: New test.
+
+2024-03-21  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2024-03-07  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/113950
+	* gcc.target/powerpc/pr113950.c: New testcase.
+
 2024-03-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
