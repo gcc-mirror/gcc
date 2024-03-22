@@ -1414,7 +1414,8 @@ namespace __variant
 
       template<typename _Tp>
 	static constexpr bool __not_in_place_tag
-	  = !__is_in_place_tag<__remove_cvref_t<_Tp>>::value;
+	  = !__is_in_place_type_v<__remove_cvref_t<_Tp>>
+	      && !__is_in_place_index_v<__remove_cvref_t<_Tp>>;
 
     public:
 #if __cpp_concepts

@@ -223,6 +223,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     using __is_in_place_type = bool_constant<__is_in_place_type_v<_Tp>>;
 
+  template<typename>
+    inline constexpr bool __is_in_place_index_v = false;
+
+  template<size_t _Nm>
+    inline constexpr bool __is_in_place_index_v<in_place_index_t<_Nm>> = true;
+
 #endif // C++17
 
 #if _GLIBCXX_USE_BUILTIN_TRAIT(__type_pack_element)
