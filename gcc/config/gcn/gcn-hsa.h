@@ -75,7 +75,7 @@ extern unsigned int gcn_local_sym_hash (const char *name);
    supported for gcn.  */
 #define GOMP_SELF_SPECS ""
 
-#define NO_XNACK "march=fiji:;march=gfx1030:;" \
+#define NO_XNACK "march=fiji:;march=gfx1030:;march=gfx1100:;" \
     /* These match the defaults set in gcn.cc.  */ \
     "!mxnack*|mxnack=default:%{march=gfx900|march=gfx906|march=gfx908:-mattr=-xnack};"
 #define NO_SRAM_ECC "!march=*:;march=fiji:;march=gfx900:;march=gfx906:;"
@@ -91,7 +91,7 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 		  "%{!march=*|march=fiji:--amdhsa-code-object-version=3} " \
 		  "%{" NO_XNACK XNACKOPT "}" \
 		  "%{" NO_SRAM_ECC SRAMOPT "} " \
-		  "%{march=gfx1030:-mattr=+wavefrontsize64} " \
+		  "%{march=gfx1030|march=gfx1100:-mattr=+wavefrontsize64} " \
 		  "-filetype=obj"
 #define LINK_SPEC "--pie --export-dynamic"
 #define LIB_SPEC  "-lc"

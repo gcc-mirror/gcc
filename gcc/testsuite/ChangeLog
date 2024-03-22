@@ -1,3 +1,62 @@
+2024-01-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/ssa-sink-18.c: xfail dg-final "Sunk statements: 5"
+	on hppa*64*-*-*.
+
+2024-01-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gfortran.dg/dec_math.f90: Skip on hppa*-*-hpux*.
+
+2024-01-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/94253
+	* gfortran.dg/bind_c_coms.f90: Add -fcommon option on hppa*-*-*.
+	* gfortran.dg/bind_c_vars.f90: Likewise.
+
+2024-01-08  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/attr-kernel-helper.c: New test.
+
+2024-01-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113245
+	* gfortran.dg/size_optional_dim_2.f90: New test.
+
+2024-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113026
+	* gcc.dg/torture/pr113026-1.c: New testcase.
+	* gcc.dg/torture/pr113026-2.c: Likewise.
+
+2024-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113228
+	* gcc.c-torture/compile/pr113228.c: New test.
+
+2024-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113120
+	* gcc.dg/bitint-62.c: New test.
+
+2024-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113119
+	* gcc.dg/bitint-61.c: New test.
+
+2024-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/112952
+	* gcc.target/avr/attribute-io.h: New file.
+	* gcc.target/avr/pr112952-0.c: New test.
+	* gcc.target/avr/pr112952-1.c: New test.
+	* gcc.target/avr/pr112952-2.c: New test.
+	* gcc.target/avr/pr112952-3.c: New test.
+
+2024-01-08  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-3.h: Use
+	check + abort rather than assert.
+
 2024-01-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/lra-cpymem_qi.c: Remove duplicate -mmcu=.

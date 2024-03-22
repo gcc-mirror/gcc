@@ -5325,10 +5325,13 @@ package body Sem_Ch6 is
 
       --  Flag Is_Inlined_Always is True by default, and reversed to False for
       --  those subprograms which could be inlined in GNATprove mode (because
-      --  Body_To_Inline is non-Empty) but should not be inlined.
+      --  Body_To_Inline is non-Empty) but should not be inlined. Flag
+      --  Is_Inlined is True by default and reversed to False when inlining
+      --  fails because the subprogram is detected to be recursive.
 
       if GNATprove_Mode then
          Set_Is_Inlined_Always (Designator);
+         Set_Is_Inlined (Designator);
       end if;
 
       --  Introduce new scope for analysis of the formals and the return type
@@ -5370,6 +5373,7 @@ package body Sem_Ch6 is
 
          if Ada_Version >= Ada_2005
            and then not Is_Invariant_Procedure_Or_Body (Designator)
+           and then not Is_Init_Proc (Designator)
          then
             declare
                Formal     : Entity_Id;

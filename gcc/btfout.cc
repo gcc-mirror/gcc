@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "cgraph.h"
 #include "varasm.h"
+#include "stringpool.h"  /* For lookup_attribute.  */
+#include "attribs.h" /* For lookup_attribute.  */
 #include "dwarf2out.h" /* For lookup_decl_die.  */
 
 static int btf_label_num;
@@ -438,6 +440,11 @@ btf_collect_datasec (ctf_container_ref ctfc)
 
       ctf_dtdef_ref dtd = ctf_dtd_lookup (ctfc, die);
       if (dtd == NULL)
+	continue;
+
+      if (DECL_EXTERNAL (func->decl)
+	  && (lookup_attribute ("kernel_helper",
+				DECL_ATTRIBUTES (func->decl))) != NULL_TREE)
 	continue;
 
       /* Functions actually get two types: a BTF_KIND_FUNC_PROTO, and
@@ -1105,17 +1112,20 @@ static void
 output_btf_strs (ctf_container_ref ctfc)
 {
   ctf_string_t * ctf_string = ctfc->ctfc_strtable.ctstab_head;
+  static int str_pos = 0;
 
   while (ctf_string)
     {
-      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_string");
+      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_string, str_pos = 0x%x", str_pos);
+      str_pos += strlen(ctf_string->cts_str) + 1;
       ctf_string = ctf_string->cts_next;
     }
 
   ctf_string = ctfc->ctfc_aux_strtable.ctstab_head;
   while (ctf_string)
     {
-      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_aux_string");
+      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_aux_string, str_pos = 0x%x", str_pos);
+      str_pos += strlen(ctf_string->cts_str) + 1;
       ctf_string = ctf_string->cts_next;
     }
 }

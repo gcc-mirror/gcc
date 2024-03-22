@@ -2111,7 +2111,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	tree *gnu_index_types = XALLOCAVEC (tree, ndim);
 	tree *gnu_temp_fields = XALLOCAVEC (tree, ndim);
 	tree gnu_max_size = size_one_node;
-	tree comp_type, tem, obj;
+	tree comp_type, fld, tem, obj;
 	Entity_Id gnat_index;
 	alias_set_type ptr_set = -1;
 	int index;
@@ -2184,11 +2184,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   if the FIELD_DECLs are distinct as objects.  */
 	if (COMPLETE_TYPE_P (gnu_fat_type))
 	  {
-	    tem = TYPE_FIELDS (gnu_fat_type);
-	    if (TYPE_ALIAS_SET_KNOWN_P (TREE_TYPE (tem)))
-	      ptr_set = TYPE_ALIAS_SET (TREE_TYPE (tem));
-	    TREE_TYPE (tem) = ptr_type_node;
-	    TREE_TYPE (DECL_CHAIN (tem)) = gnu_ptr_template;
+	    fld = TYPE_FIELDS (gnu_fat_type);
+	    if (TYPE_ALIAS_SET_KNOWN_P (TYPE_CANONICAL (TREE_TYPE (fld))))
+	      ptr_set = TYPE_ALIAS_SET (TYPE_CANONICAL (TREE_TYPE (fld)));
+	    TREE_TYPE (fld) = ptr_type_node;
+	    TREE_TYPE (DECL_CHAIN (fld)) = gnu_ptr_template;
 	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (gnu_fat_type)) = 0;
 	    for (tree t = gnu_fat_type; t; t = TYPE_NEXT_VARIANT (t))
 	      SET_TYPE_UNCONSTRAINED_ARRAY (t, gnu_type);
@@ -2197,15 +2197,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  {
 	    /* We make the fields addressable for the sake of compatibility
 	       with languages for which the regular fields are addressable.  */
-	    tem
+	    fld
 	      = create_field_decl (get_identifier ("P_ARRAY"),
 				   ptr_type_node, gnu_fat_type,
 				   NULL_TREE, NULL_TREE, 0, 1);
-	    DECL_CHAIN (tem)
+	    DECL_CHAIN (fld)
 	      = create_field_decl (get_identifier ("P_BOUNDS"),
 				   gnu_ptr_template, gnu_fat_type,
 				   NULL_TREE, NULL_TREE, 0, 1);
-	    finish_fat_pointer_type (gnu_fat_type, tem);
+	    finish_fat_pointer_type (gnu_fat_type, fld);
 	    SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_type);
 	  }
 
@@ -2230,7 +2230,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   fields once we build them.  */
 	tem = build3 (COMPONENT_REF, gnu_ptr_template,
 		      build0 (PLACEHOLDER_EXPR, gnu_fat_type),
-		      DECL_CHAIN (TYPE_FIELDS (gnu_fat_type)), NULL_TREE);
+		      DECL_CHAIN (fld), NULL_TREE);
 	gnu_template_reference
 	  = build_unary_op (INDIRECT_REF, gnu_template_type, tem);
 	TREE_READONLY (gnu_template_reference) = 1;
@@ -2413,12 +2413,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   type since the implementation type may vary between constrained
 	   subtypes and unconstrained base type.  */
 	if (Present (PAT))
-	  TREE_TYPE (TYPE_FIELDS (gnu_fat_type))
-	    = build_pointer_type_for_mode (tem, ptr_mode, true);
+	  TREE_TYPE (fld) = build_pointer_type_for_mode (tem, ptr_mode, true);
 	else
-	  TREE_TYPE (TYPE_FIELDS (gnu_fat_type)) = build_pointer_type (tem);
+	  TREE_TYPE (fld) = build_pointer_type (tem);
 	if (ptr_set != -1)
-	  TYPE_ALIAS_SET (TREE_TYPE (TYPE_FIELDS (gnu_fat_type))) = ptr_set;
+	  TYPE_ALIAS_SET (TYPE_CANONICAL (TREE_TYPE (fld))) = ptr_set;
 
 	/* If the maximum size doesn't overflow, use it.  */
 	if (gnu_max_size
@@ -6504,6 +6503,28 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			}
 		      break;
 
+		    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N:
+		    case BUILT_IN_ATOMIC_STORE_N:
+		      /* This is a generic builtin overloaded on its second
+			 parameter type, so do type resolution based on it.  */
+		      if (list_length (gnu_param_type_list) >= 3
+			  && type_for_atomic_builtin_p
+			       (list_second (gnu_param_type_list)))
+			gnu_builtin_decl
+			  = resolve_atomic_builtin
+			      (fncode, list_second (gnu_param_type_list));
+		      else
+			{
+			  post_error
+			    ("??cannot import type-generic 'G'C'C builtin!",
+			     gnat_subprog);
+			  post_error
+			    ("\\?use a supported second parameter type",
+			     gnat_subprog);
+			  gnu_builtin_decl = NULL_TREE;
+			}
+		      break;
+
 		    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N:
 		      /* This is a generic builtin overloaded on its third
 			 parameter type, so do type resolution based on it.  */
@@ -6525,9 +6546,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			}
 		      break;
 
-		    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N:
 		    case BUILT_IN_SYNC_LOCK_RELEASE_N:
-		    case BUILT_IN_ATOMIC_STORE_N:
 		      post_error
 			("??unsupported type-generic 'G'C'C builtin!",
 			 gnat_subprog);

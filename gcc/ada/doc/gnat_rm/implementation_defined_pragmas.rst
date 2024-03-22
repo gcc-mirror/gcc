@@ -329,6 +329,20 @@ this pragma serves no purpose but is ignored
 rather than rejected to allow common sets of sources to be used
 in the two situations.
 
+.. _Pragma-Always_Terminates:
+
+Pragma Always_Terminates
+========================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Always_Terminates [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect ``Always_Terminates``
+in the SPARK 2014 Reference Manual, section 7.1.2.
+
 .. _Pragma-Annotate:
 
 Pragma Annotate

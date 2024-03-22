@@ -861,7 +861,19 @@ package body Sem_Ch8 is
                    Defining_Identifier => Subt,
                    Subtype_Indication  =>
                      Make_Subtype_From_Expr (Nam, Typ)));
-               Rewrite (Subtype_Mark (N), New_Occurrence_Of (Subt, Loc));
+
+               declare
+                  New_Subtype_Mark : constant Node_Id :=
+                    New_Occurrence_Of (Subt, Loc);
+               begin
+                  if Present (Subtype_Mark (N)) then
+                     Rewrite (Subtype_Mark (N), New_Subtype_Mark);
+                  else
+                     --  An Ada2022 renaming with no subtype mark
+                     Set_Subtype_Mark (N, New_Subtype_Mark);
+                  end if;
+               end;
+
                Set_Etype (Nam, Subt);
 
                --  Suppress discriminant checks on this subtype if the original
@@ -6550,16 +6562,6 @@ package body Sem_Ch8 is
 
                      Decl := Enclosing_Declaration (E);
 
-                     --  Enclosing_Declaration does not always return a
-                     --  declaration; cope with this irregularity.
-                     if Decl in N_Subprogram_Specification_Id
-                       and then Nkind (Parent (Decl)) in
-                         N_Subprogram_Body | N_Subprogram_Declaration
-                           | N_Subprogram_Renaming_Declaration
-                     then
-                        Decl := Parent (Decl);
-                     end if;
-
                      --  Look for the suprogram renaming declaration built
                      --  for a generic actual subprogram. Unclear why
                      --  Original_Node call is needed, but sometimes it is.
@@ -6743,7 +6745,7 @@ package body Sem_Ch8 is
                                  Id : Entity_Id := Gen_Trailer;
                               begin
                                  loop
-                                    if not Present (Id) then
+                                    if No (Id) then
                                        --  E_Trailer presumably occurred
                                        --  earlier on the entity list than
                                        --  Gen_Trailer. So E preceded the

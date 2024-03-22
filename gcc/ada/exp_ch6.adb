@@ -316,11 +316,10 @@ package body Exp_Ch6 is
    --  Insert the Post_Call list previously produced by routine Expand_Actuals
    --  or Expand_Call_Helper into the tree.
 
-   function Is_True_Build_In_Place_Function_Call (N : Node_Id) return Boolean;
+   function Is_Function_Call_With_BIP_Formals (N : Node_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if N denotes a call to a function
-   --  that requires handling as a build-in-place call; returns False for
-   --  non-BIP function calls and also for calls to functions with inherited
-   --  BIP formals that do not require BIP formals. For example:
+   --  that requires handling as a build-in-place call, that is, BIP function
+   --  calls and calls to functions with inherited BIP formals. For example:
    --
    --    type Iface is limited interface;
    --    function Get_Object return Iface;
@@ -330,15 +329,14 @@ package body Exp_Ch6 is
    --    type T1 is new Root1 and Iface with ...
    --    function Get_Object return T1;
    --    --  This primitive requires the BIP formals, and the evaluation of
-   --    --  Is_True_Build_In_Place_Function_Call returns True.
+   --    --  Is_Build_In_Place_Function_Call returns True.
    --
    --    type Root2 is tagged record ...
    --    type T2 is new Root2 and Iface with ...
    --    function Get_Object return T2;
    --    --  This primitive inherits the BIP formals of the interface primitive
    --    --  but, given that T2 is not a limited type, it does not require such
-   --    --  formals; therefore Is_True_Build_In_Place_Function_Call returns
-   --    --  False.
+   --    --  formals; therefore Is_Build_In_Place_Function_Call returns False.
 
    procedure Replace_Renaming_Declaration_Id
       (New_Decl  : Node_Id;
@@ -4906,8 +4904,8 @@ package body Exp_Ch6 is
             --  inherited the BIP extra actuals but does not require them.
 
             if Nkind (Call_Node) = N_Function_Call
-              and then Is_Build_In_Place_Function_Call (Call_Node)
-              and then not Is_True_Build_In_Place_Function_Call (Call_Node)
+              and then Is_Function_Call_With_BIP_Formals (Call_Node)
+              and then not Is_Build_In_Place_Function_Call (Call_Node)
             then
                Add_Dummy_Build_In_Place_Actuals (Subp,
                  Num_Added_Extra_Actuals => Num_Extra_Actuals);
@@ -4918,8 +4916,8 @@ package body Exp_Ch6 is
       --  inherited the BIP extra actuals but does not require them.
 
       elsif Nkind (Call_Node) = N_Function_Call
-        and then Is_Build_In_Place_Function_Call (Call_Node)
-        and then not Is_True_Build_In_Place_Function_Call (Call_Node)
+        and then Is_Function_Call_With_BIP_Formals (Call_Node)
+        and then not Is_Build_In_Place_Function_Call (Call_Node)
       then
          Add_Dummy_Build_In_Place_Actuals (Subp);
       end if;
@@ -5614,7 +5612,7 @@ package body Exp_Ch6 is
             pragma Assert (Ekind (Current_Subprogram) = E_Function);
             pragma Assert
               (Is_Build_In_Place_Function (Current_Subprogram) =
-               Is_True_Build_In_Place_Function_Call (Exp));
+               Is_Build_In_Place_Function_Call (Exp));
             null;
          end if;
 
@@ -6803,17 +6801,6 @@ package body Exp_Ch6 is
          end if;
       end if;
 
-      --  Assert that if F says "return G(...);"
-      --  then F and G are both b-i-p, or neither b-i-p.
-
-      if Nkind (Exp) = N_Function_Call then
-         pragma Assert (Ekind (Scope_Id) = E_Function);
-         pragma Assert
-           (Is_Build_In_Place_Function (Scope_Id) =
-            Is_True_Build_In_Place_Function_Call (Exp));
-         null;
-      end if;
-
       --  For the case of a simple return that does not come from an
       --  extended return, in the case of build-in-place, we rewrite
       --  "return <expression>;" to be:
@@ -6833,7 +6820,7 @@ package body Exp_Ch6 is
 
       pragma Assert
         (Comes_From_Extended_Return_Statement (N)
-          or else not Is_True_Build_In_Place_Function_Call (Exp)
+          or else not Is_Build_In_Place_Function_Call (Exp)
           or else Has_BIP_Formals (Scope_Id));
 
       if not Comes_From_Extended_Return_Statement (N)
@@ -6866,6 +6853,17 @@ package body Exp_Ch6 is
             Analyze (N);
             return;
          end;
+      end if;
+
+      --  Assert that if F says "return G(...);"
+      --  then F and G are both b-i-p, or neither b-i-p.
+
+      if Nkind (Exp) = N_Function_Call then
+         pragma Assert (Ekind (Scope_Id) = E_Function);
+         pragma Assert
+           (Is_Build_In_Place_Function (Scope_Id) =
+            Is_Build_In_Place_Function_Call (Exp));
+         null;
       end if;
 
       --  Here we have a simple return statement that is part of the expansion
@@ -8155,6 +8153,66 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
+      declare
+         Result : constant Boolean := Is_Build_In_Place_Function (Function_Id);
+         --  So we can stop here in the debugger
+      begin
+         return Result;
+      end;
+   end Is_Build_In_Place_Function_Call;
+
+   ---------------------------------------
+   -- Is_Function_Call_With_BIP_Formals --
+   ---------------------------------------
+
+   function Is_Function_Call_With_BIP_Formals (N : Node_Id) return Boolean is
+      Exp_Node    : constant Node_Id := Unqual_Conv (N);
+      Function_Id : Entity_Id;
+
+   begin
+      --  Return False if the expander is currently inactive, since awareness
+      --  of build-in-place treatment is only relevant during expansion. Note
+      --  that Is_Build_In_Place_Function, which is called as part of this
+      --  function, is also conditioned this way, but we need to check here as
+      --  well to avoid blowing up on processing protected calls when expansion
+      --  is disabled (such as with -gnatc) since those would trip over the
+      --  raise of Program_Error below.
+
+      --  In SPARK mode, build-in-place calls are not expanded, so that we
+      --  may end up with a call that is neither resolved to an entity, nor
+      --  an indirect call.
+
+      if not Expander_Active or else Nkind (Exp_Node) /= N_Function_Call then
+         return False;
+      end if;
+
+      if Is_Entity_Name (Name (Exp_Node)) then
+         Function_Id := Entity (Name (Exp_Node));
+
+      --  In the case of an explicitly dereferenced call, use the subprogram
+      --  type generated for the dereference.
+
+      elsif Nkind (Name (Exp_Node)) = N_Explicit_Dereference then
+         Function_Id := Etype (Name (Exp_Node));
+
+      --  This may be a call to a protected function.
+
+      elsif Nkind (Name (Exp_Node)) = N_Selected_Component then
+         --  The selector in question might not have been analyzed due to a
+         --  previous error, so analyze it here to output the appropriate
+         --  error message instead of crashing when attempting to fetch its
+         --  entity.
+
+         if not Analyzed (Selector_Name (Name (Exp_Node))) then
+            Analyze (Selector_Name (Name (Exp_Node)));
+         end if;
+
+         Function_Id := Etype (Entity (Selector_Name (Name (Exp_Node))));
+
+      else
+         raise Program_Error;
+      end if;
+
       if Is_Build_In_Place_Function (Function_Id) then
          return True;
 
@@ -8178,41 +8236,7 @@ package body Exp_Ch6 is
             end if;
          end;
       end if;
-   end Is_Build_In_Place_Function_Call;
-
-   ------------------------------------------
-   -- Is_True_Build_In_Place_Function_Call --
-   ------------------------------------------
-
-   function Is_True_Build_In_Place_Function_Call (N : Node_Id) return Boolean
-   is
-      Exp_Node    : Node_Id;
-      Function_Id : Entity_Id;
-
-   begin
-      --  No action needed if we know that this is not a BIP function call
-
-      if not Is_Build_In_Place_Function_Call (N) then
-         return False;
-      end if;
-
-      Exp_Node := Unqual_Conv (N);
-
-      if Is_Entity_Name (Name (Exp_Node)) then
-         Function_Id := Entity (Name (Exp_Node));
-
-      elsif Nkind (Name (Exp_Node)) = N_Explicit_Dereference then
-         Function_Id := Etype (Name (Exp_Node));
-
-      elsif Nkind (Name (Exp_Node)) = N_Selected_Component then
-         Function_Id := Etype (Entity (Selector_Name (Name (Exp_Node))));
-
-      else
-         raise Program_Error;
-      end if;
-
-      return Is_Build_In_Place_Function (Function_Id);
-   end Is_True_Build_In_Place_Function_Call;
+   end Is_Function_Call_With_BIP_Formals;
 
    -----------------------------------
    -- Is_Build_In_Place_Result_Type --
@@ -8366,14 +8390,6 @@ package body Exp_Ch6 is
                             | N_Unchecked_Type_Conversion
       then
          Func_Call := Expression (Func_Call);
-      end if;
-
-      --  No action needed if the called function inherited the BIP extra
-      --  formals but it is not a true BIP function.
-
-      if not Is_True_Build_In_Place_Function_Call (Func_Call) then
-         pragma Assert (Is_Expanded_Build_In_Place_Call (Func_Call));
-         return;
       end if;
 
       --  Mark the call as processed as a build-in-place call
@@ -8781,14 +8797,6 @@ package body Exp_Ch6 is
       Result_Subt  : Entity_Id;
 
    begin
-      --  No action needed if the called function inherited the BIP extra
-      --  formals but it is not a true BIP function.
-
-      if not Is_True_Build_In_Place_Function_Call (Func_Call) then
-         pragma Assert (Is_Expanded_Build_In_Place_Call (Func_Call));
-         return;
-      end if;
-
       --  Mark the call as processed as a build-in-place call
 
       pragma Assert (not Is_Expanded_Build_In_Place_Call (Func_Call));

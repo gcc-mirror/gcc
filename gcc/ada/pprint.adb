@@ -130,7 +130,11 @@ package body Pprint is
                   end loop;
                end;
                Append (Buf, " => ");
-               Append (Buf, Expr_Name (Expression (Elmt)));
+               if Box_Present (Elmt) then
+                  Append (Buf, "<>");
+               else
+                  Append (Buf, Expr_Name (Expression (Elmt)));
+               end if;
 
             --  Print parameter_association as "x => 12345"
 

@@ -1,3 +1,10 @@
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/README: Add notes about generating libstdc++ tables.
+	* unicode/GraphemeBreakProperty.txt: New file.
+	* unicode/emoji-data.txt: New file.
+	* unicode/gen_libstdcxx_unicode_data.py: New file.
+
 2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* analyze_brprob.py: Remove stray text at end of comment.

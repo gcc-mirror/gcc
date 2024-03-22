@@ -6606,6 +6606,8 @@ package body Exp_Aggr is
       Siz_Exp    : Node_Id := Empty;
       Count_Type : Entity_Id;
 
+      Is_Indexed_Aggregate : Boolean := False;
+
       function Aggregate_Size return Int;
       --  Compute number of entries in aggregate, including choices
       --  that cover a range or subtype, as well as iterated constructs.
@@ -7042,6 +7044,35 @@ package body Exp_Aggr is
            ("\this will result in infinite recursion??", Parent (N));
       end if;
 
+      --  Determine whether this is an indexed aggregate (see RM 4.3.5(25/5)).
+
+      if Present (New_Indexed_Subp) then
+         if No (Add_Unnamed_Subp) then
+            Is_Indexed_Aggregate := True;
+
+         else
+            declare
+               Comp_Assns : constant List_Id := Component_Associations (N);
+               Comp_Assn  : Node_Id;
+
+            begin
+               if Present (Comp_Assns)
+                 and then not Is_Empty_List (Comp_Assns)
+               then
+                  Comp_Assn := First (Comp_Assns);
+
+                  if Nkind (Comp_Assn) = N_Component_Association
+                    or else
+                      (Nkind (Comp_Assn) = N_Iterated_Component_Association
+                        and then Present (Defining_Identifier (Comp_Assn)))
+                  then
+                     Is_Indexed_Aggregate := True;
+                  end if;
+               end if;
+            end;
+         end if;
+      end if;
+
       ---------------------------
       --  Positional aggregate --
       ---------------------------
@@ -7068,12 +7099,11 @@ package body Exp_Aggr is
                   Next (Comp);
                end loop;
             end;
-         end if;
 
          --  Indexed aggregates are handled below. Unnamed aggregates
          --  such as sets may include iterated component associations.
 
-         if No (New_Indexed_Subp) then
+         elsif not Is_Indexed_Aggregate then
             Comp := First (Component_Associations (N));
             while Present (Comp) loop
                if Nkind (Comp) = N_Iterated_Component_Association then
@@ -7128,15 +7158,16 @@ package body Exp_Aggr is
       -- Indexed_Aggregate --
       -----------------------
 
-      --  For an indexed aggregate there must be an Assigned_Indexeed
+      --  For an indexed aggregate there must be an Assigned_Indexed
       --  subprogram. Note that unlike array aggregates, a container
       --  aggregate must be fully positional or fully indexed. In the
       --  first case the expansion has already taken place.
       --  TBA: the keys for an indexed aggregate must provide a dense
       --  range with no repetitions.
 
-      if Present (Assign_Indexed_Subp)
+      if Is_Indexed_Aggregate
         and then Present (Component_Associations (N))
+        and then not Is_Empty_List (Component_Associations (N))
       then
          declare
             Insert : constant Entity_Id := Entity (Assign_Indexed_Subp);
@@ -7153,7 +7184,6 @@ package body Exp_Aggr is
 
             Comp   : Node_Id;
             Index  : Node_Id;
-            Pos    : Int := 0;
             Stat   : Node_Id;
             Key    : Node_Id;
 
@@ -7196,6 +7226,8 @@ package body Exp_Aggr is
             end Expand_Range_Component;
 
          begin
+            pragma Assert (No (Expressions (N)));
+
             if Siz > 0 then
 
                --  Modify the call to the constructor to allocate the
@@ -7216,89 +7248,60 @@ package body Exp_Aggr is
                          Index)));
             end if;
 
-            if Present (Expressions (N)) then
-               Comp := First (Expressions (N));
+            Comp := First (Component_Associations (N));
 
-               while Present (Comp) loop
+            --  The choice may be a static value, or a range with
+            --  static bounds.
 
-                  --  Compute index position for successive components
-                  --  in the list of expressions, and use the indexed
-                  --  assignment procedure for each.
+            while Present (Comp) loop
+               if Nkind (Comp) = N_Component_Association then
+                  Key := First (Choices (Comp));
+                  while Present (Key) loop
 
-                  Index := Make_Op_Add (Loc,
-                    Left_Opnd => Type_Low_Bound (Index_Type),
-                    Right_Opnd => Make_Integer_Literal (Loc, Pos));
+                     --  If the expression is a box, the corresponding
+                     --  component (s) is left uninitialized.
 
-                  Stat := Make_Procedure_Call_Statement (Loc,
-                    Name => New_Occurrence_Of (Insert, Loc),
-                    Parameter_Associations =>
-                      New_List (New_Occurrence_Of (Temp, Loc),
-                      Index,
-                      New_Copy_Tree (Comp)));
+                     if Box_Present (Comp) then
+                        goto Next_Key;
 
-                  Pos := Pos + 1;
+                     elsif Nkind (Key) = N_Range then
 
-                  Append (Stat, Aggr_Code);
-                  Next (Comp);
-               end loop;
-            end if;
+                        --  Create loop for tne specified range,
+                        --  with copies of the expression.
 
-            if Present (Component_Associations (N)) then
-               Comp := First (Component_Associations (N));
+                        Stat :=
+                          Expand_Range_Component (Key, Expression (Comp));
 
-               --  The choice may be a static value, or a range with
-               --  static bounds.
-
-               while Present (Comp) loop
-                  if Nkind (Comp) = N_Component_Association then
-                     Key := First (Choices (Comp));
-                     while Present (Key) loop
-
-                        --  If the expression is a box, the corresponding
-                        --  component (s) is left uninitialized.
-
-                        if Box_Present (Comp) then
-                           goto Next_Key;
-
-                        elsif Nkind (Key) = N_Range then
-
-                           --  Create loop for tne specified range,
-                           --  with copies of the expression.
-
-                           Stat :=
-                             Expand_Range_Component (Key, Expression (Comp));
-
-                        else
-                           Stat := Make_Procedure_Call_Statement (Loc,
-                             Name => New_Occurrence_Of
-                                (Entity (Assign_Indexed_Subp), Loc),
-                                Parameter_Associations =>
-                                  New_List (New_Occurrence_Of (Temp, Loc),
-                                  New_Copy_Tree (Key),
-                                  New_Copy_Tree (Expression (Comp))));
-                        end if;
-
-                        Append (Stat, Aggr_Code);
-
-                        <<Next_Key>>
-                        Next (Key);
-                     end loop;
-
-                  else
-                     --  Iterated component association. Discard
-                     --  positional insertion procedure.
-
-                     if No (Iterator_Specification (Comp)) then
-                        Add_Named_Subp := Assign_Indexed_Subp;
-                        Add_Unnamed_Subp := Empty;
+                     else
+                        Stat := Make_Procedure_Call_Statement (Loc,
+                          Name => New_Occurrence_Of
+                             (Entity (Assign_Indexed_Subp), Loc),
+                             Parameter_Associations =>
+                               New_List (New_Occurrence_Of (Temp, Loc),
+                               New_Copy_Tree (Key),
+                               New_Copy_Tree (Expression (Comp))));
                      end if;
 
-                     Expand_Iterated_Component (Comp);
+                     Append (Stat, Aggr_Code);
+
+                     <<Next_Key>>
+                     Next (Key);
+                  end loop;
+
+               else
+                  --  Iterated component association. Discard
+                  --  positional insertion procedure.
+
+                  if No (Iterator_Specification (Comp)) then
+                     Add_Named_Subp := Assign_Indexed_Subp;
+                     Add_Unnamed_Subp := Empty;
                   end if;
 
-                  Next (Comp);
-               end loop;
-            end if;
+                  Expand_Iterated_Component (Comp);
+               end if;
+
+               Next (Comp);
+            end loop;
          end;
       end if;
 

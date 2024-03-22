@@ -1983,9 +1983,9 @@ package body Inline is
       then
          declare
             Len1 : constant Positive :=
-              String (String'("cannot inline"))'Length;
+              String'("cannot inline")'Length;
             Len2 : constant Positive :=
-              String (String'("info: no contextual analysis of"))'Length;
+              String'("info: no contextual analysis of")'Length;
 
             New_Msg : String (1 .. Msg'Length + Len2 - Len1);
 
@@ -2043,17 +2043,6 @@ package body Inline is
          --  Remove last character (question mark) to make this into an error.
 
          Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
-
-      --  In GNATprove mode, issue an info message when -gnatd_f is set and
-      --  Suppress_Info is False, and indicate that the subprogram is not
-      --  always inlined by setting flag Is_Inlined_Always to False.
-
-      elsif GNATprove_Mode then
-         Set_Is_Inlined_Always (Subp, False);
-
-         if Debug_Flag_Underscore_F and not Suppress_Info then
-            Error_Msg_NE (Msg, N, Subp);
-         end if;
 
       else
 
@@ -2999,25 +2988,6 @@ package body Inline is
       F := First_Formal (Subp);
       A := First_Actual (N);
       while Present (F) loop
-         if Present (Renamed_Object (F)) then
-
-            --  If expander is active, it is an error to try to inline a
-            --  recursive subprogram. In GNATprove mode, just indicate that the
-            --  inlining will not happen, and mark the subprogram as not always
-            --  inlined.
-
-            if GNATprove_Mode then
-               Cannot_Inline
-                 ("cannot inline call to recursive subprogram?", N, Subp);
-               Set_Is_Inlined_Always (Subp, False);
-            else
-               Error_Msg_N
-                 ("cannot inline call to recursive subprogram", N);
-            end if;
-
-            return;
-         end if;
-
          --  Reset Last_Assignment for any parameters of mode out or in out, to
          --  prevent spurious warnings about overwriting for assignments to the
          --  formal in the inlined code.

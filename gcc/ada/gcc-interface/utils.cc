@@ -1823,7 +1823,7 @@ set_reverse_storage_order_on_pad_type (tree type)
   return canonicalize_pad_type (type);
 }
 
-/* Relate the alias sets of GNU_NEW_TYPE and GNU_OLD_TYPE according to OP.
+/* Relate the alias sets of NEW_TYPE and OLD_TYPE according to OP.
    If this is a multi-dimensional array type, do this recursively.
 
    OP may be
@@ -1832,30 +1832,28 @@ set_reverse_storage_order_on_pad_type (tree type)
    - ALIAS_SET_SUBSET:   the new set is made a subset of the old one.  */
 
 void
-relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
+relate_alias_sets (tree new_type, tree old_type, enum alias_set_op op)
 {
   /* Remove any padding from GNU_OLD_TYPE.  It doesn't matter in the case
      of a one-dimensional array, since the padding has the same alias set
      as the field type, but if it's a multi-dimensional array, we need to
      see the inner types.  */
-  while (TREE_CODE (gnu_old_type) == RECORD_TYPE
-	 && (TYPE_JUSTIFIED_MODULAR_P (gnu_old_type)
-	     || TYPE_PADDING_P (gnu_old_type)))
-    gnu_old_type = TREE_TYPE (TYPE_FIELDS (gnu_old_type));
+  while (TREE_CODE (old_type) == RECORD_TYPE
+	 && (TYPE_JUSTIFIED_MODULAR_P (old_type)
+	     || TYPE_PADDING_P (old_type)))
+    old_type = TREE_TYPE (TYPE_FIELDS (old_type));
 
   /* Unconstrained array types are deemed incomplete and would thus be given
      alias set 0.  Retrieve the underlying array type.  */
-  if (TREE_CODE (gnu_old_type) == UNCONSTRAINED_ARRAY_TYPE)
-    gnu_old_type
-      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_old_type))));
-  if (TREE_CODE (gnu_new_type) == UNCONSTRAINED_ARRAY_TYPE)
-    gnu_new_type
-      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_new_type))));
+  if (TREE_CODE (old_type) == UNCONSTRAINED_ARRAY_TYPE)
+    old_type = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (old_type))));
+  if (TREE_CODE (new_type) == UNCONSTRAINED_ARRAY_TYPE)
+    new_type = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (new_type))));
 
-  if (TREE_CODE (gnu_new_type) == ARRAY_TYPE
-      && TREE_CODE (TREE_TYPE (gnu_new_type)) == ARRAY_TYPE
-      && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_new_type)))
-    relate_alias_sets (TREE_TYPE (gnu_new_type), TREE_TYPE (gnu_old_type), op);
+  if (TREE_CODE (new_type) == ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (new_type)) == ARRAY_TYPE
+      && TYPE_MULTI_ARRAY_P (TREE_TYPE (new_type)))
+    relate_alias_sets (TREE_TYPE (new_type), TREE_TYPE (old_type), op);
 
   switch (op)
     {
@@ -1864,19 +1862,20 @@ relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
 	 aliasing settings because this can break the aliasing relationship
 	 between the array type and its element type.  */
       if (flag_checking || flag_strict_aliasing)
-	gcc_assert (!(TREE_CODE (gnu_new_type) == ARRAY_TYPE
-		      && TREE_CODE (gnu_old_type) == ARRAY_TYPE
-		      && TYPE_NONALIASED_COMPONENT (gnu_new_type)
-			 != TYPE_NONALIASED_COMPONENT (gnu_old_type)));
+	gcc_assert (!(TREE_CODE (new_type) == ARRAY_TYPE
+		      && TREE_CODE (old_type) == ARRAY_TYPE
+		      && TYPE_NONALIASED_COMPONENT (new_type)
+			 != TYPE_NONALIASED_COMPONENT (old_type)));
 
-      TYPE_ALIAS_SET (gnu_new_type) = get_alias_set (gnu_old_type);
+      /* The alias set always lives on the TYPE_CANONICAL.  */
+      TYPE_ALIAS_SET (TYPE_CANONICAL (new_type)) = get_alias_set (old_type);
       break;
 
     case ALIAS_SET_SUBSET:
     case ALIAS_SET_SUPERSET:
       {
-	alias_set_type old_set = get_alias_set (gnu_old_type);
-	alias_set_type new_set = get_alias_set (gnu_new_type);
+	alias_set_type old_set = get_alias_set (old_type);
+	alias_set_type new_set = get_alias_set (new_type);
 
 	/* Do nothing if the alias sets conflict.  This ensures that we
 	   never call record_alias_subset several times for the same pair
@@ -1895,7 +1894,7 @@ relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
       gcc_unreachable ();
     }
 
-  record_component_aliases (gnu_new_type);
+  record_component_aliases (new_type);
 }
 
 /* Record TYPE as a builtin type for Ada.  NAME is the name of the type.

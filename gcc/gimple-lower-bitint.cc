@@ -305,6 +305,7 @@ optimizable_arith_overflow (gimple *stmt)
   imm_use_iterator ui;
   use_operand_p use_p;
   int seen = 0;
+  gimple *realpart = NULL, *cast = NULL;
   FOR_EACH_IMM_USE_FAST (use_p, ui, lhs)
     {
       gimple *g = USE_STMT (use_p);
@@ -317,6 +318,7 @@ optimizable_arith_overflow (gimple *stmt)
 	  if ((seen & 1) != 0)
 	    return 0;
 	  seen |= 1;
+	  realpart = g;
 	}
       else if (gimple_assign_rhs_code (g) == IMAGPART_EXPR)
 	{
@@ -338,13 +340,35 @@ optimizable_arith_overflow (gimple *stmt)
 	  if (!INTEGRAL_TYPE_P (TREE_TYPE (lhs2))
 	      || TREE_CODE (TREE_TYPE (lhs2)) == BITINT_TYPE)
 	    return 0;
+	  cast = use_stmt;
 	}
       else
 	return 0;
     }
   if ((seen & 2) == 0)
     return 0;
-  return seen == 3 ? 2 : 1;
+  if (seen == 3)
+    {
+      /* Punt if the cast stmt appears before realpart stmt, because
+	 if both appear, the lowering wants to emit all the code
+	 at the location of realpart stmt.  */
+      gimple_stmt_iterator gsi = gsi_for_stmt (realpart);
+      unsigned int cnt = 0;
+      do
+	{
+	  gsi_prev_nondebug (&gsi);
+	  if (gsi_end_p (gsi) || gsi_stmt (gsi) == cast)
+	    return 0;
+	  if (gsi_stmt (gsi) == stmt)
+	    return 2;
+	  /* If realpart is too far from stmt, punt as well.
+	     Usually it will appear right after it.  */
+	  if (++cnt == 32)
+	    return 0;
+	}
+      while (1);
+    }
+  return 1;
 }
 
 /* If STMT is some kind of comparison (GIMPLE_COND, comparison assignment)
@@ -6582,8 +6606,12 @@ gimple_lower_bitint (void)
 			= build_array_type_nelts (large_huge.m_limb_type,
 						  nelts);
 		      tree ptype = build_pointer_type (TREE_TYPE (v1));
-		      tree off = fold_convert (ptype,
-					       TYPE_SIZE_UNIT (TREE_TYPE (c)));
+		      tree off;
+		      if (c)
+			off = fold_convert (ptype,
+					    TYPE_SIZE_UNIT (TREE_TYPE (c)));
+		      else
+			off = build_zero_cst (ptype);
 		      tree vd = build2 (MEM_REF, vtype,
 					build_fold_addr_expr (v1), off);
 		      g = gimple_build_assign (vd, build_zero_cst (vtype));

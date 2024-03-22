@@ -1260,9 +1260,9 @@ package body Atree is
       end if;
    end Change_Node;
 
-   ----------------
-   -- Copy_Slots --
-   ----------------
+   ------------------------
+   -- Copy_Dynamic_Slots --
+   ------------------------
 
    procedure Copy_Dynamic_Slots
      (From, To : Node_Offset; Num_Slots : Slot_Count)
@@ -1282,6 +1282,10 @@ package body Atree is
       Destination_Slots := Source_Slots;
    end Copy_Dynamic_Slots;
 
+   ----------------
+   -- Copy_Slots --
+   ----------------
+
    procedure Copy_Slots (Source, Destination : Node_Id) is
       pragma Debug (Validate_Node (Source));
       pragma Assert (Source /= Destination);
@@ -1292,6 +1296,12 @@ package body Atree is
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
 
    begin
+      --  Empty_Or_Error use as described in types.ads
+      if Destination <= Empty_Or_Error or No (Source) then
+         pragma Assert (Serious_Errors_Detected > 0);
+         return;
+      end if;
+
       Copy_Dynamic_Slots
         (Off_F (Source), Off_F (Destination), S_Size);
       All_Node_Offsets (Destination).Slots := All_Node_Offsets (Source).Slots;

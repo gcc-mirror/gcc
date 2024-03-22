@@ -1,3 +1,114 @@
+2024-01-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR sanitizer/113251
+	* varasm.cc (assemble_function_label_raw): Do not call
+	asan_function_start () without the current function.
+
+2024-01-08  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	PR target/113225
+	* btfout.cc (btf_collect_datasec): Skip creating BTF info for
+	extern and kernel_helper attributed function decls.
+
+2024-01-08  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* btfout.cc (output_btf_strs): Changed.
+
+2024-01-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (main): Handle gfx1100
+	when setting the default XNACK.
+
+2024-01-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config.gcc (amdgcn-*-amdhsa): Accept --with-arch=gfx1100.
+	* config/gcn/gcn-hsa.h (NO_XNACK): Add gfx1100:
+	(ASM_SPEC): Handle gfx1100.
+	* config/gcn/gcn-opts.h (enum processor_type): Add PROCESSOR_GFX1100.
+	(enum gcn_isa): Add ISA_RDNA3.
+	(TARGET_GFX1100, TARGET_RDNA2_PLUS, TARGET_RDNA3): Define.
+	* config/gcn/gcn-valu.md: Change TARGET_RDNA2 to TARGET_RDNA2_PLUS.
+	* config/gcn/gcn.cc (gcn_option_override,
+	gcn_omp_device_kind_arch_isa, output_file_start): Handle gfx1100.
+	(gcn_global_address_p, gcn_addr_space_legitimate_address_p): Change
+	TARGET_RDNA2 to TARGET_RDNA2_PLUS.
+	(gcn_hsa_declare_function_name): Don't use '.amdhsa_reserve_flat_scratch'
+	with gfx1100.
+	* config/gcn/gcn.h (ASSEMBLER_DIALECT): Likewise.
+	(TARGET_CPU_CPP_BUILTINS): Define __RDNA3__, __gfx1030__ and
+	__gfx1100__.
+	* config/gcn/gcn.md: Change TARGET_RDNA2 to TARGET_RDNA2_PLUS.
+	* config/gcn/gcn.opt (Enum gpu_type): Add gfx1100.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_MACH_AMDGCN_GFX1100): Define.
+	(isa_has_combined_avgprs, main): Handle gfx1100.
+	* config/gcn/t-omp-device (isa): Add gfx1100.
+
+2024-01-08  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (-mmovbe): Clarify.
+
+2024-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113026
+	* tree-vect-loop.cc (vect_need_peeling_or_partial_vectors_p):
+	Avoid an epilog in more cases.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Adjust the
+	epilogues niter upper bounds and estimates.
+
+2024-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113228
+	* gimplify.cc (recalculate_side_effects): Do nothing for SSA_NAMEs.
+
+2024-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113120
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Fix handling of very
+	large _BitInt zero INTEGER_CST PHI argument.
+
+2024-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113119
+	* gimple-lower-bitint.cc (optimizable_arith_overflow): Punt if
+	both REALPART_EXPR and cast from IMAGPART_EXPR appear, but cast
+	is before REALPART_EXPR.
+
+2024-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/112952
+	* config/avr/avr.cc (avr_handle_addr_attribute): Also print valid
+	range when diagnosing attribute "io" and "io_low" are out of range.
+	(avr_eval_addr_attrib): Don't ICE on empty address at that place.
+	(avr_insert_attributes): Reject if attribute "address", "io" or "io_low"
+	in contexts other than static storage.
+	(avr_asm_output_aligned_decl_common): Move output of decls with
+	attribute "address", "io", and "io_low" to...
+	(avr_output_addr_attrib): ...this new function.
+	(avr_asm_asm_output_aligned_bss): Remove output for decls with
+	attribute "address", "io", and "io_low".
+	(avr_encode_section_info): Rectify handling of decls with attribute
+	"address", "io", and "io_low".
+
+2024-01-08  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (TEST_XNACK_UNSET): New.
+	(elf_flags): Remove XNACK from the default value.
+	(main): Set a default XNACK according to the arch.
+
+2024-01-08  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (isa_has_combined_avgprs): Delete.
+	(process_asm): Don't count avgprs.
+
+2024-01-08  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.opt: Add supported sub-features.
+	* doc/extend.texi: Add description for target attribute.
+
+2024-01-08  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/vector.md: Modify avl_type operand index of zvbc ins.
+
 2024-01-07  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

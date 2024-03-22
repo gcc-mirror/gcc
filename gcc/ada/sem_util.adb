@@ -7386,6 +7386,11 @@ package body Sem_Util is
          Decl := Parent (Decl);
       end loop;
 
+      --  cope with oddness in definition of N_Declaration
+      if Nkind (Decl) in N_Subprogram_Specification then
+         Decl := Parent (Decl);
+      end if;
+
       return Decl;
    end Enclosing_Declaration;
 

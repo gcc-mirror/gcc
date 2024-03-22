@@ -343,7 +343,7 @@ AC_MSG_NOTICE([checking for flock implementation])
 AC_CHECK_PROGS(FLOCK, flock)
 # Fallback if 'perl' is available.
 if test -z "$FLOCK"; then
-  AC_CHECK_PROG(FLOCK, perl, $srcdir/testsuite/flock)
+  AC_CHECK_PROG(FLOCK, perl, \$(abs_top_srcdir)/testsuite/flock)
 fi
 
 AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)

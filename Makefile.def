@@ -312,6 +312,7 @@ flags_to_pass = { flag= GNATBIND ; };
 flags_to_pass = { flag= GNATMAKE ; };
 flags_to_pass = { flag= GDC ; };
 flags_to_pass = { flag= GDCFLAGS ; };
+flags_to_pass = { flag= GUILE ; };
 
 // Target tools
 flags_to_pass = { flag= AR_FOR_TARGET ; };

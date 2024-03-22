@@ -5426,7 +5426,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 {
   tree ret, low_bound, length, type;
   bool openacc = (ort & C_ORT_ACC) != 0;
-  if (TREE_CODE (t) != TREE_LIST)
+  if (TREE_CODE (t) != OMP_ARRAY_SECTION)
     {
       if (error_operand_p (t))
 	return error_mark_node;
@@ -5448,7 +5448,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       ret = t_refto;
       if (TREE_CODE (t) == FIELD_DECL)
 	ret = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
-      else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+      else if (!VAR_P (t)
+	       && (openacc || !EXPR_P (t))
+	       && TREE_CODE (t) != PARM_DECL)
 	{
 	  if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 	    return NULL_TREE;
@@ -5481,16 +5483,16 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
 	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
-      && TREE_CODE (TREE_CHAIN (t)) == FIELD_DECL)
-    TREE_CHAIN (t) = omp_privatize_field (TREE_CHAIN (t), false);
-  ret = handle_omp_array_sections_1 (c, TREE_CHAIN (t), types,
+      && TREE_CODE (TREE_OPERAND (t, 0)) == FIELD_DECL)
+    TREE_OPERAND (t, 0) = omp_privatize_field (TREE_OPERAND (t, 0), false);
+  ret = handle_omp_array_sections_1 (c, TREE_OPERAND (t, 0), types,
 				     maybe_zero_len, first_non_one, ort);
   if (ret == error_mark_node || ret == NULL_TREE)
     return ret;
 
   type = TREE_TYPE (ret);
-  low_bound = TREE_PURPOSE (t);
-  length = TREE_VALUE (t);
+  low_bound = TREE_OPERAND (t, 1);
+  length = TREE_OPERAND (t, 2);
   if ((low_bound && type_dependent_expression_p (low_bound))
       || (length && type_dependent_expression_p (length)))
     return NULL_TREE;
@@ -5696,7 +5698,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  tree lb = cp_save_expr (low_bound);
 	  if (lb != low_bound)
 	    {
-	      TREE_PURPOSE (t) = lb;
+	      TREE_OPERAND (t, 1) = lb;
 	      low_bound = lb;
 	    }
 	}
@@ -5727,14 +5729,14 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	 array-section-subscript, the array section could be non-contiguous.  */
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
 	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
-	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == OMP_ARRAY_SECTION)
 	{
 	  /* If any prior dimension has a non-one length, then deem this
 	     array section as non-contiguous.  */
-	  for (tree d = TREE_CHAIN (t); TREE_CODE (d) == TREE_LIST;
-	       d = TREE_CHAIN (d))
+	  for (tree d = TREE_OPERAND (t, 0); TREE_CODE (d) == OMP_ARRAY_SECTION;
+	       d = TREE_OPERAND (d, 0))
 	    {
-	      tree d_length = TREE_VALUE (d);
+	      tree d_length = TREE_OPERAND (d, 2);
 	      if (d_length == NULL_TREE || !integer_onep (d_length))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
@@ -5757,7 +5759,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
   tree lb = cp_save_expr (low_bound);
   if (lb != low_bound)
     {
-      TREE_PURPOSE (t) = lb;
+      TREE_OPERAND (t, 1) = lb;
       low_bound = lb;
     }
   /* Temporarily disable -fstrong-eval-order for array reductions.
@@ -5835,10 +5837,12 @@ handle_omp_array_sections (tree &c, enum c_omp_region_type ort)
 	return false;
 
       for (i = num, t = OMP_CLAUSE_DECL (c); i > 0;
-	   t = TREE_CHAIN (t))
+	   t = TREE_OPERAND (t, 0))
 	{
-	  tree low_bound = TREE_PURPOSE (t);
-	  tree length = TREE_VALUE (t);
+	  gcc_assert (TREE_CODE (t) == OMP_ARRAY_SECTION);
+
+	  tree low_bound = TREE_OPERAND (t, 1);
+	  tree length = TREE_OPERAND (t, 2);
 
 	  i--;
 	  if (low_bound
@@ -6951,8 +6955,8 @@ cp_oacc_check_attachments (tree c)
       tree t = OMP_CLAUSE_DECL (c);
       tree type;
 
-      while (TREE_CODE (t) == TREE_LIST)
-	t = TREE_CHAIN (t);
+      while (TREE_CODE (t) == OMP_ARRAY_SECTION)
+	t = TREE_OPERAND (t, 0);
 
       type = TREE_TYPE (t);
 
@@ -7059,7 +7063,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_TASK_REDUCTION:
 	  field_ok = ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP);
 	  t = OMP_CLAUSE_DECL (c);
-	  if (TREE_CODE (t) == TREE_LIST)
+	  if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	    {
 	      if (handle_omp_array_sections (c, ort))
 		{
@@ -7075,10 +7079,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  remove = true;
 		  break;
 		}
-	      if (TREE_CODE (t) == TREE_LIST)
+	      if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 		{
-		  while (TREE_CODE (t) == TREE_LIST)
-		    t = TREE_CHAIN (t);
+		  while (TREE_CODE (t) == OMP_ARRAY_SECTION)
+		    t = TREE_OPERAND (t, 0);
 		}
 	      else
 		{
@@ -8102,7 +8106,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else
 	    last_iterators = NULL_TREE;
 
-	  if (TREE_CODE (t) == TREE_LIST)
+	  if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	    {
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
@@ -8262,7 +8266,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    auto_vec<omp_addr_token *, 10> addr_tokens;
 
 	    t = OMP_CLAUSE_DECL (c);
-	    if (TREE_CODE (t) == TREE_LIST)
+	    if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	      {
 		grp_start_p = pc;
 		grp_sentinel = OMP_CLAUSE_CHAIN (c);
@@ -8272,7 +8276,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		else
 		  {
 		    t = OMP_CLAUSE_DECL (c);
-		    if (TREE_CODE (t) != TREE_LIST
+		    if (TREE_CODE (t) != OMP_ARRAY_SECTION
 			&& !type_dependent_expression_p (t)
 			&& !omp_mappable_type (TREE_TYPE (t)))
 		      {
@@ -8455,7 +8459,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		    && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
 			|| OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_POINTER
-			|| OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH))
+			|| OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH
+			|| (!openacc && EXPR_P (t))))
 		  break;
 		if (DECL_P (t))
 		  error_at (OMP_CLAUSE_LOCATION (c),
@@ -8854,15 +8859,15 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	  t = OMP_CLAUSE_DECL (c);
-	  if (TREE_CODE (t) == TREE_LIST)
+	  if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	    {
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
 	      else
 		{
 		  t = OMP_CLAUSE_DECL (c);
-		  while (TREE_CODE (t) == TREE_LIST)
-		    t = TREE_CHAIN (t);
+		  while (TREE_CODE (t) == OMP_ARRAY_SECTION)
+		    t = TREE_OPERAND (t, 0);
 		  while (INDIRECT_REF_P (t)
 			 || TREE_CODE (t) == ARRAY_REF)
 		    t = TREE_OPERAND (t, 0);
@@ -9234,10 +9239,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (DECL_P (t))
 		    bitmap_clear_bit (&aligned_head, DECL_UID (t));
 		}
-	      else if (TREE_CODE (t) == TREE_LIST)
+	      else if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 		{
-		  while (TREE_CODE (t) == TREE_LIST)
-		    t = TREE_CHAIN (t);
+		  while (TREE_CODE (t) == OMP_ARRAY_SECTION)
+		    t = TREE_OPERAND (t, 0);
 		  if (DECL_P (t))
 		    bitmap_clear_bit (&aligned_head, DECL_UID (t));
 		  t = OMP_CLAUSE_DECL (c);

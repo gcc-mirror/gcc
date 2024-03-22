@@ -558,6 +558,7 @@ DEF_RVV_TYPE (vfloat64m8_t, 17, __rvv_float64m8_t, double, RVVM8DF, _f64m8,
 
 DEF_RVV_OP_TYPE (vv)
 DEF_RVV_OP_TYPE (vx)
+DEF_RVV_OP_TYPE (vi)
 DEF_RVV_OP_TYPE (v)
 DEF_RVV_OP_TYPE (wv)
 DEF_RVV_OP_TYPE (wx)

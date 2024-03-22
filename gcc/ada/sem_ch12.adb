@@ -2541,6 +2541,12 @@ package body Sem_Ch12 is
          end if;
       end if;
 
+      if Subtype_Mark (Def) <= Empty_Or_Error then
+         pragma Assert (Serious_Errors_Detected > 0);
+         --  avoid passing bad argument to Entity
+         return;
+      end if;
+
       --  If the parent type has a known size, so does the formal, which makes
       --  legal representation clauses that involve the formal.
 
@@ -13522,8 +13528,7 @@ package body Sem_Ch12 is
                Ancestor := Get_Instance_Of (Ancestor);
 
             else
-               Ancestor :=
-                 Get_Instance_Of (Base_Type (Get_Instance_Of (A_Gen_T)));
+               Ancestor := Get_Instance_Of (Etype (Get_Instance_Of (A_Gen_T)));
             end if;
 
          --  Check whether parent is a previous formal of the current generic
@@ -14181,124 +14186,120 @@ package body Sem_Ch12 is
       if Get_Instance_Of (A_Gen_T) /= A_Gen_T then
          Error_Msg_N ("duplicate instantiation of generic type", Actual);
          return New_List (Error);
+      end if;
 
-      elsif not Is_Entity_Name (Actual)
+      if not Is_Entity_Name (Actual)
         or else not Is_Type (Entity (Actual))
       then
          Error_Msg_NE
            ("expect valid subtype mark to instantiate &", Actual, Gen_T);
          Abandon_Instantiation (Actual);
+      end if;
 
-      else
-         Act_T := Entity (Actual);
+      Act_T := Entity (Actual);
 
-         --  Ada 2005 (AI-216): An Unchecked_Union subtype shall only be passed
-         --  as a generic actual parameter if the corresponding formal type
-         --  does not have a known_discriminant_part, or is a formal derived
-         --  type that is an Unchecked_Union type.
+      --  Ada 2005 (AI-216): An Unchecked_Union subtype shall only be passed
+      --  as a generic actual parameter if the corresponding formal type
+      --  does not have a known_discriminant_part, or is a formal derived
+      --  type that is an Unchecked_Union type.
 
-         if Is_Unchecked_Union (Base_Type (Act_T)) then
-            if not Has_Discriminants (A_Gen_T)
-              or else (Is_Derived_Type (A_Gen_T)
-                        and then Is_Unchecked_Union (A_Gen_T))
-            then
-               null;
-            else
-               Error_Msg_N ("unchecked union cannot be the actual for a "
-                            & "discriminated formal type", Act_T);
-
-            end if;
-         end if;
-
-         --  Deal with fixed/floating restrictions
-
-         if Is_Floating_Point_Type (Act_T) then
-            Check_Restriction (No_Floating_Point, Actual);
-         elsif Is_Fixed_Point_Type (Act_T) then
-            Check_Restriction (No_Fixed_Point, Actual);
-         end if;
-
-         --  Deal with error of using incomplete type as generic actual.
-         --  This includes limited views of a type, even if the non-limited
-         --  view may be available.
-
-         if Ekind (Act_T) = E_Incomplete_Type
-           or else (Is_Class_Wide_Type (Act_T)
-                     and then Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
+      if Is_Unchecked_Union (Base_Type (Act_T)) then
+         if not Has_Discriminants (A_Gen_T)
+           or else (Is_Derived_Type (A_Gen_T)
+                     and then Is_Unchecked_Union (A_Gen_T))
          then
-            --  If the formal is an incomplete type, the actual can be
-            --  incomplete as well, but if an actual incomplete type has
-            --  a full view, then we'll retrieve that.
+            null;
+         else
+            Error_Msg_N ("unchecked union cannot be the actual for a "
+                         & "discriminated formal type", Act_T);
 
-            if Ekind (A_Gen_T) = E_Incomplete_Type
-              and then No (Full_View (Act_T))
-            then
-               null;
+         end if;
+      end if;
 
-            elsif Is_Class_Wide_Type (Act_T)
-              or else No (Full_View (Act_T))
-            then
-               Error_Msg_N ("premature use of incomplete type", Actual);
-               Abandon_Instantiation (Actual);
+      --  Deal with fixed/floating restrictions
 
-            else
-               Act_T := Full_View (Act_T);
-               Set_Entity (Actual, Act_T);
+      if Is_Floating_Point_Type (Act_T) then
+         Check_Restriction (No_Floating_Point, Actual);
+      elsif Is_Fixed_Point_Type (Act_T) then
+         Check_Restriction (No_Fixed_Point, Actual);
+      end if;
 
-               if Has_Private_Component (Act_T) then
-                  Error_Msg_N
-                    ("premature use of type with private component", Actual);
-               end if;
+      --  Deal with error of using incomplete type as generic actual.
+      --  This includes limited views of a type, even if the non-limited
+      --  view may be available.
+
+      if Ekind (Act_T) = E_Incomplete_Type
+        or else (Is_Class_Wide_Type (Act_T)
+                  and then Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
+      then
+         --  If the formal is an incomplete type, the actual can be
+         --  incomplete as well, but if an actual incomplete type has
+         --  a full view, then we'll retrieve that.
+
+         if Ekind (A_Gen_T) = E_Incomplete_Type
+           and then No (Full_View (Act_T))
+         then
+            null;
+
+         elsif Is_Class_Wide_Type (Act_T)
+           or else No (Full_View (Act_T))
+         then
+            Error_Msg_N ("premature use of incomplete type", Actual);
+            Abandon_Instantiation (Actual);
+
+         else
+            Act_T := Full_View (Act_T);
+            Set_Entity (Actual, Act_T);
+
+            if Has_Private_Component (Act_T) then
+               Error_Msg_N
+                 ("premature use of type with private component", Actual);
             end if;
+         end if;
 
-         --  Deal with error of premature use of private type as generic actual
+      --  Deal with error of premature use of private type as generic actual,
+      --  which is allowed for incomplete formals.
 
-         elsif Is_Private_Type (Act_T)
+      elsif Ekind (A_Gen_T) /= E_Incomplete_Type then
+         if Is_Private_Type (Act_T)
            and then Is_Private_Type (Base_Type (Act_T))
            and then not Is_Generic_Type (Act_T)
            and then not Is_Derived_Type (Act_T)
            and then No (Full_View (Root_Type (Act_T)))
          then
-            --  If the formal is an incomplete type, the actual can be
-            --  private or incomplete as well.
-
-            if Ekind (A_Gen_T) = E_Incomplete_Type then
-               null;
-            else
-               Error_Msg_N ("premature use of private type", Actual);
-            end if;
+            Error_Msg_N ("premature use of private type", Actual);
 
          elsif Has_Private_Component (Act_T) then
             Error_Msg_N
               ("premature use of type with private component", Actual);
          end if;
+      end if;
 
-         Set_Instance_Of (A_Gen_T, Act_T);
+      Set_Instance_Of (A_Gen_T, Act_T);
 
-         --  If the type is generic, the class-wide type may also be used
+      --  If the type is generic, the class-wide type may also be used
 
-         if Is_Tagged_Type (A_Gen_T)
-           and then Is_Tagged_Type (Act_T)
-           and then not Is_Class_Wide_Type (A_Gen_T)
-         then
-            Set_Instance_Of (Class_Wide_Type (A_Gen_T),
-              Class_Wide_Type (Act_T));
-         end if;
+      if Is_Tagged_Type (A_Gen_T)
+        and then Is_Tagged_Type (Act_T)
+        and then not Is_Class_Wide_Type (A_Gen_T)
+      then
+         Set_Instance_Of (Class_Wide_Type (A_Gen_T),
+           Class_Wide_Type (Act_T));
+      end if;
 
-         if not Is_Abstract_Type (A_Gen_T)
-           and then Is_Abstract_Type (Act_T)
-         then
-            Error_Msg_N
-              ("actual of non-abstract formal cannot be abstract", Actual);
-         end if;
+      if not Is_Abstract_Type (A_Gen_T)
+        and then Is_Abstract_Type (Act_T)
+      then
+         Error_Msg_N
+           ("actual of non-abstract formal cannot be abstract", Actual);
+      end if;
 
-         --  A generic scalar type is a first subtype for which we generate
-         --  an anonymous base type. Indicate that the instance of this base
-         --  is the base type of the actual.
+      --  A generic scalar type is a first subtype for which we generate
+      --  an anonymous base type. Indicate that the instance of this base
+      --  is the base type of the actual.
 
-         if Is_Scalar_Type (A_Gen_T) then
-            Set_Instance_Of (Etype (A_Gen_T), Etype (Act_T));
-         end if;
+      if Is_Scalar_Type (A_Gen_T) then
+         Set_Instance_Of (Etype (A_Gen_T), Etype (Act_T));
       end if;
 
       Check_Shared_Variable_Control_Aspects;

@@ -1,3 +1,23 @@
+2024-01-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add
+	'EF_AMDGPU_MACH_AMDGCN_GFX1100'.
+
+2024-01-08  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-gcn.c (hsa_runtime_fn_info): Add
+	hsa_amd_memory_lock_fn, hsa_amd_memory_unlock_fn,
+	hsa_amd_memory_async_copy_rect_fn function pointers.
+	(init_hsa_runtime_functions): Add above functions, with
+	DLSYM_OPT_FN.
+	(GOMP_OFFLOAD_memcpy2d, GOMP_OFFLOAD_memcpy3d): New functions.
+
+2024-01-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-gcn.c (gcn_gfx1100_s): New const string.
+	(gcn_isa_name_len): Fix length.
+	(isa_hsa_name, isa_code, max_isa_vgprs): Handle gfx1100.
+
 2024-01-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP Technical Report 12): Fix a typo.

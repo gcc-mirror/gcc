@@ -139,6 +139,7 @@ gcn_option_override (void)
       : gcn_arch == PROCESSOR_GFX908 ? ISA_CDNA1
       : gcn_arch == PROCESSOR_GFX90a ? ISA_CDNA2
       : gcn_arch == PROCESSOR_GFX1030 ? ISA_RDNA2
+      : gcn_arch == PROCESSOR_GFX1100 ? ISA_RDNA3
       : ISA_UNKNOWN);
   gcc_assert (gcn_isa != ISA_UNKNOWN);
 
@@ -160,15 +161,17 @@ gcn_option_override (void)
 	acc_lds_size = 32768;
     }
 
-  /* gfx803 "Fiji" and gfx1030 do not support XNACK.  */
+  /* gfx803 "Fiji", gfx1030 and gfx1100 do not support XNACK.  */
   if (gcn_arch == PROCESSOR_FIJI
-      || gcn_arch == PROCESSOR_GFX1030)
+      || gcn_arch == PROCESSOR_GFX1030
+      || gcn_arch == PROCESSOR_GFX1100)
     {
       if (flag_xnack == HSACO_ATTR_ON)
-	error ("-mxnack=on is incompatible with -march=%s",
+	error ("%<-mxnack=on%> is incompatible with %<-march=%s%>",
 	       (gcn_arch == PROCESSOR_FIJI ? "fiji"
-	        : gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
-	        : NULL));
+		: gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
+		: gcn_arch == PROCESSOR_GFX1100 ? "gfx1100"
+		: NULL));
       /* Allow HSACO_ATTR_ANY silently because that's the default.  */
       flag_xnack = HSACO_ATTR_OFF;
     }
@@ -1592,7 +1595,7 @@ gcn_global_address_p (rtx addr)
     {
       rtx base = XEXP (addr, 0);
       rtx offset = XEXP (addr, 1);
-      int offsetbits = (TARGET_RDNA2 ? 11 : 12);
+      int offsetbits = (TARGET_RDNA2_PLUS ? 11 : 12);
       bool immediate_p = (CONST_INT_P (offset)
 			  && INTVAL (offset) >= -(1 << 12)
 			  && INTVAL (offset) < (1 << 12));
@@ -1725,7 +1728,7 @@ gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
 	  rtx base = XEXP (x, 0);
 	  rtx offset = XEXP (x, 1);
 
-	  int offsetbits = (TARGET_RDNA2 ? 11 : 12);
+	  int offsetbits = (TARGET_RDNA2_PLUS ? 11 : 12);
 	  bool immediate_p = (GET_CODE (offset) == CONST_INT
 			      /* Signed 12/13-bit immediate.  */
 			      && INTVAL (offset) >= -(1 << offsetbits)
@@ -3043,6 +3046,8 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
 	return gcn_arch == PROCESSOR_GFX90a;
       if (strcmp (name, "gfx1030") == 0)
 	return gcn_arch == PROCESSOR_GFX1030;
+      if (strcmp (name, "gfx1100") == 0)
+	return gcn_arch == PROCESSOR_GFX1100;
       return 0;
     default:
       gcc_unreachable ();
@@ -6539,6 +6544,11 @@ output_file_start (void)
       xnack = "";
       sram_ecc = "";
       break;
+    case PROCESSOR_GFX1100:
+      cpu = "gfx1100";
+      xnack = "";
+      sram_ecc = "";
+      break;
     default: gcc_unreachable ();
     }
 
@@ -6664,7 +6674,6 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree decl)
 	   "\t  .amdhsa_next_free_vgpr\t%i\n"
 	   "\t  .amdhsa_next_free_sgpr\t%i\n"
 	   "\t  .amdhsa_reserve_vcc\t1\n"
-	   "\t  .amdhsa_reserve_flat_scratch\t0\n"
 	   "\t  .amdhsa_reserve_xnack_mask\t%i\n"
 	   "\t  .amdhsa_private_segment_fixed_size\t0\n"
 	   "\t  .amdhsa_group_segment_fixed_size\t%u\n"
@@ -6674,6 +6683,10 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree decl)
 	   sgpr,
 	   xnack_enabled,
 	   LDS_SIZE);
+  /* Not supported with 'architected flat scratch'.  */
+  if (gcn_arch != PROCESSOR_GFX1100)
+    fprintf (file,
+	   "\t  .amdhsa_reserve_flat_scratch\t0\n");
   if (gcn_arch == PROCESSOR_GFX90a)
     fprintf (file,
 	     "\t  .amdhsa_accum_offset\t%i\n"

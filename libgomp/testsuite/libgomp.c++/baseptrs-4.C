@@ -11,11 +11,9 @@
 #define REF2PTR_DECL_BASE
 
 #define ARRAY_DECL_BASE
-// Needs map clause "lvalue"-parsing support.
-//#define REF2ARRAY_DECL_BASE
+#define REF2ARRAY_DECL_BASE
 #define PTR_OFFSET_DECL_BASE
-// Needs map clause "lvalue"-parsing support.
-//#define REF2PTR_OFFSET_DECL_BASE
+#define REF2PTR_OFFSET_DECL_BASE
 
 #define MAP_SECTIONS
 
@@ -30,25 +28,21 @@
 
 #define ARRAY_DECL_MEMBER_SLICE
 #define ARRAY_DECL_MEMBER_SLICE_BASEPTR
-// Needs map clause "lvalue"-parsing support.
-//#define REF2ARRAY_DECL_MEMBER_SLICE
-//#define REF2ARRAY_DECL_MEMBER_SLICE_BASEPTR
+#define REF2ARRAY_DECL_MEMBER_SLICE
+#define REF2ARRAY_DECL_MEMBER_SLICE_BASEPTR
 #define PTR_OFFSET_DECL_MEMBER_SLICE
 #define PTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
-// Needs map clause "lvalue"-parsing support.
-//#define REF2PTR_OFFSET_DECL_MEMBER_SLICE
-//#define REF2PTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
+#define REF2PTR_OFFSET_DECL_MEMBER_SLICE
+#define REF2PTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
 
 #define PTRARRAY_DECL_MEMBER_SLICE
 #define PTRARRAY_DECL_MEMBER_SLICE_BASEPTR
-// Needs map clause "lvalue"-parsing support.
-//#define REF2PTRARRAY_DECL_MEMBER_SLICE
-//#define REF2PTRARRAY_DECL_MEMBER_SLICE_BASEPTR
+#define REF2PTRARRAY_DECL_MEMBER_SLICE
+#define REF2PTRARRAY_DECL_MEMBER_SLICE_BASEPTR
 #define PTRPTR_OFFSET_DECL_MEMBER_SLICE
 #define PTRPTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
-// Needs map clause "lvalue"-parsing support.
-//#define REF2PTRPTR_OFFSET_DECL_MEMBER_SLICE
-//#define REF2PTRPTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
+#define REF2PTRPTR_OFFSET_DECL_MEMBER_SLICE
+#define REF2PTRPTR_OFFSET_DECL_MEMBER_SLICE_BASEPTR
 
 #define NONREF_COMPONENT_BASE
 #define NONREF_COMPONENT_MEMBER_SLICE
@@ -1629,7 +1623,14 @@ ref2ptrptr_offset_decl_member_slice (void)
 
   memset (c, 0, sizeof c);
 
-  #pragma omp target enter data map(to: myt[0:3])
+  /* NOTE: It's possible that this should work without explicitly
+     mapping "myt" here, allowing it to be implicitly
+     mapped "firstprivate" by the "omp target" directive
+     below.  That doesn't work for now though (see comment
+     in gimplify.cc:gimplify_adjust_omp_clauses_1).  See also
+     ptrptr_offset_decl_member_slice above (where the explicit mapping
+     can be omitted).  */
+  #pragma omp target enter data map(to: myt, myt[0:3])
 
   #pragma omp target map(myt[2]->a[0:10])
   {
@@ -1657,7 +1658,7 @@ ref2ptrptr_offset_decl_member_slice (void)
     myt[2]->d[2]++;
   }
 
-  #pragma omp target exit data map(release: myt[0:3], myt[2]->d)
+  #pragma omp target exit data map(release: myt, myt[0:3], myt[2]->d)
 
   assert (myt[2]->a[2] == 1);
   assert (myt[2]->b[2] == 3);

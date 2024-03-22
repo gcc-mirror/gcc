@@ -1573,6 +1573,7 @@ extern UHItype __stormy16_count_leading_zeros (UHItype);
       for ((count) = 0, size = W_TYPE_SIZE; size; size -= 16)		\
 	{								\
 	  UHItype c;							\
+	  extern UHItype __clzhi2 (UHItype);				\
 									\
 	  c = __clzhi2 ((x) >> (size - 16));				\
 	  (count) += c;							\

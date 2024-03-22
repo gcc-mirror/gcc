@@ -12133,9 +12133,13 @@ package body Sem_Attr is
             | Attribute_Code_Address
          =>
             --  To be safe, assume that if the address of a variable is taken,
-            --  it may be modified via this address, so note modification.
+            --  it may be modified via this address, so note modification,
+            --  unless the address is compared directly, which should not be
+            --  considered a modification.
 
-            if Is_Variable (P) then
+            if Is_Variable (P)
+              and then Nkind (Parent (N)) not in N_Op_Compare
+            then
                Note_Possible_Modification (P, Sure => False);
             end if;
 

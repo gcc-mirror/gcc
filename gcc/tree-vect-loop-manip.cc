@@ -2063,6 +2063,25 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
       return false;
     }
 
+  /* We can't support partial vectors and early breaks with an induction
+     type other than add or neg since we require the epilog and can't
+     perform the peeling.  The below condition mirrors that of
+     vect_gen_vector_loop_niters  where niters_vector_mult_vf_var then sets
+     step_vector to VF rather than 1.  This is what creates the nonlinear
+     IV.  PR113163.  */
+  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+      && LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()
+      && LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+      && induction_type != vect_step_op_neg)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Peeling for epilogue is not supported"
+			 " for nonlinear induction except neg"
+			 " when VF is known and early breaks.\n");
+      return false;
+    }
+
   return true;
 }
 
@@ -3453,6 +3472,21 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       /* Recalculate the dominators after adding the guard edge.  */
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	iterate_fix_dominators (CDI_DOMINATORS, doms, false);
+
+      /* When we do not have a loop-around edge to the epilog we know
+	 the vector loop covered at least VF scalar iterations unless
+	 we have early breaks.
+	 Update any known upper bound with this knowledge.  */
+      if (! skip_vector
+	  && ! LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+	{
+	  if (epilog->any_upper_bound)
+	    epilog->nb_iterations_upper_bound -= lowest_vf;
+	  if (epilog->any_likely_upper_bound)
+	    epilog->nb_iterations_likely_upper_bound -= lowest_vf;
+	  if (epilog->any_estimate)
+	    epilog->nb_iterations_estimate -= lowest_vf;
+	}
 
       unsigned HOST_WIDE_INT bound;
       if (bound_scalar.is_constant (&bound))

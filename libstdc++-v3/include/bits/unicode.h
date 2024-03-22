@@ -83,8 +83,6 @@ namespace __unicode
       { return *__it == iter_value_t<_It>{}; }
   };
 
-  inline constexpr _Null_sentinel_t __null_sentinel;
-
   template<typename _FromFmt, typename _ToFmt,
 	   input_iterator _Iter, sentinel_for<_Iter> _Sent = _Iter,
 	   typename _ErrorHandler = _Repl>

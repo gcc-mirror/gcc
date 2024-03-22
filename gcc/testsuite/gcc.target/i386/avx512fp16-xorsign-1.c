@@ -35,7 +35,7 @@ do_test (void)
       abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
 /* { dg-final { scan-assembler "\[ \t\]xor" } } */
 /* { dg-final { scan-assembler "\[ \t\]and" } } */
 /* { dg-final { scan-assembler-not "copysign" } } */

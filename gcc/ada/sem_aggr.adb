@@ -31,7 +31,6 @@ with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Expander;       use Expander;
-with Exp_Ch6;        use Exp_Ch6;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
@@ -3446,7 +3445,7 @@ package body Sem_Aggr is
             --  associations (Add_Unnnamed is not allowed), so we issue an
             --  error if there are positional associations.
 
-            if not Present (Comp_Assocs)
+            if No (Comp_Assocs)
               and then Present (Expressions (N))
             then
                Error_Msg_N ("container aggregate must be "
@@ -4232,11 +4231,6 @@ package body Sem_Aggr is
       --  Verify that the type of the ancestor part is a non-private ancestor
       --  of the expected type, which must be a type extension.
 
-      procedure Transform_BIP_Assignment (Typ : Entity_Id);
-      --  For an extension aggregate whose ancestor part is a build-in-place
-      --  call returning a nonlimited type, this is used to transform the
-      --  assignment to the ancestor part to use a temp.
-
       ----------------------------
       -- Valid_Limited_Ancestor --
       ----------------------------
@@ -4327,26 +4321,6 @@ package body Sem_Aggr is
          Error_Msg_NE ("expect ancestor type of &", A, Typ);
          return False;
       end Valid_Ancestor_Type;
-
-      ------------------------------
-      -- Transform_BIP_Assignment --
-      ------------------------------
-
-      procedure Transform_BIP_Assignment (Typ : Entity_Id) is
-         Loc      : constant Source_Ptr := Sloc (N);
-         Def_Id   : constant Entity_Id  := Make_Temporary (Loc, 'Y', A);
-         Obj_Decl : constant Node_Id    :=
-                      Make_Object_Declaration (Loc,
-                        Defining_Identifier => Def_Id,
-                        Constant_Present    => True,
-                        Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                        Expression          => A,
-                        Has_Init_Expression => True);
-      begin
-         Set_Etype (Def_Id, Typ);
-         Set_Ancestor_Part (N, New_Occurrence_Of (Def_Id, Loc));
-         Insert_Action (N, Obj_Decl);
-      end Transform_BIP_Assignment;
 
    --  Start of processing for Resolve_Extension_Aggregate
 
@@ -4521,19 +4495,8 @@ package body Sem_Aggr is
                --  an AdaCore query to the ARG after this test was added.
 
                Error_Msg_N ("ancestor part must be statically tagged", A);
+
             else
-               --  We are using the build-in-place protocol, but we can't build
-               --  in place, because we need to call the function before
-               --  allocating the aggregate. Could do better for null
-               --  extensions, and maybe for nondiscriminated types.
-               --  This is wrong for limited, but those were wrong already.
-
-               if not Is_Inherently_Limited_Type (A_Type)
-                 and then Is_Build_In_Place_Function_Call (A)
-               then
-                  Transform_BIP_Assignment (A_Type);
-               end if;
-
                Resolve_Record_Aggregate (N, Typ);
             end if;
          end if;

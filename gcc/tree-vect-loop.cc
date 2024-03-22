@@ -941,9 +941,22 @@ vect_get_loop_niters (class loop *loop, const_edge main_exit, tree *assumptions,
 	 ???  For UINT_MAX latch executions this number overflows to zero
 	 for loops like do { n++; } while (n != 0);  */
       if (niter && !chrec_contains_undetermined (niter))
+	{
 	  niter = fold_build2 (PLUS_EXPR, TREE_TYPE (niter),
 			       unshare_expr (niter),
 			       build_int_cst (TREE_TYPE (niter), 1));
+	  if (TREE_CODE (niter) == INTEGER_CST
+	      && TREE_CODE (*number_of_iterationsm1) != INTEGER_CST)
+	    {
+	      /* If we manage to fold niter + 1 into INTEGER_CST even when
+		 niter is some complex expression, ensure back
+		 *number_of_iterationsm1 is an INTEGER_CST as well.  See
+		 PR113210.  */
+	      *number_of_iterationsm1
+		= fold_build2 (PLUS_EXPR, TREE_TYPE (niter), niter,
+			       build_minus_one_cst (TREE_TYPE (niter)));
+	    }
+	}
       *number_of_iterations = niter;
     }
 
@@ -1261,7 +1274,11 @@ vect_need_peeling_or_partial_vectors_p (loop_vec_info loop_vinfo)
 	     the epilogue is unnecessary.  */
 	  && (!LOOP_REQUIRES_VERSIONING (loop_vinfo)
 	      || ((unsigned HOST_WIDE_INT) max_niter
-		  > (th / const_vf) * const_vf))))
+		  /* We'd like to use LOOP_VINFO_VERSIONING_THRESHOLD
+		     but that's only computed later based on our result.
+		     The following is the most conservative approximation.  */
+		  > (std::max ((unsigned HOST_WIDE_INT) th,
+			       const_vf) / const_vf) * const_vf))))
     return true;
 
   return false;
@@ -10573,13 +10590,12 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 
    helper function for vectorizable_live_operation.  */
 
-tree
+static tree
 vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 			       stmt_vec_info stmt_info, basic_block exit_bb,
 			       tree vectype, int ncopies, slp_tree slp_node,
 			       tree bitsize, tree bitstart, tree vec_lhs,
-			       tree lhs_type, bool restart_loop,
-			       gimple_stmt_iterator *exit_gsi)
+			       tree lhs_type, gimple_stmt_iterator *exit_gsi)
 {
   gcc_assert (single_pred_p (exit_bb) || LOOP_VINFO_EARLY_BREAKS (loop_vinfo));
 
@@ -10590,7 +10606,17 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 
   gimple_seq stmts = NULL;
   tree new_tree;
-  if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+
+  /* If bitstart is 0 then we can use a BIT_FIELD_REF  */
+  if (integer_zerop (bitstart))
+    {
+      tree scalar_res = gimple_build (&stmts, BIT_FIELD_REF, TREE_TYPE (vectype),
+				      vec_lhs_phi, bitsize, bitstart);
+
+      /* Convert the extracted vector element to the scalar type.  */
+      new_tree = gimple_convert (&stmts, lhs_type, scalar_res);
+    }
+  else if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
     {
       /* Emit:
 
@@ -10616,12 +10642,6 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
       tree last_index = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (len),
 				     len, bias_minus_one);
 
-      /* This needs to implement extraction of the first index, but not sure
-	 how the LEN stuff works.  At the moment we shouldn't get here since
-	 there's no LEN support for early breaks.  But guard this so there's
-	 no incorrect codegen.  */
-      gcc_assert (!LOOP_VINFO_EARLY_BREAKS (loop_vinfo));
-
       /* SCALAR_RES = VEC_EXTRACT <VEC_LHS, LEN + BIAS - 1>.  */
       tree scalar_res
 	= gimple_build (&stmts, CFN_VEC_EXTRACT, TREE_TYPE (vectype),
@@ -10646,32 +10666,6 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 				      &LOOP_VINFO_MASKS (loop_vinfo),
 				      1, vectype, 0);
       tree scalar_res;
-
-      /* For an inverted control flow with early breaks we want EXTRACT_FIRST
-	 instead of EXTRACT_LAST.  Emulate by reversing the vector and mask. */
-      if (restart_loop && LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
-	{
-	  /* First create the permuted mask.  */
-	  tree perm_mask = perm_mask_for_reverse (TREE_TYPE (mask));
-	  tree perm_dest = copy_ssa_name (mask);
-	  gimple *perm_stmt
-		= gimple_build_assign (perm_dest, VEC_PERM_EXPR, mask,
-				       mask, perm_mask);
-	  vect_finish_stmt_generation (loop_vinfo, stmt_info, perm_stmt,
-				       &gsi);
-	  mask = perm_dest;
-
-	  /* Then permute the vector contents.  */
-	  tree perm_elem = perm_mask_for_reverse (vectype);
-	  perm_dest = copy_ssa_name (vec_lhs_phi);
-	  perm_stmt
-		= gimple_build_assign (perm_dest, VEC_PERM_EXPR, vec_lhs_phi,
-				       vec_lhs_phi, perm_elem);
-	  vect_finish_stmt_generation (loop_vinfo, stmt_info, perm_stmt,
-				       &gsi);
-	  vec_lhs_phi = perm_dest;
-	}
-
       gimple_seq_add_seq (&stmts, tem);
 
       scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST, scalar_type,
@@ -10978,8 +10972,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 						 dest, vectype, ncopies,
 						 slp_node, bitsize,
 						 tmp_bitstart, tmp_vec_lhs,
-						 lhs_type, restart_loop,
-						 &exit_gsi);
+						 lhs_type, &exit_gsi);
 
 	      if (gimple_phi_num_args (use_stmt) == 1)
 		{
