@@ -60,13 +60,15 @@ cpp_diagnostic_at (cpp_reader * pfile, enum cpp_diagnostic_level level,
 		   enum cpp_warning_reason reason, rich_location *richloc,
 		   const char *msgid, va_list *ap)
 {
-  bool ret;
-
   if (!pfile->cb.diagnostic)
     abort ();
-  ret = pfile->cb.diagnostic (pfile, level, reason, richloc, _(msgid), ap);
-
-  return ret;
+  if (pfile->diagnostic_override_loc && level != CPP_DL_NOTE)
+    {
+      rich_location rc2{pfile->line_table, pfile->diagnostic_override_loc};
+      rc2.set_escape_on_output (richloc->escape_on_output_p ());
+      return pfile->cb.diagnostic (pfile, level, reason, &rc2, _(msgid), ap);
+    }
+  return pfile->cb.diagnostic (pfile, level, reason, richloc, _(msgid), ap);
 }
 
 /* Print a diagnostic at the location of the previously lexed token.  */
@@ -201,8 +203,14 @@ cpp_diagnostic_with_line (cpp_reader * pfile, enum cpp_diagnostic_level level,
   
   if (!pfile->cb.diagnostic)
     abort ();
+  /* Don't override note locations, which will likely make the note
+     more confusing.  */
+  const bool do_loc_override
+    = pfile->diagnostic_override_loc && level != CPP_DL_NOTE;
+  if (do_loc_override)
+    src_loc = pfile->diagnostic_override_loc;
   rich_location richloc (pfile->line_table, src_loc);
-  if (column)
+  if (column && !do_loc_override)
     richloc.override_column (column);
   ret = pfile->cb.diagnostic (pfile, level, reason, &richloc, _(msgid), ap);
 

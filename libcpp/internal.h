@@ -616,6 +616,10 @@ struct cpp_reader
      zero of said file.  */
   location_t main_loc;
 
+  /* If non-zero, override diagnostic locations (other than DK_NOTE
+     diagnostics) to this one.  */
+  location_t diagnostic_override_loc;
+
   /* Returns true iff we should warn about UTF-8 bidirectional control
      characters.  */
   bool warn_bidi_p () const

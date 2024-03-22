@@ -2430,6 +2430,12 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
   pfile->buffer->file = pfile->buffer->prev->file;
   pfile->buffer->sysp = pfile->buffer->prev->sysp;
 
+  /* See comment below regarding the use of expansion_loc as the location
+     for all tokens; arrange here that diagnostics issued during lexing
+     get the same treatment.  */
+  const auto prev_loc_override = pfile->diagnostic_override_loc;
+  pfile->diagnostic_override_loc = expansion_loc;
+
   start_directive (pfile);
   _cpp_clean_line (pfile);
   save_directive = pfile->directive;
@@ -2497,6 +2503,7 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
      make that applicable to the real buffer too.  */
   pfile->buffer->prev->sysp = pfile->buffer->sysp;
   _cpp_pop_buffer (pfile);
+  pfile->diagnostic_override_loc = prev_loc_override;
 
   /* Reset the old macro state before ...  */
   XDELETE (pfile->context);
