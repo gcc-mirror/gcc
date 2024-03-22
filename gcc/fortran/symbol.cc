@@ -5408,3 +5408,61 @@ gfc_sym_get_dummy_args (gfc_symbol *sym)
 
   return dummies;
 }
+
+
+/* Given a procedure, returns the associated namespace.
+   The resulting NS should match the condition NS->PROC_NAME == SYM.  */
+
+gfc_namespace *
+gfc_get_procedure_ns (gfc_symbol *sym)
+{
+  if (sym->formal_ns
+      && sym->formal_ns->proc_name == sym)
+    return sym->formal_ns;
+
+  /* The above should have worked in most cases.  If it hasn't, try some other
+     heuristics, eventually returning SYM->NS.  */
+  if (gfc_current_ns->proc_name == sym)
+    return gfc_current_ns;
+
+  /* For contained procedures, the symbol's NS field is the
+     hosting namespace, not the procedure namespace.  */
+  if (sym->attr.flavor == FL_PROCEDURE && sym->attr.contained)
+    for (gfc_namespace *ns = sym->ns->contained; ns; ns = ns->sibling)
+      if (ns->proc_name == sym)
+	return ns;
+
+  if (sym->formal)
+    for (gfc_formal_arglist *f = sym->formal; f != nullptr; f = f->next)
+      if (f->sym)
+	{
+	  gfc_namespace *ns = f->sym->ns;
+	  if (ns && ns->proc_name == sym)
+	    return ns;
+	}
+
+  return sym->ns;
+}
+
+
+/* Given a symbol, returns the namespace in which the symbol is specified.
+   In most cases, it is the namespace hosting the symbol.  This is the case
+   for variables.  For functions, however, it is the function namespace
+   itself.  This specification namespace is used to check conformance of
+   array spec bound expressions.  */
+
+gfc_namespace *
+gfc_get_spec_ns (gfc_symbol *sym)
+{
+  if (sym->attr.flavor == FL_PROCEDURE
+      && sym->attr.function)
+    {
+      if (sym->result == sym)
+	return gfc_get_procedure_ns (sym);
+      /* Generic and intrinsic functions can have a null result.  */
+      else if (sym->result != nullptr)
+	return sym->result->ns;
+    }
+
+  return sym->ns;
+}

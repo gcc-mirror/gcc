@@ -3612,6 +3612,9 @@ bool gfc_is_associate_pointer (gfc_symbol*);
 gfc_symbol * gfc_find_dt_in_generic (gfc_symbol *);
 gfc_formal_arglist *gfc_sym_get_dummy_args (gfc_symbol *);
 
+gfc_namespace * gfc_get_procedure_ns (gfc_symbol *);
+gfc_namespace * gfc_get_spec_ns (gfc_symbol *);
+
 /* intrinsic.cc -- true if working in an init-expr, false otherwise.  */
 extern bool gfc_init_expr_flag;
 
@@ -3821,7 +3824,6 @@ bool gfc_resolve_iterator (gfc_iterator *, bool, bool);
 bool find_forall_index (gfc_expr *, gfc_symbol *, int);
 bool gfc_resolve_index (gfc_expr *, int);
 bool gfc_resolve_dim_arg (gfc_expr *);
-bool gfc_is_formal_arg (void);
 bool gfc_resolve_substring (gfc_ref *, bool *);
 void gfc_resolve_substring_charlen (gfc_expr *);
 gfc_expr *gfc_expr_to_initialize (gfc_expr *);

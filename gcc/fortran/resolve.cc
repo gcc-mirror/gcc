@@ -72,9 +72,6 @@ static bool first_actual_arg = false;
 
 static int omp_workshare_flag;
 
-/* True if we are processing a formal arglist. The corresponding function
-   resets the flag each time that it is read.  */
-static bool formal_arg_flag = false;
 
 /* True if we are resolving a specification expression.  */
 static bool specification_expr = false;
@@ -88,12 +85,6 @@ static bitmap_obstack labels_obstack;
 /* True when simplifying a EXPR_VARIABLE argument to an inquiry function.  */
 static bool inquiry_argument = false;
 
-
-bool
-gfc_is_formal_arg (void)
-{
-  return formal_arg_flag;
-}
 
 /* Is the symbol host associated?  */
 static bool
@@ -285,7 +276,8 @@ gfc_resolve_formal_arglist (gfc_symbol *proc)
       sym->attr.always_explicit = 1;
     }
 
-  formal_arg_flag = true;
+  gfc_namespace *orig_current_ns = gfc_current_ns;
+  gfc_current_ns = gfc_get_procedure_ns (proc);
 
   for (f = proc->formal; f; f = f->next)
     {
@@ -306,17 +298,18 @@ gfc_resolve_formal_arglist (gfc_symbol *proc)
 		       &proc->declared_at);
 	  continue;
 	}
-      else if (sym->attr.procedure && sym->attr.if_source != IFSRC_DECL
+
+      if (sym->attr.procedure && sym->attr.if_source != IFSRC_DECL
 	       && !resolve_procedure_interface (sym))
-	return;
+	break;
 
       if (strcmp (proc->name, sym->name) == 0)
-        {
-          gfc_error ("Self-referential argument "
-                     "%qs at %L is not allowed", sym->name,
-                     &proc->declared_at);
-          return;
-        }
+	{
+	  gfc_error ("Self-referential argument "
+		     "%qs at %L is not allowed", sym->name,
+		     &proc->declared_at);
+	  break;
+	}
 
       if (sym->attr.if_source != IFSRC_UNKNOWN)
 	gfc_resolve_formal_arglist (sym);
@@ -533,7 +526,8 @@ gfc_resolve_formal_arglist (gfc_symbol *proc)
 	    }
 	}
     }
-  formal_arg_flag = false;
+
+  gfc_current_ns = orig_current_ns;
 }
 
 
@@ -16206,6 +16200,26 @@ resolve_pdt (gfc_symbol* sym)
 }
 
 
+/* Resolve the symbol's array spec.  */
+
+static bool
+resolve_symbol_array_spec (gfc_symbol *sym, int check_constant)
+{
+  gfc_namespace *orig_current_ns = gfc_current_ns;
+  gfc_current_ns = gfc_get_spec_ns (sym);
+
+  bool saved_specification_expr = specification_expr;
+  specification_expr = true;
+
+  bool result = gfc_resolve_array_spec (sym->as, check_constant);
+
+  specification_expr = saved_specification_expr;
+  gfc_current_ns = orig_current_ns;
+
+  return result;
+}
+
+
 /* Do anything necessary to resolve a symbol.  Right now, we just
    assume that an otherwise unknown symbol is a variable.  This sort
    of thing commonly happens for symbols in module.  */
@@ -16220,7 +16234,6 @@ resolve_symbol (gfc_symbol *sym)
   gfc_component *c;
   symbol_attribute class_attr;
   gfc_array_spec *as;
-  bool saved_specification_expr;
 
   if (sym->resolve_symbol_called >= 1)
     return;
@@ -16385,16 +16398,7 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
   else if (mp_flag && sym->attr.flavor == FL_PROCEDURE && sym->attr.function)
-    {
-      bool saved_specification_expr = specification_expr;
-      bool saved_formal_arg_flag = formal_arg_flag;
-
-      specification_expr = true;
-      formal_arg_flag = true;
-      gfc_resolve_array_spec (sym->result->as, false);
-      formal_arg_flag = saved_formal_arg_flag;
-      specification_expr = saved_specification_expr;
-    }
+    resolve_symbol_array_spec (sym->result, false);
 
   /* For a CLASS-valued function with a result variable, affirm that it has
      been resolved also when looking at the symbol 'sym'.  */
@@ -16961,18 +16965,7 @@ resolve_symbol (gfc_symbol *sym)
 
   check_constant = sym->attr.in_common && !sym->attr.pointer && !sym->error;
 
-  /* Set the formal_arg_flag so that check_conflict will not throw
-     an error for host associated variables in the specification
-     expression for an array_valued function.  */
-  if ((sym->attr.function || sym->attr.result) && sym->as)
-    formal_arg_flag = true;
-
-  saved_specification_expr = specification_expr;
-  specification_expr = true;
-  gfc_resolve_array_spec (sym->as, check_constant);
-  specification_expr = saved_specification_expr;
-
-  formal_arg_flag = false;
+  resolve_symbol_array_spec (sym, check_constant);
 
   /* Resolve formal namespaces.  */
   if (sym->formal_ns && sym->formal_ns != gfc_current_ns
