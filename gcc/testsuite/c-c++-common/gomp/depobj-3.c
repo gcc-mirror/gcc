@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fexcess-precision=fast" } */
+
 typedef struct __attribute__((__aligned__ (sizeof (void *)))) omp_depend_t {
   char __omp_depend_t__[2 * sizeof (void *)];
 } omp_depend_t;
