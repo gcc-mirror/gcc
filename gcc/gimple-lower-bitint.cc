@@ -2737,7 +2737,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		  && tree_fits_uhwi_p (idx))
 		{
 		  unsigned int tprec = TYPE_PRECISION (type);
-		  unsigned int rprec = tprec % limb_prec;
+		  unsigned int rprec = (tprec - 1) % limb_prec + 1;
 		  if (rprec + bo_bit < (unsigned) limb_prec)
 		    {
 		      tree ftype
@@ -2882,7 +2882,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	  if (nlhs && i == cnt - 1)
 	    {
 	      unsigned int tprec = TYPE_PRECISION (type);
-	      unsigned int rprec = tprec % limb_prec;
+	      unsigned int rprec = (tprec - 1) % limb_prec + 1;
 	      if (rprec + bo_bit < (unsigned) limb_prec)
 		{
 		  tree ftype
@@ -2934,11 +2934,11 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
   if (bf_cur != NULL_TREE)
     {
       unsigned int tprec = TYPE_PRECISION (type);
-      unsigned int rprec = tprec % limb_prec;
-      tree ftype = build_nonstandard_integer_type (rprec + bo_bit, 1);
+      unsigned int rprec = (tprec + bo_bit) % limb_prec;
+      tree ftype = build_nonstandard_integer_type (rprec, 1);
       tree bfr = build_bit_field_ref (ftype, unshare_expr (nlhs),
-				      rprec + bo_bit,
-				      (bo_idx + tprec / limb_prec)
+				      rprec,
+				      (bo_idx + (tprec + bo_bit) / limb_prec)
 				      * limb_prec);
       rhs1 = bf_cur;
       if (bf_cur != ext)
