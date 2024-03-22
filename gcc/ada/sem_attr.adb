@@ -8221,13 +8221,26 @@ package body Sem_Attr is
       then
          declare
             Lit : constant Entity_Id := Expr_Value_E (P);
+            Typ : constant Entity_Id := Etype (Entity (P));
             Str : String_Id;
 
          begin
             Start_String;
-            Get_Unqualified_Decoded_Name_String (Chars (Lit));
-            Set_Casing (All_Upper_Case);
-            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+
+            --  If Discard_Names is in effect for the type, then we emit the
+            --  numeric representation of the prefix literal 'Pos attribute,
+            --  prefixed with a single space.
+
+            if Discard_Names (Typ) then
+               UI_Image (Enumeration_Pos (Lit), Decimal);
+               Store_String_Char  (' ');
+               Store_String_Chars (UI_Image_Buffer (1 .. UI_Image_Length));
+            else
+               Get_Unqualified_Decoded_Name_String (Chars (Lit));
+               Set_Casing (All_Upper_Case);
+               Store_String_Chars (Name_Buffer (1 .. Name_Len));
+            end if;
+
             Str := End_String;
 
             Rewrite (N, Make_String_Literal (Loc, Strval => Str));
