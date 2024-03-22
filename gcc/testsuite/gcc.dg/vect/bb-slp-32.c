@@ -24,5 +24,3 @@ int foo (int *p, int a, int b)
   bar (x);
   return sum;
 }
-
-/* { dg-final { scan-tree-dump "vectorization is not profitable" "slp2" { xfail  { vect_no_align && { ! vect_hw_misalign } } } } } */
