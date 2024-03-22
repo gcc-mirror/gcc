@@ -29,6 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "intl.h"
 #include "analyzer/analyzer.h"
+#include "tree-pretty-print.h"
+#include "diagnostic-event-id.h"
 
 #if ENABLE_ANALYZER
 
@@ -214,6 +216,63 @@ get_diagnostic_tree_for_gassign (const gassign *assign_stmt)
 {
   hash_set<tree> visited;
   return get_diagnostic_tree_for_gassign_1 (assign_stmt, &visited);
+}
+
+/* Generate a JSON value for NODE, which can be NULL_TREE.
+   This is intended for debugging the analyzer rather than serialization and
+   thus is a string (or null, for NULL_TREE).  */
+
+json::value *
+tree_to_json (tree node)
+{
+  if (!node)
+    return new json::literal (json::JSON_NULL);
+
+  pretty_printer pp;
+  dump_generic_node (&pp, node, 0, TDF_VOPS|TDF_MEMSYMS, false);
+  return new json::string (pp_formatted_text (&pp));
+}
+
+/* Generate a JSON value for EVENT_ID.
+   This is intended for debugging the analyzer rather than serialization and
+   thus is a string matching those seen in event messags (or null,
+   for unknown).  */
+
+json::value *
+diagnostic_event_id_to_json (const diagnostic_event_id_t &event_id)
+{
+  if (event_id.known_p ())
+    {
+      pretty_printer pp;
+      pp_printf (&pp, "%@", &event_id);
+      return new json::string (pp_formatted_text (&pp));
+    }
+  else
+    return new json::literal (json::JSON_NULL);
+}
+
+/* Generate a JSON value for OFFSET.
+   This is intended for debugging the analyzer rather than serialization and
+   thus is a string.  */
+
+json::value *
+bit_offset_to_json (const bit_offset_t &offset)
+{
+  pretty_printer pp;
+  pp_wide_int_large (&pp, offset, SIGNED);
+  return new json::string (pp_formatted_text (&pp));
+}
+
+/* Generate a JSON value for OFFSET.
+   This is intended for debugging the analyzer rather than serialization and
+   thus is a string.  */
+
+json::value *
+byte_offset_to_json (const byte_offset_t &offset)
+{
+  pretty_printer pp;
+  pp_wide_int_large (&pp, offset, SIGNED);
+  return new json::string (pp_formatted_text (&pp));
 }
 
 } // namespace ana

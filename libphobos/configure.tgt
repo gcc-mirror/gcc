@@ -36,6 +36,9 @@ case "${target}" in
   hppa-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
+  loongarch*-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   mips*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;

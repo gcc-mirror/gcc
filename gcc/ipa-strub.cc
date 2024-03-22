@@ -2132,7 +2132,7 @@ gsi_insert_finally_seq_after_call (gimple_stmt_iterator gsi, gimple_seq seq)
 		    || (call && gimple_call_nothrow_p (call))
 		    || (eh_lp <= 0
 			&& (TREE_NOTHROW (cfun->decl)
-			    || !flag_exceptions)));
+			    || !opt_for_fn (cfun->decl, flag_exceptions))));
 
   if (noreturn_p && nothrow_p)
     return;
@@ -2470,9 +2470,11 @@ pass_ipa_strub::adjust_at_calls_call (cgraph_edge *e, int named_args,
   /* If we're already within a strub context, pass on the incoming watermark
      pointer, and omit the enter and leave calls around the modified call, as an
      optimization, or as a means to satisfy a tail-call requirement.  */
-  tree swmp = ((optimize_size || optimize > 2
+  tree swmp = ((opt_for_fn (e->caller->decl, optimize_size)
+		|| opt_for_fn (e->caller->decl, optimize) > 2
 		|| gimple_call_must_tail_p (ocall)
-		|| (optimize == 2 && gimple_call_tail_p (ocall)))
+		|| (opt_for_fn (e->caller->decl, optimize) == 2
+		    && gimple_call_tail_p (ocall)))
 	       ? strub_watermark_parm (e->caller->decl)
 	       : NULL_TREE);
   bool omit_own_watermark = swmp;
@@ -2881,13 +2883,14 @@ pass_ipa_strub::execute (function *)
 	   parm = DECL_CHAIN (parm),
 	   nparm = DECL_CHAIN (nparm),
 	   nparmt = nparmt ? TREE_CHAIN (nparmt) : NULL_TREE)
-      if (!(0 /* DECL_BY_REFERENCE (narg) */
-	    || is_gimple_reg_type (TREE_TYPE (nparm))
-	    || VECTOR_TYPE_P (TREE_TYPE (nparm))
-	    || TREE_CODE (TREE_TYPE (nparm)) == COMPLEX_TYPE
-	    || (tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
-		&& (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
-		    <= 4 * UNITS_PER_WORD))))
+      if (TREE_THIS_VOLATILE (parm)
+	  || !(0 /* DECL_BY_REFERENCE (narg) */
+	       || is_gimple_reg_type (TREE_TYPE (nparm))
+	       || VECTOR_TYPE_P (TREE_TYPE (nparm))
+	       || TREE_CODE (TREE_TYPE (nparm)) == COMPLEX_TYPE
+	       || (tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
+		   && (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
+		       <= 4 * UNITS_PER_WORD))))
 	{
 	  /* No point in indirecting pointer types.  Presumably they
 	     won't ever pass the size-based test above, but check the
@@ -3203,7 +3206,6 @@ pass_ipa_strub::execute (function *)
 		   i++, arg = DECL_CHAIN (arg), nparm = DECL_CHAIN (nparm))
 		{
 		  tree save_arg = arg;
-		  tree tmp = arg;
 
 		  /* Arrange to pass indirectly the parms, if we decided to do
 		     so, and revert its type in the wrapper.  */
@@ -3211,10 +3213,9 @@ pass_ipa_strub::execute (function *)
 		    {
 		      tree ref_type = TREE_TYPE (nparm);
 		      TREE_ADDRESSABLE (arg) = true;
-		      tree addr = build1 (ADDR_EXPR, ref_type, arg);
-		      tmp = arg = addr;
+		      arg = build1 (ADDR_EXPR, ref_type, arg);
 		    }
-		  else
+		  else if (!TREE_THIS_VOLATILE (arg))
 		    DECL_NOT_GIMPLE_REG_P (arg) = 0;
 
 		  /* Convert the argument back to the type used by the calling
@@ -3223,16 +3224,29 @@ pass_ipa_strub::execute (function *)
 		     double to be passed on unchanged to the wrapped
 		     function.  */
 		  if (TREE_TYPE (nparm) != DECL_ARG_TYPE (nparm))
-		    arg = fold_convert (DECL_ARG_TYPE (nparm), arg);
+		    {
+		      tree tmp = arg;
+		      /* If ARG is e.g. volatile, we must copy and
+			 convert in separate statements.  */
+		      if (!is_gimple_val (arg))
+			{
+			  tmp = create_tmp_reg (TYPE_MAIN_VARIANT
+						(TREE_TYPE (arg)), "arg");
+			  gimple *stmt = gimple_build_assign (tmp, arg);
+			  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+			}
+		      arg = fold_convert (DECL_ARG_TYPE (nparm), tmp);
+		    }
 
 		  if (!is_gimple_val (arg))
 		    {
-		      tmp = create_tmp_reg (TYPE_MAIN_VARIANT
-					    (TREE_TYPE (arg)), "arg");
+		      tree tmp = create_tmp_reg (TYPE_MAIN_VARIANT
+						 (TREE_TYPE (arg)), "arg");
 		      gimple *stmt = gimple_build_assign (tmp, arg);
 		      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+		      arg = tmp;
 		    }
-		  vargs.quick_push (tmp);
+		  vargs.quick_push (arg);
 		  arg = save_arg;
 		}
 	    /* These strub arguments are adjusted later.  */

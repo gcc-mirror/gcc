@@ -696,6 +696,8 @@ DRUNTIME_CPU_POWERPC_FALSE
 DRUNTIME_CPU_POWERPC_TRUE
 DRUNTIME_CPU_MIPS_FALSE
 DRUNTIME_CPU_MIPS_TRUE
+DRUNTIME_CPU_LOONGARCH_FALSE
+DRUNTIME_CPU_LOONGARCH_TRUE
 DRUNTIME_CPU_ARM_FALSE
 DRUNTIME_CPU_ARM_TRUE
 DRUNTIME_CPU_AARCH64_FALSE
@@ -11865,7 +11867,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11868 "configure"
+#line 11870 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11971,7 +11973,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11974 "configure"
+#line 11976 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14305,6 +14307,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
                ;;
       arm*)    druntime_target_cpu_parsed="arm"
                ;;
+      loongarch*)
+               druntime_target_cpu_parsed="loongarch"
+               ;;
       mips*)   druntime_target_cpu_parsed="mips"
                ;;
       powerpc*)
@@ -14334,6 +14339,14 @@ fi
 else
   DRUNTIME_CPU_ARM_TRUE='#'
   DRUNTIME_CPU_ARM_FALSE=
+fi
+
+   if test "$druntime_target_cpu_parsed" = "loongarch"; then
+  DRUNTIME_CPU_LOONGARCH_TRUE=
+  DRUNTIME_CPU_LOONGARCH_FALSE='#'
+else
+  DRUNTIME_CPU_LOONGARCH_TRUE='#'
+  DRUNTIME_CPU_LOONGARCH_FALSE=
 fi
 
    if test "$druntime_target_cpu_parsed" = "mips"; then
@@ -15995,6 +16008,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_CPU_ARM_TRUE}" && test -z "${DRUNTIME_CPU_ARM_FALSE}"; then
   as_fn_error $? "conditional \"DRUNTIME_CPU_ARM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${DRUNTIME_CPU_LOONGARCH_TRUE}" && test -z "${DRUNTIME_CPU_LOONGARCH_FALSE}"; then
+  as_fn_error $? "conditional \"DRUNTIME_CPU_LOONGARCH\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DRUNTIME_CPU_MIPS_TRUE}" && test -z "${DRUNTIME_CPU_MIPS_FALSE}"; then

@@ -4957,23 +4957,32 @@ package body Sem_Ch3 is
 
             if Act_T /= T then
                declare
-                  Full_View_Present : constant Boolean :=
-                    Is_Private_Type (Act_T)
-                      and then Present (Full_View (Act_T));
+                  Full_Act_T : constant Entity_Id :=
+                    (if Is_Private_Type (Act_T)
+                     then Full_View (Act_T)
+                     else Empty);
                   --  Propagate attributes to full view when needed
 
                begin
                   Set_Is_Constr_Subt_For_U_Nominal (Act_T);
 
-                  if Full_View_Present then
-                     Set_Is_Constr_Subt_For_U_Nominal (Full_View (Act_T));
+                  if Present (Full_Act_T) then
+                     Set_Is_Constr_Subt_For_U_Nominal (Full_Act_T);
                   end if;
 
-                  if Aliased_Present (N) then
-                     Set_Is_Constr_Subt_For_UN_Aliased (Act_T);
+                  --  If the object is aliased, then it may be pointed to by an
+                  --  access-to-unconstrained-array value, which means that it
+                  --  must be allocated with its bounds.
 
-                     if Full_View_Present then
-                        Set_Is_Constr_Subt_For_UN_Aliased (Full_View (Act_T));
+                  if Aliased_Present (N)
+                    and then (Is_Array_Type (Act_T)
+                               or else (Present (Full_Act_T)
+                                         and then Is_Array_Type (Full_Act_T)))
+                  then
+                     Set_Is_Constr_Array_Subt_With_Bounds (Act_T);
+
+                     if Present (Full_Act_T) then
+                        Set_Is_Constr_Array_Subt_With_Bounds (Full_Act_T);
                      end if;
                   end if;
 
@@ -6023,17 +6032,10 @@ package body Sem_Ch3 is
       --  If this is a subtype declaration for an actual in an instance,
       --  inherit static and dynamic predicates if any.
 
-      --  If declaration has no aspect specifications, inherit predicate
-      --  info as well. Unclear how to handle the case of both specified
-      --  and inherited predicates ??? Other inherited aspects, such as
-      --  invariants, should be OK, but the combination with later pragmas
-      --  may also require special merging.
-
       if Has_Predicates (T)
         and then Present (Predicate_Function (T))
-        and then
-          ((In_Instance and then not Comes_From_Source (N))
-             or else No (Aspect_Specifications (N)))
+        and then In_Instance
+        and then not Comes_From_Source (N)
       then
          --  Inherit Subprograms_For_Type from the full view, if present
 

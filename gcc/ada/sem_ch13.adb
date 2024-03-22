@@ -5876,39 +5876,116 @@ package body Sem_Ch13 is
       ------------------------------
 
       procedure Check_Iterator_Functions is
-         function Valid_Default_Iterator (Subp : Entity_Id) return Boolean;
-         --  Check one possible interpretation for validity
+         function Valid_Default_Iterator (Subp     : Entity_Id;
+                                          Ref_Node : Node_Id := Empty)
+                                          return Boolean;
+         --  Check one possible interpretation for validity. If
+         --  Ref_Node is present report errors on violations.
 
          ----------------------------
          -- Valid_Default_Iterator --
          ----------------------------
 
-         function Valid_Default_Iterator (Subp : Entity_Id) return Boolean is
-            Root_T : constant Entity_Id := Root_Type (Etype (Etype (Subp)));
-            Formal : Entity_Id;
+         function Valid_Default_Iterator (Subp     : Entity_Id;
+                                          Ref_Node : Node_Id := Empty)
+                                          return Boolean
+         is
+            Return_Type : constant Entity_Id := Etype (Etype (Subp));
+            Return_Node : Node_Id;
+            Root_T      : constant Entity_Id := Root_Type (Return_Type);
+            Formal      : Entity_Id;
+
+            function Valid_Iterator_Name (E : Entity_Id) return Boolean
+            is (Chars (E) in Name_Forward_Iterator | Name_Reversible_Iterator);
+
+            function Valid_Iterator_Name (L : Elist_Id) return Boolean;
+
+            -------------------------
+            -- Valid_Iterator_Name --
+            -------------------------
+
+            function Valid_Iterator_Name (L : Elist_Id) return Boolean
+            is
+               Iface_Elmt : Elmt_Id := First_Elmt (L);
+            begin
+               while Present (Iface_Elmt) loop
+                  if Valid_Iterator_Name (Node (Iface_Elmt)) then
+                     return True;
+                  end if;
+                  Next_Elmt (Iface_Elmt);
+               end loop;
+
+               return False;
+            end Valid_Iterator_Name;
 
          begin
-            if not Check_Primitive_Function (Subp) then
+            if Subp = Any_Id then
+               if Present (Ref_Node) then
+
+                  --  Subp is not resolved and an error will be posted about
+                  --  it later
+
+                  Error_Msg_N ("improper function for default iterator!",
+                     Ref_Node);
+               end if;
+
                return False;
+            end if;
+
+            if not Check_Primitive_Function (Subp) then
+               if Present (Ref_Node) then
+                  Error_Msg_N ("improper function for default iterator!",
+                     Ref_Node);
+                  Error_Msg_Sloc := Sloc (Subp);
+                  Error_Msg_NE
+                     ("\\default iterator defined # "
+                     & "must be a primitive function",
+                     Ref_Node, Subp);
+               end if;
+
+               return False;
+            end if;
 
             --  The return type must be derived from a type in an instance
             --  of Iterator.Interfaces, and thus its root type must have a
             --  predefined name.
 
-            elsif Chars (Root_T) /= Name_Forward_Iterator
-             and then Chars (Root_T) /= Name_Reversible_Iterator
+            if not Valid_Iterator_Name (Root_T)
+               and then not (Has_Interfaces (Return_Type) and then
+                  Valid_Iterator_Name (Interfaces (Return_Type)))
             then
-               return False;
+               if Present (Ref_Node) then
 
-            else
-               Formal := First_Formal (Subp);
+                  Return_Node := Result_Definition (Parent (Subp));
+
+                  Error_Msg_N ("improper function for default iterator!",
+                     Ref_Node);
+                  Error_Msg_Sloc := Sloc (Return_Node);
+                  Error_Msg_NE ("\\return type & # "
+                     & "must inherit from either "
+                     & "Forward_Iterator or Reversible_Iterator",
+                     Ref_Node, Return_Node);
+               end if;
+
+               return False;
             end if;
+
+            Formal := First_Formal (Subp);
 
             --  False if any subsequent formal has no default expression
 
             Next_Formal (Formal);
             while Present (Formal) loop
                if No (Expression (Parent (Formal))) then
+                  if Present (Ref_Node) then
+                     Error_Msg_N ("improper function for default iterator!",
+                        Ref_Node);
+                     Error_Msg_Sloc := Sloc (Formal);
+                     Error_Msg_NE ("\\formal parameter & # "
+                        & "must have a default expression",
+                        Ref_Node, Formal);
+                  end if;
+
                   return False;
                end if;
 
@@ -5919,6 +5996,8 @@ package body Sem_Ch13 is
 
             return True;
          end Valid_Default_Iterator;
+
+         Ignore : Boolean;
 
       --  Start of processing for Check_Iterator_Functions
 
@@ -5940,9 +6019,7 @@ package body Sem_Ch13 is
 
             --  Flag the default_iterator as well as the denoted function.
 
-            if not Valid_Default_Iterator (Entity (Expr)) then
-               Error_Msg_N ("improper function for default iterator!", Expr);
-            end if;
+            Ignore := Valid_Default_Iterator (Entity (Expr), Expr);
 
          else
             declare

@@ -3916,3 +3916,39 @@
   (V1024BI "riscv_vector::vls_mode_valid_p (V1024BImode) && TARGET_MIN_VLEN >= 1024")
   (V2048BI "riscv_vector::vls_mode_valid_p (V2048BImode) && TARGET_MIN_VLEN >= 2048")
   (V4096BI "riscv_vector::vls_mode_valid_p (V4096BImode) && TARGET_MIN_VLEN >= 4096")])
+
+(define_mode_iterator VSI [
+  RVVM8SI RVVM4SI RVVM2SI RVVM1SI (RVVMF2SI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VLMULX2_SI [
+  RVVM4SI RVVM2SI RVVM1SI (RVVMF2SI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VLMULX4_SI [
+  RVVM2SI RVVM1SI (RVVMF2SI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VLMULX8_SI [
+  RVVM1SI (RVVMF2SI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VLMULX16_SI [
+  (RVVMF2SI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_attr VSIX2 [
+  (RVVM8SI "RVVM8SI") (RVVM4SI "RVVM8SI") (RVVM2SI "RVVM4SI") (RVVM1SI "RVVM2SI") (RVVMF2SI "RVVM1SI")
+])
+
+(define_mode_attr VSIX4 [
+  (RVVM2SI "RVVM8SI") (RVVM1SI "RVVM4SI") (RVVMF2SI "RVVM2SI")
+])
+
+(define_mode_attr VSIX8 [
+  (RVVM1SI "RVVM8SI") (RVVMF2SI "RVVM4SI")
+])
+
+(define_mode_attr VSIX16 [
+  (RVVMF2SI "RVVM8SI")
+])

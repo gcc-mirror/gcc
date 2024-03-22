@@ -1,5 +1,4 @@
-// Deduction from inherited constructors isn't supported yet, but we shouldn't
-// crash.  It may well be supported in C++23.
+// Deduction from inherited constructors isn't supported before C++23.
 
 //{ dg-do compile { target c++17 } }
 
@@ -17,5 +16,5 @@ int main()
 {
   B b = 42;			// { dg-line init }
   // { dg-prune-output "no matching function" }
-  // { dg-error "class template argument deduction" "" { target *-*-* } init }
+  // { dg-error "class template argument deduction" "" { target c++20_down } init }
 }

@@ -1,3 +1,48 @@
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Walloc-size): Enable also for C++ and ObjC++.
+
+2023-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/113092
+	* c-ubsan.cc (ubsan_instrument_shift): Workaround for missing
+	ubsan _BitInt support for the shift count.
+
+2023-12-20  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/113050
+	* c-common.cc (get_atomic_generic_size): Use
+	OPT_Wdiscarded_qualifiers instead of
+	OPT_Wincompatible_pointer_types.
+
+2023-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wcalloc-transposed-args): New warning.
+	* c-common.h (warn_for_calloc, warn_for_alloc_size): Declare.
+	* c-warn.cc (warn_for_calloc, warn_for_alloc_size): New functions.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* c-attribs.cc (attr_target_exclusions): Make
+	target/target_clones exclusion target-dependent.
+	(attr_target_clones_exclusions): Ditto, and add target_version.
+	(attr_target_version_exclusions): New.
+	(c_common_attribute_table): Add target_version.
+	(handle_target_version_attribute): New.
+	(handle_target_attribute): Amend comment.
+	(handle_target_clones_attribute): Ditto.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* c-attribs.cc (attr_always_inline_exclusions): New.
+	(attr_target_exclusions): Ditto.
+	(attr_target_clones_exclusions): Ditto.
+	(c_common_attribute_table): Add new exclusion lists.
+	(handle_noinline_attribute): Remove custom exclusion handling.
+	(handle_always_inline_attribute): Ditto.
+	(handle_target_attribute): Ditto.
+	(handle_target_clones_attribute): Ditto.
+
 2023-12-13  Patrick Palka  <ppalka@redhat.com>
 
 	* c.opt: Add -fdiagnostics-all-candidates.
@@ -14699,7 +14744,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2023 Free Software Foundation, Inc.
+Copyright (C) 2010-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

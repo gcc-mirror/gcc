@@ -622,7 +622,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 	 LTO object replaced by all partitions and other LTO
 	 objects removed.  */
 
-      lto_c_argv = (char **) xcalloc (sizeof (char *), num_lto_c_args);
+      lto_c_argv = (char **) xcalloc (num_lto_c_args, sizeof (char *));
       lto_c_ptr = CONST_CAST2 (const char **, char **, lto_c_argv);
 
       *lto_c_ptr++ = lto_wrapper;

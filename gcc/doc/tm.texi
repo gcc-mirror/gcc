@@ -1032,8 +1032,8 @@ applied.
 @deftypefn {Target Hook} bool TARGET_C_BITINT_TYPE_INFO (int @var{n}, struct bitint_info *@var{info})
 This target hook returns true if @code{_BitInt(@var{N})} is supported and
 provides details on it.  @code{_BitInt(@var{N})} is to be represented as
-series of @code{info->limb_mode}
-@code{CEIL (@var{N}, GET_MODE_PRECISION (info->limb_mode))} limbs,
+series of @code{info->abi_limb_mode}
+@code{CEIL (@var{N}, GET_MODE_PRECISION (info->abi_limb_mode))} limbs,
 ordered from least significant to most significant if
 @code{!info->big_endian}, otherwise from most significant to least
 significant.  If @code{info->extended} is false, the bits above or equal to
@@ -10732,6 +10732,18 @@ target specific attribute attached to it, it will not be inlined.
 @deftypefn {Target Hook} bool TARGET_OPTION_VALID_ATTRIBUTE_P (tree @var{fndecl}, tree @var{name}, tree @var{args}, int @var{flags})
 This hook is called to parse @code{attribute(target("..."))}, which
 allows setting target-specific options on individual functions.
+These function-specific options may differ
+from the options specified on the command line.  The hook should return
+@code{true} if the options are valid.
+
+The hook should set the @code{DECL_FUNCTION_SPECIFIC_TARGET} field in
+the function declaration to hold a pointer to a target-specific
+@code{struct cl_target_option} structure.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P (tree @var{fndecl}, tree @var{name}, tree @var{args}, int @var{flags})
+This hook is called to parse @code{attribute(target_version("..."))},
+which allows setting target-specific options on individual function versions.
 These function-specific options may differ
 from the options specified on the command line.  The hook should return
 @code{true} if the options are valid.

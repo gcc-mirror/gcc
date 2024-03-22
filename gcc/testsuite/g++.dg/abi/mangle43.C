@@ -1,5 +1,5 @@
 // { dg-do compile { target int128 } }
-// { dg-options "" }
+// { dg-options "-fabi-compat-version=0" }
 
 struct S {
   S(void) { m_i128 = 0; m_u128 = 0; }

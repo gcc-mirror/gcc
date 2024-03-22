@@ -3529,7 +3529,12 @@ expression_expensive_p (tree expr, bool *cond_overflow_p)
   uint64_t expanded_size = 0;
   *cond_overflow_p = false;
   return (expression_expensive_p (expr, cond_overflow_p, cache, expanded_size)
-	  || expanded_size > cache.elements ());
+	  /* ???  Both the explicit unsharing and gimplification of expr will
+	     expand shared trees to multiple copies.
+	     Guard against exponential growth by counting the visits and
+	     comparing againt the number of original nodes.  Allow a tiny
+	     bit of duplication to catch some additional optimizations.  */
+	  || expanded_size > (cache.elements () + 1));
 }
 
 /* Match.pd function to match bitwise inductive expression.
@@ -3867,6 +3872,10 @@ final_value_replacement_loop (class loop *loop)
 	  fprintf (dump_file, "\n");
 	}
       any = true;
+      /* ???  Here we'd like to have a unshare_expr that would assign
+	 shared sub-trees to new temporary variables either gimplified
+	 to a GIMPLE sequence or to a statement list (keeping this a
+	 GENERIC interface).  */
       def = unshare_expr (def);
       remove_phi_node (&psi, false);
 

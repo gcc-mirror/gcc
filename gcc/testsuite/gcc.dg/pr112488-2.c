@@ -3,7 +3,7 @@
 
 extern void abort(void);
 
-int test(int *n, struct T { char a[*n], b[*n]; }*) {	/* { dg-warning "declared inside parameter list" } */
+int test(int *n, struct T { char a[*n], b[*n]; }*) {
   return sizeof(struct T) - sizeof(struct T);
 }
 

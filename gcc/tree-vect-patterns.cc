@@ -132,6 +132,7 @@ vect_init_pattern_stmt (vec_info *vinfo, gimple *pattern_stmt,
   if (!STMT_VINFO_VECTYPE (pattern_stmt_info))
     {
       gcc_assert (!vectype
+		  || is_a <gcond *> (pattern_stmt)
 		  || (VECTOR_BOOLEAN_TYPE_P (vectype)
 		      == vect_use_mask_type_p (orig_stmt_info)));
       STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype;
@@ -2786,15 +2787,30 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (!lhs)
     {
+      if (!vectype)
+	return NULL;
+
       append_pattern_def_seq (vinfo, stmt_info, pattern_stmt, vectype);
+      vectype = truth_type_for (vectype);
+
+      /* FIXME: This part extracts the boolean value out of the bitfield in the
+		same way as vect_recog_gcond_pattern does.  However because
+		patterns cannot match the same root twice,  when we handle and
+		lower the bitfield in the gcond, vect_recog_gcond_pattern can't
+		apply anymore.  We should really fix it so that we don't need to
+		duplicate transformations like these.  */
+      tree new_lhs = vect_recog_temp_ssa_var (boolean_type_node, NULL);
       gcond *cond_stmt = dyn_cast <gcond *> (stmt_info->stmt);
       tree cond_cst = gimple_cond_rhs (cond_stmt);
+      gimple *new_stmt
+	= gimple_build_assign (new_lhs, gimple_cond_code (cond_stmt),
+			       gimple_get_lhs (pattern_stmt),
+			       fold_convert (container_type, cond_cst));
+      append_pattern_def_seq (vinfo, stmt_info, new_stmt, vectype, container_type);
       pattern_stmt
-	= gimple_build_cond (gimple_cond_code (cond_stmt),
-			     gimple_get_lhs (pattern_stmt),
-			     fold_convert (ret_type, cond_cst),
-			     gimple_cond_true_label (cond_stmt),
-			     gimple_cond_false_label (cond_stmt));
+	= gimple_build_cond (NE_EXPR, new_lhs,
+			     build_zero_cst (TREE_TYPE (new_lhs)),
+			     NULL_TREE, NULL_TREE);
     }
 
   *type_out = STMT_VINFO_VECTYPE (stmt_info);
@@ -5553,6 +5569,78 @@ integer_type_for_mask (tree var, vec_info *vinfo)
   return build_nonstandard_integer_type (def_stmt_info->mask_precision, 1);
 }
 
+/* Function vect_recog_gcond_pattern
+
+   Try to find pattern like following:
+
+     if (a op b)
+
+   where operator 'op' is not != and convert it to an adjusted boolean pattern
+
+     mask = a op b
+     if (mask != 0)
+
+   and set the mask type on MASK.
+
+   Input:
+
+   * STMT_VINFO: The stmt at the end from which the pattern
+		 search begins, i.e. cast of a bool to
+		 an integer type.
+
+   Output:
+
+   * TYPE_OUT: The type of the output of this pattern.
+
+   * Return value: A new stmt that will be used to replace the pattern.  */
+
+static gimple *
+vect_recog_gcond_pattern (vec_info *vinfo,
+			 stmt_vec_info stmt_vinfo, tree *type_out)
+{
+  /* Currently we only support this for loop vectorization and when multiple
+     exits.  */
+  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
+  if (!loop_vinfo || !LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+    return NULL;
+
+  gimple *last_stmt = STMT_VINFO_STMT (stmt_vinfo);
+  gcond* cond = NULL;
+  if (!(cond = dyn_cast <gcond *> (last_stmt)))
+    return NULL;
+
+  auto lhs = gimple_cond_lhs (cond);
+  auto rhs = gimple_cond_rhs (cond);
+  auto code = gimple_cond_code (cond);
+
+  tree scalar_type = TREE_TYPE (lhs);
+  if (VECTOR_TYPE_P (scalar_type))
+    return NULL;
+
+  if (code == NE_EXPR
+      && zerop (rhs)
+      && VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type))
+    return NULL;
+
+  tree vecitype = get_vectype_for_scalar_type (vinfo, scalar_type);
+  if (vecitype == NULL_TREE)
+    return NULL;
+
+  tree vectype = truth_type_for (vecitype);
+
+  tree new_lhs = vect_recog_temp_ssa_var (boolean_type_node, NULL);
+  gimple *new_stmt = gimple_build_assign (new_lhs, code, lhs, rhs);
+  append_pattern_def_seq (vinfo, stmt_vinfo, new_stmt, vectype, scalar_type);
+
+  gimple *pattern_stmt
+    = gimple_build_cond (NE_EXPR, new_lhs,
+			 build_int_cst (TREE_TYPE (new_lhs), 0),
+			 NULL_TREE, NULL_TREE);
+  *type_out = vectype;
+  vect_pattern_detected ("vect_recog_gcond_pattern", last_stmt);
+  return pattern_stmt;
+}
+
 /* Function vect_recog_bool_pattern
 
    Try to find pattern like following:
@@ -6591,15 +6679,26 @@ static bool
 possible_vector_mask_operation_p (stmt_vec_info stmt_info)
 {
   tree lhs = gimple_get_lhs (stmt_info->stmt);
+  tree_code code = ERROR_MARK;
+  gassign *assign = NULL;
+  gcond *cond = NULL;
+
+  if ((assign = dyn_cast <gassign *> (stmt_info->stmt)))
+    code = gimple_assign_rhs_code (assign);
+  else if ((cond = dyn_cast <gcond *> (stmt_info->stmt)))
+    {
+      lhs = gimple_cond_lhs (cond);
+      code = gimple_cond_code (cond);
+    }
+
   if (!lhs
       || TREE_CODE (lhs) != SSA_NAME
       || !VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (lhs)))
     return false;
 
-  if (gassign *assign = dyn_cast <gassign *> (stmt_info->stmt))
+  if (code != ERROR_MARK)
     {
-      tree_code rhs_code = gimple_assign_rhs_code (assign);
-      switch (rhs_code)
+      switch (code)
 	{
 	CASE_CONVERT:
 	case SSA_NAME:
@@ -6610,7 +6709,7 @@ possible_vector_mask_operation_p (stmt_vec_info stmt_info)
 	  return true;
 
 	default:
-	  return TREE_CODE_CLASS (rhs_code) == tcc_comparison;
+	  return TREE_CODE_CLASS (code) == tcc_comparison;
 	}
     }
   else if (is_a <gphi *> (stmt_info->stmt))
@@ -6657,12 +6756,35 @@ vect_determine_mask_precision (vec_info *vinfo, stmt_vec_info stmt_info)
      The number of operations are equal, but M16 would have given
      a shorter dependency chain and allowed more ILP.  */
   unsigned int precision = ~0U;
-  if (gassign *assign = dyn_cast <gassign *> (stmt_info->stmt))
+  gimple *stmt = STMT_VINFO_STMT (stmt_info);
+
+  /* If the statement compares two values that shouldn't use vector masks,
+     try comparing the values as normal scalars instead.  */
+  tree_code code = ERROR_MARK;
+  tree op0_type;
+  unsigned int nops = -1;
+  unsigned int ops_start = 0;
+
+  if (gassign *assign = dyn_cast <gassign *> (stmt))
     {
-      unsigned int nops = gimple_num_ops (assign);
-      for (unsigned int i = 1; i < nops; ++i)
+      code = gimple_assign_rhs_code (assign);
+      op0_type = TREE_TYPE (gimple_assign_rhs1 (assign));
+      nops = gimple_num_ops (assign);
+      ops_start = 1;
+    }
+  else if (gcond *cond = dyn_cast <gcond *> (stmt))
+    {
+      code = gimple_cond_code (cond);
+      op0_type = TREE_TYPE (gimple_cond_lhs (cond));
+      nops = 2;
+      ops_start = 0;
+    }
+
+  if (code != ERROR_MARK)
+    {
+      for (unsigned int i = ops_start; i < nops; ++i)
 	{
-	  tree rhs = gimple_op (assign, i);
+	  tree rhs = gimple_op (stmt, i);
 	  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (rhs)))
 	    continue;
 
@@ -6679,19 +6801,15 @@ vect_determine_mask_precision (vec_info *vinfo, stmt_vec_info stmt_info)
 	    }
 	}
 
-      /* If the statement compares two values that shouldn't use vector masks,
-	 try comparing the values as normal scalars instead.  */
-      tree_code rhs_code = gimple_assign_rhs_code (assign);
       if (precision == ~0U
-	  && TREE_CODE_CLASS (rhs_code) == tcc_comparison)
+	  && TREE_CODE_CLASS (code) == tcc_comparison)
 	{
-	  tree rhs1_type = TREE_TYPE (gimple_assign_rhs1 (assign));
 	  scalar_mode mode;
 	  tree vectype, mask_type;
-	  if (is_a <scalar_mode> (TYPE_MODE (rhs1_type), &mode)
-	      && (vectype = get_vectype_for_scalar_type (vinfo, rhs1_type))
-	      && (mask_type = get_mask_type_for_scalar_type (vinfo, rhs1_type))
-	      && expand_vec_cmp_expr_p (vectype, mask_type, rhs_code))
+	  if (is_a <scalar_mode> (TYPE_MODE (op0_type), &mode)
+	      && (vectype = get_vectype_for_scalar_type (vinfo, op0_type))
+	      && (mask_type = get_mask_type_for_scalar_type (vinfo, op0_type))
+	      && expand_vec_cmp_expr_p (vectype, mask_type, code))
 	    precision = GET_MODE_BITSIZE (mode);
 	}
     }
@@ -6870,6 +6988,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
   { vect_recog_divmod_pattern, "divmod" },
   { vect_recog_mult_pattern, "mult" },
   { vect_recog_mixed_size_cond_pattern, "mixed_size_cond" },
+  { vect_recog_gcond_pattern, "gcond" },
   { vect_recog_bool_pattern, "bool" },
   /* This must come before mask conversion, and includes the parts
      of mask conversion that are needed for gather and scatter
@@ -6956,6 +7075,10 @@ vect_mark_pattern_stmts (vec_info *vinfo,
   else
     vect_set_pattern_stmt (vinfo,
 			   pattern_stmt, orig_stmt_info, pattern_vectype);
+
+  /* For any conditionals mark them as vect_condition_def.  */
+  if (is_a <gcond *> (pattern_stmt))
+    STMT_VINFO_DEF_TYPE (STMT_VINFO_RELATED_STMT (orig_stmt_info)) = vect_condition_def;
 
   /* Transfer reduction path info to the pattern.  */
   if (STMT_VINFO_REDUC_IDX (orig_stmt_info_saved) != -1)

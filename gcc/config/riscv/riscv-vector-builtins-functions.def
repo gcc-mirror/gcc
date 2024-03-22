@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3. If not see
 #define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)
 #endif
 
+#define REQUIRED_EXTENSIONS VECTOR_EXT
 /* Internal helper functions for gimple fold use.  */
 DEF_RVV_FUNCTION (read_vl, read_vl, none_preds, p_none_void_ops)
 DEF_RVV_FUNCTION (vlenb, vlenb, none_preds, ul_none_void_ops)
@@ -650,5 +651,6 @@ DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_p
 DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew32_index_ops)
 DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_ptr_eew64_index_ops)
 DEF_RVV_FUNCTION (vlsegff, seg_fault_load, full_preds, tuple_v_scalar_const_ptr_size_ptr_ops)
+#undef REQUIRED_EXTENSIONS
 
 #undef DEF_RVV_FUNCTION

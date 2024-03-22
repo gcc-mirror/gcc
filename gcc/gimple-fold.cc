@@ -4604,7 +4604,7 @@ clear_padding_bitint_needs_padding_p (tree type)
   gcc_assert (ok);
   if (info.extended)
     return false;
-  scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+  scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.abi_limb_mode);
   if (TYPE_PRECISION (type) < GET_MODE_PRECISION (limb_mode))
     return true;
   else if (TYPE_PRECISION (type) == GET_MODE_PRECISION (limb_mode))
@@ -4881,7 +4881,8 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 	struct bitint_info info;
 	bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
 	gcc_assert (ok);
-	scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+	scalar_int_mode limb_mode
+	  = as_a <scalar_int_mode> (info.abi_limb_mode);
 	if (TYPE_PRECISION (type) <= GET_MODE_PRECISION (limb_mode))
 	  {
 	    gcc_assert ((size_t) sz <= clear_padding_unit);
@@ -7085,14 +7086,16 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
   gimple_set_bb (stmt2, NULL);
 
   /* Allocate SSA names(lhs1) on the stack.  */
-  tree lhs1 = (tree)XALLOCA (tree_ssa_name);
+  alignas (tree_node) unsigned char lhs1buf[sizeof (tree_ssa_name)];
+  tree lhs1 = (tree) &lhs1buf[0];
   memset (lhs1, 0, sizeof (tree_ssa_name));
   TREE_SET_CODE (lhs1, SSA_NAME);
   TREE_TYPE (lhs1) = type;
   init_ssa_name_imm_use (lhs1);
 
   /* Allocate SSA names(lhs2) on the stack.  */
-  tree lhs2 = (tree)XALLOCA (tree_ssa_name);
+  alignas (tree_node) unsigned char lhs2buf[sizeof (tree_ssa_name)];
+  tree lhs2 = (tree) &lhs2buf[0];
   memset (lhs2, 0, sizeof (tree_ssa_name));
   TREE_SET_CODE (lhs2, SSA_NAME);
   TREE_TYPE (lhs2) = type;

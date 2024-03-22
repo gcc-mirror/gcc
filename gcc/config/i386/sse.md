@@ -1965,19 +1965,17 @@
 
 ;; All integer modes with AVX512BW/DQ.
 (define_mode_iterator SWI1248_AVX512BWDQ
-  [(QI "TARGET_AVX512DQ") HI (SI "TARGET_AVX512BW")
-   (DI "TARGET_AVX512BW && TARGET_EVEX512")])
+  [(QI "TARGET_AVX512DQ") HI (SI "TARGET_AVX512BW") (DI "TARGET_AVX512BW")])
 
 ;; All integer modes with AVX512BW, where HImode operation
 ;; can be used instead of QImode.
 (define_mode_iterator SWI1248_AVX512BW
-  [QI HI (SI "TARGET_AVX512BW")
-   (DI "TARGET_AVX512BW && TARGET_EVEX512")])
+  [QI HI (SI "TARGET_AVX512BW") (DI "TARGET_AVX512BW")])
 
 ;; All integer modes with AVX512BW/DQ, even HImode requires DQ.
 (define_mode_iterator SWI1248_AVX512BWDQ2
   [(QI "TARGET_AVX512DQ") (HI "TARGET_AVX512DQ")
-   (SI "TARGET_AVX512BW") (DI "TARGET_AVX512BW && TARGET_EVEX512")])
+   (SI "TARGET_AVX512BW") (DI "TARGET_AVX512BW")])
 
 (define_expand "kmov<mskmodesuffix>"
   [(set (match_operand:SWI1248_AVX512BWDQ 0 "nonimmediate_operand")
@@ -2116,7 +2114,7 @@
 	(zero_extend:DI
 	  (not:SI (match_operand:SI 1 "register_operand" "k"))))
    (unspec [(const_int 0)] UNSPEC_MASKOP)]
-  "TARGET_AVX512BW && TARGET_EVEX512"
+  "TARGET_AVX512BW"
   "knotd\t{%1, %0|%0, %1}";
   [(set_attr "type" "msklog")
    (set_attr "prefix" "vex")
@@ -2126,7 +2124,7 @@
   [(set (match_operand:DI 0 "mask_reg_operand")
 	(zero_extend:DI
 	  (not:SI (match_operand:SI 1 "mask_reg_operand"))))]
-  "TARGET_AVX512BW && TARGET_EVEX512 && reload_completed"
+  "TARGET_AVX512BW && reload_completed"
   [(parallel
      [(set (match_dup 0)
 	   (zero_extend:DI
@@ -2256,7 +2254,7 @@
 	    (const_int 32))
 	  (zero_extend:DI (match_operand:SI 2 "register_operand" "k"))))
    (unspec [(const_int 0)] UNSPEC_MASKOP)]
-  "TARGET_AVX512BW && TARGET_EVEX512"
+  "TARGET_AVX512BW"
   "kunpckdq\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "mode" "DI")])
 
@@ -18296,18 +18294,16 @@
      (unspec [(const_int 0)] UNSPEC_MASKOP)])]
   "TARGET_AVX512F")
 
-(define_mode_iterator SWI24_MASK [HI (SI "TARGET_EVEX512")])
-
 (define_expand "vec_pack_trunc_<mode>"
   [(parallel
     [(set (match_operand:<DOUBLEMASKMODE> 0 "register_operand")
 	  (ior:<DOUBLEMASKMODE>
 	    (ashift:<DOUBLEMASKMODE>
 	      (zero_extend:<DOUBLEMASKMODE>
-	        (match_operand:SWI24_MASK 2 "register_operand"))
+	        (match_operand:SWI24 2 "register_operand"))
 	      (match_dup 3))
 	    (zero_extend:<DOUBLEMASKMODE>
-	      (match_operand:SWI24_MASK 1 "register_operand"))))
+	      (match_operand:SWI24 1 "register_operand"))))
      (unspec [(const_int 0)] UNSPEC_MASKOP)])]
   "TARGET_AVX512BW"
 {
@@ -20944,7 +20940,7 @@
 (define_expand "vec_unpacks_lo_di"
   [(set (match_operand:SI 0 "register_operand")
         (subreg:SI (match_operand:DI 1 "register_operand") 0))]
-  "TARGET_AVX512BW && TARGET_EVEX512")
+  "TARGET_AVX512BW")
 
 (define_expand "vec_unpacku_hi_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
@@ -20983,14 +20979,12 @@
       (unspec [(const_int 0)] UNSPEC_MASKOP)])]
   "TARGET_AVX512F")
 
-(define_mode_iterator SWI48x_MASK [SI (DI "TARGET_EVEX512")])
-
 (define_expand "vec_unpacks_hi_<mode>"
   [(parallel
-     [(set (subreg:SWI48x_MASK
+     [(set (subreg:SWI48x
 	     (match_operand:<HALFMASKMODE> 0 "register_operand") 0)
-	   (lshiftrt:SWI48x_MASK
-	     (match_operand:SWI48x_MASK 1 "register_operand")
+	   (lshiftrt:SWI48x
+	     (match_operand:SWI48x 1 "register_operand")
 	     (match_dup 2)))
       (unspec [(const_int 0)] UNSPEC_MASKOP)])]
   "TARGET_AVX512BW"

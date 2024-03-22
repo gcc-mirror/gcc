@@ -41,6 +41,7 @@ avx512er_test (void)
   compute_rcp_ref (a, b, ref);
   compute_rcp_exp (a, b, exp);
 
+#pragma GCC novector
   for (int i = 0; i < MAX; i++)
     {
       float rel_err = (ref[i] - exp[i]) / ref[i];

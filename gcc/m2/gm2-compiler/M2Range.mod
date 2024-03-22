@@ -82,7 +82,7 @@ FROM M2GenGCC IMPORT GetHighFromUnbounded, StringToChar, LValueToGenericPtr, ZCo
 FROM M2System IMPORT Address, Word, Loc, Byte, IsWordN, IsRealN, IsComplexN ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2 ;
 
-FROM M2Check IMPORT ParameterTypeCompatible, ExpressionTypeCompatible ;
+FROM M2Check IMPORT ParameterTypeCompatible, ExpressionTypeCompatible, AssignmentTypeCompatible ;
 
 FROM M2Base IMPORT Nil, IsRealType, GetBaseTypeMinMax,
                    Cardinal, Integer, ZType, IsComplexType,
@@ -1141,18 +1141,23 @@ BEGIN
       TryDeclareConstant (tokenNo, expr) ;
       IF desLowestType # NulSym
       THEN
-         IF GccKnowsAbout (expr) AND IsConst (expr) AND
-            GetMinMax (tokenno, desLowestType, min, max)
+         IF AssignmentTypeCompatible (tokenno, "", des, expr)
          THEN
-            IF OutOfRange (tokenno, min, expr, max, desLowestType)
+            IF GccKnowsAbout (expr) AND IsConst (expr) AND
+               GetMinMax (tokenno, desLowestType, min, max)
             THEN
-               MetaErrorT2 (tokenNo,
-                            'attempting to assign a value {%2Wa} to a designator {%1a} which will exceed the range of type {%1tad}',
-                            des, expr) ;
-               PutQuad (q, ErrorOp, NulSym, NulSym, r)
-            ELSE
-               SubQuad (q)
+               IF OutOfRange (tokenno, min, expr, max, desLowestType)
+               THEN
+                  MetaErrorT2 (tokenNo,
+                               'attempting to assign a value {%2Wa} to a designator {%1a} which will exceed the range of type {%1tad}',
+                               des, expr) ;
+                  PutQuad (q, ErrorOp, NulSym, NulSym, r)
+               ELSE
+                  SubQuad (q)
+               END
             END
+         ELSE
+            SubQuad (q)
          END
       END
    END

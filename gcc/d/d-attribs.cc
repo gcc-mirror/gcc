@@ -128,14 +128,16 @@ static const struct attribute_spec::exclusions attr_noinline_exclusions[] =
 
 static const struct attribute_spec::exclusions attr_target_exclusions[] =
 {
-  ATTR_EXCL ("target_clones", true, true, true),
+  ATTR_EXCL ("target_clones", TARGET_HAS_FMV_TARGET_ATTRIBUTE,
+	     TARGET_HAS_FMV_TARGET_ATTRIBUTE, TARGET_HAS_FMV_TARGET_ATTRIBUTE),
   ATTR_EXCL (NULL, false, false, false),
 };
 
 static const struct attribute_spec::exclusions attr_target_clones_exclusions[] =
 {
   ATTR_EXCL ("always_inline", true, true, true),
-  ATTR_EXCL ("target", true, true, true),
+  ATTR_EXCL ("target", TARGET_HAS_FMV_TARGET_ATTRIBUTE,
+	     TARGET_HAS_FMV_TARGET_ATTRIBUTE, TARGET_HAS_FMV_TARGET_ATTRIBUTE),
   ATTR_EXCL (NULL, false, false, false),
 };
 

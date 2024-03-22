@@ -7787,14 +7787,6 @@ package body Sem_Res is
       --  Determine whether Expr is part of an N_Attribute_Reference
       --  expression.
 
-      function In_Attribute_Old (Expr : Node_Id) return Boolean;
-      --  Determine whether Expr is in attribute Old
-
-      function Within_Exceptional_Cases_Consequence
-        (Expr : Node_Id)
-         return Boolean;
-      --  Determine whether Expr is part of an Exceptional_Cases consequence
-
       ----------------------------------------
       -- Is_Assignment_Or_Object_Expression --
       ----------------------------------------
@@ -7836,31 +7828,6 @@ package body Sem_Res is
          end if;
       end Is_Assignment_Or_Object_Expression;
 
-      ----------------------
-      -- In_Attribute_Old --
-      ----------------------
-
-      function In_Attribute_Old (Expr : Node_Id) return Boolean is
-         N : Node_Id := Expr;
-      begin
-         while Present (N) loop
-            if Nkind (N) = N_Attribute_Reference
-              and then Attribute_Name (N) = Name_Old
-            then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (N) then
-               return False;
-            end if;
-
-            N := Parent (N);
-         end loop;
-
-         return False;
-      end In_Attribute_Old;
-
       -----------------------------
       -- Is_Attribute_Expression --
       -----------------------------
@@ -7883,39 +7850,6 @@ package body Sem_Res is
 
          return False;
       end Is_Attribute_Expression;
-
-      ------------------------------------------
-      -- Within_Exceptional_Cases_Consequence --
-      ------------------------------------------
-
-      function Within_Exceptional_Cases_Consequence
-        (Expr : Node_Id)
-         return Boolean
-      is
-         Context : Node_Id := Parent (Expr);
-      begin
-         while Present (Context) loop
-            if Nkind (Context) = N_Pragma then
-
-               --  In Exceptional_Cases references to formal parameters are
-               --  only allowed within consequences, so it is enough to
-               --  recognize the pragma itself.
-
-               if Get_Pragma_Id (Context) = Pragma_Exceptional_Cases then
-                  return True;
-               end if;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Context) then
-               return False;
-            end if;
-
-            Context := Parent (Context);
-         end loop;
-
-         return False;
-      end Within_Exceptional_Cases_Consequence;
 
       --  Local variables
 
@@ -8047,40 +7981,6 @@ package body Sem_Res is
          --  they are not standard Ada legality rules.
 
          if SPARK_Mode = On then
-
-            --  Parameters of modes OUT or IN OUT of the subprogram shall not
-            --  occur in the consequences of an exceptional contract unless
-            --  they are either passed by reference or occur in the prefix
-            --  of a reference to the 'Old attribute. For convenience, we also
-            --  allow them as prefixes of attributes that do not actually read
-            --  data from the object.
-
-            if Ekind (E) in E_Out_Parameter | E_In_Out_Parameter
-              and then Scope (E) = Current_Scope_No_Loops
-              and then Within_Exceptional_Cases_Consequence (N)
-              and then not In_Attribute_Old (N)
-              and then not (Nkind (Parent (N)) = N_Attribute_Reference
-                              and then
-                            Attribute_Name (Parent (N)) in Name_Constrained
-                                                         | Name_First
-                                                         | Name_Last
-                                                         | Name_Length
-                                                         | Name_Range)
-              and then not Is_By_Reference_Type (Etype (E))
-              and then not Is_Aliased (E)
-            then
-               if Ekind (E) = E_Out_Parameter then
-                  Error_Msg_N
-                    ("formal parameter of mode `OUT` cannot appear " &
-                       "in consequence of Exceptional_Cases", N);
-               else
-                  Error_Msg_N
-                    ("formal parameter of mode `IN OUT` cannot appear " &
-                       "in consequence of Exceptional_Cases", N);
-               end if;
-               Error_Msg_N
-                 ("\only parameters passed by reference are allowed", N);
-            end if;
 
             --  Check for possible elaboration issues with respect to reads of
             --  variables. The act of renaming the variable is not considered a

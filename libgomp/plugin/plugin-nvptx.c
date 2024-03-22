@@ -1907,6 +1907,35 @@ GOMP_OFFLOAD_memcpy2d (int dst_ord, int src_ord, size_t dim1_size,
   data.srcXInBytes = src_offset1_size;
   data.srcY = src_offset0_len;
 
+  if (data.srcXInBytes != 0 || data.srcY != 0)
+    {
+      /* Adjust origin to the actual array data, else the CUDA 2D memory
+	 copy API calls below may fail to validate source/dest pointers
+	 correctly (especially for Fortran where the "virtual origin" of an
+	 array is often outside the stored data).  */
+      if (src_ord == -1)
+	data.srcHost = (const void *) ((const char *) data.srcHost
+				      + data.srcY * data.srcPitch
+				      + data.srcXInBytes);
+      else
+	data.srcDevice += data.srcY * data.srcPitch + data.srcXInBytes;
+      data.srcXInBytes = 0;
+      data.srcY = 0;
+    }
+
+  if (data.dstXInBytes != 0 || data.dstY != 0)
+    {
+      /* As above.  */
+      if (dst_ord == -1)
+	data.dstHost = (void *) ((char *) data.dstHost
+				 + data.dstY * data.dstPitch
+				 + data.dstXInBytes);
+      else
+	data.dstDevice += data.dstY * data.dstPitch + data.dstXInBytes;
+      data.dstXInBytes = 0;
+      data.dstY = 0;
+    }
+
   CUresult res = CUDA_CALL_NOCHECK (cuMemcpy2D, &data);
   if (res == CUDA_ERROR_INVALID_VALUE)
     /* If pitch > CU_DEVICE_ATTRIBUTE_MAX_PITCH or for device-to-device
@@ -1974,6 +2003,44 @@ GOMP_OFFLOAD_memcpy3d (int dst_ord, int src_ord, size_t dim2_size,
   data.srcXInBytes = src_offset2_size;
   data.srcY = src_offset1_len;
   data.srcZ = src_offset0_len;
+
+  if (data.srcXInBytes != 0 || data.srcY != 0 || data.srcZ != 0)
+    {
+      /* Adjust origin to the actual array data, else the CUDA 3D memory
+	 copy API call below may fail to validate source/dest pointers
+	 correctly (especially for Fortran where the "virtual origin" of an
+	 array is often outside the stored data).  */
+      if (src_ord == -1)
+	data.srcHost
+	  = (const void *) ((const char *) data.srcHost
+			    + (data.srcZ * data.srcHeight + data.srcY)
+			      * data.srcPitch
+			    + data.srcXInBytes);
+      else
+	data.srcDevice
+	  += (data.srcZ * data.srcHeight + data.srcY) * data.srcPitch
+	     + data.srcXInBytes;
+      data.srcXInBytes = 0;
+      data.srcY = 0;
+      data.srcZ = 0;
+    }
+
+  if (data.dstXInBytes != 0 || data.dstY != 0 || data.dstZ != 0)
+    {
+      /* As above.  */
+      if (dst_ord == -1)
+	data.dstHost = (void *) ((char *) data.dstHost
+				 + (data.dstZ * data.dstHeight + data.dstY)
+				   * data.dstPitch
+				 + data.dstXInBytes);
+      else
+	data.dstDevice
+	  += (data.dstZ * data.dstHeight + data.dstY) * data.dstPitch
+	     + data.dstXInBytes;
+      data.dstXInBytes = 0;
+      data.dstY = 0;
+      data.dstZ = 0;
+    }
 
   CUDA_CALL (cuMemcpy3D, &data);
   return true;

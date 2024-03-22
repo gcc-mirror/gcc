@@ -877,6 +877,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+/* Indicate whether the target uses "target" attributes for function
+   multiversioning.  This is used to choose between the "target" and
+   "target_version" attributes when expanding a "target_clones" attribute, and
+   determine whether the "target" and "target_clones" attributes are mutually
+   exclusive.  */
+#ifndef TARGET_HAS_FMV_TARGET_ATTRIBUTE
+#define TARGET_HAS_FMV_TARGET_ATTRIBUTE 1
+#endif
+
+
 /* Select a format to encode pointers in exception handling data.  We
    prefer those that result in fewer dynamic relocations.  Assume no
    special support here and encode direct references.  */

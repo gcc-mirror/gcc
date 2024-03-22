@@ -1,7 +1,7 @@
 /* Verify pattern initialization for nested structure type automatic variables with
    padding.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=pattern" } */
+/* { dg-options "-O -ftrivial-auto-var-init=pattern" } */
 
 struct test_aligned {
         unsigned internal1;
@@ -23,4 +23,4 @@ int foo ()
   return var.four.internal1;
 }
 
-/* { dg-final { scan-assembler-times {stp\tq[0-9]+, q[0-9]+,} 5 } } */
+/* { dg-final { scan-assembler-times {stp\tq[0-9]+, q[0-9]+,} 4 } } */

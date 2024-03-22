@@ -36,7 +36,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define TOPS <
 #endif
 
-#define ATTRIBUTE_STRUB_CALLABLE __attribute__ ((__strub__ ("callable")))
+/* Make sure these builtins won't be inlined, even with LTO.  */
+#define ATTRIBUTE_NOINLINE \
+  __attribute__ ((__noinline__, __noclone__, __noipa__))
+
+#define ATTRIBUTE_STRUB_CALLABLE \
+  __attribute__ ((__strub__ ("callable"))) ATTRIBUTE_NOINLINE
 
 /* Enter a stack scrubbing context, initializing the watermark to the caller's
    stack address.  */
@@ -72,7 +77,6 @@ __strub_update (void **watermark)
 /* Dummy function, called to force the caller to not be a leaf function, so
    that it can't use the red zone.  */
 static void ATTRIBUTE_STRUB_CALLABLE
-__attribute__ ((__noinline__, __noipa__))
 __strub_dummy_force_no_leaf (void)
 {
 }

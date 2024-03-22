@@ -19,6 +19,7 @@ unsigned short f[N];
 #endif
 __attribute__((noinline)) float
 foo (float a, float b, float c)
+/* { dg-warning {unsupported simdlen 8 \(amdgcn\)} "" { target amdgcn*-*-* } .-1 } */
 {
   if (a < 30)
     return 5.0f;
@@ -50,5 +51,3 @@ main ()
       abort ();
   return 0;
 }
-
-/* { dg-warning {unsupported simdlen 8 \(amdgcn\)} "" { target amdgcn*-*-* } 17 } */

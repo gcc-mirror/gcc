@@ -95,6 +95,10 @@ test_format()
 		    "required by the chrono-specs") != s.npos);
     }
   }
+
+  std::chrono::duration<float, std::milli> d{0.5};
+  s = std::format("{}", d);
+  VERIFY( s == "0.5ms" );
 }
 
 void

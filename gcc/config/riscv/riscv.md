@@ -41,6 +41,7 @@
   ;; Symbolic accesses.  The order of this list must match that of
   ;; enum riscv_symbol_type in riscv-protos.h.
   UNSPEC_ADDRESS_FIRST
+  UNSPEC_FORCE_FOR_MEM
   UNSPEC_PCREL
   UNSPEC_LOAD_GOT
   UNSPEC_TLS
@@ -427,6 +428,34 @@
 ;; vcompress    vector compress instruction
 ;; vmov         whole vector register move
 ;; vector       unknown vector instruction
+;; 17. Crypto Vector instructions
+;; vandn        crypto vector bitwise and-not instructions
+;; vbrev        crypto vector reverse bits in elements instructions
+;; vbrev8       crypto vector reverse bits in bytes instructions
+;; vrev8        crypto vector reverse bytes instructions
+;; vclz         crypto vector count leading Zeros instructions
+;; vctz         crypto vector count lrailing Zeros instructions
+;; vrol         crypto vector rotate left instructions
+;; vror         crypto vector rotate right instructions
+;; vwsll        crypto vector widening shift left logical instructions
+;; vclmul       crypto vector carry-less multiply - return low half instructions
+;; vclmulh      crypto vector carry-less multiply - return high half instructions
+;; vghsh        crypto vector add-multiply over GHASH Galois-Field instructions
+;; vgmul        crypto vector multiply over GHASH Galois-Field instrumctions
+;; vaesef       crypto vector AES final-round encryption instructions
+;; vaesem       crypto vector AES middle-round encryption instructions
+;; vaesdf       crypto vector AES final-round decryption instructions
+;; vaesdm       crypto vector AES middle-round decryption instructions
+;; vaeskf1      crypto vector AES-128 Forward KeySchedule generation instructions
+;; vaeskf2      crypto vector AES-256 Forward KeySchedule generation instructions
+;; vaesz        crypto vector AES round zero encryption/decryption instructions
+;; vsha2ms      crypto vector SHA-2 message schedule instructions
+;; vsha2ch      crypto vector SHA-2 two rounds of compression instructions
+;; vsha2cl      crypto vector SHA-2 two rounds of compression instructions
+;; vsm4k        crypto vector SM4 KeyExpansion instructions
+;; vsm4r        crypto vector SM4 Rounds instructions
+;; vsm3me       crypto vector SM3 Message Expansion instructions
+;; vsm3c        crypto vector SM3 Compression instructions
 (define_attr "type"
   "unknown,branch,jump,jalr,ret,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
@@ -446,7 +475,9 @@
    vired,viwred,vfredu,vfredo,vfwredu,vfwredo,
    vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
    vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
-   vgather,vcompress,vmov,vector"
+   vgather,vcompress,vmov,vector,vandn,vbrev,vbrev8,vrev8,vclz,vctz,vcpop,vrol,vror,vwsll,
+   vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,vaeskf1,vaeskf2,vaesz,
+   vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -503,7 +534,7 @@
 ;; Widening instructions have group-overlap constraints.  Those are only
 ;; valid for certain register-group sizes.  This attribute marks the
 ;; alternatives not matching the required register-group size as disabled.
-(define_attr "group_overlap" "none,W21,W42,W84,W43,W86,W87"
+(define_attr "group_overlap" "none,W21,W42,W84,W43,W86,W87,W0"
   (const_string "none"))
 
 (define_attr "group_overlap_valid" "no,yes"
@@ -524,9 +555,9 @@
 
          ;; According to RVV ISA:
          ;; The destination EEW is greater than the source EEW, the source EMUL is at least 1,
-	 ;; and the overlap is in the highest-numbered part of the destination register group
-	 ;; (e.g., when LMUL=8, vzext.vf4 v0, v6 is legal, but a source of v0, v2, or v4 is not).
-	 ;; So the source operand should have LMUL >= 1.
+         ;; and the overlap is in the highest-numbered part of the destination register group
+         ;; (e.g., when LMUL=8, vzext.vf4 v0, v6 is legal, but a source of v0, v2, or v4 is not).
+         ;; So the source operand should have LMUL >= 1.
          (and (eq_attr "group_overlap" "W43")
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 4
 			   && riscv_get_v_regno_alignment (GET_MODE (operands[3])) >= 1"))
@@ -535,6 +566,12 @@
          (and (eq_attr "group_overlap" "W86,W87")
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 8
 			   && riscv_get_v_regno_alignment (GET_MODE (operands[3])) >= 1"))
+	 (const_string "no")
+
+         ;; W21 supports highest-number overlap for source LMUL = 1.
+         ;; For 'wv' variant, we can also allow wide source operand overlaps dest operand.
+         (and (eq_attr "group_overlap" "W0")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) > 1"))
 	 (const_string "no")
         ]
        (const_string "yes")))
@@ -3759,6 +3796,14 @@
     FAIL;
 })
 
+(define_insn "*large_load_address"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (mem:DI (match_operand 1 "pcrel_symbol_operand" "")))]
+  "TARGET_64BIT && riscv_cmodel == CM_LARGE"
+  "ld\t%0,%1"
+  [(set_attr "type" "load")
+   (set (attr "length") (const_int 8))])
+
 (include "bitmanip.md")
 (include "crypto.md")
 (include "sync.md")
@@ -3771,6 +3816,7 @@
 (include "thead.md")
 (include "generic-ooo.md")
 (include "vector.md")
+(include "vector-crypto.md")
 (include "zicond.md")
 (include "sfb.md")
 (include "zc.md")

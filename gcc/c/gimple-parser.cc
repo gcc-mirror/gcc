@@ -1487,9 +1487,12 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 	      location_t loc = c_parser_peek_token (parser)->location;
 	      c_parser_consume_token (parser);
 	      tree type = c_parser_gimple_typespec (parser);
-	      struct c_expr ptr;
+	      struct c_expr ptr, alias_off, step, index, index2;
 	      ptr.value = error_mark_node;
-	      tree alias_off = NULL_TREE;
+	      alias_off.value = NULL_TREE;
+	      step.value = NULL_TREE;
+	      index.value = NULL_TREE;
+	      index2.value = NULL_TREE;
 	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 		{
 		  tree alias_type = NULL_TREE;
@@ -1525,12 +1528,52 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 		  if (c_parser_next_token_is (parser, CPP_PLUS))
 		    {
 		      c_parser_consume_token (parser);
-		      alias_off
-			= c_parser_gimple_postfix_expression (parser).value;
-		      alias_off = fold_convert (alias_type, alias_off);
+		      alias_off = c_parser_gimple_postfix_expression (parser);
 		    }
-		  if (! alias_off)
-		    alias_off = build_int_cst (alias_type, 0);
+		  if (c_parser_next_token_is (parser, CPP_MULT))
+		    {
+		      std::swap (index, alias_off);
+		      c_parser_consume_token (parser);
+		      step = c_parser_gimple_postfix_expression (parser);
+		    }
+		  else if (c_parser_next_token_is (parser, CPP_PLUS))
+		    {
+		      c_parser_consume_token (parser);
+		      index = c_parser_gimple_postfix_expression (parser);
+		      if (c_parser_next_token_is (parser, CPP_MULT))
+			{
+			  c_parser_consume_token (parser);
+			  step = c_parser_gimple_postfix_expression (parser);
+			}
+		      else
+			std::swap (index, index2);
+		    }
+		  else if (alias_off.value
+			   && TREE_CODE (alias_off.value) != INTEGER_CST)
+		    std::swap (alias_off, index2);
+		  if (c_parser_next_token_is (parser, CPP_PLUS))
+		    {
+		      c_parser_consume_token (parser);
+		      index2 = c_parser_gimple_postfix_expression (parser);
+		    }
+		  if (alias_off.value)
+		    {
+		      if (TREE_CODE (alias_off.value) != INTEGER_CST)
+			error_at (alias_off.get_start (),
+				  "expected constant offset for %<__MEM%> "
+				  "operand");
+		      alias_off.value = fold_convert (alias_type,
+						      alias_off.value);
+		    }
+		  else
+		    alias_off.value = build_int_cst (alias_type, 0);
+		  if (step.value)
+		    {
+		      if (TREE_CODE (step.value) != INTEGER_CST)
+			error_at (step.get_start (),
+				  "expected constant step for %<__MEM%> "
+				  "operand");
+		    }
 		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 					     "expected %<)%>");
 		}
@@ -1539,8 +1582,13 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 		  c_parser_set_error (parser, false);
 		  return expr;
 		}
-	      expr.value = build2_loc (loc, MEM_REF,
-				       type, ptr.value, alias_off);
+	      if (index.value || step.value || index2.value)
+		expr.value = build5_loc (loc, TARGET_MEM_REF,
+					 type, ptr.value, alias_off.value,
+					 index.value, step.value, index2.value);
+	      else
+		expr.value = build2_loc (loc, MEM_REF,
+					 type, ptr.value, alias_off.value);
 	      break;
 	    }
 	  else if (strcmp (IDENTIFIER_POINTER (id), "__VIEW_CONVERT") == 0)

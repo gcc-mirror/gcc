@@ -153,6 +153,12 @@ enum gomp_map_kind
        (address of the last adjacent entry plus its size).  */
     GOMP_MAP_STRUCT =			(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_FLAG_SPECIAL | 0),
+    /* As above, but followed by an unordered list of adjacent entries.
+       At present, this is used only to diagnose incorrect usage of variable
+       indices into arrays of structs.  */
+    GOMP_MAP_STRUCT_UNORD =		(GOMP_MAP_FLAG_SPECIAL_4
+					 | GOMP_MAP_FLAG_SPECIAL_2
+					 | GOMP_MAP_FLAG_SPECIAL | 0),
     /* On a location of a pointer/reference that is assumed to be already mapped
        earlier, store the translated address of the preceeding mapping.
        No refcount is bumped by this, and the store is done unconditionally.  */

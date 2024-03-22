@@ -1,6 +1,7 @@
 // Verify that class literals are mangled the same way regardless
 // of the underlying type.
 // { dg-do compile { target c++2a } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct I { int a[5], b[5], c[5]; };
 template <I> struct X { };

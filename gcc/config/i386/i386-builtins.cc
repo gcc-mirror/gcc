@@ -221,7 +221,7 @@ ix86_get_builtin_func_type (enum ix86_builtin_func_type tcode)
 }
 
 /* Table for the ix86 builtin decls.  */
-static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
+static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX + 1];
 
 struct builtin_isa ix86_builtins_isa[(int) IX86_BUILTIN_MAX];
 
@@ -295,6 +295,12 @@ def_builtin (HOST_WIDE_INT mask, HOST_WIDE_INT mask2,
 				       NULL, NULL_TREE);
 	  ix86_builtins[(int) code] = decl;
 	  ix86_builtins_isa[(int) code].set_and_not_built_p = false;
+	  if (!flag_non_call_exceptions)
+	    TREE_NOTHROW (decl) = 1;
+	  if (ix86_builtins[(int) IX86_BUILTIN_MAX] == NULL_TREE)
+	    ix86_builtins[(int) IX86_BUILTIN_MAX]
+	      = build_tree_list (get_identifier ("leaf"), NULL_TREE);
+	  DECL_ATTRIBUTES (decl) = ix86_builtins[(int) IX86_BUILTIN_MAX];
 	}
       else
 	{
@@ -393,6 +399,12 @@ ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2)
 	    TREE_READONLY (decl) = 1;
 	  if (ix86_builtins_isa[i].pure_p)
 	    DECL_PURE_P (decl) = 1;
+	  if (!flag_non_call_exceptions)
+	    TREE_NOTHROW (decl) = 1;
+	  if (ix86_builtins[(int) IX86_BUILTIN_MAX] == NULL_TREE)
+	    ix86_builtins[(int) IX86_BUILTIN_MAX]
+	      = build_tree_list (get_identifier ("leaf"), NULL_TREE);
+	  DECL_ATTRIBUTES (decl) = ix86_builtins[(int) IX86_BUILTIN_MAX];
 	}
     }
 

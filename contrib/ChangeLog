@@ -1,3 +1,22 @@
+2023-12-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* compare_tests: Add tool to test lines.  Match tabs besides
+	blanks to insert tool and target.  Don't print undefined fname.
+
+2023-12-20  Jason Merrill  <jason@redhat.com>
+
+	* gcc-git-customization.sh: Add git gcc-style alias.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* gcc_update: Add libgrust file dependencies.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* gcc-changelog/git_commit.py: Add libgrust.
+
 2023-12-13  Arsen Arsenović  <arsen@aarsen.me>
 
 	* download_prerequisites

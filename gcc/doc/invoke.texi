@@ -8,7 +8,7 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988-2023 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2024 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -328,7 +328,7 @@ Objective-C and Objective-C++ Dialects}.
 -pedantic-errors -fpermissive
 -w  -Wextra  -Wall  -Wabi=@var{n}
 -Waddress  -Wno-address-of-packed-member  -Waggregate-return
--Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
+-Walloc-size  -Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
 -Walloca  -Walloca-larger-than=@var{byte-size}
 -Wno-aggressive-loop-optimizations
 -Warith-conversion
@@ -344,6 +344,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wc++20-compat
 -Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
 -Wno-c++20-extensions  -Wno-c++23-extensions
+-Wcalloc-transposed-args
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual
 -Wchar-subscripts
 -Wclobbered  -Wcomment
@@ -803,7 +804,7 @@ Objective-C and Objective-C++ Dialects}.
 -moverride=@var{string}  -mverbose-cost-dump
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg}
 -mstack-protector-guard-offset=@var{offset} -mtrack-speculation
--moutline-atomics }
+-moutline-atomics -mearly-ldp-fusion -mlate-ldp-fusion}
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs
@@ -1591,6 +1592,7 @@ C++ header file to be turned into a precompiled header or Ada spec.
 @item @var{file}.f
 @itemx @var{file}.for
 @itemx @var{file}.ftn
+@itemx @var{file}.fi
 Fixed form Fortran source code that should not be preprocessed.
 
 @item @var{file}.F
@@ -1605,6 +1607,7 @@ preprocessor).
 @itemx @var{file}.f95
 @itemx @var{file}.f03
 @itemx @var{file}.f08
+@itemx @var{file}.fii
 Free form Fortran source code that should not be preprocessed.
 
 @item @var{file}.F90
@@ -8260,8 +8263,7 @@ Warn about calls to allocation functions decorated with attribute
 @code{alloc_size} that specify insufficient size for the target type of
 the pointer the result is assigned to, including those to the built-in
 forms of the functions @code{aligned_alloc}, @code{alloca},
-@code{calloc},
-@code{malloc}, and @code{realloc}.
+@code{calloc}, @code{malloc}, and @code{realloc}.
 
 @opindex Wno-alloc-zero
 @opindex Walloc-zero
@@ -8273,6 +8275,21 @@ forms of the functions @code{aligned_alloc}, @code{alloca}, @code{calloc},
 when called with a zero size differs among implementations (and in the case
 of @code{realloc} has been deprecated) relying on it may result in subtle
 portability bugs and should be avoided.
+
+@opindex Wcalloc-transposed-args
+@opindex Wno-calloc-transposed-args
+@item -Wcalloc-transposed-args
+Warn about calls to allocation functions decorated with attribute
+@code{alloc_size} with two arguments, which use @code{sizeof} operator
+as the earlier size argument and don't use it as the later size argument.
+This is a coding style warning.  The first argument to @code{calloc} is
+documented to be number of elements in array, while the second argument
+is size of each element, so @code{calloc (@var{n}, sizeof (int))} is preferred
+over @code{calloc (sizeof (int), @var{n})}.  If @code{sizeof} in the earlier
+argument and not the latter is intentional, the warning can be suppressed
+by using @code{calloc (sizeof (struct @var{S}) + 0, n)} or
+@code{calloc (1 * sizeof (struct @var{S}), 4)} or using @code{sizeof} in the
+later argument as well.
 
 @opindex Walloc-size-larger-than=
 @opindex Wno-alloc-size-larger-than
@@ -16583,6 +16600,12 @@ Maximum number of basic blocks for VRP to use a basic cache vector.
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
 
+@item fully-pipelined-fma
+Whether the target fully pipelines FMA instructions.  If non-zero,
+reassociation considers the benefit of parallelizing FMA's multiplication
+part and addition part, assuming FMUL and FMA use the same units that can
+also do FADD.
+
 @item sms-loop-average-count-threshold
 A threshold on the average loop count considered by the swing modulo scheduler.
 
@@ -16811,6 +16834,20 @@ of alignment.
 With @option{--param=aarch64-stp-policy=never}, do not emit stp.
 With @option{--param=aarch64-stp-policy=aligned}, emit stp only if the
 source pointer is aligned to at least double the alignment of the type.
+
+@item aarch64-ldp-alias-check-limit
+Limit on the number of alias checks performed by the AArch64 load/store pair
+fusion pass when attempting to form an ldp/stp.  Higher values make the pass
+more aggressive at re-ordering loads over stores, at the expense of increased
+compile time.
+
+@item aarch64-ldp-writeback
+Param to control which writeback opportunities we try to handle in the AArch64
+load/store pair fusion pass.  A value of zero disables writeback handling.  One
+means we try to form pairs involving one or more existing individual writeback
+accesses where possible.  A value of two means we also try to opportunistically
+form writeback opportunities by folding in trailing destructive updates of the
+base register used by a pair.
 
 @item aarch64-loop-vect-issue-rate-niters
 The tuning for some AArch64 CPUs tries to take both latencies and issue
@@ -21244,6 +21281,16 @@ disables the pass.
 
 @option{-mearly-ra=all} is the default for @option{-O2} and above, and for
 @option{-Os}.  @option{-mearly-ra=none} is the default otherwise.
+
+@opindex mearly-ldp-fusion
+@item -mearly-ldp-fusion
+Enable the copy of the AArch64 load/store pair fusion pass that runs before
+register allocation.  Enabled by default at @samp{-O} and above.
+
+@opindex mlate-ldp-fusion
+@item -mlate-ldp-fusion
+Enable the copy of the AArch64 load/store pair fusion pass that runs after
+register allocation.  Enabled by default at @samp{-O} and above.
 
 @opindex msve-vector-bits
 @item -msve-vector-bits=@var{bits}
@@ -33456,8 +33503,8 @@ SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
 XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
 MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
 PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, ENQCMD, UINTR and RAOINT
-instruction set support.
+AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, ENQCMD and UINTR instruction set
+support.
 
 @item clearwaterforest
 Intel Clearwater Forest CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,

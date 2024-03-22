@@ -1813,68 +1813,11 @@ package body Sem_Util is
    ------------------------------
 
    function Build_Default_Subtype_OK (T : Entity_Id) return Boolean is
-
-      function Default_Discriminant_Values_Known_At_Compile_Time
-         (T : Entity_Id) return Boolean;
-         --  For an unconstrained type T, return False if the given type has a
-         --  discriminant with default value not known at compile time. Return
-         --  True otherwise.
-
-      ---------------------------------------------------------
-      -- Default_Discriminant_Values_Known_At_Compile_Time --
-      ---------------------------------------------------------
-
-      function Default_Discriminant_Values_Known_At_Compile_Time
-         (T : Entity_Id) return Boolean
-      is
-         Discr : Entity_Id;
-         DDV : Node_Id;
-
-      begin
-
-         --  If the type has no discriminant, we know them all at compile time
-
-         if not Has_Discriminants (T) then
-            return True;
-         end if;
-
-         --  The type has discriminants, check that none of them has a default
-         --  value not known at compile time.
-
-         Discr := First_Discriminant (T);
-
-         while Present (Discr) loop
-            DDV := Discriminant_Default_Value (Discr);
-
-            if Present (DDV) and then not Compile_Time_Known_Value (DDV) then
-               return False;
-            end if;
-
-            Next_Discriminant (Discr);
-         end loop;
-
-         return True;
-      end Default_Discriminant_Values_Known_At_Compile_Time;
-
-   --  Start of processing for Build_Default_Subtype_OK
-
    begin
 
       if Is_Constrained (T) then
 
          --  We won't build a new subtype if T is constrained
-
-         return False;
-      end if;
-
-      if not Default_Discriminant_Values_Known_At_Compile_Time (T) then
-
-         --  This is a special case of definite subtypes. To allocate a
-         --  specific size to the subtype, we need to know the value at compile
-         --  time. This might not be the case if the default value is the
-         --  result of a function. In that case, the object might be definite
-         --  and limited but the needed size might not be statically known or
-         --  too tricky to obtain. In that case, we will not build the subtype.
 
          return False;
       end if;
@@ -12406,14 +12349,15 @@ package body Sem_Util is
 
    function Is_Container_Aggregate (Exp : Node_Id) return Boolean is
 
-      function Is_Record_Aggregate return Boolean is (False);
-      --  ??? Unimplemented. Given an aggregate whose type is a
-      --  record type with specified Aggregate aspect, how do we
-      --  determine whether it is a record aggregate or a container
-      --  aggregate? If the code where the aggregate occurs can see only
-      --  a partial view of the aggregate's type then the aggregate
-      --  cannot be a record type; an aggregate of a private type has to
-      --  be a container aggregate.
+      function Is_Record_Aggregate return Boolean is
+        (Is_Parenthesis_Aggregate (Exp));
+      --  Given an aggregate whose type is a record type with specified
+      --  Aggregate aspect, we determine whether it is a record aggregate or
+      --  a container aggregate by ckecking whether it uses parentheses () or
+      --  square brackets []. If the code where the aggregate occurs can see
+      --  only a partial view of the aggregate's type then the aggregate cannot
+      --  be a record type and must then use []; an aggregate of a private type
+      --  has to be a container aggregate and must then use [].
 
    begin
       return Nkind (Exp) = N_Aggregate
@@ -14587,11 +14531,16 @@ package body Sem_Util is
       --  A named subtype does not inherit the predicate function of its
       --  parent but an itype declared for a loop index needs the discrete
       --  predicate information of its parent to execute the loop properly.
+      --  Moreover, a named private subtype whose full view is an itype also
+      --  needs to inherit a predicate function because it will not be frozen.
       --  A non-discrete type may has a static predicate (for example True)
       --  but has no static_discrete_predicate.
 
       if not Only_Flags
-        and then Is_Itype (Subt)
+        and then (Is_Itype (Subt)
+                   or else (Ekind (Subt) = E_Private_Subtype
+                             and then Present (Full_View (Subt))
+                             and then Is_Itype (Full_View (Subt))))
         and then Present (Predicate_Function (Par))
       then
          Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
@@ -16036,7 +15985,7 @@ package body Sem_Util is
             Param_Typ := Etype (Param);
          end if;
 
-      --  In the case where an Itype was created for a dispatchin call, the
+      --  In the case where an Itype was created for a dispatching call, the
       --  procedure call has been rewritten. The actual may be an access to
       --  interface type in which case it is the designated type that is the
       --  controlling type.

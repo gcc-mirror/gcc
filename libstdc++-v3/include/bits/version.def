@@ -1646,6 +1646,15 @@ ftms = {
 };
 
 ftms = {
+  name = print;
+  values = {
+    v = 202211;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
   name = spanstream;
   values = {
     v = 202106;
@@ -1731,6 +1740,15 @@ ftms = {
     cxxmin = 26;
     hosted = yes;
     extra_cond = "__glibcxx_to_chars";
+  };
+};
+
+ftms = {
+  name = generator;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+    extra_cond = "__glibcxx_coroutine";
   };
 };
 

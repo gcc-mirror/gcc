@@ -13020,19 +13020,19 @@ package body Exp_Util is
             if Lib_Level and then Finalize_Storage_Only (Obj_Typ) then
                null;
 
-            --  Finalization of transient objects are treated separately in
+            --  Finalization of transient objects is treated separately in
             --  order to handle sensitive cases. These include:
 
             --    * Conditional expressions
             --    * Expressions with actions
             --    * Transient scopes
 
-            --  If one of those contexts has marked the transient object as
-            --  ignored, do not generate finalization actions for it.
+            elsif Is_Finalized_Transient (Obj_Id) then
+               null;
 
-            elsif Is_Finalized_Transient (Obj_Id)
-              or else Is_Ignored_Transient (Obj_Id)
-            then
+            --  Finalization of specific objects is also treated separately
+
+            elsif Is_Ignored_For_Finalization (Obj_Id) then
                null;
 
             --  Ignored Ghost objects do not need any cleanup actions because

@@ -4304,6 +4304,7 @@ $(lang_checks_parallel): site.exp
 	vardots=`echo "$$variant" | sed 's,/,.,g'`; \
 	$(MAKE) TESTSUITEDIR="testsuite.$$vardots" \
 	  RUNTESTFLAGS="--target_board=$$variant $(RUNTESTFLAGS)" \
+	  EXPECT=$(EXPECT) \
 	  "$$target"
 
 TESTSUITEDIR = testsuite
@@ -4369,6 +4370,7 @@ $(lang_checks_parallelized): check-% : site.exp
 	  GCC_RUNTEST_PARALLELIZE_DIR=`${PWD_COMMAND}`/$(TESTSUITEDIR)/$(check_p_tool)-parallel ; \
 	  export GCC_RUNTEST_PARALLELIZE_DIR ; \
 	  $(MAKE) TESTSUITEDIR="$(TESTSUITEDIR)" RUNTESTFLAGS="$(RUNTESTFLAGS)" \
+	    EXPECT=$(EXPECT) \
 	    check-parallel-$* \
 	    $(patsubst %,check-parallel-$*_%, $(check_p_subdirs)); \
 	  sums= ; logs= ; \
@@ -4387,6 +4389,7 @@ $(lang_checks_parallelized): check-% : site.exp
 	  rm -rf $(TESTSUITEDIR)/$*-parallel || true; \
 	else \
 	  $(MAKE) TESTSUITEDIR="$(TESTSUITEDIR)" RUNTESTFLAGS="$(RUNTESTFLAGS)" \
+	    EXPECT=$(EXPECT) \
 	    check_$*_parallelize= check-parallel-$*; \
 	fi
 

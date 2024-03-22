@@ -1618,6 +1618,9 @@
 			(SI   "V2SI")  (SF   "V2SF")
 			(DI   "V2DI")  (DF   "V2DF")])
 
+;; Load/store pair mode.
+(define_mode_attr VPAIR [(SI "V2x4QI") (DI "V2x8QI")])
+
 ;; Register suffix for double-length mode.
 (define_mode_attr Vdtype [(V4HF "8h") (V2SF "4s")])
 

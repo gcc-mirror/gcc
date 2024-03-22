@@ -38,6 +38,8 @@ void test04()
   wcout.flush();
 }
 
+// { dg-output "hello fine world" }
+
 int 
 main()
 {

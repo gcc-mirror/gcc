@@ -8401,41 +8401,59 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	{
 	  tree selectors = NULL_TREE;
 	  gfc_omp_selector *os;
+	  enum omp_tss_code set = oss->code;
+	  gcc_assert (set != OMP_TRAIT_SET_INVALID);
+
 	  for (os = oss->trait_selectors; os; os = os->next)
 	    {
+	      tree scoreval = NULL_TREE;
 	      tree properties = NULL_TREE;
 	      gfc_omp_trait_property *otp;
+	      enum omp_ts_code sel = os->code;
+
+	      /* Per the spec, "Implementations can ignore specified
+		 selectors that are not those described in this section";
+		 however, we  must record such selectors because they
+		 cause match failures.  */
+	      if (sel == OMP_TRAIT_INVALID)
+		{
+		  selectors = make_trait_selector (sel, NULL_TREE, NULL_TREE,
+						   selectors);
+		  continue;
+		}
 
 	      for (otp = os->properties; otp; otp = otp->next)
 		{
 		  switch (otp->property_kind)
 		    {
-		    case CTX_PROPERTY_USER:
-		    case CTX_PROPERTY_EXPR:
+		    case OMP_TRAIT_PROPERTY_EXPR:
 		      {
 			gfc_se se;
 			gfc_init_se (&se, NULL);
 			gfc_conv_expr (&se, otp->expr);
-			properties = tree_cons (NULL_TREE, se.expr,
-						properties);
+			properties = make_trait_property (NULL_TREE, se.expr,
+							  properties);
 		      }
 		      break;
-		    case CTX_PROPERTY_ID:
-		      properties = tree_cons (get_identifier (otp->name),
-					      NULL_TREE, properties);
+		    case OMP_TRAIT_PROPERTY_ID:
+		      properties
+			= make_trait_property (get_identifier (otp->name),
+					       NULL_TREE, properties);
 		      break;
-		    case CTX_PROPERTY_NAME_LIST:
+		    case OMP_TRAIT_PROPERTY_NAME_LIST:
 		      {
-			tree prop = NULL_TREE, value = NULL_TREE;
+			tree prop = OMP_TP_NAMELIST_NODE;
+			tree value = NULL_TREE;
 			if (otp->is_name)
-			  prop = get_identifier (otp->name);
+			  value = get_identifier (otp->name);
 			else
 			  value = gfc_conv_constant_to_tree (otp->expr);
 
-			properties = tree_cons (prop, value, properties);
+			properties = make_trait_property (prop, value,
+							  properties);
 		      }
 		      break;
-		    case CTX_PROPERTY_SIMD:
+		    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
 		      properties = gfc_trans_omp_clauses (NULL, otp->clauses,
 							  odv->where, true);
 		      break;
@@ -8449,17 +8467,14 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		  gfc_se se;
 		  gfc_init_se (&se, NULL);
 		  gfc_conv_expr (&se, os->score);
-		  properties = tree_cons (get_identifier (" score"),
-					  se.expr, properties);
+		  scoreval = se.expr;
 		}
 
-	      selectors = tree_cons (get_identifier (os->trait_selector_name),
-				     properties, selectors);
+	      selectors	= make_trait_selector (sel, scoreval,
+					       properties, selectors);
 	    }
-
-	  set_selectors
-	    = tree_cons (get_identifier (oss->trait_set_selector_name),
-			 selectors, set_selectors);
+	  set_selectors = make_trait_set_selector (set, selectors,
+						   set_selectors);
 	}
 
       const char *variant_proc_name = odv->variant_proc_symtree->name;
@@ -8487,8 +8502,10 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 			 variant_proc_name, &odv->where);
 	      variant_proc_sym = NULL;
 	    }
-	  else if (omp_get_context_selector (set_selectors, "construct",
-					     "simd") == NULL_TREE)
+	  else if (omp_get_context_selector (set_selectors,
+					     OMP_TRAIT_SET_CONSTRUCT,
+					     OMP_TRAIT_CONSTRUCT_SIMD)
+		   == NULL_TREE)
 	    {
 	      char err[256];
 	      if (!gfc_compare_interfaces (ns->proc_name, variant_proc_sym,
@@ -8505,8 +8522,9 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	  if (variant_proc_sym != NULL)
 	    {
 	      gfc_set_sym_referenced (variant_proc_sym);
-	      tree construct = omp_get_context_selector (set_selectors,
-							 "construct", NULL);
+	      tree construct
+		= omp_get_context_selector_list (set_selectors,
+						 OMP_TRAIT_SET_CONSTRUCT);
 	      omp_mark_declare_variant (gfc_get_location (&odv->where),
 					gfc_get_symbol_decl (variant_proc_sym),
 					construct);

@@ -3,16 +3,6 @@
 ! - arrays with array descriptors
 ! For those, the array descriptor / string length must be mapped with 'to:'
 
-! This test fails without the following additional patches:
-!
-! "OpenMP: Pointers and member mappings":
-! https://gcc.gnu.org/pipermail/gcc-patches/2023-August/627898.html
-!
-! "OpenMP/OpenACC: Reorganise OMP map clause handling in gimplify.cc":
-! https://gcc.gnu.org/pipermail/gcc-patches/2023-August/627900.html
-!
-! { dg-xfail-run-if TODO { offload_device_nonshared_as } }
-
 program main
 implicit none
 

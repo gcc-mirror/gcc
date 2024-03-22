@@ -19,6 +19,7 @@ int main ()
     }
 
   /* check results:  */
+  #pragma GCC novector
   for (i = 1; i <= N; i++)
     {
       if (ia[i] != 5)

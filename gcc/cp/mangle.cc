@@ -530,6 +530,16 @@ get_abi_tags (tree t)
   if (DECL_P (t) && DECL_DECLARES_TYPE_P (t))
     t = TREE_TYPE (t);
 
+  if (TREE_CODE (t) == TEMPLATE_DECL && DECL_TEMPLATE_RESULT (t))
+    {
+      tree tags = get_abi_tags (DECL_TEMPLATE_RESULT (t));
+      /* We used to overlook abi_tag on function and variable templates.  */
+      if (tags && abi_check (19))
+	return tags;
+      else
+	return NULL_TREE;
+    }
+
   tree attrs;
   if (TYPE_P (t))
     attrs = TYPE_ATTRIBUTES (t);
@@ -3434,6 +3444,7 @@ write_expression (tree expr)
 
       if (PACK_EXPANSION_P (op))
 	{
+    sizeof_pack:
 	  if (abi_check (11))
 	    {
 	      /* sZ rather than szDp.  */
@@ -3454,6 +3465,19 @@ write_expression (tree expr)
 	  int length = TREE_VEC_LENGTH (args);
 	  if (abi_check (10))
 	    {
+	      /* Before v19 we wrongly mangled all single pack expansions with
+		 sZ, but now only for expressions, as types ICEd (95298).  */
+	      if (length == 1)
+		{
+		  tree arg = TREE_VEC_ELT (args, 0);
+		  if (TREE_CODE (arg) == EXPR_PACK_EXPANSION
+		      && !abi_check (19))
+		    {
+		      op = arg;
+		      goto sizeof_pack;
+		    }
+		}
+
 	      /* sP <template-arg>* E # sizeof...(T), size of a captured
 		 template parameter pack from an alias template */
 	      write_string ("sP");

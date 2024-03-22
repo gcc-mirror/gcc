@@ -1,4 +1,5 @@
 // { dg-do compile { target c++2a } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct A1 { char c[5]; };
 

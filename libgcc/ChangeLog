@@ -1,3 +1,36 @@
+2023-12-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c++-minimal/README: New.
+	* c++-minimal/guard.c: New.
+	* config/gcn/t-amdgcn (LIB2ADD): Add it.
+	* config/nvptx/t-nvptx (LIB2ADD): Likewise.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112917
+	* config.host (sparc, sparc64): Enable...
+	* config/sparc/t-sparc: ... this new fragment.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* strub.c (ATTRIBUTE_NOINLINE): New.
+	(ATTRIBUTE_STRUB_CALLABLE): Add it.
+	(__strub_dummy_force_no_leaf): Drop it.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/cpuinfo.c (enum CPUFeatures): Move to shared
+	copy in gcc/common
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+	    Pavel Iliin  <Pavel.Iliin@arm.com>
+
+	* config/aarch64/t-aarch64: Include cpuinfo.c
+	* config/aarch64/cpuinfo.c: New file
+	(__init_cpu_features_constructor) New.
+	(__init_cpu_features_resolver) New.
+	(__init_cpu_features) New.
+
 2023-12-11  Lipeng Zhu  <lipeng.zhu@intel.com>
 
 	* gthr-posix.h (__GTHREAD_RWLOCK_INIT): New macro.
@@ -13326,7 +13359,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2023 Free Software Foundation, Inc.
+Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

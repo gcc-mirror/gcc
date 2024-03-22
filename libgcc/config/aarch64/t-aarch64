@@ -19,6 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 LIB2ADD += $(srcdir)/config/aarch64/sync-cache.c
+LIB2ADD += $(srcdir)/config/aarch64/cpuinfo.c
 
 # Add sme runtime to shared libgcc
 LIB2ADDEH += \

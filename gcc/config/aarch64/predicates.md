@@ -291,10 +291,47 @@
   (and (match_code "const_int")
        (match_test "aarch64_offset_7bit_signed_scaled_p (mode, INTVAL (op))")))
 
-(define_predicate "aarch64_mem_pair_operand"
-  (and (match_code "mem")
-       (match_test "aarch64_legitimate_address_p (mode, XEXP (op, 0), false,
-						  ADDR_QUERY_LDP_STP)")))
+(define_special_predicate "aarch64_mem_pair_operator"
+  (and
+    (match_code "mem")
+    (match_test "aarch64_ldpstp_operand_mode_p (GET_MODE (op))")
+    (ior
+      (match_test "mode == VOIDmode")
+      (match_test "known_eq (GET_MODE_SIZE (mode),
+			     GET_MODE_SIZE (GET_MODE (op)))"))))
+
+;; Like aarch64_mem_pair_operator, but additionally check the
+;; address is suitable.
+(define_special_predicate "aarch64_mem_pair_operand"
+  (and (match_operand 0 "aarch64_mem_pair_operator")
+       (match_test "aarch64_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
+						  false, ADDR_QUERY_LDP_STP)")))
+
+(define_predicate "pmode_plus_operator"
+  (and (match_code "plus")
+       (match_test "GET_MODE (op) == Pmode")))
+
+(define_special_predicate "aarch64_ldp_reg_operand"
+  (and
+    (match_code "reg,subreg")
+    (match_test "aarch64_ldpstp_operand_mode_p (GET_MODE (op))")
+    (ior
+      (match_test "mode == VOIDmode")
+      (match_test "known_eq (GET_MODE_SIZE (mode),
+			     GET_MODE_SIZE (GET_MODE (op)))"))))
+
+(define_special_predicate "aarch64_stp_reg_operand"
+  (ior (match_operand 0 "aarch64_ldp_reg_operand")
+       (and (match_code "const_int,const,const_vector,const_double")
+	    (match_test "aarch64_const_zero_rtx_p (op)")
+	    (ior
+	      (match_test "GET_MODE (op) == VOIDmode")
+	      (and
+		(match_test "aarch64_ldpstp_operand_mode_p (GET_MODE (op))")
+		(ior
+		  (match_test "mode == VOIDmode")
+		  (match_test "known_eq (GET_MODE_SIZE (mode),
+					 GET_MODE_SIZE (GET_MODE (op)))")))))))
 
 ;; Used for storing two 64-bit values in an AdvSIMD register using an STP
 ;; as a 128-bit vec_concat.

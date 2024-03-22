@@ -85,6 +85,7 @@
 #include "aarch64-feature-deps.h"
 #include "config/arm/aarch-common.h"
 #include "config/arm/aarch-common-protos.h"
+#include "common/config/aarch64/cpuinfo.h"
 #include "ssa.h"
 #include "except.h"
 #include "tree-pass.h"
@@ -5239,15 +5240,17 @@ aarch64_sme_mode_switch_regs::emit_mem_128_moves (sequence seq)
 	rtx set2 = gen_rtx_SET (ops[lhs + 2], ops[3 - lhs]);
 
 	/* Combine the sets with any stack allocation/deallocation.  */
-	rtvec vec;
+	rtx pat;
 	if (prev_loc->index == 0)
 	  {
 	    rtx plus_sp = plus_constant (Pmode, sp, sp_adjust);
-	    vec = gen_rtvec (3, gen_rtx_SET (sp, plus_sp), set1, set2);
+	    rtvec vec = gen_rtvec (3, gen_rtx_SET (sp, plus_sp), set1, set2);
+	    pat = gen_rtx_PARALLEL (VOIDmode, vec);
 	  }
+	else if (seq == PROLOGUE)
+	  pat = aarch64_gen_store_pair (ops[1], ops[0], ops[2]);
 	else
-	  vec = gen_rtvec (2, set1, set2);
-	rtx pat = gen_rtx_PARALLEL (VOIDmode, vec);
+	  pat = aarch64_gen_load_pair (ops[0], ops[2], ops[1]);
 
 	/* Queue a deallocation to the end, otherwise emit the
 	   instruction now.  */
@@ -8122,23 +8125,15 @@ static rtx
 aarch64_gen_storewb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
 			  HOST_WIDE_INT adjustment)
 {
-  switch (mode)
-    {
-    case E_DImode:
-      return gen_storewb_pairdi_di (base, base, reg, reg2,
-				    GEN_INT (-adjustment),
-				    GEN_INT (UNITS_PER_WORD - adjustment));
-    case E_DFmode:
-      return gen_storewb_pairdf_di (base, base, reg, reg2,
-				    GEN_INT (-adjustment),
-				    GEN_INT (UNITS_PER_WORD - adjustment));
-    case E_TFmode:
-      return gen_storewb_pairtf_di (base, base, reg, reg2,
-				    GEN_INT (-adjustment),
-				    GEN_INT (UNITS_PER_VREG - adjustment));
-    default:
-      gcc_unreachable ();
-    }
+  rtx new_base = plus_constant (Pmode, base, -adjustment);
+  rtx mem = gen_frame_mem (mode, new_base);
+  rtx mem2 = adjust_address_nv (mem, mode, GET_MODE_SIZE (mode));
+
+  return gen_rtx_PARALLEL (VOIDmode,
+			   gen_rtvec (3,
+				      gen_rtx_SET (base, new_base),
+				      gen_rtx_SET (mem, reg),
+				      gen_rtx_SET (mem2, reg2)));
 }
 
 /* Push registers numbered REGNO1 and REGNO2 to the stack, adjusting the
@@ -8170,20 +8165,15 @@ static rtx
 aarch64_gen_loadwb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
 			 HOST_WIDE_INT adjustment)
 {
-  switch (mode)
-    {
-    case E_DImode:
-      return gen_loadwb_pairdi_di (base, base, reg, reg2, GEN_INT (adjustment),
-				   GEN_INT (UNITS_PER_WORD));
-    case E_DFmode:
-      return gen_loadwb_pairdf_di (base, base, reg, reg2, GEN_INT (adjustment),
-				   GEN_INT (UNITS_PER_WORD));
-    case E_TFmode:
-      return gen_loadwb_pairtf_di (base, base, reg, reg2, GEN_INT (adjustment),
-				   GEN_INT (UNITS_PER_VREG));
-    default:
-      gcc_unreachable ();
-    }
+  rtx mem = gen_frame_mem (mode, base);
+  rtx mem2 = adjust_address_nv (mem, mode, GET_MODE_SIZE (mode));
+  rtx new_base = plus_constant (Pmode, base, adjustment);
+
+  return gen_rtx_PARALLEL (VOIDmode,
+			   gen_rtvec (3,
+				      gen_rtx_SET (base, new_base),
+				      gen_rtx_SET (reg, mem),
+				      gen_rtx_SET (reg2, mem2)));
 }
 
 /* Pop the two registers numbered REGNO1, REGNO2 from the stack, adjusting it
@@ -8214,59 +8204,85 @@ aarch64_pop_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment,
     }
 }
 
-/* Generate and return a store pair instruction of mode MODE to store
-   register REG1 to MEM1 and register REG2 to MEM2.  */
+/* Given an ldp/stp register operand mode MODE, return a suitable mode to use
+   for a mem rtx representing the entire pair.  */
 
-static rtx
-aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
-			rtx reg2)
+static machine_mode
+aarch64_pair_mode_for_mode (machine_mode mode)
 {
-  switch (mode)
-    {
-    case E_DImode:
-      return gen_store_pair_dw_didi (mem1, reg1, mem2, reg2);
-
-    case E_DFmode:
-      return gen_store_pair_dw_dfdf (mem1, reg1, mem2, reg2);
-
-    case E_TFmode:
-      return gen_store_pair_dw_tftf (mem1, reg1, mem2, reg2);
-
-    case E_V4SImode:
-      return gen_vec_store_pairv4siv4si (mem1, reg1, mem2, reg2);
-
-    case E_V16QImode:
-      return gen_vec_store_pairv16qiv16qi (mem1, reg1, mem2, reg2);
-
-    default:
-      gcc_unreachable ();
-    }
+  if (known_eq (GET_MODE_SIZE (mode), 4))
+    return V2x4QImode;
+  else if (known_eq (GET_MODE_SIZE (mode), 8))
+    return V2x8QImode;
+  else if (known_eq (GET_MODE_SIZE (mode), 16))
+    return V2x16QImode;
+  else
+    gcc_unreachable ();
 }
 
-/* Generate and regurn a load pair isntruction of mode MODE to load register
-   REG1 from MEM1 and register REG2 from MEM2.  */
+/* Given a base mem MEM with mode and address suitable for a single ldp/stp
+   operand, return an rtx like MEM which instead represents the entire pair.  */
 
 static rtx
-aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
-		       rtx mem2)
+aarch64_pair_mem_from_base (rtx mem)
 {
-  switch (mode)
-    {
-    case E_DImode:
-      return gen_load_pair_dw_didi (reg1, mem1, reg2, mem2);
+  auto pair_mode = aarch64_pair_mode_for_mode (GET_MODE (mem));
+  mem = adjust_bitfield_address_nv (mem, pair_mode, 0);
+  gcc_assert (aarch64_mem_pair_lanes_operand (mem, pair_mode));
+  return mem;
+}
 
-    case E_DFmode:
-      return gen_load_pair_dw_dfdf (reg1, mem1, reg2, mem2);
+/* Generate and return a store pair instruction to store REG1 and REG2
+   into memory starting at BASE_MEM.  All three rtxes should have modes of the
+   same size.  */
 
-    case E_TFmode:
-      return gen_load_pair_dw_tftf (reg1, mem1, reg2, mem2);
+rtx
+aarch64_gen_store_pair (rtx base_mem, rtx reg1, rtx reg2)
+{
+  rtx pair_mem = aarch64_pair_mem_from_base (base_mem);
 
-    case E_V4SImode:
-      return gen_load_pairv4siv4si (reg1, mem1, reg2, mem2);
+  return gen_rtx_SET (pair_mem,
+		      gen_rtx_UNSPEC (GET_MODE (pair_mem),
+				      gen_rtvec (2, reg1, reg2),
+				      UNSPEC_STP));
+}
 
-    default:
-      gcc_unreachable ();
-    }
+/* Generate and return a load pair instruction to load a pair of
+   registers starting at BASE_MEM into REG1 and REG2.  If CODE is
+   UNKNOWN, all three rtxes should have modes of the same size.
+   Otherwise, CODE is {SIGN,ZERO}_EXTEND, base_mem should be in SImode,
+   and REG{1,2} should be in DImode.  */
+
+rtx
+aarch64_gen_load_pair (rtx reg1, rtx reg2, rtx base_mem, enum rtx_code code)
+{
+  rtx pair_mem = aarch64_pair_mem_from_base (base_mem);
+
+  const bool any_extend_p = (code == ZERO_EXTEND || code == SIGN_EXTEND);
+  if (any_extend_p)
+    gcc_checking_assert (GET_MODE (base_mem) == SImode
+			 && GET_MODE (reg1) == DImode
+			 && GET_MODE (reg2) == DImode);
+  else
+    gcc_assert (code == UNKNOWN);
+
+  rtx unspecs[2] = {
+    gen_rtx_UNSPEC (any_extend_p ? SImode : GET_MODE (reg1),
+		    gen_rtvec (1, pair_mem),
+		    UNSPEC_LDP_FST),
+    gen_rtx_UNSPEC (any_extend_p ? SImode : GET_MODE (reg2),
+		    gen_rtvec (1, copy_rtx (pair_mem)),
+		    UNSPEC_LDP_SND)
+  };
+
+  if (any_extend_p)
+    for (int i = 0; i < 2; i++)
+      unspecs[i] = gen_rtx_fmt_e (code, DImode, unspecs[i]);
+
+  return gen_rtx_PARALLEL (VOIDmode,
+			   gen_rtvec (2,
+				      gen_rtx_SET (reg1, unspecs[0]),
+				      gen_rtx_SET (reg2, unspecs[1])));
 }
 
 /* Return TRUE if return address signing should be enabled for the current
@@ -8449,7 +8465,7 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	  emit_move_insn (move_src, gen_int_mode (aarch64_sve_vg, DImode));
 	}
       rtx base_rtx = stack_pointer_rtx;
-      poly_int64 sp_offset = offset;
+      poly_int64 cfa_offset = offset;
 
       HOST_WIDE_INT const_offset;
       if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
@@ -8474,8 +8490,17 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	  offset -= fp_offset;
 	}
       rtx mem = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
-      bool need_cfa_note_p = (base_rtx != stack_pointer_rtx);
 
+      rtx cfa_base = stack_pointer_rtx;
+      if (hard_fp_valid_p && frame_pointer_needed)
+	{
+	  cfa_base = hard_frame_pointer_rtx;
+	  cfa_offset += (bytes_below_sp - frame.bytes_below_hard_fp);
+	}
+
+      rtx cfa_mem = gen_frame_mem (mode,
+				   plus_constant (Pmode,
+						  cfa_base, cfa_offset));
       unsigned int regno2;
       if (!aarch64_sve_mode_p (mode)
 	  && reg == move_src
@@ -8485,12 +8510,9 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 		       frame.reg_offset[regno2] - frame.reg_offset[regno]))
 	{
 	  rtx reg2 = gen_rtx_REG (mode, regno2);
-	  rtx mem2;
 
 	  offset += GET_MODE_SIZE (mode);
-	  mem2 = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
-	  insn = emit_insn (aarch64_gen_store_pair (mode, mem, reg, mem2,
-						    reg2));
+	  insn = emit_insn (aarch64_gen_store_pair (mem, reg, reg2));
 
 	  /* The first part of a frame-related parallel insn is
 	     always assumed to be relevant to the frame
@@ -8498,31 +8520,28 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	     frame-related if explicitly marked.  */
 	  if (aarch64_emit_cfi_for_reg_p (regno2))
 	    {
-	      if (need_cfa_note_p)
-		aarch64_add_cfa_expression (insn, reg2, stack_pointer_rtx,
-					    sp_offset + GET_MODE_SIZE (mode));
-	      else
-		RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
+	      const auto off = cfa_offset + GET_MODE_SIZE (mode);
+	      rtx cfa_mem2 = gen_frame_mem (mode,
+					    plus_constant (Pmode,
+							   cfa_base,
+							   off));
+	      add_reg_note (insn, REG_CFA_OFFSET,
+			    gen_rtx_SET (cfa_mem2, reg2));
 	    }
 
 	  regno = regno2;
 	  ++i;
 	}
       else if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
-	{
-	  insn = emit_insn (gen_aarch64_pred_mov (mode, mem, ptrue, move_src));
-	  need_cfa_note_p = true;
-	}
+	insn = emit_insn (gen_aarch64_pred_mov (mode, mem, ptrue, move_src));
       else if (aarch64_sve_mode_p (mode))
 	insn = emit_insn (gen_rtx_SET (mem, move_src));
       else
 	insn = emit_move_insn (mem, move_src);
 
       RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      if (frame_related_p && need_cfa_note_p)
-	aarch64_add_cfa_expression (insn, reg, stack_pointer_rtx, sp_offset);
-      else if (frame_related_p && move_src != reg)
-	add_reg_note (insn, REG_FRAME_RELATED_EXPR, gen_rtx_SET (mem, reg));
+      if (frame_related_p)
+	add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (cfa_mem, reg));
 
       /* Emit a fake instruction to indicate that the VG save slot has
 	 been initialized.  */
@@ -8586,11 +8605,9 @@ aarch64_restore_callee_saves (poly_int64 bytes_below_sp,
 		       frame.reg_offset[regno2] - frame.reg_offset[regno]))
 	{
 	  rtx reg2 = gen_rtx_REG (mode, regno2);
-	  rtx mem2;
 
 	  offset += GET_MODE_SIZE (mode);
-	  mem2 = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
-	  emit_insn (aarch64_gen_load_pair (mode, reg, mem, reg2, mem2));
+	  emit_insn (aarch64_gen_load_pair (reg, reg2, mem));
 
 	  *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg2, *cfi_ops);
 	  regno = regno2;
@@ -8934,9 +8951,9 @@ aarch64_process_components (sbitmap components, bool prologue_p)
 			     : gen_rtx_SET (reg2, mem2);
 
       if (prologue_p)
-	insn = emit_insn (aarch64_gen_store_pair (mode, mem, reg, mem2, reg2));
+	insn = emit_insn (aarch64_gen_store_pair (mem, reg, reg2));
       else
-	insn = emit_insn (aarch64_gen_load_pair (mode, reg, mem, reg2, mem2));
+	insn = emit_insn (aarch64_gen_load_pair (reg, reg2, mem));
 
       if (frame_related_p || frame_related2_p)
 	{
@@ -10332,12 +10349,18 @@ aarch64_classify_address (struct aarch64_address_info *info,
      mode of the corresponding addressing mode is half of that.  */
   if (type == ADDR_QUERY_LDP_STP_N)
     {
-      if (known_eq (GET_MODE_SIZE (mode), 16))
+      if (known_eq (GET_MODE_SIZE (mode), 32))
+	mode = V16QImode;
+      else if (known_eq (GET_MODE_SIZE (mode), 16))
 	mode = DFmode;
       else if (known_eq (GET_MODE_SIZE (mode), 8))
 	mode = SFmode;
       else
 	return false;
+
+      /* This isn't really an Advanced SIMD struct mode, but a mode
+	 used to represent the complete mem in a load/store pair.  */
+      advsimd_struct_p = false;
     }
 
   bool allow_reg_index_p = (!load_store_pair_p
@@ -10851,6 +10874,15 @@ aarch64_float_const_zero_rtx_p (rtx x)
   return real_equal (CONST_DOUBLE_REAL_VALUE (x), &dconst0);
 }
 
+/* Return true if X is any kind of constant zero rtx.  */
+
+bool
+aarch64_const_zero_rtx_p (rtx x)
+{
+  return (x == CONST0_RTX (GET_MODE (x))
+	  || (CONST_DOUBLE_P (x) && aarch64_float_const_zero_rtx_p (x)));
+}
+
 /* Return TRUE if rtx X is immediate constant that fits in a single
    MOVI immediate operation.  */
 bool
@@ -10946,9 +10978,7 @@ aarch64_init_tpidr2_block ()
   /* The first word of the block points to the save buffer and the second
      word is the number of ZA slices to save.  */
   rtx block_0 = adjust_address (block, DImode, 0);
-  rtx block_8 = adjust_address (block, DImode, 8);
-  emit_insn (gen_store_pair_dw_didi (block_0, za_save_buffer,
-				     block_8, svl_bytes_reg));
+  emit_insn (aarch64_gen_store_pair (block_0, za_save_buffer, svl_bytes_reg));
 
   if (!memory_operand (block, V16QImode))
     block = replace_equiv_address (block, force_reg (Pmode, XEXP (block, 0)));
@@ -12054,8 +12084,7 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 
     case 'w':
     case 'x':
-      if (x == const0_rtx
-	  || (CONST_DOUBLE_P (x) && aarch64_float_const_zero_rtx_p (x)))
+      if (aarch64_const_zero_rtx_p (x))
 	{
 	  asm_fprintf (f, "%czr", code);
 	  break;
@@ -12298,7 +12327,8 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	if (!MEM_P (x)
 	    || (code == 'y'
 		&& maybe_ne (GET_MODE_SIZE (mode), 8)
-		&& maybe_ne (GET_MODE_SIZE (mode), 16)))
+		&& maybe_ne (GET_MODE_SIZE (mode), 16)
+		&& maybe_ne (GET_MODE_SIZE (mode), 32)))
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
 	    return;
@@ -12337,6 +12367,9 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
       return false;
     }
 
+  const bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
+				  || type == ADDR_QUERY_LDP_STP_N);
+
   if (aarch64_classify_address (&addr, x, mode, true, type))
     switch (addr.type)
       {
@@ -12348,7 +12381,7 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
 	  }
 
 	vec_flags = aarch64_classify_vector_mode (mode);
-	if (vec_flags & VEC_ANY_SVE)
+	if ((vec_flags & VEC_ANY_SVE) && !load_store_pair_p)
 	  {
 	    HOST_WIDE_INT vnum
 	      = exact_div (addr.const_offset,
@@ -12357,6 +12390,9 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
 			 reg_names[REGNO (addr.base)], vnum);
 	    return true;
 	  }
+
+	if (!CONST_INT_P (addr.offset))
+	  return false;
 
 	asm_fprintf (f, "[%s, %wd]", reg_names[REGNO (addr.base)],
 		     INTVAL (addr.offset));
@@ -16041,6 +16077,15 @@ private:
      leaving a vectorization of { elts }.  */
   bool m_stores_to_vector_load_decl = false;
 
+  /* Non-zero if the last operation we costed is a vector promotion or demotion.
+     In this case the value is the number of insns in the last operation.
+
+     On AArch64 vector promotion and demotions require us to first widen or
+     narrow the input and only after that emit conversion instructions.  For
+     costing this means we need to emit the cost of the final conversions as
+     well.  */
+  unsigned int m_num_last_promote_demote = 0;
+
   /* - If M_VEC_FLAGS is zero then we're costing the original scalar code.
      - If M_VEC_FLAGS & VEC_ADVSIMD is nonzero then we're costing Advanced
        SIMD code.
@@ -17095,6 +17140,29 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
     stmt_cost = aarch64_sve_adjust_stmt_cost (m_vinfo, kind, stmt_info,
 					      vectype, stmt_cost);
+
+  /*  Vector promotion and demotion requires us to widen the operation first
+      and only after that perform the conversion.  Unfortunately the mid-end
+      expects this to be doable as a single operation and doesn't pass on
+      enough context here for us to tell which operation is happening.  To
+      account for this we count every promote-demote operation twice and if
+      the previously costed operation was also a promote-demote we reduce
+      the cost of the currently being costed operation to simulate the final
+      conversion cost.  Note that for SVE we can do better here if the converted
+      value comes from a load since the widening load would consume the widening
+      operations.  However since we're in stage 3 we can't change the helper
+      vect_is_extending_load and duplicating the code seems not useful.  */
+  gassign *assign = NULL;
+  if (kind == vec_promote_demote
+      && (assign = dyn_cast <gassign *> (STMT_VINFO_STMT (stmt_info)))
+      && gimple_assign_rhs_code (assign) == FLOAT_EXPR)
+    {
+      auto new_count = count * 2 - m_num_last_promote_demote;
+      m_num_last_promote_demote = count;
+      count = new_count;
+    }
+  else
+    m_num_last_promote_demote = 0;
 
   if (stmt_info && aarch64_use_new_vector_costs_p ())
     {
@@ -18253,6 +18321,12 @@ aarch64_override_options_internal (struct gcc_options *opts)
     SET_OPTION_IF_UNSET (opts, &global_options_set, param_avoid_fma_max_bits,
 			 512);
 
+  /* Consider fully pipelined FMA in reassociation.  */
+  if (aarch64_tune_params.extra_tuning_flags
+      & AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA)
+    SET_OPTION_IF_UNSET (opts, &global_options_set, param_fully_pipelined_fma,
+			 1);
+
   aarch64_override_options_after_change_1 (opts);
 }
 
@@ -19340,6 +19414,8 @@ aarch64_process_target_attr (tree args)
   return true;
 }
 
+static bool aarch64_process_target_version_attr (tree args);
+
 /* Implement TARGET_OPTION_VALID_ATTRIBUTE_P.  This is used to
    process attribute ((target ("..."))).  */
 
@@ -19395,6 +19471,20 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 			      TREE_TARGET_OPTION (target_option_current_node));
 
   ret = aarch64_process_target_attr (args);
+  ret = aarch64_process_target_attr (args);
+  if (ret)
+    {
+      tree version_attr = lookup_attribute ("target_version",
+					    DECL_ATTRIBUTES (fndecl));
+      if (version_attr != NULL_TREE)
+	{
+	  /* Reapply any target_version attribute after target attribute.
+	     This should be equivalent to applying the target_version once
+	     after processing all target attributes.  */
+	  tree version_args = TREE_VALUE (version_attr);
+	  ret = aarch64_process_target_version_attr (version_args);
+	}
+    }
 
   /* Set up any additional state.  */
   if (ret)
@@ -19423,6 +19513,829 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
     cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (old_optimize));
   return ret;
+}
+
+typedef unsigned long long aarch64_fmv_feature_mask;
+
+typedef struct
+{
+  const char *name;
+  aarch64_fmv_feature_mask feature_mask;
+  aarch64_feature_flags opt_flags;
+} aarch64_fmv_feature_datum;
+
+#define AARCH64_FMV_FEATURE(NAME, FEAT_NAME, C) \
+  {NAME, 1ULL << FEAT_##FEAT_NAME, ::feature_deps::fmv_deps_##FEAT_NAME},
+
+/* FMV features are listed in priority order, to make it easier to sort target
+   strings.  */
+static aarch64_fmv_feature_datum aarch64_fmv_feature_data[] = {
+#include "config/aarch64/aarch64-option-extensions.def"
+};
+
+/* Parse a function multiversioning feature string STR, as found in a
+   target_version or target_clones attribute.
+
+   If ISA_FLAGS is nonnull, then update it with the specified architecture
+   features turned on.  If FEATURE_MASK is nonnull, then assign to it a bitmask
+   representing the set of features explicitly specified in the feature string.
+   Return an aarch_parse_opt_result describing the result.
+
+   When the STR string contains an invalid or duplicate extension, a copy of
+   the extension string is created and stored to INVALID_EXTENSION.  */
+
+static enum aarch_parse_opt_result
+aarch64_parse_fmv_features (const char *str, aarch64_feature_flags *isa_flags,
+			    aarch64_fmv_feature_mask *feature_mask,
+			    std::string *invalid_extension)
+{
+  if (feature_mask)
+    *feature_mask = 0ULL;
+
+  if (strcmp (str, "default") == 0)
+    return AARCH_PARSE_OK;
+
+  while (str != NULL && *str != 0)
+    {
+      const char *ext;
+      size_t len;
+
+      ext = strchr (str, '+');
+
+      if (ext != NULL)
+	len = ext - str;
+      else
+	len = strlen (str);
+
+      if (len == 0)
+	return AARCH_PARSE_MISSING_ARG;
+
+      static const int num_features = ARRAY_SIZE (aarch64_fmv_feature_data);
+      int i;
+      for (i = 0; i < num_features; i++)
+	{
+	  if (strlen (aarch64_fmv_feature_data[i].name) == len
+	      && strncmp (aarch64_fmv_feature_data[i].name, str, len) == 0)
+	    {
+	      if (isa_flags)
+		*isa_flags |= aarch64_fmv_feature_data[i].opt_flags;
+	      if (feature_mask)
+		{
+		  auto old_feature_mask = *feature_mask;
+		  *feature_mask |= aarch64_fmv_feature_data[i].feature_mask;
+		  if (*feature_mask == old_feature_mask)
+		    {
+		      /* Duplicate feature.  */
+		      if (invalid_extension)
+			*invalid_extension = std::string (str, len);
+		      return AARCH_PARSE_DUPLICATE_FEATURE;
+		    }
+		}
+	      break;
+	    }
+	}
+
+      if (i == num_features)
+	{
+	  /* Feature not found in list.  */
+	  if (invalid_extension)
+	    *invalid_extension = std::string (str, len);
+	  return AARCH_PARSE_INVALID_FEATURE;
+	}
+
+      str = ext;
+      if (str)
+	/* Skip over the next '+'.  */
+	str++;
+    }
+
+  return AARCH_PARSE_OK;
+}
+
+/* Parse the tree in ARGS that contains the target_version attribute
+   information and update the global target options space.  */
+
+static bool
+aarch64_process_target_version_attr (tree args)
+{
+  if (TREE_CODE (args) == TREE_LIST)
+    {
+      if (TREE_CHAIN (args))
+	{
+	  error ("attribute %<target_version%> has multiple values");
+	  return false;
+	}
+      args = TREE_VALUE (args);
+    }
+
+  if (!args || TREE_CODE (args) != STRING_CST)
+    {
+      error ("attribute %<target_version%> argument not a string");
+      return false;
+    }
+
+  const char *str = TREE_STRING_POINTER (args);
+
+  enum aarch_parse_opt_result parse_res;
+  auto isa_flags = aarch64_asm_isa_flags;
+
+  std::string invalid_extension;
+  parse_res = aarch64_parse_fmv_features (str, &isa_flags, NULL,
+					  &invalid_extension);
+
+  if (parse_res == AARCH_PARSE_OK)
+    {
+      aarch64_set_asm_isa_flags (isa_flags);
+      return true;
+    }
+
+  switch (parse_res)
+    {
+    case AARCH_PARSE_MISSING_ARG:
+      error ("missing value in %<target_version%> attribute");
+      break;
+
+    case AARCH_PARSE_INVALID_FEATURE:
+      error ("invalid feature modifier %qs of value %qs in "
+	     "%<target_version%> attribute", invalid_extension.c_str (),
+	     str);
+      break;
+
+    case AARCH_PARSE_DUPLICATE_FEATURE:
+      error ("duplicate feature modifier %qs of value %qs in "
+	     "%<target_version%> attribute", invalid_extension.c_str (),
+	     str);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return false;
+}
+
+/* Implement TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P.  This is used to
+   process attribute ((target_version ("..."))).  */
+
+static bool
+aarch64_option_valid_version_attribute_p (tree fndecl, tree, tree args, int)
+{
+  struct cl_target_option cur_target;
+  bool ret;
+  tree new_target;
+  tree existing_target = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+
+  /* Save the current target options to restore at the end.  */
+  cl_target_option_save (&cur_target, &global_options, &global_options_set);
+
+  /* If fndecl already has some target attributes applied to it, unpack
+     them so that we add this attribute on top of them, rather than
+     overwriting them.  */
+  if (existing_target)
+    {
+      struct cl_target_option *existing_options
+	= TREE_TARGET_OPTION (existing_target);
+
+      if (existing_options)
+	cl_target_option_restore (&global_options, &global_options_set,
+				  existing_options);
+    }
+  else
+    cl_target_option_restore (&global_options, &global_options_set,
+			      TREE_TARGET_OPTION (target_option_current_node));
+
+  ret = aarch64_process_target_version_attr (args);
+
+  /* Set up any additional state.  */
+  if (ret)
+    {
+      aarch64_override_options_internal (&global_options);
+      new_target = build_target_option_node (&global_options,
+					     &global_options_set);
+    }
+  else
+    new_target = NULL;
+
+  if (fndecl && ret)
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_target;
+
+  cl_target_option_restore (&global_options, &global_options_set, &cur_target);
+
+  return ret;
+}
+
+/* This parses the attribute arguments to target_version in DECL and the
+   feature mask required to select those targets.  No adjustments are made to
+   add or remove redundant feature requirements.  */
+
+static aarch64_fmv_feature_mask
+get_feature_mask_for_version (tree decl)
+{
+  tree version_attr = lookup_attribute ("target_version",
+					DECL_ATTRIBUTES (decl));
+  if (version_attr == NULL)
+    return 0;
+
+  const char *version_string = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE
+						    (version_attr)));
+  enum aarch_parse_opt_result parse_res;
+  aarch64_fmv_feature_mask feature_mask;
+
+  parse_res = aarch64_parse_fmv_features (version_string, NULL, &feature_mask,
+					  NULL);
+
+  /* We should have detected any errors before getting here.  */
+  gcc_assert (parse_res == AARCH_PARSE_OK);
+
+  return feature_mask;
+}
+
+/* Compare priorities of two feature masks. Return:
+     1: mask1 is higher priority
+    -1: mask2 is higher priority
+     0: masks are equal.  */
+
+static int
+compare_feature_masks (aarch64_fmv_feature_mask mask1,
+		       aarch64_fmv_feature_mask mask2)
+{
+  int pop1 = popcount_hwi (mask1);
+  int pop2 = popcount_hwi (mask2);
+  if (pop1 > pop2)
+    return 1;
+  if (pop2 > pop1)
+    return -1;
+
+  auto diff_mask = mask1 ^ mask2;
+  if (diff_mask == 0ULL)
+    return 0;
+  for (int i = FEAT_MAX - 1; i > 0; i--)
+    {
+      auto bit_mask = aarch64_fmv_feature_data[i].feature_mask;
+      if (diff_mask & bit_mask)
+	return (mask1 & bit_mask) ? 1 : -1;
+    }
+  gcc_unreachable();
+}
+
+/* Compare priorities of two version decls.  */
+
+int
+aarch64_compare_version_priority (tree decl1, tree decl2)
+{
+  auto mask1 = get_feature_mask_for_version (decl1);
+  auto mask2 = get_feature_mask_for_version (decl2);
+
+  return compare_feature_masks (mask1, mask2);
+}
+
+/* Build the struct __ifunc_arg_t type:
+
+   struct __ifunc_arg_t
+   {
+     unsigned long _size; // Size of the struct, so it can grow.
+     unsigned long _hwcap;
+     unsigned long _hwcap2;
+   }
+ */
+
+static tree
+build_ifunc_arg_type ()
+{
+  tree ifunc_arg_type = lang_hooks.types.make_type (RECORD_TYPE);
+  tree field1 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			    get_identifier ("_size"),
+			    long_unsigned_type_node);
+  tree field2 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			    get_identifier ("_hwcap"),
+			    long_unsigned_type_node);
+  tree field3 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			    get_identifier ("_hwcap2"),
+			    long_unsigned_type_node);
+
+  DECL_FIELD_CONTEXT (field1) = ifunc_arg_type;
+  DECL_FIELD_CONTEXT (field2) = ifunc_arg_type;
+  DECL_FIELD_CONTEXT (field3) = ifunc_arg_type;
+
+  TYPE_FIELDS (ifunc_arg_type) = field1;
+  DECL_CHAIN (field1) = field2;
+  DECL_CHAIN (field2) = field3;
+
+  layout_type (ifunc_arg_type);
+
+  tree const_type = build_qualified_type (ifunc_arg_type, TYPE_QUAL_CONST);
+  tree pointer_type = build_pointer_type (const_type);
+
+  return pointer_type;
+}
+
+/* Make the resolver function decl to dispatch the versions of
+   a multi-versioned function,  DEFAULT_DECL.  IFUNC_ALIAS_DECL is
+   ifunc alias that will point to the created resolver.  Create an
+   empty basic block in the resolver and store the pointer in
+   EMPTY_BB.  Return the decl of the resolver function.  */
+
+static tree
+make_resolver_func (const tree default_decl,
+		    const tree ifunc_alias_decl,
+		    basic_block *empty_bb)
+{
+  tree decl, type, t;
+
+  /* Create resolver function name based on default_decl.  */
+  tree decl_name = clone_function_name (default_decl, "resolver");
+  const char *resolver_name = IDENTIFIER_POINTER (decl_name);
+
+  /* The resolver function should have signature
+     (void *) resolver (uint64_t, const __ifunc_arg_t *) */
+  type = build_function_type_list (ptr_type_node,
+				   uint64_type_node,
+				   build_ifunc_arg_type (),
+				   NULL_TREE);
+
+  decl = build_fn_decl (resolver_name, type);
+  SET_DECL_ASSEMBLER_NAME (decl, decl_name);
+
+  DECL_NAME (decl) = decl_name;
+  TREE_USED (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
+  DECL_UNINLINABLE (decl) = 1;
+
+  /* Resolver is not external, body is generated.  */
+  DECL_EXTERNAL (decl) = 0;
+  DECL_EXTERNAL (ifunc_alias_decl) = 0;
+
+  DECL_CONTEXT (decl) = NULL_TREE;
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  DECL_STATIC_CONSTRUCTOR (decl) = 0;
+
+  if (DECL_COMDAT_GROUP (default_decl)
+      || TREE_PUBLIC (default_decl))
+    {
+      /* In this case, each translation unit with a call to this
+	 versioned function will put out a resolver.  Ensure it
+	 is comdat to keep just one copy.  */
+      DECL_COMDAT (decl) = 1;
+      make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+    }
+  else
+    TREE_PUBLIC (ifunc_alias_decl) = 0;
+
+  /* Build result decl and add to function_decl. */
+  t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
+  DECL_CONTEXT (t) = decl;
+  DECL_ARTIFICIAL (t) = 1;
+  DECL_IGNORED_P (t) = 1;
+  DECL_RESULT (decl) = t;
+
+  /* Build parameter decls and add to function_decl. */
+  tree arg1 = build_decl (UNKNOWN_LOCATION, PARM_DECL,
+			  get_identifier ("hwcap"),
+			  uint64_type_node);
+  tree arg2 = build_decl (UNKNOWN_LOCATION, PARM_DECL,
+			  get_identifier ("arg"),
+			  build_ifunc_arg_type());
+  DECL_CONTEXT (arg1) = decl;
+  DECL_CONTEXT (arg2) = decl;
+  DECL_ARTIFICIAL (arg1) = 1;
+  DECL_ARTIFICIAL (arg2) = 1;
+  DECL_IGNORED_P (arg1) = 1;
+  DECL_IGNORED_P (arg2) = 1;
+  DECL_ARG_TYPE (arg1) = uint64_type_node;
+  DECL_ARG_TYPE (arg2) = build_ifunc_arg_type ();
+  DECL_ARGUMENTS (decl) = arg1;
+  TREE_CHAIN (arg1) = arg2;
+
+  gimplify_function_tree (decl);
+  push_cfun (DECL_STRUCT_FUNCTION (decl));
+  *empty_bb = init_lowered_empty_function (decl, false,
+					   profile_count::uninitialized ());
+
+  cgraph_node::add_new_function (decl, true);
+  symtab->call_cgraph_insertion_hooks (cgraph_node::get_create (decl));
+
+  pop_cfun ();
+
+  gcc_assert (ifunc_alias_decl != NULL);
+  /* Mark ifunc_alias_decl as "ifunc" with resolver as resolver_name.  */
+  DECL_ATTRIBUTES (ifunc_alias_decl)
+    = make_attribute ("ifunc", resolver_name,
+		      DECL_ATTRIBUTES (ifunc_alias_decl));
+
+  /* Create the alias for dispatch to resolver here.  */
+  cgraph_node::create_same_body_alias (ifunc_alias_decl, decl);
+  return decl;
+}
+
+/* This adds a condition to the basic_block NEW_BB in function FUNCTION_DECL
+   to return a pointer to VERSION_DECL if all feature bits specified in
+   FEATURE_MASK are not set in MASK_VAR.  This function will be called during
+   version dispatch to decide which function version to execute.  It returns
+   the basic block at the end, to which more conditions can be added.  */
+static basic_block
+add_condition_to_bb (tree function_decl, tree version_decl,
+		     aarch64_fmv_feature_mask feature_mask,
+		     tree mask_var, basic_block new_bb)
+{
+  gimple *return_stmt;
+  tree convert_expr, result_var;
+  gimple *convert_stmt;
+  gimple *if_else_stmt;
+
+  basic_block bb1, bb2, bb3;
+  edge e12, e23;
+
+  gimple_seq gseq;
+
+  push_cfun (DECL_STRUCT_FUNCTION (function_decl));
+
+  gcc_assert (new_bb != NULL);
+  gseq = bb_seq (new_bb);
+
+  convert_expr = build1 (CONVERT_EXPR, ptr_type_node,
+			 build_fold_addr_expr (version_decl));
+  result_var = create_tmp_var (ptr_type_node);
+  convert_stmt = gimple_build_assign (result_var, convert_expr);
+  return_stmt = gimple_build_return (result_var);
+
+  if (feature_mask == 0ULL)
+    {
+      /* Default version.  */
+      gimple_seq_add_stmt (&gseq, convert_stmt);
+      gimple_seq_add_stmt (&gseq, return_stmt);
+      set_bb_seq (new_bb, gseq);
+      gimple_set_bb (convert_stmt, new_bb);
+      gimple_set_bb (return_stmt, new_bb);
+      pop_cfun ();
+      return new_bb;
+    }
+
+  tree and_expr_var = create_tmp_var (long_long_unsigned_type_node);
+  tree and_expr = build2 (BIT_AND_EXPR,
+			  long_long_unsigned_type_node,
+			  mask_var,
+			  build_int_cst (long_long_unsigned_type_node,
+					 feature_mask));
+  gimple *and_stmt = gimple_build_assign (and_expr_var, and_expr);
+  gimple_set_block (and_stmt, DECL_INITIAL (function_decl));
+  gimple_set_bb (and_stmt, new_bb);
+  gimple_seq_add_stmt (&gseq, and_stmt);
+
+  tree zero_llu = build_int_cst (long_long_unsigned_type_node, 0);
+  if_else_stmt = gimple_build_cond (EQ_EXPR, and_expr_var, zero_llu,
+				    NULL_TREE, NULL_TREE);
+  gimple_set_block (if_else_stmt, DECL_INITIAL (function_decl));
+  gimple_set_bb (if_else_stmt, new_bb);
+  gimple_seq_add_stmt (&gseq, if_else_stmt);
+
+  gimple_seq_add_stmt (&gseq, convert_stmt);
+  gimple_seq_add_stmt (&gseq, return_stmt);
+  set_bb_seq (new_bb, gseq);
+
+  bb1 = new_bb;
+  e12 = split_block (bb1, if_else_stmt);
+  bb2 = e12->dest;
+  e12->flags &= ~EDGE_FALLTHRU;
+  e12->flags |= EDGE_TRUE_VALUE;
+
+  e23 = split_block (bb2, return_stmt);
+
+  gimple_set_bb (convert_stmt, bb2);
+  gimple_set_bb (return_stmt, bb2);
+
+  bb3 = e23->dest;
+  make_edge (bb1, bb3, EDGE_FALSE_VALUE);
+
+  remove_edge (e23);
+  make_edge (bb2, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+
+  pop_cfun ();
+
+  return bb3;
+}
+
+/* This function generates the dispatch function for
+   multi-versioned functions.  DISPATCH_DECL is the function which will
+   contain the dispatch logic.  FNDECLS are the function choices for
+   dispatch, and is a tree chain.  EMPTY_BB is the basic block pointer
+   in DISPATCH_DECL in which the dispatch code is generated.  */
+
+static int
+dispatch_function_versions (tree dispatch_decl,
+			    void *fndecls_p,
+			    basic_block *empty_bb)
+{
+  gimple *ifunc_cpu_init_stmt;
+  gimple_seq gseq;
+  vec<tree> *fndecls;
+
+  gcc_assert (dispatch_decl != NULL
+	      && fndecls_p != NULL
+	      && empty_bb != NULL);
+
+  push_cfun (DECL_STRUCT_FUNCTION (dispatch_decl));
+
+  gseq = bb_seq (*empty_bb);
+  /* Function version dispatch is via IFUNC.  IFUNC resolvers fire before
+     constructors, so explicity call __init_cpu_features_resolver here.  */
+  tree init_fn_type = build_function_type_list (void_type_node,
+						long_unsigned_type_node,
+						build_ifunc_arg_type(),
+						NULL);
+  tree init_fn_id = get_identifier ("__init_cpu_features_resolver");
+  tree init_fn_decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+				  init_fn_id, init_fn_type);
+  tree arg1 = DECL_ARGUMENTS (dispatch_decl);
+  tree arg2 = TREE_CHAIN (arg1);
+  ifunc_cpu_init_stmt = gimple_build_call (init_fn_decl, 2, arg1, arg2);
+  gimple_seq_add_stmt (&gseq, ifunc_cpu_init_stmt);
+  gimple_set_bb (ifunc_cpu_init_stmt, *empty_bb);
+
+  /* Build the struct type for __aarch64_cpu_features.  */
+  tree global_type = lang_hooks.types.make_type (RECORD_TYPE);
+  tree field1 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			    get_identifier ("features"),
+			    long_long_unsigned_type_node);
+  DECL_FIELD_CONTEXT (field1) = global_type;
+  TYPE_FIELDS (global_type) = field1;
+  layout_type (global_type);
+
+  tree global_var = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+				get_identifier ("__aarch64_cpu_features"),
+				global_type);
+  DECL_EXTERNAL (global_var) = 1;
+  tree mask_var = create_tmp_var (long_long_unsigned_type_node);
+
+  tree component_expr = build3 (COMPONENT_REF, long_long_unsigned_type_node,
+				global_var, field1, NULL_TREE);
+  gimple *component_stmt = gimple_build_assign (mask_var, component_expr);
+  gimple_set_block (component_stmt, DECL_INITIAL (dispatch_decl));
+  gimple_set_bb (component_stmt, *empty_bb);
+  gimple_seq_add_stmt (&gseq, component_stmt);
+
+  tree not_expr = build1 (BIT_NOT_EXPR, long_long_unsigned_type_node, mask_var);
+  gimple *not_stmt = gimple_build_assign (mask_var, not_expr);
+  gimple_set_block (not_stmt, DECL_INITIAL (dispatch_decl));
+  gimple_set_bb (not_stmt, *empty_bb);
+  gimple_seq_add_stmt (&gseq, not_stmt);
+
+  set_bb_seq (*empty_bb, gseq);
+
+  pop_cfun ();
+
+  /* fndecls_p is actually a vector.  */
+  fndecls = static_cast<vec<tree> *> (fndecls_p);
+
+  /* At least one more version other than the default.  */
+  unsigned int num_versions = fndecls->length ();
+  gcc_assert (num_versions >= 2);
+
+  struct function_version_info
+    {
+      tree version_decl;
+      aarch64_fmv_feature_mask feature_mask;
+    } *function_versions;
+
+  function_versions = (struct function_version_info *)
+    XNEWVEC (struct function_version_info, (num_versions));
+
+  unsigned int actual_versions = 0;
+
+  for (tree version_decl : *fndecls)
+    {
+      aarch64_fmv_feature_mask feature_mask;
+      /* Get attribute string, parse it and find the right features.  */
+      feature_mask = get_feature_mask_for_version (version_decl);
+      function_versions [actual_versions].version_decl = version_decl;
+      function_versions [actual_versions].feature_mask = feature_mask;
+      actual_versions++;
+    }
+
+  auto compare_feature_version_info = [](const void *p1, const void *p2) {
+    const function_version_info v1 = *(const function_version_info *)p1;
+    const function_version_info v2 = *(const function_version_info *)p2;
+    return - compare_feature_masks (v1.feature_mask, v2.feature_mask);
+  };
+
+  /* Sort the versions according to descending order of dispatch priority.  */
+  qsort (function_versions, actual_versions,
+	 sizeof (struct function_version_info), compare_feature_version_info);
+
+  for (unsigned int i = 0; i < actual_versions; ++i)
+    *empty_bb = add_condition_to_bb (dispatch_decl,
+				     function_versions[i].version_decl,
+				     function_versions[i].feature_mask,
+				     mask_var,
+				     *empty_bb);
+
+  free (function_versions);
+  return 0;
+}
+
+/* Implement TARGET_GENERATE_VERSION_DISPATCHER_BODY.  */
+
+tree
+aarch64_generate_version_dispatcher_body (void *node_p)
+{
+  tree resolver_decl;
+  basic_block empty_bb;
+  tree default_ver_decl;
+  struct cgraph_node *versn;
+  struct cgraph_node *node;
+
+  struct cgraph_function_version_info *node_version_info = NULL;
+  struct cgraph_function_version_info *versn_info = NULL;
+
+  node = (cgraph_node *)node_p;
+
+  node_version_info = node->function_version ();
+  gcc_assert (node->dispatcher_function
+	      && node_version_info != NULL);
+
+  if (node_version_info->dispatcher_resolver)
+    return node_version_info->dispatcher_resolver;
+
+  /* The first version in the chain corresponds to the default version.  */
+  default_ver_decl = node_version_info->next->this_node->decl;
+
+  /* node is going to be an alias, so remove the finalized bit.  */
+  node->definition = false;
+
+  resolver_decl = make_resolver_func (default_ver_decl,
+				      node->decl, &empty_bb);
+
+  node_version_info->dispatcher_resolver = resolver_decl;
+
+  push_cfun (DECL_STRUCT_FUNCTION (resolver_decl));
+
+  auto_vec<tree, 2> fn_ver_vec;
+
+  for (versn_info = node_version_info->next; versn_info;
+       versn_info = versn_info->next)
+    {
+      versn = versn_info->this_node;
+      /* Check for virtual functions here again, as by this time it should
+	 have been determined if this function needs a vtable index or
+	 not.  This happens for methods in derived classes that override
+	 virtual methods in base classes but are not explicitly marked as
+	 virtual.  */
+      if (DECL_VINDEX (versn->decl))
+	sorry ("virtual function multiversioning not supported");
+
+      fn_ver_vec.safe_push (versn->decl);
+    }
+
+  dispatch_function_versions (resolver_decl, &fn_ver_vec, &empty_bb);
+  cgraph_edge::rebuild_edges ();
+  pop_cfun ();
+  return resolver_decl;
+}
+
+/* Make a dispatcher declaration for the multi-versioned function DECL.
+   Calls to DECL function will be replaced with calls to the dispatcher
+   by the front-end.  Returns the decl of the dispatcher function.  */
+
+tree
+aarch64_get_function_versions_dispatcher (void *decl)
+{
+  tree fn = (tree) decl;
+  struct cgraph_node *node = NULL;
+  struct cgraph_node *default_node = NULL;
+  struct cgraph_function_version_info *node_v = NULL;
+  struct cgraph_function_version_info *first_v = NULL;
+
+  tree dispatch_decl = NULL;
+
+  struct cgraph_function_version_info *default_version_info = NULL;
+
+  gcc_assert (fn != NULL && DECL_FUNCTION_VERSIONED (fn));
+
+  node = cgraph_node::get (fn);
+  gcc_assert (node != NULL);
+
+  node_v = node->function_version ();
+  gcc_assert (node_v != NULL);
+
+  if (node_v->dispatcher_resolver != NULL)
+    return node_v->dispatcher_resolver;
+
+  /* Find the default version and make it the first node.  */
+  first_v = node_v;
+  /* Go to the beginning of the chain.  */
+  while (first_v->prev != NULL)
+    first_v = first_v->prev;
+  default_version_info = first_v;
+  while (default_version_info != NULL)
+    {
+      if (get_feature_mask_for_version
+	    (default_version_info->this_node->decl) == 0ULL)
+	break;
+      default_version_info = default_version_info->next;
+    }
+
+  /* If there is no default node, just return NULL.  */
+  if (default_version_info == NULL)
+    return NULL;
+
+  /* Make default info the first node.  */
+  if (first_v != default_version_info)
+    {
+      default_version_info->prev->next = default_version_info->next;
+      if (default_version_info->next)
+	default_version_info->next->prev = default_version_info->prev;
+      first_v->prev = default_version_info;
+      default_version_info->next = first_v;
+      default_version_info->prev = NULL;
+    }
+
+  default_node = default_version_info->this_node;
+
+  if (targetm.has_ifunc_p ())
+    {
+      struct cgraph_function_version_info *it_v = NULL;
+      struct cgraph_node *dispatcher_node = NULL;
+      struct cgraph_function_version_info *dispatcher_version_info = NULL;
+
+      /* Right now, the dispatching is done via ifunc.  */
+      dispatch_decl = make_dispatcher_decl (default_node->decl);
+      TREE_NOTHROW (dispatch_decl) = TREE_NOTHROW (fn);
+
+      dispatcher_node = cgraph_node::get_create (dispatch_decl);
+      gcc_assert (dispatcher_node != NULL);
+      dispatcher_node->dispatcher_function = 1;
+      dispatcher_version_info
+	= dispatcher_node->insert_new_function_version ();
+      dispatcher_version_info->next = default_version_info;
+      dispatcher_node->definition = 1;
+
+      /* Set the dispatcher for all the versions.  */
+      it_v = default_version_info;
+      while (it_v != NULL)
+	{
+	  it_v->dispatcher_resolver = dispatch_decl;
+	  it_v = it_v->next;
+	}
+    }
+  else
+    {
+      error_at (DECL_SOURCE_LOCATION (default_node->decl),
+		"multiversioning needs %<ifunc%> which is not supported "
+		"on this target");
+    }
+
+  return dispatch_decl;
+}
+
+/* This function returns true if FN1 and FN2 are versions of the same function,
+   that is, the target_version attributes of the function decls are different.
+   This assumes that FN1 and FN2 have the same signature.  */
+
+bool
+aarch64_common_function_versions (tree fn1, tree fn2)
+{
+  if (TREE_CODE (fn1) != FUNCTION_DECL
+      || TREE_CODE (fn2) != FUNCTION_DECL)
+    return false;
+
+  return (aarch64_compare_version_priority (fn1, fn2) != 0);
+}
+
+/* Implement TARGET_MANGLE_DECL_ASSEMBLER_NAME, to add function multiversioning
+   suffixes.  */
+
+tree
+aarch64_mangle_decl_assembler_name (tree decl, tree id)
+{
+  /* For function version, add the target suffix to the assembler name.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (decl))
+    {
+      aarch64_fmv_feature_mask feature_mask = get_feature_mask_for_version (decl);
+
+      /* No suffix for the default version.  */
+      if (feature_mask == 0ULL)
+	return id;
+
+      std::string name = IDENTIFIER_POINTER (id);
+      name += "._";
+
+      for (int i = 0; i < FEAT_MAX; i++)
+	{
+	  if (feature_mask & aarch64_fmv_feature_data[i].feature_mask)
+	    {
+	      name += "M";
+	      name += aarch64_fmv_feature_data[i].name;
+	    }
+	}
+
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	SET_DECL_RTL (decl, NULL);
+
+      id = get_identifier (name.c_str());
+    }
+  return id;
 }
 
 /* Implement TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P.  Use an opt-out
@@ -25428,52 +26341,38 @@ aarch64_progress_pointer (rtx pointer)
   return aarch64_move_pointer (pointer, GET_MODE_SIZE (GET_MODE (pointer)));
 }
 
-/* Copy one MODE sized block from SRC to DST, then progress SRC and DST by
-   MODE bytes.  */
+typedef auto_vec<std::pair<rtx, rtx>, 12> copy_ops;
 
+/* Copy one block of size MODE from SRC to DST at offset OFFSET.  */
 static void
-aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
-					      machine_mode mode)
+aarch64_copy_one_block (copy_ops &ops, rtx src, rtx dst,
+			int offset, machine_mode mode)
 {
-  /* Handle 256-bit memcpy separately.  We do this by making 2 adjacent memory
-     address copies using V4SImode so that we can use Q registers.  */
-  if (known_eq (GET_MODE_BITSIZE (mode), 256))
+  /* Emit explict load/store pair instructions for 32-byte copies.  */
+  if (known_eq (GET_MODE_SIZE (mode), 32))
     {
       mode = V4SImode;
+      rtx src1 = adjust_address (src, mode, offset);
+      rtx dst1 = adjust_address (dst, mode, offset);
       rtx reg1 = gen_reg_rtx (mode);
       rtx reg2 = gen_reg_rtx (mode);
-      /* "Cast" the pointers to the correct mode.  */
-      *src = adjust_address (*src, mode, 0);
-      *dst = adjust_address (*dst, mode, 0);
-      /* Emit the memcpy.  */
-      emit_insn (aarch64_gen_load_pair (mode, reg1, *src, reg2,
-					aarch64_progress_pointer (*src)));
-      emit_insn (aarch64_gen_store_pair (mode, *dst, reg1,
-					 aarch64_progress_pointer (*dst), reg2));
-      /* Move the pointers forward.  */
-      *src = aarch64_move_pointer (*src, 32);
-      *dst = aarch64_move_pointer (*dst, 32);
+      rtx load = aarch64_gen_load_pair (reg1, reg2, src1);
+      rtx store = aarch64_gen_store_pair (dst1, reg1, reg2);
+      ops.safe_push ({ load, store });
       return;
     }
 
   rtx reg = gen_reg_rtx (mode);
-
-  /* "Cast" the pointers to the correct mode.  */
-  *src = adjust_address (*src, mode, 0);
-  *dst = adjust_address (*dst, mode, 0);
-  /* Emit the memcpy.  */
-  emit_move_insn (reg, *src);
-  emit_move_insn (*dst, reg);
-  /* Move the pointers forward.  */
-  *src = aarch64_progress_pointer (*src);
-  *dst = aarch64_progress_pointer (*dst);
+  rtx load = gen_move_insn (reg, adjust_address (src, mode, offset));
+  rtx store = gen_move_insn (adjust_address (dst, mode, offset), reg);
+  ops.safe_push ({ load, store });
 }
 
 /* Expand a cpymem/movmem using the MOPS extension.  OPERANDS are taken
    from the cpymem/movmem pattern.  IS_MEMMOVE is true if this is a memmove
    rather than memcpy.  Return true iff we succeeded.  */
 bool
-aarch64_expand_cpymem_mops (rtx *operands, bool is_memmove = false)
+aarch64_expand_cpymem_mops (rtx *operands, bool is_memmove)
 {
   if (!TARGET_MOPS)
     return false;
@@ -25492,55 +26391,51 @@ aarch64_expand_cpymem_mops (rtx *operands, bool is_memmove = false)
   return true;
 }
 
-/* Expand cpymem, as if from a __builtin_memcpy.  Return true if
-   we succeed, otherwise return false, indicating that a libcall to
-   memcpy should be emitted.  */
-
+/* Expand cpymem/movmem, as if from a __builtin_memcpy/memmove.
+   OPERANDS are taken from the cpymem/movmem pattern.  IS_MEMMOVE is true
+   if this is a memmove rather than memcpy.  Return true if we succeed,
+   otherwise return false, indicating that a libcall should be emitted.  */
 bool
-aarch64_expand_cpymem (rtx *operands)
+aarch64_expand_cpymem (rtx *operands, bool is_memmove)
 {
-  int mode_bits;
+  int mode_bytes;
   rtx dst = operands[0];
   rtx src = operands[1];
   unsigned align = UINTVAL (operands[3]);
   rtx base;
-  machine_mode cur_mode = BLKmode;
-  bool size_p = optimize_function_for_size_p (cfun);
+  machine_mode cur_mode = BLKmode, next_mode;
 
   /* Variable-sized or strict-align copies may use the MOPS expansion.  */
   if (!CONST_INT_P (operands[2]) || (STRICT_ALIGNMENT && align < 16))
-    return aarch64_expand_cpymem_mops (operands);
+    return aarch64_expand_cpymem_mops (operands, is_memmove);
 
   unsigned HOST_WIDE_INT size = UINTVAL (operands[2]);
+  bool use_ldpq = TARGET_SIMD && !(aarch64_tune_params.extra_tuning_flags
+				   & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS);
 
-  /* Try to inline up to 256 bytes.  */
-  unsigned max_copy_size = 256;
-  unsigned mops_threshold = aarch64_mops_memcpy_size_threshold;
+  /* Set inline limits for memmove/memcpy.  MOPS has a separate threshold.  */
+  unsigned max_copy_size = use_ldpq ? 256 : 128;
+  unsigned mops_threshold = is_memmove ? aarch64_mops_memmove_size_threshold
+				       : aarch64_mops_memcpy_size_threshold;
+
+  /* Reduce the maximum size with -Os.  */
+  if (optimize_function_for_size_p (cfun))
+    max_copy_size /= 4;
 
   /* Large copies use MOPS when available or a library call.  */
   if (size > max_copy_size || (TARGET_MOPS && size > mops_threshold))
-    return aarch64_expand_cpymem_mops (operands);
+    return aarch64_expand_cpymem_mops (operands, is_memmove);
 
-  int copy_bits = 256;
+  unsigned copy_max = 32;
 
-  /* Default to 256-bit LDP/STP on large copies, however small copies, no SIMD
-     support or slow 256-bit LDP/STP fall back to 128-bit chunks.
+  /* Default to 32-byte LDP/STP on large copies, however small copies, no SIMD
+     support or slow LDP/STP fall back to 16-byte chunks.
 
      ??? Although it would be possible to use LDP/STP Qn in streaming mode
      (so using TARGET_BASE_SIMD instead of TARGET_SIMD), it isn't clear
      whether that would improve performance.  */
-  if (size <= 24
-      || !TARGET_SIMD
-      || (aarch64_tune_params.extra_tuning_flags
-	  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
-    copy_bits = 128;
-
-  /* Emit an inline load+store sequence and count the number of operations
-     involved.  We use a simple count of just the loads and stores emitted
-     rather than rtx_insn count as all the pointer adjustments and reg copying
-     in this function will get optimized away later in the pipeline.  */
-  start_sequence ();
-  unsigned nops = 0;
+  if (size <= 24 || !use_ldpq)
+    copy_max = 16;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   dst = adjust_automodify_address (dst, VOIDmode, base, 0);
@@ -25548,69 +26443,55 @@ aarch64_expand_cpymem (rtx *operands)
   base = copy_to_mode_reg (Pmode, XEXP (src, 0));
   src = adjust_automodify_address (src, VOIDmode, base, 0);
 
-  /* Convert size to bits to make the rest of the code simpler.  */
-  int n = size * BITS_PER_UNIT;
+  copy_ops ops;
+  int offset = 0;
 
-  while (n > 0)
+  while (size > 0)
     {
       /* Find the largest mode in which to do the copy in without over reading
 	 or writing.  */
       opt_scalar_int_mode mode_iter;
       FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
-	if (GET_MODE_BITSIZE (mode_iter.require ()) <= MIN (n, copy_bits))
+	if (GET_MODE_SIZE (mode_iter.require ()) <= MIN (size, copy_max))
 	  cur_mode = mode_iter.require ();
 
       gcc_assert (cur_mode != BLKmode);
 
-      mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
+      mode_bytes = GET_MODE_SIZE (cur_mode).to_constant ();
 
       /* Prefer Q-register accesses for the last bytes.  */
-      if (mode_bits == 128 && copy_bits == 256)
+      if (mode_bytes == 16 && copy_max == 32)
 	cur_mode = V4SImode;
-
-      aarch64_copy_one_block_and_progress_pointers (&src, &dst, cur_mode);
-      /* A single block copy is 1 load + 1 store.  */
-      nops += 2;
-      n -= mode_bits;
+      aarch64_copy_one_block (ops, src, dst, offset, cur_mode);
+      size -= mode_bytes;
+      offset += mode_bytes;
 
       /* Emit trailing copies using overlapping unaligned accesses
-	(when !STRICT_ALIGNMENT) - this is smaller and faster.  */
-      if (n > 0 && n < copy_bits / 2 && !STRICT_ALIGNMENT)
+	 (when !STRICT_ALIGNMENT) - this is smaller and faster.  */
+      if (size > 0 && size < copy_max / 2 && !STRICT_ALIGNMENT)
 	{
-	  machine_mode next_mode = smallest_mode_for_size (n, MODE_INT);
-	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
-	  gcc_assert (n_bits <= mode_bits);
-	  src = aarch64_move_pointer (src, (n - n_bits) / BITS_PER_UNIT);
-	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
-	  n = n_bits;
+	  next_mode = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
+	  int n_bytes = GET_MODE_SIZE (next_mode).to_constant ();
+	  gcc_assert (n_bytes <= mode_bytes);
+	  offset -= n_bytes - size;
+	  size = n_bytes;
 	}
     }
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
-  /* MOPS sequence requires 3 instructions for the memory copying + 1 to move
-     the constant size into a register.  */
-  unsigned mops_cost = 3 + 1;
 
-  /* If MOPS is available at this point we don't consider the libcall as it's
-     not a win even on code size.  At this point only consider MOPS if
-     optimizing for size.  For speed optimizations we will have chosen between
-     the two based on copy size already.  */
-  if (TARGET_MOPS)
+  /* Memcpy interleaves loads with stores, memmove emits all loads first.  */
+  int nops = ops.length();
+  int inc = is_memmove ? nops : nops == 4 ? 2 : 3;
+
+  for (int i = 0; i < nops; i += inc)
     {
-      if (size_p && mops_cost < nops)
-	return aarch64_expand_cpymem_mops (operands);
-      emit_insn (seq);
-      return true;
+      int m = MIN (nops, i + inc);
+      /* Emit loads.  */
+      for (int j = i; j < m; j++)
+	emit_insn (ops[j].first);
+      /* Emit stores.  */
+      for (int j = i; j < m; j++)
+	emit_insn (ops[j].second);
     }
-
-  /* A memcpy libcall in the worst case takes 3 instructions to prepare the
-     arguments + 1 for the call.  When MOPS is not available and we're
-     optimizing for size a libcall may be preferable.  */
-  unsigned libcall_cost = 4;
-  if (size_p && libcall_cost < nops)
-    return false;
-
-  emit_insn (seq);
   return true;
 }
 
@@ -25628,8 +26509,7 @@ aarch64_set_one_block_and_progress_pointer (rtx src, rtx *dst,
       /* "Cast" the *dst to the correct mode.  */
       *dst = adjust_address (*dst, mode, 0);
       /* Emit the memset.  */
-      emit_insn (aarch64_gen_store_pair (mode, *dst, src,
-					 aarch64_progress_pointer (*dst), src));
+      emit_insn (aarch64_gen_store_pair (*dst, src, src));
 
       /* Move the pointers forward.  */
       *dst = aarch64_move_pointer (*dst, 32);
@@ -26686,6 +27566,20 @@ aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
   return false;
 }
 
+/* Test if MODE is suitable for a single transfer register in an ldp or stp
+   instruction.  */
+
+bool
+aarch64_ldpstp_operand_mode_p (machine_mode mode)
+{
+  if (!targetm.hard_regno_mode_ok (V0_REGNUM, mode)
+      || hard_regno_nregs (V0_REGNUM, mode) > 1)
+    return false;
+
+  const auto size = GET_MODE_SIZE (mode);
+  return known_eq (size, 4) || known_eq (size, 8) || known_eq (size, 16);
+}
+
 /* Return true if MEM1 and MEM2 can be combined into a single access
    of mode MODE, with the combined access having the same address as MEM1.  */
 
@@ -26809,6 +27703,29 @@ aarch64_swap_ldrstr_operands (rtx* operands, bool load)
 	 we do the same swap.  */
       std::swap (operands[0], operands[2]);
       std::swap (operands[1], operands[3]);
+    }
+}
+
+/* Helper function used for generation of load/store pair instructions, called
+   from peepholes in aarch64-ldpstp.md.  OPERANDS is an array of
+   operands as matched by the peepholes in that file.  LOAD_P is true if we're
+   generating a load pair, otherwise we're generating a store pair.  CODE is
+   either {ZERO,SIGN}_EXTEND for extending loads or UNKNOWN if we're generating a
+   standard load/store pair.  */
+
+void
+aarch64_finish_ldpstp_peephole (rtx *operands, bool load_p, enum rtx_code code)
+{
+  aarch64_swap_ldrstr_operands (operands, load_p);
+
+  if (load_p)
+    emit_insn (aarch64_gen_load_pair (operands[0], operands[2],
+				      operands[1], code));
+  else
+    {
+      gcc_assert (code == UNKNOWN);
+      emit_insn (aarch64_gen_store_pair (operands[0], operands[1],
+					 operands[3]));
     }
 }
 
@@ -26993,10 +27910,10 @@ bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 			     machine_mode mode, RTX_CODE code)
 {
-  rtx base, offset_1, offset_3, t1, t2;
-  rtx mem_1, mem_2, mem_3, mem_4;
+  rtx base, offset_1, offset_2;
+  rtx mem_1, mem_2;
   rtx temp_operands[8];
-  HOST_WIDE_INT off_val_1, off_val_3, base_off, new_off_1, new_off_3,
+  HOST_WIDE_INT off_val_1, off_val_2, base_off, new_off_1, new_off_2,
 		stp_off_upper_limit, stp_off_lower_limit, msize;
 
   /* We make changes on a copy as we may still bail out.  */
@@ -27019,23 +27936,19 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   if (load)
     {
       mem_1 = copy_rtx (temp_operands[1]);
-      mem_2 = copy_rtx (temp_operands[3]);
-      mem_3 = copy_rtx (temp_operands[5]);
-      mem_4 = copy_rtx (temp_operands[7]);
+      mem_2 = copy_rtx (temp_operands[5]);
     }
   else
     {
       mem_1 = copy_rtx (temp_operands[0]);
-      mem_2 = copy_rtx (temp_operands[2]);
-      mem_3 = copy_rtx (temp_operands[4]);
-      mem_4 = copy_rtx (temp_operands[6]);
+      mem_2 = copy_rtx (temp_operands[4]);
       gcc_assert (code == UNKNOWN);
     }
 
   extract_base_offset_in_addr (mem_1, &base, &offset_1);
-  extract_base_offset_in_addr (mem_3, &base, &offset_3);
+  extract_base_offset_in_addr (mem_2, &base, &offset_2);
   gcc_assert (base != NULL_RTX && offset_1 != NULL_RTX
-	      && offset_3 != NULL_RTX);
+	      && offset_2 != NULL_RTX);
 
   /* Adjust offset so it can fit in LDP/STP instruction.  */
   msize = GET_MODE_SIZE (mode).to_constant();
@@ -27043,11 +27956,11 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   stp_off_lower_limit = - msize * 0x40;
 
   off_val_1 = INTVAL (offset_1);
-  off_val_3 = INTVAL (offset_3);
+  off_val_2 = INTVAL (offset_2);
 
   /* The base offset is optimally half way between the two STP/LDP offsets.  */
   if (msize <= 4)
-    base_off = (off_val_1 + off_val_3) / 2;
+    base_off = (off_val_1 + off_val_2) / 2;
   else
     /* However, due to issues with negative LDP/STP offset generation for
        larger modes, for DF, DD, DI and vector modes. we must not use negative
@@ -27087,73 +28000,58 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   new_off_1 = off_val_1 - base_off;
 
   /* Offset of the second STP/LDP.  */
-  new_off_3 = off_val_3 - base_off;
+  new_off_2 = off_val_2 - base_off;
 
   /* The offsets must be within the range of the LDP/STP instructions.  */
   if (new_off_1 > stp_off_upper_limit || new_off_1 < stp_off_lower_limit
-      || new_off_3 > stp_off_upper_limit || new_off_3 < stp_off_lower_limit)
+      || new_off_2 > stp_off_upper_limit || new_off_2 < stp_off_lower_limit)
     return false;
 
   replace_equiv_address_nv (mem_1, plus_constant (Pmode, operands[8],
 						  new_off_1), true);
   replace_equiv_address_nv (mem_2, plus_constant (Pmode, operands[8],
-						  new_off_1 + msize), true);
-  replace_equiv_address_nv (mem_3, plus_constant (Pmode, operands[8],
-						  new_off_3), true);
-  replace_equiv_address_nv (mem_4, plus_constant (Pmode, operands[8],
-						  new_off_3 + msize), true);
+						  new_off_2), true);
 
   if (!aarch64_mem_pair_operand (mem_1, mode)
-      || !aarch64_mem_pair_operand (mem_3, mode))
+      || !aarch64_mem_pair_operand (mem_2, mode))
     return false;
-
-  if (code == ZERO_EXTEND)
-    {
-      mem_1 = gen_rtx_ZERO_EXTEND (DImode, mem_1);
-      mem_2 = gen_rtx_ZERO_EXTEND (DImode, mem_2);
-      mem_3 = gen_rtx_ZERO_EXTEND (DImode, mem_3);
-      mem_4 = gen_rtx_ZERO_EXTEND (DImode, mem_4);
-    }
-  else if (code == SIGN_EXTEND)
-    {
-      mem_1 = gen_rtx_SIGN_EXTEND (DImode, mem_1);
-      mem_2 = gen_rtx_SIGN_EXTEND (DImode, mem_2);
-      mem_3 = gen_rtx_SIGN_EXTEND (DImode, mem_3);
-      mem_4 = gen_rtx_SIGN_EXTEND (DImode, mem_4);
-    }
 
   if (load)
     {
       operands[0] = temp_operands[0];
       operands[1] = mem_1;
       operands[2] = temp_operands[2];
-      operands[3] = mem_2;
       operands[4] = temp_operands[4];
-      operands[5] = mem_3;
+      operands[5] = mem_2;
       operands[6] = temp_operands[6];
-      operands[7] = mem_4;
     }
   else
     {
       operands[0] = mem_1;
       operands[1] = temp_operands[1];
-      operands[2] = mem_2;
       operands[3] = temp_operands[3];
-      operands[4] = mem_3;
+      operands[4] = mem_2;
       operands[5] = temp_operands[5];
-      operands[6] = mem_4;
       operands[7] = temp_operands[7];
     }
 
   /* Emit adjusting instruction.  */
   emit_insn (gen_rtx_SET (operands[8], plus_constant (DImode, base, base_off)));
   /* Emit ldp/stp instructions.  */
-  t1 = gen_rtx_SET (operands[0], operands[1]);
-  t2 = gen_rtx_SET (operands[2], operands[3]);
-  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
-  t1 = gen_rtx_SET (operands[4], operands[5]);
-  t2 = gen_rtx_SET (operands[6], operands[7]);
-  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
+  if (load)
+    {
+      emit_insn (aarch64_gen_load_pair (operands[0], operands[2],
+					operands[1], code));
+      emit_insn (aarch64_gen_load_pair (operands[4], operands[6],
+					operands[5], code));
+    }
+  else
+    {
+      emit_insn (aarch64_gen_store_pair (operands[0], operands[1],
+					 operands[3]));
+      emit_insn (aarch64_gen_store_pair (operands[4], operands[5],
+					 operands[7]));
+    }
   return true;
 }
 
@@ -29601,6 +30499,10 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_OPTION_VALID_ATTRIBUTE_P
 #define TARGET_OPTION_VALID_ATTRIBUTE_P aarch64_option_valid_attribute_p
 
+#undef TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P \
+  aarch64_option_valid_version_attribute_p
+
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION aarch64_set_current_function
 
@@ -29969,6 +30871,23 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_EMIT_EPILOGUE_FOR_SIBCALL
 #define TARGET_EMIT_EPILOGUE_FOR_SIBCALL aarch64_expand_epilogue
+
+#undef TARGET_OPTION_FUNCTION_VERSIONS
+#define TARGET_OPTION_FUNCTION_VERSIONS aarch64_common_function_versions
+
+#undef TARGET_COMPARE_VERSION_PRIORITY
+#define TARGET_COMPARE_VERSION_PRIORITY aarch64_compare_version_priority
+
+#undef TARGET_GENERATE_VERSION_DISPATCHER_BODY
+#define TARGET_GENERATE_VERSION_DISPATCHER_BODY \
+  aarch64_generate_version_dispatcher_body
+
+#undef TARGET_GET_FUNCTION_VERSIONS_DISPATCHER
+#define TARGET_GET_FUNCTION_VERSIONS_DISPATCHER \
+  aarch64_get_function_versions_dispatcher
+
+#undef TARGET_MANGLE_DECL_ASSEMBLER_NAME
+#define TARGET_MANGLE_DECL_ASSEMBLER_NAME aarch64_mangle_decl_assembler_name
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

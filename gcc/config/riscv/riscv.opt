@@ -126,6 +126,9 @@ Enum(code_model) String(medlow) Value(CM_MEDLOW)
 EnumValue
 Enum(code_model) String(medany) Value(CM_MEDANY)
 
+EnumValue
+Enum(code_model) String(large) Value(CM_LARGE)
+
 mexplicit-relocs
 Target Mask(EXPLICIT_RELOCS)
 Use %reloc() operators, rather than assembly macros, to load addresses.
@@ -285,6 +288,8 @@ Mask(VECTOR_ELEN_FP_64) Var(riscv_vector_elen_flags)
 
 Mask(VECTOR_ELEN_FP_16) Var(riscv_vector_elen_flags)
 
+Mask(VECTOR_ELEN_BF_16) Var(riscv_vector_elen_flags)
+
 TargetVariable
 int riscv_zvl_flags
 
@@ -366,6 +371,8 @@ Mask(ZFHMIN)  Var(riscv_zf_subext)
 
 Mask(ZFH)     Var(riscv_zf_subext)
 
+Mask(ZVFBFMIN) Var(riscv_zf_subext)
+
 Mask(ZVFHMIN) Var(riscv_zf_subext)
 
 Mask(ZVFH)    Var(riscv_zf_subext)
@@ -415,6 +422,8 @@ int riscv_xcv_subext
 Mask(XCVMAC) Var(riscv_xcv_subext)
 
 Mask(XCVALU) Var(riscv_xcv_subext)
+
+Mask(XCVELW) Var(riscv_xcv_subext)
 
 TargetVariable
 int riscv_xthead_subext

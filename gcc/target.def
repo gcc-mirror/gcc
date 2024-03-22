@@ -6357,8 +6357,8 @@ DEFHOOK
 (bitint_type_info,
  "This target hook returns true if @code{_BitInt(@var{N})} is supported and\n\
 provides details on it.  @code{_BitInt(@var{N})} is to be represented as\n\
-series of @code{info->limb_mode}\n\
-@code{CEIL (@var{N}, GET_MODE_PRECISION (info->limb_mode))} limbs,\n\
+series of @code{info->abi_limb_mode}\n\
+@code{CEIL (@var{N}, GET_MODE_PRECISION (info->abi_limb_mode))} limbs,\n\
 ordered from least significant to most significant if\n\
 @code{!info->big_endian}, otherwise from most significant to least\n\
 significant.  If @code{info->extended} is false, the bits above or equal to\n\
@@ -6634,6 +6634,23 @@ the function declaration to hold a pointer to a target-specific\n\
 @code{struct cl_target_option} structure.",
  bool, (tree fndecl, tree name, tree args, int flags),
  default_target_option_valid_attribute_p)
+
+/* Function to validate the attribute((target_version(...))) strings.  If
+   the option is validated, the hook should also fill in
+   DECL_FUNCTION_SPECIFIC_TARGET in the function decl node.  */
+DEFHOOK
+(valid_version_attribute_p,
+ "This hook is called to parse @code{attribute(target_version(\"...\"))},\n\
+which allows setting target-specific options on individual function versions.\n\
+These function-specific options may differ\n\
+from the options specified on the command line.  The hook should return\n\
+@code{true} if the options are valid.\n\
+\n\
+The hook should set the @code{DECL_FUNCTION_SPECIFIC_TARGET} field in\n\
+the function declaration to hold a pointer to a target-specific\n\
+@code{struct cl_target_option} structure.",
+ bool, (tree fndecl, tree name, tree args, int flags),
+ default_target_option_valid_version_attribute_p)
 
 /* Function to save any extra target state in the target options structure.  */
 DEFHOOK

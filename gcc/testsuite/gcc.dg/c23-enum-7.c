@@ -26,17 +26,15 @@ enum e13 : short x13; /* { dg-error "'enum' underlying type may not be specified
 enum e14 : short f14 (); /* { dg-error "'enum' underlying type may not be specified here" } */
 typeof (enum e15 : long) x15; /* { dg-error "'enum' underlying type may not be specified here" } */
 int f16 (enum e16 : char p); /* { dg-error "'enum' underlying type may not be specified here" } */
-/* { dg-warning "will not be visible outside of this definition or declaration" "warning" { target *-*-* } .-1 } */
 int f17 (enum e17 : char); /* { dg-error "'enum' underlying type may not be specified here" } */
-/* { dg-warning "will not be visible outside of this definition or declaration" "warning" { target *-*-* } .-1 } */
 struct s18 { enum e18 : int x; }; /* { dg-error "'enum' underlying type may not be specified here" } */
 
 /* But those are OK if the enum content is defined.  */
 enum e19 : short { E19 } x19;
 enum e20 : long { E20 } f20 ();
 typeof (enum e21 : long { E21 }) x21;
-int f22 (enum e22 : long long { E22 } p); /* { dg-warning "will not be visible outside of this definition or declaration" } */
-int f23 (enum e23 : long long { E23 } p); /* { dg-warning "will not be visible outside of this definition or declaration" } */
+int f22 (enum e22 : long long { E22 } p);
+int f23 (enum e23 : long long { E23 } p);
 struct s24 { enum e24 : int { E24 } x; };
 
 /* Incompatible kinds of tags in the same scope are errors.  */

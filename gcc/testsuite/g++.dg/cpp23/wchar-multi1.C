@@ -1,6 +1,7 @@
 // P2362R3 - Remove non-encodable wide character literals and multicharacter
 // wide character literals.
 // { dg-do compile }
+// { dg-require-effective-target 4byte_wchar_t }
 
 char a = 'a';
 int b = 'ab';			// { dg-warning "multi-character character constant" }

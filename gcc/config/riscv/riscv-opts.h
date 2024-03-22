@@ -36,6 +36,7 @@ extern enum riscv_abi_type riscv_abi;
 enum riscv_code_model {
   CM_MEDLOW,
   CM_MEDANY,
+  CM_LARGE,
   CM_PIC
 };
 extern enum riscv_code_model riscv_cmodel;

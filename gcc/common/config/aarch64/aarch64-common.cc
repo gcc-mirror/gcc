@@ -149,9 +149,6 @@ struct aarch64_option_extension
   aarch64_feature_flags flags_on;
   /* If this feature is turned off, these bits also need to be turned off.  */
   aarch64_feature_flags flags_off;
-  /* Indicates whether this feature is taken into account during native cpu
-     detection.  */
-  bool native_detect_p;
 };
 
 /* ISA extensions in AArch64.  */
@@ -159,10 +156,9 @@ static constexpr aarch64_option_extension all_extensions[] =
 {
 #define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, FEATURE_STRING) \
   {NAME, AARCH64_FL_##IDENT, feature_deps::IDENT ().explicit_on, \
-   feature_deps::get_flags_off (feature_deps::root_off_##IDENT), \
-   FEATURE_STRING[0]},
+   feature_deps::get_flags_off (feature_deps::root_off_##IDENT)},
 #include "config/aarch64/aarch64-option-extensions.def"
-  {NULL, 0, 0, 0, false}
+  {NULL, 0, 0, 0}
 };
 
 struct processor_name_to_arch
@@ -311,6 +307,7 @@ aarch64_get_extension_string_for_isa_flags
      But in order to make the output more readable, it seems better
      to add the strings in definition order.  */
   aarch64_feature_flags added = 0;
+  auto flags_crypto = AARCH64_FL_AES | AARCH64_FL_SHA2;
   for (unsigned int i = ARRAY_SIZE (all_extensions); i-- > 0; )
     {
       auto &opt = all_extensions[i];
@@ -320,7 +317,7 @@ aarch64_get_extension_string_for_isa_flags
 	 per-feature crypto flags.  */
       auto flags = opt.flag_canonical;
       if (flags == AARCH64_FL_CRYPTO)
-	flags = AARCH64_FL_AES | AARCH64_FL_SHA2;
+	flags = flags_crypto;
 
       if ((flags & isa_flags & (explicit_flags | ~current_flags)) == flags)
 	{
@@ -339,14 +336,31 @@ aarch64_get_extension_string_for_isa_flags
      not have an HWCAPs then it shouldn't be taken into account for feature
      detection because one way or another we can't tell if it's available
      or not.  */
+
   for (auto &opt : all_extensions)
-    if (opt.native_detect_p
-	&& (opt.flag_canonical & current_flags & ~isa_flags))
-      {
-	current_flags &= ~opt.flags_off;
-	outstr += "+no";
-	outstr += opt.name;
-      }
+    {
+      auto flags = opt.flag_canonical;
+      /* As a special case, don't emit "+noaes" or "+nosha2" when we could emit
+	 "+nocrypto" instead, in order to support assemblers that predate the
+	 separate per-feature crypto flags.  Only allow "+nocrypto" when "sm4"
+	 is not already enabled (to avoid dependending on whether "+nocrypto"
+	 also disables "sm4").  */
+      if (flags & flags_crypto
+	  && (flags_crypto & current_flags & ~isa_flags) == flags_crypto
+	  && !(current_flags & AARCH64_FL_SM4))
+	  continue;
+
+      if (flags == AARCH64_FL_CRYPTO)
+	/* If either crypto flag needs removing here, then both do.  */
+	flags = flags_crypto;
+
+      if (flags & current_flags & ~isa_flags)
+	{
+	  current_flags &= ~opt.flags_off;
+	  outstr += "+no";
+	  outstr += opt.name;
+	}
+    }
 
   return outstr;
 }

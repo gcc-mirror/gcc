@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64 --param=riscv-autovec-lmul=m8 --param=riscv-autovec-preference=fixed-vlmax -O2" } */
+/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv64gcv_zvl256b -mabi=lp64 --param=riscv-autovec-lmul=m8 --param=riscv-autovec-preference=fixed-vlmax -O2" } */
 
 struct a_struct
 {

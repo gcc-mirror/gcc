@@ -1,3 +1,96 @@
+2023-12-30  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (tagged_types_tu_compatible_p): Revise.
+
+2023-12-22  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (composite_type_internal): Adapted from
+	composite_type to support structs and unions.
+	(composite_type): New wrapper function.
+	(build_conditional_operator): Return composite type.
+	* c-decl.cc (finish_struct): Allow NULL for
+	enclosing_struct_parse_info.
+
+2023-12-21  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (c_struct_hasher): Hash stable for struct
+	types.
+	(c_struct_hasher::hash, c_struct_hasher::equal): New
+	functions.
+	(finish_struct): Set TYPE_CANONICAL to first struct in
+	equivalence class.
+	* c-objc-common.cc (c_get_alias_set): Let structs or
+	unions with variable size alias anything.
+	* c-tree.h (comptypes_equiv): New prototype.
+	* c-typeck.cc (comptypes_equiv): New function.
+	(comptypes_internal): Implement equivalence mode.
+	(tagged_types_tu_compatible): Implement equivalence mode.
+
+2023-12-21  Martin Uecker  <uecker@tugraz.at>
+
+	* c-tree.h (c_parser_enum_specifier): Add parameter.
+	* c-decl.cc (start_enum): Allow redefinition.
+	(finish_enum): Diagnose conflicts.
+	(build_enumerator): Set context.
+	(diagnose_mismatched_decls): Diagnose conflicting enumerators.
+	(push_decl): Preserve context for enumerators.
+	* c-typeck.cc (tagged_types_tu_compatible_p): Adapt.
+	* c-parser.cc (c_parser_enum_specifier): Remember when
+	seen is from an enum type which is not yet defined.
+
+2023-12-21  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (previous_tag): New function.
+	(parser_xref_tag): Find earlier definition.
+	(get_parm_info): Turn off warning for C23.
+	(start_struct): Allow redefinitons.
+	(finish_struct): Diagnose conflicts.
+	* c-tree.h (comptypes_same_p): Add prototype.
+	* c-typeck.cc (comptypes_same_p): New function.
+	(comptypes_internal): Activate comparison of tagged types.
+	(convert_for_assignment): Ignore qualifiers.
+	(digest_init): Add error.
+	(initialized_elementwise_p): Allow compatible types.
+
+2023-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_postfix_expression_after_primary): Grow
+	sizeof_arg and sizeof_arg_loc arrays to 6 elements.  Call
+	warn_for_calloc if warn_calloc_transposed_args for functions with
+	alloc_size type attribute with 2 arguments.
+	(c_parser_expr_list): Use 6 instead of 3.
+	* c-typeck.cc (build_c_cast): Call warn_for_alloc_size for casts
+	of calls to functions with alloc_size type attribute.
+	(convert_for_assignment): Likewise.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (omp_construct_selectors): Delete.
+	(omp_device_selectors): Delete.
+	(omp_implementation_selectors): Delete.
+	(omp_user_selectors): Delete.
+	(c_parser_omp_context_selector): Adjust for new representations
+	and simplify dispatch logic.  Uniformly warn instead of sometimes
+	error when an unknown selector is found.  Adjust error messages
+	for extraneous/incorrect score.
+	(c_parser_omp_context_selector_specification): Likewise.
+	(c_finish_omp_declare_variant): Adjust for new representations.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_context_selector): Adjust for new
+	namelist property representation.
+
+2023-12-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_context_selector): Use new constructors.
+
+2023-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/111975
+	* gimple-parser.cc (c_parser_gimple_postfix_expression):
+	Parse TARGET_MEM_REF extended operands for __MEM.
+
 2023-12-13  Jason Merrill  <jason@redhat.com>
 
 	* c-typeck.cc (convert_for_assignment): Adjust call to
@@ -9870,7 +9963,7 @@
 	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
 	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

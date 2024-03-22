@@ -269,14 +269,14 @@ gfc_free_omp_trait_property_list (gfc_omp_trait_property *list)
       list = list->next;
       switch (current->property_kind)
 	{
-	case CTX_PROPERTY_ID:
+	case OMP_TRAIT_PROPERTY_ID:
 	  free (current->name);
 	  break;
-	case CTX_PROPERTY_NAME_LIST:
+	case OMP_TRAIT_PROPERTY_NAME_LIST:
 	  if (current->is_name)
 	    free (current->name);
 	  break;
-	case CTX_PROPERTY_SIMD:
+	case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
 	  gfc_free_omp_clauses (current->clauses);
 	  break;
 	default:
@@ -5584,17 +5584,55 @@ cleanup:
   return MATCH_ERROR;
 }
 
+/* Skip over and ignore trait-property-extensions.
 
-static const char *const omp_construct_selectors[] = {
-  "simd", "target", "teams", "parallel", "do", NULL };
-static const char *const omp_device_selectors[] = {
-  "kind", "isa", "arch", NULL };
-static const char *const omp_implementation_selectors[] = {
-  "vendor", "extension", "atomic_default_mem_order", "unified_address",
-  "unified_shared_memory", "dynamic_allocators", "reverse_offload", NULL };
-static const char *const omp_user_selectors[] = {
-  "condition", NULL };
+   trait-property-extension :
+     trait-property-name
+     identifier (trait-property-extension[, trait-property-extension[, ...]])
+     constant integer expression
+ */
 
+static match gfc_ignore_trait_property_extension_list (void);
+
+static match
+gfc_ignore_trait_property_extension (void)
+{
+  char buf[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_expr *expr;
+
+  /* Identifier form of trait-property name, possibly followed by
+     a list of (recursive) trait-property-extensions.  */
+  if (gfc_match_name (buf) == MATCH_YES)
+    {
+      if (gfc_match (" (") == MATCH_YES)
+	return gfc_ignore_trait_property_extension_list ();
+      return MATCH_YES;
+    }
+
+  /* Literal constant.  */
+  if (gfc_match_literal_constant (&expr, 0) == MATCH_YES)
+    return MATCH_YES;
+
+  /* FIXME: constant integer expressions.  */
+  gfc_error ("Expected trait-property-extension at %C");
+  return MATCH_ERROR;
+}
+
+static match
+gfc_ignore_trait_property_extension_list (void)
+{
+  while (1)
+    {
+      if (gfc_ignore_trait_property_extension () != MATCH_YES)
+	return MATCH_ERROR;
+      if (gfc_match (" ,") == MATCH_YES)
+	continue;
+      if (gfc_match (" )") == MATCH_YES)
+	return MATCH_YES;
+      gfc_error ("expected %<)%> at %C");
+      return MATCH_ERROR;
+    }
+}
 
 /* OpenMP 5.0:
 
@@ -5618,83 +5656,52 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	}
 
       gfc_omp_selector *os = gfc_get_omp_selector ();
-      os->trait_selector_name = XNEWVEC (char, strlen (selector) + 1);
-      strcpy (os->trait_selector_name, selector);
+      if (oss->code == OMP_TRAIT_SET_CONSTRUCT
+	  && !strcmp (selector, "do"))
+	os->code = OMP_TRAIT_CONSTRUCT_FOR;
+      else if (oss->code == OMP_TRAIT_SET_CONSTRUCT
+	       && !strcmp (selector, "for"))
+	os->code = OMP_TRAIT_INVALID;
+      else
+	os->code = omp_lookup_ts_code (oss->code, selector);
       os->next = oss->trait_selectors;
       oss->trait_selectors = os;
 
-      const char *const *selectors = NULL;
-      bool allow_score = true;
-      bool allow_user = false;
-      int property_limit = 0;
-      enum gfc_omp_trait_property_kind property_kind = CTX_PROPERTY_NONE;
-      switch (oss->trait_set_selector_name[0])
+      if (os->code == OMP_TRAIT_INVALID)
 	{
-	case 'c': /* construct */
-	  selectors = omp_construct_selectors;
-	  allow_score = false;
-	  property_limit = 1;
-	  property_kind = CTX_PROPERTY_SIMD;
+	  gfc_warning (OPT_Wopenmp,
+		       "unknown selector %qs for context selector set %qs "
+		       "at %C",
+		       selector, omp_tss_map[oss->code]);
+	  if (gfc_match (" (") == MATCH_YES
+	      && gfc_ignore_trait_property_extension_list () != MATCH_YES)
+	    return MATCH_ERROR;
+	  if (gfc_match (" ,") == MATCH_YES)
+	    continue;
 	  break;
-	case 'd': /* device */
-	  selectors = omp_device_selectors;
-	  allow_score = false;
-	  allow_user = true;
-	  property_limit = 3;
-	  property_kind = CTX_PROPERTY_NAME_LIST;
-	  break;
-	case 'i': /* implementation */
-	  selectors = omp_implementation_selectors;
-	  allow_user = true;
-	  property_limit = 3;
-	  property_kind = CTX_PROPERTY_NAME_LIST;
-	  break;
-	case 'u': /* user */
-	  selectors = omp_user_selectors;
-	  property_limit = 1;
-	  property_kind = CTX_PROPERTY_EXPR;
-	  break;
-	default:
-	  gcc_unreachable ();
 	}
-      for (int i = 0; ; i++)
-	{
-	  if (selectors[i] == NULL)
-	    {
-	      if (allow_user)
-		{
-		  property_kind = CTX_PROPERTY_USER;
-		  break;
-		}
-	      else
-		{
-		  gfc_error ("selector %qs not allowed for context selector "
-			     "set %qs at %C",
-			     selector, oss->trait_set_selector_name);
-		  return MATCH_ERROR;
-		}
-	    }
-	  if (i == property_limit)
-	    property_kind = CTX_PROPERTY_NONE;
-	  if (strcmp (selectors[i], selector) == 0)
-	    break;
-	}
-      if (property_kind == CTX_PROPERTY_NAME_LIST
-	  && oss->trait_set_selector_name[0] == 'i'
-	  && strcmp (selector, "atomic_default_mem_order") == 0)
-	property_kind = CTX_PROPERTY_ID;
+
+      enum omp_tp_type property_kind = omp_ts_map[os->code].tp_type;
+      bool allow_score = omp_ts_map[os->code].allow_score;
 
       if (gfc_match (" (") == MATCH_YES)
 	{
-	  if (property_kind == CTX_PROPERTY_NONE)
+	  if (property_kind == OMP_TRAIT_PROPERTY_NONE)
 	    {
 	      gfc_error ("selector %qs does not accept any properties at %C",
 			 selector);
 	      return MATCH_ERROR;
 	    }
 
-	  if (allow_score && gfc_match (" score") == MATCH_YES)
+	  if (gfc_match (" score") == MATCH_YES)
 	    {
+	      if (!allow_score)
+		{
+		  gfc_error ("%<score%> cannot be specified in traits "
+			     "in the %qs trait-selector-set at %C",
+			     omp_tss_map[oss->code]);
+		  return MATCH_ERROR;
+		}
 	      if (gfc_match (" (") != MATCH_YES)
 		{
 		  gfc_error ("expected %<(%> at %C");
@@ -5705,7 +5712,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 		  || os->score->ts.type != BT_INTEGER
 		  || os->score->rank != 0)
 		{
-		  gfc_error ("score argument must be constant integer "
+		  gfc_error ("%<score%> argument must be constant integer "
 			     "expression at %C");
 		  return MATCH_ERROR;
 		}
@@ -5713,7 +5720,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	      if (os->score->expr_type == EXPR_CONSTANT
 		  && mpz_sgn (os->score->value.integer) < 0)
 		{
-		  gfc_error ("score argument must be non-negative at %C");
+		  gfc_error ("%<score%> argument must be non-negative at %C");
 		  return MATCH_ERROR;
 		}
 
@@ -5737,22 +5744,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 
 	  switch (property_kind)
 	    {
-	    case CTX_PROPERTY_USER:
-	      do
-		{
-		  if (gfc_match_expr (&otp->expr) != MATCH_YES)
-		    {
-		      gfc_error ("property must be constant integer "
-				 "expression or string literal at %C");
-		      return MATCH_ERROR;
-		    }
-
-		  if (gfc_match (" ,") != MATCH_YES)
-		    break;
-		}
-	      while (1);
-	      break;
-	    case CTX_PROPERTY_ID:
+	    case OMP_TRAIT_PROPERTY_ID:
 	      {
 		char buf[GFC_MAX_SYMBOL_LEN + 1];
 		if (gfc_match_name (buf) == MATCH_YES)
@@ -5767,7 +5759,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 		  }
 	      }
 	      break;
-	    case CTX_PROPERTY_NAME_LIST:
+	    case OMP_TRAIT_PROPERTY_NAME_LIST:
 	      do
 		{
 		  char buf[GFC_MAX_SYMBOL_LEN + 1];
@@ -5798,7 +5790,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 		}
 	      while (1);
 	      break;
-	    case CTX_PROPERTY_EXPR:
+	    case OMP_TRAIT_PROPERTY_EXPR:
 	      if (gfc_match_expr (&otp->expr) != MATCH_YES)
 		{
 		  gfc_error ("expected expression at %C");
@@ -5814,16 +5806,29 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 		  return MATCH_ERROR;
 		}
 	      break;
-	    case CTX_PROPERTY_SIMD:
+	    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
 	      {
-		if (gfc_match_omp_clauses (&otp->clauses,
-					   OMP_DECLARE_SIMD_CLAUSES,
-					   true, false, false, true)
-		    != MATCH_YES)
+		if (os->code == OMP_TRAIT_CONSTRUCT_SIMD)
 		  {
-		  gfc_error ("expected simd clause at %C");
+		    if (gfc_match_omp_clauses (&otp->clauses,
+					       OMP_DECLARE_SIMD_CLAUSES,
+					       true, false, false, true)
+			!= MATCH_YES)
+		      {
+			gfc_error ("expected simd clause at %C");
+			return MATCH_ERROR;
+		      }
+		  }
+		else if (os->code == OMP_TRAIT_IMPLEMENTATION_REQUIRES)
+		  {
+		    /* FIXME: The "requires" selector was added in OpenMP 5.1.
+		       Currently only the now-deprecated syntax
+		       from OpenMP 5.0 is supported.  */
+		    sorry ("%<requires%> selector is not supported yet");
 		    return MATCH_ERROR;
 		  }
+		else
+		  gcc_unreachable ();
 		break;
 	      }
 	    default:
@@ -5836,9 +5841,9 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	      return MATCH_ERROR;
 	    }
 	}
-      else if (property_kind == CTX_PROPERTY_NAME_LIST
-	       || property_kind == CTX_PROPERTY_ID
-	       || property_kind == CTX_PROPERTY_EXPR)
+      else if (property_kind != OMP_TRAIT_PROPERTY_NONE
+	       && property_kind != OMP_TRAIT_PROPERTY_CLAUSE_LIST
+	       && property_kind != OMP_TRAIT_PROPERTY_EXTENSION)
 	{
 	  if (gfc_match (" (") != MATCH_YES)
 	    {
@@ -5874,22 +5879,16 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
   do
     {
       match m;
-      const char *selector_sets[] = { "construct", "device",
-				      "implementation", "user" };
-      const int selector_set_count = ARRAY_SIZE (selector_sets);
-      int i;
       char buf[GFC_MAX_SYMBOL_LEN + 1];
+      enum omp_tss_code set = OMP_TRAIT_SET_INVALID;
 
       m = gfc_match_name (buf);
       if (m == MATCH_YES)
-	for (i = 0; i < selector_set_count; i++)
-	  if (strcmp (buf, selector_sets[i]) == 0)
-	    break;
+	set = omp_lookup_tss_code (buf);
 
-      if (m != MATCH_YES || i == selector_set_count)
+      if (set == OMP_TRAIT_SET_INVALID)
 	{
-	  gfc_error ("expected %<construct%>, %<device%>, %<implementation%> "
-		     "or %<user%> at %C");
+	  gfc_error ("expected context selector set name at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -5909,7 +5908,7 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
 
       gfc_omp_set_selector *oss = gfc_get_omp_set_selector ();
       oss->next = odv->set_selectors;
-      oss->trait_set_selector_name = selector_sets[i];
+      oss->code = set;
       odv->set_selectors = oss;
 
       if (gfc_match_omp_context_selector (oss) != MATCH_YES)

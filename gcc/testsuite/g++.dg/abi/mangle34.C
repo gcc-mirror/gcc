@@ -4,6 +4,7 @@
 // This tests the mangling of empty template argument list in a template
 // id.
 // { dg-final { scan-assembler "_ZNK5DummyclI3GenEENT_3SigIE10ResultTypeERKS2_" } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 
 struct Void {};

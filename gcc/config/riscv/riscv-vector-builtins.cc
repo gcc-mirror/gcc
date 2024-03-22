@@ -2685,7 +2685,7 @@ static CONSTEXPR const function_type_info function_types[] = {
 /* A list of all RVV intrinsic functions.  */
 static function_group_info function_groups[] = {
 #define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
-  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO},
+  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO, REQUIRED_EXTENSIONS},
 #include "riscv-vector-builtins-functions.def"
 };
 
@@ -4413,7 +4413,10 @@ handle_pragma_vector ()
     = new hash_table<non_overloaded_registered_function_hasher> (1023);
   function_builder builder;
   for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
-    builder.register_function_group (function_groups[i]);
+  {
+    if (function_groups[i].match (function_groups[i].required_extensions))
+      builder.register_function_group (function_groups[i]);
+  }
 }
 
 /* Return the function decl with RVV function subcode CODE, or error_mark_node

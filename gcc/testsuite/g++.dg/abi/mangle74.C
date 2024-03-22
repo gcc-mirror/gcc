@@ -1,5 +1,5 @@
 // { dg-do compile { target c++17 } }
-// { dg-options "-fno-inline -O0" }
+// { dg-options "-fno-inline -O0 -fabi-compat-version=0" }
 
 inline auto var = [] () {return 2;};
 

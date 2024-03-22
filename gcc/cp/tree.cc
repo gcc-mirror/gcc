@@ -4131,7 +4131,7 @@ cp_tree_equal (tree t1, tree t2)
     case TREE_VEC:
       /* These are template args.  Really we should be getting the
 	 caller to do this as it knows it to be true.  */
-      if (!comp_template_args (t1, t2, NULL, NULL, false))
+      if (!comp_template_args (t1, t2))
 	return false;
       return true;
 

@@ -16219,23 +16219,6 @@ ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn)
 				       PATTERN (use_insn));
 }
 
-/* Return TRUE or FALSE depending on whether the unary operator meets the
-   appropriate constraints.  */
-
-bool
-ix86_unary_operator_ok (enum rtx_code,
-			machine_mode,
-			rtx operands[2],
-			bool use_ndd)
-{
-  /* If one of operands is memory, source and destination must match.  */
-  if ((MEM_P (operands[0])
-       || (!use_ndd && MEM_P (operands[1])))
-      && ! rtx_equal_p (operands[0], operands[1]))
-    return false;
-  return true;
-}
-
 /* Return TRUE if the operands to a vec_interleave_{high,low}v2df
    are ok, keeping in mind the possible movddup alternative.  */
 
@@ -20820,8 +20803,7 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	return MASK_PAIR_REGNO_P(regno);
 
       return ((TARGET_AVX512F && VALID_MASK_REG_MODE (mode))
-	      || (TARGET_AVX512BW && mode == SImode)
-	      || (TARGET_AVX512BW && TARGET_EVEX512 && mode == DImode));
+	      || (TARGET_AVX512BW && VALID_MASK_AVX512BW_MODE (mode)));
     }
 
   if (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
@@ -25679,6 +25661,7 @@ ix86_bitint_type_info (int n, struct bitint_info *info)
     info->limb_mode = SImode;
   else
     info->limb_mode = DImode;
+  info->abi_limb_mode = info->limb_mode;
   info->big_endian = false;
   info->extended = false;
   return true;

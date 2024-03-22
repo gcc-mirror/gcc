@@ -1,4 +1,5 @@
 // { dg-do compile { target c++20 } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 template <class T> concept C = true;
 template <class T, class U> concept C2 = true;

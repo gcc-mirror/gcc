@@ -237,6 +237,8 @@ struct bit_range
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
 
+  json::object *to_json () const;
+
   bool empty_p () const
   {
     return m_size_in_bits == 0;
@@ -276,8 +278,16 @@ struct bit_range
 	    && other.get_start_bit_offset () < get_next_bit_offset ());
   }
   bool intersects_p (const bit_range &other,
+		     bit_size_t *out_num_overlap_bits) const;
+  bool intersects_p (const bit_range &other,
 		     bit_range *out_this,
 		     bit_range *out_other) const;
+
+  bool exceeds_p (const bit_range &other,
+		  bit_range *out_overhanging_bit_range) const;
+
+  bool falls_short_of_p (bit_offset_t offset,
+			 bit_range *out_fall_short_bits) const;
 
   static int cmp (const bit_range &br1, const bit_range &br2);
 
@@ -303,6 +313,8 @@ struct byte_range
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
 
+  json::object *to_json () const;
+
   bool empty_p () const
   {
     return m_size_in_bytes == 0;
@@ -320,15 +332,6 @@ struct byte_range
     return (m_start_byte_offset == other.m_start_byte_offset
 	    && m_size_in_bytes == other.m_size_in_bytes);
   }
-
-  bool intersects_p (const byte_range &other,
-		     byte_size_t *out_num_overlap_bytes) const;
-
-  bool exceeds_p (const byte_range &other,
-		  byte_range *out_overhanging_byte_range) const;
-
-  bool falls_short_of_p (byte_offset_t offset,
-			 byte_range *out_fall_short_bytes) const;
 
   byte_offset_t get_start_byte_offset () const
   {

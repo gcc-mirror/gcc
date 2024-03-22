@@ -1,3 +1,44 @@
+2023-12-21  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-enter-data-6.f90: Remove XFAIL.
+
+2023-12-20  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memcpy2d): Adjust parameters to
+	avoid out-of-bounds array checks in CUDA runtime.
+	(GOMP_OFFLOAD_memcpy3d): Likewise.
+	* testsuite/libgomp.c-c++-common/memcpyxd-bias-1.c: New test.
+
+2023-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/declare-variant-1.c: Restrict the test to x86,
+	drop because of that unneeded target selector from other directives
+	and remove the aarch64 specific ones.
+
+2023-12-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* testsuite/libgomp.c/declare-variant-1.c: Fixed test.
+	* testsuite/libgomp.fortran/declare-simd-1.f90: Likewise.
+
+2023-12-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/map-subarray-5.f90: Restrict
+	'dg-output's to 'target offload_device_nonshared_as'.
+
+2023-12-15  Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (find_group_last, goacc_enter_data_internal,
+	goacc_exit_data_internal, GOACC_enter_exit_data): Add
+	GOMP_MAP_STRUCT_UNORD support.
+	* target.c (gomp_map_vars_internal): Add GOMP_MAP_STRUCT_UNORD support.
+	Detect incorrect use of variable indexing of arrays of structs.
+	(GOMP_target_enter_exit_data, gomp_target_task_fn): Add
+	GOMP_MAP_STRUCT_UNORD support.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-1.c: New test.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-2.c: New test.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-3.c: New test.
+	* testsuite/libgomp.fortran/map-subarray-5.f90: New test.
+
 2023-12-13  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.fortran/map-subarray.f90: New test.
@@ -20809,7 +20850,7 @@
 
 	Initial implementation and checkin.
 
-Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

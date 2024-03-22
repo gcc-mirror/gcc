@@ -6436,9 +6436,9 @@ build_associate_name (const char *name, gfc_expr **e1, gfc_expr **e2)
 
   sym = expr1->symtree->n.sym;
   if (expr2->ts.type == BT_UNKNOWN)
-      sym->attr.untyped = 1;
+    sym->attr.untyped = 1;
   else
-  copy_ts_from_selector_to_associate (expr1, expr2);
+    copy_ts_from_selector_to_associate (expr1, expr2);
 
   sym->attr.flavor = FL_VARIABLE;
   sym->attr.referenced = 1;
@@ -6527,6 +6527,7 @@ select_type_set_tmp (gfc_typespec *ts)
   gfc_symtree *tmp = NULL;
   gfc_symbol *selector = select_type_stack->selector;
   gfc_symbol *sym;
+  gfc_expr *expr2;
 
   if (!ts)
     {
@@ -6550,7 +6551,20 @@ select_type_set_tmp (gfc_typespec *ts)
       sym = tmp->n.sym;
       gfc_add_type (sym, ts, NULL);
 
-      if (selector->ts.type == BT_CLASS && selector->attr.class_ok
+      /* If the SELECT TYPE selector is a function we might be able to obtain
+	 a typespec from the result. Since the function might not have been
+	 parsed yet we have to check that there is indeed a result symbol.  */
+      if (selector->ts.type == BT_UNKNOWN
+	  && gfc_state_stack->construct
+
+	  && (expr2 = gfc_state_stack->construct->expr2)
+	  && expr2->expr_type == EXPR_FUNCTION
+	  && expr2->symtree
+	  && expr2->symtree->n.sym && expr2->symtree->n.sym->result)
+	selector->ts = expr2->symtree->n.sym->result->ts;
+
+      if (selector->ts.type == BT_CLASS
+	  && selector->attr.class_ok
 	  && selector->ts.u.derived && CLASS_DATA (selector))
 	{
 	  sym->attr.pointer

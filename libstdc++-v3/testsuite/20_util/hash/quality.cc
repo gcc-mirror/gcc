@@ -1,5 +1,6 @@
 // { dg-options "-DNTESTS=1 -DNSTRINGS=100 -DSTRSIZE=21" { target simulator } }
 // { dg-do run { target c++11 } }
+// { dg-timeout-factor 3 }
 
 // Copyright (C) 2010-2023 Free Software Foundation, Inc.
 //

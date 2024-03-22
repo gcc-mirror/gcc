@@ -182,10 +182,10 @@ private:
 /* signal_state_machine's ctor.  */
 
 signal_state_machine::signal_state_machine (logger *logger)
-: state_machine ("signal", logger)
+: state_machine ("signal", logger),
+  m_in_signal_handler (add_state ("in_signal_handler")),
+  m_stop (add_state ("stop"))
 {
-  m_in_signal_handler = add_state ("in_signal_handler");
-  m_stop = add_state ("stop");
 }
 
 /* Update MODEL for edges that simulate HANDLER_FUN being called as

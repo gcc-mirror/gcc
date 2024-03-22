@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "stor-layout.h"
 #include "opts.h"
+#include "optabs.h"
 #include "predict.h"
 #include "rtx-vector-builder.h"
 #include "gimple.h"
@@ -2574,6 +2575,140 @@ rtx
 replace_equiv_address_nv (rtx memref, rtx addr, bool inplace)
 {
   return change_address_1 (memref, VOIDmode, addr, 0, inplace);
+}
+
+
+/* Emit insns to reload VALUE into a new register.  VALUE is an
+   auto-increment or auto-decrement RTX whose operand is a register or
+   memory location; so reloading involves incrementing that location.
+
+   INC_AMOUNT is the number to increment or decrement by (always
+   positive and ignored for POST_MODIFY/PRE_MODIFY).
+
+   Return a pseudo containing the result.  */
+rtx
+address_reload_context::emit_autoinc (rtx value, poly_int64 inc_amount)
+{
+  /* Since we're going to call recog, and might be called within recog,
+     we need to ensure we save and restore recog_data.  */
+  recog_data_saver recog_save;
+
+  /* REG or MEM to be copied and incremented.  */
+  rtx incloc = XEXP (value, 0);
+
+  const rtx_code code = GET_CODE (value);
+  const bool post_p
+    = code == POST_DEC || code == POST_INC || code == POST_MODIFY;
+
+  bool plus_p = true;
+  rtx inc;
+  if (code == PRE_MODIFY || code == POST_MODIFY)
+    {
+      gcc_assert (GET_CODE (XEXP (value, 1)) == PLUS
+		  || GET_CODE (XEXP (value, 1)) == MINUS);
+      gcc_assert (rtx_equal_p (XEXP (XEXP (value, 1), 0), XEXP (value, 0)));
+      plus_p = GET_CODE (XEXP (value, 1)) == PLUS;
+      inc = XEXP (XEXP (value, 1), 1);
+    }
+  else
+    {
+      if (code == PRE_DEC || code == POST_DEC)
+	inc_amount = -inc_amount;
+
+      inc = gen_int_mode (inc_amount, GET_MODE (value));
+    }
+
+  rtx result;
+  if (!post_p && REG_P (incloc))
+    result = incloc;
+  else
+    {
+      result = get_reload_reg ();
+      /* First copy the location to the result register.  */
+      emit_insn (gen_move_insn (result, incloc));
+    }
+
+  /* See if we can directly increment INCLOC.  */
+  rtx_insn *last = get_last_insn ();
+  rtx_insn *add_insn = emit_insn (plus_p
+				  ? gen_add2_insn (incloc, inc)
+				  : gen_sub2_insn (incloc, inc));
+  const int icode = recog_memoized (add_insn);
+  if (icode >= 0)
+    {
+      if (!post_p && result != incloc)
+	emit_insn (gen_move_insn (result, incloc));
+      return result;
+    }
+  delete_insns_since (last);
+
+  /* If couldn't do the increment directly, must increment in RESULT.
+     The way we do this depends on whether this is pre- or
+     post-increment.  For pre-increment, copy INCLOC to the reload
+     register, increment it there, then save back.  */
+  if (!post_p)
+    {
+      if (incloc != result)
+	emit_insn (gen_move_insn (result, incloc));
+      if (plus_p)
+	emit_insn (gen_add2_insn (result, inc));
+      else
+	emit_insn (gen_sub2_insn (result, inc));
+      if (incloc != result)
+	emit_insn (gen_move_insn (incloc, result));
+    }
+  else
+    {
+      /* Post-increment.
+
+	 Because this might be a jump insn or a compare, and because
+	 RESULT may not be available after the insn in an input
+	 reload, we must do the incrementing before the insn being
+	 reloaded for.
+
+	 We have already copied INCLOC to RESULT.  Increment the copy in
+	 RESULT, save that back, then decrement RESULT so it has
+	 the original value.  */
+      if (plus_p)
+	emit_insn (gen_add2_insn (result, inc));
+      else
+	emit_insn (gen_sub2_insn (result, inc));
+      emit_insn (gen_move_insn (incloc, result));
+      /* Restore non-modified value for the result.  We prefer this
+	 way because it does not require an additional hard
+	 register.  */
+      if (plus_p)
+	{
+	  poly_int64 offset;
+	  if (poly_int_rtx_p (inc, &offset))
+	    emit_insn (gen_add2_insn (result,
+				      gen_int_mode (-offset,
+						    GET_MODE (result))));
+	  else
+	    emit_insn (gen_sub2_insn (result, inc));
+	}
+      else
+	emit_insn (gen_add2_insn (result, inc));
+    }
+  return result;
+}
+
+/* Return a memory reference like MEM, but with the address reloaded into a
+   pseudo register.  */
+
+rtx
+force_reload_address (rtx mem)
+{
+  rtx addr = XEXP (mem, 0);
+  if (GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC)
+    {
+      const auto size = GET_MODE_SIZE (GET_MODE (mem));
+      addr = address_reload_context ().emit_autoinc (addr, size);
+    }
+  else
+    addr = force_reg (Pmode, addr);
+
+  return replace_equiv_address (mem, addr);
 }
 
 /* Return a memory reference like MEMREF, but with its mode widened to

@@ -5131,6 +5131,7 @@ emit_conditional_move (rtx target, struct rtx_comparison comp,
 	  /* If we are optimizing, force expensive constants into a register
 	     but preserve an eventual equality with op2/op3.  */
 	  if (CONSTANT_P (orig_op0) && optimize
+	      && cmpmode == mode
 	      && (rtx_cost (orig_op0, mode, COMPARE, 0,
 			    optimize_insn_for_speed_p ())
 		  > COSTS_N_INSNS (1))
@@ -5142,6 +5143,7 @@ emit_conditional_move (rtx target, struct rtx_comparison comp,
 		op3p = XEXP (comparison, 0) = force_reg (cmpmode, orig_op0);
 	    }
 	  if (CONSTANT_P (orig_op1) && optimize
+	      && cmpmode == mode
 	      && (rtx_cost (orig_op1, mode, COMPARE, 0,
 			    optimize_insn_for_speed_p ())
 		  > COSTS_N_INSNS (1))

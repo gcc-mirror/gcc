@@ -1396,12 +1396,23 @@
   rtx tmp = NULL_RTX;
   if (operands[2] != const0_rtx)
     {
-      /* Emit the slide down to index 0 in a new vector.  */
-      tmp = gen_reg_rtx (<MODE>mode);
-      operands[2] = gen_lowpart (Pmode, operands[2]);
-      rtx ops[] = {tmp, operands[1], operands[2]};
-      riscv_vector::emit_vlmax_insn
-	(code_for_pred_slide (UNSPEC_VSLIDEDOWN, <MODE>mode), riscv_vector::BINARY_OP, ops);
+      /* Properly convert a poly_int value and put the result into a
+	 register.  */
+      if (CONST_POLY_INT_P (operands[2]))
+	{
+	  rtx pos = gen_reg_rtx (Pmode);
+	  riscv_legitimize_poly_move (Pmode, pos, gen_reg_rtx (Pmode),
+				      operands[2]);
+	  operands[2] = pos;
+	}
+
+    /* Emit the slide down to index 0 in a new vector.  */
+    tmp = gen_reg_rtx (<MODE>mode);
+    operands[2] = gen_lowpart (Pmode, operands[2]);
+    rtx ops[] = {tmp, operands[1], operands[2]};
+    riscv_vector::emit_vlmax_insn
+      (code_for_pred_slide (UNSPEC_VSLIDEDOWN, <MODE>mode),
+       riscv_vector::BINARY_OP, ops);
     }
 
   /* Emit v(f)mv.[xf].s.  */
@@ -1433,16 +1444,21 @@
   riscv_vector::emit_vlmax_insn (code_for_pred_merge (qimode),
 				 riscv_vector::MERGE_OP, ops1);
 
-  /* Slide down the requested byte element.  */
-  rtx tmp2 = gen_reg_rtx (qimode);
+  /* Extract from it.  */
+  riscv_vector::emit_vec_extract (operands[0], tmp1, operands[2]);
+  DONE;
+})
 
-  rtx ops2[] = {tmp2, tmp1, operands[2]};
-  riscv_vector::emit_vlmax_insn
-    (code_for_pred_slide (UNSPEC_VSLIDEDOWN, qimode),
-     riscv_vector::BINARY_OP, ops2);
-
-  /* Extract it.  */
-  emit_insn (gen_pred_extract_first (qimode, operands[0], tmp2));
+;; Same for a BImode but still return a QImode.
+(define_expand "vec_extract<mode>bi"
+  [(set (match_operand:QI	  0 "register_operand")
+     (vec_select:QI
+       (match_operand:VB	  1 "register_operand")
+       (parallel
+	 [(match_operand	  2 "nonmemory_operand")])))]
+  "TARGET_VECTOR"
+{
+  emit_insn (gen_vec_extract<mode>qi (operands[0], operands[1], operands[2]));
   DONE;
 })
 

@@ -9238,7 +9238,8 @@ build_omp_struct_comp_nodes (enum tree_code code, tree grp_start, tree grp_end,
 
 static tree
 extract_base_bit_offset (tree base, poly_int64 *bitposp,
-			 poly_offset_int *poffsetp)
+			 poly_offset_int *poffsetp,
+			 bool *variable_offset)
 {
   tree offset;
   poly_int64 bitsize, bitpos;
@@ -9256,10 +9257,13 @@ extract_base_bit_offset (tree base, poly_int64 *bitposp,
   if (offset && poly_int_tree_p (offset))
     {
       poffset = wi::to_poly_offset (offset);
-      offset = NULL_TREE;
+      *variable_offset = false;
     }
   else
-    poffset = 0;
+    {
+      poffset = 0;
+      *variable_offset = (offset != NULL_TREE);
+    }
 
   if (maybe_ne (bitpos, 0))
     poffset += bits_to_bytes_round_down (bitpos);
@@ -9439,6 +9443,7 @@ omp_get_attachment (omp_mapping_group *grp)
       return error_mark_node;
 
     case GOMP_MAP_STRUCT:
+    case GOMP_MAP_STRUCT_UNORD:
     case GOMP_MAP_FORCE_DEVICEPTR:
     case GOMP_MAP_DEVICE_RESIDENT:
     case GOMP_MAP_LINK:
@@ -9544,6 +9549,7 @@ omp_group_last (tree *start_p)
       break;
 
     case GOMP_MAP_STRUCT:
+    case GOMP_MAP_STRUCT_UNORD:
       {
 	unsigned HOST_WIDE_INT num_mappings
 	  = tree_to_uhwi (OMP_CLAUSE_SIZE (c));
@@ -9710,6 +9716,7 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
       return error_mark_node;
 
     case GOMP_MAP_STRUCT:
+    case GOMP_MAP_STRUCT_UNORD:
       {
 	unsigned HOST_WIDE_INT num_mappings
 	  = tree_to_uhwi (OMP_CLAUSE_SIZE (node));
@@ -10070,10 +10077,14 @@ omp_tsort_mapping_groups (vec<omp_mapping_group> *groups,
   return outlist;
 }
 
-/* Split INLIST into two parts, moving groups corresponding to
-   ALLOC/RELEASE/DELETE mappings to one list, and other mappings to another.
-   The former list is then appended to the latter.  Each sub-list retains the
-   order of the original list.
+/* Split INLIST into three parts:
+
+     - "present" alloc/to/from groups
+     - other to/from groups
+     - other alloc/release/delete groups
+
+   These sub-lists are then concatenated together to form the final list.
+   Each sub-list retains the order of the original list.
    Note that ATTACH nodes are later moved to the end of the list in
    gimplify_adjust_omp_clauses, for target regions.  */
 
@@ -10081,7 +10092,9 @@ static omp_mapping_group *
 omp_segregate_mapping_groups (omp_mapping_group *inlist)
 {
   omp_mapping_group *ard_groups = NULL, *tf_groups = NULL;
+  omp_mapping_group *p_groups = NULL;
   omp_mapping_group **ard_tail = &ard_groups, **tf_tail = &tf_groups;
+  omp_mapping_group **p_tail = &p_groups;
 
   for (omp_mapping_group *w = inlist; w;)
     {
@@ -10100,6 +10113,18 @@ omp_segregate_mapping_groups (omp_mapping_group *inlist)
 	  ard_tail = &w->next;
 	  break;
 
+	/* These map types are all semantically identical, so are moved into a
+	   single group.  They will each be changed into GOMP_MAP_FORCE_PRESENT
+	   in gimplify_adjust_omp_clauses.  */
+	case GOMP_MAP_PRESENT_ALLOC:
+	case GOMP_MAP_PRESENT_FROM:
+	case GOMP_MAP_PRESENT_TO:
+	case GOMP_MAP_PRESENT_TOFROM:
+	  *p_tail = w;
+	  w->next = NULL;
+	  p_tail = &w->next;
+	  break;
+
 	default:
 	  *tf_tail = w;
 	  w->next = NULL;
@@ -10111,8 +10136,9 @@ omp_segregate_mapping_groups (omp_mapping_group *inlist)
 
   /* Now splice the lists together...  */
   *tf_tail = ard_groups;
+  *p_tail = tf_groups;
 
-  return tf_groups;
+  return p_groups;
 }
 
 /* Given a list LIST_P containing groups of mappings given by GROUPS, reorder
@@ -10352,7 +10378,8 @@ omp_directive_maps_explicitly (hash_map<tree_operand_hash_no_se,
       /* We might be called during omp_build_struct_sibling_lists, when
 	 GOMP_MAP_STRUCT might have been inserted at the start of the group.
 	 Skip over that, and also possibly the node after it.  */
-      if (OMP_CLAUSE_MAP_KIND (grp_first) == GOMP_MAP_STRUCT)
+      if (OMP_CLAUSE_MAP_KIND (grp_first) == GOMP_MAP_STRUCT
+	  || OMP_CLAUSE_MAP_KIND (grp_first) == GOMP_MAP_STRUCT_UNORD)
 	{
 	  grp_first = OMP_CLAUSE_CHAIN (grp_first);
 	  if (OMP_CLAUSE_MAP_KIND (grp_first) == GOMP_MAP_FIRSTPRIVATE_POINTER
@@ -11040,7 +11067,9 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	}
     }
 
-  tree base = extract_base_bit_offset (ocd, &cbitpos, &coffset);
+  bool variable_offset;
+  tree base
+    = extract_base_bit_offset (ocd, &cbitpos, &coffset, &variable_offset);
 
   int base_token;
   for (base_token = addr_tokens.length () - 1; base_token >= 0; base_token--)
@@ -11074,14 +11103,20 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 
   if (!struct_map_to_clause || struct_map_to_clause->get (base) == NULL)
     {
-      tree l = build_omp_clause (OMP_CLAUSE_LOCATION (grp_end), OMP_CLAUSE_MAP);
-
-      OMP_CLAUSE_SET_MAP_KIND (l, GOMP_MAP_STRUCT);
-      OMP_CLAUSE_DECL (l) = unshare_expr (base);
-      OMP_CLAUSE_SIZE (l) = size_int (1);
+      enum gomp_map_kind str_kind = GOMP_MAP_STRUCT;
 
       if (struct_map_to_clause == NULL)
 	struct_map_to_clause = new hash_map<tree_operand_hash, tree>;
+
+      if (variable_offset)
+	str_kind = GOMP_MAP_STRUCT_UNORD;
+
+      tree l = build_omp_clause (OMP_CLAUSE_LOCATION (grp_end), OMP_CLAUSE_MAP);
+
+      OMP_CLAUSE_SET_MAP_KIND (l, str_kind);
+      OMP_CLAUSE_DECL (l) = unshare_expr (base);
+      OMP_CLAUSE_SIZE (l) = size_int (1);
+
       struct_map_to_clause->put (base, l);
 
       /* On first iterating through the clause list, we insert the struct node
@@ -11321,6 +11356,11 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
     {
       tree *osc = struct_map_to_clause->get (base);
       tree *sc = NULL, *scp = NULL;
+      bool unordered = false;
+
+      if (osc && OMP_CLAUSE_MAP_KIND (*osc) == GOMP_MAP_STRUCT_UNORD)
+	unordered = true;
+
       unsigned HOST_WIDE_INT i, elems = tree_to_uhwi (OMP_CLAUSE_SIZE (*osc));
       sc = &OMP_CLAUSE_CHAIN (*osc);
       /* The struct mapping might be immediately followed by a
@@ -11361,12 +11401,20 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 			 == REFERENCE_TYPE))
 	      sc_decl = TREE_OPERAND (sc_decl, 0);
 
-	    tree base2 = extract_base_bit_offset (sc_decl, &bitpos, &offset);
+	    bool variable_offset2;
+	    tree base2 = extract_base_bit_offset (sc_decl, &bitpos, &offset,
+						  &variable_offset2);
 	    if (!base2 || !operand_equal_p (base2, base, 0))
 	      break;
 	    if (scp)
 	      continue;
-	    if ((region_type & ORT_ACC) != 0)
+	    if (variable_offset2)
+	      {
+		OMP_CLAUSE_SET_MAP_KIND (*osc, GOMP_MAP_STRUCT_UNORD);
+		unordered = true;
+		break;
+	      }
+	    else if ((region_type & ORT_ACC) != 0)
 	      {
 		/* For OpenACC, allow (ignore) duplicate struct accesses in
 		   the middle of a mapping clause, e.g. "mystruct->foo" in:
@@ -11397,6 +11445,15 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 		  break;
 	      }
 	  }
+
+      /* If this is an unordered struct, just insert the new element at the
+	 end of the list.  */
+      if (unordered)
+	{
+	  for (; i < elems; i++)
+	    sc = &OMP_CLAUSE_CHAIN (*sc);
+	  scp = NULL;
+	}
 
       OMP_CLAUSE_SIZE (*osc)
 	= size_binop (PLUS_EXPR, OMP_CLAUSE_SIZE (*osc), size_one_node);
@@ -11789,14 +11846,42 @@ omp_build_struct_sibling_lists (enum tree_code code,
 
 	/* This is the first sorted node in the struct sibling list.  Use it
 	   to recalculate the correct bias to use.
-	   (&first_node - attach_decl).  */
-	tree first_node = OMP_CLAUSE_DECL (OMP_CLAUSE_CHAIN (attach));
-	first_node = build_fold_addr_expr (first_node);
-	first_node = fold_convert (ptrdiff_type_node, first_node);
+	   (&first_node - attach_decl).
+	   For GOMP_MAP_STRUCT_UNORD, we need e.g. the
+	   min(min(min(first,second),third),fourth) element, because the
+	   elements aren't in any particular order.  */
+	tree lowest_addr;
+	if (OMP_CLAUSE_MAP_KIND (struct_node) == GOMP_MAP_STRUCT_UNORD)
+	  {
+	    tree first_node = OMP_CLAUSE_CHAIN (attach);
+	    unsigned HOST_WIDE_INT num_mappings
+	      = tree_to_uhwi (OMP_CLAUSE_SIZE (struct_node));
+	    lowest_addr = OMP_CLAUSE_DECL (first_node);
+	    lowest_addr = build_fold_addr_expr (lowest_addr);
+	    lowest_addr = fold_convert (pointer_sized_int_node, lowest_addr);
+	    tree next_node = OMP_CLAUSE_CHAIN (first_node);
+	    while (num_mappings > 1)
+	      {
+		tree tmp = OMP_CLAUSE_DECL (next_node);
+		tmp = build_fold_addr_expr (tmp);
+		tmp = fold_convert (pointer_sized_int_node, tmp);
+		lowest_addr = fold_build2 (MIN_EXPR, pointer_sized_int_node,
+					   lowest_addr, tmp);
+		next_node = OMP_CLAUSE_CHAIN (next_node);
+		num_mappings--;
+	      }
+	    lowest_addr = fold_convert (ptrdiff_type_node, lowest_addr);
+	  }
+	else
+	  {
+	    tree first_node = OMP_CLAUSE_DECL (OMP_CLAUSE_CHAIN (attach));
+	    first_node = build_fold_addr_expr (first_node);
+	    lowest_addr = fold_convert (ptrdiff_type_node, first_node);
+	  }
 	tree attach_decl = OMP_CLAUSE_DECL (attach);
 	attach_decl = fold_convert (ptrdiff_type_node, attach_decl);
 	OMP_CLAUSE_SIZE (attach)
-	  = fold_build2 (MINUS_EXPR, ptrdiff_type_node, first_node,
+	  = fold_build2 (MINUS_EXPR, ptrdiff_type_node, lowest_addr,
 			 attach_decl);
 
 	/* Remove GOMP_MAP_ATTACH node from after struct node.  */
@@ -11856,118 +11941,45 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	break;
       }
 
+  vec<omp_mapping_group> *groups = NULL;
+  hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap = NULL;
+  unsigned grpnum = 0;
+  tree *grp_start_p = NULL, grp_end = NULL_TREE;
+
   if (code == OMP_TARGET
       || code == OMP_TARGET_DATA
       || code == OMP_TARGET_ENTER_DATA
-      || code == OMP_TARGET_EXIT_DATA)
+      || code == OMP_TARGET_EXIT_DATA
+      || code == OACC_DATA
+      || code == OACC_KERNELS
+      || code == OACC_PARALLEL
+      || code == OACC_SERIAL
+      || code == OACC_ENTER_DATA
+      || code == OACC_EXIT_DATA
+      || code == OACC_UPDATE
+      || code == OACC_DECLARE)
     {
-      vec<omp_mapping_group> *groups;
       groups = omp_gather_mapping_groups (list_p);
+
       if (groups)
-	{
-	  hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap;
-	  grpmap = omp_index_mapping_groups (groups);
-
-	  omp_resolve_clause_dependencies (code, groups, grpmap);
-	  omp_build_struct_sibling_lists (code, region_type, groups, &grpmap,
-					  list_p);
-
-	  omp_mapping_group *outlist = NULL;
-	  bool enter_exit = (code == OMP_TARGET_ENTER_DATA
-			     || code == OMP_TARGET_EXIT_DATA);
-
-	  /* Topological sorting may fail if we have duplicate nodes, which
-	     we should have detected and shown an error for already.  Skip
-	     sorting in that case.  */
-	  if (seen_error ())
-	    goto failure;
-
-	  delete grpmap;
-	  delete groups;
-
-	  /* Rebuild now we have struct sibling lists.  */
-	  groups = omp_gather_mapping_groups (list_p);
-	  grpmap = omp_index_mapping_groups (groups);
-
-	  outlist = omp_tsort_mapping_groups (groups, grpmap, enter_exit);
-	  outlist = omp_segregate_mapping_groups (outlist);
-	  list_p = omp_reorder_mapping_groups (groups, outlist, list_p);
-
-	failure:
-	  delete grpmap;
-	  delete groups;
-	}
-
-      /* OpenMP map clauses with 'present' need to go in front of those
-	 without.  */
-      tree present_map_head = NULL;
-      tree *present_map_tail_p = &present_map_head;
-      tree *first_map_clause_p = NULL;
-
-      for (tree *c_p = list_p; *c_p; )
-	{
-	  tree c = *c_p;
-	  tree *next_c_p = &OMP_CLAUSE_CHAIN (c);
-
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
-	    {
-	      if (!first_map_clause_p)
-		first_map_clause_p = c_p;
-	      switch (OMP_CLAUSE_MAP_KIND (c))
-		{
-		case GOMP_MAP_PRESENT_ALLOC:
-		case GOMP_MAP_PRESENT_FROM:
-		case GOMP_MAP_PRESENT_TO:
-		case GOMP_MAP_PRESENT_TOFROM:
-		  next_c_p = c_p;
-		  *c_p = OMP_CLAUSE_CHAIN (c);
-
-		  OMP_CLAUSE_CHAIN (c) = NULL;
-		  *present_map_tail_p = c;
-		  present_map_tail_p = &OMP_CLAUSE_CHAIN (c);
-
-		  break;
-
-		default:
-		  break;
-		}
-	    }
-
-	  c_p = next_c_p;
-	}
-      if (first_map_clause_p && present_map_head)
-	{
-	  tree next = *first_map_clause_p;
-	  *first_map_clause_p = present_map_head;
-	  *present_map_tail_p = next;
-	}
-    }
-  else if (region_type & ORT_ACC)
-    {
-      vec<omp_mapping_group> *groups;
-      groups = omp_gather_mapping_groups (list_p);
-      if (groups)
-	{
-	  hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap;
-	  grpmap = omp_index_mapping_groups (groups);
-
-	  oacc_resolve_clause_dependencies (groups, grpmap);
-	  omp_build_struct_sibling_lists (code, region_type, groups, &grpmap,
-					  list_p);
-
-	  delete groups;
-	  delete grpmap;
-	}
+	grpmap = omp_index_mapping_groups (groups);
     }
 
   while ((c = *list_p) != NULL)
     {
       bool remove = false;
       bool notice_outer = true;
+      bool map_descriptor;
       const char *check_non_private = NULL;
       unsigned int flags;
       tree decl;
       auto_vec<omp_addr_token *, 10> addr_tokens;
+
+      if (grp_end && c == OMP_CLAUSE_CHAIN (grp_end))
+	{
+	  grp_start_p = NULL;
+	  grp_end = NULL_TREE;
+	}
 
       switch (OMP_CLAUSE_CODE (c))
 	{
@@ -12273,7 +12285,19 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  goto do_add;
 
 	case OMP_CLAUSE_MAP:
+	  if (!grp_start_p)
+	    {
+	      grp_start_p = list_p;
+	      grp_end = (*groups)[grpnum].grp_end;
+	      grpnum++;
+	    }
 	  decl = OMP_CLAUSE_DECL (c);
+
+	  if (error_operand_p (decl))
+	    {
+	      remove = true;
+	      break;
+	    }
 
 	  if (!omp_parse_expr (addr_tokens, decl))
 	    {
@@ -12281,37 +12305,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      break;
 	    }
 
-	  if (error_operand_p (decl))
-	    remove = true;
-	  switch (code)
-	    {
-	    case OMP_TARGET:
-	      break;
-	    case OACC_DATA:
-	      if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
-		break;
-	      goto check_firstprivate;
-	    case OACC_ENTER_DATA:
-	    case OACC_EXIT_DATA:
-	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH
-		  && addr_tokens[0]->type == ARRAY_BASE)
-		remove = true;
-	      /* FALLTHRU */
-	    case OMP_TARGET_DATA:
-	    case OMP_TARGET_ENTER_DATA:
-	    case OMP_TARGET_EXIT_DATA:
-	    case OACC_HOST_DATA:
-	    check_firstprivate:
-	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
-		  || (OMP_CLAUSE_MAP_KIND (c)
-		      == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
-		/* For target {,enter ,exit }data only the array slice is
-		   mapped, but not the pointer to it.  */
-		remove = true;
-	      break;
-	    default:
-	      break;
-	    }
 	  if (remove)
 	    break;
 	  if (DECL_P (decl) && outer_ctx && (region_type & ORT_ACC))
@@ -12330,51 +12323,61 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			      DECL_NAME (decl));
 		}
 	    }
-	  if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
-	    {
-	      /* Sanity check: attach/detach map kinds use the size as a bias,
-		 and it's never right to use the decl size for such
-		 mappings.  */
-	      gcc_assert (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
-			  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH
-			  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FORCE_DETACH
-			  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH
-			  && (OMP_CLAUSE_MAP_KIND (c)
-			      != GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION));
-	      OMP_CLAUSE_SIZE (c) = DECL_P (decl) ? DECL_SIZE_UNIT (decl)
-				    : TYPE_SIZE_UNIT (TREE_TYPE (decl));
-	    }
-	  if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
-			     NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
-	    {
-	      remove = true;
-	      break;
-	    }
-	  else if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
-		    || (OMP_CLAUSE_MAP_KIND (c)
-			== GOMP_MAP_FIRSTPRIVATE_REFERENCE)
-		    || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
-		   && TREE_CODE (OMP_CLAUSE_SIZE (c)) != INTEGER_CST)
-	    {
-	      OMP_CLAUSE_SIZE (c)
-		= get_initialized_tmp_var (OMP_CLAUSE_SIZE (c), pre_p, NULL,
-					   false);
-	      if ((region_type & ORT_TARGET) != 0)
-		omp_add_variable (ctx, OMP_CLAUSE_SIZE (c),
-				  GOVD_FIRSTPRIVATE | GOVD_SEEN);
-	    }
 
-	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
-	      && (addr_tokens[0]->type == STRUCTURE_BASE
-		  || addr_tokens[0]->type == ARRAY_BASE)
-	      && addr_tokens[0]->u.structure_base_kind == BASE_DECL)
+	  map_descriptor = false;
+
+	  /* This condition checks if we're mapping an array descriptor that
+	     isn't inside a derived type -- these have special handling, and
+	     are not handled as structs in omp_build_struct_sibling_lists.
+	     See that function for further details.  */
+	  if (*grp_start_p != grp_end
+	      && OMP_CLAUSE_CHAIN (*grp_start_p)
+	      && OMP_CLAUSE_CHAIN (*grp_start_p) != grp_end)
+	    {
+	      tree grp_mid = OMP_CLAUSE_CHAIN (*grp_start_p);
+	      if (omp_map_clause_descriptor_p (grp_mid)
+		  && DECL_P (OMP_CLAUSE_DECL (grp_mid)))
+		map_descriptor = true;
+	    }
+	  else if (OMP_CLAUSE_CODE (grp_end) == OMP_CLAUSE_MAP
+		   && (OMP_CLAUSE_MAP_KIND (grp_end) == GOMP_MAP_RELEASE
+		       || OMP_CLAUSE_MAP_KIND (grp_end) == GOMP_MAP_DELETE)
+		   && OMP_CLAUSE_RELEASE_DESCRIPTOR (grp_end))
+	    map_descriptor = true;
+
+	  /* Adding the decl for a struct access: we haven't created
+	     GOMP_MAP_STRUCT nodes yet, so this statement needs to predict
+	     whether they will be created in gimplify_adjust_omp_clauses.
+	     NOTE: Technically we should probably look through DECL_VALUE_EXPR
+	     here because something that looks like a DECL_P may actually be a
+	     struct access, e.g. variables in a lambda closure
+	     (__closure->__foo) or class members (this->foo). Currently in both
+	     those cases we map the whole of the containing object (directly in
+	     the C++ FE) though, so struct nodes are not created.  */
+	  if (c == grp_end
+	      && addr_tokens[0]->type == STRUCTURE_BASE
+	      && addr_tokens[0]->u.structure_base_kind == BASE_DECL
+	      && !map_descriptor)
 	    {
 	      gcc_assert (addr_tokens[1]->type == ACCESS_METHOD);
 	      /* If we got to this struct via a chain of pointers, maybe we
 		 want to map it implicitly instead.  */
 	      if (omp_access_chain_p (addr_tokens, 1))
 		break;
+	      omp_mapping_group *wholestruct;
+	      if (!(region_type & ORT_ACC)
+		  && omp_mapped_by_containing_struct (grpmap,
+						      OMP_CLAUSE_DECL (c),
+						      &wholestruct))
+		break;
 	      decl = addr_tokens[1]->expr;
+	      if (splay_tree_lookup (ctx->variables, (splay_tree_key) decl))
+		break;
+	      /* Standalone attach or detach clauses for a struct element
+		 should not inhibit implicit mapping of the whole struct.  */
+	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
+		break;
 	      flags = GOVD_MAP | GOVD_EXPLICIT;
 
 	      gcc_assert (addr_tokens[1]->u.access_kind != ACCESS_DIRECT
@@ -12382,14 +12385,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      goto do_add_decl;
 	    }
 
-	  if (TREE_CODE (decl) == TARGET_EXPR)
-	    {
-	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
-				 is_gimple_lvalue, fb_lvalue)
-		  == GS_ERROR)
-		remove = true;
-	    }
-	  else if (!DECL_P (decl))
+	  if (!DECL_P (decl))
 	    {
 	      tree d = decl, *pd;
 	      if (TREE_CODE (d) == ARRAY_REF)
@@ -12412,56 +12408,20 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  pd = &TREE_OPERAND (decl, 0);
 		  decl = TREE_OPERAND (decl, 0);
 		}
-	      /* An "attach/detach" operation on an update directive should
-		 behave as a GOMP_MAP_ALWAYS_POINTER.  Beware that
-		 unlike attach or detach map kinds, GOMP_MAP_ALWAYS_POINTER
-		 depends on the previous mapping.  */
-	      if (code == OACC_UPDATE
-		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
-		OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALWAYS_POINTER);
 
-	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
+	      if (addr_tokens[0]->type == STRUCTURE_BASE
+		  && addr_tokens[0]->u.structure_base_kind == BASE_DECL
+		  && addr_tokens[1]->type == ACCESS_METHOD
+		  && (addr_tokens[1]->u.access_kind == ACCESS_POINTER
+		      || (addr_tokens[1]->u.access_kind
+			  == ACCESS_POINTER_OFFSET))
+		  && GOMP_MAP_ALWAYS_P (OMP_CLAUSE_MAP_KIND (c)))
 		{
-		  if (TREE_CODE (TREE_TYPE (OMP_CLAUSE_DECL (c)))
-		      == ARRAY_TYPE)
-		    remove = true;
-		  else
-		    {
-		      gomp_map_kind k = ((code == OACC_EXIT_DATA
-					  || code == OMP_TARGET_EXIT_DATA)
-					 ? GOMP_MAP_DETACH : GOMP_MAP_ATTACH);
-		      OMP_CLAUSE_SET_MAP_KIND (c, k);
-		    }
-		}
-
-	      tree cref = decl;
-
-	      while (TREE_CODE (cref) == ARRAY_REF)
-		cref = TREE_OPERAND (cref, 0);
-
-	      if (TREE_CODE (cref) == INDIRECT_REF)
-		cref = TREE_OPERAND (cref, 0);
-
-	      if (TREE_CODE (cref) == COMPONENT_REF)
-		{
-		  tree base = cref;
-		  while (base && !DECL_P (base))
-		    {
-		      tree innerbase = omp_get_base_pointer (base);
-		      if (!innerbase)
-			break;
-		      base = innerbase;
-		    }
-		  if (base
-		      && DECL_P (base)
-		      && GOMP_MAP_ALWAYS_P (OMP_CLAUSE_MAP_KIND (c))
-		      && POINTER_TYPE_P (TREE_TYPE (base)))
-		    {
-		      splay_tree_node n
-			= splay_tree_lookup (ctx->variables,
-					     (splay_tree_key) base);
-		      n->value |= GOVD_SEEN;
-		    }
+		  tree base = addr_tokens[1]->expr;
+		  splay_tree_node n
+		    = splay_tree_lookup (ctx->variables,
+					 (splay_tree_key) base);
+		  n->value |= GOVD_SEEN;
 		}
 
 	      if (code == OMP_TARGET && OMP_CLAUSE_MAP_IN_REDUCTION (c))
@@ -12572,18 +12532,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			}
 		    }
 		}
-	      else if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue,
-				      fb_lvalue) == GS_ERROR)
-		{
-		  remove = true;
-		  break;
-		}
 	      break;
 	    }
-	  flags = GOVD_MAP | GOVD_EXPLICIT;
-	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_TO
-	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_TOFROM)
-	    flags |= GOVD_MAP_ALWAYS_TO;
 
 	  if ((code == OMP_TARGET
 	       || code == OMP_TARGET_DATA
@@ -12591,26 +12541,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	       || code == OMP_TARGET_EXIT_DATA)
 	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
 	    {
-	      for (struct gimplify_omp_ctx *octx = outer_ctx; octx;
-		   octx = octx->outer_context)
-		{
-		  splay_tree_node n
-		    = splay_tree_lookup (octx->variables,
-					 (splay_tree_key) OMP_CLAUSE_DECL (c));
-		  /* If this is contained in an outer OpenMP region as a
-		     firstprivate value, remove the attach/detach.  */
-		  if (n && (n->value & GOVD_FIRSTPRIVATE))
-		    {
-		      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_FIRSTPRIVATE_POINTER);
-		      goto do_add;
-		    }
-		}
-
-	      enum gomp_map_kind map_kind = (code == OMP_TARGET_EXIT_DATA
-					     ? GOMP_MAP_DETACH
-					     : GOMP_MAP_ATTACH);
-	      OMP_CLAUSE_SET_MAP_KIND (c, map_kind);
-
 	      /* If we have attach/detach but the decl we have is a pointer to
 		 pointer, we're probably mapping the "base level" array
 		 implicitly.  Make sure we don't add the decl as if we mapped
@@ -12637,16 +12567,13 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  && TREE_CODE (TREE_TYPE (basetype)) == POINTER_TYPE)
 		break;
 	    }
-	  else if ((code == OACC_ENTER_DATA
-		    || code == OACC_EXIT_DATA
-		    || code == OACC_PARALLEL)
-		   && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
-	    {
-	      enum gomp_map_kind map_kind = (code == OACC_EXIT_DATA
-					     ? GOMP_MAP_DETACH
-					     : GOMP_MAP_ATTACH);
-	      OMP_CLAUSE_SET_MAP_KIND (c, map_kind);
-	    }
+
+	  flags = GOVD_MAP | GOVD_EXPLICIT;
+	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_TO
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_TOFROM
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_PRESENT_TO
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_PRESENT_TOFROM)
+	    flags |= GOVD_MAP_ALWAYS_TO;
 
 	  goto do_add;
 
@@ -13288,6 +13215,12 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	list_p = &OMP_CLAUSE_CHAIN (c);
     }
 
+  if (groups)
+    {
+      delete grpmap;
+      delete groups;
+    }
+
   ctx->clauses = *orig_list_p;
   gimplify_omp_ctxp = ctx;
 }
@@ -13767,14 +13700,74 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  }
     }
 
+  if (code == OMP_TARGET
+      || code == OMP_TARGET_DATA
+      || code == OMP_TARGET_ENTER_DATA
+      || code == OMP_TARGET_EXIT_DATA)
+    {
+      vec<omp_mapping_group> *groups;
+      groups = omp_gather_mapping_groups (list_p);
+      hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap = NULL;
+
+      if (groups)
+	{
+	  grpmap = omp_index_mapping_groups (groups);
+
+	  omp_resolve_clause_dependencies (code, groups, grpmap);
+	  omp_build_struct_sibling_lists (code, ctx->region_type, groups,
+					  &grpmap, list_p);
+
+	  omp_mapping_group *outlist = NULL;
+
+	  delete grpmap;
+	  delete groups;
+
+	  /* Rebuild now we have struct sibling lists.  */
+	  groups = omp_gather_mapping_groups (list_p);
+	  grpmap = omp_index_mapping_groups (groups);
+
+	  bool enter_exit = (code == OMP_TARGET_ENTER_DATA
+			     || code == OMP_TARGET_EXIT_DATA);
+
+	  outlist = omp_tsort_mapping_groups (groups, grpmap, enter_exit);
+	  outlist = omp_segregate_mapping_groups (outlist);
+	  list_p = omp_reorder_mapping_groups (groups, outlist, list_p);
+
+	  delete grpmap;
+	  delete groups;
+	}
+    }
+  else if (ctx->region_type & ORT_ACC)
+    {
+      vec<omp_mapping_group> *groups;
+      groups = omp_gather_mapping_groups (list_p);
+      if (groups)
+	{
+	  hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap;
+	  grpmap = omp_index_mapping_groups (groups);
+
+	  oacc_resolve_clause_dependencies (groups, grpmap);
+	  omp_build_struct_sibling_lists (code, ctx->region_type, groups,
+					  &grpmap, list_p);
+
+	  delete groups;
+	  delete grpmap;
+	}
+    }
+
   tree attach_list = NULL_TREE;
   tree *attach_tail = &attach_list;
+
+  tree *grp_start_p = NULL, grp_end = NULL_TREE;
 
   while ((c = *list_p) != NULL)
     {
       splay_tree_node n;
       bool remove = false;
       bool move_attach = false;
+
+      if (grp_end && c == OMP_CLAUSE_CHAIN (grp_end))
+	grp_end = NULL_TREE;
 
       switch (OMP_CLAUSE_CODE (c))
 	{
@@ -13930,6 +13923,12 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  break;
 
 	case OMP_CLAUSE_MAP:
+	  decl = OMP_CLAUSE_DECL (c);
+	  if (!grp_end)
+	    {
+	      grp_start_p = list_p;
+	      grp_end = *omp_group_last (grp_start_p);
+	    }
 	  switch (OMP_CLAUSE_MAP_KIND (c))
 	    {
 	    case GOMP_MAP_PRESENT_ALLOC:
@@ -13941,26 +13940,72 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    default:
 	      break;
 	    }
-	  if (code == OMP_TARGET_EXIT_DATA
-	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_POINTER)
+	  switch (code)
 	    {
+	    case OACC_DATA:
+	      if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
+		break;
+	      /* Fallthrough.  */
+	    case OACC_HOST_DATA:
+	    case OACC_ENTER_DATA:
+	    case OACC_EXIT_DATA:
+	    case OMP_TARGET_DATA:
+	    case OMP_TARGET_ENTER_DATA:
+	    case OMP_TARGET_EXIT_DATA:
+	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
+		  || (OMP_CLAUSE_MAP_KIND (c)
+		      == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
+		/* For target {,enter ,exit }data only the array slice is
+		   mapped, but not the pointer to it.  */
+		remove = true;
+	      if (code == OMP_TARGET_EXIT_DATA
+		  && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_POINTER
+		      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER))
+		remove = true;
+	      break;
+	    case OMP_TARGET:
+	      break;
+	    default:
+	      break;
+	    }
+	  if (remove)
+	    break;
+	  if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
+	    {
+	      /* Sanity check: attach/detach map kinds use the size as a bias,
+		 and it's never right to use the decl size for such
+		 mappings.  */
+	      gcc_assert (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
+			  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH
+			  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FORCE_DETACH
+			  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH
+			  && (OMP_CLAUSE_MAP_KIND (c)
+			      != GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION));
+	      OMP_CLAUSE_SIZE (c) = DECL_P (decl) ? DECL_SIZE_UNIT (decl)
+				    : TYPE_SIZE_UNIT (TREE_TYPE (decl));
+	    }
+	  gimplify_omp_ctxp = ctx->outer_context;
+	  if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p, NULL,
+				  is_gimple_val, fb_rvalue) == GS_ERROR)
+	    {
+	      gimplify_omp_ctxp = ctx;
 	      remove = true;
 	      break;
 	    }
-	  /* If we have a target region, we can push all the attaches to the
-	     end of the list (we may have standalone "attach" operations
-	     synthesized for GOMP_MAP_STRUCT nodes that must be processed after
-	     the attachment point AND the pointed-to block have been mapped).
-	     If we have something else, e.g. "enter data", we need to keep
-	     "attach" nodes together with the previous node they attach to so
-	     that separate "exit data" operations work properly (see
-	     libgomp/target.c).  */
-	  if ((ctx->region_type & ORT_TARGET) != 0
-	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
-		  || (OMP_CLAUSE_MAP_KIND (c)
-		      == GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION)))
-	    move_attach = true;
-	  decl = OMP_CLAUSE_DECL (c);
+	  else if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
+		    || (OMP_CLAUSE_MAP_KIND (c)
+			== GOMP_MAP_FIRSTPRIVATE_REFERENCE)
+		    || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
+		   && TREE_CODE (OMP_CLAUSE_SIZE (c)) != INTEGER_CST)
+	    {
+	      OMP_CLAUSE_SIZE (c)
+		= get_initialized_tmp_var (OMP_CLAUSE_SIZE (c), pre_p, NULL,
+					   false);
+	      if ((ctx->region_type & ORT_TARGET) != 0)
+		omp_add_variable (ctx, OMP_CLAUSE_SIZE (c),
+				  GOVD_FIRSTPRIVATE | GOVD_SEEN);
+	    }
+	  gimplify_omp_ctxp = ctx;
 	  /* Data clauses associated with reductions must be
 	     compatible with present_or_copy.  Warn and adjust the clause
 	     if that is not the case.  */
@@ -13990,13 +14035,32 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		    }
 		}
 	    }
-	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+	  if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+	       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT_UNORD)
 	      && (code == OMP_TARGET_EXIT_DATA || code == OACC_EXIT_DATA))
 	    {
 	      remove = true;
 	      break;
 	    }
-	  if (!DECL_P (decl))
+	  /* If we have a DECL_VALUE_EXPR (e.g. this is a class member and/or
+	     a variable captured in a lambda closure), look through that now
+	     before the DECL_P check below.  (A code other than COMPONENT_REF,
+	     i.e. INDIRECT_REF, will be a VLA/variable-length array
+	     section.  A global var may be a variable in a common block.  We
+	     don't want to do this here for either of those.)  */
+	  if ((ctx->region_type & ORT_ACC) == 0
+	      && DECL_P (decl)
+	      && !is_global_var (decl)
+	      && DECL_HAS_VALUE_EXPR_P (decl)
+	      && TREE_CODE (DECL_VALUE_EXPR (decl)) == COMPONENT_REF)
+	    decl = OMP_CLAUSE_DECL (c) = DECL_VALUE_EXPR (decl);
+	  if (TREE_CODE (decl) == TARGET_EXPR)
+	    {
+	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
+				 is_gimple_lvalue, fb_lvalue) == GS_ERROR)
+		remove = true;
+	    }
+	  else if (!DECL_P (decl))
 	    {
 	      if ((ctx->region_type & ORT_TARGET) != 0
 		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER)
@@ -14019,8 +14083,122 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 			}
 		    }
 		}
+
+	      tree d = decl, *pd;
+	      if (TREE_CODE (d) == ARRAY_REF)
+		{
+		  while (TREE_CODE (d) == ARRAY_REF)
+		    d = TREE_OPERAND (d, 0);
+		  if (TREE_CODE (d) == COMPONENT_REF
+		      && TREE_CODE (TREE_TYPE (d)) == ARRAY_TYPE)
+		    decl = d;
+		}
+	      pd = &OMP_CLAUSE_DECL (c);
+	      if (d == decl
+		  && TREE_CODE (decl) == INDIRECT_REF
+		  && TREE_CODE (TREE_OPERAND (decl, 0)) == COMPONENT_REF
+		  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
+		      == REFERENCE_TYPE)
+		  && (OMP_CLAUSE_MAP_KIND (c)
+		      != GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION))
+		{
+		  pd = &TREE_OPERAND (decl, 0);
+		  decl = TREE_OPERAND (decl, 0);
+		}
+
+	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
+		switch (code)
+		  {
+		  case OACC_ENTER_DATA:
+		  case OACC_EXIT_DATA:
+		    if (TREE_CODE (TREE_TYPE (OMP_CLAUSE_DECL (c)))
+			== ARRAY_TYPE)
+		      remove = true;
+		    else if (code == OACC_ENTER_DATA)
+		      goto change_to_attach;
+		    /* Fallthrough.  */
+		  case OMP_TARGET_EXIT_DATA:
+		    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_DETACH);
+		    break;
+		  case OACC_UPDATE:
+		    /* An "attach/detach" operation on an update directive
+		       should behave as a GOMP_MAP_ALWAYS_POINTER.  Note that
+		       both GOMP_MAP_ATTACH_DETACH and GOMP_MAP_ALWAYS_POINTER
+		       kinds depend on the previous mapping (for non-TARGET
+		       regions).  */
+		    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALWAYS_POINTER);
+		    break;
+		  default:
+		  change_to_attach:
+		    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ATTACH);
+		    if ((ctx->region_type & ORT_TARGET) != 0)
+		      move_attach = true;
+		  }
+	      else if ((ctx->region_type & ORT_TARGET) != 0
+		       && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+			   || (OMP_CLAUSE_MAP_KIND (c)
+			       == GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION)))
+		move_attach = true;
+
+	      /* If we have e.g. map(struct: *var), don't gimplify the
+		 argument since omp-low.cc wants to see the decl itself.  */
+	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT)
+		break;
+
+	      /* We've already partly gimplified this in
+		 gimplify_scan_omp_clauses.  Don't do any more.  */
+	      if (code == OMP_TARGET && OMP_CLAUSE_MAP_IN_REDUCTION (c))
+		break;
+
+	      gimplify_omp_ctxp = ctx->outer_context;
+	      if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue,
+				 fb_lvalue) == GS_ERROR)
+		remove = true;
+	      gimplify_omp_ctxp = ctx;
 	      break;
 	    }
+
+	 if ((code == OMP_TARGET
+	      || code == OMP_TARGET_DATA
+	      || code == OMP_TARGET_ENTER_DATA
+	      || code == OMP_TARGET_EXIT_DATA)
+	     && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
+	   {
+	     bool firstprivatize = false;
+
+	     for (struct gimplify_omp_ctx *octx = ctx->outer_context; octx;
+		  octx = octx->outer_context)
+	       {
+		 splay_tree_node n
+		   = splay_tree_lookup (octx->variables,
+					(splay_tree_key) OMP_CLAUSE_DECL (c));
+		 /* If this is contained in an outer OpenMP region as a
+		    firstprivate value, remove the attach/detach.  */
+		 if (n && (n->value & GOVD_FIRSTPRIVATE))
+		   {
+		     firstprivatize = true;
+		     break;
+		   }
+	       }
+
+	     enum gomp_map_kind map_kind;
+	     if (firstprivatize)
+	       map_kind = GOMP_MAP_FIRSTPRIVATE_POINTER;
+	     else if (code == OMP_TARGET_EXIT_DATA)
+	       map_kind = GOMP_MAP_DETACH;
+	     else
+	       map_kind = GOMP_MAP_ATTACH;
+	     OMP_CLAUSE_SET_MAP_KIND (c, map_kind);
+	   }
+	 else if ((ctx->region_type & ORT_ACC) != 0
+		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
+	   {
+	     enum gomp_map_kind map_kind = (code == OACC_EXIT_DATA
+					    ? GOMP_MAP_DETACH
+					    : GOMP_MAP_ATTACH);
+	     OMP_CLAUSE_SET_MAP_KIND (c, map_kind);
+	   }
+
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	  if ((ctx->region_type & ORT_TARGET) != 0
 	      && !(n->value & GOVD_SEEN)
@@ -14034,7 +14212,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		 in target block and none of the mapping has always modifier,
 		 remove all the struct element mappings, which immediately
 		 follow the GOMP_MAP_STRUCT map clause.  */
-	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT)
+	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT_UNORD)
 		{
 		  HOST_WIDE_INT cnt = tree_to_shwi (OMP_CLAUSE_SIZE (c));
 		  while (cnt--)
@@ -14094,6 +14273,21 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 			  || ((n->value & (GOVD_PRIVATE | GOVD_FIRSTPRIVATE))
 			      == 0));
 	    }
+
+	  /* If we have a target region, we can push all the attaches to the
+	     end of the list (we may have standalone "attach" operations
+	     synthesized for GOMP_MAP_STRUCT nodes that must be processed after
+	     the attachment point AND the pointed-to block have been mapped).
+	     If we have something else, e.g. "enter data", we need to keep
+	     "attach" nodes together with the previous node they attach to so
+	     that separate "exit data" operations work properly (see
+	     libgomp/target.c).  */
+	  if ((ctx->region_type & ORT_TARGET) != 0
+	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		  || (OMP_CLAUSE_MAP_KIND (c)
+		      == GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION)))
+	    move_attach = true;
+
 	  break;
 
 	case OMP_CLAUSE_TO:
@@ -14411,12 +14605,17 @@ omp_construct_selector_matches (enum tree_code *constructs, int nconstructs,
   if (tree attr = lookup_attribute ("omp declare variant variant",
 				    DECL_ATTRIBUTES (current_function_decl)))
     {
-      enum tree_code variant_constructs[5];
-      int variant_nconstructs = 0;
-      if (!target_seen)
-	variant_nconstructs
-	  = omp_constructor_traits_to_codes (TREE_VALUE (attr),
-					     variant_constructs);
+      tree selectors = TREE_VALUE (attr);
+      int variant_nconstructs = list_length (selectors);
+      enum tree_code *variant_constructs = NULL;
+      if (!target_seen && variant_nconstructs)
+	{
+	  variant_constructs
+	    = (enum tree_code *) alloca (variant_nconstructs
+					 * sizeof (enum tree_code));
+	  omp_construct_traits_to_codes (selectors, variant_nconstructs,
+					 variant_constructs);
+	}
       for (int i = 0; i < variant_nconstructs; i++)
 	{
 	  ++cnt;
@@ -16814,6 +17013,7 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 	      have_clause = false;
 	      break;
 	    case GOMP_MAP_STRUCT:
+	    case GOMP_MAP_STRUCT_UNORD:
 	      have_clause = false;
 	      break;
 	    default:

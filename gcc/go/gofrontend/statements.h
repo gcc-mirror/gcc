@@ -171,16 +171,17 @@ class Statement
   static Statement*
   make_defer_statement(Call_expression* call, Location);
 
-  // Make a return statement.
+  // Make a return statement.  FUNCTION is a backpointer to the
+  // function that this statement is returning from.
   static Return_statement*
-  make_return_statement(Expression_list*, Location);
+  make_return_statement(Named_object* function, Expression_list*, Location);
 
   // Make a statement that returns the result of a call expression.
   // If the call does not return any results, this just returns the
   // call expression as a statement, assuming that the function will
   // end immediately afterward.
   static Statement*
-  make_return_from_call(Call_expression*, Location);
+  make_return_from_call(Named_object* function, Call_expression*, Location);
 
   // Make a break statement.
   static Statement*
@@ -580,6 +581,11 @@ class Assignment_statement : public Statement
   set_omit_write_barrier()
   { this->omit_write_barrier_ = true; }
 
+  // Check if we can assign RHS to LHS.  If we can, return true.  If
+  // we can't, report an error and return false.
+  static bool
+  check_assignment_types(Expression* lhs, Type* rhs_type, Location);
+
  protected:
   int
   do_traverse(Traverse* traverse);
@@ -765,6 +771,9 @@ class Variable_declaration_statement : public Statement
   int
   do_traverse(Traverse*);
 
+  void
+  do_determine_types(Gogo*);
+
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -796,9 +805,11 @@ class Variable_declaration_statement : public Statement
 class Return_statement : public Statement
 {
  public:
-  Return_statement(Expression_list* vals, Location location)
+  Return_statement(Named_object* function, Expression_list* vals,
+		   Location location)
     : Statement(STATEMENT_RETURN, location),
-      vals_(vals), is_lowered_(false)
+      function_(function), vals_(vals), types_are_determined_(false),
+      is_lowered_(false)
   { }
 
   // The list of values being returned.  This may be NULL.
@@ -810,6 +821,12 @@ class Return_statement : public Statement
   int
   do_traverse(Traverse* traverse)
   { return this->traverse_expression_list(traverse, this->vals_); }
+
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -832,8 +849,12 @@ class Return_statement : public Statement
   do_dump_statement(Ast_dump_context*) const;
 
  private:
+  // A backpointer to the function we are returning from.
+  Named_object* function_;
   // Return values.  This may be NULL.
   Expression_list* vals_;
+  // True if types have been determined.
+  bool types_are_determined_;
   // True if this statement has been lowered.
   bool is_lowered_;
 };
@@ -1185,14 +1206,14 @@ class Select_clauses
 
    private:
     void
-    lower_send(Block*, Expression*, Expression*);
+    lower_send(Gogo*, Block*, Expression*, Expression*);
 
     void
     lower_recv(Gogo*, Named_object*, Block*, Expression*, Expression*,
 	       Temporary_statement*);
 
     void
-    set_case(Block*, Expression*, Expression*, Expression*);
+    set_case(Gogo*, Block*, Expression*, Expression*, Expression*);
 
     // The channel.
     Expression* channel_;
@@ -1655,6 +1676,12 @@ class For_statement : public Statement
   int
   do_traverse(Traverse*);
 
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
+
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -1714,6 +1741,12 @@ class For_range_statement : public Statement
  protected:
   int
   do_traverse(Traverse*);
+
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -1817,7 +1850,7 @@ class Case_clauses
 
   // Lower for a nonconstant switch.
   void
-  lower(Block*, Temporary_statement*, Unnamed_label*) const;
+  lower(Gogo*, Block*, Temporary_statement*, Unnamed_label*) const;
 
   // Determine types of expressions.  The Type parameter is the type
   // of the switch value.
@@ -1892,7 +1925,8 @@ class Case_clauses
 
     // Lower for a nonconstant switch.
     void
-    lower(Block*, Temporary_statement*, Unnamed_label*, Unnamed_label*) const;
+    lower(Gogo*, Block*, Temporary_statement*, Unnamed_label*,
+	  Unnamed_label*) const;
 
     // Determine types.
     void
@@ -1970,6 +2004,12 @@ class Switch_statement : public Statement
   int
   do_traverse(Traverse*);
 
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
+
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -2028,9 +2068,17 @@ class Type_case_clauses
   void
   check_duplicates() const;
 
+  // Determine types of expressions.
+  void
+  determine_types(Gogo*);
+
+  // Check types.
+  bool
+  check_types(Type*);
+
   // Lower to if and goto statements.
   void
-  lower(Gogo*, Type*, Block*, Temporary_statement* descriptor_temp,
+  lower(Gogo*, Block*, Temporary_statement* descriptor_temp,
 	Unnamed_label* break_label) const;
 
   // Return true if these clauses may fall through to the statements
@@ -2077,9 +2125,17 @@ class Type_case_clauses
     int
     traverse(Traverse*);
 
+    // Determine types.
+    void
+    determine_types(Gogo*);
+
+    // Check types.
+    bool
+    check_types(Type*);
+
     // Lower to if and goto statements.
     void
-    lower(Gogo*, Type*, Block*, Temporary_statement* descriptor_temp,
+    lower(Gogo*, Block*, Temporary_statement* descriptor_temp,
 	  Unnamed_label* break_label, Unnamed_label** stmts_label) const;
 
     // Return true if this clause may fall through to execute the
@@ -2139,6 +2195,12 @@ class Type_switch_statement : public Statement
  protected:
   int
   do_traverse(Traverse*);
+
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);

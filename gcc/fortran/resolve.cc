@@ -5669,7 +5669,7 @@ gfc_expression_rank (gfc_expr *e)
       if (ref->type != REF_ARRAY)
 	continue;
 
-      if (ref->u.ar.type == AR_FULL)
+      if (ref->u.ar.type == AR_FULL && ref->u.ar.as)
 	{
 	  rank = ref->u.ar.as->rank;
 	  break;

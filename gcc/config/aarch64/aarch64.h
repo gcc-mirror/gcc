@@ -204,7 +204,11 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 #endif
 
-/* Macros to test ISA flags.  */
+/* Macros to test ISA flags.
+
+   There is intentionally no macro for AARCH64_FL_CRYPTO, since this flag bit
+   is not always set when its constituent features are present.
+   Check (TARGET_AES && TARGET_SHA2) instead.  */
 
 #define AARCH64_ISA_SM_OFF         (aarch64_isa_flags & AARCH64_FL_SM_OFF)
 #define AARCH64_ISA_SM_ON          (aarch64_isa_flags & AARCH64_FL_SM_ON)
@@ -213,7 +217,6 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_V8A		   (aarch64_isa_flags & AARCH64_FL_V8A)
 #define AARCH64_ISA_V8_1A	   (aarch64_isa_flags & AARCH64_FL_V8_1A)
 #define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
-#define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
 #define AARCH64_ISA_LSE		   (aarch64_isa_flags & AARCH64_FL_LSE)
@@ -293,9 +296,6 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_FL_AMU		   AARCH64_FL_V8_4A
 #define AARCH64_FL_SCXTNUM	   AARCH64_FL_V8_5A
 #define AARCH64_FL_ID_PFR2	   AARCH64_FL_V8_5A
-
-/* Crypto is an optional extension to AdvSIMD.  */
-#define TARGET_CRYPTO (AARCH64_ISA_CRYPTO)
 
 /* SHA2 is an optional extension to AdvSIMD.  */
 #define TARGET_SHA2 (AARCH64_ISA_SHA2)
@@ -1361,6 +1361,8 @@ extern enum aarch64_code_model aarch64_cmodel;
 #define HAS_LONG_UNCOND_BRANCH				\
   (aarch64_cmodel == AARCH64_CMODEL_TINY		\
    || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC)
+
+#define TARGET_HAS_FMV_TARGET_ATTRIBUTE 0
 
 #define TARGET_SUPPORTS_WIDE_INT 1
 

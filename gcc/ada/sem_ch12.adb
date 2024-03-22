@@ -7059,9 +7059,13 @@ package body Sem_Ch12 is
          end if;
       end Check_Actual_Type;
 
+      --  Local variables
+
       Astype : Entity_Id;
       E      : Entity_Id;
       Formal : Node_Id;
+
+   --  Start of processing for Check_Generic_Actuals
 
    begin
       E := First_Entity (Instance);
@@ -7234,7 +7238,7 @@ package body Sem_Ch12 is
       Loc      : constant Source_Ptr := Sloc (Gen_Id);
       Gen_Par  : Entity_Id := Empty;
       E        : Entity_Id;
-      Inst_Par : Entity_Id;
+      Inst_Par : Entity_Id := Empty;
       S        : Node_Id;
 
       function Find_Generic_Child
@@ -7440,16 +7444,90 @@ package body Sem_Ch12 is
                --  the instance of Gpar, so this is illegal. The test below
                --  recognizes this particular case.
 
-               if Is_Child_Unit (E)
-                 and then not Comes_From_Source (Entity (Prefix (Gen_Id)))
-                 and then (not In_Instance
-                            or else Nkind (Parent (Parent (Gen_Id))) =
-                                                         N_Compilation_Unit)
-               then
-                  Error_Msg_N
-                    ("prefix of generic child unit must be instance of parent",
-                      Gen_Id);
-               end if;
+               declare
+                  --  We want to reject the final instantiation in
+                  --    generic package G1 is end G1;
+                  --    generic package G1.G2 is end G1.G2;
+                  --    with G1; package I1 is new G1;
+                  --    with G1.G2; package I1.I2 is new G1.G2;
+                  --  because the use of G1.G2 should instead be either
+                  --  I1.G2 or simply G2. However, the tree that is built
+                  --  in this case is wrong. In the expanded copy
+                  --  of G2, we need (and therefore generate) a renaming
+                  --    package G1 renames I1;
+                  --  but this renaming should not participate in resolving
+                  --  this occurrence of the name "G1.G2"; unfortunately,
+                  --  it does. Rather than correct this error, we compensate
+                  --  for it in this function.
+                  --
+                  --  We also perform another adjustment here. If we are
+                  --  currently inside a generic package, then that
+                  --  generic package needs to be treated as a package.
+                  --  For example, if a generic Aaa declares a nested generic
+                  --  Bbb (perhaps as a child unit) then Aaa can also legally
+                  --  declare an instance of Aaa.Bbb.
+
+                  function Adjusted_Inst_Par_Ekind return Entity_Kind;
+
+                  -----------------------------
+                  -- Adjusted_Inst_Par_Ekind --
+                  -----------------------------
+
+                  function Adjusted_Inst_Par_Ekind return Entity_Kind is
+                     Prefix_Entity   : Entity_Id;
+                     Inst_Par_GP     : Node_Id;
+                     Inst_Par_Parent : Node_Id := Parent (Inst_Par);
+                  begin
+                     if Nkind (Inst_Par_Parent) = N_Defining_Program_Unit_Name
+                     then
+                        Inst_Par_Parent := Parent (Inst_Par_Parent);
+                     end if;
+
+                     Inst_Par_GP := Generic_Parent (Inst_Par_Parent);
+
+                     if Nkind (Gen_Id) = N_Expanded_Name
+                       and then Present (Inst_Par_GP)
+                       and then Ekind (Inst_Par_GP) = E_Generic_Package
+                     then
+                        Prefix_Entity := Entity (Prefix (Gen_Id));
+
+                        if Present (Prefix_Entity)
+                           and then not Comes_From_Source (Prefix_Entity)
+                           and then Nkind (Parent (Prefix_Entity)) =
+                                      N_Package_Renaming_Declaration
+                           and then Chars (Prefix_Entity) = Chars (Inst_Par_GP)
+                        then
+                           return E_Generic_Package;
+                        end if;
+                     end if;
+
+                     if Ekind (Inst_Par) = E_Generic_Package
+                       and then In_Open_Scopes (Inst_Par)
+                     then
+                        --  If we are inside a generic package then
+                        --  treat it as a package.
+                        return E_Package;
+                     end if;
+
+                     --  The usual path
+                     return Ekind (Inst_Par);
+                  end Adjusted_Inst_Par_Ekind;
+
+               begin
+                  if Is_Child_Unit (E)
+                    and then (No (Inst_Par)
+                              or else Adjusted_Inst_Par_Ekind =
+                                      E_Generic_Package)
+                    and then (not In_Instance
+                              or else Nkind (Parent (Parent (Gen_Id))) =
+                                        N_Compilation_Unit)
+                  then
+                     Error_Msg_N
+                       ("prefix of generic child unit must be " &
+                          "instance of parent",
+                        Gen_Id);
+                  end if;
+               end;
 
                if not In_Open_Scopes (Inst_Par)
                  and then Nkind (Parent (Gen_Id)) not in
@@ -8421,38 +8499,48 @@ package body Sem_Ch12 is
             Set_Associated_Node (N, New_N);
 
          else
-            if Present (Get_Associated_Node (N))
-              and then Nkind (Get_Associated_Node (N)) = Nkind (N)
-            then
-               --  In the generic the aggregate has some composite type. If at
-               --  the point of instantiation the type has a private view,
-               --  install the full view (and that of its ancestors, if any).
+            --  If, in the generic, the aggregate has a global composite type
+            --  and, at the point of instantiation, the type has a private view
+            --  then install the full view.
 
+            declare
+               Assoc : constant Node_Id := Get_Associated_Node (N);
+
+            begin
+               if Present (Assoc)
+                 and then Nkind (Assoc) = Nkind (N)
+                 and then Present (Etype (Assoc))
+                 and then Is_Private_Type (Etype (Assoc))
+               then
+                  Switch_View (Etype (Assoc));
+               end if;
+            end;
+
+            --  Moreover, for a full aggregate, if the type is a derived tagged
+            --  type and has a global ancestor, then also restore the full view
+            --  of this ancestor and do so up to the root type. Beware that the
+            --  Ancestor_Type field is overloaded, so test that it's an entity.
+
+            if Nkind (N) = N_Aggregate
+              and then Present (Ancestor_Type (N))
+              and then Nkind (Ancestor_Type (N)) in N_Entity
+            then
                declare
-                  T   : Entity_Id := Etype (Get_Associated_Node (N));
-                  Rt  : Entity_Id;
+                  Root_Typ : constant Entity_Id :=
+                               Root_Type (Ancestor_Type (N));
+
+                  Typ : Entity_Id := Ancestor_Type (N);
 
                begin
-                  if Present (T) and then Is_Private_Type (T) then
-                     Switch_View (T);
-                  end if;
+                  loop
+                     if Is_Private_Type (Typ) then
+                        Switch_View (Typ);
+                     end if;
 
-                  if Present (T)
-                    and then Is_Tagged_Type (T)
-                    and then Is_Derived_Type (T)
-                  then
-                     Rt := Root_Type (T);
+                     exit when Typ = Root_Typ;
 
-                     loop
-                        T := Etype (T);
-
-                        if Is_Private_Type (T) then
-                           Switch_View (T);
-                        end if;
-
-                        exit when T = Rt;
-                     end loop;
-                  end if;
+                     Typ := Etype (Typ);
+                  end loop;
                end;
             end if;
          end if;
@@ -16431,6 +16519,36 @@ package body Sem_Ch12 is
             if No (N2) or else No (Typ) or else not Is_Global (Typ) then
                Set_Associated_Node (N, Empty);
 
+               --  For a full aggregate, if the type is local but is a derived
+               --  tagged type of a global ancestor, we will need to have the
+               --  full view of this global ancestor available in the instance
+               --  in order to analyze the full aggregate.
+
+               if Present (N2)
+                 and then Nkind (N2) = N_Aggregate
+                 and then Present (Typ)
+                 and then Is_Tagged_Type (Typ)
+                 and then Is_Derived_Type (Typ)
+               then
+                  declare
+                     Root_Typ : constant Entity_Id := Root_Type (Typ);
+
+                     Parent_Typ : Entity_Id := Typ;
+
+                  begin
+                     loop
+                        Parent_Typ := Etype (Parent_Typ);
+
+                        if Is_Global (Parent_Typ) then
+                           Set_Ancestor_Type (N, Parent_Typ);
+                           exit;
+                        end if;
+
+                        exit when Parent_Typ = Root_Typ;
+                     end loop;
+                  end;
+               end if;
+
                --  If the aggregate is an actual in a call, it has been
                --  resolved in the current context, to some local type. The
                --  enclosing call may have been disambiguated by the aggregate,
@@ -16469,6 +16587,19 @@ package body Sem_Ch12 is
                       Subtype_Mark => Nam,
                       Expression   => Relocate_Node (N));
                end if;
+
+            --  For a full aggregate, if the type is global and a derived
+            --  tagged type, we will also need to have the full view of its
+            --  ancestor available in the instance in order to analyze the
+            --  full aggregate.
+
+            elsif Present (N2)
+              and then Nkind (N2) = N_Aggregate
+              and then Present (Typ)
+              and then Is_Tagged_Type (Typ)
+              and then Is_Derived_Type (Typ)
+            then
+               Set_Ancestor_Type (N, Etype (Typ));
             end if;
 
             if Nkind (N) = N_Aggregate then

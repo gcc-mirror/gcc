@@ -2562,7 +2562,6 @@ loongarch_split_const_insns (rtx x)
   return low + high;
 }
 
-bool loongarch_split_move_insn_p (rtx dest, rtx src);
 /* Return one word of 128-bit value OP, taking into account the fixed
    endianness of certain registers.  BYTE selects from the byte address.  */
 
@@ -2602,7 +2601,7 @@ loongarch_load_store_insns (rtx mem, rtx_insn *insn)
     {
       set = single_set (insn);
       if (set
-	  && !loongarch_split_move_insn_p (SET_DEST (set), SET_SRC (set)))
+	  && !loongarch_split_move_p (SET_DEST (set), SET_SRC (set)))
 	might_split_p = false;
     }
 
@@ -2998,7 +2997,29 @@ loongarch_legitimize_tls_address (rtx loc)
 
     case TLS_MODEL_LOCAL_EXEC:
 	{
-	  /* la.tls.le; tp-relative add.  */
+	  /* la.tls.le; tp-relative add.
+
+	     normal:
+	      lu12i.w $rd, %le_hi20(sym)
+	      ori $rd, $rd, %le_lo12(sym)
+	      add.{w/d} $rd, $rd, $tp
+	      (st.{w/d}/ld.{w/d} $rs, $rd, 0)
+
+	     tls le relax:
+	      lu12i.w $rd, %le_hi20_r(sym)
+	      add.{w/d} $rd,$rd,$tp
+	      addi.{w/d} $rd,$rd,%le_lo12_r(sym)
+	      (st.{w/d}/ld.{w/d} $rs, $rd, 0)
+
+	     extreme (When the code model is set to extreme, the TLS le Relax
+	     instruction sequence is not generated):
+	      lu12i.w $rd, %le_hi20(sym)
+	      ori $rd, $rd, %le_lo12(sym)
+	      lu32i.d $rd, %le64_lo20(sym)
+	      lu52i.d $rd, $rd, %le64_hi12(sym)
+	      add.d $rd, $rd, $tp
+	      (st.{w/d}/ld.{w/d} $rs, $rd, 0)  */
+
 	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
 	  tmp1 = gen_reg_rtx (Pmode);
 	  dest = gen_reg_rtx (Pmode);
@@ -3009,7 +3030,20 @@ loongarch_legitimize_tls_address (rtx loc)
 	      tmp3 = gen_reg_rtx (Pmode);
 	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
 	      high = loongarch_force_temporary (tmp3, high);
-	      emit_insn (gen_ori_l_lo12 (Pmode, tmp1, high, tmp2));
+
+	      /* The assembler does not implement tls le relax support when the
+		 code model is extreme, so when the code model is extreme, the
+		 old symbol address acquisition method is still used.  */
+	      if (HAVE_AS_TLS_LE_RELAXATION && !TARGET_CMODEL_EXTREME)
+		{
+		  emit_insn (gen_add_tls_le_relax (Pmode, dest, high,
+						   tp, loc));
+		  loongarch_emit_move (dest,
+				       gen_rtx_LO_SUM (Pmode, dest, tmp2));
+		  return dest;
+		}
+	      else
+		emit_insn (gen_ori_l_lo12 (Pmode, tmp1, high, tmp2));
 
 	      if (TARGET_CMODEL_EXTREME)
 		{
@@ -3801,8 +3835,6 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total = (speed
 		  ? loongarch_cost->int_mult_si * 3 + 6
 		  : COSTS_N_INSNS (7));
-      else if (!speed)
-	*total = COSTS_N_INSNS (1) + 1;
       else if (mode == DImode)
 	*total = loongarch_cost->int_mult_di;
       else
@@ -3837,14 +3869,18 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
     case UDIV:
     case UMOD:
-      if (!speed)
-	{
-	  *total = COSTS_N_INSNS (loongarch_idiv_insns (mode));
-	}
-      else if (mode == DImode)
+      if (mode == DImode)
 	*total = loongarch_cost->int_div_di;
       else
-	*total = loongarch_cost->int_div_si;
+	{
+	  *total = loongarch_cost->int_div_si;
+	  if (TARGET_64BIT && !TARGET_DIV32)
+	    *total += COSTS_N_INSNS (2);
+	}
+
+      if (TARGET_CHECK_ZERO_DIV)
+	*total += COSTS_N_INSNS (2);
+
       return false;
 
     case SIGN_EXTEND:
@@ -3876,9 +3912,7 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		  && (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1))
 		      == ZERO_EXTEND))))
 	{
-	  if (!speed)
-	    *total = COSTS_N_INSNS (1) + 1;
-	  else if (mode == DImode)
+	  if (mode == DImode)
 	    *total = loongarch_cost->int_mult_di;
 	  else
 	    *total = loongarch_cost->int_mult_si;
@@ -4220,7 +4254,7 @@ loongarch_split_move_p (rtx dest, rtx src)
    SPLIT_TYPE describes the split condition.  */
 
 void
-loongarch_split_move (rtx dest, rtx src, rtx insn_)
+loongarch_split_move (rtx dest, rtx src)
 {
   rtx low_dest;
 
@@ -4256,33 +4290,6 @@ loongarch_split_move (rtx dest, rtx src, rtx insn_)
 	  loongarch_emit_move (low_dest, loongarch_subword (src, false));
 	  loongarch_emit_move (loongarch_subword (dest, true),
 			       loongarch_subword (src, true));
-	}
-    }
-
-  /* This is a hack.  See if the next insn uses DEST and if so, see if we
-     can forward SRC for DEST.  This is most useful if the next insn is a
-     simple store.  */
-  rtx_insn *insn = (rtx_insn *) insn_;
-  struct loongarch_address_info addr = {};
-  if (insn)
-    {
-      rtx_insn *next = next_nonnote_nondebug_insn_bb (insn);
-      if (next)
-	{
-	  rtx set = single_set (next);
-	  if (set && SET_SRC (set) == dest)
-	    {
-	      if (MEM_P (src))
-		{
-		  rtx tmp = XEXP (src, 0);
-		  loongarch_classify_address (&addr, tmp, GET_MODE (tmp),
-					      true);
-		  if (addr.reg && !reg_overlap_mentioned_p (dest, addr.reg))
-		    validate_change (next, &SET_SRC (set), src, false);
-		}
-	      else
-		validate_change (next, &SET_SRC (set), src, false);
-	    }
 	}
     }
 }
@@ -4329,23 +4336,6 @@ loongarch_split_plus_constant (rtx *op, machine_mode mode)
   op[1] = gen_int_mode (a, mode);
   v = v - (unsigned HOST_WIDE_INT) a;
   op[2] = gen_int_mode (v, mode);
-}
-
-/* Return true if a move from SRC to DEST in INSN should be split.  */
-
-bool
-loongarch_split_move_insn_p (rtx dest, rtx src)
-{
-  return loongarch_split_move_p (dest, src);
-}
-
-/* Split a move from SRC to DEST in INSN, given that
-   loongarch_split_move_insn_p holds.  */
-
-void
-loongarch_split_move_insn (rtx dest, rtx src, rtx insn)
-{
-  loongarch_split_move (dest, src, insn);
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  */
@@ -5123,29 +5113,6 @@ loongarch_zero_if_equal (rtx cmp0, rtx cmp1)
 		       OPTAB_DIRECT);
 }
 
-/* Allocate a floating-point condition-code register of mode MODE.  */
-
-static rtx
-loongarch_allocate_fcc (machine_mode mode)
-{
-  unsigned int regno, count;
-
-  gcc_assert (TARGET_HARD_FLOAT);
-
-  if (mode == FCCmode)
-    count = 1;
-  else
-    gcc_unreachable ();
-
-  cfun->machine->next_fcc += -cfun->machine->next_fcc & (count - 1);
-  if (cfun->machine->next_fcc > FCC_REG_LAST - FCC_REG_FIRST)
-    cfun->machine->next_fcc = 0;
-
-  regno = FCC_REG_FIRST + cfun->machine->next_fcc;
-  cfun->machine->next_fcc += count;
-  return gen_rtx_REG (mode, regno);
-}
-
 /* Sign- or zero-extend OP0 and OP1 for integer comparisons.  */
 
 static void
@@ -5260,7 +5227,7 @@ loongarch_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
      operands for FCMP.cond.fmt, instead a reversed condition code is
      required and a test for false.  */
   *code = NE;
-  *op0 = loongarch_allocate_fcc (FCCmode);
+  *op0 = gen_reg_rtx (FCCmode);
 
   *op1 = const0_rtx;
   loongarch_emit_binary (cmp_code, *op0, cmp_op0, cmp_op1);
@@ -5785,6 +5752,22 @@ loongarch_use_bstrins_for_ior_with_mask (machine_mode mode, rtx *op)
   return 0;
 }
 
+/* Rewrite a MEM for simple load/store under -mexplicit-relocs=auto
+   -mcmodel={normal/medium}.  */
+rtx
+loongarch_rewrite_mem_for_simple_ldst (rtx mem)
+{
+  rtx addr = XEXP (mem, 0);
+  rtx hi = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
+			   UNSPEC_PCALAU12I_GR);
+  rtx new_mem;
+
+  addr = gen_rtx_LO_SUM (Pmode, force_reg (Pmode, hi), addr);
+  new_mem = gen_rtx_MEM (GET_MODE (mem), addr);
+  MEM_COPY_ATTRIBUTES (new_mem, mem);
+  return new_mem;
+}
+
 /* Print the text for PRINT_OPERAND punctation character CH to FILE.
    The punctuation characters are:
 
@@ -5992,7 +5975,12 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
 	    gcc_unreachable ();
 	}
       else
-	reloc = hi_reloc ? "%le_hi20" : "%le_lo12";
+	{
+	  if (HAVE_AS_TLS_LE_RELAXATION && !TARGET_CMODEL_EXTREME)
+	    reloc = hi_reloc ? "%le_hi20_r" : "%le_lo12_r";
+	  else
+	    reloc = hi_reloc ? "%le_hi20" : "%le_lo12";
+	}
       break;
 
     case SYMBOL_TLSGD:
@@ -6630,7 +6618,7 @@ loongarch_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
   enum mode_class mclass;
 
   if (mode == FCCmode)
-    return FCC_REG_P (regno);
+    return FCC_REG_P (regno) || GP_REG_P (regno) || FP_REG_P (regno);
 
   size = GET_MODE_SIZE (mode);
   mclass = GET_MODE_CLASS (mode);
@@ -6845,6 +6833,9 @@ loongarch_move_to_gpr_cost (reg_class_t from)
       /* MOVFR2GR, etc.  */
       return 4;
 
+    case FCC_REGS:
+      return loongarch_cost->movcf2gr;
+
     default:
       return 0;
     }
@@ -6866,6 +6857,9 @@ loongarch_move_from_gpr_cost (reg_class_t to)
     case FP_REGS:
       /* MOVGR2FR, etc.  */
       return 4;
+
+    case FCC_REGS:
+      return loongarch_cost->movgr2cf;
 
     default:
       return 0;
@@ -6900,6 +6894,10 @@ loongarch_register_move_cost (machine_mode mode, reg_class_t from,
     return loongarch_move_from_gpr_cost (to);
   if (to == dregs)
     return loongarch_move_to_gpr_cost (from);
+
+  /* fcc -> fcc, fcc -> fpr, or fpr -> fcc. */
+  if (from == FCC_REGS || to == FCC_REGS)
+    return COSTS_N_INSNS (from == to ? 2 : 1);
 
   /* Handles cases that require a GPR temporary.  */
   cost1 = loongarch_move_to_gpr_cost (from);
@@ -6936,6 +6934,40 @@ loongarch_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   int regno;
 
   regno = true_regnum (x);
+
+  if (mode == FCCmode)
+    {
+      if (reg_class_subset_p (rclass, FCC_REGS) && !FP_REG_P (regno))
+	{
+	  if (FCC_REG_P (regno))
+	    return FP_REGS;
+
+	  auto fn = in_p ? loongarch_move_from_gpr_cost
+			 : loongarch_move_to_gpr_cost;
+
+	  if (fn (FCC_REGS) > fn (FP_REGS) + COSTS_N_INSNS (1))
+	    return FP_REGS;
+
+	  return GP_REG_P (regno) ? NO_REGS : GR_REGS;
+	}
+
+      if (reg_class_subset_p (rclass, GR_REGS) && FCC_REG_P (regno))
+	{
+	  auto fn = in_p ? loongarch_move_to_gpr_cost
+			 : loongarch_move_from_gpr_cost;
+
+	  if (fn (FCC_REGS) > fn (FP_REGS) + COSTS_N_INSNS (1))
+	    return FP_REGS;
+
+	  return NO_REGS;
+	}
+
+      if (reg_class_subset_p (rclass, FP_REGS)
+	  && (regno == -1 || MEM_P (x)))
+	return GR_REGS;
+
+      return NO_REGS;
+    }
 
   if (reg_class_subset_p (rclass, FP_REGS))
     {
@@ -10728,7 +10760,7 @@ loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
   machine_mode vmode = GET_MODE (target);
   machine_mode imode = GET_MODE_INNER (vmode);
   rtx same = XVECEXP (vals, 0, 0);
-  rtx temp, temp2;
+  rtx temp;
 
   if (CONST_INT_P (same) && nvar == 0
       && loongarch_signed_immediate_p (INTVAL (same), 10, 0))
@@ -10750,19 +10782,19 @@ loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
 	  gcc_unreachable ();
 	}
     }
-  temp = gen_reg_rtx (imode);
+
   if (imode == GET_MODE (same))
-    temp2 = same;
+    temp = same;
   else if (GET_MODE_SIZE (imode) >= UNITS_PER_WORD)
     {
       if (GET_CODE (same) == MEM)
 	{
 	  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
 	  loongarch_emit_move (reg_tmp, same);
-	  temp2 = simplify_gen_subreg (imode, reg_tmp, GET_MODE (reg_tmp), 0);
+	  temp = simplify_gen_subreg (imode, reg_tmp, GET_MODE (reg_tmp), 0);
 	}
       else
-	temp2 = simplify_gen_subreg (imode, same, GET_MODE (same), 0);
+	temp = simplify_gen_subreg (imode, same, GET_MODE (same), 0);
     }
   else
     {
@@ -10770,12 +10802,13 @@ loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
 	{
 	  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
 	  loongarch_emit_move (reg_tmp, same);
-	  temp2 = lowpart_subreg (imode, reg_tmp, GET_MODE (reg_tmp));
+	  temp = lowpart_subreg (imode, reg_tmp, GET_MODE (reg_tmp));
 	}
       else
-	temp2 = lowpart_subreg (imode, same, GET_MODE (same));
+	temp = lowpart_subreg (imode, same, GET_MODE (same));
     }
-  emit_move_insn (temp, temp2);
+
+  temp = force_reg (imode, temp);
 
   switch (vmode)
     {
@@ -10997,35 +11030,29 @@ loongarch_expand_vector_init (rtx target, rtx vals)
 			 to reduce the number of instructions.  */
 		      if (i == 1)
 			{
-			  op0 = gen_reg_rtx (imode);
-			  emit_move_insn (op0, val_hi[0]);
-			  op1 = gen_reg_rtx (imode);
-			  emit_move_insn (op1, val_hi[1]);
+			  op0 = force_reg (imode, val_hi[0]);
+			  op1 = force_reg (imode, val_hi[1]);
 			  emit_insn (
 			    loongarch_vec_repl2_256 (target_hi, op0, op1));
 			}
 		      else if (i > 1)
 			{
-			  op0 = gen_reg_rtx (imode);
-			  emit_move_insn (op0, val_hi[i]);
+			  op0 = force_reg (imode, val_hi[i]);
 			  emit_insn (
 			    loongarch_vec_set256 (target_hi, op0, GEN_INT (i)));
 			}
 		    }
 		  else
 		    {
+		      op0 = force_reg (imode, val_hi[i]);
 		      /* Assign the lowest element of val_hi to all elements
 			 of target_hi.  */
 		      if (i == 0)
 			{
-			  op0 = gen_reg_rtx (imode);
-			  emit_move_insn (op0, val_hi[0]);
 			  emit_insn (loongarch_vec_repl1_256 (target_hi, op0));
 			}
 		      else if (!rtx_equal_p (val_hi[i], val_hi[0]))
 			{
-			  op0 = gen_reg_rtx (imode);
-			  emit_move_insn (op0, val_hi[i]);
 			  emit_insn (
 			    loongarch_vec_set256 (target_hi, op0, GEN_INT (i)));
 			}
@@ -11033,18 +11060,15 @@ loongarch_expand_vector_init (rtx target, rtx vals)
 		}
 	      if (!lo_same && !half_same)
 		{
+		  op0 = force_reg (imode, val_lo[i]);
 		  /* Assign the lowest element of val_lo to all elements
 		     of target_lo.  */
 		  if (i == 0)
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val_lo[0]);
 		      emit_insn (loongarch_vec_repl1_128 (target_lo, op0));
 		    }
 		  else if (!rtx_equal_p (val_lo[i], val_lo[0]))
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val_lo[i]);
 		      emit_insn (
 			loongarch_vec_set128 (target_lo, op0, GEN_INT (i)));
 		    }
@@ -11076,16 +11100,13 @@ loongarch_expand_vector_init (rtx target, rtx vals)
 		     reduce the number of instructions.  */
 		  if (i == 1)
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val[0]);
-		      op1 = gen_reg_rtx (imode);
-		      emit_move_insn (op1, val[1]);
+		      op0 = force_reg (imode, val[0]);
+		      op1 = force_reg (imode, val[1]);
 		      emit_insn (loongarch_vec_repl2_128 (target, op0, op1));
 		    }
 		  else if (i > 1)
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val[i]);
+		      op0 = force_reg (imode, val[i]);
 		      emit_insn (
 			loongarch_vec_set128 (target, op0, GEN_INT (i)));
 		    }
@@ -11098,18 +11119,15 @@ loongarch_expand_vector_init (rtx target, rtx vals)
 			loongarch_vec_mirror (target, target, const0_rtx));
 		      return;
 		    }
+		  op0 = force_reg (imode, val[i]);
 		  /* Assign the lowest element of val to all elements of
 		     target.  */
 		  if (i == 0)
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val[0]);
 		      emit_insn (loongarch_vec_repl1_128 (target, op0));
 		    }
 		  else if (!rtx_equal_p (val[i], val[0]))
 		    {
-		      op0 = gen_reg_rtx (imode);
-		      emit_move_insn (op0, val[i]);
 		      emit_insn (
 			loongarch_vec_set128 (target, op0, GEN_INT (i)));
 		    }
@@ -11136,8 +11154,8 @@ loongarch_expand_vector_init (rtx target, rtx vals)
       return;
     }
 
-  /* Loongson is the only cpu with vectors with more elements.  */
-  gcc_assert (0);
+  /* No LoongArch CPU supports vectors with more elements as at now.  */
+  gcc_unreachable ();
 }
 
 /* Implement HARD_REGNO_CALLER_SAVE_MODE.  */
@@ -11161,7 +11179,6 @@ static void
 loongarch_expand_lsx_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
 {
   machine_mode cmp_mode = GET_MODE (op0);
-  int unspec = -1;
   bool negate = false;
 
   switch (cmp_mode)
@@ -11203,66 +11220,9 @@ loongarch_expand_lsx_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
 
     case E_V4SFmode:
     case E_V2DFmode:
-      switch (cond)
-	{
-	case UNORDERED:
-	case ORDERED:
-	case EQ:
-	case NE:
-	case UNEQ:
-	case UNLE:
-	case UNLT:
-	  break;
-	case LTGT: cond = NE; break;
-	case UNGE: cond = UNLE; std::swap (op0, op1); break;
-	case UNGT: cond = UNLT; std::swap (op0, op1); break;
-	case LE: unspec = UNSPEC_LSX_VFCMP_SLE; break;
-	case LT: unspec = UNSPEC_LSX_VFCMP_SLT; break;
-	case GE: unspec = UNSPEC_LSX_VFCMP_SLE; std::swap (op0, op1); break;
-	case GT: unspec = UNSPEC_LSX_VFCMP_SLT; std::swap (op0, op1); break;
-	default:
-		 gcc_unreachable ();
-	}
-      if (unspec < 0)
-	loongarch_emit_binary (cond, dest, op0, op1);
-      else
-	{
-	  rtx x = gen_rtx_UNSPEC (GET_MODE (dest),
-				  gen_rtvec (2, op0, op1), unspec);
-	  emit_insn (gen_rtx_SET (dest, x));
-	}
-      break;
-
     case E_V8SFmode:
     case E_V4DFmode:
-      switch (cond)
-	{
-	case UNORDERED:
-	case ORDERED:
-	case EQ:
-	case NE:
-	case UNEQ:
-	case UNLE:
-	case UNLT:
-	  break;
-	case LTGT: cond = NE; break;
-	case UNGE: cond = UNLE; std::swap (op0, op1); break;
-	case UNGT: cond = UNLT; std::swap (op0, op1); break;
-	case LE: unspec = UNSPEC_LASX_XVFCMP_SLE; break;
-	case LT: unspec = UNSPEC_LASX_XVFCMP_SLT; break;
-	case GE: unspec = UNSPEC_LASX_XVFCMP_SLE; std::swap (op0, op1); break;
-	case GT: unspec = UNSPEC_LASX_XVFCMP_SLT; std::swap (op0, op1); break;
-	default:
-		 gcc_unreachable ();
-	}
-      if (unspec < 0)
-	loongarch_emit_binary (cond, dest, op0, op1);
-      else
-	{
-	  rtx x = gen_rtx_UNSPEC (GET_MODE (dest),
-				  gen_rtvec (2, op0, op1), unspec);
-	  emit_insn (gen_rtx_SET (dest, x));
-	}
+      loongarch_emit_binary (cond, dest, op0, op1);
       break;
 
     default:

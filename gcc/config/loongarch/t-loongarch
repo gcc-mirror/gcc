@@ -67,6 +67,10 @@ loongarch-cpu.o: $(srcdir)/config/loongarch/loongarch-cpu.cc $(LA_STR_H) \
 loongarch-def.o: $(srcdir)/config/loongarch/loongarch-def.cc $(LA_STR_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
+loongarch-d.o: $(srcdir)/config/loongarch/loongarch-d.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 $(srcdir)/config/loongarch/loongarch.opt: s-loongarch-opt ; @true
 s-loongarch-opt: $(srcdir)/config/loongarch/genopts/genstr.sh \
 	$(srcdir)/config/loongarch/genopts/loongarch.opt.in \

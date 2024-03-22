@@ -1,7 +1,7 @@
 /* Verify zero initialization for nested structure type automatic variables with
    padding.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=zero" } */
+/* { dg-options "-O -ftrivial-auto-var-init=zero" } */
 
 struct test_aligned {
         unsigned internal1;
@@ -16,11 +16,12 @@ struct test_big_hole {
         struct test_aligned four;
 } __attribute__ ((aligned(64)));
 
+void bar (struct test_big_hole *);
 
-int foo ()
+void foo ()
 {
   struct test_big_hole var;
-  return var.four.internal1;
+  bar (&var);
 }
 
 /* { dg-final { scan-assembler-times {stp\tq[0-9]+, q[0-9]+,} 4 } } */

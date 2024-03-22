@@ -73,6 +73,7 @@
   UNSPEC_LOAD_FROM_GOT
   UNSPEC_PCALAU12I
   UNSPEC_PCALAU12I_GR
+  UNSPEC_ADD_TLS_LE_RELAX
   UNSPEC_ORI_L_LO12
   UNSPEC_LUI_L_HI20
   UNSPEC_LUI_H_LO20
@@ -1486,10 +1487,10 @@
                           (match_operand:GPR 2 "const_int_operand"))
 		 (and:GPR (match_operand:GPR 3 "register_operand")
 			  (match_operand:GPR 4 "const_int_operand"))))]
-  "loongarch_pre_reload_split () && \
-   loongarch_use_bstrins_for_ior_with_mask (<MODE>mode, operands)"
+  "loongarch_pre_reload_split ()
+   && loongarch_use_bstrins_for_ior_with_mask (<MODE>mode, operands)"
   "#"
-  ""
+  "&& true"
   [(set (match_dup 0) (match_dup 1))
    (set (zero_extract:GPR (match_dup 0) (match_dup 2) (match_dup 4))
 	(match_dup 3))]
@@ -2283,11 +2284,72 @@
 
 ;; Clear one FCC register
 
-(define_insn "movfcc"
-  [(set (match_operand:FCC 0 "register_operand" "=z")
-	(const_int 0))]
+(define_expand "movfcc"
+  [(set (match_operand:FCC 0 "")
+	(match_operand:FCC 1 ""))]
+  "TARGET_HARD_FLOAT"
+{
+  if (memory_operand (operands[0], FCCmode)
+      && memory_operand (operands[1], FCCmode))
+    operands[1] = force_reg (FCCmode, operands[1]);
+})
+
+(define_insn "movfcc_internal"
+  [(set (match_operand:FCC 0 "nonimmediate_operand"
+			     "=z,z,*f,*f,*r,*r,*m,*f,*r,z,*r")
+	(match_operand:FCC 1 "reg_or_0_operand"
+			     "J,*f,z,*f,J*r,*m,J*r,J*r,*f,*r,z"))]
+  "TARGET_HARD_FLOAT"
+  "@
+   fcmp.caf.s\t%0,$f0,$f0
+   movfr2cf\t%0,%1
+   movcf2fr\t%0,%1
+   fmov.s\t%0,%1
+   or\t%0,%z1,$r0
+   ld.b\t%0,%1
+   st.b\t%z1,%0
+   movgr2fr.w\t%0,%1
+   movfr2gr.s\t%0,%1
+   movgr2cf\t%0,%1
+   movcf2gr\t%0,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "FCC")])
+
+(define_insn "fcc_to_<X:mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(if_then_else:X (ne (match_operand:FCC 1 "register_operand" "0")
+			    (const_int 0))
+			(const_int 1)
+			(const_int 0)))]
+  "TARGET_HARD_FLOAT"
   ""
-  "fcmp.caf.s\t%0,$f0,$f0")
+  [(set_attr "length" "0")
+   (set_attr "type" "ghost")])
+
+(define_expand "cstore<ANYF:mode>4"
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operator:SI 1 "loongarch_fcmp_operator"
+	  [(match_operand:ANYF 2 "register_operand")
+	   (match_operand:ANYF 3 "register_operand")]))]
+  ""
+  {
+    rtx fcc = gen_reg_rtx (FCCmode);
+    rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), FCCmode,
+			      operands[2], operands[3]);
+
+    emit_insn (gen_rtx_SET (fcc, cmp));
+    if (TARGET_64BIT)
+      {
+	rtx gpr = gen_reg_rtx (DImode);
+	emit_insn (gen_fcc_to_di (gpr, fcc));
+	emit_insn (gen_rtx_SET (operands[0],
+				lowpart_subreg (SImode, gpr, DImode)));
+      }
+    else
+      emit_insn (gen_fcc_to_si (operands[0], fcc));
+
+    DONE;
+  })
 
 ;; Conditional move instructions.
 
@@ -2441,6 +2503,17 @@
   ""
   "pcalau12i\t%0,%%pc_hi20(%1)"
   [(set_attr "type" "move")])
+
+(define_insn "@add_tls_le_relax<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "register_operand" "r")
+		   (match_operand:P 2 "register_operand" "r")
+		   (match_operand:P 3 "symbolic_operand")]
+	  UNSPEC_ADD_TLS_LE_RELAX))]
+  "HAVE_AS_TLS_LE_RELAXATION"
+  "add.<d>\t%0,%1,%2,%%le_add_r(%3)"
+  [(set_attr "type" "move")]
+)
 
 (define_insn "@ori_l_lo12<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
@@ -2832,6 +2905,28 @@
   [(set_attr "type" "shift,shift")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "rotrsi3_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(sign_extend:DI
+	  (rotatert:SI (match_operand:SI 1 "register_operand" "r,r")
+		       (match_operand:SI 2 "arith_operand" "r,I"))))]
+  "TARGET_64BIT"
+  "rotr%i2.w\t%0,%1,%2"
+  [(set_attr "type" "shift,shift")
+   (set_attr "mode" "SI")])
+
+;; Expand left rotate to right rotate.
+(define_expand "rotl<mode>3"
+  [(set (match_dup 3)
+	(neg:SI (match_operand:SI 2 "register_operand")))
+   (set (match_operand:GPR 0 "register_operand")
+	(rotatert:GPR (match_operand:GPR 1 "register_operand")
+		      (match_dup 3)))]
+  ""
+  {
+    operands[3] = gen_reg_rtx (SImode);
+  });
+
 ;; The following templates were added to generate "bstrpick.d + alsl.d"
 ;; instruction pairs.
 ;; It is required that the values of const_immalsl_operand and
@@ -2873,6 +2968,18 @@
   "alsl.<d>\t%0,%1,%3,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
+
+(define_insn "alslsi3_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (plus:SI
+	    (ashift:SI (match_operand:SI 1 "register_operand" "r")
+		       (match_operand 2 "const_immalsl_operand" ""))
+	    (match_operand:SI 3 "register_operand" "r"))))]
+  ""
+  "alsl.w\t%0,%1,%3,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
 
 
 
@@ -4040,101 +4147,41 @@
 ;;
 ;; And if the pseudo op cannot be relaxed, we'll get a worse result (with
 ;; 3 instructions).
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:LD_AT_LEAST_32_BIT 2 "register_operand")
-	(mem:LD_AT_LEAST_32_BIT (match_dup 0)))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0]) \
-       || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2)
-	(mem:LD_AT_LEAST_32_BIT (lo_sum:P (match_dup 0) (match_dup 1))))]
+(define_insn_and_rewrite "simple_load<mode>"
+  [(set (match_operand:LD_AT_LEAST_32_BIT 0 "register_operand" "=r,f")
+	(match_operand:LD_AT_LEAST_32_BIT 1 "mem_simple_ldst_operand" ""))]
+  "loongarch_pre_reload_split ()
+   && la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO
+   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM)"
+  "#"
+  "&& true"
   {
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
+    operands[1] = loongarch_rewrite_mem_for_simple_ldst (operands[1]);
   })
 
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:LD_AT_LEAST_32_BIT 2 "register_operand")
-	(mem:LD_AT_LEAST_32_BIT (plus (match_dup 0)
-				(match_operand 3 "const_int_operand"))))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0]) \
-       || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2)
-	(mem:LD_AT_LEAST_32_BIT (lo_sum:P (match_dup 0) (match_dup 1))))]
-  {
-    operands[1] = plus_constant (Pmode, operands[1], INTVAL (operands[3]));
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
-  })
-
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:GPR 2 "register_operand")
-	(any_extend:GPR (mem:SUBDI (match_dup 0))))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0]) \
-       || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2)
-	(any_extend:GPR (mem:SUBDI (lo_sum:P (match_dup 0)
-					     (match_dup 1)))))]
-  {
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
-  })
-
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:GPR 2 "register_operand")
+(define_insn_and_rewrite "simple_load_<su>ext<SUBDI:mode><GPR:mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
 	(any_extend:GPR
-	  (mem:SUBDI (plus (match_dup 0)
-			   (match_operand 3 "const_int_operand")))))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0]) \
-       || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2)
-	(any_extend:GPR (mem:SUBDI (lo_sum:P (match_dup 0)
-					     (match_dup 1)))))]
+	  (match_operand:SUBDI 1 "mem_simple_ldst_operand" "")))]
+  "loongarch_pre_reload_split ()
+   && la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO
+   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM)"
+  "#"
+  "&& true"
   {
-    operands[1] = plus_constant (Pmode, operands[1], INTVAL (operands[3]));
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
+    operands[1] = loongarch_rewrite_mem_for_simple_ldst (operands[1]);
   })
 
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (mem:ST_ANY (match_dup 0))
-	(match_operand:ST_ANY 2 "register_operand"))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0])) \
-   && REGNO (operands[0]) != REGNO (operands[2])"
-  [(set (mem:ST_ANY (lo_sum:P (match_dup 0) (match_dup 1))) (match_dup 2))]
+(define_insn_and_rewrite "simple_store<mode>"
+  [(set (match_operand:ST_ANY 0 "mem_simple_ldst_operand" "")
+	(match_operand:ST_ANY 1 "reg_or_0_operand" "r,f"))]
+  "loongarch_pre_reload_split ()
+   && la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO
+   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM)"
+  "#"
+  "&& true"
   {
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
-  })
-
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (mem:ST_ANY (plus (match_dup 0)
-			  (match_operand 3 "const_int_operand")))
-	(match_operand:ST_ANY 2 "register_operand"))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0])) \
-   && REGNO (operands[0]) != REGNO (operands[2])"
-  [(set (mem:ST_ANY (lo_sum:P (match_dup 0) (match_dup 1))) (match_dup 2))]
-  {
-    operands[1] = plus_constant (Pmode, operands[1], INTVAL (operands[3]));
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
+    operands[0] = loongarch_rewrite_mem_for_simple_ldst (operands[0]);
   })
 
 ;; Synchronization instructions.

@@ -289,7 +289,7 @@ ix86_broadcast (HOST_WIDE_INT v, unsigned int width,
 
 /* Convert the CONST_WIDE_INT operand OP to broadcast in MODE.  */
 
-static rtx
+rtx
 ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
 {
   /* Don't use integer vector broadcast if we can't move from GPR to SSE
@@ -540,14 +540,6 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 		  emit_move_insn (op0, temp);
 		  return;
 		}
-	    }
-	  else if (CONST_WIDE_INT_P (op1)
-		   && GET_MODE_SIZE (mode) >= 16)
-	    {
-	      rtx tmp = ix86_convert_const_wide_int_to_broadcast
-		(GET_MODE (op0), op1);
-	      if (tmp != nullptr)
-		op1 = tmp;
 	    }
 	}
     }
@@ -1543,6 +1535,23 @@ ix86_expand_unary_operator (enum rtx_code code, machine_mode mode,
   /* Fix up the destination if needed.  */
   if (dst != operands[0])
     emit_move_insn (operands[0], dst);
+}
+
+/* Return TRUE or FALSE depending on whether the unary operator meets the
+   appropriate constraints.  */
+
+bool
+ix86_unary_operator_ok (enum rtx_code,
+			machine_mode,
+			rtx operands[2],
+			bool use_ndd)
+{
+  /* If one of operands is memory, source and destination must match.  */
+  if ((MEM_P (operands[0])
+       || (!use_ndd && MEM_P (operands[1])))
+      && ! rtx_equal_p (operands[0], operands[1]))
+    return false;
+  return true;
 }
 
 /* Predict just emitted jump instruction to be taken with probability PROB.  */
@@ -6323,18 +6332,15 @@ ix86_split_long_move (rtx operands[])
 	}
     }
 
-  /* If optimizing for size, attempt to locally unCSE nonzero constants.  */
-  if (optimize_insn_for_size_p ())
-    {
-      for (j = 0; j < nparts - 1; j++)
-	if (CONST_INT_P (operands[6 + j])
-	    && operands[6 + j] != const0_rtx
-	    && REG_P (operands[2 + j]))
-	  for (i = j; i < nparts - 1; i++)
-	    if (CONST_INT_P (operands[7 + i])
-		&& INTVAL (operands[7 + i]) == INTVAL (operands[6 + j]))
-	      operands[7 + i] = operands[2 + j];
-    }
+  /* Attempt to locally unCSE nonzero constants.  */
+  for (j = 0; j < nparts - 1; j++)
+    if (CONST_INT_P (operands[6 + j])
+	&& operands[6 + j] != const0_rtx
+	&& REG_P (operands[2 + j]))
+      for (i = j; i < nparts - 1; i++)
+	if (CONST_INT_P (operands[7 + i])
+	    && INTVAL (operands[7 + i]) == INTVAL (operands[6 + j]))
+	  operands[7 + i] = operands[2 + j];
 
   for (i = 0; i < nparts; i++)
     emit_move_insn (operands[2 + i], operands[6 + i]);

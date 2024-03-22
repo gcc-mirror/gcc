@@ -7124,7 +7124,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					     INTENT_IN, fsym->attr.pointer);
 		}
 	      else if (fsym && fsym->attr.contiguous
-		       && !gfc_is_simply_contiguous (e, false, true)
+		       && (fsym->attr.target
+			   ? gfc_is_not_contiguous (e)
+			   : !gfc_is_simply_contiguous (e, false, true))
 		       && gfc_expr_is_variable (e))
 		{
 		  gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
@@ -9763,7 +9765,9 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
 	 executable construct containing the reference. This, in fact,
 	 was later deleted by the Combined Techical Corrigenda 1 TO 4 for
 	 fortran 2008 (f08/0011).  */
-      if (!gfc_notification_std (GFC_STD_F2018_DEL) && expr->must_finalize
+      if ((gfc_option.allow_std & (GFC_STD_F2008 | GFC_STD_F2003))
+	  && !(gfc_option.allow_std & GFC_STD_GNU)
+	  && expr->must_finalize
 	  && gfc_may_be_finalized (expr->ts))
 	{
 	  gfc_warning (0, "The structure constructor at %C has been"

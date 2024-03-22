@@ -523,6 +523,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// is_array
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_array)
+  template<typename _Tp>
+    struct is_array
+    : public __bool_constant<__is_array(_Tp)>
+    { };
+#else
   template<typename>
     struct is_array
     : public false_type { };
@@ -534,6 +540,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_array<_Tp[]>
     : public true_type { };
+#endif
 
   template<typename>
     struct __is_pointer_helper
@@ -567,6 +574,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_rvalue_reference<_Tp&&>
     : public true_type { };
 
+  /// is_member_object_pointer
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_member_object_pointer)
+  template<typename _Tp>
+    struct is_member_object_pointer
+    : public __bool_constant<__is_member_object_pointer(_Tp)>
+    { };
+#else
   template<typename>
     struct __is_member_object_pointer_helper
     : public false_type { };
@@ -575,12 +589,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_member_object_pointer_helper<_Tp _Cp::*>
     : public __not_<is_function<_Tp>>::type { };
 
-  /// is_member_object_pointer
+
   template<typename _Tp>
     struct is_member_object_pointer
     : public __is_member_object_pointer_helper<__remove_cv_t<_Tp>>::type
     { };
+#endif
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_member_function_pointer)
+  /// is_member_function_pointer
+  template<typename _Tp>
+    struct is_member_function_pointer
+    : public __bool_constant<__is_member_function_pointer(_Tp)>
+    { };
+#else
   template<typename>
     struct __is_member_function_pointer_helper
     : public false_type { };
@@ -594,6 +616,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_member_function_pointer
     : public __is_member_function_pointer_helper<__remove_cv_t<_Tp>>::type
     { };
+#endif
 
   /// is_enum
   template<typename _Tp>
@@ -614,6 +637,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// is_function
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_function)
+  template<typename _Tp>
+    struct is_function
+    : public __bool_constant<__is_function(_Tp)>
+    { };
+#else
   template<typename _Tp>
     struct is_function
     : public __bool_constant<!is_const<const _Tp>::value> { };
@@ -625,6 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_function<_Tp&&>
     : public false_type { };
+#endif
 
 #ifdef __cpp_lib_is_null_pointer // C++ >= 11
   /// is_null_pointer (LWG 2247).
@@ -659,6 +689,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Composite type categories.
 
   /// is_reference
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_reference)
+  template<typename _Tp>
+    struct is_reference
+    : public __bool_constant<__is_reference(_Tp)>
+    { };
+#else
   template<typename _Tp>
     struct is_reference
     : public false_type
@@ -673,6 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_reference<_Tp&&>
     : public true_type
     { };
+#endif
 
   /// is_arithmetic
   template<typename _Tp>
@@ -688,11 +725,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// is_object
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_object)
+  template<typename _Tp>
+    struct is_object
+    : public __bool_constant<__is_object(_Tp)>
+    { };
+#else
   template<typename _Tp>
     struct is_object
     : public __not_<__or_<is_function<_Tp>, is_reference<_Tp>,
                           is_void<_Tp>>>::type
     { };
+#endif
 
   template<typename>
     struct is_member_pointer;
@@ -709,6 +753,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_compound
     : public __not_<is_fundamental<_Tp>>::type { };
 
+  /// is_member_pointer
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_member_pointer)
+  template<typename _Tp>
+    struct is_member_pointer
+    : public __bool_constant<__is_member_pointer(_Tp)>
+    { };
+#else
   /// @cond undocumented
   template<typename _Tp>
     struct __is_member_pointer_helper
@@ -719,11 +770,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
   /// @endcond
 
-  /// is_member_pointer
   template<typename _Tp>
     struct is_member_pointer
     : public __is_member_pointer_helper<__remove_cv_t<_Tp>>::type
     { };
+#endif
 
   template<typename, typename>
     struct is_same;
@@ -2038,6 +2089,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Pointer modifications.
 
+  /// remove_pointer
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__remove_pointer)
+  template<typename _Tp>
+    struct remove_pointer
+    { using type = __remove_pointer(_Tp); };
+#else
   template<typename _Tp, typename>
     struct __remove_pointer_helper
     { using type = _Tp; };
@@ -2046,11 +2103,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __remove_pointer_helper<_Tp, _Up*>
     { using type = _Up; };
 
-  /// remove_pointer
   template<typename _Tp>
     struct remove_pointer
     : public __remove_pointer_helper<_Tp, __remove_cv_t<_Tp>>
     { };
+#endif
 
   template<typename _Tp, typename = void>
     struct __add_pointer_helper
@@ -3169,12 +3226,17 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr bool is_floating_point_v = is_floating_point<_Tp>::value;
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_array)
+template <typename _Tp>
+  inline constexpr bool is_array_v = __is_array(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_array_v = false;
 template <typename _Tp>
   inline constexpr bool is_array_v<_Tp[]> = true;
 template <typename _Tp, size_t _Num>
   inline constexpr bool is_array_v<_Tp[_Num]> = true;
+#endif
 
 template <typename _Tp>
   inline constexpr bool is_pointer_v = is_pointer<_Tp>::value;
@@ -3186,42 +3248,90 @@ template <typename _Tp>
   inline constexpr bool is_rvalue_reference_v = false;
 template <typename _Tp>
   inline constexpr bool is_rvalue_reference_v<_Tp&&> = true;
+
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_member_object_pointer)
+template <typename _Tp>
+  inline constexpr bool is_member_object_pointer_v =
+    __is_member_object_pointer(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_member_object_pointer_v =
     is_member_object_pointer<_Tp>::value;
+#endif
+
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_member_function_pointer)
+template <typename _Tp>
+  inline constexpr bool is_member_function_pointer_v =
+    __is_member_function_pointer(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_member_function_pointer_v =
     is_member_function_pointer<_Tp>::value;
+#endif
+
 template <typename _Tp>
   inline constexpr bool is_enum_v = __is_enum(_Tp);
 template <typename _Tp>
   inline constexpr bool is_union_v = __is_union(_Tp);
 template <typename _Tp>
   inline constexpr bool is_class_v = __is_class(_Tp);
+// is_function_v is defined below, after is_const_v.
+
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_reference)
 template <typename _Tp>
-  inline constexpr bool is_function_v = is_function<_Tp>::value;
+  inline constexpr bool is_reference_v = __is_reference(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_reference_v = false;
 template <typename _Tp>
   inline constexpr bool is_reference_v<_Tp&> = true;
 template <typename _Tp>
   inline constexpr bool is_reference_v<_Tp&&> = true;
+#endif
+
 template <typename _Tp>
   inline constexpr bool is_arithmetic_v = is_arithmetic<_Tp>::value;
 template <typename _Tp>
   inline constexpr bool is_fundamental_v = is_fundamental<_Tp>::value;
+
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_object)
+template <typename _Tp>
+  inline constexpr bool is_object_v = __is_object(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_object_v = is_object<_Tp>::value;
+#endif
+
 template <typename _Tp>
   inline constexpr bool is_scalar_v = is_scalar<_Tp>::value;
 template <typename _Tp>
   inline constexpr bool is_compound_v = is_compound<_Tp>::value;
+
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_member_pointer)
+template <typename _Tp>
+  inline constexpr bool is_member_pointer_v = __is_member_pointer(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_member_pointer_v = is_member_pointer<_Tp>::value;
+#endif
+
 template <typename _Tp>
   inline constexpr bool is_const_v = false;
 template <typename _Tp>
   inline constexpr bool is_const_v<const _Tp> = true;
+
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_function)
+template <typename _Tp>
+  inline constexpr bool is_function_v = __is_function(_Tp);
+#else
+template <typename _Tp>
+  inline constexpr bool is_function_v = !is_const_v<const _Tp>;
+template <typename _Tp>
+  inline constexpr bool is_function_v<_Tp&> = false;
+template <typename _Tp>
+  inline constexpr bool is_function_v<_Tp&&> = false;
+#endif
+
 template <typename _Tp>
   inline constexpr bool is_volatile_v = false;
 template <typename _Tp>
@@ -3494,11 +3604,16 @@ template<typename _Ret, typename _Fn, typename... _Args>
   /// True for a type that is an array of known bound.
   /// @ingroup variable_templates
   /// @since C++20
+# if _GLIBCXX_USE_BUILTIN_TRAIT(__is_bounded_array)
+  template<typename _Tp>
+    inline constexpr bool is_bounded_array_v = __is_bounded_array(_Tp);
+# else
   template<typename _Tp>
     inline constexpr bool is_bounded_array_v = false;
 
   template<typename _Tp, size_t _Size>
     inline constexpr bool is_bounded_array_v<_Tp[_Size]> = true;
+# endif
 
   /// True for a type that is an array of unknown bound.
   /// @ingroup variable_templates
@@ -3585,6 +3700,12 @@ template<typename _Ret, typename _Fn, typename... _Args>
   /// True if the type is a scoped enumeration type.
   /// @since C++23
 
+# if _GLIBCXX_USE_BUILTIN_TRAIT(__is_scoped_enum)
+  template<typename _Tp>
+    struct is_scoped_enum
+    : bool_constant<__is_scoped_enum(_Tp)>
+    { };
+# else
   template<typename _Tp>
     struct is_scoped_enum
     : false_type
@@ -3596,11 +3717,17 @@ template<typename _Ret, typename _Fn, typename... _Args>
     struct is_scoped_enum<_Tp>
     : bool_constant<!requires(_Tp __t, void(*__f)(int)) { __f(__t); }>
     { };
+# endif
 
   /// @ingroup variable_templates
   /// @since C++23
+# if _GLIBCXX_USE_BUILTIN_TRAIT(__is_scoped_enum)
+  template<typename _Tp>
+    inline constexpr bool is_scoped_enum_v = __is_scoped_enum(_Tp);
+# else
   template<typename _Tp>
     inline constexpr bool is_scoped_enum_v = is_scoped_enum<_Tp>::value;
+# endif
 #endif
 
 #ifdef __cpp_lib_reference_from_temporary // C++ >= 23 && ref_{converts,constructs}_from_temp

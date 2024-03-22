@@ -781,6 +781,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
   struct cgraph_simd_clone *sc = node->simdclone;
   unsigned i, k;
   poly_uint64 veclen;
+  auto_vec<tree> new_params;
 
   for (i = 0; i < sc->nargs; ++i)
     {
@@ -798,9 +799,11 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
       switch (sc->args[i].arg_type)
 	{
 	default:
+	  new_params.safe_push (parm_type);
 	  break;
 	case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP:
 	case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_VARIABLE_STEP:
+	  new_params.safe_push (parm_type);
 	  if (node->definition)
 	    sc->args[i].simd_array
 	      = create_tmp_simd_array (IDENTIFIER_POINTER (DECL_NAME (parm)),
@@ -828,6 +831,9 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	  else
 	    vtype = build_vector_type (parm_type, veclen);
 	  sc->args[i].vector_type = vtype;
+	  k = vector_unroll_factor (sc->simdlen, veclen);
+	  for (unsigned j = 0; j < k; j++)
+	    new_params.safe_push (vtype);
 
 	  if (node->definition)
 	    sc->args[i].simd_array
@@ -893,22 +899,8 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	last_parm_void = true;
 
       gcc_assert (TYPE_ARG_TYPES (TREE_TYPE (node->decl)));
-      for (i = 0; i < sc->nargs; i++)
-	{
-	  tree ptype;
-	  switch (sc->args[i].arg_type)
-	    {
-	    default:
-	      ptype = sc->args[i].orig_type;
-	      break;
-	    case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP:
-	    case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_VARIABLE_STEP:
-	    case SIMD_CLONE_ARG_TYPE_VECTOR:
-	      ptype = sc->args[i].vector_type;
-	      break;
-	    }
-	  new_arg_types = tree_cons (NULL_TREE, ptype, new_arg_types);
-	}
+      for (i = 0; i < new_params.length (); i++)
+	new_arg_types = tree_cons (NULL_TREE, new_params[i], new_arg_types);
       new_reversed = nreverse (new_arg_types);
       if (last_parm_void)
 	{

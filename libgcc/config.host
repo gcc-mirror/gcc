@@ -199,9 +199,11 @@ riscv*-*-*)
 	;;
 sparc64*-*-*)
 	cpu_type=sparc
+	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
+	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 s390*-*-*)
 	cpu_type=s390

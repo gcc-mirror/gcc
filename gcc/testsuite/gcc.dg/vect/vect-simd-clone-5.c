@@ -17,6 +17,7 @@ int d[N], e[N];
 #endif
 __attribute__((noinline)) long long int
 foo (int a, int b, int c)
+/* { dg-warning {unsupported simdlen 4 \(amdgcn\)} "" { target amdgcn*-*-* } .-1 } */
 {
   return a + b + c;
 }
@@ -45,5 +46,3 @@ main ()
       abort ();
   return 0;
 }
-
-/* { dg-warning {unsupported simdlen 4 \(amdgcn\)} "" { target amdgcn*-*-* } 15 } */

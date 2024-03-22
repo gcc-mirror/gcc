@@ -3012,7 +3012,9 @@ ix86_option_override_internal (bool main_args_p,
     {
       /* Set the maximum number of bits can be moved from memory to
 	 memory efficiently.  */
-      if (ix86_tune_features[X86_TUNE_AVX512_MOVE_BY_PIECES])
+      if (opts_set->x_prefer_vector_width_type != PVW_NONE)
+	opts->x_ix86_move_max = opts->x_prefer_vector_width_type;
+      else if (ix86_tune_features[X86_TUNE_AVX512_MOVE_BY_PIECES])
 	opts->x_ix86_move_max = PVW_AVX512;
       else if (ix86_tune_features[X86_TUNE_AVX256_MOVE_BY_PIECES])
 	opts->x_ix86_move_max = PVW_AVX256;
@@ -3034,7 +3036,9 @@ ix86_option_override_internal (bool main_args_p,
     {
       /* Set the maximum number of bits can be stored to memory
 	 efficiently.  */
-      if (ix86_tune_features[X86_TUNE_AVX512_STORE_BY_PIECES])
+      if (opts_set->x_prefer_vector_width_type != PVW_NONE)
+	opts->x_ix86_store_max = opts->x_prefer_vector_width_type;
+      else if (ix86_tune_features[X86_TUNE_AVX512_STORE_BY_PIECES])
 	opts->x_ix86_store_max = PVW_AVX512;
       else if (ix86_tune_features[X86_TUNE_AVX256_STORE_BY_PIECES])
 	opts->x_ix86_store_max = PVW_AVX256;

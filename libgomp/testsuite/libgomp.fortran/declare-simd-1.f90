@@ -1,5 +1,5 @@
-! { dg-do run { target vect_simd_clones } }
-! { dg-options "-fno-inline -cpp -D__aarch64__" }
+! { dg-do run { target { vect_simd_clones && { x86_64-*-* || i?86-*-* } } } }
+! { dg-options "-fno-inline" }
 ! { dg-additional-options "-msse2" { target sse2_runtime } }
 ! { dg-additional-options "-mavx" { target avx_runtime } }
 
@@ -75,11 +75,7 @@ end module declare_simd_1_mod
   end do
 contains
   function baz (x, y, z)
-#ifdef __aarch64__
-    !$omp declare simd (baz) simdlen (4) uniform (x, y)
-#else
     !$omp declare simd (baz) simdlen (8) uniform (x, y)
-#endif
     !$omp declare simd (baz)
     integer, value :: y
     real, value :: z
@@ -94,10 +90,6 @@ function bar (a, b, c)
   real :: bar
   double precision, value :: a
   !$omp declare simd (bar)
-#ifdef __aarch64__
-  !$omp declare simd (bar) simdlen (2) linear (b : 2)
-#else
   !$omp declare simd (bar) simdlen (4) linear (b : 2)
-#endif
   bar = a + b * c
 end function bar

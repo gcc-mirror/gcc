@@ -597,7 +597,7 @@ BEGIN
          LogicalOrOp        : FoldSetOr (tokenno, p, quad, op1, op2, op3) |
          LogicalAndOp       : FoldSetAnd (tokenno, p, quad, op1, op2, op3) |
          LogicalXorOp       : FoldSymmetricDifference (tokenno, p, quad, op1, op2, op3) |
-         BecomesOp          : FoldBecomes (tokenno, p, quad, op1, op3) |
+         BecomesOp          : FoldBecomes (p, quad) |
          ArithAddOp         : FoldArithAdd (op1pos, p, quad, op1, op2, op3) |
          AddOp              : FoldAdd (op1pos, p, quad, op1, op2, op3) |
          SubOp              : FoldSub (op1pos, p, quad, op1, op2, op3) |
@@ -2653,6 +2653,7 @@ BEGIN
    END
 END CheckStop ;
 
+
 (*
 ------------------------------------------------------------------------------
    := Operator
@@ -2660,96 +2661,205 @@ END CheckStop ;
    Sym1<I> := Sym3<I>           := produces a constant
 *)
 
-PROCEDURE FoldBecomes (tokenno: CARDINAL; p: WalkAction; quad: CARDINAL; op1, op3: CARDINAL) ;
+PROCEDURE FoldBecomes (p: WalkAction; quad: CARDINAL) ;
 VAR
-   location: location_t ;
+   op            : QuadOperator ;
+   des, op2, expr: CARDINAL ;
 BEGIN
-   TryDeclareConstant(tokenno, op3) ;  (* checks to see whether it is a constant literal and declares it *)
-   TryDeclareConstructor(tokenno, op3) ;
-   location := TokenToLocation(tokenno) ;
-   IF IsConst (op1) AND IsConstant (op3)
+   IF DeclaredOperandsBecomes (p, quad)
    THEN
-      (* constant folding taking place, but have we resolved op3 yet? *)
-      IF GccKnowsAbout (op3)
+      IF TypeCheckBecomes (p, quad)
       THEN
-         (* now we can tell gcc about the relationship between, op1 and op3 *)
-         (* RemoveSSAPlaceholder (quad, op1) ;  *)
-         IF GccKnowsAbout (op1)
-         THEN
-            MetaErrorT1 (tokenno, 'constant {%1Ead} should not be reassigned', op1)
-         ELSE
-            IF IsConstString(op3)
-            THEN
-               PutConstString(tokenno, op1, GetString(op3)) ;
-            ELSIF GetType(op1)=NulSym
-            THEN
-               Assert(GetType(op3)#NulSym) ;
-               PutConst(op1, GetType(op3))
-            END ;
-            IF GetType(op3)=NulSym
-            THEN
-               CheckOrResetOverflow(tokenno, Mod2Gcc(op3), MustCheckOverflow(quad)) ;
-               AddModGcc(op1, Mod2Gcc(op3))
-            ELSE
-               IF NOT GccKnowsAbout(GetType(op1))
-               THEN
-                  RETURN
-               END ;
-               IF IsProcedure(op3)
-               THEN
-                  AddModGcc(op1,
-                            BuildConvert(location,
-                                         Mod2Gcc(GetType(op1)), BuildAddr(location, Mod2Gcc(op3), FALSE), TRUE))
-               ELSIF IsValueSolved(op3)
-               THEN
-                  PushValue(op3) ;
-                  IF IsValueTypeReal()
-                  THEN
-                     CheckOrResetOverflow(tokenno, PopRealTree(), MustCheckOverflow(quad)) ;
-                     PushValue(op3) ;
-                     AddModGcc(op1, PopRealTree())
-                  ELSIF IsValueTypeSet()
-                  THEN
-                     PopValue(op1) ;
-                     PutConstSet(op1)
-                  ELSIF IsValueTypeConstructor() OR IsValueTypeArray() OR IsValueTypeRecord()
-                  THEN
-                     PopValue(op1) ;
-                     PutConstructor(op1)
-                  ELSIF IsValueTypeComplex()
-                  THEN
-                     CheckOrResetOverflow(tokenno, PopComplexTree(), MustCheckOverflow(quad)) ;
-                     PushValue(op3) ;
-                     PopValue(op1)
-                  ELSE
-                     CheckOrResetOverflow(tokenno, PopIntegerTree(), MustCheckOverflow(quad)) ;
-                     IF GetType(op1)=NulSym
-                     THEN
-                        PushValue(op3) ;
-                        AddModGcc(op1, PopIntegerTree())
-                     ELSE
-                        PushValue(op3) ;
-                        AddModGcc(op1, BuildConvert(location, Mod2Gcc(GetType(op1)), PopIntegerTree(), FALSE))
-                     END
-                  END
-               ELSE
-                  CheckOrResetOverflow(tokenno, Mod2Gcc(op3), MustCheckOverflow(quad)) ;
-                  AddModGcc(op1,
-                            DeclareKnownConstant(location,
-                                                 Mod2Gcc(GetType(op3)),
-                                                 Mod2Gcc(op3)))
-               END
-            END ;
-            p (op1) ;
-            NoChange := FALSE ;
-            SubQuad(quad) ;
-            Assert (RememberConstant(Mod2Gcc (op1)) = Mod2Gcc (op1))
-         END
+         PerformFoldBecomes (p, quad)
       ELSE
-         (* not to worry, we must wait until op3 is known *)
+         GetQuad (quad, op, des, op2, expr) ;
+         RemoveQuad (p, des, quad)
       END
    END
 END FoldBecomes ;
+
+
+(*
+   TryDeclareConst -
+*)
+
+PROCEDURE TryDeclareConst (tokenno: CARDINAL; sym: CARDINAL) ;
+BEGIN
+   (* Check whether expr is a constant literal and if so declare it.  *)
+   TryDeclareConstant (tokenno, sym) ;
+   (* Check whether expr is a const constructor and if so declare it.  *)
+   TryDeclareConstructor (tokenno, sym)
+END TryDeclareConst ;
+
+
+(*
+   RemoveQuad - remove quad and ensure p (des) is called.
+*)
+
+PROCEDURE RemoveQuad (p: WalkAction; des: CARDINAL; quad: CARDINAL) ;
+BEGIN
+   p (des) ;
+   NoChange := FALSE ;
+   SubQuad (quad)
+END RemoveQuad ;
+
+
+(*
+   DeclaredOperandsBecomes -
+*)
+
+PROCEDURE DeclaredOperandsBecomes (p: WalkAction; quad: CARDINAL) : BOOLEAN ;
+VAR
+   des, op2, expr     : CARDINAL ;
+   overflowChecking   : BOOLEAN ;
+   despos, op2pos,
+   exprpos, becomespos: CARDINAL ;
+   op                 : QuadOperator ;
+BEGIN
+   GetQuadOtok (quad, becomespos, op,
+                des, op2, expr, overflowChecking,
+                despos, op2pos, exprpos) ;
+   Assert (op2pos = UnknownTokenNo) ;
+   TryDeclareConst (exprpos, expr) ;
+   IF IsConst (des) AND IsConstant (expr)
+   THEN
+      (* Constant folding taking place, but have we resolved op3 yet?  *)
+      IF GccKnowsAbout (expr)
+      THEN
+         (* Now we can tell gcc about the relationship between des and expr.  *)
+         (* RemoveSSAPlaceholder (quad, des) ;  *)
+         IF GccKnowsAbout (des)
+         THEN
+            MetaErrorT1 (despos, 'constant {%1Ead} should not be reassigned', des) ;
+            RemoveQuad (p, des, quad) ;
+            RETURN FALSE
+         ELSE
+            RETURN TRUE
+         END
+      END
+   END ;
+   RETURN FALSE
+END DeclaredOperandsBecomes ;
+
+
+(*
+   TypeCheckBecomes - returns TRUE if the type check succeeds.
+*)
+
+PROCEDURE TypeCheckBecomes (p: WalkAction; quad: CARDINAL) : BOOLEAN ;
+VAR
+   des, op2, expr     : CARDINAL ;
+   overflowChecking   : BOOLEAN ;
+   despos, op2pos,
+   exprpos, becomespos: CARDINAL ;
+   op                 : QuadOperator ;
+BEGIN
+   GetQuadOtok (quad, becomespos, op,
+                des, op2, expr, overflowChecking,
+                despos, op2pos, exprpos) ;
+   Assert (op2pos = UnknownTokenNo) ;
+   IF StrictTypeChecking AND
+      (NOT AssignmentTypeCompatible (despos, "", des, expr))
+   THEN
+      MetaErrorT2 (MakeVirtualTok (becomespos, despos, exprpos),
+                   'assignment check caught mismatch between {%1Ead} and {%2ad}',
+                   des, expr) ;
+      RemoveQuad (p, des, quad) ;
+      RETURN FALSE
+   END ;
+   RETURN TRUE
+END TypeCheckBecomes ;
+
+
+(*
+   PerformFoldBecomes -
+*)
+
+PROCEDURE PerformFoldBecomes (p: WalkAction; quad: CARDINAL) ;
+VAR
+   des, op2, expr     : CARDINAL ;
+   overflowChecking   : BOOLEAN ;
+   despos, op2pos,
+   exprpos, becomespos,
+   virtpos            : CARDINAL ;
+   op                 : QuadOperator ;
+   desloc, exprloc    : location_t ;
+BEGIN
+   GetQuadOtok (quad, becomespos, op,
+                des, op2, expr, overflowChecking,
+                despos, op2pos, exprpos) ;
+   Assert (op2pos = UnknownTokenNo) ;
+   IF IsConstString (expr)
+   THEN
+      PutConstString (exprpos, des, GetString (expr))
+   ELSIF GetType (des) = NulSym
+   THEN
+      Assert (GetType (expr) # NulSym) ;
+      PutConst (des, GetType (expr))
+   END ;
+   IF GetType (expr) = NulSym
+   THEN
+      CheckOrResetOverflow (exprpos, Mod2Gcc (expr), MustCheckOverflow (quad)) ;
+      AddModGcc (des, Mod2Gcc (expr))
+   ELSE
+      IF NOT GccKnowsAbout (GetType (des))
+      THEN
+         RETURN
+      END ;
+      IF IsProcedure (expr)
+      THEN
+         AddModGcc (des,
+                    BuildConvert (TokenToLocation (exprpos),
+                                  Mod2Gcc (GetType (des)),
+                                  BuildAddr (TokenToLocation (exprpos),
+                                             Mod2Gcc (expr), FALSE), TRUE))
+      ELSIF IsValueSolved (expr)
+      THEN
+         PushValue (expr) ;
+         IF IsValueTypeReal ()
+         THEN
+            CheckOrResetOverflow (exprpos, PopRealTree (), MustCheckOverflow (quad)) ;
+            PushValue (expr) ;
+            AddModGcc (des, PopRealTree ())
+         ELSIF IsValueTypeSet ()
+         THEN
+            PopValue (des) ;
+            PutConstSet (des)
+         ELSIF IsValueTypeConstructor () OR IsValueTypeArray () OR IsValueTypeRecord ()
+         THEN
+            PopValue (des) ;
+            PutConstructor (des)
+         ELSIF IsValueTypeComplex ()
+         THEN
+            CheckOrResetOverflow (exprpos, PopComplexTree (), MustCheckOverflow (quad)) ;
+            PushValue (expr) ;
+            PopValue (des)
+         ELSE
+            CheckOrResetOverflow (exprpos, PopIntegerTree (), MustCheckOverflow (quad)) ;
+            IF GetType (des) = NulSym
+            THEN
+               PushValue (expr) ;
+               AddModGcc (des, PopIntegerTree ())
+            ELSE
+               virtpos := MakeVirtualTok (becomespos, despos, exprpos) ;
+               PushValue (expr) ;
+               AddModGcc (des, BuildConvert (TokenToLocation (virtpos),
+                                             Mod2Gcc (GetType (des)), PopIntegerTree (), FALSE))
+            END
+         END
+      ELSE
+         virtpos := MakeVirtualTok (becomespos, despos, exprpos) ;
+         CheckOrResetOverflow (exprpos, Mod2Gcc (des), MustCheckOverflow (quad)) ;
+         AddModGcc (des,
+                    DeclareKnownConstant (TokenToLocation (virtpos),
+                                          Mod2Gcc (GetType (expr)),
+                                          Mod2Gcc (expr)))
+      END
+   END ;
+   RemoveQuad (p, des, quad) ;
+   Assert (RememberConstant(Mod2Gcc (des)) = Mod2Gcc (des))
+END PerformFoldBecomes ;
+
 
 VAR
    tryBlock: Tree ;    (* this must be placed into gccgm2 and it must follow the

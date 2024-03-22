@@ -1647,21 +1647,13 @@ typedef struct gfc_omp_declare_simd
 gfc_omp_declare_simd;
 #define gfc_get_omp_declare_simd() XCNEW (gfc_omp_declare_simd)
 
-
-enum gfc_omp_trait_property_kind
-{
-  CTX_PROPERTY_NONE,
-  CTX_PROPERTY_USER,
-  CTX_PROPERTY_NAME_LIST,
-  CTX_PROPERTY_ID,
-  CTX_PROPERTY_EXPR,
-  CTX_PROPERTY_SIMD
-};
+/* For OpenMP trait selector enum types and tables.  */
+#include "omp-selectors.h"
 
 typedef struct gfc_omp_trait_property
 {
   struct gfc_omp_trait_property *next;
-  enum gfc_omp_trait_property_kind property_kind;
+  enum omp_tp_type property_kind;
   bool is_name : 1;
 
   union
@@ -1677,8 +1669,7 @@ typedef struct gfc_omp_trait_property
 typedef struct gfc_omp_selector
 {
   struct gfc_omp_selector *next;
-
-  char *trait_selector_name;
+  enum omp_ts_code code;
   gfc_expr *score;
   struct gfc_omp_trait_property *properties;
 } gfc_omp_selector;
@@ -1687,8 +1678,7 @@ typedef struct gfc_omp_selector
 typedef struct gfc_omp_set_selector
 {
   struct gfc_omp_set_selector *next;
-
-  const char *trait_set_selector_name;
+  enum omp_tss_code code;
   struct gfc_omp_selector *trait_selectors;
 } gfc_omp_set_selector;
 #define gfc_get_omp_set_selector() XCNEW (gfc_omp_set_selector)

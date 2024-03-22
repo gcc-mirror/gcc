@@ -1304,6 +1304,10 @@ proc check_stack_check_available { stack_kind } {
 
 # Return 1 if the target supports stack scrubbing.
 proc check_effective_target_strub {} {
+    # strub is not supported on AIX.
+    if { [istarget powerpc*-*-aix*] } {
+	return 0
+    }
     return [check_no_compiler_messages strub assembly {
 	void __attribute__ ((__strub__)) fn (void) {}
     } ""]
@@ -4048,6 +4052,44 @@ proc check_effective_target_vect_int { } {
 	 || ([istarget riscv*-*-*]
 	     && [check_effective_target_riscv_v])
 	}}]
+}
+
+# Return 1 if the target supports vectorization of early breaks,
+# 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_early_break { } {
+    return [check_cached_effective_target_indexed vect_early_break {
+      expr {
+	[istarget aarch64*-*-*]
+	|| [check_effective_target_sse4]
+	}}]
+}
+
+# Return 1 if the target supports hardware execution of early breaks,
+# 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_early_break_hw { } {
+    return [check_cached_effective_target_indexed vect_early_break_hw {
+      expr {
+	[istarget aarch64*-*-*]
+	|| [check_sse4_hw_available]
+	}}]
+}
+
+proc add_options_for_vect_early_break { flags } {
+    if { ! [check_effective_target_vect_early_break] } {
+	return "$flags"
+    }
+
+    if { [check_effective_target_sse4] } {
+	return "$flags -msse4.1"
+    }
+
+    return "$flags"
 }
 
 # Return 1 if the target supports hardware vectorization of complex additions of
@@ -9033,7 +9075,7 @@ proc available_vector_sizes { } {
 	lappend result 4096 2048 1024 512 256 128 64 32 16 8 4 2
     } elseif { [istarget riscv*-*-*] } {
 	if { [check_effective_target_riscv_v] } {
-	    lappend result 0 32 64 128 256 512 1024
+	    lappend result 0 32 64 128
 	}
 	lappend result 128
     } else {
@@ -11569,13 +11611,14 @@ proc check_vect_support_and_set_flags { } {
         }
     } elseif [istarget amdgcn-*-*] {
         set dg-do-what-default run
-    } elseif [istarget riscv64-*-*] {
+    } elseif [istarget riscv*-*-*] {
 	if [check_effective_target_riscv_v] {
 	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-vector-abi"
 	    set dg-do-what-default run
 	} else {
-	    lappend DEFAULT_VECTCFLAGS "-march=rv64gcv_zvfh" "-mabi=lp64d"
-	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-autovec-preference=scalable"
+	    foreach item [add_options_for_riscv_v ""] {
+		lappend DEFAULT_VECTCFLAGS $item
+	    }
 	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-vector-abi"
 	    set dg-do-what-default compile
 	}
@@ -13144,6 +13187,19 @@ proc check_effective_target_cv_alu { } {
     } "-march=rv32i_xcvalu" ]
 }
 
+# Return 1 if the CORE-V ELW extension is available.
+proc check_effective_target_cv_elw { } {
+    if { !([istarget riscv*-*-*]) } {
+         return 0
+     }
+    return [check_no_compiler_messages cv_elw object {
+        void foo (void)
+        {
+          asm ("cv.elw x0, 0(x0)");
+        }
+    } "-march=rv32i_xcvelw" ]
+}
+
 proc check_effective_target_loongarch_sx { } {
     return [check_no_compiler_messages loongarch_lsx assembly {
        #if !defined(__loongarch_sx)
@@ -13191,6 +13247,18 @@ proc check_effective_target_loongarch_call36_support { } {
 	pcaddu18i $r1,%call36(a)
 	jirl $r1,$r1,0
   } ""]
+}
+
+# Returns 1 if binutils supports TLS le Relax, 0 otherwise.
+proc check_effective_target_tls_le_relax { } {
+  if [check_effective_target_tls_native] {
+    return [check_no_compiler_messages loongarch_tls_le_relax object {
+        /* Assembly code */
+	lu12i.w $r12, %le_hi20_r(a)
+    }]
+  }
+
+  return 0;
 }
 
 # Appends necessary Python flags to extra-tool-flags if Python.h is supported.

@@ -7419,7 +7419,12 @@ vect_slp_check_for_roots (bb_vec_info bb_vinfo)
 		      invalid = true;
 		      break;
 		    }
-		  if (chain[i].dt != vect_internal_def)
+		  if (chain[i].dt != vect_internal_def
+		      /* Avoid stmts where the def is not the LHS, like
+			 ASMs.  */
+		      || (gimple_get_lhs (bb_vinfo->lookup_def
+						      (chain[i].op)->stmt)
+			  != chain[i].op))
 		    remain_cnt++;
 		}
 	      if (!invalid && chain.length () - remain_cnt > 1)
@@ -7431,8 +7436,11 @@ vect_slp_check_for_roots (bb_vec_info bb_vinfo)
 		    remain.create (remain_cnt);
 		  for (unsigned i = 0; i < chain.length (); ++i)
 		    {
-		      if (chain[i].dt == vect_internal_def)
-			stmts.quick_push (bb_vinfo->lookup_def (chain[i].op));
+		      stmt_vec_info stmt_info;
+		      if (chain[i].dt == vect_internal_def
+			  && ((stmt_info = bb_vinfo->lookup_def (chain[i].op)),
+			      gimple_get_lhs (stmt_info->stmt) == chain[i].op))
+			stmts.quick_push (stmt_info);
 		      else
 			remain.quick_push (chain[i].op);
 		    }
@@ -8626,10 +8634,21 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
     for (unsigned i = 0; i < dr_chain.length (); ++i)
       if (!bitmap_bit_p (used_defs, i))
 	{
-	  gimple *stmt = SSA_NAME_DEF_STMT (dr_chain[i]);
-	  gimple_stmt_iterator rgsi = gsi_for_stmt (stmt);
-	  gsi_remove (&rgsi, true);
-	  release_defs (stmt);
+	  tree def = dr_chain[i];
+	  do
+	    {
+	      gimple *stmt = SSA_NAME_DEF_STMT (def);
+	      if (is_gimple_assign (stmt)
+		  && (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
+		      || gimple_assign_rhs_code (stmt) == CONSTRUCTOR))
+		def = single_ssa_tree_operand (stmt, SSA_OP_USE);
+	      else
+		def = NULL;
+	      gimple_stmt_iterator rgsi = gsi_for_stmt (stmt);
+	      gsi_remove (&rgsi, true);
+	      release_defs (stmt);
+	    }
+	  while (def);
 	}
 
   return true;
@@ -9054,13 +9073,6 @@ vect_schedule_slp_node (vec_info *vinfo,
   int i;
   slp_tree child;
 
-  /* For existing vectors there's nothing to do.  */
-  if (SLP_TREE_DEF_TYPE (node) == vect_external_def
-      && SLP_TREE_VEC_DEFS (node).exists ())
-    return;
-
-  gcc_assert (SLP_TREE_VEC_DEFS (node).is_empty ());
-
   /* Vectorize externals and constants.  */
   if (SLP_TREE_DEF_TYPE (node) == vect_constant_def
       || SLP_TREE_DEF_TYPE (node) == vect_external_def)
@@ -9071,9 +9083,17 @@ vect_schedule_slp_node (vec_info *vinfo,
       if (!SLP_TREE_VECTYPE (node))
 	return;
 
-      vect_create_constant_vectors (vinfo, node);
+      /* There are two reasons vector defs might already exist.  The first
+	 is that we are vectorizing an existing vector def.  The second is
+	 when performing BB vectorization shared constant/external nodes
+	 are not split apart during partitioning so during the code-gen
+	 DFS walk we can end up visiting them twice.  */
+      if (! SLP_TREE_VEC_DEFS (node).exists ())
+	vect_create_constant_vectors (vinfo, node);
       return;
     }
+
+  gcc_assert (SLP_TREE_VEC_DEFS (node).is_empty ());
 
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
 

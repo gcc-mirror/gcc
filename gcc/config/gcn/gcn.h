@@ -836,3 +836,7 @@ enum gcn_builtin_codes
       || M == V2SFmode || M == V2DImode || M == V2DFmode) \
    ? 2 \
    : 1)
+
+/* The C++ front end insists to link against libstdc++ -- which we don't build.
+   Tell it to instead link against the innocuous libgcc.  */
+#define LIBSTDCXX "gcc"

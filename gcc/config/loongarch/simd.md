@@ -268,6 +268,35 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
+;; Expand left rotate to right rotate.
+(define_expand "vrotl<mode>3"
+  [(set (match_dup 3)
+	(neg:IVEC (match_operand:IVEC 2 "register_operand")))
+   (set (match_operand:IVEC 0 "register_operand")
+	(rotatert:IVEC (match_operand:IVEC 1 "register_operand")
+		       (match_dup 3)))]
+  ""
+  {
+    operands[3] = gen_reg_rtx (<MODE>mode);
+  });
+
+;; Expand left rotate with a scalar amount to right rotate: negate the
+;; scalar before broadcasting it because scalar negation is cheaper than
+;; vector negation.
+(define_expand "rotl<mode>3"
+  [(set (match_dup 3)
+	(neg:SI (match_operand:SI 2 "register_operand")))
+   (set (match_dup 4)
+	(vec_duplicate:IVEC (subreg:<IVEC:UNITMODE> (match_dup 3) 0)))
+   (set (match_operand:IVEC 0 "register_operand")
+	(rotatert:IVEC (match_operand:IVEC 1 "register_operand")
+		       (match_dup 4)))]
+  ""
+  {
+    operands[3] = gen_reg_rtx (SImode);
+    operands[4] = gen_reg_rtx (<MODE>mode);
+  });
+
 ;; <x>vrotri.{b/h/w/d}
 
 (define_insn "rotr<mode>3"
@@ -278,6 +307,155 @@
   "<x>vrotri.<simdfmt>\t%<wu>0,%<wu>1,%2";
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
+
+;; <x>vfcmp.*.{s/d} with defined RTX code
+;; There are no fcmp.{sugt/suge/cgt/cge}.{s/d} menmonics in GAS, so we have
+;; to reverse the operands ourselves :(.
+(define_code_iterator fcond_simd [unordered uneq unlt unle eq lt le
+				  ordered ltgt ne])
+(define_insn "<simd_isa>_<x>vfcmp_<fcond>_<simdfmt>"
+  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
+	(fcond_simd:<VIMODE>
+	  (match_operand:FVEC 1 "register_operand" "f")
+	  (match_operand:FVEC 2 "register_operand" "f")))]
+  ""
+  "<x>vfcmp.<fcond>.<simdfmt>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_fcmp")
+   (set_attr "mode" "<MODE>")])
+
+;; There are no fcmp.{sge/sgt/cuge/cugt}.{s/d} menmonics in GAS, so we have
+;; to reverse the operands ourselves.
+(define_code_iterator fcond_simd_rev [ge gt unge ungt])
+
+(define_code_attr fcond_rev_asm
+  [(ge		"sle")
+   (gt		"slt")
+   (unge	"cule")
+   (ungt	"cult")])
+
+(define_insn "<simd_isa>_<x>vfcmp_<fcond>_<simdfmt>"
+  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
+	(fcond_simd_rev:<VIMODE>
+	  (match_operand:FVEC 1 "register_operand" "f")
+	  (match_operand:FVEC 2 "register_operand" "f")))]
+  ""
+  "<x>vfcmp.<fcond_rev_asm>.<simdfmt>\t%<wu>0,%<wu>2,%<wu>1";
+  [(set_attr "type" "simd_fcmp")
+   (set_attr "mode" "<MODE>")])
+
+;; <x>vfcmp.*.{s/d} without defined RTX code, but with defined RTX code for
+;; its inverse.  Again, there are no fcmp.{sugt/suge/cgt/cge}.{s/d}
+;; menmonics in GAS, so we have to reverse the operands ourselves.
+(define_code_iterator fcond_inv [ge gt unge ungt])
+(define_code_iterator fcond_inv_rev [le lt unle unlt])
+(define_code_attr fcond_inv
+  [(ge		"sult")
+   (gt		"sule")
+   (unge	"clt")
+   (ungt	"cle")
+   (le		"sugt")
+   (lt		"suge")
+   (unle	"cgt")
+   (unlt	"cge")])
+(define_code_attr fcond_inv_rev_asm
+  [(le		"sult")
+   (lt		"sule")
+   (unle	"clt")
+   (unlt	"cle")])
+
+(define_insn "<simd_isa>_<x>vfcmp_<fcond_inv>_<simdfmt>"
+  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
+	(not:<VIMODE>
+	  (fcond_inv:<VIMODE>
+	    (match_operand:FVEC 1 "register_operand" "f")
+	    (match_operand:FVEC 2 "register_operand" "f"))))]
+  ""
+  "<x>vfcmp.<fcond_inv>.<simdfmt>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_fcmp")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "<simd_isa>_<x>vfcmp_<fcond_inv>_<simdfmt>"
+  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
+	(not:<VIMODE>
+	  (fcond_inv_rev:<VIMODE>
+	    (match_operand:FVEC 1 "register_operand" "f")
+	    (match_operand:FVEC 2 "register_operand" "f"))))]
+  ""
+  "<x>vfcmp.<fcond_inv_rev_asm>.<simdfmt>\t%<wu>0,%<wu>2,%<wu>1"
+  [(set_attr "type" "simd_fcmp")
+   (set_attr "mode" "<MODE>")])
+
+;; <x>vfcmp.*.{s/d} instructions only as instrinsics
+(define_c_enum "unspec"
+  [UNSPEC_SIMD_FCMP_CAF
+   UNSPEC_SIMD_FCMP_SAF
+   UNSPEC_SIMD_FCMP_SEQ
+   UNSPEC_SIMD_FCMP_SUN
+   UNSPEC_SIMD_FCMP_SUEQ
+   UNSPEC_SIMD_FCMP_CNE
+   UNSPEC_SIMD_FCMP_SOR
+   UNSPEC_SIMD_FCMP_SUNE])
+
+(define_int_iterator SIMD_FCMP
+  [UNSPEC_SIMD_FCMP_CAF
+   UNSPEC_SIMD_FCMP_SAF
+   UNSPEC_SIMD_FCMP_SEQ
+   UNSPEC_SIMD_FCMP_SUN
+   UNSPEC_SIMD_FCMP_SUEQ
+   UNSPEC_SIMD_FCMP_CNE
+   UNSPEC_SIMD_FCMP_SOR
+   UNSPEC_SIMD_FCMP_SUNE])
+
+(define_int_attr fcond_unspec
+  [(UNSPEC_SIMD_FCMP_CAF	"caf")
+   (UNSPEC_SIMD_FCMP_SAF	"saf")
+   (UNSPEC_SIMD_FCMP_SEQ	"seq")
+   (UNSPEC_SIMD_FCMP_SUN	"sun")
+   (UNSPEC_SIMD_FCMP_SUEQ	"sueq")
+   (UNSPEC_SIMD_FCMP_CNE	"cne")
+   (UNSPEC_SIMD_FCMP_SOR	"sor")
+   (UNSPEC_SIMD_FCMP_SUNE	"sune")])
+
+(define_insn "<simd_isa>_<x>vfcmp_<fcond_unspec>_<simdfmt>"
+  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
+	(unspec:<VIMODE> [(match_operand:FVEC 1 "register_operand" "f")
+			  (match_operand:FVEC 2 "register_operand" "f")]
+			 SIMD_FCMP))]
+  ""
+  "<x>vfcmp.<fcond_unspec>.<simdfmt>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_fcmp")
+   (set_attr "mode" "<MODE>")])
+
+; [x]vf{min/max} instructions are IEEE-754-2008 conforming, use them for
+; the corresponding IEEE-754-2008 operations.  We must use UNSPEC instead
+; of smin/smax though, see PR105414 and PR107013.
+
+(define_int_iterator UNSPEC_FMAXMIN [UNSPEC_FMAX UNSPEC_FMIN])
+(define_int_attr fmaxmin [(UNSPEC_FMAX "fmax") (UNSPEC_FMIN "fmin")])
+
+(define_insn "<fmaxmin><mode>3"
+  [(set (match_operand:FVEC 0 "register_operand" "=f")
+	(unspec:FVEC [(match_operand:FVEC 1 "register_operand" "f")
+		      (match_operand:FVEC 2 "register_operand" "f")]
+		     UNSPEC_FMAXMIN))]
+  ""
+  "<x>v<fmaxmin>.<simdfmt>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_fminmax")
+   (set_attr "mode" "<MODE>")])
+
+;; ... and also reduc operations.
+(define_expand "reduc_<fmaxmin>_scal_<mode>"
+  [(match_operand:<UNITMODE> 0 "register_operand")
+   (match_operand:FVEC 1 "register_operand")
+   (const_int UNSPEC_FMAXMIN)]
+  ""
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  loongarch_expand_vector_reduc (gen_<fmaxmin><mode>3, tmp, operands[1]);
+  emit_insn (gen_vec_extract<mode><unitmode> (operands[0], tmp,
+					      const0_rtx));
+  DONE;
+})
 
 ; The LoongArch SX Instructions.
 (include "lsx.md")

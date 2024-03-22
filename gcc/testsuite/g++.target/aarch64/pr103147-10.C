@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fpack-struct -mstrict-align -fno-stack-protector" } */
+/* { dg-options "-O2 -fpack-struct -mstrict-align -fno-stack-protector -fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include <arm_neon.h>

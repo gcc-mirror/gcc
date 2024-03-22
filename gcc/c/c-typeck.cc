@@ -381,8 +381,15 @@ build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
    nonzero; if that isn't so, this may crash.  In particular, we
    assume that qualifiers match.  */
 
+struct composite_cache {
+  tree t1;
+  tree t2;
+  tree composite;
+  struct composite_cache* next;
+};
+
 tree
-composite_type (tree t1, tree t2)
+composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 {
   enum tree_code code1;
   enum tree_code code2;
@@ -427,7 +434,8 @@ composite_type (tree t1, tree t2)
       {
 	tree pointed_to_1 = TREE_TYPE (t1);
 	tree pointed_to_2 = TREE_TYPE (t2);
-	tree target = composite_type (pointed_to_1, pointed_to_2);
+	tree target = composite_type_internal (pointed_to_1,
+					       pointed_to_2, cache);
         t1 = build_pointer_type_for_mode (target, TYPE_MODE (t1), false);
 	t1 = build_type_attribute_variant (t1, attributes);
 	return qualify_type (t1, t2);
@@ -435,7 +443,8 @@ composite_type (tree t1, tree t2)
 
     case ARRAY_TYPE:
       {
-	tree elt = composite_type (TREE_TYPE (t1), TREE_TYPE (t2));
+	tree elt = composite_type_internal (TREE_TYPE (t1), TREE_TYPE (t2),
+					    cache);
 	int quals;
 	tree unqual_elt;
 	tree d1 = TYPE_DOMAIN (t1);
@@ -503,9 +512,87 @@ composite_type (tree t1, tree t2)
 	return build_type_attribute_variant (t1, attributes);
       }
 
-    case ENUMERAL_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
+      if (flag_isoc23 && !comptypes_same_p (t1, t2))
+	{
+	  gcc_checking_assert (COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2));
+	  gcc_checking_assert (!TYPE_NAME (t1) || comptypes (t1, t2));
+
+	  /* If a composite type for these two types is already under
+	     construction, return it.  */
+
+	  for (struct composite_cache *c = cache; c != NULL; c = c->next)
+	    if (c->t1 == t1 && c->t2 == t2)
+	       return c->composite;
+
+	  /* Otherwise, create a new type node and link it into the cache.  */
+
+	  tree n = make_node (code1);
+	  TYPE_NAME (n) = TYPE_NAME (t1);
+
+	  struct composite_cache cache2 = { t1, t2, n, cache };
+	  cache = &cache2;
+
+	  tree f1 = TYPE_FIELDS (t1);
+	  tree f2 = TYPE_FIELDS (t2);
+	  tree fields = NULL_TREE;
+
+	  for (tree a = f1, b = f2; a && b;
+	       a = DECL_CHAIN (a), b = DECL_CHAIN (b))
+	    {
+	      tree ta = TREE_TYPE (a);
+	      tree tb = TREE_TYPE (b);
+
+	      if (DECL_C_BIT_FIELD (a))
+		{
+		  ta = DECL_BIT_FIELD_TYPE (a);
+		  tb = DECL_BIT_FIELD_TYPE (b);
+		}
+
+	      gcc_assert (DECL_NAME (a) == DECL_NAME (b));
+	      gcc_checking_assert (!DECL_NAME (a) || comptypes (ta, tb));
+
+	      tree t = composite_type_internal (ta, tb, cache);
+	      tree f = build_decl (input_location, FIELD_DECL, DECL_NAME (a), t);
+
+	      DECL_PACKED (f) = DECL_PACKED (a);
+	      SET_DECL_ALIGN (f, DECL_ALIGN (a));
+	      DECL_ATTRIBUTES (f) = DECL_ATTRIBUTES (a);
+	      C_DECL_VARIABLE_SIZE (f) = C_TYPE_VARIABLE_SIZE (t);
+
+	      finish_decl (f, input_location, NULL, NULL, NULL);
+
+	      if (DECL_C_BIT_FIELD (a))
+		{
+		  /* This will be processed by finish_struct.  */
+		  SET_DECL_C_BIT_FIELD (f);
+		  DECL_INITIAL (f) = build_int_cst (integer_type_node,
+						    tree_to_uhwi (DECL_SIZE (a)));
+		  DECL_NONADDRESSABLE_P (f) = true;
+		  DECL_PADDING_P (f) = !DECL_NAME (a);
+		}
+
+	      DECL_CHAIN (f) = fields;
+	      fields = f;
+	    }
+
+	  fields = nreverse (fields);
+
+	  /* Setup the struct/union type.  Because we inherit all variably
+	     modified components, we can ignore the size expression.  */
+	  tree expr = NULL_TREE;
+	  n = finish_struct(input_location, n, fields, attributes, NULL, &expr);
+
+	  n = qualify_type (n, t1);
+
+	  gcc_checking_assert (!TYPE_NAME (n) || comptypes (n, t1));
+	  gcc_checking_assert (!TYPE_NAME (n) || comptypes (n, t2));
+
+	  return n;
+	}
+      /* FALLTHRU */
+    case ENUMERAL_TYPE:
       if (attributes != NULL)
 	{
 	  /* Try harder not to create a new aggregate type.  */
@@ -520,7 +607,8 @@ composite_type (tree t1, tree t2)
       /* Function types: prefer the one that specified arg types.
 	 If both do, merge the arg types.  Also merge the return types.  */
       {
-	tree valtype = composite_type (TREE_TYPE (t1), TREE_TYPE (t2));
+	tree valtype = composite_type_internal (TREE_TYPE (t1),
+						TREE_TYPE (t2), cache);
 	tree p1 = TYPE_ARG_TYPES (t1);
 	tree p2 = TYPE_ARG_TYPES (t2);
 	int len;
@@ -565,6 +653,16 @@ composite_type (tree t1, tree t2)
 	for (; p1 && p1 != void_list_node;
 	     p1 = TREE_CHAIN (p1), p2 = TREE_CHAIN (p2), n = TREE_CHAIN (n))
 	  {
+	     tree mv1 = TREE_VALUE (p1);
+	     if (mv1 && mv1 != error_mark_node
+		 && TREE_CODE (mv1) != ARRAY_TYPE)
+	       mv1 = TYPE_MAIN_VARIANT (mv1);
+
+	     tree mv2 = TREE_VALUE (p2);
+	     if (mv2 && mv2 != error_mark_node
+		 && TREE_CODE (mv2) != ARRAY_TYPE)
+	       mv2 = TYPE_MAIN_VARIANT (mv2);
+
 	    /* A null type means arg type is not specified.
 	       Take whatever the other function type has.  */
 	    if (TREE_VALUE (p1) == NULL_TREE)
@@ -585,10 +683,6 @@ composite_type (tree t1, tree t2)
 		&& TREE_VALUE (p1) != TREE_VALUE (p2))
 	      {
 		tree memb;
-		tree mv2 = TREE_VALUE (p2);
-		if (mv2 && mv2 != error_mark_node
-		    && TREE_CODE (mv2) != ARRAY_TYPE)
-		  mv2 = TYPE_MAIN_VARIANT (mv2);
 		for (memb = TYPE_FIELDS (TREE_VALUE (p1));
 		     memb; memb = DECL_CHAIN (memb))
 		  {
@@ -598,8 +692,9 @@ composite_type (tree t1, tree t2)
 		      mv3 = TYPE_MAIN_VARIANT (mv3);
 		    if (comptypes (mv3, mv2))
 		      {
-			TREE_VALUE (n) = composite_type (TREE_TYPE (memb),
-							 TREE_VALUE (p2));
+			TREE_VALUE (n) = composite_type_internal (TREE_TYPE (memb),
+								  TREE_VALUE (p2),
+								  cache);
 			pedwarn (input_location, OPT_Wpedantic,
 				 "function types not truly compatible in ISO C");
 			goto parm_done;
@@ -610,10 +705,6 @@ composite_type (tree t1, tree t2)
 		&& TREE_VALUE (p2) != TREE_VALUE (p1))
 	      {
 		tree memb;
-		tree mv1 = TREE_VALUE (p1);
-		if (mv1 && mv1 != error_mark_node
-		    && TREE_CODE (mv1) != ARRAY_TYPE)
-		  mv1 = TYPE_MAIN_VARIANT (mv1);
 		for (memb = TYPE_FIELDS (TREE_VALUE (p2));
 		     memb; memb = DECL_CHAIN (memb))
 		  {
@@ -623,15 +714,17 @@ composite_type (tree t1, tree t2)
 		      mv3 = TYPE_MAIN_VARIANT (mv3);
 		    if (comptypes (mv3, mv1))
 		      {
-			TREE_VALUE (n) = composite_type (TREE_TYPE (memb),
-							 TREE_VALUE (p1));
+			TREE_VALUE (n)
+				= composite_type_internal (TREE_TYPE (memb),
+							   TREE_VALUE (p1),
+							   cache);
 			pedwarn (input_location, OPT_Wpedantic,
 				 "function types not truly compatible in ISO C");
 			goto parm_done;
 		      }
 		  }
 	      }
-	    TREE_VALUE (n) = composite_type (TREE_VALUE (p1), TREE_VALUE (p2));
+	    TREE_VALUE (n) = composite_type_internal (mv1, mv2, cache);
 	  parm_done: ;
 	  }
 
@@ -643,7 +736,13 @@ composite_type (tree t1, tree t2)
     default:
       return build_type_attribute_variant (t1, attributes);
     }
+}
 
+tree
+composite_type (tree t1, tree t2)
+{
+  struct composite_cache cache = { };
+  return composite_type_internal (t1, t2, &cache);
 }
 
 /* Return the type of a conditional expression between pointers to
@@ -1063,6 +1162,7 @@ struct comptypes_data {
   bool different_types_p;
   bool warning_needed;
   bool anon_field;
+  bool equiv;
 
   const struct tagged_tu_seen_cache* cache;
 };
@@ -1079,6 +1179,23 @@ comptypes (tree type1, tree type2)
 
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
+
+
+/* Like comptypes, but it returns non-zero only for identical
+   types.  */
+
+bool
+comptypes_same_p (tree type1, tree type2)
+{
+  struct comptypes_data data = { };
+  bool ret = comptypes_internal (type1, type2, &data);
+
+  if (data.different_types_p)
+    return false;
+
+  return ret;
+}
+
 
 /* Like comptypes, but if it returns non-zero because enum and int are
    compatible, it sets *ENUM_AND_INT_P to true.  */
@@ -1106,6 +1223,21 @@ comptypes_check_different_types (tree type1, tree type2,
 
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
+
+
+/* Like comptypes, but if it returns nonzero for struct and union
+   types considered equivalent for aliasing purposes.  */
+
+bool
+comptypes_equiv_p (tree type1, tree type2)
+{
+  struct comptypes_data data = { };
+  data.equiv = true;
+  bool ret = comptypes_internal (type1, type2, &data);
+
+  return ret;
+}
+
 
 /* Return true if TYPE1 and TYPE2 are compatible types for assignment
    or various other operations.  If they are compatible but a warning may
@@ -1233,6 +1365,9 @@ comptypes_internal (const_tree type1, const_tree type2,
 
 	if ((d1 == NULL_TREE) != (d2 == NULL_TREE))
 	  data->different_types_p = true;
+	/* Ignore size mismatches.  */
+	if (data->equiv)
+	  return true;
 	/* Sizes must match unless one is missing or variable.  */
 	if (d1 == NULL_TREE || d2 == NULL_TREE || d1 == d2)
 	  return true;
@@ -1266,11 +1401,11 @@ comptypes_internal (const_tree type1, const_tree type2,
     case ENUMERAL_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
-      if (false)
-	{
-	  return tagged_types_tu_compatible_p (t1, t2, data);
-	}
-      return false;
+
+      if (!flag_isoc23)
+	return false;
+
+      return tagged_types_tu_compatible_p (t1, t2, data);
 
     case VECTOR_TYPE:
       return known_eq (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
@@ -1376,8 +1511,6 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
   if (!data->anon_field && TYPE_STUB_DECL (t1) != TYPE_STUB_DECL (t2))
     data->different_types_p = true;
 
-  data->anon_field = false;
-
   /* Incomplete types are incompatible inside a TU.  */
   if (TYPE_SIZE (t1) == NULL || TYPE_SIZE (t2) == NULL)
     return false;
@@ -1402,6 +1535,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
     {
     case ENUMERAL_TYPE:
       {
+	if (!comptypes (ENUM_UNDERLYING_TYPE (t1), ENUM_UNDERLYING_TYPE (t2)))
+	  return false;
+
 	/* Speed up the case where the type values are in the same order.  */
 	tree tv1 = TYPE_VALUES (t1);
 	tree tv2 = TYPE_VALUES (t2);
@@ -1447,25 +1583,36 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 	if (list_length (TYPE_FIELDS (t1)) != list_length (TYPE_FIELDS (t2)))
 	  return false;
 
+	if (data->equiv && (C_TYPE_VARIABLE_SIZE (t1) || C_TYPE_VARIABLE_SIZE (t2)))
+	  return false;
+
 	for (s1 = TYPE_FIELDS (t1), s2 = TYPE_FIELDS (t2);
 	     s1 && s2;
 	     s1 = DECL_CHAIN (s1), s2 = DECL_CHAIN (s2))
 	  {
-	    if (TREE_CODE (s1) != TREE_CODE (s2)
-		|| DECL_NAME (s1) != DECL_NAME (s2))
+	    gcc_assert (TREE_CODE (s1) == FIELD_DECL);
+	    gcc_assert (TREE_CODE (s2) == FIELD_DECL);
+
+	    if (DECL_NAME (s1) != DECL_NAME (s2))
 	      return false;
 
-	    if (!DECL_NAME (s1) && RECORD_OR_UNION_TYPE_P (TREE_TYPE (s1)))
-	      data->anon_field = true;
+	    if (DECL_ALIGN (s1) != DECL_ALIGN (s2))
+	      return false;
+
+	    data->anon_field = !DECL_NAME (s1);
 
 	    data->cache = &entry;
 	    if (!comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2), data))
 	      return false;
 
-	    if (TREE_CODE (s1) == FIELD_DECL
-		&& simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
-				     DECL_FIELD_BIT_OFFSET (s2)) != 1)
-	      return false;
+	    tree st1 = TYPE_SIZE (TREE_TYPE (s1));
+	    tree st2 = TYPE_SIZE (TREE_TYPE (s2));
+
+	    if (data->equiv
+		&& st1 && TREE_CODE (st1) == INTEGER_CST
+		&& st2 && TREE_CODE (st2) == INTEGER_CST
+		&& !tree_int_cst_equal (st1, st2))
+	     return false;
 	  }
 	return true;
 
@@ -5515,6 +5662,11 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
     result_type = type2;
   else if (code1 == POINTER_TYPE && code2 == NULLPTR_TYPE)
     result_type = type1;
+  else if (RECORD_OR_UNION_TYPE_P (type1) && RECORD_OR_UNION_TYPE_P (type2)
+	   && comptypes (TYPE_MAIN_VARIANT (type1),
+			 TYPE_MAIN_VARIANT (type2)))
+    result_type = composite_type (TYPE_MAIN_VARIANT (type1),
+				  TYPE_MAIN_VARIANT (type2));
 
   if (!result_type)
     {
@@ -6054,6 +6206,19 @@ build_c_cast (location_t loc, tree type, tree expr)
 			    c_addr_space_name (as_to),
 			    c_addr_space_name (as_from));
 	    }
+
+	  /* Warn of new allocations that are not big enough for the target
+	     type.  */
+	  if (warn_alloc_size && TREE_CODE (value) == CALL_EXPR)
+	    if (tree fndecl = get_callee_fndecl (value))
+	      if (DECL_IS_MALLOC (fndecl))
+		{
+		  tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (fndecl));
+		  tree alloc_size = lookup_attribute ("alloc_size", attrs);
+		  if (alloc_size)
+		    warn_for_alloc_size (loc, TREE_TYPE (type), value,
+					 alloc_size);
+		}
 	}
 
       /* Warn about possible alignment problems.  */
@@ -6989,7 +7154,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       if (checktype != error_mark_node
 	  && TREE_CODE (checktype) == ENUMERAL_TYPE
 	  && TREE_CODE (type) == ENUMERAL_TYPE
-	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
+	  && !comptypes (TYPE_MAIN_VARIANT (checktype), TYPE_MAIN_VARIANT (type)))
        {
 	  gcc_rich_location loc (location);
 	  warning_at (&loc, OPT_Wenum_conversion,
@@ -7089,7 +7254,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   /* Aggregates in different TUs might need conversion.  */
   if ((codel == RECORD_TYPE || codel == UNION_TYPE)
       && codel == coder
-      && comptypes (type, rhstype))
+      && comptypes (TYPE_MAIN_VARIANT (type), TYPE_MAIN_VARIANT (rhstype)))
     return convert_and_check (expr_loc != UNKNOWN_LOCATION
 			      ? expr_loc : location, type, rhs);
 
@@ -7277,32 +7442,15 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
       /* Warn of new allocations that are not big enough for the target
 	 type.  */
-      tree fndecl;
-      if (warn_alloc_size
-	  && TREE_CODE (rhs) == CALL_EXPR
-	  && (fndecl = get_callee_fndecl (rhs)) != NULL_TREE
-	  && DECL_IS_MALLOC (fndecl))
-	{
-	  tree fntype = TREE_TYPE (fndecl);
-	  tree fntypeattrs = TYPE_ATTRIBUTES (fntype);
-	  tree alloc_size = lookup_attribute ("alloc_size", fntypeattrs);
-	  if (alloc_size)
+      if (warn_alloc_size && TREE_CODE (rhs) == CALL_EXPR)
+	if (tree fndecl = get_callee_fndecl (rhs))
+	  if (DECL_IS_MALLOC (fndecl))
 	    {
-	      tree args = TREE_VALUE (alloc_size);
-	      int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
-	      /* For calloc only use the second argument.  */
-	      if (TREE_CHAIN (args))
-		idx = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
-	      tree arg = CALL_EXPR_ARG (rhs, idx);
-	      if (TREE_CODE (arg) == INTEGER_CST
-		  && !VOID_TYPE_P (ttl) && TYPE_SIZE_UNIT (ttl)
-		  && INTEGER_CST == TREE_CODE (TYPE_SIZE_UNIT (ttl))
-		  && tree_int_cst_lt (arg, TYPE_SIZE_UNIT (ttl)))
-		 warning_at (location, OPT_Walloc_size, "allocation of "
-			     "insufficient size %qE for type %qT with "
-			     "size %qE", arg, ttl, TYPE_SIZE_UNIT (ttl));
+	      tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (fndecl));
+	      tree alloc_size = lookup_attribute ("alloc_size", attrs);
+	      if (alloc_size)
+		warn_for_alloc_size (location, ttl, rhs, alloc_size);
 	    }
-	}
 
       /* See if the pointers point to incompatible address spaces.  */
       asl = TYPE_ADDR_SPACE (ttl);
@@ -8460,6 +8608,13 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	/* Although the types are compatible, we may require a
 	   conversion.  */
 	inside_init = convert (type, inside_init);
+
+      if ((code == RECORD_TYPE || code == UNION_TYPE)
+	  && !comptypes (TYPE_MAIN_VARIANT (type), TYPE_MAIN_VARIANT (TREE_TYPE (inside_init))))
+	{
+	  error_init (init_loc, "invalid initializer");
+	  return error_mark_node;
+	}
 
       if (require_constant
 	  && TREE_CODE (inside_init) == COMPOUND_LITERAL_EXPR)
@@ -10546,7 +10701,7 @@ initialize_elementwise_p (tree type, tree value)
     return !VECTOR_TYPE_P (value_type);
 
   if (AGGREGATE_TYPE_P (type))
-    return type != TYPE_MAIN_VARIANT (value_type);
+    return !comptypes (type, TYPE_MAIN_VARIANT (value_type));
 
   return false;
 }

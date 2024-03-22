@@ -1,26 +1,24 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic" } */
 
 int
-bar (int *x, int a, int b, int n)
+x264_pixel_8x8 (unsigned char *pix1, unsigned char *pix2, int i_stride_pix2)
 {
-  x = __builtin_assume_aligned (x, __BIGGEST_ALIGNMENT__);
-  int sum1 = 0;
-  int sum2 = 0;
-  for (int i = 0; i < n; ++i)
+  int i_sum = 0;
+  for (int y = 0; y < 8; y++)
     {
-      sum1 += x[2*i] - a;
-      sum1 += x[2*i+1] * b;
-      sum2 += x[2*i] - b;
-      sum2 += x[2*i+1] * a;
+      i_sum += __builtin_abs (pix1[0] - pix2[0]);
+      i_sum += __builtin_abs (pix1[1] - pix2[1]);
+      i_sum += __builtin_abs (pix1[2] - pix2[2]);
+      i_sum += __builtin_abs (pix1[3] - pix2[3]);
+      i_sum += __builtin_abs (pix1[4] - pix2[4]);
+      i_sum += __builtin_abs (pix1[5] - pix2[5]);
+      i_sum += __builtin_abs (pix1[6] - pix2[6]);
+      i_sum += __builtin_abs (pix1[7] - pix2[7]);
+      pix1 += 16;
+      pix2 += i_stride_pix2;
     }
-  return sum1 + sum2;
+  return i_sum;
 }
 
 /* { dg-final { scan-assembler {e32,m2} } } */
-/* { dg-final { scan-assembler-not {jr} } } */
-/* { dg-final { scan-assembler-times {ret} 2 } } *
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-not "Maximum lmul = 1" "vect" } } */

@@ -1244,7 +1244,7 @@ END stop ;
 *)
 
 PROCEDURE CheckReadBeforeInitQuad (procSym: CARDINAL; quad: CARDINAL;
-                                   warning: BOOLEAN; lst: List; i: CARDINAL) : BOOLEAN ;
+                                   warning: BOOLEAN; i: CARDINAL) : BOOLEAN ;
 VAR
    op                          : QuadOperator ;
    op1, op2, op3               : CARDINAL ;
@@ -1382,7 +1382,7 @@ END CheckReadBeforeInitQuad ;
 
 PROCEDURE FilterCheckReadBeforeInitQuad (procSym: CARDINAL; start: CARDINAL;
                                          warning: BOOLEAN;
-                                         lst: List; i: CARDINAL) : BOOLEAN ;
+                                         i: CARDINAL) : BOOLEAN ;
 VAR
    Op           : QuadOperator ;
    Op1, Op2, Op3: CARDINAL ;
@@ -1390,7 +1390,7 @@ BEGIN
    GetQuad (start, Op, Op1, Op2, Op3) ;
    IF (Op # RangeCheckOp) AND (Op # StatementNoteOp)
    THEN
-      RETURN CheckReadBeforeInitQuad (procSym, start, warning, lst, i)
+      RETURN CheckReadBeforeInitQuad (procSym, start, warning, i)
    END ;
    RETURN FALSE
 END FilterCheckReadBeforeInitQuad ;
@@ -1403,10 +1403,10 @@ END FilterCheckReadBeforeInitQuad ;
 PROCEDURE CheckReadBeforeInitFirstBasicBlock (procSym: CARDINAL;
                                               start, end: CARDINAL;
                                               warning: BOOLEAN;
-                                              lst: List; i: CARDINAL) ;
+                                              i: CARDINAL) ;
 BEGIN
    LOOP
-      IF FilterCheckReadBeforeInitQuad (procSym, start, warning, lst, i)
+      IF FilterCheckReadBeforeInitQuad (procSym, start, warning, i)
       THEN
       END ;
       IF start = end
@@ -1630,7 +1630,7 @@ BEGIN
       bbPtr := Indexing.GetIndice (bbArray, bbi) ;
       CheckReadBeforeInitFirstBasicBlock (procSym,
                                           bbPtr^.start, bbPtr^.end,
-                                          warning, lst, i) ;
+                                          warning, i) ;
       IF bbPtr^.endCond
       THEN
          (* Check to see if we are moving into an conditional block in which case

@@ -2318,6 +2318,7 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 		      go_error_at(id_location,
 				  "%qs repeated on left side of %s",
 				  Gogo::message_name(id).c_str(), ":=");
+		      id = this->gogo_->pack_hidden_name("_", false);
 		    }
 		  til.push_back(Typed_identifier(id, NULL, location));
 		}
@@ -2330,10 +2331,12 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 
 	  id = this->gogo_->pack_hidden_name(id, is_id_exported);
 	  ins = uniq_idents.insert(id);
+	  std::string name = id;
 	  if (!ins.second && !Gogo::is_sink_name(id))
 	    {
 	      dup_name = Gogo::message_name(id);
 	      dup_loc = id_location;
+	      id = this->gogo_->pack_hidden_name("_", false);
 	    }
 	  til.push_back(Typed_identifier(id, NULL, location));
 	}
@@ -3511,9 +3514,9 @@ Parse::id_to_expression(const std::string& name, Location location,
       if (is_composite_literal_key)
 	{
 	  // This is a composite literal key, which means that it
-	  // could just be a struct field name, so avoid confusiong by
+	  // could just be a struct field name, so avoid confusion by
 	  // not adding it to the bindings.  We'll look up the name
-	  // later during the lowering phase if necessary.
+	  // later during the determine types phase if necessary.
 	  return Expression::make_composite_literal_key(name, location);
 	}
       named_object = this->gogo_->add_unknown_name(name, location);
@@ -4496,12 +4499,12 @@ Parse::return_stat()
   Expression_list* vals = NULL;
   if (this->expression_may_start_here())
     vals = this->expression_list(NULL, false, true);
-  this->gogo_->add_statement(Statement::make_return_statement(vals, location));
+  Named_object* function = this->gogo_->current_function();
+  this->gogo_->add_statement(Statement::make_return_statement(function, vals,
+							      location));
 
-  if (vals == NULL
-      && this->gogo_->current_function()->func_value()->results_are_named())
+  if (vals == NULL && function->func_value()->results_are_named())
     {
-      Named_object* function = this->gogo_->current_function();
       Function::Results* results = function->func_value()->result_variables();
       for (Function::Results::const_iterator p = results->begin();
 	   p != results->end();

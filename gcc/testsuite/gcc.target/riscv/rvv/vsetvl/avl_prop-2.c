@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zve32f -mabi=lp64d -O3 --param=riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv64gc_zve32f -mabi=lp64d -O3 --param=riscv-autovec-preference=fixed-vlmax" } */
 
 int d0, sj, v0, rp, zi;
 

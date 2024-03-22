@@ -268,6 +268,17 @@ btf_emit_id_p (ctf_id_t id)
 	  && (btf_id_map[id] <= BTF_MAX_TYPE));
 }
 
+/* Return true if DTD is a forward-declared enum.  The BTF representation
+   of forward declared enums is not formally defined.  */
+
+static bool
+btf_fwd_to_enum_p (ctf_dtdef_ref dtd)
+{
+  uint32_t btf_kind = get_btf_kind (CTF_V2_INFO_KIND (dtd->dtd_data.ctti_info));
+
+  return (btf_kind == BTF_KIND_FWD && dtd->dtd_data.ctti_type == CTF_K_ENUM);
+}
+
 /* Each BTF type can be followed additional, variable-length information
    completing the description of the type. Calculate the number of bytes
    of variable information required to encode a given type.  */
@@ -753,8 +764,12 @@ btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ref_id)
       uint32_t ref_kind
 	= get_btf_kind (CTF_V2_INFO_KIND (ref_type->dtd_data.ctti_info));
 
+      const char *kind_name = btf_fwd_to_enum_p (ref_type)
+	? btf_kind_name (BTF_KIND_ENUM)
+	: btf_kind_name (ref_kind);
+
       dw2_asm_output_data (4, ref_id, "%s: (BTF_KIND_%s '%s')",
-			   prefix, btf_kind_name (ref_kind),
+			   prefix, kind_name,
 			   get_btf_type_name (ref_type));
     }
 }
@@ -765,11 +780,11 @@ btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ref_id)
 static void
 btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 {
-  uint32_t btf_kind, btf_kflag, btf_vlen, btf_size_type;
+  uint32_t btf_kind, btf_kflag, btf_vlen, btf_size;
   uint32_t ctf_info = dtd->dtd_data.ctti_info;
 
   btf_kind = get_btf_kind (CTF_V2_INFO_KIND (ctf_info));
-  btf_size_type = dtd->dtd_data.ctti_type;
+  btf_size = dtd->dtd_data.ctti_size;
   btf_vlen = CTF_V2_INFO_VLEN (ctf_info);
 
   /* By now any unrepresentable types have been removed.  */
@@ -777,7 +792,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 
   /* Size 0 integers are redundant definitions of void. None should remain
      in the types list by this point.  */
-  gcc_assert (btf_kind != BTF_KIND_INT || btf_size_type >= 1);
+  gcc_assert (btf_kind != BTF_KIND_INT || btf_size >= 1);
 
   /* Re-encode the ctti_info to BTF.  */
   /* kflag is 1 for structs/unions with a bitfield member.
@@ -810,16 +825,26 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
      structs and forwards to unions. The dwarf2ctf conversion process stores
      the kind of the forward in ctti_type, but for BTF this must be 0 for
      forwards, with only the KIND_FLAG to distinguish.
-     At time of writing, BTF forwards to enums are unspecified.  */
-  if (btf_kind == BTF_KIND_FWD)
+     Forwards to enum types are special-cased below.  */
+  else if (btf_kind == BTF_KIND_FWD)
     {
       if (dtd->dtd_data.ctti_type == CTF_K_UNION)
 	btf_kflag = 1;
 
-      btf_size_type = 0;
+      /* PR debug/111735.  Encode foward-declared enums as BTF_KIND_ENUM
+	 with vlen=0.  A representation for these is not formally defined;
+	 this is the de-facto standard used by other tools like clang
+	 and pahole.  */
+      else if (dtd->dtd_data.ctti_type == CTF_K_ENUM)
+	{
+	  btf_kind = BTF_KIND_ENUM;
+	  btf_vlen = 0;
+	}
+
+      btf_size = 0;
     }
 
-  if (btf_kind == BTF_KIND_ENUM)
+  else if (btf_kind == BTF_KIND_ENUM)
     {
       btf_kflag = dtd->dtd_enum_unsigned
 		    ? BTF_KF_ENUM_UNSIGNED
@@ -829,7 +854,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
    }
 
   /* PR debug/112656.  BTF_KIND_FUNC_PROTO is always anonymous.  */
-  if (btf_kind == BTF_KIND_FUNC_PROTO)
+  else if (btf_kind == BTF_KIND_FUNC_PROTO)
     dtd->dtd_data.ctti_name = 0;
 
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name,
@@ -848,8 +873,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
     case BTF_KIND_ENUM:
     case BTF_KIND_DATASEC:
     case BTF_KIND_ENUM64:
-      dw2_asm_output_data (4, dtd->dtd_data.ctti_size, "btt_size: %uB",
-			   dtd->dtd_data.ctti_size);
+      dw2_asm_output_data (4, btf_size, "btt_size: %uB", btf_size);
       return;
     case BTF_KIND_ARRAY:
     case BTF_KIND_FWD:

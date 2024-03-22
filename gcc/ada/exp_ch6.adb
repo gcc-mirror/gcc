@@ -5441,29 +5441,6 @@ package body Exp_Ch6 is
    is
       Par : constant Node_Id := Parent (N);
 
-      function Is_Element_Reference (N : Node_Id) return Boolean;
-      --  Determine whether node N denotes a reference to an Ada 2012 container
-      --  element.
-
-      --------------------------
-      -- Is_Element_Reference --
-      --------------------------
-
-      function Is_Element_Reference (N : Node_Id) return Boolean is
-         Ref : constant Node_Id := Original_Node (N);
-
-      begin
-         --  Analysis marks an element reference by setting the generalized
-         --  indexing attribute of an indexed component before the component
-         --  is rewritten into a function call.
-
-         return
-           Nkind (Ref) = N_Indexed_Component
-             and then Present (Generalized_Indexing (Ref));
-      end Is_Element_Reference;
-
-   --  Start of processing for Expand_Ctrl_Function_Call
-
    begin
       --  Optimization: if the returned value is returned again, then no need
       --  to copy/readjust/finalize, we can just pass the value through (see
@@ -5500,30 +5477,15 @@ package body Exp_Ch6 is
 
       Set_Analyzed (N);
 
-      --  Apply the transformation, unless it was already applied manually
+      --  Apply the transformation unless it was already applied earlier. This
+      --  may happen because Remove_Side_Effects can be called during semantic
+      --  analysis, for example from Build_Actual_Subtype_Of_Component. It is
+      --  crucial to avoid creating a reference of reference here, because it
+      --  would not be subsequently recognized by the Is_Finalizable_Transient
+      --  and Requires_Cleanup_Actions predicates.
 
       if Nkind (Par) /= N_Reference then
          Remove_Side_Effects (N);
-      end if;
-
-      --  The side effect removal of the function call produced a temporary.
-      --  When the context is a case expression, if expression, or expression
-      --  with actions, the lifetime of the temporary must be extended to match
-      --  that of the context. Otherwise the function result will be finalized
-      --  too early and affect the result of the expression. To prevent this
-      --  unwanted effect, the temporary should not be considered for clean up
-      --  actions by the general finalization machinery.
-
-      --  Exception to this rule are references to Ada 2012 container elements.
-      --  Such references must be finalized at the end of each iteration of the
-      --  related quantified expression, otherwise the container will remain
-      --  busy.
-
-      if Nkind (N) = N_Explicit_Dereference
-        and then Within_Case_Or_If_Expression (N)
-        and then not Is_Element_Reference (N)
-      then
-         Set_Is_Ignored_Transient (Entity (Prefix (N)));
       end if;
    end Expand_Ctrl_Function_Call;
 

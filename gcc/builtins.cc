@@ -1403,16 +1403,24 @@ get_memory_rtx (tree exp, tree len)
 
 /* Built-in functions to perform an untyped call and return.  */
 
-#define set_apply_args_size(x) \
-  (this_target_builtins->x_apply_args_size_plus_one = 1 + (x))
-#define get_apply_args_size() \
-  (this_target_builtins->x_apply_args_size_plus_one - 1)
+/* Wrapper that implicitly applies a delta when getting or setting the
+   enclosed value.  */
+template <typename T>
+class delta_type
+{
+  T &value; T const delta;
+public:
+  delta_type (T &val, T dlt) : value (val), delta (dlt) {}
+  operator T () const { return value + delta; }
+  T operator = (T val) const { value = val - delta; return val; }
+};
+
+#define saved_apply_args_size \
+  (delta_type<int> (this_target_builtins->x_apply_args_size_plus_one, -1))
 #define apply_args_mode \
   (this_target_builtins->x_apply_args_mode)
-#define set_apply_result_size(x) \
-  (this_target_builtins->x_apply_result_size_plus_one = 1 + (x))
-#define get_apply_result_size() \
-  (this_target_builtins->x_apply_result_size_plus_one - 1)
+#define saved_apply_result_size \
+  (delta_type<int> (this_target_builtins->x_apply_result_size_plus_one, -1))
 #define apply_result_mode \
   (this_target_builtins->x_apply_result_mode)
 
@@ -1422,7 +1430,7 @@ get_memory_rtx (tree exp, tree len)
 static int
 apply_args_size (void)
 {
-  int size = get_apply_args_size ();
+  int size = saved_apply_args_size;
   int align;
   unsigned int regno;
 
@@ -1456,7 +1464,7 @@ apply_args_size (void)
 	else
 	  apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
 
-      set_apply_args_size (size);
+      saved_apply_args_size = size;
     }
   return size;
 }
@@ -1467,7 +1475,7 @@ apply_args_size (void)
 static int
 apply_result_size (void)
 {
-  int size = get_apply_result_size ();
+  int size = saved_apply_result_size;
   int align, regno;
 
   /* The values computed by this function never change.  */
@@ -1500,7 +1508,7 @@ apply_result_size (void)
       size = APPLY_RESULT_SIZE;
 #endif
 
-      set_apply_result_size (size);
+      saved_apply_result_size = size;
     }
   return size;
 }
@@ -4483,10 +4491,6 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
       if (max_len >> max_bits > min_len >> max_bits)
 	tst_bits = max_bits;
     }
-  /* ??? Do we have to check that all powers of two lengths from
-     max_bits down to ctz_len pass can_store_by_pieces?  As in, could
-     it possibly be that xlenest passes while smaller power-of-two
-     sizes don't?  */
 
   by_pieces_constfn constfun;
   void *constfundata;
@@ -5443,8 +5447,38 @@ expand_builtin_frame_address (tree fndecl, tree exp)
 static rtx
 expand_builtin_stack_address ()
 {
-  return convert_to_mode (ptr_mode, copy_to_reg (stack_pointer_rtx),
-			  STACK_UNSIGNED);
+  rtx ret = convert_to_mode (ptr_mode, copy_to_reg (stack_pointer_rtx),
+			     STACK_UNSIGNED);
+
+  /* Unbias the stack pointer, bringing it to the boundary between the
+     stack area claimed by the active function calling this builtin,
+     and stack ranges that could get clobbered if it called another
+     function.  It should NOT encompass any stack red zone, that is
+     used in leaf functions.
+
+     On SPARC, the register save area is *not* considered active or
+     used by the active function, but rather as akin to the area in
+     which call-preserved registers are saved by callees.  This
+     enables __strub_leave to clear what would otherwise overlap with
+     its own register save area.
+
+     If the address is computed too high or too low, parts of a stack
+     range that should be scrubbed may be left unscrubbed, scrubbing
+     may corrupt active portions of the stack frame, and stack ranges
+     may be doubly-scrubbed by caller and callee.
+
+     In order for it to be just right, the area delimited by
+     @code{__builtin_stack_address} and @code{__builtin_frame_address
+     (0)} should encompass caller's registers saved by the function,
+     local on-stack variables and @code{alloca} stack areas.
+     Accumulated outgoing on-stack arguments, preallocated as part of
+     a function's own prologue, are to be regarded as part of the
+     (caller) function's active area as well, whereas those pushed or
+     allocated temporarily for a call are regarded as part of the
+     callee's stack range, rather than the caller's.  */
+  ret = plus_constant (ptr_mode, ret, STACK_POINTER_OFFSET);
+
+  return force_reg (ptr_mode, ret);
 }
 
 /* Expand a call to builtin function __builtin_strub_enter.  */

@@ -304,7 +304,9 @@
 				 (umax "maxu")
 				 (clz "clz")
 				 (ctz "ctz")
-				 (popcount "cpop")])
+				 (popcount "cpop")
+				 (rotate "rol")
+				 (rotatert "ror")])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators.

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax -O3" } */
+/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv64gcv_zvl256b -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax -O3" } */
 
 
 #include <stdint-gcc.h>

@@ -128,6 +128,7 @@ AVAIL (hint_pause, (!0))
 // CORE-V AVAIL
 AVAIL (cvmac, TARGET_XCVMAC && !TARGET_64BIT)
 AVAIL (cvalu, TARGET_XCVALU && !TARGET_64BIT)
+AVAIL (cvelw, TARGET_XCVELW && !TARGET_64BIT)
 
 /* Construct a riscv_builtin_description from the given arguments.
 
@@ -168,6 +169,7 @@ AVAIL (cvalu, TARGET_XCVALU && !TARGET_64BIT)
 #define RISCV_ATYPE_HI intHI_type_node
 #define RISCV_ATYPE_SI intSI_type_node
 #define RISCV_ATYPE_VOID_PTR ptr_type_node
+#define RISCV_ATYPE_INT_PTR integer_ptr_type_node
 
 /* RISCV_FTYPE_ATYPESN takes N RISCV_FTYPES-like type codes and lists
    their associated RISCV_ATYPEs.  */

@@ -541,11 +541,6 @@ package Sinput is
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
-   function Get_Logical_Line_Number_Img
-     (P : Source_Ptr) return String;
-   --  Same as above function, but returns the line number as a string of
-   --  decimal digits, with no leading space. Destroys Name_Buffer.
-
    function Get_Physical_Line_Number
      (P : Source_Ptr) return Physical_Line_Number;
    --  The line number of the specified source position is obtained by

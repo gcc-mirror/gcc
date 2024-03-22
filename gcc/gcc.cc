@@ -5008,7 +5008,7 @@ process_command (unsigned int decoded_options_count,
     {
       if (!any_link_options_p && !static_p)
 	{
-#ifdef HAVE_LD_PIE
+#if defined HAVE_LD_PIE && defined LD_PIE_SPEC
 	  save_switch (LD_PIE_SPEC, 0, NULL, /*validated=*/true, /*known=*/false);
 #endif
 	  /* These are passed straight down to collect2 so we have to break
@@ -8907,7 +8907,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2023 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2024 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),

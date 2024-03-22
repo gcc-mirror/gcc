@@ -141,6 +141,7 @@ else version (SPARC64)  private enum __aligned__ = 16;
 else version (SystemZ)  private enum __aligned__ = 8;
 else version (X86)      private enum __aligned__ = 16;
 else version (X86_64)   private enum __aligned__ = 16;
+else version (LoongArch64) private enum __aligned__ = 16;
 else static assert( false, "Platform not supported.");
 
 align(__aligned__) struct _Unwind_Exception

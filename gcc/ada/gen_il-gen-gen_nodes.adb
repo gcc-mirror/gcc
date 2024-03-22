@@ -493,7 +493,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Is_Parenthesis_Aggregate, Flag),
         Sy (Is_Homogeneous_Aggregate, Flag),
         Sy (Is_Enum_Array_Aggregate, Flag),
-        Sm (Aggregate_Bounds, Node_Id),
+        Sm (Aggregate_Bounds_Or_Ancestor_Type, Node_Id),
         Sm (Entity_Or_Associated_Node, Node_Id), -- just Associated_Node
         Sm (Compile_Time_Known_Aggregate, Flag),
         Sm (Expansion_Delayed, Flag),

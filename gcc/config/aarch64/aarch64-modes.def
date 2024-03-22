@@ -96,8 +96,12 @@ INT_MODE (XI, 64);
 
 /* V8DI mode.  */
 VECTOR_MODE_WITH_PREFIX (V, INT, DI, 8, 5);
-
 ADJUST_ALIGNMENT (V8DI, 8);
+
+/* V2x4QImode.  Used in load/store pair patterns.  */
+VECTOR_MODE_WITH_PREFIX (V2x, INT, QI, 4, 5);
+ADJUST_NUNITS (V2x4QI, 8);
+ADJUST_ALIGNMENT (V2x4QI, 4);
 
 /* Define Advanced SIMD modes for structures of 2, 3 and 4 d-registers.  */
 #define ADV_SIMD_D_REG_STRUCT_MODES(NVECS, VB, VH, VS, VD) \

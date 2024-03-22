@@ -34,6 +34,8 @@
 #define __DISABLE_AVX512BW__
 #endif /* __AVX512BW__ */
 
+typedef unsigned long long __mmask64;
+
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_avx512_set_epi32 (int __q3, int __q2, int __q1, int __q0)
 {
@@ -223,27 +225,6 @@ _kshiftri_mask32 (__mmask32 __A, unsigned int __B)
 
 #endif
 
-#ifdef __DISABLE_AVX512BW__
-#undef __DISABLE_AVX512BW__
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512BW__ */
-
-#if !defined (__AVX512BW__) || !defined (__EVEX512__)
-#pragma GCC push_options
-#pragma GCC target("avx512bw,evex512")
-#define __DISABLE_AVX512BW_512__
-#endif /* __AVX512BW_512__ */
-
-/* Internal data types for implementing the intrinsics.  */
-typedef short __v32hi __attribute__ ((__vector_size__ (64)));
-typedef short __v32hi_u __attribute__ ((__vector_size__ (64),	\
-					__may_alias__, __aligned__ (1)));
-typedef char __v64qi __attribute__ ((__vector_size__ (64)));
-typedef char __v64qi_u __attribute__ ((__vector_size__ (64),	\
-				       __may_alias__, __aligned__ (1)));
-
-typedef unsigned long long __mmask64;
-
 extern __inline unsigned char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _ktest_mask64_u8  (__mmask64 __A,  __mmask64 __B, unsigned char *__CF)
@@ -364,6 +345,25 @@ _kandn_mask64 (__mmask64 __A, __mmask64 __B)
 {
   return (__mmask64) __builtin_ia32_kandndi ((__mmask64) __A, (__mmask64) __B);
 }
+
+#ifdef __DISABLE_AVX512BW__
+#undef __DISABLE_AVX512BW__
+#pragma GCC pop_options
+#endif /* __DISABLE_AVX512BW__ */
+
+#if !defined (__AVX512BW__) || !defined (__EVEX512__)
+#pragma GCC push_options
+#pragma GCC target("avx512bw,evex512")
+#define __DISABLE_AVX512BW_512__
+#endif /* __AVX512BW_512__ */
+
+/* Internal data types for implementing the intrinsics.  */
+typedef short __v32hi __attribute__ ((__vector_size__ (64)));
+typedef short __v32hi_u __attribute__ ((__vector_size__ (64),	\
+					__may_alias__, __aligned__ (1)));
+typedef char __v64qi __attribute__ ((__vector_size__ (64)));
+typedef char __v64qi_u __attribute__ ((__vector_size__ (64),	\
+				       __may_alias__, __aligned__ (1)));
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))

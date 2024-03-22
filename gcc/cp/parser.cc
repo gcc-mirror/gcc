@@ -9190,6 +9190,8 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    = make_location (start_loc, start_loc, parser->lexer);
 	  /* Create an expression representing the address.  */
 	  expression = finish_label_address_expr (identifier, combined_loc);
+	  if (TREE_CODE (expression) == ADDR_EXPR)
+	    mark_label_addressed (identifier);
 	  if (cp_parser_non_integral_constant_expression (parser,
 							  NIC_ADDR_LABEL))
 	    expression = error_mark_node;
@@ -25102,8 +25104,21 @@ cp_parser_parameter_declaration_clause (cp_parser* parser,
      committed yet, nor should we.  Pushing here will detect the error
      of redefining a parameter.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
-    for (tree p : pending_decls)
-      pushdecl (p);
+    {
+      for (tree p : pending_decls)
+	pushdecl (p);
+
+      /* Delayed checking of auto parameters.  */
+      if (!parser->auto_is_implicit_function_template_parm_p
+	  && cxx_dialect >= cxx14)
+	for (tree p = parameters; p; p = TREE_CHAIN (p))
+	  if (type_uses_auto (TREE_TYPE (TREE_VALUE (p))))
+	    {
+	      error_at (location_of (TREE_VALUE (p)),
+			"%<auto%> parameter not permitted in this context");
+	      TREE_TYPE (TREE_VALUE (p)) = error_mark_node;
+	    }
+    }
 
   /* Finish the parameter list.  */
   if (!ellipsis_p)
@@ -46949,20 +46964,8 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	  continue;
 	}
 
-      if (lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl))
-	  || lookup_attribute ("omp declare target link",
-			       DECL_ATTRIBUTES (decl)))
-	{
-	  error_at (loc, "variable %qD used more than once with "
-		    "%<#pragma acc declare%>", decl);
-	  error = true;
-	  continue;
-	}
-
       if (!error)
 	{
-	  tree id;
-
 	  if (DECL_LOCAL_DECL_P (decl))
 	    /* We need to mark the aliased decl, as that is the entity
 	       that is being referred to.  This won't work for
@@ -46974,6 +46977,17 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	      if (alias != error_mark_node)
 		decl = alias;
 
+	  if (lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl))
+	      || lookup_attribute ("omp declare target link",
+				   DECL_ATTRIBUTES (decl)))
+	    {
+	      error_at (loc, "variable %qD used more than once with "
+			"%<#pragma acc declare%>", decl);
+	      error = true;
+	      continue;
+	    }
+
+	  tree id;
 	  if (OMP_CLAUSE_MAP_KIND (t) == GOMP_MAP_LINK)
 	    id = get_identifier ("omp declare target link");
 	  else
@@ -47404,26 +47418,20 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
     }
 }
 
-static const char *const omp_construct_selectors[] = {
-  "simd", "target", "teams", "parallel", "for", NULL };
-static const char *const omp_device_selectors[] = {
-  "kind", "isa", "arch", NULL };
-static const char *const omp_implementation_selectors[] = {
-  "vendor", "extension", "atomic_default_mem_order", "unified_address",
-  "unified_shared_memory", "dynamic_allocators", "reverse_offload", NULL };
-static const char *const omp_user_selectors[] = {
-  "condition", NULL };
-
 /* OpenMP 5.0:
 
    trait-selector:
      trait-selector-name[([trait-score:]trait-property[,trait-property[,...]])]
 
    trait-score:
-     score(score-expression)  */
+     score(score-expression)
+
+   Note that this function returns a list of trait selectors for the
+   trait-selector-set SET.  */
 
 static tree
-cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
+cp_parser_omp_context_selector (cp_parser *parser, enum omp_tss_code set,
+				bool has_parms_p)
 {
   tree ret = NULL_TREE;
   do
@@ -47438,77 +47446,44 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 	  return error_mark_node;
 	}
 
-      tree properties = NULL_TREE;
-      const char *const *selectors = NULL;
-      bool allow_score = true;
-      bool allow_user = false;
-      int property_limit = 0;
-      enum { CTX_PROPERTY_NONE, CTX_PROPERTY_USER, CTX_PROPERTY_NAME_LIST,
-	     CTX_PROPERTY_ID, CTX_PROPERTY_EXPR,
-	     CTX_PROPERTY_SIMD } property_kind = CTX_PROPERTY_NONE;
-      switch (IDENTIFIER_POINTER (set)[0])
+      enum omp_ts_code sel
+	= omp_lookup_ts_code (set, IDENTIFIER_POINTER (selector));
+
+      if (sel == OMP_TRAIT_INVALID)
 	{
-	case 'c': /* construct */
-	  selectors = omp_construct_selectors;
-	  allow_score = false;
-	  property_limit = 1;
-	  property_kind = CTX_PROPERTY_SIMD;
-	  break;
-	case 'd': /* device */
-	  selectors = omp_device_selectors;
-	  allow_score = false;
-	  allow_user = true;
-	  property_limit = 3;
-	  property_kind = CTX_PROPERTY_NAME_LIST;
-	  break;
-	case 'i': /* implementation */
-	  selectors = omp_implementation_selectors;
-	  allow_user = true;
-	  property_limit = 3;
-	  property_kind = CTX_PROPERTY_NAME_LIST;
-	  break;
-	case 'u': /* user */
-	  selectors = omp_user_selectors;
-	  property_limit = 1;
-	  property_kind = CTX_PROPERTY_EXPR;
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-      for (int i = 0; ; i++)
-	{
-	  if (selectors[i] == NULL)
+	  /* Per the spec, "Implementations can ignore specified selectors
+	     that are not those described in this section"; however, we
+	     must record such selectors because they cause match failures.  */
+	  warning_at (cp_lexer_peek_token (parser->lexer)->location,
+		      OPT_Wopenmp,
+		      "unknown selector %qs for context selector set %qs",
+		      IDENTIFIER_POINTER (selector),  omp_tss_map[set]);
+	  cp_lexer_consume_token (parser->lexer);
+	  ret = make_trait_selector (sel, NULL_TREE, NULL_TREE, ret);
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+	    for (size_t n = cp_parser_skip_balanced_tokens (parser, 1) - 1;
+		 n; --n)
+	      cp_lexer_consume_token (parser->lexer);
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	    {
-	      if (allow_user)
-		{
-		  property_kind = CTX_PROPERTY_USER;
-		  break;
-		}
-	      else
-		{
-		  error ("selector %qs not allowed for context selector "
-			 "set %qs", IDENTIFIER_POINTER (selector),
-			 IDENTIFIER_POINTER (set));
-		  cp_lexer_consume_token (parser->lexer);
-		  return error_mark_node;
-		}
+	      cp_lexer_consume_token (parser->lexer);
+	      continue;
 	    }
-	  if (i == property_limit)
-	    property_kind = CTX_PROPERTY_NONE;
-	  if (strcmp (selectors[i], IDENTIFIER_POINTER (selector)) == 0)
+	  else
 	    break;
 	}
-      if (property_kind == CTX_PROPERTY_NAME_LIST
-	  && IDENTIFIER_POINTER (set)[0] == 'i'
-	  && strcmp (IDENTIFIER_POINTER (selector),
-		     "atomic_default_mem_order") == 0)
-	property_kind = CTX_PROPERTY_ID;
 
       cp_lexer_consume_token (parser->lexer);
 
+      tree properties = NULL_TREE;
+      tree scoreval = NULL_TREE;
+      enum omp_tp_type property_kind = omp_ts_map[sel].tp_type;
+      bool allow_score = omp_ts_map[sel].allow_score;
+      tree t;
+
       if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
 	{
-	  if (property_kind == CTX_PROPERTY_NONE)
+	  if (property_kind == OMP_TRAIT_PROPERTY_NONE)
 	    {
 	      error ("selector %qs does not accept any properties",
 		     IDENTIFIER_POINTER (selector));
@@ -47519,8 +47494,7 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 	  parens.consume_open (parser);
 
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-	  if (allow_score
-	      && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
 	      && strcmp (IDENTIFIER_POINTER (token->u.value), "score") == 0
 	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN))
 	    {
@@ -47541,22 +47515,25 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		    cp_parser_skip_to_closing_parenthesis (parser, true,
 							   false, true);
 		  cp_parser_require (parser, CPP_COLON, RT_COLON);
-		  if (score != error_mark_node)
+		  if (!allow_score)
+		    error_at (token->location,
+			      "%<score%> cannot be specified in traits "
+			      "in the %qs trait-selector-set",
+			      omp_tss_map[set]);
+		  else if (score != error_mark_node)
 		    {
 		      score = fold_non_dependent_expr (score);
 		      if (value_dependent_expression_p (score))
-			properties = tree_cons (get_identifier (" score"),
-						score, properties);
+			scoreval = score;
 		      else if (!INTEGRAL_TYPE_P (TREE_TYPE (score))
 			       || TREE_CODE (score) != INTEGER_CST)
-			error_at (token->location, "score argument must be "
-				  "constant integer expression");
+			error_at (token->location, "%<score%> argument must "
+				  "be constant integer expression");
 		      else if (tree_int_cst_sgn (score) < 0)
-			error_at (token->location, "score argument must be "
-				  "non-negative");
+			error_at (token->location, "%<score%> argument must "
+				  "be non-negative");
 		      else
-			properties = tree_cons (get_identifier (" score"),
-						score, properties);
+			scoreval = score;
 		    }
 		}
 	      else
@@ -47567,42 +47544,14 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 
 	  switch (property_kind)
 	    {
-	      tree t;
-	    case CTX_PROPERTY_USER:
-	      do
-		{
-		  t = cp_parser_constant_expression (parser);
-		  if (t != error_mark_node)
-		    {
-		      t = fold_non_dependent_expr (t);
-		      if (TREE_CODE (t) == STRING_CST)
-			properties = tree_cons (NULL_TREE, t, properties);
-		      else if (!value_dependent_expression_p (t)
-			       && (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-				   || !tree_fits_shwi_p (t)))
-			error_at (token->location, "property must be "
-				  "constant integer expression or string "
-				  "literal");
-		      else
-			properties = tree_cons (NULL_TREE, t, properties);
-		    }
-		  else
-		    return error_mark_node;
-
-		  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
-		    cp_lexer_consume_token (parser->lexer);
-		  else
-		    break;
-		}
-	      while (1);
-	      break;
-	    case CTX_PROPERTY_ID:
+	    case OMP_TRAIT_PROPERTY_ID:
 	      if (cp_lexer_next_token_is (parser->lexer, CPP_KEYWORD)
 		  || cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 		{
 		  tree prop = cp_lexer_peek_token (parser->lexer)->u.value;
 		  cp_lexer_consume_token (parser->lexer);
-		  properties = tree_cons (prop, NULL_TREE, properties);
+		  properties = make_trait_property (prop, NULL_TREE,
+						    properties);
 		}
 	      else
 		{
@@ -47610,14 +47559,15 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		  return error_mark_node;
 		}
 	      break;
-	    case CTX_PROPERTY_NAME_LIST:
+	    case OMP_TRAIT_PROPERTY_NAME_LIST:
 	      do
 		{
-		  tree prop = NULL_TREE, value = NULL_TREE;
+		  tree prop = OMP_TP_NAMELIST_NODE;
+		  tree value = NULL_TREE;
 		  if (cp_lexer_next_token_is (parser->lexer, CPP_KEYWORD)
 		      || cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 		    {
-		      prop = cp_lexer_peek_token (parser->lexer)->u.value;
+		      value = cp_lexer_peek_token (parser->lexer)->u.value;
 		      cp_lexer_consume_token (parser->lexer);
 		    }
 		  else if (cp_lexer_next_token_is (parser->lexer, CPP_STRING))
@@ -47631,7 +47581,7 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		      return error_mark_node;
 		    }
 
-		  properties = tree_cons (prop, value, properties);
+		  properties = make_trait_property (prop, value, properties);
 
 		  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 		    cp_lexer_consume_token (parser->lexer);
@@ -47640,7 +47590,9 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		}
 	      while (1);
 	      break;
-	    case CTX_PROPERTY_EXPR:
+	    case OMP_TRAIT_PROPERTY_EXPR:
+	      /* FIXME: this is bogus, the expression need
+		 not be constant.  */
 	      t = cp_parser_constant_expression (parser);
 	      if (t != error_mark_node)
 		{
@@ -47651,23 +47603,38 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		    error_at (token->location, "property must be "
 			      "constant integer expression");
 		  else
-		    properties = tree_cons (NULL_TREE, t, properties);
+		    properties = make_trait_property (NULL_TREE, t,
+						      properties);
 		}
 	      else
 		return error_mark_node;
 	      break;
-	    case CTX_PROPERTY_SIMD:
-	      if (!has_parms_p)
+	    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
+	      if (sel == OMP_TRAIT_CONSTRUCT_SIMD)
 		{
-		  error_at (token->location, "properties for %<simd%> "
-			    "selector may not be specified in "
-			    "%<metadirective%>");
+		  if (!has_parms_p)
+		    {
+		      error_at (token->location, "properties for %<simd%> "
+				"selector may not be specified in "
+				"%<metadirective%>");
+		      return error_mark_node;
+		    }
+		  properties
+		    = cp_parser_omp_all_clauses (parser,
+						 OMP_DECLARE_SIMD_CLAUSE_MASK,
+						 "simd", NULL, true, 2);
+		}
+	      else if (sel == OMP_TRAIT_IMPLEMENTATION_REQUIRES)
+		{
+		  /* FIXME: The "requires" selector was added in OpenMP 5.1.
+		     Currently only the now-deprecated syntax
+		     from OpenMP 5.0 is supported.  */
+		  sorry_at (token->location,
+			    "%<requires%> selector is not supported yet");
 		  return error_mark_node;
 		}
-	      properties
-		= cp_parser_omp_all_clauses (parser,
-					     OMP_DECLARE_SIMD_CLAUSE_MASK,
-					     "simd", NULL, true, 2);
+	      else
+		gcc_unreachable ();
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -47678,15 +47645,15 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 
 	  properties = nreverse (properties);
 	}
-      else if (property_kind == CTX_PROPERTY_NAME_LIST
-	       || property_kind == CTX_PROPERTY_ID
-	       || property_kind == CTX_PROPERTY_EXPR)
+      else if (property_kind != OMP_TRAIT_PROPERTY_NONE
+	       && property_kind != OMP_TRAIT_PROPERTY_CLAUSE_LIST
+	       && property_kind != OMP_TRAIT_PROPERTY_EXTENSION)
 	{
 	  cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 	  return error_mark_node;
 	}
 
-      ret = tree_cons (selector, properties, ret);
+      ret = make_trait_selector (sel, scoreval, properties, ret);
 
       if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	cp_lexer_consume_token (parser->lexer);
@@ -47722,35 +47689,14 @@ cp_parser_omp_context_selector_specification (cp_parser *parser,
       if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 	setp
 	  = IDENTIFIER_POINTER (cp_lexer_peek_token (parser->lexer)->u.value);
-      switch (setp[0])
+      enum omp_tss_code set = omp_lookup_tss_code (setp);
+
+      if (set == OMP_TRAIT_SET_INVALID)
 	{
-	case 'c':
-	  if (strcmp (setp, "construct") == 0)
-	    setp = NULL;
-	  break;
-	case 'd':
-	  if (strcmp (setp, "device") == 0)
-	    setp = NULL;
-	  break;
-	case 'i':
-	  if (strcmp (setp, "implementation") == 0)
-	    setp = NULL;
-	  break;
-	case 'u':
-	  if (strcmp (setp, "user") == 0)
-	    setp = NULL;
-	  break;
-	default:
-	  break;
-	}
-      if (setp)
-	{
-	  cp_parser_error (parser, "expected %<construct%>, %<device%>, "
-				   "%<implementation%> or %<user%>");
+	  cp_parser_error (parser, "expected context selector set name");
 	  return error_mark_node;
 	}
 
-      tree set = cp_lexer_peek_token (parser->lexer)->u.value;
       cp_lexer_consume_token (parser->lexer);
 
       if (!cp_parser_require (parser, CPP_EQ, RT_EQ))
@@ -47768,7 +47714,7 @@ cp_parser_omp_context_selector_specification (cp_parser *parser,
 	  ret = error_mark_node;
 	}
       else if (ret != error_mark_node)
-	ret = tree_cons (set, selectors, ret);
+	ret = make_trait_set_selector (set, selectors, ret);
 
       braces.require_close (parser);
 

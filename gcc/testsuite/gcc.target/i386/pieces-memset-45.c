@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=x86-64 -mprefer-vector-width=256 -mavx512f -mtune-ctrl=avx512_store_by_pieces" } */
+/* { dg-options "-O2 -march=x86-64 -mavx512f -mtune-ctrl=avx512_store_by_pieces" } */
 
 extern char *dst;
 

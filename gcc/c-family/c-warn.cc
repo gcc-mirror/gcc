@@ -2263,6 +2263,76 @@ warn_for_memset (location_t loc, tree arg0, tree arg2,
     }
 }
 
+/* Warn for calloc (sizeof (X), n).  */
+
+void
+warn_for_calloc (location_t *sizeof_arg_loc, tree callee,
+		 vec<tree, va_gc> *params, tree *sizeof_arg, tree attr)
+{
+  if (!TREE_VALUE (attr) || !TREE_CHAIN (TREE_VALUE (attr)))
+    return;
+
+  int arg1 = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr))) - 1;
+  int arg2
+    = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (TREE_VALUE (attr)))) - 1;
+  if (arg1 < 0
+      || (unsigned) arg1 >= vec_safe_length (params)
+      || arg1 >= 6
+      || arg2 < 0
+      || (unsigned) arg2 >= vec_safe_length (params)
+      || arg2 >= 6
+      || arg1 >= arg2)
+    return;
+
+  if (sizeof_arg[arg1] == NULL_TREE || sizeof_arg[arg2] != NULL_TREE)
+    return;
+
+  if (warning_at (sizeof_arg_loc[arg1], OPT_Wcalloc_transposed_args,
+		  "%qD sizes specified with %<sizeof%> in the earlier "
+		  "argument and not in the later argument", callee))
+    inform (sizeof_arg_loc[arg1], "earlier argument should specify number "
+	    "of elements, later size of each element");
+}
+
+/* Warn for allocator calls where the constant allocated size is smaller
+   than sizeof (TYPE).  */
+
+void
+warn_for_alloc_size (location_t loc, tree type, tree call, tree alloc_size)
+{
+  if (!TREE_VALUE (alloc_size))
+    return;
+
+  tree arg1 = TREE_VALUE (TREE_VALUE (alloc_size));
+  int idx1 = TREE_INT_CST_LOW (arg1) - 1;
+  if (idx1 < 0 || idx1 >= call_expr_nargs (call))
+    return;
+  arg1 = CALL_EXPR_ARG (call, idx1);
+  if (TREE_CODE (arg1) != INTEGER_CST)
+    return;
+  if (TREE_CHAIN (TREE_VALUE (alloc_size)))
+    {
+      tree arg2 = TREE_VALUE (TREE_CHAIN (TREE_VALUE (alloc_size)));
+      int idx2 = TREE_INT_CST_LOW (arg2) - 1;
+      if (idx2 < 0 || idx2 >= call_expr_nargs (call))
+	return;
+      arg2 = CALL_EXPR_ARG (call, idx2);
+      if (TREE_CODE (arg2) != INTEGER_CST)
+	return;
+      arg1 = int_const_binop (MULT_EXPR, fold_convert (sizetype, arg1),
+			      fold_convert (sizetype, arg2));
+      if (TREE_CODE (arg1) != INTEGER_CST)
+	return;
+    }
+  if (!VOID_TYPE_P (type)
+      && TYPE_SIZE_UNIT (type)
+      && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
+      && tree_int_cst_lt (arg1, TYPE_SIZE_UNIT (type)))
+    warning_at (loc, OPT_Walloc_size,
+		"allocation of insufficient size %qE for type %qT with "
+		"size %qE", arg1, type, TYPE_SIZE_UNIT (type));
+}
+
 /* Subroutine of build_binary_op. Give warnings for comparisons
    between signed and unsigned quantities that may fail. Do the
    checking based on the original operand trees ORIG_OP0 and ORIG_OP1,

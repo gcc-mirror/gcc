@@ -1,5 +1,6 @@
 // ABI #47 "natural" template parameter mangling
 // { dg-do compile { target c++17 } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 template <template <class...> class TT> class A { };
 template <int... T> class B { };

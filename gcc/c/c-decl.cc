@@ -634,6 +634,36 @@ public:
   auto_vec<tree> typedefs_seen;
 };
 
+
+/* Hash table for structs and unions.  */
+struct c_struct_hasher : ggc_ptr_hash<tree_node>
+{
+  static hashval_t hash (tree t);
+  static bool equal (tree, tree);
+};
+
+/* Hash an RECORD OR UNION.  */
+hashval_t
+c_struct_hasher::hash (tree type)
+{
+  inchash::hash hstate;
+
+  hstate.add_int (TREE_CODE (type));
+  hstate.add_object (TYPE_NAME (type));
+
+  return hstate.end ();
+}
+
+/* Compare two RECORD or UNION types.  */
+bool
+c_struct_hasher::equal (tree t1,  tree t2)
+{
+  return comptypes_equiv_p (t1, t2);
+}
+
+/* All tagged typed so that TYPE_CANONICAL can be set correctly.  */
+static GTY (()) hash_table<c_struct_hasher> *c_struct_htab;
+
 /* Information for the struct or union currently being parsed, or
    NULL if not parsing a struct or union.  */
 static class c_struct_parse_info *struct_parse_info;
@@ -2037,6 +2067,28 @@ locate_old_decl (tree decl)
 	    decl, TREE_TYPE (decl));
 }
 
+
+/* Helper function.  For a tagged type, it finds the declaration
+   for a visible tag declared in the the same scope if such a
+   declaration exists.  */
+static tree
+previous_tag (tree type)
+{
+  struct c_binding *b = NULL;
+  tree name = TYPE_NAME (type);
+
+  if (name)
+    b = I_TAG_BINDING (name);
+
+  if (b)
+    b = b->shadowed;
+
+  if (b && B_IN_CURRENT_SCOPE (b))
+    return b->decl;
+
+  return NULL_TREE;
+}
+
 /* Subroutine of duplicate_decls.  Compare NEWDECL to OLDDECL.
    Returns true if the caller should proceed to merge the two, false
    if OLDDECL should simply be discarded.  As a side effect, issues
@@ -2090,9 +2142,24 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
      given scope.  */
   if (TREE_CODE (olddecl) == CONST_DECL)
     {
-      auto_diagnostic_group d;
-      error ("redeclaration of enumerator %q+D", newdecl);
-      locate_old_decl (olddecl);
+      if (flag_isoc23
+	  && TYPE_NAME (DECL_CONTEXT (newdecl))
+	  && DECL_CONTEXT (newdecl) != DECL_CONTEXT (olddecl)
+	  && TYPE_NAME (DECL_CONTEXT (newdecl)) == TYPE_NAME (DECL_CONTEXT (olddecl)))
+	{
+	  if (!simple_cst_equal (DECL_INITIAL (olddecl), DECL_INITIAL (newdecl)))
+	    {
+	      auto_diagnostic_group d;
+	      error ("conflicting redeclaration of enumerator %q+D", newdecl);
+	      locate_old_decl (olddecl);
+	    }
+	}
+      else
+	{
+	  auto_diagnostic_group d;
+	  error ("redeclaration of enumerator %q+D", newdecl);
+	  locate_old_decl (olddecl);
+	}
       return false;
     }
 
@@ -3253,8 +3320,11 @@ pushdecl (tree x)
 
   /* Must set DECL_CONTEXT for everything not at file scope or
      DECL_FILE_SCOPE_P won't work.  Local externs don't count
-     unless they have initializers (which generate code).  */
+     unless they have initializers (which generate code).  We
+     also exclude CONST_DECLs because enumerators will get the
+     type of the enum as context.  */
   if (current_function_decl
+      && TREE_CODE (x) != CONST_DECL
       && (!VAR_OR_FUNCTION_DECL_P (x)
 	  || DECL_INITIAL (x) || !TREE_PUBLIC (x)))
     DECL_CONTEXT (x) = current_function_decl;
@@ -8573,11 +8643,14 @@ get_parm_info (bool ellipsis, tree expr)
 	  if (TREE_CODE (decl) != UNION_TYPE || b->id != NULL_TREE)
 	    {
 	      if (b->id)
-		/* The %s will be one of 'struct', 'union', or 'enum'.  */
-		warning_at (b->locus, 0,
-			    "%<%s %E%> declared inside parameter list"
-			    " will not be visible outside of this definition or"
-			    " declaration", keyword, b->id);
+		{
+		  /* The %s will be one of 'struct', 'union', or 'enum'.  */
+		  if (!flag_isoc23)
+		    warning_at (b->locus, 0,
+				"%<%s %E%> declared inside parameter list"
+				" will not be visible outside of this definition or"
+				" declaration", keyword, b->id);
+		}
 	      else
 		/* The %s will be one of 'struct', 'union', or 'enum'.  */
 		warning_at (b->locus, 0,
@@ -8668,6 +8741,17 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
      present, only a definition in the current scope is relevant.  */
 
   ref = lookup_tag (code, name, has_enum_type_specifier, &refloc);
+
+  /* If the visble type is still being defined, see if there is
+     an earlier definition (which may be complete).  We do not
+     have to loop because nested redefinitions are not allowed.  */
+  if (flag_isoc23 && ref && C_TYPE_BEING_DEFINED (ref))
+    {
+      tree vis = previous_tag (ref);
+      if (vis)
+	ref = vis;
+    }
+
   /* If this is the right type of tag, return what we found.
      (This reference will be shadowed by shadow_tag later if appropriate.)
      If this is the wrong type of tag, do not return it.  If it was the
@@ -8782,6 +8866,14 @@ start_struct (location_t loc, enum tree_code code, tree name,
 
   if (name != NULL_TREE)
     ref = lookup_tag (code, name, true, &refloc);
+
+  /* For C23, even if we already have a completed definition,
+     we do not use it. We will check for consistency later.
+     If we are in a nested redefinition the type is not
+     complete. We will then detect this below.  */
+  if (flag_isoc23 && ref && TYPE_SIZE (ref))
+    ref = NULL_TREE;
+
   if (ref && TREE_CODE (ref) == code)
     {
       if (TYPE_STUB_DECL (ref))
@@ -9581,6 +9673,43 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       warning_at (loc, 0, "union cannot be made transparent");
     }
 
+  /* Check for consistency with previous definition.  */
+  if (flag_isoc23 && NULL != enclosing_struct_parse_info)
+    {
+      tree vistype = previous_tag (t);
+      if (vistype
+	  && TREE_CODE (vistype) == TREE_CODE (t)
+	  && !C_TYPE_BEING_DEFINED (vistype))
+	{
+	  TYPE_STUB_DECL (vistype) = TYPE_STUB_DECL (t);
+	  if (c_type_variably_modified_p (t))
+	    error ("redefinition of struct or union %qT with variably "
+		   "modified type", t);
+	  else if (!comptypes_same_p (t, vistype))
+	    error ("redefinition of struct or union %qT", t);
+	}
+    }
+
+  C_TYPE_BEING_DEFINED (t) = 0;
+
+  /* Set type canonical based on equivalence class.  */
+  if (flag_isoc23)
+    {
+      if (NULL == c_struct_htab)
+	c_struct_htab = hash_table<c_struct_hasher>::create_ggc (61);
+
+      hashval_t hash = c_struct_hasher::hash (t);
+
+      tree *e = c_struct_htab->find_slot_with_hash (t, hash, INSERT);
+      if (*e)
+	TYPE_CANONICAL (t) = *e;
+      else
+	{
+	  TYPE_CANONICAL (t) = t;
+	  *e = t;
+	}
+    }
+
   tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
     {
@@ -9615,16 +9744,19 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   if (warn_cxx_compat)
     warn_cxx_compat_finish_struct (fieldlist, TREE_CODE (t), loc);
 
-  delete struct_parse_info;
+  if (NULL != enclosing_struct_parse_info)
+    {
+      delete struct_parse_info;
 
-  struct_parse_info = enclosing_struct_parse_info;
+      struct_parse_info = enclosing_struct_parse_info;
 
-  /* If this struct is defined inside a struct, add it to
-     struct_types.  */
-  if (warn_cxx_compat
-      && struct_parse_info != NULL
-      && !in_sizeof && !in_typeof && !in_alignof)
-    struct_parse_info->struct_types.safe_push (t);
+      /* If this struct is defined inside a struct, add it to
+	 struct_types.  */
+      if (warn_cxx_compat
+	  && struct_parse_info != NULL
+	  && !in_sizeof && !in_typeof && !in_alignof)
+	struct_parse_info->struct_types.safe_push (t);
+     }
 
   return t;
 }
@@ -9697,7 +9829,7 @@ layout_array_type (tree t)
 
 tree
 start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
-	    tree fixed_underlying_type)
+	    tree fixed_underlying_type, bool potential_nesting_p)
 {
   tree enumtype = NULL_TREE;
   location_t enumloc = UNKNOWN_LOCATION;
@@ -9709,9 +9841,26 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
   if (name != NULL_TREE)
     enumtype = lookup_tag (ENUMERAL_TYPE, name, true, &enumloc);
 
+  if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
+    {
+      /* If the type is currently being defined or if we have seen an
+	 incomplete version which is now complete, this is a nested
+	 redefinition.  The later happens if the redefinition occurs
+	 inside the enum specifier itself.  */
+      if (C_TYPE_BEING_DEFINED (enumtype)
+	  || (potential_nesting_p && TYPE_VALUES (enumtype) != NULL_TREE))
+	error_at (loc, "nested redefinition of %<enum %E%>", name);
+
+      /* For C23 we allow redefinitions.  We set to zero and check for
+	 consistency later.  */
+      if (flag_isoc23 && TYPE_VALUES (enumtype) != NULL_TREE)
+	enumtype = NULL_TREE;
+    }
+
   if (enumtype == NULL_TREE || TREE_CODE (enumtype) != ENUMERAL_TYPE)
     {
       enumtype = make_node (ENUMERAL_TYPE);
+      TYPE_SIZE (enumtype) = NULL_TREE;
       pushtag (loc, name, enumtype);
       if (fixed_underlying_type != NULL_TREE)
 	{
@@ -9738,9 +9887,6 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
       enumloc = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (enumtype));
       DECL_SOURCE_LOCATION (TYPE_STUB_DECL (enumtype)) = loc;
     }
-
-  if (C_TYPE_BEING_DEFINED (enumtype))
-    error_at (loc, "nested redefinition of %<enum %E%>", name);
 
   C_TYPE_BEING_DEFINED (enumtype) = 1;
 
@@ -9971,6 +10117,20 @@ finish_enum (tree enumtype, tree values, tree attributes)
       && !in_sizeof && !in_typeof && !in_alignof)
     struct_parse_info->struct_types.safe_push (enumtype);
 
+  /* Check for consistency with previous definition */
+  if (flag_isoc23)
+    {
+      tree vistype = previous_tag (enumtype);
+      if (vistype
+	  && TREE_CODE (vistype) == TREE_CODE (enumtype)
+	  && !C_TYPE_BEING_DEFINED (vistype))
+	{
+	  TYPE_STUB_DECL (vistype) = TYPE_STUB_DECL (enumtype);
+	  if (!comptypes_same_p (enumtype, vistype))
+	    error("conflicting redefinition of enum %qT", enumtype);
+	}
+    }
+
   C_TYPE_BEING_DEFINED (enumtype) = 0;
 
   return enumtype;
@@ -10150,6 +10310,7 @@ build_enumerator (location_t decl_loc, location_t loc,
 
   decl = build_decl (decl_loc, CONST_DECL, name, TREE_TYPE (value));
   DECL_INITIAL (decl) = value;
+  DECL_CONTEXT (decl) = the_enum->enum_type;
   pushdecl (decl);
 
   return tree_cons (decl, value, NULL_TREE);
@@ -10166,7 +10327,7 @@ c_simulate_enum_decl (location_t loc, const char *name,
 
   struct c_enum_contents the_enum;
   tree enumtype = start_enum (loc, &the_enum, get_identifier (name),
-			      NULL_TREE);
+			      NULL_TREE, false);
 
   tree value_chain = NULL_TREE;
   string_int_pair *value;

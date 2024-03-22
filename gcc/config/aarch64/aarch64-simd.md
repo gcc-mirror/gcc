@@ -232,38 +232,6 @@
   [(set_attr "type" "neon_store1_1reg<q>")]
 )
 
-(define_insn "load_pair<DREG:mode><DREG2:mode>"
-  [(set (match_operand:DREG 0 "register_operand")
-	(match_operand:DREG 1 "aarch64_mem_pair_operand"))
-   (set (match_operand:DREG2 2 "register_operand")
-	(match_operand:DREG2 3 "memory_operand"))]
-  "TARGET_FLOAT
-   && rtx_equal_p (XEXP (operands[3], 0),
-		   plus_constant (Pmode,
-				  XEXP (operands[1], 0),
-				  GET_MODE_SIZE (<DREG:MODE>mode)))"
-  {@ [ cons: =0 , 1   , =2 , 3 ; attrs: type ]
-     [ w        , Ump , w  , m ; neon_ldp    ] ldp\t%d0, %d2, %z1
-     [ r        , Ump , r  , m ; load_16     ] ldp\t%x0, %x2, %z1
-  }
-)
-
-(define_insn "vec_store_pair<DREG:mode><DREG2:mode>"
-  [(set (match_operand:DREG 0 "aarch64_mem_pair_operand")
-	(match_operand:DREG 1 "register_operand"))
-   (set (match_operand:DREG2 2 "memory_operand")
-	(match_operand:DREG2 3 "register_operand"))]
-  "TARGET_FLOAT
-   && rtx_equal_p (XEXP (operands[2], 0),
-		   plus_constant (Pmode,
-				  XEXP (operands[0], 0),
-				  GET_MODE_SIZE (<DREG:MODE>mode)))"
-  {@ [ cons: =0 , 1 , =2 , 3 ; attrs: type ]
-     [ Ump      , w , m  , w ; neon_stp    ] stp\t%d1, %d3, %z0
-     [ Ump      , r , m  , r ; store_16    ] stp\t%x1, %x3, %z0
-  }
-)
-
 (define_insn "aarch64_simd_stp<mode>"
   [(set (match_operand:VP_2E 0 "aarch64_mem_pair_lanes_operand")
 	(vec_duplicate:VP_2E (match_operand:<VEL> 1 "register_operand")))]
@@ -272,34 +240,6 @@
      [ Umn      , w ; neon_stp               ] stp\t%<Vetype>1, %<Vetype>1, %y0
      [ Umn      , r ; store_<ldpstp_vel_sz>  ] stp\t%<vwcore>1, %<vwcore>1, %y0
   }
-)
-
-(define_insn "load_pair<VQ:mode><VQ2:mode>"
-  [(set (match_operand:VQ 0 "register_operand" "=w")
-	(match_operand:VQ 1 "aarch64_mem_pair_operand" "Ump"))
-   (set (match_operand:VQ2 2 "register_operand" "=w")
-	(match_operand:VQ2 3 "memory_operand" "m"))]
-  "TARGET_FLOAT
-    && rtx_equal_p (XEXP (operands[3], 0),
-		    plus_constant (Pmode,
-			       XEXP (operands[1], 0),
-			       GET_MODE_SIZE (<VQ:MODE>mode)))"
-  "ldp\\t%q0, %q2, %z1"
-  [(set_attr "type" "neon_ldp_q")]
-)
-
-(define_insn "vec_store_pair<VQ:mode><VQ2:mode>"
-  [(set (match_operand:VQ 0 "aarch64_mem_pair_operand" "=Ump")
-	(match_operand:VQ 1 "register_operand" "w"))
-   (set (match_operand:VQ2 2 "memory_operand" "=m")
-	(match_operand:VQ2 3 "register_operand" "w"))]
-  "TARGET_FLOAT
-   && rtx_equal_p (XEXP (operands[2], 0),
-		   plus_constant (Pmode,
-				  XEXP (operands[0], 0),
-				  GET_MODE_SIZE (<VQ:MODE>mode)))"
-  "stp\\t%q1, %q3, %z0"
-  [(set_attr "type" "neon_stp_q")]
 )
 
 (define_expand "@aarch64_split_simd_mov<mode>"
@@ -3942,6 +3882,48 @@
 					     operands[1], operands[2]));
     }
 
+  DONE;
+})
+
+;; Patterns comparing two vectors and conditionally jump
+
+(define_expand "cbranch<mode>4"
+  [(set (pc)
+        (if_then_else
+          (match_operator 0 "aarch64_equality_operator"
+            [(match_operand:VDQ_I 1 "register_operand")
+             (match_operand:VDQ_I 2 "aarch64_simd_reg_or_zero")])
+          (label_ref (match_operand 3 ""))
+          (pc)))]
+  "TARGET_SIMD"
+{
+  auto code = GET_CODE (operands[0]);
+  rtx tmp = operands[1];
+
+  /* If comparing against a non-zero vector we have to do a comparison first
+     so we can have a != 0 comparison with the result.  */
+  if (operands[2] != CONST0_RTX (<MODE>mode))
+    {
+      tmp = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_xor<mode>3 (tmp, operands[1], operands[2]));
+    }
+
+  /* For 64-bit vectors we need no reductions.  */
+  if (known_eq (128, GET_MODE_BITSIZE (<MODE>mode)))
+    {
+      /* Always reduce using a V4SI.  */
+      rtx reduc = gen_lowpart (V4SImode, tmp);
+      rtx res = gen_reg_rtx (V4SImode);
+      emit_insn (gen_aarch64_umaxpv4si (res, reduc, reduc));
+      emit_move_insn (tmp, gen_lowpart (<MODE>mode, res));
+    }
+
+  rtx val = gen_reg_rtx (DImode);
+  emit_move_insn (val, gen_lowpart (DImode, tmp));
+
+  rtx cc_reg = aarch64_gen_compare_reg (code, val, const0_rtx);
+  rtx cmp_rtx = gen_rtx_fmt_ee (code, DImode, cc_reg, const0_rtx);
+  emit_jump_insn (gen_condjump (cmp_rtx, cc_reg, operands[3]));
   DONE;
 })
 

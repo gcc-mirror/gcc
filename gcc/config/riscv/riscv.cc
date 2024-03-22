@@ -296,6 +296,9 @@ bool riscv_user_wants_strict_align;
 /* Stack alignment to assume/maintain.  */
 unsigned riscv_stack_boundary;
 
+/* Whether in riscv_output_mi_thunk. */
+static bool riscv_in_thunk_func = false;
+
 /* If non-zero, this is an offset to be added to SP to redefine the CFA
    when restoring the FP register from the stack.  Only valid when generating
    the epilogue.  */
@@ -355,13 +358,13 @@ static const common_vector_cost generic_vls_vector_cost = {
   1, /* fp_stmt_cost  */
   1, /* gather_load_cost  */
   1, /* scatter_store_cost  */
-  1, /* vec_to_scalar_cost  */
+  2, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
-  1, /* permute_cost  */
-  3, /* align_load_cost  */
-  3, /* align_store_cost  */
-  3, /* unalign_load_cost  */
-  3, /* unalign_store_cost  */
+  2, /* permute_cost  */
+  1, /* align_load_cost  */
+  1, /* align_store_cost  */
+  1, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
 };
 
 /* Generic costs for VLA vector operations.  */
@@ -371,13 +374,13 @@ static const scalable_vector_cost generic_vla_vector_cost = {
     1, /* fp_stmt_cost  */
     1, /* gather_load_cost  */
     1, /* scatter_store_cost  */
-    1, /* vec_to_scalar_cost  */
+    2, /* vec_to_scalar_cost  */
     1, /* scalar_to_vec_cost  */
-    1, /* permute_cost  */
-    3, /* align_load_cost  */
-    3, /* align_store_cost  */
-    3, /* unalign_load_cost  */
-    3, /* unalign_store_cost  */
+    2, /* permute_cost  */
+    1, /* align_load_cost  */
+    1, /* align_store_cost  */
+    1, /* unalign_load_cost  */
+    1, /* unalign_store_cost  */
   },
 };
 
@@ -481,7 +484,6 @@ static const struct riscv_tune_param optimize_size_tune_info = {
 static bool riscv_avoid_shrink_wrapping_separate ();
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
-static void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
 
 /* Defining target-specific uses of __attribute__.  */
 TARGET_GNU_ATTRIBUTES (riscv_attribute_table,
@@ -879,7 +881,17 @@ riscv_classify_symbol (const_rtx x)
   if (GET_CODE (x) == SYMBOL_REF && flag_pic && !riscv_symbol_binds_local_p (x))
     return SYMBOL_GOT_DISP;
 
-  return riscv_cmodel == CM_MEDLOW ? SYMBOL_ABSOLUTE : SYMBOL_PCREL;
+  switch (riscv_cmodel)
+    {
+    case CM_MEDLOW:
+      return SYMBOL_ABSOLUTE;
+    case CM_LARGE:
+      if (SYMBOL_REF_P (x))
+	return CONSTANT_POOL_ADDRESS_P (x) ? SYMBOL_PCREL : SYMBOL_FORCE_TO_MEM;
+      return SYMBOL_PCREL;
+    default:
+      return SYMBOL_PCREL;
+    }
 }
 
 /* Classify the base of symbolic expression X.  */
@@ -943,6 +955,7 @@ static int riscv_symbol_insns (enum riscv_symbol_type type)
     case SYMBOL_PCREL: return 2; /* AUIPC + the reference.  */
     case SYMBOL_TLS_LE: return 3; /* LUI + ADD TP + the reference.  */
     case SYMBOL_GOT_DISP: return 3; /* AUIPC + LD GOT + the reference.  */
+    case SYMBOL_FORCE_TO_MEM: return 3; /* AUIPC + LD + the reference.  */
     default: gcc_unreachable ();
     }
 }
@@ -1112,6 +1125,9 @@ riscv_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
   split_const (x, &base, &offset);
   if (riscv_symbolic_constant_p (base, &type))
     {
+      if (type == SYMBOL_FORCE_TO_MEM)
+	return false;
+
       /* As an optimization, don't spill symbolic constants that are as
 	 cheap to rematerialize as to access in the constant pool.  */
       if (SMALL_OPERAND (INTVAL (offset)) && riscv_symbol_insns (type) > 0)
@@ -1939,6 +1955,9 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
   if (low_out)
     switch (symbol_type)
       {
+      case SYMBOL_FORCE_TO_MEM:
+	return false;
+
       case SYMBOL_ABSOLUTE:
 	{
 	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
@@ -2096,7 +2115,20 @@ static rtx
 riscv_force_address (rtx x, machine_mode mode)
 {
   if (!riscv_legitimate_address_p (mode, x, false))
-    x = force_reg (Pmode, x);
+    {
+      if (can_create_pseudo_p ())
+	return force_reg (Pmode, x);
+      else
+	{
+	  /* It's only safe for the thunk function.
+	     Use ra as the temp regiater.  */
+	  gcc_assert (riscv_in_thunk_func);
+	  rtx reg = RISCV_PROLOGUE_TEMP2 (Pmode);
+	  riscv_emit_move (reg, x);
+	  return reg;
+	}
+    }
+
   return x;
 }
 
@@ -2372,7 +2404,7 @@ riscv_expand_op (enum rtx_code code, machine_mode mode, rtx op0, rtx op1,
 
 static void
 riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
-				  int multiplier)
+				  HOST_WIDE_INT multiplier)
 {
   if (multiplier == 0)
     {
@@ -2381,7 +2413,7 @@ riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
     }
 
   bool neg_p = multiplier < 0;
-  int multiplier_abs = abs (multiplier);
+  unsigned HOST_WIDE_INT multiplier_abs = abs (multiplier);
 
   if (multiplier_abs == 1)
     {
@@ -2472,12 +2504,14 @@ riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
 
 /* Analyze src and emit const_poly_int mov sequence.  */
 
-static void
+void
 riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
 {
   poly_int64 value = rtx_to_poly_int64 (src);
-  int offset = value.coeffs[0];
-  int factor = value.coeffs[1];
+  /* It use HOST_WIDE_INT intead of int since 32bit type is not enough
+     for e.g. (const_poly_int:DI [549755813888, 549755813888]).  */
+  HOST_WIDE_INT offset = value.coeffs[0];
+  HOST_WIDE_INT factor = value.coeffs[1];
   int vlenb = BYTES_PER_RISCV_VECTOR.coeffs[1];
   int div_factor = 0;
   /* Calculate (const_poly_int:MODE [m, n]) using scalar instructions.
@@ -2687,18 +2721,27 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	      else
 		result = gen_reg_rtx (smode);
 
-	      riscv_vector::emit_vec_extract (result, v, index + i);
+	      riscv_vector::emit_vec_extract (result, v,
+					      gen_int_mode (index + i, Pmode));
 
 	      if (i == 1)
 		{
-		  rtx tmp = expand_binop (Pmode, ashl_optab,
-					  gen_lowpart (Pmode, result),
-					  gen_int_mode (32, Pmode), NULL_RTX, 0,
-					  OPTAB_DIRECT);
-		  rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, int_reg,
-					   NULL_RTX, 0,
-					   OPTAB_DIRECT);
-		  emit_move_insn (int_reg, tmp2);
+		  if (UNITS_PER_WORD < mode_size)
+		    /* If Pmode = SImode and mode = DImode, we just need to
+		       extract element of index = 1 from the vector and move it
+		       into the highpart of the DEST since DEST consists of 2
+		       scalar registers.  */
+		    emit_move_insn (gen_highpart (smode, int_reg), result);
+		  else
+		    {
+		      rtx tmp = expand_binop (Pmode, ashl_optab,
+					      gen_lowpart (Pmode, result),
+					      gen_int_mode (32, Pmode),
+					      NULL_RTX, 0, OPTAB_DIRECT);
+		      rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, int_reg,
+					       NULL_RTX, 0, OPTAB_DIRECT);
+		      emit_move_insn (int_reg, tmp2);
+		    }
 		}
 	    }
 
@@ -5928,6 +5971,12 @@ riscv_size_ok_for_small_data_p (int size)
 static bool
 riscv_in_small_data_p (const_tree x)
 {
+  /* Because default_use_anchors_for_symbol_p doesn't gather small data to use
+     the anchor symbol to address nearby objects.  In large model, it can get
+     the better result using the anchor optiomization.  */
+  if (riscv_cmodel == CM_LARGE)
+    return false;
+
   if (TREE_CODE (x) == STRING_CST || TREE_CODE (x) == FUNCTION_DECL)
     return false;
 
@@ -5993,12 +6042,32 @@ riscv_unique_section (tree decl, int reloc)
   default_unique_section (decl, reloc);
 }
 
+/* Constant pools are per-function when in large code model.  */
+
+static inline bool
+riscv_can_use_per_function_literal_pools_p (void)
+{
+  return riscv_cmodel == CM_LARGE;
+}
+
+static bool
+riscv_use_blocks_for_constant_p (machine_mode, const_rtx)
+{
+  /* We can't use blocks for constants when we're using a per-function
+     constant pool.  */
+  return !riscv_can_use_per_function_literal_pools_p ();
+}
+
 /* Return a section for X, handling small data. */
 
 static section *
 riscv_elf_select_rtx_section (machine_mode mode, rtx x,
 			      unsigned HOST_WIDE_INT align)
 {
+  /* The literal pool stays with the function.  */
+  if (riscv_can_use_per_function_literal_pools_p ())
+    return function_section (current_function_decl);
+
   section *s = default_elf_select_rtx_section (mode, x, align);
 
   if (riscv_size_ok_for_small_data_p (GET_MODE_SIZE (mode).to_constant ()))
@@ -8086,8 +8155,9 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
   if (!riscv_macro_fusion_p ())
     return false;
 
-  if (simple_sets_p && (riscv_fusion_enabled_p (RISCV_FUSE_ZEXTW) ||
-			riscv_fusion_enabled_p (RISCV_FUSE_ZEXTH)))
+  if (simple_sets_p
+      && (riscv_fusion_enabled_p (RISCV_FUSE_ZEXTW)
+	  || riscv_fusion_enabled_p (RISCV_FUSE_ZEXTWS)))
     {
       /* We are trying to match the following:
 	   prev (slli) == (set (reg:DI rD)
@@ -8502,6 +8572,8 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   rtx this_rtx, temp1, temp2, fnaddr;
   rtx_insn *insn;
 
+  riscv_in_thunk_func = true;
+
   /* Pretend to be a post-reload pass while generating rtl.  */
   reload_completed = 1;
 
@@ -8568,6 +8640,7 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Clean up the vars set above.  Note that final_end_function resets
      the global pointer for us.  */
   reload_completed = 0;
+  riscv_in_thunk_func = false;
 }
 
 /* Allocate a chunk of memory for per-function machine-dependent data.  */
@@ -8709,6 +8782,18 @@ riscv_option_override (void)
 
   if (flag_pic)
     g_switch_value = 0;
+
+  /* Always prefer medlow than medany for RV32 since medlow can access
+     full address space. */
+  if (riscv_cmodel == CM_LARGE && !TARGET_64BIT)
+    riscv_cmodel = CM_MEDLOW;
+
+  if (riscv_cmodel == CM_LARGE && TARGET_EXPLICIT_RELOCS)
+    sorry ("code model %qs with %qs", "large", "-mexplicit-relocs");
+
+  if (riscv_cmodel == CM_LARGE && flag_pic)
+    sorry ("code model %qs with %qs", "large",
+	   global_options.x_flag_pic > 1 ? "-fPIC" : "-fpic");
 
   if (flag_pic)
     riscv_cmodel = CM_PIC;
@@ -9082,6 +9167,12 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 
   /* Don't use sibcall for interrupt functions.  */
   if (cfun->machine->interrupt_handler_p)
+    return false;
+
+  /* Don't use sibcalls in the large model, because a sibcall instruction
+     expanding and a epilogue expanding both use RISCV_PROLOGUE_TEMP
+     register.  */
+  if (riscv_cmodel == CM_LARGE)
     return false;
 
   return true;
@@ -9619,10 +9710,10 @@ riscv_regmode_natural_size (machine_mode mode)
 
   if (riscv_v_ext_mode_p (mode))
     {
+      poly_uint64 size = GET_MODE_SIZE (mode);
       if (riscv_v_ext_tuple_mode_p (mode))
 	{
-	  poly_uint64 size
-	    = GET_MODE_SIZE (riscv_vector::get_subpart_mode (mode));
+	  size = GET_MODE_SIZE (riscv_vector::get_subpart_mode (mode));
 	  if (known_lt (size, BYTES_PER_RISCV_VECTOR))
 	    return size;
 	}
@@ -9632,8 +9723,14 @@ riscv_regmode_natural_size (machine_mode mode)
 	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
 	    return BYTES_PER_RISCV_VECTOR;
 	}
-      if (!GET_MODE_SIZE (mode).is_constant ())
+      if (!size.is_constant ())
 	return BYTES_PER_RISCV_VECTOR;
+      else if (!riscv_v_ext_vls_mode_p (mode))
+	/* For -march=rv64gc_zve32f, the natural vector register size
+	   is 32bits which is smaller than scalar register size, so we
+	   return minimum size between vector register size and scalar
+	   register size.  */
+	return MIN (size.to_constant (), UNITS_PER_WORD);
     }
   return UNITS_PER_WORD;
 }
@@ -10531,7 +10628,7 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
 #define TARGET_LEGITIMATE_CONSTANT_P riscv_legitimate_constant_p
 
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
-#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_const_rtx_true
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P riscv_use_blocks_for_constant_p
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	riscv_legitimate_address_p

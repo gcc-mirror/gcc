@@ -332,7 +332,7 @@ C ObjC C++ ObjC++ Var(warn_alloca) Warning
 Warn on any use of alloca.
 
 Walloc-size
-C ObjC Var(warn_alloc_size) Warning LangEnabledBy(C ObjC, Wextra)
+C ObjC C++ ObjC++ Var(warn_alloc_size) Warning LangEnabledBy(C ObjC C++ ObjC++, Wextra)
 Warn when allocating insufficient storage for the target type of the assigned pointer.
 
 Walloc-size-larger-than=
@@ -501,6 +501,10 @@ Warn about C++23 constructs in code compiled with an older standard.
 Wc++26-extensions
 C++ ObjC++ Var(warn_cxx26_extensions) Warning Init(1)
 Warn about C++26 constructs in code compiled with an older standard.
+
+Wcalloc-transposed-args
+C ObjC C++ ObjC++ Var(warn_calloc_transposed_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wextra)
+Warn about suspicious calls to calloc-like functions where sizeof expression is the earlier size argument and not the latter.
 
 Wcast-function-type
 C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)

@@ -5,4 +5,4 @@
 #
 
 %rename lib liborig
-*lib: @LIBQUADSPEC@ @LIBM@ %(libgcc) %(liborig)
+*lib: @LIBQUADSPEC@ @LIBM@ %(liborig)

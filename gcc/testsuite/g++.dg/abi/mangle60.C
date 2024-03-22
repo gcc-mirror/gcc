@@ -1,5 +1,5 @@
 // PR c++/51854
-// { dg-options "" }
+// { dg-options "-fabi-compat-version=0" }
 
 template <unsigned N> struct A;
 

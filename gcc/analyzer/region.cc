@@ -757,6 +757,24 @@ int_size_in_bits (const_tree type, bit_size_t *out)
     return false;
 }
 
+/* Base implementation of region::get_bit_size_sval vfunc.  */
+
+const svalue *
+region::get_bit_size_sval (region_model_manager *mgr) const
+{
+  tree type = get_type ();
+
+  /* Bail out e.g. for heap-allocated regions.  */
+  if (!type)
+    return mgr->get_or_create_unknown_svalue (size_type_node);
+
+  bit_size_t bits;
+  if (!int_size_in_bits (type, &bits))
+    return mgr->get_or_create_unknown_svalue (size_type_node);
+
+  return mgr->get_or_create_int_cst (size_type_node, bits);
+}
+
 /* If the size of this region (in bits) is known statically, write it to *OUT
    and return true.
    Otherwise return false.  */
@@ -1933,6 +1951,15 @@ offset_region::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+const svalue *
+offset_region::get_bit_offset (region_model_manager *mgr) const
+{
+  const svalue *bits_per_byte_sval
+    = mgr->get_or_create_int_cst (size_type_node, BITS_PER_UNIT);
+  return mgr->get_or_create_binop (size_type_node, MULT_EXPR,
+				   m_byte_offset, bits_per_byte_sval);
+}
+
 /* Implementation of region::get_relative_concrete_offset vfunc
    for offset_region.  */
 
@@ -1985,6 +2012,30 @@ offset_region::get_byte_size_sval (region_model_manager *mgr) const
     }
 
   return region::get_byte_size_sval (mgr);
+}
+
+/* Implementation of region::get_bit_size_sval vfunc for offset_region.  */
+
+const svalue *
+offset_region::get_bit_size_sval (region_model_manager *mgr) const
+{
+  tree offset_cst = get_bit_offset (mgr)->maybe_get_constant ();
+  bit_size_t bit_size;
+  /* If the offset points in the middle of the region,
+     return the remaining bits.  */
+  if (get_bit_size (&bit_size) && offset_cst)
+    {
+      bit_size_t offset = wi::to_offset (offset_cst);
+      bit_range r (0, bit_size);
+      if (r.contains_p (offset))
+	{
+	  tree remaining_bit_size = wide_int_to_tree (size_type_node,
+						       bit_size - offset);
+	  return mgr->get_or_create_constant_svalue (remaining_bit_size);
+	}
+    }
+
+  return region::get_bit_size_sval (mgr);
 }
 
 /* class sized_region : public region.  */
@@ -2045,6 +2096,17 @@ sized_region::get_bit_size (bit_size_t *out) const
     return false;
   *out = byte_size * BITS_PER_UNIT;
   return true;
+}
+
+/* Implementation of region::get_bit_size_sval vfunc for sized_region.  */
+
+const svalue *
+sized_region::get_bit_size_sval (region_model_manager *mgr) const
+{
+  const svalue *bits_per_byte_sval
+    = mgr->get_or_create_int_cst (size_type_node, BITS_PER_UNIT);
+  return mgr->get_or_create_binop (size_type_node, MULT_EXPR,
+				   m_byte_size_sval, bits_per_byte_sval);
 }
 
 /* class cast_region : public region.  */
@@ -2196,6 +2258,15 @@ bit_range_region::get_byte_size_sval (region_model_manager *mgr) const
 
   HOST_WIDE_INT num_bytes = m_bits.m_size_in_bits.to_shwi () / BITS_PER_UNIT;
   return mgr->get_or_create_int_cst (size_type_node, num_bytes);
+}
+
+/* Implementation of region::get_bit_size_sval vfunc for bit_range_region.  */
+
+const svalue *
+bit_range_region::get_bit_size_sval (region_model_manager *mgr) const
+{
+  return mgr->get_or_create_int_cst (size_type_node,
+				     m_bits.m_size_in_bits);
 }
 
 /* Implementation of region::get_relative_concrete_offset vfunc for

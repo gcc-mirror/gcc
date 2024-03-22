@@ -81,9 +81,6 @@
 
 extern char * mcore_current_function_name;
  
-/* The MCore ABI says that bitfields are unsigned by default.  */
-#define CC1_SPEC "-funsigned-bitfields"
-
 /* Target machine storage Layout.  */
 
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  	\

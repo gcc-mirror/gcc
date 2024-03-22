@@ -346,11 +346,13 @@ is
    end Value;
 
    function Value (Item : chars_ptr; Length : size_t) return String is
-      Result : char_array (0 .. Length);
+      Result : String (1 .. Natural (Length));
+      C : char;
 
    begin
       pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
                        "early returns for performance");
+
       --  As per AI-00177, this is equivalent to:
 
       --    To_Ada (Value (Item, Length) & nul);
@@ -359,16 +361,17 @@ is
          raise Dereference_Error;
       end if;
 
-      for J in 0 .. Length - 1 loop
-         Result (J) := Peek (Item + J);
+      for J in Result'Range loop
+         C := Peek (Item + size_t (J - 1));
 
-         if Result (J) = nul then
-            return To_Ada (Result (0 .. J));
+         if C = nul then
+            return Result (1 .. J - 1);
+         else
+            Result (J) := To_Ada (C);
          end if;
       end loop;
 
-      Result (Length) := nul;
-      return To_Ada (Result);
+      return Result;
 
       pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
    end Value;

@@ -519,6 +519,28 @@ extern rtx adjust_address_1 (rtx, machine_mode, poly_int64, int, int,
 extern rtx adjust_automodify_address_1 (rtx, machine_mode, rtx,
 					poly_int64, int);
 
+/* Class wrapping emit_autoinc which allows derived classes to control
+   how reload pseudos are created.  */
+struct address_reload_context
+{
+  /* Can be overriden by derived classes.  */
+  virtual rtx get_reload_reg () const { return gen_reg_rtx (Pmode); }
+
+  /* Emit insns to reload VALUE into a new register.  VALUE is an
+     auto-increment or auto-decrement RTX whose operand is a register or
+     memory location; so reloading involves incrementing that location.
+
+     AMOUNT is the number to increment or decrement by (always
+     positive and ignored for POST_MODIFY/PRE_MODIFY).
+
+     Return a pseudo containing the result.  */
+  rtx emit_autoinc (rtx value, poly_int64 amount);
+};
+
+/* Return a memory reference like MEM, but with the address reloaded into a
+   pseudo register.  */
+extern rtx force_reload_address (rtx mem);
+
 /* Return a memory reference like MEMREF, but whose address is changed by
    adding OFFSET, an RTX, to it.  POW2 is the highest power of two factor
    known to be in OFFSET (possibly 1).  */

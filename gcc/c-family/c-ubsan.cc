@@ -256,6 +256,32 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
+      if (TREE_CODE (type1) == BITINT_TYPE
+	  && TYPE_PRECISION (type1) > MAX_FIXED_MODE_SIZE)
+	{
+	  /* Workaround for missing _BitInt support in libsanitizer.
+	     Instead of crashing in the library, pretend values above
+	     maximum value of normal integral type or below minimum value
+	     of that type are those extremes.  */
+	  tree type2 = build_nonstandard_integer_type (MAX_FIXED_MODE_SIZE,
+						       TYPE_UNSIGNED (type1));
+	  tree op2 = op1;
+	  if (!TYPE_UNSIGNED (type1))
+	    {
+	      op2 = fold_build2 (LT_EXPR, boolean_type_node, unshare_expr (op1),
+				 fold_convert (type1, TYPE_MIN_VALUE (type2)));
+	      op2 = fold_build3 (COND_EXPR, type2, op2, TYPE_MIN_VALUE (type2),
+				 fold_convert (type2, unshare_expr (op1)));
+	    }
+	  else
+	    op2 = fold_convert (type2, op1);
+	  tree op3
+	    = fold_build2 (GT_EXPR, boolean_type_node, unshare_expr (op1),
+			   fold_convert (type1, TYPE_MAX_VALUE (type2)));
+	  op1 = fold_build3 (COND_EXPR, type2, op3, TYPE_MAX_VALUE (type2),
+			     op2);
+	  type1 = type2;
+	}
       tree utd0 = ubsan_type_descriptor (type0, UBSAN_PRINT_FORCE_INT);
       tree data = ubsan_create_data ("__ubsan_shift_data", 1, &loc, utd0,
 				     ubsan_type_descriptor (type1), NULL_TREE,

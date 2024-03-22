@@ -134,6 +134,13 @@ Maximal estimated growth of function body caused by early inlining of single cal
 Common Joined UInteger Var(param_fsm_scale_path_stmts) Init(2) IntegerRange(1, 10) Param Optimization
 Scale factor to apply to the number of statements in a threading path crossing a loop backedge when comparing to max-jump-thread-duplication-stmts.
 
+-param=fully-pipelined-fma=
+Common Joined UInteger Var(param_fully_pipelined_fma) Init(0) IntegerRange(0, 1) Param Optimization
+Whether the target fully pipelines FMA instructions.  If non-zero,
+reassociation considers the benefit of parallelizing FMA's multiplication
+part and addition part, assuming FMUL and FMA use the same units that can
+also do FADD.
+
 -param=gcse-after-reload-critical-fraction=
 Common Joined UInteger Var(param_gcse_after_reload_critical_fraction) Init(10) Param Optimization
 The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload.

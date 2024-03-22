@@ -1128,6 +1128,27 @@ public:
       return gen_vsetvl_discard_result (Pmode, avl, sew, vlmul, ta, ma);
   }
 
+  /* Return true that the non-AVL operands of THIS will be modified
+     if we fuse the VL modification from OTHER into THIS.  */
+  bool vl_modify_non_avl_op_p (const vsetvl_info &other) const
+  {
+    /* We don't need to worry about any operands from THIS be
+       modified by OTHER vsetvl since we OTHER vsetvl doesn't
+       modify any operand.  */
+    if (!other.has_vl ())
+      return false;
+
+    /* THIS VL operand always preempt OTHER VL operand.  */
+    if (this->has_vl ())
+      return false;
+
+    /* If THIS has non IMM AVL and THIS is AVL compatible with
+       OTHER, the AVL value of THIS is same as VL value of OTHER.  */
+    if (!this->has_imm_avl ())
+      return false;
+    return find_access (this->get_insn ()->uses (), REGNO (other.get_vl ()));
+  }
+
   bool operator== (const vsetvl_info &other) const
   {
     gcc_assert (!uninit_p () && !other.uninit_p ()
@@ -1896,6 +1917,20 @@ public:
     gcc_unreachable ();
   }
 
+  bool vl_not_in_conflict_p (const vsetvl_info &prev, const vsetvl_info &next)
+  {
+    /* We don't fuse this following case:
+
+	li a5, -1
+	vmv.s.x v0, a5         -- PREV
+	vsetvli a5, ...        -- NEXT
+
+       Don't fuse NEXT into PREV.
+    */
+    return !prev.vl_modify_non_avl_op_p (next)
+	   && !next.vl_modify_non_avl_op_p (prev);
+  }
+
   bool avl_compatible_p (const vsetvl_info &prev, const vsetvl_info &next)
   {
     gcc_assert (prev.valid_p () && next.valid_p ());
@@ -1953,7 +1988,8 @@ public:
   {
     bool compatible_p = sew_lmul_compatible_p (prev, next)
 			&& policy_compatible_p (prev, next)
-			&& avl_compatible_p (prev, next);
+			&& avl_compatible_p (prev, next)
+			&& vl_not_in_conflict_p (prev, next);
     return compatible_p;
   }
 
@@ -1961,7 +1997,8 @@ public:
   {
     bool available_p = sew_lmul_available_p (prev, next)
 		       && policy_available_p (prev, next)
-		       && avl_available_p (prev, next);
+		       && avl_available_p (prev, next)
+		       && vl_not_in_conflict_p (prev, next);
     gcc_assert (!available_p || compatible_p (prev, next));
     return available_p;
   }

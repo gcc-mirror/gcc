@@ -35,6 +35,8 @@ struct loongarch_rtx_cost_data
   unsigned short int_mult_di;
   unsigned short int_div_si;
   unsigned short int_div_di;
+  unsigned short movcf2gr;
+  unsigned short movgr2cf;
   unsigned short branch_cost;
   unsigned short memory_latency;
 
@@ -95,6 +97,18 @@ struct loongarch_rtx_cost_data
     return *this;
   }
 
+  loongarch_rtx_cost_data movcf2gr_ (unsigned short _movcf2gr)
+  {
+    movcf2gr = _movcf2gr;
+    return *this;
+  }
+
+  loongarch_rtx_cost_data movgr2cf_ (unsigned short _movgr2cf)
+  {
+    movgr2cf = _movgr2cf;
+    return *this;
+  }
+
   loongarch_rtx_cost_data branch_cost_ (unsigned short _branch_cost)
   {
     branch_cost = _branch_cost;
@@ -106,7 +120,6 @@ struct loongarch_rtx_cost_data
     memory_latency = _memory_latency;
     return *this;
   }
-
 };
 
 /* Costs to use when optimizing for size.  */

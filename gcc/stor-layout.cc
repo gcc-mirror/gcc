@@ -2154,7 +2154,8 @@ finish_bitfield_representative (tree repr, tree field)
 	  unsigned prec = TYPE_PRECISION (TREE_TYPE (field));
 	  bool ok = targetm.c.bitint_type_info (prec, &info);
 	  gcc_assert (ok);
-	  scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+	  scalar_int_mode limb_mode
+	    = as_a <scalar_int_mode> (info.abi_limb_mode);
 	  unsigned lprec = GET_MODE_PRECISION (limb_mode);
 	  if (prec > lprec)
 	    {
@@ -2416,16 +2417,20 @@ layout_type (tree type)
 	int cnt;
 	bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
 	gcc_assert (ok);
-	scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+	scalar_int_mode limb_mode
+	  = as_a <scalar_int_mode> (info.abi_limb_mode);
 	if (TYPE_PRECISION (type) <= GET_MODE_PRECISION (limb_mode))
 	  {
 	    SET_TYPE_MODE (type, limb_mode);
+	    gcc_assert (info.abi_limb_mode == info.limb_mode);
 	    cnt = 1;
 	  }
 	else
 	  {
 	    SET_TYPE_MODE (type, BLKmode);
 	    cnt = CEIL (TYPE_PRECISION (type), GET_MODE_PRECISION (limb_mode));
+	    gcc_assert (info.abi_limb_mode == info.limb_mode
+			|| !info.big_endian == !WORDS_BIG_ENDIAN);
 	  }
 	TYPE_SIZE (type) = bitsize_int (cnt * GET_MODE_BITSIZE (limb_mode));
 	TYPE_SIZE_UNIT (type) = size_int (cnt * GET_MODE_SIZE (limb_mode));

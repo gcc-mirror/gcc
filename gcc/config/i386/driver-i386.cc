@@ -665,9 +665,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  /* Assume Arrow Lake S.  */
 		  else if (has_feature (FEATURE_SM3))
 		    cpu = "arrowlake-s";
-		  /* Assume Grand Ridge.  */
-		  else if (has_feature (FEATURE_RAOINT))
-		    cpu = "grandridge";
 		  /* Assume Sierra Forest.  */
 		  else if (has_feature (FEATURE_AVXVNNIINT8))
 		    cpu = "sierraforest";

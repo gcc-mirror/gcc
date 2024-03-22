@@ -566,15 +566,6 @@ namespace std
 # define _GLIBCXX_EXTERN_TEMPLATE -1
 #endif
 
-
-#if _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
-# define __glibcxx_constexpr_assert(cond) \
-  if (std::__is_constant_evaluated() && !bool(cond))	\
-    __builtin_unreachable() /* precondition violation detected! */
-#else
-# define __glibcxx_constexpr_assert(unevaluated)
-#endif
-
 #undef _GLIBCXX_VERBOSE_ASSERT
 
 // Assert.

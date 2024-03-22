@@ -1,3 +1,8 @@
+2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.am: Allow overriding EXEPCT.
+	* Makefile.in: Regenerate.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.am: Handle Darwin rpaths.

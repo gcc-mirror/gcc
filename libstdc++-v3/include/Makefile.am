@@ -35,6 +35,7 @@ std_freestanding = \
 	${std_srcdir}/coroutine \
 	${std_srcdir}/expected \
 	${std_srcdir}/functional \
+	${std_srcdir}/generator \
 	${std_srcdir}/iterator \
 	${std_srcdir}/limits \
 	${std_srcdir}/memory \
@@ -85,6 +86,7 @@ std_headers = \
 	${std_srcdir}/memory_resource \
 	${std_srcdir}/mutex \
 	${std_srcdir}/ostream \
+	${std_srcdir}/print \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
 	${std_srcdir}/regex \
@@ -122,6 +124,7 @@ bits_freestanding = \
 	${bits_srcdir}/concept_check.h \
 	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/cpp_type_traits.h \
+	${bits_srcdir}/elements_of.h \
 	${bits_srcdir}/enable_special_members.h \
 	${bits_srcdir}/functexcept.h \
 	${bits_srcdir}/functional_hash.h \

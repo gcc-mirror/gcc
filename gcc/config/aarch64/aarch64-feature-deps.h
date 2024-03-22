@@ -115,6 +115,13 @@ get_flags_off (aarch64_feature_flags mask)
   constexpr auto cpu_##CORE_IDENT = ARCH_IDENT ().enable | get_enable FEATURES;
 #include "config/aarch64/aarch64-cores.def"
 
+/* Define fmv_deps_<NAME> variables for each FMV feature, giving the transitive
+   closure of all the features that the FMV feature enables.  */
+#define AARCH64_FMV_FEATURE(A, FEAT_NAME, OPT_FLAGS) \
+  constexpr auto fmv_deps_##FEAT_NAME = get_enable OPT_FLAGS;
+#include "config/aarch64/aarch64-option-extensions.def"
+
+
 }
 }
 

@@ -57,5 +57,6 @@ bool ix86_notrack_prefixed_insn_p (rtx_insn *);
 machine_mode ix86_split_reduction (machine_mode mode);
 void ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode, rtx op0,
 				 rtx op1, rtx *quot_p, rtx *rem_p);
+rtx ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op);
 
 #endif  /* GCC_I386_EXPAND_H */

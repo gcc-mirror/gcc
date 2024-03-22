@@ -7637,7 +7637,7 @@ get_atomic_generic_size (location_t loc, tree function,
 		return 0;
 	      }
 	    else
-	      pedwarn (loc, OPT_Wincompatible_pointer_types, "argument %d "
+	      pedwarn (loc, OPT_Wdiscarded_qualifiers, "argument %d "
 		       "of %qE discards %<const%> qualifier", x + 1,
 		       function);
 	  }
@@ -7651,7 +7651,7 @@ get_atomic_generic_size (location_t loc, tree function,
 		return 0;
 	      }
 	    else
-	      pedwarn (loc, OPT_Wincompatible_pointer_types, "argument %d "
+	      pedwarn (loc, OPT_Wdiscarded_qualifiers, "argument %d "
 		       "of %qE discards %<volatile%> qualifier", x + 1,
 		       function);
 	  }
