@@ -188,12 +188,14 @@ extern  void  yylex                   (void);
 \"[^\"\n]*\"               { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_stringtok, yytext); return; }
 \"[^\"\n]*$                { updatepos();
                              m2flex_M2Error("missing terminating quote, \"");
+			     M2LexBuf_AddTokCharStar(M2Reserved_stringtok, yytext);
                              resetpos(); return;
                            }
 
 '[^'\n]*'                  { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_stringtok, yytext); return; }
 '[^'\n]*$                  { updatepos();
                              m2flex_M2Error("missing terminating quote, '");
+			     M2LexBuf_AddTokCharStar(M2Reserved_stringtok, yytext);
                              resetpos(); return;
                            }
 
