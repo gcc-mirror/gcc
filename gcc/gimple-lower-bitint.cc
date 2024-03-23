@@ -1506,7 +1506,7 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	  if (m_bitfld_load)
 	    {
 	      tree t4;
-	      if (!m_first)
+	      if (!save_first)
 		t4 = m_data[m_bitfld_load + 1];
 	      else
 		t4 = make_ssa_name (m_limb_type);
