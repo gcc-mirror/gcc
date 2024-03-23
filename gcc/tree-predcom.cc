@@ -1102,8 +1102,39 @@ pcom_worker::suitable_component_p (struct component *comp)
   gcc_assert (ok);
   first->offset = 0;
 
-  for (i = 1; comp->refs.iterate (i, &a); i++)
+  FOR_EACH_VEC_ELT (comp->refs, i, a)
     {
+      if (has_write && comp->comp_step == RS_NONZERO)
+	{
+	  /* Punt for non-invariant references where step isn't a multiple
+	     of reference size.  If step is smaller than reference size,
+	     it overlaps the access in next iteration, if step is larger,
+	     but not multiple of the access size, there could be overlap
+	     in some later iteration.  There might be more latent issues
+	     about this in predcom or data reference analysis.  If the
+	     reference is a COMPONENT_REF, also check if step isn't a
+	     multiple of the containg aggregate size.  See PR111683.  */
+	  tree ref = DR_REF (a->ref);
+	  tree step = DR_STEP (a->ref);
+	  if (TREE_CODE (ref) == COMPONENT_REF
+	      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1)))
+	    ref = TREE_OPERAND (ref, 0);
+	  do
+	    {
+	      tree sz = TYPE_SIZE_UNIT (TREE_TYPE (ref));
+	      if (TREE_CODE (sz) != INTEGER_CST)
+		return false;
+	      if (wi::multiple_of_p (wi::to_offset (step),
+				     wi::to_offset (sz), SIGNED))
+		break;
+	      if (TREE_CODE (ref) != COMPONENT_REF)
+		return false;
+	      ref = TREE_OPERAND (ref, 0);
+	    }
+	  while (1);
+	}
+      if (i == 0)
+	continue;
       /* Polynomial offsets are no use, since we need to know the
 	 gap between iteration numbers at compile time.  */
       poly_widest_int offset;
