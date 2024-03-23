@@ -2198,6 +2198,27 @@ register_atomic_builtins (known_function_manager &kfm)
 	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
 }
 
+/* Handle calls to the various __builtin___ubsan_handle_*.
+   These can return, but continuing after such a return
+   isn't likely to be interesting to the user of the analyzer.
+   Hence we terminate the analysis path at one of these calls.  */
+
+class kf_ubsan_handler : public internal_known_function
+{
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      cd.get_ctxt ()->terminate_path ();
+  }
+};
+
+static void
+register_sanitizer_builtins (known_function_manager &kfm)
+{
+  kfm.add (BUILT_IN_UBSAN_HANDLE_NONNULL_ARG,
+	   make_unique<kf_ubsan_handler> ());
+}
+
 /* Populate KFM with instances of known functions supported by the core of the
    analyzer (as opposed to plugins).  */
 
@@ -2224,6 +2245,7 @@ register_known_functions (known_function_manager &kfm,
     kfm.add (BUILT_IN_STACK_SAVE, make_unique<kf_stack_save> ());
 
     register_atomic_builtins (kfm);
+    register_sanitizer_builtins (kfm);
     register_varargs_builtins (kfm);
   }
 
