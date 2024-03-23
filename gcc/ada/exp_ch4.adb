@@ -555,7 +555,7 @@ package body Exp_Ch4 is
 
    procedure Expand_Allocator_Expression (N : Node_Id) is
       Loc            : constant Source_Ptr := Sloc (N);
-      Exp            : constant Node_Id    := Expression (Expression (N));
+      Exp            : constant Node_Id    := Unqualify (Expression (N));
       Indic          : constant Node_Id    := Subtype_Mark (Expression (N));
       T              : constant Entity_Id  := Entity (Indic);
       PtrT           : constant Entity_Id  := Etype (N);
@@ -595,7 +595,7 @@ package body Exp_Ch4 is
          --  Insert the declaration and generate the in-place assignment
 
          Insert_Action (N, Temp_Decl);
-         Convert_Aggr_In_Allocator (N, Exp, Temp);
+         Convert_Aggr_In_Allocator (N, Temp);
       end Build_Aggregate_In_Place;
 
       --  Local variables

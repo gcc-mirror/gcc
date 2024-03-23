@@ -31,14 +31,12 @@ package Exp_Aggr is
    procedure Expand_N_Delta_Aggregate     (N : Node_Id);
    procedure Expand_N_Extension_Aggregate (N : Node_Id);
 
-   procedure Convert_Aggr_In_Allocator
-     (N    : Node_Id;
-      Aggr : Node_Id;
-      Temp : Entity_Id);
-   --  N is an N_Allocator whose (ultimate) expression is the aggregate Aggr.
+   procedure Convert_Aggr_In_Allocator (N : Node_Id; Temp : Entity_Id);
+   --  N is an N_Allocator whose (ultimate) expression must be an N_Aggregate
+   --  or N_Extension_Aggregate with Expansion_Delayed.
    --  This procedure performs an in-place aggregate assignment into an object
-   --  allocated with the subtype of Aggr and designated by Temp, so that N
-   --  can be rewritten as a mere occurrence of Temp.
+   --  allocated with the subtype of the aggregate and designated by Temp, so
+   --  that N can be rewritten as a mere occurrence of Temp.
 
    procedure Convert_Aggr_In_Assignment (N : Node_Id);
    --  If the right-hand side of an assignment is an aggregate, expand the
@@ -48,9 +46,9 @@ package Exp_Aggr is
    --  backend.
 
    procedure Convert_Aggr_In_Object_Decl (N : Node_Id);
-   --  N is an N_Object_Declaration with an expression which must be an
-   --  N_Aggregate or N_Extension_Aggregate with Expansion_Delayed.
-   --  This procedure performs in-place aggregate assignment.
+   --  N is an N_Object_Declaration whose expression must be an N_Aggregate or
+   --  N_Extension_Aggregate with Expansion_Delayed.
+   --  This procedure performs an in-place aggregate assignment.
 
    function Is_Delayed_Aggregate (N : Node_Id) return Boolean;
    --  Returns True if N is an aggregate of some kind whose Expansion_Delayed

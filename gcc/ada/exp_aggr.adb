@@ -282,10 +282,7 @@ package body Exp_Aggr is
    --    Indexes is the current list of expressions used to index the object we
    --    are writing into.
 
-   procedure Convert_Array_Aggr_In_Allocator
-     (N      : Node_Id;
-      Aggr   : Node_Id;
-      Target : Node_Id);
+   procedure Convert_Array_Aggr_In_Allocator (N : Node_Id; Target : Node_Id);
    --  If the aggregate appears within an allocator and can be expanded in
    --  place, this routine generates the individual assignments to components
    --  of the designated object. This is an optimization over the general
@@ -3543,11 +3540,8 @@ package body Exp_Aggr is
    -- Convert_Aggr_In_Allocator --
    -------------------------------
 
-   procedure Convert_Aggr_In_Allocator
-     (N    : Node_Id;
-      Aggr : Node_Id;
-      Temp : Entity_Id)
-   is
+   procedure Convert_Aggr_In_Allocator (N : Node_Id; Temp : Entity_Id) is
+      Aggr : constant Node_Id    := Unqualify (Expression (N));
       Loc  : constant Source_Ptr := Sloc (Aggr);
       Typ  : constant Entity_Id  := Etype (Aggr);
 
@@ -3557,7 +3551,7 @@ package body Exp_Aggr is
 
    begin
       if Is_Array_Type (Typ) then
-         Convert_Array_Aggr_In_Allocator (N, Aggr, Occ);
+         Convert_Array_Aggr_In_Allocator (N, Occ);
 
       elsif Has_Default_Init_Comps (Aggr) then
          declare
@@ -3605,12 +3599,9 @@ package body Exp_Aggr is
       Aggr : constant Node_Id    := Unqualify (Expression (N));
       Loc  : constant Source_Ptr := Sloc (Aggr);
       Typ  : constant Entity_Id  := Etype (Aggr);
-      Occ  : constant Node_Id    := New_Occurrence_Of (Obj, Loc);
-
-      Has_Transient_Scope : Boolean := False;
 
       function Discriminants_Ok return Boolean;
-      --  If the object type is constrained, the discriminants in the
+      --  If the object's subtype is constrained, the discriminants in the
       --  aggregate must be checked against the discriminants of the subtype.
       --  This cannot be done using Apply_Discriminant_Checks because after
       --  expansion there is no aggregate left to check.
@@ -3677,10 +3668,19 @@ package body Exp_Aggr is
          return True;
       end Discriminants_Ok;
 
+      --  Local variables
+
+      Has_Transient_Scope : Boolean;
+      Occ                 : Node_Id;
+      Param               : Node_Id;
+      Stmt                : Node_Id;
+      Stmts               : List_Id;
+
    --  Start of processing for Convert_Aggr_In_Object_Decl
 
    begin
-      Set_Assignment_OK (Occ);
+      --  First generate discriminant checks if need be, and bail out if one
+      --  of them fails statically.
 
       if Has_Discriminants (Typ)
         and then Typ /= Etype (Obj)
@@ -3706,61 +3706,59 @@ package body Exp_Aggr is
       then
          Establish_Transient_Scope (Aggr, Manage_Sec_Stack => False);
          Has_Transient_Scope := True;
+      else
+         Has_Transient_Scope := False;
       end if;
 
-      declare
-         Stmts : constant List_Id := Late_Expansion (Aggr, Typ, Occ);
-         Stmt  : Node_Id;
-         Param : Node_Id;
+      Occ := New_Occurrence_Of (Obj, Loc);
+      Set_Assignment_OK (Occ);
+      Stmts := Late_Expansion (Aggr, Typ, Occ);
 
-      begin
-         --  If Obj is already frozen or if N is wrapped in a transient scope,
-         --  Stmts do not need to be saved in Initialization_Statements since
-         --  there is no freezing issue.
+      --  If Obj is already frozen or if N is wrapped in a transient scope,
+      --  Stmts do not need to be saved in Initialization_Statements since
+      --  there is no freezing issue.
 
-         if Is_Frozen (Obj) or else Has_Transient_Scope then
+      if Is_Frozen (Obj) or else Has_Transient_Scope then
+         Insert_Actions_After (N, Stmts);
+
+      else
+         Stmt := Make_Compound_Statement (Sloc (N), Actions => Stmts);
+         Insert_Action_After (N, Stmt);
+
+         --  Insert_Action_After may freeze Obj in which case we should
+         --  remove the compound statement just created and simply insert
+         --  Stmts after N.
+
+         if Is_Frozen (Obj) then
+            Remove (Stmt);
             Insert_Actions_After (N, Stmts);
+
          else
-            Stmt := Make_Compound_Statement (Sloc (N), Actions => Stmts);
-            Insert_Action_After (N, Stmt);
+            Set_Initialization_Statements (Obj, Stmt);
+         end if;
+      end if;
 
-            --  Insert_Action_After may freeze Obj in which case we should
-            --  remove the compound statement just created and simply insert
-            --  Stmts after N.
+      --  If Typ has controlled components and a call to a Slice_Assign
+      --  procedure is part of the initialization statements, then we
+      --  need to initialize the array component since Slice_Assign will
+      --  need to adjust it.
 
-            if Is_Frozen (Obj) then
-               Remove (Stmt);
-               Insert_Actions_After (N, Stmts);
-            else
-               Set_Initialization_Statements (Obj, Stmt);
+      if Has_Controlled_Component (Typ) then
+         Stmt := First (Stmts);
+
+         while Present (Stmt) loop
+            if Nkind (Stmt) = N_Procedure_Call_Statement
+              and then Is_TSS (Entity (Name (Stmt)), TSS_Slice_Assign)
+            then
+               Param := First (Parameter_Associations (Stmt));
+               Insert_Actions (Stmt,
+                 Build_Initialization_Call (N,
+                   New_Copy_Tree (Param), Etype (Param)));
             end if;
-         end if;
 
-         --  If Typ has controlled components and a call to a Slice_Assign
-         --  procedure is part of the initialization statements, then we
-         --  need to initialize the array component since Slice_Assign will
-         --  need to adjust it.
-
-         if Has_Controlled_Component (Typ) then
-            Stmt := First (Stmts);
-
-            while Present (Stmt) loop
-               if Nkind (Stmt) = N_Procedure_Call_Statement
-                 and then Is_TSS (Entity (Name (Stmt)), TSS_Slice_Assign)
-               then
-                  Param := First (Parameter_Associations (Stmt));
-                  Insert_Actions
-                    (Stmt,
-                     Build_Initialization_Call (N,
-                       New_Copy_Tree (Param), Etype (Param)));
-               end if;
-
-               Next (Stmt);
-            end loop;
-         end if;
-      end;
-
-      Set_No_Initialization (N);
+            Next (Stmt);
+         end loop;
+      end if;
 
       --  After expansion the expression can be removed from the declaration
       --  except if the object is class-wide, in which case the aggregate
@@ -3770,6 +3768,8 @@ package body Exp_Aggr is
          Set_Expression (N, Empty);
       end if;
 
+      Set_No_Initialization (N);
+
       Initialize_Discriminants (N, Typ);
    end Convert_Aggr_In_Object_Decl;
 
@@ -3777,13 +3777,11 @@ package body Exp_Aggr is
    -- Convert_Array_Aggr_In_Allocator --
    -------------------------------------
 
-   procedure Convert_Array_Aggr_In_Allocator
-     (N      : Node_Id;
-      Aggr   : Node_Id;
-      Target : Node_Id)
-   is
-      Typ       : constant Entity_Id := Etype (Aggr);
-      Ctyp      : constant Entity_Id := Component_Type (Typ);
+   procedure Convert_Array_Aggr_In_Allocator (N : Node_Id; Target : Node_Id) is
+      Aggr : constant Node_Id   := Unqualify (Expression (N));
+      Typ  : constant Entity_Id := Etype (Aggr);
+      Ctyp : constant Entity_Id := Component_Type (Typ);
+
       Aggr_Code : List_Id;
       New_Aggr  : Node_Id;
 
@@ -3845,13 +3843,6 @@ package body Exp_Aggr is
       Target_Object : Entity_Id := Empty) return Boolean
    is
       Is_Array : constant Boolean := Is_Array_Type (Etype (N));
-
-      Aggr_In     : Node_Id;
-      Aggr_Bounds : Range_Nodes;
-      Obj_In      : Node_Id;
-      Obj_Bounds  : Range_Nodes;
-      Parent_Kind : Node_Kind;
-      Parent_Node : Node_Id;
 
       function Safe_Aggregate (Aggr : Node_Id) return Boolean;
       --  Check recursively that each component of a (sub)aggregate does not
@@ -4106,6 +4097,15 @@ package body Exp_Aggr is
          end if;
       end Safe_Component;
 
+      --  Local variables
+
+      Aggr_In     : Node_Id;
+      Aggr_Bounds : Range_Nodes;
+      Obj_In      : Node_Id;
+      Obj_Bounds  : Range_Nodes;
+      Parent_Kind : Node_Kind;
+      Parent_Node : Node_Id;
+
    --  Start of processing for In_Place_Assign_OK
 
    begin
@@ -4214,16 +4214,16 @@ package body Exp_Aggr is
    ----------------------------
 
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      T    : Entity_Id;
-      Temp : Entity_Id;
+      Loc : constant Source_Ptr := Sloc (N);
 
       Aggr_Code   : List_Id;
+      Full_Typ    : Entity_Id;
       Instr       : Node_Id;
-      Target_Expr : Node_Id;
       Parent_Kind : Node_Kind;
-      Unc_Decl    : Boolean := False;
       Parent_Node : Node_Id;
+      Target_Expr : Node_Id;
+      Temp        : Entity_Id;
+      Unc_Decl    : Boolean := False;
 
    begin
       pragma Assert (Nkind (N) in N_Aggregate | N_Extension_Aggregate);
@@ -4275,7 +4275,7 @@ package body Exp_Aggr is
 
          or else (Parent_Kind = N_Object_Declaration and then not Unc_Decl)
 
-         --  Safe assignment (see Convert_Aggr_Assignments). So far only the
+         --  Safe assignment (see Convert_Aggr_In_Assignment). So far only the
          --  assignments in init procs are taken into account.
 
          or else (Parent_Kind = N_Assignment_Statement
@@ -4304,14 +4304,12 @@ package body Exp_Aggr is
          Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
-      --  If the aggregate is nonlimited, create a temporary, since aggregates
-      --  have "by copy" semantics. If it is limited and context is an
-      --  assignment, this is a subaggregate for an enclosing aggregate being
-      --  expanded. It must be built in place, so use target of the current
-      --  assignment.
+      --  If the context is an assignment and the aggregate is limited, this
+      --  is a subaggregate of an enclosing aggregate being expanded; it must
+      --  be built in place, so use the target of the current assignment.
 
-      if Is_Limited_Type (Typ)
-        and then Parent_Kind = N_Assignment_Statement
+      if Parent_Kind = N_Assignment_Statement
+        and then Is_Limited_Type (Typ)
       then
          Target_Expr := New_Copy_Tree (Name (Parent_Node));
          Insert_Actions (Parent_Node,
@@ -4320,7 +4318,7 @@ package body Exp_Aggr is
 
       --  Do not declare a temporary to initialize an aggregate assigned to
       --  a target when in-place assignment is possible, i.e. preserving the
-      --  by-copy semantic of aggregates. This avoids large stack usage and
+      --  by-copy semantics of aggregates. This avoids large stack usage and
       --  generates more efficient code.
 
       elsif Parent_Kind = N_Assignment_Statement
@@ -4345,6 +4343,8 @@ package body Exp_Aggr is
             end if;
          end;
 
+      --  Otherwise, create a temporary since aggregates have by-copy semantics
+
       else
          Temp := Make_Temporary (Loc, 'A', N);
 
@@ -4354,35 +4354,35 @@ package body Exp_Aggr is
          if Has_Unknown_Discriminants (Typ)
            and then Present (Underlying_Record_View (Typ))
          then
-            T := Underlying_Record_View (Typ);
+            Full_Typ := Underlying_Record_View (Typ);
          else
-            T := Typ;
+            Full_Typ := Typ;
          end if;
 
          Instr :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
-             Object_Definition   => New_Occurrence_Of (T, Loc));
+             Object_Definition   => New_Occurrence_Of (Full_Typ, Loc));
 
          Set_No_Initialization (Instr);
          Insert_Action (N, Instr);
-         Initialize_Discriminants (Instr, T);
+         Initialize_Discriminants (Instr, Full_Typ);
 
          Target_Expr := New_Occurrence_Of (Temp, Loc);
-         Aggr_Code   := Build_Record_Aggr_Code (N, T, Target_Expr);
+         Aggr_Code   := Build_Record_Aggr_Code (N, Full_Typ, Target_Expr);
 
          --  Save the last assignment statement associated with the aggregate
          --  when building a controlled object. This reference is utilized by
          --  the finalization machinery when marking an object as successfully
          --  initialized.
 
-         if Needs_Finalization (T) then
+         if Needs_Finalization (Full_Typ) then
             Set_Last_Aggregate_Assignment (Temp, Last (Aggr_Code));
          end if;
 
          Insert_Actions (N, Aggr_Code);
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
-         Analyze_And_Resolve (N, T);
+         Analyze_And_Resolve (N, Full_Typ);
       end if;
    end Convert_To_Assignments;
 
