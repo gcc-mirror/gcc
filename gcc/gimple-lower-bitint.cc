@@ -5902,20 +5902,25 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
   if (is_gimple_assign (stmt))
     {
       lhs = gimple_assign_lhs (stmt);
-      if (TREE_CODE (lhs) == SSA_NAME
-	  && TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
-	  && bitint_precision_kind (TREE_TYPE (lhs)) >= bitint_prec_large)
+      if (TREE_CODE (lhs) == SSA_NAME)
 	{
-	  if (!bitmap_bit_p (names, SSA_NAME_VERSION (lhs)))
-	    return;
-	  switch (gimple_assign_rhs_code (stmt))
+	  tree type = TREE_TYPE (lhs);
+	  if (TREE_CODE (type) == COMPLEX_TYPE)
+	    type = TREE_TYPE (type);
+	  if (TREE_CODE (type) == BITINT_TYPE
+	      && bitint_precision_kind (type) >= bitint_prec_large)
 	    {
-	    case MULT_EXPR:
-	    case TRUNC_DIV_EXPR:
-	    case TRUNC_MOD_EXPR:
-	      muldiv_p = true;
-	    default:
-	      break;
+	      if (!bitmap_bit_p (names, SSA_NAME_VERSION (lhs)))
+		return;
+	      switch (gimple_assign_rhs_code (stmt))
+		{
+		case MULT_EXPR:
+		case TRUNC_DIV_EXPR:
+		case TRUNC_MOD_EXPR:
+		  muldiv_p = true;
+		default:
+		  break;
+		}
 	    }
 	}
     }
@@ -5947,27 +5952,37 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
 
   auto_vec<tree, 16> worklist;
   FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
-    if (TREE_CODE (TREE_TYPE (var)) == BITINT_TYPE
-	&& bitint_precision_kind (TREE_TYPE (var)) >= bitint_prec_large)
-      {
-	if (bitmap_bit_p (names, SSA_NAME_VERSION (var)))
-	  use (live, var);
-	else
-	  worklist.safe_push (var);
-      }
+    {
+      tree type = TREE_TYPE (var);
+      if (TREE_CODE (type) == COMPLEX_TYPE)
+	type = TREE_TYPE (type);
+      if (TREE_CODE (type) == BITINT_TYPE
+	  && bitint_precision_kind (type) >= bitint_prec_large)
+	{
+	  if (bitmap_bit_p (names, SSA_NAME_VERSION (var)))
+	    use (live, var);
+	  else
+	    worklist.safe_push (var);
+	}
+    }
 
   while (worklist.length () > 0)
     {
       tree s = worklist.pop ();
       FOR_EACH_SSA_TREE_OPERAND (var, SSA_NAME_DEF_STMT (s), iter, SSA_OP_USE)
-	if (TREE_CODE (TREE_TYPE (var)) == BITINT_TYPE
-	    && bitint_precision_kind (TREE_TYPE (var)) >= bitint_prec_large)
-	  {
-	    if (bitmap_bit_p (names, SSA_NAME_VERSION (var)))
-	      use (live, var);
-	    else
-	      worklist.safe_push (var);
-	  }
+	{
+	  tree type = TREE_TYPE (var);
+	  if (TREE_CODE (type) == COMPLEX_TYPE)
+	    type = TREE_TYPE (type);
+	  if (TREE_CODE (type) == BITINT_TYPE
+	      && bitint_precision_kind (type) >= bitint_prec_large)
+	    {
+	      if (bitmap_bit_p (names, SSA_NAME_VERSION (var)))
+		use (live, var);
+	      else
+		worklist.safe_push (var);
+	    }
+	}
     }
 
   if (muldiv_p)
