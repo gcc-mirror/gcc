@@ -29,7 +29,7 @@ void *allocate_trampoline_page (void);
 void __gcc_nested_func_ptr_created (void *chain, void *func, void *dst);
 void __gcc_nested_func_ptr_deleted (void);
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__gnu_hurd__)
 static const unsigned char aarch64_trampoline_insns[6][4] = {
   {0x5f, 0x24, 0x03, 0xd5}, /* hint    34 */
   {0xb1, 0x00, 0x00, 0x58}, /* ldr     x17, .+20 */
@@ -82,7 +82,7 @@ allocate_trampoline_page (void)
 {
   void *page;
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__gnu_hurd__)
   page = mmap (0, getpagesize (), PROT_WRITE | PROT_EXEC,
 	       MAP_ANON | MAP_PRIVATE, 0, 0);
 #elif __APPLE__
