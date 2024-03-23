@@ -76,14 +76,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @headerfile generator
    * @since C++23
    */
-  template<typename _Ref, typename _V = void, typename _Alloc = void>
+  template<typename _Ref, typename _Val = void, typename _Alloc = void>
     class generator;
 
   /// @cond undocumented
   namespace __gen
   {
     /// _Reference type for a generator whose reference (first argument) and
-    /// value (second argument) types are _Ref and _V.
+    /// value (second argument) types are _Ref and _Val.
     template<typename _Ref, typename _Val>
     using _Reference_t = __conditional_t<is_void_v<_Val>,
 					 _Ref&&, _Ref>;
@@ -642,14 +642,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // namespace __gen
   /// @endcond
 
-  template<typename _Ref, typename _V, typename _Alloc>
+  template<typename _Ref, typename _Val, typename _Alloc>
     class generator
-      : public ranges::view_interface<generator<_Ref, _V, _Alloc>>
+      : public ranges::view_interface<generator<_Ref, _Val, _Alloc>>
     {
-      using _Value = __conditional_t<is_void_v<_V>, remove_cvref_t<_Ref>, _V>;
+      using _Value = __conditional_t<is_void_v<_Val>,
+				     remove_cvref_t<_Ref>,
+				     _Val>;
       static_assert(__gen::_Cv_unqualified_object<_Value>,
 		    "Generator value must be a cv-unqualified object type");
-      using _Reference = __gen::_Reference_t<_Ref, _V>;
+      using _Reference = __gen::_Reference_t<_Ref, _Val>;
       static_assert(is_reference_v<_Reference>
 		    || (__gen::_Cv_unqualified_object<_Reference>
 			&& copy_constructible<_Reference>),
@@ -737,8 +739,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool _M_began = false;
     };
 
-  template<class _Ref, class _V, class _Alloc>
-    struct generator<_Ref, _V, _Alloc>::_Iterator
+  template<class _Ref, class _Val, class _Alloc>
+    struct generator<_Ref, _Val, _Alloc>::_Iterator
     {
       using value_type = _Value;
       using difference_type = ptrdiff_t;
