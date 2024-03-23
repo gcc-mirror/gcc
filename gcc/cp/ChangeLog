@@ -1,3 +1,9 @@
+2024-03-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/59465
+	* init.cc (can_init_array_with_p): New.
+	(perform_member_init): Check it.
+
 2024-03-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/110323

@@ -1,3 +1,22 @@
+2024-03-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112974
+	PR analyzer/112975
+	* sm-taint.cc (taint_state_machine::on_condition): Strip away
+	casts before considering LHS and RHS, to increase the chance of
+	detecting places where sanitization of a value may have happened.
+
+2024-03-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc: Include "diagnostic-format-sarif.h".
+	(bounds_to_str): New.
+	(taint_diagnostic::maybe_add_sarif_properties): New.
+	(tainted_offset::tainted_offset): Add "offset" param.
+	(tainted_offset::maybe_add_sarif_properties): New.
+	(tainted_offset::m_offset): New.
+	(region_model::check_region_for_taint): Pass offset to
+	tainted_offset ctor.
+
 2024-03-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/113619

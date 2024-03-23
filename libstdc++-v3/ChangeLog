@@ -1,3 +1,59 @@
+2024-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114401
+	* include/bits/hashtable.h (_Hashtable::_M_reinsert_node): Call
+	release() on node handle instead of just zeroing its pointer.
+	(_Hashtable::_M_reinsert_node_multi): Likewise.
+	(_Hashtable::_M_merge_unique): Likewise.
+	(_Hashtable::_M_merge_multi): Likewise.
+	* include/bits/node_handle.h (_Node_handle_common::release()):
+	New member function.
+	(_Node_handle_common::_Optional_alloc::_M_empty): Remove
+	unnecessary union member.
+	(_Node_handle_common): Declare _Hashtable as a friend.
+	* include/bits/stl_tree.h (_Rb_tree::_M_reinsert_node_unique):
+	Call release() on node handle instead of just zeroing its
+	pointer.
+	(_Rb_tree::_M_reinsert_node_equal): Likewise.
+	(_Rb_tree::_M_reinsert_node_hint_unique): Likewise.
+	(_Rb_tree::_M_reinsert_node_hint_equal): Likewise.
+	* testsuite/23_containers/multiset/modifiers/114401.cc: New test.
+	* testsuite/23_containers/set/modifiers/114401.cc: New test.
+	* testsuite/23_containers/unordered_multiset/modifiers/114401.cc: New test.
+	* testsuite/23_containers/unordered_set/modifiers/114401.cc: New test.
+
+2024-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113841
+	* include/bits/allocator.h (allocator<cv T>): Add default
+	constructor to partial specializations for cv-qualified types.
+	* include/bits/stl_vector.h (_Vector_impl::_Vector_impl()):
+	Constrain so that it's only present if the allocator is default
+	constructible.
+	* include/bits/stl_bvector.h (_Bvector_impl::_Bvector_impl()):
+	Likewise.
+	* testsuite/23_containers/vector/cons/113841.cc: New test.
+
+2024-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_construct.h (destroy_at, construct_at): Guard
+	with feature test macros instead of just __cplusplus.
+
+2024-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (generator, tuple_like): Move earlier
+	in the file.
+	* include/bits/version.h: Regenerate.
+
+2024-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114394
+	* include/std/functional (bind): Use __invoke_result_t instead
+	of result_of::type.
+	* include/std/type_traits (__invoke_result_t): New alias
+	template.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust prune pattern.
+
 2024-03-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/version.def (null_iterators): Remove extra_cond.

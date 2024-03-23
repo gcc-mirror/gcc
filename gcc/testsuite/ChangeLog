@@ -1,3 +1,164 @@
+2024-03-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/55978
+	* gfortran.dg/null_actual_5.f90: New test.
+
+2024-03-22  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-ztso-amo-add-1.c: Add
+	dg_add_options riscv_a
+	* gcc.target/riscv/amo-table-ztso-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-5.c:	Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-6.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-7.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-5.c: Ditto.
+
+2024-03-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112974
+	PR analyzer/112975
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	taint-pr112974.c and taint-pr112975.c to analyzer_kernel_plugin.c.
+	* gcc.dg/plugin/taint-pr112974.c: New test.
+	* gcc.dg/plugin/taint-pr112975.c: New test.
+
+2024-03-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/59465
+	* g++.dg/init/array62.C: New test.
+	* g++.dg/init/array63.C: New test.
+	* g++.dg/init/array64.C: New test.
+
+2024-03-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/107426
+	* gfortran.dg/pr89943_3.f90: Update error pattern.
+	* gfortran.dg/pr89943_4.f90: Likewise.
+	* gfortran.dg/use_31.f90: New test.
+
+2024-03-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/111781
+	* gfortran.dg/spec_expr_8.f90: New test.
+	* gfortran.dg/spec_expr_9.f90: New test.
+
+2024-03-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/graphite/pr107865.f90: Declare array bound variable(s)
+	as dummy argument(s).
+	* gfortran.dg/pr101267.f90: Likewise.
+	* gfortran.dg/pr112404.f90: Likewise.
+	* gfortran.dg/pr78061.f: Likewise.
+	* gfortran.dg/pr79315.f90: Likewise.
+	* gfortran.dg/vect/pr90681.f: Likewise.
+	* gfortran.dg/vect/pr97761.f90: Likewise.
+	* gfortran.dg/vect/pr99746.f90: Likewise.
+
+2024-03-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-1.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-10.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-11.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-12.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-13.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-14.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-15.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-16.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-17.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-18.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-2.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-3.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-4.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-5.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-6.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-7.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-8.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits-9.c: New test.
+	* gcc.target/riscv/rvv/base/riscv_rvv_vector_bits.h: New test.
+
+2024-03-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/backprop-6.c: On s390 we also have a copysign
+	optab for long double.  Thus, scan 3 instead of 2 times for it.
+
+2024-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112724
+	* c-c++-common/gomp/depobj-3.c: Add -fexcess-precision=fast as
+	dg-additional-options.
+
+2024-03-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/109619
+	* gcc.dg/redecl-26.c: New test.
+
+2024-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/96147
+	* gcc.dg/vect/bb-slp-32.c (dg-final): Remove.
+
+2024-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/114150
+	* gcc.target/i386/avx512cd-vpbroadcastmb2q-2.c: Skip on
+	Solaris/x86 with as.
+	* gcc.target/i386/avx512cd-vpbroadcastmw2d-2.c: Likewise.
+
+2024-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* gcc.dg/ubsan/pr111736.c: New test.
+
+2024-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114405
+	* gcc.dg/torture/bitint-66.c: New test.
+
+2024-03-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/abs-4.c: On s390 we also have a copysign optab
+	for long double.  Thus, scan 3 instead of 2 times for it.
+
+2024-03-22  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/114194
+	* gcc.target/riscv/rvv/xtheadvector/pr114194.c: New test.
+
+2024-03-22  Pan Li  <pan2.li@intel.com>
+
+	PR target/114352
+	* gcc.target/riscv/rvv/base/pr114352-3.c: New test.
+
+2024-03-22  Pan Li  <pan2.li@intel.com>
+
+	PR target/114352
+	* gcc.target/riscv/rvv/base/pr114352-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr114352-2.c: New test.
+
+2024-03-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/114396
+	* gcc.target/i386/pr114396.c: Move to...
+	* gcc.c-torture/execute/pr114396.c: ...here.
+
+2024-03-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114422
+	* gm2/iso/fail/badset.mod: New test.
+	* gm2/iso/fail/badset2.mod: New test.
+	* gm2/iso/fail/badset3.mod: New test.
+
 2024-03-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/113619

@@ -1,3 +1,36 @@
+2024-03-22  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* config/accel/target-indirect.c: Include string.h and hashtab.h.
+	Remove include of splay-tree.h.  Update comments.
+	(splay_tree_prefix, splay_tree_c): Delete.
+	(struct indirect_map_t): New.
+	(hash_entry_type, htab_alloc, htab_free, htab_hash, htab_eq): New.
+	(GOMP_INDIRECT_ADD_MAP): Remove volatile qualifier.
+	(USE_SPLAY_TREE_LOOKUP): Rename to...
+	(USE_HASHTAB_LOOKUP): ..this.
+	(indirect_map, indirect_array): Delete.
+	(indirect_htab): New.
+	(build_indirect_map): Remove locking.  Build indirect map using
+	hashtab.
+	(GOMP_target_map_indirect_ptr): Use indirect_htab to lookup target
+	address.
+	(GOMP_target_map_indirect_ptr): Remove volatile qualifier.
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Call build_indirect_map
+	from first thread of first team only.
+	* config/nvptx/team.c (gomp_nvptx_main): Likewise.
+	* testsuite/libgomp.c-c++-common/declare-target-indirect-2.c (main):
+	Add missing break statements.
+	* testsuite/libgomp.fortran/declare-target-indirect-2.f90: Remove
+	xfail.
+
+2024-03-22  Andrew Stubbs  <ams@baylibre.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): GFX1103.
+	(gcn_gfx1103_s): New.
+	(isa_hsa_name): Handle gfx1103.
+	(isa_code): Likewise.
+	(max_isa_vgprs): Likewise.
+
 2024-03-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.oacc-fortran/acc-memcpy.f90: Fix 'char'

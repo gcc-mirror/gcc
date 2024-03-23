@@ -1,3 +1,136 @@
+2024-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_set_current_function): Adjust diagnostic
+	for deprecated SIGNAL and INTERRUPT usage without respective header.
+
+2024-03-22  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.md (*memory_barrier): Split into RDNA and !RDNA.
+	(atomic_load<mode>): Adjust RDNA cache settings.
+	(atomic_store<mode>): Likewise.
+	(atomic_exchange<mode>): Likewise.
+
+2024-03-22  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_vectorize_preferred_simd_mode): Prefer V32 on
+	RDNA devices.
+
+2024-03-22  Andrew Stubbs  <ams@baylibre.com>
+
+	* config.gcc (amdgcn): Add gfx1103 entries.
+	* config/gcn/gcn-hsa.h (NO_XNACK): Likewise.
+	(gcn_local_sym_hash): Likewise.
+	* config/gcn/gcn-opts.h (enum processor_type): Likewise.
+	(TARGET_GFX1103): New macro.
+	* config/gcn/gcn.cc (gcn_option_override): Handle gfx1103.
+	(gcn_omp_device_kind_arch_isa): Likewise.
+	(output_file_start): Likewise.
+	(gcn_hsa_declare_function_name): Use TARGET_RDNA3, not just gfx1100.
+	* config/gcn/gcn.h (TARGET_CPU_CPP_BUILTINS): Add __gfx1103__.
+	* config/gcn/gcn.opt: Add gfx1103.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_MACH_AMDGCN_GFX1103): New.
+	(main): Handle gfx1103.
+	* config/gcn/t-omp-device: Add gfx1103 isa.
+	* doc/install.texi (amdgcn): Add gfx1103.
+	* doc/invoke.texi (-march): Likewise.
+
+2024-03-22  Andrew Stubbs  <ams@baylibre.com>
+
+	* dojump.cc (do_compare_rtx_and_jump): Clear excess bits in vector
+	bitmasks.
+	(do_compare_and_jump): Remove now-redundant similar code.
+	* internal-fn.cc (expand_fn_using_insn): Clear excess bits in vector
+	bitmasks.
+	(add_mask_and_len_args): Likewise.
+
+2024-03-22  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Add pre-define
+	macro __riscv_v_fixed_vlen when zvl.
+	* config/riscv/riscv.cc (riscv_handle_rvv_vector_bits_attribute):
+	New static func to take care of the RVV types decorated by
+	the attributes.
+
+2024-03-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/109619
+	* builtins.cc (fold_builtin_1): Use error_operand_p
+	instead of checking against ERROR_MARK.
+	(fold_builtin_2): Likewise.
+	(fold_builtin_3): Likewise.
+
+2024-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* ubsan.cc (ubsan_expand_null_ifn, instrument_mem_ref): Avoid
+	SANITIZE_NULL instrumentation for non-generic address spaces
+	for which targetm.addr_space.zero_address_valid (as) is true.
+
+2024-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114405
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_mergeable_stmt):
+	Set rprec to limb_prec rather than 0 if tprec is divisible by
+	limb_prec.  In the last bf_cur handling, set rprec to (tprec + bo_bit)
+	% limb_prec rather than tprec % limb_prec and use just rprec instead
+	of rprec + bo_bit.  For build_bit_field_ref offset, divide
+	(tprec + bo_bit) by limb_prec rather than just tprec.
+
+2024-03-22  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/114194
+	* config/riscv/vector-iterators.md: Split VI into VI_FRAC and VI_NOFRAC.
+	Only include VI_NOFRAC in V_VLS without TARGET_XTHEADVECTOR.
+
+2024-03-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_expand_prologue): Add missing stack
+	tie for scalable and final stack adjustment if needed.
+	Co-authored-by: Raphael Zinsly <rzinsly@ventanamicro.com>
+
+2024-03-22  Pan Li  <pan2.li@intel.com>
+
+	PR target/114352
+	* common/config/riscv/riscv-common.cc (struct riscv_func_target_info):
+	New struct for func decl and target name.
+	(struct riscv_func_target_hasher): New hasher for hash table mapping
+	from the fn_decl to fn_target_name.
+	(riscv_func_decl_hash): New func to compute the hash for fn_decl.
+	(riscv_func_target_hasher::hash): New func to impl hash interface.
+	(riscv_func_target_hasher::equal): New func to impl equal interface.
+	(riscv_cmdline_subset_list): New static var for cmdline subset list.
+	(riscv_func_target_table_lazy_init): New func to lazy init the func
+	target hash table.
+	(riscv_func_target_get): New func to get target name from hash table.
+	(riscv_func_target_put): New func to put target name into hash table.
+	(riscv_func_target_remove_and_destory): New func to remove target
+	info from the hash table and destory it.
+	(riscv_parse_arch_string): Set the static var cmdline_subset_list.
+	* config/riscv/riscv-subset.h (riscv_cmdline_subset_list): New static
+	var for cmdline subset list.
+	(riscv_func_target_get): New func decl.
+	(riscv_func_target_put): Ditto.
+	(riscv_func_target_remove_and_destory): Ditto.
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Take cmdline_subset_list instead of current_subset_list when clone.
+	(riscv_process_target_attr): Record the func target info to hash table.
+	(riscv_option_valid_attribute_p): Add new arg tree fndel.
+	* config/riscv/riscv.cc (riscv_declare_function_name): Consume the
+	func target info and print the arch message.
+
+2024-03-22  Pan Li  <pan2.li@intel.com>
+
+	PR target/114352
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::parse):
+	Replace implied, combine and check to func finalize.
+	(riscv_subset_list::finalize): New func impl to take care of
+	implied, combine ext and related checks.
+	* config/riscv/riscv-subset.h: Add func decl for finalize.
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Finalize the ext before return succeed.
+	* config/riscv/riscv.cc (riscv_set_current_function): Reinit the
+	machine mode before when set cur function.
+
 2024-03-21  Andrew Stubbs  <ams@baylibre.com>
 
 	* config/gcn/gcn.cc (gcn_expand_builtin_1): Comment correction.

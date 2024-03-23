@@ -1,3 +1,36 @@
+2024-03-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/55978
+	* interface.cc (gfc_compare_actual_formal): Skip size check for
+	NULL() actual without MOLD argument.
+
+2024-03-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/107426
+	* gfortran.h (gfc_save_module_list, gfc_restore_old_module_list):
+	New declarations.
+	* module.cc (old_module_list_tail): New global variable.
+	(gfc_save_module_list, gfc_restore_old_module_list): New functions.
+	(gfc_use_modules): Set module_list and old_module_list_tail.
+	* parse.cc (next_statement): Save module_list before doing any work.
+	(reject_statement): Restore module_list to its saved value.
+
+2024-03-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/111781
+	* symbol.cc (gfc_get_procedure_ns, gfc_get_spec_ns): New functions.
+	* gfortran.h (gfc_get_procedure_ns, gfc_get_spec ns): Declare them.
+	(gfc_is_formal_arg): Remove.
+	* expr.cc (check_restricted): Remove special case allowing local
+	variable in dummy argument bound expressions.  Use gfc_get_spec_ns
+	to get the right namespace.
+	* resolve.cc (gfc_is_formal_arg, formal_arg_flag): Remove.
+	(gfc_resolve_formal_arglist): Set gfc_current_ns.  Quit loop and
+	restore gfc_current_ns instead of early returning.
+	(resolve_symbol): Factor common array spec resolution code to...
+	(resolve_symbol_array_spec): ... this new function.  Additionnally
+	set and restore gfc_current_ns.
+
 2024-03-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/30802
