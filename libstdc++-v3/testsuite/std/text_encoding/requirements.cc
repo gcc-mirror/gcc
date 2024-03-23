@@ -8,7 +8,7 @@
 # error "Feature-test macro for text_encoding has wrong value in <text_encoding>"
 #endif
 
-#undef __cpp_lib_expected
+#undef __cpp_lib_text_encoding
 #include <version>
 #ifndef __cpp_lib_text_encoding
 # error "Feature-test macro for text_encoding missing in <version>"
