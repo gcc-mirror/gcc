@@ -9840,12 +9840,12 @@ BEGIN
                BuildConvertFunction
             ELSE
                MetaErrorT1 (functok,
-                            'argument to {%1E%ad} must be a float point type', Sym) ;
+                            'argument to {%1Ead} must be a float point type', Sym) ;
                PushTFtok (MakeConstLit (functok, MakeKey('0'), Type), Type, functok)
             END
          ELSE
             MetaErrorT2 (vartok,
-                         'argument to {%1E%ad} must be a variable or constant, seen {%2ad}',
+                         'argument to {%1Ead} must be a variable or constant, seen {%2ad}',
                          Sym, Var) ;
             PushTFtok (MakeConstLit (functok, MakeKey('0'), Type), Type, functok)
          END
@@ -9924,7 +9924,7 @@ BEGIN
             BuildConvertFunction
          ELSE
             MetaErrorT1 (vartok,
-                         'argument to {%1E%ad} must be a variable or constant', ProcSym) ;
+                         'argument to {%1Ead} must be a variable or constant', ProcSym) ;
             PushTFtok (MakeConstLit (functok, MakeKey('0.0'), Type), Type, functok)
          END
       ELSE
