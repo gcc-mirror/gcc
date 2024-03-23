@@ -773,12 +773,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator++(int)
       { this->operator++(); }
 
-      yielded
+      _Reference
       operator*()
 	const noexcept(is_nothrow_move_constructible_v<_Reference>)
       {
 	auto& __p = this->_M_coro.promise();
-	return static_cast<yielded>(*__p._M_value());
+	return static_cast<_Reference>(*__p._M_value());
       }
 
     private:
