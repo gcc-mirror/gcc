@@ -1,3 +1,12 @@
+2024-03-22  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-03-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/114396
+	* gcc.target/i386/pr114396.c: Move to...
+	* gcc.c-torture/execute/pr114396.c: ...here.
+
 2024-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/114231
