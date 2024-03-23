@@ -5784,7 +5784,12 @@ pa_output_global_address (FILE *file, rtx x, int round_constant)
   if (GET_CODE (x) == HIGH)
     x = XEXP (x, 0);
 
-  if (GET_CODE (x) == SYMBOL_REF && read_only_operand (x, VOIDmode))
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_DLTIND14R)
+    {
+      x = XVECEXP (x, 0, 0);
+      output_addr_const (file, x);
+    }
+  else if (GET_CODE (x) == SYMBOL_REF && read_only_operand (x, VOIDmode))
     output_addr_const (file, x);
   else if (GET_CODE (x) == SYMBOL_REF && !flag_pic)
     {

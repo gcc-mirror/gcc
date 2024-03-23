@@ -1247,12 +1247,15 @@ do {									     \
 	       reg_names [REGNO (XEXP (addr, 0))]);			\
       break;								\
     case LO_SUM:							\
-      if (!symbolic_operand (XEXP (addr, 1), VOIDmode))			\
+      if (GET_CODE (XEXP (addr, 1)) == UNSPEC				\
+	  && XINT (XEXP (addr, 1), 1) == UNSPEC_DLTIND14R)		\
+	fputs ("RT'", FILE);						\
+      else if (!symbolic_operand (XEXP (addr, 1), VOIDmode))		\
 	fputs ("R'", FILE);						\
       else if (flag_pic == 0)						\
 	fputs ("RR'", FILE);						\
       else								\
-	fputs ("RT'", FILE);						\
+	gcc_unreachable ();						\
       pa_output_global_address (FILE, XEXP (addr, 1), 0);		\
       fputs ("(", FILE);						\
       output_operand (XEXP (addr, 0), 0);				\
