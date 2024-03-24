@@ -8,8 +8,8 @@
 ../../../libcpp/lex.cc:2120:39: warning: ‘loc’ may be used uninitialized [-Wmaybe-uninitialized]
 ../../../libcpp/macro.cc:185:26: warning: format not a string literal and no format arguments [-Wformat-security]
 ../../../libcpp/macro.cc:214:34: warning: format not a string literal and no format arguments [-Wformat-security]
-../../../libcpp/macro.cc:3704:25: warning: format not a string literal and no format arguments [-Wformat-security]
-../../../libcpp/macro.cc:3719:25: warning: format not a string literal and no format arguments [-Wformat-security]
+../../../libcpp/macro.cc:3710:25: warning: format not a string literal and no format arguments [-Wformat-security]
+../../../libcpp/macro.cc:3725:25: warning: format not a string literal and no format arguments [-Wformat-security]
 ../../c++tools/server.cc:490:11: warning: ignoring return value of ‘ssize_t write(int, const void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
 ../../c++tools/server.cc:620:10: warning: ignoring return value of ‘int pipe(int*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
 ../../gcc/../libgcc/libgcov-util.c:455:9: warning: ignoring return value of ‘int chdir(const char*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
@@ -26,31 +26,35 @@
 ../../gcc/analyzer/call-summary.cc:123:26: warning: unknown conversion type character ‘E’ in format [-Wformat=]
 ../../gcc/analyzer/call-summary.cc:99:32: warning: too many arguments for format [-Wformat-extra-args]
 ../../gcc/analyzer/call-summary.cc:99:40: warning: unknown conversion type character ‘E’ in format [-Wformat=]
-../../gcc/analyzer/diagnostic-manager.cc:810:20: warning: too many arguments for format [-Wformat-extra-args]
-../../gcc/analyzer/diagnostic-manager.cc:810:28: warning: unknown conversion type character ‘E’ in format [-Wformat=]
-../../gcc/analyzer/program-state.cc:1422:15: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/analyzer/sm-malloc.cc:1647:22: warning: too many arguments for format [-Wformat-extra-args]
-../../gcc/analyzer/sm-malloc.cc:1647:25: warning: unknown conversion type character ‘E’ in format [-Wformat=]
-../../gcc/analyzer/sm-malloc.cc:1648:22: warning: too many arguments for format [-Wformat-extra-args]
-../../gcc/analyzer/sm-malloc.cc:1648:25: warning: unknown conversion type character ‘E’ in format [-Wformat=]
-../../gcc/analyzer/store.h:300:5: warning: ‘size_in_bytes.generic_wide_int<fixed_wide_int_storage<128> >::<anonymous>.fixed_wide_int_storage<128>::val[1]’ may be used uninitialized [-Wmaybe-uninitialized]
-../../gcc/c-family/c-common.cc:6639:14: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/c-family/c-common.cc:6643:16: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/analyzer/diagnostic-manager.cc:811:20: warning: too many arguments for format [-Wformat-extra-args]
+../../gcc/analyzer/diagnostic-manager.cc:811:28: warning: unknown conversion type character ‘E’ in format [-Wformat=]
+../../gcc/analyzer/program-state.cc:1437:15: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/analyzer/record-layout.h:64:24: warning: too many arguments for format [-Wformat-extra-args]
+../../gcc/analyzer/record-layout.h:64:41: warning: unknown conversion type character ‘D’ in format [-Wformat=]
+../../gcc/analyzer/record-layout.h:66:24: warning: too many arguments for format [-Wformat-extra-args]
+../../gcc/analyzer/record-layout.h:66:27: warning: unknown conversion type character ‘D’ in format [-Wformat=]
+../../gcc/analyzer/sm-malloc.cc:1624:22: warning: too many arguments for format [-Wformat-extra-args]
+../../gcc/analyzer/sm-malloc.cc:1624:25: warning: unknown conversion type character ‘E’ in format [-Wformat=]
+../../gcc/analyzer/sm-malloc.cc:1625:22: warning: too many arguments for format [-Wformat-extra-args]
+../../gcc/analyzer/sm-malloc.cc:1625:25: warning: unknown conversion type character ‘E’ in format [-Wformat=]
+../../gcc/analyzer/store.h:310:5: warning: ‘size_in_bytes.generic_wide_int<fixed_wide_int_storage<128> >::<anonymous>.fixed_wide_int_storage<128>::val[1]’ may be used uninitialized [-Wmaybe-uninitialized]
+../../gcc/c-family/c-common.cc:6763:14: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/c-family/c-common.cc:6767:16: warning: format not a string literal and no format arguments [-Wformat-security]
 ../../gcc/c/c-convert.cc:84:13: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/c/c-typeck.cc:12255:16: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/c/c-typeck.cc:3762:17: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/c/c-typeck.cc:4532:16: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/c/c-typeck.cc:6731:23: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/c/c-typeck.cc:12367:16: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/c/c-typeck.cc:3808:17: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/c/c-typeck.cc:4578:16: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/c/c-typeck.cc:6827:23: warning: format not a string literal and no format arguments [-Wformat-security]
 ../../gcc/collect-utils.cc:237:21: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/collect2.cc:2397:21: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/diagnostic.cc:2257:15: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/expmed.cc:1839:45: warning: ‘*(unsigned int*)((char*)&imode + offsetof(scalar_int_mode, scalar_int_mode::m_mode))’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+../../gcc/collect2.cc:2400:21: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/diagnostic.cc:2316:15: warning: format not a string literal and no format arguments [-Wformat-security]
+../../gcc/expmed.cc:1845:45: warning: ‘*(unsigned int*)((char*)&imode + offsetof(scalar_int_mode, scalar_int_mode::m_mode))’ may be used uninitialized in this function [-Wmaybe-uninitialized]
 ../../gcc/fold-const.cc:384:13: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/gcc.cc:10593:12: warning: ignoring return value of ‘ssize_t read(int, void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
-../../gcc/gcc.cc:7823:9: warning: ignoring return value of ‘ssize_t write(int, const void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
-../../gcc/gcc.cc:7826:13: warning: ignoring return value of ‘ssize_t write(int, const void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
-../../gcc/gcc.cc:7827:13: warning: ignoring return value of ‘ssize_t write(int, const void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
-../../gcc/gcc.cc:7829:9: warning: ignoring return value of ‘ssize_t write(int, const void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+../../gcc/gcc.cc:10674:12: warning: ignoring return value of ‘ssize_t read(int, void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+../../gcc/gcc.cc:7903:9: warning: ignoring return value of ‘ssize_t write(int, const void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+../../gcc/gcc.cc:7906:13: warning: ignoring return value of ‘ssize_t write(int, const void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+../../gcc/gcc.cc:7907:13: warning: ignoring return value of ‘ssize_t write(int, const void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+../../gcc/gcc.cc:7909:9: warning: ignoring return value of ‘ssize_t write(int, const void*, size_t)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
 ../../gcc/genhooks.cc:112:17: warning: ignoring return value of ‘int fscanf(FILE*, const char*, ...)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
 ../../gcc/genhooks.cc:121:14: warning: ignoring return value of ‘int fscanf(FILE*, const char*, ...)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
 ../../gcc/genhooks.cc:174:14: warning: ignoring return value of ‘int fscanf(FILE*, const char*, ...)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
@@ -68,7 +72,7 @@
 ../../gcc/text-art/table.cc:981:62: warning: unquoted keyword ‘char’ in format [-Wformat-diag]
 ../../gcc/text-art/table.cc:981:69: warning: spurious trailing punctuation sequence ‘])’ in format [-Wformat-diag]
 ../../gcc/tree-ssa-sccvn.cc:284:21: warning: format not a string literal and no format arguments [-Wformat-security]
-../../gcc/tree-vect-stmts.cc:10388:47: warning: ‘stride_step’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+../../gcc/tree-vect-stmts.cc:10386:47: warning: ‘stride_step’ may be used uninitialized in this function [-Wmaybe-uninitialized]
 ../../gcc/vec.h:347:10: warning: ‘void free(void*)’ called on unallocated object ‘dest_bbs’ [-Wfree-nonheap-object]
 ../../libcpp/expr.cc:842:35: warning: format not a string literal and no format arguments [-Wformat-security]
 ../../libcpp/expr.cc:845:38: warning: format not a string literal and no format arguments [-Wformat-security]
@@ -79,26 +83,13 @@
 ../../libcpp/lex.cc:2120:39: warning: ‘loc’ may be used uninitialized [-Wmaybe-uninitialized]
 ../../libcpp/macro.cc:185:26: warning: format not a string literal and no format arguments [-Wformat-security]
 ../../libcpp/macro.cc:214:34: warning: format not a string literal and no format arguments [-Wformat-security]
-../../libcpp/macro.cc:3704:25: warning: format not a string literal and no format arguments [-Wformat-security]
-../../libcpp/macro.cc:3719:25: warning: format not a string literal and no format arguments [-Wformat-security]
+../../libcpp/macro.cc:3710:25: warning: format not a string literal and no format arguments [-Wformat-security]
+../../libcpp/macro.cc:3725:25: warning: format not a string literal and no format arguments [-Wformat-security]
 /home/runner/work/gccrs/gccrs/gccrs-build/x86_64-pc-linux-gnu/32/libssp/../../../../libssp/gets-chk.c:74: warning: the `gets' function is dangerous and should not be used.
 /home/runner/work/gccrs/gccrs/gccrs-build/x86_64-pc-linux-gnu/libssp/../../../libssp/gets-chk.c:74: warning: the `gets' function is dangerous and should not be used.
-Makefile:900: warning: ignoring old recipe for target 'all-multi'
-Makefile:900: warning: ignoring old recipe for target 'all-multi'
-Makefile:900: warning: ignoring old recipe for target 'all-multi'
-Makefile:900: warning: ignoring old recipe for target 'all-multi'
-Makefile:900: warning: ignoring old recipe for target 'all-multi'
-Makefile:900: warning: ignoring old recipe for target 'all-multi'
-Makefile:900: warning: ignoring old recipe for target 'all-multi'
-Makefile:909: warning: overriding recipe for target 'all-multi'
-Makefile:909: warning: overriding recipe for target 'all-multi'
-Makefile:909: warning: overriding recipe for target 'all-multi'
-Makefile:909: warning: overriding recipe for target 'all-multi'
-Makefile:909: warning: overriding recipe for target 'all-multi'
-Makefile:909: warning: overriding recipe for target 'all-multi'
-Makefile:909: warning: overriding recipe for target 'all-multi'
 gengtype-lex.cc:357:15: warning: this statement may fall through [-Wimplicit-fallthrough=]
 gengtype-lex.cc:357:15: warning: this statement may fall through [-Wimplicit-fallthrough=]
 gengtype-lex.cc:357:15: warning: this statement may fall through [-Wimplicit-fallthrough=]
 gengtype-lex.cc:357:15: warning: this statement may fall through [-Wimplicit-fallthrough=]
+install.texi:2231: warning: `.' or `,' must follow @xref, not f
 libtool: install: warning: remember to run `libtool --finish /usr/local/libexec/gcc/x86_64-pc-linux-gnu/14.0.0'
