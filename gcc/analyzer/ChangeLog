@@ -1,3 +1,12 @@
+2024-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114408
+	* engine.cc (impl_run_checkers): Free up any dominance info that
+	we may have created.
+	* kf.cc (class kf_ubsan_handler): New.
+	(register_sanitizer_builtins): New.
+	(register_known_functions): Call register_sanitizer_builtins.
+
 2024-03-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/112974

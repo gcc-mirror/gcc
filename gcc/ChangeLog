@@ -1,3 +1,33 @@
+2024-03-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_output_global_address): Handle
+	UNSPEC_DLTIND14R addresses.
+	* config/pa/pa.h (PRINT_OPERAND_ADDRESS): Output "RT'" for
+	UNSPEC_DLTIND14R address.
+
+2024-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114433
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): For
+	m_bitfld_load check save_first rather than m_first.
+
+2024-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114425
+	* gimple-lower-bitint.cc (build_bitint_stmt_ssa_conflicts): Handle
+	_Complex large/huge _BitInt types like the large/huge _BitInt types.
+
+2024-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111683
+	* tree-predcom.cc (pcom_worker::suitable_component_p): If has_write
+	and comp_step is RS_NONZERO, return false if any reference in the
+	component doesn't have DR_STEP a multiple of access size.
+
+2024-03-23  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md: Add new split pattern described above.
+
 2024-03-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.cc (avr_set_current_function): Adjust diagnostic

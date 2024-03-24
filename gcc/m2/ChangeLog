@@ -1,3 +1,16 @@
+2024-03-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114444
+	* gm2-compiler/M2Quads.mod (BuildTruncFunction): Correct
+	error format specifier.
+	(BuildFloatFunction): Correct error format specifier.
+
+2024-03-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114443
+	* m2.flex: Call AddTokCharStar with a stringtok if
+	end of line is reached without a closing quote.
+
 2024-03-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114422
