@@ -1,3 +1,20 @@
+2024-03-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101135
+	* trans-array.cc (gfc_get_dataptr_offset): Check for optional
+	arguments being present before dereferencing data pointer.
+
+2024-03-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/55978
+	* interface.cc (gfc_compare_actual_formal): Skip size check for
+	NULL() actual without MOLD argument.
+
+2024-03-23  Harald Anlauf  <anlauf@gmx.de>
+
+	* trans-types.cc (gfc_get_nodesc_array_type): Clear used gmp
+	variables.
+
 2024-03-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
