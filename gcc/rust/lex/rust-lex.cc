@@ -128,7 +128,8 @@ is_non_decimal_int_literal_separator (uint32_t character)
 bool
 is_identifier_start (uint32_t codepoint)
 {
-  return (cpp_check_xid_property (codepoint) & CPP_XID_START) || codepoint == '_';
+  return (cpp_check_xid_property (codepoint) & CPP_XID_START)
+	 || codepoint == '_';
 }
 
 bool
