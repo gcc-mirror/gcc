@@ -139,12 +139,6 @@
    should be initialized.)  */
 #define CLASSTYPE_VBASECLASSES(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vbases)
 
-/* A vector of BINFOs for the direct and indirect virtual base classes
-   that this type uses in a post-order depth-first left-to-right
-   order.  (In other words, these bases appear in the order that they
-   should be initialized.)  */
-#define CLASSTYPE_VBASECLASSES(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vbases)
-
 /* We used to have a variant type for lang_type.  Keep the name of the
    checking accessor for the sole survivor.  */
 #define LANG_TYPE_CLASS_CHECK(NODE) (TYPE_LANG_SPECIFIC (NODE))
@@ -782,12 +776,6 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    for this class.  */
 #define CLASSTYPE_PRIMARY_BINFO(NODE)                                          \
   (LANG_TYPE_CLASS_CHECK (NODE)->primary_base)
-
-/* A vector of BINFOs for the direct and indirect virtual base classes
-   that this type uses in a post-order depth-first left-to-right
-   order.  (In other words, these bases appear in the order that they
-   should be initialized.)  */
-#define CLASSTYPE_VBASECLASSES(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vbases)
 
 /* The type corresponding to NODE when NODE is used as a base class,
    i.e., NODE without virtual base classes or tail padding.  */
