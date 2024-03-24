@@ -133,8 +133,10 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
+    HIR::Visibility vis = translate_visibility (type.get_visibility ());
+
     translated = new HIR::ExternalTypeItem (mapping, type.get_identifier (),
-					    type.get_locus ());
+					    vis, type.get_locus ());
   }
 
 private:

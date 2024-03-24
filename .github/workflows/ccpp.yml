@@ -37,7 +37,9 @@ jobs:
                   build-essential \
                   gcc-multilib \
                   g++-multilib \
-                  dejagnu
+                  dejagnu;
+          # install Rust directly using rustup
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
     - name: Configure
       run: |
@@ -52,6 +54,8 @@ jobs:
       shell: bash
       run: |
            cd gccrs-build; \
+           # Add cargo to our path quickly
+           . "$HOME/.cargo/env";
            make -Otarget -j $(nproc) 2>&1 | tee log
 
     - name: Check for new warnings
@@ -114,7 +118,9 @@ jobs:
                   build-essential \
                   gcc-multilib \
                   g++-multilib \
-                  dejagnu
+                  dejagnu;
+          # install Rust directly using rustup
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
     - name: Configure
       run: |
@@ -129,6 +135,8 @@ jobs:
       shell: bash
       run: |
            cd gccrs-build; \
+           # Add cargo to our path quickly
+           . "$HOME/.cargo/env";
            make -Otarget -j $(nproc) 2>&1 | tee log
 
     - name: Check for new warnings
@@ -178,6 +186,7 @@ jobs:
       run: |
           apt-get update;
           apt-get install -y \
+                  curl \
                   automake \
                   autoconf \
                   libtool \
@@ -192,8 +201,9 @@ jobs:
                   g++-4.8 \
                   gcc-4.8-multilib \
                   g++-4.8-multilib \
-                  dejagnu \
-                  cargo
+                  dejagnu;
+          # install Rust directly using rustup
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
     - name: Configure
       run: |
@@ -209,6 +219,8 @@ jobs:
     - name: Build
       shell: bash
       run: |
+           # Add cargo to our path quickly
+           . "$HOME/.cargo/env";
            make -C gccrs-build -j $(nproc)
 
     - name: Run Tests
@@ -248,7 +260,9 @@ jobs:
 
     - name: Install Deps
       run: |
-          brew install dejagnu mpfr libmpc gmp
+          brew install dejagnu mpfr libmpc gmp;
+          # install Rust directly using rustup
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
     - name: Configure
       run: |

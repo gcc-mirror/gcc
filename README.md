@@ -80,7 +80,7 @@ $ make
 Running the compiler itself without make install we can simply invoke the compiler proper:
 
 ```bash
-$ ./gcc/crab1 test.rs -frust-debug -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -frust-incomplete-and-experimental-compiler-do-not-use
+$ ./gcc/crab1 test.rs -frust-debug -frust-dump-ast-pretty -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -frust-incomplete-and-experimental-compiler-do-not-use
 ```
 
 To invoke the compiler driver (gccrs) we need to:

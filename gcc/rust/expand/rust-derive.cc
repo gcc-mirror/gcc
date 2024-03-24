@@ -24,7 +24,7 @@ namespace Rust {
 namespace AST {
 
 DeriveVisitor::DeriveVisitor (location_t loc)
-  : loc (loc), builder (AstBuilder (loc))
+  : loc (loc), builder (Builder (loc))
 {}
 
 std::unique_ptr<Item>
@@ -45,7 +45,7 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
     case BuiltinMacro::PartialOrd:
     case BuiltinMacro::Hash:
     default:
-      rust_sorry_at (attr.get_locus (), "uninmplemented builtin derive macro");
+      rust_sorry_at (attr.get_locus (), "unimplemented builtin derive macro");
       return nullptr;
     };
 }
