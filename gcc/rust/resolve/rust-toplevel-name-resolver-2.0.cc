@@ -478,8 +478,7 @@ TopLevel::visit (AST::UseDeclaration &use)
   for (auto &path : paths)
     if (!handle_use_dec (path))
       rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
-		     "could not resolve import %qs",
-		     path.as_string ().c_str ());
+		     "unresolved import %qs", path.as_string ().c_str ());
 }
 
 } // namespace Resolver2_0
