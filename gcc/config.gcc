@@ -1139,6 +1139,7 @@ aarch64*-*-elf | aarch64*-*-fuchsia* | aarch64*-*-rtems*)
                 ;;
 	aarch64-*-rtems*)
 		tm_file="${tm_file} aarch64/rtems.h rtems.h"
+		tmake_file="${tmake_file} aarch64/t-aarch64-rtems"
 		;;
 	esac
 	case $target in
