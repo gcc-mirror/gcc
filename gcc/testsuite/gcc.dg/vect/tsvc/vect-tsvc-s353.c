@@ -44,4 +44,4 @@ int main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail { ! riscv_v } } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" } } */

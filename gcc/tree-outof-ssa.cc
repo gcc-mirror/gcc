@@ -1,5 +1,5 @@
 /* Convert a program in SSA form into Normal form.
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
    Contributed by Andrew Macleod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -1351,9 +1351,6 @@ rewrite_out_of_ssa (struct ssaexpand *sa)
     gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
 
   remove_ssa_form (flag_tree_ter, sa);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
 
   return 0;
 }

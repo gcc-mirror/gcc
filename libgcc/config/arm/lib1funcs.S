@@ -1,7 +1,7 @@
 @ libgcc routines for ARM cpu.
 @ Division routines, written by Richard Earnshaw, (rearnsha@armltd.co.uk)
 
-/* Copyright (C) 1995-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2024 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -2145,6 +2145,78 @@ LSYM(Lchange_\register):
 	pop	{r0, r1}
 	bx	lr
 	SIZE (__gnu_thumb1_case_uhi)
+#endif
+
+#ifdef L_sync_none
+	/* Null implementation of __sync_synchronize, for use when
+	   it is known that the system is single threaded.  */
+	.text
+	.align 0
+	FUNC_START sync_synchronize_none
+	bx	lr
+	FUNC_END sync_synchronize_none
+#endif
+
+#ifdef L_sync_dmb
+	/* Full memory barrier using DMB.  Requires Armv7 (all profiles)
+	or armv6-m, or later.  */
+	.text
+	.align 0
+#if __ARM_ARCH_PROFILE == 'M'
+	.arch armv6-m
+#else
+	.arch armv7-a
+#endif
+	FUNC_START sync_synchronize_dmb
+	/* M-profile devices only support SY as the synchronization level,
+	   but that's probably what we want here anyway.  */
+	dmb
+	RET
+	FUNC_END sync_synchronize_dmb
+#endif
+
+#ifdef L_sync_cp15dmb
+#ifndef NOT_ISA_TARGET_32BIT
+	/* Implementation of DMB using CP15 operations.  This was first
+	   defined in Armv6, but deprecated in Armv7 and can give
+	   sub-optimal performance.  */
+	.text
+	.align 0
+	ARM_FUNC_START sync_synchronize_cp15dmb
+	mcr	p15, 0, r0, c7, c10, 5
+	RET
+	FUNC_END sync_synchronize_cp15dmb
+#endif
+#endif
+
+#ifdef L_sync_synchronize
+	/* Generic version of the synchronization primitive.  If we know
+	   that DMB exists, then use it.  Otherwise, arrange for a link
+	   time warning explaining how to pick a suitable alternative.
+	   We choose not to use CP15DMB because it is performance
+	   deprecated.  We only define this function if generating
+	   ELF binaries as otherwise we can't rely on the warning being
+	   generated.  */
+
+#ifdef __ELF__
+	.text
+	.align 0
+	FUNC_START sync_synchronize
+#if __ARM_ARCH >= 7 || __ARM_ARCH_PROFILE == 'M'
+	dmb
+#endif
+	RET
+	FUNC_END sync_synchronize
+#if !(__ARM_ARCH >= 7 || __ARM_ARCH_PROFILE == 'M')
+	.section .gnu.warning.__sync_synchronize
+	.align 0
+	.ascii "This implementation of __sync_synchronize is a stub with "
+	.ascii "no effect.  Relink with\n"
+	.ascii "  -specs=sync-{none,dmb,cp15dmb}.specs\n"
+	.ascii "to specify exactly which barrier format to use and avoid "
+	.ascii "this warning\0"
+#endif
+#endif
 #endif
 
 #ifdef L_thumb1_case_si

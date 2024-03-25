@@ -1,4 +1,5 @@
 // Test mangling of pointers to cv-qualified member functions
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct A;
 void f (void (A::*)() const) {}

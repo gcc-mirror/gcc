@@ -1,5 +1,5 @@
 /* PR target/96939 */
-/* { dg-options "-march=armv8-a+crc" } */
+/* { dg-options "-march=armv8-a+simd+crc" } */
 
 #include <arm_acle.h>
 

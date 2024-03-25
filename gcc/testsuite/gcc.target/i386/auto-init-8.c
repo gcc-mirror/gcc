@@ -29,7 +29,7 @@ double foo()
   return result;
 }
 
-/* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 1 "expand" } } */
+/* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 3 "expand" } } */
 /* { dg-final { scan-rtl-dump-times "\\\[0xfefefefefefefefe\\\]" 2 "expand" } } */
 /* { dg-final { scan-rtl-dump-times "0xfffffffffffffffe\\\]\\\) repeated x16" 2 "expand" } } */
 

@@ -1,5 +1,5 @@
 /* Classes for modeling the state of memory.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -27,6 +27,8 @@ along with GCC; see the file COPYING3.  If not see
      http://lcs.ios.ac.cn/~xuzb/canalyze/memmodel.pdf  */
 
 #include "bitmap.h"
+#include "stringpool.h"
+#include "attribs.h" // for rdwr_map
 #include "selftest.h"
 #include "analyzer/svalue.h"
 #include "analyzer/region.h"
@@ -173,6 +175,8 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
+  json::object *to_json () const;
+
   bool can_merge_with_p (const region_to_value_map &other,
 			 region_to_value_map *out) const;
 
@@ -276,6 +280,8 @@ class region_model
 
   void debug () const;
 
+  json::object *to_json () const;
+
   void validate () const;
 
   void canonicalize ();
@@ -326,6 +332,7 @@ class region_model
 
   void handle_phi (const gphi *phi, tree lhs, tree rhs,
 		   const region_model &old_state,
+		   hash_set<const svalue *> &svals_changing_meaning,
 		   region_model_context *ctxt);
 
   bool maybe_update_for_edge (const superedge &edge,
@@ -527,14 +534,14 @@ class region_model
 			       const svalue *sval_hint,
 			       region_model_context *ctxt) const;
 
-  void
+  const svalue *
   check_for_null_terminated_string_arg (const call_details &cd,
-					unsigned idx);
+					unsigned idx) const;
   const svalue *
   check_for_null_terminated_string_arg (const call_details &cd,
 					unsigned idx,
 					bool include_terminator,
-					const svalue **out_sval);
+					const svalue **out_sval) const;
 
   const builtin_known_function *
   get_builtin_kf (const gcall *call,
@@ -555,6 +562,8 @@ class region_model
     for (auto &callback : pop_frame_callbacks)
 	callback (model, prev_model, retval, ctxt);
   }
+
+  bool called_from_main_p () const;
 
 private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
@@ -603,7 +612,6 @@ private:
 			   bool nonnull,
 			   region_model_context *ctxt);
 
-  bool called_from_main_p () const;
   const svalue *get_initial_value_for_global (const region *reg) const;
 
   const region * get_region_for_poisoned_expr (tree expr) const;
@@ -644,9 +652,22 @@ private:
   void check_call_args (const call_details &cd) const;
   void check_call_format_attr (const call_details &cd,
 			       tree format_attr) const;
-  void check_external_function_for_access_attr (const gcall *call,
-						tree callee_fndecl,
-						region_model_context *ctxt) const;
+  void check_function_attr_access (const gcall *call,
+				   tree callee_fndecl,
+				   region_model_context *ctxt,
+				   rdwr_map &rdwr_idx) const;
+  void check_function_attr_null_terminated_string_arg (const gcall *call,
+						       tree callee_fndecl,
+						       region_model_context *ctxt,
+						       rdwr_map &rdwr_idx);
+  void check_one_function_attr_null_terminated_string_arg (const gcall *call,
+							   tree callee_fndecl,
+							   region_model_context *ctxt,
+							   rdwr_map &rdwr_idx,
+							   tree attr);
+  void check_function_attrs (const gcall *call,
+			     tree callee_fndecl,
+			     region_model_context *ctxt);
 
   static auto_vec<pop_frame_callback> pop_frame_callbacks;
   /* Storing this here to avoid passing it around everywhere.  */
@@ -789,6 +810,11 @@ class region_model_context
   virtual const gimple *get_stmt () const = 0;
 
   virtual const exploded_graph *get_eg () const = 0;
+
+  /* Hooks for detecting infinite loops.  */
+  virtual void maybe_did_work () = 0;
+  virtual bool checking_for_infinite_loop_p () const = 0;
+  virtual void on_unusable_in_infinite_loop () = 0;
 };
 
 /* A "do nothing" subclass of region_model_context.  */
@@ -846,6 +872,9 @@ public:
 
   const gimple *get_stmt () const override { return NULL; }
   const exploded_graph *get_eg () const override { return NULL; }
+  void maybe_did_work () override {}
+  bool checking_for_infinite_loop_p () const override { return false; }
+  void on_unusable_in_infinite_loop () override {}
 };
 
 /* A subclass of region_model_context for determining if operations fail
@@ -875,7 +904,7 @@ class region_model_context_decorator : public region_model_context
 {
  public:
   bool warn (std::unique_ptr<pending_diagnostic> d,
-	     const stmt_finder *custom_finder)
+	     const stmt_finder *custom_finder) override
   {
     if (m_inner)
       return m_inner->warn (std::move (d), custom_finder);
@@ -1021,6 +1050,24 @@ class region_model_context_decorator : public region_model_context
 	return nullptr;
   }
 
+  void maybe_did_work () override
+  {
+    if (m_inner)
+      m_inner->maybe_did_work ();
+  }
+
+  bool checking_for_infinite_loop_p () const override
+  {
+    if (m_inner)
+      return m_inner->checking_for_infinite_loop_p ();
+    return false;
+  }
+  void on_unusable_in_infinite_loop () override
+  {
+    if (m_inner)
+      m_inner->on_unusable_in_infinite_loop ();
+  }
+
 protected:
   region_model_context_decorator (region_model_context *inner)
   : m_inner (inner)
@@ -1093,6 +1140,8 @@ struct model_merger
     return m_point.get_function_point ();
   }
 
+  void on_widening_reuse (const widening_svalue *widening_sval);
+
   const region_model *m_model_a;
   const region_model *m_model_b;
   const program_point &m_point;
@@ -1101,6 +1150,8 @@ struct model_merger
   const extrinsic_state *m_ext_state;
   const program_state *m_state_a;
   const program_state *m_state_b;
+
+  hash_set<const svalue *> m_svals_changing_meaning;
 };
 
 /* A record that can (optionally) be written out when

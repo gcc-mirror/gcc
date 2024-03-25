@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -780,6 +780,9 @@ Rainer Orth for random MIPS work, including improvements to GCC's o32
 ABI support, improvements to dejagnu's MIPS support, Java configuration
 clean-ups and porting work, and maintaining the IRIX, Solaris 2, and
 Tru64 UNIX ports.
+
+@item
+Patrick Palka for contributions to the C++ library and front end.
 
 @item
 Steven Pemberton for his contribution of @file{enquire} which allowed GCC to

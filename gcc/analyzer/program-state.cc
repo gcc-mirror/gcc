@@ -1,5 +1,5 @@
 /* Classes for representing the state of interest at a given path of analysis.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -524,6 +524,14 @@ void
 sm_state_map::clear_any_state (const svalue *sval)
 {
   m_map.remove (sval);
+}
+
+/* Clear all per-svalue state within this state map.  */
+
+void
+sm_state_map::clear_all_per_svalue_state ()
+{
+  m_map.empty ();
 }
 
 /* Set the "global" state within this state map to STATE.  */
@@ -1145,15 +1153,22 @@ program_state::on_edge (exploded_graph &eg,
 				  this,
 				  uncertainty, &path_ctxt,
 				  last_stmt);
+  std::unique_ptr<rejected_constraint> rc;
+  logger * const logger = eg.get_logger ();
   if (!m_region_model->maybe_update_for_edge (*succ,
 					      last_stmt,
-					      &ctxt, NULL))
+					      &ctxt,
+					      logger ? &rc : nullptr))
     {
-      logger * const logger = eg.get_logger ();
       if (logger)
-	logger->log ("edge to SN: %i is impossible"
-		     " due to region_model constraints",
-		     succ->m_dest->m_index);
+	{
+	  logger->start_log_line ();
+	  logger->log_partial ("edge to SN: %i is impossible"
+			       " due to region_model constraint: ",
+			       succ->m_dest->m_index);
+	  rc->dump_to_pp (logger->get_printer ());
+	  logger->end_log_line ();
+	}
       return false;
     }
   if (terminated)

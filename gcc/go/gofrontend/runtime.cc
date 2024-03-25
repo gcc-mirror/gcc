@@ -256,8 +256,8 @@ runtime_function_type(Runtime_function_type bft)
 // Convert an expression to the type to pass to a runtime function.
 
 static Expression*
-convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
-				 Location loc)
+convert_to_runtime_function_type(Gogo* gogo, Runtime_function_type bft,
+				 Expression* e, Location loc)
 {
   switch (bft)
     {
@@ -284,6 +284,8 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
     case RFT_POINTER:
       {
 	Type* t = runtime_function_type(bft);
+	Type_context context(t, false);
+	e->determine_type(gogo, &context);
 	if (!Type::are_identical(t, e->type(), true, NULL))
 	  e = Expression::make_cast(t, e, loc);
 	return e;
@@ -317,7 +319,7 @@ Runtime::convert_types(Gogo* gogo)
       Type* t = runtime_function_types[i];
       if (t != NULL && t->named_type() != NULL)
 	{
-	  bool r = t->verify();
+	  bool r = t->verify(gogo);
 	  go_assert(r);
 	  t->named_type()->convert(gogo);
 	}
@@ -414,7 +416,7 @@ Runtime::runtime_declaration(Function code)
 // Make a call to a runtime function.
 
 Call_expression*
-Runtime::make_call(Runtime::Function code, Location loc,
+Runtime::make_call(Gogo* gogo, Runtime::Function code, Location loc,
 		   int param_count, ...)
 {
   go_assert(code < Runtime::NUMBER_OF_FUNCTIONS);
@@ -436,7 +438,7 @@ Runtime::make_call(Runtime::Function code, Location loc,
     {
       Expression* e = va_arg(ap, Expression*);
       Runtime_function_type rft = pb->parameter_types[i];
-      args->push_back(convert_to_runtime_function_type(rft, e, loc));
+      args->push_back(convert_to_runtime_function_type(gogo, rft, e, loc));
     }
   va_end(ap);
 

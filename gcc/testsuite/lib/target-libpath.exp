@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2023 Free Software Foundation, Inc.
+# Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -67,6 +67,7 @@ proc set_ld_library_path_env_vars { } {
   global orig_dyld_library_path
   global orig_path
   global orig_gcc_exec_prefix
+  global ENABLE_DARWIN_AT_RPATH
   global env
 
   # Save the original GCC_EXEC_PREFIX.
@@ -133,6 +134,7 @@ proc set_ld_library_path_env_vars { } {
   #
   # Doing this is somewhat of a hack as ld_library_path gets repeated in
   # SHLIB_PATH and LD_LIBRARY_PATH when unix_load sets these variables.
+  if { ![istarget *-*-darwin*] } {
   if { $orig_ld_library_path_saved } {
     setenv LD_LIBRARY_PATH "$ld_library_path:$orig_ld_library_path"
   } else {
@@ -166,10 +168,22 @@ proc set_ld_library_path_env_vars { } {
   } else {
     setenv LD_LIBRARY_PATH_64 "$ld_library_path"
   }
-  if { $orig_dyld_library_path_saved } {
-    setenv DYLD_LIBRARY_PATH "$ld_library_path:$orig_dyld_library_path"
-  } else {
-    setenv DYLD_LIBRARY_PATH "$ld_library_path"
+  }
+  if { [istarget *-*-darwin*] } {
+    if { [info exists ENABLE_DARWIN_AT_RPATH] || [istarget *-*-darwin1\[5-9\]*]
+         || [istarget *-*-darwin2*] } {
+      # Either we are not using DYLD_LIBRARY_PATH or we're on a version of the
+      # OS for which it is not passed through system exes.
+      if [info exists env(DYLD_LIBRARY_PATH)] {
+        unsetenv DYLD_LIBRARY_PATH
+      }
+    } else {
+      if { $orig_dyld_library_path_saved } {
+        setenv DYLD_LIBRARY_PATH "$ld_library_path:$orig_dyld_library_path"
+      } else {
+        setenv DYLD_LIBRARY_PATH "$ld_library_path"
+      }
+    }
   }
   if { [istarget *-*-cygwin*] || [istarget *-*-mingw*] } {
     if { $orig_path_saved } {
@@ -179,6 +193,7 @@ proc set_ld_library_path_env_vars { } {
     }
   }
 
+  verbose -log "set paths"
   verbose -log "LD_LIBRARY_PATH=[getenv LD_LIBRARY_PATH]"
   verbose -log "LD_RUN_PATH=[getenv LD_RUN_PATH]"
   verbose -log "SHLIB_PATH=[getenv SHLIB_PATH]"

@@ -1,6 +1,6 @@
 /* m2decl.cc provides an interface to GCC decl trees.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -284,17 +284,6 @@ m2decl_DeclareModuleCtor (tree decl)
   return decl;
 }
 
-/* ConstantStringExceedsZType return TRUE if str cannot be represented in the ZTYPE.  */
-
-bool
-m2decl_ConstantStringExceedsZType (location_t location,
-				   const char *str, unsigned int base,
-				   bool issueError)
-{
-  widest_int wval;
-  return m2expr_StrToWideInt (location, str, base, wval, issueError);
-}
-
 /* BuildConstLiteralNumber - returns a GCC TREE built from the
    string, str.  It assumes that, str, represents a legal number in
    Modula-2.  It always returns a positive value.  */
@@ -305,12 +294,22 @@ m2decl_BuildConstLiteralNumber (location_t location, const char *str,
 {
   widest_int wval;
   tree value;
-  bool overflow = m2expr_StrToWideInt (location, str, base, wval, issueError);
-  value = wide_int_to_tree (m2type_GetM2ZType (), wval);
-
-  if (issueError && (overflow || m2expr_TreeOverflow (value)))
+  bool overflow = m2expr_OverflowZType (location, str, base, issueError);
+  if (overflow)
+    value = m2expr_GetIntegerZero (location);
+  else
+    {
+      overflow = m2expr_StrToWideInt (location, str, base, wval, issueError);
+      if (overflow)
+	value = m2expr_GetIntegerZero (location);
+      else
+	{
+	  value = wide_int_to_tree (m2type_GetM2ZType (), wval);
+	  overflow = m2expr_TreeOverflow (value);
+	}
+    }
+  if (issueError && overflow)
     error_at (location, "constant %qs is too large", str);
-
   return m2block_RememberConstant (value);
 }
 

@@ -1,5 +1,5 @@
 #  Assembly-based regression-test driver for the SVE ACLE
-#  Copyright (C) 2009-2023 Free Software Foundation, Inc.
+#  Copyright (C) 2009-2024 Free Software Foundation, Inc.
 #
 #  This file is part of GCC.
 #
@@ -50,6 +50,7 @@ if { [info exists gcc_runtest_parallelize_limit_minor] } {
 torture-init
 set-torture-options {
     "-std=c90 -O0 -g"
+    "-std=c90 -O0 -DSTREAMING_COMPATIBLE"
     "-std=c90 -O1 -g"
     "-std=c99 -O2 -g"
     "-std=c11 -O3 -g"

@@ -437,8 +437,14 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   void init_##TYPE1##_##TYPE2##_##NUM (VARS##NUM (TYPE2, __VA_ARGS__),         \
 				       TYPE2 *__restrict out)                  \
   {                                                                            \
-    TYPE1 v = {INIT##NUM (__VA_ARGS__)};                                       \
+    TYPE1 v = {__VA_ARGS__};                                                   \
     *(TYPE1 *) out = v;                                                        \
+  }
+
+#define DEF_OP_VV_VA(OP, TYPE1, ...)                                           \
+  TYPE1 test_##OP##_##TYPE1 (TYPE1 a, TYPE1 b)                                 \
+  {                                                                            \
+    return OP (a, b, __VA_ARGS__);                                             \
   }
 
 #define DEF_REPEAT(TYPE1, TYPE2, NUM, ...)                                     \
@@ -838,4 +844,19 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   TYPE f##TYPE (TYPE a, TYPE b)                                                \
   {                                                                            \
     return __builtin_shufflevector (a, b, MASK_##NUM);                         \
+  }
+
+#define DEF_COMBINE(TYPE1, TYPE2, NUM, ...)                                    \
+  void combine_##TYPE1##_##TYPE2##_##NUM (TYPE2 *out, TYPE2 x, TYPE2 y)        \
+  {                                                                            \
+    v##NUM##TYPE1 v = {__VA_ARGS__};                                           \
+    *(v##NUM##TYPE1 *) out = v;                                                \
+  }
+
+#define DEF_TRAILING(TYPE1, TYPE2, NUM, ...)                                   \
+  void init_##TYPE1##_##TYPE2##_##NUM (TYPE2 var0, TYPE2 var1, TYPE2 var2,     \
+				       TYPE2 var3, TYPE2 *__restrict out)      \
+  {                                                                            \
+    TYPE1 v = {__VA_ARGS__};                                                   \
+    *(TYPE1 *) out = v;                                                        \
   }

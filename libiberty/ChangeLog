@@ -1,3 +1,52 @@
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_X86_SHA1_HW_SUPPORT): Verify __get_cpuid and
+	__get_cpuid_count are not implicitly declared.
+	* configure: Regenerated.
+
+2023-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* pex-unix.c (pex_unix_wait): Change return type to pid_t.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_make_comp): Handle
+	DEMANGLE_COMPONENT_CONSTRAINTS.
+	(d_count_templates_scopes): Likewise.
+	(d_print_comp_inner): Likewise.
+	(d_maybe_constraints): New.
+	(d_encoding, d_template_args_1): Call it.
+	(d_parmlist): Handle 'Q'.
+	* testsuite/demangle-expected: Add some constraint tests.
+
+2023-11-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (GCC_CHECK_ASSEMBLER_HWCAP): Invoke.
+	* configure, aclocal.m4: Regenerate.
+	* Makefile.in (COMPILE.c): Add HWCAP_CFLAGS.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_X86_SHA1_HW_SUPPORT): New check.
+	* sha1.c: If HAVE_X86_SHA1_HW_SUPPORT is defined, include x86intrin.h
+	and cpuid.h.
+	(sha1_hw_process_bytes, sha1_hw_process_block,
+	sha1_choose_process_bytes): New functions.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
+2023-11-15  Mark Wielaard  <mjw@redhat.com>
+
+	* aclocal.m4: Rebuild.
+
+2023-11-10  Brendan Shanks  <bshanks@codeweavers.com>
+
+	* configure.ac (AC_CHECK_HEADERS): Add spawn.h.
+	(checkfuncs): Add posix_spawn, posix_spawnp.
+	(AC_CHECK_FUNCS): Add posix_spawn, posix_spawnp.
+	* aclocal.m4, configure, config.in: Rebuild.
+	* pex-unix.c [HAVE_POSIX_SPAWN] (pex_unix_exec_child): New function.
+
 2023-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109751

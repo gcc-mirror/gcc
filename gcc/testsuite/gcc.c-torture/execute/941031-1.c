@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef long mpt;
 
 int
@@ -19,7 +22,8 @@ f (mpt us, mpt vs)
   return avs;
 }
 
-main ()
+int
+main (void)
 {
   if (f ((mpt) 3, (mpt) 17) != 17)
     abort ();

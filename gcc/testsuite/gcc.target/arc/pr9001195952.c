@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { ! { clmcpu } } } */
-/* { dg-options "-mcpu=archs -Os -w -fpic" } */
+/* { dg-options "-mcpu=archs -Os -w -fpic -fpermissive" } */
 
 /* tst_movb split pattern is wrong for anything else than NPS
    chip.  */

@@ -1,3 +1,44 @@
+2023-12-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/linux/aarch64/atomic_16.S: Implement lock-free ARMv8.0 atomics.
+	(libat_exchange_16): Merge RELEASE and ACQ_REL/SEQ_CST cases.
+	* config/linux/aarch64/host-config.h: Use atomic_16.S for baseline v8.0.
+
+2023-11-10  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/linux/aarch64/host-config.h (ifunc1): Use CPUID in ifunc
+	selection.
+
+2023-10-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/109951
+	* configure.ac: 'AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)'.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* testsuite/lib/libatomic.exp (libatomic_init): If
+	'--with-build-sysroot=[...]' was specified, use it for build-tree
+	testing.
+	* testsuite/libatomic-site-extra.exp.in (GCC_UNDER_TEST): Don't
+	set.
+	(SYSROOT_CFLAGS_FOR_TARGET): Set.
+
+2023-10-23  Jan Beulich  <jbeulich@suse.com>
+
+	* Makefile.am (all-multi): Drop commands.
+	* Makefile.in: Update accordingly.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libatomic.exp: Pass correct flags on darwin.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Handle Darwin rpaths.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+
 2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
 
 	* configure: Regenerate.
@@ -752,7 +793,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

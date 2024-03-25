@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 __extension__ union { double d; int i[2]; } u = { d: -0.25 };
 
 /* This assumes the endianness of words in a long long is the same as

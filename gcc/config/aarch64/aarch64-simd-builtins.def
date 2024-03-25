@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -42,6 +42,13 @@
    Parameter 4 is the 'flag' of the intrinsic.  This is used to
    help describe the attributes (for example, pure) for the intrinsic
    function.  */
+
+  BUILTIN_V12DIF (LOADSTRUCT_LANE, vec_ldap1_lane, 0, ALL)
+  BUILTIN_V12DI (LOADSTRUCT_LANE_U, vec_ldap1_lane, 0, ALL)
+  BUILTIN_V12DI (LOADSTRUCT_LANE_P, vec_ldap1_lane, 0, ALL)
+  BUILTIN_V12DIF (STORESTRUCT_LANE, vec_stl1_lane, 0, ALL)
+  BUILTIN_V12DI (STORESTRUCT_LANE_U, vec_stl1_lane, 0, ALL)
+  BUILTIN_V12DI (STORESTRUCT_LANE_P, vec_stl1_lane, 0, ALL)
 
   BUILTIN_VDC (BINOP, combine, 0, AUTO_FP)
   BUILTIN_VD_I (BINOPU, combine, 0, NONE)

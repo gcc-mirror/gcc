@@ -1,3 +1,4 @@
+int
 foo (double d)
 {
   d = -d;
@@ -6,7 +7,8 @@ foo (double d)
   return 2;
 }
 
-main ()
+int
+main (void)
 {
   foo (0.0);
 }

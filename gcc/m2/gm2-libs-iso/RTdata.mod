@@ -1,6 +1,6 @@
 (* RTdata.mod implements a mechanism whereby devices can attach data.
 
-Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Copyright (C) 2008-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE RTdata ;
 
-FROM IOLink IMPORT DeviceTablePtr, RAISEdevException ;
+FROM IOLink IMPORT RAISEdevException ;
 FROM RTentity IMPORT Group, InitGroup, PutKey, IsIn, DelKey ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 

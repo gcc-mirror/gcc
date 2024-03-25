@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 main()
 {
   if (wwrite((long long) 0) != 123)

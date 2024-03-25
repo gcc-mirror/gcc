@@ -1,6 +1,6 @@
 /* Plugin for NVPTX execution.
 
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -266,6 +266,8 @@ typedef struct nvptx_tdata
 
   const struct targ_fn_launch *fn_descs;
   unsigned fn_num;
+
+  unsigned ind_fn_num;
 } nvptx_tdata_t;
 
 /* Descriptor of a loaded function.  */
@@ -338,6 +340,11 @@ struct ptx_device
 };
 
 static struct ptx_device **ptx_devices;
+
+/* OpenMP kernels reserve a small amount of ".shared" space for use by
+   omp_alloc.  The size is configured using GOMP_NVPTX_LOWLAT_POOL, but the
+   default is set here.  */
+static unsigned lowlat_pool_size = 8 * 1024;
 
 static inline struct nvptx_thread *
 nvptx_thread (void)
@@ -1217,6 +1224,22 @@ GOMP_OFFLOAD_init_device (int n)
       instantiated_devices++;
     }
 
+  const char *var_name = "GOMP_NVPTX_LOWLAT_POOL";
+  const char *env_var = secure_getenv (var_name);
+  notify_var (var_name, env_var);
+
+  if (env_var != NULL)
+    {
+      char *endptr;
+      unsigned long val = strtoul (env_var, &endptr, 10);
+      if (endptr == NULL || *endptr != '\0'
+	  || errno == ERANGE || errno == EINVAL
+	  || val > UINT_MAX)
+	GOMP_PLUGIN_error ("Error parsing %s", var_name);
+      else
+	lowlat_pool_size = val;
+    }
+
   pthread_mutex_unlock (&ptx_dev_lock);
 
   return dev != NULL;
@@ -1285,12 +1308,13 @@ nvptx_set_clocktick (CUmodule module, struct ptx_device *dev)
 int
 GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 			 struct addr_pair **target_table,
-			 uint64_t **rev_fn_table)
+			 uint64_t **rev_fn_table,
+			 uint64_t *host_ind_fn_table)
 {
   CUmodule module;
   const char *const *var_names;
   const struct targ_fn_launch *fn_descs;
-  unsigned int fn_entries, var_entries, other_entries, i, j;
+  unsigned int fn_entries, var_entries, ind_fn_entries, other_entries, i, j;
   struct targ_fn_descriptor *targ_fns;
   struct addr_pair *targ_tbl;
   const nvptx_tdata_t *img_header = (const nvptx_tdata_t *) target_data;
@@ -1319,6 +1343,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   var_names = img_header->var_names;
   fn_entries = img_header->fn_num;
   fn_descs = img_header->fn_descs;
+  ind_fn_entries = GOMP_VERSION_SUPPORTS_INDIRECT_FUNCS (version)
+		     ? img_header->ind_fn_num : 0;
 
   /* Currently, other_entries contains only the struct of ICVs.  */
   other_entries = 1;
@@ -1371,6 +1397,60 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 
       targ_tbl->start = (uintptr_t) var;
       targ_tbl->end = targ_tbl->start + bytes;
+    }
+
+  if (ind_fn_entries > 0)
+    {
+      CUdeviceptr var;
+      size_t bytes;
+
+      /* Read indirect function table from image.  */
+      CUresult r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &var, &bytes, module,
+				      "$offload_ind_func_table");
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuModuleGetGlobal error: %s", cuda_error (r));
+      assert (bytes == sizeof (uint64_t) * ind_fn_entries);
+
+      uint64_t ind_fn_table[ind_fn_entries];
+      r = CUDA_CALL_NOCHECK (cuMemcpyDtoH, ind_fn_table, var, bytes);
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuMemcpyDtoH error: %s", cuda_error (r));
+
+      /* Build host->target address map for indirect functions.  */
+      uint64_t ind_fn_map[ind_fn_entries * 2 + 1];
+      for (unsigned k = 0; k < ind_fn_entries; k++)
+	{
+	  ind_fn_map[k * 2] = host_ind_fn_table[k];
+	  ind_fn_map[k * 2 + 1] = ind_fn_table[k];
+	  GOMP_PLUGIN_debug (0, "Indirect function %d: %lx->%lx\n",
+			     k, host_ind_fn_table[k], ind_fn_table[k]);
+	}
+      ind_fn_map[ind_fn_entries * 2] = 0;
+
+      /* Write the map onto the target.  */
+      void *map_target_addr
+	= GOMP_OFFLOAD_alloc (ord, sizeof (ind_fn_map));
+      GOMP_PLUGIN_debug (0, "Allocated indirect map at %p\n", map_target_addr);
+
+      GOMP_OFFLOAD_host2dev (ord, map_target_addr,
+			     (void*) ind_fn_map,
+			     sizeof (ind_fn_map));
+
+      /* Write address of the map onto the target.  */
+      CUdeviceptr varptr;
+      size_t varsize;
+      r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &varptr, &varsize,
+			     module, XSTRING (GOMP_INDIRECT_ADDR_MAP));
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("Indirect map variable not found in image: %s",
+			   cuda_error (r));
+
+      GOMP_PLUGIN_debug (0,
+			 "Indirect map variable found at %llx with size %ld\n",
+			 varptr, varsize);
+
+      GOMP_OFFLOAD_host2dev (ord, (void *) varptr, &map_target_addr,
+			     sizeof (map_target_addr));
     }
 
   CUdeviceptr varptr;
@@ -1827,6 +1907,35 @@ GOMP_OFFLOAD_memcpy2d (int dst_ord, int src_ord, size_t dim1_size,
   data.srcXInBytes = src_offset1_size;
   data.srcY = src_offset0_len;
 
+  if (data.srcXInBytes != 0 || data.srcY != 0)
+    {
+      /* Adjust origin to the actual array data, else the CUDA 2D memory
+	 copy API calls below may fail to validate source/dest pointers
+	 correctly (especially for Fortran where the "virtual origin" of an
+	 array is often outside the stored data).  */
+      if (src_ord == -1)
+	data.srcHost = (const void *) ((const char *) data.srcHost
+				      + data.srcY * data.srcPitch
+				      + data.srcXInBytes);
+      else
+	data.srcDevice += data.srcY * data.srcPitch + data.srcXInBytes;
+      data.srcXInBytes = 0;
+      data.srcY = 0;
+    }
+
+  if (data.dstXInBytes != 0 || data.dstY != 0)
+    {
+      /* As above.  */
+      if (dst_ord == -1)
+	data.dstHost = (void *) ((char *) data.dstHost
+				 + data.dstY * data.dstPitch
+				 + data.dstXInBytes);
+      else
+	data.dstDevice += data.dstY * data.dstPitch + data.dstXInBytes;
+      data.dstXInBytes = 0;
+      data.dstY = 0;
+    }
+
   CUresult res = CUDA_CALL_NOCHECK (cuMemcpy2D, &data);
   if (res == CUDA_ERROR_INVALID_VALUE)
     /* If pitch > CU_DEVICE_ATTRIBUTE_MAX_PITCH or for device-to-device
@@ -1894,6 +2003,44 @@ GOMP_OFFLOAD_memcpy3d (int dst_ord, int src_ord, size_t dim2_size,
   data.srcXInBytes = src_offset2_size;
   data.srcY = src_offset1_len;
   data.srcZ = src_offset0_len;
+
+  if (data.srcXInBytes != 0 || data.srcY != 0 || data.srcZ != 0)
+    {
+      /* Adjust origin to the actual array data, else the CUDA 3D memory
+	 copy API call below may fail to validate source/dest pointers
+	 correctly (especially for Fortran where the "virtual origin" of an
+	 array is often outside the stored data).  */
+      if (src_ord == -1)
+	data.srcHost
+	  = (const void *) ((const char *) data.srcHost
+			    + (data.srcZ * data.srcHeight + data.srcY)
+			      * data.srcPitch
+			    + data.srcXInBytes);
+      else
+	data.srcDevice
+	  += (data.srcZ * data.srcHeight + data.srcY) * data.srcPitch
+	     + data.srcXInBytes;
+      data.srcXInBytes = 0;
+      data.srcY = 0;
+      data.srcZ = 0;
+    }
+
+  if (data.dstXInBytes != 0 || data.dstY != 0 || data.dstZ != 0)
+    {
+      /* As above.  */
+      if (dst_ord == -1)
+	data.dstHost = (void *) ((char *) data.dstHost
+				 + (data.dstZ * data.dstHeight + data.dstY)
+				   * data.dstPitch
+				 + data.dstXInBytes);
+      else
+	data.dstDevice
+	  += (data.dstZ * data.dstHeight + data.dstY) * data.dstPitch
+	     + data.dstXInBytes;
+      data.dstXInBytes = 0;
+      data.dstY = 0;
+      data.dstZ = 0;
+    }
 
   CUDA_CALL (cuMemcpy3D, &data);
   return true;
@@ -2119,7 +2266,7 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 		     " [(teams: %u), 1, 1] [(lanes: 32), (threads: %u), 1]\n",
 		     __FUNCTION__, fn_name, teams, threads);
   r = CUDA_CALL_NOCHECK (cuLaunchKernel, function, teams, 1, 1,
-			 32, threads, 1, 0, NULL, NULL, config);
+			 32, threads, 1, lowlat_pool_size, NULL, NULL, config);
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuLaunchKernel error: %s", cuda_error (r));
   if (reverse_offload)

@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -328,11 +328,11 @@ static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
 static rtx_insn *thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				       vec<machine_mode> &,
 				       vec<const char *> &, vec<rtx> &,
-				       HARD_REG_SET &, location_t);
+				       vec<rtx> &, HARD_REG_SET &, location_t);
 static const char *arm_identify_fpu_from_isa (sbitmap);
 
 /* Table of machine attributes.  */
-static const struct attribute_spec arm_attribute_table[] =
+static const attribute_spec arm_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -380,8 +380,17 @@ static const struct attribute_spec arm_attribute_table[] =
     arm_handle_cmse_nonsecure_entry, NULL },
   { "cmse_nonsecure_call", 0, 0, false, false, false, true,
     arm_handle_cmse_nonsecure_call, NULL },
-  { "Advanced SIMD type", 1, 1, false, true, false, true, NULL, NULL },
-  { NULL, 0, 0, false, false, false, false, NULL, NULL }
+  { "Advanced SIMD type", 1, 1, false, true, false, true, NULL, NULL }
+};
+
+static const scoped_attribute_specs arm_gnu_attribute_table =
+{
+  "gnu", { arm_gnu_attributes }
+};
+
+static const scoped_attribute_specs *const arm_attribute_table[] =
+{
+  &arm_gnu_attribute_table
 };
 
 /* Initialize the GCC target structure.  */
@@ -2424,8 +2433,6 @@ const struct tune_params arm_fa726te_tune =
   tune_params::SCHED_AUTOPREF_OFF
 };
 
-char *accepted_branch_protection_string = NULL;
-
 /* Auto-generated CPU, FPU and architecture tables.  */
 #include "arm-cpu-data.h"
 
@@ -3299,7 +3306,8 @@ arm_configure_build_target (struct arm_build_target *target,
 
   if (opts->x_arm_branch_protection_string)
     {
-      aarch_validate_mbranch_protection (opts->x_arm_branch_protection_string);
+      aarch_validate_mbranch_protection (opts->x_arm_branch_protection_string,
+					 "-mbranch-protection=");
 
       if (aarch_ra_sign_key != AARCH_KEY_A)
 	{
@@ -13695,8 +13703,11 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
     }
   code = GET_CODE (op);
 
-  if (code == POST_INC || code == PRE_DEC
-      || code == PRE_INC || code == POST_DEC)
+  if ((code == POST_INC
+       || code == PRE_DEC
+       || code == PRE_INC
+       || code == POST_DEC)
+      && REG_P (XEXP (op, 0)))
     {
       reg_no = arm_effective_regno (XEXP (op, 0), strict);
       return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
@@ -21789,7 +21800,7 @@ arm_asm_declare_function_name (FILE *file, const char *name, tree decl)
   ARM_DECLARE_FUNCTION_NAME (file, name, decl);
   ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
   ASM_DECLARE_RESULT (file, DECL_RESULT (decl));
-  ASM_OUTPUT_LABEL (file, name);
+  ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
 
   if (cmse_name)
     ASM_OUTPUT_LABEL (file, cmse_name);
@@ -30464,6 +30475,62 @@ arm_output_iwmmxt_tinsr (rtx *operands)
   return "";
 }
 
+/* Output an arm casesi dispatch sequence.  Used by arm_casesi_internal insn.
+   Responsible for the handling of switch statements in arm.  */
+const char *
+arm_output_casesi (rtx *operands)
+{
+  char label[100];
+  rtx diff_vec = PATTERN (NEXT_INSN (as_a <rtx_insn *> (operands[2])));
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
+  output_asm_insn ("cmp\t%0, %1", operands);
+  output_asm_insn ("bhi\t%l3", operands);
+  ASM_GENERATE_INTERNAL_LABEL (label, "Lrtx", CODE_LABEL_NUMBER (operands[2]));
+  switch (GET_MODE (diff_vec))
+    {
+    case E_QImode:
+      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
+	output_asm_insn ("ldrb\t%4, [%5, %0]", operands);
+      else
+	output_asm_insn ("ldrsb\t%4, [%5, %0]", operands);
+      output_asm_insn ("add\t%|pc, %|pc, %4, lsl #2", operands);
+      break;
+    case E_HImode:
+      if (REGNO (operands[4]) != REGNO (operands[5]))
+	{
+	  output_asm_insn ("add\t%4, %0, %0", operands);
+	  if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
+	    output_asm_insn ("ldrh\t%4, [%5, %4]", operands);
+	  else
+	    output_asm_insn ("ldrsh\t%4, [%5, %4]", operands);
+	}
+      else
+	{
+	  output_asm_insn ("add\t%4, %5, %0", operands);
+	  if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
+	    output_asm_insn ("ldrh\t%4, [%4, %0]", operands);
+	  else
+	    output_asm_insn ("ldrsh\t%4, [%4, %0]", operands);
+	}
+      output_asm_insn ("add\t%|pc, %|pc, %4, lsl #2", operands);
+      break;
+    case E_SImode:
+      if (flag_pic)
+	{
+	  output_asm_insn ("ldr\t%4, [%5, %0, lsl #2]", operands);
+	  output_asm_insn ("add\t%|pc, %|pc, %4", operands);
+	}
+      else
+	output_asm_insn ("ldr\t%|pc, [%5, %0, lsl #2]", operands);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+    assemble_label (asm_out_file, label);
+    output_asm_insn ("nop", operands);
+  return "";
+}
+
 /* Output a Thumb-1 casesi dispatch sequence.  */
 const char *
 thumb1_output_casesi (rtx *operands)
@@ -34578,7 +34645,8 @@ arm_stack_protect_guard (void)
 rtx_insn *
 thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 		      vec<machine_mode> & /*input_modes*/,
-		      vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
+		      vec<const char *> &constraints,
+		      vec<rtx> &, vec<rtx> & /*clobbers*/,
 		      HARD_REG_SET & /*clobbered_regs*/, location_t /*loc*/)
 {
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)

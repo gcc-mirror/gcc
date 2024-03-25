@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -33,34 +33,36 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 /* IO locking rules:
-   UNIT_LOCK is a master lock, protecting UNIT_ROOT tree and UNIT_CACHE.
+   UNIT_RWLOCK is a master rw lock, protecting UNIT_ROOT tree and UNIT_CACHE.
+   Using an rwlock improves efficiency by allowing us to separate readers
+   and writers of both UNIT_ROOT and UNIT_CACHE.
    Concurrent use of different units should be supported, so
    each unit has its own lock, LOCK.
    Open should be atomic with its reopening of units and list_read.c
    in several places needs find_unit another unit while holding stdin
-   unit's lock, so it must be possible to acquire UNIT_LOCK while holding
+   unit's lock, so it must be possible to acquire UNIT_RWLOCK while holding
    some unit's lock.  Therefore to avoid deadlocks, it is forbidden
-   to acquire unit's private locks while holding UNIT_LOCK, except
+   to acquire unit's private locks while holding UNIT_RWLOCK, except
    for freshly created units (where no other thread can get at their
    address yet) or when using just trylock rather than lock operation.
    In addition to unit's private lock each unit has a WAITERS counter
    and CLOSED flag.  WAITERS counter must be either only
    atomically incremented/decremented in all places (if atomic builtins
-   are supported), or protected by UNIT_LOCK in all places (otherwise).
+   are supported), or protected by UNIT_RWLOCK in all places (otherwise).
    CLOSED flag must be always protected by unit's LOCK.
-   After finding a unit in UNIT_CACHE or UNIT_ROOT with UNIT_LOCK held,
+   After finding a unit in UNIT_CACHE or UNIT_ROOT with UNIT_RWLOCK held,
    WAITERS must be incremented to avoid concurrent close from freeing
-   the unit between unlocking UNIT_LOCK and acquiring unit's LOCK.
-   Unit freeing is always done under UNIT_LOCK.  If close_unit sees any
+   the unit between unlocking UNIT_RWLOCK and acquiring unit's LOCK.
+   Unit freeing is always done under UNIT_RWLOCK.  If close_unit sees any
    WAITERS, it doesn't free the unit but instead sets the CLOSED flag
    and the thread that decrements WAITERS to zero while CLOSED flag is
-   set is responsible for freeing it (while holding UNIT_LOCK).
+   set is responsible for freeing it (while holding UNIT_RWLOCK).
    flush_all_units operation is iterating over the unit tree with
-   increasing UNIT_NUMBER while holding UNIT_LOCK and attempting to
+   increasing UNIT_NUMBER while holding UNIT_RWLOCK and attempting to
    flush each unit (and therefore needs the unit's LOCK held as well).
    To avoid deadlocks, it just trylocks the LOCK and if unsuccessful,
-   remembers the current unit's UNIT_NUMBER, unlocks UNIT_LOCK, acquires
-   unit's LOCK and after flushing reacquires UNIT_LOCK and restarts with
+   remembers the current unit's UNIT_NUMBER, unlocks UNIT_RWLOCK, acquires
+   unit's LOCK and after flushing reacquires UNIT_RWLOCK and restarts with
    the smallest UNIT_NUMBER above the last one flushed.
 
    If find_unit/find_or_create_unit/find_file/get_unit routines return
@@ -101,10 +103,14 @@ gfc_offset max_offset;
 gfc_offset default_recl;
 
 gfc_unit *unit_root;
-#ifdef __GTHREAD_MUTEX_INIT
-__gthread_mutex_t unit_lock = __GTHREAD_MUTEX_INIT;
+#ifdef __GTHREAD_RWLOCK_INIT
+__gthread_rwlock_t unit_rwlock = __GTHREAD_RWLOCK_INIT;
 #else
-__gthread_mutex_t unit_lock;
+#ifdef __GTHREAD_MUTEX_INIT
+__gthread_mutex_t unit_rwlock = __GTHREAD_MUTEX_INIT;
+#else
+__gthread_mutex_t unit_rwlock;
+#endif
 #endif
 
 /* We use these filenames for error reporting.  */
@@ -317,6 +323,28 @@ delete_unit (gfc_unit *old)
   unit_root = delete_treap (old, unit_root);
 }
 
+/* get_gfc_unit_from_root()-- Given an integer, return a pointer
+   to the unit structure. Returns NULL if the unit does not exist,
+   otherwise returns a locked unit. */
+
+static inline gfc_unit *
+get_gfc_unit_from_unit_root (int n)
+{
+  gfc_unit *p;
+  int c = 0;
+  p = unit_root;
+  while (p != NULL)
+    {
+      c = compare (n, p->unit_number);
+      if (c < 0)
+        p = p->left;
+      if (c > 0)
+        p = p->right;
+      if (c == 0)
+        break;
+    }
+  return p;
+}
 
 /* get_gfc_unit()-- Given an integer, return a pointer to the unit
    structure.  Returns NULL if the unit does not exist,
@@ -329,7 +357,7 @@ get_gfc_unit (int n, int do_create)
   int c, created = 0;
 
   NOTE ("Unit n=%d, do_create = %d", n, do_create);
-  LOCK (&unit_lock);
+  RDLOCK (&unit_rwlock);
 
 retry:
   for (c = 0; c < CACHE_SIZE; c++)
@@ -339,18 +367,25 @@ retry:
 	goto found;
       }
 
-  p = unit_root;
-  while (p != NULL)
-    {
-      c = compare (n, p->unit_number);
-      if (c < 0)
-	p = p->left;
-      if (c > 0)
-	p = p->right;
-      if (c == 0)
-	break;
-    }
+  p = get_gfc_unit_from_unit_root (n);
 
+  /* We did not find a unit in the cache nor in the unit list,
+    create a new (locked) unit and insert into the unit list and
+    cache. Manipulating either or both the unit list and the unit
+    cache requires to hold a write-lock [for obvious reasons]:
+    By separating the read/write lock, we will greatly reduce
+    the contention on the read part, while the write part is
+    unlikely once the unit hits the cache. */
+  RD_TO_WRLOCK (&unit_rwlock);
+
+  /* In the case of high concurrency, when multiple threads want
+    to find or create the same unit, the unit number may not
+    exist in cache nor in the unit list during read phase, then
+    threads will acquire the write-lock to insert the same unit
+    number to unit list. To avoid duplicate insert, we need to
+    find unit list once again to ensure that the unit number
+    not exist. */
+  p = get_gfc_unit_from_unit_root (n);
   if (p == NULL && do_create)
     {
       p = insert_unit (n);
@@ -368,8 +403,8 @@ retry:
   if (created)
     {
       /* Newly created units have their lock held already
-	 from insert_unit.  Just unlock UNIT_LOCK and return.  */
-      UNLOCK (&unit_lock);
+	 from insert_unit. Just unlock UNIT_RWLOCK and return. */
+      RWUNLOCK (&unit_rwlock);
       return p;
     }
 
@@ -380,7 +415,7 @@ found:
       if (! TRYLOCK (&p->lock))
 	{
 	  /* assert (p->closed == 0); */
-	  UNLOCK (&unit_lock);
+	  RWUNLOCK (&unit_rwlock);
 	  return p;
 	}
 
@@ -388,14 +423,14 @@ found:
     }
 
 
-  UNLOCK (&unit_lock);
+  RWUNLOCK (&unit_rwlock);
 
   if (p != NULL && (p->child_dtio == 0))
     {
       LOCK (&p->lock);
       if (p->closed)
 	{
-	  LOCK (&unit_lock);
+	  WRLOCK (&unit_rwlock);
 	  UNLOCK (&p->lock);
 	  if (predec_waiting_locked (p) == 0)
 	    destroy_unit_mutex (p);
@@ -594,8 +629,8 @@ init_units (void)
 #endif
 #endif
 
-#ifndef __GTHREAD_MUTEX_INIT
-  __GTHREAD_MUTEX_INIT_FUNCTION (&unit_lock);
+#if (!defined(__GTHREAD_RWLOCK_INIT) && !defined(__GTHREAD_MUTEX_INIT))
+  __GTHREAD_MUTEX_INIT_FUNCTION (&unit_rwlock);
 #endif
 
   if (sizeof (max_offset) == 8)
@@ -732,7 +767,7 @@ close_unit_1 (gfc_unit *u, int locked)
 
   u->closed = 1;
   if (!locked)
-    LOCK (&unit_lock);
+    WRLOCK (&unit_rwlock);
 
   for (i = 0; i < CACHE_SIZE; i++)
     if (unit_cache[i] == u)
@@ -759,7 +794,7 @@ close_unit_1 (gfc_unit *u, int locked)
     destroy_unit_mutex (u);
 
   if (!locked)
-    UNLOCK (&unit_lock);
+    RWUNLOCK (&unit_rwlock);
 
   return rc;
 }
@@ -796,10 +831,10 @@ close_unit (gfc_unit *u)
 void
 close_units (void)
 {
-  LOCK (&unit_lock);
+  WRLOCK (&unit_rwlock);
   while (unit_root != NULL)
     close_unit_1 (unit_root, 1);
-  UNLOCK (&unit_lock);
+  RWUNLOCK (&unit_rwlock);
 
   free (newunits);
 
@@ -906,7 +941,7 @@ finish_last_advance_record (gfc_unit *u)
 int
 newunit_alloc (void)
 {
-  LOCK (&unit_lock);
+  WRLOCK (&unit_rwlock);
   if (!newunits)
     {
       newunits = xcalloc (16, 1);
@@ -920,7 +955,7 @@ newunit_alloc (void)
         {
           newunits[ii] = true;
           newunit_lwi = ii + 1;
-	  UNLOCK (&unit_lock);
+	  RWUNLOCK (&unit_rwlock);
           return -ii + NEWUNIT_START;
         }
     }
@@ -933,12 +968,12 @@ newunit_alloc (void)
   memset (newunits + old_size, 0, old_size);
   newunits[old_size] = true;
   newunit_lwi = old_size + 1;
-    UNLOCK (&unit_lock);
+    RWUNLOCK (&unit_rwlock);
   return -old_size + NEWUNIT_START;
 }
 
 
-/* Free a previously allocated newunit= unit number.  unit_lock must
+/* Free a previously allocated newunit= unit number.  unit_rwlock must
    be held when calling.  */
 
 void

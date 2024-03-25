@@ -27,16 +27,16 @@ contains
     !$omp declare variant (f1) match	! { dg-error "expected '\\(' at .1." }
   end subroutine
   subroutine f9 ()
-    !$omp declare variant (f1) match(	! { dg-error "expected 'construct', 'device', 'implementation' or 'user' at .1." }
+    !$omp declare variant (f1) match(	! { dg-error "expected context selector set name at .1." }
   end subroutine
   subroutine f10 ()
-    !$omp declare variant (f1) match()	! { dg-error "expected 'construct', 'device', 'implementation' or 'user' at .1." }
+    !$omp declare variant (f1) match()	! { dg-error "expected context selector set name at .1." }
   end subroutine
   subroutine f11 ()
-    !$omp declare variant (f1) match(foo)	! { dg-error "expected 'construct', 'device', 'implementation' or 'user' at .1." }
+    !$omp declare variant (f1) match(foo)	! { dg-error "expected context selector set name at .1." }
   end subroutine
   subroutine f12 ()
-    !$omp declare variant (f1) match(something={something})	! { dg-error "expected 'construct', 'device', 'implementation' or 'user' at .1." }
+    !$omp declare variant (f1) match(something={something})	! { dg-error "expected context selector set name at .1." }
   end subroutine
   subroutine f13 ()
     !$omp declare variant (f1) match(user)	! { dg-error "expected '=' at .1." }
@@ -69,10 +69,10 @@ contains
     !$omp declare variant (f1) match(user={condition(1, 2, 3)})	! { dg-error "expected '\\)' at .1." }
   end subroutine
   subroutine f23 ()
-    !$omp declare variant (f1) match(construct={master})	! { dg-error "selector 'master' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={master})	! { dg-warning "unknown selector 'master' for context selector set 'construct'" }
   end subroutine
   subroutine f24 ()
-    !$omp declare variant (f1) match(construct={teams,parallel,master,do})	! { dg-error "selector 'master' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={teams,parallel,master,do})	! { dg-warning "unknown selector 'master' for context selector set 'construct'" }
   end subroutine
   subroutine f25 ()
     !$omp declare variant (f1) match(construct={parallel(1	! { dg-error "selector 'parallel' does not accept any properties at .1." }
@@ -105,10 +105,10 @@ contains
     !$omp declare variant (f1) match(device={arch(17)})	! { dg-error "expected identifier or string literal at .1." }
   end subroutine
   subroutine f41 ()
-    !$omp declare variant (f1) match(device={foobar(3)})
+    !$omp declare variant (f1) match(device={foobar(3)}) ! { dg-warning "unknown selector 'foobar' for context selector set 'device' at .1." }
   end subroutine
   subroutine f43 ()
-    !$omp declare variant (f1) match(implementation={foobar(3)})
+    !$omp declare variant (f1) match(implementation={foobar(3)}) ! { dg-warning "unknown selector 'foobar' for context selector set 'implementation' at .1." }
   end subroutine
   subroutine f44 ()
     !$omp declare variant (f1) match(implementation={vendor})	! { dg-error "expected '\\(' at .1." }
@@ -141,46 +141,46 @@ contains
     !$omp declare variant (f1) match(implementation={atomic_default_mem_order(relaxed,seq_cst)})	! { dg-error "expected '\\)' at .1." }
   end subroutine
   subroutine f58 ()
-    !$omp declare variant (f1) match(user={foobar(3)})	! { dg-error "selector 'foobar' not allowed for context selector set 'user' at .1." }
+    !$omp declare variant (f1) match(user={foobar(3)})	! { dg-warning "unknown selector 'foobar' for context selector set 'user' at .1." }
   end subroutine
   subroutine f59 ()
-    !$omp declare variant (f1) match(construct={foobar(3)})	! { dg-error "selector 'foobar' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={foobar(3)})	! { dg-warning "unknown selector 'foobar' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f60 ()
-    !$omp declare variant (f1) match(construct={parallel},foobar={bar})	! { dg-error "expected 'construct', 'device', 'implementation' or 'user' at .1." }
+    !$omp declare variant (f1) match(construct={parallel},foobar={bar})	! { dg-error "expected context selector set name at .1." }
   end subroutine
   subroutine f64 ()
-    !$omp declare variant (f1) match(construct={single})	! { dg-error "selector 'single' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={single})	! { dg-warning "unknown selector 'single' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f65 ()
-    !$omp declare variant (f1) match(construct={taskgroup})	! { dg-error "selector 'taskgroup' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={taskgroup})	! { dg-warning "unknown selector 'taskgroup' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f66 ()
-    !$omp declare variant (f1) match(construct={for})	! { dg-error "selector 'for' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={for})	! { dg-warning "unknown selector 'for' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f67 ()
-    !$omp declare variant (f1) match(construct={threadprivate})	! { dg-error "selector 'threadprivate' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={threadprivate})	! { dg-warning "unknown selector 'threadprivate' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f68 ()
-    !$omp declare variant (f1) match(construct={critical})	! { dg-error "selector 'critical' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={critical})	! { dg-warning "unknown selector 'critical' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f69 ()
-    !$omp declare variant (f1) match(construct={task})	! { dg-error "selector 'task' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={task})	! { dg-warning "unknown selector 'task' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f70 ()
-    !$omp declare variant (f1) match(construct={taskloop})	! { dg-error "selector 'taskloop' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={taskloop})	! { dg-warning "unknown selector 'taskloop' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f71 ()
-    !$omp declare variant (f1) match(construct={sections})	! { dg-error "selector 'sections' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={sections})	! { dg-warning "unknown selector 'sections' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f72 ()
-    !$omp declare variant (f1) match(construct={section})	! { dg-error "selector 'section' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={section})	! { dg-warning "unknown selector 'section' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f73 ()
-    !$omp declare variant (f1) match(construct={workshare})	! { dg-error "selector 'workshare' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={workshare})	! { dg-warning "unknown selector 'workshare' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f74 ()
-    !$omp declare variant (f1) match(construct={requires})	! { dg-error "selector 'requires' not allowed for context selector set 'construct' at .1." }
+    !$omp declare variant (f1) match(construct={requires})	! { dg-warning "unknown selector 'requires' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f75 ()
     !$omp declare variant (f1),match(construct={parallel})	! { dg-error "expected 'match' at .1." }
@@ -189,9 +189,9 @@ contains
     !$omp declare variant (f1) match(implementation={atomic_default_mem_order("relaxed")})	! { dg-error "expected identifier at .1." }
   end subroutine
   subroutine f77 ()
-    !$omp declare variant (f1) match(user={condition(score(f76):1)})  ! { dg-error "score argument must be constant integer expression at .1." }
+    !$omp declare variant (f1) match(user={condition(score(f76):1)})  ! { dg-error ".score. argument must be constant integer expression at .1." }
   end subroutine
   subroutine f78 ()
-    !$omp declare variant (f1) match(user={condition(score(-130):1)}) ! { dg-error "score argument must be non-negative" }
+    !$omp declare variant (f1) match(user={condition(score(-130):1)}) ! { dg-error ".score. argument must be non-negative" }
   end subroutine
 end module

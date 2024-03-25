@@ -2,6 +2,8 @@
 /* { dg-require-effective-target powerpc_prefixed_addr } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -mdejagnu-cpu=power10" } */
+/* If -mstrict-align is enabled by default, we don't get the expected opcodes.
+   { dg-additional-options "-mno-strict-align" { target opt_mstrict_align } } */
 
 /* Tests whether we generate a prefixed load/store operation for addresses that
    don't meet DS/DQ offset constraints.  64-bit is needed for testing the use

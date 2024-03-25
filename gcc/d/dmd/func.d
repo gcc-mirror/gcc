@@ -25,6 +25,7 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.blockexit;
 import dmd.gluelayer;
+import dmd.dcast;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.delegatize;
@@ -48,7 +49,7 @@ import dmd.mtype;
 import dmd.objc;
 import dmd.root.aav;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.root.stringtable;
 import dmd.semantic2;
@@ -689,7 +690,7 @@ extern (C++) class FuncDeclaration : Declaration
      * Determine if 'this' overrides fd.
      * Return !=0 if it does.
      */
-    final int overrides(FuncDeclaration fd)
+    extern (D) final int overrides(FuncDeclaration fd)
     {
         int result = 0;
         if (fd.ident == ident)
@@ -838,7 +839,7 @@ extern (C++) class FuncDeclaration : Declaration
      * Returns:
      *  base class if overriding, null if not
      */
-    final BaseClass* overrideInterface()
+    extern (D) final BaseClass* overrideInterface()
     {
         for (ClassDeclaration cd = toParent2().isClassDeclaration(); cd; cd = cd.baseClass)
         {
@@ -1215,7 +1216,7 @@ extern (C++) class FuncDeclaration : Declaration
      *      -1      increase nesting by 1 (`fd` is nested within `this`)
      *      LevelError  error, `this` cannot call `fd`
      */
-    final int getLevel(FuncDeclaration fd, int intypeof)
+    extern (D) final int getLevel(FuncDeclaration fd, int intypeof)
     {
         //printf("FuncDeclaration::getLevel(fd = '%s')\n", fd.toChars());
         Dsymbol fdparent = fd.toParent2();
@@ -1276,8 +1277,8 @@ extern (C++) class FuncDeclaration : Declaration
      *      -1      increase nesting by 1 (`fd` is nested within 'this')
      *      LevelError  error
      */
-    final int getLevelAndCheck(const ref Loc loc, Scope* sc, FuncDeclaration fd,
-                               Declaration decl)
+    extern (D) final int getLevelAndCheck(const ref Loc loc, Scope* sc, FuncDeclaration fd,
+                                          Declaration decl)
     {
         int level = getLevel(fd, sc.intypeof);
         if (level != LevelError)
@@ -1490,7 +1491,7 @@ extern (C++) class FuncDeclaration : Declaration
         return purity;
     }
 
-    final PURE isPureBypassingInference()
+    extern (D) final PURE isPureBypassingInference()
     {
         if (purityInprocess)
             return PURE.fwdref;
@@ -1544,7 +1545,7 @@ extern (C++) class FuncDeclaration : Declaration
         return type.toTypeFunction().trust == TRUST.safe;
     }
 
-    final bool isSafeBypassingInference()
+    extern (D) final bool isSafeBypassingInference()
     {
         return !(safetyInprocess) && isSafe();
     }
@@ -1612,7 +1613,7 @@ extern (C++) class FuncDeclaration : Declaration
         return type.toTypeFunction().isnogc;
     }
 
-    final bool isNogcBypassingInference()
+    extern (D) final bool isNogcBypassingInference()
     {
         return !nogcInprocess && isNogc();
     }
@@ -2935,7 +2936,7 @@ extern (C++) class FuncDeclaration : Declaration
      * Returns:
      *      `false` if the result cannot be returned by hidden reference.
      */
-    final bool checkNRVO()
+    extern (D) final bool checkNRVO()
     {
         if (!isNRVO() || returns is null)
             return false;
@@ -3240,13 +3241,6 @@ unittest
     assert(mismatches.isMutable);
 }
 
-private const(char)* prependSpace(const(char)* str)
-{
-    if (!str || !*str) return "";
-
-    return (" " ~ str.toDString() ~ "\0").ptr;
-}
-
 /// Flag used by $(LREF resolveFuncCall).
 enum FuncResolveFlag : ubyte
 {
@@ -3360,14 +3354,11 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         const(char)* lastprms = parametersTypeToChars(tf1.parameterList);
         const(char)* nextprms = parametersTypeToChars(tf2.parameterList);
 
-        const(char)* mod1 = prependSpace(MODtoChars(tf1.mod));
-        const(char)* mod2 = prependSpace(MODtoChars(tf2.mod));
-
         .error(loc, "`%s.%s` called with argument types `%s` matches both:\n%s:     `%s%s%s`\nand:\n%s:     `%s%s%s`",
             s.parent.toPrettyChars(), s.ident.toChars(),
             fargsBuf.peekChars(),
-            m.lastf.loc.toChars(), m.lastf.toPrettyChars(), lastprms, mod1,
-            m.nextf.loc.toChars(), m.nextf.toPrettyChars(), nextprms, mod2);
+            m.lastf.loc.toChars(), m.lastf.toPrettyChars(), lastprms, tf1.modToChars(),
+            m.nextf.loc.toChars(), m.nextf.toPrettyChars(), nextprms, tf2.modToChars());
         return null;
     }
 
@@ -3421,15 +3412,25 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
     if (!tf)
         tf = fd.originalType.toTypeFunction();
 
-    if (tthis && !MODimplicitConv(tthis.mod, tf.mod)) // modifier mismatch
+    // modifier mismatch
+    if (tthis && (fd.isCtorDeclaration() ?
+        !MODimplicitConv(tf.mod, tthis.mod) :
+        !MODimplicitConv(tthis.mod, tf.mod)))
     {
         OutBuffer thisBuf, funcBuf;
         MODMatchToBuffer(&thisBuf, tthis.mod, tf.mod);
         auto mismatches = MODMatchToBuffer(&funcBuf, tf.mod, tthis.mod);
         if (hasOverloads)
         {
-            .error(loc, "none of the overloads of `%s` are callable using a %sobject",
-                   fd.ident.toChars(), thisBuf.peekChars());
+            OutBuffer buf;
+            buf.argExpTypesToCBuffer(fargs);
+            if (fd.isCtorDeclaration())
+                .error(loc, "none of the overloads of `%s` can construct a %sobject with argument types `(%s)`",
+                    fd.toChars(), thisBuf.peekChars(), buf.peekChars());
+            else
+                .error(loc, "none of the overloads of `%s` are callable using a %sobject with argument types `(%s)`",
+                    fd.toChars(), thisBuf.peekChars(), buf.peekChars());
+
             if (!global.gag || global.params.v.showGaggedErrors)
                 printCandidates(loc, fd, sc.isDeprecated());
             return null;
@@ -3446,8 +3447,12 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
             return null;
         }
 
-        .error(loc, "%smethod `%s` is not callable using a %sobject",
-               funcBuf.peekChars(), fd.toPrettyChars(), thisBuf.peekChars());
+        if (fd.isCtorDeclaration())
+            .error(loc, "%s%s `%s` cannot construct a %sobject",
+                   funcBuf.peekChars(), fd.kind(), fd.toPrettyChars(), thisBuf.peekChars());
+        else
+            .error(loc, "%smethod `%s` is not callable using a %sobject",
+                   funcBuf.peekChars(), fd.toPrettyChars(), thisBuf.peekChars());
 
         if (mismatches.isNotShared)
             .errorSupplemental(fd.loc, "Consider adding `shared` here");
@@ -3534,11 +3539,17 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
             if (!print)
                 return true;
             auto tf = cast(TypeFunction) fd.type;
+            OutBuffer buf;
+            buf.writestring(fd.toPrettyChars());
+            buf.writestring(parametersTypeToChars(tf.parameterList));
+            if (tf.mod)
+            {
+                buf.writeByte(' ');
+                buf.MODtoBuffer(tf.mod);
+            }
             .errorSupplemental(fd.loc,
-                    printed ? "                `%s%s`" :
-                    single_candidate ? "Candidate is: `%s%s`" : "Candidates are: `%s%s`",
-                    fd.toPrettyChars(),
-                parametersTypeToChars(tf.parameterList));
+                printed ? "                `%s`" :
+                single_candidate ? "Candidate is: `%s`" : "Candidates are: `%s`", buf.peekChars());
         }
         else if (auto td = s.isTemplateDeclaration())
         {
@@ -3939,7 +3950,7 @@ extern (C++) final class FuncLiteralDeclaration : FuncDeclaration
      * If B to A conversion is convariant that requires offseet adjusting,
      * all return statements should be adjusted to return expressions typed A.
      */
-    void modifyReturns(Scope* sc, Type tret)
+    extern (D) void modifyReturns(Scope* sc, Type tret)
     {
         import dmd.statement_rewrite_walker;
 
@@ -4624,8 +4635,7 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         {
             if (!gag)
             {
-                version (none) // disable obsolete warning
-                    warning(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+                warning(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
             }
         }
         else if (!sc.func.safetyViolation)

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
    unsigned long bad(int reg, unsigned long inWord)
    {
        union {
@@ -11,7 +14,8 @@
        return data.word;
    }
 
-main()
+int
+main(void)
 {
   /* XXX This test could be generalized.  */
   if (sizeof (long) != 4)

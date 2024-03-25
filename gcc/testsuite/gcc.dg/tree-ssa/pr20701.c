@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fno-early-inlining -fdelete-null-pointer-checks -fno-thread-jumps" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fno-early-inlining -fdelete-null-pointer-checks -fno-thread-jumps -fno-ipa-vrp" } */
 
 typedef struct {
   int code;

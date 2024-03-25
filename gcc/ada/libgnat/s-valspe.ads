@@ -72,6 +72,42 @@ is
    --  Ghost function that returns the index of the first non-space character
    --  in S, which necessarily exists given the precondition on S.
 
+   function Is_Boolean_Image_Ghost
+     (Str : String;
+      Val : Boolean) return Boolean
+   is
+     (not Only_Space_Ghost (Str, Str'First, Str'Last)
+        and then
+      (declare
+         F : constant Positive := First_Non_Space_Ghost
+           (Str, Str'First, Str'Last);
+       begin
+         (Val
+          and then F <= Str'Last - 3
+          and then Str (F)     in 't' | 'T'
+          and then Str (F + 1) in 'r' | 'R'
+          and then Str (F + 2) in 'u' | 'U'
+          and then Str (F + 3) in 'e' | 'E'
+          and then
+            (if F + 3 < Str'Last then
+               Only_Space_Ghost (Str, F + 4, Str'Last)))
+           or else
+         (not Val
+          and then F <= Str'Last - 4
+          and then Str (F)     in 'f' | 'F'
+          and then Str (F + 1) in 'a' | 'A'
+          and then Str (F + 2) in 'l' | 'L'
+          and then Str (F + 3) in 's' | 'S'
+          and then Str (F + 4) in 'e' | 'E'
+          and then
+            (if F + 4 < Str'Last then
+               Only_Space_Ghost (Str, F + 5, Str'Last)))))
+   with
+     Ghost;
+   --  Ghost function that returns True iff Str is the image of boolean Val,
+   --  that is "true" or "false" in any capitalization, possibly surounded by
+   --  space characters.
+
    function Only_Number_Ghost (Str : String; From, To : Integer) return Boolean
    is
       (for all J in From .. To => Str (J) in '0' .. '9' | '_')

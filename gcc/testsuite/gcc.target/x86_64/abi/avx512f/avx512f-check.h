@@ -24,17 +24,17 @@ main ()
 	{
 	  avx512f_test ();
 #ifdef DEBUG
-	  printf ("PASSED\n");
+	  __builtin_printf ("PASSED\n");
 #endif
 	}
 #ifdef DEBUG
       else
-	printf ("SKIPPED\n");
+	__builtin_printf ("SKIPPED\n");
 #endif
     }
 #ifdef DEBUG
   else
-    printf ("SKIPPED\n");
+    __builtin_printf ("SKIPPED\n");
 #endif
 
   return 0;

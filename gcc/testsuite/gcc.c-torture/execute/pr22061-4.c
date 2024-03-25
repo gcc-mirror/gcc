@@ -1,4 +1,7 @@
 /* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
+void abort (void);
+void exit (int);
+
 void
 bar (int N)
 {

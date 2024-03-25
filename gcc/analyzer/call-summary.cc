@@ -585,6 +585,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
     case RK_STRING:
     case RK_ERRNO:
     case RK_UNKNOWN:
+    case RK_PRIVATE:
       /* We can reuse these regions directly.  */
       return summary_reg;
 

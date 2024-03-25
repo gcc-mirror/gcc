@@ -1,5 +1,5 @@
 /* Native CPU detection for aarch64.
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -262,6 +262,7 @@ host_detect_local_cpu (int argc, const char **argv)
   unsigned int n_variants = 0;
   bool processed_exts = false;
   aarch64_feature_flags extension_flags = 0;
+  aarch64_feature_flags unchecked_extension_flags = 0;
   aarch64_feature_flags default_flags = 0;
   std::string buf;
   size_t sep_pos = -1;
@@ -348,7 +349,10 @@ host_detect_local_cpu (int argc, const char **argv)
 	      /* If the feature contains no HWCAPS string then ignore it for the
 		 auto detection.  */
 	      if (val.empty ())
-		continue;
+		{
+		  unchecked_extension_flags |= aarch64_extensions[i].flag;
+		  continue;
+		}
 
 	      bool enabled = true;
 
@@ -380,7 +384,8 @@ host_detect_local_cpu (int argc, const char **argv)
   if (n_cores == 0
       || n_cores > 2
       || (n_cores == 1 && n_variants != 1)
-      || imp == INVALID_IMP)
+      || imp == INVALID_IMP
+      || !processed_exts)
     goto not_found;
 
   /* Simple case, one core type or just looking for the arch. */
@@ -446,6 +451,10 @@ host_detect_local_cpu (int argc, const char **argv)
 
   if (tune)
     return res;
+
+  /* Add any features that should be be present, but can't be verified using
+     the /proc/cpuinfo "Features" list.  */
+  extension_flags |= unchecked_extension_flags & default_flags;
 
   {
     std::string extension

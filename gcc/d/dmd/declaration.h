@@ -124,7 +124,6 @@ public:
     const char *kind() const override;
     uinteger_t size(const Loc &loc) override final;
 
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override final;
 
     bool isStatic() const { return (storage_class & STCstatic) != 0; }
     LINK resolvedLinkage() const; // returns the linkage, resolving the target-specific `System` one
@@ -705,15 +704,11 @@ public:
     bool functionSemantic3();
     bool equals(const RootObject * const o) const override final;
 
-    int overrides(FuncDeclaration *fd);
     int findVtblIndex(Dsymbols *vtbl, int dim);
-    BaseClass *overrideInterface();
     bool overloadInsert(Dsymbol *s) override;
     bool inUnittest();
     MATCH leastAsSpecialized(FuncDeclaration *g, Identifiers *names);
     LabelDsymbol *searchLabel(Identifier *ident, const Loc &loc);
-    int getLevel(FuncDeclaration *fd, int intypeof); // lexical nesting level difference
-    int getLevelAndCheck(const Loc &loc, Scope *sc, FuncDeclaration *fd);
     const char *toPrettyChars(bool QualifyTypes = false) override;
     const char *toFullSignature();  // for diagnostics, e.g. 'int foo(int x, int y) pure'
     bool isMain() const;
@@ -726,13 +721,9 @@ public:
     bool isOverloadable() const override final;
     bool isAbstract() override final;
     PURE isPure();
-    PURE isPureBypassingInference();
     bool isSafe();
-    bool isSafeBypassingInference();
     bool isTrusted();
-
     bool isNogc();
-    bool isNogcBypassingInference();
 
     virtual bool isNested() const;
     AggregateDeclaration *isThis() override;
@@ -751,8 +742,6 @@ public:
 
     static FuncDeclaration *genCfunc(Parameters *args, Type *treturn, const char *name, StorageClass stc=0);
     static FuncDeclaration *genCfunc(Parameters *args, Type *treturn, Identifier *id, StorageClass stc=0);
-
-    bool checkNRVO();
 
     FuncDeclaration *isFuncDeclaration() override final { return this; }
 
@@ -788,8 +777,6 @@ public:
     bool isVirtual() const override;
     bool addPreInvariant() override;
     bool addPostInvariant() override;
-
-    void modifyReturns(Scope *sc, Type *tret);
 
     FuncLiteralDeclaration *isFuncLiteralDeclaration() override { return this; }
     const char *kind() const override;

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl4096b -mabi=lp64d -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv64gcv_zvl4096b -mabi=lp64d -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic -fdump-tree-vect-details" } */
 
 #include <stdint-gcc.h>
 
@@ -59,6 +59,6 @@ foo8 (int64_t *restrict a)
     a[i] = a[i]-16;
 }
 
-/* { dg-final { scan-tree-dump-not "Maximum lmul" "vect" } } */
+/* { dg-final { scan-tree-dump-not "Preferring smaller LMUL loop because it has unexpected spills" "vect" } } */
 /* { dg-final { scan-assembler-times {vsetvli} 4 } } */
 /* { dg-final { scan-assembler-times {vsetivli} 4 } } */

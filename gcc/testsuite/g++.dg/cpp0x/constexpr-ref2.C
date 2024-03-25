@@ -4,8 +4,8 @@
 extern int *p;
 constexpr int& ri = *p;		// { dg-error "p" }
 
-extern constexpr int &er;	// { dg-error "not a definition" }
-constexpr int& ri2 = er;	// { dg-error "er" }
+extern constexpr int &er;	// { dg-error "not a definition|not a constant" }
+constexpr int& ri2 = er;
 
 void f(int j)
 {

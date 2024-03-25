@@ -1,6 +1,6 @@
 ## Makefile for the C++23 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2023 Free Software Foundation, Inc.
+## Copyright (C) 1997-2024 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -35,7 +35,7 @@ else
 inst_sources =
 endif
 
-sources = stacktrace.cc
+sources = stacktrace.cc print.cc
 
 vpath % $(top_srcdir)/src/c++23
 
@@ -45,6 +45,12 @@ libc__23convenience_la_SOURCES = $(sources)  $(inst_sources)
 else
 libc__23convenience_la_SOURCES =
 endif
+
+# Use C++26 so that std::filebuf::native_handle() is available.
+print.lo: print.cc
+	$(LTCXXCOMPILE) -std=gnu++26 -c $<
+print.o: print.cc
+	$(CXXCOMPILE) -std=gnu++26 -c $<
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

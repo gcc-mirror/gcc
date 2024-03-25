@@ -1,5 +1,5 @@
 /* Subroutines for loongarch-specific option handling.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
 This file is part of GCC.
@@ -163,6 +163,7 @@ loongarch_config_target (struct loongarch_target *target,
 			 int follow_multilib_list_p)
 {
   struct loongarch_target t;
+
   if (!target)
     return;
 
@@ -552,17 +553,17 @@ isa_default_abi (const struct loongarch_isa *isa)
   switch (isa->fpu)
     {
       case ISA_EXT_FPU64:
-	if (isa->base == ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64V100)
 	  abi.base = ABI_BASE_LP64D;
 	break;
 
       case ISA_EXT_FPU32:
-	if (isa->base == ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64V100)
 	  abi.base = ABI_BASE_LP64F;
 	break;
 
       case ISA_EXT_NONE:
-	if (isa->base == ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64V100)
 	  abi.base = ABI_BASE_LP64S;
 	break;
 
@@ -582,7 +583,7 @@ isa_base_compat_p (const struct loongarch_isa *set1,
   switch (set2->base)
     {
       case ISA_BASE_LA64V100:
-	return (set1->base == ISA_BASE_LA64V100);
+	return (set1->base >= ISA_BASE_LA64V100);
 
       default:
 	gcc_unreachable ();
@@ -654,12 +655,18 @@ abi_str (struct loongarch_abi abi)
 		     strlen (loongarch_abi_base_strings[abi.base]));
   else
     {
+      /* This situation has not yet occurred, so in order to avoid the
+	 -Warray-bounds warning during C++ syntax checking, this part
+	 of the code is commented first.  */
+      /*
       APPEND_STRING (loongarch_abi_base_strings[abi.base])
       APPEND1 ('/')
       APPEND_STRING (loongarch_abi_ext_strings[abi.ext])
       APPEND1 ('\0')
 
       return XOBFINISH (&msg_obstack, const char *);
+      */
+      gcc_unreachable ();
     }
 }
 

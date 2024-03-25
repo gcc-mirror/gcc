@@ -23,8 +23,8 @@ fdeprecated_primary ();
 void use_primary ()
 {
   // Verify that uses of the now deprecacted primary are diagnosed.
-  fdeprecated_primary<void>();          // { dg-warning "deprecated" "bug 84542" { xfail *-*-* } }
-  fdeprecated_primary<int>();           // { dg-warning "deprecated" "bug 84542" { xfail *-*-* } }
+  fdeprecated_primary<void>();          // { dg-warning "deprecated" "bug 84542" }
+  fdeprecated_primary<int>();           // { dg-warning "deprecated" "bug 84542" }
 }
 
 void use_special ()

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 static void
 compare (long long foo)
 {

@@ -1,5 +1,5 @@
 /* Code for RTL register eliminations.
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -666,6 +666,10 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
       return x;
 
     case CLOBBER:
+    case ASM_OPERANDS:
+      gcc_assert (insn && DEBUG_INSN_P (insn));
+      break;
+
     case SET:
       gcc_unreachable ();
 

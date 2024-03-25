@@ -1,6 +1,6 @@
 // Safe container implementation  -*- C++ -*-
 
-// Copyright (C) 2014-2023 Free Software Foundation, Inc.
+// Copyright (C) 2014-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,7 @@ namespace __gnu_debug
     {
       typedef _SafeBase<_SafeContainer> _Base;
 
+      _GLIBCXX20_CONSTEXPR
       _SafeContainer&
       _M_cont() _GLIBCXX_NOEXCEPT
       { return *static_cast<_SafeContainer*>(this); }
@@ -54,20 +55,23 @@ namespace __gnu_debug
       _Safe_container(_Safe_container&&) = default;
 
     private:
+      _GLIBCXX20_CONSTEXPR
       _Safe_container(_Safe_container&& __x, const _Alloc&, std::true_type)
       : _Safe_container(std::move(__x))
       { }
 
+      _GLIBCXX20_CONSTEXPR
       _Safe_container(_Safe_container&& __x, const _Alloc& __a, std::false_type)
       : _Safe_container()
       {
 	if (__x._M_cont().get_allocator() == __a)
 	  _Base::_M_swap(__x);
-	else
+	else if (!std::__is_constant_evaluated())
 	  __x._M_invalidate_all();
       }
 
     protected:
+      _GLIBCXX20_CONSTEXPR
       _Safe_container(_Safe_container&& __x, const _Alloc& __a)
       : _Safe_container(std::move(__x), __a,
 		      typename std::allocator_traits<_Alloc>::is_always_equal{})
@@ -75,17 +79,23 @@ namespace __gnu_debug
 #endif
 
       // Copy assignment invalidate all iterators.
+      _GLIBCXX20_CONSTEXPR
       _Safe_container&
       operator=(const _Safe_container&) _GLIBCXX_NOEXCEPT
       {
-	this->_M_invalidate_all();
+	if (!std::__is_constant_evaluated())
+	  this->_M_invalidate_all();
 	return *this;
       }
 
 #if __cplusplus >= 201103L
+      _GLIBCXX20_CONSTEXPR
       _Safe_container&
       operator=(_Safe_container&& __x) noexcept
       {
+	if (std::__is_constant_evaluated())
+	  return *this;
+
 	if (std::__addressof(__x) == this)
 	  {
 	    // Standard containers have a valid but unspecified value after
@@ -113,6 +123,7 @@ namespace __gnu_debug
 	return *this;
       }
 
+      _GLIBCXX20_CONSTEXPR
       void
       _M_swap(_Safe_container& __x) noexcept
       {

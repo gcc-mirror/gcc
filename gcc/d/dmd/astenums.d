@@ -383,6 +383,7 @@ enum STMT : ubyte
 enum InitKind : ubyte
 {
     void_,
+    default_,
     error,
     struct_,
     array,

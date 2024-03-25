@@ -1,5 +1,5 @@
 /* Wrapper to call lto.  Used by collect2 and the linker plugin.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
    Factored out of collect2 by Rafael Espindola <espindola@google.com>
 
@@ -1355,7 +1355,7 @@ void
 print_lto_docs_link ()
 {
   bool print_url = global_dc->printer->url_format != URL_FORMAT_NONE;
-  const char *url = global_dc->get_option_url (global_dc, OPT_flto);
+  const char *url = global_dc->make_option_url (OPT_flto);
 
   pretty_printer pp;
   pp.url_format = URL_FORMAT_DEFAULT;
@@ -2146,7 +2146,11 @@ main (int argc, char *argv[])
   diagnostic_initialize (global_dc, 0);
   diagnostic_color_init (global_dc);
   diagnostic_urls_init (global_dc);
-  global_dc->get_option_url = get_option_url;
+  global_dc->set_option_hooks (nullptr,
+			       nullptr,
+			       nullptr,
+			       get_option_url,
+			       0);
 
   if (atexit (lto_wrapper_cleanup) != 0)
     fatal_error (input_location, "%<atexit%> failed");

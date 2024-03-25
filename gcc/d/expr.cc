@@ -1,5 +1,5 @@
 /* expr.cc -- Lower D frontend expressions to GCC trees.
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -789,42 +789,58 @@ public:
 
   void visit (CatAssignExp *e) final override
   {
+    if (!global.params.useGC)
+      {
+	error_at (make_location_t (e->loc),
+		  "appending to array in %qs requires the GC and cannot be "
+		  "used with %<-fno-druntime%>", e->toChars ());
+	this->result_ = error_mark_node;
+	return;
+      }
+
     Type *tb1 = e->e1->type->toBasetype ();
     Type *tb2 = e->e2->type->toBasetype ();
-    Type *etype = tb1->nextOf ()->toBasetype ();
 
-    /* Save the address of `e1', so it can be evaluated first.
-       As all D run-time library functions for concat assignments update `e1'
-       in-place and then return its value, the saved address can also be used as
-       the result of this expression as well.  */
-    tree lhs = build_expr (e->e1);
-    tree lexpr = stabilize_expr (&lhs);
-    tree ptr = d_save_expr (build_address (lhs));
-    tree result = NULL_TREE;
-
-    if (tb1->ty == TY::Tarray && tb2->ty == TY::Tdchar
-	&& (etype->ty == TY::Tchar || etype->ty == TY::Twchar))
+    if (e->op == EXP::concatenateDcharAssign)
       {
 	/* Append a dchar to a char[] or wchar[]:
 	   The assignment is handled by the D run-time library, so only
 	   need to call `_d_arrayappend[cw]d(&e1, e2)'  */
+	Type *etype = tb1->nextOf ()->toBasetype ();
+
+	/* Save the address of `e1', so it can be evaluated first.
+	   As all D run-time library functions for concat assignments update
+	   `e1' in-place and then return its value, the saved address can also
+	   be used as the result of this expression as well.  */
+	tree lhs = build_expr (e->e1);
+	tree lexpr = stabilize_expr (&lhs);
+	tree ptr = d_save_expr (build_address (lhs));
+	tree result = NULL_TREE;
+
+	gcc_assert (tb1->ty == TY::Tarray && tb2->ty == TY::Tdchar
+		    && (etype->ty == TY::Tchar || etype->ty == TY::Twchar));
+
 	libcall_fn libcall = (etype->ty == TY::Tchar)
 	  ? LIBCALL_ARRAYAPPENDCD : LIBCALL_ARRAYAPPENDWD;
 
 	result = build_libcall (libcall, e->type, 2,
 				ptr, build_expr (e->e2));
+
+	/* Construct in order: ptr = &e1, _d_arrayappend(ptr, e2), *ptr;  */
+	result = compound_expr (compound_expr (lexpr, ptr), result);
+	this->result_ = compound_expr (result, build_deref (ptr));
       }
     else
       {
+	gcc_assert (e->op == EXP::concatenateAssign
+		    || e->op == EXP::concatenateElemAssign);
+	gcc_assert (tb1->ty == TY::Tarray || tb2->ty == TY::Tsarray);
 	/* Appending an element or array to another array has already been
 	   handled by the front-end.  */
-	gcc_assert (tb1->ty == TY::Tarray || tb2->ty == TY::Tsarray);
-	gcc_unreachable ();
-      }
+	gcc_assert (e->lowering);
 
-    /* Construct in order: ptr = &e1, _d_arrayappend(ptr, e2), *ptr;  */
-    result = compound_expr (compound_expr (lexpr, ptr), result);
-    this->result_ = compound_expr (result, build_deref (ptr));
+	this->result_ = build_expr (e->lowering);
+      }
   }
 
   /* Build an assignment expression.  The right operand is implicitly
@@ -972,8 +988,7 @@ public:
 	Declaration *decl = e->e1->isVarExp ()->var;
 	if (decl->storage_class & (STCout | STCref))
 	  {
-	    tree t2 = convert_for_assignment (build_expr (e->e2),
-					      e->e2->type, e->e1->type);
+	    tree t2 = convert_for_assignment (e->e2, e->e1->type);
 	    tree t1 = build_expr (e->e1);
 	    /* Want reference to lhs, not indirect ref.  */
 	    t1 = TREE_OPERAND (t1, 0);
@@ -993,8 +1008,7 @@ public:
     if (tb1->ty == TY::Tstruct)
       {
 	tree t1 = build_expr (e->e1);
-	tree t2 = convert_for_assignment (build_expr (e->e2, false, true),
-					  e->e2->type, e->e1->type);
+	tree t2 = convert_for_assignment (e->e2, e->e1->type, true);
 	StructDeclaration *sd = tb1->isTypeStruct ()->sym;
 
 	/* Look for struct = 0.  */
@@ -1073,8 +1087,7 @@ public:
 	    || (e->op == EXP::blit || e->e1->type->size () == 0))
 	  {
 	    tree t1 = build_expr (e->e1);
-	    tree t2 = convert_for_assignment (build_expr (e->e2),
-					      e->e2->type, e->e1->type);
+	    tree t2 = convert_for_assignment (e->e2, e->e1->type);
 
 	    this->result_ = build_assign (modifycode, t1, t2);
 	    return;
@@ -1088,8 +1101,7 @@ public:
 
     /* Simple assignment.  */
     tree t1 = build_expr (e->e1);
-    tree t2 = convert_for_assignment (build_expr (e->e2),
-				      e->e2->type, e->e1->type);
+    tree t2 = convert_for_assignment (e->e2, e->e1->type);
 
     this->result_ = build_assign (modifycode, t1, t2);
   }
@@ -1713,6 +1725,12 @@ public:
     /* Now we have the type, callee and maybe object reference,
        build the call expression.  */
     tree exp = d_build_call (tf, callee, object, e->arguments);
+
+    /* Record whether the call expression has no side effects, so we can check
+       for an unused return value later.  */
+    if (TREE_CODE (exp) == CALL_EXPR && CALL_EXPR_FN (exp) != NULL_TREE
+	&& call_side_effect_free_p (e->f, e->e1->type))
+      CALL_EXPR_WARN_IF_UNUSED (exp) = 1;
 
     if (returnvalue != NULL_TREE)
       exp = compound_expr (exp, returnvalue);
@@ -2338,7 +2356,12 @@ public:
 		new_call = d_save_expr (new_call);
 		se->type = sd->type;
 		se->sym = new_call;
-		result = compound_expr (build_expr (se), new_call);
+
+		/* Setting `se->sym' would mean that the result of the
+		   constructed struct literal expression is `*(new_call)'.
+		   Strip off the indirect reference, as we don't mean to
+		   compute the value yet.  */
+		result = build_address (build_expr (se));
 	      }
 	    else
 	      result = new_call;
@@ -2350,66 +2373,11 @@ public:
     else if (tb->ty == TY::Tarray)
       {
 	/* Allocating memory for a new D array.  */
-	tb = e->newtype->toBasetype ();
-	TypeDArray *tarray = tb->isTypeDArray ();
-
 	gcc_assert (e->arguments && e->arguments->length >= 1);
 
-	if (e->arguments->length == 1)
-	  {
-	    /* Single dimension array allocations.  */
-	    Expression *arg = (*e->arguments)[0];
-
-	    if (tarray->next->size () == 0)
-	      {
-		/* Array element size is unknown.  */
-		this->result_ = d_array_value (build_ctype (e->type),
-					       size_int (0), null_pointer_node);
-		return;
-	      }
-
-	    libcall_fn libcall = tarray->next->isZeroInit ()
-	      ? LIBCALL_NEWARRAYT : LIBCALL_NEWARRAYIT;
-	    result = build_libcall (libcall, tb, 2,
-				    build_typeinfo (e, e->type),
-				    build_expr (arg));
-	  }
-	else
-	  {
-	    /* Multidimensional array allocations.  */
-	    tree tarray = make_array_type (Type::tsize_t, e->arguments->length);
-	    tree var = build_local_temp (tarray);
-	    vec <constructor_elt, va_gc> *elms = NULL;
-
-	    /* Get the base element type for the array, generating the
-	       initializer for the dims parameter along the way.  */
-	    Type *telem = e->newtype->toBasetype ();
-	    for (size_t i = 0; i < e->arguments->length; i++)
-	      {
-		Expression *arg = (*e->arguments)[i];
-		CONSTRUCTOR_APPEND_ELT (elms, size_int (i), build_expr (arg));
-
-		gcc_assert (telem->ty == TY::Tarray);
-		telem = telem->toBasetype ()->nextOf ();
-		gcc_assert (telem);
-	      }
-
-	    /* Initialize the temporary.  */
-	    tree init = modify_expr (var, build_constructor (tarray, elms));
-	    var = compound_expr (init, var);
-
-	    /* Generate: _d_newarraymTX(ti, dims)
-		     or: _d_newarraymiTX(ti, dims)  */
-	    libcall_fn libcall = telem->isZeroInit ()
-	      ? LIBCALL_NEWARRAYMTX : LIBCALL_NEWARRAYMITX;
-
-	    tree tinfo = build_typeinfo (e, e->type);
-	    tree dims = d_array_value (build_ctype (Type::tsize_t->arrayOf ()),
-				       size_int (e->arguments->length),
-				       build_address (var));
-
-	    result = build_libcall (libcall, tb, 2, tinfo, dims);
-	  }
+	/* Array allocations have already been handled by the front-end.  */
+	gcc_assert (e->lowering != NULL);
+	result = build_expr (e->lowering);
 
 	if (e->argprefix)
 	  result = compound_expr (build_expr (e->argprefix), result);

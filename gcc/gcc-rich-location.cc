@@ -1,5 +1,5 @@
 /* Implementation of gcc_rich_location class
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,10 +75,11 @@ gcc_rich_location::add_fixit_misspelled_id (location_t misspelled_token_loc,
 /* Return true if there is nothing on LOC's line before LOC.  */
 
 static bool
-blank_line_before_p (location_t loc)
+blank_line_before_p (file_cache &fc,
+		     location_t loc)
 {
   expanded_location exploc = expand_location (loc);
-  char_span line = location_get_source_line (exploc.file, exploc.line);
+  char_span line = fc.get_source_line (exploc.file, exploc.line);
   if (!line)
     return false;
   if (line.length () < (size_t)exploc.column)
@@ -96,7 +97,8 @@ blank_line_before_p (location_t loc)
    If true is returned then *OUT_START_OF_LINE is written to.  */
 
 static bool
-use_new_line (location_t insertion_point, location_t indent,
+use_new_line (file_cache &fc,
+	      location_t insertion_point, location_t indent,
 	      location_t *out_start_of_line)
 {
   if (indent == UNKNOWN_LOCATION)
@@ -105,7 +107,7 @@ use_new_line (location_t insertion_point, location_t indent,
   if (linemap_macro_expansion_map_p (indent_map))
     return false;
 
-  if (!blank_line_before_p (insertion_point))
+  if (!blank_line_before_p (fc, insertion_point))
     return false;
 
   /* Locate the start of the line containing INSERTION_POINT.  */
@@ -162,7 +164,8 @@ gcc_rich_location::add_fixit_insert_formatted (const char *content,
 					       location_t indent)
 {
   location_t start_of_line;
-  if (use_new_line (insertion_point, indent, &start_of_line))
+  if (use_new_line (global_dc->get_file_cache (),
+		    insertion_point, indent, &start_of_line))
     {
       /* Add CONTENT on its own line, using the indentation of INDENT.  */
 
@@ -200,7 +203,7 @@ maybe_range_label_for_tree_type_mismatch::get_text (unsigned range_idx) const
   tree expr_type = TREE_TYPE (m_expr);
 
   tree other_type = NULL_TREE;
-  if (CAN_HAVE_LOCATION_P (m_other_expr))
+  if (m_other_expr && EXPR_P (m_other_expr))
     other_type = TREE_TYPE (m_other_expr);
 
   range_label_for_type_mismatch inner (expr_type, other_type);

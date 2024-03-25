@@ -61,6 +61,12 @@ package Ada.Real_Time.Timing_Events is
 
    function Time_Of_Event (Event : Timing_Event) return Time;
 
+   --  The compilation closure of this version (as opposed to the hie version)
+   --  of Ada.Real_TIme.Timing_Events includes a specification of a
+   --  Concurrent Partition_Elaboration_Policy. Thus, a bind-time error
+   --  will result if this unit occurs in the same partition as a conflicting
+   --  Partition_Elaboration_Policy specification.
+
 private
 
    type Timing_Event is new Ada.Finalization.Limited_Controlled with record

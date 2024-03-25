@@ -272,9 +272,8 @@ struct CompileEnv
     DString time;
     DString vendor;
     DString timestamp;
-    bool previewIn;
-    bool ddocOutput;
-    bool shortenedMethods;
+    d_bool previewIn;
+    d_bool ddocOutput;
 };
 
 struct Global

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 volatile double a, *p;
 
 int main ()

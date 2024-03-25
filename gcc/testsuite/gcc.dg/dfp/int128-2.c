@@ -1,0 +1,200 @@
+/* PR libgcc/65833 */
+/* { dg-do run { target { int128 && bitint } } } */
+/* { dg-options "-O2 -std=gnu2x" } */
+
+__attribute__((noipa)) _Decimal64
+tests64 (__int128 b)
+{
+  return b;
+}
+
+__attribute__((noipa)) _Decimal64
+testu64 (unsigned __int128 b)
+{
+  return b;
+}
+
+__attribute__((noipa)) _Decimal32
+tests32 (__int128 b)
+{
+  return b;
+}
+
+__attribute__((noipa)) _Decimal32
+testu32 (unsigned __int128 b)
+{
+  return b;
+}
+
+__attribute__((noipa)) _Decimal128
+tests128 (__int128 b)
+{
+  return b;
+}
+
+__attribute__((noipa)) _Decimal128
+testu128 (unsigned __int128 b)
+{
+  return b;
+}
+
+int
+main ()
+{
+  {
+    _Decimal64 a, b;
+#define CHECK(x, y) (a = (x), b = (y), a != (y) || __builtin_memcmp (&a, &b, sizeof (a)))
+#define C(x, y) ((((__int128) (x##ULL)) << 64) | (y##ULL))
+#define UC(x, y) ((((unsigned __int128) (x##ULL)) << 64) | (y##ULL))
+#define INT128_MAX ((__int128) ((((unsigned __int128) 1) << 127) - 1))
+#define UINT128_MAX (~(unsigned __int128) 0)
+    if (CHECK (tests64 (0LL), 0.DD)
+	|| CHECK (tests64 (7LL), 7.DD)
+	|| CHECK (tests64 (-42LL), -42.DD)
+	|| CHECK (tests64 (-777777777LL), -777777777.DD)
+	|| CHECK (tests64 (9999999999999000LL), 9999999999999000.DD)
+	|| CHECK (tests64 (-9999999999999999LL), -9999999999999999.DD)
+	|| CHECK (tests64 (-99999999999999994LL), -9999999999999999.e+1DD)
+	|| CHECK (tests64 (99999999999999995LL), 1000000000000000.e+2DD)
+	|| CHECK (tests64 (999999999999999900LL), 9999999999999999.e+2DD)
+	|| CHECK (tests64 (999999999999999949LL), 9999999999999999.e+2DD)
+	|| CHECK (tests64 (-(__int128) 9999999999999999000ULL), -9999999999999999.e+3DD)
+	|| CHECK (tests64 (9999999999999999499ULL), 9999999999999999.e+3DD)
+	|| CHECK (tests64 (C (0x36, 0x35c9adc5de9e7960)), 9999999999999999.e+5DD)
+	|| CHECK (tests64 (C (0x36, 0x35c9adc5de9f3caf)), 9999999999999999.e+5DD)
+	|| CHECK (tests64 (-C (0x21e, 0x19e0c9bab230bdc0)), -9999999999999999.e+6DD)
+	|| CHECK (tests64 (-C (0x21e, 0x19e0c9bab2385edf)), -9999999999999999.e+6DD)
+	|| CHECK (tests64 (C (0x1a24, 0x9b1f10a067e2c000)), 1234567890123456.e+8DD)
+	|| CHECK (tests64 (C (0x2937babe64c6b8c, 0x10542c1f57200000)), 3424231985445429e+21DD)
+	|| CHECK (tests64 (C (0x4b3b4ca85a86c25b, 0xefa958854dc00000)), 9999999999999999.e+22DD)
+	|| CHECK (tests64 (C (0x4b3b4ca85a86c36a, 0xfc99bd62a6dfffff)), 9999999999999999.e+22DD)
+	|| CHECK (tests64 (-C (0x4b3b4ca85a86c25b, 0xefa958854dc00000)), -9999999999999999.e+22DD)
+	|| CHECK (tests64 (-C (0x1016b2fcff8f2cf6, 0xd16cf61904c00000)), -2138550877694459e+22DD)
+	|| CHECK (tests64 (-C (0x1016b2fcff8f2e05, 0xde5d5af65de00000)), -2138550877694460e+22DD)
+	|| CHECK (tests64 (-C (0x1016b2fcff8f2e05, 0xde5d5af65ddfffff)), -2138550877694459e+22DD)
+	|| CHECK (tests64 (-C (0x1016b2fcff8f2f14, 0xeb4dbfd3b6ffffff)), -2138550877694460e+22DD)
+	|| CHECK (tests64 (-C (0x1016b2fcff8f2ad8, 0xb78c2c5e52800000)), -2138550877694458e+22DD)
+	|| CHECK (tests64 (-C (0x1016b2fcff8f2be7, 0xc47c913baba00000)), -2138550877694458e+22DD)
+	|| CHECK (tests64 (-C (0x1016b2fcff8f2be7, 0xc47c913baba00001)), -2138550877694459e+22DD)
+	|| CHECK (tests64 (C (0x7ffffffffffff947, 0xd26076f482000000)), 1701411834604692e+23DD)
+	|| CHECK (tests64 (INT128_MAX), 1701411834604692e+23DD)
+	|| CHECK (tests64 (-C (0x7ffffffffffff947, 0xd26076f482000000)), -1701411834604692e+23DD)
+	|| CHECK (tests64 (-INT128_MAX - 1), -1701411834604692e+23DD))
+      __builtin_abort ();
+    if (CHECK (testu64 (0ULL), 0.DD)
+	|| CHECK (testu64 (7ULL), 7.DD)
+	|| CHECK (testu64 (42ULL), 42.DD)
+	|| CHECK (testu64 (777777777ULL), 777777777.DD)
+	|| CHECK (testu64 (9999999999999000ULL), 9999999999999000.DD)
+	|| CHECK (testu64 (999999999999999900ULL), 9999999999999999.e+2DD)
+	|| CHECK (testu64 (9999999999999999000ULL), 9999999999999999.e+3DD)
+	|| CHECK (testu64 (UC (0x5, 0x6bc75e2d630fec77)), 9999999999999999.e+4DD)
+	|| CHECK (testu64 (UC (0x36, 0x35c9adc5de9e7960)), 9999999999999999.e+5DD)
+	|| CHECK (testu64 (UC (0x21e, 0x19e0c9bab230bdc0)), 9999999999999999.e+6DD)
+	|| CHECK (testu64 (UC (0x1a24, 0x9b1f10a067e2c000)), 1234567890123456.e+8DD)
+	|| CHECK (testu64 (UC (0x19c2d4b6fefc3378, 0xa349b93967400000)), 3424231985445429e+22DD)
+	|| CHECK (testu64 (UC (0x2e90434dfef46d45, 0x1f6d190ddcc00000)), 6189354365465179e+22DD)
+	|| CHECK (testu64 (UC (0x2e90434dfef46e54, 0x2c5d7deb35e00000)), 6189354365465180e+22DD)
+	|| CHECK (testu64 (UC (0x2e90434dfef46e54, 0x2c5d7deb35dfffff)), 6189354365465179e+22DD)
+	|| CHECK (testu64 (UC (0x2e90434dfef46f63, 0x394de2c88effffff)), 6189354365465180e+22DD)
+	|| CHECK (testu64 (UC (0x2e90434dfef46b27, 0x058c4f532a800000)), 6189354365465178e+22DD)
+	|| CHECK (testu64 (UC (0x2e90434dfef46c36, 0x127cb43083a00000)), 6189354365465178e+22DD)
+	|| CHECK (testu64 (UC (0x2e90434dfef46c36, 0x127cb43083a00001)), 6189354365465179e+22DD)
+	|| CHECK (testu64 (UC (0x4b3b4ca85a86c25b, 0xefa958854dc00000)), 9999999999999999.e+22DD)
+	|| CHECK (testu64 (UC (0xfffffffffffff28f, 0xa4c0ede904000000)), 340282366920938.4e+24DD)
+	|| CHECK (testu64 (UC (0xfffffffffffffd26, 0x2624de8e7f3fffff)), 340282366920938.4e+24DD)
+	|| CHECK (testu64 (UC (0xfffffffffffffd26, 0x2624de8e7f400000)), 340282366920938.4e+24DD)
+	|| CHECK (testu64 (UC (0xfffffffffffffd26, 0x2624de8e7f400001)), 340282366920938.5e+24DD)
+	|| CHECK (testu64 (UC (0xfffffffffffffd26, 0x2624de90d34be400)), 340282366920938.5e+24DD)
+	|| CHECK (testu64 (UINT128_MAX), 340282366920938.5e+24DD))
+      __builtin_abort ();
+  }
+  {
+    _Decimal32 a, b;
+    if (CHECK (tests32 (0LL), 0.DF)
+	|| CHECK (tests32 (7LL), 7.DF)
+	|| CHECK (tests32 (-42LL), -42.DF)
+	|| CHECK (tests32 (-777777LL), -777777.DF)
+	|| CHECK (tests32 (9999000LL), 9999000.DF)
+	|| CHECK (tests32 (-9999999LL), -9999999.DF)
+	|| CHECK (tests32 (99999994LL), 9999999.e+1DF)
+	|| CHECK (tests32 (99999995LL), 1000000.e+2DF)
+	|| CHECK (tests32 (999999900LL), 9999999.e+2DF)
+	|| CHECK (tests32 (-9999999000LL), -9999999.e+3DF)
+	|| CHECK (tests32 (999999900000LL), 9999999.e+5DF)
+	|| CHECK (tests32 (-9999999000000LL), -9999999.e+6DF)
+	|| CHECK (tests32 (123456700000000000LL), 1234567.e+11DF)
+	|| CHECK (tests32 (C (0x6ea49330, 0xa5672e5497c00000)), 3424231e+22DF)
+	|| CHECK (tests32 (C (0x4b3b4c2a22c8a457, 0x48f8d71980000000)), 9999999.e+31DF)
+	|| CHECK (tests32 (-C (0x4b3b4c2a22c8a457, 0x48f8d71980000000)), -9999999.e+31DF)
+	|| CHECK (tests32 (-C (0x1016b30c6f76e61c, 0x6cefef0580000000)), -2138551e+31DF)
+	|| CHECK (tests32 (-C (0x1016b34b8b55f62d, 0xcd389498c0000000)), -2138552e+31DF)
+	|| CHECK (tests32 (-C (0x1016b34b8b55f62d, 0xcd389498bfffffff)), -2138551e+31DF)
+	|| CHECK (tests32 (-C (0x1016b38aa735063f, 0x2d813a2bffffffff)), -2138552e+31DF)
+	|| CHECK (tests32 (-C (0x1016b38aa735063f, 0x2d813a2c00000000)), -2138552e+31DF)
+	|| CHECK (tests32 (-C (0x1016b3c9c3141650, 0x8dc9dfbf40000000)), -2138552e+31DF)
+	|| CHECK (tests32 (-C (0x1016b3c9c3141650, 0x8dc9dfbf40000001)), -2138553e+31DF)
+	|| CHECK (tests32 (C (0x7ffffbe294adefda, 0xd863b4a300000000)), 1701411e+32DF)
+	|| CHECK (tests32 (INT128_MAX), 1701412e+32DF)
+	|| CHECK (tests32 (-C (0x7ffffbe294adefda, 0xd863b4a300000000)), -1701411e+32DF)
+	|| CHECK (tests32 (-INT128_MAX - 1LL), -1701412e+32DF))
+      __builtin_abort ();
+    if (CHECK (testu32 (0ULL), 0.DF)
+	|| CHECK (testu32 (7ULL), 7.DF)
+	|| CHECK (testu32 (42ULL), 42.DF)
+	|| CHECK (testu32 (77777ULL), 77777.DF)
+	|| CHECK (testu32 (9999000ULL), 9999000.DF)
+	|| CHECK (testu32 (999999900ULL), 9999999.e+2DF)
+	|| CHECK (testu32 (999999949ULL), 9999999.e+2DF)
+	|| CHECK (testu32 (9999999000ULL), 9999999.e+3DF)
+	|| CHECK (testu32 (9999999499ULL), 9999999.e+3DF)
+	|| CHECK (testu32 (999999900000ULL), 9999999.e+5DF)
+	|| CHECK (testu32 (9999999000000ULL), 9999999.e+6DF)
+	|| CHECK (testu32 (123456700000000ULL), 1234567.e+8DF)
+	|| CHECK (testu32 (UC (0x6ea49330, 0xa5672e5497c00000)), 3424231e+22DF)
+	|| CHECK (testu32 (UC (0x785ee0436adaa08, 0xba7f48b5c0000000)), 9999999.e+30DF)
+	|| CHECK (testu32 (UC (0x2e904596f4d9f2bb, 0x14fbca9180000000)), 6189359e+31DF)
+	|| CHECK (testu32 (UC (0x2e9045d610b902cc, 0x75447024c0000000)), 6189360e+31DF)
+	|| CHECK (testu32 (UC (0x2e9045d610b902cc, 0x75447024bfffffff)), 6189359e+31DF)
+	|| CHECK (testu32 (UC (0x2e9046152c9812dd, 0xd58d15b7ffffffff)), 6189360e+31DF)
+	|| CHECK (testu32 (UC (0x2e904518bd1bd298, 0x546a7f6b00000000)), 6189358e+31DF)
+	|| CHECK (testu32 (UC (0x2e904557d8fae2a9, 0xb4b324fe40000000)), 6189358e+31DF)
+	|| CHECK (testu32 (UC (0x2e904557d8fae2a9, 0xb4b324fe40000001)), 6189359e+31DF)
+	|| CHECK (testu32 (UC (0xfffffcb356c92111, 0x367458c700000000)), 3402823e+32DF)
+	|| CHECK (testu32 (UINT128_MAX), 3402824e+32DF))
+      __builtin_abort ();
+  }
+  {
+    _Decimal128 a, b;
+    if (CHECK (tests128 (0LL), 0.DL)
+	|| CHECK (tests128 (7LL), 7.DL)
+	|| CHECK (tests128 (-42LL), -42.DL)
+	|| CHECK (tests128 (-777777777LL), -777777777.DL)
+	|| CHECK (tests128 (-12345678912345LL), -12345678912345.DL)
+	|| CHECK (tests128 (123456789123456789LL), 123456789123456789.DL)
+	|| CHECK (tests128 (C (0x2835cd9, 0xd1a22ada09c71c71)), 777777777777777777777777777.DL)
+	|| CHECK (tests128 (C (0x1ed09bead87c0, 0x378d8e63fa0a1f00)), 9999999999999999999999999900000000.DL)
+	|| CHECK (tests128 (-C (0x1ed09bead87c0, 0x378d8e63ffffffff)), -9999999999999999999999999999999999.DL)
+	|| CHECK (tests128 (-C (0x13426172c74d82, 0x2b878fe7fffffffa)), -9999999999999999999999999999999999.e+1DL)
+	|| CHECK (tests128 (C (0x13426172c74d82, 0x2b878fe7fffffffb)), 1000000000000000000000000000000000.e+2DL)
+	|| CHECK (tests128 (C (0xc097ce7bc90715, 0xb34b9f0fffffff9c)), 9999999999999999999999999999999999.e+2DL)
+	|| CHECK (tests128 (C (0xc097ce7bc90715, 0xb34b9f0fffffffcd)), 9999999999999999999999999999999999.e+2DL)
+	|| CHECK (tests128 (-C (0x785ee10d5da46d9, 0x00f4369ffffffc18)), -9999999999999999999999999999999999.e+3DL)
+	|| CHECK (tests128 (C (0x785ee10d5da46d9, 0x00f4369ffffffe0b)), 9999999999999999999999999999999999.e+3DL)
+	|| CHECK (tests128 (C (0x7fffffffffffffff, 0xffffffffffffe9a0)), 1701411834604692317316873037158841.e+5DL)
+	|| CHECK (tests128 (INT128_MAX), 1701411834604692317316873037158841.e+5DL)
+	|| CHECK (tests128 (-INT128_MAX - 1), -1701411834604692317316873037158841.e+5DL))
+      __builtin_abort ();
+    if (CHECK (testu128 (0ULL), 0.DL)
+	|| CHECK (testu128 (7ULL), 7.DL)
+	|| CHECK (testu128 (42ULL), 42.DL)
+	|| CHECK (testu128 (777777777ULL), 777777777.DL)
+	|| CHECK (testu128 (UC (0x1431e0fae, 0x6d7217ca9ffffc18)), 99999999999999999999999999000.DL)
+	|| CHECK (testu128 (UC (0xc097ce7bc90715, 0xb34b9f0fffffff9c)), 9999999999999999999999999999999999.e+2DL)
+	|| CHECK (testu128 (UC (0x785ee10d5da46d9, 0x00f4369ffffffc18)), 9999999999999999999999999999999999.e+3DL)
+	|| CHECK (testu128 (UC (0x4b3b4ca85a86c47a, 0x098a223fffffec77)), 9999999999999999999999999999999999.e+4DL)
+	|| CHECK (testu128 (UC (0xffffffffffffffff, 0xffffffffffffd340)), 3402823669209384634633746074317682.e+5DL)
+	|| CHECK (testu128 (UINT128_MAX), 3402823669209384634633746074317682.e+5DL))
+      __builtin_abort ();
+  }
+}

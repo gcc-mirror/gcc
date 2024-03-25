@@ -1,4 +1,8 @@
-main ()
+void abort (void);
+void exit (int);
+
+int
+main (void)
 {
   union {
     double d;

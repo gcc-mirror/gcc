@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -w" } */
+/* { dg-options "-fpermissive -O2 -w" } */
 
 extern void sincos(double x, double *sinx, double *cosx);
 void apply(void (*f)(double, double *, double *),

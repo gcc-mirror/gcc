@@ -7,7 +7,7 @@ f (a, b, m, n)
   int qn;
   int j;
 
-  abort ();
+  __builtin_abort ();
 
   acc = a[m - 1];
   a += 0;

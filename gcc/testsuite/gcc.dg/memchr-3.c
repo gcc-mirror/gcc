@@ -6,7 +6,7 @@
 typedef __INT8_TYPE__  int8_t;
 typedef __INT32_TYPE__ int32_t;
 
-extern void* memchr (const void*, int, long); /* { dg-warning "-Wbuiltin-declaration-mismatch" "" { target llp64 } } */
+extern void* memchr (const void*, int, long); /* { dg-warning "-Wbuiltin-declaration-mismatch" "" { target { llp64 || avr-*-* } } } */
 
 struct SX
 {

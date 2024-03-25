@@ -1,8 +1,7 @@
 /* { dg-do compile } */
 
-/* No special options--in particular, turn off the default
-   -pedantic-errors option.  */
-/* { dg-options "" } */
+/* Also turn off the default -pedantic-errors option.  */
+/* { dg-options "-fpermissive" } */
 
 /* When not using -fplan9-extensions, we don't support automatic
    conversion of pointer types, and we don't support referring to a

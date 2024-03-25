@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long val = 0x5e000000;
 
 long
@@ -27,7 +30,8 @@ f4 ()
   f3 (v);
 }
 
-main ()
+int
+main (void)
 {
   f4 ();
   if (val != 0x5e000132)

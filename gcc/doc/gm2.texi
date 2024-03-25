@@ -1,6 +1,6 @@
 \input texinfo
 @c -*-texinfo-*-
-@c Copyright (C) 2001-2023 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2024 Free Software Foundation, Inc.
 @c This is part of the GM2 manual.
 
 @c User level documentation for GNU Modula-2
@@ -15,7 +15,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-gm2 1999-2023
+@set copyrights-gm2 1999-2024
 
 @copying
 @c man begin COPYRIGHT

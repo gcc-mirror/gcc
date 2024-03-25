@@ -172,7 +172,7 @@ extern int    __gnat_open_new_temp		   (char *, int);
 extern int    __gnat_mkdir			   (char *, int);
 extern int    __gnat_stat			   (char *,
 						    GNAT_STRUCT_STAT *);
-extern int    __gnat_unlink                        (char *);
+extern int    __gnat_unlink                        (char *, int encoding);
 extern int    __gnat_rename                        (char *, char *);
 extern int    __gnat_chdir                         (char *);
 extern int    __gnat_rmdir                         (char *);

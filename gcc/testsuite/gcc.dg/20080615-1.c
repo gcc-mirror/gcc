@@ -1,5 +1,5 @@
 /* { dg-do compile }  */
-/* { dg-options "-w -O2" } */
+/* { dg-options "-w -fpermissive -O2" } */
 
 static int *see_bb_splay_ar = ((void *) 0);
 static void

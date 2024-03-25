@@ -289,8 +289,6 @@ package body Gen_IL.Internals is
             return "Has_SP_Choice";
          when Ignore_SPARK_Mode_Pragmas =>
             return "Ignore_SPARK_Mode_Pragmas";
-         when Is_Constr_Subt_For_UN_Aliased =>
-            return "Is_Constr_Subt_For_UN_Aliased";
          when Is_CPP_Class =>
             return "Is_CPP_Class";
          when Is_CUDA_Kernel =>

@@ -1,5 +1,8 @@
 /* { dg-require-effective-target trampolines } */
 
+void abort (void);
+void exit (int);
+
 extern long foo (long, long, long (*) (long, long));
 extern long use (long (*) (long, long), long, long);
 

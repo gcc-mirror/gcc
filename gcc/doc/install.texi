@@ -40,7 +40,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -64,7 +64,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988-2023 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2024 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -157,10 +157,6 @@ package-specific installation instructions.
 @end ifhtml
 We recommend you browse the entire generic installation instructions before
 you proceed.
-
-Lists of successful builds for released versions of GCC are
-available at @uref{https://gcc.gnu.org/buildstat.html}.
-These lists are updated as new information becomes available.
 
 The installation procedure itself is broken into five steps.
 
@@ -477,6 +473,17 @@ is shown below:
 @code{sys} and @code{time}.
 @end table
 
+@item GNU gettext
+
+Necessary to build GCC with internationalization support via
+@option{--enable-nls}.  It can be downloaded from
+@uref{https://gnu.org/s/gettext/}.  If a GNU gettext distribution is
+found in a subdirectory of your GCC sources named @file{gettext}, it
+will be built together with GCC, unless present in the system (either in
+libc or as a stand-alone library).
+
+The in-tree configuration requires GNU gettext version 0.22 or later.
+
 @end table
 
 @heading Tools/packages necessary for modifying GCC
@@ -617,9 +624,9 @@ HTTPS as tarballs compressed with @command{gzip} or @command{bzip2}.
 Please refer to the @uref{https://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
-The source distribution includes the C, C++, Objective-C, Fortran,
-and Ada (in the case of GCC 3.1 and later) compilers, as well as
-runtime libraries for C++, Objective-C, and Fortran.
+The source distribution includes the Ada, C, C++, Objective-C, D (GCC 9
+and later), Fortran, Go, and Modula-2 (GCC 13 and later) compilers, as
+well as runtime libraries for C++, Objective-C, and Fortran.
 For previous versions these were downloadable as separate components such
 as the core GCC distribution, which included the C language front end and
 shared components, and language-specific distributions including the
@@ -633,14 +640,14 @@ components of the binutils you intend to build alongside the compiler
 (@file{bfd}, @file{binutils}, @file{gas}, @file{gprof}, @file{ld},
 @file{opcodes}, @dots{}) to the directory containing the GCC sources.
 
-Likewise the GMP, MPFR and MPC libraries can be automatically built
-together with GCC.  You may simply run the
+Likewise the GMP, MPFR, MPC and Gettext libraries can be automatically
+built together with GCC.  You may simply run the
 @command{contrib/download_prerequisites} script in the GCC source directory
 to set up everything.
-Otherwise unpack the GMP, MPFR and/or MPC source
+Otherwise unpack the GMP, MPFR, MPC and/or Gettext source
 distributions in the directory containing the GCC sources and rename
-their directories to @file{gmp}, @file{mpfr} and @file{mpc},
-respectively (or use symbolic links with the same name).
+their directories to @file{gmp}, @file{mpfr}, @file{mpc} and
+@file{gettext}, respectively (or use symbolic links with the same name).
 
 @html
 <hr />
@@ -686,9 +693,8 @@ phases.
 First, we @strong{highly} recommend that GCC be built into a
 separate directory from the sources which does @strong{not} reside
 within the source tree.  This is how we generally build GCC; building
-where @var{srcdir} == @var{objdir} should still work, but doesn't
-get extensive testing; building where @var{objdir} is a subdirectory
-of @var{srcdir} is unsupported.
+where @var{objdir} is a subdirectory of @var{srcdir} should work as well;
+building where @var{objdir} == @var{srcdir} is unsupported.
 
 If you have previously built GCC in the same directory for a
 different target machine, do @samp{make distclean} to delete all files
@@ -1236,8 +1242,8 @@ sysv, aix.
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for aarch64*-*-*, arm*-*-*, loongarch*-*-*, riscv*-*-*, sh*-*-* and
-x86-64-*-linux*.  The accepted values and meaning for each target is given
+for aarch64*-*-*, amdgcn*-*-*, arm*-*-*, loongarch*-*-*, riscv*-*-*, sh*-*-*
+and x86-64-*-linux*.  The accepted values and meaning for each target is given
 below.
 
 @table @code
@@ -1249,6 +1255,15 @@ default run-time library will be built.  If @var{list} is
 @code{default} or --with-multilib-list= is not specified, then the
 default set of libraries is selected based on the value of
 @option{--target}.
+
+@item amdgcn*-*-*
+@var{list} is a comma separated list of ISA names (allowed values: @code{fiji},
+@code{gfx900}, @code{gfx906}, @code{gfx908}, @code{gfx90a}). It ought not
+include the name of the default ISA, specified via @option{--with-arch}.  If
+@var{list} is empty, then there will be no multilibs and only the default
+run-time library will be built.  If @var{list} is @code{default} or
+@option{--with-multilib-list=} is not specified, then the default set of
+libraries is selected.
 
 @item arm*-*-*
 @var{list} is a comma separated list of @code{aprofile} and
@@ -1847,6 +1862,12 @@ particularly useful if you intend to use several versions of GCC in
 parallel.  The default is @samp{yes} for @samp{libada}, and @samp{no} for
 the remaining libraries.
 
+@item --with-darwin-extra-rpath
+This is provided to allow distributions to add a single additional
+runpath on Darwin / macOS systems. This allows for cases where the
+installed GCC library directories are then symlinked to a common
+directory outside of the GCC installation.
+
 @item @anchor{WithAixSoname}--with-aix-soname=@samp{aix}, @samp{svr4} or @samp{both}
 Traditional AIX shared library versioning (versioned @code{Shared Object}
 files as members of unversioned @code{Archive Library} files named
@@ -2204,9 +2225,56 @@ which lets GCC output diagnostics in languages other than American
 English.  Native Language Support is enabled by default if not doing a
 canadian cross build.  The @option{--disable-nls} option disables NLS@.
 
+Note that this functionality requires either libintl (provided by GNU
+gettext) or C standard library that contains support for gettext (such
+as the GNU C Library).
+@xref{with-included-gettext,,--with-included-gettext} for more
+information on the conditions required to get gettext support.
+
+@item --with-libintl-prefix=@var{dir}
+@itemx --without-libintl-prefix
+Searches for libintl in @file{@var{dir}/include} and
+@file{@var{dir}/lib}, or disables manual searching for it, letting the
+linker handle it.
+
+@item --with-libintl-type=@var{type}
+Specifies the type of library to search for when looking for libintl.
+@var{type} can be one of @code{auto}, @code{static} or @code{shared}.
+
+@anchor{with-included-gettext}
 @item --with-included-gettext
-If NLS is enabled, the @option{--with-included-gettext} option causes the build
-procedure to prefer its copy of GNU @command{gettext}.
+Only available if @file{gettext} is present in the source tree.
+
+Forces the gettext tree to be configured to build and use a new static
+libintl, overriding the system libintl.  Results in GCC being built
+against the newly built libintl rather than the system libintl.
+
+The build system makes a somewhat complicated choice when picking where
+to get gettext routines from.  The following table is a summary of the
+possible options:
+
+@c Thanks for summary, Bruno!
+@multitable @columnfractions .12 .12 .12 .2 .44
+@headitem GNU gettext present in sources
+@tab libintl installed on the system
+@tab @code{gettext} present in libc
+@tab @code{--with-included-gettext}
+@tab Effects on localization
+
+@item No @tab No  @tab No  @tab (ignored) @tab No localization
+@item No @tab No  @tab Yes @tab (ignored) @tab Localized, libc gettext
+@item No @tab Yes @tab No  @tab (ignored) @tab Localized, libintl
+@item No @tab Yes @tab Yes @tab (ignored) @tab Localized, libintl
+
+@item Yes @tab No  @tab No  @tab No  @tab Localized, new, static libintl
+@item Yes @tab No  @tab No  @tab Yes @tab Localized, new, static libintl
+@item Yes @tab No  @tab Yes @tab No  @tab Localized, libc gettext
+@item Yes @tab No  @tab Yes @tab Yes @tab Localized, new, static libintl
+@item Yes @tab Yes @tab No  @tab No  @tab Localized, libintl
+@item Yes @tab Yes @tab No  @tab Yes @tab Localized, new, static libintl
+@item Yes @tab Yes @tab Yes @tab No  @tab Localized, libintl
+@item Yes @tab Yes @tab Yes @tab Yes @tab Localized, new, static libintl
+@end multitable
 
 @item --with-catgets
 If NLS is enabled, and if the host lacks @code{gettext} but has the
@@ -3214,9 +3282,6 @@ Before you install GCC, we encourage you to run the testsuites and to
 compare your results with results from a similar configuration that have
 been submitted to the
 @uref{https://gcc.gnu.org/ml/gcc-testresults/,,gcc-testresults mailing list}.
-Some of these archived results are linked from the build status lists
-at @uref{https://gcc.gnu.org/buildstat.html}, although not everyone who
-reports a successful build runs the testsuites and submits the results.
 This step is optional and may require you to download additional software,
 but it can give you confidence in your new GCC installation or point out
 problems before you install and start using your new GCC@.
@@ -3521,51 +3586,7 @@ Alternatively, there are prebuilt online versions of the manuals for
 released versions of GCC on
 @uref{https://gcc.gnu.org/onlinedocs/,,the GCC web site}.
 
-If you are bootstrapping a released version of GCC then please
-quickly review the build status page for your release, available from
-@uref{https://gcc.gnu.org/buildstat.html}.
-If your system is not listed for the version of GCC that you built,
-send a note to
-@email{gcc@@gcc.gnu.org} indicating
-that you successfully built and installed GCC@.
-Include the following information:
-
-@itemize @bullet
-@item
-Output from running @file{@var{srcdir}/config.guess}.  Do not send
-that file itself, just the one-line output from running it.
-
-@item
-The output of @samp{gcc -v} for your newly installed @command{gcc}.
-This tells us which version of GCC you built and the options you passed to
-configure.
-
-@item
-If the build was for GNU/Linux, also include:
-@itemize @bullet
-@item
-The distribution name and version (e.g., Red Hat 7.1 or Debian 2.2.3);
-this information should be available from @file{/etc/issue}.
-
-@item
-The version of the Linux kernel, available from @samp{uname --version}
-or @samp{uname -a}.
-
-@item
-The version of glibc you used; for RPM-based systems like Red Hat,
-Mandrake, and SuSE type @samp{rpm -q glibc} to get the glibc version,
-and on systems like Debian and Progeny use @samp{dpkg -l libc6}.
-@end itemize
-For other systems, you can include similar information if you think it is
-relevant.
-
-@item
-Any other information that you think would be useful to people building
-GCC on the same configuration.  The new entry in the build status list
-will include a link to the archived copy of your message.
-@end itemize
-
-We'd also like to know if the
+If you built GCC yourself we would like to know if the
 @ifnothtml
 @ref{Specific, host/target specific installation notes}
 @end ifnothtml
@@ -3720,8 +3741,6 @@ information have to.
 @uref{#h8300-hms,,h8300-hms}
 @item
 @uref{#hppa-hp-hpux,,hppa*-hp-hpux*}
-@item
-@uref{#hppa-hp-hpux10,,hppa*-hp-hpux10}
 @item
 @uref{#hppa-hp-hpux11,,hppa*-hp-hpux11}
 @item
@@ -3918,9 +3937,15 @@ Instead of GNU Binutils, you will need to install LLVM 13.0.1, or later, and cop
 Use Newlib (4.3.0 or newer).
 
 To run the binaries, install the HSA Runtime from the
-@uref{https://rocm.github.io,,ROCm Platform}, and use
+@uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
 @file{libexec/gcc/amdhsa-amdhsa/@var{version}/gcn-run} to launch them
 on the GPU.
+
+To enable support for GCN3 Fiji devices (gfx803), GCC has to be configured with
+@option{--with-arch=@code{fiji}} or
+@option{--with-multilib-list=@code{fiji},...}.  Note that support for Fiji
+devices has been removed in ROCm 4.0 and support in LLVM is deprecated and will
+be removed in LLVM 18.
 
 @html
 <hr />
@@ -4047,14 +4072,6 @@ This configuration is intended for embedded systems.
 @end html
 @anchor{x-x-freebsd}
 @heading *-*-freebsd*
-In order to better utilize FreeBSD base system functionality and match
-the configuration of the system compiler, GCC 4.5 and above as well as
-GCC 4.4 past 2010-06-20 leverage SSP support in libc (which is present
-on FreeBSD 7 or later) and the use of @code{__cxa_atexit} by default
-(on FreeBSD 6 or later).  The use of @code{dl_iterate_phdr} inside
-@file{libgcc_s.so.1} and boehm-gc (on FreeBSD 7 or later) is enabled
-by GCC 4.5 and above.
-
 We support FreeBSD using the ELF file format with DWARF 2 debugging
 for all CPU architectures.  There are
 no known issues with mixing object files and libraries with different
@@ -4102,29 +4119,12 @@ longer a multiple of 2 bytes.
 @end html
 @anchor{hppa-hp-hpux}
 @heading hppa*-hp-hpux*
-Support for HP-UX version 9 and older was discontinued in GCC 3.4.
-
-We require using gas/binutils on all hppa platforms.  Version 2.19 or
+We require using gas on all hppa platforms.  Version 2.19 or
 later is recommended.
 
 It may be helpful to configure GCC with the
 @uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}} and
 @option{--with-as=@dots{}} options to ensure that GCC can find GAS@.
-
-The HP assembler should not be used with GCC.  It is rarely tested and may
-not work.  It shouldn't be used with any languages other than C due to its
-many limitations.
-
-Specifically, @option{-g} does not work (HP-UX uses a peculiar debugging
-format which GCC does not know about).  It also inserts timestamps
-into each object file it creates, causing the 3-stage comparison test to
-fail during a bootstrap.  You should be able to continue by saying
-@samp{make all-host all-target} after getting the failure from @samp{make}.
-
-Various GCC features are not supported.  For example, it does not support weak
-symbols or alias definitions.  As a result, explicit template instantiations
-are required when using C++.  This makes it difficult if not impossible to
-build many C++ applications.
 
 There are two default scheduling models for instructions.  These are
 PROCESSOR_7100LC and PROCESSOR_8000.  They are selected from the pa-risc
@@ -4153,26 +4153,8 @@ More specific information to @samp{hppa*-hp-hpux*} targets follows.
 @html
 <hr />
 @end html
-@anchor{hppa-hp-hpux10}
-@heading hppa*-hp-hpux10
-For hpux10.20, we @emph{highly} recommend you pick up the latest sed patch
-@code{PHCO_19798} from HP@.
-
-The C++ ABI has changed incompatibly in GCC 4.0.  COMDAT subspaces are
-used for one-only code and data.  This resolves many of the previous
-problems in using C++ on this target.  However, the ABI is not compatible
-with the one implemented under HP-UX 11 using secondary definitions.
-
-@html
-<hr />
-@end html
 @anchor{hppa-hp-hpux11}
 @heading hppa*-hp-hpux11
-GCC 3.0 and up support HP-UX 11.  GCC 2.95.x is not supported and cannot
-be used to compile GCC 3.0 and up.
-
-The libffi library haven't been ported to 64-bit HP-UX@ and doesn't build.
-
 Refer to @uref{binaries.html,,binaries} for information about obtaining
 precompiled GCC binaries for HP-UX@.  Precompiled binaries must be obtained
 to build the Ada language as it cannot be bootstrapped using C@.  Ada is
@@ -4250,9 +4232,7 @@ options, including program core dumps.  Binutils 2.14 corrects a
 problem on the 64-bit port resulting from HP's non-standard use of
 the .init and .fini sections for array initializers and finalizers.
 
-Although the HP and GNU linkers are both supported for the
-@samp{hppa64-hp-hpux11*} target, it is strongly recommended that the
-HP linker be used for link editing on this target.
+Only the HP linker is supported for the @samp{hppa64-hp-hpux11*} target.
 
 At this time, the GNU linker does not support the creation of long
 branch stubs.  As a result, it cannot successfully link binaries
@@ -4709,7 +4689,7 @@ Andes NDS32 target in big endian mode.
 Nvidia PTX target.
 
 Instead of GNU binutils, you will need to install
-@uref{https://github.com/MentorEmbedded/nvptx-tools/,,nvptx-tools}.
+@uref{https://github.com/SourceryTools/nvptx-tools,,nvptx-tools}.
 Tell GCC where to find it:
 @option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
 

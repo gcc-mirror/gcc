@@ -1,5 +1,5 @@
 /* Definitions and declarations for stor-layout.cc.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,7 +36,6 @@ extern void place_field (record_layout_info, tree);
 extern void compute_record_mode (tree);
 extern void finish_bitfield_layout (tree);
 extern void finish_record_layout (record_layout_info, int);
-extern unsigned int element_precision (const_tree);
 extern void finalize_size_functions (void);
 extern void fixup_unsigned_type (tree);
 extern void initialize_sizetypes (void);

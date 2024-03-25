@@ -1,6 +1,7 @@
 ! { dg-do run }
 ! { dg-additional-sources bind_c_vars_driver.c }
 module bind_c_vars
+! { dg-additional-options "-fcommon" { target hppa*-*-hpux* } }
   use, intrinsic :: iso_c_binding
   implicit none
 

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_double } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" { target riscv*-*-* } } */
 
 typedef struct { double re, im; } dcmlx_t;
 typedef struct { double re[4], im[4]; } dcmlx4_t;

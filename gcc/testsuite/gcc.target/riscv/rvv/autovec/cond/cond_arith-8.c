@@ -77,3 +77,4 @@ TEST_ALL
 /* { dg-final { scan-assembler-times {vfsub\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 22 } } */
 /* { dg-final { scan-assembler-times {vfmul\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 22 } } */
 /* { dg-final { scan-assembler-times {vfdiv\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 22 } } */
+/* { dg-final { scan-assembler-times {\tvf?merge\.v[vxi]m\t} 14 } } */

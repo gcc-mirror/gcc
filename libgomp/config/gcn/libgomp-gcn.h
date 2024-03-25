@@ -1,4 +1,4 @@
-/* Copyright (C) 2022-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <tobias@codesourcery.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -32,6 +32,12 @@
 
 #define DEFAULT_GCN_STACK_SIZE (32*1024)
 #define DEFAULT_TEAM_ARENA_SIZE (64*1024)
+
+/* These define the LDS location of data needed by OpenMP.  */
+#define TEAM_ARENA_START 16  /* LDS offset of free pointer.  */
+#define TEAM_ARENA_FREE  24  /* LDS offset of free pointer.  */
+#define TEAM_ARENA_END   32  /* LDS offset of end pointer.  */
+#define GCN_LOWLAT_HEAP  40  /* LDS offset of the OpenMP low-latency heap.  */
 
 struct heap
 {

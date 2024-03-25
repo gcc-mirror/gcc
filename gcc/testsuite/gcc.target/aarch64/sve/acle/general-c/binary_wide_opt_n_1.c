@@ -27,8 +27,8 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8,
   svaddwb (s16, s8);
   svaddwb (f32, f16); /* { dg-error {'svaddwb' has no form that takes 'svfloat32_t' arguments} } */
   svaddwb (f16, f32); /* { dg-error {'svaddwb' has no form that takes 'svfloat16_t' arguments} } */
-  svaddwb (0, u32); /* { dg-error {passing 'int' to argument 1 of 'svaddwb', which expects an SVE vector type} } */
-  svaddwb (0, u64); /* { dg-error {passing 'int' to argument 1 of 'svaddwb', which expects an SVE vector type} } */
+  svaddwb (0, u32); /* { dg-error {passing 'int' to argument 1 of 'svaddwb', which expects an SVE type rather than a scalar} } */
+  svaddwb (0, u64); /* { dg-error {passing 'int' to argument 1 of 'svaddwb', which expects an SVE type rather than a scalar} } */
   svaddwb (u8, 0); /* { dg-error {'svaddwb' has no form that takes 'svuint8_t' arguments} } */
   svaddwb (u16, 0);
   svaddwb (u32, 0);

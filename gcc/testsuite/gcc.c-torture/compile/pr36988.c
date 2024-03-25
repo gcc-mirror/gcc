@@ -1,6 +1,7 @@
 typedef struct {
     unsigned char mbxCommand;
 } MAILBOX_t;
+void __writel(unsigned int);
 void lpfc_sli_brdrestart(void)
 {
   volatile unsigned int word0;

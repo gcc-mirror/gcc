@@ -15,6 +15,9 @@ AC_DEFUN([DRUNTIME_CPU_SOURCES],
                ;;
       arm*)    druntime_target_cpu_parsed="arm"
                ;;
+      loongarch*)
+               druntime_target_cpu_parsed="loongarch"
+               ;;
       mips*)   druntime_target_cpu_parsed="mips"
                ;;
       powerpc*)
@@ -34,6 +37,8 @@ AC_DEFUN([DRUNTIME_CPU_SOURCES],
                  [test "$druntime_target_cpu_parsed" = "aarch64"])
   AM_CONDITIONAL([DRUNTIME_CPU_ARM],
                  [test "$druntime_target_cpu_parsed" = "arm"])
+  AM_CONDITIONAL([DRUNTIME_CPU_LOONGARCH],
+                 [test "$druntime_target_cpu_parsed" = "loongarch"])
   AM_CONDITIONAL([DRUNTIME_CPU_MIPS],
                  [test "$druntime_target_cpu_parsed" = "mips"])
   AM_CONDITIONAL([DRUNTIME_CPU_POWERPC],

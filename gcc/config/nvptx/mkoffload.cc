@@ -1,6 +1,6 @@
 /* Offload image generation tool for PTX.
 
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
    Contributed by Nathan Sidwell <nathan@codesourcery.com> and
    Bernd Schmidt <bernds@codesourcery.com>.
@@ -51,6 +51,7 @@ struct id_map
 };
 
 static id_map *func_ids, **funcs_tail = &func_ids;
+static id_map *ind_func_ids, **ind_funcs_tail = &ind_func_ids;
 static id_map *var_ids, **vars_tail = &var_ids;
 
 /* Files to unlink.  */
@@ -302,6 +303,11 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 		      output_fn_ptr = true;
 		      record_id (input + i + 9, &funcs_tail);
 		    }
+		  else if (startswith (input + i, "IND_FUNC_MAP "))
+		    {
+		      output_fn_ptr = true;
+		      record_id (input + i + 13, &ind_funcs_tail);
+		    }
 		  else
 		    abort ();
 		  /* Skip to next line. */
@@ -422,6 +428,77 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
       fprintf (out, "};\\n\";\n\n");
     }
 
+  if (ind_func_ids)
+    {
+      const char needle[] = "// BEGIN GLOBAL FUNCTION DECL: ";
+
+      fprintf (out, "static const char ptx_code_%u[] =\n", obj_count++);
+      fprintf (out, "\t\".version ");
+      for (size_t i = 0; version[i] != '\0' && version[i] != '\n'; i++)
+	fputc (version[i], out);
+      fprintf (out, "\"\n\t\".target sm_");
+      for (size_t i = 0; sm_ver[i] != '\0' && sm_ver[i] != '\n'; i++)
+	fputc (sm_ver[i], out);
+      fprintf (out, "\"\n\t\".file 2 \\\"<dummy>\\\"\"\n");
+
+      /* WORKAROUND - see PR 108098
+	 It seems as if older CUDA JIT compiler optimizes the function pointers
+	 in offload_func_table to NULL, which can be prevented by adding a
+	 dummy procedure. With CUDA 11.1, it seems to work fine without
+	 workaround while CUDA 10.2 as some ancient version have need the
+	 workaround. Assuming CUDA 11.0 fixes it, emitting it could be
+	 restricted to 'if (sm_ver2[0] < 8 && version2[0] < 7)' as sm_80 and
+	 PTX ISA 7.0 are new in CUDA 11.0; for 11.1 it would be sm_86 and
+	 PTX ISA 7.1.  */
+      fprintf (out, "\n\t\".func __dummy$func2 ( );\"\n");
+      fprintf (out, "\t\".func __dummy$func2 ( )\"\n");
+      fprintf (out, "\t\"{\"\n");
+      fprintf (out, "\t\"}\"\n");
+
+      size_t fidx = 0;
+      for (id = ind_func_ids; id; id = id->next)
+	{
+	  fprintf (out, "\t\".extern ");
+	  const char *p = input + file_idx[fidx];
+	  while (true)
+	    {
+	      p = strstr (p, needle);
+	      if (!p)
+		{
+		  fidx++;
+		  if (fidx >= file_cnt)
+		    break;
+		  p = input + file_idx[fidx];
+		  continue;
+		}
+	      p += strlen (needle);
+	      if (!startswith (p, id->ptx_name))
+		continue;
+	      p += strlen (id->ptx_name);
+	      if (*p != '\n')
+		continue;
+	      p++;
+	      /* Skip over any directives.  */
+	      while (!startswith (p, ".func"))
+		while (*p++ != ' ');
+	      for (; *p != '\0' && *p != '\n'; p++)
+		fputc (*p, out);
+	      break;
+	    }
+	  fprintf (out, "\"\n");
+	  if (fidx == file_cnt)
+	    fatal_error (input_location,
+			 "Cannot find function declaration for %qs",
+			 id->ptx_name);
+	}
+
+      fprintf (out, "\t\".visible .global .align 8 .u64 "
+		    "$offload_ind_func_table[] = {");
+      for (comma = "", id = ind_func_ids; id; comma = ",", id = id->next)
+	fprintf (out, "%s\"\n\t\t\"%s", comma, id->ptx_name);
+      fprintf (out, "};\\n\";\n\n");
+    }
+
   /* Dump out array of pointers to ptx object strings.  */
   fprintf (out, "static const struct ptx_obj {\n"
 	   "  const char *code;\n"
@@ -447,6 +524,12 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	     id->dim ? id->dim : "");
   fprintf (out, "\n};\n\n");
 
+  /* Dump out indirect function idents.  */
+  fprintf (out, "static const char *const ind_func_mappings[] = {");
+  for (comma = "", id = ind_func_ids; id; comma = ",", id = id->next)
+    fprintf (out, "%s\n\t\"%s\"", comma, id->ptx_name);
+  fprintf (out, "\n};\n\n");
+
   fprintf (out,
 	   "static const struct nvptx_data {\n"
 	   "  uintptr_t omp_requires_mask;\n"
@@ -456,12 +539,14 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	   "  unsigned var_num;\n"
 	   "  const struct nvptx_fn *fn_names;\n"
 	   "  unsigned fn_num;\n"
+	   "  unsigned ind_fn_num;\n"
 	   "} nvptx_data = {\n"
 	   "  %d, ptx_objs, sizeof (ptx_objs) / sizeof (ptx_objs[0]),\n"
 	   "  var_mappings,"
 	   "  sizeof (var_mappings) / sizeof (var_mappings[0]),\n"
 	   "  func_mappings,"
-	   "  sizeof (func_mappings) / sizeof (func_mappings[0])\n"
+	   "  sizeof (func_mappings) / sizeof (func_mappings[0]),\n"
+	   "  sizeof (ind_func_mappings) / sizeof (ind_func_mappings[0])\n"
 	   "};\n\n", omp_requires);
 
   fprintf (out, "#ifdef __cplusplus\n"

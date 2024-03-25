@@ -1,5 +1,5 @@
 /* A state machine for detecting misuses of <stdio.h>'s FILE * API.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "options.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -176,14 +175,12 @@ public:
     return OPT_Wanalyzer_double_fclose;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     /* CWE-1341: Multiple Releases of Same Resource or Handle.  */
-    m.add_cwe (1341);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "double %<fclose%> of FILE %qE",
-			 m_arg);
+    ctxt.add_cwe (1341);
+    return ctxt.warn ("double %<fclose%> of FILE %qE",
+		      m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -224,19 +221,15 @@ public:
     return OPT_Wanalyzer_file_leak;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     /* CWE-775: "Missing Release of File Descriptor or Handle after
        Effective Lifetime". */
-    m.add_cwe (775);
+    ctxt.add_cwe (775);
     if (m_arg)
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "leak of FILE %qE",
-			   m_arg);
+      return ctxt.warn ("leak of FILE %qE", m_arg);
     else
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "leak of FILE");
+      return ctxt.warn ("leak of FILE");
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -277,13 +270,13 @@ private:
 /* fileptr_state_machine's ctor.  */
 
 fileptr_state_machine::fileptr_state_machine (logger *logger)
-: state_machine ("file", logger)
+: state_machine ("file", logger),
+  m_unchecked (add_state ("unchecked")),
+  m_null (add_state ("null")),
+  m_nonnull (add_state ("nonnull")),
+  m_closed (add_state ("closed")),
+  m_stop (add_state ("stop"))
 {
-  m_unchecked = add_state ("unchecked");
-  m_null = add_state ("null");
-  m_nonnull = add_state ("nonnull");
-  m_closed = add_state ("closed");
-  m_stop = add_state ("stop");
 }
 
 /* Get a set of functions that are known to take a FILE * that must be open,

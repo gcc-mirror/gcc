@@ -1,5 +1,5 @@
 /* Intrinsic function resolution.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -2363,7 +2363,15 @@ gfc_resolve_repeat (gfc_expr *f, gfc_expr *string,
     }
 
   if (tmp)
-    f->ts.u.cl->length = gfc_multiply (tmp, gfc_copy_expr (ncopies));
+    {
+      /* Force-convert to gfc_charlen_int_kind before gfc_multiply.  */
+      gfc_expr *e = gfc_copy_expr (ncopies);
+      gfc_typespec ts = tmp->ts;
+      ts.kind = gfc_charlen_int_kind;
+      gfc_convert_type_warn (e, &ts, 2, 0);
+      gfc_convert_type_warn (tmp, &ts, 2, 0);
+      f->ts.u.cl->length = gfc_multiply (tmp, e);
+    }
 }
 
 

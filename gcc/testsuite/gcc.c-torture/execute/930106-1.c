@@ -1,4 +1,5 @@
 /* { dg-add-options stack_size } */
+/* { dg-additional-options "-std=gnu89" } */
 
 #if defined (STACK_SIZE)
 #define DUMMY_SIZE 9

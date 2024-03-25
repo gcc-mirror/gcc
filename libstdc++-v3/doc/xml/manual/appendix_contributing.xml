@@ -887,7 +887,7 @@ indicate a place that may require attention for multi-thread safety.
 
       Type names and template formal-argument names: <literal>_[A-Z][^_].*</literal>
 
-      Examples:  <code>_Helper  _CharT  _N</code>
+      Examples:  <code>_Helper  _CharT  _Nm</code>
 
       Member data and function names: <literal>_M_.*</literal>
 
@@ -899,7 +899,7 @@ indicate a place that may require attention for multi-thread safety.
 
       Don't use names in the same scope that differ only in the prefix,
       e.g. _S_top and _M_top. See <link linkend="coding_style.bad_identifiers">BADNAMES</link> for a list of forbidden names.
-      (The most tempting of these seem to be and "_T" and "__sz".)
+      (The most tempting of these seem to be and "_T" and "_N".)
 
       Names must never have "__" internally; it would confuse name
       unmanglers on some targets. Also, never use "__[0-9]", same reason.

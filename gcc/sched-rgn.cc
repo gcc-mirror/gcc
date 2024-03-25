@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -3198,20 +3198,13 @@ schedule_region (int rgn)
       current_sched_info->queue_must_finish_empty = current_nr_blocks == 1;
 
       curr_bb = first_bb;
-      if (dbg_cnt (sched_block))
-        {
-	  int saved_last_basic_block = last_basic_block_for_fn (cfun);
+      int saved_last_basic_block = last_basic_block_for_fn (cfun);
 
-	  schedule_block (&curr_bb, bb_state[first_bb->index]);
-	  gcc_assert (EBB_FIRST_BB (bb) == first_bb);
-	  sched_rgn_n_insns += sched_n_insns;
-	  realloc_bb_state_array (saved_last_basic_block);
-	  save_state_for_fallthru_edge (last_bb, curr_state);
-        }
-      else
-        {
-          sched_rgn_n_insns += rgn_n_insns;
-        }
+      schedule_block (&curr_bb, bb_state[first_bb->index]);
+      gcc_assert (EBB_FIRST_BB (bb) == first_bb);
+      sched_rgn_n_insns += sched_n_insns;
+      realloc_bb_state_array (saved_last_basic_block);
+      save_state_for_fallthru_edge (last_bb, curr_state);
 
       /* Clean up.  */
       if (current_nr_blocks > 1)

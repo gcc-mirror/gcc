@@ -85,6 +85,9 @@
 
 #if defined (__APPLE__)
 #include <unistd.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <TargetConditionals.h>
 #endif
 
 #if defined (__hpux__)
@@ -240,6 +243,7 @@ UINT __gnat_current_ccs_encoding;
 #define DIR_SEPARATOR '\\'
 
 #else
+#include <signal.h>
 #include <utime.h>
 #endif
 
@@ -613,11 +617,18 @@ __gnat_get_file_names_case_sensitive (void)
       else
 	{
 	  /* By default, we suppose filesystems aren't case sensitive on
-	     Windows and Darwin (but they are on arm-darwin).  */
-#if defined (WINNT) || defined (__DJGPP__) \
-  || (defined (__APPLE__) && !(defined (__arm__) || defined (__arm64__)))
+	     Windows or DOS.  */
+#if defined (WINNT) || defined (__DJGPP__)
 	  file_names_case_sensitive_cache = 0;
+#elif defined (__APPLE__)
+	  /* By default, macOS volumes are case-insensitive, iOS
+	     volumes are case-sensitive.  */
+#if TARGET_OS_IOS
+	  file_names_case_sensitive_cache = 1;
 #else
+	  file_names_case_sensitive_cache = 0;
+#endif
+#else /* Neither Windows nor Apple.  */
 	  file_names_case_sensitive_cache = 1;
 #endif
 	}
@@ -747,15 +758,19 @@ __gnat_os_filename (char *filename ATTRIBUTE_UNUSED,
 /* Delete a file.  */
 
 int
-__gnat_unlink (char *path)
+__gnat_unlink (char *path, int encoding ATTRIBUTE_UNUSED)
 {
 #if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (IS_CROSS)
-  {
-    TCHAR wpath[GNAT_MAX_PATH_LEN];
+  TCHAR wpath[GNAT_MAX_PATH_LEN];
 
+  if (encoding == Encoding_Unspecified)
     S2WSC (wpath, path, GNAT_MAX_PATH_LEN);
-    return _tunlink (wpath);
-  }
+  else if (encoding == Encoding_UTF8)
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
+  else
+    S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+
+  return _tunlink (wpath);
 #else
   return unlink (path);
 #endif
@@ -1507,7 +1522,16 @@ extern long long __gnat_file_time(char* name)
     long long ll_time;
   } t_write;
 
-  if (!GetFileAttributesExA(name, GetFileExInfoStandard, &fad)) {
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+  int name_len;
+
+  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  name_len = _tcslen (wname);
+
+  if (name_len > GNAT_MAX_PATH_LEN)
+    return LLONG_MIN;
+
+  if (!GetFileAttributesEx(wname, GetFileExInfoStandard, &fad)) {
     return LLONG_MIN;
   }
 

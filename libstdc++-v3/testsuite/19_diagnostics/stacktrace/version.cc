@@ -1,5 +1,6 @@
 // { dg-do preprocess { target c++23 } }
 // { dg-require-effective-target stacktrace }
+// { dg-add-options no_pch }
 
 #include <version>
 

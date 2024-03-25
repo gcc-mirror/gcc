@@ -1,5 +1,5 @@
 // Implementation of public inline member functions for RTL SSA     -*- C++ -*-
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -215,7 +215,7 @@ set_info::last_nondebug_insn_use () const
 inline use_info *
 set_info::first_any_insn_use () const
 {
-  if (m_first_use->is_in_any_insn ())
+  if (m_first_use && m_first_use->is_in_any_insn ())
     return m_first_use;
   return nullptr;
 }
@@ -916,6 +916,15 @@ function_info::reg_defs (unsigned int regno) const
   return { m_defs[regno + 1], nullptr };
 }
 
+inline bool
+function_info::is_single_dominating_def (const set_info *set) const
+{
+  return (set->is_first_def ()
+	  && set->is_last_def ()
+	  && (!HARD_REGISTER_NUM_P (set->regno ())
+	      || !TEST_HARD_REG_BIT (m_clobbered_by_calls, set->regno ())));
+}
+
 inline set_info *
 function_info::single_dominating_def (unsigned int regno) const
 {
@@ -951,6 +960,18 @@ function_info::add_regno_clobber (obstack_watermark &watermark,
   change.new_defs = new_defs;
   change.move_range = move_range;
   return true;
+}
+
+template<typename T, typename... Ts>
+inline T *
+function_info::change_alloc (obstack_watermark &wm, Ts... args)
+{
+  static_assert (std::is_trivially_destructible<T>::value,
+		 "destructor won't be called");
+  static_assert (alignof (T) <= obstack_alignment,
+		 "too much alignment required");
+  void *addr = XOBNEW (wm, T);
+  return new (addr) T (std::forward<Ts> (args)...);
 }
 
 }

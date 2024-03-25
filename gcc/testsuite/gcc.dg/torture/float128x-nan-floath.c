@@ -1,6 +1,6 @@
 /* Test _Float128x NaNs in <float.h>.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -fsignaling-nans" } */
+/* { dg-options "-std=c23 -fsignaling-nans" } */
 /* { dg-add-options float128x } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target float128x_runtime } */

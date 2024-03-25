@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-2023 Free Software Foundation, Inc.
+// Copyright (C) 1997-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,8 @@
 
 #pragma GCC system_header
 
-#include <bits/c++config.h>
+#define __glibcxx_want_freestanding_cstring
+#include <bits/version.h>
 #include <string.h>
 
 #ifndef _GLIBCXX_CSTRING
@@ -90,7 +91,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::strncmp;
   using ::strncpy;
   using ::strspn;
+#if _GLIBCXX_HOSTED || __cplusplus <= 202302L
   using ::strtok;
+#endif
   using ::strxfrm;
   using ::strchr;
   using ::strpbrk;

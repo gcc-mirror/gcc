@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 
 struct tag {
   int m1;

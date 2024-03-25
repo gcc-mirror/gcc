@@ -1,5 +1,5 @@
 /* Configuration common to all targets running RTEMS. 
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -52,6 +52,8 @@
 "%{qrtems:--start-group -lrtemsbsp -lrtemscpu -latomic -lc -lgcc --end-group}"
 
 #define TARGET_POSIX_IO
+
+#define TARGET_HAVE_LIBATOMIC true
 
 /* Prefer int for int32_t (see stdint-newlib.h).  */
 #undef STDINT_LONG32

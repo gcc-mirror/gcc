@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020-2023 Free Software Foundation, Inc.
+# Copyright (C) 2020-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
-# <http://www.gnu.org/licenses/>.  */
+# <http://www.gnu.org/licenses/>.
 
 import argparse
 import datetime
@@ -37,7 +37,8 @@ IGNORED_COMMITS = (
         '3ab5c8cd03d92bf4ec41e351820349d92fbc40c4',
         '86d8e0c0652ef5236a460b75c25e4f7093cc0651',
         'e4cba49413ca429dc82f6aa2e88129ecb3fdd943',
-        '1957bedf29a1b2cc231972aba680fe80199d5498')
+        '1957bedf29a1b2cc231972aba680fe80199d5498',
+        '040e5b0edbca861196d9e2ea2af5e805769c8d5d')
 
 FORMAT = '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT,

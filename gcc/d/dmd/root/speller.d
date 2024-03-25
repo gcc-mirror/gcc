@@ -42,7 +42,7 @@ private:
 
 import core.stdc.stdlib;
 import core.stdc.string;
-import dmd.common.string : SmallBuffer;
+import dmd.common.smallbuffer : SmallBuffer;
 
 enum isSearchFunction(alias fun) = is(searchFunctionType!fun);
 alias searchFunctionType(alias fun) = typeof(() {int x; return fun("", x);}());

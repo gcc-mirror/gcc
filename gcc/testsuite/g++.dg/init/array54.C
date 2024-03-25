@@ -1,5 +1,6 @@
 // PR c++/90947
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target thread_fence }
 
 #include <atomic>
 

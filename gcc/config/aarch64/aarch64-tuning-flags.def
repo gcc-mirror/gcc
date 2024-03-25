@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -46,5 +46,9 @@ AARCH64_EXTRA_TUNING_OPTION ("cse_sve_vl_constants", CSE_SVE_VL_CONSTANTS)
 AARCH64_EXTRA_TUNING_OPTION ("use_new_vector_costs", USE_NEW_VECTOR_COSTS)
 
 AARCH64_EXTRA_TUNING_OPTION ("matched_vector_throughput", MATCHED_VECTOR_THROUGHPUT)
+
+AARCH64_EXTRA_TUNING_OPTION ("avoid_cross_loop_fma", AVOID_CROSS_LOOP_FMA)
+
+AARCH64_EXTRA_TUNING_OPTION ("fully_pipelined_fma", FULLY_PIPELINED_FMA)
 
 #undef AARCH64_EXTRA_TUNING_OPTION

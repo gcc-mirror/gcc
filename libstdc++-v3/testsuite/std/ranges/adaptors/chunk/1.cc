@@ -1,14 +1,16 @@
 // { dg-do run { target c++23 } }
+// { dg-add-options no_pch }
 
 #include <ranges>
-#include <algorithm>
-#include <vector>
-#include <testsuite_hooks.h>
-#include <testsuite_iterators.h>
 
 #if __cpp_lib_ranges_chunk != 202202L
 # error "Feature-test macro __cpp_lib_ranges_chunk has wrong value in <ranges>"
 #endif
+
+#include <algorithm>
+#include <vector>
+#include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
 
 namespace ranges = std::ranges;
 namespace views = std::views;

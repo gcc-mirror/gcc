@@ -1,0 +1,38 @@
+# Copyright (C) 2002-2024 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# On Debian, Ubuntu and other derivative distributions, the 32bit libraries
+# are found in /lib32 and /usr/lib32, /lib64 and /usr/lib64 are symlinks to
+# /lib and /usr/lib, while other distributions install libraries into /lib64
+# and /usr/lib64.  The LSB does not enforce the use of /lib64 and /usr/lib64,
+# it doesn't tell anything about the 32bit libraries on those systems.  Set
+# MULTILIB_OSDIRNAMES according to what is found on the target.
+
+# To support i386, x86-64 and x32 libraries, the directory structrue
+# should be:
+#
+# 	/lib has i386 libraries.
+# 	/lib64 has x86-64 libraries.
+# 	/libx32 has x32 libraries.
+#
+comma=,
+MULTILIB_OPTIONS    = $(subst $(comma),/,$(TM_MULTILIB_CONFIG))
+MULTILIB_DIRNAMES   = $(patsubst m%, %, $(subst /, ,$(MULTILIB_OPTIONS)))
+MULTILIB_OSDIRNAMES = m64=../lib64$(call if_multiarch,:x86_64-gnu)
+MULTILIB_OSDIRNAMES+= m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:i386-gnu)
+MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-gnux32)

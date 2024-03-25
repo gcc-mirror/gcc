@@ -1,4 +1,5 @@
 /* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+/* { dg-additional-options "-std=gnu89" } */
 
 typedef unsigned long int unsigned_word;
 typedef signed long int signed_word;

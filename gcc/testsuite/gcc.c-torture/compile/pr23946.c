@@ -1,4 +1,4 @@
-
+void long2str (const char *, int);
 extern int foo (void);
 
 int
@@ -10,10 +10,10 @@ avi_parse_comments (int fd, char *buf, int space_left)
   if (fd <= 0 || !buf || space_left <= 0)
     return -1;
 
-  memset (buf, 0, space_left);
+  __builtin_memset (buf, 0, space_left);
 
   readlen = foo ();
-  if (!(data = malloc (readlen * sizeof (char) + 1)))
+  if (!(data = __builtin_malloc (readlen * sizeof (char) + 1)))
     return -1;
 
   c = data;
@@ -34,7 +34,7 @@ avi_parse_comments (int fd, char *buf, int space_left)
 	    return len;
 
 
-	  memcpy (buf + len, c, 4);
+	  __builtin_memcpy (buf + len, c, 4);
 	  len += 4;
 
 
@@ -42,7 +42,7 @@ avi_parse_comments (int fd, char *buf, int space_left)
 	  len += 4;
 
 
-	  memcpy (buf + len, d, k);
+	  __builtin_memcpy (buf + len, d, k);
 
 	  *(buf + len + k + 1) = '\0';
 
@@ -64,7 +64,7 @@ avi_parse_comments (int fd, char *buf, int space_left)
 
 	}
     }
-  free (data);
+  __builtin_free (data);
 
   return len;
 }

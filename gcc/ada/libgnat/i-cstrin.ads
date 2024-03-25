@@ -121,8 +121,9 @@ is
    with
      Pre    =>
        Item /= Null_Ptr
-         and then Strlen (Item) <= size_t'Last - Offset
-         and then Strlen (Item) + Offset <= Chars'Length,
+         and then (Chars'First /= 0 or else Chars'Last /= size_t'Last)
+         and then Chars'Length <= size_t'Last - Offset
+         and then Chars'Length + Offset <= Strlen (Item),
      Global => (In_Out => C_Memory);
 
    procedure Update
@@ -133,8 +134,8 @@ is
    with
      Pre    =>
        Item /= Null_Ptr
-         and then Strlen (Item) <= size_t'Last - Offset
-         and then Strlen (Item) + Offset <= Str'Length,
+         and then Str'Length <= size_t'Last - Offset
+         and then Str'Length + Offset <= Strlen (Item),
      Global => (In_Out => C_Memory);
 
    Update_Error : exception;

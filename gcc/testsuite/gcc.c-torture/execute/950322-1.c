@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 f (unsigned char *a)
 {
   int i, j;

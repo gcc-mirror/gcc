@@ -3,6 +3,9 @@
    one for the partial argument and one for the varargs save area.
    Make sure that these uses don't conflict.  */
 
+void abort (void);
+void exit (int);
+
 struct s { int i[18]; };
 
 int f (struct s pa, int pb, ...)

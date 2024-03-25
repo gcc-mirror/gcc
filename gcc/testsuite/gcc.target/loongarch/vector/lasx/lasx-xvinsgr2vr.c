@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-mlasx -w -fno-strict-aliasing" } */
 #include "../simd_correctness_check.h"
 #include <lasxintrin.h>

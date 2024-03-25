@@ -1,5 +1,5 @@
 /* Modeling API uses and misuses via state machines.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -298,6 +298,8 @@ public:
 
   virtual state_machine::state_t get_global_state () const = 0;
   virtual void set_global_state (state_machine::state_t) = 0;
+
+  virtual void clear_all_per_svalue_state () = 0;
 
   /* A vfunc for handling custom transitions, such as when registering
      a signal handler.  */

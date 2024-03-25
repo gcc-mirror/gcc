@@ -31,10 +31,13 @@ gmp='gmp-6.2.1.tar.bz2'
 mpfr='mpfr-4.1.0.tar.bz2'
 mpc='mpc-1.2.1.tar.gz'
 isl='isl-0.24.tar.bz2'
+gettext='gettext-0.22.tar.gz'
 
 base_url='http://gcc.gnu.org/pub/gcc/infrastructure/'
 
 echo_archives() {
+    echo "${gettext}"
+    if "${only_gettext}"; then return; fi
     echo "${gmp}"
     echo "${mpfr}"
     echo "${mpc}"
@@ -44,6 +47,7 @@ echo_archives() {
 graphite=1
 verify=1
 force=0
+only_gettext=false
 OS=$(uname)
 
 if type wget > /dev/null ; then
@@ -72,12 +76,13 @@ The following options are available:
  --no-verify      don't verify package integrity
  --sha512         use SHA512 checksum to verify package integrity (default)
  --md5            use MD5 checksum to verify package integrity
+ --only-gettext   inhibit downloading any package but gettext
  --help           show this text and exit
  --version        show version information and exit
 "
 
 versiontext="${program} ${version}
-Copyright (C) 2016-2023 Free Software Foundation, Inc.
+Copyright (C) 2016-2024 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
 
@@ -156,6 +161,9 @@ do
             --md5)
                 chksum_extension='md5'
                 verify=1
+                ;;
+            --only-gettext)
+                only_gettext=true
                 ;;
             -*)
                 die "unknown option: ${arg}"

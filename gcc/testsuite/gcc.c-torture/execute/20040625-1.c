@@ -1,4 +1,7 @@
 /* From PR target/16176 */
+void abort (void);
+void exit (int);
+
 struct __attribute__ ((packed)) s { struct s *next; };
 
 struct s * __attribute__ ((noinline))

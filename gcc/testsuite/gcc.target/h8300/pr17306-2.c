@@ -8,6 +8,8 @@ struct x {
   char y;
 };
 
+void oof (void);
+
 struct x __attribute__ ((eightbit_data)) foo;
 
 int bar ()

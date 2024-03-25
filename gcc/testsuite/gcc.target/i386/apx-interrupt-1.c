@@ -1,5 +1,5 @@
-/* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-mapxf -m64 -O2 -mgeneral-regs-only -mno-cld -mno-push-args -maccumulate-outgoing-args" } */
+/* { dg-do compile { target { { ! ia32 } && cfi } } } */
+/* { dg-options "-mapx-features=egpr -m64 -O2 -mgeneral-regs-only -mno-cld -mno-push-args -maccumulate-outgoing-args -fomit-frame-pointer" } */
 
 extern void foo (void *) __attribute__ ((interrupt));
 extern int bar (int);

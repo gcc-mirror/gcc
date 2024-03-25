@@ -1,4 +1,4 @@
-# Copyright (C) 2023-2023 Free Software Foundation, Inc.
+# Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,8 +45,8 @@ dg-init
 
 # Main loop.
 set CFLAGS "$DEFAULT_CFLAGS -march=$gcc_march -mabi=$gcc_mabi -O3"
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/dynamic-lmul*.\[cS\]]] \
-	"-O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic" $CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
+	"" $CFLAGS
 
 # All done.
 dg-finish

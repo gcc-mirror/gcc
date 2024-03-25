@@ -22,6 +22,7 @@ tsan_files = \
 	tsan_ignoreset.cpp \
 	tsan_interceptors_posix.cpp \
 	tsan_interceptors_mac.cpp \
+	tsan_interceptors_memintrinsics.cpp \
 	tsan_interface_ann.cpp \
 	tsan_interface_atomic.cpp \
 	tsan_interface.cpp \
@@ -49,7 +50,7 @@ tsan_files = \
 	tsan_vector_clock.cpp
 
 libtsan_la_SOURCES = $(tsan_files)
-EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S tsan_rtl_aarch64.S tsan_rtl_mips64.S tsan_rtl_ppc64.S tsan_rtl_s390x.S
+EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S tsan_rtl_aarch64.S tsan_rtl_mips64.S tsan_rtl_ppc64.S tsan_rtl_s390x.S tsan_rtl_riscv64.S
 libtsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(TSAN_TARGET_DEPENDENT_OBJECTS)
 libtsan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(TSAN_TARGET_DEPENDENT_OBJECTS)
 if LIBBACKTRACE_SUPPORTED
@@ -57,7 +58,11 @@ libtsan_la_LIBADD += $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 libtsan_la_DEPENDENCIES +=$(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 endif
 libtsan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-libtsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libtsan)
+if ENABLE_DARWIN_AT_RPATH
+libtsan_darwin_rpath = -nodefaultrpaths -Wl,-rpath,@loader_path/
+endif
+libtsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+	$(link_libtsan) $(libtsan_darwin_rpath)
 
 libtsan_preinit.o: tsan_preinit.o
 	cp $< $@

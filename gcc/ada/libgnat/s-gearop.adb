@@ -901,7 +901,7 @@ is
               (for all KK in R'Range (2) => R (J, KK)'Initialized);
          end loop;
       end return;
-   end  Matrix_Matrix_Product;
+   end Matrix_Matrix_Product;
 
    ----------------------------
    -- Matrix_Vector_Solution --

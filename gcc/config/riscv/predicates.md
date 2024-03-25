@@ -1,5 +1,5 @@
 ;; Predicate description for RISC-V target.
-;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -41,9 +41,23 @@
   (ior (match_operand 0 "arith_operand")
        (match_operand 0 "lui_operand")))
 
+(define_predicate "movcc_operand"
+  (if_then_else (match_test "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV
+			     || TARGET_ZICOND_LIKE")
+		(match_operand 0 "sfb_alu_operand")
+		(match_operand 0 "arith_operand")))
+
 (define_predicate "const_csr_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
+
+(define_predicate "const_0_3_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
+
+(define_predicate "const_0_10_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 10)")))
 
 (define_predicate "csr_operand"
   (ior (match_operand 0 "const_csr_operand")
@@ -77,6 +91,10 @@
 (define_predicate "const_1_or_4_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 1 || INTVAL (op) == 4")))
+
+(define_predicate "const_1_or_8_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 8")))
 
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "const_0_operand")
@@ -283,7 +301,8 @@
     case SYMBOL_REF:
     case LABEL_REF:
       return riscv_symbolic_constant_p (op, &symbol_type)
-	      && !riscv_split_symbol_type (symbol_type);
+	     && !riscv_split_symbol_type (symbol_type)
+	     && symbol_type != SYMBOL_FORCE_TO_MEM;
 
     case HIGH:
       op = XEXP (op, 0);
@@ -320,18 +339,24 @@
 })
 
 (define_predicate "call_insn_operand"
-  (ior (match_operand 0 "absolute_symbolic_operand")
-       (match_operand 0 "plt_symbolic_operand")
-       (match_operand 0 "register_operand")))
+  (match_operand 0 "general_operand")
+{
+  if (riscv_cmodel == CM_LARGE)
+    return register_operand (op, mode);
+  else
+    return (absolute_symbolic_operand (op, mode)
+	    || plt_symbolic_operand (op, mode)
+	    || register_operand (op, mode));
+})
 
 (define_predicate "modular_operator"
   (match_code "plus,minus,mult,ashift"))
 
+(define_predicate "ne_operator"
+  (match_code "ne"))
+
 (define_predicate "equality_operator"
   (match_code "eq,ne"))
-
-(define_predicate "order_operator"
-  (match_code "eq,ne,lt,ltu,le,leu,ge,geu,gt,gtu"))
 
 (define_predicate "signed_order_operator"
   (match_code "eq,ne,lt,le,ge,gt"))
@@ -480,10 +505,6 @@
   (ior (match_operand 0 "register_operand")
        (match_code "const_vector")))
 
-(define_predicate "vector_gs_scale_operand_64"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) == 1 || (INTVAL (op) == 8 && Pmode == DImode)")))
-
 (define_predicate "vector_gs_extension_operand"
   (ior (match_operand 0 "const_1_operand")
        (and (match_operand 0 "const_0_operand")
@@ -547,14 +568,7 @@
 
 ;; The scalar operand can be directly broadcast by RVV instructions.
 (define_predicate "direct_broadcast_operand"
-  (and (match_test "!(reload_completed && !FLOAT_MODE_P (GET_MODE (op))
-		&& (register_operand (op, GET_MODE (op)) || CONST_INT_P (op)
-		|| rtx_equal_p (op, CONST0_RTX (GET_MODE (op))))
-		&& maybe_gt (GET_MODE_BITSIZE (GET_MODE (op)), GET_MODE_BITSIZE (Pmode)))")
-    (ior (match_test "rtx_equal_p (op, CONST0_RTX (GET_MODE (op)))")
-         (ior (match_code "const_int,const_poly_int")
-              (ior (match_operand 0 "register_operand")
-                   (match_test "satisfies_constraint_Wdm (op)"))))))
+  (match_test "riscv_vector::can_be_broadcasted_p (op)"))
 
 ;; A CONST_INT operand that has exactly two bits cleared.
 (define_predicate "const_nottwobits_operand"
@@ -612,3 +626,11 @@
   (and (match_code "const_int")
        (ior (match_operand 0 "not_uimm_extra_bit_operand")
 	    (match_operand 0 "const_nottwobits_not_arith_operand"))))
+
+(define_predicate "pcrel_symbol_operand"
+  (match_code "symbol_ref")
+{
+  enum riscv_symbol_type type;
+  return (riscv_symbolic_constant_p (op, &type)
+         && type == SYMBOL_PCREL);
+})

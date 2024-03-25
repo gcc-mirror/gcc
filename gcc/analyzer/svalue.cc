@@ -1,5 +1,5 @@
 /* Symbolic values.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -251,6 +251,7 @@ svalue::can_merge_p (const svalue *other,
 	   a descending chain of constraints.  */
 	if (other == widen_arg0)
 	  {
+	    merger->on_widening_reuse (widen_arg0);
 	    return widen_arg0;
 	  }
 
@@ -606,6 +607,12 @@ public:
       m_found = true;
   }
 
+  void visit_widening_svalue (const widening_svalue *candidate) final override
+  {
+    if (candidate == m_needle)
+      m_found = true;
+  }
+
   bool found_p () const { return m_found; }
 
 private:
@@ -620,7 +627,8 @@ svalue::involves_p (const svalue *other) const
 {
   /* Currently only implemented for these kinds.  */
   gcc_assert (other->get_kind () == SK_INITIAL
-	      || other->get_kind () == SK_CONJURED);
+	      || other->get_kind () == SK_CONJURED
+	      || other->get_kind () == SK_WIDENING);
 
   involvement_visitor v (other);
   accept (&v);

@@ -1,3 +1,5 @@
+void abort (void);
+
 int main()
 {
   int b = 0;

@@ -1,5 +1,5 @@
 /* Core data structures for the 'tree' type.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -94,6 +94,9 @@ struct die_struct;
 
 /* Nonzero if this is a cold function.  */
 #define ECF_COLD		  (1 << 15)
+
+/* Nonzero if this is a function expected to end with an exception.  */
+#define ECF_XTHROW		  (1 << 16)
 
 /* Call argument flags.  */
 
@@ -386,6 +389,9 @@ enum omp_clause_code {
   /* OpenACC/OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
 
+  /* OpenACC clause: self.  */
+  OMP_CLAUSE_SELF,
+
   /* OpenMP clause: num_threads (integer-expression).  */
   OMP_CLAUSE_NUM_THREADS,
 
@@ -487,6 +493,9 @@ enum omp_clause_code {
 
   /* OpenMP clause: filter (integer-expression).  */
   OMP_CLAUSE_FILTER,
+
+  /* OpenMP clause: indirect [(constant-integer-expression)].  */
+  OMP_CLAUSE_INDIRECT,
 
   /* Internally used only clause, holding SIMD uid.  */
   OMP_CLAUSE__SIMDUID_,
@@ -977,12 +986,19 @@ enum annot_expr_kind {
   annot_expr_kind_last
 };
 
-/* The kind of a TREE_CLOBBER_P CONSTRUCTOR node.  */
+/* The kind of a TREE_CLOBBER_P CONSTRUCTOR node.  Other than _UNDEF, these are
+   in roughly sequential order.  */
 enum clobber_kind {
   /* Unspecified, this clobber acts as a store of an undefined value.  */
   CLOBBER_UNDEF,
-  /* This clobber ends the lifetime of the storage.  */
-  CLOBBER_EOL,
+  /* Beginning of storage duration, e.g. malloc.  */
+  CLOBBER_STORAGE_BEGIN,
+  /* Beginning of object lifetime, e.g. C++ constructor.  */
+  CLOBBER_OBJECT_BEGIN,
+  /* End of object lifetime, e.g. C++ destructor.  */
+  CLOBBER_OBJECT_END,
+  /* End of storage duration, e.g. free.  */
+  CLOBBER_STORAGE_END,
   CLOBBER_LAST
 };
 
@@ -1076,10 +1092,11 @@ struct GTY(()) tree_base {
 
       unsigned spare1 : 8;
 
-      /* This field is only used with TREE_TYPE nodes; the only reason it is
+      /* For _TYPE nodes, this is TYPE_ADDR_SPACE; the reason it is
 	 present in tree_base instead of tree_type is to save space.  The size
 	 of the field must be large enough to hold addr_space_t values.
-	 For CONSTRUCTOR nodes this holds the clobber_kind enum.  */
+	 For CONSTRUCTOR nodes this holds the clobber_kind enum.
+	 The C++ front-end uses this in IDENTIFIER_NODE and NAMESPACE_DECL.  */
       unsigned address_space : 8;
     } bits;
 
@@ -1376,6 +1393,9 @@ struct GTY(()) tree_base {
 
        DECL_NONALIASED in
 	  VAR_DECL
+
+       CHREC_NOWRAP in
+	  POLYNOMIAL_CHREC
 
    deprecated_flag:
 

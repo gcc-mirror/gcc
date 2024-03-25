@@ -1,5 +1,5 @@
 ;;- Machine description for Renesas / SuperH SH.
-;;  Copyright (C) 1993-2023 Free Software Foundation, Inc.
+;;  Copyright (C) 1993-2024 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -842,7 +842,7 @@
   if (SUBREG_P (reg))
     reg = SUBREG_REG (reg);
   gcc_assert (REG_P (reg));
-  if (find_regno_note (curr_insn, REG_DEAD, REGNO (reg)) != NULL_RTX)
+  if (find_regno_note (curr_insn, REG_DEAD, REGNO (reg)) == NULL_RTX)
     FAIL;
 
   /* FIXME: Maybe also search the predecessor basic blocks to catch
@@ -10936,7 +10936,7 @@
 
 ;; Switch to a new stack with its address in sp_switch (a SYMBOL_REF).
 (define_insn "sp_switch_1"
-  [(set (reg:SI SP_REG) (unspec_volatile [(match_operand:SI 0 "" "")]
+  [(set (reg:SI SP_REG) (unspec_volatile:SI [(match_operand:SI 0 "" "")]
     UNSPECV_SP_SWITCH_B))]
   "TARGET_SH1"
 {

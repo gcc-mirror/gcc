@@ -1,4 +1,5 @@
 /* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+/* { dg-additional-options "-fpermissive" } */
 
 extern unsigned int __invalid_size_argument_for_IOC;
 typedef unsigned int __u32;

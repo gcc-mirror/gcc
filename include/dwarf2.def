@@ -1,7 +1,7 @@
 /* -*- c -*-
    Declarations and definitions of codes relating to the DWARF2 and
    DWARF3 symbolic debugging information formats.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -802,8 +802,17 @@ DW_IDX (DW_IDX_parent, 4)
 DW_IDX (DW_IDX_type_hash, 5)
 DW_IDX_DUP (DW_IDX_lo_user, 0x2000)
 DW_IDX (DW_IDX_hi_user, 0x3fff)
+/* Internal linkage.  A flag.  */
 DW_IDX (DW_IDX_GNU_internal, 0x2000)
+/* External linkage.  A flag.  Note that gdb no longer generates this;
+   the default is to assume external linkage.  */
 DW_IDX (DW_IDX_GNU_external, 0x2001)
+/* This entry is the program's entry point.  A flag.  */
+DW_IDX (DW_IDX_GNU_main, 0x2002)
+/* Language for this entry.  A DW_LANG_* value.  */
+DW_IDX (DW_IDX_GNU_language, 0x2003)
+/* This entry is a linkage name.  A flag.  */
+DW_IDX (DW_IDX_GNU_linkage_name, 0x2004)
 DW_END_IDX
 
 /* DWARF5 Unit type header encodings  */

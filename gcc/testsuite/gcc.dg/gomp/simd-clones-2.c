@@ -6,7 +6,6 @@ int addit(int a, int b, int *c)
 {
   return a + b;
 }
-/* { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-4 } */
 /* { dg-final { scan-tree-dump {(?n)^__attribute__\(\(omp declare simd \(notinbranch aligned\(2:32\)\), omp declare simd \(inbranch uniform\(2\) linear\(1:66\)\)\)\)$} "optimized" } } */
 
 #pragma omp declare simd uniform(a) aligned(a:32) linear(k:1) notinbranch
@@ -16,6 +15,12 @@ float setArray(float *a, float x, int k)
   return a[k];
 }
 /* { dg-final { scan-tree-dump {(?n)^__attribute__\(\(omp declare simd \(notinbranch uniform\(0\) aligned\(0:32\) linear\(2:1\)\)\)\)$} "optimized" } } */
+
+/* { dg-final { scan-tree-dump "_ZGVnN2ua32vl_setArray" "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnN4ua32vl_setArray" "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnN2vvva32_addit" "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnM2vl66u_addit" "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnM4vl66u_addit" "optimized" { target aarch64*-*-* } } } */
 
 /* { dg-final { scan-tree-dump "_ZGVbN4ua32vl_setArray" "optimized" { target i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-tree-dump "_ZGVbN4vvva32_addit" "optimized" { target i?86-*-* x86_64-*-* } } } */

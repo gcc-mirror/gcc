@@ -42,5 +42,7 @@ main (void)
 
   #pragma omp target exit data map(from:a.ptr, a.ptr[:N])
 
+  free (a.ptr);
+
   return 0;
 }

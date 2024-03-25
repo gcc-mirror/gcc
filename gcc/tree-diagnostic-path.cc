@@ -1,5 +1,5 @@
 /* Paths through the code associated with a diagnostic.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
 This file is part of GCC.
@@ -204,9 +204,9 @@ struct event_range
       {
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point
-	  (initial_loc, LOCATION_ASPECT_CARET);
-	if (exploc.file != LOCATION_FILE (dc->last_location))
-	  dc->m_text_callbacks.start_span (dc, exploc);
+	  (line_table, initial_loc, LOCATION_ASPECT_CARET);
+	if (exploc.file != LOCATION_FILE (dc->m_last_location))
+	  diagnostic_start_span (dc) (dc, exploc);
       }
 
     /* If we have an UNKNOWN_LOCATION (or BUILTINS_LOCATION) as the
@@ -599,7 +599,7 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 
   const unsigned num_events = path->num_events ();
 
-  switch (context->path_format)
+  switch (context->get_path_format ())
     {
     case DPF_NONE:
       /* Do nothing.  */
@@ -614,7 +614,7 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	    label_text event_text (event.get_desc (false));
 	    gcc_assert (event_text.get ());
 	    diagnostic_event_id_t event_id (i);
-	    if (context->show_path_depths)
+	    if (context->show_path_depths_p ())
 	      {
 		int stack_depth = event.get_stack_depth ();
 		tree fndecl = event.get_fndecl ();
@@ -646,7 +646,7 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	char *saved_prefix = pp_take_prefix (context->printer);
 	pp_set_prefix (context->printer, NULL);
 	print_path_summary_as_text (&summary, context,
-				    context->show_path_depths);
+				    context->show_path_depths_p ());
 	pp_flush (context->printer);
 	pp_set_prefix (context->printer, saved_prefix);
       }
@@ -673,15 +673,14 @@ default_tree_make_json_for_path (diagnostic_context *context,
 			json_from_expanded_location (context,
 						     event.get_location ()));
       label_text event_text (event.get_desc (false));
-      event_obj->set ("description", new json::string (event_text.get ()));
+      event_obj->set_string ("description", event_text.get ());
       if (tree fndecl = event.get_fndecl ())
 	{
 	  const char *function
 	    = identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2));
-	  event_obj->set ("function", new json::string (function));
+	  event_obj->set_string ("function", function);
 	}
-      event_obj->set ("depth",
-		      new json::integer_number (event.get_stack_depth ()));
+      event_obj->set_integer ("depth", event.get_stack_depth ());
       path_array->append (event_obj);
     }
   return path_array;

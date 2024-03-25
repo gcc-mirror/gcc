@@ -1,6 +1,6 @@
 // <vector> -*- C++ -*-
 
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -76,7 +76,10 @@
 # include <debug/vector>
 #endif
 
+#define __glibcxx_want_constexpr_vector
 #define __glibcxx_want_erase_if
+#define __glibcxx_want_incomplete_container_elements
+#define __glibcxx_want_nonmember_container_access
 #include <bits/version.h>
 
 #if __cplusplus >= 201703L

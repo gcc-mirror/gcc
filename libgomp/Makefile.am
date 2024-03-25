@@ -53,9 +53,14 @@ else
 libgomp_version_script =
 libgomp_version_dep =
 endif
+
 libgomp_version_info = -version-info $(libtool_VERSION)
+if ENABLE_DARWIN_AT_RPATH
+libgomp_darwin_rpath = -Wc,-nodefaultrpaths
+libgomp_darwin_rpath += -Wl,-rpath,@loader_path
+endif
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
-        $(lt_host_flags)
+        $(lt_host_flags) $(libgomp_darwin_rpath)
 libgomp_la_LIBADD =
 libgomp_la_DEPENDENCIES = $(libgomp_version_dep)
 libgomp_la_LINK = $(LINK) $(libgomp_la_LDFLAGS)
@@ -67,7 +72,7 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c error.c \
 	target.c splay-tree.c libgomp-plugin.c oacc-parallel.c oacc-host.c \
 	oacc-init.c oacc-mem.c oacc-async.c oacc-plugin.c oacc-cuda.c \
 	priority_queue.c affinity-fmt.c teams.c allocator.c oacc-profiling.c \
-	oacc-target.c
+	oacc-target.c target-indirect.c
 
 include $(top_srcdir)/plugin/Makefrag.am
 

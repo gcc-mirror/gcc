@@ -47,7 +47,7 @@ contains
 
 end program test
 
-! { dg-final { scan-tree-dump-times "scalar2 \\(slr1" 1 "original" } }
+! { dg-final { scan-tree-dump-times "scalar2 \\(.* slr1" 1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "= es1 != 0B" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "assumed_shape2 \\(es1" 0 "original" } }

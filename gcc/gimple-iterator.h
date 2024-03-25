@@ -1,5 +1,5 @@
 /* Header file for gimple iterators.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -163,6 +163,41 @@ gsi_last_bb (basic_block bb)
 
   seq = bb_seq_addr (bb);
   i.ptr = gimple_seq_last (*seq);
+  i.seq = seq;
+  i.bb = bb;
+
+  return i;
+}
+
+/* Return a new iterator pointing to before the first statement or after
+   last statement (depending on whether adding statements after it or before it)
+   in a GIMPLE_SEQ.  */
+
+inline gimple_stmt_iterator
+gsi_end (gimple_seq &seq)
+{
+  gimple_stmt_iterator i;
+  gimple *g = gimple_seq_last (seq);
+
+  i.ptr = NULL;
+  i.seq = &seq;
+  i.bb = g ? gimple_bb (g) : NULL;
+
+  return i;
+}
+
+/* Return a new iterator pointing to before the first statement or after
+   last statement (depending on whether adding statements after it or before it)
+   in basic block BB.  */
+
+inline gimple_stmt_iterator
+gsi_end_bb (basic_block bb)
+{
+  gimple_stmt_iterator i;
+  gimple_seq *seq;
+
+  seq = bb_seq_addr (bb);
+  i.ptr = NULL;
   i.seq = seq;
   i.bb = bb;
 

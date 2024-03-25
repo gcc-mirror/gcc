@@ -1,5 +1,8 @@
 /* Test IEEE +0/-0 rules */
 
+void abort (void);
+void exit (int);
+
 static double pzero = +0.0;
 static double nzero = -0.0;
 static double pinf  = +1.0 / 0.0;
@@ -18,11 +21,13 @@ expect (double value, double expected)
   else if (value != value)
     abort ();			/* actual value is a NaN */
 
-  else if (memcmp ((void *)&value, (void *)&expected, sizeof (double)) != 0)
+  else if (__builtin_memcmp ((void *)&value, (void *)&expected,
+			     sizeof (double)) != 0)
     abort ();			/* values don't match */
 }
 
-main ()
+int
+main (void)
 {
   expect (pzero + pzero, pzero);
   expect (pzero + nzero, pzero);

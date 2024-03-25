@@ -1,6 +1,6 @@
 // <regex> -*- C++ -*-
 
-// Copyright (C) 2007-2023 Free Software Foundation, Inc.
+// Copyright (C) 2007-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,6 +67,9 @@
 #include <bits/regex_compiler.h>
 #include <bits/regex.h>
 #include <bits/regex_executor.h>
+
+#define __glibcxx_want_nonmember_container_access
+#include <bits/version.h>
 
 #if __cplusplus >= 201703L && _GLIBCXX_USE_CXX11_ABI
 #include <bits/memory_resource.h>

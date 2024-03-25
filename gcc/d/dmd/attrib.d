@@ -32,7 +32,7 @@ import dmd.declaration;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem : dsymbolSemantic;
+import dmd.dsymbolsem;
 import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
@@ -121,31 +121,6 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
     Scope* newScope(Scope* sc)
     {
         return sc;
-    }
-
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        Dsymbols* d = include(sc);
-        if (d)
-        {
-            Scope* sc2 = newScope(sc);
-            d.foreachDsymbol( s => s.addMember(sc2, sds) );
-            if (sc2 != sc)
-                sc2.pop();
-        }
-    }
-
-    override void setScope(Scope* sc)
-    {
-        Dsymbols* d = include(sc);
-        //printf("\tAttribDeclaration::setScope '%s', d = %p\n",toChars(), d);
-        if (d)
-        {
-            Scope* sc2 = newScope(sc);
-            d.foreachDsymbol( s => s.setScope(sc2) );
-            if (sc2 != sc)
-                sc2.pop();
-        }
     }
 
     override void importAll(Scope* sc)
@@ -295,34 +270,6 @@ extern (C++) class StorageClassDeclaration : AttribDeclaration
         return t;
     }
 
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        Dsymbols* d = include(sc);
-        if (d)
-        {
-            Scope* sc2 = newScope(sc);
-
-            d.foreachDsymbol( (s)
-            {
-                //printf("\taddMember %s to %s\n", s.toChars(), sds.toChars());
-                // STC.local needs to be attached before the member is added to the scope (because it influences the parent symbol)
-                if (auto decl = s.isDeclaration())
-                {
-                    decl.storage_class |= stc & STC.local;
-                    if (auto sdecl = s.isStorageClassDeclaration()) // TODO: why is this not enough to deal with the nested case?
-                    {
-                        sdecl.stc |= stc & STC.local;
-                    }
-                }
-                s.addMember(sc2, sds);
-            });
-
-            if (sc2 != sc)
-                sc2.pop();
-        }
-
-    }
-
     override inout(StorageClassDeclaration) isStorageClassDeclaration() inout
     {
         return this;
@@ -376,14 +323,6 @@ extern (C++) final class DeprecatedDeclaration : StorageClassDeclaration
             scx = sc.push();
         scx.depdecl = this;
         return scx;
-    }
-
-    override void setScope(Scope* sc)
-    {
-        //printf("DeprecatedDeclaration::setScope() %p\n", this);
-        if (decl)
-            Dsymbol.setScope(sc); // for forward reference
-        return AttribDeclaration.setScope(sc);
     }
 
     override void accept(Visitor v)
@@ -471,13 +410,6 @@ extern (C++) final class CPPMangleDeclaration : AttribDeclaration
     {
         return createNewScope(sc, sc.stc, LINK.cpp, cppmangle, sc.visibility, sc.explicitVisibility,
             sc.aligndecl, sc.inlining);
-    }
-
-    override void setScope(Scope* sc)
-    {
-        if (decl)
-            Dsymbol.setScope(sc); // for forward reference
-        return AttribDeclaration.setScope(sc);
     }
 
     override const(char)* toChars() const
@@ -640,37 +572,6 @@ extern (C++) final class VisibilityDeclaration : AttribDeclaration
         return createNewScope(sc, sc.stc, sc.linkage, sc.cppmangle, this.visibility, 1, sc.aligndecl, sc.inlining);
     }
 
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        if (pkg_identifiers)
-        {
-            Dsymbol tmp;
-            Package.resolve(pkg_identifiers, &tmp, null);
-            visibility.pkg = tmp ? tmp.isPackage() : null;
-            pkg_identifiers = null;
-        }
-        if (visibility.kind == Visibility.Kind.package_ && visibility.pkg && sc._module)
-        {
-            Module m = sc._module;
-
-            // https://issues.dlang.org/show_bug.cgi?id=17441
-            // While isAncestorPackageOf does an equality check, the fix for the issue adds a check to see if
-            // each package's .isModule() properites are equal.
-            //
-            // Properties generated from `package(foo)` i.e. visibility.pkg have .isModule() == null.
-            // This breaks package declarations of the package in question if they are declared in
-            // the same package.d file, which _do_ have a module associated with them, and hence a non-null
-            // isModule()
-            if (!m.isPackage() || !visibility.pkg.ident.equals(m.isPackage().ident))
-            {
-                Package pkg = m.parent ? m.parent.isPackage() : null;
-                if (!pkg || !visibility.pkg.isAncestorPackageOf(pkg))
-                    .error(loc, "%s `%s` does not bind to one of ancestor packages of module `%s`", kind(), toPrettyChars(false), m.toPrettyChars(true));
-            }
-        }
-        return AttribDeclaration.addMember(sc, sds);
-    }
-
     override const(char)* kind() const
     {
         return "visibility attribute";
@@ -774,13 +675,6 @@ extern (C++) final class AnonDeclaration : AttribDeclaration
         return new AnonDeclaration(loc, isunion, Dsymbol.arraySyntaxCopy(decl));
     }
 
-    override void setScope(Scope* sc)
-    {
-        if (decl)
-            Dsymbol.setScope(sc);
-        return AttribDeclaration.setScope(sc);
-    }
-
     override void setFieldOffset(AggregateDeclaration ad, ref FieldState fieldState, bool isunion)
     {
         //printf("\tAnonDeclaration::setFieldOffset %s %p\n", isunion ? "union" : "struct", this);
@@ -839,10 +733,10 @@ extern (C++) final class AnonDeclaration : AttribDeclaration
             /* Given the anon 'member's size and alignment,
              * go ahead and place it.
              */
-            anonoffset = AggregateDeclaration.placeField(
-                &fieldState.offset,
+            anonoffset = placeField(
+                fieldState.offset,
                 anonstructsize, anonalignsize, alignment,
-                &ad.structsize, &ad.alignsize,
+                ad.structsize, ad.alignsize,
                 isunion);
 
             // Add to the anon fields the base offset of this anonymous aggregate
@@ -984,11 +878,6 @@ extern (C++) class ConditionalDeclaration : AttribDeclaration
         }
     }
 
-    override void setScope(Scope* sc)
-    {
-        include(sc).foreachDsymbol( s => s.setScope(sc) );
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -1052,30 +941,6 @@ extern (C++) final class StaticIfDeclaration : ConditionalDeclaration
         {
             return ConditionalDeclaration.include(sc);
         }
-    }
-
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        //printf("StaticIfDeclaration::addMember() '%s'\n", toChars());
-        /* This is deferred until the condition evaluated later (by the include() call),
-         * so that expressions in the condition can refer to declarations
-         * in the same scope, such as:
-         *
-         * template Foo(int i)
-         * {
-         *     const int j = i + 1;
-         *     static if (j == 3)
-         *         const int k;
-         * }
-         */
-        this.scopesym = sds;
-    }
-
-    override void setScope(Scope* sc)
-    {
-        // do not evaluate condition before semantic pass
-        // But do set the scope, in case we need it for forward referencing
-        Dsymbol.setScope(sc);
     }
 
     override void importAll(Scope* sc)
@@ -1186,23 +1051,10 @@ extern (C++) final class StaticForeachDeclaration : AttribDeclaration
         return d;
     }
 
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        // used only for caching the enclosing symbol
-        this.scopesym = sds;
-    }
-
     override void addComment(const(char)* comment)
     {
         // do nothing
         // change this to give semantics to documentation comments on static foreach declarations
-    }
-
-    override void setScope(Scope* sc)
-    {
-        // do not evaluate condition before semantic pass
-        // But do set the scope, in case we need it for forward referencing
-        Dsymbol.setScope(sc);
     }
 
     override void importAll(Scope* sc)
@@ -1266,15 +1118,6 @@ extern(C++) final class ForwardingAttribDeclaration : AttribDeclaration
         return sc.push(sym);
     }
 
-    /***************************************
-     * Lazily initializes the scope to forward to.
-     */
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        sym.parent = sds;
-        return super.addMember(sc, sym);
-    }
-
     override inout(ForwardingAttribDeclaration) isForwardingAttribDeclaration() inout
     {
         return this;
@@ -1310,17 +1153,6 @@ extern (C++) final class MixinDeclaration : AttribDeclaration
     {
         //printf("MixinDeclaration::syntaxCopy('%s')\n", toChars());
         return new MixinDeclaration(loc, Expression.arraySyntaxCopy(exps));
-    }
-
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        //printf("MixinDeclaration::addMember(sc = %p, sds = %p, memnum = %d)\n", sc, sds, memnum);
-        this.scopesym = sds;
-    }
-
-    override void setScope(Scope* sc)
-    {
-        Dsymbol.setScope(sc);
     }
 
     override const(char)* kind() const
@@ -1371,14 +1203,6 @@ extern (C++) final class UserAttributeDeclaration : AttribDeclaration
             sc2.userAttribDecl = this;
         }
         return sc2;
-    }
-
-    override void setScope(Scope* sc)
-    {
-        //printf("UserAttributeDeclaration::setScope() %p\n", this);
-        if (decl)
-            Dsymbol.setScope(sc); // for forward reference of UDAs
-        return AttribDeclaration.setScope(sc);
     }
 
     extern (D) static Expressions* concat(Expressions* udas1, Expressions* udas2)

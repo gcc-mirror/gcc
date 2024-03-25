@@ -1,5 +1,5 @@
 /* Costs of operations of individual x86 CPUs.
-   Copyright (C) 1988-2023 Free Software Foundation, Inc.
+   Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3392,6 +3392,122 @@ struct processor_costs lujiazui_cost = {
   4,					/* Small unroll limit.  */
   2,					/* Small unroll factor.  */
 };
+
+/* yongfeng_cost should produce code tuned for ZHAOXIN yongfeng CPU.  */
+static stringop_algs yongfeng_memcpy[2] = {
+  {libcall, {{6, unrolled_loop, true}, {256, unrolled_loop, false},
+			 {-1, libcall, false}}},
+  {libcall, {{8, loop, false}, {512, unrolled_loop, false},
+			 {-1, libcall, false}}}};
+static stringop_algs yongfeng_memset[2] = {
+  {libcall, {{6, loop_1_byte, false}, {128, loop, false},
+			 {-1, libcall, false}}},
+  {libcall, {{2, rep_prefix_4_byte, false}, {64, loop, false},
+			 {1024, vector_loop, false},
+			 {-1, libcall, false}}}};
+static const
+struct processor_costs yongfeng_cost = {
+  {
+  /* Start of register allocator costs.  integer->integer move cost is 2.  */
+  8,				/* cost for loading QImode using movzbl.  */
+  {8, 8, 8},			/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {8, 8, 8},			/* cost of storing integer registers.  */
+  2,					/* cost of reg,reg fld/fst.  */
+  {8, 8, 8},			/* cost of loading fp registers
+				in SFmode, DFmode and XFmode.  */
+  {8, 8, 8},			/* cost of storing fp registers
+				in SFmode, DFmode and XFmode.  */
+  2,				/* cost of moving MMX register.  */
+  {8, 8},			/* cost of loading MMX registers
+				in SImode and DImode.  */
+  {8, 8},			/* cost of storing MMX registers
+				in SImode and DImode.  */
+  2, 3, 4,			/* cost of moving XMM,YMM,ZMM register.  */
+  {8, 8, 8, 10, 15},	/* cost of loading SSE registers
+				in 32,64,128,256 and 512-bit.  */
+  {8, 8, 8, 10, 15},	/* cost of storing SSE registers
+				in 32,64,128,256 and 512-bit.  */
+  8, 8,				/* SSE->integer and integer->SSE moves.  */
+  8, 8,				/* mask->integer and integer->mask moves.  */
+  {8, 8, 8},		/* cost of loading mask register
+				in QImode, HImode, SImode.  */
+  {8, 8, 8},		/* cost if storing mask register
+				in QImode, HImode, SImode.  */
+  2,				/* cost of moving mask register.  */
+  /* End of register allocator costs.  */
+  },
+
+  COSTS_N_INSNS (1),			/* cost of an add instruction.  */
+  COSTS_N_INSNS (1),		        /* cost of a lea instruction.  */
+  COSTS_N_INSNS (1),			/* variable shift costs.  */
+  COSTS_N_INSNS (1),			/* constant shift costs.  */
+  {COSTS_N_INSNS (2),			/* cost of starting multiply for QI.  */
+   COSTS_N_INSNS (3),			/*				 HI.  */
+   COSTS_N_INSNS (2),			/*				 SI.  */
+   COSTS_N_INSNS (2),			/*				 DI.  */
+   COSTS_N_INSNS (3)},		/*				 other.  */
+  0,				/* cost of multiply per each bit set.  */
+  {COSTS_N_INSNS (8),			/* cost of a divide/mod for QI.  */
+   COSTS_N_INSNS (9),			/*			    HI.  */
+   COSTS_N_INSNS (8),			/*			    SI.  */
+   COSTS_N_INSNS (41),			/*			    DI.  */
+   COSTS_N_INSNS (41)},		/*			    other.  */
+  COSTS_N_INSNS (1),			/* cost of movsx.  */
+  COSTS_N_INSNS (1),			/* cost of movzx.  */
+  8,					/* "large" insn.  */
+  17,					/* MOVE_RATIO.  */
+  6,					/* CLEAR_RATIO.  */
+  {8, 8, 8},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {8, 8, 8},			/* cost of storing integer registers.  */
+  {8, 8, 8, 12, 15},			/* cost of loading SSE register
+				in 32bit, 64bit, 128bit, 256bit and 512bit.  */
+  {8, 8, 8, 12, 15},			/* cost of storing SSE register
+				in 32bit, 64bit, 128bit, 256bit and 512bit.  */
+  {8, 8, 8, 12, 15},			/* cost of unaligned loads.  */
+  {8, 8, 8, 12, 15},			/* cost of unaligned storess.  */
+  2, 3, 4,			/* cost of moving XMM,YMM,ZMM register.  */
+  8,				/* cost of moving SSE register to integer.  */
+  18, 6,				/* Gather load static, per_elt.  */
+  18, 6,				/* Gather store static, per_elt.  */
+  32,				  	/* size of l1 cache.  */
+  256,					/* size of l2 cache.  */
+  64,					/* size of prefetch block.  */
+  12,					/* number of parallel prefetches.  */
+  3,					/* Branch cost.  */
+  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (3),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (14),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (3),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (3),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (10),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (14),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (20),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (35),			/* cost of SQRTSD instruction.  */
+  4, 4, 4, 4,				/* reassoc int, fp, vec_int, vec_fp.  */
+  yongfeng_memcpy,
+  yongfeng_memset,
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:11:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
+  4,					/* Small unroll limit.  */
+  2,					/* Small unroll factor.  */
+};
+
 
 /* Generic should produce code tuned for Core-i7 (and newer chips)
    and btver1 (and newer chips).  */

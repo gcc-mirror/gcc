@@ -310,18 +310,16 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc, logger *) final override
+  emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     bool warned;
     // just assuming constants for now
     auto actual_refcnt
 	= m_actual_refcnt->dyn_cast_constant_svalue ()->get_constant ();
     auto ob_refcnt = m_ob_refcnt->dyn_cast_constant_svalue ()->get_constant ();
-    warned = warning_meta (rich_loc, m, get_controlling_option (),
-			   "expected %qE to have "
-			   "reference count: %qE but ob_refcnt field is: %qE",
-			   m_reg_tree, actual_refcnt, ob_refcnt);
+    warned = ctxt.warn ("expected %qE to have "
+			"reference count: %qE but ob_refcnt field is: %qE",
+			m_reg_tree, actual_refcnt, ob_refcnt);
 
     // location_t loc = rich_loc->get_loc ();
     // foo (loc);

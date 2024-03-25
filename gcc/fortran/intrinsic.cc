@@ -1,6 +1,6 @@
 /* Build up a list of intrinsic subroutines and functions for the
    name-resolution stage.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -3310,51 +3310,56 @@ add_functions (void)
   make_generic ("loc", GFC_ISYM_LOC, GFC_STD_GNU);
 
 
-  /* The next of intrinsic subprogram are the degree trigonometric functions.
-     These were hidden behind the -fdec-math option, but are now simply
-     included as extensions to the set of intrinsic subprograms.  */
+  /* The degree trigonometric functions were added as part of the DEC
+     Fortran compatibility effort, and were hidden behind a -fdec-math
+     option.  Fortran 2023 has added some of these functions to Fortran
+     standard as generic subprogram, e.g., acosd() is added while dacosd()
+     is not.  So, update GFC_STD_GNU to GFC_STD_F2023 for the generic
+     functions.  */
 
   add_sym_1 ("acosd", GFC_ISYM_ACOSD, CLASS_ELEMENTAL, ACTUAL_YES,
-	     BT_REAL, dr, GFC_STD_GNU,
+	     BT_REAL, dr, GFC_STD_F2023,
 	     gfc_check_fn_r, gfc_simplify_acosd, gfc_resolve_trigd,
 	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("acosd", GFC_ISYM_ACOSD, GFC_STD_F2023);
 
   add_sym_1 ("dacosd", GFC_ISYM_ACOSD, CLASS_ELEMENTAL, ACTUAL_YES,
 	     BT_REAL, dd, GFC_STD_GNU,
 	     gfc_check_fn_d, gfc_simplify_acosd, gfc_resolve_trigd,
 	     x, BT_REAL, dd, REQUIRED);
 
-  make_generic ("acosd", GFC_ISYM_ACOSD, GFC_STD_GNU);
-
   add_sym_1 ("asind", GFC_ISYM_ASIND, CLASS_ELEMENTAL, ACTUAL_YES,
-	     BT_REAL, dr, GFC_STD_GNU,
+	     BT_REAL, dr, GFC_STD_F2023,
 	     gfc_check_fn_r, gfc_simplify_asind, gfc_resolve_trigd,
 	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("asind", GFC_ISYM_ASIND, GFC_STD_F2023);
 
   add_sym_1 ("dasind", GFC_ISYM_ASIND, CLASS_ELEMENTAL, ACTUAL_YES,
 	     BT_REAL, dd, GFC_STD_GNU,
 	     gfc_check_fn_d, gfc_simplify_asind, gfc_resolve_trigd,
 	     x, BT_REAL, dd, REQUIRED);
 
-  make_generic ("asind", GFC_ISYM_ASIND, GFC_STD_GNU);
-
   add_sym_1 ("atand", GFC_ISYM_ATAND, CLASS_ELEMENTAL, ACTUAL_YES,
-	     BT_REAL, dr, GFC_STD_GNU,
+	     BT_REAL, dr, GFC_STD_F2023,
 	     gfc_check_fn_r, gfc_simplify_atand, gfc_resolve_trigd,
 	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("atand", GFC_ISYM_ATAND, GFC_STD_F2023);
 
   add_sym_1 ("datand", GFC_ISYM_ATAND, CLASS_ELEMENTAL, ACTUAL_YES,
 	     BT_REAL, dd, GFC_STD_GNU,
 	     gfc_check_fn_d, gfc_simplify_atand, gfc_resolve_trigd,
 	     x, BT_REAL, dd, REQUIRED);
 
-  make_generic ("atand", GFC_ISYM_ATAND, GFC_STD_GNU);
-
   add_sym_2 ("atan2d", GFC_ISYM_ATAN2D, CLASS_ELEMENTAL, ACTUAL_YES,
-	     BT_REAL, dr, GFC_STD_GNU,
+	     BT_REAL, dr, GFC_STD_F2023,
 	     gfc_check_atan2, gfc_simplify_atan2d, gfc_resolve_trigd2,
 	     y, BT_REAL, dr, REQUIRED,
 	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("atan2d", GFC_ISYM_ATAN2D, GFC_STD_F2023);
 
   add_sym_2 ("datan2d", GFC_ISYM_ATAN2D, CLASS_ELEMENTAL, ACTUAL_YES,
 	     BT_REAL, dd, GFC_STD_GNU,
@@ -3362,19 +3367,17 @@ add_functions (void)
 	     y, BT_REAL, dd, REQUIRED,
 	     x, BT_REAL, dd, REQUIRED);
 
-  make_generic ("atan2d", GFC_ISYM_ATAN2D, GFC_STD_GNU);
-
   add_sym_1 ("cosd", GFC_ISYM_COSD, CLASS_ELEMENTAL, ACTUAL_YES,
-	     BT_REAL, dr, GFC_STD_GNU,
+	     BT_REAL, dr, GFC_STD_F2023,
 	     gfc_check_fn_r, gfc_simplify_cosd, gfc_resolve_trigd,
 	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("cosd", GFC_ISYM_COSD, GFC_STD_F2023);
 
   add_sym_1 ("dcosd", GFC_ISYM_COSD, CLASS_ELEMENTAL, ACTUAL_YES,
 	     BT_REAL, dd, GFC_STD_GNU,
 	     gfc_check_fn_d, gfc_simplify_cosd, gfc_resolve_trigd,
 	     x, BT_REAL, dd, REQUIRED);
-
-  make_generic ("cosd", GFC_ISYM_COSD, GFC_STD_GNU);
 
   add_sym_1 ("cotan", GFC_ISYM_COTAN, CLASS_ELEMENTAL, ACTUAL_YES,
 	     BT_REAL, dr, GFC_STD_GNU,
@@ -3411,28 +3414,28 @@ add_functions (void)
   make_generic ("cotand", GFC_ISYM_COTAND, GFC_STD_GNU);
 
   add_sym_1 ("sind", GFC_ISYM_SIND, CLASS_ELEMENTAL, ACTUAL_YES,
-	     BT_REAL, dr, GFC_STD_GNU,
+	     BT_REAL, dr, GFC_STD_F2023,
 	     gfc_check_fn_r, gfc_simplify_sind, gfc_resolve_trigd,
 	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("sind", GFC_ISYM_SIND, GFC_STD_F2023);
 
   add_sym_1 ("dsind", GFC_ISYM_SIND, CLASS_ELEMENTAL, ACTUAL_YES,
 	     BT_REAL, dd, GFC_STD_GNU,
 	     gfc_check_fn_d, gfc_simplify_sind, gfc_resolve_trigd,
 	     x, BT_REAL, dd, REQUIRED);
 
-  make_generic ("sind", GFC_ISYM_SIND, GFC_STD_GNU);
-
   add_sym_1 ("tand", GFC_ISYM_TAND, CLASS_ELEMENTAL, ACTUAL_YES,
-	     BT_REAL, dr, GFC_STD_GNU,
+	     BT_REAL, dr, GFC_STD_F2023,
 	     gfc_check_fn_r, gfc_simplify_tand, gfc_resolve_trigd,
 	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("tand", GFC_ISYM_TAND, GFC_STD_F2023);
 
   add_sym_1 ("dtand", GFC_ISYM_TAND, CLASS_ELEMENTAL, ACTUAL_YES,
 	     BT_REAL, dd, GFC_STD_GNU,
 	     gfc_check_fn_d, gfc_simplify_tand, gfc_resolve_trigd,
 	     x, BT_REAL, dd, REQUIRED);
-
-  make_generic ("tand", GFC_ISYM_TAND, GFC_STD_GNU);
 
   /* The following function is internally used for coarray libray functions.
      "make_from_module" makes it inaccessible for external users.  */
@@ -4887,6 +4890,10 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
 
     case GFC_STD_F2018:
       symstd_msg = _("new in Fortran 2018");
+      break;
+
+    case GFC_STD_F2023:
+      symstd_msg = _("new in Fortran 2023");
       break;
 
     case GFC_STD_GNU:

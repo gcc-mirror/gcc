@@ -1,8 +1,11 @@
 /* { dg-do run } */
-/* { dg-options "-O2 --save-temps -fno-inline" } */
+/* { dg-options "-O2 --save-temps" } */
 
 extern void abort (void);
 
+/* Note GCC can optimize this to -346565474575675 even without inlining so
+   mark it for noipa.  */
+[[gnu::noipa]]
 long long int
 dummy_number_generator ()
 {

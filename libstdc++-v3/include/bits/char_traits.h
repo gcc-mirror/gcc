@@ -1,6 +1,6 @@
 // Character Traits for use by standard string and iostream -*- C++ -*-
 
-// Copyright (C) 1997-2023 Free Software Foundation, Inc.
+// Copyright (C) 1997-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,9 +60,6 @@
 #ifndef _GLIBCXX_ALWAYS_INLINE
 # define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
 #endif
-
-#define __glibcxx_want_constexpr_char_traits
-#include <bits/version.h>
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -230,19 +227,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 202002L
       if (std::__is_constant_evaluated())
 	{
-	  if (__s1 == __s2) // unlikely, but saves a lot of work
-	    return __s1;
-	  const auto __end = __s2 + __n - 1;
-	  bool __overlap = false;
-	  for (std::size_t __i = 0; __i < __n - 1; ++__i)
-	    {
-	      if (__s1 + __i == __end)
-		{
-		  __overlap = true;
-		  break;
-		}
-	    }
-	  if (__overlap)
+	  // Use __builtin_constant_p to avoid comparing unrelated pointers.
+	  if (__builtin_constant_p(__s2 < __s1)
+		&& __s1 > __s2 && __s1 < (__s2 + __n))
 	    {
 	      do
 		{

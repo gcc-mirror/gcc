@@ -163,5 +163,5 @@ main ()
   exit (0);
 }
 #else
-main(){ exit (0); }
+int main(){ exit (0); }
 #endif

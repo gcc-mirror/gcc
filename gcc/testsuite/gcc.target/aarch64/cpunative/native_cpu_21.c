@@ -7,7 +7,7 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+crc\+lse\+rcpc\+rdma\+dotprod\+fp16fml\+sb\+ssbs\+sve2-sm4\+sve2-aes\+sve2-sha3\+sve2-bitperm\+i8mm\+bf16\+flagm\n} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+flagm\+dotprod\+rdma\+lse\+crc\+fp16fml\+rcpc\+i8mm\+bf16\+sve2-aes\+sve2-bitperm\+sve2-sha3\+sve2-sm4\+sb\+ssbs\n} } } */
 
 /* Check that an Armv8-A core doesn't fall apart on extensions without midr
    values.  */

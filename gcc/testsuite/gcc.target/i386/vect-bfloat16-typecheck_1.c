@@ -123,12 +123,12 @@ __m128bf16 footest (__m128bf16 vector0)
   (void) glob_bfloat_vec;
   (__m128bf16) glob_bfloat_vec;
 
-  (__bf16) glob_bfloat_vec; /* { dg-error {aggregate value used where a floating-point was expected} } */
+  (__bf16) glob_bfloat_vec; /* { dg-error {vector value used where a floating-point was expected} } */
   (short) glob_bfloat_vec; /* { dg-error {cannot convert a vector of type '__m128bf16' {aka '__vector\(8\) __bf16'} to type 'short int' which has different size} } */
   (int) glob_bfloat_vec; /* { dg-error {cannot convert a vector of type '__m128bf16' {aka '__vector\(8\) __bf16'} to type 'int' which has different size} } */
-  (_Float16) glob_bfloat_vec; /* { dg-error {aggregate value used where a floating-point was expected} } */
-  (float) glob_bfloat_vec; /* { dg-error {aggregate value used where a floating-point was expected} } */
-  (double) glob_bfloat_vec; /* { dg-error {aggregate value used where a floating-point was expected} } */
+  (_Float16) glob_bfloat_vec; /* { dg-error {vector value used where a floating-point was expected} } */
+  (float) glob_bfloat_vec; /* { dg-error {vector value used where a floating-point was expected} } */
+  (double) glob_bfloat_vec; /* { dg-error {vector value used where a floating-point was expected} } */
 
   (__v8si) glob_bfloat_vec; /* { dg-error {cannot convert a value of type '__m128bf16' {aka '__vector\(8\) __bf16'} to vector type '__vector\(8\) int' which has different size} } */
   (__m256) glob_bfloat_vec; /* { dg-error {cannot convert a value of type '__m128bf16' {aka '__vector\(8\) __bf16'} to vector type '__vector\(8\) float' which has different size} } */
@@ -224,8 +224,8 @@ __m128bf16 footest (__m128bf16 vector0)
   0 ? 0.1 : vector0; /* { dg-error {type mismatch in conditional expression} } */
   0 ? vector0 : 0.1; /* { dg-error {type mismatch in conditional expression} } */
   0 ? bfloat_ptr : bfloat_ptr2;
-  0 ? bfloat_ptr : float_ptr; /* { dg-warning {pointer type mismatch in conditional expression} } */
-  0 ? float_ptr : bfloat_ptr; /* { dg-warning {pointer type mismatch in conditional expression} } */
+  0 ? bfloat_ptr : float_ptr; /* { dg-error {pointer type mismatch in conditional expression} } */
+  0 ? float_ptr : bfloat_ptr; /* { dg-error {pointer type mismatch in conditional expression} } */
 
   vector0 ? vector0 : vector0; /* { dg-error {used vector type where scalar is required} } */
   vector0 ? is_a_float16_vec : vector0; /* { dg-error {used vector type where scalar is required} } */

@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu89" } */
 f()
 {
   unsigned b = 0;

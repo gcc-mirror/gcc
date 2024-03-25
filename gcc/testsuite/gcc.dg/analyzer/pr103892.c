@@ -1,4 +1,4 @@
-/* { dg-additional-options "-O2" } */
+/* { dg-additional-options "-O2 -Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
 
 /* C only: C++ FE optimizes argstr_get_word completely away
    and therefore the number of SN diminishes compared to C,
@@ -38,7 +38,7 @@ typedef struct pipecmd_sequence pipecmd_sequence_t;
 
 static char *argstr_get_word (const char **argstr)
 {
- while (**argstr) {
+ while (**argstr) { /* { dg-warning "infinite loop" } */
   switch (**argstr) {
    case ' ':
    case '\t':

@@ -4,6 +4,7 @@ typedef struct dw_fde_struct
 } *dw_fde_ref;
 dw_fde_ref fde_table;
 unsigned fde_table_in_use;
+void tree_contains_struct_check_failed (int);
 void output_call_frame_info (void)
 {
   unsigned int i;

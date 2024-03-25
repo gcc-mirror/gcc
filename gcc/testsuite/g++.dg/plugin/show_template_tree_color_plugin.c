@@ -21,7 +21,7 @@
 int plugin_is_GPL_compatible;
 
 void
-noop_starter_fn (diagnostic_context *, diagnostic_info *)
+noop_starter_fn (diagnostic_context *, const diagnostic_info *)
 {
 }
 

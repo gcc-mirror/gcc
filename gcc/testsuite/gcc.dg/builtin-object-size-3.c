@@ -628,6 +628,7 @@ test10 (void)
     }
 }
 
+#ifndef __AVR__ /* avr has no strndup */
 /* Tests for strdup/strndup.  */
 size_t
 __attribute__ ((noinline))
@@ -716,6 +717,7 @@ test11 (void)
     FAIL ();
   free (res);
 }
+#endif /* avr */
 
 int
 main (void)
@@ -732,6 +734,8 @@ main (void)
   test8 ();
   test9 (1);
   test10 ();
+#ifndef __AVR__ /* avr has no strndup */
   test11 ();
+#endif
   DONE ();
 }

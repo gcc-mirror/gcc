@@ -1,5 +1,5 @@
 /* Modeling API uses and misuses via state machines.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -188,10 +188,7 @@ make_checkers (auto_delete_vec <state_machine> &out, logger *logger)
   out.safe_push (make_malloc_state_machine (logger));
   out.safe_push (make_fileptr_state_machine (logger));
   out.safe_push (make_fd_state_machine (logger));
-  /* The "taint" checker must be explicitly enabled (as it currently
-     leads to state explosions that stop the other checkers working).  */
-  if (flag_analyzer_checker)
-    out.safe_push (make_taint_state_machine (logger));
+  out.safe_push (make_taint_state_machine (logger));
   out.safe_push (make_sensitive_state_machine (logger));
   out.safe_push (make_signal_state_machine (logger));
   out.safe_push (make_va_list_state_machine (logger));

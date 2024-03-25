@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 __complex__
 double f ()
 {
@@ -9,7 +12,8 @@ double f ()
   return c;
 }
 
-main ()
+int
+main (void)
 {
   __complex__ double c;
 

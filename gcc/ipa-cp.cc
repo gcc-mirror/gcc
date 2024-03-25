@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com> and Martin Jambor
    <mjambor@suse.cz>
@@ -478,27 +478,17 @@ values_equal_for_ipcp_p (tree x, tree y)
 
   if (TREE_CODE (x) == ADDR_EXPR
       && TREE_CODE (y) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (x, 0)) == CONST_DECL
-      && TREE_CODE (TREE_OPERAND (y, 0)) == CONST_DECL)
-    return operand_equal_p (DECL_INITIAL (TREE_OPERAND (x, 0)),
-			    DECL_INITIAL (TREE_OPERAND (y, 0)), 0);
+      && (TREE_CODE (TREE_OPERAND (x, 0)) == CONST_DECL
+	  || (TREE_CODE (TREE_OPERAND (x, 0)) == VAR_DECL
+	      && DECL_IN_CONSTANT_POOL (TREE_OPERAND (x, 0))))
+      && (TREE_CODE (TREE_OPERAND (y, 0)) == CONST_DECL
+	  || (TREE_CODE (TREE_OPERAND (y, 0)) == VAR_DECL
+	      && DECL_IN_CONSTANT_POOL (TREE_OPERAND (y, 0)))))
+    return TREE_OPERAND (x, 0) == TREE_OPERAND (y, 0)
+	   || operand_equal_p (DECL_INITIAL (TREE_OPERAND (x, 0)),
+			       DECL_INITIAL (TREE_OPERAND (y, 0)), 0);
   else
     return operand_equal_p (x, y, 0);
-}
-
-/* Print V which is extracted from a value in a lattice to F.  */
-
-static void
-print_ipcp_constant_value (FILE * f, tree v)
-{
-  if (TREE_CODE (v) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (v, 0)) == CONST_DECL)
-    {
-      fprintf (f, "& ");
-      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (v, 0)));
-    }
-  else
-    print_generic_expr (f, v);
 }
 
 /* Print V which is extracted from a value in a lattice to F.  */
@@ -1271,6 +1261,8 @@ ipa_argagg_value_list::dump (FILE *f)
       print_generic_expr (f, av.value);
       if (av.by_ref)
 	fprintf (f, "(by_ref)");
+      if (av.killed)
+	fprintf (f, "(killed)");
       comma = true;
     }
   fprintf (f, "\n");
@@ -1437,6 +1429,8 @@ ipa_argagg_value_list::push_adjusted_values (unsigned src_index,
 	  new_av.unit_offset = av->unit_offset - unit_delta;
 	  new_av.index = dest_index;
 	  new_av.by_ref = av->by_ref;
+	  gcc_assert (!av->killed);
+	  new_av.killed = false;
 
 	  /* Quick check that the offsets we push are indeed increasing.  */
 	  gcc_assert (first
@@ -1473,6 +1467,7 @@ push_agg_values_from_plats (ipcp_param_lattices *plats, int dest_index,
 	iav.unit_offset = aglat->offset / BITS_PER_UNIT - unit_delta;
 	iav.index = dest_index;
 	iav.by_ref = plats->aggs_by_ref;
+	iav.killed = false;
 
 	gcc_assert (first
 		    || iav.unit_offset > prev_unit_offset);
@@ -1931,7 +1926,8 @@ ipa_vr_operation_and_type_effects (vrange &dst_vr,
   Value_Range varying (dst_type);
   varying.set_varying (dst_type);
 
-  return (handler.fold_range (dst_vr, dst_type, src_vr, varying)
+  return (handler.operand_check_p (dst_type, src_type, dst_type)
+	  && handler.fold_range (dst_vr, dst_type, src_vr, varying)
 	  && !dst_vr.varying_p ()
 	  && !dst_vr.undefined_p ());
 }
@@ -2139,6 +2135,7 @@ ipa_push_agg_values_from_jfunc (ipa_node_params *info, cgraph_node *node,
       iav.unit_offset = item.offset / BITS_PER_UNIT;
       iav.index = dst_index;
       iav.by_ref = agg_jfunc->by_ref;
+      iav.killed = 0;
 
       gcc_assert (first
 		  || iav.unit_offset > prev_unit_offset);
@@ -3981,6 +3978,7 @@ estimate_local_effects (struct cgraph_node *node)
 	      avals.m_known_aggs[j].unit_offset = unit_offset;
 	      avals.m_known_aggs[j].index = index;
 	      avals.m_known_aggs[j].by_ref = plats->aggs_by_ref;
+	      avals.m_known_aggs[j].killed = false;
 
 	      perform_estimation_of_a_value (node, &avals,
 					     removable_params_cost, 0, val);
@@ -5857,6 +5855,7 @@ push_agg_values_for_index_from_edge (struct cgraph_edge *cs, int index,
 	  iav.unit_offset = agg_jf.offset / BITS_PER_UNIT;
 	  iav.index = index;
 	  iav.by_ref = jfunc->agg.by_ref;
+	  iav.killed = false;
 
 	  gcc_assert (first
 		      || iav.unit_offset > prev_unit_offset);

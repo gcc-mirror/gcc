@@ -1,7 +1,7 @@
 /* An experimental state machine, for tracking bad calls from within
    signal handlers.
 
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "bitmap.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -114,15 +113,13 @@ public:
     return OPT_Wanalyzer_unsafe_call_within_signal_handler;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     auto_diagnostic_group d;
-    diagnostic_metadata m;
     /* CWE-479: Signal Handler Use of a Non-reentrant Function.  */
-    m.add_cwe (479);
-    if (warning_meta (rich_loc, m, get_controlling_option (),
-		      "call to %qD from within signal handler",
-		      m_unsafe_fndecl))
+    ctxt.add_cwe (479);
+    if (ctxt.warn ("call to %qD from within signal handler",
+		   m_unsafe_fndecl))
       {
 	/* If we know a possible alternative function, add a note
 	   suggesting the replacement.  */
@@ -185,10 +182,10 @@ private:
 /* signal_state_machine's ctor.  */
 
 signal_state_machine::signal_state_machine (logger *logger)
-: state_machine ("signal", logger)
+: state_machine ("signal", logger),
+  m_in_signal_handler (add_state ("in_signal_handler")),
+  m_stop (add_state ("stop"))
 {
-  m_in_signal_handler = add_state ("in_signal_handler");
-  m_stop = add_state ("stop");
 }
 
 /* Update MODEL for edges that simulate HANDLER_FUN being called as
@@ -279,6 +276,7 @@ public:
 						       src_enode);
     if (dst_enode)
       eg->add_edge (src_enode, dst_enode, NULL, /*state_change (),*/
+		    true, /* assume does work  */
 		    make_unique<signal_delivery_edge_info_t> ());
   }
 

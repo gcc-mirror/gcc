@@ -1,6 +1,6 @@
 /* coreout.h - Declarations and definitions related to
    BPF Compile Once - Run Everywhere (CO-RE) support.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

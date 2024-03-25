@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2019-2024 Free Software Foundation, Inc.
 
    This file is part of LIBF7, which is part of GCC.
 
@@ -134,14 +134,14 @@
     ..regno = 0
 
     .irp    reg,                        \
-            X, x, XL, xl, Xl, xL, x, x  \
+            X, x, XL, xl, Xl, xL, x, x, \
             Y, y, YL, yl, Yl, yL, y, y, \
             Z, z, ZL, zl, Zl, zL, z, z
         .ifc  \reg,\dst
-            ..dst = (..regno / 8) + 26
+            ..dst = 2 * (..regno / 8) + 26
         .endif
         .ifc  \reg,\src
-            ..src = (..regno / 8) + 26
+            ..src = 2 * (..regno / 8) + 26
         .endif
         ..regno = ..regno + 1
     .endr

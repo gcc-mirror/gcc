@@ -1,5 +1,5 @@
 /* Subroutines used for MIPS code generation.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -611,7 +611,7 @@ static tree mips_handle_use_shadow_register_set_attr (tree *, tree, tree, int,
 						      bool *);
 
 /* The value of TARGET_ATTRIBUTE_TABLE.  */
-static const struct attribute_spec mips_attribute_table[] = {
+TARGET_GNU_ATTRIBUTES (mips_attribute_table, {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "long_call",   0, 0, false, true,  true,  false, NULL, NULL },
@@ -636,9 +636,8 @@ static const struct attribute_spec mips_attribute_table[] = {
     mips_handle_use_shadow_register_set_attr, NULL },
   { "keep_interrupts_masked",	0, 0, false, true,  true, false, NULL, NULL },
   { "use_debug_exception_return", 0, 0, false, true, true, false, NULL, NULL },
-  { "use_hazard_barrier_return", 0, 0, true, false, false, false, NULL, NULL },
-  { NULL,	   0, 0, false, false, false, false, NULL, NULL }
-};
+  { "use_hazard_barrier_return", 0, 0, true, false, false, false, NULL, NULL }
+});
 
 /* A table describing all the processors GCC knows about; see
    mips-cpus.def for details.  */
@@ -4171,6 +4170,37 @@ mips_set_reg_reg_cost (machine_mode mode)
     }
 }
 
+/* Implement TARGET_INSN_COSTS.  */
+
+static int
+mips_insn_cost (rtx_insn *x, bool speed)
+{
+  int cost;
+  int count;
+  int ratio;
+
+  if (recog_memoized (x) < 0
+      && GET_CODE (PATTERN (x)) != ASM_INPUT
+      && asm_noperands (PATTERN (x)) < 0)
+    goto pattern_cost;
+
+  /* FIXME: return get_attr_length?  More tests may be needed.  */
+  if (!speed)
+    goto pattern_cost;
+
+  count = get_attr_insn_count (x);
+  ratio = get_attr_perf_ratio (x);
+  cost = count * ratio;
+  if (cost > 0)
+    return cost;
+
+pattern_cost:
+  cost = pattern_cost (PATTERN (x), speed);
+  /* If the cost is zero, then it's likely a complex insn.
+     FIXME: Return COSTS_N_INSNS (2)?  More tests are needed.  */
+  return cost;
+}
+
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
@@ -7270,7 +7300,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 /* Declare a unique, locally-binding function called NAME, then start
    its definition.  */
 
-static void
+static tree
 mips_start_unique_function (const char *name)
 {
   tree decl;
@@ -7292,13 +7322,15 @@ mips_start_unique_function (const char *name)
   fputs ("\t.hidden\t", asm_out_file);
   assemble_name (asm_out_file, name);
   putc ('\n', asm_out_file);
+
+  return decl;
 }
 
 /* Start a definition of function NAME.  MIPS16_P indicates whether the
    function contains MIPS16 code.  */
 
 static void
-mips_start_function_definition (const char *name, bool mips16_p)
+mips_start_function_definition (const char *name, bool mips16_p, tree decl)
 {
   if (mips16_p)
     fprintf (asm_out_file, "\t.set\tmips16\n");
@@ -7322,8 +7354,7 @@ mips_start_function_definition (const char *name, bool mips16_p)
   ASM_OUTPUT_TYPE_DIRECTIVE (asm_out_file, name, "function");
 
   /* Start the definition proper.  */
-  assemble_name (asm_out_file, name);
-  fputs (":\n", asm_out_file);
+  ASM_OUTPUT_FUNCTION_LABEL (asm_out_file, name, decl);
 }
 
 /* End a function definition started by mips_start_function_definition.  */
@@ -7350,8 +7381,8 @@ mips_finish_stub (mips_one_only_stub **stub_ptr)
     return;
 
   const char *name = stub->get_name ();
-  mips_start_unique_function (name);
-  mips_start_function_definition (name, false);
+  tree decl = mips_start_unique_function (name);
+  mips_start_function_definition (name, false, decl);
   stub->output_body ();
   mips_end_function_definition (name);
   delete stub;
@@ -7605,7 +7636,7 @@ mips16_build_function_stub (void)
 
   /* Start the function definition.  */
   assemble_start_function (stubdecl, stubname);
-  mips_start_function_definition (stubname, false);
+  mips_start_function_definition (stubname, false, stubdecl);
 
   /* If generating pic2 code, either set up the global pointer or
      switch to pic0.  */
@@ -7865,7 +7896,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 
       /* Start the function definition.  */
       assemble_start_function (stubdecl, stubname);
-      mips_start_function_definition (stubname, false);
+      mips_start_function_definition (stubname, false, stubdecl);
 
       if (fp_ret_p)
 	{
@@ -12065,7 +12096,7 @@ mips_output_function_prologue (FILE *file)
      assemble_start_function.  This is needed so that the name used here
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
-  mips_start_function_definition (fnname, TARGET_MIPS16);
+  mips_start_function_definition (fnname, TARGET_MIPS16, current_function_decl);
 
   /* Output MIPS-specific frame information.  */
   if (!flag_inhibit_size_directive)
@@ -20550,6 +20581,8 @@ mips_option_override (void)
   /* Set NaN and ABS defaults.  */
   if (mips_nan == MIPS_IEEE_754_DEFAULT && !ISA_HAS_IEEE_754_LEGACY)
     mips_nan = MIPS_IEEE_754_2008;
+  if (mips_abs == MIPS_IEEE_754_DEFAULT && mips_nan == MIPS_IEEE_754_2008)
+    mips_abs = MIPS_IEEE_754_2008;
   if (mips_abs == MIPS_IEEE_754_DEFAULT && !ISA_HAS_IEEE_754_LEGACY)
     mips_abs = MIPS_IEEE_754_2008;
 
@@ -23068,6 +23101,8 @@ mips_bit_clear_p (enum machine_mode mode, unsigned HOST_WIDE_INT m)
 #define TARGET_RTX_COSTS mips_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST mips_address_cost
+#undef  TARGET_INSN_COST
+#define TARGET_INSN_COST mips_insn_cost
 
 #undef TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
 #define TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P mips_no_speculation_in_delay_slots_p

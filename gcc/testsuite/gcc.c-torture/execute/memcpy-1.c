@@ -2,6 +2,9 @@
 
 #include <string.h>
 
+void abort (void);
+void exit (int);
+
 #if defined (STACK_SIZE)
 #define MEMCPY_SIZE (STACK_SIZE / 3)
 #else
@@ -14,7 +17,8 @@ void *copy (void *o, const void *i, unsigned l)
   return memcpy (o, i, l);
 }
 
-main ()
+int
+main (void)
 {
   unsigned i;
   unsigned char src[MEMCPY_SIZE];

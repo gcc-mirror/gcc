@@ -1,5 +1,8 @@
 /* { dg-skip-if "small alignment" { pdp11-*-* } } */
 
+void abort (void);
+void exit (int);
+
 struct s1
 {
   int __attribute__ ((aligned (8))) a;

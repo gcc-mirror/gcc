@@ -12,8 +12,8 @@ struct dc
   int *d;
 };
 
-int
-main ()
+static void
+test (unsigned variant)
 {
   int n = 100, i, j, k;
   struct dc v = { .a = 3 };
@@ -22,7 +22,16 @@ main ()
   v.c = (int *) malloc (sizeof (int) * n);
   v.d = (int *) malloc (sizeof (int) * n);
 
+  if (variant & 1)
+    {
 #pragma acc enter data copyin(v)
+    }
+  else
+    {
+      void *v_d = acc_malloc (sizeof v);
+      acc_map_data (&v, v_d, sizeof v);
+      acc_memcpy_to_device (v_d, &v, sizeof v);
+    }
 
   for (k = 0; k < 16; k++)
     {
@@ -46,9 +55,25 @@ main ()
       assert (!acc_is_present (v.d, sizeof (int) * n));
     }
 
+  if (variant & 1)
+    {
 #pragma acc exit data copyout(v)
+    }
+  else
+    {
+      void *v_d = acc_deviceptr (&v);
+      acc_unmap_data (&v);
+      acc_free (v_d);
+    }
 
   assert (!acc_is_present (&v, sizeof (v)));
+}
+
+int
+main ()
+{
+  for (unsigned variant = 0; variant < 2; ++variant)
+    test (variant);
 
   return 0;
 }

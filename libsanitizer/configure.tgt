@@ -72,6 +72,11 @@ case "${target}" in
   x86_64-*-solaris2.11* | i?86-*-solaris2.11*)
 	;;
   riscv64-*-linux*)
+	if test x$ac_cv_sizeof_void_p = x8; then
+		TSAN_SUPPORTED=yes
+		LSAN_SUPPORTED=yes
+		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_riscv64.lo
+	fi
 	;;
   loongarch64-*-linux*)
 	;;

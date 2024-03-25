@@ -7,7 +7,6 @@
 /*
 ** test_float_long___builtin_lrintf:
 **   ...
-**   vsetvli\s+[atx][0-9]+,\s*zero,\s*e32,\s*m1,\s*ta,\s*ma
 **   vfcvt\.x\.f\.v\s+v[0-9]+,\s*v[0-9]+
 **   ...
 */

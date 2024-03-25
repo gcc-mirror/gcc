@@ -1,5 +1,5 @@
 // Exception handling and frame unwind runtime interface routines.
-// Copyright (C) 2011-2023 Free Software Foundation, Inc.
+// Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -141,6 +141,7 @@ else version (SPARC64)  private enum __aligned__ = 16;
 else version (SystemZ)  private enum __aligned__ = 8;
 else version (X86)      private enum __aligned__ = 16;
 else version (X86_64)   private enum __aligned__ = 16;
+else version (LoongArch64) private enum __aligned__ = 16;
 else static assert( false, "Platform not supported.");
 
 align(__aligned__) struct _Unwind_Exception

@@ -1,6 +1,6 @@
 /* PR target/108881 */
 /* { dg-do compile } */
-/* { dg-options "-mavx512bf16 -mno-avx512vl" } */
+/* { dg-options "-fpermissive -mavx512bf16 -mno-avx512vl" } */
 
 typedef float __m256 __attribute__((__vector_size__(32)));
 typedef __bf16 __v16bf __attribute__((__vector_size__(32)));

@@ -1,0 +1,2 @@
+Minimal hacked-up version of some C++ support for offload devices, until we
+have libstdc++-v3/libsupc++ proper.

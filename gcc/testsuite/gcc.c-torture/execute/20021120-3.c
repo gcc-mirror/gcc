@@ -1,6 +1,10 @@
 /* Test whether a partly call-clobbered register will be moved over a call.
    Although the original test case didn't use any GNUisms, it proved
    difficult to reduce without the named register extension.  */
+
+void abort (void);
+void exit (int);
+
 #if __SH64__ == 32
 #define LOC asm ("r10")
 #else
@@ -11,7 +15,7 @@ unsigned int foo (char *c, unsigned int x, unsigned int y)
 {
   register unsigned int z LOC;
 
-  sprintf (c, "%d", x / y);
+  __builtin_sprintf (c, "%d", x / y);
   z = x + 1;
   return z / (y + 1);
 }

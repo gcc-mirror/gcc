@@ -1,2 +1,2 @@
 extern volatile int i;
-f(){int j;for(;;)j = i;}
+void f(void){int j;for(;;)j = i;}

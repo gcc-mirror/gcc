@@ -16,7 +16,6 @@ struct C : public A
   {
     B < &A::A > b;  // { dg-error "taking address of constructor 'A::A" "" { target c++98_only } }
     // { dg-error "taking address of constructor 'constexpr A::A" "" { target c++11 } .-1 }
+    // { dg-error "template argument 1 is invalid" "" { target *-*-* } .-2 }
   }
 };
-
-template class C < int >;

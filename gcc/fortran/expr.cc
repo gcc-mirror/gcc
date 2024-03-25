@@ -1,5 +1,5 @@
 /* Routines for manipulation of expression nodes.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -5958,6 +5958,20 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
   if (expr->expr_type == EXPR_ARRAY)
     return true;
 
+  if (expr->expr_type == EXPR_NULL)
+    {
+      /* F2018:16.9.144  NULL ([MOLD]):
+	 "If MOLD is present, the characteristics are the same as MOLD."
+	 "If MOLD is absent, the characteristics of the result are
+	 determined by the entity with which the reference is associated."
+	 F2018:15.3.2.2 characteristics attributes include CONTIGUOUS.  */
+      if (expr->ts.type == BT_UNKNOWN)
+	return true;
+      else
+	return (gfc_variable_attr (expr, NULL).contiguous
+		|| gfc_variable_attr (expr, NULL).allocatable);
+    }
+
   if (expr->expr_type == EXPR_FUNCTION)
     {
       if (expr->value.function.isym)
@@ -6474,7 +6488,8 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	{
 	  if (context)
 	    {
-	      if (assoc->target->expr_type == EXPR_VARIABLE)
+	      if (assoc->target->expr_type == EXPR_VARIABLE
+		  && gfc_has_vector_index (assoc->target))
 		gfc_error ("%qs at %L associated to vector-indexed target"
 			   " cannot be used in a variable definition"
 			   " context (%s)",

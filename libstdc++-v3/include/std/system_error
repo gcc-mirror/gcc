@@ -1,6 +1,6 @@
 // <system_error> -*- C++ -*-
 
-// Copyright (C) 2007-2023 Free Software Foundation, Inc.
+// Copyright (C) 2007-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -563,7 +563,7 @@ namespace __adl_only
     : runtime_error(__ec.message()), _M_code(__ec) { }
 
     system_error(error_code __ec, const string& __what)
-    : runtime_error(__what + ": " + __ec.message()), _M_code(__ec) { }
+    : runtime_error(__what + (": " + __ec.message())), _M_code(__ec) { }
 
     system_error(error_code __ec, const char* __what)
     : runtime_error(__what + (": " + __ec.message())), _M_code(__ec) { }
@@ -576,7 +576,7 @@ namespace __adl_only
       _M_code(__v, __ecat) { }
 
     system_error(int __v, const error_category& __ecat, const string& __what)
-    : runtime_error(__what + ": " + error_code(__v, __ecat).message()),
+    : runtime_error(__what + (": " + error_code(__v, __ecat).message())),
       _M_code(__v, __ecat) { }
 
 #if __cplusplus >= 201103L

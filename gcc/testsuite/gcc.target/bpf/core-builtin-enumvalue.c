@@ -40,12 +40,12 @@ int foo(void *data)
  return 0;
 }
 
-/* { dg-final { scan-assembler-times "\t.4byte\t0x8\t; bpfcr_type \\(named_ue64\\)" 5 } } */
-/* { dg-final { scan-assembler-times "\t.4byte\t0x9\t; bpfcr_type \\(named_se64\\)" 5} } */
-/* { dg-final { scan-assembler-times "\t.4byte\t0xb\t; bpfcr_type \\(named_ue\\)" 5 } } */
-/* { dg-final { scan-assembler-times "\t.4byte\t0xc\t; bpfcr_type \\(named_se\\)" 5} } */
-/* { dg-final { scan-assembler-times "\t.4byte\t0xa\t; bpfcr_kind" 12 } } BPF_ENUMVAL_EXISTS */
-/* { dg-final { scan-assembler-times "\t.4byte\t0xb\t; bpfcr_kind" 8 } } BPF_ENUMVAL_VALUE */
+/* { dg-final { scan-assembler-times "bpfcr_type \\(named_ue64\\)" 5 } } */
+/* { dg-final { scan-assembler-times "bpfcr_type \\(named_se64\\)" 5} } */
+/* { dg-final { scan-assembler-times "bpfcr_type \\(named_ue\\)" 5 } } */
+/* { dg-final { scan-assembler-times "bpfcr_type \\(named_se\\)" 5} } */
+/* { dg-final { scan-assembler-times "0xa\[\t \]+\[^\n\]*bpfcr_kind" 12 } } BPF_ENUMVAL_EXISTS */
+/* { dg-final { scan-assembler-times "0xb\[\t \]+\[^\n\]*bpfcr_kind" 8 } } BPF_ENUMVAL_VALUE */
 
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0\"\\)" 8 } } */
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"1\"\\)" 8 } } */

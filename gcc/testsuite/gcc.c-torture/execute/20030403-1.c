@@ -3,6 +3,8 @@
 
 #include <limits.h>
 
+void abort (void);
+
 int
 main ()
 {

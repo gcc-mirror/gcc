@@ -12,7 +12,7 @@ ew (unsigned short int c9, int stuff)
       int *fd = &stuff;
 
       *fd = c9;
-      fd = *fd;
+      fd = (int *) (__INTPTR_TYPE__) *fd;
       if (*fd != 0)
 	for (*by = 0; *by < 2; ++*by)
 	  c9 *= e1;

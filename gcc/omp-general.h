@@ -1,7 +1,7 @@
 /* General types and functions that are uselful for processing of OpenMP,
    OpenACC and similar directivers at various stages of compilation.
 
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "gomp-constants.h"
 #include "omp-api.h"
+#include "omp-selectors.h"
 
 /*  Flags for an OpenACC loop.  */
 
@@ -92,6 +93,63 @@ struct omp_for_data
 
 #define OACC_FN_ATTRIB "oacc function"
 
+/* Accessors for OMP context selectors, used by variant directives.
+   These are represented internally by a multilevel TREE_LIST structure, but
+   these accessors should be used to avoid confusion.  The grammar is:
+
+   context-set-selector-specification:
+     trait-set-selector [, trait-set-selector [, ...]]
+   trait-set-selector:
+     trait-set-selector-name = { trait-selector [, trait-selector [, ... ]] }
+   trait-selector:
+     trait-selector-name [ ( [trait-score: ]
+			     trait-property [, trait-property  [, ...]] ) ]
+
+   trait-properties can variously be identifiers, strings, clauses, or
+   expressions.
+
+   All the lists are chained via TREE_CHAIN.  If a score is present, it is
+   internally tacked on to the properties with a TREE_PURPOSE of
+   OMP_TS_SCORE_NODE.  */
+
+#define OMP_TS_SCORE_NODE integer_minus_one_node
+#define OMP_TP_NAMELIST_NODE integer_one_node
+
+#define OMP_TSS_ID(NODE) \
+  TREE_PURPOSE (NODE)
+#define OMP_TSS_TRAIT_SELECTORS(NODE) \
+  TREE_VALUE (NODE)
+#define OMP_TS_ID(NODE) \
+  TREE_PURPOSE (NODE)
+#define OMP_TS_SCORE(NODE) \
+  ((TREE_VALUE (NODE)					      \
+    && TREE_CODE (TREE_VALUE (NODE)) == TREE_LIST	      \
+    && TREE_PURPOSE (TREE_VALUE (NODE)) == OMP_TS_SCORE_NODE) \
+   ? TREE_VALUE (TREE_VALUE (NODE)) : NULL_TREE)
+#define OMP_TS_PROPERTIES(NODE) \
+  ((TREE_VALUE (NODE)					      \
+    && TREE_CODE (TREE_VALUE (NODE)) == TREE_LIST	      \
+    && TREE_PURPOSE (TREE_VALUE (NODE)) == OMP_TS_SCORE_NODE) \
+   ? TREE_CHAIN (TREE_VALUE (NODE)) : TREE_VALUE (NODE))
+#define OMP_TP_NAME(NODE) \
+  TREE_PURPOSE (NODE)
+#define OMP_TP_VALUE(NODE) \
+  TREE_VALUE (NODE)
+
+#define OMP_TSS_CODE(t)						\
+  ((enum omp_tss_code) TREE_INT_CST_LOW (OMP_TSS_ID (t)))
+#define OMP_TSS_NAME(t)			\
+  (omp_tss_map[OMP_TSS_CODE (t)])
+
+#define OMP_TS_CODE(t)						\
+  ((enum omp_ts_code) TREE_INT_CST_LOW (OMP_TS_ID (t)))
+#define OMP_TS_NAME(t)			\
+  (omp_ts_map[OMP_TS_CODE (t)].name)
+
+extern tree make_trait_set_selector (enum omp_tss_code, tree, tree);
+extern tree make_trait_selector (enum omp_ts_code, tree, tree, tree);
+extern tree make_trait_property (tree, tree, tree);
+
 extern tree omp_find_clause (tree clauses, enum omp_clause_code kind);
 extern bool omp_is_allocatable_or_ptr (tree decl);
 extern tree omp_check_optional_argument (tree decl, bool for_present_check);
@@ -106,13 +164,16 @@ extern gimple *omp_build_barrier (tree lhs);
 extern tree find_combined_omp_for (tree *, int *, void *);
 extern poly_uint64 omp_max_vf (void);
 extern int omp_max_simt_vf (void);
-extern int omp_constructor_traits_to_codes (tree, enum tree_code *);
+extern const char *omp_context_name_list_prop (tree);
+extern void omp_construct_traits_to_codes (tree, int, enum tree_code *);
 extern tree omp_check_context_selector (location_t loc, tree ctx);
 extern void omp_mark_declare_variant (location_t loc, tree variant,
 				      tree construct);
 extern int omp_context_selector_matches (tree);
-extern int omp_context_selector_set_compare (const char *, tree, tree);
-extern tree omp_get_context_selector (tree, const char *, const char *);
+extern int omp_context_selector_set_compare (enum omp_tss_code, tree, tree);
+extern tree omp_get_context_selector (tree, enum omp_tss_code,
+				      enum omp_ts_code);
+extern tree omp_get_context_selector_list (tree, enum omp_tss_code);
 extern tree omp_resolve_declare_variant (tree);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);
@@ -152,5 +213,74 @@ get_openacc_privatization_dump_flags ()
 }
 
 extern tree omp_build_component_ref (tree obj, tree field);
+
+namespace omp_addr_tokenizer {
+
+/* These are the ways of accessing a variable that have special-case handling
+   in the middle end (gimplify, omp-lower, etc.).  */
+
+/* These are the kinds of access that an ACCESS_METHOD token can represent.  */
+
+enum access_method_kinds
+{
+  ACCESS_DIRECT,
+  ACCESS_REF,
+  ACCESS_POINTER,
+  ACCESS_REF_TO_POINTER,
+  ACCESS_POINTER_OFFSET,
+  ACCESS_REF_TO_POINTER_OFFSET,
+  ACCESS_INDEXED_ARRAY,
+  ACCESS_INDEXED_REF_TO_ARRAY
+};
+
+/* These are the kinds that a STRUCTURE_BASE or ARRAY_BASE (except
+   BASE_COMPONENT_EXPR) can represent.  */
+
+enum structure_base_kinds
+{
+  BASE_DECL,
+  BASE_COMPONENT_EXPR,
+  BASE_ARBITRARY_EXPR
+};
+
+/* The coarse type for an address token.  These can have subtypes for
+   ARRAY_BASE or STRUCTURE_BASE (structure_base_kinds) or ACCESS_METHOD
+   (access_method_kinds).  */
+
+enum token_type
+{
+  ARRAY_BASE,
+  STRUCTURE_BASE,
+  COMPONENT_SELECTOR,
+  ACCESS_METHOD
+};
+
+/* The struct that forms a single token of an address expression as parsed by
+   omp_parse_expr.  These are typically held in a vec after parsing.  */
+
+struct omp_addr_token
+{
+  enum token_type type;
+  tree expr;
+
+  union
+  {
+    access_method_kinds access_kind;
+    structure_base_kinds structure_base_kind;
+  } u;
+
+  omp_addr_token (token_type, tree);
+  omp_addr_token (access_method_kinds, tree);
+  omp_addr_token (token_type, structure_base_kinds, tree);
+};
+
+extern bool omp_access_chain_p (vec<omp_addr_token *> &, unsigned);
+extern tree omp_accessed_addr (vec<omp_addr_token *> &, unsigned, tree);
+
+}
+
+typedef omp_addr_tokenizer::omp_addr_token omp_addr_token;
+
+extern bool omp_parse_expr (vec<omp_addr_token *> &, tree);
 
 #endif /* GCC_OMP_GENERAL_H */

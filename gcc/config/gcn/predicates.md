@@ -1,5 +1,5 @@
 ;; Predicate definitions for GCN.
-;; Copyright (C) 2016-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -68,6 +68,30 @@
     return false;
 
   return VGPR_REGNO_P (REGNO (op)) || REGNO (op) >= FIRST_PSEUDO_REGISTER;
+})
+
+(define_predicate "gcn_avgpr_register_operand"
+  (match_operand 0 "register_operand")
+  {
+    if (GET_CODE (op) == SUBREG)
+        op = SUBREG_REG (op);
+
+  if (!REG_P (op))
+      return false;
+
+  return AVGPR_REGNO_P (REGNO (op)) || REGNO (op) >= FIRST_PSEUDO_REGISTER;
+})
+
+(define_predicate "gcn_avgpr_hard_register_operand"
+  (match_operand 0 "register_operand")
+    {
+        if (GET_CODE (op) == SUBREG)
+	        op = SUBREG_REG (op);
+
+  if (!REG_P (op))
+        return false;
+
+  return AVGPR_REGNO_P (REGNO (op));
 })
 
 (define_predicate "gcn_inline_immediate_operand"

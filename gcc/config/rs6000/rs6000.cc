@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -1115,7 +1115,7 @@ static tree rs6000_handle_longcall_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_handle_altivec_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_handle_struct_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_builtin_vectorized_libmass (combined_fn, tree, tree);
-static void rs6000_emit_set_long_const (rtx, HOST_WIDE_INT);
+static void rs6000_emit_set_long_const (rtx, HOST_WIDE_INT, int * = nullptr);
 static int rs6000_memory_move_cost (machine_mode, reg_class_t, bool);
 static bool rs6000_debug_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int rs6000_debug_address_cost (rtx, machine_mode, addr_space_t,
@@ -1255,7 +1255,7 @@ static const char alt_reg_names[][8] =
 
 /* Table of valid machine attributes.  */
 
-static const struct attribute_spec rs6000_attribute_table[] =
+static const attribute_spec rs6000_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -1272,7 +1272,16 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE,
 #endif
-  { NULL,        0, 0, false, false, false, false, NULL, NULL }
+};
+
+static const scoped_attribute_specs rs6000_gnu_attribute_table =
+{
+  "gnu", { rs6000_gnu_attributes }
+};
+
+static const scoped_attribute_specs *const rs6000_attribute_table[] =
+{
+  &rs6000_gnu_attribute_table
 };
 
 #ifndef TARGET_PROFILE_KERNEL
@@ -3378,7 +3387,8 @@ darwin_rs6000_override_options (void)
 static rtx_insn *
 rs6000_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
 		      vec<machine_mode> & /*input_modes*/,
-		      vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
+		      vec<const char *> & /*constraints*/,
+		      vec<rtx> &/*uses*/, vec<rtx> &clobbers,
 		      HARD_REG_SET &clobbered_regs, location_t /*loc*/)
 {
   clobbers.safe_push (gen_rtx_REG (SImode, CA_REGNO));
@@ -6054,21 +6064,9 @@ num_insns_constant_gpr (HOST_WIDE_INT value)
 
   else if (TARGET_POWERPC64)
     {
-      HOST_WIDE_INT low = sext_hwi (value, 32);
-      HOST_WIDE_INT high = value >> 31;
-
-      if (high == 0 || high == -1)
-	return 2;
-
-      high >>= 1;
-
-      if (low == 0 || low == high)
-	return num_insns_constant_gpr (high) + 1;
-      else if (high == 0)
-	return num_insns_constant_gpr (low) + 1;
-      else
-	return (num_insns_constant_gpr (high)
-		+ num_insns_constant_gpr (low) + 1);
+      int num_insns = 0;
+      rs6000_emit_set_long_const (nullptr, value, &num_insns);
+      return num_insns;
     }
 
   else
@@ -10201,9 +10199,13 @@ rs6000_conditional_register_usage (void)
     for (i = 32; i < 64; i++)
       fixed_regs[i] = call_used_regs[i] = 1;
 
+  /* For non PC-relative code, GPR2 is unavailable for register allocation.  */
+  if (FIXED_R2 && !rs6000_pcrel_p ())
+    fixed_regs[2] = 1;
+
   /* The TOC register is not killed across calls in a way that is
      visible to the compiler.  */
-  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
+  if (fixed_regs[2] && (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2))
     call_used_regs[2] = 0;
 
   if (DEFAULT_ABI == ABI_V4 && flag_pic == 2)
@@ -10494,14 +10496,13 @@ can_be_built_by_li_and_rldic (HOST_WIDE_INT c, int *shift, HOST_WIDE_INT *mask)
 
 /* Subroutine of rs6000_emit_set_const, handling PowerPC64 DImode.
    Output insns to set DEST equal to the constant C as a series of
-   lis, ori and shl instructions.  */
+   lis, ori and shl instructions.  If NUM_INSNS is not NULL, then
+   only increase *NUM_INSNS as the number of insns, and do not emit
+   any insns.  */
 
 static void
-rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
+rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c, int *num_insns)
 {
-  rtx temp;
-  int shift;
-  HOST_WIDE_INT mask;
   HOST_WIDE_INT ud1, ud2, ud3, ud4;
 
   ud1 = c & 0xffff;
@@ -10509,168 +10510,196 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
   ud3 = (c >> 32) & 0xffff;
   ud4 = (c >> 48) & 0xffff;
 
-  if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000))
-      || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
-    emit_move_insn (dest, GEN_INT (sext_hwi (ud1, 16)));
+  /* This lambda is used to emit one insn or just increase the insn count.
+     When counting the insn number, no need to emit the insn.  */
+  auto count_or_emit_insn = [&num_insns] (rtx dest_or_insn, rtx src = nullptr) {
+    if (num_insns)
+      {
+	(*num_insns)++;
+	return;
+      }
 
-  else if ((ud4 == 0xffff && ud3 == 0xffff && (ud2 & 0x8000))
-	   || (ud4 == 0 && ud3 == 0 && ! (ud2 & 0x8000)))
+    if (src)
+      emit_move_insn (dest_or_insn, src);
+    else
+      emit_insn (dest_or_insn);
+  };
+
+  if (TARGET_PREFIXED && SIGNED_INTEGER_34BIT_P (c))
     {
-      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
-
-      emit_move_insn (ud1 != 0 ? temp : dest,
-		      GEN_INT (sext_hwi (ud2 << 16, 32)));
-      if (ud1 != 0)
-	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
+      /* li/lis/pli */
+      count_or_emit_insn (dest, GEN_INT (c));
+      return;
     }
-  else if (ud4 == 0xffff && ud3 == 0xffff && !(ud2 & 0x8000) && ud1 == 0)
+
+  if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000))
+      || (ud4 == 0 && ud3 == 0 && ud2 == 0 && !(ud1 & 0x8000)))
+    {
+      /* li */
+      count_or_emit_insn (dest, GEN_INT (sext_hwi (ud1, 16)));
+      return;
+    }
+
+  rtx temp
+    = (num_insns || !can_create_pseudo_p ()) ? dest : gen_reg_rtx (DImode);
+
+  if ((ud4 == 0xffff && ud3 == 0xffff && (ud2 & 0x8000))
+      || (ud4 == 0 && ud3 == 0 && !(ud2 & 0x8000)))
+    {
+      /* lis[; ori] */
+      count_or_emit_insn (ud1 != 0 ? temp : dest,
+			  GEN_INT (sext_hwi (ud2 << 16, 32)));
+      if (ud1 != 0)
+	count_or_emit_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
+      return;
+    }
+
+  if (ud4 == 0xffff && ud3 == 0xffff && !(ud2 & 0x8000) && ud1 == 0)
     {
       /* lis; xoris */
-      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
-      emit_move_insn (temp, GEN_INT (sext_hwi ((ud2 | 0x8000) << 16, 32)));
-      emit_move_insn (dest, gen_rtx_XOR (DImode, temp, GEN_INT (0x80000000)));
+      count_or_emit_insn (temp, GEN_INT (sext_hwi ((ud2 | 0x8000) << 16, 32)));
+      count_or_emit_insn (dest,
+			  gen_rtx_XOR (DImode, temp, GEN_INT (0x80000000)));
+      return;
     }
-  else if (ud4 == 0xffff && ud3 == 0xffff && (ud1 & 0x8000))
+
+  if (ud4 == 0xffff && ud3 == 0xffff && (ud1 & 0x8000))
     {
       /* li; xoris */
-      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
-      emit_move_insn (temp, GEN_INT (sext_hwi (ud1, 16)));
-      emit_move_insn (dest, gen_rtx_XOR (DImode, temp,
-					 GEN_INT ((ud2 ^ 0xffff) << 16)));
+      count_or_emit_insn (temp, GEN_INT (sext_hwi (ud1, 16)));
+      count_or_emit_insn (dest, gen_rtx_XOR (DImode, temp,
+					     GEN_INT ((ud2 ^ 0xffff) << 16)));
+      return;
     }
-  else if (can_be_built_by_li_lis_and_rotldi (c, &shift, &mask)
-	   || can_be_built_by_li_lis_and_rldicl (c, &shift, &mask)
-	   || can_be_built_by_li_lis_and_rldicr (c, &shift, &mask)
-	   || can_be_built_by_li_and_rldic (c, &shift, &mask))
+
+  int shift;
+  HOST_WIDE_INT mask;
+  if (can_be_built_by_li_lis_and_rotldi (c, &shift, &mask)
+      || can_be_built_by_li_lis_and_rldicl (c, &shift, &mask)
+      || can_be_built_by_li_lis_and_rldicr (c, &shift, &mask)
+      || can_be_built_by_li_and_rldic (c, &shift, &mask))
     {
-      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      /* li/lis; rldicX */
       unsigned HOST_WIDE_INT imm = (c | ~mask);
       imm = (imm >> shift) | (imm << (HOST_BITS_PER_WIDE_INT - shift));
 
-      emit_move_insn (temp, GEN_INT (imm));
+      count_or_emit_insn (temp, GEN_INT (imm));
       if (shift != 0)
 	temp = gen_rtx_ROTATE (DImode, temp, GEN_INT (shift));
       if (mask != HOST_WIDE_INT_M1)
 	temp = gen_rtx_AND (DImode, temp, GEN_INT (mask));
-      emit_move_insn (dest, temp);
+      count_or_emit_insn (dest, temp);
+
+      return;
     }
-  else if (ud3 == 0 && ud4 == 0)
+
+  if (ud3 == 0 && ud4 == 0)
     {
-      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
-
-      gcc_assert (ud2 & 0x8000);
-
-      if (ud1 == 0)
-	{
-	  /* lis; rldicl */
-	  emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
-	  emit_move_insn (dest,
-			  gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff)));
-	}
-      else if (!(ud1 & 0x8000))
+      gcc_assert ((ud2 & 0x8000) && ud1 != 0);
+      if (!(ud1 & 0x8000))
 	{
 	  /* li; oris */
-	  emit_move_insn (temp, GEN_INT (ud1));
-	  emit_move_insn (dest,
-			  gen_rtx_IOR (DImode, temp, GEN_INT (ud2 << 16)));
+	  count_or_emit_insn (temp, GEN_INT (ud1));
+	  count_or_emit_insn (dest,
+			      gen_rtx_IOR (DImode, temp, GEN_INT (ud2 << 16)));
+	  return;
 	}
-      else
-	{
-	  /* lis; ori; rldicl */
-	  emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
-	  emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
-	  emit_move_insn (dest,
+
+      /* lis; ori; rldicl */
+      count_or_emit_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
+      count_or_emit_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
+      count_or_emit_insn (dest,
 			  gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff)));
-	}
+      return;
     }
-  else if (ud1 == ud3 && ud2 == ud4)
+
+  if (ud1 == ud3 && ud2 == ud4)
     {
-      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      /* load low 32bits first, e.g. "lis; ori", then "rldimi".  */
       HOST_WIDE_INT num = (ud2 << 16) | ud1;
-      rs6000_emit_set_long_const (temp, sext_hwi (num, 32));
-      rtx one = gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff));
-      rtx two = gen_rtx_ASHIFT (DImode, temp, GEN_INT (32));
-      emit_move_insn (dest, gen_rtx_IOR (DImode, one, two));
-    }
-  else if ((ud4 == 0xffff && (ud3 & 0x8000))
-	   || (ud4 == 0 && ! (ud3 & 0x8000)))
-    {
-      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      rs6000_emit_set_long_const (temp, sext_hwi (num, 32), num_insns);
 
-      emit_move_insn (temp, GEN_INT (sext_hwi (ud3 << 16, 32)));
+      rtx rldimi = gen_rotldi3_insert_3 (dest, temp, GEN_INT (32), temp,
+					 GEN_INT (0xffffffff));
+      count_or_emit_insn (rldimi);
+      return;
+    }
+
+  if ((ud4 == 0xffff && (ud3 & 0x8000)) || (ud4 == 0 && !(ud3 & 0x8000)))
+    {
+      /* li; [ori;] rldicl [;oir].  */
+      count_or_emit_insn (temp, GEN_INT (sext_hwi (ud3 << 16, 32)));
       if (ud2 != 0)
-	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud2)));
-      emit_move_insn (ud1 != 0 ? temp : dest,
-		      gen_rtx_ASHIFT (DImode, temp, GEN_INT (16)));
+	count_or_emit_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud2)));
+      count_or_emit_insn (ud1 != 0 ? temp : dest,
+			  gen_rtx_ASHIFT (DImode, temp, GEN_INT (16)));
       if (ud1 != 0)
-	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
+	count_or_emit_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
+      return;
     }
-  else if (TARGET_PREFIXED)
+
+  if (TARGET_PREFIXED)
     {
       if (can_create_pseudo_p ())
 	{
-	  /* pli A,L + pli B,H + rldimi A,B,32,0.  */
-	  temp = gen_reg_rtx (DImode);
-	  rtx temp1 = gen_reg_rtx (DImode);
-	  emit_move_insn (temp, GEN_INT ((ud4 << 16) | ud3));
-	  emit_move_insn (temp1, GEN_INT ((ud2 << 16) | ud1));
-
-	  emit_insn (gen_rotldi3_insert_3 (dest, temp, GEN_INT (32), temp1,
-					   GEN_INT (0xffffffff)));
+	  /* pli A,L; pli B,H; rldimi A,B,32,0.  */
+	  rtx temp1 = num_insns ? nullptr : gen_reg_rtx (DImode);
+	  count_or_emit_insn (temp, GEN_INT ((ud4 << 16) | ud3));
+	  count_or_emit_insn (temp1, GEN_INT ((ud2 << 16) | ud1));
+	  rtx rldimi = gen_rotldi3_insert_3 (dest, temp, GEN_INT (32), temp1,
+					     GEN_INT (0xffffffff));
+	  count_or_emit_insn (rldimi);
+	  return;
 	}
-      else
-	{
-	  /* pli A,H + sldi A,32 + paddi A,A,L.  */
-	  emit_move_insn (dest, GEN_INT ((ud4 << 16) | ud3));
 
-	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
+      /* pli A,H; sldi A,32; paddi A,A,L.  */
+      count_or_emit_insn (dest, GEN_INT ((ud4 << 16) | ud3));
+      count_or_emit_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
 
-	  bool can_use_paddi = REGNO (dest) != FIRST_GPR_REGNO;
-
-	  /* Use paddi for the low 32 bits.  */
-	  if (ud2 != 0 && ud1 != 0 && can_use_paddi)
-	    emit_move_insn (dest, gen_rtx_PLUS (DImode, dest,
+      bool can_use_paddi = dest ? REGNO (dest) != FIRST_GPR_REGNO : false;
+      /* Use paddi for the low 32 bits.  */
+      if (ud2 != 0 && ud1 != 0 && can_use_paddi)
+	count_or_emit_insn (dest, gen_rtx_PLUS (DImode, dest,
 						GEN_INT ((ud2 << 16) | ud1)));
-
-	  /* Use oris, ori for low 32 bits.  */
-	  if (ud2 != 0 && (ud1 == 0 || !can_use_paddi))
-	    emit_move_insn (dest,
+      /* Use oris, ori for low 32 bits.  */
+      if (ud2 != 0 && (ud1 == 0 || !can_use_paddi))
+	count_or_emit_insn (dest,
 			    gen_rtx_IOR (DImode, dest, GEN_INT (ud2 << 16)));
-	  if (ud1 != 0 && (ud2 == 0 || !can_use_paddi))
-	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
-	}
+      if (ud1 != 0 && (ud2 == 0 || !can_use_paddi))
+	count_or_emit_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+      return;
     }
-  else
+
+  if (can_create_pseudo_p ())
     {
-      if (can_create_pseudo_p ())
-	{
-	  /* lis HIGH,UD4 ; ori HIGH,UD3 ;
-	     lis LOW,UD2 ; ori LOW,UD1 ; rldimi LOW,HIGH,32,0.  */
-	  rtx high = gen_reg_rtx (DImode);
-	  rtx low = gen_reg_rtx (DImode);
-	  HOST_WIDE_INT num = (ud2 << 16) | ud1;
-	  rs6000_emit_set_long_const (low, sext_hwi (num, 32));
-	  num = (ud4 << 16) | ud3;
-	  rs6000_emit_set_long_const (high, sext_hwi (num, 32));
-	  emit_insn (gen_rotldi3_insert_3 (dest, high, GEN_INT (32), low,
-					   GEN_INT (0xffffffff)));
-	}
-      else
-	{
-	  /* lis DEST,UD4 ; ori DEST,UD3 ; rotl DEST,32 ;
-	     oris DEST,UD2 ; ori DEST,UD1.  */
-	  emit_move_insn (dest, GEN_INT (sext_hwi (ud4 << 16, 32)));
-	  if (ud3 != 0)
-	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud3)));
+      /* lis HIGH,UD4 ; ori HIGH,UD3 ;
+	 lis LOW,UD2 ; ori LOW,UD1 ; rldimi LOW,HIGH,32,0.  */
+      rtx high = num_insns ? nullptr : gen_reg_rtx (DImode);
+      rtx low = num_insns ? nullptr : gen_reg_rtx (DImode);
+      HOST_WIDE_INT num = (ud2 << 16) | ud1;
+      rs6000_emit_set_long_const (low, sext_hwi (num, 32), num_insns);
+      num = (ud4 << 16) | ud3;
+      rs6000_emit_set_long_const (high, sext_hwi (num, 32), num_insns);
 
-	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
-	  if (ud2 != 0)
-	    emit_move_insn (dest,
-			    gen_rtx_IOR (DImode, dest, GEN_INT (ud2 << 16)));
-	  if (ud1 != 0)
-	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
-	}
+      rtx rldimi = gen_rotldi3_insert_3 (dest, high, GEN_INT (32), low,
+					 GEN_INT (0xffffffff));
+      count_or_emit_insn (rldimi);
+      return;
     }
+
+  /* lis DEST,UD4 ; ori DEST,UD3 ; rotl DEST,32 ;
+     oris DEST,UD2 ; ori DEST,UD1.  */
+  count_or_emit_insn (dest, GEN_INT (sext_hwi (ud4 << 16, 32)));
+  if (ud3 != 0)
+    count_or_emit_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud3)));
+
+  count_or_emit_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
+  if (ud2 != 0)
+    count_or_emit_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud2 << 16)));
+  if (ud1 != 0)
+    count_or_emit_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+
+  return;
 }
 
 /* Helper for the following.  Get rid of [r+r] memory refs
@@ -15471,6 +15500,18 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 	    emit_insn (gen_stack_protect_testdi (compare_result, op0, op1b));
 	  else
 	    emit_insn (gen_stack_protect_testsi (compare_result, op0, op1b));
+	}
+      else if (mode == V16QImode)
+	{
+	  gcc_assert (code == EQ || code == NE);
+
+	  rtx result_vector = gen_reg_rtx (V16QImode);
+	  rtx cc_bit = gen_reg_rtx (SImode);
+	  emit_insn (gen_altivec_vcmpequb_p (result_vector, op0, op1));
+	  emit_insn (gen_cr6_test_for_lt (cc_bit));
+	  emit_insn (gen_rtx_SET (compare_result,
+				  gen_rtx_COMPARE (comp_mode, cc_bit,
+						   const1_rtx)));
 	}
       else
 	emit_insn (gen_rtx_SET (compare_result,
@@ -21378,7 +21419,7 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
       fputs ("\t.long 0\n", file);
       fprintf (file, "\t.previous\n");
     }
-  ASM_OUTPUT_LABEL (file, name);
+  ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
 }
 
 static void rs6000_elf_file_end (void) ATTRIBUTE_UNUSED;
@@ -21951,7 +21992,7 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
   assemble_name (file, buffer);
   fputs (TARGET_32BIT ? "\n" : ",3\n", file);
 
-  ASM_OUTPUT_LABEL (file, buffer);
+  ASM_OUTPUT_FUNCTION_LABEL (file, buffer, decl);
 
   symtab_node::get (decl)->call_for_symbol_and_aliases (rs6000_declare_alias,
 							&data, true);
@@ -23647,10 +23688,10 @@ altivec_expand_vec_perm_const (rtx target, rtx op0, rtx op1,
 		      && GET_MODE (XEXP (op0, 0)) != V8HImode)))
 	    continue;
 
-          /* For little-endian, the two input operands must be swapped
-             (or swapped back) to ensure proper right-to-left numbering
-             from 0 to 2N-1.  */
-	  if (swapped ^ !BYTES_BIG_ENDIAN
+	  /* For little-endian, the two input operands must be swapped
+	     (or swapped back) to ensure proper right-to-left numbering
+	     from 0 to 2N-1.  */
+	  if (swapped == BYTES_BIG_ENDIAN
 	      && icode != CODE_FOR_vsx_xxpermdi_v16qi)
 	    std::swap (op0, op1);
 	  if (imode != V16QImode)
@@ -24377,7 +24418,8 @@ invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, const
 	  && VECTOR_TYPE_P (TREE_TYPE (val))
           && (funcdecl == NULL_TREE
               || (TREE_CODE (funcdecl) == FUNCTION_DECL
-                  && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))
+                  && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD
+                  && !fndecl_built_in_p (funcdecl, BUILT_IN_CLASSIFY_TYPE))))
 	  ? N_("AltiVec argument passed to unprototyped function")
 	  : NULL;
 }
@@ -25682,6 +25724,7 @@ rs6000_need_ipa_fn_target_info (const_tree decl,
 static bool
 rs6000_update_ipa_fn_target_info (unsigned int &info, const gimple *stmt)
 {
+#ifndef HAVE_AS_POWER10_HTM
   /* Assume inline asm can use any instruction features.  */
   if (gimple_code (stmt) == GIMPLE_ASM)
     {
@@ -25693,7 +25736,9 @@ rs6000_update_ipa_fn_target_info (unsigned int &info, const gimple *stmt)
 	info |= RS6000_FN_TARGET_INFO_HTM;
       return false;
     }
-  else if (gimple_code (stmt) == GIMPLE_CALL)
+#endif
+
+  if (gimple_code (stmt) == GIMPLE_CALL)
     {
       tree fndecl = gimple_call_fndecl (stmt);
       if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_MD))

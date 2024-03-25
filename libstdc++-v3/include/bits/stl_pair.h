@@ -1,6 +1,6 @@
 // Pair implementation -*- C++ -*-
 
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,10 +64,6 @@
 #if __cplusplus >= 202002L
 # include <compare>
 #endif
-
-#define __glibcxx_want_constexpr_utility
-#define __glibcxx_want_tuples_by_type
-#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1054,7 +1050,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __pair_get<_Int>::__const_move_get(std::move(__in)); }
 
 
-#ifdef __cpp_lib_tuples_by_type // C++ >= 14
+#ifdef __glibcxx_tuples_by_type // C++ >= 14
   template <typename _Tp, typename _Up>
     constexpr _Tp&
     get(pair<_Tp, _Up>& __p) noexcept
@@ -1094,7 +1090,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const _Tp&&
     get(const pair<_Up, _Tp>&& __p) noexcept
     { return std::move(__p.second); }
-#endif // __cpp_lib_tuples_by_type
+#endif // __glibcxx_tuples_by_type
 
 
 #if __cplusplus > 202002L

@@ -3,7 +3,9 @@
 
 #include "struct_vect-6.c"
 
+#ifndef N
 #define N 93
+#endif
 
 TYPE a[N], b[N], c[N], d[N], a2[N], b2[N], c2[N], d2[N], e[N * 8];
 

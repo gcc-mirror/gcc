@@ -3,7 +3,7 @@
 #include "empty.h"
 int the_next_line;
 
-/* { dg-options "-fdiagnostics-show-caret -fdiagnostics-show-line-numbers" } */
+/* { dg-options "-fpermissive -fdiagnostics-show-caret -fdiagnostics-show-line-numbers" } */
 
 void test (int i, int j)
 {

@@ -1,6 +1,7 @@
 /* PR c/64279 */
 /* { dg-do compile } */
 /* { dg-options "-Wduplicated-branches" } */
+/* { dg-options "-fpermissive -Wduplicated-branches" { target c } } */
 
 int
 f (int p)

@@ -23,12 +23,14 @@ struct objlist {
 
 static uintptr_t ldd(void *frame) __attribute__((__used__));
 static list_head_t *_dl_all_objects_ptr;
+int dynvec(struct object *, int);
+int relative_relocp(struct object *);
 static void fini_array(struct object *const obj) {
   if ((dynvec(obj,(unsigned)26)) != ((Elf32_Word)-1)) {
     unsigned i;
     const unsigned funcs = (dynvec(obj,(unsigned)28)) / 4;
     const Elf32_Word fa = (dynvec(obj,(unsigned)26));
-    const int *const p = relative_relocp(obj);
+    const int *const p = (int *) relative_relocp(obj);
     for (i = (funcs ? (funcs - 1) : 0U); i != 0U; i--) {
       void (*const func)(void) = (void *) p[i];
       (*func)();
@@ -42,6 +44,7 @@ static void _do_exit_fini(void) {
        ((o)) = ((void *)(((list_head_t *)((o)))->next)))
     fini_array (o->object);
 }
+void atexit(void (*)(void));
 static uintptr_t ldd (void *frame) {
   atexit(_do_exit_fini);
 }

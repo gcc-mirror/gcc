@@ -1,6 +1,6 @@
 (* RndFile.mod implement the ISO RndFile specification.
 
-Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Copyright (C) 2008-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -51,7 +51,7 @@ FROM EXCEPTIONS IMPORT ExceptionNumber, RAISE,
                        AllocateSource, ExceptionSource, IsCurrentSource,
                        IsExceptionalExecution ;
 
-IMPORT FIO, SYSTEM, RTio, errno, ErrnoCategory ;
+IMPORT FIO, RTio, errno, ErrnoCategory ;
 
 
 VAR

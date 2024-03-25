@@ -1,6 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997-2023 Free Software Foundation, Inc.
+// Copyright (C) 1997-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -538,6 +538,7 @@ namespace std
   // This can be used without checking if the compiler supports the feature.
   // The macro _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED can be used to check if
   // the compiler support is present to make this function work as expected.
+  __attribute__((__always_inline__))
   _GLIBCXX_CONSTEXPR inline bool
   __is_constant_evaluated() _GLIBCXX_NOEXCEPT
   {
@@ -565,56 +566,54 @@ namespace std
 # define _GLIBCXX_EXTERN_TEMPLATE -1
 #endif
 
-
-#if _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
-# define __glibcxx_constexpr_assert(cond) \
-  if (std::__is_constant_evaluated() && !bool(cond))	\
-    __builtin_unreachable() /* precondition violation detected! */
-#else
-# define __glibcxx_constexpr_assert(unevaluated)
-#endif
-
 #undef _GLIBCXX_VERBOSE_ASSERT
 
 // Assert.
-#if defined(_GLIBCXX_ASSERTIONS) \
-  || defined(_GLIBCXX_PARALLEL) || defined(_GLIBCXX_PARALLEL_ASSERTIONS)
-# ifdef _GLIBCXX_VERBOSE_ASSERT
+#ifdef _GLIBCXX_VERBOSE_ASSERT
 namespace std
 {
 #pragma GCC visibility push(default)
-  // Avoid the use of assert, because we're trying to keep the <cassert>
-  // include out of the mix.
+  // Don't use <cassert> because this should be unaffected by NDEBUG.
   extern "C++" _GLIBCXX_NORETURN
   void
-  __glibcxx_assert_fail(const char* __file, int __line,
-			const char* __function, const char* __condition)
+  __glibcxx_assert_fail /* Called when a precondition violation is detected. */
+    (const char* __file, int __line, const char* __function,
+     const char* __condition)
   _GLIBCXX_NOEXCEPT;
 #pragma GCC visibility pop
 }
-#define __glibcxx_assert_impl(_Condition)				\
-  if (__builtin_expect(!bool(_Condition), false))			\
-  {									\
-    __glibcxx_constexpr_assert(false);					\
-    std::__glibcxx_assert_fail(__FILE__, __LINE__, __PRETTY_FUNCTION__,	\
-			       #_Condition);				\
-  }
-# else // ! VERBOSE_ASSERT
-# define __glibcxx_assert_impl(_Condition)		\
-  if (__builtin_expect(!bool(_Condition), false))	\
-  {							\
-    __glibcxx_constexpr_assert(false);			\
-    __builtin_abort();					\
-  }
-# endif
+# define _GLIBCXX_ASSERT_FAIL(_Condition)				\
+  std::__glibcxx_assert_fail(__FILE__, __LINE__, __PRETTY_FUNCTION__,	\
+			     #_Condition)
+#else // ! VERBOSE_ASSERT
+# define _GLIBCXX_ASSERT_FAIL(_Condition) __builtin_abort()
 #endif
 
 #if defined(_GLIBCXX_ASSERTIONS)
-# define __glibcxx_assert(cond) \
-  do { __glibcxx_assert_impl(cond); } while (false)
+// Enable runtime assertion checks, and also check in constant expressions.
+# define __glibcxx_assert(cond)						\
+  do {									\
+    if (__builtin_expect(!bool(cond), false))				\
+      _GLIBCXX_ASSERT_FAIL(cond);					\
+  } while (false)
+#elif _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
+// Only check assertions during constant evaluation.
+namespace std
+{
+  __attribute__((__always_inline__,__visibility__("default")))
+  inline void
+  __glibcxx_assert_fail()
+  { }
+}
+# define __glibcxx_assert(cond)						\
+  do {									\
+    if (std::__is_constant_evaluated())					\
+      if (__builtin_expect(!bool(cond), false))				\
+	std::__glibcxx_assert_fail();					\
+  } while (false)
 #else
-# define __glibcxx_assert(cond) \
-  do { __glibcxx_constexpr_assert(cond); } while (false)
+// Don't check any assertions.
+# define __glibcxx_assert(cond)
 #endif
 
 // Macro indicating that TSAN is in use.

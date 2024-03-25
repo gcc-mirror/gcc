@@ -27,6 +27,7 @@ import dmd.dclass;
 import dmd.declaration;
 import dmd.denum;
 import dmd.dimport;
+import dmd.dinterpret;
 import dmd.dmangle;
 import dmd.dmodule;
 import dmd.dscope;
@@ -52,12 +53,13 @@ import dmd.visitor;
 import dmd.mtype;
 import dmd.objc;
 import dmd.opover;
+import dmd.optimize;
 import dmd.parse;
 import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.root.rmem;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.root.stringtable;
 import dmd.safe;
@@ -368,6 +370,64 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
         pt = t;
     else
         pt = t.merge();
+}
+
+/***************************************
+ * Search for identifier id as a member of `this`.
+ * `id` may be a template instance.
+ *
+ * Params:
+ *  loc = location to print the error messages
+ *  sc = the scope where the symbol is located
+ *  id = the id of the symbol
+ *  flags = the search flags which can be `SearchLocalsOnly` or `IgnorePrivateImports`
+ *
+ * Returns:
+ *      symbol found, NULL if not
+ */
+private Dsymbol searchX(Dsymbol dsym, const ref Loc loc, Scope* sc, RootObject id, int flags)
+{
+    //printf("Dsymbol::searchX(this=%p,%s, ident='%s')\n", this, toChars(), ident.toChars());
+    Dsymbol s = dsym.toAlias();
+    Dsymbol sm;
+    if (Declaration d = s.isDeclaration())
+    {
+        if (d.inuse)
+        {
+            .error(loc, "circular reference to `%s`", d.toPrettyChars());
+            return null;
+        }
+    }
+    switch (id.dyncast())
+    {
+    case DYNCAST.identifier:
+        sm = s.search(loc, cast(Identifier)id, flags);
+        break;
+    case DYNCAST.dsymbol:
+        {
+            // It's a template instance
+            //printf("\ttemplate instance id\n");
+            Dsymbol st = cast(Dsymbol)id;
+            TemplateInstance ti = st.isTemplateInstance();
+            sm = s.search(loc, ti.name);
+            if (!sm)
+                return null;
+            sm = sm.toAlias();
+            TemplateDeclaration td = sm.isTemplateDeclaration();
+            if (!td)
+                return null; // error but handled later
+            ti.tempdecl = td;
+            if (!ti.semanticRun)
+                ti.dsymbolSemantic(sc);
+            sm = ti.toAlias();
+            break;
+        }
+    case DYNCAST.type:
+    case DYNCAST.expression:
+    default:
+        assert(0);
+    }
+    return sm;
 }
 
 /******************************************
@@ -1097,7 +1157,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             if (isRefOrOut && !isAuto &&
                 !(global.params.previewIn && (fparam.storageClass & STC.in_)) &&
                 global.params.rvalueRefParam != FeatureState.enabled)
-                e = e.toLvalue(sc, e);
+                e = e.toLvalue(sc, "create default argument for `ref` / `out` parameter from");
 
             fparam.defaultArg = e;
             return (e.op != EXP.error);
@@ -3747,7 +3807,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         }
         // check before alias resolution; the alias itself might be deprecated!
         if (s.isAliasDeclaration)
-            e.checkDeprecated(sc, s);
+            s.checkDeprecated(e.loc, sc);
         s = s.toAlias();
 
         if (auto em = s.isEnumMember())
@@ -4305,6 +4365,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                 && d.isFuncDeclaration().objc.selector)
             {
                 auto classRef = new ObjcClassReferenceExp(e.loc, mt.sym);
+                classRef.type = objc.getRuntimeMetaclass(mt.sym).getType();
                 return new DotVarExp(e.loc, classRef, d).expressionSemantic(sc);
             }
             else if (d.needThis() && sc.intypeof != 1)
@@ -5007,7 +5068,7 @@ RootObject compileTypeMixin(TypeMixin tm, ref const Loc loc, Scope* sc)
     const len = buf.length;
     buf.writeByte(0);
     const str = buf.extractSlice()[0 .. len];
-    const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+    const bool doUnittests = global.params.parsingUnittestsRequired();
     auto locm = adjustLocForMixin(str, loc, global.params.mixinOut);
     scope p = new Parser!ASTCodegen(locm, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
     p.transitionIn = global.params.v.vin;

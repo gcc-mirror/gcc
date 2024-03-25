@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 typedef struct {
     unsigned long pmd0;
     unsigned long pmd1;

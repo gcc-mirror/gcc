@@ -1,5 +1,5 @@
 # libgcc host-specific configuration file.
-# Copyright (C) 1997-2023 Free Software Foundation, Inc.
+# Copyright (C) 1997-2024 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -199,9 +199,11 @@ riscv*-*-*)
 	;;
 sparc64*-*-*)
 	cpu_type=sparc
+	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
+	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 s390*-*-*)
 	cpu_type=s390
@@ -233,7 +235,6 @@ case ${host} in
       ;;
   esac
   tmake_file="$tmake_file t-slibgcc-darwin"
-  # newer toolsets produce warnings when building for unsupported versions.
   case ${host} in
     *-*-darwin1[89]* | *-*-darwin2* )
       tmake_file="t-darwin-min-8 $tmake_file"
@@ -251,6 +252,28 @@ case ${host} in
       echo "Warning: libgcc configured to support macOS 10.5" 1>&2
       ;;
   esac
+  # We are not using libtool to build the libs here, so we need to replicate
+  # a little of the logic around setting Darwin rpaths.  Setting an explicit
+  # yes or no is honoured, otherwise we choose a suitable default.
+  # Sadly, this has to be kept in line with the rules in libtool.m4.
+  # This make fragment will override the setting in t-slibgcc-darwin so it
+  # must appear after it.
+  if test "x$enable_darwin_at_rpath" = "x"; then
+    echo "enable_darwin_at_rpath is unset" 1>&2
+    case ${host} in
+      *-darwin[45678]*) ;;
+      *-darwin9* | *-darwin1[01234]*) ;; # We might default these on later.
+      *-darwin*)
+        echo "but is needed after macOS 10.11 (setting it on)" 1>&2
+        enable_darwin_at_rpath=yes
+        ;;
+    esac
+  else
+    echo "enable_darwin_at_rpath is '$enable_darwin_at_rpath'" 1>&2
+  fi
+  if test "x$enable_darwin_at_rpath" = "xyes"; then
+    tmake_file="$tmake_file t-darwin-rpath "
+  fi
   extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o libemutls_w.a"
   ;;
 *-*-dragonfly*)
@@ -423,6 +446,7 @@ aarch64*-*-linux*)
 	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	tmake_file="${tmake_file} t-dfprules"
+	tmake_file="${tmake_file} ${cpu_type}/t-heap-trampoline"
 	;;
 aarch64*-*-vxworks7*)
 	extra_parts="$extra_parts crtfastmath.o"
@@ -532,7 +556,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	tm_file="$tm_file arm/bpabi-lib.h"
 	case ${host} in
 	arm*-*-eabi* | arm*-*-rtems*)
-	  tmake_file="${tmake_file} arm/t-bpabi t-crtfm"
+	  tmake_file="${tmake_file} arm/t-bpabi arm/t-sync t-crtfm"
 	  extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 	  ;;
 	arm*-*-symbianelf*)
@@ -697,6 +721,7 @@ x86_64-*-darwin*)
 	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-msabi"
 	tm_file="$tm_file i386/darwin-lib.h"
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
+	tmake_file="${tmake_file} i386/t-heap-trampoline"
 	;;
 i[34567]86-*-elfiamcu)
 	tmake_file="$tmake_file i386/t-crtstuff t-softfp-sfdftf i386/32/t-softfp i386/32/t-iamcu i386/t-softfp t-softfp t-dfprules"
@@ -763,6 +788,7 @@ x86_64-*-linux*)
 	tmake_file="${tmake_file} i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
 	tm_file="${tm_file} i386/elf-lib.h"
 	md_unwind_header=i386/linux-unwind.h
+	tmake_file="${tmake_file} i386/t-heap-trampoline"
 	;;
 x86_64-*-kfreebsd*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"

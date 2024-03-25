@@ -1,4 +1,4 @@
-/* { dg-options "-Wdeprecated-copy -fdiagnostics-format=json" } */
+/* { dg-options "-Wdeprecated-copy -fno-diagnostics-json-formatting -fdiagnostics-format=json" } */
 
 template <class> class b;
 struct B {

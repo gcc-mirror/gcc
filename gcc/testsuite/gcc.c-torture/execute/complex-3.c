@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct complex
 {
   float r;
@@ -15,7 +18,8 @@ f (float a, float b)
   return c;
 }
 
-main ()
+int
+main (void)
 {
   struct complex z = f (1.0, 0.0);
 

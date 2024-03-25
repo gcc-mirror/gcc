@@ -7,7 +7,8 @@ typedef struct {
 	FOO *b1;
 } BAR;
 
-Nase ()
+void
+Nase (void)
 {
 	int i, j;
 	FOO *foop;

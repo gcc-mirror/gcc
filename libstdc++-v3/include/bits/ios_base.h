@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2023 Free Software Foundation, Inc.
+// Copyright (C) 1997-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,9 +45,6 @@
 #else
 # include <system_error>
 #endif
-
-#define __glibcxx_want_ios_noreplace
-#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -476,7 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     static const openmode __noreplace =	_S_noreplace;
 
-#ifdef __cpp_lib_ios_noreplace // C++ >= 23 && HOSTED
+#ifdef __glibcxx_ios_noreplace // C++ >= 23 && HOSTED
     /// Open a file in exclusive mode.
     static const openmode noreplace =	_S_noreplace;
 #endif

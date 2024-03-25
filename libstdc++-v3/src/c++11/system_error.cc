@@ -1,6 +1,6 @@
 // <system_error> implementation file
 
-// Copyright (C) 2007-2023 Free Software Foundation, Inc.
+// Copyright (C) 2007-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,6 +46,74 @@ namespace
 {
   using std::string;
 
+#if _GLIBCXX_HAVE_STRERROR_R
+  // Handle the result of POSIX strerror_r.
+  inline std::size_t
+  use_strerror_result(int res, char* buf, std::size_t bufsz,
+		      std::size_t& nextbufsz)
+  {
+    if (res == 0) // Success.
+      return std::strlen(buf);
+
+    if (res == ERANGE) // Buffer too small to hold result string.
+      {
+	nextbufsz = 2 * bufsz;
+	return 0;
+      }
+    // else res == EINVAL, unknown error.
+    if (*buf == '\0') // No result string written to buffer.
+      {
+	const char msg[] = "Unknown error";
+	std::memcpy(buf, msg, sizeof(msg) - 1);
+	return sizeof(msg) - 1;
+      }
+    else // An "unknown error" string was already written to the buffer.
+      return std::strlen(buf);
+  }
+
+  // Handle the result of GNU strerror_r.
+  inline std::size_t
+  use_strerror_result(char* res, char* buf, std::size_t bufsz,
+		      std::size_t& nextbufsz)
+  {
+    if (res == buf) // Result string written to the buffer.
+      return std::strlen(res);
+
+    // Static result string returned, must be copied to the buffer.
+    std::size_t len = std::strlen(res);
+    if (len <= bufsz)
+      {
+	std::strcpy(buf, res);
+	return len;
+      }
+
+    // Reallocate and try again:
+    nextbufsz = len;
+    return 0;
+  }
+
+  string strerror_string(int err)
+  {
+    // Estimate maximum length of strerror strings (including "Unknown error").
+    // Any excess capacity here can be used by std::system_error constructors
+    // when concatenating strings.
+    std::size_t len = 60;
+    string s;
+    do
+      s.__resize_and_overwrite(len, [err, &len](char* p, std::size_t n) {
+	*p = '\0';
+	return use_strerror_result(strerror_r(err, p, n), p, n, len);
+      });
+    while (s.empty());
+    return s;
+  }
+#else
+  string strerror_string(int err)
+  {
+    return strerror(err); // XXX Not thread-safe.
+  }
+#endif
+
   template<typename T>
     struct constant_init
     {
@@ -66,11 +134,7 @@ namespace
     _GLIBCXX_DEFAULT_ABI_TAG
     string
     message(int i) const final
-    {
-      // XXX locale issues: how does one get or set loc.
-      // _GLIBCXX_HAVE_STRERROR_L, strerror_l(i, cloc)
-      return string(strerror(i));
-    }
+    { return strerror_string(i); }
 
     // Override this to avoid a virtual call to default_error_condition(i).
     bool
@@ -113,9 +177,7 @@ namespace
       }
       return string("Unknown error code");
 #else
-      // XXX locale issues: how does one get or set loc.
-      // _GLIBCXX_HAVE_STRERROR_L, strerror_l(i, cloc)
-      return string(strerror(i));
+      return strerror_string(i);
 #endif
     }
 

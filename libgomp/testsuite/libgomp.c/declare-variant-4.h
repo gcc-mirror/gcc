@@ -1,28 +1,34 @@
 #pragma omp declare target
+
+__attribute__ ((noipa))
 int
 gfx803 (void)
 {
   return 0x803;
 }
 
+__attribute__ ((noipa))
 int
 gfx900 (void)
 {
   return 0x900;
 }
 
+__attribute__ ((noipa))
 int
 gfx906 (void)
 {
   return 0x906;
 }
 
+__attribute__ ((noipa))
 int
 gfx908 (void)
 {
   return 0x908;
 }
 
+__attribute__ ((noipa))
 int
 gfx90a (void)
 {
@@ -38,6 +44,7 @@ gfx90a (void)
 #pragma omp declare variant(gfx906) match(device = {isa("gfx906")})
 #pragma omp declare variant(gfx908) match(device = {isa("gfx908")})
 #pragma omp declare variant(gfx90a) match(device = {isa("gfx90a")})
+__attribute__ ((noipa))
 int
 f (void)
 {
@@ -54,10 +61,15 @@ main (void)
 #pragma omp target map(from : v)
   v = f ();
 
+#ifdef OFFLOAD_DEVICE_GCN
   if (v == 0)
     __builtin_abort ();
 
   __builtin_printf ("AMDGCN accelerator: gfx%x\n", v);
+#else
+  if (v != 0)
+    __builtin_abort ();
+#endif
 
   return 0;
 }

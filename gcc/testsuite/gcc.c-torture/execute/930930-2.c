@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int
 test_endianness()
 {
@@ -22,7 +25,8 @@ test_endianness_vol()
   return dw.u[0] != 0 ? 1 : 0;
 }
 
-main ()
+int
+main (void)
 {
   if (test_endianness () != test_endianness_vol ())
     abort ();

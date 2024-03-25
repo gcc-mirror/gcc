@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -ffast-math -march=knl" } */
+/* { dg-options "-O2 -ftree-vectorize -ffast-math -march=skylake-avx512 -mprefer-vector-width=512" } */
 /* { dg-final { scan-assembler-times "vpermpd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 
 #define N 1024

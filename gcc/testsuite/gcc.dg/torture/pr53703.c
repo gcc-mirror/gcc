@@ -44,6 +44,7 @@ struct rtmaddr_ifamap {
   int address_len;
   int local_len;
 };
+int ifa_sa_len (int, int);
 int usagi_getifaddrs (struct ifaddrs **ifap)
 {
   struct nlmsg_list *nlmsg_list, *nlmsg_end, *nlm;
@@ -72,7 +73,7 @@ int usagi_getifaddrs (struct ifaddrs **ifap)
 	      struct rtattr *rta;
 	      sa_family_t nlm_family = 0;
 	      uint32_t nlm_scope = 0, nlm_index = 0;
-	      memset (&ifamap, 0, sizeof (ifamap));
+	      __builtin_memset (&ifamap, 0, sizeof (ifamap));
 	      switch (nlh->nlmsg_type)
 		{
 		case RTM_NEWLINK:
@@ -134,8 +135,8 @@ int usagi_getifaddrs (struct ifaddrs **ifap)
 		    }
 		  if (ifamap.address_len != ifamap.local_len
 		      || (ifamap.address != ((void *)0)
-			  && memcmp (ifamap.address, ifamap.local,
-				     ifamap.address_len)))
+			  && __builtin_memcmp (ifamap.address, ifamap.local,
+					       ifamap.address_len)))
 		    {
 		      if (!build)
 			dlen += (((ifa_sa_len (nlm_family,

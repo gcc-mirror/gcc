@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2024 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -75,23 +75,23 @@ extern unsigned int gcn_local_sym_hash (const char *name);
    supported for gcn.  */
 #define GOMP_SELF_SPECS ""
 
-#define NO_XNACK "!march=*:;march=fiji:;"
+#define NO_XNACK "march=fiji:;march=gfx1030:;march=gfx1100:;" \
+    /* These match the defaults set in gcn.cc.  */ \
+    "!mxnack*|mxnack=default:%{march=gfx900|march=gfx906|march=gfx908:-mattr=-xnack};"
 #define NO_SRAM_ECC "!march=*:;march=fiji:;march=gfx900:;march=gfx906:;"
 
 /* In HSACOv4 no attribute setting means the binary supports "any" hardware
    configuration.  The name of the attribute also changed.  */
 #define SRAMOPT "msram-ecc=on:-mattr=+sramecc;msram-ecc=off:-mattr=-sramecc"
-
-/* Replace once XNACK is supported:
-   #define XNACKOPT "mxnack=on:-mattr=+xnack;mxnack=off:-mattr=-xnack"  */
-#define XNACKOPT "!mnack=*:-mattr=-xnack;mnack=*:-mattr=-xnack"
+#define XNACKOPT "mxnack=on:-mattr=+xnack;mxnack=off:-mattr=-xnack"
 
 /* Use LLVM assembler and linker options.  */
 #define ASM_SPEC  "-triple=amdgcn--amdhsa "  \
-		  "%:last_arg(%{march=*:-mcpu=%*}) " \
+		  "%{march=*:-mcpu=%*} " \
 		  "%{!march=*|march=fiji:--amdhsa-code-object-version=3} " \
 		  "%{" NO_XNACK XNACKOPT "}" \
 		  "%{" NO_SRAM_ECC SRAMOPT "} " \
+		  "%{march=gfx1030|march=gfx1100:-mattr=+wavefrontsize64} " \
 		  "-filetype=obj"
 #define LINK_SPEC "--pie --export-dynamic"
 #define LIB_SPEC  "-lc"
@@ -100,12 +100,6 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 #define STARTFILE_SPEC "crt0.o%s"
 #define ENDFILE_SPEC   ""
 #define STANDARD_STARTFILE_PREFIX_2 ""
-
-/* The LLVM assembler rejects multiple -mcpu options, so we must drop
-   all but the last.  */
-extern const char *last_arg_spec_function (int argc, const char **argv);
-#define EXTRA_SPEC_FUNCTIONS	\
-    { "last_arg", last_arg_spec_function },
 
 #undef LOCAL_INCLUDE_DIR
 

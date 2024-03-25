@@ -1,3 +1,6 @@
+void abort(void);
+void exit(int);
+
 #define C L'\400'
 
 #if C
@@ -6,7 +9,8 @@
 #define zero C
 #endif
 
-main()
+int
+main(void)
 {
   if (zero != 0)
     abort ();

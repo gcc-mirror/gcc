@@ -1,5 +1,5 @@
 /* Classes for analyzer diagnostics.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 #define GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 
+#include "diagnostic-metadata.h"
 #include "diagnostic-path.h"
 #include "analyzer/sm.h"
 
@@ -144,6 +145,47 @@ struct final_event : public event_desc
 
 } /* end of namespace evdesc */
 
+/*  A bundle of information for use by implementations of the
+    pending_diagnostic::emit vfunc.
+
+    The rich_location will have already been populated with a
+    diagnostic_path.  */
+
+class diagnostic_emission_context
+{
+public:
+  diagnostic_emission_context (const saved_diagnostic &sd,
+			       rich_location &rich_loc,
+			       diagnostic_metadata &metadata,
+			       logger *logger)
+  : m_sd (sd),
+    m_rich_loc (rich_loc),
+    m_metadata (metadata),
+    m_logger (logger)
+  {
+  }
+
+  const pending_diagnostic &get_pending_diagnostic () const;
+
+  bool warn (const char *, ...) ATTRIBUTE_GCC_DIAG (2,3);
+  void inform (const char *, ...) ATTRIBUTE_GCC_DIAG (2,3);
+
+  location_t get_location () const { return m_rich_loc.get_loc (); }
+  logger *get_logger () const { return m_logger; }
+
+  void add_cwe (int cwe) { m_metadata.add_cwe (cwe); }
+  void add_rule (const diagnostic_metadata::rule &r)
+  {
+    m_metadata.add_rule (r);
+  }
+
+private:
+  const saved_diagnostic &m_sd;
+  rich_location &m_rich_loc;
+  diagnostic_metadata &m_metadata;
+  logger *m_logger;
+};
+
 /* An abstract base class for capturing information about a diagnostic in
    a form that is ready to emit at a later point (or be rejected).
    Each kind of diagnostic will have a concrete subclass of
@@ -177,10 +219,9 @@ class pending_diagnostic
      path being explored.  By default, don't terminate the path.  */
   virtual bool terminate_path_p () const { return false; }
 
-  /* Vfunc for emitting the diagnostic.  The rich_location will have been
-     populated with a diagnostic_path.
+  /* Vfunc for emitting the diagnostic.
      Return true if a diagnostic is actually emitted.  */
-  virtual bool emit (rich_location *, logger *) = 0;
+  virtual bool emit (diagnostic_emission_context &) = 0;
 
   /* Hand-coded RTTI: get an ID for the subclass.  */
   virtual const char *get_kind () const = 0;
@@ -360,6 +401,15 @@ class pending_diagnostic
   {
     /* Default implementation: accept this path.  */
     return true;
+  }
+
+  /* Vfunc for use in SARIF output to give pending_diagnostic subclasses
+     the opportunity to add diagnostic-specific properties to the SARIF
+     "result" object for the diagnostic.
+     This is intended for use when debugging a diagnostic.  */
+  virtual void maybe_add_sarif_properties (sarif_object &/*result_obj*/) const
+  {
+    /* Default no-op implementation.  */
   }
 };
 

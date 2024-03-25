@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -551,8 +551,7 @@ enum reg_class
 #define CRIS_STACKADJ_REG CRIS_STRUCT_VALUE_REGNUM
 #define EH_RETURN_STACKADJ_RTX gen_rtx_REG (SImode, CRIS_STACKADJ_REG)
 
-#define EH_RETURN_HANDLER_RTX \
-  cris_return_addr_rtx (0, NULL)
+#define EH_RETURN_HANDLER_RTX cris_eh_return_handler_rtx ()
 
 #define INIT_EXPANDERS cris_init_expanders ()
 

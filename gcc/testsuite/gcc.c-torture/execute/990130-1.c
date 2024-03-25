@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int count = 0;
 int dummy;
 
@@ -14,7 +17,8 @@ foo(void)
   asm("" : "+r"(*bar()));
 }
 
-main()
+int
+main(void)
 {
   foo();
   if (count != 1)

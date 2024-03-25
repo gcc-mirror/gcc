@@ -3,7 +3,7 @@
 static int a=0;
 extern int b __attribute__ ((alias("a")));
 __attribute__ ((noinline))
-static inc()
+static void inc(void)
 {
   b++;
 }

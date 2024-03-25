@@ -1,8 +1,12 @@
+void abort (void);
+void exit (int);
+
 struct S
 {
   int *sp, fc, *sc, a[2];
 };
 
+void
 f (struct S *x)
 {
   int *t = x->sc;
@@ -20,7 +24,8 @@ f (struct S *x)
   x->sp = t;
 }
 
-main ()
+int
+main (void)
 {
   struct S s;
   static int sc[3] = {2, 3, 4};

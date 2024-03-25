@@ -1,10 +1,14 @@
+void abort (void);
+void exit (int);
+
 int
 f (int n)
 {
   return (n > 0) - (n < 0);
 }
 
-main ()
+int
+main (void)
 {
   if (f (-1) != -1)
     abort ();

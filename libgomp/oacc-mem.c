@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -1028,6 +1028,7 @@ find_group_last (int pos, size_t mapnum, size_t *sizes, unsigned short *kinds)
       break;
 
     case GOMP_MAP_STRUCT:
+    case GOMP_MAP_STRUCT_UNORD:
       pos += sizes[pos];
       break;
 
@@ -1088,6 +1089,7 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
       switch (kinds[i] & 0xff)
 	{
 	case GOMP_MAP_STRUCT:
+	case GOMP_MAP_STRUCT_UNORD:
 	  {
 	    size = (uintptr_t) hostaddrs[group_last] + sizes[group_last]
 		   - (uintptr_t) hostaddrs[i];
@@ -1334,6 +1336,7 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	  break;
 
 	case GOMP_MAP_STRUCT:
+	case GOMP_MAP_STRUCT_UNORD:
 	  /* Skip the 'GOMP_MAP_STRUCT' itself, and use the regular processing
 	     for all its entries.  This special handling exists for GCC 10.1
 	     compatibility; afterwards, we're not generating these no-op
@@ -1472,7 +1475,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 
       if (kind == GOMP_MAP_POINTER
 	  || kind == GOMP_MAP_TO_PSET
-	  || kind == GOMP_MAP_STRUCT)
+	  || kind == GOMP_MAP_STRUCT
+	  || kind == GOMP_MAP_STRUCT_UNORD)
 	continue;
 
       if (kind == GOMP_MAP_FORCE_ALLOC

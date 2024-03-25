@@ -1,7 +1,7 @@
 // Test of std::basic_ostream<char, std::char_traits<char> > mangling
 
 // { dg-do compile }
-// { dg-options "-fno-inline" }
+// { dg-options "-fno-inline -fabi-compat-version=0" }
 
 namespace std {
   template<typename> struct char_traits;

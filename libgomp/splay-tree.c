@@ -1,5 +1,5 @@
 /* A splay-tree datatype.
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -131,7 +131,11 @@ splay_tree_splay (splay_tree sp, splay_tree_key key)
 
 /* Insert a new NODE into SP.  The NODE shouldn't exist in the tree.  */
 
+#ifdef splay_tree_static
+__attribute__((unused)) static void
+#else
 attribute_hidden void
+#endif
 splay_tree_insert (splay_tree sp, splay_tree_node node)
 {
   int comparison = 0;
@@ -167,7 +171,11 @@ splay_tree_insert (splay_tree sp, splay_tree_node node)
 
 /* Remove node with KEY from SP.  It is not an error if it did not exist.  */
 
+#ifdef splay_tree_static
+__attribute__((unused)) static void
+#else
 attribute_hidden void
+#endif
 splay_tree_remove (splay_tree sp, splay_tree_key key)
 {
   splay_tree_splay (sp, key);
@@ -202,7 +210,28 @@ splay_tree_remove (splay_tree sp, splay_tree_key key)
 /* Lookup KEY in SP, returning NODE if present, and NULL
    otherwise.  */
 
+#ifdef splay_tree_static
+__attribute__((unused)) static splay_tree_node
+#else
+attribute_hidden splay_tree_node
+#endif
+splay_tree_lookup_node (splay_tree sp, splay_tree_key key)
+{
+  splay_tree_splay (sp, key);
+
+  if (sp->root && splay_compare (&sp->root->key, key) == 0)
+    return sp->root;
+  else
+    return NULL;
+}
+
+/* Likewise but return the key.  */
+
+#ifdef splay_tree_static
+__attribute__((unused)) static splay_tree_key
+#else
 attribute_hidden splay_tree_key
+#endif
 splay_tree_lookup (splay_tree sp, splay_tree_key key)
 {
   splay_tree_splay (sp, key);
@@ -231,7 +260,11 @@ splay_tree_foreach_internal (splay_tree_node node, splay_tree_callback func,
 
 /* Run FUNC on each of the nodes in SP.  */
 
+#ifdef splay_tree_static
+__attribute__((unused)) static void
+#else
 attribute_hidden void
+#endif
 splay_tree_foreach (splay_tree sp, splay_tree_callback func, void *data)
 {
   splay_tree_foreach_internal (sp->root, func, data);
@@ -253,8 +286,13 @@ splay_tree_foreach_internal_lazy (splay_tree_node node,
   return splay_tree_foreach_internal_lazy (node->right, func, data);
 }
 
+#ifdef splay_tree_static
+__attribute__((unused)) static void
+#else
 attribute_hidden void
-splay_tree_foreach_lazy (splay_tree sp, splay_tree_callback_stop func, void *data)
+#endif
+splay_tree_foreach_lazy (splay_tree sp, splay_tree_callback_stop func,
+			 void *data)
 {
   splay_tree_foreach_internal_lazy (sp->root, func, data);
 }

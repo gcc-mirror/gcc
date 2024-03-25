@@ -1,5 +1,5 @@
 /* Code for GIMPLE range op related routines.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -908,39 +908,34 @@ public:
   cfn_clz (bool internal) { m_gimple_call_internal_p = internal; }
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &, relation_trio) const;
+			   const irange &rh, relation_trio) const;
 private:
   bool m_gimple_call_internal_p;
 } op_cfn_clz (false), op_cfn_clz_internal (true);
 
 bool
 cfn_clz::fold_range (irange &r, tree type, const irange &lh,
-		     const irange &, relation_trio) const
+		     const irange &rh, relation_trio) const
 {
   // __builtin_c[lt]z* return [0, prec-1], except when the
   // argument is 0, but that is undefined behavior.
   //
   // For __builtin_c[lt]z* consider argument of 0 always undefined
-  // behavior, for internal fns depending on C?Z_DEFINED_VALUE_AT_ZERO.
+  // behavior, for internal fns likewise, unless it has 2 arguments,
+  // then the second argument is the value at zero.
   if (lh.undefined_p ())
     return false;
   int prec = TYPE_PRECISION (lh.type ());
   int mini = 0;
   int maxi = prec - 1;
-  int zerov = 0;
-  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (lh.type ());
   if (m_gimple_call_internal_p)
     {
-      if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
-	  && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
-	{
-	  // Only handle the single common value.
-	  if (zerov == prec)
-	    maxi = prec;
-	  else
-	    // Magic value to give up, unless we can prove arg is non-zero.
-	    mini = -2;
-	}
+      // Only handle the single common value.
+      if (rh.lower_bound () == prec)
+	maxi = prec;
+      else
+	// Magic value to give up, unless we can prove arg is non-zero.
+	mini = -2;
     }
 
   // From clz of minimum we can compute result maximum.
@@ -985,37 +980,31 @@ public:
   cfn_ctz (bool internal) { m_gimple_call_internal_p = internal; }
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &, relation_trio) const;
+			   const irange &rh, relation_trio) const;
 private:
   bool m_gimple_call_internal_p;
 } op_cfn_ctz (false), op_cfn_ctz_internal (true);
 
 bool
 cfn_ctz::fold_range (irange &r, tree type, const irange &lh,
-		     const irange &, relation_trio) const
+		     const irange &rh, relation_trio) const
 {
   if (lh.undefined_p ())
     return false;
   int prec = TYPE_PRECISION (lh.type ());
   int mini = 0;
   int maxi = prec - 1;
-  int zerov = 0;
-  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (lh.type ());
 
   if (m_gimple_call_internal_p)
     {
-      if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
-	  && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
-	{
-	  // Handle only the two common values.
-	  if (zerov == -1)
-	    mini = -1;
-	  else if (zerov == prec)
-	    maxi = prec;
-	  else
-	    // Magic value to give up, unless we can prove arg is non-zero.
-	    mini = -2;
-	}
+      // Handle only the two common values.
+      if (rh.lower_bound () == -1)
+	mini = -1;
+      else if (rh.lower_bound () == prec)
+	maxi = prec;
+      else
+	// Magic value to give up, unless we can prove arg is non-zero.
+	mini = -2;
     }
   // If arg is non-zero, then use [0, prec - 1].
   if (!range_includes_zero_p (&lh))
@@ -1288,16 +1277,24 @@ gimple_range_op_handler::maybe_builtin_call ()
 
     CASE_CFN_CLZ:
       m_op1 = gimple_call_arg (call, 0);
-      if (gimple_call_internal_p (call))
-	m_operator = &op_cfn_clz_internal;
+      if (gimple_call_internal_p (call)
+	  && gimple_call_num_args (call) == 2)
+	{
+	  m_op2 = gimple_call_arg (call, 1);
+	  m_operator = &op_cfn_clz_internal;
+	}
       else
 	m_operator = &op_cfn_clz;
       break;
 
     CASE_CFN_CTZ:
       m_op1 = gimple_call_arg (call, 0);
-      if (gimple_call_internal_p (call))
-	m_operator = &op_cfn_ctz_internal;
+      if (gimple_call_internal_p (call)
+	  && gimple_call_num_args (call) == 2)
+	{
+	  m_op2 = gimple_call_arg (call, 1);
+	  m_operator = &op_cfn_ctz_internal;
+	}
       else
 	m_operator = &op_cfn_ctz;
       break;

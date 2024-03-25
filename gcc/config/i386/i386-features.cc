@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -90,6 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"
 #include "i386-builtins.h"
 #include "i386-features.h"
+#include "i386-expand.h"
 
 const char * const xlogue_layout::STUB_BASE_NAMES[XLOGUE_STUB_COUNT] = {
   "savms64",
@@ -562,183 +563,195 @@ general_scalar_chain::compute_convert_gain ()
       else if (MEM_P (src) && REG_P (dst))
 	igain += m * ix86_cost->int_load[2] - ix86_cost->sse_load[sse_cost_idx];
       else
-	switch (GET_CODE (src))
-	  {
-	  case ASHIFT:
-	  case ASHIFTRT:
-	  case LSHIFTRT:
-	    if (m == 2)
-	      {
-		if (INTVAL (XEXP (src, 1)) >= 32)
-		  igain += ix86_cost->add;
-		/* Gain for extend highpart case.  */
-		else if (GET_CODE (XEXP (src, 0)) == ASHIFT)
-		  igain += ix86_cost->shift_const - ix86_cost->sse_op;
-		else
-		  igain += ix86_cost->shift_const;
-	      }
+	{
+	  /* For operations on memory operands, include the overhead
+	     of explicit load and store instructions.  */
+	  if (MEM_P (dst))
+	    igain += optimize_insn_for_size_p ()
+		     ? -COSTS_N_BYTES (8)
+		     : (m * (ix86_cost->int_load[2]
+			     + ix86_cost->int_store[2])
+			- (ix86_cost->sse_load[sse_cost_idx] +
+			   ix86_cost->sse_store[sse_cost_idx]));
 
-	    igain += ix86_cost->shift_const - ix86_cost->sse_op;
+	  switch (GET_CODE (src))
+	    {
+	    case ASHIFT:
+	    case ASHIFTRT:
+	    case LSHIFTRT:
+	      if (m == 2)
+		{
+		  if (INTVAL (XEXP (src, 1)) >= 32)
+		    igain += ix86_cost->add;
+		  /* Gain for extend highpart case.  */
+		  else if (GET_CODE (XEXP (src, 0)) == ASHIFT)
+		    igain += ix86_cost->shift_const - ix86_cost->sse_op;
+		  else
+		    igain += ix86_cost->shift_const;
+		}
 
-	    if (CONST_INT_P (XEXP (src, 0)))
-	      igain -= vector_const_cost (XEXP (src, 0));
-	    break;
+	      igain += ix86_cost->shift_const - ix86_cost->sse_op;
 
-	  case ROTATE:
-	  case ROTATERT:
-	    igain += m * ix86_cost->shift_const;
-	    if (TARGET_AVX512VL)
-	      igain -= ix86_cost->sse_op;
-	    else if (smode == DImode)
-	      {
-		int bits = INTVAL (XEXP (src, 1));
-		if ((bits & 0x0f) == 0)
-		  igain -= ix86_cost->sse_op;
-		else if ((bits & 0x07) == 0)
-		  igain -= 2 * ix86_cost->sse_op;
-		else
-		  igain -= 3 * ix86_cost->sse_op;
-	      }
-	    else if (INTVAL (XEXP (src, 1)) == 16)
-	      igain -= ix86_cost->sse_op;
-	    else
-	      igain -= 2 * ix86_cost->sse_op;
-	    break;
+	      if (CONST_INT_P (XEXP (src, 0)))
+		igain -= vector_const_cost (XEXP (src, 0));
+	      break;
 
-	  case AND:
-	  case IOR:
-	  case XOR:
-	  case PLUS:
-	  case MINUS:
-	    igain += m * ix86_cost->add - ix86_cost->sse_op;
-	    /* Additional gain for andnot for targets without BMI.  */
-	    if (GET_CODE (XEXP (src, 0)) == NOT
-		&& !TARGET_BMI)
-	      igain += m * ix86_cost->add;
+	    case ROTATE:
+	    case ROTATERT:
+	      igain += m * ix86_cost->shift_const;
+	      if (TARGET_AVX512VL)
+		igain -= ix86_cost->sse_op;
+	      else if (smode == DImode)
+		{
+		  int bits = INTVAL (XEXP (src, 1));
+		  if ((bits & 0x0f) == 0)
+		    igain -= ix86_cost->sse_op;
+		  else if ((bits & 0x07) == 0)
+		    igain -= 2 * ix86_cost->sse_op;
+		  else
+		    igain -= 3 * ix86_cost->sse_op;
+		}
+	      else if (INTVAL (XEXP (src, 1)) == 16)
+		igain -= ix86_cost->sse_op;
+	      else
+		igain -= 2 * ix86_cost->sse_op;
+	      break;
 
-	    if (CONST_INT_P (XEXP (src, 0)))
-	      igain -= vector_const_cost (XEXP (src, 0));
-	    if (CONST_INT_P (XEXP (src, 1)))
-	      igain -= vector_const_cost (XEXP (src, 1));
-	    if (MEM_P (XEXP (src, 1)))
-	      {
-		if (optimize_insn_for_size_p ())
-		  igain -= COSTS_N_BYTES (m == 2 ? 3 : 5);
-		else
-		  igain += m * ix86_cost->int_load[2]
-			   - ix86_cost->sse_load[sse_cost_idx];
-	      }
-	    break;
-
-	  case NEG:
-	  case NOT:
-	    igain -= ix86_cost->sse_op + COSTS_N_INSNS (1);
-
-	    if (GET_CODE (XEXP (src, 0)) != ABS)
-	      {
+	    case AND:
+	    case IOR:
+	    case XOR:
+	    case PLUS:
+	    case MINUS:
+	      igain += m * ix86_cost->add - ix86_cost->sse_op;
+	      /* Additional gain for andnot for targets without BMI.  */
+	      if (GET_CODE (XEXP (src, 0)) == NOT
+		  && !TARGET_BMI)
 		igain += m * ix86_cost->add;
-		break;
-	      }
-	    /* FALLTHRU */
 
-	  case ABS:
-	  case SMAX:
-	  case SMIN:
-	  case UMAX:
-	  case UMIN:
-	    /* We do not have any conditional move cost, estimate it as a
-	       reg-reg move.  Comparisons are costed as adds.  */
-	    igain += m * (COSTS_N_INSNS (2) + ix86_cost->add);
-	    /* Integer SSE ops are all costed the same.  */
-	    igain -= ix86_cost->sse_op;
-	    break;
+	      if (CONST_INT_P (XEXP (src, 0)))
+		igain -= vector_const_cost (XEXP (src, 0));
+	      if (CONST_INT_P (XEXP (src, 1)))
+		igain -= vector_const_cost (XEXP (src, 1));
+	      if (MEM_P (XEXP (src, 1)))
+		{
+		  if (optimize_insn_for_size_p ())
+		    igain -= COSTS_N_BYTES (m == 2 ? 3 : 5);
+		  else
+		    igain += m * ix86_cost->int_load[2]
+			     - ix86_cost->sse_load[sse_cost_idx];
+		}
+	      break;
 
-	  case COMPARE:
-	    if (XEXP (src, 1) != const0_rtx)
-	      {
-		/* cmp vs. pxor;pshufd;ptest.  */
-		igain += COSTS_N_INSNS (m - 3);
-	      }
-	    else if (GET_CODE (XEXP (src, 0)) != AND)
-	      {
-		/* test vs. pshufd;ptest.  */
-		igain += COSTS_N_INSNS (m - 2);
-	      }
-	    else if (GET_CODE (XEXP (XEXP (src, 0), 0)) != NOT)
-	      {
-		/* and;test vs. pshufd;ptest.  */
-		igain += COSTS_N_INSNS (2 * m - 2);
-	      }
-	    else if (TARGET_BMI)
-	      {
-		/* andn;test vs. pandn;pshufd;ptest.  */
-		igain += COSTS_N_INSNS (2 * m - 3);
-	      }
-	    else
-	      {
-		/* not;and;test vs. pandn;pshufd;ptest.  */
-		igain += COSTS_N_INSNS (3 * m - 3);
-	      }
-	    break;
+	    case NEG:
+	    case NOT:
+	      igain -= ix86_cost->sse_op + COSTS_N_INSNS (1);
 
-	  case CONST_INT:
-	    if (REG_P (dst))
-	      {
-		if (optimize_insn_for_size_p ())
-		  {
-		    /* xor (2 bytes) vs. xorps (3 bytes).  */
-		    if (src == const0_rtx)
-		      igain -= COSTS_N_BYTES (1);
-		    /* movdi_internal vs. movv2di_internal.  */
-		    /* => mov (5 bytes) vs. movaps (7 bytes).  */
-		    else if (x86_64_immediate_operand (src, SImode))
-		      igain -= COSTS_N_BYTES (2);
-		    else
-		      /* ??? Larger immediate constants are placed in the
-			 constant pool, where the size benefit/impact of
-			 STV conversion is affected by whether and how
-			 often each constant pool entry is shared/reused.
-			 The value below is empirically derived from the
-			 CSiBE benchmark (and the optimal value may drift
-			 over time).  */
-		      igain += COSTS_N_BYTES (0);
-		  }
-		else
-		  {
-		    /* DImode can be immediate for TARGET_64BIT
-		       and SImode always.  */
-		    igain += m * COSTS_N_INSNS (1);
-		    igain -= vector_const_cost (src);
-		  }
-	      }
-	    else if (MEM_P (dst))
-	      {
-		igain += (m * ix86_cost->int_store[2]
-			  - ix86_cost->sse_store[sse_cost_idx]);
-		igain -= vector_const_cost (src);
-	      }
-	    break;
+	      if (GET_CODE (XEXP (src, 0)) != ABS)
+		{
+		  igain += m * ix86_cost->add;
+		  break;
+		}
+	      /* FALLTHRU */
 
-	  case VEC_SELECT:
-	    if (XVECEXP (XEXP (src, 1), 0, 0) == const0_rtx)
-	      {
-		// movd (4 bytes) replaced with movdqa (4 bytes).
-		if (!optimize_insn_for_size_p ())
-		  igain += ix86_cost->sse_to_integer - ix86_cost->xmm_move;
-	      }
-	    else
-	      {
-		// pshufd; movd replaced with pshufd.
-		if (optimize_insn_for_size_p ())
-		  igain += COSTS_N_BYTES (4);
-		else
-		  igain += ix86_cost->sse_to_integer;
-	      }
-	    break;
+	    case ABS:
+	    case SMAX:
+	    case SMIN:
+	    case UMAX:
+	    case UMIN:
+	      /* We do not have any conditional move cost, estimate it as a
+		 reg-reg move.  Comparisons are costed as adds.  */
+	      igain += m * (COSTS_N_INSNS (2) + ix86_cost->add);
+	      /* Integer SSE ops are all costed the same.  */
+	      igain -= ix86_cost->sse_op;
+	      break;
 
-	  default:
-	    gcc_unreachable ();
-	  }
+	    case COMPARE:
+	      if (XEXP (src, 1) != const0_rtx)
+		{
+		  /* cmp vs. pxor;pshufd;ptest.  */
+		  igain += COSTS_N_INSNS (m - 3);
+		}
+	      else if (GET_CODE (XEXP (src, 0)) != AND)
+		{
+		  /* test vs. pshufd;ptest.  */
+		  igain += COSTS_N_INSNS (m - 2);
+		}
+	      else if (GET_CODE (XEXP (XEXP (src, 0), 0)) != NOT)
+		{
+		  /* and;test vs. pshufd;ptest.  */
+		  igain += COSTS_N_INSNS (2 * m - 2);
+		}
+	      else if (TARGET_BMI)
+		{
+		  /* andn;test vs. pandn;pshufd;ptest.  */
+		  igain += COSTS_N_INSNS (2 * m - 3);
+		}
+	      else
+		{
+		  /* not;and;test vs. pandn;pshufd;ptest.  */
+		  igain += COSTS_N_INSNS (3 * m - 3);
+		}
+	      break;
+
+	    case CONST_INT:
+	      if (REG_P (dst))
+		{
+		  if (optimize_insn_for_size_p ())
+		    {
+		      /* xor (2 bytes) vs. xorps (3 bytes).  */
+		      if (src == const0_rtx)
+			igain -= COSTS_N_BYTES (1);
+		      /* movdi_internal vs. movv2di_internal.  */
+		      /* => mov (5 bytes) vs. movaps (7 bytes).  */
+		      else if (x86_64_immediate_operand (src, SImode))
+			igain -= COSTS_N_BYTES (2);
+		      else
+			/* ??? Larger immediate constants are placed in the
+			   constant pool, where the size benefit/impact of
+			   STV conversion is affected by whether and how
+			   often each constant pool entry is shared/reused.
+			   The value below is empirically derived from the
+			   CSiBE benchmark (and the optimal value may drift
+			   over time).  */
+			igain += COSTS_N_BYTES (0);
+		    }
+		  else
+		    {
+		      /* DImode can be immediate for TARGET_64BIT
+			 and SImode always.  */
+		      igain += m * COSTS_N_INSNS (1);
+		      igain -= vector_const_cost (src);
+		    }
+		}
+	      else if (MEM_P (dst))
+		{
+		  igain += (m * ix86_cost->int_store[2]
+			    - ix86_cost->sse_store[sse_cost_idx]);
+		  igain -= vector_const_cost (src);
+		}
+	      break;
+
+	    case VEC_SELECT:
+	      if (XVECEXP (XEXP (src, 1), 0, 0) == const0_rtx)
+		{
+		  // movd (4 bytes) replaced with movdqa (4 bytes).
+		  if (!optimize_insn_for_size_p ())
+		    igain += ix86_cost->sse_to_integer - ix86_cost->xmm_move;
+		}
+	      else
+		{
+		  // pshufd; movd replaced with pshufd.
+		  if (optimize_insn_for_size_p ())
+		    igain += COSTS_N_BYTES (4);
+		  else
+		    igain += ix86_cost->sse_to_integer;
+		}
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
 
       if (igain != 0 && dump_file)
 	{
@@ -752,11 +765,33 @@ general_scalar_chain::compute_convert_gain ()
     fprintf (dump_file, "  Instruction conversion gain: %d\n", gain);
 
   /* Cost the integer to sse and sse to integer moves.  */
-  cost += n_sse_to_integer * ix86_cost->sse_to_integer;
-  /* ???  integer_to_sse but we only have that in the RA cost table.
-     Assume sse_to_integer/integer_to_sse are the same which they
-     are at the moment.  */
-  cost += n_integer_to_sse * ix86_cost->sse_to_integer;
+  if (!optimize_function_for_size_p (cfun))
+    {
+      cost += n_sse_to_integer * ix86_cost->sse_to_integer;
+      /* ???  integer_to_sse but we only have that in the RA cost table.
+	      Assume sse_to_integer/integer_to_sse are the same which they
+	      are at the moment.  */
+      cost += n_integer_to_sse * ix86_cost->sse_to_integer;
+    }
+  else if (TARGET_64BIT || smode == SImode)
+    {
+      cost += n_sse_to_integer * COSTS_N_BYTES (4);
+      cost += n_integer_to_sse * COSTS_N_BYTES (4);
+    }
+  else if (TARGET_SSE4_1)
+    {
+      /* vmovd (4 bytes) + vpextrd (6 bytes).  */
+      cost += n_sse_to_integer * COSTS_N_BYTES (10);
+      /* vmovd (4 bytes) + vpinsrd (6 bytes).  */
+      cost += n_integer_to_sse * COSTS_N_BYTES (10);
+    }
+  else
+    {
+      /* movd (4 bytes) + psrlq (5 bytes) + movd (4 bytes).  */
+      cost += n_sse_to_integer * COSTS_N_BYTES (13);
+      /* movd (4 bytes) + movd (4 bytes) + unpckldq (4 bytes).  */
+      cost += n_integer_to_sse * COSTS_N_BYTES (12);
+    }
 
   if (dump_file)
     fprintf (dump_file, "  Registers conversion cost: %d\n", cost);
@@ -1831,14 +1866,25 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
 	{
 	  /* Since there are no instructions to store 128-bit constant,
 	     temporary register usage is required.  */
+	  bool use_move;
 	  start_sequence ();
-	  src = gen_rtx_CONST_VECTOR (V1TImode, gen_rtvec (1, src));
-	  src = validize_mem (force_const_mem (V1TImode, src));
+	  tmp = ix86_convert_const_wide_int_to_broadcast (TImode, src);
+	  if (tmp)
+	    {
+	      src = lowpart_subreg (V1TImode, tmp, TImode);
+	      use_move = true;
+	    }
+	  else
+	    {
+	      src = gen_rtx_CONST_VECTOR (V1TImode, gen_rtvec (1, src));
+	      src = validize_mem (force_const_mem (V1TImode, src));
+	      use_move = MEM_P (dst);
+	    }
 	  rtx_insn *seq = get_insns ();
 	  end_sequence ();
 	  if (seq)
 	    emit_insn_before (seq, insn);
-	  if (MEM_P (dst))
+	  if (use_move)
 	    {
 	      tmp = gen_reg_rtx (V1TImode);
 	      emit_insn_before (gen_rtx_SET (tmp, src), insn);
@@ -2605,10 +2651,11 @@ convert_scalars_to_vector (bool timode_p)
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
-  /* vzeroupper instructions are inserted immediately after reload to
-     account for possible spills from 256bit or 512bit registers.  The pass
-     reuses mode switching infrastructure by re-running mode insertion
-     pass, so disable entities that have already been processed.  */
+  /* vzeroupper instructions are inserted immediately after reload and
+     postreload_cse to clean up after it a little bit to account for possible
+     spills from 256bit or 512bit registers.  The pass reuses mode switching
+     infrastructure by re-running mode insertion pass, so disable entities
+     that have already been processed.  */
   for (int i = 0; i < MAX_386_ENTITIES; i++)
     ix86_optimize_mode_switching[i] = 0;
 
@@ -3112,7 +3159,7 @@ remove_partial_avx_dependency (void)
 	  insn = NEXT_INSN (insn);
 	}
       if (insn == BB_HEAD (bb))
-        set_insn = emit_insn_before (set, insn);
+	set_insn = emit_insn_before (set, insn);
       else
 	set_insn = emit_insn_after (set,
 				    insn ? PREV_INSN (insn) : BB_END (bb));
@@ -3286,7 +3333,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
       predicate_chain = TREE_CHAIN (predicate_chain);
       
       if (and_expr_var == NULL)
-        and_expr_var = cond_var;
+	and_expr_var = cond_var;
       else
 	{
 	  gimple *assign_stmt;
@@ -3303,7 +3350,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
     }
 
   if_else_stmt = gimple_build_cond (GT_EXPR, and_expr_var,
-	  		            integer_zero_node,
+				    integer_zero_node,
 				    NULL_TREE, NULL_TREE);
   gimple_set_block (if_else_stmt, DECL_INITIAL (function_decl));
   gimple_set_bb (if_else_stmt, new_bb);
@@ -3400,10 +3447,10 @@ dispatch_function_versions (tree dispatch_decl,
       tree predicate_chain = NULL_TREE;
       unsigned int priority;
       /* Get attribute string, parse it and find the right predicate decl.
-         The predicate function could be a lengthy combination of many
+	 The predicate function could be a lengthy combination of many
 	 features, like arch-type and various isa-variants.  */
       priority = get_builtin_code_for_version (version_decl,
-	 			               &predicate_chain);
+					       &predicate_chain);
 
       if (predicate_chain == NULL_TREE)
 	continue;
@@ -3421,7 +3468,7 @@ dispatch_function_versions (tree dispatch_decl,
      to execute,  which one should be dispatched?  In future, allow the user
      to specify a dispatch  priority next to the version.  */
   qsort (function_version_info, actual_versions,
-         sizeof (struct _function_version_info), feature_compare);
+	 sizeof (struct _function_version_info), feature_compare);
 
   for  (i = 0; i < actual_versions; ++i)
     *empty_bb = add_condition_to_bb (dispatch_decl,
@@ -3538,7 +3585,7 @@ ix86_get_function_versions_dispatcher (void *decl)
     {
       if (is_function_default_version
 	    (default_version_info->this_node->decl))
-        break;
+	break;
       default_version_info = default_version_info->next;
     }
 
@@ -3551,7 +3598,7 @@ ix86_get_function_versions_dispatcher (void *decl)
     {
       default_version_info->prev->next = default_version_info->next;
       if (default_version_info->next)
-        default_version_info->next->prev = default_version_info->prev;
+	default_version_info->next->prev = default_version_info->prev;
       first_v->prev = default_version_info;
       default_version_info->next = first_v;
       default_version_info->prev = NULL;

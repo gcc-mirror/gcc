@@ -1,5 +1,5 @@
 # GCC host-specific configuration file.
-# Copyright (C) 1997-2023 Free Software Foundation, Inc.
+# Copyright (C) 1997-2024 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -230,24 +230,19 @@ case ${host} in
     host_exeext=.exe
     host_lto_plugin_soname=cyglto_plugin.dll
     ;;
-  i[34567]86-*-mingw32*)
+  i[34567]86-*-mingw32* | x86_64-*-mingw*)
     host_xm_file=i386/xm-mingw32.h
-    host_xmake_file="${host_xmake_file} i386/x-mingw32 i386/x-mingw32-utf8"
+    host_xmake_file="${host_xmake_file} ${host_xmake_mingw} i386/x-mingw32"
+    host_extra_gcc_objs="${host_extra_gcc_objs} ${host_extra_gcc_objs_mingw} driver-mingw32.o"
+    host_extra_objs="${host_extra_objs} ${host_extra_objs_mingw}"
     host_exeext=.exe
     out_host_hook_obj=host-mingw32.o
-    host_extra_objs="${host_extra_objs} utf8-mingw32.o"
-    host_extra_gcc_objs="${host_extra_gcc_objs} driver-mingw32.o utf8rc-mingw32.o"
     host_lto_plugin_soname=liblto_plugin.dll
-    ;;
-  x86_64-*-mingw*)
-    use_long_long_for_widest_fast_int=yes
-    host_xm_file=i386/xm-mingw32.h
-    host_xmake_file="${host_xmake_file} i386/x-mingw32 i386/x-mingw32-utf8"
-    host_exeext=.exe
-    out_host_hook_obj=host-mingw32.o
-    host_extra_objs="${host_extra_objs} utf8-mingw32.o"
-    host_extra_gcc_objs="${host_extra_gcc_objs} driver-mingw32.o utf8rc-mingw32.o"
-    host_lto_plugin_soname=liblto_plugin.dll
+    case ${host} in
+      x86_64-*-*)
+        use_long_long_for_widest_fast_int=yes
+        ;;
+    esac
     ;;
   aarch64*-*-darwin*)
     out_host_hook_obj="${out_host_hook_obj} host-aarch64-darwin.o"

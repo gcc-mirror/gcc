@@ -165,21 +165,24 @@ See_Also:
 
 Params:
     R = type to be tested
-    E = the type of the elements of the range if not `void`
+    E = if present, the elements of the range must be
+        $(DDSUBLINK spec/const3, implicit_qualifier_conversions, qualifier-convertible)
+        to this type
 
 Returns:
     `true` if R is an input range (possibly with element type `E`), `false` if not
  */
-enum bool isInputRange(R, E = void) =
+enum bool isInputRange(R) =
     is(typeof(R.init) == R)
     && is(typeof((R r) { return r.empty; } (R.init)) == bool)
     && (is(typeof((return ref R r) => r.front)) || is(typeof(ref (return ref R r) => r.front)))
     && !is(typeof((R r) { return r.front; } (R.init)) == void)
-    && is(typeof((R r) => r.popFront))
-    && (is(E == void) ||
-        is(ElementType!R == E) ||
-        is(const(ElementType!R) == E) ||
-        (is(const(ElementType!R) == immutable E) && is(const(E) == E)));
+    && is(typeof((R r) => r.popFront));
+
+/// ditto
+enum bool isInputRange(R, E) =
+    .isInputRange!R && isQualifierConvertible!(ElementType!R, E);
+
 ///
 @safe unittest
 {
@@ -540,13 +543,9 @@ private void putChar(R, E)(ref R r, E e)
 if (isSomeChar!E)
 {
     // https://issues.dlang.org/show_bug.cgi?id=9186: Can't use (E[]).init
-    ref const( char)[] cstringInit();
-    ref const(wchar)[] wstringInit();
-    ref const(dchar)[] dstringInit();
-
-    enum csCond = is(typeof(doPut(r, cstringInit())));
-    enum wsCond = is(typeof(doPut(r, wstringInit())));
-    enum dsCond = is(typeof(doPut(r, dstringInit())));
+    enum csCond = is(typeof(doPut(r, (){ ref const( char)[] cstringInit(); return cstringInit(); }())));
+    enum wsCond = is(typeof(doPut(r, (){ ref const(wchar)[] wstringInit(); return wstringInit(); }())));
+    enum dsCond = is(typeof(doPut(r, (){ ref const(dchar)[] dstringInit(); return dstringInit(); }())));
 
     //Use "max" to avoid static type demotion
     enum ccCond = is(typeof(doPut(r,  char.max)));
@@ -1016,12 +1015,27 @@ See_Also:
 enum bool isForwardRange(R) = isInputRange!R
     && is(typeof((R r) { return r.save; } (R.init)) == R);
 
+/// ditto
+enum bool isForwardRange(R, E) =
+    .isForwardRange!R && isQualifierConvertible!(ElementType!R, E);
+
 ///
 @safe unittest
 {
     static assert(!isForwardRange!(int));
     static assert( isForwardRange!(int[]));
     static assert( isForwardRange!(inout(int)[]));
+
+    static assert( isForwardRange!(int[], const int));
+    static assert(!isForwardRange!(int[], immutable int));
+
+    static assert(!isForwardRange!(const(int)[], int));
+    static assert( isForwardRange!(const(int)[], const int));
+    static assert(!isForwardRange!(const(int)[], immutable int));
+
+    static assert(!isForwardRange!(immutable(int)[], int));
+    static assert( isForwardRange!(immutable(int)[], const int));
+    static assert( isForwardRange!(immutable(int)[], immutable int));
 }
 
 @safe unittest

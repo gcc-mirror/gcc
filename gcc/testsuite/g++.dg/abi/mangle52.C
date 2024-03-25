@@ -1,4 +1,4 @@
-// { dg-options "-fabi-version=0 -Wabi=2" }
+// { dg-options "-fabi-version=18 -fabi-compat-version=18 -Wabi=2" }
 
 template <unsigned int> struct helper {};
 // { dg-final { scan-assembler "\n_?_Z6check1IiEvP6helperIXszscT_Li1EEE\[: \t\n\]" } }

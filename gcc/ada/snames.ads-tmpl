@@ -158,6 +158,7 @@ package Snames is
    Name_Full_Access_Only               : constant Name_Id := N + $;
    Name_Ghost_Predicate                : constant Name_Id := N + $;
    Name_Integer_Literal                : constant Name_Id := N + $;
+   Name_Local_Restrictions             : constant Name_Id := N + $;
    Name_No_Controlled_Parts            : constant Name_Id := N + $;
    Name_No_Task_Parts                  : constant Name_Id := N + $;
    Name_Real_Literal                   : constant Name_Id := N + $;
@@ -169,6 +170,7 @@ package Snames is
    Name_String_Literal                 : constant Name_Id := N + $;
    Name_Synchronization                : constant Name_Id := N + $;
    Name_Unimplemented                  : constant Name_Id := N + $;
+   Name_User_Aspect                    : constant Name_Id := N + $;
 
    --  Some special names used by the expander. Note that the lower case u's
    --  at the start of these names get translated to extra underscores. These
@@ -492,6 +494,7 @@ package Snames is
    Name_Unevaluated_Use_Of_Old         : constant Name_Id := N + $; -- GNAT
    Name_Unsuppress                     : constant Name_Id := N + $; -- Ada 05
    Name_Use_VADS_Size                  : constant Name_Id := N + $; -- GNAT
+   Name_User_Aspect_Definition         : constant Name_Id := N + $; -- GNAT
    Name_Validity_Checks                : constant Name_Id := N + $; -- GNAT
    Name_Warning_As_Error               : constant Name_Id := N + $; -- GNAT
    Name_Warnings                       : constant Name_Id := N + $; -- GNAT
@@ -672,6 +675,7 @@ package Snames is
    Name_Share_Generic                  : constant Name_Id := N + $; -- GNAT
    Name_Shared                         : constant Name_Id := N + $; -- Ada 83
    Name_Shared_Passive                 : constant Name_Id := N + $;
+   Name_Side_Effects                   : constant Name_Id := N + $; -- GNAT
    Name_Simple_Storage_Pool_Type       : constant Name_Id := N + $; -- GNAT
 
    --  Note: Storage_Size is not in this list because its name matches the name
@@ -1804,6 +1808,7 @@ package Snames is
       Pragma_Unevaluated_Use_Of_Old,
       Pragma_Unsuppress,
       Pragma_Use_VADS_Size,
+      Pragma_User_Aspect_Definition,
       Pragma_Validity_Checks,
       Pragma_Warning_As_Error,
       Pragma_Warnings,
@@ -1938,6 +1943,7 @@ package Snames is
       Pragma_Share_Generic,
       Pragma_Shared,
       Pragma_Shared_Passive,
+      Pragma_Side_Effects,
       Pragma_Simple_Storage_Pool_Type,
       Pragma_Source_Reference,
       Pragma_Static_Elaboration_Desired,

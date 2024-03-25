@@ -30,6 +30,11 @@ git config alias.gcc-backport '!f() { "`git rev-parse --show-toplevel`/contrib/g
 git config alias.gcc-fix-changelog '!f() { "`git rev-parse --show-toplevel`/contrib/git-fix-changelog.py" $@; } ; f'
 git config alias.gcc-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/mklog.py" $@; } ; f'
 git config alias.gcc-commit-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/git-commit-mklog.py" "$@"; }; f'
+git config alias.gcc-style '!f() {
+    check=`git rev-parse --show-toplevel`/contrib/check_GNU_style.py;
+    arg=; if [ $# -ge 1 ] && [ "$1" != "-f" ]; then arg="$1"; shift;
+    elif [ $# -eq 3 ]; then arg="$3"; set -- "$1" "$2"; fi
+    git show $arg | $check "$@" -; }; f'
 
 # Make diff on MD files use "(define" as a function marker.
 # Use this in conjunction with a .gitattributes file containing

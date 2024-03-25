@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -2281,6 +2281,10 @@ expand_eh_return (void)
   emit_move_insn (EH_RETURN_STACKADJ_RTX, const0_rtx);
 #endif
 
+#ifdef EH_RETURN_TAKEN_RTX
+  emit_move_insn (EH_RETURN_TAKEN_RTX, const0_rtx);
+#endif
+
   around_label = gen_label_rtx ();
   emit_jump (around_label);
 
@@ -2289,6 +2293,10 @@ expand_eh_return (void)
 
 #ifdef EH_RETURN_STACKADJ_RTX
   emit_move_insn (EH_RETURN_STACKADJ_RTX, crtl->eh.ehr_stackadj);
+#endif
+
+#ifdef EH_RETURN_TAKEN_RTX
+  emit_move_insn (EH_RETURN_TAKEN_RTX, const1_rtx);
 #endif
 
   if (targetm.have_eh_return ())
@@ -2301,7 +2309,19 @@ expand_eh_return (void)
 	error ("%<__builtin_eh_return%> not supported on this target");
     }
 
+#ifdef EH_RETURN_TAKEN_RTX
+  rtx_code_label *eh_done_label = gen_label_rtx ();
+  emit_jump (eh_done_label);
+#endif
+
   emit_label (around_label);
+
+#ifdef EH_RETURN_TAKEN_RTX
+  for (rtx tmp : { EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX })
+    if (tmp && REG_P (tmp))
+      emit_clobber (tmp);
+  emit_label (eh_done_label);
+#endif
 }
 
 /* Convert a ptr_mode address ADDR_TREE to a Pmode address controlled by

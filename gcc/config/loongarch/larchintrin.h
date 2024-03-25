@@ -1,5 +1,5 @@
 /* Intrinsics for LoongArch BASE operations.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
 This file is part of GCC.
@@ -330,6 +330,44 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrwr_d (unsigned long int _1, unsigned int _2)
 {
   __builtin_loongarch_iocsrwr_d ((unsigned long int) _1, (unsigned int) _2);
+}
+#endif
+
+#ifdef __loongarch_frecipe
+/* Assembly instruction format: fd, fj.  */
+/* Data types in instruction templates:  SF, SF.  */
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__frecipe_s (float _1)
+{
+  __builtin_loongarch_frecipe_s ((float) _1);
+}
+
+/* Assembly instruction format: fd, fj.  */
+/* Data types in instruction templates:  DF, DF.  */
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__frecipe_d (double _1)
+{
+  __builtin_loongarch_frecipe_d ((double) _1);
+}
+
+/* Assembly instruction format: fd, fj.  */
+/* Data types in instruction templates:  SF, SF.  */
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__frsqrte_s (float _1)
+{
+  __builtin_loongarch_frsqrte_s ((float) _1);
+}
+
+/* Assembly instruction format: fd, fj.  */
+/* Data types in instruction templates:  DF, DF.  */
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__frsqrte_d (double _1)
+{
+  __builtin_loongarch_frsqrte_d ((double) _1);
 }
 #endif
 

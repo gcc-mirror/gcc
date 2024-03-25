@@ -12,9 +12,14 @@ float d[N];
 int e[N];
 unsigned short f[N];
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(4) notinbranch uniform(b)
+#else
 #pragma omp declare simd simdlen(8) notinbranch uniform(b)
+#endif
 __attribute__((noinline)) float
 foo (float a, float b, float c)
+/* { dg-warning {unsupported simdlen 8 \(amdgcn\)} "" { target amdgcn*-*-* } .-1 } */
 {
   if (a < 30)
     return 5.0f;
@@ -46,5 +51,3 @@ main ()
       abort ();
   return 0;
 }
-
-/* { dg-warning {unsupported simdlen 8 \(amdgcn\)} "" { target amdgcn*-*-* } 17 } */

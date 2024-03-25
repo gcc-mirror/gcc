@@ -1,4 +1,4 @@
-/* Test C2x storage class specifiers in compound literals not permitted for
+/* Test C23 storage class specifiers in compound literals not permitted for
    C90, but without a duplicate diagnostic, just the diagnostic for compound
    literals not being permitted in C90 at all.  */
 /* { dg-do compile } */

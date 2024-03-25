@@ -2,6 +2,8 @@
    dbr_schedule could do the next iteration's addition in the
    branch delay slot, then subtract the value again if the branch
    wasn't taken.  This can lead to rounding errors.  */
+void abort (void);
+void exit (int);
 double x = -0x1.0p53;
 double y = 1;
 int

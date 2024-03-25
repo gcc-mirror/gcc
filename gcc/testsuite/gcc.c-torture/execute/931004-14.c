@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 struct tiny
 {
   char c;
@@ -8,6 +11,7 @@ struct tiny
   char f;
 };
 
+void
 f (int n, ...)
 {
   struct tiny x;
@@ -35,7 +39,8 @@ f (int n, ...)
   va_end (ap);
 }
 
-main ()
+int
+main (void)
 {
   struct tiny x[3];
   x[0].c = 10;

@@ -1,9 +1,14 @@
+void abort (void);
+void exit (int);
+
+void
 f (double *ty)
 {
   *ty = -1.0;
 }
 
-main ()
+int
+main (void)
 {
   double foo[6];
   double tx = 0.0, ty, d;

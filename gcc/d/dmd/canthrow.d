@@ -55,7 +55,7 @@ enum CT : BE
  *      eSink = if !null, then send error messages to eSink
  * Returns: `CT.exception` or `CT.error` if the expression may throw exceptions.
  */
-extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
+CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
 {
     //printf("Expression::canThrow(%d) %s\n", mustNotThrow, e.toChars());
     // stop walking if we determine this expression can throw
@@ -80,7 +80,8 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, ErrorSink 
                     if (!f.isDtorDeclaration())
                         errorSupplementalInferredAttr(f, 10, false, STC.nothrow_);
 
-                    e.checkOverriddenDtor(null, f, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
+                    import dmd.expressionsem : checkOverriddenDtor;
+                    f.checkOverriddenDtor(null, e.loc, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
                 }
                 else if (func)
                 {

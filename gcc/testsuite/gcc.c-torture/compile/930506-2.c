@@ -1,4 +1,5 @@
 /* { dg-require-effective-target trampolines } */
+/* { dg-additional-options "-std=gnu89" } */
 
 int f1()
 {

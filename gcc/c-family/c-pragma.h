@@ -1,5 +1,5 @@
 /* Pragma related interfaces.
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -125,6 +125,7 @@ enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_IF,
   PRAGMA_OMP_CLAUSE_IN_REDUCTION,
   PRAGMA_OMP_CLAUSE_INBRANCH,
+  PRAGMA_OMP_CLAUSE_INDIRECT,
   PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR,
   PRAGMA_OMP_CLAUSE_LASTPRIVATE,
   PRAGMA_OMP_CLAUSE_LINEAR,
@@ -256,7 +257,7 @@ c_register_pragma_with_early_handler (const char *space, const char *name,
 				      pragma_handler_1arg early_handler);
 extern void c_invoke_early_pragma_handler (unsigned int);
 extern void c_pp_invoke_early_pragma_handler (unsigned int);
-
+extern void c_reset_target_pragmas ();
 
 extern void maybe_apply_pragma_weak (tree);
 extern void maybe_apply_pending_pragma_weaks (void);

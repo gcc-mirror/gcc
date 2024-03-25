@@ -1,5 +1,5 @@
 /* Statement translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -1746,6 +1746,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   e = sym->assoc->target;
 
   class_target = (e->expr_type == EXPR_VARIABLE)
+		    && e->ts.type == BT_CLASS
 		    && (gfc_is_class_scalar_expr (e)
 			|| gfc_is_class_array_ref (e, NULL));
 
@@ -2037,7 +2038,12 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 
       /* Class associate-names come this way because they are
 	 unconditionally associate pointers and the symbol is scalar.  */
-      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.dimension)
+      if (sym->ts.type == BT_CLASS && e->expr_type == EXPR_FUNCTION)
+	{
+	  gfc_conv_expr (&se, e);
+	  se.expr = gfc_evaluate_now (se.expr, &se.pre);
+	}
+      else if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.dimension)
 	{
 	  tree target_expr;
 	  /* For a class array we need a descriptor for the selector.  */
@@ -6228,7 +6234,7 @@ allocate_get_initializer (gfc_code * code, gfc_expr * expr)
 /* Translate the ALLOCATE statement.  */
 
 tree
-gfc_trans_allocate (gfc_code * code)
+gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 {
   gfc_alloc *al;
   gfc_expr *expr, *e3rhs = NULL, *init_expr;
@@ -6790,11 +6796,38 @@ gfc_trans_allocate (gfc_code * code)
       else
 	tmp = expr3_esize;
 
+      gfc_omp_namelist *omp_alloc_item = NULL;
+      if (omp_allocate)
+	{
+	  gfc_omp_namelist *n = NULL;
+	  gfc_omp_namelist *n_null = NULL;
+	  for (n = omp_allocate; n; n = n->next)
+	    {
+	      if (n->sym == NULL)
+		{
+		  n_null = n;
+		  continue;
+		}
+	      if (expr->expr_type == EXPR_VARIABLE
+		  && expr->symtree->n.sym == n->sym)
+		{
+		  gfc_ref *ref;
+		  for (ref = expr->ref; ref; ref = ref->next)
+		    if (ref->type == REF_COMPONENT)
+		      break;
+		  if (ref == NULL)
+		    break;
+		}
+	    }
+	  omp_alloc_item = n ? n : n_null;
+
+	}
+
       if (!gfc_array_allocate (&se, expr, stat, errmsg, errlen,
 			       label_finish, tmp, &nelems,
 			       e3rhs ? e3rhs : code->expr3,
 			       e3_is == E3_DESC ? expr3 : NULL_TREE,
-			       e3_has_nodescriptor))
+			       e3_has_nodescriptor, omp_alloc_item))
 	{
 	  /* A scalar or derived type.  First compute the size to
 	     allocate.
@@ -6874,10 +6907,59 @@ gfc_trans_allocate (gfc_code * code)
 	    /* Handle size computation of the type declared to alloc.  */
 	    memsz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
 
+	  bool use_coarray_alloc
+	    = (flag_coarray == GFC_FCOARRAY_LIB
+	       && (caf_attr = gfc_caf_attr (expr, true, &caf_refs_comp))
+				.codimension);
+	  tree omp_cond = NULL_TREE;
+	  tree omp_alt_alloc = NULL_TREE;
+	  tree succ_add_expr = NULL_TREE;
+	  if (!use_coarray_alloc && omp_alloc_item)
+	    {
+	      tree align, alloc, sz;
+	      gfc_se se2;
+
+	      omp_cond = boolean_true_node;
+	      if (omp_alloc_item->u2.allocator)
+		{
+		  gfc_init_se (&se2, NULL);
+		  gfc_conv_expr (&se2, omp_alloc_item->u2.allocator);
+		  gfc_add_block_to_block (&se.pre, &se2.pre);
+		  alloc = gfc_evaluate_now (se2.expr, &se.pre);
+		  gfc_add_block_to_block (&se.pre, &se2.post);
+		}
+	      else
+		alloc = build_zero_cst (ptr_type_node);
+	      tmp = TREE_TYPE (TREE_TYPE (se.expr));
+	      if (tmp == void_type_node)
+		tmp = gfc_typenode_for_spec (&expr->ts, 0);
+	      if (omp_alloc_item->u.align)
+		{
+		  gfc_init_se (&se2, NULL);
+		  gfc_conv_expr (&se2, omp_alloc_item->u.align);
+		  gcc_assert (CONSTANT_CLASS_P (se2.expr)
+			      && se2.pre.head == NULL
+			      && se2.post.head == NULL);
+		  align = build_int_cst (size_type_node,
+					 MAX (tree_to_uhwi (se2.expr),
+					 TYPE_ALIGN_UNIT (tmp)));
+		}
+	      else
+		align = build_int_cst (size_type_node, TYPE_ALIGN_UNIT (tmp));
+	      sz = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
+			    fold_convert (size_type_node, memsz),
+			    build_int_cst (size_type_node, 1));
+	      omp_alt_alloc = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
+	      DECL_ATTRIBUTES (omp_alt_alloc)
+		= tree_cons (get_identifier ("omp allocator"),
+			     build_tree_list (NULL_TREE, alloc),
+			     DECL_ATTRIBUTES (omp_alt_alloc));
+	      omp_alt_alloc = build_call_expr (omp_alt_alloc, 3, align, sz, alloc);
+	      succ_add_expr = gfc_omp_call_add_alloc (se.expr);
+	    }
+
 	  /* Store the caf-attributes for latter use.  */
-	  if (flag_coarray == GFC_FCOARRAY_LIB
-	      && (caf_attr = gfc_caf_attr (expr, true, &caf_refs_comp))
-		 .codimension)
+	  if (use_coarray_alloc)
 	    {
 	      /* Scalar allocatable components in coarray'ed derived types make
 		 it here and are treated now.  */
@@ -6904,9 +6986,11 @@ gfc_trans_allocate (gfc_code * code)
 	  else if (gfc_expr_attr (expr).allocatable)
 	    gfc_allocate_allocatable (&se.pre, se.expr, memsz,
 				      NULL_TREE, stat, errmsg, errlen,
-				      label_finish, expr, 0);
+				      label_finish, expr, 0,
+				      omp_cond, omp_alt_alloc, succ_add_expr);
 	  else
-	    gfc_allocate_using_malloc (&se.pre, se.expr, memsz, stat);
+	    gfc_allocate_using_malloc (&se.pre, se.expr, memsz, stat,
+				      omp_cond, omp_alt_alloc, succ_add_expr);
 	}
       else
 	{

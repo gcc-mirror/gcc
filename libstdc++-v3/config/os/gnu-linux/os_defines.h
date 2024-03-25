@@ -1,6 +1,6 @@
 // Specific definitions for GNU/Linux  -*- C++ -*-
 
-// Copyright (C) 2000-2023 Free Software Foundation, Inc.
+// Copyright (C) 2000-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,6 +59,11 @@
 	    && defined(__FLOAT128__)))
 # define _GLIBCXX_HAVE_FLOAT128_MATH 1
 #endif
+
+// Enable __cxa_thread_atexit to rely on a (presumably libc-provided)
+// __cxa_thread_atexit_impl, if it happens to be defined, even if
+// configure couldn't find it during the build.
+#define _GLIBCXX_MAY_HAVE___CXA_THREAD_ATEXIT_IMPL 1
 
 #ifdef __linux__
 // The following libpthread properties only apply to Linux, not GNU/Hurd.

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -35,6 +35,11 @@ extern unsigned long total_code_bytes;
 /* Generate code for ELF32 ABI.  */
 #ifndef TARGET_ELF32
 #define TARGET_ELF32 0
+#endif
+
+/* Generate code for ELF64 ABI.  */
+#ifndef TARGET_ELF64
+#define TARGET_ELF64 0
 #endif
 
 /* Generate code for SOM 32bit ABI.  */
@@ -823,12 +828,11 @@ extern int may_call_alloca;
 
 /* Nonzero if 14-bit offsets can be used for all loads and stores.
    This is not possible when generating PA 1.x code as floating point
-   loads and stores only support 5-bit offsets.  Note that we do not
-   forbid the use of 14-bit offsets for integer modes.  Instead, we
-   use secondary reloads to fix REG+D memory addresses for integer
-   mode floating-point loads and stores.
+   accesses only support 5-bit offsets.  Note that we do not forbid
+   the use of 14-bit offsets prior to reload.  Instead, we use secondary
+   reloads to fix REG+D memory addresses for floating-point accesses.
 
-   FIXME: the ELF32 linker clobbers the LSB of the FP register number
+   FIXME: the GNU ELF linker clobbers the LSB of the FP register number
    in PA 2.0 floating-point insns with long displacements.  This is
    because R_PARISC_DPREL14WR and other relocations like it are not
    yet supported by GNU ld.  For now, we reject long displacements
@@ -836,7 +840,7 @@ extern int may_call_alloca;
 
 #define INT14_OK_STRICT \
   (TARGET_SOFT_FLOAT                                                   \
-   || (TARGET_PA_20 && !TARGET_ELF32))
+   || (TARGET_PA_20 && !TARGET_ELF32 && !TARGET_ELF64))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -1306,3 +1310,7 @@ do {									     \
 
 /* Output default function prologue for hpux.  */
 #define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue
+
+/* An integer expression for the size in bits of the largest integer machine
+   mode that should actually be used.  We allow pairs of registers.  */
+#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)

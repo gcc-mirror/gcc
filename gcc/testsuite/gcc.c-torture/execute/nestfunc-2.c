@@ -1,5 +1,8 @@
 /* { dg-require-effective-target trampolines } */
 
+void abort (void);
+void exit (int);
+
 extern int foo (int, int, int (*) (int, int, int, int, int, int, int));
 
 int z;

@@ -1,6 +1,6 @@
 (* M2Check.mod perform rigerous type checking for fully declared symbols.
 
-Copyright (C) 2020-2023 Free Software Foundation, Inc.
+Copyright (C) 2020-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -39,7 +39,7 @@ FROM M2Error IMPORT Error, InternalError, NewError, ErrorString, ChainError ;
 FROM M2MetaError IMPORT MetaErrorStringT2, MetaErrorStringT3, MetaErrorStringT4, MetaString2, MetaString3, MetaString4 ;
 FROM StrLib IMPORT StrEqual ;
 FROM M2Debug IMPORT Assert ;
-FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetSType, IsType, SkipType, IsProcedure, NoOfParam, IsVarParam, GetNth, GetNthParam, IsProcType, IsVar, IsEnumeration, IsArray, GetDeclaredMod, IsSubrange, GetArraySubscript, IsConst, IsReallyPointer, IsPointer, IsParameter, ModeOfAddr, GetMode, GetType, IsUnbounded, IsComposite, IsConstructor, IsParameter ;
+FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetSType, IsType, SkipType, IsProcedure, NoOfParam, IsVarParam, GetNth, GetNthParam, IsProcType, IsVar, IsEnumeration, IsArray, GetDeclaredMod, IsSubrange, GetArraySubscript, IsConst, IsReallyPointer, IsPointer, IsParameter, ModeOfAddr, GetMode, GetType, IsUnbounded, IsComposite, IsConstructor, IsParameter, IsConstString ;
 FROM M2GCCDeclare IMPORT GetTypeMin, GetTypeMax ;
 FROM M2System IMPORT Address ;
 FROM M2ALU IMPORT Equ, PushIntegerTree ;
@@ -221,11 +221,11 @@ BEGIN
       result := checkPair (result, tinfo, GetType (left), GetType (right)) ;
       IF (lSub # NulSym) AND (rSub # NulSym)
       THEN
-         result := checkSubrange (result, tinfo, GetSType (lSub), GetSType (rSub))
+         result := checkSubrange (result, tinfo, getSType (lSub), getSType (rSub))
       END
    ELSIF IsUnbounded (left) AND (IsArray (right) OR IsUnbounded (right))
    THEN
-      IF IsGenericSystemType (GetSType (left)) OR IsGenericSystemType (GetSType (right))
+      IF IsGenericSystemType (getSType (left)) OR IsGenericSystemType (getSType (right))
       THEN
          RETURN true
       ELSE
@@ -296,9 +296,12 @@ BEGIN
       THEN
          (* need to create top level error message first.  *)
          tinfo^.error := NewError (tinfo^.token) ;
+         (* The parameters to MetaString4 in buildError4 must match the order
+            of paramters passed to ParameterTypeCompatible.  *)
          s := MetaString4 (tinfo^.format,
+                           tinfo^.procedure,
                            tinfo^.left, tinfo^.right,
-                           tinfo^.procedure, tinfo^.nth) ;
+                           tinfo^.nth) ;
          ErrorString (tinfo^.error, s)
       END ;
       (* and also generate a sub error containing detail.  *)
@@ -396,7 +399,7 @@ BEGIN
                    THEN
                       IF IsVar (right) OR IsConst (right)
                       THEN
-                         right := GetSType (right)
+                         right := getSType (right)
                       END
                    END ;
                    IF tinfo^.strict
@@ -500,7 +503,7 @@ END isLValue ;
 
 
 (*
-   checkVarEquivalence - this test must be done first as it checks the symbol mode.
+   checkVarEquivalence - this test must be done early as it checks the symbol mode.
                          An LValue is treated as a pointer during assignment and the
                          LValue is attached to a variable.  This function skips the variable
                          and checks the types - after it has considered a possible LValue.
@@ -542,6 +545,63 @@ BEGIN
       RETURN result
    END
 END checkVarEquivalence ;
+
+
+(*
+   checkConstMeta -
+*)
+
+PROCEDURE checkConstMeta  (result: status;
+                           left, right: CARDINAL) : status ;
+VAR
+   typeRight: CARDINAL ;
+BEGIN
+   Assert (IsConst (left)) ;
+   IF isFalse (result)
+   THEN
+      RETURN result
+   ELSIF IsConstString (left)
+   THEN
+      typeRight := GetDType (right) ;
+      IF typeRight = NulSym
+      THEN
+         RETURN result
+      ELSIF IsSet (typeRight) OR IsEnumeration (typeRight)
+      THEN
+         RETURN false
+      END
+   END ;
+   RETURN result
+END checkConstMeta ;
+
+
+(*
+   checkConstEquivalence - this check can be done first as it checks symbols which
+                           may have no type.  Ie constant strings.  These constants
+                           will likely have their type set during quadruple folding.
+                           But we can check the meta type for obvious mismatches
+                           early on.  For example adding a string to an enum or set.
+*)
+
+PROCEDURE checkConstEquivalence (result: status;
+                                 left, right: CARDINAL) : status ;
+BEGIN
+   IF isFalse (result)
+   THEN
+      RETURN result
+   ELSIF (left = NulSym) OR (right = NulSym)
+   THEN
+      (* No option but to return true.  *)
+      RETURN true
+   ELSIF IsConst (left)
+   THEN
+      RETURN checkConstMeta (result, left, right)
+   ELSIF IsConst (right)
+   THEN
+      RETURN checkConstMeta (result, right, left)
+   END ;
+   RETURN result
+END checkConstEquivalence ;
 
 
 (*
@@ -655,28 +715,32 @@ BEGIN
    THEN
       RETURN return (true, tinfo, left, right)
    ELSE
-      result := checkVarEquivalence (unknown, tinfo, left, right) ;
+      result := checkConstEquivalence (unknown, left, right) ;
       IF NOT isKnown (result)
       THEN
-         result := checkSystemEquivalence (unknown, left, right) ;
+         result := checkVarEquivalence (unknown, tinfo, left, right) ;
          IF NOT isKnown (result)
          THEN
-            result := checkSubrangeTypeEquivalence (unknown, tinfo, left, right) ;
+            result := checkSystemEquivalence (unknown, left, right) ;
             IF NOT isKnown (result)
             THEN
-               result := checkBaseTypeEquivalence (unknown, tinfo, left, right) ;
+               result := checkSubrangeTypeEquivalence (unknown, tinfo, left, right) ;
                IF NOT isKnown (result)
                THEN
-                  result := checkTypeEquivalence (unknown, left, right) ;
+                  result := checkBaseTypeEquivalence (unknown, tinfo, left, right) ;
                   IF NOT isKnown (result)
                   THEN
-                     result := checkArrayTypeEquivalence (result, tinfo, left, right) ;
+                     result := checkTypeEquivalence (unknown, left, right) ;
                      IF NOT isKnown (result)
                      THEN
-                        result := checkGenericTypeEquivalence (result, left, right) ;
+                        result := checkArrayTypeEquivalence (result, tinfo, left, right) ;
                         IF NOT isKnown (result)
                         THEN
-                           result := checkTypeKindEquivalence (result, tinfo, left, right)
+                           result := checkGenericTypeEquivalence (result, left, right) ;
+                           IF NOT isKnown (result)
+                           THEN
+                              result := checkTypeKindEquivalence (result, tinfo, left, right)
+                           END
                         END
                      END
                   END
@@ -946,7 +1010,7 @@ BEGIN
    THEN
       RETURN true
    ELSE
-      (* long cascade of all type kinds.  *)
+      (* Long cascade of all type kinds.  *)
       IF IsSet (left) AND IsSet (right)
       THEN
          RETURN checkSetEquivalent (result, tinfo, left, right)
@@ -1179,13 +1243,31 @@ END checkRecordEquivalence ;
 
 PROCEDURE getType (sym: CARDINAL) : CARDINAL ;
 BEGIN
-   IF IsTyped (sym)
+   IF (sym # NulSym) AND IsProcedure (sym)
+   THEN
+      RETURN Address
+   ELSIF IsTyped (sym)
    THEN
       RETURN GetDType (sym)
    ELSE
       RETURN sym
    END
 END getType ;
+
+
+(*
+   getSType -
+*)
+
+PROCEDURE getSType (sym: CARDINAL) : CARDINAL ;
+BEGIN
+   IF IsProcedure (sym)
+   THEN
+      RETURN Address
+   ELSE
+      RETURN GetSType (sym)
+   END
+END getSType ;
 
 
 (*
@@ -1459,8 +1541,8 @@ VAR
    tinfo           : tInfo ;
 BEGIN
    tinfo := newtInfo () ;
-   formalT := GetSType (formal) ;
-   actualT := GetSType (actual) ;
+   formalT := getSType (formal) ;
+   actualT := getSType (actual) ;
    tinfo^.format := collapseString (format) ;
    tinfo^.token := token ;
    tinfo^.kind := parameter ;
@@ -1545,11 +1627,11 @@ BEGIN
       THEN
          IF IsConst (right) OR IsVar (right)
          THEN
-            right := GetSType (right)
+            right := getSType (right)
          END ;
          IF IsSet (right)
          THEN
-            right := GetSType (right)
+            right := getSType (right)
          END
       END
    END ;

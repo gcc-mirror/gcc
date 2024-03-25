@@ -21,6 +21,7 @@ avx512bw_test ()
   unsigned short i;
   foo (N);
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if ( (unsigned char)i != yy [i] )
       abort ();

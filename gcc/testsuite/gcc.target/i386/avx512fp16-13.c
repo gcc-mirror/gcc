@@ -126,7 +126,7 @@ abs256_ph (__m256h a)
   return _mm256_abs_ph (a);
 }
 
-/* { dg-final { scan-assembler-times "vpbroadcastq\[^\n\]*%ymm\[0-9\]+" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[^\n\]*%ymm\[0-9\]+" 1 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpand\[^\n\]*%ymm\[0-9\]+" 1 } } */
 
 __m128h
@@ -136,5 +136,5 @@ abs_ph (__m128h a)
   return _mm_abs_ph (a);
 }
 
-/* { dg-final { scan-assembler-times "vpbroadcastq\[^\n\]*%xmm\[0-9\]+" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[^\n\]*%xmm\[0-9\]+" 1 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpand\[^\n\]*%xmm\[0-9\]+" 1 } } */

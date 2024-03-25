@@ -1,0 +1,61 @@
+/* { dg-do compile } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3" } */
+
+#include <assert.h>
+int (e) (int g, int h) { return h > 0x10 || g > 0xFFFFFFFF >> h ? g : g << h; }
+struct i
+{
+  int j;
+  int l : 1;
+};
+struct m
+{
+  char k;
+  int n;
+};
+char o;
+char p;
+short s;
+int q;
+struct m r;
+int v;
+int t;
+short z;
+long ac;
+int ad;
+int ae;
+
+static void
+ai (struct i bf)
+{
+  for (; v; v++)
+    r.k = 0;
+  do
+    ac ^= bf.j;
+  while (bf.j < 0);
+  s = 0;
+  if (bf.l)
+    q |= 0x800;
+}
+
+int
+main ()
+{
+  struct i aw = {0xE00, 1};
+  o = 4;
+  s = p;
+  ai (aw);
+  t = 1;
+  ++p;
+  for (; t <= 7; t++)
+    {
+      ad &= 1;
+      (o &= 1 - e (0x40000012, ++ae)) & (z |= 1);
+    }
+  for (; r.n;)
+    ;
+  assert (o == 4);
+  return 0;
+}
+
+/* { dg-final { scan-assembler-not {vsetivli\s+[a-x0-9]+,\s*3} } } */

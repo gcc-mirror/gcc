@@ -2,4 +2,4 @@
 char *s = k(k(1,2));
 char *t = k(#) k(#undef k) k(x);
 
-f(){}
+void f(void){}

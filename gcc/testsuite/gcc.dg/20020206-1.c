@@ -3,8 +3,9 @@
    for -O2 -fprefetch-loop-arrays for ix86 targets.  */
 
 /* { dg-do run } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -mtune=pentium3 -w" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-options "-O2 -fprefetch-loop-arrays" } */
+/* { dg-options "-O2 -fprefetch-loop-arrays -mtune=pentium3" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-prune-output  ".-fprefetch-loop-arrays. not supported for this target" } */
 
 
 struct reload
@@ -40,6 +41,6 @@ main ()
   n_reloads = 4;
   rld[2].out = 2;
   if (combine_reloads () != 2)
-    abort ();
-  exit (0);
+    __builtin_abort ();
+  __builtin_exit (0);
 }

@@ -129,7 +129,7 @@ static bool force_show_locus_color = false;
 
 static void
 custom_diagnostic_finalizer (diagnostic_context *context,
-			     diagnostic_info *diagnostic,
+			     const diagnostic_info *diagnostic,
 			     diagnostic_t)
 {
   bool old_show_color = pp_show_color (context->printer);
@@ -438,7 +438,8 @@ test_show_locus (function *fun)
       rich_location richloc (line_table, loc);
       for (int line = start_line; line <= finish_line; line++)
 	{
-	  char_span content = location_get_source_line (file, line);
+	  file_cache &fc = global_dc->get_file_cache ();
+	  char_span content = fc.get_source_line (file, line);
 	  gcc_assert (content);
 	  /* Split line up into words.  */
 	  for (int idx = 0; idx < content.length (); idx++)

@@ -1,5 +1,5 @@
 /* Get CPU type and Features for x86 processors.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Sriraman Tallam (tmsriram@google.com)
 
 This file is part of GCC.
@@ -663,6 +663,12 @@ get_zhaoxin_cpu (struct __processor_model *cpu_model,
 	  reset_cpu_feature (cpu_model, cpu_features2, FEATURE_F16C);
 	  cpu_model->__cpu_subtype = ZHAOXIN_FAM7H_LUJIAZUI;
 	}
+     else if (model >= 0x5b)
+	{
+	  cpu = "yongfeng";
+	  CHECK___builtin_cpu_is ("yongfeng");
+	  cpu_model->__cpu_subtype = ZHAOXIN_FAM7H_YONGFENG;
+	}
       break;
     default:
       break;
@@ -709,6 +715,9 @@ get_available_features (struct __processor_model *cpu_model,
   int apx_usable = 0;
   /* Check if KL is usable.  */
   int has_kl = 0;
+  /* Record AVX10 version.  */
+  int avx10_set = 0;
+  int version = 0;
   if ((ecx & bit_OSXSAVE))
     {
       /* Check if XMM, YMM, OPMASK, upper 256 bits of ZMM0-ZMM15 and
@@ -852,8 +861,6 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_IBT);
       if (edx & bit_UINTR)
 	set_feature (FEATURE_UINTR);
-      if (edx & bit_USER_MSR)
-	set_feature (FEATURE_USER_MSR);
       if (amx_usable)
 	{
 	  if (edx & bit_AMX_TILE)
@@ -912,6 +919,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_PREFETCHI);
 	  if (eax & bit_RAOINT)
 	    set_feature (FEATURE_RAOINT);
+	  if (edx & bit_USER_MSR)
+	    set_feature (FEATURE_USER_MSR);
 	  if (avx_usable)
 	    {
 	      if (eax & bit_AVXVNNI)
@@ -935,6 +944,9 @@ get_available_features (struct __processor_model *cpu_model,
 	    {
 	      if (eax & bit_AVX512BF16)
 		set_feature (FEATURE_AVX512BF16);
+	      /* AVX10 has the same XSTATE with AVX512.  */
+	      if (edx & bit_AVX10)
+		avx10_set = 1;
 	    }
 	  if (amx_usable)
 	    {
@@ -984,6 +996,33 @@ get_available_features (struct __processor_model *cpu_model,
 	  if (has_kl)
 	    set_feature (FEATURE_KL);
 	}
+    }
+
+  /* Get Advanced Features at level 0x24 (eax = 0x24).  */
+  if (avx10_set && max_cpuid_level >= 0x24)
+    {
+      __cpuid (0x24, eax, ebx, ecx, edx);
+      version = ebx & 0xff;
+      if (ebx & bit_AVX10_256)
+	switch (version)
+	  {
+	  case 1:
+	    set_feature (FEATURE_AVX10_1_256);
+	    break;
+	  default:
+	    set_feature (FEATURE_AVX10_1_256);
+	    break;
+	  }
+      if (ebx & bit_AVX10_512)
+	switch (version)
+	  {
+	  case 1:
+	    set_feature (FEATURE_AVX10_1_512);
+	    break;
+	  default:
+	    set_feature (FEATURE_AVX10_1_512);
+	    break;
+	  }
     }
 
   /* Check cpuid level of extended features.  */

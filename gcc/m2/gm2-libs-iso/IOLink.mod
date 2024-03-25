@@ -1,6 +1,6 @@
 (* IOLink.mod implement the ISO IOLink specification.
 
-Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Copyright (C) 2008-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE IOLink ;
 
-IMPORT RTio, RTentity, EXCEPTIONS, IOChan, M2RTS, SYSTEM, ASCII ;
+IMPORT RTio, RTentity, EXCEPTIONS, M2RTS, ASCII ;
 
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 

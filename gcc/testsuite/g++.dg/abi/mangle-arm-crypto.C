@@ -4,6 +4,7 @@
 // { dg-do compile }
 // { dg-require-effective-target arm_crypto_ok }
 // { dg-add-options arm_crypto }
+// { dg-additional-options -fabi-compat-version=0 }
 
 #include <arm_neon.h>
 

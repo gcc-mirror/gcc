@@ -1,4 +1,5 @@
-main ()
+int
+main (void)
 {
   int i;
   int f;
@@ -9,15 +10,15 @@ main ()
 
       if ((i & (i - 1)) == 0)
 	{
-	  printf ("d");
+	  __builtin_printf ("d");
 	  f = 1;
 	}
       if ((i & -i) == i)
 	{
-	  printf ("t");
+	  __builtin_printf ("t");
 	  f = 1;
 	}
       if (f)
-	printf ("%d\n", i);
+	__builtin_printf ("%d\n", i);
     }
 }

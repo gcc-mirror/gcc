@@ -1,3 +1,26 @@
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* objc-act.cc (struct objc_feature_info): New.
+	(objc_nonfragile_abi_p): New.
+	(objc_common_register_features): New.
+	* objc-act.h (objc_common_register_features): New.
+	* objc-lang.cc (c_family_register_lang_features): New.
+
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-act.h (objc_common_tree_size): Remove.
+	* objc-act.cc (objc_common_tree_size): Remove.
+	* objc-lang.cc (LANG_HOOKS_TREE_SIZE): Remove.
+
+2023-10-23  Andrew Pinski  <pinskia@gmail.com>
+
+	* objc-gnu-runtime-abi-01.cc (build_objc_method_call): Allow
+	for error_operand after call to build_c_cast.
+	* objc-next-runtime-abi-01.cc (build_objc_method_call): Likewise.
+	* objc-next-runtime-abi-02.cc (build_v2_build_objc_method_call): Likewise.
+
 2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* objc-act.cc: Change spelling to macOS.
@@ -4278,7 +4301,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

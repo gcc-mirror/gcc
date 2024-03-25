@@ -1,5 +1,5 @@
 /* Type class enum
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,7 +38,7 @@ enum type_class
   record_type_class, union_type_class,
   array_type_class, string_type_class,
   lang_type_class, opaque_type_class,
-  bitint_type_class
+  bitint_type_class, vector_type_class
 };
 
 #endif /* GCC_TYPECLASS_H */

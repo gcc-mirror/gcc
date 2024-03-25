@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512f -O2 -mtune=knl" } */
+/* { dg-options "-mavx512f -O2" } */
 /* { dg-final { scan-assembler-times "vpgatherdd\[ \\t\]+\[^\{\n\]*zmm\[0-9\]\[^\n\]*zmm\[0-9\]{%k\[1-7\]}(?:\n|\[ \\t\]+#)" 2 } } */
 
 #include <immintrin.h>

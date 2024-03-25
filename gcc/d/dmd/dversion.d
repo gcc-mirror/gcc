@@ -68,43 +68,6 @@ extern (C++) final class DebugSymbol : Dsymbol
         }
     }
 
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        //printf("DebugSymbol::addMember('%s') %s\n", sds.toChars(), toChars());
-        Module m = sds.isModule();
-        // Do not add the member to the symbol table,
-        // just make sure subsequent debug declarations work.
-        if (ident)
-        {
-            if (!m)
-            {
-                .error(loc, "%s `%s` declaration must be at module level", kind, toPrettyChars);
-                errors = true;
-            }
-            else
-            {
-                if (findCondition(m.debugidsNot, ident))
-                {
-                    .error(loc, "%s `%s` defined after use", kind, toPrettyChars);
-                    errors = true;
-                }
-                if (!m.debugids)
-                    m.debugids = new Identifiers();
-                m.debugids.push(ident);
-            }
-        }
-        else
-        {
-            if (!m)
-            {
-                .error(loc, "%s `%s` level declaration must be at module level", kind, toPrettyChars);
-                errors = true;
-            }
-            else
-                m.debuglevel = level;
-        }
-    }
-
     override const(char)* kind() const nothrow
     {
         return "debug";
@@ -159,44 +122,6 @@ extern (C++) final class VersionSymbol : Dsymbol
             OutBuffer buf;
             buf.print(level);
             return buf.extractChars();
-        }
-    }
-
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        //printf("VersionSymbol::addMember('%s') %s\n", sds.toChars(), toChars());
-        Module m = sds.isModule();
-        // Do not add the member to the symbol table,
-        // just make sure subsequent debug declarations work.
-        if (ident)
-        {
-            VersionCondition.checkReserved(loc, ident.toString());
-            if (!m)
-            {
-                .error(loc, "%s `%s` declaration must be at module level", kind, toPrettyChars);
-                errors = true;
-            }
-            else
-            {
-                if (findCondition(m.versionidsNot, ident))
-                {
-                    .error(loc, "%s `%s` defined after use", kind, toPrettyChars);
-                    errors = true;
-                }
-                if (!m.versionids)
-                    m.versionids = new Identifiers();
-                m.versionids.push(ident);
-            }
-        }
-        else
-        {
-            if (!m)
-            {
-                .error(loc, "%s `%s` level declaration must be at module level", kind, toPrettyChars);
-                errors = true;
-            }
-            else
-                m.versionlevel = level;
         }
     }
 

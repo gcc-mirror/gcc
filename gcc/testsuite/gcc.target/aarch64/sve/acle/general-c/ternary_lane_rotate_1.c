@@ -11,11 +11,11 @@ f1 (svbool_t pg, svfloat16_t f16, svfloat32_t f32, svfloat64_t f64,
   svcmla_lane (pg, pg, pg, 0, 90); /* { dg-error {'svcmla_lane' has no form that takes 'svbool_t' arguments} } */
   svcmla_lane (s32, s32, s32, 0, 90); /* { dg-error {ACLE function 'svcmla_lane_s32' requires ISA extension 'sve2'} "" { xfail aarch64_sve2 } } */
   svcmla_lane (f64, f64, f64, 0, 90); /* { dg-error {'svcmla_lane' has no form that takes 'svfloat64_t' arguments} } */
-  svcmla_lane (1, f32, f32, 0, 90); /* { dg-error {passing 'int' to argument 1 of 'svcmla_lane', which expects an SVE vector type} } */
-  svcmla_lane (f32, 1, f32, 0, 90); /* { dg-error {passing 'int' to argument 2 of 'svcmla_lane', which expects an SVE vector type} } */
-  svcmla_lane (f32, f32, 1, 0, 90); /* { dg-error {passing 'int' to argument 3 of 'svcmla_lane', which expects an SVE vector type} } */
-  svcmla_lane (f32, f64, f32, 0, 90); /* { dg-error {passing 'svfloat64_t' to argument 2 of 'svcmla_lane', but previous arguments had type 'svfloat32_t'} } */
-  svcmla_lane (f32, f32, f64, 0, 90); /* { dg-error {passing 'svfloat64_t' to argument 3 of 'svcmla_lane', but previous arguments had type 'svfloat32_t'} } */
+  svcmla_lane (1, f32, f32, 0, 90); /* { dg-error {passing 'int' to argument 1 of 'svcmla_lane', which expects an SVE type rather than a scalar} } */
+  svcmla_lane (f32, 1, f32, 0, 90); /* { dg-error {passing 'int' to argument 2 of 'svcmla_lane', which expects an SVE type rather than a scalar} } */
+  svcmla_lane (f32, f32, 1, 0, 90); /* { dg-error {passing 'int' to argument 3 of 'svcmla_lane', which expects an SVE type rather than a scalar} } */
+  svcmla_lane (f32, f64, f32, 0, 90); /* { dg-error {passing 'svfloat64_t' to argument 2 of 'svcmla_lane', but argument 1 had type 'svfloat32_t'} } */
+  svcmla_lane (f32, f32, f64, 0, 90); /* { dg-error {passing 'svfloat64_t' to argument 3 of 'svcmla_lane', but argument 1 had type 'svfloat32_t'} } */
   svcmla_lane (f32, f32, f32, s32, 0); /* { dg-error {argument 4 of 'svcmla_lane' must be an integer constant expression} } */
   svcmla_lane (f32, f32, f32, i, 0); /* { dg-error {argument 4 of 'svcmla_lane' must be an integer constant expression} } */
 

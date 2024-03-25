@@ -1,5 +1,5 @@
 /* Declarations and definitions dealing with attribute handling.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,6 +19,13 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_ATTRIBS_H
 #define GCC_ATTRIBS_H
+
+/* A set of attributes that belong to the same namespace, given by NS.  */
+struct scoped_attribute_specs
+{
+  const char *ns;
+  array_slice<const attribute_spec> attributes;
+};
 
 extern const struct attribute_spec *lookup_attribute_spec (const_tree);
 extern void free_attr_data ();
@@ -41,10 +48,10 @@ extern void apply_tm_attr (tree, tree);
 extern tree make_attribute (const char *, const char *, tree);
 extern bool attribute_ignored_p (tree);
 extern bool attribute_ignored_p (const attribute_spec *const);
+extern bool any_nonignored_attribute_p (tree);
 
-extern struct scoped_attributes* register_scoped_attributes (const struct attribute_spec *,
-							     const char *,
-							     bool = false);
+extern struct scoped_attributes *
+  register_scoped_attributes (const scoped_attribute_specs &, bool = false);
 
 extern char *sorted_attr_string (tree);
 extern bool common_function_versions (tree, tree);

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 static double one = 1.0;
 
 f()

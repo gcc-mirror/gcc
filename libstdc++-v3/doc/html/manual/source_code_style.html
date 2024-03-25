@@ -468,7 +468,7 @@
 <br />
       Type names and template formal-argument names: <code class="literal">_[A-Z][^_].*</code><br />
 <br />
-      Examples:  <code class="code">_Helper  _CharT  _N</code><br />
+      Examples:  <code class="code">_Helper  _CharT  _Nm</code><br />
 <br />
       Member data and function names: <code class="literal">_M_.*</code><br />
 <br />
@@ -480,7 +480,7 @@
 <br />
       Don't use names in the same scope that differ only in the prefix,<br />
       e.g. _S_top and _M_top. See <a class="link" href="source_code_style.html#coding_style.bad_identifiers" title="Bad Identifiers">BADNAMES</a> for a list of forbidden names.<br />
-      (The most tempting of these seem to be and "_T" and "__sz".)<br />
+      (The most tempting of these seem to be and "_T" and "_N".)<br />
 <br />
       Names must never have "__" internally; it would confuse name<br />
       unmanglers on some targets. Also, never use "__[0-9]", same reason.<br />

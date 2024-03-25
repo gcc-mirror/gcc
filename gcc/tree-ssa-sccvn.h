@@ -1,5 +1,5 @@
 /* Tree SCC value numbering
-   Copyright (C) 2007-2023 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -298,6 +298,7 @@ tree vn_nary_simplify (vn_nary_op_t);
 unsigned do_rpo_vn (function *, edge, bitmap,
 		    /* iterate */ bool = false,
 		    /* eliminate */ bool = true,
+		    /* skip_entry_phis */ bool = false,
 		    vn_lookup_kind = VN_WALKREWRITE);
 
 /* Private interface for PRE.  */

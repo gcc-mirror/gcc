@@ -1,5 +1,24 @@
+2024-01-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR rust/113056
+	* configure.ac: 'AM_ENABLE_MULTILIB' only for target builds.
+	* configure: Regenerate.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Makefile.am: New file.
+	* Makefile.in: Generate.
+	* configure.ac: New file.
+	* configure: Generate.
+	* aclocal.m4: Generate.
+	* libproc_macro/Makefile.am: New file.
+	* libproc_macro/proc_macro.cc: New file.
+	* libproc_macro/proc_macro.h: New file.
+	* libproc_macro/Makefile.in: Generate.
+
 
-Copyright (C) 2023 Free Software Foundation, Inc.
+Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

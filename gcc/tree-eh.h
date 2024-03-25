@@ -1,5 +1,5 @@
 /* Header file for exception handling.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,7 +30,7 @@ extern bool remove_stmt_from_eh_lp (gimple *);
 extern int lookup_stmt_eh_lp_fn (struct function *, const gimple *);
 extern int lookup_stmt_eh_lp (const gimple *);
 extern bool make_eh_dispatch_edges (geh_dispatch *);
-extern void make_eh_edges (gimple *);
+extern edge make_eh_edge (gimple *);
 extern edge redirect_eh_edge (edge, basic_block);
 extern void redirect_eh_dispatch_edge (geh_dispatch *, edge, basic_block);
 extern bool operation_could_trap_helper_p (enum tree_code, bool, bool, bool,

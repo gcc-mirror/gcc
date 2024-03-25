@@ -15,4 +15,4 @@ foo(const long long B, int a)
 
 /* { dg-final { scan-assembler-times "bext\t" 1 } } */
 /* { dg-final { scan-assembler-not {\mbset} } } */
-/* { dg-final { scan-assembler-not {\mand} } } */
+/* { dg-final { scan-assembler-not {\msll} } } */

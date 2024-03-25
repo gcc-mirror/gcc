@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int
 g (unsigned long long int *v, int n, unsigned int a[], int b)
 {
@@ -8,7 +11,8 @@ g (unsigned long long int *v, int n, unsigned int a[], int b)
   return n;
 }
 
-main ()
+int
+main (void)
 {
   int res;
   unsigned int ar[] = { 10, 11, 12, 13, 14 };

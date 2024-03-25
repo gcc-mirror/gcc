@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5047,11 +5047,11 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
       /* Remove some further statements which can't be kept in the IL because
 	 they can use SSA_NAMEs whose setter is going to be removed too.  */
-      while (temp_stmts.length ())
+      for (gimple *g2 : temp_stmts)
 	{
-	  g = temp_stmts.pop ();
-	  gsi2 = gsi_for_stmt (g);
+	  gsi2 = gsi_for_stmt (g2);
 	  gsi_remove (&gsi2, true);
+	  release_defs (g2);
 	}
     }
   else
@@ -5068,10 +5068,12 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 	rhs1 = gimple_assign_rhs1 (g);
 	gsi2 = gsi_for_stmt (g);
 	gsi_remove (&gsi2, true);
+	release_defs (g);
       }
   gcc_checking_assert (rhs1 == gimple_assign_lhs (im2));
   gsi2 = gsi_for_stmt (im2);
   gsi_remove (&gsi2, true);
+  release_defs (im2);
   /* Replace the re2 statement with __real__ of the newly added
      .UADDC/.USUBC call.  */
   if (re2)
@@ -5150,6 +5152,93 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 	}
     }
   return true;
+}
+
+/* Replace .POPCOUNT (x) == 1 or .POPCOUNT (x) != 1 with
+   (x & (x - 1)) > x - 1 or (x & (x - 1)) <= x - 1 if .POPCOUNT
+   isn't a direct optab.  */
+
+static void
+match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
+{
+  tree clhs, crhs;
+  enum tree_code code;
+  if (gimple_code (stmt) == GIMPLE_COND)
+    {
+      clhs = gimple_cond_lhs (stmt);
+      crhs = gimple_cond_rhs (stmt);
+      code = gimple_cond_code (stmt);
+    }
+  else
+    {
+      clhs = gimple_assign_rhs1 (stmt);
+      crhs = gimple_assign_rhs2 (stmt);
+      code = gimple_assign_rhs_code (stmt);
+    }
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return;
+  if (TREE_CODE (clhs) != SSA_NAME || !integer_onep (crhs))
+    return;
+  gimple *call = SSA_NAME_DEF_STMT (clhs);
+  combined_fn cfn = gimple_call_combined_fn (call);
+  switch (cfn)
+    {
+    CASE_CFN_POPCOUNT:
+      break;
+    default:
+      return;
+    }
+  if (!has_single_use (clhs))
+    return;
+  tree arg = gimple_call_arg (call, 0);
+  tree type = TREE_TYPE (arg);
+  if (!INTEGRAL_TYPE_P (type))
+    return;
+  bool nonzero_arg = tree_expr_nonzero_p (arg);
+  if (direct_internal_fn_supported_p (IFN_POPCOUNT, type, OPTIMIZE_FOR_BOTH))
+    {
+      /* Tell expand_POPCOUNT the popcount result is only used in equality
+	 comparison with one, so that it can decide based on rtx costs.  */
+      gimple *g = gimple_build_call_internal (IFN_POPCOUNT, 2, arg,
+					      nonzero_arg ? integer_zero_node
+					      : integer_one_node);
+      gimple_call_set_lhs (g, gimple_call_lhs (call));
+      gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
+      gsi_replace (&gsi2, g, true);
+      return;
+    }
+  tree argm1 = make_ssa_name (type);
+  gimple *g = gimple_build_assign (argm1, PLUS_EXPR, arg,
+				   build_int_cst (type, -1));
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (type),
+			   nonzero_arg ? BIT_AND_EXPR : BIT_XOR_EXPR,
+			   arg, argm1);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  tree_code cmpcode;
+  if (nonzero_arg)
+    {
+      argm1 = build_zero_cst (type);
+      cmpcode = code;
+    }
+  else
+    cmpcode = code == EQ_EXPR ? GT_EXPR : LE_EXPR;
+  if (gcond *cond = dyn_cast <gcond *> (stmt))
+    {
+      gimple_cond_set_lhs (cond, gimple_assign_lhs (g));
+      gimple_cond_set_rhs (cond, argm1);
+      gimple_cond_set_code (cond, cmpcode);
+    }
+  else
+    {
+      gimple_assign_set_rhs1 (stmt, gimple_assign_lhs (g));
+      gimple_assign_set_rhs2 (stmt, argm1);
+      gimple_assign_set_rhs_code (stmt, cmpcode);
+    }
+  update_stmt (stmt);
+  gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
+  gsi_remove (&gsi2, true);
+  release_defs (call);
 }
 
 /* Return true if target has support for divmod.  */
@@ -5805,6 +5894,11 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      match_uaddc_usubc (&gsi, stmt, code);
 	      break;
 
+	    case EQ_EXPR:
+	    case NE_EXPR:
+	      match_single_bit_test (&gsi, stmt);
+	      break;
+
 	    default:;
 	    }
 	}
@@ -5870,7 +5964,10 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	    }
 	}
       else if (gimple_code (stmt) == GIMPLE_COND)
-	optimize_spaceship (as_a <gcond *> (stmt));
+	{
+	  match_single_bit_test (&gsi, stmt);
+	  optimize_spaceship (as_a <gcond *> (stmt));
+	}
       gsi_next (&gsi);
     }
   if (fma_state.m_deferring_p

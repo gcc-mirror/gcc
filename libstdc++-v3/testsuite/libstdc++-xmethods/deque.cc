@@ -1,7 +1,7 @@
 // { dg-do run }
 // { dg-options "-g -O0" }
 
-// Copyright (C) 2014-2023 Free Software Foundation, Inc.
+// Copyright (C) 2014-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,6 +66,30 @@ main ()
 // { dg-final { whatis-test q1.front() int } }
 // { dg-final { whatis-test q1.back() int } }
 // { dg-final { whatis-test q3\[0\] int } }
+
+  // PR libstdc++/112491
+  std::deque<int> q5;
+  q5.push_front(5);
+// { dg-final { note-test q5.size() 1 } }
+// { dg-final { note-test q5\[0\] 5 } }
+  std::deque<int> q6 = q1;
+  q6.pop_front();
+// { dg-final { note-test {q6.size() == (q1_size-1)} true } }
+// { dg-final { note-test q6\[1\] 102 } }
+  std::deque<int> q7 = q2;
+  q7.pop_front();
+  q7.pop_front();
+// { dg-final { note-test {q7.size() == (q2_size-2)} true } }
+// { dg-final { note-test q7\[1\] 203 } }
+  std::deque<int> q8 = q3;
+  q8.pop_front();
+  q8.pop_front();
+  q8.pop_front();
+// { dg-final { note-test {q8.size() == (q3_size-3)} true } }
+// { dg-final { note-test q8\[1\] 304 } }
+  std::deque<int> q9 = q8;
+  q9.clear();
+// { dg-final { note-test q9.size() 0 } }
 
   return 0;  // Mark SPOT
 }

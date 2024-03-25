@@ -1,4 +1,4 @@
-#   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 # Load support procs.
 load_lib gfortran-dg.exp
+load_lib atomic-dg.exp
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_FFLAGS
@@ -53,13 +54,34 @@ proc dg-compile-aux-modules { args } {
     }
 }
 
+# coarray tests might need libatomic.  Assume that it is either not needed or
+# provided by builtins if it's not available.
+set maybe_atomic_lib ""
+if [check_effective_target_libatomic_available] {
+    if ![is_remote host] {
+	if [info exists TOOL_OPTIONS] {
+	    set maybe_atomic_lib "[atomic_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	} else {
+	    set maybe_atomic_lib "[atomic_link_flags [get_multilibs]]"
+	}
+    } else {
+        set maybe_atomic_lib ""
+    }
+}
+
+set all_flags $DEFAULT_FFLAGS
+if { $maybe_atomic_lib != "" } {
+   foreach f $maybe_atomic_lib {
+     lappend all_flags $f
+   }
+}
+
 # Main loop.
 gfortran-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "" $DEFAULT_FFLAGS
+       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "" $all_flags
 
 gfortran-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/g77/*.\[fF\] ] ] "" $DEFAULT_FFLAGS
-
+       [glob -nocomplain $srcdir/$subdir/g77/*.\[fF\] ] ] "" $all_flags
 
 # All done.
 dg-finish

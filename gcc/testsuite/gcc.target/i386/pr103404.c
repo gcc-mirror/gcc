@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-Og -fcse-follow-jumps -fno-dce -fno-early-inlining -fgcse -fharden-conditional-branches -frerun-cse-after-loop -fno-tree-ccp -mavx5124fmaps -std=c99 -w" } */
+/* { dg-additional-options "-Og -fcse-follow-jumps -fno-dce -fno-early-inlining -fgcse -fharden-conditional-branches -frerun-cse-after-loop -fno-tree-ccp -mavx512f -std=c99 -w" } */
 
 typedef unsigned __attribute__((__vector_size__ (4))) U;
 typedef unsigned __attribute__((__vector_size__ (16))) V;

@@ -13,6 +13,7 @@ enum optab_methods
 };
 struct optab_d { };
 typedef struct optab_d *optab;
+void expand_binop (optab, int, enum optab_methods);
 void
 expand_shift_1 (int code, int unsignedp, int rotate,
 		optab lshift_optab, optab rshift_arith_optab)

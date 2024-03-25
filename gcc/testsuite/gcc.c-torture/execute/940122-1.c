@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 char *a = 0;
 char *b = 0;
 

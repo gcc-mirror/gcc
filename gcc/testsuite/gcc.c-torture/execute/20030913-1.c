@@ -1,6 +1,9 @@
 /* Assignments via pointers pointing to global variables were being killed
    by SSA-DCE.  Test contributed by Paul Brook <paul@nowt.org>  */
 
+void abort (void);
+void exit (int);
+
 int g;
  
 void 

@@ -66,5 +66,5 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8,
 
   svshrnb (f32, 1); /* { dg-error {'svshrnb' has no form that takes 'svfloat32_t' arguments} } */
 
-  svshrnb (1, 1); /* { dg-error {passing 'int' to argument 1 of 'svshrnb', which expects an SVE vector type} } */
+  svshrnb (1, 1); /* { dg-error {passing 'int' to argument 1 of 'svshrnb', which expects an SVE type rather than a scalar} } */
 }

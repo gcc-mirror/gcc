@@ -1,5 +1,5 @@
 /* Alias analysis for trees.
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -496,7 +496,8 @@ ref_may_alias_global_p_1 (tree base, bool escaped_local_p)
   if (DECL_P (base))
     return (is_global_var (base)
 	    || (escaped_local_p
-		&& pt_solution_includes (&cfun->gimple_df->escaped, base)));
+		&& pt_solution_includes (&cfun->gimple_df->escaped_return,
+					 base)));
   else if (TREE_CODE (base) == MEM_REF
 	   || TREE_CODE (base) == TARGET_MEM_REF)
     return ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0),
@@ -578,6 +579,9 @@ dump_alias_info (FILE *file)
 
   fprintf (file, "\nESCAPED");
   dump_points_to_solution (file, &cfun->gimple_df->escaped);
+
+  fprintf (file, "\nESCAPED_RETURN");
+  dump_points_to_solution (file, &cfun->gimple_df->escaped_return);
 
   fprintf (file, "\n\nFlow-insensitive points-to information\n\n");
 

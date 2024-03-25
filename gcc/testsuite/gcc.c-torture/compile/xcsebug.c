@@ -1,7 +1,8 @@
 int g1;
 int g2;
 
-foo ()
+void
+foo (void)
 {
   int i = 1;
   int x;

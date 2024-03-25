@@ -1,5 +1,5 @@
 /* Compute different info about registers.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -140,6 +140,9 @@ reginfo_cc_finalize (void)
   CLEAR_HARD_REG_SET (global_reg_set);
 }
 
+/* In insn-preds.cc.  */
+extern void init_reg_class_start_regs ();
+
 /* Given a register bitmap, turn on the bits in a HARD_REG_SET that
    correspond to the hard registers, if any, set in that map.  This
    could be done far more efficiently by having all sorts of special-cases
@@ -198,6 +201,8 @@ init_reg_sets (void)
 
   SET_HARD_REG_SET (accessible_reg_set);
   SET_HARD_REG_SET (operand_reg_set);
+
+  init_reg_class_start_regs ();
 }
 
 /* We need to save copies of some of the register information which

@@ -91,8 +91,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@LIBGFOR_MINIMAL_TRUE@am__append_1 = -DLIBGFOR_MINIMAL
-@LIBGFOR_MINIMAL_FALSE@am__append_2 = \
+@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -Wc,-nodefaultrpaths \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
+@LIBGFOR_MINIMAL_TRUE@am__append_2 = -DLIBGFOR_MINIMAL
+@LIBGFOR_MINIMAL_FALSE@am__append_3 = \
 @LIBGFOR_MINIMAL_FALSE@io/close.c \
 @LIBGFOR_MINIMAL_FALSE@io/file_pos.c \
 @LIBGFOR_MINIMAL_FALSE@io/format.c \
@@ -110,7 +112,7 @@ target_triplet = @target@
 @LIBGFOR_MINIMAL_FALSE@io/fbuf.c \
 @LIBGFOR_MINIMAL_FALSE@io/async.c
 
-@LIBGFOR_MINIMAL_FALSE@am__append_3 = \
+@LIBGFOR_MINIMAL_FALSE@am__append_4 = \
 @LIBGFOR_MINIMAL_FALSE@intrinsics/access.c \
 @LIBGFOR_MINIMAL_FALSE@intrinsics/c99_functions.c \
 @LIBGFOR_MINIMAL_FALSE@intrinsics/chdir.c \
@@ -143,9 +145,9 @@ target_triplet = @target@
 @LIBGFOR_MINIMAL_FALSE@intrinsics/umask.c \
 @LIBGFOR_MINIMAL_FALSE@intrinsics/unlink.c
 
-@IEEE_SUPPORT_TRUE@am__append_4 = ieee/ieee_helper.c
-@LIBGFOR_MINIMAL_TRUE@am__append_5 = runtime/minimal.c
-@LIBGFOR_MINIMAL_FALSE@am__append_6 = \
+@IEEE_SUPPORT_TRUE@am__append_5 = ieee/ieee_helper.c
+@LIBGFOR_MINIMAL_TRUE@am__append_6 = runtime/minimal.c
+@LIBGFOR_MINIMAL_FALSE@am__append_7 = \
 @LIBGFOR_MINIMAL_FALSE@runtime/backtrace.c \
 @LIBGFOR_MINIMAL_FALSE@runtime/convert_char.c \
 @LIBGFOR_MINIMAL_FALSE@runtime/environ.c \
@@ -584,7 +586,7 @@ AMTAR = @AMTAR@
 
 # Some targets require additional compiler options for IEEE compatibility.
 AM_CFLAGS = @AM_CFLAGS@ -fcx-fortran-rules $(SECTION_FLAGS) \
-	$(IEEE_FLAGS) $(am__append_1)
+	$(IEEE_FLAGS) $(am__append_2)
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AM_FCFLAGS = @AM_FCFLAGS@ $(IEEE_FLAGS)
 AR = @AR@
@@ -743,6 +745,8 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBGFOR_USE_SYMVER_FALSE@version_dep = 
 @LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = gfortran.ver
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = gfortran.ver-sun gfortran.ver
+extra_darwin_ldflags_libgfortran = @extra_ldflags_libgfortran@ \
+	$(am__append_1)
 gfor_c_HEADERS = ISO_Fortran_binding.h
 gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
@@ -754,7 +758,7 @@ libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LTLDFLAGS) $(LIBQUADLIB) ../libbacktrace/libbacktrace.la \
 	$(HWCAP_LDFLAGS) \
-	$(LIBM) $(extra_ldflags_libgfortran) \
+	$(LIBM) $(extra_darwin_ldflags_libgfortran) \
 	$(version_arg) -Wc,-shared-libgcc
 
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
@@ -775,7 +779,7 @@ AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(MULTIBUILDTOP)../libbacktrace \
 	      -I../libbacktrace
 
-gfor_io_src = io/size_from_kind.c $(am__append_2)
+gfor_io_src = io/size_from_kind.c $(am__append_3)
 gfor_io_headers = \
 io/io.h \
 io/fbuf.h \
@@ -797,7 +801,7 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/selected_int_kind.f90 \
 	intrinsics/selected_real_kind.f90 intrinsics/trigd.c \
 	intrinsics/unpack_generic.c runtime/in_pack_generic.c \
-	runtime/in_unpack_generic.c $(am__append_3) $(am__append_4)
+	runtime/in_unpack_generic.c $(am__append_4) $(am__append_5)
 @IEEE_SUPPORT_TRUE@gfor_ieee_helper_src = ieee/ieee_helper.c
 @IEEE_SUPPORT_FALSE@gfor_ieee_src = 
 @IEEE_SUPPORT_TRUE@gfor_ieee_src = \
@@ -806,8 +810,8 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 @IEEE_SUPPORT_TRUE@ieee/ieee_features.F90
 
 gfor_src = runtime/bounds.c runtime/compile_options.c runtime/memory.c \
-	runtime/string.c runtime/select.c $(am__append_5) \
-	$(am__append_6)
+	runtime/string.c runtime/select.c $(am__append_6) \
+	$(am__append_7)
 i_all_c = \
 $(srcdir)/generated/all_l1.c \
 $(srcdir)/generated/all_l2.c \

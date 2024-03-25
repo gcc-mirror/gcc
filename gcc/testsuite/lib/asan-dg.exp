@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2023 Free Software Foundation, Inc.
+# Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ proc asan_link_flags_1 { paths lib } {
 	   || [file exists "${gccpath}/libsanitizer/${lib}/.libs/lib${lib}.${shlib_ext}"] } {
 	  append flags " -B${gccpath}/libsanitizer/ "
 	  append flags " -B${gccpath}/libsanitizer/${lib}/ "
-	  append flags " -L${gccpath}/libsanitizer/${lib}/.libs "
+	  append flags " -B${gccpath}/libsanitizer/${lib}/.libs "
 	  append ld_library_path ":${gccpath}/libsanitizer/${lib}/.libs"
       }
     } else {

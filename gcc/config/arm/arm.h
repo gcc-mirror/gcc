@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -2092,10 +2092,11 @@ enum arm_auto_incmodes
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE Pmode
 
-#define CASE_VECTOR_PC_RELATIVE ((TARGET_THUMB2				\
-				  || (TARGET_THUMB1			\
-				      && (optimize_size || flag_pic)))	\
-				 && (!target_pure_code))
+#define CASE_VECTOR_PC_RELATIVE						\
+   (TARGET_ARM								\
+    || (!target_pure_code						\
+	&& (TARGET_THUMB2						\
+	    || (TARGET_THUMB1 && (optimize_size || flag_pic)))))
 
 
 #define CASE_VECTOR_SHORTEN_MODE(min, max, body)			\
@@ -2109,9 +2110,19 @@ enum arm_auto_incmodes
       : min >= -4096 && max < 4096					\
       ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 0, HImode)	\
       : SImode)								\
-   : ((min < 0 || max >= 0x20000 || !TARGET_THUMB2) ? SImode		\
-      : (max >= 0x200) ? HImode						\
-      : QImode))
+   : (TARGET_THUMB2							\
+      ? ((min > 0 && max < 0x200) ? QImode				\
+      : (min > 0 && max <= 0x20000) ? HImode				\
+      : SImode)								\
+   : ((min >= 0 && max < 1024)						\
+      ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 1, QImode)	\
+      : (min >= -512 && max <= 508)					\
+      ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 0, QImode)	\
+      :(min >= 0 && max < 262144)					\
+      ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 1, HImode)	\
+      : (min >= -131072 && max <=131068)				\
+      ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 0, HImode)	\
+      : SImode)))
 
 /* signed 'char' is most compatible, but RISC OS wants it unsigned.
    unsigned is probably best, but may break some code.  */
@@ -2291,8 +2302,14 @@ extern int making_const_table;
 	asm_fprintf (STREAM, "\tpop {%r}\n", REGNO);	\
     } while (0)
 
-#define ADDR_VEC_ALIGN(JUMPTABLE)	\
-  ((TARGET_THUMB && GET_MODE (PATTERN (JUMPTABLE)) == SImode) ? 2 : 0)
+/* If the switch table is in the code segment, additional alignment is
+   needed for Thumb SImode tables.  Otherwise, tables in RO data have
+   natural alignment.  */
+#define ADDR_VEC_ALIGN(TABLE)						\
+  (JUMP_TABLES_IN_TEXT_SECTION						\
+   ? ((TARGET_THUMB && GET_MODE (PATTERN (TABLE)) == SImode) ? 2 : 0)	\
+   : (exact_log2 (GET_MODE_ALIGNMENT (GET_MODE (PATTERN (TABLE)))	\
+		  / BITS_PER_UNIT)))
 
 /* Alignment for case labels comes from ADDR_VEC_ALIGN; avoid the
    default alignment from elfos.h.  */
@@ -2301,7 +2318,7 @@ extern int making_const_table;
 
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL)                \
    (GET_CODE (PATTERN (prev_active_insn (LABEL))) == ADDR_DIFF_VEC \
-   ? 1 : 0)
+   ? (TARGET_ARM ? 2 : 1) : 0)
 
 #define ARM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL) 	\
   arm_declare_function_name ((STREAM), (NAME), (DECL));

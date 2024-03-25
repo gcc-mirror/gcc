@@ -1,5 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -878,7 +878,7 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
       fallthru = false;
       break;
     case GIMPLE_RESX:
-      make_eh_edges (last);
+      make_eh_edge (last);
       fallthru = false;
       break;
     case GIMPLE_EH_DISPATCH:
@@ -894,7 +894,7 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
 
       /* If this statement has reachable exception handlers, then
 	 create abnormal edges to them.  */
-      make_eh_edges (last);
+      make_eh_edge (last);
 
       /* BUILTIN_RETURN is really a return statement.  */
       if (gimple_call_builtin_p (last, BUILT_IN_RETURN))
@@ -911,7 +911,7 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
       /* A GIMPLE_ASSIGN may throw internally and thus be considered
 	 control-altering.  */
       if (is_ctrl_altering_stmt (last))
-	make_eh_edges (last);
+	make_eh_edge (last);
       fallthru = true;
       break;
 
@@ -1214,6 +1214,22 @@ assign_discriminators (void)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 
+	  /* Don't allow debug stmts to affect discriminators, but
+	     allow them to take discriminators when they're on the
+	     same line as the preceding nondebug stmt.  */
+	  if (is_gimple_debug (stmt))
+	    {
+	      if (curr_locus != UNKNOWN_LOCATION
+		  && same_line_p (curr_locus, &curr_locus_e,
+				  gimple_location (stmt)))
+		{
+		  location_t loc = gimple_location (stmt);
+		  location_t dloc = location_with_discriminator (loc,
+								 curr_discr);
+		  gimple_set_location (stmt, dloc);
+		}
+	      continue;
+	    }
 	  if (curr_locus == UNKNOWN_LOCATION)
 	    {
 	      curr_locus = gimple_location (stmt);
@@ -4657,6 +4673,16 @@ verify_gimple_assign_single (gassign *stmt)
       error ("%qs in gimple IL", code_name);
       return true;
 
+    case WITH_SIZE_EXPR:
+      if (!is_gimple_val (TREE_OPERAND (rhs1, 1)))
+	{
+	  error ("invalid %qs size argument in load", code_name);
+	  debug_generic_stmt (lhs);
+	  debug_generic_stmt (rhs1);
+	  return true;
+	}
+      rhs1 = TREE_OPERAND (rhs1, 0);
+      /* Fallthru.  */
     case COMPONENT_REF:
     case BIT_FIELD_REF:
     case ARRAY_REF:
@@ -4793,12 +4819,6 @@ verify_gimple_assign_single (gassign *stmt)
 	  return true;
 	}
       return res;
-
-    case WITH_SIZE_EXPR:
-      error ("%qs RHS in assignment statement",
-	     get_tree_code_name (rhs_code));
-      debug_generic_expr (rhs1);
-      return true;
 
     case OBJ_TYPE_REF:
       /* FIXME.  */
@@ -5774,6 +5794,7 @@ gimple_verify_flow_info (void)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 
+	  /* Do NOT disregard debug stmts after found_ctrl_stmt.  */
 	  if (found_ctrl_stmt)
 	    {
 	      error ("control flow in the middle of basic block %d",
@@ -6579,7 +6600,7 @@ gimple_duplicate_bb (basic_block bb, copy_bb_data *id)
 		if (!existed)
 		  {
 		    gcc_assert (MR_DEPENDENCE_CLIQUE (op) <= cfun->last_clique);
-		    newc = ++cfun->last_clique;
+		    newc = get_new_clique (cfun);
 		  }
 		MR_DEPENDENCE_CLIQUE (op) = newc;
 	      }
@@ -8270,6 +8291,15 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 
 	      if (strstr (IDENTIFIER_POINTER (name), "no_sanitize"))
 		print_no_sanitize_attr_value (file, TREE_VALUE (chain));
+	      else if (!strcmp (IDENTIFIER_POINTER (name),
+				"omp declare variant base"))
+		{
+		  tree a = TREE_VALUE (chain);
+		  print_generic_expr (file, TREE_PURPOSE (a), dump_flags);
+		  fprintf (file, " match ");
+		  print_omp_context_selector (file, TREE_VALUE (a),
+					      dump_flags);
+		}
 	      else
 		print_generic_expr (file, TREE_VALUE (chain), dump_flags);
 	      fprintf (file, ")");

@@ -1,3 +1,96 @@
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/README: Add notes about generating libstdc++ tables.
+	* unicode/GraphemeBreakProperty.txt: New file.
+	* unicode/emoji-data.txt: New file.
+	* unicode/gen_libstdcxx_unicode_data.py: New file.
+
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* analyze_brprob.py: Remove stray text at end of comment.
+	* analyze_brprob_spec.py: Likewise.
+	* check-params-in-docs.py: Likewise.
+	* check_GNU_style.py: Likewise.
+	* check_GNU_style_lib.py: Likewise.
+	* filter-clang-warnings.py: Likewise.
+	* gcc-changelog/git_check_commit.py: Likewise.
+	* gcc-changelog/git_commit.py: Likewise.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/git_update_version.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+	* gen_autofdo_event.py: Likewise.
+	* mark_spam.py: Likewise.
+	* unicode/gen-box-drawing-chars.py: Likewise.
+	* unicode/gen-combining-chars.py: Likewise.
+	* unicode/gen-printable-chars.py: Likewise.
+	* unicode/gen_wcwidth.py: Likewise.
+
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_wcwidth.py: Add sys.argv[0] to usage error.
+
+2024-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GenericFilter): Skip gpl_v3_without_node.texi.
+	(GCCFilter): Skip GmcOptions.cc.
+
+2023-12-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* compare_tests: Add tool to test lines.  Match tabs besides
+	blanks to insert tool and target.  Don't print undefined fname.
+
+2023-12-20  Jason Merrill  <jason@redhat.com>
+
+	* gcc-git-customization.sh: Add git gcc-style alias.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* gcc_update: Add libgrust file dependencies.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* gcc-changelog/git_commit.py: Add libgrust.
+
+2023-12-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* download_prerequisites
+	<arg parse>: Parse --only-gettext.
+	(echo_archives): Check only_gettext and stop early if true.
+	(helptext): Document --only-gettext.
+
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config-list.mk (OPT_IN_LANGUAGES): New variable.
+	($(LIST)): Replace --enable-languages=all with a specifc list.
+	Disable fortran on bpf and mmix.  Enable the languages in
+	OPT_IN_LANGUAGES.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* unicode/README: Adjust glibc git commit hash, number of Unicode
+	data files to be updated and latest Unicode version.
+	* unicode/from_glibc/utf8_gen.py: Update from glibc.
+	* unicode/UnicodeData.txt: Update from Unicode 15.1.
+	* unicode/EastAsianWidth.txt: Likewise.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+	* unicode/NameAliases.txt: Likewise.
+	* unicode/DerivedCoreProperties.txt: Likewise.
+	* unicode/PropList.txt: Likewise.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	040e5b0edbca861196d9e2ea2af5e805769c8d5d to ignored commits.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* prerequisites.sha512: Add gettext.
+	* prerequisites.md5: Add gettext.
+	* download_prerequisites: Add gettext.
+
 2023-10-05  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* mdcompact/mdcompact-testsuite.el: New file.

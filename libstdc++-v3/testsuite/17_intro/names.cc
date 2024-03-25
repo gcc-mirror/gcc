@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2023 Free Software Foundation, Inc.
+// Copyright (C) 2017-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -140,6 +140,7 @@
 
 // These clash with newlib so don't use them.
 # define __lockable		cannot be used as an identifier
+# define __null_sentinel	cannot be used as an identifier
 # define __packed		cannot be used as an identifier
 # define __unused		cannot be used as an identifier
 # define __used			cannot be used as an identifier

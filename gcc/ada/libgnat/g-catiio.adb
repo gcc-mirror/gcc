@@ -849,7 +849,7 @@ package body GNAT.Calendar.Time_IO is
       begin
          Advance_Digits (Num_Digits => 1);
 
-         while Index <= Date'Length and then Symbol in '0' .. '9' loop
+         while Index <= Date'Last and then Symbol in '0' .. '9' loop
             Advance;
          end loop;
 
@@ -1005,7 +1005,7 @@ package body GNAT.Calendar.Time_IO is
 
       --  Check for trailing characters
 
-      if Index /= Date'Length + 1 then
+      if Index /= Date'Last + 1 then
          raise Wrong_Syntax;
       end if;
 

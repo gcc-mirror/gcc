@@ -1,5 +1,5 @@
 /* Support routines for value ranges.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Andrew Macleod <amacleod@redhat.com>.
 
@@ -139,6 +139,9 @@ public:
   void verify_mask () const;
   void dump (FILE *) const;
 
+  bool member_p (const wide_int &val) const;
+  void adjust_range (irange &r) const;
+
   // Convenience functions for nonzero bitmask compatibility.
   wide_int get_nonzero_bits () const;
   void set_nonzero_bits (const wide_int &bits);
@@ -198,6 +201,19 @@ irange_bitmask::set_nonzero_bits (const wide_int &bits)
   m_mask = bits;
   if (flag_checking)
     verify_mask ();
+}
+
+// Return TRUE if val could be a valid value with this bitmask.
+
+inline bool
+irange_bitmask::member_p (const wide_int &val) const
+{
+  if (unknown_p ())
+    return true;
+  wide_int res = m_mask & val;
+  if (m_value != 0)
+    res |= ~m_mask & m_value;
+  return res == val;
 }
 
 inline bool
@@ -339,6 +355,7 @@ private:
   bool set_range_from_bitmask ();
 
   bool intersect (const wide_int& lb, const wide_int& ub);
+  bool union_append (const irange &r);
   unsigned char m_num_ranges;
   bool m_resizable;
   unsigned char m_max_ranges;
@@ -1533,4 +1550,21 @@ void frange_arithmetic (enum tree_code, tree, REAL_VALUE_TYPE &,
 			const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
 			const REAL_VALUE_TYPE &);
 
+// Return true if TYPE1 and TYPE2 are compatible range types.
+
+inline bool
+range_compatible_p (tree type1, tree type2)
+{
+  // types_compatible_p requires conversion in both directions to be useless.
+  // GIMPLE only requires a cast one way in order to be compatible.
+  // Ranges really only need the sign and precision to be the same.
+  return TYPE_SIGN (type1) == TYPE_SIGN (type2)
+	 && (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
+	     // FIXME: As PR112788 shows, for now on rs6000 _Float128 has
+	     // type precision 128 while long double has type precision 127
+	     // but both have the same mode so their precision is actually
+	     // the same, workaround it temporarily.
+	     || (SCALAR_FLOAT_TYPE_P (type1)
+		 && TYPE_MODE (type1) == TYPE_MODE (type2)));
+}
 #endif // GCC_VALUE_RANGE_H

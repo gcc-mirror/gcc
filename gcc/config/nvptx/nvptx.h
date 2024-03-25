@@ -1,5 +1,5 @@
 /* Target Definitions for NVPTX.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -209,8 +209,8 @@ struct GTY(()) machine_function
 {
   rtx_expr_list *call_args;  /* Arg list for the current call.  */
   bool doing_call; /* Within a CALL_ARGS ... CALL_ARGS_END sequence.  */
-  bool is_varadic;  /* This call is varadic  */
-  bool has_varadic;  /* Current function has a varadic call.  */
+  bool is_variadic;  /* This call is variadic  */
+  bool has_variadic;  /* Current function has a variadic call.  */
   bool has_chain; /* Current function has outgoing static chain.  */
   bool has_softstack; /* Current function has a soft stack frame.  */
   bool has_simtreg; /* Current function has an OpenMP SIMD region.  */
@@ -318,6 +318,9 @@ struct GTY(()) machine_function
   ((VALUE) = GET_MODE_BITSIZE ((MODE)), 2)
 
 #define SUPPORTS_WEAK 1
+
+#define MAKE_DECL_ONE_ONLY(DECL) \
+  (DECL_WEAK (DECL) = 1)
 
 /* The documentation states that ASM_OUTPUT_DEF_FROM_DECLS is used in
    preference to ASM_OUTPUT_DEF if the tree nodes are available.  However, we

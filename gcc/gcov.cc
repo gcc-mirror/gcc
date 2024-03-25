@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990-2023 Free Software Foundation, Inc.
+   Copyright (C) 1990-2024 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
    Mangled further by Nathan Sidwell <nathan@codesourcery.com>
@@ -967,7 +967,7 @@ print_version (void)
 {
   fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
   fnotice (stdout, "JSON format version: %s\n", GCOV_JSON_FORMAT_VERSION);
-  fprintf (stdout, "Copyright %s 2023 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2024 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.  There is NO\n\
@@ -1109,12 +1109,11 @@ output_intermediate_json_line (json::array *object,
     return;
 
   json::object *lineo = new json::object ();
-  lineo->set ("line_number", new json::integer_number (line_num));
+  lineo->set_integer ("line_number", line_num);
   if (function_name != NULL)
-    lineo->set ("function_name", new json::string (function_name));
-  lineo->set ("count", new json::integer_number (line->count));
-  lineo->set ("unexecuted_block",
-	      new json::literal (line->has_unexecuted_block));
+    lineo->set_string ("function_name", function_name);
+  lineo->set_integer ("count", line->count);
+  lineo->set_bool ("unexecuted_block", line->has_unexecuted_block);
 
   json::array *bb_ids = new json::array ();
   for (const block_info *block : line->blocks)
@@ -1135,25 +1134,20 @@ output_intermediate_json_line (json::array *object,
 	if (!(*it)->is_unconditional && !(*it)->is_call_non_return)
 	  {
 	    json::object *branch = new json::object ();
-	    branch->set ("count", new json::integer_number ((*it)->count));
-	    branch->set ("throw", new json::literal ((*it)->is_throw));
-	    branch->set ("fallthrough",
-			 new json::literal ((*it)->fall_through));
-	    branch->set ("source_block_id",
-			 new json::integer_number ((*it)->src->id));
-	    branch->set ("destination_block_id",
-			 new json::integer_number ((*it)->dst->id));
+	    branch->set_integer ("count", (*it)->count);
+	    branch->set_bool ("throw", (*it)->is_throw);
+	    branch->set_bool ("fallthrough", (*it)->fall_through);
+	    branch->set_integer ("source_block_id", (*it)->src->id);
+	    branch->set_integer ("destination_block_id", (*it)->dst->id);
 	    branches->append (branch);
 	  }
 	else if ((*it)->is_call_non_return)
 	  {
 	    json::object *call = new json::object ();
 	    gcov_type returns = (*it)->src->count - (*it)->count;
-	    call->set ("source_block_id",
-		       new json::integer_number ((*it)->src->id));
-	    call->set ("destination_block_id",
-		       new json::integer_number ((*it)->dst->id));
-	    call->set ("returned", new json::integer_number (returns));
+	    call->set_integer ("source_block_id", (*it)->src->id);
+	    call->set_integer ("destination_block_id", (*it)->dst->id);
+	    call->set_integer ("returned", returns);
 	    calls->append (call);
 	  }
       }
@@ -1236,7 +1230,7 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
   json::object *root = new json::object ();
   json_files->append (root);
 
-  root->set ("file", new json::string (src->name));
+  root->set_string ("file", src->name);
 
   json::array *functions = new json::array ();
   root->set ("functions", functions);
@@ -1247,22 +1241,15 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
        it != src->functions.end (); it++)
     {
       json::object *function = new json::object ();
-      function->set ("name", new json::string ((*it)->m_name));
-      function->set ("demangled_name",
-		     new json::string ((*it)->get_demangled_name ()));
-      function->set ("start_line",
-		     new json::integer_number ((*it)->start_line));
-      function->set ("start_column",
-		     new json::integer_number ((*it)->start_column));
-      function->set ("end_line", new json::integer_number ((*it)->end_line));
-      function->set ("end_column",
-		     new json::integer_number ((*it)->end_column));
-      function->set ("blocks",
-		     new json::integer_number ((*it)->get_block_count ()));
-      function->set ("blocks_executed",
-		     new json::integer_number ((*it)->blocks_executed));
-      function->set ("execution_count",
-		     new json::integer_number ((*it)->blocks[0].count));
+      function->set_string ("name", (*it)->m_name);
+      function->set_string ("demangled_name", (*it)->get_demangled_name ());
+      function->set_integer ("start_line", (*it)->start_line);
+      function->set_integer ("start_column", (*it)->start_column);
+      function->set_integer ("end_line", (*it)->end_line);
+      function->set_integer ("end_column", (*it)->end_column);
+      function->set_integer ("blocks", (*it)->get_block_count ());
+      function->set_integer ("blocks_executed", (*it)->blocks_executed);
+      function->set_integer ("execution_count", (*it)->blocks[0].count);
 
       functions->append (function);
     }
@@ -1549,12 +1536,12 @@ generate_results (const char *file_name)
   gcov_intermediate_filename = get_gcov_intermediate_filename (file_name);
 
   json::object *root = new json::object ();
-  root->set ("format_version", new json::string (GCOV_JSON_FORMAT_VERSION));
-  root->set ("gcc_version", new json::string (version_string));
+  root->set_string ("format_version", GCOV_JSON_FORMAT_VERSION);
+  root->set_string ("gcc_version", version_string);
 
   if (bbg_cwd != NULL)
-    root->set ("current_working_directory", new json::string (bbg_cwd));
-  root->set ("data_file", new json::string (file_name));
+    root->set_string ("current_working_directory", bbg_cwd);
+  root->set_string ("data_file", file_name);
 
   json::array *json_files = new json::array ();
   root->set ("files", json_files);
@@ -1613,13 +1600,13 @@ generate_results (const char *file_name)
     {
       if (flag_use_stdout)
 	{
-	  root->dump (stdout);
+	  root->dump (stdout, false);
 	  printf ("\n");
 	}
       else
 	{
 	  pretty_printer pp;
-	  root->print (&pp);
+	  root->print (&pp, false);
 	  pp_formatted_text (&pp);
 
 	  fnotice (stdout, "Creating '%s'\n",

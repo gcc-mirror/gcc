@@ -1,5 +1,5 @@
 # Machine description for AArch64 architecture.
-# Copyright (C) 2012-2023 Free Software Foundation, Inc.
+# Copyright (C) 2012-2024 Free Software Foundation, Inc.
 # Contributed by ARM Ltd.
 #
 # This file is part of GCC.
@@ -19,3 +19,14 @@
 # <http://www.gnu.org/licenses/>.
 
 LIB2ADD += $(srcdir)/config/aarch64/sync-cache.c
+LIB2ADD += $(srcdir)/config/aarch64/cpuinfo.c
+
+# Add sme runtime to shared libgcc
+LIB2ADDEH += \
+	$(srcdir)/config/aarch64/__aarch64_have_sme.c \
+	$(srcdir)/config/aarch64/__arm_sme_state.S \
+	$(srcdir)/config/aarch64/__arm_tpidr2_restore.S \
+	$(srcdir)/config/aarch64/__arm_tpidr2_save.S \
+	$(srcdir)/config/aarch64/__arm_za_disable.S
+
+SHLIB_MAPFILES += $(srcdir)/config/aarch64/libgcc-sme.ver

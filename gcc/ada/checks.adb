@@ -1664,7 +1664,7 @@ package body Checks is
                end if;
 
                --  If the expressions for the discriminants are identical
-               --  and it is side-effect free (for now just an entity),
+               --  and it is side-effect-free (for now just an entity),
                --  this may be a shared constraint, e.g. from a subtype
                --  without a constraint introduced as a generic actual.
                --  Examine other discriminants if any.
@@ -2720,15 +2720,20 @@ package body Checks is
    ---------------------------
 
    procedure Apply_Predicate_Check
-     (N   : Node_Id;
-      Typ : Entity_Id;
-      Fun : Entity_Id := Empty)
+     (N     : Node_Id;
+      Typ   : Entity_Id;
+      Deref : Boolean := False;
+      Fun   : Entity_Id := Empty)
    is
-      Par : Node_Id;
-      S   : Entity_Id;
+      Loc            : constant Source_Ptr := Sloc (N);
+      Check_Disabled : constant Boolean :=
+        not Predicate_Enabled (Typ)
+          or else not Predicate_Check_In_Scope (N);
 
-      Check_Disabled : constant Boolean := not Predicate_Enabled (Typ)
-        or else not Predicate_Check_In_Scope (N);
+      Expr : Node_Id;
+      Par  : Node_Id;
+      S    : Entity_Id;
+
    begin
       S := Current_Scope;
       while Present (S) and then not Is_Subprogram (S) loop
@@ -2757,7 +2762,7 @@ package body Checks is
 
          if not Check_Disabled then
             Insert_Action (N,
-              Make_Raise_Storage_Error (Sloc (N),
+              Make_Raise_Storage_Error (Loc,
                 Reason => SE_Infinite_Recursion));
             return;
          end if;
@@ -2824,19 +2829,9 @@ package body Checks is
          Par := Parent (Par);
       end if;
 
-      --  For an entity of the type, generate a call to the predicate
-      --  function, unless its type is an actual subtype, which is not
-      --  visible outside of the enclosing subprogram.
+      --  Try to avoid creating a temporary if the expression is an aggregate
 
-      if Is_Entity_Name (N)
-        and then not Is_Actual_Subtype (Typ)
-      then
-         Insert_Action (N,
-           Make_Predicate_Check
-             (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
-         return;
-
-      elsif Nkind (N) in N_Aggregate | N_Extension_Aggregate then
+      if Nkind (N) in N_Aggregate | N_Extension_Aggregate then
 
          --  If the expression is an aggregate in an assignment, apply the
          --  check to the LHS after the assignment, rather than create a
@@ -2871,21 +2866,36 @@ package body Checks is
             then
                Insert_Action_After (Par,
                   Make_Predicate_Check (Typ,
-                    New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
+                    New_Occurrence_Of (Defining_Identifier (Par), Loc)));
                return;
             end if;
 
          end if;
       end if;
 
-      --  If the expression is not an entity it may have side effects,
-      --  and the following call will create an object declaration for
-      --  it. We disable checks during its analysis, to prevent an
-      --  infinite recursion.
+      --  For an entity of the type, generate a call to the predicate
+      --  function, unless its type is an actual subtype, which is not
+      --  visible outside of the enclosing subprogram.
 
-      Insert_Action (N,
-        Make_Predicate_Check
-          (Typ, Duplicate_Subexpr (N)), Suppress => All_Checks);
+      if Is_Entity_Name (N) and then not Is_Actual_Subtype (Typ) then
+         Expr := New_Occurrence_Of (Entity (N), Loc);
+
+      --  If the expression is not an entity, it may have side effects
+
+      else
+         Expr := Duplicate_Subexpr (N);
+      end if;
+
+      --  Make the dereference if requested
+
+      if Deref then
+         Expr := Make_Explicit_Dereference (Loc, Prefix => Expr);
+      end if;
+
+      --  Disable checks to prevent an infinite recursion
+
+      Insert_Action
+        (N, Make_Predicate_Check (Typ, Expr), Suppress => All_Checks);
    end Apply_Predicate_Check;
 
    -----------------------

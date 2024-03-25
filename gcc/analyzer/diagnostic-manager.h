@@ -1,5 +1,5 @@
 /* Classes for saving, deduplicating, and emitting analyzer diagnostics.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -66,6 +66,8 @@ public:
   void add_any_saved_events (checker_path &dst_path);
 
   void emit_any_notes () const;
+
+  void maybe_add_sarif_properties (sarif_object &result_obj) const;
 
   //private:
   const state_machine *m_sm;

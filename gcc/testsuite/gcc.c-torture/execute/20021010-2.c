@@ -18,7 +18,8 @@ unsigned int *global_vramPtr = (unsigned int *)0xa000;
 IOGBounds global_bounds = { 100, 150, 100, 150 };
 IOGBounds global_saveRect = { 75, 175, 75, 175 };
 
-main()
+int
+main(void)
 {
   unsigned int *vramPtr;
   int width;

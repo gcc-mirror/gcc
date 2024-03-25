@@ -584,8 +584,8 @@ class Type
   // returns false if the type is invalid and we should not continue
   // traversing it.
   bool
-  verify()
-  { return this->do_verify(); }
+  verify(Gogo* gogo)
+  { return this->do_verify(gogo); }
 
   // Bit flags to pass to are_identical and friends.
 
@@ -1101,7 +1101,7 @@ class Type
 
   // Verify the type.
   virtual bool
-  do_verify()
+  do_verify(Gogo*)
   { return true; }
 
   virtual bool
@@ -1300,13 +1300,13 @@ class Type
 		       Function_type* equal_fntype);
 
   void
-  write_identity_hash(Gogo*, int64_t size);
+  write_identity_hash(Gogo*, Named_object* function, int64_t size);
 
   void
-  write_identity_equal(Gogo*, int64_t size);
+  write_identity_equal(Gogo*, Named_object* function, int64_t size);
 
   void
-  write_named_equal(Gogo*, Named_type*);
+  write_named_equal(Gogo*, Named_object* function, Named_type*);
 
   // Build a composite literal for the uncommon type information.
   Expression*
@@ -1354,8 +1354,8 @@ class Type
 		     Location);
 
   static void
-  build_one_stub_method(Gogo*, Method*, const char* receiver_name,
-			const Type* receiver_type,
+  build_one_stub_method(Gogo*, Method*, Named_object* stub,
+			const char* receiver_name, const Type* receiver_type,
 			const Typed_identifier_list*, bool is_varargs,
 			const Typed_identifier_list*, Location);
 
@@ -1364,12 +1364,12 @@ class Type
   build_direct_iface_stub_methods(Gogo*, const Type*, Methods*, Location);
 
   static void
-  build_one_iface_stub_method(Gogo*, Method*, const char*,
+  build_one_iface_stub_method(Gogo*, Method*, Named_object* stub, const char*,
                               const Typed_identifier_list*, bool,
 			      const Typed_identifier_list*, Location);
 
   static void
-  add_return_from_results(Gogo*, Call_expression*,
+  add_return_from_results(Gogo*, Named_object* stub, Call_expression*,
 			  const Typed_identifier_list*, Location);
 
   static Expression*
@@ -2297,8 +2297,8 @@ class Pointer_type : public Type
   do_traverse(Traverse*);
 
   bool
-  do_verify()
-  { return this->to_type_->verify(); }
+  do_verify(Gogo* gogo)
+  { return this->to_type_->verify(gogo); }
 
   // If this is a pointer to a type that can't be in the heap, then
   // the garbage collector does not have to look at this, so pretend
@@ -2654,11 +2654,11 @@ class Struct_type : public Type
 
   // Write the hash function for this type.
   void
-  write_hash_function(Gogo*, Function_type*);
+  write_hash_function(Gogo*, Named_object* function, Function_type*);
 
   // Write the equality function for this type.
   void
-  write_equal_function(Gogo*, Named_type*);
+  write_equal_function(Gogo*, Named_object* function, Named_type*);
 
   // Whether we can write this type to a C header file, to implement
   // -fgo-c-header.
@@ -2675,7 +2675,7 @@ class Struct_type : public Type
   do_traverse(Traverse*);
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const;
@@ -2844,18 +2844,18 @@ class Array_type : public Type
 
   // Write the hash function for this type.
   void
-  write_hash_function(Gogo*, Function_type*);
+  write_hash_function(Gogo*, Named_object* function, Function_type*);
 
   // Write the equality function for this type.
   void
-  write_equal_function(Gogo*, Named_type*);
+  write_equal_function(Gogo*, Named_object* function, Named_type*);
 
  protected:
   int
   do_traverse(Traverse* traverse);
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const;
@@ -2901,7 +2901,7 @@ class Array_type : public Type
 
  private:
   bool
-  verify_length();
+  verify_length(Gogo*);
 
   Expression*
   array_type_descriptor(Gogo*, Named_type*);
@@ -3003,7 +3003,7 @@ class Map_type : public Type
   do_traverse(Traverse*);
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const
@@ -3123,7 +3123,7 @@ class Channel_type : public Type
   { return Type::traverse(this->element_type_, traverse); }
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const
@@ -3604,7 +3604,7 @@ class Named_type : public Type
   { return Type::traverse(this->type_, traverse); }
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const;
@@ -3762,7 +3762,7 @@ class Forward_declaration_type : public Type
   do_traverse(Traverse* traverse);
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const

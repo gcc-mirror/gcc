@@ -2113,11 +2113,28 @@ package body Sem_Ch5 is
          Ent : Entity_Id;
 
       begin
-         --  If iterator type is derived, the cursor is declared in the scope
-         --  of the parent type.
+         --  If the iterator type is derived and it has an iterator interface
+         --  type as an ancestor, then the cursor type is declared in the scope
+         --  of that interface type.
 
          if Is_Derived_Type (Typ) then
-            Ent := First_Entity (Scope (Etype (Typ)));
+            declare
+               Iter_Iface : constant Entity_Id :=
+                              Iterator_Interface_Ancestor (Typ);
+
+            begin
+               if Present (Iter_Iface) then
+                  Ent := First_Entity (Scope (Iter_Iface));
+
+               --  If there's not an iterator interface, then retrieve the
+               --  scope associated with the parent type and start from its
+               --  first entity.
+
+               else
+                  Ent := First_Entity (Scope (Etype (Typ)));
+               end if;
+            end;
+
          else
             Ent := First_Entity (Scope (Typ));
          end if;
@@ -3434,14 +3451,6 @@ package body Sem_Ch5 is
 
       if Present (Iterator_Filter (N)) then
          Preanalyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
-      end if;
-
-      --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
-      --  This check is relevant only when SPARK_Mode is on as it is not a
-      --  standard Ada legality check.
-
-      if SPARK_Mode = On and then Is_Effectively_Volatile (Id) then
-         Error_Msg_N ("loop parameter cannot be volatile", Id);
       end if;
    end Analyze_Loop_Parameter_Specification;
 

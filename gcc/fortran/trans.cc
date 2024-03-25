@@ -1,5 +1,5 @@
 /* Code translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -796,7 +796,10 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
       if (stat requested)
 	stat = 0;
 
+      // if cond == NULL_NULL:
       newmem = malloc (MAX (size, 1));
+      // otherwise:
+      newmem = <cond> ? <alt_alloc> : malloc (MAX (size, 1))
       if (newmem == NULL)
       {
         if (stat)
@@ -808,7 +811,8 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
     }  */
 void
 gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
-			   tree size, tree status)
+			   tree size, tree status, tree cond, tree alt_alloc,
+			   tree extra_success_expr)
 {
   tree tmp, error_cond;
   stmtblock_t on_error;
@@ -822,13 +826,18 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
 
   /* The allocation itself.  */
   size = fold_convert (size_type_node, size);
-  gfc_add_modify (block, pointer,
-	  fold_convert (TREE_TYPE (pointer),
-		build_call_expr_loc (input_location,
-			     builtin_decl_explicit (BUILT_IN_MALLOC), 1,
-			     fold_build2_loc (input_location,
-				      MAX_EXPR, size_type_node, size,
-				      build_int_cst (size_type_node, 1)))));
+  tmp = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
+			 size, build_int_cst (size_type_node, 1));
+
+  tmp = build_call_expr_loc (input_location,
+			     builtin_decl_explicit (BUILT_IN_MALLOC), 1, tmp);
+  if (cond == boolean_true_node)
+    tmp = alt_alloc;
+  else if (cond)
+    tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp), cond,
+		      alt_alloc, tmp);
+
+  gfc_add_modify (block, pointer, fold_convert (TREE_TYPE (pointer), tmp));
 
   /* What to do in case of error.  */
   gfc_start_block (&on_error);
@@ -852,7 +861,9 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 			 gfc_unlikely (error_cond, PRED_FORTRAN_FAIL_ALLOC),
 			 gfc_finish_block (&on_error),
-			 build_empty_stmt (input_location));
+			 extra_success_expr
+			 ? extra_success_expr
+			 : build_empty_stmt (input_location));
 
   gfc_add_expr_to_block (block, tmp);
 }
@@ -938,7 +949,8 @@ gfc_allocate_using_caf_lib (stmtblock_t * block, tree pointer, tree size,
 void
 gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size,
 			  tree token, tree status, tree errmsg, tree errlen,
-			  tree label_finish, gfc_expr* expr, int corank)
+			  tree label_finish, gfc_expr* expr, int corank,
+			  tree cond, tree alt_alloc, tree extra_success_expr)
 {
   stmtblock_t alloc_block;
   tree tmp, null_mem, alloc, error;
@@ -963,7 +975,7 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size,
   if (flag_coarray == GFC_FCOARRAY_LIB
       && (corank > 0 || caf_attr.codimension))
     {
-      tree cond, sub_caf_tree;
+      tree cond2, sub_caf_tree;
       gfc_se se;
       bool compute_special_caf_types_size = false;
 
@@ -1027,16 +1039,17 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size,
 	{
 	  TREE_USED (label_finish) = 1;
 	  tmp = build1_v (GOTO_EXPR, label_finish);
-	  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-				  status, build_zero_cst (TREE_TYPE (status)));
+	  cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+				   status, build_zero_cst (TREE_TYPE (status)));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				 gfc_unlikely (cond, PRED_FORTRAN_FAIL_ALLOC),
+				 gfc_unlikely (cond2, PRED_FORTRAN_FAIL_ALLOC),
 				 tmp, build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&alloc_block, tmp);
 	}
     }
   else
-    gfc_allocate_using_malloc (&alloc_block, mem, size, status);
+    gfc_allocate_using_malloc (&alloc_block, mem, size, status,
+			       cond, alt_alloc, extra_success_expr);
 
   alloc = gfc_finish_block (&alloc_block);
 
@@ -1781,6 +1794,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
   tree cond, tmp, error;
   tree status_type = NULL_TREE;
   tree token = NULL_TREE;
+  tree descr = NULL_TREE;
   gfc_coarray_deregtype caf_dereg_type = GFC_CAF_COARRAY_DEREGISTER;
 
   if (coarray_dealloc_mode >= GFC_CAF_COARRAY_ANALYZE)
@@ -1788,7 +1802,11 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
       if (flag_coarray == GFC_FCOARRAY_LIB)
 	{
 	  if (caf_token)
-	    token = caf_token;
+	    {
+	      token = caf_token;
+	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (pointer)))
+		pointer = gfc_conv_descriptor_data_get (pointer);
+	    }
 	  else
 	    {
 	      tree caf_type, caf_decl = pointer;
@@ -1824,7 +1842,10 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 	pointer = gfc_conv_descriptor_data_get (pointer);
     }
   else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (pointer)))
-    pointer = gfc_conv_descriptor_data_get (pointer);
+    {
+      descr = pointer;
+      pointer = gfc_conv_descriptor_data_get (pointer);
+    }
 
   cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node, pointer,
 			  build_int_cst (TREE_TYPE (pointer), 0));
@@ -1876,9 +1897,27 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
       tmp = build_call_expr_loc (input_location,
 				 builtin_decl_explicit (BUILT_IN_FREE), 1,
 				 fold_convert (pvoid_type_node, pointer));
+      if (flag_openmp_allocators && coarray_dealloc_mode < GFC_CAF_COARRAY_ANALYZE)
+	{
+	  tree cond, omp_tmp;
+	  if (descr)
+	    cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+				    gfc_conv_descriptor_version (descr),
+				    build_int_cst (integer_type_node, 1));
+	  else
+	    cond = gfc_omp_call_is_alloc (pointer);
+	  omp_tmp = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+	  omp_tmp = build_call_expr_loc (input_location, omp_tmp, 2, pointer,
+					 build_zero_cst (ptr_type_node));
+	  tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp), cond,
+			    omp_tmp, tmp);
+	}
       gfc_add_expr_to_block (&non_null, tmp);
       gfc_add_modify (&non_null, pointer, build_int_cst (TREE_TYPE (pointer),
 							 0));
+      if (flag_openmp_allocators && descr)
+	gfc_add_modify (&non_null, gfc_conv_descriptor_version (descr),
+			build_zero_cst (integer_type_node));
 
       if (status != NULL_TREE && !integer_zerop (status))
 	{
@@ -2050,6 +2089,16 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, tree label_finish,
       tmp = build_call_expr_loc (input_location,
 				 builtin_decl_explicit (BUILT_IN_FREE), 1,
 				 fold_convert (pvoid_type_node, pointer));
+      if (flag_openmp_allocators)
+	{
+	  tree cond, omp_tmp;
+	  cond = gfc_omp_call_is_alloc (pointer);
+	  omp_tmp = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+	  omp_tmp = build_call_expr_loc (input_location, omp_tmp, 2, pointer,
+					 build_zero_cst (ptr_type_node));
+	  tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp), cond,
+			    omp_tmp, tmp);
+	}
       gfc_add_expr_to_block (&non_null, tmp);
 
       if (status != NULL_TREE && !integer_zerop (status))
@@ -2483,7 +2532,7 @@ trans_code (gfc_code * code, tree cond)
 	  break;
 
 	case EXEC_ALLOCATE:
-	  res = gfc_trans_allocate (code);
+	  res = gfc_trans_allocate (code, NULL);
 	  break;
 
 	case EXEC_DEALLOCATE:

@@ -1,5 +1,6 @@
 /* Check that __int128 types are mangled.  */
 /* { dg-do compile { target mips*-*-* } } */
+// { dg-additional-options -fabi-compat-version=0 }
 
 #ifdef __mips64
 typedef int int128 __attribute__ ((mode(TI)));

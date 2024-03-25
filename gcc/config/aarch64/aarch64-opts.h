@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -32,8 +32,6 @@ enum aarch64_processor
 #define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   INTERNAL_IDENT,
 #include "aarch64-cores.def"
-  /* Used to indicate that no processor has been specified.  */
-  generic,
   /* Used to mark the end of the processor table.  */
   aarch64_none
 };
@@ -120,6 +118,17 @@ enum aarch64_ldp_stp_policy {
   AARCH64_LDP_STP_POLICY_ALIGNED,
   AARCH64_LDP_STP_POLICY_ALWAYS,
   AARCH64_LDP_STP_POLICY_NEVER
+};
+
+/* An enum specifying when the early-ra pass should be run:
+   - AARCH64_EARLY_RA_ALL: for all functions
+   - AARCH64_EARLY_RA_STRIDED: for functions that have access to strided
+     multi-register instructions
+   - AARCH64_EARLY_RA_NONE: for no functions.  */
+enum aarch64_early_ra_scope {
+  AARCH64_EARLY_RA_ALL,
+  AARCH64_EARLY_RA_STRIDED,
+  AARCH64_EARLY_RA_NONE
 };
 
 #endif

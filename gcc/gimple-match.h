@@ -1,6 +1,6 @@
 /* Gimple simplify definitions.
 
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -32,7 +32,8 @@ public:
   enum uncond { UNCOND };
 
   /* Build an unconditional op.  */
-  gimple_match_cond (uncond) : cond (NULL_TREE), else_value (NULL_TREE) {}
+  gimple_match_cond (uncond) : cond (NULL_TREE), else_value (NULL_TREE), len
+			       (NULL_TREE), bias (NULL_TREE) {}
   gimple_match_cond (tree, tree);
   gimple_match_cond (tree, tree, tree, tree);
 
@@ -56,7 +57,8 @@ public:
 
 inline
 gimple_match_cond::gimple_match_cond (tree cond_in, tree else_value_in)
-  : cond (cond_in), else_value (else_value_in)
+  : cond (cond_in), else_value (else_value_in), len (NULL_TREE),
+    bias (NULL_TREE)
 {
 }
 
@@ -92,6 +94,10 @@ public:
 		   code_helper, tree, tree, tree, tree, tree);
   gimple_match_op (const gimple_match_cond &,
 		   code_helper, tree, tree, tree, tree, tree, tree);
+  gimple_match_op (const gimple_match_cond &,
+		   code_helper, tree, tree, tree, tree, tree, tree, tree);
+  gimple_match_op (const gimple_match_cond &,
+		   code_helper, tree, tree, tree, tree, tree, tree, tree, tree);
 
   void set_op (code_helper, tree, unsigned int);
   void set_op (code_helper, tree, tree);
@@ -100,6 +106,8 @@ public:
   void set_op (code_helper, tree, tree, tree, tree, bool);
   void set_op (code_helper, tree, tree, tree, tree, tree);
   void set_op (code_helper, tree, tree, tree, tree, tree, tree);
+  void set_op (code_helper, tree, tree, tree, tree, tree, tree, tree);
+  void set_op (code_helper, tree, tree, tree, tree, tree, tree, tree, tree);
   void set_value (tree);
 
   tree op_or_null (unsigned int) const;
@@ -212,6 +220,39 @@ gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
   ops[4] = op4;
 }
 
+inline
+gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
+				  code_helper code_in, tree type_in,
+				  tree op0, tree op1, tree op2, tree op3,
+				  tree op4, tree op5)
+  : cond (cond_in), code (code_in), type (type_in), reverse (false),
+    num_ops (6)
+{
+  ops[0] = op0;
+  ops[1] = op1;
+  ops[2] = op2;
+  ops[3] = op3;
+  ops[4] = op4;
+  ops[5] = op5;
+}
+
+inline
+gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
+				  code_helper code_in, tree type_in,
+				  tree op0, tree op1, tree op2, tree op3,
+				  tree op4, tree op5, tree op6)
+  : cond (cond_in), code (code_in), type (type_in), reverse (false),
+    num_ops (7)
+{
+  ops[0] = op0;
+  ops[1] = op1;
+  ops[2] = op2;
+  ops[3] = op3;
+  ops[4] = op4;
+  ops[5] = op5;
+  ops[6] = op6;
+}
+
 /* Change the operation performed to CODE_IN, the type of the result to
    TYPE_IN, and the number of operands to NUM_OPS_IN.  The caller needs
    to set the operands itself.  */
@@ -297,6 +338,39 @@ gimple_match_op::set_op (code_helper code_in, tree type_in,
   ops[2] = op2;
   ops[3] = op3;
   ops[4] = op4;
+}
+
+inline void
+gimple_match_op::set_op (code_helper code_in, tree type_in,
+			 tree op0, tree op1, tree op2, tree op3, tree op4,
+			 tree op5)
+{
+  code = code_in;
+  type = type_in;
+  num_ops = 6;
+  ops[0] = op0;
+  ops[1] = op1;
+  ops[2] = op2;
+  ops[3] = op3;
+  ops[4] = op4;
+  ops[5] = op5;
+}
+
+inline void
+gimple_match_op::set_op (code_helper code_in, tree type_in,
+			 tree op0, tree op1, tree op2, tree op3, tree op4,
+			 tree op5, tree op6)
+{
+  code = code_in;
+  type = type_in;
+  num_ops = 7;
+  ops[0] = op0;
+  ops[1] = op1;
+  ops[2] = op2;
+  ops[3] = op3;
+  ops[4] = op4;
+  ops[5] = op5;
+  ops[6] = op6;
 }
 
 /* Set the "operation" to be the single value VALUE, such as a constant

@@ -8,7 +8,6 @@
 /*
 ** test_uint16_t___builtin_bswap16:
 **   ...
-**   vsetvli\s+[atx][0-9]+,\s*zero,\s*e16,\s*m1,\s*ta,\s*ma
 **   vsrl\.vi\s+v[0-9]+,\s*v[0-9],\s*8+
 **   vsll\.vi\s+v[0-9]+,\s*v[0-9],\s*8+
 **   vor\.vv\s+v[0-9]+,\s*v[0-9],\s*v[0-9]+

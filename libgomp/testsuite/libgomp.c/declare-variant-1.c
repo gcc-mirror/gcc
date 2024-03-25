@@ -1,9 +1,9 @@
-/* { dg-do link { target vect_simd_clones } } */
+/* { dg-do link { target { vect_simd_clones && { i?86-*-* x86_64-*-* } } } } */
 /* { dg-require-effective-target lto } */
 /* { dg-require-effective-target fpic } */
 /* { dg-require-effective-target shared } */
 /* { dg-additional-options "-fdump-tree-gimple -fdump-tree-optimized -O2 -fPIC -shared -flto -flto-partition=one" } */
-/* { dg-additional-options "-mno-sse3" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-additional-options "-mno-sse3" } */
 
 int
 f01 (int a)
@@ -40,12 +40,14 @@ f04 (int a)
 int
 test1 (int x)
 {
-  /* At gimplification time, we can't decide yet which function to call.  */
+  /* At gimplification time, we can't decide yet which function to call,
+     given the f01 variant.  */
   /* { dg-final { scan-tree-dump-times "f04 \\\(x" 2 "gimple" } } */
   /* After simd clones are created, the original non-clone test1 shall
      call f03 (score 6), the sse2/avx/avx2 clones too, but avx512f clones
      shall call f01 with score 8.  */
   /* { dg-final { scan-ltrans-tree-dump-not "f04 \\\(x" "optimized" } } */
+  /* { dg-final { scan-ltrans-tree-dump-not "f02 \\\(x" "optimized" } } */
   /* { dg-final { scan-ltrans-tree-dump-times "f03 \\\(x" 14 "optimized" } } */
   /* { dg-final { scan-ltrans-tree-dump-times "f01 \\\(x" 4 "optimized" } } */
   int a = f04 (x);

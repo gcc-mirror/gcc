@@ -53,8 +53,6 @@ public:
     ForeachRangeStatement *rangefe;
 
     d_bool needExpansion;
-
-    StaticForeach *syntaxCopy();
 };
 
 class DVCondition : public Condition

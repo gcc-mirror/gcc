@@ -1,6 +1,6 @@
 (* wrapc.def provides access to more of the C library.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -27,11 +27,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 DEFINITION MODULE wrapc ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-
-EXPORT QUALIFIED strtime, filesize, fileinode,
-                 getrand, getusername, filemtime,
-                 getnameuidgid, signbit, signbitf, signbitl,
-		 isfinite, isfinitel, isfinitef ;
 
 
 (*
@@ -119,6 +114,30 @@ PROCEDURE isfinitef (x: SHORTREAL) : INTEGER ;
 *)
 
 PROCEDURE isfinitel (x: LONGREAL) : INTEGER ;
+
+
+(*
+   isnan - provide non builtin alternative to the gcc builtin isnan.
+           Returns 1 if x is a NaN otherwise return 0.
+*)
+
+PROCEDURE isnan (x: REAL) : INTEGER ;
+
+
+(*
+   isnanf - provide non builtin alternative to the gcc builtin isnanf.
+            Returns 1 if x is a NaN otherwise return 0.
+*)
+
+PROCEDURE isnanf (x: SHORTREAL) : INTEGER ;
+
+
+(*
+   isnanl - provide non builtin alternative to the gcc builtin isnanl.
+            Returns 1 if x is a NaN otherwise return 0.
+*)
+
+PROCEDURE isnanl (x: LONGREAL) : INTEGER ;
 
 
 END wrapc.

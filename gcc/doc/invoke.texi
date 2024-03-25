@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8,7 +8,7 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988-2023 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2024 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -219,6 +219,7 @@ in the following sections.
 -fno-elide-constructors
 -fno-enforce-eh-specs
 -fno-gnu-keywords
+-fno-immediate-escalation
 -fno-implicit-templates
 -fno-implicit-inline-templates
 -fno-implement-inlines
@@ -231,7 +232,7 @@ in the following sections.
 -fnew-inheriting-ctors
 -fnew-ttp-matching
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names
--fno-optional-diags  -fpermissive
+-fno-optional-diags
 -fno-pretty-templates
 -fno-rtti  -fsized-deallocation
 -ftemplate-backtrace-limit=@var{n}
@@ -305,6 +306,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}
 -fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}
 -fdiagnostics-format=@r{[}text@r{|}sarif-stderr@r{|}sarif-file@r{|}json@r{|}json-stderr@r{|}json-file@r{]}
+-fno-diagnostics-json-formatting
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers
 -fno-diagnostics-show-cwe
@@ -323,10 +325,10 @@ Objective-C and Objective-C++ Dialects}.
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic
--pedantic-errors
+-pedantic-errors -fpermissive
 -w  -Wextra  -Wall  -Wabi=@var{n}
 -Waddress  -Wno-address-of-packed-member  -Waggregate-return
--Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
+-Walloc-size  -Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
 -Walloca  -Walloca-larger-than=@var{byte-size}
 -Wno-aggressive-loop-optimizations
 -Warith-conversion
@@ -337,11 +339,12 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare  -Wbool-operation
 -Wno-builtin-declaration-mismatch
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat
--Wc11-c2x-compat
+-Wc11-c23-compat
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat
 -Wc++20-compat
 -Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
 -Wno-c++20-extensions  -Wno-c++23-extensions
+-Wcalloc-transposed-args
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual
 -Wchar-subscripts
 -Wclobbered  -Wcomment
@@ -366,7 +369,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-y2k  -Wframe-address
 -Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object
 -Wno-if-not-aligned  -Wno-ignored-attributes
--Wignored-qualifiers  -Wno-incompatible-pointer-types
+-Wignored-qualifiers  -Wno-incompatible-pointer-types  -Whardened
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n}
 -Wno-implicit-function-declaration  -Wno-implicit-int
 -Winfinite-recursion
@@ -383,7 +386,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
 -Wnull-dereference  -Wno-odr
 -Wopenacc-parallelism
--Wopenmp-simd
+-Wopenmp -Wopenmp-simd
 -Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects
 -Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded
 -Wparentheses  -Wno-pedantic-ms-format
@@ -448,6 +451,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-exploded-nodes-3
 -fdump-analyzer-exploded-paths
 -fdump-analyzer-feasibility
+-fdump-analyzer-infinite-loop
 -fdump-analyzer-json
 -fdump-analyzer-state-purge
 -fdump-analyzer-stderr
@@ -467,6 +471,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-file-leak
 -Wno-analyzer-free-of-non-heap
 -Wno-analyzer-imprecise-fp-arithmetic
+-Wno-analyzer-infinite-loop
 -Wno-analyzer-infinite-recursion
 -Wno-analyzer-jump-through-null
 -Wno-analyzer-malloc-leak
@@ -487,7 +492,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-tainted-divisor
 -Wno-analyzer-tainted-offset
 -Wno-analyzer-tainted-size
+-Wanalyzer-symbol-too-complex
 -Wanalyzer-too-complex
+-Wno-analyzer-undefined-behavior-strtok
 -Wno-analyzer-unsafe-call-within-signal-handler
 -Wno-analyzer-use-after-free
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame
@@ -502,7 +509,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations
--Wmissing-parameter-type -Wmissing-prototypes -Wmissing-variable-declarations
+-Wmissing-parameter-type -Wdeclaration-missing-parameter-type
+-Wmissing-prototypes -Wmissing-variable-declarations
 -Wnested-externs -Wold-style-declaration  -Wold-style-definition
 -Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion
 -Wdeclaration-after-statement  -Wpointer-sign}
@@ -557,6 +565,7 @@ Objective-C and Objective-C++ Dialects}.
 -fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion
 -fif-conversion2  -findirect-inlining
+-finline-stringops[=@var{fn}]
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n}
 -finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
@@ -641,17 +650,23 @@ Objective-C and Objective-C++ Dialects}.
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},...
 -fsanitize-undefined-trap-on-error  -fbounds-check
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
--fharden-compares -fharden-conditional-branches
+-fharden-compares -fharden-conditional-branches  -fhardened
+-fharden-control-flow-redundancy  -fhardcfr-skip-leaf
+-fhardcfr-check-exceptions  -fhardcfr-check-returning-calls
+-fhardcfr-check-noreturn-calls=@r{[}always@r{|}no-xthrow@r{|}nothrow@r{|}never@r{]}
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong
 -fstack-protector-explicit  -fstack-check
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym}
 -fno-stack-limit  -fsplit-stack
+-fstrub=disable  -fstrub=strict  -fstrub=relaxed
+-fstrub=all  -fstrub=at-calls  -fstrub=internal
 -fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]}
 -fvtv-counts  -fvtv-debug
 -finstrument-functions  -finstrument-functions-once
 -finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{}
 -finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{}
--fprofile-prefix-map=@var{old}=@var{new}}
+-fprofile-prefix-map=@var{old}=@var{new}
+-fpatchable-function-entry=@var{N}@r{[},@var{M}@r{]}}
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
@@ -715,7 +730,8 @@ Objective-C and Objective-C++ Dialects}.
 -fverbose-asm  -fpack-struct[=@var{n}]
 -fleading-underscore  -ftls-model=@var{model}
 -fstack-reuse=@var{reuse_level}
--ftrampolines  -ftrapv  -fwrapv
+-ftrampolines -ftrampoline-impl=@r{[}stack@r{|}heap@r{]}
+-ftrapv  -fwrapv
 -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]}
 -fstrict-volatile-bitfields  -fsync-libcalls}
 
@@ -788,7 +804,7 @@ Objective-C and Objective-C++ Dialects}.
 -moverride=@var{string}  -mverbose-cost-dump
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg}
 -mstack-protector-guard-offset=@var{offset} -mtrack-speculation
--moutline-atomics }
+-moutline-atomics -mearly-ldp-fusion -mlate-ldp-fusion}
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs
@@ -922,7 +938,7 @@ Objective-C and Objective-C++ Dialects}.
 -iframework
 -image_base  -init  -install_name  -keep_private_externs
 -multi_module  -multiply_defined  -multiply_defined_unused
--noall_load   -no_dead_strip_inits_and_terms
+-noall_load   -no_dead_strip_inits_and_terms -nodefaultrpaths
 -nofixprebinding  -nomultidefs  -noprebind  -noseglinkedit
 -pagezero_size  -prebind  -prebind_all_twolevel_modules
 -private_bundle  -read_only_relocs  -sectalign
@@ -1038,9 +1054,10 @@ Objective-C and Objective-C++ Dialects}.
 -mcond-move-float  -mno-cond-move-float
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align
 -mmax-inline-memcpy-size=@var{n}
--mexplicit-relocs -mno-explicit-relocs
+-mexplicit-relocs=@var{style} -mexplicit-relocs -mno-explicit-relocs
 -mdirect-extern-access -mno-direct-extern-access
--mcmodel=@var{code-model}}
+-mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as}
+-mrecip  -mrecip=@var{opt}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2  -m32rx  -m32r
@@ -1237,6 +1254,7 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg}
 -mstack-protector-guard-offset=@var{offset}
 -mcsr-check -mno-csr-check
+-mmovcc  -mno-movcc
 -minline-atomics  -mno-inline-atomics
 -minline-strlen  -mno-inline-strlen
 -minline-strcmp  -mno-inline-strcmp
@@ -1445,7 +1463,7 @@ See RS/6000 and PowerPC Options.
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni
 -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16
 -mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mapxf
--musermsr
+-musermsr -mavx10.1 -mavx10.1-256 -mavx10.1-512
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg}
 -mkl -mwidekl
@@ -1574,6 +1592,7 @@ C++ header file to be turned into a precompiled header or Ada spec.
 @item @var{file}.f
 @itemx @var{file}.for
 @itemx @var{file}.ftn
+@itemx @var{file}.fi
 Fixed form Fortran source code that should not be preprocessed.
 
 @item @var{file}.F
@@ -1588,6 +1607,7 @@ preprocessor).
 @itemx @var{file}.f95
 @itemx @var{file}.f03
 @itemx @var{file}.f08
+@itemx @var{file}.fii
 Free form Fortran source code that should not be preprocessed.
 
 @item @var{file}.F90
@@ -2428,9 +2448,12 @@ same as C11 except for corrections of defects (all of which are also
 applied with @option{-std=c11}) and a new value of
 @code{__STDC_VERSION__}, and so is supported to the same extent as C11.
 
-@item c2x
-The next version of the ISO C standard, still under development.  The
-support for this version is experimental and incomplete.
+@item c23
+@itemx c2x
+@itemx iso9899:2024
+ISO C23, the 2023 revision of the ISO C standard (expected to be
+published in 2024).  The support for this version is experimental and
+incomplete.  The name @samp{c2x} is deprecated.
 
 @item gnu90
 @itemx gnu89
@@ -2449,10 +2472,11 @@ The name @samp{gnu1x} is deprecated.
 @itemx gnu18
 GNU dialect of ISO C17.  This is the default for C code.
 
-@item gnu2x
+@item gnu23
+@itemx gnu2x
 The next version of the ISO C standard, still under development, plus
 GNU extensions.  The support for this version is experimental and
-incomplete.
+incomplete.  The name @samp{gnu2x} is deprecated.
 
 @item c++98
 @itemx c++03
@@ -2562,10 +2586,10 @@ this switch.  You may want to use the @option{-fno-gnu-keywords} flag
 instead, which disables @code{typeof} but not @code{asm} and
 @code{inline}.  In C99 mode (@option{-std=c99} or @option{-std=gnu99}),
 this switch only affects the @code{asm} and @code{typeof} keywords,
-since @code{inline} is a standard keyword in ISO C99.  In C2X mode
-(@option{-std=c2x} or @option{-std=gnu2x}), this switch only affects
+since @code{inline} is a standard keyword in ISO C99.  In C23 mode
+(@option{-std=c23} or @option{-std=gnu23}), this switch only affects
 the @code{asm} keyword, since @code{typeof} is a standard keyword in
-ISO C2X.
+ISO C23.
 
 @opindex fno-builtin
 @opindex fbuiltin
@@ -2768,9 +2792,9 @@ can be omitted, to use a target-specific default value.
 @opindex fopenmp
 @cindex OpenMP parallel
 @item -fopenmp
-Enable handling of OpenMP directives @samp{#pragma omp} in C/C++,
+Enable handling of OpenMP directives @samp{#pragma omp},
 @samp{[[omp::directive(...)]]}, @samp{[[omp::sequence(...)]]} and
-@samp{[[omp::decl(...)]]} in C++ and @samp{!$omp} in Fortran.  It
+@samp{[[omp::decl(...)]]} in C/C++ and @samp{!$omp} in Fortran.  It
 additionally enables the conditional compilation sentinel @samp{!$} in
 Fortran.  In fixed source form Fortran, the sentinels can also start with
 @samp{c} or @samp{*}.  When @option{-fopenmp} is specified, the
@@ -2787,9 +2811,9 @@ have support for @option{-pthread}. @option{-fopenmp} implies
 Enable handling of OpenMP's @code{simd}, @code{declare simd},
 @code{declare reduction}, @code{assume}, @code{ordered}, @code{scan}
 and @code{loop} directive, and of combined or composite directives with
-@code{simd} as constituent with @code{#pragma omp} in C/C++,
+@code{simd} as constituent with @code{#pragma omp},
 @code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
-@code{[[omp::decl(...)]]} in C++ and @code{!$omp} in Fortran.  It
+@code{[[omp::decl(...)]]} in C/C++ and @code{!$omp} in Fortran.  It
 additionally enables the conditional compilation sentinel @samp{!$} in
 Fortran.  In fixed source form Fortran, the sentinels can also start with
 @samp{c} or @samp{*}.  Other OpenMP directives are ignored.  Unless
@@ -3307,6 +3331,11 @@ called.  If the handler returns, execution continues normally.
 @item -fcoroutines
 Enable support for the C++ coroutines extension (experimental).
 
+@opindex fdiagnostics-all-candidates
+@item -fdiagnostics-all-candidates
+Permit the C++ front end to note all candidates during overload resolution
+failure, including when a deleted function is selected.
+
 @opindex fno-elide-constructors
 @opindex felide-constructors
 @item -fno-elide-constructors
@@ -3370,6 +3399,39 @@ Do not recognize @code{typeof} as a keyword, so that code can use this
 word as an identifier.  You can use the keyword @code{__typeof__} instead.
 This option is implied by the strict ISO C++ dialects: @option{-ansi},
 @option{-std=c++98}, @option{-std=c++11}, etc.
+
+@opindex fno-immediate-escalation
+@opindex fimmediate-escalation
+@item -fno-immediate-escalation
+Do not enable immediate function escalation whereby certain functions
+can be promoted to consteval, as specified in P2564R3.  For example:
+
+@example
+consteval int id(int i) @{ return i; @}
+
+constexpr int f(auto t)
+@{
+  return t + id(t); // id causes f<int> to be promoted to consteval
+@}
+
+void g(int i)
+@{
+  f (3);
+@}
+@end example
+
+compiles in C++20: @code{f} is an immediate-escalating function (due to
+the @code{auto} it is a function template and is declared @code{constexpr})
+and @code{id(t)} is an immediate-escalating expression, so @code{f} is
+promoted to @code{consteval}.  Consequently, the call to @code{id(t)}
+is in an immediate context, so doesn't have to produce a constant (that
+is the mechanism allowing consteval function composition).  However,
+with @option{-fno-immediate-escalation}, @code{f} is not promoted to
+@code{consteval}, and since the call to consteval function @code{id(t)}
+is not a constant expression, the compiler rejects the code.
+
+This option is turned on by default; it is only effective in C++20 mode
+or later.
 
 @opindex fimplicit-constexpr
 @item -fimplicit-constexpr
@@ -3500,12 +3562,6 @@ synonyms as keywords.
 Disable diagnostics that the standard says a compiler does not need to
 issue.  Currently, the only such diagnostic issued by G++ is the one for
 a name having multiple meanings within a class.
-
-@opindex fpermissive
-@item -fpermissive
-Downgrade some diagnostics about nonconformant code from errors to
-warnings.  Thus, using @option{-fpermissive} allows some
-nonconforming code to compile.
 
 @opindex fno-pretty-templates
 @opindex fpretty-templates
@@ -5709,8 +5765,7 @@ where the JSON is emitted to - with the former, the JSON is emitted to stderr,
 whereas with @samp{json-file} it is written to @file{@var{source}.gcc.json}.
 
 The emitted JSON consists of a top-level JSON array containing JSON objects
-representing the diagnostics.  The JSON is emitted as one line, without
-formatting; the examples below have been formatted for clarity.
+representing the diagnostics.
 
 Diagnostics can have child diagnostics.  For example, this error and note:
 
@@ -5973,6 +6028,24 @@ Diagnostics have a boolean attribute @code{escape-source}, hinting whether
 non-ASCII bytes should be escaped when printing the pertinent lines of
 source code (@code{true} for diagnostics involving source encoding issues).
 
+@opindex fno-diagnostics-json-formatting
+@opindex fdiagnostics-json-formatting
+@item -fno-diagnostics-json-formatting
+By default, when JSON is emitted for diagnostics (via
+@option{-fdiagnostics-format=sarif-stderr},
+@option{-fdiagnostics-format=sarif-file},
+@option{-fdiagnostics-format=json},
+@option{-fdiagnostics-format=json-stderr},
+@option{-fdiagnostics-format=json-file}),
+GCC will add newlines and indentation to visually emphasize the
+hierarchical structure of the JSON.
+
+Use @option{-fno-diagnostics-json-formatting} to suppress this whitespace.
+It must be passed before the option it is to affect.
+
+This is intended for compatibility with tools that do not expect the output
+to contain newlines, such as that emitted by older GCC releases.
+
 @end table
 
 @node Warning Options
@@ -6166,6 +6239,28 @@ errors by @option{-pedantic-errors}.  For instance:
 -Wvla @r{(C90 or earlier)}
 -Wwrite-strings @r{(C++11 or later)}
 }
+
+@opindex fpermissive
+@item -fpermissive
+Downgrade some required diagnostics about nonconformant code from
+errors to warnings.  Thus, using @option{-fpermissive} allows some
+nonconforming code to compile.  Some C++ diagnostics are controlled
+only by this flag, but it also downgrades some C and C++ diagnostics
+that have their own flag:
+
+@gccoptlist{
+-Wdeclaration-missing-parameter-type @r{(C and Objective-C only)}
+-Wimplicit-function-declaration @r{(C and Objective-C only)}
+-Wimplicit-int @r{(C and Objective-C only)}
+-Wincompatible-pointer-types @r{(C and Objective-C only)}
+-Wint-conversion @r{(C and Objective-C only)}
+-Wnarrowing @r{(C++ and Objective-C++ only)}
+-Wreturn-mismatch @r{(C and Objective-C only)}
+}
+
+The @option{-fpermissive} option is the default for historic C language
+modes (@option{-std=c89}, @option{-std=gnu89}, @option{-std=c90},
+@option{-std=gnu90}).
 
 @opindex Wall
 @opindex Wno-all
@@ -6830,8 +6925,10 @@ This warning is enabled by @option{-Wall} in C++.
 @opindex Wno-implicit-int
 @item -Wno-implicit-int @r{(C and Objective-C only)}
 This option controls warnings when a declaration does not specify a type.
-This warning is enabled by default in C99 and later dialects of C,
-and also by @option{-Wall}.
+This warning is enabled by default, as an error, in C99 and later
+dialects of C, and also by @option{-Wall}.  The error can be downgraded
+to a warning using @option{-fpermissive} (along with certain other
+errors), or for this error alone, with @option{-Wno-error=implicit-int}.
 
 This warning is upgraded to an error by @option{-pedantic-errors}.
 
@@ -6839,8 +6936,11 @@ This warning is upgraded to an error by @option{-pedantic-errors}.
 @opindex Wno-implicit-function-declaration
 @item -Wno-implicit-function-declaration @r{(C and Objective-C only)}
 This option controls warnings when a function is used before being declared.
-This warning is enabled by default in C99 and later dialects of C,
-and also by @option{-Wall}.
+This warning is enabled by default, as an error, in C99 and later
+dialects of C, and also by @option{-Wall}.  The error can be downgraded
+to a warning using @option{-fpermissive} (along with certain other
+errors), or for this error alone, with
+@option{-Wno-error=implicit-function-declaration}.
 
 This warning is upgraded to an error by @option{-pedantic-errors}.
 
@@ -6849,6 +6949,18 @@ This warning is upgraded to an error by @option{-pedantic-errors}.
 @item -Wimplicit @r{(C and Objective-C only)}
 Same as @option{-Wimplicit-int} and @option{-Wimplicit-function-declaration}.
 This warning is enabled by @option{-Wall}.
+
+@opindex Whardened
+@opindex Wno-hardened
+@item -Whardened
+Warn when @option{-fhardened} did not enable an option from its set (for
+which see @option{-fhardened}).  For instance, using @option{-fhardened}
+and @option{-fstack-protector} at the same time on the command line causes
+@option{-Whardened} to warn because @option{-fstack-protector-strong} is
+not enabled by @option{-fhardened}.
+
+This warning is enabled by default and has effect only when @option{-fhardened}
+is enabled.
 
 @opindex Wimplicit-fallthrough
 @opindex Wno-implicit-fallthrough
@@ -7332,22 +7444,36 @@ This warning is enabled by @option{-Wall} for C and C++.
 Do not warn about returning a pointer (or in C++, a reference) to a
 variable that goes out of scope after the function returns.
 
+@opindex Wreturn-mismatch
+@opindex Wno-return-mismatch
+@item -Wreturn-mismatch
+Warn about return statements without an expressions in functions which
+do not return @code{void}.  Also warn about a @code{return} statement
+with an expression in a function whose return type is @code{void},
+unless the expression type is also @code{void}.  As a GNU extension, the
+latter case is accepted without a warning unless @option{-Wpedantic} is
+used.
+
+Attempting to use the return value of a non-@code{void} function other
+than @code{main} that flows off the end by reaching the closing curly
+brace that terminates the function is undefined.
+
+This warning is specific to C and enabled by default.  In C99 and later
+language dialects, it is treated as an error.  It can be downgraded
+to a warning using @option{-fpermissive} (along with other warnings),
+or for just this warning, with @option{-Wno-error=return-mismatch}.
+
 @opindex Wreturn-type
 @opindex Wno-return-type
 @item -Wreturn-type
-Warn whenever a function is defined with a return type that defaults
-to @code{int}.  Also warn about any @code{return} statement with no
-return value in a function whose return type is not @code{void}
-(falling off the end of the function body is considered returning
-without a value).
+Warn whenever a function is defined with a return type that defaults to
+@code{int} (unless @option{-Wimplicit-int} is active, which takes
+precedence).  Also warn if execution may reach the end of the function
+body, or if the function does not contain any return statement at all.
 
-For C only, warn about a @code{return} statement with an expression in a
-function whose return type is @code{void}, unless the expression type is
-also @code{void}.  As a GNU extension, the latter case is accepted
-without a warning unless @option{-Wpedantic} is used.  Attempting
-to use the return value of a non-@code{void} function other than @code{main}
-that flows off the end by reaching the closing curly brace that terminates
-the function is undefined.
+Attempting to use the return value of a non-@code{void} function other
+than @code{main} that flows off the end by reaching the closing curly
+brace that terminates the function is undefined.
 
 Unlike in C, in C++, flowing off the end of a non-@code{void} function other
 than @code{main} results in undefined behavior even when the value of
@@ -8060,7 +8186,7 @@ if the array is referenced as a flexible array member.
 
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}
+@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}returns_nonnull@r{|}
 Warn for cases where adding an attribute may be beneficial. The
 attributes currently supported are listed below.
 
@@ -8080,9 +8206,11 @@ attributes currently supported are listed below.
 @itemx -Wsuggest-attribute=noreturn
 @itemx -Wmissing-noreturn
 @itemx -Wsuggest-attribute=malloc
+@itemx -Wsuggest-attribute=returns_nonnull
+@itemx -Wno-suggest-attribute=returns_nonnull
 
 Warn about functions that might be candidates for attributes
-@code{pure}, @code{const} or @code{noreturn} or @code{malloc}. The compiler
+@code{pure}, @code{const}, @code{noreturn}, @code{malloc} or @code{returns_nonnull}. The compiler
 only warns for functions visible in other compilation units or (in the case of
 @code{pure} and @code{const}) if it cannot prove that the function returns
 normally. A function returns normally if it doesn't contain an infinite loop or
@@ -8128,6 +8256,15 @@ always leads to a call to another @code{cold} function such as wrappers of
 C++ @code{throw} or fatal error reporting functions leading to @code{abort}.
 @end table
 
+@opindex Wno-alloc-size
+@opindex Walloc-size
+@item -Walloc-size
+Warn about calls to allocation functions decorated with attribute
+@code{alloc_size} that specify insufficient size for the target type of
+the pointer the result is assigned to, including those to the built-in
+forms of the functions @code{aligned_alloc}, @code{alloca},
+@code{calloc}, @code{malloc}, and @code{realloc}.
+
 @opindex Wno-alloc-zero
 @opindex Walloc-zero
 @item -Walloc-zero
@@ -8138,6 +8275,21 @@ forms of the functions @code{aligned_alloc}, @code{alloca}, @code{calloc},
 when called with a zero size differs among implementations (and in the case
 of @code{realloc} has been deprecated) relying on it may result in subtle
 portability bugs and should be avoided.
+
+@opindex Wcalloc-transposed-args
+@opindex Wno-calloc-transposed-args
+@item -Wcalloc-transposed-args
+Warn about calls to allocation functions decorated with attribute
+@code{alloc_size} with two arguments, which use @code{sizeof} operator
+as the earlier size argument and don't use it as the later size argument.
+This is a coding style warning.  The first argument to @code{calloc} is
+documented to be number of elements in array, while the second argument
+is size of each element, so @code{calloc (@var{n}, sizeof (int))} is preferred
+over @code{calloc (sizeof (int), @var{n})}.  If @code{sizeof} in the earlier
+argument and not the latter is intentional, the warning can be suppressed
+by using @code{calloc (sizeof (struct @var{S}) + 0, n)} or
+@code{calloc (1 * sizeof (struct @var{S}), 4)} or using @code{sizeof} in the
+later argument as well.
 
 @opindex Walloc-size-larger-than=
 @opindex Wno-alloc-size-larger-than
@@ -8495,6 +8647,11 @@ types.  This warning is for cases not covered by @option{-Wno-pointer-sign},
 which warns for pointer argument passing or assignment with different
 signedness.
 
+By default, in C99 and later dialects of C, GCC treats this issue as an
+error.  The error can be downgraded to a warning using
+@option{-fpermissive} (along with certain other errors), or for this
+error alone, with @option{-Wno-error=incompatible-pointer-types}.
+
 This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wno-int-conversion
@@ -8504,6 +8661,11 @@ Do not warn about incompatible integer to pointer and pointer to integer
 conversions.  This warning is about implicit conversions; for explicit
 conversions the warnings @option{-Wno-int-to-pointer-cast} and
 @option{-Wno-pointer-to-int-cast} may be used.
+
+By default, in C99 and later dialects of C, GCC treats this issue as an
+error.  The error can be downgraded to a warning using
+@option{-fpermissive} (along with certain other errors), or for this
+error alone, with @option{-Wno-error=int-conversion}.
 
 This warning is upgraded to an error by @option{-pedantic-errors}.
 
@@ -8978,17 +9140,19 @@ For instance, warn about use of anonymous structures and unions,
 and so on.  This option is independent of the standards mode.  Warnings are
 disabled in the expression that follows @code{__extension__}.
 
-@opindex Wc11-c2x-compat
-@opindex Wno-c11-c2x-compat
-@item -Wc11-c2x-compat @r{(C and Objective-C only)}
-Warn about features not present in ISO C11, but present in ISO C2X.
+@opindex Wc11-c23-compat
+@opindex Wno-c11-c23-compat
+@item -Wc11-c23-compat @r{(C and Objective-C only)}
+@itemx -Wc11-c2x-compat @r{(C and Objective-C only)}
+Warn about features not present in ISO C11, but present in ISO C23.
 For instance, warn about omitting the string in @code{_Static_assert},
 use of @samp{[[]]} syntax for attributes, use of decimal
 floating-point types, and so on.  This option is independent of the
 standards mode.  Warnings are disabled in the expression that follows
-@code{__extension__}.
+@code{__extension__}.  The name @option{-Wc11-c2x-compat} is
+deprecated.
 
-When not compiling in C2X mode, these warnings are upgraded to errors
+When not compiling in C23 mode, these warnings are upgraded to errors
 by @option{-pedantic-errors}.
 
 @opindex Wc++-compat
@@ -9057,6 +9221,13 @@ will only be diagnosed if @option{-Wpedantic} is used.
 @item -Wno-c++23-extensions @r{(C++ and Objective-C++ only)}
 Do not warn about C++23 constructs in code being compiled using
 an older C++ standard.  Even without this option, some C++23 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
+@opindex Wc++26-extensions
+@opindex Wno-c++26-extensions
+@item -Wno-c++26-extensions @r{(C++ and Objective-C++ only)}
+Do not warn about C++26 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++26 constructs
 will only be diagnosed if @option{-Wpedantic} is used.
 
 @opindex Wcast-qual
@@ -9580,7 +9751,7 @@ Warnings about ill-formed uses of standard attributes are upgraded to
 errors by @option{-pedantic-errors}.
 
 Additionally, using @option{-Wno-attributes=}, it is possible to suppress
-warnings about unknown scoped attributes (in C++11 and C2X).  For example,
+warnings about unknown scoped attributes (in C++11 and C23).  For example,
 @option{-Wno-attributes=vendor::attr} disables warning about the following
 declaration:
 
@@ -9651,7 +9822,7 @@ is also enabled by @option{-Wextra}.
 @item -Wold-style-definition @r{(C and Objective-C only)}
 Warn if an old-style function definition is used.  A warning is given
 even if there is a previous prototype.  A definition using @samp{()}
-is not considered an old-style definition in C2X mode, because it is
+is not considered an old-style definition in C23 mode, because it is
 equivalent to @samp{(void)} in that case, but is considered an
 old-style definition for older standards.
 
@@ -9666,6 +9837,20 @@ void foo(bar) @{ @}
 @end smallexample
 
 This warning is also enabled by @option{-Wextra}.
+
+@opindex Wno-declaration-missing-parameter-type
+@opindex Wdeclaration-missing-parameter-type
+@item -Wno-declaration-missing-parameter-type @r{(C and Objective-C only)}
+Do not warn if a function declaration contains a parameter name without
+a type.  Such function declarations do not provide a function prototype
+and prevent most type checking in function calls.
+
+This warning is enabled by default.  In C99 and later dialects of C, it
+is treated as an error.  The error can be downgraded to a warning using
+@option{-fpermissive} (along with certain other errors), or for this
+error alone, with @option{-Wno-error=declaration-missing-parameter-type}.
+
+This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wmissing-prototypes
 @opindex Wno-missing-prototypes
@@ -9889,6 +10074,11 @@ Enabled by default.
 @cindex OpenACC accelerator programming
 @item -Wopenacc-parallelism
 Warn about potentially suboptimal choices related to OpenACC parallelism.
+
+@opindex Wopenmp
+@opindex Wno-openmp
+@item -Wno-openmp
+Warn about suspicious OpenMP code.
 
 @opindex Wopenmp-simd
 @opindex Wno-openmp-simd
@@ -10359,6 +10549,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-file-leak
 -Wanalyzer-free-of-non-heap
 -Wanalyzer-imprecise-fp-arithmetic
+-Wanalyzer-infinite-loop
 -Wanalyzer-infinite-recursion
 -Wanalyzer-jump-through-null
 -Wanalyzer-malloc-leak
@@ -10373,6 +10564,13 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-shift-count-negative
 -Wanalyzer-shift-count-overflow
 -Wanalyzer-stale-setjmp-buffer
+-Wanalyzer-tainted-allocation-size
+-Wanalyzer-tainted-array-index
+-Wanalyzer-tainted-assertion
+-Wanalyzer-tainted-divisor
+-Wanalyzer-tainted-offset
+-Wanalyzer-tainted-size
+-Wanalyzer-undefined-behavior-strtok
 -Wanalyzer-unsafe-call-within-signal-handler
 -Wanalyzer-use-after-free
 -Wanalyzer-use-of-pointer-in-stale-stack-frame
@@ -10384,16 +10582,22 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-write-to-const
 -Wanalyzer-write-to-string-literal
 }
-@ignore
--Wanalyzer-tainted-allocation-size
--Wanalyzer-tainted-array-index
--Wanalyzer-tainted-divisor
--Wanalyzer-tainted-offset
--Wanalyzer-tainted-size
-@end ignore
 
 This option is only available if GCC was configured with analyzer
 support enabled.
+
+@opindex Wanalyzer-symbol-too-complex
+@opindex Wno-analyzer-symbol-too-complex
+@item -Wanalyzer-symbol-too-complex
+If @option{-fanalyzer} is enabled, the analyzer uses various heuristics
+to attempt to track the state of memory, but these can be defeated by
+sufficiently complicated code.
+
+By default, the analysis silently stops tracking values of expressions
+if they exceed the threshold defined by
+@option{--param analyzer-max-svalue-depth=@var{value}}, and falls back
+to an imprecise representation for such expressions.
+The @option{-Wanalyzer-symbol-too-complex} option warns if this occurs.
 
 @opindex Wanalyzer-too-complex
 @opindex Wno-analyzer-too-complex
@@ -10625,6 +10829,57 @@ arithmetic is used in locations where precise computation is needed.  This
 diagnostic only warns on use of floating-point operands inside the
 calculation of an allocation size at the moment.
 
+@opindex Wanalyzer-infinite-loop
+@opindex Wno-analyzer-infinite-loop
+@item -Wno-analyzer-infinite-loop
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-infinite-loop} to disable it.
+
+This diagnostics warns for paths through the code which appear to
+lead to an infinite loop.
+
+Specifically, the analyzer will issue this warning when it "sees" a loop
+in which:
+@itemize @bullet
+@item
+no externally-visible work could be being done within the loop
+@item
+there is no way to escape from the loop
+@item
+the analyzer is sufficiently confident about the program state
+throughout the loop to know that the above are true
+@end itemize
+
+One way for this warning to be emitted is when there is an execution
+path through a loop for which taking the path on one iteration implies
+that the same path will be taken on all subsequent iterations.
+
+For example, consider:
+
+@smallexample
+  while (1)
+    @{
+      char opcode = *cpu_state.pc;
+      switch (opcode)
+       @{
+       case OPCODE_FOO:
+         handle_opcode_foo (&cpu_state);
+         break;
+       case OPCODE_BAR:
+         handle_opcode_bar (&cpu_state);
+         break;
+       @}
+    @}
+@end smallexample
+
+The analyzer will complain for the above case because if @code{opcode}
+ever matches none of the cases, the @code{switch} will follow the
+implicit @code{default} case, making the body of the loop be a ``no-op''
+with @code{cpu_state.pc} unchanged, and thus using the same value of
+@code{opcode} on all subseqent iterations, leading to an infinite loop.
+
+See @uref{https://cwe.mitre.org/data/definitions/835.html, CWE-835: Loop with Unreachable Exit Condition ('Infinite Loop')}.
+
 @opindex Wanalyzer-infinite-recursion
 @opindex Wno-analyzer-infinite-recursion
 @item -Wno-analyzer-infinite-recursion
@@ -10648,6 +10903,8 @@ this diagnostic.
 
 Compare with @option{-Winfinite-recursion}, which provides a similar
 diagnostic, but is implemented in a different way.
+
+See @uref{https://cwe.mitre.org/data/definitions/674.html, CWE-674: Uncontrolled Recursion}.
 
 @opindex Wanalyzer-jump-through-null
 @opindex Wno-analyzer-jump-through-null
@@ -10838,8 +11095,7 @@ no longer exists, and likely lead to a crash (or worse).
 @opindex Wanalyzer-tainted-allocation-size
 @opindex Wno-analyzer-tainted-allocation-size
 @item -Wno-analyzer-tainted-allocation-size
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-allocation-size} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10854,8 +11110,7 @@ See @uref{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Alloc
 @opindex Wno-analyzer-tainted-assertion
 @item -Wno-analyzer-tainted-assertion
 
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-assertion} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10916,8 +11171,7 @@ despite the above not being an assertion failure, strictly speaking.
 @opindex Wanalyzer-tainted-array-index
 @opindex Wno-analyzer-tainted-array-index
 @item -Wno-analyzer-tainted-array-index
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-array-index} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10930,8 +11184,7 @@ See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Val
 @opindex Wanalyzer-tainted-divisor
 @opindex Wno-analyzer-tainted-divisor
 @item -Wno-analyzer-tainted-divisor
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-divisor} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10944,8 +11197,7 @@ See @uref{https://cwe.mitre.org/data/definitions/369.html, CWE-369: Divide By Ze
 @opindex Wanalyzer-tainted-offset
 @opindex Wno-analyzer-tainted-offset
 @item -Wno-analyzer-tainted-offset
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-offset} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10958,8 +11210,7 @@ See @uref{https://cwe.mitre.org/data/definitions/823.html, CWE-823: Use of Out-o
 @opindex Wanalyzer-tainted-size
 @opindex Wno-analyzer-tainted-size
 @item -Wno-analyzer-tainted-size
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-size} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10968,6 +11219,18 @@ an operation such as @code{memset} without being sanitized, so that an
 attacker could inject an out-of-bounds access.
 
 See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+
+@opindex Wanalyzer-undefined-behavior-strtok
+@opindex Wno-analyzer-undefined-behavior-strtok
+@item -Wno-analyzer-undefined-behavior-strtok
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-undefined-behavior-strtok} to disable it.
+
+This diagnostic warns for paths through the code in which a
+call is made to @code{strtok} with undefined behavior.
+
+Specifically, passing NULL as the first parameter for the initial
+call to @code{strtok} within a process has undefined behavior.
 
 @opindex Wanalyzer-unsafe-call-within-signal-handler
 @opindex Wno-analyzer-unsafe-call-within-signal-handler
@@ -11209,38 +11472,6 @@ call site, and that are sufficiently complicated (as per
 @item -fanalyzer-checker=@var{name}
 Restrict the analyzer to run just the named checker, and enable it.
 
-Some checkers are disabled by default (even with @option{-fanalyzer}),
-such as the @code{taint} checker that implements
-@option{-Wanalyzer-tainted-array-index}, and this option is required
-to enable them.
-
-@emph{Note:} currently, @option{-fanalyzer-checker=taint} disables the
-following warnings from @option{-fanalyzer}:
-
-@gccoptlist{
--Wanalyzer-deref-before-check
--Wanalyzer-double-fclose
--Wanalyzer-double-free
--Wanalyzer-exposure-through-output-file
--Wanalyzer-fd-access-mode-mismatch
--Wanalyzer-fd-double-close
--Wanalyzer-fd-leak
--Wanalyzer-fd-use-after-close
--Wanalyzer-fd-use-without-check
--Wanalyzer-file-leak
--Wanalyzer-free-of-non-heap
--Wanalyzer-malloc-leak
--Wanalyzer-mismatching-deallocation
--Wanalyzer-null-argument
--Wanalyzer-null-dereference
--Wanalyzer-possible-null-argument
--Wanalyzer-possible-null-dereference
--Wanalyzer-unsafe-call-within-signal-handler
--Wanalyzer-use-after-free
--Wanalyzer-va-list-leak
--Wanalyzer-va-list-use-after-va-end
-}
-
 @opindex fanalyzer-debug-text-art
 @opindex fno-analyzer-debug-text-art
 @item -fanalyzer-debug-text-art-headings
@@ -11451,6 +11682,12 @@ Dump internal details about the analyzer's search for feasible paths.
 The details are written in a form suitable for viewing with GraphViz
 to filenames of the form @file{@var{file}.*.fg.dot},
 @file{@var{file}.*.tg.dot}, and @file{@var{file}.*.fpath.txt}.
+
+@opindex dump-analyzer-infinite-loop
+@item -fdump-analyzer-infinite-loop
+Dump internal details about the analyzer's search for infinite loops.
+The details are written in a form suitable for viewing with GraphViz
+to filenames of the form @file{@var{file}.*.infinite-loop.dot}.
 
 @opindex fdump-analyzer-json
 @item -fdump-analyzer-json
@@ -12266,6 +12503,20 @@ Optimize various standard C string functions (e.g.@: @code{strlen},
 their @code{_FORTIFY_SOURCE} counterparts into faster alternatives.
 
 Enabled at levels @option{-O2}, @option{-O3}.
+
+@opindex finline-stringops
+@item -finline-stringops[=@var{fn}]
+Expand memory and string operations (for now, only @code{memset})
+inline, even when the length is variable or big enough as to require
+looping.  This is most useful along with @option{-ffreestanding} and
+@option{-fno-builtin}.
+
+In some circumstances, it enables the compiler to generate code that
+takes advantage of known alignment and length multipliers, but even then
+it may be less efficient than optimized runtime implementations, and
+grow code size so much that even a less performant but shared
+implementation runs faster due to better use of code caches.  This
+option is disabled by default.
 
 @opindex fno-inline
 @opindex finline
@@ -13623,6 +13874,27 @@ The values used for pattern initialization might be changed in the future.
 
 The default is @samp{uninitialized}.
 
+Note that the initializer values, whether @samp{zero} or @samp{pattern},
+refer to data representation (in memory or machine registers), rather
+than to their interpretation as numerical values.  This distinction may
+be important in languages that support types with biases or implicit
+multipliers, and with such extensions as @samp{hardbool} (@pxref{Type
+Attributes}).  For example, a variable that uses 8 bits to represent
+(biased) quantities in the @code{range 160..400} will be initialized
+with the bit patterns @code{0x00} or @code{0xFE}, depending on
+@var{choice}, whether or not these representations stand for values in
+that range, and even if they do, the interpretation of the value held by
+the variable will depend on the bias.  A @samp{hardbool} variable that
+uses say @code{0X5A} and @code{0xA5} for @code{false} and @code{true},
+respectively, will trap with either @samp{choice} of trivial
+initializer, i.e., @samp{zero} initialization will not convert to the
+representation for @code{false}, even if it would for a @code{static}
+variable of the same type.  This means the initializer pattern doesn't
+generally depend on the type of the initialized variable.  One notable
+exception is that (non-hardened) boolean variables that fit in registers
+are initialized with @code{false} (zero), even when @samp{pattern} is
+requested.
+
 You can control this behavior for a specific variable by using the variable
 attribute @code{uninitialized} (@pxref{Variable Attributes}).
 
@@ -14720,10 +14992,10 @@ double} variants, to generate code that raises the ``inexact''
 floating-point exception for noninteger arguments.  ISO C99 and C11
 allow these functions to raise the ``inexact'' exception, but ISO/IEC
 TS 18661-1:2014, the C bindings to IEEE 754-2008, as integrated into
-ISO C2X, does not allow these functions to do so.
+ISO C23, does not allow these functions to do so.
 
 The default is @option{-ffp-int-builtin-inexact}, allowing the
-exception to be raised, unless C2X or a later C standard is selected.
+exception to be raised, unless C23 or a later C standard is selected.
 This option does nothing unless @option{-ftrapping-math} is in effect.
 
 Even if @option{-fno-fp-int-builtin-inexact} is used, if the functions
@@ -15958,6 +16230,16 @@ A value of zero can be used to lift
 the bound.  A variable whose value is unknown at compilation time and
 defined outside a SCoP is a parameter of the SCoP.
 
+@item hardcfr-max-blocks
+Disable @option{-fharden-control-flow-redundancy} for functions with a
+larger number of blocks than the specified value.  Zero removes any
+limit.
+
+@item hardcfr-max-inline-blocks
+Force @option{-fharden-control-flow-redundancy} to use out-of-line
+checking for functions with a larger number of basic blocks than the
+specified value.
+
 @item loop-block-tile-size
 Loop blocking or strip mining transforms, enabled with
 @option{-floop-block} or @option{-floop-strip-mine}, strip mine each
@@ -16318,6 +16600,12 @@ Maximum number of basic blocks for VRP to use a basic cache vector.
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
 
+@item fully-pipelined-fma
+Whether the target fully pipelines FMA instructions.  If non-zero,
+reassociation considers the benefit of parallelizing FMA's multiplication
+part and addition part, assuming FMUL and FMA use the same units that can
+also do FADD.
+
 @item sms-loop-average-count-threshold
 A threshold on the average loop count considered by the swing modulo scheduler.
 
@@ -16490,14 +16778,23 @@ With @option{--param=openacc-privatization=noisy}, do diagnose.
 The following choices of @var{name} are available on AArch64 targets:
 
 @table @gcctabopt
-@item aarch64-sve-compare-costs
-When vectorizing for SVE, consider using ``unpacked'' vectors for
-smaller elements and use the cost model to pick the cheapest approach.
-Also use the cost model to choose between SVE and Advanced SIMD vectorization.
+@item aarch64-vect-compare-costs
+When vectorizing, consider using multiple different approaches and use
+the cost model to choose the cheapest one.  This includes:
 
-Using unpacked vectors includes storing smaller elements in larger
-containers and accessing elements with extending loads and truncating
-stores.
+@itemize
+@item
+Trying both SVE and Advanced SIMD, when SVE is available.
+
+@item
+Trying to use 64-bit Advanced SIMD vectors for the smallest data elements,
+rather than using 128-bit vectors for everything.
+
+@item
+Trying to use ``unpacked'' SVE vectors for smaller elements.  This includes
+storing smaller elements in larger containers and accessing elements with
+extending loads and truncating stores.
+@end itemize
 
 @item aarch64-float-recp-precision
 The number of Newton iterations for calculating the reciprocal for float type.
@@ -16546,6 +16843,20 @@ of alignment.
 With @option{--param=aarch64-stp-policy=never}, do not emit stp.
 With @option{--param=aarch64-stp-policy=aligned}, emit stp only if the
 source pointer is aligned to at least double the alignment of the type.
+
+@item aarch64-ldp-alias-check-limit
+Limit on the number of alias checks performed by the AArch64 load/store pair
+fusion pass when attempting to form an ldp/stp.  Higher values make the pass
+more aggressive at re-ordering loads over stores, at the expense of increased
+compile time.
+
+@item aarch64-ldp-writeback
+Param to control which writeback opportunities we try to handle in the AArch64
+load/store pair fusion pass.  A value of zero disables writeback handling.  One
+means we try to form pairs involving one or more existing individual writeback
+accesses where possible.  A value of two means we also try to opportunistically
+form writeback opportunities by folding in trailing destructive updates of the
+base register used by a pair.
 
 @item aarch64-loop-vect-issue-rate-niters
 The tuning for some AArch64 CPUs tries to take both latencies and issue
@@ -16907,7 +17218,24 @@ while the second one prevents profile corruption by emitting thread-safe code.
 Using @samp{prefer-atomic} would be transformed either to @samp{atomic},
 when supported by a target, or to @samp{single} otherwise.  The GCC driver
 automatically selects @samp{prefer-atomic} when @option{-pthread}
-is present in the command line.
+is present in the command line, otherwise the default method is @samp{single}.
+
+If @samp{atomic} is selected, then the profile information is updated using
+atomic operations on a best-effort basis.  Ideally, the profile information is
+updated through atomic operations in hardware.  If the target platform does not
+support the required atomic operations in hardware, however, @file{libatomic}
+is available, then the profile information is updated through calls to
+@file{libatomic}.  If the target platform neither supports the required atomic
+operations in hardware nor @file{libatomic}, then the profile information is
+not atomically updated and a warning is issued.  In this case, the obtained
+profiling information may be corrupt for multi-threaded applications.
+
+For performance reasons, if 64-bit counters are used for the profiling
+information and the target platform only supports 32-bit atomic operations in
+hardware, then the performance critical profiling updates are done using two
+32-bit atomic operations for each counter update.  If a signal interrupts these
+two operations updating a counter, then the profiling information may be in an
+inconsistent state.
 
 @opindex fprofile-filter-files
 @item -fprofile-filter-files=@var{regex}
@@ -17442,6 +17770,119 @@ condition, and to call @code{__builtin_trap} if the result is
 unexpected.  Use with @samp{-fharden-compares} to cover all
 conditionals.
 
+@opindex fharden-control-flow-redundancy
+@item -fharden-control-flow-redundancy
+Emit extra code to set booleans when entering basic blocks, and to
+verify and trap, at function exits, when the booleans do not form an
+execution path that is compatible with the control flow graph.
+
+Verification takes place before returns, before mandatory tail calls
+(see below) and, optionally, before escaping exceptions with
+@option{-fhardcfr-check-exceptions}, before returning calls with
+@option{-fhardcfr-check-returning-calls}, and before noreturn calls with
+@option{-fhardcfr-check-noreturn-calls}).  Tuning options
+@option{--param hardcfr-max-blocks} and @option{--param
+hardcfr-max-inline-blocks} are available.
+
+Tail call optimization takes place too late to affect control flow
+redundancy, but calls annotated as mandatory tail calls by language
+front-ends, and any calls marked early enough as potential tail calls
+would also have verification issued before the call, but these
+possibilities are merely theoretical, as these conditions can only be
+met when using custom compiler plugins.
+
+@opindex fhardcfr-skip-leaf
+@item -fhardcfr-skip-leaf
+Disable @option{-fharden-control-flow-redundancy} in leaf functions.
+
+@opindex fhardcfr-check-exceptions
+@opindex fno-hardcfr-check-exceptions
+@item -fhardcfr-check-exceptions
+When @option{-fharden-control-flow-redundancy} is active, check the
+recorded execution path against the control flow graph at exception
+escape points, as if the function body was wrapped with a cleanup
+handler that performed the check and reraised.  This option is enabled
+by default; use @option{-fno-hardcfr-check-exceptions} to disable it.
+
+@opindex fhardcfr-check-returning-calls
+@opindex fno-hardcfr-check-returning-calls
+@item -fhardcfr-check-returning-calls
+When @option{-fharden-control-flow-redundancy} is active, check the
+recorded execution path against the control flow graph before any
+function call immediately followed by a return of its result, if any, so
+as to not prevent tail-call optimization, whether or not it is
+ultimately optimized to a tail call.
+
+This option is enabled by default whenever sibling call optimizations
+are enabled (see @option{-foptimize-sibling-calls}), but it can be
+enabled (or disabled, using its negated form) explicitly, regardless of
+the optimizations.
+
+@opindex fhardcfr-check-noreturn-calls
+@item -fhardcfr-check-noreturn-calls=@r{[}always@r{|}no-xthrow@r{|}nothrow@r{|}never@r{]}
+When @option{-fharden-control-flow-redundancy} is active, check the
+recorded execution path against the control flow graph before
+@code{noreturn} calls, either all of them (@option{always}), those that
+aren't expected to return control to the caller through an exception
+(@option{no-xthrow}, the default), those that may not return control to
+the caller through an exception either (@option{nothrow}), or none of
+them (@option{never}).
+
+Checking before a @code{noreturn} function that may return control to
+the caller through an exception may cause checking to be performed more
+than once, if the exception is caught in the caller, whether by a
+handler or a cleanup.  When @option{-fhardcfr-check-exceptions} is also
+enabled, the compiler will avoid associating a @code{noreturn} call with
+the implicitly-added cleanup handler, since it would be redundant with
+the check performed before the call, but other handlers or cleanups in
+the function, if activated, will modify the recorded execution path and
+check it again when another checkpoint is hit.  The checkpoint may even
+be another @code{noreturn} call, so checking may end up performed
+multiple times.
+
+Various optimizers may cause calls to be marked as @code{noreturn}
+and/or @code{nothrow}, even in the absence of the corresponding
+attributes, which may affect the placement of checks before calls, as
+well as the addition of implicit cleanup handlers for them.  This
+unpredictability, and the fact that raising and reraising exceptions
+frequently amounts to implicitly calling @code{noreturn} functions, have
+made @option{no-xthrow} the default setting for this option: it excludes
+from the @code{noreturn} treatment only internal functions used to
+(re)raise exceptions, that are not affected by these optimizations.
+
+@opindex fhardened
+@item -fhardened
+Enable a set of flags for C and C++ that improve the security of the
+generated code without affecting its ABI.  The precise flags enabled
+may change between major releases of GCC, but are currently:
+
+@c Keep this in sync with print_help_hardened!
+@gccoptlist{
+-D_FORTIFY_SOURCE=3
+-D_GLIBCXX_ASSERTIONS
+-ftrivial-auto-var-init=zero
+-fPIE  -pie  -Wl,-z,relro,-z,now
+-fstack-protector-strong
+-fstack-clash-protection
+-fcf-protection=full @r{(x86 GNU/Linux only)}
+}
+
+The list of options enabled by @option{-fhardened} can be generated using
+the @option{--help=hardened} option.
+
+When the system glibc is older than 2.35, @option{-D_FORTIFY_SOURCE=2}
+is used instead.
+
+This option is intended to be used in production builds, not merely
+in debug builds.
+
+Currently, @option{-fhardened} is only supported on GNU/Linux targets.
+
+@option{-fhardened} only enables a particular option if it wasn't
+already specified anywhere on the command line.  For instance,
+@option{-fhardened} @option{-fstack-protector} will only enable
+@option{-fstack-protector}, but not @option{-fstack-protector-strong}.
+
 @opindex fstack-protector
 @item -fstack-protector
 Emit extra code to check for buffer overflows, such as stack smashing
@@ -17568,6 +18009,56 @@ then the linker can fix up these calls so that the code compiled
 without @option{-fsplit-stack} always has a large stack.  Support for
 this is implemented in the gold linker in GNU binutils release 2.21
 and later.
+
+@opindex -fstrub=disable
+@item -fstrub=disable
+Disable stack scrubbing entirely, ignoring any @code{strub} attributes.
+See @xref{Common Type Attributes}.
+
+@opindex fstrub=strict
+@item -fstrub=strict
+Functions default to @code{strub} mode @code{disabled}, and apply
+@option{strict}ly the restriction that only functions associated with
+@code{strub}-@code{callable} modes (@code{at-calls}, @code{callable} and
+@code{always_inline} @code{internal}) are @code{callable} by functions
+with @code{strub}-enabled modes (@code{at-calls} and @code{internal}).
+
+@opindex fstrub=relaxed
+@item -fstrub=relaxed
+Restore the default stack scrub (@code{strub}) setting, namely,
+@code{strub} is only enabled as required by @code{strub} attributes
+associated with function and data types.  @code{Relaxed} means that
+strub contexts are only prevented from calling functions explicitly
+associated with @code{strub} mode @code{disabled}.  This option is only
+useful to override other @option{-fstrub=*} options that precede it in
+the command line.
+
+@opindex fstrub=at-calls
+@item -fstrub=at-calls
+Enable @code{at-calls} @code{strub} mode where viable.  The primary use
+of this option is for testing.  It exercises the @code{strub} machinery
+in scenarios strictly local to a translation unit.  This @code{strub}
+mode modifies function interfaces, so any function that is visible to
+other translation units, or that has its address taken, will @emph{not}
+be affected by this option.  Optimization options may also affect
+viability.  See the @code{strub} attribute documentation for details on
+viability and eligibility requirements.
+
+@opindex fstrub=internal
+@item -fstrub=internal
+Enable @code{internal} @code{strub} mode where viable.  The primary use
+of this option is for testing.  This option is intended to exercise
+thoroughly parts of the @code{strub} machinery that implement the less
+efficient, but interface-preserving @code{strub} mode.  Functions that
+would not be affected by this option are quite uncommon.
+
+@opindex fstrub=all
+@item -fstrub=all
+Enable some @code{strub} mode where viable.  When both strub modes are
+viable, @code{at-calls} is preferred.  @option{-fdump-ipa-strubm} adds
+function attributes that tell which mode was selected for each function.
+The primary use of this option is for testing, to exercise thoroughly
+the @code{strub} machinery.
 
 @opindex fvtable-verify
 @item -fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]}
@@ -18951,6 +19442,20 @@ For languages other than Ada, the @code{-ftrampolines} and
 trampolines are always generated on platforms that need them
 for nested functions.
 
+@opindex ftrampoline-impl
+@item -ftrampoline-impl=@r{[}stack@r{|}heap@r{]}
+By default, trampolines are generated on stack.  However, certain platforms
+(such as the Apple M1) do not permit an executable stack.  Compiling with
+@option{-ftrampoline-impl=heap} generate calls to
+@code{__builtin_nested_func_ptr_created} and
+@code{__builtin_nested_func_ptr_deleted} in order to allocate and
+deallocate trampoline space on the executable heap.  These functions are
+implemented in libgcc, and will only be provided on specific targets:
+x86_64 Darwin, x86_64 and aarch64 Linux.  @emph{PLEASE NOTE}: Heap
+trampolines are @emph{not} guaranteed to be correctly deallocated if you
+@code{setjmp}, instantiate nested functions, and then @code{longjmp} back
+to a state prior to having allocated those nested functions.
+
 @opindex fvisibility
 @item -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]}
 Set the default ELF image symbol visibility to the specified option---all
@@ -19473,6 +19978,14 @@ and inlining decisions.
 
 @item inline
 Dump after function inlining.
+
+@item strubm
+Dump after selecting @code{strub} modes, and recording the selections as
+function attributes.
+
+@item strub
+Dump @code{strub} transformations: interface changes, function wrapping,
+and insertion of builtin calls for stack scrubbing and watermarking.
 
 @end table
 
@@ -20126,7 +20639,7 @@ allocation before or after interprocedural optimization.
 @item -fmultiflags
 This option enables multilib-aware @code{TFLAGS} to be used to build
 target libraries with options different from those the compiler is
-configured to use by default, through the use of specs (@xref{Spec
+configured to use by default, through the use of specs (@pxref{Spec
 Files}) set up by compiler internals, by the target, or by builders at
 configure time.
 
@@ -20598,10 +21111,12 @@ and the features that they enable by default:
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
 @item @samp{armv8.7-a} @tab Armv8.7-A @tab @samp{armv8.6-a}, @samp{+ls64}
 @item @samp{armv8.8-a} @tab Armv8.8-a @tab @samp{armv8.7-a}, @samp{+mops}
+@item @samp{armv8.9-a} @tab Armv8.9-a @tab @samp{armv8.8-a}
 @item @samp{armv9-a} @tab Armv9-A @tab @samp{armv8.5-a}, @samp{+sve}, @samp{+sve2}
 @item @samp{armv9.1-a} @tab Armv9.1-A @tab @samp{armv9-a}, @samp{+bf16}, @samp{+i8mm}
 @item @samp{armv9.2-a} @tab Armv9.2-A @tab @samp{armv9.1-a}, @samp{+ls64}
 @item @samp{armv9.3-a} @tab Armv9.3-A @tab @samp{armv9.2-a}, @samp{+mops}
+@item @samp{armv9.4-a} @tab Armv9.4-A @tab @samp{armv9.3-a}
 @item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
 
@@ -20648,7 +21163,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x1c}, @samp{cortex-x2},
 @samp{cortex-x3}, @samp{cortex-x4}, @samp{cortex-a510}, @samp{cortex-a520},
 @samp{cortex-a710}, @samp{cortex-a715}, @samp{cortex-a720}, @samp{ampere1},
-@samp{ampere1a}, and @samp{native}.
+@samp{ampere1a}, @samp{ampere1b}, and @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -20760,6 +21275,31 @@ Enable compiler hardening against straight line speculation (SLS).
 @end table
 In addition, @samp{-mharden-sls=all} enables all SLS hardening while
 @samp{-mharden-sls=none} disables all SLS hardening.
+
+@opindex mearly-ra
+@item -mearly-ra=@var{scope}
+Determine when to enable an early register allocation pass.  This pass runs
+before instruction scheduling and tries to find a spill-free allocation of
+floating-point and vector code.  It also tries to make use of strided
+multi-register instructions, such as SME2's strided LD1 and ST1.
+
+The possible values of @var{scope} are: @var{all}, which runs the pass on
+all functions; @var{strided}, which runs the pass on functions that have
+access to strided multi-register instructions; and @var{none}, which
+disables the pass.
+
+@option{-mearly-ra=all} is the default for @option{-O2} and above, and for
+@option{-Os}.  @option{-mearly-ra=none} is the default otherwise.
+
+@opindex mearly-ldp-fusion
+@item -mearly-ldp-fusion
+Enable the copy of the AArch64 load/store pair fusion pass that runs before
+register allocation.  Enabled by default at @samp{-O} and above.
+
+@opindex mlate-ldp-fusion
+@item -mlate-ldp-fusion
+Enable the copy of the AArch64 load/store pair fusion pass that runs after
+register allocation.  Enabled by default at @samp{-O} and above.
 
 @opindex msve-vector-bits
 @item -msve-vector-bits=@var{bits}
@@ -20904,6 +21444,22 @@ Enable the Flag Manipulation instructions Extension.
 Enable the Pointer Authentication Extension.
 @item cssc
 Enable the Common Short Sequence Compression instructions.
+@item sme
+Enable the Scalable Matrix Extension.
+@item sme-i16i64
+Enable the FEAT_SME_I16I64 extension to SME.
+@item sme-f64f64
+Enable the FEAT_SME_F64F64 extension to SME.
++@item sme2
+Enable the Scalable Matrix Extension 2.  This also enables SME instructions.
+@item d128
+Enable support for 128-bit system register read/write instructions.
+@item gcs
+Enable support for Armv9.4-a Guarded Control Stack extension.
+@item the
+Enable support for Armv8.9-a/9.4-a translation hardening extension.
+@item rcpc3
+Enable the RCpc3 (Release Consistency) extension.
 
 @end table
 
@@ -21091,7 +21647,9 @@ are
 
 @table @samp
 @item fiji
-Compile for GCN3 Fiji devices (gfx803).
+Compile for GCN3 Fiji devices (gfx803).  Support deprecated; availablility
+depends on how GCC has been configured, see @option{--with-arch} and
+@option{--with-multilib-list}.
 
 @item gfx900
 Compile for GCN5 Vega 10 devices (gfx900).
@@ -21131,8 +21689,8 @@ run-time performance.  The default is 32KB when using OpenACC or OpenMP, and
 Compile binaries suitable for devices with the XNACK feature enabled, disabled,
 or either mode.  Some devices always require XNACK and some allow the user to
 configure XNACK.  The compiled code must match the device mode.
-@c The default is @samp{-mxnack=any}.
-At present this option is a placeholder for support that is not yet implemented.
+The default is @samp{-mxnack=any} on devices that support Unified Shared
+Memory, and @samp{-mxnack=no} otherwise.
 
 @end table
 
@@ -22545,7 +23103,7 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52}, @samp{cortex-r52plus},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
-@samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-m85}, @samp{cortex-x1},
+@samp{cortex-m35p}, @samp{cortex-m52}, @samp{cortex-m55}, @samp{cortex-m85}, @samp{cortex-x1},
 @samp{cortex-x1c}, @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{xscale},
@@ -22611,34 +23169,34 @@ The following extension options are common to the listed CPUs:
 @table @samp
 @item +nodsp
 Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p},
-@samp{cortex-m55} and @samp{cortex-m85}. Also disable the M-Profile Vector
-Extension (MVE) integer and single precision floating-point instructions on
-@samp{cortex-m55} and @samp{cortex-m85}.
+@samp{cortex-m52}, @samp{cortex-m55} and @samp{cortex-m85}.
+Also disable the M-Profile Vector Extension (MVE) integer and
+single precision floating-point instructions on
+@samp{cortex-m52}, @samp{cortex-m55} and @samp{cortex-m85}.
 
 @item +nopacbti
 Disable the Pointer Authentication and Branch Target Identification Extension
-on @samp{cortex-m85}.
+on @samp{cortex-m52} and @samp{cortex-m85}.
 
 @item +nomve
 Disable the M-Profile Vector Extension (MVE) integer and single precision
-floating-point instructions on @samp{cortex-m55} and @samp{cortex-m85}.
+floating-point instructions on @samp{cortex-m52}, @samp{cortex-m55} and @samp{cortex-m85}.
 
 @item +nomve.fp
 Disable the M-Profile Vector Extension (MVE) single precision floating-point
-instructions on @samp{cortex-m55} and @samp{cortex-m85}.
+instructions on @samp{cortex-m52}, @samp{cortex-m55} and @samp{cortex-m85}.
 
 @item +cdecp0, +cdecp1, ... , +cdecp7
 Enable the Custom Datapath Extension (CDE) on selected coprocessors according
-to the numbers given in the options in the range 0 to 7 on @samp{cortex-m55}.
+to the numbers given in the options in the range 0 to 7 on @samp{cortex-m52} and @samp{cortex-m55}.
 
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},
 @samp{arm1020e}, @samp{arm1022e}, @samp{arm926ej-s},
 @samp{arm1026ej-s}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
-@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33}, @samp{cortex-m35p}
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33}, @samp{cortex-m35p},
-@samp{cortex-m55} and @samp{cortex-m85}.
+@samp{cortex-m52}, @samp{cortex-m55} and @samp{cortex-m85}.
 Disables the floating-point and SIMD instructions on
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7},
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
@@ -22981,9 +23539,9 @@ Development Tools Engineering Specification", which can be found on
 Mitigate against a potential security issue with the @code{VLLDM} instruction
 in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
 enabled by default when the option @option{-mcpu=} is used with
-@code{cortex-m33}, @code{cortex-m35p}, @code{cortex-m55}, @code{cortex-m85}
-or @code{star-mc1}. The option @option{-mno-fix-cmse-cve-2021-35465} can be used
-to disable the mitigation.
+@code{cortex-m33}, @code{cortex-m35p}, @code{cortex-m52}, @code{cortex-m55},
+@code{cortex-m85} or @code{star-mc1}. The option @option{-mno-fix-cmse-cve-2021-35465}
+can be used to disable the mitigation.
 
 @opindex mstack-protector-guard
 @opindex mstack-protector-guard-offset
@@ -24367,6 +24925,14 @@ an executable when linking, using the Darwin @file{libtool} command.
 @item -force_cpusubtype_ALL
 This causes GCC's output file to have the @samp{ALL} subtype, instead of
 one controlled by the @option{-mcpu} or @option{-march} option.
+
+@opindex nodefaultrpaths
+@item -nodefaultrpaths
+Do not add default run paths for the compiler library directories to
+executables, modules or dynamic libraries. On macOS 10.5 and later,
+the embedded runpath is added by default unless the user adds
+@option{-nodefaultrpaths} to the link line. Run paths are needed
+(and therefore enforced) to build on macOS version 10.11 or later.
 
 @item -allowable_client  @var{client_name}
 @itemx -client_name
@@ -26186,25 +26752,36 @@ The text segment and data segment must be within 2GB addressing space.
 
 @item extreme
 This mode does not limit the size of the code segment and data segment.
-The @option{-mcmodel=extreme} option is incompatible with @option{-fplt} and
-@option{-mno-explicit-relocs}.
+The @option{-mcmodel=extreme} option is incompatible with @option{-fplt}
+and/or @option{-mexplicit-relocs=none}.
 @end table
 The default code model is @code{normal}.
 
-@opindex mexplicit-relocs
-@opindex mno-explicit-relocs
-@item -mexplicit-relocs
-@itemx -mno-explicit-relocs
-Use or do not use assembler relocation operators when dealing with symbolic
+@item -mexplicit-relocs=@var{style}
+Set when to use assembler relocation operators when dealing with symbolic
 addresses.  The alternative is to use assembler macros instead, which may
-limit instruction scheduling but allow linker relaxation.  The default
-value for the option is determined during GCC build-time by detecting
-corresponding assembler support:
-@code{-mno-explicit-relocs} if the assembler supports relaxation or it
-does not support relocation operators at all,
-@code{-mexplicit-relocs} otherwise.  This option is mostly useful for
-debugging, or interoperation with assemblers different from the build-time
-one.
+limit instruction scheduling but allow linker relaxation.
+with @option{-mexplicit-relocs=none} the assembler macros are always used,
+with @option{-mexplicit-relocs=always} the assembler relocation operators
+are always used, with @option{-mexplicit-relocs=auto} the compiler will
+use the relocation operators where the linker relaxation is impossible to
+improve the code quality, and macros elsewhere.  The default
+value for the option is determined with the assembler capability detected
+during GCC build-time and the setting of @option{-mrelax}:
+@option{-mexplicit-relocs=none} if the assembler does not support
+relocation operators at all,
+@option{-mexplicit-relocs=always} if the assembler supports relocation
+operators but @option{-mrelax} is not enabled,
+@option{-mexplicit-relocs=auto} if the assembler supports relocation
+operators and @option{-mrelax} is enabled.
+
+@opindex mexplicit-relocs
+@item -mexplicit-relocs
+An alias of @option{-mexplicit-relocs=always} for backward compatibility.
+
+@opindex mno-explicit-relocs
+@item -mno-explicit-relocs
+An alias of @option{-mexplicit-relocs=none} for backward compatibility.
 
 @opindex mdirect-extern-access
 @item -mdirect-extern-access
@@ -26219,6 +26796,88 @@ environments where no dynamic link is performed, like firmwares, OS
 kernels, executables linked with @option{-static} or @option{-static-pie}.
 @option{-mdirect-extern-access} is not compatible with @option{-fPIC} or
 @option{-fpic}.
+
+@item -mrelax
+@itemx -mno-relax
+Take (do not take) advantage of linker relaxations.  If
+@option{-mpass-mrelax-to-as} is enabled, this option is also passed to
+the assembler.  The default is determined during GCC build-time by
+detecting corresponding assembler support:
+@option{-mrelax} if the assembler supports both the @option{-mrelax}
+option and the conditional branch relaxation (it's required or the
+@code{.align} directives and conditional branch instructions in the
+assembly code outputted by GCC may be rejected by the assembler because
+of a relocation overflow), @option{-mno-relax} otherwise.
+
+@item -mpass-mrelax-to-as
+@itemx -mno-pass-mrelax-to-as
+Pass (do not pass) the @option{-mrelax} or @option{-mno-relax} option
+to the assembler.  The default is determined during GCC build-time by
+detecting corresponding assembler support:
+@option{-mpass-mrelax-to-as} if the assembler supports the
+@option{-mrelax} option, @option{-mno-pass-mrelax-to-as} otherwise.
+This option is mostly useful for debugging, or interoperation with
+assemblers different from the build-time one.
+
+@opindex mrecip
+@item -mrecip
+This option enables use of the reciprocal estimate and reciprocal square
+root estimate instructions with additional Newton-Raphson steps to increase
+precision instead of doing a divide or square root and divide for
+floating-point arguments.
+These instructions are generated only when @option{-funsafe-math-optimizations}
+is enabled together with @option{-ffinite-math-only} and
+@option{-fno-trapping-math}.
+This option is off by default. Before you can use this option, you must sure the
+target CPU supports frecipe and frsqrte instructions.
+Note that while the throughput of the sequence is higher than the throughput of
+the non-reciprocal instruction, the precision of the sequence can be decreased
+by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
+
+@opindex mrecip=opt
+@item -mrecip=@var{opt}
+This option controls which reciprocal estimate instructions
+may be used.  @var{opt} is a comma-separated list of options, which may
+be preceded by a @samp{!} to invert the option:
+
+@table @samp
+@item all
+Enable all estimate instructions.
+
+@item default
+Enable the default instructions, equivalent to @option{-mrecip}.
+
+@item none
+Disable all estimate instructions, equivalent to @option{-mno-recip}.
+
+@item div
+Enable the approximation for scalar division.
+
+@item vec-div
+Enable the approximation for vectorized division.
+
+@item sqrt
+Enable the approximation for scalar square root.
+
+@item vec-sqrt
+Enable the approximation for vectorized square root.
+
+@item rsqrt
+Enable the approximation for scalar reciprocal square root.
+
+@item vec-rsqrt
+Enable the approximation for vectorized reciprocal square root.
+@end table
+
+So, for example, @option{-mrecip=all,!sqrt} enables
+all of the reciprocal approximations, except for scalar square root.
+
+@item loongarch-vect-unroll-limit
+The vectorizer will use available tuning information to determine whether it
+would be beneficial to unroll the main vectorized loop and by how much.  This
+parameter set's the upper bound of how much the vectorizer will unroll the main
+loop.  The default value is six.
+
 @end table
 
 
@@ -29337,9 +29996,10 @@ conventions are: @samp{ilp32}, @samp{ilp32f}, @samp{ilp32d}, @samp{lp64},
 @samp{lp64f}, and @samp{lp64d}.  Some calling conventions are impossible to
 implement on some ISAs: for example, @samp{-march=rv32if -mabi=ilp32d} is
 invalid because the ABI requires 64-bit values be passed in F registers, but F
-registers are only 32 bits wide.  There is also the @samp{ilp32e} ABI that can
-only be used with the @samp{rv32e} architecture.  This ABI is not well
-specified at present, and is subject to change.
+registers are only 32 bits wide.  There are also the @samp{ilp32e} ABI that can
+only be used with the @samp{rv32e} architecture and the @samp{lp64e} ABI that
+can only be used with the @samp{rv64e}.  Those ABIs are not well specified at
+present, and are subject to change.
 
 @opindex mfdiv
 @item -mfdiv
@@ -29390,7 +30050,7 @@ by particular CPU name.
 Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
 @samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34}, @samp{sifive-e76},
 @samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54}, @samp{sifive-s76},
-@samp{sifive-u54}, and @samp{sifive-u74}.
+@samp{sifive-u54}, @samp{sifive-u74}, and @samp{sifive-x280}.
 
 @opindex mtune
 @item -mtune=@var{processor-string}
@@ -29429,6 +30089,14 @@ Do or don't use smaller but slower prologue and epilogue code that uses
 library function calls.  The default is to use fast inline prologues and
 epilogues.
 
+@opindex mmovcc
+@item -mmovcc
+@itemx -mno-movcc
+Do or don't produce branchless conditional-move code sequences even with
+targets that do not have specific instructions for conditional operations.
+If enabled, sequences of ALU operations are produced using base integer
+ISA instructions where profitable.
+
 @opindex minline-atomics
 @item -minline-atomics
 @itemx -mno-inline-atomics
@@ -29452,6 +30120,10 @@ Inlining will only be done if the strings are properly aligned
 and instructions for accelerated processing are available.
 The default is to not inline strcmp calls.
 
+The @option{--param riscv-strcmp-inline-limit=@var{n}} parameter controls
+the maximum number of bytes compared by the inlined code.
+The default value is 64.
+
 @opindex minline-strncmp
 @item -minline-strncmp
 @itemx -mno-inline-strncmp
@@ -29459,6 +30131,10 @@ Do or do not attempt to inline strncmp calls if possible.
 Inlining will only be done if the strings are properly aligned
 and instructions for accelerated processing are available.
 The default is to not inline strncmp calls.
+
+The @option{--param riscv-strcmp-inline-limit=@var{n}} parameter controls
+the maximum number of bytes compared by the inlined code.
+The default value is 64.
 
 @opindex mshorten-memrefs
 @item -mshorten-memrefs
@@ -32836,25 +33512,8 @@ SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
 XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
 MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
 PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, ENQCMD, UINTR and RAOINT
-instruction set support.
-
-@item arrowlake
-Intel Arrow Lake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
-XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
-MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
-PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-AVXIFMA, AVXVNNIINT8, AVXNECONVERT and CMPCCXADD instruction set support.
-
-@item arrowlake-s
-Intel Arrow Lake S CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
-XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
-MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
-PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16, SHA512, SM3
-and SM4 instruction set support.
+AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, ENQCMD and UINTR instruction set
+support.
 
 @item clearwaterforest
 Intel Clearwater Forest CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
@@ -32862,17 +33521,8 @@ SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE,
 XSAVEC, XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB,
 MOVDIRI, MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA,
 LZCNT, PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16, SHA512, SM3, SM4,
-USER_MSR and PREFETCHI instruction set support.
-
-@item pantherlake
-Intel Panther Lake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
-XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
-MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
-PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16, SHA512, SM3, SM4
-and PREFETCHI instruction set support.
+ENQCMD, UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16,
+SHA512, SM3, SM4, USER_MSR and PREFETCHI instruction set support.
 
 @item knl
 Intel Knight's Landing CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
@@ -32990,6 +33640,33 @@ VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
 MOVDIRI, MOVDIR64B, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE, TSXLDTRK,
 UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512FP16, AVX512BF16, AMX-FP16,
 PREFETCHI and AMX-COMPLEX instruction set support.
+
+@item arrowlake
+Intel Arrow Lake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
+XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
+MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
+PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
+UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT and CMPCCXADD instruction set
+support.
+
+@item arrowlake-s
+Intel Arrow Lake S CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
+XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
+MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
+PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
+UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16, SHA512,
+SM3 and SM4 instruction set support.
+
+@item pantherlake
+Intel Panther Lake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
+XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
+MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
+PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
+UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16, SHA512,
+SM3, SM4 and PREFETCHI instruction set support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.
@@ -33167,6 +33844,12 @@ instruction set support.
 ZHAOXIN lujiazui CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
 SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
 ABM, BMI, BMI2, F16C, FXSR, RDSEED instruction set support.
+
+@item yongfeng
+ZHAOXIN yongfeng CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
+SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
+ABM, BMI, BMI2, F16C, FXSR, RDSEED, AVX2, FMA, SHA, LZCNT
+instruction set support.
 
 @item geode
 AMD Geode embedded processor with MMX and 3DNow!@: instruction set support.
@@ -33866,6 +34549,15 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @opindex musermsr
 @itemx -musermsr
+@need 200
+@opindex mavx10.1
+@itemx -mavx10.1
+@need 200
+@opindex mavx10.1-256
+@itemx -mavx10.1-256
+@need 200
+@opindex mavx10.1-512
+@itemx -mavx10.1-512
 These switches enable the use of instructions in the MMX, SSE,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
 AES, PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
@@ -33876,9 +34568,9 @@ GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
 ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
 UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI, AVX512-FP16,
 AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AMX-FP16, PREFETCHI, RAOINT,
-AMX-COMPLEX, AVXVNNIINT16, SM3, SHA512, SM4, APX_F, USER_MSR or CLDEMOTE
-extended instruction sets.  Each has a corresponding @option{-mno-} option
-to disable use of these instructions.
+AMX-COMPLEX, AVXVNNIINT16, SM3, SHA512, SM4, APX_F, USER_MSR, AVX10.1 or
+CLDEMOTE extended instruction sets.  Each has a corresponding @option{-mno-}
+option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
@@ -34016,8 +34708,8 @@ see @ref{Other Builtins} for details.
 
 @opindex mmovbe
 @item -mmovbe
-This option enables use of the @code{movbe} instruction to implement
-@code{__builtin_bswap32} and @code{__builtin_bswap64}.
+This option enables use of the @code{movbe} instruction to optimize
+byte swapping of four and eight byte entities.
 
 @opindex mshstk
 @item -mshstk

@@ -4,6 +4,7 @@
    AAPCS64 \S 4.1.  */
 
 /* { dg-do run { target aarch64*-*-* } } */
+/* { dg-additional-options "-mbranch-protection=none" } */
 /* { dg-additional-sources "abitest.S" } */
 
 #ifndef IN_FRAMEWORK

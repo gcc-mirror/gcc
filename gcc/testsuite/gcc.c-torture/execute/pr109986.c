@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 /* PR middle-end/109986 */
 
 #include "../../gcc.dg/tree-ssa/pr109986.c"

@@ -113,18 +113,13 @@ public:
     Sizeok sizeok;              // set when structsize contains valid data
 
     virtual Scope *newScope(Scope *sc);
-    void setScope(Scope *sc) override final;
-    size_t nonHiddenFields();
-    bool determineSize(const Loc &loc);
     virtual void finalizeSize() = 0;
     uinteger_t size(const Loc &loc) override final;
     bool fill(const Loc &loc, Expressions &elements, bool ctorinit);
     Type *getType() override final;
     bool isDeprecated() const override final; // is aggregate deprecated?
-    void setDeprecated();
     bool isNested() const;
     bool isExport() const override final;
-    Dsymbol *searchCtor();
 
     Visibility visible() override final;
 
@@ -171,7 +166,6 @@ private:
 public:
     static StructDeclaration *create(const Loc &loc, Identifier *id, bool inObject);
     StructDeclaration *syntaxCopy(Dsymbol *s) override;
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override final;
     const char *kind() const override;
     void finalizeSize() override final;
     bool isPOD();
@@ -279,24 +273,19 @@ public:
     ObjcClassDeclaration objc;          // Data for a class declaration that is needed for the Objective-C integration
     Symbol *cpp_type_info_ptr_sym;      // cached instance of class Id.cpp_type_info_ptr
 
-    void classError(const char* fmt, const char* arg);
     static ClassDeclaration *create(const Loc &loc, Identifier *id, BaseClasses *baseclasses, Dsymbols *members, bool inObject);
     const char *toPrettyChars(bool QualifyTypes = false) override;
     ClassDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
-    bool isBaseOf2(ClassDeclaration *cd);
 
     #define OFFSET_RUNTIME 0x76543210
     #define OFFSET_FWDREF 0x76543211
     virtual bool isBaseOf(ClassDeclaration *cd, int *poffset);
 
     bool isBaseInfoComplete();
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override final;
-    ClassDeclaration *searchBase(Identifier *ident);
     void finalizeSize() override;
     bool hasMonitor();
     bool isFuncHidden(FuncDeclaration *fd);
-    FuncDeclaration *findFunc(Identifier *ident, TypeFunction *tf);
     bool isCOMclass() const;
     virtual bool isCOMinterface() const;
     bool isCPPclass() const;

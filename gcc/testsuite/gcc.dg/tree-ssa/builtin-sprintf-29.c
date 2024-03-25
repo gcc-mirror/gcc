@@ -1,6 +1,6 @@
 /* PR middle-end/100732 - ICE on sprintf %s with integer argument
    { dg-do compile }
-   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
+   { dg-options "-fpermissive -O2 -Wall -fdump-tree-optimized" } */
 
 #define sprintf(d, f, ...) \
   __builtin___sprintf_chk (d, 0, 32, f, __VA_ARGS__)

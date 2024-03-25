@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Motorola M*CORE Processor.
-   Copyright (C) 1993-2023 Free Software Foundation, Inc.
+   Copyright (C) 1993-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -81,9 +81,6 @@
 
 extern char * mcore_current_function_name;
  
-/* The MCore ABI says that bitfields are unsigned by default.  */
-#define CC1_SPEC "-funsigned-bitfields"
-
 /* Target machine storage Layout.  */
 
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  	\

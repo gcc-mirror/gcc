@@ -64,9 +64,8 @@
     (<command>gcc</command>, <command>g++</command>, etc) is widely
     considered to be one of the leading compilers in the world.  Its
     development is overseen by the
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/">GCC team</link>.  All of
-    the rapid development and near-legendary
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/buildstat.html">portability</link>
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/">GCC team</link>.
+    All of the rapid development and near-legendary portability
     that are the hallmarks of an open-source project are applied to libstdc++.
     </para>
     <para>

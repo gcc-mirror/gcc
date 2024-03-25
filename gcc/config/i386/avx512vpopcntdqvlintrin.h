@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,9 +28,10 @@
 #ifndef _AVX512VPOPCNTDQVLINTRIN_H_INCLUDED
 #define _AVX512VPOPCNTDQVLINTRIN_H_INCLUDED
 
-#if !defined(__AVX512VPOPCNTDQ__) || !defined(__AVX512VL__)
+#if !defined(__AVX512VPOPCNTDQ__) || !defined(__AVX512VL__) \
+  || defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512vpopcntdq,avx512vl")
+#pragma GCC target("avx512vpopcntdq,avx512vl,no-evex512")
 #define __DISABLE_AVX512VPOPCNTDQVL__
 #endif /* __AVX512VPOPCNTDQVL__ */
 
@@ -56,7 +57,7 @@ _mm_maskz_popcnt_epi32 (__mmask16 __U, __m128i __A)
 {
   return (__m128i) __builtin_ia32_vpopcountd_v4si_mask ((__v4si) __A,
 							 (__v4si)
-							 _mm_setzero_si128 (),
+							 _mm_avx512_setzero_si128 (),
 							 (__mmask16) __U);
 }
 
@@ -82,7 +83,7 @@ _mm256_maskz_popcnt_epi32 (__mmask16 __U, __m256i __A)
 {
   return (__m256i) __builtin_ia32_vpopcountd_v8si_mask ((__v8si) __A,
 						(__v8si)
-						_mm256_setzero_si256 (),
+						_mm256_avx512_setzero_si256 (),
 						(__mmask16) __U);
 }
 
@@ -108,7 +109,7 @@ _mm_maskz_popcnt_epi64 (__mmask8 __U, __m128i __A)
 {
   return (__m128i) __builtin_ia32_vpopcountq_v2di_mask ((__v2di) __A,
 							(__v2di)
-							_mm_setzero_si128 (),
+							_mm_avx512_setzero_si128 (),
 							(__mmask8) __U);
 }
 
@@ -134,7 +135,7 @@ _mm256_maskz_popcnt_epi64 (__mmask8 __U, __m256i __A)
 {
   return (__m256i) __builtin_ia32_vpopcountq_v4di_mask ((__v4di) __A,
 						(__v4di)
-						_mm256_setzero_si256 (),
+						_mm256_avx512_setzero_si256 (),
 						(__mmask8) __U);
 }
 

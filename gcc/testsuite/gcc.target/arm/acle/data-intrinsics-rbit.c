@@ -1,6 +1,6 @@
 /* Test the ACLE data intrinsics existence for specific instruction.  */
 /* { dg-do run } */
-/* { dg-require-effective-target arm_arch_v6t2_ok } */
+/* { dg-require-effective-target arm_arch_v6t2_hw } */
 /* { dg-additional-options "--save-temps -O1" } */
 /* { dg-add-options arm_arch_v6t2 } */
 /* { dg-final { check-function-bodies "**" "" "" } } */

@@ -148,6 +148,7 @@ AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
+AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
 
 AM_MAINTAINER_MODE
 
@@ -342,7 +343,7 @@ AC_MSG_NOTICE([checking for flock implementation])
 AC_CHECK_PROGS(FLOCK, flock)
 # Fallback if 'perl' is available.
 if test -z "$FLOCK"; then
-  AC_CHECK_PROG(FLOCK, perl, $srcdir/testsuite/flock)
+  AC_CHECK_PROG(FLOCK, perl, \$(abs_top_srcdir)/testsuite/flock)
 fi
 
 AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)

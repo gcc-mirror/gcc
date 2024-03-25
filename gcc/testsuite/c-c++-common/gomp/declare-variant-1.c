@@ -9,6 +9,7 @@ int bar (int, int, int *);
   match (device={arch(x86_64,powerpc64),isa(avx512f,popcntb)}, \
 	 implementation={atomic_default_mem_order(seq_cst),made_up_selector("foo", 13, "bar")}, \
 	 user={condition(3-3)})
+/* { dg-warning "unknown selector 'made_up_selector'" "" { target *-*-* } .-2 } */
 int baz (int, int, int *);
 
 int

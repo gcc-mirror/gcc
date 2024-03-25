@@ -432,6 +432,7 @@ else version (MIPS_Any)
         MAP_HUGETLB = 0x80000,
     }
 }
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/bits/mman-map-flags-generic.h
 else version (LoongArch64)
 {
     static if (_DEFAULT_SOURCE) enum

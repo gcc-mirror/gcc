@@ -1,6 +1,6 @@
 (* M2RTS.mod Implements the run time system facilities of Modula-2.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -31,7 +31,7 @@ FROM libc IMPORT abort, exit, write, getenv, printf, strlen ;
 (* FROM Builtins IMPORT strncmp, strcmp ;  not available during bootstrap.  *)
 FROM NumberIO IMPORT CardToStr ;
 FROM StrLib IMPORT StrCopy, StrLen, StrEqual ;
-FROM SYSTEM IMPORT ADDRESS, ADR ;
+FROM SYSTEM IMPORT ADR ;
 FROM ASCII IMPORT nl, nul ;
 FROM Storage IMPORT ALLOCATE ;
 

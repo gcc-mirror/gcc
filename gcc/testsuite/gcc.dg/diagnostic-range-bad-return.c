@@ -1,4 +1,4 @@
-/* { dg-options "-fdiagnostics-show-caret -Wreturn-local-addr" } */
+/* { dg-options "-fpermissive -fdiagnostics-show-caret -Wreturn-local-addr" } */
 
 int *address_of_local (void)
 {

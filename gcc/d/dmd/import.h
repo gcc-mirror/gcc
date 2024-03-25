@@ -41,12 +41,8 @@ public:
     const char *kind() const override;
     Visibility visible() override;
     Import *syntaxCopy(Dsymbol *s) override; // copy only syntax trees
-    void load(Scope *sc);
     void importAll(Scope *sc) override;
     Dsymbol *toAlias() override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
-    void setScope(Scope* sc) override;
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
     bool overloadInsert(Dsymbol *s) override;
 
     Import *isImport() override { return this; }

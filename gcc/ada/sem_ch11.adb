@@ -70,9 +70,7 @@ package body Sem_Ch11 is
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
    end Analyze_Exception_Declaration;
 
    --------------------------------

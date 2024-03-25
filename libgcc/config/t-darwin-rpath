@@ -1,0 +1,2 @@
+# Use @rpath and add a search path to exes and dylibs that depend on this.
+SHLIB_RPATH = @rpath

@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2023 Free Software Foundation, Inc.
+; Copyright (C) 2003-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -331,6 +331,10 @@ Walloca
 C ObjC C++ ObjC++ Var(warn_alloca) Warning
 Warn on any use of alloca.
 
+Walloc-size
+C ObjC C++ ObjC++ Var(warn_alloc_size) Warning LangEnabledBy(C ObjC C++ ObjC++, Wextra)
+Warn when allocating insufficient storage for the target type of the assigned pointer.
+
 Walloc-size-larger-than=
 C ObjC C++ LTO ObjC++ Var(warn_alloc_size_limit) Joined Host_Wide_Int ByteSize Warning Init(HOST_WIDE_INT_MAX)
 -Walloc-size-larger-than=<bytes>	Warn for calls to allocation functions that
@@ -429,9 +433,13 @@ Wbuiltin-macro-redefined
 C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) CppReason(CPP_W_BUILTIN_MACRO_REDEFINED) Var(cpp_warn_builtin_macro_redefined) Init(1) Warning
 Warn when a built-in preprocessor macro is undefined or redefined.
 
+Wc11-c23-compat
+C ObjC CPP(cpp_warn_c11_c23_compat) CppReason(CPP_W_C11_C23_COMPAT) Var(warn_c11_c23_compat) Init(-1) Warning
+Warn about features not present in ISO C11, but present in ISO C23.
+
 Wc11-c2x-compat
-C ObjC CPP(cpp_warn_c11_c2x_compat) CppReason(CPP_W_C11_C2X_COMPAT) Var(warn_c11_c2x_compat) Init(-1) Warning
-Warn about features not present in ISO C11, but present in ISO C2X.
+C ObjC Alias(Wc11-c23-compat)
+Deprecated in favor of -Wc11-c23-compat.
 
 Wc90-c99-compat
 C ObjC CPP(cpp_warn_c90_c99_compat) CppReason(CPP_W_C90_C99_COMPAT) Var(warn_c90_c99_compat) Init(-1) Warning
@@ -489,6 +497,14 @@ Warn about C++20 constructs in code compiled with an older standard.
 Wc++23-extensions
 C++ ObjC++ Var(warn_cxx23_extensions) Warning Init(1)
 Warn about C++23 constructs in code compiled with an older standard.
+
+Wc++26-extensions
+C++ ObjC++ Var(warn_cxx26_extensions) Warning Init(1)
+Warn about C++26 constructs in code compiled with an older standard.
+
+Wcalloc-transposed-args
+C ObjC C++ ObjC++ Var(warn_calloc_transposed_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wextra)
+Warn about suspicious calls to calloc-like functions where sizeof expression is the earlier size argument and not the latter.
 
 Wcast-function-type
 C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)
@@ -582,6 +598,10 @@ Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage.
 Wdeclaration-after-statement
 C ObjC Var(warn_declaration_after_statement) Init(-1) Warning
 Warn when a declaration is found after a statement.
+
+Wdeclaration-missing-parameter-type
+C ObjC Var(warn_declaration_missing_parameter) Warning Init(1)
+Warn for missing parameter types in function declarations.
 
 Wdelete-incomplete
 C++ ObjC++ Var(warn_delete_incomplete) Init(1) Warning
@@ -1163,6 +1183,10 @@ Wopenacc-parallelism
 C C++ Var(warn_openacc_parallelism) Warning
 Warn about potentially suboptimal choices related to OpenACC parallelism.
 
+Wopenmp
+C ObjC C++ ObjC++ Warning Var(warn_openmp) Init(1)
+Warn about suspicious OpenMP code.
+
 Wopenmp-simd
 C C++ Var(warn_openmp_simd) Warning LangEnabledBy(C C++,Wall)
 Warn if a simd directive is overridden by the vectorizer cost model.
@@ -1262,6 +1286,10 @@ Warn about uses of register storage specifier.
 Wreorder
 C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code.
+
+Wreturn-mismatch
+C ObjC Var(warn_return_mismatch) Warning Init(1)
+Warn whenever void-returning functions return a non-void expressions, or a return expression is missing in a function not returning void.
 
 Wreturn-type
 C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall) Init(-1)
@@ -1781,6 +1809,10 @@ fdiagnostics-show-template-tree
 C++ ObjC++ Var(flag_diagnostics_show_template_tree) Init(0)
 Print hierarchical comparisons when template types are mismatched.
 
+fdiagnostics-all-candidates
+C++ ObjC++ Var(flag_diagnostics_all_candidates)
+Note all candidates during overload resolution failure.
+
 fdirectives-only
 C ObjC C++ ObjC++
 Preprocess directives only.
@@ -1873,6 +1905,10 @@ Assume normal C execution environment.
 fhuge-objects
 C++ ObjC++ WarnRemoved
 No longer supported.
+
+fimmediate-escalation
+C++ ObjC++ Var(flag_immediate_escalation) Init(1)
+Implement P2564 for consteval propagation.
 
 fimplement-inlines
 C++ ObjC++ Var(flag_implement_inlines) Init(1)
@@ -2108,7 +2144,7 @@ C ObjC C++ ObjC++
 Look for and use PCH files even when preprocessing.
 
 fpermissive
-C++ ObjC++ Var(flag_permissive)
+C ObjC C++ ObjC++ Var(flag_permissive)
 Downgrade conformance errors to warnings.
 
 fplan9-extensions
@@ -2459,9 +2495,13 @@ std=c18
 C ObjC Alias(std=c17)
 Conform to the ISO 2017 C standard (published in 2018).
 
-std=c2x
+std=c23
 C ObjC
-Conform to the ISO 202X C standard draft (experimental and incomplete support).
+Conform to the ISO 2023 C standard draft (expected to be published in 2024) (experimental and incomplete support).
+
+std=c2x
+C ObjC Alias(std=c23)
+Deprecated in favor of -std=c23.
 
 std=c89
 C ObjC Alias(std=c90)
@@ -2553,9 +2593,13 @@ std=gnu18
 C ObjC Alias(std=gnu17)
 Conform to the ISO 2017 C standard (published in 2018) with GNU extensions.
 
-std=gnu2x
+std=gnu23
 C ObjC
-Conform to the ISO 202X C standard draft with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2023 C standard draft (expected to be published in 2024) with GNU extensions (experimental and incomplete support).
+
+std=gnu2x
+C ObjC Alias(std=gnu23)
+Deprecated in favor of -std=gnu23.
 
 std=gnu89
 C ObjC Alias(std=gnu90)
@@ -2600,6 +2644,10 @@ Conform to the ISO 2017 C standard (published in 2018).
 std=iso9899:2018
 C ObjC Alias(std=c17)
 Conform to the ISO 2017 C standard (published in 2018).
+
+std=iso9899:2024
+C ObjC Alias(std=c23)
+Conform to the ISO 2023 C standard draft (expected to be published in 2024) (experimental and incomplete support).
 
 stdlib=
 Driver C++ ObjC++ Common Condition(ENABLE_STDLIB_OPTION) Var(flag_stdlib_kind) Joined Enum(stdlib_kind) RejectNegative Init(1)

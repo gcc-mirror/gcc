@@ -1,6 +1,6 @@
 // <memory_resource> -*- C++ -*-
 
-// Copyright (C) 2018-2023 Free Software Foundation, Inc.
+// Copyright (C) 2018-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,7 @@
 #include <ext/numeric_traits.h>		// __int_traits
 #include <debug/assertions.h>
 
-#if ! __cpp_lib_make_obj_using_allocator
+#if ! __glibcxx_make_obj_using_allocator
 # include <bits/utility.h>		// index_sequence
 # include <tuple>			// tuple, forward_as_tuple
 #endif
@@ -220,7 +220,7 @@ namespace pmr
 	}
 #endif // C++2a
 
-#if ! __cpp_lib_make_obj_using_allocator
+#if ! __glibcxx_make_obj_using_allocator
       template<typename _Tp1, typename... _Args>
 	__attribute__((__nonnull__))
 	typename __not_pair<_Tp1>::type
@@ -337,7 +337,7 @@ namespace pmr
 #endif
 
     private:
-#if ! __cpp_lib_make_obj_using_allocator
+#if ! __glibcxx_make_obj_using_allocator
       using __uses_alloc1_ = __uses_alloc1<polymorphic_allocator>;
       using __uses_alloc2_ = __uses_alloc2<polymorphic_allocator>;
 

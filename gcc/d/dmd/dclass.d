@@ -180,7 +180,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
     int cppDtorVtblIndex = -1;
 
     /// to prevent recursive attempts
-    private bool inuse;
+    bool inuse;
 
     ThreeState isabstract;
 
@@ -367,7 +367,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
         baseok = Baseok.none;
     }
 
-    final void classError(const(char)* fmt, const(char)* arg)
+    extern (D) final void classError(const(char)* fmt, const(char)* arg)
     {
         .error(loc, fmt, kind, toPrettyChars, arg);
     }
@@ -423,7 +423,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
      * Determine if 'this' is a base class of cd.
      * This is used to detect circular inheritance only.
      */
-    final bool isBaseOf2(ClassDeclaration cd) pure nothrow @nogc
+    extern (D) final bool isBaseOf2(ClassDeclaration cd) pure nothrow @nogc
     {
         if (!cd)
             return false;
@@ -468,67 +468,6 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
         return baseok >= Baseok.done;
     }
 
-    override final Dsymbol search(const ref Loc loc, Identifier ident, int flags = SearchLocalsOnly)
-    {
-        //printf("%s.ClassDeclaration.search('%s', flags=x%x)\n", toChars(), ident.toChars(), flags);
-        //if (_scope) printf("%s baseok = %d\n", toChars(), baseok);
-        if (_scope && baseok < Baseok.semanticdone)
-        {
-            if (!inuse)
-            {
-                // must semantic on base class/interfaces
-                inuse = true;
-                dsymbolSemantic(this, null);
-                inuse = false;
-            }
-        }
-
-        if (!members || !symtab) // opaque or addMember is not yet done
-        {
-            // .stringof is always defined (but may be hidden by some other symbol)
-            if (ident != Id.stringof && !(flags & IgnoreErrors) && semanticRun < PASS.semanticdone)
-                classError("%s `%s` is forward referenced when looking for `%s`", ident.toChars());
-            //*(char*)0=0;
-            return null;
-        }
-
-        auto s = ScopeDsymbol.search(loc, ident, flags);
-
-        // don't search imports of base classes
-        if (flags & SearchImportsOnly)
-            return s;
-
-        if (s)
-            return s;
-
-        // Search bases classes in depth-first, left to right order
-        foreach (b; (*baseclasses)[])
-        {
-            if (!b.sym)
-                continue;
-
-            if (!b.sym.symtab)
-            {
-                classError("%s `%s` base `%s` is forward referenced", b.sym.ident.toChars());
-                continue;
-            }
-
-            import dmd.access : symbolIsVisible;
-
-            s = b.sym.search(loc, ident, flags);
-            if (!s)
-                continue;
-            else if (s == this) // happens if s is nested in this and derives from this
-                s = null;
-            else if (!(flags & IgnoreSymbolVisibility) && !(s.visible().kind == Visibility.Kind.protected_) && !symbolIsVisible(this, s))
-                s = null;
-            else
-                break;
-        }
-
-        return s;
-    }
-
     /************************************
      * Search base classes in depth-first, left-to-right order for
      * a class or interface named 'ident'.
@@ -538,7 +477,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
      * Returns:
      *  ClassDeclaration if found, null if not
      */
-    final ClassDeclaration searchBase(Identifier ident)
+    extern (D) final ClassDeclaration searchBase(Identifier ident)
     {
         foreach (b; *baseclasses)
         {
@@ -613,7 +552,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
 
                 if (!b.sym.alignsize)
                     b.sym.alignsize = target.ptrsize;
-                alignmember(structalign_t(cast(ushort)b.sym.alignsize), b.sym.alignsize, &offset);
+                offset = alignmember(structalign_t(cast(ushort)b.sym.alignsize), b.sym.alignsize, offset);
                 assert(bi < vtblInterfaces.length);
 
                 BaseClass* bv = (*vtblInterfaces)[bi];
@@ -675,7 +614,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
     final bool isFuncHidden(FuncDeclaration fd)
     {
         //printf("ClassDeclaration.isFuncHidden(class = %s, fd = %s)\n", toChars(), fd.toPrettyChars());
-        Dsymbol s = search(Loc.initial, fd.ident, IgnoreAmbiguous | IgnoreErrors);
+        Dsymbol s = this.search(Loc.initial, fd.ident, IgnoreAmbiguous | IgnoreErrors);
         if (!s)
         {
             //printf("not found\n");
@@ -716,7 +655,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
      * Errors:
      *  prints error message if more than one match
      */
-    final FuncDeclaration findFunc(Identifier ident, TypeFunction tf)
+    extern (D) final FuncDeclaration findFunc(Identifier ident, TypeFunction tf)
     {
         //printf("ClassDeclaration.findFunc(%s, %s) %s\n", ident.toChars(), tf.toChars(), toChars());
         FuncDeclaration fdmatch = null;

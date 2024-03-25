@@ -1,4 +1,4 @@
-/* Test that qualifiers are lost in tertiary operator for pointers to arrays before C2X, PR98397 */
+/* Test that qualifiers are lost in tertiary operator for pointers to arrays before C23, PR98397 */
 /* { dg-do compile } */
 /* { dg-options "-std=c11 -pedantic-errors -Wno-discarded-array-qualifiers" } */
 

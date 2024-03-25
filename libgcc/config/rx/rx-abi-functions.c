@@ -1,5 +1,5 @@
 /* RX C ABI functions
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -33,6 +33,13 @@
 
 #ifdef __RX_64BIT_DOUBLES__
 
+extern int __ltdf2 (double, double);
+extern int __gtdf2 (double, double);
+extern int __ledf2 (double, double);
+extern int __gedf2 (double, double);
+extern int __eqdf2 (double, double);
+extern int __nedf2 (double, double);
+
 int _COM_CMPLTd (double a, double b) { return __ltdf2 (a, b) == -1; }
 int _COM_CMPGTd (double a, double b) { return __gtdf2 (a, b) == 1; }
 int _COM_CMPLEd (double a, double b) { return __ledf2 (a, b) != 1; }
@@ -48,6 +55,13 @@ int _COM_CMPEQf (double, double) __attribute__ ((weak, alias ("_COM_CMPEQd")));
 int _COM_CMPNEf (double, double) __attribute__ ((weak, alias ("_COM_CMPNEd")));
 
 #else /* 32-bit doubles.  */
+
+extern int __ltsf2 (float, float);
+extern int __gtsf2 (float, float);
+extern int __lesf2 (float, float);
+extern int __gesf2 (float, float);
+extern int __eqsf2 (float, float);
+extern int __nesf2 (float, float);
 
 double _COM_CONVfd (float a) { return a; }
 float  _COM_CONVdf (double a) { return a; }

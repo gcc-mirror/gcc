@@ -1,6 +1,6 @@
 (* Sets.mod provides a dynamic set module.
 
-Copyright (C) 2009-2023 Free Software Foundation, Inc.
+Copyright (C) 2009-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -31,9 +31,9 @@ FROM Assertion IMPORT Assert ;
 
 
 CONST
-   BitsetSize  = SIZE(BITSET) ;
-   MaxBitset   = MAX(BITSET) ;
-   BitsPerByte = (MaxBitset+1) DIV BitsetSize ;
+   BitsetSize  = SIZE (BITSET) ;
+   MaxBitset   = MAX (BITSET) ;
+   BitsPerByte = (MaxBitset + 1) DIV BitsetSize ;
    Debugging   = FALSE ;
 
 TYPE
@@ -313,6 +313,61 @@ BEGIN
       END
    END
 END IncludeElementIntoSet ;
+
+
+(*
+   EqualSet - return TRUE if left = right.
+*)
+
+PROCEDURE EqualSet (left, right: Set) : BOOLEAN ;
+VAR
+   v   : PtrToByte ;
+   lptr,
+   rptr: PtrToBitset ;
+   last,
+   el  : CARDINAL ;
+BEGIN
+   IF (left^.init = right^.init) AND
+      (left^.start = right^.start) AND
+      (left^.end = right^.end) AND
+      (left^.elements = right^.elements)
+   THEN
+      (* Now check contents.  *)
+      el := left^.start ;
+      last := left^.end ;
+      WHILE el <= last DO
+         lptr := findPos (left^.pb, el) ;
+         rptr := findPos (right^.pb, el) ;
+         IF el + BitsetSize < last
+         THEN
+            (* We can check complete bitset,  *)
+            IF lptr^ # rptr^
+            THEN
+               RETURN FALSE
+            END ;
+            INC (el, BitsetSize) ;
+            v := PtrToByte (lptr) ;
+            INC (v, BitsetSize) ;   (* Avoid implications of C address arithmetic in mc PtrToByte *)
+            lptr := PtrToBitset (v) ;
+            v := PtrToByte (rptr) ;
+            INC (v, BitsetSize) ;   (* Avoid implications of C address arithmetic in mc PtrToByte *)
+            rptr := PtrToBitset (v)
+         ELSE
+            (* We must check remaining bits only.  *)
+            WHILE (el <= last) AND (el >= left^.init) DO
+               IF IsElementInSet (left, el) # IsElementInSet (right, el)
+               THEN
+                  RETURN FALSE
+               END ;
+               INC (el)
+            END ;
+            RETURN TRUE
+         END
+      END ;
+      RETURN TRUE
+   END ;
+   RETURN FALSE
+END EqualSet ;
 
 
 END Sets.

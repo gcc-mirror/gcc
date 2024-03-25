@@ -86,7 +86,7 @@ F7_C_FLAGS +=   $(F7_FLAGS) \
 		-fno-tree-loop-optimize \
 		-fno-tree-loop-im -fno-move-loop-invariants
 
-F7_ASM_FLAGS +=	$(F7_FLAGS)
+F7_ASM_FLAGS +=	$(F7_FLAGS) -g0
 
 $(patsubst %, f7_c_%.o, $(CALL_PROLOGUES)) \
 	: F7_C_FLAGS += -mcall-prologues

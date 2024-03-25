@@ -13,6 +13,9 @@
 
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 #ifdef STACK_SIZE
 /* We need to be careful that we don't blow our stack.  Function f, in the
    worst case, needs to fit on the stack:

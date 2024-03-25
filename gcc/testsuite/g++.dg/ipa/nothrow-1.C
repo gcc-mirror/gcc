@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fnon-call-exceptions -fdump-tree-optimized"  } */
+/* { dg-options "-O2 -fnon-call-exceptions -fdump-tree-optimized -fno-ipa-vrp"  } */
 int *ptr;
 static int barvar;
 

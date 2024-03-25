@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 void func(int, int);
 
 int main()

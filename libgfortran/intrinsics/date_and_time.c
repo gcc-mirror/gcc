@@ -1,5 +1,5 @@
 /* Implementation of the DATE_AND_TIME intrinsic.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Steven Bosscher.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -209,20 +209,20 @@ date_and_time (char *__date, char *__time, char *__zone,
 	delta = 1;
       
       if (unlikely (len < VALUES_SIZE))
-	  runtime_error ("Incorrect extent in VALUE argument to"
+	  runtime_error ("Incorrect extent in VALUES argument to"
 			 " DATE_AND_TIME intrinsic: is %ld, should"
 			 " be >=%ld", (long int) len, (long int) VALUES_SIZE);
 
       /* Cope with different type kinds.  */
       if (elt_size == 4)
-        {
+	{
 	  GFC_INTEGER_4 *vptr4 = __values->base_addr;
 
 	  for (i = 0; i < VALUES_SIZE; i++, vptr4 += delta)
 	    *vptr4 = values[i];
 	}
       else if (elt_size == 8)
-        {
+	{
 	  GFC_INTEGER_8 *vptr8 = (GFC_INTEGER_8 *)__values->base_addr;
 
 	  for (i = 0; i < VALUES_SIZE; i++, vptr8 += delta)
@@ -233,6 +233,32 @@ date_and_time (char *__date, char *__time, char *__zone,
 		*vptr8 = values[i];
 	    }
 	}
+      else if (elt_size == 2)
+	{
+	  GFC_INTEGER_2 *vptr2 = (GFC_INTEGER_2 *)__values->base_addr;
+
+	  for (i = 0; i < VALUES_SIZE; i++, vptr2 += delta)
+	    {
+	      if (values[i] == - GFC_INTEGER_4_HUGE)
+		*vptr2 = - GFC_INTEGER_2_HUGE;
+	      else
+		*vptr2 = (GFC_INTEGER_2) values[i];
+	    }
+	}
+#if defined (HAVE_GFC_INTEGER_16)
+      else if (elt_size == 16)
+	{
+	  GFC_INTEGER_16 *vptr16 = (GFC_INTEGER_16 *)__values->base_addr;
+
+	  for (i = 0; i < VALUES_SIZE; i++, vptr16 += delta)
+	    {
+	      if (values[i] == - GFC_INTEGER_4_HUGE)
+		*vptr16 = - GFC_INTEGER_16_HUGE;
+	      else
+		*vptr16 = values[i];
+	    }
+	}
+#endif
       else 
 	abort ();
     }

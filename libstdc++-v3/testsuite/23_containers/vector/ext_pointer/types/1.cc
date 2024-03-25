@@ -1,6 +1,6 @@
 // Test for Container using non-standard pointer types.
 
-// Copyright (C) 2008-2023 Free Software Foundation, Inc.
+// Copyright (C) 2008-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,8 @@ namespace N
     X operator+(T, std::size_t)
     { return X(); }
 
-  template<typename T>
-    X operator-(T, T)
+  template<typename T, typename U>
+    X operator-(T, U)
     { return X(); }
 }
 

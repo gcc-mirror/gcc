@@ -1,6 +1,6 @@
 (* M2Range.mod exports procedures which maintain the range checking.
 
-Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Copyright (C) 2008-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -82,7 +82,7 @@ FROM M2GenGCC IMPORT GetHighFromUnbounded, StringToChar, LValueToGenericPtr, ZCo
 FROM M2System IMPORT Address, Word, Loc, Byte, IsWordN, IsRealN, IsComplexN ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2 ;
 
-FROM M2Check IMPORT ParameterTypeCompatible, ExpressionTypeCompatible ;
+FROM M2Check IMPORT ParameterTypeCompatible, ExpressionTypeCompatible, AssignmentTypeCompatible ;
 
 FROM M2Base IMPORT Nil, IsRealType, GetBaseTypeMinMax,
                    Cardinal, Integer, ZType, IsComplexType,
@@ -492,7 +492,7 @@ END PutRangeUnary ;
                    and returns, p.
 *)
 
-PROCEDURE PutRangeParam (p: Range; t: TypeOfRange; proc: CARDINAL;
+PROCEDURE PutRangeParam (tokno: CARDINAL; p: Range; t: TypeOfRange; proc: CARDINAL;
                          i: CARDINAL; formal, actual: CARDINAL) : Range ;
 BEGIN
    WITH p^ DO
@@ -504,7 +504,7 @@ BEGIN
       procedure      := proc ;
       paramNo        := i ;
       isLeftValue    := FALSE ;
-      tokenNo        := GetTokenNo () ;
+      tokenNo        := tokno ;
       strict         := FALSE ;
       isin           := FALSE
    END ;
@@ -737,13 +737,13 @@ END InitTypesAssignmentCheck ;
                              and, e, are parameter compatible.
 *)
 
-PROCEDURE InitTypesParameterCheck (proc: CARDINAL; i: CARDINAL;
+PROCEDURE InitTypesParameterCheck (tokno: CARDINAL; proc: CARDINAL; i: CARDINAL;
                                    formal, actual: CARDINAL) : CARDINAL ;
 VAR
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   Assert (PutRangeParam (GetIndice (RangeIndex, r), typeparam, proc, i, formal, actual) # NIL) ;
+   Assert (PutRangeParam (tokno, GetIndice (RangeIndex, r), typeparam, proc, i, formal, actual) # NIL) ;
    RETURN r
 END InitTypesParameterCheck ;
 
@@ -755,7 +755,7 @@ END InitTypesParameterCheck ;
                          and returns, p.
 *)
 
-PROCEDURE PutRangeParamAssign (p: Range; t: TypeOfRange; proc: CARDINAL;
+PROCEDURE PutRangeParamAssign (tokno: CARDINAL; p: Range; t: TypeOfRange; proc: CARDINAL;
                                i: CARDINAL; formal, actual: CARDINAL) : Range ;
 BEGIN
    WITH p^ DO
@@ -768,7 +768,7 @@ BEGIN
       paramNo        := i ;
       dimension      := i ;
       isLeftValue    := FALSE ;
-      tokenNo        := GetTokenNo ()
+      tokenNo        := tokno
    END ;
    RETURN( p )
 END PutRangeParamAssign ;
@@ -779,13 +779,13 @@ END PutRangeParamAssign ;
                              are parameter compatible.
 *)
 
-PROCEDURE InitParameterRangeCheck (proc: CARDINAL; i: CARDINAL;
+PROCEDURE InitParameterRangeCheck (tokno: CARDINAL; proc: CARDINAL; i: CARDINAL;
                                    formal, actual: CARDINAL) : CARDINAL ;
 VAR
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   Assert (PutRangeParamAssign (GetIndice (RangeIndex, r), paramassign, proc, i, formal, actual) # NIL) ;
+   Assert (PutRangeParamAssign (tokno, GetIndice (RangeIndex, r), paramassign, proc, i, formal, actual) # NIL) ;
    RETURN r
 END InitParameterRangeCheck ;
 
@@ -1141,18 +1141,23 @@ BEGIN
       TryDeclareConstant (tokenNo, expr) ;
       IF desLowestType # NulSym
       THEN
-         IF GccKnowsAbout (expr) AND IsConst (expr) AND
-            GetMinMax (tokenno, desLowestType, min, max)
+         IF AssignmentTypeCompatible (tokenno, "", des, expr)
          THEN
-            IF OutOfRange (tokenno, min, expr, max, desLowestType)
+            IF GccKnowsAbout (expr) AND IsConst (expr) AND
+               GetMinMax (tokenno, desLowestType, min, max)
             THEN
-               MetaErrorT2 (tokenNo,
-                            'attempting to assign a value {%2Wa} to a designator {%1a} which will exceed the range of type {%1tad}',
-                            des, expr) ;
-               PutQuad (q, ErrorOp, NulSym, NulSym, r)
-            ELSE
-               SubQuad (q)
+               IF OutOfRange (tokenno, min, expr, max, desLowestType)
+               THEN
+                  MetaErrorT2 (tokenNo,
+                               'attempting to assign a value {%2Wa} to a designator {%1a} which will exceed the range of type {%1tad}',
+                               des, expr) ;
+                  PutQuad (q, ErrorOp, NulSym, NulSym, r)
+               ELSE
+                  SubQuad (q)
+               END
             END
+         ELSE
+            SubQuad (q)
          END
       END
    END
@@ -1619,7 +1624,7 @@ END FoldTypeAssign ;
 PROCEDURE FoldTypeParam (q: CARDINAL; tokenNo: CARDINAL; formal, actual, procedure: CARDINAL; paramNo: CARDINAL) ;
 BEGIN
    IF ParameterTypeCompatible (tokenNo,
-                               '{%4EN} type failure between actual {%3ad} and the {%2ad}',
+                               '{%4EN} parameter type failure between actual parameter type {%3ad} and the formal type {%2ad}',
                                procedure, formal, actual, paramNo, IsVarParam (procedure, paramNo))
    THEN
       SubQuad(q)

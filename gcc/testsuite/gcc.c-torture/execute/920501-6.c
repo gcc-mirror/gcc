@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+void abort (void);
+void exit (int);
+
 /* Convert a decimal string to a long long unsigned.  No error check is
    performed.  */
 
@@ -76,6 +79,7 @@ int plist (p0, p1, tab)
   return xp - tab;
 }
 
+int
 main (argc, argv)
      int argc;
      char *argv[];

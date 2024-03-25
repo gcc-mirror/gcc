@@ -1,6 +1,6 @@
 /* PR c/67730 */
 /* { dg-do compile } */
-/* { dg-options "-Wc++-compat" } */
+/* { dg-options "-Wc++-compat -fpermissive" } */
 
 #include "pr67730.h"
 

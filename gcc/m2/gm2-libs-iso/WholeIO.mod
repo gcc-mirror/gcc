@@ -1,6 +1,6 @@
 (* WholeIO.mod implement the ISO WholeIO specification.
 
-Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Copyright (C) 2008-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -41,7 +41,6 @@ FROM TextUtil IMPORT SkipSpaces ;
      type IOConsts.ReadResults.
 *)
 
-IMPORT IOChan ;
 
 (* The text form of a signed whole number is
      ["+" | "-"], decimal digit, {decimal digit}

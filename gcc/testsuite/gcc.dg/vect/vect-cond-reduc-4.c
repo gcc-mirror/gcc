@@ -42,7 +42,6 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" } } */
-/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 2 "vect" { target { vect_fold_extract_last && vect_pack_trunc } } } } */
-/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 4 "vect" { target { { vect_fold_extract_last } && { ! vect_pack_trunc } } } } } */
+/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST(?:(?!failed)(?!Re-trying).)*succeeded" 2 "vect" { target { vect_fold_extract_last && vect_pack_trunc } } } } */
 /* { dg-final { scan-tree-dump-times "condition expression based on integer induction." 2 "vect" { target { ! vect_fold_extract_last } } } } */
 

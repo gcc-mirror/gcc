@@ -1,5 +1,5 @@
 /* Constant folding for calls to built-in and internal functions.
-   Copyright (C) 1988-2023 Free Software Foundation, Inc.
+   Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "fold-const-call.h"
 #include "case-cfn-macros.h"
-#include "tm.h" /* For C[LT]Z_DEFINED_AT_ZERO.  */
+#include "tm.h" /* For C[LT]Z_DEFINED_VALUE_AT_ZERO.  */
 #include "builtins.h"
 #include "gimple-expr.h"
 #include "tree-vector-builder.h"
@@ -1017,14 +1017,18 @@ fold_const_call_ss (wide_int *result, combined_fn fn, const wide_int_ref &arg,
   switch (fn)
     {
     CASE_CFN_FFS:
+    case CFN_BUILT_IN_FFSG:
       *result = wi::shwi (wi::ffs (arg), precision);
       return true;
 
     CASE_CFN_CLZ:
+    case CFN_BUILT_IN_CLZG:
       {
 	int tmp;
 	if (wi::ne_p (arg, 0))
 	  tmp = wi::clz (arg);
+	else if (TREE_CODE (arg_type) == BITINT_TYPE)
+	  tmp = TYPE_PRECISION (arg_type);
 	else if (!CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (arg_type),
 					     tmp))
 	  tmp = TYPE_PRECISION (arg_type);
@@ -1033,10 +1037,13 @@ fold_const_call_ss (wide_int *result, combined_fn fn, const wide_int_ref &arg,
       }
 
     CASE_CFN_CTZ:
+    case CFN_BUILT_IN_CTZG:
       {
 	int tmp;
 	if (wi::ne_p (arg, 0))
 	  tmp = wi::ctz (arg);
+	else if (TREE_CODE (arg_type) == BITINT_TYPE)
+	  tmp = TYPE_PRECISION (arg_type);
 	else if (!CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (arg_type),
 					     tmp))
 	  tmp = TYPE_PRECISION (arg_type);
@@ -1045,14 +1052,17 @@ fold_const_call_ss (wide_int *result, combined_fn fn, const wide_int_ref &arg,
       }
 
     CASE_CFN_CLRSB:
+    case CFN_BUILT_IN_CLRSBG:
       *result = wi::shwi (wi::clrsb (arg), precision);
       return true;
 
     CASE_CFN_POPCOUNT:
+    case CFN_BUILT_IN_POPCOUNTG:
       *result = wi::shwi (wi::popcount (arg), precision);
       return true;
 
     CASE_CFN_PARITY:
+    case CFN_BUILT_IN_PARITYG:
       *result = wi::shwi (wi::parity (arg), precision);
       return true;
 
@@ -1531,6 +1541,49 @@ fold_const_call_sss (real_value *result, combined_fn fn,
 
 /* Try to evaluate:
 
+      *RESULT = FN (ARG0, ARG1)
+
+   where ARG_TYPE is the type of ARG0 and PRECISION is the number of bits in
+   the result.  Return true on success.  */
+
+static bool
+fold_const_call_sss (wide_int *result, combined_fn fn,
+		     const wide_int_ref &arg0, const wide_int_ref &arg1,
+		     unsigned int precision, tree arg_type ATTRIBUTE_UNUSED)
+{
+  switch (fn)
+    {
+    case CFN_CLZ:
+    case CFN_BUILT_IN_CLZG:
+      {
+	int tmp;
+	if (wi::ne_p (arg0, 0))
+	  tmp = wi::clz (arg0);
+	else
+	  tmp = arg1.to_shwi ();
+	*result = wi::shwi (tmp, precision);
+	return true;
+      }
+
+    case CFN_CTZ:
+    case CFN_BUILT_IN_CTZG:
+      {
+	int tmp;
+	if (wi::ne_p (arg0, 0))
+	  tmp = wi::ctz (arg0);
+	else
+	  tmp = arg1.to_shwi ();
+	*result = wi::shwi (tmp, precision);
+	return true;
+      }
+
+    default:
+      return false;
+    }
+}
+
+/* Try to evaluate:
+
       RESULT = fn (ARG0, ARG1)
 
    where FORMAT is the format of the real and imaginary parts of RESULT
@@ -1564,6 +1617,19 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1)
   machine_mode mode = TYPE_MODE (type);
   machine_mode arg0_mode = TYPE_MODE (TREE_TYPE (arg0));
   machine_mode arg1_mode = TYPE_MODE (TREE_TYPE (arg1));
+
+  if (integer_cst_p (arg0) && integer_cst_p (arg1))
+    {
+      if (SCALAR_INT_MODE_P (mode))
+	{
+	  wide_int result;
+	  if (fold_const_call_sss (&result, fn, wi::to_wide (arg0),
+				   wi::to_wide (arg1), TYPE_PRECISION (type),
+				   TREE_TYPE (arg0)))
+	    return wide_int_to_tree (type, result);
+	}
+      return NULL_TREE;
+    }
 
   if (mode == arg0_mode
       && real_cst_p (arg0)

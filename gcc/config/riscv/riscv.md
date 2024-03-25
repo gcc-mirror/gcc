@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V for GNU compiler.
-;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 
@@ -41,6 +41,7 @@
   ;; Symbolic accesses.  The order of this list must match that of
   ;; enum riscv_symbol_type in riscv-protos.h.
   UNSPEC_ADDRESS_FIRST
+  UNSPEC_FORCE_FOR_MEM
   UNSPEC_PCREL
   UNSPEC_LOAD_GOT
   UNSPEC_TLS
@@ -85,6 +86,9 @@
 
   ;; String unspecs
   UNSPEC_STRLEN
+
+  ;; Workaround for HFmode without hardware extension
+  UNSPEC_FMV_SFP16_X
 ])
 
 (define_c_enum "unspecv" [
@@ -235,7 +239,6 @@
   RVVM1x7DF,RVVM1x6DF,RVVM1x5DF,RVVM2x4DF,
   RVVM1x4DF,RVVM2x3DF,RVVM1x3DF,RVVM4x2DF,
   RVVM2x2DF,RVVM1x2DF,
-  VNx2x1DF,VNx3x1DF,VNx4x1DF,VNx5x1DF,VNx6x1DF,VNx7x1DF,VNx8x1DF,
   V1QI,V2QI,V4QI,V8QI,V16QI,V32QI,V64QI,V128QI,V256QI,V512QI,V1024QI,V2048QI,V4096QI,
   V1HI,V2HI,V4HI,V8HI,V16HI,V32HI,V64HI,V128HI,V256HI,V512HI,V1024HI,V2048HI,
   V1SI,V2SI,V4SI,V8SI,V16SI,V32SI,V64SI,V128SI,V256SI,V512SI,V1024SI,
@@ -428,6 +431,34 @@
 ;; vcompress    vector compress instruction
 ;; vmov         whole vector register move
 ;; vector       unknown vector instruction
+;; 17. Crypto Vector instructions
+;; vandn        crypto vector bitwise and-not instructions
+;; vbrev        crypto vector reverse bits in elements instructions
+;; vbrev8       crypto vector reverse bits in bytes instructions
+;; vrev8        crypto vector reverse bytes instructions
+;; vclz         crypto vector count leading Zeros instructions
+;; vctz         crypto vector count lrailing Zeros instructions
+;; vrol         crypto vector rotate left instructions
+;; vror         crypto vector rotate right instructions
+;; vwsll        crypto vector widening shift left logical instructions
+;; vclmul       crypto vector carry-less multiply - return low half instructions
+;; vclmulh      crypto vector carry-less multiply - return high half instructions
+;; vghsh        crypto vector add-multiply over GHASH Galois-Field instructions
+;; vgmul        crypto vector multiply over GHASH Galois-Field instrumctions
+;; vaesef       crypto vector AES final-round encryption instructions
+;; vaesem       crypto vector AES middle-round encryption instructions
+;; vaesdf       crypto vector AES final-round decryption instructions
+;; vaesdm       crypto vector AES middle-round decryption instructions
+;; vaeskf1      crypto vector AES-128 Forward KeySchedule generation instructions
+;; vaeskf2      crypto vector AES-256 Forward KeySchedule generation instructions
+;; vaesz        crypto vector AES round zero encryption/decryption instructions
+;; vsha2ms      crypto vector SHA-2 message schedule instructions
+;; vsha2ch      crypto vector SHA-2 two rounds of compression instructions
+;; vsha2cl      crypto vector SHA-2 two rounds of compression instructions
+;; vsm4k        crypto vector SM4 KeyExpansion instructions
+;; vsm4r        crypto vector SM4 Rounds instructions
+;; vsm3me       crypto vector SM3 Message Expansion instructions
+;; vsm3c        crypto vector SM3 Compression instructions
 (define_attr "type"
   "unknown,branch,jump,jalr,ret,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
@@ -447,7 +478,9 @@
    vired,viwred,vfredu,vfredo,vfwredu,vfwredo,
    vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
    vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
-   vgather,vcompress,vmov,vector"
+   vgather,vcompress,vmov,vector,vandn,vbrev,vbrev8,vrev8,vclz,vctz,vcpop,vrol,vror,vwsll,
+   vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,vaeskf1,vaeskf2,vaesz,
+   vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -501,6 +534,51 @@
   ]
   (const_string "no")))
 
+;; Widening instructions have group-overlap constraints.  Those are only
+;; valid for certain register-group sizes.  This attribute marks the
+;; alternatives not matching the required register-group size as disabled.
+(define_attr "group_overlap" "none,W21,W42,W84,W43,W86,W87,W0"
+  (const_string "none"))
+
+(define_attr "group_overlap_valid" "no,yes"
+  (cond [(eq_attr "group_overlap" "none")
+         (const_string "yes")
+
+         (and (eq_attr "group_overlap" "W21")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 2"))
+	 (const_string "no")
+
+         (and (eq_attr "group_overlap" "W42")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 4"))
+	 (const_string "no")
+
+         (and (eq_attr "group_overlap" "W84")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 8"))
+	 (const_string "no")
+
+         ;; According to RVV ISA:
+         ;; The destination EEW is greater than the source EEW, the source EMUL is at least 1,
+         ;; and the overlap is in the highest-numbered part of the destination register group
+         ;; (e.g., when LMUL=8, vzext.vf4 v0, v6 is legal, but a source of v0, v2, or v4 is not).
+         ;; So the source operand should have LMUL >= 1.
+         (and (eq_attr "group_overlap" "W43")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 4
+			   && riscv_get_v_regno_alignment (GET_MODE (operands[3])) >= 1"))
+	 (const_string "no")
+
+         (and (eq_attr "group_overlap" "W86,W87")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 8
+			   && riscv_get_v_regno_alignment (GET_MODE (operands[3])) >= 1"))
+	 (const_string "no")
+
+         ;; W21 supports highest-number overlap for source LMUL = 1.
+         ;; For 'wv' variant, we can also allow wide source operand overlaps dest operand.
+         (and (eq_attr "group_overlap" "W0")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) > 1"))
+	 (const_string "no")
+        ]
+       (const_string "yes")))
+
 ;; Attribute to control enable or disable instructions.
 (define_attr "enabled" "no,yes"
   (cond [
@@ -508,6 +586,9 @@
     (const_string "no")
 
     (eq_attr "fp_vector_disabled" "yes")
+    (const_string "no")
+
+    (eq_attr "group_overlap_valid" "no")
     (const_string "no")
   ]
   (const_string "yes")))
@@ -518,20 +599,26 @@
 	  ;; Branches further than +/- 1 MiB require three instructions.
 	  ;; Branches further than +/- 4 KiB require two instructions.
 	  (eq_attr "type" "branch")
-	  (if_then_else (and (le (minus (match_dup 0) (pc)) (const_int 4088))
-				  (le (minus (pc) (match_dup 0)) (const_int 4092)))
-	  (const_int 4)
-	  (if_then_else (and (le (minus (match_dup 0) (pc)) (const_int 1048568))
-				  (le (minus (pc) (match_dup 0)) (const_int 1048572)))
-	  (const_int 8)
-	  (const_int 12)))
+	  (if_then_else (and (le (minus (match_dup 0) (pc))
+				 (const_int 4088))
+			     (le (minus (pc) (match_dup 0))
+				 (const_int 4092)))
+			(const_int 4)
+			(if_then_else (and (le (minus (match_dup 0) (pc))
+					       (const_int 1048568))
+					   (le (minus (pc) (match_dup 0))
+					       (const_int 1048572)))
+				      (const_int 8)
+				      (const_int 12)))
 
 	  ;; Jumps further than +/- 1 MiB require two instructions.
 	  (eq_attr "type" "jump")
-	  (if_then_else (and (le (minus (match_dup 0) (pc)) (const_int 1048568))
-				  (le (minus (pc) (match_dup 0)) (const_int 1048572)))
-	  (const_int 4)
-	  (const_int 8))
+	  (if_then_else (and (le (minus (match_dup 0) (pc))
+				 (const_int 1048568))
+			     (le (minus (pc) (match_dup 0))
+				 (const_int 1048572)))
+			(const_int 4)
+			(const_int 8))
 
 	  ;; Conservatively assume calls take two instructions (AUIPC + JALR).
 	  ;; The linker will opportunistically relax the sequence to JAL.
@@ -1662,7 +1749,7 @@
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT && !TARGET_ZBA && !TARGET_XTHEADBB
+  "TARGET_64BIT && !TARGET_ZBA && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
    && !(register_operand (operands[1], SImode)
         && reg_or_subregno (operands[1]) == VL_REGNUM)"
   "@
@@ -1690,7 +1777,7 @@
   [(set (match_operand:GPR    0 "register_operand"     "=r,r")
 	(zero_extend:GPR
 	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB && !TARGET_XTHEADBB"
+  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
   "@
    #
    lhu\t%0,%1"
@@ -1709,11 +1796,17 @@
    (set_attr "type" "load")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "zero_extendqi<SUPERQI:mode>2"
+(define_expand "zero_extendqi<SUPERQI:mode>2"
+  [(set (match_operand:SUPERQI    0 "register_operand")
+	(zero_extend:SUPERQI
+	    (match_operand:QI 1 "nonimmediate_operand")))]
+  "")
+
+(define_insn "*zero_extendqi<SUPERQI:mode>2_internal"
   [(set (match_operand:SUPERQI 0 "register_operand"    "=r,r")
 	(zero_extend:SUPERQI
 	    (match_operand:QI 1 "nonimmediate_operand" " r,m")))]
-  ""
+  "!TARGET_XTHEADMEMIDX"
   "@
    andi\t%0,%1,0xff
    lbu\t%0,%1"
@@ -1728,11 +1821,17 @@
 ;;
 ;;  ....................
 
-(define_insn "extendsidi2"
+(define_expand "extendsidi2"
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(sign_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT"
+  "TARGET_64BIT")
+
+(define_insn "*extendsidi2_internal"
+  [(set (match_operand:DI     0 "register_operand"     "=r,r")
+	(sign_extend:DI
+	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
+  "TARGET_64BIT && !TARGET_XTHEADMEMIDX"
   "@
    sext.w\t%0,%1
    lw\t%0,%1"
@@ -1749,7 +1848,7 @@
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
-  "!TARGET_ZBB && !TARGET_XTHEADBB"
+  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
   "@
    #
    l<SHORT:size>\t%0,%1"
@@ -1827,6 +1926,14 @@
   [(set_attr "move_type" "fmove,move,load,store,mtc,mfc")
    (set_attr "type" "fmove")
    (set_attr "mode" "HF")])
+
+(define_insn "*movhf_softfloat_boxing"
+  [(set (match_operand:HF 0 "register_operand"            "=f")
+        (unspec:HF [(match_operand:X 1 "register_operand" " r")] UNSPEC_FMV_SFP16_X))]
+  "!TARGET_ZFHMIN"
+  "fmv.w.x\t%0,%1"
+  [(set_attr "type" "fmove")
+   (set_attr "mode" "SF")])
 
 ;;
 ;;  ....................
@@ -2294,9 +2401,7 @@
 	      (use (match_operand:SI 3 "const_int_operand"))])]
   ""
 {
-  if (riscv_vector::expand_block_move (operands[0], operands[1], operands[2]))
-    DONE;
-  else if (riscv_expand_block_move (operands[0], operands[1], operands[2]))
+  if (riscv_expand_block_move (operands[0], operands[1], operands[2]))
     DONE;
   else
     FAIL;
@@ -2622,7 +2727,7 @@
 (define_insn "*branch<mode>"
   [(set (pc)
 	(if_then_else
-	 (match_operator 1 "order_operator"
+	 (match_operator 1 "ordered_comparison_operator"
 			 [(match_operand:X 2 "register_operand" "r")
 			  (match_operand:X 3 "reg_or_0_operand" "rJ")])
 	 (label_ref (match_operand 0 "" ""))
@@ -2637,14 +2742,15 @@
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
-;; Patterns for implementations that optimize short forward branches.
+;; Conditional move and add patterns.
 
 (define_expand "mov<mode>cc"
   [(set (match_operand:GPR 0 "register_operand")
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
-			  (match_operand:GPR 2 "sfb_alu_operand")
-			  (match_operand:GPR 3 "sfb_alu_operand")))]
-  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND_LIKE"
+			  (match_operand:GPR 2 "movcc_operand")
+			  (match_operand:GPR 3 "movcc_operand")))]
+  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND_LIKE
+   || TARGET_MOVCC"
 {
   if (riscv_expand_conditional_move (operands[0], operands[1],
 				     operands[2], operands[3]))
@@ -2653,21 +2759,44 @@
     FAIL;
 })
 
-(define_insn "*mov<GPR:mode><X:mode>cc"
-  [(set (match_operand:GPR 0 "register_operand" "=r,r")
-	(if_then_else:GPR
-	 (match_operator 5 "order_operator"
-		[(match_operand:X 1 "register_operand" "r,r")
-		 (match_operand:X 2 "reg_or_0_operand" "rJ,rJ")])
-	 (match_operand:GPR 3 "register_operand" "0,0")
-	 (match_operand:GPR 4 "sfb_alu_operand" "rJ,IL")))]
-  "TARGET_SFB_ALU"
-  "@
-   b%C5\t%1,%z2,1f\t# movcc\;mv\t%0,%z4\n1:
-   b%C5\t%1,%z2,1f\t# movcc\;li\t%0,%4\n1:"
-  [(set_attr "length" "8")
-   (set_attr "type" "sfb_alu")
-   (set_attr "mode" "<GPR:MODE>")])
+(define_expand "add<mode>cc"
+  [(match_operand:GPR 0 "register_operand")
+   (match_operand     1 "comparison_operator")
+   (match_operand:GPR 2 "arith_operand")
+   (match_operand:GPR 3 "arith_operand")]
+  "TARGET_MOVCC"
+{
+  rtx cmp = operands[1];
+  rtx cmp0 = XEXP (cmp, 0);
+  rtx cmp1 = XEXP (cmp, 1);
+  machine_mode mode0 = GET_MODE (cmp0);
+
+  /* We only handle word mode integer compares for now.  */
+  if (INTEGRAL_MODE_P (mode0) && mode0 != word_mode)
+    FAIL;
+
+  enum rtx_code code = GET_CODE (cmp);
+  rtx reg0 = gen_reg_rtx (<MODE>mode);
+  rtx reg1 = gen_reg_rtx (<MODE>mode);
+  rtx reg2 = gen_reg_rtx (<MODE>mode);
+  bool invert = false;
+
+  if (INTEGRAL_MODE_P (mode0))
+    riscv_expand_int_scc (reg0, code, cmp0, cmp1, &invert);
+  else if (FLOAT_MODE_P (mode0) && fp_scc_comparison (cmp, GET_MODE (cmp)))
+    riscv_expand_float_scc (reg0, code, cmp0, cmp1, &invert);
+  else
+    FAIL;
+
+  if (invert)
+    riscv_emit_binary (PLUS, reg1, reg0, constm1_rtx);
+  else
+    riscv_emit_unary (NEG, reg1, reg0);
+  riscv_emit_binary (AND, reg2, reg1, operands[3]);
+  riscv_emit_binary (PLUS, operands[0], reg2, operands[2]);
+
+  DONE;
+})
 
 ;; Used to implement built-in functions.
 (define_expand "condjump"
@@ -2690,19 +2819,88 @@
   DONE;
 })
 
-(define_expand "@cbranch<mode>4"
-  [(set (pc)
-	(if_then_else (match_operator 0 "fp_branch_comparison"
-		       [(match_operand:ANYF 1 "register_operand")
-			(match_operand:ANYF 2 "register_operand")])
-		      (label_ref (match_operand 3 ""))
-		      (pc)))]
+(define_expand "@cbranch<ANYF:mode>4"
+  [(parallel [(set (pc)
+		   (if_then_else (match_operator 0 "fp_branch_comparison"
+				  [(match_operand:ANYF 1 "register_operand")
+				   (match_operand:ANYF 2 "register_operand")])
+				 (label_ref (match_operand 3 ""))
+				 (pc)))
+	      (clobber (match_operand 4 ""))])]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
 {
-  riscv_expand_conditional_branch (operands[3], GET_CODE (operands[0]),
-				   operands[1], operands[2]);
-  DONE;
+  if (!signed_order_operator (operands[0], GET_MODE (operands[0])))
+    {
+      riscv_expand_conditional_branch (operands[3], GET_CODE (operands[0]),
+				       operands[1], operands[2]);
+      DONE;
+    }
+  operands[4] = gen_reg_rtx (TARGET_64BIT ? DImode : SImode);
 })
+
+(define_insn_and_split "*cbranch<ANYF:mode>4"
+  [(set (pc)
+	(if_then_else (match_operator 1 "fp_native_comparison"
+		       [(match_operand:ANYF 2 "register_operand" "f")
+			(match_operand:ANYF 3 "register_operand" "f")])
+		      (label_ref (match_operand 0 ""))
+		      (pc)))
+   (clobber (match_operand:X 4 "register_operand" "=r"))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+	(match_op_dup:X 1 [(match_dup 2) (match_dup 3)]))
+   (set (pc)
+	(if_then_else (ne:X (match_dup 4) (const_int 0))
+		      (label_ref (match_operand 0))
+		      (pc)))]
+  ""
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (le (minus (match_dup 0) (pc))
+			       (const_int 4084))
+			   (le (minus (pc) (match_dup 0))
+			       (const_int 4096)))
+		      (const_int 8)
+		      (if_then_else (and (le (minus (match_dup 0) (pc))
+					     (const_int 1048564))
+					 (le (minus (pc) (match_dup 0))
+					     (const_int 1048576)))
+				    (const_int 12)
+				    (const_int 16))))])
+
+(define_insn_and_split "*cbranch<ANYF:mode>4"
+  [(set (pc)
+	(if_then_else (match_operator 1 "ne_operator"
+		       [(match_operand:ANYF 2 "register_operand" "f")
+			(match_operand:ANYF 3 "register_operand" "f")])
+		      (label_ref (match_operand 0 ""))
+		      (pc)))
+   (clobber (match_operand:X 4 "register_operand" "=r"))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+	(eq:X (match_dup 2) (match_dup 3)))
+   (set (pc)
+	(if_then_else (eq:X (match_dup 4) (const_int 0))
+		      (label_ref (match_operand 0))
+		      (pc)))]
+  ""
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (le (minus (match_dup 0) (pc))
+			       (const_int 4084))
+			   (le (minus (pc) (match_dup 0))
+			       (const_int 4096)))
+		      (const_int 8)
+		      (if_then_else (and (le (minus (match_dup 0) (pc))
+					     (const_int 1048564))
+					 (le (minus (pc) (match_dup 0))
+					     (const_int 1048576)))
+				    (const_int 12)
+				    (const_int 16))))])
 
 (define_insn_and_split "*branch_on_bit<X:mode>"
   [(set (pc)
@@ -2773,7 +2971,7 @@
 
 (define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "register_operand")
-	(match_operator:SI 1 "order_operator"
+	(match_operator:SI 1 "ordered_comparison_operator"
 	    [(match_operand:GPR 2 "register_operand")
 	     (match_operand:GPR 3 "nonmemory_operand")]))]
   ""
@@ -3283,7 +3481,7 @@
 
 (define_insn "riscv_frcsr"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec_volatile [(const_int 0)] UNSPECV_FRCSR))]
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_FRCSR))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "frcsr\t%0"
   [(set_attr "type" "fmove")])
@@ -3296,7 +3494,7 @@
 
 (define_insn "riscv_frflags"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec_volatile [(const_int 0)] UNSPECV_FRFLAGS))]
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_FRFLAGS))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "frflags\t%0"
   [(set_attr "type" "fmove")])
@@ -3552,7 +3750,8 @@
 			  (match_operand:BLK 2)))
 	      (use (match_operand:SI 3))
 	      (use (match_operand:SI 4))])]
-  "riscv_inline_strncmp && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+  "riscv_inline_strncmp && !optimize_size
+    && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_VECTOR)"
 {
   if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
                            operands[3], operands[4]))
@@ -3572,7 +3771,8 @@
 	      (compare:SI (match_operand:BLK 1)
 			  (match_operand:BLK 2)))
 	      (use (match_operand:SI 3))])]
-  "riscv_inline_strcmp && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+  "riscv_inline_strcmp && !optimize_size
+    && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_VECTOR)"
 {
   if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
                            NULL_RTX, operands[3]))
@@ -3593,7 +3793,8 @@
 		     (match_operand:SI 2 "const_int_operand")
 		     (match_operand:SI 3 "const_int_operand")]
 		  UNSPEC_STRLEN))]
-  "riscv_inline_strlen && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+  "riscv_inline_strlen && !optimize_size
+    && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_VECTOR)"
 {
   rtx search_char = operands[2];
 
@@ -3605,6 +3806,14 @@
   else
     FAIL;
 })
+
+(define_insn "*large_load_address"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (mem:DI (match_operand 1 "pcrel_symbol_operand" "")))]
+  "TARGET_64BIT && riscv_cmodel == CM_LARGE"
+  "ld\t%0,%1"
+  [(set_attr "type" "load")
+   (set (attr "length") (const_int 8))])
 
 (include "bitmanip.md")
 (include "crypto.md")
@@ -3618,6 +3827,8 @@
 (include "thead.md")
 (include "generic-ooo.md")
 (include "vector.md")
+(include "vector-crypto.md")
 (include "zicond.md")
+(include "sfb.md")
 (include "zc.md")
 (include "corev.md")

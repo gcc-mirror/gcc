@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2023 Free Software Foundation, Inc.
+// Copyright (C) 2012-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,11 +17,13 @@
 
 // { dg-do run { target c++11 } }
 
-#include <testsuite_performance.h>
+#include <string>
 #include <random>
 #include <sstream>
 #include <tr1/unordered_set>
 #include <unordered_set>
+
+#include <testsuite_performance.h>
 
 #define USE_MY_FOO 1
 
@@ -71,10 +73,13 @@ struct HashFunction
 };
 
 const int sz = 300000;
+const int usz = sz / 2;
 
 template<typename _ContType>
   void
-  bench(const char* container_desc, const typename _ContType::value_type* foos)
+  bench(const char* container_desc,
+	const typename _ContType::value_type* foos,
+	const typename _ContType::value_type* ufoos)
   {
     using namespace __gnu_test;
 
@@ -105,6 +110,51 @@ template<typename _ContType>
     ostr.str("");
     ostr << container_desc << nb_loop << " times insertion of "
 	 << sz << " elements";
+    report_performance(__FILE__, ostr.str().c_str(), time, resource);
+
+    // Try to lookup for mostly unknown entries.
+    start_counters(time, resource);
+
+    int fcount = 0;
+    for (int j = 0; j != nb_loop; ++j)
+      for (int i = 0; i != usz; ++i)
+	fcount += s.find(ufoos[i]) != s.end() ? 1 : 0;
+
+    stop_counters(time, resource);
+    ostr.str("");
+    ostr << container_desc << nb_loop << " times lookup of "
+	 << usz << " elements " << fcount / nb_loop << " found";
+    report_performance(__FILE__, ostr.str().c_str(), time, resource);
+
+    // Try again the previous operations but on a copy with potentially
+    // less memory fragmentation.
+    _ContType scopy(s);
+
+    // Try to insert again to check performance of collision detection
+    start_counters(time, resource);
+
+    for (int j = 0; j != nb_loop; ++j)
+      for (int i = 0; i != sz; ++i)
+	scopy.insert(foos[i]);
+
+    stop_counters(time, resource);
+    ostr.str("");
+    ostr << container_desc << nb_loop << " times insertion of "
+	 << sz << " elements in copy";
+    report_performance(__FILE__, ostr.str().c_str(), time, resource);
+
+    // Try to lookup for mostly unknown entries.
+    start_counters(time, resource);
+
+    fcount = 0;
+    for (int j = 0; j != nb_loop; ++j)
+      for (int i = 0; i != usz; ++i)
+	fcount += scopy.find(ufoos[i]) != scopy.end() ? 1 : 0;
+
+    stop_counters(time, resource);
+    ostr.str("");
+    ostr << container_desc << nb_loop << " times lookup of "
+	 << usz << " elements " << fcount / nb_loop << " found";
     report_performance(__FILE__, ostr.str().c_str(), time, resource);
   }
 
@@ -155,67 +205,75 @@ int main()
 
   {
     int bars[sz];
+    int ubars[usz];
     for (int i = 0; i != sz; ++i)
       bars[i] = i;
+    for (int i = 0; i != usz; ++i)
+      ubars[i] = sz + i;
     bench<std::tr1::unordered_set<int>>(
-	"std::tr1::unordered_set<int> ", bars);
+      "std::tr1::unordered_set<int> ", bars, ubars);
     bench<std::unordered_set<int>>(
-	"std::unordered_set<int> ", bars);
+      "std::unordered_set<int> ", bars, ubars);
   }
 
-  Foo foos[sz];
-#if USE_MY_FOO
   {
-    std::random_device randev;
-    for (int i = 0; i != sz; ++i)
-      foos[i].init(randev);
-  }
+    Foo foos[sz];
+    Foo ufoos[usz];
+#if USE_MY_FOO
+    {
+      std::random_device randev;
+      for (int i = 0; i != sz; ++i)
+	foos[i].init(randev);
+      for (int i = 0; i != usz; ++i)
+	ufoos[i].init(randev);
+    }
 #endif
 
-  time_counter time;
-  resource_counter resource;
-  start_counters(time, resource);
+    time_counter time;
+    resource_counter resource;
+    start_counters(time, resource);
 
-  bench<__tr1_uset<false>>(
-	"std::tr1::unordered_set without hash code cached ", foos);
-  bench<__tr1_uset<true>>(
-	"std::tr1::unordered_set with hash code cached ", foos);
-  bench<__tr1_umset<false>>(
-	"std::tr1::unordered_multiset without hash code cached ", foos);
-  bench<__tr1_umset<true>>(
-	"std::tr1::unordered_multiset with hash code cached ", foos);
+    bench<__tr1_uset<false>>(
+      "std::tr1::unordered_set without hash code cached ", foos, ufoos);
+    bench<__tr1_uset<true>>(
+      "std::tr1::unordered_set with hash code cached ", foos, ufoos);
+    bench<__tr1_umset<false>>(
+      "std::tr1::unordered_multiset without hash code cached ", foos, ufoos);
+    bench<__tr1_umset<true>>(
+      "std::tr1::unordered_multiset with hash code cached ", foos, ufoos);
 
-  stop_counters(time, resource);
-  report_performance(__FILE__, "tr1 benches", time, resource);
+    stop_counters(time, resource);
+    report_performance(__FILE__, "tr1 benches", time, resource);
 
-  start_counters(time, resource);
-  bench<__uset<false>>(
-	"std::unordered_set without hash code cached ", foos);
-  bench<__uset<true>>(
-	"std::unordered_set with hash code cached ", foos);
-  bench<__umset<false>>(
-	"std::unordered_multiset without hash code cached ", foos);
-  bench<__umset<true>>(
-	"std::unordered_multiset with hash code cached ", foos);
+    start_counters(time, resource);
+    bench<__uset<false>>(
+      "std::unordered_set without hash code cached ", foos, ufoos);
+    bench<__uset<true>>(
+      "std::unordered_set with hash code cached ", foos, ufoos);
+    bench<__umset<false>>(
+      "std::unordered_multiset without hash code cached ", foos, ufoos);
+    bench<__umset<true>>(
+      "std::unordered_multiset with hash code cached ", foos, ufoos);
 
-  stop_counters(time, resource);
-  report_performance(__FILE__, "std benches", time, resource);
+    stop_counters(time, resource);
+    report_performance(__FILE__, "std benches", time, resource);
 
-  start_counters(time, resource);
-  bench<__uset2<false>>(
-	"std::unordered_set2 without hash code cached ", foos);
-  bench<__uset2<true>>(
-	"std::unordered_set2 with hash code cached ", foos);
-  bench<__umset2<false>>(
-	"std::unordered_multiset2 without hash code cached ", foos);
-  bench<__umset2<true>>(
-	"std::unordered_multiset2 with hash code cached ", foos);
+    start_counters(time, resource);
+    bench<__uset2<false>>(
+      "std::unordered_set2 without hash code cached ", foos, ufoos);
+    bench<__uset2<true>>(
+      "std::unordered_set2 with hash code cached ", foos, ufoos);
+    bench<__umset2<false>>(
+      "std::unordered_multiset2 without hash code cached ", foos, ufoos);
+    bench<__umset2<true>>(
+      "std::unordered_multiset2 with hash code cached ", foos, ufoos);
 
-  stop_counters(time, resource);
-  report_performance(__FILE__, "std2 benches", time, resource);
+    stop_counters(time, resource);
+    report_performance(__FILE__, "std2 benches", time, resource);
 
-  bench<std::unordered_set<Foo, HashFunction>>(
-	"std::unordered_set default cache ", foos);
-  bench<std::unordered_multiset<Foo, HashFunction>>(
-	"std::unordered_multiset default cache ", foos);
+    bench<std::unordered_set<Foo, HashFunction>>(
+      "std::unordered_set default cache ", foos, ufoos);
+    bench<std::unordered_multiset<Foo, HashFunction>>(
+      "std::unordered_multiset default cache ", foos, ufoos);
+  }
 }

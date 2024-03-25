@@ -41,6 +41,7 @@
 
 #include "adaint.h"
 #include <sys/types.h>
+#include <string.h>
 
 #if defined (__vxworks) && defined (__RTP__)
 # include <wait.h>
@@ -346,11 +347,11 @@ __gnat_waitpid (int pid)
      return -1;
   }
 
-  if WIFEXITED (status) {
+  if (WIFEXITED (status)) {
      status = WEXITSTATUS (status);
-  } else if WIFSIGNALED (status) {
+  } else if (WIFSIGNALED (status)) {
      status = WTERMSIG (status);
-  } else if WIFSTOPPED (status) {
+  } else if (WIFSTOPPED (status)) {
      status = WSTOPSIG (status);
   }
 

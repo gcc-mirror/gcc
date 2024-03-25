@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1016,8 +1016,10 @@ DEF_RTL_EXPR(DEFINE_SPECIAL_PREDICATE, "define_special_predicate", "ses", RTX_EX
       at -m switches and the like.
    2: A docstring for this constraint, in Texinfo syntax; not currently
       used, in future will be incorporated into the manual's list of
-      machine-specific operand constraints.  */
-DEF_RTL_EXPR(DEFINE_REGISTER_CONSTRAINT, "define_register_constraint", "sss", RTX_EXTRA)
+      machine-specific operand constraints.
+   3: A C expression that evalutes to true if "regno" is a valid
+      start register.  */
+DEF_RTL_EXPR(DEFINE_REGISTER_CONSTRAINT, "define_register_constraint", "sssS", RTX_EXTRA)
 
 /* Definition of a non-register operand constraint.  These look at the
    operand and decide whether it fits the constraint.

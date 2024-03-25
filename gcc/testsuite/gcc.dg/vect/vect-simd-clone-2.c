@@ -12,10 +12,17 @@ int array[N] __attribute__((aligned (32)));
 
 #pragma omp declare simd simdlen(4) notinbranch aligned(a:16) uniform(a) linear(b)
 #pragma omp declare simd simdlen(4) notinbranch aligned(a:32) uniform(a) linear(b)
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(2) notinbranch aligned(a:16) uniform(a) linear(b)
+#pragma omp declare simd simdlen(2) notinbranch aligned(a:32) uniform(a) linear(b)
+#else
 #pragma omp declare simd simdlen(8) notinbranch aligned(a:16) uniform(a) linear(b)
 #pragma omp declare simd simdlen(8) notinbranch aligned(a:32) uniform(a) linear(b)
+#endif
 __attribute__((noinline)) void
 foo (int *a, int b, int c)
+/* { dg-warning {unsupported simdlen 8 \(amdgcn\)} "" { target amdgcn*-*-* } .-1 } */
+/* { dg-warning {unsupported simdlen 4 \(amdgcn\)} "" { target amdgcn*-*-* } .-2 } */
 {
   a[b] = c;
 }
@@ -50,6 +57,3 @@ main ()
       abort ();
   return 0;
 }
-
-/* { dg-warning {unsupported simdlen 8 \(amdgcn\)} "" { target amdgcn*-*-* } 18 } */
-/* { dg-warning {unsupported simdlen 4 \(amdgcn\)} "" { target amdgcn*-*-* } 18 } */

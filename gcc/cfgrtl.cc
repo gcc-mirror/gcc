@@ -1,5 +1,5 @@
 /* Control flow graph manipulation code for GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2092,7 +2092,13 @@ commit_one_edge_insertion (edge e)
 	delete_insn (before);
     }
   else
-    gcc_assert (!JUMP_P (last));
+    /* Some builtin expanders, such as those for memset and memcpy,
+       may generate loops and conditionals, and those may get emitted
+       into edges.  That's ok while expanding to rtl, basic block
+       boundaries will be identified and split afterwards.  ???  Need
+       we check whether the destination labels of any inserted jumps
+       are also part of the inserted sequence?  */
+    gcc_assert (!JUMP_P (last) || currently_expanding_to_rtl);
 }
 
 /* Update the CFG for all queued instructions.  */
@@ -4385,7 +4391,7 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to,
 			  {
 			    gcc_assert
 			      (MR_DEPENDENCE_CLIQUE (op) <= cfun->last_clique);
-			    newc = ++cfun->last_clique;
+			    newc = get_new_clique (cfun);
 			  }
 			/* We cannot adjust MR_DEPENDENCE_CLIQUE in-place
 			   since MEM_EXPR is shared so make a copy and

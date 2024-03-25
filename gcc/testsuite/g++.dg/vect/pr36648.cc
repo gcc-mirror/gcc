@@ -25,6 +25,6 @@ int main() { }
    targets, ! vect_no_align is a sufficient test.  */
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { { { !  vect_no_align } && { ! powerpc*-*-* } } || { powerpc*-*-* && vect_hw_misalign } } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { { { ! vect_no_align } && { ! powerpc*-*-* } } || { powerpc*-*-* && vect_hw_misalign } } xfail { vect_variable_length && vect_load_lanes } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { { { ! vect_no_align } && { ! powerpc*-*-* } } || { powerpc*-*-* && vect_hw_misalign } } } } } */
 
 

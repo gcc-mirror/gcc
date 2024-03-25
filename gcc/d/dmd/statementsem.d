@@ -55,6 +55,7 @@ import dmd.location;
 import dmd.mtype;
 import dmd.mustuse;
 import dmd.nogc;
+import dmd.optimize;
 import dmd.opover;
 import dmd.parse;
 import dmd.common.outbuffer;
@@ -3483,7 +3484,10 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             // https://issues.dlang.org/show_bug.cgi?id=23159
             if (!global.params.useExceptions)
             {
-                error(oss.loc, "`%s` cannot be used with -betterC", Token.toChars(oss.tok));
+                version (IN_GCC)
+                    error(oss.loc, "`%s` cannot be used with `-fno-exceptions`", Token.toChars(oss.tok));
+                else
+                    error(oss.loc, "`%s` cannot be used with -betterC", Token.toChars(oss.tok));
                 return setError();
             }
 
@@ -3797,7 +3801,7 @@ private extern(D) Expression applyOpApply(ForeachStatement fs, Expression flde,
 {
     version (none)
     {
-        if (global.params.useDIP1000 == FeatureState.enabled)
+        if (sc2.useDIP1000 == FeatureState.enabled)
         {
             message(loc, "To enforce `@safe`, the compiler allocates a closure unless `opApply()` uses `scope`");
         }
@@ -3805,7 +3809,7 @@ private extern(D) Expression applyOpApply(ForeachStatement fs, Expression flde,
     }
     else
     {
-        if (global.params.useDIP1000 == FeatureState.enabled)
+        if (sc2.useDIP1000 == FeatureState.enabled)
             ++(cast(FuncExp)flde).fd.tookAddressOf;  // allocate a closure unless the opApply() uses 'scope'
     }
     assert(tab.ty == Tstruct || tab.ty == Tclass);
@@ -4884,7 +4888,7 @@ private Statements* flatten(Statement statement, Scope* sc)
             const len = buf.length;
             buf.writeByte(0);
             const str = buf.extractSlice()[0 .. len];
-            const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+            const bool doUnittests = global.params.parsingUnittestsRequired();
             auto loc = adjustLocForMixin(str, cs.loc, global.params.mixinOut);
             scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
             p.transitionIn = global.params.v.vin;

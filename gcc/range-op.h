@@ -1,5 +1,5 @@
 /* Header file for range operator class.
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -157,6 +157,10 @@ public:
 
   virtual bool overflow_free_p (const irange &lh, const irange &rh,
 				relation_trio = TRIO_VARYING) const;
+
+  // Compatability check for operands.
+  virtual bool operand_check_p (tree, tree, tree) const;
+
 protected:
   // Perform an integral operation between 2 sub-ranges and return it.
   virtual void wi_fold (irange &r, tree type,
@@ -185,9 +189,7 @@ protected:
   virtual void update_bitmask (irange &, const irange &, const irange &) const;
 
   // Perform an float operation between 2 ranges and return it.
-  virtual void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-			bool &maybe_nan,
-			tree type,
+  virtual void rv_fold (frange &r, tree type,
 			const REAL_VALUE_TYPE &lh_lb,
 			const REAL_VALUE_TYPE &lh_ub,
 			const REAL_VALUE_TYPE &rh_lb,
@@ -228,6 +230,7 @@ public:
 				  const vrange &op2) const;
   bool overflow_free_p (const vrange &lh, const vrange &rh,
 			relation_trio = TRIO_VARYING) const;
+  bool operand_check_p (tree, tree, tree) const;
 protected:
   unsigned dispatch_kind (const vrange &lhs, const vrange &op1,
 			  const vrange& op2) const;

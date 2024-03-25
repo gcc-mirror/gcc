@@ -1,5 +1,6 @@
 // Testcase for 'this' mangling
 // { dg-do compile { target c++11 } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct B
 {

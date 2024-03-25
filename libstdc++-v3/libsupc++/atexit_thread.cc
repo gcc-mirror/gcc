@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2023 Free Software Foundation, Inc.
+// Copyright (C) 2012-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -138,11 +138,32 @@ namespace {
   }
 }
 
+#if __GXX_WEAK__ && _GLIBCXX_MAY_HAVE___CXA_THREAD_ATEXIT_IMPL
+extern "C"
+int __attribute__ ((__weak__))
+__cxa_thread_atexit_impl (void (_GLIBCXX_CDTOR_CALLABI *func) (void *),
+			  void *arg, void *d);
+#endif
+
+// ??? We can't make it an ifunc, can we?
 extern "C" int
 __cxxabiv1::__cxa_thread_atexit (void (_GLIBCXX_CDTOR_CALLABI *dtor)(void *),
-				 void *obj, void */*dso_handle*/)
+				 void *obj, [[maybe_unused]] void *dso_handle)
   _GLIBCXX_NOTHROW
 {
+#if __GXX_WEAK__ && _GLIBCXX_MAY_HAVE___CXA_THREAD_ATEXIT_IMPL
+  if (__cxa_thread_atexit_impl)
+    // Rely on a (presumably libc-provided) __cxa_thread_atexit_impl,
+    // if it happens to be defined, even if configure couldn't find it
+    // during the build.  _GLIBCXX_MAY_HAVE___CXA_THREAD_ATEXIT_IMPL
+    // may be defined e.g. in os_defines.h on platforms where some
+    // versions of libc have a __cxa_thread_atexit_impl definition,
+    // but whose earlier versions didn't.  This enables programs build
+    // by toolchains compatible with earlier libc versions to still
+    // benefit from a libc-provided __cxa_thread_atexit_impl.
+    return __cxa_thread_atexit_impl (dtor, obj, dso_handle);
+#endif
+
   // Do this initialization once.
   if (__gthread_active_p ())
     {

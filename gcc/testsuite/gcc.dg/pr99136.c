@@ -1,6 +1,6 @@
 /* PR c/99136 */
 /* { dg-do compile } */
-/* { dg-options "-w -fexcess-precision=standard" } */
+/* { dg-options "-fpermissive -w -fexcess-precision=standard" } */
 
 void
 foo (double x)

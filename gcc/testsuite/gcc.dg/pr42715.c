@@ -1,5 +1,5 @@
 /* { dg-do compile { target fpic } } */
-/* { dg-options "-fPIC -g -O2 -w" } */
+/* { dg-options "-fPIC -g -O2 -fpermissive -w" } */
 /* var-tracking failed to clobber the reg holding v at the asm insn,
    so v ended up bound to an intermediate PIC expression.  */
 

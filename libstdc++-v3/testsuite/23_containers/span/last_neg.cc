@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,6 @@ test01()
 {
   int a[2];
   std::span<int, 2> s(a);
-  s.last<3>(); // { dg-error "here" }
+  (void) s.last<3>(); // { dg-error "here" }
 }
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }

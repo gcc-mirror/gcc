@@ -1,5 +1,5 @@
 /* Specialized bits of code needed for the offloading tables.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,6 +43,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined(HAVE_GAS_HIDDEN) && ENABLE_OFFLOADING == 1
 
 #define OFFLOAD_FUNC_TABLE_SECTION_NAME ".gnu.offload_funcs"
+#define OFFLOAD_IND_FUNC_TABLE_SECTION_NAME ".gnu.offload_ind_funcs"
 #define OFFLOAD_VAR_TABLE_SECTION_NAME ".gnu.offload_vars"
 
 #ifdef CRT_BEGIN
@@ -53,6 +54,9 @@ const void *const __offload_func_table[0]
 const void *const __offload_var_table[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_VAR_TABLE_SECTION_NAME))) = { };
+const void *const __offload_ind_func_table[0]
+  __attribute__ ((__used__, visibility ("hidden"),
+		  section (OFFLOAD_IND_FUNC_TABLE_SECTION_NAME))) = { };
 
 #elif defined CRT_END
 
@@ -62,19 +66,25 @@ const void *const __offload_funcs_end[0]
 const void *const __offload_vars_end[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_VAR_TABLE_SECTION_NAME))) = { };
+const void *const __offload_ind_funcs_end[0]
+  __attribute__ ((__used__, visibility ("hidden"),
+		  section (OFFLOAD_IND_FUNC_TABLE_SECTION_NAME))) = { };
 
 #elif defined CRT_TABLE
 
 extern const void *const __offload_func_table[];
 extern const void *const __offload_var_table[];
+extern const void *const __offload_ind_func_table[];
 extern const void *const __offload_funcs_end[];
 extern const void *const __offload_vars_end[];
+extern const void *const __offload_ind_funcs_end[];
 
 const void *const __OFFLOAD_TABLE__[]
   __attribute__ ((__visibility__ ("hidden"))) =
 {
   &__offload_func_table, &__offload_funcs_end,
-  &__offload_var_table, &__offload_vars_end
+  &__offload_var_table, &__offload_vars_end,
+  &__offload_ind_func_table, &__offload_ind_funcs_end,
 };
 
 #else /* ! CRT_BEGIN && ! CRT_END && ! CRT_TABLE  */

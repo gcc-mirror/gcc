@@ -1,4 +1,4 @@
-; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -22,6 +22,9 @@ config/loongarch/loongarch-opts.h
 
 HeaderInclude
 config/loongarch/loongarch-str.h
+
+TargetVariable
+unsigned int recip_mask = 0
 
 ; ISA related options
 ;; Base ISA
@@ -107,6 +110,9 @@ Enum(cpu_type) String(@@STR_CPU_LOONGARCH64@@) Value(CPU_LOONGARCH64)
 EnumValue
 Enum(cpu_type) String(@@STR_CPU_LA464@@) Value(CPU_LA464)
 
+EnumValue
+Enum(cpu_type) String(@@STR_CPU_LA664@@) Value(CPU_LA664)
+
 m@@OPTSTR_ARCH@@=
 Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPT_UNSET)
 -m@@OPTSTR_ARCH@@=PROCESSOR	Generate code for the given PROCESSOR ISA.
@@ -146,10 +152,6 @@ mbranch-cost=
 Target RejectNegative Joined UInteger Var(loongarch_branch_cost)
 -mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
 
-mmemvec-cost=
-Target RejectNegative Joined UInteger Var(loongarch_vector_access_cost) IntegerRange(1, 5)
-mmemvec-cost=COST      Set the cost of vector memory access instructions.
-
 mcheck-zero-division
 Target Mask(CHECK_ZERO_DIV)
 Trap on integer divide by zero.
@@ -174,9 +176,34 @@ mmax-inline-memcpy-size=
 Target Joined RejectNegative UInteger Var(loongarch_max_inline_memcpy_size) Init(1024)
 -mmax-inline-memcpy-size=SIZE	Set the max size of memcpy to inline, default is 1024.
 
-mexplicit-relocs
-Target Var(TARGET_EXPLICIT_RELOCS) Init(HAVE_AS_EXPLICIT_RELOCS & !HAVE_AS_MRELAX_OPTION)
+Enum
+Name(explicit_relocs) Type(int)
+The code model option names for -mexplicit-relocs:
+
+EnumValue
+Enum(explicit_relocs) String(@@STR_EXPLICIT_RELOCS_AUTO@@) Value(EXPLICIT_RELOCS_AUTO)
+
+EnumValue
+Enum(explicit_relocs) String(@@STR_EXPLICIT_RELOCS_NONE@@) Value(EXPLICIT_RELOCS_NONE)
+
+EnumValue
+Enum(explicit_relocs) String(@@STR_EXPLICIT_RELOCS_ALWAYS@@) Value(EXPLICIT_RELOCS_ALWAYS)
+
+mexplicit-relocs=
+Target RejectNegative Joined Enum(explicit_relocs) Var(la_opt_explicit_relocs) Init(M_OPT_UNSET)
 Use %reloc() assembly operators.
+
+mexplicit-relocs
+Target Var(la_opt_explicit_relocs_backward) Init(M_OPT_UNSET)
+Use %reloc() assembly operators (for backward compatibility).
+
+mrecip
+Target RejectNegative Var(loongarch_recip)
+Generate approximate reciprocal divide and square root for better throughput.
+
+mrecip=
+Target RejectNegative Joined Var(loongarch_recip_name)
+Control generation of reciprocal estimates.
 
 ; The code model option names for -mcmodel.
 Enum
@@ -210,6 +237,28 @@ Target Var(TARGET_DIRECT_EXTERN_ACCESS) Init(0)
 Avoid using the GOT to access external symbols.
 
 mrelax
-Target Var(loongarch_mrelax) Init(HAVE_AS_MRELAX_OPTION)
+Target Var(loongarch_mrelax) Init(HAVE_AS_MRELAX_OPTION && HAVE_AS_COND_BRANCH_RELAXATION)
 Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses.
+
+mpass-mrelax-to-as
+Target Var(loongarch_pass_mrelax_to_as) Init(HAVE_AS_MRELAX_OPTION)
+Pass -mrelax or -mno-relax option to the assembler.
+
+-param=loongarch-vect-unroll-limit=
+Target Joined UInteger Var(loongarch_vect_unroll_limit) Init(6) IntegerRange(1, 64) Param
+Used to limit unroll factor which indicates how much the autovectorizer may
+unroll a loop.  The default value is 6.
+
+-param=loongarch-vect-issue-info=
+Target Undocumented Joined UInteger Var(loongarch_vect_issue_info) Init(4) IntegerRange(1, 64) Param
+Indicate how many non memory access vector instructions can be issued per
+cycle, it's used in unroll factor determination for autovectorizer.  The
+default value is 4.
+
+; Features added during ISA evolution.  This concept is different from ISA
+; extension, read Section 1.5 of LoongArch v1.10 Volume 1 for the
+; explanation.  These features may be implemented and enumerated with
+; CPUCFG independantly, so we use bit flags to specify them.
+Variable
+HOST_WIDE_INT isa_evolution = 0

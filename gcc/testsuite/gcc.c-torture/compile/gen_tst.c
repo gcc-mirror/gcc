@@ -1,5 +1,6 @@
 /* Compiler Test Generator Program.
    Copyright (C) 1989 FSF.  */
+/* { dg-additional-options "-std=gnu89" } */
 
 
 #define E0 ((type *)10000000)

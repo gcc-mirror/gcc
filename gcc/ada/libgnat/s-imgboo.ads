@@ -42,7 +42,7 @@ pragma Assertion_Policy (Pre            => Ignore,
                          Contract_Cases => Ignore,
                          Ghost          => Ignore);
 
-with System.Val_Bool;
+with System.Val_Spec;
 
 package System.Img_Bool
   with SPARK_Mode, Preelaborate
@@ -56,8 +56,7 @@ is
      Pre  => S'First = 1
        and then (if V then S'Length >= 4 else S'Length >= 5),
      Post => (if V then P = 4 else P = 5)
-       and then System.Val_Bool.Is_Boolean_Image_Ghost (S (1 .. P))
-       and then System.Val_Bool.Value_Boolean (S (1 .. P)) = V;
+       and then System.Val_Spec.Is_Boolean_Image_Ghost (S (1 .. P), V);
    --  Computes Boolean'Image (V) and stores the result in S (1 .. P)
    --  setting the resulting value of P. The caller guarantees that S
    --  is long enough to hold the result, and that S'First is 1.

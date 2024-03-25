@@ -1,6 +1,6 @@
 /* PR target/82483 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512ifma -mno-sse2 -w -Wno-psabi" } */
+/* { dg-options "-fpermissive -O2 -mavx512ifma -mno-sse2 -w -Wno-psabi" } */
 
 typedef long long __m512i __attribute__((__vector_size__(64)));
 __m512i

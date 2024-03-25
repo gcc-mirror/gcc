@@ -1,5 +1,5 @@
 /* Text art visualizations within -fanalyzer.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -919,11 +919,9 @@ class x_aligned_x_ruler_widget : public leaf_widget
 {
 public:
   x_aligned_x_ruler_widget (const access_diagram_impl &dia_impl,
-			    const theme &theme,
-			    table_dimension_sizes &col_widths)
+			    const theme &theme)
   : m_dia_impl (dia_impl),
-    m_theme (theme),
-    m_col_widths (col_widths)
+    m_theme (theme)
   {
   }
 
@@ -973,7 +971,6 @@ private:
 
   const access_diagram_impl &m_dia_impl;
   const theme &m_theme;
-  table_dimension_sizes &m_col_widths;
   std::vector<label> m_labels;
 };
 
@@ -1337,7 +1334,7 @@ public:
 	    logger->log ("showing first and final element in array type");
 	  region_model_manager *mgr = m_op.m_model.get_manager ();
 	  tree domain = TYPE_DOMAIN (base_type);
-	  if (TYPE_MIN_VALUE (domain) && TYPE_MAX_VALUE (domain))
+	  if (domain && TYPE_MIN_VALUE (domain) && TYPE_MAX_VALUE (domain))
 	    {
 	      const svalue *min_idx_sval
 		= mgr->get_or_create_constant_svalue (TYPE_MIN_VALUE (domain));
@@ -1367,7 +1364,7 @@ public:
     gcc_assert (m_boundaries != nullptr);
 
     tree domain = TYPE_DOMAIN (base_type);
-    if (!(TYPE_MIN_VALUE (domain) && TYPE_MAX_VALUE (domain)))
+    if (!(domain && TYPE_MIN_VALUE (domain) && TYPE_MAX_VALUE (domain)))
       return;
 
     const int table_y = 0;
@@ -2361,7 +2358,7 @@ private:
     LOG_SCOPE (m_logger);
 
     x_aligned_x_ruler_widget *w
-      = new x_aligned_x_ruler_widget (*this, m_theme, *m_col_widths);
+      = new x_aligned_x_ruler_widget (*this, m_theme);
 
     access_range invalid_before_bits;
     if (m_op.maybe_get_invalid_before_bits (&invalid_before_bits))

@@ -1,5 +1,7 @@
 /* PR target/9348 */
 
+void abort (void);
+
 #define u_l_l unsigned long long
 #define l_l long long
 

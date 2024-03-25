@@ -2,7 +2,7 @@
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
 // { dg-require-weak "" }
 // { dg-require-alias "" }
-// { dg-options "-mavx -Wabi -fabi-version=2" }
+// { dg-options "-mavx -Wabi -fabi-version=2 -fabi-compat-version=0" }
 // { dg-final { scan-assembler "(weak|glob)\[^\n\]*_Z1fIDv4_fEvT_" } }
 // { dg-final { scan-assembler "(weak|glob)\[^\n\]*_Z1fIU8__vectorfEvT_" } }
 // { dg-final { scan-assembler "(weak|glob)\[^\n\]*_ZN1AIDv4_fE1tE" } }

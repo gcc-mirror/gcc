@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 static int 
 test(int x)
 {

@@ -1,5 +1,5 @@
 /* libgcc routines for 68000 w/o floating-point hardware.
-   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+   Copyright (C) 1994-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1383,6 +1383,8 @@ Ladddf$a:
 	bge	2f			|
 	movel	d0,d0           	| check for zero, since we don't  '
 	bne	Ladddf$ret		| want to return -0 by mistake
+	movel	d1,d1			|
+	bne	Ladddf$ret		|
 	bclr	IMM (31),d7		|
 	bra	Ladddf$ret		|
 2:
@@ -2090,8 +2092,7 @@ Ldivdf$a$nf:
 | If a is INFINITY we have to check b
 	cmpl	d7,d2		| compare b with INFINITY 
 	bge	Ld$inop		| if b is NaN or INFINITY return NaN
-	tstl	d3		|
-	bne	Ld$inop		| 
+	movl	a0,d7		| restore sign bit to d7
 	bra	Ld$overflow	| else return overflow
 
 | If a number is denormalized we put an exponent of 1 but do not put the 
@@ -2936,7 +2937,7 @@ Laddsf$4:
 #else
 	cmpl	IMM (0xff),d2
 #endif
-	bhi	1f
+	bge	1f
 	bclr	IMM (FLT_MANT_DIG-1),d0
 #ifndef __mcoldfire__
 	lslw	IMM (7),d2

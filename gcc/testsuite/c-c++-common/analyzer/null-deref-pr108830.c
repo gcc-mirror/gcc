@@ -1,6 +1,6 @@
 /* Reduced from apr-1.7.0/tables/apr_hash.c: 'apr_hash_merge' */
 
-/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+/* { dg-additional-options "-Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
 
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 

@@ -1,3 +1,22 @@
+2023-11-30  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c: Include <windows.h> if available.
+	(coff_add): On Windows call GetModuleHandle to get base address.
+
+2023-11-29  Ian Lance Taylor  <iant@golang.org>
+
+	* fileline.c: Include <windows.h> if available.
+	(windows_get_executable_path): New static function.
+	(fileline_initialize): Call windows_get_executable_path.
+	* configure.ac: Checked for windows.h
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+
 2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
 
 	* configure: Regenerate.
@@ -2010,7 +2029,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

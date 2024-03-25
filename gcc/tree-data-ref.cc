@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -1639,6 +1639,13 @@ runtime_alias_check_p (ddr_p ddr, class loop *loop, bool speed_p)
     return opt_result::failure_at (DR_STMT (DDR_A (ddr)),
 				   "runtime alias check not supported for"
 				   " outer loop.\n");
+
+  /* FORNOW: We don't support handling different address spaces.  */
+  if (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (DR_BASE_ADDRESS (DDR_A (ddr)))))
+      != TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (DR_BASE_ADDRESS (DDR_B (ddr))))))
+    return opt_result::failure_at (DR_STMT (DDR_A (ddr)),
+				   "runtime alias check between different "
+				   "address spaces not supported.\n");
 
   return opt_result::success ();
 }

@@ -1,1 +1,1 @@
-x(y){return 8193*y;}
+int x(int y){return 8193*y;}

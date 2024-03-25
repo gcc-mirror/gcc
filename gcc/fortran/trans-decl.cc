@@ -1,5 +1,5 @@
 /* Backend function setup
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -3821,7 +3821,7 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, -2, pchar_type_node, pchar_type_node);
 
   gfor_fndecl_generate_error = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("generate_error")), ". R . R ",
+	get_identifier (PREFIX("generate_error")), ". W . R ",
 	void_type_node, 3, pvoid_type_node, integer_type_node,
 	pchar_type_node);
 
@@ -4350,7 +4350,7 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
 
 
 /* Initialize INTENT(OUT) derived type dummies.  As well as giving
-   them their default initializer, if they do not have allocatable
+   them their default initializer, if they have allocatable
    components, they have their allocatable components deallocated.  */
 
 static void

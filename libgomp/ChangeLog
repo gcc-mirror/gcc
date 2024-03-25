@@ -1,3 +1,450 @@
+2024-01-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add
+	'EF_AMDGPU_MACH_AMDGCN_GFX1100'.
+
+2024-01-08  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-gcn.c (hsa_runtime_fn_info): Add
+	hsa_amd_memory_lock_fn, hsa_amd_memory_unlock_fn,
+	hsa_amd_memory_async_copy_rect_fn function pointers.
+	(init_hsa_runtime_functions): Add above functions, with
+	DLSYM_OPT_FN.
+	(GOMP_OFFLOAD_memcpy2d, GOMP_OFFLOAD_memcpy3d): New functions.
+
+2024-01-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-gcn.c (gcn_gfx1100_s): New const string.
+	(gcn_isa_name_len): Fix length.
+	(isa_hsa_name, isa_code, max_isa_vgprs): Handle gfx1100.
+
+2024-01-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Technical Report 12): Fix a typo.
+	(Device Memory Routines): Fix OpenMP 5.1 spec refs; add
+	omp_target_is_accessible.
+	(Environment Display Routine): Uncomment and add
+	omp_display_env description.
+	(OMP_DISPLAY_ENV): Update wording, add 'see also'.
+
+2024-01-06  Mark Wielaard  <mark@klomp.org>
+
+	* configure: Regenerate.
+
+2024-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
+2023-12-21  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-enter-data-6.f90: Remove XFAIL.
+
+2023-12-20  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memcpy2d): Adjust parameters to
+	avoid out-of-bounds array checks in CUDA runtime.
+	(GOMP_OFFLOAD_memcpy3d): Likewise.
+	* testsuite/libgomp.c-c++-common/memcpyxd-bias-1.c: New test.
+
+2023-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/declare-variant-1.c: Restrict the test to x86,
+	drop because of that unneeded target selector from other directives
+	and remove the aarch64 specific ones.
+
+2023-12-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* testsuite/libgomp.c/declare-variant-1.c: Fixed test.
+	* testsuite/libgomp.fortran/declare-simd-1.f90: Likewise.
+
+2023-12-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/map-subarray-5.f90: Restrict
+	'dg-output's to 'target offload_device_nonshared_as'.
+
+2023-12-15  Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (find_group_last, goacc_enter_data_internal,
+	goacc_exit_data_internal, GOACC_enter_exit_data): Add
+	GOMP_MAP_STRUCT_UNORD support.
+	* target.c (gomp_map_vars_internal): Add GOMP_MAP_STRUCT_UNORD support.
+	Detect incorrect use of variable indexing of arrays of structs.
+	(GOMP_target_enter_exit_data, gomp_target_task_fn): Add
+	GOMP_MAP_STRUCT_UNORD support.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-1.c: New test.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-2.c: New test.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-3.c: New test.
+	* testsuite/libgomp.fortran/map-subarray-5.f90: New test.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.fortran/map-subarray.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-2.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-3.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-4.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-6.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-7.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-8.f90: New test.
+	* testsuite/libgomp.fortran/map-subcomponents.f90: New test.
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: Adjust for
+	descriptor-mapping changes.  Remove XFAIL.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* target.c (gomp_map_pointer): Modify zero-length array section
+	pointer handling.
+	(gomp_attach_pointer): Likewise.
+	(gomp_map_fields_existing): Use gomp_map_0len_lookup.
+	(gomp_attach_pointer): Allow attaching null pointers (or Fortran
+	"unassociated" pointers).
+	(gomp_map_vars_internal): Handle zero-sized struct members.  Add
+	diagnostic for unmapped struct pointer members.
+	* testsuite/libgomp.c-c++-common/baseptrs-1.c: New test.
+	* testsuite/libgomp.c-c++-common/baseptrs-2.c: New test.
+	* testsuite/libgomp.c-c++-common/baseptrs-6.c: New test.
+	* testsuite/libgomp.c-c++-common/baseptrs-7.c: New test.
+	* testsuite/libgomp.c-c++-common/ptr-attach-2.c: New test.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-2.c: Fix missing
+	"free".
+	* testsuite/libgomp.c-c++-common/target-implicit-map-5.c: New test.
+	* testsuite/libgomp.c-c++-common/target-map-zlas-1.c: New test.
+	* testsuite/libgomp.c++/class-array-1.C: New test.
+	* testsuite/libgomp.c++/baseptrs-3.C: New test.
+	* testsuite/libgomp.c++/baseptrs-4.C: New test.
+	* testsuite/libgomp.c++/baseptrs-5.C: New test.
+	* testsuite/libgomp.c++/baseptrs-8.C: New test.
+	* testsuite/libgomp.c++/baseptrs-9.C: New test.
+	* testsuite/libgomp.c++/ref-mapping-1.C: New test.
+	* testsuite/libgomp.c++/target-48.C: New test.
+	* testsuite/libgomp.c++/target-49.C: New test.
+	* testsuite/libgomp.c++/target-exit-data-reftoptr-1.C: New test.
+	* testsuite/libgomp.c++/target-lambda-1.C: Update for OpenMP 5.2
+	semantics.
+	* testsuite/libgomp.c++/target-this-3.C: Likewise.
+	* testsuite/libgomp.c++/target-this-4.C: Likewise.
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: Add temporary XFAIL.
+	* testsuite/libgomp.fortran/target-enter-data-6.f90: Likewise.
+
+2023-12-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/linux/allocator.c (linux_memspace_alloc): Fix 'size_t'
+	vs. '%ld' format string mismatch.
+
+2023-12-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* allocator.c (MEMSPACE_ALLOC): Add PIN.
+	(MEMSPACE_CALLOC): Add PIN.
+	(MEMSPACE_REALLOC): Add PIN.
+	(MEMSPACE_FREE): Add PIN.
+	(MEMSPACE_VALIDATE): Add PIN.
+	(omp_init_allocator): Use MEMSPACE_VALIDATE to check pinning.
+	(omp_aligned_alloc): Add pinning to all MEMSPACE_* calls.
+	(omp_aligned_calloc): Likewise.
+	(omp_realloc): Likewise.
+	(omp_free): Likewise.
+	* config/linux/allocator.c: New file.
+	* config/nvptx/allocator.c (MEMSPACE_ALLOC): Add PIN.
+	(MEMSPACE_CALLOC): Add PIN.
+	(MEMSPACE_REALLOC): Add PIN.
+	(MEMSPACE_FREE): Add PIN.
+	(MEMSPACE_VALIDATE): Add PIN.
+	* config/gcn/allocator.c (MEMSPACE_ALLOC): Add PIN.
+	(MEMSPACE_CALLOC): Add PIN.
+	(MEMSPACE_REALLOC): Add PIN.
+	(MEMSPACE_FREE): Add PIN.
+	* libgomp.texi: Switch pinned trait to supported.
+	(MEMSPACE_VALIDATE): Add PIN.
+	* testsuite/libgomp.c/alloc-pinned-1.c: New test.
+	* testsuite/libgomp.c/alloc-pinned-2.c: New test.
+	* testsuite/libgomp.c/alloc-pinned-3.c: New test.
+	* testsuite/libgomp.c/alloc-pinned-4.c: New test.
+
+2023-12-11  Lipeng Zhu  <lipeng.zhu@intel.com>
+
+	* testsuite/libgomp.fortran/rwlock_1.f90: New file.
+	* testsuite/libgomp.fortran/rwlock_2.f90: New file.
+	* testsuite/libgomp.fortran/rwlock_3.f90: New file.
+
+2023-12-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* testsuite/libgomp.c/declare-variant-1.c: Adapt test for aarch64.
+	* testsuite/libgomp.fortran/declare-simd-1.f90: Likewise.
+
+2023-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp_g.h (GOMP_add_alloc, GOMP_is_alloc): Add.
+
+2023-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* allocator.c (struct fort_alloc_splay_tree_key_s,
+	fort_alloc_splay_compare, GOMP_add_alloc, GOMP_is_alloc): New.
+	* libgomp.h: Define splay_tree_static for 'reverse' splay tree.
+	* libgomp.map (GOMP_5.1.2): New; add GOMP_add_alloc and
+	GOMP_is_alloc; move GOMP_target_map_indirect_ptr from ...
+	(GOMP_5.1.1): ... here.
+	* libgomp.texi (Impl. Status, Memory management): Update for
+	allocators/allocate directives.
+	* splay-tree.c: Handle splay_tree_static define to declare all
+	functions as static.
+	(splay_tree_lookup_node): New.
+	* splay-tree.h: Handle splay_tree_decl_only define.
+	(splay_tree_lookup_node): New prototype.
+	* target.c: Define splay_tree_static for 'reverse'.
+	* testsuite/libgomp.fortran/allocators-1.f90: New test.
+	* testsuite/libgomp.fortran/allocators-2.f90: New test.
+	* testsuite/libgomp.fortran/allocators-3.f90: New test.
+	* testsuite/libgomp.fortran/allocators-4.f90: New test.
+	* testsuite/libgomp.fortran/allocators-5.f90: New test.
+
+2023-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/libgomp-gcn.h (TEAM_ARENA_START): Move to here.
+	(TEAM_ARENA_FREE): Likewise.
+	(TEAM_ARENA_END): Likewise.
+	(GCN_LOWLAT_HEAP): New.
+	* config/gcn/team.c (LITTLEENDIAN_CPU): New, and import hsa.h.
+	(__gcn_lowlat_init): New prototype.
+	(gomp_gcn_enter_kernel): Initialize the low-latency heap.
+	* libgomp.h (TEAM_ARENA_START): Move to libgomp.h.
+	(TEAM_ARENA_FREE): Likewise.
+	(TEAM_ARENA_END): Likewise.
+	* plugin/plugin-gcn.c (lowlat_size): New variable.
+	(print_kernel_dispatch): Label the group_segment_size purpose.
+	(init_environment_variables): Read GOMP_GCN_LOWLAT_POOL.
+	(create_kernel_dispatch): Pass low-latency head allocation to kernel.
+	(run_kernel): Use shadow; don't assume values.
+	* testsuite/libgomp.c/omp_alloc-traits.c: Enable for amdgcn.
+	* config/gcn/allocator.c: New file.
+	* libgomp.texi: Document low-latency implementation details.
+
+2023-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* allocator.c (MEMSPACE_VALIDATE): New macro.
+	(omp_init_allocator): Use MEMSPACE_VALIDATE.
+	(omp_aligned_alloc): Use OMP_LOW_LAT_MEM_ALLOC_INVALID.
+	(omp_aligned_calloc): Likewise.
+	(omp_realloc): Likewise.
+	* config/nvptx/allocator.c (nvptx_memspace_validate): New function.
+	(MEMSPACE_VALIDATE): New macro.
+	(OMP_LOW_LAT_MEM_ALLOC_INVALID): New define.
+	* libgomp.texi: Document low-latency implementation details.
+	* testsuite/libgomp.c/omp_alloc-1.c (main): Add gnu_lowlat.
+	* testsuite/libgomp.c/omp_alloc-2.c (main): Add gnu_lowlat.
+	* testsuite/libgomp.c/omp_alloc-3.c (main): Add gnu_lowlat.
+	* testsuite/libgomp.c/omp_alloc-4.c (main): Add access trait.
+	* testsuite/libgomp.c/omp_alloc-5.c (main): Add gnu_lowlat.
+	* testsuite/libgomp.c/omp_alloc-6.c (main): Add access trait.
+	* testsuite/libgomp.c/omp_alloc-traits.c: New test.
+
+2023-12-06  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung   <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* allocator.c (MEMSPACE_ALLOC): New macro.
+	(MEMSPACE_CALLOC): New macro.
+	(MEMSPACE_REALLOC): New macro.
+	(MEMSPACE_FREE): New macro.
+	(predefined_alloc_mapping): New array.  Add _Static_assert to match.
+	(ARRAY_SIZE): New macro.
+	(omp_aligned_alloc): Use MEMSPACE_ALLOC.
+	Implement fall-backs for predefined allocators.  Simplify existing
+	fall-backs.
+	(omp_free): Use MEMSPACE_FREE.
+	(omp_calloc): Use MEMSPACE_CALLOC. Implement fall-backs for
+	predefined allocators.  Simplify existing fall-backs.
+	(omp_realloc): Use MEMSPACE_REALLOC, MEMSPACE_ALLOC, and MEMSPACE_FREE.
+	Implement fall-backs for predefined allocators.  Simplify existing
+	fall-backs.
+	* config/nvptx/team.c (__nvptx_lowlat_pool): New asm variable.
+	(__nvptx_lowlat_init): New prototype.
+	(gomp_nvptx_main): Call __nvptx_lowlat_init.
+	* libgomp.texi: Update memory space table.
+	* plugin/plugin-nvptx.c (lowlat_pool_size): New variable.
+	(GOMP_OFFLOAD_init_device): Read the GOMP_NVPTX_LOWLAT_POOL envvar.
+	(GOMP_OFFLOAD_run): Apply lowlat_pool_size.
+	* basic-allocator.c: New file.
+	* config/nvptx/allocator.c: New file.
+	* testsuite/libgomp.c/omp_alloc-1.c: New test.
+	* testsuite/libgomp.c/omp_alloc-2.c: New test.
+	* testsuite/libgomp.c/omp_alloc-3.c: New test.
+	* testsuite/libgomp.c/omp_alloc-4.c: New test.
+	* testsuite/libgomp.c/omp_alloc-5.c: New test.
+	* testsuite/libgomp.c/omp_alloc-6.c: New test.
+
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-4-fiji.c: Adjust.
+	* testsuite/libgomp.c/declare-variant-4-gfx803.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx900.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx906.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx908.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx90a.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4.h: Likewise.
+	* testsuite/libgomp.c/declare-variant-4.c: New.
+
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: Turn 'dg-do run'
+	into 'dg-do link'.
+	* testsuite/libgomp.c/declare-variant-3.c: New.
+	* testsuite/libgomp.c/declare-variant-3.h: Extend.
+
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: Restrict
+	'scan-offload-tree-dump' to 'only_for_offload_target nvptx-none'.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-fiji.c: Restrict
+	'scan-offload-tree-dump' to
+	'only_for_offload_target amdgcn-amdhsa'.
+	* testsuite/libgomp.c/declare-variant-4-gfx803.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx900.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx906.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx908.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx90a.c: Likewise.
+
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c:
+	'dg-additional-options -foffload=nvptx-none'.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: Likewise.
+
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/target-simd-clone-1.c: Restrict
+	'scan-offload-ipa-dump's to
+	'only_for_offload_target amdgcn-amdhsa'.
+	* testsuite/libgomp.c/target-simd-clone-2.c: Likewise.
+	* testsuite/libgomp.c/target-simd-clone-3.c: Likewise.
+
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (5.2 Impl. Status): An argument to the destroy clause
+	is now supported.
+
+2023-11-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-3.h (f30, f35, f53, f70)
+	(f75, f80, f): Add '__attribute__ ((noipa))'.
+	* testsuite/libgomp.c/declare-variant-4.h (gfx803, gfx900, gfx906)
+	(gfx908, gfx90a, f): Likewise.
+
+2023-11-15  Andrew Stubbs  <ams@codesourcery.com>
+	    Andrew Jenner   <andrew@codesourcery.com>
+
+	* plugin/plugin-gcn.c (max_isa_vgprs): New.
+	(run_kernel): CDNA2 devices have more VGPRs.
+
+2023-11-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Impl. Status): Update for OpenMP TR12;
+	renamed section from TR11.
+
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/linux/target-indirect.c: Move to...
+	* target-indirect.c: ...here.
+
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add target-indirect.c.
+	* Makefile.in: Regenerate.
+	* libgomp-plugin.h (GOMP_INDIRECT_ADDR_MAP): New define.
+	(GOMP_OFFLOAD_load_image): Add extra argument.
+	* libgomp.h (struct indirect_splay_tree_key_s): New.
+	(indirect_splay_tree_node, indirect_splay_tree,
+	indirect_splay_tree_key): New.
+	(indirect_splay_compare): New.
+	* libgomp.map (GOMP_5.1.1): Add GOMP_target_map_indirect_ptr.
+	* libgomp.texi (OpenMP 5.1): Update documentation on indirect
+	calls in target region and on indirect clause.
+	(Other new OpenMP 5.2 features): Add entry for virtual function calls.
+	* libgomp_g.h (GOMP_target_map_indirect_ptr): Add prototype.
+	* oacc-host.c (host_load_image): Add extra argument.
+	* target.c (gomp_load_image_to_device): If the GOMP_VERSION is high
+	enough, read host indirect functions table and pass to
+	load_image_func.
+	* config/accel/target-indirect.c: New.
+	* config/linux/target-indirect.c: New.
+	* config/gcn/team.c (build_indirect_map): Add prototype.
+	(gomp_gcn_enter_kernel): Initialize support for indirect
+	function calls on GCN target.
+	* config/nvptx/team.c (build_indirect_map): Add prototype.
+	(gomp_nvptx_main): Initialize support for indirect function
+	calls on NVPTX target.
+	* plugin/plugin-gcn.c (struct gcn_image_desc): Add field for
+	indirect functions count.
+	(GOMP_OFFLOAD_load_image): Add extra argument.  If the GOMP_VERSION
+	is high enough, build address translation table and copy it to target
+	memory.
+	* plugin/plugin-nvptx.c (nvptx_tdata): Add field for indirect
+	functions count.
+	(GOMP_OFFLOAD_load_image): Add extra argument.  If the GOMP_VERSION
+	is high enough, Build address translation table and copy it to target
+	memory.
+	* testsuite/libgomp.c-c++-common/declare-target-indirect-1.c: New.
+	* testsuite/libgomp.c-c++-common/declare-target-indirect-2.c: New.
+	* testsuite/libgomp.c++/declare-target-indirect-1.C: New.
+
+2023-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (Enabling OpenMP): Adjust wording for attribute syntax
+	supported also in C.
+
+2023-10-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-8.c: Add OpenACC
+	'acc_map_data' variant.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_data_start): Handle
+	'GOACC_FLAG_LOCAL_DEVICE'.
+	(GOACC_parallel_keyed): Simplify accordingly.
+	* testsuite/libgomp.oacc-fortran/self-1.f90: Adjust.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/if-1.c: Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/self-1.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/if-self-1.c: New.
+	* testsuite/libgomp.oacc-fortran/self-1.f90: Likewise.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_parallel_keyed): Add code to handle
+	GOACC_FLAG_LOCAL_DEVICE case.
+	* testsuite/libgomp.oacc-c-c++-common/self-1.c: New test.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Handle Darwin rpaths.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths
+
+2023-10-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH_AMDGCN_GFX1030): New.
+	(isa_hsa_name): Recognise gfx1030.
+	(isa_code): Likewise.
+	* team.c (defined): Remove s_endpgm.
+
+2023-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp_lib.f90.in: Tag omp_lock_hint_* as being deprecated when
+	_OPENMP >= 201811.
+
 2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (Enabling OpenMP): Update for C/C++ attributes;
@@ -20440,7 +20887,7 @@
 
 	Initial implementation and checkin.
 
-Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

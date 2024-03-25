@@ -69,6 +69,21 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
+/* The following #include is for strub_make_callable.
+
+   This function marks a function as safe to call from strub contexts.  We mark
+   Ada subprograms that may be called implicitly by the compiler, and that won't
+   leave on the stack caller data passed to them.  This stops implicit calls
+   introduced in subprograms that have their stack scrubbed from being flagged
+   as unsafe, even in -fstrub=strict mode.
+
+   These subprograms are also marked with the strub(callable) attribute in Ada
+   sources, but their declarations aren't necessarily imported by GNAT, or made
+   visible to gigi, in units that end up relying on them.  So when gigi
+   introduces their declarations on its own, it must also add the attribute, by
+   calling strub_make_callable.  */
+#include "ipa-strub.h"
+
 /* We should avoid allocating more than ALLOCA_THRESHOLD bytes via alloca,
    for fear of running out of stack space.  If we need more, we use xmalloc
    instead.  */
@@ -454,6 +469,7 @@ gigi (Node_Id gnat_root,
 						     int64_type, NULL_TREE),
 			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
+  strub_make_callable (mulv64_decl);
 
   if (Enable_128bit_Types)
     {
@@ -466,6 +482,7 @@ gigi (Node_Id gnat_root,
 							 NULL_TREE),
 			       NULL_TREE, is_default, true, true, true, false,
 			       false, NULL, Empty);
+      strub_make_callable (mulv128_decl);
     }
 
   /* Name of the _Parent field in tagged record types.  */
@@ -519,6 +536,7 @@ gigi (Node_Id gnat_root,
 			   ftype, NULL_TREE,
 			   is_default, true, true, true, false, false, NULL,
 			   Empty);
+  set_call_expr_flags (reraise_zcx_decl, ECF_NORETURN | ECF_XTHROW);
 
   /* Dummy objects to materialize "others" and "all others" in the exception
      tables.  These are exported by a-exexpr-gcc.adb, so see this unit for
@@ -721,6 +739,8 @@ build_raise_check (int check, enum exception_info_kind kind)
     = create_subprog_decl (get_identifier (Name_Buffer), NULL_TREE, ftype,
 			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
+  strub_make_callable (result);
+  set_call_expr_flags (result, ECF_NORETURN | ECF_XTHROW);
 
   return result;
 }
@@ -1302,7 +1322,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      avoid problematic conversions to the nominal subtype.  But remove any
      padding from the resulting type.  */
   if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_result))
-      || Is_Constr_Subt_For_UN_Aliased (gnat_result_type)
+      || Is_Constr_Array_Subt_With_Bounds (gnat_result_type)
       || (Ekind (gnat_entity) == E_Constant
 	  && Present (Full_View (gnat_entity))
 	  && Has_Discriminants (gnat_result_type)
@@ -3019,7 +3039,9 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	}
 
       /* We use two different strategies to translate the loop, depending on
-	 whether optimization is enabled.
+	 whether optimization is enabled, except for the very peculiar case
+	 of a loop running over a boolean type where we use the simpler form
+	 in order to avoid manipulating negative values in a boolean context.
 
 	 If it is, we generate the canonical loop form expected by the loop
 	 optimizer and the loop vectorizer, which is the do-while form:
@@ -3065,7 +3087,9 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
 	 which works in all cases.  */
 
-      if (optimize && !optimize_debug)
+      if (optimize
+	  && !optimize_debug
+	  && TREE_CODE (gnu_base_type) != BOOLEAN_TYPE)
 	{
 	  /* We can use the do-while form directly if GNU_FIRST-1 doesn't
 	     overflow.  */
@@ -5015,16 +5039,14 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		gnu_actual = convert (get_unpadded_type (Etype (gnat_actual)),
 				      gnu_actual);
 
-	      /* If we have the constructed subtype of an aliased object
-		 with an unconstrained nominal subtype, the type of the
-		 actual includes the template, although it is formally
-		 constrained.  So we need to convert it back to the real
-		 constructed subtype to retrieve the constrained part
-		 and takes its address.  */
+	      /* If it is the constructed subtype of an array allocated with
+		 its bounds, the type of the actual includes the template,
+		 although it is formally constrained.  So we need to convert
+		 it back to the real constructed subtype to retrieve the
+		 constrained part and takes its address.  */
 	      if (TREE_CODE (TREE_TYPE (gnu_actual)) == RECORD_TYPE
 		  && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (gnu_actual))
-		  && Is_Constr_Subt_For_UN_Aliased (Etype (gnat_actual))
-		  && Is_Array_Type (Underlying_Type (Etype (gnat_actual))))
+		  && Is_Constr_Array_Subt_With_Bounds (Etype (gnat_actual)))
 		gnu_actual = convert (gnu_actual_type, gnu_actual);
 	    }
 
@@ -8946,30 +8968,6 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	    else
 	      op = inner;
 	  }
-      break;
-
-    case CALL_EXPR:
-      /* If we are passing a constant fat pointer CONSTRUCTOR, make sure it is
-	 put into static memory; this performs a restricted version of constant
-	 propagation on fat pointers in calls.  But do not do it for strings to
-	 avoid blocking concatenation in the caller when it is inlined.  */
-      for (int i = 0; i < call_expr_nargs (expr); i++)
-	{
-	  tree arg = CALL_EXPR_ARG (expr, i);
-
-	  if (TREE_CODE (arg) == CONSTRUCTOR
-	      && TREE_CONSTANT (arg)
-	      && TYPE_IS_FAT_POINTER_P (TREE_TYPE (arg)))
-	    {
-	      tree t = CONSTRUCTOR_ELT (arg, 0)->value;
-	      if (TREE_CODE (t) == NOP_EXPR)
-		t = TREE_OPERAND (t, 0);
-	      if (TREE_CODE (t) == ADDR_EXPR)
-		t = TREE_OPERAND (t, 0);
-	      if (TREE_CODE (t) != STRING_CST)
-		CALL_EXPR_ARG (expr, i) = tree_output_constant_def (arg);
-	    }
-	}
       break;
 
     case DECL_EXPR:

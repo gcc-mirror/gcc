@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -289,12 +289,18 @@ ix86_broadcast (HOST_WIDE_INT v, unsigned int width,
 
 /* Convert the CONST_WIDE_INT operand OP to broadcast in MODE.  */
 
-static rtx
+rtx
 ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
 {
   /* Don't use integer vector broadcast if we can't move from GPR to SSE
      register directly.  */
   if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+    return nullptr;
+
+  unsigned int msize = GET_MODE_SIZE (mode);
+
+  /* Only optimized for vpbroadcast[bwsd]/vbroadcastss with xmm/ymm/zmm.  */
+  if (msize != 16 && msize != 32 && msize != 64)
     return nullptr;
 
   /* Convert CONST_WIDE_INT to a non-standard SSE constant integer
@@ -309,18 +315,23 @@ ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
   HOST_WIDE_INT val = CONST_WIDE_INT_ELT (op, 0);
   HOST_WIDE_INT val_broadcast;
   scalar_int_mode broadcast_mode;
-  if (TARGET_AVX2
+  /* vpbroadcastb zmm requires TARGET_AVX512BW.  */
+  if ((msize == 64 ? TARGET_AVX512BW : TARGET_AVX2)
       && ix86_broadcast (val, GET_MODE_BITSIZE (QImode),
 			 val_broadcast))
     broadcast_mode = QImode;
-  else if (TARGET_AVX2
+  else if ((msize == 64 ? TARGET_AVX512BW : TARGET_AVX2)
 	   && ix86_broadcast (val, GET_MODE_BITSIZE (HImode),
 			      val_broadcast))
     broadcast_mode = HImode;
-  else if (ix86_broadcast (val, GET_MODE_BITSIZE (SImode),
+  /* vbroadcasts[sd] only support memory operand w/o AVX2.
+     When msize == 16, pshufs is used for vec_duplicate.
+     when msize == 64, vpbroadcastd is used, and TARGET_AVX512F must be existed.  */
+  else if ((msize != 32 || TARGET_AVX2)
+	   && ix86_broadcast (val, GET_MODE_BITSIZE (SImode),
 			   val_broadcast))
     broadcast_mode = SImode;
-  else if (TARGET_64BIT
+  else if (TARGET_64BIT && (msize != 32 || TARGET_AVX2)
 	   && ix86_broadcast (val, GET_MODE_BITSIZE (DImode),
 			      val_broadcast))
     broadcast_mode = DImode;
@@ -341,7 +352,8 @@ ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
   bool ok = ix86_expand_vector_init_duplicate (false, vector_mode,
 					       target,
 					       GEN_INT (val_broadcast));
-  gcc_assert (ok);
+  if (!ok)
+    return nullptr;
   target = lowpart_subreg (mode, target, vector_mode);
   return target;
 }
@@ -530,14 +542,6 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 		  return;
 		}
 	    }
-	  else if (CONST_WIDE_INT_P (op1)
-		   && GET_MODE_SIZE (mode) >= 16)
-	    {
-	      rtx tmp = ix86_convert_const_wide_int_to_broadcast
-		(GET_MODE (op0), op1);
-	      if (tmp != nullptr)
-		op1 = tmp;
-	    }
 	}
     }
 
@@ -598,21 +602,7 @@ ix86_broadcast_from_constant (machine_mode mode, rtx op)
 
   /* Convert CONST_VECTOR to a non-standard SSE constant integer
      broadcast only if vector broadcast is available.  */
-  if (!(TARGET_AVX2
-	|| (TARGET_AVX
-	    && (GET_MODE_INNER (mode) == SImode
-		|| GET_MODE_INNER (mode) == DImode))
-	|| FLOAT_MODE_P (mode))
-      || standard_sse_constant_p (op, mode))
-    return nullptr;
-
-  /* Don't broadcast from a 64-bit integer constant in 32-bit mode.
-     We can still put 64-bit integer constant in memory when
-     avx512 embed broadcast is available.  */
-  if (GET_MODE_INNER (mode) == DImode && !TARGET_64BIT
-      && (!TARGET_AVX512F
-	  || (GET_MODE_SIZE (mode) == 64 && !TARGET_EVEX512)
-	  || (GET_MODE_SIZE (mode) < 64 && !TARGET_AVX512VL)))
+  if (standard_sse_constant_p (op, mode))
     return nullptr;
 
   if (GET_MODE_INNER (mode) == TImode)
@@ -708,15 +698,22 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
 	{
 	  /* Broadcast to XMM/YMM/ZMM register from an integer
 	     constant or scalar mem.  */
-	  op1 = gen_reg_rtx (mode);
-	  if (FLOAT_MODE_P (mode)
-	      || (!TARGET_64BIT && GET_MODE_INNER (mode) == DImode))
+	  rtx tmp = gen_reg_rtx (mode);
+	  if (FLOAT_MODE_P (mode))
 	    first = force_const_mem (GET_MODE_INNER (mode), first);
 	  bool ok = ix86_expand_vector_init_duplicate (false, mode,
-						       op1, first);
-	  gcc_assert (ok);
-	  emit_move_insn (op0, op1);
-	  return;
+						       tmp, first);
+	  if (!ok && !TARGET_64BIT && GET_MODE_INNER (mode) == DImode)
+	    {
+	      first = force_const_mem (GET_MODE_INNER (mode), first);
+	      ok = ix86_expand_vector_init_duplicate (false, mode,
+						      tmp, first);
+	    }
+	  if (ok)
+	    {
+	      emit_move_insn (op0, tmp);
+	      return;
+	    }
 	}
     }
 
@@ -1110,7 +1107,9 @@ ix86_split_mmx_pack (rtx operands[], enum rtx_code code)
   ix86_move_vector_high_sse_to_mmx (op0);
 }
 
-/* Split MMX punpcklXX/punpckhXX with SSE punpcklXX.  */
+/* Split MMX punpcklXX/punpckhXX with SSE punpcklXX.  This is also used
+   for a full unpack of OPERANDS[1] and OPERANDS[2] into a wider
+   OPERANDS[0].  */
 
 void
 ix86_split_mmx_punpck (rtx operands[], bool high_p)
@@ -1118,7 +1117,7 @@ ix86_split_mmx_punpck (rtx operands[], bool high_p)
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   rtx op2 = operands[2];
-  machine_mode mode = GET_MODE (op0);
+  machine_mode mode = GET_MODE (op1);
   rtx mask;
   /* The corresponding SSE mode.  */
   machine_mode sse_mode, double_sse_mode;
@@ -1258,14 +1257,14 @@ ix86_swap_binary_operands_p (enum rtx_code code, machine_mode mode,
   return false;
 }
 
-
 /* Fix up OPERANDS to satisfy ix86_binary_operator_ok.  Return the
    destination to use for the operation.  If different from the true
-   destination in operands[0], a copy operation will be required.  */
+   destination in operands[0], a copy operation will be required except
+   under TARGET_APX_NDD.  */
 
 rtx
 ix86_fixup_binary_operands (enum rtx_code code, machine_mode mode,
-			    rtx operands[])
+			    rtx operands[], bool use_ndd)
 {
   rtx dst = operands[0];
   rtx src1 = operands[1];
@@ -1305,7 +1304,7 @@ ix86_fixup_binary_operands (enum rtx_code code, machine_mode mode,
     src1 = force_reg (mode, src1);
 
   /* Source 1 cannot be a non-matching memory.  */
-  if (MEM_P (src1) && !rtx_equal_p (dst, src1))
+  if (!use_ndd && MEM_P (src1) && !rtx_equal_p (dst, src1))
     src1 = force_reg (mode, src1);
 
   /* Improve address combine.  */
@@ -1324,9 +1323,10 @@ ix86_fixup_binary_operands (enum rtx_code code, machine_mode mode,
 
 void
 ix86_fixup_binary_operands_no_copy (enum rtx_code code,
-				    machine_mode mode, rtx operands[])
+				    machine_mode mode, rtx operands[],
+				    bool use_ndd)
 {
-  rtx dst = ix86_fixup_binary_operands (code, mode, operands);
+  rtx dst = ix86_fixup_binary_operands (code, mode, operands, use_ndd);
   gcc_assert (dst == operands[0]);
 }
 
@@ -1336,11 +1336,11 @@ ix86_fixup_binary_operands_no_copy (enum rtx_code code,
 
 void
 ix86_expand_binary_operator (enum rtx_code code, machine_mode mode,
-			     rtx operands[])
+			     rtx operands[], bool use_ndd)
 {
   rtx src1, src2, dst, op, clob;
 
-  dst = ix86_fixup_binary_operands (code, mode, operands);
+  dst = ix86_fixup_binary_operands (code, mode, operands, use_ndd);
   src1 = operands[1];
   src2 = operands[2];
 
@@ -1350,7 +1350,8 @@ ix86_expand_binary_operator (enum rtx_code code, machine_mode mode,
 
   if (reload_completed
       && code == PLUS
-      && !rtx_equal_p (dst, src1))
+      && !rtx_equal_p (dst, src1)
+      && !use_ndd)
     {
       /* This is going to be an LEA; avoid splitting it later.  */
       emit_insn (op);
@@ -1449,7 +1450,7 @@ ix86_expand_vector_logical_operator (enum rtx_code code, machine_mode mode,
 
 bool
 ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
-			 rtx operands[3])
+			 rtx operands[3], bool use_ndd)
 {
   rtx dst = operands[0];
   rtx src1 = operands[1];
@@ -1473,7 +1474,7 @@ ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
     return false;
 
   /* Source 1 cannot be a non-matching memory.  */
-  if (MEM_P (src1) && !rtx_equal_p (dst, src1))
+  if (!use_ndd && MEM_P (src1) && !rtx_equal_p (dst, src1))
     /* Support "andhi/andsi/anddi" as a zero-extending move.  */
     return (code == AND
 	    && (mode == HImode
@@ -1490,7 +1491,7 @@ ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
 
 void
 ix86_expand_unary_operator (enum rtx_code code, machine_mode mode,
-			    rtx operands[])
+			    rtx operands[], bool use_ndd)
 {
   bool matching_memory = false;
   rtx src, dst, op, clob;
@@ -1509,7 +1510,7 @@ ix86_expand_unary_operator (enum rtx_code code, machine_mode mode,
     }
 
   /* When source operand is memory, destination must match.  */
-  if (MEM_P (src) && !matching_memory)
+  if (!use_ndd && MEM_P (src) && !matching_memory)
     src = force_reg (mode, src);
 
   /* Emit the instruction.  */
@@ -1527,6 +1528,23 @@ ix86_expand_unary_operator (enum rtx_code code, machine_mode mode,
   /* Fix up the destination if needed.  */
   if (dst != operands[0])
     emit_move_insn (operands[0], dst);
+}
+
+/* Return TRUE or FALSE depending on whether the unary operator meets the
+   appropriate constraints.  */
+
+bool
+ix86_unary_operator_ok (enum rtx_code,
+			machine_mode,
+			rtx operands[2],
+			bool use_ndd)
+{
+  /* If one of operands is memory, source and destination must match.  */
+  if ((MEM_P (operands[0])
+       || (!use_ndd && MEM_P (operands[1])))
+      && ! rtx_equal_p (operands[0], operands[1]))
+    return false;
+  return true;
 }
 
 /* Predict just emitted jump instruction to be taken with probability PROB.  */
@@ -2411,30 +2429,54 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
   rtx tmp;
 
   /* Handle special case - vector comparsion with boolean result, transform
-     it using ptest instruction.  */
+     it using ptest instruction or vpcmpeq + kortest.  */
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
       || (mode == TImode && !TARGET_64BIT)
-      || mode == OImode)
+      || mode == OImode
+      || GET_MODE_SIZE (mode) == 64)
     {
-      rtx flag = gen_rtx_REG (CCZmode, FLAGS_REG);
-      machine_mode p_mode = GET_MODE_SIZE (mode) == 32 ? V4DImode : V2DImode;
+      unsigned msize = GET_MODE_SIZE (mode);
+      machine_mode p_mode
+	= msize == 64 ? V16SImode : msize == 32 ? V4DImode : V2DImode;
+      /* kortest set CF when result is 0xFFFF (op0 == op1).  */
+      rtx flag = gen_rtx_REG (msize == 64 ? CCCmode : CCZmode, FLAGS_REG);
 
       gcc_assert (code == EQ || code == NE);
 
-      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+      /* Using vpcmpeq zmm zmm k + kortest for 512-bit vectors.  */
+      if (msize == 64)
 	{
-	  op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
-	  op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
-	  mode = p_mode;
+	  if (mode != V16SImode)
+	    {
+	      op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
+	      op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
+	    }
+
+	  tmp = gen_reg_rtx (HImode);
+	  emit_insn (gen_avx512f_cmpv16si3 (tmp, op0, op1, GEN_INT (0)));
+	  emit_insn (gen_kortesthi_ccc (tmp, tmp));
 	}
-      /* Generate XOR since we can't check that one operand is zero vector.  */
-      tmp = gen_reg_rtx (mode);
-      emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
-      tmp = gen_lowpart (p_mode, tmp);
-      emit_insn (gen_rtx_SET (gen_rtx_REG (CCZmode, FLAGS_REG),
-			      gen_rtx_UNSPEC (CCZmode,
-					      gen_rtvec (2, tmp, tmp),
-					      UNSPEC_PTEST)));
+      /* Using ptest for 128/256-bit vectors.  */
+      else
+	{
+	  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+	    {
+	      op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
+	      op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
+	      mode = p_mode;
+	    }
+
+	  /* Generate XOR since we can't check that one operand is zero
+	     vector.  */
+	  tmp = gen_reg_rtx (mode);
+	  rtx ops[3] = { tmp, op0, op1 };
+	  ix86_expand_vector_logical_operator (XOR, mode, ops);
+	  tmp = gen_lowpart (p_mode, tmp);
+	  emit_insn (gen_rtx_SET (gen_rtx_REG (CCZmode, FLAGS_REG),
+				  gen_rtx_UNSPEC (CCZmode,
+						  gen_rtvec (2, tmp, tmp),
+						  UNSPEC_PTEST)));
+	}
       tmp = gen_rtx_fmt_ee (code, VOIDmode, flag, const0_rtx);
       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 				  gen_rtx_LABEL_REF (VOIDmode, label),
@@ -4198,6 +4240,8 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V8QImode:
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SImode:
       if (TARGET_SSE4_1)
 	{
@@ -4207,6 +4251,8 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V4QImode:
     case E_V2HImode:
+    case E_V2HFmode:
+    case E_V2BFmode:
       if (TARGET_SSE4_1)
 	{
 	  gen = gen_mmx_pblendvb_v4qi;
@@ -5216,6 +5262,9 @@ ix86_expand_vec_perm_vpermt2 (rtx target, rtx mask, rtx op0, rtx op1,
   if (gen == NULL)
     return false;
 
+  if (d && d->testing_p)
+    return true;
+
   /* ix86_expand_vec_perm_vpermt2 is called from both const and non-const
      expander, so args are either in d, or in op0, op1 etc.  */
   if (d)
@@ -5660,7 +5709,7 @@ ix86_expand_sse_extend (rtx dest, rtx src, bool unsigned_p)
       gcc_unreachable ();
     }
 
-  ops[0] = gen_reg_rtx (imode);
+  ops[0] = dest;
 
   ops[1] = force_reg (imode, src);
 
@@ -5671,7 +5720,6 @@ ix86_expand_sse_extend (rtx dest, rtx src, bool unsigned_p)
 				  ops[1], pc_rtx, pc_rtx);
 
   ix86_split_mmx_punpck (ops, false);
-  emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), ops[0], imode));
 }
 
 /* Unpack SRC into the next wider integer vector type.  UNSIGNED_P is
@@ -6277,18 +6325,15 @@ ix86_split_long_move (rtx operands[])
 	}
     }
 
-  /* If optimizing for size, attempt to locally unCSE nonzero constants.  */
-  if (optimize_insn_for_size_p ())
-    {
-      for (j = 0; j < nparts - 1; j++)
-	if (CONST_INT_P (operands[6 + j])
-	    && operands[6 + j] != const0_rtx
-	    && REG_P (operands[2 + j]))
-	  for (i = j; i < nparts - 1; i++)
-	    if (CONST_INT_P (operands[7 + i])
-		&& INTVAL (operands[7 + i]) == INTVAL (operands[6 + j]))
-	      operands[7 + i] = operands[2 + j];
-    }
+  /* Attempt to locally unCSE nonzero constants.  */
+  for (j = 0; j < nparts - 1; j++)
+    if (CONST_INT_P (operands[6 + j])
+	&& operands[6 + j] != const0_rtx
+	&& REG_P (operands[2 + j]))
+      for (i = j; i < nparts - 1; i++)
+	if (CONST_INT_P (operands[7 + i])
+	    && INTVAL (operands[7 + i]) == INTVAL (operands[6 + j]))
+	  operands[7 + i] = operands[2 + j];
 
   for (i = 0; i < nparts; i++)
     emit_move_insn (operands[2 + i], operands[6 + i]);
@@ -6641,6 +6686,142 @@ ix86_split_lshr (rtx *operands, rtx scratch, machine_mode mode)
       else
 	emit_insn (gen_x86_shift_adj_2
 		   (half_mode, low[0], high[0], operands[2]));
+    }
+}
+
+/* Helper function to split TImode ashl under NDD.  */
+void
+ix86_split_ashl_ndd (rtx *operands, rtx scratch)
+{
+  gcc_assert (TARGET_APX_NDD);
+  int half_width = GET_MODE_BITSIZE (TImode) >> 1;
+
+  rtx low[2], high[2];
+  int count;
+
+  split_double_mode (TImode, operands, 2, low, high);
+  if (CONST_INT_P (operands[2]))
+    {
+      count = INTVAL (operands[2]) & (GET_MODE_BITSIZE (TImode) - 1);
+
+      if (count >= half_width)
+	{
+	  count = count - half_width;
+	  if (count == 0)
+	    {
+	      if (!rtx_equal_p (high[0], low[1]))
+		emit_move_insn (high[0], low[1]);
+	    }
+	  else if (count == 1)
+	    emit_insn (gen_adddi3 (high[0], low[1], low[1]));
+	  else
+	    emit_insn (gen_ashldi3 (high[0], low[1], GEN_INT (count)));
+
+	  ix86_expand_clear (low[0]);
+	}
+      else if (count == 1)
+	{
+	  rtx x3 = gen_rtx_REG (CCCmode, FLAGS_REG);
+	  rtx x4 = gen_rtx_LTU (TImode, x3, const0_rtx);
+	  emit_insn (gen_add3_cc_overflow_1 (DImode, low[0],
+					     low[1], low[1]));
+	  emit_insn (gen_add3_carry (DImode, high[0], high[1], high[1],
+				     x3, x4));
+	}
+      else
+	{
+	  emit_insn (gen_x86_64_shld_ndd (high[0], high[1], low[1],
+					  GEN_INT (count)));
+	  emit_insn (gen_ashldi3 (low[0], low[1], GEN_INT (count)));
+	}
+    }
+  else
+    {
+      emit_insn (gen_x86_64_shld_ndd (high[0], high[1], low[1],
+				      operands[2]));
+      emit_insn (gen_ashldi3 (low[0], low[1], operands[2]));
+      if (TARGET_CMOVE && scratch)
+	{
+	  ix86_expand_clear (scratch);
+	  emit_insn (gen_x86_shift_adj_1
+		     (DImode, high[0], low[0], operands[2], scratch));
+	}
+      else
+	emit_insn (gen_x86_shift_adj_2 (DImode, high[0], low[0], operands[2]));
+    }
+}
+
+/* Helper function to split TImode l/ashr under NDD.  */
+void
+ix86_split_rshift_ndd (enum rtx_code code, rtx *operands, rtx scratch)
+{
+  gcc_assert (TARGET_APX_NDD);
+  int half_width = GET_MODE_BITSIZE (TImode) >> 1;
+  bool ashr_p = code == ASHIFTRT;
+  rtx (*gen_shr)(rtx, rtx, rtx) = ashr_p ? gen_ashrdi3
+					 : gen_lshrdi3;
+
+  rtx low[2], high[2];
+  int count;
+
+  split_double_mode (TImode, operands, 2, low, high);
+  if (CONST_INT_P (operands[2]))
+    {
+      count = INTVAL (operands[2]) & (GET_MODE_BITSIZE (TImode) - 1);
+
+      if (ashr_p && (count == GET_MODE_BITSIZE (TImode) - 1))
+	{
+	  emit_insn (gen_shr (high[0], high[1],
+			      GEN_INT (half_width - 1)));
+	  emit_move_insn (low[0], high[0]);
+	}
+      else if (count >= half_width)
+	{
+	  if (ashr_p)
+	    emit_insn (gen_shr (high[0], high[1],
+				GEN_INT (half_width - 1)));
+	  else
+	    ix86_expand_clear (high[0]);
+
+	  if (count > half_width)
+	    emit_insn (gen_shr (low[0], high[1],
+				GEN_INT (count - half_width)));
+	  else
+	    emit_move_insn (low[0], high[1]);
+	}
+      else
+	{
+	  emit_insn (gen_x86_64_shrd_ndd (low[0], low[1], high[1],
+					  GEN_INT (count)));
+	  emit_insn (gen_shr (high[0], high[1], GEN_INT (count)));
+	}
+    }
+  else
+    {
+      emit_insn (gen_x86_64_shrd_ndd (low[0], low[1], high[1],
+				      operands[2]));
+      emit_insn (gen_shr (high[0], high[1], operands[2]));
+
+      if (TARGET_CMOVE && scratch)
+	{
+	  if (ashr_p)
+	    {
+	      emit_move_insn (scratch, high[0]);
+	      emit_insn (gen_shr (scratch, scratch,
+				  GEN_INT (half_width - 1)));
+	    }
+	  else
+	    ix86_expand_clear (scratch);
+
+	  emit_insn (gen_x86_shift_adj_1
+		     (DImode, low[0], high[0], operands[2], scratch));
+	}
+      else if (ashr_p)
+	emit_insn (gen_x86_shift_adj_3
+		   (DImode, low[0], high[0], operands[2]));
+      else
+	emit_insn (gen_x86_shift_adj_2
+		   (DImode, low[0], high[0], operands[2]));
     }
 }
 
@@ -14234,7 +14415,7 @@ rdseed_step:
       if (ignore)
 	return const0_rtx;
 
-      emit_insn (gen_push (gen_rtx_REG (word_mode, FLAGS_REG)));
+      emit_insn (gen_pushfl ());
 
       if (optimize
 	  || target == NULL_RTX
@@ -14253,7 +14434,7 @@ rdseed_step:
 	op0 = copy_to_mode_reg (word_mode, op0);
 
       emit_insn (gen_push (op0));
-      emit_insn (gen_pop (gen_rtx_REG (word_mode, FLAGS_REG)));
+      emit_insn (gen_popfl ());
       return 0;
 
     case IX86_BUILTIN_KTESTC8:
@@ -15526,6 +15707,42 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 
   switch (mode)
     {
+    case E_V2DImode:
+      if (CONST_INT_P (val))
+	{
+	  int tmp = (int)INTVAL (val);
+	  if (tmp == (int)(INTVAL (val) >> 32))
+	    {
+	      rtx reg = gen_reg_rtx (V4SImode);
+	      ok = ix86_vector_duplicate_value (V4SImode, reg,
+						GEN_INT (tmp));
+	      if (ok)
+		{
+		  emit_move_insn (target, gen_lowpart (V2DImode, reg));
+		  return true;
+		}
+	    }
+	}
+      return ix86_vector_duplicate_value (mode, target, val);
+
+    case E_V4DImode:
+      if (CONST_INT_P (val))
+	{
+	  int tmp = (int)INTVAL (val);
+	  if (tmp == (int)(INTVAL (val) >> 32))
+	    {
+	      rtx reg = gen_reg_rtx (V8SImode);
+	      ok = ix86_vector_duplicate_value (V8SImode, reg,
+						GEN_INT (tmp));
+	      if (ok)
+		{
+		  emit_move_insn (target, gen_lowpart (V4DImode, reg));
+		  return true;
+		}
+	    }
+	}
+      return ix86_vector_duplicate_value (mode, target, val);
+
     case E_V2SImode:
     case E_V2SFmode:
       if (!mmx_ok)
@@ -15533,11 +15750,9 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
       /* FALLTHRU */
 
     case E_V4DFmode:
-    case E_V4DImode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V2DFmode:
-    case E_V2DImode:
     case E_V4SFmode:
     case E_V4SImode:
     case E_V16SImode:
@@ -15554,6 +15769,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	  rtx x;
 
 	  val = gen_lowpart (SImode, val);
+	  if (CONST_INT_P (val))
+	    return false;
 	  x = gen_rtx_TRUNCATE (HImode, val);
 	  x = gen_rtx_VEC_DUPLICATE (mode, x);
 	  emit_insn (gen_rtx_SET (target, x));
@@ -15561,14 +15778,38 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	}
       goto widen;
 
+    case E_V4HFmode:
+    case E_V4BFmode:
+      if (TARGET_MMX_WITH_SSE)
+	{
+	  val = force_reg (GET_MODE_INNER (mode), val);
+	  rtx x = gen_rtx_VEC_DUPLICATE (mode, val);
+	  emit_insn (gen_rtx_SET (target, x));
+	  return true;
+	}
+      return false;
+
     case E_V2HImode:
       if (TARGET_SSE2)
 	{
 	  rtx x;
 
 	  val = gen_lowpart (SImode, val);
+	  if (CONST_INT_P (val))
+	    return false;
 	  x = gen_rtx_TRUNCATE (HImode, val);
 	  x = gen_rtx_VEC_DUPLICATE (mode, x);
+	  emit_insn (gen_rtx_SET (target, x));
+	  return true;
+	}
+      return false;
+
+    case E_V2HFmode:
+    case E_V2BFmode:
+      if (TARGET_SSE2)
+	{
+	  val = force_reg (GET_MODE_INNER (mode), val);
+	  rtx x = gen_rtx_VEC_DUPLICATE (mode, val);
 	  emit_insn (gen_rtx_SET (target, x));
 	  return true;
 	}
@@ -15581,6 +15822,10 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
       goto widen;
 
     case E_V8HImode:
+      if (CONST_INT_P (val))
+	goto widen;
+      /* FALLTHRU */
+
     case E_V8HFmode:
     case E_V8BFmode:
       if (TARGET_AVX2)
@@ -15628,6 +15873,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
       goto widen;
 
     case E_V16QImode:
+      if (CONST_INT_P (val))
+	goto widen;
       if (TARGET_AVX2)
 	return ix86_vector_duplicate_value (mode, target, val);
 
@@ -15647,7 +15894,13 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 
 	val = convert_modes (wsmode, smode, val, true);
 
-	if (smode == QImode && !TARGET_PARTIAL_REG_STALL)
+	if (CONST_INT_P (val))
+	  {
+	    x = simplify_binary_operation (ASHIFT, wsmode, val,
+					   GEN_INT (GET_MODE_BITSIZE (smode)));
+	    val = simplify_binary_operation (IOR, wsmode, val, x);
+	  }
+	else if (smode == QImode && !TARGET_PARTIAL_REG_STALL)
 	  emit_insn (gen_insv_1 (wsmode, val, val));
 	else
 	  {
@@ -15660,15 +15913,20 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 
 	x = gen_reg_rtx (wvmode);
 	ok = ix86_expand_vector_init_duplicate (mmx_ok, wvmode, x, val);
-	gcc_assert (ok);
+	if (!ok)
+	  return false;
 	emit_move_insn (target, gen_lowpart (GET_MODE (target), x));
-	return ok;
+	return true;
       }
 
     case E_V16HImode:
+    case E_V32QImode:
+      if (CONST_INT_P (val))
+	goto widen;
+      /* FALLTHRU */
+
     case E_V16HFmode:
     case E_V16BFmode:
-    case E_V32QImode:
       if (TARGET_AVX2)
 	return ix86_vector_duplicate_value (mode, target, val);
       else
@@ -15694,7 +15952,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	  rtx x = gen_reg_rtx (hvmode);
 
 	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
-	  gcc_assert (ok);
+	  if (!ok)
+	    return false;
 
 	  x = gen_rtx_VEC_CONCAT (mode, x, x);
 	  emit_insn (gen_rtx_SET (target, x));
@@ -15731,7 +15990,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	  rtx x = gen_reg_rtx (hvmode);
 
 	  ok = ix86_expand_vector_init_duplicate (false, hvmode, x, val);
-	  gcc_assert (ok);
+	  if (!ok)
+	    return false;
 
 	  x = gen_rtx_VEC_CONCAT (mode, x, x);
 	  emit_insn (gen_rtx_SET (target, x));
@@ -15784,6 +16044,8 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       use_vector_set = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
       break;
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
       use_vector_set = TARGET_SSE || TARGET_3DNOW_A;
       break;
     case E_V4QImode:
@@ -16020,6 +16282,8 @@ ix86_expand_vector_init_one_var (bool mmx_ok, machine_mode mode,
     case E_V4SImode:
     case E_V8HImode:
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
       break;
 
     case E_V16QImode:
@@ -16407,6 +16671,7 @@ ix86_expand_vector_init_general (bool mmx_ok, machine_mode mode,
   rtx ops[64], op0, op1, op2, op3, op4, op5;
   machine_mode half_mode = VOIDmode;
   machine_mode quarter_mode = VOIDmode;
+  machine_mode int_inner_mode = VOIDmode;
   int n, i;
 
   switch (mode)
@@ -16551,6 +16816,13 @@ quarter:
       ix86_expand_vector_init_interleave (mode, target, ops, n >> 1);
       return;
 
+    case E_V4HFmode:
+    case E_V4BFmode:
+    case E_V2HFmode:
+    case E_V2BFmode:
+      int_inner_mode = HImode;
+      break;
+
     case E_V4HImode:
     case E_V8QImode:
 
@@ -16582,6 +16854,16 @@ quarter:
 	  for (j = 0; j < n_elt_per_word; ++j)
 	    {
 	      rtx elt = XVECEXP (vals, 0, (i+1)*n_elt_per_word - j - 1);
+	      if (int_inner_mode != E_VOIDmode)
+		{
+		  gcc_assert (TARGET_SSE2 && int_inner_mode == HImode);
+		  rtx tmp = gen_reg_rtx (int_inner_mode);
+		  elt = lowpart_subreg (int_inner_mode,
+					force_reg (inner_mode, elt),
+					inner_mode);
+		  emit_move_insn (tmp, elt);
+		  elt = tmp;
+		}
 	      elt = convert_modes (tmp_mode, inner_mode, elt, true);
 
 	      if (j == 0)
@@ -16681,18 +16963,18 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
 	all_same = false;
     }
 
+  /* If all values are identical, broadcast the value.  */
+  if (all_same
+      && ix86_expand_vector_init_duplicate (mmx_ok, mode, target,
+					    XVECEXP (vals, 0, 0)))
+    return;
+
   /* Constants are best loaded from the constant pool.  */
   if (n_var == 0)
     {
       emit_move_insn (target, gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0)));
       return;
     }
-
-  /* If all values are identical, broadcast the value.  */
-  if (all_same
-      && ix86_expand_vector_init_duplicate (mmx_ok, mode, target,
-					    XVECEXP (vals, 0, 0)))
-    return;
 
   /* Values where only one field is non-constant are best loaded from
      the pool and overwritten via move later.  */
@@ -16807,6 +17089,14 @@ ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
 	  break;
 	case E_V16SFmode:
 	  cmp_mode = V16SImode;
+	  break;
+	case E_V2HFmode:
+	case E_V2BFmode:
+	  cmp_mode = V2HImode;
+	  break;
+	case E_V4HFmode:
+	case E_V4BFmode:
+	  cmp_mode = V4HImode;
 	  break;
 	case E_V8HFmode:
 	  cmp_mode = V8HImode;
@@ -17054,9 +17344,13 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
     case E_V8HFmode:
     case E_V8BFmode:
     case E_V2HImode:
+    case E_V2HFmode:
+    case E_V2BFmode:
       use_vec_merge = TARGET_SSE2;
       break;
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
       use_vec_merge = mmx_ok && (TARGET_SSE || TARGET_3DNOW_A);
       break;
 
@@ -17397,9 +17691,13 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
     case E_V8HFmode:
     case E_V8BFmode:
     case E_V2HImode:
+    case E_V2HFmode:
+    case E_V2BFmode:
       use_vec_extr = TARGET_SSE2;
       break;
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
       use_vec_extr = mmx_ok && (TARGET_SSE || TARGET_3DNOW_A);
       break;
 
@@ -17657,6 +17955,7 @@ emit_reduc_half (rtx dest, rtx src, int i)
       tem = gen_mmx_lshrv1si3 (d, gen_lowpart (V1SImode, src),
 			       GEN_INT (i / 2));
       break;
+    case E_V8QImode:
     case E_V4HImode:
       d = gen_reg_rtx (V1DImode);
       tem = gen_mmx_lshrv1di3 (d, gen_lowpart (V1DImode, src),

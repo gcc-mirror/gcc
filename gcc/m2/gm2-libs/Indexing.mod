@@ -1,6 +1,6 @@
 (* Indexing.mod provides a dynamic indexing mechanism for CARDINAL.
 
-Copyright (C) 2003-2023 Free Software Foundation, Inc.
+Copyright (C) 2003-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -28,7 +28,7 @@ IMPLEMENTATION MODULE Indexing ;
 
 FROM libc IMPORT memset, memmove ;
 FROM Storage IMPORT ALLOCATE, REALLOCATE, DEALLOCATE ;
-FROM SYSTEM IMPORT TSIZE, ADDRESS, WORD, BYTE ;
+FROM SYSTEM IMPORT TSIZE, WORD, BYTE ;
 
 CONST
    MinSize = 128 ;

@@ -1,7 +1,7 @@
 /* Write and read the cgraph to the memory mapped representation of a
    .o file.
 
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -68,6 +68,7 @@ enum LTO_symtab_tags
   LTO_symtab_edge,
   LTO_symtab_indirect_edge,
   LTO_symtab_variable,
+  LTO_symtab_indirect_function,
   LTO_symtab_last_tag
 };
 
@@ -1111,6 +1112,18 @@ output_offload_tables (void)
 			       (*offload_vars)[i]);
     }
 
+  for (unsigned i = 0; i < vec_safe_length (offload_ind_funcs); i++)
+    {
+      symtab_node *node = symtab_node::get ((*offload_ind_funcs)[i]);
+      if (!node)
+	continue;
+      node->force_output = true;
+      streamer_write_enum (ob->main_stream, LTO_symtab_tags,
+			   LTO_symtab_last_tag, LTO_symtab_indirect_function);
+      lto_output_fn_decl_ref (ob->decl_state, ob->main_stream,
+			      (*offload_ind_funcs)[i]);
+    }
+
   if (output_requires)
     {
       HOST_WIDE_INT val = ((HOST_WIDE_INT) omp_requires_mask
@@ -1134,6 +1147,7 @@ output_offload_tables (void)
     {
       vec_free (offload_funcs);
       vec_free (offload_vars);
+      vec_free (offload_ind_funcs);
     }
 }
 
@@ -1862,6 +1876,19 @@ input_offload_tables (bool do_force_output)
 	      if (do_force_output)
 		varpool_node::get (var_decl)->force_output = 1;
 	      tmp_decl = var_decl;
+	    }
+	  else if (tag == LTO_symtab_indirect_function)
+	    {
+	      tree fn_decl
+		= lto_input_fn_decl_ref (ib, file_data);
+	      vec_safe_push (offload_ind_funcs, fn_decl);
+
+	      /* Prevent IPA from removing fn_decl as unreachable, since there
+		 may be no refs from the parent function to child_fn in offload
+		 LTO mode.  */
+	      if (do_force_output)
+		cgraph_node::get (fn_decl)->mark_force_output ();
+	      tmp_decl = fn_decl;
 	    }
 	  else if (tag == LTO_symtab_edge)
 	    {

@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1770,8 +1770,6 @@ decl_remember_implicit_trigger_p (tree decl)
 void
 synthesize_method (tree fndecl)
 {
-  bool nested = (current_function_decl != NULL_TREE);
-  tree context = decl_function_context (fndecl);
   bool need_body = true;
   tree stmt;
   location_t save_input_location = input_location;
@@ -1795,10 +1793,7 @@ synthesize_method (tree fndecl)
      it now.  */
   push_deferring_access_checks (dk_no_deferred);
 
-  if (! context)
-    push_to_top_level ();
-  else if (nested)
-    push_function_context ();
+  bool push_to_top = maybe_push_to_top_level (fndecl);
 
   input_location = DECL_SOURCE_LOCATION (fndecl);
 
@@ -1843,10 +1838,7 @@ synthesize_method (tree fndecl)
 
   input_location = save_input_location;
 
-  if (! context)
-    pop_from_top_level ();
-  else if (nested)
-    pop_function_context ();
+  maybe_pop_from_top_level (push_to_top);
 
   pop_deferring_access_checks ();
 
@@ -2091,6 +2083,7 @@ constructible_expr (tree to, tree from)
 {
   tree expr;
   cp_unevaluated cp_uneval_guard;
+  const int len = TREE_VEC_LENGTH (from);
   if (CLASS_TYPE_P (to))
     {
       tree ctype = to;
@@ -2098,11 +2091,16 @@ constructible_expr (tree to, tree from)
       if (!TYPE_REF_P (to))
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
-      vec_alloc (args, TREE_VEC_LENGTH (from));
-      for (tree arg : tree_vec_range (from))
-	args->quick_push (build_stub_object (arg));
-      expr = build_special_member_call (ob, complete_ctor_identifier, &args,
-					ctype, LOOKUP_NORMAL, tf_none);
+      if (len == 0)
+	expr = build_value_init (ctype, tf_none);
+      else
+	{
+	  vec_alloc (args, len);
+	  for (tree arg : tree_vec_range (from))
+	    args->quick_push (build_stub_object (arg));
+	  expr = build_special_member_call (ob, complete_ctor_identifier, &args,
+					    ctype, LOOKUP_NORMAL, tf_none);
+	}
       if (expr == error_mark_node)
 	return error_mark_node;
       /* The current state of the standard vis-a-vis LWG 2116 is that
@@ -2120,7 +2118,6 @@ constructible_expr (tree to, tree from)
     }
   else
     {
-      const int len = TREE_VEC_LENGTH (from);
       if (len == 0)
 	return build_value_init (strip_array_types (to), tf_none);
       if (len > 1)
@@ -2216,7 +2213,9 @@ is_trivially_xible (enum tree_code code, tree to, tree from)
 bool
 is_nothrow_xible (enum tree_code code, tree to, tree from)
 {
+  ++cp_noexcept_operand;
   tree expr = is_xible_helper (code, to, from, /*trivial*/false);
+  --cp_noexcept_operand;
   if (expr == NULL_TREE || expr == error_mark_node)
     return false;
   return expr_noexcept_p (expr, tf_none);

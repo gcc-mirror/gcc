@@ -1,5 +1,5 @@
 /* A splay-tree datatype.
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -34,6 +34,8 @@ typedef struct splay_tree_s *splay_tree;
 typedef struct splay_tree_key_s *splay_tree_key;
    define splay_tree_key_s structure, and define
    splay_compare inline function.
+
+   Define splay_tree_static to mark all functions as static.
 
    Alternatively, they can define splay_tree_prefix macro before
    including this header and then all the above types, the
@@ -72,6 +74,8 @@ typedef struct splay_tree_key_s *splay_tree_key;
     splay_tree_name (splay_tree_prefix, splay_compare)
 # define splay_tree_lookup	\
     splay_tree_name (splay_tree_prefix, splay_tree_lookup)
+# define splay_tree_lookup_node	\
+    splay_tree_name (splay_tree_prefix, splay_tree_lookup_node)
 # define splay_tree_insert	\
     splay_tree_name (splay_tree_prefix, splay_tree_insert)
 # define splay_tree_remove	\
@@ -105,17 +109,29 @@ struct splay_tree_s {
 typedef void (*splay_tree_callback) (splay_tree_key, void *);
 typedef int (*splay_tree_callback_stop) (splay_tree_key, void *);
 
+#ifndef splay_tree_static
 extern splay_tree_key splay_tree_lookup (splay_tree, splay_tree_key);
+extern splay_tree_node splay_tree_lookup_node (splay_tree, splay_tree_key);
 extern void splay_tree_insert (splay_tree, splay_tree_node);
 extern void splay_tree_remove (splay_tree, splay_tree_key);
 extern void splay_tree_foreach (splay_tree, splay_tree_callback, void *);
 extern void splay_tree_foreach_lazy (splay_tree, splay_tree_callback_stop, void *);
+#endif
+
+#ifdef splay_tree_static_unused_attr
+#  undef splay_tree_static_unused_attr
+#endif
+
 #else  /* splay_tree_c */
 #  ifdef splay_tree_prefix
 #    include "splay-tree.c"
 #  endif
 #  undef splay_tree_c
 #endif /* #ifndef splay_tree_c */
+
+#ifdef splay_tree_static
+#  undef splay_tree_static
+#endif
 
 #ifdef splay_tree_prefix
 #  undef splay_tree_name_1
@@ -128,6 +144,7 @@ extern void splay_tree_foreach_lazy (splay_tree, splay_tree_callback_stop, void 
 #  undef splay_tree_key
 #  undef splay_compare
 #  undef splay_tree_lookup
+#  undef splay_tree_lookup_node
 #  undef splay_tree_insert
 #  undef splay_tree_remove
 #  undef splay_tree_foreach

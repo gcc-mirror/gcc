@@ -1,3 +1,6 @@
+	void abort (void);
+	void exit (int);
+
 	int main(void)
 	{
 		float reale = 1.0f;

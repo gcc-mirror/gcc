@@ -1,6 +1,6 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -102,12 +102,12 @@ along with GCC; see the file COPYING3.  If not see
 	if (ADDRESS_REG_P (operands[0]))		\
 	  return "jmp %%pc@(2,%0:l)";			\
 	else if (TARGET_LONG_JUMP_TABLE_OFFSETS)	\
-	  return "jmp %%pc@(2,%0:l)";			\
+	  return "jmp %%pc@(%l1,%0:l)";			\
 	else						\
 	  return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
       }							\
     else if (TARGET_LONG_JUMP_TABLE_OFFSETS)		\
-      return "jmp %%pc@(2,%0:l)";			\
+      return "jmp %%pc@(%l1,%0:l)";			\
     else						\
       return "jmp %%pc@(2,%0:w)";			\
   } while (0)

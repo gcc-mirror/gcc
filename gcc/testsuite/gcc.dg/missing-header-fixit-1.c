@@ -5,7 +5,7 @@
 /* This is padding (to avoid the generated patch containing DejaGnu
    directives).  */
 
-/* { dg-options "-fdiagnostics-generate-patch" } */
+/* { dg-options "-fpermissive -fdiagnostics-generate-patch" } */
 
 void test (int i, int j)
 {

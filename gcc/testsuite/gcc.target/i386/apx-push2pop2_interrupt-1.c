@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -mapxf -mgeneral-regs-only -mno-cld -mno-push-args -maccumulate-outgoing-args" } */
+/* { dg-options "-O2 -mapx-features=egpr,push2pop2 -mgeneral-regs-only -mno-cld -mno-push-args -maccumulate-outgoing-args" } */
 
 extern void foo (void *) __attribute__ ((interrupt));
 

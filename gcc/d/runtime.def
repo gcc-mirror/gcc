@@ -1,5 +1,5 @@
 /* runtime.def -- Definitions for D runtime functions.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -69,18 +69,6 @@ DEF_D_RUNTIME (DYNAMIC_CAST, "_d_dynamic_cast", RT(OBJECT),
 	       P2(OBJECT, CLASSINFO), 0)
 DEF_D_RUNTIME (INTERFACE_CAST, "_d_interface_cast", RT(OBJECT),
 	       P2(OBJECT, CLASSINFO), 0)
-
-/* Used when calling new on an array.  The `i' variant is for when the
-   initializer is nonzero, and the `m' variant is when initializing a
-   multi-dimensional array.  */
-DEF_D_RUNTIME (NEWARRAYT, "_d_newarrayT", RT(ARRAY_VOID),
-	       P2(CONST_TYPEINFO, SIZE_T), 0)
-DEF_D_RUNTIME (NEWARRAYIT, "_d_newarrayiT", RT(ARRAY_VOID),
-	       P2(CONST_TYPEINFO, SIZE_T), 0)
-DEF_D_RUNTIME (NEWARRAYMTX, "_d_newarraymTX", RT(ARRAY_VOID),
-	       P2(CONST_TYPEINFO, ARRAY_SIZE_T), 0)
-DEF_D_RUNTIME (NEWARRAYMITX, "_d_newarraymiTX", RT(ARRAY_VOID),
-	       P2(CONST_TYPEINFO, ARRAY_SIZE_T), 0)
 
 /* Used for allocating an array literal on the GC heap.  */
 DEF_D_RUNTIME (ARRAYLITERALTX, "_d_arrayliteralTX", RT(VOIDPTR),

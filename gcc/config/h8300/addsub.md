@@ -239,3 +239,80 @@
   "reload_completed"
   "xor.w\\t#32768,%e0"
   [(set_attr "length" "4")])
+
+(define_expand "uaddv<mode>4"
+  [(set (match_operand:QHSI 0 "register_operand" "")
+	(plus:QHSI (match_operand:QHSI 1 "register_operand" "")
+		   (match_operand:QHSI 2 "register_operand" "")))
+   (set (pc)
+	(if_then_else (ltu (match_dup 0) (match_dup 1))
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
+  "")
+
+(define_insn_and_split "*uaddv"
+  [(set (match_operand:QHSI2 3 "register_operand" "=&r")
+	(ltu:QHSI2 (plus:QHSI (match_operand:QHSI 1 "register_operand" "%0")
+			   (match_operand:QHSI 2 "register_operand" "r"))
+		(match_dup 1)))
+   (set (match_operand:QHSI 0 "register_operand" "=r")
+	(plus:QHSI (match_dup 1) (match_dup 2)))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 3) (ltu:QHSI2 (plus:QHSI (match_dup 1) (match_dup 2))
+					  (match_dup 1)))
+	      (set (match_dup 0) (plus:QHSI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REG))])])
+
+(define_insn "*uaddv"
+  [(set (match_operand:QHSI2 3 "register_operand" "=&r")
+	(ltu:QHSI2 (plus:QHSI (match_operand:QHSI 1 "register_operand" "%0")
+			     (match_operand:QHSI 2 "register_operand" "r"))
+		(match_dup 1)))
+   (set (match_operand:QHSI 0 "register_operand" "=r")
+	(plus (match_dup 1) (match_dup 2)))
+   (clobber (reg:CC CC_REG))]
+  ""
+{
+  if (E_<QHSI2:MODE>mode == E_QImode)
+    {
+      if (E_<QHSI:MODE>mode == E_QImode)
+	return "sub.b\t%X3,%X3\;add.b\t%X2,%X0\;addx\t%X3,%X3";
+      else if (E_<QHSI:MODE>mode == E_HImode)
+	return "sub.b\t%X3,%X3\;add.w\t%T2,%T0\;addx\t%X3,%X3";
+      else if (E_<QHSI:MODE>mode == E_SImode)
+	return "sub.b\t%X3,%X3\;add.l\t%S2,%S0\;addx\t%X3,%X3";
+    }
+  else if (E_<QHSI2:MODE>mode == E_HImode)
+    {
+      if (E_<QHSI:MODE>mode == E_QImode)
+	return "sub.w\t%T3,%T3\;add.b\t%X2,%X0\;addx\t%X3,%X3";
+      else if (E_<QHSI:MODE>mode == E_HImode)
+	return "sub.w\t%T3,%T3\;add.w\t%T2,%T0\;addx\t%X3,%X3";
+      else if (E_<QHSI:MODE>mode == E_SImode)
+	return "sub.w\t%T3,%T3\;add.l\t%S2,%S0\;addx\t%X3,%X3";
+    }
+  else if (E_<QHSI2:MODE>mode == E_SImode)
+    {
+      if (E_<QHSI:MODE>mode == E_QImode)
+	return "sub.l\t%S3,%S3\;add.b\t%X2,%X0\;addx\t%X3,%X3";
+      else if (E_<QHSI:MODE>mode == E_HImode)
+	return "sub.l\t%S3,%S3\;add.w\t%T2,%T0\;addx\t%X3,%X3";
+      else if (E_<QHSI:MODE>mode == E_SImode)
+	return "sub.l\t%S3,%S3\;add.l\t%S2,%S0\;addx\t%X3,%X3";
+    }
+  else
+    gcc_unreachable ();
+}
+  [(set_attr "length" "6")])
+
+(define_expand "usubv<mode>4"
+  [(set (match_operand:QHSI 0 "register_operand" "")
+	(minus:QHSI (match_operand:QHSI 1 "register_operand" "")
+		    (match_operand:QHSI 2 "register_operand" "")))
+   (set (pc)
+	(if_then_else (ltu (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
+  "")

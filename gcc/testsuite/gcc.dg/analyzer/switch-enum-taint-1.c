@@ -1,6 +1,3 @@
-// TODO: remove need for this option
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
-
 #include "analyzer-decls.h"
 
 /* Verify the handling of "switch (enum_value)".  */

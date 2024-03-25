@@ -155,10 +155,9 @@ class double_save_thread : public gil_diagnostic
     return m_call == sub_other.m_call;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    return warning_at (rich_loc, get_controlling_option (),
-		       "nested usage of %qs", "Py_BEGIN_ALLOW_THREADS");
+    return ctxt.warn ("nested usage of %qs", "Py_BEGIN_ALLOW_THREADS");
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) final override
@@ -194,19 +193,16 @@ class fncall_without_gil : public gil_diagnostic
 	    && m_arg_idx == sub_other.m_arg_idx);
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
     if (m_callee_fndecl)
-      return warning_at (rich_loc, get_controlling_option (),
-			 "use of PyObject as argument %i of %qE"
-			 " without the GIL",
-			 m_arg_idx + 1, m_callee_fndecl);
+      return ctxt.warn ("use of PyObject as argument %i of %qE"
+			" without the GIL",
+			m_arg_idx + 1, m_callee_fndecl);
     else
-      return warning_at (rich_loc, get_controlling_option (),
-			 "use of PyObject as argument %i of call"
-			 " without the GIL",
-			 m_arg_idx + 1, m_callee_fndecl);
+      return ctxt.warn ("use of PyObject as argument %i of call"
+			" without the GIL",
+			m_arg_idx + 1, m_callee_fndecl);
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) final override
@@ -245,11 +241,9 @@ class pyobject_usage_without_gil : public gil_diagnostic
 			((const pyobject_usage_without_gil&)base_other).m_expr);
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
-    return warning_at (rich_loc, get_controlling_option (),
-		       "use of PyObject %qE without the GIL", m_expr);
+    return ctxt.warn ("use of PyObject %qE without the GIL", m_expr);
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) final override

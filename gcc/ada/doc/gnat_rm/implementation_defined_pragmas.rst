@@ -329,6 +329,20 @@ this pragma serves no purpose but is ignored
 rather than rejected to allow common sets of sources to be used
 in the two situations.
 
+.. _Pragma-Always_Terminates:
+
+Pragma Always_Terminates
+========================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Always_Terminates [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect ``Always_Terminates``
+in the SPARK 2014 Reference Manual, section 7.1.2.
+
 .. _Pragma-Annotate:
 
 Pragma Annotate
@@ -2472,7 +2486,9 @@ Syntax:
 This is a configuration pragma
 that takes a single argument that is a simple identifier. Any subsequent
 use of a pragma whose pragma identifier matches this argument will be
-silently ignored. This may be useful when legacy code or code intended
+silently ignored. Any preceding use of a pragma whose pragma identifier
+matches this argument will be parsed and then ignored.
+This may be useful when legacy code or code intended
 for compilation with some other compiler contains pragmas that match the
 name, but not the exact implementation, of a GNAT pragma. The use of this
 pragma allows such pragmas to be ignored, which may be useful in CodePeer
@@ -5816,6 +5832,20 @@ Syntax:
 This pragma is provided for compatibility with other Ada implementations. It
 is recognized but ignored by all current versions of GNAT.
 
+.. _Pragma-Side_Effects:
+
+Pragma Side_Effects
+===================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Side_Effects [ (static_boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect
+``Side_Effects`` in the SPARK Reference Manual, section 6.1.11.
+
 .. _Pragma-Simple_Storage_Pool_Type:
 
 Pragma Simple_Storage_Pool_Type
@@ -6827,6 +6857,37 @@ This pragma may appear as a configuration pragma, or in a declarative
 part or package specification. In the latter case it applies to
 uses up to the end of the corresponding statement sequence or
 sequence of package declarations.
+
+Pragma User_Aspect_Definition
+=============================
+
+Syntax:
+
+
+.. code-block:: ada
+
+  pragma User_Aspect_Definition
+    (Identifier {, Identifier [(Identifier {, Identifier})]});
+
+
+This configuration pragma defines a new aspect, making it available for
+subsequent use in a User_Aspect aspect specification. The first
+identifier is the name of the new aspect. Any subsequent arguments
+specify the names of other aspects. A subsequent name for which no parenthesized
+arguments are given shall denote either a Boolean-valued
+non-representation aspect or an aspect that has been defined by another
+User_Aspect_Definition pragma. A name for which one or more arguments are
+given shall be either Annotate or Local_Restrictions (and the arguments shall
+be appropriate for the named aspect). This pragma, together with the
+User_Aspect aspect, provides a mechanism for
+avoiding textual duplication if some set of aspect specifications is needed
+in multiple places. This is somewhat analogous to how profiles allow avoiding
+duplication of Restrictions pragmas. The visibility rules for an aspect
+defined by a User_Aspect_Definition pragma are the same as for a check name
+introduced by a Check_Name pragma. If multiple
+definitions are visible for some aspect at some point, then the
+definitions must agree. A predefined aspect cannot be redefined.
+
 
 Pragma Unimplemented_Unit
 =========================

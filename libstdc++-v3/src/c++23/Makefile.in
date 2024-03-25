@@ -121,7 +121,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__23convenience_la_LIBADD =
-am__objects_1 = stacktrace.lo
+am__objects_1 = stacktrace.lo print.lo
 am__objects_2 =
 @GLIBCXX_HOSTED_TRUE@am_libc__23convenience_la_OBJECTS =  \
 @GLIBCXX_HOSTED_TRUE@	$(am__objects_1) $(am__objects_2)
@@ -430,7 +430,7 @@ headers =
 
 # XTEMPLATE_FLAGS = -fno-implicit-templates
 @ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = 
-sources = stacktrace.cc
+sources = stacktrace.cc print.cc
 @GLIBCXX_HOSTED_FALSE@libc__23convenience_la_SOURCES = 
 @GLIBCXX_HOSTED_TRUE@libc__23convenience_la_SOURCES = $(sources)  $(inst_sources)
 
@@ -741,6 +741,12 @@ uninstall-am:
 
 
 vpath % $(top_srcdir)/src/c++23
+
+# Use C++26 so that std::filebuf::native_handle() is available.
+print.lo: print.cc
+	$(LTCXXCOMPILE) -std=gnu++26 -c $<
+print.o: print.cc
+	$(CXXCOMPILE) -std=gnu++26 -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

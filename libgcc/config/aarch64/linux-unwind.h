@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is free software; you can redistribute it and/or modify it
@@ -77,7 +77,10 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
     }
 
   rt_ = context->cfa;
-  sc = &rt_->uc.uc_mcontext;
+  /* Historically, the uc_mcontext member was of type struct sigcontext, but
+     glibc uses a different type now with member names in the implementation
+     namespace.  */
+  sc = (struct sigcontext *) &rt_->uc.uc_mcontext;
 
 /* This define duplicates the definition in aarch64.md */
 #define SP_REGNUM 31

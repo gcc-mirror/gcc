@@ -5,8 +5,12 @@
 
    Written by Kaveh R. Ghazi, 10/30/2000.  */
 
+#define _GNU_SOURCE /* For fputs_unlocked.  */
 #include <stdio.h>
 extern void abort(void);
+
+/* Not all systems have fputs_unlocked.  See fputs-lib.c.  */
+extern int (fputs_unlocked) (const char *, FILE *);
 
 int i;
 

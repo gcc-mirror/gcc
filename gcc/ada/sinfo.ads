@@ -845,6 +845,11 @@ package Sinfo is
    --    is used for translation of the at end handler into a normal exception
    --    handler.
 
+   --  Ancestor_Type
+   --    Present in record N_Aggregate nodes. Used to store the first global
+   --    ancestor of the type of the aggregate in a generic context, if any,
+   --    when the type is a derived tagged type. Otherwise Empty.
+
    --  Aspect_On_Partial_View
    --    Present on an N_Aspect_Specification node. For an aspect that applies
    --    to a type entity, indicates whether the specification appears on the
@@ -961,6 +966,20 @@ package Sinfo is
    --    Present in N_Object_Renaming_Declaration nodes. True if this node was
    --    was constructed as part of the expansion of an iterator
    --    specification.
+
+   --  Compare_Type
+   --    Present in N_Op_Compare nodes. Set during resolution to the type of
+   --    the operands. It is used to propagate the type of the operands from
+   --    a N_Op_Compare node in a generic construct to the nodes created from
+   --    it in the various instances, when this type is global to the generic
+   --    construct. Resolution for global types cannot be redone in instances
+   --    because the instantiation can be done out of context, e.g. for bodies,
+   --    and the visibility of global types is incorrect in this case; that is
+   --    why the result of the resolution done in the generic construct needs
+   --    to be available in the instances but, unlike for arithmetic operators,
+   --    the Etype cannot be used to that effect for comparison operators. It
+   --    is also used as the type subject to the Has_Private_View processing on
+   --    the nodes instead of the Etype.
 
    --  Compile_Time_Known_Aggregate
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
@@ -1708,12 +1727,6 @@ package Sinfo is
    --  Is_Expanded_Contract
    --    Present in N_Contract nodes. Set if the contract has already undergone
    --    expansion activities.
-
-   --  Is_Finalization_Wrapper
-   --    This flag is present in N_Block_Statement nodes. It is set when the
-   --    block acts as a wrapper of a handled construct which has controlled
-   --    objects. The wrapper prevents interference between exception handlers
-   --    and At_End handlers.
 
    --  Is_Generic_Contract_Pragma
    --    This flag is present in N_Pragma nodes. It is set when the pragma is
@@ -4073,7 +4086,7 @@ package Sinfo is
       --  Expressions (set to No_List if none or null record case)
       --  Component_Associations (set to No_List if none)
       --  Null_Record_Present
-      --  Aggregate_Bounds
+      --  Aggregate_Bounds (array) or Ancestor_Type (record)
       --  Associated_Node
       --  Compile_Time_Known_Aggregate
       --  Expansion_Delayed
@@ -4507,31 +4520,37 @@ package Sinfo is
 
       --  N_Op_Eq
       --  Sloc points to =
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Ne
       --  Sloc points to /=
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Lt
       --  Sloc points to <
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Le
       --  Sloc points to <=
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Gt
       --  Sloc points to >
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Ge
       --  Sloc points to >=
+      --  Compare_Type
       --  plus fields for binary operator
       --  plus fields for expression
 
@@ -5218,7 +5237,6 @@ package Sinfo is
       --  Is_Task_Allocation_Block
       --  Exception_Junk
       --  Is_Abort_Block
-      --  Is_Finalization_Wrapper
       --  Is_Initialization_Block
       --  Is_Task_Master
       --  At_End_Proc (set to Empty if no clean up procedure)

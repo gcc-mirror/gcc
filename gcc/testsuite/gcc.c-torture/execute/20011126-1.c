@@ -1,5 +1,7 @@
 /* Produced a overflow in ifcvt.c, causing S to contain 0xffffffff7fffffff.  */
 
+void abort (void);
+
 int a = 1;
 
 int main ()

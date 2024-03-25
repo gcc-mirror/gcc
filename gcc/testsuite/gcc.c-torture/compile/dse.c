@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 typedef unsigned long microblaze_reg_t;
 struct pt_regs
 {

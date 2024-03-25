@@ -1,6 +1,12 @@
 /* { dg-require-effective-target alloca } */
 typedef unsigned long grub_uint64_t;
 typedef grub_uint64_t grub_size_t;
+void grub_putchar (char);
+void cl_set_pos (void);
+void cl_print (grub_size_t, char);
+void grub_memmove (void);
+void cl_delete (grub_size_t);
+void
 grub_cmdline_get (unsigned max_len, int echo_char)
 {
   unsigned xpos, ypos, ystart;

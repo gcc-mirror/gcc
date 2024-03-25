@@ -1,6 +1,6 @@
 /* Gimple folding definitions.
 
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -60,7 +60,8 @@ extern tree gimple_fold_indirect_ref (tree);
 extern bool gimple_fold_builtin_sprintf (gimple_stmt_iterator *);
 extern bool gimple_fold_builtin_snprintf (gimple_stmt_iterator *);
 extern bool arith_code_with_undefined_signed_overflow (tree_code);
-extern gimple_seq rewrite_to_defined_overflow (gimple *, bool = false);
+extern void rewrite_to_defined_overflow (gimple_stmt_iterator *);
+extern gimple_seq rewrite_to_defined_overflow (gimple *);
 extern void replace_call_with_value (gimple_stmt_iterator *, tree);
 extern tree tree_vec_extract (gimple_stmt_iterator *, tree, tree, tree, tree);
 extern void gsi_replace_with_seq_vops (gimple_stmt_iterator *, gimple_seq);

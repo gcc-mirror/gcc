@@ -2,7 +2,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_arch_v7a_ok } */
-/* { dg-options "-O0 -march=armv7-a" } */
+/* { dg-options "-O0 -march=armv7-a+fp" } */
 
 struct _NSPoint
 {

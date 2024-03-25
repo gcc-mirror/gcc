@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2627,7 +2627,9 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   gfc_component *comp;
   bool has_inquiry_part;
 
-  if (expr->expr_type != EXPR_VARIABLE && expr->expr_type != EXPR_FUNCTION)
+  if (expr->expr_type != EXPR_VARIABLE
+      && expr->expr_type != EXPR_FUNCTION
+      && !(expr->expr_type == EXPR_NULL && expr->ts.type != BT_UNKNOWN))
     gfc_internal_error ("gfc_variable_attr(): Expression isn't a variable");
 
   sym = expr->symtree->n.sym;
@@ -2652,6 +2654,22 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   target = attr.target;
   if (pointer || attr.proc_pointer)
     target = 1;
+
+  /* F2018:11.1.3.3: Other attributes of associate names
+     "The associating entity does not have the ALLOCATABLE or POINTER
+     attributes; it has the TARGET attribute if and only if the selector is
+     a variable and has either the TARGET or POINTER attribute."  */
+  if (sym->attr.associate_var && sym->assoc && sym->assoc->target)
+    {
+      if (sym->assoc->target->expr_type == EXPR_VARIABLE)
+	{
+	  symbol_attribute tgt_attr;
+	  tgt_attr = gfc_expr_attr (sym->assoc->target);
+	  target = (tgt_attr.pointer || tgt_attr.target);
+	}
+      else
+	target = 0;
+    }
 
   if (ts != NULL && expr->ts.type == BT_UNKNOWN)
     *ts = sym->ts;

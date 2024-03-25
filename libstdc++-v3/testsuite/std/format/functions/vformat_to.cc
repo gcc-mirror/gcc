@@ -29,17 +29,22 @@ private:
 void
 test_move_only()
 {
+  const char arg1[] = "matte";
+  int arg2 = '!';
+
   std::string str;
   move_only_iterator<char> mo(std::back_inserter(str));
   auto res = std::vformat_to(std::move(mo), "for{:.3} that{:c}",
-			     std::make_format_args("matte", (int)'!'));
+			     std::make_format_args(arg1, arg2));
   static_assert(std::is_same_v<decltype(res), decltype(mo)>);
   VERIFY( str == "format that!" );
 
+  const wchar_t warg1[] = L"matte";
+  long warg2 = L'!';
   std::wstring wstr;
   move_only_iterator<wchar_t> wmo(std::back_inserter(wstr));
   auto wres = std::vformat_to(std::move(wmo), L"for{:.3} that{:c}",
-			      std::make_wformat_args(L"matte", (long)L'!'));
+			      std::make_wformat_args(warg1, warg2));
   static_assert(std::is_same_v<decltype(wres), decltype(wmo)>);
   VERIFY( wstr == L"format that!" );
 }

@@ -137,61 +137,55 @@ void
 f_pr90868_2 (void)
 {
   extern int we0;
-#pragma acc declare create(we0) /* { dg-error "variable 'we0' used more than once with '#pragma acc declare'" "" { target c } } */
+#pragma acc declare create(we0) /* { dg-error "variable 'we0' used more than once with '#pragma acc declare'" } */
 
   extern int we1;
-#pragma acc declare copyin(we1) /* { dg-error "variable 'we1' used more than once with '#pragma acc declare'" "" { target c } } */
+#pragma acc declare copyin(we1) /* { dg-error "variable 'we1' used more than once with '#pragma acc declare'" } */
 
   extern int *we2;
-#pragma acc declare deviceptr(we2) /* { dg-error "variable 'we2' used more than once with '#pragma acc declare'" "" { target c } } */
+#pragma acc declare deviceptr(we2) /* { dg-error "variable 'we2' used more than once with '#pragma acc declare'" } */
 
   extern int we3;
-#pragma acc declare device_resident(we3) /* { dg-error "variable 'we3' used more than once with '#pragma acc declare'" "" { target c } } */
+#pragma acc declare device_resident(we3) /* { dg-error "variable 'we3' used more than once with '#pragma acc declare'" } */
 
   extern int we4;
-#pragma acc declare link(we4) /* { dg-error "variable 'we4' used more than once with '#pragma acc declare'" "" { target c } } */
+#pragma acc declare link(we4) /* { dg-error "variable 'we4' used more than once with '#pragma acc declare'" } */
 
   extern int we5;
-#pragma acc declare present_or_copyin(we5) /* { dg-error "variable 'we5' used more than once with '#pragma acc declare'" "" { target c } } */
+#pragma acc declare present_or_copyin(we5) /* { dg-error "variable 'we5' used more than once with '#pragma acc declare'" } */
  
   extern int we6;
-#pragma acc declare present_or_create(we6) /* { dg-error "variable 'we6' used more than once with '#pragma acc declare'" "" { target c } } */
+#pragma acc declare present_or_create(we6) /* { dg-error "variable 'we6' used more than once with '#pragma acc declare'" } */
 }
 
 
 /* The same as 'f_pr90868' but everything contained in an OpenACC 'data'
    construct.  */
 
-#ifdef __cplusplus
-/* TODO PR90868
-
-   C++: ICE during gimplification.  */
-#else
 void
 f_pr90868_data (void)
 {
 #pragma acc data
   {
     extern int we0;
-# pragma acc declare create(we0) /* { dg-error "variable 'we0' used more than once with '#pragma acc declare'" "" { target c } } */
+# pragma acc declare create(we0) /* { dg-error "variable 'we0' used more than once with '#pragma acc declare'" } */
 
     extern int we1;
-# pragma acc declare copyin(we1) /* { dg-error "variable 'we1' used more than once with '#pragma acc declare'" "" { target c } } */
+# pragma acc declare copyin(we1) /* { dg-error "variable 'we1' used more than once with '#pragma acc declare'" } */
 
     extern int *we2;
-# pragma acc declare deviceptr(we2) /* { dg-error "variable 'we2' used more than once with '#pragma acc declare'" "" { target c } } */
+# pragma acc declare deviceptr(we2) /* { dg-error "variable 'we2' used more than once with '#pragma acc declare'" } */
 
     extern int we3;
-# pragma acc declare device_resident(we3) /* { dg-error "variable 'we3' used more than once with '#pragma acc declare'" "" { target c } } */
+# pragma acc declare device_resident(we3) /* { dg-error "variable 'we3' used more than once with '#pragma acc declare'" } */
 
     extern int we4;
-# pragma acc declare link(we4) /* { dg-error "variable 'we4' used more than once with '#pragma acc declare'" "" { target c } } */
+# pragma acc declare link(we4) /* { dg-error "variable 'we4' used more than once with '#pragma acc declare'" } */
 
     extern int we5;
-# pragma acc declare present_or_copyin(we5) /* { dg-error "variable 'we5' used more than once with '#pragma acc declare'" "" { target c } } */
+# pragma acc declare present_or_copyin(we5) /* { dg-error "variable 'we5' used more than once with '#pragma acc declare'" } */
  
     extern int we6;
-# pragma acc declare present_or_create(we6) /* { dg-error "variable 'we6' used more than once with '#pragma acc declare'" "" { target c } } */
+# pragma acc declare present_or_create(we6) /* { dg-error "variable 'we6' used more than once with '#pragma acc declare'" } */
   }
 }
-#endif

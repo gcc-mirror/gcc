@@ -1,7 +1,7 @@
-/* Test C2x enumerations with values not representable in int are not diagnosed
-   for C11 with -pedantic-errors -Wno-c11-c2x-compat.  */
+/* Test C23 enumerations with values not representable in int are not diagnosed
+   for C11 with -pedantic-errors -Wno-c11-c23-compat.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c11 -pedantic-errors -Wno-c11-c2x-compat" } */
+/* { dg-options "-std=c11 -pedantic-errors -Wno-c11-c23-compat" } */
 
 enum e1 { e1a = -__LONG_LONG_MAX__ - 1 };
 

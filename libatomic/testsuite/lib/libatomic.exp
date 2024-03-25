@@ -146,13 +146,22 @@ proc libatomic_init { args } {
 
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
+	# If '--with-build-sysroot=[...]' was specified, use it for build-tree
+	# testing.
+	global SYSROOT_CFLAGS_FOR_TARGET
+	lappend ALWAYS_CFLAGS "additional_flags=${SYSROOT_CFLAGS_FOR_TARGET}"
+
 	lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
 	lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
-	lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
+        if [istarget *-*-darwin*] {
+            lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
+	} else {
+	    lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
+	}
     }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
 
-    if [istarget *-*-darwin*] {
+    if [istarget *-*-darwin\[89\]*] {
 	lappend ALWAYS_CFLAGS "additional_flags=-shared-libgcc"
     }
 

@@ -1,7 +1,7 @@
 # @configure_input@
 # Makefile for libcpp.  Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 2004-2023 Free Software Foundation, Inc.
+# Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 #This file is part of libcpp.
 
@@ -270,7 +270,9 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 ETAGS = @ETAGS@
 
 TAGS_SOURCES = $(libcpp_a_SOURCES) internal.h system.h ucnid.h \
-    include/cpplib.h include/line-map.h include/mkdeps.h include/symtab.h
+    include/cpplib.h include/line-map.h include/mkdeps.h include/symtab.h \
+    include/rich-location.h
+
 
 TAGS: $(TAGS_SOURCES)
 	cd $(srcdir) && $(ETAGS) $(TAGS_SOURCES)

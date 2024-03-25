@@ -1,5 +1,5 @@
 /* Header file for libgcc2.c.  */
-/* Copyright (C) 2000-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef HIDE_EXPORTS
 #pragma GCC visibility push(default)
 #endif
+
+extern void __builtin_nested_func_ptr_created (void *, void *, void **);
+extern void __builtin_nested_func_ptr_deleted (void);
 
 extern int __gcc_bcmp (const unsigned char *, const unsigned char *, size_t);
 extern void __clear_cache (void *, void *);
@@ -550,6 +553,10 @@ extern int __parityDI2 (UDWtype);
 #define int bogus_type
 
 extern void __enable_execute_stack (void *);
+
+extern void __strub_enter (void **);
+extern void __strub_update (void**);
+extern void __strub_leave (void **);
 
 #ifndef HIDE_EXPORTS
 #pragma GCC visibility pop

@@ -1,5 +1,5 @@
 /* pecoff.c -- Get debug data from a PE/COFFF file for backtraces.
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
    Adapted from elf.c by Tristan Gingold, AdaCore.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,18 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #include "backtrace.h"
 #include "internal.h"
+
+#ifdef HAVE_WINDOWS_H
+#ifndef WIN32_MEAN_AND_LEAN
+#define WIN32_MEAN_AND_LEAN
+#endif
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#include <windows.h>
+#endif
 
 /* Coff file header.  */
 
@@ -610,6 +622,7 @@ coff_add (struct backtrace_state *state, int descriptor,
   int debug_view_valid;
   int is_64;
   uintptr_t image_base;
+  uintptr_t base_address = 0;
   struct dwarf_sections dwarf_sections;
 
   *found_sym = 0;
@@ -856,7 +869,16 @@ coff_add (struct backtrace_state *state, int descriptor,
 				  + (sections[i].offset - min_offset));
     }
 
-  if (!backtrace_dwarf_add (state, /* base_address */ 0, &dwarf_sections,
+#ifdef HAVE_WINDOWS_H
+  {
+    uintptr_t module_handle;
+
+    module_handle = (uintptr_t) GetModuleHandle (NULL);
+    base_address = module_handle - image_base;
+  }
+#endif
+
+  if (!backtrace_dwarf_add (state, base_address, &dwarf_sections,
 			    0, /* FIXME: is_bigendian */
 			    NULL, /* altlink */
 			    error_callback, data, fileline_fn,

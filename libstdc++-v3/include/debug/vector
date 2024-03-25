@@ -1,6 +1,6 @@
 // Debugging vector implementation -*- C++ -*-
 
-// Copyright (C) 2003-2023 Free Software Foundation, Inc.
+// Copyright (C) 2003-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,22 +55,27 @@ namespace __gnu_debug
     {
       typedef typename _BaseSequence::size_type size_type;
 
+      _GLIBCXX20_CONSTEXPR
       const _SafeSequence&
       _M_seq() const { return *static_cast<const _SafeSequence*>(this); }
 
     protected:
+      _GLIBCXX20_CONSTEXPR
       _Safe_vector() _GLIBCXX_NOEXCEPT
 	: _M_guaranteed_capacity(0)
       { _M_update_guaranteed_capacity(); }
 
+      _GLIBCXX20_CONSTEXPR
       _Safe_vector(const _Safe_vector&) _GLIBCXX_NOEXCEPT
 	: _M_guaranteed_capacity(0)
       { _M_update_guaranteed_capacity(); }
 
+      _GLIBCXX20_CONSTEXPR
       _Safe_vector(size_type __n) _GLIBCXX_NOEXCEPT
 	: _M_guaranteed_capacity(__n)
       { }
 
+      _GLIBCXX20_CONSTEXPR
       _Safe_vector&
       operator=(const _Safe_vector&) _GLIBCXX_NOEXCEPT
       {
@@ -79,10 +84,12 @@ namespace __gnu_debug
       }
 
 #if __cplusplus >= 201103L
+      _GLIBCXX20_CONSTEXPR
       _Safe_vector(_Safe_vector&& __x) noexcept
 	: _Safe_vector()
       { __x._M_guaranteed_capacity = 0; }
 
+      _GLIBCXX20_CONSTEXPR
       _Safe_vector&
       operator=(_Safe_vector&& __x) noexcept
       {
@@ -98,6 +105,7 @@ namespace __gnu_debug
       _M_requires_reallocation(size_type __elements) const _GLIBCXX_NOEXCEPT
       { return __elements > _M_seq().capacity(); }
 
+      _GLIBCXX20_CONSTEXPR
       void
       _M_update_guaranteed_capacity() _GLIBCXX_NOEXCEPT
       {
@@ -172,15 +180,18 @@ namespace __debug
       vector() = default;
 #endif
 
+      _GLIBCXX20_CONSTEXPR
       explicit
       vector(const _Allocator& __a) _GLIBCXX_NOEXCEPT
       : _Base(__a) { }
 
 #if __cplusplus >= 201103L
+      _GLIBCXX20_CONSTEXPR
       explicit
       vector(size_type __n, const _Allocator& __a = _Allocator())
       : _Base(__n, __a), _Safe_vector(__n) { }
 
+      _GLIBCXX20_CONSTEXPR
       vector(size_type __n, const __type_identity_t<_Tp>& __value,
 	     const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) { }
@@ -197,10 +208,11 @@ namespace __debug
 #else
       template<class _InputIterator>
 #endif
+	_GLIBCXX20_CONSTEXPR
 	vector(_InputIterator __first, _InputIterator __last,
 	       const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__base(
-		  __glibcxx_check_valid_constructor_range(__first, __last)),
+	: _Base(__gnu_debug::__base(std::__is_constant_evaluated() ? __first
+		  : __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __a) { }
 
 #if __cplusplus < 201103L
@@ -212,9 +224,11 @@ namespace __debug
       vector(const vector&) = default;
       vector(vector&&) = default;
 
+      _GLIBCXX20_CONSTEXPR
       vector(const vector& __x, const __type_identity_t<allocator_type>& __a)
       : _Base(__x, __a) { }
 
+      _GLIBCXX20_CONSTEXPR
       vector(vector&& __x, const __type_identity_t<allocator_type>& __a)
       noexcept(
 	std::is_nothrow_constructible<_Base,
@@ -223,6 +237,7 @@ namespace __debug
 	_Base(std::move(__x), __a),
 	_Safe_vector(std::move(__x)) { }
 
+      _GLIBCXX20_CONSTEXPR
       vector(initializer_list<value_type> __l,
 	     const allocator_type& __a = allocator_type())
       : _Base(__l, __a) { }
@@ -231,6 +246,7 @@ namespace __debug
 #endif
 
       /// Construction from a normal-mode vector
+      _GLIBCXX20_CONSTEXPR
       vector(_Base_ref __x)
       : _Base(__x._M_ref) { }
 
@@ -241,12 +257,16 @@ namespace __debug
       vector&
       operator=(vector&&) = default;
 
+      _GLIBCXX20_CONSTEXPR
       vector&
       operator=(initializer_list<value_type> __l)
       {
 	_Base::operator=(__l);
-	this->_M_invalidate_all();
-	this->_M_update_guaranteed_capacity();
+	if (!std::__is_constant_evaluated())
+	  {
+	    this->_M_invalidate_all();
+	    this->_M_update_guaranteed_capacity();
+	  }
 	return *this;
       }
 #endif
@@ -257,9 +277,14 @@ namespace __debug
 #else
       template<typename _InputIterator>
 #endif
+	_GLIBCXX20_CONSTEXPR
 	void
 	assign(_InputIterator __first, _InputIterator __last)
 	{
+	  if (std::__is_constant_evaluated())
+	    return _Base::assign(__gnu_debug::__unsafe(__first),
+				 __gnu_debug::__unsafe(__last));
+
 	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
 	  __glibcxx_check_valid_range2(__first, __last, __dist);
 
@@ -273,21 +298,29 @@ namespace __debug
 	  this->_M_update_guaranteed_capacity();
 	}
 
+      _GLIBCXX20_CONSTEXPR
       void
       assign(size_type __n, const _Tp& __u)
       {
 	_Base::assign(__n, __u);
-	this->_M_invalidate_all();
-	this->_M_update_guaranteed_capacity();
+	if (!std::__is_constant_evaluated())
+	  {
+	    this->_M_invalidate_all();
+	    this->_M_update_guaranteed_capacity();
+	  }
       }
 
 #if __cplusplus >= 201103L
+      _GLIBCXX20_CONSTEXPR
       void
       assign(initializer_list<value_type> __l)
       {
 	_Base::assign(__l);
-	this->_M_invalidate_all();
-	this->_M_update_guaranteed_capacity();
+	if (!std::__is_constant_evaluated())
+	  {
+	    this->_M_invalidate_all();
+	    this->_M_update_guaranteed_capacity();
+	  }
       }
 #endif
 
@@ -295,62 +328,74 @@ namespace __debug
 
       // iterators:
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       iterator
       begin() _GLIBCXX_NOEXCEPT
       { return iterator(_Base::begin(), this); }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       const_iterator
       begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(_Base::begin(), this); }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       iterator
       end() _GLIBCXX_NOEXCEPT
       { return iterator(_Base::end(), this); }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       const_iterator
       end() const _GLIBCXX_NOEXCEPT
       { return const_iterator(_Base::end(), this); }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(end()); }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(end()); }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       reverse_iterator
       rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
 #if __cplusplus >= 201103L
       [[__nodiscard__]]
+      _GLIBCXX20_CONSTEXPR
       const_iterator
       cbegin() const noexcept
       { return const_iterator(_Base::begin(), this); }
 
       [[__nodiscard__]]
+      _GLIBCXX20_CONSTEXPR
       const_iterator
       cend() const noexcept
       { return const_iterator(_Base::end(), this); }
 
       [[__nodiscard__]]
+      _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
       [[__nodiscard__]]
+      _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
@@ -361,9 +406,13 @@ namespace __debug
       using _Base::max_size;
 
 #if __cplusplus >= 201103L
+      _GLIBCXX20_CONSTEXPR
       void
       resize(size_type __sz)
       {
+	if (std::__is_constant_evaluated())
+	  return _Base::resize(__sz);
+
 	bool __realloc = this->_M_requires_reallocation(__sz);
 	if (__sz < this->size())
 	  this->_M_invalidate_after_nth(__sz);
@@ -373,9 +422,13 @@ namespace __debug
 	this->_M_update_guaranteed_capacity();
       }
 
+      _GLIBCXX20_CONSTEXPR
       void
       resize(size_type __sz, const _Tp& __c)
       {
+	if (std::__is_constant_evaluated())
+	  return _Base::resize(__sz, __c);
+
 	bool __realloc = this->_M_requires_reallocation(__sz);
 	if (__sz < this->size())
 	  this->_M_invalidate_after_nth(__sz);
@@ -399,9 +452,13 @@ namespace __debug
 #endif
 
 #if __cplusplus >= 201103L
+      _GLIBCXX20_CONSTEXPR
       void
       shrink_to_fit()
       {
+	if (std::__is_constant_evaluated())
+	  return _Base::shrink_to_fit();
+
 	if (_Base::_M_shrink_to_fit())
 	  {
 	    this->_M_guaranteed_capacity = _Base::capacity();
@@ -411,9 +468,13 @@ namespace __debug
 #endif
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       size_type
       capacity() const _GLIBCXX_NOEXCEPT
       {
+	if (std::__is_constant_evaluated())
+	  return _Base::capacity();
+
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
 	return this->_M_guaranteed_capacity;
 #else
@@ -423,9 +484,13 @@ namespace __debug
 
       using _Base::empty;
 
+      _GLIBCXX20_CONSTEXPR
       void
       reserve(size_type __n)
       {
+	if (std::__is_constant_evaluated())
+	  return _Base::reserve(__n);
+
 	bool __realloc = this->_M_requires_reallocation(__n);
 	_Base::reserve(__n);
 	if (__n > this->_M_guaranteed_capacity)
@@ -436,6 +501,7 @@ namespace __debug
 
       // element access:
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       reference
       operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
@@ -444,6 +510,7 @@ namespace __debug
       }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       const_reference
       operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
@@ -454,6 +521,7 @@ namespace __debug
       using _Base::at;
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       reference
       front() _GLIBCXX_NOEXCEPT
       {
@@ -462,6 +530,7 @@ namespace __debug
       }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       const_reference
       front() const _GLIBCXX_NOEXCEPT
       {
@@ -470,6 +539,7 @@ namespace __debug
       }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       reference
       back() _GLIBCXX_NOEXCEPT
       {
@@ -478,6 +548,7 @@ namespace __debug
       }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       const_reference
       back() const _GLIBCXX_NOEXCEPT
       {
@@ -490,9 +561,13 @@ namespace __debug
       using _Base::data;
 
       // 23.2.4.3 modifiers:
+      _GLIBCXX20_CONSTEXPR
       void
       push_back(const _Tp& __x)
       {
+	if (std::__is_constant_evaluated())
+	  return _Base::push_back(__x);
+
 	bool __realloc = this->_M_requires_reallocation(this->size() + 1);
 	_Base::push_back(__x);
 	if (__realloc)
@@ -502,12 +577,14 @@ namespace __debug
 
 #if __cplusplus >= 201103L
       template<typename _Up = _Tp>
+	_GLIBCXX20_CONSTEXPR
 	typename __gnu_cxx::__enable_if<!std::__are_same<_Up, bool>::__value,
 					void>::__type
 	push_back(_Tp&& __x)
 	{ emplace_back(std::move(__x)); }
 
       template<typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 #if __cplusplus > 201402L
 	reference
 #else
@@ -515,6 +592,9 @@ namespace __debug
 #endif
 	emplace_back(_Args&&... __args)
 	{
+	  if (std::__is_constant_evaluated())
+	    return _Base::emplace_back(std::forward<_Args>(__args)...);
+
 	  bool __realloc = this->_M_requires_reallocation(this->size() + 1);
 	  _Base::emplace_back(std::forward<_Args>(__args)...);
 	  if (__realloc)
@@ -526,19 +606,29 @@ namespace __debug
 	}
 #endif
 
+      _GLIBCXX20_CONSTEXPR
       void
       pop_back() _GLIBCXX_NOEXCEPT
       {
-	__glibcxx_check_nonempty();
-	this->_M_invalidate_if(_Equal(--_Base::end()));
+	if (!std::__is_constant_evaluated())
+	  {
+	    __glibcxx_check_nonempty();
+	    this->_M_invalidate_if(_Equal(--_Base::end()));
+	  }
 	_Base::pop_back();
       }
 
 #if __cplusplus >= 201103L
       template<typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	iterator
 	emplace(const_iterator __position, _Args&&... __args)
 	{
+	  if (std::__is_constant_evaluated())
+	    return iterator(_Base::emplace(__position.base(),
+					   std::forward<_Args>(__args)...),
+			    this);
+
 	  __glibcxx_check_insert(__position);
 	  bool __realloc = this->_M_requires_reallocation(this->size() + 1);
 	  difference_type __offset = __position.base() - _Base::cbegin();
@@ -553,6 +643,7 @@ namespace __debug
 	}
 #endif
 
+      _GLIBCXX20_CONSTEXPR
       iterator
 #if __cplusplus >= 201103L
       insert(const_iterator __position, const _Tp& __x)
@@ -560,6 +651,9 @@ namespace __debug
       insert(iterator __position, const _Tp& __x)
 #endif
       {
+	if (std::__is_constant_evaluated())
+	  return iterator(_Base::insert(__position.base(), __x), this);
+
 	__glibcxx_check_insert(__position);
 	bool __realloc = this->_M_requires_reallocation(this->size() + 1);
 	difference_type __offset = __position.base() - _Base::begin();
@@ -574,20 +668,26 @@ namespace __debug
 
 #if __cplusplus >= 201103L
       template<typename _Up = _Tp>
+	_GLIBCXX20_CONSTEXPR
 	typename __gnu_cxx::__enable_if<!std::__are_same<_Up, bool>::__value,
 					iterator>::__type
 	insert(const_iterator __position, _Tp&& __x)
 	{ return emplace(__position, std::move(__x)); }
 
+      _GLIBCXX20_CONSTEXPR
       iterator
       insert(const_iterator __position, initializer_list<value_type> __l)
       { return this->insert(__position, __l.begin(), __l.end()); }
 #endif
 
 #if __cplusplus >= 201103L
+      _GLIBCXX20_CONSTEXPR
       iterator
       insert(const_iterator __position, size_type __n, const _Tp& __x)
       {
+	if (std::__is_constant_evaluated())
+	  return iterator(_Base::insert(__position.base(), __n, __x), this);
+
 	__glibcxx_check_insert(__position);
 	bool __realloc = this->_M_requires_reallocation(this->size() + __n);
 	difference_type __offset = __position.base() - _Base::cbegin();
@@ -618,10 +718,16 @@ namespace __debug
 #if __cplusplus >= 201103L
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
+	_GLIBCXX20_CONSTEXPR
 	iterator
 	insert(const_iterator __position,
 	       _InputIterator __first, _InputIterator __last)
 	{
+	  if (std::__is_constant_evaluated())
+	    return iterator(_Base::insert(__position.base(),
+					  __gnu_debug::__unsafe(__first),
+					  __gnu_debug::__unsafe(__last)), this);
+
 	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
 	  __glibcxx_check_insert_range(__position, __first, __last, __dist);
 
@@ -673,6 +779,7 @@ namespace __debug
 	}
 #endif
 
+      _GLIBCXX20_CONSTEXPR
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __position)
@@ -680,6 +787,9 @@ namespace __debug
       erase(iterator __position)
 #endif
       {
+	if (std::__is_constant_evaluated())
+	  return iterator(_Base::erase(__position.base()), this);
+
 	__glibcxx_check_erase(__position);
 	difference_type __offset = __position.base() - _Base::begin();
 	_Base_iterator __res = _Base::erase(__position.base());
@@ -687,6 +797,7 @@ namespace __debug
 	return iterator(__res, this);
       }
 
+      _GLIBCXX20_CONSTEXPR
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __first, const_iterator __last)
@@ -694,6 +805,9 @@ namespace __debug
       erase(iterator __first, iterator __last)
 #endif
       {
+	if (std::__is_constant_evaluated())
+	  return iterator(_Base::erase(__first.base(), __last.base()), this);
+
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
@@ -714,25 +828,31 @@ namespace __debug
 #endif
       }
 
+      _GLIBCXX20_CONSTEXPR
       void
       swap(vector& __x)
       _GLIBCXX_NOEXCEPT_IF( noexcept(declval<_Base&>().swap(__x)) )
       {
-	_Safe::_M_swap(__x);
+	if (!std::__is_constant_evaluated())
+	  _Safe::_M_swap(__x);
 	_Base::swap(__x);
 	std::swap(this->_M_guaranteed_capacity, __x._M_guaranteed_capacity);
       }
 
+      _GLIBCXX20_CONSTEXPR
       void
       clear() _GLIBCXX_NOEXCEPT
       {
 	_Base::clear();
-	this->_M_invalidate_all();
+	if (!std::__is_constant_evaluated())
+	  this->_M_invalidate_all();
       }
 
+      _GLIBCXX20_CONSTEXPR
       _Base&
       _M_base() _GLIBCXX_NOEXCEPT { return *this; }
 
+      _GLIBCXX20_CONSTEXPR
       const _Base&
       _M_base() const _GLIBCXX_NOEXCEPT { return *this; }
 
@@ -746,6 +866,7 @@ namespace __debug
     };
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator==(const vector<_Tp, _Alloc>& __lhs,
 	       const vector<_Tp, _Alloc>& __rhs)
@@ -789,6 +910,7 @@ namespace __debug
 #endif // three-way comparison
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     inline void
     swap(vector<_Tp, _Alloc>& __lhs, vector<_Tp, _Alloc>& __rhs)
     _GLIBCXX_NOEXCEPT_IF(noexcept(__lhs.swap(__rhs)))

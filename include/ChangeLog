@@ -1,3 +1,32 @@
+2023-12-15  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_STRUCT_UNORD.
+
+2023-12-10  Tom Tromey  <tom@tromey.com>
+
+	* dwarf2.def (DW_IDX_GNU_internal, DW_IDX_GNU_external): Comment.
+	(DW_IDX_GNU_main, DW_IDX_GNU_language, DW_IDX_GNU_linkage_name):
+	New constants.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_CONSTRAINTS.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* sha1.h (sha1_process_bytes_fn): New typedef.
+	(sha1_choose_process_bytes): Declare.
+
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION): Increment to 3.
+	(GOMP_VERSION_SUPPORTS_INDIRECT_FUNCS): New.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gomp-constants.h (GOACC_FLAG_LOCAL_DEVICE): New flag bit value.
+
 2023-10-12  Zhang, Jun  <jun.zhang@intel.com>
 
 	PR target/109812

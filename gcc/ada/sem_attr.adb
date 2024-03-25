@@ -4981,7 +4981,7 @@ package body Sem_Attr is
          --  Loop_Entry must create a constant initialized by the evaluated
          --  prefix.
 
-         if Is_Limited_View (Etype (P)) then
+         if Is_Inherently_Limited_Type (Etype (P)) then
             Error_Attr_P ("prefix of attribute % cannot be limited");
          end if;
 
@@ -7357,7 +7357,7 @@ package body Sem_Attr is
          then
             Error_Attr_P ("prefix of attribute % must be a record or array");
 
-         elsif Is_Limited_View (P_Type) then
+         elsif Is_Inherently_Limited_Type (P_Type) then
             Error_Attr ("prefix of attribute % cannot be limited", N);
 
          elsif Nkind (E1) /= N_Aggregate then
@@ -8691,6 +8691,26 @@ package body Sem_Attr is
             Set_Is_Static_Expression (N, False);
          elsif not Is_OK_Static_Subtype (P_Type) then
             Set_Raises_Constraint_Error (N);
+         end if;
+
+         --  RM 13.14(8/4): a nonstatic expression in a spec expression does
+         --  not cause freezing, so the representation attributes cannot be
+         --  evaluated at this point if the type is not already frozen.
+
+         if not Static
+           and then In_Spec_Expression
+           and then Id in Attribute_Alignment
+                       |  Attribute_Component_Size
+                       |  Attribute_Max_Alignment_For_Allocation
+                       |  Attribute_Max_Size_In_Storage_Elements
+                       |  Attribute_Object_Size
+                       |  Attribute_Size
+                       |  Attribute_Small
+                       |  Attribute_VADS_Size
+                       |  Attribute_Value_Size
+           and then not Is_Frozen (P_Type)
+         then
+            return;
          end if;
 
       --  Array case. We enforce the constrained requirement of (RM 4.9(7-8))
@@ -12113,15 +12133,17 @@ package body Sem_Attr is
             | Attribute_Code_Address
          =>
             --  To be safe, assume that if the address of a variable is taken,
-            --  it may be modified via this address, so note modification.
+            --  it may be modified via this address, so note modification,
+            --  unless the address is compared directly, which should not be
+            --  considered a modification.
 
-            if Is_Variable (P) then
+            if Is_Variable (P)
+              and then Nkind (Parent (N)) not in N_Op_Compare
+            then
                Note_Possible_Modification (P, Sure => False);
             end if;
 
-            if Nkind (P) in N_Subexpr
-              and then Is_Overloaded (P)
-            then
+            if Nkind (P) in N_Subexpr and then Is_Overloaded (P) then
                Get_First_Interp (P, Index, It);
                Get_Next_Interp (Index, It);
 
@@ -12135,11 +12157,7 @@ package body Sem_Attr is
             if not Is_Entity_Name (P)
               or else not Is_Overloadable (Entity (P))
             then
-               if not Is_Task_Type (Etype (P))
-                 or else Nkind (P) = N_Explicit_Dereference
-               then
-                  Resolve (P);
-               end if;
+               Resolve (P);
             end if;
 
             --  If this is the name of a derived subprogram, or that of a

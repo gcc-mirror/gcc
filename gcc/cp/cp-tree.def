@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -24,13 +24,14 @@ along with GCC; see the file COPYING3.  If not see
 /* An OFFSET_REF is used in two situations:
 
    1. An expression of the form `A::m' where `A' is a class and `m' is
-      a non-static member.  In this case, operand 0 will be a TYPE
-      (corresponding to `A') and operand 1 will be a FIELD_DECL,
-      BASELINK, or TEMPLATE_ID_EXPR (corresponding to `m').
+      a non-static member or an overload set.  In this case, operand 0
+      will be a TYPE (corresponding to `A') and operand 1 will be a
+      FIELD_DECL, BASELINK, or TEMPLATE_ID_EXPR (corresponding to `m').
 
-      The expression is a pointer-to-member if its address is taken,
-      but simply denotes a member of the object if its address is not
-      taken.
+      The expression is a pointer-to-member if its address is taken (and
+      if, after any overload resolution, 'm' does not designate a
+      static or explicit object member function).  It simply denotes a
+      member of the object if its address is not taken.
 
       This form is only used during the parsing phase; once semantic
       analysis has taken place they are eliminated.
@@ -262,17 +263,6 @@ DEFTREECODE (TYPEID_EXPR, "typeid_expr", tcc_expression, 1)
 DEFTREECODE (NOEXCEPT_EXPR, "noexcept_expr", tcc_unary, 1)
 DEFTREECODE (SPACESHIP_EXPR, "spaceship_expr", tcc_expression, 2)
 
-/* A placeholder for an expression that is not type-dependent, but
-   does occur in a template.  When an expression that is not
-   type-dependent appears in a larger expression, we must compute the
-   type of that larger expression.  That computation would normally
-   modify the original expression, which would change the mangling of
-   that expression if it appeared in a template argument list.  In
-   that situation, we create a NON_DEPENDENT_EXPR to take the place of
-   the original expression.  The expression is the only operand -- it
-   is only needed for diagnostics.  */
-DEFTREECODE (NON_DEPENDENT_EXPR, "non_dependent_expr", tcc_expression, 1)
-
 /* CTOR_INITIALIZER is a placeholder in template code for a call to
    setup_vtbl_pointer (and appears in all functions, not just ctors).  */
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", tcc_expression, 1)
@@ -456,8 +446,7 @@ DEFTREECODE (TRAIT_TYPE, "trait_type", tcc_type, 0)
    LAMBDA_EXPR_CAPTURE_LIST holds the capture-list, including `this'.
    LAMBDA_EXPR_THIS_CAPTURE goes straight to the capture of `this', if it exists.
    LAMBDA_EXPR_PENDING_PROXIES is a vector of capture proxies which need to
-   be pushed once scope returns to the lambda.
-   LAMBDA_EXPR_MUTABLE_P signals whether this lambda was declared mutable.  */
+   be pushed once scope returns to the lambda.  */
 DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)
 
 /* The declared type of an expression.  This is a C++0x extension.

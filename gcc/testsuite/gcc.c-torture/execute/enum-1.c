@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef enum
 {
   END = -1,
@@ -34,7 +37,8 @@ atom ()
     return 0;
 }
 
-main ()
+int
+main (void)
 {
   tok = 0;
   if (atom () != 1)

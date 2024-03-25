@@ -1,3 +1,66 @@
+2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.am: Allow overriding EXEPCT.
+	* Makefile.in: Regenerate.
+
+2023-12-18  Yang Yujie  <yangyujie@loongson.cn>
+
+	* m4/druntime/cpu.m4: Support loongarch* targets.
+	* libdruntime/Makefile.am: Same.
+	* libdruntime/Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2023-12-18  Yang Yujie  <yangyujie@loongson.cn>
+
+	* libdruntime/config/loongarch/switchcontext.S: New file.
+
+2023-12-18  liushuyu  <liushuyu011@gmail.com>
+
+	* configure.tgt: Enable libphobos for LoongArch architecture.
+	* libdruntime/gcc/sections/elf.d: Add TLS_DTV_OFFSET constant for
+	LoongArch64.
+	* libdruntime/gcc/unwind/generic.d: Add __aligned__ constant for
+	LoongArch64.
+
+2023-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 2bbf64907c.
+	* src/MERGE: Merge upstream phobos b64bfbf91.
+
+2023-11-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime ff57fec515.
+	* src/MERGE: Merge upstream phobos 17bafda79.
+
+2023-11-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos fc06c514a.
+
+2023-11-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 643b1261bb.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_FREEBSD): Add
+	core/sys/freebsd/ifaddrs.d, core/sys/freebsd/net/if_dl.d,
+	core/sys/freebsd/sys/socket.d, core/sys/freebsd/sys/types.d.
+	(DRUNTIME_DSOURCES_LINUX): Add core/sys/linux/linux/if_arp.d,
+	core/sys/linux/linux/if_packet.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 1c98326e7.
+
+2023-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e48bc0987d.
+	* src/MERGE: Merge upstream phobos 2458e8f82.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+	* libdruntime/Makefile.am: Handle Darwin rpaths.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am: Handle Darwin rpaths.
+	* src/Makefile.in: Regenerate.
+
 2023-10-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 4c18eed967.
@@ -1783,7 +1846,7 @@
 	* testsuite/testsuite_flags.in: New file.
 
 
-Copyright (C) 2018-2023 Free Software Foundation, Inc.
+Copyright (C) 2018-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

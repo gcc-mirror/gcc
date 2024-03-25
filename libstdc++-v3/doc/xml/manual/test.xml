@@ -266,10 +266,8 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
 
      <para>
        Archives of test results for various versions and platforms are
-       available on the GCC website in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/gcc-4.3/buildstat.html">build
-       status</link> section of each individual release, and are also
        archived on a daily basis on the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/gcc-testresults/current">gcc-testresults</link>
-       mailing list. Please check either of these places for a similar
+       mailing list. Please check there for a similar
        combination of source version, operating system, and host CPU.
      </para>
   </section>

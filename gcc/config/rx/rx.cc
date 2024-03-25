@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RX processors.
-   Copyright (C) 2008-2023 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -2760,7 +2760,7 @@ rx_handle_vector_attribute (tree * node,
 }
 
 /* Table of RX specific attributes.  */
-const struct attribute_spec rx_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (rx_attribute_table,
 {
   /* Name, min_len, max_len, decl_req, type_req, fn_type_req,
      affects_type_identity, handler, exclude.  */
@@ -2771,9 +2771,8 @@ const struct attribute_spec rx_attribute_table[] =
   { "naked",          0, 0, true, false, false, false,
     rx_handle_func_attribute, NULL },
   { "vector",         1, -1, true, false, false, false,
-    rx_handle_vector_attribute, NULL },
-  { NULL,             0, 0, false, false, false, false, NULL, NULL }
-};
+    rx_handle_vector_attribute, NULL }
+});
 
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
 

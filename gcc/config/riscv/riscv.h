@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <stdbool.h>
 #include "config/riscv/riscv-opts.h"
+
+#define SWITCHABLE_TARGET 1
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() riscv_cpu_cpp_builtins (pfile)
@@ -168,7 +170,7 @@ ASM_MISA_SPEC
 /* The largest type that can be passed in floating-point registers.  */
 #define UNITS_PER_FP_ARG						\
   ((riscv_abi == ABI_ILP32 || riscv_abi == ABI_ILP32E			\
-    || riscv_abi == ABI_LP64)						\
+    || riscv_abi == ABI_LP64 || riscv_abi == ABI_LP64E)			\
    ? 0 									\
    : ((riscv_abi == ABI_ILP32F || riscv_abi == ABI_LP64F) ? 4 : 8))
 
@@ -191,10 +193,15 @@ ASM_MISA_SPEC
 
 /* The smallest supported stack boundary the calling convention supports.  */
 #define STACK_BOUNDARY \
-  (riscv_abi == ABI_ILP32E ? BITS_PER_WORD : 2 * BITS_PER_WORD)
+  (riscv_abi == ABI_ILP32E || riscv_abi == ABI_LP64E \
+   ? BITS_PER_WORD \
+   : 2 * BITS_PER_WORD)
 
 /* The ABI stack alignment.  */
-#define ABI_STACK_BOUNDARY (riscv_abi == ABI_ILP32E ? BITS_PER_WORD : 128)
+#define ABI_STACK_BOUNDARY \
+  (riscv_abi == ABI_ILP32E || riscv_abi == ABI_LP64E \
+   ? BITS_PER_WORD \
+   : 128)
 
 /* There is no point aligning anything to a rounder boundary than this.  */
 #define BIGGEST_ALIGNMENT 128
@@ -372,6 +379,8 @@ ASM_MISA_SPEC
   ((unsigned int) ((int) (REGNO) - GP_REG_FIRST) < GP_REG_NUM)
 #define FP_REG_P(REGNO)  \
   ((unsigned int) ((int) (REGNO) - FP_REG_FIRST) < FP_REG_NUM)
+#define HARDFP_REG_P(REGNO)  \
+  ((REGNO) >= FP_REG_FIRST && (REGNO) <= FP_REG_LAST)
 #define V_REG_P(REGNO)  \
   ((unsigned int) ((int) (REGNO) - V_REG_FIRST) < V_REG_NUM)
 #define VL_REG_P(REGNO) ((REGNO) == VL_REGNUM)
@@ -665,7 +674,10 @@ enum reg_class
 #define GP_RETURN GP_ARG_FIRST
 #define FP_RETURN (UNITS_PER_FP_ARG == 0 ? GP_RETURN : FP_ARG_FIRST)
 
-#define MAX_ARGS_IN_REGISTERS (riscv_abi == ABI_ILP32E ? 6 : 8)
+#define MAX_ARGS_IN_REGISTERS \
+  (riscv_abi == ABI_ILP32E || riscv_abi == ABI_LP64E \
+   ? 6 \
+   : 8)
 
 #define MAX_ARGS_IN_VECTOR_REGISTERS (16)
 #define MAX_ARGS_IN_MASK_REGISTERS (1)
@@ -1054,6 +1066,10 @@ while (0)
 #define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)                             \
   riscv_declare_function_name (STR, NAME, DECL)
 
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)                           \
+  riscv_declare_function_size (FILE, FNAME, DECL)
+
 /* Add output .variant_cc directive for specific alias definition.  */
 #undef ASM_OUTPUT_DEF_FROM_DECLS
 #define ASM_OUTPUT_DEF_FROM_DECLS(STR, DECL, TARGET)                           \
@@ -1130,6 +1146,7 @@ extern poly_int64 riscv_v_adjust_bytesize (enum machine_mode, int);
   "%{mabi=ilp32f:ilp32f}" \
   "%{mabi=ilp32d:ilp32d}" \
   "%{mabi=lp64:lp64}" \
+  "%{mabi=lp64e:lp64e}" \
   "%{mabi=lp64f:lp64f}" \
   "%{mabi=lp64d:lp64d}" \
 
@@ -1191,9 +1208,11 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 #define OPTIMIZE_MODE_SWITCHING(ENTITY) (TARGET_VECTOR)
 #define NUM_MODES_FOR_MODE_SWITCHING {VXRM_MODE_NONE, riscv_vector::FRM_NONE}
 
-
 /* The size difference between different RVV modes can be up to 64 times.
    e.g. RVVMF64BI vs RVVMF1BI on zvl512b, which is [1, 1] vs [64, 64].  */
 #define MAX_POLY_VARIANT 64
+
+#define HAVE_POST_MODIFY_DISP TARGET_XTHEADMEMIDX
+#define HAVE_PRE_MODIFY_DISP  TARGET_XTHEADMEMIDX
 
 #endif /* ! GCC_RISCV_H */

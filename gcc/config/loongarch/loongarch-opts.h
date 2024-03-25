@@ -1,5 +1,5 @@
 /* Definitions for loongarch-specific option handling.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
 This file is part of GCC.
@@ -21,19 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LOONGARCH_OPTS_H
 #define LOONGARCH_OPTS_H
 
+/* The loongarch-def.h file is a C++ header and it shouldn't be used by
+   target libraries.  Exclude it and everything using the C++ structs
+   (struct loongarch_target and gcc_options) from target libraries.  */
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 #include "loongarch-def.h"
 
 /* Target configuration */
 extern struct loongarch_target la_target;
-
-/* Flag status */
-struct loongarch_flags {
-    int flt; const char* flt_str;
-#define SX_FLAG_TYPE(x) ((x) < 0 ? -(x) : (x))
-    int sx[2];
-};
-
-#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 
 /* Initialize loongarch_target from separate option variables.  */
 void
@@ -56,6 +51,12 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 				 struct gcc_options *opts_set);
 #endif
 
+/* Flag status */
+struct loongarch_flags {
+    int flt; const char* flt_str;
+#define SX_FLAG_TYPE(x) ((x) < 0 ? -(x) : (x))
+    int sx[2];
+};
 
 /* Macros for common conditional expressions used in loongarch.{c,h,md} */
 #define TARGET_CMODEL_NORMAL	    (la_target.cmodel == CMODEL_NORMAL)
@@ -85,9 +86,9 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 				   || la_target.isa.simd == ISA_EXT_SIMD_LASX)
 #define ISA_HAS_LASX		  (la_target.isa.simd == ISA_EXT_SIMD_LASX)
 
-
 /* TARGET_ macros for use in *.md template conditionals */
 #define TARGET_uARCH_LA464	  (la_target.cpu_tune == CPU_LA464)
+#define TARGET_uARCH_LA664	  (la_target.cpu_tune == CPU_LA664)
 
 /* Note: optimize_size may vary across functions,
    while -m[no]-memcpy imposes a global constraint.  */
@@ -97,8 +98,24 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 #define HAVE_AS_EXPLICIT_RELOCS 0
 #endif
 
+#ifndef HAVE_AS_SUPPORT_CALL36
+#define HAVE_AS_SUPPORT_CALL36 0
+#endif
+
 #ifndef HAVE_AS_MRELAX_OPTION
 #define HAVE_AS_MRELAX_OPTION 0
+#endif
+
+#ifndef HAVE_AS_COND_BRANCH_RELAXATION
+#define HAVE_AS_COND_BRANCH_RELAXATION 0
+#endif
+
+#ifndef HAVE_AS_TLS
+#define HAVE_AS_TLS 0
+#endif
+
+#ifndef HAVE_AS_TLS_LE_RELAXATION
+#define HAVE_AS_TLS_LE_RELAXATION 0
 #endif
 
 #endif /* LOONGARCH_OPTS_H */

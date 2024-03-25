@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # Generate Intel taken branches Linux perf event script for autofdo profiling.
 
-# Copyright (C) 2016-2023 Free Software Foundation, Inc.
+# Copyright (C) 2016-2024 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
-# <http://www.gnu.org/licenses/>.  */
+# <http://www.gnu.org/licenses/>.
 
 # Run it with perf record -b -e EVENT program ...
 # The Linux Kernel needs to support the PMU of the current CPU, and

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 typedef struct { double x, y; } p;
 typedef struct { int s; float r; } t;
 t *e, i;

@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 static a[];
 static b, h, m, n, o, p, q, t, u, v, t5, t6, t16, t17, t18, t25;
 c;

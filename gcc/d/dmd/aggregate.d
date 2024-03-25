@@ -178,21 +178,11 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         return sc2;
     }
 
-    override final void setScope(Scope* sc)
-    {
-        // Might need a scope to resolve forward references. The check for
-        // semanticRun prevents unnecessary setting of _scope during deferred
-        // setScope phases for aggregates which already finished semantic().
-        // See https://issues.dlang.org/show_bug.cgi?id=16607
-        if (semanticRun < PASS.semanticdone)
-            ScopeDsymbol.setScope(sc);
-    }
-
     /***************************************
      * Returns:
      *      The total number of fields minus the number of hidden fields.
      */
-    final size_t nonHiddenFields()
+    extern (D) final size_t nonHiddenFields()
     {
         return fields.length - isNested() - (vthis2 !is null);
     }
@@ -202,7 +192,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
      * Returns:
      *      false if failed to determine the size.
      */
-    final bool determineSize(const ref Loc loc)
+    extern (D) final bool determineSize(const ref Loc loc)
     {
         //printf("AggregateDeclaration::determineSize() %s, sizeok = %d\n", toChars(), sizeok);
 
@@ -501,90 +491,6 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         return !errors;
     }
 
-    /****************************
-     * Do byte or word alignment as necessary.
-     * Align sizes of 0, as we may not know array sizes yet.
-     * Params:
-     *   alignment = struct alignment that is in effect
-     *   memalignsize = natural alignment of field
-     *   poffset = pointer to offset to be aligned
-     */
-    extern (D) static void alignmember(structalign_t alignment, uint memalignsize, uint* poffset) pure nothrow @safe
-    {
-        //debug printf("alignment = %u %d, size = %u, offset = %u\n", alignment.get(), alignment.isPack(), memalignsize, *poffset);
-        uint alignvalue;
-
-        if (alignment.isDefault())
-        {
-            // Alignment in Target::fieldalignsize must match what the
-            // corresponding C compiler's default alignment behavior is.
-            alignvalue = memalignsize;
-        }
-        else if (alignment.isPack())    // #pragma pack semantics
-        {
-            alignvalue = alignment.get();
-            if (memalignsize < alignvalue)
-                alignvalue = memalignsize;      // align to min(memalignsize, alignment)
-        }
-        else if (alignment.get() > 1)
-        {
-            // Align on alignment boundary, which must be a positive power of 2
-            alignvalue = alignment.get();
-        }
-        else
-            return;
-
-        assert(alignvalue > 0 && !(alignvalue & (alignvalue - 1)));
-        *poffset = (*poffset + alignvalue - 1) & ~(alignvalue - 1);
-    }
-
-    /****************************************
-     * Place a field (mem) into an aggregate (agg), which can be a struct, union or class
-     * Params:
-     *    nextoffset    = location just past the end of the previous field in the aggregate.
-     *                    Updated to be just past the end of this field to be placed, i.e. the future nextoffset
-     *    memsize       = size of field
-     *    memalignsize  = natural alignment of field
-     *    alignment     = alignment in effect for this field
-     *    paggsize      = size of aggregate (updated)
-     *    paggalignsize = alignment of aggregate (updated)
-     *    isunion       = the aggregate is a union
-     * Returns:
-     *    aligned offset to place field at
-     *
-     */
-    extern (D) static uint placeField(uint* nextoffset, uint memsize, uint memalignsize,
-        structalign_t alignment, uint* paggsize, uint* paggalignsize, bool isunion)
-    {
-        uint ofs = *nextoffset;
-
-        const uint actualAlignment =
-            alignment.isDefault() || alignment.isPack() && memalignsize < alignment.get()
-                        ? memalignsize : alignment.get();
-
-        // Ensure no overflow
-        bool overflow;
-        const sz = addu(memsize, actualAlignment, overflow);
-        addu(ofs, sz, overflow);
-        if (overflow) assert(0);
-
-        // Skip no-op for noreturn without custom aligment
-        if (memalignsize != 0 || !alignment.isDefault())
-            alignmember(alignment, memalignsize, &ofs);
-
-        uint memoffset = ofs;
-        ofs += memsize;
-        if (ofs > *paggsize)
-            *paggsize = ofs;
-        if (!isunion)
-            *nextoffset = ofs;
-
-        if (*paggalignsize < actualAlignment)
-            *paggalignsize = actualAlignment;
-
-        return memoffset;
-    }
-
     override final Type getType()
     {
         /* Apply storage classes to forward references. (Issue 22254)
@@ -609,7 +515,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     }
 
     /// Flag this aggregate as deprecated
-    final void setDeprecated()
+    extern (D) final void setDeprecated()
     {
         this.storage_class |= STC.deprecated_;
     }
@@ -745,9 +651,9 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     /*******************************************
      * Look for constructor declaration.
      */
-    final Dsymbol searchCtor()
+    extern (D) final Dsymbol searchCtor()
     {
-        auto s = search(Loc.initial, Id.ctor);
+        auto s = this.search(Loc.initial, Id.ctor);
         if (s)
         {
             if (!(s.isCtorDeclaration() ||
@@ -843,4 +749,104 @@ int apply(Dsymbol symbol, int function(Dsymbol, void*) fp, void* ctx)
     }
 
     return fp(symbol, ctx);
+}
+
+/****************************
+ * Do byte or word alignment as necessary.
+ * Align sizes of 0, as we may not know array sizes yet.
+ * Params:
+ *   alignment = struct alignment that is in effect
+ *   memalignsize = natural alignment of field
+ *   offset = offset to be aligned
+ * Returns:
+ *   aligned offset
+ */
+public uint alignmember(structalign_t alignment, uint memalignsize, uint offset) pure nothrow @safe
+{
+    //debug printf("alignment = %u %d, size = %u, offset = %u\n", alignment.get(), alignment.isPack(), memalignsize, offset);
+    uint alignvalue;
+
+    if (alignment.isDefault())
+    {
+        // Alignment in Target::fieldalignsize must match what the
+        // corresponding C compiler's default alignment behavior is.
+        alignvalue = memalignsize;
+    }
+    else if (alignment.isPack())    // #pragma pack semantics
+    {
+        alignvalue = alignment.get();
+        if (memalignsize < alignvalue)
+            alignvalue = memalignsize;      // align to min(memalignsize, alignment)
+    }
+    else if (alignment.get() > 1)
+    {
+        // Align on alignment boundary, which must be a positive power of 2
+        alignvalue = alignment.get();
+    }
+    else
+        return offset;
+
+    assert(alignvalue && !(alignvalue & (alignvalue - 1))); // non-zero and power of 2
+    return (offset + alignvalue - 1) & ~(alignvalue - 1);
+}
+
+/****************************************
+ * Place a field (mem) into an aggregate (agg), which can be a struct, union or class
+ * Params:
+ *    nextoffset    = location just past the end of the previous field in the aggregate.
+ *                    Updated to be just past the end of this field to be placed, i.e. the future nextoffset
+ *    memsize       = size of field
+ *    memalignsize  = natural alignment of field
+ *    alignment     = alignment in effect for this field
+ *    aggsize       = size of aggregate (updated)
+ *    aggalignsize  = alignment of aggregate (updated)
+ *    isunion       = the aggregate is a union
+ * Returns:
+ *    aligned offset to place field at
+ *
+ */
+public uint placeField(ref uint nextoffset, uint memsize, uint memalignsize,
+    structalign_t alignment, ref uint aggsize, ref uint aggalignsize, bool isunion) @safe pure nothrow
+{
+    static if (0)
+    {
+        printf("placeField() nextoffset:   %u\n", nextoffset);
+        printf(":            memsize:      %u\n", memsize);
+        printf(":            memalignsize: %u\n", memalignsize);
+        printf(":            alignment:    %u\n", alignment.get());
+        printf(":            aggsize:      %u\n", aggsize);
+        printf(":            aggalignsize: %u\n", aggalignsize);
+        printf(":            isunion:      %d\n", isunion);
+    }
+
+    uint ofs = nextoffset;
+
+    const uint actualAlignment =
+        alignment.isDefault() || alignment.isPack() && memalignsize < alignment.get()
+                    ? memalignsize : alignment.get();
+
+    // Ensure no overflow for (memsize + actualAlignment + ofs)
+    bool overflow;
+    const sz = addu(memsize, actualAlignment, overflow);
+    addu(ofs, sz, overflow);
+    if (overflow) assert(0);
+
+    // Skip no-op for noreturn without custom aligment
+    if (memalignsize != 0 || !alignment.isDefault())
+        ofs = alignmember(alignment, memalignsize, ofs);
+
+    uint memoffset = ofs;
+    ofs += memsize;
+    if (ofs > aggsize)
+        aggsize = ofs;
+    if (!isunion)
+    {
+        nextoffset = ofs;
+        //printf("     revised nextoffset:   %u\n", ofs);
+    }
+
+    if (aggalignsize < actualAlignment)
+        aggalignsize = actualAlignment;
+
+    return memoffset;
 }

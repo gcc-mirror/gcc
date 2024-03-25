@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2021-2023 Free Software Foundation, Inc.
+// Copyright (C) 2021-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,10 +26,10 @@
 namespace
 {
   const int nb_elements = 20;
-  const int nb_insts = 150000;
+  const int nb_insts = 15000;
 
   template<typename _ElemType>
-    void bench(const char* desc, const std::vector<_ElemType>& elems)
+    void bench(const char* desc, const std::vector<_ElemType>& elems, bool with_copy)
     {
       using namespace __gnu_test;
 
@@ -51,6 +51,19 @@ namespace
       std::ostringstream ostr;
       ostr << desc << " 1st insert";
       report_performance(__FILE__, ostr.str().c_str(), time, resource);
+
+      if (with_copy)
+	{
+	  start_counters(time, resource);
+
+	  std::vector<std::unordered_set<_ElemType>>(insts).swap(insts);
+
+	  stop_counters(time, resource);
+
+	  ostr.str("");
+	  ostr << desc << " copy";
+	  report_performance(__FILE__, ostr.str().c_str(), time, resource);
+	}
 
       start_counters(time, resource);
 
@@ -103,7 +116,8 @@ int main()
     for (int i = 0; i != nb_elements; ++i)
       elems.push_back(i);
 
-    bench("std::unordered_set<int>:    ", elems);
+    bench("std::unordered_set<int>:    ", elems, false);
+    bench("std::unordered_set<int>:    ", elems, true);
   }
 
   {
@@ -118,7 +132,8 @@ int main()
 	}
     }
 
-    bench("std::unordered_set<string>: ", elems);
+    bench("std::unordered_set<string>: ", elems, false);
+    bench("std::unordered_set<string>: ", elems, true);
   }
 
   return 0;

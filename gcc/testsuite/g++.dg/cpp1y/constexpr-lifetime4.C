@@ -5,7 +5,7 @@ constexpr const double& test() {
   return local;
 }
 
-static_assert(test() == 3.0, "");  // { dg-error "constant|accessing object outside its lifetime" }
+static_assert(test() == 3.0, "");  // { dg-error "constant|accessing '\[^'\]+' outside its lifetime" }
 
 // no deference, shouldn't error
 static_assert((test(), true), "");

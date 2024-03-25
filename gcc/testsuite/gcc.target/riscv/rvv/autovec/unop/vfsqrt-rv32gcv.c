@@ -7,6 +7,6 @@
    it here instead of in the template directly (which is also
    included by the run test that might need to be linked without
    the extension).  */
-TEST_TYPE3(_Float16)
+TEST_TYPE (_Float16, f16)
 
 /* { dg-final { scan-assembler-times {\tvfsqrt\.v} 3 } } */

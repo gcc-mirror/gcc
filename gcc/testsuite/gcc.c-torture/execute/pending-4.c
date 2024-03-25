@@ -1,3 +1,5 @@
+void abort (void);
+void exit (int);
 
 void dummy (x, y)
      int *x;

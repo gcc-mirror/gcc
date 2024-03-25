@@ -9,4 +9,4 @@ void b() {
     c[a] = d[-a];
 }
 
-/* { dg-final { scan-assembler-times {vslide1up\.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vrgather} 1 } } */

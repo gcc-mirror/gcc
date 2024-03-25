@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wimplicit-function-declaration -fdiagnostics-show-caret" } */
+/* { dg-options "-fpermissive -fdiagnostics-show-caret" } */
 
 typedef struct GtkWidget { int dummy; } GtkWidget;
 

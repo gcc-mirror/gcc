@@ -1,4 +1,5 @@
-main ()
+int
+main (void)
 {
   int volatile p;
   int i;

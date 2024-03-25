@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fno-inline" } */
+/* { dg-options "-O2 -ftree-vectorize -fno-inline --param aarch64-vect-compare-costs=0" } */
 
 #include <stdint.h>
 

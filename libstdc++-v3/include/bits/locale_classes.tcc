@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007-2023 Free Software Foundation, Inc.
+// Copyright (C) 2007-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,6 +87,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				__s2.data(), __s2.data() + __s2.length()) < 0);
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
   template<typename _Facet>
     inline const _Facet*
     __try_use_facet(const locale& __loc) _GLIBCXX_NOTHROW
@@ -97,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // We know these standard facets are always installed in every locale
       // so dynamic_cast always succeeds, just use static_cast instead.
 #define _GLIBCXX_STD_FACET(...) \
-      if _GLIBCXX17_CONSTEXPR (__is_same(_Facet, __VA_ARGS__)) \
+      if _GLIBCXX_CONSTEXPR (__is_same(_Facet, __VA_ARGS__)) \
 	return static_cast<const _Facet*>(__facets[__i])
 
       _GLIBCXX_STD_FACET(ctype<char>);
@@ -145,6 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return static_cast<const _Facet*>(__facets[__i]);
 #endif
     }
+#pragma GCC diagnostic pop
 
   /**
    *  @brief  Test for the presence of a facet.

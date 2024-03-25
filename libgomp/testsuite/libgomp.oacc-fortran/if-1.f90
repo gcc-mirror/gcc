@@ -1,3 +1,7 @@
+! OpenACC 'if' clause.
+
+! See also 'self-1.f90'.
+
 ! { dg-do run }
 ! { dg-additional-options "-cpp" }
 

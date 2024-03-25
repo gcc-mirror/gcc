@@ -1,6 +1,6 @@
 /* Convert language-specific tree expression to rtl instructions,
    for GNU compiler.
-   Copyright (C) 1988-2023 Free Software Foundation, Inc.
+   Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -147,7 +147,6 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	}
       break;
     case COMPONENT_REF:
-    case NON_DEPENDENT_EXPR:
       recurse_op[0] = true;
       break;
     case COMPOUND_EXPR:
@@ -371,7 +370,6 @@ mark_exp_read (tree exp)
     case ADDR_EXPR:
     case INDIRECT_REF:
     case FLOAT_EXPR:
-    case NON_DEPENDENT_EXPR:
     case VIEW_CONVERT_EXPR:
       mark_exp_read (TREE_OPERAND (exp, 0));
       break;

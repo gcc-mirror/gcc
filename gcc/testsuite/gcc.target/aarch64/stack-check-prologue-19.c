@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fstack-clash-protection -fomit-frame-pointer --param stack-clash-protection-guard-size=12 -fsanitize=shadow-call-stack -ffixed-x18" } */
+/* { dg-options "-O2 -fstack-clash-protection -fomit-frame-pointer --param stack-clash-protection-guard-size=12 -fsanitize=shadow-call-stack -ffixed-x18 -fno-stack-protector" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 void f(int, ...);

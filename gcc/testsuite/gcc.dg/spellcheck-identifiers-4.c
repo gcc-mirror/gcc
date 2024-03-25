@@ -1,4 +1,4 @@
-/* { dg-options "-Wimplicit-function-declaration" } */
+/* { dg-options "-fpermissive -Wimplicit-function-declaration" } */
 
 extern double sqrt (double);
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,5 +31,4 @@ front()
 
 static_assert(front() != L'a'); // { dg-error "non-constant condition" }
 
-// { dg-prune-output "in 'constexpr' expansion" }
-// { dg-prune-output "unreachable" }
+// { dg-error "assert_fail" "" { target *-*-* } 0 }

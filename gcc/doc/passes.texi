@@ -1,6 +1,6 @@
 @c markers: BUG TODO
 
-@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -543,7 +543,7 @@ and is defined by @code{pass_early_warn_uninitialized} and
 @item Dead code elimination
 
 This pass scans the function for statements without side effects whose
-result is unused.  It does not do memory life analysis, so any value
+result is unused.  It does not do memory lifetime analysis, so any value
 that is stored in memory is considered used.  The pass is run multiple
 times throughout the optimization process.  It is located in
 @file{tree-ssa-dce.cc} and is described by @code{pass_dce}.

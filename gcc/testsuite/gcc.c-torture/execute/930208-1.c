@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 typedef union {
   long l;
   struct { char b3, b2, b1, b0; } c;

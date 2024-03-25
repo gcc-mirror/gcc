@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 __complex__ double
 f (__complex__ double x, __complex__ double y)
 {
@@ -8,7 +11,8 @@ f (__complex__ double x, __complex__ double y)
 __complex__ double ag = 1.0 + 1.0i;
 __complex__ double bg = -2.0 + 2.0i;
 
-main ()
+int
+main (void)
 {
   __complex__ double a, b, c;
 

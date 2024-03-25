@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 struct s {
   int f;
 };

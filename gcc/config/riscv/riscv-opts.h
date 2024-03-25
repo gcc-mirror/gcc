@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2016-2023 Free Software Foundation, Inc.
+   Copyright (C) 2016-2024 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
 This file is part of GCC.
@@ -27,6 +27,7 @@ enum riscv_abi_type {
   ABI_ILP32F,
   ABI_ILP32D,
   ABI_LP64,
+  ABI_LP64E,
   ABI_LP64F,
   ABI_LP64D
 };
@@ -35,6 +36,7 @@ extern enum riscv_abi_type riscv_abi;
 enum riscv_code_model {
   CM_MEDLOW,
   CM_MEDANY,
+  CM_LARGE,
   CM_PIC
 };
 extern enum riscv_code_model riscv_cmodel;
@@ -102,6 +104,18 @@ enum riscv_entity
   MAX_RISCV_ENTITIES
 };
 
+/* RISC-V stringop strategy. */
+enum stringop_strategy_enum {
+  /* No expansion. */
+  STRATEGY_LIBCALL = 1,
+  /* Use scalar expansion if possible. */
+  STRATEGY_SCALAR = 2,
+  /* Only vector expansion if possible. */
+  STRATEGY_VECTOR = 4,
+  /* Use any. */
+  STRATEGY_AUTO = STRATEGY_SCALAR | STRATEGY_VECTOR
+};
+
 #define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))
 
 /* Bit of riscv_zvl_flags will set contintuly, N-1 bit will set if N-bit is
@@ -118,12 +132,11 @@ enum riscv_entity
      ? 0                                                                       \
      : 32 << (__builtin_popcount (opts->x_riscv_zvl_flags) - 1))
 
-/* We only enable VLS modes for VLA vectorization since fixed length VLMAX mode
-   is the highest priority choice and should not conflict with VLS modes.  */
-#define TARGET_VECTOR_VLS                                                      \
-  (TARGET_VECTOR && riscv_autovec_preference == RVV_SCALABLE)
-
 /* TODO: Enable RVV movmisalign by default for now.  */
 #define TARGET_VECTOR_MISALIGN_SUPPORTED 1
+
+/* The maximmum LMUL according to user configuration.  */
+#define TARGET_MAX_LMUL                                                        \
+  (int) (riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul)
 
 #endif /* ! GCC_RISCV_OPTS_H */

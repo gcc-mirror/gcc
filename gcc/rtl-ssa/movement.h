@@ -1,5 +1,5 @@
 // RTL SSA utilities relating to instruction movement               -*- C++ -*-
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -18,6 +18,10 @@
 // <http://www.gnu.org/licenses/>.
 
 namespace rtl_ssa {
+
+// Return true if INSN can in principle be moved around, and if RTL-SSA
+// has enough information to do that.
+bool can_move_insn_p (insn_info *);
 
 // Restrict movement range RANGE so that the instruction is placed later
 // than INSN.  (The movement range is the range of instructions after which
@@ -61,7 +65,8 @@ move_earlier_than (insn_range_info range, insn_info *insn)
 inline bool
 can_insert_after (insn_info *insn)
 {
-  return insn->is_bb_head () || (insn->is_real () && !insn->is_jump ());
+  return (insn->is_bb_head ()
+	  || (insn->is_real () && !control_flow_insn_p (insn->rtl ())));
 }
 
 // Try to restrict move range MOVE_RANGE so that it is possible to
@@ -177,6 +182,11 @@ restrict_movement_for_defs_ignoring (insn_range_info &move_range,
 {
   for (def_info *def : defs)
     {
+      // Skip fresh defs that are being inserted, as these shouldn't
+      // constrain movement.
+      if (def->is_temporary ())
+	continue;
+
       // If the definition is a clobber, we can move it with respect
       // to other clobbers.
       //
@@ -242,7 +252,8 @@ restrict_movement_for_defs_ignoring (insn_range_info &move_range,
 
   // Make sure that we don't move stores between basic blocks, since we
   // don't have enough information to tell whether it's safe.
-  if (def_info *def = memory_access (defs))
+  def_info *def = memory_access (defs);
+  if (def && !def->is_temporary ())
     {
       move_range = move_later_than (move_range, def->bb ()->head_insn ());
       move_range = move_earlier_than (move_range, def->bb ()->end_insn ());

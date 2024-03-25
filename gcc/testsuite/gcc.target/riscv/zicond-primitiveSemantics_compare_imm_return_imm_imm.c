@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zicond -mabi=lp64d" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_zicond -mabi=ilp32f" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_zicond -mabi=lp64d -mbranch-cost=3" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_zicond -mabi=ilp32f -mbranch-cost=3" { target { rv32 } } } */
 /* { dg-skip-if "" { *-*-* } {"-O0" "-Og" "-Os" "-Oz"} } */
 
 long primitiveSemantics_compare_imm_return_imm_imm_00(long a, long b) {

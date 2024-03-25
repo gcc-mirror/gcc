@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target bitint } } */
-/* { dg-options "-O2 -std=c2x -pedantic-errors" } */
+/* { dg-options "-O2 -std=c23 -pedantic-errors" } */
 
 #define expr_has_type(e, t) _Generic (e, default : 0, t : 1)
 

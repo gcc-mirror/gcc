@@ -3,6 +3,8 @@
 /* Verify that GCC zero-extends integer constants
    in unsigned binary operations. */
 
+void abort (void);
+
 typedef unsigned char u8;
 
 u8 fun(u8 y)

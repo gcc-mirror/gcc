@@ -1,5 +1,5 @@
 ;; Common GCC machine description file, shared by all targets.
-;; Copyright (C) 2014-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -16,6 +16,34 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.  */
+
+;; This predicate is intended to be paired with register constraints that use
+;; register filters to impose an alignment.  Operands that are aligned via
+;; TARGET_HARD_REGNO_MODE_OK should use normal register_operands instead.
+(define_predicate "aligned_register_operand"
+  (match_code "reg,subreg")
+{
+  /* Require the offset in a non-paradoxical subreg to be naturally aligned.
+     For example, if we have a subreg of something that is double the size of
+     this operand, the offset must select the first or second half of it.  */
+  if (SUBREG_P (op)
+      && multiple_p (SUBREG_BYTE (op), GET_MODE_SIZE (GET_MODE (op))))
+    op = SUBREG_REG (op);
+  if (!REG_P (op))
+    return false;
+
+  if (HARD_REGISTER_P (op))
+    {
+      if (!in_hard_reg_set_p (operand_reg_set, GET_MODE (op), REGNO (op)))
+	return false;
+
+      /* Reject hard registers that would need reloading, so that the reload
+	 is visible to IRA and to pre-RA optimizers.  */
+      if (REGNO (op) % REG_NREGS (op) != 0)
+	return false;
+    }
+  return true;
+})
 
 (define_register_constraint "r" "GENERAL_REGS"
   "Matches any general register.")

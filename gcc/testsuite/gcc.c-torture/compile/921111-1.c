@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 int ps;
 struct vp {
   int wa;

@@ -24,12 +24,9 @@
    language is requested. */
 #undef ENABLE_NLS
 
-/* Define to get calls to the valgrind runtime enabled. */
-#undef ENABLE_VALGRIND_ANNOTATIONS
-
-/* Define if you want to workaround valgrind (a memory checker) warnings about
-   possible memory leaks because of libcpp use of interior pointers. */
-#undef ENABLE_VALGRIND_CHECKING
+/* Define if you want to workaround Valgrind warnings about possible memory
+   leaks because of libcpp use of interior pointers. */
+#undef ENABLE_VALGRIND_WORKAROUNDS
 
 /* Define to 1 if you have `alloca', as a function or macro. */
 #undef HAVE_ALLOCA
@@ -38,8 +35,20 @@
    */
 #undef HAVE_ALLOCA_H
 
+/* Define to 1 if you have the Mac OS X function
+   CFLocaleCopyPreferredLanguages in the CoreFoundation framework. */
+#undef HAVE_CFLOCALECOPYPREFERREDLANGUAGES
+
+/* Define to 1 if you have the Mac OS X function CFPreferencesCopyAppValue in
+   the CoreFoundation framework. */
+#undef HAVE_CFPREFERENCESCOPYAPPVALUE
+
 /* Define to 1 if you have the `clearerr_unlocked' function. */
 #undef HAVE_CLEARERR_UNLOCKED
+
+/* Define if the GNU dcgettext() function is already present or preinstalled.
+   */
+#undef HAVE_DCGETTEXT
 
 /* Define to 1 if you have the declaration of `abort', and to 0 if you don't.
    */
@@ -171,7 +180,10 @@
 /* Define to 1 if you have the `getc_unlocked' function. */
 #undef HAVE_GETC_UNLOCKED
 
-/* Define if you have the iconv() function. */
+/* Define if the GNU gettext() function is already present or preinstalled. */
+#undef HAVE_GETTEXT
+
+/* Define if you have the iconv() function and it works. */
 #undef HAVE_ICONV
 
 /* Define to 1 if you have the <inttypes.h> header file. */
@@ -185,9 +197,6 @@
 
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
-
-/* Define if valgrind's memcheck.h header is installed. */
-#undef HAVE_MEMCHECK_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -236,9 +245,6 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* Define if valgrind's valgrind/memcheck.h header is installed. */
-#undef HAVE_VALGRIND_MEMCHECK_H
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST

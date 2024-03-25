@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int i, a[99];
 
 void f (int one)

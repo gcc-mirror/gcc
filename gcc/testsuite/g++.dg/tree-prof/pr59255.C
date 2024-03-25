@@ -1,4 +1,5 @@
 // PR c++/59255
+// Explicit { dg-require-effective-target exceptions_enabled } so that dependent tests don't turn UNRESOLVED for '-fno-exceptions'.
 // { dg-options "-std=c++11 -O2" }
 
 struct S

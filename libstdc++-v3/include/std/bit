@@ -1,6 +1,6 @@
 // <bit> -*- C++ -*-
 
-// Copyright (C) 2018-2023 Free Software Foundation, Inc.
+// Copyright (C) 2018-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bit_cast(const _From& __from) noexcept
 #ifdef __cpp_concepts
     requires (sizeof(_To) == sizeof(_From))
-      && __is_trivially_copyable(_To) && __is_trivially_copyable(_From)
+      && is_trivially_copyable_v<_To> && is_trivially_copyable_v<_From>
 #endif
     {
       return __builtin_bit_cast(_To, __from);

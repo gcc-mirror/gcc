@@ -1,6 +1,6 @@
 ! { dg-do compile }
 
-function f1 (a, b, c, d, e, f) ! { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } }
+function f1 (a, b, c, d, e, f)
   integer, value :: a, b, c
   integer :: d, e, f, f1
 !$omp declare simd (f1) uniform(b) linear(c, d) linear(uval(e)) linear(ref(f))
@@ -12,7 +12,7 @@ function f1 (a, b, c, d, e, f) ! { dg-warning "GCC does not currently support mi
   f = f + 1
   f1 = a + b + c + d + e + f
 end function f1
-integer function f2 (a, b) ! { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } }
+integer function f2 (a, b)
   integer :: a, b
 !$omp declare simd uniform(b) linear(ref(a):b)
   a = a + 1

@@ -1,6 +1,6 @@
 ; Processor-independent options for Darwin.
 
-; Copyright (C) 2005-2023 Free Software Foundation, Inc.
+; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -240,6 +240,10 @@ Driver RejectNegative
 nodefaultexport
 Driver RejectNegative
 Do not add a default symbol exports to modules or dynamic libraries.
+
+nodefaultrpaths
+Driver RejectNegative
+Do not add default run paths (for the compiler library directories) to executables, modules or dynamic libraries.
 
 nofixprebinding
 Driver RejectNegative

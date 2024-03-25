@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2019-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2019-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -87,7 +87,7 @@ __gthread_key_delete (__gthread_key_t __key __attribute__ ((__unused__)))
 static inline void *
 __gthread_getspecific (__gthread_key_t __key __attribute__((unused)))
 {
-  return NULL;
+  return 0;
 }
 
 static inline int

@@ -1,5 +1,5 @@
 /* GNU compiler vector extension intrinsics
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 This file is part of GCC.
@@ -59,8 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 				    | __VEC_CLASS_FP_INFINITY)
 
 /* This also accepts a type for its parameter, so it is not enough
-   to #define vec_step to __builtin_vec_step.  */
-#define vec_step(x) __builtin_vec_step (* (__typeof__ (x) *) 0)
+   to #define vec_step to __builtin_s390_vec_step.  */
+#define vec_step(x) __builtin_s390_vec_step (* (__typeof__ (x) *) 0)
 
 static inline int
 __lcbb(const void *ptr, int bndry)

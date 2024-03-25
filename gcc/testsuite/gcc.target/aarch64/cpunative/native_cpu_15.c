@@ -7,7 +7,7 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+sve2-sm4} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+sve2-sm4\n} } } */
 
 /* Test one where the bounary of buffer size would cut off and leave
    a valid feature in the first full buffer.  e.g. this will cut off at

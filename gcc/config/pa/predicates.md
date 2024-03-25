@@ -1,5 +1,5 @@
 ;; Predicate definitions for HP PA-RISC.
-;; Copyright (C) 2005-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -267,6 +267,10 @@
   if (!INT_14_BITS (op))
     return false;
 
+  /* Short displacement.  */
+  if (INT_5_BITS (op))
+    return true;
+
   /* Although this may not be necessary, we require that the
      base value is correctly aligned for its mode as this is
      assumed in the instruction encoding.  */
@@ -304,6 +308,10 @@
 
   if (reg_plus_base_memory_operand (op, mode))
     {
+      /* There is no support for handling secondary reloads of integer
+	 REG+D instructions in pa_emit_move_sequence.  Further, the Q
+	 constraint is used in more than simple move instructions.  So,
+	 we must return true and let reload handle the reload.  */
       if (reload_in_progress)
 	return true;
 
@@ -312,7 +320,7 @@
 	op = SUBREG_REG (op);
       op = XEXP (op, 0);
       op = REG_P (XEXP (op, 0)) ? XEXP (op, 1) : XEXP (op, 0);
-      return base14_operand (op, mode) || INT_5_BITS (op);
+      return base14_operand (op, mode);
     }
 
   if (!MEM_P (op))
@@ -341,17 +349,12 @@
 
   if (reg_plus_base_memory_operand (op, mode))
     {
-      if (reload_in_progress)
-	return true;
-
       /* Extract CONST_INT operand.  */
       if (GET_CODE (op) == SUBREG)
 	op = SUBREG_REG (op);
       op = XEXP (op, 0);
       op = REG_P (XEXP (op, 0)) ? XEXP (op, 1) : XEXP (op, 0);
-      return ((TARGET_PA_20
-	       && !TARGET_ELF32
-	       && base14_operand (op, mode))
+      return ((INT14_OK_STRICT && base14_operand (op, mode))
 	      || INT_5_BITS (op));
     }
 

@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002-2023 Free Software Foundation, Inc.
+// Copyright (C) 2002-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -418,7 +418,7 @@ namespace __gnu_test
 	operator==(const uneq_allocator& a,
 		   const uneq_allocator<Tp1,
 		   typename AllocTraits::template rebind<Tp1>::other>& b)
-	{ return a.personality == b.personality; }
+	{ return a.personality == b.get_personality(); }
 
       template<typename Tp1>
 	friend inline bool

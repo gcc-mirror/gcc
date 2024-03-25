@@ -34,6 +34,8 @@ union tree_node
   int mode;
   struct tree_type type;
 };
+int vector_type_mode (tree);
+void real_inf (struct real_value *);
 tree
 omp_reduction_init (tree clause, tree type)
 {

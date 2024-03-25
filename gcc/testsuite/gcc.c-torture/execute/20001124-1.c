@@ -1,3 +1,5 @@
+void abort(void);
+void exit(int);
 
 struct inode {
 	long long		i_size;

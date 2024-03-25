@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -613,32 +613,54 @@ chrec_apply (unsigned var,
       if (evolution_function_is_affine_p (chrec))
 	{
 	  tree chrecr = CHREC_RIGHT (chrec);
+	  tree chrecl = CHREC_LEFT (chrec);
 	  if (CHREC_VARIABLE (chrec) != var)
-	    res = build_polynomial_chrec
-	      (CHREC_VARIABLE (chrec),
-	       chrec_apply (var, CHREC_LEFT (chrec), x),
-	       chrec_apply (var, chrecr, x));
+	    res = build_polynomial_chrec (CHREC_VARIABLE (chrec),
+					  chrec_apply (var, chrecl, x),
+					  chrec_apply (var, chrecr, x));
 
-	  /* "{a, +, b} (x)"  ->  "a + b*x".  */
-	  else if (operand_equal_p (CHREC_LEFT (chrec), chrecr)
+	  /* "{a, +, a}" (x-1) -> "a*x".  */
+	  else if (operand_equal_p (chrecl, chrecr)
 		   && TREE_CODE (x) == PLUS_EXPR
 		   && integer_all_onesp (TREE_OPERAND (x, 1))
 		   && !POINTER_TYPE_P (type)
 		   && TYPE_PRECISION (TREE_TYPE (x))
 		      >= TYPE_PRECISION (type))
 	    {
-	      /* We know the number of iterations can't be negative.
-		 So {a, +, a} (x-1) -> "a*x".  */
+	      /* We know the number of iterations can't be negative.  */
 	      res = build_int_cst (TREE_TYPE (x), 1);
 	      res = chrec_fold_plus (TREE_TYPE (x), x, res);
 	      res = chrec_convert_rhs (type, res, NULL);
 	      res = chrec_fold_multiply (type, chrecr, res);
 	    }
+	  /* "{a, +, b} (x)"  ->  "a + b*x".  */
 	  else
 	    {
-	      res = chrec_convert_rhs (TREE_TYPE (chrecr), x, NULL);
-	      res = chrec_fold_multiply (TREE_TYPE (chrecr), chrecr, res);
-	      res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
+	      /* The overall increment might not fit in a signed type so
+		 use an unsigned computation to get at the final value
+		 and avoid undefined signed overflow.  */
+	      tree utype = TREE_TYPE (chrecr);
+	      if (INTEGRAL_TYPE_P (utype) && !TYPE_OVERFLOW_WRAPS (utype))
+		utype = unsigned_type_for (TREE_TYPE (chrecr));
+	      res = chrec_convert_rhs (utype, x, NULL);
+	      res = chrec_fold_multiply (utype,
+					 chrec_convert (utype, chrecr, NULL),
+					 res);
+	      /* When the resulting increment fits the original type
+		 do the increment in it.  */
+	      if (TREE_CODE (res) == INTEGER_CST
+		  && int_fits_type_p (res, TREE_TYPE (chrecr)))
+		{
+		  res = chrec_convert (TREE_TYPE (chrecr), res, NULL);
+		  res = chrec_fold_plus (type, chrecl, res);
+		}
+	      else
+		{
+		  res = chrec_fold_plus (utype,
+					 chrec_convert (utype, chrecl, NULL),
+					 res);
+		  res = chrec_convert (type, res, NULL);
+		}
 	    }
 	}
       else if (TREE_CODE (x) == INTEGER_CST

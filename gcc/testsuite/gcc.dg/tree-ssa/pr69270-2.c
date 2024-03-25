@@ -15,6 +15,12 @@ typedef struct immediate_use_iterator_d
 {
 }
 imm_use_iterator;
+int arf (void);
+int gimple_debug_bind_p (gimple);
+int gimple_bb (gimple);
+tree gimple_assign_rhs_to_tree (void);
+int is_gimple_min_invariant (tree);
+tree unshare_expr (tree);
 void
 insert_debug_temp_for_var_def (gimple stmt)
 {

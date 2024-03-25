@@ -1,15 +1,17 @@
 int val;
 
 int *ptr = &val;
-float *ptr2 = &val;
+float *ptr2 = (float *) &val;
 
 __attribute__((optimize ("-fno-strict-aliasing")))
-typepun ()
+void
+typepun (void)
 {
   *ptr2=0;
 }
 
-main()
+int
+main(void)
 {
   *ptr=1;
   typepun ();

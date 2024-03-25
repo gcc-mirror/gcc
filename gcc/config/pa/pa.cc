@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for HPPA.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.cc
 
 This file is part of GCC.
@@ -1872,9 +1872,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 
       if (reg_plus_base_memory_operand (op1, GET_MODE (op1)))
 	{
-	  if (!(TARGET_PA_20
-		&& !TARGET_ELF32
-		&& INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
+	  if (!(INT14_OK_STRICT && INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
 	      && !INT_5_BITS (XEXP (XEXP (op1, 0), 1)))
 	    {
 	      /* SCRATCH_REG will hold an address and maybe the actual data.
@@ -1923,9 +1921,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 
       if (reg_plus_base_memory_operand (op0, GET_MODE (op0)))
 	{
-	  if (!(TARGET_PA_20
-		&& !TARGET_ELF32
-		&& INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
+	  if (!(INT14_OK_STRICT && INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
 	      && !INT_5_BITS (XEXP (XEXP (op0, 0), 1)))
 	    {
 	      /* SCRATCH_REG will hold an address and maybe the actual data.
@@ -3995,7 +3991,8 @@ pa_output_function_label (FILE *file)
   /* The function's label and associated .PROC must never be
      separated and must be output *after* any profiling declarations
      to avoid changing spaces/subspaces within a procedure.  */
-  ASM_OUTPUT_LABEL (file, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
+  const char *name = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+  ASM_OUTPUT_FUNCTION_LABEL (file, name, current_function_decl);
   fputs ("\t.PROC\n", file);
 
   /* pa_expand_prologue does the dirty work now.  We just need
@@ -10401,7 +10398,7 @@ pa_asm_trampoline_template (FILE *f)
 	  fputs ("\tldw		0(%r22),%r21\n", f);
 	  fputs ("\tldw		4(%r22),%r19\n", f);
 	  fputs ("\tbve		(%r21)\n", f);
-	  fputs ("\tldw		52(%r1),%r29\n", f);
+	  fputs ("\tldw		52(%r20),%r29\n", f);
 	  fputs ("\t.word	0\n", f);
 	  fputs ("\t.word	0\n", f);
 	  fputs ("\t.word	0\n", f);
@@ -10819,23 +10816,29 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 
       if (GET_CODE (index) == CONST_INT)
 	{
+	  /* Short 5-bit displacements always okay.  */
 	  if (INT_5_BITS (index))
 	    return true;
 
-	  /* When INT14_OK_STRICT is false, a secondary reload is needed
-	     to adjust the displacement of SImode and DImode floating point
-	     instructions but this may fail when the register also needs
-	     reloading.  So, we return false when STRICT is true.  We
-	     also reject long displacements for float mode addresses since
-	     the majority of accesses will use floating point instructions
-	     that don't support 14-bit offsets.  */
-	  if (!INT14_OK_STRICT
-	      && (strict || !(reload_in_progress || reload_completed))
-	      && mode != QImode
-	      && mode != HImode)
+	  if (!base14_operand (index, mode))
 	    return false;
 
-	  return base14_operand (index, mode);
+	  /* Long 14-bit displacements always okay for these cases.  */
+	  if (INT14_OK_STRICT
+	      || mode == QImode
+	      || mode == HImode)
+	    return true;
+
+	  /* A secondary reload may be needed to adjust the displacement
+	     of floating-point accesses when STRICT is nonzero.  */
+	  if (strict)
+	    return false;
+
+	  /* We get significantly better code if we allow long displacements
+	     before reload for all accesses.  Instructions must satisfy their
+	     constraints after reload, so we must have an integer access.
+	     Return true for both cases.  */
+	  return true;
 	}
 
       if (!TARGET_DISABLE_INDEXING

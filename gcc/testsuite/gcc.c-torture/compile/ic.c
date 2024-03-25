@@ -1,3 +1,4 @@
+int
 foo (int *ip, int a)
 {
   a++;

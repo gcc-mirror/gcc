@@ -1,5 +1,5 @@
 /* Implementation of the FINDLOC intrinsic
-   Copyright (C) 2018-2023 Free Software Foundation, Inc.
+   Copyright (C) 2018-2024 Free Software Foundation, Inc.
    Contributed by Thomas König <tk@tkoenig.net>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -107,11 +107,7 @@ findloc1_s1 (gfc_array_index_type * const restrict retarray,
 
       retarray->base_addr = xmallocarray (alloc_size, sizeof (index_type));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-	}
+	return;
     }
   else
     {
@@ -295,11 +291,7 @@ mfindloc1_s1 (gfc_array_index_type * const restrict retarray,
 
       retarray->base_addr = xmallocarray (alloc_size, sizeof (index_type));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-	}
+	return;
     }
   else
     {
@@ -468,11 +460,7 @@ sfindloc1_s1 (gfc_array_index_type * const restrict retarray,
 
       retarray->base_addr = xmallocarray (alloc_size, sizeof (index_type));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-	}
+	return;
     }
   else
     {

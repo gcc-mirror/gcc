@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -1481,10 +1481,7 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
 void
 asan_function_start (void)
 {
-  section *fnsec = function_section (current_function_decl);
-  switch_to_section (fnsec);
-  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LASANPC",
-			 current_function_funcdef_no);
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LASANPC", current_function_funcdef_no);
 }
 
 /* Return number of shadow bytes that are occupied by a local variable
@@ -2006,6 +2003,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   DECL_INITIAL (decl) = decl;
   TREE_ASM_WRITTEN (decl) = 1;
   TREE_ASM_WRITTEN (id) = 1;
+  DECL_ALIGN_RAW (decl) = DECL_ALIGN_RAW (current_function_decl);
   emit_move_insn (mem, expand_normal (build_fold_addr_expr (decl)));
   shadow_base = expand_binop (Pmode, lshr_optab, base,
 			      gen_int_shift_amount (Pmode, ASAN_SHADOW_SHIFT),
@@ -2291,6 +2289,8 @@ asan_protect_global (tree decl, bool ignore_decl_rtl_set_p)
       || (DECL_SECTION_NAME (decl) != NULL
 	  && !symtab_node::get (decl)->implicit_section
 	  && !section_sanitized_p (DECL_SECTION_NAME (decl)))
+      /* Don't protect variables in non-generic address-space.  */
+      || !ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (decl)))
       || DECL_SIZE (decl) == 0
       || ASAN_RED_ZONE_SIZE * BITS_PER_UNIT > MAX_OFILE_ALIGNMENT
       || TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST

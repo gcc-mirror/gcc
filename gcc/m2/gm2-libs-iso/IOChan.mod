@@ -1,6 +1,6 @@
 (* IOChan.mod implement the ISO IOChan specification.
 
-Copyright (C) 2002-2023 Free Software Foundation, Inc.
+Copyright (C) 2002-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE IOChan ;
 
-IMPORT FIO, EXCEPTIONS, M2EXCEPTION, RTio, IOConsts,
+IMPORT FIO, EXCEPTIONS, M2EXCEPTION, RTio,
        RTentity, errno, ErrnoCategory, IOLink, StdChans, M2RTS ;
 
 FROM EXCEPTIONS IMPORT ExceptionSource, RAISE, AllocateSource,

@@ -1,4 +1,7 @@
-static inline
+void abort (void);
+void exit (int);
+
+static inline int
 p (int *p)
 {
   return !((long) p & 1);
@@ -12,7 +15,8 @@ f (int *q)
   return 0;
 }
 
-main ()
+int
+main (void)
 {
   if (f ((int*) 0xffffffff) != 0)
     abort ();

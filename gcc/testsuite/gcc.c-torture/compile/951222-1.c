@@ -1,4 +1,5 @@
 /* { dg-require-stack-size "10000+3*8" } */
+/* { dg-additional-options "-std=gnu89" } */
 
 extern long long foo ();
 

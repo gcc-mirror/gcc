@@ -2,6 +2,9 @@
 
    by Manfred Hollstein <manfredh@redhat.com>  */
 
+void abort (void);
+void exit (int);
+
 void *temporary_obstack;
 
 static int input (void);

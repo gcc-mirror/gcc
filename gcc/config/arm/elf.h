@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with ELF obj format.
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org> and
    Catherine Moore <clm@cygnus.com>
    
@@ -91,11 +91,21 @@
 /* Define this macro if jump tables (for `tablejump' insns) should be
    output in the text section, along with the assembler instructions.
    Otherwise, the readonly data section is used.  */
-/* We put ARM and Thumb-2 jump tables in the text section, because it makes
-   the code more efficient, but for Thumb-1 it's better to put them out of
-   band unless we are generating compressed tables.  */
+/* The choice of placement for jump tables is nuanced.  For cores with
+   Harvard caches (pretty much all cases these days), there is a
+   benefit of maintaing a separation between I- and D-cache candidates
+   and that favors having jump tables in the RO data section.  This
+   makes the dispatch sequence slightly longer as we need to load the
+   address of the jump table first, but we often save elsewhere as the
+   content of the code section becomes better packed and we need
+   fewer long-range branch operations.  We also require the dispatch
+   table to be in the RO section when compiling for pure code.  We
+   currently place jump tables in the RO-data section for Arm or
+   whenever pure code is required; we also do it for Thumb-1 when
+   using an ADDR_VEC.  The remaining cases put the jump table in the
+   text section, but we should revisit this choice.  */
 #define JUMP_TABLES_IN_TEXT_SECTION					\
-   ((TARGET_32BIT || (TARGET_THUMB && (optimize_size || flag_pic))) \
+   ((TARGET_THUMB2 || (TARGET_THUMB && (optimize_size || flag_pic))) \
     && !target_pure_code)
 
 #ifndef LINK_SPEC

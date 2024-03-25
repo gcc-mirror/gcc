@@ -40,6 +40,10 @@ struct ix86_frame
 {
   long stack_pointer_offset;
 };
+int ix86_target_stack_probe (void);
+int pro_epilogue_adjust_stack (rtx, rtx, rtx, int, int);
+rtx gen_rtx_CONST_INT (int);
+void fancy_abort (const char *, int, const char *);
 void
 ix86_expand_prologue (void)
 {

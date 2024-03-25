@@ -1,5 +1,5 @@
 /* Subclass of diagnostic_path for analyzer diagnostics.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -65,6 +65,7 @@ public:
   void dump (pretty_printer *pp) const;
   void debug () const;
 
+  logger *get_logger () const { return m_logger; }
   void maybe_log (logger *logger, const char *desc) const;
 
   void add_event (std::unique_ptr<checker_event> event);

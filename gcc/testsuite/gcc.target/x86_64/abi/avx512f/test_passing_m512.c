@@ -24,6 +24,7 @@ int failed = 0;
   assert (memcmp (&X1, &X2, sizeof (T)) == 0); \
 } while (0)
 
+void
 fun_check_passing_m512_8_values (__m512 i0 ATTRIBUTE_UNUSED, __m512 i1 ATTRIBUTE_UNUSED, __m512 i2 ATTRIBUTE_UNUSED, __m512 i3 ATTRIBUTE_UNUSED, __m512 i4 ATTRIBUTE_UNUSED, __m512 i5 ATTRIBUTE_UNUSED, __m512 i6 ATTRIBUTE_UNUSED, __m512 i7 ATTRIBUTE_UNUSED)
 {
   /* Check argument values.  */

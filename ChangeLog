@@ -1,3 +1,121 @@
+2024-01-08  Joseph Myers  <josmyers@redhat.com>
+
+	* MAINTAINERS: Update my email address.
+
+2023-12-30  Joseph Myers  <jsm@polyomino.org.uk>
+
+	* MAINTAINERS: Update my email address.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.def: Add libgrust as host & target module.
+	* configure.ac: Add libgrust to host tools list. Add libgrust to
+	noconfigdirs if we're not building target libstdc++.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* MAINTAINERS: Add maintainers for libgrust.
+
+2023-12-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* Makefile.def (gettext): Disable (via missing)
+	{install-,}{pdf,html,info,dvi} and TAGS targets.  Set no_install
+	to true.  Add --disable-threads --disable-libasprintf.  Drop the
+	lib_path (as there are no shared libs).
+	* Makefile.in: Regenerate.
+
+2023-12-12  Paul Iannetta  <piannetta@kalrayinc.com>
+
+	* MAINTAINERS: Add myself to write after approval
+
+2023-12-12  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* MAINTAINERS: Update my email address
+
+2023-12-12  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* MAINTAINERS: Add myself to write after approval
+
+2023-11-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* MAINTAINERS: Add myself to write after approval and DCO
+
+2023-11-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libtool.m4: Fix stray call
+
+2023-11-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Add dependency on site.exp to check-gcc-* targets
+
+2023-11-18  Petter Tomner  <tomner@bahnhof.se>
+
+	* MAINTAINERS: Update my email address.
+
+2023-11-18  Frederik Harwath  <frederik@harwath.name>
+
+	* MAINTAINERS: Change my address.
+
+2023-11-16  Michal Jires  <mjires@suse.cz>
+
+	* MAINTAINERS: Add myself.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR bootstrap/12596
+	* .gitignore: Add '/gettext*'.
+	* configure.ac (host_libs): Replace intl with gettext.
+	(hbaseargs, bbaseargs, baseargs): Split baseargs into
+	{h,b}baseargs.
+	(skip_barg): New flag.  Skips appending current flag to
+	bbaseargs.
+	<library exemptions>: Exempt --with-libintl-{type,prefix} from
+	target and build machine argument passing.
+	* configure: Regenerate.
+	* Makefile.def (host_modules): Replace intl module with gettext
+	module.
+	(configure-ld): Depend on configure-gettext.
+	* Makefile.in: Regenerate.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* intl/*: Remove.
+
+2023-11-09  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-11-09  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS: Update my email address.
+
+2023-11-06  Carl Love  <cel@linux.ibm.com>
+
+	* MAINTAINERS: Update my email address.
+
+2023-11-01  Eric Gallager  <egallager@gcc.gnu.org>
+
+	* .github/CONTRIBUTING.md: Wrap lines more tightly.
+
+2023-11-01  Eric Gallager  <egallager@gcc.gnu.org>
+
+	* .github/CONTRIBUTING.md: New file.
+	* .github/PULL_REQUEST_TEMPLATE.md: New file.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Do not add default runpaths to GCC exes
+	when we are building -static-libstdc++/-static-libgcc (the
+	default).
+	* libtool.m4: Add 'enable-darwin-at-runpath'.  Act  on the
+	enable flag to alter Darwin libraries to use @rpath names.
+
 2023-10-15  Mike Frysinger  <vapier@gentoo.org>
 
 	* Makefile.def: Add distclean-sim dependency on distclean-gnulib.

@@ -1,0 +1,312 @@
+#  Specific regression driver for AArch64 SME.
+#  Copyright (C) 2009-2024 Free Software Foundation, Inc.
+#
+#  This file is part of GCC.
+#
+#  GCC is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3, or (at your option)
+#  any later version.
+#
+#  GCC is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with GCC; see the file COPYING3.  If not see
+#  <http://www.gnu.org/licenses/>.  */
+
+# Test whether certain SVE instructions are accepted or rejected in
+# SME streaming mode.
+
+# Exit immediately if this isn't an AArch64 target.
+if {![istarget aarch64*-*-*] } {
+    return
+}
+
+load_lib gcc-defs.exp
+
+if ![gcc_parallel_test_run_p aarch64-ssve] {
+  return
+}
+
+gcc_parallel_test_enable 0
+
+# Code shared by all tests.
+set preamble {
+#include <arm_sve.h>
+
+#pragma GCC target "+i8mm+f32mm+f64mm+sve2+sve2-bitperm+sve2-sm4+sve2-aes+sve2-sha3+sme"
+
+extern svbool_t &pred;
+
+extern svint8_t &s8;
+extern svint32_t &s32;
+
+extern svuint8_t &u8;
+extern svuint16_t &u16;
+extern svuint32_t &u32;
+extern svuint64_t &u64;
+
+extern svbfloat16_t &bf16;
+extern svfloat32_t &f32;
+
+extern void *void_ptr;
+
+extern int8_t *s8_ptr;
+extern int16_t *s16_ptr;
+extern int32_t *s32_ptr;
+
+extern uint8_t *u8_ptr;
+extern uint16_t *u16_ptr;
+extern uint32_t *u32_ptr;
+extern uint64_t *u64_ptr;
+
+extern uint64_t indx;
+}
+
+# Wrap a standalone call in a streaming-compatible function.
+set sc_harness {
+void
+foo () [[arm::streaming_compatible]]
+{
+  $CALL;
+}
+}
+
+# HARNESS is some source code that should be appended to the preamble
+# variable defined above.  It includes the string "$CALL", which should be
+# replaced by the function call in CALL.  The result after both steps is
+# a complete C++ translation unit.
+#
+# Try compiling the C++ code and see what output GCC produces.
+# The expected output is either:
+#
+# - empty, if SHOULD_PASS is true
+# - a message rejecting CALL in streaming mode, if SHOULD_PASS is false
+#
+# CALL is simple enough that it can be used in test names.
+proc check_ssve_call { harness name call should_pass } {
+    global preamble
+
+    set filename test-[pid]
+    set fd [open $filename.cc w]
+    puts $fd $preamble
+    puts -nonewline $fd [string map [list {$CALL} $call] $harness]
+    close $fd
+    remote_download host $filename.cc
+
+    set test "streaming SVE call $name"
+
+    set gcc_output [g++_target_compile $filename.cc $filename.s assembly ""]
+    remote_file build delete $filename.cc $filename.s
+
+    if { [string equal $gcc_output ""] } {
+	if { $should_pass } {
+	    pass $test
+	} else {
+	    fail $test
+	}
+	return
+    }
+
+    set lines [split $gcc_output "\n"]
+    set error_text "cannot be called when SME streaming mode is enabled"
+    if { [llength $lines] == 3
+	 && [string first "In function" [lindex $lines 0]] >= 0
+	 && [string first $error_text [lindex $lines 1]] >= 0
+	 && [string equal [lindex $lines 2] ""] } {
+	if { $should_pass } {
+	    fail $test
+	} else {
+	    pass $test
+	}
+	return
+    }
+
+    verbose -log "$test: unexpected output"
+    fail $test
+}
+
+# Apply check_ssve_call to each line in CALLS.  The other arguments are
+# as for check_ssve_call.
+proc check_ssve_calls { harness calls should_pass } {
+    foreach line [split $calls "\n"] {
+	set call [string trim $line]
+	if { [string equal $call ""] } {
+	    continue
+	}
+	check_ssve_call $harness "$call" $call $should_pass
+    }
+}
+
+# A small selection of things that are valid in streaming mode.
+set streaming_ok {
+    s8 = svadd_x (pred, s8, s8)
+    s8 = svld1 (pred, s8_ptr)
+}
+
+# This order follows the list in the SME manual.
+set nonstreaming_only {
+    u32 = svadrb_offset (u32, u32)
+    u64 = svadrb_offset (u64, u64)
+    u32 = svadrh_index (u32, u32)
+    u64 = svadrh_index (u64, u64)
+    u32 = svadrw_index (u32, u32)
+    u64 = svadrw_index (u64, u64)
+    u32 = svadrd_index (u32, u32)
+    u64 = svadrd_index (u64, u64)
+    u8 = svaesd (u8, u8)
+    u8 = svaese (u8, u8)
+    u8 = svaesimc (u8)
+    u8 = svaesmc (u8)
+    u8 = svbdep (u8, u8)
+    u8 = svbext (u8, u8)
+    f32 = svbfmmla (f32, bf16, bf16)
+    u8 = svbgrp (u8, u8)
+    u32 = svcompact (pred, u32)
+    f32 = svadda (pred, 1.0f, f32)
+    f32 = svexpa (u32)
+    f32 = svmmla (f32, f32, f32)
+    f32 = svtmad (f32, f32, 0)
+    f32 = svtsmul (f32, u32)
+    f32 = svtssel (f32, u32)
+    u32 = svhistcnt_z (pred, u32, u32)
+    u8 = svhistseg (u8, u8)
+    u32 = svld1ub_gather_offset_u32 (pred, u8_ptr, u32)
+    u32 = svld1ub_gather_offset_u32 (pred, u32, 1)
+    u64 = svld1_gather_index (pred, u64_ptr, u64)
+    u64 = svld1_gather_index_u64 (pred, u64, 1)
+    u32 = svld1uh_gather_index_u32 (pred, u16_ptr, u32)
+    u32 = svld1uh_gather_index_u32 (pred, u32, 1)
+    u8 = svld1ro (pred, u8_ptr + indx)
+    u8 = svld1ro (pred, u8_ptr + 1)
+    u16 = svld1ro (pred, u16_ptr + indx)
+    u16 = svld1ro (pred, u16_ptr + 1)
+    u32 = svld1ro (pred, u32_ptr + indx)
+    u32 = svld1ro (pred, u32_ptr + 1)
+    u64 = svld1ro (pred, u64_ptr + indx)
+    u64 = svld1ro (pred, u64_ptr + 1)
+    u32 = svld1sb_gather_offset_u32 (pred, s8_ptr, u32)
+    u32 = svld1sb_gather_offset_u32 (pred, u32, 1)
+    u32 = svld1sh_gather_index_u32 (pred, s16_ptr, u32)
+    u32 = svld1sh_gather_index_u32 (pred, u32, 1)
+    u64 = svld1sw_gather_index_u64 (pred, s32_ptr, u64)
+    u64 = svld1sw_gather_index_u64 (pred, u64, 1)
+    u64 = svld1uw_gather_index_u64 (pred, u32_ptr, u64)
+    u64 = svld1uw_gather_index_u64 (pred, u64, 1)
+    u32 = svld1_gather_index (pred, u32_ptr, u32)
+    u32 = svld1_gather_index_u32 (pred, u32, 1)
+    u8 = svldff1(pred, u8_ptr)
+    u16 = svldff1ub_u16(pred, u8_ptr)
+    u32 = svldff1ub_u32(pred, u8_ptr)
+    u64 = svldff1ub_u64(pred, u8_ptr)
+    u32 = svldff1ub_gather_offset_u32 (pred, u8_ptr, u32)
+    u32 = svldff1ub_gather_offset_u32 (pred, u32, 1)
+    u64 = svldff1(pred, u64_ptr)
+    u64 = svldff1_gather_index (pred, u64_ptr, u64)
+    u64 = svldff1_gather_index_u64 (pred, u64, 1)
+    u16 = svldff1(pred, u16_ptr)
+    u32 = svldff1uh_u32(pred, u16_ptr)
+    u64 = svldff1uh_u64(pred, u16_ptr)
+    u32 = svldff1uh_gather_offset_u32 (pred, u16_ptr, u32)
+    u32 = svldff1uh_gather_offset_u32 (pred, u32, 1)
+    u16 = svldff1sb_u16(pred, s8_ptr)
+    u32 = svldff1sb_u32(pred, s8_ptr)
+    u64 = svldff1sb_u64(pred, s8_ptr)
+    u32 = svldff1sb_gather_offset_u32 (pred, s8_ptr, u32)
+    u32 = svldff1sb_gather_offset_u32 (pred, u32, 1)
+    u32 = svldff1sh_u32(pred, s16_ptr)
+    u64 = svldff1sh_u64(pred, s16_ptr)
+    u32 = svldff1sh_gather_offset_u32 (pred, s16_ptr, u32)
+    u32 = svldff1sh_gather_offset_u32 (pred, u32, 1)
+    u64 = svldff1sw_u64(pred, s32_ptr)
+    u64 = svldff1sw_gather_offset_u64 (pred, s32_ptr, u64)
+    u64 = svldff1sw_gather_offset_u64 (pred, u64, 1)
+    u32 = svldff1(pred, u32_ptr)
+    u32 = svldff1_gather_index (pred, u32_ptr, u32)
+    u32 = svldff1_gather_index_u32 (pred, u32, 1)
+    u64 = svldff1uw_u64(pred, u32_ptr)
+    u64 = svldff1uw_gather_offset_u64 (pred, u32_ptr, u64)
+    u64 = svldff1uw_gather_offset_u64 (pred, u64, 1)
+    u8 = svldnf1(pred, u8_ptr)
+    u16 = svldnf1ub_u16(pred, u8_ptr)
+    u32 = svldnf1ub_u32(pred, u8_ptr)
+    u64 = svldnf1ub_u64(pred, u8_ptr)
+    u64 = svldnf1(pred, u64_ptr)
+    u16 = svldnf1(pred, u16_ptr)
+    u32 = svldnf1uh_u32(pred, u16_ptr)
+    u64 = svldnf1uh_u64(pred, u16_ptr)
+    u16 = svldnf1sb_u16(pred, s8_ptr)
+    u32 = svldnf1sb_u32(pred, s8_ptr)
+    u64 = svldnf1sb_u64(pred, s8_ptr)
+    u32 = svldnf1sh_u32(pred, s16_ptr)
+    u64 = svldnf1sh_u64(pred, s16_ptr)
+    u64 = svldnf1sw_u64(pred, s32_ptr)
+    u32 = svldnf1(pred, u32_ptr)
+    u64 = svldnf1uw_u64(pred, u32_ptr)
+    u32 = svldnt1ub_gather_offset_u32 (pred, u8_ptr, u32)
+    u32 = svldnt1ub_gather_offset_u32 (pred, u32, 1)
+    u64 = svldnt1_gather_index (pred, u64_ptr, u64)
+    u64 = svldnt1_gather_index_u64 (pred, u64, 1)
+    u32 = svldnt1uh_gather_offset_u32 (pred, u16_ptr, u32)
+    u32 = svldnt1uh_gather_offset_u32 (pred, u32, 1)
+    u32 = svldnt1sb_gather_offset_u32 (pred, s8_ptr, u32)
+    u32 = svldnt1sb_gather_offset_u32 (pred, u32, 1)
+    u32 = svldnt1sh_gather_offset_u32 (pred, s16_ptr, u32)
+    u32 = svldnt1sh_gather_offset_u32 (pred, u32, 1)
+    u64 = svldnt1sw_gather_offset_u64 (pred, s32_ptr, u64)
+    u64 = svldnt1sw_gather_offset_u64 (pred, u64, 1)
+    u64 = svldnt1uw_gather_offset_u64 (pred, u32_ptr, u64)
+    u64 = svldnt1uw_gather_offset_u64 (pred, u64, 1)
+    u32 = svldnt1_gather_offset (pred, u32_ptr, u32)
+    u32 = svldnt1_gather_offset_u32 (pred, u32, 1)
+    pred = svmatch (pred, u8, u8)
+    pred = svnmatch (pred, u8, u8)
+    u64 = svpmullb_pair (u64, u64)
+    u64 = svpmullt_pair (u64, u64)
+    svprfb_gather_offset (pred, void_ptr, u64, SV_PLDL1KEEP)
+    svprfb_gather_offset (pred, u64, 1, SV_PLDL1KEEP)
+    svprfd_gather_index (pred, void_ptr, u64, SV_PLDL1KEEP)
+    svprfd_gather_index (pred, u64, 1, SV_PLDL1KEEP)
+    svprfh_gather_index (pred, void_ptr, u64, SV_PLDL1KEEP)
+    svprfh_gather_index (pred, u64, 1, SV_PLDL1KEEP)
+    svprfw_gather_index (pred, void_ptr, u64, SV_PLDL1KEEP)
+    svprfw_gather_index (pred, u64, 1, SV_PLDL1KEEP)
+    u64 = svrax1 (u64, u64)
+    pred = svrdffr ()
+    pred = svrdffr_z (pred)
+    svsetffr ()
+    u32 = svsm4e (u32, u32)
+    u32 = svsm4ekey (u32, u32)
+    s32 = svmmla (s32, s8, s8)
+    svst1b_scatter_offset (pred, u8_ptr, u32, u32)
+    svst1b_scatter_offset (pred, u32, 1, u32)
+    svst1_scatter_index (pred, u64_ptr, u64, u64)
+    svst1_scatter_index (pred, u64, 1, u64)
+    svst1h_scatter_index (pred, u16_ptr, u32, u32)
+    svst1h_scatter_index (pred, u32, 1, u32)
+    svst1w_scatter_index (pred, u32_ptr, u64, u64)
+    svst1w_scatter_index (pred, u64, 1, u64)
+    svst1_scatter_index (pred, u32_ptr, u32, u32)
+    svst1_scatter_index (pred, u32, 1, u32)
+    svstnt1b_scatter_offset (pred, u8_ptr, u32, u32)
+    svstnt1b_scatter_offset (pred, u32, 1, u32)
+    svstnt1_scatter_offset (pred, u64_ptr, u64, u64)
+    svstnt1_scatter_offset (pred, u64, 1, u64)
+    svstnt1h_scatter_offset (pred, u16_ptr, u32, u32)
+    svstnt1h_scatter_offset (pred, u32, 1, u32)
+    svstnt1w_scatter_offset (pred, u32_ptr, u64, u64)
+    svstnt1w_scatter_offset (pred, u64, 1, u64)
+    svstnt1_scatter_offset (pred, u32_ptr, u32, u32)
+    svstnt1_scatter_offset (pred, u32, 1, u32)
+    u32 = svmmla (u32, u8, u8)
+    s32 = svusmmla (s32, u8, s8)
+    svwrffr (pred)
+}
+
+check_ssve_calls $sc_harness $streaming_ok 1
+check_ssve_calls $sc_harness $nonstreaming_only 0
+
+gcc_parallel_test_enable 1

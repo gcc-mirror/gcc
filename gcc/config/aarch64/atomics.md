@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 processor synchronization primitives.
-;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2024 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -39,7 +39,7 @@
 (define_mode_attr cas_short_expected_pred
   [(QI "aarch64_reg_or_imm") (HI "aarch64_plushi_operand")])
 (define_mode_attr cas_short_expected_imm
-  [(QI "n") (HI "Uph")])
+  [(QI "n") (HI "Uih")])
 
 (define_insn_and_split "@aarch64_compare_and_swap<mode>"
   [(set (reg:CC CC_REGNUM)					;; bool out
@@ -224,7 +224,7 @@
       UNSPECV_ATOMIC_EXCHG))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 4 "=&r"))]
-  ""
+  "!TARGET_LSE"
   "#"
   "&& epilogue_completed"
   [(const_int 0)]

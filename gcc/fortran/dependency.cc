@@ -1,5 +1,5 @@
 /* Dependency analysis
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of GCC.
@@ -2336,4 +2336,132 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
     return 1;
 
   return fin_dep == GFC_DEP_OVERLAP;
+}
+
+/* Check if two refs are equal, for the purposes of checking if one might be
+   the base of the other for OpenMP (target directives).  Derived from
+   gfc_dep_resolver.  This function is stricter, e.g. indices arr(i) and
+   arr(j) compare as non-equal.  */
+
+bool
+gfc_omp_expr_prefix_same (gfc_expr *lexpr, gfc_expr *rexpr)
+{
+  gfc_ref *lref, *rref;
+
+  if (lexpr->symtree && rexpr->symtree)
+    {
+      /* See are_identical_variables above.  */
+      if (lexpr->symtree->n.sym->attr.dummy
+	  && rexpr->symtree->n.sym->attr.dummy)
+	{
+	  /* Dummy arguments: Only check for equal names.  */
+	  if (lexpr->symtree->n.sym->name != rexpr->symtree->n.sym->name)
+	    return false;
+	}
+      else
+	{
+	  if (lexpr->symtree->n.sym != rexpr->symtree->n.sym)
+	    return false;
+	}
+    }
+  else if (lexpr->base_expr && rexpr->base_expr)
+    {
+      if (gfc_dep_compare_expr (lexpr->base_expr, rexpr->base_expr) != 0)
+	return false;
+    }
+  else
+    return false;
+
+  lref = lexpr->ref;
+  rref = rexpr->ref;
+
+  while (lref && rref)
+    {
+      gfc_dependency fin_dep = GFC_DEP_EQUAL;
+
+      if (lref && lref->type == REF_COMPONENT && lref->u.c.component
+	  && strcmp (lref->u.c.component->name, "_data") == 0)
+	lref = lref->next;
+
+      if (rref && rref->type == REF_COMPONENT && rref->u.c.component
+	  && strcmp (rref->u.c.component->name, "_data") == 0)
+	rref = rref->next;
+
+      gcc_assert (lref->type == rref->type);
+
+      switch (lref->type)
+	{
+	case REF_COMPONENT:
+	  if (lref->u.c.component != rref->u.c.component)
+	    return false;
+	  break;
+
+	case REF_ARRAY:
+	  if (ref_same_as_full_array (lref, rref))
+	    break;
+	  if (ref_same_as_full_array (rref, lref))
+	    break;
+
+	  if (lref->u.ar.dimen != rref->u.ar.dimen)
+	    {
+	      if (lref->u.ar.type == AR_FULL
+		  && gfc_full_array_ref_p (rref, NULL))
+		break;
+	      if (rref->u.ar.type == AR_FULL
+		  && gfc_full_array_ref_p (lref, NULL))
+		break;
+	      return false;
+	    }
+
+	  for (int n = 0; n < lref->u.ar.dimen; n++)
+	    {
+	      if (lref->u.ar.dimen_type[n] == DIMEN_VECTOR
+		  && rref->u.ar.dimen_type[n] == DIMEN_VECTOR
+		  && gfc_dep_compare_expr (lref->u.ar.start[n],
+					   rref->u.ar.start[n]) == 0)
+		continue;
+	      if (lref->u.ar.dimen_type[n] == DIMEN_RANGE
+		  && rref->u.ar.dimen_type[n] == DIMEN_RANGE)
+		fin_dep = check_section_vs_section (&lref->u.ar, &rref->u.ar,
+						    n);
+	      else if (lref->u.ar.dimen_type[n] == DIMEN_ELEMENT
+		       && rref->u.ar.dimen_type[n] == DIMEN_RANGE)
+		fin_dep = gfc_check_element_vs_section (lref, rref, n);
+	      else if (rref->u.ar.dimen_type[n] == DIMEN_ELEMENT
+		       && lref->u.ar.dimen_type[n] == DIMEN_RANGE)
+		fin_dep = gfc_check_element_vs_section (rref, lref, n);
+	      else if (lref->u.ar.dimen_type[n] == DIMEN_ELEMENT
+		       && rref->u.ar.dimen_type[n] == DIMEN_ELEMENT)
+		{
+		  gfc_array_ref l_ar = lref->u.ar;
+		  gfc_array_ref r_ar = rref->u.ar;
+		  gfc_expr *l_start = l_ar.start[n];
+		  gfc_expr *r_start = r_ar.start[n];
+		  int i = gfc_dep_compare_expr (r_start, l_start);
+		  if (i == 0)
+		    fin_dep = GFC_DEP_EQUAL;
+		  else
+		    return false;
+		}
+	      else
+		return false;
+	      if (n + 1 < lref->u.ar.dimen
+		  && fin_dep != GFC_DEP_EQUAL)
+		return false;
+	    }
+
+	  if (fin_dep != GFC_DEP_EQUAL
+	      && fin_dep != GFC_DEP_OVERLAP)
+	    return false;
+
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+      lref = lref->next;
+      rref = rref->next;
+    }
+
+  return true;
 }

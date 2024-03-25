@@ -1,3 +1,11 @@
+2023-11-14  Sam James  <sam@gentoo.org>
+
+	* gcc_release: Cleanup whitespace.
+
+2023-11-14  Sam James  <sam@gentoo.org>
+
+	* gcc_release: Use HTTPS for links.
+
 2023-07-07  Richard Biener  <rguenther@suse.de>
 
 	* crontab: Remove entry for GCC 10.

@@ -1,4 +1,4 @@
-/* Test compatibility of unprototyped and prototyped function types (C2x made
+/* Test compatibility of unprototyped and prototyped function types (C23 made
    the case of types affected by default argument promotions compatible, before
    removing unprototyped functions completely).  Test affected usages are not
    accepted for C11.  */

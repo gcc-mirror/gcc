@@ -20,6 +20,7 @@ import dmd.astenums;
 import dmd.arraytypes;
 import dmd.attrib;
 import dmd.dsymbol;
+import dmd.dsymbolsem;
 import dmd.errors;
 import dmd.globals;
 import dmd.hdrgen;
@@ -1813,7 +1814,7 @@ public:
         {
             buf.writestring("::");
 
-            import dmd.root.rootobject;
+            import dmd.rootobject;
             // Is this even possible?
             if (arg.dyncast != DYNCAST.identifier)
             {

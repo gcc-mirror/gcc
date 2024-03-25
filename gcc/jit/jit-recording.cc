@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -4966,7 +4966,7 @@ recording::global::write_to_dump (dump &d)
   else if (m_rvalue_init)
     {
       d.write (" = ");
-      d.write (m_rvalue_init->get_debug_string ());
+      d.write ("%s", m_rvalue_init->get_debug_string ());
       d.write (";\n");
     }
 

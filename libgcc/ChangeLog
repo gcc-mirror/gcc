@@ -1,3 +1,265 @@
+2023-12-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c++-minimal/README: New.
+	* c++-minimal/guard.c: New.
+	* config/gcn/t-amdgcn (LIB2ADD): Add it.
+	* config/nvptx/t-nvptx (LIB2ADD): Likewise.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112917
+	* config.host (sparc, sparc64): Enable...
+	* config/sparc/t-sparc: ... this new fragment.
+
+2023-12-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* strub.c (ATTRIBUTE_NOINLINE): New.
+	(ATTRIBUTE_STRUB_CALLABLE): Add it.
+	(__strub_dummy_force_no_leaf): Drop it.
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/cpuinfo.c (enum CPUFeatures): Move to shared
+	copy in gcc/common
+
+2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+	    Pavel Iliin  <Pavel.Iliin@arm.com>
+
+	* config/aarch64/t-aarch64: Include cpuinfo.c
+	* config/aarch64/cpuinfo.c: New file
+	(__init_cpu_features_constructor) New.
+	(__init_cpu_features_resolver) New.
+	(__init_cpu_features) New.
+
+2023-12-11  Lipeng Zhu  <lipeng.zhu@intel.com>
+
+	* gthr-posix.h (__GTHREAD_RWLOCK_INIT): New macro.
+	(__gthrw): New function.
+	(__gthread_rwlock_rdlock): New function.
+	(__gthread_rwlock_tryrdlock): New function.
+	(__gthread_rwlock_wrlock): New function.
+	(__gthread_rwlock_trywrlock): New function.
+	(__gthread_rwlock_unlock): New function.
+
+2023-12-08  Florian Weimer  <fweimer@redhat.com>
+
+	* libgcov-interface.c (__gcov_fork): Use __builtin_fork instead
+	of fork.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.in: Regenerate.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/__arm_za_disable.S: Add hidden alias.
+	* config/aarch64/aarch64-unwind.h: Reset the SME state before
+	EH return via the _Unwind_Frames_Extra hook.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/t-aarch64: Add sources to the build.
+	* config/aarch64/__aarch64_have_sme.c: New file.
+	* config/aarch64/__arm_sme_state.S: New file.
+	* config/aarch64/__arm_tpidr2_restore.S: New file.
+	* config/aarch64/__arm_tpidr2_save.S: New file.
+	* config/aarch64/__arm_za_disable.S: New file.
+	* config/aarch64/aarch64-asm.h: New file.
+	* config/aarch64/libgcc-sme.ver: New file.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.in: Undef HAVE___GETAUXVAL.
+	* configure: Regenerate.
+	* configure.ac: Check for __getauxval.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.in: Undef HAVE_AS_VARIANT_PCS.
+	* configure: Regenerate.
+	* configure.ac: Check for .variant_pcs.
+
+2023-12-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* configure.ac: Check for strub support.
+	* configure: Rebuilt.
+	* Makefile.in: Compile strub.c conditionally.
+
+2023-12-06  Thomas Schwinge  <thomas@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/109289
+	* emutls.c: Add GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
+	pragma.
+
+2023-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (LIB2ADD): Add strub.c.
+	* libgcc2.h (__strub_enter, __strub_update, __strub_leave):
+	Declare.
+	* strub.c: New.
+	* libgcc-std.ver.in (__strub_enter): Add to GCC_14.0.0.
+	(__strub_update, __strub_leave): Likewise.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* unwind-pe.h (_Unwind_gnu_Find_got): Add prototype.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/rx/rx-abi-functions.c (__ltdf2, __gtdf2): Add prototype.
+	(__ledf2, __gedf2, __eqdf2, __nedf2): Likewise.
+	(__ltsf2, __gtsf2, __lesf2, __gesf2, __eqsf2, __nesf2): Likewise.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/frv/frvbegin.c (atexit): Add prototype.
+
+2023-12-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* libgcc-std.ver.in (__hardcfr_check): Add to GCC_14.0.0.
+
+2023-12-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/112777
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC):  Honor that __LIBGCC_HAVE_LIBATOMIC is
+	always defined as either 0 or 1.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* config/aarch64/linux-unwind.h
+	(aarch64_fallback_frame_state): Add cast to the expected type
+	in sc assignment.
+
+2023-11-30  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/111404
+	* config/aarch64/lse.S (__aarch64_cas16_acq_rel): Execute STLXP using
+	either new value or loaded value.
+
+2023-11-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/lib1funcs.S (__sync_synchronize): Adjust warning message.
+
+2023-11-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.host (arm*-*-eabi* | arm*-*-rtems*):
+	Add arm/t-sync to the makefile rules.
+	* config/arm/lib1funcs.S (__sync_synchronize_none)
+	(__sync_synchronize_cp15dmb, __sync_synchronize_dmb)
+	(__sync_synchronize): New functions.
+	* config/arm/t-sync: New file.
+	* config/arm/sync-none.specs: Likewise.
+	* config/arm/sync-dmb.specs: Likewise.
+	* config/arm/sync-cp15dmb.specs: Likewise.
+
+2023-11-23  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* hardcfr.c (__hardcfr_check_fail): Mark as always_inline.
+
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC): Formatting fixes.
+
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC): Always define it.
+	Set it also to 1, if __LIBGCC_HAVE_LIBATOMIC is defined.
+
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Revert:
+	2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov.h (gcov_type): Define using __LIBGCC_GCOV_TYPE_SIZE.
+	(gcov_type_unsigned): Likewise.
+
+2023-11-10  Keith Packard  <keithp@keithp.com>
+
+	* config/m68k/lb1sf68.S (__adddf3): Properly check for non-zero denorm.
+	(__divdf3): Restore sign bit properly.
+	(__addsf3): Correct exponent check.
+	* config/m68k/fpgnulib.c (EXPMASK): Define.
+	(__extendsfdf2): Handle Inf and NaN properly.
+	(__truncdfsf2): Handle underflow and overflow correctly.
+	(__extenddfxf2): Handle underflow, denorms, Inf and NaN correctly.
+	(__truncxfdf2): Handle underflow and denorms correctly.
+	(__fixxfsi): Reimplement.
+
+2023-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/65833
+	* config/t-softfp (softfp_bid_list): Add
+	{U,}TItype <-> _Decimal{32,64,128} conversions.
+	* soft-fp/floattisd.c: New file.
+	* soft-fp/floattidd.c: New file.
+	* soft-fp/floattitd.c: New file.
+	* soft-fp/floatuntisd.c: New file.
+	* soft-fp/floatuntidd.c: New file.
+	* soft-fp/floatuntitd.c: New file.
+	* soft-fp/fixsdti.c: New file.
+	* soft-fp/fixddti.c: New file.
+	* soft-fp/fixtdti.c: New file.
+	* soft-fp/fixunssdti.c: New file.
+	* soft-fp/fixunsddti.c: New file.
+	* soft-fp/fixunstdti.c: New file.
+
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* offloadstuff.c (OFFLOAD_IND_FUNC_TABLE_SECTION_NAME): New.
+	(__offload_ind_func_table): New.
+	(__offload_ind_funcs_end): New.
+	(__OFFLOAD_TABLE__): Add entries for indirect functions.
+
+2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/gthr-gcn.h (__gthread_getspecific): 's%NULL%0'.
+
+2023-10-31  Alexandre Oliva  <oliva@adacore.com>
+
+	* hardcfr.c: Adjust copyright year.
+
+2023-10-24  Sergei Trofimovich  <siarheit@google.com>
+
+	* config/aarch64/heap-trampoline.c: Disable when libc is not
+	present.
+	* config/i386/heap-trampoline.c: Ditto.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-slibgcc-darwin: Generate libgcc_s
+	with an @rpath name.
+	* config.host: Handle Darwin rpaths.
+	* config/t-darwin-rpath: New file.
+
+2023-10-22  Andrew Burgess  <andrew.burgess@embecosm.com>
+	    Maxim Blinov  <maxim.blinov@embecosm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgcc2.h (__builtin_nested_func_ptr_created): Declare.
+	(__builtin_nested_func_ptr_deleted): Declare.
+	* libgcc-std.ver.in: Add the new symbols.
+	* config/aarch64/heap-trampoline.c: Implement heap-based
+	trampolines for aarch64.
+	* config/aarch64/t-heap-trampoline: Add rule to build
+	config/aarch64/heap-trampoline.c
+	* config/i386/heap-trampoline.c: Implement heap-based
+	trampolines for x86_64.
+	* config/i386/t-heap-trampoline: Add rule to build
+	config/i386/heap-trampoline.cc
+	* config.host: Handle --enable-heap-trampolines on
+	x86_64-*-linux*, aarch64-*-linux*, x86_64-*-darwin*.
+
+2023-10-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/amdgcn_veclib.h (CDNA3_PLUS): Set false for __RDNA2__.
+
+2023-10-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (LIB2ADD): Add hardcfr.c.
+	* hardcfr.c: New.
+
 2023-10-13  Florian Weimer  <fweimer@redhat.com>
 
 	* config/or1k/linux-unwind.h (or1k_fallback_frame_state): Add
@@ -13097,7 +13359,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2023 Free Software Foundation, Inc.
+Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

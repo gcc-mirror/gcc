@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -std=c99" } */
+/* { dg-options "-fpermissive -O2 -std=c99" } */
 
 void
 foo (void)

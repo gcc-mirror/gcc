@@ -10,14 +10,14 @@ f1 (svbool_t pg, uint32_t *u32_ptr, svuint8_t u8, svuint16_t u16,
 {
   svadrb_offset (u32); /* { dg-error {too few arguments to function 'svadrb_offset'} } */
   svadrb_offset (u32, u32, u32); /* { dg-error {too many arguments to function 'svadrb_offset'} } */
-  svadrb_offset (u32_ptr, s32); /* { dg-error {passing '[^']*\*'[^\n]* to argument 1 of 'svadrb_offset', which expects an SVE vector type} } */
-  svadrb_offset (0, s32); /* { dg-error {passing 'int' to argument 1 of 'svadrb_offset', which expects an SVE vector type} } */
+  svadrb_offset (u32_ptr, s32); /* { dg-error {passing '[^']*\*'[^\n]* to argument 1 of 'svadrb_offset', which expects an SVE type} } */
+  svadrb_offset (0, s32); /* { dg-error {passing 'int' to argument 1 of 'svadrb_offset', which expects an SVE type rather than a scalar} } */
   svadrb_offset (u16, u16); /* { dg-error {passing 'svuint16_t' to argument 1 of 'svadrb_offset', which expects 'svuint32_t' or 'svuint64_t'} } */
   svadrb_offset (s32, s32); /* { dg-error {passing 'svint32_t' to argument 1 of 'svadrb_offset', which expects 'svuint32_t' or 'svuint64_t'} } */
   svadrb_offset (f32, s32); /* { dg-error {passing 'svfloat32_t' to argument 1 of 'svadrb_offset', which expects 'svuint32_t' or 'svuint64_t'} } */
   svadrb_offset (pg, s32); /* { dg-error {passing 'svbool_t' to argument 1 of 'svadrb_offset', which expects 'svuint32_t' or 'svuint64_t'} } */
 
-  svadrb_offset (u32, 0); /* { dg-error {passing 'int' to argument 2 of 'svadrb_offset', which expects an SVE vector type} } */
+  svadrb_offset (u32, 0); /* { dg-error {passing 'int' to argument 2 of 'svadrb_offset', which expects an SVE type rather than a scalar} } */
   svadrb_offset (u32, u8); /* { dg-error {passing 'svuint8_t' to argument 2 of 'svadrb_offset', which expects a vector of 32-bit or 64-bit integers} } */
   svadrb_offset (u32, u16); /* { dg-error {passing 'svuint16_t' to argument 2 of 'svadrb_offset', which expects a vector of 32-bit or 64-bit integers} } */
   svadrb_offset (u32, pg); /* { dg-error {passing 'svbool_t' to argument 2 of 'svadrb_offset', which expects a vector of integers} } */

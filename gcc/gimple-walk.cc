@@ -1,6 +1,6 @@
 /* Gimple walk support.
 
-   Copyright (C) 2007-2023 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -56,11 +56,21 @@ walk_gimple_seq_mod (gimple_seq *pseq, walk_stmt_fn callback_stmt,
 	  gcc_assert (wi);
 	  wi->callback_result = ret;
 
-	  return wi->removed_stmt ? NULL : gsi_stmt (gsi);
+	  gimple *g;
+	  if (!wi->removed_stmt)
+	    g = gsi_stmt (gsi);
+	  else
+	    {
+	      g = NULL;
+	      wi->removed_stmt = false;
+	    }
+	  return g;
 	}
 
       if (!wi->removed_stmt)
 	gsi_next (&gsi);
+      else
+	wi->removed_stmt = false;
     }
 
   if (wi)

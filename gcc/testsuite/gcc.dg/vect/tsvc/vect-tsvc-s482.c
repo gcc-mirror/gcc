@@ -3,6 +3,7 @@
 
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-require-effective-target vect_float } */
+/* { dg-add-options vect_early_break } */
 
 #include "tsvc.h"
 
@@ -37,4 +38,4 @@ int main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail { ! vect_early_break } } } } */

@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fanalyzer-call-summaries -Wno-analyzer-too-complex" } */
+/* { dg-additional-options "-fanalyzer-call-summaries -Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
 /* { dg-skip-if "c++98 has no noreturn attribute" { c++98_only } } */
 
 #ifdef __cplusplus

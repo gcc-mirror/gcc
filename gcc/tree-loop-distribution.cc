@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -1440,7 +1440,7 @@ loop_distribution::data_dep_in_cycle_p (struct graph *rdg,
   else if (DDR_NUM_DIST_VECTS (ddr) > 1)
     return true;
   else if (DDR_REVERSED_P (ddr)
-	   || lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), 1))
+	   || lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), DDR_NB_LOOPS (ddr)))
     return false;
 
   return true;
@@ -2155,9 +2155,6 @@ loop_distribution::pg_add_dependence_edges (struct graph *rdg, int dir,
 	    }
 	  else if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
 	    {
-	      if (DDR_REVERSED_P (ddr))
-		this_dir = -this_dir;
-
 	      /* Known dependences can still be unordered througout the
 		 iteration space, see gcc.dg/tree-ssa/ldist-16.c and
 		 gcc.dg/tree-ssa/pr94969.c.  */
@@ -2170,7 +2167,20 @@ loop_distribution::pg_add_dependence_edges (struct graph *rdg, int dir,
 	      /* Else as the distance vector is lexicographic positive swap
 		 the dependence direction.  */
 	      else
-		this_dir = -this_dir;
+		{
+		  if (DDR_REVERSED_P (ddr))
+		    this_dir = -this_dir;
+		  this_dir = -this_dir;
+
+		  /* When then dependence distance of the innermost common
+		     loop of the DRs is zero we have a conflict.  */
+		  auto l1 = gimple_bb (DR_STMT (dr1))->loop_father;
+		  auto l2 = gimple_bb (DR_STMT (dr2))->loop_father;
+		  int idx = index_in_loop_nest (find_common_loop (l1, l2)->num,
+						DDR_LOOP_NEST (ddr));
+		  if (DDR_DIST_VECT (ddr, 0)[idx] == 0)
+		    this_dir = 2;
+		}
 	    }
 	  else
 	    this_dir = 0;

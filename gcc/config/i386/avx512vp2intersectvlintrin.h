@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2019-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,9 +28,10 @@
 #ifndef _AVX512VP2INTERSECTVLINTRIN_H_INCLUDED
 #define _AVX512VP2INTERSECTVLINTRIN_H_INCLUDED
 
-#if !defined(__AVX512VP2INTERSECT__) || !defined(__AVX512VL__)
+#if !defined(__AVX512VP2INTERSECT__) || !defined(__AVX512VL__) \
+  || defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512vp2intersect,avx512vl")
+#pragma GCC target("avx512vp2intersect,avx512vl,no-evex512")
 #define __DISABLE_AVX512VP2INTERSECTVL__
 #endif /* __AVX512VP2INTERSECTVL__ */
 

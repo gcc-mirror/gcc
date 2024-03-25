@@ -12,4 +12,5 @@ DEF(0, unsigned, long long)
 DEF(1, unsigned, unsigned long long)
 DEF(2, double, float)
 
-/* { dg-final { scan-tree-dump-times "negate_expr" 6 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "negate_expr" 6 "optimized" { target { large_double } } } } */
+/* { dg-final { scan-tree-dump-times "negate_expr" 4 "optimized" { target { ! large_double } } } } */

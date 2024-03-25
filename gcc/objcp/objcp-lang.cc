@@ -1,5 +1,5 @@
 /* Language-dependent hooks for Objective-C++.
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -50,11 +50,10 @@ struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
    there should be very few (if any) routines below.  */
 
 tree
-objcp_tsubst_copy_and_build (tree t, tree args, tsubst_flags_t complain,
-			     tree in_decl)
+objcp_tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
 #define RECURSE(NODE)							\
-  tsubst_copy_and_build (NODE, args, complain, in_decl)
+  tsubst_expr (NODE, args, complain, in_decl)
 
   /* The following two can only occur in Objective-C++.  */
 
@@ -67,8 +66,14 @@ objcp_tsubst_copy_and_build (tree t, tree args, tsubst_flags_t complain,
 	 RECURSE (TREE_OPERAND (t, 2)), NULL);
 
     case CLASS_REFERENCE_EXPR:
-      return objc_get_class_reference
-	(RECURSE (TREE_OPERAND (t, 0)));
+      {
+	tree ident = TREE_OPERAND (t, 0);
+	if (TYPE_P (ident))
+	  ident = tsubst (ident, args, complain, in_decl);
+	else
+	  ident = RECURSE (ident);
+	return objc_get_class_reference (ident);
+      }
 
     default:
       break;
@@ -78,6 +83,16 @@ objcp_tsubst_copy_and_build (tree t, tree args, tsubst_flags_t complain,
   return NULL_TREE;
 
 #undef RECURSE
+}
+
+/* Implement c-family hook to add language-specific features
+   for __has_{feature,extension}.  */
+
+void
+c_family_register_lang_features ()
+{
+  objc_common_register_features ();
+  cp_register_features ();
 }
 
 static void

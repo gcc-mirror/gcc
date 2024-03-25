@@ -1,5 +1,5 @@
 /* Definitions for C++ contract levels
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by Jeff Chapman II (jchapman@lock3software.com)
 
 This file is part of GCC.
@@ -636,7 +636,11 @@ make_postcondition_variable (cp_expr id)
 bool
 check_postcondition_result (tree decl, tree type, location_t loc)
 {
-  if (VOID_TYPE_P (type))
+  /* Do not be confused by targetm.cxx.cdtor_return_this ();
+     conceptually, cdtors have no return value.  */
+  if (VOID_TYPE_P (type)
+      || DECL_CONSTRUCTOR_P (decl)
+      || DECL_DESTRUCTOR_P (decl))
     {
       error_at (loc,
 		DECL_CONSTRUCTOR_P (decl)
@@ -722,7 +726,8 @@ build_comment (cp_expr condition)
 {
   /* Try to get the actual source text for the condition; if that fails pretty
      print the resulting tree.  */
-  char *str = get_source_text_between (condition.get_start (),
+  char *str = get_source_text_between (global_dc->get_file_cache (),
+				       condition.get_start (),
 				       condition.get_finish ());
   if (!str)
     {

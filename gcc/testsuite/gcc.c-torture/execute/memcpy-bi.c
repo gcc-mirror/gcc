@@ -1,6 +1,8 @@
 /* Test builtin-memcpy (which may emit different code for different N).  */
 #include <string.h>
 
+void abort (void);
+
 #define TESTSIZE 80
 
 char src[TESTSIZE] __attribute__ ((aligned));
@@ -21,7 +23,8 @@ TN ((n) + 1) \
 TN ((n) + 2) \
 TN ((n) + 3)
 
-main ()
+int
+main (void)
 {
   int i,j;
 

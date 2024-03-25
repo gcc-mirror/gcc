@@ -1,6 +1,6 @@
 (* FormatStrings.mod provides a pseudo printf capability.
 
-Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -26,13 +26,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE FormatStrings ;
 
-FROM DynamicStrings IMPORT String, InitString, InitStringChar, Mark,
+FROM DynamicStrings IMPORT InitString, InitStringChar, Mark,
                            ConCat, Slice, Index, char, string,
                            Assign, Length, Mult, Dup, ConCatChar,
                            PushAllocation, PopAllocationExemption,
                            InitStringDB, InitStringCharStarDB,
                            InitStringCharDB, MultDB, DupDB, SliceDB,
-                           KillString, ConCatChar ;
+                           KillString ;
 
 FROM StringConvert IMPORT IntegerToString, CardinalToString, hstoc ;
 FROM SYSTEM IMPORT ADDRESS ;

@@ -7,14 +7,16 @@ struct rtx_def
   int code;
   rtx rt_rtx;
 };
+int arf (void);
+int foo (void);
 rtx
 try_combine (rtx i1, rtx newpat)
 {
   rtx temp;
-  if (i1 && (temp = ((((((newpat->rt_rtx, ((((temp)->code) == 42)))))))))
+  if (i1 && (temp = (rtx) ((((((newpat->rt_rtx, ((((temp)->code) == 42)))))))))
       && ((temp =
-	(((((((((((newpat)->rt_rtx),
-		 ((((temp)->code) == 42) && arf ())))))))))))))
+	   (rtx) (((((((((((newpat)->rt_rtx),
+			  ((((temp)->code) == 42) && arf ())))))))))))))
     ;
   else if (i1 && foo ());
 }

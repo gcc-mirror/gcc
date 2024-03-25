@@ -1,5 +1,7 @@
 /* submitted by kenneth zadeck */
 
+void abort (void);
+
 static int test_var;
 
 /* the idea here is that not only is inlinable, inlinable but since it
@@ -20,7 +22,8 @@ not_inlinable ()
   inlinable();
 }
 
-main ()
+int
+main (void)
 {
   test_var = 10;
   /* Variable test_var should be considered call-clobbered by the call

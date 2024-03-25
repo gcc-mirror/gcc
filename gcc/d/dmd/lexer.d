@@ -50,7 +50,6 @@ struct CompileEnv
 
     bool previewIn;          /// `in` means `[ref] scope const`, accepts rvalues
     bool ddocOutput;         /// collect embedded documentation comments
-    bool shortenedMethods = true;   /// allow => in normal function declarations
     bool masm;               /// use MASM inline asm syntax
 }
 
@@ -3258,6 +3257,24 @@ class Lexer
     {
         scanloc.linnum = scanloc.linnum + 1;
         line = p;
+    }
+
+    /****************************
+     * Print the tokens from the current `token` to the end,
+     * while not advancing the parser forward.
+     * Useful for debugging.
+     */
+    void printRestOfTokens()
+    {
+        auto tk = &token;
+        while (1)
+        {
+            printf("%s ", (*tk).toChars());
+            if (tk.value == TOK.endOfFile)
+                break;
+            tk = peek(tk);
+        }
+        printf("\n");
     }
 }
 

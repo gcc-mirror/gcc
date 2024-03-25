@@ -1,3 +1,4 @@
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
 // { dg-options "-Wcatch-value=3" }
 
 struct A { virtual ~A() {} };

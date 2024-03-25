@@ -1,7 +1,8 @@
 /* { dg-require-effective-target label_values } */
 /* { dg-require-effective-target indirect_jumps } */
 
-f ()
+void
+f (void)
 {
   long *sp;
   long *pc;

@@ -1,6 +1,6 @@
 ; Options for the GCN port of the compiler.
 
-; Copyright (C) 2016-2023 Free Software Foundation, Inc.
+; Copyright (C) 2016-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -40,12 +40,18 @@ Enum(gpu_type) String(gfx908) Value(PROCESSOR_GFX908)
 EnumValue
 Enum(gpu_type) String(gfx90a) Value(PROCESSOR_GFX90a)
 
+EnumValue
+Enum(gpu_type) String(gfx1030) Value(PROCESSOR_GFX1030)
+
+EnumValue
+Enum(gpu_type) String(gfx1100) Value(PROCESSOR_GFX1100)
+
 march=
-Target RejectNegative Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_FIJI)
+Target RejectNegative Negative(march=) Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_FIJI)
 Specify the name of the target GPU.
 
 mtune=
-Target RejectNegative Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_FIJI)
+Target RejectNegative Negative(mtune=) Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_FIJI)
 Specify the name of the target GPU.
 
 m32
@@ -94,9 +100,12 @@ Enum(hsaco_attr_type) String(on) Value(HSACO_ATTR_ON)
 EnumValue
 Enum(hsaco_attr_type) String(any) Value(HSACO_ATTR_ANY)
 
+EnumValue
+Enum(hsaco_attr_type) String(default) Value(HSACO_ATTR_DEFAULT)
+
 mxnack=
-Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_xnack) Init(HSACO_ATTR_OFF)
-Compile for devices requiring XNACK enabled. Default \"off\".
+Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_xnack) Init(HSACO_ATTR_DEFAULT)
+Compile for devices requiring XNACK enabled. Default \"any\" if USM is supported.
 
 msram-ecc=
 Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_sram_ecc) Init(HSACO_ATTR_ANY)

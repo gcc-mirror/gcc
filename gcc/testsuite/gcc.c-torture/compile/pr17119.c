@@ -1,3 +1,6 @@
+void func1 (void);
+void func2 (void);
+
 void
 _mesa_DrawPixels (int width, int height, unsigned format,
 		  unsigned type, const void * pixels)

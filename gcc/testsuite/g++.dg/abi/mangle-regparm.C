@@ -1,5 +1,5 @@
 // { dg-do run { target { { i?86-*-* x86_64-*-* } && ia32 } } }
-// { dg-options "-Wabi=8 -save-temps" }
+// { dg-options "-Wabi=8 -save-temps -fabi-compat-version=0" }
 // { dg-final { scan-assembler "_Z18IndirectExternCallIPU7stdcallU7regparmILi3EEFviiEiEvT_T0_S3_" } }
 
 typedef __SIZE_TYPE__ size_t;

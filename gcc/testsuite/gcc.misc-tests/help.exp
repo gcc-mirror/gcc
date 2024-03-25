@@ -1,4 +1,4 @@
-# Copyright (C) 2005-2023 Free Software Foundation, Inc.
+# Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -150,6 +150,8 @@ foreach cls { "ada" "c" "c++" "d" "fortran" "go" \
 
 # Listing only excludes gives empty results.
 check_for_options c "--help=^joined,^separate" "" "" ""
+
+check_for_options c "--help=hardened" "The following options are enabled by -fhardened" "" ""
 
 if [ info exists prev_columns ] {
     # Reset the enviroment variable to its oriuginal value.

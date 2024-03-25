@@ -14,7 +14,7 @@ test (svbool_t pg, svint8_t s8, svuint8_t u8,
   svcvtnt_f32_m (0, pg, f64); /* { dg-error {passing 'int' to argument 1 of 'svcvtnt_f32_m', which expects 'svfloat32_t'} } */
   svcvtnt_f32_m (pg, pg, f64); /* { dg-error {passing 'svbool_t' to argument 1 of 'svcvtnt_f32_m', which expects 'svfloat32_t'} } */
   svcvtnt_f32_m (f32, s32, f64); /* { dg-error {passing 'svint32_t' to argument 2 of 'svcvtnt_f32_m', which expects 'svbool_t'} } */
-  svcvtnt_f32_m (f32, pg, 0); /* { dg-error {passing 'int' to argument 3 of 'svcvtnt_f32_m', which expects an SVE vector type} } */
+  svcvtnt_f32_m (f32, pg, 0); /* { dg-error {passing 'int' to argument 3 of 'svcvtnt_f32_m', which expects an SVE type rather than a scalar} } */
 
   svcvtnt_f32_m (f32, pg, s8); /* { dg-error {'svcvtnt_f32_m' has no form that takes 'svint8_t' arguments} } */
   svcvtnt_f32_m (f32, pg, s16); /* { dg-error {'svcvtnt_f32_m' has no form that takes 'svint16_t' arguments} } */

@@ -1,7 +1,7 @@
 /* Pass to detect and issue warnings for invalid accesses, including
    invalid or mismatched allocation/deallocation calls.
 
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
    This file is part of GCC.
@@ -1574,6 +1574,7 @@ fndecl_alloc_p (tree fndecl, bool all_alloc)
 	case BUILT_IN_ALIGNED_ALLOC:
 	case BUILT_IN_CALLOC:
 	case BUILT_IN_GOMP_ALLOC:
+	case BUILT_IN_GOMP_REALLOC:
 	case BUILT_IN_MALLOC:
 	case BUILT_IN_REALLOC:
 	case BUILT_IN_STRDUP:
@@ -1801,9 +1802,20 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	case BUILT_IN_ALLOCA_WITH_ALIGN:
 	  return false;
 
+	case BUILT_IN_GOMP_ALLOC:
+	case BUILT_IN_GOMP_REALLOC:
+	  if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
+	    return false;
+
+	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_GOMP_FREE,
+					       BUILT_IN_GOMP_REALLOC))
+	    return true;
+
+	  alloc_dealloc_kind = alloc_kind_t::builtin;
+	  break;
+
 	case BUILT_IN_ALIGNED_ALLOC:
 	case BUILT_IN_CALLOC:
-	case BUILT_IN_GOMP_ALLOC:
 	case BUILT_IN_MALLOC:
 	case BUILT_IN_REALLOC:
 	case BUILT_IN_STRDUP:
@@ -1829,7 +1841,8 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
   if (fndecl_built_in_p (dealloc_decl, BUILT_IN_NORMAL))
     {
       built_in_function dealloc_code = DECL_FUNCTION_CODE (dealloc_decl);
-      if (dealloc_code == BUILT_IN_REALLOC)
+      if (dealloc_code == BUILT_IN_REALLOC
+	  || dealloc_code == BUILT_IN_GOMP_REALLOC)
 	realloc_kind = alloc_kind_t::builtin;
 
       for (tree amats = DECL_ATTRIBUTES (alloc_decl);
@@ -1882,6 +1895,7 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	    case BUILT_IN_ALIGNED_ALLOC:
 	    case BUILT_IN_CALLOC:
 	    case BUILT_IN_GOMP_ALLOC:
+	    case BUILT_IN_GOMP_REALLOC:
 	    case BUILT_IN_MALLOC:
 	    case BUILT_IN_REALLOC:
 	    case BUILT_IN_STRDUP:
@@ -3477,41 +3491,18 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 
       if (integer_zerop (ptr))
 	{
-	  if (sizidx >= 0 && tree_int_cst_sgn (sizrng[0]) > 0)
+	  if (!access.second.internal_p
+	      && sizidx >= 0 && tree_int_cst_sgn (sizrng[0]) > 0)
 	    {
 	      /* Warn about null pointers with positive sizes.  This is
 		 different from also declaring the pointer argument with
 		 attribute nonnull when the function accepts null pointers
 		 only when the corresponding size is zero.  */
-	      if (access.second.internal_p)
-		{
-		  const std::string argtypestr
-		    = access.second.array_as_string (ptrtype);
-
-		  if (warning_at (loc, OPT_Wnonnull,
-				  "argument %i of variable length "
-				  "array %s is null but "
-				  "the corresponding bound argument "
-				  "%i value is %s",
-				  ptridx + 1, argtypestr.c_str (),
-				  sizidx + 1, sizstr))
-		    arg_warned = OPT_Wnonnull;
-		}
-	      else if (warning_at (loc, OPT_Wnonnull,
+	      if (warning_at (loc, OPT_Wnonnull,
 				   "argument %i is null but "
 				   "the corresponding size argument "
 				   "%i value is %s",
 				   ptridx + 1, sizidx + 1, sizstr))
-		arg_warned = OPT_Wnonnull;
-	    }
-	  else if (access_size && access.second.static_p)
-	    {
-	      /* Warn about null pointers for [static N] array arguments
-		 but do not warn for ordinary (i.e., nonstatic) arrays.  */
-	      if (warning_at (loc, OPT_Wnonnull,
-			      "argument %i to %<%T[static %E]%> "
-			      "is null where non-null expected",
-			      ptridx + 1, argtype, access_nelts))
 		arg_warned = OPT_Wnonnull;
 	    }
 
@@ -4373,7 +4364,7 @@ void
 pass_waccess::check_stmt (gimple *stmt)
 {
   if (m_check_dangling_p
-      && gimple_clobber_p (stmt, CLOBBER_EOL))
+      && gimple_clobber_p (stmt, CLOBBER_STORAGE_END))
     {
       /* Ignore clobber statements in blocks with exceptional edges.  */
       basic_block bb = gimple_bb (stmt);

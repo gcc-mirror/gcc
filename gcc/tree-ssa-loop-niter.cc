@@ -1,5 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2235,14 +2235,18 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
   tree call;
   if (use_ifn)
     {
-      call = build_call_expr_internal_loc (UNKNOWN_LOCATION, ifn,
-					   integer_type_node, 1, src);
       int val;
       int optab_defined_at_zero
 	= (leading
 	   ? CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (utype), val)
 	   : CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (utype), val));
-      if (define_at_zero && !(optab_defined_at_zero == 2 && val == prec))
+      tree arg2 = NULL_TREE;
+      if (define_at_zero && optab_defined_at_zero == 2 && val == prec)
+	arg2 = build_int_cst (integer_type_node, val);
+      call = build_call_expr_internal_loc (UNKNOWN_LOCATION, ifn,
+					   integer_type_node, arg2 ? 2 : 1,
+					   src, arg2);
+      if (define_at_zero && arg2 == NULL_TREE)
 	{
 	  tree is_zero = fold_build2 (NE_EXPR, boolean_type_node, src,
 				      build_zero_cst (TREE_TYPE (src)));
@@ -4202,11 +4206,15 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
 
   /* If access is not executed on every iteration, we must ensure that overlow
      may not make the access valid later.  */
-  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (data->stmt))
-      && scev_probably_wraps_p (NULL_TREE,
-				initial_condition_in_loop_num (ev, loop->num),
-				step, data->stmt, loop, true))
-    upper = false;
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (data->stmt)))
+    {
+      if (scev_probably_wraps_p (NULL_TREE,
+				 initial_condition_in_loop_num (ev, loop->num),
+				 step, data->stmt, loop, true))
+	upper = false;
+    }
+  else
+    record_nonwrapping_chrec (ev);
 
   record_nonwrapping_iv (loop, init, step, data->stmt, low, high, false, upper);
   return true;
@@ -4320,6 +4328,7 @@ infer_loop_bounds_from_pointer_arith (class loop *loop, gimple *stmt)
   if (flag_delete_null_pointer_checks && int_cst_value (low) == 0)
     low = build_int_cstu (TREE_TYPE (low), TYPE_ALIGN_UNIT (TREE_TYPE (type)));
 
+  record_nonwrapping_chrec (scev);
   record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
 }
 
@@ -4367,6 +4376,7 @@ infer_loop_bounds_from_signedness (class loop *loop, gimple *stmt)
       high = wide_int_to_tree (type, r.upper_bound ());
     }
 
+  record_nonwrapping_chrec (scev);
   record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
 }
 
@@ -5499,6 +5509,11 @@ scev_probably_wraps_p (tree var, tree base, tree step,
     return false;
 
   if (loop_exits_before_overflow (base, step, at_stmt, loop))
+    return false;
+
+  /* Check the nonwrapping flag, which may be set by niter analysis (e.g., the
+     above loop exits before overflow).  */
+  if (var && nonwrapping_chrec_p (analyze_scalar_evolution (loop, var)))
     return false;
 
   /* At this point we still don't have a proof that the iv does not

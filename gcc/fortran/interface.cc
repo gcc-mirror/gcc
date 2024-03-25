@@ -1,5 +1,5 @@
 /* Deal with interfaces.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -736,10 +736,18 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
      better way of doing this.  When ISO C binding is cleared up,
      this can probably be removed.  See PR 57048.  */
 
-  if (((ts1->type == BT_INTEGER && ts2->type == BT_DERIVED)
-       || (ts1->type == BT_DERIVED && ts2->type == BT_INTEGER))
-      && ts1->u.derived && ts2->u.derived
-      && ts1->u.derived == ts2->u.derived)
+  if ((ts1->type == BT_INTEGER
+       && ts2->type == BT_DERIVED
+       && ts1->f90_type == BT_VOID
+       && ts2->u.derived->from_intmod == INTMOD_ISO_C_BINDING
+       && ts1->u.derived
+       && strcmp (ts1->u.derived->name, ts2->u.derived->name) == 0)
+      || (ts2->type == BT_INTEGER
+	  && ts1->type == BT_DERIVED
+	  && ts2->f90_type == BT_VOID
+	  && ts1->u.derived->from_intmod == INTMOD_ISO_C_BINDING
+	  && ts2->u.derived
+	  && strcmp (ts1->u.derived->name, ts2->u.derived->name) == 0))
     return true;
 
   /* The _data component is not always present, therefore check for its
@@ -4729,6 +4737,17 @@ gfc_extend_expr (gfc_expr *e)
 	  if (sym != NULL)
 	    break;
 	}
+
+      /* F2018(15.4.3.4.2) requires that the use of unlimited polymorphic
+	 formal arguments does not override the intrinsic uses.  */
+      gfc_push_suppress_errors ();
+      if (sym
+	  && (UNLIMITED_POLY (sym->formal->sym)
+	      || (sym->formal->next
+		  && UNLIMITED_POLY (sym->formal->next->sym)))
+	  && !gfc_check_operator_interface (sym, e->value.op.op, e->where))
+	sym = NULL;
+      gfc_pop_suppress_errors ();
     }
 
   /* TODO: Do an ambiguity-check and error if multiple matching interfaces are

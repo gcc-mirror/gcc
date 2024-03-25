@@ -1,5 +1,5 @@
 /* Library interface to C front end
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -454,6 +454,7 @@ plugin_build_enum_type (cc1_plugin::connection *self,
 
   TYPE_PRECISION (result) = TYPE_PRECISION (underlying_int_type);
   TYPE_UNSIGNED (result) = TYPE_UNSIGNED (underlying_int_type);
+  ENUM_UNDERLYING_TYPE (result) = underlying_int_type;
 
   plugin_context *ctx = static_cast<plugin_context *> (self);
   return convert_out (ctx->preserve (result));

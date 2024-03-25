@@ -16,7 +16,7 @@ import core.stdc.stdlib;
 import core.stdc.string;
 
 import dmd.root.array;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.rmem;
 
 import dmd.aggregate;

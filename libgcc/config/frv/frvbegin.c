@@ -1,5 +1,5 @@
 /* Frv initialization file linked before all user modules
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
     Contributed by Red Hat, Inc.
   
    This file is part of GCC.
@@ -119,6 +119,7 @@ __do_global_dtors (void)
     }
 }
 
+int atexit (void (*)(void));
 /* Run the global constructors.  */
 void
 __do_global_ctors (void)

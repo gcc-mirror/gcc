@@ -1,6 +1,6 @@
 /* Portable assumptions */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 [[gnu::__assume__ (1)]] void f1 (void);	/* { dg-warning "'assume' attribute not followed by ';'" } */
 					/* { dg-warning "'assume' attribute ignored" "" { target *-*-* } .-1 } */

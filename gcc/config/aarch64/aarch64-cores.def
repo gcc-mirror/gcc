@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -74,6 +74,7 @@ AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  V8A,  (CRC, CRYPTO), thu
 /* Ampere Computing ('\xC0') cores. */
 AARCH64_CORE("ampere1", ampere1, cortexa57, V8_6A, (F16, RNG, AES, SHA3), ampere1, 0xC0, 0xac3, -1)
 AARCH64_CORE("ampere1a", ampere1a, cortexa57, V8_6A, (F16, RNG, AES, SHA3, SM4, MEMTAG), ampere1a, 0xC0, 0xac4, -1)
+AARCH64_CORE("ampere1b", ampere1b, cortexa57, V8_7A, (F16, RNG, AES, SHA3, SM4, MEMTAG, CSSC), ampere1b, 0xC0, 0xac5, -1)
 /* Do not swap around "emag" and "xgene1",
    this order is required to handle variant correctly. */
 AARCH64_CORE("emag",        emag,      xgene1,    V8A,  (CRC, CRYPTO), emag, 0x50, 0x000, 3)
@@ -188,5 +189,10 @@ AARCH64_CORE("neoverse-n2", neoversen2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPER
 
 AARCH64_CORE("neoverse-v2", neoversev2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
+
+/* Generic Architecture Processors.  */
+AARCH64_CORE("generic",  generic, cortexa53, V8A,  (), generic, 0x0, 0x0, -1)
+AARCH64_CORE("generic-armv8-a",  generic_armv8_a, cortexa53, V8A, (), generic_armv8_a, 0x0, 0x0, -1)
+AARCH64_CORE("generic-armv9-a",  generic_armv9_a, cortexa53, V9A, (), generic_armv9_a, 0x0, 0x0, -1)
 
 #undef AARCH64_CORE

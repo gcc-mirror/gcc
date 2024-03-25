@@ -23,6 +23,8 @@ union tree_node
   struct tree_typed typed;
   struct tree_type_common type_common;
 };
+tree arf (void);
+void error (const char *);
 tree
 convert (tree type, tree expr)
 {
@@ -31,7 +33,7 @@ convert (tree type, tree expr)
   const char *invalid_conv_diag;
   tree ret;
   if (tree_contains_struct[expr->base.code][(42)] != 1)
-    abort ();
+    __builtin_abort ();
   if (type->type_common.main_variant == expr->typed.type->type_common.main_variant
       && (expr->typed.type->base.code != 123
 	  || e->base.code == 456))

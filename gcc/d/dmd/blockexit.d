@@ -151,14 +151,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
                         }
                     }
 
-                    if (!(result & BE.fallthru) && !s.comeFrom())
-                    {
-                        version (none) // this warning is completely useless due to insane false positive rate in real life template code
-                        if (blockExit(s, func, eSink) != BE.halt && s.hasCode() &&
-                            s.loc != Loc.initial) // don't emit warning for generated code
-                            global.errorSink.warning(s.loc, "statement is not reachable");
-                    }
-                    else
+                    if ((result & BE.fallthru) || s.comeFrom())
                     {
                         result &= ~BE.fallthru;
                         result |= blockExit(s, func, eSink);
@@ -445,17 +438,6 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
                     blockExit(s._body, func, eSink);
                 if (s.finalbody && (finalresult & BE.throw_))
                     blockExit(s.finalbody, func, eSink);
-            }
-
-            version (none)
-            {
-                // https://issues.dlang.org/show_bug.cgi?id=13201
-                // Mask to prevent spurious warnings for
-                // destructor call, exit of synchronized statement, etc.
-                if (result == BE.halt && finalresult != BE.halt && s.finalbody && s.finalbody.hasCode())
-                {
-                    eSink.warning(s.finalbody.loc, "statement is not reachable");
-                }
             }
 
             if (!(finalresult & BE.fallthru))

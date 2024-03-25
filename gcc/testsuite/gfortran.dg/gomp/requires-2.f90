@@ -8,7 +8,7 @@
 !$omp requires atomic_default_mem_order (seq_cst)
 !$omp requires atomic_default_mem_order (seq_cst)
 !$omp requires atomic_default_mem_order (acq_rel) ! { dg-error "overrides a previous 'atomic_default_mem_order\\(seq_cst\\)'" }
-!$omp requires atomic_default_mem_order (foo) ! { dg-error "Expected SEQ_CST, ACQ_REL or RELAXED for ATOMIC_DEFAULT_MEM_ORDER clause" }
+!$omp requires atomic_default_mem_order (foo) ! { dg-error "Expected ACQ_REL, ACQUIRE, RELAXED, RELEASE or SEQ_CST for ATOMIC_DEFAULT_MEM_ORDER clause" }
 end
 
 ! { dg-prune-output "not yet supported" }

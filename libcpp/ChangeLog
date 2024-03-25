@@ -1,3 +1,178 @@
+2024-01-04  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* charset.cc (cpp_check_xid_property): New.
+	* include/cpplib.h
+	(cpp_check_xid_property): New.
+	(enum cpp_xid_property): New.
+
+2023-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/112956
+	* lex.cc (_cpp_lex_direct): Initialize c to 0.
+	For CPP_PRAGMA_EOL tokens and if c == 0 also for CPP_EOF
+	set result->src_loc to highest locus.
+
+2023-11-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/112701
+	* expr.cc (num_div_op): Set unsignedp appropriately when returning a
+	stub value for divide by 0.
+
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* include/cpplib.h (struct cpp_callbacks): Add has_feature.
+	(enum cpp_builtin_type): Add BT_HAS_{FEATURE,EXTENSION}.
+	* init.cc: Add __has_{feature,extension}.
+	* macro.cc (_cpp_builtin_macro_text): Handle
+	BT_HAS_{FEATURE,EXTENSION}.
+
+2023-11-24  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (ENABLE_VALGRIND_CHECKING): Delete.
+	(ENABLE_VALGRIND_ANNOTATIONS): Rename to
+	ENABLE_VALGRIND_WORKAROUNDS.  Delete Valgrind header checks.
+	* lex.cc (new_buff): Adjust for renaming.
+	(_cpp_free_buff): Ditto.
+
+2023-11-20  Marc Poulhiès  <dkm@kataplop.net>
+
+	* macro.cc (parse_params): Fix typo in variadic.
+	(create_iso_definition): Likewise.
+
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (TAGS_SOURCES): Add "include/rich-location.h".
+	* include/cpplib.h (class rich_location): New forward decl.
+	* include/line-map.h (class range_label)
+	(enum range_display_kind, struct location_range)
+	(class semi_embedded_vec, class rich_location, class label_text)
+	(class range_label, class fixit_hint): Move to...
+	* include/rich-location.h: ...this new file.
+	* internal.h: Include "rich-location.h".
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc (write_copyright): Update copyright year.
+	* makeuname2c.cc (write_copyright): Likewise.
+	(struct generated): Update latest Unicode version.
+	(generated_ranges): Add 2ebf0-2ee5d CJK UNIFIED IDEOGRAPH
+	range which was forgotten to be added to 4-8 table, but
+	clearly is expected to be there from the 15.1 additions.
+	* ucnid.h: Regenerated.
+	* uname2c.h: Regenerated.
+	* generated_cpp_wcwidth.h: Regenerated.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110341
+	* charset.cc: Implement C++26 P1854R4 - Making non-encodable string
+	literals ill-formed.
+	(one_count_chars, convert_count_chars, count_source_chars): New
+	functions.
+	(narrow_str_to_charconst): Change last arg type from cpp_ttype to
+	const cpp_token *.  For C++ if pedantic and i > 1 in CPP_CHAR
+	interpret token also as CPP_STRING32 and if number of characters
+	in the CPP_STRING32 is larger than number of bytes in CPP_CHAR,
+	pedwarn on it.  Make the diagnostics more detailed.
+	(wide_str_to_charconst): Change last arg type from cpp_ttype to
+	const cpp_token *.  Make the diagnostics more detailed.
+	(cpp_interpret_charconst): Adjust narrow_str_to_charconst and
+	wide_str_to_charconst callers.
+
+2023-11-14  Arsen Arsenović  <arsen@aarsen.me>
+
+	* config.in: Regenerate.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2023-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::get_expanded_location): Make
+	const.
+	(rich_location::get_line_table): New accessor.
+	(rich_location::m_line_table): Make the pointer be const.
+	(rich_location::m_have_expanded_location): Make mutable.
+	(rich_location::m_expanded_location): Likewise.
+	(fixit_hint::affects_line_p): Add const line_maps * param.
+	(linemap_client_expand_location_to_spelling_point): Likewise.
+	* line-map.cc (rich_location::get_expanded_location): Make const.
+	Pass m_line_table to
+	linemap_client_expand_location_to_spelling_point.
+	(rich_location::maybe_add_fixit): Likewise.
+	(fixit_hint::affects_line_p): Add set param and pass to
+	linemap_client_expand_location_to_spelling_point.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* directives.cc: Refer to C23 instead of C2X in diagnostics and
+	comments.
+	(STDC2X): Rename to STDC23.
+	* expr.cc: Use cpp_warn_c11_c23_compat instead of
+	cpp_warn_c11_c2x_compat and CPP_W_C11_C23_COMPAT instead of
+	CPP_W_C11_C2X_COMPAT.  Refer to C23 instead of C2X in diagnostics
+	and comments.
+	* include/cpplib.h: Refer to C23 instead of C2X in diagnostics and
+	comments.
+	(CLK_GNUC2X): Rename to CLK_GNUC23.
+	(CLK_STDC2X): Rename to CLK_STDC23.
+	(CPP_W_C11_C2X_COMPAT): Rename to CPP_W_C11_C23_COMPAT.
+	* init.cc: Use GNUC23 instead of GNUC2X, STDC23 instead of STDC2X
+	and cpp_warn_c11_c23_compat instead of cpp_warn_c11_c2x_compat.
+	* lex.cc (maybe_va_opt_error): Refer to C23 instead of C2X in
+	diagnostic.
+	* macro.cc (_cpp_arguments_ok): Refer to C23 instead of C2X in
+	comment.
+
+2023-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110342
+	* include/cpplib.h (TTYPE_TABLE): Add CPP_UNEVAL_STRING literal
+	entry.  Use C++11 instead of C++-0x in comments.
+	* charset.cc (convert_escape): Add UNEVAL argument, if true,
+	pedantically diagnose numeric escape sequences.
+	(cpp_interpret_string_1): Formatting fix.  Adjust convert_escape
+	caller.
+	(cpp_interpret_string): Formatting string.
+	(cpp_interpret_string_notranslate): Pass type through to
+	cpp_interpret_string if it is CPP_UNEVAL_STRING.
+
+2023-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h
+	(line_map_macro::get_expansion_point_location): New accessor.
+	(line_map_macro::expansion): Rename field to...
+	(line_map_macro::mexpansion): Rename field to...
+	(MACRO_MAP_EXPANSION_POINT_LOCATION): Delete this function.
+	* line-map.cc (linemap_enter_macro): Update for renaming of field.
+	(linemap_macro_map_loc_to_exp_point): Update for removal of
+	MACRO_MAP_EXPANSION_POINT_LOCATION.
+
+2023-10-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/36887
+	* directives.cc (do_pragma_poison): Store in the extra hash map the
+	location from which an identifier has been poisoned.
+	* lex.cc (identifier_diagnostics_on_lex): When issuing a diagnostic
+	for the use of a poisoned identifier, also add a note indicating the
+	location from which it was poisoned.
+	* identifiers.cc (alloc_node): Convert to template function.
+	(_cpp_init_hashtable): Handle the new extra hash map.
+	(_cpp_destroy_hashtable): Likewise.
+	* include/cpplib.h (struct cpp_hashnode_extra): New struct.
+	(cpp_create_reader): Update prototype to...
+	* init.cc (cpp_create_reader): ...accept an argument for the extra
+	hash table and pass it to _cpp_init_hashtable.
+	* include/symtab.h (ht_lookup): New overload for convenience.
+	* internal.h (struct cpp_reader): Add EXTRA_HASH_TABLE member.
+	(_cpp_init_hashtable): Adjust prototype.
+
 2023-10-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (LINEMAPS_ORDINARY_MAPS): Delete.
@@ -7805,7 +7980,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -6,13 +6,30 @@
 
 uint32_t foo1(uint32_t rs1, uint32_t rs2, int bs)
 {
-    return __builtin_riscv_aes32dsi(rs1,rs2,bs);
+    return __builtin_riscv_aes32dsi(rs1,rs2,bs);	/* { dg-error "invalid argument to built-in function" } */
 }
 
 uint32_t foo2(uint32_t rs1, uint32_t rs2, int bs)
 {
-    return __builtin_riscv_aes32dsmi(rs1,rs2,bs);
+    return __builtin_riscv_aes32dsmi(rs1,rs2,bs);	/* { dg-error "invalid argument to built-in function" } */
 }
 
-/* { dg-final { scan-assembler-times "aes32dsi" 1 } } */
-/* { dg-final { scan-assembler-times "aes32dsmi" 1 } } */
+uint32_t foo3(uint32_t rs1, uint32_t rs2)
+{
+    return __builtin_riscv_aes32dsi(rs1,rs2,-1);	/* { dg-error "invalid argument to built-in function" } */
+}
+
+uint32_t foo4(uint32_t rs1, uint32_t rs2)
+{
+    return __builtin_riscv_aes32dsmi(rs1,rs2,-1);	/* { dg-error "invalid argument to built-in function" } */
+}
+
+uint32_t foo5(uint32_t rs1, uint32_t rs2)
+{
+    return __builtin_riscv_aes32dsi(rs1,rs2,4);		/* { dg-error "invalid argument to built-in function" } */
+}
+
+uint32_t foo6(uint32_t rs1, uint32_t rs2)
+{
+    return __builtin_riscv_aes32dsmi(rs1,rs2,4);	/* { dg-error "invalid argument to built-in function" } */
+}

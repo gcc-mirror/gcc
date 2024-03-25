@@ -153,11 +153,11 @@ package body Exp_Pakd is
    --  reference the corresponding packed array type.
 
    procedure Setup_Inline_Packed_Array_Reference
-     (N      : Node_Id;
-      Atyp   : Entity_Id;
-      Obj    : in out Node_Id;
-      Cmask  : out Uint;
-      Shift  : out Node_Id);
+     (N     : Node_Id;
+      Atyp  : Entity_Id;
+      Obj   : in out Node_Id;
+      Cmask : out Uint;
+      Shift : out Node_Id);
    --  This procedure performs common processing on the N_Indexed_Component
    --  parameter given as N, whose prefix is a reference to a packed array.
    --  This is used for the get and set when the component size is 1, 2, 4,
@@ -1059,9 +1059,11 @@ package body Exp_Pakd is
       Obj   : Node_Id;
       Atyp  : Entity_Id;
       PAT   : Entity_Id;
-      Ctyp  : Entity_Id;
-      Csiz  : Int;
       Cmask : Uint;
+
+      Arr_Typ : constant Entity_Id := Etype (Prefix (Lhs));
+      Ctyp    : constant Entity_Id := Component_Type (Arr_Typ);
+      Csiz    : constant Int := UI_To_Int (Component_Size (Arr_Typ));
 
       Shift : Node_Id;
       --  The expression for the shift value that is required
@@ -1073,12 +1075,9 @@ package body Exp_Pakd is
       New_Lhs : Node_Id;
       New_Rhs : Node_Id;
 
-      Rhs_Val_Known : Boolean;
-      Rhs_Val       : Uint;
+      Rhs_Val : Uint;
       --  If the value of the right hand side as an integer constant is
-      --  known at compile time, Rhs_Val_Known is set True, and Rhs_Val
-      --  contains the value. Otherwise Rhs_Val_Known is set False, and
-      --  the Rhs_Val is undefined.
+      --  known at compile time, Rhs_Val contains the value.
 
       function Get_Shift return Node_Id;
       --  Function used to get the value of Shift, making sure that it
@@ -1114,8 +1113,6 @@ package body Exp_Pakd is
       Convert_To_Actual_Subtype (Obj);
       Atyp := Etype (Obj);
       PAT  := Packed_Array_Impl_Type (Atyp);
-      Ctyp := Component_Type (Atyp);
-      Csiz := UI_To_Int (Component_Size (Atyp));
 
       --  We remove side effects, in case the rhs modifies the lhs, because we
       --  are about to transform the rhs into an expression that first READS
@@ -1137,20 +1134,19 @@ package body Exp_Pakd is
 
       if Nkind (Rhs) = N_String_Literal then
          declare
-            Decl : Node_Id;
-         begin
-            Decl :=
+            Decl : constant Node_Id :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Make_Temporary (Loc, 'T', Rhs),
                 Object_Definition   => New_Occurrence_Of (Ctyp, Loc),
                 Expression          => New_Copy_Tree (Rhs));
-
+         begin
             Insert_Actions (N, New_List (Decl));
             Rhs := New_Occurrence_Of (Defining_Identifier (Decl), Loc);
          end;
+      else
+         Rhs := Convert_To (Ctyp, Rhs);
       end if;
 
-      Rhs := Convert_To (Ctyp, Rhs);
       Set_Parent (Rhs, N);
 
       --  If we are building the initialization procedure for a packed array,
@@ -1232,8 +1228,7 @@ package body Exp_Pakd is
          --  Determine if right side is all 0 bits or all 1 bits
 
          if Compile_Time_Known_Value (Rhs) then
-            Rhs_Val       := Expr_Rep_Value (Rhs);
-            Rhs_Val_Known := True;
+            Rhs_Val := Expr_Rep_Value (Rhs);
 
          --  The following test catches the case of an unchecked conversion of
          --  an integer literal. This results from optimizing aggregates of
@@ -1242,19 +1237,17 @@ package body Exp_Pakd is
          elsif Nkind (Rhs) = N_Unchecked_Type_Conversion
            and then Compile_Time_Known_Value (Expression (Rhs))
          then
-            Rhs_Val       := Expr_Rep_Value (Expression (Rhs));
-            Rhs_Val_Known := True;
+            Rhs_Val := Expr_Rep_Value (Expression (Rhs));
 
          else
-            Rhs_Val       := No_Uint;
-            Rhs_Val_Known := False;
+            Rhs_Val := No_Uint;
          end if;
 
          --  Some special checks for the case where the right hand value is
          --  known at compile time. Basically we have to take care of the
          --  implicit conversion to the subtype of the component object.
 
-         if Rhs_Val_Known then
+         if Present (Rhs_Val) then
 
             --  If we have a biased component type then we must manually do the
             --  biasing, since we are taking responsibility in this case for
@@ -1291,7 +1284,7 @@ package body Exp_Pakd is
 
          --  First we deal with the "and"
 
-         if not Rhs_Val_Known or else Rhs_Val /= Cmask then
+         if No (Rhs_Val) or else Rhs_Val /= Cmask then
             declare
                Mask1 : Node_Id;
                Lit   : Node_Id;
@@ -1321,7 +1314,7 @@ package body Exp_Pakd is
 
          --  Then deal with the "or"
 
-         if not Rhs_Val_Known or else Rhs_Val /= 0 then
+         if No (Rhs_Val) or else Rhs_Val /= 0 then
             declare
                Or_Rhs : Node_Id;
 
@@ -1361,7 +1354,7 @@ package body Exp_Pakd is
                end Fixup_Rhs;
 
             begin
-               if Rhs_Val_Known
+               if Present (Rhs_Val)
                  and then Compile_Time_Known_Value (Get_Shift)
                then
                   Or_Rhs :=
@@ -1389,7 +1382,7 @@ package body Exp_Pakd is
                   --  which will be properly retyped when we analyze and
                   --  resolve the expression.
 
-                  elsif Rhs_Val_Known then
+                  elsif Present (Rhs_Val) then
 
                      --  Note that Rhs_Val has already been normalized to
                      --  be an unsigned value with the proper number of bits.
@@ -1439,7 +1432,6 @@ package body Exp_Pakd is
             Bits_nn : constant Entity_Id := RTE (Bits_Id (Csiz));
             Set_nn  : Entity_Id;
             Subscr  : Node_Id;
-            Atyp    : Entity_Id;
             Rev_SSO : Node_Id;
 
          begin
@@ -1461,9 +1453,6 @@ package body Exp_Pakd is
 
             --  Now generate the set reference
 
-            Obj := Relocate_Node (Prefix (Lhs));
-            Convert_To_Actual_Subtype (Obj);
-            Atyp := Etype (Obj);
             Compute_Linear_Subscript (Atyp, Lhs, Subscr);
 
             --  Set indication of whether the packed array has reverse SSO
@@ -2112,8 +2101,8 @@ package body Exp_Pakd is
 
       --  We build up an expression serially that has the form
 
-      --    linear-subscript * component_size       for each array reference
-      --      +  field'Bit_Position                 for each record field
+      --    linear-subscript * component_size     for each array component ref
+      --      +  pref.component'Bit_Position      for each record component ref
       --      +  ...
 
       loop
@@ -2135,7 +2124,7 @@ package body Exp_Pakd is
          elsif Nkind (Base) = N_Selected_Component then
             Term :=
               Make_Attribute_Reference (Loc,
-                Prefix         => Selector_Name (Base),
+                Prefix         => Base,
                 Attribute_Name => Name_Bit_Position);
 
          else
@@ -2210,7 +2199,7 @@ package body Exp_Pakd is
          end loop;
 
          return False;
-      end  In_Partially_Packed_Record;
+      end In_Partially_Packed_Record;
 
    --  Start of processing for Known_Aligned_Enough
 
@@ -2472,21 +2461,19 @@ package body Exp_Pakd is
    -----------------------------------------
 
    procedure Setup_Inline_Packed_Array_Reference
-     (N      : Node_Id;
-      Atyp   : Entity_Id;
-      Obj    : in out Node_Id;
-      Cmask  : out Uint;
-      Shift  : out Node_Id)
+     (N     : Node_Id;
+      Atyp  : Entity_Id;
+      Obj   : in out Node_Id;
+      Cmask : out Uint;
+      Shift : out Node_Id)
    is
       Loc  : constant Source_Ptr := Sloc (N);
       PAT  : Entity_Id;
       Otyp : Entity_Id;
-      Csiz : Uint;
+      Csiz : constant Uint := Component_Size (Atyp);
       Osiz : Uint;
 
    begin
-      Csiz := Component_Size (Atyp);
-
       Convert_To_PAT_Type (Obj);
       PAT := Etype (Obj);
 

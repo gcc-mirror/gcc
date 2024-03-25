@@ -1,6 +1,6 @@
 (* ShortWholeIO.mod implements input/output of SHORTINT/SHORTCARD over channels.
 
-Copyright (C) 2013-2023 Free Software Foundation, Inc.
+Copyright (C) 2013-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -40,8 +40,6 @@ FROM TextUtil IMPORT SkipSpaces ;
      over specified channels.  The read result is of the
      type IOConsts.ReadResults.
 *)
-
-IMPORT IOChan;
 
 (* The text form of a signed whole number is
      ["+" | "-"], decimal digit, {decimal digit}

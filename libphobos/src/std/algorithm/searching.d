@@ -1547,27 +1547,95 @@ if (isInputRange!Range && !isInfinite!Range &&
 
 // find
 /**
+Finds an element `e` of an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+where `pred(e)` is `true`.
+$(P
+$(PANEL
+$(UL
+$(LI `find` behaves similarly to `dropWhile` in other languages.)
+$(LI To _find the *last* matching element in a
+$(REF_ALTTEXT bidirectional, isBidirectionalRange, std,range,primitives) `haystack`,
+call `find!pred(retro(haystack))`. See $(REF retro, std,range).)
+)))
+
+Complexity:
+    `find` performs $(BIGOH walkLength(haystack)) evaluations of `pred`.
+
+Params:
+
+    pred = The predicate to match an element.
+    haystack = The $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+               searched in.
+
+Returns:
+    `haystack` advanced such that the front element satisfies `pred`.
+    If no such element exists, returns an empty `haystack`.
+*/
+InputRange find(alias pred, InputRange)(InputRange haystack)
+if (isInputRange!InputRange)
+{
+    alias R = InputRange;
+    alias predFun = unaryFun!pred;
+    static if (isNarrowString!R)
+    {
+        import std.utf : decode;
+
+        immutable len = haystack.length;
+        size_t i = 0, next = 0;
+        while (next < len)
+        {
+            if (predFun(decode(haystack, next)))
+                return haystack[i .. $];
+            i = next;
+        }
+        return haystack[$ .. $];
+    }
+    else
+    {
+        //standard range
+        for ( ; !haystack.empty; haystack.popFront() )
+        {
+            if (predFun(haystack.front))
+                break;
+        }
+        return haystack;
+    }
+}
+
+///
+@safe unittest
+{
+    auto arr = [ 1, 2, 3, 4, 1 ];
+    assert(find!("a > 2")(arr) == [ 3, 4, 1 ]);
+
+    // with predicate alias
+    bool pred(int e) => e + 1 > 1.5;
+    assert(find!(pred)(arr) == arr);
+}
+
+@safe pure unittest
+{
+    int[] r = [ 1, 2, 3 ];
+    assert(find!(a=>a > 2)(r) == [3]);
+    bool pred(int x) { return x + 1 > 1.5; }
+    assert(find!(pred)(r) == r);
+
+    assert(find!(a=>a > 'v')("hello world") == "world");
+    assert(find!(a=>a%4 == 0)("日本語") == "本語");
+}
+
+/**
 Finds an individual element in an $(REF_ALTTEXT input range, isInputRange, std,range,primitives).
 Elements of `haystack` are compared with `needle` by using predicate
 `pred` with `pred(haystack.front, needle)`.
-`find` performs $(BIGOH walkLength(haystack)) evaluations of `pred`.
-
 The predicate is passed to $(REF binaryFun, std, functional), and can either accept a
 string, or any callable that can be executed via `pred(element, element)`.
 
-To _find the last occurrence of `needle` in a
-$(REF_ALTTEXT bidirectional, isBidirectionalRange, std,range,primitives) `haystack`,
-call `find(retro(haystack), needle)`. See $(REF retro, std,range).
-
-If no `needle` is provided, `pred(haystack.front)` will be evaluated on each
-element of the input range.
-
-If `input` is a $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives),
+If `haystack` is a $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives),
 `needle` can be a $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives) too.
 In this case `startsWith!pred(haystack, needle)` is evaluated on each evaluation.
 
-Note:
-    `find` behaves similar to `dropWhile` in other languages.
+$(NOTE To find the first element $(I not) matching the needle, use predicate `"a != b"`.)
 
 Complexity:
     `find` performs $(BIGOH walkLength(haystack)) evaluations of `pred`.
@@ -1579,21 +1647,16 @@ Complexity:
 Params:
 
     pred = The predicate for comparing each element with the needle, defaulting to equality `"a == b"`.
-           The negated predicate `"a != b"` can be used to search instead for the first
-           element $(I not) matching the needle.
-
     haystack = The $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
                searched in.
-
     needle = The element searched for.
 
 Returns:
-
     `haystack` advanced such that the front element is the one searched for;
     that is, until `binaryFun!pred(haystack.front, needle)` is `true`. If no
     such position exists, returns an empty `haystack`.
 
-See_ALso: $(LREF findAdjacent), $(LREF findAmong), $(LREF findSkip), $(LREF findSplit), $(LREF startsWith)
+See_Also: $(LREF findAdjacent), $(LREF findAmong), $(LREF findSkip), $(LREF findSplit), $(LREF startsWith)
 */
 InputRange find(alias pred = "a == b", InputRange, Element)(InputRange haystack, scope Element needle)
 if (isInputRange!InputRange &&
@@ -1754,8 +1817,8 @@ if (isInputRange!InputRange &&
     assert(arr.find(4) == [4, 4, 4, 4, 5, 6, 9]);
     assert(arr.find(1) == arr);
     assert(arr.find(9) == [9]);
-    assert(arr.find!((a, b) => a > b)(4) == [5, 6, 9]);
-    assert(arr.find!((a, b) => a < b)(4) == arr);
+    assert(arr.find!((e, n) => e > n)(4) == [5, 6, 9]);
+    assert(arr.find!((e, n) => e < n)(4) == arr);
     assert(arr.find(0).empty);
     assert(arr.find(10).empty);
     assert(arr.find(8).empty);
@@ -1770,7 +1833,7 @@ if (isInputRange!InputRange &&
     import std.uni : toLower;
 
     string[] s = ["Hello", "world", "!"];
-    assert(s.find!((a, b) => toLower(a) == b)("hello") == s);
+    assert(s.find!((e, n) => toLower(e) == n)("hello") == s);
 }
 
 @safe unittest
@@ -1860,60 +1923,6 @@ if (isInputRange!InputRange &&
 
     ubyte x = 0;
     assert([x].find(x).empty == false);
-}
-
-/// ditto
-InputRange find(alias pred, InputRange)(InputRange haystack)
-if (isInputRange!InputRange)
-{
-    alias R = InputRange;
-    alias predFun = unaryFun!pred;
-    static if (isNarrowString!R)
-    {
-        import std.utf : decode;
-
-        immutable len = haystack.length;
-        size_t i = 0, next = 0;
-        while (next < len)
-        {
-            if (predFun(decode(haystack, next)))
-                return haystack[i .. $];
-            i = next;
-        }
-        return haystack[$ .. $];
-    }
-    else
-    {
-        //standard range
-        for ( ; !haystack.empty; haystack.popFront() )
-        {
-            if (predFun(haystack.front))
-                break;
-        }
-        return haystack;
-    }
-}
-
-///
-@safe unittest
-{
-    auto arr = [ 1, 2, 3, 4, 1 ];
-    assert(find!("a > 2")(arr) == [ 3, 4, 1 ]);
-
-    // with predicate alias
-    bool pred(int x) { return x + 1 > 1.5; }
-    assert(find!(pred)(arr) == arr);
-}
-
-@safe pure unittest
-{
-    int[] r = [ 1, 2, 3 ];
-    assert(find!(a=>a > 2)(r) == [3]);
-    bool pred(int x) { return x + 1 > 1.5; }
-    assert(find!(pred)(r) == r);
-
-    assert(find!(a=>a > 'v')("hello world") == "world");
-    assert(find!(a=>a%4 == 0)("日本語") == "本語");
 }
 
 /// ditto
@@ -2376,9 +2385,9 @@ is considered to be 1.) The strategy used in searching several
 subranges at once maximizes cache usage by moving in `haystack` as
 few times as possible.
  */
-Tuple!(Range, size_t) find(alias pred = "a == b", Range, Ranges...)
-(Range haystack, Ranges needles)
-if (Ranges.length > 1 && is(typeof(startsWith!pred(haystack, needles))))
+Tuple!(Range, size_t) find(alias pred = "a == b", Range, Needles...)
+(Range haystack, Needles needles)
+if (Needles.length > 1 && is(typeof(startsWith!pred(haystack, needles))))
 {
     for (;; haystack.popFront())
     {
@@ -2536,13 +2545,13 @@ was successful.
 For more information about `pred` see $(LREF find).
 
 See_Also:
-$(REF among, std,algorithm,comparison) for checking a value against multiple possibilities.
+$(REF among, std,algorithm,comparison) for checking a value against multiple arguments.
  +/
 template canFind(alias pred="a == b")
 {
     /++
-    Returns `true` if and only if any value `v` found in the
-    input range `range` satisfies the predicate `pred`.
+    Returns `true` if and only if `pred(e)` is true for any value `e` in the
+    input range `range`.
     Performs (at most) $(BIGOH haystack.length) evaluations of `pred`.
      +/
     bool canFind(Range)(Range haystack)
@@ -2565,16 +2574,15 @@ template canFind(alias pred="a == b")
     Returns the 1-based index of the first needle found in `haystack`. If no
     needle is found, then `0` is returned.
 
-    So, if used directly in the condition of an if statement or loop, the result
+    So, if used directly in the condition of an `if` statement or loop, the result
     will be `true` if one of the needles is found and `false` if none are
     found, whereas if the result is used elsewhere, it can either be cast to
     `bool` for the same effect or used to get which needle was found first
-    without having to deal with the tuple that `LREF find` returns for the
+    without having to deal with the tuple that $(LREF find) returns for the
     same operation.
      +/
-    size_t canFind(Range, Ranges...)(Range haystack, scope Ranges needles)
-    if (Ranges.length > 1 &&
-        allSatisfy!(isForwardRange, Ranges) &&
+    size_t canFind(Range, Needles...)(Range haystack, scope Needles needles)
+    if (Needles.length > 1 &&
         is(typeof(find!pred(haystack, needles))))
     {
         return find!pred(haystack, needles)[1];
@@ -2584,15 +2592,21 @@ template canFind(alias pred="a == b")
 ///
 @safe unittest
 {
-    assert(canFind([0, 1, 2, 3], 2) == true);
-    assert(canFind([0, 1, 2, 3], [1, 2], [2, 3]));
-    assert(canFind([0, 1, 2, 3], [1, 2], [2, 3]) == 1);
-    assert(canFind([0, 1, 2, 3], [1, 7], [2, 3]));
-    assert(canFind([0, 1, 2, 3], [1, 7], [2, 3]) == 2);
+    const arr = [0, 1, 2, 3];
+    assert(canFind(arr, 2));
+    assert(!canFind(arr, 4));
 
-    assert(canFind([0, 1, 2, 3], 4) == false);
-    assert(!canFind([0, 1, 2, 3], [1, 3], [2, 4]));
-    assert(canFind([0, 1, 2, 3], [1, 3], [2, 4]) == 0);
+    // find one of several needles
+    assert(arr.canFind(3, 2));
+    assert(arr.canFind(3, 2) == 2); // second needle found
+    assert(arr.canFind([1, 3], 2) == 2);
+
+    assert(canFind(arr, [1, 2], [2, 3]));
+    assert(canFind(arr, [1, 2], [2, 3]) == 1);
+    assert(canFind(arr, [1, 7], [2, 3]));
+    assert(canFind(arr, [1, 7], [2, 3]) == 2);
+    assert(!canFind(arr, [1, 3], [2, 4]));
+    assert(canFind(arr, [1, 3], [2, 4]) == 0);
 }
 
 /**
@@ -2607,10 +2621,10 @@ template canFind(alias pred="a == b")
         "cardboard"
     ];
     assert(!canFind(words, "bees"));
-    assert( canFind!((string a, string b) => a.startsWith(b))(words, "bees"));
+    assert( canFind!((string elem, string needle) => elem.startsWith(needle))(words, "bees"));
 }
 
-/// Search for mutliple items in an array of items (search for needles in an array of hay stacks)
+/// Search for multiple items in an array of items (search for needles in an array of haystacks)
 @safe unittest
 {
     string s1 = "aaa111aaa";
@@ -2618,7 +2632,7 @@ template canFind(alias pred="a == b")
     string s3 = "aaa333aaa";
     string s4 = "aaa444aaa";
     const hay = [s1, s2, s3, s4];
-    assert(hay.canFind!(e => (e.canFind("111", "222"))));
+    assert(hay.canFind!(e => e.canFind("111", "222")));
 }
 
 @safe unittest
@@ -2736,7 +2750,7 @@ Returns:
 `seq` advanced to the first matching element, or until empty if there are no
 matching elements.
 
-See_Also: $(LREF find), $(REF std,algorithm,comparison,among)
+See_Also: $(LREF find), $(REF among, std,algorithm,comparison)
 */
 InputRange findAmong(alias pred = "a == b", InputRange, ForwardRange)(
     InputRange seq, ForwardRange choices)
@@ -2881,94 +2895,100 @@ if (isForwardRange!R1 && ifTestable!(typeof(haystack.front), unaryFun!pred))
     assert(findSkip!isWhite(s) == 2);
 }
 
+private struct FindSplitResult(ubyte emptyRangeIndex, Types...)
+{
+    this(Types vals)
+    {
+        asTuple = typeof(asTuple)(vals);
+    }
+    void opAssign(typeof(asTuple) rhs)
+    {
+        asTuple = rhs;
+    }
+    Tuple!Types asTuple;
+    alias asTuple this;
+
+    static if (hasConstEmptyMember!(typeof(asTuple[emptyRangeIndex])))
+    {
+        bool opCast(T : bool)() const => !asTuple[emptyRangeIndex].empty;
+    }
+    else
+    {
+        bool opCast(T : bool)() => !asTuple[emptyRangeIndex].empty;
+    }
+}
+
 /**
 These functions find the first occurrence of `needle` in `haystack` and then
 split `haystack` as follows.
 
-`findSplit` returns a tuple `result` containing $(I three) ranges. `result[0]`
-is the portion of `haystack` before `needle`, `result[1]` is the portion of
-`haystack` that matches `needle`, and `result[2]` is the portion of `haystack`
-after the match. If `needle` was not found, `result[0]` comprehends `haystack`
+$(PANEL
+`findSplit` returns a tuple `result` containing $(I three) ranges.
+$(UL
+$(LI `result[0]` is the portion of `haystack` before `needle`)
+$(LI `result[1]` is the portion of
+`haystack` that matches `needle`)
+$(LI `result[2]` is the portion of `haystack`
+after the match.)
+)
+If `needle` was not found, `result[0]` comprehends `haystack`
 entirely and `result[1]` and `result[2]` are empty.
 
-`findSplitBefore` returns a tuple `result` containing two ranges. `result[0]` is
-the portion of `haystack` before `needle`, and `result[1]` is the balance of
-`haystack` starting with the match. If `needle` was not found, `result[0]`
+`findSplitBefore` returns a tuple `result` containing two ranges.
+$(UL
+$(LI `result[0]` is the portion of `haystack` before `needle`)
+$(LI `result[1]` is the balance of `haystack` starting with the match.)
+)
+If `needle` was not found, `result[0]`
 comprehends `haystack` entirely and `result[1]` is empty.
 
 `findSplitAfter` returns a tuple `result` containing two ranges.
-`result[0]` is the portion of `haystack` up to and including the
-match, and `result[1]` is the balance of `haystack` starting
-after the match. If `needle` was not found, `result[0]` is empty
+$(UL
+$(LI `result[0]` is the portion of `haystack` up to and including the
+match)
+$(LI `result[1]` is the balance of `haystack` starting
+after the match.)
+)
+If `needle` was not found, `result[0]` is empty
 and `result[1]` is `haystack`.
-
+)
+$(P
 In all cases, the concatenation of the returned ranges spans the
 entire `haystack`.
 
 If `haystack` is a random-access range, all three components of the tuple have
 the same type as `haystack`. Otherwise, `haystack` must be a
 $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives) and
-the type of `result[0]` and `result[1]` is the same as $(REF takeExactly,
-std,range).
+the type of `result[0]` (and `result[1]` for `findSplit`) is the same as
+the result of $(REF takeExactly, std,range).
 
 For more information about `pred` see $(LREF find).
-
+)
 Params:
-    pred = Predicate to use for comparing needle against haystack.
-    haystack = The range to search.
-    needle = What to look for.
+    pred = Predicate to compare 2 elements.
+    haystack = The forward range to search.
+    needle = The forward range to look for.
 
 Returns:
 
-A sub-type of `Tuple!()` of the split portions of `haystack` (see above for
-details).  This sub-type of `Tuple!()` has `opCast` defined for `bool`.  This
-`opCast` returns `true` when the separating `needle` was found
-and `false` otherwise.
+A sub-type of $(REF Tuple, std, typecons) of the split portions of `haystack` (see above for
+details). This sub-type of `Tuple` defines `opCast!bool`, which
+returns `true` when the separating `needle` was found and `false` otherwise.
 
 See_Also: $(LREF find)
  */
 auto findSplit(alias pred = "a == b", R1, R2)(R1 haystack, R2 needle)
 if (isForwardRange!R1 && isForwardRange!R2)
 {
-    static struct Result(S1, S2) if (isForwardRange!S1 &&
-                                     isForwardRange!S2)
-    {
-        this(S1 pre, S1 separator, S2 post)
-        {
-            asTuple = typeof(asTuple)(pre, separator, post);
-        }
-        void opAssign(typeof(asTuple) rhs)
-        {
-            asTuple = rhs;
-        }
-        Tuple!(S1, S1, S2) asTuple;
-        static if (hasConstEmptyMember!(typeof(asTuple[1])))
-        {
-            bool opCast(T : bool)() const
-            {
-                return !asTuple[1].empty;
-            }
-        }
-        else
-        {
-            bool opCast(T : bool)()
-            {
-                return !asTuple[1].empty;
-            }
-        }
-        alias asTuple this;
-    }
-
     static if (isSomeString!R1 && isSomeString!R2
             || (isRandomAccessRange!R1 && hasSlicing!R1 && hasLength!R1 && hasLength!R2))
     {
         auto balance = find!pred(haystack, needle);
         immutable pos1 = haystack.length - balance.length;
         immutable pos2 = balance.empty ? pos1 : pos1 + needle.length;
-        return Result!(typeof(haystack[0 .. pos1]),
-                       typeof(haystack[pos2 .. haystack.length]))(haystack[0 .. pos1],
-                                                                  haystack[pos1 .. pos2],
-                                                                  haystack[pos2 .. haystack.length]);
+        alias Slice = typeof(haystack[0 .. pos1]);
+        return FindSplitResult!(1, Slice, Slice, Slice)(
+            haystack[0 .. pos1], haystack[pos1 .. pos2], haystack[pos2 .. haystack.length]);
     }
     else
     {
@@ -2997,10 +3017,11 @@ if (isForwardRange!R1 && isForwardRange!R2)
         {
             pos1 = pos2;
         }
-        return Result!(typeof(takeExactly(original, pos1)),
-                       typeof(h))(takeExactly(original, pos1),
-                                  takeExactly(haystack, pos2 - pos1),
-                                  h);
+        return FindSplitResult!(1,
+            typeof(takeExactly(original, pos1)),
+            typeof(takeExactly(original, pos1)), typeof(h))(
+            takeExactly(original, pos1),
+            takeExactly(haystack, pos2 - pos1), h);
     }
 }
 
@@ -3008,43 +3029,14 @@ if (isForwardRange!R1 && isForwardRange!R2)
 auto findSplitBefore(alias pred = "a == b", R1, R2)(R1 haystack, R2 needle)
 if (isForwardRange!R1 && isForwardRange!R2)
 {
-    static struct Result(S1, S2) if (isForwardRange!S1 &&
-                                     isForwardRange!S2)
-    {
-        this(S1 pre, S2 post)
-        {
-            asTuple = typeof(asTuple)(pre, post);
-        }
-        void opAssign(typeof(asTuple) rhs)
-        {
-            asTuple = rhs;
-        }
-        Tuple!(S1, S2) asTuple;
-        static if (hasConstEmptyMember!(typeof(asTuple[1])))
-        {
-            bool opCast(T : bool)() const
-            {
-                return !asTuple[1].empty;
-            }
-        }
-        else
-        {
-            bool opCast(T : bool)()
-            {
-                return !asTuple[1].empty;
-            }
-        }
-        alias asTuple this;
-    }
-
     static if (isSomeString!R1 && isSomeString!R2
             || (isRandomAccessRange!R1 && hasLength!R1 && hasSlicing!R1 && hasLength!R2))
     {
         auto balance = find!pred(haystack, needle);
         immutable pos = haystack.length - balance.length;
-        return Result!(typeof(haystack[0 .. pos]),
-                       typeof(haystack[pos .. haystack.length]))(haystack[0 .. pos],
-                                                                 haystack[pos .. haystack.length]);
+        return FindSplitResult!(1,
+            typeof(haystack[0 .. pos]), typeof(haystack[0 .. pos]))(
+            haystack[0 .. pos], haystack[pos .. haystack.length]);
     }
     else
     {
@@ -3074,9 +3066,9 @@ if (isForwardRange!R1 && isForwardRange!R2)
             pos1 = pos2;
             haystack = h;
         }
-        return Result!(typeof(takeExactly(original, pos1)),
-                       typeof(haystack))(takeExactly(original, pos1),
-                                         haystack);
+        return FindSplitResult!(1,
+            typeof(takeExactly(original, pos1)), typeof(haystack))(
+            takeExactly(original, pos1), haystack);
     }
 }
 
@@ -3084,47 +3076,19 @@ if (isForwardRange!R1 && isForwardRange!R2)
 auto findSplitAfter(alias pred = "a == b", R1, R2)(R1 haystack, R2 needle)
 if (isForwardRange!R1 && isForwardRange!R2)
 {
-    static struct Result(S1, S2) if (isForwardRange!S1 &&
-                                     isForwardRange!S2)
-    {
-        this(S1 pre, S2 post)
-        {
-            asTuple = typeof(asTuple)(pre, post);
-        }
-        void opAssign(typeof(asTuple) rhs)
-        {
-            asTuple = rhs;
-        }
-        Tuple!(S1, S2) asTuple;
-        static if (hasConstEmptyMember!(typeof(asTuple[1])))
-        {
-            bool opCast(T : bool)() const
-            {
-                return !asTuple[0].empty;
-            }
-        }
-        else
-        {
-            bool opCast(T : bool)()
-            {
-                return !asTuple[0].empty;
-            }
-        }
-        alias asTuple this;
-    }
-
     static if (isSomeString!R1 && isSomeString!R2
             || isRandomAccessRange!R1 && hasLength!R1 && hasSlicing!R1 && hasLength!R2)
     {
         auto balance = find!pred(haystack, needle);
         immutable pos = balance.empty ? 0 : haystack.length - balance.length + needle.length;
-        return Result!(typeof(haystack[0 .. pos]),
-                       typeof(haystack[pos .. haystack.length]))(haystack[0 .. pos],
-                                                                 haystack[pos .. haystack.length]);
+        return FindSplitResult!(0,
+            typeof(haystack[0 .. pos]), typeof(haystack[0 .. pos]))(
+            haystack[0 .. pos], haystack[pos .. haystack.length]);
     }
     else
     {
         import std.range : takeExactly;
+        alias Res = FindSplitResult!(0, typeof(takeExactly(haystack, 0)), typeof(haystack));
         auto original = haystack.save;
         auto h = haystack.save;
         auto n = needle.save;
@@ -3134,9 +3098,7 @@ if (isForwardRange!R1 && isForwardRange!R2)
             if (h.empty)
             {
                 // Failed search
-                return Result!(typeof(takeExactly(original, 0)),
-                               typeof(original))(takeExactly(original, 0),
-                                                 original);
+                return Res(takeExactly(original, 0), original);
             }
             if (binaryFun!pred(h.front, n.front))
             {
@@ -3152,9 +3114,7 @@ if (isForwardRange!R1 && isForwardRange!R2)
                 pos2 = ++pos1;
             }
         }
-        return Result!(typeof(takeExactly(original, pos2)),
-                       typeof(h))(takeExactly(original, pos2),
-                                  h);
+        return Res(takeExactly(original, pos2), h);
     }
 }
 
@@ -3171,12 +3131,12 @@ if (isForwardRange!R1 && isForwardRange!R2)
     }
     else assert(0);
 
-    // works with const aswell
-    if (const split = "dlang-rocks".findSplit("-"))
+    // findSplitBefore returns 2 ranges
+    if (const split = [2, 3, 2, 3, 4, 1].findSplitBefore!"a > b"([2, 2]))
     {
-        assert(split[0] == "dlang");
-        assert(split[1] == "-");
-        assert(split[2] == "rocks");
+        assert(split[0] == [2, 3, 2]);
+        // [3, 4] each greater than [2, 2]
+        assert(split[1] == [3, 4, 1]);
     }
     else assert(0);
 }

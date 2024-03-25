@@ -3,6 +3,7 @@ typedef struct
   int a, b;
 } T;
 
+void
 f (T *bs)
 {
   long long x;

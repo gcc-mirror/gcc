@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -109,7 +109,7 @@ along with GCC; see the file COPYING3.  If not see
 #define C_DECL_COMPOUND_LITERAL_P(DECL) \
   DECL_LANG_FLAG_5 (VAR_DECL_CHECK (DECL))
 
-/* Set on decls used as placeholders for a C2x underspecified object
+/* Set on decls used as placeholders for a C23 underspecified object
    definition.  */
 #define C_DECL_UNDERSPECIFIED(DECL) DECL_LANG_FLAG_7 (DECL)
 
@@ -451,13 +451,13 @@ struct c_declspecs {
      specified other than in a definition of that enum (if so, this is
      invalid unless it is an empty declaration "enum identifier
      enum-type-specifier;", but such an empty declaration is valid in
-     C2x when "enum identifier;" would not be).  */
+     C23 when "enum identifier;" would not be).  */
   BOOL_BITFIELD enum_type_specifier_ref_p : 1;
-  /* Whether "auto" was specified in C2X (or later) mode and means the
+  /* Whether "auto" was specified in C23 (or later) mode and means the
      type is to be deduced from an initializer, or would mean that if
      no type specifier appears later in these declaration
      specifiers.  */
-  BOOL_BITFIELD c2x_auto_p : 1;
+  BOOL_BITFIELD c23_auto_p : 1;
   /* Whether "constexpr" was specified.  */
   BOOL_BITFIELD constexpr_p : 1;
   /* The address space that the declaration belongs to.  */
@@ -596,6 +596,7 @@ enum c_inline_static_type {
 
 
 /* in c-parser.cc */
+struct c_tree_token_vec;
 extern void c_parse_init (void);
 extern bool c_keyword_starts_typename (enum rid keyword);
 
@@ -655,7 +656,8 @@ extern void finish_decl (tree, location_t, tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
 extern void finish_function (location_t = input_location);
 extern tree finish_struct (location_t, tree, tree, tree,
-			   class c_struct_parse_info *);
+			   class c_struct_parse_info *,
+			   tree *expr = NULL);
 extern tree c_simulate_enum_decl (location_t, const char *,
 				  vec<string_int_pair> *);
 extern tree c_simulate_record_decl (location_t, const char *,
@@ -681,7 +683,8 @@ extern void c_warn_unused_attributes (tree);
 extern tree c_warn_type_attributes (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
-extern tree start_enum (location_t, struct c_enum_contents *, tree, tree);
+extern tree start_enum (location_t, struct c_enum_contents *, tree, tree,
+			bool potential_nesting_p);
 extern bool start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree, bool = true, location_t * = NULL);
@@ -719,6 +722,7 @@ extern struct c_declspecs *declspecs_add_addrspace (location_t,
 extern struct c_declspecs *declspecs_add_alignas (location_t,
 						  struct c_declspecs *, tree);
 extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
+extern size_t c_tree_size (enum tree_code);
 
 /* in c-objc-common.cc */
 extern bool c_objc_common_init (void);
@@ -754,6 +758,8 @@ extern tree c_objc_common_truthvalue_conversion (location_t, tree);
 extern tree require_complete_type (location_t, tree);
 extern bool same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
+extern bool comptypes_same_p (tree, tree);
+extern bool comptypes_equiv_p (tree, tree);
 extern int comptypes_check_different_types (tree, tree, bool *);
 extern int comptypes_check_enum_int (tree, tree, bool *);
 extern bool c_mark_addressable (tree, bool = false);
@@ -907,6 +913,8 @@ set_c_expr_source_range (c_expr *expr,
 extern vec<tree> incomplete_record_decls;
 
 extern const char *c_get_sarif_source_language (const char *filename);
+
+extern const struct scoped_attribute_specs std_attribute_table;
 
 #if CHECKING_P
 namespace selftest {

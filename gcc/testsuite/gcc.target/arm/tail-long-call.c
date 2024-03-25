@@ -1,6 +1,8 @@
-/* { dg-skip-if "need at least armv5te" { *-*-* } { "-march=armv[234]*" "-mthumb" } { "" } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target arm_arch_v5te_arm_ok } */
 /* { dg-skip-if "FDPIC does not support tailcall optimization" { arm*-*-uclinuxfdpiceabi } "*" "" } */
-/* { dg-options "-O2 -march=armv5te -marm" } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_arch_v5te_arm } */
 /* { dg-final { scan-assembler "bx" } } */
 /* { dg-final { scan-assembler-not "blx" } } */
 

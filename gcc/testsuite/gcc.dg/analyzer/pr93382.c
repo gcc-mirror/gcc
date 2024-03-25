@@ -1,5 +1,3 @@
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
-
 typedef __SIZE_TYPE__ size_t;
 
 int idx;

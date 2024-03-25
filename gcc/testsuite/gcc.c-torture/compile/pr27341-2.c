@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 void zgemm_ (const int*, const double*);
 extern void matmul_c8 (_Complex double * dest)
 {

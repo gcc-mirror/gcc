@@ -70,20 +70,6 @@ package body System.Finalization_Masters is
       return System.Storage_Elements."+" (Addr, Offset);
    end Add_Offset_To_Address;
 
-   ------------
-   -- Attach --
-   ------------
-
-   procedure Attach (N : not null FM_Node_Ptr; L : not null FM_Node_Ptr) is
-   begin
-      Lock_Task.all;
-      Attach_Unprotected (N, L);
-      Unlock_Task.all;
-
-      --  Note: No need to unlock in case of an exception because the above
-      --  code can never raise one.
-   end Attach;
-
    ------------------------
    -- Attach_Unprotected --
    ------------------------

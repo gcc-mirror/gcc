@@ -1,5 +1,5 @@
 /* toir.cc -- Lower D frontend statements to GCC trees.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -214,6 +214,38 @@ add_stmt (tree t)
      so if there's no side-effects, then don't add it.  */
   if (!TREE_SIDE_EFFECTS (t))
     return;
+
+  /* If a call expression has no side effects, and there's no explicit
+     `cast(void)', then issue a warning about the unused return value.  */
+  if (TREE_CODE (t) == INDIRECT_REF)
+    {
+      t = TREE_OPERAND (t, 0);
+
+      if (TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE)
+	warning (OPT_Wunused_value, "value computed is not used");
+    }
+
+  if (TREE_CODE (t) == CALL_EXPR && CALL_EXPR_FN (t) != NULL_TREE
+      && CALL_EXPR_WARN_IF_UNUSED (t))
+    {
+      tree callee =  CALL_EXPR_FN (t);
+
+      /* It's a call to a function or function pointer.  */
+      if (TREE_CODE (callee) == ADDR_EXPR
+	  && VAR_OR_FUNCTION_DECL_P (TREE_OPERAND (callee, 0)))
+	callee = TREE_OPERAND (callee, 0);
+
+      /* It's a call to a delegate object.  */
+      if (TREE_CODE (callee) == COMPONENT_REF
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (callee, 0))) == RECORD_TYPE
+	  && TYPE_DELEGATE (TREE_TYPE (TREE_OPERAND (callee, 0))))
+	callee = TREE_OPERAND (callee, 0);
+
+      warning (OPT_Wunused_value,
+	       "calling %qE without side effects discards return value "
+	       "of type %qT; prepend a %<cast(void)%> if intentional",
+	       callee, TREE_TYPE (t));
+    }
 
   if (TREE_CODE (t) == COMPOUND_EXPR)
     {

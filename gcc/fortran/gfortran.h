@@ -1,5 +1,5 @@
 /* gfortran header file
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1380,6 +1380,7 @@ typedef struct gfc_omp_namelist
       gfc_namespace *ns;
       gfc_expr *allocator;
       struct gfc_symbol *traits_sym;
+      struct gfc_omp_namelist *duplicate_of;
     } u2;
   struct gfc_omp_namelist *next;
   locus where;
@@ -1496,19 +1497,23 @@ enum gfc_omp_atomic_op
 enum gfc_omp_requires_kind
 {
   /* Keep in sync with gfc_namespace, esp. with omp_req_mem_order.  */
-  OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST = 1,  /* 01 */
-  OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL = 2,  /* 10 */
-  OMP_REQ_ATOMIC_MEM_ORDER_RELAXED = 3,  /* 11 */
-  OMP_REQ_REVERSE_OFFLOAD = (1 << 2),
-  OMP_REQ_UNIFIED_ADDRESS = (1 << 3),
-  OMP_REQ_UNIFIED_SHARED_MEMORY = (1 << 4),
-  OMP_REQ_DYNAMIC_ALLOCATORS = (1 << 5),
+  OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST = 1,  /* 001 */
+  OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL = 2,  /* 010 */
+  OMP_REQ_ATOMIC_MEM_ORDER_RELAXED = 3,  /* 011 */
+  OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE = 4,  /* 100 */
+  OMP_REQ_ATOMIC_MEM_ORDER_RELEASE = 5,  /* 101 */
+  OMP_REQ_REVERSE_OFFLOAD = (1 << 3),
+  OMP_REQ_UNIFIED_ADDRESS = (1 << 4),
+  OMP_REQ_UNIFIED_SHARED_MEMORY = (1 << 5),
+  OMP_REQ_DYNAMIC_ALLOCATORS = (1 << 6),
   OMP_REQ_TARGET_MASK = (OMP_REQ_REVERSE_OFFLOAD
 			 | OMP_REQ_UNIFIED_ADDRESS
 			 | OMP_REQ_UNIFIED_SHARED_MEMORY),
   OMP_REQ_ATOMIC_MEM_ORDER_MASK = (OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST
 				   | OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL
-				   | OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
+				   | OMP_REQ_ATOMIC_MEM_ORDER_RELAXED
+				   | OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE
+				   | OMP_REQ_ATOMIC_MEM_ORDER_RELEASE)
 };
 
 enum gfc_omp_memorder
@@ -1545,6 +1550,8 @@ typedef struct gfc_omp_clauses
 {
   gfc_omp_namelist *lists[OMP_LIST_NUM];
   struct gfc_expr *if_expr;
+  struct gfc_expr *if_exprs[OMP_IF_LAST];
+  struct gfc_expr *self_expr;
   struct gfc_expr *final_expr;
   struct gfc_expr *num_threads;
   struct gfc_expr *chunk_size;
@@ -1561,7 +1568,6 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *priority;
   struct gfc_expr *detach;
   struct gfc_expr *depobj;
-  struct gfc_expr *if_exprs[OMP_IF_LAST];
   struct gfc_expr *dist_chunk_size;
   struct gfc_expr *message;
   struct gfc_omp_assumptions *assume;
@@ -1578,6 +1584,7 @@ typedef struct gfc_omp_clauses
   unsigned grainsize_strict:1, num_tasks_strict:1, compare:1, weak:1;
   unsigned non_rectangular:1, order_concurrent:1;
   unsigned contains_teams_construct:1, target_first_st_is_teams:1;
+  unsigned contained_in_target_construct:1;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
   ENUM_BITFIELD (gfc_omp_device_type) device_type:2;
   ENUM_BITFIELD (gfc_omp_memorder) memorder:3;
@@ -1640,21 +1647,13 @@ typedef struct gfc_omp_declare_simd
 gfc_omp_declare_simd;
 #define gfc_get_omp_declare_simd() XCNEW (gfc_omp_declare_simd)
 
-
-enum gfc_omp_trait_property_kind
-{
-  CTX_PROPERTY_NONE,
-  CTX_PROPERTY_USER,
-  CTX_PROPERTY_NAME_LIST,
-  CTX_PROPERTY_ID,
-  CTX_PROPERTY_EXPR,
-  CTX_PROPERTY_SIMD
-};
+/* For OpenMP trait selector enum types and tables.  */
+#include "omp-selectors.h"
 
 typedef struct gfc_omp_trait_property
 {
   struct gfc_omp_trait_property *next;
-  enum gfc_omp_trait_property_kind property_kind;
+  enum omp_tp_type property_kind;
   bool is_name : 1;
 
   union
@@ -1670,8 +1669,7 @@ typedef struct gfc_omp_trait_property
 typedef struct gfc_omp_selector
 {
   struct gfc_omp_selector *next;
-
-  char *trait_selector_name;
+  enum omp_ts_code code;
   gfc_expr *score;
   struct gfc_omp_trait_property *properties;
 } gfc_omp_selector;
@@ -1680,8 +1678,7 @@ typedef struct gfc_omp_selector
 typedef struct gfc_omp_set_selector
 {
   struct gfc_omp_set_selector *next;
-
-  const char *trait_set_selector_name;
+  enum omp_tss_code code;
   struct gfc_omp_selector *trait_selectors;
 } gfc_omp_set_selector;
 #define gfc_get_omp_set_selector() XCNEW (gfc_omp_set_selector)
@@ -2256,7 +2253,7 @@ typedef struct gfc_namespace
   unsigned implicit_interface_calls:1;
 
   /* OpenMP requires. */
-  unsigned omp_requires:6;
+  unsigned omp_requires:7;
   unsigned omp_target_seen:1;
 
   /* Set to 1 if this is an implicit OMP structured block.  */
@@ -2746,7 +2743,7 @@ typedef struct
   unsigned int c_double : 1;
   unsigned int c_long_double : 1;
   unsigned int c_float128 : 1;
-  /* True if for _Float128 C2X IEC 60559 *f128 APIs should be used
+  /* True if for _Float128 C23 IEC 60559 *f128 APIs should be used
      instead of libquadmath *q APIs.  */
   unsigned int use_iec_60559 : 1;
 }
@@ -4007,6 +4004,9 @@ bool gfc_may_be_finalized (gfc_typespec);
 #define IS_POINTER(sym) \
 	(sym->ts.type == BT_CLASS && sym->attr.class_ok && CLASS_DATA (sym) \
 	 ? CLASS_DATA (sym)->attr.class_pointer : sym->attr.pointer)
+#define IS_PROC_POINTER(sym) \
+	(sym->ts.type == BT_CLASS && sym->attr.class_ok && CLASS_DATA (sym) \
+	 ? CLASS_DATA (sym)->attr.proc_pointer : sym->attr.proc_pointer)
 
 /* frontend-passes.cc */
 

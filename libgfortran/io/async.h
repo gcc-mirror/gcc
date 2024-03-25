@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2018-2024 Free Software Foundation, Inc.
    Contributed by Nicolas Koenig
 
    This file is part of the GNU Fortran runtime library (libgfortran).
@@ -210,6 +210,128 @@
     DEBUG_PRINTF ("%s" DEBUG_RED "ACQ:" DEBUG_NORM " %-30s %78p\n", aio_prefix, #mutex, mutex); \
   } while (0)
 
+#ifdef __GTHREAD_RWLOCK_INIT
+#define RWLOCK_DEBUG_ADD(rwlock) do {		\
+    aio_rwlock_debug *n;				\
+    n = xmalloc (sizeof (aio_rwlock_debug));	\
+    n->prev = TAIL_RWLOCK_DEBUG_QUEUE;			\
+    if (n->prev)				\
+      n->prev->next = n;			\
+    n->next = NULL;				\
+    n->line = __LINE__;				\
+    n->func = __FUNCTION__;			\
+    n->rw = rwlock;				\
+    if (!aio_rwlock_debug_head) {			\
+      aio_rwlock_debug_head = n;			\
+    }						\
+  } while (0)
+
+#define CHECK_RDLOCK(rwlock, status) do {					\
+    aio_rwlock_debug *curr;						\
+    INTERN_WRLOCK (&debug_queue_rwlock);					\
+    if (__gthread_rwlock_tryrdlock (rwlock)) {				\
+      if ((curr = IN_RWLOCK_DEBUG_QUEUE (rwlock))) {				\
+	sprintf (status, DEBUG_RED "%s():%d" DEBUG_NORM, curr->func, curr->line); \
+      } else								\
+	sprintf (status, DEBUG_RED "unknown" DEBUG_NORM);			\
+    }									\
+    else {								\
+      __gthread_rwlock_unlock (rwlock);					\
+      sprintf (status, DEBUG_GREEN "rwunlocked" DEBUG_NORM);			\
+    }									\
+    INTERN_RWUNLOCK (&debug_queue_rwlock);					\
+  }while (0)
+
+#define CHECK_WRLOCK(rwlock, status) do {					\
+    aio_rwlock_debug *curr;						\
+    INTERN_WRLOCK (&debug_queue_rwlock);					\
+    if (__gthread_rwlock_trywrlock (rwlock)) {				\
+      if ((curr = IN_RWLOCK_DEBUG_QUEUE (rwlock))) {				\
+	sprintf (status, DEBUG_RED "%s():%d" DEBUG_NORM, curr->func, curr->line); \
+      } else								\
+	sprintf (status, DEBUG_RED "unknown" DEBUG_NORM);			\
+    }									\
+    else {								\
+      __gthread_rwlock_unlock (rwlock);					\
+      sprintf (status, DEBUG_GREEN "rwunlocked" DEBUG_NORM);			\
+    }									\
+    INTERN_RWUNLOCK (&debug_queue_rwlock);					\
+  }while (0)
+
+#define TAIL_RWLOCK_DEBUG_QUEUE ({			\
+      aio_rwlock_debug *curr = aio_rwlock_debug_head;	\
+      while (curr && curr->next) {		\
+	curr = curr->next;			\
+      }						\
+      curr;					\
+    })
+
+#define IN_RWLOCK_DEBUG_QUEUE(rwlock) ({		\
+      __label__ end;				\
+      aio_rwlock_debug *curr = aio_rwlock_debug_head;	\
+      while (curr) {				\
+	if (curr->rw == rwlock) {			\
+	  goto end;				\
+	}					\
+	curr = curr->next;			\
+      }						\
+    end:;					\
+      curr;					\
+    })
+
+#define RDLOCK(rwlock) do {						\
+    char status[200];							\
+    CHECK_RDLOCK (rwlock, status);						\
+    DEBUG_PRINTF ("%s%-42s prev: %-35s %20s():%-5d %18p\n", aio_prefix,	\
+		 DEBUG_RED "RDLOCK: " DEBUG_NORM #rwlock, status, __FUNCTION__, __LINE__, (void *) rwlock); \
+    INTERN_RDLOCK (rwlock);							\
+    INTERN_WRLOCK (&debug_queue_rwlock);					\
+    RWLOCK_DEBUG_ADD (rwlock);						\
+    INTERN_RWUNLOCK (&debug_queue_rwlock);					\
+    DEBUG_PRINTF ("%s" DEBUG_RED "ACQ:" DEBUG_NORM " %-30s %78p\n", aio_prefix, #rwlock, rwlock); \
+  } while (0)
+
+#define WRLOCK(rwlock) do {						\
+    char status[200];							\
+    CHECK_WRLOCK (rwlock, status);						\
+    DEBUG_PRINTF ("%s%-42s prev: %-35s %20s():%-5d %18p\n", aio_prefix,	\
+		 DEBUG_RED "WRLOCK: " DEBUG_NORM #rwlock, status, __FUNCTION__, __LINE__, (void *) rwlock); \
+    INTERN_WRLOCK (rwlock);							\
+    INTERN_WRLOCK (&debug_queue_rwlock);					\
+    RWLOCK_DEBUG_ADD (rwlock);						\
+    INTERN_RWUNLOCK (&debug_queue_rwlock);					\
+    DEBUG_PRINTF ("%s" DEBUG_RED "ACQ:" DEBUG_NORM " %-30s %78p\n", aio_prefix, #rwlock, rwlock); \
+  } while (0)
+
+#define RWUNLOCK(rwlock) do {						\
+    aio_rwlock_debug *curr;						\
+    DEBUG_PRINTF ("%s%-75s %20s():%-5d %18p\n", aio_prefix, DEBUG_GREEN "RWUNLOCK: " DEBUG_NORM #rwlock, \
+		 __FUNCTION__, __LINE__, (void *) rwlock);		\
+    INTERN_WRLOCK (&debug_queue_rwlock);					\
+    curr = IN_RWLOCK_DEBUG_QUEUE (rwlock);					\
+    if (curr)								\
+      {									\
+	if (curr->prev)							\
+	  curr->prev->next = curr->next;				\
+	if (curr->next) {						\
+	  curr->next->prev = curr->prev;				\
+	  if (curr == aio_rwlock_debug_head)					\
+	    aio_rwlock_debug_head = curr->next;				\
+	} else {							\
+	  if (curr == aio_rwlock_debug_head)					\
+	    aio_rwlock_debug_head = NULL;					\
+	}								\
+	free (curr);							\
+      }									\
+    INTERN_RWUNLOCK (&debug_queue_rwlock);					\
+    INTERN_RWUNLOCK (rwlock);						\
+  } while (0)
+
+#define RD_TO_WRLOCK(rwlock)	\
+  RWUNLOCK (rwlock);	\
+  WRLOCK (rwlock);
+#endif
+
 #define DEBUG_LINE(...) __VA_ARGS__
 
 #else
@@ -221,11 +343,30 @@
 #define LOCK(mutex) INTERN_LOCK (mutex)
 #define UNLOCK(mutex) INTERN_UNLOCK (mutex)
 #define TRYLOCK(mutex) (__gthread_mutex_trylock (mutex))
+#ifdef __GTHREAD_RWLOCK_INIT
+#define RDLOCK(rwlock) INTERN_RDLOCK (rwlock)
+#define WRLOCK(rwlock) INTERN_WRLOCK (rwlock)
+#define RWUNLOCK(rwlock) INTERN_RWUNLOCK (rwlock)
+#define RD_TO_WRLOCK(rwlock)	\
+  RWUNLOCK (rwlock);	\
+  WRLOCK (rwlock);
+#endif
+#endif
+
+#ifndef __GTHREAD_RWLOCK_INIT
+#define RDLOCK(rwlock) LOCK (rwlock)
+#define WRLOCK(rwlock) LOCK (rwlock)
+#define RWUNLOCK(rwlock) UNLOCK (rwlock)
+#define RD_TO_WRLOCK(rwlock) do {} while (0)
 #endif
 
 #define INTERN_LOCK(mutex) T_ERROR (__gthread_mutex_lock, mutex);
 
 #define INTERN_UNLOCK(mutex) T_ERROR (__gthread_mutex_unlock, mutex);
+
+#define INTERN_RDLOCK(rwlock) T_ERROR (__gthread_rwlock_rdlock, rwlock)
+#define INTERN_WRLOCK(rwlock) T_ERROR (__gthread_rwlock_wrlock, rwlock)
+#define INTERN_RWUNLOCK(rwlock) T_ERROR (__gthread_rwlock_unlock, rwlock)
 
 #if ASYNC_IO
 
@@ -288,8 +429,18 @@ DEBUG_LINE (typedef struct aio_lock_debug{
   struct aio_lock_debug *prev;
 } aio_lock_debug;)
 
+DEBUG_LINE (typedef struct aio_rwlock_debug{
+  __gthread_rwlock_t *rw;
+  int line;
+  const char *func;
+  struct aio_rwlock_debug *next;
+  struct aio_rwlock_debug *prev;
+} aio_rwlock_debug;)
+
 DEBUG_LINE (extern aio_lock_debug *aio_debug_head;)
 DEBUG_LINE (extern __gthread_mutex_t debug_queue_lock;)
+DEBUG_LINE (extern aio_rwlock_debug *aio_rwlock_debug_head;)
+DEBUG_LINE (extern __gthread_rwlock_t debug_queue_rwlock;)
 
 /* Thread - local storage of the current unit we are looking at. Needed for
    error reporting.  */

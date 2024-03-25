@@ -1,6 +1,6 @@
 // <optional> -*- C++ -*-
 
-// Copyright (C) 2013-2023 Free Software Foundation, Inc.
+// Copyright (C) 2013-2024 Free Software Foundation, Inc.
 // Copyright The GNU Toolchain Authors.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,6 +32,7 @@
 
 #pragma GCC system_header
 
+#define __glibcxx_want_freestanding_optional
 #define __glibcxx_want_optional
 #include <bits/version.h>
 
@@ -311,6 +312,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (this->_M_engaged)
 	  _M_destroy();
+	else // This seems redundant but improves codegen, see PR 112480.
+	  this->_M_engaged = false;
       }
     };
 
@@ -1048,7 +1051,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) &
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, _Tp&>>;
-	  static_assert(__is_optional_v<remove_cvref_t<_Up>>);
+	  static_assert(__is_optional_v<remove_cvref_t<_Up>>,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), **this);
 	  else
@@ -1060,7 +1065,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) const &
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, const _Tp&>>;
-	  static_assert(__is_optional_v<_Up>);
+	  static_assert(__is_optional_v<_Up>,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), **this);
 	  else
@@ -1072,7 +1079,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) &&
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, _Tp>>;
-	  static_assert(__is_optional_v<remove_cvref_t<_Up>>);
+	  static_assert(__is_optional_v<remove_cvref_t<_Up>>,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), std::move(**this));
 	  else
@@ -1084,7 +1093,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) const &&
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, const _Tp>>;
-	  static_assert(__is_optional_v<remove_cvref_t<_Up>>);
+	  static_assert(__is_optional_v<remove_cvref_t<_Up>>,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), std::move(**this));
 	  else
@@ -1140,7 +1151,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	or_else(_Fn&& __f) const&
 	{
 	  using _Up = invoke_result_t<_Fn>;
-	  static_assert( is_same_v<remove_cvref_t<_Up>, optional> );
+	  static_assert(is_same_v<remove_cvref_t<_Up>, optional>,
+			"the function passed to std::optional<T>::or_else "
+			"must return a std::optional<T>");
 
 	  if (has_value())
 	    return *this;
@@ -1153,7 +1166,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	or_else(_Fn&& __f) &&
 	{
 	  using _Up = invoke_result_t<_Fn>;
-	  static_assert( is_same_v<remove_cvref_t<_Up>, optional> );
+	  static_assert(is_same_v<remove_cvref_t<_Up>, optional>,
+			"the function passed to std::optional<T>::or_else "
+			"must return a std::optional<T>");
 
 	  if (has_value())
 	    return std::move(*this);

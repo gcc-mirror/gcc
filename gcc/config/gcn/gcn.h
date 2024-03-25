@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2024 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -28,6 +28,10 @@
 	builtin_define ("__CDNA1__");                                          \
       else if (TARGET_CDNA2)                                                   \
 	builtin_define ("__CDNA2__");                                          \
+      else if (TARGET_RDNA2)                                                   \
+	builtin_define ("__RDNA2__");                                          \
+      else if (TARGET_RDNA3)                                                   \
+	builtin_define ("__RDNA3__");                                          \
       if (TARGET_FIJI)                                                         \
 	{                                                                      \
 	  builtin_define ("__fiji__");                                         \
@@ -39,9 +43,13 @@
 	builtin_define ("__gfx906__");                                         \
       else if (TARGET_GFX908)                                                  \
 	builtin_define ("__gfx908__");                                         \
-      else if (TARGET_GFX90a)                                                  \
-	builtin_define ("__gfx90a__");                                         \
+      else if (TARGET_GFX1030)                                                 \
+	builtin_define ("__gfx1030");                                          \
+      else if (TARGET_GFX1100)                                                 \
+	builtin_define ("__gfx1100__");                                        \
   } while (0)
+
+#define ASSEMBLER_DIALECT (TARGET_RDNA2_PLUS ? 1 : 0)
 
 /* Support for a compile-time default architecture and tuning.
    The rules are:
@@ -142,6 +150,9 @@
 #define FIRST_VGPR_REG	    160
 #define VGPR_REGNO(N)	    ((N)+FIRST_VGPR_REG)
 #define LAST_VGPR_REG	    415
+#define FIRST_AVGPR_REG     416
+#define AVGPR_REGNO(N)      ((N)+FIRST_AVGPR_REG)
+#define LAST_AVGPR_REG      671
 
 /* Frame Registers, and other registers */
 
@@ -153,10 +164,10 @@
 #define RETURN_VALUE_REG	  168	/* Must be divisible by 4.  */
 #define STATIC_CHAIN_REGNUM	  30
 #define WORK_ITEM_ID_Z_REG	  162
-#define SOFT_ARG_REG		  416
-#define FRAME_POINTER_REGNUM	  418
-#define DWARF_LINK_REGISTER	  420
-#define FIRST_PSEUDO_REGISTER	  421
+#define SOFT_ARG_REG		  672
+#define FRAME_POINTER_REGNUM	  674
+#define DWARF_LINK_REGISTER	  676
+#define FIRST_PSEUDO_REGISTER	  677
 
 #define FIRST_PARM_REG (FIRST_SGPR_REG + 24)
 #define FIRST_VPARM_REG (FIRST_VGPR_REG + 8)
@@ -172,6 +183,7 @@
 #define SGPR_OR_VGPR_REGNO_P(N) ((N)>=FIRST_VGPR_REG && (N) <= LAST_SGPR_REG)
 #define SGPR_REGNO_P(N)		((N) <= LAST_SGPR_REG)
 #define VGPR_REGNO_P(N)		((N)>=FIRST_VGPR_REG && (N) <= LAST_VGPR_REG)
+#define AVGPR_REGNO_P(N)        ((N)>=FIRST_AVGPR_REG && (N) <= LAST_AVGPR_REG)
 #define SSRC_REGNO_P(N)		((N) <= SCC_REG && (N) != VCCZ_REG)
 #define SDST_REGNO_P(N)		((N) <= EXEC_HI_REG && (N) != VCCZ_REG)
 #define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
@@ -202,8 +214,25 @@
     1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, \
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		    \
-    /* VGRPs */					    \
+    /* VGPRs */					    \
     0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    /* Accumulation VGPRs */			    \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -240,7 +269,7 @@
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		    \
-    /* VGRPs */					    \
+    /* VGPRs */					    \
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -257,6 +286,23 @@
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    /* Accumulation VGPRs */			    \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
     /* Other registers.  */			    \
     1, 1, 1, 1, 1				    \
 }
@@ -316,6 +362,8 @@ enum reg_class
   SGPR_SRC_REGS,
   GENERAL_REGS,
   VGPR_REGS,
+  AVGPR_REGS,
+  ALL_VGPR_REGS,
   ALL_GPR_REGS,
   SRCDST_REGS,
   AFP_REGS,
@@ -341,6 +389,8 @@ enum reg_class
    "SGPR_SRC_REGS",	    \
    "GENERAL_REGS",	    \
    "VGPR_REGS",		    \
+   "AVGPR_REGS",	    \
+   "ALL_VGPR_REGS",	    \
    "ALL_GPR_REGS",	    \
    "SRCDST_REGS",	    \
    "AFP_REGS",		    \
@@ -354,38 +404,56 @@ enum reg_class
     /* NO_REGS.  */							   \
     {0, 0, 0, 0,							   \
      0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* SCC_CONDITIONAL_REG.  */						   \
     {0, 0, 0, 0,							   \
      NAMED_REG_MASK2 (SCC_REG), 0, 0, 0,				   \
-     0, 0, 0, 0, 0},							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0, 0, 0},							   \
     /* VCCZ_CONDITIONAL_REG.  */					   \
     {0, 0, 0, NAMED_REG_MASK (VCCZ_REG),				   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* VCC_CONDITIONAL_REG.  */						   \
     {0, 0, 0, NAMED_REG_MASK (VCC_LO_REG)|NAMED_REG_MASK (VCC_HI_REG),	   \
      0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* EXECZ_CONDITIONAL_REG.  */					   \
     {0, 0, 0, 0,							   \
      NAMED_REG_MASK2 (EXECZ_REG), 0, 0, 0,				   \
-     0, 0, 0, 0, 0},							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0, 0, 0},							   \
     /* ALL_CONDITIONAL_REGS.  */					   \
     {0, 0, 0, NAMED_REG_MASK (VCCZ_REG),				   \
      NAMED_REG_MASK2 (EXECZ_REG) | NAMED_REG_MASK2 (SCC_REG), 0, 0, 0,	   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* EXEC_MASK_REG.  */						   \
     {0, 0, 0, NAMED_REG_MASK (EXEC_LO_REG) | NAMED_REG_MASK (EXEC_HI_REG), \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* SGPR_REGS.  */							   \
     {0xffffffff, 0xffffffff, 0xffffffff, 0xf1,				   \
      0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* SGPR_EXEC_REGS.	*/						   \
     {0xffffffff, 0xffffffff, 0xffffffff,				   \
       0xf1 | NAMED_REG_MASK (EXEC_LO_REG) | NAMED_REG_MASK (EXEC_HI_REG),  \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* SGPR_VOP_SRC_REGS.  */						   \
@@ -394,11 +462,15 @@ enum reg_class
        -NAMED_REG_MASK (EXEC_LO_REG)					   \
        -NAMED_REG_MASK (EXEC_HI_REG),					   \
      NAMED_REG_MASK2 (SCC_REG), 0, 0, 0,				   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* SGPR_MEM_SRC_REGS.  */						   \
     {0xffffffff, 0xffffffff, 0xffffffff,				   \
      0xffffffff-NAMED_REG_MASK (VCCZ_REG)-NAMED_REG_MASK (M0_REG)	   \
      -NAMED_REG_MASK (EXEC_LO_REG)-NAMED_REG_MASK (EXEC_HI_REG),	   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* SGPR_DST_REGS.  */						   \
@@ -409,30 +481,56 @@ enum reg_class
     /* SGPR_SRC_REGS.  */						   \
     {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
      NAMED_REG_MASK2 (EXECZ_REG) | NAMED_REG_MASK2 (SCC_REG), 0, 0, 0,	   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* GENERAL_REGS.  */						   \
     {0xffffffff, 0xffffffff, 0xffffffff, 0xf1,				   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
     /* VGPR_REGS.  */							   \
     {0, 0, 0, 0,							   \
      0,		 0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0, 0, 0,						   \
+     0, 0, 0, 0, 0, 0},							   \
+    /* AVGPR_REGS.  */							   \
+    {0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0,		 0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0},	   \
+    /* ALL_VGPR_REGS.  */						   \
+    {0, 0, 0, 0,							   \
+     0,          0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0},	   \
     /* ALL_GPR_REGS.  */						   \
     {0xffffffff, 0xffffffff, 0xffffffff, 0xf1,				   \
      0,		 0xffffffff, 0xffffffff, 0xffffffff,			   \
-     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0},	   \
+     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0, 0, 0,						   \
+     0, 0, 0, 0, 0, 0},							   \
     /* SRCDST_REGS.  */							   \
     {0xffffffff, 0xffffffff, 0xffffffff,				   \
      0xffffffff-NAMED_REG_MASK (VCCZ_REG),				   \
      0,		 0xffffffff, 0xffffffff, 0xffffffff,			   \
-     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0},	   \
+     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0, 0, 0,						   \
+     0, 0, 0, 0, 0, 0},							   \
     /* AFP_REGS.  */							   \
     {0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
      0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0xf},						   \
     /* ALL_REGS.  */							   \
     {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0 }}
 
@@ -537,6 +635,34 @@ enum gcn_address_spaces
     "v236", "v237", "v238", "v239", "v240", "v241", "v242", "v243", "v244", \
     "v245", "v246", "v247", "v248", "v249", "v250", "v251", "v252", "v253", \
     "v254", "v255",							    \
+    "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10",	    \
+    "a11", "a12", "a13", "a14", "a15", "a16", "a17", "a18", "a19", "a20",   \
+    "a21", "a22", "a23", "a24", "a25", "a26", "a27", "a28", "a29", "a30",   \
+    "a31", "a32", "a33", "a34", "a35", "a36", "a37", "a38", "a39", "a40",   \
+    "a41", "a42", "a43", "a44", "a45", "a46", "a47", "a48", "a49", "a50",   \
+    "a51", "a52", "a53", "a54", "a55", "a56", "a57", "a58", "a59", "a60",   \
+    "a61", "a62", "a63", "a64", "a65", "a66", "a67", "a68", "a69", "a70",   \
+    "a71", "a72", "a73", "a74", "a75", "a76", "a77", "a78", "a79", "a80",   \
+    "a81", "a82", "a83", "a84", "a85", "a86", "a87", "a88", "a89", "a90",   \
+    "a91", "a92", "a93", "a94", "a95", "a96", "a97", "a98", "a99", "a100",  \
+    "a101", "a102", "a103", "a104", "a105", "a106", "a107", "a108", "a109", \
+    "a110", "a111", "a112", "a113", "a114", "a115", "a116", "a117", "a118", \
+    "a119", "a120", "a121", "a122", "a123", "a124", "a125", "a126", "a127", \
+    "a128", "a129", "a130", "a131", "a132", "a133", "a134", "a135", "a136", \
+    "a137", "a138", "a139", "a140", "a141", "a142", "a143", "a144", "a145", \
+    "a146", "a147", "a148", "a149", "a150", "a151", "a152", "a153", "a154", \
+    "a155", "a156", "a157", "a158", "a159", "a160", "a161", "a162", "a163", \
+    "a164", "a165", "a166", "a167", "a168", "a169", "a170", "a171", "a172", \
+    "a173", "a174", "a175", "a176", "a177", "a178", "a179", "a180", "a181", \
+    "a182", "a183", "a184", "a185", "a186", "a187", "a188", "a189", "a190", \
+    "a191", "a192", "a193", "a194", "a195", "a196", "a197", "a198", "a199", \
+    "a200", "a201", "a202", "a203", "a204", "a205", "a206", "a207", "a208", \
+    "a209", "a210", "a211", "a212", "a213", "a214", "a215", "a216", "a217", \
+    "a218", "a219", "a220", "a221", "a222", "a223", "a224", "a225", "a226", \
+    "a227", "a228", "a229", "a230", "a231", "a232", "a233", "a234", "a235", \
+    "a236", "a237", "a238", "a239", "a240", "a241", "a242", "a243", "a244", \
+    "a245", "a246", "a247", "a248", "a249", "a250", "a251", "a252", "a253", \
+    "a254", "a255",							    \
     "?ap0", "?ap1", "?fp0", "?fp1", "?dwlr" }
 
 #define PRINT_OPERAND(FILE, X, CODE)  print_operand(FILE, X, CODE)
@@ -714,3 +840,7 @@ enum gcn_builtin_codes
       || M == V2SFmode || M == V2DImode || M == V2DFmode) \
    ? 2 \
    : 1)
+
+/* The C++ front end insists to link against libstdc++ -- which we don't build.
+   Tell it to instead link against the innocuous libgcc.  */
+#define LIBSTDCXX "gcc"

@@ -51,7 +51,9 @@
 #include "system.h"
 #endif
 
+#ifndef LIGHT_RUNTIME
 #include "adaint.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {

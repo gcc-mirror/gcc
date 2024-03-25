@@ -1,5 +1,5 @@
 /* Target-dependent globals.
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,6 +38,7 @@ extern struct target_builtins *this_target_builtins;
 extern struct target_gcse *this_target_gcse;
 extern struct target_bb_reorder *this_target_bb_reorder;
 extern struct target_lower_subreg *this_target_lower_subreg;
+extern struct target_constraints *this_target_constraints;
 #endif
 
 class GTY(()) target_globals {
@@ -61,6 +62,7 @@ public:
   struct target_gcse *GTY((skip)) gcse;
   struct target_bb_reorder *GTY((skip)) bb_reorder;
   struct target_lower_subreg *GTY((skip)) lower_subreg;
+  struct target_constraints *GTY((skip)) constraints;
 };
 
 #if SWITCHABLE_TARGET
@@ -89,6 +91,7 @@ restore_target_globals (class target_globals *g)
   this_target_gcse = g->gcse;
   this_target_bb_reorder = g->bb_reorder;
   this_target_lower_subreg = g->lower_subreg;
+  this_target_constraints = g->constraints;
 }
 #endif
 

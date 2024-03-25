@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2023 Free Software Foundation, Inc.
+   Copyright (C) 1993-2024 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -101,8 +101,10 @@ static void print_instantiation_partial_context (diagnostic_context *,
 						 struct tinst_level *,
 						 location_t);
 static void maybe_print_constraint_context (diagnostic_context *);
-static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
-static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
+static void cp_diagnostic_starter (diagnostic_context *,
+				   const diagnostic_info *);
+static void cp_print_error_function (diagnostic_context *,
+				     const diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
 			int, bool, bool, bool, bool *, const char **);
@@ -478,7 +480,7 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 
   /* Don't try to do this once cgraph starts throwing away front-end
      information.  */
-  if (at_eof >= 2)
+  if (at_eof >= 3)
     return;
 
   FOR_EACH_VEC_SAFE_ELT (typenames, i, t)
@@ -1510,10 +1512,6 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       dump_decl (pp, BASELINK_FUNCTIONS (t), flags);
       break;
 
-    case NON_DEPENDENT_EXPR:
-      dump_expr (pp, t, flags);
-      break;
-
     case TEMPLATE_TYPE_PARM:
       if (flags & TFF_DECL_SPECIFIERS)
 	pp->declaration (t);
@@ -2499,6 +2497,15 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_right_bracket (pp);
       break;
 
+    case OMP_ARRAY_SECTION:
+      dump_expr (pp, TREE_OPERAND (t, 0), flags);
+      pp_cxx_left_bracket (pp);
+      dump_expr (pp, TREE_OPERAND (t, 1), flags);
+      pp_colon (pp);
+      dump_expr (pp, TREE_OPERAND (t, 2), flags);
+      pp_cxx_right_bracket (pp);
+      break;
+
     case UNARY_PLUS_EXPR:
       dump_unary_op (pp, "+", t, flags);
       break;
@@ -2940,10 +2947,6 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_type (pp, TREE_TYPE (t), flags);
       pp_cxx_left_paren (pp);
       pp_cxx_right_paren (pp);
-      break;
-
-    case NON_DEPENDENT_EXPR:
-      dump_expr (pp, TREE_OPERAND (t, 0), flags);
       break;
 
     case ARGUMENT_PACK_SELECT:
@@ -3538,7 +3541,7 @@ eh_spec_to_string (tree p, int /*v*/)
 /* Langhook for print_error_function.  */
 void
 cxx_print_error_function (diagnostic_context *context, const char *file,
-			  diagnostic_info *diagnostic)
+			  const diagnostic_info *diagnostic)
 {
   char *prefix;
   if (file)
@@ -3552,7 +3555,7 @@ cxx_print_error_function (diagnostic_context *context, const char *file,
 
 static void
 cp_diagnostic_starter (diagnostic_context *context,
-		       diagnostic_info *diagnostic)
+		       const diagnostic_info *diagnostic)
 {
   diagnostic_report_current_module (context, diagnostic_location (diagnostic));
   cp_print_error_function (context, diagnostic);
@@ -3567,7 +3570,7 @@ cp_diagnostic_starter (diagnostic_context *context,
    a diagnostic message.  Called from cp_diagnostic_starter.  */
 static void
 cp_print_error_function (diagnostic_context *context,
-			 diagnostic_info *diagnostic)
+			 const diagnostic_info *diagnostic)
 {
   /* If we are in an instantiation context, current_function_decl is likely
      to be wrong, so just rely on print_instantiation_full_context.  */
@@ -3644,7 +3647,7 @@ cp_print_error_function (diagnostic_context *context,
 		  pp_newline (context->printer);
 		  if (s.file != NULL)
 		    {
-		      if (context->show_column && s.column != 0)
+		      if (context->m_show_column && s.column != 0)
 			pp_printf (context->printer,
 				   _("    inlined from %qD at %r%s:%d:%d%R"),
 				   fndecl,
@@ -3745,7 +3748,7 @@ print_instantiation_partial_context_line (diagnostic_context *context,
 
   expanded_location xloc = expand_location (loc);
 
-  if (context->show_column)
+  if (context->m_show_column)
     pp_verbatim (context->printer, _("%r%s:%d:%d:%R   "),
 		 "locus", xloc.file, xloc.line, xloc.column);
   else
@@ -3824,7 +3827,7 @@ print_instantiation_partial_context (diagnostic_context *context,
 	{
 	  expanded_location xloc;
 	  xloc = expand_location (loc);
-	  if (context->show_column)
+	  if (context->m_show_column)
 	    pp_verbatim (context->printer,
 			 _("%r%s:%d:%d:%R   [ skipping %d instantiation "
 			   "contexts, use -ftemplate-backtrace-limit=0 to "
@@ -3884,7 +3887,7 @@ maybe_print_constexpr_context (diagnostic_context *context)
     {
       expanded_location xloc = expand_location (EXPR_LOCATION (t));
       const char *s = expr_as_string (t, 0);
-      if (context->show_column)
+      if (context->m_show_column)
 	pp_verbatim (context->printer,
 		     _("%r%s:%d:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, xloc.column, s);
@@ -3901,7 +3904,7 @@ static void
 print_location (diagnostic_context *context, location_t loc)
 {
   expanded_location xloc = expand_location (loc);
-  if (context->show_column)
+  if (context->m_show_column)
     pp_verbatim (context->printer, _("%r%s:%d:%d:%R   "),
                  "locus", xloc.file, xloc.line, xloc.column);
   else

@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -184,7 +184,10 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 
   /* Host fallback if "if" clause is false or if the current device is set to
      the host.  */
-  if (flags & GOACC_FLAG_HOST_FALLBACK)
+  if ((flags & GOACC_FLAG_HOST_FALLBACK)
+      /* TODO: a proper pthreads based "multi-core CPU" local device
+	 implementation. Currently, this is still the same as host-fallback.  */
+      || (flags & GOACC_FLAG_LOCAL_DEVICE))
     {
       prof_info.device_type = acc_device_host;
       api_info.device_type = prof_info.device_type;
@@ -446,7 +449,8 @@ GOACC_data_start (int flags_m, size_t mapnum,
 
   /* Host fallback or 'do nothing'.  */
   if ((acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-      || (flags & GOACC_FLAG_HOST_FALLBACK))
+      || (flags & GOACC_FLAG_HOST_FALLBACK)
+      || (flags & GOACC_FLAG_LOCAL_DEVICE))
     {
       prof_info.device_type = acc_device_host;
       api_info.device_type = prof_info.device_type;

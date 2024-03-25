@@ -2,7 +2,7 @@
    by the C-based front ends.  The structure of gimplified, or
    language-independent, trees is dictated by the grammar described in this
    file.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Lowering of expressions contributed by Sebastian Pop <s.pop@laposte.net>
    Re-written to support lowering of whole function trees, documentation
    and miscellaneous cleanups by Diego Novillo <dnovillo@redhat.com>
@@ -307,6 +307,27 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
     }
 
   append_to_statement_list (body, &stmt_list);
+  if (c_dialect_cxx ()
+      && stmt_list
+      && TREE_CODE (stmt_list) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator tsi = tsi_last (stmt_list);
+      if (!tsi_end_p (tsi))
+	{
+	  tree t = *tsi;
+	  while (TREE_CODE (t) == CLEANUP_POINT_EXPR
+		 || TREE_CODE (t) == EXPR_STMT
+		 || CONVERT_EXPR_CODE_P (TREE_CODE (t)))
+	    t = TREE_OPERAND (t, 0);
+	  /* For C++, if iteration statement body ends with fallthrough
+	     statement, mark it such that we diagnose it even if next
+	     statement would be labeled statement with case/default label.  */
+	  if (TREE_CODE (t) == CALL_EXPR
+	      && !CALL_EXPR_FN (t)
+	      && CALL_EXPR_IFN (t) == IFN_FALLTHROUGH)
+	    TREE_NOTHROW (t) = 1;
+	}
+    }
   finish_bc_block (&stmt_list, bc_continue, clab);
   if (incr)
     {
@@ -814,6 +835,28 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	    *expr_p = create_tmp_var (type);
 	    gimple_call_set_lhs (call, *expr_p);
 	    return GS_ALL_DONE;
+	  }
+	break;
+      }
+
+    case CALL_EXPR:
+      {
+	tree fndecl = get_callee_fndecl (*expr_p);
+	if (fndecl
+	    && fndecl_built_in_p (fndecl, BUILT_IN_CLZG, BUILT_IN_CTZG)
+	    && call_expr_nargs (*expr_p) == 2
+	    && TREE_CODE (CALL_EXPR_ARG (*expr_p, 1)) != INTEGER_CST)
+	  {
+	    tree a = save_expr (CALL_EXPR_ARG (*expr_p, 0));
+	    tree c = build_call_expr_loc (EXPR_LOCATION (*expr_p),
+					  fndecl, 1, a);
+	    *expr_p = build3_loc (EXPR_LOCATION (*expr_p), COND_EXPR,
+				  integer_type_node,
+				  build2_loc (EXPR_LOCATION (*expr_p),
+					      NE_EXPR, boolean_type_node, a,
+					      build_zero_cst (TREE_TYPE (a))),
+				  c, CALL_EXPR_ARG (*expr_p, 1));
+	    return GS_OK;
 	  }
 	break;
       }

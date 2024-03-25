@@ -2,6 +2,8 @@
 /* Bitwise shift with negative shift count has undefined behavior,
    but we shouldn't ICE on it.  */
 
+void bar (void);
+
 void
 foo (long x)
 {

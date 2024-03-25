@@ -1,5 +1,7 @@
 /* Test saving and restoring of SIMD registers.  */
 
+void abort (void);
+
 typedef short Q __attribute__((vector_size(8)));
 
 Q q1 = {1, 2}, q2 = {3, 4}, q3 = {5, 6}, q4 = {7, 8};
@@ -46,13 +48,13 @@ main (void)
 {
   func2 ();
 
-  if (memcmp (&w1, &w3, sizeof (Q)) != 0)
+  if (__builtin_memcmp (&w1, &w3, sizeof (Q)) != 0)
     abort ();
-  if (memcmp (&w2, &w4, sizeof (Q)) != 0)
+  if (__builtin_memcmp (&w2, &w4, sizeof (Q)) != 0)
     abort ();
-  if (memcmp (&z1, &z3, sizeof (Q)) != 0)
+  if (__builtin_memcmp (&z1, &z3, sizeof (Q)) != 0)
     abort ();
-  if (memcmp (&z2, &z4, sizeof (Q)) != 0)
+  if (__builtin_memcmp (&z2, &z4, sizeof (Q)) != 0)
     abort ();
 
   return 0;

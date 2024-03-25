@@ -47,7 +47,11 @@ libhwasan_la_LIBADD += $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 endif
 libhwasan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 
-libhwasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libhwasan)
+if ENABLE_DARWIN_AT_RPATH
+libhwasan_darwin_rpath = -nodefaultrpaths -Wl,-rpath,@loader_path/
+endif
+libhwasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+	$(link_libhwasan) $(libhwasan_darwin_rpath)
 
 libhwasan_preinit.o: hwasan_preinit.o
 	cp $< $@

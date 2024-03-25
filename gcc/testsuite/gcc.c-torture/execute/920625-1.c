@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 typedef struct{double x,y;}point;
 point pts[]={{1.0,2.0},{3.0,4.0},{5.0,6.0},{7.0,8.0}};
 static int va1(int nargs,...)
@@ -30,7 +33,8 @@ static int va2(int nargs,...)
   va_end(args);
 }
 
-main()
+int
+main(void)
 {
 va1(4,pts[0],pts[1],pts[2],pts[3]);
 va2(4,ipts[0],ipts[1],ipts[2],ipts[3]);

@@ -65,7 +65,7 @@ int test_accept_on_accept (int fd_a)
   if (fd_b == -1)
     return -1;
 
-  int fd_c = accept (fd_b, NULL, 0);  /* { dg-warning "'accept' on file descriptor 'fd_b' in wrong phase \\\[-Wanalyzer-fd-phase-mismatch\\\]" "warning" } */
+  int fd_c = accept (fd_b, NULL, 0);  /* { dg-warning "'accept' on file descriptor 'fd_b' in wrong phase \\\[CWE-666\\\] \\\[-Wanalyzer-fd-phase-mismatch\\\]" "warning" } */
   /* { dg-message "'accept' expects a listening stream socket file descriptor but 'fd_b' is connected" "final event" { target *-*-* } .-1 } */
 
   return fd_b;

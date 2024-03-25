@@ -1,5 +1,5 @@
 ;; Constraint definitions for GCN.
-;; Copyright (C) 2016-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -76,6 +76,9 @@
 
 (define_register_constraint "v" "VGPR_REGS"
   "VGPR registers")
+
+(define_register_constraint "a" "TARGET_CDNA1_PLUS ? AVGPR_REGS : NO_REGS"
+  "Accumulator VGPR registers")
 
 (define_register_constraint "Sg" "SGPR_REGS"
   "SGPR registers")

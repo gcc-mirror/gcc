@@ -1,6 +1,7 @@
 /* Reduced from haproxy's src/ssl_sample.c  */
 
 /* { dg-require-effective-target ptr_eq_long } */
+/* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
 
 union sample_value {
   long long int sint;

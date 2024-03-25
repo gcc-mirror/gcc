@@ -2,6 +2,7 @@
 // correctly.
 
 // { dg-do compile { target { aarch64*-*-* } } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 #include <arm_neon.h>
 

@@ -2,7 +2,7 @@
 
 # makeSystem creates a target SYSTEM.def using the appropriate dialect template.
 
-# Copyright (C) 2008-2023 Free Software Foundation, Inc.
+# Copyright (C) 2008-2024 Free Software Foundation, Inc.
 # Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 #
 # This file is part of GNU Modula-2.
@@ -102,8 +102,8 @@ MINIMAL="-fno-scaffold-main -fno-scaffold-dynamic -fno-scaffold-static -fno-m2-p
 
 rm -f ${OUTPUTFILE}
 if ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
-	       -c -fdump-system-exports ${SYSTEMMOD} -o /dev/null 2>&1 > /dev/null ; then
-    types=`${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} -fno-m2-plugin -c -fdump-system-exports ${SYSTEMMOD} -o /dev/null | cut -f5 -d' '`
+	       -S -fdump-system-exports ${SYSTEMMOD} -o /dev/null 2>&1 > /dev/null ; then
+    types=`${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} -fno-m2-plugin -S -fdump-system-exports ${SYSTEMMOD} -o /dev/null | cut -f5 -d' '`
     touch ${OUTPUTFILE}
     displayStart
     displayExportedTypes
@@ -112,6 +112,6 @@ if ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
     displayEnd
 else
     ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
-		-c -fdump-system-exports ${SYSTEMMOD} -o /dev/null
+		-S -fdump-system-exports ${SYSTEMMOD} -o /dev/null
     exit $?
 fi

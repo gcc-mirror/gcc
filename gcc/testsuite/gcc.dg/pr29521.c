@@ -1,6 +1,6 @@
 /* PR 29521 : warning for return with expression in function returning void */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-fpermissive" } */
 
 void func (void) { }
 

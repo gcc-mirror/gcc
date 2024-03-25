@@ -12,7 +12,7 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8,
   svprfb_gather (pg, u32); /* { dg-error {too few arguments to function 'svprfb_gather'} } */
   svprfb_gather (pg, u32, SV_PLDL1KEEP, 0); /* { dg-error {too many arguments to function 'svprfb_gather'} } */
   svprfb_gather (0, u32, SV_PLDL1KEEP); /* { dg-error {passing 'int' to argument 1 of 'svprfb_gather', which expects 'svbool_t'} } */
-  svprfb_gather (pg, 0, SV_PLDL1KEEP); /* { dg-error {passing 'int' to argument 2 of 'svprfb_gather', which expects an SVE vector type} } */
+  svprfb_gather (pg, 0, SV_PLDL1KEEP); /* { dg-error {passing 'int' to argument 2 of 'svprfb_gather', which expects an SVE type rather than a scalar} } */
 
   svprfb_gather (pg, s8, SV_PLDL1KEEP); /* { dg-error {passing 'svint8_t' to argument 2 of 'svprfb_gather', which expects 'svuint32_t' or 'svuint64_t'} } */
   svprfb_gather (pg, u8, SV_PLDL1KEEP); /* { dg-error {passing 'svuint8_t' to argument 2 of 'svprfb_gather', which expects 'svuint32_t' or 'svuint64_t'} } */

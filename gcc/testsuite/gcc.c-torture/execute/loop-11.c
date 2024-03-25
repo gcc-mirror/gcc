@@ -1,3 +1,5 @@
+void abort (void);
+
 static int a[199];
 
 static void

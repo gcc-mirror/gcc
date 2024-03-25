@@ -1,6 +1,9 @@
+void abort (void);
+void exit (int);
+
 int b = 0;
 
-func () { }
+void func (void) { }
 
 void
 testit(int x)

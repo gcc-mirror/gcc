@@ -1,4 +1,5 @@
 /* { dg-require-stack-size "1024+16" } */
+/* { dg-additional-options "-fpermissive" } */
 
 extern int nc;
 void f(void)

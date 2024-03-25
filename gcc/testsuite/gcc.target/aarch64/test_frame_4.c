@@ -6,7 +6,7 @@
      * we can use "stp !" to optimize stack adjustment.  */
 
 /* { dg-do run } */
-/* { dg-options "-O2 -fomit-frame-pointer --save-temps" } */
+/* { dg-options "-O2 -fomit-frame-pointer --save-temps -fno-stack-protector" } */
 
 #include "test_frame_common.h"
 

@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Debug;          use Debug;
 with Elists;         use Elists;
@@ -2582,6 +2581,7 @@ package body Sem_Disp is
                loop
                   Parent_Op := Overridden_Operation (Parent_Op);
                   exit when No (Parent_Op)
+                    or else No (Find_DT (Parent_Op))
                     or else (No_Interfaces
                               and then Is_Interface (Find_DT (Parent_Op)));
 

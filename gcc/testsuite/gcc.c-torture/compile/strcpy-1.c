@@ -6,7 +6,8 @@ typedef struct
 }STACK;
 STACK stack[15];
 int level;
-rezero ()
+void
+rezero (void)
 {
   level = 0;
   __builtin_strcpy (stack[level].str, "");

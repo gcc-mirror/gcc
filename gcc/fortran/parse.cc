@@ -1,5 +1,5 @@
 /* Main parser.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1364,6 +1364,8 @@ decode_omp_directive (void)
 	  prog_unit->omp_target_seen = true;
 	break;
       }
+    case ST_OMP_ALLOCATE_EXEC:
+    case ST_OMP_ALLOCATORS:
     case ST_OMP_TEAMS:
     case ST_OMP_TEAMS_DISTRIBUTE:
     case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
@@ -1386,7 +1388,10 @@ decode_omp_directive (void)
 	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	    case EXEC_OMP_TARGET_SIMD:
-	      stk->tail->ext.omp_clauses->contains_teams_construct = 1;
+	      if (ret == ST_OMP_ALLOCATE_EXEC || ret == ST_OMP_ALLOCATORS)
+		new_st.ext.omp_clauses->contained_in_target_construct = 1;
+	      else
+		stk->tail->ext.omp_clauses->contains_teams_construct = 1;
 	      break;
 	    default:
 	      break;
@@ -5131,8 +5136,9 @@ parse_associate (void)
   gfc_current_ns = my_ns;
   for (a = new_st.ext.block.assoc; a; a = a->next)
     {
-      gfc_symbol* sym;
+      gfc_symbol *sym, *tsym;
       gfc_expr *target;
+      int rank;
 
       if (gfc_get_sym_tree (a->name, NULL, &a->st, false))
 	gcc_unreachable ();
@@ -5194,64 +5200,69 @@ parse_associate (void)
 	      sym->ts.type = BT_DERIVED;
 	      sym->ts.u.derived = derived;
 	    }
-	}
-
-      if (target->rank)
-	{
-	  int rank = 0;
-	  rank = target->rank;
-	  /* When the rank is greater than zero then sym will be an array.  */
-	  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
+	  else if (target->symtree && (tsym = target->symtree->n.sym))
 	    {
-	      if ((!CLASS_DATA (sym)->as && rank != 0)
-		  || (CLASS_DATA (sym)->as
-		      && CLASS_DATA (sym)->as->rank != rank))
+	      sym->ts = tsym->result ? tsym->result->ts : tsym->ts;
+	      if (sym->ts.type == BT_CLASS)
 		{
-		  /* Don't just (re-)set the attr and as in the sym.ts,
-		     because this modifies the target's attr and as.  Copy the
-		     data and do a build_class_symbol.  */
-		  symbol_attribute attr = CLASS_DATA (target)->attr;
-		  int corank = gfc_get_corank (target);
-		  gfc_typespec type;
-
-		  if (rank || corank)
-		    {
-		      as = gfc_get_array_spec ();
-		      as->type = AS_DEFERRED;
-		      as->rank = rank;
-		      as->corank = corank;
-		      attr.dimension = rank ? 1 : 0;
-		      attr.codimension = corank ? 1 : 0;
-		    }
-		  else
-		    {
-		      as = NULL;
-		      attr.dimension = attr.codimension = 0;
-		    }
-		  attr.class_ok = 0;
-		  type = CLASS_DATA (sym)->ts;
-		  if (!gfc_build_class_symbol (&type,
-					       &attr, &as))
-		    gcc_unreachable ();
-		  sym->ts = type;
-		  sym->ts.type = BT_CLASS;
+		  if (CLASS_DATA (sym)->as)
+		    target->rank = CLASS_DATA (sym)->as->rank;
 		  sym->attr.class_ok = 1;
 		}
-	      else
-		sym->attr.class_ok = 1;
 	    }
-	  else if ((!sym->as && rank != 0)
-		   || (sym->as && sym->as->rank != rank))
+	}
+
+      rank = target->rank;
+      /* Fixup cases where the ranks are mismatched.  */
+      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
+	{
+	  if ((!CLASS_DATA (sym)->as && rank != 0)
+	       || (CLASS_DATA (sym)->as
+		   && CLASS_DATA (sym)->as->rank != rank))
 	    {
-	      as = gfc_get_array_spec ();
-	      as->type = AS_DEFERRED;
-	      as->rank = rank;
-	      as->corank = gfc_get_corank (target);
-	      sym->as = as;
-	      sym->attr.dimension = 1;
-	      if (as->corank)
-		sym->attr.codimension = 1;
+	      /* Don't just (re-)set the attr and as in the sym.ts,
+	      because this modifies the target's attr and as.  Copy the
+	      data and do a build_class_symbol.  */
+	      symbol_attribute attr = CLASS_DATA (target)->attr;
+	      int corank = gfc_get_corank (target);
+	      gfc_typespec type;
+
+	      if (rank || corank)
+		{
+		  as = gfc_get_array_spec ();
+		  as->type = AS_DEFERRED;
+		  as->rank = rank;
+		  as->corank = corank;
+		  attr.dimension = rank ? 1 : 0;
+		  attr.codimension = corank ? 1 : 0;
+		}
+	      else
+		{
+		  as = NULL;
+		  attr.dimension = attr.codimension = 0;
+		}
+	      attr.class_ok = 0;
+	      type = CLASS_DATA (sym)->ts;
+	      if (!gfc_build_class_symbol (&type, &attr, &as))
+		gcc_unreachable ();
+	      sym->ts = type;
+	      sym->ts.type = BT_CLASS;
+	      sym->attr.class_ok = 1;
 	    }
+	  else
+	    sym->attr.class_ok = 1;
+	}
+      else if ((!sym->as && rank != 0)
+	       || (sym->as && sym->as->rank != rank))
+	{
+	  as = gfc_get_array_spec ();
+	  as->type = AS_DEFERRED;
+	  as->rank = rank;
+	  as->corank = gfc_get_corank (target);
+	  sym->as = as;
+	  sym->attr.dimension = 1;
+	  if (as->corank)
+	    sym->attr.codimension = 1;
 	}
     }
 
@@ -7273,9 +7284,17 @@ done:
       omp_requires_mask
 	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQ_REL);
       break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQUIRE);
+      break;
     case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
       omp_requires_mask
 	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELAXED);
+      break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_RELEASE:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELEASE);
       break;
     }
 

@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "langhooks.h"
 #include "tree-vector-builder.h"
+#include "recog.h"
 
 struct target_expmed default_target_expmed;
 #if SWITCHABLE_TARGET
@@ -772,8 +773,8 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
       && !MEM_P (op0)
       && optab_handler (vec_set_optab, outermode) != CODE_FOR_nothing
       && fieldmode == innermode
-      && known_eq (bitsize, GET_MODE_BITSIZE (innermode))
-      && multiple_p (bitnum, GET_MODE_BITSIZE (innermode), &pos))
+      && known_eq (bitsize, GET_MODE_PRECISION (innermode))
+      && multiple_p (bitnum, GET_MODE_PRECISION (innermode), &pos))
     {
       class expand_operand ops[3];
       enum insn_code icode = optab_handler (vec_set_optab, outermode);
@@ -1675,7 +1676,7 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   if (VECTOR_MODE_P (GET_MODE (op0))
       && !MEM_P (op0)
       && VECTOR_MODE_P (tmode)
-      && known_eq (bitsize, GET_MODE_BITSIZE (tmode))
+      && known_eq (bitsize, GET_MODE_PRECISION (tmode))
       && maybe_gt (GET_MODE_SIZE (GET_MODE (op0)), GET_MODE_SIZE (tmode)))
     {
       machine_mode new_mode = GET_MODE (op0);
@@ -1744,6 +1745,8 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
       FOR_EACH_MODE_FROM (new_mode, new_mode)
 	if (known_eq (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (GET_MODE (op0)))
 	    && known_eq (GET_MODE_UNIT_SIZE (new_mode), GET_MODE_SIZE (tmode))
+	    && known_eq (bitsize, GET_MODE_UNIT_PRECISION (new_mode))
+	    && multiple_p (bitnum, GET_MODE_UNIT_PRECISION (new_mode))
 	    && targetm.vector_mode_supported_p (new_mode)
 	    && targetm.modes_tieable_p (GET_MODE (op0), new_mode))
 	  break;
@@ -1758,16 +1761,19 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   if (VECTOR_MODE_P (outermode) && !MEM_P (op0))
     {
       scalar_mode innermode = GET_MODE_INNER (outermode);
+
       enum insn_code icode
 	= convert_optab_handler (vec_extract_optab, outermode, innermode);
+
       poly_uint64 pos;
       if (icode != CODE_FOR_nothing
-	  && known_eq (bitsize, GET_MODE_BITSIZE (innermode))
-	  && multiple_p (bitnum, GET_MODE_BITSIZE (innermode), &pos))
+	  && known_eq (bitsize, GET_MODE_PRECISION (innermode))
+	  && multiple_p (bitnum, GET_MODE_PRECISION (innermode), &pos))
 	{
 	  class expand_operand ops[3];
 
-	  create_output_operand (&ops[0], target, innermode);
+	  create_output_operand (&ops[0], target,
+				 insn_data[icode].operand[0].mode);
 	  ops[0].target = 1;
 	  create_input_operand (&ops[1], op0, outermode);
 	  create_integer_operand (&ops[2], pos);

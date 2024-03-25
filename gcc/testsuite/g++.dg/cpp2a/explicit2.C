@@ -1,5 +1,6 @@
 // P0892R2
 // { dg-do compile }
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
 // { dg-options "-std=c++2a" }
 
 int foo() { return 42; }

@@ -1,5 +1,5 @@
 /* Definitions for option handling for IA-32.
-   Copyright (C) 1988-2023 Free Software Foundation, Inc.
+   Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -139,7 +139,8 @@ enum apx_features {
   apx_egpr = 1 << 0,
   apx_push2pop2 = 1 << 1,
   apx_ndd = 1 << 2,
-  apx_all = apx_egpr | apx_push2pop2 | apx_ndd,
+  apx_ppx = 1 << 3,
+  apx_all = apx_egpr | apx_push2pop2 | apx_ndd | apx_ppx,
 };
 
 #endif

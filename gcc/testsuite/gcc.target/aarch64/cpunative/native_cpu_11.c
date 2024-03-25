@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+sb} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+sb\n} } } */
 
 /* Test one with a feature name that overlaps with another one.  */

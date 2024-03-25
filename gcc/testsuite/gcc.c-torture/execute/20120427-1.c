@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 typedef struct sreal
 {
   unsigned sig;		/* Significant.  */

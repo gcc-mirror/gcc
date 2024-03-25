@@ -12,7 +12,7 @@ int main()
       a = 1;
       for (; a; a++) {
 	    {
-	      long b = j, d = h;
+	      __INTPTR_TYPE__ b = j, d = h;
 	      int c = 0;
 	      while (d--)
 		*(char *)b++ = c;

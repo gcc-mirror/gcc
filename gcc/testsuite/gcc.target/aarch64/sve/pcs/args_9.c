@@ -45,5 +45,5 @@ caller (int64_t *x0, int16_t *x1, svbool_t p0)
   return svcntp_b8 (res, res);
 }
 
-/* { dg-final { scan-assembler {\tptrue\t(p[0-9]+)\.b, mul3\n\tstr\t\1, \[(x[0-9]+)\]\n.*\tstr\t\2, \[sp\]\n} } } */
-/* { dg-final { scan-assembler {\tptrue\t(p[0-9]+)\.h, mul3\n\tstr\t\1, \[(x[0-9]+)\]\n.*\tstr\t\2, \[sp, 8\]\n} } } */
+/* { dg-final { scan-assembler {\tptrue\t(p[0-9]+)\.b, mul3\n\tstr\t\1, \[(x[0-9]+)\]\n.*\t(?:str\t\2, \[sp\]|stp\t\2, x[0-9]+, \[sp\])\n} } } */
+/* { dg-final { scan-assembler {\tptrue\t(p[0-9]+)\.h, mul3\n\tstr\t\1, \[(x[0-9]+)\]\n.*\t(?:str\t\2, \[sp, 8\]|stp\tx[0-9]+, \2, \[sp\])\n} } } */

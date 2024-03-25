@@ -8,8 +8,8 @@ test (svbool_t pg, svint8_t s8, svuint8_t u8,
 {
   svunpklo (); /* { dg-error {too few arguments to function 'svunpklo'} } */
   svunpklo (pg, s8); /* { dg-error {too many arguments to function 'svunpklo'} } */
-  svunpklo (i); /* { dg-error {passing 'int' to argument 1 of 'svunpklo', which expects an SVE vector type} } */
-  svunpklo (f); /* { dg-error {passing 'float' to argument 1 of 'svunpklo', which expects an SVE vector type} } */
+  svunpklo (i); /* { dg-error {passing 'int' to argument 1 of 'svunpklo', which expects an SVE type rather than a scalar} } */
+  svunpklo (f); /* { dg-error {passing 'float' to argument 1 of 'svunpklo', which expects an SVE type rather than a scalar} } */
   svunpklo (pg);
   svunpklo (s8);
   svunpklo (s16);

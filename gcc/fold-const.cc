@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3315,9 +3315,65 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 				flags | OEP_ADDRESS_OF
 				| OEP_MATCH_SIDE_EFFECTS);
       case CONSTRUCTOR:
-	/* In GIMPLE empty constructors are allowed in initializers of
-	   aggregates.  */
-	return !CONSTRUCTOR_NELTS (arg0) && !CONSTRUCTOR_NELTS (arg1);
+	{
+	  /* In GIMPLE empty constructors are allowed in initializers of
+	     aggregates.  */
+	  if (!CONSTRUCTOR_NELTS (arg0) && !CONSTRUCTOR_NELTS (arg1))
+	    return true;
+
+	  /* See sem_variable::equals in ipa-icf for a similar approach.  */
+	  tree typ0 = TREE_TYPE (arg0);
+	  tree typ1 = TREE_TYPE (arg1);
+
+	  if (TREE_CODE (typ0) != TREE_CODE (typ1))
+	    return false;
+	  else if (TREE_CODE (typ0) == ARRAY_TYPE)
+	    {
+	      /* For arrays, check that the sizes all match.  */
+	      const HOST_WIDE_INT siz0 = int_size_in_bytes (typ0);
+	      if (TYPE_MODE (typ0) != TYPE_MODE (typ1)
+		  || siz0 < 0
+		  || siz0 != int_size_in_bytes (typ1))
+		return false;
+	    }
+	  else if (!types_compatible_p (typ0, typ1))
+	    return false;
+
+	  vec<constructor_elt, va_gc> *v0 = CONSTRUCTOR_ELTS (arg0);
+	  vec<constructor_elt, va_gc> *v1 = CONSTRUCTOR_ELTS (arg1);
+	  if (vec_safe_length (v0) != vec_safe_length (v1))
+	    return false;
+
+	  /* Address of CONSTRUCTOR is defined in GENERIC to mean the value
+	     of the CONSTRUCTOR referenced indirectly.  */
+	  flags &= ~OEP_ADDRESS_OF;
+
+	  for (unsigned idx = 0; idx < vec_safe_length (v0); ++idx)
+	    {
+	      constructor_elt *c0 = &(*v0)[idx];
+	      constructor_elt *c1 = &(*v1)[idx];
+
+	      /* Check that the values are the same...  */
+	      if (c0->value != c1->value
+		  && !operand_equal_p (c0->value, c1->value, flags))
+		return false;
+
+	      /* ... and that they apply to the same field!  */
+	      if (c0->index != c1->index
+		  && (TREE_CODE (typ0) == ARRAY_TYPE
+		      ? !operand_equal_p (c0->index, c1->index, flags)
+		      : !operand_equal_p (DECL_FIELD_OFFSET (c0->index),
+					  DECL_FIELD_OFFSET (c1->index),
+					  flags)
+			|| !operand_equal_p (DECL_FIELD_BIT_OFFSET (c0->index),
+					     DECL_FIELD_BIT_OFFSET (c1->index),
+					     flags)))
+		return false;
+	    }
+
+	  return true;
+	}
+
       default:
 	break;
       }
@@ -3703,9 +3759,7 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	     elements.  Individual elements in the constructor must be
 	     indexed in increasing order and form an initial sequence.
 
-	     We make no effort to compare constructors in generic.
-	     (see sem_variable::equals in ipa-icf which can do so for
-	      constants).  */
+	     We make no effort to compare nonconstant ones in GENERIC.  */
 	  if (!VECTOR_TYPE_P (TREE_TYPE (arg0))
 	      || !VECTOR_TYPE_P (TREE_TYPE (arg1)))
 	    return false;
@@ -3887,7 +3941,13 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	    /* In GIMPLE the indexes can be either NULL or matching i.  */
 	    if (field == NULL_TREE)
 	      field = bitsize_int (idx);
-	    hash_operand (field, hstate, flags);
+	    if (TREE_CODE (field) == FIELD_DECL)
+	      {
+		hash_operand (DECL_FIELD_OFFSET (field), hstate, flags);
+		hash_operand (DECL_FIELD_BIT_OFFSET (field), hstate, flags);
+	      }
+	    else
+	      hash_operand (field, hstate, flags);
 	    hash_operand (value, hstate, flags);
 	  }
 	return;
@@ -10692,15 +10752,39 @@ valid_mask_for_fold_vec_perm_cst_p (tree arg0, tree arg1,
 
       /* Ensure that the stepped sequence always selects from the same
 	 input pattern.  */
-      unsigned arg_npatterns
-	= ((q1 & 1) == 0) ? VECTOR_CST_NPATTERNS (arg0)
-			  : VECTOR_CST_NPATTERNS (arg1);
+      tree arg = ((q1 & 1) == 0) ? arg0 : arg1;
+      unsigned arg_npatterns = VECTOR_CST_NPATTERNS (arg);
 
       if (!multiple_p (step, arg_npatterns))
 	{
 	  if (reason)
 	    *reason = "step is not multiple of npatterns";
 	  return false;
+	}
+
+      /* If a1 chooses base element from arg, ensure that it's a natural
+	 stepped sequence, ie, (arg[2] - arg[1]) == (arg[1] - arg[0])
+	 to preserve arg's encoding.  */
+
+      if (maybe_lt (r1, arg_npatterns))
+	{
+	  unsigned HOST_WIDE_INT index;
+	  if (!r1.is_constant (&index))
+	    return false;
+
+	  tree arg_elem0 = vector_cst_elt (arg, index);
+	  tree arg_elem1 = vector_cst_elt (arg, index + arg_npatterns);
+	  tree arg_elem2 = vector_cst_elt (arg, index + arg_npatterns * 2);
+
+	  tree step1, step2;
+	  if (!(step1 = const_binop (MINUS_EXPR, arg_elem1, arg_elem0))
+	      || !(step2 = const_binop (MINUS_EXPR, arg_elem2, arg_elem1))
+	      || !operand_equal_p (step1, step2, 0))
+	    {
+	      if (reason)
+		*reason = "not a natural stepped sequence";
+	      return false;
+	    }
 	}
     }
 
@@ -10719,27 +10803,38 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
   unsigned res_npatterns, res_nelts_per_pattern;
   unsigned HOST_WIDE_INT res_nelts;
 
-  /* (1) If SEL is a suitable mask as determined by
-     valid_mask_for_fold_vec_perm_cst_p, then:
-     res_npatterns = max of npatterns between ARG0, ARG1, and SEL
-     res_nelts_per_pattern = max of nelts_per_pattern between
-			     ARG0, ARG1 and SEL.
-     (2) If SEL is not a suitable mask, and TYPE is VLS then:
-     res_npatterns = nelts in result vector.
-     res_nelts_per_pattern = 1.
-     This exception is made so that VLS ARG0, ARG1 and SEL work as before.  */
+  /* First try to implement the fold in a VLA-friendly way.
+
+     (1) If the selector is simply a duplication of N elements, the
+	 result is likewise a duplication of N elements.
+
+     (2) If the selector is N elements followed by a duplication
+	 of N elements, the result is too.
+
+     (3) If the selector is N elements followed by an interleaving
+	 of N linear series, the situation is more complex.
+
+	 valid_mask_for_fold_vec_perm_cst_p detects whether we
+	 can handle this case.  If we can, then each of the N linear
+	 series either (a) selects the same element each time or
+	 (b) selects a linear series from one of the input patterns.
+
+	 If (b) holds for one of the linear series, the result
+	 will contain a linear series, and so the result will have
+	 the same shape as the selector.  If (a) holds for all of
+	 the linear series, the result will be the same as (2) above.
+
+	 (b) can only hold if one of the input patterns has a
+	 stepped encoding.  */
+
   if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
     {
-      res_npatterns
-	= std::max (VECTOR_CST_NPATTERNS (arg0),
-		    std::max (VECTOR_CST_NPATTERNS (arg1),
-			      sel.encoding ().npatterns ()));
-
-      res_nelts_per_pattern
-	= std::max (VECTOR_CST_NELTS_PER_PATTERN (arg0),
-		    std::max (VECTOR_CST_NELTS_PER_PATTERN (arg1),
-			      sel.encoding ().nelts_per_pattern ()));
-
+      res_npatterns = sel.encoding ().npatterns ();
+      res_nelts_per_pattern = sel.encoding ().nelts_per_pattern ();
+      if (res_nelts_per_pattern == 3
+	  && VECTOR_CST_NELTS_PER_PATTERN (arg0) < 3
+	  && VECTOR_CST_NELTS_PER_PATTERN (arg1) < 3)
+	res_nelts_per_pattern = 2;
       res_nelts = res_npatterns * res_nelts_per_pattern;
     }
   else if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
@@ -11982,33 +12077,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
       goto bit_rotate;
 
     case BIT_AND_EXPR:
-      /* Fold (X ^ 1) & 1 as (X & 1) == 0.  */
-      if (TREE_CODE (arg0) == BIT_XOR_EXPR
-	  && INTEGRAL_TYPE_P (type)
-	  && integer_onep (TREE_OPERAND (arg0, 1))
-	  && integer_onep (arg1))
-	{
-	  tree tem2;
-	  tem = TREE_OPERAND (arg0, 0);
-	  tem2 = fold_convert_loc (loc, TREE_TYPE (tem), arg1);
-	  tem2 = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (tem),
-				  tem, tem2);
-	  return fold_build2_loc (loc, EQ_EXPR, type, tem2,
-				  build_zero_cst (TREE_TYPE (tem)));
-	}
-      /* Fold ~X & 1 as (X & 1) == 0.  */
-      if (TREE_CODE (arg0) == BIT_NOT_EXPR
-	  && INTEGRAL_TYPE_P (type)
-	  && integer_onep (arg1))
-	{
-	  tree tem2;
-	  tem = TREE_OPERAND (arg0, 0);
-	  tem2 = fold_convert_loc (loc, TREE_TYPE (tem), arg1);
-	  tem2 = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (tem),
-				  tem, tem2);
-	  return fold_build2_loc (loc, EQ_EXPR, type, tem2,
-				  build_zero_cst (TREE_TYPE (tem)));
-	}
       /* Fold !X & 1 as X == 0.  */
       if (TREE_CODE (arg0) == TRUTH_NOT_EXPR
 	  && integer_onep (arg1))
@@ -14468,7 +14536,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	      && TREE_CODE (op2) == INTEGER_CST
 	      && integer_pow2p (bottom)
 	      && wi::multiple_of_p (wi::to_widest (op2),
-				    wi::to_widest (bottom), UNSIGNED))
+				    wi::to_widest (bottom), SIGNED))
 	    return true;
 
 	  op1 = gimple_assign_rhs1 (stmt);
@@ -17165,7 +17233,8 @@ namespace test_fold_vec_perm_cst {
 static tree
 build_vec_cst_rand (machine_mode vmode, unsigned npatterns,
 		    unsigned nelts_per_pattern,
-		    int step = 0, int threshold = 100)
+		    int step = 0, bool natural_stepped = false,
+		    int threshold = 100)
 {
   tree inner_type = lang_hooks.types.type_for_mode (GET_MODE_INNER (vmode), 1);
   tree vectype = build_vector_type_for_mode (inner_type, vmode);
@@ -17180,17 +17249,28 @@ build_vec_cst_rand (machine_mode vmode, unsigned npatterns,
 
   // Fill a1 for each pattern
   for (unsigned i = 0; i < npatterns; i++)
-    builder.quick_push (build_int_cst (inner_type, rand () % threshold));
-
+    {
+      tree a1;
+      if (natural_stepped)
+	{
+	  tree a0 = builder[i];
+	  wide_int a0_val = wi::to_wide (a0);
+	  wide_int a1_val = a0_val + step;
+	  a1 = wide_int_to_tree (inner_type, a1_val);
+	}
+      else
+	a1 = build_int_cst (inner_type, rand () % threshold);
+      builder.quick_push (a1);
+    }
   if (nelts_per_pattern == 2)
     return builder.build ();
 
   for (unsigned i = npatterns * 2; i < npatterns * nelts_per_pattern; i++)
     {
       tree prev_elem = builder[i - npatterns];
-      int prev_elem_val = TREE_INT_CST_LOW (prev_elem);
-      int val = prev_elem_val + step;
-      builder.quick_push (build_int_cst (inner_type, val));
+      wide_int prev_elem_val = wi::to_wide (prev_elem);
+      wide_int val = prev_elem_val + step;
+      builder.quick_push (wide_int_to_tree (inner_type, val));
     }
 
   return builder.build ();
@@ -17436,7 +17516,7 @@ test_nunits_min_2 (machine_mode vmode)
 	 and step (a2 - a1) = 1, step is not a multiple of npatterns
 	 in input vector. So return NULL_TREE.  */
       {
-	tree arg0 = build_vec_cst_rand (vmode, 2, 3, 1);
+	tree arg0 = build_vec_cst_rand (vmode, 2, 3, 1, true);
 	tree arg1 = build_vec_cst_rand (vmode, 2, 3, 1);
 	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
 
@@ -17456,7 +17536,7 @@ test_nunits_min_2 (machine_mode vmode)
 	 Test that stepped sequence of the pattern selects from arg0.
 	 res = { arg1[0], arg0[0], arg0[1], ... } // (1, 3)  */
       {
-	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1, true);
 	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
 	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
 
@@ -17469,6 +17549,85 @@ test_nunits_min_2 (machine_mode vmode)
 
 	tree expected_res[] = { ARG1(0), ARG0(0), ARG0(1) };
 	validate_res (1, 3, res, expected_res);
+      }
+
+      /* Case 6: PR111648 - a1 chooses base element from input vector arg.
+	 In this case ensure that arg has a natural stepped sequence
+	 to preserve arg's encoding.
+
+	 As a concrete example, consider:
+	 arg0: { -16, -9, -10, ... } // (1, 3)
+	 arg1: { -12, -5, -6, ... }  // (1, 3)
+	 sel = { 0, len, len + 1, ... } // (1, 3)
+
+	 This will create res with following encoding:
+	 res = { arg0[0], arg1[0], arg1[1], ... } // (1, 3)
+	     = { -16, -12, -5, ... }
+
+	 The step in above encoding would be: (-5) - (-12) = 7
+	 And hence res[3] would be computed as -5 + 7 = 2.
+	 instead of arg1[2], ie, -6.
+	 Ensure that valid_mask_for_fold_vec_perm_cst returns false
+	 for this case.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { 0, len, len+1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	const char *reason;
+	/* FIXME: It may happen that build_vec_cst_rand may build a natural
+	   stepped pattern, even if we didn't explicitly tell it to. So folding
+	   may not always fail, but if it does, ensure that's because arg1 does
+	   not have a natural stepped sequence (and not due to other reason)  */
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel, &reason);
+	if (res == NULL_TREE)
+	  ASSERT_TRUE (!strcmp (reason, "not a natural stepped sequence"));
+      }
+
+      /* Case 7: Same as Case 6, except that arg1 contains natural stepped
+	 sequence and thus folding should be valid for this case.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1, true);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { 0, len, len+1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG1(1) };
+	validate_res (1, 3, res, expected_res);
+      }
+
+      /* Case 8: Same as aarch64/sve/slp_3.c:
+	 arg0, arg1 are dup vectors.
+	 sel = { 0, len, 1, len+1, 2, len+2, ... } // (2, 3)
+	 So res = { arg0[0], arg1[0], ... } // (2, 1)
+
+	 In this case, since the input vectors are dup, only the first two
+	 elements per pattern in sel are considered significant.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 3);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1, 2, len + 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0) };
+	validate_res (2, 1, res, expected_res);
       }
     }
 }
@@ -17637,6 +17796,44 @@ test_nunits_min_4 (machine_mode vmode)
 
 	ASSERT_TRUE (res == NULL_TREE);
 	ASSERT_TRUE (!strcmp (reason, "step is not multiple of npatterns"));
+      }
+
+      /* Case 8: PR111754: When input vector is not a stepped sequence,
+	 check that the result is not a stepped sequence either, even
+	 if sel has a stepped sequence.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 2);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { 0, 1, 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 1, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg0, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(1) };
+	validate_res (sel.encoding ().npatterns (), 2, res, expected_res);
+      }
+
+      /* Case 9: If sel doesn't contain a stepped sequence,
+	 check that the result has same encoding as sel, irrespective
+	 of shape of input vectors.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 2);
+	poly_uint64 mask_elems[] = { 0, len };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0) };
+	validate_res (sel.encoding ().npatterns (),
+		      sel.encoding ().nelts_per_pattern (), res, expected_res);
       }
     }
 }

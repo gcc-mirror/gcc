@@ -1,8 +1,10 @@
-AC_INIT([libgrust], version-unused,,librust)
+AC_INIT([libgrust], version-unused,,libgrust)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_FILES([Makefile])
 
-# AM_ENABLE_MULTILIB(, ..)
+if test -n "${with_target_subdir}"; then
+  AM_ENABLE_MULTILIB(, ..)
+fi
 
 # Do not delete or change the following two lines.  For why, see
 # http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
@@ -31,6 +33,13 @@ AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h \
                  time.h sys/stat.h wchar.h)
+
+AC_ARG_ENABLE([werror],
+  [AS_HELP_STRING([--disable-werror], [disable building with -Werror])])
+
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+XCFLAGS="$XCFLAGS $CET_FLAGS"
 
 # Check for tools
 AM_PROG_AR
@@ -107,7 +116,8 @@ _EOF
    AS_UNSET([ml_norecursion])
 ])
 
+GCC_BASE_VER
 
-AC_MSG_NOTICE([librust has been configured.])
+AC_MSG_NOTICE([libgrust has been configured.])
 
 AC_OUTPUT

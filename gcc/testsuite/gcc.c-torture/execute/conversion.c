@@ -8,6 +8,9 @@
    Note that this code is NOT intended for testing of accuracy of fp
    conversions.  */
 
+void abort (void);
+void exit (int);
+
 float
 u2f(u)
      unsigned int u;
@@ -71,6 +74,7 @@ ldnear (long double x, long double y)
   return t == 0 || x / t > 100000000000000000000000000000000.0;
 }
 
+void
 test_integer_to_float()
 {
   if (u2f(0U) != (float) 0U)				/* 0 */
@@ -171,6 +175,7 @@ sll2ld(s)
   return s;
 }
 
+void
 test_longlong_integer_to_float()
 {
   if (ull2f(0ULL) != (float) 0ULL)			/* 0 */
@@ -274,6 +279,7 @@ ld2s(long double d)
   return (int) d;
 }
 
+void
 test_float_to_integer()
 {
   if (f2u(0.0) != 0)
@@ -429,6 +435,7 @@ ld2sll(long double d)
   return (long long int) d;
 }
 
+void
 test_float_to_longlong_integer()
 {
   if (f2ull(0.0) != 0LL)
@@ -527,7 +534,8 @@ test_float_to_longlong_integer()
 }
 #endif
 
-main()
+int
+main(void)
 {
   test_integer_to_float();
   test_float_to_integer();

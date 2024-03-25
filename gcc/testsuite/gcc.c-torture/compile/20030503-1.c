@@ -1,3 +1,5 @@
+void bar (void);
+
 void foo ()
 {
   if (1)

@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -119,6 +119,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "ipa-strub.h"
 
 /* Inliner uses greedy algorithm to inline calls in a priority order.
    Badness is used as the key in a Fibonacci heap which roughly corresponds
@@ -443,6 +444,11 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       inlinable = false;
     }
 
+  if (inlinable && !strub_inlinable_to_p (callee, caller))
+    {
+      e->inline_failed = CIF_UNSPECIFIED;
+      inlinable = false;
+    }
   if (!inlinable && report)
     report_inline_failed_reason (e);
   return inlinable;

@@ -1,6 +1,7 @@
 // { dg-do compile { target c++23 } }
 // This test relies on std::string.
 // { dg-require-effective-target hosted }
+// { dg-add-options no_pch }
 
 #include <bitset>
 

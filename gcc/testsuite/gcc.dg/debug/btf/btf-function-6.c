@@ -6,8 +6,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -gbtf -dA" } */
 
-/* { dg-final { scan-assembler-times " BTF_KIND_FUNC\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*linkage=2\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_FUNC_PROTO 'extfunc'" 1 } } */
-/* { dg-final { scan-assembler-times " BTF_KIND_FUNC\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*linkage=1\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_FUNC_PROTO 'foo'" 1 } } */
+/* { dg-final { scan-assembler-times " BTF_KIND_FUNC\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*linkage=2\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_FUNC_PROTO ''" 1 } } */
+/* { dg-final { scan-assembler-times " BTF_KIND_FUNC\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*linkage=1\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_FUNC_PROTO ''" 1 } } */
 
 extern int extfunc(int a, int b);
 

@@ -10,3 +10,4 @@
 /* { dg-final { scan-assembler-times {\tvfsgnjx\.vv} 6 { xfail riscv*-*-* } } } */
 /* { dg-final { scan-assembler-times {\tvfsgnjn\.vv} 6 } } */
 /* { dg-final { scan-assembler-not {\tvmerge\.vvm} } } */
+/* { dg-final { scan-assembler-not {\tvf?merge\.v[vxi]m\t} } } */

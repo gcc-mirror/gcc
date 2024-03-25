@@ -1,6 +1,6 @@
 (* StringConvert.mod provides functions to convert numbers to and from strings.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -33,7 +33,7 @@ FROM M2RTS IMPORT ErrorMessage ;
 
 IMPORT DynamicStrings ;
 
-FROM DynamicStrings IMPORT String, InitString,
+FROM DynamicStrings IMPORT InitString,
                            InitStringChar, InitStringCharStar,
                            Mark, ConCat, Dup, string,
                            Slice, Index, char, Assign, Length, Mult,

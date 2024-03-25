@@ -1,3 +1,4 @@
+// function type aliases
 module issue16020;
 
 alias F1 = const(int)(); const(int) f1(){return 42;}
@@ -36,4 +37,8 @@ alias Specialized = FunTemplate!int;
 alias Compared = void(int);
 static assert(is(Specialized == Compared));
 
-void main() {}
+// type suffixes
+alias FT = const(int)*();
+static assert(is(FT* == const(int)* function()));
+alias FT2 = int*[2]() pure;
+static assert(is(FT2* == int*[2] function() pure));

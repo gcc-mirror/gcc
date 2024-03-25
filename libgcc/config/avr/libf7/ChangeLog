@@ -1,3 +1,25 @@
+2023-11-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7-const.def [F7MOD_sinh_]: Add MiniMax polynomial.
+	* libf7.c (f7_sinh): Use it instead of (exp(x) - exp(-x)) / 2
+	when |x| < 0.5 to avoid loss of precision due to cancellation.
+
+2023-11-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7-asm.sx (sqrt_approx): Rewrite.
+	* libf7.c (f7_sqrt): Use it instead of sqrt_worker.
+	(sqrt_worker): Remove.
+
+2023-11-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7-asm.sx (mul_mant) [AVR_HAVE_MUL]: Tweak code.
+
+2023-10-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7-asm.sx (mul_mant): Implement for devices without MUL.
+	* asm-defs.h (wmov) [!HAVE_MUL]: Fix regno computation.
+	* t-libf7 (F7_ASM_FLAGS): Add -g0.
+
 2023-10-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	* f7-renames.h: Re-renerate.

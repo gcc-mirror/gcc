@@ -36,6 +36,10 @@ program main
   call six ()
   call seven ()
   call eight ()
+  call nine ()
+  call ten ()
+  call eleven ()
+  call twelve ()
 
 contains
   ! Implicitly mapped – but no pointers are mapped
@@ -407,5 +411,181 @@ contains
 !      if (associated (var%uni4)) stop 6
     !$omp end target
   end subroutine eight
+
+  ! This is "subroutine four" but with explicit base-pointer mappings
+  ! (var%f, etc.).
+  subroutine nine()
+    type(t2) :: var
+
+    print '(g0)', '==== TESTCASE "nine" ===='
+
+    var = t2(a = 1, &
+             b = 2, c = cmplx(-1.0_8, 2.0_8,kind=8), &
+             d = [(-3*i, i = 1, 10)], &
+             str1 = "abcde", &
+             str2 = ["12345", "67890", "ABCDE", "FGHIJ"], &
+             uni1 = 4_"abcde", &
+             uni2 = [4_"12345", 4_"67890", 4_"ABCDE", 4_"FGHIJ"])
+    allocate (var%f, source=[22, 33, 44, 55])
+    allocate (var%str4, source=["Let's", "Go!!!"])
+    allocate (var%uni4, source=[4_"Let's", 4_"Go!!!"])
+
+!   !$omp target map(tofrom: var%d(4:7), var%f(2:3), var%str2(2:3)) &
+!   !$omp&       map(tofrom: var%str4(2:2), var%uni2(2:3), var%uni4(2:2))
+    !$omp target map(to: var%f) map(tofrom: var%d(4:7), var%f(2:3), &
+    !$omp&       var%str2(2:3), var%uni2(2:3))
+      if (any (var%d(4:7) /= [(-3*i, i = 4, 7)])) stop 4
+      if (any (var%str2(2:3) /= ["67890", "ABCDE"])) stop 6
+
+      if (.not. associated (var%f)) stop 9
+      if (size (var%f) /= 4) stop 10
+      if (any (var%f(2:3) /= [33, 44])) stop 11
+!     if (.not. associated (var%str4)) stop 15
+!     if (len (var%str4) /= 5) stop 16
+!     if (size (var%str4) /= 2) stop 17
+!     if (var%str4(2) /= "Go!!!") stop 18
+
+      if (any (var%uni2(2:3) /= [4_"67890", 4_"ABCDE"])) stop 19
+!     if (.not. associated (var%uni4)) stop 20
+!     if (len (var%uni4) /= 5) stop 21
+!     if (size (var%uni4) /= 2) stop 22
+!     if (var%uni4(2) /= "Go!!!") stop 23
+    !$omp end target
+
+    deallocate(var%f, var%str4)
+  end subroutine nine
+
+  ! This is "subroutine five" but with explicit base-pointer mappings.
+  subroutine ten()
+    type(t2) :: var
+
+    print '(g0)', '==== TESTCASE "ten" ===='
+
+    var = t2(a = 1, &
+             b = 2, c = cmplx(-1.0_8, 2.0_8,kind=8), &
+             d = [(-3*i, i = 1, 10)], &
+             str1 = "abcde", &
+             str2 = ["12345", "67890", "ABCDE", "FGHIJ"], &
+             uni1 = 4_"abcde", &
+             uni2 = [4_"12345", 4_"67890", 4_"ABCDE", 4_"FGHIJ"])
+    allocate (var%f, source=[22, 33, 44, 55])
+    allocate (var%str4, source=["Let's", "Go!!!"])
+
+    !$omp target map(tofrom: var%d(4:7))
+      if (any (var%d(4:7) /= [(-3*i, i = 4, 7)])) stop 4
+    !$omp end target
+    !$omp target map(tofrom: var%str2(2:3))
+      if (any (var%str2(2:3) /= ["67890", "ABCDE"])) stop 6
+    !$omp end target
+
+    !$omp target map(to: var%f) map(tofrom: var%f(2:3))
+     if (.not. associated (var%f)) stop 9
+     if (size (var%f) /= 4) stop 10
+     if (any (var%f(2:3) /= [33, 44])) stop 11
+    !$omp end target
+!  !$omp target map(tofrom: var%str4(2:2))
+!     if (.not. associated (var%str4)) stop 15
+!     if (len (var%str4) /= 5) stop 16
+!     if (size (var%str4) /= 2) stop 17
+!     if (var%str4(2) /= "Go!!!") stop 18
+!   !$omp end target
+!  !$omp target map(tofrom: var%uni4(2:2))
+!     if (.not. associated (var%uni4)) stop 15
+!     if (len (var%uni4) /= 5) stop 16
+!     if (size (var%uni4) /= 2) stop 17
+!     if (var%uni4(2) /= 4_"Go!!!") stop 18
+!  !$omp end target
+
+    deallocate(var%f, var%str4)
+  end subroutine ten
+
+  ! This is "subroutine six" but with explicit base pointer mappings.
+  subroutine eleven()
+    type(t2) :: var
+
+    print '(g0)', '==== TESTCASE "eleven" ===='
+
+    var = t2(a = 1, &
+             b = 2, c = cmplx(-1.0_8, 2.0_8,kind=8), &
+             d = [(-3*i, i = 1, 10)], &
+             str1 = "abcde", &
+             str2 = ["12345", "67890", "ABCDE", "FGHIJ"], &
+             uni1 = 4_"abcde", &
+             uni2 = [4_"12345", 4_"67890", 4_"ABCDE", 4_"FGHIJ"])
+    allocate (var%f, source=[22, 33, 44, 55])
+    allocate (var%str4, source=["Let's", "Go!!!"])
+    allocate (var%uni4, source=[4_"Let's", 4_"Go!!!"])
+
+!   !$omp target map(tofrom: var%d(5), var%f(3), var%str2(3), &
+!   !$omp                    var%str4(2), var%uni2(3), var%uni4(2))
+    !$omp target map(to: var%f) map(tofrom: var%d(5), var%f(3), &
+    !$omp&                                  var%str2(3), var%uni2(3))
+      if (var%d(5) /= -3*5) stop 4
+      if (var%str2(3) /= "ABCDE") stop 6
+      if (var%uni2(3) /= 4_"ABCDE") stop 7
+
+     if (.not. associated (var%f)) stop 9
+     if (size (var%f) /= 4) stop 10
+     if (var%f(3) /= 44) stop 11
+!     if (.not. associated (var%str4)) stop 15
+!     if (len (var%str4) /= 5) stop 16
+!     if (size (var%str4) /= 2) stop 17
+!     if (var%str4(2) /= "Go!!!") stop 18
+!     if (.not. associated (var%uni4)) stop 19
+!     if (len (var%uni4) /= 5) stop 20
+!     if (size (var%uni4) /= 2) stop 21
+!     if (var%uni4(2) /= 4_"Go!!!") stop 22
+    !$omp end target
+
+    deallocate(var%f, var%str4, var%uni4)
+  end subroutine eleven
+
+  ! This is "subroutine seven" but with explicit base-pointer mappings.
+  subroutine twelve()
+    type(t2) :: var
+
+    print '(g0)', '==== TESTCASE "twelve" ===='
+
+    var = t2(a = 1, &
+             b = 2, c = cmplx(-1.0_8, 2.0_8,kind=8), &
+             d = [(-3*i, i = 1, 10)], &
+             str1 = "abcde", &
+             str2 = ["12345", "67890", "ABCDE", "FGHIJ"], &
+             uni1 = 4_"abcde", &
+             uni2 = [4_"12345", 4_"67890", 4_"ABCDE", 4_"FGHIJ"])
+    allocate (var%f, source=[22, 33, 44, 55])
+    allocate (var%str4, source=["Let's", "Go!!!"])
+    allocate (var%uni4, source=[4_"Let's", 4_"Go!!!"])
+
+    !$omp target map(tofrom: var%d(5))
+      if (var%d(5) /= (-3*5)) stop 4
+    !$omp end target
+    !$omp target map(tofrom: var%str2(2:3))
+      if (any (var%str2(2:3) /= ["67890", "ABCDE"])) stop 6
+    !$omp end target
+    !$omp target map(tofrom: var%uni2(2:3))
+      if (any (var%uni2(2:3) /= [4_"67890", 4_"ABCDE"])) stop 7
+    !$omp end target
+
+    !$omp target map(to: var%f) map(tofrom: var%f(2:3))
+     if (.not. associated (var%f)) stop 9
+     if (size (var%f) /= 4) stop 10
+     if (any (var%f(2:3) /= [33, 44])) stop 11
+    !$omp end target
+!   !$omp target map(tofrom: var%str4(2:2))
+!     if (.not. associated (var%str4)) stop 15
+!     if (len (var%str4) /= 5) stop 16
+!     if (size (var%str4) /= 2) stop 17
+!     if (var%str4(2) /= "Go!!!") stop 18
+!   !$omp end target
+!   !$omp target map(tofrom: var%uni4(2:2))
+!     if (.not. associated (var%uni4)) stop 15
+!     if (len (var%uni4) /= 5) stop 16
+!     if (size (var%uni4) /= 2) stop 17
+!     if (var%uni4(2) /= 4_"Go!!!") stop 18
+!   !$omp end target
+
+    deallocate(var%f, var%str4, var%uni4)
+  end subroutine twelve
 
 end program main

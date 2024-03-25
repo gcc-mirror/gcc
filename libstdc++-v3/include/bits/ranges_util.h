@@ -1,6 +1,6 @@
 // Utilities for representing and manipulating ranges -*- C++ -*-
 
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,9 @@
 #if __cplusplus > 201703L
 # include <bits/ranges_base.h>
 # include <bits/utility.h>
+# include <bits/invoke.h>
 
-#ifdef __cpp_lib_ranges
+#ifdef __glibcxx_ranges
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -267,13 +268,21 @@ namespace ranges
       using __size_type
 	= __detail::__make_unsigned_like_t<iter_difference_t<_It>>;
 
-      template<typename, bool = _S_store_size>
+      template<typename _Tp, bool = _S_store_size>
 	struct _Size
-	{ };
+	{
+	  [[__gnu__::__always_inline__]]
+	  constexpr _Size(_Tp = {}) { }
+	};
 
       template<typename _Tp>
 	struct _Size<_Tp, true>
-	{ _Tp _M_size; };
+	{
+	  [[__gnu__::__always_inline__]]
+	  constexpr _Size(_Tp __s = {}) : _M_size(__s) { }
+
+	  _Tp _M_size;
+	};
 
       [[no_unique_address]] _Size<__size_type> _M_size = {};
 
@@ -294,11 +303,8 @@ namespace ranges
       noexcept(is_nothrow_constructible_v<_It, decltype(__i)>
 	       && is_nothrow_constructible_v<_Sent, _Sent&>)
 	requires (_Kind == subrange_kind::sized)
-      : _M_begin(std::move(__i)), _M_end(__s)
-      {
-	if constexpr (_S_store_size)
-	  _M_size._M_size = __n;
-      }
+      : _M_begin(std::move(__i)), _M_end(__s), _M_size(__n)
+      { }
 
       template<__detail::__different_from<subrange> _Rng>
 	requires borrowed_range<_Rng>

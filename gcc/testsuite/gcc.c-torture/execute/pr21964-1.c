@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 void
 foo (int n, int m)
 {

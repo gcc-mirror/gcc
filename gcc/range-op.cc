@@ -1,5 +1,5 @@
 /* Code for range operators.
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -201,6 +201,10 @@ range_op_handler::fold_range (vrange &r, tree type,
 			      relation_trio rel) const
 {
   gcc_checking_assert (m_operator);
+#if CHECKING_P
+  if (!lh.undefined_p () && !rh.undefined_p ())
+    gcc_assert (m_operator->operand_check_p (type, lh.type (), rh.type ()));
+#endif
   switch (dispatch_kind (r, lh, rh))
     {
       case RO_III:
@@ -237,9 +241,12 @@ range_op_handler::op1_range (vrange &r, tree type,
 			     relation_trio rel) const
 {
   gcc_checking_assert (m_operator);
-
   if (lhs.undefined_p ())
     return false;
+#if CHECKING_P
+  if (!op2.undefined_p ())
+    gcc_assert (m_operator->operand_check_p (lhs.type (), type, op2.type ()));
+#endif
   switch (dispatch_kind (r, lhs, op2))
     {
       case RO_III:
@@ -270,7 +277,10 @@ range_op_handler::op2_range (vrange &r, tree type,
   gcc_checking_assert (m_operator);
   if (lhs.undefined_p ())
     return false;
-
+#if CHECKING_P
+  if (!op1.undefined_p ())
+    gcc_assert (m_operator->operand_check_p (lhs.type (), op1.type (), type));
+#endif
   switch (dispatch_kind (r, lhs, op1))
     {
       case RO_III:
@@ -392,6 +402,13 @@ range_op_handler::overflow_free_p (const vrange &lh,
       default:
 	return false;
     }
+}
+
+bool
+range_op_handler::operand_check_p (tree t1, tree t2, tree t3) const
+{
+  gcc_checking_assert (m_operator);
+  return m_operator->operand_check_p (t1, t2, t3);
 }
 
 // Update the known bitmasks in R when applying the operation CODE to
@@ -737,6 +754,14 @@ range_operator::update_bitmask (irange &, const irange &,
 {
 }
 
+// Check that operand types are OK.  Default to always OK.
+
+bool
+range_operator::operand_check_p (tree, tree, tree) const
+{
+  return true;
+}
+
 // Create and return a range from a pair of wide-ints that are known
 // to have overflowed (or underflowed).
 
@@ -931,8 +956,9 @@ operator_equal::fold_range (irange &r, tree type,
 
   // We can be sure the values are always equal or not if both ranges
   // consist of a single value, and then compare them.
-  if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
-      && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
+  bool op1_const = wi::eq_p (op1.lower_bound (), op1.upper_bound ());
+  bool op2_const = wi::eq_p (op2.lower_bound (), op2.upper_bound ());
+  if (op1_const && op2_const)
     {
       if (wi::eq_p (op1.lower_bound (), op2.upper_bound()))
 	r = range_true (type);
@@ -947,6 +973,11 @@ operator_equal::fold_range (irange &r, tree type,
       tmp.intersect (op2);
       if (tmp.undefined_p ())
 	r = range_false (type);
+      // Check if a constant cannot satisfy the bitmask requirements.
+      else if (op2_const && !op1.get_bitmask ().member_p (op2.lower_bound ()))
+	 r = range_false (type);
+      else if (op1_const && !op2.get_bitmask ().member_p (op1.lower_bound ()))
+	 r = range_false (type);
       else
 	r = range_true_and_false (type);
     }
@@ -1033,8 +1064,9 @@ operator_not_equal::fold_range (irange &r, tree type,
 
   // We can be sure the values are always equal or not if both ranges
   // consist of a single value, and then compare them.
-  if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
-      && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
+  bool op1_const = wi::eq_p (op1.lower_bound (), op1.upper_bound ());
+  bool op2_const = wi::eq_p (op2.lower_bound (), op2.upper_bound ());
+  if (op1_const && op2_const)
     {
       if (wi::ne_p (op1.lower_bound (), op2.upper_bound()))
 	r = range_true (type);
@@ -1049,6 +1081,11 @@ operator_not_equal::fold_range (irange &r, tree type,
       tmp.intersect (op2);
       if (tmp.undefined_p ())
 	r = range_true (type);
+      // Check if a constant cannot satisfy the bitmask requirements.
+      else if (op2_const && !op1.get_bitmask ().member_p (op2.lower_bound ()))
+	 r = range_true (type);
+      else if (op1_const && !op2.get_bitmask ().member_p (op1.lower_bound ()))
+	 r = range_true (type);
       else
 	r = range_true_and_false (type);
     }
@@ -2454,6 +2491,9 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override
     { update_known_bitmask (r, LSHIFT_EXPR, lh, rh); }
+  // Check compatibility of LHS and op1.
+  bool operand_check_p (tree t1, tree t2, tree) const final override
+    { return range_compatible_p (t1, t2); }
 } op_lshift;
 
 class operator_rshift : public cross_product_operator
@@ -2483,6 +2523,9 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override
     { update_known_bitmask (r, RSHIFT_EXPR, lh, rh); }
+  // Check compatibility of LHS and op1.
+  bool operand_check_p (tree t1, tree t2, tree) const final override
+    { return range_compatible_p (t1, t2); }
 } op_rshift;
 
 
@@ -3058,8 +3101,10 @@ public:
 			  const irange &lhs,
 			  const irange &op1,
 			  relation_trio rel = TRIO_VARYING) const;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 } op_logical_and;
-
 
 bool
 operator_logical_and::fold_range (irange &r, tree type,
@@ -3069,6 +3114,11 @@ operator_logical_and::fold_range (irange &r, tree type,
 {
   if (empty_range_varying (r, type, lh, rh))
     return true;
+
+  // Precision of LHS and both operands must match.
+  if (TYPE_PRECISION (lh.type ()) != TYPE_PRECISION (type)
+      || TYPE_PRECISION (type) != TYPE_PRECISION (rh.type ()))
+    return false;
 
   // 0 && anything is 0.
   if ((wi::eq_p (lh.lower_bound (), 0) && wi::eq_p (lh.upper_bound (), 0))
@@ -3555,6 +3605,9 @@ public:
 			  const irange &lhs,
 			  const irange &op1,
 			  relation_trio rel = TRIO_VARYING) const;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 } op_logical_or;
 
 bool
@@ -3981,6 +4034,9 @@ public:
 			  const irange &lhs,
 			  const irange &op2,
 			  relation_trio rel = TRIO_VARYING) const;
+  // Check compatibility of LHS and op1.
+  bool operand_check_p (tree t1, tree t2, tree) const final override
+    { return range_compatible_p (t1, t2); }
 } op_logical_not;
 
 // Folding a logical NOT, oddly enough, involves doing nothing on the
@@ -4023,7 +4079,6 @@ operator_logical_not::op1_range (irange &r,
   // Logical NOT is involutary...do it again.
   return fold_range (r, type, lhs, op2);
 }
-
 
 bool
 operator_bitwise_not::fold_range (irange &r, tree type,

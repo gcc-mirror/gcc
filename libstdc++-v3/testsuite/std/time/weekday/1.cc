@@ -1,6 +1,6 @@
 // { dg-do compile { target c++20 } }
 
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 // Class template day [time.cal.weekday]
 
 #include <chrono>
+#include <limits>
 
 constexpr void
 constexpr_weekday()
@@ -36,6 +37,26 @@ constexpr_weekday()
 
   static_assert(weekday{3}[2].weekday() == weekday{3});
   static_assert(weekday{3}[last].weekday() == weekday{3});
+
+  // Test for UB (overflow).
+  {
+    using rep = days::rep;
+    using std::numeric_limits;
+
+    auto constexpr days_min = days{numeric_limits<rep>::min()};
+    auto constexpr weekday_from_sysdays_min   = weekday{sys_days{days_min}};
+    auto constexpr weekday_000_plus_days_min  = weekday{ 0 } + days_min;
+    auto constexpr weekday_255_plus_days_min  = weekday{255} + days_min;
+    auto constexpr weekday_000_minus_days_min = weekday{ 0 } - days_min;
+    auto constexpr weekday_255_minus_days_min = weekday{255} - days_min;
+
+    auto constexpr days_max = days{numeric_limits<rep>::max()};
+    auto constexpr weekday_from_sysdays_max   = weekday{sys_days{days_max}};
+    auto constexpr weekday_000_plus_days_max  = weekday{ 0 } + days_max;
+    auto constexpr weekday_255_plus_days_max  = weekday{255} + days_max;
+    auto constexpr weekday_000_minus_days_max = weekday{ 0 } - days_max;
+    auto constexpr weekday_255_minus_days_max = weekday{255} - days_max;
+  }
 
   static_assert(weekday{sys_days{1900y/January/1}} == Monday);
   static_assert(weekday{sys_days{1970y/January/1}} == Thursday);

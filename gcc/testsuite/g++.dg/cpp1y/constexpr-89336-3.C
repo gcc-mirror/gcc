@@ -18,7 +18,7 @@ constexpr int
 bar ()
 {
   union U { int a[5]; long b; };
-  union V { union U u; short v; };
+  union V { short v; union U u; };
   V w {};
   w.v = 5;
   w.u.a[3] = w.u.a[1] = w.v;		// { dg-error "change of the active member of a union from" "" { target c++17_down } }

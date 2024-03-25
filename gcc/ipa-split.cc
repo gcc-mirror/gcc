@@ -1,5 +1,5 @@
 /* Function splitting pass
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
    Contributed by Jan Hubicka  <jh@suse.cz>
 
 This file is part of GCC.
@@ -104,6 +104,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "cfgloop.h"
 #include "attribs.h"
+#include "ipa-strub.h"
 
 /* Per basic block info.  */
 
@@ -1809,6 +1810,12 @@ execute_split_functions (void)
       if (dump_file)
 	fprintf (dump_file, "Not splitting: function is in user defined "
 		 "section.\n");
+      return 0;
+    }
+  if (!strub_splittable_p (node))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not splitting: function is a strub context.\n");
       return 0;
     }
 

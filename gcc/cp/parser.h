@@ -1,5 +1,5 @@
 /* Data structures and function exported by the C++ Parser.
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -408,8 +408,12 @@ struct GTY(()) cp_parser {
      identifiers) rather than an explicit template parameter list.  */
   bool fully_implicit_function_template_p;
 
-  /* TRUE if omp::directive or omp::sequence attributes may not appear.  */
+  /* TRUE if omp::directive, omp::decl or omp::sequence attributes may not
+     appear.  */
   bool omp_attrs_forbidden_p;
+
+  /* TRUE if an OpenMP array section is allowed.  */
+  bool omp_array_section_p;
 
   /* Tracks the function's template parameter list when declaring a function
      using generic type parameters.  This is either a new chain in the case of a

@@ -7,7 +7,6 @@
 /*
 ** test_float___builtin_truncf:
 **   ...
-**   vsetvli\s+[atx][0-9]+,\s*zero,\s*e32,\s*m1,\s*ta,\s*mu
 **   vfabs\.v\s+v[0-9]+,\s*v[0-9]+
 **   vmflt\.vf\s+v0,\s*v[0-9]+,\s*[fa]+[0-9]+
 **   vfcvt\.rtz\.x\.f\.v\s+v[0-9]+,\s*v[0-9]+,\s*v0\.t

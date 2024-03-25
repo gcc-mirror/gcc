@@ -3,6 +3,8 @@
    Prefetch using all valid combinations of rw and locality values.
    These must be compile-time constants.  */
 
+void exit (int);
+
 #define NO_TEMPORAL_LOCALITY 0
 #define LOW_TEMPORAL_LOCALITY 1
 #define MODERATE_TEMPORAL_LOCALITY 1

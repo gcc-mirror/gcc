@@ -1,6 +1,6 @@
 /* Declarations of functions and data types used for SHA1 sum
    library functions.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -107,6 +107,13 @@ extern void sha1_process_block (const void *buffer, size_t len,
    It is NOT required that LEN is a multiple of 64.  */
 extern void sha1_process_bytes (const void *buffer, size_t len,
 				struct sha1_ctx *ctx);
+
+typedef void (*sha1_process_bytes_fn) (const void *, size_t,
+				       struct sha1_ctx *);
+
+/* Return sha1_process_bytes or some hardware optimized version thereof
+   depending on current CPU.  */
+extern sha1_process_bytes_fn sha1_choose_process_bytes (void);
 
 /* Process the remaining bytes in the buffer and put result from CTX
    in first 20 bytes following RESBUF.  The result is always in little

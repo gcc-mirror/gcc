@@ -1,5 +1,5 @@
 /* Definitions for LoongArch CPU properties.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
 This file is part of GCC.
@@ -23,18 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "diagnostic-core.h"
 
 #include "loongarch-def.h"
 #include "loongarch-opts.h"
 #include "loongarch-cpu.h"
+#include "loongarch-cpucfg-map.h"
 #include "loongarch-str.h"
 
+
 /* Native CPU detection with "cpucfg" */
-#define N_CPUCFG_WORDS 0x15
 static uint32_t cpucfg_cache[N_CPUCFG_WORDS] = { 0 };
-static const int cpucfg_useful_idx[] = {0, 1, 2, 16, 17, 18, 19};
 
 static uint32_t
 read_cpucfg_word (int wordno)
@@ -56,11 +55,8 @@ read_cpucfg_word (int wordno)
 void
 cache_cpucfg (void)
 {
-  for (unsigned int i = 0; i < sizeof (cpucfg_useful_idx) / sizeof (int); i++)
-    {
-      cpucfg_cache[cpucfg_useful_idx[i]]
-	= read_cpucfg_word (cpucfg_useful_idx[i]);
-    }
+  for (int idx: cpucfg_useful_idx)
+    cpucfg_cache[idx] = read_cpucfg_word (idx);
 }
 
 uint32_t
@@ -106,6 +102,10 @@ fill_native_cpu_config (struct loongarch_target *tgt)
       native_cpu_type = CPU_LA464;
       break;
 
+    case 0x0014d000:   /* LA664 */
+      native_cpu_type = CPU_LA664;
+      break;
+
     default:
       /* Unknown PRID.  */
       if (tune_native_p)
@@ -121,38 +121,36 @@ fill_native_cpu_config (struct loongarch_target *tgt)
       int tmp;
       tgt->cpu_arch = native_cpu_type;
 
+      auto &preset = loongarch_cpu_default_isa[tgt->cpu_arch];
+
       /* Fill: loongarch_cpu_default_isa[tgt->cpu_arch].base
 	 With: base architecture (ARCH)
 	 At:   cpucfg_words[1][1:0] */
 
-      #define PRESET_ARCH (loongarch_cpu_default_isa[tgt->cpu_arch].base)
-      switch (cpucfg_cache[1] & 0x3)
-	{
-	  case 0x02:
-	    tmp = ISA_BASE_LA64V100;
-	    break;
+      if (native_cpu_type != CPU_NATIVE)
+	tmp = loongarch_cpu_default_isa[native_cpu_type].base;
+      else
+	switch (cpucfg_cache[1] & 0x3)
+	  {
+	    case 0x02:
+	      tmp = ISA_BASE_LA64V100;
+	      break;
 
-	  default:
-	    fatal_error (UNKNOWN_LOCATION,
-			 "unknown native base architecture %<0x%x%>, "
-			 "%qs failed", (unsigned int) (cpucfg_cache[1] & 0x3),
-			 "-m" OPTSTR_ARCH "=" STR_CPU_NATIVE);
-	}
-
-      /* Check consistency with PRID presets.  */
-      if (native_cpu_type != CPU_NATIVE && tmp != PRESET_ARCH)
-	warning (0, "base architecture %qs differs from PRID preset %qs",
-		 loongarch_isa_base_strings[tmp],
-		 loongarch_isa_base_strings[PRESET_ARCH]);
+	    default:
+	      fatal_error (UNKNOWN_LOCATION,
+			   "unknown native base architecture %<0x%x%>, "
+			   "%qs failed",
+			   (unsigned int) (cpucfg_cache[1] & 0x3),
+			   "-m" OPTSTR_ARCH "=" STR_CPU_NATIVE);
+	  }
 
       /* Use the native value anyways.  */
-      PRESET_ARCH = tmp;
+      preset.base = tmp;
 
       /* Fill: loongarch_cpu_default_isa[tgt->cpu_arch].fpu
 	 With: FPU type (FP, FP_SP, FP_DP)
 	 At:   cpucfg_words[2][2:0] */
 
-      #define PRESET_FPU (loongarch_cpu_default_isa[tgt->cpu_arch].fpu)
       switch (cpucfg_cache[2] & 0x7)
 	{
 	  case 0x07:
@@ -175,20 +173,19 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 	}
 
       /* Check consistency with PRID presets.  */
-      if (native_cpu_type != CPU_NATIVE && tmp != PRESET_FPU)
+      if (native_cpu_type != CPU_NATIVE && tmp != preset.fpu)
 	warning (0, "floating-point unit %qs differs from PRID preset %qs",
 		 loongarch_isa_ext_strings[tmp],
-		 loongarch_isa_ext_strings[PRESET_FPU]);
+		 loongarch_isa_ext_strings[preset.fpu]);
 
       /* Use the native value anyways.  */
-      PRESET_FPU = tmp;
+      preset.fpu = tmp;
 
 
       /* Fill: loongarch_cpu_default_isa[CPU_NATIVE].simd
 	 With: SIMD extension type (LSX, LASX)
 	 At:   cpucfg_words[2][7:6] */
 
-      #define PRESET_SIMD (loongarch_cpu_default_isa[tgt->cpu_arch].simd)
       switch (cpucfg_cache[2] & 0xc0)
 	{
 	  case 0xc0:
@@ -215,14 +212,37 @@ fill_native_cpu_config (struct loongarch_target *tgt)
       /* Check consistency with PRID presets.  */
 
       /*
-      if (native_cpu_type != CPU_NATIVE && tmp != PRESET_SIMD)
+      if (native_cpu_type != CPU_NATIVE && tmp != preset.simd)
 	warning (0, "SIMD extension %qs differs from PRID preset %qs",
 		 loongarch_isa_ext_strings[tmp],
-		 loongarch_isa_ext_strings[PRESET_SIMD]);
+		 loongarch_isa_ext_strings[preset.simd]);
       */
 
       /* Use the native value anyways.  */
-      PRESET_SIMD = tmp;
+      preset.simd = tmp;
+
+
+      int64_t hw_isa_evolution = 0;
+
+      /* Features added during ISA evolution.  */
+      for (const auto &entry: cpucfg_map)
+	if (cpucfg_cache[entry.cpucfg_word] & entry.cpucfg_bit)
+	  hw_isa_evolution |= entry.isa_evolution_bit;
+
+      if (native_cpu_type != CPU_NATIVE)
+	{
+	  /* Check if the local CPU really supports the features of the base
+	     ISA of probed native_cpu_type.  If any feature is not detected,
+	     either GCC or the hardware is buggy.  */
+	  if ((preset.evolution & hw_isa_evolution) != hw_isa_evolution)
+	    warning (0,
+		     "detected base architecture %qs, but some of its "
+		     "features are not detected; the detected base "
+		     "architecture may be unreliable, only detected "
+		     "features will be enabled",
+		     loongarch_isa_base_strings[preset.base]);
+	}
+      preset.evolution = hw_isa_evolution;
     }
 
   if (tune_native_p)
@@ -233,7 +253,7 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 	 With: cache size info
 	 At:   cpucfg_words[16:20][31:0] */
 
-      #define PRESET_CACHE (loongarch_cpu_cache[tgt->cpu_tune])
+      auto &preset_cache = loongarch_cpu_cache[tgt->cpu_tune];
       struct loongarch_cache native_cache;
       int l1d_present = 0, l1u_present = 0;
       int l2d_present = 0;
@@ -264,8 +284,8 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 	>> 10;					  /* in kibibytes */
 
       /* Use the native value anyways.  */
-      PRESET_CACHE.l1d_line_size = native_cache.l1d_line_size;
-      PRESET_CACHE.l1d_size = native_cache.l1d_size;
-      PRESET_CACHE.l2d_size = native_cache.l2d_size;
+      preset_cache.l1d_line_size = native_cache.l1d_line_size;
+      preset_cache.l1d_size = native_cache.l1d_size;
+      preset_cache.l2d_size = native_cache.l2d_size;
     }
 }

@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008-2023 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -147,6 +147,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_LUJIAZUI:
       def_or_undef (parse_in, "__lujiazui");
       def_or_undef (parse_in, "__lujiazui__");
+      break;
+    case PROCESSOR_YONGFENG:
+      def_or_undef (parse_in, "__yongfeng");
+      def_or_undef (parse_in, "__yongfeng__");
       break;
     case PROCESSOR_PENTIUM4:
       def_or_undef (parse_in, "__pentium4");
@@ -378,6 +382,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
        break;
     case PROCESSOR_LUJIAZUI:
       def_or_undef (parse_in, "__tune_lujiazui__");
+       break;
+    case PROCESSOR_YONGFENG:
+      def_or_undef (parse_in, "__tune_yongfeng__");
        break;
     case PROCESSOR_PENTIUM4:
       def_or_undef (parse_in, "__tune_pentium4__");

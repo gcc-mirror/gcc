@@ -2,6 +2,7 @@
 /* { dg-require-effective-target label_values } */
 
 typedef unsigned long Eterm;
+void
 process_main (void)
 {
   register Eterm x0;

@@ -12,6 +12,7 @@
 module dmd.templateparamsem;
 
 import dmd.arraytypes;
+import dmd.dinterpret;
 import dmd.dsymbol;
 import dmd.dscope;
 import dmd.dtemplate;
@@ -19,7 +20,7 @@ import dmd.globals;
 import dmd.location;
 import dmd.expression;
 import dmd.expressionsem;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.mtype;
 import dmd.typesem;
 import dmd.visitor;

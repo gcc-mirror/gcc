@@ -10,4 +10,5 @@ int f(int a)
   return (a<-a)?a:-a;
 }
 
-/* { dg-final { scan-tree-dump-times "ABS_EXPR" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.COPYSIGN" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "ABS_EXPR" 1 "optimized" } } */

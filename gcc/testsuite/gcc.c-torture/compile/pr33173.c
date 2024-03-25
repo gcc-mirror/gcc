@@ -12,6 +12,7 @@ typedef struct rend_service_descriptor_t
   char status_tag[32];
 }
 tor_version_t;
+void
 test_dir_format (void)
 {
   tor_version_t ver1;
@@ -52,7 +53,7 @@ test_dir_format (void)
 											  char
 											  *)
 											 (v2);
-											 register
+											 register int
 											 __result
 											 =
 											 (((__const unsigned char *) (__const char *) (v1))[0] - __s2[0]); if (__s1_len > 0 && __result == 0)
@@ -76,10 +77,10 @@ test_dir_format (void)
 									      (__const
 									       char
 									       *)
-									      (__const
+									      (__const int
 									       *)
 									      (v1);
-									      register
+									      register int
 									      __result
 									      =
 									      ((__const unsigned char *) (__const char *) (v2))[0]; if (__s2_len > 0 && __result == 0)
@@ -96,7 +97,7 @@ test_dir_format (void)
 									v2))));}
 	))
       {
-	printf (".");
+	__builtin_printf (".");
       }
   }
 }

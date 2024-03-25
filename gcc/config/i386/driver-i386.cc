@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -369,6 +369,37 @@ detect_caches_intel (bool xeon_mp, unsigned max_level,
   return describe_cache (level1, level2);
 }
 
+/* Extended features */
+#define has_feature(f) \
+  has_cpu_feature (&cpu_model, cpu_features2, f)
+
+/* We will emit a warning when using AVX10.1 and AVX512 options with one
+   enabled and the other disabled.  Add this function to avoid push "-mno-"
+   options under this scenario for -march=native.  */
+
+bool check_avx512_features (__processor_model &cpu_model,
+			    unsigned int (&cpu_features2)[SIZE_OF_CPU_FEATURES],
+			    const enum processor_features feature)
+{
+  if (has_feature (FEATURE_AVX10_1_256)
+      && ((feature == FEATURE_AVX512F)
+	  || (feature == FEATURE_AVX512CD)
+	  || (feature == FEATURE_AVX512DQ)
+	  || (feature == FEATURE_AVX512BW)
+	  || (feature == FEATURE_AVX512VL)
+	  || (feature == FEATURE_AVX512IFMA)
+	  || (feature == FEATURE_AVX512VBMI)
+	  || (feature == FEATURE_AVX512VBMI2)
+	  || (feature == FEATURE_AVX512VNNI)
+	  || (feature == FEATURE_AVX512VPOPCNTDQ)
+	  || (feature == FEATURE_AVX512BITALG)
+	  || (feature == FEATURE_AVX512FP16)
+	  || (feature == FEATURE_AVX512BF16)))
+    return false;
+
+  return true;
+}
+
 /* This will be called by the spec parser in gcc.cc when it sees
    a %:local_cpu_detect(args) construct.  Currently it will be
    called with either "arch [32|64]" or "tune [32|64]" as argument
@@ -446,10 +477,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 				       ext_level, &l2sizekb);
 	}
     }
-
-  /* Extended features */
-#define has_feature(f) \
-  has_cpu_feature (&cpu_model, cpu_features2, f)
 
   if (vendor == VENDOR_AMD)
     {
@@ -530,6 +557,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	case 7:
 	  if (model == 0x3b)
 	    processor = PROCESSOR_LUJIAZUI;
+	  else if (model >= 0x5b)
+	    processor = PROCESSOR_YONGFENG;
 	  break;
 	default:
 	  break;
@@ -636,9 +665,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  /* Assume Arrow Lake S.  */
 		  else if (has_feature (FEATURE_SM3))
 		    cpu = "arrowlake-s";
-		  /* Assume Grand Ridge.  */
-		  else if (has_feature (FEATURE_RAOINT))
-		    cpu = "grandridge";
 		  /* Assume Sierra Forest.  */
 		  else if (has_feature (FEATURE_AVXVNNIINT8))
 		    cpu = "sierraforest";
@@ -817,6 +843,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
     case PROCESSOR_LUJIAZUI:
       cpu = "lujiazui";
       break;
+    case PROCESSOR_YONGFENG:
+      cpu = "yongfeng";
+      break;
 
     default:
       /* Use something reasonable.  */
@@ -863,7 +892,17 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  options = concat (options, " ",
 				    isa_names_table[i].option, NULL);
 	      }
-	    else
+	    /* Never push -mno-avx10.1-{256,512} under -march=native to
+	       avoid unnecessary warnings when building librarys.  */
+	    else if (isa_names_table[i].feature != FEATURE_AVX10_1_256
+		     && isa_names_table[i].feature != FEATURE_AVX10_1_512
+		     && isa_names_table[i].feature != FEATURE_AVX512PF
+		     && isa_names_table[i].feature != FEATURE_AVX512ER
+		     && isa_names_table[i].feature != FEATURE_AVX5124FMAPS
+		     && isa_names_table[i].feature != FEATURE_AVX5124VNNIW
+		     && isa_names_table[i].feature != FEATURE_PREFETCHWT1
+		     && check_avx512_features (cpu_model, cpu_features2,
+					       isa_names_table[i].feature))
 	      options = concat (options, neg_option,
 				isa_names_table[i].option + 2, NULL);
 	  }

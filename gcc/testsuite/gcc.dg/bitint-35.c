@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target { bitint && { float32 && int32 } } } } */
-/* { dg-options "-std=c2x -Wconversion -Wfloat-conversion" } */
+/* { dg-options "-std=c23 -Wconversion -Wfloat-conversion" } */
 /* { dg-add-options float32 } */
 
 void

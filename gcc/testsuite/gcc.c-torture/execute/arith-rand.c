@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long
 simple_rand ()
 {
@@ -38,7 +41,8 @@ random_bitstring ()
 
 #define ABS(x) ((x) >= 0 ? (x) : -(x))
 
-main ()
+int
+main (void)
 {
   long int i;
 

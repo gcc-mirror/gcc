@@ -1,11 +1,9 @@
 /* Verify that hardware multiply is preferred on XScale. */
 /* { dg-do compile } */
-/* { dg-options "-mcpu=xscale -O2 -marm" } */
-/* { dg-skip-if "Test is specific to the Xscale" { arm*-*-* } { "-march=*" } { "-march=xscale" } } */
-/* { dg-skip-if "Test is specific to the Xscale" { arm*-*-* } { "-mcpu=*" } { "-mcpu=xscale" } } */
-/* { dg-skip-if "Test is specific to ARM mode" { arm*-*-* } { "-mthumb" } { "" } } */
-/* { dg-require-effective-target arm_arch_v5te_arm_ok } */
-/* { dg-require-effective-target arm32 } */
+/* { dg-options "-O2" } */
+/* { dg-require-effective-target arm_arch_xscale_arm_ok } */
+/* { dg-add-options arm_arch_xscale_arm } */
+
 
 /* Brett Gaines' test case. */
 unsigned BCPL(unsigned) __attribute__ ((naked));

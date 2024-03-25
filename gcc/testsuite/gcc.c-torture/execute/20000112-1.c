@@ -1,5 +1,8 @@
 #include <string.h>
 
+void abort (void);
+void exit (int);
+
 static int
 special_format (fmt)
      const char *fmt;
@@ -10,7 +13,8 @@ special_format (fmt)
           || strchr (fmt, 'n') != 0);
 }
 
-main()
+int
+main(void)
 {
   if (special_format ("ee"))
     abort ();

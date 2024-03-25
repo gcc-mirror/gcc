@@ -1,6 +1,6 @@
 /* wrapc.c provide access to miscellaneous C library functions.
 
-Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -223,6 +223,33 @@ int
 wrapc_isfinitef (float x)
 {
   return (fpclassify (x) != FP_NAN && fpclassify (x) != FP_INFINITE);
+}
+
+/* isnan - provide non builtin alternative to the gcc builtin isnan.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+int
+wrapc_isnan (double x)
+{
+  return isnan (x);
+}
+
+/* isnanf - provide non builtin alternative to the gcc builtin isnanf.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+int
+wrapc_isnanf (float x)
+{
+  return isnan (x);
+}
+
+/* isnanl - provide non builtin alternative to the gcc builtin isnanl.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+int
+wrapc_isnanl (long double x)
+{
+  return isnan (x);
 }
 
 /* init - init/finish functions for the module */

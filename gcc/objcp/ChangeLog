@@ -1,3 +1,21 @@
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* objcp-lang.cc (c_family_register_lang_features): New.
+
+2023-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR objc++/111920
+	* objcp-lang.cc (objcp_tsubst_expr) <case CLASS_REFERENCE_EXPR>:
+	Use tsubst instead of tsubst_expr for type operands.
+
+2023-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	* objcp-lang.cc (objcp_tsubst_copy_and_build): Rename to ...
+	(objcp_tsubst_expr): ... this.  Adjust tsubst_copy_and_build
+	uses.
+
 2022-11-15  Patrick Palka  <ppalka@redhat.com>
 
 	* objcp-lang.cc (objcp_tsubst_copy_and_build): Adjust calls to
@@ -649,7 +667,7 @@
 	* objcp-lang.c: Likewise.
 
 
-Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

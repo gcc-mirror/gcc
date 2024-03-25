@@ -10,7 +10,7 @@
 
 @copying
 @c man begin COPYRIGHT
-Copyright @copyright{} 1987-2023 Free Software Foundation, Inc.
+Copyright @copyright{} 1987-2024 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -1887,7 +1887,7 @@ signifies the 2011 revision of the C standard; the value
 @code{201710L} signifies the 2017 revision of the C standard (which is
 otherwise identical to the 2011 version apart from correction of
 defects).  An unspecified value larger than @code{201710L} is used for
-the experimental @option{-std=c2x} and @option{-std=gnu2x} modes.
+the experimental @option{-std=c23} and @option{-std=gnu23} modes.
 
 This macro is not defined if the @option{-traditional-cpp} option is
 used, nor when compiling C++ or Objective-C@.
@@ -3199,6 +3199,8 @@ directive}: @samp{#if}, @samp{#ifdef} or @samp{#ifndef}.
 * @code{__has_cpp_attribute}::
 * @code{__has_c_attribute}::
 * @code{__has_builtin}::
+* @code{__has_feature}::
+* @code{__has_extension}::
 * @code{__has_include}::
 @end menu
 
@@ -3472,7 +3474,7 @@ The special operator @code{__has_attribute (@var{operand})} may be used
 in @samp{#if} and @samp{#elif} expressions to test whether the attribute
 referenced by its @var{operand} is recognized by GCC.  Using the operator
 in other contexts is not valid.  In C code, if compiling for strict
-conformance to standards before C2x, @var{operand} must be
+conformance to standards before C23, @var{operand} must be
 a valid identifier.  Otherwise, @var{operand} may be optionally
 introduced by the @code{@var{attribute-scope}::} prefix.
 The @var{attribute-scope} prefix identifies the ``namespace'' within
@@ -3560,6 +3562,45 @@ the operator is as follows:
 #  define builtin_object_size(ptr)   ((size_t)-1)
 #endif
 @end smallexample
+
+@node @code{__has_feature}
+@subsection @code{__has_feature}
+@cindex @code{__has_feature}
+
+The special operator @code{__has_feature (@var{operand})} may be used in
+constant integer contexts and in preprocessor @samp{#if} and @samp{#elif}
+expressions to test whether the identifier given in @var{operand} is recognized
+as a feature supported by GCC given the current options and, in the case of
+standard language features, whether the feature is available in the chosen
+version of the language standard.
+
+Note that @code{__has_feature} and @code{__has_extension} are not recommended
+for use in new code, and are only provided for compatibility with Clang.  For
+details of which identifiers are accepted by these function-like macros, see
+@w{@uref{https://clang.llvm.org/docs/LanguageExtensions.html#has-feature-and-has-extension,
+the Clang documentation}}.
+
+@node @code{__has_extension}
+@subsection @code{__has_extension}
+@cindex @code{__has_extension}
+
+The special operator @code{__has_extension (@var{operand})} may be used in
+constant integer contexts and in preprocessor @samp{#if} and @samp{#elif}
+expressions to test whether the identifier given in @var{operand} is recognized
+as an extension supported by GCC given the current options.  In any given
+context, the features accepted by @code{__has_extension} are a strict superset
+of those accepted by @code{__has_feature}.  Unlike @code{__has_feature},
+@code{__has_extension} tests whether a given feature is available regardless of
+strict language standards conformance.
+
+If the @option{-pedantic-errors} flag is given, @code{__has_extension} is
+equivalent to @code{__has_feature}.
+
+Note that @code{__has_feature} and @code{__has_extension} are not recommended
+for use in new code, and are only provided for compatibility with Clang.  For
+details of which identifiers are accepted by these function-like macros, see
+@w{@uref{https://clang.llvm.org/docs/LanguageExtensions.html#has-feature-and-has-extension,
+the Clang documentation}}.
 
 @node @code{__has_include}
 @subsection @code{__has_include}

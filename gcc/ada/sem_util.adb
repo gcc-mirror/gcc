@@ -1813,51 +1813,6 @@ package body Sem_Util is
    ------------------------------
 
    function Build_Default_Subtype_OK (T : Entity_Id) return Boolean is
-
-      function Default_Discriminant_Values_Known_At_Compile_Time
-         (T : Entity_Id) return Boolean;
-         --  For an unconstrained type T, return False if the given type has a
-         --  discriminant with default value not known at compile time. Return
-         --  True otherwise.
-
-      ---------------------------------------------------------
-      -- Default_Discriminant_Values_Known_At_Compile_Time --
-      ---------------------------------------------------------
-
-      function Default_Discriminant_Values_Known_At_Compile_Time
-         (T : Entity_Id) return Boolean
-      is
-         Discr : Entity_Id;
-         DDV : Node_Id;
-
-      begin
-
-         --  If the type has no discriminant, we know them all at compile time
-
-         if not Has_Discriminants (T) then
-            return True;
-         end if;
-
-         --  The type has discriminants, check that none of them has a default
-         --  value not known at compile time.
-
-         Discr := First_Discriminant (T);
-
-         while Present (Discr) loop
-            DDV := Discriminant_Default_Value (Discr);
-
-            if Present (DDV) and then not Compile_Time_Known_Value (DDV) then
-               return False;
-            end if;
-
-            Next_Discriminant (Discr);
-         end loop;
-
-         return True;
-      end Default_Discriminant_Values_Known_At_Compile_Time;
-
-   --  Start of processing for Build_Default_Subtype_OK
-
    begin
 
       if Is_Constrained (T) then
@@ -1867,19 +1822,7 @@ package body Sem_Util is
          return False;
       end if;
 
-      if not Default_Discriminant_Values_Known_At_Compile_Time (T) then
-
-         --  This is a special case of definite subtypes. To allocate a
-         --  specific size to the subtype, we need to know the value at compile
-         --  time. This might not be the case if the default value is the
-         --  result of a function. In that case, the object might be definite
-         --  and limited but the needed size might not be statically known or
-         --  too tricky to obtain. In that case, we will not build the subtype.
-
-         return False;
-      end if;
-
-      return Is_Definite_Subtype (T) and then Is_Limited_View (T);
+      return Is_Definite_Subtype (T) and then Is_Inherently_Limited_Type (T);
    end Build_Default_Subtype_OK;
 
    --------------------------------------------
@@ -3795,36 +3738,6 @@ package body Sem_Util is
       end loop;
    end Check_Inherited_Nonoverridable_Aspects;
 
-   ----------------------------------------
-   -- Check_Nonvolatile_Function_Profile --
-   ----------------------------------------
-
-   procedure Check_Nonvolatile_Function_Profile (Func_Id : Entity_Id) is
-      Formal : Entity_Id;
-
-   begin
-      --  Inspect all formal parameters
-
-      Formal := First_Formal (Func_Id);
-      while Present (Formal) loop
-         if Is_Effectively_Volatile_For_Reading (Etype (Formal)) then
-            Error_Msg_NE
-              ("nonvolatile function & cannot have a volatile parameter",
-               Formal, Func_Id);
-         end if;
-
-         Next_Formal (Formal);
-      end loop;
-
-      --  Inspect the return type
-
-      if Is_Effectively_Volatile_For_Reading (Etype (Func_Id)) then
-         Error_Msg_NE
-           ("nonvolatile function & cannot have a volatile return type",
-            Result_Definition (Parent (Func_Id)), Func_Id);
-      end if;
-   end Check_Nonvolatile_Function_Profile;
-
    -------------------
    -- Check_Parents --
    -------------------
@@ -4370,21 +4283,24 @@ package body Sem_Util is
                              and then Has_No_Output (Subp_Id))
               and then not Is_Wrapper (Subp_Id)
             then
-               if Pragma_Name (Prag) = Name_Contract_Cases then
-                  Error_Msg_NE (Adjust_Message
-                    ("contract case does not check the outcome of calling "
-                     & "&?.t?"), Expr, Subp_Id);
+               case Pragma_Name (Prag) is
+                  when Name_Contract_Cases =>
+                     Error_Msg_NE (Adjust_Message
+                       ("contract case does not check the outcome of calling "
+                        & "&?.t?"), Expr, Subp_Id);
 
-               elsif Pragma_Name (Prag) = Name_Refined_Post then
-                  Error_Msg_NE (Adjust_Message
-                    ("refined postcondition does not check the outcome of "
-                     & "calling &?.t?"), Err_Node, Subp_Id);
+                  when Name_Refined_Post =>
+                     Error_Msg_NE (Adjust_Message
+                       ("refined postcondition does not check the outcome of "
+                        & "calling &?.t?"), Err_Node, Subp_Id);
 
-               else
-                  Error_Msg_NE (Adjust_Message
-                    ("postcondition does not check the outcome of calling "
-                     & "&?.t?"), Err_Node, Subp_Id);
-               end if;
+                  when Name_Postcondition =>
+                     Error_Msg_NE (Adjust_Message
+                       ("postcondition does not check the outcome of calling "
+                        & "&?.t?"), Err_Node, Subp_Id);
+
+                  when others => pragma Assert (False);
+               end case;
             end if;
          end Check_Conjunct;
 
@@ -4555,11 +4471,16 @@ package body Sem_Util is
    --  Start of processing for Check_Result_And_Post_State
 
    begin
+      --  Do not check in instances, because we already checked the generic
+
+      if In_Instance then
+         return;
+
       --  The lack of attribute 'Result or a post-state is classified as a
       --  suspicious contract. Do not perform the check if the corresponding
-      --  swich is not set.
+      --  switch is not set.
 
-      if not Warn_On_Suspicious_Contract then
+      elsif not Warn_On_Suspicious_Contract then
          return;
 
       --  Nothing to do if there is no contract
@@ -5144,96 +5065,6 @@ package body Sem_Util is
          Report_Unused_Body_States (States);
       end if;
    end Check_Unused_Body_States;
-
-   ------------------------------------
-   -- Check_Volatility_Compatibility --
-   ------------------------------------
-
-   procedure Check_Volatility_Compatibility
-     (Id1, Id2                     : Entity_Id;
-      Description_1, Description_2 : String;
-      Srcpos_Bearer                : Node_Id) is
-
-   begin
-      if SPARK_Mode /= On then
-         return;
-      end if;
-
-      declare
-         AR1 : constant Boolean := Async_Readers_Enabled (Id1);
-         AW1 : constant Boolean := Async_Writers_Enabled (Id1);
-         ER1 : constant Boolean := Effective_Reads_Enabled (Id1);
-         EW1 : constant Boolean := Effective_Writes_Enabled (Id1);
-         AR2 : constant Boolean := Async_Readers_Enabled (Id2);
-         AW2 : constant Boolean := Async_Writers_Enabled (Id2);
-         ER2 : constant Boolean := Effective_Reads_Enabled (Id2);
-         EW2 : constant Boolean := Effective_Writes_Enabled (Id2);
-
-         AR_Check_Failed : constant Boolean := AR1 and not AR2;
-         AW_Check_Failed : constant Boolean := AW1 and not AW2;
-         ER_Check_Failed : constant Boolean := ER1 and not ER2;
-         EW_Check_Failed : constant Boolean := EW1 and not EW2;
-
-         package Failure_Description is
-            procedure Note_If_Failure
-              (Failed : Boolean; Aspect_Name : String);
-            --  If Failed is False, do nothing.
-            --  If Failed is True, add Aspect_Name to the failure description.
-
-            function Failure_Text return String;
-            --  returns accumulated list of failing aspects
-         end Failure_Description;
-
-         package body Failure_Description is
-            Description_Buffer : Bounded_String;
-
-            ---------------------
-            -- Note_If_Failure --
-            ---------------------
-
-            procedure Note_If_Failure
-              (Failed : Boolean; Aspect_Name : String) is
-            begin
-               if Failed then
-                  if Description_Buffer.Length /= 0 then
-                     Append (Description_Buffer, ", ");
-                  end if;
-                  Append (Description_Buffer, Aspect_Name);
-               end if;
-            end Note_If_Failure;
-
-            ------------------
-            -- Failure_Text --
-            ------------------
-
-            function Failure_Text return String is
-            begin
-               return +Description_Buffer;
-            end Failure_Text;
-         end Failure_Description;
-
-         use Failure_Description;
-      begin
-         if AR_Check_Failed
-           or AW_Check_Failed
-           or ER_Check_Failed
-           or EW_Check_Failed
-         then
-            Note_If_Failure (AR_Check_Failed, "Async_Readers");
-            Note_If_Failure (AW_Check_Failed, "Async_Writers");
-            Note_If_Failure (ER_Check_Failed, "Effective_Reads");
-            Note_If_Failure (EW_Check_Failed, "Effective_Writes");
-
-            Error_Msg_N
-              (Description_1
-                 & " and "
-                 & Description_2
-                 & " are not compatible with respect to volatility due to "
-                 & Failure_Text,
-               Srcpos_Bearer);
-         end if;
-      end;
-   end Check_Volatility_Compatibility;
 
    -----------------
    -- Choice_List --
@@ -6190,7 +6021,7 @@ package body Sem_Util is
       --  In Ada 95, limited types are returned by reference, but not if the
       --  convention is other than Ada.
 
-      elsif Is_Limited_View (Typ)
+      elsif Is_Inherently_Limited_Type (Typ)
         and then not Has_Foreign_Convention (Func)
       then
          Set_Returns_By_Ref (Func);
@@ -7554,6 +7385,11 @@ package body Sem_Util is
       loop
          Decl := Parent (Decl);
       end loop;
+
+      --  cope with oddness in definition of N_Declaration
+      if Nkind (Decl) in N_Subprogram_Specification then
+         Decl := Parent (Decl);
+      end if;
 
       return Decl;
    end Enclosing_Declaration;
@@ -10045,7 +9881,7 @@ package body Sem_Util is
            ("value of discriminant & is out of range", Discrim_Value, Discrim);
          Report_Errors := True;
          return;
-      end  if;
+      end if;
 
       --  If we have found the corresponding choice, recursively add its
       --  components to the Into list. The nested components are part of
@@ -10104,7 +9940,7 @@ package body Sem_Util is
       --  formal, or a variable or constant object, then we get the actual
       --  subtype from the referenced entity if one has been built.
 
-      if Nkind (N) = N_Identifier
+      if Nkind (N) in N_Identifier | N_Expanded_Name
         and then
           (Is_Formal (Entity (N))
             or else Ekind (Entity (N)) = E_Constant
@@ -10218,14 +10054,12 @@ package body Sem_Util is
    -------------------------------------
 
    function Get_Actual_Subtype_If_Available (N : Node_Id) return Entity_Id is
-      Typ : constant Entity_Id := Etype (N);
-
    begin
       --  If what we have is an identifier that references a subprogram
       --  formal, or a variable or constant object, then we get the actual
       --  subtype from the referenced entity if one has been built.
 
-      if Nkind (N) = N_Identifier
+      if Nkind (N) in N_Identifier | N_Expanded_Name
         and then
           (Is_Formal (Entity (N))
             or else Ekind (Entity (N)) = E_Constant
@@ -10245,7 +10079,7 @@ package body Sem_Util is
       --  Otherwise the Etype of N is returned unchanged
 
       else
-         return Typ;
+         return Etype (N);
       end if;
    end Get_Actual_Subtype_If_Available;
 
@@ -12520,14 +12354,15 @@ package body Sem_Util is
 
    function Is_Container_Aggregate (Exp : Node_Id) return Boolean is
 
-      function Is_Record_Aggregate return Boolean is (False);
-      --  ??? Unimplemented. Given an aggregate whose type is a
-      --  record type with specified Aggregate aspect, how do we
-      --  determine whether it is a record aggregate or a container
-      --  aggregate? If the code where the aggregate occurs can see only
-      --  a partial view of the aggregate's type then the aggregate
-      --  cannot be a record type; an aggregate of a private type has to
-      --  be a container aggregate.
+      function Is_Record_Aggregate return Boolean is
+        (Is_Parenthesis_Aggregate (Exp));
+      --  Given an aggregate whose type is a record type with specified
+      --  Aggregate aspect, we determine whether it is a record aggregate or
+      --  a container aggregate by ckecking whether it uses parentheses () or
+      --  square brackets []. If the code where the aggregate occurs can see
+      --  only a partial view of the aggregate's type then the aggregate cannot
+      --  be a record type and must then use []; an aggregate of a private type
+      --  has to be a container aggregate and must then use [].
 
    begin
       return Nkind (Exp) = N_Aggregate
@@ -14701,11 +14536,16 @@ package body Sem_Util is
       --  A named subtype does not inherit the predicate function of its
       --  parent but an itype declared for a loop index needs the discrete
       --  predicate information of its parent to execute the loop properly.
+      --  Moreover, a named private subtype whose full view is an itype also
+      --  needs to inherit a predicate function because it will not be frozen.
       --  A non-discrete type may has a static predicate (for example True)
       --  but has no static_discrete_predicate.
 
       if not Only_Flags
-        and then Is_Itype (Subt)
+        and then (Is_Itype (Subt)
+                   or else (Ekind (Subt) = E_Private_Subtype
+                             and then Present (Full_View (Subt))
+                             and then Is_Itype (Full_View (Subt))))
         and then Present (Predicate_Function (Par))
       then
          Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
@@ -15327,7 +15167,7 @@ package body Sem_Util is
            --  statement is aliased if its type is immutably limited.
 
            or else (Is_Return_Object (E)
-                     and then Is_Limited_View (Etype (E)))
+                     and then Is_Inherently_Limited_Type (Etype (E)))
 
            --  The current instance of a limited type is aliased, so
            --  we want to allow uses of T'Access in the init proc for
@@ -15336,7 +15176,7 @@ package body Sem_Util is
 
            or else (Is_Formal (E)
                      and then Chars (E) = Name_uInit
-                     and then Is_Limited_View (Etype (E)));
+                     and then Is_Inherently_Limited_Type (Etype (E)));
 
       elsif Nkind (Obj) = N_Selected_Component then
          return Is_Aliased (Entity (Selector_Name (Obj)));
@@ -16150,7 +15990,7 @@ package body Sem_Util is
             Param_Typ := Etype (Param);
          end if;
 
-      --  In the case where an Itype was created for a dispatchin call, the
+      --  In the case where an Itype was created for a dispatching call, the
       --  procedure call has been rewritten. The actual may be an access to
       --  interface type in which case it is the designated type that is the
       --  controlling type.
@@ -17509,6 +17349,36 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Fully_Initialized_Variant;
+
+   -----------------------------------
+   -- Is_Function_With_Side_Effects --
+   -----------------------------------
+
+   function Is_Function_With_Side_Effects (Subp : Entity_Id) return Boolean is
+      Arg  : Node_Id;
+      Expr : Node_Id;
+      Prag : constant Node_Id := Get_Pragma (Subp, Pragma_Side_Effects);
+
+   begin
+      --  Extract the value from the Boolean expression (if any)
+
+      if Present (Prag) then
+         Arg := First (Pragma_Argument_Associations (Prag));
+
+         if Present (Arg) then
+            Expr := Get_Pragma_Arg (Arg);
+
+            return Is_True (Expr_Value (Expr));
+
+         --  Otherwise the aspect or pragma defaults to True
+
+         else
+            return True;
+         end if;
+      end if;
+
+      return False;
+   end Is_Function_With_Side_Effects;
 
    ------------------------------------
    -- Is_Generic_Declaration_Or_Body --
@@ -19290,7 +19160,7 @@ package body Sem_Util is
 
                --  An effectively volatile object may act as an actual when the
                --  corresponding formal is of a non-scalar effectively volatile
-               --  type (SPARK RM 7.1.3(10)).
+               --  type (SPARK RM 7.1.3(9)).
 
                if not Is_Scalar_Type (Etype (Formal))
                  and then Is_Effectively_Volatile_For_Reading (Etype (Formal))
@@ -19299,7 +19169,7 @@ package body Sem_Util is
 
                --  An effectively volatile object may act as an actual in a
                --  call to an instance of Unchecked_Conversion. (SPARK RM
-               --  7.1.3(10)).
+               --  7.1.3(9)).
 
                elsif Is_Unchecked_Conversion_Instance (Subp) then
                   return True;
@@ -21468,6 +21338,40 @@ package body Sem_Util is
       pragma Assert (No (Actual));
    end Iterate_Call_Parameters;
 
+   --------------------------------
+   -- Iterate_Interface_Ancestor --
+   --------------------------------
+
+   function Iterator_Interface_Ancestor (Typ : Entity_Id) return Entity_Id is
+   begin
+      if Has_Interfaces (Typ) then
+         declare
+            Iface_Elmt : Elmt_Id;
+            Ifaces     : Elist_Id;
+            Root_Iface : Entity_Id;
+
+         begin
+            Collect_Interfaces (Typ, Ifaces);
+
+            Iface_Elmt := First_Elmt (Ifaces);
+            while Present (Iface_Elmt) loop
+               Root_Iface := Root_Type (Node (Iface_Elmt));
+
+               if Chars (Root_Iface)
+                    in Name_Forward_Iterator | Name_Reversible_Iterator
+                 and then In_Predefined_Unit (Root_Iface)
+               then
+                  return Root_Iface;
+               end if;
+
+               Next_Elmt (Iface_Elmt);
+            end loop;
+         end;
+      end if;
+
+      return Empty;
+   end Iterator_Interface_Ancestor;
+
    -------------------------
    -- Kill_Current_Values --
    -------------------------
@@ -22564,7 +22468,7 @@ package body Sem_Util is
 
       begin
          if Is_Record_Type (Typ)
-           and then not Is_Limited_View (Typ)
+           and then not Is_Inherently_Limited_Type (Typ)
            and then Has_Defaulted_Discriminants (Typ)
          then
             --  Loop through the components, looking for an array whose upper
@@ -23572,11 +23476,6 @@ package body Sem_Util is
                then
                   Set_Chars (Result, Chars (Entity (Result)));
                end if;
-            end if;
-
-            if Has_Aspects (N) then
-               Set_Aspect_Specifications (Result,
-                 Copy_List_With_Replacement (Aspect_Specifications (N)));
             end if;
          end if;
 
@@ -25406,7 +25305,7 @@ package body Sem_Util is
 
       --  Check the status of the operand of a type conversion
 
-      elsif Nkind (N) = N_Type_Conversion then
+      elsif Nkind (N) in N_Type_Conversion | N_Unchecked_Type_Conversion then
          return Null_Status (Expression (N));
 
       --  The input denotes a reference to an entity. Determine whether the

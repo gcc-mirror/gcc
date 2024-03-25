@@ -1,7 +1,7 @@
 /* Dependency checks for instruction scheduling, shared between ARM and
    AARCH64.
 
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -534,7 +534,8 @@ arm_mac_accumulator_is_mul_result (rtx producer, rtx consumer)
 rtx_insn *
 arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 		   vec<machine_mode> & /*input_modes*/,
-		   vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
+		   vec<const char *> &constraints,
+		   vec<rtx> & /*uses*/, vec<rtx> & /*clobbers*/,
 		   HARD_REG_SET & /*clobbered_regs*/, location_t loc)
 {
   bool saw_asm_flag = false;
@@ -659,185 +660,146 @@ arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
   return saw_asm_flag ? seq : NULL;
 }
 
-#define BRANCH_PROTECT_STR_MAX 255
-extern char *accepted_branch_protection_string;
-
-static enum aarch_parse_opt_result
-aarch_handle_no_branch_protection (char* str, char* rest)
+static void
+aarch_handle_no_branch_protection (void)
 {
   aarch_ra_sign_scope = AARCH_FUNCTION_NONE;
   aarch_enable_bti = 0;
-  if (rest)
-    {
-      error ("unexpected %<%s%> after %<%s%>", rest, str);
-      return AARCH_PARSE_INVALID_FEATURE;
-    }
-  return AARCH_PARSE_OK;
 }
 
-static enum aarch_parse_opt_result
-aarch_handle_standard_branch_protection (char* str, char* rest)
+static void
+aarch_handle_standard_branch_protection (void)
 {
   aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
   aarch_ra_sign_key = AARCH_KEY_A;
   aarch_enable_bti = 1;
-  if (rest)
-    {
-      error ("unexpected %<%s%> after %<%s%>", rest, str);
-      return AARCH_PARSE_INVALID_FEATURE;
-    }
-  return AARCH_PARSE_OK;
 }
 
-static enum aarch_parse_opt_result
-aarch_handle_pac_ret_protection (char* str ATTRIBUTE_UNUSED,
-				 char* rest ATTRIBUTE_UNUSED)
+static void
+aarch_handle_pac_ret_protection (void)
 {
   aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
   aarch_ra_sign_key = AARCH_KEY_A;
-  return AARCH_PARSE_OK;
 }
 
-static enum aarch_parse_opt_result
-aarch_handle_pac_ret_leaf (char* str ATTRIBUTE_UNUSED,
-			   char* rest ATTRIBUTE_UNUSED)
+static void
+aarch_handle_pac_ret_leaf (void)
 {
   aarch_ra_sign_scope = AARCH_FUNCTION_ALL;
-  return AARCH_PARSE_OK;
 }
 
-static enum aarch_parse_opt_result
-aarch_handle_pac_ret_b_key (char* str ATTRIBUTE_UNUSED,
-			    char* rest ATTRIBUTE_UNUSED)
+static void
+aarch_handle_pac_ret_b_key (void)
 {
   aarch_ra_sign_key = AARCH_KEY_B;
-  return AARCH_PARSE_OK;
 }
 
-static enum aarch_parse_opt_result
-aarch_handle_bti_protection (char* str ATTRIBUTE_UNUSED,
-			     char* rest ATTRIBUTE_UNUSED)
+static void
+aarch_handle_bti_protection (void)
 {
   aarch_enable_bti = 1;
-  return AARCH_PARSE_OK;
 }
 
 static const struct aarch_branch_protect_type aarch_pac_ret_subtypes[] = {
-  { "leaf", aarch_handle_pac_ret_leaf, NULL, 0 },
-  { "b-key", aarch_handle_pac_ret_b_key, NULL, 0 },
-  { NULL, NULL, NULL, 0 }
+  { "leaf", false, aarch_handle_pac_ret_leaf, NULL, 0 },
+  { "b-key", false, aarch_handle_pac_ret_b_key, NULL, 0 },
+  { NULL, false, NULL, NULL, 0 }
 };
 
 static const struct aarch_branch_protect_type aarch_branch_protect_types[] = {
-  { "none", aarch_handle_no_branch_protection, NULL, 0 },
-  { "standard", aarch_handle_standard_branch_protection, NULL, 0 },
-  { "pac-ret", aarch_handle_pac_ret_protection, aarch_pac_ret_subtypes,
+  { "none", true, aarch_handle_no_branch_protection, NULL, 0 },
+  { "standard", true, aarch_handle_standard_branch_protection, NULL, 0 },
+  { "pac-ret", false, aarch_handle_pac_ret_protection, aarch_pac_ret_subtypes,
     ARRAY_SIZE (aarch_pac_ret_subtypes) },
-  { "bti", aarch_handle_bti_protection, NULL, 0 },
-  { NULL, NULL, NULL, 0 }
+  { "bti", false, aarch_handle_bti_protection, NULL, 0 },
+  { NULL, false, NULL, NULL, 0 }
 };
 
-/* Parses CONST_STR for branch protection features specified in
-   aarch64_branch_protect_types, and set any global variables required.  Returns
-   the parsing result and assigns LAST_STR to the last processed token from
-   CONST_STR so that it can be used for error reporting.  */
+/* In-place split *str at delim, return *str and set *str to the tail
+   of the string or NULL if the end is reached.  */
 
-enum aarch_parse_opt_result
-aarch_parse_branch_protection (const char *const_str, char** last_str)
+static char *
+next_tok (char **str, int delim)
 {
-  char *str_root = xstrdup (const_str);
-  char* token_save = NULL;
-  char *str = strtok_r (str_root, "+", &token_save);
-  enum aarch_parse_opt_result res = AARCH_PARSE_OK;
-  if (!str)
-    res = AARCH_PARSE_MISSING_ARG;
-  else
+  char *tok = *str;
+  for (char *p = tok; p && *p != '\0'; p++)
     {
-      char *next_str = strtok_r (NULL, "+", &token_save);
-      /* Reset the branch protection features to their defaults.  */
-      aarch_handle_no_branch_protection (NULL, NULL);
-
-      while (str && res == AARCH_PARSE_OK)
+      if (*p == delim)
 	{
-	  const aarch_branch_protect_type* type = aarch_branch_protect_types;
-	  bool found = false;
-	  /* Search for this type.  */
-	  while (type && type->name && !found && res == AARCH_PARSE_OK)
-	    {
-	      if (strcmp (str, type->name) == 0)
-		{
-		  found = true;
-		  res = type->handler (str, next_str);
-		  str = next_str;
-		  next_str = strtok_r (NULL, "+", &token_save);
-		}
-	      else
-		type++;
-	    }
-	  if (found && res == AARCH_PARSE_OK)
-	    {
-	      bool found_subtype = true;
-	      /* Loop through each token until we find one that isn't a
-		 subtype.  */
-	      while (found_subtype)
-		{
-		  found_subtype = false;
-		  const aarch_branch_protect_type *subtype = type->subtypes;
-		  /* Search for the subtype.  */
-		  while (str && subtype && subtype->name && !found_subtype
-			  && res == AARCH_PARSE_OK)
-		    {
-		      if (strcmp (str, subtype->name) == 0)
-			{
-			  found_subtype = true;
-			  res = subtype->handler (str, next_str);
-			  str = next_str;
-			  next_str = strtok_r (NULL, "+", &token_save);
-			}
-		      else
-			subtype++;
-		    }
-		}
-	    }
-	  else if (!found)
-	    res = AARCH_PARSE_INVALID_ARG;
+	  *p = '\0';
+	  *str = p + 1;
+	  return tok;
 	}
     }
-  /* Copy the last processed token into the argument to pass it back.
-    Used by option and attribute validation to print the offending token.  */
-  if (last_str)
-    {
-      if (str)
-	strcpy (*last_str, str);
-      else
-	*last_str = NULL;
-    }
-
-  if (res == AARCH_PARSE_OK)
-    {
-      /* If needed, alloc the accepted string then copy in const_str.
-	Used by override_option_after_change_1.  */
-      if (!accepted_branch_protection_string)
-	accepted_branch_protection_string
-	  = (char *) xmalloc (BRANCH_PROTECT_STR_MAX + 1);
-      strncpy (accepted_branch_protection_string, const_str,
-	       BRANCH_PROTECT_STR_MAX + 1);
-      /* Forcibly null-terminate.  */
-      accepted_branch_protection_string[BRANCH_PROTECT_STR_MAX] = '\0';
-    }
-  return res;
+  *str = NULL;
+  return tok;
 }
 
+/* Parses CONST_STR for branch protection features specified in
+   aarch64_branch_protect_types, and set any global variables required.
+   Returns true on success.  */
+
 bool
-aarch_validate_mbranch_protection (const char *const_str)
+aarch_validate_mbranch_protection (const char *const_str, const char *opt)
 {
-  char *str = (char *) xmalloc (strlen (const_str));
-  enum aarch_parse_opt_result res =
-    aarch_parse_branch_protection (const_str, &str);
-  if (res == AARCH_PARSE_INVALID_ARG)
-    error ("invalid argument %<%s%> for %<-mbranch-protection=%>", str);
-  else if (res == AARCH_PARSE_MISSING_ARG)
-    error ("missing argument for %<-mbranch-protection=%>");
-  free (str);
-  return res == AARCH_PARSE_OK;
+  char *str_root = xstrdup (const_str);
+  char *next_str = str_root;
+  char *str = next_tok (&next_str, '+');
+  char *alone_str = NULL;
+  bool reject_alone = false;
+  bool res = true;
+
+  /* First entry is "none" and it is used to reset the state.  */
+  aarch_branch_protect_types[0].handler ();
+
+  while (str)
+    {
+      const aarch_branch_protect_type *type = aarch_branch_protect_types;
+      for (; type->name; type++)
+	if (strcmp (str, type->name) == 0)
+	  break;
+      if (type->name == NULL)
+	{
+	  res = false;
+	  if (strcmp (str, "") == 0)
+	    error ("missing feature or flag for %<%s%>", opt);
+	  else
+	    error ("invalid argument %<%s%> for %<%s%>", str, opt);
+	  break;
+	}
+
+      if (type->alone && alone_str == NULL)
+	alone_str = str;
+      else
+	reject_alone = true;
+      if (reject_alone && alone_str != NULL)
+	{
+	  res = false;
+	  error ("argument %<%s%> can only appear alone in %<%s%>",
+		 alone_str, opt);
+	  break;
+	}
+
+      type->handler ();
+      str = next_tok (&next_str, '+');
+      if (type->subtypes == NULL)
+	continue;
+
+      /* Loop through tokens until we find one that isn't a subtype.  */
+      while (str)
+	{
+	  const aarch_branch_protect_type *subtype = type->subtypes;
+	  for (; subtype->name; subtype++)
+	    if (strcmp (str, subtype->name) == 0)
+	      break;
+	  if (subtype->name == NULL)
+	    break;
+
+	  subtype->handler ();
+	  str = next_tok (&next_str, '+');
+	}
+    }
+
+  free (str_root);
+  return res;
 }

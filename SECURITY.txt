@@ -155,10 +155,10 @@ Security features implemented in GCC
     GCC implements a number of security features that reduce the impact
     of security issues in applications, such as -fstack-protector,
     -fstack-clash-protection, _FORTIFY_SOURCE and so on.  A failure of
-    these features to function perfectly in all situations is not an
-    exploitable vulnerability in itself since it does not affect the
-    correctness of programs.  Further, they're dependent on heuristics
-    and may not always have full coverage for protection.
+    these features to function perfectly in all situations is not a
+    vulnerability in itself since it does not affect the correctness of
+    programs.  Further, they're dependent on heuristics and may not
+    always have full coverage for protection.
 
     Similarly, GCC may transform code in a way that the correctness of
     the expressed algorithm is preserved, but supplementary properties

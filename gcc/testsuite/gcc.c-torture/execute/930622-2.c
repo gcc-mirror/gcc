@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long double
 ll_to_ld (long long n)
 {
@@ -10,7 +13,8 @@ ld_to_ll (long double n)
   return n;
 }
 
-main ()
+int
+main (void)
 {
   long long n;
 

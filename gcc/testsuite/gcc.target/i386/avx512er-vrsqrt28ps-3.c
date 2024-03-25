@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target avx512er } */
 /* { dg-options "-O2 -ffast-math -ftree-vectorize -mavx512er" } */
+/* { dg-warning "AVX512ER support will be removed in GCC 15" "" { target *-*-* } 0 } */
 
 #include <math.h>
 #include "avx512er-check.h"
@@ -37,6 +38,7 @@ avx512er_test (void)
   compute_rsqrt_ref (in, ref);
   compute_rsqrt_exp (in, exp);
 
+#pragma GCC novector
   for (int i = 0; i < MAX; i++)
     {
       float rel_err = (ref[i] - exp[i]) / ref[i];

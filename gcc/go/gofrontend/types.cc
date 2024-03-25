@@ -1377,6 +1377,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
 
   // Build the contents of the type descriptor.
   Expression* initializer = this->do_type_descriptor(gogo, NULL);
+  initializer->determine_type_no_context(gogo);
 
   Btype* initializer_btype = initializer->type()->get_backend(gogo);
 
@@ -1492,7 +1493,9 @@ Type::type_descriptor_defined_elsewhere(Named_type* nt,
 Expression*
 Type::type_descriptor(Gogo* gogo, Type* type)
 {
-  return type->do_type_descriptor(gogo, NULL);
+  Expression* ret = type->do_type_descriptor(gogo, NULL);
+  ret->determine_type_no_context(gogo);
+  return ret;
 }
 
 // Return a composite literal for a type descriptor with a name.
@@ -1501,7 +1504,9 @@ Expression*
 Type::named_type_descriptor(Gogo* gogo, Type* type, Named_type* name)
 {
   go_assert(name != NULL && type->named_type() != name);
-  return type->do_type_descriptor(gogo, name);
+  Expression* ret = type->do_type_descriptor(gogo, name);
+  ret->determine_type_no_context(gogo);
+  return ret;
 }
 
 // Make a builtin struct type from a list of fields.  The fields are
@@ -1555,7 +1560,7 @@ Type::convert_builtin_named_types(Gogo* gogo)
        p != Type::named_builtin_types.end();
        ++p)
     {
-      bool r = (*p)->verify();
+      bool r = (*p)->verify(gogo);
       go_assert(r);
       (*p)->convert(gogo);
     }
@@ -1989,16 +1994,17 @@ Type::write_hash_function(Gogo* gogo, int64_t size, const Backend_name* bname,
   gogo->start_block(bloc);
 
   if (size != -1)
-    this->write_identity_hash(gogo, size);
+    this->write_identity_hash(gogo, hash_fn, size);
   else if (this->struct_type() != NULL)
-    this->struct_type()->write_hash_function(gogo, hash_fntype);
+    this->struct_type()->write_hash_function(gogo, hash_fn, hash_fntype);
   else if (this->array_type() != NULL)
-    this->array_type()->write_hash_function(gogo, hash_fntype);
+    this->array_type()->write_hash_function(gogo, hash_fn, hash_fntype);
   else
     go_unreachable();
 
   Block* b = gogo->finish_block(bloc);
   gogo->add_block(b, bloc);
+  b->determine_types(gogo);
   gogo->lower_block(hash_fn, b);
   gogo->order_block(b);
   gogo->remove_shortcuts_in_block(b);
@@ -2016,7 +2022,7 @@ Type::write_hash_function(Gogo* gogo, int64_t size, const Backend_name* bname,
 // is called), and the constant size.
 
 void
-Type::write_identity_hash(Gogo* gogo, int64_t size)
+Type::write_identity_hash(Gogo* gogo, Named_object* function, int64_t size)
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -2057,7 +2063,8 @@ Type::write_identity_hash(Gogo* gogo, int64_t size)
 
   Expression_list* vals = new Expression_list();
   vals->push_back(call);
-  Statement* s = Statement::make_return_statement(vals, bloc);
+  Statement* s = Statement::make_return_statement(function, vals, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
 }
 
@@ -2329,18 +2336,19 @@ Type::write_equal_function(Gogo* gogo, Named_type* name, int64_t size,
   gogo->start_block(bloc);
 
   if (size != -1)
-    this->write_identity_equal(gogo, size);
+    this->write_identity_equal(gogo, equal_fn, size);
   else if (name != NULL && name->real_type()->named_type() != NULL)
-    this->write_named_equal(gogo, name);
+    this->write_named_equal(gogo, equal_fn, name);
   else if (this->struct_type() != NULL)
-    this->struct_type()->write_equal_function(gogo, name);
+    this->struct_type()->write_equal_function(gogo, equal_fn, name);
   else if (this->array_type() != NULL)
-    this->array_type()->write_equal_function(gogo, name);
+    this->array_type()->write_equal_function(gogo, equal_fn, name);
   else
     go_unreachable();
 
   Block* b = gogo->finish_block(bloc);
   gogo->add_block(b, bloc);
+  b->determine_types(gogo);
   gogo->lower_block(equal_fn, b);
   gogo->order_block(b);
   gogo->remove_shortcuts_in_block(b);
@@ -2358,7 +2366,7 @@ Type::write_equal_function(Gogo* gogo, Named_type* name, int64_t size,
 // constructed before this is called), and the constant size.
 
 void
-Type::write_identity_equal(Gogo* gogo, int64_t size)
+Type::write_identity_equal(Gogo* gogo, Named_object* function, int64_t size)
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -2399,7 +2407,8 @@ Type::write_identity_equal(Gogo* gogo, int64_t size)
 
   Expression_list* vals = new Expression_list();
   vals->push_back(call);
-  Statement* s = Statement::make_return_statement(vals, bloc);
+  Statement* s = Statement::make_return_statement(function, vals, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
 }
 
@@ -2410,7 +2419,7 @@ Type::write_identity_equal(Gogo* gogo, int64_t size)
 // functions defined only in that package.
 
 void
-Type::write_named_equal(Gogo* gogo, Named_type* name)
+Type::write_named_equal(Gogo* gogo, Named_object* function, Named_type* name)
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -2429,11 +2438,13 @@ Type::write_named_equal(Gogo* gogo, Named_type* name)
   Expression* ref = Expression::make_var_reference(key1_arg, bloc);
   ref = Expression::make_cast(pt, ref, bloc);
   Temporary_statement* p1 = Statement::make_temporary(pt, ref, bloc);
+  p1->determine_types(gogo);
   gogo->add_statement(p1);
 
   ref = Expression::make_var_reference(key2_arg, bloc);
   ref = Expression::make_cast(pt, ref, bloc);
   Temporary_statement* p2 = Statement::make_temporary(pt, ref, bloc);
+  p2->determine_types(gogo);
   gogo->add_statement(p2);
 
   // Compare the values for equality.
@@ -2448,7 +2459,8 @@ Type::write_named_equal(Gogo* gogo, Named_type* name)
   // Return the equality comparison.
   Expression_list* vals = new Expression_list();
   vals->push_back(cond);
-  Statement* s = Statement::make_return_statement(vals, bloc);
+  Statement* s = Statement::make_return_statement(function, vals, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
 }
 
@@ -5950,7 +5962,7 @@ Struct_type::do_traverse(Traverse* traverse)
 // Verify that the struct type is complete and valid.
 
 bool
-Struct_type::do_verify()
+Struct_type::do_verify(Gogo*)
 {
   Struct_field_list* fields = this->fields_;
   if (fields == NULL)
@@ -6658,7 +6670,8 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 // function.
 
 void
-Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
+Struct_type::write_hash_function(Gogo* gogo, Named_object* function,
+				 Function_type* hash_fntype)
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -6678,6 +6691,7 @@ Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
   Expression* ref = Expression::make_var_reference(seed_arg, bloc);
   Temporary_statement* retval = Statement::make_temporary(uintptr_type, ref,
 							  bloc);
+  retval->determine_types(gogo);
   gogo->add_statement(retval);
 
   // Make a temporary to hold the key as a uintptr.
@@ -6685,6 +6699,7 @@ Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
   ref = Expression::make_cast(uintptr_type, ref, bloc);
   Temporary_statement* key = Statement::make_temporary(uintptr_type, ref,
 						       bloc);
+  key->determine_types(gogo);
   gogo->add_statement(key);
 
   // Loop over the struct fields.
@@ -6720,6 +6735,7 @@ Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
 	Expression::make_temporary_reference(retval, bloc);
       tref->set_is_lvalue();
       Statement* s = Statement::make_assignment(tref, call, bloc);
+      s->determine_types(gogo);
       gogo->add_statement(s);
     }
 
@@ -6727,7 +6743,8 @@ Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
   Expression_list* vals = new Expression_list();
   ref = Expression::make_temporary_reference(retval, bloc);
   vals->push_back(ref);
-  Statement* s = Statement::make_return_statement(vals, bloc);
+  Statement* s = Statement::make_return_statement(function, vals, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
 }
 
@@ -6735,7 +6752,8 @@ Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
 // identity function.
 
 void
-Struct_type::write_equal_function(Gogo* gogo, Named_type* name)
+Struct_type::write_equal_function(Gogo* gogo, Named_object* function,
+				  Named_type* name)
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -6752,11 +6770,13 @@ Struct_type::write_equal_function(Gogo* gogo, Named_type* name)
   Expression* ref = Expression::make_var_reference(key1_arg, bloc);
   ref = Expression::make_unsafe_cast(pt, ref, bloc);
   Temporary_statement* p1 = Statement::make_temporary(pt, ref, bloc);
+  p1->determine_types(gogo);
   gogo->add_statement(p1);
 
   ref = Expression::make_var_reference(key2_arg, bloc);
   ref = Expression::make_unsafe_cast(pt, ref, bloc);
   Temporary_statement* p2 = Statement::make_temporary(pt, ref, bloc);
+  p2->determine_types(gogo);
   gogo->add_statement(p2);
 
   const Struct_field_list* fields = this->fields_;
@@ -6785,18 +6805,21 @@ Struct_type::write_equal_function(Gogo* gogo, Named_type* name)
       gogo->start_block(bloc);
       Expression_list* vals = new Expression_list();
       vals->push_back(Expression::make_boolean(false, bloc));
-      Statement* s = Statement::make_return_statement(vals, bloc);
+      Statement* s = Statement::make_return_statement(function, vals, bloc);
+      s->determine_types(gogo);
       gogo->add_statement(s);
       Block* then_block = gogo->finish_block(bloc);
 
       s = Statement::make_if_statement(cond, then_block, NULL, bloc);
+      s->determine_types(gogo);
       gogo->add_statement(s);
     }
 
   // All the fields are equal, so return true.
   Expression_list* vals = new Expression_list();
   vals->push_back(Expression::make_boolean(true, bloc));
-  Statement* s = Statement::make_return_statement(vals, bloc);
+  Statement* s = Statement::make_return_statement(function, vals, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
 }
 
@@ -7337,13 +7360,14 @@ Array_type::do_traverse(Traverse* traverse)
 // Check that the length is valid.
 
 bool
-Array_type::verify_length()
+Array_type::verify_length(Gogo* gogo)
 {
   if (this->length_ == NULL)
     return true;
 
-  Type_context context(Type::lookup_integer_type("int"), false);
-  this->length_->determine_type(&context);
+  Type* int_type = Type::lookup_integer_type("int");
+  Type_context int_context(int_type, false);
+  this->length_->determine_type(gogo, &int_context);
 
   if (this->length_->is_error_expression()
       || this->length_->type()->is_error())
@@ -7379,7 +7403,6 @@ Array_type::verify_length()
       return false;
     }
 
-  Type* int_type = Type::lookup_integer_type("int");
   unsigned int tbits = int_type->integer_type()->bits();
   unsigned long val;
   switch (nc.to_unsigned_long(&val))
@@ -7421,14 +7444,14 @@ Array_type::verify_length()
 // Verify the type.
 
 bool
-Array_type::do_verify()
+Array_type::do_verify(Gogo* gogo)
 {
   if (this->element_type()->is_error_type())
     {
       this->set_is_error();
       return false;
     }
-  if (!this->verify_length())
+  if (!this->verify_length(gogo))
     {
       this->length_ = Expression::make_error(this->length_->location());
       this->set_is_error();
@@ -7514,7 +7537,8 @@ Array_type::do_hash_for_method(Gogo* gogo, int flags) const
 // function.
 
 void
-Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
+Array_type::write_hash_function(Gogo* gogo, Named_object* function,
+				Function_type* hash_fntype)
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -7534,6 +7558,7 @@ Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
   Expression* ref = Expression::make_var_reference(seed_arg, bloc);
   Temporary_statement* retval = Statement::make_temporary(uintptr_type, ref,
 							  bloc);
+  retval->determine_types(gogo);
   gogo->add_statement(retval);
 
   // Make a temporary to hold the key as a uintptr.
@@ -7541,12 +7566,14 @@ Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
   ref = Expression::make_cast(uintptr_type, ref, bloc);
   Temporary_statement* key = Statement::make_temporary(uintptr_type, ref,
 						       bloc);
+  key->determine_types(gogo);
   gogo->add_statement(key);
 
   // Loop over the array elements.
   // for i = range a
   Type* int_type = Type::lookup_integer_type("int");
   Temporary_statement* index = Statement::make_temporary(int_type, NULL, bloc);
+  index->determine_types(gogo);
   gogo->add_statement(index);
 
   Expression* iref = Expression::make_temporary_reference(index, bloc);
@@ -7585,6 +7612,7 @@ Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
     Expression::make_temporary_reference(retval, bloc);
   tref->set_is_lvalue();
   Statement* s = Statement::make_assignment(tref, call, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
 
   // Increase the element pointer.
@@ -7595,13 +7623,15 @@ Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
   Block* statements = gogo->finish_block(bloc);
 
   for_range->add_statements(statements);
+  for_range->determine_types(gogo);
   gogo->add_statement(for_range);
 
   // Return retval to the caller of the hash function.
   Expression_list* vals = new Expression_list();
   ref = Expression::make_temporary_reference(retval, bloc);
   vals->push_back(ref);
-  s = Statement::make_return_statement(vals, bloc);
+  s = Statement::make_return_statement(function, vals, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
 }
 
@@ -7609,7 +7639,8 @@ Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
 // identity function.
 
 void
-Array_type::write_equal_function(Gogo* gogo, Named_type* name)
+Array_type::write_equal_function(Gogo* gogo, Named_object* function,
+				 Named_type* name)
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -7626,17 +7657,20 @@ Array_type::write_equal_function(Gogo* gogo, Named_type* name)
   Expression* ref = Expression::make_var_reference(key1_arg, bloc);
   ref = Expression::make_unsafe_cast(pt, ref, bloc);
   Temporary_statement* p1 = Statement::make_temporary(pt, ref, bloc);
+  p1->determine_types(gogo);
   gogo->add_statement(p1);
 
   ref = Expression::make_var_reference(key2_arg, bloc);
   ref = Expression::make_unsafe_cast(pt, ref, bloc);
   Temporary_statement* p2 = Statement::make_temporary(pt, ref, bloc);
+  p2->determine_types(gogo);
   gogo->add_statement(p2);
 
   // Loop over the array elements.
   // for i = range a
   Type* int_type = Type::lookup_integer_type("int");
   Temporary_statement* index = Statement::make_temporary(int_type, NULL, bloc);
+  index->determine_types(gogo);
   gogo->add_statement(index);
 
   Expression* iref = Expression::make_temporary_reference(index, bloc);
@@ -7665,22 +7699,26 @@ Array_type::write_equal_function(Gogo* gogo, Named_type* name)
   gogo->start_block(bloc);
   Expression_list* vals = new Expression_list();
   vals->push_back(Expression::make_boolean(false, bloc));
-  Statement* s = Statement::make_return_statement(vals, bloc);
+  Statement* s = Statement::make_return_statement(function, vals, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
   Block* then_block = gogo->finish_block(bloc);
 
   s = Statement::make_if_statement(cond, then_block, NULL, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
 
   Block* statements = gogo->finish_block(bloc);
 
   for_range->add_statements(statements);
+  for_range->determine_types(gogo);
   gogo->add_statement(for_range);
 
   // All the elements are equal, so return true.
   vals = new Expression_list();
   vals->push_back(Expression::make_boolean(true, bloc));
-  s = Statement::make_return_statement(vals, bloc);
+  s = Statement::make_return_statement(function, vals, bloc);
+  s->determine_types(gogo);
   gogo->add_statement(s);
 }
 
@@ -8225,7 +8263,7 @@ Map_type::do_traverse(Traverse* traverse)
 // Check that the map type is OK.
 
 bool
-Map_type::do_verify()
+Map_type::do_verify(Gogo*)
 {
   // The runtime support uses "map[void]void".
   if (!this->key_type_->is_comparable() && !this->key_type_->is_void_type())
@@ -8768,7 +8806,7 @@ Type::make_map_type(Type* key_type, Type* val_type, Location location)
 // Verify.
 
 bool
-Channel_type::do_verify()
+Channel_type::do_verify(Gogo*)
 {
   // We have no location for this error, but this is not something the
   // ordinary user will see.
@@ -10833,7 +10871,7 @@ Find_alias::type(Type* type)
 // Verify that a named type does not refer to itself.
 
 bool
-Named_type::do_verify()
+Named_type::do_verify(Gogo*)
 {
   if (this->is_verified_)
     return true;
@@ -11016,7 +11054,7 @@ Named_type::convert(Gogo* gogo)
   // If we are called to turn unsafe.Sizeof into a constant, we may
   // not have verified the type yet.  We have to make sure it is
   // verified, since that sets the list of dependencies.
-  this->verify();
+  this->verify(gogo);
 
   // Convert all the dependencies.  If they refer indirectly back to
   // this type, they will pick up the intermediate representation we just
@@ -11805,9 +11843,9 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 	{
 	  stub = gogo->start_function(stub_name, stub_type, false,
 				      fntype->location());
-	  Type::build_one_stub_method(gogo, m, buf, receiver_type, stub_params,
-				      fntype->is_varargs(), stub_results,
-				      location);
+	  Type::build_one_stub_method(gogo, m, stub, buf, receiver_type,
+				      stub_params, fntype->is_varargs(),
+				      stub_results, location);
 	  gogo->finish_function(fntype->location());
 
 	  if (type->named_type() == NULL && stub->is_function())
@@ -11826,6 +11864,7 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 
 void
 Type::build_one_stub_method(Gogo* gogo, Method* method,
+			    Named_object* stub,
 			    const char* receiver_name,
 			    const Type* receiver_type,
 			    const Typed_identifier_list* params,
@@ -11865,7 +11904,7 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
   go_assert(func != NULL);
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
 						location);
-  Type::add_return_from_results(gogo, call, results, location);
+  Type::add_return_from_results(gogo, stub, call, results, location);
 }
 
 // Build direct interface stub methods for TYPE as needed.  METHODS
@@ -11974,7 +12013,7 @@ Type::build_direct_iface_stub_methods(Gogo* gogo, const Type* type,
         {
           stub = gogo->start_function(stub_name, stub_type, false,
                                       fntype->location());
-	  Type::build_one_iface_stub_method(gogo, m, buf, stub_params,
+	  Type::build_one_iface_stub_method(gogo, m, stub, buf, stub_params,
 					    fntype->is_varargs(), stub_results,
 					    loc);
           gogo->finish_function(fntype->location());
@@ -12001,6 +12040,7 @@ Type::build_direct_iface_stub_methods(Gogo* gogo, const Type* type,
 
 void
 Type::build_one_iface_stub_method(Gogo* gogo, Method* method,
+				  Named_object* stub,
                                   const char* receiver_name,
                                   const Typed_identifier_list* params,
 				  bool is_varargs,
@@ -12037,7 +12077,7 @@ Type::build_one_iface_stub_method(Gogo* gogo, Method* method,
   go_assert(func != NULL);
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
                                                 loc);
-  Type::add_return_from_results(gogo, call, results, loc);
+  Type::add_return_from_results(gogo, stub, call, results, loc);
 }
 
 // Build and add a return statement from a call expression and a list
@@ -12045,9 +12085,10 @@ Type::build_one_iface_stub_method(Gogo* gogo, Method* method,
 // results.
 
 void
-Type::add_return_from_results(Gogo* gogo, Call_expression* call,
-				const Typed_identifier_list* results,
-				Location loc)
+Type::add_return_from_results(Gogo* gogo, Named_object* stub,
+			      Call_expression* call,
+			      const Typed_identifier_list* results,
+			      Location loc)
 {
   Statement* s;
   if (results == NULL || results->empty())
@@ -12063,9 +12104,10 @@ Type::add_return_from_results(Gogo* gogo, Call_expression* call,
 	  for (size_t i = 0; i < rc; ++i)
 	    vals->push_back(Expression::make_call_result(call, i));
 	}
-      s = Statement::make_return_statement(vals, loc);
+      s = Statement::make_return_statement(stub, vals, loc);
     }
 
+  s->determine_types(gogo);
   gogo->add_statement(s);
 }
 
@@ -12791,7 +12833,7 @@ Forward_declaration_type::do_traverse(Traverse* traverse)
 // Verify the type.
 
 bool
-Forward_declaration_type::do_verify()
+Forward_declaration_type::do_verify(Gogo*)
 {
   if (!this->is_defined() && !this->is_nil_constant_as_type())
     {

@@ -1,6 +1,9 @@
 /* { dg-add-options stack_size } */
 
-f()
+void exit (int);
+
+void
+f(void)
 {
   int x = 1;
 #if defined(STACK_SIZE)
@@ -19,7 +22,8 @@ f()
   exit(0);
 }
 
-main()
+int
+main(void)
 {
   f();
 }

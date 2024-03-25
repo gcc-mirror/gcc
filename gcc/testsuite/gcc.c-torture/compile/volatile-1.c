@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 /* The problem here was that the statements that
    loaded from exception.reason where not being
    marked as having volatile behavior which

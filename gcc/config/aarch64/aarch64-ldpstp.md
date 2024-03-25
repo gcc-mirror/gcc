@@ -1,5 +1,5 @@
 ;; AArch64 ldp/stp peephole optimizations.
-;; Copyright (C) 2014-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2024 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -24,10 +24,10 @@
    (set (match_operand:GPI 2 "register_operand" "")
 	(match_operand:GPI 3 "memory_operand" ""))]
   "aarch64_operands_ok_for_ldpstp (operands, true, <MODE>mode)"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (set (match_dup 2) (match_dup 3))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, true);
+  aarch64_finish_ldpstp_peephole (operands, true);
+  DONE;
 })
 
 (define_peephole2
@@ -36,10 +36,10 @@
    (set (match_operand:GPI 2 "memory_operand" "")
 	(match_operand:GPI 3 "aarch64_reg_or_zero" ""))]
   "aarch64_operands_ok_for_ldpstp (operands, false, <MODE>mode)"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (set (match_dup 2) (match_dup 3))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, false);
+  aarch64_finish_ldpstp_peephole (operands, false);
+  DONE;
 })
 
 (define_peephole2
@@ -48,10 +48,10 @@
    (set (match_operand:GPF 2 "register_operand" "")
 	(match_operand:GPF 3 "memory_operand" ""))]
   "aarch64_operands_ok_for_ldpstp (operands, true, <MODE>mode)"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (set (match_dup 2) (match_dup 3))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, true);
+  aarch64_finish_ldpstp_peephole (operands, true);
+  DONE;
 })
 
 (define_peephole2
@@ -60,10 +60,10 @@
    (set (match_operand:GPF 2 "memory_operand" "")
 	(match_operand:GPF 3 "aarch64_reg_or_fp_zero" ""))]
   "aarch64_operands_ok_for_ldpstp (operands, false, <MODE>mode)"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (set (match_dup 2) (match_dup 3))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, false);
+  aarch64_finish_ldpstp_peephole (operands, false);
+  DONE;
 })
 
 (define_peephole2
@@ -72,10 +72,10 @@
    (set (match_operand:DREG2 2 "register_operand" "")
 	(match_operand:DREG2 3 "memory_operand" ""))]
   "aarch64_operands_ok_for_ldpstp (operands, true, <DREG:MODE>mode)"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (set (match_dup 2) (match_dup 3))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, true);
+  aarch64_finish_ldpstp_peephole (operands, true);
+  DONE;
 })
 
 (define_peephole2
@@ -84,10 +84,10 @@
    (set (match_operand:DREG2 2 "memory_operand" "")
 	(match_operand:DREG2 3 "register_operand" ""))]
   "aarch64_operands_ok_for_ldpstp (operands, false, <DREG:MODE>mode)"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (set (match_dup 2) (match_dup 3))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, false);
+  aarch64_finish_ldpstp_peephole (operands, false);
+  DONE;
 })
 
 (define_peephole2
@@ -99,10 +99,10 @@
    && aarch64_operands_ok_for_ldpstp (operands, true, <VQ:MODE>mode)
    && (aarch64_tune_params.extra_tuning_flags
 	& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (set (match_dup 2) (match_dup 3))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, true);
+  aarch64_finish_ldpstp_peephole (operands, true);
+  DONE;
 })
 
 (define_peephole2
@@ -114,10 +114,10 @@
    && aarch64_operands_ok_for_ldpstp (operands, false, <VQ:MODE>mode)
    && (aarch64_tune_params.extra_tuning_flags
 	& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (set (match_dup 2) (match_dup 3))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, false);
+  aarch64_finish_ldpstp_peephole (operands, false);
+  DONE;
 })
 
 
@@ -129,10 +129,10 @@
    (set (match_operand:DI 2 "register_operand" "")
 	(sign_extend:DI (match_operand:SI 3 "memory_operand" "")))]
   "aarch64_operands_ok_for_ldpstp (operands, true, SImode)"
-  [(parallel [(set (match_dup 0) (sign_extend:DI (match_dup 1)))
-	      (set (match_dup 2) (sign_extend:DI (match_dup 3)))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, true);
+  aarch64_finish_ldpstp_peephole (operands, true, SIGN_EXTEND);
+  DONE;
 })
 
 (define_peephole2
@@ -141,10 +141,10 @@
    (set (match_operand:DI 2 "register_operand" "")
 	(zero_extend:DI (match_operand:SI 3 "memory_operand" "")))]
   "aarch64_operands_ok_for_ldpstp (operands, true, SImode)"
-  [(parallel [(set (match_dup 0) (zero_extend:DI (match_dup 1)))
-	      (set (match_dup 2) (zero_extend:DI (match_dup 3)))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, true);
+  aarch64_finish_ldpstp_peephole (operands, true, ZERO_EXTEND);
+  DONE;
 })
 
 ;; Handle storing of a floating point zero with integer data.
@@ -163,10 +163,10 @@
    (set (match_operand:<FCVT_TARGET> 2 "memory_operand" "")
 	(match_operand:<FCVT_TARGET> 3 "aarch64_reg_zero_or_fp_zero" ""))]
   "aarch64_operands_ok_for_ldpstp (operands, false, <V_INT_EQUIV>mode)"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (set (match_dup 2) (match_dup 3))])]
+  [(const_int 0)]
 {
-  aarch64_swap_ldrstr_operands (operands, false);
+  aarch64_finish_ldpstp_peephole (operands, false);
+  DONE;
 })
 
 ;; Handle consecutive load/store whose offset is out of the range

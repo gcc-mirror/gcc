@@ -13,6 +13,7 @@
 module rt.lifetime;
 
 import core.attribute : weak;
+import core.internal.array.utils : __arrayStart, __arrayClearPad;
 import core.memory;
 debug(PRINTF) import core.stdc.stdio;
 static import rt.tlsgc;
@@ -226,7 +227,6 @@ size_t structTypeInfoSize(const TypeInfo ti) pure nothrow @nogc
 private class ArrayAllocLengthLock
 {}
 
-
 /**
   Set the allocated length of the array block.  This is called
   any time an array is appended to or its length is set.
@@ -387,14 +387,6 @@ private size_t __arrayAllocLength(ref BlkInfo info, const TypeInfo tinext) pure 
 }
 
 /**
-  get the start of the array for the given block
-  */
-private void *__arrayStart(return scope BlkInfo info) nothrow pure
-{
-    return info.base + ((info.size & BIGLENGTHMASK) ? LARGEPREFIX : 0);
-}
-
-/**
   get the padding required to allocate size bytes.  Note that the padding is
   NOT included in the passed in size.  Therefore, do NOT call this function
   with the size of an allocated block.
@@ -402,22 +394,6 @@ private void *__arrayStart(return scope BlkInfo info) nothrow pure
 private size_t __arrayPad(size_t size, const TypeInfo tinext) nothrow pure @trusted
 {
     return size > MAXMEDSIZE ? LARGEPAD : ((size > MAXSMALLSIZE ? MEDPAD : SMALLPAD) + structTypeInfoSize(tinext));
-}
-
-/**
-  clear padding that might not be zeroed by the GC (it assumes it is within the
-  requested size from the start, but it is actually at the end of the allocated block)
-  */
-private void __arrayClearPad(ref BlkInfo info, size_t arrsize, size_t padsize) nothrow pure
-{
-    import core.stdc.string;
-    if (padsize > MEDPAD && !(info.attr & BlkAttr.NO_SCAN) && info.base)
-    {
-        if (info.size < PAGESIZE)
-            memset(info.base + arrsize, 0, padsize);
-        else
-            memset(info.base, 0, LARGEPREFIX);
-    }
 }
 
 /**
@@ -1062,98 +1038,6 @@ extern (C) void[] _d_newarrayiT(const TypeInfo ti, size_t length) pure nothrow @
             memcpy(result.ptr + u, init.ptr, sz);
         return result;
     }
-    }
-}
-
-
-/*
- * Helper for creating multi-dimensional arrays
- */
-private void[] _d_newarrayOpT(alias op)(const TypeInfo ti, size_t[] dims)
-{
-    debug(PRINTF) printf("_d_newarrayOpT(ndims = %d)\n", dims.length);
-    if (dims.length == 0)
-        return null;
-
-    void[] foo(const TypeInfo ti, size_t[] dims)
-    {
-        auto tinext = unqualify(ti.next);
-        auto dim = dims[0];
-
-        debug(PRINTF) printf("foo(ti = %p, ti.next = %p, dim = %d, ndims = %d\n", ti, ti.next, dim, dims.length);
-        if (dims.length == 1)
-        {
-            auto r = op(ti, dim);
-            return *cast(void[]*)(&r);
-        }
-
-        auto allocsize = (void[]).sizeof * dim;
-        auto info = __arrayAlloc(allocsize, ti, tinext);
-        auto isshared = typeid(ti) is typeid(TypeInfo_Shared);
-        __setArrayAllocLength(info, allocsize, isshared, tinext);
-        auto p = __arrayStart(info)[0 .. dim];
-
-        foreach (i; 0..dim)
-        {
-            (cast(void[]*)p.ptr)[i] = foo(tinext, dims[1..$]);
-        }
-        return p;
-    }
-
-    auto result = foo(ti, dims);
-    debug(PRINTF) printf("result = %llx\n", result.ptr);
-
-    return result;
-}
-
-
-/**
-Create a new multi-dimensional array
-
-Has two variants:
-- `_d_newarraymTX` which initializes to 0
-- `_d_newarraymiTX` which initializes elements based on `TypeInfo`
-
----
-void main()
-{
-    new int[][](10, 20);
-    // _d_newarraymTX(typeid(float), [10, 20]);
-
-    new float[][][](10, 20, 30);
-    // _d_newarraymiTX(typeid(float), [10, 20, 30]);
-}
----
-
-Params:
-    ti = `TypeInfo` of the array type
-    dims = array length values for each dimension
-
-Returns:
-    newly allocated array
-*/
-extern (C) void[] _d_newarraymTX(const TypeInfo ti, size_t[] dims) @weak
-{
-    debug(PRINTF) printf("_d_newarraymT(dims.length = %d)\n", dims.length);
-
-    if (dims.length == 0)
-        return null;
-    else
-    {
-        return _d_newarrayOpT!(_d_newarrayT)(ti, dims);
-    }
-}
-
-/// ditto
-extern (C) void[] _d_newarraymiTX(const TypeInfo ti, size_t[] dims) @weak
-{
-    debug(PRINTF) printf("_d_newarraymiT(dims.length = %d)\n", dims.length);
-
-    if (dims.length == 0)
-        return null;
-    else
-    {
-        return _d_newarrayOpT!(_d_newarrayiT)(ti, dims);
     }
 }
 

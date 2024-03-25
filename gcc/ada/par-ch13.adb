@@ -945,7 +945,6 @@ package body Ch13 is
          --  Here aspects are allowed, and we store them
 
          else
-            Set_Parent (Aspects, Decl);
             Set_Aspect_Specifications (Decl, Aspects);
          end if;
       end if;

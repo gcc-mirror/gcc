@@ -1,5 +1,5 @@
 /* Subclasses of diagnostic_event for analyzer diagnostics.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -117,6 +117,9 @@ public:
   {
     return 0;
   }
+
+  void
+  maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const override;
 
   /* Additional functionality.  */
 
@@ -391,6 +394,9 @@ public:
 class superedge_event : public checker_event
 {
 public:
+  void maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj)
+    const override;
+
   /* Mark this edge event as being either an interprocedural call or
      return in which VAR is in STATE, and that this is critical to the
      diagnostic (so that get_desc can attempt to get a better description
@@ -444,11 +450,12 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override;
+  label_text get_desc (bool can_colorize) const override;
 
- private:
+protected:
   label_text maybe_describe_condition (bool can_colorize) const;
 
+private:
   static label_text maybe_describe_condition (bool can_colorize,
 					      tree lhs,
 					      enum tree_code op,

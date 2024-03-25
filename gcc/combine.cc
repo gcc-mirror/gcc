@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -7466,6 +7466,11 @@ expand_field_assignment (const_rtx x)
       if (!targetm.scalar_mode_supported_p (compute_mode))
 	break;
 
+      /* gen_lowpart_for_combine returns CLOBBER on failure.  */
+      rtx lowpart = gen_lowpart (compute_mode, SET_SRC (x));
+      if (GET_CODE (lowpart) == CLOBBER)
+	break;
+
       /* Now compute the equivalent expression.  Make a copy of INNER
 	 for the SET_DEST in case it is a MEM into which we will substitute;
 	 we don't want shared RTL in that case.  */
@@ -7480,9 +7485,7 @@ expand_field_assignment (const_rtx x)
 				     inner);
       masked = simplify_gen_binary (ASHIFT, compute_mode,
 				    simplify_gen_binary (
-				      AND, compute_mode,
-				      gen_lowpart (compute_mode, SET_SRC (x)),
-				      mask),
+				      AND, compute_mode, lowpart, mask),
 				    pos);
 
       x = gen_rtx_SET (copy_rtx (inner),
@@ -8224,12 +8227,20 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  int sub_width;
 	  if ((REG_P (sub) || MEM_P (sub))
 	      && GET_MODE_PRECISION (sub_mode).is_constant (&sub_width)
-	      && sub_width < mode_width)
+	      && sub_width < mode_width
+	      && (!WORD_REGISTER_OPERATIONS
+		  || sub_width >= BITS_PER_WORD
+		  /* On WORD_REGISTER_OPERATIONS targets the bits
+		     beyond sub_mode aren't considered undefined,
+		     so optimize only if it is a MEM load when MEM loads
+		     zero extend, because then the upper bits are all zero.  */
+		  || (MEM_P (sub)
+		      && load_extend_op (sub_mode) == ZERO_EXTEND)))
 	    {
 	      unsigned HOST_WIDE_INT mode_mask = GET_MODE_MASK (sub_mode);
 	      unsigned HOST_WIDE_INT mask;
 
-	      /* original AND constant with all the known zero bits set */
+	      /* Original AND constant with all the known zero bits set.  */
 	      mask = UINTVAL (XEXP (x, 1)) | (~nonzero_bits (sub, sub_mode));
 	      if ((mask & mode_mask) == mode_mask)
 		{
@@ -8449,8 +8460,8 @@ make_compound_operation (rtx x, enum rtx_code in_code)
   if (code == ZERO_EXTEND)
     {
       new_rtx = make_compound_operation (XEXP (x, 0), next_code);
-      tem = simplify_const_unary_operation (ZERO_EXTEND, GET_MODE (x),
-					    new_rtx, GET_MODE (XEXP (x, 0)));
+      tem = simplify_unary_operation (ZERO_EXTEND, GET_MODE (x),
+				      new_rtx, GET_MODE (XEXP (x, 0)));
       if (tem)
 	return tem;
       SUBST (XEXP (x, 0), new_rtx);

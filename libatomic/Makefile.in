@@ -328,6 +328,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SIZES = @SIZES@
 STRIP = @STRIP@
+SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
 VERSION = @VERSION@
 XCFLAGS = @XCFLAGS@
 XLDFLAGS = @XLDFLAGS@
@@ -416,7 +417,12 @@ noinst_LTLIBRARIES = libatomic_convenience.la
 @LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libatomic_version_dep = $(top_srcdir)/libatomic.map
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libatomic_version_dep = libatomic.map-sun
 libatomic_version_info = -version-info $(libtool_VERSION)
-libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) $(lt_host_flags)
+@ENABLE_DARWIN_AT_RPATH_TRUE@libatomic_darwin_rpath =  \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wc,-nodefaultrpaths \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
+libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
+	$(lt_host_flags) $(libatomic_darwin_rpath)
+
 libatomic_la_SOURCES = gload.c gstore.c gcas.c gexch.c glfree.c lock.c \
 	init.c fenv.c fence.c flag.c $(am__append_2)
 SIZEOBJS = load store cas exch fadd fsub fand fior fxor fnand tas
@@ -892,12 +898,11 @@ vpath % $(strip $(search_path))
 %_.lo: Makefile
 	$(LTCOMPILE) $(M_DEPS) $(M_SIZE) $(M_IFUNC) -c -o $@ $(M_SRC)
 
-# Override the automake generated all-multi rule to guarantee that all-multi
+# Amend the automake generated all-multi rule to guarantee that all-multi
 # is not run in parallel with the %_.lo rules which generate $(DEPDIR)/*.Ppo
 # makefile fragments to avoid broken *.Ppo getting included into the Makefile
 # when it is reloaded during the build of all-multi.
 all-multi: $(libatomic_la_LIBADD)
-	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
 
 # target overrides
 -include $(tmake_file)

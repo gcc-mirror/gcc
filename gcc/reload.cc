@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3076,12 +3076,6 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	      int earlyclobber = 0;
 	      enum constraint_num cn;
 	      enum reg_class cl;
-
-	      /* If the predicate accepts a unary operator, it means that
-		 we need to reload the operand, but do not do this for
-		 match_operator and friends.  */
-	      if (UNARY_P (operand) && *p != 0)
-		operand = XEXP (operand, 0);
 
 	      /* If the operand is a SUBREG, extract
 		 the REG or MEM (or maybe even a constant) within.

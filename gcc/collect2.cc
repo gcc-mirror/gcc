@@ -1,6 +1,6 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -622,7 +622,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 	 LTO object replaced by all partitions and other LTO
 	 objects removed.  */
 
-      lto_c_argv = (char **) xcalloc (sizeof (char *), num_lto_c_args);
+      lto_c_argv = (char **) xcalloc (num_lto_c_args, sizeof (char *));
       lto_c_ptr = CONST_CAST2 (const char **, char **, lto_c_argv);
 
       *lto_c_ptr++ = lto_wrapper;
@@ -865,12 +865,15 @@ main (int argc, char **argv)
   int i;
 
   for (i = 0; i < USE_LD_MAX; i++)
-    full_ld_suffixes[i]
 #ifdef CROSS_DIRECTORY_STRUCTURE
-      = concat (target_machine, "-", ld_suffixes[i], NULL);
-#else
-      = ld_suffixes[i];
+    /* lld and mold are platform-agnostic and not prefixed with target
+       triple.  */
+    if (!(i == USE_LLD_LD || i == USE_MOLD_LD))
+      full_ld_suffixes[i] = concat (target_machine, "-", ld_suffixes[i],
+				    NULL);
+    else
 #endif
+      full_ld_suffixes[i] = ld_suffixes[i];
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))

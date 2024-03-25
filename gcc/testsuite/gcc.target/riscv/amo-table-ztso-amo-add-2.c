@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* Verify that atomic op mappings the Ztso suggested mapping.  */
-/* { dg-options "-march=rv64id_ztso -mabi=lp64d -O3" } */
+/* { dg-options "-O3" } */
+/* { dg-add-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

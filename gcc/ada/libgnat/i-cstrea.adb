@@ -130,4 +130,13 @@ package body Interfaces.C_Streams is
       return C_setvbuf (stream, buffer, mode, size);
    end setvbuf;
 
+   ------------
+   -- unlink --
+   ------------
+
+   function unlink (filename : chars) return int is
+   begin
+      return System.CRTL.unlink (filename);
+   end unlink;
+
 end Interfaces.C_Streams;

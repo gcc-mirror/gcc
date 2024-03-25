@@ -2,7 +2,7 @@
 /* Duplicate logic as libatomic/testsuite/libatomic.c/atomic-op-2.c */
 /* Test __atomic routines for existence and proper execution on 2 byte
    values with each valid memory model.  */
-/* { dg-do run } */
+/* { dg-do run { target { riscv_a } } } */
 /* { dg-options "-minline-atomics -Wno-address-of-packed-member" } */
 
 /* Test the execution of the __atomic_*OP builtin routines for a short.  */

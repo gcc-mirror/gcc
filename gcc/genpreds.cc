@@ -2,7 +2,7 @@
    - prototype declarations for operand predicates (tm-preds.h)
    - function definitions of operand predicates, if defined new-style
      (insn-preds.cc)
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -677,6 +677,7 @@ public:
   size_t namelen;
   const char *regclass;  /* for register constraints */
   rtx exp;               /* for other constraints */
+  const char *filter;    /* the register filter condition, or null if none */
   unsigned int is_register	: 1;
   unsigned int is_const_int	: 1;
   unsigned int is_const_dbl	: 1;
@@ -763,7 +764,8 @@ mangle (const char *name)
    is the register class, if any; EXP is the expression to test, if any;
    IS_MEMORY, IS_SPECIAL_MEMORY, IS_RELAXED_MEMORY and IS_ADDRESS indicate
    memory, special memory, and address constraints, respectively; LOC is the .md
-   file location.
+   file location; FILTER is the filter condition for a register constraint,
+   or null if none.
 
    Not all combinations of arguments are valid; most importantly, REGCLASS is
    mutually exclusive with EXP, and
@@ -776,7 +778,8 @@ mangle (const char *name)
 static void
 add_constraint (const char *name, const char *regclass,
 		rtx exp, bool is_memory, bool is_special_memory,
-		bool is_relaxed_memory, bool is_address, file_location loc)
+		bool is_relaxed_memory, bool is_address, file_location loc,
+		const char *filter = nullptr)
 {
   class constraint_data *c, **iter, **slot;
   const char *p;
@@ -908,6 +911,7 @@ add_constraint (const char *name, const char *regclass,
   c->namelen = namelen;
   c->regclass = regclass;
   c->exp = exp;
+  c->filter = filter;
   c->is_register = regclass != 0;
   c->is_const_int = is_const_int;
   c->is_const_dbl = is_const_dbl;
@@ -966,7 +970,8 @@ static void
 process_define_register_constraint (md_rtx_info *info)
 {
   add_constraint (XSTR (info->def, 0), XSTR (info->def, 1),
-		  0, false, false, false, false, info->loc);
+		  0, false, false, false, false, info->loc,
+		  XSTR (info->def, 3));
 }
 
 /* Put the constraints into enum order.  We want to keep constraints
@@ -1319,6 +1324,34 @@ write_insn_const_int_ok_for_constraint (void)
 	"  return false;\n"
 	"}\n");
 }
+
+/* Print the init_reg_class_start_regs function, which initializes
+   this_target_constraints->register_filters from the C conditions
+   in the define_register_constraints.  */
+static void
+write_init_reg_class_start_regs ()
+{
+  printf ("\n"
+	  "void\n"
+	  "init_reg_class_start_regs ()\n"
+	  "{\n");
+  if (!register_filters.is_empty ())
+    {
+      printf ("  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER;"
+	      " ++regno)\n"
+	      "    {\n");
+      for (unsigned int i = 0; i < register_filters.length (); ++i)
+	{
+	  printf ("      if (");
+	  rtx_reader_ptr->print_c_condition (register_filters[i]);
+	  printf (")\n"
+		  "        SET_HARD_REG_BIT (%s[%d], regno);\n",
+		  "this_target_constraints->register_filters", i);
+	}
+      printf ("    }\n");
+    }
+  printf ("}\n");
+}
 
 /* Write a definition for a function NAME that returns true if a given
    constraint_num is in the range [START, END).  */
@@ -1401,6 +1434,54 @@ print_type_tree (const vec <std::pair <unsigned int, const char *> > &vec,
   printf ("%*sreturn %s;\n", indent, "", fallback);
 }
 
+/* Print the get_register_filter function, which returns a pointer
+   to the start register filter for a given constraint, or null if none.  */
+static void
+write_get_register_filter ()
+{
+  constraint_data *c;
+
+  printf ("\n"
+	  "#ifdef GCC_HARD_REG_SET_H\n"
+	  "static inline const HARD_REG_SET *\n"
+	  "get_register_filter (constraint_num%s)\n",
+	  register_filters.is_empty () ? "" : " c");
+  printf ("{\n");
+  FOR_ALL_CONSTRAINTS (c)
+    if (c->is_register && c->filter)
+      {
+	printf ("  if (c == CONSTRAINT_%s)\n", c->c_name);
+	printf ("    return &this_target_constraints->register_filters[%d];\n",
+		get_register_filter_id (c->filter));
+      }
+  printf ("  return nullptr;\n"
+	  "}\n"
+	  "#endif\n");
+}
+
+/* Print the get_register_filter_id function, which returns the index
+   of the given constraint's register filter in
+   this_target_constraints->register_filters, or -1 if none.  */
+static void
+write_get_register_filter_id ()
+{
+  constraint_data *c;
+
+  printf ("\n"
+	  "static inline int\n"
+	  "get_register_filter_id (constraint_num%s)\n",
+	  register_filters.is_empty () ? "" : " c");
+  printf ("{\n");
+  FOR_ALL_CONSTRAINTS (c)
+    if (c->is_register && c->filter)
+      {
+	printf ("  if (c == CONSTRAINT_%s)\n", c->c_name);
+	printf ("    return %d;\n", get_register_filter_id (c->filter));
+      }
+  printf ("  return -1;\n"
+	  "}\n");
+}
+
 /* Write tm-preds.h.  Unfortunately, it is impossible to forward-declare
    an enumeration in portable C, so we have to condition all these
    prototypes on HAVE_MACHINE_MODES.  */
@@ -1424,6 +1505,53 @@ write_tm_preds_h (void)
     printf ("extern bool %s (rtx, machine_mode);\n", p->name);
 
   puts ("#endif /* HAVE_MACHINE_MODES */\n");
+
+  /* Print the definition of the target_constraints structure.  */
+  printf ("#ifdef GCC_HARD_REG_SET_H\n"
+	  "struct target_constraints {\n"
+	  "  HARD_REG_SET register_filters[%d];\n",
+	  MAX (register_filters.length (), 1));
+  printf ("};\n"
+	  "\n"
+	  "extern struct target_constraints default_target_constraints;\n"
+	  "#if SWITCHABLE_TARGET\n"
+	  "extern struct target_constraints *this_target_constraints;\n"
+	  "#else\n"
+	  "#define this_target_constraints (&default_target_constraints)\n"
+	  "#endif\n");
+
+  /* Print TEST_REGISTER_FILTER_BIT, which tests whether register REGNO
+     is a valid start register for register filter ID.  */
+  printf ("\n"
+	  "#define TEST_REGISTER_FILTER_BIT(ID, REGNO) \\\n");
+  if (register_filters.is_empty ())
+    printf ("  ((void) (ID), (void) (REGNO), false)\n");
+  else
+    printf ("  TEST_HARD_REG_BIT ("
+	    "this_target_constraints->register_filters[ID], REGNO)\n");
+
+  /* Print test_register_filters, which tests whether register REGNO
+     is a valid start register for the mask of register filters in MASK.  */
+  printf ("\n"
+	  "inline bool\n"
+	  "test_register_filters (unsigned int%s, unsigned int%s)\n",
+	  register_filters.is_empty () ? "" : " mask",
+	  register_filters.is_empty () ? "" : " regno");
+  printf ("{\n");
+  if (register_filters.is_empty ())
+    printf ("  return true;\n");
+  else
+    {
+      printf ("  for (unsigned int id = 0; id < %d; ++id)\n",
+	      register_filters.length ());
+      printf ("    if ((mask & (1U << id))\n"
+	      "\t&& !TEST_REGISTER_FILTER_BIT (id, regno))\n"
+	      "      return false;\n"
+	      "  return true;\n");
+    }
+  printf ("}\n"
+	  "#endif\n"
+	  "\n");
 
   if (constraint_max_namelen > 0)
     {
@@ -1548,6 +1676,9 @@ write_tm_preds_h (void)
 	values.safe_push (std::make_pair (address_end, "CT_FIXED_FORM"));
       print_type_tree (values, 0, values.length (), "CT_REGISTER", 2);
       puts ("}");
+
+      write_get_register_filter ();
+      write_get_register_filter_id ();
     }
 
   puts ("#endif /* tm-preds.h */");
@@ -1599,6 +1730,13 @@ write_insn_preds_c (void)
 #include \"tm-constrs.h\"\n\
 #include \"target.h\"\n");
 
+  printf ("\n"
+	  "struct target_constraints default_target_constraints;\n"
+	  "#if SWITCHABLE_TARGET\n"
+	  "struct target_constraints *this_target_constraints"
+	  " = &default_target_constraints;\n"
+	  "#endif\n");
+
   FOR_ALL_PREDICATES (p)
     write_one_predicate_function (p);
 
@@ -1613,6 +1751,8 @@ write_insn_preds_c (void)
       if (have_const_int_constraints)
 	write_insn_const_int_ok_for_constraint ();
     }
+
+  write_init_reg_class_start_regs ();
 }
 
 /* Argument parsing.  */

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct x {
 	int a, b;
 } z = { -4028, 4096 };
@@ -9,7 +12,7 @@ int foo(struct x *p, int y)
   return 0;
 }
 
-main()
+int main(void)
 {
   if (foo (&z, 10))
     abort ();

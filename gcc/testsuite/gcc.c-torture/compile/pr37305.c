@@ -1,5 +1,6 @@
 typedef int int32_t;
 typedef unsigned int uint32_t;
+int safe_mod_u_u (unsigned int, unsigned int);
 static inline int
 safe_add_s_s (int si1, int si2)
 {

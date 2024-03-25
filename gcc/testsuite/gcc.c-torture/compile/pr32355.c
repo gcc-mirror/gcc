@@ -13,6 +13,8 @@ struct sigaction
   __sigset_t sa_mask;
   int sa_flags;
 };
+void sigemptyset (__sigset_t *);
+void
 doSignalsSetup (void)
 {
   static const int signals[] = {

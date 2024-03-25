@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef struct trio { int a, b, c; } trio;
 
 int
@@ -14,7 +17,8 @@ foo (trio t, int i, int j, int k)
   return bar (i, j, k, t);
 }
 
-main ()
+int
+main (void)
 {
   trio t = { 1, 2, 3 };
 

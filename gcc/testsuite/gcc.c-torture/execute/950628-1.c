@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef struct
 {
   char hours, day, month;
@@ -23,7 +26,8 @@ T f (void)
   return virk;
 }
 
-main ()
+int
+main (void)
 {
   if (f ().hours != 1 || f ().day != 2 || f ().month != 3 || f ().year != 4)
     abort ();

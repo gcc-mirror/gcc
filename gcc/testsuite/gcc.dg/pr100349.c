@@ -1,8 +1,9 @@
 // { dg-do compile }
-// { dg-options "-O2 -w" }
+// { dg-options "-O2" }
 
 #include <stdint.h>
 uint8_t a;
+void
 b(int8_t c) {
   int d;
 e:

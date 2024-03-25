@@ -1,4 +1,4 @@
-// Copyright (C) 1997-2023 Free Software Foundation, Inc.
+// Copyright (C) 1997-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -206,6 +206,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   locale::facet::_S_initialize_once()
   {
+    // Need to check this because we could get called once from
+    // _S_get_c_locale() when the program is single-threaded, and then again
+    // (via __gthread_once) when it's multi-threaded.
+    if (_S_c_locale)
+      return;
+
     // Initialize the underlying locale model.
     _S_create_c_locale(_S_c_locale, _S_c_name);
   }
@@ -216,12 +222,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GTHREADS
     if (__gthread_active_p())
       __gthread_once(&_S_once, _S_initialize_once);
-    else
 #endif
-      {
-	if (!_S_c_locale)
-	  _S_initialize_once();
-      }
+    if (__builtin_expect (!_S_c_locale, 0))
+      _S_initialize_once();
     return _S_c_locale;
   }
 

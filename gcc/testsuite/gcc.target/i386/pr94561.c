@@ -1,6 +1,6 @@
 /* PR target/94561 */
 /* { dg-do compile } */
-/* { dg-options "-march=knl -O3 -funroll-loops" } */
+/* { dg-options "-mavx512f -O3 -funroll-loops" } */
 
 struct xi {
   long int mg;

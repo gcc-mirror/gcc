@@ -1,5 +1,5 @@
 /* Timing variables for measuring compiler performance.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
 This file is part of GCC.
@@ -841,12 +841,10 @@ json::object *
 make_json_for_timevar_time_def (const timevar_time_def &ttd)
 {
   json::object *obj = new json::object ();
-  obj->set ("user",
-	    new json::float_number (nanosec_to_floating_sec (ttd.user)));
-  obj->set ("sys", new json::float_number (nanosec_to_floating_sec (ttd.sys)));
-  obj->set ("wall",
-	    new json::float_number (nanosec_to_floating_sec (ttd.wall)));
-  obj->set ("ggc_mem", new json::integer_number (ttd.ggc_mem));
+  obj->set_float ("user", nanosec_to_floating_sec (ttd.user));
+  obj->set_float ("sys", nanosec_to_floating_sec (ttd.sys));
+  obj->set_float ("wall", nanosec_to_floating_sec (ttd.wall));
+  obj->set_integer ("ggc_mem", ttd.ggc_mem);
   return obj;
 }
 #undef nanosec_to_floating_sec
@@ -859,7 +857,7 @@ json::value *
 timer::timevar_def::make_json () const
 {
   json::object *timevar_obj = new json::object ();
-  timevar_obj->set ("name", new json::string (name));
+  timevar_obj->set_string ("name", name);
   timevar_obj->set ("elapsed", make_json_for_timevar_time_def (elapsed));
 
   if (children)
@@ -883,7 +881,7 @@ timer::timevar_def::make_json () const
 		continue;
 	      json::object *child_obj = new json::object;
 	      children_arr->append (child_obj);
-	      child_obj->set ("name", new json::string (i.first->name));
+	      child_obj->set_string ("name", i.first->name);
 	      child_obj->set ("elapsed",
 			      make_json_for_timevar_time_def (i.second));
 	    }
@@ -947,15 +945,15 @@ timer::make_json () const
 
     json::object *total_obj = new json::object();
     json_arr->append (total_obj);
-    total_obj->set ("name", new json::string ("TOTAL"));
+    total_obj->set_string ("name", "TOTAL");
     total_obj->set ("elapsed", make_json_for_timevar_time_def (total_elapsed));
   }
 
   if (m_jit_client_items)
     report_obj->set ("client_items", m_jit_client_items->make_json ());
 
-  report_obj->set ("CHECKING_P", new json::literal ((bool)CHECKING_P));
-  report_obj->set ("flag_checking", new json::literal ((bool)flag_checking));
+  report_obj->set_bool ("CHECKING_P", CHECKING_P);
+  report_obj->set_bool ("flag_checking", flag_checking);
 
   return report_obj;
 

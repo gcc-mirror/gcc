@@ -277,6 +277,45 @@ EXPORT(isfinitef) (float x)
 #endif
 }
 
+/* isnan - provide non builtin alternative to the gcc builtin isnan.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+extern "C" int
+EXPORT(isnan) (double x)
+{
+#if defined(FP_NAN)
+  return fpclassify (x) == FP_NAN;
+#else
+  return x != x;
+#endif
+}
+
+/* isnanf - provide non builtin alternative to the gcc builtin isnanf.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+extern "C" int
+EXPORT(isnanf) (float x)
+{
+#if defined(FP_NAN)
+  return fpclassify (x) == FP_NAN;
+#else
+  return x != x;
+#endif
+}
+
+/* isnanl - provide non builtin alternative to the gcc builtin isnanl.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+extern "C" int
+EXPORT(isnanl) (long double x)
+{
+#if defined(FP_NAN)
+  return fpclassify (x) == FP_NAN;
+#else
+  return x != x;
+#endif
+}
+
 /* GNU Modula-2 linking hooks.  */
 
 extern "C" void

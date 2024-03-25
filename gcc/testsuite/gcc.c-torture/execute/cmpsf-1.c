@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 #include <limits.h>
 
 #define F 140

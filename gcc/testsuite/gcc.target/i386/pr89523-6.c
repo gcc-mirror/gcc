@@ -1,6 +1,7 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-require-effective-target maybe_x32 } */
 /* { dg-options "-mx32 -O2 -mavx512pf" } */
+/* { dg-warning "AVX512PF support will be removed in GCC 15" "" { target *-*-* } 0 } */
 /* { dg-final { scan-assembler-not "\tvgather" } } */
 /* { dg-final { scan-assembler "addr32 vgather" } } */
 

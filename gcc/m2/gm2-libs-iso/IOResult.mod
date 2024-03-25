@@ -1,6 +1,6 @@
 (* IOResult.mod implement the ISO IOResult specification.
 
-Copyright (C) 2009-2023 Free Software Foundation, Inc.
+Copyright (C) 2009-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE IOResult ;
 
-IMPORT IOChan ;
 
 PROCEDURE ReadResult (cid: IOChan.ChanId): ReadResults;
   (* Returns the result for the last read operation on the channel cid. *)

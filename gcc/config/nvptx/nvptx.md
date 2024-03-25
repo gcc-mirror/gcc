@@ -1,5 +1,5 @@
 ;; Machine description for NVPTX.
-;; Copyright (C) 2014-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2024 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -33,8 +33,6 @@
    UNSPEC_FPINT_BTRUNC
    UNSPEC_FPINT_CEIL
    UNSPEC_FPINT_NEARBYINT
-
-   UNSPEC_BITREV
 
    UNSPEC_ALLOCA
 
@@ -636,8 +634,7 @@
 
 (define_insn "bitrev<mode>2"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
-	(unspec:SDIM [(match_operand:SDIM 1 "nvptx_register_operand" "R")]
-		     UNSPEC_BITREV))]
+	(bitreverse:SDIM (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
   ""
   "%.\\tbrev.b%T0\\t%0, %1;")
 

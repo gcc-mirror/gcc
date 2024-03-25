@@ -418,8 +418,8 @@ Bugs:  Changes to `ref` and `out` arguments are not propagated to the
 */
 struct Task(alias fun, Args...)
 {
-    AbstractTask base = {runTask : &impl};
-    alias base this;
+    private AbstractTask base = {runTask : &impl};
+    private alias base this;
 
     private @property AbstractTask* basePtr()
     {
@@ -1581,7 +1581,7 @@ public:
     auto logs = new double[10_000_000];
 
     // Parallel foreach works with or without an index
-    // variable.  It can be iterate by ref if range.front
+    // variable.  It can iterate by ref if range.front
     // returns by ref.
 
     // Iterate over logs using work units of size 100.

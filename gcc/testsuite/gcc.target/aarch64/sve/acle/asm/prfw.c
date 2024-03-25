@@ -218,8 +218,8 @@ TEST_PREFETCH (prfw_vnum_31, uint16_t,
 
 /*
 ** prfw_vnum_32:
-**	cntd	(x[0-9]+)
-**	lsl	(x[0-9]+), \1, #?8
+**	cntb	(x[0-9]+)
+**	lsl	(x[0-9]+), \1, #?5
 **	add	(x[0-9]+), (\2, x0|x0, \2)
 **	prfw	pldl1keep, p0, \[\3\]
 **	ret

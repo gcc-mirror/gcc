@@ -26,8 +26,6 @@ public:
 
     virtual Dsymbols *include(Scope *sc);
     virtual Scope *newScope(Scope *sc);
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
-    void setScope(Scope *sc) override;
     void importAll(Scope *sc) override;
     void addComment(const utf8_t *comment) override;
     const char *kind() const override;
@@ -49,7 +47,6 @@ public:
     StorageClassDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
     bool oneMember(Dsymbol **ps, Identifier *ident) override final;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     StorageClassDeclaration *isStorageClassDeclaration() override { return this; }
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -63,7 +60,6 @@ public:
 
     DeprecatedDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
-    void setScope(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -86,7 +82,6 @@ public:
 
     CPPMangleDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
-    void setScope(Scope *sc) override;
     const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -110,7 +105,6 @@ public:
 
     VisibilityDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     const char *kind() const override;
     const char *toPrettyChars(bool unused) override;
     VisibilityDeclaration *isVisibilityDeclaration() override { return this; }
@@ -123,7 +117,6 @@ public:
     Expressions *alignExps;
     structalign_t salign;
 
-    AlignDeclaration(const Loc &loc, Expression *ealign, Dsymbols *decl);
     AlignDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
@@ -139,7 +132,6 @@ public:
     unsigned anonalignsize;     // size of anonymous struct for alignment purposes
 
     AnonDeclaration *syntaxCopy(Dsymbol *s) override;
-    void setScope(Scope *sc) override;
     void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override;
     const char *kind() const override;
     AnonDeclaration *isAnonDeclaration() override { return this; }
@@ -167,7 +159,6 @@ public:
     bool oneMember(Dsymbol **ps, Identifier *ident) override final;
     Dsymbols *include(Scope *sc) override;
     void addComment(const utf8_t *comment) override final;
-    void setScope(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -180,8 +171,6 @@ public:
 
     StaticIfDeclaration *syntaxCopy(Dsymbol *s) override;
     Dsymbols *include(Scope *sc) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
-    void setScope(Scope *sc) override;
     void importAll(Scope *sc) override;
     StaticIfDeclaration *isStaticIfDeclaration() override { return this; }
     const char *kind() const override;
@@ -200,9 +189,7 @@ public:
     StaticForeachDeclaration *syntaxCopy(Dsymbol *s) override;
     bool oneMember(Dsymbol **ps, Identifier *ident) override;
     Dsymbols *include(Scope *sc) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     void addComment(const utf8_t *comment) override;
-    void setScope(Scope *sc) override;
     void importAll(Scope *sc) override;
     const char *kind() const override;
     void accept(Visitor *v) override { v->visit(this); }
@@ -214,7 +201,6 @@ public:
     ForwardingScopeDsymbol *sym;
 
     Scope *newScope(Scope *sc) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     ForwardingAttribDeclaration *isForwardingAttribDeclaration() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -230,8 +216,6 @@ public:
     d_bool compiled;
 
     MixinDeclaration *syntaxCopy(Dsymbol *s) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
-    void setScope(Scope *sc) override;
     const char *kind() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -247,7 +231,6 @@ public:
 
     UserAttributeDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
-    void setScope(Scope *sc) override;
     Expressions *getAttributes();
     const char *kind() const override;
     void accept(Visitor *v) override { v->visit(this); }

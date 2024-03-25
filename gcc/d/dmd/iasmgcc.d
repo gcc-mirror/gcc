@@ -302,7 +302,7 @@ Ldone:
 extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
 {
     //printf("GccAsmStatement.semantic()\n");
-    const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+    const bool doUnittests = global.params.parsingUnittestsRequired();
     scope p = new Parser!ASTCodegen(sc._module, ";", false, global.errorSink, &global.compileEnv, doUnittests);
 
     // Make a safe copy of the token list before parsing.
@@ -341,7 +341,7 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
             e = e.expressionSemantic(sc);
             // Check argument is a valid lvalue/rvalue.
             if (i < s.outputargs)
-                e = e.modifiableLvalue(sc, null);
+                e = e.modifiableLvalue(sc);
             else if (e.checkValue())
                 e = ErrorExp.get();
             (*s.args)[i] = e;

@@ -96,6 +96,8 @@ package Einfo.Utils is
    function Is_Access_Type                      (Id : E) return B with Inline;
    function Is_Access_Protected_Subprogram_Type (Id : E) return B with Inline;
    function Is_Access_Subprogram_Type           (Id : E) return B with Inline;
+   function Is_Address_Compatible_Type          (Id : E) return B with Inline;
+   --  Check whether the type represents an address
    function Is_Aggregate_Type                   (Id : E) return B with Inline;
    function Is_Anonymous_Access_Type            (Id : E) return B with Inline;
    function Is_Array_Type                       (Id : E) return B with Inline;
@@ -461,6 +463,7 @@ package Einfo.Utils is
    --    Refined_Global
    --    Refined_Post
    --    Refined_State
+   --    Side_Effects
    --    Subprogram_Variant
    --    Test_Case
    --    Volatile_Function

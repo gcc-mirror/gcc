@@ -1,6 +1,6 @@
 (* SymbolTable.mod provides access to the symbol table.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -76,7 +76,7 @@ FROM M2Base IMPORT MixTypes, InitBase, Char, Integer, LongReal,
                    Cardinal, LongInt, LongCard, ZType, RType ;
 
 FROM M2System IMPORT Address ;
-FROM m2decl IMPORT ConstantStringExceedsZType ;
+FROM m2expr IMPORT OverflowZType ;
 FROM m2tree IMPORT Tree ;
 FROM m2linemap IMPORT BuiltinsLocation ;
 FROM StrLib IMPORT StrEqual ;
@@ -6588,12 +6588,12 @@ BEGIN
       loc := TokenToLocation (tok) ;
       CASE char (s, -1) OF
 
-      'H':  overflow := ConstantStringExceedsZType (loc, string (s), 16, issueError) |
-      'B':  overflow := ConstantStringExceedsZType (loc, string (s), 8, issueError) |
-      'A':  overflow := ConstantStringExceedsZType (loc, string (s), 2, issueError)
+      'H':  overflow := OverflowZType (loc, string (s), 16, issueError) |
+      'B':  overflow := OverflowZType (loc, string (s), 8, issueError) |
+      'A':  overflow := OverflowZType (loc, string (s), 2, issueError)
 
       ELSE
-         overflow := ConstantStringExceedsZType (loc, string (s), 10, issueError)
+         overflow := OverflowZType (loc, string (s), 10, issueError)
       END ;
       s := KillString (s) ;
       RETURN ZType

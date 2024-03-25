@@ -1,5 +1,7 @@
-// { dg-do compile { target c++23 } }
+// { dg-options "-lstdc++exp" }
+// { dg-do run { target c++23 } }
 // { dg-require-effective-target stacktrace }
+// { dg-add-options no_pch }
 
 #include <stacktrace>
 #include <sstream>
@@ -16,7 +18,8 @@ test_to_string()
 {
   auto trace = std::stacktrace::current();
   std::string s1 = std::to_string(trace.at(0));
-  VERIFY( s1.contains("test_to_string():15") );
+  VERIFY( s1.contains("test_to_string()") );
+  VERIFY( s1.contains("output.cc:19") );
   std::string s2 = std::to_string(trace);
   VERIFY( s2.contains(s1) );
 }
@@ -46,7 +49,17 @@ test_format()
   std::stacktrace_entry entry = trace.at(0);
   std::string str = std::to_string(entry);
   VERIFY( std::format("{}", entry) == str );
-  VERIFY( std::format("{0:!<{1}}", entry, str.size() + 3) == (str + "!!!") );
+  auto len = str.size();
+  // with width
+  VERIFY( std::format("{0:{1}}", entry, len + 1) == (str + " ") );
+  // with align + width
+  VERIFY( std::format("{0:<{1}}", entry, len + 2) == (str + "  ") );
+  VERIFY( std::format("{0:^{1}}", entry, len + 3) == (" " + str + "  ") );
+  VERIFY( std::format("{0:>{1}}", entry, len + 4) == ("    " + str) );
+  // with fill-and-align + width
+  VERIFY( std::format("{0:!<{1}}", entry, len + 2) == (str + "!!") );
+  VERIFY( std::format("{0:!^{1}}", entry, len + 3) == ("!" + str + "!!") );
+  VERIFY( std::format("{0:!>{1}}", entry, len + 4) == ("!!!!" + str) );
 }
 
 int main()

@@ -20,9 +20,11 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.dcast;
 import dmd.declaration;
+import dmd.dinterpret;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
+import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
@@ -37,6 +39,7 @@ import dmd.init;
 import dmd.location;
 import dmd.mtype;
 import dmd.opover;
+import dmd.optimize;
 import dmd.statement;
 import dmd.target;
 import dmd.tokens;
@@ -104,6 +107,7 @@ Expression toAssocArrayLiteral(ArrayInitializer ai)
  */
 extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedInterpret needInterpret)
 {
+    //printf("initializerSemantic() tx: %p %s\n", tx, tx.toChars());
     Type t = tx;
 
     static Initializer err()
@@ -112,6 +116,12 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
     }
 
     Initializer visitVoid(VoidInitializer i)
+    {
+        i.type = t;
+        return i;
+    }
+
+    Initializer visitDefault(DefaultInitializer i)
     {
         i.type = t;
         return i;
@@ -189,7 +199,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         uint length;
         const(uint) amax = 0x80000000;
         bool errors = false;
-        //printf("ArrayInitializer::semantic(%s), ai: %s %p\n", t.toChars(), i.toChars(), i);
+        //printf("ArrayInitializer::semantic(%s), ai: %s\n", t.toChars(), toChars(i));
         if (i.sem) // if semantic() already run
         {
             return i;
@@ -590,7 +600,17 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
 
     Initializer visitC(CInitializer ci)
     {
-        //printf("CInitializer::semantic() tx: %s t: %s ci: %s\n", (tx ? tx.toChars() : "".ptr), t.toChars(), ci.toChars());
+        //printf("CInitializer::semantic() tx: %s t: %s ci: %s\n", (tx ? tx.toChars() : "".ptr), t.toChars(), toChars(ci));
+        static if (0)
+            if (auto ts = tx.isTypeStruct())
+            {
+                import dmd.common.outbuffer;
+                OutBuffer buf;
+                HdrGenStage hgs;
+                toCBuffer(ts.sym, buf, hgs);
+                printf("%s\n", buf.peekChars());
+            }
+
         /* Rewrite CInitializer into ExpInitializer, ArrayInitializer, or StructInitializer
          */
         t = t.toBasetype();
@@ -784,6 +804,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             for (size_t index = 0; index < ci.initializerList.length; )
             {
                 CInitializer cprev;
+                size_t indexprev;
              L1:
                 DesigInit di = ci.initializerList[index];
                 Designators* dlist = di.designatorList;
@@ -817,6 +838,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                         /* The peeling didn't work, so unpeel it
                          */
                         ci = cprev;
+                        index = indexprev;
                         di = ci.initializerList[index];
                         goto L2;
                     }
@@ -827,12 +849,14 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 {
                     if (fieldi == nfields)
                         break;
-                    if (index == 0 && ci.initializerList.length == 1 && di.initializer.isCInitializer())
+                    if (/*index == 0 && ci.initializerList.length == 1 &&*/ di.initializer.isCInitializer())
                     {
                         /* Try peeling off this set of { } and see if it works
                          */
                         cprev = ci;
                         ci = di.initializer.isCInitializer();
+                        indexprev = index;
+                        index = 0;
                         goto L1;
                     }
 
@@ -1015,6 +1039,12 @@ Initializer inferType(Initializer init, Scope* sc)
         return new ErrorInitializer();
     }
 
+    Initializer visitDefault(DefaultInitializer i)
+    {
+        error(i.loc, "cannot infer type from default initializer");
+        return new ErrorInitializer();
+    }
+
     Initializer visitError(ErrorInitializer i)
     {
         return i;
@@ -1171,6 +1201,11 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
     Expression visitVoid(VoidInitializer)
     {
         return null;
+    }
+
+    Expression visitDefault(DefaultInitializer di)
+    {
+        return di.type ? di.type.defaultInit(Loc.initial, isCfile) : null;
     }
 
     Expression visitError(ErrorInitializer)

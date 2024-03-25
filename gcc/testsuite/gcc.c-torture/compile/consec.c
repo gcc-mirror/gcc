@@ -1,5 +1,6 @@
 /* { dg-require-effective-target untyped_assembly } */
 /* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+/* { dg-additional-options "-std=gnu89" } */
 
 int glob;
 

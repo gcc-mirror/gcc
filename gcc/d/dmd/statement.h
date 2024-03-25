@@ -113,14 +113,9 @@ public:
 
     virtual Statement *syntaxCopy();
 
-    void error(const char *format, ...);
-    void warning(unsigned flag, const char *format, ...);
-    void deprecation(const char *format, ...);
     virtual Statement *getRelatedLabeled() { return this; }
     virtual bool hasBreak() const;
     virtual bool hasContinue() const;
-    bool usesEH();
-    bool comeFrom();
     bool hasCode();
     virtual Statement *last();
 
@@ -712,7 +707,7 @@ class AsmStatement : public Statement
 {
 public:
     Token *tokens;
-    bool caseSensitive;  // for register names
+    d_bool caseSensitive;  // for register names
 
     AsmStatement *syntaxCopy() override;
     void accept(Visitor *v) override { v->visit(this); }

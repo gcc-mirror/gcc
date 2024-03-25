@@ -13,13 +13,14 @@ union gimple_statement_d
   unsigned num_ops;
   tree exp;
 };
+void gimple_call_arg (gimple, unsigned);
 
 unsigned int x;
 static inline tree
 gimple_op (const_gimple gs, unsigned i)
 {
   if (!(i < gs->num_ops))
-    abort ();
+    __builtin_abort ();
   return gs->exp;
 }
 

@@ -1,6 +1,6 @@
 // <shared_mutex> -*- C++ -*-
 
-// Copyright (C) 2013-2023 Free Software Foundation, Inc.
+// Copyright (C) 2013-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -820,7 +820,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unlock()
       {
 	if (!_M_owns)
-	  __throw_system_error(int(errc::resource_deadlock_would_occur));
+	  __throw_system_error(int(errc::operation_not_permitted));
 	_M_pm->unlock_shared();
 	_M_owns = false;
       }

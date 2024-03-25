@@ -11,16 +11,16 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8, svint16_t s16, svuint16_t u16,
 {
   svmlalb_lane (u64, u32, u32); /* { dg-error {too few arguments to function 'svmlalb_lane'} } */
   svmlalb_lane (u64, u32, u32, 0, 0); /* { dg-error {too many arguments to function 'svmlalb_lane'} } */
-  svmlalb_lane (0, u16, u16, 0); /* { dg-error {passing 'int' to argument 1 of 'svmlalb_lane', which expects an SVE vector type} } */
+  svmlalb_lane (0, u16, u16, 0); /* { dg-error {passing 'int' to argument 1 of 'svmlalb_lane', which expects an SVE type rather than a scalar} } */
   svmlalb_lane (pg, u16, u16, 0); /* { dg-error {'svmlalb_lane' has no form that takes 'svbool_t' arguments} } */
   svmlalb_lane (u8, u8, u8, 0); /* { dg-error {'svmlalb_lane' has no form that takes 'svuint8_t' arguments} } */
   svmlalb_lane (u16, u8, u8, 0); /* { dg-error {'svmlalb_lane' has no form that takes 'svuint16_t' arguments} } */
   svmlalb_lane (f16, u16, u16, 0); /* { dg-error {'svmlalb_lane' has no form that takes 'svfloat16_t' arguments} } */
   svmlalb_lane (f32, f16, f16, 0);
   svmlalb_lane (u32, u16, u16, 0);
-  svmlalb_lane (u32, 0, u16, 0); /* { dg-error {passing 'int' to argument 2 of 'svmlalb_lane', which expects an SVE vector type} } */
+  svmlalb_lane (u32, 0, u16, 0); /* { dg-error {passing 'int' to argument 2 of 'svmlalb_lane', which expects an SVE type rather than a scalar} } */
   svmlalb_lane (u32, s16, u16, 0); /* { dg-error {arguments 1 and 2 of 'svmlalb_lane' must have the same signedness, but the values passed here have type 'svuint32_t' and 'svint16_t' respectively} } */
-  svmlalb_lane (u32, u16, 0, 0); /* { dg-error {passing 'int' to argument 3 of 'svmlalb_lane', which expects an SVE vector type} } */
+  svmlalb_lane (u32, u16, 0, 0); /* { dg-error {passing 'int' to argument 3 of 'svmlalb_lane', which expects an SVE type rather than a scalar} } */
   svmlalb_lane (u32, u16, s16, 0); /* { dg-error {arguments 1 and 3 of 'svmlalb_lane' must have the same signedness, but the values passed here have type 'svuint32_t' and 'svint16_t' respectively} } */
   svmlalb_lane (u32, u32, u32, 0); /* { dg-error {passing 'svuint32_t' instead of the expected 'svuint16_t' to argument 2 of 'svmlalb_lane', after passing 'svuint32_t' to argument 1} } */
   svmlalb_lane (u32, u8, u16, 0); /* { dg-error {passing 'svuint8_t' instead of the expected 'svuint16_t' to argument 2 of 'svmlalb_lane', after passing 'svuint32_t' to argument 1} } */

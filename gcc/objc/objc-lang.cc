@@ -1,5 +1,5 @@
 /* Language-dependent hooks for Objective-C.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -44,8 +44,6 @@ enum c_language_kind c_language = clk_objc;
 #define LANG_HOOKS_GIMPLIFY_EXPR objc_gimplify_expr
 #undef LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS objc_common_init_ts
-#undef LANG_HOOKS_TREE_SIZE
-#define LANG_HOOKS_TREE_SIZE objc_common_tree_size
 #undef LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE
 #define LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE objc_get_sarif_source_language
 
@@ -56,6 +54,16 @@ const char *
 objc_get_sarif_source_language (const char *)
 {
   return "objectivec";
+}
+
+/* Implement c-family hook to add language-specific features
+   for __has_{feature,extension}.  */
+
+void
+c_family_register_lang_features ()
+{
+  objc_common_register_features ();
+  c_register_features ();
 }
 
 /* Lang hook routines common to C and ObjC appear in c-objc-common.cc;

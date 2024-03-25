@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011-2023 Free Software Foundation, Inc.
+// Copyright (C) 2011-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,10 +39,6 @@
 #  include <bits/allocator.h>
 # endif
 #endif
-
-#define __glibcxx_want_constexpr_dynamic_alloc
-#define __glibcxx_want_allocator_traits_is_always_equal
-#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

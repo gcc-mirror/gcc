@@ -1,7 +1,7 @@
 # Makefile for the libiberty library.
 # Originally written by K. Richard Pixley <rich@cygnus.com>.
 #
-# Copyright (C) 1990-2023 Free Software Foundation, Inc.
+# Copyright (C) 1990-2024 Free Software Foundation, Inc.
 #
 # This file is part of the libiberty library.
 # Libiberty is free software; you can redistribute it and/or
@@ -114,7 +114,7 @@ INCDIR=$(srcdir)/$(MULTISRCTOP)../include
 
 COMPILE.c = $(CC) -c @DEFS@ $(CFLAGS) $(CPPFLAGS) -I. -I$(INCDIR) \
                $(HDEFINES) @ac_libiberty_warn_cflags@ -D_GNU_SOURCE \
-               @CET_HOST_FLAGS@
+               @CET_HOST_FLAGS@ @HWCAP_CFLAGS@
 
 # Just to make sure we don't use a built-in rule with VPATH
 .c.$(objext):

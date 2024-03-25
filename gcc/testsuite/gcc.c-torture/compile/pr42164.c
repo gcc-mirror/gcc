@@ -16,6 +16,8 @@ typedef struct
 {
   unsigned long val;
 } swp_entry_t;
+unsigned long swp_offset(swp_entry_t);
+void __BUG_ON(unsigned long);
 pte_t swp_entry_to_pte (swp_entry_t entry)
 {
   swp_entry_t arch_entry;

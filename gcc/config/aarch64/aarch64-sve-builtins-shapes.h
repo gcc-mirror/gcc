@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE (function shapes)
-   Copyright (C) 2018-2023 Free Software Foundation, Inc.
+   Copyright (C) 2018-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -40,6 +40,9 @@ namespace aarch64_sve
        one in which the argument is the usual vector, and one in which it
        is replaced by a scalar.
 
+     - an "_opt_single" suffix similarly says that the function can take
+       a vector or tuple argument, with the former having a "_single" suffix.
+
      - "_int" and "_uint" replace the argument's element type with a
        signed or unsigned integer of the same width.  The suffixes above
        then indicate whether this final argument is or might be a scalar.
@@ -75,6 +78,7 @@ namespace aarch64_sve
     extern const function_shape *const adr_offset;
     extern const function_shape *const binary;
     extern const function_shape *const binary_int_opt_n;
+    extern const function_shape *const binary_int_opt_single_n;
     extern const function_shape *const binary_lane;
     extern const function_shape *const binary_long_lane;
     extern const function_shape *const binary_long_opt_n;
@@ -82,9 +86,11 @@ namespace aarch64_sve
     extern const function_shape *const binary_narrowb_opt_n;
     extern const function_shape *const binary_narrowt_opt_n;
     extern const function_shape *const binary_opt_n;
+    extern const function_shape *const binary_opt_single_n;
     extern const function_shape *const binary_pred;
     extern const function_shape *const binary_rotate;
     extern const function_shape *const binary_scalar;
+    extern const function_shape *const binary_single;
     extern const function_shape *const binary_to_uint;
     extern const function_shape *const binary_uint;
     extern const function_shape *const binary_uint_n;
@@ -93,27 +99,50 @@ namespace aarch64_sve
     extern const function_shape *const binary_uint64_opt_n;
     extern const function_shape *const binary_wide;
     extern const function_shape *const binary_wide_opt_n;
+    extern const function_shape *const binary_za_int_m;
+    extern const function_shape *const binary_za_m;
+    extern const function_shape *const binary_za_slice_lane;
+    extern const function_shape *const binary_za_slice_int_opt_single;
+    extern const function_shape *const binary_za_slice_opt_single;
+    extern const function_shape *const binary_za_slice_uint_opt_single;
+    extern const function_shape *const binary_za_uint_m;
+    extern const function_shape *const binaryxn;
+    extern const function_shape *const bool_inherent;
+    extern const function_shape *const clamp;
     extern const function_shape *const clast;
     extern const function_shape *const compare;
     extern const function_shape *const compare_opt_n;
     extern const function_shape *const compare_ptr;
     extern const function_shape *const compare_scalar;
+    extern const function_shape *const compare_scalar_count;
     extern const function_shape *const compare_wide_opt_n;
     extern const function_shape *const count_inherent;
     extern const function_shape *const count_pat;
     extern const function_shape *const count_pred;
+    extern const function_shape *const count_pred_c;
     extern const function_shape *const count_vector;
     extern const function_shape *const create;
+    extern const function_shape *const dot_za_slice_int_lane;
+    extern const function_shape *const dot_za_slice_lane;
+    extern const function_shape *const dot_za_slice_uint_lane;
     extern const function_shape *const dupq;
+    extern const function_shape *const dup_neonq;
     extern const function_shape *const ext;
+    extern const function_shape *const extract_pred;
     extern const function_shape *const fold_left;
     extern const function_shape *const get;
+    extern const function_shape *const get_neonq;
     extern const function_shape *const inc_dec;
     extern const function_shape *const inc_dec_pat;
     extern const function_shape *const inc_dec_pred;
     extern const function_shape *const inc_dec_pred_scalar;
     extern const function_shape *const inherent;
     extern const function_shape *const inherent_b;
+    extern const function_shape *const inherent_za;
+    extern const function_shape *const inherent_zt;
+    extern const function_shape *const inherent_mask_za;
+    extern const function_shape *const ldr_zt;
+    extern const function_shape *const ldr_za;
     extern const function_shape *const load;
     extern const function_shape *const load_ext;
     extern const function_shape *const load_ext_gather_index;
@@ -124,6 +153,9 @@ namespace aarch64_sve
     extern const function_shape *const load_gather_sv_restricted;
     extern const function_shape *const load_gather_vs;
     extern const function_shape *const load_replicate;
+    extern const function_shape *const load_za;
+    extern const function_shape *const luti2_lane_zt;
+    extern const function_shape *const luti4_lane_zt;
     extern const function_shape *const mmla;
     extern const function_shape *const pattern_pred;
     extern const function_shape *const prefetch;
@@ -131,15 +163,22 @@ namespace aarch64_sve
     extern const function_shape *const prefetch_gather_offset;
     extern const function_shape *const ptest;
     extern const function_shape *const rdffr;
+    extern const function_shape *const read_za;
+    extern const function_shape *const read_za_m;
+    extern const function_shape *const read_za_slice;
     extern const function_shape *const reduction;
     extern const function_shape *const reduction_wide;
+    extern const function_shape *const reinterpret;
+    extern const function_shape *const select_pred;
     extern const function_shape *const set;
     extern const function_shape *const setffr;
+    extern const function_shape *const set_neonq;
     extern const function_shape *const shift_left_imm_long;
     extern const function_shape *const shift_left_imm_to_uint;
     extern const function_shape *const shift_right_imm;
     extern const function_shape *const shift_right_imm_narrowb;
     extern const function_shape *const shift_right_imm_narrowt;
+    extern const function_shape *const shift_right_imm_narrowxn;
     extern const function_shape *const shift_right_imm_narrowb_to_uint;
     extern const function_shape *const shift_right_imm_narrowt_to_uint;
     extern const function_shape *const store;
@@ -147,6 +186,10 @@ namespace aarch64_sve
     extern const function_shape *const store_scatter_index_restricted;
     extern const function_shape *const store_scatter_offset;
     extern const function_shape *const store_scatter_offset_restricted;
+    extern const function_shape *const store_za;
+    extern const function_shape *const storexn;
+    extern const function_shape *const str_za;
+    extern const function_shape *const str_zt;
     extern const function_shape *const tbl_tuple;
     extern const function_shape *const ternary_bfloat;
     extern const function_shape *const ternary_bfloat_lane;
@@ -159,9 +202,9 @@ namespace aarch64_sve
     extern const function_shape *const ternary_long_lane;
     extern const function_shape *const ternary_long_opt_n;
     extern const function_shape *const ternary_opt_n;
-    extern const function_shape *const ternary_qq_lane;
+    extern const function_shape *const ternary_qq_or_011_lane;
     extern const function_shape *const ternary_qq_lane_rotate;
-    extern const function_shape *const ternary_qq_opt_n;
+    extern const function_shape *const ternary_qq_opt_n_or_011;
     extern const function_shape *const ternary_qq_rotate;
     extern const function_shape *const ternary_rotate;
     extern const function_shape *const ternary_shift_left_imm;
@@ -174,6 +217,7 @@ namespace aarch64_sve
     extern const function_shape *const unary;
     extern const function_shape *const unary_convert;
     extern const function_shape *const unary_convert_narrowt;
+    extern const function_shape *const unary_convertxn;
     extern const function_shape *const unary_long;
     extern const function_shape *const unary_n;
     extern const function_shape *const unary_narrowb;
@@ -185,6 +229,12 @@ namespace aarch64_sve
     extern const function_shape *const unary_to_uint;
     extern const function_shape *const unary_uint;
     extern const function_shape *const unary_widen;
+    extern const function_shape *const unary_za_m;
+    extern const function_shape *const unary_za_slice;
+    extern const function_shape *const unaryxn;
+    extern const function_shape *const write_za;
+    extern const function_shape *const write_za_m;
+    extern const function_shape *const write_za_slice;
   }
 }
 

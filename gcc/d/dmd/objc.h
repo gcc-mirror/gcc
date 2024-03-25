@@ -30,8 +30,6 @@ struct ObjcSelector
 
     static void _init();
 
-    ObjcSelector(const char *sv, size_t len, size_t pcount);
-
     static ObjcSelector *create(FuncDeclaration *fdecl);
 };
 

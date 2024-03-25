@@ -137,12 +137,16 @@ libm2log_la_M2FLAGS = \
  -fm2-pathname=m2log -I$(GM2_SRC)/gm2-libs-log \
  -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
  -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
- -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2log \
+ -Wcase-enum -Wreturn-type \
+ -fcase -fm2-prefix=m2log \
  $(TARGET_LONGDOUBLE_ABI)
 if TARGET_DARWIN
 libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
 libm2log_la_link_flags =
+endif
+if ENABLE_DARWIN_AT_RPATH
+libm2log_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
 endif
 libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags)
 BUILT_SOURCES = ../libm2pim/SYSTEM.def

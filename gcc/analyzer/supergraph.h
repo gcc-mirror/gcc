@@ -1,5 +1,5 @@
 /* "Supergraph" classes that combine CFGs and callgraph into one digraph.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -531,6 +531,8 @@ class cfg_superedge : public superedge
 
   size_t get_phi_arg_idx () const;
   tree get_phi_arg (const gphi *phi) const;
+
+  location_t get_goto_locus () const { return m_cfg_edge->goto_locus; }
 
  private:
   const ::edge m_cfg_edge;

@@ -1,5 +1,5 @@
 /* MD reader for GCC.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -132,9 +132,9 @@ md_reader::fprint_md_ptr_loc (FILE *outf, const void *ptr)
 
 /* Special fprint_md_ptr_loc for writing to STDOUT.  */
 void
-md_reader::print_md_ptr_loc (const void *ptr)
+md_reader::print_md_ptr_loc (const void *ptr, FILE *file)
 {
-  fprint_md_ptr_loc (stdout, ptr);
+  fprint_md_ptr_loc (file, ptr);
 }
 
 /* Return a condition that satisfies both COND1 and COND2.  Either string

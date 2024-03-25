@@ -1,3 +1,5 @@
 driver-aarch64.o: $(srcdir)/config/aarch64/driver-aarch64.cc \
-  $(CONFIG_H) $(SYSTEM_H)
+  $(CONFIG_H) $(SYSTEM_H) $(TM_H) $(CORETYPES_H) \
+  $(srcdir)/config/aarch64/aarch64-protos.h \
+  $(srcdir)/config/aarch64/aarch64-feature-deps.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

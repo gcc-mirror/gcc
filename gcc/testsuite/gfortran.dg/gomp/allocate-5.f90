@@ -1,3 +1,4 @@
+! { dg-additional-options "-fopenmp-allocators" }
 module my_omp_lib
   use iso_c_binding, only: c_intptr_t
   !use omp_lib
@@ -45,15 +46,15 @@ subroutine two(c,x2,y2)
   class(t), pointer :: y2(:)
 
   !$omp flush  ! some executable statement
-  !$omp allocate(a)  ! { dg-message "not yet supported" }
-  allocate(a,b(4),c(3,4))
-  deallocate(a,b,c)
+  !$omp allocate(a)
+  allocate(a)
+  deallocate(a)
 
-  !$omp allocate(x1,y1,x2,y2)  ! { dg-message "not yet supported" }
+  !$omp allocate(x1,y1,x2,y2)
   allocate(x1,y1,x2(5),y2(5))
   deallocate(x1,y1,x2,y2)
 
-  !$omp allocate(b,a) align ( 128 )  ! { dg-message "not yet supported" }
+  !$omp allocate(b,a) align ( 128 )
   !$omp allocate align ( 64 )
   allocate(a,b(4),c(3,4))
   deallocate(a,b,c)
@@ -66,7 +67,7 @@ subroutine three(c)
   integer, allocatable :: a, b(:), c(:,:)
 
   call foo()  ! executable stmt
-  !$omp allocate allocator( omp_large_cap_mem_alloc ) , align(64)  ! { dg-message "not yet supported" }
+  !$omp allocate allocator( omp_large_cap_mem_alloc ) , align(64)
   !$omp allocate(b) allocator( omp_high_bw_mem_alloc )
   !$omp allocate(c) allocator( omp_high_bw_mem_alloc )
   allocate(a,b(4),c(3,4))
@@ -74,7 +75,7 @@ subroutine three(c)
 
   block
     q = 5  ! executable stmt
-    !$omp allocate(a) align(64)  ! { dg-message "not yet supported" }
+    !$omp allocate(a) align(64)
     !$omp allocate(b) allocator( omp_high_bw_mem_alloc ), align(32)
     !$omp allocate(c) allocator( omp_thread_mem_alloc )
     allocate(a,b(4),c(3,4))
@@ -84,7 +85,7 @@ subroutine three(c)
 contains
   subroutine inner
     call foo()  ! executable stmt
-    !$omp allocate(a) align(64)  ! { dg-message "not yet supported" }
+    !$omp allocate(a) align(64)
     !$omp allocate(b) allocator( omp_high_bw_mem_alloc ), align(32)
     !$omp allocate(c) allocator( omp_thread_mem_alloc )
     allocate(a,b(4),c(3,4))

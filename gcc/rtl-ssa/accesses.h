@@ -1,5 +1,5 @@
 // Access-related classes for RTL SSA                               -*- C++ -*-
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -203,6 +203,10 @@ public:
   // and if all accesses to resource () occur in notes, rather than
   // in the main instruction pattern.
   bool only_occurs_in_notes () const { return m_only_occurs_in_notes; }
+
+  // Return true if this is a temporary access, e.g. one created for
+  // an insn that is about to be inserted.
+  bool is_temporary () const { return m_is_temp; }
 
 protected:
   access_info (resource_info, access_kind);

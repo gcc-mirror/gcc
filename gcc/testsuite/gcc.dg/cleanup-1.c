@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wall" } */
+/* { dg-options "-fpermissive -Wall" } */
 /* Validate expected warnings and errors.  */
 
 #define U	__attribute__((unused))

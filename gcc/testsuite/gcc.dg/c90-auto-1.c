@@ -5,7 +5,7 @@
 void
 f (void)
 {
-  /* This should have type int following C90 rules, whereas in C2x it
+  /* This should have type int following C90 rules, whereas in C23 it
      would have type double.  */
   auto x = 1.5;
   int *p = &x;

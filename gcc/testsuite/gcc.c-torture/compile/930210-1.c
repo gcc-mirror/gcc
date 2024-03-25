@@ -1,4 +1,5 @@
-f()
+void
+f(void)
 {
   char  c1, c2;
   char *p1, *p2;

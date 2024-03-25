@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 #define VALUE 0x123456789abcdefLL
 #define AFTER 0x55
 

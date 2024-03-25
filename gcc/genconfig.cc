@@ -1,6 +1,6 @@
 /* Generate from machine description:
    - some #define configuration flags.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -359,6 +359,8 @@ main (int argc, const char **argv)
       printf ("#define HAVE_peephole2 0\n");
       printf ("#define MAX_INSNS_PER_PEEP2 0\n");
     }
+
+  printf ("#define NUM_REGISTER_FILTERS %d\n", register_filters.length ());
 
   puts ("\n#endif /* GCC_INSN_CONFIG_H */");
 

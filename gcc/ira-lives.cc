@@ -1,5 +1,5 @@
 /* IRA processing allocno lives to build allocno live ranges.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1066,6 +1066,66 @@ process_single_reg_class_operands (bool in_p, int freq)
     }
 }
 
+/* Go through the operands of the extracted insn looking for operand
+   alternatives that apply a register filter.  Record any such filters
+   in the operand's allocno.  */
+static void
+process_register_constraint_filters ()
+{
+  for (int opno = 0; opno < recog_data.n_operands; ++opno)
+    {
+      rtx op = recog_data.operand[opno];
+      if (SUBREG_P (op))
+	op = SUBREG_REG (op);
+      if (REG_P (op) && !HARD_REGISTER_P (op))
+	{
+	  ira_allocno_t a = ira_curr_regno_allocno_map[REGNO (op)];
+	  for (int alt = 0; alt < recog_data.n_alternatives; alt++)
+	    {
+	      if (!TEST_BIT (preferred_alternatives, alt))
+		continue;
+
+	      auto *op_alt = &recog_op_alt[alt * recog_data.n_operands];
+	      auto cl = alternative_class (op_alt, opno);
+	      /* The two extremes are easy:
+
+		 - We should record the filter if CL matches the
+		   allocno class.
+
+		 - We should ignore the filter if CL and the allocno class
+		   are disjoint.  We'll either pick a different alternative
+		   or reload the operand.
+
+		 Things are trickier if the classes overlap.  However:
+
+		 - If the allocno class includes registers that are not
+		   in CL, some choices of hard register will need a reload
+		   anyway.  It isn't obvious that reloads due to filters
+		   are worse than reloads due to regnos being outside CL.
+
+		 - Conversely, if the allocno class is a subset of CL,
+		   any allocation will satisfy the class requirement.
+		   We should try to make sure it satisfies the filter
+		   requirement too.  This is useful if, for example,
+		   an allocno needs to be in "low" registers to satisfy
+		   some uses, and its allocno class is therefore those
+		   low registers, but the allocno is elsewhere allowed
+		   to be in any even-numbered register.  Picking an
+		   even-numbered low register satisfies both types of use.  */
+	      if (!ira_class_subset_p[ALLOCNO_CLASS (a)][cl])
+		continue;
+
+	      auto filters = alternative_register_filters (op_alt, opno);
+	      if (!filters)
+		continue;
+
+	      filters |= ALLOCNO_REGISTER_FILTERS (a);
+	      ALLOCNO_SET_REGISTER_FILTERS (a, filters);
+	    }
+	}
+    }
+}
+
 /* Look through the CALL_INSN_FUNCTION_USAGE of a call insn INSN, and see if
    we find a SET rtx that we can use to deduce that a register can be cheaply
    caller-saved.  Return such a register, or NULL_RTX if none is found.  */
@@ -1214,6 +1274,32 @@ process_out_of_region_eh_regs (basic_block bb)
 
 #endif
 
+/* Add conflicts for object OBJ from REGION landing pads using CALLEE_ABI.  */
+static void
+add_conflict_from_region_landing_pads (eh_region region, ira_object_t obj,
+				       function_abi callee_abi)
+{
+  ira_allocno_t a = OBJECT_ALLOCNO (obj);
+  rtx_code_label *landing_label;
+  basic_block landing_bb;
+
+  for (eh_landing_pad lp = region->landing_pads; lp ; lp = lp->next_lp)
+    {
+      if ((landing_label = lp->landing_pad) != NULL
+	  && (landing_bb = BLOCK_FOR_INSN (landing_label)) != NULL
+	  && (region->type != ERT_CLEANUP
+	      || bitmap_bit_p (df_get_live_in (landing_bb),
+			       ALLOCNO_REGNO (a))))
+	{
+	  HARD_REG_SET new_conflict_regs
+	    = callee_abi.mode_clobbers (ALLOCNO_MODE (a));
+	  OBJECT_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
+	  OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
+	  return;
+	}
+    }
+}
+
 /* Process insns of the basic block given by its LOOP_TREE_NODE to
    update allocno live ranges, allocno hard register conflicts,
    intersected calls, and register pressure info for allocnos for the
@@ -1352,6 +1438,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      }
 
 	  preferred_alternatives = ira_setup_alts (insn);
+	  process_register_constraint_filters ();
 	  process_single_reg_class_operands (false, freq);
 
 	  if (call_p)
@@ -1385,23 +1472,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		      SET_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
 		    }
 		  eh_region r;
-		  eh_landing_pad lp;
-		  rtx_code_label *landing_label;
-		  basic_block landing_bb;
 		  if (can_throw_internal (insn)
-		      && (r = get_eh_region_from_rtx (insn)) != NULL
-		      && (lp = gen_eh_landing_pad (r)) != NULL
-		      && (landing_label = lp->landing_pad) != NULL
-		      && (landing_bb = BLOCK_FOR_INSN (landing_label)) != NULL
-		      && (r->type != ERT_CLEANUP
-			  || bitmap_bit_p (df_get_live_in (landing_bb),
-					   ALLOCNO_REGNO (a))))
-		    {
-		      HARD_REG_SET new_conflict_regs
-			= callee_abi.mode_clobbers (ALLOCNO_MODE (a));
-		      OBJECT_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
-		      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
-		    }
+		      && (r = get_eh_region_from_rtx (insn)) != NULL)
+		    add_conflict_from_region_landing_pads (r, obj, callee_abi);
 		  if (sparseset_bit_p (allocnos_processed, num))
 		    continue;
 		  sparseset_set_bit (allocnos_processed, num);

@@ -537,7 +537,7 @@ package body Exp_Disp is
             then
                Target_List := Priv_Decls;
 
-            elsif not Present (Vis_Decls) then
+            elsif No (Vis_Decls) then
                Target_List := New_List;
                Set_Private_Declarations (Spec, Target_List);
             else

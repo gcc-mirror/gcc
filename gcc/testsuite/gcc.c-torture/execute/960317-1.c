@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int
 f (unsigned bitcount, int mant)
 {
@@ -14,7 +17,8 @@ auf:
   return 1;
 }
 
-main ()
+int
+main (void)
 {
   if (f (0, -1))
     abort ();

@@ -1,2 +1,2 @@
 extern char foo[], bar[];
-void f (void) { memcpy (foo, bar, 7); }
+void f (void) { __builtin_memcpy (foo, bar, 7); }

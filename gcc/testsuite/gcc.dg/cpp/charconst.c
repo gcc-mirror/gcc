@@ -11,9 +11,9 @@
 #endif
 #if L''			/* { dg-error "empty" "empty wide charconst" } */
 #endif
-#if 'very long'		/* { dg-warning "too long" "long charconst" } */
+#if 'very long'		/* { dg-warning "multi-character literal with \[0-9]+ characters exceeds 'int' size of \[0-9]+ bytes" "long charconst" } */
 #endif
-#if L'very long'	/* { dg-warning "too long" "long wide charconst" } */
+#if L'very long'	/* { dg-warning "multi-character literal cannot have an encoding prefix" "long wide charconst" } */
 #endif
 /* Don't do this test for L'ab'; it depends upon sizeof (wchar_t).  */
 #if 'ab'		/* { dg-warning "multi-char" "multi-character" } */
@@ -27,10 +27,10 @@ void foo ()
   c = '';		/* { dg-error "empty" "empty charconst" } */
   w = L'';		/* { dg-error "empty" "empty wide charconst" } */
 
-  c = 'very long';	/* { dg-warning "too long" "long charconst" } */
-  w = L'very long';	/* { dg-warning "too long" "long wide charconst" } */
+  c = 'very long';	/* { dg-warning "multi-character literal with \[0-9]+ characters exceeds 'int' size of \[0-9]+ bytes" "long charconst" } */
+  w = L'very long';	/* { dg-warning "multi-character literal cannot have an encoding prefix" "long wide charconst" } */
 
   c = 'ab';		/* { dg-warning "multi-char" "multi-char" } */
   /* Wide charconsts cannot contain more than one wide character.  */
-  w = L'ab';		/* { dg-warning "too long" "multi-char wide" } */
+  w = L'ab';		/* { dg-warning "multi-character literal cannot have an encoding prefix" "multi-char wide" } */
 }

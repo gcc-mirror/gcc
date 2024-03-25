@@ -1,5 +1,5 @@
 /* Declarations for objc-act.cc.
-   Copyright (C) 1990-2023 Free Software Foundation, Inc.
+   Copyright (C) 1990-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,9 @@ const char *objc_printable_name (tree, int);
 int objc_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 void objc_common_init_ts (void);
 const char *objc_get_sarif_source_language (const char *);
+
+/* Register features common to Objective-C and Objective-C++.  */
+void objc_common_register_features ();
 
 /* NB: The remaining public functions are prototyped in c-common.h, for the
    benefit of stub-objc.cc and objc-act.cc.  */
@@ -737,8 +740,6 @@ struct objc_try_context
    than making them externs.  */
 
 extern tree objc_create_temporary_var (tree, const char *);
-
-size_t objc_common_tree_size (enum tree_code code);
 
 
 #define objc_is_object_id(TYPE) (OBJC_TYPE_NAME (TYPE) == objc_object_id)

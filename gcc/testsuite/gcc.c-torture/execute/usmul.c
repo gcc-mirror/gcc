@@ -1,4 +1,7 @@
 /* { dg-require-effective-target int32plus } */
+void abort (void);
+void exit (int);
+
 int __attribute__ ((noinline)) foo (short x, unsigned short y)
 {
   return x * y;

@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-# Copyright (C) 2018-2023 Free Software Foundation, Inc.
+# Copyright (C) 2018-2024 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,6 +34,9 @@ case "${target}" in
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   hppa-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
+  loongarch*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   mips*-*-linux*)

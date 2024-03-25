@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -218,6 +218,7 @@ sem_item::target_supports_symbol_aliases_p (void)
 #if !defined (ASM_OUTPUT_DEF) || (!defined(ASM_OUTPUT_WEAK_ALIAS) && !defined (ASM_WEAKEN_DECL))
   return false;
 #else
+  gcc_checking_assert (TARGET_SUPPORTS_ALIASES);
   return true;
 #endif
 }
@@ -1664,6 +1665,10 @@ sem_variable::equals_wpa (sem_item *item,
 
   if (DECL_IN_TEXT_SECTION (decl) != DECL_IN_TEXT_SECTION (item->decl))
     return return_false_with_msg ("text section");
+
+  if (TYPE_ADDR_SPACE (TREE_TYPE (decl))
+      != TYPE_ADDR_SPACE (TREE_TYPE (item->decl)))
+    return return_false_with_msg ("address-space");
 
   ipa_ref *ref = NULL, *ref2 = NULL;
   for (unsigned i = 0; node->iterate_reference (i, ref); i++)
@@ -3417,7 +3422,8 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count,
 				 alias->node->dump_asm_name ());
 	      }
 
-	    if (lookup_attribute ("no_icf", DECL_ATTRIBUTES (alias->decl)))
+	    if (lookup_attribute ("no_icf", DECL_ATTRIBUTES (alias->decl))
+		|| lookup_attribute ("no_icf", DECL_ATTRIBUTES (source->decl)))
 	      {
 		if (dump_enabled_p ())
 		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
@@ -3505,6 +3511,7 @@ sem_item_optimizer::fixup_points_to_sets (void)
 	    && SSA_NAME_PTR_INFO (name))
 	  fixup_pt_set (&SSA_NAME_PTR_INFO (name)->pt);
       fixup_pt_set (&fn->gimple_df->escaped);
+      fixup_pt_set (&fn->gimple_df->escaped_return);
 
        /* The above gets us to 99% I guess, at least catching the
 	  address compares.  Below also gets us aliasing correct

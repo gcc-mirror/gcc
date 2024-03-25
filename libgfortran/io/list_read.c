@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist input contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -2189,14 +2189,14 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
       break;
     case BT_CLASS:
       {
-	  int unit = dtp->u.p.current_unit->unit_number;
+	  GFC_INTEGER_4 unit = dtp->u.p.current_unit->unit_number;
 	  char iotype[] = "LISTDIRECTED";
           gfc_charlen_type iotype_len = 12;
 	  char tmp_iomsg[IOMSG_LEN] = "";
 	  char *child_iomsg;
 	  gfc_charlen_type child_iomsg_len;
-	  int noiostat;
-	  int *child_iostat = NULL;
+	  GFC_INTEGER_4 noiostat;
+	  GFC_INTEGER_4 *child_iostat = NULL;
 	  gfc_full_array_i4 vlist;
 
 	  GFC_DESCRIPTOR_DATA(&vlist) = NULL;
@@ -2204,8 +2204,8 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 
 	  /* Set iostat, intent(out).  */
 	  noiostat = 0;
-	  child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
-			  dtp->common.iostat : &noiostat;
+	  child_iostat = ((dtp->common.flags & IOPARM_HAS_IOSTAT)
+			  ? dtp->common.iostat : &noiostat);
 
 	  /* Set iomsge, intent(inout).  */
 	  if (dtp->common.flags & IOPARM_HAS_IOMSG)
@@ -2987,14 +2987,14 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
 	    /* If this object has a User Defined procedure, call it.  */
 	    if (nl->dtio_sub != NULL)
 	      {
-		int unit = dtp->u.p.current_unit->unit_number;
+		GFC_INTEGER_4 unit = dtp->u.p.current_unit->unit_number;
 		char iotype[] = "NAMELIST";
 		gfc_charlen_type iotype_len = 8;
 		char tmp_iomsg[IOMSG_LEN] = "";
 		char *child_iomsg;
 		gfc_charlen_type child_iomsg_len;
-		int noiostat;
-		int *child_iostat = NULL;
+		GFC_INTEGER_4 noiostat;
+		GFC_INTEGER_4 *child_iostat = NULL;
 		gfc_full_array_i4 vlist;
 		formatted_dtio dtio_ptr = (formatted_dtio)nl->dtio_sub;
 
@@ -3006,8 +3006,8 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
 
 		/* Set iostat, intent(out).  */
 		noiostat = 0;
-		child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
-				dtp->common.iostat : &noiostat;
+		child_iostat = ((dtp->common.flags & IOPARM_HAS_IOSTAT)
+				? dtp->common.iostat : &noiostat);
 
 		/* Set iomsg, intent(inout).  */
 		if (dtp->common.flags & IOPARM_HAS_IOMSG)

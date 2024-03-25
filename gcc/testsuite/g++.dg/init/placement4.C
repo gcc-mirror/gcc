@@ -1,5 +1,7 @@
 // PR c++/34158
 
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
+
 typedef __SIZE_TYPE__ size_t;
 extern "C" void* malloc (size_t);
 extern "C" void free (void *);

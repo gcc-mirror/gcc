@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 /* PR c/5503
    Test whether argument checking is done for fputs, bzero and bcmp.  */
 typedef struct { int i; } FILE;

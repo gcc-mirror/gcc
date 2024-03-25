@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -384,7 +384,7 @@ symbol_table::process_new_functions (void)
    functions or variables.  */
 
 void
-symtab_node::reset (void)
+symtab_node::reset (bool preserve_comdat_group)
 {
   /* Reset our data structures so we can analyze the function again.  */
   analyzed = false;
@@ -395,7 +395,8 @@ symtab_node::reset (void)
   cpp_implicit_alias = false;
 
   remove_all_references ();
-  remove_from_same_comdat_group ();
+  if (!preserve_comdat_group)
+    remove_from_same_comdat_group ();
 
   if (cgraph_node *cn = dyn_cast <cgraph_node *> (this))
     {

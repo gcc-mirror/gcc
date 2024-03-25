@@ -25,6 +25,7 @@ int failed = 0;
   assert (memcmp (&X1, &X2, sizeof (T)) == 0); \
 } while (0)
 
+void
 fun_check_passing_m256bf16_8_values (__m256bf16 i0 ATTRIBUTE_UNUSED,
 				     __m256bf16 i1 ATTRIBUTE_UNUSED,
 				     __m256bf16 i2 ATTRIBUTE_UNUSED,

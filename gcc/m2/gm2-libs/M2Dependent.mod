@@ -1,6 +1,6 @@
 (* M2Dependent.mod implements the run time module dependencies.
 
-Copyright (C) 2022-2023 Free Software Foundation, Inc.
+Copyright (C) 2022-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -29,7 +29,7 @@ IMPLEMENTATION MODULE M2Dependent ;
 
 FROM libc IMPORT abort, exit, write, getenv, printf, snprintf, strncpy ;
 FROM ASCII IMPORT nul, nl ;
-FROM SYSTEM IMPORT ADR, SIZE ;
+FROM SYSTEM IMPORT ADR ;
 FROM Storage IMPORT ALLOCATE ;
 FROM StrLib IMPORT StrCopy, StrLen, StrEqual ;
 
@@ -75,6 +75,21 @@ VAR
 
 
 (*
+   InitDependencyList - initialize all fields of DependencyList.
+*)
+
+PROCEDURE InitDependencyList (VAR depList: DependencyList;
+                              proc: PROC; state: DependencyState) ;
+BEGIN
+   depList.proc := proc ;
+   depList.forced := FALSE ;
+   depList.forc := FALSE ;
+   depList.appl := FALSE ;
+   depList.state := state
+END InitDependencyList ;
+
+
+(*
    CreateModule - creates a new module entry and returns the
                   ModuleChain.
 *)
@@ -90,8 +105,7 @@ BEGIN
    mptr^.libname := libname ;
    mptr^.init := init ;
    mptr^.fini := fini ;
-   mptr^.dependency.proc := dependencies ;
-   mptr^.dependency.state := unregistered ;
+   InitDependencyList (mptr^.dependency, dependencies, unregistered) ;
    mptr^.prev := NIL ;
    mptr^.next := NIL ;
    IF HexTrace

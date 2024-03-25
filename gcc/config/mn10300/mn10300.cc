@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for Matsushita MN10300 series
-   Copyright (C) 1996-2023 Free Software Foundation, Inc.
+   Copyright (C) 1996-2024 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -2850,7 +2850,8 @@ mn10300_conditional_register_usage (void)
 static rtx_insn *
 mn10300_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
 		       vec<machine_mode> & /*input_modes*/,
-		       vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
+		       vec<const char *> & /*constraints*/,
+		       vec<rtx> &/*uses*/, vec<rtx> &clobbers,
 		       HARD_REG_SET &clobbered_regs, location_t /*loc*/)
 {
   clobbers.safe_push (gen_rtx_REG (CCmode, CC_REG));

@@ -1,5 +1,5 @@
 /* Helper class for handling a call with specific arguments.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -445,14 +445,12 @@ public:
     return OPT_Wanalyzer_overlapping_buffers;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     auto_diagnostic_group d;
 
-    bool warned;
-    warned = warning_at (rich_loc, get_controlling_option (),
-			 "overlapping buffers passed as arguments to %qD",
-			 m_fndecl);
+    bool warned = ctxt.warn ("overlapping buffers passed as arguments to %qD",
+			     m_fndecl);
 
     // TODO: draw a picture?
 

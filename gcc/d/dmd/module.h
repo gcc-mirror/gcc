@@ -43,7 +43,6 @@ public:
 
     bool isAncestorPackageOf(const Package * const pkg) const;
 
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
     void accept(Visitor *v) override { v->visit(this); }
 
     Module *isPackageMod();
@@ -124,10 +123,8 @@ public:
     Module *parse();    // syntactic parse
     void importAll(Scope *sc) override;
     int needModuleInfo();
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
     bool isPackageAccessible(Package *p, Visibility visibility, int flags = 0) override;
     Dsymbol *symtabInsert(Dsymbol *s) override;
-    void deleteObjFile();
     static void runDeferredSemantic();
     static void runDeferredSemantic2();
     static void runDeferredSemantic3();
@@ -172,3 +169,4 @@ struct ModuleDeclaration
 };
 
 extern void getLocalClasses(Module* mod, Array<ClassDeclaration* >& aclasses);
+FuncDeclaration *findGetMembers(ScopeDsymbol *dsym);

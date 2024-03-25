@@ -1,5 +1,5 @@
 /* Consolidation of svalues and regions.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -184,6 +184,16 @@ region_model_manager::reject_if_too_complex (svalue *sval)
 	m_max_complexity.m_max_depth = c.m_max_depth;
       return false;
     }
+
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  sval->dump_to_pp (&pp, true);
+  if (warning_at (input_location, OPT_Wanalyzer_symbol_too_complex,
+		  "symbol too complicated: %qs",
+		  pp_formatted_text (&pp)))
+    inform (input_location,
+	    "max_depth %i exceeds --param=analyzer-max-svalue-depth=%i",
+	    c.m_max_depth, param_analyzer_max_svalue_depth);
 
   delete sval;
   return true;
@@ -586,9 +596,6 @@ maybe_undo_optimize_bit_field_compare (tree type,
 				       tree cst,
 				       const svalue *arg1)
 {
-  if (type != unsigned_char_type_node)
-    return NULL;
-
   const binding_map &map = compound_sval->get_map ();
   unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (cst);
   /* If "mask" is a contiguous range of set bits, see if the
@@ -1261,7 +1268,8 @@ conjured_purge::purge (const conjured_svalue *sval) const
 }
 
 /* Return the svalue * of type TYPE for the value conjured for ID_REG
-   at STMT, creating it if necessary.
+   at STMT (using IDX for any further disambiguation),
+   creating it if necessary.
    Use P to purge existing state from the svalue, for the case where a
    conjured_svalue would be reused along an execution path.  */
 
@@ -1269,9 +1277,10 @@ const svalue *
 region_model_manager::get_or_create_conjured_svalue (tree type,
 						     const gimple *stmt,
 						     const region *id_reg,
-						     const conjured_purge &p)
+						     const conjured_purge &p,
+						     unsigned idx)
 {
-  conjured_svalue::key_t key (type, stmt, id_reg);
+  conjured_svalue::key_t key (type, stmt, id_reg, idx);
   if (conjured_svalue **slot = m_conjured_values_map.get (key))
     {
       const conjured_svalue *sval = *slot;
@@ -1283,7 +1292,7 @@ region_model_manager::get_or_create_conjured_svalue (tree type,
       return sval;
     }
   conjured_svalue *conjured_sval
-    = new conjured_svalue (alloc_symbol_id (), type, stmt, id_reg);
+    = new conjured_svalue (alloc_symbol_id (), type, stmt, id_reg, idx);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (conjured_sval);
   m_conjured_values_map.put (key, conjured_sval);
   return conjured_sval;

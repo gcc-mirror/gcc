@@ -1,5 +1,5 @@
 /* d-builtins.cc -- GCC builtins support for D.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -955,6 +955,9 @@ d_build_d_type_nodes (void)
   /* Bool and Character types.  */
   d_bool_type = make_unsigned_type (1);
   TREE_SET_CODE (d_bool_type, BOOLEAN_TYPE);
+
+  d_bool_false_node = TYPE_MIN_VALUE (d_bool_type);
+  d_bool_true_node = TYPE_MAX_VALUE (d_bool_type);
 
   char8_type_node = make_unsigned_type (8);
   TYPE_STRING_FLAG (char8_type_node) = 1;

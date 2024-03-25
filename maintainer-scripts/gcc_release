@@ -25,7 +25,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
-# <http://www.gnu.org/licenses/>.
+# <https://www.gnu.org/licenses/>.
 #
 ########################################################################
 
@@ -153,7 +153,7 @@ build_sources() {
       # Update this ChangeLog file only if it does not yet contain the
       # entry we are going to add.  (This is a safety net for repeated
       # runs of this script for the same release.)
-      if ! grep "GCC ${RELEASE} released." ${SOURCE_DIRECTORY}/${x} > /dev/null ; then       
+      if ! grep "GCC ${RELEASE} released." ${SOURCE_DIRECTORY}/${x} > /dev/null ; then
 	cat - ${SOURCE_DIRECTORY}/${x} > ${SOURCE_DIRECTORY}/${x}.new <<EOF
 ${LONG_DATE}  Release Manager
 
@@ -278,7 +278,7 @@ EOF
 
   # Create a "MD5SUMS" file to use for checking the validity of the release.
   echo \
-"# This file contains the MD5 checksums of the files in the 
+"# This file contains the MD5 checksums of the files in the
 # gcc-"${RELEASE}".tar.xz tarball.
 #
 # Besides verifying that all files in the tarball were correctly expanded,
@@ -323,7 +323,7 @@ build_tarfiles() {
   chmod -R a+r ${SOURCE_DIRECTORY}
   # And that all directories have mode 755.
   find ${SOURCE_DIRECTORY} -type d -exec chmod 755 {} \;
- 
+
   # Build one huge tarfile for the entire distribution.
   build_tarfile gcc-${RELEASE} `basename ${SOURCE_DIRECTORY}`
 }
@@ -442,7 +442,7 @@ snapshot_print() {
 # Announce a snapshot, both on the web and via mail.
 announce_snapshot() {
   inform "Updating links and READMEs on the FTP server"
-  
+
   TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
   SNAPSHOT_README=${RELEASE}/README
   SNAPSHOT_INDEX=${RELEASE}/index.html
@@ -451,7 +451,7 @@ announce_snapshot() {
   echo \
 "Snapshot gcc-"${RELEASE}" is now available on
   https://gcc.gnu.org/pub/gcc/snapshots/"${RELEASE}"/
-and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
+and on various mirrors, see https://gcc.gnu.org/mirrors.html for details.
 
 This snapshot has been generated from the GCC "${BRANCH}" git branch
 with the following options: "git://gcc.gnu.org/git/gcc.git branch ${GITBRANCH} revision ${GITREV}"
@@ -469,10 +469,10 @@ You'll find:
 <body>
 <h1>GCC "${RELEASE}" Snapshot</h1>
 
-<p>The <a href =\"http://gcc.gnu.org/\">GCC Project</a> makes
+<p>The <a href =\"https://gcc.gnu.org/\">GCC Project</a> makes
 periodic snapshots of the GCC source tree available to the public
 for testing purposes.</p>
-	
+
 <p>If you are planning to download and use one of our snapshots, then
 we highly recommend you join the GCC developers list.  Details for
 how to sign up can be found on the GCC project home page.</p>
@@ -481,7 +481,7 @@ how to sign up can be found on the GCC project home page.</p>
 with the following options: <code>"git://gcc.gnu.org/git/gcc.git branch ${GITBRANCH} revision ${GITREV}"</code></p>
 
 <table>" > ${SNAPSHOT_INDEX}
-       
+
   snapshot_print gcc-${RELEASE}.tar.xz "Complete GCC"
 
   echo \
@@ -548,7 +548,7 @@ FTP_PATH=/var/ftp/pub/gcc
 # The directory in which snapshots will be placed.
 SNAPSHOTS_DIR=${FTP_PATH}/snapshots
 
-# The major number for the release.  For release `3.0.2' this would be 
+# The major number for the release.  For release `3.0.2' this would be
 # `3'
 RELEASE_MAJOR=""
 # The minor number for the release.  For release `3.0.2' this would be
@@ -560,7 +560,7 @@ RELEASE_REVISION=""
 # The complete name of the release.
 RELEASE=""
 
-# The name of the branch from which the release should be made, in a 
+# The name of the branch from which the release should be made, in a
 # user-friendly form.
 BRANCH=""
 
