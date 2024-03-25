@@ -1466,12 +1466,13 @@ package body System.Task_Primitives.Operations is
         and then T.Common.LL.Thread /= Null_Thread_Id
       then
          declare
-            CPUs    : constant size_t :=
-                        C.size_t (Multiprocessors.Number_Of_CPUs);
-            CPU_Set : cpu_set_t_ptr := null;
-            Size    : constant size_t := CPU_ALLOC_SIZE (CPUs);
+            CPUs         : constant size_t :=
+              C.size_t (Multiprocessors.Number_Of_CPUs);
+            CPU_Set      : cpu_set_t_ptr := null;
+            Is_Set_Owned : Boolean := False;
+            Size         : constant size_t := CPU_ALLOC_SIZE (CPUs);
 
-            Result  : C.int;
+            Result       : C.int;
 
          begin
             --  We look at the specific CPU (Base_CPU) first, then at the
@@ -1483,6 +1484,7 @@ package body System.Task_Primitives.Operations is
                --  Set the affinity to an unique CPU
 
                CPU_Set := CPU_ALLOC (CPUs);
+               Is_Set_Owned := True;
                System.OS_Interface.CPU_ZERO (Size, CPU_Set);
                System.OS_Interface.CPU_SET
                  (int (T.Common.Base_CPU), Size, CPU_Set);
@@ -1499,6 +1501,7 @@ package body System.Task_Primitives.Operations is
                --  dispatching domain.
 
                CPU_Set := CPU_ALLOC (CPUs);
+               Is_Set_Owned := True;
                System.OS_Interface.CPU_ZERO (Size, CPU_Set);
 
                for Proc in T.Common.Domain'Range loop
@@ -1512,7 +1515,9 @@ package body System.Task_Primitives.Operations is
               pthread_setaffinity_np (T.Common.LL.Thread, Size, CPU_Set);
             pragma Assert (Result = 0);
 
-            CPU_FREE (CPU_Set);
+            if Is_Set_Owned then
+               CPU_FREE (CPU_Set);
+            end if;
          end;
       end if;
    end Set_Task_Affinity;
