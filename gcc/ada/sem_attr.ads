@@ -288,6 +288,10 @@ package Sem_Attr is
       --  attribute is primarily intended for use in implementation of the
       --  standard input-output functions for fixed-point values.
 
+      --------------------
+      --  Invalid_Value --
+      --------------------
+
       Attribute_Invalid_Value => True,
       --  For every scalar type, S'Invalid_Value designates an undefined value
       --  of the type. If possible this value is an invalid value, and in fact
@@ -297,6 +301,10 @@ package Sem_Attr is
       --  set a value where initialization is required (e.g. as a result of the
       --  coding standards in use), but logically no initialization is needed,
       --  and the value should never be accessed.
+
+      ----------------
+      -- Loop_Entry --
+      ----------------
 
       Attribute_Loop_Entry => True,
       --  For every object of a non-limited type, S'Loop_Entry [(Loop_Name)]
