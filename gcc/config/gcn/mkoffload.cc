@@ -59,6 +59,8 @@
 #define EF_AMDGPU_MACH_AMDGCN_GFX90a 0x3f
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX1030
 #define EF_AMDGPU_MACH_AMDGCN_GFX1030 0x36
+#undef  EF_AMDGPU_MACH_AMDGCN_GFX1036
+#define EF_AMDGPU_MACH_AMDGCN_GFX1036 0x45
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX1100
 #define EF_AMDGPU_MACH_AMDGCN_GFX1100 0x41
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX1103
@@ -971,6 +973,8 @@ main (int argc, char **argv)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX90a;
       else if (strcmp (argv[i], "-march=gfx1030") == 0)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX1030;
+      else if (strcmp (argv[i], "-march=gfx1036") == 0)
+	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX1036;
       else if (strcmp (argv[i], "-march=gfx1100") == 0)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX1100;
       else if (strcmp (argv[i], "-march=gfx1103") == 0)
@@ -1016,6 +1020,7 @@ main (int argc, char **argv)
     {
     case EF_AMDGPU_MACH_AMDGCN_GFX803:
     case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+    case EF_AMDGPU_MACH_AMDGCN_GFX1036:
     case EF_AMDGPU_MACH_AMDGCN_GFX1100:
     case EF_AMDGPU_MACH_AMDGCN_GFX1103:
       SET_XNACK_UNSET (elf_flags);

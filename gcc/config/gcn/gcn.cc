@@ -139,6 +139,7 @@ gcn_option_override (void)
       : gcn_arch == PROCESSOR_GFX908 ? ISA_CDNA1
       : gcn_arch == PROCESSOR_GFX90a ? ISA_CDNA2
       : gcn_arch == PROCESSOR_GFX1030 ? ISA_RDNA2
+      : gcn_arch == PROCESSOR_GFX1036 ? ISA_RDNA2
       : gcn_arch == PROCESSOR_GFX1100 ? ISA_RDNA3
       : gcn_arch == PROCESSOR_GFX1103 ? ISA_RDNA3
       : ISA_UNKNOWN);
@@ -165,6 +166,7 @@ gcn_option_override (void)
   /* gfx803 "Fiji", gfx1030 and gfx1100 do not support XNACK.  */
   if (gcn_arch == PROCESSOR_FIJI
       || gcn_arch == PROCESSOR_GFX1030
+      || gcn_arch == PROCESSOR_GFX1036
       || gcn_arch == PROCESSOR_GFX1100
       || gcn_arch == PROCESSOR_GFX1103)
     {
@@ -172,6 +174,7 @@ gcn_option_override (void)
 	error ("%<-mxnack=on%> is incompatible with %<-march=%s%>",
 	       (gcn_arch == PROCESSOR_FIJI ? "fiji"
 		: gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
+		: gcn_arch == PROCESSOR_GFX1036 ? "gfx1036"
 		: gcn_arch == PROCESSOR_GFX1100 ? "gfx1100"
 		: gcn_arch == PROCESSOR_GFX1103 ? "gfx1103"
 		: NULL));
@@ -3049,6 +3052,8 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
 	return gcn_arch == PROCESSOR_GFX90a;
       if (strcmp (name, "gfx1030") == 0)
 	return gcn_arch == PROCESSOR_GFX1030;
+      if (strcmp (name, "gfx1036") == 0)
+	return gcn_arch == PROCESSOR_GFX1036;
       if (strcmp (name, "gfx1100") == 0)
 	return gcn_arch == PROCESSOR_GFX1100;
       if (strcmp (name, "gfx1103") == 0)
@@ -6581,6 +6586,11 @@ output_file_start (void)
       break;
     case PROCESSOR_GFX1030:
       cpu = "gfx1030";
+      xnack = "";
+      sram_ecc = "";
+      break;
+    case PROCESSOR_GFX1036:
+      cpu = "gfx1036";
       xnack = "";
       sram_ecc = "";
       break;

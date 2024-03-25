@@ -391,6 +391,7 @@ typedef enum {
   EF_AMDGPU_MACH_AMDGCN_GFX908 = 0x030,
   EF_AMDGPU_MACH_AMDGCN_GFX90a = 0x03f,
   EF_AMDGPU_MACH_AMDGCN_GFX1030 = 0x036,
+  EF_AMDGPU_MACH_AMDGCN_GFX1036 = 0x045,
   EF_AMDGPU_MACH_AMDGCN_GFX1100 = 0x041,
   EF_AMDGPU_MACH_AMDGCN_GFX1103 = 0x044
 } EF_AMDGPU_MACH;
@@ -1677,6 +1678,7 @@ const static char *gcn_gfx906_s = "gfx906";
 const static char *gcn_gfx908_s = "gfx908";
 const static char *gcn_gfx90a_s = "gfx90a";
 const static char *gcn_gfx1030_s = "gfx1030";
+const static char *gcn_gfx1036_s = "gfx1036";
 const static char *gcn_gfx1100_s = "gfx1100";
 const static char *gcn_gfx1103_s = "gfx1103";
 const static int gcn_isa_name_len = 7;
@@ -1700,6 +1702,8 @@ isa_hsa_name (int isa) {
       return gcn_gfx90a_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX1030:
       return gcn_gfx1030_s;
+    case EF_AMDGPU_MACH_AMDGCN_GFX1036:
+      return gcn_gfx1036_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX1100:
       return gcn_gfx1100_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX1103:
@@ -1746,6 +1750,9 @@ isa_code(const char *isa) {
   if (!strncmp (isa, gcn_gfx1030_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX1030;
 
+  if (!strncmp (isa, gcn_gfx1036_s, gcn_isa_name_len))
+    return EF_AMDGPU_MACH_AMDGCN_GFX1036;
+
   if (!strncmp (isa, gcn_gfx1100_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX1100;
 
@@ -1770,6 +1777,7 @@ max_isa_vgprs (int isa)
     case EF_AMDGPU_MACH_AMDGCN_GFX90a:
       return 512;
     case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+    case EF_AMDGPU_MACH_AMDGCN_GFX1036:
       return 512;  /* 512 SIMD32 = 256 wavefrontsize64.  */
     case EF_AMDGPU_MACH_AMDGCN_GFX1100:
     case EF_AMDGPU_MACH_AMDGCN_GFX1103:
