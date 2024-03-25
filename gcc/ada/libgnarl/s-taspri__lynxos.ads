@@ -86,12 +86,16 @@ private
 
    type Private_Data is limited record
       Thread : aliased System.OS_Interface.pthread_t;
-      pragma Atomic (Thread);
-      --  Thread field may be updated by two different threads of control.
-      --  (See, Enter_Task and Create_Task in s-taprop.adb). They put the same
-      --  value (thr_self value). We do not want to use lock on those
-      --  operations and the only thing we have to make sure is that they are
-      --  updated in atomic fashion.
+      --  This component is written to once before concurrent access to it is
+      --  possible, and then remains constant. The place where it is written to
+      --  depends on how the enclosing ATCB comes into existence:
+      --
+      --  1. For the environment task, the component is set in
+      --     System.Task_Primitive.Operations.Initialize.
+      --  2. For foreign threads, it happens in
+      --     System.Task_Primitives.Operations.Register_Foreign_Thread.
+      --  3. For others tasks, it's in
+      --     System.Task_Primitives.Operations.Create_Task.
 
       LWP : aliased System.OS_Interface.pthread_t;
       --  The purpose of this field is to provide a better tasking support on

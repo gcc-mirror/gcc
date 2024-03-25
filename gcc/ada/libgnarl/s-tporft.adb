@@ -98,6 +98,7 @@ begin
    System.Soft_Links.Create_TSD
      (Self_Id.Common.Compiler_Data, null, Sec_Stack_Size);
 
+   Self_Id.Common.LL.Thread := Thread;
    Enter_Task (Self_Id);
 
    return Self_Id;
