@@ -615,37 +615,37 @@ package Sem_Attr is
    --  universal type.
 
    Universal_Type_Attribute : constant array (Attribute_Id) of Boolean :=
-     (Attribute_Aft                          => True,
-      Attribute_Alignment                    => True,
-      Attribute_Component_Size               => True,
-      Attribute_Count                        => True,
-      Attribute_Delta                        => True,
-      Attribute_Digits                       => True,
-      Attribute_Exponent                     => True,
-      Attribute_First_Bit                    => True,
-      Attribute_Fore                         => True,
-      Attribute_Last_Bit                     => True,
-      Attribute_Length                       => True,
-      Attribute_Machine_Emax                 => True,
-      Attribute_Machine_Emin                 => True,
-      Attribute_Machine_Mantissa             => True,
-      Attribute_Machine_Radix                => True,
-      Attribute_Max_Alignment_For_Allocation => True,
-      Attribute_Max_Size_In_Storage_Elements => True,
-      Attribute_Model_Emin                   => True,
-      Attribute_Model_Epsilon                => True,
-      Attribute_Model_Mantissa               => True,
-      Attribute_Model_Small                  => True,
-      Attribute_Modulus                      => True,
-      Attribute_Pos                          => True,
-      Attribute_Position                     => True,
-      Attribute_Safe_First                   => True,
-      Attribute_Safe_Last                    => True,
-      Attribute_Scale                        => True,
-      Attribute_Size                         => True,
-      Attribute_Small                        => True,
-      Attribute_Wide_Wide_Width              => True,
-      Attribute_Wide_Width                   => True,
+     (Attribute_Aft                          |
+      Attribute_Alignment                    |
+      Attribute_Component_Size               |
+      Attribute_Count                        |
+      Attribute_Delta                        |
+      Attribute_Digits                       |
+      Attribute_Exponent                     |
+      Attribute_First_Bit                    |
+      Attribute_Fore                         |
+      Attribute_Last_Bit                     |
+      Attribute_Length                       |
+      Attribute_Machine_Emax                 |
+      Attribute_Machine_Emin                 |
+      Attribute_Machine_Mantissa             |
+      Attribute_Machine_Radix                |
+      Attribute_Max_Alignment_For_Allocation |
+      Attribute_Max_Size_In_Storage_Elements |
+      Attribute_Model_Emin                   |
+      Attribute_Model_Epsilon                |
+      Attribute_Model_Mantissa               |
+      Attribute_Model_Small                  |
+      Attribute_Modulus                      |
+      Attribute_Pos                          |
+      Attribute_Position                     |
+      Attribute_Safe_First                   |
+      Attribute_Safe_Last                    |
+      Attribute_Scale                        |
+      Attribute_Size                         |
+      Attribute_Small                        |
+      Attribute_Wide_Wide_Width              |
+      Attribute_Wide_Width                   |
       Attribute_Width                        => True,
       others                                 => False);
 
