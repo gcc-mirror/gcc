@@ -3225,7 +3225,7 @@ package body Sem_Attr is
 
       if Comes_From_Source (N) then
          if not Attribute_83 (Attr_Id) then
-            if Ada_Version = Ada_83 and then Comes_From_Source (N) then
+            if Ada_Version = Ada_83 then
                Error_Msg_Name_1 := Aname;
                Error_Msg_N ("(Ada 83) attribute% is not standard??", N);
             end if;
