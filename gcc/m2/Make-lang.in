@@ -168,7 +168,8 @@ doc/m2.ps: doc/m2.dvi
 m2.pdf: doc/m2.pdf
 
 doc/m2.pdf: $(TEXISRC) $(objdir)/m2/images/gnu.eps
-	$(TEXI2PDF) -I $(objdir)/m2 -I $(srcdir)/doc/include $(srcdir)/doc/gm2.texi -o $@
+	$(TEXI2PDF) -I $(objdir)/m2 -I $(srcdir)/doc/include \
+          $(srcdir)/doc/gm2.texi -o $@
 
 M2_PDFFILES = doc/m2.pdf
 

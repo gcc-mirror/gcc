@@ -6,6 +6,13 @@ FROM SYSTEM IMPORT ADDRESS ;
 
 (* floating point intrinsic procedure functions *)
 
+@findex isnanf
+PROCEDURE __BUILTIN__ isnanf (x: SHORTREAL) : INTEGER ;
+@findex isnan
+PROCEDURE __BUILTIN__ isnan (x: REAL) : INTEGER ;
+@findex isnanl
+PROCEDURE __BUILTIN__ isnanl (x: LONGREAL) : INTEGER ;
+
 @findex isfinitef
 PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : INTEGER ;
 @findex isfinite
@@ -113,9 +120,9 @@ PROCEDURE __BUILTIN__ nextafterf (x, y: SHORTREAL) : SHORTREAL ;
 PROCEDURE __BUILTIN__ nextafterl (x, y: LONGREAL) : LONGREAL ;
 
 @findex nexttoward
-PROCEDURE __BUILTIN__ nexttoward (x, y: REAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ nexttoward (x: REAL; y: LONGREAL) : REAL ;
 @findex nexttowardf
-PROCEDURE __BUILTIN__ nexttowardf (x, y: SHORTREAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ nexttowardf (x: SHORTREAL; y: LONGREAL) : SHORTREAL ;
 @findex nexttowardl
 PROCEDURE __BUILTIN__ nexttowardl (x, y: LONGREAL) : LONGREAL ;
 
