@@ -609,6 +609,33 @@ package Sem_Attr is
       --  for constructing this definition in package System (see note above
       --  in Default_Bit_Order description). This is a static attribute.
 
+      Attribute_Atomic_Always_Lock_Free    |
+      Attribute_Bit_Position               |
+      Attribute_Compiler_Version           |
+      Attribute_Descriptor_Size            |
+      Attribute_Enabled                    |
+      Attribute_Fast_Math                  |
+      Attribute_From_Any                   |
+      Attribute_Has_Access_Values          |
+      Attribute_Has_Tagged_Values          |
+      Attribute_Initialized                |
+      Attribute_Library_Level              |
+      Attribute_Pool_Address               |
+      Attribute_Restriction_Set            |
+      Attribute_Scalar_Storage_Order       |
+      Attribute_Simple_Storage_Pool        |
+      Attribute_Small_Denominator          |
+      Attribute_Small_Numerator            |
+      Attribute_System_Allocator_Alignment |
+      Attribute_To_Any                     |
+      Attribute_TypeCode                   |
+      Attribute_Type_Key                   |
+      Attribute_Unconstrained_Array        |
+      Attribute_Update                     |
+      Attribute_Valid_Value                |
+      Attribute_Wchar_T_Size               => True,
+      --  See description in GNAT RM
+
       others => False);
 
    --  The following table lists all attributes that yield a result of a
