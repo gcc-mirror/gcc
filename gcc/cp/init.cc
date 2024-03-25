@@ -950,12 +950,16 @@ can_init_array_with_p (tree type, tree init)
      mem-initializers of a constructor.  */
   if (DECL_DEFAULTED_FN (current_function_decl))
     return true;
-  /* As an extension, we allow copying from a compound literal.  */
   if (TREE_CODE (init) == TARGET_EXPR)
     {
       init = TARGET_EXPR_INITIAL (init);
+      /* As an extension, we allow copying from a compound literal.  */
       if (TREE_CODE (init) == CONSTRUCTOR)
 	return CONSTRUCTOR_C99_COMPOUND_LITERAL (init);
+      /* VEC_INIT_EXPR is used for non-constant initialization of trailing
+	 elements with no explicit initializers.  */
+      else if (TREE_CODE (init) == VEC_INIT_EXPR)
+	return true;
     }
 
   return false;
