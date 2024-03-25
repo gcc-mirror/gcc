@@ -201,14 +201,20 @@ riscv_pragma_intrinsic (cpp_reader *)
   if (strcmp (name, "vector") == 0
       || strcmp (name, "xtheadvector") == 0)
     {
-      if (!TARGET_VECTOR)
+      if (TARGET_VECTOR)
+	riscv_vector::handle_pragma_vector ();
+      else /* Indicates riscv_vector.h is included but v is missing in arch  */
 	{
-	  error ("%<#pragma riscv intrinsic%> option %qs needs 'V' or "
-		 "'XTHEADVECTOR' extension enabled",
-		 name);
-	  return;
+	  /* To make the the rvv types and intrinsic API available for the
+	     target("arch=+v") attribute,  we need to temporally enable the
+	     TARGET_VECTOR, and disable it after all initialized.  */
+	  target_flags |= MASK_VECTOR;
+
+	  riscv_vector::init_builtins ();
+	  riscv_vector::handle_pragma_vector ();
+
+	  target_flags &= ~MASK_VECTOR;
 	}
-      riscv_vector::handle_pragma_vector ();
     }
   else
     error ("unknown %<#pragma riscv intrinsic%> option %qs", name);

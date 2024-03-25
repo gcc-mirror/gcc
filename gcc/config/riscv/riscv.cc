@@ -5467,7 +5467,15 @@ riscv_return_value_is_vector_type_p (const_tree fntype)
 {
   tree return_type = TREE_TYPE (fntype);
 
-  return riscv_vector_type_p (return_type);
+  if (riscv_vector_type_p (return_type))
+    {
+      if (!TARGET_VECTOR)
+	error_at (input_location,
+		  "return type %qT requires the V ISA extension", return_type);
+      return true;
+    }
+  else
+    return false;
 }
 
 /* Return true if a function with type FNTYPE takes arguments in
@@ -5481,7 +5489,13 @@ riscv_arguments_is_vector_type_p (const_tree fntype)
     {
       tree arg_type = TREE_VALUE (chain);
       if (riscv_vector_type_p (arg_type))
-	return true;
+	{
+	  if (!TARGET_VECTOR)
+	    error_at (input_location,
+		      "argument type %qT requires the V ISA extension",
+		      arg_type);
+	  return true;
+	}
     }
 
   return false;
@@ -5493,8 +5507,16 @@ riscv_arguments_is_vector_type_p (const_tree fntype)
 static bool
 riscv_vector_cc_function_p (const_tree fntype)
 {
-  return lookup_attribute ("vector_cc", TYPE_ATTRIBUTES (fntype)) != NULL_TREE
-	 || lookup_attribute ("riscv_vector_cc", TYPE_ATTRIBUTES (fntype)) != NULL_TREE;
+  tree attr = TYPE_ATTRIBUTES (fntype);
+  bool vector_cc_p = lookup_attribute ("vector_cc", attr) != NULL_TREE
+    || lookup_attribute ("riscv_vector_cc", attr) != NULL_TREE;
+
+  if (vector_cc_p && !TARGET_VECTOR)
+    error_at (input_location,
+	      "function attribute %qs requires the V ISA extension",
+	      "riscv_vector_cc");
+
+  return vector_cc_p;
 }
 
 /* Implement TARGET_FNTYPE_ABI.  */
