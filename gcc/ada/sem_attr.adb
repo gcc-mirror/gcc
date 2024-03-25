@@ -170,7 +170,10 @@ package body Sem_Attr is
      (Attribute_First_Valid                  |
       Attribute_Has_Same_Storage             |
       Attribute_Last_Valid                   |
-      Attribute_Max_Alignment_For_Allocation => True,
+      Attribute_Max_Alignment_For_Allocation |
+      Attribute_Old                          |
+      Attribute_Overlaps_Storage             |
+      Attribute_Result                       => True,
       others                                 => False);
 
    --  The following array is the list of attributes defined in the Ada 2022
