@@ -1322,6 +1322,8 @@ package Sinfo is
    --    assignment or initialization. When the full context is known, the
    --    target of the assignment or initialization is used to generate the
    --    left-hand side of individual assignment to each subcomponent.
+   --    Also set on conditional expressions whose dependent expressions are
+   --    nested aggregates, in order to avoid creating a temporary for them.
 
    --  Expression_Copy
    --    Present in N_Pragma_Argument_Association nodes. Contains a copy of the
@@ -4657,6 +4659,7 @@ package Sinfo is
       --  Else_Actions
       --  Is_Elsif (set if comes from ELSIF)
       --  Do_Overflow_Check
+      --  Expansion_Delayed
       --  plus fields for expression
 
       --  Expressions here is a three-element list, whose first element is the
@@ -4695,6 +4698,7 @@ package Sinfo is
       --  Alternatives (the case expression alternatives)
       --  Etype
       --  Do_Overflow_Check
+      --  Expansion_Delayed
 
       ----------------------------------------
       -- 4.5.7  Case Expression Alternative --

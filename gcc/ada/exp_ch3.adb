@@ -7689,8 +7689,46 @@ package body Exp_Ch3 is
                Expander_Mode_Restore;
             end if;
 
+            --  For a special return object, the transformation must wait until
+            --  after the object is turned into an allocator.
+
             if not Special_Ret_Obj then
                Convert_Aggr_In_Object_Decl (N);
+            end if;
+
+         --  If the initialization expression is a conditional expression whose
+         --  expansion has been delayed, assign it explicitly to the object but
+         --  only after analyzing it again and expanding it.
+
+         elsif Is_Delayed_Conditional_Expression (Expr_Q) then
+            --  For a special return object, the transformation must wait until
+            --  after the object is turned into an allocator, and will be done
+            --  during the expansion of the allocator.
+
+            if not Special_Ret_Obj then
+               declare
+                  Assign : constant Node_Id :=
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Occurrence_Of (Def_Id, Loc),
+                      Expression => Relocate_Node (Expr));
+
+               begin
+                  Set_Assignment_OK (Name (Assign));
+                  Set_Analyzed (Expression (Assign), False);
+                  Set_No_Finalize_Actions (Assign);
+                  Insert_Action_After (Init_After, Assign);
+
+                  --  Save the assignment statement when declaring a controlled
+                  --  object. This reference is used later by the finalization
+                  --  machinery to mark the object as successfully initialized
+
+                  if Needs_Finalization (Typ) then
+                     Set_Last_Aggregate_Assignment (Def_Id, Assign);
+                  end if;
+
+                  Set_Expression (N, Empty);
+                  Set_No_Initialization (N);
+               end;
             end if;
 
          --  Ada 2005 (AI-318-02): If the initialization expression is a call

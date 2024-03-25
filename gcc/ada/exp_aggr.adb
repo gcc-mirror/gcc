@@ -4216,84 +4216,152 @@ package body Exp_Aggr is
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (N);
 
-      Aggr_Code   : List_Id;
-      Full_Typ    : Entity_Id;
-      Instr       : Node_Id;
-      Parent_Kind : Node_Kind;
-      Parent_Node : Node_Id;
-      Target_Expr : Node_Id;
-      Temp        : Entity_Id;
-      Unc_Decl    : Boolean := False;
+      function Known_Size (Decl : Node_Id; Cond_Init : Boolean) return Boolean;
+      --  Decl is an N_Object_Declaration node. Return true if it declares an
+      --  object with a known size; in this context, that is always the case,
+      --  except for a declaration without explicit constraints of an object,
+      --  either whose nominal subtype is class-wide, or whose initialization
+      --  contains a conditional expression and whose nominal subtype is both
+      --  discriminated and unconstrained.
+
+      ----------------
+      -- Known_Size --
+      ----------------
+
+      function Known_Size (Decl : Node_Id; Cond_Init : Boolean) return Boolean
+      is
+      begin
+         if Is_Entity_Name (Object_Definition (Decl)) then
+            declare
+               Typ : constant Entity_Id := Entity (Object_Definition (Decl));
+
+            begin
+               return not Is_Class_Wide_Type (Typ)
+                 and then not (Cond_Init
+                                and then Has_Discriminants (Typ)
+                                and then not Is_Constrained (Typ));
+            end;
+
+         else
+            return True;
+         end if;
+      end Known_Size;
+
+      --  Local variables
+
+      Aggr_Code    : List_Id;
+      Full_Typ     : Entity_Id;
+      In_Cond_Expr : Boolean;
+      Instr        : Node_Id;
+      Node         : Node_Id;
+      Parent_Node  : Node_Id;
+      Target_Expr  : Node_Id;
+      Temp         : Entity_Id;
+
+   --  Start of processing for Convert_To_Assignments
 
    begin
       pragma Assert (Nkind (N) in N_Aggregate | N_Extension_Aggregate);
       pragma Assert (not Is_Static_Dispatch_Table_Aggregate (N));
       pragma Assert (Is_Record_Type (Typ));
 
-      Parent_Node := Parent (N);
-      Parent_Kind := Nkind (Parent_Node);
+      In_Cond_Expr := False;
+      Node         := N;
+      Parent_Node  := Parent (Node);
 
-      if Parent_Kind = N_Qualified_Expression then
-         --  Check if we are in an unconstrained declaration because in this
-         --  case the current delayed expansion mechanism doesn't work when
-         --  the declared object size depends on the initializing expr.
+      --  First, climb the parent chain, looking through qualified expressions
+      --  and dependent expressions of conditional expressions.
 
-         Parent_Node := Parent (Parent_Node);
-         Parent_Kind := Nkind (Parent_Node);
+      while True loop
+         case Nkind (Parent_Node) is
+            when N_Case_Expression_Alternative =>
+               null;
 
-         if Parent_Kind = N_Object_Declaration then
-            Unc_Decl :=
-              not Is_Entity_Name (Object_Definition (Parent_Node))
-                or else (Nkind (N) = N_Aggregate
-                          and then
-                            Has_Discriminants
-                              (Entity (Object_Definition (Parent_Node))))
-                or else Is_Class_Wide_Type
-                          (Entity (Object_Definition (Parent_Node)));
-         end if;
-      end if;
+            when N_Case_Expression =>
+               exit when Node = Expression (Parent_Node);
+               In_Cond_Expr := True;
 
-      --  Just set the Delay flag in the cases where the transformation will be
-      --  done top down from above.
+            when N_If_Expression =>
+               exit when Node = First (Expressions (Parent_Node));
+               In_Cond_Expr := True;
+
+            when N_Qualified_Expression =>
+               null;
+
+            when others =>
+               exit;
+         end case;
+
+         Node        := Parent_Node;
+         Parent_Node := Parent (Node);
+      end loop;
+
+      --  Set the Expansion_Delayed flag in the cases where the transformation
+      --  will be done top down from above.
 
       if
          --  Internal aggregates (transformed when expanding the parent),
          --  excluding container aggregates as these are transformed into
-         --  subprogram calls later.
+         --  subprogram calls later. So far aggregates with self-references
+         --  are not supported if they appear in a conditional expression.
 
-         (Parent_Kind = N_Component_Association
-           and then not Is_Container_Aggregate (Parent (Parent_Node)))
+         (Nkind (Parent_Node) = N_Component_Association
+           and then not Is_Container_Aggregate (Parent (Parent_Node))
+           and then not (In_Cond_Expr and then Has_Self_Reference (N)))
 
-         or else (Parent_Kind in N_Aggregate | N_Extension_Aggregate
-                   and then not Is_Container_Aggregate (Parent_Node))
+         or else (Nkind (Parent_Node) in N_Aggregate | N_Extension_Aggregate
+                   and then not Is_Container_Aggregate (Parent_Node)
+                   and then not (In_Cond_Expr and then Has_Self_Reference (N)))
 
          --  Allocator (see Convert_Aggr_In_Allocator)
 
-         or else Parent_Kind = N_Allocator
+         or else Nkind (Parent_Node) = N_Allocator
 
-         --  Object declaration (see Convert_Aggr_In_Object_Decl)
+         --  Object declaration (see Convert_Aggr_In_Object_Decl). So far only
+         --  declarations with a known size are supported.
 
-         or else (Parent_Kind = N_Object_Declaration and then not Unc_Decl)
+         or else (Nkind (Parent_Node) = N_Object_Declaration
+                   and then Known_Size (Parent_Node, In_Cond_Expr))
 
          --  Safe assignment (see Convert_Aggr_In_Assignment). So far only the
          --  assignments in init procs are taken into account.
 
-         or else (Parent_Kind = N_Assignment_Statement
+         or else (Nkind (Parent_Node) = N_Assignment_Statement
                    and then Inside_Init_Proc)
-
-         --  (Ada 2005) An inherently limited type in a return statement, which
-         --  will be handled in a build-in-place fashion, and may be rewritten
-         --  as an extended return and have its own finalization machinery.
-         --  In the case of a simple return, the aggregate needs to be delayed
-         --  until the scope for the return statement has been created, so
-         --  that any finalization chain will be associated with that scope.
-         --  For extended returns, we delay expansion to avoid the creation
-         --  of an unwanted transient scope that could result in premature
-         --  finalization of the return object (which is built in place
-         --  within the caller's scope).
-
-         or else Is_Build_In_Place_Aggregate_Return (N)
       then
+         Node := N;
+
+         --  Mark the aggregate, as well as all the intermediate conditional
+         --  expressions, as having expansion delayed. This will block the
+         --  usual (bottom-up) expansion of the marked nodes and replace it
+         --  with a top-down expansion from the parent node.
+
+         while Node /= Parent_Node loop
+            if Nkind (Node) in N_Aggregate
+                             | N_Case_Expression
+                             | N_Extension_Aggregate
+                             | N_If_Expression
+            then
+               Set_Expansion_Delayed (Node);
+            end if;
+
+            Node := Parent (Node);
+         end loop;
+
+         return;
+
+      --  (Ada 2005) An inherently limited type in a return statement, which
+      --  will be handled in a build-in-place fashion, and may be rewritten
+      --  as an extended return and have its own finalization machinery.
+      --  In the case of a simple return, the aggregate needs to be delayed
+      --  until the scope for the return statement has been created, so
+      --  that any finalization chain will be associated with that scope.
+      --  For extended returns, we delay expansion to avoid the creation
+      --  of an unwanted transient scope that could result in premature
+      --  finalization of the return object (which is built in place
+      --  within the caller's scope).
+
+      elsif Is_Build_In_Place_Aggregate_Return (N) then
          Set_Expansion_Delayed (N);
          return;
       end if;
@@ -4304,11 +4372,19 @@ package body Exp_Aggr is
          Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
+      --  Now get back to the immediate parent, modulo qualified expression
+
+      Parent_Node := Parent (N);
+
+      if Nkind (Parent_Node) = N_Qualified_Expression then
+         Parent_Node := Parent (Parent_Node);
+      end if;
+
       --  If the context is an assignment and the aggregate is limited, this
       --  is a subaggregate of an enclosing aggregate being expanded; it must
       --  be built in place, so use the target of the current assignment.
 
-      if Parent_Kind = N_Assignment_Statement
+      if Nkind (Parent_Node) = N_Assignment_Statement
         and then Is_Limited_Type (Typ)
       then
          Target_Expr := New_Copy_Tree (Name (Parent_Node));
@@ -4321,7 +4397,7 @@ package body Exp_Aggr is
       --  by-copy semantics of aggregates. This avoids large stack usage and
       --  generates more efficient code.
 
-      elsif Parent_Kind = N_Assignment_Statement
+      elsif Nkind (Parent_Node) = N_Assignment_Statement
         and then In_Place_Assign_OK (N, Get_Base_Object (Name (Parent_Node)))
       then
          declare
@@ -8678,6 +8754,13 @@ package body Exp_Aggr is
           Name       => New_Copy_Tree (Comp),
           Expression => Relocate_Node (Init_Expr));
 
+      --  If the initialization expression is a conditional expression whose
+      --  expansion has been delayed, analyze it again and expand it.
+
+      if Is_Delayed_Conditional_Expression (Expression (Init_Stmt)) then
+         Set_Analyzed (Expression (Init_Stmt), False);
+      end if;
+
       Append_To (Blk_Stmts, Init_Stmt);
 
       --  Arrange for the component to be adjusted if need be (the call will be
@@ -8795,6 +8878,18 @@ package body Exp_Aggr is
       return Nkind (Unqual_N) in N_Aggregate | N_Extension_Aggregate
         and then Expansion_Delayed (Unqual_N);
    end Is_Delayed_Aggregate;
+
+   ---------------------------------------
+   -- Is_Delayed_Conditional_Expression --
+   ---------------------------------------
+
+   function Is_Delayed_Conditional_Expression (N : Node_Id) return Boolean is
+      Unqual_N : constant Node_Id := Unqualify (N);
+
+   begin
+      return Nkind (Unqual_N) in N_Case_Expression | N_If_Expression
+        and then Expansion_Delayed (Unqual_N);
+   end Is_Delayed_Conditional_Expression;
 
    --------------------------------
    -- Is_CCG_Supported_Aggregate --

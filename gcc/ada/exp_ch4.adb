@@ -564,9 +564,15 @@ package body Exp_Ch4 is
 
       procedure Build_Aggregate_In_Place (Temp : Entity_Id; Typ : Entity_Id);
       --  If Exp is an aggregate to build in place, build the declaration of
-      --  Temp with Typ and with expression an uninitialized allocator for
-      --  Etype (Exp), then perform an in-place aggregate assignment of Exp
+      --  Temp with Typ and initializing expression an uninitialized allocator
+      --  for Etype (Exp), then perform an in-place aggregate assignment of Exp
       --  into the allocated memory.
+
+      procedure Build_Explicit_Assignment (Temp : Entity_Id; Typ : Entity_Id);
+      --  If Exp is a conditional expression whose expansion has been delayed,
+      --  build the declaration of Temp with Typ and initializing expression an
+      --  uninitialized allocator for Etype (Exp), then perform an assignment
+      --  of Exp into the allocated memory.
 
       ------------------------------
       -- Build_Aggregate_In_Place --
@@ -598,13 +604,58 @@ package body Exp_Ch4 is
          Convert_Aggr_In_Allocator (N, Temp);
       end Build_Aggregate_In_Place;
 
+      -------------------------------
+      -- Build_Explicit_Assignment --
+      -------------------------------
+
+      procedure Build_Explicit_Assignment (Temp : Entity_Id; Typ : Entity_Id)
+      is
+         Assign : constant Node_Id :=
+           Make_Assignment_Statement (Loc,
+             Name       =>
+               Make_Explicit_Dereference (Loc,
+                 New_Occurrence_Of (Temp, Loc)),
+             Expression => Relocate_Node (Exp));
+
+         Temp_Decl : constant Node_Id :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Temp,
+             Object_Definition   => New_Occurrence_Of (Typ, Loc),
+             Expression          =>
+               Make_Allocator (Loc,
+                 Expression => New_Occurrence_Of (Etype (Exp), Loc)));
+
+      begin
+         --  Prevent default initialization of the allocator
+
+         Set_No_Initialization (Expression (Temp_Decl));
+
+         --  Copy the Comes_From_Source flag onto the allocator since logically
+         --  this allocator is a replacement of the original allocator. This is
+         --  for proper handling of restriction No_Implicit_Heap_Allocations.
+
+         Preserve_Comes_From_Source (Expression (Temp_Decl), N);
+
+         --  Insert the declaration
+
+         Insert_Action (N, Temp_Decl);
+
+         --  Arrange for the expression to be analyzed again and expanded
+
+         Set_Assignment_OK (Name (Assign));
+         Set_Analyzed (Expression (Assign), False);
+         Set_No_Finalize_Actions (Assign);
+         Insert_Action (N, Assign);
+      end Build_Explicit_Assignment;
+
       --  Local variables
 
-      Adj_Call      : Node_Id;
-      Aggr_In_Place : Boolean;
-      Node          : Node_Id;
-      Temp          : Entity_Id;
-      Temp_Decl     : Node_Id;
+      Adj_Call          : Node_Id;
+      Aggr_In_Place     : Boolean;
+      Delayed_Cond_Expr : Boolean;
+      Node              : Node_Id;
+      Temp              : Entity_Id;
+      Temp_Decl         : Node_Id;
 
       TagT : Entity_Id := Empty;
       --  Type used as source for tag assignment
@@ -631,13 +682,16 @@ package body Exp_Ch4 is
 
       Apply_Constraint_Check (Exp, T, No_Sliding => True);
 
-      Aggr_In_Place := Is_Delayed_Aggregate (Exp);
+      Aggr_In_Place     := Is_Delayed_Aggregate (Exp);
+      Delayed_Cond_Expr := Is_Delayed_Conditional_Expression (Exp);
 
       --  If the expression is an aggregate to be built in place, then we need
       --  to delay applying predicate checks, because this would result in the
-      --  creation of a temporary, which is illegal for limited types,
+      --  creation of a temporary, which is illegal for limited types and just
+      --  inefficient in the other cases. Likewise for a conditional expression
+      --  whose expansion has been delayed.
 
-      if not Aggr_In_Place then
+      if not Aggr_In_Place and then not Delayed_Cond_Expr then
          Apply_Predicate_Check (Exp, T);
       end if;
 
@@ -741,6 +795,7 @@ package body Exp_Ch4 is
          --  or this is a return/secondary stack allocation.
 
          if not Aggr_In_Place
+           and then not Delayed_Cond_Expr
            and then Present (Storage_Pool (N))
            and then not Is_RTE (Storage_Pool (N), RE_RS_Pool)
            and then not Is_RTE (Storage_Pool (N), RE_SS_Pool)
@@ -793,6 +848,9 @@ package body Exp_Ch4 is
             if Aggr_In_Place then
                Build_Aggregate_In_Place (Temp, PtrT);
 
+            elsif Delayed_Cond_Expr then
+               Build_Explicit_Assignment (Temp, PtrT);
+
             else
                Node := Relocate_Node (N);
                Set_Analyzed (Node);
@@ -844,6 +902,9 @@ package body Exp_Ch4 is
 
                if Aggr_In_Place then
                   Build_Aggregate_In_Place (Temp, Def_Id);
+
+               elsif Delayed_Cond_Expr then
+                  Build_Explicit_Assignment (Temp, Def_Id);
 
                else
                   Node := Relocate_Node (N);
@@ -940,6 +1001,7 @@ package body Exp_Ch4 is
            and then Needs_Finalization (T)
            and then not Is_Inherently_Limited_Type (T)
            and then not Aggr_In_Place
+           and then not Delayed_Cond_Expr
            and then Nkind (Exp) /= N_Function_Call
            and then not Special_Return
          then
@@ -975,7 +1037,7 @@ package body Exp_Ch4 is
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
 
-         if Aggr_In_Place then
+         if Aggr_In_Place or else Delayed_Cond_Expr then
             Apply_Predicate_Check (N, T, Deref => True);
          end if;
 
@@ -1002,6 +1064,19 @@ package body Exp_Ch4 is
          if Aggr_In_Place then
             Apply_Predicate_Check (N, T, Deref => True);
          end if;
+
+      --  If the initialization expression is a conditional expression whose
+      --  expansion has been delayed, assign it explicitly to the allocator,
+      --  but only after analyzing it again and expanding it.
+
+      elsif Delayed_Cond_Expr then
+         Temp := Make_Temporary (Loc, 'P', N);
+         Build_Explicit_Assignment (Temp, PtrT);
+         Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
+         Rewrite (N, New_Occurrence_Of (Temp, Loc));
+         Analyze_And_Resolve (N, PtrT);
+
+         Apply_Predicate_Check (N, T, Deref => True);
 
       elsif Is_Access_Type (T) and then Can_Never_Be_Null (T) then
          Install_Null_Excluding_Check (Exp);
@@ -4886,6 +4961,32 @@ package body Exp_Ch4 is
    ------------------------------
 
    procedure Expand_N_Case_Expression (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      Par : constant Node_Id    := Parent (N);
+      Typ : constant Entity_Id  := Etype (N);
+
+      In_Predicate : constant Boolean :=
+        Ekind (Current_Scope) in E_Function | E_Procedure
+          and then Is_Predicate_Function (Current_Scope);
+      --  Flag set when the case expression appears within a predicate
+
+      Optimize_Return_Stmt : constant Boolean :=
+        Nkind (Par) = N_Simple_Return_Statement and then not In_Predicate;
+      --  Small optimization: when the case expression appears in the context
+      --  of a simple return statement, expand into
+
+      --    case X is
+      --       when A =>
+      --          return AX;
+      --       when B =>
+      --          return BX;
+      --       ...
+      --    end case;
+
+      --  This makes the expansion much easier when expressions are calls to
+      --  a BIP function. But do not perform it when the return statement is
+      --  within a predicate function, as this causes spurious errors.
+
       function Is_Copy_Type (Typ : Entity_Id) return Boolean;
       --  Return True if we can copy objects of this type when expanding a case
       --  expression.
@@ -4909,10 +5010,6 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Loc : constant Source_Ptr := Sloc (N);
-      Par : constant Node_Id    := Parent (N);
-      Typ : constant Entity_Id  := Etype (N);
-
       Acts       : List_Id;
       Alt        : Node_Id;
       Case_Stmt  : Node_Id;
@@ -4920,16 +5017,39 @@ package body Exp_Ch4 is
       Target     : Entity_Id := Empty;
       Target_Typ : Entity_Id;
 
-      In_Predicate : Boolean := False;
-      --  Flag set when the case expression appears within a predicate
+      Optimize_Assignment_Stmt : Boolean;
+      --  Small optimization: when the case expression appears in the context
+      --  of a safe assignment statement, expand into
 
-      Optimize_Return_Stmt : Boolean := False;
-      --  Flag set when the case expression can be optimized in the context of
-      --  a simple return statement.
+      --    case X is
+      --       when A =>
+      --          lhs := AX;
+      --       when B =>
+      --          lhs := BX;
+      --       ...
+      --    end case;
+
+      --  This makes the expansion much more efficient in the context of an
+      --  aggregate converted into assignments.
 
    --  Start of processing for Expand_N_Case_Expression
 
    begin
+      --  If the expansion of the expression has been delayed, we wait for the
+      --  rewriting of its parent as an assignment statement; when that's done,
+      --  we optimize the assignment (the very purpose of the manipulation).
+
+      if Expansion_Delayed (N) then
+         if Nkind (Par) /= N_Assignment_Statement then
+            return;
+         end if;
+
+         Optimize_Assignment_Stmt := True;
+
+      else
+         Optimize_Assignment_Stmt := False;
+      end if;
+
       --  Check for MINIMIZED/ELIMINATED overflow mode
 
       if Minimized_Eliminated_Overflow_Check (N) then
@@ -4941,15 +5061,11 @@ package body Exp_Ch4 is
       --  to which it applies has a static predicate aspect, do not expand,
       --  because it will be converted to the proper predicate form later.
 
-      if Ekind (Current_Scope) in E_Function | E_Procedure
-        and then Is_Predicate_Function (Current_Scope)
+      if In_Predicate
+        and then
+          Has_Static_Predicate_Aspect (Etype (First_Entity (Current_Scope)))
       then
-         In_Predicate := True;
-
-         if Has_Static_Predicate_Aspect (Etype (First_Entity (Current_Scope)))
-         then
-            return;
-         end if;
+         return;
       end if;
 
       --  When the type of the case expression is elementary, expand
@@ -5002,24 +5118,6 @@ package body Exp_Ch4 is
       Set_From_Conditional_Expression (Case_Stmt);
       Acts := New_List;
 
-      --  Small optimization: when the case expression appears in the context
-      --  of a simple return statement, expand into
-
-      --    case X is
-      --       when A =>
-      --          return AX;
-      --       when B =>
-      --          return BX;
-      --       ...
-      --    end case;
-
-      --  This makes the expansion much easier when expressions are calls to
-      --  a BIP function. But do not perform it when the return statement is
-      --  within a predicate function, as this causes spurious errors.
-
-      Optimize_Return_Stmt :=
-        Nkind (Par) = N_Simple_Return_Statement and then not In_Predicate;
-
       --  Scalar/Copy case
 
       if Is_Copy_Type (Typ) then
@@ -5060,7 +5158,10 @@ package body Exp_Ch4 is
       --  Generate:
       --    Target : [Ptr_]Typ;
 
-      if not Optimize_Return_Stmt then
+      if Optimize_Assignment_Stmt then
+         Remove_Side_Effects (Name (Par), Name_Req => True);
+
+      elsif not Optimize_Return_Stmt then
          Target := Make_Temporary (Loc, 'T');
 
          Decl :=
@@ -5077,23 +5178,41 @@ package body Exp_Ch4 is
       Alt := First (Alternatives (N));
       while Present (Alt) loop
          declare
-            Alt_Expr : Node_Id             := Expression (Alt);
+            Alt_Expr : Node_Id             := Relocate_Node (Expression (Alt));
             Alt_Loc  : constant Source_Ptr := Sloc (Alt_Expr);
             LHS      : Node_Id;
             Stmts    : List_Id;
 
          begin
-            --  Take the unrestricted access of the expression value for non-
-            --  scalar types. This approach avoids big copies and covers the
-            --  limited and unconstrained cases.
+            --  Generate:
+            --    lhs := AX;
+
+            if Optimize_Assignment_Stmt then
+               --  We directly copy the parent node to preserve its flags
+
+               Stmts := New_List (New_Copy (Par));
+               Set_Sloc       (First (Stmts), Alt_Loc);
+               Set_Name       (First (Stmts), New_Copy_Tree (Name (Par)));
+               Set_Expression (First (Stmts), Alt_Expr);
+
+               --  If the expression is itself a conditional expression whose
+               --  expansion has been delayed, analyze it again and expand it.
+
+               if Is_Delayed_Conditional_Expression (Alt_Expr) then
+                  Set_Analyzed (Alt_Expr, False);
+               end if;
 
             --  Generate:
-            --    return AX['Unrestricted_Access];
+            --    return AX;
 
-            if Optimize_Return_Stmt then
+            elsif Optimize_Return_Stmt then
                Stmts := New_List (
                  Make_Simple_Return_Statement (Alt_Loc,
                    Expression => Alt_Expr));
+
+            --  Take the unrestricted access of the expression value for non-
+            --  scalar types. This approach avoids big copies and covers the
+            --  limited and unconstrained cases.
 
             --  Generate:
             --    Target := AX['Unrestricted_Access];
@@ -5150,9 +5269,9 @@ package body Exp_Ch4 is
          Next (Alt);
       end loop;
 
-      --  Rewrite the parent return statement as a case statement
+      --  Rewrite the parent statement as a case statement
 
-      if Optimize_Return_Stmt then
+      if Optimize_Assignment_Stmt or else Optimize_Return_Stmt then
          Rewrite (Par, Case_Stmt);
          Analyze (Par);
 
@@ -5332,6 +5451,26 @@ package body Exp_Ch4 is
       Par   : constant Node_Id    := Parent (N);
       Typ   : constant Entity_Id  := Etype (N);
 
+      In_Predicate : constant Boolean :=
+        Ekind (Current_Scope) in E_Function | E_Procedure
+          and then Is_Predicate_Function (Current_Scope);
+      --  Flag set when the if expression appears within a predicate
+
+      Optimize_Return_Stmt : constant Boolean :=
+        Nkind (Par) = N_Simple_Return_Statement and then not In_Predicate;
+      --  Small optimization: when the if expression appears in the context of
+      --  a simple return statement, expand into
+
+      --    if cond then
+      --       return then-expr
+      --    else
+      --       return else-expr;
+      --    end if;
+
+      --  This makes the expansion much easier when expressions are calls to
+      --  a BIP function. But do not perform it when the return statement is
+      --  within a predicate function, as this causes spurious errors.
+
       Force_Expand : constant Boolean := Is_Anonymous_Access_Actual (N);
       --  Determine if we are dealing with a special case of a conditional
       --  expression used as an actual for an anonymous access type which
@@ -5365,18 +5504,44 @@ package body Exp_Ch4 is
       --  Local variables
 
       Actions : List_Id;
-      Decl    : Node_Id;
-      Expr    : Node_Id;
-      New_If  : Node_Id;
-      New_N   : Node_Id;
+      Decl     : Node_Id;
+      Expr     : Node_Id;
+      New_Else : Node_Id;
+      New_If   : Node_Id;
+      New_N    : Node_Id;
+      New_Then : Node_Id;
 
-      Optimize_Return_Stmt : Boolean := False;
-      --  Flag set when the if expression can be optimized in the context of
-      --  a simple return statement.
+      Optimize_Assignment_Stmt : Boolean;
+      --  Small optimization: when the if expression appears in the context of
+      --  a safe assignment statement, expand into
+
+      --    if cond then
+      --       lhs := then-expr
+      --    else
+      --       lhs := else-expr;
+      --    end if;
+
+      --  This makes the expansion much more efficient in the context of an
+      --  aggregate converted into assignments.
 
    --  Start of processing for Expand_N_If_Expression
 
    begin
+      --  If the expansion of the expression has been delayed, we wait for the
+      --  rewriting of its parent as an assignment statement; when that's done,
+      --  we optimize the assignment (the very purpose of the manipulation).
+
+      if Expansion_Delayed (N) then
+         if Nkind (Par) /= N_Assignment_Statement then
+            return;
+         end if;
+
+         Optimize_Assignment_Stmt := True;
+
+      else
+         Optimize_Assignment_Stmt := False;
+      end if;
+
       --  Deal with non-standard booleans
 
       Adjust_Condition (Cond);
@@ -5457,25 +5622,54 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      --  Small optimization: when the if expression appears in the context of
-      --  a simple return statement, expand into
+      if Optimize_Assignment_Stmt then
+         Remove_Side_Effects (Name (Par), Name_Req => True);
 
-      --    if cond then
-      --       return then-expr
-      --    else
-      --       return else-expr;
-      --    end if;
+         --  When the "then" or "else" expressions involve controlled function
+         --  calls, generated temporaries are chained on the corresponding list
+         --  of actions. These temporaries need to be finalized after the if
+         --  expression is evaluated.
 
-      --  This makes the expansion much easier when expressions are calls to
-      --  a BIP function. But do not perform it when the return statement is
-      --  within a predicate function, as this causes spurious errors.
+         Process_Transients_In_Expression (N, Then_Actions (N));
+         Process_Transients_In_Expression (N, Else_Actions (N));
 
-      Optimize_Return_Stmt :=
-        Nkind (Par) = N_Simple_Return_Statement
-          and then not (Ekind (Current_Scope) in E_Function | E_Procedure
-                         and then Is_Predicate_Function (Current_Scope));
+         --  We directly copy the parent node to preserve its flags
 
-      if Optimize_Return_Stmt then
+         New_Then := New_Copy (Par);
+         Set_Sloc       (New_Then, Sloc (Thenx));
+         Set_Name       (New_Then, New_Copy_Tree (Name (Par)));
+         Set_Expression (New_Then, Relocate_Node (Thenx));
+
+         --  If the expression is itself a conditional expression whose
+         --  expansion has been delayed, analyze it again and expand it.
+
+         if Is_Delayed_Conditional_Expression (Expression (New_Then)) then
+            Set_Analyzed (Expression (New_Then), False);
+         end if;
+
+         New_Else := New_Copy (Par);
+         Set_Sloc       (New_Else, Sloc (Elsex));
+         Set_Name       (New_Else, New_Copy_Tree (Name (Par)));
+         Set_Expression (New_Else, Relocate_Node (Elsex));
+
+         if Is_Delayed_Conditional_Expression (Expression (New_Else)) then
+            Set_Analyzed (Expression (New_Else), False);
+         end if;
+
+         New_If :=
+           Make_Implicit_If_Statement (N,
+             Condition       => Relocate_Node (Cond),
+             Then_Statements => New_List (New_Then),
+             Else_Statements => New_List (New_Else));
+
+         --  Preserve the original context for which the if statement is
+         --  being generated. This is needed by the finalization machinery
+         --  to prevent the premature finalization of controlled objects
+         --  found within the if statement.
+
+         Set_From_Conditional_Expression (New_If);
+
+      elsif Optimize_Return_Stmt then
          --  When the "then" or "else" expressions involve controlled function
          --  calls, generated temporaries are chained on the corresponding list
          --  of actions. These temporaries need to be finalized after the if
@@ -6085,9 +6279,9 @@ package body Exp_Ch4 is
          Prepend_List (Else_Actions (N), Else_Statements (New_If));
       end if;
 
-      --  Rewrite the parent return statement as an if statement
+      --  Rewrite the parent statement as an if statement
 
-      if Optimize_Return_Stmt then
+      if Optimize_Assignment_Stmt or else Optimize_Return_Stmt then
          Rewrite (Par, New_If);
          Analyze (Par);
 
@@ -10354,9 +10548,16 @@ package body Exp_Ch4 is
 
       Apply_Constraint_Check (Operand, Target_Type, No_Sliding => True);
 
-      --  Apply possible predicate check
+      --  Apply possible predicate check but, for a delayed aggregate, the
+      --  check is effectively delayed until after the aggregate is expanded
+      --  into a series of assignments. Likewise for a conditional expression
+      --  whose expansion has been delayed.
 
-      Apply_Predicate_Check (Operand, Target_Type);
+      if not Is_Delayed_Aggregate (Operand)
+        and then not Is_Delayed_Conditional_Expression (Operand)
+      then
+         Apply_Predicate_Check (Operand, Target_Type);
+      end if;
 
       if Do_Range_Check (Operand) then
          Generate_Range_Check (Operand, Target_Type, CE_Range_Check_Failed);

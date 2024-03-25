@@ -464,6 +464,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Expressions, List_Id, Default_No_List),
         Sy (Is_Elsif, Flag),
         Sm (Do_Overflow_Check, Flag),
+        Sm (Expansion_Delayed, Flag),
         Sm (Else_Actions, List_Id),
         Sm (Then_Actions, List_Id)));
 
@@ -513,7 +514,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Case_Expression, N_Subexpr,
        (Sy (Expression, Node_Id, Default_Empty),
         Sy (Alternatives, List_Id, Default_No_List),
-        Sm (Do_Overflow_Check, Flag)));
+        Sm (Do_Overflow_Check, Flag),
+        Sm (Expansion_Delayed, Flag)));
 
    Cc (N_Delta_Aggregate, N_Subexpr,
        (Sy (Expression, Node_Id, Default_Empty),
