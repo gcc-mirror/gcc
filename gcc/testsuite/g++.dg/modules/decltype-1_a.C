@@ -1,5 +1,5 @@
 // PR c++/105322
-// { dg-module-do link
+// { dg-module-do link }
 // { dg-additional-options -fmodules-ts }
 // { dg-module-cmi pr105322.Decltype }
 
