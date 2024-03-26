@@ -1,3 +1,9 @@
+2024-03-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (doc/m2.pdf): Add line break.
+	* target-independent/m2/Builtins.texi: Rebuilt.
+	* target-independent/m2/gm2-libs.texi: Rebuilt.
+
 2024-03-23  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114444

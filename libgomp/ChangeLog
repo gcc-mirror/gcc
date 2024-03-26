@@ -1,3 +1,11 @@
+2024-03-25  Richard Biener  <rguenther@suse.de>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): GFX1036.
+	(gcn_gfx1103_s): New.
+	(isa_hsa_name): Handle gfx1036.
+	(isa_code): Likewise.
+	(max_isa_vgprs): Likewise.
+
 2024-03-22  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* config/accel/target-indirect.c: Include string.h and hashtab.h.

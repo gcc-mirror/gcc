@@ -1,3 +1,16 @@
+2024-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114349
+	* name-lookup.cc (maybe_push_to_top_level): For a non-lambda,
+	don't push to top level if decl_function_context is non-null.
+	* pt.cc (maybe_instantiate_noexcept): Use maybe_push_to_top_level.
+
+2024-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114439
+	* init.cc (can_init_array_with_p): Return true for a VEC_INIT_EXPR
+	wrapped in a TARGET_EXPR.
+
 2024-03-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/59465

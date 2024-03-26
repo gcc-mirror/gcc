@@ -1,3 +1,26 @@
+2024-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114349
+	* g++.dg/cpp0x/noexcept85.C: New test.
+	* g++.dg/cpp0x/noexcept86.C: New test.
+
+2024-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114439
+	* g++.dg/init/array65.C: New test.
+
+2024-03-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pragma-1.c: Remove.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-1.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-2.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-3.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-4.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-5.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-6.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-7.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-8.c: New test.
+
 2024-03-23  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114443

@@ -1,3 +1,8 @@
+2024-03-25  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* unwind-arm-common.inc (__gnu_personality_sigframe_fdpic): Cast
+	last argument of _Unwind_VRS_Set to void *.
+
 2024-03-22  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	PR libgcc/111731

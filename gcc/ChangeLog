@@ -1,3 +1,34 @@
+2024-03-25  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc (amdgcn): Add gfx1036 entries.
+	* config/gcn/gcn-hsa.h (NO_XNACK): Likewise.
+	(gcn_local_sym_hash): Likewise.
+	* config/gcn/gcn-opts.h (enum processor_type): Likewise.
+	(TARGET_GFX1036): New macro.
+	* config/gcn/gcn.cc (gcn_option_override): Handle gfx1036.
+	(gcn_omp_device_kind_arch_isa): Likewise.
+	(output_file_start): Likewise.
+	* config/gcn/gcn.h (TARGET_CPU_CPP_BUILTINS): Add __gfx1036__.
+	(TARGET_CPU_CPP_BUILTINS): Rename __gfx1030 to __gfx1030__.
+	* config/gcn/gcn.opt: Add gfx1036.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_MACH_AMDGCN_GFX1036): New.
+	(main): Handle gfx1036.
+	* config/gcn/t-omp-device: Add gfx1036 isa.
+	* doc/install.texi (amdgcn): Add gfx1036.
+	* doc/invoke.texi (-march): Likewise.
+
+2024-03-25  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-c.cc (riscv_pragma_intrinsic): Remove error
+	when V is disabled and init the RVV types and intrinic APIs.
+	* config/riscv/riscv-vector-builtins.cc (expand_builtin): Report
+	error if V ext is disabled.
+	* config/riscv/riscv.cc (riscv_return_value_is_vector_type_p):
+	Ditto.
+	(riscv_arguments_is_vector_type_p): Ditto.
+	(riscv_vector_cc_function_p): Ditto.
+	* config/riscv/riscv_vector.h: Remove error if V is disable.
+
 2024-03-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_output_global_address): Handle
