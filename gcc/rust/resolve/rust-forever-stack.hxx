@@ -468,7 +468,7 @@ ForeverStack<N>::resolve_path (const std::vector<S> &segments)
 }
 
 template <Namespace N>
-tl::optional<std::pair<typename ForeverStack<N>::Node &, std::string>>
+tl::optional<typename ForeverStack<N>::DfsResult>
 ForeverStack<N>::dfs (ForeverStack<N>::Node &starting_point, NodeId to_find)
 {
   auto values = starting_point.rib.get_values ();
@@ -498,7 +498,7 @@ ForeverStack<N>::to_canonical_path (NodeId id)
   // back up to the root (parent().parent().parent()...) accumulate link
   // segments reverse them that's your canonical path
 
-  return dfs (root, id).map ([this, id] (std::pair<Node &, std::string> tuple) {
+  return dfs (root, id).map ([this, id] (DfsResult tuple) {
     auto containing_node = tuple.first;
     auto name = tuple.second;
 
