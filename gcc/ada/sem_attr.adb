@@ -3214,26 +3214,23 @@ package body Sem_Attr is
 
          --  Deal with Ada 83 issues
 
-         if not Attribute_83 (Attr_Id) then
-            if Ada_Version = Ada_83 then
-               Error_Msg_Name_1 := Aname;
-               Error_Msg_N ("(Ada 83) attribute% is not standard??", N);
-            end if;
-
-            if Attribute_Impl_Def (Attr_Id) then
-               Check_Restriction (No_Implementation_Attributes, N);
-            end if;
+         if not Attribute_83 (Attr_Id) and then Ada_Version = Ada_83 then
+            Error_Msg_Name_1 := Aname;
+            Error_Msg_N ("(Ada 83) attribute% is not standard??", N);
          end if;
 
          --  Deal with Ada 2005 attributes that are implementation attributes
          --  because they appear in a version of Ada before Ada 2005, ditto for
          --  Ada 2012 and Ada 2022 attributes appearing in an earlier version.
+         --  Likewise for GNAT implementation-defined attributes.
 
          if (Attribute_05 (Attr_Id) and then Ada_Version < Ada_2005)
                or else
             (Attribute_12 (Attr_Id) and then Ada_Version < Ada_2012)
                or else
             (Attribute_22 (Attr_Id) and then Ada_Version < Ada_2022)
+               or else
+            Attribute_Impl_Def (Attr_Id)
          then
             Check_Restriction (No_Implementation_Attributes, N);
          end if;
