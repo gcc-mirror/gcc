@@ -596,10 +596,14 @@ private:
 					 SegIterator<S> iterator);
 
   /* Helper functions for forward resolution (to_canonical_path, to_rib...) */
+  struct DfsResult
+  {
+    Node &first;
+    std::string second;
+  };
 
   // FIXME: Documentation
-  tl::optional<std::pair<Node &, std::string>> dfs (Node &starting_point,
-						    NodeId to_find);
+  tl::optional<DfsResult> dfs (Node &starting_point, NodeId to_find);
   // FIXME: Documentation
   tl::optional<Rib &> dfs_rib (Node &starting_point, NodeId to_find);
 };
