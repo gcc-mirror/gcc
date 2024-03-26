@@ -139,6 +139,9 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
   if (TREE_READONLY (base) || (VAR_P (base) && DECL_HARD_REGISTER (base)))
     return false;
 
+  if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (base))))
+    return false;
+
   stmt = gsi_stmt (gsi);
   loc = gimple_location (stmt);
   rhs = is_vptr_store (stmt, expr, is_write);
