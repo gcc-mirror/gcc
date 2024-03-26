@@ -2375,8 +2375,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
      a copy of the scalar code (even if we might be able to vectorize it).  */
   if (loop_cost_model (loop) == VECT_COST_MODEL_VERY_CHEAP
       && (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
-	  || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-	  || LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)))
+	  || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3683,7 +3682,8 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
 			   /* No code motion support for multiple epilogues so for now
 			      not supported when multiple exits.  */
 			 && !LOOP_VINFO_EARLY_BREAKS (first_loop_vinfo)
-			 && !loop->simduid);
+			 && !loop->simduid
+			 && loop_cost_model (loop) > VECT_COST_MODEL_VERY_CHEAP);
   if (!vect_epilogues)
     return first_loop_vinfo;
 

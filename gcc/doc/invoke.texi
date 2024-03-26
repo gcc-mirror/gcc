@@ -14315,13 +14315,10 @@ counts that will likely execute faster than when executing the original
 scalar loop.  The @samp{cheap} model disables vectorization of
 loops where doing so would be cost prohibitive for example due to
 required runtime checks for data dependence or alignment but otherwise
-is equal to the @samp{dynamic} model.  The @samp{very-cheap} model only
-allows vectorization if the vector code would entirely replace the
-scalar code that is being vectorized.  For example, if each iteration
-of a vectorized loop would only be able to handle exactly four iterations
-of the scalar loop, the @samp{very-cheap} model would only allow
-vectorization if the scalar iteration count is known to be a multiple
-of four.
+is equal to the @samp{dynamic} model.  The @samp{very-cheap} model disables
+vectorization of loops when any runtime check for data dependence or alignment
+is required, it also disables vectorization of epilogue loops but otherwise is
+equal to the @samp{cheap} model.
 
 The default cost model depends on other optimization flags and is
 either @samp{dynamic} or @samp{cheap}.
