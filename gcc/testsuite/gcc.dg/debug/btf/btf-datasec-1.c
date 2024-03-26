@@ -19,8 +19,10 @@
 /* { dg-final { scan-assembler-times "0xf000003\[\t \]+\[^\n\]*btt_info" 2 } } */
 /* { dg-final { scan-assembler-times "0xf000001\[\t \]+\[^\n\]*btt_info" 1 } } */
 
-/* The offset entry for each variable in a DATSEC should be 0 at compile time.  */
-/* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bts_offset" 7 } } */
+/* The offset entry for each variable in a DATSEC should contain a label.  */
+/* { dg-final { scan-assembler-times ".4byte\[\t \]\[a-e\]\[\t \]+\[^\n\]*bts_offset" 5 } } */
+/* { dg-final { scan-assembler-times "my_cstruct\[\t \]+\[^\n\]*bts_offset" 1 } } */
+/* { dg-final { scan-assembler-times "bigarr\[\t \]+\[^\n\]*bts_offset" 1 } } */
 
 /* Check that strings for each DATASEC have been added to the BTF string table.  */
 /* { dg-final { scan-assembler-times "ascii \".data.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */

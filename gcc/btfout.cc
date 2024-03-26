@@ -1014,13 +1014,41 @@ btf_asm_func_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd, ctf_id_t id)
   btf_asm_type_ref ("btt_type", ctfc, get_btf_id (ref_id));
 }
 
+/* Collect the name for the DATASEC reference required to be output as a
+   symbol. */
+
+static const char *
+get_name_for_datasec_entry (ctf_container_ref ctfc, ctf_id_t ref_id)
+{
+  if (ref_id >= num_types_added + 1
+      && ref_id < num_types_added + num_vars_added + 1)
+    {
+      /* Ref to a variable.  Should only appear in DATASEC entries.  */
+      ctf_id_t var_id = btf_relative_var_id (ref_id);
+      ctf_dvdef_ref dvd = ctfc->ctfc_vars_list[var_id];
+      return dvd->dvd_name;
+    }
+  else if (ref_id >= num_types_added + num_vars_added + 1)
+    {
+      /* Ref to a FUNC record.  */
+      size_t func_id = btf_relative_func_id (ref_id);
+      ctf_dtdef_ref ref_type = (*funcs)[func_id];
+      return get_btf_type_name (ref_type);
+    }
+  return NULL;
+}
+
 /* Asm'out a variable entry following a BTF_KIND_DATASEC.  */
 
 static void
 btf_asm_datasec_entry (ctf_container_ref ctfc, struct btf_var_secinfo info)
 {
+  const char *symbol_name = get_name_for_datasec_entry (ctfc, info.type);
   btf_asm_type_ref ("bts_type", ctfc, info.type);
-  dw2_asm_output_data (4, info.offset, "bts_offset");
+  if (symbol_name == NULL)
+    dw2_asm_output_data (4, info.offset, "bts_offset");
+  else
+    dw2_asm_output_offset (4, symbol_name, NULL, "bts_offset");
   dw2_asm_output_data (4, info.size, "bts_size");
 }
 

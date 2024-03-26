@@ -11,7 +11,7 @@
 
 /* { dg-final { scan-assembler-times "ascii \"foo.0\"\[\t \]+\[^\n\]*btf_string" 1 } } */
 
-/* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bts_offset" 1 } } */
+/* { dg-final { scan-assembler-times "foo\[\t \]+\[^\n\]*bts_offset" 1 } } */
 /* { dg-final { scan-assembler-times "1\[\t \]+\[^\n\]*bts_size" 1 } } */
 
 extern const void foo __attribute__((weak)) __attribute__((section (".ksyms")));
