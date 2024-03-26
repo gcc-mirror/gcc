@@ -157,7 +157,7 @@ DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
    by push/pop instructions.
    This increase code size by about 5% in 32bit mode, less so in 64bit mode
    because parameters are passed in registers.  It is considerable
-   win for targets without stack engine that prevents multple push operations
+   win for targets without stack engine that prevents multiple push operations
    to happen in parallel.  */
 
 DEF_TUNE (X86_TUNE_ACCUMULATE_OUTGOING_ARGS, "accumulate_outgoing_args",
