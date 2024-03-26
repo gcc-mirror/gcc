@@ -563,14 +563,24 @@ get_store_value (gimple *stmt)
     return gimple_assign_rhs1 (stmt);
 }
 
-/* Return true if it is non-contiguous load/store.  */
+/* Return true if addtional vector vars needed.  */
 static bool
-non_contiguous_memory_access_p (stmt_vec_info stmt_info)
+need_additional_vector_vars_p (stmt_vec_info stmt_info)
 {
   enum stmt_vec_info_type type
     = STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
-  return ((type == load_vec_info_type || type == store_vec_info_type)
-	  && !adjacent_dr_p (STMT_VINFO_DATA_REF (stmt_info)));
+  if (type == load_vec_info_type || type == store_vec_info_type)
+    {
+      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+	  && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+	return true;
+
+      machine_mode mode = TYPE_MODE (STMT_VINFO_VECTYPE (stmt_info));
+      int lmul = riscv_get_v_regno_alignment (mode);
+      if (DR_GROUP_SIZE (stmt_info) * lmul > RVV_M8)
+	return true;
+    }
+  return false;
 }
 
 /* Return the LMUL of the current analysis.  */
@@ -739,10 +749,7 @@ update_local_live_ranges (
 	  stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
 	  enum stmt_vec_info_type type
 	    = STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
-	  if (non_contiguous_memory_access_p (stmt_info)
-	      /* LOAD_LANES/STORE_LANES doesn't need a perm indice.  */
-	      && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info)
-		   != VMAT_LOAD_STORE_LANES)
+	  if (need_additional_vector_vars_p (stmt_info))
 	    {
 	      /* For non-adjacent load/store STMT, we will potentially
 		 convert it into:
