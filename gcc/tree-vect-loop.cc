@@ -9197,6 +9197,28 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 		return false;
 	      }
 	}
+
+      /* Verify we have set up compatible types.  */
+      edge le = loop_latch_edge (LOOP_VINFO_LOOP (loop_vinfo));
+      tree latch_vectype = NULL_TREE;
+      if (slp_node)
+	{
+	  slp_tree latch_def = SLP_TREE_CHILDREN (slp_node)[le->dest_idx];
+	  latch_vectype = SLP_TREE_VECTYPE (latch_def);
+	}
+      else
+	{
+	  tree latch_def = PHI_ARG_DEF_FROM_EDGE (phi, le);
+	  if (TREE_CODE (latch_def) == SSA_NAME)
+	    {
+	      stmt_vec_info latch_def_info = loop_vinfo->lookup_def (latch_def);
+	      latch_def_info = vect_stmt_to_vectorize (latch_def_info);
+	      latch_vectype = STMT_VINFO_VECTYPE (latch_def_info);
+	    }
+	}
+      if (!types_compatible_p (latch_vectype, vectype))
+	return false;
+
       /* The recurrence costs the initialization vector and one permute
 	 for each copy.  */
       unsigned prologue_cost = record_stmt_cost (cost_vec, 1, scalar_to_vec,
