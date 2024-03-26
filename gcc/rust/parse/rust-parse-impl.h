@@ -1382,10 +1382,10 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	case IDENTIFIER:
 	case UNDERSCORE:
 	  return parse_const_item (std::move (vis), std::move (outer_attrs));
-	case UNSAFE:
-	case EXTERN_KW:
 	case ASYNC:
 	  return parse_async_item (std::move (vis), std::move (outer_attrs));
+	case UNSAFE:
+	case EXTERN_KW:
 	case FN_KW:
 	  return parse_function (std::move (vis), std::move (outer_attrs));
 	default:
