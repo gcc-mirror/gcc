@@ -14791,7 +14791,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Valid_Configuration_Pragma;
             Check_Arg_Count (1);
-            Check_Optional_Identifier (Arg1, "max_size");
+            Check_Optional_Identifier (Arg1, Name_Max_Size);
 
             Arg := Get_Pragma_Arg (Arg1);
             Check_Arg_Is_OK_Static_Expression (Arg, Any_Integer);
