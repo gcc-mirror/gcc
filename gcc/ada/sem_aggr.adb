@@ -1198,6 +1198,14 @@ package body Sem_Aggr is
 
          Resolve_Container_Aggregate (N, Typ);
 
+      --  Check for an attempt to use "[]" for an aggregate of a record type
+      --  after handling the case where the type has an Aggregate aspect,
+      --  because the aspect can be specified for record types, but if it
+      --  wasn't specified, then this is an error.
+
+      elsif Is_Record_Type (Typ) and then Is_Homogeneous_Aggregate (N) then
+         Error_Msg_N ("record aggregate must use (), not '[']", N);
+
       elsif Is_Array_Type (Typ) then
 
          --  First a special test, for the case of a positional aggregate of
@@ -5515,15 +5523,6 @@ package body Sem_Aggr is
          and then Ada_Version < Ada_2005
       then
          Error_Msg_N ("record aggregate must be null", N);
-         return;
-      end if;
-
-      --  A record aggregate can only use parentheses
-
-      if Nkind (N) = N_Aggregate
-        and then Is_Homogeneous_Aggregate (N)
-      then
-         Error_Msg_N ("record aggregate must use (), not '[']", N);
          return;
       end if;
 
