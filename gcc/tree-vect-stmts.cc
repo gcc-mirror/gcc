@@ -6667,7 +6667,8 @@ vectorizable_operation (vec_info *vinfo,
 
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype);
-  if (maybe_ne (nunits_out, nunits_in))
+  if (maybe_ne (nunits_out, nunits_in)
+      || !tree_nop_conversion_p (TREE_TYPE (vectype_out), TREE_TYPE (vectype)))
     return false;
 
   tree vectype2 = NULL_TREE, vectype3 = NULL_TREE;
@@ -6685,7 +6686,9 @@ vectorizable_operation (vec_info *vinfo,
       is_invariant &= (dt[1] == vect_external_def
 		       || dt[1] == vect_constant_def);
       if (vectype2
-	  && maybe_ne (nunits_out, TYPE_VECTOR_SUBPARTS (vectype2)))
+	  && (maybe_ne (nunits_out, TYPE_VECTOR_SUBPARTS (vectype2))
+	      || !tree_nop_conversion_p (TREE_TYPE (vectype_out),
+					 TREE_TYPE (vectype2))))
 	return false;
     }
   if (op_type == ternary_op)
@@ -6701,7 +6704,9 @@ vectorizable_operation (vec_info *vinfo,
       is_invariant &= (dt[2] == vect_external_def
 		       || dt[2] == vect_constant_def);
       if (vectype3
-	  && maybe_ne (nunits_out, TYPE_VECTOR_SUBPARTS (vectype3)))
+	  && (maybe_ne (nunits_out, TYPE_VECTOR_SUBPARTS (vectype3))
+	      || !tree_nop_conversion_p (TREE_TYPE (vectype_out),
+					 TREE_TYPE (vectype3))))
 	return false;
     }
 
