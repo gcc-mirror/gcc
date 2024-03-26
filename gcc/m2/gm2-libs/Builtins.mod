@@ -33,7 +33,7 @@ PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_alloca)) alloca (i: CARDINAL) : 
 BEGIN
    (* This routine will never be called as it allocates memory on
       top of the current stack frame, which is automatically
-      deallocated upon its return. *)
+      deallocated upon its return.  *)
    HALT ;
    RETURN NIL
 END alloca ;
@@ -43,18 +43,17 @@ BEGIN
    (* this routine is only called if -fdebug-builtins is supplied
       on the command line.  The purpose of this routine is to allow
       a developer to single step into this routine and inspect the
-      value of, nBytes, and, returned.
-    *)
+      value of nBytes and returned.   *)
    RETURN returned
 END alloca_trace ;
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_memcpy)) memcpy (dest, src: ADDRESS; nbytes: CARDINAL) : ADDRESS ;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_memcpy))
+          memcpy (dest, src: ADDRESS; nbytes: CARDINAL) : ADDRESS ;
 BEGIN
-   (* hopefully the compiler will choose to use the __builtin_memcpy function within GCC.
-      This call is here just in case it cannot. Ie if the user sets a procedure variable to
-      memcpy, then clearly the compiler cannot inline such a call and thus it will
-      be forced into calling this function.
-   *)
+   (* Hopefully the compiler will choose to use the __builtin_memcpy
+      function within GCC.  This call is here just in case it cannot.
+      If the user sets a procedure variable to memcpy then the
+      code below could be run instead.   *)
    RETURN cbuiltin.memcpy (dest, src, nbytes)
 END memcpy ;
 
@@ -629,17 +628,153 @@ BEGIN
    RETURN -1.0
 END huge_valf ;
 
+PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_isgreater)) isgreater (x, y: REAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isgreater ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isgreaterf)) isgreaterf (x, y: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isgreaterf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isgreaterl)) isgreaterl (x, y: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isgreaterl ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isgreaterequal)) isgreaterequal (x, y: REAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isgreaterequal ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isgreaterequalf)) isgreaterequalf (x, y: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isgreaterequalf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isgreaterequall)) isgreaterequall (x, y: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isgreaterequall ;
+
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isless)) isless (x, y: REAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isless ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_islessf)) islessf (x, y: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END islessf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_islessl)) islessl (x, y: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END islessl ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_islessequal)) islessequal (x, y: REAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END islessequal ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_islessequalf)) islessequalf (x, y: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END islessequalf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_islessequall)) islessequall (x, y: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END islessequall ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_islessgreater)) islessgreater (x, y: REAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END islessgreater ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_islessgreaterf)) islessgreaterf (x, y: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END islessgreaterf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_islessgreaterl)) islessgreaterl (x, y: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END islessgreaterl ;
+
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isunordered)) isunordered (x, y: REAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isunordered ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isunorderedf)) isunorderedf (x, y: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isunorderedf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isunorderedl)) isunorderedl (x, y: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isunorderedl ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_iseqsig)) iseqsig (x, y: REAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END iseqsig ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_iseqsigf)) iseqsigf (x, y: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END iseqsigf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_iseqsigl)) iseqsigl (x, y: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END iseqsigl ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isnormal)) isnormal (r: REAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isnormal ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isnormalf)) isnormalf (s: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isnormalf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isnormall)) isnormall (l: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isnormall ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isinf)) isinf_sign (r: REAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isinf_sign ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isinf_signf)) isinf_signf (s: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isinf_signf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isinf)) isinf_signl (l: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END isinf_signl ;
+
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_longjmp)) longjmp (env: ADDRESS; val: INTEGER) ;
 BEGIN
-   (* empty, replaced internally by gcc *)
+   (* Empty, replaced internally by gcc.  *)
 END longjmp ;
 
 PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_setjmp)) setjmp (env: ADDRESS) : INTEGER ;
 BEGIN
-   (* empty, replaced internally by gcc *)
-   RETURN 0   (* keeps gm2 happy *)
+   (* Empty, replaced internally by gcc.  *)
+   RETURN 0   (* Keep -Wreturn-type happy.  *)
 END setjmp ;
-
 
 (*
    frame_address - returns the address of the frame.

@@ -28,7 +28,7 @@ DEFINITION MODULE Builtins ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
-(* floating point intrinsic procedure functions *)
+(* Floating point intrinsic procedure functions.  *)
 
 PROCEDURE __BUILTIN__ isnanf (x: SHORTREAL) : INTEGER ;
 PROCEDURE __BUILTIN__ isnan (x: REAL) : INTEGER ;
@@ -107,7 +107,43 @@ PROCEDURE __BUILTIN__ scalbn (x: REAL; n: INTEGER) : REAL ;
 PROCEDURE __BUILTIN__ scalbnf (x: SHORTREAL; n: INTEGER) : SHORTREAL ;
 PROCEDURE __BUILTIN__ scalbnl (x: LONGREAL; n: INTEGER) : LONGREAL ;
 
-(* complex arithmetic intrincic procedure functions *)
+PROCEDURE __BUILTIN__ isgreater (x, y: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isgreaterf (x, y: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isgreaterl (x, y: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ isgreaterequal (x, y: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isgreaterequalf (x, y: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isgreaterequall (x, y: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ isless (x, y: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ islessf (x, y: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ islessl (x, y: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ islessequal (x, y: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ islessequalf (x, y: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ islessequall (x, y: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ islessgreater (x, y: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ islessgreaterf (x, y: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ islessgreaterl (x, y: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ isunordered (x, y: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isunorderedf (x, y: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isunorderedl (x, y: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ iseqsig (x, y: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ iseqsigf (x, y: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ iseqsigl (x, y: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ isnormal (r: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isnormalf (s: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isnormall (l: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ isinf_sign (r: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isinf_signf (s: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ isinf_signl (l: LONGREAL) : INTEGER ;
+
+(* Complex arithmetic intrincic procedure functions.  *)
 
 PROCEDURE __BUILTIN__ cabsf (z: SHORTCOMPLEX) : SHORTREAL ;
 PROCEDURE __BUILTIN__ cabs (z: COMPLEX) : REAL ;
