@@ -11,7 +11,7 @@ main ()
   int d = (-__INT_MAX__ - 1) / 2;
   int e = 10;
   int f = (d * 2 > e * 5 ? d * 2 : e * 5) * 6;
-  if (f != 120)
+  if (f != 300)
     __builtin_abort ();
   int g = (-__INT_MAX__ - 1) / 2;
   int h = 0;
