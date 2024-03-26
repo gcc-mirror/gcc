@@ -1182,8 +1182,12 @@ package body Sem_Aggr is
       elsif Is_Array_Type (Typ) and then Null_Record_Present (N) then
          Error_Msg_N ("null record forbidden in array aggregate", N);
 
+      elsif Is_Record_Type (Typ)
+        and then not Is_Homogeneous_Aggregate (N)
+      then
+         Resolve_Record_Aggregate (N, Typ);
+
       elsif Has_Aspect (Typ, Aspect_Aggregate)
-        and then Ekind (Typ) /= E_Record_Type
         and then Ada_Version >= Ada_2022
       then
          --  Check for Ada 2022 and () aggregate.
@@ -1193,22 +1197,6 @@ package body Sem_Aggr is
          end if;
 
          Resolve_Container_Aggregate (N, Typ);
-
-      --  Check Ada 2022 empty aggregate [] initializing a record type that has
-      --  aspect aggregate; the empty aggregate will be expanded into a call to
-      --  the empty function specified in the aspect aggregate.
-
-      elsif Has_Aspect (Typ, Aspect_Aggregate)
-        and then Ekind (Typ) = E_Record_Type
-        and then Is_Homogeneous_Aggregate (N)
-        and then Is_Empty_List (Expressions (N))
-        and then Is_Empty_List (Component_Associations (N))
-        and then Ada_Version >= Ada_2022
-      then
-         Resolve_Container_Aggregate (N, Typ);
-
-      elsif Is_Record_Type (Typ) then
-         Resolve_Record_Aggregate (N, Typ);
 
       elsif Is_Array_Type (Typ) then
 
