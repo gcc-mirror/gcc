@@ -60,7 +60,8 @@ static const BuiltinAttrDefinition __definitions[]
      // #![feature(rustc_attrs)]
      {Attrs::RUSTC_DEPRECATED, STATIC_ANALYSIS},
      {Attrs::RUSTC_INHERIT_OVERFLOW_CHECKS, CODE_GENERATION},
-     {Attrs::STABLE, STATIC_ANALYSIS}};
+     {Attrs::STABLE, STATIC_ANALYSIS},
+     {Attrs::UNSTABLE, STATIC_ANALYSIS}};
 
 BuiltinAttributeMappings *
 BuiltinAttributeMappings::get ()
