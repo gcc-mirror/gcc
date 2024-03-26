@@ -45,7 +45,7 @@
 # define HAVE_FEAT_LSE128 0
 #endif
 
-#define HAVE_FEAT_LSE2  HAVE_IFUNC
+#define HAVE_FEAT_LSE2	HAVE_IFUNC
 
 #if HAVE_FEAT_LSE128
 	.arch	armv9-a+lse128
@@ -53,31 +53,37 @@
 	.arch	armv8-a+lse
 #endif
 
-#define LSE128(NAME) 	NAME##_i1
-#define LSE2(NAME) 	NAME##_i2
-#define CORE(NAME) 	NAME
+#define LSE128(NAME)	libat_##NAME##_i1
+#define LSE2(NAME)	libat_##NAME##_i2
+#define CORE(NAME)	libat_##NAME
+#define ATOMIC(NAME)	__atomic_##NAME
 
-#define ENTRY_FEAT(NAME, FEAT)  \
-	ENTRY (FEAT (NAME))
+#if HAVE_IFUNC
+# define ENTRY(NAME)		ENTRY2 (CORE (NAME), )
+# define ENTRY_FEAT(NAME, FEAT) ENTRY2 (FEAT (NAME), )
+# define END_FEAT(NAME, FEAT)	END2 (FEAT (NAME))
+#else
+/* Emit __atomic_* entrypoints if no ifuncs.  */
+# define ENTRY(NAME)	ENTRY2 (CORE (NAME), ALIAS (NAME, ATOMIC, CORE))
+#endif
 
-#define ENTRY(NAME)		\
+#define END(NAME)		END2 (CORE (NAME))
+
+#define ENTRY2(NAME, ALIASES)	\
 	.global NAME;		\
 	.hidden NAME;		\
 	.type NAME,%function;	\
 	.p2align 4;		\
+	ALIASES;		\
 NAME:				\
-	.cfi_startproc;	\
-	hint	34	// bti c
+	.cfi_startproc;		\
+	hint	34;	// bti c
 
-#define END_FEAT(NAME, FEAT)	\
-	END (FEAT (NAME))
-
-#define END(NAME)		\
+#define END2(NAME)		\
 	.cfi_endproc;		\
 	.size NAME, .-NAME;
 
-#define ALIAS(NAME, FROM, TO)	ALIAS1 (FROM (NAME),TO (NAME))
-#define ALIAS2(NAME)		ALIAS1 (__atomic_##NAME, libat_##NAME)
+#define ALIAS(NAME, FROM, TO)	ALIAS1 (FROM (NAME), TO (NAME))
 
 #define ALIAS1(ALIAS, NAME)	\
 	.global ALIAS;		\
@@ -116,7 +122,7 @@ NAME:				\
 #define SEQ_CST 5
 
 
-ENTRY (libat_load_16)
+ENTRY (load_16)
 	mov	x5, x0
 	cbnz	w1, 2f
 
@@ -131,11 +137,11 @@ ENTRY (libat_load_16)
 	stxp	w4, res0, res1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_load_16)
+END (load_16)
 
 
 #if HAVE_FEAT_LSE2
-ENTRY_FEAT (libat_load_16, LSE2)
+ENTRY_FEAT (load_16, LSE2)
 	cbnz	w1, 1f
 
 	/* RELAXED.  */
@@ -155,11 +161,11 @@ ENTRY_FEAT (libat_load_16, LSE2)
 	ldp	res0, res1, [x0]
 	dmb	ishld
 	ret
-END_FEAT (libat_load_16, LSE2)
+END_FEAT (load_16, LSE2)
 #endif
 
 
-ENTRY (libat_store_16)
+ENTRY (store_16)
 	cbnz	w4, 2f
 
 	/* RELAXED.  */
@@ -173,11 +179,11 @@ ENTRY (libat_store_16)
 	stlxp	w4, in0, in1, [x0]
 	cbnz	w4, 2b
 	ret
-END (libat_store_16)
+END (store_16)
 
 
 #if HAVE_FEAT_LSE2
-ENTRY_FEAT (libat_store_16, LSE2)
+ENTRY_FEAT (store_16, LSE2)
 	cbnz	w4, 1f
 
 	/* RELAXED.  */
@@ -189,11 +195,11 @@ ENTRY_FEAT (libat_store_16, LSE2)
 	stlxp	w4, in0, in1, [x0]
 	cbnz	w4, 1b
 	ret
-END_FEAT (libat_store_16, LSE2)
+END_FEAT (store_16, LSE2)
 #endif
 
 
-ENTRY (libat_exchange_16)
+ENTRY (exchange_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -217,11 +223,11 @@ ENTRY (libat_exchange_16)
 	stlxp	w4, in0, in1, [x5]
 	cbnz	w4, 4b
 	ret
-END (libat_exchange_16)
+END (exchange_16)
 
 
 #if HAVE_FEAT_LSE128
-ENTRY_FEAT (libat_exchange_16, LSE128)
+ENTRY_FEAT (exchange_16, LSE128)
 	mov	tmp0, x0
 	mov	res0, in0
 	mov	res1, in1
@@ -241,11 +247,11 @@ ENTRY_FEAT (libat_exchange_16, LSE128)
 	/* RELEASE/ACQ_REL/SEQ_CST.  */
 2:	swppal	res0, res1, [tmp0]
 	ret
-END_FEAT (libat_exchange_16, LSE128)
+END_FEAT (exchange_16, LSE128)
 #endif
 
 
-ENTRY (libat_compare_exchange_16)
+ENTRY (compare_exchange_16)
 	ldp	exp0, exp1, [x1]
 	cbz	w4, 3f
 	cmp	w4, RELEASE
@@ -289,11 +295,11 @@ ENTRY (libat_compare_exchange_16)
 	stp	tmp0, tmp1, [x1]
 6:	cset	x0, eq
 	ret
-END (libat_compare_exchange_16)
+END (compare_exchange_16)
 
 
 #if HAVE_FEAT_LSE2
-ENTRY_FEAT (libat_compare_exchange_16, LSE2)
+ENTRY_FEAT (compare_exchange_16, LSE2)
 	ldp	exp0, exp1, [x1]
 	mov	tmp0, exp0
 	mov	tmp1, exp1
@@ -326,11 +332,11 @@ ENTRY_FEAT (libat_compare_exchange_16, LSE2)
 	/* ACQ_REL/SEQ_CST.  */
 4:	caspal	exp0, exp1, in0, in1, [x0]
 	b	0b
-END_FEAT (libat_compare_exchange_16, LSE2)
+END_FEAT (compare_exchange_16, LSE2)
 #endif
 
 
-ENTRY (libat_fetch_add_16)
+ENTRY (fetch_add_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -349,10 +355,10 @@ ENTRY (libat_fetch_add_16)
 	stlxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_fetch_add_16)
+END (fetch_add_16)
 
 
-ENTRY (libat_add_fetch_16)
+ENTRY (add_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -371,10 +377,10 @@ ENTRY (libat_add_fetch_16)
 	stlxp	w4, res0, res1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_add_fetch_16)
+END (add_fetch_16)
 
 
-ENTRY (libat_fetch_sub_16)
+ENTRY (fetch_sub_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -393,10 +399,10 @@ ENTRY (libat_fetch_sub_16)
 	stlxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_fetch_sub_16)
+END (fetch_sub_16)
 
 
-ENTRY (libat_sub_fetch_16)
+ENTRY (sub_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -415,10 +421,10 @@ ENTRY (libat_sub_fetch_16)
 	stlxp	w4, res0, res1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_sub_fetch_16)
+END (sub_fetch_16)
 
 
-ENTRY (libat_fetch_or_16)
+ENTRY (fetch_or_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -437,11 +443,11 @@ ENTRY (libat_fetch_or_16)
 	stlxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_fetch_or_16)
+END (fetch_or_16)
 
 
 #if HAVE_FEAT_LSE128
-ENTRY_FEAT (libat_fetch_or_16, LSE128)
+ENTRY_FEAT (fetch_or_16, LSE128)
 	mov	tmp0, x0
 	mov	res0, in0
 	mov	res1, in1
@@ -461,11 +467,11 @@ ENTRY_FEAT (libat_fetch_or_16, LSE128)
 	/* RELEASE/ACQ_REL/SEQ_CST.  */
 2:	ldsetpal	res0, res1, [tmp0]
 	ret
-END_FEAT (libat_fetch_or_16, LSE128)
+END_FEAT (fetch_or_16, LSE128)
 #endif
 
 
-ENTRY (libat_or_fetch_16)
+ENTRY (or_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -484,11 +490,11 @@ ENTRY (libat_or_fetch_16)
 	stlxp	w4, res0, res1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_or_fetch_16)
+END (or_fetch_16)
 
 
 #if HAVE_FEAT_LSE128
-ENTRY_FEAT (libat_or_fetch_16, LSE128)
+ENTRY_FEAT (or_fetch_16, LSE128)
 	cbnz	w4, 1f
 	mov	tmp0, in0
 	mov	tmp1, in1
@@ -513,11 +519,11 @@ ENTRY_FEAT (libat_or_fetch_16, LSE128)
 	orr	res0, in0, tmp0
 	orr	res1, in1, tmp1
 	ret
-END_FEAT (libat_or_fetch_16, LSE128)
+END_FEAT (or_fetch_16, LSE128)
 #endif
 
 
-ENTRY (libat_fetch_and_16)
+ENTRY (fetch_and_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -536,11 +542,11 @@ ENTRY (libat_fetch_and_16)
 	stlxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_fetch_and_16)
+END (fetch_and_16)
 
 
 #if HAVE_FEAT_LSE128
-ENTRY_FEAT (libat_fetch_and_16, LSE128)
+ENTRY_FEAT (fetch_and_16, LSE128)
 	mov	tmp0, x0
 	mvn	res0, in0
 	mvn	res1, in1
@@ -561,11 +567,11 @@ ENTRY_FEAT (libat_fetch_and_16, LSE128)
 	/* RELEASE/ACQ_REL/SEQ_CST.  */
 2:	ldclrpal	res0, res1, [tmp0]
 	ret
-END_FEAT (libat_fetch_and_16, LSE128)
+END_FEAT (fetch_and_16, LSE128)
 #endif
 
 
-ENTRY (libat_and_fetch_16)
+ENTRY (and_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -584,11 +590,11 @@ ENTRY (libat_and_fetch_16)
 	stlxp	w4, res0, res1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_and_fetch_16)
+END (and_fetch_16)
 
 
 #if HAVE_FEAT_LSE128
-ENTRY_FEAT (libat_and_fetch_16, LSE128)
+ENTRY_FEAT (and_fetch_16, LSE128)
 	mvn	tmp0, in0
 	mvn	tmp0, in1
 	cbnz	w4, 1f
@@ -614,11 +620,11 @@ ENTRY_FEAT (libat_and_fetch_16, LSE128)
 	and	res0, tmp0, in0
 	and	res1, tmp1, in1
 	ret
-END_FEAT (libat_and_fetch_16, LSE128)
+END_FEAT (and_fetch_16, LSE128)
 #endif
 
 
-ENTRY (libat_fetch_xor_16)
+ENTRY (fetch_xor_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -637,10 +643,10 @@ ENTRY (libat_fetch_xor_16)
 	stlxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_fetch_xor_16)
+END (fetch_xor_16)
 
 
-ENTRY (libat_xor_fetch_16)
+ENTRY (xor_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
 
@@ -659,10 +665,10 @@ ENTRY (libat_xor_fetch_16)
 	stlxp	w4, res0, res1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_xor_fetch_16)
+END (xor_fetch_16)
 
 
-ENTRY (libat_fetch_nand_16)
+ENTRY (fetch_nand_16)
 	mov	x5, x0
 	mvn	in0, in0
 	mvn	in1, in1
@@ -683,10 +689,10 @@ ENTRY (libat_fetch_nand_16)
 	stlxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_fetch_nand_16)
+END (fetch_nand_16)
 
 
-ENTRY (libat_nand_fetch_16)
+ENTRY (nand_fetch_16)
 	mov	x5, x0
 	mvn	in0, in0
 	mvn	in1, in1
@@ -707,12 +713,12 @@ ENTRY (libat_nand_fetch_16)
 	stlxp	w4, res0, res1, [x5]
 	cbnz	w4, 2b
 	ret
-END (libat_nand_fetch_16)
+END (nand_fetch_16)
 
 
 /* __atomic_test_and_set is always inlined, so this entry is unused and
    only required for completeness.  */
-ENTRY (libat_test_and_set_16)
+ENTRY (test_and_set_16)
 
 	/* RELAXED/ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
 	mov	x5, x0
@@ -720,70 +726,48 @@ ENTRY (libat_test_and_set_16)
 	stlxrb	w4, w2, [x5]
 	cbnz	w4, 1b
 	ret
-END (libat_test_and_set_16)
+END (test_and_set_16)
 
 
 /* Alias entry points which are the same in LSE2 and LSE128.  */
 
 #if HAVE_IFUNC
 # if !HAVE_FEAT_LSE128
-ALIAS (libat_exchange_16, LSE128, LSE2)
-ALIAS (libat_fetch_or_16, LSE128, LSE2)
-ALIAS (libat_fetch_and_16, LSE128, LSE2)
-ALIAS (libat_or_fetch_16, LSE128, LSE2)
-ALIAS (libat_and_fetch_16, LSE128, LSE2)
+ALIAS (exchange_16, LSE128, LSE2)
+ALIAS (fetch_or_16, LSE128, LSE2)
+ALIAS (fetch_and_16, LSE128, LSE2)
+ALIAS (or_fetch_16, LSE128, LSE2)
+ALIAS (and_fetch_16, LSE128, LSE2)
 # endif
-ALIAS (libat_load_16, LSE128, LSE2)
-ALIAS (libat_store_16, LSE128, LSE2)
-ALIAS (libat_compare_exchange_16, LSE128, LSE2)
-ALIAS (libat_fetch_add_16, LSE128, LSE2)
-ALIAS (libat_add_fetch_16, LSE128, LSE2)
-ALIAS (libat_fetch_sub_16, LSE128, LSE2)
-ALIAS (libat_sub_fetch_16, LSE128, LSE2)
-ALIAS (libat_fetch_xor_16, LSE128, LSE2)
-ALIAS (libat_xor_fetch_16, LSE128, LSE2)
-ALIAS (libat_fetch_nand_16, LSE128, LSE2)
-ALIAS (libat_nand_fetch_16, LSE128, LSE2)
-ALIAS (libat_test_and_set_16, LSE128, LSE2)
+ALIAS (load_16, LSE128, LSE2)
+ALIAS (store_16, LSE128, LSE2)
+ALIAS (compare_exchange_16, LSE128, LSE2)
+ALIAS (fetch_add_16, LSE128, LSE2)
+ALIAS (add_fetch_16, LSE128, LSE2)
+ALIAS (fetch_sub_16, LSE128, LSE2)
+ALIAS (sub_fetch_16, LSE128, LSE2)
+ALIAS (fetch_xor_16, LSE128, LSE2)
+ALIAS (xor_fetch_16, LSE128, LSE2)
+ALIAS (fetch_nand_16, LSE128, LSE2)
+ALIAS (nand_fetch_16, LSE128, LSE2)
+ALIAS (test_and_set_16, LSE128, LSE2)
 
 /* Alias entry points which are the same in baseline and LSE2.  */
 
-ALIAS (libat_exchange_16, LSE2, CORE)
-ALIAS (libat_fetch_add_16, LSE2, CORE)
-ALIAS (libat_add_fetch_16, LSE2, CORE)
-ALIAS (libat_fetch_sub_16, LSE2, CORE)
-ALIAS (libat_sub_fetch_16, LSE2, CORE)
-ALIAS (libat_fetch_or_16, LSE2, CORE)
-ALIAS (libat_or_fetch_16, LSE2, CORE)
-ALIAS (libat_fetch_and_16, LSE2, CORE)
-ALIAS (libat_and_fetch_16, LSE2, CORE)
-ALIAS (libat_fetch_xor_16, LSE2, CORE)
-ALIAS (libat_xor_fetch_16, LSE2, CORE)
-ALIAS (libat_fetch_nand_16, LSE2, CORE)
-ALIAS (libat_nand_fetch_16, LSE2, CORE)
-ALIAS (libat_test_and_set_16, LSE2, CORE)
-
-#else
-
-/* Emit __atomic_* entrypoints if no ifuncs.  */
-
-ALIAS2 (load_16)
-ALIAS2 (store_16)
-ALIAS2 (compare_exchange_16)
-ALIAS2 (exchange_16)
-ALIAS2 (fetch_add_16)
-ALIAS2 (add_fetch_16)
-ALIAS2 (fetch_sub_16)
-ALIAS2 (sub_fetch_16)
-ALIAS2 (fetch_or_16)
-ALIAS2 (or_fetch_16)
-ALIAS2 (fetch_and_16)
-ALIAS2 (and_fetch_16)
-ALIAS2 (fetch_xor_16)
-ALIAS2 (xor_fetch_16)
-ALIAS2 (fetch_nand_16)
-ALIAS2 (nand_fetch_16)
-ALIAS2 (test_and_set_16)
+ALIAS (exchange_16, LSE2, CORE)
+ALIAS (fetch_add_16, LSE2, CORE)
+ALIAS (add_fetch_16, LSE2, CORE)
+ALIAS (fetch_sub_16, LSE2, CORE)
+ALIAS (sub_fetch_16, LSE2, CORE)
+ALIAS (fetch_or_16, LSE2, CORE)
+ALIAS (or_fetch_16, LSE2, CORE)
+ALIAS (fetch_and_16, LSE2, CORE)
+ALIAS (and_fetch_16, LSE2, CORE)
+ALIAS (fetch_xor_16, LSE2, CORE)
+ALIAS (xor_fetch_16, LSE2, CORE)
+ALIAS (fetch_nand_16, LSE2, CORE)
+ALIAS (nand_fetch_16, LSE2, CORE)
+ALIAS (test_and_set_16, LSE2, CORE)
 #endif
 
 /* GNU_PROPERTY_AARCH64_* macros from elf.h for use in asm code.  */
