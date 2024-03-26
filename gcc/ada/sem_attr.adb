@@ -6683,10 +6683,6 @@ package body Sem_Attr is
             elsif Depends_On_Private (P_Type) then
                Error_Attr_P ("prefix type of % is a private extension");
 
-            --  Check that we don't view convert to an abstract type
-
-            elsif Is_Abstract_Type (Node (First_Elmt (Parents))) then
-               Error_Attr_P ("type of % cannot be abstract");
             end if;
 
             --  Generate a view conversion and analyze it
