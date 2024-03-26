@@ -2327,6 +2327,7 @@ pp_c_cast_expression (c_pretty_printer *pp, tree e)
     case FIX_TRUNC_EXPR:
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
+    case EXCESS_PRECISION_EXPR:
       if (!location_wrapper_p (e))
 	pp_c_type_cast (pp, TREE_TYPE (e));
       pp_c_cast_expression (pp, TREE_OPERAND (e, 0));
@@ -2753,6 +2754,7 @@ c_pretty_printer::expression (tree e)
     case FIX_TRUNC_EXPR:
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
+    case EXCESS_PRECISION_EXPR:
       pp_c_cast_expression (this, e);
       break;
 

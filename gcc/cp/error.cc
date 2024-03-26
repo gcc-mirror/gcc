@@ -2662,6 +2662,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     CASE_CONVERT:
     case IMPLICIT_CONV_EXPR:
     case VIEW_CONVERT_EXPR:
+    case EXCESS_PRECISION_EXPR:
       {
 	tree op = TREE_OPERAND (t, 0);
 
