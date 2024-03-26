@@ -6898,6 +6898,27 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
       if (TYPE_UNSIGNED (ctype) != TYPE_UNSIGNED (type))
 	break;
 
+      /* Punt for multiplication altogether.
+	 MAX (1U + INT_MAX, 1U) * 2U is not equivalent to
+	 MAX ((1U + INT_MAX) * 2U, 1U * 2U), the former is
+	 0U, the latter is 2U.
+	 MAX (INT_MIN / 2, 0) * -2 is not equivalent to
+	 MIN (INT_MIN / 2 * -2, 0 * -2), the former is
+	 well defined 0, the latter invokes UB.
+	 MAX (INT_MIN / 2, 5) * 5 is not equivalent to
+	 MAX (INT_MIN / 2 * 5, 5 * 5), the former is
+	 well defined 25, the latter invokes UB.  */
+      if (code == MULT_EXPR)
+	break;
+      /* For division/modulo, punt on c being -1 for MAX, as
+	 MAX (INT_MIN, 0) / -1 is not equivalent to
+	 MIN (INT_MIN / -1, 0 / -1), the former is well defined
+	 0, the latter invokes UB (or for -fwrapv is INT_MIN).
+	 MIN (INT_MIN, 0) / -1 already invokes UB, so the
+	 transformation won't make it worse.  */
+      else if (tcode == MAX_EXPR && integer_minus_onep (c))
+	break;
+
       /* MIN (a, b) / 5 -> MIN (a / 5, b / 5)  */
       sub_strict_overflow_p = false;
       if ((t1 = extract_muldiv (op0, c, code, wide_type,
