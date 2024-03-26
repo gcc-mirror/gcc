@@ -1,3 +1,13 @@
+2024-03-25  Joseph Myers  <josmyers@redhat.com>
+
+	Backported from master:
+	2024-01-31  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112571
+	* c-decl.cc (start_enum): Clear ENUM_FIXED_UNDERLYING_TYPE_P when
+	defining without a fixed underlying type an enumeration previously
+	declared with a fixed underlying type.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.
