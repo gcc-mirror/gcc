@@ -20,7 +20,7 @@ int f[] = { 1, 1, 1, 1, 1, 1, 1, 1,
 int
 main ()
 {
-  if (foo (f, 16) != 2)
+  if (foo (f, 8) != 2)
     __builtin_abort ();
   return 0;
 }
