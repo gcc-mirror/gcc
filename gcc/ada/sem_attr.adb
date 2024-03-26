@@ -3423,18 +3423,6 @@ package body Sem_Attr is
 
       case Attr_Id is
 
-      --  Attributes related to Ada 2012 iterators. Attribute specifications
-      --  exist for these, but they cannot be queried.
-
-      when Attribute_Constant_Indexing
-         | Attribute_Default_Iterator
-         | Attribute_Implicit_Dereference
-         | Attribute_Iterator_Element
-         | Attribute_Iterable
-         | Attribute_Variable_Indexing
-      =>
-         Error_Msg_N ("illegal attribute", N);
-
       --  Internal attributes used to deal with Ada 2012 delayed aspects. These
       --  were already rejected by the parser. Thus they shouldn't appear here.
 
@@ -9015,19 +9003,6 @@ package body Sem_Attr is
 
       case Id is
 
-      --  Attributes related to Ada 2012 iterators; nothing to evaluate for
-      --  these.
-
-      when Attribute_Constant_Indexing
-         | Attribute_Default_Iterator
-         | Attribute_Implicit_Dereference
-         | Attribute_Iterator_Element
-         | Attribute_Iterable
-         | Attribute_Reduce
-         | Attribute_Variable_Indexing
-      =>
-         null;
-
       --  Internal attributes used to deal with Ada 2012 delayed aspects.
       --  These were already rejected by the parser. Thus they shouldn't
       --  appear here.
@@ -10207,6 +10182,13 @@ package body Sem_Attr is
                null;
          end case;
       end Range_Length;
+
+      ------------
+      -- Reduce --
+      ------------
+
+      when Attribute_Reduce =>
+         null;
 
       ---------
       -- Ref --
