@@ -130,12 +130,8 @@ libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix _$(s)_.lo,$(SIZEOBJS)))
 ## On a target-specific basis, include alternates to be selected by IFUNC.
 if HAVE_IFUNC
 if ARCH_AARCH64_LINUX
-if ARCH_AARCH64_HAVE_LSE128
-AM_CPPFLAGS	     = -DHAVE_FEAT_LSE128
-endif
 IFUNC_OPTIONS	     = -march=armv8-a+lse
 libatomic_la_LIBADD += $(foreach s,$(SIZES),$(addsuffix _$(s)_1_.lo,$(SIZEOBJS)))
-libatomic_la_SOURCES += atomic_16.S
 
 endif
 if ARCH_ARM_LINUX
@@ -153,6 +149,10 @@ IFUNC_OPTIONS	     = -mcx16 -mcx16
 libatomic_la_LIBADD += $(addsuffix _16_1_.lo,$(SIZEOBJS)) \
 		       $(addsuffix _16_2_.lo,$(SIZEOBJS))
 endif
+endif
+
+if ARCH_AARCH64_LINUX
+libatomic_la_SOURCES += atomic_16.S
 endif
 
 libatomic_convenience_la_SOURCES = $(libatomic_la_SOURCES)

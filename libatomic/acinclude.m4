@@ -99,7 +99,6 @@ AC_DEFUN([LIBAT_TEST_FEAT_AARCH64_LSE128],[
   ])
   LIBAT_DEFINE_YESNO([HAVE_FEAT_LSE128], [$libat_cv_have_feat_lse128],
 	[Have LSE128 support for 16 byte integers.])
-  AM_CONDITIONAL([ARCH_AARCH64_HAVE_LSE128], [test x$libat_cv_have_feat_lse128 = xyes])
 ])
 
 dnl

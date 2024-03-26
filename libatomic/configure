@@ -656,8 +656,6 @@ LIBAT_BUILD_VERSIONED_SHLIB_FALSE
 LIBAT_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
 SECTION_LDFLAGS
-ARCH_AARCH64_HAVE_LSE128_FALSE
-ARCH_AARCH64_HAVE_LSE128_TRUE
 SYSROOT_CFLAGS_FOR_TARGET
 enable_aarch64_lse
 libtool_VERSION
@@ -14740,15 +14738,6 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-   if test x$libat_cv_have_feat_lse128 = xyes; then
-  ARCH_AARCH64_HAVE_LSE128_TRUE=
-  ARCH_AARCH64_HAVE_LSE128_FALSE='#'
-else
-  ARCH_AARCH64_HAVE_LSE128_TRUE='#'
-  ARCH_AARCH64_HAVE_LSE128_FALSE=
-fi
-
-
 
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether byte ordering is bigendian" >&5
 $as_echo_n "checking whether byte ordering is bigendian... " >&6; }
@@ -16042,11 +16031,6 @@ if test -z "${ENABLE_DARWIN_AT_RPATH_TRUE}" && test -z "${ENABLE_DARWIN_AT_RPATH
   as_fn_error $? "conditional \"ENABLE_DARWIN_AT_RPATH\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${ARCH_AARCH64_HAVE_LSE128_TRUE}" && test -z "${ARCH_AARCH64_HAVE_LSE128_FALSE}"; then
-  as_fn_error $? "conditional \"ARCH_AARCH64_HAVE_LSE128\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-
 if test -z "${LIBAT_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBAT_BUILD_VERSIONED_SHLIB_FALSE}"; then
   as_fn_error $? "conditional \"LIBAT_BUILD_VERSIONED_SHLIB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5

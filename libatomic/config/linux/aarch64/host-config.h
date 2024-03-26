@@ -24,6 +24,19 @@
 #if HAVE_IFUNC
 #include <sys/auxv.h>
 
+#ifndef HWCAP_ATOMICS
+# define HWCAP_ATOMICS	(1 << 8)
+#endif
+#ifndef HWCAP_CPUID
+# define HWCAP_CPUID	(1 << 11)
+#endif
+#ifndef HWCAP_USCAT
+# define HWCAP_USCAT	(1 << 25)
+#endif
+#ifndef HWCAP2_LSE128
+# define HWCAP2_LSE128	(1UL << 47)
+#endif
+
 #if __has_include(<sys/ifunc.h>)
 # include <sys/ifunc.h>
 #else
@@ -35,28 +48,14 @@ typedef struct __ifunc_arg_t {
 # define _IFUNC_ARG_HWCAP (1ULL << 62)
 #endif
 
-#ifdef HWCAP_USCAT
-# if N == 16
-#  define IFUNC_COND_1		(has_lse128 (hwcap, features))
-#  define IFUNC_COND_2		(has_lse2 (hwcap, features))
-#  define IFUNC_NCOND(N)	2
-# else
-#  define IFUNC_COND_1		(hwcap & HWCAP_ATOMICS)
-#  define IFUNC_NCOND(N)	1
-# endif
-#else
-#  define IFUNC_COND_1	(false)
-#  define IFUNC_NCOND(N)	1
-#endif
-
-#endif /* HAVE_IFUNC */
-
-/* All 128-bit atomic functions are defined in aarch64/atomic_16.S.  */
 #if N == 16
-# define DONE 1
+# define IFUNC_COND_1		(has_lse128 (hwcap, features))
+# define IFUNC_COND_2		(has_lse2 (hwcap, features))
+# define IFUNC_NCOND(N)	2
+#else
+# define IFUNC_COND_1		(hwcap & HWCAP_ATOMICS)
+# define IFUNC_NCOND(N)	1
 #endif
-
-#ifdef HWCAP_USCAT
 
 #define MIDR_IMPLEMENTOR(midr)	(((midr) >> 24) & 255)
 #define MIDR_PARTNUM(midr)	(((midr) >> 4) & 0xfff)
@@ -89,11 +88,6 @@ has_lse2 (unsigned long hwcap, const __ifunc_arg_t *features)
 
 #define AT_FEAT_FIELD(isar0)	(((isar0) >> 20) & 15)
 
-/* Ensure backwards compatibility with glibc <= 2.38.  */
-#ifndef HWCAP2_LSE128
-#define HWCAP2_LSE128		(1UL << 47)
-#endif
-
 static inline bool
 has_lse128 (unsigned long hwcap, const __ifunc_arg_t *features)
 {
@@ -116,6 +110,14 @@ has_lse128 (unsigned long hwcap, const __ifunc_arg_t *features)
   return false;
 }
 
+#endif /* HAVE_IFUNC */
+
+/* All 128-bit atomic functions are defined in aarch64/atomic_16.S.  */
+#if N == 16
+# define DONE 1
+# if !HAVE_IFUNC
+#  define IFUNC_ALT 1
+# endif
 #endif
 
 #include_next <host-config.h>

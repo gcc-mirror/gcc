@@ -38,6 +38,15 @@
    The libat_<op>_16_i1 entry points are used when LSE128 is available.
    The libat_<op>_16_i2 entry points are used when LSE2 is available.  */
 
+#include "auto-config.h"
+
+#if !HAVE_IFUNC
+# undef HAVE_FEAT_LSE128
+# define HAVE_FEAT_LSE128 0
+#endif
+
+#define HAVE_FEAT_LSE2  HAVE_IFUNC
+
 #if HAVE_FEAT_LSE128
 	.arch	armv9-a+lse128
 #else
@@ -67,8 +76,8 @@ NAME:				\
 	.cfi_endproc;		\
 	.size NAME, .-NAME;
 
-#define ALIAS(NAME, FROM, TO)	\
-	ALIAS1 (FROM (NAME),TO (NAME))
+#define ALIAS(NAME, FROM, TO)	ALIAS1 (FROM (NAME),TO (NAME))
+#define ALIAS2(NAME)		ALIAS1 (__atomic_##NAME, libat_##NAME)
 
 #define ALIAS1(ALIAS, NAME)	\
 	.global ALIAS;		\
@@ -125,6 +134,7 @@ ENTRY (libat_load_16)
 END (libat_load_16)
 
 
+#if HAVE_FEAT_LSE2
 ENTRY_FEAT (libat_load_16, LSE2)
 	cbnz	w1, 1f
 
@@ -146,6 +156,7 @@ ENTRY_FEAT (libat_load_16, LSE2)
 	dmb	ishld
 	ret
 END_FEAT (libat_load_16, LSE2)
+#endif
 
 
 ENTRY (libat_store_16)
@@ -165,6 +176,7 @@ ENTRY (libat_store_16)
 END (libat_store_16)
 
 
+#if HAVE_FEAT_LSE2
 ENTRY_FEAT (libat_store_16, LSE2)
 	cbnz	w4, 1f
 
@@ -178,6 +190,7 @@ ENTRY_FEAT (libat_store_16, LSE2)
 	cbnz	w4, 1b
 	ret
 END_FEAT (libat_store_16, LSE2)
+#endif
 
 
 ENTRY (libat_exchange_16)
@@ -279,6 +292,7 @@ ENTRY (libat_compare_exchange_16)
 END (libat_compare_exchange_16)
 
 
+#if HAVE_FEAT_LSE2
 ENTRY_FEAT (libat_compare_exchange_16, LSE2)
 	ldp	exp0, exp1, [x1]
 	mov	tmp0, exp0
@@ -313,6 +327,7 @@ ENTRY_FEAT (libat_compare_exchange_16, LSE2)
 4:	caspal	exp0, exp1, in0, in1, [x0]
 	b	0b
 END_FEAT (libat_compare_exchange_16, LSE2)
+#endif
 
 
 ENTRY (libat_fetch_add_16)
@@ -710,13 +725,14 @@ END (libat_test_and_set_16)
 
 /* Alias entry points which are the same in LSE2 and LSE128.  */
 
-#if !HAVE_FEAT_LSE128
+#if HAVE_IFUNC
+# if !HAVE_FEAT_LSE128
 ALIAS (libat_exchange_16, LSE128, LSE2)
 ALIAS (libat_fetch_or_16, LSE128, LSE2)
 ALIAS (libat_fetch_and_16, LSE128, LSE2)
 ALIAS (libat_or_fetch_16, LSE128, LSE2)
 ALIAS (libat_and_fetch_16, LSE128, LSE2)
-#endif
+# endif
 ALIAS (libat_load_16, LSE128, LSE2)
 ALIAS (libat_store_16, LSE128, LSE2)
 ALIAS (libat_compare_exchange_16, LSE128, LSE2)
@@ -746,6 +762,29 @@ ALIAS (libat_xor_fetch_16, LSE2, CORE)
 ALIAS (libat_fetch_nand_16, LSE2, CORE)
 ALIAS (libat_nand_fetch_16, LSE2, CORE)
 ALIAS (libat_test_and_set_16, LSE2, CORE)
+
+#else
+
+/* Emit __atomic_* entrypoints if no ifuncs.  */
+
+ALIAS2 (load_16)
+ALIAS2 (store_16)
+ALIAS2 (compare_exchange_16)
+ALIAS2 (exchange_16)
+ALIAS2 (fetch_add_16)
+ALIAS2 (add_fetch_16)
+ALIAS2 (fetch_sub_16)
+ALIAS2 (sub_fetch_16)
+ALIAS2 (fetch_or_16)
+ALIAS2 (or_fetch_16)
+ALIAS2 (fetch_and_16)
+ALIAS2 (and_fetch_16)
+ALIAS2 (fetch_xor_16)
+ALIAS2 (xor_fetch_16)
+ALIAS2 (fetch_nand_16)
+ALIAS2 (nand_fetch_16)
+ALIAS2 (test_and_set_16)
+#endif
 
 /* GNU_PROPERTY_AARCH64_* macros from elf.h for use in asm code.  */
 #define FEATURE_1_AND 0xc0000000
