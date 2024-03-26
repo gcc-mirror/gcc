@@ -71,9 +71,9 @@ template<aarch64_feature> struct info;
     static constexpr auto enable = flag | get_enable REQUIRES;		\
     static constexpr auto explicit_on = enable | get_enable EXPLICIT_ON; \
   };									\
-  const aarch64_feature_flags info<aarch64_feature::IDENT>::flag;	\
-  const aarch64_feature_flags info<aarch64_feature::IDENT>::enable;	\
-  const aarch64_feature_flags info<aarch64_feature::IDENT>::explicit_on; \
+  constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::flag;	\
+  constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::enable;	\
+  constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::explicit_on; \
   constexpr info<aarch64_feature::IDENT> IDENT ()			\
   {									\
     return info<aarch64_feature::IDENT> ();				\
