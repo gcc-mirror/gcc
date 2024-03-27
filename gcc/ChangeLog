@@ -1,3 +1,22 @@
+2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110838
+	* match.pd (([rl]shift @0 out-of-bounds) -> zero): Restrict
+	the arithmetic right-shift case to non-negative operands.
+
+2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91838
+	* gimple-match-head.cc: Include attribs.h and asan.h.
+	* generic-match-head.cc: Likewise.
+	* match.pd (([rl]shift @0 out-of-bounds) -> zero): New pattern.
+
 2024-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/114231

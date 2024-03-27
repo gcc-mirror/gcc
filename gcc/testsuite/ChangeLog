@@ -1,3 +1,11 @@
+2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114027
+	* gcc.dg/vect/pr114027.c: Fix iteration count.
+
 2024-03-25  Joseph Myers  <josmyers@redhat.com>
 
 	Backported from master:
