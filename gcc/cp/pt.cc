@@ -10917,7 +10917,8 @@ find_template_parameter_info::found (tree parm)
 {
   if (TREE_CODE (parm) == TREE_LIST)
     parm = TREE_VALUE (parm);
-  if (TREE_CODE (parm) == TYPE_DECL)
+  if (TREE_CODE (parm) == TYPE_DECL
+      || TREE_CODE (parm) == TEMPLATE_DECL)
     parm = TREE_TYPE (parm);
   else
     parm = DECL_INITIAL (parm);
