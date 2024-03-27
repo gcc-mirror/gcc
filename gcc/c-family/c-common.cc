@@ -8461,7 +8461,19 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	if (new_return)
 	  {
 	    /* Cast function result from I{1,2,4,8,16} to the required type.  */
-	    result = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (new_return), result);
+	    if (TREE_CODE (TREE_TYPE (new_return)) == BITINT_TYPE)
+	      {
+		struct bitint_info info;
+		unsigned prec = TYPE_PRECISION (TREE_TYPE (new_return));
+		targetm.c.bitint_type_info (prec, &info);
+		if (!info.extended)
+		  /* For _BitInt which has the padding bits undefined
+		     convert to the _BitInt type rather than VCE to force
+		     zero or sign extension.  */
+		  result = build1 (NOP_EXPR, TREE_TYPE (new_return), result);
+	      }
+	    result
+	      = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (new_return), result);
 	    result = build2 (MODIFY_EXPR, TREE_TYPE (new_return), new_return,
 			     result);
 	    TREE_SIDE_EFFECTS (result) = 1;
