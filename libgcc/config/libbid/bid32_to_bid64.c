@@ -79,6 +79,7 @@ bid64_to_bid32 (UINT64 x _RND_MODE_PARAM _EXC_FLAGS_PARAM
   UINT128 Q;
   UINT64 sign_x, coefficient_x, remainder_h, carry, Stemp;
   UINT32 res;
+  UINT64 t64;
   int_float tempx;
   int exponent_x, bin_expon_cx, extra_digits, rmode = 0, amount;
   unsigned status = 0;
@@ -93,8 +94,10 @@ bid64_to_bid32 (UINT64 x _RND_MODE_PARAM _EXC_FLAGS_PARAM
   // unpack arguments, check for NaN or Infinity, 0
   if (!unpack_BID64 (&sign_x, &exponent_x, &coefficient_x, x)) {
     if (((x) & 0x7800000000000000ull) == 0x7800000000000000ull) {
-      res = (coefficient_x & 0x0003ffffffffffffull);
-      res /= 1000000000ull;
+      t64 = (coefficient_x & 0x0003ffffffffffffull);
+      res = t64/1000000000ull;
+      //res = (coefficient_x & 0x0003ffffffffffffull);
+      //res /= 1000000000ull;
       res |= ((coefficient_x >> 32) & 0xfc000000);
 #ifdef SET_STATUS_FLAGS
       if ((x & SNAN_MASK64) == SNAN_MASK64)	// sNaN
@@ -139,10 +142,6 @@ bid64_to_bid32 (UINT64 x _RND_MODE_PARAM _EXC_FLAGS_PARAM
     exponent_x += extra_digits;
     if ((exponent_x < 0) && (exponent_x + MAX_FORMAT_DIGITS_32 >= 0)) {
       status = UNDERFLOW_EXCEPTION;
-      if (exponent_x == -1)
-	if (coefficient_x + round_const_table[rmode][extra_digits] >=
-	    power10_table_128[extra_digits + 7].w[0])
-	  status = 0;
       extra_digits -= exponent_x;
       exponent_x = 0;
     }

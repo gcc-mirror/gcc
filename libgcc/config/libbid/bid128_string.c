@@ -56,6 +56,7 @@ bid128_to_string (char *str, UINT128 x
   UINT128 C1;
   unsigned int k = 0; // pointer in the string
   unsigned int d0, d123;
+  unsigned int zero_digit = (unsigned int) '0';
   UINT64 HI_18Dig, LO_18Dig, Tmp;
   UINT32 MiDi[12], *ptr;
   char *c_ptr_start, *c_ptr;
@@ -232,14 +233,14 @@ bid128_to_string (char *str, UINT128 x
     d123 = exp - 1000 * d0;
 
     if (d0) { // 1000 <= exp <= 6144 => 4 digits to return
-      str[k++] = d0 + 0x30;// ASCII for decimal digit d0
+      str[k++] = d0 + zero_digit; // ASCII for decimal digit d0
       ind = 3 * d123;
       str[k++] = char_table3[ind];
       str[k++] = char_table3[ind + 1];
       str[k++] = char_table3[ind + 2];
     } else { // 0 <= exp <= 999 => d0 = 0
       if (d123 < 10) { // 0 <= exp <= 9 => 1 digit to return
-	str[k++] = d123 + 0x30;// ASCII
+	str[k++] = d123 + zero_digit; // ASCII
       } else if (d123 < 100) { // 10 <= exp <= 99 => 2 digits to return
 	ind = 2 * (d123 - 10);
 	str[k++] = char_table2[ind];
@@ -643,7 +644,7 @@ bid128_from_string (char *ps _RND_MODE_PARAM _EXC_FLAGS_PARAM
     }
 		break;
 
-
+        default: break; // default added to avoid compiler warning
 	}
     // now form the coefficient as coeff_high*10^17+coeff_low+carry
     scale_high = 100000000000000000ull;

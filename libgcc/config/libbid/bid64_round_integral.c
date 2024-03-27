@@ -142,6 +142,7 @@ bid64_round_integral_exact (UINT64 x _RND_MODE_PARAM _EXC_FLAGS_PARAM
       BID_RETURN (res);
     }
     break;
+  default: break; // default added to avoid compiler warning
   }	// end switch ()
 
   // q = nr. of decimal digits in x (1 <= q <= 54)
@@ -483,6 +484,7 @@ bid64_round_integral_exact (UINT64 x _RND_MODE_PARAM _EXC_FLAGS_PARAM
       BID_RETURN (res);
     }
     break;
+  default: break; // default added to avoid compiler warning
   }	// end switch ()
   BID_RETURN (res);
 }

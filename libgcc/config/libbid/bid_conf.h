@@ -519,6 +519,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define BID_BIG_ENDIAN __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
 #endif
 
+#if BID_BIG_ENDIAN
+#define BID_HIGH_128W 0
+#define BID_LOW_128W  1
+#else
+#define BID_HIGH_128W 1
+#define BID_LOW_128W  0
+#endif
+
 #ifndef BID_THREAD
 #if defined (HAVE_CC_TLS) && defined (USE_TLS)
 #define BID_THREAD __thread

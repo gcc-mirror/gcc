@@ -251,7 +251,7 @@ bid64_from_string (char *ps
 #endif
   UINT64 sign_x, coefficient_x = 0, rounded = 0, res;
   int expon_x = 0, sgn_expon, ndigits, add_expon = 0, midpoint =
-    0, rounded_up = 0;
+    0, rounded_up = 0, dround = 0;
   int dec_expon_scale = 0, right_radix_leading_zeros = 0, rdx_pt_enc =
     0;
   unsigned fpsc;
@@ -419,10 +419,10 @@ bid64_from_string (char *ps
 	break;
 
 	case ROUNDING_DOWN:
-		if(sign_x) { coefficient_x++; rounded_up=1; }
+                if(sign_x) { if(c>'0') {coefficient_x++; rounded_up=1;} else dround=1; }
 		break;
 	case ROUNDING_UP:
-		if(!sign_x) { coefficient_x++; rounded_up=1; }
+                if(!sign_x) { if(c>'0') {coefficient_x++; rounded_up=1;} else dround=1; }
 		break;
 	case ROUNDING_TIES_AWAY:
 		if(c>='5') { coefficient_x++; rounded_up=1; }
@@ -443,8 +443,21 @@ bid64_from_string (char *ps
 	midpoint = 0;
 	rounded_up = 1;
       }
-      if (c > '0')
+      if (c > '0') {
 	rounded = 1;
+
+	if(dround)
+        {
+          dround = 0;
+          coefficient_x ++;
+          rounded_up = 1;
+
+         if (coefficient_x == 10000000000000000ull) {
+            coefficient_x = 1000000000000000ull;
+            add_expon = 1;
+	 }
+	}
+      }
     }
     ps++;
     c = *ps;

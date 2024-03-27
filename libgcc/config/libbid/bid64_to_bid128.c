@@ -153,9 +153,6 @@ bid128_to_bid64 (UINT128 x _RND_MODE_PARAM _EXC_FLAGS_PARAM
 	  T128 = round_const_table_128[rmode][extra_digits];
 	  __add_carry_out (CX1.w[0], carry, T128.w[0], CX.w[0]);
 	  CX1.w[1] = CX.w[1] + T128.w[1] + carry;
-	  if (__unsigned_compare_ge_128
-	      (CX1, power10_table_128[extra_digits + 16]))
-	    uf_check = 0;
 	}
 	extra_digits =
 	  extra_digits + DECIMAL_EXPONENT_BIAS_128 -

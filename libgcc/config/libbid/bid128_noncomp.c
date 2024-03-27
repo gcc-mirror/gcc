@@ -443,7 +443,7 @@ void
 bid128_class (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
-int
+class_t
 bid128_class (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
