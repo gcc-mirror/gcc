@@ -68,7 +68,10 @@ DefaultResolver::visit (AST::Function &function)
 	else if (p->is_self ())
 	  {
 	    auto &param = static_cast<AST::SelfParam &> (*p);
-	    param.get_type ().accept_vis (*this);
+
+	    if (param.has_type ())
+	      param.get_type ().accept_vis (*this);
+
 	    param.get_lifetime ().accept_vis (*this);
 	  }
 	else
