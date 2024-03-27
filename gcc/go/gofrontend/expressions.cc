@@ -18790,7 +18790,7 @@ Composite_literal_expression::lower_array(Type* type)
 
 	  Named_type* ntype = Type::lookup_integer_type("int");
 	  Integer_type* inttype = ntype->integer_type();
-	  if (sizeof(index) <= static_cast<size_t>(inttype->bits() * 8)
+	  if (sizeof(index) >= static_cast<size_t>(inttype->bits() / 8)
 	      && index >> (inttype->bits() - 1) != 0)
 	    {
 	      go_error_at(index_expr->location(), "index value overflow");
