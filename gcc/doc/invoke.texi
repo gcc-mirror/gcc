@@ -36798,17 +36798,17 @@ Substitute the variable part of a matched option.  See below.
 Note that each comma in the substituted string is replaced by
 a single space.
 
-@item %<S
-Remove all occurrences of @code{-S} from the command line.  Note---this
+@item %<@var{S}
+Remove all occurrences of @code{-@var{S}} from the command line.  Note---this
 command is position dependent.  @samp{%} commands in the spec string
-before this one see @code{-S}, @samp{%} commands in the spec string
+before this one see @code{-@var{S}}, @samp{%} commands in the spec string
 after this one do not.
 
-@item %<S*
-Similar to @samp{%<S}, but match all switches beginning with @code{-S}.
+@item %<@var{S}*
+Similar to @samp{%<@var{S}}, but match all switches beginning with @code{-@var{S}}.
 
-@item %>S
-Similar to @samp{%<S}, but keep @code{-S} in the GCC command line.
+@item %>@var{S}
+Similar to @samp{%<@var{S}}, but keep @code{-@var{S}} in the GCC command line.
 
 @item %:@var{function}(@var{args})
 Call the named function @var{function}, passing it @var{args}.
@@ -36992,47 +36992,47 @@ otherwise.
 @end smallexample
 @end table
 
-@item %@{S@}
-Substitutes the @code{-S} switch, if that switch is given to GCC@.
+@item %@{@var{S}@}
+Substitutes the @code{-@var{S}} switch, if that switch is given to GCC@.
 If that switch is not specified, this substitutes nothing.  Note that
 the leading dash is omitted when specifying this option, and it is
 automatically inserted if the substitution is performed.  Thus the spec
 string @samp{%@{foo@}} matches the command-line option @option{-foo}
 and outputs the command-line option @option{-foo}.
 
-@item %W@{S@}
-Like %@{@code{S}@} but mark last argument supplied within as a file to be
+@item %W@{@var{S}@}
+Like %@{@code{@var{S}}@} but mark last argument supplied within as a file to be
 deleted on failure.
 
-@item %@@@{S@}
-Like %@{@code{S}@} but puts the result into a @code{FILE} and substitutes
+@item %@@@{@var{S}@}
+Like %@{@code{@var{S}}@} but puts the result into a @code{FILE} and substitutes
 @code{@@FILE} if an @code{@@file} argument has been supplied.
 
-@item %@{S*@}
+@item %@{@var{S}*@}
 Substitutes all the switches specified to GCC whose names start
-with @code{-S}, but which also take an argument.  This is used for
+with @code{-@var{S}}, but which also take an argument.  This is used for
 switches like @option{-o}, @option{-D}, @option{-I}, etc.
 GCC considers @option{-o foo} as being
 one switch whose name starts with @samp{o}.  %@{o*@} substitutes this
 text, including the space.  Thus two arguments are generated.
 
-@item %@{S*&T*@}
-Like %@{@code{S}*@}, but preserve order of @code{S} and @code{T} options
-(the order of @code{S} and @code{T} in the spec is not significant).
+@item %@{@var{S}*&@var{T}*@}
+Like %@{@code{@var{S}}*@}, but preserve order of @code{@var{S}} and @code{@var{T}} options
+(the order of @code{@var{S}} and @code{@var{T}} in the spec is not significant).
 There can be any number of ampersand-separated variables; for each the
 wild card is optional.  Useful for CPP as @samp{%@{D*&U*&A*@}}.
 
-@item %@{S:X@}
-Substitutes @code{X}, if the @option{-S} switch is given to GCC@.
+@item %@{@var{S}:@var{X}@}
+Substitutes @code{@var{X}}, if the @option{-@var{S}} switch is given to GCC@.
 
-@item %@{!S:X@}
-Substitutes @code{X}, if the @option{-S} switch is @emph{not} given to GCC@.
+@item %@{!@var{S}:@var{X}@}
+Substitutes @code{@var{X}}, if the @option{-@var{S}} switch is @emph{not} given to GCC@.
 
-@item %@{S*:X@}
-Substitutes @code{X} if one or more switches whose names start with
-@code{-S} are specified to GCC@.  Normally @code{X} is substituted only
+@item %@{@var{S}*:@var{X}@}
+Substitutes @code{@var{X}} if one or more switches whose names start with
+@code{-@var{S}} are specified to GCC@.  Normally @code{@var{X}} is substituted only
 once, no matter how many such switches appeared.  However, if @code{%*}
-appears somewhere in @code{X}, then @code{X} is substituted once
+appears somewhere in @code{@var{X}}, then @code{@var{X}} is substituted once
 for each matching switch, with the @code{%*} replaced by the part of
 that switch matching the @code{*}.
 
@@ -37053,23 +37053,23 @@ when matching an option like @option{-mcu=newchip} produces:
 --script=newchip/memory.ld
 @end smallexample
 
-@item %@{.S:X@}
-Substitutes @code{X}, if processing a file with suffix @code{S}.
+@item %@{.@var{S}:@var{X}@}
+Substitutes @code{@var{X}}, if processing a file with suffix @code{@var{S}}.
 
-@item %@{!.S:X@}
-Substitutes @code{X}, if @emph{not} processing a file with suffix @code{S}.
+@item %@{!.@var{S}:@var{X}@}
+Substitutes @code{@var{X}}, if @emph{not} processing a file with suffix @code{@var{S}}.
 
-@item %@{,S:X@}
-Substitutes @code{X}, if processing a file for language @code{S}.
+@item %@{,@var{S}:@var{X}@}
+Substitutes @code{@var{X}}, if processing a file for language @code{@var{S}}.
 
-@item %@{!,S:X@}
-Substitutes @code{X}, if not processing a file for language @code{S}.
+@item %@{!,@var{S}:@var{X}@}
+Substitutes @code{@var{X}}, if not processing a file for language @code{@var{S}}.
 
-@item %@{S|P:X@}
-Substitutes @code{X} if either @code{-S} or @code{-P} is given to
+@item %@{@var{S}|@var{P}:@var{X}@}
+Substitutes @code{@var{X}} if either @code{-@var{S}} or @code{-@var{P}} is given to
 GCC@.  This may be combined with @samp{!}, @samp{.}, @samp{,}, and
 @code{*} sequences as well, although they have a stronger binding than
-the @samp{|}.  If @code{%*} appears in @code{X}, all of the
+the @samp{|}.  If @code{%*} appears in @code{@var{X}}, all of the
 alternatives must be starred, and only the first matching alternative
 is substituted.
 
@@ -37090,33 +37090,33 @@ jim.d         -bar -boggle
 -d jim.d      -bar -baz -boggle
 @end smallexample
 
-@item %@{%:@var{function}(@var{args}):X@}
+@item %@{%:@var{function}(@var{args}):@var{X}@}
 
 Call function named @var{function} with args @var{args}.  If the
-function returns non-NULL, then @code{X} is substituted, if it returns
+function returns non-NULL, then @code{@var{X}} is substituted, if it returns
 NULL, it isn't substituted.
 
-@item %@{S:X; T:Y; :D@}
+@item %@{@var{S}:@var{X}; @var{T}:@var{Y}; :@var{D}@}
 
-If @code{S} is given to GCC, substitutes @code{X}; else if @code{T} is
-given to GCC, substitutes @code{Y}; else substitutes @code{D}.  There can
+If @code{@var{S}} is given to GCC, substitutes @code{@var{X}}; else if @code{@var{T}} is
+given to GCC, substitutes @code{@var{Y}}; else substitutes @code{@var{D}}.  There can
 be as many clauses as you need.  This may be combined with @code{.},
 @code{,}, @code{!}, @code{|}, and @code{*} as needed.
 
 
 @end table
 
-The switch matching text @code{S} in a @samp{%@{S@}}, @samp{%@{S:X@}}
+The switch matching text @code{@var{S}} in a @samp{%@{@var{S}@}}, @samp{%@{@var{S}:@var{X}@}}
 or similar construct can use a backslash to ignore the special meaning
 of the character following it, thus allowing literal matching of a
 character that is otherwise specially treated.  For example,
-@samp{%@{std=iso9899\:1999:X@}} substitutes @code{X} if the
+@samp{%@{std=iso9899\:1999:@var{X}@}} substitutes @code{@var{X}} if the
 @option{-std=iso9899:1999} option is given.
 
-The conditional text @code{X} in a @samp{%@{S:X@}} or similar
+The conditional text @code{@var{X}} in a @samp{%@{@var{S}:@var{X}@}} or similar
 construct may contain other nested @samp{%} constructs or spaces, or
 even newlines.  They are processed as usual, as described above.
-Trailing white space in @code{X} is ignored.  White space may also
+Trailing white space in @code{@var{X}} is ignored.  White space may also
 appear anywhere on the left side of the colon in these constructs,
 except between @code{.} or @code{*} and the corresponding word.
 
@@ -37124,7 +37124,7 @@ The @option{-O}, @option{-f}, @option{-m}, and @option{-W} switches are
 handled specifically in these constructs.  If another value of
 @option{-O} or the negated form of a @option{-f}, @option{-m}, or
 @option{-W} switch is found later in the command line, the earlier
-switch value is ignored, except with @{@code{S}*@} where @code{S} is
+switch value is ignored, except with @{@code{@var{S}}*@} where @code{@var{S}} is
 just one letter, which passes all matching options.
 
 The character @samp{|} at the beginning of the predicate text is used to
