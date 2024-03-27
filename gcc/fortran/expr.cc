@@ -3517,6 +3517,7 @@ check_restricted (gfc_expr *e)
       if (e->error
 	    || sym->attr.in_common
 	    || sym->attr.use_assoc
+	    || sym->attr.used_in_submodule
 	    || sym->attr.dummy
 	    || sym->attr.implied_index
 	    || sym->attr.flavor == FL_PARAMETER
