@@ -2267,9 +2267,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This is a pointer to the character sequence held by the string.
        *  Modifying the characters in the sequence is allowed.
+       *
+       *  The standard requires this function to be `noexcept` but for the
+       *  Copy-On-Write string implementation it can throw.  This function
+       *  allows modifying the string contents directly, which means we
+       *  must copy-on-write to unshare it, which requires allocating memory.
       */
       _CharT*
-      data() noexcept
+      data() noexcept(false)
       {
 	_M_leak();
 	return _M_data();
