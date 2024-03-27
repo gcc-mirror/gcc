@@ -51,6 +51,7 @@
 #define __glibcxx_want_make_from_tuple
 #define __glibcxx_want_ranges_zip
 #define __glibcxx_want_tuple_like
+#define __glibcxx_want_constrained_equality
 #include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -250,17 +251,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_lib_tuple_like // >= C++23
   struct __tuple_like_tag_t { explicit __tuple_like_tag_t() = default; };
 
-  // These forward declarations are used by the operator<=> overload for
+  // This forward declaration is used by the operator<=> overload for
   // tuple-like types.
-  template<typename _Cat, typename _Tp, typename _Up>
+  template<typename _Cat, typename _Tp, typename _Up, typename _IndexSeq>
     constexpr _Cat
-    __tuple_cmp(const _Tp&, const _Up&, index_sequence<>);
-
-  template<typename _Cat, typename _Tp, typename _Up,
-	   size_t _Idx0, size_t... _Idxs>
-    constexpr _Cat
-    __tuple_cmp(const _Tp& __t, const _Up& __u,
-		index_sequence<_Idx0, _Idxs...>);
+    __tuple_cmp(const _Tp& __t, const _Up& __u, _IndexSeq);
 #endif // C++23
 
   /**
@@ -1848,7 +1843,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<__tuple_like _UTuple>
 	requires (!__is_tuple_v<_UTuple>)
 	friend constexpr bool
-	operator==(const tuple& __t, const _UTuple& __u)
+	operator== [[nodiscard]] (const tuple& __t, const _UTuple& __u)
 	{
 	  static_assert(sizeof...(_Elements) == tuple_size_v<_UTuple>,
 	      "tuple objects can only be compared if they have equal sizes.");
@@ -2521,6 +2516,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
+#if __cpp_lib_three_way_comparison
+  template<typename... _Tps, typename... _Ups>
+    requires (sizeof...(_Tps) == sizeof...(_Ups))
+      && (requires (const _Tps& __t, const _Ups& __u) {
+	{ __t == __u } -> __detail::__boolean_testable;
+      } && ...)
+    constexpr bool
+    operator== [[nodiscard]] (const tuple<_Tps...>& __t,
+			      const tuple<_Ups...>& __u)
+    {
+      return [&]<size_t... _Inds>(index_sequence<_Inds...>) {
+	// Fold == over the tuples until non-equal elements are found.
+	return ((std::get<_Inds>(__t) == std::get<_Inds>(__u)) && ...);
+      }(index_sequence_for<_Tps...>{});
+    }
+
+  template<typename _Cat, typename _Tp, typename _Up, typename _IndexSeq>
+    [[nodiscard]]
+    constexpr _Cat
+    __tuple_cmp(const _Tp& __t, const _Up& __u, _IndexSeq __indices)
+    {
+      _Cat __c = _Cat::equivalent;
+
+      // Set __c to the comparison result of two corresponding elements.
+      // Return true they are equivalent.
+      auto __cmp = [&]<size_t _Ind>(integral_constant<size_t, _Ind>) {
+	__c = __detail::__synth3way(std::get<_Ind>(__t), std::get<_Ind>(__u));
+	return __c == 0;
+      };
+
+      [&]<size_t... _Inds>(index_sequence<_Inds...>) {
+	// Fold __cmp over the tuples until non-equivalent elements are found.
+	(void)(__cmp(integral_constant<size_t, _Inds>{}) && ...);
+      }(__indices);
+
+      return __c;
+    }
+
+  template<typename... _Tps, typename... _Ups>
+    requires (sizeof...(_Tps) == sizeof...(_Ups))
+      && (requires { typename __detail::__synth3way_t<_Tps, _Ups>; } && ...)
+    constexpr
+    common_comparison_category_t<__detail::__synth3way_t<_Tps, _Ups>...>
+    operator<=> [[nodiscard]] (const tuple<_Tps...>& __t,
+			       const tuple<_Ups...>& __u)
+    {
+      using _Cat
+	= common_comparison_category_t<__detail::__synth3way_t<_Tps, _Ups>...>;
+      return std::__tuple_cmp<_Cat>(__t, __u, index_sequence_for<_Tps...>());
+    }
+#else
+
   // This class performs the comparison operations on tuples
   template<typename _Tp, typename _Up, size_t __i, size_t __size>
     struct __tuple_compare
@@ -2552,6 +2599,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename... _TElements, typename... _UElements>
+    _GLIBCXX_NODISCARD
     constexpr bool
     operator==(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
@@ -2564,36 +2612,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __compare::__eq(__t, __u);
     }
 
-#if __cpp_lib_three_way_comparison
-  template<typename _Cat, typename _Tp, typename _Up>
-    constexpr _Cat
-    __tuple_cmp(const _Tp&, const _Up&, index_sequence<>)
-    { return _Cat::equivalent; }
-
-  template<typename _Cat, typename _Tp, typename _Up,
-	   size_t _Idx0, size_t... _Idxs>
-    constexpr _Cat
-    __tuple_cmp(const _Tp& __t, const _Up& __u,
-		index_sequence<_Idx0, _Idxs...>)
-    {
-      auto __c
-	= __detail::__synth3way(std::get<_Idx0>(__t), std::get<_Idx0>(__u));
-      if (__c != 0)
-	return __c;
-      return std::__tuple_cmp<_Cat>(__t, __u, index_sequence<_Idxs...>());
-    }
-
-  template<typename... _Tps, typename... _Ups>
-    constexpr
-    common_comparison_category_t<__detail::__synth3way_t<_Tps, _Ups>...>
-    operator<=>(const tuple<_Tps...>& __t, const tuple<_Ups...>& __u)
-    {
-      using _Cat
-	= common_comparison_category_t<__detail::__synth3way_t<_Tps, _Ups>...>;
-      return std::__tuple_cmp<_Cat>(__t, __u, index_sequence_for<_Tps...>());
-    }
-#else
   template<typename... _TElements, typename... _UElements>
+    _GLIBCXX_NODISCARD
     constexpr bool
     operator<(const tuple<_TElements...>& __t,
 	      const tuple<_UElements...>& __u)
@@ -2607,24 +2627,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename... _TElements, typename... _UElements>
+    _GLIBCXX_NODISCARD
     constexpr bool
     operator!=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     { return !(__t == __u); }
 
   template<typename... _TElements, typename... _UElements>
+    _GLIBCXX_NODISCARD
     constexpr bool
     operator>(const tuple<_TElements...>& __t,
 	      const tuple<_UElements...>& __u)
     { return __u < __t; }
 
   template<typename... _TElements, typename... _UElements>
+    _GLIBCXX_NODISCARD
     constexpr bool
     operator<=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     { return !(__u < __t); }
 
   template<typename... _TElements, typename... _UElements>
+    _GLIBCXX_NODISCARD
     constexpr bool
     operator>=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)

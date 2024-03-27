@@ -1238,6 +1238,15 @@ ftms = {
 };
 
 ftms = {
+  name = constrained_equality;
+  values = {
+    v = 202403;
+    cxxmin = 20;
+    extra_cond = "__glibcxx_three_way_comparison";
+  };
+};
+
+ftms = {
   name = erase_if;
   values = {
     v = 202002;

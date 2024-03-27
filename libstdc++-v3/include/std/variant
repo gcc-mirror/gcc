@@ -33,6 +33,7 @@
 
 #define __glibcxx_want_freestanding_variant
 #define __glibcxx_want_variant
+#define __glibcxx_want_constrained_equality
 #include <bits/version.h>
 
 #ifdef __cpp_lib_variant // C++ >= 17
@@ -1236,9 +1237,19 @@ namespace __variant
 
   struct monostate { };
 
+#if __cpp_lib_concepts
+# define _VARIANT_RELATION_FUNCTION_CONSTRAINTS(TYPES, OP) \
+  requires ((requires (const TYPES& __t) { \
+	{ __t OP __t } -> __detail::__boolean_testable; }) && ...)
+#else
+# define _VARIANT_RELATION_FUNCTION_CONSTRAINTS(TYPES, OP)
+#endif
+
 #define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
   template<typename... _Types> \
-    constexpr bool operator __OP(const variant<_Types...>& __lhs, \
+    _VARIANT_RELATION_FUNCTION_CONSTRAINTS(_Types, __OP) \
+    constexpr bool \
+    operator __OP [[nodiscard]] (const variant<_Types...>& __lhs, \
 				 const variant<_Types...>& __rhs) \
     { \
       bool __ret = true; \
@@ -1690,21 +1701,6 @@ namespace __variant
       template<size_t _Np, typename _Vp>
 	friend constexpr decltype(auto)
 	__detail::__variant::__get(_Vp&& __v) noexcept;
-
-#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP) \
-      template<typename... _Tp> \
-	friend constexpr bool \
-	operator __OP(const variant<_Tp...>& __lhs, \
-		      const variant<_Tp...>& __rhs);
-
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(<)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(<=)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(==)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(!=)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(>=)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(>)
-
-#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
     };
 
   template<size_t _Np, typename... _Types>
