@@ -1340,6 +1340,9 @@ EnumValue
 Enum(apx_features) String(nf) Value(apx_nf) Set(6)
 
 EnumValue
+Enum(apx_features) String(ccmp) Value(apx_ccmp) Set(7)
+
+EnumValue
 Enum(apx_features) String(all) Value(apx_all) Set(1)
 
 mapx-inline-asm-use-gpr32

@@ -140,8 +140,10 @@ enum apx_features {
   apx_push2pop2 = 1 << 1,
   apx_ndd = 1 << 2,
   apx_ppx = 1 << 3,
-  apx_nf = 1<< 4,
-  apx_all = apx_egpr | apx_push2pop2 | apx_ndd | apx_ppx | apx_nf,
+  apx_nf = 1 << 4,
+  apx_ccmp = 1 << 5,
+  apx_all = apx_egpr | apx_push2pop2 | apx_ndd
+	    | apx_ppx | apx_nf | apx_ccmp,
 };
 
 #endif

@@ -433,6 +433,22 @@ static bool i386_asm_output_addr_const_extra (FILE *, rtx);
 static bool ix86_can_inline_p (tree, tree);
 static unsigned int ix86_minimum_incoming_stack_boundary (bool);
 
+typedef enum ix86_flags_cc
+{
+  X86_CCO = 0, X86_CCNO, X86_CCB, X86_CCNB,
+  X86_CCE, X86_CCNE, X86_CCBE, X86_CCNBE,
+  X86_CCS, X86_CCNS, X86_CCP, X86_CCNP,
+  X86_CCL, X86_CCNL, X86_CCLE, X86_CCNLE
+} ix86_cc;
+
+static const char *ix86_ccmp_dfv_mapping[] =
+{
+  "{dfv=of}", "{dfv=}", "{dfv=cf}", "{dfv=}",
+  "{dfv=zf}", "{dfv=}", "{dfv=cf, zf}", "{dfv=}",
+  "{dfv=sf}", "{dfv=}", "{dfv=cf}", "{dfv=}",
+  "{dfv=sf}", "{dfv=sf, of}", "{dfv=sf, of, zf}", "{dfv=sf, of}"
+};
+
 
 /* Whether -mtune= or -march= were specified */
 int ix86_tune_defaulted;
@@ -13690,6 +13706,7 @@ print_reg (rtx x, int code, FILE *file)
    M -- print addr32 prefix for TARGET_X32 with VSIB address.
    ! -- print NOTRACK prefix for jxx/call/ret instructions if required.
    N -- print maskz if it's constant 0 operand.
+   G -- print embedded flag for ccmp/ctest.
  */
 
 void
@@ -14081,6 +14098,14 @@ ix86_print_operand (FILE *file, rtx x, int code)
 			      code == 'c' || code == 'f',
 			      code == 'F' || code == 'f',
 			      file);
+	  return;
+
+	case 'G':
+	  {
+	    int dfv = INTVAL (x);
+	    const char *dfv_suffix = ix86_ccmp_dfv_mapping[dfv];
+	    fputs (dfv_suffix, file);
+	  }
 	  return;
 
 	case 'H':
@@ -16464,6 +16489,24 @@ ix86_convert_const_vector_to_integer (rtx op, machine_mode mode)
     }
 
   return val.to_shwi ();
+}
+
+int ix86_get_flags_cc (rtx_code code)
+{
+  switch (code)
+    {
+      case NE: return X86_CCNE;
+      case EQ: return X86_CCE;
+      case GE: return X86_CCNL;
+      case GT: return X86_CCNLE;
+      case LE: return X86_CCLE;
+      case LT: return X86_CCL;
+      case GEU: return X86_CCNB;
+      case GTU: return X86_CCNBE;
+      case LEU: return X86_CCBE;
+      case LTU: return X86_CCB;
+      default: return -1;
+    }
 }
 
 /* Return TRUE or FALSE depending on whether the first SET in INSN
@@ -26950,6 +26993,13 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_MEMTAG_TAG_SIZE
 #define TARGET_MEMTAG_TAG_SIZE ix86_memtag_tag_size
+
+#undef TARGET_GEN_CCMP_FIRST
+#define TARGET_GEN_CCMP_FIRST ix86_gen_ccmp_first
+
+#undef TARGET_GEN_CCMP_NEXT
+#define TARGET_GEN_CCMP_NEXT ix86_gen_ccmp_next
+
 
 static bool
 ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)

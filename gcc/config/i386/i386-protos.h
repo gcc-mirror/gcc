@@ -243,6 +243,11 @@ extern void ix86_expand_atomic_fetch_op_loop (rtx, rtx, rtx, enum rtx_code,
 extern void ix86_expand_cmpxchg_loop (rtx *, rtx, rtx, rtx, rtx, rtx,
 				      bool, rtx_code_label *);
 extern rtx ix86_expand_fast_convert_bf_to_sf (rtx);
+extern rtx ix86_gen_ccmp_first (rtx_insn **, rtx_insn **, enum rtx_code,
+				tree, tree);
+extern rtx ix86_gen_ccmp_next (rtx_insn **, rtx_insn **, rtx,
+			       enum rtx_code, tree, tree, enum rtx_code);
+extern int ix86_get_flags_cc (enum rtx_code);
 extern rtx ix86_memtag_untagged_pointer (rtx, rtx);
 extern bool ix86_memtag_can_tag_addresses (void);
 

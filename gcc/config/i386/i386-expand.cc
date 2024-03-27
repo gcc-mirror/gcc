@@ -25352,4 +25352,125 @@ ix86_expand_fast_convert_bf_to_sf (rtx val)
   return ret;
 }
 
+rtx
+ix86_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
+			rtx_code code, tree treeop0, tree treeop1)
+{
+  if (!TARGET_APX_CCMP)
+    return NULL_RTX;
+
+  rtx op0, op1, res;
+  machine_mode op_mode;
+
+  start_sequence ();
+  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+
+  op_mode = GET_MODE (op0);
+  if (op_mode == VOIDmode)
+    op_mode = GET_MODE (op1);
+
+  if (!(op_mode == DImode || op_mode == SImode || op_mode == HImode
+	|| op_mode == QImode))
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  /* Canonicalize the operands according to mode.  */
+  if (!nonimmediate_operand (op0, op_mode))
+    op0 = force_reg (op_mode, op0);
+  if (!x86_64_general_operand (op1, op_mode))
+    op1 = force_reg (op_mode, op1);
+
+  *prep_seq = get_insns ();
+  end_sequence ();
+
+  start_sequence ();
+
+  res = ix86_expand_compare (code, op0, op1);
+
+  if (!res)
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+  *gen_seq = get_insns ();
+  end_sequence ();
+
+  return res;
+}
+
+rtx
+ix86_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
+		       rtx_code cmp_code, tree treeop0, tree treeop1,
+		       rtx_code bit_code)
+{
+  if (!TARGET_APX_CCMP)
+    return NULL_RTX;
+
+  rtx op0, op1, target;
+  machine_mode op_mode, cmp_mode, cc_mode = CCmode;
+  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (treeop0));
+  insn_code icode;
+  rtx_code prev_code;
+  struct expand_operand ops[5];
+  int dfv;
+
+  push_to_sequence (*prep_seq);
+  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+
+  cmp_mode = op_mode = GET_MODE (op0);
+
+  if (!(op_mode == DImode || op_mode == SImode || op_mode == HImode
+	|| op_mode == QImode))
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  icode = code_for_ccmp (op_mode);
+
+  op0 = prepare_operand (icode, op0, 2, op_mode, cmp_mode, unsignedp);
+  op1 = prepare_operand (icode, op1, 3, op_mode, cmp_mode, unsignedp);
+  if (!op0 || !op1)
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  *prep_seq = get_insns ();
+  end_sequence ();
+
+  target = gen_rtx_REG (cc_mode, FLAGS_REG);
+  dfv = ix86_get_flags_cc ((rtx_code) cmp_code);
+
+  prev_code = GET_CODE (prev);
+
+  if (bit_code != AND)
+    prev_code = reverse_condition (prev_code);
+  else
+    dfv = (int)(dfv ^ 1);
+
+  prev = gen_rtx_fmt_ee (prev_code, VOIDmode, XEXP (prev, 0),
+			 const0_rtx);
+
+  create_fixed_operand (&ops[0], target);
+  create_fixed_operand (&ops[1], prev);
+  create_fixed_operand (&ops[2], op0);
+  create_fixed_operand (&ops[3], op1);
+  create_fixed_operand (&ops[4], GEN_INT (dfv));
+
+  push_to_sequence (*gen_seq);
+  if (!maybe_expand_insn (icode, 5, ops))
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  *gen_seq = get_insns ();
+  end_sequence ();
+
+  return gen_rtx_fmt_ee ((rtx_code) cmp_code, VOIDmode, target, const0_rtx);
+}
+
 #include "gt-i386-expand.h"
