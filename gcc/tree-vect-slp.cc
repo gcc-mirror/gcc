@@ -2759,7 +2759,9 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
     }
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
-      dump_printf_loc (metadata, user_loc, "\tstmt %u %G", i, stmt_info->stmt);
+      dump_printf_loc (metadata, user_loc, "\t%sstmt %u %G",
+		       STMT_VINFO_LIVE_P (stmt_info) ? "[l] " : "",
+		       i, stmt_info->stmt);
   else
     {
       dump_printf_loc (metadata, user_loc, "\t{ ");
@@ -2834,6 +2836,23 @@ dot_slp_tree (const char *fname, slp_tree node)
       debug_dump_context ctx (f);
       hash_set<slp_tree> visited;
       dot_slp_tree (f, node, visited);
+    }
+  fflush (f);
+  fprintf (f, "}\n");
+  fclose (f);
+}
+
+DEBUG_FUNCTION void
+dot_slp_tree (const char *fname, const vec<slp_instance> &slp_instances)
+{
+  FILE *f = fopen (fname, "w");
+  fprintf (f, "digraph {\n");
+  fflush (f);
+    {
+      debug_dump_context ctx (f);
+      hash_set<slp_tree> visited;
+      for (auto inst : slp_instances)
+	dot_slp_tree (f, SLP_INSTANCE_TREE (inst), visited);
     }
   fflush (f);
   fprintf (f, "}\n");
