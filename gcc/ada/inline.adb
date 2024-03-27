@@ -2110,6 +2110,11 @@ package body Inline is
       Is_Serious    : Boolean := False;
       Suppress_Info : Boolean := False)
    is
+      Inline_Prefix : constant String := "cannot inline";
+
+      function Starts_With (S, Prefix : String) return Boolean is
+        (S (S'First .. S'First + Prefix'Length - 1) = Prefix);
+
    begin
       --  In GNATprove mode, inlining is the technical means by which the
       --  higher-level goal of contextual analysis is reached, so issue
@@ -2117,20 +2122,15 @@ package body Inline is
       --  subprogram, rather than failure to inline it.
 
       if GNATprove_Mode
-        and then Msg (Msg'First .. Msg'First + 12) = "cannot inline"
+        and then Starts_With (Msg, Inline_Prefix)
       then
          declare
-            Len1 : constant Positive :=
-              String'("cannot inline")'Length;
-            Len2 : constant Positive :=
-              String'("info: no contextual analysis of")'Length;
+            Msg_Txt : constant String :=
+              Msg (Msg'First + Inline_Prefix'Length .. Msg'Last);
 
-            New_Msg : String (1 .. Msg'Length + Len2 - Len1);
-
+            New_Msg : constant String :=
+              "info: no contextual analysis of" & Msg_Txt;
          begin
-            New_Msg (1 .. Len2) := "info: no contextual analysis of";
-            New_Msg (Len2 + 1 .. Msg'Length + Len2 - Len1) :=
-              Msg (Msg'First + Len1 .. Msg'Last);
             Cannot_Inline (New_Msg, N, Subp, Is_Serious, Suppress_Info);
             return;
          end;
