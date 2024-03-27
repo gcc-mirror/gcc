@@ -5174,7 +5174,11 @@ bool
 verify_type_context (location_t loc, type_context_kind context,
 		     const_tree type, bool silent_p)
 {
-  if (!sizeless_type_p (type))
+  const_tree tmp = type;
+  if (omp_type_context (context) && POINTER_TYPE_P (type))
+    tmp = strip_pointer_types (tmp);
+
+  if (!sizeless_type_p (tmp))
     return true;
 
   switch (context)
@@ -5234,6 +5238,37 @@ verify_type_context (location_t loc, type_context_kind context,
       if (!silent_p)
 	error_at (loc, "capture by copy of SVE type %qT", type);
       return false;
+
+    case TCTX_OMP_MAP:
+      if (!silent_p)
+	error_at (loc, "SVE type %qT not allowed in %<map%> clause", type);
+      return false;
+
+    case TCTX_OMP_MAP_IMP_REF:
+      if (!silent_p)
+	error ("cannot reference %qT object types in %<target%> region", type);
+      return false;
+
+    case TCTX_OMP_PRIVATE:
+      if (!silent_p)
+	error_at (loc, "SVE type %qT not allowed in"
+		  " %<target%> %<private%> clause", type);
+      return false;
+
+    case TCTX_OMP_FIRSTPRIVATE:
+      if (!silent_p)
+	error_at (loc, "SVE type %qT not allowed in"
+		  " %<target%> %<firstprivate%> clause", type);
+      return false;
+
+    case TCTX_OMP_DEVICE_ADDR:
+      if (!silent_p)
+	error_at (loc, "SVE type %qT not allowed in"
+		  " %<target%> device clauses", type);
+      return false;
+
+    default:
+      break;
     }
   gcc_unreachable ();
 }

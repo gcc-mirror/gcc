@@ -9222,11 +9222,18 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 			  | GOVD_MAP_ALLOC_ONLY)) == flags)
 	    {
 	      tree type = TREE_TYPE (decl);
+	      location_t loc = DECL_SOURCE_LOCATION (decl);
 
 	      if (gimplify_omp_ctxp->target_firstprivatize_array_bases
 		  && omp_privatize_by_reference (decl))
 		type = TREE_TYPE (type);
-	      if (!omp_mappable_type (type))
+
+	      if (!verify_type_context (loc, TCTX_OMP_MAP_IMP_REF, type))
+		/* Check if TYPE can appear in a target region.
+		   verify_type_context has already issued an error if it
+		   can't.  */
+		nflags |= GOVD_MAP | GOVD_EXPLICIT;
+	      else if (!omp_mappable_type (type))
 		{
 		  error ("%qD referenced in target region does not have "
 			 "a mappable type", decl);
@@ -12956,12 +12963,44 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
       unsigned int flags;
       tree decl;
       auto_vec<omp_addr_token *, 10> addr_tokens;
+      tree op = NULL_TREE;
+      location_t loc = OMP_CLAUSE_LOCATION (c);
 
       if (grp_end && c == OMP_CLAUSE_CHAIN (grp_end))
 	{
 	  grp_start_p = NULL;
 	  grp_end = NULL_TREE;
 	}
+
+      if (code == OMP_TARGET
+	  || code == OMP_TARGET_DATA
+	  || code == OMP_TARGET_ENTER_DATA
+	  || code == OMP_TARGET_EXIT_DATA)
+	/* Do some target-specific type checks for map operands.  */
+	switch (OMP_CLAUSE_CODE (c))
+	  {
+	  case OMP_CLAUSE_MAP:
+	    op = OMP_CLAUSE_OPERAND (c, 0);
+	    verify_type_context (loc, TCTX_OMP_MAP, TREE_TYPE (op));
+	    break;
+	  case OMP_CLAUSE_PRIVATE:
+	    op = OMP_CLAUSE_OPERAND (c, 0);
+	    verify_type_context (loc, TCTX_OMP_PRIVATE, TREE_TYPE (op));
+	    break;
+	  case OMP_CLAUSE_FIRSTPRIVATE:
+	    op = OMP_CLAUSE_OPERAND (c, 0);
+	    verify_type_context (loc, TCTX_OMP_FIRSTPRIVATE, TREE_TYPE (op));
+	    break;
+	  case OMP_CLAUSE_IS_DEVICE_PTR:
+	  case OMP_CLAUSE_USE_DEVICE_ADDR:
+	  case OMP_CLAUSE_USE_DEVICE_PTR:
+	  case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	    op = OMP_CLAUSE_OPERAND (c, 0);
+	    verify_type_context (loc, TCTX_OMP_DEVICE_ADDR, TREE_TYPE (op));
+	    break;
+	  default:
+	    break;
+	  }
 
       switch (OMP_CLAUSE_CODE (c))
 	{
