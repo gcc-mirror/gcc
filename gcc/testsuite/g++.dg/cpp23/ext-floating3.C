@@ -4,6 +4,7 @@
 // And some further tests.
 // { dg-do compile { target { c++23 && { i?86-*-linux* x86_64-*-linux* } } } }
 // { dg-options "" }
+// { dg-add-options float16 }
 
 #include "ext-floating.h"
 

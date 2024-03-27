@@ -3829,6 +3829,9 @@ proc check_effective_target_bfloat16_runtime {} {
 }
 
 proc add_options_for_bfloat16 { flags } {
+    if { [istarget i?86-*-*] || [istarget x86_64-*-*] } {
+	return "$flags -msse2"
+    }
     return "$flags"
 }
 
