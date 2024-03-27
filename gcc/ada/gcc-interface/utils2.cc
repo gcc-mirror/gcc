@@ -2887,7 +2887,11 @@ gnat_save_expr (tree exp)
 
 /* Protect EXP for immediate reuse.  This is a variant of gnat_save_expr that
    is optimized under the assumption that EXP's value doesn't change before
-   its subsequent reuse(s) except through its potential reevaluation.  */
+   its subsequent reuse(s) except potentially through its reevaluation.
+
+   gnat_protect_expr guarantees that multiple evaluations of the expression
+   will not generate multiple side effects, whereas gnat_save_expr further
+   guarantees that all evaluations will yield the same result.  */
 
 tree
 gnat_protect_expr (tree exp)
@@ -2931,6 +2935,13 @@ gnat_protect_expr (tree exp)
       && INDIRECT_REF_P (TREE_OPERAND (exp, 0)))
     return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
 		   TREE_OPERAND (exp, 1), NULL_TREE);
+
+  /* An atomic load is an INDIRECT_REF of its first argument, so apply the
+     same transformation as in the INDIRECT_REF case above.  */
+  if (code == CALL_EXPR && call_is_atomic_load (exp))
+    return build_call_expr (TREE_OPERAND (CALL_EXPR_FN (exp), 0), 2,
+			    gnat_protect_expr (CALL_EXPR_ARG (exp, 0)),
+			    CALL_EXPR_ARG (exp, 1));
 
   /* If this is a COMPONENT_REF of a fat pointer, save the entire fat pointer.
      This may be more efficient, but will also allow us to more easily find
