@@ -1701,8 +1701,7 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
          on earlier blocks first is better.
 	 ???  Basic blocks are by no means guaranteed to be ordered in
 	 optimal order for this iteration.  */
-      bb_index = bitmap_first_set_bit (work_set);
-      bitmap_clear_bit (work_set, bb_index);
+      bb_index = bitmap_clear_first_set_bit (work_set);
 
       /* Since the registration of NEW -> OLD name mappings is done
 	 separately from the call to update_ssa, when updating the SSA
@@ -1712,12 +1711,14 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
       gcc_checking_assert (bb_index
 			   < (unsigned) last_basic_block_for_fn (cfun));
 
-      EXECUTE_IF_AND_COMPL_IN_BITMAP (&dfs[bb_index], phi_insertion_points,
-	                              0, i, bi)
-	{
+      /* The population counts of the dominance frontiers is low
+	 compared to that of phi_insertion_points which approaches
+	 the IDF and of work_set which is at most that of the IDF
+	 as well.  That makes iterating over the DFS bitmap preferential
+	 to whole bitmap operations involving also phi_insertion_points.  */
+      EXECUTE_IF_SET_IN_BITMAP (&dfs[bb_index], 0, i, bi)
+	if (bitmap_set_bit (phi_insertion_points, i))
 	  bitmap_set_bit (work_set, i);
-	  bitmap_set_bit (phi_insertion_points, i);
-	}
     }
 
   return phi_insertion_points;
