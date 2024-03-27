@@ -1,3 +1,57 @@
+2024-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-feature-deps.h: Use constexpr for
+	out-of-line statics.
+
+2024-03-26  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	PR target/114431
+	* btfout.cc (get_name_for_datasec_entry): Add function.
+	(btf_asm_datasec_entry): Print label when possible.
+
+2024-03-26  Richard Ball  <richard.ball@arm.com>
+
+	PR target/114272
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE):
+	Change SCHEDULER_IDENT from cortexa55 to cortexa53
+	for Cortex-A510 and Cortex-A520.
+
+2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111151
+	* fold-const.cc (extract_muldiv_1) <case MAX_EXPR>: Punt for
+	MULT_EXPR altogether, or for MAX_EXPR if c is -1.
+
+2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* tsan.cc (instrument_expr): Punt on non-generic address space
+	accesses.
+
+2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114471
+	* tree-vect-stmts.cc (vectorizable_operation): Verify operand
+	types are compatible with the result type.
+
+2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114464
+	* tree-vect-loop.cc (vectorizable_recurr): Verify the latch
+	vector type is compatible with what we chose for the recurrence.
+
+2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgloopmanip.cc (update_loop_exit_probability_scale_dom_bbs):
+	Fix comment typo - multple -> multiple.
+	* config/i386/x86-tune.def (X86_TUNE_ACCUMULATE_OUTGOING_ARGS):
+	Likewise.
+
+2024-03-26  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Predefine
+	__mips_strict_alignment if STRICT_ALIGNMENT.
+
 2024-03-25  Richard Biener  <rguenther@suse.de>
 
 	* config.gcc (amdgcn): Add gfx1036 entries.

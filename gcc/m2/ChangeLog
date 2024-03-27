@@ -1,3 +1,72 @@
+2024-03-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114478
+	* gm2-gcc/m2builtins.cc (struct builtin_macro_definition): New struct.
+	(lookup_builtin_macro): New function.
+	(m2builtins_BuildBuiltinTree): Rewrite to lookup builtin function
+	and builtin macro.
+	(lookup_builtin_function): New function.
+	(define_builtin): Rename parameter type to prototype push macro
+	definition to builtin_macros vector.
+	(define_builtin_ext): New function.
+	(define_builtin_math): New function.
+	(m2builtins_init): Add isgreater, isless, isgreaterequal,
+	islessequal, islessgreater, isunordered, isnormal to macro definitions.
+	* gm2-libs/Builtins.def (isgreater): New procedure function.
+	(isgreaterf): Ditto.
+	(isgreaterl): Ditto.
+	(isgreaterequal): Ditto.
+	(isgreaterequalf): Ditto.
+	(isgreaterequall): Ditto.
+	(isless): Ditto.
+	(islessf): Ditto.
+	(islessl): Ditto.
+	(islessequal): Ditto.
+	(islessequalf): Ditto.
+	(islessequall): Ditto.
+	(islessgreater): Ditto.
+	(islessgreaterf): Ditto.
+	(islessgreaterl): Ditto.
+	(isunordered): Ditto.
+	(isunorderedf): Ditto.
+	(isunorderedl): Ditto.
+	(iseqsig): Ditto.
+	(iseqsigf): Ditto.
+	(iseqsigl): Ditto.
+	(isnormal): Ditto.
+	(isnormalf): Ditto.
+	(isnormall): Ditto.
+	(isinf_sign): Ditto.
+	(isinf_signf): Ditto.
+	(isinf_signl): Ditto.
+	* gm2-libs/Builtins.mod (isgreater): New procedure function.
+	(isgreaterf): Ditto.
+	(isgreaterl): Ditto.
+	(isgreaterequal): Ditto.
+	(isgreaterequalf): Ditto.
+	(isgreaterequall): Ditto.
+	(isless): Ditto.
+	(islessf): Ditto.
+	(islessl): Ditto.
+	(islessequal): Ditto.
+	(islessequalf): Ditto.
+	(islessequall): Ditto.
+	(islessgreater): Ditto.
+	(islessgreaterf): Ditto.
+	(islessgreaterl): Ditto.
+	(isunordered): Ditto.
+	(isunorderedf): Ditto.
+	(isunorderedl): Ditto.
+	(iseqsig): Ditto.
+	(iseqsigf): Ditto.
+	(iseqsigl): Ditto.
+	(isnormal): Ditto.
+	(isnormalf): Ditto.
+	(isnormall): Ditto.
+	(isinf_sign): Ditto.
+	(isinf_signf): Ditto.
+	(isinf_signl): Ditto.
+
 2024-03-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (doc/m2.pdf): Add line break.

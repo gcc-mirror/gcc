@@ -1,3 +1,40 @@
+2024-03-26  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/std/generator (generator::_Iterator::operator*): Fix
+	return type.
+	* testsuite/24_iterators/range_generators/iter_deref_return.cc:
+	New test.
+
+2024-03-26  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/std/generator: Fix _V badname.
+
+2024-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/19_diagnostics/stacktrace/current.cc: Check for
+	__cpp_lib_stacktrace instead of check for stacktrace ET.
+	* testsuite/19_diagnostics/stacktrace/entry.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/hash.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/output.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/synopsis.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/version.cc: Likewise.
+	* testsuite/23_containers/vector/debug/assign4_backtrace_neg.cc:
+	Likewise.
+	* testsuite/lib/libstdc++.exp (check_effective_target_stacktrace):
+	Remove.
+
+2024-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/dg-options.exp (dg-require-cpp-feature-test):
+	New proc.
+	* testsuite/lib/libstdc++.exp (check_v3_target_cpp_feature_test):
+	New proc.
+	* testsuite/std/text_encoding/cons.cc: Use new directive to skip
+	the test if the __cpp_lib_text_encoding feature test macro is
+	not defined.
+	* testsuite/std/text_encoding/requirements.cc: Likewise.
+
 2024-03-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/std/text_encoding/requirements.cc: #undef the

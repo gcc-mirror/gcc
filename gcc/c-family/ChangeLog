@@ -1,3 +1,10 @@
+2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112724
+	* c-pretty-print.cc (pp_c_cast_expression,
+	c_pretty_printer::expression): Handle EXCESS_PRECISION_EXPR like
+	NOP_EXPR.
+
 2024-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/114364

@@ -1,3 +1,8 @@
+2024-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/107031
+	* io/file_pos.c (st_endfile): Remove call to next_record().
+
 2024-03-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/105437

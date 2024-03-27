@@ -1,3 +1,8 @@
+2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112724
+	* error.cc (dump_expr): Handle EXCESS_PRECISION_EXPR like NOP_EXPR.
+
 2024-03-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/114349

@@ -1,3 +1,70 @@
+2024-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/107031
+	* gfortran.dg/endfile_5.f90: New test.
+
+2024-03-26  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.dg/debug/btf/btf-datasec-1.c: Correct for new
+	implementation.
+	* gcc.dg/debug/btf/btf-datasec-2.c: Likewise
+	* gcc.dg/debug/btf/btf-pr106773.c: Likewise
+
+2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111151
+	PR testsuite/114486
+	* gcc.c-torture/execute/pr111151.c (main): Fix up expected value for
+	f.
+
+2024-03-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114478
+	* gm2/builtins/run/pass/builtins-run-pass.exp: New test.
+	* gm2/builtins/run/pass/testcomparisons.mod: New test.
+	* gm2/builtins/run/pass/testisnormal.mod: New test.
+	* gm2/pimlib/run/pass/testchar.mod: New test.
+
+2024-03-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100557
+	* g++.dg/cpp2a/concepts-pr100557.C: New test.
+
+2024-03-26  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/decltype-1_a.C: Add missing } to dg-module-do
+	directive.
+	* g++.dg/modules/lambda-5_a.C: Likewise.
+
+2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/pr113126.c: Add -Wno-psabi as dg-additional-options.
+
+2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111151
+	* gcc.c-torture/execute/pr111151.c: New test.
+
+2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* gcc.dg/tsan/pr111736.c: New test.
+
+2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114471
+	* gcc.dg/vect/pr114471.c: New testcase.
+
+2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114464
+	* g++.dg/vect/pr114464.cc: New testcase.
+
+2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114027
+	* gcc.dg/vect/pr114027.c: Fix iteration count.
+
 2024-03-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/114349
