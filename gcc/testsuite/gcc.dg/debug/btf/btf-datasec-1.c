@@ -11,16 +11,16 @@
 
 /* { dg-do compile )  */
 /* { dg-options "-O0 -gbtf -dA" } */
-/* { dg-options "-O0 -gbtf -dA -msdata=none" { target { { powerpc*-*-* } && ilp32 } } } */
-/* { dg-options "-O0 -gbtf -dA -msmall-data-limit=0" { target { riscv*-*-* } } } */
-/* { dg-options "-O0 -gbtf -dA -G0" { target { nios2-*-* } } } */
+/* { dg-additional-options "-msdata=none" { target { { powerpc*-*-* } && ilp32 } } } */
+/* { dg-additional-options "-msmall-data-limit=0" { target { riscv*-*-* } } } */
+/* { dg-additional-options "-G0" { target { nios2-*-* } } } */
 
 /* Check for two DATASEC entries with vlen 3, and one with vlen 1.  */
 /* { dg-final { scan-assembler-times "0xf000003\[\t \]+\[^\n\]*btt_info" 2 } } */
 /* { dg-final { scan-assembler-times "0xf000001\[\t \]+\[^\n\]*btt_info" 1 } } */
 
 /* The offset entry for each variable in a DATSEC should contain a label.  */
-/* { dg-final { scan-assembler-times ".4byte\[\t \]\[a-e\]\[\t \]+\[^\n\]*bts_offset" 5 } } */
+/* { dg-final { scan-assembler-times "(?:(?:\\.4byte|\\.long|data4\\.ua|\\.ualong|\\.uaword|\\.dword|long|dc\\.l|\\.word)\[\t \]|\\.vbyte\t4,\[\t \]?)\[a-e\]\[\t \]+\[^\n\]*bts_offset" 5 } } */
 /* { dg-final { scan-assembler-times "my_cstruct\[\t \]+\[^\n\]*bts_offset" 1 } } */
 /* { dg-final { scan-assembler-times "bigarr\[\t \]+\[^\n\]*bts_offset" 1 } } */
 
