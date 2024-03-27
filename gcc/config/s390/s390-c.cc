@@ -275,7 +275,9 @@ s390_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
       /* __vector long __bool a; */
       if (ident == C_CPP_HASHNODE (__bool_keyword))
 	expand_bool_p = true;
-      else
+
+      /* If there are more tokens to check.  */
+      else if (ident)
 	{
 	  /* Triggered with: __vector long long __bool a; */
 	  do
