@@ -3508,6 +3508,9 @@ template <typename _Abi, typename>
 #ifdef __clang__
 	    return __movm<_Np, _Tp>(__k._M_data) ? __v._M_data - __pm_one : __v._M_data;
 #else // __clang__
+	    using _TV = __vector_type_t<_Tp, _Np>;
+	    constexpr size_t __bytes = sizeof(__v) < 16 ? 16 : sizeof(__v);
+	    constexpr size_t __width = __bytes / sizeof(_Tp);
 	    if constexpr (is_integral_v<_Tp>)
 	      {
 		constexpr bool __lp64 = sizeof(long) == sizeof(long long);
@@ -3517,11 +3520,11 @@ template <typename _Abi, typename>
 			      std::conditional_t<__lp64, long long, int>,
 			      std::conditional_t<
 				std::is_same_v<_Ip, signed char>, char, _Ip>>;
-		const auto __value = __vector_bitcast<_Up>(__v._M_data);
+		const auto __value = __intrin_bitcast<__vector_type_t<_Up, __width>>(__v._M_data);
 #define _GLIBCXX_SIMD_MASK_SUB(_Sizeof, _Width, _Instr)                        \
-  if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__v) == _Width)               \
-    return __vector_bitcast<_Tp>(__builtin_ia32_##_Instr##_mask(__value,       \
-	     __vector_broadcast<_Np>(_Up(__pm_one)), __value, __k._M_data))
+  if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__value) == _Width)           \
+    return __intrin_bitcast<_TV>(__builtin_ia32_##_Instr##_mask(__value,       \
+	     __vector_broadcast<__width>(_Up(__pm_one)), __value, __k._M_data))
 		_GLIBCXX_SIMD_MASK_SUB(1, 64, psubb512);
 		_GLIBCXX_SIMD_MASK_SUB(1, 32, psubb256);
 		_GLIBCXX_SIMD_MASK_SUB(1, 16, psubb128);
@@ -3538,16 +3541,17 @@ template <typename _Abi, typename>
 	      }
 	    else
 	      {
+		const auto __value = __intrin_bitcast<__vector_type_t<_Tp, __width>>(__v._M_data);
 #define _GLIBCXX_SIMD_MASK_SUB_512(_Sizeof, _Width, _Instr)                    \
-  if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__v) == _Width)               \
+  if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__value) == _Width)           \
     return __builtin_ia32_##_Instr##_mask(                                     \
-	     __v._M_data, __vector_broadcast<_Np>(_Tp(__pm_one)), __v._M_data, \
+	     __value, __vector_broadcast<__width>(_Tp(__pm_one)), __value,     \
 	     __k._M_data, _MM_FROUND_CUR_DIRECTION)
 #define _GLIBCXX_SIMD_MASK_SUB(_Sizeof, _Width, _Instr)                        \
-  if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__v) == _Width)               \
-    return __builtin_ia32_##_Instr##_mask(                                     \
-	     __v._M_data, __vector_broadcast<_Np>(_Tp(__pm_one)), __v._M_data, \
-	     __k._M_data)
+  if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__value) == _Width)           \
+    return __intrin_bitcast<_TV>(__builtin_ia32_##_Instr##_mask(               \
+	     __value, __vector_broadcast<__width>(_Tp(__pm_one)), __value,     \
+	     __k._M_data))
 		_GLIBCXX_SIMD_MASK_SUB_512(4, 64, subps512);
 		_GLIBCXX_SIMD_MASK_SUB(4, 32, subps256);
 		_GLIBCXX_SIMD_MASK_SUB(4, 16, subps128);
