@@ -3538,17 +3538,23 @@ template <typename _Abi, typename>
 	      }
 	    else
 	      {
-#define _GLIBCXX_SIMD_MASK_SUB(_Sizeof, _Width, _Instr)                        \
+#define _GLIBCXX_SIMD_MASK_SUB_512(_Sizeof, _Width, _Instr)                    \
   if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__v) == _Width)               \
     return __builtin_ia32_##_Instr##_mask(                                     \
 	     __v._M_data, __vector_broadcast<_Np>(_Tp(__pm_one)), __v._M_data, \
 	     __k._M_data, _MM_FROUND_CUR_DIRECTION)
-		_GLIBCXX_SIMD_MASK_SUB(4, 64, subps512);
+#define _GLIBCXX_SIMD_MASK_SUB(_Sizeof, _Width, _Instr)                        \
+  if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__v) == _Width)               \
+    return __builtin_ia32_##_Instr##_mask(                                     \
+	     __v._M_data, __vector_broadcast<_Np>(_Tp(__pm_one)), __v._M_data, \
+	     __k._M_data)
+		_GLIBCXX_SIMD_MASK_SUB_512(4, 64, subps512);
 		_GLIBCXX_SIMD_MASK_SUB(4, 32, subps256);
 		_GLIBCXX_SIMD_MASK_SUB(4, 16, subps128);
-		_GLIBCXX_SIMD_MASK_SUB(8, 64, subpd512);
+		_GLIBCXX_SIMD_MASK_SUB_512(8, 64, subpd512);
 		_GLIBCXX_SIMD_MASK_SUB(8, 32, subpd256);
 		_GLIBCXX_SIMD_MASK_SUB(8, 16, subpd128);
+#undef _GLIBCXX_SIMD_MASK_SUB_512
 #undef _GLIBCXX_SIMD_MASK_SUB
 	      }
 #endif // __clang__
