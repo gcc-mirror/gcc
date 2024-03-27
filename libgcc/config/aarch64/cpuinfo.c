@@ -52,14 +52,14 @@ struct {
 #ifndef AT_HWCAP
 #define AT_HWCAP 16
 #endif
-#ifndef HWCAP_CPUID
-#define HWCAP_CPUID (1 << 11)
-#endif
 #ifndef HWCAP_FP
 #define HWCAP_FP (1 << 0)
 #endif
 #ifndef HWCAP_ASIMD
 #define HWCAP_ASIMD (1 << 1)
+#endif
+#ifndef HWCAP_EVTSTRM
+#define HWCAP_EVTSTRM (1 << 2)
 #endif
 #ifndef HWCAP_AES
 #define HWCAP_AES (1 << 3)
@@ -73,6 +73,9 @@ struct {
 #ifndef HWCAP_SHA2
 #define HWCAP_SHA2 (1 << 6)
 #endif
+#ifndef HWCAP_CRC32
+#define HWCAP_CRC32 (1 << 7)
+#endif
 #ifndef HWCAP_ATOMICS
 #define HWCAP_ATOMICS (1 << 8)
 #endif
@@ -81,6 +84,9 @@ struct {
 #endif
 #ifndef HWCAP_ASIMDHP
 #define HWCAP_ASIMDHP (1 << 10)
+#endif
+#ifndef HWCAP_CPUID
+#define HWCAP_CPUID (1 << 11)
 #endif
 #ifndef HWCAP_ASIMDRDM
 #define HWCAP_ASIMDRDM (1 << 12)
@@ -132,6 +138,12 @@ struct {
 #endif
 #ifndef HWCAP_SB
 #define HWCAP_SB (1 << 29)
+#endif
+#ifndef HWCAP_PACA
+#define HWCAP_PACA (1 << 30)
+#endif
+#ifndef HWCAP_PACG
+#define HWCAP_PACG (1UL << 31)
 #endif
 
 #ifndef HWCAP2_DCPODP
