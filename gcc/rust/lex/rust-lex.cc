@@ -1840,14 +1840,18 @@ Lexer::parse_raw_byte_string (location_t loc)
   int length = 1;
   int hash_count = 0;
 
+  const location_t string_begin_locus = get_current_location ();
+
   // get hash count at beginnning
   skip_input ();
   current_char = peek_input ();
   length++;
+  current_column++;
   while (current_char == '#')
     {
       hash_count++;
       length++;
+      current_column++;
 
       skip_input ();
       current_char = peek_input ();
@@ -1862,6 +1866,7 @@ Lexer::parse_raw_byte_string (location_t loc)
   skip_input ();
   current_char = peek_input ();
   length++;
+  current_column++;
 
   while (true)
     {
@@ -1884,26 +1889,36 @@ Lexer::parse_raw_byte_string (location_t loc)
 	      skip_input (hash_count);
 	      current_char = peek_input ();
 	      length += hash_count + 1;
+	      current_column += hash_count + 1;
 	      break;
 	    }
 	}
-
-      if (current_char.value > 127)
+      else if (current_char.value > 127)
 	{
 	  rust_error_at (get_current_location (),
 			 "character %<%s%> in raw byte string out of range",
 			 current_char.as_string ().c_str ());
 	  current_char = 0;
 	}
+      else if (current_char.is_eof ())
+	{
+	  rust_error_at (string_begin_locus, "unended raw byte string literal");
+	  return Token::make (END_OF_FILE, get_current_location ());
+	}
 
       length++;
+      current_column++;
+      if (current_char == '\n')
+	{
+	  current_line++;
+	  current_column = 1;
+	  start_line (current_line, max_column_hint);
+	}
 
       str += current_char;
       skip_input ();
       current_char = peek_input ();
     }
-
-  current_column += length;
 
   loc += length - 1;
 
