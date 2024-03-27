@@ -48,6 +48,7 @@ public:
   static constexpr auto &TARGET_FEATURE = "target_feature";
   // From now on, these are reserved by the compiler and gated through
   // #![feature(rustc_attrs)]
+  static constexpr auto &RUSTC_DEPRECATED = "rustc_deprecated";
   static constexpr auto &RUSTC_INHERIT_OVERFLOW_CHECKS
     = "rustc_inherit_overflow_checks";
   static constexpr auto &STABLE = "stable";

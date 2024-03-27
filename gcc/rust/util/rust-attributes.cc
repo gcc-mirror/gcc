@@ -58,6 +58,7 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::TARGET_FEATURE, CODE_GENERATION},
      // From now on, these are reserved by the compiler and gated through
      // #![feature(rustc_attrs)]
+     {Attrs::RUSTC_DEPRECATED, STATIC_ANALYSIS},
      {Attrs::RUSTC_INHERIT_OVERFLOW_CHECKS, CODE_GENERATION},
      {Attrs::STABLE, STATIC_ANALYSIS}};
 
