@@ -2672,6 +2672,18 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   if (ts != NULL && expr->ts.type == BT_UNKNOWN)
     *ts = sym->ts;
 
+  /* Catch left-overs from match_actual_arg, where an actual argument of a
+     procedure is given a temporary ts.type == BT_PROCEDURE.  The fixup is
+     needed for structure constructors in DATA statements, where a pointer
+     is associated with a data target, and the argument has not been fully
+     resolved yet.  Components references are dealt with further below.  */
+  if (ts != NULL
+      && expr->ts.type == BT_PROCEDURE
+      && expr->ref == NULL
+      && attr.flavor != FL_PROCEDURE
+      && attr.target)
+    *ts = sym->ts;
+
   has_inquiry_part = false;
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_INQUIRY)
