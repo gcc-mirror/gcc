@@ -408,7 +408,7 @@ lto_end_uncompression (struct lto_compression_stream *stream,
     }
 #endif
   if (compression == ZSTD)
-    internal_error ("compiler does not support ZSTD LTO compression");
+    fatal_error (UNKNOWN_LOCATION, "compiler does not support ZSTD LTO compression");
 
   lto_uncompression_zlib (stream);
 }
