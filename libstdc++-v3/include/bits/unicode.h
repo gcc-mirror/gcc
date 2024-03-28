@@ -578,8 +578,10 @@ namespace __unicode
       constexpr bool empty() const { return ranges::empty(_M_base); }
     };
 
+#ifdef __cpp_char8_t
   template<typename _View>
     using _Utf8_view = _Utf_view<char8_t, _View>;
+#endif
   template<typename _View>
     using _Utf16_view = _Utf_view<char16_t, _View>;
   template<typename _View>
@@ -991,12 +993,14 @@ inline namespace __v15_1_0
     consteval bool
     __literal_encoding_is_unicode()
     {
-      if constexpr (is_same_v<_CharT, char8_t>)
-	return true;
-      else if constexpr (is_same_v<_CharT, char16_t>)
+      if constexpr (is_same_v<_CharT, char16_t>)
 	return true;
       else if constexpr (is_same_v<_CharT, char32_t>)
 	  return true;
+#ifdef __cpp_char8_t
+      else if constexpr (is_same_v<_CharT, char8_t>)
+	return true;
+#endif
 
       const char* __enc = "";
 
