@@ -1,6 +1,5 @@
 #include <stdarg.h>
 #include <stdint.h>
-#include <limits.h>
 
 typedef unsigned int mode_t;
 
