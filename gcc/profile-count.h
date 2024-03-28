@@ -876,7 +876,8 @@ public:
 
       profile_count ret;
       gcc_checking_assert (compatible_p (other));
-      ret.m_val = m_val + other.m_val;
+      uint64_t ret_val = m_val + other.m_val;
+      ret.m_val = MIN (ret_val, max_count);
       ret.m_quality = MIN (m_quality, other.m_quality);
       return ret;
     }
@@ -895,7 +896,8 @@ public:
       else
 	{
           gcc_checking_assert (compatible_p (other));
-	  m_val += other.m_val;
+	  uint64_t ret_val = m_val + other.m_val;
+	  m_val = MIN (ret_val, max_count);
 	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
@@ -923,7 +925,7 @@ public:
       else
 	{
           gcc_checking_assert (compatible_p (other));
-	  m_val = m_val >= other.m_val ? m_val - other.m_val: 0;
+	  m_val = m_val >= other.m_val ? m_val - other.m_val : 0;
 	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
@@ -1093,7 +1095,9 @@ public:
       if (!initialized_p ())
 	return uninitialized ();
       profile_count ret;
-      ret.m_val = RDIV (m_val * prob, REG_BR_PROB_BASE);
+      uint64_t tmp;
+      safe_scale_64bit (m_val, prob, REG_BR_PROB_BASE, &tmp);
+      ret.m_val = tmp;
       ret.m_quality = MIN (m_quality, ADJUSTED);
       return ret;
     }
