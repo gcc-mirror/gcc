@@ -1,3 +1,10 @@
+2024-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114469
+	* c-common.cc (resolve_overloaded_builtin): For _BitInt result
+	on !extended targets convert result to the _BitInt type before
+	using VIEW_CONVERT_EXPR.
+
 2024-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/112724

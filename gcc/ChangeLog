@@ -1,3 +1,32 @@
+2024-03-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/101523
+	* combine.cc (try_combine): Don't do a 2-insn combination if
+	it does not in fact change I2.
+
+2024-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (Spec Files): Use @var{S} instead of S,
+	@var{X} instead of X etc. for other placeholders.
+
+2024-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114057
+	* tree-vect-slp.cc (vect_bb_slp_mark_live_stmts): Mark
+	BB reduction remain defs as scalar uses.
+
+2024-03-27  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (rcpc3):
+	Fix FEATURE_STRING field to "lrcpc3".
+
+2024-03-27  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: Add LSE128
+	AARCH64_OPT_EXTENSION, adding it as a dependency for the D128
+	feature.
+	* doc/invoke.texi (AArch64 Options): Document +lse128.
+
 2024-03-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-feature-deps.h: Use constexpr for

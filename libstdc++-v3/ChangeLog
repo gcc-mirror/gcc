@@ -1,3 +1,35 @@
+2024-03-27  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h (_S_masked_unary):
+	Cast inputs < 16 bytes to 16 byte vectors before calling the
+	right subtraction builtin. Before returning, truncate to the
+	return vector type.
+
+2024-03-27  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h (_S_masked_unary): Call
+	the 4- and 8-byte variants of __builtin_ia32_subp[ds] without
+	rounding direction argument.
+
+2024-03-27  Srinivas Yadav Singanaboina  <vasu.srinivasvasu.14@gmail.com>
+
+	* include/Makefile.am: Add simd_sve.h.
+	* include/Makefile.in: Add simd_sve.h.
+	* include/experimental/bits/simd.h: Add new SveAbi.
+	* include/experimental/bits/simd_builtin.h: Use
+	__no_sve_deduce_t to support existing Neon Abi.
+	* include/experimental/bits/simd_converter.h: Convert
+	sequentially when sve is available.
+	* include/experimental/bits/simd_detail.h: Define sve
+	specific macro.
+	* include/experimental/bits/simd_math.h: Fallback frexp
+	to execute sequntially when sve is available, to handle
+	fixed_size_simd return type that always uses sve.
+	* include/experimental/simd: Include bits/simd_sve.h.
+	* testsuite/experimental/simd/tests/bits/main.h: Enable
+	testing for sve128, sve256, sve512.
+	* include/experimental/bits/simd_sve.h: New file.
+
 2024-03-26  Arsen Arsenović  <arsen@aarsen.me>
 
 	* include/std/generator (generator::_Iterator::operator*): Fix

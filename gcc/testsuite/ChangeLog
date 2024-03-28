@@ -1,3 +1,40 @@
+2024-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114473
+	* gcc.dg/analyzer/call-summaries-pr114473.c: New test.
+
+2024-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/debug/btf/btf-cvr-quals-1.c: Use dg-additional-options
+	instead of multiple dg-options.
+	* gcc.dg/debug/btf/btf-datasec-1.c: Likewise.  Accept all supported
+	unaligned 4 byte assembler directives rather than assuming it must
+	be .4byte.
+
+2024-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/target-supports.exp (add_options_for_bfloat16): Add -msse2 on
+	i?86/x86_64.
+	* g++.dg/cpp23/ext-floating3.C: Add dg-add-options float16.
+	* g++.dg/cpp23/ext-floating12.C: Add dg-add-options float16 and
+	bfloat16.
+
+2024-03-27  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/cpunative/info_24: New.
+	* gcc.target/aarch64/cpunative/native_cpu_24.c: Likewise.
+
+2024-03-27  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/lse128-flag.c: New.
+	* gcc.target/aarch64/cpunative/info_23: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_23.c: Likewise.
+
+2024-03-27  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/copy-headers-8.c: Set
+	LOGICAL_OP_NON_SHORT_CIRCUIT to true.
+
 2024-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/107031

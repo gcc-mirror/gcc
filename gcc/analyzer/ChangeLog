@@ -1,3 +1,13 @@
+2024-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114473
+	* call-summary.cc
+	(call_summary_replay::convert_svalue_from_summary): Assert that
+	the types match.
+	(call_summary_replay::convert_region_from_summary): Likewise.
+	(call_summary_replay::convert_region_from_summary_1): Add missing
+	cast for the deref of RK_SYMBOLIC case.
+
 2024-03-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114408
