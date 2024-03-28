@@ -1387,6 +1387,23 @@ sem_function::init (ipa_icf_gimple::func_checker *checker)
 	  cfg_checksum = iterative_hash_host_wide_int (e->flags,
 			 cfg_checksum);
 
+	/* TODO: We should be able to match PHIs with different order of
+	   parameters.  This needs to be also updated in
+	   sem_function::compare_phi_node.  */
+	gphi_iterator si;
+	for (si = gsi_start_nonvirtual_phis (bb); !gsi_end_p (si);
+	     gsi_next_nonvirtual_phi (&si))
+	  {
+	    hstate.add_int (GIMPLE_PHI);
+	    gphi *phi = si.phi ();
+	    m_checker->hash_operand (gimple_phi_result (phi), hstate, 0,
+				     func_checker::OP_NORMAL);
+	    hstate.add_int (gimple_phi_num_args (phi));
+	    for (unsigned int i = 0; i < gimple_phi_num_args (phi); i++)
+	      m_checker->hash_operand (gimple_phi_arg_def (phi, i),
+				       hstate, 0, func_checker::OP_NORMAL);
+	  }
+
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	     gsi_next (&gsi))
 	  {
@@ -1579,6 +1596,8 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
       if (size1 != size2)
 	return return_false ();
 
+      /* TODO: We should be able to match PHIs with different order of
+	 parameters.  This needs to be also updated in sem_function::init.  */
       for (i = 0; i < size1; ++i)
 	{
 	  t1 = gimple_phi_arg (phi1, i)->def;
