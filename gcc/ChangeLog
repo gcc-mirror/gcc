@@ -1,3 +1,11 @@
+2024-03-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR sanitizer/97696
+	* asan.cc (asan_expand_mark_ifn): Allow the length to be a poly_int.
+
 2024-03-26  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
