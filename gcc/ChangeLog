@@ -1,3 +1,27 @@
+2024-03-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR sanitizer/97696
+	* asan.c (asan_expand_mark_ifn): Allow the length to be a poly_int.
+
+2024-03-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/arm_neon.h (vld1_s8_x4, vld1_s16_x4, vld1_s32_x4):
+	(vld1_u8_x4, vld1_u16_x4, vld1_u32_x4, vld1_f16_x4, vld1_f32_x4):
+	(vld1_p8_x4, vld1_p16_x4, vld1_s64_x4, vld1_u64_x4, vld1_p64_x4):
+	(vld1_f64_x4): Avoid using a union of a 256-bit structure and 512-bit
+	XImode integer.  Instead use the same approach as the vld4 intrinsics.
+	(vst1_s8_x4, vst1_s16_x4, vst1_s32_x4, vst1_u8_x4, vst1_u16_x4):
+	(vst1_u32_x4, vst1_f16_x4, vst1_f32_x4, vst1_p8_x4, vst1_p16_x4):
+	(vst1_s64_x4, vst1_u64_x4, vst1_p64_x4, vst1_f64_x4, vld1_bf16_x4):
+	(vst1_bf16_x4): Likewise for stores.
+	(vst1q_s8_x4, vst1q_s16_x4, vst1q_s32_x4, vst1q_u8_x4, vst1q_u16_x4):
+	(vst1q_u32_x4, vst1q_f16_x4, vst1q_f32_x4, vst1q_p8_x4, vst1q_p16_x4):
+	(vst1q_s64_x4, vst1q_u64_x4, vst1q_p64_x4, vst1q_f64_x4)
+	(vst1q_bf16_x4): Rename val parameter to __val.
+
 2024-03-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
