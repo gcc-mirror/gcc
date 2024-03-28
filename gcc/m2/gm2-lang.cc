@@ -193,7 +193,8 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
       switch (code)
 	{
 	case OPT_fcpp:
-	  gcc_checking_assert (building_cpp_command);
+	  if (value)
+	    gcc_checking_assert (building_cpp_command);
 	  break;
 	case OPT_fcpp_begin:
 	  in_cpp_args = true;

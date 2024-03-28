@@ -104,6 +104,7 @@ EXTERN void M2Options_FinaliseOptions (void);
 EXTERN void M2Options_SetDebugFunctionLineNumbers (bool value);
 EXTERN void M2Options_SetGenerateStatementNote (bool value);
 EXTERN bool M2Options_GetCpp (void);
+EXTERN bool M2Options_GetLineDirectives (void);
 EXTERN bool M2Options_GetM2g (void);
 EXTERN bool M2Options_SetM2g (bool value);
 EXTERN bool M2Options_SetLowerCaseKeywords (bool value);

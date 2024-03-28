@@ -673,6 +673,16 @@ END GetCpp ;
 
 
 (*
+   GetLineDirectives - returns TRUE if line directives are allowed.
+*)
+
+PROCEDURE GetLineDirectives () : BOOLEAN ;
+BEGIN
+   RETURN LineDirectives
+END GetLineDirectives ;
+
+
+(*
    SetPPOnly - set the PPonly (preprocess only) to value.
 *)
 

@@ -1657,7 +1657,8 @@ The preprocessor @samp{cpp} can be invoked via the @samp{-fcpp}
 command line option.  This in turn invokes @samp{cpp} with the
 following arguments @samp{-traditional -lang-asm}.  These options
 preserve comments and all quotations.  @samp{gm2} treats a @samp{#}
-character in the first column as a preprocessor directive.
+character in the first column as a preprocessor directive unless
+@samp{-fno-cpp} is supplied.
 
 For example here is a module which calls @code{FatalError}
 via the macro @code{ERROR}.

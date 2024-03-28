@@ -329,6 +329,28 @@ PROCEDURE GetObj () : ADDRESS ;
 
 
 (*
+   SetCpp - enables the source to be preprocessed and enables the
+            recognition of C preprocessor line directives.
+*)
+
+PROCEDURE SetCpp (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   GetCpp - returns TRUE if the C preprocessor was used.
+*)
+
+PROCEDURE GetCpp () : BOOLEAN ;
+
+
+(*
+   GetLineDirectives - returns TRUE if line directives are allowed.
+*)
+
+PROCEDURE GetLineDirectives () : BOOLEAN ;
+
+
+(*
    SetScaffoldDynamic - set the -fscaffold-dynamic flag.
 *)
 
@@ -465,20 +487,6 @@ PROCEDURE SetQuiet (value: BOOLEAN) : BOOLEAN ;
 *)
 
 PROCEDURE SetCC1Quiet (value: BOOLEAN) ;
-
-
-(*
-   SetCpp -
-*)
-
-PROCEDURE SetCpp (value: BOOLEAN) : BOOLEAN ;
-
-
-(*
-   GetCpp - returns TRUE if the C preprocessor was used.
-*)
-
-PROCEDURE GetCpp () : BOOLEAN ;
 
 
 (*

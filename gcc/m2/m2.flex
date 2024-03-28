@@ -160,8 +160,14 @@ extern  void  yylex                   (void);
 <COMMENTC>.                { updatepos(); skippos(); }
 <COMMENTC>\n.*             { consumeLine(); }
 <COMMENTC>"*/"             { endOfCComment(); }
-^\#.*                      { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */ BEGIN LINE0; }
-\n\#.*                     { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */ BEGIN LINE0; }
+^\#.*                      { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */
+                             if (M2Options_GetLineDirectives ())
+			        BEGIN LINE0;
+		           }
+\n\#.*                     { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */
+                             if (M2Options_GetLineDirectives ())
+			        BEGIN LINE0;
+			   }
 <LINE0>\#[ \t]*            { updatepos(); }
 <LINE0>[0-9]+[ \t]*\"      { updatepos(); lineno=atoi(yytext); BEGIN LINE1; }
 <LINE0>\n                  { m2flex_M2Error("missing initial quote after #line directive"); resetpos(); BEGIN INITIAL; }
