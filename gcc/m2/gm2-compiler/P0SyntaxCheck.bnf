@@ -82,9 +82,10 @@ CONST
                                    (* giving up.                              *)
 
 VAR
-   seenError  : BOOLEAN ;
-   LastIdent  : Name ;
-   InsertCount: CARDINAL ;
+   EnableImportCheck,
+   seenError        : BOOLEAN ;
+   LastIdent        : Name ;
+   InsertCount      : CARDINAL ;
 
 
 PROCEDURE ErrorString (s: String) ;
@@ -320,6 +321,21 @@ END PeepToken ;
 
 
 (*
+   DetectImport - checks whether the next token is an import or from and if so
+                  generates an error message.  This is called after an export
+                  statement to notify the user that the ordering is incorrect.
+*)
+
+PROCEDURE DetectImport ;
+BEGIN
+   IF (currenttoken = importtok) OR (currenttoken = fromtok)
+   THEN
+      ErrorArray ('an {%AkIMPORT} statement must preceed an {%kEXPORT} statement')
+   END
+END DetectImport ;
+
+
+(*
    Expect -
 *)
 
@@ -328,6 +344,10 @@ BEGIN
    IF currenttoken=t
    THEN
       GetToken ;
+      IF EnableImportCheck
+      THEN
+         DetectImport
+      END ;
       IF Pass0
       THEN
          PeepToken (stopset0, stopset1, stopset2)
@@ -347,6 +367,7 @@ END Expect ;
 PROCEDURE CompilationUnit () : BOOLEAN ;
 BEGIN
    seenError := FALSE ;
+   EnableImportCheck := FALSE ;
    InsertCount := 0 ;
    FileUnit (SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
    RETURN NOT seenError
@@ -883,7 +904,9 @@ Priority := "[" ConstExpression "]" =:
 Export := "EXPORT" ( "QUALIFIED"   IdentList |
                      "UNQUALIFIED" IdentList |
                       IdentList
-                   ) ";" =:
+                   )                                                       % EnableImportCheck := TRUE %
+                     ";"                                                   % EnableImportCheck := FALSE %
+                         =:
 
 Import :=  "FROM" Ident "IMPORT" IdentList ";" |
            "IMPORT"                                                        % PushTtok (ImportTok, GetTokenNo () -1)
