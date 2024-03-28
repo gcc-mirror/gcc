@@ -4035,7 +4035,7 @@ estimate_bb_frequencies ()
 
   /* Scaling frequencies up to maximal profile count may result in
      frequent overflows especially when inlining loops.
-     Small scalling results in unnecesary precision loss.  Stay in
+     Small scaling results in unnecesary precision loss.  Stay in
      the half of the (exponential) range.  */
   freq_max = (sreal (1) << (profile_count::n_bits / 2)) / freq_max;
   if (freq_max < 16)
