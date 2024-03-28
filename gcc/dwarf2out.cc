@@ -6651,7 +6651,7 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
     case dw_val_class_loc:
       fprintf (outfile, "location descriptor");
       if (val->v.val_loc == NULL)
-	fprintf (outfile, " -> <null>\n");
+	fprintf (outfile, " -> <null>");
       else if (recurse)
 	{
 	  fprintf (outfile, ":\n");
@@ -6662,9 +6662,9 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
       else
 	{
 	  if (flag_dump_noaddr || flag_dump_unnumbered)
-	    fprintf (outfile, " #\n");
+	    fprintf (outfile, " #");
 	  else
-	    fprintf (outfile, " (%p)\n", (void *) val->v.val_loc);
+	    fprintf (outfile, " (%p)", (void *) val->v.val_loc);
 	}
       break;
     case dw_val_class_loc_list:
