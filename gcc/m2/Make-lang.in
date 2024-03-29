@@ -400,20 +400,20 @@ m2.install-common: installdirs
          done
 
 m2.install-info: installdirs
-	if [ -d gm2$(exeext) ] ; then \
-	  if [ -f $(objdir)/doc/gm2.info ]; then \
-	    rm -f $(DESTDIR)$(infodir)/gm2.info*; \
-	    for f in $(objdir)/doc/gm2.info*; do \
+	if [ -f gm2$(exeext) ] ; then \
+	  if [ -f $(objdir)/doc/m2.info ]; then \
+	    rm -f $(DESTDIR)$(infodir)/m2.info*; \
+	    for f in $(objdir)/doc/m2.info*; do \
 	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
               rm -f $(DESTDIR)$(infodir)/`basename $$realfile`; \
 	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/`basename $$realfile`; \
 	    done; \
-	    chmod a-x $(DESTDIR)$(infodir)/gm2.info*; \
+	    chmod a-x $(DESTDIR)$(infodir)/m2.info*; \
 	  else true; fi; \
 	else true; fi
-	-if [ -f gm2$(exeext) ] && [ -f $(DESTDIR)$(infodir)/gm2.info ]; then \
+	-if [ -f gm2$(exeext) ] && [ -f $(DESTDIR)$(infodir)/m2.info ]; then \
 	  if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
-	    install-info --dir-file=$(infodir)/dir $(DESTDIR)$(infodir)/gm2.info; \
+	    install-info --dir-file=$(infodir)/dir $(DESTDIR)$(infodir)/m2.info; \
 	  else true; fi; \
 	else true; fi
 
