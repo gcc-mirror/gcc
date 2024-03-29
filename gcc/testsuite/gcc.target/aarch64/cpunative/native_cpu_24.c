@@ -1,5 +1,5 @@
 /* { dg-do compile { target { { aarch64*-*-linux*} && native } } } */
-/* { dg-set-compiler-env-var GCC_CPUINFO "$srcdir/gcc.target/aarch64/cpunative/info_23" } */
+/* { dg-set-compiler-env-var GCC_CPUINFO "$srcdir/gcc.target/aarch64/cpunative/info_24" } */
 /* { dg-additional-options "-mcpu=native --save-temps " } */
 
 int main()
