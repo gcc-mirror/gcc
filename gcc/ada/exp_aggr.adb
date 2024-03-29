@@ -8376,7 +8376,9 @@ package body Exp_Aggr is
                Static_Components := False;
                return False;
 
-            elsif Is_Delayed_Aggregate (Expr_Q) then
+            elsif Is_Delayed_Aggregate (Expr_Q)
+              or else Is_Delayed_Conditional_Expression (Expr_Q)
+            then
                Static_Components := False;
                return False;
 
