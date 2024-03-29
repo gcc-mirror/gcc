@@ -5029,9 +5029,13 @@ expand_or_defer_fn_1 (tree fn)
       /* We don't want to process FN again, so pretend we've written
 	 it out, even though we haven't.  */
       TREE_ASM_WRITTEN (fn) = 1;
-      /* If this is a constexpr function, keep DECL_SAVED_TREE.  */
+      /* If this is a constexpr function we still need the body to be
+	 able to evaluate it.  Similarly, with modules we only stream
+	 the maybe-in-charge cdtor and regenerate the clones from it on
+	 demand, so we also need to keep the body.  Otherwise we don't
+	 need it anymore.  */
       if (!DECL_DECLARED_CONSTEXPR_P (fn)
-	  && !(modules_p () && DECL_DECLARED_INLINE_P (fn)))
+	  && !(modules_p () && vague_linkage_p (fn)))
 	DECL_SAVED_TREE (fn) = NULL_TREE;
       return false;
     }
