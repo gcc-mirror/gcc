@@ -22409,12 +22409,24 @@ package body Sem_Util is
             return False;
          end Depends_On_Discriminant;
 
+      --  Start of processing for Caller_Known_Size_Record
+
       begin
          --  This is a protected type without Corresponding_Record_Type set,
          --  typically because expansion is disabled. The safe thing to do is
          --  to return True, so Needs_Secondary_Stack returns False.
 
          if No (Typ) then
+            return True;
+         end if;
+
+         --  If either size is specified for the type, then it's known in the
+         --  caller in particular. Note that, even if the clause is confirming,
+         --  this does not change the outcome since the size was already known.
+
+         if Has_Size_Clause (First_Subtype (Typ))
+           or else Has_Object_Size_Clause (First_Subtype (Typ))
+         then
             return True;
          end if;
 

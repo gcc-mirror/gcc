@@ -156,17 +156,16 @@ package Freeze is
    --    RM_Size field is set to the required size, allowing for possible front
    --    end packing of an array using this type as a component type.
    --
-   --  Note: the flag Size_Known_At_Compile_Time is used to determine if the
-   --  secondary stack must be used to return a value of the type, and also
-   --  to determine whether a component clause is allowed for a component
-   --  of the given type.
-   --
-   --  Note: this is public because of one dubious use in Sem_Res???
+   --  Note: the flag Size_Known_At_Compile_Time is used to determine whether a
+   --  size clause is allowed for the type, and also whether a component clause
+   --  is allowed for a component of the type.
    --
    --  Note: Check_Compile_Time_Size does not test the case of the size being
    --  known because a size clause is specifically given. That is because we
    --  do not allow a size clause if the size would not otherwise be known at
    --  compile time in any case.
+   --
+   --  ??? This is public because of dubious uses in Sem_Ch3 and Sem_Res
 
    procedure Check_Inherited_Conditions
     (R               : Entity_Id;

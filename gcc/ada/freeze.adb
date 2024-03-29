@@ -1077,6 +1077,7 @@ package body Freeze is
                     and then
                       No (Discriminant_Default_Value (First_Discriminant (T)))
                     and then not Known_RM_Size (T)
+                    and then not Known_Esize (T)
                   then
                      return False;
                   end if;
