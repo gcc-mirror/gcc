@@ -1,3 +1,15 @@
+2024-03-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2023-05-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103716
+	* resolve.cc (gfc_resolve_ref): Conversion of array_ref into an
+	element should be done for all characters without a len expr,
+	not just deferred lens, and for integer expressions.
+	* trans-expr.cc (conv_inquiry): For len and kind inquiry refs,
+	set the se string_length to NULL_TREE.
+
 2024-03-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/101135
