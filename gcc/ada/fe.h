@@ -98,9 +98,11 @@ extern void Set_Normalized_First_Bit	(Entity_Id, Uint);
 extern void Set_Normalized_Position	(Entity_Id, Uint);
 extern void Set_RM_Size			(Entity_Id, Uint);
 
+#define Is_Base_Type		einfo__utils__is_base_type
 #define Is_Entity_Name		einfo__utils__is_entity_name
 
-extern Boolean Is_Entity_Name		(Node_Id);
+extern Boolean Is_Base_Type	(Entity_Id);
+extern Boolean Is_Entity_Name	(Node_Id);
 
 #define Get_Attribute_Definition_Clause	einfo__utils__get_attribute_definition_clause
 
