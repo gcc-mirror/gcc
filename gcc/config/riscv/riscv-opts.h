@@ -154,4 +154,10 @@ enum rvv_vector_bits_enum {
 #define TARGET_MAX_LMUL                                                        \
   (int) (rvv_max_lmul == RVV_DYNAMIC ? RVV_M8 : rvv_max_lmul)
 
+/* TLS types.  */
+enum riscv_tls_type {
+  TLS_TRADITIONAL,
+  TLS_DESCRIPTORS
+};
+
 #endif /* ! GCC_RISCV_OPTS_H */

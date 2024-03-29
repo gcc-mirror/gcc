@@ -1265,7 +1265,8 @@ See RS/6000 and PowerPC Options.
 -minline-atomics  -mno-inline-atomics
 -minline-strlen  -mno-inline-strlen
 -minline-strcmp  -mno-inline-strcmp
--minline-strncmp  -mno-inline-strncmp}
+-minline-strncmp  -mno-inline-strncmp
+-mtls-dialect=desc  -mtls-dialect=trad}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs
@@ -31063,6 +31064,16 @@ which register to use as base register for reading the canary,
 and from what offset from that base register. There is no default
 register or offset as this is entirely for use within the Linux
 kernel.
+
+@opindex mtls-dialect=desc
+@item -mtls-dialect=desc
+Use TLS descriptors as the thread-local storage mechanism for dynamic accesses
+of TLS variables.
+
+@opindex mtls-dialect=trad
+@item -mtls-dialect=trad
+Use traditional TLS as the thread-local storage mechanism for dynamic accesses
+of TLS variables.  This is the default.
 @end table
 
 @node RL78 Options

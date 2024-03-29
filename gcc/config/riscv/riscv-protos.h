@@ -34,9 +34,10 @@ enum riscv_symbol_type {
   SYMBOL_TLS,
   SYMBOL_TLS_LE,
   SYMBOL_TLS_IE,
-  SYMBOL_TLS_GD
+  SYMBOL_TLS_GD,
+  SYMBOL_TLSDESC,
 };
-#define NUM_SYMBOL_TYPES (SYMBOL_TLS_GD + 1)
+#define NUM_SYMBOL_TYPES (SYMBOL_TLSDESC + 1)
 
 /* Classifies an address.
 

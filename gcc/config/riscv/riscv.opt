@@ -606,3 +606,17 @@ Enum(rvv_vector_bits) String(zvl) Value(RVV_VECTOR_BITS_ZVL)
 mrvv-vector-bits=
 Target RejectNegative Joined Enum(rvv_vector_bits) Var(rvv_vector_bits) Init(RVV_VECTOR_BITS_SCALABLE)
 -mrvv-vector-bits=<string>	Set the kind of bits for an RVV vector register.
+
+Enum
+Name(tls_type) Type(enum riscv_tls_type)
+The possible TLS dialects:
+
+EnumValue
+Enum(tls_type) String(trad) Value(TLS_TRADITIONAL)
+
+EnumValue
+Enum(tls_type) String(desc) Value(TLS_DESCRIPTORS)
+
+mtls-dialect=
+Target RejectNegative Joined Enum(tls_type) Var(riscv_tls_dialect) Init(TLS_TRADITIONAL) Save
+Specify TLS dialect.

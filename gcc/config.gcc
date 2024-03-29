@@ -2492,6 +2492,7 @@ riscv*-*-linux*)
 	# Force .init_array support.  The configure script cannot always
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
+	with_tls=${with_tls:-trad}
 	;;
 riscv*-*-elf* | riscv*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
@@ -2534,6 +2535,7 @@ riscv*-*-freebsd*)
 	# Force .init_array support.  The configure script cannot always
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
+	with_tls=${with_tls:-trad}
 	;;
 
 loongarch*-*-linux*)
@@ -4671,7 +4673,7 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute isa_spec"
+		supported_defaults="abi arch tune riscv_attribute isa_spec tls"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
@@ -4801,6 +4803,17 @@ case "${target}" in
 				;;
 			esac
 		fi
+		# Handle --with-tls.
+		case "$with_tls" in
+		"" \
+		| trad | desc)
+			# OK
+			;;
+		*)
+			echo "Unknown TLS method used in --with-tls=$with_tls" 1>&2
+			exit 1
+			;;
+		esac
 
 		# Handle --with-multilib-list.
 		if test "x${with_multilib_list}" != xdefault; then

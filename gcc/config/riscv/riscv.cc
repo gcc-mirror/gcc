@@ -1072,6 +1072,7 @@ static int riscv_symbol_insns (enum riscv_symbol_type type)
     case SYMBOL_ABSOLUTE: return 2; /* LUI + the reference.  */
     case SYMBOL_PCREL: return 2; /* AUIPC + the reference.  */
     case SYMBOL_TLS_LE: return 3; /* LUI + ADD TP + the reference.  */
+    case SYMBOL_TLSDESC: return 6; /* 4-instruction call + ADD TP + the reference.  */
     case SYMBOL_GOT_DISP: return 3; /* AUIPC + LD GOT + the reference.  */
     case SYMBOL_FORCE_TO_MEM: return 3; /* AUIPC + LD + the reference.  */
     default: gcc_unreachable ();
@@ -2220,7 +2221,7 @@ riscv_call_tls_get_addr (rtx sym, rtx result)
 static rtx
 riscv_legitimize_tls_address (rtx loc)
 {
-  rtx dest, tp, tmp;
+  rtx dest, tp, tmp, a0;
   enum tls_model model = SYMBOL_REF_TLS_MODEL (loc);
 
 #if 0
@@ -2236,9 +2237,24 @@ riscv_legitimize_tls_address (rtx loc)
       /* Rely on section anchors for the optimization that LDM TLS
 	 provides.  The anchor's address is loaded with GD TLS. */
     case TLS_MODEL_GLOBAL_DYNAMIC:
-      tmp = gen_rtx_REG (Pmode, GP_RETURN);
-      dest = gen_reg_rtx (Pmode);
-      emit_libcall_block (riscv_call_tls_get_addr (loc, tmp), dest, tmp, loc);
+      if (TARGET_TLSDESC)
+	{
+	  static unsigned seqno;
+	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
+	  a0 = gen_rtx_REG (Pmode, GP_ARG_FIRST);
+	  dest = gen_reg_rtx (Pmode);
+
+	  emit_insn (gen_tlsdesc (Pmode, loc, GEN_INT (seqno)));
+	  emit_insn (gen_add3_insn (dest, a0, tp));
+	  seqno++;
+	}
+      else
+	{
+	  tmp = gen_rtx_REG (Pmode, GP_RETURN);
+	  dest = gen_reg_rtx (Pmode);
+	  emit_libcall_block (riscv_call_tls_get_addr (loc, tmp), dest, tmp,
+			      loc);
+	}
       break;
 
     case TLS_MODEL_INITIAL_EXEC:
