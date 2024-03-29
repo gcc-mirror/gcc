@@ -10626,8 +10626,10 @@ maybe_warn_about_returning_address_of_local (tree retval, location_t loc)
       || TREE_CODE (whats_returned) == TARGET_EXPR)
     {
       if (TYPE_REF_P (valtype))
-	warning_at (loc, OPT_Wreturn_local_addr,
-		    "returning reference to temporary");
+	/* P2748 made this an error in C++26.  */
+	emit_diagnostic (cxx_dialect >= cxx26 ? DK_PERMERROR : DK_WARNING,
+			 loc, OPT_Wreturn_local_addr,
+			 "returning reference to temporary");
       else if (TYPE_PTR_P (valtype))
 	warning_at (loc, OPT_Wreturn_local_addr,
 		    "returning pointer to temporary");

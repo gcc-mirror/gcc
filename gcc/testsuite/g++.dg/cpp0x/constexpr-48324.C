@@ -7,7 +7,7 @@ struct S {
 };
 
 constexpr const int& to_ref(int i) {
-  return S(i).val; // { dg-warning "reference to temporary" }
+  return S(i).val; // { dg-message "reference to temporary" }
 }
 
 constexpr int ary[to_ref(98)] = { }; // { dg-error "25:size of array .ary. is not an integral" }

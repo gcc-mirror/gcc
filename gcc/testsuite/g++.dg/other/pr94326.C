@@ -3,7 +3,7 @@
 // { dg-options "-fcompare-debug" }
 
 template <typename = int> struct A {
-  const int &foo() { return 0; }	// { dg-warning "returning reference to temporary" }
+  const int &foo() { return 0; }	// { dg-message "returning reference to temporary" }
   template <typename _Kt> void bar(_Kt) { foo(); }
 };
 struct B {

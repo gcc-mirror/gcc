@@ -6,5 +6,5 @@ struct X {
 
 int a[3];
 X foo1 () { return a; }
-const X &foo2 () { return a; } // { dg-warning "returning reference to temporary" }
+const X &foo2 () { return a; } // { dg-message "returning reference to temporary" }
 X &foo3 () { return a; } // { dg-error "cannot bind non-const lvalue ref" }
