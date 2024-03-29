@@ -1527,7 +1527,7 @@ gfc_finalize_tree_expr (gfc_se *se, gfc_symbol *derived,
     }
   else if (derived && gfc_is_finalizable (derived, NULL))
     {
-      if (derived->attr.zero_comp && !rank)
+      if (!derived->components && (!rank || attr.elemental))
 	{
 	  /* Any attempt to assign zero length entities, causes the gimplifier
 	     all manner of problems. Instead, a variable is created to act as
@@ -1578,7 +1578,7 @@ gfc_finalize_tree_expr (gfc_se *se, gfc_symbol *derived,
 					      final_fndecl);
   if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
     {
-      if (is_class)
+      if (is_class || attr.elemental)
 	desc = gfc_conv_scalar_to_descriptor (se, desc, attr);
       else
 	{
@@ -1588,7 +1588,7 @@ gfc_finalize_tree_expr (gfc_se *se, gfc_symbol *derived,
 	}
     }
 
-  if (derived && derived->attr.zero_comp)
+  if (derived && !derived->components)
     {
       /* All the conditions below break down for zero length derived types.  */
       tmp = build_call_expr_loc (input_location, final_fndecl, 3,
