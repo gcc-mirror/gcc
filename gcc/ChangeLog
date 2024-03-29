@@ -1,3 +1,46 @@
+2024-03-28  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/h8300/extensions.md (zero_extendqihi*): Add output
+	template for reg->reg case where the regs don't match.
+
+2024-03-28  Gaius Mulley  <(no_default)>
+
+	PR modula2/114517
+	* doc/gm2.texi: Mention gm2 treats a # in the first column
+	as a preprocessor directive unless -fno-cpp is supplied.
+
+2024-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* predict.cc (estimate_bb_frequencies): Fix comment typo,
+	scalling -> scaling.
+
+2024-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112303
+	* profile-count.h (profile_count::operator+): Perform
+	addition in uint64_t variable and set m_val to MIN of that
+	val and max_count.
+	(profile_count::operator+=): Likewise.
+	(profile_count::operator-=): Formatting fix.
+	(profile_count::apply_probability): Use safe_scale_64bit
+	even in the int overload.
+
+2024-03-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/113907
+	* ipa-icf.cc (sem_function::init): Hash PHI operands
+	(sem_function::compare_phi_node): Add argument about preserving order
+
+2024-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114480
+	* cfganal.cc (compute_idf): Use simpler bitmap iteration,
+	touch work_set only when phi_insertion_points changed.
+
+2024-03-28  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* config/riscv/riscv.h (REGISTER_NAMES): Add vxsat.
+
 2024-03-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/101523

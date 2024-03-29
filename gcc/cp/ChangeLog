@@ -1,3 +1,9 @@
+2024-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100667
+	* semantics.cc (same_type_ref_bind_p): New.
+	(finish_trait_expr): Use it.
+
 2024-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/112724

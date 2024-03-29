@@ -1,3 +1,33 @@
+2024-03-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114520
+	* gm2-compiler/P0SyntaxCheck.bnf (DetectImport): New
+	procedure.
+	(EnableImportCheck): New boolean.
+	(Expect): Call DetectImport.
+	(Export): Set EnableImportCheck TRUE before ';' and FALSE
+	afterwards.
+
+2024-03-28  Gaius Mulley  <(no_default)>
+
+	PR modula2/114517
+	* gm2-compiler/M2Options.def (SetCpp): Add comment.
+	(GetCpp): Move after SetCpp.
+	(GetLineDirectives): New procedure function.
+	* gm2-compiler/M2Options.mod (GetLineDirectives): New
+	procedure function.
+	* gm2-gcc/m2options.h (M2Options_GetLineDirectives): New
+	prototype.
+	* gm2-lang.cc (gm2_langhook_init_options): OPT_fcpp only
+	assert if !value.
+	* m2.flex: Test GetLineDirectives before changing to LINE0
+	state.
+
+2024-03-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* target-independent/m2/Builtins.texi: Rebuilt.
+	* target-independent/m2/gm2-libs.texi: Rebuilt.
+
 2024-03-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114478

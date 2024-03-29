@@ -1,3 +1,93 @@
+2024-03-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR analyzer/111289
+	* c-c++-common/analyzer/stdarg-pr111289-int.c: Don't include
+	<limits.h>.
+
+2024-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100667
+	* g++.dg/ext/is_constructible8.C: New test.
+
+2024-03-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114474
+	* gfortran.dg/data_pointer_3.f90: New test.
+
+2024-03-28  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/rvv/vtype-call-clobbered.c: New Test.
+
+2024-03-28  Gaius Mulley  <(no_default)>
+
+	PR modula2/114517
+	* gm2/cpp/fail/hashfirstcolumn2.mod: New test.
+	* gm2/imports/fail/imports-fail.exp: New test.
+	* gm2/imports/fail/localmodule2.mod: New test.
+	* gm2/imports/run/pass/localmodule.mod: New test.
+
+2024-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112303
+	* gcc.c-torture/compile/pr112303.c: New test.
+
+2024-03-28  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	PR testsuite/114307
+	* gcc.dg/vect/vect-cond-reduc-in-order-2-signed-zero.c: Remove dg-run.
+	* gcc.dg/vect/complex/complex-operations-run.c: Likewise.
+	* gcc.dg/vect/pr113576.c: Remove dg-run.  Use dg-additional-options for
+	test-specific flags.
+	* gcc.dg/vect/gimplefe-40.c: Use dg-additional-options for
+	test-specific flags.
+	* gcc.dg/vect/gimplefe-41.c: Likewise.
+	* gcc.dg/vect/pr101145inf.c: Likewise.
+	* gcc.dg/vect/pr101145inf_1.c: Likewise.
+	* gcc.dg/vect/pr108316.c: Likewise.
+	* gcc.dg/vect/pr109011-1.c: Likewise.
+	* gcc.dg/vect/pr109011-2.c: Likewise.
+	* gcc.dg/vect/pr109011-3.c: Likewise.
+	* gcc.dg/vect/pr109011-4.c: Likewise.
+	* gcc.dg/vect/pr109011-5.c: Likewise.
+	* gcc.dg/vect/pr111846.c: Likewise.
+	* gcc.dg/vect/pr111860-2.c: Likewise.
+	* gcc.dg/vect/pr111860-3.c: Likewise.
+	* gcc.dg/vect/pr113002.c: Likewise.
+	* gcc.dg/vect/pr84711.c: Likewise.
+	* gcc.dg/vect/pr85597.c: Likewise.
+	* gcc.dg/vect/pr88497-1.c: Likewise.
+	* gcc.dg/vect/pr88497-2.c: Likewise.
+	* gcc.dg/vect/pr88497-3.c: Likewise.
+	* gcc.dg/vect/pr88497-4.c: Likewise.
+	* gcc.dg/vect/pr88497-5.c: Likewise.
+	* gcc.dg/vect/pr88497-7.c: Likewise.
+	* gcc.dg/vect/pr92347.c: Likewise.
+	* gcc.dg/vect/pr93069.c: Likewise.
+	* gcc.dg/vect/pr97241.c: Likewise.
+	* gcc.dg/vect/pr99102.c: Likewise.
+	* gcc.dg/vect/vect-early-break_65.c: Likewise.
+	* gcc.dg/vect/vect-fold-1.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-19.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-20.c: Likewise.
+	* gcc.dg/vect/vect-reduc-epilogue-gaps.c: Likewise.
+	* gcc.dg/vect/vect-singleton_1.c: Likewise.
+	* g++.dg/vect/pr84556.cc: Likewise.
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Likewise.
+	* gfortran.dg/vect/pr77848.f: Likewise.
+	* gfortran.dg/vect/pr90913.f90: Likewise.
+
+2024-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109925
+	* gcc.c-torture/execute/pr109925.c: New test.
+
+2024-03-28  Mikael Morin  <mikael@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111781
+	PR fortran/114475
+	* gfortran.dg/spec_expr_10.f90: New test.
+
 2024-03-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114473
