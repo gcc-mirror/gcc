@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 import os.path
 import sys
 import shlex
@@ -53,7 +53,7 @@ ignore = [ "coretypes_h",
 
 def process_log_file (header, logfile):
   if header_roots.get (header) != None:
-    print "Error: already processed log file: " + header + ".log"
+    print ("Error: already processed log file: " + header + ".log")
     return
   hname = pretty_name (header)
   header_roots[hname] = { }
@@ -66,7 +66,7 @@ def process_log_file (header, logfile):
       if newinc:
         incfrom = list()
         newinc = False
-      fn = re.findall(ur".*/(.*?):", line)
+      fn = re.findall(r".*/(.*?):", line)
       if len(fn) != 1:
         continue
       if fn[0][-2:] != ".h":
@@ -76,16 +76,16 @@ def process_log_file (header, logfile):
         incfrom.append (n)
       continue
     newinc = True
-    note = re.findall (ur"^.*note: (.*)", line)
+    note = re.findall (r"^.*note: (.*)", line)
     if len(note) > 0:
       sline.append (("note", note[0]))
     else:
-      err_msg = re.findall (ur"^.*: error: (.*)", line)
+      err_msg = re.findall (r"^.*: error: (.*)", line)
       if len(err_msg) == 1:
         msg = err_msg[0]
         if (len (re.findall("error: forward declaration", line))) != 0:
           continue
-        path = re.findall (ur"^(.*?):.*error: ", line)
+        path = re.findall (r"^(.*?):.*error: ", line)
         if len(path) != 1:
           continue
         if path[0][-2:] != ".h":
@@ -95,7 +95,7 @@ def process_log_file (header, logfile):
           continue
         sline.append (("error", msg, fname, incfrom))
 
-  print str(len(sline)) + " lines to process"
+  print (str(len(sline)) + " lines to process")
   lastline = "note"
   for line in sline:
     if line[0] != "note" and lastline[0] == "error":
@@ -111,7 +111,7 @@ def process_log_file (header, logfile):
           if ee not in extra_edges:
             extra_edges.append (ee)
           fname = t
-          print string
+          print (string)
 
       if hname not in nodes:
         nodes.append(hname)
@@ -125,7 +125,7 @@ def process_log_file (header, logfile):
       if header_roots[hname].get(fname) == None:
         header_roots[hname][fname] = list()
       if msg not in header_roots[hname][fname]:
-        print string + ofname + " : " +msg
+        print (string + ofname + " : " +msg)
         header_roots[hname][fname].append (msg)
     lastline = line;
 
@@ -181,10 +181,10 @@ def build_dot_file (file_list):
   if verbose:
     depcount.sort(key=lambda tup:tup[2])
     for x in depcount:
-      print " ("+str(x[2])+ ") : " + x[0] + " -> " + x[1]
+      print (" ("+str(x[2])+ ") : " + x[0] + " -> " + x[1])
       if (x[2] <= verbosity):
         for l in header_roots[x[0]][x[1]]:
-          print "            " + l
+          print ("            " + l)
 
   output.write ("}\n");
 
@@ -205,7 +205,7 @@ for arg in sys.argv[1:]:
       if (verbosity == 9):
         verbosity = 9999
   elif arg[0:1] == "-":
-    print "Unrecognized option " + arg
+    print ("Unrecognized option " + arg)
     dohelp = True
   else:
     files.append (arg)
@@ -214,16 +214,16 @@ if len(sys.argv) == 1:
   dohelp = True
 
 if dohelp:
-  print "Parses the log files from the reduce-headers tool to generate"
-  print "dependency graphs for the include web for specified files."
-  print "Usage:  [-nnum] [-h] [-v[n]] [-ooutput] file1 [[file2] ... [filen]]"
-  print "       -ooutput : Specifies output to output.dot and output.png"
-  print "                  Defaults to 'graph.dot and graph.png"
-  print "       -vn : verbose mode, shows the number of connections, and if n"
-  print "             is specified, show the messages if # < n. 9 is infinity"
-  print "       -h : help"
+  print ("Parses the log files from the reduce-headers tool to generate")
+  print ("dependency graphs for the include web for specified files.")
+  print ("Usage:  [-nnum] [-h] [-v[n]] [-ooutput] file1 [[file2] ... [filen]]")
+  print ("       -ooutput : Specifies output to output.dot and output.png")
+  print ("                  Defaults to 'graph.dot and graph.png")
+  print ("       -vn : verbose mode, shows the number of connections, and if n")
+  print ("             is specified, show the messages if # < n. 9 is infinity")
+  print ("       -h : help")
 else:
-  print files
+  print (files)
   build_dot_file (files)
   os.system ("dot -Tpng " + dotname + " -o" + graphname)
 

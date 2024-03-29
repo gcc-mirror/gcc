@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 import os.path
 import sys
 import shlex
@@ -82,7 +82,7 @@ for arg in sys.argv[1:]:
       noterm = True
   elif arg[0:2] == "-f":
     if not os.path.exists (arg[2:]):
-      print "Option " + arg +" doesn't specify a proper file"
+      print ("Option " + arg +" doesn't specify a proper file")
       dohelp = True
     else:
       sfile = open (arg[2:], "r")
@@ -93,7 +93,7 @@ for arg in sys.argv[1:]:
   elif arg[0:2] == "-n":
     edge_thresh = int (arg[2:])
   elif arg[0:1] == "-":
-    print "Unrecognized option " + arg
+    print ("Unrecognized option " + arg)
     dohelp = True
   else:
     files.append (arg)
@@ -102,17 +102,17 @@ if len(sys.argv) == 1:
   dohelp = True
 
 if dohelp:
-  print "Generates a graph of the include web for specified files."
-  print "Usage:  [-finput_file] [-h] [-ooutput] [file1 ... [filen]]"
-  print "  -finput_file : Input file containing a list of files to process."
-  print "  -ooutput : Specifies output to output.dot and output.png."
-  print "             defaults to graph.dot and graph.png."
-  print "  -nnum : Specifies the # of edges beyond which sfdp is invoked. def=0."
-  print "  -a : Aggregate all .c files to 1 file.  Shows only include web."
-  print "  -at : Aggregate, but don't include terminal.h to .c links."
-  print "  -h : Print this help."
+  print ("Generates a graph of the include web for specified files.")
+  print ("Usage:  [-finput_file] [-h] [-ooutput] [file1 ... [filen]]")
+  print ("  -finput_file : Input file containing a list of files to process.")
+  print ("  -ooutput : Specifies output to output.dot and output.png.")
+  print ("             defaults to graph.dot and graph.png.")
+  print ("  -nnum : Specifies the # of edges beyond which sfdp is invoked. def=0.")
+  print ("  -a : Aggregate all .c files to 1 file.  Shows only include web.")
+  print ("  -at : Aggregate, but don't include terminal.h to .c links.")
+  print ("  -h : Print this help.")
 else:
-  print files
+  print (files)
   build_dot_file (files)
   if edges > edge_thresh:
     os.system ("sfdp -Tpng " + dotname + " -o" + graphname)

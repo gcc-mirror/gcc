@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 import os.path
 import sys
 import shlex
@@ -45,11 +45,11 @@ if not usage and len (src) > 0:
   l.sort (key=lambda tup:tup[0], reverse=True)
 
   for f in l:
-    print str (f[0]) + " : " + f[1]
+    print (str (f[0]) + " : " + f[1])
 
 else:
-  print "count-headers file1 [filen]"
-  print "Count the number of occurrences of all includes across all listed files"
+  print ("count-headers file1 [filen]")
+  print ("Count the number of occurrences of all includes across all listed files")
 
  
 

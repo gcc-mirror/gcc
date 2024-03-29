@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 import os.path
 import sys
 import shlex
@@ -177,7 +177,7 @@ def build_target_dict (bld_dir, just_these):
         target = t.strip()
         tpath = bld_dir + "/" + target
         if not os.path.exists (tpath + "/gcc"):
-          print "Error: gcc build directory for target " + t + " Does not exist: " + tpath + "/gcc"
+          print ("Error: gcc build directory for target " + t + " Does not exist: " + tpath + "/gcc")
           error = True
         else:
           target_dict[target] = tpath
@@ -209,7 +209,7 @@ def find_targets (src_file):
   targ_list = list()
   obj_name = get_obj_name (src_file)
   if not obj_name:
-    print "Error: " + src_file + " - Cannot determine object name."
+    print ("Error: " + src_file + " - Cannot determine object name.")
     return list()
 
   # Put the high priority targets which tend to trigger failures first
@@ -263,22 +263,22 @@ def try_to_remove (src_file, h_list, verbose):
         hostbuild = True
       if not target_dict:
         summary = src_file + ": Target builds are required for config files.  None found."
-        print summary
+        print (summary)
         return summary
       if not targ_list:
         summary =src_file + ": Cannot find any targets which build this file."
-        print summary
+        print (summary)
         return summary
 
     if hostbuild:
       # confirm it actually builds before we do anything
-      print "Confirming source file builds"
+      print ("Confirming source file builds")
       res = get_make_output (build_dir + "/gcc", "all")
       if res[0] != 0:
         message = "Error: " + src_file + " does not build currently."
         summary = src_file + " does not build on host."
-        print message
-        print res[1]
+        print (message)
+        print (res[1])
         if verbose:
           verbose.write (message + "\n")
           verbose.write (res[1]+ "\n")
@@ -314,7 +314,7 @@ def try_to_remove (src_file, h_list, verbose):
         lookfor = ii_src_line(src_info)[inc_file]
         src_tmp.remove (lookfor)
         message = "Trying " + src_file + " without " + inc_file
-        print message
+        print (message)
         if verbose:
           verbose.write (message + "\n")
         out = open(src_file, "w")
@@ -350,7 +350,7 @@ def try_to_remove (src_file, h_list, verbose):
               message = "Passed host and target builds"
 
         if keep:
-          print message + "\n"
+          print (message + "\n")
 
         if (rc != 0):
           if verbose:
@@ -392,7 +392,7 @@ def try_to_remove (src_file, h_list, verbose):
           if ii_path(iinfo) == "build" and not target_dict:
             keep = True
             text = message + " : Will not remove a build file without some targets."
-            print text
+            print (text)
             ilog = open(src_file+".log","a")
             ilog.write (text +"\n")
             ilog.write ("============================================\n");
@@ -414,7 +414,7 @@ def try_to_remove (src_file, h_list, verbose):
                     text = message + ", but must keep " + inc_file + " because it provides " + dep 
                     if because.get(dep) != None:
                       text = text + " Possibly required by " + because[dep]
-                    print text
+                    print (text)
                     ilog = open(inc_file+".log","a")
                     ilog.write (because[dep]+": Requires [dep] in "+src_file+"\n")
                     ilog.write ("============================================\n");
@@ -444,7 +444,7 @@ def try_to_remove (src_file, h_list, verbose):
 
           src_tmp = copy.deepcopy (src_data)
         else:
-          print message + "  --> removing " + inc_file + "\n"
+          print (message + "  --> removing " + inc_file + "\n")
           rmcount += 1
           if verbose:
             verbose.write (message + "  --> removing " + inc_file + "\n")
@@ -454,7 +454,7 @@ def try_to_remove (src_file, h_list, verbose):
             remove_count[inc_file] += 1
           src_data = copy.deepcopy (src_tmp)
     except:
-      print "Interuption: restoring original file"
+      print ("Interuption: restoring original file")
       out = open(src_file, "w")
       for line in src_orig:
         out.write (line)
@@ -473,8 +473,8 @@ def try_to_remove (src_file, h_list, verbose):
       rc = res[0]
       if (rc != 0):
         # host build failed! return to original version
-        print "Error: " + src_file + " Failed to bootstrap at end!!! restoring."
-        print "        Bad version at " + src_file + ".bad"
+        print ("Error: " + src_file + " Failed to bootstrap at end!!! restoring.")
+        print ("        Bad version at " + src_file + ".bad")
         os.rename (src_file, src_file + ".bad")
         out = open(src_file, "w")
         for line in src_orig:
@@ -486,7 +486,7 @@ def try_to_remove (src_file, h_list, verbose):
       summary = src_file + ": No change."
     else:
       summary = src_file + ": Reduction performed, "+str(rmcount)+" includes removed."
-  print summary
+  print (summary)
   return summary
 
 only_h = list ()
@@ -513,11 +513,11 @@ for x in sys.argv[1:]:
   elif x[0:2] == "-t":
     target_dir = x[2:]
   elif x[0] == "-":
-    print "Error:  Unrecognized option " + x
+    print ("Error:  Unrecognized option " + x)
     usgae = True
   else:
     if not os.path.exists (x):
-      print "Error: specified file " + x + " does not exist."
+      print ("Error: specified file " + x + " does not exist.")
       usage = True
     else:
       src.append (x)
@@ -526,50 +526,50 @@ if target_dir:
   build_target_dict (target_dir, only_targs)
 
 if build_dir == "" and target_dir == "":
-  print "Error: Must specify a build directory, and/or a target directory."
+  print ("Error: Must specify a build directory, and/or a target directory.")
   usage = True
 
 if build_dir and not os.path.exists (build_dir):
-    print "Error: specified build directory does not exist : " + build_dir
+    print ("Error: specified build directory does not exist : " + build_dir)
     usage = True
 
 if target_dir and not os.path.exists (target_dir):
-    print "Error: specified target directory does not exist : " + target_dir
+    print ("Error: specified target directory does not exist : " + target_dir)
     usage = True
 
 if usage:
-  print "Attempts to remove extraneous include files from source files."
-  print " "
-  print "Should be run from the main gcc source directory, and works on a target"
-  print "directory, as we attempt to make the 'all' target."
-  print " "
-  print "By default, gcc-reorder-includes is run on each file before attempting"
-  print "to remove includes. this removes duplicates and puts some headers in a"
-  print "canonical ordering"
-  print " "
-  print "The build directory should be ready to compile via make. Time is saved"
-  print "if the build is already complete, so that only changes need to be built."
-  print " "
-  print "Usage: [options] file1.c [file2.c] ... [filen.c]"
-  print "      -bdir    : the root build directory to attempt buiding .o files."
-  print "      -tdir    : the target build directory"
-  print "      -d       : Ignore conditional macro dependencies."
-  print " "
-  print "      -Dmacro  : Ignore a specific macro for dependencies"
-  print "      -Ttarget : Only consider target in target directory."
-  print "      -fheader : Specifies a specific .h file to be considered."
-  print " "
-  print "      -D, -T, and -f can be specified mulitple times and are aggregated."
-  print " "
-  print "  The original file will be in filen.bak"
-  print " "
+  print ("Attempts to remove extraneous include files from source files.")
+  print (" ")
+  print ("Should be run from the main gcc source directory, and works on a target")
+  print ("directory, as we attempt to make the 'all' target.")
+  print (" ")
+  print ("By default, gcc-reorder-includes is run on each file before attempting")
+  print ("to remove includes. this removes duplicates and puts some headers in a")
+  print ("canonical ordering")
+  print (" ")
+  print ("The build directory should be ready to compile via make. Time is saved")
+  print ("if the build is already complete, so that only changes need to be built.")
+  print (" ")
+  print ("Usage: [options] file1.c [file2.c] ... [filen.c]")
+  print ("      -bdir    : the root build directory to attempt buiding .o files.")
+  print ("      -tdir    : the target build directory")
+  print ("      -d       : Ignore conditional macro dependencies.")
+  print (" ")
+  print ("      -Dmacro  : Ignore a specific macro for dependencies")
+  print ("      -Ttarget : Only consider target in target directory.")
+  print ("      -fheader : Specifies a specific .h file to be considered.")
+  print (" ")
+  print ("      -D, -T, and -f can be specified mulitple times and are aggregated.")
+  print (" ")
+  print ("  The original file will be in filen.bak")
+  print (" ")
   sys.exit (0)
  
 if only_h:
-  print "Attempting to remove only these files:"
+  print ("Attempting to remove only these files:")
   for x in only_h:
-    print x
-  print " "
+    print (x)
+  print (" ")
 
 logfile = open("reduce-headers.log","w")
 
@@ -583,7 +583,7 @@ ilog = open("reduce-headers.sum","a")
 ilog.write ("===============================================================\n")
 for x in remove_count:
   msg = x + ": Removed " + str(remove_count[x]) + " times."
-  print msg
+  print (msg)
   logfile.write (msg + "\n")
   ilog.write (msg + "\n")
 
