@@ -1574,9 +1574,9 @@ package Sinfo is
    --  Instance_Spec
    --    This field is present in generic instantiation nodes, and also in
    --    formal package declaration nodes (formal package declarations are
-   --    treated in a manner very similar to package instantiations). It points
-   --    to the node for the spec of the instance, inserted as part of the
-   --    semantic processing for instantiations in Sem_Ch12.
+   --    treated similarly to package instantiations). It points to the node
+   --    for the spec of the instance, inserted as part of the semantic
+   --    processing for instantiations in Sem_Ch12.
 
    --  Is_Abort_Block
    --    Present in N_Block_Statement nodes. True if the block protects a list
@@ -3639,8 +3639,8 @@ package Sinfo is
 
       --  The only choice that appears explicitly is the OTHERS choice, as
       --  defined here. Other cases of discrete choice (expression and
-      --  discrete range) appear directly. This production is also used
-      --  for the OTHERS possibility of an exception choice.
+      --  discrete range) appear directly. N_Others_Choice is also used
+      --  in exception handlers and generic formal packages.
 
       --  Note: in accordance with the syntax, the parser does not check that
       --  OTHERS appears at the end on its own in a choice list context. This
@@ -7139,6 +7139,7 @@ package Sinfo is
 
       --  GENERIC_ASSOCIATION ::=
       --    [generic_formal_parameter_SELECTOR_NAME =>]
+      --      EXPLICIT_GENERIC_ACTUAL_PARAMETER
 
       --  Note: unlike the procedure call case, a generic association node
       --  is generated for every association, even if no formal parameter
@@ -7149,7 +7150,8 @@ package Sinfo is
       --  In Ada 2005, a formal may be associated with a box, if the
       --  association is part of the list of actuals for a formal package.
       --  If the association is given by  OTHERS => <>, the association is
-      --  an N_Others_Choice.
+      --  an N_Others_Choice (not an N_Generic_Association whose Selector_Name
+      --  is an N_Others_Choice).
 
       --  N_Generic_Association
       --  Sloc points to first token of generic association
@@ -7442,7 +7444,7 @@ package Sinfo is
       --  Defining_Identifier
       --  Name
       --  Generic_Associations (set to No_List if (<>) case or
-      --   empty generic actual part)
+      --   empty formal package actual part)
       --  Box_Present
       --  Instance_Spec
       --  Is_Known_Guaranteed_ABE
@@ -7452,21 +7454,50 @@ package Sinfo is
       --------------------------------------
 
       --  FORMAL_PACKAGE_ACTUAL_PART ::=
-      --    ([OTHERS] => <>)
+      --    ([OTHERS =>] <>)
       --    | [GENERIC_ACTUAL_PART]
-      --    (FORMAL_PACKAGE_ASSOCIATION {. FORMAL_PACKAGE_ASSOCIATION}
+      --    | (FORMAL_PACKAGE_ASSOCIATION {, FORMAL_PACKAGE_ASSOCIATION}
+      --        [, OTHERS => <>])
 
       --  FORMAL_PACKAGE_ASSOCIATION ::=
       --   GENERIC_ASSOCIATION
       --  | GENERIC_FORMAL_PARAMETER_SELECTOR_NAME => <>
 
       --  There is no explicit node in the tree for a formal package actual
-      --  part. Instead the information appears in the parent node (i.e. the
-      --  formal package declaration node itself).
-
-      --  There is no explicit node for a formal package association. All of
-      --  them are represented either by a generic association, possibly with
-      --  Box_Present, or by an N_Others_Choice.
+      --  part, nor for a formal package association. A formal package
+      --  association is represented as a generic association, possibly with
+      --  Box_Present.
+      --
+      --  The "others => <>" syntax (both cases) is represented as an
+      --  N_Others_Choice (not an N_Generic_Association whose Selector_Name
+      --  is an N_Others_Choice). This admittedly odd representation does not
+      --  lose information, because "others" cannot be followed by anything
+      --  other than "=> <>". Thus:
+      --
+      --  "... is new G;"
+      --    The N_Formal_Package_Declaration has empty Generic_Associations,
+      --    and Box_Present = False.
+      --
+      --  "... is new G(<>);"
+      --    The N_Formal_Package_Declaration has empty Generic_Associations,
+      --    and Box_Present = True.
+      --
+      --  "... is new G(others => <>);"
+      --    The N_Formal_Package_Declaration has Generic_Associations with a
+      --    single element, which is an N_Others_Choice.
+      --    The N_Formal_Package_Declaration has Box_Present = False.
+      --
+      --  "... is new G(X, F => Y, others => <>);"
+      --    The N_Formal_Package_Declaration has Generic_Associations with
+      --    three elements, the last of which is an N_Others_Choice.
+      --    The N_Formal_Package_Declaration has Box_Present = False.
+      --
+      --  "... is new G(F1 => X, F2 => <>, others => <>);"
+      --    The N_Formal_Package_Declaration has Generic_Associations with
+      --    three elements. The first is an N_Generic_Association with
+      --    Box_Present = False. The second is an N_Generic_Association with
+      --    Box_Present = True. The last is an N_Others_Choice.
+      --    The N_Formal_Package_Declaration has Box_Present = False.
 
       ---------------------------------
       -- 13.1  Representation clause --
