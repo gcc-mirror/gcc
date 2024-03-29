@@ -506,11 +506,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* Machine_Attributes on types are expected to be propagated to
 	 subtypes.  The corresponding Gigi_Rep_Items are only attached
 	 to the first subtype though, so we handle the propagation here.  */
-      if (Base_Type (gnat_entity) != gnat_entity
+      if (!Is_Base_Type (gnat_entity)
 	  && !Is_First_Subtype (gnat_entity)
-	  && Has_Gigi_Rep_Item (First_Subtype (Base_Type (gnat_entity))))
-	prepend_attributes (&attr_list,
-			    First_Subtype (Base_Type (gnat_entity)));
+	  && Has_Gigi_Rep_Item (First_Subtype (gnat_entity)))
+	prepend_attributes (&attr_list, First_Subtype (gnat_entity));
 
       /* Compute a default value for the size of an elementary type.  */
       if (Known_Esize (gnat_entity) && Is_Elementary_Type (gnat_entity))
