@@ -47,6 +47,7 @@ along with Gcov; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "json.h"
 #include "hwint.h"
+#include "xregex.h"
 
 #include <zlib.h>
 #include <getopt.h>
@@ -689,6 +690,48 @@ static int flag_counts = 0;
 /* Return code of the tool invocation.  */
 static int return_code = 0;
 
+/* "Keep policy" when adding functions to the global function table.  This will
+   be set to false when --include is used, otherwise every function should be
+   added to the table.  Used for --include/exclude.  */
+static bool default_keep = true;
+
+/* Include/exclude filters function based on matching the (de)mangled name.
+   The default is to match the mangled name.  Note that flag_demangled_names
+   does not affect this.  */
+static bool flag_filter_on_demangled = false;
+
+/* A 'function filter', a filter and action for determining if a function
+   should be included in the output or not.  Used for --include/--exclude
+   filtering.  */
+struct fnfilter
+{
+  /* The (extended) compiled regex for this filter.  */
+  regex_t regex;
+
+  /* The action when this filter (regex) matches - if true, the function should
+     be kept, otherwise discarded.  */
+  bool keep;
+
+  /* Compile the regex EXPR, or exit if pattern is malformed.  */
+  void compile (const char *expr)
+  {
+    int err = regcomp (&regex, expr, REG_NOSUB | REG_EXTENDED);
+    if (err)
+      {
+	size_t len = regerror (err, &regex, nullptr, 0);
+	char *msg = XNEWVEC (char, len);
+	regerror (err, &regex, msg, len);
+	fprintf (stderr, "Bad regular expression: %s\n", msg);
+	free (msg);
+	exit (EXIT_FAILURE);
+    }
+  }
+};
+
+/* A collection of filter functions for including/exclude functions in the
+   output.  This is empty unless --include/--exclude is used.  */
+static vector<fnfilter> filters;
+
 /* Forward declarations.  */
 static int process_args (int, char **);
 static void print_usage (int) ATTRIBUTE_NORETURN;
@@ -983,6 +1026,8 @@ print_usage (int error_p)
   fnotice (file, "  -d, --display-progress          Display progress information\n");
   fnotice (file, "  -D, --debug			    Display debugging dumps\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
+  fnotice (file, "      --include                   Include functions matching this regex\n");
+  fnotice (file, "      --exclude                   Exclude functions matching this regex\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
   fnotice (file, "  -j, --json-format               Output JSON intermediate format\n\
                                     into .gcov.json.gz file\n");
@@ -991,6 +1036,8 @@ print_usage (int error_p)
   fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
                                     source files\n");
   fnotice (file, "  -m, --demangled-names           Output demangled function names\n");
+  fnotice (file, "  -M, --filter-on-demangled       Make --include/--exclude match on demangled\n\
+                                    names. This does not imply -m\n");
   fnotice (file, "  -n, --no-output                 Do not create an output file\n");
   fnotice (file, "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n");
   fnotice (file, "  -p, --preserve-paths            Preserve all pathname components\n");
@@ -1035,11 +1082,14 @@ static const struct option options[] =
   { "branch-counts",        no_argument,       NULL, 'c' },
   { "conditions",	    no_argument,       NULL, 'g' },
   { "json-format",	    no_argument,       NULL, 'j' },
+  { "include",              required_argument, NULL, 'I' },
+  { "exclude",              required_argument, NULL, 'E' },
   { "human-readable",	    no_argument,       NULL, 'H' },
   { "no-output",            no_argument,       NULL, 'n' },
   { "long-file-names",      no_argument,       NULL, 'l' },
   { "function-summaries",   no_argument,       NULL, 'f' },
   { "demangled-names",      no_argument,       NULL, 'm' },
+  { "filter-on-demangled",  no_argument,       NULL, 'M' },
   { "preserve-paths",       no_argument,       NULL, 'p' },
   { "relative-only",        no_argument,       NULL, 'r' },
   { "object-directory",     required_argument, NULL, 'o' },
@@ -1062,7 +1112,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  const char *opts = "abcdDfghHijklmno:pqrs:tuvwx";
+  const char *opts = "abcdDfghHijklmMno:pqrs:tuvwx";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -1088,6 +1138,17 @@ process_args (int argc, char **argv)
 	case 'l':
 	  flag_long_names = 1;
 	  break;
+	case 'I':
+	  default_keep = false;
+	  filters.push_back (fnfilter {});
+	  filters.back ().keep = true;
+	  filters.back ().compile (optarg);
+	  break;
+	case 'E':
+	  filters.push_back (fnfilter {});
+	  filters.back ().keep = false;
+	  filters.back ().compile (optarg);
+	  break;
 	case 'H':
 	  flag_human_readable_numbers = 1;
 	  break;
@@ -1099,6 +1160,9 @@ process_args (int argc, char **argv)
 	  break;
 	case 'm':
 	  flag_demangled_names = 1;
+	  break;
+	case 'M':
+	  flag_filter_on_demangled = true;
 	  break;
 	case 'n':
 	  flag_gcov_file = 0;
@@ -1740,9 +1804,13 @@ release_structures (void)
        it != functions.end (); it++)
     delete (*it);
 
+  for (fnfilter &filter : filters)
+    regfree (&filter.regex);
+
   sources.resize (0);
   names.resize (0);
   functions.resize (0);
+  filters.resize (0);
   ident_to_fn.clear ();
 }
 
@@ -1967,8 +2035,6 @@ read_graph_file (void)
 	  unsigned end_column = gcov_read_unsigned ();
 
 	  fn = new function_info ();
-	  functions.push_back (fn);
-	  ident_to_fn[ident] = fn;
 
 	  fn->m_name = function_name;
 	  fn->ident = ident;
@@ -1982,6 +2048,26 @@ read_graph_file (void)
 	  fn->artificial = artificial;
 
 	  current_tag = tag;
+
+	  /* This is separate from flag_demangled_names to support filtering on
+	     mangled names while printing demangled names, or filtering on
+	     demangled names while printing mangled names.  An independent flag
+	     makes sure the function selection does not change even if
+	     demangling is turned on/off.  */
+	  const char *fname = function_name;
+	  if (flag_filter_on_demangled)
+	    fname = fn->get_demangled_name ();
+
+	  bool keep = default_keep;
+	  for (const fnfilter &fn : filters)
+	    if (regexec (&fn.regex, fname, 0, nullptr, 0) == 0)
+	      keep = fn.keep;
+
+	  if (keep)
+	    {
+	      functions.push_back (fn);
+	      ident_to_fn[ident] = fn;
+	    }
 	}
       else if (fn && tag == GCOV_TAG_BLOCKS)
 	{
@@ -3391,11 +3477,17 @@ output_lines (FILE *gcov_file, const source_info *src)
 
   unsigned line_start_group = 0;
   vector<function_info *> *fns;
+  unsigned filtered_line_end = !filters.empty () ? 0 : source_lines.size ();
 
   for (unsigned line_num = 1; line_num <= source_lines.size (); line_num++)
     {
       if (line_num >= src->lines.size ())
 	{
+	  /* If the src->lines is truncated because the rest of the functions
+	     are filtered out we must stop here, and not fall back to printing
+	     the rest of the file.  */
+	  if (!filters.empty ())
+	    break;
 	  fprintf (gcov_file, "%9s:%5u", "-", line_num);
 	  print_source_line (gcov_file, source_lines, line_num);
 	  continue;
@@ -3414,11 +3506,26 @@ output_lines (FILE *gcov_file, const source_info *src)
 	      for (unsigned i = 0; i < fns->size (); i++)
 		if ((*fns)[i]->end_line > line_start_group)
 		  line_start_group = (*fns)[i]->end_line;
+
+	      /* When filtering, src->lines will be cut short for the last
+		 selected function.  To make sure the "overlapping function"
+		 section is printed too, adjust the end so that it is within
+		 src->lines.  */
+	      if (line_start_group >= src->lines.size ())
+		line_start_group = src->lines.size () - 1;
+
+	      if (!filters.empty ())
+		filtered_line_end = line_start_group;
 	    }
 	  else if (fns != NULL && fns->size () == 1)
 	    {
 	      function_info *fn = (*fns)[0];
 	      output_function_details (gcov_file, fn);
+
+	      /* If functions are filtered, only the matching functions will be in
+		 fns and there is no need for extra checking.  */
+	      if (!filters.empty ())
+		filtered_line_end = fn->end_line;
 	    }
 	}
 
@@ -3428,12 +3535,16 @@ output_lines (FILE *gcov_file, const source_info *src)
 	 Otherwise, print the execution count before the source line.
 	 There are 16 spaces of indentation added before the source
 	 line so that tabs won't be messed up.  */
-      output_line_beginning (gcov_file, line->exists, line->unexceptional,
-			     line->has_unexecuted_block, line->count,
-			     line_num, "=====", "#####", src->maximum_count);
+      if (line_num <= filtered_line_end)
+	{
+	  output_line_beginning (gcov_file, line->exists, line->unexceptional,
+				 line->has_unexecuted_block, line->count,
+				 line_num, "=====", "#####",
+				 src->maximum_count);
 
-      print_source_line (gcov_file, source_lines, line_num);
-      output_line_details (gcov_file, line, line_num);
+	  print_source_line (gcov_file, source_lines, line_num);
+	  output_line_details (gcov_file, line, line_num);
+	}
 
       if (line_start_group == line_num)
 	{
