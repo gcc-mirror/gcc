@@ -90,11 +90,16 @@ extern loongarch_def_array<const char *, N_ABI_BASE_TYPES>
 
 #define TO_LP64_ABI_BASE(C) (C)
 
-#define ABI_FPU_64(abi_base) \
+#define ABI_LP64_P(abi_base) \
+  (abi_base == ABI_BASE_LP64D \
+   || abi_base == ABI_BASE_LP64F \
+   || abi_base == ABI_BASE_LP64S)
+
+#define ABI_FPU64_P(abi_base) \
   (abi_base == ABI_BASE_LP64D)
-#define ABI_FPU_32(abi_base) \
+#define ABI_FPU32_P(abi_base) \
   (abi_base == ABI_BASE_LP64F)
-#define ABI_FPU_NONE(abi_base) \
+#define ABI_NOFPU_P(abi_base) \
   (abi_base == ABI_BASE_LP64S)
 
 

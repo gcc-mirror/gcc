@@ -710,12 +710,18 @@ enum reg_class
 			| RECIP_MASK_RSQRT | RECIP_MASK_VEC_SQRT \
 			| RECIP_MASK_VEC_DIV | RECIP_MASK_VEC_RSQRT)
 
-#define TARGET_RECIP_DIV        ((recip_mask & RECIP_MASK_DIV) != 0 || TARGET_uARCH_LA664)
-#define TARGET_RECIP_SQRT       ((recip_mask & RECIP_MASK_SQRT) != 0 || TARGET_uARCH_LA664)
-#define TARGET_RECIP_RSQRT      ((recip_mask & RECIP_MASK_RSQRT) != 0 || TARGET_uARCH_LA664)
-#define TARGET_RECIP_VEC_DIV    ((recip_mask & RECIP_MASK_VEC_DIV) != 0 || TARGET_uARCH_LA664)
-#define TARGET_RECIP_VEC_SQRT   ((recip_mask & RECIP_MASK_VEC_SQRT) != 0 || TARGET_uARCH_LA664)
-#define TARGET_RECIP_VEC_RSQRT  ((recip_mask & RECIP_MASK_VEC_RSQRT) != 0 || TARGET_uARCH_LA664)
+#define TARGET_RECIP_DIV \
+  ((recip_mask & RECIP_MASK_DIV) != 0 && ISA_HAS_FRECIPE)
+#define TARGET_RECIP_SQRT \
+  ((recip_mask & RECIP_MASK_SQRT) != 0 && ISA_HAS_FRECIPE)
+#define TARGET_RECIP_RSQRT \
+  ((recip_mask & RECIP_MASK_RSQRT) != 0 && ISA_HAS_FRECIPE)
+#define TARGET_RECIP_VEC_DIV \
+  ((recip_mask & RECIP_MASK_VEC_DIV) != 0 && ISA_HAS_FRECIPE)
+#define TARGET_RECIP_VEC_SQRT \
+  ((recip_mask & RECIP_MASK_VEC_SQRT) != 0 && ISA_HAS_FRECIPE)
+#define TARGET_RECIP_VEC_RSQRT \
+  ((recip_mask & RECIP_MASK_VEC_RSQRT) != 0 && ISA_HAS_FRECIPE)
 
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  */

@@ -208,9 +208,6 @@ const enum reg_class loongarch_regno_to_class[FIRST_PSEUDO_REGISTER] = {
     FRAME_REGS,	FRAME_REGS
 };
 
-/* Which cost information to use.  */
-static const struct loongarch_rtx_cost_data *loongarch_cost;
-
 /* Information about a single argument.  */
 struct loongarch_arg_info
 {
@@ -5911,17 +5908,6 @@ loongarch_print_operand_punctuation (FILE *file, int ch)
     }
 }
 
-/* Initialize loongarch_print_operand_punct.  */
-
-static void
-loongarch_init_print_operand_punct (void)
-{
-  const char *p;
-
-  for (p = ".$"; *p; p++)
-    loongarch_print_operand_punct[(unsigned char) *p] = true;
-}
-
 /* PRINT_OPERAND prefix LETTER refers to the integer branch instruction
    associated with condition CODE.  Print the condition part of the
    opcode to FILE.  */
@@ -7625,118 +7611,15 @@ loongarch_init_machine_status (void)
 }
 
 static void
-loongarch_cpu_option_override (struct loongarch_target *target,
-			       struct gcc_options *opts,
-			       struct gcc_options *opts_set)
+loongarch_global_init (void)
 {
-  /* alignments */
-  if (opts->x_flag_align_functions && !opts->x_str_align_functions)
-    opts->x_str_align_functions
-      = loongarch_cpu_align[target->cpu_tune].function;
-
-  if (opts->x_flag_align_labels && !opts->x_str_align_labels)
-    opts->x_str_align_labels = loongarch_cpu_align[target->cpu_tune].label;
-
-  /* Set up parameters to be used in prefetching algorithm.  */
-  int simultaneous_prefetches
-    = loongarch_cpu_cache[target->cpu_tune].simultaneous_prefetches;
-
-  SET_OPTION_IF_UNSET (opts, opts_set, param_simultaneous_prefetches,
-		       simultaneous_prefetches);
-
-  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_line_size,
-		       loongarch_cpu_cache[target->cpu_tune].l1d_line_size);
-
-  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_size,
-		       loongarch_cpu_cache[target->cpu_tune].l1d_size);
-
-  SET_OPTION_IF_UNSET (opts, opts_set, param_l2_cache_size,
-		       loongarch_cpu_cache[target->cpu_tune].l2d_size);
-}
-
-static void
-loongarch_option_override_internal (struct gcc_options *opts,
-				    struct gcc_options *opts_set)
-{
-  int i, regno, mode;
-
-  if (flag_pic)
-    g_switch_value = 0;
-
-  loongarch_init_target (&la_target,
-			 la_opt_cpu_arch, la_opt_cpu_tune, la_opt_fpu,
-			 la_opt_simd, la_opt_abi_base, la_opt_abi_ext,
-			 la_opt_cmodel, opts->x_la_isa_evolution,
-			 opts_set->x_la_isa_evolution);
-
-  /* Handle target-specific options: compute defaults/conflicts etc.  */
-  loongarch_config_target (&la_target, NULL, 0);
-
-  loongarch_update_gcc_opt_status (&la_target, opts, opts_set);
-  loongarch_cpu_option_override (&la_target, opts, opts_set);
-
-  if (TARGET_ABI_LP64)
-    flag_pcc_struct_return = 0;
-
-  /* Decide which rtx_costs structure to use.  */
-  if (optimize_size)
-    loongarch_cost = &loongarch_rtx_cost_optimize_size;
-  else
-    loongarch_cost = &loongarch_cpu_rtx_cost_data[la_target.cpu_tune];
-
-  /* If the user hasn't specified a branch cost, use the processor's
-     default.  */
-  if (la_branch_cost == 0)
-    la_branch_cost = loongarch_cost->branch_cost;
-
-  /* Enable sw prefetching at -O3 and higher.  */
-  if (opts->x_flag_prefetch_loop_arrays < 0
-      && (opts->x_optimize >= 3 || opts->x_flag_profile_use)
-      && !opts->x_optimize_size)
-    opts->x_flag_prefetch_loop_arrays = 1;
-
-  if (TARGET_DIRECT_EXTERN_ACCESS && flag_shlib)
-    error ("%qs cannot be used for compiling a shared library",
-	   "-mdirect-extern-access");
-
-  switch (la_target.cmodel)
-    {
-      case CMODEL_EXTREME:
-	if (opts->x_flag_plt)
-	  {
-	    if (global_options_set.x_flag_plt)
-	      error ("code model %qs is not compatible with %s",
-		     "extreme", "-fplt");
-	    opts->x_flag_plt = 0;
-	  }
-	break;
-
-      case CMODEL_TINY_STATIC:
-      case CMODEL_MEDIUM:
-      case CMODEL_NORMAL:
-      case CMODEL_TINY:
-      case CMODEL_LARGE:
-	break;
-
-      default:
-	gcc_unreachable ();
-    }
-
-  /* Validate the guard size.  */
-  int guard_size = param_stack_clash_protection_guard_size;
-
-  /* Enforce that interval is the same size as size so the mid-end does the
-     right thing.  */
-  SET_OPTION_IF_UNSET (opts, &global_options_set,
-		       param_stack_clash_protection_probe_interval,
-		       guard_size);
-
-  loongarch_init_print_operand_punct ();
+  /* Initialize loongarch_print_operand_punct.  */
+  for (const char *p = ".$"; *p; p++)
+    loongarch_print_operand_punct[(unsigned char) *p] = true;
 
   /* Set up array to map GCC register number to debug register number.
      Ignore the special purpose register numbers.  */
-
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+  for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       if (GP_REG_P (i) || FP_REG_P (i))
 	loongarch_dwarf_regno[i] = i;
@@ -7745,115 +7628,53 @@ loongarch_option_override_internal (struct gcc_options *opts,
     }
 
   /* Set up loongarch_hard_regno_mode_ok.  */
-  for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
-    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+  for (int mode = 0; mode < MAX_MACHINE_MODE; mode++)
+    for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
       loongarch_hard_regno_mode_ok_p[mode][regno]
 	= loongarch_hard_regno_mode_ok_uncached (regno, (machine_mode) mode);
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &loongarch_init_machine_status;
+};
 
-  /* -mrecip options.  */
-  static struct
-    {
-      const char *string;	    /* option name.  */
-      unsigned int mask;	    /* mask bits to set.  */
-    }
-  const recip_options[] = {
-	{ "all",       RECIP_MASK_ALL },
-	{ "none",      RECIP_MASK_NONE },
-	{ "div",       RECIP_MASK_DIV },
-	{ "sqrt",      RECIP_MASK_SQRT },
-	{ "rsqrt",     RECIP_MASK_RSQRT },
-	{ "vec-div",   RECIP_MASK_VEC_DIV },
-	{ "vec-sqrt",  RECIP_MASK_VEC_SQRT },
-	{ "vec-rsqrt", RECIP_MASK_VEC_RSQRT },
-  };
+static void
+loongarch_option_override_internal (struct loongarch_target *target,
+				    struct gcc_options *opts,
+				    struct gcc_options *opts_set)
+{
+  /* Handle options not covered by struct loongarch_target.  */
+  loongarch_init_misc_options (opts, opts_set);
 
-  if (la_recip_name)
-    {
-      char *p = ASTRDUP (la_recip_name);
-      char *q;
-      unsigned int mask, i;
-      bool invert;
+  /* Resolve the target struct.  */
+  loongarch_init_target (target,
+			 opts->x_la_opt_cpu_arch,
+			 opts->x_la_opt_cpu_tune,
+			 opts->x_la_opt_fpu,
+			 opts->x_la_opt_simd,
+			 opts->x_la_opt_abi_base,
+			 opts->x_la_opt_abi_ext,
+			 opts->x_la_opt_cmodel,
+			 opts->x_la_isa_evolution,
+			 opts_set->x_la_isa_evolution);
 
-      while ((q = strtok (p, ",")) != NULL)
-	{
-	  p = NULL;
-	  if (*q == '!')
-	    {
-	      invert = true;
-	      q++;
-	    }
-	  else
-	    invert = false;
+  loongarch_config_target (target, NULL, 0);
 
-	  if (!strcmp (q, "default"))
-	    mask = RECIP_MASK_ALL;
-	  else
-	    {
-	      for (i = 0; i < ARRAY_SIZE (recip_options); i++)
-		if (!strcmp (q, recip_options[i].string))
-		  {
-		    mask = recip_options[i].mask;
-		    break;
-		  }
-
-	      if (i == ARRAY_SIZE (recip_options))
-		{
-		  error ("unknown option for %<-mrecip=%s%>", q);
-		  invert = false;
-		  mask = RECIP_MASK_NONE;
-		}
-	    }
-
-	  if (invert)
-	    recip_mask &= ~mask;
-	  else
-	    recip_mask |= mask;
-	}
-    }
-  if (la_recip)
-    recip_mask |= RECIP_MASK_ALL;
-  if (!ISA_HAS_FRECIPE)
-    recip_mask = RECIP_MASK_NONE;
-
-#define INIT_TARGET_FLAG(NAME, INIT) \
-  { \
-    if (!(target_flags_explicit & MASK_##NAME)) \
-      { \
-	if (INIT) \
-	  target_flags |= MASK_##NAME; \
-	else \
-	  target_flags &= ~MASK_##NAME; \
-      } \
-  }
-
-  /* Enable conditional moves for int and float by default.  */
-  INIT_TARGET_FLAG (COND_MOVE_INT, 1)
-  INIT_TARGET_FLAG (COND_MOVE_FLOAT, 1)
-
-  /* Set mrelax default.  */
-  INIT_TARGET_FLAG (LINKER_RELAXATION,
-		    HAVE_AS_MRELAX_OPTION && HAVE_AS_COND_BRANCH_RELAXATION)
-
-#undef INIT_TARGET_FLAG
-
-  if (la_opt_explicit_relocs == M_OPT_UNSET)
-    la_opt_explicit_relocs = (HAVE_AS_EXPLICIT_RELOCS
-			      ? (TARGET_LINKER_RELAXATION
-				 ? EXPLICIT_RELOCS_AUTO
-				 : EXPLICIT_RELOCS_ALWAYS)
-			      : EXPLICIT_RELOCS_NONE);
+  /* Override some options according to the resolved target.  */
+  loongarch_target_option_override (target, opts, opts_set);
 }
-
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
 
 static void
 loongarch_option_override (void)
 {
-  loongarch_option_override_internal (&global_options, &global_options_set);
+  /* Setting up the target configuration.  */
+  loongarch_option_override_internal (&la_target,
+				      &global_options,
+				      &global_options_set);
+
+  /* Global initializations.  */
+  loongarch_global_init ();
 }
 
 /* Implement TARGET_OPTION_SAVE.  */

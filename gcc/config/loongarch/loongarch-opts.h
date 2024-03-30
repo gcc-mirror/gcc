@@ -30,6 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 /* Target configuration */
 extern struct loongarch_target la_target;
 
+/* RTL cost information */
+extern const struct loongarch_rtx_cost_data *loongarch_cost;
+
+
 /* Initialize loongarch_target from separate option variables.  */
 void
 loongarch_init_target (struct loongarch_target *target,
@@ -46,11 +50,30 @@ loongarch_config_target (struct loongarch_target *target,
 			 struct loongarch_flags *flags,
 			 int follow_multilib_list_p);
 
+
+/* Refresh the switches acccording to the resolved loongarch_target struct.  */
+void
+loongarch_target_option_override (struct loongarch_target *target,
+				  struct gcc_options *opts,
+				  struct gcc_options *opts_set);
+
+
 /* option status feedback for "gcc --help=target -Q" */
 void
 loongarch_update_gcc_opt_status (struct loongarch_target *target,
 				 struct gcc_options *opts,
 				 struct gcc_options *opts_set);
+
+
+/* Parser for -mrecip=<recip_string>.  */
+unsigned int
+loongarch_parse_mrecip_scheme (const char *recip_string);
+
+
+/* Resolve options that's not covered by la_target.  */
+void
+loongarch_init_misc_options (struct gcc_options *opts,
+			     struct gcc_options *opts_set);
 #endif
 
 /* Flag status */
@@ -80,9 +103,7 @@ struct loongarch_flags {
 #define TARGET_DOUBLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64D)
 
 #define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64)
-#define TARGET_ABI_LP64		  (la_target.abi.base == ABI_BASE_LP64D	\
-				   || la_target.abi.base == ABI_BASE_LP64F \
-				   || la_target.abi.base == ABI_BASE_LP64S)
+#define TARGET_ABI_LP64		  ABI_LP64_P(la_target.abi.base)
 
 #define ISA_HAS_LSX \
   (la_target.isa.simd == ISA_EXT_SIMD_LSX \

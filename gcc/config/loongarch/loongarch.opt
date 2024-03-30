@@ -205,13 +205,13 @@ mexplicit-relocs
 Target Alias(mexplicit-relocs=, always, none)
 Use %reloc() assembly operators (for backward compatibility).
 
-mrecip
-Target RejectNegative Var(la_recip) Save
-Generate approximate reciprocal divide and square root for better throughput.
-
 mrecip=
 Target RejectNegative Joined Var(la_recip_name) Save
 Control generation of reciprocal estimates.
+
+mrecip
+Target Alias(mrecip=, all, none)
+Generate approximate reciprocal divide and square root for better throughput.
 
 ; The code model option names for -mcmodel.
 Enum
