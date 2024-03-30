@@ -186,7 +186,7 @@ cplus_demangle (const char *mangled, int options)
   if (GNAT_DEMANGLING)
     return ada_demangle (mangled, options);
 
-  if (DLANG_DEMANGLING)
+  if (DLANG_DEMANGLING || AUTO_DEMANGLING)
     {
       ret = dlang_demangle (mangled, options);
       if (ret)
