@@ -4589,7 +4589,7 @@ expand_builtin (unsigned int code, tree exp, rtx target)
 
   if (!TARGET_VECTOR)
     error_at (EXPR_LOCATION (exp),
-	      "builtin function %qE requires the V ISA extension", exp);
+	      "built-in function %qE requires the V ISA extension", exp);
 
   return function_expander (rfn.instance, rfn.decl, exp, target).expand ();
 }
