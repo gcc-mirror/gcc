@@ -1058,8 +1058,9 @@ Objective-C and Objective-C++ Dialects}.
 -mmax-inline-memcpy-size=@var{n}
 -mexplicit-relocs=@var{style} -mexplicit-relocs -mno-explicit-relocs
 -mdirect-extern-access -mno-direct-extern-access
--mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as}
--mrecip  -mrecip=@var{opt}
+-mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as
+-mrecip  -mrecip=@var{opt} -mfrecipe -mno-frecipe -mdiv32 -mno-div32
+-mlam-bh -mno-lam-bh -mlamcas -mno-lamcas -mld-seq-sa -mno-ld-seq-sa}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2  -m32rx  -m32r
@@ -27094,6 +27095,46 @@ Enable the approximation for vectorized reciprocal square root.
 
 So, for example, @option{-mrecip=all,!sqrt} enables
 all of the reciprocal approximations, except for scalar square root.
+
+@opindex mfrecipe
+@opindex mno-frecipe
+@item -mfrecipe
+@itemx -mno-frecipe
+Use (do not use) @code{frecipe.@{s/d@}} and @code{frsqrte.@{s/d@}}
+instructions.  When build with @option{-march=la664}, it is enabled by default.
+The default is @option{-mno-frecipe}.
+
+@opindex mdiv32
+@opindex mno-div32
+@item -mdiv32
+@itemx -mno-div32
+Use (do not use) @code{div.w[u]} and @code{mod.w[u]} instructions with input
+not sign-extended.  When build with @option{-march=la664}, it is enabled by
+default.  The default is @option{-mno-div32}.
+
+@opindex mlam-bh
+@opindex mno-lam-bh
+@item -mlam-bh
+@itemx -mno-lam-bh
+Use (do not use) @code{am@{swap/add@}[_db].@{b/h@}} instructions.  When build
+with @option{-march=la664}, it is enabled by default.  The default is
+@option{-mno-lam-bh}.
+
+@opindex mlamcas
+@opindex mno-lamcas
+@item -mlamcas
+@itemx -mno-lamcas
+Use (do not use) @code{amcas[_db].@{b/h/w/d@}} instructions.  When build with
+@option{-march=la664}, it is enabled by default.  The default is
+@option{-mno-lamcas}.
+
+@opindex mld-seq-sa
+@opindex mno-ld-seq-sa
+@item -mld-seq-sa
+@itemx -mno-ld-seq-sa
+Whether a load-load barrier (@code{dbar 0x700}) is needed.  When build with
+@option{-march=la664}, it is enabled by default.  The default is
+@option{-mno-ld-seq-sa}, the load-load barrier is needed.
 
 @item loongarch-vect-unroll-limit
 The vectorizer will use available tuning information to determine whether it
