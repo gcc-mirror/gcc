@@ -1498,7 +1498,6 @@ riscv_subset_list::parse (const char *arch, location_t loc)
     return NULL;
 
   riscv_subset_list *subset_list = new riscv_subset_list (arch, loc);
-  riscv_subset_t *itr;
   const char *p = arch;
   p = subset_list->parse_base_ext (p);
   if (p == NULL)
