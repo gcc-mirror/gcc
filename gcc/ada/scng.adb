@@ -2786,12 +2786,9 @@ package body Scng is
             Accumulate_Token_Checksum;
             Token := Token_Type'Val (Get_Name_Table_Byte (Token_Name));
 
-            if Token = Tok_Interface then
-               Interface_Seen := True;
-
             --  See Exp_Put_Image for documentation of Tagged_Seen
 
-            elsif Token = Tok_Tagged then
+            if Token = Tok_Tagged then
                Tagged_Seen := True;
             end if;
 

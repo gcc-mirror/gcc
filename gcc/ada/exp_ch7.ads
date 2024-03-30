@@ -257,12 +257,6 @@ package Exp_Ch7 is
    --  Build a call to suppress the finalization of the object Obj, only after
    --  creating the Master_Node of Obj if it does not already exist.
 
-   procedure Preload_Finalization_Collection (Compilation_Unit : Node_Id);
-   --  Call RTE (RE_Finalization_Collection) if necessary to load the packages
-   --  involved in finalization support. We need to do this explicitly, fairly
-   --  early during compilation, because otherwise it happens during freezing,
-   --  which triggers visibility bugs in generic instantiations.
-
    --------------------------------------------
    -- Task and Protected Object finalization --
    --------------------------------------------
