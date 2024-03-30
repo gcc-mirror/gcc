@@ -1,3 +1,7 @@
+2024-03-29  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	* libgccjit.cc (gcc_jit_type_get_size): Add pointer support
+
 2024-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* jit-playback.cc (new_bitcast): Use HOST_WIDE_INT_PRINT_DEC instead

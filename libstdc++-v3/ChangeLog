@@ -1,3 +1,21 @@
+2024-03-29  Arsen Arsenović  <arsen@aarsen.me>
+
+	* testsuite/24_iterators/range_generators/01.cc: Drop GCC
+	Runtime Library Exception.
+	* testsuite/24_iterators/range_generators/02.cc: Drop GCC
+	Runtime Library Exception.
+	* testsuite/24_iterators/range_generators/copy.cc: Drop GCC
+	Runtime Library Exception.
+	* testsuite/24_iterators/range_generators/except.cc: Drop GCC
+	Runtime Library Exception.
+	* testsuite/24_iterators/range_generators/subrange.cc: Drop GCC
+	Runtime Library Exception.
+	* testsuite/24_iterators/range_generators/synopsis.cc: Drop GCC
+	Runtime Library Exception.
+	* testsuite/24_iterators/range_generators/iter_deref_return.cc:
+	Drop GCC Runtime Library Exception from the "You should have
+	received a copy" paragraph.
+
 2024-03-27  Matthias Kretz  <m.kretz@gsi.de>
 
 	* include/experimental/bits/simd_x86.h (_S_masked_unary):

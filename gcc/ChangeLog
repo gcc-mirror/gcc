@@ -1,3 +1,9 @@
+2024-03-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* lto-compress.cc (lto_end_uncompression): Use
+	fatal_error instead of internal_error when ZSTD
+	is not enabled.
+
 2024-03-28  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/h8300/extensions.md (zero_extendqihi*): Add output

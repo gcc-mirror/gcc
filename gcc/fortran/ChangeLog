@@ -1,3 +1,20 @@
+2024-03-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50410
+	* trans-expr.cc (gfc_conv_structure): Check for NULL pointer.
+
+2024-03-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36337
+	PR fortran/110987
+	PR fortran/113885
+	* trans-expr.cc (gfc_trans_assignment_1): Place finalization
+	block before rhs post block for elemental rhs.
+	* trans.cc (gfc_finalize_tree_expr): Check directly if a type
+	has no components, rather than the zero components attribute.
+	Treat elemental zero component expressions in the same way as
+	scalars.
+
 2024-03-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/114474
