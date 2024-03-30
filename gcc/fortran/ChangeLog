@@ -1,3 +1,11 @@
+2024-03-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50410
+	* trans-expr.cc (gfc_conv_structure): Check for NULL pointer.
+
 2024-03-20  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
