@@ -1,3 +1,22 @@
+2024-03-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-02-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113866
+	* trans-expr.cc (gfc_conv_procedure_call): When passing an optional
+	dummy argument to an optional dummy argument of a bind(c) procedure
+	and the dummy argument is passed via a CFI descriptor, no special
+	presence check and passing of a default NULL pointer is needed.
+
+2024-03-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50410
+	* trans-expr.cc (gfc_conv_structure): Check for NULL pointer.
+
 2024-03-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
