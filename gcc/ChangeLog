@@ -1,3 +1,10 @@
+2024-03-30  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/114175
+	* config/mips/mips.cc (mips_setup_incoming_varargs): Only skip
+	mips_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P
+	functions if arg.type is NULL.
+
 2024-03-29  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* lto-compress.cc (lto_end_uncompression): Use
