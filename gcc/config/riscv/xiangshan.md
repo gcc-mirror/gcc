@@ -70,7 +70,7 @@
 
 (define_insn_reservation "xiangshan_jump" 1
   (and (eq_attr "tune" "xiangshan")
-       (eq_attr "type" "jump,call,auipc,unknown"))
+       (eq_attr "type" "jump,call,auipc,unknown,branch,jalr,ret,sfb_alu"))
   "xs_jmp_rs")
 
 (define_insn_reservation "xiangshan_i2f" 3
