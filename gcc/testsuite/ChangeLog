@@ -1,3 +1,69 @@
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112303
+	* gcc.c-torture/compile/pr112303.c: New test.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109925
+	* gcc.c-torture/execute/pr109925.c: New test.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111151
+	* gcc.c-torture/execute/pr111151.c: New test.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* gcc.dg/tsan/pr111736.c: New test.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111683
+	* gcc.dg/pr111683-1.c: New test.
+	* gcc.dg/pr111683-2.c: New test.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* gcc.dg/ubsan/pr111736.c: New test.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* gcc.dg/c23-stdarg-9.c: New test.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* gcc.dg/c23-stdarg-7.c: New test.
+	* gcc.dg/c23-stdarg-8.c: New test.
+
 2024-03-29  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

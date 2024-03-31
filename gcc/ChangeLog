@@ -1,3 +1,195 @@
+2024-03-30  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2024-03-30  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/114175
+	* config/mips/mips.cc (mips_setup_incoming_varargs): Only skip
+	mips_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P
+	functions if arg.type is NULL.
+
+2024-03-30  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2024-03-19  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/114175
+	* config/loongarch/loongarch.cc
+	(loongarch_setup_incoming_varargs): Only skip
+	loongarch_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P
+	functions if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112303
+	* profile-count.h (profile_count::operator+): Perform
+	addition in uint64_t variable and set m_val to MIN of that
+	val and max_count.
+	(profile_count::operator+=): Likewise.
+	(profile_count::operator-=): Formatting fix.
+	(profile_count::apply_probability): Use safe_scale_64bit
+	even in the int overload.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111151
+	* fold-const.cc (extract_muldiv_1) <case MAX_EXPR>: Punt for
+	MULT_EXPR altogether, or for MAX_EXPR if c is -1.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* tsan.cc (instrument_expr): Punt on non-generic address space
+	accesses.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111683
+	* tree-predcom.cc (pcom_worker::suitable_component_p): If has_write
+	and comp_step is RS_NONZERO, return false if any reference in the
+	component doesn't have DR_STEP a multiple of access size.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* ubsan.cc (ubsan_expand_null_ifn, instrument_mem_ref): Avoid
+	SANITIZE_NULL instrumentation for non-generic address spaces
+	for which targetm.addr_space.zero_address_valid (as) is true.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/visium/visium.cc (visium_setup_incoming_varargs): Only skip
+	TARGET_FUNCTION_ARG_ADVANCE for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/nios2/nios2.cc (nios2_setup_incoming_varargs): Only skip
+	nios2_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/nds32/nds32.cc (nds32_setup_incoming_varargs): Only skip
+	function arg advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/m32r/m32r.cc (m32r_setup_incoming_varargs): Only skip
+	function arg advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/ft32/ft32.cc (ft32_setup_incoming_varargs): Only skip
+	function arg advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/epiphany/epiphany.cc (epiphany_setup_incoming_varargs): Only
+	skip function arg advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/csky/csky.cc (csky_setup_incoming_varargs): Only skip
+	csky_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/114369
+	* system.h (vec_step): Define to vec_step_ when compiling
+	with clang on PowerPC.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/arc/arc.cc (arc_setup_incoming_varargs): Only skip
+	arc_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/alpha/alpha.cc (alpha_setup_incoming_varargs): Only skip
+	function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/rs6000/rs6000-call.cc (setup_incoming_varargs): Only skip
+	rs6000_function_arg_advance_1 for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
+2024-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114175
+	* config/i386/i386.cc (ix86_setup_incoming_varargs): Only skip
+	ix86_function_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL.
+
 2024-03-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
