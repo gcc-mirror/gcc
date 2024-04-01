@@ -1,3 +1,110 @@
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_build_constant_cfstring): Prevent over-
+	alignment of CFString constants by setting DECL_USER_ALIGN.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_objc1_section): Use the correct
+	meta-data version for constant strings.
+	(machopic_select_section): Assert if we fail to handle CFString
+	sections as Obejctive-C meta-data or drectly.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105522
+	* config/darwin.cc (machopic_select_section): Handle C and C++
+	CFStrings.
+	(darwin_rename_builtins): Move this out of the CFString code.
+	(darwin_libc_has_function): Likewise.
+	(darwin_build_constant_cfstring): Create an anonymous var to
+	hold each CFString.
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Handle constant
+	CFstrings.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h
+	(darwin_label_is_anonymous_local_objc_name): Make metadata names
+	linker-visibile for GNU objective C.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.in: Regenerate.
+	* config/darwin.cc (darwin_file_start): Add assembler directives
+	for the target OS version, where these are supported by the
+	assembler.
+	(darwin_override_options): Check for building >= macOS 10.14.
+	* configure: Regenerate.
+	* configure.ac: Check for assembler support of .build_version
+	directives.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/111610
+	* configure: Regenerate.
+	* configure.ac: Rename the missing dsymutil case to "DET_UNKNOWN".
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (static_init_section): Add the
+	__TEXT,__StaticInit section.
+	* config/darwin.cc (darwin_function_section): Use the static init
+	section for global initializers, to match other platform toolchains.
+	Place unlikely executed global init code into the standard cold
+	section.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (darwin_exception_section): Move to
+	the __TEXT segment.
+	* config/darwin.cc (darwin_emit_except_table_label): Align before
+	the exception table label.
+	* config/darwin.h (ASM_PREFERRED_EH_DATA_FORMAT): Use indirect PC-
+	relative 4byte relocs.
+
+2024-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2023-08-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld64_version): Allow for dyld in ld -v
+	output.
+	* configure: Regenerate.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle explict disable of stdlib option, set
+	defaults for Darwin.
+
 2024-03-30  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:

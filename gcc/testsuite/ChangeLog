@@ -1,3 +1,37 @@
+2024-03-31  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2024-03-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/107426
+	* gfortran.dg/pr89943_3.f90: Update error pattern.
+	* gfortran.dg/pr89943_4.f90: Likewise.
+	* gfortran.dg/use_31.f90: New test.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/encode-10.mm: Remove unneeded '-lobjc' option addition.
+	* obj-c++.dg/encode-9.mm: Likewise.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObjCRuntime.h: Make
+	this header use pragma system_header.
+
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105522
+	* gcc.dg/pr105522.c: New file.
+
 2024-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
