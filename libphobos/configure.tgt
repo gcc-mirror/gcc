@@ -27,6 +27,9 @@ case "${target}" in
   *-*-dragonfly*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
+  aarch64-*-darwin2*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   aarch64*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
@@ -53,6 +56,12 @@ case "${target}" in
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   sparc*-*-solaris2.11*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
+  *-*-darwin9* | *-*-darwin1[01]*)
+	LIBDRUNTIME_ONLY=yes
+	;;
+  x86_64-*-darwin1[2-9]* | x86_64-*-darwin2* | i?86-*-darwin1[2-7])
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   x86_64-*-freebsd* | i?86-*-freebsd*)
