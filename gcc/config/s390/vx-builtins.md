@@ -424,7 +424,7 @@
 
 
 ; Replicate from vector element
-(define_expand "vec_splat<mode>"
+(define_expand "@vec_splat<mode>"
   [(set (match_operand:V_HW                      0 "register_operand"  "")
 	(vec_duplicate:V_HW (vec_select:<non_vec>
 			     (match_operand:V_HW 1 "register_operand"  "")
