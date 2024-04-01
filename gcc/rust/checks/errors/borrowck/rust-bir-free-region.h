@@ -75,21 +75,13 @@ public:
     for (auto &region : regions)
       {
 	if (region.is_early_bound ())
-	  {
-	    free_regions.push_back (parent_free_regions[region.get_index ()]);
-	  }
+	  free_regions.push_back (parent_free_regions[region.get_index ()]);
 	else if (region.is_static ())
-	  {
-	    free_regions.push_back (0);
-	  }
+	  free_regions.push_back (0);
 	else if (region.is_anonymous ())
-	  {
-	    free_regions.push_back (get_next_free_region ());
-	  }
+	  free_regions.push_back (get_next_free_region ());
 	else if (region.is_named ())
-	  {
-	    rust_unreachable (); // FIXME
-	  }
+	  rust_unreachable (); // FIXME
 	else
 	  {
 	    rust_sorry_at (UNKNOWN_LOCATION, "Unimplemented");

@@ -92,10 +92,8 @@ BorrowChecker::go (HIR::Crate &crate)
     }
 
   for (auto closure ATTRIBUTE_UNUSED : collector.get_closures ())
-    {
-      rust_sorry_at (closure->get_locus (),
-		     "Closure borrow checking is not implemented yet.");
-    }
+    rust_sorry_at (closure->get_locus (),
+		   "Closure borrow checking is not implemented yet.");
 }
 
 } // namespace HIR

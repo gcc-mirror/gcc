@@ -50,9 +50,7 @@ protected:
   template <typename T> void visit_all (std::vector<std::unique_ptr<T>> &items)
   {
     for (std::unique_ptr<T> &item : items)
-      {
-	item->accept_vis (*this);
-      }
+      item->accept_vis (*this);
   }
 
   void visit (HIR::Function &function) override
