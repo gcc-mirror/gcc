@@ -233,28 +233,21 @@ public:
     PlaceId new_place = places.size () - 1;
     Place &new_place_ref = places[new_place]; // Intentional shadowing.
     if (last_sibling == 0)
-      {
-	places[new_place_ref.path.parent].path.first_child = new_place;
-      }
+      places[new_place_ref.path.parent].path.first_child = new_place;
     else
-      {
-	places[last_sibling].path.next_sibling = new_place;
-      }
+      places[last_sibling].path.next_sibling = new_place;
 
     if (new_place_ref.kind == Place::VARIABLE
 	|| new_place_ref.kind == Place::TEMPORARY)
-      {
-	scopes[current_scope].locals.push_back (new_place);
-      }
+      scopes[current_scope].locals.push_back (new_place);
 
     auto variances = Resolver::TypeCheckContext::get ()
 		       ->get_variance_analysis_ctx ()
 		       .query_type_variances (new_place_ref.tyty);
     std::vector<Polonius::Origin> regions;
     for (size_t i = 0; i < variances.size (); i++)
-      {
-	regions.push_back (next_free_region++);
-      }
+      regions.push_back (next_free_region++);
+
     new_place_ref.regions.set_from (std::move (regions));
 
     return new_place;

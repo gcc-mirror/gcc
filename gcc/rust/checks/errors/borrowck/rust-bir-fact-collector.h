@@ -67,9 +67,8 @@ class FactCollector : public Visitor
   {
     std::vector<FreeRegion> free_regions;
     for (size_t i = 0; i < size; i++)
-      {
-	free_regions.push_back (region_binder.get_next_free_region ());
-      }
+      free_regions.push_back (region_binder.get_next_free_region ());
+
     return FreeRegions (std::move (free_regions));
   }
 
@@ -129,9 +128,8 @@ protected: // Main collection entry points (for different categories).
 	  case Place::TEMPORARY:
 	    facts.path_is_var.emplace_back (place_id, place_id);
 	    for (auto &region : place.regions)
-	      {
-		facts.use_of_var_derefs_origin.emplace_back (place_id, region);
-	      }
+	      facts.use_of_var_derefs_origin.emplace_back (place_id, region);
+
 	    // TODO: drop_of_var_derefs_origin
 	    break;
 	  case Place::FIELD:
@@ -154,10 +152,9 @@ protected: // Main collection entry points (for different categories).
       }
 
     for (PlaceId arg = FIRST_VARIABLE_PLACE + 1; arg < first_local; ++arg)
-      {
-	facts.path_assigned_at_base.emplace_back (
-	  arg, get_point (0, 0, PointPosition::START));
-      }
+      facts.path_assigned_at_base.emplace_back (
+	arg, get_point (0, 0, PointPosition::START));
+
     for (PlaceId place = first_local; place < place_db.size (); ++place)
       {
 	if (place_db[place].is_var ())
@@ -560,17 +557,13 @@ protected: // Generic BIR operations.
   {
     place_db.for_each_path_segment (place_id, [&] (PlaceId id) {
       for (auto loan : place_db[id].borrowed_by)
-	{
-	  facts.loan_invalidated_at.emplace_back (get_current_point_start (),
-						  loan);
-	}
+	facts.loan_invalidated_at.emplace_back (get_current_point_start (),
+						loan);
     });
     place_db.for_each_path_from_root (place_id, [&] (PlaceId id) {
       for (auto loan : place_db[id].borrowed_by)
-	{
-	  facts.loan_invalidated_at.emplace_back (get_current_point_start (),
-						  loan);
-	}
+	facts.loan_invalidated_at.emplace_back (get_current_point_start (),
+						loan);
     });
   }
 
@@ -583,14 +576,10 @@ protected: // Generic BIR operations.
 	  if (mutability == Mutability::Imm
 	      && place_db.get_loans ()[other_loan].mutability
 		   == Mutability::Imm)
-	    {
-	      continue;
-	    }
+	    continue;
 	  else
-	    {
-	      facts.loan_invalidated_at.emplace_back (
-		get_current_point_start (), other_loan);
-	    }
+	    facts.loan_invalidated_at.emplace_back (get_current_point_start (),
+						    other_loan);
 	}
     });
 
@@ -600,14 +589,10 @@ protected: // Generic BIR operations.
 	  if (mutability == Mutability::Imm
 	      && place_db.get_loans ()[other_loan].mutability
 		   == Mutability::Imm)
-	    {
-	      continue;
-	    }
+	    continue;
 	  else
-	    {
-	      facts.loan_invalidated_at.emplace_back (
-		get_current_point_start (), other_loan);
-	    }
+	    facts.loan_invalidated_at.emplace_back (get_current_point_start (),
+						    other_loan);
 	}
     });
   }
@@ -618,9 +603,7 @@ protected: // Generic BIR operations.
       if (id == place_id)
 	return;
       if (place_db[id].kind == Place::DEREF)
-	{
-	  rust_error_at (location, "Cannot move from behind a reference.");
-	}
+	rust_error_at (location, "Cannot move from behind a reference.");
     });
   }
 
@@ -654,13 +637,9 @@ protected: // Subset helpers.
   void push_subset (Variance variance, FreeRegion lhs, FreeRegion rhs)
   {
     if (variance.is_covariant ())
-      {
-	push_subset (lhs, rhs);
-      }
+      push_subset (lhs, rhs);
     else if (variance.is_contravariant ())
-      {
-	push_subset (rhs, lhs);
-      }
+      push_subset (rhs, lhs);
     else if (variance.is_invariant ())
       {
 	push_subset (lhs, rhs);
@@ -671,13 +650,9 @@ protected: // Subset helpers.
   void push_subset_all (Variance variance, FreeRegion lhs, FreeRegion rhs)
   {
     if (variance.is_covariant ())
-      {
-	push_subset_all (lhs, rhs);
-      }
+      push_subset_all (lhs, rhs);
     else if (variance.is_contravariant ())
-      {
-	push_subset_all (rhs, lhs);
-      }
+      push_subset_all (rhs, lhs);
     else if (variance.is_invariant ())
       {
 	push_subset_all (lhs, rhs);
@@ -701,9 +676,7 @@ protected: // Subset helpers.
     rust_assert (lhs.size () == rhs.size ());
     rust_assert (lhs.size () == variances.size ());
     for (size_t i = 0; i < lhs.size (); ++i)
-      {
-	push_subset (variances[i], lhs[i], rhs[i]);
-      }
+      push_subset (variances[i], lhs[i], rhs[i]);
   }
 
   void push_subset_all (TyTy::BaseType *type, FreeRegions lhs, FreeRegions rhs)
@@ -714,9 +687,7 @@ protected: // Subset helpers.
     rust_assert (lhs.size () == rhs.size ());
     rust_assert (lhs.size () == variances.size ());
     for (size_t i = 0; i < lhs.size (); ++i)
-      {
-	push_subset_all (variances[i], lhs[i], rhs[i]);
-      }
+      push_subset_all (variances[i], lhs[i], rhs[i]);
   }
 
   void push_subset_user (TyTy::BaseType *type, FreeRegions free_regions,
@@ -731,18 +702,14 @@ protected: // Subset helpers.
     for (size_t i = 0; i < free_regions.size (); ++i)
       {
 	if (user_regions[i].is_named ())
-	  {
-	    push_subset (variances[i], free_regions[i],
-			 {Polonius::Origin (user_regions[i].get_index ())});
-	  }
+	  push_subset (variances[i], free_regions[i],
+		       {Polonius::Origin (user_regions[i].get_index ())});
 	else if (user_regions[i].is_anonymous ())
 	  {
 	    // IGNORE
 	  }
 	else
-	  {
-	    rust_internal_error_at (UNKNOWN_LOCATION, "Unexpected region type");
-	  }
+	  rust_internal_error_at (UNKNOWN_LOCATION, "Unexpected region type");
       }
   }
 

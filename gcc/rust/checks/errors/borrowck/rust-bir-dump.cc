@@ -42,13 +42,9 @@ renumber_places (const Function &func, std::vector<PlaceId> &place_map)
     {
       const Place &place = func.place_db[in_id];
       if (place.kind == Place::VARIABLE || place.kind == Place::TEMPORARY)
-	{
-	  place_map[in_id] = next_out_id++;
-	}
+	place_map[in_id] = next_out_id++;
       else
-	{
-	  place_map[in_id] = INVALID_PLACE;
-	}
+	place_map[in_id] = INVALID_PLACE;
     }
 }
 
@@ -138,10 +134,9 @@ Dump::go (bool enable_simplify_cfg)
 	  stream << ";\n";
 	}
       if (!bb_terminated)
-	{
-	  stream << indentation << indentation << "goto -> bb"
-		 << bb_fold_map[bb.successors.at (0)] << ";\t\t" << i++ << "\n";
-	}
+	stream << indentation << indentation << "goto -> bb"
+	       << bb_fold_map[bb.successors.at (0)] << ";\t\t" << i++ << "\n";
+
       stream << indentation << "}\n";
     }
 
@@ -276,15 +271,13 @@ void
 Dump::visit (const CallExpr &expr)
 {
   stream << "Call(";
-  if (auto fn_type
-      = func.place_db[expr.get_callable ()].tyty->try_as<TyTy::FnType> ())
-    {
-      stream << fn_type->get_identifier ();
-    }
+  auto maybe_fn_type
+    = func.place_db[expr.get_callable ()].tyty->try_as<TyTy::FnType> ();
+  if (maybe_fn_type)
+    stream << maybe_fn_type->get_identifier ();
   else
-    {
-      visit_move_place (expr.get_callable ());
-    }
+    visit_move_place (expr.get_callable ());
+
   stream << ")(";
   print_comma_separated (stream, expr.get_arguments (),
 			 [this] (PlaceId place_id) {
@@ -321,13 +314,9 @@ void
 Dump::visit (const Assignment &expr)
 {
   if (func.place_db[expr.get_rhs ()].is_rvalue ())
-    {
-      visit_move_place (expr.get_rhs ());
-    }
+    visit_move_place (expr.get_rhs ());
   else
-    {
-      visit_place (expr.get_rhs ());
-    }
+    visit_place (expr.get_rhs ());
 }
 
 std::ostream &
@@ -346,9 +335,8 @@ Dump::visit_scope (ScopeId id, size_t depth)
     return;
 
   if (id > 1)
-    {
-      indent (depth) << "scope " << id - 1 << " {\n";
-    }
+    indent (depth) << "scope " << id - 1 << " {\n";
+
   for (auto &local : scope.locals)
     {
       indent (depth + 1) << "let _";
@@ -357,9 +345,8 @@ Dump::visit_scope (ScopeId id, size_t depth)
       stream << ";\n";
     }
   for (auto &child : scope.children)
-    {
-      visit_scope (child, (id >= 1) ? depth + 1 : depth);
-    }
+    visit_scope (child, (id >= 1) ? depth + 1 : depth);
+
   if (id > 1)
     indent (depth) << "}\n";
 }
