@@ -1,3 +1,10 @@
+2024-03-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-7.c:
+	Adjust test dg-error.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-8.c:
+	Ditto.
+
 2024-03-29  Guillaume Gomez  <guillaume1.gomez@gmail.com>
 
 	* jit.dg/test-pointer_size.c: New file.

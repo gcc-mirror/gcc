@@ -1,3 +1,18 @@
+2024-03-31  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/xiangshan.md (xiangshan_jump): Add branch, jalr, ret
+	and sfb_alu.
+
+2024-03-31  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins.cc (expand_builtin): Take
+	the term built-in over builtin.
+
+2024-03-31  Pan Li  <pan2.li@intel.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::parse):
+	Remove unused var decl.
+
 2024-03-30  Xi Ruoyao  <xry111@xry111.site>
 
 	PR target/114175

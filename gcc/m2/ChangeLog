@@ -1,3 +1,11 @@
+2024-03-31  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Make-lang.in (m2.install-info): Fix rule.
+
+2024-03-31  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Make-lang.in (install-html): New rule.
+
 2024-03-28  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114520
