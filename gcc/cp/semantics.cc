@@ -12439,7 +12439,13 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       return CP_AGGREGATE_TYPE_P (type1);
 
     case CPTK_IS_ARRAY:
-      return type_code1 == ARRAY_TYPE;
+      return (type_code1 == ARRAY_TYPE
+	      /* We don't want to report T[0] as being an array type.
+		 This is for compatibility with an implementation of
+		 std::is_array by template argument deduction, because
+		 compute_array_index_type_loc rejects a zero-size array
+		 in SFINAE context.  */
+	      && !(TYPE_SIZE (type1) && integer_zerop (TYPE_SIZE (type1))));
 
     case CPTK_IS_ASSIGNABLE:
       return is_xible (MODIFY_EXPR, type1, type2);
