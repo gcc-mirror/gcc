@@ -145,9 +145,8 @@ package Types is
    --  standard 32-bit integer as an index value, since we count on all index
    --  values being the same size.
 
-   type Text_Ptr is new Int;
-   --  Type used for subscripts in text buffer
-
+   type Text_Ptr is new Int range -4 .. Int'Last;
+   --  -4 .. -1 are special; see constants below
    type Text_Buffer is array (Text_Ptr range <>) of Character;
    --  Text buffer used to hold source file or library information file
 
@@ -265,7 +264,7 @@ package Types is
    --  the location is in System, but we don't know exactly what line.
 
    First_Source_Ptr : constant Source_Ptr := 0;
-   --  Starting source pointer index value for first source program
+   --  Starting source pointer index value for first source file
 
    -------------------------------------
    -- Range Definitions for Tree Data --
