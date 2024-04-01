@@ -3369,7 +3369,7 @@ darwin_override_options (void)
       /* External toolchains based on LLVM or clang 7+ have support for
 	 dwarf-4.  */
       if ((dsymutil_version.kind == LLVM && dsymutil_version.major >= 7)
-	  || (dsymutil_version.kind == CLANG && dsymutil_version.major >= 7))
+	  || (dsymutil_version.kind == CLANG && dsymutil_version.major >= 700))
 	dwarf_version = 4;
       else if (dsymutil_version.kind == DWARFUTILS
 	       && dsymutil_version.major >= 121)
