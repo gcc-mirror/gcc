@@ -752,7 +752,7 @@ update_local_live_ranges (
 
 		We will be likely using one more vector variable.  */
 	      unsigned int max_point
-		= (*program_points_per_bb.get (bb)).length () - 1;
+		= (*program_points_per_bb.get (bb)).length ();
 	      auto *live_ranges = live_ranges_per_bb.get (bb);
 	      bool existed_p = false;
 	      tree var = type == load_vec_info_type
