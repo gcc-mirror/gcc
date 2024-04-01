@@ -1,3 +1,13 @@
+2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/101718
+	* objc-next-runtime-abi-02.c (build_v2_build_objc_method_call):
+	Revise for cases where scalar objects use an sret parameter.
+	(next_runtime_abi_02_build_objc_method_call): Likwise.
+
 2023-05-29  Release Manager
 
 	* GCC 11.4.0 released.
