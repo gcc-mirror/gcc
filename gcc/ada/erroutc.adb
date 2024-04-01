@@ -683,28 +683,106 @@ package body Erroutc is
       end if;
    end Output_Line_Number;
 
+   ------------------------
+   -- Output_Text_Within --
+   ------------------------
+
+   procedure Output_Text_Within (Txt : String_Ptr; Line_Length : Nat) is
+      Offs : constant Nat := Column - 1;
+      --  Offset to start of message, used for continuations
+
+      Ptr   : Natural;
+
+      Split : Natural;
+      --   Position where a new line was inserted in the original message
+
+      Start : Natural;
+      --   Start of the current line
+
+      Max   : Integer := Integer (Line_Length - Column + 1);
+      --  Maximum characters to output on next line
+
+      Text_Length : constant Natural := Txt'Length;
+      --  Length of the message
+
+   begin
+      --  Here we have to split the message up into multiple lines
+
+      Ptr := 1;
+      loop
+         --  Make sure we do not have ludicrously small line
+
+         Max := Integer'Max (Max, 20);
+
+         --  If remaining text fits, output it respecting LF and we are done
+
+         if Text_Length - Ptr < Max then
+            for J in Ptr .. Text_Length loop
+               if Txt (J) = ASCII.LF then
+                  Write_Eol;
+                  Write_Spaces (Offs);
+               else
+                  Write_Char (Txt (J));
+               end if;
+            end loop;
+
+            return;
+
+         --  Line does not fit
+
+         else
+            Start := Ptr;
+
+            --  First scan forward looking for a hard end of line
+
+            for Scan in Ptr .. Ptr + Max - 1 loop
+               if Txt (Scan) = ASCII.LF then
+                  Split := Scan - 1;
+                  Ptr := Scan + 1;
+                  goto Continue;
+               end if;
+            end loop;
+
+            --  Otherwise scan backwards looking for a space
+
+            for Scan in reverse Ptr .. Ptr + Max - 1 loop
+               if Txt (Scan) = ' ' then
+                  Split := Scan - 1;
+                  Ptr := Scan + 1;
+                  goto Continue;
+               end if;
+            end loop;
+
+            --  If we fall through, no space, so split line arbitrarily
+
+            Split := Ptr + Max - 1;
+            Ptr := Split + 1;
+         end if;
+
+         <<Continue>>
+         if Start <= Split then
+            Write_Line (Txt (Start .. Split));
+            Write_Spaces (Offs);
+         end if;
+
+         Max := Integer (Line_Length - Column + 1);
+      end loop;
+   end Output_Text_Within;
+
    ---------------------
    -- Output_Msg_Text --
    ---------------------
 
    procedure Output_Msg_Text (E : Error_Msg_Id) is
-      Offs : constant Nat := Column - 1;
-      --  Offset to start of message, used for continuations
-
-      Max : Integer;
-      --  Maximum characters to output on next line
-
-      Length : Nat;
-      --  Maximum total length of lines
 
       E_Msg : Error_Msg_Object renames Errors.Table (E);
       Text  : constant String_Ptr := E_Msg.Text;
-      Ptr   : Natural;
-      Split : Natural;
-      Start : Natural;
-      Tag : constant String := Get_Warning_Tag (E);
-      Txt : String_Ptr;
-      Len : Natural;
+      Tag   : constant String := Get_Warning_Tag (E);
+      Txt   : String_Ptr;
+
+      Line_Length : constant Nat :=
+        (if Error_Msg_Line_Length = 0 then Nat'Last
+         else Error_Msg_Line_Length);
 
    begin
       --  Postfix warning tag to message if needed
@@ -788,78 +866,7 @@ package body Erroutc is
          Txt := new String'(SGR_Error & "error: " & SGR_Reset & Txt.all);
       end if;
 
-      --  Set error message line length and length of message
-
-      if Error_Msg_Line_Length = 0 then
-         Length := Nat'Last;
-      else
-         Length := Error_Msg_Line_Length;
-      end if;
-
-      Max := Integer (Length - Column + 1);
-      Len := Txt'Length;
-
-      --  Here we have to split the message up into multiple lines
-
-      Ptr := 1;
-      loop
-         --  Make sure we do not have ludicrously small line
-
-         Max := Integer'Max (Max, 20);
-
-         --  If remaining text fits, output it respecting LF and we are done
-
-         if Len - Ptr < Max then
-            for J in Ptr .. Len loop
-               if Txt (J) = ASCII.LF then
-                  Write_Eol;
-                  Write_Spaces (Offs);
-               else
-                  Write_Char (Txt (J));
-               end if;
-            end loop;
-
-            return;
-
-         --  Line does not fit
-
-         else
-            Start := Ptr;
-
-            --  First scan forward looking for a hard end of line
-
-            for Scan in Ptr .. Ptr + Max - 1 loop
-               if Txt (Scan) = ASCII.LF then
-                  Split := Scan - 1;
-                  Ptr := Scan + 1;
-                  goto Continue;
-               end if;
-            end loop;
-
-            --  Otherwise scan backwards looking for a space
-
-            for Scan in reverse Ptr .. Ptr + Max - 1 loop
-               if Txt (Scan) = ' ' then
-                  Split := Scan - 1;
-                  Ptr := Scan + 1;
-                  goto Continue;
-               end if;
-            end loop;
-
-            --  If we fall through, no space, so split line arbitrarily
-
-            Split := Ptr + Max - 1;
-            Ptr := Split + 1;
-         end if;
-
-         <<Continue>>
-         if Start <= Split then
-            Write_Line (Txt (Start .. Split));
-            Write_Spaces (Offs);
-         end if;
-
-         Max := Integer (Length - Column + 1);
-      end loop;
+      Output_Text_Within (Txt, Line_Length);
    end Output_Msg_Text;
 
    ---------------------
