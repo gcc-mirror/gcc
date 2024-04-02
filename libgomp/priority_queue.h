@@ -137,7 +137,7 @@ extern struct gomp_task *priority_tree_next_task (enum priority_queue_type,
 						  bool *);
 
 /* Return TRUE if there is more than one priority in HEAD.  This is
-   used throughout to to choose between the fast path (priority 0 only
+   used throughout to choose between the fast path (priority 0 only
    items) and a world with multiple priorities.  */
 
 static inline bool

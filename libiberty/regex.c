@@ -5597,7 +5597,7 @@ byte_re_match_2_internal (struct re_pattern_buffer *bufp,
      to resume scanning the pattern; the second one is where to resume
      scanning the strings.  If the latter is zero, the failure point is
      a ``dummy''; if a failure happens and the failure point is a dummy,
-     it gets discarded and the next next one is tried.  */
+     it gets discarded and the next one is tried.  */
 #ifdef MATCH_MAY_ALLOCATE /* otherwise, this is global.  */
   PREFIX(fail_stack_type) fail_stack;
 #endif

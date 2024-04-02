@@ -1047,7 +1047,7 @@ __objc_prepare_dtable_for_class (Class cls)
 
   /* This table could be initialized in init.c.  We cannot use the
      class name since the class maintains the instance methods and the
-     meta class maintains the the class methods yet both share the
+     meta class maintains the class methods yet both share the
      same name.  Classes should be unique in any program.  */
   if (! prepared_dtable_table)
     prepared_dtable_table 

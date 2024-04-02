@@ -47,7 +47,7 @@ Boston, MA 02110-1301, USA.  */
 
 /* Performs in-place initialization of a dyn_string struct.  This
    function can be used with a dyn_string struct on the stack or
-   embedded in another object.  The contents of of the string itself
+   embedded in another object.  The contents of the string itself
    are still dynamically allocated.  The string initially is capable
    of holding at least SPACE characeters, including the terminating
    NUL.  If SPACE is 0, it will silently be increated to 1.  

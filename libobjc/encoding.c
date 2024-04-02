@@ -1088,7 +1088,7 @@ objc_layout_structure (const char *type,
          && *ntype++ != '=')
     /* do nothing */;
 
-  /* If there's a "<name>=", ntype - 1 points to '='; skip the the name */
+  /* If there's a "<name>=", ntype - 1 points to '='; skip the name.  */
   if (*(ntype - 1) == '=')
     type = ntype;
 

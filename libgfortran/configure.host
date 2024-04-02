@@ -1,7 +1,7 @@
 # configure.host
 #
 # This shell script handles all host based configuration for libgfortran.
-# It sets various shell variables based on the the host triplet.
+# It sets various shell variables based on the host triplet.
 # You can modify this shell script without rerunning autoconf/aclocal/etc.
 # This file is "sourced", not executed.
 #

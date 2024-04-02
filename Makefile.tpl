@@ -1976,7 +1976,7 @@ configure-target-[+module+]: maybe-all-gcc[+
    (define dep-maybe (lambda ()
       (if (exist? "hard") "" "maybe-")))
 
-   ;; dep-kind returns returns "prebootstrap" for configure or build
+   ;; dep-kind returns "prebootstrap" for configure or build
    ;; dependencies of bootstrapped modules on a build module
    ;; (e.g. all-gcc on all-build-bison); "normal" if the dependency is
    ;; on an "install" target, or if the dependence module is not

@@ -385,7 +385,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @code{-Wunknown-pragmas} (implied by @code{-Wall}) and @code{-Wattributes}
       (enabled by default), respectively; for Fortran free-source code, there is
       a warning enabled by default and, for fixed-source code, the @code{omx}
-      sentinel is warned for with with @code{-Wsurprising} (enabled by
+      sentinel is warned for with @code{-Wsurprising} (enabled by
       @code{-Wall}).  Unknown clauses are always rejected with an error.}
 @item Clauses on @code{end} directive can be on directive @tab Y @tab
 @item @code{destroy} clause with destroy-var argument on @code{depobj}
@@ -2218,7 +2218,7 @@ in the @code{to} and @code{from} clauses of the @code{target update} directive
 to transfer data between the associated pointers. The reference count of such
 associated storage is infinite.  The association can be removed by calling
 @code{omp_target_disassociate_ptr} which should be done before the lifetime
-of either either storage ends.
+of either storage ends.
 
 The routine returns nonzero (@code{EINVAL}) when the @var{device_num} invalid,
 for when the initial device or the associated device shares memory with the
@@ -2815,7 +2815,7 @@ traits; if an allocator that fulfills the requirements cannot be created,
 @code{omp_null_allocator} is returned.
 
 The predefined memory spaces and available traits can be found at
-@ref{OMP_ALLOCATOR}, where the trait names have to be be prefixed by
+@ref{OMP_ALLOCATOR}, where the trait names have to be prefixed by
 @code{omp_atk_} (e.g. @code{omp_atk_pinned}) and the named trait values by
 @code{omp_atv_} (e.g. @code{omp_atv_true}); additionally, @code{omp_atv_default}
 may be used as trait value to specify that the default value should be used.
@@ -3210,7 +3210,7 @@ The @var{allocator} and @var{free_allocator} arguments must be a predefined
 allocator, an allocator handle or @code{omp_null_allocator}.  If
 @var{free_allocator} is @code{omp_null_allocator}, the implementation
 automatically determines the allocator used for the allocation of @var{ptr}.
-If @var{allocator} is @code{omp_null_allocator} and @var{ptr} is is not a
+If @var{allocator} is @code{omp_null_allocator} and @var{ptr} is not a
 null pointer, the same allocator as @code{free_allocator} is used and
 when @var{ptr} is a null pointer the allocator specified by the
 @var{def-allocator-var} ICV is used.
@@ -3468,7 +3468,7 @@ as listed below.  Except that the last three allocators have the
 
 For the @code{fallback} trait, the default value is @code{null_fb} for the
 @code{omp_default_mem_alloc} allocator and any allocator that is associated
-with device memory; for all other other allocators, it is @code{default_mem_fb}
+with device memory; for all other allocators, it is @code{default_mem_fb}
 by default.
 
 Examples:
