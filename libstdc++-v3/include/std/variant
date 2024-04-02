@@ -48,6 +48,7 @@
 #include <bits/stl_construct.h>
 #include <bits/utility.h> // in_place_index_t
 #if __cplusplus >= 202002L
+# include <concepts>
 # include <compare>
 #endif
 
@@ -1237,47 +1238,119 @@ namespace __variant
 
   struct monostate { };
 
-#if __cpp_lib_concepts
-# define _VARIANT_RELATION_FUNCTION_CONSTRAINTS(TYPES, OP) \
-  requires ((requires (const TYPES& __t) { \
-	{ __t OP __t } -> __detail::__boolean_testable; }) && ...)
-#else
-# define _VARIANT_RELATION_FUNCTION_CONSTRAINTS(TYPES, OP)
-#endif
+namespace __detail::__variant
+{
+  template<typename _Ret, typename _Vp, typename _Op>
+    constexpr _Ret
+    __compare(_Ret __ret, const _Vp& __lhs, const _Vp& __rhs, _Op __op)
+    {
+      __variant::__raw_idx_visit(
+	[&__ret, &__lhs, __op] (auto&& __rhs_mem, auto __rhs_index) mutable
+	{
+	  if constexpr (__rhs_index != variant_npos)
+	    {
+	      if (__lhs.index() == __rhs_index.value)
+		{
+		  auto& __this_mem = std::get<__rhs_index>(__lhs);
+		  __ret = __op(__this_mem, __rhs_mem);
+		  return;
+		}
+	    }
+	  __ret = __op(__lhs.index() + 1, __rhs_index + 1);
+	}, __rhs);
+      return __ret;
+    }
+} // namespace __detail::__variant
 
-#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP) \
-  template<typename... _Types> \
-    _VARIANT_RELATION_FUNCTION_CONSTRAINTS(_Types, __OP) \
-    constexpr bool \
-    operator __OP [[nodiscard]] (const variant<_Types...>& __lhs, \
-				 const variant<_Types...>& __rhs) \
-    { \
-      bool __ret = true; \
-      __detail::__variant::__raw_idx_visit( \
-        [&__ret, &__lhs] (auto&& __rhs_mem, auto __rhs_index) mutable \
-        { \
-	  if constexpr (__rhs_index != variant_npos) \
-	    { \
-	      if (__lhs.index() == __rhs_index) \
-	        { \
-		  auto& __this_mem = std::get<__rhs_index>(__lhs);	\
-                  __ret = __this_mem __OP __rhs_mem; \
-		  return; \
-                } \
-            } \
-	  __ret = (__lhs.index() + 1) __OP (__rhs_index + 1); \
-	}, __rhs); \
-      return __ret; \
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t == __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator== [[nodiscard]] (const variant<_Types...>& __lhs,
+			      const variant<_Types...>& __rhs)
+    {
+      return __detail::__variant::__compare(true, __lhs, __rhs,
+					    [](auto&& __l, auto&& __r) {
+					      return __l == __r;
+					    });
     }
 
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(<)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(<=)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(==)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(!=)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(>=)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(>)
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t != __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator!= [[nodiscard]] (const variant<_Types...>& __lhs,
+			      const variant<_Types...>& __rhs)
+    {
+      return __detail::__variant::__compare(true, __lhs, __rhs,
+					    [](auto&& __l, auto&& __r) {
+					      return __l != __r;
+					    });
+    }
 
-#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t < __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator< [[nodiscard]] (const variant<_Types...>& __lhs,
+			     const variant<_Types...>& __rhs)
+    {
+      return __detail::__variant::__compare(true, __lhs, __rhs,
+					    [](auto&& __l, auto&& __r) {
+					      return __l < __r;
+					    });
+    }
+
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t <= __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator<= [[nodiscard]] (const variant<_Types...>& __lhs,
+			      const variant<_Types...>& __rhs)
+    {
+      return __detail::__variant::__compare(true, __lhs, __rhs,
+					    [](auto&& __l, auto&& __r) {
+					      return __l <= __r;
+					    });
+    }
+
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t > __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator> [[nodiscard]] (const variant<_Types...>& __lhs,
+			     const variant<_Types...>& __rhs)
+    {
+      return __detail::__variant::__compare(true, __lhs, __rhs,
+					    [](auto&& __l, auto&& __r) {
+					      return __l > __r;
+					    });
+    }
+
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t >= __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator>= [[nodiscard]] (const variant<_Types...>& __lhs,
+			      const variant<_Types...>& __rhs)
+    {
+      return __detail::__variant::__compare(true, __lhs, __rhs,
+					    [](auto&& __l, auto&& __r) {
+					      return __l >= __r;
+					    });
+    }
 
   constexpr bool operator==(monostate, monostate) noexcept { return true; }
 
@@ -1290,22 +1363,10 @@ namespace __variant
     {
       common_comparison_category_t<compare_three_way_result_t<_Types>...> __ret
 	= strong_ordering::equal;
-
-      __detail::__variant::__raw_idx_visit(
-	[&__ret, &__v] (auto&& __w_mem, auto __w_index) mutable
-	{
-	  if constexpr (__w_index != variant_npos)
-	    {
-	      if (__v.index() == __w_index)
-		{
-		  auto& __this_mem = std::get<__w_index>(__v);
-		  __ret = __this_mem <=> __w_mem;
-		  return;
-		}
-	    }
-	  __ret = (__v.index() + 1) <=> (__w_index + 1);
-	}, __w);
-      return __ret;
+      return __detail::__variant::__compare(__ret, __v, __w,
+					    [](auto&& __l, auto&& __r) {
+					      return __l <=> __r;
+					    });
     }
 
   constexpr strong_ordering
