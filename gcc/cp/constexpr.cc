@@ -702,16 +702,14 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 
 /* We have an expression tree T that represents a call, either CALL_EXPR
    or AGGR_INIT_EXPR.  If the call is lexically to a named function,
-   retrun the _DECL for that function.  */
+   return the _DECL for that function.  */
 
 static tree
 get_function_named_in_call (tree t)
 {
-  tree fun = cp_get_callee (t);
-  if (fun && TREE_CODE (fun) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (fun, 0)) == FUNCTION_DECL)
-    fun = TREE_OPERAND (fun, 0);
-  return fun;
+  tree callee = cp_get_callee (t);
+  tree fun = cp_get_fndecl_from_callee (callee, /*fold*/false);
+  return fun ? fun : callee;
 }
 
 /* Subroutine of check_constexpr_fundef.  BODY is the body of a function
