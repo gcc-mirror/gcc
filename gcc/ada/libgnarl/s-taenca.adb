@@ -410,18 +410,6 @@ package body System.Tasking.Entry_Calls is
 
       Self_Id.Common.State := Entry_Caller_Sleep;
 
-      --  Try to remove calls to Sleep in the loop below by letting the caller
-      --  a chance of getting ready immediately, using Unlock & Yield.
-      --  See similar action in Wait_For_Call & Timed_Selective_Wait.
-
-      STPO.Unlock (Self_Id);
-
-      if Entry_Call.State < Done then
-         STPO.Yield;
-      end if;
-
-      STPO.Write_Lock (Self_Id);
-
       loop
          Check_Pending_Actions_For_Entry_Call (Self_Id, Entry_Call);
 
