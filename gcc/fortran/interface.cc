@@ -1752,6 +1752,14 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
       return false;
     }
 
+  if (s2->attr.subroutine && s1->attr.flavor == FL_VARIABLE)
+    {
+      if (errmsg != NULL)
+	snprintf (errmsg, err_len, "subroutine proc pointer '%s' passed "
+		  "to dummy variable '%s'", name2, s1->name);
+      return false;
+    }
+
   /* Do strict checks on all characteristics
      (for dummy procedures and procedure pointer assignments).  */
   if (!generic_flag && strict_flag)
@@ -2388,10 +2396,20 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     {
       gfc_symbol *act_sym = actual->symtree->n.sym;
 
-      if (formal->attr.flavor != FL_PROCEDURE)
+      if (formal->attr.flavor != FL_PROCEDURE && !act_sym->ts.interface)
 	{
 	  if (where)
 	    gfc_error ("Invalid procedure argument at %L", &actual->where);
+	  return false;
+	}
+      else if (act_sym->ts.interface
+	       && !gfc_compare_interfaces (formal, act_sym->ts.interface,
+					   act_sym->name, 0, 1, err,
+					   sizeof(err),NULL, NULL))
+	{
+	  if (where)
+	    gfc_error_opt (0, "Interface mismatch in dummy procedure %qs at %L:"
+			   " %s", formal->name, &actual->where, err);
 	  return false;
 	}
 
