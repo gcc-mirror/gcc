@@ -162,14 +162,16 @@ struct loongarch_cache {
   }
 };
 
-/* Alignment for functions and labels for best performance.  For new uarchs
-   the value should be measured via benchmarking.  See the documentation for
-   -falign-functions and -falign-labels in invoke.texi for the format.  */
+/* Alignment for functions loops and jumps for best performance.  For new
+   uarchs the value should be measured via benchmarking.  See the
+   documentation for -falign-functions, -falign-loops, and -falign-jumps in
+   invoke.texi for the format.  */
 struct loongarch_align {
   const char *function;	/* default value for -falign-functions */
-  const char *label;	/* default value for -falign-labels */
+  const char *loop;	/* default value for -falign-loops */
+  const char *jump;	/* default value for -falign-jumps */
 
-  loongarch_align () : function (nullptr), label (nullptr) {}
+  loongarch_align () : function (nullptr), loop (nullptr), jump (nullptr) {}
 
   loongarch_align function_ (const char *_function)
   {
@@ -177,9 +179,15 @@ struct loongarch_align {
     return *this;
   }
 
-  loongarch_align label_ (const char *_label)
+  loongarch_align loop_ (const char *_loop)
   {
-    label = _label;
+    loop = _loop;
+    return *this;
+  }
+
+  loongarch_align jump_ (const char *_jump)
+  {
+    jump = _jump;
     return *this;
   }
 };

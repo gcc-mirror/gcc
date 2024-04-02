@@ -922,13 +922,20 @@ loongarch_target_option_override (struct loongarch_target *target,
 {
   loongarch_update_gcc_opt_status (target, opts, opts_set);
 
-  /* alignments */
-  if (opts->x_flag_align_functions && !opts->x_str_align_functions)
-    opts->x_str_align_functions
-      = loongarch_cpu_align[target->cpu_tune].function;
+  /* If not optimizing for size, set the default
+     alignment to what the target wants.  */
+  if (!opts->x_optimize_size)
+    {
+      if (opts->x_flag_align_functions && !opts->x_str_align_functions)
+	opts->x_str_align_functions
+	  = loongarch_cpu_align[target->cpu_tune].function;
 
-  if (opts->x_flag_align_labels && !opts->x_str_align_labels)
-    opts->x_str_align_labels = loongarch_cpu_align[target->cpu_tune].label;
+      if (opts->x_flag_align_loops && !opts->x_str_align_loops)
+	opts->x_str_align_loops = loongarch_cpu_align[target->cpu_tune].loop;
+
+      if (opts->x_flag_align_jumps && !opts->x_str_align_jumps)
+	opts->x_str_align_jumps = loongarch_cpu_align[target->cpu_tune].jump;
+    }
 
   /* Set up parameters to be used in prefetching algorithm.  */
   int simultaneous_prefetches

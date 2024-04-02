@@ -81,14 +81,19 @@ array_tune<loongarch_cache> loongarch_cpu_cache =
 
 static inline loongarch_align la464_align ()
 {
-  return loongarch_align ().function_ ("32").label_ ("16");
+  return loongarch_align ().function_ ("32").loop_ ("16").jump_ ("16");
+}
+
+static inline loongarch_align la664_align ()
+{
+  return loongarch_align ().function_ ("8").loop_ ("8").jump_ ("32");
 }
 
 array_tune<loongarch_align> loongarch_cpu_align =
   array_tune<loongarch_align> ()
-    .set (CPU_LOONGARCH64, la464_align ())
+    .set (CPU_LOONGARCH64, la664_align ())
     .set (CPU_LA464, la464_align ())
-    .set (CPU_LA664, la464_align ());
+    .set (CPU_LA664, la664_align ());
 
 /* Default RTX cost initializer.  */
 loongarch_rtx_cost_data::loongarch_rtx_cost_data ()
