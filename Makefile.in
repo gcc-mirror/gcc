@@ -66497,6 +66497,36 @@ configure-flex: stage_last
 configure-m4: stage_last
 @endif gcc-bootstrap
 
+@if gcc-bootstrap
+@unless target-zlib-bootstrap
+configure-target-fastjar: maybe-configure-target-zlib
+@endunless target-zlib-bootstrap
+@unless target-zlib-bootstrap
+all-target-fastjar: maybe-all-target-zlib
+@endunless target-zlib-bootstrap
+@unless target-libstdc++-v3-bootstrap
+configure-target-libgo: maybe-all-target-libstdc++-v3
+@endunless target-libstdc++-v3-bootstrap
+@unless target-libbacktrace-bootstrap
+all-target-libgo: maybe-all-target-libbacktrace
+@endunless target-libbacktrace-bootstrap
+@unless target-libatomic-bootstrap
+all-target-libgo: maybe-all-target-libatomic
+@endunless target-libatomic-bootstrap
+@unless target-libstdc++-v3-bootstrap
+configure-target-libgm2: maybe-all-target-libstdc++-v3
+@endunless target-libstdc++-v3-bootstrap
+@unless target-libatomic-bootstrap
+all-target-libgm2: maybe-all-target-libatomic
+@endunless target-libatomic-bootstrap
+@unless target-libbacktrace-bootstrap
+configure-target-libgfortran: maybe-all-target-libbacktrace
+@endunless target-libbacktrace-bootstrap
+@unless target-libbacktrace-bootstrap
+configure-target-libgo: maybe-all-target-libbacktrace
+@endunless target-libbacktrace-bootstrap
+@endif gcc-bootstrap
+
 @unless gcc-bootstrap
 all-gnattools: maybe-all-target-libstdc++-v3
 configure-libcc1: maybe-configure-gcc
