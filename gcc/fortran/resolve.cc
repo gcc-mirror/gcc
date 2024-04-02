@@ -1950,12 +1950,20 @@ resolve_procedure_expression (gfc_expr* expr)
       || (sym->attr.function && sym->result == sym))
     return true;
 
-  /* A non-RECURSIVE procedure that is used as procedure expression within its
+   /* A non-RECURSIVE procedure that is used as procedure expression within its
      own body is in danger of being called recursively.  */
   if (is_illegal_recursion (sym, gfc_current_ns))
-    gfc_warning (0, "Non-RECURSIVE procedure %qs at %L is possibly calling"
-		 " itself recursively.  Declare it RECURSIVE or use"
-		 " %<-frecursive%>", sym->name, &expr->where);
+    {
+      if (sym->attr.use_assoc && expr->symtree->name[0] == '@')
+	gfc_warning (0, "Non-RECURSIVE procedure %qs from module %qs is "
+		     " possibly calling itself recursively in procedure %qs. "
+		     " Declare it RECURSIVE or use %<-frecursive%>",
+		     sym->name, sym->module, gfc_current_ns->proc_name->name);
+      else
+	gfc_warning (0, "Non-RECURSIVE procedure %qs at %L is possibly calling"
+		     " itself recursively.  Declare it RECURSIVE or use"
+		     " %<-frecursive%>", sym->name, &expr->where);
+    }
 
   return true;
 }
@@ -6624,6 +6632,13 @@ resolve_typebound_static (gfc_expr* e, gfc_symtree** target,
       if (st)
 	*target = st;
     }
+
+  if (is_illegal_recursion ((*target)->n.sym, gfc_current_ns)
+      && !e->value.compcall.tbp->deferred)
+    gfc_warning (0, "Non-RECURSIVE procedure %qs at %L is possibly calling"
+		 " itself recursively.  Declare it RECURSIVE or use"
+		 " %<-frecursive%>", (*target)->n.sym->name, &e->where);
+
   return true;
 }
 

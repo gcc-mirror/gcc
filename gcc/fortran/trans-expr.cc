@@ -1692,6 +1692,7 @@ gfc_trans_class_init_assign (gfc_code *code)
   tree tmp;
   gfc_se dst,src,memsz;
   gfc_expr *lhs, *rhs, *sz;
+  gfc_component *cmp;
 
   gfc_start_block (&block);
 
@@ -1707,6 +1708,21 @@ gfc_trans_class_init_assign (gfc_code *code)
   gfc_add_def_init_component (rhs);
   /* The _def_init is always scalar.  */
   rhs->rank = 0;
+
+  /* Check def_init for initializers.  If this is a dummy with all default
+     initializer components NULL, return NULL_TREE and use the passed value as
+     required by F2018(8.5.10).  */
+  if (!lhs->ref && lhs->symtree->n.sym->attr.dummy)
+    {
+      cmp = rhs->ref->next->u.c.component->ts.u.derived->components;
+      for (; cmp; cmp = cmp->next)
+	{
+	  if (cmp->initializer)
+	    break;
+	  else if (!cmp->next)
+	    return build_empty_stmt (input_location);
+	}
+    }
 
   if (code->expr1->ts.type == BT_CLASS
       && CLASS_DATA (code->expr1)->attr.dimension)
