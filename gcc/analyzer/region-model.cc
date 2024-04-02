@@ -5781,7 +5781,8 @@ apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 	  && is_a <const initial_svalue *> (unaryop->get_arg ()))
 	if (const initial_svalue *initvalop = (as_a <const initial_svalue *>
 					       (unaryop->get_arg ())))
-	  if (TREE_CODE (initvalop->get_type ()) == ENUMERAL_TYPE)
+	  if (initvalop->get_type ()
+	      && TREE_CODE (initvalop->get_type ()) == ENUMERAL_TYPE)
 	    {
 	      index_sval = initvalop;
 	      check_index_type = false;

@@ -616,6 +616,8 @@ maybe_undo_optimize_bit_field_compare (tree type,
 				       tree cst,
 				       const svalue *arg1)
 {
+  if (!type)
+    return nullptr;
   if (!INTEGRAL_TYPE_P (type))
     return NULL;
 
