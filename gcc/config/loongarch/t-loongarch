@@ -18,8 +18,9 @@
 
 
 GTM_H += loongarch-multilib.h
-OPTIONS_H_EXTRA += $(srcdir)/config/loongarch/loongarch-def.h	\
-		   $(srcdir)/config/loongarch/loongarch-tune.h	\
+OPTIONS_H_EXTRA += $(srcdir)/config/loongarch/loongarch-def.h	    \
+		   $(srcdir)/config/loongarch/loongarch-def-array.h \
+		   $(srcdir)/config/loongarch/loongarch-tune.h	    \
 		   $(srcdir)/config/loongarch/loongarch-cpucfg-map.h
 
 # Canonical target triplet from config.gcc
