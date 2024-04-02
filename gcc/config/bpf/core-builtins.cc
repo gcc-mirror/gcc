@@ -795,6 +795,23 @@ process_field_expr (struct cr_builtins *data)
 static GTY(()) hash_map<tree, tree> *bpf_enum_mappings;
 tree enum_value_type = NULL_TREE;
 
+static int
+get_index_for_enum_value (tree type, tree expr)
+{
+  gcc_assert (TREE_CODE (expr) == CONST_DECL
+	      && TREE_CODE (type) == ENUMERAL_TYPE);
+
+  unsigned int index = 0;
+  for (tree l = TYPE_VALUES (type); l; l = TREE_CHAIN (l))
+    {
+      gcc_assert (index < (1 << 16));
+      if (TREE_VALUE (l) == expr)
+	return index;
+      index++;
+    }
+  return -1;
+}
+
 /* Pack helper for the __builtin_preserve_enum_value.  */
 
 static struct cr_local
@@ -846,6 +863,16 @@ pack_enum_value_fail:
 	ret.reloc_data.default_value = integer_one_node;
     }
 
+  if (ret.fail == false )
+    {
+      int index = get_index_for_enum_value (type, tmp);
+      if (index == -1 || index >= (1 << 16))
+	{
+	  bpf_error ("enum value in CO-RE builtin cannot be represented");
+	  ret.fail = true;
+	}
+    }
+
   ret.reloc_data.type = type;
   ret.reloc_data.kind = kind;
   return ret;
@@ -864,25 +891,17 @@ process_enum_value (struct cr_builtins *data)
 
   struct cr_final ret = { NULL, type, data->kind };
 
-  if (TREE_CODE (expr) == CONST_DECL
-     && TREE_CODE (type) == ENUMERAL_TYPE)
-    {
-      unsigned int index = 0;
-      for (tree l = TYPE_VALUES (type); l; l = TREE_CHAIN (l))
-	{
-	  if (TREE_VALUE (l) == expr)
-	    {
-	      char *tmp = (char *) ggc_alloc_atomic ((index / 10) + 1);
-	      sprintf (tmp, "%d", index);
-	      ret.str = (const char *) tmp;
+  gcc_assert (TREE_CODE (expr) == CONST_DECL
+	      && TREE_CODE (type) == ENUMERAL_TYPE);
 
-	      break;
-	    }
-	  index++;
-	}
-    }
-  else
-    gcc_unreachable ();
+  int index = get_index_for_enum_value (type, expr);
+  gcc_assert (index != -1 && index < (1 << 16));
+
+  /* Index can only be a value up to 2^16.  Should always fit
+     in 6 chars.  */
+  char tmp[6];
+  sprintf (tmp, "%u", index);
+  ret.str = CONST_CAST (char *, ggc_strdup(tmp));
 
   return ret;
 }
