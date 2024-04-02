@@ -10962,8 +10962,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 						 lhs_type, &exit_gsi);
 
 	      auto gsi = gsi_for_stmt (use_stmt);
-	      remove_phi_node (&gsi, false);
 	      tree lhs_phi = gimple_phi_result (use_stmt);
+	      remove_phi_node (&gsi, false);
 	      gimple *copy = gimple_build_assign (lhs_phi, new_tree);
 	      gsi_insert_before (&exit_gsi, copy, GSI_SAME_STMT);
 	      break;

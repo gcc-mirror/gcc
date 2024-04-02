@@ -223,6 +223,14 @@ release_phi_node (gimple *phi)
       delink_imm_use (imm);
     }
 
+  /* Immediately return the memory to the allocator when we would
+     only ever re-use it for a smaller size allocation.  */
+  if (len - 2 >= NUM_BUCKETS - 2)
+    {
+      ggc_free (phi);
+      return;
+    }
+
   bucket = len > NUM_BUCKETS - 1 ? NUM_BUCKETS - 1 : len;
   bucket -= 2;
   vec_safe_push (free_phinodes[bucket], phi);
@@ -445,9 +453,9 @@ remove_phi_node (gimple_stmt_iterator *gsi, bool release_lhs_p)
 
   /* If we are deleting the PHI node, then we should release the
      SSA_NAME node so that it can be reused.  */
-  release_phi_node (phi);
   if (release_lhs_p)
     release_ssa_name (gimple_phi_result (phi));
+  release_phi_node (phi);
 }
 
 /* Remove all the phi nodes from BB.  */
