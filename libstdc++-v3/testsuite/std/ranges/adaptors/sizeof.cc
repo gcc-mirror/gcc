@@ -49,3 +49,7 @@ static_assert(sizeof(ranges::lazy_split_view<V, std::string_view>) == 4*ptr);
 
 static_assert
  (sizeof(ranges::reverse_view<ranges::filter_view<V, decltype(pred_l)>>) == 3*ptr);
+
+#if __cpp_lib_ranges_slide
+static_assert(sizeof(ranges::slide_view<V>) == 3*ptr);
+#endif

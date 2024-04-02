@@ -886,14 +886,17 @@ namespace views
 
 namespace __detail
 {
-  struct _Empty { };
+  template<typename _Tp, int _Disc>
+    struct _Absent { };
 
   // Alias for a type that is conditionally present
   // (and is an empty type otherwise).
   // Data members using this alias should use [[no_unique_address]] so that
   // they take no space when not needed.
-  template<bool _Present, typename _Tp>
-    using __maybe_present_t = __conditional_t<_Present, _Tp, _Empty>;
+  // The optional template parameter _Disc is for discriminating two otherwise
+  // equivalent absent types so that even they can overlap.
+  template<bool _Present, typename _Tp, int _Disc = 0>
+    using __maybe_present_t = __conditional_t<_Present, _Tp, _Absent<_Tp, _Disc>>;
 
   // Alias for a type that is conditionally const.
   template<bool _Const, typename _Tp>
@@ -6553,10 +6556,10 @@ namespace views::__adaptor
     range_difference_t<_Vp> _M_n;
     [[no_unique_address]]
       __detail::__maybe_present_t<__detail::__slide_caches_first<_Vp>,
-				  __detail::_CachedPosition<_Vp>> _M_cached_begin;
+				  __detail::_CachedPosition<_Vp>, 0> _M_cached_begin;
     [[no_unique_address]]
       __detail::__maybe_present_t<__detail::__slide_caches_last<_Vp>,
-				  __detail::_CachedPosition<_Vp>> _M_cached_end;
+				  __detail::_CachedPosition<_Vp>, 1> _M_cached_end;
 
     template<bool> class _Iterator;
     class _Sentinel;
