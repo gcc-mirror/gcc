@@ -22,8 +22,12 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 DEFINITION MODULE FOR "C" m2misc ;
 
 FROM m2tree IMPORT Tree ;
+FROM SYSTEM IMPORT ADDRESS ;
+
 
 PROCEDURE DebugTree (t: Tree) ;
+PROCEDURE error (message: ARRAY OF CHAR) ;
+PROCEDURE cerror (message: ADDRESS) ;
 
 
 END m2misc.

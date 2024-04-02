@@ -29,6 +29,22 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2misc.h"
 #include "m2tree.h"
 
+/* C error entry to error.  */
+
+void
+m2misc_cerror (const char *message)
+{
+  error (message);
+}
+
+/* modula2 entry for cerror.  */
+
+void
+m2misc_error (const char *message)
+{
+  m2misc_cerror (message);
+}
+
 /* DebugTree - display the tree t.  */
 
 void

@@ -39,6 +39,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 EXTERN void m2misc_DebugTree (tree t);
 EXTERN void m2misc_printStmt (void);
 EXTERN void m2misc_DebugTreeChain (tree t);
+EXTERN void m2misc_cerror (const char *message);
+EXTERN void m2misc_error (const char *message);
 
 #undef EXTERN
 #endif /* m2misc_h.  */

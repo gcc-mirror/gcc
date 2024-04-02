@@ -22,9 +22,10 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 IMPLEMENTATION MODULE M2LexBuf ;
 
 IMPORT m2flex ;
+IMPORT FIO ;
 
 FROM libc IMPORT strlen ;
-FROM SYSTEM IMPORT ADDRESS ;
+FROM SYSTEM IMPORT ADDRESS, ADR ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM DynamicStrings IMPORT string, InitString, InitStringCharStar, Equal, Mark, KillString ;
 FROM FormatStrings IMPORT Sprintf1 ;
@@ -33,10 +34,13 @@ FROM M2Reserved IMPORT toktype, tokToTok ;
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
 FROM M2Debug IMPORT Assert ;
 FROM NameKey IMPORT makekey ;
+FROM NumberIO IMPORT CardToStr ;
 FROM m2linemap IMPORT location_t, GetLocationBinary ;
 FROM M2Emit IMPORT UnknownLocation, BuiltinsLocation ;
 FROM M2Error IMPORT WarnStringAt ;
 FROM M2MetaError IMPORT MetaErrorT0 ;
+FROM M2Options IMPORT GetDebugTraceToken ;
+FROM M2LangDump IMPORT GetDumpFile ;
 
 FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice,
                      KillIndex, ForeachIndiceInIndexDo,
@@ -659,16 +663,30 @@ END GetTokenFiltered ;
 *)
 
 PROCEDURE GetToken ;
+VAR
+   buf: ARRAY [0..20] OF CHAR ;
 BEGIN
    IF UseBufferedTokens
    THEN
-      UpdateToken (ListOfTokens, CurrentTokNo)
+      UpdateToken (ListOfTokens, CurrentTokNo) ;
+      IF GetDebugTraceToken ()
+      THEN
+         CardToStr (CurrentTokNo, 0, buf) ;
+         FIO.WriteString (GetDumpFile (), 'token: ') ;
+         FIO.WriteString (GetDumpFile (), buf) ;
+         FIO.WriteLine (GetDumpFile ())
+      END
    ELSE
       IF NOT InBounds (ListOfTokens, CurrentTokNo)
       THEN
          GetTokenFiltered (FALSE)
       END ;
-      UpdateToken (ListOfTokens, CurrentTokNo)
+      UpdateToken (ListOfTokens, CurrentTokNo) ;
+      IF GetDebugTraceToken ()
+      THEN
+         CardToStr (CurrentTokNo, 0, buf) ;
+         m2flex.M2Error (ADR (buf))
+      END
    END
 END GetToken ;
 

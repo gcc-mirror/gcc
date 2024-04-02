@@ -475,12 +475,6 @@ gm2_langhook_handle_option (
     case OPT_fdebug_builtins:
       M2Options_SetDebugBuiltins (value);
       return 1;
-    case OPT_fdebug_trace_quad:
-      M2Options_SetDebugTraceQuad (value);
-      return 1;
-    case OPT_fdebug_trace_api:
-      M2Options_SetDebugTraceAPI (value);
-      return 1;
     case OPT_fdebug_function_line_numbers:
       M2Options_SetDebugFunctionLineNumbers (value);
       return 1;
@@ -548,6 +542,9 @@ gm2_langhook_handle_option (
       return M2Options_SetUninitVariableChecking (value, arg);
     case OPT_fm2_strict_type:
       M2Options_SetStrictTypeChecking (value);
+      return 1;
+    case OPT_fm2_debug_trace_:
+      M2Options_SetM2DebugTraceFilter (value, arg);
       return 1;
 #ifdef ENABLE_QUAD_DUMP_ALL
     case OPT_fm2_dump_filter_:

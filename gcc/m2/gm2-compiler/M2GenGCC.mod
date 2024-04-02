@@ -96,8 +96,7 @@ FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3,
 FROM M2Options IMPORT UnboundedByReference, PedanticCast,
                       VerboseUnbounded, Iso, Pim, DebugBuiltins, WholeProgram,
                       StrictTypeChecking, AutoInit, cflag, ScaffoldMain,
-                      ScaffoldDynamic, ScaffoldStatic,
-                      DebugTraceQuad, DebugTraceAPI ;
+                      ScaffoldDynamic, ScaffoldStatic, GetDebugTraceQuad ;
 
 FROM M2Printf IMPORT printf0, printf1, printf2, printf4 ;
 FROM M2Quiet IMPORT qprintf0 ;
@@ -459,7 +458,7 @@ BEGIN
    END ;
    location := TokenToLocation (CurrentQuadToken) ;
    CheckReferenced(q, op) ;
-   IF DebugTraceQuad
+   IF GetDebugTraceQuad ()
    THEN
       printf0('building: ') ;
       DisplayQuad(q)

@@ -491,7 +491,10 @@ EXTERN void m2flex_M2Error (const char *s)
     }
     putchar('\n');
   }
-  printf("%s:%d:%s\n", filename, currentLine->lineno, s);
+  if (s == NULL)
+    printf("%s:%d\n", filename, currentLine->lineno);
+  else
+    printf("%s:%d:%s\n", filename, currentLine->lineno, s);
 }
 
 static void poperrorskip (const char *s)
@@ -505,6 +508,35 @@ static void poperrorskip (const char *s)
     currentLine->nextpos  = nextpos;
     currentLine->tokenpos = tokenpos;
   }
+}
+
+/* skipnewline skips all '\n' at the start of the line and returns
+   the new position.  */
+
+static
+char *
+skipnewline (char *line)
+{
+  while (((*line) != (char)0) && ((*line) == '\n'))
+    line++;
+  return line;
+}
+
+/* traceLine display the source line providing -fdebug-trace-line was
+   enabled.  */
+
+static
+void
+traceLine (void)
+{
+  if (M2Options_GetDebugTraceLine ())
+    {
+      char *line = skipnewline (currentLine->linebuf);
+      if (filename == NULL)
+	printf("<stdin>:%d:%s\n", currentLine->lineno, line);
+      else
+	printf("%s:%d:%s\n", filename, currentLine->lineno, line);
+    }
 }
 
 /*
@@ -527,6 +559,7 @@ static void consumeLine (void)
   currentLine->column=0;
   START_LINE (lineno, yyleng);
   yyless(1);                  /* push back all but the \n */
+  traceLine ();
 }
 
 static void assert_location (location_t location ATTRIBUTE_UNUSED)

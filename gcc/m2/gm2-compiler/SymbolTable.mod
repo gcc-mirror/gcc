@@ -35,7 +35,9 @@ FROM Indexing IMPORT InitIndex, InBounds, LowIndice, HighIndice,
 FROM Sets IMPORT Set, InitSet, IncludeElementIntoSet, IsElementInSet ;
 FROM m2linemap IMPORT location_t ;
 
-FROM M2Options IMPORT Pedantic, ExtendedOpaque, DebugFunctionLineNumbers, ScaffoldDynamic, DebugBuiltins ;
+FROM M2Options IMPORT Pedantic, ExtendedOpaque,
+                      GetDebugFunctionLineNumbers, ScaffoldDynamic,
+                      DebugBuiltins ;
 
 FROM M2LexBuf IMPORT UnknownTokenNo, TokenToLineNo,
                      FindFileNameFromToken, TokenToLocation ;
@@ -1375,7 +1377,7 @@ END DebugProcedureLineNumber ;
 
 PROCEDURE DebugLineNumbers (sym: CARDINAL) ;
 BEGIN
-   IF DebugFunctionLineNumbers
+   IF GetDebugFunctionLineNumbers ()
    THEN
       printf0 ('<lines>\n') ;
       ForeachProcedureDo(sym, DebugProcedureLineNumber) ;

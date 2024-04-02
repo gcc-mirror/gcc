@@ -221,7 +221,7 @@ FROM M2Options IMPORT NilChecking,
                       ScaffoldDynamic, ScaffoldStatic, cflag,
                       ScaffoldMain, SharedFlag, WholeProgram,
                       GetDumpDir, GetM2DumpFilter,
-                      GetRuntimeModuleOverride,
+                      GetRuntimeModuleOverride, GetDebugTraceQuad,
                       DumpLangQuad ;
 
 FROM M2LangDump IMPORT CreateDumpQuad, CloseDumpQuad, GetDumpFile ;
@@ -13390,13 +13390,18 @@ BEGIN
             TokenNo := GetTokenNo ()
          ELSE
             TokenNo := TokPos
+         END ;
+         IF GetDebugTraceQuad ()
+         THEN
+            printf0('generating: ') ;
+            DisplayQuad (NextQuad) ;
+            (* MetaErrorT1 (TokenNo, '{%1On}', NextQuad) *)
          END
       END ;
       IF NextQuad=BreakAtQuad
       THEN
          stop
       END ;
-      (* DisplayQuad(NextQuad) ; *)
       NewQuad (NextQuad)
    END
 END GenQuadOTrash ;
@@ -13475,13 +13480,18 @@ BEGIN
          END ;
          op1pos := Op1Pos ;
          op2pos := Op2Pos ;
-         op3pos := Op3Pos
+         op3pos := Op3Pos ;
+         IF GetDebugTraceQuad ()
+         THEN
+            printf0('generating: ') ;
+            DisplayQuad (NextQuad) ;
+            (* MetaErrorT1 (TokenNo, '{%1On}', NextQuad) *)
+         END
       END ;
       IF NextQuad=BreakAtQuad
       THEN
          stop
       END ;
-      (* DisplayQuad(NextQuad) ; *)
       NewQuad (NextQuad)
    END
 END GenQuadOTypetok ;

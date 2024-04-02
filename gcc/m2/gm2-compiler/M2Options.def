@@ -45,8 +45,6 @@ VAR
    Pim4,                         (* -fpim4 use strict rules.                 *)
    PositiveModFloorDiv,          (* Force PIM4 behaviour for DIV and MOD     *)
    CompilerDebugging,            (* -fd internal debugging messages          *)
-   DebugTraceQuad,               (* -fdebug-trace-quad                       *)
-   DebugTraceAPI,                (* -fdebug-trace-api                        *)
    GenerateDebugging,            (* -g option to generate info for gdb/dbx   *)
    GenerateLineDebug,            (* -gline to generate line debugging.       *)
    Verbose,                      (* -verbose produce verbose error messages. *)
@@ -119,7 +117,6 @@ VAR
                                  (* the shared library version of the        *)
                                  (* scaffold.                                *)
    ForcedLocation,
-   DebugFunctionLineNumbers,
    GenerateStatementNote,
    Optimizing,
    Coding,
@@ -672,22 +669,16 @@ PROCEDURE SetQuadDebugging (value: BOOLEAN) ;
 
 
 (*
-   SetDebugTraceQuad -
+   SetM2DebugTraceFilter - set internal debug flags.  The flags should be
+                           specified as a comma separated list.  The full
+                           list allowed is quad,line,token,tree.
 *)
 
-PROCEDURE SetDebugTraceQuad (value: BOOLEAN) ;
+PROCEDURE SetM2DebugTraceFilter (value: BOOLEAN; filter: ADDRESS) ;
 
 
 (*
-   SetDebugTraceAPI -
-*)
-
-PROCEDURE SetDebugTraceAPI (value: BOOLEAN) ;
-
-
-(*
-   SetDebugFunctionLineNumbers - turn DebugFunctionLineNumbers on/off
-                                 (used internally for debugging).
+   SetDebugFunctionLineNumbers - set DebugFunctionLineNumbers.
 *)
 
 PROCEDURE SetDebugFunctionLineNumbers (value: BOOLEAN) ;
@@ -1074,6 +1065,41 @@ PROCEDURE GetM2DumpFilter () : ADDRESS ;
 *)
 
 PROCEDURE GetDumpLangGimple () : BOOLEAN ;
+
+
+(*
+   GetDebugTraceQuad - return DebugTraceQuad.
+*)
+
+PROCEDURE GetDebugTraceQuad () : BOOLEAN ;
+
+
+(*
+   GetDebugTraceTree - return DebugTraceTree.
+*)
+
+PROCEDURE GetDebugTraceTree () : BOOLEAN ;
+
+
+(*
+   GetDebugTraceToken - return DebugTraceToken.
+*)
+
+PROCEDURE GetDebugTraceToken () : BOOLEAN ;
+
+
+(*
+   GetDebugTraceLine - return DebugTraceLine.
+*)
+
+PROCEDURE GetDebugTraceLine () : BOOLEAN ;
+
+
+(*
+   GetDebugFunctionLineNumbers - return DebugFunctionLineNumbers.
+*)
+
+PROCEDURE GetDebugFunctionLineNumbers () : BOOLEAN ;
 
 
 (*

@@ -33,10 +33,12 @@ FROM Debug IMPORT Halt ;
 FROM m2linemap IMPORT location_t ;
 FROM m2configure IMPORT FullPathCPP, TargetIEEEQuadDefault ;
 FROM M2Error IMPORT InternalError ;
+FROM FormatStrings IMPORT Sprintf1 ;
+FROM m2misc IMPORT cerror ;
 
 FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
                            InitStringCharStar, ConCatChar, ConCat, KillString,
-                           Dup, string, char,
+                           Dup, string, char, Index,
                            PushAllocation, PopAllocationExemption,
                            InitStringDB, InitStringCharStarDB,
                            InitStringCharDB, MultDB, DupDB, SliceDB ;
@@ -73,6 +75,11 @@ VAR
    UselistFilename,
    RuntimeModuleOverride,
    CppArgs              : String ;
+   DebugFunctionLineNumbers,
+   DebugTraceQuad,   (* -fdebug-trace-quad.  *)
+   DebugTraceTree,   (* -fdebug-trace-tree.  *)
+   DebugTraceLine,   (* -fdebug-trace-line.  *)
+   DebugTraceToken, (* -fdebug-trace-token.  *)
    MFlag,
    MMFlag,
    MPFlag,
@@ -315,6 +322,22 @@ PROCEDURE GetMP () : BOOLEAN ;
 BEGIN
    RETURN MPFlag
 END GetMP ;
+
+
+(*
+   errors1 -
+*)
+
+PROCEDURE errors1 (format: ARRAY OF CHAR; arg: String) ;
+VAR
+   message: String ;
+   cstr   : ADDRESS ;
+BEGIN
+   message := Sprintf1 (InitString (format), arg) ;
+   cstr := string (message) ;
+   cerror (cstr) ;
+   exit (1)
+END errors1 ;
 
 
 (*
@@ -1079,23 +1102,121 @@ END SetCompilerDebugging ;
 
 
 (*
-   SetDebugTraceQuad -
+   SetM2DebugTraceFilter - set internal debug flags.  The flags should be
+                           specified as a comma separated list.  The full
+                           list allowed is quad,line,token,all.
 *)
 
-PROCEDURE SetDebugTraceQuad (value: BOOLEAN) ;
+PROCEDURE SetM2DebugTraceFilter (value: BOOLEAN; filter: ADDRESS) ;
+VAR
+   word,
+   full  : String ;
+   start,
+   i     : INTEGER ;
 BEGIN
-   DebugTraceQuad := value
-END SetDebugTraceQuad ;
+   full := InitStringCharStar (filter) ;
+   start := 0 ;
+   REPEAT
+      i := Index (full, ',', start) ;
+      IF i = -1
+      THEN
+         word := Slice (full, start, 0)
+      ELSE
+         word := Slice (full, start, i)
+      END ;
+      SetM2DebugTrace (word, value) ;
+      word := KillString (word) ;
+      start := i+1 ;
+   UNTIL i = -1 ;
+   full := KillString (full) ;
+END SetM2DebugTraceFilter ;
 
 
 (*
-   SetDebugTraceAPI -
+   SetM2DebugTrace -
 *)
 
-PROCEDURE SetDebugTraceAPI (value: BOOLEAN) ;
+PROCEDURE SetM2DebugTrace (word: String; value: BOOLEAN) ;
 BEGIN
-   DebugTraceAPI := value
-END SetDebugTraceAPI ;
+   IF EqualArray (word, 'all')
+   THEN
+      (* DebugTraceTree := value *)
+      DebugTraceQuad := value ;
+      DebugTraceToken := value ;
+      DebugTraceLine := value
+   ELSIF EqualArray (word, 'quad')
+   THEN
+      DebugTraceQuad := value
+   ELSIF EqualArray (word, 'token')
+   THEN
+      DebugTraceToken := value
+   ELSIF EqualArray (word, 'line')
+   THEN
+      DebugTraceLine := value
+   ELSE
+      errors1 ("unrecognized filter %s seen in -fm2-debug-trace= option\n", word)
+   END
+END SetM2DebugTrace ;
+
+
+(*
+   SetDebugFunctionLineNumbers - set DebugFunctionLineNumbers.
+*)
+
+PROCEDURE SetDebugFunctionLineNumbers (value: BOOLEAN) ;
+BEGIN
+   DebugFunctionLineNumbers := value
+END SetDebugFunctionLineNumbers ;
+
+
+(*
+   GetDebugTraceQuad - return DebugTraceQuad.
+*)
+
+PROCEDURE GetDebugTraceQuad () : BOOLEAN ;
+BEGIN
+   RETURN DebugTraceQuad
+END GetDebugTraceQuad ;
+
+
+(*
+   GetDebugTraceTree - return DebugTraceTree.
+*)
+
+PROCEDURE GetDebugTraceTree () : BOOLEAN ;
+BEGIN
+   RETURN DebugTraceTree
+END GetDebugTraceTree ;
+
+
+(*
+   GetDebugTraceToken - return DebugTraceToken.
+*)
+
+PROCEDURE GetDebugTraceToken () : BOOLEAN ;
+BEGIN
+   RETURN DebugTraceToken
+END GetDebugTraceToken ;
+
+
+(*
+   GetDebugTraceLine - return DebugTraceLine.
+*)
+
+PROCEDURE GetDebugTraceLine () : BOOLEAN ;
+BEGIN
+   RETURN DebugTraceLine
+END GetDebugTraceLine ;
+
+
+(*
+   GetDebugFunctionLineNumbers - return DebugFunctionLineNumbers.
+*)
+
+PROCEDURE GetDebugFunctionLineNumbers () : BOOLEAN ;
+BEGIN
+   RETURN DebugFunctionLineNumbers
+END GetDebugFunctionLineNumbers ;
 
 
 (*
@@ -1234,17 +1355,6 @@ BEGIN
       RETURN( location )
    END
 END OverrideLocation ;
-
-
-(*
-   SetDebugFunctionLineNumbers - turn DebugFunctionLineNumbers on/off
-                                 (used internally for debugging).
-*)
-
-PROCEDURE SetDebugFunctionLineNumbers (value: BOOLEAN) ;
-BEGIN
-   DebugFunctionLineNumbers := value
-END SetDebugFunctionLineNumbers ;
 
 
 (*
@@ -1848,7 +1958,9 @@ BEGIN
    ForcedLocation                    := FALSE ;
    WholeProgram                      := FALSE ;
    DebugTraceQuad                    := FALSE ;
-   DebugTraceAPI                     := FALSE ;
+   DebugTraceTree                    := FALSE ;
+   DebugTraceLine                    := FALSE ;
+   DebugTraceToken                   := FALSE ;
    DebugFunctionLineNumbers          := FALSE ;
    GenerateStatementNote             := FALSE ;
    LowerCaseKeywords                 := FALSE ;

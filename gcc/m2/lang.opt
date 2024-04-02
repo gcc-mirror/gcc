@@ -90,17 +90,9 @@ fd
 Modula-2
 turn on internal debugging of the compiler (internal switch)
 
-fdebug-trace-quad
-Modula-2
-turn on quadruple tracing (internal switch)
-
-fdebug-trace-api
-Modula-2
-turn on the Modula-2 api tracing (internal switch)
-
 fdebug-function-line-numbers
 Modula-2
-turn on the Modula-2 function line number generation (internal switch)
+turn on tracing of procedure line numbers (internal switch)
 
 fdef=
 Modula-2 Joined
@@ -137,6 +129,10 @@ specify the library order, the libraries may be specified by a comma separated a
 flocation=
 Modula-2 Joined
 set all location values to a specific value (internal switch)
+
+fm2-debug-trace=
+Modula-2 Joined
+turn on internal debug tracing for quad,token,line,all (internal switch)
 
 fm2-g
 Modula-2
