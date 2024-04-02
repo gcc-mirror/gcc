@@ -144,6 +144,7 @@ void
 loongarch_init_target (struct loongarch_target *target,
 		       int cpu_arch, int cpu_tune, int fpu, int simd,
 		       int abi_base, int abi_ext, int cmodel,
+		       int tls_dialect,
 		       HOST_WIDE_INT isa_evolution,
 		       HOST_WIDE_INT isa_evolution_set)
 {
@@ -158,6 +159,7 @@ loongarch_init_target (struct loongarch_target *target,
   target->abi.base = abi_base;
   target->abi.ext = abi_ext;
   target->cmodel = cmodel;
+  target->tls_dialect = tls_dialect;
 }
 
 
@@ -179,7 +181,8 @@ loongarch_config_target (struct loongarch_target *target,
   obstack_init (&msg_obstack);
 
   struct {
-    int arch, tune, fpu, simd, abi_base, abi_ext, cmodel, abi_flt;
+    int arch, tune, fpu, simd, abi_base, abi_ext, cmodel,
+	tls_dialect, abi_flt;
   } constrained = {
       M_OPT_ABSENT (target->cpu_arch)	  ? 0 : 1,
       M_OPT_ABSENT (target->cpu_tune)	  ? 0 : 1,
@@ -188,6 +191,7 @@ loongarch_config_target (struct loongarch_target *target,
       M_OPT_ABSENT (target->abi.base)	  ? 0 : 1,
       M_OPT_ABSENT (target->abi.ext)	  ? 0 : 1,
       M_OPT_ABSENT (target->cmodel)	  ? 0 : 1,
+      M_OPT_ABSENT (target->tls_dialect)  ? 0 : 1,
       M_OPT_ABSENT (target->abi.base)	  ? 0 : 1,
   };
 
@@ -556,6 +560,9 @@ fallback:
       gcc_unreachable ();
     }
 
+  t.tls_dialect = constrained.tls_dialect ? target->tls_dialect
+	  : DEFAULT_TLS_TYPE;
+
   /* Cleanup and return.  */
   obstack_free (&msg_obstack, NULL);
   *target = t;
@@ -790,6 +797,9 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 
   /* status of -mcmodel */
   opts->x_la_opt_cmodel = target->cmodel;
+
+  /* status of -mtls-dialect */
+  opts->x_la_opt_tls_dialect = target->tls_dialect;
 
   /* status of -mfpu */
   opts->x_la_opt_fpu = target->isa.fpu;

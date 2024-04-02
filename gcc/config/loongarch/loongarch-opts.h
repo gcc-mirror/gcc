@@ -39,6 +39,7 @@ void
 loongarch_init_target (struct loongarch_target *target,
 		       int cpu_arch, int cpu_tune, int fpu, int simd,
 		       int abi_base, int abi_ext, int cmodel,
+		       int tls_dialect,
 		       HOST_WIDE_INT isa_evolutions,
 		       HOST_WIDE_INT isa_evolutions_set);
 
@@ -104,6 +105,8 @@ struct loongarch_flags {
 
 #define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64)
 #define TARGET_ABI_LP64		  ABI_LP64_P(la_target.abi.base)
+
+#define TARGET_TLS_DESC		  (la_target.tls_dialect == TLS_DESCRIPTORS)
 
 #define ISA_HAS_LSX \
   (la_target.isa.simd == ISA_EXT_SIMD_LSX \

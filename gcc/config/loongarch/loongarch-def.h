@@ -180,6 +180,7 @@ struct loongarch_target
   int cpu_arch;	    /* CPU_ */
   int cpu_tune;	    /* same */
   int cmodel;	    /* CMODEL_ */
+  int tls_dialect;  /* TLS_ */
 };
 
 /* CPU model */
@@ -191,6 +192,12 @@ enum {
   CPU_LA664	    = 4,
   N_ARCH_TYPES	    = 5,
   N_TUNE_TYPES	    = 5
+};
+
+/* TLS types.  */
+enum {
+  TLS_TRADITIONAL = 0,
+  TLS_DESCRIPTORS = 1
 };
 
 /* CPU model properties */

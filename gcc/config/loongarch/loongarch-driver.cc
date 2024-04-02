@@ -45,7 +45,7 @@ la_driver_init (int argc ATTRIBUTE_UNUSED, const char **argv ATTRIBUTE_UNUSED)
   /* Initialize all fields of la_target.  */
   loongarch_init_target (&la_target, M_OPT_UNSET, M_OPT_UNSET, M_OPT_UNSET,
 			 M_OPT_UNSET, M_OPT_UNSET, M_OPT_UNSET, M_OPT_UNSET,
-			 0, 0);
+			 M_OPT_UNSET, 0, 0);
   return "";
 }
 

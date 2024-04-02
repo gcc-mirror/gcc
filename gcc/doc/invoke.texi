@@ -1060,7 +1060,8 @@ Objective-C and Objective-C++ Dialects}.
 -mdirect-extern-access -mno-direct-extern-access
 -mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as
 -mrecip  -mrecip=@var{opt} -mfrecipe -mno-frecipe -mdiv32 -mno-div32
--mlam-bh -mno-lam-bh -mlamcas -mno-lamcas -mld-seq-sa -mno-ld-seq-sa}
+-mlam-bh -mno-lam-bh -mlamcas -mno-lamcas -mld-seq-sa -mno-ld-seq-sa
+-mtls-dialect=@var{opt}}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2  -m32rx  -m32r
@@ -27135,6 +27136,19 @@ Use (do not use) @code{amcas[_db].@{b/h/w/d@}} instructions.  When build with
 Whether a load-load barrier (@code{dbar 0x700}) is needed.  When build with
 @option{-march=la664}, it is enabled by default.  The default is
 @option{-mno-ld-seq-sa}, the load-load barrier is needed.
+
+@opindex mtls-dialect
+@item -mtls-dialect=@var{opt}
+This option controls which tls dialect may be used for general dynamic and
+local dynamic TLS models.
+
+@table @samp
+@item trad
+Use traditional TLS. This is the default.
+
+@item desc
+Use TLS descriptors.
+@end table
 
 @item loongarch-vect-unroll-limit
 The vectorizer will use available tuning information to determine whether it

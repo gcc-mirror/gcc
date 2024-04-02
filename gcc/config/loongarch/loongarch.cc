@@ -2031,7 +2031,7 @@ loongarch_symbol_insns (enum loongarch_symbol_type type, machine_mode mode)
 
     case SYMBOL_TLSGD:
     case SYMBOL_TLSLDM:
-      return 3;
+      return TARGET_TLS_DESC ? 4 : 3;
 
     case SYMBOL_PCREL64:
       return 5;
@@ -2933,24 +2933,43 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 static rtx
 loongarch_legitimize_tls_address (rtx loc)
 {
-  rtx dest, tp, tmp, tmp1, tmp2, tmp3;
+  rtx dest, tp, tmp, tmp1, tmp2, tmp3, a0;
   enum tls_model model = SYMBOL_REF_TLS_MODEL (loc);
   rtx_insn *insn;
 
   switch (model)
     {
     case TLS_MODEL_LOCAL_DYNAMIC:
-      tmp = gen_rtx_REG (Pmode, GP_RETURN);
-      dest = gen_reg_rtx (Pmode);
-      insn = loongarch_call_tls_get_addr (loc, SYMBOL_TLSLDM, tmp);
-      emit_libcall_block (insn, dest, tmp, loc);
-      break;
-
+      if (!TARGET_TLS_DESC)
+	{
+	  tmp = gen_rtx_REG (Pmode, GP_RETURN);
+	  dest = gen_reg_rtx (Pmode);
+	  insn = loongarch_call_tls_get_addr (loc, SYMBOL_TLSLDM, tmp);
+	  emit_libcall_block (insn, dest, tmp, loc);
+	  break;
+	}
+      /* Fall through.  */
     case TLS_MODEL_GLOBAL_DYNAMIC:
-      tmp = gen_rtx_REG (Pmode, GP_RETURN);
-      dest = gen_reg_rtx (Pmode);
-      insn = loongarch_call_tls_get_addr (loc, SYMBOL_TLSGD, tmp);
-      emit_libcall_block (insn, dest, tmp, loc);
+      if (TARGET_TLS_DESC)
+	{
+	  a0 = gen_rtx_REG (Pmode, GP_ARG_FIRST);
+	  dest = gen_reg_rtx (Pmode);
+	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
+
+	  if (TARGET_CMODEL_EXTREME)
+	    emit_insn (gen_got_load_tls_desc_off64 (loc, gen_reg_rtx (DImode)));
+	  else
+	    emit_insn (gen_got_load_tls_desc (Pmode, loc));
+
+	  emit_insn (gen_add3_insn (dest, a0, tp));
+	}
+      else
+	{
+	  tmp = gen_rtx_REG (Pmode, GP_RETURN);
+	  dest = gen_reg_rtx (Pmode);
+	  insn = loongarch_call_tls_get_addr (loc, SYMBOL_TLSGD, tmp);
+	  emit_libcall_block (insn, dest, tmp, loc);
+	}
       break;
 
     case TLS_MODEL_INITIAL_EXEC:
@@ -7654,6 +7673,7 @@ loongarch_option_override_internal (struct loongarch_target *target,
 			 opts->x_la_opt_abi_base,
 			 opts->x_la_opt_abi_ext,
 			 opts->x_la_opt_cmodel,
+			 opts->x_la_opt_tls_dialect,
 			 opts->x_la_isa_evolution,
 			 opts_set->x_la_isa_evolution);
 
@@ -7700,6 +7720,7 @@ loongarch_option_restore (struct gcc_options *,
   la_target.isa.evolution = ptr->x_la_isa_evolution;
 
   la_target.cmodel = ptr->x_la_opt_cmodel;
+  la_target.tls_dialect = ptr->x_la_opt_tls_dialect;
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */

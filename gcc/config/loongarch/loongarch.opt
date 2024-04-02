@@ -253,6 +253,20 @@ mpass-mrelax-to-as
 Driver Var(la_pass_mrelax_to_as) Init(HAVE_AS_MRELAX_OPTION)
 Pass -mrelax or -mno-relax option to the assembler.
 
+Enum
+Name(tls_type) Type(int)
+The possible TLS dialects:
+
+EnumValue
+Enum(tls_type) String(trad) Value(TLS_TRADITIONAL)
+
+EnumValue
+Enum(tls_type) String(desc) Value(TLS_DESCRIPTORS)
+
+mtls-dialect=
+Target RejectNegative Joined Enum(tls_type) Var(la_opt_tls_dialect) Init(M_OPT_UNSET) Save
+Specify TLS dialect.
+
 -param=loongarch-vect-unroll-limit=
 Target Joined UInteger Var(la_vect_unroll_limit) Init(6) IntegerRange(1, 64) Param
 Used to limit unroll factor which indicates how much the autovectorizer may

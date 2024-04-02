@@ -64,6 +64,9 @@ UrlSuffix(gcc/LoongArch-Options.html#index-mdirect-extern-access)
 
 ; skipping UrlSuffix for 'mrelax' due to finding no URLs
 
+mtls-dialect=
+UrlSuffix(gcc/LoongArch-Options.html#index-mtls-dialect-1)
+
 mfrecipe
 UrlSuffix(gcc/LoongArch-Options.html#index-mfrecipe)
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=loongarch64 -mabi=lp64d -O2 -mcmodel=extreme -fno-plt -mexplicit-relocs=always -fdump-rtl-final" } */
+/* { dg-options "-march=loongarch64 -mabi=lp64d -O2 -mcmodel=extreme -mtls-dialect=trad -fno-plt -mexplicit-relocs=always -fdump-rtl-final" } */
 
 int a;
 extern int b;
