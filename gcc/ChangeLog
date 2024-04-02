@@ -1,3 +1,38 @@
+2024-04-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_override_options): Handle fPIE.
+
+2024-04-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Handle weak crts
+	before other objects. (REAL_LIBGCC_SPEC): Remove weak crts
+	from here.  (DARWIN_WEAK_CRTS): New.
+
+2024-04-01  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2024-01-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/113233
+	* config/loongarch/genopts/loongarch.opt.in: Mark options with
+	the "Save" property.
+	* config/loongarch/loongarch-opts.cc
+	(loongarch_update_gcc_opt_status): Update the value of the
+	la_target to global_options.
+	* config/loongarch/loongarch-opts.h
+	(loongarch_update_gcc_opt_status): Add a function declaration.
+	* config/loongarch/loongarch.cc
+	(loongarch_option_override_internal): Call the function
+	loongarch_update_gcc_opt_status.
+	(loongarch_option_save): New functions.
+	(loongarch_option_restore): Likewise.
+	(TARGET_OPTION_SAVE): Define macro.
+	(TARGET_OPTION_RESTORE): Likewise.
+	* config/loongarch/loongarch.opt: Regenerate.
+
 2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
