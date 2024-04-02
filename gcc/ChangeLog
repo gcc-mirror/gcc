@@ -1,3 +1,53 @@
+2024-04-01  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/genopts/loongarch.opt.in: Mark -m[no-]recip as
+	aliases to -mrecip={all,none}, respectively.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch-def.h (ABI_FPU_64): Rename to...
+	(ABI_FPU64_P): ...this.
+	(ABI_FPU_32): Rename to...
+	(ABI_FPU32_P): ...this.
+	(ABI_FPU_NONE): Rename to...
+	(ABI_NOFPU_P): ...this.
+	(ABI_LP64_P): Define.
+	* config/loongarch/loongarch.cc (loongarch_init_print_operand_punct):
+	Merged into loongarch_global_init.
+	(loongarch_cpu_option_override): Renamed to
+	loongarch_target_option_override.
+	(loongarch_option_override_internal): Move the work after
+	loongarch_config_target into loongarch_target_option_override.
+	(loongarch_global_init): Define.
+	(INIT_TARGET_FLAG): Move to loongarch-opts.cc.
+	(loongarch_option_override): Call loongarch_global_init
+	separately.
+	* config/loongarch/loongarch-opts.cc (loongarch_parse_mrecip_scheme):
+	Split the parsing of -mrecip=<string> from
+	loongarch_option_override_internal.
+	(loongarch_generate_mrecip_scheme): Define. Split from
+	loongarch_option_override_internal.
+	(loongarch_target_option_override): Define. Renamed from
+	loongarch_cpu_option_override.
+	(loongarch_init_misc_options): Define. Split from
+	loongarch_option_override_internal.
+	(INIT_TARGET_FLAG): Move from loongarch.cc.
+	* config/loongarch/loongarch-opts.h (loongarch_target_option_override):
+	New prototype.
+	(loongarch_parse_mrecip_scheme): New prototype.
+	(loongarch_init_misc_options): New prototype.
+	(TARGET_ABI_LP64): Simplify with ABI_LP64_P.
+	* config/loongarch/loongarch.h (TARGET_RECIP_DIV): Simplify.
+	Do not reference specific CPU architecture (LA664).
+	(TARGET_RECIP_SQRT): Same.
+	(TARGET_RECIP_RSQRT): Same.
+	(TARGET_RECIP_VEC_DIV): Same.
+	(TARGET_RECIP_VEC_SQRT): Same.
+	(TARGET_RECIP_VEC_RSQRT): Same.
+
+2024-04-01  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/invoke.texi: Add descriptions for the compilation
+	options.
+
 2024-03-31  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/xiangshan.md (xiangshan_jump): Add branch, jalr, ret

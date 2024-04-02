@@ -1,3 +1,47 @@
+2024-04-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114548
+	* gm2-compiler/M2Quads.mod (ConvertToAddress): Pass
+	procedure, false parameters to BuildConvertFunction.
+	(PushOne): Pass procedure, true parameters to
+	BuildConvertFunction.
+	Remove usused parameter internal.
+	(BuildPseudoBy): Remove parameter to PushOne.
+	(BuildIncProcedure): Ditto.
+	(BuildDecProcedure): Ditto.
+	(BuildFunctionCall): Add ConstExpr parameter to
+	BuildPseudoFunctionCall.
+	(BuildConstFunctionCall): Add procedure and true to
+	BuildConvertFunction.
+	(BuildPseudoFunctionCall): Add ConstExpr parameter.
+	Pass ProcSym and ConstExpr to BuildLengthFunction,
+	BuildConvertFunction, BuildOddFunction, BuildAbsFunction,
+	BuildCapFunction, BuildValFunction, BuildChrFunction,
+	BuildOrdFunction, BuildIntFunction, BuildTruncFunction,
+	BuildFloatFunction, BuildAddAdrFunction, BuildSubAdrFunction,
+	BuildDifAdrFunction, BuildCastFunction, BuildReFunction,
+	BuildImFunction and BuildCmplxFunction.
+	(BuildAddAdrFunction): Add ProcSym, ConstExpr parameters and
+	check for constant parameters.
+	(BuildSubAdrFunction): Ditto.
+	(BuildDifAdrFunction): Ditto.
+	(ConstExprError): Ditto.
+	(BuildLengthFunction): Ditto.
+	(BuildOddFunction): Ditto.
+	(BuildAbsFunction): Ditto.
+	(BuildCapFunction): Ditto.
+	(BuildChrFunction): Ditto.
+	(BuildOrdFunction): Ditto.
+	(BuildIntFunction): Ditto.
+	(BuildValFunction): Ditto.
+	(BuildCastFunction): Ditto.
+	(BuildConvertFunction): Ditto.
+	(BuildTruncFunction): Ditto.
+	(BuildFloatFunction): Ditto.
+	(BuildReFunction): Ditto.
+	(BuildImFunction): Ditto.
+	(BuildCmplxFunction): Ditto.
+
 2024-03-31  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* Make-lang.in (m2.install-info): Fix rule.

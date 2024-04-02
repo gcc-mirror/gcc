@@ -1,3 +1,38 @@
+2024-04-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114548
+	* gm2/iso/const/fail/expression.mod: New test.
+	* gm2/iso/const/fail/iso-const-fail.exp: New test.
+	* gm2/iso/const/fail/testabs.mod: New test.
+	* gm2/iso/const/fail/testaddadr.mod: New test.
+	* gm2/iso/const/fail/testcap.mod: New test.
+	* gm2/iso/const/fail/testcap2.mod: New test.
+	* gm2/iso/const/fail/testchr.mod: New test.
+	* gm2/iso/const/fail/testchr2.mod: New test.
+	* gm2/iso/const/fail/testcmplx.mod: New test.
+	* gm2/iso/const/fail/testfloat.mod: New test.
+	* gm2/iso/const/fail/testim.mod: New test.
+	* gm2/iso/const/fail/testint.mod: New test.
+	* gm2/iso/const/fail/testlength.mod: New test.
+	* gm2/iso/const/fail/testodd.mod: New test.
+	* gm2/iso/const/fail/testord.mod: New test.
+	* gm2/iso/const/fail/testre.mod: New test.
+	* gm2/iso/const/fail/testtrunc.mod: New test.
+	* gm2/iso/const/fail/testval.mod: New test.
+	* gm2/iso/const/pass/constbool.mod: New test.
+	* gm2/iso/const/pass/constbool2.mod: New test.
+	* gm2/iso/const/pass/constbool3.mod: New test.
+
+2024-04-01  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/conversion/pr16333.C: Change dg-warning to dg-message.
+	* g++.dg/cpp0x/constexpr-48324.C
+	* g++.dg/other/pr94326.C
+	* g++.dg/warn/Wreturn-local-addr-2.C
+	* g++.old-deja/g++.jason/warning8.C: Likewise.
+	* g++.dg/cpp1y/auto-fn6.C: Check that others don't complain.
+	* g++.dg/warn/Wreturn-local-addr-5.C: Expect error in C++26.
+
 2024-03-31  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-7.c:
