@@ -54,12 +54,27 @@ void foo47 () {vint64m4_t t;}
 void foo48 () {vuint64m4_t t;}
 void foo49 () {vint64m8_t t;}
 void foo50 () {vuint64m8_t t;}
-void foo57 () {vfloat32mf2_t t;} /* { dg-error {unknown type name 'vfloat32mf2_t'} } */
-void foo58 () {vfloat32m1_t t;} /* { dg-error {unknown type name 'vfloat32m1_t'} } */
-void foo59 () {vfloat32m2_t t;} /* { dg-error {unknown type name 'vfloat32m2_t'} } */
-void foo60 () {vfloat32m4_t t;} /* { dg-error {unknown type name 'vfloat32m4_t'} } */
-void foo61 () {vfloat32m8_t t;} /* { dg-error {unknown type name 'vfloat32m8_t'} } */
-void foo62 () {vfloat64m1_t t;} /* { dg-error {unknown type name 'vfloat64m1_t'} } */
-void foo63 () {vfloat64m2_t t;} /* { dg-error {unknown type name 'vfloat64m2_t'} } */
-void foo64 () {vfloat64m4_t t;} /* { dg-error {unknown type name 'vfloat64m4_t'} } */
-void foo65 () {vfloat64m8_t t;} /* { dg-error {unknown type name 'vfloat64m8_t'} } */
+
+/* To support target attribute, the vfloat*m*x*_t need to be registered
+   in advance.  We add type and args/return value check during the
+   set current function but cannot cover below cases.  It is the same
+   behavior compared to aarch64 sve.  */
+void foo57 () {vfloat32mf2_t t;}
+void foo58 () {vfloat32m1_t t;}
+void foo59 () {vfloat32m2_t t;}
+void foo60 () {vfloat32m4_t t;}
+void foo61 () {vfloat32m8_t t;}
+void foo62 () {vfloat64m1_t t;}
+void foo63 () {vfloat64m2_t t;}
+void foo64 () {vfloat64m4_t t;}
+void foo65 () {vfloat64m8_t t;}
+
+void new_foo57 (vfloat32mf2_t t) { } /* { dg-error {argument type 'vfloat32mf2_t' requires the zve32f, zve64f, zve64d or v ISA extension} } */
+void new_foo58 (vfloat32m1_t t) { }  /* { dg-error {argument type 'vfloat32m1_t' requires the zve32f, zve64f, zve64d or v ISA extension} } */
+void new_foo59 (vfloat32m2_t t) { }  /* { dg-error {argument type 'vfloat32m2_t' requires the zve32f, zve64f, zve64d or v ISA extension} } */
+void new_foo60 (vfloat32m4_t t) { }  /* { dg-error {argument type 'vfloat32m4_t' requires the zve32f, zve64f, zve64d or v ISA extension} } */
+void new_foo61 (vfloat32m8_t t) { }  /* { dg-error {argument type 'vfloat32m8_t' requires the zve32f, zve64f, zve64d or v ISA extension} } */
+void new_foo62 (vfloat64m1_t t) { }  /* { dg-error {argument type 'vfloat64m1_t' requires the zve64d or v ISA extension} } */
+void new_foo63 (vfloat64m2_t t) { }  /* { dg-error {argument type 'vfloat64m2_t' requires the zve64d or v ISA extension} } */
+void new_foo64 (vfloat64m4_t t) { }  /* { dg-error {argument type 'vfloat64m4_t' requires the zve64d or v ISA extension} } */
+void new_foo65 (vfloat64m8_t t) { }  /* { dg-error {argument type 'vfloat64m8_t' requires the zve64d or v ISA extension} } */

@@ -3123,6 +3123,36 @@ register_builtin_types ()
 #include "riscv-vector-builtins.def"
 }
 
+/* Similar as register_builtin_types but perform the registration if and
+   only if the element of abi_vector_type is NULL_TREE.  */
+static void
+register_builtin_types_on_null ()
+{
+  /* Get type node from get_typenode_from_name to prevent we have different type
+     node define in different target libraries, e.g. int32_t defined as
+     `long` in RV32/newlib-stdint, but `int` for RV32/glibc-stdint.h.
+     NOTE: uint[16|32|64]_type_node already defined in tree.h.  */
+  tree int8_type_node = get_typenode_from_name (INT8_TYPE);
+  tree uint8_type_node = get_typenode_from_name (UINT8_TYPE);
+  tree int16_type_node = get_typenode_from_name (INT16_TYPE);
+  tree int32_type_node = get_typenode_from_name (INT32_TYPE);
+  tree int64_type_node = get_typenode_from_name (INT64_TYPE);
+
+  machine_mode mode;
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,         \
+		     ARGS...)                                                  \
+  mode = VECTOR_MODE##mode;                                                    \
+  if (abi_vector_types[VECTOR_TYPE_##NAME] == NULL_TREE)                       \
+    register_builtin_type (VECTOR_TYPE_##NAME, SCALAR_TYPE##_type_node, mode);
+
+#define DEF_RVV_TUPLE_TYPE(NAME, NCHARS, ABI_NAME, SUBPART_TYPE, SCALAR_TYPE,  \
+			   NF, VECTOR_SUFFIX)                                  \
+  if (abi_vector_types[VECTOR_TYPE_##NAME] == NULL_TREE)                       \
+    register_tuple_type (VECTOR_TYPE_##NAME, VECTOR_TYPE_##SUBPART_TYPE,       \
+			 SCALAR_TYPE##_type_node, NF);
+#include "riscv-vector-builtins.def"
+}
+
 /* Register vector type TYPE under its risv_vector.h name.  */
 static void
 register_vector_type (vector_type_index type)
@@ -4419,6 +4449,22 @@ init_builtins ()
     handle_pragma_vector ();
 }
 
+/* Reinitialize builtins similar to init_builtins,  but only the null
+   builtin types will be registered.  */
+void
+reinit_builtins ()
+{
+  rvv_switcher rvv;
+
+  if (!TARGET_VECTOR)
+    return;
+
+  register_builtin_types_on_null ();
+
+  if (in_lto_p)
+    handle_pragma_vector ();
+}
+
 /* Implement TARGET_VERIFY_TYPE_CONTEXT for RVV types.  */
 bool
 verify_type_context (location_t loc, type_context_kind context, const_tree type,
@@ -4588,8 +4634,11 @@ expand_builtin (unsigned int code, tree exp, rtx target)
   registered_function &rfn = *(*registered_functions)[code];
 
   if (!TARGET_VECTOR)
-    error_at (EXPR_LOCATION (exp),
-	      "built-in function %qE requires the V ISA extension", exp);
+    {
+      error_at (EXPR_LOCATION (exp),
+		"built-in function %qE requires the V ISA extension", exp);
+      return target;
+    }
 
   return function_expander (rfn.instance, rfn.decl, exp, target).expand ();
 }

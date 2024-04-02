@@ -546,6 +546,7 @@ enum avl_type
 };
 /* Routines implemented in riscv-vector-builtins.cc.  */
 void init_builtins (void);
+void reinit_builtins (void);
 const char *mangle_builtin_type (const_tree);
 tree lookup_vector_type_attribute (const_tree);
 bool builtin_type_p (const_tree);
@@ -762,6 +763,7 @@ extern bool
 riscv_option_valid_attribute_p (tree, tree, tree, int);
 extern void
 riscv_override_options_internal (struct gcc_options *);
+extern void riscv_option_override (void);
 
 struct riscv_tune_param;
 /* Information about one micro-arch we know about.  */

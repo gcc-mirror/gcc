@@ -34,6 +34,72 @@ along with GCC; see the file COPYING3.  If not see
 
 #define builtin_define(TXT) cpp_define (pfile, TXT)
 
+struct pragma_intrinsic_flags
+{
+  int intrinsic_target_flags;
+
+  int intrinsic_riscv_vector_elen_flags;
+  int intrinsic_riscv_zvl_flags;
+  int intrinsic_riscv_zvb_subext;
+  int intrinsic_riscv_zvk_subext;
+};
+
+static void
+riscv_pragma_intrinsic_flags_pollute (struct pragma_intrinsic_flags *flags)
+{
+  flags->intrinsic_target_flags = target_flags;
+  flags->intrinsic_riscv_vector_elen_flags = riscv_vector_elen_flags;
+  flags->intrinsic_riscv_zvl_flags = riscv_zvl_flags;
+  flags->intrinsic_riscv_zvb_subext = riscv_zvb_subext;
+  flags->intrinsic_riscv_zvk_subext = riscv_zvk_subext;
+
+  target_flags = target_flags
+    | MASK_VECTOR;
+
+  riscv_zvl_flags = riscv_zvl_flags
+    | MASK_ZVL32B
+    | MASK_ZVL64B
+    | MASK_ZVL128B;
+
+  riscv_vector_elen_flags = riscv_vector_elen_flags
+    | MASK_VECTOR_ELEN_32
+    | MASK_VECTOR_ELEN_64
+    | MASK_VECTOR_ELEN_FP_16
+    | MASK_VECTOR_ELEN_FP_32
+    | MASK_VECTOR_ELEN_FP_64;
+
+  riscv_zvb_subext = riscv_zvb_subext
+    | MASK_ZVBB
+    | MASK_ZVBC
+    | MASK_ZVKB;
+
+  riscv_zvk_subext = riscv_zvk_subext
+    | MASK_ZVKG
+    | MASK_ZVKNED
+    | MASK_ZVKNHA
+    | MASK_ZVKNHB
+    | MASK_ZVKSED
+    | MASK_ZVKSH
+    | MASK_ZVKN
+    | MASK_ZVKNC
+    | MASK_ZVKNG
+    | MASK_ZVKS
+    | MASK_ZVKSC
+    | MASK_ZVKSG
+    | MASK_ZVKT;
+}
+
+static void
+riscv_pragma_intrinsic_flags_restore (struct pragma_intrinsic_flags *flags)
+{
+  target_flags = flags->intrinsic_target_flags;
+
+  riscv_vector_elen_flags = flags->intrinsic_riscv_vector_elen_flags;
+  riscv_zvl_flags = flags->intrinsic_riscv_zvl_flags;
+  riscv_zvb_subext = flags->intrinsic_riscv_zvb_subext;
+  riscv_zvk_subext = flags->intrinsic_riscv_zvk_subext;
+}
+
 static int
 riscv_ext_version_value (unsigned major, unsigned minor)
 {
@@ -201,20 +267,20 @@ riscv_pragma_intrinsic (cpp_reader *)
   if (strcmp (name, "vector") == 0
       || strcmp (name, "xtheadvector") == 0)
     {
-      if (TARGET_VECTOR)
-	riscv_vector::handle_pragma_vector ();
-      else /* Indicates riscv_vector.h is included but v is missing in arch  */
-	{
-	  /* To make the the rvv types and intrinsic API available for the
-	     target("arch=+v") attribute,  we need to temporally enable the
-	     TARGET_VECTOR, and disable it after all initialized.  */
-	  target_flags |= MASK_VECTOR;
+      struct pragma_intrinsic_flags backup_flags;
 
-	  riscv_vector::init_builtins ();
-	  riscv_vector::handle_pragma_vector ();
+      riscv_pragma_intrinsic_flags_pollute (&backup_flags);
 
-	  target_flags &= ~MASK_VECTOR;
-	}
+      riscv_option_override ();
+      init_adjust_machine_modes ();
+      riscv_vector::reinit_builtins ();
+      riscv_vector::handle_pragma_vector ();
+
+      riscv_pragma_intrinsic_flags_restore (&backup_flags);
+
+      /* Re-initialize after the flags are restored.  */
+      riscv_option_override ();
+      init_adjust_machine_modes ();
     }
   else
     error ("unknown %<#pragma riscv intrinsic%> option %qs", name);
