@@ -11646,7 +11646,7 @@ This switch suppresses warnings for possible elaboration problems.
 
 @item @code{-gnatw.l}
 
-`List inherited aspects.'
+`List inherited aspects as info messages.'
 
 This switch causes the compiler to list inherited invariants,
 preconditions, and postconditions from Type_Invariant’Class, Invariant’Class,
@@ -11660,7 +11660,7 @@ Pre’Class, and Post’Class aspects. Also list inherited subtype predicates.
 
 @item @code{-gnatw.L}
 
-`Suppress listing of inherited aspects.'
+`Suppress listing of inherited aspects as info messages.'
 
 This switch suppresses listing of inherited aspects.
 @end table
@@ -11755,11 +11755,11 @@ use of @code{-gnatg}.
 
 @item @code{-gnatw.n}
 
-`Activate warnings on atomic synchronization.'
+`Activate info messages on atomic synchronization.'
 
-This switch actives warnings when an access to an atomic variable
+This switch activates info messages when an access to an atomic variable
 requires the generation of atomic synchronization code. These
-warnings are off by default.
+info messages are off by default.
 @end table
 
 @geindex -gnatw.N (gcc)
@@ -11769,12 +11769,12 @@ warnings are off by default.
 
 @item @code{-gnatw.N}
 
-`Suppress warnings on atomic synchronization.'
+`Suppress info messages on atomic synchronization.'
 
 @geindex Atomic Synchronization
 @geindex warnings
 
-This switch suppresses warnings when an access to an atomic variable
+This switch suppresses info messages when an access to an atomic variable
 requires the generation of atomic synchronization code.
 @end table
 
@@ -29645,8 +29645,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{d1}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye

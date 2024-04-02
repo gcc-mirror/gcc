@@ -3415,7 +3415,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: -gnatw.l  (gcc)
 
 :switch:`-gnatw.l`
-  *List inherited aspects.*
+  *List inherited aspects as info messages.*
 
   This switch causes the compiler to list inherited invariants,
   preconditions, and postconditions from Type_Invariant'Class, Invariant'Class,
@@ -3425,7 +3425,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: -gnatw.L  (gcc)
 
 :switch:`-gnatw.L`
-  *Suppress listing of inherited aspects.*
+  *Suppress listing of inherited aspects as info messages.*
 
   This switch suppresses listing of inherited aspects.
 
@@ -3495,20 +3495,20 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: Atomic Synchronization, warnings
 
 :switch:`-gnatw.n`
-  *Activate warnings on atomic synchronization.*
+  *Activate info messages on atomic synchronization.*
 
-  This switch actives warnings when an access to an atomic variable
+  This switch activates info messages when an access to an atomic variable
   requires the generation of atomic synchronization code. These
-  warnings are off by default.
+  info messages are off by default.
 
 .. index:: -gnatw.N  (gcc)
 
 :switch:`-gnatw.N`
-  *Suppress warnings on atomic synchronization.*
+  *Suppress info messages on atomic synchronization.*
 
   .. index:: Atomic Synchronization, warnings
 
-  This switch suppresses warnings when an access to an atomic variable
+  This switch suppresses info messages when an access to an atomic variable
   requires the generation of atomic synchronization code.
 
 
