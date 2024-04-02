@@ -107,7 +107,7 @@ package Err_Vars is
 
    --  WARNING: There is a matching C declaration of these variables in fe.h
 
-   Error_Msg_Sloc : Source_Ptr;
+   Error_Msg_Sloc : Source_Ptr := No_Location;
    --  Source location for # insertion character in message
 
    Error_Msg_Name_1 : Name_Id;
