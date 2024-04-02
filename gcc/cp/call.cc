@@ -8632,7 +8632,15 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
       break;
     };
 
-  expr = convert_like (next_conversion (convs), expr, fn, argnum,
+  conversion *nc = next_conversion (convs);
+  if (convs->kind == ck_ref_bind && nc->kind == ck_qual
+      && !convs->need_temporary_p)
+    /* direct_reference_binding might have inserted a ck_qual under
+       this ck_ref_bind for the benefit of conversion sequence ranking.
+       Don't actually perform that conversion.  */
+    nc = next_conversion (nc);
+
+  expr = convert_like (nc, expr, fn, argnum,
 		       convs->kind == ck_ref_bind
 		       ? issue_conversion_warnings : false,
 		       c_cast_p, /*nested_p=*/true, complain & ~tf_no_cleanup);
@@ -8709,19 +8717,6 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
     case ck_ref_bind:
       {
 	tree ref_type = totype;
-
-	/* direct_reference_binding might have inserted a ck_qual under
-	   this ck_ref_bind for the benefit of conversion sequence ranking.
-	   Ignore the conversion; we'll create our own below.  */
-	if (next_conversion (convs)->kind == ck_qual
-	    && !convs->need_temporary_p)
-	  {
-	    gcc_assert (same_type_p (TREE_TYPE (expr),
-				     next_conversion (convs)->type));
-	    /* Strip the cast created by the ck_qual; cp_build_addr_expr
-	       below expects an lvalue.  */
-	    STRIP_NOPS (expr);
-	  }
 
 	if (convs->bad_p && !next_conversion (convs)->bad_p)
 	  {
