@@ -1,4 +1,5 @@
 // { dg-do compile { target c++20 } }
+// { dg-skip-if "" { *-*-* } { "-fno-char8_t" } }
 
 #include <cuchar>
 

@@ -25,8 +25,10 @@ bool c = std::in_range<int>(L'2'); // { dg-error "here" }
 bool d = std::in_range<wchar_t>(2); // { dg-error "here" }
 bool e = std::in_range<int>(true); // { dg-error "here" }
 bool f = std::in_range<bool>(0); // { dg-error "here" }
-bool g = std::in_range<int>(u8'a'); // { dg-error "here" }
-bool h = std::in_range<char8_t>(97); // { dg-error "here" }
+bool g = std::in_range<int>(u8'a'); // { dg-error "here" "" { target { no-opts "-fno-char8_t" } } }
+#ifdef __cpp_char8_t
+bool h = std::in_range<char8_t>(97); // { dg-error "here" "" { target { no-opts "-fno-char8_t" } } }
+#endif
 bool i = std::in_range<int>(u'a'); // { dg-error "here" }
 bool j = std::in_range<char16_t>(97); // { dg-error "here" }
 bool k = std::in_range<int>(U'a'); // { dg-error "here" }

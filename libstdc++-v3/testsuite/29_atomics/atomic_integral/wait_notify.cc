@@ -59,7 +59,9 @@ main ()
   check<unsigned long long>();
 
   check<wchar_t>();
+#if __cpp_char8_t
   check<char8_t>();
+#endif
   check<char16_t>();
   check<char32_t>();
 

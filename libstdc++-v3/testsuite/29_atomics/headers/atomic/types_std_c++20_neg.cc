@@ -47,9 +47,7 @@ void test01()
   using atomic_llong;		// { dg-error "expected nested-name-specifier" }
   using atomic_ullong;		// { dg-error "expected nested-name-specifier" }
   using atomic_wchar_t;		// { dg-error "expected nested-name-specifier" }
-#ifdef _GLIBCXX_USE_CHAR8_T
   using atomic_char8_t;		// { dg-error "expected nested-name-specifier" }
-#endif
   using atomic_char16_t;	// { dg-error "expected nested-name-specifier" }
   using atomic_char32_t;	// { dg-error "expected nested-name-specifier" }
 

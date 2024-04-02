@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++20 } }
+// { dg-skip-if "" { *-*-* } { "-fno-char8_t" } }
 
 #include <string>
 #include <memory_resource>
