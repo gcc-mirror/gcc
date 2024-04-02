@@ -36,6 +36,13 @@ test01(const char* first, const char* last)
   enum E { } e;
   std::from_chars(first, last, e); // { dg-error "no matching" }
   std::from_chars(first, last, e, 10); // { dg-error "no matching" }
+
+#ifndef __cpp_char8_t
+  struct char8_t { };
+#endif
+  char8_t c8;
+  std::from_chars(first, last, c8); // { dg-error "no matching" }
+  std::from_chars(first, last, c8, 10); // { dg-error "no matching" }
 }
 
 // { dg-prune-output "enable_if" }
