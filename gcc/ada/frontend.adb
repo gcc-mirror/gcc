@@ -158,7 +158,6 @@ begin
       --  intended -gnatg or -gnaty compilations. We also disconnect checking
       --  for maximum line length.
 
-      Opt.Style_Check := False;
       Style_Check := False;
 
       --  Capture current suppress options, which may get modified
