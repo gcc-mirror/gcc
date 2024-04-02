@@ -1001,8 +1001,22 @@ cp_get_fndecl_from_callee (tree fn, bool fold /* = true */)
 {
   if (fn == NULL_TREE)
     return fn;
+
+  /* We evaluate constexpr functions on the original, pre-genericization
+     bodies.  So block-scope extern declarations have not been mapped to
+     declarations in outer scopes.  Use the namespace-scope declaration,
+     if any, so that retrieve_constexpr_fundef can find it (PR111132).  */
+  auto fn_or_local_alias = [] (tree f)
+    {
+      if (DECL_LOCAL_DECL_P (f))
+	if (tree alias = DECL_LOCAL_DECL_ALIAS (f))
+	  if (alias != error_mark_node)
+	    return alias;
+      return f;
+    };
+
   if (TREE_CODE (fn) == FUNCTION_DECL)
-    return fn;
+    return fn_or_local_alias (fn);
   tree type = TREE_TYPE (fn);
   if (type == NULL_TREE || !INDIRECT_TYPE_P (type))
     return NULL_TREE;
@@ -1013,7 +1027,7 @@ cp_get_fndecl_from_callee (tree fn, bool fold /* = true */)
       || TREE_CODE (fn) == FDESC_EXPR)
     fn = TREE_OPERAND (fn, 0);
   if (TREE_CODE (fn) == FUNCTION_DECL)
-    return fn;
+    return fn_or_local_alias (fn);
   return NULL_TREE;
 }
 
