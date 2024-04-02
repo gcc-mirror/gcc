@@ -4920,7 +4920,7 @@ package body Sem_Elab is
            and then not New_In_State.Suppress_Info_Messages
          then
             Error_Msg_NE
-              ("info: access to & during elaboration", Attr, Subp_Id);
+              ("info: access to & during elaboration?$?", Attr, Subp_Id);
          end if;
 
          --  Warnings are suppressed when a prior scenario is already in that
@@ -5027,7 +5027,7 @@ package body Sem_Elab is
            and then not New_In_State.Suppress_Info_Messages
          then
             Error_Msg_NE
-              ("info: activation of & during elaboration", Call, Obj_Id);
+              ("info: activation of & during elaboration?$?", Call, Obj_Id);
          end if;
 
          --  Nothing to do when the call activates a task whose type is defined
@@ -6461,7 +6461,7 @@ package body Sem_Elab is
             if In_SPARK then
                return " in SPARK";
             else
-               return "";
+               return "?$?";
             end if;
          end Suffix;
 
@@ -8277,7 +8277,9 @@ package body Sem_Elab is
                Error_Msg_Name_1     := Prag_Nam;
                Error_Msg_Qual_Level := Nat'Last;
 
-               Error_Msg_NE ("info: missing pragma % for unit &", N, Unit_Id);
+               Error_Msg_NE
+                 ("info: missing pragma % for unit &?$?", N,
+                  Unit_Id);
                Error_Msg_Qual_Level := 0;
             end if;
          end Info_Missing_Pragma;
@@ -8406,7 +8408,8 @@ package body Sem_Elab is
                Error_Msg_Qual_Level := Nat'Last;
 
                Error_Msg_NE
-                 ("info: implicit pragma % generated for unit &", N, Unit_Id);
+                 ("info: implicit pragma % generated for unit &?$?",
+                   N, Unit_Id);
 
                Error_Msg_Qual_Level := 0;
                Output_Active_Scenarios (N, In_State);
