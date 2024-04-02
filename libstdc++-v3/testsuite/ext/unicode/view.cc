@@ -10,7 +10,7 @@ using namespace std::string_view_literals;
 constexpr void
 test_utf8_to_utf8()
 {
-  const std::u8string_view s8 = u8"£🇬🇧 €🇪🇺 æбçδé ♠♥♦♣ 🤡";
+  const auto s8 = u8"£🇬🇧 €🇪🇺 æбçδé ♠♥♦♣ 🤡"sv;
   uc::_Utf8_view v(s8);
   VERIFY( std::ranges::distance(v) == s8.size() );
   VERIFY( std::ranges::equal(v,  s8) );
@@ -19,7 +19,7 @@ test_utf8_to_utf8()
 constexpr void
 test_utf8_to_utf16()
 {
-  const std::u8string_view s8  = u8"£🇬🇧 €🇪🇺 æбçδé ♠♥♦♣ 🤡";
+  const auto s8  = u8"£🇬🇧 €🇪🇺 æбçδé ♠♥♦♣ 🤡"sv;
   const std::u16string_view s16 = u"£🇬🇧 €🇪🇺 æбçδé ♠♥♦♣ 🤡";
   uc::_Utf16_view v(s8);
   VERIFY( std::ranges::distance(v) == s16.size() );

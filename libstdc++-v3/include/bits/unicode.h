@@ -581,6 +581,9 @@ namespace __unicode
 #ifdef __cpp_char8_t
   template<typename _View>
     using _Utf8_view = _Utf_view<char8_t, _View>;
+#else
+  template<typename _View>
+    using _Utf8_view = _Utf_view<char, _View>;
 #endif
   template<typename _View>
     using _Utf16_view = _Utf_view<char16_t, _View>;
