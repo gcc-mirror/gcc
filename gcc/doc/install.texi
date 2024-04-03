@@ -3944,7 +3944,9 @@ Instead of GNU Binutils, you will need to install LLVM 15, or later, and copy
 by specifying a @code{--with-multilib-list=} that does not list @code{gfx1100}
 and @code{gfx1103}.
 
-Use Newlib (4.3.0 or newer; 4.4.0 or later is recommended).
+Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and git commit
+7dd4eb1db (2025-03-25, post-4.4.0) fixes device console output for GFX10 and
+GFX11 devices).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
@@ -3954,8 +3956,8 @@ on the GPU.
 To enable support for GCN3 Fiji devices (gfx803), GCC has to be configured with
 @option{--with-arch=@code{fiji}} or
 @option{--with-multilib-list=@code{fiji},...}.  Note that support for Fiji
-devices has been removed in ROCm 4.0 and support in LLVM is deprecated and will
-be removed in LLVM 18.
+devices has been removed in ROCm 4.0 and support in LLVM was deprecated and has
+been removed in LLVM 18.
 
 @html
 <hr />
