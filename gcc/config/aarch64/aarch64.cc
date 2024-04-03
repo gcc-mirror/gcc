@@ -19738,7 +19738,7 @@ aarch64_parse_fmv_features (const char *str, aarch64_feature_flags *isa_flags,
       if (len == 0)
 	return AARCH_PARSE_MISSING_ARG;
 
-      static const int num_features = ARRAY_SIZE (aarch64_fmv_feature_data);
+      int num_features = ARRAY_SIZE (aarch64_fmv_feature_data);
       int i;
       for (i = 0; i < num_features; i++)
 	{
@@ -19937,7 +19937,8 @@ compare_feature_masks (aarch64_fmv_feature_mask mask1,
   auto diff_mask = mask1 ^ mask2;
   if (diff_mask == 0ULL)
     return 0;
-  for (int i = FEAT_MAX - 1; i > 0; i--)
+  int num_features = ARRAY_SIZE (aarch64_fmv_feature_data);
+  for (int i = num_features - 1; i >= 0; i--)
     {
       auto bit_mask = aarch64_fmv_feature_data[i].feature_mask;
       if (diff_mask & bit_mask)
@@ -20020,7 +20021,8 @@ aarch64_mangle_decl_assembler_name (tree decl, tree id)
 
       name += "._";
 
-      for (int i = 0; i < FEAT_MAX; i++)
+      int num_features = ARRAY_SIZE (aarch64_fmv_feature_data);
+      for (int i = 0; i < num_features; i++)
 	{
 	  if (feature_mask & aarch64_fmv_feature_data[i].feature_mask)
 	    {
