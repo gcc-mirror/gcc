@@ -845,19 +845,8 @@ package body Inline is
    ------------------------
 
    procedure Add_Scope_To_Clean (Scop : Entity_Id) is
-      Elmt : Elmt_Id;
-
    begin
-      Elmt := First_Elmt (To_Clean);
-      while Present (Elmt) loop
-         if Node (Elmt) = Scop then
-            return;
-         end if;
-
-         Next_Elmt (Elmt);
-      end loop;
-
-      Append_Elmt (Scop, To_Clean);
+      Append_Unique_Elmt (Scop, To_Clean);
    end Add_Scope_To_Clean;
 
    --------------
@@ -915,7 +904,7 @@ package body Inline is
 
    procedure Analyze_Inlined_Bodies is
       Comp_Unit : Node_Id;
-      J         : Int;
+      J         : Nat;
       Pack      : Entity_Id;
       Subp      : Subp_Index;
       S         : Succ_Index;
@@ -2569,8 +2558,8 @@ package body Inline is
            (Proc_Id   : out Entity_Id;
             Decl_List : out List_Id)
          is
-            Formals   : constant List_Id   := New_List;
-            Subp_Name : constant Name_Id   := New_Internal_Name ('F');
+            Formals   : constant List_Id := New_List;
+            Subp_Name : constant Name_Id := New_Internal_Name ('F');
 
             Body_Decls : List_Id := No_List;
             Decl       : Node_Id;
