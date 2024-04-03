@@ -117,9 +117,10 @@ AARCH64_OPT_FMV_EXTENSION("sm4", SM4, (SIMD), (), (), "sm3 sm4")
 
 /* An explicit +rdma implies +simd, but +rdma+nosimd still enables scalar
    RDMA instructions.  */
-AARCH64_OPT_EXTENSION("rdma", RDMA, (), (SIMD), (), "asimdrdm")
+AARCH64_OPT_FMV_EXTENSION("rdma", RDMA, (), (SIMD), (), "asimdrdm")
 
-AARCH64_FMV_FEATURE("rmd", RDM, (RDMA))
+/* rdm is an alias for rdma.  */
+AARCH64_FMV_FEATURE("rdm", RDM, (RDMA))
 
 AARCH64_OPT_FMV_EXTENSION("crc", CRC, (), (), (), "crc32")
 

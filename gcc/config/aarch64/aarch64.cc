@@ -19695,6 +19695,10 @@ typedef struct
 #define AARCH64_FMV_FEATURE(NAME, FEAT_NAME, C) \
   {NAME, 1ULL << FEAT_##FEAT_NAME, ::feature_deps::fmv_deps_##FEAT_NAME},
 
+/* The "rdma" alias uses a different FEAT_NAME to avoid a duplicate
+   feature_deps name.  */
+#define FEAT_RDMA FEAT_RDM
+
 /* FMV features are listed in priority order, to make it easier to sort target
    strings.  */
 static aarch64_fmv_feature_datum aarch64_fmv_feature_data[] = {
