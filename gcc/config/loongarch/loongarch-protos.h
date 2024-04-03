@@ -89,9 +89,6 @@ extern void loongarch_split_128bit_move (rtx, rtx);
 extern bool loongarch_split_128bit_move_p (rtx, rtx);
 extern void loongarch_split_256bit_move (rtx, rtx);
 extern bool loongarch_split_256bit_move_p (rtx, rtx);
-extern void loongarch_split_lsx_copy_d (rtx, rtx, rtx, rtx (*)(rtx, rtx, rtx));
-extern void loongarch_split_lsx_insert_d (rtx, rtx, rtx, rtx);
-extern void loongarch_split_lsx_fill_d (rtx, rtx);
 extern const char *loongarch_output_move (rtx, rtx);
 #ifdef RTX_CODE
 extern void loongarch_expand_scc (rtx *);

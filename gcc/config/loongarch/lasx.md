@@ -572,12 +572,7 @@
 	  (match_operand 3 "const_<bitmask256>_operand" "")))]
   "ISA_HAS_LASX"
 {
-#if 0
-  if (!TARGET_64BIT && (<MODE>mode == V4DImode || <MODE>mode == V4DFmode))
-    return "#";
-  else
-#endif
-    return "xvinsgr2vr.<lasxfmt>\t%u0,%z1,%y3";
+  return "xvinsgr2vr.<lasxfmt>\t%u0,%z1,%y3";
 }
   [(set_attr "type" "simd_insert")
    (set_attr "mode" "<MODE>")])
@@ -1446,10 +1441,7 @@
   if (which_alternative == 1)
     return "xvldi.b\t%u0,0" ;
 
-  if (!TARGET_64BIT && (<MODE>mode == V2DImode || <MODE>mode == V2DFmode))
-    return "#";
-  else
-    return "xvreplgr2vr.<lasxfmt>\t%u0,%z1";
+  return "xvreplgr2vr.<lasxfmt>\t%u0,%z1";
 }
   [(set_attr "type" "simd_fill")
    (set_attr "mode" "<MODE>")
