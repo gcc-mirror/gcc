@@ -452,6 +452,13 @@ TopLevel::handle_use_dec (AST::SimplePath &path)
   auto locus = path.get_final_segment ().get_locus ();
   auto declared_name = path.get_final_segment ().as_string ();
 
+  // In that function, we only need to declare a new definition - the use path.
+  // the resolution needs to happpen in the EarlyNameResolver. So the
+  // definitions we'll add will be the path's NodeId - that makes sense, as we
+  // need one definition per path declared in a Use tree. so all good.
+  // alright, now in what namespace do we declare them? all of them? do we only
+  // declare them in the EarlyNameResolver? this is dodgy
+
   // in what namespace do we perform path resolution? All of them? see which one
   // matches? Error out on ambiguities?
   // so, apparently, for each one that matches, add it to the proper namespace
@@ -463,6 +470,10 @@ TopLevel::handle_use_dec (AST::SimplePath &path)
     = [this, &found, &declared_name, locus] (Namespace ns,
 					     const AST::SimplePath &path) {
 	tl::optional<Rib::Definition> resolved = tl::nullopt;
+
+	insert_or_error_out (declared_name, locus, path.get_node_id (), ns);
+	// what do we do here with the full simplepath? do we add it to an extra
+	// map?
 
 	// FIXME: resolve_path needs to return an `expected<NodeId, Error>` so
 	// that we can improve it with hints or location or w/ever. and maybe
