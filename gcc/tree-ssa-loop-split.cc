@@ -653,8 +653,26 @@ split_loop (class loop *loop1)
 	gimple_seq stmts2;
 	border = force_gimple_operand (border, &stmts2, true, NULL_TREE);
 	if (stmts2)
-	  gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop1),
-					    stmts2);
+	  {
+	    /* When the split condition is not always evaluated make sure
+	       to rewrite it to defined overflow.  */
+	    if (!dominated_by_p (CDI_DOMINATORS, exit1->src, bbs[i]))
+	      {
+		gimple_stmt_iterator gsi;
+		gsi = gsi_start (stmts2);
+		while (!gsi_end_p (gsi))
+		  {
+		    gimple *stmt = gsi_stmt (gsi);
+		    if (is_gimple_assign (stmt)
+			&& arith_code_with_undefined_signed_overflow
+						(gimple_assign_rhs_code (stmt)))
+		      rewrite_to_defined_overflow (&gsi);
+		    gsi_next (&gsi);
+		  }
+	      }
+	    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop1),
+					      stmts2);
+	  }
 	tree cond = fold_build2 (guard_code, boolean_type_node,
 				 guard_init, border);
 	if (!initial_true)
