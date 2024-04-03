@@ -1,3 +1,92 @@
+2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/debug/dwarf2/pr85550.C: Skip for Darwin.
+
+2024-04-02  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-segaddr.c: Adjust for darwin linker warning.
+	* gcc.dg/pie-7.c: Likewise.
+
+2024-04-02  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/111066
+	* g++.dg/special/initpri3.C: Fix wording.
+
+2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-setting-alignment.c:  Handle Darwin in
+	jit-verify-assemble output.
+
+2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/jit.exp: Accept target clauses in jit-verify-assembler
+	handling.
+
+2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-link-section-assembler.c: Accept any whitespace
+	between the .section directive and its arguments.
+
+2024-04-02  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-04-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103825
+	* g++.dg/cpp0x/enum44.C: New test.
+
+2024-04-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103707
+	PR fortran/106987
+	* gfortran.dg/arithmetic_overflow_3.f90: New test.
+
+2024-04-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113799
+	* gfortran.dg/arithmetic_overflow_2.f90: New test.
+
+2024-04-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-05-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95374
+	PR fortran/104352
+	* gfortran.dg/zero_sized_13.f90: New test.
+
+2024-04-02  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2023-09-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/111407
+	* gcc.dg/pr111407.c: New test.
+
 2024-04-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:

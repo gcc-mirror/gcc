@@ -1,3 +1,9 @@
+2024-04-02  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	PR libgcc/111731
+	* unwind-dw2-fde.c: Split unwind ranges if they contain the
+	unwind table.
+
 2024-02-16  Matteo Italia  <matteo@mitalia.net>
 
 	Backported from master:

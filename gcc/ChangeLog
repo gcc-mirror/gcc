@@ -1,3 +1,12 @@
+2024-04-02  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2023-09-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/111407
+	* tree-ssa-math-opts.cc (convert_mult_to_widen): Avoid the transform
+	when one of the operands is subject to abnormal coalescing.
+
 2024-04-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

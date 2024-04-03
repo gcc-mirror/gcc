@@ -1,3 +1,42 @@
+2024-04-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103707
+	PR fortran/106987
+	* arith.cc (is_hard_arith_error): New helper function to determine
+	whether an arithmetic error is "hard" or not.
+	(check_result): Use it.
+	(gfc_arith_divide): Set "Division by zero" only for regular
+	numerators of real and complex divisions.
+	(reduce_unary): Use is_hard_arith_error to determine whether a hard
+	or (recoverable) soft error was encountered.  Terminate immediately
+	on hard error, otherwise remember code of first soft error.
+	(reduce_binary_ac): Likewise.
+	(reduce_binary_ca): Likewise.
+	(reduce_binary_aa): Likewise.
+
+2024-04-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113799
+	* arith.cc (reduce_unary): Remember any overflow encountered during
+	reduction of unary arithmetic operations on array constructors and
+	continue, and return error status, but terminate on serious errors.
+
+2024-04-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-05-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95374
+	PR fortran/104352
+	* decl.cc (add_init_expr_to_sym): Set shape of initializer also for
+	zero-sized arrays, so that bounds violations can be detected later.
+
 2024-03-31  Mikael Morin  <mikael@gcc.gnu.org>
 
 	Backported from master:

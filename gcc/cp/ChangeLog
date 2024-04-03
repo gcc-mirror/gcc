@@ -1,3 +1,12 @@
+2024-04-02  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-04-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103825
+	* typeck.cc (is_bitfield_expr_with_lowered_type): Handle
+	CLEANUP_POINT_EXPR.
+
 2024-02-16  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
