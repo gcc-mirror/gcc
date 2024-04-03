@@ -993,7 +993,8 @@ compile_offload_image (const char *target, const char *compiler_path,
 
   obstack_ptr_grow (&argv_obstack, NULL);
   argv = XOBFINISH (&argv_obstack, char **);
-  fork_execute (argv[0], argv, true, "offload_args");
+  suffix = concat (target, ".offload_args", NULL);
+  fork_execute (argv[0], argv, true, suffix);
   obstack_free (&argv_obstack, NULL);
 
   free_array_of_ptrs ((void **) paths, n_paths);
