@@ -6863,8 +6863,8 @@ package body Sem_Attr is
       --------------
 
       when Attribute_Type_Key => Type_Key : declare
-         Full_Name  : constant String_Id :=
-                        Fully_Qualified_Name_String (Entity (P));
+         Full_Name : constant String_Id :=
+           Fully_Qualified_Name_String (Entity (P), Append_NUL => False);
 
          CRC : CRC32;
          --  The computed signature for the type
@@ -6997,9 +6997,9 @@ package body Sem_Attr is
          Start_String;
          Deref := False;
 
-         --  Copy all characters in Full_Name but the trailing NUL
+         --  Copy all characters in Full_Name
 
-         for J in 1 .. String_Length (Full_Name) - 1 loop
+         for J in 1 .. String_Length (Full_Name) loop
             Store_String_Char (Get_String_Char (Full_Name, Pos (J)));
          end loop;
 
