@@ -675,6 +675,12 @@ To take maximum advantage of this space-saving optimization, any
 unit declaring a tagged type should be compiled with the restriction,
 though this is not required.
 
+When pragmas ``Discard_Names`` and ``Restrictions (No_Streams)`` simultaneously
+apply to a tagged type, its Expanded_Name and External_Tag are also initialized
+with empty strings. In particular, both these pragmas can be applied as
+configuration pragmas to avoid exposing entity names at binary level for the
+entire partition.
+
 No_Tagged_Type_Registration
 ---------------------------
 .. index:: No_Tagged_Type_Registration

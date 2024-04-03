@@ -4000,12 +4000,6 @@ applied to a tagged type its Expanded_Name and External_Tag are initialized
 with empty strings. This is useful to avoid exposing entity names at binary
 level but has a negative impact on the debuggability of tagged types.
 
-Alternatively, when pragmas ``Discard_Names`` and ``Restrictions (No_Streams)``
-simultanously apply to a tagged type, its Expanded_Name and External_Tag are
-also initialized with empty strings. In particular, both these pragmas can be
-applied as configuration pragmas to avoid exposing entity names at binary
-level for the entire parition.
-
 Pragma Normalize_Scalars
 ========================
 

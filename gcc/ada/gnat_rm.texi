@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Apr 16, 2024
+GNAT Reference Manual , May 28, 2024
 
 AdaCore
 
@@ -5534,12 +5534,6 @@ When pragmas @code{Discard_Names} and @code{No_Tagged_Streams} are simultaneousl
 applied to a tagged type its Expanded_Name and External_Tag are initialized
 with empty strings. This is useful to avoid exposing entity names at binary
 level but has a negative impact on the debuggability of tagged types.
-
-Alternatively, when pragmas @code{Discard_Names} and @code{Restrictions (No_Streams)}
-simultanously apply to a tagged type, its Expanded_Name and External_Tag are
-also initialized with empty strings. In particular, both these pragmas can be
-applied as configuration pragmas to avoid exposing entity names at binary
-level for the entire parition.
 
 @node Pragma Normalize_Scalars,Pragma Obsolescent,Pragma No_Tagged_Streams,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-normalize-scalars}@anchor{b0}
@@ -13245,6 +13239,12 @@ since they do not need to worry about dispatching stream operations.
 To take maximum advantage of this space-saving optimization, any
 unit declaring a tagged type should be compiled with the restriction,
 though this is not required.
+
+When pragmas @code{Discard_Names} and @code{Restrictions (No_Streams)} simultaneously
+apply to a tagged type, its Expanded_Name and External_Tag are also initialized
+with empty strings. In particular, both these pragmas can be applied as
+configuration pragmas to avoid exposing entity names at binary level for the
+entire partition.
 
 @node No_Tagged_Type_Registration,No_Task_Allocators,No_Streams,Partition-Wide Restrictions
 @anchor{gnat_rm/standard_and_implementation_defined_restrictions no-tagged-type-registration}@anchor{205}
