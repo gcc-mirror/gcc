@@ -1,3 +1,30 @@
+2024-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114519
+	* include/bits/unicode.h (_Utf8_view): Guard with check for
+	char8_t being enabled.
+	(__literal_encoding_is_unicode): Guard use of char8_t with check
+	for it being enabled.
+	* testsuite/std/format/functions/114519.cc: New test.
+
+2024-04-02  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (ranges::__detail::_Empty): Rename to ...
+	(ranges::__detail::_Absent): ... this.  Turn into a template
+	parameterized by the absent type _Tp and discriminator _Disc.
+	(ranges::__detail::__maybe_present_t): Add an optional
+	discriminator parameter.
+	(slide_view::_M_cached_begin): Pass a discriminator argument to
+	__maybe_present_t.
+	(slide_view::_M_cached_end): Likewise.
+	* testsuite/std/ranges/adaptors/sizeof.cc: Verify the size of
+	slide_view<V> is 3 instead 4 pointers.
+
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* acinclude.m4: Fix duplicated words; file file -> file can.
+	* configure.host: Fix duplicated words; the the -> the.
+
 2024-03-29  Arsen Arsenović  <arsen@aarsen.me>
 
 	* testsuite/24_iterators/range_generators/01.cc: Drop GCC

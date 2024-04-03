@@ -1,3 +1,11 @@
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.c (duplicate_classes): Fix duplicated words in comment; in in
+	-> in.
+	* sendmsg.c (__objc_prepare_dtable_for_class): Fix duplicated words
+	in comment; the the -> the.
+	* encoding.c (objc_layout_structure): Likewise.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

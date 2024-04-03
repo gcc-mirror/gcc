@@ -1,3 +1,65 @@
+2024-04-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114565
+	* gm2-compiler/M2GenGCC.mod (CodeStatement): Test
+	GetDebugTraceQuad before calling DisplayQuad.
+	* gm2-compiler/M2LexBuf.mod (NumberIO): Import CardToStr.
+	(GetToken): Test GetDebugTraceToken before writing the
+	token number or token line.
+	* gm2-compiler/M2Options.def (SetDebugTraceQuad): Rename to
+	(SetM2DebugTraceFilter): ...this.
+	(SetDebugTraceAPI): Remove.
+	(GetDebugTraceQuad): New procedure function.
+	(GetDebugTraceTree): Ditto.
+	(GetDebugTraceToken): Ditto.
+	(GetDebugTraceLine): Ditto.
+	(GetDebugFunctionLineNumbers): Ditto.
+	* gm2-compiler/M2Options.mod (DebugFunctionLineNumbers): New
+	boolean variable.
+	(DebugTraceQuad): Ditto.
+	(DebugTraceTree): Ditto.
+	(DebugTraceLine): Ditto.
+	(DebugTraceToken): Ditto.
+	(errors1): New procedure.
+	(SetDebugTraceQuad): Remove.
+	(SetM2DebugTraceFilter): New procedure implemented.
+	(SetM2DebugTrace): Ditto.
+	(GetDebugTraceQuad): Ditto.
+	(GetDebugTraceToken ): Ditto.
+	(GetDebugTraceLine): Ditto.
+	(SetDebugTraceLine): Remove.
+	* gm2-compiler/M2Quads.mod (GenQuadOTrash): Test
+	GetDebugTraceQuad and call DisplayQuad.
+	(GenQuadOTypetok): Ditto.
+	* gm2-compiler/SymbolTable.mod: Replace
+	DebugFunctionLineNumbers with GetDebugFunctionLineNumbers.
+	* gm2-gcc/init.cc (_M2_M2LangDump_init): Add prototype.
+	(init_PerCompilationInit): Add call.
+	* gm2-gcc/m2misc.cc (m2misc_cerror): New function.
+	(m2misc_error): Ditto.
+	* gm2-gcc/m2misc.def (error): New procedure.
+	(cerror): Ditto.
+	* gm2-gcc/m2misc.h (m2misc_cerror): New prototype.
+	(m2misc_error): Ditto.
+	* gm2-gcc/m2options.h (M2Options_SetDebugTraceQuad): New
+	prototype.
+	(M2Options_SetDebugTraceAPI): Remove.
+	(M2Options_GetDebugTraceToken): New prototype.
+	(M2Options_GetDebugTraceLine): Ditto.
+	(M2Options_SetDebugFunctionLineNumbers): Ditto.
+	(M2Options_GetDebugFunctionLineNumbers): Ditto.
+	(M2Options_SetM2DebugTraceFilter): Ditto.
+	* gm2-lang.cc (gm2_langhook_init_options): Remove
+	OPT_fdebug_trace_quad case.
+	Remove OPT_fdebug_trace_api case.
+	Add OPT_fm2_debug_trace_ case.
+	* lang.opt (fm2-debug-trace): New option.
+	(fdebug-trace-api): Remove.
+	(fdebug-trace-quad): Remove.
+	* m2.flex (m2flex_M2Error): Check s for NULL.
+	(skipnewline): New function.
+	(consumeLine): Call traceline.
+
 2024-04-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114548

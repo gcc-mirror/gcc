@@ -1,3 +1,16 @@
+2024-04-02  Tom Tromey  <tom@tromey.com>
+
+	* cplus-dem.c (cplus_demangle): Try the D demangler with
+	"auto" format.
+	* testsuite/d-demangle-expected: Add --format=auto test.
+
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* regex.c (byte_re_match_2_internal): Fix duplicated words in comment;
+	next next -> next.
+	* dyn-string.c (dyn_string_init): Fix duplicated words in comment;
+	of of -> of.
+
 2024-02-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR other/113957

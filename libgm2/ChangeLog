@@ -1,3 +1,7 @@
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.host: Fix duplicated words; the the -> the.
+
 2024-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/113749

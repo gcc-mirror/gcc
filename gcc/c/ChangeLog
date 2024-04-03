@@ -1,3 +1,9 @@
+2024-04-02  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114361
+	* c-decl.cc (finish_struct): Set TYPE_CANONICAL when completing
+	strucute types.
+
 2024-03-14  Chung-Lin Tang  <cltang@baylibre.com>
 
 	* c-parser.cc (c_parser_oacc_data_clause): Add parsing support for

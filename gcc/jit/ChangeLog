@@ -1,3 +1,9 @@
+2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Make-lang.in: Implement exports list, and use a shared
+	libgcc.
+	* libgccjit.exports: New file.
+
 2024-03-29  Guillaume Gomez  <guillaume1.gomez@gmail.com>
 
 	* libgccjit.cc (gcc_jit_type_get_size): Add pointer support

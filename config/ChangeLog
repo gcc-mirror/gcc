@@ -1,3 +1,8 @@
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* lcmessage.m4: Fix duplicated words; can can -> can,
+	package package -> package.
+
 2024-01-11  Mike Frysinger  <vapier@gentoo.org>
 
 	* acinclude.m4 (CYG_AC_PATH_LIBERTY): Delete.

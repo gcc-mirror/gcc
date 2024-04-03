@@ -1,3 +1,8 @@
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* decCommon.c (decFinalize): Fix duplicated words in
+	comment; the the -> the.
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* configure.ac (--enable-host-shared): Don't set PICFLAG here.

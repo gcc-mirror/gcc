@@ -1,3 +1,9 @@
+2024-04-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-manager.cc (maybe_undo_optimize_bit_field_compare):
+	Guard against null types.
+	* region-model.cc (apply_constraints_for_gswitch): Likewise.
+
 2024-03-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114473

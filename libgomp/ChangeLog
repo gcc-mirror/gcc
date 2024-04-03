@@ -1,3 +1,15 @@
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Fix duplicated words; with with ->
+	with.
+	(omp_target_associate_ptr): Fix duplicated words; either either ->
+	either.
+	(omp_init_allocator): Fix duplicated words; be be -> be.
+	(omp_realloc): Fix duplicated words; is is -> is.
+	(OMP_ALLOCATOR): Fix duplicated words; other other -> other.
+	* priority_queue.h (priority_queue_multi_p): Fix duplicated words;
+	to to -> to.
+
 2024-03-25  Richard Biener  <rguenther@suse.de>
 
 	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): GFX1036.

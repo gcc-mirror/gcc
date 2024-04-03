@@ -1,3 +1,61 @@
+2024-04-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/aarch64-option-extensions.def: Fix comment.
+
+2024-04-02  Tom Tromey  <tromey@adacore.com>
+
+	* dwarf2out.cc (print_dw_val) <dw_val_class_loc>: Don't
+	print newline when not recursing.
+
+2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_override_options): Update the
+	clang major version value in the dsymutil check.
+
+2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_override_options): Reduce the debug
+	level to 2 if dsymutil cannot handle .macinfo sections.
+
+2024-04-02  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/t-loongarch: Add loongarch-def-arrays.h
+	to OPTION_H_EXTRA.
+
+2024-04-02  mengqinggang  <mengqinggang@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+	    Xi Ruoyao  <xry111@xry111.site>
+
+	* config.gcc: Add --with-tls option to change TLS flavor.
+	* config/loongarch/genopts/loongarch.opt.in: Add -mtls-dialect to
+	configure TLS flavor.
+	* config/loongarch/loongarch-def.h (struct loongarch_target): Add
+	tls_dialect.
+	* config/loongarch/loongarch-driver.cc (la_driver_init): Add tls
+	flavor.
+	* config/loongarch/loongarch-opts.cc (loongarch_init_target): Add
+	tls_dialect.
+	(loongarch_config_target): Ditto.
+	(loongarch_update_gcc_opt_status): Ditto.
+	* config/loongarch/loongarch-opts.h (loongarch_init_target): Ditto.
+	(TARGET_TLS_DESC): New define.
+	* config/loongarch/loongarch.cc (loongarch_symbol_insns): Add TLS
+	DESC instructions sequence length.
+	(loongarch_legitimize_tls_address): New TLS DESC instruction sequence.
+	(loongarch_option_override_internal): Add la_opt_tls_dialect.
+	(loongarch_option_restore): Add la_target.tls_dialect.
+	* config/loongarch/loongarch.md (@got_load_tls_desc<mode>): Normal
+	code model for TLS DESC.
+	(got_load_tls_desc_off64): Extreme cmode model for TLS DESC.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.opt.urls: Ditto.
+	* doc/invoke.texi: Add a description of the compilation option
+	'-mtls-dialect={trad,desc}'.
+
+2024-04-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.opt.urls: Regenerate.
+
 2024-04-01  Yang Yujie  <yangyujie@loongson.cn>
 
 	* config/loongarch/genopts/loongarch.opt.in: Mark -m[no-]recip as

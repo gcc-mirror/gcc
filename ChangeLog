@@ -1,3 +1,16 @@
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/106472
+	* Makefile.tpl (make-postboot-target-dep): New lambda.
+	Use it to add --enable-bootstrap dependencies of target modules
+	on other target modules if the latter aren't bootstrapped.
+	* Makefile.in: Regenerate.
+
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.tpl: Fix duplicated words; returns returns ->
+	returns.
+
 2024-03-08  Filip Kastl  <fkastl@suse.cz>
 
 	* MAINTAINERS: Fix order of names in Write After Aproval

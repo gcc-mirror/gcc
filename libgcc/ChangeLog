@@ -1,3 +1,8 @@
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2-fde.c (struct fde_accumulator): Fix duplicated
+	words in comment; is is -> is.
+
 2024-03-25  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* unwind-arm-common.inc (__gnu_personality_sigframe_fdpic): Cast

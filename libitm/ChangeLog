@@ -1,3 +1,8 @@
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* beginend.cc (GTM::gtm_thread::begin_transaction): Fix duplicated
+	words in comment; not not -> not to.
+
 2024-02-05  Marek Polacek  <polacek@redhat.com>
 
 	* containers.h (vector): Remove the template-id in constructors.

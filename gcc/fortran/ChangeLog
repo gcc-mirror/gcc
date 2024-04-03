@@ -1,3 +1,24 @@
+2024-04-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/106999
+	* interface.cc (gfc_compare_interfaces): Add error for a
+	subroutine proc pointer passed to a variable formal.
+	(compare_parameter): If a procedure pointer is being passed to
+	a non-procedure formal arg, and there is an an interface, use
+	gfc_compare_interfaces to check and provide a more useful error
+	message.
+
+2024-04-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112407
+	* resolve.cc (resolve_procedure_expression): Change the test for
+	for recursion in the case of hidden procedures from modules.
+	(resolve_typebound_static): Add warning for possible recursive
+	calls to typebound procedures.
+	* trans-expr.cc (gfc_trans_class_init_assign): Do not apply
+	default initializer to class dummy where component initializers
+	are all null.
+
 2024-03-29  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/50410
