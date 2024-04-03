@@ -35,6 +35,8 @@
 #include "gomp-constants.h"
 #include "simple-object.h"
 #include "elf.h"
+#include "configargs.h"  /* For configure_default_options.  */
+#include "multilib.h"  /* For multilib_options.  */
 
 /* These probably won't (all) be in elf.h for a while.  */
 #undef  EM_AMDGPU
@@ -846,6 +848,62 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
   obstack_free (&argv_obstack, NULL);
 }
 
+static int
+get_arch (const char *str, const char *with_arch_str)
+{
+  if (strcmp (str, "fiji") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX803;
+  else if (strcmp (str, "gfx900") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX900;
+  else if (strcmp (str, "gfx906") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX906;
+  else if (strcmp (str, "gfx908") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX908;
+  else if (strcmp (str, "gfx90a") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX90a;
+  else if (strcmp (str, "gfx1030") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX1030;
+  else if (strcmp (str, "gfx1036") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX1036;
+  else if (strcmp (str, "gfx1100") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX1100;
+  else if (strcmp (str, "gfx1103") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX1103;
+
+  error ("unrecognized argument in option %<-march=%s%>", str);
+
+  /* The suggestions are based on the configured multilib support; the compiler
+     itself might support more.  */
+  if (multilib_options[0] != '\0')
+    {
+      /* Example: "march=gfx900/march=gfx906" */
+      char *args = (char *) alloca (strlen (multilib_options));
+      const char *p = multilib_options, *q = NULL;
+      args[0] = '\0';
+      while (true)
+	{
+	  p = strchr (p, '=');
+	  if (!p)
+	    break;
+	  if (q)
+	    strcat (args, ", ");
+	  ++p;
+	  q = strchr (p, '/');
+	  if (q)
+	    strncat (args, p, q-p);
+	  else
+	    strcat (args, p);
+	}
+      inform (UNKNOWN_LOCATION, "valid arguments to %<-march=%> are: %s", args);
+    }
+  else if (with_arch_str)
+    inform (UNKNOWN_LOCATION, "valid argument to %<-march=%> is %qs", with_arch_str);
+
+  exit (FATAL_EXIT_CODE);
+
+  return 0;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -853,9 +911,21 @@ main (int argc, char **argv)
   FILE *out = stdout;
   FILE *cfile = stdout;
   const char *outname = 0;
+  const char *with_arch_str = NULL;
 
   progname = tool_name;
+  gcc_init_libintl ();
   diagnostic_initialize (global_dc, 0);
+  diagnostic_color_init (global_dc);
+
+  for (size_t i = 0; i < ARRAY_SIZE (configure_default_options); i++)
+    if (configure_default_options[i].name != NULL
+	&& strcmp (configure_default_options[i].name, "arch") == 0)
+      {
+	with_arch_str = configure_default_options[0].value;
+	elf_arch = get_arch (configure_default_options[0].value, NULL);
+	break;
+      }
 
   obstack_init (&files_to_cleanup);
   if (atexit (mkoffload_cleanup) != 0)
@@ -961,24 +1031,8 @@ main (int argc, char **argv)
       else if (strcmp (argv[i], "-dumpbase") == 0
 	       && i + 1 < argc)
 	dumppfx = argv[++i];
-      else if (strcmp (argv[i], "-march=fiji") == 0)
-	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX803;
-      else if (strcmp (argv[i], "-march=gfx900") == 0)
-	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX900;
-      else if (strcmp (argv[i], "-march=gfx906") == 0)
-	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX906;
-      else if (strcmp (argv[i], "-march=gfx908") == 0)
-	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX908;
-      else if (strcmp (argv[i], "-march=gfx90a") == 0)
-	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX90a;
-      else if (strcmp (argv[i], "-march=gfx1030") == 0)
-	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX1030;
-      else if (strcmp (argv[i], "-march=gfx1036") == 0)
-	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX1036;
-      else if (strcmp (argv[i], "-march=gfx1100") == 0)
-	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX1100;
-      else if (strcmp (argv[i], "-march=gfx1103") == 0)
-	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX1103;
+      else if (startswith (argv[i], "-march="))
+	elf_arch = get_arch (argv[i] + strlen ("-march="), with_arch_str);
 #define STR "-mstack-size="
       else if (startswith (argv[i], STR))
 	gcn_stack_size = atoi (argv[i] + strlen (STR));
