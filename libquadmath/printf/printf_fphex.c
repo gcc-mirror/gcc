@@ -163,7 +163,8 @@ __quadmath_printf_fphex (struct __quadmath_printf_file *fp,
 
   /* Fetch the argument value.	*/
     {
-      fpnum.value = **(const __float128 **) args[0];
+      memcpy (&fpnum.value, *(const void *const *) args[0],
+	      sizeof (fpnum.value));
 
       /* Check for special values: not a number or infinity.  */
       if (isnanq (fpnum.value))
