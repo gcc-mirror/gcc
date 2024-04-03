@@ -99,17 +99,17 @@ AARCH64_OPT_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON, EXPLICIT_OFF,	\
 AARCH64_FMV_FEATURE(NAME, IDENT, (IDENT))
 
 
-AARCH64_OPT_EXTENSION("fp", FP, (), (), (), "fp")
-
-AARCH64_OPT_EXTENSION("simd", SIMD, (FP), (), (), "asimd")
-
 AARCH64_OPT_FMV_EXTENSION("rng", RNG, (), (), (), "rng")
 
 AARCH64_OPT_FMV_EXTENSION("flagm", FLAGM, (), (), (), "flagm")
 
 AARCH64_FMV_FEATURE("flagm2", FLAGM2, (FLAGM))
 
-AARCH64_FMV_FEATURE("fp16fml", FP16FML, (F16FML))
+AARCH64_OPT_FMV_EXTENSION("lse", LSE, (), (), (), "atomics")
+
+AARCH64_OPT_FMV_EXTENSION("fp", FP, (), (), (), "fp")
+
+AARCH64_OPT_FMV_EXTENSION("simd", SIMD, (FP), (), (), "asimd")
 
 AARCH64_OPT_FMV_EXTENSION("dotprod", DOTPROD, (SIMD), (), (), "asimddp")
 
@@ -120,12 +120,6 @@ AARCH64_OPT_FMV_EXTENSION("sm4", SM4, (SIMD), (), (), "sm3 sm4")
 AARCH64_OPT_EXTENSION("rdma", RDMA, (), (SIMD), (), "asimdrdm")
 
 AARCH64_FMV_FEATURE("rmd", RDM, (RDMA))
-
-AARCH64_OPT_FMV_EXTENSION("lse", LSE, (), (), (), "atomics")
-
-AARCH64_FMV_FEATURE("fp", FP, (FP))
-
-AARCH64_FMV_FEATURE("simd", SIMD, (SIMD))
 
 AARCH64_OPT_FMV_EXTENSION("crc", CRC, (), (), (), "crc32")
 
@@ -159,6 +153,8 @@ AARCH64_FMV_FEATURE("fp16", FP16, (F16))
    and -march=armv8.4-a+fp16fml are equivalent and enable both F16FML and F16.
    -march=armv8.4-a+nofp16+fp16 enables F16 but not F16FML.  */
 AARCH64_OPT_EXTENSION("fp16fml", F16FML, (), (F16), (), "asimdfhm")
+
+AARCH64_FMV_FEATURE("fp16fml", FP16FML, (F16FML))
 
 AARCH64_FMV_FEATURE("dit", DIT, ())
 
