@@ -237,14 +237,17 @@ package Aspects is
    --  Aspect_Id's excluding No_Aspect
 
    subtype Nonoverridable_Aspect_Id is Aspect_Id with
-     Static_Predicate => Nonoverridable_Aspect_Id in
-       Aspect_Default_Iterator | Aspect_Iterator_Element |
-       Aspect_Implicit_Dereference | Aspect_Constant_Indexing |
-       Aspect_Variable_Indexing | Aspect_Aggregate |
-       Aspect_Max_Entry_Queue_Length
-        | Aspect_No_Controlled_Parts
-       --  ??? No_Controlled_Parts not yet in Aspect_Id enumeration
-       ;  --  see RM 13.1.1(18.7)
+     Static_Predicate =>
+       Nonoverridable_Aspect_Id in Aspect_Aggregate
+                                 | Aspect_Constant_Indexing
+                                 | Aspect_Default_Iterator
+                                 | Aspect_Implicit_Dereference
+                                 | Aspect_Iterator_Element
+                                 | Aspect_Max_Entry_Queue_Length
+                                 | Aspect_No_Controlled_Parts
+                                 | Aspect_Variable_Indexing;
+   --  ??? No_Controlled_Parts not yet in Aspect_Id enumeration see RM
+   --  13.1.1(18.7).
 
    --  The following array indicates aspects that accept 'Class
 
