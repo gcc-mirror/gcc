@@ -320,22 +320,22 @@ public:
   unsigned int alignb;
 
   /* The partition representative.  */
-  size_t representative;
+  unsigned representative;
 
   /* The next stack variable in the partition, or EOC.  */
-  size_t next;
+  unsigned next;
 
   /* The numbers of conflicting stack variables.  */
   bitmap conflicts;
 };
 
-#define EOC  ((size_t)-1)
+#define EOC  ((unsigned)-1)
 
 /* We have an array of such objects while deciding allocation.  */
 static class stack_var *stack_vars;
-static size_t stack_vars_alloc;
-static size_t stack_vars_num;
-static hash_map<tree, size_t> *decl_to_stack_part;
+static unsigned stack_vars_alloc;
+static unsigned stack_vars_num;
+static hash_map<tree, unsigned> *decl_to_stack_part;
 
 /* Conflict bitmaps go on this obstack.  This allows us to destroy
    all of them in one big sweep.  */
@@ -343,7 +343,7 @@ static bitmap_obstack stack_var_bitmap_obstack;
 
 /* An array of indices such that stack_vars[stack_vars_sorted[i]].size
    is non-decreasing.  */
-static size_t *stack_vars_sorted;
+static unsigned *stack_vars_sorted;
 
 /* The phase of the stack frame.  This is the known misalignment of
    virtual_stack_vars_rtx from PREFERRED_STACK_BOUNDARY.  That is,
@@ -457,7 +457,7 @@ add_stack_var (tree decl, bool really_expand)
 	= XRESIZEVEC (class stack_var, stack_vars, stack_vars_alloc);
     }
   if (!decl_to_stack_part)
-    decl_to_stack_part = new hash_map<tree, size_t>;
+    decl_to_stack_part = new hash_map<tree, unsigned>;
 
   v = &stack_vars[stack_vars_num];
   decl_to_stack_part->put (decl, stack_vars_num);
@@ -491,7 +491,7 @@ add_stack_var (tree decl, bool really_expand)
 /* Make the decls associated with luid's X and Y conflict.  */
 
 static void
-add_stack_var_conflict (size_t x, size_t y)
+add_stack_var_conflict (unsigned x, unsigned y)
 {
   class stack_var *a = &stack_vars[x];
   class stack_var *b = &stack_vars[y];
@@ -508,7 +508,7 @@ add_stack_var_conflict (size_t x, size_t y)
 /* Check whether the decls associated with luid's X and Y conflict.  */
 
 static bool
-stack_var_conflict_p (size_t x, size_t y)
+stack_var_conflict_p (unsigned x, unsigned y)
 {
   class stack_var *a = &stack_vars[x];
   class stack_var *b = &stack_vars[y];
@@ -537,7 +537,7 @@ visit_op (gimple *, tree op, tree, void *data)
       && DECL_P (op)
       && DECL_RTL_IF_SET (op) == pc_rtx)
     {
-      size_t *v = decl_to_stack_part->get (op);
+      unsigned *v = decl_to_stack_part->get (op);
       if (v)
 	bitmap_set_bit (active, *v);
     }
@@ -557,10 +557,10 @@ visit_conflict (gimple *, tree op, tree, void *data)
       && DECL_P (op)
       && DECL_RTL_IF_SET (op) == pc_rtx)
     {
-      size_t *v = decl_to_stack_part->get (op);
+      unsigned *v = decl_to_stack_part->get (op);
       if (v && bitmap_set_bit (active, *v))
 	{
-	  size_t num = *v;
+	  unsigned num = *v;
 	  bitmap_iterator bi;
 	  unsigned i;
 	  gcc_assert (num < stack_vars_num);
@@ -627,7 +627,7 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
       if (gimple_clobber_p (stmt))
 	{
 	  tree lhs = gimple_assign_lhs (stmt);
-	  size_t *v;
+	  unsigned *v;
 	  /* Nested function lowering might introduce LHSs
 	     that are COMPONENT_REFs.  */
 	  if (!VAR_P (lhs))
@@ -743,8 +743,8 @@ add_scope_conflicts (void)
 static int
 stack_var_cmp (const void *a, const void *b)
 {
-  size_t ia = *(const size_t *)a;
-  size_t ib = *(const size_t *)b;
+  unsigned ia = *(const unsigned *)a;
+  unsigned ib = *(const unsigned *)b;
   unsigned int aligna = stack_vars[ia].alignb;
   unsigned int alignb = stack_vars[ib].alignb;
   poly_int64 sizea = stack_vars[ia].size;
@@ -792,8 +792,8 @@ stack_var_cmp (const void *a, const void *b)
   return 0;
 }
 
-struct part_traits : unbounded_int_hashmap_traits <size_t, bitmap> {};
-typedef hash_map<size_t, bitmap, part_traits> part_hashmap;
+struct part_traits : unbounded_int_hashmap_traits <unsigned , bitmap> {};
+typedef hash_map<unsigned, bitmap, part_traits> part_hashmap;
 
 /* If the points-to solution *PI points to variables that are in a partition
    together with other variables add all partition members to the pointed-to
@@ -844,7 +844,7 @@ static void
 update_alias_info_with_stack_vars (void)
 {
   part_hashmap *decls_to_partitions = NULL;
-  size_t i, j;
+  unsigned i, j;
   tree var = NULL_TREE;
 
   for (i = 0; i < stack_vars_num; i++)
@@ -923,7 +923,7 @@ update_alias_info_with_stack_vars (void)
    Merge them into a single partition A.  */
 
 static void
-union_stack_vars (size_t a, size_t b)
+union_stack_vars (unsigned a, unsigned b)
 {
   class stack_var *vb = &stack_vars[b];
   bitmap_iterator bi;
@@ -969,20 +969,20 @@ union_stack_vars (size_t a, size_t b)
 static void
 partition_stack_vars (void)
 {
-  size_t si, sj, n = stack_vars_num;
+  unsigned si, sj, n = stack_vars_num;
 
-  stack_vars_sorted = XNEWVEC (size_t, stack_vars_num);
+  stack_vars_sorted = XNEWVEC (unsigned, stack_vars_num);
   for (si = 0; si < n; ++si)
     stack_vars_sorted[si] = si;
 
   if (n == 1)
     return;
 
-  qsort (stack_vars_sorted, n, sizeof (size_t), stack_var_cmp);
+  qsort (stack_vars_sorted, n, sizeof (unsigned), stack_var_cmp);
 
   for (si = 0; si < n; ++si)
     {
-      size_t i = stack_vars_sorted[si];
+      unsigned i = stack_vars_sorted[si];
       unsigned int ialign = stack_vars[i].alignb;
       poly_int64 isize = stack_vars[i].size;
 
@@ -994,7 +994,7 @@ partition_stack_vars (void)
 
       for (sj = si + 1; sj < n; ++sj)
 	{
-	  size_t j = stack_vars_sorted[sj];
+	  unsigned j = stack_vars_sorted[sj];
 	  unsigned int jalign = stack_vars[j].alignb;
 	  poly_int64 jsize = stack_vars[j].size;
 
@@ -1034,7 +1034,7 @@ partition_stack_vars (void)
 static void
 dump_stack_var_partition (void)
 {
-  size_t si, i, j, n = stack_vars_num;
+  unsigned si, i, j, n = stack_vars_num;
 
   for (si = 0; si < n; ++si)
     {
@@ -1044,8 +1044,7 @@ dump_stack_var_partition (void)
       if (stack_vars[i].representative != i)
 	continue;
 
-      fprintf (dump_file, "Partition " HOST_SIZE_T_PRINT_UNSIGNED ": size ",
-	       (fmt_size_t) i);
+      fprintf (dump_file, "Partition %u: size ", i);
       print_dec (stack_vars[i].size, dump_file);
       fprintf (dump_file, " align %u\n", stack_vars[i].alignb);
 
@@ -1128,9 +1127,9 @@ public:
    a unique location within the stack frame.  Update each partition member
    with that location.  */
 static void
-expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
+expand_stack_vars (bool (*pred) (unsigned), class stack_vars_data *data)
 {
-  size_t si, i, j, n = stack_vars_num;
+  unsigned si, i, j, n = stack_vars_num;
   poly_uint64 large_size = 0, large_alloc = 0;
   rtx large_base = NULL;
   rtx large_untagged_base = NULL;
@@ -1398,7 +1397,7 @@ expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
 static poly_uint64
 account_stack_vars (void)
 {
-  size_t si, j, i, n = stack_vars_num;
+  unsigned si, j, i, n = stack_vars_num;
   poly_uint64 size = 0;
 
   for (si = 0; si < n; ++si)
@@ -2028,13 +2027,13 @@ stack_protect_decl_phase (tree decl)
    as callbacks for expand_stack_vars.  */
 
 static bool
-stack_protect_decl_phase_1 (size_t i)
+stack_protect_decl_phase_1 (unsigned i)
 {
   return stack_protect_decl_phase (stack_vars[i].decl) == 1;
 }
 
 static bool
-stack_protect_decl_phase_2 (size_t i)
+stack_protect_decl_phase_2 (unsigned i)
 {
   return stack_protect_decl_phase (stack_vars[i].decl) == 2;
 }
@@ -2044,7 +2043,7 @@ stack_protect_decl_phase_2 (size_t i)
    Returns true if any of the vars in the partition need to be protected.  */
 
 static bool
-asan_decl_phase_3 (size_t i)
+asan_decl_phase_3 (unsigned i)
 {
   while (i != EOC)
     {
@@ -2062,7 +2061,7 @@ asan_decl_phase_3 (size_t i)
 static bool
 add_stack_protection_conflicts (void)
 {
-  size_t i, j, n = stack_vars_num;
+  unsigned i, j, n = stack_vars_num;
   unsigned char *phase;
   bool ret = false;
 
@@ -2107,7 +2106,7 @@ init_vars_expansion (void)
   bitmap_obstack_initialize (&stack_var_bitmap_obstack);
 
   /* A map from decl to stack partition.  */
-  decl_to_stack_part = new hash_map<tree, size_t>;
+  decl_to_stack_part = new hash_map<tree, unsigned>;
 
   /* Initialize local stack smashing state.  */
   has_protected_decls = false;
@@ -2144,7 +2143,7 @@ HOST_WIDE_INT
 estimated_stack_frame_size (struct cgraph_node *node)
 {
   poly_int64 size = 0;
-  size_t i;
+  unsigned i;
   tree var;
   struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
 
@@ -2159,7 +2158,7 @@ estimated_stack_frame_size (struct cgraph_node *node)
   if (stack_vars_num > 0)
     {
       /* Fake sorting the stack vars for account_stack_vars ().  */
-      stack_vars_sorted = XNEWVEC (size_t, stack_vars_num);
+      stack_vars_sorted = XNEWVEC (unsigned , stack_vars_num);
       for (i = 0; i < stack_vars_num; ++i)
 	stack_vars_sorted[i] = i;
       size += account_stack_vars ();
