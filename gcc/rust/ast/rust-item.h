@@ -1213,7 +1213,7 @@ public:
 
   std::string as_string () const override;
 
-  NewBindType get_new_bind_type () { return bind_type; }
+  NewBindType get_new_bind_type () const { return bind_type; }
 
   void accept_vis (ASTVisitor &vis) override;
 

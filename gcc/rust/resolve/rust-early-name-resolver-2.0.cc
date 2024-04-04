@@ -21,6 +21,7 @@
 #include "rust-diagnostics.h"
 #include "rust-toplevel-name-resolver-2.0.h"
 #include "rust-attributes.h"
+#include "rust-finalize-imports-2.0.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -57,6 +58,9 @@ Early::go (AST::Crate &crate)
   for (auto &&import : toplevel.get_imports_to_resolve ())
     build_import_mapping (std::move (import));
 
+  // Once this is done, we finalize their resolution
+  FinalizeImports::go (import_mappings, toplevel, ctx);
+
   // We now proceed with resolving macros, which can be nested in almost any
   // items
   textual_scope.push ();
@@ -80,10 +84,6 @@ Early::resolve_glob_import (TopLevel::ImportKind &&glob)
   // here, we insert the module's NodeId into the import_mappings and will look
   // up the module proper in `FinalizeImports`
   import_mappings.insert ({std::move (glob), resolved->get_node_id ()});
-
-  // FIXME: This needs to be done in `FinalizeImports`
-  // GlobbingVisitor gvisitor (ctx);
-  // gvisitor.go (result.value ());
 
   return true;
 }
@@ -168,29 +168,6 @@ bool
 Early::resolve_rebind_import (TopLevel::ImportKind &&rebind_import)
 {
   auto &path = rebind_import.to_resolve;
-
-  // We can fetch the value here as `resolve_rebind` will only be called on
-  // imports of the right kind
-  auto &rebind = rebind_import.rebind.value ();
-
-  location_t locus = UNKNOWN_LOCATION;
-  std::string declared_name;
-
-  // FIXME: This needs to be done in `FinalizeImports`
-  switch (rebind.get_new_bind_type ())
-    {
-    case AST::UseTreeRebind::NewBindType::IDENTIFIER:
-      declared_name = rebind.get_identifier ().as_string ();
-      locus = rebind.get_identifier ().get_locus ();
-      break;
-    case AST::UseTreeRebind::NewBindType::NONE:
-      declared_name = path.get_final_segment ().as_string ();
-      locus = path.get_final_segment ().get_locus ();
-      break;
-    case AST::UseTreeRebind::NewBindType::WILDCARD:
-      rust_unreachable ();
-      break;
-    }
 
   return ctx.values.resolve_path (path.get_segments ())
     .or_else ([&] () { return ctx.types.resolve_path (path.get_segments ()); })

@@ -26,105 +26,6 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-void
-GlobbingVisitor::go (AST::Module *module)
-{
-  for (auto &i : module->get_items ())
-    visit (i);
-}
-
-void
-GlobbingVisitor::visit (AST::Module &module)
-{
-  if (module.get_visibility ().is_public ())
-    ctx.insert_shadowable (module.get_name (), module.get_node_id (),
-			   Namespace::Types);
-}
-
-void
-GlobbingVisitor::visit (AST::MacroRulesDefinition &macro)
-{
-  if (macro.get_visibility ().is_public ())
-    ctx.insert_shadowable (macro.get_rule_name (), macro.get_node_id (),
-			   Namespace::Macros);
-}
-
-void
-GlobbingVisitor::visit (AST::Function &function)
-{
-  if (function.get_visibility ().is_public ())
-    ctx.insert_shadowable (function.get_function_name (),
-			   function.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::StaticItem &static_item)
-{
-  if (static_item.get_visibility ().is_public ())
-    ctx.insert_shadowable (static_item.get_identifier (),
-			   static_item.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::StructStruct &struct_item)
-{
-  if (struct_item.get_visibility ().is_public ())
-    {
-      ctx.insert_shadowable (struct_item.get_identifier (),
-			     struct_item.get_node_id (), Namespace::Types);
-      if (struct_item.is_unit_struct ())
-	ctx.insert_shadowable (struct_item.get_identifier (),
-			       struct_item.get_node_id (), Namespace::Values);
-    }
-}
-
-void
-GlobbingVisitor::visit (AST::TupleStruct &tuple_struct)
-{
-  if (tuple_struct.get_visibility ().is_public ())
-    {
-      ctx.insert_shadowable (tuple_struct.get_identifier (),
-			     tuple_struct.get_node_id (), Namespace::Types);
-
-      ctx.insert_shadowable (tuple_struct.get_identifier (),
-			     tuple_struct.get_node_id (), Namespace::Values);
-    }
-}
-
-void
-GlobbingVisitor::visit (AST::Enum &enum_item)
-{
-  if (enum_item.get_visibility ().is_public ())
-    ctx.insert_shadowable (enum_item.get_identifier (),
-			   enum_item.get_node_id (), Namespace::Types);
-}
-
-void
-GlobbingVisitor::visit (AST::Union &union_item)
-{
-  if (union_item.get_visibility ().is_public ())
-    ctx.insert_shadowable (union_item.get_identifier (),
-			   union_item.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::ConstantItem &const_item)
-{
-  if (const_item.get_visibility ().is_public ())
-    ctx.insert_shadowable (const_item.get_identifier (),
-			   const_item.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::ExternCrate &crate)
-{}
-
-void
-GlobbingVisitor::visit (AST::UseDeclaration &use)
-{
-  // Handle cycles ?
-}
-
 TopLevel::TopLevel (NameResolutionContext &resolver)
   : DefaultResolver (resolver)
 {}
@@ -564,25 +465,12 @@ TopLevel::visit (AST::UseDeclaration &use)
   for (auto &&path : paths)
     imports_to_resolve.emplace_back (ImportKind::Simple (std::move (path)));
 
-  // if (!handle_use_dec (path))
-  //   rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
-  //    "unresolved import %qs", path.as_string ().c_str ());
-
   for (auto &&glob : glob_path)
     imports_to_resolve.emplace_back (ImportKind::Glob (std::move (glob)));
-
-  // if (!handle_use_glob (glob))
-  //   rust_error_at (glob.get_final_segment ().get_locus (), ErrorCode::E0433,
-  //    "unresolved import %qs", glob.as_string ().c_str ());
 
   for (auto &&rebind : rebind_path)
     imports_to_resolve.emplace_back (
       ImportKind::Rebind (std::move (rebind.first), std::move (rebind.second)));
-
-  // if (!handle_rebind (rebind))
-  //   rust_error_at (rebind.first.get_final_segment ().get_locus (),
-  //    ErrorCode::E0433, "unresolved import %qs",
-  //    rebind.first.as_string ().c_str ());
 }
 
 } // namespace Resolver2_0
