@@ -142,15 +142,15 @@ gf_vsnprintf (char *str, size_t size, const char *format, va_list ap)
 {
   int written;
 
-  written = vsprintf(buffer, format, ap);
+  written = vsprintf(str, format, ap);
 
   if (written >= size - 1)
     {
-      /* The error message was longer than our buffer.  Ouch.  Because
+      /* The error message was longer than the string size.  Ouch.  Because
 	 we may have messed up things badly, report the error and
 	 quit.  */
-#define ERROR_MESSAGE "Internal error: buffer overrun in gf_vsnprintf()\n"
-      write (STDERR_FILENO, buffer, size - 1);
+#define ERROR_MESSAGE "Internal error: string overrun in gf_vsnprintf()\n"
+      write (STDERR_FILENO, str, size - 1);
       write (STDERR_FILENO, ERROR_MESSAGE, strlen (ERROR_MESSAGE));
       sys_abort ();
 #undef ERROR_MESSAGE
