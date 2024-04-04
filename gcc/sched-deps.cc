@@ -1735,7 +1735,7 @@ add_insn_mem_dependence (class deps_desc *deps, bool read_p,
   insn_node = alloc_INSN_LIST (insn, *insn_list);
   *insn_list = insn_node;
 
-  if (sched_deps_info->use_cselib)
+  if (sched_deps_info->use_cselib && MEM_P (mem))
     {
       mem = shallow_copy_rtx (mem);
       XEXP (mem, 0) = cselib_subst_to_values_from_insn (XEXP (mem, 0),
@@ -2458,6 +2458,25 @@ sched_analyze_1 (class deps_desc *deps, rtx x, rtx_insn *insn)
 			       FIRST_STACK_REG);
 	}
 #endif
+      if (!deps->readonly && regno == STACK_POINTER_REGNUM)
+	{
+	  /* Please see PR114115.  We have insn modifying memory on the stack
+	     and not addressed by stack pointer and we have insn reserving the
+	     stack space.  If we move the insn modifying memory before insn
+	     reserving the stack space, we can change memory out of the red
+	     zone.  Even worse, some optimizations (e.g. peephole) can add
+	     insns using temporary stack slots before insn reserving the stack
+	     space but after the insn modifying memory.  This will corrupt the
+	     modified memory.  Therefore we treat insn changing the stack as
+	     reading unknown memory.  This will create anti-dependence.  We
+	     don't need to treat the insn as writing memory because GCC by
+	     itself does not generate code reading undefined stack memory.  */
+	  if ((deps->pending_read_list_length + deps->pending_write_list_length)
+	      >= param_max_pending_list_length
+	      && !DEBUG_INSN_P (insn))
+	    flush_pending_lists (deps, insn, true, true);
+	  add_insn_mem_dependence (deps, true, insn, dest);
+	}
     }
   else if (MEM_P (dest))
     {
@@ -2498,10 +2517,11 @@ sched_analyze_1 (class deps_desc *deps, rtx x, rtx_insn *insn)
 	  pending_mem = deps->pending_read_mems;
 	  while (pending)
 	    {
-	      if (anti_dependence (pending_mem->element (), t)
-		  && ! sched_insns_conditions_mutex_p (insn, pending->insn ()))
-		note_mem_dep (t, pending_mem->element (), pending->insn (),
-			      DEP_ANTI);
+	      rtx mem = pending_mem->element ();
+	      if (REG_P (mem)
+		  || (anti_dependence (mem, t)
+		      && ! sched_insns_conditions_mutex_p (insn, pending->insn ())))
+		note_mem_dep (t, mem, pending->insn (), DEP_ANTI);
 
 	      pending = pending->next ();
 	      pending_mem = pending_mem->next ();
@@ -2637,12 +2657,10 @@ sched_analyze_2 (class deps_desc *deps, rtx x, rtx_insn *insn)
 	    pending_mem = deps->pending_read_mems;
 	    while (pending)
 	      {
-		if (read_dependence (pending_mem->element (), t)
-		    && ! sched_insns_conditions_mutex_p (insn,
-							 pending->insn ()))
-		  note_mem_dep (t, pending_mem->element (),
-				pending->insn (),
-				DEP_ANTI);
+		rtx mem = pending_mem->element ();
+		if (MEM_P (mem) && read_dependence (mem, t)
+		    && ! sched_insns_conditions_mutex_p (insn, pending->insn ()))
+		  note_mem_dep (t, mem, pending->insn (), DEP_ANTI);
 
 		pending = pending->next ();
 		pending_mem = pending_mem->next ();
@@ -3026,8 +3044,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	  while (pending)
 	    {
 	      if (! sched_insns_conditions_mutex_p (insn, pending->insn ()))
-		add_dependence (insn, pending->insn (),
-				REG_DEP_OUTPUT);
+		add_dependence (insn, pending->insn (),	REG_DEP_OUTPUT);
 	      pending = pending->next ();
 	      pending_mem = pending_mem->next ();
 	    }
@@ -3036,10 +3053,10 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	  pending_mem = deps->pending_read_mems;
 	  while (pending)
 	    {
-	      if (MEM_VOLATILE_P (pending_mem->element ())
+	      rtx mem = pending_mem->element ();
+	      if (MEM_P (mem) && MEM_VOLATILE_P (mem)
 		  && ! sched_insns_conditions_mutex_p (insn, pending->insn ()))
-		add_dependence (insn, pending->insn (),
-				REG_DEP_OUTPUT);
+		add_dependence (insn, pending->insn (),	REG_DEP_OUTPUT);
 	      pending = pending->next ();
 	      pending_mem = pending_mem->next ();
 	    }
