@@ -8485,6 +8485,8 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 		  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
 		    return 0;
 
+		  if (TREE_CODE (val) == NON_LVALUE_EXPR)
+		    val = TREE_OPERAND (val, 0);
 		  if (TREE_CODE (val) != INTEGER_CST)
 		    return 0;
 
