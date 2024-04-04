@@ -342,6 +342,8 @@ selftest-rust-valgrind: $(RUST_SELFTEST_DEPS)
 # should have dependencies on info files that should be installed.
 rust.install-info:
 
+rust.install-dvi:
+rust.install-html:
 rust.install-pdf:
 
 # Install man pages for the front end. This target should ignore errors.
