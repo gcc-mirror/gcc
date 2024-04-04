@@ -112,8 +112,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_istream<char>::
     ignore(streamsize __n, int_type __delim)
     {
-      if (traits_type::eq_int_type(__delim, traits_type::eof()))
-	return ignore(__n);
+      {
+	// If conversion to int_type changes the value then __delim does not
+	// correspond to a value of type char_type, and so will never match
+	// a character extracted from the input sequence. Just use ignore(n).
+	const int_type chk_delim = traits_type::to_int_type(__delim);
+	const bool matchable = traits_type::eq_int_type(chk_delim, __delim);
+	if (__builtin_expect(!matchable, 0))
+	  return ignore(__n);
+	// Now we know that __delim is a valid char_type value, so it's safe
+	// for the code below to use traits_type::find to search for it.
+      }
 
       _M_gcount = 0;
       sentry __cerb(*this, true);
