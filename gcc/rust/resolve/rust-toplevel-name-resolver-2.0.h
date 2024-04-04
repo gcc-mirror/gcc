@@ -66,30 +66,6 @@ public:
 
   void go (AST::Crate &crate);
 
-private:
-  /**
-   * Insert a new definition or error out if a definition with the same name was
-   * already present in the same namespace in the same scope.
-   *
-   * @param identifier The identifier of the definition to add.
-   * @param node A reference to the node, so we can get its `NodeId` and
-   * location.
-   * @param ns The namespace in which to add the definition.
-   */
-  template <typename T>
-  void insert_or_error_out (const Identifier &identifier, const T &node,
-			    Namespace ns);
-  void insert_or_error_out (const Identifier &identifier,
-			    const location_t &locus, const NodeId &id,
-			    Namespace ns);
-
-  // FIXME: Do we move these to our mappings?
-  std::unordered_map<NodeId, location_t> node_locations;
-
-  // Store node forwarding for use declaration, the link between a
-  // definition and its new local name.
-  std::unordered_map<NodeId, NodeId> node_forwarding;
-
   // Each import will be transformed into an instance of `ImportKind`, a class
   // representing some of the data we need to resolve in the
   // `EarlyNameResolver`. Basically, for each `UseTree` that we see in
@@ -142,6 +118,35 @@ private:
     {}
   };
 
+  std::vector<ImportKind> &&get_imports_to_resolve ()
+  {
+    return std::move (imports_to_resolve);
+  }
+
+private:
+  /**
+   * Insert a new definition or error out if a definition with the same name was
+   * already present in the same namespace in the same scope.
+   *
+   * @param identifier The identifier of the definition to add.
+   * @param node A reference to the node, so we can get its `NodeId` and
+   * location.
+   * @param ns The namespace in which to add the definition.
+   */
+  template <typename T>
+  void insert_or_error_out (const Identifier &identifier, const T &node,
+			    Namespace ns);
+  void insert_or_error_out (const Identifier &identifier,
+			    const location_t &locus, const NodeId &id,
+			    Namespace ns);
+
+  // FIXME: Do we move these to our mappings?
+  std::unordered_map<NodeId, location_t> node_locations;
+
+  // Store node forwarding for use declaration, the link between a
+  // definition and its new local name.
+  std::unordered_map<NodeId, NodeId> node_forwarding;
+
   // One of the outputs of the `TopLevel` visitor - the list of imports that
   // `Early` should take care of resolving
   std::vector<ImportKind> imports_to_resolve;
@@ -163,18 +168,23 @@ private:
   void visit (AST::ConstantItem &const_item) override;
   void visit (AST::ExternCrate &crate) override;
 
-  // FIXME: Documentation
-  // Call this on all the paths of a UseDec - so each flattened path in a
-  // UseTreeList for example
-  // FIXME: Should that return `found`?
-  bool handle_use_dec (AST::SimplePath &path);
-  bool handle_use_glob (AST::SimplePath &glob);
-  bool handle_rebind (std::pair<AST::SimplePath, AST::UseTreeRebind> &pair);
-
   void visit (AST::UseDeclaration &use) override;
 };
 
 } // namespace Resolver2_0
 } // namespace Rust
+
+// For storing Imports as keys in maps
+namespace std {
+template <> struct less<Rust::Resolver2_0::TopLevel::ImportKind>
+{
+  bool operator() (const Rust::Resolver2_0::TopLevel::ImportKind &lhs,
+		   const Rust::Resolver2_0::TopLevel::ImportKind &rhs) const
+  {
+    return lhs.to_resolve.as_string () < rhs.to_resolve.as_string ()
+	   && lhs.kind < rhs.kind;
+  }
+};
+} // namespace std
 
 #endif // !RUST_TOPLEVEL_NAME_RESOLVER_2_0_H
