@@ -7649,6 +7649,19 @@ trees_in::install_entity (tree decl)
       gcc_checking_assert (!existed);
       slot = ident;
     }
+  else if (state->is_partition ())
+    {
+      /* The decl is already in the entity map, but we see it again now from a
+	 partition: we want to overwrite if the original decl wasn't also from
+	 a (possibly different) partition.  Otherwise, for things like template
+	 instantiations, make_dependency might not realise that this is also
+	 provided from a partition and should be considered part of this module
+	 (and thus always emitted into the primary interface's CMI).  */
+      unsigned *slot = entity_map->get (DECL_UID (decl));
+      module_state *imp = import_entity_module (*slot);
+      if (!imp->is_partition ())
+	*slot = ident;
+    }
 
   return true;
 }
