@@ -1,3 +1,11 @@
+2024-04-03  Simon Chopin  <simon.chopin@canonical.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/114533
+	* printf/printf_fp.c (__quadmath_printf_fp): Use memcpy to copy
+	__float128 out of args.
+	* printf/printf_fphex.c (__quadmath_printf_fphex): Likewise.
+
 2024-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* libquadmath.texi: Bump @copying's copyright year.

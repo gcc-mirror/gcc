@@ -1,3 +1,17 @@
+2024-04-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/114115
+	* gcc.dg/pr114115.c: New test.
+
+2024-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114552
+	* gcc.c-torture/execute/pr114552.c: New test.
+
+2024-04-03  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-abs.c: New test.
+
 2024-04-02  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/114361

@@ -1,3 +1,7 @@
+2024-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Enable libphobos for Darwin >= 12.
+
 2024-03-17  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 855353a1d9.

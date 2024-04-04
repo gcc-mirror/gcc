@@ -1,3 +1,10 @@
+2024-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104606
+	* include/std/optional (operator<=>(const optional<T>&, const U&)):
+	Reverse order of three_way_comparable_with template arguments.
+	* testsuite/20_util/optional/relops/104606.cc: New test.
+
 2024-04-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/114519

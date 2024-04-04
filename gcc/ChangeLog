@@ -1,3 +1,72 @@
+2024-04-03  Mark Wielaard  <mark@klomp.org>
+
+	* config/i386/i386.opt.urls: Regenerate.
+
+2024-04-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/114115
+	* cgraph.h (symtab_node): Add check_ifunc_callee_symtab_nodes.
+	(cgraph_node): Add called_by_ifunc_resolver.
+	* cgraphunit.cc (symbol_table::compile): Call
+	symtab_node::check_ifunc_callee_symtab_nodes.
+	* symtab.cc (check_ifunc_resolver): New.
+	(ifunc_ref_map): Likewise.
+	(is_caller_ifunc_resolver): Likewise.
+	(symtab_node::check_ifunc_callee_symtab_nodes): Likewise.
+	* tree-profile.cc (gimple_gen_ic_func_profiler): Disable indirect
+	call profiling for IFUNC resolvers and their callees.
+
+2024-04-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* lto-wrapper.cc (compile_offload_image): Prefix 'offload_args'
+	suffix by the target name.
+
+2024-04-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (amdgcn-*-amdhsa): Update Newlib recommendation
+	and update wording for LLVM 18 release.
+
+2024-04-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR other/111966
+	* config/gcn/mkoffload.cc (get_arch): New; moved -march= flag
+	handling from ...
+	(main): ... here; call it to handle --with-arch config option
+	and -march= commandline.
+
+2024-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114552
+	* expr.cc (emit_push_insn): Only use store_constructor for
+	immediate_const_ctor_p if int_expr_size matches size.
+
+2024-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114557
+	PR tree-optimization/114480
+	* tree-phinodes.cc (release_phi_node): Return PHIs from
+	allocation buckets not covered by free_phinodes to GC.
+	(remove_phi_node): Release the PHI LHS before freeing the
+	PHI node.
+	* tree-vect-loop.cc (vectorizable_live_operation): Get PHI lhs
+	before releasing it.
+
+2024-04-03  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md: Remove unused code.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_split_lsx_copy_d): Remove.
+	(loongarch_split_lsx_insert_d): Ditto.
+	(loongarch_split_lsx_fill_d): Ditto.
+	* config/loongarch/loongarch.cc
+	(loongarch_split_lsx_copy_d): Ditto.
+	(loongarch_split_lsx_insert_d): Ditto.
+	(loongarch_split_lsx_fill_d): Ditto.
+	* config/loongarch/lsx.md (lsx_vpickve2gr_du): Remove splitter.
+	(lsx_vpickve2gr_<lsxfmt_f>): Ditto.
+	(abs<mode>2): Remove expander.
+	(vabs<mode>2): Rename 2 abs<mode>2.
+
 2024-04-02  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/aarch64/aarch64-option-extensions.def: Fix comment.
