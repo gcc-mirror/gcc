@@ -749,21 +749,28 @@ TopLevel::visit (AST::UseDeclaration &use)
   const auto &tree = use.get_tree ();
   flatten (tree.get (), paths, glob_path, rebind_path, this->ctx);
 
-  for (auto &path : paths)
-    if (!handle_use_dec (path))
-      rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
-		     "unresolved import %qs", path.as_string ().c_str ());
+  for (auto &&path : paths)
+    imports_to_resolve.emplace_back (ImportKind::Simple (std::move (path)));
 
-  for (auto &glob : glob_path)
-    if (!handle_use_glob (glob))
-      rust_error_at (glob.get_final_segment ().get_locus (), ErrorCode::E0433,
-		     "unresolved import %qs", glob.as_string ().c_str ());
+  // if (!handle_use_dec (path))
+  //   rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
+  //    "unresolved import %qs", path.as_string ().c_str ());
 
-  for (auto &rebind : rebind_path)
-    if (!handle_rebind (rebind))
-      rust_error_at (rebind.first.get_final_segment ().get_locus (),
-		     ErrorCode::E0433, "unresolved import %qs",
-		     rebind.first.as_string ().c_str ());
+  for (auto &&glob : glob_path)
+    imports_to_resolve.emplace_back (ImportKind::Glob (std::move (glob)));
+
+  // if (!handle_use_glob (glob))
+  //   rust_error_at (glob.get_final_segment ().get_locus (), ErrorCode::E0433,
+  //    "unresolved import %qs", glob.as_string ().c_str ());
+
+  for (auto &&rebind : rebind_path)
+    imports_to_resolve.emplace_back (
+      ImportKind::Rebind (std::move (rebind.first), std::move (rebind.second)));
+
+  // if (!handle_rebind (rebind))
+  //   rust_error_at (rebind.first.get_final_segment ().get_locus (),
+  //    ErrorCode::E0433, "unresolved import %qs",
+  //    rebind.first.as_string ().c_str ());
 }
 
 } // namespace Resolver2_0

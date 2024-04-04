@@ -19,7 +19,10 @@
 #ifndef RUST_TOPLEVEL_NAME_RESOLVER_2_0_H
 #define RUST_TOPLEVEL_NAME_RESOLVER_2_0_H
 
+#include "optional.h"
 #include "rust-ast-visitor.h"
+#include "rust-ast.h"
+#include "rust-item.h"
 #include "rust-name-resolution-context.h"
 #include "rust-default-resolver.h"
 
@@ -86,6 +89,62 @@ private:
   // Store node forwarding for use declaration, the link between a
   // definition and its new local name.
   std::unordered_map<NodeId, NodeId> node_forwarding;
+
+  // Each import will be transformed into an instance of `ImportKind`, a class
+  // representing some of the data we need to resolve in the
+  // `EarlyNameResolver`. Basically, for each `UseTree` that we see in
+  // `TopLevel`, create one of these. `TopLevel` should build a list of these
+  // `ImportKind`s, which `Early` can then resolve to their proper definitions.
+  // Then, a final pass will insert the definitions into the `ForeverStack` -
+  // `FinalizeImports`.
+  //
+  // Using this struct should be very simple - each path within a `UseTree`
+  // becomes one `ImportKind`. The complex case is glob imports, in which case
+  // one glob import will become one `ImportKind` which will later become
+  // multiple definitions thanks to the `GlobbingVisitor`.
+  struct ImportKind
+  {
+    enum class Kind
+    {
+      Glob,
+      Simple,
+      Rebind,
+    } kind;
+
+    static ImportKind Glob (AST::SimplePath &&to_resolve)
+    {
+      return ImportKind (Kind::Glob, std::move (to_resolve));
+    }
+
+    static ImportKind Simple (AST::SimplePath &&to_resolve)
+    {
+      return ImportKind (Kind::Simple, std::move (to_resolve));
+    }
+
+    static ImportKind Rebind (AST::SimplePath &&to_resolve,
+			      AST::UseTreeRebind &&rebind)
+    {
+      return ImportKind (Kind::Rebind, std::move (to_resolve),
+			 std::move (rebind));
+    }
+
+    // The path for `Early` to resolve.
+    AST::SimplePath to_resolve;
+
+    // The path to rebind an import to - only present if kind is Kind::Rebind
+    tl::optional<AST::UseTreeRebind> rebind;
+
+  private:
+    ImportKind (Kind kind, AST::SimplePath &&to_resolve,
+		tl::optional<AST::UseTreeRebind> &&rebind = tl::nullopt)
+      : kind (kind), to_resolve (std::move (to_resolve)),
+	rebind (std::move (rebind))
+    {}
+  };
+
+  // One of the outputs of the `TopLevel` visitor - the list of imports that
+  // `Early` should take care of resolving
+  std::vector<ImportKind> imports_to_resolve;
 
   void visit (AST::Module &module) override;
   void visit (AST::Trait &trait) override;
