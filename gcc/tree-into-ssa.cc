@@ -3301,7 +3301,7 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs,
 
 	  mark_block_for_update (bb);
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    if (e->src->index >= 0)
+	    if (e->src->index >= NUM_FIXED_BLOCKS)
 	      mark_block_for_update (e->src);
 	}
 
