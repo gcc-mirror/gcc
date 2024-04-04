@@ -24,6 +24,7 @@
 #include "rust-ast-visitor.h"
 #include "rust-name-resolution-context.h"
 #include "rust-default-resolver.h"
+#include "rust-toplevel-name-resolver-2.0.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -90,6 +91,21 @@ private:
   private:
     std::vector<std::unordered_map<std::string, NodeId>> scopes;
   };
+
+  // Mappings between an import and the definition it imports
+  std::map<TopLevel::ImportKind, NodeId> import_mappings;
+
+  // FIXME: Documentation
+  // Call this on all the paths of a UseDec - so each flattened path in a
+  // UseTreeList for example
+  // FIXME: Should that return `found`?
+  bool resolve_simple_import (TopLevel::ImportKind &&import);
+  bool resolve_glob_import (TopLevel::ImportKind &&glob_import);
+  bool resolve_rebind_import (TopLevel::ImportKind &&rebind_import);
+
+  // Handle an import, resolving it to its definition and adding it to the list
+  // of import mappings
+  void build_import_mapping (TopLevel::ImportKind &&import);
 
   TextualScope textual_scope;
   std::vector<Error> macro_resolve_errors;

@@ -18,6 +18,7 @@
 
 #include "rust-early-name-resolver-2.0.h"
 #include "rust-ast-full.h"
+#include "rust-diagnostics.h"
 #include "rust-toplevel-name-resolver-2.0.h"
 #include "rust-attributes.h"
 
@@ -51,14 +52,180 @@ Early::go (AST::Crate &crate)
   auto toplevel = TopLevel (ctx);
   toplevel.go (crate);
 
-  textual_scope.push ();
+  // We start with resolving the list of imports that `TopLevel` has built for
+  // us
+  for (auto &&import : toplevel.get_imports_to_resolve ())
+    build_import_mapping (std::move (import));
 
-  // Then we proceed to the proper "early" name resolution: Import and macro
-  // name resolution
+  // We now proceed with resolving macros, which can be nested in almost any
+  // items
+  textual_scope.push ();
   for (auto &item : crate.items)
     item->accept_vis (*this);
-
   textual_scope.pop ();
+}
+
+bool
+Early::resolve_glob_import (TopLevel::ImportKind &&glob)
+{
+  auto resolved = ctx.types.resolve_path (glob.to_resolve.get_segments ());
+  if (!resolved.has_value ())
+    return false;
+
+  auto result
+    = Analysis::Mappings::get ().lookup_ast_module (resolved->get_node_id ());
+  if (!result)
+    return false;
+
+  // here, we insert the module's NodeId into the import_mappings and will look
+  // up the module proper in `FinalizeImports`
+  import_mappings.insert ({std::move (glob), resolved->get_node_id ()});
+
+  // FIXME: This needs to be done in `FinalizeImports`
+  // GlobbingVisitor gvisitor (ctx);
+  // gvisitor.go (result.value ());
+
+  return true;
+}
+
+bool
+Early::resolve_simple_import (TopLevel::ImportKind &&import)
+{
+  // TODO: Fix documentation - the function has changed slightly
+
+  const auto &path = import.to_resolve;
+  // auto locus = path.get_final_segment ().get_locus ();
+  // auto declared_name = path.get_final_segment ().as_string ();
+
+  // In that function, we only need to declare a new definition - the use path.
+  // the resolution needs to happpen in the EarlyNameResolver. So the
+  // definitions we'll add will be the path's NodeId - that makes sense, as we
+  // need one definition per path declared in a Use tree. so all good.
+  // alright, now in what namespace do we declare them? all of them? do we only
+  // declare them in the EarlyNameResolver? this is dodgy
+
+  // in what namespace do we perform path resolution? All of them? see which one
+  // matches? Error out on ambiguities?
+  // so, apparently, for each one that matches, add it to the proper namespace
+  // :(
+
+  return ctx.values.resolve_path (path.get_segments ())
+    .or_else ([&] () { return ctx.types.resolve_path (path.get_segments ()); })
+    .or_else ([&] () { return ctx.macros.resolve_path (path.get_segments ()); })
+    .map ([&] (Rib::Definition def) {
+      import_mappings.insert ({std::move (import), def.get_node_id ()});
+    })
+    .has_value ();
+
+  //    switch (ns)
+  //      {
+  //      case Namespace::Values:
+  // resolved = ctx.values.resolve_path (path.get_segments ());
+  // break;
+  //      case Namespace::Types:
+  // resolved = ctx.types.resolve_path (path.get_segments ());
+  // break;
+  //      case Namespace::Macros:
+  // resolved = ctx.macros.resolve_path (path.get_segments ());
+  // break;
+  //      case Namespace::Labels:
+  // // TODO: Is that okay?
+  // rust_unreachable ();
+  //      }
+
+  // FIXME: Ugly
+  //   (void) resolved.map ([this, &found, path, import] (Rib::Definition
+  //   def) {
+  //     found = true;
+
+  //     import_mappings.insert ({std::move (import), def.get_node_id
+  //     ()});
+
+  //     // what do we do with the id?
+  //     // insert_or_error_out (declared_name, locus, def.get_node_id (),
+  //     // ns); auto result = node_forwarding.find (def.get_node_id ());
+  //     if
+  //     // (result != node_forwarding.cend ()
+  //     //     && result->second != path.get_node_id ())
+  //     //   rust_error_at (path.get_locus (), "%qs defined multiple
+  //     times",
+  //     //    declared_name.c_str ());
+  //     // else // No previous thing has inserted this into our scope
+  //     //   node_forwarding.insert ({def.get_node_id (),
+  //     path.get_node_id
+  //     //   ()});
+
+  //     return def.get_node_id ();
+  //   });
+  // };
+
+  // resolve_and_insert (path);
+
+  // return found;
+}
+
+bool
+Early::resolve_rebind_import (TopLevel::ImportKind &&rebind_import)
+{
+  auto &path = rebind_import.to_resolve;
+
+  // We can fetch the value here as `resolve_rebind` will only be called on
+  // imports of the right kind
+  auto &rebind = rebind_import.rebind.value ();
+
+  location_t locus = UNKNOWN_LOCATION;
+  std::string declared_name;
+
+  // FIXME: This needs to be done in `FinalizeImports`
+  switch (rebind.get_new_bind_type ())
+    {
+    case AST::UseTreeRebind::NewBindType::IDENTIFIER:
+      declared_name = rebind.get_identifier ().as_string ();
+      locus = rebind.get_identifier ().get_locus ();
+      break;
+    case AST::UseTreeRebind::NewBindType::NONE:
+      declared_name = path.get_final_segment ().as_string ();
+      locus = path.get_final_segment ().get_locus ();
+      break;
+    case AST::UseTreeRebind::NewBindType::WILDCARD:
+      rust_unreachable ();
+      break;
+    }
+
+  return ctx.values.resolve_path (path.get_segments ())
+    .or_else ([&] () { return ctx.types.resolve_path (path.get_segments ()); })
+    .or_else ([&] () { return ctx.macros.resolve_path (path.get_segments ()); })
+    .map ([&] (Rib::Definition def) {
+      import_mappings.insert ({std::move (rebind_import), def.get_node_id ()});
+    })
+    .has_value ();
+}
+
+void
+Early::build_import_mapping (TopLevel::ImportKind &&import)
+{
+  auto found = false;
+
+  // We create a copy of the path in case of errors, since the `import` will be
+  // moved into the newly created import mappings
+  auto path = import.to_resolve;
+
+  switch (import.kind)
+    {
+    case TopLevel::ImportKind::Kind::Glob:
+      found = resolve_glob_import (std::move (import));
+      break;
+    case TopLevel::ImportKind::Kind::Simple:
+      found = resolve_simple_import (std::move (import));
+      break;
+    case TopLevel::ImportKind::Kind::Rebind:
+      found = resolve_rebind_import (std::move (import));
+      break;
+    }
+
+  if (!found)
+    rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
+		   "unresolved import %qs", path.as_string ().c_str ());
 }
 
 void
