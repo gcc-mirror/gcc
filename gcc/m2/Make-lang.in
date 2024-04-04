@@ -162,6 +162,18 @@ m2.dvi: doc/m2.dvi
 doc/m2.dvi: $(TEXISRC) $(objdir)/m2/images/gnu.eps
 	$(TEXI2DVI) -c -I $(objdir)/m2 -I $(srcdir)/doc/include -o $@ $(srcdir)/doc/gm2.texi
 
+M2_DVIFILES = doc/m2.dvi
+
+m2.install-dvi: $(M2_DVIFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)/gcc"
+	@list='$(M2_DVIFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(dvi__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
+	done
+
 doc/m2.ps: doc/m2.dvi
 	dvips -o $@ $<
 
