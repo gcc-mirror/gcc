@@ -515,7 +515,8 @@ Technical Report (TR) 12 is the second preview for OpenMP 6.0.
 @item @code{strict} modifier keyword to @code{num_threads} @tab N @tab
 @item @code{atomic} permitted in a construct with @code{order(concurrent)}
       @tab N @tab
-@item @code{coexecute} directive for Fortran @tab N @tab
+@item @code{workdistribute} directive for Fortran @tab N
+      @tab Renamed just after TR12; added in TR12 as @code{coexecute}
 @item Fortran DO CONCURRENT as associated loop in a @code{loop} construct
       @tab N @tab
 @item @code{threadset} clause in task-generating constructs @tab N @tab
@@ -539,6 +540,8 @@ Technical Report (TR) 12 is the second preview for OpenMP 6.0.
 
 @unnumberedsubsec Other new TR 12 features
 @multitable @columnfractions .60 .10 .25
+@item Canonical loop nest enclosed in (multiple) curly braces (C/C++) or BLOCK constructs (Fortran)
+      @tab N @tab
 @item Relaxed Fortran restrictions to the @code{aligned} clause @tab N @tab
 @item Mapping lambda captures @tab N @tab
 @item New @code{omp_pause_stop_tool} constant for omp_pause_resource @tab N @tab
