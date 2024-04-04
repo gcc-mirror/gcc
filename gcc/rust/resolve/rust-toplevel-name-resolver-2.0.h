@@ -29,29 +29,6 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-class GlobbingVisitor : public AST::DefaultASTVisitor
-{
-  using AST::DefaultASTVisitor::visit;
-
-public:
-  GlobbingVisitor (NameResolutionContext &ctx) : ctx (ctx) {}
-
-  void go (AST::Module *module);
-  void visit (AST::Module &module) override;
-  void visit (AST::MacroRulesDefinition &macro) override;
-  void visit (AST::Function &function) override;
-  void visit (AST::StaticItem &static_item) override;
-  void visit (AST::StructStruct &struct_item) override;
-  void visit (AST::TupleStruct &tuple_struct) override;
-  void visit (AST::Enum &enum_item) override;
-  void visit (AST::Union &union_item) override;
-  void visit (AST::ConstantItem &const_item) override;
-  void visit (AST::ExternCrate &crate) override;
-  void visit (AST::UseDeclaration &use) override;
-
-private:
-  NameResolutionContext &ctx;
-};
 /**
  * The `TopLevel` visitor takes care of collecting all the definitions in a
  * crate, and inserting them into the proper namespaces. These definitions can
@@ -123,7 +100,6 @@ public:
     return std::move (imports_to_resolve);
   }
 
-private:
   /**
    * Insert a new definition or error out if a definition with the same name was
    * already present in the same namespace in the same scope.
@@ -140,6 +116,7 @@ private:
 			    const location_t &locus, const NodeId &id,
 			    Namespace ns);
 
+private:
   // FIXME: Do we move these to our mappings?
   std::unordered_map<NodeId, location_t> node_locations;
 
