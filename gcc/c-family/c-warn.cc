@@ -2176,7 +2176,6 @@ warn_about_parentheses (location_t loc, enum tree_code code,
 	}
       return;
     }
-#undef NOT_A_BOOLEAN_EXPR_P
 }
 
 /* If LABEL (a LABEL_DECL) has not been used, issue a warning.  */
