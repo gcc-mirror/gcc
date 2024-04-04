@@ -175,6 +175,16 @@ go.install-pdf: doc/gccgo.pdf
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
 	done
 
+go.install-dvi: doc/gccgo.dvi
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)/gcc"
+	@for p in doc/gccgo.dvi; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(dvi__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
+	done
+
 go.install-html: $(build_htmldir)/go
 	@$(NORMAL_INSTALL)
 	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
