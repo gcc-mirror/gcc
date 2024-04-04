@@ -1,3 +1,12 @@
+2024-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2024-03-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/111632
+	* libcc1plugin.cc: Fix include.
+	* libcp1plugin.cc: Fix include.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

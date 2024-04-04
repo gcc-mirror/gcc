@@ -1,3 +1,11 @@
+2024-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2024-03-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/111632
+	* system.h: Include safe-ctype.h after C++ standard headers.
+
 2024-04-02  Qing Zhao  <qing.zhao@oracle.com>
 
 	Backported from master:

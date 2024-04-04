@@ -1,3 +1,18 @@
+2024-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr105554.c: Require ifunc.
+
+2024-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-12-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/112297
+	* gcc.target/i386/pr100936.c: Require nonpic target.
+
 2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
