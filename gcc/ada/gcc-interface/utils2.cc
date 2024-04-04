@@ -535,85 +535,50 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
 }
 
 /* Compute the result of applying OP_CODE to LHS and RHS, where both are of
-   type TYPE.  We know that TYPE is a modular type with a nonbinary
-   modulus.  */
+   TYPE.  We know that TYPE is a modular type with a nonbinary modulus.  */
 
 static tree
 nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
                              tree rhs)
 {
   tree modulus = TYPE_MODULUS (type);
-  unsigned int needed_precision = tree_floor_log2 (modulus) + 1;
-  unsigned int precision;
-  bool unsignedp = true;
-  tree op_type = type;
-  tree result;
+  unsigned precision = tree_floor_log2 (modulus) + 1;
+  tree op_type, result;
 
-  /* If this is an addition of a constant, convert it to a subtraction
-     of a constant since we can do that faster.  */
-  if (op_code == PLUS_EXPR && TREE_CODE (rhs) == INTEGER_CST)
-    {
-      rhs = fold_build2 (MINUS_EXPR, type, modulus, rhs);
-      op_code = MINUS_EXPR;
-    }
-
-  /* For the logical operations, we only need PRECISION bits.  For
-     addition and subtraction, we need one more and for multiplication we
-     need twice as many.  But we never want to make a size smaller than
-     our size. */
+  /* For the logical operations, we only need PRECISION bits.  For addition and
+     subtraction, we need one more, and for multiplication twice as many.  */
   if (op_code == PLUS_EXPR || op_code == MINUS_EXPR)
-    needed_precision += 1;
+    precision += 1;
   else if (op_code == MULT_EXPR)
-    needed_precision *= 2;
+    precision *= 2;
 
-  precision = MAX (needed_precision, TYPE_PRECISION (op_type));
-
-  /* Unsigned will do for everything but subtraction.  */
-  if (op_code == MINUS_EXPR)
-    unsignedp = false;
-
-  /* If our type is the wrong signedness or isn't wide enough, make a new
-     type and convert both our operands to it.  */
-  if (TYPE_PRECISION (op_type) < precision
-      || TYPE_UNSIGNED (op_type) != unsignedp)
+  /* If the type is not wide enough, make a new type of the needed precision
+     and convert modulus and operands to it.  Use a type with full precision
+     for its mode since operations are ultimately performed in the mode.  */
+  if (TYPE_PRECISION (type) < precision)
     {
-      /* Copy the type so we ensure it can be modified to make it modular.  */
-      op_type = copy_type (gnat_type_for_size (precision, unsignedp));
-      modulus = convert (op_type, modulus);
-      SET_TYPE_MODULUS (op_type, modulus);
-      TYPE_MODULAR_P (op_type) = 1;
-      lhs = convert (op_type, lhs);
-      rhs = convert (op_type, rhs);
+      const scalar_int_mode m = smallest_int_mode_for_size (precision);
+      op_type = gnat_type_for_mode (m, 1);
+      modulus = fold_convert (op_type, modulus);
+      lhs = fold_convert (op_type, lhs);
+      rhs = fold_convert (op_type, rhs);
     }
+  else
+    op_type = type;
 
   /* Do the operation, then we'll fix it up.  */
   result = fold_build2 (op_code, op_type, lhs, rhs);
 
-  /* For multiplication, we have no choice but to do a full modulus
-     operation.  However, we want to do this in the narrowest
-     possible size.  */
-  if (op_code == MULT_EXPR)
-    {
-      /* Copy the type so we ensure it can be modified to make it modular.  */
-      tree div_type = copy_type (gnat_type_for_size (needed_precision, 1));
-      modulus = convert (div_type, modulus);
-      SET_TYPE_MODULUS (div_type, modulus);
-      TYPE_MODULAR_P (div_type) = 1;
-      result = convert (op_type,
-			fold_build2 (TRUNC_MOD_EXPR, div_type,
-				     convert (div_type, result), modulus));
-    }
+  /* Unconditionally add the modulus to the result for a subtraction, this gets
+     rid of all its peculiarities by cancelling out the addition of the binary
+     modulus in the case where the subtraction wraps around in OP_TYPE, and may
+     even generate better code on architectures with conditional moves.  */
+  if (op_code == MINUS_EXPR)
+    result = fold_build2 (PLUS_EXPR, op_type, result, modulus);
 
-  /* For subtraction, add the modulus back if we are negative.  */
-  else if (op_code == MINUS_EXPR)
-    {
-      result = gnat_protect_expr (result);
-      result = fold_build3 (COND_EXPR, op_type,
-			    fold_build2 (LT_EXPR, boolean_type_node, result,
-					 build_int_cst (op_type, 0)),
-			    fold_build2 (PLUS_EXPR, op_type, result, modulus),
-			    result);
-    }
+  /* For a multiplication, we have no choice but to use a modulo operation.  */
+  if (op_code == MULT_EXPR)
+    result = fold_build2 (TRUNC_MOD_EXPR, op_type, result, modulus);
 
   /* For the other operations, subtract the modulus if we are >= it.  */
   else
@@ -627,7 +592,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
 			    result);
     }
 
-  return convert (type, result);
+  return fold_convert (type, result);
 }
 
 /* This page contains routines that implement the Ada semantics with regard
