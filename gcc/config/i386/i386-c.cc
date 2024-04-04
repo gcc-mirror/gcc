@@ -749,6 +749,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     }
   if (isa_flag2 & OPTION_MASK_ISA2_AVX10_1_512)
     def_or_undef (parse_in, "__AVX10_1_512__");
+  if (isa_flag2 & OPTION_MASK_ISA2_APX_F)
+    def_or_undef (parse_in, "__APX_F__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
