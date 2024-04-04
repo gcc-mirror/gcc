@@ -47,10 +47,30 @@
 #include "aarch64-builtins.h"
 #include "ssa.h"
 #include "gimple-fold.h"
+#include "tree-ssa.h"
 
 using namespace aarch64_sve;
 
 namespace {
+
+/* Return true if VAL is an undefined value.  */
+static bool
+is_undef (tree val)
+{
+  if (TREE_CODE (val) == SSA_NAME)
+    {
+      if (ssa_undefined_value_p (val, false))
+	return true;
+
+      gimple *def = SSA_NAME_DEF_STMT (val);
+      if (gcall *call = dyn_cast<gcall *> (def))
+	if (tree fndecl = gimple_call_fndecl (call))
+	  if (const function_instance *instance = lookup_fndecl (fndecl))
+	    if (instance->base == functions::svundef)
+	      return true;
+    }
+  return false;
+}
 
 /* Return the UNSPEC_CMLA* unspec for rotation amount ROT.  */
 static int
@@ -1142,6 +1162,13 @@ public:
   expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
+
+    /* If the SVE argument is undefined, we just need to reinterpret the
+       Advanced SIMD argument as an SVE vector.  */
+    if (!BYTES_BIG_ENDIAN
+	&& is_undef (CALL_EXPR_ARG (e.call_expr, 0)))
+      return simplify_gen_subreg (mode, e.args[1], GET_MODE (e.args[1]), 0);
+
     rtx_vector_builder builder (VNx16BImode, 16, 2);
     for (unsigned int i = 0; i < 16; i++)
       builder.quick_push (CONST1_RTX (BImode));

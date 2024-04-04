@@ -1055,6 +1055,22 @@ get_vector_type (sve_type type)
   return acle_vector_types[type.num_vectors - 1][vector_type];
 }
 
+/* If FNDECL is an SVE builtin, return its function instance, otherwise
+   return null.  */
+const function_instance *
+lookup_fndecl (tree fndecl)
+{
+  if (!fndecl_built_in_p (fndecl, BUILT_IN_MD))
+    return nullptr;
+
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  if ((code & AARCH64_BUILTIN_CLASS) != AARCH64_BUILTIN_SVE)
+    return nullptr;
+
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  return &(*registered_functions)[subcode]->instance;
+}
+
 /* Report an error against LOCATION that the user has tried to use
    function FNDECL when extension EXTENSION is disabled.  */
 static void

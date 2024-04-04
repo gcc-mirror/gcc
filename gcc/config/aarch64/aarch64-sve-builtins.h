@@ -810,6 +810,7 @@ extern tree acle_svprfop;
 
 bool vector_cst_all_same (tree, unsigned int);
 bool is_ptrue (tree, unsigned int);
+const function_instance *lookup_fndecl (tree);
 
 /* Try to find a mode with the given mode_suffix_info fields.  Return the
    mode on success or MODE_none on failure.  */
