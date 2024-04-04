@@ -1401,17 +1401,20 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
      For shift, when shift mount >= precision, there would be UD.
      For mult, don't known how to generate
      init_expr * pow (step, niters) for variable niters.
-     For neg, it should be ok, since niters of vectorized main loop
-     will always be multiple of 2.  */
-  if ((!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-       || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ())
-      && induction_type != vect_step_op_neg)
+     For neg unknown niters are ok, since niters of vectorized main loop
+     will always be multiple of 2.
+     See also PR113163,  PR114196 and PR114485.  */
+  if (!LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()
+      || LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+      || (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	  && induction_type != vect_step_op_neg))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "Peeling for epilogue is not supported"
-			 " for nonlinear induction except neg"
-			 " when iteration count is unknown.\n");
+			 " for this nonlinear induction"
+			 " when iteration count is unknown or"
+			 " when using partial vectorization.\n");
       return false;
     }
 
