@@ -781,7 +781,10 @@ bitmap_alloc (bitmap_obstack *bit_obstack MEM_STAT_DECL)
   bitmap map;
 
   if (!bit_obstack)
-    bit_obstack = &bitmap_default_obstack;
+    {
+      gcc_assert (bitmap_default_obstack_depth > 0);
+      bit_obstack = &bitmap_default_obstack;
+    }
   map = bit_obstack->heads;
   if (map)
     bit_obstack->heads = (class bitmap_head *) map->first;
