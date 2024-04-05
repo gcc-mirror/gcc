@@ -1377,7 +1377,7 @@ check_ifunc_resolver (cgraph_node *node, void *data)
   return false;
 }
 
-static auto_bitmap ifunc_ref_map;
+static bitmap ifunc_ref_map;
 
 /* Return true if any caller of NODE is an ifunc resolver.  */
 
@@ -1398,9 +1398,8 @@ is_caller_ifunc_resolver (cgraph_node *node)
 
       /* Skip if it has been visited.  */
       unsigned int uid = e->caller->get_uid ();
-      if (bitmap_bit_p (ifunc_ref_map, uid))
+      if (!bitmap_set_bit (ifunc_ref_map, uid))
 	continue;
-      bitmap_set_bit (ifunc_ref_map, uid);
 
       if (is_caller_ifunc_resolver (e->caller))
 	{
@@ -1431,6 +1430,9 @@ symtab_node::check_ifunc_callee_symtab_nodes (void)
 {
   symtab_node *node;
 
+  bitmap_obstack_initialize (NULL);
+  ifunc_ref_map = BITMAP_ALLOC (NULL);
+
   FOR_EACH_SYMBOL (node)
     {
       cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
@@ -1449,7 +1451,8 @@ symtab_node::check_ifunc_callee_symtab_nodes (void)
 	cnode->called_by_ifunc_resolver = true;
     }
 
-  bitmap_clear (ifunc_ref_map);
+  BITMAP_FREE (ifunc_ref_map);
+  bitmap_obstack_release (NULL);
 }
 
 /* Verify symbol table for internal consistency.  */
