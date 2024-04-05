@@ -869,17 +869,6 @@ dest:
     goto * 0;
 }
 
-int __sigsetjmp ();
-
-/* This should compile, but not called. */
-void
-mcdc021c ()
-{
-  while (x) /* conditions(0/2) true(0) false(0)*/
-	    /* conditions(end) */
-     __sigsetjmp ();
-}
-
 /* If edges are not properly contracted the a && id (b) will be interpreted as
    two independent expressions. */
 void
