@@ -895,7 +895,7 @@ proc configure_check-function-bodies { config } {
 	# example).
 	set up_config(fluff) {^\s*(?://)}
     } elseif { [istarget *-*-darwin*] } {
-	set up_config(fluff) {^\s*(?:\.|//|@)|^L[0-9ACESV]}
+	set up_config(fluff) {^\s*(?:\.|//|@)|^L[0-9ABCESV]}
     } else {
 	# Skip lines beginning with labels ('.L[...]:') or other directives
 	# ('.align', '.cfi_startproc', '.quad [...]', '.text', etc.), '//' or
