@@ -3242,7 +3242,7 @@ ix86_option_override_internal (bool main_args_p,
      on the command line.  */
   if (opts->x_flag_hardened && cf_okay_p)
     {
-      if (opts->x_flag_cf_protection == CF_NONE)
+      if (!opts_set->x_flag_cf_protection)
 	opts->x_flag_cf_protection = CF_FULL;
       else if (opts->x_flag_cf_protection != CF_FULL)
 	warning_at (UNKNOWN_LOCATION, OPT_Whardened,
