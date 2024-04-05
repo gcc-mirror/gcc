@@ -194,17 +194,13 @@ AARCH64_FMV_FEATURE("sve2-sm4", SVE_SM4, (SVE2_SM4))
 
 AARCH64_OPT_FMV_EXTENSION("sme", SME, (BF16, SVE2), (), (), "sme")
 
-AARCH64_OPT_FMV_EXTENSION("memtag", MEMTAG, (), (), (), "")
-
-AARCH64_FMV_FEATURE("memtag2", MEMTAG2, (MEMTAG))
+AARCH64_OPT_EXTENSION("memtag", MEMTAG, (), (), (), "")
 
 AARCH64_OPT_FMV_EXTENSION("sb", SB, (), (), (), "sb")
 
 AARCH64_OPT_FMV_EXTENSION("predres", PREDRES, (), (), (), "")
 
-AARCH64_OPT_FMV_EXTENSION("ssbs", SSBS, (), (), (), "ssbs")
-
-AARCH64_FMV_FEATURE("ssbs2", SSBS2, (SSBS))
+AARCH64_OPT_EXTENSION("ssbs", SSBS, (), (), (), "ssbs")
 
 AARCH64_OPT_EXTENSION("profile", PROFILE, (), (), (), "")
 
@@ -213,12 +209,6 @@ AARCH64_OPT_EXTENSION("tme", TME, (), (), (), "")
 AARCH64_OPT_EXTENSION("pauth", PAUTH, (), (), (), "paca pacg")
 
 AARCH64_OPT_EXTENSION("ls64", LS64, (), (), (), "")
-
-AARCH64_FMV_FEATURE("ls64", LS64, ())
-
-AARCH64_FMV_FEATURE("ls64_v", LS64_V, ())
-
-AARCH64_FMV_FEATURE("ls64_accdata", LS64_ACCDATA, (LS64))
 
 AARCH64_OPT_EXTENSION("sme-f64f64", SME_F64F64, (SME), (), (), "")
 
