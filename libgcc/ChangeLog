@@ -1,3 +1,7 @@
+2024-04-04  Jørgen Kvalsvik  <j@lambda.is>
+
+	* libgcov-merge.c (__gcov_merge_ior): New.
+
 2024-04-03  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/cpuinfo.c: Add HWCAP_EVTSTRM, HWCAP_CRC32, HWCAP_CPUID,

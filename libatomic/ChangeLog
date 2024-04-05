@@ -1,3 +1,15 @@
+2024-04-04  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/113986
+	* Makefile.in: Regenerated.
+	* Makefile.am: Make atomic_16.S not depend on HAVE_IFUNC.
+	Remove predefine of HAVE_FEAT_LSE128.
+	* acinclude.m4: Remove ARCH_AARCH64_HAVE_LSE128.
+	* configure: Regenerated.
+	* config/linux/aarch64/atomic_16.S: Add __atomic_ alias if !HAVE_IFUNC.
+	* config/linux/aarch64/host-config.h: Correctly handle !HAVE_IFUNC.
+	Add defines for HWCAP_ATOMICS and HWCAP_CPUID.
+
 2024-02-14  Roger Sayle  <roger@nextmovesoftware.com>
 	    Victor Do Nascimento  <victor.donascimento@arm.com>
 

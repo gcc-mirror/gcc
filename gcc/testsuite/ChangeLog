@@ -1,3 +1,65 @@
+2024-04-04  centurion  <centurion009@proton.me>
+
+	PR c++/114377
+	* g++.dg/cpp2a/class-deduction-alias19.C: New test.
+
+2024-04-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/111571
+	* gcc.dg/ipa/pr111571.c: New test.
+
+2024-04-04  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/114415
+	* gcc.target/i386/pr114415.c: New test.
+
+2024-04-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114587
+	* gcc.target/i386/apx-2.c: New test.
+
+2024-04-04  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gdc.dg/gcov.exp: New test.
+	* gdc.dg/gcov1.d: New test.
+
+2024-04-04  Jørgen Kvalsvik  <j@lambda.is>
+
+	* lib/gcov.exp: Add condition coverage test function.
+	* g++.dg/gcov/gcov-18.C: New test.
+	* gcc.misc-tests/gcov-19.c: New test.
+	* gcc.misc-tests/gcov-20.c: New test.
+	* gcc.misc-tests/gcov-21.c: New test.
+	* gcc.misc-tests/gcov-22.c: New test.
+	* gcc.misc-tests/gcov-23.c: New test.
+
+2024-04-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114577
+	* gcc.target/aarch64/sve/acle/general/pr114577_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general/pr114577_2.c: Likewise.
+
+2024-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114485
+	* gcc.dg/vect/pr114485.c: New testcase.
+
+2024-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114537
+	* g++.dg/cpp2a/bit-cast16.C: New test.
+
+2024-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114555
+	* gcc.dg/bitint-103.c: New test.
+	* gcc.dg/bitint-104.c: New test.
+
+2024-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114551
+	* gcc.dg/torture/pr114551.c: New testcase.
+
 2024-04-03  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR tree-optimization/114115

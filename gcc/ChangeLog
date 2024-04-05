@@ -1,3 +1,162 @@
+2024-04-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/111571
+	* ipa-param-manipulation.cc
+	(ipa_param_body_adjustments::common_initialization): Avoid creating
+	duplicate replacement entries.
+
+2024-04-04  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/114415
+	* sched-deps.cc (add_insn_mem_dependence): Add memory check for mem argument.
+	(sched_analyze_1): Treat stack pointer modification as memory read.
+	(sched_analyze_2, sched_analyze_insn): Add memory guard for processing pending_read_mems.
+	* sched-int.h (deps_desc): Add comment to pending_read_mems.
+
+2024-04-04  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/nvptx/mkoffload.cc (main): Call
+	gcc_init_libintl and diagnostic_color_init.
+
+2024-04-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114587
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__APX_F__ when APX is enabled.
+
+2024-04-04  Jørgen Kvalsvik  <j@lambda.is>
+
+	* builtins.cc (expand_builtin_fork_or_exec): Check
+	condition_coverage_flag.
+	* collect2.cc (main): Add -fno-condition-coverage to OBSTACK.
+	* common.opt: Add new options -fcondition-coverage and
+	-Wcoverage-too-many-conditions.
+	* doc/gcov.texi: Add --conditions documentation.
+	* doc/invoke.texi: Add -fcondition-coverage documentation.
+	* function.cc (free_after_compilation): Free cond_uids.
+	* function.h (struct function): Add cond_uids.
+	* gcc.cc: Link gcov on -fcondition-coverage.
+	* gcov-counter.def (GCOV_COUNTER_CONDS): New.
+	* gcov-dump.cc (tag_conditions): New.
+	* gcov-io.h (GCOV_TAG_CONDS): New.
+	(GCOV_TAG_CONDS_LENGTH): New.
+	(GCOV_TAG_CONDS_NUM): New.
+	* gcov.cc (class condition_info): New.
+	(condition_info::condition_info): New.
+	(condition_info::popcount): New.
+	(struct coverage_info): New.
+	(add_condition_counts): New.
+	(output_conditions): New.
+	(print_usage): Add -g, --conditions.
+	(process_args): Likewise.
+	(output_intermediate_json_line): Output conditions.
+	(read_graph_file): Read condition counters.
+	(read_count_file): Likewise.
+	(file_summary): Print conditions.
+	(accumulate_line_info): Accumulate conditions.
+	(output_line_details): Print conditions.
+	* gimplify.cc (next_cond_uid): New.
+	(reset_cond_uid): New.
+	(shortcut_cond_r): Set condition discriminator.
+	(tag_shortcut_cond): New.
+	(gimple_associate_condition_with_expr): New.
+	(shortcut_cond_expr): Set condition discriminator.
+	(gimplify_cond_expr): Likewise.
+	(gimplify_function_tree): Call reset_cond_uid.
+	* ipa-inline.cc (can_early_inline_edge_p): Check
+	condition_coverage_flag.
+	* ipa-split.cc (pass_split_functions::gate): Likewise.
+	* passes.cc (finish_optimization_passes): Likewise.
+	* profile.cc (struct condcov): New declaration.
+	(cov_length): Likewise.
+	(cov_blocks): Likewise.
+	(cov_masks): Likewise.
+	(cov_maps): Likewise.
+	(cov_free): Likewise.
+	(instrument_decisions): New.
+	(read_thunk_profile): Control output to file.
+	(branch_prob): Call find_conditions, instrument_decisions.
+	(init_branch_prob): Add total_num_conds.
+	(end_branch_prob): Likewise.
+	* tree-core.h (struct tree_exp): Add condition_uid.
+	* tree-profile.cc (struct conds_ctx): New.
+	(CONDITIONS_MAX_TERMS): New.
+	(EDGE_CONDITION): New.
+	(topological_cmp): New.
+	(index_of): New.
+	(single_p): New.
+	(single_edge): New.
+	(contract_edge_up): New.
+	(struct outcomes): New.
+	(conditional_succs): New.
+	(condition_index): New.
+	(condition_uid): New.
+	(masking_vectors): New.
+	(emit_assign): New.
+	(emit_bitwise_op): New.
+	(make_top_index_visit): New.
+	(make_top_index): New.
+	(paths_between): New.
+	(struct condcov): New.
+	(cov_length): New.
+	(cov_blocks): New.
+	(cov_masks): New.
+	(cov_maps): New.
+	(cov_free): New.
+	(find_conditions): New.
+	(struct counters): New.
+	(find_counters): New.
+	(resolve_counter): New.
+	(resolve_counters): New.
+	(instrument_decisions): New.
+	(tree_profiling): Check condition_coverage_flag.
+	(pass_ipa_tree_profile::gate): Likewise.
+	* tree.h (SET_EXPR_UID): New.
+	(EXPR_COND_UID): New.
+
+2024-04-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114577
+	* config/aarch64/aarch64-sve-builtins.h (aarch64_sve::lookup_fndecl):
+	Declare.
+	* config/aarch64/aarch64-sve-builtins.cc (aarch64_sve::lookup_fndecl):
+	New function.
+	* config/aarch64/aarch64-sve-builtins-base.cc (is_undef): Likewise.
+	(svset_neonq_impl::expand): Optimise expansions whose first argument
+	is undefined.
+
+2024-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114485
+	* tree-vect-loop-manip.cc (vect_can_peel_nonlinear_iv_p):
+	vect_step_op_neg isn't OK for partial vectors but only
+	for unknown niter.
+
+2024-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114537
+	* fold-const.cc (native_encode_initializer): Look through
+	NON_LVALUE_EXPR if val is INTEGER_CST.
+
+2024-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114555
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): For
+	m_bitfld_load and save_cast_conditional add any needed PHIs
+	and adjust t4 accordingly.
+
+2024-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114551
+	* tree-ssa-loop-split.cc (split_loop): If the guard is
+	only conditionally evaluated rewrite computations with
+	possibly undefined overflow to unsigned arithmetic.
+
+2024-04-04  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR gcov-profile/113765
+	* auto-profile.cc (afdo_annotate_cfg): Don't set full_profile to true
+
 2024-04-03  Mark Wielaard  <mark@klomp.org>
 
 	* config/i386/i386.opt.urls: Regenerate.
