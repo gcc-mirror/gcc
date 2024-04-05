@@ -2116,6 +2116,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 					   TREE_PURPOSE (parm), fn,
 					   i - is_method, tf_warning_or_error);
       t = build_call_a (fn, i, argarray);
+      if (MAYBE_CLASS_TYPE_P (TREE_TYPE (t)))
+	t = build_cplus_new (TREE_TYPE (t), t, tf_warning_or_error);
       t = fold_convert (void_type_node, t);
       t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
       append_to_statement_list (t, &ret);
@@ -2149,6 +2151,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 					   TREE_PURPOSE (parm), fn,
 					   i - is_method, tf_warning_or_error);
       t = build_call_a (fn, i, argarray);
+      if (MAYBE_CLASS_TYPE_P (TREE_TYPE (t)))
+	t = build_cplus_new (TREE_TYPE (t), t, tf_warning_or_error);
       t = fold_convert (void_type_node, t);
       return fold_build_cleanup_point_expr (TREE_TYPE (t), t);
     }
