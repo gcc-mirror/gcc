@@ -280,6 +280,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wcoverage-mismatch)
 Wcoverage-invalid-line-number
 UrlSuffix(gcc/Warning-Options.html#index-Wcoverage-invalid-line-number)
 
+Wcoverage-too-many-conditions
+UrlSuffix(gcc/Warning-Options.html#index-Wcoverage-too-many-conditions)
+
 Wmissing-profile
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-profile)
 
@@ -1056,6 +1059,9 @@ UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-abs-path)
 ; skipping UrlSuffix for 'fprofile-arcs' due to multiple URLs:
 ;   duplicate: 'gcc/Instrumentation-Options.html#index-fprofile-arcs'
 ;   duplicate: 'gcc/Other-Builtins.html#index-fprofile-arcs-1'
+
+fcondition-coverage
+UrlSuffix(gcc/Instrumentation-Options.html#index-fcondition-coverage)
 
 fprofile-dir=
 UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-dir)
