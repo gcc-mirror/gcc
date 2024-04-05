@@ -30,7 +30,8 @@ dg-init
 
 # Main loop.
 gdc-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/*.d ] ] "" $DEFAULT_DFLAGS
+       [prune [glob -nocomplain $srcdir/$subdir/*.d ] \
+	      $srcdir/$subdir/gcov*.d ] ] "" $DEFAULT_DFLAGS
 
 # All done.
 dg-finish
