@@ -64,21 +64,26 @@ public:
       Rebind,
     } kind;
 
-    static ImportKind Glob (AST::SimplePath &&to_resolve)
+    static ImportKind Glob (AST::SimplePath &&to_resolve, Rib &values_rib,
+			    Rib &types_rib, Rib &macros_rib)
     {
-      return ImportKind (Kind::Glob, std::move (to_resolve));
+      return ImportKind (Kind::Glob, std::move (to_resolve), values_rib,
+			 types_rib, macros_rib);
     }
 
-    static ImportKind Simple (AST::SimplePath &&to_resolve)
+    static ImportKind Simple (AST::SimplePath &&to_resolve, Rib &values_rib,
+			      Rib &types_rib, Rib &macros_rib)
     {
-      return ImportKind (Kind::Simple, std::move (to_resolve));
+      return ImportKind (Kind::Simple, std::move (to_resolve), values_rib,
+			 types_rib, macros_rib);
     }
 
     static ImportKind Rebind (AST::SimplePath &&to_resolve,
-			      AST::UseTreeRebind &&rebind)
+			      AST::UseTreeRebind &&rebind, Rib &values_rib,
+			      Rib &types_rib, Rib &macros_rib)
     {
-      return ImportKind (Kind::Rebind, std::move (to_resolve),
-			 std::move (rebind));
+      return ImportKind (Kind::Rebind, std::move (to_resolve), values_rib,
+			 types_rib, macros_rib, std::move (rebind));
     }
 
     // The path for `Early` to resolve.
@@ -87,11 +92,17 @@ public:
     // The path to rebind an import to - only present if kind is Kind::Rebind
     tl::optional<AST::UseTreeRebind> rebind;
 
+    Rib &values_rib;
+    Rib &types_rib;
+    Rib &macros_rib;
+
   private:
-    ImportKind (Kind kind, AST::SimplePath &&to_resolve,
+    ImportKind (Kind kind, AST::SimplePath &&to_resolve, Rib &values_rib,
+		Rib &types_rib, Rib &macros_rib,
 		tl::optional<AST::UseTreeRebind> &&rebind = tl::nullopt)
       : kind (kind), to_resolve (std::move (to_resolve)),
-	rebind (std::move (rebind))
+	rebind (std::move (rebind)), values_rib (values_rib),
+	types_rib (types_rib), macros_rib (macros_rib)
     {}
   };
 
