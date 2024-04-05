@@ -2138,7 +2138,7 @@ struct alias_walker
 {
   virtual bool conflict_p (int &budget) const = 0;
   virtual insn_info *insn () const = 0;
-  virtual bool valid () const  = 0;
+  virtual bool valid () const = 0;
   virtual void advance () = 0;
 };
 
