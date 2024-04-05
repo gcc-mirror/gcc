@@ -124,7 +124,7 @@ public:
 
     bool is_ambiguous () const;
 
-    NodeId get_node_id ()
+    NodeId get_node_id () const
     {
       rust_assert (!is_ambiguous ());
       return ids[0];
