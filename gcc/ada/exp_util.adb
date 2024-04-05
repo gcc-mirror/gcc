@@ -12772,6 +12772,35 @@ package body Exp_Util is
             --  since we know it cannot be null and we don't want a check.
 
             else
+               --  Make_Reference assumes that the referenced
+               --  object satisfies the constraints of the designated
+               --  subtype of the access type. Ensure that this assumption
+               --  holds by introducing a qualified expression if needed.
+
+               if not Analyzed (Exp)
+                 and then Nkind (Exp) = N_Aggregate
+                 and then (Is_Array_Type (Exp_Type)
+                           or else Has_Discriminants (Exp_Type))
+                 and then Is_Constrained (Exp_Type)
+               then
+                  --  Do not suppress checks associated with the qualified
+                  --  expression we are about to introduce (unless those
+                  --  checks were already suppressed when Remove_Side_Effects
+                  --  was called).
+
+                  if Is_Array_Type (Exp_Type) then
+                     Scope_Suppress.Suppress (Length_Check)
+                       := Svg_Suppress.Suppress (Length_Check);
+                  else
+                     Scope_Suppress.Suppress (Discriminant_Check)
+                       := Svg_Suppress.Suppress (Discriminant_Check);
+                  end if;
+
+                  E := Make_Qualified_Expression (Loc,
+                         Subtype_Mark => New_Occurrence_Of (Exp_Type, Loc),
+                         Expression => E);
+               end if;
+
                New_Exp := Make_Reference (Loc, E);
                Set_Is_Known_Non_Null (Def_Id);
             end if;
