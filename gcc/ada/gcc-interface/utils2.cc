@@ -33,6 +33,7 @@
 #include "tree.h"
 #include "inchash.h"
 #include "builtins.h"
+#include "expmed.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
@@ -534,6 +535,91 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
 					   p1_array_is_null, same_bounds));
 }
 
+/* Try to compute the reduction of OP modulo MODULUS in PRECISION bits with a
+   division-free algorithm.  Return NULL_TREE if this is not easily doable.  */
+
+tree
+fast_modulo_reduction (tree op, tree modulus, unsigned int precision)
+{
+  const tree type = TREE_TYPE (op);
+  const unsigned int type_precision = TYPE_PRECISION (type);
+
+  /* The implementation is host-dependent for the time being.  */
+  if (type_precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      const unsigned HOST_WIDE_INT d = tree_to_uhwi (modulus);
+      unsigned HOST_WIDE_INT ml, mh;
+      int pre_shift, post_shift;
+      tree t;
+
+      /* The trick is to replace the division by d with a multiply-and-shift
+	 sequence parameterized by a (multiplier, shifter) pair computed from
+	 d, the precision of the type and the needed precision:
+
+	   op / d = (op * multiplier) >> shifter
+
+         But choose_multiplier provides a slightly different interface:
+
+           op / d = (op h* multiplier) >> reduced_shifter
+
+         that makes things easier by using a high-part multiplication.  */
+      mh = choose_multiplier (d, type_precision, precision, &ml, &post_shift);
+
+      /* If the suggested multiplier is more than TYPE_PRECISION bits, we can
+	 do better for even divisors, using an initial right shift.  */
+      if (mh != 0 && (d & 1) == 0)
+	{
+	  pre_shift = ctz_or_zero (d);
+	  mh = choose_multiplier (d >> pre_shift, type_precision,
+				  precision - pre_shift, &ml, &post_shift);
+	}
+      else
+	pre_shift = 0;
+
+      /* If the suggested multiplier is still more than TYPE_PRECISION bits,
+	 try again with a larger type up to the word size.  */
+      if (mh != 0)
+	{
+	  if (type_precision < BITS_PER_WORD)
+	    {
+	      const scalar_int_mode m
+		= smallest_int_mode_for_size (type_precision + 1);
+	      tree new_type = gnat_type_for_mode (m, 1);
+	      op = fold_convert (new_type, op);
+	      modulus = fold_convert (new_type, modulus);
+	      t = fast_modulo_reduction (op, modulus, precision);
+	      if (t)
+		return fold_convert (type, t);
+	    }
+
+	  return NULL_TREE;
+	}
+
+      /* This computes op - (op / modulus) * modulus with PRECISION bits.  */
+      op = gnat_protect_expr (op);
+
+      /* t = op >> pre_shift
+	 t = t h* ml
+	 t = t >> post_shift
+	 t = t * modulus  */
+      if (pre_shift)
+	t = fold_build2 (RSHIFT_EXPR, type, op,
+			 build_int_cst (type, pre_shift));
+      else
+	t = op;
+      t = fold_build2 (MULT_HIGHPART_EXPR, type, t, build_int_cst (type, ml));
+      if (post_shift)
+	t = fold_build2 (RSHIFT_EXPR, type, t,
+			 build_int_cst (type, post_shift));
+      t = fold_build2 (MULT_EXPR, type, t, modulus);
+
+      return fold_build2 (MINUS_EXPR, type, op, t);
+    }
+
+  else
+    return NULL_TREE;
+}
+
 /* Compute the result of applying OP_CODE to LHS and RHS, where both are of
    TYPE.  We know that TYPE is a modular type with a nonbinary modulus.  */
 
@@ -543,7 +629,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
 {
   tree modulus = TYPE_MODULUS (type);
   unsigned precision = tree_floor_log2 (modulus) + 1;
-  tree op_type, result;
+  tree op_type, result, fmr;
 
   /* For the logical operations, we only need PRECISION bits.  For addition and
      subtraction, we need one more, and for multiplication twice as many.  */
@@ -576,9 +662,19 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
   if (op_code == MINUS_EXPR)
     result = fold_build2 (PLUS_EXPR, op_type, result, modulus);
 
-  /* For a multiplication, we have no choice but to use a modulo operation.  */
+  /* For a multiplication, we first try to do a modulo reduction by means of a
+     (multiplier, shifter) pair in the needed precision up to the word size, or
+     else we fall back to a standard modulo operation.  But not when optimizing
+     for size, because it will be longer than a div+mul+sub sequence.  */
   if (op_code == MULT_EXPR)
-    result = fold_build2 (TRUNC_MOD_EXPR, op_type, result, modulus);
+    {
+      if (!optimize_size
+	  && precision <= BITS_PER_WORD
+	  && (fmr = fast_modulo_reduction (result, modulus, precision)))
+	result = fmr;
+      else
+	result = fold_build2 (TRUNC_MOD_EXPR, op_type, result, modulus);
+    }
 
   /* For the other operations, subtract the modulus if we are >= it.  */
   else

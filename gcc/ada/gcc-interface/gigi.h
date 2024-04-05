@@ -1040,6 +1040,11 @@ extern bool simple_constant_p (Entity_Id gnat_entity);
 /* Return the size of TYPE, which must be a positive power of 2.  */
 extern unsigned int resolve_atomic_size (tree type);
 
+/* Try to compute the reduction of OP modulo MODULUS in PRECISION bits with a
+   division-free algorithm.  Return NULL_TREE if this is not easily doable.  */
+extern tree fast_modulo_reduction (tree op, tree modulus,
+				   unsigned int precision);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
