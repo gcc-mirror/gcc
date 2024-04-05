@@ -2059,14 +2059,10 @@ public:
 
     /* Register painting styles.  */
     {
-      style valid_style;
-      valid_style.m_fg_color = style::named_color::GREEN;
-      valid_style.m_bold = true;
+      style valid_style (get_style_from_color_cap_name ("valid"));
       m_valid_style_id = m_sm.get_or_create_id (valid_style);
 
-      style invalid_style;
-      invalid_style.m_fg_color = style::named_color::RED;
-      invalid_style.m_bold = true;
+      style invalid_style (get_style_from_color_cap_name ("invalid"));
       m_invalid_style_id = m_sm.get_or_create_id (invalid_style);
     }
 

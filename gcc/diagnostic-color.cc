@@ -101,6 +101,8 @@ static struct color_cap color_dict[] =
   { "diff-delete", SGR_SEQ (COLOR_FG_RED), 11, false },
   { "diff-insert", SGR_SEQ (COLOR_FG_GREEN), 11, false },
   { "type-diff", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN), 9, false },
+  { "valid", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN), 5, false },
+  { "invalid", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_RED), 7, false },
   { NULL, NULL, 0, false }
 };
 

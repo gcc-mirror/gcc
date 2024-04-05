@@ -5244,7 +5244,7 @@ The default @env{GCC_COLORS} is
 error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:\
 quote=01:path=01;36:fixit-insert=32:fixit-delete=31:\
 diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32:\
-type-diff=01;32:fnname=01;32:targs=35
+type-diff=01;32:fnname=01;32:targs=35:valid=01;31:invalid=01;32
 @end smallexample
 @noindent
 where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
@@ -5327,6 +5327,14 @@ SGR substring for inserted lines within generated patches.
 @item type-diff=
 SGR substring for highlighting mismatching types within template
 arguments in the C++ frontend.
+
+@vindex valid GCC_COLORS @r{capability}
+@item valid=
+SGR substring for highlighting valid elements within text art diagrams.
+
+@vindex invalid GCC_COLORS @r{capability}
+@item invalid=
+SGR substring for highlighting invalid elements within text art diagrams.
 @end table
 
 @opindex fdiagnostics-urls

@@ -332,6 +332,8 @@ struct style
   std::vector<cppchar_t> m_url; // empty = no URL
 };
 
+extern style get_style_from_color_cap_name (const char *name);
+
 /* A class to keep track of all the styles in use in a drawing, so that
    we can refer to them via the compact style::id_t type, rather than
    via e.g. pointers.  */
