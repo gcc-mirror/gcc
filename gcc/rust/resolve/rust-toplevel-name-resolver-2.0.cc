@@ -455,6 +455,10 @@ TopLevel::visit (AST::UseDeclaration &use)
   auto rebind_path
     = std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> ();
 
+  auto &values_rib = ctx.values.peek ();
+  auto &types_rib = ctx.types.peek ();
+  auto &macros_rib = ctx.macros.peek ();
+
   // FIXME: How do we handle `use foo::{self}` imports? Some beforehand cleanup?
   // How do we handle module imports in general? Should they get added to all
   // namespaces?
@@ -463,14 +467,17 @@ TopLevel::visit (AST::UseDeclaration &use)
   flatten (tree.get (), paths, glob_path, rebind_path, this->ctx);
 
   for (auto &&path : paths)
-    imports_to_resolve.emplace_back (ImportKind::Simple (std::move (path)));
+    imports_to_resolve.emplace_back (
+      ImportKind::Simple (std::move (path), values_rib, types_rib, macros_rib));
 
   for (auto &&glob : glob_path)
-    imports_to_resolve.emplace_back (ImportKind::Glob (std::move (glob)));
+    imports_to_resolve.emplace_back (
+      ImportKind::Glob (std::move (glob), values_rib, types_rib, macros_rib));
 
   for (auto &&rebind : rebind_path)
     imports_to_resolve.emplace_back (
-      ImportKind::Rebind (std::move (rebind.first), std::move (rebind.second)));
+      ImportKind::Rebind (std::move (rebind.first), std::move (rebind.second),
+			  values_rib, types_rib, macros_rib));
 }
 
 } // namespace Resolver2_0

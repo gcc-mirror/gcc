@@ -201,6 +201,7 @@ Late::visit (AST::PathInExpression &expr)
   // in a function item` error here?
   // do we emit it in `get<Namespace::Labels>`?
 
+  rust_debug ("[ARTHUR]: %s", expr.as_simple_path ().as_string ().c_str ());
   auto value = ctx.values.resolve_path (expr.get_segments ());
   if (!value.has_value ())
     rust_unreachable (); // Should have been resolved earlier
