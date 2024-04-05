@@ -10607,9 +10607,7 @@ find_in_mapping (tree t, void *context)
    corresponding dr_vec_info need to be reconnected to the EPILOGUE's
    stmt_vec_infos, their statements need to point to their corresponding copy,
    if they are gather loads or scatter stores then their reference needs to be
-   updated to point to its corresponding copy and finally we set
-   'base_misaligned' to false as we have already peeled for alignment in the
-   prologue of the main loop.  */
+   updated to point to its corresponding copy.  */
 
 static void
 update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
@@ -10750,10 +10748,6 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	}
       DR_STMT (dr) = STMT_VINFO_STMT (stmt_vinfo);
       stmt_vinfo->dr_aux.stmt = stmt_vinfo;
-      /* The vector size of the epilogue is smaller than that of the main loop
-	 so the alignment is either the same or lower. This means the dr will
-	 thus by definition be aligned.  */
-      STMT_VINFO_DR_INFO (stmt_vinfo)->base_misaligned = false;
     }
 
   epilogue_vinfo->shared->datarefs_copy.release ();
