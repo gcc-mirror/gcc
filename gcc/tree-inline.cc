@@ -4659,7 +4659,8 @@ prepend_lexical_block (tree current_block, tree new_block)
   BLOCK_SUPERCONTEXT (new_block) = current_block;
 }
 
-/* Add local variables from CALLEE to CALLER.  */
+/* Add local variables from CALLEE to CALLER.  If set for condition coverage,
+   copy basic condition -> expression mapping to CALLER.  */
 
 static inline void
 add_local_variables (struct function *callee, struct function *caller,
@@ -4689,6 +4690,23 @@ add_local_variables (struct function *callee, struct function *caller,
 	  }
 	add_local_decl (caller, new_var);
       }
+
+  /* If -fcondition-coverage is used and the caller has conditions, copy the
+     mapping into the caller but and the end so the caller and callee
+     expressions aren't mixed.  */
+  if (callee->cond_uids)
+    {
+      if (!caller->cond_uids)
+	caller->cond_uids = new hash_map <gcond*, unsigned> ();
+
+      unsigned dst_max_uid = 0;
+      for (auto itr : *callee->cond_uids)
+	if (itr.second >= dst_max_uid)
+	  dst_max_uid = itr.second + 1;
+
+      for (auto itr : *callee->cond_uids)
+	caller->cond_uids->put (itr.first, itr.second + dst_max_uid);
+    }
 }
 
 /* Add to BINDINGS a debug stmt resetting SRCVAR if inlining might
