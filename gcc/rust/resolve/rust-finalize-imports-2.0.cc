@@ -125,25 +125,30 @@ GlobbingVisitor::visit (AST::UseDeclaration &use)
 }
 
 void
-finalize_simple_import (TopLevel &toplevel,
-			const std::pair<TopLevel::ImportKind, NodeId> &mapping)
+finalize_simple_import (
+  TopLevel &toplevel,
+  const std::pair<TopLevel::ImportKind, Early::ImportData> &mapping)
 {
   // FIXME: We probably need to store namespace information
 
   auto locus = mapping.first.to_resolve.get_locus ();
-  auto def = mapping.second;
+  auto data = mapping.second;
   auto identifier
     = mapping.first.to_resolve.get_final_segment ().get_segment_name ();
 
   // FIXME: Fix the namespace in which we insert the new definition
-  toplevel.insert_or_error_out (identifier, locus, def, Namespace::Values);
+  toplevel.insert_or_error_out (identifier, locus,
+				data.definition.get_node_id (),
+				data.ns.value ());
 }
 
 void
-finalize_glob_import (NameResolutionContext &ctx,
-		      const std::pair<TopLevel::ImportKind, NodeId> &mapping)
+finalize_glob_import (
+  NameResolutionContext &ctx,
+  const std::pair<TopLevel::ImportKind, Early::ImportData> &mapping)
 {
-  auto module = Analysis::Mappings::get ().lookup_ast_module (mapping.second);
+  auto module = Analysis::Mappings::get ().lookup_ast_module (
+    mapping.second.definition.get_node_id ());
   rust_assert (module);
 
   GlobbingVisitor glob_visitor (ctx);
@@ -151,14 +156,15 @@ finalize_glob_import (NameResolutionContext &ctx,
 }
 
 void
-finalize_rebind_import (TopLevel &toplevel,
-			const std::pair<TopLevel::ImportKind, NodeId> &mapping)
+finalize_rebind_import (
+  TopLevel &toplevel,
+  const std::pair<TopLevel::ImportKind, Early::ImportData> &mapping)
 {
   // We can fetch the value here as `resolve_rebind` will only be called on
   // imports of the right kind
   auto &path = mapping.first.to_resolve;
   auto &rebind = mapping.first.rebind.value ();
-  auto def = mapping.second;
+  auto data = mapping.second;
 
   location_t locus = UNKNOWN_LOCATION;
   std::string declared_name;
@@ -180,12 +186,15 @@ finalize_rebind_import (TopLevel &toplevel,
     }
 
   // FIXME: Fix the namespace in which we insert the new definition
-  toplevel.insert_or_error_out (declared_name, locus, def, Namespace::Values);
+  toplevel.insert_or_error_out (declared_name, locus,
+				data.definition.get_node_id (),
+				data.ns.value ());
 }
 
 void
-FinalizeImports::go (std::map<TopLevel::ImportKind, NodeId> import_mappings,
-		     TopLevel &toplevel, NameResolutionContext &ctx)
+FinalizeImports::go (
+  std::map<TopLevel::ImportKind, Early::ImportData> import_mappings,
+  TopLevel &toplevel, NameResolutionContext &ctx)
 {
   for (const auto &mapping : import_mappings)
     switch (mapping.first.kind)

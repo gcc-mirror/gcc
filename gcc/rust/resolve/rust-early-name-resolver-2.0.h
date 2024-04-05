@@ -24,6 +24,7 @@
 #include "rust-ast-visitor.h"
 #include "rust-name-resolution-context.h"
 #include "rust-default-resolver.h"
+#include "rust-rib.h"
 #include "rust-toplevel-name-resolver-2.0.h"
 
 namespace Rust {
@@ -54,6 +55,40 @@ public:
 
   void visit (AST::Function &) override;
   void visit (AST::StructStruct &) override;
+
+  struct ImportData
+  {
+    enum class Kind
+    {
+      Simple,
+      Glob,
+      Rebind
+    } kind;
+
+    Rib::Definition definition;
+    tl::optional<Namespace> ns;
+
+    static ImportData Simple (std::pair<Rib::Definition, Namespace> def_ns)
+    {
+      return ImportData (Kind::Simple, def_ns.first, def_ns.second);
+    }
+
+    static ImportData Rebind (std::pair<Rib::Definition, Namespace> def_ns)
+    {
+      return ImportData (Kind::Rebind, def_ns.first, def_ns.second);
+    }
+
+    static ImportData Glob (Rib::Definition module)
+    {
+      return ImportData (Kind::Glob, module);
+    }
+
+  private:
+    ImportData (Kind kind, Rib::Definition definition,
+		tl::optional<Namespace> ns = tl::nullopt)
+      : kind (kind), definition (definition), ns (ns)
+    {}
+  };
 
 private:
   void visit_attributes (std::vector<AST::Attribute> &attrs);
@@ -93,7 +128,7 @@ private:
   };
 
   // Mappings between an import and the definition it imports
-  std::map<TopLevel::ImportKind, NodeId> import_mappings;
+  std::map<TopLevel::ImportKind, ImportData> import_mappings;
 
   // FIXME: Documentation
   // Call this on all the paths of a UseDec - so each flattened path in a

@@ -18,6 +18,7 @@
 
 #include "rust-name-resolution-context.h"
 #include "rust-toplevel-name-resolver-2.0.h"
+#include "rust-early-name-resolver-2.0.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -88,8 +89,9 @@ private:
 class FinalizeImports
 {
 public:
-  static void go (std::map<TopLevel::ImportKind, NodeId> import_mappings,
-		  TopLevel &toplevel, NameResolutionContext &ctx);
+  static void
+  go (std::map<TopLevel::ImportKind, Early::ImportData> import_mappings,
+      TopLevel &toplevel, NameResolutionContext &ctx);
 };
 
 } // namespace Resolver2_0
