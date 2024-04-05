@@ -75,11 +75,11 @@ $ make
 
 ```
 
-Alternatively, a docker environment is avaiable for ARM-based Mac contributors.
+Alternatively, a docker environment is available for ARM-based Mac contributors.
 
 Please visit [gccrs-workspace](https://github.com/badumbatish/gccrs-workspace). 
  
-The image is based on Ubuntu ARM and came with dependencies all fetched.
+The image is based on Ubuntu ARM and comes with dependencies all fetched.
 
 #### Running GCC Rust
 
