@@ -1,3 +1,31 @@
+2024-04-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-protos.h (enum darwin_external_toolchain): New.
+	* config/darwin.cc (DSYMUTIL_VERSION): New.
+	(darwin_override_options): Choose the default debug DWARF version
+	depending on the configured dsymutil version.
+
+2024-04-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_override_options): Reduce the debug
+	level to 2 if dsymutil cannot handle .macinfo sections.
+
+2024-04-04  Edwin Lu  <ewlu@rivosinc.com>
+
+	Backported from master:
+	2024-03-19  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/114175
+	* config/riscv/riscv.cc (riscv_setup_incoming_varargs): Only skip
+	riscv_funciton_arg_advance for TYPE_NO_NAMED_ARGS_STDARG_P functions
+	if arg.type is NULL
+
 2024-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:

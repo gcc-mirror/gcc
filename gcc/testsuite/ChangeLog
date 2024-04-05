@@ -1,3 +1,51 @@
+2024-04-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/114036
+	* gcc.misc-tests/gcov-14.c: Allow for 'Foo' to be undefined
+	on Darwin link lines.
+
+2024-04-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-03-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/114049
+	* gcc.dg/framework-1.c: Use an IOKit header instead of a
+	Kernel one.
+
+2024-04-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/pie-2.c: Skip test on darwin.
+
+2024-04-04  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	Backported from master:
+	2023-09-29  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/debug/dwarf2/inline4.c: Ajdust regexp to match darwin
+	output.
+
+2024-04-04  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	Backported from master:
+	2023-08-21  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/lto/20091013-1_2.c: Add -Wno-stringop-overread.
+
+2024-04-04  Iain Sandoe  <iains.gcc@gmail.com>
+
+	Backported from master:
+	2023-11-29  Iain Sandoe  <iains.gcc@gmail.com>
+
+	* lib/target-supports.exp: Test an asm line that fails on broken
+	Darwin assembler versions.
+
 2024-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:
