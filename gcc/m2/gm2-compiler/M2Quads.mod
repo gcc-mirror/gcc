@@ -307,6 +307,8 @@ TYPE
                              LineNo             : CARDINAL ;     (* Line No of source text.         *)
                              TokenNo            : CARDINAL ;     (* Token No of source text.        *)
                              NoOfTimesReferenced: CARDINAL ;     (* No of times quad is referenced. *)
+                             ConstExpr,                          (* Must backend resolve this at    *)
+                                                                 (* compile time?  *)
                              CheckType,
                              CheckOverflow      : BOOLEAN ;      (* should backend check overflow   *)
                              op1pos,
@@ -344,7 +346,8 @@ VAR
    TryStack,
    CatchStack,
    ExceptStack,
-   ConstStack,
+   ConstExprStack,
+   ConstParamStack,
    AutoStack,
    RepeatStack,
    WhileStack,
@@ -369,6 +372,7 @@ VAR
    LogicalXorTok,                     (* Internal _LXOR token.                   *)
    LogicalDifferenceTok : Name ;      (* Internal _LDIFF token.                  *)
    InConstExpression,
+   InConstParameters,
    IsAutoOn,                          (* Should parser automatically push        *)
                                       (* idents?                                 *)
    MustNotCheckBounds   : BOOLEAN ;
@@ -850,6 +854,101 @@ END IsFinallyEnd ;
 
 
 (*
+   IsBecomes - return TRUE if QuadNo is a BecomesOp.
+*)
+
+PROCEDURE IsBecomes (QuadNo: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsQuadA (QuadNo, BecomesOp)
+END IsBecomes ;
+
+
+(*
+   IsDummy - return TRUE if QuadNo is a DummyOp.
+*)
+
+PROCEDURE IsDummy (QuadNo: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsQuadA (QuadNo, DummyOp)
+END IsDummy ;
+
+
+(*
+   IsQuadConstExpr - returns TRUE if QuadNo is part of a constant expression.
+*)
+
+PROCEDURE IsQuadConstExpr (QuadNo: CARDINAL) : BOOLEAN ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (QuadNo) ;
+   RETURN f^.ConstExpr
+END IsQuadConstExpr ;
+
+
+(*
+   SetQuadConstExpr - sets the constexpr field to value.
+*)
+
+PROCEDURE SetQuadConstExpr (QuadNo: CARDINAL; value: BOOLEAN) ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (QuadNo) ;
+   f^.ConstExpr := value
+END SetQuadConstExpr ;
+
+
+(*
+   GetQuadDest - returns the jump destination associated with quad.
+*)
+
+PROCEDURE GetQuadDest (QuadNo: CARDINAL) : CARDINAL ;
+BEGIN
+   RETURN GetQuadOp3 (QuadNo)
+END GetQuadDest ;
+
+
+(*
+   GetQuadOp1 - returns the 1st operand associated with quad.
+*)
+
+PROCEDURE GetQuadOp1 (QuadNo: CARDINAL) : CARDINAL ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (QuadNo) ;
+   RETURN f^.Operand1
+END GetQuadOp1 ;
+
+
+(*
+   GetQuadOp2 - returns the 2nd operand associated with quad.
+*)
+
+PROCEDURE GetQuadOp2 (QuadNo: CARDINAL) : CARDINAL ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (QuadNo) ;
+   RETURN f^.Operand2
+END GetQuadOp2 ;
+
+
+(*
+   GetQuadOp3 - returns the 3rd operand associated with quad.
+*)
+
+PROCEDURE GetQuadOp3 (QuadNo: CARDINAL) : CARDINAL ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (QuadNo) ;
+   RETURN f^.Operand3
+END GetQuadOp3 ;
+
+
+(*
    IsInitialisingConst - returns TRUE if the quadruple is setting
                          a const (op1) with a value.
 *)
@@ -1180,7 +1279,7 @@ PROCEDURE GetQuadOtok (QuadNo: CARDINAL;
                        VAR tok: CARDINAL;
                        VAR Op: QuadOperator;
                        VAR Oper1, Oper2, Oper3: CARDINAL;
-                       VAR overflowChecking: BOOLEAN ;
+                       VAR overflowChecking, constExpr: BOOLEAN ;
                        VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 VAR
    f: QuadFrame ;
@@ -1196,7 +1295,8 @@ BEGIN
       Op2Pos := op2pos ;
       Op3Pos := op3pos ;
       tok := TokenNo ;
-      overflowChecking := CheckOverflow
+      overflowChecking := CheckOverflow ;
+      constExpr := ConstExpr
    END
 END GetQuadOtok ;
 
@@ -1210,7 +1310,7 @@ PROCEDURE PutQuadOtok (QuadNo: CARDINAL;
                        tok: CARDINAL;
                        Op: QuadOperator;
                        Oper1, Oper2, Oper3: CARDINAL;
-                       overflowChecking: BOOLEAN ;
+                       overflowChecking, constExpr: BOOLEAN ;
                        Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 VAR
    f: QuadFrame ;
@@ -1233,7 +1333,8 @@ BEGIN
          op1pos        := Op1Pos ;
          op2pos        := Op2Pos ;
          op3pos        := Op3Pos ;
-         TokenNo       := tok
+         TokenNo       := tok ;
+         ConstExpr     := constExpr
       END
    END
 END PutQuadOtok ;
@@ -1384,7 +1485,8 @@ BEGIN
          Operand2      := Oper2 ;
          Operand3      := Oper3 ;
          CheckOverflow := overflow ;
-         CheckType     := checktype
+         CheckType     := checktype ;
+         ConstExpr     := IsInConstExpression ()
       END
    END
 END PutQuadOType ;
@@ -1403,14 +1505,14 @@ END PutQuad ;
 
 
 (*
-   GetQuadOtok - returns the fields associated with quadruple QuadNo.
+   GetQuadOTypetok - returns the fields associated with quadruple QuadNo.
 *)
 
 PROCEDURE GetQuadOTypetok (QuadNo: CARDINAL;
                            VAR tok: CARDINAL;
                            VAR Op: QuadOperator;
                            VAR Oper1, Oper2, Oper3: CARDINAL;
-                           VAR overflowChecking, typeChecking: BOOLEAN ;
+                           VAR overflowChecking, typeChecking, constExpr: BOOLEAN ;
                            VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 VAR
    f: QuadFrame ;
@@ -1427,7 +1529,8 @@ BEGIN
       Op3Pos := op3pos ;
       tok := TokenNo ;
       overflowChecking := CheckOverflow ;
-      typeChecking := CheckType
+      typeChecking := CheckType ;
+      constExpr := ConstExpr
    END
 END GetQuadOTypetok ;
 
@@ -1547,7 +1650,8 @@ BEGIN
       Trash := 0 ;
       op1pos   := UnknownTokenNo ;
       op2pos   := UnknownTokenNo ;
-      op3pos   := UnknownTokenNo
+      op3pos   := UnknownTokenNo ;
+      ConstExpr := FALSE
    END
 END EraseQuad ;
 
@@ -3199,9 +3303,11 @@ BEGIN
             CASE Operator OF
 
             SubrangeLowOp :  Operand3 := CollectLow (Operand3) ;
-                             Operator := BecomesOp |
+                             Operator := BecomesOp ;
+                             ConstExpr := FALSE |
             SubrangeHighOp:  Operand3 := CollectHigh (Operand3) ;
-                             Operator := BecomesOp |
+                             Operator := BecomesOp ;
+                             ConstExpr := FALSE |
             OptParamOp    :  Operand3 := GetOptArgInit (Operand3) ;
                              Operator := ParamOp
 
@@ -3665,21 +3771,21 @@ BEGIN
       PopTtok (Des, destok) ;
       (* Conditional Boolean Assignment.  *)
       BackPatch (t, NextQuad) ;
-      IF GetMode (Des) = RightValue
+      IF GetMode (Des) = LeftValue
       THEN
-         GenQuadO (becomesTokNo, BecomesOp, Des, NulSym, True, checkOverflow)
-      ELSE
          CheckPointerThroughNil (destok, Des) ;
          GenQuadO (destok, XIndrOp, Des, Boolean, True, checkOverflow)
+      ELSE
+         GenQuadO (becomesTokNo, BecomesOp, Des, NulSym, True, checkOverflow)
       END ;
       GenQuadO (destok, GotoOp, NulSym, NulSym, NextQuad+2, checkOverflow) ;
       BackPatch (f, NextQuad) ;
-      IF GetMode (Des) = RightValue
+      IF GetMode (Des) = LeftValue
       THEN
-         GenQuadO (becomesTokNo, BecomesOp, Des, NulSym, False, checkOverflow)
-      ELSE
          CheckPointerThroughNil (destok, Des) ;
          GenQuadO (destok, XIndrOp, Des, Boolean, False, checkOverflow)
+      ELSE
+         GenQuadO (becomesTokNo, BecomesOp, Des, NulSym, False, checkOverflow)
       END
    ELSE
       PopTrwtok (Exp, r, exptok) ;
@@ -12956,11 +13062,9 @@ VAR
    f  : BoolFrame ;
 BEGIN
    Assert (IsBoolean (i)) ;
-   (*
-      need to convert it to a variable containing the result.
-      Des will be a boolean type
-   *)
-   Des := MakeTemporary (tok, RightValue) ;
+   (* We need to convert the boolean top of stack into a variable or
+      constant boolean.  *)
+   Des := MakeTemporary (tok, AreConstant (IsInConstExpression ())) ;
    PutVar (Des, Boolean) ;
    PushTtok (Des, tok) ;   (* we have just increased the stack so we must use i+1 *)
    f := PeepAddress (BoolStack, i+1) ;
@@ -12968,9 +13072,9 @@ BEGIN
    BuildAssignmentWithoutBounds (tok, FALSE, TRUE) ;  (* restored stack *)
    f := PeepAddress (BoolStack, i) ;
    WITH f^ DO
-      TrueExit := Des ;  (* alter Stack(i) to contain the variable *)
+      TrueExit := Des ;  (* Alter Stack(i) to contain the variable.  *)
       FalseExit := Boolean ;
-      BooleanOp := FALSE ; (* no longer a Boolean True|False pair    *)
+      BooleanOp := FALSE ; (* No longer a Boolean True|False pair.  *)
       Unbounded := NulSym ;
       Dimension := 0 ;
       ReadWrite := NulSym ;
@@ -13802,7 +13906,13 @@ BEGIN
    f := GetQF(BufferQuad) ;
    WITH f^ DO
       WriteOperator(Operator) ;
-      fprintf1 (GetDumpFile (), '  [%d]    ', NoOfTimesReferenced) ;
+      fprintf1 (GetDumpFile (), ' [%d]', NoOfTimesReferenced) ;
+      IF ConstExpr
+      THEN
+         fprintf0 (GetDumpFile (), ' const ')
+      ELSE
+         fprintf0 (GetDumpFile (), '       ')
+      END ;
       CASE Operator OF
 
       HighOp           : WriteOperand(Operand1) ;
@@ -15651,7 +15761,7 @@ END PopAuto ;
 
 PROCEDURE PushInConstExpression ;
 BEGIN
-   PushWord(ConstStack, InConstExpression) ;
+   PushWord(ConstExprStack, InConstExpression) ;
    InConstExpression := TRUE
 END PushInConstExpression ;
 
@@ -15662,7 +15772,7 @@ END PushInConstExpression ;
 
 PROCEDURE PopInConstExpression ;
 BEGIN
-   InConstExpression := PopWord(ConstStack)
+   InConstExpression := PopWord(ConstExprStack)
 END PopInConstExpression ;
 
 
@@ -15674,6 +15784,37 @@ PROCEDURE IsInConstExpression () : BOOLEAN ;
 BEGIN
    RETURN( InConstExpression )
 END IsInConstExpression ;
+
+
+(*
+   PushInConstParameters - push the InConstParameters flag and then set it to TRUE.
+*)
+
+PROCEDURE PushInConstParameters ;
+BEGIN
+   PushWord (ConstParamStack, InConstParameters) ;
+   InConstParameters := TRUE
+END PushInConstParameters ;
+
+
+(*
+   PopInConstParameters - restores the previous value of the InConstParameters.
+*)
+
+PROCEDURE PopInConstParameters ;
+BEGIN
+   InConstParameters := PopWord(ConstParamStack)
+END PopInConstParameters ;
+
+
+(*
+   IsInConstParameters - returns the value of the InConstParameters.
+*)
+
+PROCEDURE IsInConstParameters () : BOOLEAN ;
+BEGIN
+   RETURN( InConstParameters )
+END IsInConstParameters ;
 
 
 (*
@@ -15764,7 +15905,8 @@ BEGIN
    CatchStack := InitStackWord() ;
    ExceptStack := InitStackWord() ;
    ConstructorStack := InitStackAddress() ;
-   ConstStack := InitStackWord() ;
+   ConstParamStack := InitStackWord () ;
+   ConstExprStack := InitStackWord () ;
    (* StressStack ; *)
    SuppressWith := FALSE ;
    Head := 1 ;
@@ -15779,6 +15921,7 @@ BEGIN
    AutoStack := InitStackWord() ;
    IsAutoOn := TRUE ;
    InConstExpression := FALSE ;
+   InConstParameters := FALSE ;
    FreeLineList := NIL ;
    InitList(VarientFields) ;
    VarientFieldNo := 0 ;

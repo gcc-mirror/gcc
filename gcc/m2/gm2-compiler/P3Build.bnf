@@ -129,7 +129,8 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     AddVarientRange, AddVarientEquality,
                     BuildAsmElement, BuildAsmTrash,
                     BeginVarient, EndVarient, BeginVarientList, EndVarientList,
-                    PushInConstExpression, PopInConstExpression, IsInConstExpression,
+                    PushInConstExpression, PopInConstExpression,
+                    PushInConstParameters, PopInConstParameters, IsInConstParameters,
                     BuildDefaultFieldAlignment, BuildPragmaField,
                     IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto ;
 
@@ -670,10 +671,12 @@ ConstantDeclaration :=                                                     % VAR
                      =:
 
 ConstExpression :=                                                         % VAR tokpos: CARDINAL ; %
+                                                                           % PushInConstExpression %
                                                                            % PushAutoOn %
                    SimpleConstExpr [ Relation                              % tokpos := GetTokenNo ()-1 %
                                               SimpleConstExpr              % BuildRelOp (tokpos) %
                                    ]                                       % PopAuto %
+                                                                           % PopInConstExpression %
                 =:
 
 Relation := "="                                                            % PushTtok(EqualTok, GetTokenNo() -1) %
@@ -773,8 +776,8 @@ ConstSetOrQualidentOrFunction :=                                           % VAR
                                      Constructor
                                  ) =:
 
-ConstActualParameters :=                                                   % PushInConstExpression %
-                         ActualParameters                                  % PopInConstExpression %
+ConstActualParameters :=                                                   % PushInConstParameters %
+                         ActualParameters                                  % PopInConstParameters %
                        =:
 
 ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "("                    % PushAutoOn %
@@ -1121,7 +1124,7 @@ SetOrDesignatorOrFunction :=                                               % VAR
                                                                            % Assert (OperandTok (1) # UnknownTokenNo) %
                               [ Constructor |
                                 SimpleDes                                  % (* Assert (OperandTok(1) # UnknownTokenNo) *) %
-                                          [ ActualParameters               % IF IsInConstExpression()
+                                          [ ActualParameters               % IF IsInConstParameters ()
                                                                              THEN
                                                                                 BuildConstFunctionCall
                                                                              ELSE

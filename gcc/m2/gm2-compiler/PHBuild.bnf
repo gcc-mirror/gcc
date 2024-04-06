@@ -102,7 +102,8 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     AddVarientRange, AddVarientEquality,
                     BuildDefaultFieldAlignment, BuildPragmaField,
                     CheckWithReference, DisplayStack, Annotate,
-                    IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto ;
+                    IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto,
+                    PushInConstExpression, PopInConstExpression ;
 
 FROM P3SymBuild IMPORT P3StartBuildProgModule,
                        P3EndBuildProgModule,
@@ -572,10 +573,12 @@ ConstantDeclaration :=                                                     % Pus
                      =:
 
 ConstExpression :=                                                         % VAR tokpos: CARDINAL ; %
+                                                                           % PushInConstExpression %
                                                                            % PushAutoOn %
                    SimpleConstExpr [ Relation                              % tokpos := GetTokenNo ()-1 %
                                               SimpleConstExpr              % BuildRelOp (tokpos) %
                                    ]                                       % PopAuto %
+                                                                           % PopInConstExpression %
                 =:
 
 Relation := "="                                                            % PushTtok(EqualTok, GetTokenNo() -1) %

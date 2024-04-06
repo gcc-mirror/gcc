@@ -111,6 +111,14 @@ m2expr_StringLength (tree string)
   return TREE_STRING_LENGTH (string);
 }
 
+/* BuildCondIfExpression returns a tree containing (condition) ? (left) : right.  */
+
+tree
+m2expr_BuildCondIfExpression (tree condition, tree type, tree left, tree right)
+{
+  return fold_build3 (COND_EXPR, type, condition, left, right);
+}
+
 /* CheckAddressToCardinal if op is a pointer convert it to the ADDRESS type.  */
 
 static tree

@@ -737,5 +737,12 @@ PROCEDURE OverflowZType (location: location_t;
                          str: ADDRESS; base: CARDINAL;
                          issueError: BOOLEAN) : BOOLEAN ;
 
+(*
+   BuildCondIfExpression - returns a tree containing
+                           (condition) ? (left) : right.
+*)
+
+PROCEDURE BuildCondIfExpression (condition, type, left, right: Tree) : Tree ;
+
 
 END m2expr.

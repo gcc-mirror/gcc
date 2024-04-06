@@ -66,7 +66,8 @@ FROM M2Quads IMPORT Top, PushT, PopT, PushTF, PopTF, PopNothing, OperandT, PushT
                     PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto,
                     BuildTypeForConstructor, BuildConstructor, BuildConstructorEnd,
                     PopConstructor,
-                    NextConstructorField, SilentBuildConstructor ;
+                    NextConstructorField, SilentBuildConstructor,
+                    PushInConstExpression, PopInConstExpression ;
 
 FROM P3SymBuild IMPORT CheckCanBeImported ;
 
@@ -603,9 +604,11 @@ ConstantDeclaration :=                                                     % VAR
 
 ConstExpression :=                                                         % VAR top: CARDINAL ; %
                                                                            % top := Top() %
+                                                                           % PushInConstExpression %
                                                                            % PushAutoOff %
                    SimpleConstExpr [ Relation SimpleConstExpr              % BuildRelationConst %
                                    ]                                       % PopAuto %
+                                                                           % PopInConstExpression %
                                                                            % Assert(top=Top()) %
                 =:
 

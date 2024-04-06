@@ -571,10 +571,11 @@ VAR
    op                          : QuadOperator ;
    op1, op2, op3               : CARDINAL ;
    op1tok, op2tok, op3tok, qtok: CARDINAL ;
-   overflowChecking            : BOOLEAN ;
+   constExpr, overflowChecking : BOOLEAN ;
    s                           : String ;
 BEGIN
-   GetQuadOtok (quad, qtok, op, op1, op2, op3, overflowChecking,
+   GetQuadOtok (quad, qtok, op, op1, op2, op3,
+                overflowChecking, constExpr,
                 op1tok, op2tok, op3tok) ;
    IF IsUniqueWarning (qtok)
    THEN
@@ -1249,7 +1250,7 @@ VAR
    op                          : QuadOperator ;
    op1, op2, op3               : CARDINAL ;
    op1tok, op2tok, op3tok, qtok: CARDINAL ;
-   overflowChecking            : BOOLEAN ;
+   constExpr, overflowChecking : BOOLEAN ;
 BEGIN
    IF quad = 3140
    THEN
@@ -1262,7 +1263,8 @@ BEGIN
       ForeachLocalSymDo (procSym, PrintSym) ;
       printf0 ("***********************************\n")
    END ;
-   GetQuadOtok (quad, qtok, op, op1, op2, op3, overflowChecking,
+   GetQuadOtok (quad, qtok, op, op1, op2, op3,
+                overflowChecking, constExpr,
                 op1tok, op2tok, op3tok) ;
    op1tok := DefaultTokPos (op1tok, qtok) ;
    op2tok := DefaultTokPos (op2tok, qtok) ;
@@ -1541,12 +1543,13 @@ VAR
    op                            : QuadOperator ;
    op1, proc, param, paramValue  : CARDINAL ;
    op1tok, op2tok, paramtok, qtok: CARDINAL ;
-   overflowChecking              : BOOLEAN ;
+   constExpr, overflowChecking   : BOOLEAN ;
    heapValue, ptrToHeap          : CARDINAL ;
 BEGIN
    IF trashQuad # 0
    THEN
-      GetQuadOtok (trashQuad, qtok, op, op1, proc, param, overflowChecking,
+      GetQuadOtok (trashQuad, qtok, op, op1, proc, param,
+                   overflowChecking, constExpr,
                    op1tok, op2tok, paramtok) ;
       heapValue := GetQuadTrash (trashQuad) ;
       IF Debugging

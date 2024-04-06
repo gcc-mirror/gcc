@@ -124,6 +124,11 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsPseudoQuad,
                  IsDefOrModFile,
                  IsInitialisingConst,
+                 IsQuadConstExpr,
+                 IsBecomes,
+                 IsDummy,
+                 GetQuadOp1, GetQuadOp2, GetQuadOp3, GetQuadDest,
+                 SetQuadConstExpr,
 
                  DumpQuadruples, DisplayQuadRange, DisplayQuad,
                  WriteOperator, BackPatchSubrangesAndOptParam,
@@ -146,6 +151,8 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsAutoPushOn, PushAutoOn, PushAutoOff, PopAuto,
                  PushInConstExpression, PopInConstExpression,
                  IsInConstExpression,
+                 PushInConstParameters, PopInConstParameters,
+                 IsInConstParameters,
                  MustCheckOverflow, BuildAsmElement, BuildAsmTrash,
                  GetQuadTrash ;
 
@@ -395,6 +402,62 @@ PROCEDURE IsFinallyEnd (QuadNo: CARDINAL) : BOOLEAN ;
 
 
 (*
+   IsBecomes - return TRUE if QuadNo is a BecomesOp.
+*)
+
+PROCEDURE IsBecomes (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsDummy - return TRUE if QuadNo is a DummyOp.
+*)
+
+PROCEDURE IsDummy (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsQuadConstExpr - returns TRUE if QuadNo is part of a constant expression.
+*)
+
+PROCEDURE IsQuadConstExpr (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetQuadConstExpr - sets the constexpr field to value.
+*)
+
+PROCEDURE SetQuadConstExpr (QuadNo: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   GetQuadDest - returns the jump destination associated with quad.
+*)
+
+PROCEDURE GetQuadDest (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetQuadOp1 - returns the 1st operand associated with quad.
+*)
+
+PROCEDURE GetQuadOp1 (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetQuadOp2 - returns the 2nd operand associated with quad.
+*)
+
+PROCEDURE GetQuadOp2 (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetQuadOp3 - returns the 3rd operand associated with quad.
+*)
+
+PROCEDURE GetQuadOp3 (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
    IsInitialisingConst - returns TRUE if the quadruple is setting
                          a const (op1) with a value.
 *)
@@ -547,7 +610,7 @@ PROCEDURE GetQuadOtok (QuadNo: CARDINAL;
                        VAR tok: CARDINAL;
                        VAR Op: QuadOperator;
                        VAR Oper1, Oper2, Oper3: CARDINAL;
-                       VAR overflowChecking: BOOLEAN ;
+                       VAR overflowChecking, constExpr: BOOLEAN ;
                        VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 
 
@@ -559,8 +622,9 @@ PROCEDURE GetQuadOTypetok (QuadNo: CARDINAL;
                            VAR tok: CARDINAL;
                            VAR Op: QuadOperator;
                            VAR Oper1, Oper2, Oper3: CARDINAL;
-                           VAR overflowChecking, typeChecking: BOOLEAN ;
+                           VAR overflowChecking, typeChecking, constExpr: BOOLEAN ;
                            VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
+
 
 (*
    PutQuadOtok - alters a quadruple QuadNo with Op, Oper1, Oper2, Oper3, and
@@ -571,7 +635,7 @@ PROCEDURE PutQuadOtok (QuadNo: CARDINAL;
                        tok: CARDINAL;
                        Op: QuadOperator;
                        Oper1, Oper2, Oper3: CARDINAL;
-                       overflowChecking: BOOLEAN ;
+                       overflowChecking, constExpr: BOOLEAN ;
                        Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 
 
@@ -2799,6 +2863,27 @@ PROCEDURE PopInConstExpression ;
 *)
 
 PROCEDURE IsInConstExpression () : BOOLEAN ;
+
+
+(*
+   PushInConstParameters - push the InConstParameters flag and then set it to TRUE.
+*)
+
+PROCEDURE PushInConstParameters ;
+
+
+(*
+   PopInConstParameters - restores the previous value of the InConstParameters.
+*)
+
+PROCEDURE PopInConstParameters ;
+
+
+(*
+   IsInConstParameters - returns the value of the InConstParameters.
+*)
+
+PROCEDURE IsInConstParameters () : BOOLEAN ;
 
 
 (*

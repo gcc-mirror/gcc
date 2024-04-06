@@ -154,6 +154,7 @@ PROCEDURE ReduceBranch (Operator: QuadOperator;
                         VAR NextQuad: CARDINAL;
                         Folded: BOOLEAN) : BOOLEAN ;
 VAR
+   constExpr,
    overflowChecking: BOOLEAN ;
    OpNext          : QuadOperator ;
    tok,
@@ -188,11 +189,11 @@ BEGIN
          THEN
             GetQuadOtok (CurrentQuad, tok, Operator,
                          CurrentOperand1, CurrentOperand2, CurrentOperand3,
-                         overflowChecking, op1tok, op2tok, op3tok) ;
+                         overflowChecking, constExpr, op1tok, op2tok, op3tok) ;
             SubQuad (NextQuad) ;
             PutQuadOtok (CurrentQuad, tok, Opposite (Operator),
                          CurrentOperand1, CurrentOperand2, Op3Next,
-                         overflowChecking,
+                         overflowChecking, constExpr,
                          op1tok, op2tok, op3tok) ;
             NextQuad := NextPlusOne ;
             Folded := TRUE
