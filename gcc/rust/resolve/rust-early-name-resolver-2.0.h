@@ -127,20 +127,24 @@ private:
     std::vector<std::unordered_map<std::string, NodeId>> scopes;
   };
 
+  // TODO: This is becoming a very complex type - ugly
   // Mappings between an import and the definition it imports
-  std::map<TopLevel::ImportKind, ImportData> import_mappings;
+  std::unordered_map<NodeId,
+		     std::vector<std::pair<TopLevel::ImportKind, ImportData>>>
+    import_mappings;
 
   // FIXME: Documentation
   // Call this on all the paths of a UseDec - so each flattened path in a
   // UseTreeList for example
   // FIXME: Should that return `found`?
-  bool resolve_simple_import (TopLevel::ImportKind &&import);
-  bool resolve_glob_import (TopLevel::ImportKind &&glob_import);
-  bool resolve_rebind_import (TopLevel::ImportKind &&rebind_import);
+  bool resolve_simple_import (NodeId use_dec_id, TopLevel::ImportKind &&import);
+  bool resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&import);
+  bool resolve_rebind_import (NodeId use_dec_id, TopLevel::ImportKind &&import);
 
   // Handle an import, resolving it to its definition and adding it to the list
   // of import mappings
-  void build_import_mapping (TopLevel::ImportKind &&import);
+  void build_import_mapping (
+    std::pair<NodeId, std::vector<TopLevel::ImportKind>> &&use_import);
 
   TextualScope textual_scope;
   std::vector<Error> macro_resolve_errors;

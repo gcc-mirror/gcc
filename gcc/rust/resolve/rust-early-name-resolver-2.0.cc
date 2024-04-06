@@ -59,7 +59,7 @@ Early::go (AST::Crate &crate)
     build_import_mapping (std::move (import));
 
   // Once this is done, we finalize their resolution
-  FinalizeImports::go (import_mappings, toplevel, ctx);
+  FinalizeImports (std::move (import_mappings), toplevel, ctx).go (crate);
 
   // We now proceed with resolving macros, which can be nested in almost any
   // items
@@ -70,7 +70,7 @@ Early::go (AST::Crate &crate)
 }
 
 bool
-Early::resolve_glob_import (TopLevel::ImportKind &&glob)
+Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
 {
   auto resolved = ctx.types.resolve_path (glob.to_resolve.get_segments ());
   if (!resolved.has_value ())
@@ -84,58 +84,86 @@ Early::resolve_glob_import (TopLevel::ImportKind &&glob)
   // here, we insert the module's NodeId into the import_mappings and will look
   // up the module proper in `FinalizeImports`
   // The namespace does not matter here since we are dealing with a glob
-  import_mappings.insert ({std::move (glob), ImportData::Glob (*resolved)});
+  // TODO: Ugly
+  import_mappings.insert (
+    {use_dec_id, {{std::move (glob), ImportData::Glob (*resolved)}}});
 
   return true;
 }
 
 bool
-Early::resolve_simple_import (TopLevel::ImportKind &&import)
+Early::resolve_simple_import (NodeId use_dec_id, TopLevel::ImportKind &&import)
 {
   return ctx.resolve_path (import.to_resolve)
     .map ([&] (std::pair<Rib::Definition, Namespace> def_ns) {
-      import_mappings.insert (
-	{std::move (import), ImportData::Simple (def_ns)});
+      // We insert an empty vector, unless an element was already present for
+      // `use_dec_id` - which is returned in the tuple's first member
+      auto tuple = import_mappings.insert ({use_dec_id, {}});
+      // We then get that tuple's first member, which will be an iterator to the
+      // existing vec<pair<ImportKind, ImportData>> OR an iterator to our newly
+      // created empty vector (plus its key since this is a hashmap iterator).
+      // we then access the second member of the pair to get access to the
+      // vector directly.
+      auto &imports = tuple.first->second;
+
+      imports.emplace_back (
+	std::make_pair (std::move (import), ImportData::Simple (def_ns)));
     })
     .has_value ();
 }
 
 bool
-Early::resolve_rebind_import (TopLevel::ImportKind &&rebind_import)
+Early::resolve_rebind_import (NodeId use_dec_id,
+			      TopLevel::ImportKind &&rebind_import)
 {
   return ctx.resolve_path (rebind_import.to_resolve)
     .map ([&] (std::pair<Rib::Definition, Namespace> def_ns) {
-      import_mappings.insert (
-	{std::move (rebind_import), ImportData::Rebind (def_ns)});
+      // We insert an empty vector, unless an element was already present for
+      // `use_dec_id` - which is returned in the tuple's first member
+      auto tuple = import_mappings.insert ({use_dec_id, {}});
+      // We then get that tuple's first member, which will be an iterator to the
+      // existing vec<pair<ImportKind, ImportData>> OR an iterator to our newly
+      // created empty vector (plus its key since this is a hashmap iterator).
+      // we then access the second member of the pair to get access to the
+      // vector directly.
+      auto &imports = tuple.first->second;
+
+      imports.emplace_back (std::make_pair (std::move (rebind_import),
+					    ImportData::Rebind (def_ns)));
     })
     .has_value ();
 }
 
 void
-Early::build_import_mapping (TopLevel::ImportKind &&import)
+Early::build_import_mapping (
+  std::pair<NodeId, std::vector<TopLevel::ImportKind>> &&use_import)
 {
   auto found = false;
+  auto use_dec_id = use_import.first;
 
-  // We create a copy of the path in case of errors, since the `import` will
-  // be moved into the newly created import mappings
-  auto path = import.to_resolve;
-
-  switch (import.kind)
+  for (auto &&import : use_import.second)
     {
-    case TopLevel::ImportKind::Kind::Glob:
-      found = resolve_glob_import (std::move (import));
-      break;
-    case TopLevel::ImportKind::Kind::Simple:
-      found = resolve_simple_import (std::move (import));
-      break;
-    case TopLevel::ImportKind::Kind::Rebind:
-      found = resolve_rebind_import (std::move (import));
-      break;
-    }
+      // We create a copy of the path in case of errors, since the `import` will
+      // be moved into the newly created import mappings
+      auto path = import.to_resolve;
 
-  if (!found)
-    rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
-		   "unresolved import %qs", path.as_string ().c_str ());
+      switch (import.kind)
+	{
+	case TopLevel::ImportKind::Kind::Glob:
+	  found = resolve_glob_import (use_dec_id, std::move (import));
+	  break;
+	case TopLevel::ImportKind::Kind::Simple:
+	  found = resolve_simple_import (use_dec_id, std::move (import));
+	  break;
+	case TopLevel::ImportKind::Kind::Rebind:
+	  found = resolve_rebind_import (use_dec_id, std::move (import));
+	  break;
+	}
+
+      if (!found)
+	rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
+		       "unresolved import %qs", path.as_string ().c_str ());
+    }
 }
 
 void

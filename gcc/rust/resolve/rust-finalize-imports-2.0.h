@@ -16,6 +16,8 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-ast.h"
+#include "rust-expr.h"
 #include "rust-name-resolution-context.h"
 #include "rust-toplevel-name-resolver-2.0.h"
 #include "rust-early-name-resolver-2.0.h"
@@ -86,12 +88,25 @@ private:
 // each ImportKind - easy!
 // 	- yay!
 
-class FinalizeImports
+class FinalizeImports : DefaultResolver
 {
 public:
-  static void
-  go (std::map<TopLevel::ImportKind, Early::ImportData> import_mappings,
-      TopLevel &toplevel, NameResolutionContext &ctx);
+  FinalizeImports (
+    std::unordered_map<
+      NodeId, std::vector<std::pair<TopLevel::ImportKind, Early::ImportData>>>
+      &&data,
+    TopLevel &toplevel, NameResolutionContext &ctx);
+
+  void go (AST::Crate &crate);
+
+private:
+  void visit (AST::UseDeclaration &) override;
+
+  std::unordered_map<
+    NodeId, std::vector<std::pair<TopLevel::ImportKind, Early::ImportData>>>
+    data;
+  TopLevel &toplevel;
+  NameResolutionContext &ctx;
 };
 
 } // namespace Resolver2_0

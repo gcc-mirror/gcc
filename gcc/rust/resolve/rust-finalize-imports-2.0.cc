@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-finalize-imports-2.0.h"
+#include "rust-default-resolver.h"
 #include "rust-hir-map.h"
 #include "rust-name-resolution-context.h"
 #include "rust-rib.h"
@@ -191,11 +192,27 @@ finalize_rebind_import (
 				data.ns.value ());
 }
 
-void
-FinalizeImports::go (
-  std::map<TopLevel::ImportKind, Early::ImportData> import_mappings,
+FinalizeImports::FinalizeImports (
+  std::unordered_map<
+    NodeId, std::vector<std::pair<TopLevel::ImportKind, Early::ImportData>>>
+    &&data,
   TopLevel &toplevel, NameResolutionContext &ctx)
+  : DefaultResolver (ctx), data (std::move (data)), toplevel (toplevel),
+    ctx (ctx)
+{}
+
+void
+FinalizeImports::go (AST::Crate &crate)
 {
+  for (auto &item : crate.items)
+    item->accept_vis (*this);
+}
+
+void
+FinalizeImports::visit (AST::UseDeclaration &use)
+{
+  auto import_mappings = data[use.get_node_id ()];
+
   for (const auto &mapping : import_mappings)
     switch (mapping.first.kind)
       {
