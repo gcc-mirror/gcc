@@ -161,8 +161,9 @@ Early::build_import_mapping (
 	}
 
       if (!found)
-	rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
-		       "unresolved import %qs", path.as_string ().c_str ());
+	collect_error (Error (path.get_final_segment ().get_locus (),
+			      ErrorCode::E0433, "unresolved import %qs",
+			      path.as_string ().c_str ()));
     }
 }
 
@@ -303,8 +304,9 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 	      if (!definition.has_value ())
 		{
 		  // FIXME: Change to proper error message
-		  rust_error_at (trait.get ().get_locus (),
-				 "could not resolve trait");
+		  collect_error (Error (trait.get ().get_locus (),
+					"could not resolve trait %qs",
+					trait.get ().as_string ().c_str ()));
 		  continue;
 		}
 
@@ -326,8 +328,9 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 	  if (!definition.has_value ())
 	    {
 	      // FIXME: Change to proper error message
-	      rust_error_at (attr.get_locus (),
-			     "could not resolve attribute macro invocation");
+	      collect_error (
+		Error (attr.get_locus (),
+		       "could not resolve attribute macro invocation"));
 	      return;
 	    }
 	  auto pm_def = mappings.lookup_attribute_proc_macro_def (
