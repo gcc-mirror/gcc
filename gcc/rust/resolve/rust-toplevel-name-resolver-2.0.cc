@@ -466,18 +466,22 @@ TopLevel::visit (AST::UseDeclaration &use)
   const auto &tree = use.get_tree ();
   flatten (tree.get (), paths, glob_path, rebind_path, this->ctx);
 
+  auto imports = std::vector<ImportKind> ();
+
   for (auto &&path : paths)
-    imports_to_resolve.emplace_back (
+    imports.emplace_back (
       ImportKind::Simple (std::move (path), values_rib, types_rib, macros_rib));
 
   for (auto &&glob : glob_path)
-    imports_to_resolve.emplace_back (
+    imports.emplace_back (
       ImportKind::Glob (std::move (glob), values_rib, types_rib, macros_rib));
 
   for (auto &&rebind : rebind_path)
-    imports_to_resolve.emplace_back (
+    imports.emplace_back (
       ImportKind::Rebind (std::move (rebind.first), std::move (rebind.second),
 			  values_rib, types_rib, macros_rib));
+
+  imports_to_resolve.insert ({use.get_node_id (), std::move (imports)});
 }
 
 } // namespace Resolver2_0

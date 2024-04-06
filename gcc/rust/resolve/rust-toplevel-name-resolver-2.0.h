@@ -106,7 +106,8 @@ public:
     {}
   };
 
-  std::vector<ImportKind> &&get_imports_to_resolve ()
+  std::unordered_map<NodeId, std::vector<ImportKind>> &&
+  get_imports_to_resolve ()
   {
     return std::move (imports_to_resolve);
   }
@@ -137,7 +138,7 @@ private:
 
   // One of the outputs of the `TopLevel` visitor - the list of imports that
   // `Early` should take care of resolving
-  std::vector<ImportKind> imports_to_resolve;
+  std::unordered_map<NodeId, std::vector<ImportKind>> imports_to_resolve;
 
   void visit (AST::Module &module) override;
   void visit (AST::Trait &trait) override;
