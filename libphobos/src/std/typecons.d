@@ -559,6 +559,14 @@ private template isBuildableFrom(U)
     enum isBuildableFrom(T) = isBuildable!(T, U);
 }
 
+private enum hasCopyCtor(T) = __traits(hasCopyConstructor, T);
+
+// T is expected to be an instantiation of Tuple.
+private template noMemberHasCopyCtor(T)
+{
+    import std.meta : anySatisfy;
+    enum noMemberHasCopyCtor = !anySatisfy!(hasCopyCtor, T.Types);
+}
 
 /**
 _Tuple of values, for example $(D Tuple!(int, string)) is a record that
@@ -745,7 +753,8 @@ if (distinctFieldNames!(Specs))
          *               compatible with the target `Tuple`'s type.
          */
         this(U)(U another)
-        if (areBuildCompatibleTuples!(typeof(this), U))
+        if (areBuildCompatibleTuples!(typeof(this), U) &&
+            (noMemberHasCopyCtor!(typeof(this)) || !is(Unqual!U == Unqual!(typeof(this)))))
         {
             field[] = another.field[];
         }
@@ -1653,6 +1662,42 @@ if (distinctFieldNames!(Specs))
     }
 
     Tuple!(MyStruct) t;
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24465
+@safe unittest
+{
+    {
+        static struct S
+        {
+            this(ref return scope inout(S) rhs) scope @trusted inout pure nothrow {}
+        }
+
+        static void foo(Tuple!S)
+        {
+        }
+
+        Tuple!S t;
+        foo(t);
+
+        auto t2 = Tuple!S(t);
+    }
+
+    {
+        static struct S {}
+        Tuple!S t;
+        auto t2 = Tuple!S(t);
+
+        // This can't be done if Tuple has a copy constructor, because it's not
+        // allowed to have an rvalue constructor at that point, and the
+        // compiler doesn't to something intelligent like transform it into a
+        // move instead. However, it has been legal with Tuple for a while
+        // (maybe even since it was first added) when the type doesn't have a
+        // copy constructor, so this is testing to make sure that the fix to
+        // make copy constructors work doesn't mess up the rvalue constructor
+        // when none of the Tuple's members have copy constructors.
+        auto t3 = Tuple!S(Tuple!S.init);
+    }
 }
 
 /**

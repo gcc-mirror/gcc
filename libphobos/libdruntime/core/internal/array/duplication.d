@@ -21,9 +21,9 @@ U[] _dup(T, U)(scope T[] a) pure nothrow @trusted if (__traits(isPOD, T))
     {
         import core.stdc.string : memcpy;
         import core.internal.array.construction: _d_newarrayUPureNothrow;
-        auto arr = _d_newarrayUPureNothrow!T(a.length, is(T == shared));
+        auto arr = _d_newarrayUPureNothrow!U(a.length, is(U == shared));
         memcpy(cast(void*) arr.ptr, cast(const(void)*) a.ptr, T.sizeof * a.length);
-        return *cast(U[]*) &arr;
+        return arr;
     }
 }
 
@@ -357,4 +357,14 @@ U[] _dup(T, U)(T[] a) if (!__traits(isPOD, T))
 
     static assert(test!Copy());
     assert(test!Copy());
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24453
+@safe unittest
+{
+    static inout(char)[] foo(ref scope return inout(char)[] s)
+    {
+        auto bla = s.idup;
+        return s;
+    }
 }

@@ -647,7 +647,7 @@ fronting the GC allocator.
     import std.experimental.allocator.gc_allocator : GCAllocator;
     import std.typecons : Ternary;
     // KRRegion fronting a general-purpose allocator
-    ubyte[1024 * 128] buf;
+    align(KRRegion!().alignment) ubyte[1024 * 128] buf;
     auto alloc = fallbackAllocator(KRRegion!()(buf), GCAllocator.instance);
     auto b = alloc.allocate(100);
     assert(b.length == 100);
@@ -916,7 +916,7 @@ version (StdUnittest)
 @system unittest
 {   import std.typecons : Ternary;
 
-    ubyte[1024] b;
+    align(KRRegion!().alignment) ubyte[1024] b;
     auto alloc = KRRegion!()(b);
 
     auto k = alloc.allocate(128);
