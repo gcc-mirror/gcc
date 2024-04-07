@@ -57,6 +57,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __glibcxx_spanstream
+# define _GLIBCXX_STRSTREAM_DEPR(A, B) _GLIBCXX_DEPRECATED_SUGGEST(A "' or '" B)
+#else
+# define _GLIBCXX_STRSTREAM_DEPR(A, B) _GLIBCXX_DEPRECATED_SUGGEST(A)
+#endif
+
   // Class strstreambuf, a streambuf class that manages an array of char.
   // Note that this class is not a template.
   class strstreambuf : public basic_streambuf<char, char_traits<char> >
@@ -151,7 +157,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool _M_dynamic  : 1;
     bool _M_frozen   : 1;
     bool _M_constant : 1;
-  };
+  } _GLIBCXX_STRSTREAM_DEPR("std::stringbuf", "std::spanbuf");
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
   // Class istrstream, an istream that manages a strstreambuf.
   class istrstream : public basic_istream<char>
@@ -176,7 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   private:
     strstreambuf _M_buf;
-  };
+  } _GLIBCXX_STRSTREAM_DEPR("std::istringstream", "std::ispanstream");
 
   // Class ostrstream
   class ostrstream : public basic_ostream<char>
@@ -201,7 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   private:
     strstreambuf _M_buf;
-  };
+  } _GLIBCXX_STRSTREAM_DEPR("std::ostringstream", "std::ospanstream");
 
   // Class strstream
   class strstream : public basic_iostream<char>
@@ -231,7 +240,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   private:
     strstreambuf _M_buf;
-  };
+  } _GLIBCXX_STRSTREAM_DEPR("std::stringstream", "std::spanstream");
+
+#undef _GLIBCXX_STRSTREAM_DEPR
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
