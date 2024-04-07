@@ -406,7 +406,7 @@ extern GTY(()) int darwin_ms_struct;
     %{!r:%{!nostdlib:%{!nodefaultlibs: " DARWIN_WEAK_CRTS "}}} \
     %o \
     %{!r:%{!nostdlib:%{!nodefaultlibs:\
-      %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
+      %{fprofile-arcs|fcondition-coverage|fprofile-generate*|coverage:-lgcov} \
       %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1): \
 	%{static|static-libgcc|static-libstdc++|static-libgfortran: \
 	  libgomp.a%s; : -lgomp }} \
