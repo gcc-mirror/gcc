@@ -65,17 +65,16 @@ public:
       Rebind
     } kind;
 
-    Rib::Definition definition;
-    tl::optional<Namespace> ns;
-
-    static ImportData Simple (std::pair<Rib::Definition, Namespace> def_ns)
+    static ImportData
+    Simple (std::vector<std::pair<Rib::Definition, Namespace>> &&definitions)
     {
-      return ImportData (Kind::Simple, def_ns.first, def_ns.second);
+      return ImportData (Kind::Simple, std::move (definitions));
     }
 
-    static ImportData Rebind (std::pair<Rib::Definition, Namespace> def_ns)
+    static ImportData
+    Rebind (std::vector<std::pair<Rib::Definition, Namespace>> &&definitions)
     {
-      return ImportData (Kind::Rebind, def_ns.first, def_ns.second);
+      return ImportData (Kind::Rebind, std::move (definitions));
     }
 
     static ImportData Glob (Rib::Definition module)
@@ -83,11 +82,36 @@ public:
       return ImportData (Kind::Glob, module);
     }
 
+    Rib::Definition module () const
+    {
+      rust_assert (kind == Kind::Glob);
+      return glob_module;
+    }
+
+    std::vector<std::pair<Rib::Definition, Namespace>> definitions () const
+    {
+      rust_assert (kind != Kind::Glob);
+      return std::move (resolved_definitions);
+    }
+
   private:
-    ImportData (Kind kind, Rib::Definition definition,
-		tl::optional<Namespace> ns = tl::nullopt)
-      : kind (kind), definition (definition), ns (ns)
+    ImportData (
+      Kind kind,
+      std::vector<std::pair<Rib::Definition, Namespace>> &&definitions)
+      : kind (kind), resolved_definitions (std::move (definitions))
     {}
+
+    ImportData (Kind kind, Rib::Definition module)
+      : kind (kind), glob_module (module)
+    {}
+
+    // TODO: Should this be a union?
+
+    // For Simple and Rebind
+    std::vector<std::pair<Rib::Definition, Namespace>> resolved_definitions;
+
+    // For Glob
+    Rib::Definition glob_module;
   };
 
 private:
@@ -140,6 +164,28 @@ private:
   bool resolve_simple_import (NodeId use_dec_id, TopLevel::ImportKind &&import);
   bool resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&import);
   bool resolve_rebind_import (NodeId use_dec_id, TopLevel::ImportKind &&import);
+
+  template <typename P>
+  std::vector<std::pair<Rib::Definition, Namespace>>
+  resolve_path_in_all_ns (const P &path)
+  {
+    const auto &segments = path.get_segments ();
+    std::vector<std::pair<Rib::Definition, Namespace>> resolved;
+
+    // Pair a definition with the namespace it was found in
+    auto pair_with_ns = [&] (Namespace ns) {
+      return [&, ns] (Rib::Definition def) {
+	auto pair = std::make_pair (def, ns);
+	return resolved.emplace_back (std::move (pair));
+      };
+    };
+
+    ctx.values.resolve_path (segments).map (pair_with_ns (Namespace::Values));
+    ctx.types.resolve_path (segments).map (pair_with_ns (Namespace::Types));
+    ctx.macros.resolve_path (segments).map (pair_with_ns (Namespace::Macros));
+
+    return resolved;
+  }
 
   // Handle an import, resolving it to its definition and adding it to the list
   // of import mappings

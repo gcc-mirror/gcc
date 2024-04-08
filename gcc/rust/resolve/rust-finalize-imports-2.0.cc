@@ -137,10 +137,10 @@ finalize_simple_import (
   auto identifier
     = mapping.first.to_resolve.get_final_segment ().get_segment_name ();
 
-  // FIXME: Fix the namespace in which we insert the new definition
-  toplevel.insert_or_error_out (identifier, locus,
-				data.definition.get_node_id (),
-				data.ns.value ());
+  for (auto &&definition : data.definitions ())
+    toplevel
+      .insert_or_error_out (
+	identifier, locus, definition.first.get_node_id (), definition.second /* TODO: This isn't clear - it would be better if it was called .ns or something */);
 }
 
 void
@@ -149,7 +149,7 @@ finalize_glob_import (
   const std::pair<TopLevel::ImportKind, Early::ImportData> &mapping)
 {
   auto module = Analysis::Mappings::get ().lookup_ast_module (
-    mapping.second.definition.get_node_id ());
+    mapping.second.module ().get_node_id ());
   rust_assert (module);
 
   GlobbingVisitor glob_visitor (ctx);
@@ -186,10 +186,9 @@ finalize_rebind_import (
       break;
     }
 
-  // FIXME: Fix the namespace in which we insert the new definition
-  toplevel.insert_or_error_out (declared_name, locus,
-				data.definition.get_node_id (),
-				data.ns.value ());
+  for (auto &&definition : data.definitions ())
+    toplevel.insert_or_error_out (
+      declared_name, locus, definition.first.get_node_id (), definition.second /* TODO: This isn't clear - it would be better if it was called .ns or something */);
 }
 
 FinalizeImports::FinalizeImports (
