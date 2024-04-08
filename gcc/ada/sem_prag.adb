@@ -27650,13 +27650,6 @@ package body Sem_Prag is
       --  Start of processing for Check_Dependency_Clause
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            return;
-         end if;
-
          --  Examine all refinement clauses and compare them against the
          --  dependence clause.
 
@@ -27910,16 +27903,10 @@ package body Sem_Prag is
       --  Start of processing for Check_Output_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the outputs of pragma Depends looking for a state with a
          --  visible refinement.
 
-         elsif Present (Spec_Outputs) then
+         if Present (Spec_Outputs) then
             Item_Elmt := First_Elmt (Spec_Outputs);
             while Present (Item_Elmt) loop
                Item := Node (Item_Elmt);
@@ -28261,13 +28248,7 @@ package body Sem_Prag is
          Clause : Node_Id;
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
-         elsif Present (Clauses) then
+         if Present (Clauses) then
             Clause := First (Clauses);
             while Present (Clause) loop
                SPARK_Msg_N
@@ -28368,6 +28349,13 @@ package body Sem_Prag is
       --  is consistent with their role.
 
       Analyze_Depends_In_Decl_Part (N);
+
+      --  Do not perform these checks in an instance because they were already
+      --  performed successfully in the generic template.
+
+      if In_Instance then
+         goto Leave;
+      end if;
 
       --  Do not match dependencies against refinements if Refined_Depends is
       --  illegal to avoid emitting misleading error.
