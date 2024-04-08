@@ -2978,24 +2978,13 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
       gimple *stmt = gsi_stmt (si);
       if (is_gimple_call (stmt))
 	{
-	  tree old_lhs = gimple_call_lhs (stmt);
 	  struct cgraph_edge *edge = id->dst_node->get_edge (stmt);
 	  if (edge)
 	    {
-	      gimple *new_stmt
-		= cgraph_edge::redirect_call_stmt_to_callee (edge);
-	      /* If IPA-SRA transformation, run as part of edge redirection,
-		 removed the LHS because it is unused, save it to
-		 killed_new_ssa_names so that we can prune it from debug
-		 statements.  */
-	      if (old_lhs
-		  && TREE_CODE (old_lhs) == SSA_NAME
-		  && !gimple_call_lhs (new_stmt))
-		{
-		  if (!id->killed_new_ssa_names)
-		    id->killed_new_ssa_names = new hash_set<tree> (16);
-		  id->killed_new_ssa_names->add (old_lhs);
-		}
+	      if (!id->killed_new_ssa_names)
+		id->killed_new_ssa_names = new hash_set<tree> (16);
+	      cgraph_edge::redirect_call_stmt_to_callee (edge,
+		id->killed_new_ssa_names);
 
 	      if (stmt == last && id->call_stmt && maybe_clean_eh_stmt (stmt))
 		gimple_purge_dead_eh_edges (bb);
@@ -3322,8 +3311,12 @@ copy_body (copy_body_data *id,
   body = copy_cfg_body (id, entry_block_map, exit_block_map,
 			new_entry);
   copy_debug_stmts (id);
-  delete id->killed_new_ssa_names;
-  id->killed_new_ssa_names = NULL;
+  if (id->killed_new_ssa_names)
+    {
+      ipa_release_ssas_in_hash (id->killed_new_ssa_names);
+      delete id->killed_new_ssa_names;
+      id->killed_new_ssa_names = NULL;
+    }
 
   return body;
 }
