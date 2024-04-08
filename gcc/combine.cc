@@ -3222,8 +3222,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 #endif
 	      /* Cases for modifying the CC-using comparison.  */
 	      if (compare_code != orig_compare_code
-		  /* ??? Do we need to verify the zero rtx?  */
-		  && XEXP (*cc_use_loc, 1) == const0_rtx)
+		  && COMPARISON_P (*cc_use_loc))
 		{
 		  /* Replace cc_use_loc with entire new RTX.  */
 		  SUBST (*cc_use_loc,
@@ -3233,8 +3232,19 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		}
 	      else if (compare_mode != orig_compare_mode)
 		{
+		  subrtx_ptr_iterator::array_type array;
+
 		  /* Just replace the CC reg with a new mode.  */
-		  SUBST (XEXP (*cc_use_loc, 0), newpat_dest);
+		  FOR_EACH_SUBRTX_PTR (iter, array, cc_use_loc, NONCONST)
+		    {
+		      rtx *loc = *iter;
+		      if (REG_P (*loc)
+			  && REGNO (*loc) == REGNO (newpat_dest))
+			{
+			  SUBST (*loc, newpat_dest);
+			  iter.skip_subrtxes ();
+			}
+		    }
 		  undobuf.other_insn = cc_use_insn;
 		}
 	    }
