@@ -94,44 +94,54 @@ Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
 bool
 Early::resolve_simple_import (NodeId use_dec_id, TopLevel::ImportKind &&import)
 {
-  return ctx.resolve_path (import.to_resolve)
-    .map ([&] (std::pair<Rib::Definition, Namespace> def_ns) {
-      // We insert an empty vector, unless an element was already present for
-      // `use_dec_id` - which is returned in the tuple's first member
-      auto tuple = import_mappings.insert ({use_dec_id, {}});
-      // We then get that tuple's first member, which will be an iterator to the
-      // existing vec<pair<ImportKind, ImportData>> OR an iterator to our newly
-      // created empty vector (plus its key since this is a hashmap iterator).
-      // we then access the second member of the pair to get access to the
-      // vector directly.
-      auto &imports = tuple.first->second;
+  auto definitions = resolve_path_in_all_ns (import.to_resolve);
 
-      imports.emplace_back (
-	std::make_pair (std::move (import), ImportData::Simple (def_ns)));
-    })
-    .has_value ();
+  // if we've found at least one definition, then we're good
+  if (definitions.empty ())
+    return false;
+
+  // We insert an empty vector, unless an element was already present for
+  // `use_dec_id` - which is returned in the tuple's first member
+  auto tuple = import_mappings.insert ({use_dec_id, {}});
+  // We then get that tuple's first member, which will be an iterator to the
+  // existing vec<pair<ImportKind, ImportData>> OR an iterator to our newly
+  // created empty vector (plus its key since this is a hashmap iterator).
+  // we then access the second member of the pair to get access to the
+  // vector directly.
+  auto &imports = tuple.first->second;
+
+  imports.emplace_back (
+    std::make_pair (std::move (import),
+		    ImportData::Simple (std::move (definitions))));
+
+  return true;
 }
 
 bool
 Early::resolve_rebind_import (NodeId use_dec_id,
 			      TopLevel::ImportKind &&rebind_import)
 {
-  return ctx.resolve_path (rebind_import.to_resolve)
-    .map ([&] (std::pair<Rib::Definition, Namespace> def_ns) {
-      // We insert an empty vector, unless an element was already present for
-      // `use_dec_id` - which is returned in the tuple's first member
-      auto tuple = import_mappings.insert ({use_dec_id, {}});
-      // We then get that tuple's first member, which will be an iterator to the
-      // existing vec<pair<ImportKind, ImportData>> OR an iterator to our newly
-      // created empty vector (plus its key since this is a hashmap iterator).
-      // we then access the second member of the pair to get access to the
-      // vector directly.
-      auto &imports = tuple.first->second;
+  auto definitions = resolve_path_in_all_ns (rebind_import.to_resolve);
 
-      imports.emplace_back (std::make_pair (std::move (rebind_import),
-					    ImportData::Rebind (def_ns)));
-    })
-    .has_value ();
+  // if we've found at least one definition, then we're good
+  if (definitions.empty ())
+    return false;
+
+  // We insert an empty vector, unless an element was already present for
+  // `use_dec_id` - which is returned in the tuple's first member
+  auto tuple = import_mappings.insert ({use_dec_id, {}});
+  // We then get that tuple's first member, which will be an iterator to the
+  // existing vec<pair<ImportKind, ImportData>> OR an iterator to our newly
+  // created empty vector (plus its key since this is a hashmap iterator).
+  // we then access the second member of the pair to get access to the
+  // vector directly.
+  auto &imports = tuple.first->second;
+
+  imports.emplace_back (
+    std::make_pair (std::move (rebind_import),
+		    ImportData::Rebind (std::move (definitions))));
+
+  return true;
 }
 
 void

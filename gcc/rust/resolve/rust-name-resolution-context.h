@@ -199,32 +199,6 @@ public:
 	       std::function<void (void)> lambda,
 	       tl::optional<Identifier> path = {});
 
-  template <typename P>
-  tl::optional<std::pair<Rib::Definition, Namespace>>
-  resolve_path (const P &path)
-  {
-    const auto &segments = path.get_segments ();
-
-    // Pair a definition with the namespace it was found in
-    auto pair_with_ns = [] (Namespace ns) {
-      return [ns] (Rib::Definition def) { return std::make_pair (def, ns); };
-    };
-
-    // We first check in values, if not found then types, if not found then
-    // macros. There should not be any ambiguity at this point - this function
-    // will short circuit and return the first definition it has found.
-    return values.resolve_path (segments)
-      .map (pair_with_ns (Namespace::Values))
-      .or_else ([&] () {
-	return types.resolve_path (segments).map (
-	  pair_with_ns (Namespace::Types));
-      })
-      .or_else ([&] () {
-	return macros.resolve_path (segments).map (
-	  pair_with_ns (Namespace::Macros));
-      });
-  }
-
   ForeverStack<Namespace::Values> values;
   ForeverStack<Namespace::Types> types;
   ForeverStack<Namespace::Macros> macros;
