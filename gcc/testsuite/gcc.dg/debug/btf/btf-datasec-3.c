@@ -7,22 +7,22 @@
 
 extern int VERSION __attribute__((section (".version")));
 
-extern int test_bss1;
-extern int test_data1;
+extern int ext1;
+extern int ext2;
 
-int test_bss2;
-int test_data2 = 2;
+int var1 __attribute__((section (".sec_a")));
+int var2 __attribute__((section (".sec_b"))) = 2;
 
 int
 foo (void)
 {
-  test_bss2 = VERSION;
-  return test_bss1 + test_data1 + test_data2;
+  ext2 = VERSION;
+  return ext1 + var1 + var2;
 }
 
 /* There should be 3 DATASEC entries total.  Of the extern decls, only VERSION
    has a known section; entries are not created for the other two.  */
 /* { dg-final { scan-assembler-times "bts_type" 3 } } */
-/* { dg-final { scan-assembler-times "bts_type: \\(BTF_KIND_VAR 'test_data2'\\)" 1 } } */
-/* { dg-final { scan-assembler-times "bts_type: \\(BTF_KIND_VAR 'test_bss2'\\)" 1 } } */
 /* { dg-final { scan-assembler-times "bts_type: \\(BTF_KIND_VAR 'VERSION'\\)" 1 } } */
+/* { dg-final { scan-assembler-not "bts_type: \\(BTF_KIND_VAR 'ext1'\\)" } } */
+/* { dg-final { scan-assembler-not "bts_type: \\(BTF_KIND_VAR 'ext2'\\)" } } */
