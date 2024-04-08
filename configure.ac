@@ -1411,6 +1411,7 @@ fi
 
 ACX_PROG_GNAT
 ACX_PROG_GDC
+ACX_PROG_CARGO
 ACX_PROG_CMP_IGNORE_INITIAL
 
 AC_ARG_ENABLE([bootstrap],
@@ -2304,6 +2305,23 @@ directories, to avoid imposing the performance cost of
 	        esac
           ;;
         esac
+
+        # Disable Rust if cargo is unavailable.
+        case ${add_this_lang}:${language}:${have_cargo} in
+          yes:rust:no)
+            # Specifically requested language; tell them.
+            AC_MSG_ERROR([cargo is required to build $language])
+            ;;
+          all:rust:no)
+            AC_MSG_WARN([cargo is required to build $language])
+            add_this_lang=unsupported
+            ;;
+          *:rust:no)
+            # Silently disable.
+            add_this_lang=unsupported
+            ;;
+        esac
+
 
         # Disable a language that is unsupported by the target.
 	case "${add_this_lang}: $unsupported_languages " in
