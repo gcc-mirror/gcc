@@ -106,6 +106,9 @@ public:
   /* Generate hash value based on the overload_name and the argument list passed
      by the user when calling. */
   hashval_t overloaded_hash (const vec<tree, va_gc> &);
+
+  /* The reqired extension for the register function.  */
+  enum required_ext required;
 };
 
 /* Hash traits for registered_function.  */
@@ -3701,6 +3704,7 @@ function_builder::add_function (const function_instance &instance,
 				const char *name, tree fntype, tree attrs,
 				bool placeholder_p, const char *overload_name,
 				const vec<tree> &argument_types,
+				enum required_ext required,
 				bool overloaded_p = false)
 {
   unsigned int code = vec_safe_length (registered_functions);
@@ -3730,6 +3734,7 @@ function_builder::add_function (const function_instance &instance,
   rfn.overload_name = overload_name ? xstrdup (overload_name) : NULL;
   rfn.argument_types = argument_types;
   rfn.overloaded_p = overloaded_p;
+  rfn.required = required;
   vec_safe_push (registered_functions, &rfn);
 
   return rfn;
@@ -3744,7 +3749,8 @@ void
 function_builder::add_unique_function (const function_instance &instance,
 				       const function_shape *shape,
 				       tree return_type,
-				       vec<tree> &argument_types)
+				       vec<tree> &argument_types,
+				       enum required_ext required)
 {
   /* Do not add this function if it is invalid.  */
   if (!check_required_extensions (instance))
@@ -3762,7 +3768,7 @@ function_builder::add_unique_function (const function_instance &instance,
   tree attrs = get_attributes (instance);
   registered_function &rfn
     = add_function (instance, name, fntype, attrs, false, overload_name,
-		    argument_types.copy ());
+		    argument_types.copy (), required);
 
   /* Enter the function into the hash table.  */
   hashval_t hash = instance.hash ();
@@ -3777,7 +3783,7 @@ function_builder::add_unique_function (const function_instance &instance,
       tree attrs = get_attributes (instance);
       bool placeholder_p = !m_direct_overloads;
       add_function (instance, overload_name, fntype, attrs, placeholder_p, NULL,
-		    vNULL);
+		    vNULL, required);
 
       /* Enter the function into the non-overloaded hash table.  */
       hash = rfn.overloaded_hash ();
@@ -3792,7 +3798,8 @@ function_builder::add_unique_function (const function_instance &instance,
 /* Add overloaded function for gcc. */
 void
 function_builder::add_overloaded_function (const function_instance &instance,
-					   const function_shape *shape)
+					   const function_shape *shape,
+					   enum required_ext required)
 {
   if (!check_required_extensions (instance))
     return;
@@ -3805,7 +3812,7 @@ function_builder::add_overloaded_function (const function_instance &instance,
 	 for the overloaded function.  */
       tree fntype = build_function_type (void_type_node, void_list_node);
       add_function (instance, name, fntype, NULL_TREE, m_direct_overloads, name,
-		    vNULL, true);
+		    vNULL, required, true);
       obstack_free (&m_string_obstack, name);
     }
 }
@@ -4633,10 +4640,12 @@ expand_builtin (unsigned int code, tree exp, rtx target)
 {
   registered_function &rfn = *(*registered_functions)[code];
 
-  if (!TARGET_VECTOR)
+  if (!required_extensions_specified (rfn.required))
     {
       error_at (EXPR_LOCATION (exp),
-		"built-in function %qE requires the V ISA extension", exp);
+		"built-in function %qE requires the %qs ISA extension",
+		exp,
+		reqired_ext_to_isa_name (rfn.required));
       return target;
     }
 

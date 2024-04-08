@@ -72,9 +72,10 @@ build_one (function_builder &b, const function_group_info &group,
   if (TARGET_XTHEADVECTOR && !check_type (return_type, argument_types))
     return;
 
-  b.add_overloaded_function (function_instance, *group.shape);
+  b.add_overloaded_function (function_instance, *group.shape,
+			     group.required_extensions);
   b.add_unique_function (function_instance, (*group.shape), return_type,
-			 argument_types);
+			 argument_types, group.required_extensions);
 }
 
 /* Add a function instance for every operand && predicate && args
@@ -249,9 +250,10 @@ build_th_loadstore (function_builder &b, const function_group_info &group,
   if (strstr (group.base_name, "w") && (sew == 8 || sew ==16))
     return;
 
-  b.add_overloaded_function (function_instance, *group.shape);
+  b.add_overloaded_function (function_instance, *group.shape,
+			     group.required_extensions);
   b.add_unique_function (function_instance, (*group.shape), return_type,
-			 argument_types);
+			 argument_types, group.required_extensions);
 }
 
 /* th_loadstore_width_def class.  */
@@ -931,7 +933,7 @@ struct vcreate_def : public build_base
 	    argument_types.quick_push (arg_type);
 
 	  b.add_unique_function (function_instance, (*group.shape), return_type,
-	    argument_types);
+	    argument_types, group.required_extensions);
      }
   }
 
@@ -966,7 +968,8 @@ struct read_vl_def : public function_shape
   {
     auto_vec<tree> argument_types;
     b.add_unique_function (get_read_vl_instance (), (*group.shape),
-			   size_type_node, argument_types);
+			   size_type_node, argument_types,
+			   group.required_extensions);
   }
 
   char *get_name (function_builder &b, const function_instance &instance,
@@ -1024,7 +1027,8 @@ struct vlenb_def : public function_shape
 					 *group.shape, group.ops_infos.types[0],
 					 group.preds[0], &group.ops_infos);
     b.add_unique_function (function_instance, (*group.shape),
-			   long_unsigned_type_node, argument_types);
+			   long_unsigned_type_node, argument_types,
+			   group.required_extensions);
   }
 
   char *get_name (function_builder &b, const function_instance &instance,

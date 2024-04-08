@@ -124,7 +124,74 @@ enum required_ext
   ZVKSED_EXT,  /* Crypto vector Zvksed sub-ext */
   ZVKSH_EXT,   /* Crypto vector Zvksh sub-ext */
   XTHEADVECTOR_EXT,   /* XTheadVector extension */
+  /* Please update below to isa_name func when add or remove enum type(s).  */
 };
+
+static inline const char * reqired_ext_to_isa_name (enum required_ext required)
+{
+  switch (required)
+  {
+    case VECTOR_EXT:
+      return "v";
+    case ZVBB_EXT:
+      return "zvbb";
+    case ZVBB_OR_ZVKB_EXT:
+      return "zvbb or zvkb";
+    case ZVBC_EXT:
+      return "zvbc";
+    case ZVKG_EXT:
+      return "zvkg";
+    case ZVKNED_EXT:
+      return "zvkned";
+    case ZVKNHA_OR_ZVKNHB_EXT:
+      return "zvknha or zvknhb";
+    case ZVKNHB_EXT:
+      return "zvknhb";
+    case ZVKSED_EXT:
+      return "zvksed";
+    case ZVKSH_EXT:
+      return "zvksh";
+    case XTHEADVECTOR_EXT:
+      return "xthreadvector";
+    default:
+      gcc_unreachable ();
+  }
+
+  gcc_unreachable ();
+}
+
+static inline bool required_extensions_specified (enum required_ext required)
+{
+  switch (required)
+  {
+    case VECTOR_EXT:
+      return TARGET_VECTOR;;
+    case ZVBB_EXT:
+      return TARGET_ZVBB;
+    case ZVBB_OR_ZVKB_EXT:
+      return TARGET_ZVBB || TARGET_ZVKB;
+    case ZVBC_EXT:
+      return TARGET_ZVBC;
+    case ZVKG_EXT:
+      return TARGET_ZVKG;
+    case ZVKNED_EXT:
+      return TARGET_ZVKNED;
+    case ZVKNHA_OR_ZVKNHB_EXT:
+      return TARGET_ZVKNHA || TARGET_ZVKNHB;
+    case ZVKNHB_EXT:
+      return TARGET_ZVKNHB;
+    case ZVKSED_EXT:
+      return TARGET_ZVKSED;
+    case ZVKSH_EXT:
+      return TARGET_ZVKSH;
+    case XTHEADVECTOR_EXT:
+      return TARGET_XTHEADVECTOR;
+    default:
+      gcc_unreachable ();
+  }
+
+  gcc_unreachable ();
+}
 
 /* Enumerates the RVV operand types.  */
 enum operand_type_index
@@ -325,9 +392,10 @@ public:
   void allocate_argument_types (const function_instance &, vec<tree> &) const;
   void apply_predication (const function_instance &, tree, vec<tree> &) const;
   void add_unique_function (const function_instance &, const function_shape *,
-			    tree, vec<tree> &);
+			    tree, vec<tree> &, enum required_ext);
   void add_overloaded_function (const function_instance &,
-				const function_shape *);
+				const function_shape *,
+				enum required_ext);
   void register_function_group (const function_group_info &);
   void append_name (const char *);
   void append_base_name (const char *);
@@ -340,7 +408,8 @@ private:
 
   registered_function &add_function (const function_instance &, const char *,
 				     tree, tree, bool, const char *,
-				     const vec<tree> &, bool);
+				     const vec<tree> &, enum required_ext,
+				     bool);
 
   /* True if we should create a separate decl for each instance of an
      overloaded function, instead of using function_builder.  */
