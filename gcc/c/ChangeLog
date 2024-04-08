@@ -1,3 +1,12 @@
+2024-04-05  Martin Uecker  <uecker@tugraz.at>
+
+	Revert:
+	2024-04-02  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114361
+	* c-decl.cc (finish_struct): Set TYPE_CANONICAL when completing
+	strucute types.
+
 2024-04-02  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/114361

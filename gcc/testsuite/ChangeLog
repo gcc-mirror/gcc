@@ -138,6 +138,16 @@
 	PR tree-optimization/114566
 	* gcc.target/i386/avx512f-pr114566.c: New test.
 
+2024-04-05  Martin Uecker  <uecker@tugraz.at>
+
+	Revert:
+	2024-04-02  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114361
+	* gcc.dg/pr114361.c: New test.
+	* gcc.dg/c23-tag-incomplete-1.c: New test.
+	* gcc.dg/c23-tag-incomplete-2.c: New test.
+
 2024-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gdc.dg/dg.exp: Prune gcov*.d from the list of tests to run.
