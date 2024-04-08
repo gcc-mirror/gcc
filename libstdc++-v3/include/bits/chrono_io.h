@@ -3685,6 +3685,7 @@ namespace __detail
 		      if (!__is_failed(__err)) [[likely]]
 			{
 			  long double __val{};
+#if __cpp_lib_to_chars
 			  string __str = std::move(__buf).str();
 			  auto __first = __str.data();
 			  auto __last = __first + __str.size();
@@ -3694,6 +3695,9 @@ namespace __detail
 			  if ((bool)ec || ptr != __last) [[unlikely]]
 			    __err |= ios_base::failbit;
 			  else
+#else
+			  if (__buf >> __val)
+#endif
 			    {
 			      duration<long double> __fs(__val);
 			      if constexpr (__is_floating)
