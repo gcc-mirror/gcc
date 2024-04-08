@@ -28248,16 +28248,13 @@ package body Sem_Prag is
          Clause : Node_Id;
 
       begin
-         if Present (Clauses) then
-            Clause := First (Clauses);
-            while Present (Clause) loop
-               SPARK_Msg_N
-                 ("unmatched or extra clause in dependence refinement",
-                  Clause);
+         Clause := First (Clauses);
+         while Present (Clause) loop
+            SPARK_Msg_N
+              ("unmatched or extra clause in dependence refinement", Clause);
 
-               Next (Clause);
-            end loop;
-         end if;
+            Next (Clause);
+         end loop;
       end Report_Extra_Clauses;
 
       --  Local variables
