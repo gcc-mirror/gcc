@@ -820,11 +820,6 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 	  /* Set kflag if this member is a representable bitfield.  */
 	  if (btf_dmd_representable_bitfield_p (ctfc, dmd))
 	    btf_kflag = 1;
-
-	  /* Struct members that refer to unsupported types or bitfield formats
-	     shall be skipped. These are marked during preprocessing.  */
-	  else if (!btf_emit_id_p (dmd->dmd_type))
-	    btf_vlen -= 1;
 	}
     }
 
