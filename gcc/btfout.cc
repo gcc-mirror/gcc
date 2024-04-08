@@ -1045,7 +1045,7 @@ btf_asm_datasec_entry (ctf_container_ref ctfc, struct btf_var_secinfo info)
 {
   const char *symbol_name = get_name_for_datasec_entry (ctfc, info.type);
   btf_asm_type_ref ("bts_type", ctfc, info.type);
-  if (symbol_name == NULL)
+  if (!btf_with_core_debuginfo_p () || symbol_name == NULL)
     dw2_asm_output_data (4, info.offset, "bts_offset");
   else
     dw2_asm_output_offset (4, symbol_name, NULL, "bts_offset");

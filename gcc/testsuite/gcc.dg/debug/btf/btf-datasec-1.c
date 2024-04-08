@@ -19,10 +19,12 @@
 /* { dg-final { scan-assembler-times "0xf000003\[\t \]+\[^\n\]*btt_info" 2 } } */
 /* { dg-final { scan-assembler-times "0xf000001\[\t \]+\[^\n\]*btt_info" 1 } } */
 
-/* The offset entry for each variable in a DATSEC should contain a label.  */
-/* { dg-final { scan-assembler-times "(?:(?:\\.4byte|\\.long|data4\\.ua|\\.ualong|\\.uaword|\\.dword|long|dc\\.l|\\.word)\[\t \]|\\.vbyte\t4,\[\t \]?)_?\[a-e\]\[\t \]+\[^\n\]*bts_offset" 5 } } */
-/* { dg-final { scan-assembler-times "my_cstruct\[\t \]+\[^\n\]*bts_offset" 1 } } */
-/* { dg-final { scan-assembler-times "bigarr\[\t \]+\[^\n\]*bts_offset" 1 } } */
+/* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bts_offset" 7 { target { ! bpf-*-* } } } } */
+
+/* For BPF target the offset entry for each variable in a DATSEC should contain a label.  */
+/* { dg-final { scan-assembler-times ".4byte\[\t \]\[a-e\]\[\t \]+\[^\n\]*bts_offset" 5 { target bpf-*-* } } } */
+/* { dg-final { scan-assembler-times "my_cstruct\[\t \]+\[^\n\]*bts_offset" 1 { target bpf-*-* } } } */
+/* { dg-final { scan-assembler-times "bigarr\[\t \]+\[^\n\]*bts_offset" 1 { target bpf-*-* } } } */
 
 /* Check that strings for each DATASEC have been added to the BTF string table.  */
 /* { dg-final { scan-assembler-times "ascii \".data.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
