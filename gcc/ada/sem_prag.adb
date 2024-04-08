@@ -28712,16 +28712,10 @@ package body Sem_Prag is
       --  Start of processing for Check_In_Out_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the In_Out items of the corresponding Global pragma
          --  looking for a state with a visible refinement.
 
-         elsif Has_In_Out_State and then Present (In_Out_Items) then
+         if Has_In_Out_State and then Present (In_Out_Items) then
             Item_Elmt := First_Elmt (In_Out_Items);
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
@@ -28821,16 +28815,10 @@ package body Sem_Prag is
       --  Start of processing for Check_Input_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the Input items of the corresponding Global pragma looking
          --  for a state with a visible refinement.
 
-         elsif Has_In_State and then Present (In_Items) then
+         if Has_In_State and then Present (In_Items) then
             Item_Elmt := First_Elmt (In_Items);
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
@@ -28944,16 +28932,10 @@ package body Sem_Prag is
       --  Start of processing for Check_Output_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the Output items of the corresponding Global pragma
          --  looking for a state with a visible refinement.
 
-         elsif Has_Out_State and then Present (Out_Items) then
+         if Has_Out_State and then Present (Out_Items) then
             Item_Elmt := First_Elmt (Out_Items);
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
@@ -29050,16 +29032,10 @@ package body Sem_Prag is
       --  Start of processing for Check_Proof_In_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the Proof_In items of the corresponding Global pragma
          --  looking for a state with a visible refinement.
 
-         elsif Has_Proof_In_State and then Present (Proof_In_Items) then
+         if Has_Proof_In_State and then Present (Proof_In_Items) then
             Item_Elmt := First_Elmt (Proof_In_Items);
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
@@ -29214,13 +29190,7 @@ package body Sem_Prag is
       --  Start of processing for Check_Refined_Global_List
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
-         elsif Nkind (List) = N_Null then
+         if Nkind (List) = N_Null then
             null;
 
          --  Single global item declaration
@@ -29465,18 +29435,10 @@ package body Sem_Prag is
       --  Start of processing for Report_Extra_Constituents
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
-         else
-            Report_Extra_Constituents_In_List (In_Constits);
-            Report_Extra_Constituents_In_List (In_Out_Constits);
-            Report_Extra_Constituents_In_List (Out_Constits);
-            Report_Extra_Constituents_In_List (Proof_In_Constits);
-         end if;
+         Report_Extra_Constituents_In_List (In_Constits);
+         Report_Extra_Constituents_In_List (In_Out_Constits);
+         Report_Extra_Constituents_In_List (Out_Constits);
+         Report_Extra_Constituents_In_List (Proof_In_Constits);
       end Report_Extra_Constituents;
 
       --------------------------
@@ -29488,21 +29450,13 @@ package body Sem_Prag is
          Item_Id   : Entity_Id;
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
-         else
-            if Present (Repeat_Items) then
-               Item_Elmt := First_Elmt (Repeat_Items);
-               while Present (Item_Elmt) loop
-                  Item_Id := Node (Item_Elmt);
-                  SPARK_Msg_NE ("missing global item &", N, Item_Id);
-                  Next_Elmt (Item_Elmt);
-               end loop;
-            end if;
+         if Present (Repeat_Items) then
+            Item_Elmt := First_Elmt (Repeat_Items);
+            while Present (Item_Elmt) loop
+               Item_Id := Node (Item_Elmt);
+               SPARK_Msg_NE ("missing global item &", N, Item_Id);
+               Next_Elmt (Item_Elmt);
+            end loop;
          end if;
       end Report_Missing_Items;
 
@@ -29603,6 +29557,13 @@ package body Sem_Prag is
 
       Analyze_Global_In_Decl_Part (N);
 
+      --  Do not perform these checks in an instance because they were already
+      --  performed successfully in the generic template.
+
+      if In_Instance then
+         goto Leave;
+      end if;
+
       --  Perform all refinement checks with respect to completeness and mode
       --  matching.
 
@@ -29671,7 +29632,6 @@ package body Sem_Prag is
       --  in the generic template.
 
       if Serious_Errors_Detected = Errors
-        and then not In_Instance
         and then not Has_Null_State
         and then No_Constit
       then
