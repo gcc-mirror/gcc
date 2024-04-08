@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "attribs.h"
 #include "gimple-walk.h"
+#include "tree-sra.h"
 
 #include "tree-ssa-alias-compare.h"
 #include "ipa-icf-gimple.h"
@@ -59,7 +60,8 @@ func_checker::func_checker (tree source_func_decl, tree target_func_decl,
   : m_source_func_decl (source_func_decl), m_target_func_decl (target_func_decl),
     m_ignored_source_nodes (ignored_source_nodes),
     m_ignored_target_nodes (ignored_target_nodes),
-    m_ignore_labels (ignore_labels), m_tbaa (tbaa)
+    m_ignore_labels (ignore_labels), m_tbaa (tbaa),
+    m_total_scalarization_limit_known_p (false)
 {
   function *source_func = DECL_STRUCT_FUNCTION (source_func_decl);
   function *target_func = DECL_STRUCT_FUNCTION (target_func_decl);
@@ -356,6 +358,36 @@ func_checker::operand_equal_p (const_tree t1, const_tree t2,
   return operand_compare::operand_equal_p (t1, t2, flags);
 }
 
+/* Return true if either T1 and T2 cannot be totally scalarized or if doing
+   so would result in copying the same memory.  Otherwise return false.  */
+
+bool
+func_checker::safe_for_total_scalarization_p (tree t1, tree t2)
+{
+  tree type1 = TREE_TYPE (t1);
+  tree type2 = TREE_TYPE (t2);
+
+  if (!AGGREGATE_TYPE_P (type1)
+      || !AGGREGATE_TYPE_P (type2)
+      || !tree_fits_uhwi_p (TYPE_SIZE (type1))
+      || !tree_fits_uhwi_p (TYPE_SIZE (type2)))
+    return true;
+
+  if (!m_total_scalarization_limit_known_p)
+    {
+      push_cfun (DECL_STRUCT_FUNCTION (m_target_func_decl));
+      m_total_scalarization_limit = sra_get_max_scalarization_size ();
+      pop_cfun ();
+      m_total_scalarization_limit_known_p = true;
+    }
+
+  unsigned HOST_WIDE_INT sz = tree_to_uhwi (TYPE_SIZE (type1));
+  gcc_assert (sz == tree_to_uhwi (TYPE_SIZE (type2)));
+  if (sz > m_total_scalarization_limit)
+    return true;
+  return sra_total_scalarization_would_copy_same_data_p (type1, type2);
+}
+
 /* Function responsible for comparison of various operands T1 and T2
    which are accessed as ACCESS.
    If these components, from functions FUNC1 and FUNC2, are equal, true
@@ -377,7 +409,12 @@ func_checker::compare_operand (tree t1, tree t2, operand_access_type access)
 				   lto_streaming_expected_p (), m_tbaa);
 
       if (!flags)
-	return true;
+	{
+	  if (!safe_for_total_scalarization_p (t1, t2))
+	    return return_false_with_msg
+	      ("total scalarization may not be equivalent");
+	  return true;
+	}
       if (flags & SEMANTICS)
 	return return_false_with_msg
 		("compare_ao_refs failed (semantic difference)");

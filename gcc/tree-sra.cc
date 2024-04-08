@@ -974,18 +974,101 @@ create_access (tree expr, gimple *stmt, bool write)
   return access;
 }
 
-
-/* Return true iff TYPE is scalarizable - i.e. a RECORD_TYPE or fixed-length
-   ARRAY_TYPE with fields that are either of gimple register types (excluding
-   bit-fields) or (recursively) scalarizable types.  CONST_DECL must be true if
-   we are considering a decl from constant pool.  If it is false, char arrays
-   will be refused.  */
+/* Given an array type TYPE, extract element size to *EL_SIZE, minimum index to
+   *IDX and maximum index to *MAX so that the caller can iterate over all
+   elements and return true, except if the array is known to be zero-length,
+   then return false.  */
 
 static bool
-scalarizable_type_p (tree type, bool const_decl)
+prepare_iteration_over_array_elts (tree type, HOST_WIDE_INT *el_size,
+				   offset_int *idx, offset_int *max)
+{
+  tree elem_size = TYPE_SIZE (TREE_TYPE (type));
+  gcc_assert (elem_size && tree_fits_shwi_p (elem_size));
+  *el_size = tree_to_shwi (elem_size);
+  gcc_assert (*el_size > 0);
+
+  tree minidx = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
+  gcc_assert (TREE_CODE (minidx) == INTEGER_CST);
+  tree maxidx = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+  /* Skip (some) zero-length arrays; others have MAXIDX == MINIDX - 1.  */
+  if (!maxidx)
+    return false;
+  gcc_assert (TREE_CODE (maxidx) == INTEGER_CST);
+  tree domain = TYPE_DOMAIN (type);
+  /* MINIDX and MAXIDX are inclusive, and must be interpreted in
+     DOMAIN (e.g. signed int, whereas min/max may be size_int).  */
+  *idx = wi::to_offset (minidx);
+  *max = wi::to_offset (maxidx);
+  if (!TYPE_UNSIGNED (domain))
+    {
+      *idx = wi::sext (*idx, TYPE_PRECISION (domain));
+      *max = wi::sext (*max, TYPE_PRECISION (domain));
+    }
+  return true;
+}
+
+/* A structure to track collecting padding and hold collected padding
+   information.   */
+
+class sra_padding_collecting
+{
+public:
+  /* Given that there won't be any data until at least OFFSET, add an
+     appropriate entry to the list of paddings or extend the last one.  */
+  void record_padding (HOST_WIDE_INT offset);
+  /* Vector of pairs describing contiguous pieces of padding, each pair
+     consisting of offset and length.  */
+  auto_vec<std::pair<HOST_WIDE_INT, HOST_WIDE_INT>, 10> m_padding;
+  /* Offset where data should continue after the last seen actual bit of data
+     if there was no padding.  */
+  HOST_WIDE_INT m_data_until = 0;
+};
+
+/* Given that there won't be any data until at least OFFSET, add an appropriate
+   entry to the list of paddings or extend the last one.  */
+
+void sra_padding_collecting::record_padding (HOST_WIDE_INT offset)
+{
+  if (offset > m_data_until)
+    {
+      HOST_WIDE_INT psz = offset - m_data_until;
+      if (!m_padding.is_empty ()
+	  && ((m_padding[m_padding.length () - 1].first
+	       + m_padding[m_padding.length () - 1].second) == offset))
+	m_padding[m_padding.length () - 1].second += psz;
+      else
+	m_padding.safe_push (std::make_pair (m_data_until, psz));
+    }
+}
+
+/* Return true iff TYPE is totally scalarizable - i.e. a RECORD_TYPE or
+   fixed-length ARRAY_TYPE with fields that are either of gimple register types
+   (excluding bit-fields) or (recursively) scalarizable types.  CONST_DECL must
+   be true if we are considering a decl from constant pool.  If it is false,
+   char arrays will be refused.
+
+   TOTAL_OFFSET is the offset of TYPE within any outer type that is being
+   examined.
+
+   If PC is non-NULL, collect padding information into the vector within the
+   structure.  The information is however only complete if the function returns
+   true and does not contain any padding at its end.  */
+
+static bool
+totally_scalarizable_type_p (tree type, bool const_decl,
+			     HOST_WIDE_INT total_offset,
+			     sra_padding_collecting *pc)
 {
   if (is_gimple_reg_type (type))
-    return true;
+    {
+      if (pc)
+	{
+	  pc->record_padding (total_offset);
+	  pc->m_data_until = total_offset + tree_to_shwi (TYPE_SIZE (type));
+	}
+      return true;
+    }
   if (type_contains_placeholder_p (type))
     return false;
 
@@ -1000,6 +1083,8 @@ scalarizable_type_p (tree type, bool const_decl)
 	{
 	  tree ft = TREE_TYPE (fld);
 
+	  if (!DECL_SIZE (fld))
+	    return false;
 	  if (zerop (DECL_SIZE (fld)))
 	    continue;
 
@@ -1014,7 +1099,8 @@ scalarizable_type_p (tree type, bool const_decl)
 	  if (DECL_BIT_FIELD (fld))
 	    return false;
 
-	  if (!scalarizable_type_p (ft, const_decl))
+	  if (!totally_scalarizable_type_p (ft, const_decl, total_offset + pos,
+					    pc))
 	    return false;
 	}
 
@@ -1043,9 +1129,35 @@ scalarizable_type_p (tree type, bool const_decl)
 	/* Variable-length array, do not allow scalarization.  */
 	return false;
 
+      unsigned old_padding_len = 0;
+      if (pc)
+	old_padding_len = pc->m_padding.length ();
       tree elem = TREE_TYPE (type);
-      if (!scalarizable_type_p (elem, const_decl))
+      if (!totally_scalarizable_type_p (elem, const_decl, total_offset, pc))
 	return false;
+      if (pc)
+	{
+	  unsigned new_padding_len = pc->m_padding.length ();
+	  HOST_WIDE_INT el_size;
+	  offset_int idx, max;
+	  if (!prepare_iteration_over_array_elts (type, &el_size, &idx, &max))
+	    return true;
+	  pc->record_padding (total_offset + el_size);
+	  ++idx;
+	  for (HOST_WIDE_INT pos = total_offset + el_size;
+	       idx <= max;
+	       pos += el_size, ++idx)
+	    {
+	      for (unsigned i = old_padding_len; i < new_padding_len; i++)
+		{
+		  HOST_WIDE_INT pp
+		    = pos + pc->m_padding[i].first - total_offset;
+		  HOST_WIDE_INT psz = pc->m_padding[i].second;
+		  pc->m_padding.safe_push (std::make_pair (pp, psz));
+		}
+	    }
+	  pc->m_data_until = total_offset + tree_to_shwi (TYPE_SIZE (type));
+	}
       return true;
     }
   default:
@@ -3359,28 +3471,12 @@ totally_scalarize_subtree (struct access *root)
     case ARRAY_TYPE:
       {
 	tree elemtype = TREE_TYPE (root->type);
-	tree elem_size = TYPE_SIZE (elemtype);
-	gcc_assert (elem_size && tree_fits_shwi_p (elem_size));
-	HOST_WIDE_INT el_size = tree_to_shwi (elem_size);
-	gcc_assert (el_size > 0);
+	HOST_WIDE_INT el_size;
+	offset_int idx, max;
+	if (!prepare_iteration_over_array_elts (root->type, &el_size,
+						&idx, &max))
+	  break;
 
-	tree minidx = TYPE_MIN_VALUE (TYPE_DOMAIN (root->type));
-	gcc_assert (TREE_CODE (minidx) == INTEGER_CST);
-	tree maxidx = TYPE_MAX_VALUE (TYPE_DOMAIN (root->type));
-	/* Skip (some) zero-length arrays; others have MAXIDX == MINIDX - 1.  */
-	if (!maxidx)
-	  goto out;
-	gcc_assert (TREE_CODE (maxidx) == INTEGER_CST);
-	tree domain = TYPE_DOMAIN (root->type);
-	/* MINIDX and MAXIDX are inclusive, and must be interpreted in
-	   DOMAIN (e.g. signed int, whereas min/max may be size_int).  */
-	offset_int idx = wi::to_offset (minidx);
-	offset_int max = wi::to_offset (maxidx);
-	if (!TYPE_UNSIGNED (domain))
-	  {
-	    idx = wi::sext (idx, TYPE_PRECISION (domain));
-	    max = wi::sext (max, TYPE_PRECISION (domain));
-	  }
 	for (HOST_WIDE_INT pos = root->offset;
 	     idx <= max;
 	     pos += el_size, ++idx)
@@ -3406,7 +3502,8 @@ totally_scalarize_subtree (struct access *root)
 				 ? &last_seen_sibling->next_sibling
 				 : &root->first_child);
 	    tree nref = build4 (ARRAY_REF, elemtype, root->expr,
-				wide_int_to_tree (domain, idx),
+				wide_int_to_tree (TYPE_DOMAIN (root->type),
+						  idx),
 				NULL_TREE, NULL_TREE);
 	    struct access *new_child
 	      = create_total_access_and_reshape (root, pos, el_size, elemtype,
@@ -3424,9 +3521,32 @@ totally_scalarize_subtree (struct access *root)
     default:
       gcc_unreachable ();
     }
-
- out:
   return true;
+}
+
+/* Get the total total scalarization size limit in the current function.  */
+
+unsigned HOST_WIDE_INT
+sra_get_max_scalarization_size (void)
+{
+  bool optimize_speed_p = !optimize_function_for_size_p (cfun);
+  /* If the user didn't set PARAM_SRA_MAX_SCALARIZATION_SIZE_<...>,
+     fall back to a target default.  */
+  unsigned HOST_WIDE_INT max_scalarization_size
+    = get_move_ratio (optimize_speed_p) * UNITS_PER_WORD;
+
+  if (optimize_speed_p)
+    {
+      if (OPTION_SET_P (param_sra_max_scalarization_size_speed))
+	max_scalarization_size = param_sra_max_scalarization_size_speed;
+    }
+  else
+    {
+      if (OPTION_SET_P (param_sra_max_scalarization_size_size))
+	max_scalarization_size = param_sra_max_scalarization_size_size;
+    }
+  max_scalarization_size *= BITS_PER_UNIT;
+  return max_scalarization_size;
 }
 
 /* Go through all accesses collected throughout the (intraprocedural) analysis
@@ -3456,24 +3576,8 @@ analyze_all_variable_accesses (void)
 
   propagate_all_subaccesses ();
 
-  bool optimize_speed_p = !optimize_function_for_size_p (cfun);
-  /* If the user didn't set PARAM_SRA_MAX_SCALARIZATION_SIZE_<...>,
-     fall back to a target default.  */
   unsigned HOST_WIDE_INT max_scalarization_size
-    = get_move_ratio (optimize_speed_p) * UNITS_PER_WORD;
-
-  if (optimize_speed_p)
-    {
-      if (OPTION_SET_P (param_sra_max_scalarization_size_speed))
-	max_scalarization_size = param_sra_max_scalarization_size_speed;
-    }
-  else
-    {
-      if (OPTION_SET_P (param_sra_max_scalarization_size_size))
-	max_scalarization_size = param_sra_max_scalarization_size_size;
-    }
-  max_scalarization_size *= BITS_PER_UNIT;
-
+    = sra_get_max_scalarization_size ();
   EXECUTE_IF_SET_IN_BITMAP (candidate_bitmap, 0, i, bi)
     if (bitmap_bit_p (should_scalarize_away_bitmap, i)
 	&& !bitmap_bit_p (cannot_scalarize_away_bitmap, i))
@@ -3498,7 +3602,9 @@ analyze_all_variable_accesses (void)
 	     access;
 	     access = access->next_grp)
 	  if (!can_totally_scalarize_forest_p (access)
-	      || !scalarizable_type_p (access->type, constant_decl_p (var)))
+	      || !totally_scalarizable_type_p (access->type,
+					       constant_decl_p (var),
+					       0, nullptr))
 	    {
 	      all_types_ok = false;
 	      break;
@@ -4845,3 +4951,45 @@ make_pass_sra (gcc::context *ctxt)
 {
   return new pass_sra (ctxt);
 }
+
+
+/* If type T cannot be totally scalarized, return false.  Otherwise return true
+   and push to the vector within PC offsets and lengths of all padding in the
+   type as total scalarization would encounter it.  */
+
+static bool
+check_ts_and_push_padding_to_vec (tree type, sra_padding_collecting *pc)
+{
+  if (!totally_scalarizable_type_p (type, true /* optimistic value */,
+				    0, pc))
+    return false;
+
+  pc->record_padding (tree_to_shwi (TYPE_SIZE (type)));
+  return true;
+}
+
+/* Given two types in an assignment, return true either if any one cannot be
+   totally scalarized or if they have padding (i.e. not copied bits)  */
+
+bool
+sra_total_scalarization_would_copy_same_data_p (tree t1, tree t2)
+{
+  sra_padding_collecting p1;
+  if (!check_ts_and_push_padding_to_vec (t1, &p1))
+    return true;
+
+  sra_padding_collecting p2;
+  if (!check_ts_and_push_padding_to_vec (t2, &p2))
+    return true;
+
+  unsigned l = p1.m_padding.length ();
+  if (l != p2.m_padding.length ())
+    return false;
+  for (unsigned i = 0; i < l; i++)
+    if (p1.m_padding[i].first != p2.m_padding[i].first
+	|| p1.m_padding[i].second != p2.m_padding[i].second)
+      return false;
+
+  return true;
+}
+
