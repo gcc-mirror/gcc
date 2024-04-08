@@ -308,6 +308,7 @@ public:
   tree type () const { return m_type; }
   void get_vrange (Value_Range &) const;
   bool equal_p (const vrange &) const;
+  bool equal_p (const ipa_vr &) const;
   const vrange_storage *storage () const { return m_storage; }
   void streamer_read (lto_input_block *, class data_in *);
   void streamer_write (output_block *) const;
@@ -1278,5 +1279,7 @@ ipa_range_set_and_normalize (vrange &r, tree val)
 
 bool ipa_return_value_range (Value_Range &range, tree decl);
 void ipa_record_return_value_range (Value_Range val);
+bool ipa_jump_functions_equivalent_p (ipa_jump_func *jf1, ipa_jump_func *jf2);
+
 
 #endif /* IPA_PROP_H */

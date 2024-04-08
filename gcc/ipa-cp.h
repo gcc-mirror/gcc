@@ -289,4 +289,6 @@ public:
   bool virt_call = false;
 };
 
+bool values_equal_for_ipcp_p (tree x, tree y);
+
 #endif /* IPA_CP_H */
