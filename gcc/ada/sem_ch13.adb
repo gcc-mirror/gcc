@@ -11107,6 +11107,7 @@ package body Sem_Ch13 is
          elsif A_Id in Aspect_CPU
                      | Aspect_Dynamic_Predicate
                      | Aspect_Ghost_Predicate
+                     | Aspect_Interrupt_Priority
                      | Aspect_Predicate
                      | Aspect_Priority
                      | Aspect_Static_Predicate
@@ -13366,6 +13367,7 @@ package body Sem_Ch13 is
                   if Get_Aspect_Id (Ritem) in Aspect_CPU
                                             | Aspect_Dynamic_Predicate
                                             | Aspect_Ghost_Predicate
+                                            | Aspect_Interrupt_Priority
                                             | Aspect_Predicate
                                             | Aspect_Static_Predicate
                                             | Aspect_Priority
@@ -15881,7 +15883,10 @@ package body Sem_Ch13 is
                      Set_Must_Not_Freeze (Expr);
                      Preanalyze_Spec_Expression (Expr, E);
 
-                  when Aspect_Priority =>
+                  when Aspect_CPU
+                     | Aspect_Interrupt_Priority
+                     | Aspect_Priority
+                  =>
                      Push_Type (E);
                      Preanalyze_Spec_Expression (Expr, Any_Integer);
                      Pop_Type (E);
