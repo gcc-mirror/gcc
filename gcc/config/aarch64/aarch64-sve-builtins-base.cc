@@ -2809,7 +2809,7 @@ public:
        version) is through the USDOT instruction but with the second and third
        inputs swapped.  */
     if (m_su)
-      e.rotate_inputs_left (1, 2);
+      e.rotate_inputs_left (1, 3);
     /* The ACLE function has the same order requirements as for svdot.
        While there's no requirement for the RTL pattern to have the same sort
        of order as that for <sur>dot_prod, it's easier to read.

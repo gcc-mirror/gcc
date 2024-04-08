@@ -6,7 +6,7 @@
 
 /*
 ** sudot_s32_tied1:
-**	usdot	z0\.s, z2\.b, z4\.b
+**	usdot	z0\.s, z4\.b, z2\.b
 **	ret
 */
 TEST_TRIPLE_Z (sudot_s32_tied1, svint32_t, svint8_t, svuint8_t,
@@ -17,7 +17,7 @@ TEST_TRIPLE_Z (sudot_s32_tied1, svint32_t, svint8_t, svuint8_t,
 ** sudot_s32_tied2:
 **	mov	(z[0-9]+)\.d, z0\.d
 **	movprfx	z0, z4
-**	usdot	z0\.s, z2\.b, \1\.b
+**	usdot	z0\.s, \1\.b, z2\.b
 **	ret
 */
 TEST_TRIPLE_Z_REV (sudot_s32_tied2, svint32_t, svint8_t, svuint8_t,
@@ -27,7 +27,7 @@ TEST_TRIPLE_Z_REV (sudot_s32_tied2, svint32_t, svint8_t, svuint8_t,
 /*
 ** sudot_w0_s32_tied:
 **	mov	(z[0-9]+\.b), w0
-**	usdot	z0\.s, z2\.b, \1
+**	usdot	z0\.s, \1, z2\.b
 **	ret
 */
 TEST_TRIPLE_ZX (sudot_w0_s32_tied, svint32_t, svint8_t, uint8_t,
@@ -37,7 +37,7 @@ TEST_TRIPLE_ZX (sudot_w0_s32_tied, svint32_t, svint8_t, uint8_t,
 /*
 ** sudot_9_s32_tied:
 **	mov	(z[0-9]+\.b), #9
-**	usdot	z0\.s, z2\.b, \1
+**	usdot	z0\.s, \1, z2\.b
 **	ret
 */
 TEST_TRIPLE_Z (sudot_9_s32_tied, svint32_t, svint8_t, uint8_t,
