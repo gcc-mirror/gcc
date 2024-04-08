@@ -1310,7 +1310,13 @@ fs::remove_all(const path& p)
     // Our work here is done.
     return 0;
   case ENOTDIR:
-  case ELOOP:
+  case ELOOP:  // POSIX says openat with O_NOFOLLOW sets ELOOP for a symlink.
+#if defined __FreeBSD__ || defined __DragonFly__
+  case EMLINK: // Used instead of ELOOP
+#endif
+#if defined __NetBSD__ && defined EFTYPE
+  case EFTYPE: // Used instead of ELOOP
+#endif
     // Not a directory, will remove below.
     break;
 #endif
@@ -1350,7 +1356,13 @@ fs::remove_all(const path& p, error_code& ec)
     ec.clear();
     return 0;
   case ENOTDIR:
-  case ELOOP:
+  case ELOOP:  // POSIX says openat with O_NOFOLLOW sets ELOOP for a symlink.
+#if defined __FreeBSD__ || defined __DragonFly__
+  case EMLINK: // Used instead of ELOOP
+#endif
+#if defined __NetBSD__ && defined EFTYPE
+  case EFTYPE: // Used instead of ELOOP
+#endif
     // Not a directory, will remove below.
     break;
 #endif
