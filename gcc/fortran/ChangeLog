@@ -1,3 +1,14 @@
+2024-04-06  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114474
+	* primary.cc (gfc_variable_attr): Catch variables used in structure
+	constructors within DATA statements that are still tagged with a
+	temporary type BT_PROCEDURE from match_actual_arg and which have the
+	target attribute, and fix their typespec.
+
 2024-04-02  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

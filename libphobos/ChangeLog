@@ -1,3 +1,7 @@
+2024-04-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Enable libphobos for Darwin >= 12.
+
 2023-11-07  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/core/cpuid.d (getCpuInfo0B): Limit number of times loop

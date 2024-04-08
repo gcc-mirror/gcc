@@ -1,3 +1,20 @@
+2024-04-06  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-03-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114474
+	* gfortran.dg/data_pointer_3.f90: New test.
+
+2024-04-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/114034
+	* g++.dg/gcov/gcov-dump-1.C: Remove extra -lgcov.
+	* g++.dg/gcov/gcov-dump-2.C: Likewise.
+
 2024-04-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
