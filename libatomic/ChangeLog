@@ -1,3 +1,7 @@
+2024-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerate.
+
 2024-04-04  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	PR target/113986

@@ -1,3 +1,17 @@
+2024-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111132
+	* constexpr.cc (get_function_named_in_call): Use
+	cp_get_fndecl_from_callee.
+	* cvt.cc (cp_get_fndecl_from_callee): If there's a
+	DECL_LOCAL_DECL_ALIAS, use it.
+
+2024-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114572
+	* cp-gimplify.cc (cxx_omp_clause_apply_fn): Call build_cplus_new
+	on build_call_a result if it has class type.
+
 2024-04-04  centurion  <centurion009@proton.me>
 
 	PR c++/114377

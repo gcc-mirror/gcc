@@ -1,3 +1,102 @@
+2024-04-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114617
+	* gm2-compiler/M2GenGCC.mod (CodeStatememt): Add quad trace.
+	(ResolveConstantExpressions): Add parameter p to FoldIfLess,
+	FoldIfGre, FoldIfLessEqu, FoldIfGreEqu, FoldIfEqu, FoldIfNotEqu,
+	FoldIfIn and FoldIfNotIn.
+	(CodeInline): Add constExpr variable and pass it to GetQuadOtok.
+	(CodeReturnValue): Ditto.
+	(CodeParam): Ditto.
+	(FoldStringLength): Ditto.
+	(FoldStringConvertM2nul): Ditto.
+	(FoldStringConvertCnul): Ditto.
+	(DeclaredOperandsBecomes): Ditto.
+	(TypeCheckBecomes): Ditto.
+	(PerformFoldBecomes): Ditto.
+	(CodeBecomes): Ditto.
+	(CheckElementSetTypes): Ditto.
+	(CodeBinarySet): Ditto.
+	(PerformCodeIfLess): Ditto.
+	(PerformCodeIfGre): Ditto.
+	(PerformCodeIfLessEqu): Ditto.
+	(PerformCodeIfGreEqu): Ditto.
+	(PerformCodeIfEqu): Ditto.
+	(PerformCodeIfNotEqu): Ditto.
+	(IsValidExpressionRelOp): Ditto.
+	(PerformCodeIfIn): Ditto.
+	(PerformCodeIfNotIn): Ditto.
+	(CodeXIndr): Ditto.
+	(QuadCondition): New procedure function.
+	(IsBooleanRelOpPattern): Ditto.
+	(FoldBooleanRelopPattern): Ditto.
+	(FoldIfGre): Check for boolean relop constant expression and
+	add parameter p.
+	(FoldIfLessEqu): Ditto.
+	(FoldIfIn): Ditto.
+	(FoldIfEqu): Ditto.
+	(FoldIfNotIn): Ditto.
+	(FoldIfGreEqu): New procedure.
+	(FoldIfNotEqu): Ditto.
+	* gm2-compiler/M2Optimize.mod (ReduceBranch): Add constExpr
+	variable and pass it to GetQuadOtok.
+	* gm2-compiler/M2Quads.def (IsBecomes): New procedure function.
+	(IsDummy): Ditto.
+	(IsQuadConstExpr): Ditto.
+	(SetQuadConstExpr): Ditto.
+	(GetQuadDest): New procedure.
+	(GetQuadOp1): New procedure.
+	(GetQuadOp2): New procedure.
+	(GetQuadOp3): New procedure.
+	(GetQuadOtok): New procedure.
+	(GetQuadOTypetok): New procedure.
+	(PutQuadOtok): New procedure.
+	(IsInConstParameters): New procedure function.
+	* gm2-compiler/M2Quads.mod (IsBecomes): New procedure function.
+	(IsDummy): Ditto.
+	(IsQuadConstExpr): Ditto.
+	(SetQuadConstExpr): Ditto.
+	(GetQuadDest): New procedure.
+	(GetQuadOp1): New procedure.
+	(GetQuadOp2): New procedure.
+	(GetQuadOp3): New procedure.
+	(GetQuadOtok): New procedure.
+	(GetQuadOTypetok): New procedure.
+	(PutQuadOtok): New procedure.
+	(IsInConstParameters): New procedure function.
+	(ConstStack): Remove to ...
+	(ConstExprStack): ... this.
+	(ConstParamStack): New variable and initialize.
+	(QuadFrame): New field ConstExpr.
+	(GetQuadOtok): Add parameter constExpr and assign.
+	(PutQuadOtok): Add constExpr parameter and assign.
+	(PutQuadOType): Ditto.
+	(GetQuadOTypetok): Ditto.
+	(EraseQuad): Assign ConstExpr to FALSE.
+	(FoldSubrange): Set ConstExpr to FALSE in BecomesOp.
+	(PushInConstParameters): New procedure.
+	(PopInConstParameters): New procedure.
+	(IsInConstParameters): New procedure function.
+	* gm2-compiler/M2SymInit.mod (IssueConditional): Add
+	constExpr boolean variable.
+	(CheckReadBeforeInitQuad): Ditto.
+	(trashParam): Ditto.
+	* gm2-compiler/P3Build.bnf (ConstExpression): Call
+	PushInConstExpression and PopInConstExpression.
+	(ConstSetOrQualidentOrFunction): Call
+	PushInConstParameters and PopInConstParameters.
+	* gm2-compiler/PCBuild.bnf (ConstExpression): Call
+	PushInConstExpression and PopInConstExpression.
+	* gm2-compiler/PHBuild.bnf: Ditto
+	* gm2-gcc/m2expr.cc (m2expr_BuildCondIfExpression): New
+	function.
+	* gm2-gcc/m2expr.def (BuildCondIfExpression): New prototype.
+	* gm2-gcc/m2expr.h (m2expr_BuildCondIfExpression): New function.
+
+2024-04-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Make-lang.in (m2.install-dvi): New rule.
+
 2024-04-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114565

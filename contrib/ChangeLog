@@ -1,3 +1,8 @@
+2024-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	8057f9aa1f7e70490064de796d7a8d42d446caf8 to IGNORED_COMMITS.
+
 2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unicode/gen_libstdcxx_unicode_data.py: Fix header of generated

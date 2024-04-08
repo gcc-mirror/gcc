@@ -1,3 +1,10 @@
+2024-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114588
+	* access-diagram.cc (access_diagram_impl::access_diagram_impl):
+	Replace hardcoded colors for valid_style and invalid_style with
+	calls to text_art::get_style_from_color_cap_name.
+
 2024-04-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model-manager.cc (maybe_undo_optimize_bit_field_compare):

@@ -1,3 +1,156 @@
+2024-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114624
+	* tree-scalar-evolution.cc (final_value_replacement_loop):
+	Get at the PHI arg location before releasing the PHI node.
+
+2024-04-08  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-shapes.cc (build_one): Pass
+	required_ext arg when invoke add function.
+	(build_th_loadstore): Ditto.
+	(struct vcreate_def): Ditto.
+	(struct read_vl_def): Ditto.
+	(struct vlenb_def): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (function_builder::add_function):
+	Introduce new arg required_ext to fill in the register func.
+	(function_builder::add_unique_function): Ditto.
+	(function_builder::add_overloaded_function): Ditto.
+	(expand_builtin): Leverage required_extensions_specified to
+	check if the required extension is provided.
+	* config/riscv/riscv-vector-builtins.h (reqired_ext_to_isa_name): New
+	func impl to convert the required_ext enum to the extension name.
+	(required_extensions_specified): New func impl to predicate if
+	the required extension is well feeded.
+
+2024-04-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Update coverage
+	specs.
+
+2024-04-08  demin.han  <demin.han@starfivetech.com>
+
+	* config/riscv/riscv-vector-costs.cc: Use length()
+
+2024-04-08  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-c.cc (struct pragma_intrinsic_flags): New
+	struct to hold all intrinisc related flags.
+	(riscv_pragma_intrinsic_flags_pollute): New func to pollute
+	the intrinsic flags and backup original flags.
+	(riscv_pragma_intrinsic_flags_restore): New func to restore
+	the flags from the backup intrinsic flags.
+	(riscv_pragma_intrinsic): Pollute the flags and register all
+	possible builtin types and functions, then restore and reinit.
+	* config/riscv/riscv-protos.h (reinit_builtins): New func
+	decl to reinit after flags pollution.
+	(riscv_option_override): New extern func decl.
+	* config/riscv/riscv-vector-builtins.cc (register_builtin_types_on_null):
+	New func to register builtin types if null.
+	(DEF_RVV_TYPE): Ditto.
+	(DEF_RVV_TUPLE_TYPE): Ditto.
+	(reinit_builtins): New func impl to reinit after flags pollution.
+	(expand_builtin): Return
+	target rtx after error_at.
+	* config/riscv/riscv.cc (riscv_vector_int_type_p): New predicate
+	func to tell one tree type is integer or not.
+	(riscv_vector_float_type_p): New predicate func to tell one tree
+	type is float or not.
+	(riscv_vector_element_bitsize): New func to get the element bitsize
+	of a vector tree type.
+	(riscv_vector_required_min_vlen): New func to get the required min vlen
+	of a vector tree type.
+	(riscv_validate_vector_type): New func to validate the tree type
+	is valid on flags.
+	(riscv_return_value_is_vector_type_p): Leverage the func
+	riscv_validate_vector_type to do the tree type validation.
+	(riscv_arguments_is_vector_type_p): Ditto.
+	(riscv_override_options_internal): Ditto.
+
+2024-04-08  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/112919
+	* config/loongarch/loongarch-def.cc (la664_align): Newly defined
+	function that sets alignment rules under the LA664 microarchitecture.
+	* config/loongarch/loongarch-opts.cc
+	(loongarch_target_option_override): If not optimizing for size, set
+	the default alignment to what the target wants.
+	* config/loongarch/loongarch-tune.h (struct loongarch_align): Add
+	new member variables jump and loop.
+
+2024-04-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114590
+	* config/i386/i386.md (x86_64_shld): Use explicit shift count in
+	AT&T syntax.
+	(x86_64_shld_ndd): Likewise.
+	(x86_shld): Likewise.
+	(x86_shld_ndd): Likewise.
+	(x86_64_shrd): Likewise.
+	(x86_64_shrd_ndd): Likewise.
+	(x86_shrd): Likewise.
+	(x86_shrd_ndd): Likewise.
+
+2024-04-06  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR middle-end/114599
+	* tree-inline.cc (add_local_variables): Copy cond_uids mappings.
+
+2024-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114588
+	* diagnostic-color.cc (color_dict): Add "valid" and "invalid" as
+	color capability names.
+	* doc/invoke.texi: Document them in description of GCC_COLORS.
+	* text-art/style.cc: Include "diagnostic-color.h".
+	(text_art::get_style_from_color_cap_name): New.
+	* text-art/types.h (get_style_from_color_cap_name): New decl.
+
+2024-04-05  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-ldp-fusion.cc (struct alias_walker):
+	Fix double space after const qualifier on valid ().
+
+2024-04-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113964
+	* ipa-param-manipulation.cc (ipa_param_adjustments::modify_call):
+	Force values obtined through pass-through maps to the expected
+	split type.
+
+2024-04-05  Mark Wielaard  <mark@klomp.org>
+
+	* common.opt.urls: Regenerate.
+
+2024-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114603
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_cnot<mode>): Replace
+	with...
+	(@aarch64_ptrue_cnot<mode>): ...this, requiring operand 1 to be
+	a ptrue.
+	(*cnot<mode>): Require operand 1 to be a ptrue.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svcnot_impl::expand):
+	Use aarch64_ptrue_cnot<mode> for _x operations that are predicated
+	with a ptrue.  Represent other _x operations as fully-defined _m
+	operations.
+
+2024-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114566
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): Don't clear
+	base_misaligned.
+
+2024-04-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114599
+	PR gcov-profile/114115
+	* symtab.cc (ifunc_ref_map): Do not use auto_bitmap.
+	(is_caller_ifunc_resolver): Optimize bitmap_bit_p/bitmap_set_bit
+	pair.
+	(symtab_node::check_ifunc_callee_symtab_nodes): Properly
+	allocate ifunc_ref_map here.
+
 2024-04-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/111571

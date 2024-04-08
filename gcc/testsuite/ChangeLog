@@ -1,3 +1,158 @@
+2024-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114624
+	* gcc.dg/torture/pr114624.c: New testcase.
+
+2024-04-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-7.c: Adjust
+	the error message for v extension.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-1.c: New test.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-10.c: New test.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-2.c: New test.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-3.c: New test.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-4.c: New test.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-5.c: New test.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-6.c: New test.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-7.c: New test.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-8.c: New test.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-9.c: New test.
+
+2024-04-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr109479-1.c: Adjust the existing test
+	scenarios and add new error check tests.
+	* gcc.target/riscv/rvv/base/pr109479-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr109479-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr109479-4.c: Diito.
+	* gcc.target/riscv/rvv/base/pr109479-5.c: Diito.
+	* gcc.target/riscv/rvv/base/pr109479-6.c: Diito.
+	* gcc.target/riscv/rvv/base/user-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-12.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-13.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-14.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-15.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/user-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-10.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-11.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-12.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-13.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-14.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-15.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-16.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-17.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-18.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-19.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-20.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-21.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-22.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-23.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-24.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-25.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-26.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-27.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-28.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-29.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-30.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-31.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-32.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-33.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-34.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-35.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-36.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-37.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-38.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-39.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-40.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-41.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-42.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-43.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-44.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-45.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-46.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-47.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-48.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-49.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-50.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-51.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-52.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-53.c: New test.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-9.c: New test.
+
+2024-04-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114617
+	* gm2/iso/const/pass/iso-const-pass.exp: New test.
+
+2024-04-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/114304
+	PR libfortran/105473
+	* gfortran.dg/pr105473.f90: Modify to verify new error message.
+	* gfortran.dg/pr114304.f90: New test.
+
+2024-04-06  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR middle-end/114599
+	* gcc.misc-tests/gcov-pr114599.c: New test.
+
+2024-04-06  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcc.misc-tests/gcov-19.c: Remove test.
+
+2024-04-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/scanasm.exp: Add 'LB*' to the local labels that are
+	ignored for Darwin.
+
+2024-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91079
+	DR 1881
+	* g++.dg/ext/is_std_layout5.C: New test.
+
+2024-04-05  Patrick O'Neill  <patrick@rivosinc.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113964
+	* gcc.dg/ipa/pr114247.c: New test.
+
+2024-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114603
+	* gcc.target/aarch64/sve/acle/general/cnot_1.c: New test.
+
+2024-04-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111132
+	* g++.dg/cpp0x/constexpr-redeclaration3.C: New test.
+	* g++.dg/cpp0x/constexpr-redeclaration4.C: New test.
+
+2024-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114566
+	* gcc.target/i386/avx512f-pr114566.c: New test.
+
+2024-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gdc.dg/dg.exp: Prune gcov*.d from the list of tests to run.
+	* gdc.dg/gcov.exp: Update copyright years.
+
+2024-04-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/pr93372-2.c: Tweak scan-assembler
+	checks to cover recent combine improvement.
+
+2024-04-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/debug/btf/btf-datasec-1.c: Adjust pattern for targets with
+	symbols having a leading underscore.
+
 2024-04-04  centurion  <centurion009@proton.me>
 
 	PR c++/114377

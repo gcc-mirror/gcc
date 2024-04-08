@@ -1,3 +1,7 @@
+2024-04-05  Marek Polacek  <polacek@redhat.com>
+
+	* c-warn.cc (warn_about_parentheses): Remove an #undef.
+
 2024-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/114469

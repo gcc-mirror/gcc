@@ -1,3 +1,12 @@
+2024-04-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/reverse-offload-sm30.c: Set 'GCC_COLORS' to the empty string.
+
+2024-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114572
+	* testsuite/libgomp.c++/pr114572.C: New test.
+
 2024-04-04  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (TR12): Honor post-TR12 directive name change; add
