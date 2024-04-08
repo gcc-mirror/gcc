@@ -274,6 +274,7 @@ esac
 case ${target}${target_min} in
     *-*-solaris2.11.[0-3]*		\
    | ia64*-*-*				\
+   | nios2*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target}${target_min} is obsolete." >&2
