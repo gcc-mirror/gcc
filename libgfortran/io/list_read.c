@@ -463,7 +463,7 @@ eat_separator (st_parameter_dt *dtp)
 
   dtp->u.p.comma_flag = 0;
   c = next_char (dtp);
-  if (c == ' ')
+  if (c == ' ' || c == '\t')
     {
       eat_spaces (dtp);
       c = next_char (dtp);
