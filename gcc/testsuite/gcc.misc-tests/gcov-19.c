@@ -1468,6 +1468,54 @@ mcdc026e (int a, int b, int c, int d, int e)
     return x + y;
 }
 
+__attribute__((always_inline))
+inline int
+mcdc027_inlined (int a)
+{
+    if (a)
+	x = a;
+    else
+	x = 1;
+
+    return a + 1;
+}
+
+/* Check that conditions in a function inlined into a function without
+   conditionals works.  */
+void
+mcdc027a (int a) /* conditions(1/2) false(0) */
+		 /* conditions(end) */
+{
+    mcdc027_inlined (a);
+}
+
+/* Check that conditions in a function inlined into a function with
+   conditionals works and that the conditions are not mixed up.  */
+void
+mcdc027b (int a) /* conditions(1/2) false(0) */
+		 /* conditions(end) */
+{
+    int v = mcdc027_inlined (a);
+
+    if (v > 10) /* conditions(1/2) true(0) */
+		/* condiitions(end) */
+	x = 10;
+}
+
+/* Check that conditions in a function inlined into a function with
+   conditionals works and that the conditions are not mixed up.  Use different
+   number of conditions to distinguish the expressions.  */
+void
+mcdc027c (int a, int b) /* conditions(1/2) false(0) */
+			/* conditions(end) */
+{
+    int v = mcdc027_inlined (a);
+
+    if (v > 10 && b) /* conditions(1/4) true(0 1) false(1) */
+		     /* condiitions(end) */
+	x = 10;
+}
+
 int main ()
 {
     mcdc001a (0, 1);
@@ -1721,6 +1769,10 @@ int main ()
     mcdc026e (1, 1, 1, 0, 1);
     mcdc026e (1, 1, 0, 0, 1);
     mcdc026e (1, 1, 1, 1, 1);
+
+    mcdc027a (1);
+    mcdc027b (1);
+    mcdc027c (1, 0);
 }
 
 /* { dg-final { run-gcov conditions { --conditions gcov-19.c } } } */
