@@ -1049,6 +1049,7 @@ instrument_decisions (array_slice<basic_block> expr, size_t condno,
     zerocounter[2] = zero;
 
     unsigned xi = 0;
+    bool increment = false;
     tree rhs = build_int_cst (gcov_type_node, 1ULL << xi);
     for (basic_block current : expr)
     {
@@ -1057,7 +1058,14 @@ instrument_decisions (array_slice<basic_block> expr, size_t condno,
 	    candidates.safe_push (zerocounter);
 	counters prev = resolve_counters (candidates);
 
-	int increment = 0;
+	if (increment)
+	{
+	    xi += 1;
+	    gcc_checking_assert (xi < sizeof (uint64_t) * BITS_PER_UNIT);
+	    rhs = build_int_cst (gcov_type_node, 1ULL << xi);
+	    increment = false;
+	}
+
 	for (edge e : current->succs)
 	{
 	    counters next = prev;
@@ -1072,7 +1080,7 @@ instrument_decisions (array_slice<basic_block> expr, size_t condno,
 		    tree m = build_int_cst (gcov_type_node, masks[2*xi + k]);
 		    next[2] = emit_bitwise_op (e, prev[2], BIT_IOR_EXPR, m);
 		}
-		increment = 1;
+		increment = true;
 	    }
 	    else if (e->flags & EDGE_COMPLEX)
 	    {
@@ -1085,10 +1093,12 @@ instrument_decisions (array_slice<basic_block> expr, size_t condno,
 	    }
 	    table.get_or_insert (e->dest).safe_push (next);
 	}
-	xi += increment;
-	if (increment)
-	    rhs = build_int_cst (gcov_type_node, 1ULL << xi);
     }
+
+    /* Since this is also the return value, the number of conditions, make sure
+       to include the increment of the last basic block.  */
+    if (increment)
+	xi += 1;
 
     gcc_assert (xi == bitmap_count_bits (core));
 
