@@ -2512,14 +2512,11 @@ loongarch_init_builtins (void)
   for (i = 0; i < ARRAY_SIZE (loongarch_builtins); i++)
     {
       d = &loongarch_builtins[i];
-      if (d->avail ())
-	{
-	  type = loongarch_build_function_type (d->function_type);
-	  loongarch_builtin_decls[i]
-	    = add_builtin_function (d->name, type, i, BUILT_IN_MD, NULL,
-				    NULL);
-	  loongarch_get_builtin_decl_index[d->icode] = i;
-	}
+      type = loongarch_build_function_type (d->function_type);
+      loongarch_builtin_decls[i]
+	= add_builtin_function (d->name, type, i, BUILT_IN_MD, NULL,
+			  NULL);
+      loongarch_get_builtin_decl_index[d->icode] = i;
     }
 }
 
@@ -3105,15 +3102,21 @@ loongarch_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 			  int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl;
-  unsigned int fcode, avail;
+  unsigned int fcode;
   const struct loongarch_builtin_description *d;
 
   fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   fcode = DECL_MD_FUNCTION_CODE (fndecl);
   gcc_assert (fcode < ARRAY_SIZE (loongarch_builtins));
   d = &loongarch_builtins[fcode];
-  avail = d->avail ();
-  gcc_assert (avail != 0);
+
+  if (!d->avail ())
+    {
+      error_at (EXPR_LOCATION (exp),
+		"built-in function %qD is not enabled", fndecl);
+      return target;
+    }
+
   switch (d->builtin_type)
     {
     case LARCH_BUILTIN_DIRECT:
