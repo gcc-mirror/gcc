@@ -739,6 +739,8 @@ is_miss_rate_acceptable (unsigned HOST_WIDE_INT cache_line_size,
   if (delta >= (HOST_WIDE_INT) cache_line_size)
     return false;
 
+  gcc_assert (align_unit > 0);
+
   miss_positions = 0;
   total_positions = (cache_line_size / align_unit) * distinct_iters;
   max_allowed_miss_positions = (ACCEPTABLE_MISS_RATE * total_positions) / 1000;
