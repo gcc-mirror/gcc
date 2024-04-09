@@ -7172,8 +7172,13 @@ gimple_lower_bitint (void)
 	  gimple_stmt_iterator gsi = gsi_after_labels (gimple_bb (stmt));
 	  while (gsi_stmt (gsi) != stmt)
 	    {
-	      arg_stmts.safe_push (gsi_stmt (gsi));
-	      gsi_remove (&gsi, false);
+	      if (is_gimple_debug (gsi_stmt (gsi)))
+		gsi_next (&gsi);
+	      else
+		{
+		  arg_stmts.safe_push (gsi_stmt (gsi));
+		  gsi_remove (&gsi, false);
+		}
 	    }
 	  gimple *g;
 	  basic_block bb = NULL;
