@@ -247,7 +247,15 @@ expand_ccmp_expr_1 (gimple *g, rtx_insn **prep_seq, rtx_insn **gen_seq)
 	      cost2 = seq_cost (prep_seq_2, speed_p);
 	      cost2 += seq_cost (gen_seq_2, speed_p);
 	    }
-	  if (cost2 < cost1)
+
+	  /* It's possible that one expansion succeeds and the other
+	     fails.
+	     For example, x86 has int ccmp but not fp ccmp, and so a
+	     combined fp and int comparison must be ordered such that
+	     the fp comparison happens first. The costs are not
+	     meaningful for failed expansions.  */
+
+	  if (ret2 && (!ret || cost2 < cost1))
 	    {
 	      *prep_seq = prep_seq_2;
 	      *gen_seq = gen_seq_2;
