@@ -1,0 +1,5 @@
+All of the Rust crates within libgrust should vendor their dependencies in order to allow cargo to build these crates without an internet connection.
+
+This can be achieved with the `cargo vendor` subcommand, available by default on modern version of `cargo`.
+
+If you update a dependency, remember to re-run `cargo vendor` in order to download the updated version of this library. This should be checked by `cargo build --offline` in our CI anyway, so there isn't much risk.
