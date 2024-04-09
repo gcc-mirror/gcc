@@ -421,8 +421,9 @@ rust/%.o: rust/lex/%.cc
 %.toml:
 	echo $@
 
+# TODO: Improve `cargo` invocation with host specific flags, possibly creating a $(CARGO) variable?
 rust/libformat_parser.a: $(srcdir)/../libgrust/libformat_parser/Cargo.toml $(wildcard $(srcdir)/../libgrust/libformat_parser/src/*.rs)
-	cargo build --manifest-path $(srcdir)/../libgrust/libformat_parser/Cargo.toml # FIXME: Not always release, right?
+	cd $(srcdir)/../libgrust/libformat_parser && cargo build --offline  # FIXME: Not always release, right?
 	cp $(srcdir)/../libgrust/libformat_parser/target/debug/liblibformat_parser.a $@
 
 # build all rust/parse files in rust folder, add cross-folder includes
