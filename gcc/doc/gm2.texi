@@ -398,14 +398,6 @@ it allows users to single step code into an intrinsic function.
 @c Modula-2
 @c turn on internal debugging of the compiler (internal switch)
 
-@c fdebug-trace-quad
-@c Modula-2
-@c turn on quadruple tracing (internal switch)
-
-@c fdebug-trace-api
-@c Modula-2
-@c turn on the Modula-2 api tracing (internal switch)
-
 @c fdebug-function-line-numbers
 @c Modula-2
 @c turn on the Modula-2 function line number generation (internal switch)
@@ -473,6 +465,11 @@ this option forces the use of the static version.
 @c flocation=
 @c Modula-2 Joined
 @c set all location values to a specific value (internal switch)
+
+@c fm2-debug-trace=
+@c Modula-2 Joined
+@c turn on trace debugging using a comma separated list:
+@c line,token,quad,all.
 
 @item -fm2-g
 improve the debugging experience for new programmers at the expense
