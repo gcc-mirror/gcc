@@ -11150,9 +11150,10 @@ package body Sem_Ch13 is
          Error_Msg_NE
            ("!visibility of aspect for& changes after freeze point",
             ASN, Ent);
+         Error_Msg_Sloc := Sloc (Freeze_Node (Ent));
          Error_Msg_NE
-           ("info: & is frozen here, (RM 13.1.1 (13/3))??",
-            Freeze_Node (Ent), Ent);
+           ("\& is frozen #, (RM 13.1.1 (13/3))",
+            ASN, Ent);
       end if;
    end Check_Aspect_At_End_Of_Declarations;
 
