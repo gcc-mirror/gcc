@@ -26279,72 +26279,72 @@
 (define_insn "aesenc"
   [(set (match_operand:V2DI 0 "register_operand" "=x,x,v")
 	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x,v")
-		       (match_operand:V2DI 2 "vector_operand" "xja,xm,vm")]
+		       (match_operand:V2DI 2 "vector_operand" "xja,xjm,vm")]
 		      UNSPEC_AESENC))]
   "TARGET_AES || (TARGET_VAES && TARGET_AVX512VL)"
   "@
    aesenc\t{%2, %0|%0, %2}
-   vaesenc\t{%2, %1, %0|%0, %1, %2}
+   * return TARGET_AES ? \"vaesenc\t{%2, %1, %0|%0, %1, %2}\" : \"%{evex%} vaesenc\t{%2, %1, %0|%0, %1, %2}\";
    vaesenc\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,aes,avx512vl")
+  [(set_attr "isa" "noavx,avx,vaes_avx512vl")
    (set_attr "type" "sselog1")
    (set_attr "addr" "gpr16,*,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex,evex")
+   (set_attr "prefix" "orig,maybe_evex,evex")
    (set_attr "btver2_decode" "double,double,double")
    (set_attr "mode" "TI")])
 
 (define_insn "aesenclast"
   [(set (match_operand:V2DI 0 "register_operand" "=x,x,v")
 	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x,v")
-		       (match_operand:V2DI 2 "vector_operand" "xja,xm,vm")]
+		       (match_operand:V2DI 2 "vector_operand" "xja,xjm,vm")]
 		      UNSPEC_AESENCLAST))]
   "TARGET_AES || (TARGET_VAES && TARGET_AVX512VL)"
   "@
    aesenclast\t{%2, %0|%0, %2}
-   vaesenclast\t{%2, %1, %0|%0, %1, %2}
+   * return TARGET_AES ? \"vaesenclast\t{%2, %1, %0|%0, %1, %2}\" : \"%{evex%} vaesenclast\t{%2, %1, %0|%0, %1, %2}\";
    vaesenclast\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,aes,avx512vl")
+  [(set_attr "isa" "noavx,avx,vaes_avx512vl")
    (set_attr "type" "sselog1")
    (set_attr "addr" "gpr16,*,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex,evex")
-   (set_attr "btver2_decode" "double,double,double") 
+   (set_attr "prefix" "orig,maybe_evex,evex")
+   (set_attr "btver2_decode" "double,double,double")
    (set_attr "mode" "TI")])
 
 (define_insn "aesdec"
   [(set (match_operand:V2DI 0 "register_operand" "=x,x,v")
 	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x,v")
-		       (match_operand:V2DI 2 "vector_operand" "xja,xm,vm")]
+		       (match_operand:V2DI 2 "vector_operand" "xja,xjm,vm")]
 		      UNSPEC_AESDEC))]
   "TARGET_AES || (TARGET_VAES && TARGET_AVX512VL)"
   "@
    aesdec\t{%2, %0|%0, %2}
-   vaesdec\t{%2, %1, %0|%0, %1, %2}
+   * return TARGET_AES ? \"vaesdec\t{%2, %1, %0|%0, %1, %2}\" : \"%{evex%} vaesdec\t{%2, %1, %0|%0, %1, %2}\";
    vaesdec\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,aes,avx512vl")
+  [(set_attr "isa" "noavx,avx,vaes_avx512vl")
    (set_attr "type" "sselog1")
    (set_attr "addr" "gpr16,*,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex,evex")
+   (set_attr "prefix" "orig,maybe_evex,evex")
    (set_attr "btver2_decode" "double,double,double") 
    (set_attr "mode" "TI")])
 
 (define_insn "aesdeclast"
   [(set (match_operand:V2DI 0 "register_operand" "=x,x,v")
 	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x,v")
-		       (match_operand:V2DI 2 "vector_operand" "xja,xm,vm")]
+		       (match_operand:V2DI 2 "vector_operand" "xja,xjm,vm")]
 		      UNSPEC_AESDECLAST))]
   "TARGET_AES || (TARGET_VAES && TARGET_AVX512VL)"
   "@
    aesdeclast\t{%2, %0|%0, %2}
-   vaesdeclast\t{%2, %1, %0|%0, %1, %2}
+   * return TARGET_AES ? \"vaesdeclast\t{%2, %1, %0|%0, %1, %2}\" : \"%{evex%} vaesdeclast\t{%2, %1, %0|%0, %1, %2}\";
    vaesdeclast\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,aes,avx512vl")
+  [(set_attr "isa" "noavx,avx,vaes_avx512vl")
    (set_attr "addr" "gpr16,*,*")
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex,evex")
+   (set_attr "prefix" "orig,maybe_evex,evex")
    (set_attr "btver2_decode" "double,double,double")
    (set_attr "mode" "TI")])
 
@@ -30246,44 +30246,60 @@
    [(set_attr ("prefix") ("evex"))])
 
 (define_insn "vaesdec_<mode>"
-  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=v")
+  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=x,v")
 	(unspec:VI1_AVX512VL_F
-	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "v")
-	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "vm")]
+	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "x,v")
+	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "xjm,vm")]
 	  UNSPEC_VAESDEC))]
   "TARGET_VAES"
-  "vaesdec\t{%2, %1, %0|%0, %1, %2}"
-)
+{
+  if (which_alternative == 0 && <MODE>mode == V16QImode)
+    return "%{evex%} vaesdec\t{%2, %1, %0|%0, %1, %2}";
+  else
+    return "vaesdec\t{%2, %1, %0|%0, %1, %2}";
+})
 
 (define_insn "vaesdeclast_<mode>"
-  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=v")
+  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=x,v")
 	(unspec:VI1_AVX512VL_F
-	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "v")
-	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "vm")]
+	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "x,v")
+	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "xjm,vm")]
 	  UNSPEC_VAESDECLAST))]
   "TARGET_VAES"
-  "vaesdeclast\t{%2, %1, %0|%0, %1, %2}"
-)
+{
+  if (which_alternative == 0 && <MODE>mode == V16QImode)
+    return "%{evex%} vaesdeclast\t{%2, %1, %0|%0, %1, %2}";
+  else
+    return "vaesdeclast\t{%2, %1, %0|%0, %1, %2}";
+})
 
 (define_insn "vaesenc_<mode>"
-  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=v")
+  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=x,v")
 	(unspec:VI1_AVX512VL_F
-	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "v")
-	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "vm")]
+	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "x,v")
+	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "xjm,vm")]
 	  UNSPEC_VAESENC))]
   "TARGET_VAES"
-  "vaesenc\t{%2, %1, %0|%0, %1, %2}"
-)
+{
+  if (which_alternative == 0 && <MODE>mode == V16QImode)
+    return "%{evex%} vaesenc\t{%2, %1, %0|%0, %1, %2}";
+  else
+    return "vaesenc\t{%2, %1, %0|%0, %1, %2}";
+})
 
 (define_insn "vaesenclast_<mode>"
-  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=v")
+  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=x,v")
 	(unspec:VI1_AVX512VL_F
-	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "v")
-	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "vm")]
+	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "x,v")
+	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "xjm,vm")]
 	  UNSPEC_VAESENCLAST))]
   "TARGET_VAES"
-  "vaesenclast\t{%2, %1, %0|%0, %1, %2}"
-)
+{
+  if (which_alternative == 0 && <MODE>mode == V16QImode)
+    return "%{evex%} vaesenclast\t{%2, %1, %0|%0, %1, %2}";
+  else
+    return "vaesenclast\t{%2, %1, %0|%0, %1, %2}";
+})
 
 (define_insn "vpclmulqdq_<mode>"
   [(set (match_operand:VI8_FVL 0 "register_operand" "=v")
