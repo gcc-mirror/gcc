@@ -13151,10 +13151,14 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	/* Ignore NTTP objects.  */
 	return false;
 
+      bool unscoped_enum_const_p = false;
       if (!(flags & WMB_Using) && CP_DECL_CONTEXT (decl) != data->ns)
 	{
 	  /* A using that lost its wrapper or an unscoped enum
 	     constant.  */
+	  /* FIXME: Ensure that unscoped enums are differentiated from
+	     'using enum' declarations when PR c++/114683 is fixed.  */
+	  unscoped_enum_const_p = (TREE_CODE (decl) == CONST_DECL);
 	  flags = WMB_Flags (flags | WMB_Using);
 	  if (DECL_MODULE_EXPORT_P (TREE_CODE (decl) == CONST_DECL
 				    ? TYPE_NAME (TREE_TYPE (decl))
@@ -13215,6 +13219,8 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
       if (flags & WMB_Using)
 	{
 	  decl = ovl_make (decl, NULL_TREE);
+	  if (!unscoped_enum_const_p)
+	    OVL_USING_P (decl) = true;
 	  if (flags & WMB_Export)
 	    OVL_EXPORT_P (decl) = true;
 	}
