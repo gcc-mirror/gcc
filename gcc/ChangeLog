@@ -1,3 +1,29 @@
+2024-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108007
+	PR ipa/112616
+	* cgraph.h (cgraph_edge): Add a parameter to
+	redirect_call_stmt_to_callee.
+	* ipa-param-manipulation.h (ipa_param_adjustments): Add a
+	parameter to modify_call.
+	(ipa_release_ssas_in_hash): Declare.
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): New
+	parameter killed_ssas, pass it to padjs->modify_call.
+	* ipa-param-manipulation.cc (purge_all_uses): New function.
+	(ipa_param_adjustments::modify_call): New parameter killed_ssas.
+	Instead of substituting uses, invoke purge_all_uses.  If
+	hash of killed SSAs has not been provided, create a temporary one
+	and release SSAs that have been added to it.
+	(compare_ssa_versions): New function.
+	(ipa_release_ssas_in_hash): Likewise.
+	* tree-inline.cc (redirect_all_calls): Create
+	id->killed_new_ssa_names earlier, pass it to edge redirection,
+	adjust a comment.
+	(copy_body): Release SSAs in id->killed_new_ssa_names.
+
 2024-04-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

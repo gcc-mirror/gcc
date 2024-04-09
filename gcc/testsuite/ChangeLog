@@ -1,3 +1,14 @@
+2024-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108007
+	PR ipa/112616
+	* gcc.dg/ipa/pr108007.c: New test.
+	* gcc.dg/ipa/pr112616.c: Likewise.
+	* g++.dg/ipa/pr113757.C: New file.
+
 2024-04-06  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
