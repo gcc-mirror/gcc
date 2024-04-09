@@ -4290,19 +4290,19 @@ walk_module_binding (tree binding, bitmap partitions,
 
 			count += callback (btype, flags, data);
 		      }
-		    bool hidden = STAT_DECL_HIDDEN_P (bind);
+		    bool part_hidden = STAT_DECL_HIDDEN_P (bind);
 		    for (ovl_iterator iter (MAYBE_STAT_DECL (STAT_DECL (bind)));
 			 iter; ++iter)
 		      {
 			if (iter.hidden_p ())
-			  hidden = true;
+			  part_hidden = true;
 			gcc_checking_assert
-			  (!(hidden && DECL_IS_UNDECLARED_BUILTIN (*iter)));
+			  (!(part_hidden && DECL_IS_UNDECLARED_BUILTIN (*iter)));
 
 			WMB_Flags flags = WMB_None;
 			if (maybe_dups)
 			  flags = WMB_Flags (flags | WMB_Dups);
-			if (decl_hidden)
+			if (part_hidden)
 			  flags = WMB_Flags (flags | WMB_Hidden);
 			if (iter.using_p ())
 			  {
@@ -4311,7 +4311,7 @@ walk_module_binding (tree binding, bitmap partitions,
 			      flags = WMB_Flags (flags | WMB_Export);
 			  }
 			count += callback (*iter, flags, data);
-			hidden = false;
+			part_hidden = false;
 		      }
 		  }
 	      }
