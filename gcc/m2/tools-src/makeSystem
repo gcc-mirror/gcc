@@ -101,8 +101,10 @@ displayEnd () {
 MINIMAL="-fno-scaffold-main -fno-scaffold-dynamic -fno-scaffold-static -fno-m2-plugin"
 
 rm -f ${OUTPUTFILE}
-if ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
-	       -S -fdump-system-exports ${SYSTEMMOD} -o /dev/null 2>&1 > /dev/null ; then
+${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
+	    -S -fdump-system-exports ${SYSTEMMOD} -o /dev/null 2>&1 > /dev/null
+res=$?
+if [ ${res} -eq 0 ] ; then
     types=`${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} -fno-m2-plugin -S -fdump-system-exports ${SYSTEMMOD} -o /dev/null | cut -f5 -d' '`
     touch ${OUTPUTFILE}
     displayStart
@@ -111,7 +113,9 @@ if ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
     displayBuiltinTypes
     displayEnd
 else
-    ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
-		-S -fdump-system-exports ${SYSTEMMOD} -o /dev/null
-    exit $?
+    echo "the command below failed:"
+    echo "${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} -S -fdump-system-exports ${SYSTEMMOD}"
+    echo "to debug the command use"
+    echo "${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} -S -fdump-system-exports ${SYSTEMMOD} -wrapper gdb,--args"
+    exit $res
 fi
