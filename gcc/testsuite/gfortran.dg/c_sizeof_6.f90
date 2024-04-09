@@ -8,7 +8,7 @@ program foo
 
    character(kind=c_char,len=1),parameter :: str2(4) = ["a","b","c","d"]
 
-   i = c_sizeof(str2(1:3)) ! { dg-error "must be an interoperable data" }
+   i = c_sizeof(str2(1:3))
 
    if (i /= 3) STOP 1
 

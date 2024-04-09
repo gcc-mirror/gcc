@@ -15,7 +15,7 @@ subroutine foo(x, y)
   ii = storage_size (x) ! { dg-error "Assumed-type argument at .1. is not permitted as actual argument to the intrinsic storage_size" }
 
   ii = sizeof (y) ! { dg-error "shall not be an assumed-size array" }
-  ii = c_sizeof (y) ! { dg-error "shall not be an assumed-size array" }
+  ii = c_sizeof (y) ! { dg-error "\[Aa\]ssumed-size array" }
   ii = storage_size (y) ! okay, element-size is known
 
   ii = sizeof (proc) ! { dg-error "shall not be a procedure" }
