@@ -51,7 +51,7 @@ mctor-dtor
 UrlSuffix(gcc/NDS32-Options.html#index-mctor-dtor)
 
 mrelax
-UrlSuffix(gcc/NDS32-Options.html#index-mrelax-4)
+UrlSuffix(gcc/NDS32-Options.html#index-mrelax-5)
 
 ; skipping UrlSuffix for 'munaligned-access' due to finding no URLs
 

@@ -84,7 +84,7 @@ mtune=
 UrlSuffix(gcc/SPARC-Options.html#index-mtune-15)
 
 mcmodel=
-UrlSuffix(gcc/SPARC-Options.html#index-mcmodel-1)
+UrlSuffix(gcc/SPARC-Options.html#index-mcmodel-2)
 
 ; skipping UrlSuffix for 'mdebug=' due to finding no URLs
 

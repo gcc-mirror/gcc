@@ -27011,6 +27011,7 @@ section (on some targets).  The default value is 0.
 Inline all block moves (such as calls to @code{memcpy} or structure copies)
 less than or equal to @var{n} bytes.  The default value of @var{n} is 1024.
 
+@opindex mcmodel
 @item -mcmodel=@var{code-model}
 Set the code model to one of:
 @table @samp
@@ -27073,6 +27074,8 @@ kernels, executables linked with @option{-static} or @option{-static-pie}.
 @option{-mdirect-extern-access} is not compatible with @option{-fPIC} or
 @option{-fpic}.
 
+@opindex mrelax
+@opindex mno-relax
 @item -mrelax
 @itemx -mno-relax
 Take (do not take) advantage of linker relaxations.  If
@@ -27085,6 +27088,8 @@ option and the conditional branch relaxation (it's required or the
 assembly code outputted by GCC may be rejected by the assembler because
 of a relocation overflow), @option{-mno-relax} otherwise.
 
+@opindex mpass-mrelax-to-as
+@opindex mno-pass-mrelax-to-as
 @item -mpass-mrelax-to-as
 @itemx -mno-pass-mrelax-to-as
 Pass (do not pass) the @option{-mrelax} or @option{-mno-relax} option
@@ -27201,7 +27206,7 @@ Use traditional TLS. This is the default.
 Use TLS descriptors.
 @end table
 
-@item loongarch-vect-unroll-limit
+@item --param loongarch-vect-unroll-limit=@var{n}
 The vectorizer will use available tuning information to determine whether it
 would be beneficial to unroll the main vectorized loop and by how much.  This
 parameter set's the upper bound of how much the vectorizer will unroll the main

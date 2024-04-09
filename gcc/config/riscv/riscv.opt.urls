@@ -49,7 +49,7 @@ UrlSuffix(gcc/RISC-V-Options.html#index-mstrict-align-4)
 ; skipping UrlSuffix for 'mexplicit-relocs' due to finding no URLs
 
 mrelax
-UrlSuffix(gcc/RISC-V-Options.html#index-mrelax-5)
+UrlSuffix(gcc/RISC-V-Options.html#index-mrelax-6)
 
 mcsr-check
 UrlSuffix(gcc/RISC-V-Options.html#index-mcsr-check)
