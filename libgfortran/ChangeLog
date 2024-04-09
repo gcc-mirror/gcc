@@ -1,3 +1,8 @@
+2024-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libfortran/114304
+	* io/list_read.c (eat_separator): Accept tab as alternative to space.
+
 2024-04-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/114304

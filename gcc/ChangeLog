@@ -1,3 +1,107 @@
+2024-04-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/112560
+	* combine.cc (try_combine): Replace cc_use_loc with the entire
+	new RTX only in case cc_use_loc satisfies COMPARISON_P predicate.
+	Otherwise scan the entire cc_use_loc RTX for CC reg to be updated
+	with a new mode.
+	* config/i386/i386.md (@pushf<mode>2): Allow all CC modes for
+	operand 1.
+
+2024-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.opt (--param=gcn-preferred-vectorization-factor):
+	New.
+	* config/gcn/gcn.cc (gcn_vectorize_preferred_simd_mode) Use it.
+	* doc/invoke.texi (Optimize Options): Document it.
+
+2024-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	'asm_goto_with_outputs'.  Add comment to 'lra'.
+
+2024-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113359
+	* ipa-icf-gimple.h (func_checker): New members
+	safe_for_total_scalarization_p, m_total_scalarization_limit_known_p
+	and m_total_scalarization_limit.
+	(func_checker::func_checker): Initialize new member variables.
+	* ipa-icf-gimple.cc: Include tree-sra.h.
+	(func_checker::func_checker): Initialize new member variables.
+	(func_checker::safe_for_total_scalarization_p): New function.
+	(func_checker::compare_operand): Use the new function.
+	* tree-sra.h (sra_get_max_scalarization_size): Declare.
+	(sra_total_scalarization_would_copy_same_data_p): Likewise.
+	* tree-sra.cc (prepare_iteration_over_array_elts): New function.
+	(class sra_padding_collecting): New.
+	(sra_padding_collecting::record_padding): Likewise.
+	(scalarizable_type_p): Rename to totally_scalarizable_type_p.  Add
+	ability to record padding when requested.
+	(totally_scalarize_subtree): Split out gathering information necessary
+	to iterate over array elements to prepare_iteration_over_array_elts.
+	Fix errornous early exit.
+	(analyze_all_variable_accesses): Adjust the call to
+	totally_scalarizable_type_p.  Move determining of total scalariation
+	size limit...
+	(sra_get_max_scalarization_size): ...here.
+	(check_ts_and_push_padding_to_vec): New function.
+	(sra_total_scalarization_would_copy_same_data_p): Likewise.
+
+2024-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113907
+	* ipa-prop.h (class ipa_vr): Declare new overload of a member function
+	equal_p.
+	(ipa_jump_functions_equivalent_p): Declare.
+	* ipa-prop.cc (ipa_vr::equal_p): New function.
+	(ipa_agg_pass_through_jf_equivalent_p): Likewise.
+	(ipa_agg_jump_functions_equivalent_p): Likewise.
+	(ipa_jump_functions_equivalent_p): Likewise.
+	* ipa-cp.h (values_equal_for_ipcp_p): Declare.
+	* ipa-cp.cc (values_equal_for_ipcp_p): Make function public.
+	* ipa-icf-gimple.cc: Include alloc-pool.h, symbol-summary.h, sreal.h,
+	ipa-cp.h and ipa-prop.h.
+	(func_checker::compare_gimple_call): Comapre jump functions.
+
+2024-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114607
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svusdot_impl::expand): Fix botched attempt to swap the operands
+	for svsudot.
+
+2024-04-08  Tatsuyuki Ishi  <ishitatsuyuki@gmail.com>
+
+	* config/riscv/riscv.opt: Add -mtls-dialect to configure TLS flavor.
+	* config.gcc: Add --with-tls configuration option to change the
+	default TLS flavor.
+	* config/riscv/riscv.h: Add TARGET_TLSDESC determined from
+	-mtls-dialect and with_tls defaults.
+	* config/riscv/riscv-opts.h: Define enum riscv_tls_type for the
+	two TLS flavors.
+	* config/riscv/riscv-protos.h: Define SYMBOL_TLSDESC symbol type.
+	* config/riscv/riscv.md: Add instruction sequence for TLSDESC.
+	* config/riscv/riscv.cc (riscv_symbol_insns): Add instruction
+	sequence length data for TLSDESC.
+	(riscv_legitimize_tls_address): Add lowering of TLSDESC.
+	* doc/install.texi: Document --with-tls for RISC-V.
+	* doc/invoke.texi: Document -mtls-dialect for RISC-V.
+
+2024-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114605
+	* config/s390/s390.cc (s390_const_int_pool_entry_p): Punt
+	if mem doesn't have MODE_INT mode, or pool constant doesn't
+	have MODE_INT mode, or if pool constant mode is smaller than
+	mem mode.  If mem mode is different from pool constant mode,
+	try to simplify subreg.  If that doesn't work, punt, if it
+	does, use the simplified constant instead of the constant pool
+	constant.
+	* config/s390/s390.md (movdi from const pool peephole): If
+	either low or high 32-bit part is zero, just emit move insn
+	instead of move + ior.
+
 2024-04-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/114624

@@ -1,3 +1,105 @@
+2024-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/gcn/cond_fmaxnm_1.c: Specify
+	'--param=gcn-preferred-vectorization-factor=64'.
+	* gcc.target/gcn/cond_fmaxnm_2.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_3.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_4.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_5.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_6.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_7.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_8.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_1.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_2.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_3.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_4.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_5.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_6.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_7.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_8.c: Likewise.
+	* gcc.target/gcn/cond_shift_3.c: Likewise.
+	* gcc.target/gcn/cond_shift_4.c: Likewise.
+	* gcc.target/gcn/cond_shift_8.c: Likewise.
+	* gcc.target/gcn/cond_shift_9.c: Likewise.
+	* gcc.target/gcn/cond_smax_1.c: Likewise.
+	* gcc.target/gcn/cond_smin_1.c: Likewise.
+	* gcc.target/gcn/cond_umax_1.c: Likewise.
+	* gcc.target/gcn/cond_umin_1.c: Likewise.
+	* gcc.target/gcn/simd-math-1.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short.c: Likewise.
+	* gcc.target/gcn/simd-math-5.c: Likewise.
+	* gcc.target/gcn/smax_1.c: Likewise.
+	* gcc.target/gcn/smin_1.c: Likewise.
+	* gcc.target/gcn/umax_1.c: Likewise.
+	* gcc.target/gcn/umin_1.c: Likewise.
+
+2024-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/target-supports.exp (check_effective_target_lra): Add
+	comment.
+	(check_effective_target_asm_goto_with_outputs): New.
+	* gcc.c-torture/compile/asmgoto-2.c: Use it.
+	* gcc.c-torture/compile/asmgoto-5.c: Likewise.
+	* gcc.c-torture/compile/asmgoto-6.c: Likewise.
+	* gcc.c-torture/compile/pr98096.c: Likewise.
+	* gcc.dg/pr100590.c: Likewise.
+	* gcc.dg/pr107385.c: Likewise.
+	* gcc.dg/pr108095.c: Likewise.
+	* gcc.dg/pr97954.c: Likewise.
+	* gcc.dg/torture/pr100329.c: Likewise.
+	* gcc.dg/torture/pr100398.c: Likewise.
+	* gcc.dg/torture/pr100519.c: Likewise.
+	* gcc.dg/torture/pr110422.c: Likewise.
+	* gcc.dg/pr110079.c: Special-case nvptx target.
+
+2024-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libfortran/114304
+	* gfortran.dg/pr114304-2.f90: New test.
+
+2024-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113359
+	* gcc.dg/lto/pr113359-1_0.c: New.
+	* gcc.dg/lto/pr113359-1_1.c: Likewise.
+	* gcc.dg/lto/pr113359-2_0.c: Likewise.
+	* gcc.dg/lto/pr113359-2_1.c: Likewise.
+	* gcc.dg/lto/pr113359-3_0.c: Likewise.
+	* gcc.dg/lto/pr113359-3_1.c: Likewise.
+	* gcc.dg/lto/pr113359-4_0.c: Likewise.
+	* gcc.dg/lto/pr113359-4_1.c: Likewise.
+	* gcc.dg/lto/pr113359-5_0.c: Likewise.
+	* gcc.dg/lto/pr113359-5_1.c: Likewise.
+
+2024-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113907
+	* gcc.dg/lto/pr113907_0.c: New.
+	* gcc.dg/lto/pr113907_1.c: Likewise.
+	* gcc.dg/lto/pr113907_2.c: Likewise.
+
+2024-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114607
+	* gcc.target/aarch64/sve/acle/asm/sudot_s32.c: New test.
+
+2024-04-08  Tatsuyuki Ishi  <ishitatsuyuki@gmail.com>
+
+	* gcc.target/riscv/tls_1.x: Add TLSDESC GD test case.
+	* gcc.target/riscv/tlsdesc.c: Same as above.
+
+2024-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114605
+	* gcc.dg/pr114605.c: New test.
+
+2024-04-08  Swinney, Jonathan  <jswinney@amazon.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x4.c: Exit with a nonzero
+	code if the test fails.
+
 2024-04-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/114624

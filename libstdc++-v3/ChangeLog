@@ -1,3 +1,48 @@
+2024-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114519
+	* include/bits/unicode.h (_Utf8_view) [!__cpp_char8_t]: Define
+	using char instead of char8_t.
+	* testsuite/ext/unicode/view.cc: Use u8""sv literals to create
+	string views, instead of std::u8string_view.
+
+2024-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/integer_comparisons/equal_neg.cc: Use
+	no-opts selector for errors that depend on -fchar8_t.
+	* testsuite/20_util/integer_comparisons/greater_equal_neg.cc:
+	Likewise.
+	* testsuite/20_util/integer_comparisons/greater_neg.cc:
+	Likewise.
+	* testsuite/20_util/integer_comparisons/in_range_neg.cc:
+	Likewise.
+	* testsuite/20_util/integer_comparisons/less_equal_neg.cc:
+	Likewise.
+	* testsuite/20_util/integer_comparisons/less_neg.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/not_equal_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/hash/hash_char8_t.cc: Skip
+	if -fno-char8_t is used.
+	* testsuite/21_strings/headers/cuchar/functions_std_cxx20.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/deleted.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/deleted.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/factory/u8path-depr.cc: Use
+	char for u8 literal if char8_t is not available.
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Check
+	__cpp_char8_t.
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Likewise.
+	* testsuite/29_atomics/headers/atomic/types_std_c++20_neg.cc:
+	Remove check for _GLIBCXX_USE_CHAR8_T.
+
+2024-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/from_chars/1_neg.cc: Add char8_t cases,
+	using a struct of that name if -fno-char8_t is active.
+	* testsuite/20_util/from_chars/1_c++20_neg.cc: Removed.
+
 2024-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104606

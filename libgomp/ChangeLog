@@ -1,3 +1,11 @@
+2024-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-gcn.c (init_hsa_context): Add and handle
+	'bool probe' parameter.  Adjust all users; errors during device
+	probing are fatal.
+	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Aside from
+	'CUDA_ERROR_NO_DEVICE', errors during device probing are fatal.
+
 2024-04-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.c/reverse-offload-sm30.c: Set 'GCC_COLORS' to the empty string.
