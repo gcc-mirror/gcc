@@ -429,19 +429,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR6");
   if ((flags & OPTION_MASK_POPCNTD) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR7");
-  /* Note that the OPTION_MASK_DIRECT_MOVE flag is automatically
-     turned on in the following condition:
-     1. TARGET_P8_VECTOR is enabled and OPTION_MASK_DIRECT_MOVE is not
-        explicitly disabled.
-        Hereafter, the OPTION_MASK_DIRECT_MOVE flag is considered to
-        have been turned on explicitly.
-     Note that the OPTION_MASK_DIRECT_MOVE flag is automatically
-     turned off in any of the following conditions:
-     1. TARGET_HARD_FLOAT, TARGET_ALTIVEC, or TARGET_VSX is explicitly
-	disabled and OPTION_MASK_DIRECT_MOVE was not explicitly
-	enabled.
-     2. TARGET_VSX is off.  */
-  if ((flags & OPTION_MASK_DIRECT_MOVE) != 0)
+  if ((flags & OPTION_MASK_P8_VECTOR) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR8");
   if ((flags & OPTION_MASK_MODULO) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR9");
