@@ -29104,7 +29104,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(unspec:V4SI
 	  [(match_operand:V4SI 1 "register_operand" "0")
-	   (match_operand:V4SI 2 "vector_operand" "xBm")]
+	   (match_operand:V4SI 2 "vector_operand" "xja")]
 	  UNSPEC_SHA1MSG1))]
   "TARGET_SHA"
   "sha1msg1\t{%2, %0|%0, %2}"
@@ -29115,7 +29115,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(unspec:V4SI
 	  [(match_operand:V4SI 1 "register_operand" "0")
-	   (match_operand:V4SI 2 "vector_operand" "xBm")]
+	   (match_operand:V4SI 2 "vector_operand" "xja")]
 	  UNSPEC_SHA1MSG2))]
   "TARGET_SHA"
   "sha1msg2\t{%2, %0|%0, %2}"
@@ -29126,7 +29126,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(unspec:V4SI
 	  [(match_operand:V4SI 1 "register_operand" "0")
-	   (match_operand:V4SI 2 "vector_operand" "xBm")]
+	   (match_operand:V4SI 2 "vector_operand" "xja")]
 	  UNSPEC_SHA1NEXTE))]
   "TARGET_SHA"
   "sha1nexte\t{%2, %0|%0, %2}"
@@ -29137,7 +29137,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(unspec:V4SI
 	  [(match_operand:V4SI 1 "register_operand" "0")
-	   (match_operand:V4SI 2 "vector_operand" "xBm")
+	   (match_operand:V4SI 2 "vector_operand" "xja")
 	   (match_operand:SI 3 "const_0_to_3_operand")]
 	  UNSPEC_SHA1RNDS4))]
   "TARGET_SHA"
@@ -29150,7 +29150,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(unspec:V4SI
 	  [(match_operand:V4SI 1 "register_operand" "0")
-	   (match_operand:V4SI 2 "vector_operand" "xBm")]
+	   (match_operand:V4SI 2 "vector_operand" "xja")]
 	  UNSPEC_SHA256MSG1))]
   "TARGET_SHA"
   "sha256msg1\t{%2, %0|%0, %2}"
@@ -29161,7 +29161,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(unspec:V4SI
 	  [(match_operand:V4SI 1 "register_operand" "0")
-	   (match_operand:V4SI 2 "vector_operand" "xBm")]
+	   (match_operand:V4SI 2 "vector_operand" "xja")]
 	  UNSPEC_SHA256MSG2))]
   "TARGET_SHA"
   "sha256msg2\t{%2, %0|%0, %2}"
@@ -29172,7 +29172,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(unspec:V4SI
 	  [(match_operand:V4SI 1 "register_operand" "0")
-	   (match_operand:V4SI 2 "vector_operand" "xBm")
+	   (match_operand:V4SI 2 "vector_operand" "xja")
 	   (match_operand:V4SI 3 "register_operand" "Yz")]
 	  UNSPEC_SHA256RNDS2))]
   "TARGET_SHA"
@@ -30591,9 +30591,9 @@
 
 (define_insn "*encodekey128u32"
   [(match_parallel 2 "encodekey128_operation"
-    [(set (match_operand:SI 0 "register_operand" "=r")
+    [(set (match_operand:SI 0 "register_operand" "=jr")
 	  (unspec_volatile:SI
-	    [(match_operand:SI   1 "register_operand" "r")
+	    [(match_operand:SI   1 "register_operand" "jr")
 	     (reg:V2DI XMM0_REG)]
 	    UNSPECV_ENCODEKEY128U32))])]
   "TARGET_KL"
@@ -30648,9 +30648,9 @@
 
 (define_insn "*encodekey256u32"
   [(match_parallel 2 "encodekey256_operation"
-    [(set (match_operand:SI 0 "register_operand" "=r")
+    [(set (match_operand:SI 0 "register_operand" "=jr")
 	  (unspec_volatile:SI
-	    [(match_operand:SI   1 "register_operand" "r")
+	    [(match_operand:SI   1 "register_operand" "jr")
 	     (reg:V2DI XMM0_REG)
 	     (reg:V2DI XMM1_REG)]
 	    UNSPECV_ENCODEKEY256U32))])]
@@ -30671,7 +30671,7 @@
 (define_insn "aes<aesklvariant>u8"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(unspec_volatile:V2DI [(match_operand:V2DI 1 "register_operand" "0")
-			       (match_operand:BLK   2 "memory_operand" "m")]
+			       (match_operand:BLK   2 "memory_operand" "jm")]
 			      AESDECENCKL))
    (set (reg:CCZ FLAGS_REG)
 	(unspec_volatile:CCZ [(match_dup 1) (match_dup 2)] AESDECENCKL))]
@@ -30735,7 +30735,7 @@
   [(match_parallel 1 "aeswidekl_operation"
     [(set (reg:CCZ FLAGS_REG)
 	  (unspec_volatile:CCZ
-	    [(match_operand:BLK 0 "memory_operand" "m")]
+	    [(match_operand:BLK 0 "memory_operand" "jm")]
 	    AESDECENCWIDEKL))])]
   "TARGET_WIDEKL"
   "aes<aeswideklvariant>\t%0"
