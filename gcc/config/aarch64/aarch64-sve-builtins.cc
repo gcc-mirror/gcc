@@ -933,14 +933,19 @@ tree acle_svprfop;
 /* The list of all registered function decls, indexed by code.  */
 static GTY(()) vec<registered_function *, va_gc> *registered_functions;
 
+/* Stores the starting function index for each pragma handler.  */
+static unsigned int initial_indexes[NUM_PRAGMA_HANDLERS];
+
 /* All registered function decls, hashed on the function_instance
    that they implement.  This is used for looking up implementations of
    overloaded functions.  */
 static hash_table<registered_function_hasher> *function_table;
 
-/* Maps all overloaded function names that we've registered so far to
-   their associated function_instances.  The map keys are IDENTIFIER_NODEs.  */
-static GTY(()) hash_map<tree, registered_function *> *overload_names;
+/* Index 0 maps all overloaded function names that we've registered so far to
+   their associated function_instances.  Index 1 does the same for functions
+   that we've skipped over without registering.  In both cases, the map keys
+   are IDENTIFIER_NODEs.  */
+static GTY(()) hash_map<tree, registered_function *> *overload_names[2];
 
 /* True if we've already complained about attempts to use functions
    when the required extension is disabled.  */
@@ -1348,10 +1353,21 @@ sve_switcher::~sve_switcher ()
   maximum_field_alignment = m_old_maximum_field_alignment;
 }
 
-function_builder::function_builder ()
+function_builder::function_builder (handle_pragma_index pragma_index,
+				    bool function_nulls)
 {
   m_overload_type = build_function_type (void_type_node, void_list_node);
   m_direct_overloads = lang_GNU_CXX ();
+
+  if (initial_indexes[pragma_index] == 0)
+    {
+      unsigned int index = vec_safe_length (registered_functions);
+      initial_indexes[pragma_index] = index;
+    }
+
+  m_function_index = initial_indexes[pragma_index];
+  m_function_nulls = function_nulls;
+
   gcc_obstack_init (&m_string_obstack);
 }
 
@@ -1515,9 +1531,8 @@ function_builder::add_function (const function_instance &instance,
 				bool overloaded_p,
 				bool placeholder_p)
 {
-  unsigned int code = vec_safe_length (registered_functions);
-  code = (code << AARCH64_BUILTIN_SHIFT) | AARCH64_BUILTIN_SVE;
-
+  unsigned int length = vec_safe_length (registered_functions);
+  unsigned int code = (m_function_index << AARCH64_BUILTIN_SHIFT) | AARCH64_BUILTIN_SVE;
   /* We need to be able to generate placeholders to enusre that we have a
      consistent numbering scheme for function codes between the C and C++
      frontends, so that everything ties up in LTO.
@@ -1531,7 +1546,7 @@ function_builder::add_function (const function_instance &instance,
      nodes and remove the target hook. For now, however, we need to appease the
      validation and return a non-NULL, non-error_mark_node node, so we
      arbitrarily choose integer_zero_node.  */
-  tree decl = placeholder_p
+  tree decl = placeholder_p || m_function_nulls
     ? integer_zero_node
     : simulate_builtin_function_decl (input_location, name, fntype,
 				      code, NULL, attrs);
@@ -1541,7 +1556,11 @@ function_builder::add_function (const function_instance &instance,
   rfn.decl = decl;
   rfn.required_extensions = required_extensions;
   rfn.overloaded_p = overloaded_p;
-  vec_safe_push (registered_functions, &rfn);
+  if (m_function_index >= length)
+    vec_safe_push (registered_functions, &rfn);
+  else
+    (*registered_functions)[m_function_index] = &rfn;
+  m_function_index++;
 
   return rfn;
 }
@@ -1570,11 +1589,14 @@ add_unique_function (const function_instance &instance,
 					   required_extensions, false, false);
 
   /* Enter the function into the hash table.  */
-  hashval_t hash = instance.hash ();
-  registered_function **rfn_slot
-    = function_table->find_slot_with_hash (instance, hash, INSERT);
-  gcc_assert (!*rfn_slot);
-  *rfn_slot = &rfn;
+  if (!m_function_nulls)
+    {
+      hashval_t hash = instance.hash ();
+      registered_function **rfn_slot
+	= function_table->find_slot_with_hash (instance, hash, INSERT);
+      gcc_assert (!*rfn_slot);
+      *rfn_slot = &rfn;
+    }
 
   /* Also add the function under its overloaded alias, if we want
      a separate decl for each instance of an overloaded function.  */
@@ -1605,12 +1627,13 @@ function_builder::
 add_overloaded_function (const function_instance &instance,
 			 aarch64_feature_flags required_extensions)
 {
-  if (!overload_names)
-    overload_names = hash_map<tree, registered_function *>::create_ggc ();
+  auto &name_map = overload_names[m_function_nulls];
+  if (!name_map)
+    name_map = hash_map<tree, registered_function *>::create_ggc ();
 
   char *name = get_name (instance, true);
   tree id = get_identifier (name);
-  if (registered_function **map_value = overload_names->get (id))
+  if (registered_function **map_value = name_map->get (id))
     gcc_assert ((*map_value)->instance == instance
 		&& ((*map_value)->required_extensions
 		    & ~required_extensions) == 0);
@@ -1619,7 +1642,7 @@ add_overloaded_function (const function_instance &instance,
       registered_function &rfn
 	= add_function (instance, name, m_overload_type, NULL_TREE,
 			required_extensions, true, m_direct_overloads);
-      overload_names->put (id, &rfn);
+      name_map->put (id, &rfn);
     }
   obstack_free (&m_string_obstack, name);
 }
@@ -4526,9 +4549,9 @@ init_builtins ()
   register_builtin_types ();
   if (in_lto_p)
     {
-      handle_arm_sve_h ();
-      handle_arm_sme_h ();
-      handle_arm_neon_sve_bridge_h ();
+      handle_arm_sve_h (false);
+      handle_arm_sme_h (false);
+      handle_arm_neon_sve_bridge_h (false);
     }
 }
 
@@ -4630,7 +4653,7 @@ register_svprfop ()
 
 /* Implement #pragma GCC aarch64 "arm_sve.h".  */
 void
-handle_arm_sve_h ()
+handle_arm_sve_h (bool function_nulls_p)
 {
   if (function_table)
     {
@@ -4657,17 +4680,20 @@ handle_arm_sve_h ()
 
   /* Define the functions.  */
   function_table = new hash_table<registered_function_hasher> (1023);
-  function_builder builder;
+  function_builder builder (arm_sve_handle, function_nulls_p);
   for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
     builder.register_function_group (function_groups[i]);
 }
 
 /* Implement #pragma GCC aarch64 "arm_neon_sve_bridge.h".  */
 void
-handle_arm_neon_sve_bridge_h ()
+handle_arm_neon_sve_bridge_h (bool function_nulls_p)
 {
+  if (initial_indexes[arm_sme_handle] == 0)
+    handle_arm_sme_h (true);
+
   /* Define the functions.  */
-  function_builder builder;
+  function_builder builder (arm_neon_sve_handle, function_nulls_p);
   for (unsigned int i = 0; i < ARRAY_SIZE (neon_sve_function_groups); ++i)
     builder.register_function_group (neon_sve_function_groups[i]);
 }
@@ -4684,7 +4710,7 @@ builtin_decl (unsigned int code, bool)
 
 /* Implement #pragma GCC aarch64 "arm_sme.h".  */
 void
-handle_arm_sme_h ()
+handle_arm_sme_h (bool function_nulls_p)
 {
   if (!function_table)
     {
@@ -4693,17 +4719,9 @@ handle_arm_sme_h ()
       return;
     }
 
-  static bool initialized_p;
-  if (initialized_p)
-    {
-      error ("duplicate definition of %qs", "arm_sme.h");
-      return;
-    }
-  initialized_p = true;
-
   sme_switcher sme;
 
-  function_builder builder;
+  function_builder builder (arm_sme_handle, function_nulls_p);
   for (unsigned int i = 0; i < ARRAY_SIZE (sme_function_groups); ++i)
     builder.register_function_group (sme_function_groups[i]);
 }

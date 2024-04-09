@@ -123,6 +123,15 @@ enum units_index
   UNITS_vectors
 };
 
+/* Enumerates the pragma handlers.  */
+enum handle_pragma_index
+{
+  arm_sve_handle,
+  arm_sme_handle,
+  arm_neon_sve_handle,
+  NUM_PRAGMA_HANDLERS
+};
+
 /* Describes the various uses of a governing predicate.  */
 enum predication_index
 {
@@ -419,7 +428,7 @@ class registered_function;
 class function_builder
 {
 public:
-  function_builder ();
+  function_builder (handle_pragma_index, bool);
   ~function_builder ();
 
   void add_unique_function (const function_instance &, tree,
@@ -453,6 +462,12 @@ private:
 
   /* Used for building up function names.  */
   obstack m_string_obstack;
+
+  /* Used to store the index for the current function.  */
+  unsigned int m_function_index;
+
+  /* Stores the mode of the current pragma handler.  */
+  bool m_function_nulls;
 };
 
 /* A base class for handling calls to built-in functions.  */

@@ -1014,9 +1014,9 @@ bool aarch64_general_check_builtin_call (location_t, vec<location_t>,
 
 namespace aarch64_sve {
   void init_builtins ();
-  void handle_arm_sve_h ();
-  void handle_arm_sme_h ();
-  void handle_arm_neon_sve_bridge_h ();
+  void handle_arm_sve_h (bool);
+  void handle_arm_sme_h (bool);
+  void handle_arm_neon_sve_bridge_h (bool);
   tree builtin_decl (unsigned, bool);
   bool builtin_type_p (const_tree);
   bool builtin_type_p (const_tree, unsigned int *, unsigned int *);
