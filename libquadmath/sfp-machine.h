@@ -18,6 +18,11 @@
 #define _FP_NANSIGN_Q 1
 #define _FP_KEEPNANFRACP 1
 #define _FP_TININESS_AFTER_ROUNDING 0
+#ifndef __BYTE_ORDER
+#define __LITTLE_ENDIAN __ORDER_LITTLE_ENDIAN__
+#define __BIG_ENDIAN __ORDER_BIG_ENDIAN__
+#define __BYTE_ORDER __BYTE_ORDER__
+#endif
 #define _FP_DECL_EX \
   unsigned int fp_roundmode __attribute__ ((unused)) = FP_RND_NEAREST;
 #define FP_ROUNDMODE fp_roundmode
