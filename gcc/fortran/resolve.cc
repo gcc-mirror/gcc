@@ -16700,15 +16700,6 @@ resolve_symbol (gfc_symbol *sym)
 
   if (sym->param_list)
     resolve_pdt (sym);
-
-  if (!sym->attr.referenced
-      && (sym->ts.type == BT_CLASS || sym->ts.type == BT_DERIVED))
-    {
-      gfc_expr *final_expr = gfc_lval_expr_from_sym (sym);
-      if (gfc_is_finalizable (final_expr->ts.u.derived, NULL))
-	gfc_set_sym_referenced (sym);
-      gfc_free_expr (final_expr);
-    }
 }
 
 
