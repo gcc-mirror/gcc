@@ -1015,7 +1015,6 @@ new_tree_live_info (var_map map)
   live->work_stack = XNEWVEC (int, last_basic_block_for_fn (cfun));
   live->stack_top = live->work_stack;
 
-  live->global = BITMAP_ALLOC (NULL);
   return live;
 }
 
@@ -1035,7 +1034,6 @@ delete_tree_live_info (tree_live_info_p live)
       bitmap_obstack_release (&live->liveout_obstack);
       free (live->liveout);
     }
-  BITMAP_FREE (live->global);
   free (live->work_stack);
   free (live);
 }
@@ -1123,7 +1121,6 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
   use_operand_p use;
   basic_block def_bb = NULL;
   imm_use_iterator imm_iter;
-  bool global = false;
 
   p = var_to_partition (live->map, ssa_name);
   if (p == NO_PARTITION)
@@ -1173,16 +1170,8 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 
       /* If there was a live on entry use, set the bit.  */
       if (add_block)
-        {
-	  global = true;
-	  bitmap_set_bit (&live->livein[add_block->index], p);
-	}
+	bitmap_set_bit (&live->livein[add_block->index], p);
     }
-
-  /* If SSA_NAME is live on entry to at least one block, fill in all the live
-     on entry blocks between the def and all the uses.  */
-  if (global)
-    bitmap_set_bit (live->global, p);
 }
 
 
