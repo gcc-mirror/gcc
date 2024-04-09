@@ -5660,7 +5660,8 @@ build_qualified_type (tree type, int type_quals MEM_STAT_DECL)
   return t;
 }
 
-/* Create a variant of type T with alignment ALIGN.  */
+/* Create a variant of type T with alignment ALIGN which
+   is measured in bits.  */
 
 tree
 build_aligned_type (tree type, unsigned int align)

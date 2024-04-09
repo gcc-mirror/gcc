@@ -1896,7 +1896,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree lhs_type = TREE_TYPE (lhs);
 	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
 	  required alignment (power) is 4 bytes regardless of data type.  */
-	tree align_ltype = build_aligned_type (lhs_type, 4);
+	tree align_ltype = build_aligned_type (lhs_type, 32);
 	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
 	   the tree using the value from arg0.  The resulting type will match
 	   the type of arg1.  */
@@ -1940,7 +1940,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree arg2_type = ptr_type_node;
 	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
 	   required alignment (power) is 4 bytes regardless of data type.  */
-	tree align_stype = build_aligned_type (arg0_type, 4);
+	tree align_stype = build_aligned_type (arg0_type, 32);
 	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
 	   the tree using the value from arg1.  */
 	gimple_seq stmts = NULL;
