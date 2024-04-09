@@ -491,7 +491,7 @@ Target Mask(CRYPTO) Var(rs6000_isa_flags)
 Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions.
 
 mdirect-move
-Target Undocumented Mask(DIRECT_MOVE) Var(rs6000_isa_flags) WarnRemoved
+Target Undocumented WarnRemoved
 
 mhtm
 Target Mask(HTM) Var(rs6000_isa_flags)
