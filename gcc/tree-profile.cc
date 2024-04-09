@@ -359,12 +359,17 @@ condition_index (unsigned flag)
    min-max, etc., which leaves ghost identifiers in basic blocks that do not
    end with a conditional jump.  They are not really meaningful for condition
    coverage anymore, but since coverage is unreliable under optimization anyway
-   this is not a big problem.  */
+   this is not a big problem.
+
+   The cond_uids map in FN cannot be expected to exist.  It will only be
+   created if it is needed, and a function may have gconds even though there
+   are none in source.  This can be seen in PR gcov-profile/114601, when
+   -finstrument-functions-once is used and the function has no conditions.  */
 unsigned
 condition_uid (struct function *fn, basic_block b)
 {
     gimple *stmt = gsi_stmt (gsi_last_bb (b));
-    if (!safe_is_a<gcond *> (stmt))
+    if (!safe_is_a <gcond*> (stmt) || !fn->cond_uids)
 	return 0;
 
     unsigned *v = fn->cond_uids->get (as_a <gcond*> (stmt));
