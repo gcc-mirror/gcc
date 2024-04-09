@@ -1,0 +1,5 @@
+DEFINITION MODULE AdvParse ;
+
+PROCEDURE foo ;
+
+END AdvParse.

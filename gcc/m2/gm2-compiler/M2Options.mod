@@ -1944,7 +1944,7 @@ BEGIN
    ReturnChecking                    := FALSE ;
    CaseElseChecking                  := FALSE ;
    CPreProcessor                     := FALSE ;
-   LineDirectives                    := FALSE ;
+   LineDirectives                    := TRUE ;
    ExtendedOpaque                    := FALSE ;
    UnboundedByReference              := FALSE ;
    VerboseUnbounded                  := FALSE ;
