@@ -218,15 +218,18 @@ find_option (vec<cl_decoded_option> &options, cl_decoded_option *option)
   return find_option (options, option->opt_index);
 }
 
-/* Merge -flto FOPTION into vector of DECODED_OPTIONS.  */
+/* Merge -flto FOPTION into vector of DECODED_OPTIONS.  If FORCE is true
+   then FOPTION overrides previous settings.  */
 
 static void
 merge_flto_options (vec<cl_decoded_option> &decoded_options,
-		    cl_decoded_option *foption)
+		    cl_decoded_option *foption, bool force)
 {
   int existing_opt = find_option (decoded_options, foption);
   if (existing_opt == -1)
     decoded_options.safe_push (*foption);
+  else if (force)
+    decoded_options[existing_opt].arg = foption->arg;
   else
     {
       if (strcmp (foption->arg, decoded_options[existing_opt].arg) != 0)
@@ -493,7 +496,7 @@ merge_and_complain (vec<cl_decoded_option> &decoded_options,
 	  break;
 
 	case OPT_flto_:
-	  merge_flto_options (decoded_options, foption);
+	  merge_flto_options (decoded_options, foption, false);
 	  break;
 	}
     }
@@ -1549,8 +1552,8 @@ run_gcc (unsigned argc, char *argv[])
 	  break;
 
 	case OPT_flto_:
-	  /* Merge linker -flto= option with what we have in IL files.  */
-	  merge_flto_options (fdecoded_options, option);
+	  /* Override IL file settings with a linker -flto= option.  */
+	  merge_flto_options (fdecoded_options, option, true);
 	  if (strcmp (option->arg, "jobserver") == 0)
 	    jobserver_requested = true;
 	  break;
