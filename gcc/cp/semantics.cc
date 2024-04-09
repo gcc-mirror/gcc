@@ -1046,6 +1046,7 @@ tree
 finish_if_stmt_cond (tree orig_cond, tree if_stmt)
 {
   tree cond = maybe_convert_cond (orig_cond);
+  maybe_warn_for_constant_evaluated (cond, IF_STMT_CONSTEXPR_P (if_stmt));
   if (IF_STMT_CONSTEXPR_P (if_stmt)
       && !type_dependent_expression_p (cond)
       && require_constant_expression (cond)
@@ -1054,16 +1055,11 @@ finish_if_stmt_cond (tree orig_cond, tree if_stmt)
 	 converted to bool.  */
       && TYPE_MAIN_VARIANT (TREE_TYPE (cond)) == boolean_type_node)
     {
-      maybe_warn_for_constant_evaluated (cond, /*constexpr_if=*/true);
       cond = instantiate_non_dependent_expr (cond);
       cond = cxx_constant_value (cond);
     }
-  else
-    {
-      maybe_warn_for_constant_evaluated (cond, /*constexpr_if=*/false);
-      if (processing_template_decl)
-	cond = orig_cond;
-    }
+  else if (processing_template_decl)
+    cond = orig_cond;
   finish_cond (&IF_COND (if_stmt), cond);
   add_stmt (if_stmt);
   THEN_CLAUSE (if_stmt) = push_stmt_list ();
