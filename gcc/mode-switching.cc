@@ -585,7 +585,7 @@ forward_transfer (int bb_index)
   return true;
 }
 
-/* A backwards confluence function.  Update the the bb_info single_succ
+/* A backwards confluence function.  Update the bb_info single_succ
    field for E's source block, based on changes to E's destination block.
    At the end of the dataflow problem, single_succ is the single mode
    that all successors require (directly or indirectly), or no_mode

@@ -167,7 +167,7 @@ check_for_binary_op_overflow (range_query *query,
   return true;
 }
 
-/* Set INIT, STEP, and DIRECTION the the corresponding values of NAME
+/* Set INIT, STEP, and DIRECTION to the corresponding values of NAME
    within LOOP, and return TRUE.  Otherwise return FALSE, and set R to
    the conservative range of NAME within the loop.  */
 

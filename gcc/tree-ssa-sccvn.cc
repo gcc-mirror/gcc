@@ -5979,7 +5979,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
   if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (phi)))
     return set_ssa_val_to (PHI_RESULT (phi), PHI_RESULT (phi));
 
-  /* We track whether a PHI was CSEd to to avoid excessive iterations
+  /* We track whether a PHI was CSEd to avoid excessive iterations
      that would be necessary only because the PHI changed arguments
      but not value.  */
   if (!inserted)

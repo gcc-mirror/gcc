@@ -271,7 +271,7 @@ struct GTY(()) function {
   htab_t GTY((skip)) value_histograms;
 
   /* Annotated gconds so that basic conditions in the same expression map to
-     the same same uid.  This is used for condition coverage.  */
+     the same uid.  This is used for condition coverage.  */
   hash_map <gcond*, unsigned> *GTY((skip)) cond_uids;
 
   /* For function.cc.  */

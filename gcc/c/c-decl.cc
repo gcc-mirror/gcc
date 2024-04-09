@@ -2069,7 +2069,7 @@ locate_old_decl (tree decl)
 
 
 /* Helper function.  For a tagged type, it finds the declaration
-   for a visible tag declared in the the same scope if such a
+   for a visible tag declared in the same scope if such a
    declaration exists.  */
 static tree
 previous_tag (tree type)
@@ -2316,7 +2316,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
      (C23 6.7.2.2/5), but may pose portability problems.  */
   else if (enum_and_int_p
 	   && TREE_CODE (newdecl) != TYPE_DECL
-	   /* Don't warn about about acc_on_device built-in redeclaration,
+	   /* Don't warn about acc_on_device built-in redeclaration,
 	      the built-in is declared with int rather than enum because
 	      the enum isn't intrinsic.  */
 	   && !(TREE_CODE (olddecl) == FUNCTION_DECL

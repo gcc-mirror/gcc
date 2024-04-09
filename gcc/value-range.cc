@@ -1886,7 +1886,7 @@ irange_bitmask::adjust_range (irange &r) const
     }
 }
 
-// If the the mask can be trivially converted to a range, do so and
+// If the mask can be trivially converted to a range, do so and
 // return TRUE.
 
 bool

@@ -567,7 +567,7 @@ DEFTREECODE (CO_YIELD_EXPR, "co_yield", tcc_expression, 2)
 /* The co_return expression is used to support coroutines.
 
    Op0 is the original expr, can be void (for use in diagnostics)
-   Op1 is the promise return_xxxx call for for the expression given. */
+   Op1 is the promise return_xxxx call for the expression given. */
 
 DEFTREECODE (CO_RETURN_EXPR, "co_return", tcc_statement, 2)
 

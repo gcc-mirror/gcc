@@ -1170,7 +1170,7 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
 /* For some target specific vectorization cost which can't be handled per stmt,
    we check the requisite conditions and adjust the vectorization cost
-   accordingly if satisfied.  One typical example is to model model and adjust
+   accordingly if satisfied.  One typical example is to model and adjust
    loop_len cost for known_lt (NITERS, VF).  */
 
 void

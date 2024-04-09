@@ -452,7 +452,7 @@ host_detect_local_cpu (int argc, const char **argv)
   if (tune)
     return res;
 
-  /* Add any features that should be be present, but can't be verified using
+  /* Add any features that should be present, but can't be verified using
      the /proc/cpuinfo "Features" list.  */
   extension_flags |= unchecked_extension_flags & default_flags;
 

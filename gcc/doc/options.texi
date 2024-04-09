@@ -422,9 +422,9 @@ The option is the inverse of another option that has the
 the options-processing script will declare @code{TARGET_@var{thisname}},
 @code{TARGET_@var{name}_P} and @code{TARGET_@var{name}_OPTS_P} macros:
 @code{TARGET_@var{thisname}} is 1 when the option is active and 0 otherwise,
-@code{TARGET_@var{name}_P} is similar to @code{TARGET_@var{name}} but take an
-argument as @samp{target_flags}, and and @code{TARGET_@var{name}_OPTS_P} also
-similar to @code{TARGET_@var{name}} but take an argument as @code{gcc_options}.
+@code{TARGET_@var{name}_P} is similar to @code{TARGET_@var{name}} but takes an
+argument as @samp{target_flags}, and @code{TARGET_@var{name}_OPTS_P} is also
+similar to @code{TARGET_@var{name}} but takes an argument as @code{gcc_options}.
 
 @item Enum(@var{name})
 The option's argument is a string from the set of strings associated

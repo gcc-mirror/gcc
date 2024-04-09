@@ -25503,7 +25503,7 @@ more_specialized_fn (tree pat1, tree pat2, int len)
   if (DECL_STATIC_FUNCTION_P (decl1) || DECL_STATIC_FUNCTION_P (decl2))
     {
       /* Note C++20 DR2445 extended the above to static member functions, but
-	 I think think the old G++ behavior of just skipping the object
+	 I think the old G++ behavior of just skipping the object
 	 parameter when comparing to a static member function was better, so
 	 let's stick with that for now.  This is CWG2834.  --jason 2023-12 */
       if (DECL_OBJECT_MEMBER_FUNCTION_P (decl1))
@@ -30564,7 +30564,7 @@ type_targs_deducible_from (tree tmpl, tree type)
 
   /* Maybe add in default template args.  This seems like a flaw in the
      specification in terms of partial specialization, since it says the
-     partial specialization has the the template parameter list of A, but a
+     partial specialization has the template parameter list of A, but a
      partial specialization can't have default targs.  */
   targs = coerce_template_parms (tparms, targs, tmpl, tf_none);
   if (targs == error_mark_node)

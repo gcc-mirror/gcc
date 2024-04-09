@@ -358,7 +358,7 @@ public:
   use_info *next_any_insn_use () const;
 
   // Return the next use by a debug instruction, or null if none.
-  // This is only valid if if is_in_debug_insn ().
+  // This is only valid if is_in_debug_insn ().
   use_info *next_debug_insn_use () const;
 
   // Return the previous use by a phi node in the list, or null if none.

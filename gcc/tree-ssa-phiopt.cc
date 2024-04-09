@@ -1251,7 +1251,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	     _3 = i_6 != 0;
 	     Here, carg is 4, oarg is 6, crhs is 0, and because
 	     (4 != 0) == (6 != 0), we don't care if i_6 is 4 or 6, both
-	     have the same outcome.  So, can can optimize this to:
+	     have the same outcome.  So, we can optimize this to:
 	     _3 = i_2(D) != 0;
 	     If the single imm use of phi result >, >=, < or <=, similarly
 	     we can check if both carg and oarg compare the same against

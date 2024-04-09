@@ -238,7 +238,7 @@ Constructor expressions
    The fields in ``fields`` need to be the same objects that were used
    to create the struct.
 
-   Each value has to have have the same unqualified type as the field
+   Each value has to have the same unqualified type as the field
    it is applied to.
 
    A NULL value element  in ``values`` is a shorthand for zero initialization

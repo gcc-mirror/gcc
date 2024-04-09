@@ -390,7 +390,7 @@ condition_uid (struct function *fn, basic_block b)
    |/ \
    T   F
 
-   T has has multiple incoming edges and is the outcome of a short circuit,
+   T has multiple incoming edges and is the outcome of a short circuit,
    with top = a, bot = b.  The top node (a) is masked when the edge (b, T) is
    taken.
 
@@ -437,7 +437,7 @@ condition_uid (struct function *fn, basic_block b)
    The masking table is represented as two bitfields per term in the expression
    with the index corresponding to the term in the Boolean expression.
    a || b && c becomes the term vector [a b c] and the masking table [a[0]
-   a[1] b[0] ...].  The kth bit of a masking vector is set if the the kth term
+   a[1] b[0] ...].  The kth bit of a masking vector is set if the kth term
    is masked by taking the edge.
 
    The out masks are in uint64_t (the practical maximum for gcov_type_node for

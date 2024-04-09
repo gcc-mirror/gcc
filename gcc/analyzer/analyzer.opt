@@ -224,7 +224,7 @@ Warn about code paths in which an unsanitized value is used as a size.
 
 Wanalyzer-undefined-behavior-strtok
 Common Var(warn_analyzer_undefined_behavior_strtok) Init(1) Warning
-Warn about code paths in in which a call is made to strtok with undefined behavior.
+Warn about code paths in which a call is made to strtok with undefined behavior.
 
 Wanalyzer-use-after-free
 Common Var(warn_analyzer_use_after_free) Init(1) Warning

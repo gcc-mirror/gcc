@@ -2567,7 +2567,7 @@ add_branch_counts (coverage_info *coverage, const arc_info *arc)
     }
 }
 
-/* Increment totals in COVERAGE according to to block BLOCK.  */
+/* Increment totals in COVERAGE according to block BLOCK.  */
 
 static void
 add_condition_counts (coverage_info *coverage, const block_info *block)

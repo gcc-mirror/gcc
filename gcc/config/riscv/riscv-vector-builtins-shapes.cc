@@ -102,7 +102,7 @@ build_all (function_builder &b, const function_group_info &group)
 
 #define BASE_NAME_MAX_LEN 16
 
-/* Base class for for build.  */
+/* Base class for build.  */
 struct build_base : public function_shape
 {
   void build (function_builder &b,

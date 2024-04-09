@@ -7224,7 +7224,7 @@ maybe_warn_about_constant_value (location_t loc, tree decl)
    in bytes.  If COOKIE_SIZE is NULL, return array type
    ELT_TYPE[FULL_SIZE / sizeof(ELT_TYPE)], otherwise return
    struct { size_t[COOKIE_SIZE/sizeof(size_t)]; ELT_TYPE[N]; }
-   where N is is computed such that the size of the struct fits into FULL_SIZE.
+   where N is computed such that the size of the struct fits into FULL_SIZE.
    If ARG_SIZE is non-NULL, it is the first argument to the new operator.
    It should be passed if ELT_TYPE is zero sized type in which case FULL_SIZE
    will be also 0 and so it is not possible to determine the actual array

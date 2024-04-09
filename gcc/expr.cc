@@ -392,7 +392,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 		 BFmode -> SFmode -> HFmode conversion where SFmode
 		 has superset of BFmode values.  We don't need
 		 to handle sNaNs by raising exception and turning
-		 into into qNaN though, as that can be done in the
+		 it into qNaN though, as that can be done in the
 		 SFmode -> HFmode conversion too.  */
 	      rtx temp = gen_reg_rtx (SFmode);
 	      int save_flag_finite_math_only = flag_finite_math_only;

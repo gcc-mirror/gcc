@@ -45273,7 +45273,7 @@ substitute_in_tree (tree *context, tree orig, tree repl, bool flatten)
 }
 
 /* Walker to patch up the BLOCK_NODE hierarchy after the above surgery.
-   *DP is is the parent block.  */
+   *DP is the parent block.  */
 
 static tree
 fixup_blocks_walker (tree *tp, int *walk_subtrees, void *dp)

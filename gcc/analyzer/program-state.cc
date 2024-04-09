@@ -877,7 +877,7 @@ program_state::program_state (const extrinsic_state &ext_state)
     }
 }
 
-/* Attempt to to use R to replay SUMMARY into this object.
+/* Attempt to use R to replay SUMMARY into this object.
    Return true if it is possible.  */
 
 bool
@@ -1625,7 +1625,7 @@ program_state::detect_leaks (const program_state &src_state,
 	dest_state.m_region_model->unset_dynamic_extents (reg);
 }
 
-/* Attempt to to use R to replay SUMMARY into this object.
+/* Attempt to use R to replay SUMMARY into this object.
    Return true if it is possible.  */
 
 bool

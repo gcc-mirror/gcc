@@ -5623,7 +5623,7 @@ region_model::update_for_return_superedge (const return_superedge &return_edge,
   update_for_return_gcall (call_stmt, ctxt);
 }
 
-/* Attempt to to use R to replay SUMMARY into this object.
+/* Attempt to use R to replay SUMMARY into this object.
    Return true if it is possible.  */
 
 bool

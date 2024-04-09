@@ -458,7 +458,7 @@ pass_avlprop::execute (function *fn)
 
 	  /* TODO: We only do AVL propagation for VLMAX AVL with tail
 	     agnostic policy since we have missed-LEN information partial
-	     autovectorization.  We could add more more AVL propagation
+	     autovectorization.  We could add more AVL propagation
 	     for intrinsic codes in the future.  */
 	  if (vlmax_ta_p (insn->rtl ()))
 	    m_candidates.safe_push (std::make_pair (AVLPROP_VLMAX_TA, insn));

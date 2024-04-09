@@ -3895,7 +3895,7 @@ finish_template_decl (tree parms)
 //      typename pair<T, U>::first_type void f(T, U);
 //
 // Here, it is unlikely that there is a partial specialization of
-// pair constrained for for Integral and Floating_point arguments.
+// pair constrained for Integral and Floating_point arguments.
 //
 // The general rule is: if a constrained specialization with matching
 // constraints is found return that type. Also note that if TYPE is not a
@@ -10692,7 +10692,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	 initializer is a binding of the iteration variable, save
 	 that location.  Any of these locations in the initialization clause
 	 for the current nested loop are better than using the argument locus,
-	 that points to the "for" of the the outermost loop in the nest.  */
+	 that points to the "for" of the outermost loop in the nest.  */
       if (init && EXPR_HAS_LOCATION (init))
 	elocus = EXPR_LOCATION (init);
       else if (decl && INDIRECT_REF_P (decl) && EXPR_HAS_LOCATION (decl))

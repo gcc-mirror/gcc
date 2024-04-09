@@ -11710,7 +11710,7 @@ By default the analyzer attempts to reconstruct the original function
 frames, and to emit events showing the inlined calls.
 
 With @option{-fno-analyzer-undo-inlining} this attempt to reconstruct
-the original frame information can be be disabled, which may be of help
+the original frame information can be disabled, which may be of help
 when debugging issues in the analyzer.
 
 @item -fanalyzer-verbose-edges
@@ -25759,7 +25759,7 @@ Outputs pseudo-c assembly dialect.
 @item -minline-memops-threshold=@var{bytes}
 Specifies a size threshold in bytes at or below which memmove, memcpy
 and memset shall always be expanded inline.  Operations dealing with
-sizes larger than this threshold would have to be be implemented using
+sizes larger than this threshold would have to be implemented using
 a library call instead of being expanded inline, but since BPF doesn't
 allow libcalls, exceeding this threshold results in a compile-time
 error.  The default is @samp{1024} bytes.

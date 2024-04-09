@@ -325,7 +325,7 @@ phi_analyzer::operator[] (tree name)
   return m_tab[v];
 }
 
-// Process phi node PHI to see if it it part of a group.
+// Process phi node PHI to see if it is part of a group.
 
 void
 phi_analyzer::process_phi (gphi *phi)

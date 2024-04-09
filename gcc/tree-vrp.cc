@@ -131,7 +131,7 @@ remove_unreachable::maybe_register (gimple *s)
     m_list.safe_push (std::make_pair (e->src->index, e->dest->index));
 }
 
-// Return true if all uses of NAME are dominated by by block BB.  1 use
+// Return true if all uses of NAME are dominated by block BB.  1 use
 // is allowed in block BB, This is one we hope to remove.
 // ie
 //  _2 = _1 & 7;
