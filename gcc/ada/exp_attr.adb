@@ -2173,8 +2173,8 @@ package body Exp_Attr is
       --  for the arguments of a 'Read attribute reference (since the
       --  scalar argument is an OUT scalar) and for the arguments of a
       --  'Has_Same_Storage or 'Overlaps_Storage attribute reference (which not
-      --  considered to be reads of their prefixes and expressions, see Ada RM
-      --  13.3(73.10/3)).
+      --  considered to be reads of their prefixes and expressions, see
+      --  RM 13.3(73.10/3)).
 
       if Validity_Checks_On and then Validity_Check_Operands
         and then Id /= Attribute_Asm_Output

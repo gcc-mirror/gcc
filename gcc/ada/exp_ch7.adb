@@ -7419,7 +7419,7 @@ package body Exp_Ch7 is
                      --  non-POC components are finalized before the
                      --  non-POC extension components. This violates the
                      --  usual "finalize in reverse declaration order"
-                     --  principle, but that's ok (see Ada RM 7.6.1(9)).
+                     --  principle, but that's ok (see RM 7.6.1(9)).
                      --
                      --  Last_POC_Call should be non-empty if the extension
                      --  has at least one POC. Interactions with variant

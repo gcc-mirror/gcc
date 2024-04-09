@@ -2728,7 +2728,7 @@ package Einfo is
 --       Defined in all entities. Set for implicitly declared subprograms
 --       that require overriding or are null procedures, and are hidden by
 --       a non-fully conformant homograph with the same characteristics
---       (Ada RM 8.3 12.3/2).
+--       (RM 8.3(12.3/2)).
 
 --    Is_Hidden_Open_Scope
 --       Defined in all entities. Set for a scope that contains the

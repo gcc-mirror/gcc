@@ -16553,7 +16553,7 @@ package body Sem_Ch3 is
 
       New_Overloaded_Entity (New_Subp, Derived_Type);
 
-      --  Ada RM 6.1.1 (15): If a subprogram inherits nonconforming class-wide
+      --  RM 6.1.1(15): If a subprogram inherits nonconforming class-wide
       --  preconditions and the derived type is abstract, the derived operation
       --  is abstract as well if parent subprogram is not abstract or null.
 

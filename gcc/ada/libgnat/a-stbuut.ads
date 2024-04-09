@@ -33,7 +33,7 @@ with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
 
 package Ada.Strings.Text_Buffers.Utils with Pure is
 
-   --  Ada.Strings.Text_Buffers is a predefined unit (see Ada RM A.4.12).
+   --  Ada.Strings.Text_Buffers is a predefined unit (see RM A.4.12).
    --  This is a GNAT-defined child unit of that parent.
 
    subtype Character_7 is
