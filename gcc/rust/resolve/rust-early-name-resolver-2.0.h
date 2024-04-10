@@ -114,6 +114,52 @@ public:
     Rib::Definition glob_module;
   };
 
+  struct ImportPair
+  {
+    TopLevel::ImportKind import_kind;
+    ImportData data;
+
+    explicit ImportPair (TopLevel::ImportKind &&kind, ImportData &&data)
+      : import_kind (std::move (kind)), data (std::move (data))
+    {}
+  };
+
+  class ImportMappings
+  {
+  public:
+    std::vector<ImportPair> &new_or_access (NodeId path_id)
+    {
+      // We insert an empty vector, unless an element was already present for
+      // `use_dec_id` - which is returned in the tuple's first member
+      auto iter = mappings.insert ({{path_id}, {}});
+
+      // We then get that tuple's first member, which will be an iterator to the
+      // existing vec<pair<ImportKind, ImportData>> OR an iterator to our newly
+      // created empty vector (plus its key since this is a hashmap iterator).
+      // we then access the second member of the pair to get access to the
+      // vector directly.
+      return iter.first->second;
+    }
+
+    void insert (NodeId path_id, std::vector<ImportPair> &&pairs)
+    {
+      mappings.insert ({{path_id}, std::move (pairs)});
+    }
+
+    // Same as `insert`, but with just one node
+    void insert (NodeId path_id, ImportPair &&pair)
+    {
+      mappings.insert ({{path_id}, {pair}});
+    }
+
+    std::vector<ImportPair> &get (NodeId use_id) { return mappings[use_id]; }
+
+  private:
+    // Each path can import in multiple namespaces, hence the mapping from one
+    // path to a vector of import pairs
+    std::unordered_map<NodeId, std::vector<ImportPair>> mappings;
+  };
+
 private:
   void visit_attributes (std::vector<AST::Attribute> &attrs);
 
@@ -151,11 +197,8 @@ private:
     std::vector<std::unordered_map<std::string, NodeId>> scopes;
   };
 
-  // TODO: This is becoming a very complex type - ugly
   // Mappings between an import and the definition it imports
-  std::unordered_map<NodeId,
-		     std::vector<std::pair<TopLevel::ImportKind, ImportData>>>
-    import_mappings;
+  ImportMappings import_mappings;
 
   // FIXME: Documentation
   // Call this on all the paths of a UseDec - so each flattened path in a
