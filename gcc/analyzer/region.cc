@@ -89,7 +89,7 @@ region_offset::calc_symbolic_bit_offset (region_model_manager *mgr) const
 					m_sym_offset, bits_per_byte);
     }
   else
-    return *mgr->get_or_create_int_cst (size_type_node, m_offset);
+    return *mgr->get_or_create_int_cst (NULL_TREE, m_offset);
 }
 
 const svalue *
