@@ -21,6 +21,9 @@
 
 @subsection Overview
 
+At a high-level, we're doing coverage-guided symbolic execution of the
+user's code.
+
 The analyzer implementation works on the gimple-SSA representation.
 (I chose this in the hopes of making it easy to work with LTO to
 do whole-program analysis).
@@ -55,7 +58,9 @@ Next is the heart of the analyzer: we use a worklist to explore state
 within the supergraph, building an "exploded graph".
 Nodes in the exploded graph correspond to <point,@w{ }state> pairs, as in
      "Precise Interprocedural Dataflow Analysis via Graph Reachability"
-     (Thomas Reps, Susan Horwitz and Mooly Sagiv).
+     (Thomas Reps, Susan Horwitz and Mooly Sagiv) - but note that
+we're not using the algorithm described in that paper, just the
+``exploded graph'' terminology.
 
 We reuse nodes for <point, state> pairs we've already seen, and avoid
 tracking state too closely, so that (hopefully) we rapidly converge
@@ -499,7 +504,8 @@ which dumps a @file{SRC.eg.txt} file containing the full @code{exploded_graph}.
 
 Assuming that you have the
 @uref{https://gcc-newbies-guide.readthedocs.io/en/latest/debugging.html,,python support scripts for gdb}
-installed, you can use:
+installed (which you should do, it makes debugging GCC much easier),
+you can use:
 
 @smallexample
 (gdb) break-on-saved-diagnostic
