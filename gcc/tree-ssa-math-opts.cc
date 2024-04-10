@@ -2875,8 +2875,9 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
 
   lhs = gimple_assign_lhs (stmt);
   type = TREE_TYPE (lhs);
-  if (TREE_CODE (type) != INTEGER_TYPE
-      && TREE_CODE (type) != FIXED_POINT_TYPE)
+  if ((TREE_CODE (type) != INTEGER_TYPE
+       && TREE_CODE (type) != FIXED_POINT_TYPE)
+      || !type_has_mode_precision_p (type))
     return false;
 
   if (code == MINUS_EXPR)
