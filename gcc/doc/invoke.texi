@@ -9391,6 +9391,19 @@ In a cast involving pointer to member types this warning warns whenever
 the type cast is changing the pointer to member type.
 This warning is enabled by @option{-Wextra}.
 
+@opindex Wcast-user-defined
+@opindex Wno-cast-user-defined
+@item -Wcast-user-defined
+Warn when a cast to reference type does not involve a user-defined
+conversion that the programmer might expect to be called.
+
+@smallexample
+struct A @{ operator const int&(); @} a;
+auto r = (int&)a; // warning
+@end smallexample
+
+This warning is enabled by default.
+
 @opindex Wwrite-strings
 @opindex Wno-write-strings
 @item -Wwrite-strings

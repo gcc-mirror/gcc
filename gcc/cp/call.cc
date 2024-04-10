@@ -2034,7 +2034,17 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	 recalculate the second conversion sequence.  */
       for (conversion *t = conv; t; t = next_conversion (t))
 	if (t->kind == ck_user
-	    && DECL_CONV_FN_P (t->cand->fn))
+	    && c_cast_p && !maybe_valid_p)
+	  {
+	    if (complain & tf_warning)
+	      warning (OPT_Wcast_user_defined,
+		       "casting %qT to %qT does not use %qD",
+		       from, rto, t->cand->fn);
+	    /* Don't let recalculation try to make this valid.  */
+	    break;
+	  }
+	else if (t->kind == ck_user
+		 && DECL_CONV_FN_P (t->cand->fn))
 	  {
 	    tree ftype = TREE_TYPE (TREE_TYPE (t->cand->fn));
 	    /* A prvalue of non-class type is cv-unqualified.  */

@@ -514,6 +514,10 @@ Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual) Warning
 Warn about casts which discard qualifiers.
 
+Wcast-user-defined
+C++ ObjC++ Var(warn_cast_user_defined) Warning Init(1)
+Warn about a cast to reference type that does not use a related user-defined conversion function.
+
 Wcatch-value
 C++ ObjC++ Warning Alias(Wcatch-value=, 1, 0)
 Warn about catch handlers of non-reference type.
