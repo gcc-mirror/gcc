@@ -85,7 +85,7 @@ test_format()
   s = std::format(loc_fr, "{:%x}", 2022y/December/19);
   VERIFY( s == "12/19/22" );
   s = std::format(loc_fr, "{:L%x}", 2022y/December/19);
-  VERIFY( s == "19/12/2022" );
+  VERIFY( s == "19/12/2022" || s == "19.12.2022" ); // depends on locale defs
   s = std::format(loc_fr, "{}", 2022y/December/19);
   VERIFY( s == "2022-12-19" );
   s = std::format(loc_fr, "{:L%F}", 2022y/December/19);
