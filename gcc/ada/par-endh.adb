@@ -412,7 +412,7 @@ package body Endh is
                      Error_Msg_SC
                        ("misplaced aspects for package declaration");
                      Error_Msg
-                       ("info: aspect specifications belong here??", Is_Loc);
+                       ("info: aspect specifications belong here", Is_Loc);
                      P_Aspect_Specifications (Empty, Semicolon => True);
 
                   --  Other cases where aspect specifications are not allowed

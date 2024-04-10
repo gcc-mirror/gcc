@@ -7397,7 +7397,7 @@ package body Sem_Res is
                else
                   if Debug_Flag_Underscore_F then
                      Error_Msg_NE
-                       ("info: analyzing call to & in context?", N, Nam_UA);
+                       ("info: analyzing call to & in context", N, Nam_UA);
                   end if;
 
                   Expand_Inlined_Call (N, Nam_UA, Nam);
