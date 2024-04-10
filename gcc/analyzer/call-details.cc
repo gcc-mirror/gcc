@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "make-unique.h"
+#include "diagnostic-format-sarif.h"
 
 #if ENABLE_ANALYZER
 
@@ -425,8 +426,14 @@ class overlapping_buffers
 : public pending_diagnostic_subclass<overlapping_buffers>
 {
 public:
-  overlapping_buffers (tree fndecl)
-  : m_fndecl (fndecl)
+  overlapping_buffers (tree fndecl,
+		       const symbolic_byte_range &byte_range_a,
+		       const symbolic_byte_range &byte_range_b,
+		       const svalue *num_bytes_read_sval)
+  : m_fndecl (fndecl),
+    m_byte_range_a (byte_range_a),
+    m_byte_range_b (byte_range_b),
+    m_num_bytes_read_sval (num_bytes_read_sval)
   {
   }
 
@@ -469,8 +476,25 @@ public:
        m_fndecl);
   }
 
+  void maybe_add_sarif_properties (sarif_object &result_obj)
+    const final override
+  {
+    sarif_property_bag &props = result_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/overlapping_buffers/"
+    props.set (PROPERTY_PREFIX "bytes_range_a",
+	       m_byte_range_a.to_json ());
+    props.set (PROPERTY_PREFIX "bytes_range_b",
+	       m_byte_range_b.to_json ());
+    props.set (PROPERTY_PREFIX "num_bytes_read_sval",
+	       m_num_bytes_read_sval->to_json ());
+#undef PROPERTY_PREFIX
+  }
+
 private:
   tree m_fndecl;
+  symbolic_byte_range m_byte_range_a;
+  symbolic_byte_range m_byte_range_b;
+  const svalue *m_num_bytes_read_sval;
 };
 
 
@@ -517,7 +541,10 @@ call_details::complain_about_overlap (unsigned arg_idx_a,
   if (!byte_range_a.intersection (byte_range_b, *model).is_true ())
     return;
 
-  ctxt->warn (make_unique<overlapping_buffers> (get_fndecl_for_call ()));
+  ctxt->warn (make_unique<overlapping_buffers> (get_fndecl_for_call (),
+						byte_range_a,
+						byte_range_b,
+						num_bytes_read_sval));
 }
 
 } // namespace ana

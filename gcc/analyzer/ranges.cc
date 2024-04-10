@@ -103,6 +103,12 @@ symbolic_byte_offset::dump (bool simple) const
   pp_flush (&pp);
 }
 
+json::value *
+symbolic_byte_offset::to_json () const
+{
+  return m_num_bytes_sval->to_json ();
+}
+
 tree
 symbolic_byte_offset::maybe_get_constant () const
 {
@@ -154,6 +160,15 @@ symbolic_byte_range::dump (bool simple, region_model_manager &mgr) const
   dump_to_pp (&pp, simple, mgr);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+json::value *
+symbolic_byte_range::to_json () const
+{
+  json::object *obj = new json::object ();
+  obj->set ("start", m_start.to_json ());
+  obj->set ("size", m_size.to_json ());
+  return obj;
 }
 
 bool
