@@ -571,6 +571,26 @@ visit_conflict (gimple *, tree op, tree, void *data)
   return false;
 }
 
+/* Helper function for add_scope_conflicts_1.  For USE on
+   a stmt, if it is a SSA_NAME and in its SSA_NAME_DEF_STMT is known to be
+   based on some ADDR_EXPR, invoke VISIT on that ADDR_EXPR.  */
+
+static inline void
+add_scope_conflicts_2 (tree use, bitmap work,
+		       walk_stmt_load_store_addr_fn visit)
+{
+  if (TREE_CODE (use) == SSA_NAME
+      && (POINTER_TYPE_P (TREE_TYPE (use))
+	  || INTEGRAL_TYPE_P (TREE_TYPE (use))))
+    {
+      gimple *g = SSA_NAME_DEF_STMT (use);
+      if (is_gimple_assign (g))
+	if (tree op = gimple_assign_rhs1 (g))
+	  if (TREE_CODE (op) == ADDR_EXPR)
+	    visit (g, TREE_OPERAND (op, 0), op, work);
+    }
+}
+
 /* Helper routine for add_scope_conflicts, calculating the active partitions
    at the end of BB, leaving the result in WORK.  We're called to generate
    conflicts when FOR_CONFLICT is true, otherwise we're just tracking
@@ -583,6 +603,8 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
   edge_iterator ei;
   gimple_stmt_iterator gsi;
   walk_stmt_load_store_addr_fn visit;
+  use_operand_p use_p;
+  ssa_op_iter iter;
 
   bitmap_clear (work);
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -593,7 +615,10 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
+      gphi *phi = as_a <gphi *> (stmt);
       walk_stmt_load_store_addr_ops (stmt, work, NULL, NULL, visit);
+      FOR_EACH_PHI_ARG (use_p, phi, iter, SSA_OP_USE)
+	add_scope_conflicts_2 (USE_FROM_PTR (use_p), work, visit);
     }
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -613,8 +638,7 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	}
       else if (!is_gimple_debug (stmt))
 	{
-	  if (for_conflict
-	      && visit == visit_op)
+	  if (for_conflict && visit == visit_op)
 	    {
 	      /* If this is the first real instruction in this BB we need
 	         to add conflicts for everything live at this point now.
@@ -634,6 +658,8 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	      visit = visit_conflict;
 	    }
 	  walk_stmt_load_store_addr_ops (stmt, work, visit, visit, visit);
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	    add_scope_conflicts_2 (USE_FROM_PTR (use_p), work, visit);
 	}
     }
 }
@@ -998,7 +1024,8 @@ dump_stack_var_partition (void)
       if (stack_vars[i].representative != i)
 	continue;
 
-      fprintf (dump_file, "Partition %lu: size ", (unsigned long) i);
+      fprintf (dump_file, "Partition " HOST_SIZE_T_PRINT_UNSIGNED ": size ",
+	       (fmt_size_t) i);
       print_dec (stack_vars[i].size, dump_file);
       fprintf (dump_file, " align %u\n", stack_vars[i].alignb);
 
@@ -3645,17 +3672,22 @@ expand_asm_stmt (gasm *stmt)
 	{
 	  edge e;
 	  edge_iterator ei;
-	  
+	  unsigned int cnt = EDGE_COUNT (gimple_bb (stmt)->succs);
+
 	  FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
 	    {
-	      start_sequence ();
-	      for (rtx_insn *curr = after_rtl_seq;
-		   curr != NULL_RTX;
-		   curr = NEXT_INSN (curr))
-		emit_insn (copy_insn (PATTERN (curr)));
-	      rtx_insn *copy = get_insns ();
-	      end_sequence ();
-	      insert_insn_on_edge (copy, e);
+	      rtx_insn *copy;
+	      if (--cnt == 0)
+		copy = after_rtl_seq;
+	      else
+		{
+		  start_sequence ();
+		  duplicate_insn_chain (after_rtl_seq, after_rtl_end,
+					NULL, NULL);
+		  copy = get_insns ();
+		  end_sequence ();
+		}
+	      prepend_insn_to_edge (copy, e);
 	    }
 	}
     }
@@ -3971,37 +4003,18 @@ expand_gimple_stmt_1 (gimple *stmt)
 	  {
 	    rtx target, temp;
 	    bool nontemporal = gimple_assign_nontemporal_move_p (assign_stmt);
-	    struct separate_ops ops;
 	    bool promoted = false;
 
 	    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 	    if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
 	      promoted = true;
 
-	    ops.code = gimple_assign_rhs_code (assign_stmt);
-	    ops.type = TREE_TYPE (lhs);
-	    switch (get_gimple_rhs_class (ops.code))
-	      {
-		case GIMPLE_TERNARY_RHS:
-		  ops.op2 = gimple_assign_rhs3 (assign_stmt);
-		  /* Fallthru */
-		case GIMPLE_BINARY_RHS:
-		  ops.op1 = gimple_assign_rhs2 (assign_stmt);
-		  /* Fallthru */
-		case GIMPLE_UNARY_RHS:
-		  ops.op0 = gimple_assign_rhs1 (assign_stmt);
-		  break;
-		default:
-		  gcc_unreachable ();
-	      }
-	    ops.location = gimple_location (stmt);
-
-	    /* If we want to use a nontemporal store, force the value to
-	       register first.  If we store into a promoted register,
-	       don't directly expand to target.  */
+	   /* If we want to use a nontemporal store, force the value to
+	      register first.  If we store into a promoted register,
+	      don't directly expand to target.  */
 	    temp = nontemporal || promoted ? NULL_RTX : target;
-	    temp = expand_expr_real_2 (&ops, temp, GET_MODE (target),
-				       EXPAND_NORMAL);
+	    temp = expand_expr_real_gassign (assign_stmt, temp,
+					     GET_MODE (target), EXPAND_NORMAL);
 
 	    if (temp == target)
 	      ;
@@ -4013,7 +4026,7 @@ expand_gimple_stmt_1 (gimple *stmt)
 		if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
 		  {
 		    temp = convert_modes (GET_MODE (target),
-					  TYPE_MODE (ops.type),
+					  TYPE_MODE (TREE_TYPE (lhs)),
 					  temp, unsignedp);
 		    temp = convert_modes (GET_MODE (SUBREG_REG (target)),
 					  GET_MODE (target), temp, unsignedp);
@@ -6354,11 +6367,15 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
   /* References of size POLY_INT_CST to a fixed-size object must go
      through memory.  It's more efficient to force that here than
      to create temporary slots on the fly.
-     RTL expansion expectes TARGET_MEM_REF to always address actual memory.  */
+     RTL expansion expectes TARGET_MEM_REF to always address actual memory.
+     Also, force to stack non-BLKmode vars accessed through VIEW_CONVERT_EXPR
+     to BLKmode type.  */
   else if (TREE_CODE (t) == TARGET_MEM_REF
 	   || (TREE_CODE (t) == MEM_REF
 	       && TYPE_SIZE (TREE_TYPE (t))
-	       && POLY_INT_CST_P (TYPE_SIZE (TREE_TYPE (t)))))
+	       && POLY_INT_CST_P (TYPE_SIZE (TREE_TYPE (t))))
+	   || (TREE_CODE (t) == VIEW_CONVERT_EXPR
+	       && TYPE_MODE (TREE_TYPE (t)) == BLKmode))
     {
       tree base = get_base_address (t);
       if (base

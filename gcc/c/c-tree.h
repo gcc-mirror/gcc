@@ -731,12 +731,14 @@ extern bool c_warn_unused_global_decl (const_tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
 extern bool c_var_mod_p (tree x, tree fn);
 extern alias_set_type c_get_alias_set (tree);
+extern int c_type_dwarf_attribute (const_tree, int);
 
 /* in c-typeck.cc */
 extern int in_alignof;
 extern int in_sizeof;
 extern int in_typeof;
 extern bool c_in_omp_for;
+extern bool c_omp_array_section_p;
 
 extern tree c_last_sizeof_arg;
 extern location_t c_last_sizeof_loc;
@@ -754,7 +756,8 @@ bool c_type_variably_modified_p (tree t)
 
 
 extern bool char_type_p (tree);
-extern tree c_objc_common_truthvalue_conversion (location_t, tree);
+extern tree c_objc_common_truthvalue_conversion (location_t, tree,
+						 tree = integer_type_node);
 extern tree require_complete_type (location_t, tree);
 extern bool same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
@@ -777,6 +780,7 @@ extern tree composite_type (tree, tree);
 extern tree build_component_ref (location_t, tree, tree, location_t,
 				 location_t);
 extern tree build_array_ref (location_t, tree, tree);
+extern tree build_omp_array_section (location_t, tree, tree, tree);
 extern tree build_external_ref (location_t, tree, bool, tree *);
 extern void pop_maybe_used (bool);
 extern struct c_expr c_expr_sizeof_expr (location_t, struct c_expr);

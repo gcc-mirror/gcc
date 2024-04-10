@@ -967,6 +967,12 @@ create_access (tree expr, gimple *stmt, bool write)
       disqualify_candidate (base, "Encountered an access beyond the base.");
       return NULL;
     }
+  if (TREE_CODE (TREE_TYPE (expr)) == BITINT_TYPE
+      && size > WIDE_INT_MAX_PRECISION - 1)
+    {
+      disqualify_candidate (base, "Encountered too large _BitInt access.");
+      return NULL;
+    }
 
   access = create_access_1 (base, offset, size);
   access->expr = expr;
@@ -1553,15 +1559,32 @@ scan_function (void)
 	    case GIMPLE_ASM:
 	      {
 		gasm *asm_stmt = as_a <gasm *> (stmt);
-		for (i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
+		if (stmt_ends_bb_p (asm_stmt)
+		    && !single_succ_p (gimple_bb (asm_stmt)))
 		  {
-		    t = TREE_VALUE (gimple_asm_input_op (asm_stmt, i));
-		    ret |= build_access_from_expr (t, asm_stmt, false);
+		    for (i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
+		      {
+			t = TREE_VALUE (gimple_asm_input_op (asm_stmt, i));
+			disqualify_base_of_expr (t, "OP of asm goto.");
+		      }
+		    for (i = 0; i < gimple_asm_noutputs (asm_stmt); i++)
+		      {
+			t = TREE_VALUE (gimple_asm_output_op (asm_stmt, i));
+			disqualify_base_of_expr (t, "OP of asm goto.");
+		      }
 		  }
-		for (i = 0; i < gimple_asm_noutputs (asm_stmt); i++)
+		else
 		  {
-		    t = TREE_VALUE (gimple_asm_output_op (asm_stmt, i));
-		    ret |= build_access_from_expr (t, asm_stmt, true);
+		    for (i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
+		      {
+			t = TREE_VALUE (gimple_asm_input_op (asm_stmt, i));
+			ret |= build_access_from_expr (t, asm_stmt, false);
+		      }
+		    for (i = 0; i < gimple_asm_noutputs (asm_stmt); i++)
+		      {
+			t = TREE_VALUE (gimple_asm_output_op (asm_stmt, i));
+			ret |= build_access_from_expr (t, asm_stmt, true);
+		      }
 		  }
 	      }
 	      break;
@@ -2733,7 +2756,8 @@ analyze_access_subtree (struct access *root, struct access *parent,
          For integral types this means the precision has to match.
 	 Avoid assumptions based on the integral type kind, too.  */
       if (INTEGRAL_TYPE_P (root->type)
-	  && (TREE_CODE (root->type) != INTEGER_TYPE
+	  && ((TREE_CODE (root->type) != INTEGER_TYPE
+	       && TREE_CODE (root->type) != BITINT_TYPE)
 	      || TYPE_PRECISION (root->type) != root->size)
 	  /* But leave bitfield accesses alone.  */
 	  && (TREE_CODE (root->expr) != COMPONENT_REF
@@ -2742,8 +2766,11 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  tree rt = root->type;
 	  gcc_assert ((root->offset % BITS_PER_UNIT) == 0
 		      && (root->size % BITS_PER_UNIT) == 0);
-	  root->type = build_nonstandard_integer_type (root->size,
-						       TYPE_UNSIGNED (rt));
+	  if (TREE_CODE (root->type) == BITINT_TYPE)
+	    root->type = build_bitint_type (root->size, TYPE_UNSIGNED (rt));
+	  else
+	    root->type = build_nonstandard_integer_type (root->size,
+							 TYPE_UNSIGNED (rt));
 	  root->expr = build_ref_for_offset (UNKNOWN_LOCATION, root->base,
 					     root->offset, root->reverse,
 					     root->type, NULL, false);

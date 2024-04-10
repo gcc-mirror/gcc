@@ -370,7 +370,7 @@ public:
   label_text get_desc (bool can_colorize) const final override;
   meaning get_meaning () const override;
 
-  function *get_dest_function () const
+  const function *get_dest_function () const
   {
     return m_dst_state.get_current_function ();
   }

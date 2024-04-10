@@ -147,7 +147,7 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
-LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libstdc__fs_la_LIBADD =
 @ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-dir.lo cow-ops.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-path.lo
@@ -158,6 +158,10 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+libstdc__fsconvenience_la_LIBADD =
+am_libstdc__fsconvenience_la_OBJECTS = $(am__objects_2)
+libstdc__fsconvenience_la_OBJECTS =  \
+	$(am_libstdc__fsconvenience_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -184,7 +188,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(libstdc__fs_la_SOURCES)
+SOURCES = $(libstdc__fs_la_SOURCES) \
+	$(libstdc__fsconvenience_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -449,7 +454,11 @@ WARN_CXXFLAGS = \
 
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
+
+# Separate libstdc++fs.a to be installed.
 toolexeclib_LTLIBRARIES = libstdc++fs.la
+# Duplicate lib that is to be part of libstdc++exp.a
+noinst_LTLIBRARIES = libstdc++fsconvenience.la
 headers = 
 @ENABLE_DUAL_ABI_FALSE@cxx11_abi_sources = 
 @ENABLE_DUAL_ABI_TRUE@cxx11_abi_sources = \
@@ -466,6 +475,7 @@ sources = \
 
 # vpath % $(top_srcdir)/src/filesystem
 libstdc__fs_la_SOURCES = $(sources)
+libstdc__fsconvenience_la_SOURCES = $(sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -565,6 +575,17 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclib_LTLIBRARIES)'; test -n "$(toolexeclibdir)" || list=; \
@@ -602,6 +623,9 @@ clean-toolexeclibLTLIBRARIES:
 
 libstdc++fs.la: $(libstdc__fs_la_OBJECTS) $(libstdc__fs_la_DEPENDENCIES) $(EXTRA_libstdc__fs_la_DEPENDENCIES) 
 	$(AM_V_CXXLD)$(CXXLINK) -rpath $(toolexeclibdir) $(libstdc__fs_la_OBJECTS) $(libstdc__fs_la_LIBADD) $(LIBS)
+
+libstdc++fsconvenience.la: $(libstdc__fsconvenience_la_OBJECTS) $(libstdc__fsconvenience_la_DEPENDENCIES) $(EXTRA_libstdc__fsconvenience_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(CXXLINK)  $(libstdc__fsconvenience_la_OBJECTS) $(libstdc__fsconvenience_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -715,8 +739,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -785,8 +809,9 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-toolexeclibLTLIBRARIES cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
+	clean-libtool clean-noinstLTLIBRARIES \
+	clean-toolexeclibLTLIBRARIES cscopelist-am ctags ctags-am \
+	distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
 	install-dvi install-dvi-am install-exec install-exec-am \

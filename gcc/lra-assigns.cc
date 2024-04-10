@@ -1430,13 +1430,19 @@ assign_by_spills (void)
 	    hard_regno = spill_for (regno, &all_spilled_pseudos, iter == 1);
 	  if (hard_regno < 0)
 	    {
-	      if (reload_p) {
-		/* Put unassigned reload pseudo first in the
-		   array.  */
-		regno2 = sorted_pseudos[nfails];
-		sorted_pseudos[nfails++] = regno;
-		sorted_pseudos[i] = regno2;
-	      }
+	      if (reload_p)
+		{
+		  /* Put unassigned reload pseudo first in the array.  */
+		  regno2 = sorted_pseudos[nfails];
+		  sorted_pseudos[nfails++] = regno;
+		  sorted_pseudos[i] = regno2;
+		}
+	      else
+		{
+		  /* Consider all alternatives on the next constraint
+		     subpass.  */
+		  bitmap_set_bit (&all_spilled_pseudos, regno);
+		}
 	    }
 	  else
 	    {

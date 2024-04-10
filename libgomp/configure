@@ -16638,6 +16638,13 @@ done
 
 # Fallback if 'perl' is available.
 if test -z "$FLOCK"; then
+  # These need to be absolute paths, yet at the same time need to
+  # canonicalize only relative paths, because then amd will not unmount
+  # drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
+  case $srcdir in
+    [\\/$]* | ?:[\\/]*) libgomp_abs_srcdir=${srcdir} ;;
+    *) libgomp_abs_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
+  esac
   # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -16655,7 +16662,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_FLOCK="\$(abs_top_srcdir)/testsuite/flock"
+    ac_cv_prog_FLOCK="$libgomp_abs_srcdir/testsuite/flock"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi

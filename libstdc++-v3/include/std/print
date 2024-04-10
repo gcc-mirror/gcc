@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline void
   vprint_unicode(FILE* __stream, string_view __fmt, format_args __args)
   {
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(__CYGWIN__)
     // For most targets we don't need to do anything special to write
     // Unicode to a terminal.
     std::vprint_nonunicode(__stream, __fmt, __args);

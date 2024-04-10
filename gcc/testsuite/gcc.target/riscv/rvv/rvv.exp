@@ -42,7 +42,7 @@ gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
 	"-O3 -ftree-vectorize" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls/*.\[cS\]]] \
-	"-O3 -ftree-vectorize --param riscv-autovec-preference=scalable" $CFLAGS
+	"-O3 -ftree-vectorize -mrvv-vector-bits=scalable" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/struct/*.\[cS\]]] \
 	"" "-O3 -ftree-vectorize"
 
@@ -93,30 +93,30 @@ foreach op $AUTOVEC_TEST_OPTS {
 
 # VLS-VLMAX tests
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls-vlmax/*.\[cS\]]] \
-	"-std=c99 -O3 -ftree-vectorize --param riscv-autovec-preference=fixed-vlmax" $CFLAGS
+	"-std=c99 -O3 -ftree-vectorize -mrvv-vector-bits=zvl" $CFLAGS
 
 # gather-scatter tests
 set AUTOVEC_TEST_OPTS [list \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=dynamic -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=dynamic -ffast-math} \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=dynamic -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
-  {-ftree-vectorize -O2 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=dynamic -ffast-math} ]
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=dynamic -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=zvl --param riscv-autovec-lmul=dynamic -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=dynamic -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=m1 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=m4 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=m8 -fno-vect-cost-model -ffast-math} \
+  {-ftree-vectorize -O2 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=dynamic -ffast-math} ]
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/gather-scatter/*.\[cS\]]] \
     "" "$op"

@@ -392,7 +392,7 @@ namespace __variant
     };
 
   // Defines members and ctors.
-  template<typename... _Types>
+  template<bool __trivially_destructible, typename... _Types>
     union _Variadic_union
     {
       _Variadic_union() = default;
@@ -401,8 +401,8 @@ namespace __variant
 	_Variadic_union(in_place_index_t<_Np>, _Args&&...) = delete;
     };
 
-  template<typename _First, typename... _Rest>
-    union _Variadic_union<_First, _Rest...>
+  template<bool __trivially_destructible, typename _First, typename... _Rest>
+    union _Variadic_union<__trivially_destructible, _First, _Rest...>
     {
       constexpr _Variadic_union() : _M_rest() { }
 
@@ -427,13 +427,12 @@ namespace __variant
       ~_Variadic_union() = default;
 
       constexpr ~_Variadic_union()
-	requires (!is_trivially_destructible_v<_First>)
-	      || (!is_trivially_destructible_v<_Variadic_union<_Rest...>>)
+	requires (!__trivially_destructible)
       { }
 #endif
 
       _Uninitialized<_First> _M_first;
-      _Variadic_union<_Rest...> _M_rest;
+      _Variadic_union<__trivially_destructible, _Rest...> _M_rest;
     };
 
   // _Never_valueless_alt is true for variant alternatives that can
@@ -514,7 +513,7 @@ namespace __variant
 	return this->_M_index != __index_type(variant_npos);
       }
 
-      _Variadic_union<_Types...> _M_u;
+      _Variadic_union<false, _Types...> _M_u;
       using __index_type = __select_index<_Types...>;
       __index_type _M_index;
     };
@@ -552,7 +551,7 @@ namespace __variant
 	return this->_M_index != static_cast<__index_type>(variant_npos);
       }
 
-      _Variadic_union<_Types...> _M_u;
+      _Variadic_union<true, _Types...> _M_u;
       using __index_type = __select_index<_Types...>;
       __index_type _M_index;
     };

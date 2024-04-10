@@ -10,10 +10,10 @@ contains
     !$omp declare variant (f1) match(construct={parallel},construct={parallel}) ! { dg-error "selector set 'construct' specified more than once" }
   end subroutine
   subroutine f30 ()
-    !$omp declare variant (f1) match(user={condition(0)},construct={target},user={condition(0)})  ! { dg-error "selector set 'user' specified more than once" }
+    !$omp declare variant (f1) match(user={condition(.false.)},construct={target},user={condition(.false.)})  ! { dg-error "selector set 'user' specified more than once" }
   end subroutine
   subroutine f31 ()
-    !$omp declare variant (f1) match(user={condition(0)},user={condition(1)}) ! { dg-error "selector set 'user' specified more than once" }
+    !$omp declare variant (f1) match(user={condition(.false.)},user={condition(.true.)}) ! { dg-error "selector set 'user' specified more than once" }
   end subroutine
   subroutine f37 ()
     !$omp declare variant (f1) match(device={kind(unknown)})  ! { dg-warning "unknown property 'unknown' of 'kind' selector" }

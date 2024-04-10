@@ -180,6 +180,8 @@ private string miniFormat(V)(const scope ref V v)
     /// `shared` values are formatted as their base type
     static if (is(V == shared T, T))
     {
+        import core.atomic : atomicLoad;
+
         // Use atomics to avoid race conditions whenever possible
         static if (__traits(compiles, atomicLoad(v)))
         {
@@ -471,11 +473,6 @@ private bool[] calcFieldOverlap(const scope size_t[] offsets)
 
     return overlaps;
 }
-
-// This should be a local import in miniFormat but fails with a cyclic dependency error
-// core.thread.osthread -> core.time -> object -> core.internal.array.capacity
-// -> core.atomic -> core.thread -> core.thread.osthread
-import core.atomic : atomicLoad;
 
 /// Negates a comparison token, e.g. `==` is mapped to `!=`
 private string invertCompToken(scope string comp) pure nothrow @nogc @safe

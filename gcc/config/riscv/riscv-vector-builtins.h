@@ -123,6 +123,7 @@ enum required_ext
   ZVKNHB_EXT,  /* Crypto vector Zvknhb sub-ext */
   ZVKSED_EXT,  /* Crypto vector Zvksed sub-ext */
   ZVKSH_EXT,   /* Crypto vector Zvksh sub-ext */
+  XTHEADVECTOR_EXT,   /* XTheadVector extension */
 };
 
 /* Enumerates the RVV operand types.  */
@@ -252,6 +253,8 @@ struct function_group_info
         return TARGET_ZVKSED;
       case ZVKSH_EXT:
         return TARGET_ZVKSH;
+      case XTHEADVECTOR_EXT:
+	return TARGET_XTHEADVECTOR;
       default:
         gcc_unreachable ();
     }

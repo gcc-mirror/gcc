@@ -117,11 +117,23 @@ PROCEDURE InitDecRangeCheck (d, e: CARDINAL) : CARDINAL ;
 (*
    InitForLoopBeginRangeCheck - returns a range check node which
                                 remembers the information necessary
-                                so that a range check for FOR d := e TO .. DO
-                                can be generated later on.
+                                so that a range check for
+                                FOR des := expr1 TO expr2 DO
+                                can be generated later on.  expr2 is
+                                only used to type check with des.
 *)
 
-PROCEDURE InitForLoopBeginRangeCheck (d, e: CARDINAL) : CARDINAL ;
+PROCEDURE InitForLoopBeginRangeCheck (des, destok,
+                                      expr1, expr1tok,
+                                      expr2, expr2tok,
+                                      byconst, byconsttok: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutRangeForIncrement - places incrementquad into the range record.
+*)
+
+PROCEDURE PutRangeForIncrement (range: CARDINAL; incrementquad: CARDINAL) ;
 
 
 (*

@@ -62,5 +62,6 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 }
 
 /* { dg-final { jit-verify-output-file-was-created "" } } */
-/* { dg-final { jit-verify-assembler-output ".comm	foo,4,8" } } */
+/* { dg-final { jit-verify-assembler-output ".comm	foo,4,8" { target { ! *-*-darwin* } } } } */
+/* { dg-final { jit-verify-assembler-output ".comm\\s_foo,4,3" { target *-*-darwin* } } } */
 /* { dg-final { jit-verify-assembler-output "movl	-16\\\(%rbp\\\), %eax" } } */

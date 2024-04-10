@@ -413,12 +413,12 @@ static assert(is( X!( C, immutable(B) ) == const(B) ));
 static assert(is( X!( C, immutable(D) ) == const(B) ));
 static assert(is( X!( C, immutable(K) ) == const(Object) ));
 
-static assert(Error!( C, immutable(SC) )); // should work
-static assert(Error!( C, immutable(SI) )); // should work
-static assert(Error!( immutable(SI), C )); // should work
-static assert(Error!( C, immutable(SB) )); // should work
-static assert(Error!( C, immutable(SD) )); // should work
-static assert(Error!( C, immutable(SK) )); // should work
+static assert(is( X!( C, immutable(SC)) == const(B) ));
+static assert(is( X!( C, immutable(SI) ) == const(I) ));
+static assert(is( X!( immutable(SI), C ) == const(I) ));
+static assert(is( X!( C, immutable(SB) ) == const(Object) ));
+static assert(is( X!( C, immutable(SD) ) == const(B) ));
+static assert(is( X!( C, immutable(SK) ) == const(Object) ));
 
 static assert(is( X!( const(C), C ) == const(C) ));
 static assert(is( X!( const(C), I ) == const(I) ));
@@ -427,11 +427,11 @@ static assert(is( X!( const(C), D ) == const(B) ));
 static assert(is( X!( const(C), K ) == const(Object) ));
 
 static assert(is( X!( const(C), SC ) == const(C)));
-static assert(Error!( const(C), SI )); // should work
-static assert(is( X!( const(SI), const(C) ) == const(I) )); // should work
-static assert(is( X!( const(C), SB ) == const(B)));
+static assert(is( X!( const(C), SI ) == const(I)));
+static assert(is( X!( const(SI), const(C) ) == const(I) ));
+static assert(is( X!( const(C), SB ) == const(Object)));
 static assert(is( X!( const(C), SD ) == const(B)));
-static assert(is( X!( const(C), SK ) == Object)); // `const`
+static assert(is( X!( const(C), SK ) == const(Object)));
 
 static assert(is( X!( SiC, SC ) == const(C) ));
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zvbc -mabi=lp64d -O3 -Wno-psabi" } */
+/* { dg-options "-march=rv64gc_zvbc -mabi=lp64d -O3" } */
 #include "riscv_vector.h"
 
 vuint64m1_t test_vclmul_vx_u64m1_extend(vuint64m1_t vs2, uint32_t rs1, size_t vl) {

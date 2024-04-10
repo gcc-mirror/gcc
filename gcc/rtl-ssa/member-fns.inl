@@ -120,6 +120,15 @@ use_info::next_any_insn_use () const
 }
 
 inline use_info *
+use_info::next_debug_insn_use () const
+{
+  if (auto use = next_use ())
+    if (use->is_in_debug_insn ())
+      return use;
+  return nullptr;
+}
+
+inline use_info *
 use_info::prev_phi_use () const
 {
   // This is used less often than next_nondebug_insn_use, so it doesn't
@@ -209,6 +218,20 @@ set_info::last_nondebug_insn_use () const
 {
   if (m_is_set_with_nondebug_insn_uses)
     return m_first_use->last_use ()->last_nondebug_insn_use ();
+  return nullptr;
+}
+
+inline use_info *
+set_info::first_debug_insn_use () const
+{
+  use_info *use;
+  if (has_nondebug_insn_uses ())
+    use = last_nondebug_insn_use ()->next_use ();
+  else
+    use = first_use ();
+
+  if (use && use->is_in_debug_insn ())
+    return use;
   return nullptr;
 }
 
@@ -308,6 +331,12 @@ inline iterator_range<nondebug_insn_use_iterator>
 set_info::nondebug_insn_uses () const
 {
   return { first_nondebug_insn_use (), nullptr };
+}
+
+inline iterator_range<debug_insn_use_iterator>
+set_info::debug_insn_uses () const
+{
+  return { first_debug_insn_use (), nullptr };
 }
 
 inline iterator_range<reverse_use_iterator>

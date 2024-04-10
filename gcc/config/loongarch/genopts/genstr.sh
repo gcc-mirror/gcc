@@ -107,7 +107,7 @@ EOF
       print("")
       print("m"$3)
       gsub(/-/, "_", $3)
-      print("Target Mask(ISA_"toupper($3)") Var(isa_evolution)")
+      print("Target Mask(ISA_"toupper($3)") Var(la_isa_evolution)")
       $1=""; $2=""; $3=""
       sub(/^ */, "", $0)
       print($0)

@@ -113,7 +113,8 @@ class Prog:
         # Whether to create .sum rather than .log output.
         self.do_sum = True
         # Regexps used while parsing.
-        self.test_run_re = re.compile (r'^Test run by (\S+) on (.*)$')
+        self.test_run_re = re.compile (r'^Test run by (\S+) on (.*)$',
+                                       re.IGNORECASE)
         self.tool_re = re.compile (r'^\t\t=== (.*) tests ===$')
         self.result_re = re.compile (r'^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED'
                                      r'|WARNING|ERROR|UNSUPPORTED|UNTESTED'

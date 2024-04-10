@@ -2909,6 +2909,29 @@ combine_blocks (class loop *loop, bool loop_versioned)
   edge e;
   edge_iterator ei;
 
+  /* Reset flow-sensitive info before predicating stmts or PHIs we
+     might fold.  */
+  bool *predicated = XNEWVEC (bool, orig_loop_num_nodes);
+  for (i = 0; i < orig_loop_num_nodes; i++)
+    {
+      bb = ifc_bbs[i];
+      predicated[i] = is_predicated (bb);
+      if (predicated[i])
+	{
+	  for (auto gsi = gsi_start_phis (bb);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    reset_flow_sensitive_info (gimple_phi_result (*gsi));
+	  for (auto gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple *stmt = gsi_stmt (gsi);
+	      ssa_op_iter i;
+	      tree op;
+	      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
+		reset_flow_sensitive_info (op);
+	    }
+	}
+    }
+
   remove_conditions_and_labels (loop);
   insert_gimplified_predicates (loop);
   predicate_all_scalar_phis (loop, loop_versioned);
@@ -2917,20 +2940,13 @@ combine_blocks (class loop *loop, bool loop_versioned)
     predicate_statements (loop);
 
   /* Merge basic blocks.  */
-  exit_bb = NULL;
-  bool *predicated = XNEWVEC (bool, orig_loop_num_nodes);
+  exit_bb = single_exit (loop)->src;
+  gcc_assert (exit_bb != loop->latch);
   for (i = 0; i < orig_loop_num_nodes; i++)
     {
       bb = ifc_bbs[i];
-      predicated[i] = !is_true_predicate (bb_predicate (bb));
       free_bb_predicate (bb);
-      if (bb_with_exit_edge_p (loop, bb))
-	{
-	  gcc_assert (exit_bb == NULL);
-	  exit_bb = bb;
-	}
     }
-  gcc_assert (exit_bb != loop->latch);
 
   merge_target_bb = loop->header;
 
@@ -3003,13 +3019,6 @@ combine_blocks (class loop *loop, bool loop_versioned)
 	    /* If this is the first load we arrive at update last_vdef
 	       so we handle stray PHIs correctly.  */
 	    last_vdef = gimple_vuse (stmt);
-	  if (predicated[i])
-	    {
-	      ssa_op_iter i;
-	      tree op;
-	      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
-		reset_flow_sensitive_info (op);
-	    }
 	}
 
       /* Update stmt list.  */
@@ -3692,6 +3701,14 @@ bitfields_to_lower_p (class loop *loop,
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 
+	      if (TREE_THIS_VOLATILE (op))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "\t Bitfield NO OK to lower,"
+					" the access is volatile.\n");
+		  return false;
+		}
+
 	      if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4022,18 +4039,25 @@ pass_if_conversion::execute (function *fun)
   if (todo & TODO_update_ssa_any)
     update_ssa (todo & TODO_update_ssa_any);
 
-  /* If if-conversion elided the loop fall back to the original one.  */
+  /* If if-conversion elided the loop fall back to the original one.  Likewise
+     if the loops are not nested in the same outer loop.  */
   for (unsigned i = 0; i < preds.length (); ++i)
     {
       gimple *g = preds[i];
       if (!gimple_bb (g))
 	continue;
-      unsigned ifcvt_loop = tree_to_uhwi (gimple_call_arg (g, 0));
-      unsigned orig_loop = tree_to_uhwi (gimple_call_arg (g, 1));
-      if (!get_loop (fun, ifcvt_loop) || !get_loop (fun, orig_loop))
+      auto ifcvt_loop = get_loop (fun, tree_to_uhwi (gimple_call_arg (g, 0)));
+      auto orig_loop = get_loop (fun, tree_to_uhwi (gimple_call_arg (g, 1)));
+      if (!ifcvt_loop || !orig_loop)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "If-converted loop vanished\n");
+	  fold_loop_internal_call (g, boolean_false_node);
+	}
+      else if (loop_outer (ifcvt_loop) != loop_outer (orig_loop))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "If-converted loop in different outer loop\n");
 	  fold_loop_internal_call (g, boolean_false_node);
 	}
     }

@@ -1,5 +1,4 @@
 /* Test DEC*_SNAN macros defined in <float.h> with DFP support.  */
-/* { dg-do run } */
 /* { dg-options "-std=c23" } */
 
 #include <float.h>

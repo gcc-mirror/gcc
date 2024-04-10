@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=rv64gcv -mabi=lp64d --param riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-O3 -march=rv64gcv -mabi=lp64d -mrvv-vector-bits=zvl" } */
 
 float f[12][100];
 

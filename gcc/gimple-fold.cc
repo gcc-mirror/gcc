@@ -995,9 +995,12 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 		if (warning != OPT_Wrestrict)
 		  return false;
 
-	      scalar_int_mode mode;
-	      if (int_mode_for_size (ilen * 8, 0).exists (&mode)
-		  && GET_MODE_SIZE (mode) * BITS_PER_UNIT == ilen * 8
+	      scalar_int_mode imode;
+	      machine_mode mode;
+	      if (int_mode_for_size (ilen * BITS_PER_UNIT, 0).exists (&imode)
+		  && bitwise_mode_for_size (ilen
+					    * BITS_PER_UNIT).exists (&mode)
+		  && known_eq (GET_MODE_BITSIZE (mode), ilen * BITS_PER_UNIT)
 		  /* If the destination pointer is not aligned we must be able
 		     to emit an unaligned store.  */
 		  && (dest_align >= GET_MODE_ALIGNMENT (mode)
@@ -1005,7 +1008,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 		      || (optab_handler (movmisalign_optab, mode)
 			  != CODE_FOR_nothing)))
 		{
-		  tree type = build_nonstandard_integer_type (ilen * 8, 1);
+		  tree type = bitwise_type_for_mode (mode);
 		  tree srctype = type;
 		  tree desttype = type;
 		  if (src_align < GET_MODE_ALIGNMENT (mode))
@@ -4018,6 +4021,11 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
       minlen = wi::shwi (0, prec);
       maxlen = wi::to_wide (max_object_size (), prec) - 2;
     }
+
+  /* For -fsanitize=address, don't optimize the upper bound of the
+     length to be able to diagnose UB on non-zero terminated arrays.  */
+  if (sanitize_flags_p (SANITIZE_ADDRESS))
+    maxlen = wi::max_value (TYPE_PRECISION (sizetype), UNSIGNED);
 
   if (minlen == maxlen)
     {

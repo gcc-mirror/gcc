@@ -1,3 +1,246 @@
+2024-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103707
+	PR fortran/106987
+	* arith.cc (is_hard_arith_error): New helper function to determine
+	whether an arithmetic error is "hard" or not.
+	(check_result): Use it.
+	(gfc_arith_divide): Set "Division by zero" only for regular
+	numerators of real and complex divisions.
+	(reduce_unary): Use is_hard_arith_error to determine whether a hard
+	or (recoverable) soft error was encountered.  Terminate immediately
+	on hard error, otherwise remember code of first soft error.
+	(reduce_binary_ac): Likewise.
+	(reduce_binary_ca): Likewise.
+	(reduce_binary_aa): Likewise.
+
+2024-03-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104819
+	* check.cc (gfc_check_null): Handle nested NULL()s.
+	(is_c_interoperable): Check for MOLD argument of NULL() as part of
+	the interoperability check.
+	* interface.cc (gfc_compare_actual_formal): Extend checks for NULL()
+	actual arguments for presence of MOLD argument when required by
+	Interp J3/22-146.
+
+2024-02-29  Alexander Westbrooks  <alexanderw@gcc.gnu.org>
+
+	PR fortran/82943
+	PR fortran/86148
+	PR fortran/86268
+	* decl.cc (gfc_get_pdt_instance): Set the PDT instance field
+	'f2k_derived', if not set already, to point to the given
+	PDT template 'f2k_derived' namespace in order to give the
+	PDT instance referential access to the typebound procedures
+	of the template.
+	* gfortran.h (gfc_pdt_is_instance_of): Add prototype.
+	* resolve.cc (resolve_typebound_procedure): If the derived type
+	does not have the attribute 'pdt_template' set, compare the
+	dummy argument to the 'resolve_bindings_derived' type like usual.
+	If the derived type is a 'pdt_template', then check if the
+	dummy argument is an instance of the PDT template. If the derived
+	type is a PDT template, and the dummy argument is an instance of
+	that template, but the dummy argument 'param_list' is not
+	SPEC_ASSUMED, check if there are any LEN parameters in the
+	dummy argument. If there are no LEN parameters, then this implies
+	that there are only KIND parameters in the dummy argument.
+	If there are LEN parameters, this would be an error, for all
+	LEN parameters for the dummy argument MUST be assumed for
+	typebound procedures of PDTs.
+	(resolve_pdt): Add a check for ALLOCATABLE and POINTER attributes for
+	SPEC_DEFERRED parameters of PDT class symbols.  ALLOCATABLE and
+	POINTER attributes for a PDT class symbol are stored in the
+	'class_pointer' and 'allocatable' attributes of the '_data'
+	component respectively.
+	* symbol.cc (gfc_pdt_is_instance_of): New function.
+
+2024-02-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114012
+	* trans-expr.cc (gfc_conv_procedure_call): Evaluate non-trivial
+	arguments just once before assigning to an unlimited polymorphic
+	dummy variable.
+
+2024-02-23  Steve Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114024
+	* trans-stmt.cc (gfc_trans_allocate): When a source expression has
+	substring references, part-refs, or %re/%im inquiries, wrap the
+	entity in parentheses to force evaluation of the expression.
+
+2024-02-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_depobj): Use OPT_Wopenmp
+	as warning category in gfc_warning.
+
+2024-02-20  Peter Hill  <peter.hill@york.ac.uk>
+
+	PR fortran/105658
+	* trans-expr.cc (gfc_conv_intrinsic_to_class): When passing an
+	array component reference of intrinsic type to a procedure
+	with an unlimited polymorphic dummy argument, a temporary
+	should be created.
+
+2024-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/113503
+	* trans-expr.cc (alloc_scalar_allocatable_subcomponent): Don't
+	overwrite expr2->ts.u.cl->backend_decl, instead set size to
+	expr2->ts.u.cl->backend_decl first and use size instead of
+	expr2->ts.u.cl->backend_decl.
+	(gfc_trans_subcomponent_assign): Emit se.pre into block
+	before calling alloc_scalar_allocatable_subcomponent instead of
+	after it.
+
+2024-02-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113911
+	* trans-array.cc (gfc_trans_deferred_array): Do not clobber
+	deferred length for a character variable passed as dummy argument.
+
+2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* dump-parse-tree.cc (show_attr): Handle omp_declare_target_indirect
+	attribute.
+	* f95-lang.cc (gfc_gnu_attributes): Add entry for 'omp declare
+	target indirect'.
+	* gfortran.h (symbol_attribute): Add omp_declare_target_indirect
+	field.
+	(struct gfc_omp_clauses): Add indirect field.
+	* openmp.cc (omp_mask2): Add OMP_CLAUSE_INDIRECT.
+	(gfc_match_omp_clauses): Match indirect clause.
+	(OMP_DECLARE_TARGET_CLAUSES): Add OMP_CLAUSE_INDIRECT.
+	(gfc_match_omp_declare_target): Check omp_device_type and apply
+	omp_declare_target_indirect attribute to symbol if indirect clause
+	active.  Show warning if there are only device_type and/or indirect
+	clauses on the directive.
+	* trans-decl.cc (add_attributes_to_decl): Add 'omp declare target
+	indirect' attribute if symbol has indirect attribute set.
+
+2024-02-14  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105847
+	* trans-io.cc (transfer_namelist_element): When building the
+	namelist object name, if the use rename attribute is set, use
+	the local name specified in the use statement.
+
+2024-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.cc (error_print): For u printing of ptrdiff_t,
+	print ptrdiff_t argument converted to unsigned long long and
+	masked with 2ULL * PTRDIFF_MAX + 1.
+
+2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113904
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Handle splitting of
+	OMP_TRAIT_PROPERTY_EXPR into OMP_TRAIT_PROPERTY_{DEV_NUM,BOOL}_EXPR.
+	* openmp.cc (gfc_match_omp_context_selector): Likewise; rejects
+	non-const device_num/condition; improve diagnostic.
+
+2024-02-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113866
+	* trans-expr.cc (gfc_conv_procedure_call): When passing an optional
+	dummy argument to an optional dummy argument of a bind(c) procedure
+	and the dummy argument is passed via a CFI descriptor, no special
+	presence check and passing of a default NULL pointer is needed.
+
+2024-02-13  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113883
+	* trans-array.cc (gfc_trans_deferred_array): Set length to zero,
+	avoiding extraneous diagnostics.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.cc (error_print): Handle z and t modifiers on d, i and u.
+	* check.cc (gfc_check_transfer): Use %zd instead of %ld and casts to
+	long.
+	* primary.cc (gfc_convert_to_structure_constructor): Use %td instead
+	of %ld and casts to long.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-common.cc (build_common_decl): Use %wu instead of %lu and
+	casts to unsigned long.
+	* resolve.cc (resolve_ordinary_assign): Use %wd instead of %ld and
+	casts to long.
+	* array.cc (gfc_resolve_character_array_constructor): Likewise.
+	* data.cc (create_character_initializer): Likewise.
+
+2024-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113799
+	* arith.cc (reduce_unary): Remember any overflow encountered during
+	reduction of unary arithmetic operations on array constructors and
+	continue, and return error status, but terminate on serious errors.
+
+2024-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* trans-expr.cc (conv_dummy_value): Treat NULL actual argument to
+	optional dummy with the VALUE attribute as not present.
+	(gfc_conv_procedure_call): Likewise.
+
+2024-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104908
+	* trans-array.cc (gfc_conv_array_ref): Restrict use of transformed
+	descriptor (sym->backend_decl) to the unlimited polymorphic case.
+
+2024-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* trans-expr.cc (conv_dummy_value): New.
+	(gfc_conv_procedure_call): Factor code for handling dummy arguments
+	with the VALUE attribute in the scalar case into conv_dummy_value().
+	Reuse and adjust for calling elemental procedures.
+
+2024-01-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* trans-expr.cc (gfc_conv_procedure_call): Fix handling of optional
+	scalar arguments of intrinsic type with the VALUE attribute.
+
+2024-01-20  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/48776
+	PR fortran/111291
+	* parse.cc: Restore current interface to its previous value on error.
+
+2024-01-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113471
+	* trans-array.cc (array_bound_check_elemental): Array bounds check
+	shall apply here to elemental dimensions of an array section only.
+
+2024-01-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/67277
+	* trans-intrinsic.cc (gfc_conv_intrinsic_ishftc): Handle optional
+	dummy argument for SIZE passed to ISHFTC.  Set default value to
+	BIT_SIZE(I) when missing.
+
+2024-01-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113305
+	* gfortran.h (gfc_loop_annot): New.
+	(gfc_iterator, gfc_forall_iterator): Use for annotation control.
+	* array.cc (gfc_copy_iterator): Adjust.
+	* gfortran.texi: Document annotations IVDEP, UNROLL n, VECTOR,
+	NOVECTOR as applied to DO CONCURRENT.
+	* parse.cc (parse_do_block): Parse annotations IVDEP, UNROLL n,
+	VECTOR, NOVECTOR as applied to DO CONCURRENT.  Apply UNROLL only to
+	first loop control variable.
+	* trans-stmt.cc (iter_info): Use gfc_loop_annot.
+	(gfc_trans_simple_do): Adjust.
+	(gfc_trans_forall_loop): Annotate loops with IVDEP, UNROLL n,
+	VECTOR, NOVECTOR as needed for DO CONCURRENT.
+	(gfc_trans_forall_1): Handle loop annotations.
+
 2024-01-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/113245

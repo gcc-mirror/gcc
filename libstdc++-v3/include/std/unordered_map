@@ -51,6 +51,7 @@
 #define __glibcxx_want_node_extract
 #define __glibcxx_want_nonmember_container_access
 #define __glibcxx_want_unordered_map_try_emplace
+#define __glibcxx_want_tuple_like
 #include <bits/version.h>
 
 #if __cplusplus >= 201703L

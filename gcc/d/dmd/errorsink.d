@@ -1,7 +1,7 @@
 /**
  * Provides an abstraction for what to do with error messages.
  *
- * Copyright:   Copyright (C) 2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 2023-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/errorsink.d, _errorsink.d)
@@ -58,6 +58,20 @@ class ErrorSinkNull : ErrorSink
     void deprecation(const ref Loc loc, const(char)* format, ...) { }
 
     void deprecationSupplemental(const ref Loc loc, const(char)* format, ...) { }
+}
+
+/*****************************************
+ * Ignores the messages, but sets `sawErrors` for any calls to `error()`
+ */
+class ErrorSinkLatch : ErrorSinkNull
+{
+  nothrow:
+  extern (C++):
+  override:
+
+    bool sawErrors;
+
+    void error(const ref Loc loc, const(char)* format, ...) { sawErrors = true; }
 }
 
 /*****************************************

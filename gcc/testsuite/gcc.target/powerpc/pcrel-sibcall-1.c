@@ -8,10 +8,10 @@
    generated when the caller preserves the TOC but the callee does not.  */
 
 #pragma GCC target ("cpu=power10,pcrel")
-int x (void) __attribute__((noinline));
-int y (void) __attribute__((noinline));
-int xx (void) __attribute__((noinline));
-  
+int x (void) __attribute__((noipa));
+int y (void) __attribute__((noipa));
+int xx (void) __attribute__((noipa));
+
 int x (void)
 {
   return 1;

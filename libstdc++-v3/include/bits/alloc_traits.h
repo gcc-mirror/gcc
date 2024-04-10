@@ -38,6 +38,9 @@
 # if _GLIBCXX_HOSTED
 #  include <bits/allocator.h>
 # endif
+# if __cpp_exceptions
+#  include <bits/stl_iterator.h> // __make_move_if_noexcept_iterator
+# endif
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)

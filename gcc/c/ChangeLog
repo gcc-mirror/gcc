@@ -1,3 +1,130 @@
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/113918
+	* c-tree.h (c_type_dwarf_attribute): Declare.
+	* c-objc-common.h (LANG_HOOKS_TYPE_DWARF_ATTRIBUTE): Redefine.
+	* c-objc-common.cc: Include dwarf2.h.
+	(c_type_dwarf_attribute): New function.
+
+2024-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114042
+	* c-parser.cc (c_parser_postfix_expression): Diagnose
+	__builtin_stdc_bit_* argument with ENUMERAL_TYPE or BOOLEAN_TYPE
+	type or if signed here rather than on the replacement builtins
+	in check_builtin_function_arguments.
+
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114007
+	* c-parser.cc (c_parser_std_attribute): Remove loose_scope_p argument.
+	Instead of checking it, parse 2 CPP_COLONs with the first one with
+	COLON_SCOPE flag the same as CPP_SCOPE.
+	(c_parser_std_attribute_list): Remove loose_scope_p argument, don't
+	pass it to c_parser_std_attribute.
+	(c_parser_std_attribute_specifier): Adjust c_parser_std_attribute_list
+	caller.
+
+2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113904
+	* c-parser.cc (c_parser_omp_context_selector): Handle splitting of
+	OMP_TRAIT_PROPERTY_EXPR into OMP_TRAIT_PROPERTY_{DEV_NUM,BOOL}_EXPR.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (get_parm_array_spec): Use HOST_WIDE_INT_PRINT_UNSIGNED
+	instead of "%lu" and casts to unsigned long or unsigned long long.
+
+2024-02-08  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/113776
+	* c-typeck.cc (c_objc_common_truthvalue_conversion): Return an
+	integer constant expression for boolean conversion of floating
+	constant.
+
+2024-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/113740
+	* c-decl.cc (finish_struct): Only use build_bitint_type if
+	bit-field has width larger or equal to minimum _BitInt
+	precision.
+
+2024-01-31  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112571
+	* c-decl.cc (start_enum): Clear ENUM_FIXED_UNDERLYING_TYPE_P when
+	defining without a fixed underlying type an enumeration previously
+	declared with a fixed underlying type.
+
+2024-01-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113438
+	* c-typeck.cc (composite_type_internal): Set TYPE_STUB_DECL.
+
+2024-01-31  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/111059
+	PR c/111911
+	* c-tree.h (c_objc_common_truthvalue_conversion): Add third
+	argument.
+	* c-convert.cc (c_convert): For conversions to boolean, pass third
+	argument to c_objc_common_truthvalue_conversion rather than
+	converting here.
+	* c-typeck.cc (build_c_cast): Ensure arguments with integer
+	operands are marked as such for conversion to boolean.
+	(c_objc_common_truthvalue_conversion): Add third argument TYPE.
+
+2024-01-21  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113492
+	* c-decl.cc (grokdeclarator): Use c_common_unsigned_type instead of
+	unsigned_type_for to create the unsigned type for bitfields declared
+	with int when using -funsigned-bitfields.
+
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/113315
+	* c-typeck.cc (build_array_ref): If index has BITINT_TYPE type with
+	precision larger than sizetype precision, convert it to sizetype.
+
+2024-01-11  Julian Brown  <julian@codesourcery.com>
+
+	* c-parser.cc (c_parser_braced_init, c_parser_conditional_expression):
+	Don't allow OpenMP array section.
+	(c_parser_postfix_expression): Don't allow array section in statement
+	expression.
+	(c_parser_postfix_expression_after_primary): Add support for OpenMP
+	array section parsing.
+	(c_parser_expr_list): Don't allow OpenMP array section here.
+	(c_parser_omp_variable_list): Change ALLOW_DEREF parameter to
+	MAP_LVALUE.  Support parsing of general lvalues in "map", "to" and
+	"from" clauses.
+	(c_parser_omp_var_list_parens): Change ALLOW_DEREF parameter to
+	MAP_LVALUE.  Update call to c_parser_omp_variable_list.
+	(c_parser_oacc_data_clause): Update calls to
+	c_parser_omp_var_list_parens.
+	(c_parser_omp_clause_reduction): Use OMP_ARRAY_SECTION tree node
+	instead of TREE_LIST for array sections.
+	(c_parser_omp_target): Allow GOMP_MAP_ATTACH.
+	* c-tree.h (c_omp_array_section_p): Add extern declaration.
+	(build_omp_array_section): Add prototype.
+	* c-typeck.cc (c_omp_array_section_p): Add flag.
+	(mark_exp_read): Support OMP_ARRAY_SECTION.
+	(build_omp_array_section): Add function.
+	(build_external_ref): Tweak error path for OpenMP array sections.
+	(handle_omp_array_sections_1): Use OMP_ARRAY_SECTION tree code instead
+	of TREE_LIST.  Handle more kinds of expressions.
+	(c_oacc_check_attachments): Use OMP_ARRAY_SECTION instead of TREE_LIST
+	for array sections.
+	(c_finish_omp_clauses): Use OMP_ARRAY_SECTION instead of TREE_LIST.
+	Check for supported expression types.
+
+2024-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR c/113267
+	* c-parser.cc (c_parser_for_statement): Skip the pragma is no cond.
+
 2024-01-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_clause_name): Move handling of indirect

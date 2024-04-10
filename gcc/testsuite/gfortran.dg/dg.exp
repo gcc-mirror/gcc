@@ -54,27 +54,7 @@ proc dg-compile-aux-modules { args } {
     }
 }
 
-# coarray tests might need libatomic.  Assume that it is either not needed or
-# provided by builtins if it's not available.
-set maybe_atomic_lib ""
-if [check_effective_target_libatomic_available] {
-    if ![is_remote host] {
-	if [info exists TOOL_OPTIONS] {
-	    set maybe_atomic_lib "[atomic_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
-	} else {
-	    set maybe_atomic_lib "[atomic_link_flags [get_multilibs]]"
-	}
-    } else {
-        set maybe_atomic_lib ""
-    }
-}
-
 set all_flags $DEFAULT_FFLAGS
-if { $maybe_atomic_lib != "" } {
-   foreach f $maybe_atomic_lib {
-     lappend all_flags $f
-   }
-}
 
 # Main loop.
 gfortran-dg-runtest [lsort \

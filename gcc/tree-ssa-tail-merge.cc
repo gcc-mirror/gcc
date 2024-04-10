@@ -474,6 +474,9 @@ same_succ_hash (const same_succ *e)
        !gsi_end_p (gsi); gsi_next_nondebug (&gsi))
     {
       stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	continue;
+
       stmt_update_dep_bb (stmt);
       if (stmt_local_def (stmt))
 	continue;

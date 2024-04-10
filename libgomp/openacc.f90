@@ -787,13 +787,16 @@ module openacc
   public :: acc_async_test, acc_async_test_all
   public :: acc_wait, acc_async_wait, acc_wait_async
   public :: acc_wait_all, acc_async_wait_all, acc_wait_all_async
-  public :: acc_init, acc_shutdown, acc_on_device
+  public :: acc_init, acc_shutdown, acc_on_device, acc_malloc, acc_free
   public :: acc_copyin, acc_present_or_copyin, acc_pcopyin, acc_create
   public :: acc_present_or_create, acc_pcreate, acc_copyout, acc_delete
-  public :: acc_update_device, acc_update_self, acc_is_present
+  public :: acc_update_device, acc_update_self, acc_map_data, acc_unmap_data
+  public :: acc_deviceptr, acc_hostptr, acc_is_present
   public :: acc_copyin_async, acc_create_async, acc_copyout_async
   public :: acc_delete_async, acc_update_device_async, acc_update_self_async
   public :: acc_copyout_finalize, acc_delete_finalize
+  public :: acc_memcpy_to_device, acc_memcpy_to_device_async
+  public :: acc_memcpy_from_device, acc_memcpy_from_device_async
 
   integer, parameter :: openacc_version = 201711
 
@@ -871,8 +874,19 @@ module openacc
     procedure :: acc_on_device_h
   end interface
 
-  ! acc_malloc: Only available in C/C++
-  ! acc_free: Only available in C/C++
+  interface
+    type(c_ptr) function acc_malloc (bytes) bind(C)
+      use iso_c_binding, only: c_ptr, c_size_t
+      integer(c_size_t), value :: bytes
+    end function
+  end interface
+
+  interface
+    subroutine acc_free (data_dev) bind(C)
+      use iso_c_binding, only: c_ptr
+      type(c_ptr), value :: data_dev
+    end subroutine
+  end interface
 
   ! As vendor extension, the following code supports both 32bit and 64bit
   ! arguments for "size"; the OpenACC standard only permits default-kind
@@ -953,10 +967,34 @@ module openacc
     procedure :: acc_update_self_array_h
   end interface
 
-  ! acc_map_data: Only available in C/C++
-  ! acc_unmap_data: Only available in C/C++
-  ! acc_deviceptr: Only available in C/C++
-  ! acc_hostptr: Only available in C/C++
+  interface
+    subroutine acc_map_data (data_arg, data_dev, bytes) bind(C)
+      use iso_c_binding, only: c_ptr, c_size_t
+      type(*), dimension(*) :: data_arg
+      type(c_ptr), value :: data_dev
+      integer(c_size_t), value :: bytes
+    end subroutine
+  end interface
+
+  interface
+    subroutine acc_unmap_data (data_arg) bind(C)
+      type(*), dimension(*) :: data_arg
+    end subroutine
+  end interface
+
+  interface
+    type(c_ptr) function acc_deviceptr (data_arg) bind(C)
+      use iso_c_binding, only: c_ptr
+      type(*), dimension(*) :: data_arg
+    end function
+  end interface
+
+  interface
+    type(c_ptr) function acc_hostptr (data_dev) bind(C)
+      use iso_c_binding, only: c_ptr
+      type(c_ptr), value :: data_dev
+    end function
+  end interface
 
   interface acc_is_present
     procedure :: acc_is_present_32_h
@@ -964,8 +1002,49 @@ module openacc
     procedure :: acc_is_present_array_h
   end interface
 
-  ! acc_memcpy_to_device: Only available in C/C++
-  ! acc_memcpy_from_device: Only available in C/C++
+  interface
+    subroutine acc_memcpy_to_device (data_dev_dest, data_host_src,  &
+                                     bytes) bind(C)
+      use iso_c_binding, only: c_ptr, c_size_t
+      type(c_ptr), value :: data_dev_dest
+      type(*),dimension(*) :: data_host_src
+      integer(c_size_t), value :: bytes
+    end subroutine
+  end interface
+
+  interface
+    subroutine acc_memcpy_to_device_async (data_dev_dest, data_host_src,  &
+                                           bytes, async_arg) bind(C)
+      use iso_c_binding, only: c_ptr, c_size_t
+      import :: acc_handle_kind
+      type(c_ptr), value :: data_dev_dest
+      type(*),dimension(*) :: data_host_src
+      integer(c_size_t), value :: bytes
+      integer(acc_handle_kind), value :: async_arg
+    end subroutine
+  end interface
+
+  interface
+    subroutine acc_memcpy_from_device (data_host_dest, data_dev_src,  &
+                                       bytes) bind(C)
+      use iso_c_binding, only: c_ptr, c_size_t
+      type(*),dimension(*) :: data_host_dest
+      type(c_ptr), value :: data_dev_src
+      integer(c_size_t), value :: bytes
+    end subroutine
+  end interface
+
+  interface
+    subroutine acc_memcpy_from_device_async (data_host_dest, data_dev_src,  &
+                                             bytes, async_arg) bind(C)
+      use iso_c_binding, only: c_ptr, c_size_t
+      import :: acc_handle_kind
+      type(*),dimension(*) :: data_host_dest
+      type(c_ptr), value :: data_dev_src
+      integer(c_size_t), value :: bytes
+      integer(acc_handle_kind), value :: async_arg
+    end subroutine
+  end interface
 
   interface acc_copyin_async
     procedure :: acc_copyin_async_32_h

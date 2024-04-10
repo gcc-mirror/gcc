@@ -2,7 +2,7 @@
 /* Note, _Complex long double is initialized to zeroes due to the current
    implemenation limitation.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=pattern -march=x86-64 -mtune=generic -msse" } */
+/* { dg-options "-ftrivial-auto-var-init=pattern -march=x86-64 -mtune=generic -msse -fno-asynchronous-unwind-tables" } */
 
 
 _Complex long double result;

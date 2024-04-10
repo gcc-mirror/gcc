@@ -83,6 +83,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm-constrs.h"
 #include "tree-vrp.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "sched-int.h"
@@ -17867,33 +17869,45 @@ expand_perm_as_a_vlbr_vstbr_candidate (const struct expand_vec_perm_d &d)
 
   if (memcmp (d.perm, perm[0], MAX_VECT_LEN) == 0)
     {
-      rtx target = gen_rtx_SUBREG (V8HImode, d.target, 0);
-      rtx op0 = gen_rtx_SUBREG (V8HImode, d.op0, 0);
-      emit_insn (gen_bswapv8hi (target, op0));
+      if (!d.testing_p)
+	{
+	  rtx target = gen_rtx_SUBREG (V8HImode, d.target, 0);
+	  rtx op0 = gen_rtx_SUBREG (V8HImode, d.op0, 0);
+	  emit_insn (gen_bswapv8hi (target, op0));
+	}
       return true;
     }
 
   if (memcmp (d.perm, perm[1], MAX_VECT_LEN) == 0)
     {
-      rtx target = gen_rtx_SUBREG (V4SImode, d.target, 0);
-      rtx op0 = gen_rtx_SUBREG (V4SImode, d.op0, 0);
-      emit_insn (gen_bswapv4si (target, op0));
+      if (!d.testing_p)
+	{
+	  rtx target = gen_rtx_SUBREG (V4SImode, d.target, 0);
+	  rtx op0 = gen_rtx_SUBREG (V4SImode, d.op0, 0);
+	  emit_insn (gen_bswapv4si (target, op0));
+	}
       return true;
     }
 
   if (memcmp (d.perm, perm[2], MAX_VECT_LEN) == 0)
     {
-      rtx target = gen_rtx_SUBREG (V2DImode, d.target, 0);
-      rtx op0 = gen_rtx_SUBREG (V2DImode, d.op0, 0);
-      emit_insn (gen_bswapv2di (target, op0));
+      if (!d.testing_p)
+	{
+	  rtx target = gen_rtx_SUBREG (V2DImode, d.target, 0);
+	  rtx op0 = gen_rtx_SUBREG (V2DImode, d.op0, 0);
+	  emit_insn (gen_bswapv2di (target, op0));
+	}
       return true;
     }
 
   if (memcmp (d.perm, perm[3], MAX_VECT_LEN) == 0)
     {
-      rtx target = gen_rtx_SUBREG (V1TImode, d.target, 0);
-      rtx op0 = gen_rtx_SUBREG (V1TImode, d.op0, 0);
-      emit_insn (gen_bswapv1ti (target, op0));
+      if (!d.testing_p)
+	{
+	  rtx target = gen_rtx_SUBREG (V1TImode, d.target, 0);
+	  rtx op0 = gen_rtx_SUBREG (V1TImode, d.op0, 0);
+	  emit_insn (gen_bswapv1ti (target, op0));
+	}
       return true;
     }
 

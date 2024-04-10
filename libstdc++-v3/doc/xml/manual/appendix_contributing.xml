@@ -20,7 +20,7 @@
 <para>
   The GNU C++ Library is part of GCC and follows the same development model,
   so the general rules for
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/contribute.html">contributing
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/contribute.html">contributing
   to GCC</link> apply. Active
   contributors are assigned maintainership responsibility, and given
   write access to the source repository. First-time contributors
@@ -64,7 +64,7 @@
       <listitem>
 	<para>
 	  Peruse
-	  the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/prep/standards/">GNU
+	  the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.gnu.org/prep/standards/">GNU
 	  Coding Standards</link>, and chuckle when you hit the part
 	  about <quote>Using Languages Other Than C</quote>.
 	</para>
@@ -91,7 +91,7 @@
   <section xml:id="list.copyright"><info><title>Assignment</title></info>
 
     <para>
-      See the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/contribute.html#legal">legal prerequisites</link> for all GCC contributions.
+      See the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/contribute.html#legal">legal prerequisites</link> for all GCC contributions.
     </para>
 
     <para>
@@ -151,12 +151,12 @@
 
       <listitem>
 	<para>
-	  A ChangeLog entry as plain text; see the various
-	  ChangeLog files for format and content. If you are
-	  using emacs as your editor, simply position the insertion
-	  point at the beginning of your change and hit CX-4a to bring
-	  up the appropriate ChangeLog entry. See--magic! Similar
-	  functionality also exists for vi.
+	  A ChangeLog entry as part of the Git commit message. Check
+	  some recent commits for format and content. The
+	  <filename>contrib/mklog.py</filename> script can be used to
+	  generate a ChangeLog template for commit messages. See
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/gitwrite.html">Read-write Git access</link>
+	  for scripts and aliases that are useful here.
 	</para>
       </listitem>
 
@@ -171,7 +171,7 @@
       <listitem>
 	<para>
 	  The patch itself. If you are using the Git repository use
-	  <command>git diff</command> or <command>git format-patch</command>
+	  <command>git show</command> or <command>git format-patch</command>
 	  to produce a patch;
 	  otherwise, use <command>diff -cp OLD NEW</command>. If your
 	  version of diff does not support these options, then get the
@@ -186,6 +186,8 @@
 	  patches and related discussion should be sent to the
 	  libstdc++ mailing list. In common with the rest of GCC,
 	  patches should also be sent to the gcc-patches mailing list.
+	  So you could send your email To:libstdc++@gcc.gnu.org and
+	  Cc:gcc-patches@gcc.gnu.org for example.
 	</para>
       </listitem>
     </itemizedlist>
@@ -616,13 +618,13 @@ indicate a place that may require attention for multi-thread safety.
       it is intended to precede the recommendations of the GNU Coding
       Standard, which can be referenced in full here:
 
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/prep/standards/standards.html#Formatting">http://www.gnu.org/prep/standards/standards.html#Formatting</link>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.gnu.org/prep/standards/standards.html#Formatting">https://www.gnu.org/prep/standards/standards.html#Formatting</link>
 
       The rest of this is also interesting reading, but skip the "Design
       Advice" part.
 
       The GCC coding conventions are here, and are also useful:
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/codingconventions.html">http://gcc.gnu.org/codingconventions.html</link>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/codingconventions.html">https://gcc.gnu.org/codingconventions.html</link>
 
       In addition, because it doesn't seem to be stated explicitly anywhere
       else, there is an 80 column source limit.

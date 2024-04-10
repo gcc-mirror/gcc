@@ -282,6 +282,12 @@ vect_preserves_scalar_order_p (dr_vec_info *dr_info_a, dr_vec_info *dr_info_b)
       && !STMT_VINFO_GROUPED_ACCESS (stmtinfo_b))
     return true;
 
+  /* If there is a loop invariant read involved we might vectorize it in
+     the prologue, breaking scalar oder with respect to the in-loop store.  */
+  if ((DR_IS_READ (dr_info_a->dr) && integer_zerop (DR_STEP (dr_info_a->dr)))
+      || (DR_IS_READ (dr_info_b->dr) && integer_zerop (DR_STEP (dr_info_b->dr))))
+    return false;
+
   /* STMT_A and STMT_B belong to overlapping groups.  All loads are
      emitted at the position of the first scalar load.
      Stores in a group are emitted at the position of the last scalar store.
@@ -613,10 +619,10 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   return opt_result::success ();
 }
 
-/* Funcion vect_analyze_early_break_dependences.
+/* Function vect_analyze_early_break_dependences.
 
-   Examime all the data references in the loop and make sure that if we have
-   mulitple exits that we are able to safely move stores such that they become
+   Examine all the data references in the loop and make sure that if we have
+   multiple exits that we are able to safely move stores such that they become
    safe for vectorization.  The function also calculates the place where to move
    the instructions to and computes what the new vUSE chain should be.
 
@@ -633,7 +639,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
      - Multiple loads are allowed as long as they don't alias.
 
    NOTE:
-     This implemementation is very conservative. Any overlappig loads/stores
+     This implementation is very conservative. Any overlapping loads/stores
      that take place before the early break statement gets rejected aside from
      WAR dependencies.
 
@@ -662,7 +668,6 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
   auto_vec<data_reference *> bases;
   basic_block dest_bb = NULL;
 
-  hash_set <gimple *> visited;
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   class loop *loop_nest = loop_outer (loop);
 
@@ -671,13 +676,35 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 		     "loop contains multiple exits, analyzing"
 		     " statement dependencies.\n");
 
-  for (gimple *c : LOOP_VINFO_LOOP_CONDS (loop_vinfo))
-    {
-      stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (c);
-      if (STMT_VINFO_TYPE (loop_cond_info) != loop_exit_ctrl_vec_info_type)
-	continue;
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+    if (dump_enabled_p ())
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "alternate exit has been chosen as main exit.\n");
 
-      gimple_stmt_iterator gsi = gsi_for_stmt (c);
+  /* Since we don't support general control flow, the location we'll move the
+     side-effects to is always the latch connected exit.  When we support
+     general control flow we can do better but for now this is fine.  Move
+     side-effects to the in-loop destination of the last early exit.  For the
+     PEELED case we move the side-effects to the latch block as this is
+     guaranteed to be the last block to be executed when a vector iteration
+     finished.  */
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+    dest_bb = loop->latch;
+  else
+    dest_bb = single_pred (loop->latch);
+
+  /* We start looking from dest_bb, for the non-PEELED case we don't want to
+     move any stores already present, but we do want to read and validate the
+     loads.  */
+  basic_block bb = dest_bb;
+
+  /* We move stores across all loads to the beginning of dest_bb, so
+     the first block processed below doesn't need dependence checking.  */
+  bool check_deps = false;
+
+  do
+    {
+      gimple_stmt_iterator gsi = gsi_last_bb (bb);
 
       /* Now analyze all the remaining statements and try to determine which
 	 instructions are allowed/needed to be moved.  */
@@ -685,8 +712,7 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  gsi_prev (&gsi);
-	  if (!gimple_has_ops (stmt)
-	      || is_gimple_debug (stmt))
+	  if (is_gimple_debug (stmt))
 	    continue;
 
 	  stmt_vec_info stmt_vinfo = loop_vinfo->lookup_stmt (stmt);
@@ -694,52 +720,30 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 	  if (!dr_ref)
 	    continue;
 
-	  /* We currently only support statically allocated objects due to
-	     not having first-faulting loads support or peeling for
-	     alignment support.  Compute the size of the referenced object
-	     (it could be dynamically allocated).  */
-	  tree obj = DR_BASE_ADDRESS (dr_ref);
-	  if (!obj || TREE_CODE (obj) != ADDR_EXPR)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "early breaks only supported on statically"
-				 " allocated objects.\n");
-	      return opt_result::failure_at (c,
-				 "can't safely apply code motion to "
-				 "dependencies of %G to vectorize "
-				 "the early exit.\n", c);
-	    }
-
-	  tree refop = TREE_OPERAND (obj, 0);
-	  tree refbase = get_base_address (refop);
-	  if (!refbase || !DECL_P (refbase) || !DECL_SIZE (refbase)
-	      || TREE_CODE (DECL_SIZE (refbase)) != INTEGER_CST)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "early breaks only supported on"
-				 " statically allocated objects.\n");
-	      return opt_result::failure_at (c,
-				 "can't safely apply code motion to "
-				 "dependencies of %G to vectorize "
-				 "the early exit.\n", c);
-	    }
+	  /* We know everything below dest_bb is safe since we know we
+	     had a full vector iteration when reaching it.  Either by
+	     the loop entry / IV exit test being last or because this
+	     is the loop latch itself.  */
+	  if (!check_deps)
+	    continue;
 
 	  /* Check if vector accesses to the object will be within bounds.
 	     must be a constant or assume loop will be versioned or niters
-	     bounded by VF so accesses are within range.  */
-	  if (!ref_within_array_bound (stmt, DR_REF (dr_ref)))
+	     bounded by VF so accesses are within range.  We only need to check
+	     the reads since writes are moved to a safe place where if we get
+	     there we know they are safe to perform.  */
+	  if (DR_IS_READ (dr_ref)
+	      && !ref_within_array_bound (stmt, DR_REF (dr_ref)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "early breaks not supported: vectorization "
-				 "would %s beyond size of obj.",
+				 "would %s beyond size of obj.\n",
 				 DR_IS_READ (dr_ref) ? "read" : "write");
-	      return opt_result::failure_at (c,
+	      return opt_result::failure_at (stmt,
 				 "can't safely apply code motion to "
 				 "dependencies of %G to vectorize "
-				 "the early exit.\n", c);
+				 "the early exit.\n", stmt);
 	    }
 
 	  if (DR_IS_READ (dr_ref))
@@ -802,26 +806,38 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 	    }
 	}
 
-      /* Save destination as we go, BB are visited in order and the last one
-	is where statements should be moved to.  */
-      if (!dest_bb)
-	dest_bb = gimple_bb (c);
-      else
+      if (!single_pred_p (bb))
 	{
-	  basic_block curr_bb = gimple_bb (c);
-	  if (dominated_by_p (CDI_DOMINATORS, curr_bb, dest_bb))
-	    dest_bb = curr_bb;
+	  gcc_assert (bb == loop->header);
+	  break;
 	}
-    }
 
-  basic_block dest_bb0 = EDGE_SUCC (dest_bb, 0)->dest;
-  basic_block dest_bb1 = EDGE_SUCC (dest_bb, 1)->dest;
-  dest_bb = flow_bb_inside_loop_p (loop, dest_bb0) ? dest_bb0 : dest_bb1;
+      /* If we possibly sink through a virtual PHI make sure to elide that.  */
+      if (gphi *vphi = get_virtual_phi (bb))
+	LOOP_VINFO_EARLY_BRK_STORES (loop_vinfo).safe_push (vphi);
+
+      /* All earlier blocks need dependence checking.  */
+      check_deps = true;
+      bb = single_pred (bb);
+    }
+  while (1);
+
   /* We don't allow outer -> inner loop transitions which should have been
      trapped already during loop form analysis.  */
   gcc_assert (dest_bb->loop_father == loop);
 
-  gcc_assert (dest_bb);
+  /* Check that the destination block we picked has only one pred.  To relax this we
+     have to take special care when moving the statements.  We don't currently support
+     such control flow however this check is there to simplify how we handle
+     labels that may be present anywhere in the IL.  This check is to ensure that the
+     labels aren't significant for the CFG.  */
+  if (!single_pred (dest_bb))
+    return opt_result::failure_at (vect_location,
+			     "chosen loop exit block (BB %d) does not have a "
+			     "single predecessor which is currently not "
+			     "supported for early break vectorization.\n",
+			     dest_bb->index);
+
   LOOP_VINFO_EARLY_BRK_DEST_BB (loop_vinfo) = dest_bb;
 
   if (!LOOP_VINFO_EARLY_BRK_VUSES (loop_vinfo).is_empty ())
@@ -2361,8 +2377,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   /* Check if we can possibly peel the loop.  */
   if (!vect_can_advance_ivs_p (loop_vinfo)
       || !slpeel_can_duplicate_loop_p (loop, LOOP_VINFO_IV_EXIT (loop_vinfo),
-				       LOOP_VINFO_IV_EXIT (loop_vinfo))
-      || loop->inner)
+				       loop_preheader_edge (loop))
+      || loop->inner
+      || LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
     do_peeling = false;
 
   struct _vect_peel_extended_info peel_for_known_alignment;
@@ -4325,6 +4342,11 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   if (!multiple_p (pbitpos, BITS_PER_UNIT))
     return false;
 
+  /* We need to be able to form an address to the base which for example
+     isn't possible for hard registers.  */
+  if (may_be_nonaddressable_p (base))
+    return false;
+
   poly_int64 pbytepos = exact_div (pbitpos, BITS_PER_UNIT);
 
   if (TREE_CODE (base) == MEM_REF)
@@ -5320,7 +5342,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
       while (sinfo);
     }
-  aggr_ptr_type = build_pointer_type_for_mode (aggr_type, ptr_mode,
+  aggr_ptr_type = build_pointer_type_for_mode (aggr_type, VOIDmode,
 					       need_ref_all);
   aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var, base_name);
 

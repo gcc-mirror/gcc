@@ -15,32 +15,38 @@
 #include <pthread.h>
 #endif
 
+/* HEAP_T_ATTR is provided to allow targets to build the exported functions
+   as weak definitions.  */
+#ifndef HEAP_T_ATTR
+#  define HEAP_T_ATTR
+#endif
+
 void *allocate_trampoline_page (void);
 int get_trampolines_per_page (void);
 struct tramp_ctrl_data *allocate_tramp_ctrl (struct tramp_ctrl_data *parent);
 void *allocate_trampoline_page (void);
 
-void __builtin_nested_func_ptr_created (void *chain, void *func, void **dst);
-void __builtin_nested_func_ptr_deleted (void);
+void __gcc_nested_func_ptr_created (void *chain, void *func, void *dst);
+void __gcc_nested_func_ptr_deleted (void);
 
-#if defined(__gnu_linux__)
-static const uint32_t aarch64_trampoline_insns[] = {
-  0xd503245f, /* hint    34 */
-  0x580000b1, /* ldr     x17, .+20 */
-  0x580000d2, /* ldr     x18, .+24 */
-  0xd61f0220, /* br      x17 */
-  0xd5033f9f, /* dsb     sy */
-  0xd5033fdf /* isb */
+#if defined(__linux__)
+static const unsigned char aarch64_trampoline_insns[6][4] = {
+  {0x5f, 0x24, 0x03, 0xd5}, /* hint    34 */
+  {0xb1, 0x00, 0x00, 0x58}, /* ldr     x17, .+20 */
+  {0xd2, 0x00, 0x00, 0x58}, /* ldr     x18, .+24 */
+  {0x20, 0x02, 0x1f, 0xd6}, /* br      x17 */
+  {0x9f, 0x3f, 0x03, 0xd5}, /* dsb     sy */
+  {0xdf, 0x3f, 0x03, 0xd5} /* isb */
 };
 
 #elif __APPLE__
-static const uint32_t aarch64_trampoline_insns[] = {
-  0xd503245f, /* hint    34 */
-  0x580000b1, /* ldr     x17, .+20 */
-  0x580000d0, /* ldr     x16, .+24 */
-  0xd61f0220, /* br      x17 */
-  0xd5033f9f, /* dsb     sy */
-  0xd5033fdf /* isb */
+static const unsigned char aarch64_trampoline_insns[6][4] = {
+  {0x5f, 0x24, 0x03, 0xd5}, /* hint    34 */
+  {0xb1, 0x00, 0x00, 0x58}, /* ldr     x17, .+20 */
+  {0xd0, 0x00, 0x00, 0x58}, /* ldr     x16, .+24 */
+  {0x20, 0x02, 0x1f, 0xd6}, /* br      x17 */
+  {0x9f, 0x3f, 0x03, 0xd5}, /* dsb     sy */
+  {0xdf, 0x3f, 0x03, 0xd5} /* isb */
 };
 
 #else
@@ -48,7 +54,7 @@ static const uint32_t aarch64_trampoline_insns[] = {
 #endif
 
 struct aarch64_trampoline {
-  uint32_t insns[6];
+  unsigned char insns[6][4];
   void *func_ptr;
   void *chain_ptr;
 };
@@ -76,7 +82,7 @@ allocate_trampoline_page (void)
 {
   void *page;
 
-#if defined(__gnu_linux__)
+#if defined(__linux__)
   page = mmap (0, getpagesize (), PROT_WRITE | PROT_EXEC,
 	       MAP_ANON | MAP_PRIVATE, 0, 0);
 #elif __APPLE__
@@ -107,8 +113,9 @@ allocate_tramp_ctrl (struct tramp_ctrl_data *parent)
   return p;
 }
 
+HEAP_T_ATTR
 void
-__builtin_nested_func_ptr_created (void *chain, void *func, void **dst)
+__gcc_nested_func_ptr_created (void *chain, void *func, void *dst)
 {
   if (tramp_ctrl_curr == NULL)
     {
@@ -151,11 +158,12 @@ __builtin_nested_func_ptr_created (void *chain, void *func, void **dst)
   __builtin___clear_cache ((void *)trampoline->insns,
 			   ((void *)trampoline->insns + sizeof(trampoline->insns)));
 
-  *dst = &trampoline->insns;
+  *(void **) dst = &trampoline->insns;
 }
 
+HEAP_T_ATTR
 void
-__builtin_nested_func_ptr_deleted (void)
+__gcc_nested_func_ptr_deleted (void)
 {
   if (tramp_ctrl_curr == NULL)
     abort ();

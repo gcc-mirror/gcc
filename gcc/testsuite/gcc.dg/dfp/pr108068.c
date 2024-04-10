@@ -1,5 +1,4 @@
 /* PR tree-optimization/108068 */
-/* { dg-do run } */
 /* { dg-options "-O2" } */
 
 int

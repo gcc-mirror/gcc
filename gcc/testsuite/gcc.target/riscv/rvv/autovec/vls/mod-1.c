@@ -53,5 +53,5 @@ DEF_OP_VV (mod, 128, int64_t, %)
 DEF_OP_VV (mod, 256, int64_t, %)
 DEF_OP_VV (mod, 512, int64_t, %)
 
-/* { dg-final { scan-assembler-times {vremu?\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 42 } } */
+/* { dg-final { scan-assembler-times {vremu?\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 47 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */

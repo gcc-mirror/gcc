@@ -1,7 +1,7 @@
 /**
  * CTFE for expressions involving pointers, slices, array concatenation etc.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/ctfeexpr.d, _ctfeexpr.d)
@@ -34,6 +34,7 @@ import dmd.root.ctfloat;
 import dmd.root.port;
 import dmd.root.rmem;
 import dmd.tokens;
+import dmd.typesem;
 import dmd.visitor;
 
 /****************************************************************/
@@ -568,6 +569,9 @@ StringExp createBlockDuplicatedStringLiteral(UnionExp* pue, const ref Loc loc, T
         case 4:
             (cast(dchar*)s)[elemi] = value;
             break;
+        case 8:
+            (cast(ulong*)s)[elemi] = value;
+            break;
         default:
             assert(0);
         }
@@ -636,8 +640,10 @@ bool isSafePointerCast(Type srcPointee, Type destPointee)
 
     // It's OK if function pointers differ only in safe/pure/nothrow
     if (srcPointee.ty == Tfunction && destPointee.ty == Tfunction)
+    {
         return srcPointee.covariant(destPointee) == Covariant.yes ||
             destPointee.covariant(srcPointee) == Covariant.yes;
+    }
     // it's OK to cast to void*
     if (destPointee.ty == Tvoid)
         return true;
@@ -1491,7 +1497,7 @@ Expression ctfeIndex(UnionExp* pue, const ref Loc loc, Type type, Expression e1,
             error(loc, "string index %llu is out of bounds `[0 .. %llu]`", indx, cast(ulong)es1.len);
             return CTFEExp.cantexp;
         }
-        emplaceExp!IntegerExp(pue, loc, es1.getCodeUnit(cast(size_t) indx), type);
+        emplaceExp!IntegerExp(pue, loc, es1.getIndex(cast(size_t) indx), type);
         return pue.exp();
     }
 
@@ -1701,7 +1707,7 @@ Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray 
         void* s = mem.xcalloc(newlen + 1, oldse.sz);
         const data = oldse.peekData();
         memcpy(s, data.ptr, copylen * oldse.sz);
-        const defaultValue = cast(uint)defaultElem.toInteger();
+        const defaultValue = cast(ulong)defaultElem.toInteger();
         foreach (size_t elemi; copylen .. newlen)
         {
             switch (oldse.sz)
@@ -1714,6 +1720,9 @@ Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray 
                 break;
             case 4:
                 (cast(dchar*)s)[cast(size_t)(indxlo + elemi)] = cast(dchar)defaultValue;
+                break;
+            case 8:
+                (cast(ulong*)s)[cast(size_t)(indxlo + elemi)] = cast(ulong)defaultValue;
                 break;
             default:
                 assert(0);

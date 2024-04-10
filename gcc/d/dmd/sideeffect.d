@@ -1,7 +1,7 @@
 /**
  * Find side-effects of expressions.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/sideeffect.d, _sideeffect.d)
@@ -19,11 +19,13 @@ import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
+import dmd.id;
 import dmd.identifier;
 import dmd.init;
 import dmd.mtype;
 import dmd.postordervisitor;
 import dmd.tokens;
+import dmd.typesem;
 import dmd.visitor;
 
 /**************************************************
@@ -269,6 +271,15 @@ bool discardValue(Expression e)
             break;
         }
     case EXP.call:
+        // https://issues.dlang.org/show_bug.cgi?id=24359
+        auto ce = e.isCallExp();
+        if (const f = ce.f)
+        {
+            if (f.ident == Id.__equals && ce.arguments && ce.arguments.length == 2)
+            {
+                return discardValue(new EqualExp(EXP.equal, e.loc, (*ce.arguments)[0], (*ce.arguments)[1]));
+            }
+        }
         return false;
     case EXP.andAnd:
     case EXP.orOr:

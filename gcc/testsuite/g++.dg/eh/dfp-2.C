@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-require-effective-target dfp }
+/* { dg-require-effective-target dfprt } */
 
 extern "C" void abort ();
 

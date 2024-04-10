@@ -233,6 +233,7 @@ Classes used:
 /* This TU doesn't need or want to see the networking.  */
 #define CODY_NETWORKING 0
 #include "mapper-client.h"
+#include <zlib.h> // for crc32, crc32_combine
 
 #if 0 // 1 for testing no mmap
 #define MAPPED_READING 0
@@ -487,10 +488,7 @@ protected:
 unsigned
 bytes::calc_crc (unsigned l) const
 {
-  unsigned crc = 0;
-  for (size_t ix = 4; ix < l; ix++)
-    crc = crc32_byte (crc, buffer[ix]);
-  return crc;
+  return crc32 (0, (unsigned char *)buffer + 4, l - 4);
 }
 
 class elf_in;
@@ -717,7 +715,7 @@ bytes_out::set_crc (unsigned *crc_ptr)
       unsigned crc = calc_crc (pos);
       unsigned accum = *crc_ptr;
       /* Only mix the existing *CRC_PTR if it is non-zero.  */
-      accum = accum ? crc32_unsigned (accum, crc) : crc;
+      accum = accum ? crc32_combine (accum, crc, pos - 4) : crc;
       *crc_ptr = accum;
 
       /* Buffer will be sufficiently aligned.  */
@@ -2307,11 +2305,7 @@ private:
     DB_HIDDEN_BIT,		/* A hidden binding.  */
     /* The following bits are not independent, but enumerating them is
        awkward.  */
-    DB_ALIAS_TMPL_INST_BIT,	/* An alias template instantiation. */
-    DB_ALIAS_SPEC_BIT,		/* Specialization of an alias template
-				   (in both spec tables).  */
-    DB_TYPE_SPEC_BIT,		/* Specialization in the type table.
-				   */
+    DB_TYPE_SPEC_BIT,		/* Specialization in the type table.  */
     DB_FRIEND_SPEC_BIT,		/* An instantiated template friend.  */
   };
 
@@ -2401,14 +2395,6 @@ public:
   bool is_unreached () const
   {
     return get_flag_bit<DB_UNREACHED_BIT> ();
-  }
-  bool is_alias_tmpl_inst () const
-  {
-    return get_flag_bit<DB_ALIAS_TMPL_INST_BIT> ();
-  }
-  bool is_alias () const
-  {
-    return get_flag_bit<DB_ALIAS_SPEC_BIT> ();
   }
   bool is_hidden () const
   {
@@ -2524,13 +2510,12 @@ public:
     hash *chain;	     /* Original table.  */
     depset *current;         /* Current depset being depended.  */
     unsigned section;	     /* When writing out, the section.  */
-    bool sneakoscope;        /* Detecting dark magic (of a voldemort).  */
     bool reached_unreached;  /* We reached an unreached entity.  */
 
   public:
     hash (size_t size, hash *c = NULL)
       : parent (size), chain (c), current (NULL), section (0),
-	sneakoscope (false), reached_unreached (false)
+	reached_unreached (false)
     {
       worklist.create (size);
     }
@@ -2784,13 +2769,11 @@ enum merge_kind
   MK_template_mask = 0x10,  /* A template specialization.  */
 
   MK_tmpl_decl_mask = 0x4, /* In decl table.  */
-  MK_tmpl_alias_mask = 0x2, /* Also in type table  */
 
   MK_tmpl_tmpl_mask = 0x1, /* We want TEMPLATE_DECL.  */
 
   MK_type_spec = MK_template_mask,
   MK_decl_spec = MK_template_mask | MK_tmpl_decl_mask,
-  MK_alias_spec = MK_decl_spec | MK_tmpl_alias_mask,
 
   MK_hwm = 0x20
 };
@@ -2808,7 +2791,7 @@ static char const *const merge_kind_name[MK_hwm] =
     NULL, NULL,
 
     "decl spec", "decl tmpl spec",	/* 20,21 decl (template).  */
-    "alias spec", "alias tmpl spec",	/* 22,23 alias (template). */
+    NULL, NULL,
     NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL,
   };
@@ -2837,6 +2820,13 @@ typedef hash_map<tree,uintptr_t,
 		 simple_hashmap_traits<nodel_ptr_hash<tree_node>,uintptr_t> >
 duplicate_hash_map;
 
+/* Data needed for post-processing.  */
+struct post_process_data {
+  tree decl;
+  location_t start_locus;
+  location_t end_locus;
+};
+
 /* Tree stream reader.  Note that reading a stream doesn't mark the
    read trees with TREE_VISITED.  Thus it's quite safe to have
    multiple concurrent readers.  Which is good, because lazy
@@ -2848,7 +2838,7 @@ private:
   module_state *state;		/* Module being imported.  */
   vec<tree> back_refs;		/* Back references.  */
   duplicate_hash_map *duplicates;	/* Map from existings to duplicate.  */
-  vec<tree> post_decls;		/* Decls to post process.  */
+  vec<post_process_data> post_decls;	/* Decls to post process.  */
   unsigned unused;		/* Inhibit any interior TREE_USED
 				   marking.  */
 
@@ -2945,16 +2935,16 @@ public:
   tree odr_duplicate (tree decl, bool has_defn);
 
 public:
-  /* Return the next decl to postprocess, or NULL.  */
-  tree post_process ()
+  /* Return the decls to postprocess.  */
+  const vec<post_process_data>& post_process ()
   {
-    return post_decls.length () ? post_decls.pop () : NULL_TREE;
+    return post_decls;
   }
 private:
-  /* Register DECL for postprocessing.  */
-  void post_process (tree decl)
+  /* Register DATA for postprocessing.  */
+  void post_process (post_process_data data)
   {
-    post_decls.safe_push (decl);
+    post_decls.safe_push (data);
   }
 
 private:
@@ -5351,6 +5341,7 @@ trees_out::core_bools (tree t)
       WB (t->base.u.bits.user_align);
       WB (t->base.u.bits.nameless_flag);
       WB (t->base.u.bits.atomic_flag);
+      WB (t->base.u.bits.unavailable_flag);
       break;
     }
 
@@ -5385,7 +5376,17 @@ trees_out::core_bools (tree t)
       WB (t->decl_common.lang_flag_2);
       WB (t->decl_common.lang_flag_3);
       WB (t->decl_common.lang_flag_4);
-      WB (t->decl_common.lang_flag_5);
+
+      {
+	/* This is DECL_INTERFACE_KNOWN: We should redetermine whether
+	   we need to import or export any vtables or typeinfo objects
+	   on stream-in.  */
+	bool interface_known = t->decl_common.lang_flag_5;
+	if (VAR_P (t) && (DECL_VTABLE_OR_VTT_P (t) || DECL_TINFO_P (t)))
+	  interface_known = false;
+	WB (interface_known);
+      }
+
       WB (t->decl_common.lang_flag_6);
       WB (t->decl_common.lang_flag_7);
       WB (t->decl_common.lang_flag_8);
@@ -5531,6 +5532,7 @@ trees_in::core_bools (tree t)
       RB (t->base.u.bits.user_align);
       RB (t->base.u.bits.nameless_flag);
       RB (t->base.u.bits.atomic_flag);
+      RB (t->base.u.bits.unavailable_flag);
       break;
     }
 
@@ -5657,8 +5659,7 @@ trees_out::lang_decl_bools (tree t)
      want to mark them as in module purview.  */
   WB (lang->u.base.module_purview_p && !header_module_p ());
   WB (lang->u.base.module_attach_p);
-  if (VAR_OR_FUNCTION_DECL_P (t))
-    WB (lang->u.base.module_keyed_decls_p);
+  WB (lang->u.base.module_keyed_decls_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -5683,8 +5684,9 @@ trees_out::lang_decl_bools (tree t)
       WB (lang->u.fn.has_dependent_explicit_spec_p);
       WB (lang->u.fn.immediate_fn_p);
       WB (lang->u.fn.maybe_deleted);
-      WB (lang->u.fn.escalated_p);
       /* We do not stream lang->u.fn.implicit_constexpr.  */
+      WB (lang->u.fn.escalated_p);
+      WB (lang->u.fn.xobj_func);
       goto lds_min;
 
     case lds_decomp:  /* lang_decl_decomp.  */
@@ -5730,8 +5732,7 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.dependent_init_p);
   RB (lang->u.base.module_purview_p);
   RB (lang->u.base.module_attach_p);
-  if (VAR_OR_FUNCTION_DECL_P (t))
-    RB (lang->u.base.module_keyed_decls_p);
+  RB (lang->u.base.module_keyed_decls_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -5753,8 +5754,9 @@ trees_in::lang_decl_bools (tree t)
       RB (lang->u.fn.has_dependent_explicit_spec_p);
       RB (lang->u.fn.immediate_fn_p);
       RB (lang->u.fn.maybe_deleted);
-      RB (lang->u.fn.escalated_p);
       /* We do not stream lang->u.fn.implicit_constexpr.  */
+      RB (lang->u.fn.escalated_p);
+      RB (lang->u.fn.xobj_func);
       goto lds_min;
 
     case lds_decomp:  /* lang_decl_decomp.  */
@@ -5804,10 +5806,8 @@ trees_out::lang_type_bools (tree t)
 
   WB ((lang->gets_delete >> 0) & 1);
   WB ((lang->gets_delete >> 1) & 1);
-  // Interfaceness is recalculated upon reading.  May have to revisit?
-  // How do dllexport and dllimport interact across a module?
-  // lang->interface_only
-  // lang->interface_unknown
+  WB (lang->interface_only);
+  WB (lang->interface_unknown);
   WB (lang->contains_empty_class_p);
   WB (lang->anon_aggr);
   WB (lang->non_zero_init);
@@ -5875,9 +5875,8 @@ trees_in::lang_type_bools (tree t)
   v = b () << 0;
   v |= b () << 1;
   lang->gets_delete = v;
-  // lang->interface_only
-  // lang->interface_unknown
-  lang->interface_unknown = true; // Redetermine interface
+  RB (lang->interface_only);
+  RB (lang->interface_unknown);
   RB (lang->contains_empty_class_p);
   RB (lang->anon_aggr);
   RB (lang->non_zero_init);
@@ -6311,6 +6310,7 @@ trees_out::core_vals (tree t)
       WT (((lang_tree_node *)t)->lambda_expression.capture_list);
       WT (((lang_tree_node *)t)->lambda_expression.this_capture);
       WT (((lang_tree_node *)t)->lambda_expression.extra_scope);
+      WT (((lang_tree_node *)t)->lambda_expression.regen_info);
       /* pending_proxies is a parse-time thing.  */
       gcc_assert (!((lang_tree_node *)t)->lambda_expression.pending_proxies);
       if (state)
@@ -6346,8 +6346,7 @@ trees_out::core_vals (tree t)
       gcc_checking_assert
       	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
       gcc_checking_assert
-	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result)
-	 || dep_hash->find_dependency (t)->is_alias_tmpl_inst ());
+	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result));
       if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (t))
 	WT (DECL_CHAIN (t));
       break;
@@ -6812,6 +6811,7 @@ trees_in::core_vals (tree t)
       RT (((lang_tree_node *)t)->lambda_expression.capture_list);
       RT (((lang_tree_node *)t)->lambda_expression.this_capture);
       RT (((lang_tree_node *)t)->lambda_expression.extra_scope);
+      RT (((lang_tree_node *)t)->lambda_expression.regen_info);
       /* lambda_expression.pending_proxies is NULL  */
       ((lang_tree_node *)t)->lambda_expression.locus
 	= state->read_location (*this);
@@ -6948,6 +6948,9 @@ trees_out::lang_decl_vals (tree t)
 	  if (streaming_p ())
 	    wi (lang->u.fn.u5.fixed_offset);
 	}
+      else if (decl_tls_wrapper_p (t))
+	/* The wrapped variable.  */
+	WT (lang->u.fn.befriending_classes);
       else
 	WT (lang->u.fn.u5.cloned_function);
 
@@ -7027,6 +7030,8 @@ trees_in::lang_decl_vals (tree t)
 	  RT (lang->u.fn.befriending_classes);
 	  lang->u.fn.u5.fixed_offset = wi ();
 	}
+      else if (decl_tls_wrapper_p (t))
+	RT (lang->u.fn.befriending_classes);
       else
 	RT (lang->u.fn.u5.cloned_function);
 
@@ -7858,8 +7863,7 @@ trees_out::decl_value (tree decl, depset *dep)
       install_entity (decl, dep);
     }
 
-  if (VAR_OR_FUNCTION_DECL_P (inner)
-      && DECL_LANG_SPECIFIC (inner)
+  if (DECL_LANG_SPECIFIC (inner)
       && DECL_MODULE_KEYED_DECLS_P (inner)
       && !is_key_order ())
     {
@@ -7925,6 +7929,9 @@ trees_out::decl_value (tree decl, depset *dep)
       dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
 				   decl, cloned_p ? "" : "not ");
     }
+
+  if (streaming_p () && VAR_P (decl) && CP_DECL_THREAD_LOCAL_P (decl))
+    u (decl_tls_model (decl));
 
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written decl:%d %C:%N", tag,
@@ -8156,8 +8163,7 @@ trees_in::decl_value ()
   bool installed = install_entity (existing);
   bool is_new = existing == decl;
 
-  if (VAR_OR_FUNCTION_DECL_P (inner)
-      && DECL_LANG_SPECIFIC (inner)
+  if (DECL_LANG_SPECIFIC (inner)
       && DECL_MODULE_KEYED_DECLS_P (inner))
     {
       /* Read and maybe install the attached entities.  */
@@ -8236,22 +8242,36 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
+      /* Redetermine whether we need to import or export this declaration
+	 for this TU.  But for extern templates we know we must import:
+	 they'll be defined in a different TU.
+	 FIXME: How do dllexport and dllimport interact across a module?
+	 See also https://github.com/itanium-cxx-abi/cxx-abi/issues/170.
+	 May have to revisit?  */
+      if (type
+	  && CLASS_TYPE_P (type)
+	  && TYPE_LANG_SPECIFIC (type)
+	  && !(CLASSTYPE_EXPLICIT_INSTANTIATION (type)
+	       && CLASSTYPE_INTERFACE_KNOWN (type)
+	       && CLASSTYPE_INTERFACE_ONLY (type)))
+	{
+	  CLASSTYPE_INTERFACE_ONLY (type) = false;
+	  CLASSTYPE_INTERFACE_UNKNOWN (type) = true;
+	}
+
       /* Add to specialization tables now that constraints etc are
 	 added.  */
       if (mk == MK_partial)
 	{
 	  bool is_type = TREE_CODE (inner) == TYPE_DECL;
 	  spec.spec = is_type ? type : inner;
-	  add_mergeable_specialization (!is_type, false,
-					&spec, decl, spec_flags);
+	  add_mergeable_specialization (!is_type, &spec, decl, spec_flags);
 	}
       else if (mk & MK_template_mask)
 	{
 	  bool is_type = !(mk & MK_tmpl_decl_mask);
 	  spec.spec = is_type ? type : mk & MK_tmpl_tmpl_mask ? inner : decl;
-	  add_mergeable_specialization (!is_type,
-					!is_type && mk & MK_tmpl_alias_mask,
-					&spec, decl, spec_flags);
+	  add_mergeable_specialization (!is_type, &spec, decl, spec_flags);
 	}
 
       if (NAMESPACE_SCOPE_P (decl)
@@ -8273,6 +8293,13 @@ trees_in::decl_value ()
 	   look like templates.  */
 	if (!install_implicit_member (inner))
 	  set_overrun ();
+
+      /* When importing a TLS wrapper from a header unit, we haven't
+	 actually emitted its definition yet. Remember it so we can
+	 do this later.  */
+      if (state->is_header ()
+	  && decl_tls_wrapper_p (decl))
+	note_vague_linkage_fn (decl);
     }
   else
     {
@@ -8321,7 +8348,7 @@ trees_in::decl_value ()
       if (!e)
 	{
 	  spec.spec = inner;
-	  add_mergeable_specialization (true, false, &spec, decl, spec_flags);
+	  add_mergeable_specialization (true, &spec, decl, spec_flags);
 	}
       else if (e != existing)
 	set_overrun ();
@@ -8354,6 +8381,13 @@ trees_in::decl_value ()
 				   to the class defn).  */
 				CLASSTYPE_MEMBER_VEC (DECL_CONTEXT (decl)));
 	}
+    }
+
+  if (VAR_P (decl) && CP_DECL_THREAD_LOCAL_P (decl))
+    {
+      enum tls_model model = tls_model (u ());
+      if (is_new)
+	set_decl_tls_model (decl, model);
     }
 
   if (!NAMESPACE_SCOPE_P (inner)
@@ -8710,7 +8744,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
     dep = dep_hash->find_dependency (decl);
   else if (TREE_CODE (ctx) != FUNCTION_DECL
 	   || TREE_CODE (decl) == TEMPLATE_DECL
-	   || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl))
+	   || DECL_IMPLICIT_TYPEDEF_P (decl)
 	   || (DECL_LANG_SPECIFIC (decl)
 	       && DECL_MODULE_IMPORT_P (decl)))
     {
@@ -9138,6 +9172,13 @@ trees_in::tree_value ()
       set_overrun ();
       /* Bail.  */
       return NULL_TREE;
+    }
+
+  if (TREE_CODE (t) == LAMBDA_EXPR
+      && CLASSTYPE_LAMBDA_EXPR (TREE_TYPE (t)))
+    {
+      existing = CLASSTYPE_LAMBDA_EXPR (TREE_TYPE (t));
+      back_refs[~tag] = existing;
     }
 
   dump (dumper::TREE) && dump ("Read tree:%d %C:%N", tag, TREE_CODE (t), t);
@@ -10077,23 +10118,12 @@ trees_out::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 	  tree dflt = TREE_PURPOSE (parm);
 	  tree_node (dflt);
 
-	  if (streaming_p ())
-	    {
-	      tree decl = TREE_VALUE (parm);
-	      if (TREE_CODE (decl) == TEMPLATE_DECL)
-		{
-		  tree ctx = DECL_CONTEXT (decl);
-		  tree inner = DECL_TEMPLATE_RESULT (decl);
-		  tree tpi = (TREE_CODE (inner) == TYPE_DECL
-			      ? TEMPLATE_TYPE_PARM_INDEX (TREE_TYPE (decl))
-			      : DECL_INITIAL (inner));
-		  bool original = (TEMPLATE_PARM_LEVEL (tpi)
-				   == TEMPLATE_PARM_ORIG_LEVEL (tpi));
-		  /* Original template template parms have a context
-		     of their owning template.  Reduced ones do not.  */
-		  gcc_checking_assert (original ? ctx == tmpl : !ctx);
-		}
-	    }
+	  /* Template template parameters need a context of their owning
+	     template. This is quite tricky to infer correctly on stream-in
+	     (see PR c++/98881) so we'll just provide it directly.  */
+	  tree decl = TREE_VALUE (parm);
+	  if (TREE_CODE (decl) == TEMPLATE_DECL)
+	    tree_node (DECL_CONTEXT (decl));
 	}
     }
 }
@@ -10111,24 +10141,14 @@ trees_in::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 	{
 	  tree parm = TREE_VEC_ELT (vec, ix);
 	  tree dflt = tree_node ();
-	  if (get_overrun ())
-	    return false;
 	  TREE_PURPOSE (parm) = dflt;
 
 	  tree decl = TREE_VALUE (parm);
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    {
-	      tree inner = DECL_TEMPLATE_RESULT (decl);
-	      tree tpi = (TREE_CODE (inner) == TYPE_DECL
-			  ? TEMPLATE_TYPE_PARM_INDEX (TREE_TYPE (decl))
-			  : DECL_INITIAL (inner));
-	      bool original = (TEMPLATE_PARM_LEVEL (tpi)
-			       == TEMPLATE_PARM_ORIG_LEVEL (tpi));
-	      /* Original template template parms have a context
-		 of their owning template.  Reduced ones do not.  */
-	      if (original)
-		DECL_CONTEXT (decl) = tmpl;
-	    }
+	    DECL_CONTEXT (decl) = tree_node ();
+
+	  if (get_overrun ())
+	    return false;
 	}
     }
   return true;
@@ -10437,28 +10457,32 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	      if (tree scope
 		  = LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR
 					     (TREE_TYPE (decl))))
-		if (TREE_CODE (scope) == VAR_DECL
-		    && DECL_MODULE_KEYED_DECLS_P (scope))
-		  {
-		    mk = MK_keyed;
-		    break;
-		  }
-
-	    if (RECORD_OR_UNION_TYPE_P (ctx))
-	      {
-		if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
-		  mk = MK_field;
-		break;
-	      }
+		{
+		  /* Lambdas attached to fields are keyed to its class.  */
+		  if (TREE_CODE (scope) == FIELD_DECL)
+		    scope = TYPE_NAME (DECL_CONTEXT (scope));
+		  if (DECL_LANG_SPECIFIC (scope)
+		      && DECL_MODULE_KEYED_DECLS_P (scope))
+		    {
+		      mk = MK_keyed;
+		      break;
+		    }
+		}
 
 	    if (TREE_CODE (decl) == TEMPLATE_DECL
 		&& DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
-	      mk = MK_local_friend;
-	    else if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
 	      {
-		if (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && UNSCOPED_ENUM_P (TREE_TYPE (decl))
-		    && TYPE_VALUES (TREE_TYPE (decl)))
+		mk = MK_local_friend;
+		break;
+	      }
+
+	    if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
+	      {
+		if (RECORD_OR_UNION_TYPE_P (ctx))
+		  mk = MK_field;
+		else if (DECL_IMPLICIT_TYPEDEF_P (decl)
+			 && UNSCOPED_ENUM_P (TREE_TYPE (decl))
+			 && TYPE_VALUES (TREE_TYPE (decl)))
 		  /* Keyed by first enum value, and underlying type.  */
 		  mk = MK_enum;
 		else
@@ -10482,8 +10506,6 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	  mk = MK_friend_spec;
 	else if (dep->is_type_spec ())
 	  mk = MK_type_spec;
-	else if (dep->is_alias ())
-	  mk = MK_alias_spec;
 	else
 	  mk = MK_decl_spec;
 
@@ -10594,11 +10616,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  gcc_assert (existing);
 	  if (mk & MK_tmpl_decl_mask)
 	    {
-	      if (mk & MK_tmpl_alias_mask)
-		/* It should be in both tables.  */
-		gcc_checking_assert
-		  (same_type_p (match_mergeable_specialization (false, entry),
-				TREE_TYPE (existing)));
 	      if (mk & MK_tmpl_tmpl_mask)
 		existing = DECL_TI_TEMPLATE (existing);
 	    }
@@ -10742,7 +10759,13 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    gcc_checking_assert (LAMBDA_TYPE_P (TREE_TYPE (inner)));
 	    tree scope = LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR
 						  (TREE_TYPE (inner)));
-	    gcc_checking_assert (TREE_CODE (scope) == VAR_DECL);
+	    gcc_checking_assert (TREE_CODE (scope) == VAR_DECL
+				 || TREE_CODE (scope) == FIELD_DECL
+				 || TREE_CODE (scope) == PARM_DECL
+				 || TREE_CODE (scope) == TYPE_DECL);
+	    /* Lambdas attached to fields are keyed to the class.  */
+	    if (TREE_CODE (scope) == FIELD_DECL)
+	      scope = TYPE_NAME (DECL_CONTEXT (scope));
 	    auto *root = keyed_table->get (scope);
 	    unsigned ix = root->length ();
 	    /* If we don't find it, we'll write a really big number
@@ -11020,6 +11043,26 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		}
 	    }
 	}
+      else if (mk == MK_keyed
+	       && DECL_LANG_SPECIFIC (name)
+	       && DECL_MODULE_KEYED_DECLS_P (name))
+	{
+	  gcc_checking_assert (TREE_CODE (container) == NAMESPACE_DECL
+			       || TREE_CODE (container) == TYPE_DECL);
+	  if (auto *set = keyed_table->get (name))
+	    if (key.index < set->length ())
+	      {
+		existing = (*set)[key.index];
+		if (existing)
+		  {
+		    gcc_checking_assert
+		      (DECL_IMPLICIT_TYPEDEF_P (existing));
+		    if (inner != decl)
+		      existing
+			= CLASSTYPE_TI_TEMPLATE (TREE_TYPE (existing));
+		  }
+	      }
+	}
       else
 	switch (TREE_CODE (container))
 	  {
@@ -11027,27 +11070,8 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    gcc_unreachable ();
 
 	  case NAMESPACE_DECL:
-	    if (mk == MK_keyed)
-	      {
-		if (DECL_LANG_SPECIFIC (name)
-		    && VAR_OR_FUNCTION_DECL_P (name)
-		    && DECL_MODULE_KEYED_DECLS_P (name))
-		  if (auto *set = keyed_table->get (name))
-		    if (key.index < set->length ())
-		      {
-			existing = (*set)[key.index];
-			if (existing)
-			  {
-			    gcc_checking_assert
-			      (DECL_IMPLICIT_TYPEDEF_P (existing));
-			    if (inner != decl)
-			      existing
-				= CLASSTYPE_TI_TEMPLATE (TREE_TYPE (existing));
-			  }
-		      }
-	      }
-	    else if (is_attached
-		     && !(state->is_module () || state->is_partition ()))
+	    if (is_attached
+		&& !(state->is_module () || state->is_partition ()))
 	      kind = "unique";
 	    else
 	      {
@@ -11523,9 +11547,11 @@ has_definition (tree decl)
       break;
 
     case VAR_DECL:
+      /* DECL_INITIALIZED_P might not be set on a dependent VAR_DECL.  */
       if (DECL_LANG_SPECIFIC (decl)
-	  && DECL_TEMPLATE_INFO (decl))
-	return DECL_INITIAL (decl);
+	  && DECL_TEMPLATE_INFO (decl)
+	  && DECL_INITIAL (decl))
+	return true;
       else
 	{
 	  if (!DECL_INITIALIZED_P (decl))
@@ -11629,14 +11655,24 @@ trees_out::write_function_def (tree decl)
       tree_node (cexpr->body);
     }
 
+  function* f = DECL_STRUCT_FUNCTION (decl);
+
   if (streaming_p ())
     {
       unsigned flags = 0;
 
+      if (f)
+	flags |= 2;
       if (DECL_NOT_REALLY_EXTERN (decl))
 	flags |= 1;
 
       u (flags);
+    }
+
+  if (state && f)
+    {
+      state->write_location (*this, f->function_start_locus);
+      state->write_location (*this, f->function_end_locus);
     }
 }
 
@@ -11654,6 +11690,8 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   tree saved = tree_node ();
   tree context = tree_node ();
   constexpr_fundef cexpr;
+  post_process_data pdata {};
+  pdata.decl = maybe_template;
 
   tree maybe_dup = odr_duplicate (maybe_template, DECL_SAVED_TREE (decl));
   bool installing = maybe_dup && !DECL_SAVED_TREE (decl);
@@ -11670,6 +11708,12 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 
   unsigned flags = u ();
 
+  if (flags & 2)
+    {
+      pdata.start_locus = state->read_location (*this);
+      pdata.end_locus = state->read_location (*this);
+    }
+
   if (get_overrun ())
     return NULL_TREE;
 
@@ -11679,14 +11723,12 @@ trees_in::read_function_def (tree decl, tree maybe_template)
       DECL_RESULT (decl) = result;
       DECL_INITIAL (decl) = initial;
       DECL_SAVED_TREE (decl) = saved;
-      if (maybe_dup)
-	DECL_ARGUMENTS (decl) = DECL_ARGUMENTS (maybe_dup);
 
       if (context)
 	SET_DECL_FRIEND_CONTEXT (decl, context);
       if (cexpr.decl)
 	register_constexpr_fundef (cexpr);
-      post_process (maybe_template);
+      post_process (pdata);
     }
   else if (maybe_dup)
     {
@@ -11753,6 +11795,11 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 	  DECL_INITIALIZED_P (decl) = true;
 	  if (maybe_dup && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (maybe_dup))
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
+	  if (DECL_IMPLICIT_INSTANTIATION (decl)
+	      || (DECL_CLASS_SCOPE_P (decl)
+		  && !DECL_VTABLE_OR_VTT_P (decl)
+		  && !DECL_TEMPLATE_INFO (decl)))
+	    note_vague_linkage_variable (decl);
 	}
       DECL_INITIAL (decl) = init;
       if (!dyn_init)
@@ -12046,15 +12093,6 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   bool installing = maybe_dup && !TYPE_SIZE (type);
   if (installing)
     {
-      if (DECL_EXTERNAL (defn) && TYPE_LANG_SPECIFIC (type))
-	{
-	  /* We don't deal with not-really-extern, because, for a
-	     module you want the import to be the interface, and for a
-	     header-unit, you're doing it wrong.  */
-	  CLASSTYPE_INTERFACE_UNKNOWN (type) = false;
-	  CLASSTYPE_INTERFACE_ONLY (type) = true;
-	}
-
       if (maybe_dup != defn)
 	{
 	  // FIXME: This is needed on other defns too, almost
@@ -12121,8 +12159,16 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 
 	      if (TREE_CODE (decl) == FIELD_DECL
 		  && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
-		ANON_AGGR_TYPE_FIELD
-		  (TYPE_MAIN_VARIANT (TREE_TYPE (decl))) = decl;
+		{
+		  tree anon_type = TYPE_MAIN_VARIANT (TREE_TYPE (decl));
+		  if (DECL_NAME (defn) == as_base_identifier)
+		    /* ANON_AGGR_TYPE_FIELD should already point to the
+		       original FIELD_DECL; don't overwrite it to point
+		       to the as-base FIELD_DECL copy.  */
+		    gcc_checking_assert (ANON_AGGR_TYPE_FIELD (anon_type));
+		  else
+		    ANON_AGGR_TYPE_FIELD (anon_type) = decl;
+		}
 
 	      if (TREE_CODE (decl) == USING_DECL
 		  && TREE_CODE (USING_DECL_SCOPE (decl)) == RECORD_TYPE)
@@ -12655,17 +12701,12 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	 bindings.  */
       *slot = dep = make_entity (decl, ek, has_def);
 
-      if (TREE_CODE (decl) == TEMPLATE_DECL)
-	{
-	  if (DECL_ALIAS_TEMPLATE_P (decl) && DECL_TEMPLATE_INFO (decl))
-	    dep->set_flag_bit<DB_ALIAS_TMPL_INST_BIT> ();
-	  else if (CHECKING_P)
-	    /* The template_result should otherwise not be in the
-	       table, or be an empty redirect (created above).  */
-	    if (auto *eslot = entity_slot (DECL_TEMPLATE_RESULT (decl), false))
-	      gcc_checking_assert ((*eslot)->get_entity_kind () == EK_REDIRECT
-				   && !(*eslot)->deps.length ());
-	}
+      if (CHECKING_P && TREE_CODE (decl) == TEMPLATE_DECL)
+	/* The template_result should otherwise not be in the
+	   table, or be an empty redirect (created above).  */
+	if (auto *eslot = entity_slot (DECL_TEMPLATE_RESULT (decl), false))
+	  gcc_checking_assert ((*eslot)->get_entity_kind () == EK_REDIRECT
+			       && !(*eslot)->deps.length ());
 
       if (ek != EK_USING)
 	{
@@ -13053,16 +13094,10 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
 	 heuristic.  We don't attempt to replicate that algorithm, but
 	 observe its behaviour and reproduce it upon read back.  */
 
-       gcc_checking_assert (DECL_ALIAS_TEMPLATE_P (entry->tmpl)
-			   || TREE_CODE (entry->spec) == ENUMERAL_TYPE
+       gcc_checking_assert (TREE_CODE (entry->spec) == ENUMERAL_TYPE
 			   || DECL_CLASS_TEMPLATE_P (entry->tmpl));
 
-       /* Only alias templates can appear in both tables (and
-	  if they're in the type table they must also be in the decl
-	  table).  */
-       gcc_checking_assert
-	 (!match_mergeable_specialization (true, entry)
-	  == !DECL_ALIAS_TEMPLATE_P (entry->tmpl));
+       gcc_checking_assert (!match_mergeable_specialization (true, entry));
     }
   else if (VAR_OR_FUNCTION_DECL_P (entry->spec))
     gcc_checking_assert (!DECL_LOCAL_DECL_P (entry->spec));
@@ -13118,7 +13153,6 @@ depset::hash::add_specializations (bool decl_p)
       spec_entry *entry = data.pop ();
       tree spec = entry->spec;
       int use_tpl = 0;
-      bool is_alias = false;
       bool is_friend = false;
 
       if (decl_p && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (entry->tmpl))
@@ -13126,13 +13160,7 @@ depset::hash::add_specializations (bool decl_p)
 	   instantiation.  */
 	is_friend = true;
 
-      if (!decl_p && DECL_ALIAS_TEMPLATE_P (entry->tmpl))
-	{
-	  spec = TYPE_NAME (spec);
-	  is_alias = true;
-	}
-
-      if (decl_p || is_alias)
+      if (decl_p)
 	{
 	  if (tree ti = DECL_TEMPLATE_INFO (spec))
 	    {
@@ -13191,7 +13219,7 @@ depset::hash::add_specializations (bool decl_p)
       if (use_tpl == 1)
 	/* Implicit instantiations only walked if we reach them.  */
 	needs_reaching = true;
-      else if (!DECL_LANG_SPECIFIC (spec)
+      else if (!DECL_LANG_SPECIFIC (STRIP_TEMPLATE (spec))
 	       || !DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (spec)))
 	/* Likewise, GMF explicit or partial specializations.  */
 	needs_reaching = true;
@@ -13217,20 +13245,9 @@ depset::hash::add_specializations (bool decl_p)
       gcc_checking_assert (!TREE_VISITED (spec));
       depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
       if (dep->is_special ())
-	{
-	  /* An already located specialization, this must be the TYPE
-	     corresponding to an alias_decl we found in the decl
-	     table.  */
-	  spec_entry *other = reinterpret_cast <spec_entry *> (dep->deps[0]);
-	  gcc_checking_assert (!decl_p && is_alias && !dep->is_type_spec ());
-	  gcc_checking_assert (other->tmpl == entry->tmpl
-			       && template_args_equal (other->args, entry->args)
-			       && TREE_TYPE (other->spec) == entry->spec);
-	  dep->set_flag_bit<DB_ALIAS_SPEC_BIT> ();
-	}
+	gcc_unreachable ();
       else
 	{
-	  gcc_checking_assert (decl_p || !is_alias);
 	  if (dep->get_entity_kind () == depset::EK_REDIRECT)
 	    dep = dep->deps[0];
 	  else if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
@@ -13348,14 +13365,7 @@ depset::hash::find_dependencies (module_state *module)
 		      add_namespace_context (item, ns);
 		    }
 
-		  // FIXME: Perhaps p1815 makes this redundant? Or at
-		  // least simplifies it.  Voldemort types are only
-		  // ever emissable when containing (inline) function
-		  // definition is emitted?
-		  /* Turn the Sneakoscope on when depending the decl.  */
-		  sneakoscope = true;
 		  walker.decl_value (decl, current);
-		  sneakoscope = false;
 		  if (current->has_defn ())
 		    walker.write_definition (decl);
 		}
@@ -13993,6 +14003,12 @@ get_primary (module_state *parent)
 module_state *
 get_module (tree name, module_state *parent, bool partition)
 {
+  /* We might be given an empty NAME if preprocessing fails to handle
+     a header-name token.  */
+  if (name && TREE_CODE (name) == STRING_CST
+      && TREE_STRING_LENGTH (name) == 0)
+    return nullptr;
+
   if (partition)
     {
       if (!parent)
@@ -15068,8 +15084,10 @@ module_state::read_cluster (unsigned snum)
      push_function_context does too much work.   */
   tree old_cfd = current_function_decl;
   struct function *old_cfun = cfun;
-  while (tree decl = sec.post_process ())
+  for (const post_process_data& pdata : sec.post_process ())
     {
+      tree decl = pdata.decl;
+
       bool abstract = false;
       if (TREE_CODE (decl) == TEMPLATE_DECL)
 	{
@@ -15081,6 +15099,8 @@ module_state::read_cluster (unsigned snum)
       allocate_struct_function (decl, abstract);
       cfun->language = ggc_cleared_alloc<language_function> ();
       cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
+      cfun->function_start_locus = pdata.start_locus;
+      cfun->function_end_locus = pdata.end_locus;
 
       if (abstract)
 	;
@@ -15212,6 +15232,19 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 
       sec.u (flags);
       write_location (sec, DECL_SOURCE_LOCATION (ns));
+
+      if (DECL_NAMESPACE_INLINE_P (ns))
+	{
+	  if (tree attr = lookup_attribute ("abi_tag", DECL_ATTRIBUTES (ns)))
+	    {
+	      tree tags = TREE_VALUE (attr);
+	      sec.u (list_length (tags));
+	      for (tree tag = tags; tag; tag = TREE_CHAIN (tag))
+		sec.str (TREE_STRING_POINTER (TREE_VALUE (tag)));
+	    }
+	  else
+	    sec.u (0);
+	}
     }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
@@ -15242,11 +15275,22 @@ module_state::read_namespaces (unsigned num)
       /* See comment in write_namespace about why not bits.  */
       unsigned flags = sec.u ();
       location_t src_loc = read_location (sec);
+      unsigned tags_count = (flags & 2) ? sec.u () : 0;
 
       if (entity_index >= entity_num
 	  || !parent
 	  || (flags & 0xc) == 0x8)
 	sec.set_overrun ();
+
+      tree tags = NULL_TREE;
+      while (tags_count--)
+	{
+	  size_t len;
+	  const char *str = sec.str (&len);
+	  tags = tree_cons (NULL_TREE, build_string (len + 1, str), tags);
+	  tags = nreverse (tags);
+	}
+
       if (sec.get_overrun ())
 	break;
 
@@ -15277,6 +15321,10 @@ module_state::read_namespaces (unsigned num)
 	  if (flags & 8)
 	    DECL_MODULE_EXPORT_P (inner) = true;
 	}
+
+      if (tags)
+	DECL_ATTRIBUTES (inner)
+	  = tree_cons (get_identifier ("abi_tag"), tags, DECL_ATTRIBUTES (inner));
 
       /* Install the namespace.  */
       (*entity_ary)[entity_lwm + entity_index] = inner;
@@ -17436,13 +17484,14 @@ module_state::write_inits (elf_out *to, depset::hash &table, unsigned *crc_ptr)
   tree list = static_aggregates;
   for (int passes = 0; passes != 2; passes++)
     {
-      for (tree init = list; init; init = TREE_CHAIN (init), count++)
+      for (tree init = list; init; init = TREE_CHAIN (init))
 	if (TREE_LANG_FLAG_0 (init))
 	  {
 	    tree decl = TREE_VALUE (init);
 
 	    dump ("Initializer:%u for %N", count, decl);
 	    sec.tree_node (decl);
+	    ++count;
 	  }
 
       list = tls_aggregates;
@@ -18641,7 +18690,8 @@ get_originating_module_decl (tree decl)
       && (TREE_CODE (DECL_CONTEXT (decl)) == ENUMERAL_TYPE))
     decl = TYPE_NAME (DECL_CONTEXT (decl));
   else if (TREE_CODE (decl) == FIELD_DECL
-	   || TREE_CODE (decl) == USING_DECL)
+	   || TREE_CODE (decl) == USING_DECL
+	   || CONST_DECL_USING_P (decl))
     {
       decl = DECL_CONTEXT (decl);
       if (TREE_CODE (decl) != FUNCTION_DECL)
@@ -18838,8 +18888,11 @@ set_defining_module (tree decl)
   gcc_checking_assert (!DECL_LANG_SPECIFIC (decl)
 		       || !DECL_MODULE_IMPORT_P (decl));
 
-  if (module_has_cmi_p ())
+  if (module_p ())
     {
+      /* We need to track all declarations within a module, not just those
+	 in the module purview, because we don't necessarily know yet if
+	 this module will require a CMI while in the global fragment.  */
       tree ctx = DECL_CONTEXT (decl);
       if (ctx
 	  && (TREE_CODE (ctx) == RECORD_TYPE || TREE_CODE (ctx) == UNION_TYPE)
@@ -18903,10 +18956,18 @@ maybe_key_decl (tree ctx, tree decl)
   if (!modules_p ())
     return;
 
-  // FIXME: For now just deal with lambdas attached to var decls.
-  // This might be sufficient?
-  if (TREE_CODE (ctx) != VAR_DECL)
+  /* We only need to deal with lambdas attached to var, field,
+     parm, or type decls.  */
+  if (TREE_CODE (ctx) != VAR_DECL
+      && TREE_CODE (ctx) != FIELD_DECL
+      && TREE_CODE (ctx) != PARM_DECL
+      && TREE_CODE (ctx) != TYPE_DECL)
     return;
+
+  /* For fields, key it to the containing type to handle deduplication
+     correctly.  */
+  if (TREE_CODE (ctx) == FIELD_DECL)
+    ctx = TYPE_NAME (DECL_CONTEXT (ctx));
 
   if (!keyed_table)
     keyed_table = new keyed_map_t (EXPERIMENT (1, 400));

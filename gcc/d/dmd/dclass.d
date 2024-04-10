@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/class.html, Classes)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dclass.d, _dclass.d)
@@ -33,6 +33,7 @@ import dmd.mtype;
 import dmd.objc;
 import dmd.root.rmem;
 import dmd.target;
+import dmd.typesem;
 import dmd.visitor;
 
 /***********************************************************
@@ -123,6 +124,7 @@ extern (C++) struct BaseClass
     }
 }
 
+// These must match the values in druntime/src/object.d
 enum ClassFlags : uint
 {
     none          = 0x0,
@@ -135,6 +137,7 @@ enum ClassFlags : uint
     isAbstract    = 0x40,
     isCPPclass    = 0x80,
     hasDtor       = 0x100,
+    hasNameSig    = 0x200,
 }
 
 /***********************************************************
@@ -594,7 +597,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
         fieldState.offset = structsize;
         foreach (s; *members)
         {
-            s.setFieldOffset(this, fieldState, false);
+            s.setFieldOffset(this, &fieldState, false);
         }
 
         sizeok = Sizeok.done;
@@ -614,7 +617,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
     final bool isFuncHidden(FuncDeclaration fd)
     {
         //printf("ClassDeclaration.isFuncHidden(class = %s, fd = %s)\n", toChars(), fd.toPrettyChars());
-        Dsymbol s = this.search(Loc.initial, fd.ident, IgnoreAmbiguous | IgnoreErrors);
+        Dsymbol s = this.search(Loc.initial, fd.ident, SearchOpt.ignoreAmbiguous | SearchOpt.ignoreErrors);
         if (!s)
         {
             //printf("not found\n");
@@ -670,6 +673,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
 
         void searchVtbl(ref Dsymbols vtbl)
         {
+            import dmd.typesem : covariant;
             bool seenInterfaceVirtual;
             foreach (s; vtbl)
             {

@@ -1,6 +1,7 @@
 RISCV_BUILTINS_H = $(srcdir)/config/riscv/riscv-vector-builtins.h \
 		   $(srcdir)/config/riscv/riscv-vector-builtins.def \
 		   $(srcdir)/config/riscv/riscv-vector-builtins-functions.def \
+       $(srcdir)/config/riscv/thead-vector-builtins-functions.def \
 		   riscv-vector-type-indexer.gen.def
 
 riscv-builtins.o: $(srcdir)/config/riscv/riscv-builtins.cc $(CONFIG_H) \

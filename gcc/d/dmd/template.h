@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -36,7 +36,7 @@ public:
     // kludge for template.isType()
     DYNCAST dyncast() const override { return DYNCAST_TUPLE; }
 
-    const char *toChars() const override { return objects.toChars(); }
+    const char *toChars() const override;
 };
 
 struct TemplatePrevious
@@ -290,7 +290,7 @@ public:
     TemplateInstance *syntaxCopy(Dsymbol *) override;
     Dsymbol *toAlias() override final;   // resolve real symbol
     const char *kind() const override;
-    bool oneMember(Dsymbol **ps, Identifier *ident) override;
+    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     const char *toChars() const override;
     const char* toPrettyCharsHelper() override final;
     Identifier *getIdent() override final;
@@ -309,20 +309,25 @@ public:
 
     TemplateMixin *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
-    bool oneMember(Dsymbol **ps, Identifier *ident) override;
+    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     bool hasPointers() override;
-    void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override;
     const char *toChars() const override;
 
     TemplateMixin *isTemplateMixin() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
-Expression *isExpression(RootObject *o);
-Dsymbol *isDsymbol(RootObject *o);
-Type *isType(RootObject *o);
-Tuple *isTuple(RootObject *o);
-Parameter *isParameter(RootObject *o);
-TemplateParameter *isTemplateParameter(RootObject *o);
-bool isError(const RootObject *const o);
-void printTemplateStats();
+namespace dmd
+{
+    // in templateparamsem.d
+    bool tpsemantic(TemplateParameter *tp, Scope *sc, TemplateParameters *parameters);
+
+    Expression *isExpression(RootObject *o);
+    Dsymbol *isDsymbol(RootObject *o);
+    Type *isType(RootObject *o);
+    Tuple *isTuple(RootObject *o);
+    Parameter *isParameter(RootObject *o);
+    TemplateParameter *isTemplateParameter(RootObject *o);
+    bool isError(const RootObject *const o);
+    void printTemplateStats(bool listInstances, ErrorSink* eSink);
+}

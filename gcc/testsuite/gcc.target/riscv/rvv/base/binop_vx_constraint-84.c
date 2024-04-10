@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gcv -mabi=ilp32 -O3" } */
+// PR113249
+/* { dg-additional-options "-fno-schedule-insns -fno-schedule-insns2" } */
 #include "riscv_vector.h"
 
 void f (void * in, void *out, uint64_t x, int n)

@@ -1574,7 +1574,7 @@ select_buffer (st_parameter_dt *dtp, const fnode *f, int precision,
 	       char *buf, size_t *size, int kind)
 {
   char *result;
-  
+
   /* The buffer needs at least one more byte to allow room for
      normalizing and 1 to hold null terminator.  */
   *size = size_from_kind (dtp, f, kind) + precision + 1 + 1;
@@ -1757,7 +1757,7 @@ write_real (st_parameter_dt *dtp, const char *source, int kind)
 
   /* Scratch buffer to hold final result.  */
   buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
-  
+
   get_float_string (dtp, &f, source , kind, 1, buffer,
                            precision, buf_size, result, &flt_str_len);
   write_float_string (dtp, result, flt_str_len);
@@ -1785,8 +1785,6 @@ write_real_w0 (st_parameter_dt *dtp, const char *source, int kind,
 
   set_fnode_default (dtp, &ff, kind);
 
-  if (f->u.real.d > 0)
-    ff.u.real.d = f->u.real.d;
   ff.format = f->format;
 
   /* For FMT_G, Compensate for extra digits when using scale factor, d
@@ -1794,11 +1792,17 @@ write_real_w0 (st_parameter_dt *dtp, const char *source, int kind,
      is used.  */
   if (f->format == FMT_G)
     {
+      if (f->u.real.d > 0)
+	ff.u.real.d = f->u.real.d;
       if (dtp->u.p.scale_factor > 0 && f->u.real.d == 0)
 	comp_d = 1;
       else
 	comp_d = 0;
     }
+  else
+    if (f->u.real.d >= 0)
+      ff.u.real.d = f->u.real.d;
+
 
   if (f->u.real.e >= 0)
     ff.u.real.e = f->u.real.e;
@@ -1987,7 +1991,20 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, &vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
       }
       break;
     default:
@@ -2326,7 +2343,22 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 				child_iostat, child_iomsg,
 				iotype_len, child_iomsg_len);
 		    }
+		  dtp->u.p.child_saved_iostat = *child_iostat;
 		  dtp->u.p.current_unit->child_dtio--;
+
+		  if ((dtp->u.p.child_saved_iostat != 0) &&
+		      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+		      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+		    {
+		      char message[IOMSG_LEN + 1];
+
+		      /* Trim trailing spaces from the message.  */
+		      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+		      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+		      message[child_iomsg_len] = '\0';
+		      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+				      message);
+		    }
 
 		  goto obj_loop;
 		}

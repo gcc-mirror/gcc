@@ -1343,6 +1343,29 @@ distributes_over_addition_p (tree_code op, int opno)
     }
 }
 
+/* OP is the INDEXth operand to CODE (counting from zero) and OTHER_OP
+   is the other operand.  Try to use the value of OP to simplify the
+   operation in one step, without having to process individual elements.  */
+static tree
+simplify_const_binop (tree_code code, tree op, tree other_op,
+		      int index ATTRIBUTE_UNUSED)
+{
+  /* AND, IOR as well as XOR with a zerop can be simplified directly.  */
+  if (TREE_CODE (op) == VECTOR_CST && TREE_CODE (other_op) == VECTOR_CST)
+    {
+      if (integer_zerop (other_op))
+	{
+	  if (code == BIT_IOR_EXPR || code == BIT_XOR_EXPR)
+	    return op;
+	  else if (code == BIT_AND_EXPR)
+	    return other_op;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+
 /* Combine two constants ARG1 and ARG2 under operation CODE to produce a new
    constant.  We assume ARG1 and ARG2 have the same data type, or at least
    are the same kind of constant and the same machine mode.  Return zero if
@@ -1645,6 +1668,14 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       if (real && imag)
 	return build_complex (type, real, imag);
     }
+
+  tree simplified;
+  if ((simplified = simplify_const_binop (code, arg1, arg2, 0)))
+    return simplified;
+
+  if (commutative_tree_code (code)
+      && (simplified = simplify_const_binop (code, arg2, arg1, 1)))
+    return simplified;
 
   if (TREE_CODE (arg1) == VECTOR_CST
       && TREE_CODE (arg2) == VECTOR_CST
@@ -8773,8 +8804,7 @@ native_interpret_int (tree type, const unsigned char *ptr, int len)
   else
     total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
 
-  if (total_bytes > len
-      || total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
+  if (total_bytes > len)
     return NULL_TREE;
 
   wide_int result = wi::from_buffer (ptr, total_bytes);
@@ -9329,9 +9359,10 @@ fold_view_convert_vector_encoding (tree type, tree expr)
 static tree
 fold_view_convert_expr (tree type, tree expr)
 {
-  /* We support up to 1024-bit values (for GCN/RISC-V V128QImode).  */
   unsigned char buffer[128];
+  unsigned char *buf;
   int len;
+  HOST_WIDE_INT l;
 
   /* Check that the host and target are sane.  */
   if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
@@ -9341,11 +9372,23 @@ fold_view_convert_expr (tree type, tree expr)
     if (tree res = fold_view_convert_vector_encoding (type, expr))
       return res;
 
-  len = native_encode_expr (expr, buffer, sizeof (buffer));
+  l = int_size_in_bytes (type);
+  if (l > (int) sizeof (buffer)
+      && l <= WIDE_INT_MAX_PRECISION / BITS_PER_UNIT)
+    {
+      buf = XALLOCAVEC (unsigned char, l);
+      len = l;
+    }
+  else
+    {
+      buf = buffer;
+      len = sizeof (buffer);
+    }
+  len = native_encode_expr (expr, buf, len);
   if (len == 0)
     return NULL_TREE;
 
-  return native_interpret_expr (type, buffer, len);
+  return native_interpret_expr (type, buf, len);
 }
 
 /* Build an expression for the address of T.  Folds away INDIRECT_REF
@@ -11736,6 +11779,15 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 		  + (lit0 != 0) + (lit1 != 0)
 		  + (minus_lit0 != 0) + (minus_lit1 != 0)) > 2)
 	    {
+	      int var0_origin = (var0 != 0) + 2 * (var1 != 0);
+	      int minus_var0_origin
+		= (minus_var0 != 0) + 2 * (minus_var1 != 0);
+	      int con0_origin = (con0 != 0) + 2 * (con1 != 0);
+	      int minus_con0_origin
+		= (minus_con0 != 0) + 2 * (minus_con1 != 0);
+	      int lit0_origin = (lit0 != 0) + 2 * (lit1 != 0);
+	      int minus_lit0_origin
+		= (minus_lit0 != 0) + 2 * (minus_lit1 != 0);
 	      var0 = associate_trees (loc, var0, var1, code, atype);
 	      minus_var0 = associate_trees (loc, minus_var0, minus_var1,
 					    code, atype);
@@ -11748,15 +11800,19 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
 	      if (minus_var0 && var0)
 		{
+		  var0_origin |= minus_var0_origin;
 		  var0 = associate_trees (loc, var0, minus_var0,
 					  MINUS_EXPR, atype);
 		  minus_var0 = 0;
+		  minus_var0_origin = 0;
 		}
 	      if (minus_con0 && con0)
 		{
+		  con0_origin |= minus_con0_origin;
 		  con0 = associate_trees (loc, con0, minus_con0,
 					  MINUS_EXPR, atype);
 		  minus_con0 = 0;
+		  minus_con0_origin = 0;
 		}
 
 	      /* Preserve the MINUS_EXPR if the negative part of the literal is
@@ -11772,15 +11828,19 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 		      /* But avoid ending up with only negated parts.  */
 		      && (var0 || con0))
 		    {
+		      minus_lit0_origin |= lit0_origin;
 		      minus_lit0 = associate_trees (loc, minus_lit0, lit0,
 						    MINUS_EXPR, atype);
 		      lit0 = 0;
+		      lit0_origin = 0;
 		    }
 		  else
 		    {
+		      lit0_origin |= minus_lit0_origin;
 		      lit0 = associate_trees (loc, lit0, minus_lit0,
 					      MINUS_EXPR, atype);
 		      minus_lit0 = 0;
+		      minus_lit0_origin = 0;
 		    }
 		}
 
@@ -11790,36 +11850,50 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 		return NULL_TREE;
 
 	      /* Eliminate lit0 and minus_lit0 to con0 and minus_con0. */
+	      con0_origin |= lit0_origin;
 	      con0 = associate_trees (loc, con0, lit0, code, atype);
-	      lit0 = 0;
+	      minus_con0_origin |= minus_lit0_origin;
 	      minus_con0 = associate_trees (loc, minus_con0, minus_lit0,
 					    code, atype);
-	      minus_lit0 = 0;
 
 	      /* Eliminate minus_con0.  */
 	      if (minus_con0)
 		{
 		  if (con0)
-		    con0 = associate_trees (loc, con0, minus_con0,
-					    MINUS_EXPR, atype);
+		    {
+		      con0_origin |= minus_con0_origin;
+		      con0 = associate_trees (loc, con0, minus_con0,
+					      MINUS_EXPR, atype);
+		    }
 		  else if (var0)
-		    var0 = associate_trees (loc, var0, minus_con0,
-					    MINUS_EXPR, atype);
+		    {
+		      var0_origin |= minus_con0_origin;
+		      var0 = associate_trees (loc, var0, minus_con0,
+					      MINUS_EXPR, atype);
+		    }
 		  else
 		    gcc_unreachable ();
-		  minus_con0 = 0;
 		}
 
 	      /* Eliminate minus_var0.  */
 	      if (minus_var0)
 		{
 		  if (con0)
-		    con0 = associate_trees (loc, con0, minus_var0,
-					    MINUS_EXPR, atype);
+		    {
+		      con0_origin |= minus_var0_origin;
+		      con0 = associate_trees (loc, con0, minus_var0,
+					      MINUS_EXPR, atype);
+		    }
 		  else
 		    gcc_unreachable ();
-		  minus_var0 = 0;
 		}
+
+	      /* Reassociate only if there has been any actual association
+		 between subtrees from op0 and subtrees from op1 in at
+		 least one of the operands, otherwise we risk infinite
+		 recursion.  See PR114084.  */
+	      if (var0_origin != 3 && con0_origin != 3)
+		return NULL_TREE;
 
 	      return
 		fold_convert_loc (loc, type, associate_trees (loc, var0, con0,
@@ -12900,7 +12974,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	if (element_precision (TREE_TYPE (targ1)) > element_precision (newtype))
 	  newtype = TREE_TYPE (targ1);
 
-	if (element_precision (newtype) < element_precision (TREE_TYPE (arg0)))
+	if (element_precision (newtype) < element_precision (TREE_TYPE (arg0))
+	    && (!VECTOR_TYPE_P (type) || is_truth_type_for (newtype, type)))
 	  return fold_build2_loc (loc, code, type,
 			      fold_convert_loc (loc, newtype, targ0),
 			      fold_convert_loc (loc, newtype, targ1));

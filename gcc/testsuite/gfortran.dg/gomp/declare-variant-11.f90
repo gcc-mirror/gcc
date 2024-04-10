@@ -49,8 +49,8 @@ contains
 
   subroutine f13 ()
     !$omp declare variant (f10) match (device={isa("avx512f")})
-    !$omp declare variant (f11) match (user={condition(1)},device={isa(avx512f)},implementation={vendor(gnu)})
-    !$omp declare variant (f12) match (user={condition(2 + 1)},device={isa(avx512f)})
+    !$omp declare variant (f11) match (user={condition(.true.)},device={isa(avx512f)},implementation={vendor(gnu)})
+    !$omp declare variant (f12) match (user={condition(.true. .NEQV. .false.)},device={isa(avx512f)})
   end subroutine
 
   subroutine f14 ()

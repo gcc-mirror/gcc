@@ -1892,7 +1892,7 @@ Complex!T pow(T)(const T x, Complex!T n) @trusted pure nothrow @nogc
 @safe pure nothrow @nogc unittest
 {
     import std.meta : AliasSeq;
-    import std.math : RealFormat, floatTraits;
+    import std.math.traits : floatTraits, RealFormat;
     static foreach (T; AliasSeq!(float, double, real))
     {{
          static if (floatTraits!T.realFormat == RealFormat.ibmExtended)

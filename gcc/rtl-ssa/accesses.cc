@@ -1466,6 +1466,16 @@ function_info::create_set (obstack_watermark &watermark,
   return set;
 }
 
+use_info *
+function_info::create_use (obstack_watermark &watermark,
+			   insn_info *insn,
+			   set_info *set)
+{
+  auto use = change_alloc<use_info> (watermark, insn, set->resource (), set);
+  use->m_is_temp = true;
+  return use;
+}
+
 // Return true if ACCESS1 can represent ACCESS2 and if ACCESS2 can
 // represent ACCESS1.
 static bool

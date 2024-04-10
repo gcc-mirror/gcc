@@ -74,7 +74,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-reference.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
+#include "ipa-utils.h"
 #include "gcse.h"
 #include "omp-offload.h"
 #include "edit-context.h"
@@ -2322,11 +2325,8 @@ toplev::main (int argc, char **argv)
      emit some diagnostics here.  */
   invoke_plugin_callbacks (PLUGIN_FINISH, NULL);
 
-  if (flag_diagnostics_generate_patch)
+  if (auto edit_context_ptr = global_dc->get_edit_context ())
     {
-      auto edit_context_ptr = global_dc->get_edit_context ();
-      gcc_assert (edit_context_ptr);
-
       pretty_printer pp;
       pp_show_color (&pp) = pp_show_color (global_dc->printer);
       edit_context_ptr->print_diff (&pp, true);
@@ -2359,7 +2359,11 @@ toplev::finalize (void)
   ipa_fnsummary_cc_finalize ();
   ipa_modref_cc_finalize ();
   ipa_edge_modifications_finalize ();
+  ipa_icf_cc_finalize ();
 
+  ipa_prop_cc_finalize ();
+  ipa_profile_cc_finalize ();
+  ipa_sra_cc_finalize ();
   cgraph_cc_finalize ();
   cgraphunit_cc_finalize ();
   symtab_thunks_cc_finalize ();

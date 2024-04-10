@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_fp16_alternative_ok } */
-/* { dg-options "-mfp16-format=alternative -pedantic" } */
+/* { dg-options "-pedantic" } */
+/* { dg-add-options arm_fp16_alternative } */
 
 /* This number overflows the range of the alternative encoding.  Since this
    encoding doesn't have infinities, we should get a pedantic warning,

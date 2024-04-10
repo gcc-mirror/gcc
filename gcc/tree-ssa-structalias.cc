@@ -8179,10 +8179,9 @@ dump_varinfo (FILE *file, varinfo_t vi)
     fprintf (file, "%shead:%u", sep, vi->head);
   if (vi->offset)
     fprintf (file, "%soffset:" HOST_WIDE_INT_PRINT_DEC, sep, vi->offset);
-  if (vi->size != ~(unsigned HOST_WIDE_INT)0)
+  if (vi->size != ~HOST_WIDE_INT_0U)
     fprintf (file, "%ssize:" HOST_WIDE_INT_PRINT_DEC, sep, vi->size);
-  if (vi->fullsize != ~(unsigned HOST_WIDE_INT)0
-      && vi->fullsize != vi->size)
+  if (vi->fullsize != ~HOST_WIDE_INT_0U && vi->fullsize != vi->size)
     fprintf (file, "%sfullsize:" HOST_WIDE_INT_PRINT_DEC, sep,
 	     vi->fullsize);
   fprintf (file, "\n");

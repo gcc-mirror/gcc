@@ -43,5 +43,5 @@ test()
 
 static_assert(test()); // { dg-error "" }
 
-// { dg-prune-output "builtin_unreachable" }
+// { dg-prune-output "_Error_formatter::_M_error()" }
 // { dg-prune-output "in 'constexpr'" }

@@ -129,4 +129,4 @@ fasten_main(size_t group, size_t ntypes, size_t nposes, size_t natlig, size_t na
 }
 
 /* { dg-final { scan-tree-dump-times {\.COND_MUL} 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times {\.VCOND} 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times {\.VCOND} 1 "optimized" { xfail *-*-* } } } */

@@ -2691,7 +2691,7 @@ build_replicated_int_cst (tree type, unsigned int width, HOST_WIDE_INT value)
     low = value;
   else
     {
-      mask = ((HOST_WIDE_INT)1 << width) - 1;
+      mask = (HOST_WIDE_INT_1U << width) - 1;
       low = (unsigned HOST_WIDE_INT) ~0 / mask * (value & mask);
     }
 
@@ -5882,9 +5882,10 @@ decl_fini_priority_insert (tree decl, priority_type priority)
 static void
 print_debug_expr_statistics (void)
 {
-  fprintf (stderr, "DECL_DEBUG_EXPR  hash: size %ld, %ld elements, %f collisions\n",
-	   (long) debug_expr_for_decl->size (),
-	   (long) debug_expr_for_decl->elements (),
+  fprintf (stderr, "DECL_DEBUG_EXPR  hash: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) debug_expr_for_decl->size (),
+	   (fmt_size_t) debug_expr_for_decl->elements (),
 	   debug_expr_for_decl->collisions ());
 }
 
@@ -5893,9 +5894,10 @@ print_debug_expr_statistics (void)
 static void
 print_value_expr_statistics (void)
 {
-  fprintf (stderr, "DECL_VALUE_EXPR  hash: size %ld, %ld elements, %f collisions\n",
-	   (long) value_expr_for_decl->size (),
-	   (long) value_expr_for_decl->elements (),
+  fprintf (stderr, "DECL_VALUE_EXPR  hash: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) value_expr_for_decl->size (),
+	   (fmt_size_t) value_expr_for_decl->elements (),
 	   value_expr_for_decl->collisions ());
 }
 
@@ -6287,9 +6289,10 @@ type_hash_canon (unsigned int hashcode, tree type)
 static void
 print_type_hash_statistics (void)
 {
-  fprintf (stderr, "Type hash: size %ld, %ld elements, %f collisions\n",
-	   (long) type_hash_table->size (),
-	   (long) type_hash_table->elements (),
+  fprintf (stderr, "Type hash: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) type_hash_table->size (),
+	   (fmt_size_t) type_hash_table->elements (),
 	   type_hash_table->collisions ());
 }
 
@@ -9929,20 +9932,25 @@ build_common_builtin_nodes (void)
 
   tree ptr_ptr_type_node = build_pointer_type (ptr_type_node);
 
-  ftype = build_function_type_list (void_type_node,
-				    ptr_type_node, // void *chain
-				    ptr_type_node, // void *func
-				    ptr_ptr_type_node, // void **dst
-				    NULL_TREE);
-  local_define_builtin ("__builtin_nested_func_ptr_created", ftype,
-			BUILT_IN_NESTED_PTR_CREATED,
-			"__builtin_nested_func_ptr_created", ECF_NOTHROW);
+  if (!builtin_decl_explicit_p (BUILT_IN_GCC_NESTED_PTR_CREATED))
+    {
+      ftype = build_function_type_list (void_type_node,
+					ptr_type_node, // void *chain
+					ptr_type_node, // void *func
+					ptr_ptr_type_node, // void **dst
+					NULL_TREE);
+      local_define_builtin ("__builtin___gcc_nested_func_ptr_created", ftype,
+			    BUILT_IN_GCC_NESTED_PTR_CREATED,
+			    "__gcc_nested_func_ptr_created", ECF_NOTHROW);
+    }
 
-  ftype = build_function_type_list (void_type_node,
-				    NULL_TREE);
-  local_define_builtin ("__builtin_nested_func_ptr_deleted", ftype,
-			BUILT_IN_NESTED_PTR_DELETED,
-			"__builtin_nested_func_ptr_deleted", ECF_NOTHROW);
+  if (!builtin_decl_explicit_p (BUILT_IN_GCC_NESTED_PTR_DELETED))
+    {
+      ftype = build_function_type_list (void_type_node, NULL_TREE);
+      local_define_builtin ("__builtin___gcc_nested_func_ptr_deleted", ftype,
+			    BUILT_IN_GCC_NESTED_PTR_DELETED,
+			    "__gcc_nested_func_ptr_deleted", ECF_NOTHROW);
+    }
 
   ftype = build_function_type_list (void_type_node,
 				    ptr_type_node, ptr_type_node, NULL_TREE);

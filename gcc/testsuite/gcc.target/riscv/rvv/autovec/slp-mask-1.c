@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-std=gnu99 -O3 -march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=scalable -fdump-tree-slp-details" } */
+/* { dg-additional-options "-std=gnu99 -O3 -march=rv64gcv -mabi=lp64d -mrvv-vector-bits=scalable -fdump-tree-slp-details" } */
 
 void
 __attribute__ ((noipa))

@@ -1,3 +1,48 @@
+2024-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113749
+	* libm2pim/wrapc.cc: Include fcntl.h.
+	(SeekSet): New function.
+	(SeekEnd): Ditto.
+	(ReadOnly): Ditto.
+	(WriteOnly): Ditto.
+
+2024-02-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* libm2iso/wraptime.cc [HAVE_STRUCT_TIMEZONE && HAVE_GETTIMEOFDAY]
+	(EXPORT(gettimeofday)): Cast tv to struct timeval *.
+	[HAVE_STRUCT_TIMEZONE && HAVE_SETTIMEOFDAY]
+	(EXPORT(settimeofday)): Likewise.
+
+2024-02-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR modula2/113888
+	* configure.ac (GM2_CHECK_LIB): Rename gettimeofday guard to
+	HAVE_GETTIMEOFDAY.
+	(GM_CHECK_LIB): Check for settimeofday.
+	(GM2_CHECK_LIB): Check for exp10, exp10f, exp10l in libm.
+	(AC_CHECK_DECLS): Check for getenv.
+	* configure, config.h.in: Regenerate.
+	* libm2pim/dtoa.cc: Rename <strings.h>, <string.h> guards to
+	HAVE_STRINGS_H, HAVE_STRING_H.
+	* libm2pim/ldtoa.cc: Likewise.
+
+2024-01-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111956
+	* Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* Makefile.in: Regenerate.
+	* libm2cor/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2pim/Makefile.in: Regenerate.
+
 2024-01-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2iso/RTco.cc (initialized): Use bool instead of int.

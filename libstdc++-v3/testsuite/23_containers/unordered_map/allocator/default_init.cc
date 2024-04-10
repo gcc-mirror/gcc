@@ -22,6 +22,7 @@
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
+#include <cstring>
 #include <ext/aligned_buffer.h>
 
 using T = int;
@@ -35,7 +36,7 @@ void test01()
 			     alloc_type> test_type;
 
   __gnu_cxx::__aligned_buffer<test_type> buf;
-  __builtin_memset(buf._M_addr(), ~0, sizeof(test_type));
+  std::memset(buf._M_addr(), ~0, sizeof(test_type));
 
   test_type *tmp = ::new(buf._M_addr()) test_type;
 
@@ -51,7 +52,7 @@ void test02()
 			     alloc_type> test_type;
 
   __gnu_cxx::__aligned_buffer<test_type> buf;
-  __builtin_memset(buf._M_addr(), ~0, sizeof(test_type));
+  std::memset(buf._M_addr(), ~0, sizeof(test_type));
 
   test_type *tmp = ::new(buf._M_addr()) test_type();
 

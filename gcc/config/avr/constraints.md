@@ -188,6 +188,21 @@
   (and (match_code "const_int")
        (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<1) | (1<<8))")))
 
+(define_constraint "Cb2"
+  "Constant 2-byte integer that has exactly 1 bit set."
+  (and (match_code "const_int")
+       (match_test "single_one_operand (op, HImode)")))
+
+(define_constraint "Cb3"
+  "Constant 3-byte integer that has exactly 1 bit set."
+  (and (match_code "const_int")
+       (match_test "single_one_operand (op, PSImode)")))
+
+(define_constraint "Cb4"
+  "Constant 4-byte integer that has exactly 1 bit set."
+  (and (match_code "const_int")
+       (match_test "single_one_operand (op, SImode)")))
+
 (define_constraint "Cx2"
   "Constant 2-byte integer that allows XOR without clobber register."
   (and (match_code "const_int")
@@ -239,25 +254,25 @@
 (define_constraint "Y01"
   "Fixed-point or integer constant with bit representation 0x1"
   (ior (and (match_code "const_fixed")
-	    (match_test "INTVAL (avr_to_int_mode (op)) == 1"))
+            (match_test "INTVAL (avr_to_int_mode (op)) == 1"))
        (match_test "satisfies_constraint_P (op)")))
 
 (define_constraint "Ym1"
   "Fixed-point or integer constant with bit representation -0x1"
   (ior (and (match_code "const_fixed")
-	    (match_test "INTVAL (avr_to_int_mode (op)) == -1"))
+            (match_test "INTVAL (avr_to_int_mode (op)) == -1"))
        (match_test "satisfies_constraint_N (op)")))
 
 (define_constraint "Y02"
   "Fixed-point or integer constant with bit representation 0x2"
   (ior (and (match_code "const_fixed")
-	    (match_test "INTVAL (avr_to_int_mode (op)) == 2"))
+            (match_test "INTVAL (avr_to_int_mode (op)) == 2"))
        (match_test "satisfies_constraint_K (op)")))
 
 (define_constraint "Ym2"
   "Fixed-point or integer constant with bit representation -0x2"
   (ior (and (match_code "const_fixed")
-	    (match_test "INTVAL (avr_to_int_mode (op)) == -2"))
+            (match_test "INTVAL (avr_to_int_mode (op)) == -2"))
        (match_test "satisfies_constraint_Cm2 (op)")))
 
 ;; Constraint that's the empty set.  Useful with mode and code iterators.

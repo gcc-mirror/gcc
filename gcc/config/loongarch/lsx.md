@@ -728,17 +728,6 @@
   DONE;
 })
 
-(define_expand "neg<mode>2"
-  [(set (match_operand:FLSX 0 "register_operand")
-	(neg:FLSX (match_operand:FLSX 1 "register_operand")))]
-  "ISA_HAS_LSX"
-{
-  rtx reg = gen_reg_rtx (<MODE>mode);
-  emit_move_insn (reg, CONST0_RTX (<MODE>mode));
-  emit_insn (gen_sub<mode>3 (operands[0], reg, operands[1]));
-  DONE;
-})
-
 (define_expand "lsx_vrepli<mode>"
   [(match_operand:ILSX 0 "register_operand")
    (match_operand 1 "const_imm10_operand")]
@@ -1479,7 +1468,7 @@
   [(set (match_operand:FLSX 0 "register_operand" "=f")
     (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
 		 UNSPEC_LSX_VFRECIPE))]
-  "ISA_HAS_LSX && TARGET_FRECIPE"
+  "ISA_HAS_LSX && ISA_HAS_FRECIPE"
   "vfrecipe.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
@@ -1512,7 +1501,7 @@
   [(set (match_operand:FLSX 0 "register_operand" "=f")
     (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
 		 UNSPEC_LSX_VFRSQRTE))]
-  "ISA_HAS_LSX && TARGET_FRECIPE"
+  "ISA_HAS_LSX && ISA_HAS_FRECIPE"
   "vfrsqrte.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])

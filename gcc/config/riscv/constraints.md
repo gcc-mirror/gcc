@@ -55,6 +55,11 @@
   (and (match_code "const_int")
        (match_test "ival == 2")))
 
+(define_constraint "c03"
+  "Constant value 3"
+  (and (match_code "const_int")
+       (match_test "ival == 3")))
+
 (define_constraint "c04"
   "Constant value 4"
   (and (match_code "const_int")
@@ -262,3 +267,28 @@
   (and (match_code "const_int")
        (and (match_test "IN_RANGE (ival, 0, 1073741823)")
             (match_test "exact_log2 (ival + 1) != -1"))))
+
+(define_constraint "CV_simd_si6"
+  "A 6-bit signed immediate for SIMD."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -32, 31)")))
+
+(define_constraint "CV_simd_un6"
+  "A 6-bit unsigned immediate for SIMD."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 63)")))
+
+(define_constraint "CV_simd_i01"
+  "Shifting immediate for SIMD shufflei1."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 64, 127)")))
+
+(define_constraint "CV_simd_i02"
+  "Shifting immediate for SIMD shufflei2."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -128, -65)")))
+
+(define_constraint "CV_simd_i03"
+  "Shifting immediate for SIMD shufflei3."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -64, -1)")))

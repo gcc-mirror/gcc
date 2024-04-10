@@ -1,5 +1,6 @@
 /* { dg-require-effective-target ppc_float128_hw } */
-/* { dg-options "-mpower9-vector -O2 -ffast-math" } */
+/* { dg-options "-mvsx -O2 -ffast-math" } */
+/* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
 
 #ifndef TYPE
 #define TYPE _Float128

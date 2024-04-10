@@ -2375,6 +2375,21 @@ extern int making_const_table;
   else if (TARGET_THUMB1)				\
     thumb1_final_prescan_insn (INSN)
 
+/* These defines are useful to refer to the value of the mve_unpredicated_insn
+   insn attribute.  Note that, because these use the get_attr_* function, these
+   will change recog_data if (INSN) isn't current_insn.  */
+#define MVE_VPT_PREDICABLE_INSN_P(INSN)					\
+  (recog_memoized (INSN) >= 0						\
+   && get_attr_mve_unpredicated_insn (INSN) != CODE_FOR_nothing)
+
+#define MVE_VPT_PREDICATED_INSN_P(INSN)					\
+  (MVE_VPT_PREDICABLE_INSN_P (INSN)					\
+   && recog_memoized (INSN) != get_attr_mve_unpredicated_insn (INSN))
+
+#define MVE_VPT_UNPREDICATED_INSN_P(INSN)				\
+  (MVE_VPT_PREDICABLE_INSN_P (INSN)					\
+   && recog_memoized (INSN) == get_attr_mve_unpredicated_insn (INSN))
+
 #define ARM_SIGN_EXTEND(x)  ((HOST_WIDE_INT)			\
   (HOST_BITS_PER_WIDE_INT <= 32 ? (unsigned HOST_WIDE_INT) (x)	\
    : ((((unsigned HOST_WIDE_INT)(x)) & (unsigned HOST_WIDE_INT) 0xffffffff) |\

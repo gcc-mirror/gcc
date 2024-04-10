@@ -1294,8 +1294,9 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		{
 		  error_at_line 
 		    (&lexer_line,
-		     "rtx type `%s' has `0' in position %lu, can't handle",
-		     rtx_name[i], (unsigned long) aindex);
+		     "rtx type `%s' has `0' in position "
+		     HOST_SIZE_T_PRINT_UNSIGNED ", can't handle",
+		     rtx_name[i], (fmt_size_t) aindex);
 		  t = &string_type;
 		  subname = "rt_int";
 		}
@@ -1333,17 +1334,20 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    default:
 	      error_at_line
 		(&lexer_line,
-		 "rtx type `%s' has `%c' in position %lu, can't handle",
+		 "rtx type `%s' has `%c' in position "
+		 HOST_SIZE_T_PRINT_UNSIGNED ", can't handle",
 		 rtx_name[i], rtx_format[i][aindex],
-		 (unsigned long) aindex);
+		 (fmt_size_t) aindex);
 	      t = &string_type;
 	      subname = "rt_int";
 	      break;
 	    }
 
 	  subfields = create_field (subfields, t,
-				    xasprintf (".fld[%lu].%s",
-					       (unsigned long) aindex,
+				    xasprintf (".fld["
+					       HOST_SIZE_T_PRINT_UNSIGNED
+					       "].%s",
+					       (fmt_size_t) aindex,
 					       subname));
 	  subfields->opt = nodot;
 	  if (t == note_union_tp)
@@ -1711,9 +1715,9 @@ open_base_files (void)
       "tree-dfa.h", "tree-ssa.h", "reload.h", "cpplib.h", "tree-chrec.h",
       "except.h", "output.h",  "cfgloop.h", "target.h", "lto-streamer.h",
       "target-globals.h", "ipa-ref.h", "cgraph.h", "symbol-summary.h",
-      "ipa-prop.h", "ipa-fnsummary.h", "dwarf2out.h", "omp-general.h",
-      "omp-offload.h", "ipa-modref-tree.h", "ipa-modref.h", "symtab-thunks.h",
-      "symtab-clones.h", "diagnostic-spec.h", "ctfc.h",
+      "sreal.h", "ipa-cp.h", "ipa-prop.h", "ipa-fnsummary.h", "dwarf2out.h",
+      "omp-general.h", "omp-offload.h", "ipa-modref-tree.h", "ipa-modref.h",
+      "symtab-thunks.h", "symtab-clones.h", "diagnostic-spec.h", "ctfc.h",
       NULL
     };
     const char *const *ifp;
@@ -4718,8 +4722,8 @@ write_roots (pair_p variables, bool emit_pch)
 }
 
 /* Prints not-as-ugly version of a typename of T to OF.  Trades the uniquness
-   guaranteee for somewhat increased readability.  If name conflicts do happen,
-   this funcion will have to be adjusted to be more like
+   guarantee for somewhat increased readability.  If name conflicts do happen,
+   this function will have to be adjusted to be more like
    output_mangled_typename.  */
 
 #define INDENT 2

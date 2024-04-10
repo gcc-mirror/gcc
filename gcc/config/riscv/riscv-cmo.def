@@ -17,11 +17,11 @@ RISCV_BUILTIN (prefetchi_si, "zicbop_cbo_prefetchi", RISCV_BUILTIN_DIRECT, RISCV
 RISCV_BUILTIN (prefetchi_di, "zicbop_cbo_prefetchi", RISCV_BUILTIN_DIRECT, RISCV_UDI_FTYPE_UDI, prefetchi64),
 
 // zbkc or zbc
-RISCV_BUILTIN (clmul_si, "clmul", RISCV_BUILTIN_DIRECT, RISCV_USI_FTYPE_USI_USI, clmul_zbkc32_or_zbc32),
-RISCV_BUILTIN (clmul_di, "clmul", RISCV_BUILTIN_DIRECT, RISCV_UDI_FTYPE_UDI_UDI, clmul_zbkc64_or_zbc64),
-RISCV_BUILTIN (clmulh_si, "clmulh", RISCV_BUILTIN_DIRECT, RISCV_USI_FTYPE_USI_USI, clmul_zbkc32_or_zbc32),
-RISCV_BUILTIN (clmulh_di, "clmulh", RISCV_BUILTIN_DIRECT, RISCV_UDI_FTYPE_UDI_UDI, clmul_zbkc64_or_zbc64),
+RISCV_BUILTIN (clmul_si, "clmul_32", RISCV_BUILTIN_DIRECT, RISCV_USI_FTYPE_USI_USI, clmul_zbkc_or_zbc),
+RISCV_BUILTIN (clmul_di, "clmul_64", RISCV_BUILTIN_DIRECT, RISCV_UDI_FTYPE_UDI_UDI, clmul_zbkc64_or_zbc64),
+RISCV_BUILTIN (clmulh_si, "clmulh_32", RISCV_BUILTIN_DIRECT, RISCV_USI_FTYPE_USI_USI, clmul_zbkc32_or_zbc32),
+RISCV_BUILTIN (clmulh_di, "clmulh_64", RISCV_BUILTIN_DIRECT, RISCV_UDI_FTYPE_UDI_UDI, clmul_zbkc64_or_zbc64),
 
 // zbc
-RISCV_BUILTIN (clmulr_si, "clmulr", RISCV_BUILTIN_DIRECT, RISCV_USI_FTYPE_USI_USI, clmulr_zbc32),
-RISCV_BUILTIN (clmulr_di, "clmulr", RISCV_BUILTIN_DIRECT, RISCV_UDI_FTYPE_UDI_UDI, clmulr_zbc64),
+RISCV_BUILTIN (clmulr_si, "clmulr_32", RISCV_BUILTIN_DIRECT, RISCV_USI_FTYPE_USI_USI, clmulr_zbc32),
+RISCV_BUILTIN (clmulr_di, "clmulr_64", RISCV_BUILTIN_DIRECT, RISCV_UDI_FTYPE_UDI_UDI, clmulr_zbc64),

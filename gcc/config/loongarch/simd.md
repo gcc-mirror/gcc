@@ -85,11 +85,20 @@
 (define_mode_attr simdifmt_for_f [(V2DF "l") (V4DF "l")
 				  (V4SF "w") (V8SF "w")])
 
+;; Suffix for integer mode in LSX or LASX instructions to operating FP
+;; vectors using integer vector operations.
+(define_mode_attr simdfmt_as_i [(V2DF "d") (V4DF "d")
+				(V4SF "w") (V8SF "w")])
+
 ;; Size of vector elements in bits.
 (define_mode_attr elmbits [(V2DI "64") (V4DI "64")
 			   (V4SI "32") (V8SI "32")
 			   (V8HI "16") (V16HI "16")
 			   (V16QI "8") (V32QI "8")])
+
+;; The index of sign bit in FP vector elements.
+(define_mode_attr elmsgnbit [(V2DF "63") (V4DF "63")
+			     (V4SF "31") (V8SF "31")])
 
 ;; This attribute is used to form an immediate operand constraint using
 ;; "const_<bitimm>_operand".
@@ -456,6 +465,15 @@
 					      const0_rtx));
   DONE;
 })
+
+;; FP negation.
+(define_insn "neg<mode>2"
+  [(set (match_operand:FVEC 0 "register_operand" "=f")
+	(neg:FVEC (match_operand:FVEC 1 "register_operand" "f")))]
+  ""
+  "<x>vbitrevi.<simdfmt_as_i>\t%<wu>0,%<wu>1,<elmsgnbit>"
+  [(set_attr "type" "simd_logic")
+   (set_attr "mode" "<MODE>")])
 
 ; The LoongArch SX Instructions.
 (include "lsx.md")

@@ -866,7 +866,7 @@ find_uninit_fields_r (tree *tp, int *walk_subtrees, void *data)
   else if (code == CALL_EXPR)
     {
       tree fn = get_callee_fndecl (init);
-      if (fn && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+      if (fn && DECL_IOBJ_MEMBER_FUNCTION_P (fn))
 	{
 	  tree op = CALL_EXPR_ARG (init, 0);
 	  if (TREE_CODE (op) == ADDR_EXPR)
@@ -906,7 +906,8 @@ find_uninit_fields_r (tree *tp, int *walk_subtrees, void *data)
 	    warning_at (EXPR_LOCATION (init), OPT_Wuninitialized,
 			"reference %qD is not yet bound to a value when used "
 			"here", field);
-	  else if (!INDIRECT_TYPE_P (type) || is_this_parameter (d->member))
+	  else if ((!INDIRECT_TYPE_P (type) || is_this_parameter (d->member))
+		   && !conv_binds_to_reference_parm_p (type, init))
 	    warning_at (EXPR_LOCATION (init), OPT_Wuninitialized,
 			"member %qD is used uninitialized", field);
 	  *walk_subtrees = false;
@@ -2477,7 +2478,7 @@ build_offset_ref (tree type, tree member, bool address_p,
 
 	   -- in a mem-initializer for a constructor for that class or for
 	   a class derived from that class (_class.base.init_).  */
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (member))
+      if (DECL_OBJECT_MEMBER_FUNCTION_P (member))
 	{
 	  /* Build a representation of the qualified name suitable
 	     for use as the operand to "&" -- even though the "&" is
@@ -4155,7 +4156,8 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 
   /* If one destructor throws, keep trying to clean up the rest, unless we're
      already in a build_vec_init cleanup.  */
-  if (flag_exceptions && !in_cleanup && !expr_noexcept_p (tmp, tf_none))
+  if (flag_exceptions && !in_cleanup && !processing_template_decl
+      && !expr_noexcept_p (tmp, tf_none))
     {
       loop = build2 (TRY_CATCH_EXPR, void_type_node, loop,
 		     unshare_expr (loop));
@@ -4256,7 +4258,7 @@ create_temporary_var (tree type)
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
-  DECL_CONTEXT (decl) = current_function_decl;
+  DECL_CONTEXT (decl) = current_scope ();
 
   return decl;
 }
@@ -4863,7 +4865,9 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 But for non-classes, that's the same as value-initialization.  */
       if (empty_list)
 	{
-	  if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
+	  if (cxx_dialect >= cxx11
+	      && (CLASS_TYPE_P (type)
+		  || TREE_CODE (type) == ARRAY_TYPE))
 	    {
 	      init = build_constructor (init_list_type_node, NULL);
 	    }

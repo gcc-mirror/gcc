@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power9 -O2" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
 
 /* Verify P9 changes to allow DImode into Altivec registers, and generate
    constants using XXSPLTIB.  */

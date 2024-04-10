@@ -5,6 +5,7 @@
 /* { dg-additional-options "-msse2 -mno-avx512f" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-additional-options "-march=armv8-a" { target aarch64_sve } } */
 /* { dg-additional-options "-maltivec" { target powerpc_altivec_ok } } */
+/* { dg-additional-options "-mlsx" { target loongarch_sx } } */
 /* { dg-skip-if "no fallback for MVE" { arm_mve } } */
 
 #include <stdint.h>

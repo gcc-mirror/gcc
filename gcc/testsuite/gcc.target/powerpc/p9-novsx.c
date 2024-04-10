@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power9 -mno-vsx -O1" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power9 -mvsx -mno-vsx -O1" } */
 /* { dg-final { scan-assembler-times "lvx %?v?2,%?r?3" 1 } } */
 /* { dg-final { scan-assembler-times "stvx %?v?2,%?r?3" 1 } } */
 

@@ -186,44 +186,48 @@ namespace regex_constants
    */
   _GLIBCXX17_INLINE constexpr syntax_option_type __polynomial = _S_polynomial;
 
-  constexpr inline syntax_option_type
-  operator&(syntax_option_type __a, syntax_option_type __b)
+  [[__nodiscard__]]
+  constexpr syntax_option_type
+  operator&(syntax_option_type __a, syntax_option_type __b) noexcept
   {
     return (syntax_option_type)(static_cast<unsigned int>(__a)
 				& static_cast<unsigned int>(__b));
   }
 
-  constexpr inline syntax_option_type
-  operator|(syntax_option_type __a, syntax_option_type __b)
+  [[__nodiscard__]]
+  constexpr syntax_option_type
+  operator|(syntax_option_type __a, syntax_option_type __b) noexcept
   {
     return (syntax_option_type)(static_cast<unsigned int>(__a)
 				| static_cast<unsigned int>(__b));
   }
 
-  constexpr inline syntax_option_type
-  operator^(syntax_option_type __a, syntax_option_type __b)
+  [[__nodiscard__]]
+  constexpr syntax_option_type
+  operator^(syntax_option_type __a, syntax_option_type __b) noexcept
   {
     return (syntax_option_type)(static_cast<unsigned int>(__a)
 				^ static_cast<unsigned int>(__b));
   }
 
-  constexpr inline syntax_option_type
-  operator~(syntax_option_type __a)
+  [[__nodiscard__]]
+  constexpr syntax_option_type
+  operator~(syntax_option_type __a) noexcept
   { return (syntax_option_type)(~static_cast<unsigned int>(__a)); }
 
   _GLIBCXX14_CONSTEXPR
   inline syntax_option_type&
-  operator&=(syntax_option_type& __a, syntax_option_type __b)
+  operator&=(syntax_option_type& __a, syntax_option_type __b) noexcept
   { return __a = __a & __b; }
 
   _GLIBCXX14_CONSTEXPR
   inline syntax_option_type&
-  operator|=(syntax_option_type& __a, syntax_option_type __b)
+  operator|=(syntax_option_type& __a, syntax_option_type __b) noexcept
   { return __a = __a | __b; }
 
   _GLIBCXX14_CONSTEXPR
   inline syntax_option_type&
-  operator^=(syntax_option_type& __a, syntax_option_type __b)
+  operator^=(syntax_option_type& __a, syntax_option_type __b) noexcept
   { return __a = __a ^ __b; }
 
   ///@}
@@ -367,44 +371,48 @@ namespace regex_constants
    */
   _GLIBCXX17_INLINE constexpr match_flag_type format_first_only = _S_first_only;
 
-  constexpr inline match_flag_type
-  operator&(match_flag_type __a, match_flag_type __b)
+  [[__nodiscard__]]
+  constexpr match_flag_type
+  operator&(match_flag_type __a, match_flag_type __b) noexcept
   {
     return (match_flag_type)(static_cast<unsigned int>(__a)
 				& static_cast<unsigned int>(__b));
   }
 
-  constexpr inline match_flag_type
-  operator|(match_flag_type __a, match_flag_type __b)
+  [[__nodiscard__]]
+  constexpr match_flag_type
+  operator|(match_flag_type __a, match_flag_type __b) noexcept
   {
     return (match_flag_type)(static_cast<unsigned int>(__a)
 				| static_cast<unsigned int>(__b));
   }
 
-  constexpr inline match_flag_type
-  operator^(match_flag_type __a, match_flag_type __b)
+  [[__nodiscard__]]
+  constexpr match_flag_type
+  operator^(match_flag_type __a, match_flag_type __b) noexcept
   {
     return (match_flag_type)(static_cast<unsigned int>(__a)
 				^ static_cast<unsigned int>(__b));
   }
 
-  constexpr inline match_flag_type
-  operator~(match_flag_type __a)
+  [[__nodiscard__]]
+  constexpr match_flag_type
+  operator~(match_flag_type __a) noexcept
   { return (match_flag_type)(~static_cast<unsigned int>(__a)); }
 
   _GLIBCXX14_CONSTEXPR
   inline match_flag_type&
-  operator&=(match_flag_type& __a, match_flag_type __b)
+  operator&=(match_flag_type& __a, match_flag_type __b) noexcept
   { return __a = __a & __b; }
 
   _GLIBCXX14_CONSTEXPR
   inline match_flag_type&
-  operator|=(match_flag_type& __a, match_flag_type __b)
+  operator|=(match_flag_type& __a, match_flag_type __b) noexcept
   { return __a = __a | __b; }
 
   _GLIBCXX14_CONSTEXPR
   inline match_flag_type&
-  operator^=(match_flag_type& __a, match_flag_type __b)
+  operator^=(match_flag_type& __a, match_flag_type __b) noexcept
   { return __a = __a ^ __b; }
 
   ///@}

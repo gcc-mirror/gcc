@@ -524,8 +524,7 @@ interpreted as a synonym for @option{-fdump-rtl-mach}.
 
 @opindex dD
 @item -dD
-Like @option{-dM} except in two respects: it does @emph{not} include the
-predefined macros, and it outputs @emph{both} the @samp{#define}
+Like @option{-dM} except that it outputs @emph{both} the @samp{#define}
 directives and the result of preprocessing.  Both kinds of output go to
 the standard output file.
 

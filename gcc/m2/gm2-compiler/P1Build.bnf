@@ -374,7 +374,7 @@ VAR
    nothing: CARDINAL ;
 BEGIN
    AddNameToScope(makekey(currentstring)) ;
-   PushTF(makekey(currentstring), identtok) ;
+   PushTFtok(makekey(currentstring), identtok, GetTokenNo()) ;
    CheckExplicitExported ;
    IF NOT IsAutoPushOn()
    THEN

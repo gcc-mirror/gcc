@@ -615,11 +615,14 @@ proc v3_target_compile { source dest type options } {
 	}
     }
 
-    # Small adjustment for MinGW hosts.
-    if { $dest == "/dev/null" && [ishost "*-*-mingw*"] } {
+    # Small adjustment for Windows hosts.
+    if { $dest == "/dev/null"
+	  && [info exists ::env(OS)] && [string match "Windows*" $::env(OS)] } {
 	if { $type == "executable" } {
 	    set dest "x.exe"
 	} else {
+	    # Windows uses special file named "nul" as a substitute for
+	    # /dev/null
 	    set dest "nul"
 	}
     }

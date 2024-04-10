@@ -55,6 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 
@@ -1064,4 +1066,14 @@ ipa_opt_pass_d *
 make_pass_ipa_profile (gcc::context *ctxt)
 {
   return new pass_ipa_profile (ctxt);
+}
+
+/* Reset all state within ipa-profile.cc so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+ipa_profile_cc_finalize (void)
+{
+  delete call_sums;
+  call_sums = NULL;
 }

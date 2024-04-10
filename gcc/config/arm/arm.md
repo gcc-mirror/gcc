@@ -124,6 +124,18 @@
 ; and not all ARM insns do.
 (define_attr "predicated" "yes,no" (const_string "no"))
 
+; An attribute that encodes the CODE_FOR_<insn> of the MVE VPT unpredicated
+; version of a VPT-predicated instruction.  For unpredicated instructions
+; that are predicable, encode the same pattern's CODE_FOR_<insn> as a way to
+; encode that it is a predicable instruction.
+(define_attr "mve_unpredicated_insn" "" (symbol_ref "CODE_FOR_nothing"))
+
+; An attribute used by the loop-doloop pass when determining whether it is
+; safe to predicate a MVE instruction, that operates across lanes, and was
+; previously not predicated.  The pass will still check whether all inputs
+; are predicated by the VCTP predication mask.
+(define_attr "mve_safe_imp_xlane_pred" "yes,no" (const_string "no"))
+
 ; LENGTH of an instruction (in bytes)
 (define_attr "length" ""
   (const_int 4))
@@ -307,6 +319,8 @@
 ;
 ; NOCOND means that the instruction does not use or alter the condition
 ;   codes but can be converted into a conditionally exectuted instruction.
+;   Given that NOCOND is the default for most instructions if omitted,
+;   the attribute predicable must be set to yes as well.
 
 (define_attr "conds" "use,set,clob,unconditional,nocond"
 	(if_then_else
@@ -12547,6 +12561,7 @@
   revsh%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
@@ -12560,6 +12575,7 @@
    rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
@@ -12578,9 +12594,13 @@
   "arm_arch6
    && aarch_rev16_shleft_mask_imm_p (operands[3], SImode)
    && aarch_rev16_shright_mask_imm_p (operands[2], SImode)"
-  "rev16\\t%0, %1"
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
@@ -12595,22 +12615,29 @@
   "arm_arch6
    && aarch_rev16_shleft_mask_imm_p (operands[3], SImode)
    && aarch_rev16_shright_mask_imm_p (operands[2], SImode)"
-  "rev16\\t%0, %1"
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
-(define_expand "arm_rev16si2"
-  [(set (match_operand:SI 0 "s_register_operand")
-	(bswap:SI (match_operand:SI 1 "s_register_operand")))]
+;; Similar pattern to match (rotate (bswap) 16)
+(define_insn "arm_rev16si2"
+  [(set (match_operand:SI 0 "register_operand" "=l,l,r")
+        (rotate:SI (bswap:SI (match_operand:SI 1 "register_operand" "l,l,r"))
+                   (const_int 16)))]
   "arm_arch6"
-  {
-    rtx left = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff00), SImode);
-    rtx right = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff), SImode);
-    emit_insn (gen_arm_rev16si2_alt1 (operands[0], operands[1], right, left));
-    DONE;
-  }
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
+  [(set_attr "arch" "t1,t2,32")
+   (set_attr "length" "2,2,4")
+   (set_attr "type" "rev")]
 )
 
 (define_expand "bswaphi2"

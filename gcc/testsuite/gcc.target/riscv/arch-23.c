@@ -4,7 +4,6 @@ int foo()
 {
 }
 
-/* { dg-error "ISA string is not in canonical order. 'c'" "" { target *-*-* } 0 } */
 /* { dg-error "extension 'w' is unsupported standard single letter extension" "" { target *-*-* } 0 } */
 /* { dg-error "extension 'zvl' starts with 'z' but is unsupported standard extension" "" { target *-*-* } 0 } */
 /* { dg-error "extension 's123' starts with 's' but is unsupported standard supervisor extension" "" { target *-*-* } 0 } */

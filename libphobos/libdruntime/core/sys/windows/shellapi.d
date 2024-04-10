@@ -188,7 +188,7 @@ enum SHERB_NOPROGRESSUI   = 2;
 enum SHERB_NOSOUND        = 4;
 
 alias WORD FILEOP_FLAGS, PRINTEROP_FLAGS;
-mixin DECLARE_HANDLE!("HDROP");
+alias HDROP = HANDLE;
 
 //align(2): // 1 in Win32, default in Win64
 

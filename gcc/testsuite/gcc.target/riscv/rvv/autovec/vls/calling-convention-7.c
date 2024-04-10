@@ -1,0 +1,128 @@
+/* { dg-do compile } */
+/* { dg-options "-march=rv64gcv_zvl4096b -mrvv-vector-bits=scalable -mabi=lp64d -O3 -fno-schedule-insns2" } */
+
+#include "def.h"
+
+DEF_RET1_ARG0 (v1df)
+DEF_RET1_ARG0 (v2df)
+DEF_RET1_ARG0 (v4df)
+DEF_RET1_ARG0 (v8df)
+DEF_RET1_ARG0 (v16df)
+DEF_RET1_ARG0 (v32df)
+DEF_RET1_ARG0 (v64df)
+DEF_RET1_ARG0 (v128df)
+DEF_RET1_ARG0 (v256df)
+DEF_RET1_ARG0 (v512df)
+
+DEF_RET1_ARG1 (v1df)
+DEF_RET1_ARG1 (v2df)
+DEF_RET1_ARG1 (v4df)
+DEF_RET1_ARG1 (v8df)
+DEF_RET1_ARG1 (v16df)
+DEF_RET1_ARG1 (v32df)
+DEF_RET1_ARG1 (v64df)
+DEF_RET1_ARG1 (v128df)
+DEF_RET1_ARG1 (v256df)
+DEF_RET1_ARG1 (v512df)
+
+DEF_RET1_ARG2 (v1df)
+DEF_RET1_ARG2 (v2df)
+DEF_RET1_ARG2 (v4df)
+DEF_RET1_ARG2 (v8df)
+DEF_RET1_ARG2 (v16df)
+DEF_RET1_ARG2 (v32df)
+DEF_RET1_ARG2 (v64df)
+DEF_RET1_ARG2 (v128df)
+DEF_RET1_ARG2 (v256df)
+DEF_RET1_ARG2 (v512df)
+
+DEF_RET1_ARG3 (v1df)
+DEF_RET1_ARG3 (v2df)
+DEF_RET1_ARG3 (v4df)
+DEF_RET1_ARG3 (v8df)
+DEF_RET1_ARG3 (v16df)
+DEF_RET1_ARG3 (v32df)
+DEF_RET1_ARG3 (v64df)
+DEF_RET1_ARG3 (v128df)
+DEF_RET1_ARG3 (v256df)
+DEF_RET1_ARG3 (v512df)
+
+DEF_RET1_ARG4 (v1df)
+DEF_RET1_ARG4 (v2df)
+DEF_RET1_ARG4 (v4df)
+DEF_RET1_ARG4 (v8df)
+DEF_RET1_ARG4 (v16df)
+DEF_RET1_ARG4 (v32df)
+DEF_RET1_ARG4 (v64df)
+DEF_RET1_ARG4 (v128df)
+DEF_RET1_ARG4 (v256df)
+DEF_RET1_ARG4 (v512df)
+
+DEF_RET1_ARG5 (v1df)
+DEF_RET1_ARG5 (v2df)
+DEF_RET1_ARG5 (v4df)
+DEF_RET1_ARG5 (v8df)
+DEF_RET1_ARG5 (v16df)
+DEF_RET1_ARG5 (v32df)
+DEF_RET1_ARG5 (v64df)
+DEF_RET1_ARG5 (v128df)
+DEF_RET1_ARG5 (v256df)
+DEF_RET1_ARG5 (v512df)
+
+DEF_RET1_ARG6 (v1df)
+DEF_RET1_ARG6 (v2df)
+DEF_RET1_ARG6 (v4df)
+DEF_RET1_ARG6 (v8df)
+DEF_RET1_ARG6 (v16df)
+DEF_RET1_ARG6 (v32df)
+DEF_RET1_ARG6 (v64df)
+DEF_RET1_ARG6 (v128df)
+DEF_RET1_ARG6 (v256df)
+DEF_RET1_ARG6 (v512df)
+
+DEF_RET1_ARG7 (v1df)
+DEF_RET1_ARG7 (v2df)
+DEF_RET1_ARG7 (v4df)
+DEF_RET1_ARG7 (v8df)
+DEF_RET1_ARG7 (v16df)
+DEF_RET1_ARG7 (v32df)
+DEF_RET1_ARG7 (v64df)
+DEF_RET1_ARG7 (v128df)
+DEF_RET1_ARG7 (v256df)
+DEF_RET1_ARG7 (v512df)
+
+DEF_RET1_ARG8 (v1df)
+DEF_RET1_ARG8 (v2df)
+DEF_RET1_ARG8 (v4df)
+DEF_RET1_ARG8 (v8df)
+DEF_RET1_ARG8 (v16df)
+DEF_RET1_ARG8 (v32df)
+DEF_RET1_ARG8 (v64df)
+DEF_RET1_ARG8 (v128df)
+DEF_RET1_ARG8 (v256df)
+DEF_RET1_ARG8 (v512df)
+
+DEF_RET1_ARG9 (v1df)
+DEF_RET1_ARG9 (v2df)
+DEF_RET1_ARG9 (v4df)
+DEF_RET1_ARG9 (v8df)
+DEF_RET1_ARG9 (v16df)
+DEF_RET1_ARG9 (v32df)
+DEF_RET1_ARG9 (v64df)
+DEF_RET1_ARG9 (v128df)
+DEF_RET1_ARG9 (v256df)
+DEF_RET1_ARG9 (v512df)
+
+// RET1_ARG0 tests
+/* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 6 } } */
+/* { dg-final { scan-assembler-times {mv\s+s0,a0\s+call\s+memset\s+mv\s+a0,s0} 3 } } */
+
+// v1df and v2df tests: return value (ld) and function prologue (sd)
+//   - 1 ld per v1df and 2 ld per v2df with args > 1
+//   - argnum sd's per v1df when argnum > 1 
+//   - 2 * argnum sd's per v2df when argnum > 0
+/* { dg-final { scan-assembler-times {ld\s+a[0-1],\s*[0-9]+\(sp\)} 24 } } */
+/* { dg-final { scan-assembler-times {sd\s+a[0-7],\s*[0-9]+\(sp\)} 103 } } */
+
+// v4-512df tests: return value (vse64.v)
+/* { dg-final { scan-assembler-times {vse64.v\s+v[0-9],\s*[0-9]+\(a0\)} 77 } } */

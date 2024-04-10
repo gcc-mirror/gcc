@@ -317,11 +317,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
     { return __it; }
 
+#if __cplusplus < 201103L
   template<typename _Ite, typename _Seq>
-    _GLIBCXX20_CONSTEXPR
     _Ite
     __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
 		 std::random_access_iterator_tag>&);
+
+ template<typename _Ite, typename _Cont, typename _Seq>
+    _Ite
+    __niter_base(const ::__gnu_debug::_Safe_iterator<
+		 ::__gnu_cxx::__normal_iterator<_Ite, _Cont>, _Seq,
+		 std::random_access_iterator_tag>&);
+#else
+  template<typename _Ite, typename _Seq>
+    _GLIBCXX20_CONSTEXPR
+    decltype(std::__niter_base(std::declval<_Ite>()))
+    __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
+		 std::random_access_iterator_tag>&)
+    noexcept(std::is_nothrow_copy_constructible<_Ite>::value);
+#endif
 
   // Reverse the __niter_base transformation to get a
   // __normal_iterator back again (this assumes that __normal_iterator
@@ -330,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX20_CONSTEXPR
     inline _From
     __niter_wrap(_From __from, _To __res)
-    { return __from + (__res - std::__niter_base(__from)); }
+    { return __from + (std::__niter_base(__res) - std::__niter_base(__from)); }
 
   // No need to wrap, iterator already has the right type.
   template<typename _Iterator>
@@ -1792,11 +1806,14 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 
 #if __cpp_lib_three_way_comparison
-  // Iter points to a contiguous range of unsigned narrow character type
-  // or std::byte, suitable for comparison by memcmp.
-  template<typename _Iter>
-    concept __is_byte_iter = contiguous_iterator<_Iter>
-      && __is_memcmp_ordered<iter_value_t<_Iter>>::__value;
+  // Both iterators refer to contiguous ranges of unsigned narrow characters,
+  // or std::byte, or big-endian unsigned integers, suitable for comparison
+  // using memcmp.
+  template<typename _Iter1, typename _Iter2>
+    concept __memcmp_ordered_with
+      = (__is_memcmp_ordered_with<iter_value_t<_Iter1>,
+				  iter_value_t<_Iter2>>::__value)
+	  && contiguous_iterator<_Iter1> && contiguous_iterator<_Iter2>;
 
   // Return a struct with two members, initialized to the smaller of x and y
   // (or x if they compare equal) and the result of the comparison x <=> y.
@@ -1846,20 +1863,20 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       if (!std::__is_constant_evaluated())
 	if constexpr (same_as<_Comp, __detail::_Synth3way>
 		      || same_as<_Comp, compare_three_way>)
-	  if constexpr (__is_byte_iter<_InputIter1>)
-	    if constexpr (__is_byte_iter<_InputIter2>)
-	      {
-		const auto [__len, __lencmp] = _GLIBCXX_STD_A::
-		  __min_cmp(__last1 - __first1, __last2 - __first2);
-		if (__len)
-		  {
-		    const auto __c
-		      = __builtin_memcmp(&*__first1, &*__first2, __len) <=> 0;
-		    if (__c != 0)
-		      return __c;
-		  }
-		return __lencmp;
-	      }
+	  if constexpr (__memcmp_ordered_with<_InputIter1, _InputIter2>)
+	    {
+	      const auto [__len, __lencmp] = _GLIBCXX_STD_A::
+		__min_cmp(__last1 - __first1, __last2 - __first2);
+	      if (__len)
+		{
+		  const auto __blen = __len * sizeof(*__first1);
+		  const auto __c
+		    = __builtin_memcmp(&*__first1, &*__first2, __blen) <=> 0;
+		  if (__c != 0)
+		    return __c;
+		}
+	      return __lencmp;
+	    }
 
       while (__first1 != __last1)
 	{

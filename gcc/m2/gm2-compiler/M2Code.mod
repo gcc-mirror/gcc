@@ -61,7 +61,9 @@ FROM M2GCCDeclare IMPORT FoldConstants, StartDeclareScope,
                          DeclareProcedure, InitDeclarations,
                          DeclareModuleVariables, MarkExported ;
 
-FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo ;
+FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock,
+                    ForeachScopeBlockDo2, ForeachScopeBlockDo3 ;
+
 FROM m2top IMPORT StartGlobalContext, EndGlobalContext, SetFlagUnitAtATime ;
 FROM M2Error IMPORT FlushErrors, FlushWarnings ;
 FROM M2Swig IMPORT GenerateSwigFile ;
@@ -402,15 +404,15 @@ BEGIN
    InitOptimizeVariables ;
    OptimTimes := 1 ;
    Current := CountQuads () ;
-   ForeachScopeBlockDo (sb, InitialDeclareAndOptimize) ;
-   ForeachScopeBlockDo (sb, ScopeBlockVariableAnalysis) ;
+   ForeachScopeBlockDo3 (sb, InitialDeclareAndOptimize) ;
+   ForeachScopeBlockDo3 (sb, ScopeBlockVariableAnalysis) ;
    REPEAT
-      ForeachScopeBlockDo (sb, SecondDeclareAndOptimize) ;
+      ForeachScopeBlockDo3 (sb, SecondDeclareAndOptimize) ;
       Previous := Current ;
       Current := CountQuads () ;
       INC (OptimTimes)
    UNTIL (OptimTimes=MaxOptimTimes) OR (Current=Previous) ;
-   ForeachScopeBlockDo (sb, LoopAnalysis)
+   ForeachScopeBlockDo3 (sb, LoopAnalysis)
 END OptimizeScopeBlock ;
 
 
@@ -476,30 +478,30 @@ BEGIN
       THEN
          n := GetSymName(scope) ;
          printf1('before coding procedure %a\n', n) ;
-         ForeachScopeBlockDo(sb, DisplayQuadRange) ;
+         ForeachScopeBlockDo3 (sb, DisplayQuadRange) ;
          printf0('===============\n')
       END ;
-      ForeachScopeBlockDo(sb, ConvertQuadsToTree)
+      ForeachScopeBlockDo2 (sb, ConvertQuadsToTree)
    ELSIF IsModuleWithinProcedure(scope)
    THEN
       IF DisplayQuadruples
       THEN
          n := GetSymName(scope) ;
          printf1('before coding module %a within procedure\n', n) ;
-         ForeachScopeBlockDo(sb, DisplayQuadRange) ;
+         ForeachScopeBlockDo3 (sb, DisplayQuadRange) ;
          printf0('===============\n')
       END ;
-      ForeachScopeBlockDo(sb, ConvertQuadsToTree) ;
+      ForeachScopeBlockDo2 (sb, ConvertQuadsToTree) ;
       ForeachProcedureDo(scope, CodeBlock)
    ELSE
       IF DisplayQuadruples
       THEN
          n := GetSymName(scope) ;
          printf1('before coding module %a\n', n) ;
-         ForeachScopeBlockDo(sb, DisplayQuadRange) ;
+         ForeachScopeBlockDo3 (sb, DisplayQuadRange) ;
          printf0('===============\n')
       END ;
-      ForeachScopeBlockDo(sb, ConvertQuadsToTree) ;
+      ForeachScopeBlockDo2 (sb, ConvertQuadsToTree) ;
       IF WholeProgram
       THEN
          ForeachSourceModuleDo(CodeProcedures)

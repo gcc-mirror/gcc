@@ -470,7 +470,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
 	  dinteger_t esize = ebtype->nextOf ()->size ();
 	  dinteger_t tsize = tbtype->nextOf ()->size ();
 
-	  tree ptrtype = build_ctype (tbtype->nextOf ()->pointerTo ());
+	  tree ptrtype = build_ctype (dmd::pointerTo (tbtype->nextOf ()));
 
 	  if (esize != tsize)
 	    {
@@ -727,12 +727,12 @@ check_valist_conversion (Expression *expr, Type *totype, bool in_assignment)
   if (VarExp *ve = expr->isVarExp ())
     {
       decl = ve->var;
-      type = ve->var->type->nextOf ()->pointerTo ();
+      type = dmd::pointerTo (ve->var->type->nextOf ());
     }
   else if (SymOffExp *se = expr->isSymOffExp ())
     {
       decl = se->var;
-      type = se->var->type->nextOf ()->pointerTo ()->pointerTo ();
+      type = dmd::pointerTo (dmd::pointerTo (se->var->type->nextOf ()));
     }
 
   /* Should not be called unless is_valist_parameter_type also matched.  */
@@ -957,7 +957,7 @@ d_array_convert (Expression *exp)
 
   if (tb->ty == TY::Tsarray)
     {
-      Type *totype = tb->nextOf ()->arrayOf ();
+      Type *totype = dmd::arrayOf (tb->nextOf ());
       return convert_expr (build_expr (exp), exp->type, totype);
     }
 
@@ -986,7 +986,7 @@ d_array_convert (Type *etype, Expression *exp)
 	  expr = compound_expr (modify_expr (var, expr), var);
 	}
 
-      return d_array_value (build_ctype (exp->type->arrayOf ()),
+      return d_array_value (build_ctype (dmd::arrayOf (exp->type)),
 			    size_int (1), build_address (expr));
     }
   else

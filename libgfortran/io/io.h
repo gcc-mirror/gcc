@@ -34,6 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define gcc_unreachable() __builtin_unreachable ()
 
+/* Used for building error message strings.  */
+#define IOMSG_LEN 256
+
 /* POSIX 2008 specifies that the extended locale stuff is found in
    locale.h, but some systems have them in xlocale.h.  */
 
@@ -98,10 +101,6 @@ typedef struct array_loop_spec
   index_type step;
 }
 array_loop_spec;
-
-/* User defined input/output iomsg length. */
-
-#define IOMSG_LEN 256
 
 /* Subroutine formatted_dtio (struct, unit, iotype, v_list, iostat,
 			      iomsg, (_iotype), (_iomsg))  */
@@ -1020,9 +1019,15 @@ dec_waiting_unlocked (gfc_unit *u)
 #ifdef HAVE_ATOMIC_FETCH_ADD
   (void) __atomic_fetch_add (&u->waiting, -1, __ATOMIC_RELAXED);
 #else
-  WRLOCK (&unit_rwlock);
+#ifdef __GTHREAD_RWLOCK_INIT
+  __gthread_rwlock_wrlock (&unit_rwlock);
   u->waiting--;
-  RWUNLOCK (&unit_rwlock);
+  __gthread_rwlock_unlock (&unit_rwlock);
+#else
+  __gthread_mutex_lock (&unit_rwlock);
+  u->waiting--;
+  __gthread_mutex_unlock (&unit_rwlock);
+#endif
 #endif
 }
 

@@ -24,7 +24,8 @@ load_lib asan-dg.exp
 
 # Initialize `dg'.
 dg-init
-asan_init
+# libasan uses libstdc++ so make sure we provide paths for it.
+asan_init 1
 
 # Main loop.
 if [check_effective_target_fsanitize_address] {

@@ -24,7 +24,7 @@ IMPLEMENTATION MODULE SymbolConversion ;
 FROM NameKey IMPORT Name ;
 
 FROM Indexing IMPORT Index, InitIndex, PutIndice, GetIndice, InBounds,
-                     DebugIndex ;
+                     DebugIndex, InitIndexTuned ;
 
 FROM SymbolTable IMPORT IsConst, PopValue, IsValueSolved, GetSymName,
                         GetType, SkipType ;
@@ -237,8 +237,8 @@ END Poison ;
 
 PROCEDURE Init ;
 BEGIN
-   mod2gcc := InitIndex(1) ;
-   ALLOCATE(PoisonedSymbol, 1)
+   mod2gcc := InitIndexTuned (1, 1024*1024 DIV 16, 16) ;
+   ALLOCATE (PoisonedSymbol, 1)
 END Init ;
 
 

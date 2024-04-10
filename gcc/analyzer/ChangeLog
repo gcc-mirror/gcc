@@ -1,3 +1,275 @@
+2024-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* access-diagram.cc: Include diagnostic-core.h before including
+	diagnostic.h or diagnostic-path.h.
+	* sm-malloc.cc: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* call-summary.cc: Likewise.
+	* record-layout.cc: Likewise.
+
+2024-02-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114159
+	* analyzer.cc: Include "tree-dfa.h".
+	(get_ssa_default_def): New decl.
+	* analyzer.h (get_ssa_default_def): New.
+	* call-info.cc (call_info::call_info): New ctor taking an explicit
+	called_fn.
+	* call-info.h (call_info::call_info): Likewise.
+	* call-summary.cc (call_summary_replay::call_summary_replay):
+	Convert param from function * to const function &.
+	* call-summary.h (call_summary_replay::call_summary_replay):
+	Likewise.
+	* checker-event.h (state_change_event::get_dest_function):
+	Constify return value.
+	* engine.cc (point_and_state::validate): Update for conversion to
+	const function &.
+	(exploded_node::on_stmt): Likewise.
+	(call_summary_edge_info::call_summary_edge_info): Likewise.
+	Pass in called_fn to call_info ctor.
+	(exploded_node::replay_call_summaries): Update for conversion to
+	const function &.  Convert per_function_data from * to &.
+	(exploded_node::replay_call_summary): Update for conversion to
+	const function &.
+	(exploded_graph::add_function_entry): Likewise.
+	(toplevel_function_p): Likewise.
+	(add_tainted_args_callback): Likewise.
+	(exploded_graph::build_initial_worklist): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(maybe_update_for_edge): Likewise.
+	(exploded_graph::on_escaped_function): Likewise.
+	* exploded-graph.h (exploded_node::replay_call_summaries):
+	Likewise.
+	(exploded_node::replay_call_summary): Likewise.
+	(exploded_graph::add_function_entry): Likewise.
+	* program-point.cc (function_point::from_function_entry):
+	Likewise.
+	(program_point::from_function_entry): Likewise.
+	* program-point.h (function_point::from_function_entry): Likewise.
+	(program_point::from_function_entry): Likewise.
+	* program-state.cc (program_state::push_frame): Likewise.
+	(program_state::get_current_function): Constify return type.
+	* program-state.h (program_state::push_frame): Update for
+	conversion to const function &.
+	(program_state::get_current_function): Likewise.
+	* region-model-manager.cc
+	(region_model_manager::get_frame_region): Likewise.
+	* region-model-manager.h
+	(region_model_manager::get_frame_region): Likewise.
+	* region-model.cc (region_model::called_from_main_p): Likewise.
+	(region_model::update_for_gcall): Likewise.
+	(region_model::push_frame): Likewise.
+	(region_model::get_current_function): Constify return type.
+	(region_model::pop_frame): Update for conversion to
+	const function &.
+	(selftest::test_stack_frames): Likewise.
+	(selftest::test_get_representative_path_var): Likewise.
+	(selftest::test_state_merging): Likewise.
+	(selftest::test_alloca): Likewise.
+	* region-model.h (region_model::push_frame): Likewise.
+	(region_model::get_current_function): Likewise.
+	* region.cc (frame_region::dump_to_pp): Likewise.
+	(frame_region::get_region_for_local): Likewise.
+	* region.h (class frame_region): Likewise.
+	* sm-signal.cc (signal_unsafe_call::describe_state_change):
+	Likewise.
+	(update_model_for_signal_handler): Likewise.
+	(signal_delivery_edge_info_t::update_model): Likewise.
+	(register_signal_handler::impl_transition): Likewise.
+	* state-purge.cc (class gimple_op_visitor): Likewise.
+	(state_purge_map::state_purge_map): Likewise.
+	(state_purge_map::get_or_create_data_for_decl): Likewise.
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Likewise.
+	(state_purge_per_ssa_name::add_to_worklist): Likewise.
+	(state_purge_per_ssa_name::process_point): Likewise.
+	(state_purge_per_decl::add_to_worklist): Likewise.
+	(state_purge_annotator::print_needed): Likewise.
+	* state-purge.h
+	(state_purge_map::get_or_create_data_for_decl): Likewise.
+	(class state_purge_per_tree): Likewise.
+	(class state_purge_per_ssa_name): Likewise.
+	(class state_purge_per_decl): Likewise.
+	* supergraph.cc (supergraph::dump_dot_to_pp): Likewise.
+	* supergraph.h
+	(supergraph::get_node_for_function_entry): Likewise.
+	(supergraph::get_node_for_function_exit): Likewise.
+
+2024-02-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110483
+	PR analyzer/111802
+	* access-diagram.cc
+	(string_literal_spatial_item::add_column_for_byte): Use %wu for
+	printing unsigned HOST_WIDE_INT.
+
+2024-02-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111881
+	* constraint-manager.cc (bound::ensure_closed): Assert that
+	m_constant has integral type.
+	(range::add_bound): Bail out on floating point constants.
+
+2024-02-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113999
+	* analyzer.h (get_string_cst_size): New decl.
+	* region-model-manager.cc (get_string_cst_size): New.
+	(region_model_manager::maybe_get_char_from_string_cst): Treat
+	single-byte accesses within string_cst but beyond
+	TREE_STRING_LENGTH as being 0.
+	* region-model.cc (string_cst_has_null_terminator): Likewise.
+
+2024-02-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113998
+	* ranges.cc (symbolic_byte_range::intersection): Handle empty ranges.
+	(selftest::test_intersects): Add test coverage for empty ranges.
+
+2024-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111289
+	* varargs.cc (representable_in_integral_type_p): New.
+	(va_arg_compatible_types_p): Add "arg_sval" param.  Handle integer
+	types.
+	(kf_va_arg::impl_call_pre): Pass arg_sval to
+	va_arg_compatible_types_p.
+
+2024-02-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR analyzer/113983
+	* region-model-manager.cc (maybe_undo_optimize_bit_field_compare): Reject
+	non integral types.
+
+2024-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111266
+	* region.cc (offset_region::get_byte_size_sval): Delete.
+	(offset_region::get_bit_size_sval): Delete.
+	* region.h (region::get_byte_size): Add comment clarifying that
+	this relates to the size of the access, rather than the size
+	that's valid to access.
+	(region::get_bit_size): Likewise.
+	(region::get_byte_size_sval): Likewise.
+	(region::get_bit_size_sval): Likewise.
+	(offset_region::get_byte_size_sval): Delete.
+	(offset_region::get_bit_size_sval): Delete.
+
+2024-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* pending-diagnostic.cc (diagnostic_emission_context::warn):
+	Update for renaming of emit_diagnostic_valist overload to
+	emit_diagnostic_valist_meta.
+	(diagnostic_emission_context::inform): Likewise.
+
+2024-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113253
+	* region-model.cc (region_model::on_stmt_pre): Add gcc_unreachable
+	for debug statements.
+	* state-purge.cc
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Skip any
+	debug stmts in the FOR_EACH_IMM_USE_FAST list.
+	* supergraph.cc (supergraph::supergraph): Don't add debug stmts
+	to the supernodes.
+
+2024-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113509
+	* checker-event.cc (state_change_event::get_desc): Don't assume
+	"var" is non-NULL.
+
+2024-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113654
+	* region-model.cc (is_round_up): New.
+	(is_multiple_p): New.
+	(is_dubious_capacity): New.
+	(region_model::check_region_size): Move usage of size_visitor into
+	is_dubious_capacity.
+
+2024-01-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc
+	(dubious_allocation_size::dubious_allocation_size): Add
+	"capacity_sval" param.  Drop unused ctor.
+	(dubious_allocation_size::maybe_add_sarif_properties): New.
+	(dubious_allocation_size::m_capacity_sval): New field.
+	(region_model::check_region_size): Pass capacity svalue to
+	dubious_allocation_size ctor.
+
+2024-01-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112969
+	* store.cc (binding_cluster::maybe_get_compound_binding): When
+	populating default_map, express the bit-range of the default key
+	for REG relative to REG, rather than to the base region.
+
+2024-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112977
+	* engine.cc (impl_region_model_context::on_liveness_change): Pass
+	m_ext_state to sm_state_map::on_liveness_change.
+	* program-state.cc (sm_state_map::on_svalue_leak): Guard removal
+	of map entry based on can_purge_p.
+	(sm_state_map::on_liveness_change): Add ext_state param.  Add
+	workaround for bad interaction between state purging and
+	alt-inherited sm-state.
+	* program-state.h (sm_state_map::on_liveness_change): Add
+	ext_state param.
+	* sm-taint.cc
+	(taint_state_machine::has_alt_get_inherited_state_p): New.
+	(taint_state_machine::can_purge_p): Return false for "has_lb" and
+	"has_ub".
+	* sm.h (state_machine::has_alt_get_inherited_state_p): New vfunc.
+
+2024-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111361
+	* region-model.cc (svalue_byte_range_has_null_terminator_1): The
+	initial byte of an all-zeroes SVAL is a zero byte.  Remove
+	gcc_unreachable from SK_CONSTANT for constants that aren't
+	STRING_CST or INTEGER_CST.
+
+2024-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112811
+	* region-model.cc (fragment::dump_to_pp): New.
+	(fragment::has_null_terminator): Convert to...
+	(svalue_byte_range_has_null_terminator_1): ...this new function,
+	updating to use a byte_range relative to the start of the svalue.
+	(svalue_byte_range_has_null_terminator): New.
+	(fragment::string_cst_has_null_terminator): Convert to...
+	(string_cst_has_null_terminator): ...this, updating to use a
+	byte_range relative to the start of the svalue.
+	(iterable_cluster::dump_to_pp): New.
+	(region_model::scan_for_null_terminator): Add logging, moving body
+	to...
+	(region_model::scan_for_null_terminator_1): ...this new function,
+	adding more logging, and updating to use
+	svalue_byte_range_has_null_terminator.
+	* region-model.h (region_model::scan_for_null_terminator_1): New
+	decl.
+
+2024-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106229
+	* analyzer.h (compare_constants): New decl.
+	* constraint-manager.cc (compare_constants): Make non-static.
+	* sm-taint.cc: Add include "fold-const.h".
+	(class concrete_range): New.
+	(get_possible_range): New.
+	(index_can_be_out_of_bounds_p): New.
+	(region_model::check_region_for_taint): Reject
+	-Wanalyzer-tainted-array-index if the type of the value makes it
+	impossible for it to be out-of-bounds of the array.
+
+2024-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113333
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Casting all zeroes
+	should give all zeroes.
+
 2024-01-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.opt.urls: New file, autogenerated by

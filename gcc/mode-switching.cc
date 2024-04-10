@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lcm.h"
 #include "cfgcleanup.h"
 #include "tree-pass.h"
+#include "cfgbuild.h"
 
 /* We want target macros for the mode switching code to be able to refer
    to instruction attribute values.  */
@@ -1105,6 +1106,8 @@ optimize_mode_switching (void)
   edge_list = pre_edge_lcm_avs (n_entities * max_num_modes, transp, comp, antic,
 				kill, avin, avout, &insert, &del);
 
+  auto_sbitmap jumping_blocks (last_basic_block_for_fn (cfun));
+  bitmap_clear (jumping_blocks);
   for (j = n_entities - 1; j >= 0; j--)
     {
       int no_mode = num_modes[entity_map[j]];
@@ -1215,6 +1218,13 @@ optimize_mode_switching (void)
 		  /* Insert MODE_SET only if it is nonempty.  */
 		  if (mode_set != NULL_RTX)
 		    {
+		      for (auto insn = mode_set; insn; insn = NEXT_INSN (insn))
+			if (JUMP_P (insn))
+			  {
+			    rebuild_jump_labels_chain (mode_set);
+			    bitmap_set_bit (jumping_blocks, bb->index);
+			    break;
+			  }
 		      emitted = true;
 		      if (NOTE_INSN_BASIC_BLOCK_P (ptr->insn_ptr))
 			/* We need to emit the insns in a FIFO-like manner,
@@ -1251,6 +1261,11 @@ optimize_mode_switching (void)
   sbitmap_vector_free (comp);
   sbitmap_vector_free (avin);
   sbitmap_vector_free (avout);
+
+  gcc_assert (SBITMAP_SIZE ((sbitmap) jumping_blocks)
+	      == (unsigned int) last_basic_block_for_fn (cfun));
+  if (!bitmap_empty_p (jumping_blocks))
+    find_many_sub_basic_blocks (jumping_blocks);
 
   if (need_commit)
     commit_edge_insertions ();

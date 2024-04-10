@@ -581,6 +581,7 @@ static char *d_demangle (const char *, int, size_t *);
     case DEMANGLE_COMPONENT_CONST_THIS:			\
     case DEMANGLE_COMPONENT_REFERENCE_THIS:		\
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:	\
+    case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:	\
     case DEMANGLE_COMPONENT_TRANSACTION_SAFE:		\
     case DEMANGLE_COMPONENT_NOEXCEPT:			\
     case DEMANGLE_COMPONENT_THROW_SPEC
@@ -748,6 +749,9 @@ d_dump (struct demangle_component *dc, int indent)
       break;
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
       printf ("rvalue reference this\n");
+      break;
+    case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:
+      printf ("explicit object parameter\n");
       break;
     case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
       printf ("transaction_safe this\n");
@@ -1547,6 +1551,8 @@ d_name (struct d_info *di, int substable)
 
 /* <nested-name> ::= N [<CV-qualifiers>] [<ref-qualifier>] <prefix> <unqualified-name> E
                  ::= N [<CV-qualifiers>] [<ref-qualifier>] <template-prefix> <template-args> E
+                 ::= N H <prefix> <unqualified-name> E
+                 ::= N H <template-prefix> <template-args> E
 */
 
 static struct demangle_component *
@@ -1559,13 +1565,24 @@ d_nested_name (struct d_info *di)
   if (! d_check_char (di, 'N'))
     return NULL;
 
-  pret = d_cv_qualifiers (di, &ret, 1);
-  if (pret == NULL)
-    return NULL;
+  if (d_peek_char (di) == 'H')
+    {
+      d_advance (di, 1);
+      di->expansion += sizeof "this";
+      pret = &ret;
+      rqual = d_make_comp (di, DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION,
+			   NULL, NULL);
+    }
+  else
+    {
+      pret = d_cv_qualifiers (di, &ret, 1);
+      if (pret == NULL)
+	return NULL;
 
-  /* Parse the ref-qualifier now and then attach it
-     once we have something to attach it to.  */
-  rqual = d_ref_qualifier (di, NULL);
+      /* Parse the ref-qualifier now and then attach it
+	 once we have something to attach it to.  */
+      rqual = d_ref_qualifier (di, NULL);
+    }
 
   *pret = d_prefix (di, 1);
   if (*pret == NULL)
@@ -4427,6 +4444,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_CONST_THIS:
     case DEMANGLE_COMPONENT_REFERENCE_THIS:
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
+    case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:
     case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
     case DEMANGLE_COMPONENT_NOEXCEPT:
     case DEMANGLE_COMPONENT_THROW_SPEC:
@@ -6521,6 +6539,8 @@ d_print_mod (struct d_print_info *dpi, int options,
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE:
       d_append_string (dpi, "&&");
       return;
+    case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:
+      return;
     case DEMANGLE_COMPONENT_COMPLEX:
       d_append_string (dpi, " _Complex");
       return;
@@ -6559,11 +6579,13 @@ d_print_function_type (struct d_print_info *dpi, int options,
 {
   int need_paren;
   int need_space;
+  int xobj_memfn;
   struct d_print_mod *p;
   struct d_print_mod *hold_modifiers;
 
   need_paren = 0;
   need_space = 0;
+  xobj_memfn = 0;
   for (p = mods; p != NULL; p = p->next)
     {
       if (p->printed)
@@ -6586,7 +6608,8 @@ d_print_function_type (struct d_print_info *dpi, int options,
 	  need_space = 1;
 	  need_paren = 1;
 	  break;
-	FNQUAL_COMPONENT_CASE:
+	case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:
+	  xobj_memfn = 1;
 	  break;
 	default:
 	  break;
@@ -6617,6 +6640,8 @@ d_print_function_type (struct d_print_info *dpi, int options,
     d_append_char (dpi, ')');
 
   d_append_char (dpi, '(');
+  if (xobj_memfn)
+    d_append_string (dpi, "this ");
 
   if (d_right (dc) != NULL)
     d_print_comp (dpi, options, d_right (dc));

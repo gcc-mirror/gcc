@@ -2,6 +2,9 @@
 /* { dg-options "-O0" } */
 
 #include <x86intrin.h>
+#ifdef DEBUG
+#include <stdio.h>
+#endif
 
 extern void abort (void);
 

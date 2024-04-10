@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fstack-clash-protection -mtune=generic -fomit-frame-pointer" } */
+/* { dg-options "-O2 -fstack-clash-protection -mtune=generic -fomit-frame-pointer -mnoreturn-no-callee-saved-registers" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
 /* { dg-skip-if "" { *-*-* } { "-fstack-protector*" } { "" } } */
 
@@ -23,19 +23,14 @@ f3 (void)
 /* Verify no explicit probes.  */
 /* { dg-final { scan-assembler-not "or\[ql\]" } } */
 
-/* We also want to verify we did not use a push/pop sequence
-   to probe *sp as the callee register saves are sufficient
-   to probe *sp.
-
-   y0/y1 are live across the call and thus must be allocated
+/* y0/y1 are live across the call and thus must be allocated
    into either a stack slot or callee saved register.  The former
    would be rather dumb.  So assume it does not happen.
 
-   So search for two/four pushes for the callee register saves/argument pushes
-   (plus one for the PIC register if needed on ia32) and no pops (since the
-   function has no reachable epilogue).  */
-/* { dg-final { scan-assembler-times "push\[ql\]" 2 { target { ! ia32 } } } }  */
-/* { dg-final { scan-assembler-times "push\[ql\]" 4 { target { ia32 && nonpic } } } }  */
-/* { dg-final { scan-assembler-times "push\[ql\]" 5 { target { ia32 && { ! nonpic } } } } }  */
-/* { dg-final { scan-assembler-not "pop" } } */
-
+   So search for a push/pop sequence for stack probe and 2 argument
+   pushes on ia32.  There is no need to save and restore the PIC
+   register on ia32 for a noreturn function.  */
+/* { dg-final { scan-assembler-times "push\[ql\]" 1 { target { ! ia32 } } } }  */
+/* { dg-final { scan-assembler-times "push\[ql\]" 3 { target ia32 } } }  */
+/* { dg-final { scan-assembler-not "pop" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "pop" 1 { target ia32 } } } */

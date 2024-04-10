@@ -280,7 +280,7 @@
   (and (match_code "const_int")
        (ior (match_test "ival == 0xff")
 	    (match_test "ival == 0xffff")
-	    (match_test "ival == (HOST_WIDE_INT) 0xffffffff"))))
+	    (match_test "ival == HOST_WIDE_INT_C (0xffffffff)"))))
 
 (define_constraint "M"
   "0, 1, 2, or 3 (shifts for the @code{lea} instruction)."
@@ -348,6 +348,10 @@
    to double word size."
   (match_operand 0 "x86_64_dwzext_immediate_operand"))
 
+(define_constraint "Ws"
+  "A symbolic reference or label reference."
+  (match_code "const,symbol_ref,label_ref"))
+
 (define_constraint "Z"
   "32-bit unsigned integer constant, or a symbolic reference known
    to fit that range (for immediate operands in zero-extending x86-64
@@ -367,6 +371,24 @@
 (define_address_constraint "Ts"
   "Address operand without segment register"
   (match_operand 0 "address_no_seg_operand"))
+
+;; j prefix is used for APX operand constraints.
+;;  <  Auto-dec memory operand without GPR32.
+;;  >  Auto-inc memory operand without GPR32.
+;;  a  Vector memory operand without GPR32.
+;;  b  VSIB address operand without EGPR.
+;;  c  Integer register.  GENERAL_GPR16 for TARGET_APX_EGPR and
+;;     !TARGET_AVX, otherwise GENERAL_REGS.
+;;  e  Memory operand for APX NDD ADD.
+;;  j  Integer register.  GENERAL_GPR16 for TARGET_APX_EGPR, otherwise
+;;     GENERAL_REGS.
+;;  o  Offsetable memory operand without GPR32.
+;;  p  General address operand without GPR32.
+;;  m  Memory operand without GPR32.
+;;  M  Memory operand, with APX NDD check.
+;;  R  Integer register.  GENERAL_REGS.
+;;  O  Offsettable memory operand, with APX NDD check.
+;;  V  Non-offsetable memory operand without GPR32.
 
 ;; Constraint that force to use EGPR, can only adopt to register class.
 (define_register_constraint  "jR" "GENERAL_REGS")
@@ -389,7 +411,7 @@
 		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
 
 (define_constraint "j>"
-  "@internal auto-dec memory operand without GPR32."
+  "@internal auto-inc memory operand without GPR32."
   (and (and (match_code "mem")
 	    (ior (match_test "GET_CODE (XEXP (op, 0)) == PRE_INC")
 	         (match_test "GET_CODE (XEXP (op, 0)) == POST_INC")))
@@ -434,7 +456,15 @@
 (define_register_constraint  "jc"
  "TARGET_APX_EGPR && !TARGET_AVX ? GENERAL_GPR16 : GENERAL_REGS")
 
-(define_constraint  "je"
-  "@internal constant that do not allow any unspec global offsets"
-  (and (match_operand 0 "x86_64_immediate_operand")
-       (match_test "!x86_poff_operand_p (op)")))
+(define_memory_constraint "je"
+  "@internal Memory operand for APX NDD ADD."
+  (match_operand 0 "apx_ndd_add_memory_operand"))
+
+(define_memory_constraint "jM"
+  "@internal Memory operand, with APX NDD check."
+  (match_operand 0 "apx_ndd_memory_operand"))
+
+(define_memory_constraint "jO"
+  "@internal Offsettable memory operand, with APX NDD check."
+  (and (match_operand 0 "apx_ndd_memory_operand")
+	   (match_test "offsettable_nonstrict_memref_p (op)")))

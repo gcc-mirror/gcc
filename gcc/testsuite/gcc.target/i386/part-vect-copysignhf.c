@@ -1,5 +1,5 @@
 /* { dg-do run { target avx512fp16 } } */
-/* { dg-options "-O1 -mavx512fp16 -mavx512vl -ftree-vectorize -fdump-tree-slp-details -fdump-tree-optimized" } */
+/* { dg-options "-O1 -mavx512fp16 -mavx512vl -fdump-tree-slp-details -fdump-tree-optimized" } */
 
 extern void abort ();
 

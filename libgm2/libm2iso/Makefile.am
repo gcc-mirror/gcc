@@ -90,7 +90,6 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
@@ -199,14 +198,14 @@ libm2iso_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2iso_la_
 libm2iso_la_CFLAGS = \
    $(C_INCLUDES) -I. -I.. -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs \
    -DBUILD_GM2_LIBS -I@srcdir@/../ -I../../../gcc -I$(GCC_DIR) -I$(GCC_DIR)/../include \
-   -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include \
-   $(TARGET_LONGDOUBLE_ABI)
+   -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include
+
 libm2iso_la_M2FLAGS = \
   -fm2-pathname=m2iso -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso \
   -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
   -fiso -fextended-opaque -fm2-g -g -Wcase-enum \
-  -Wreturn-type -fcase -fm2-prefix=m2iso \
-   $(TARGET_LONGDOUBLE_ABI)
+  -Wreturn-type -fcase -fm2-prefix=m2iso
+
 if TARGET_DARWIN
 libm2iso_la_link_flags = -Wl,-undefined,dynamic_lookup
 else

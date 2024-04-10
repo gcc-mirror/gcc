@@ -67,14 +67,12 @@ private:
   const char *parsing_subset_version (const char *, const char *, unsigned *,
 				      unsigned *, bool, bool *);
 
-  const char *parse_std_ext (const char *);
+  const char *parse_base_ext (const char *);
 
-  const char *parse_single_std_ext (const char *);
+  const char *parse_single_std_ext (const char *, bool);
 
-  const char *parse_multiletter_ext (const char *, const char *,
-				     const char *);
   const char *parse_single_multiletter_ext (const char *, const char *,
-					    const char *);
+					    const char *, bool);
 
   void handle_implied_ext (const char *);
   bool check_implied_ext ();
@@ -99,7 +97,7 @@ public:
   riscv_subset_list *clone () const;
 
   static riscv_subset_list *parse (const char *, location_t);
-  const char *parse_single_ext (const char *);
+  const char *parse_single_ext (const char *, bool exact_single_p = true);
 
   const riscv_subset_t *begin () const {return m_head;};
   const riscv_subset_t *end () const {return NULL;};

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zve64d_zvfh_zfh -mabi=ilp32d -mcmodel=medany -fdiagnostics-plain-output -ftree-vectorize -O2 --param riscv-autovec-lmul=m1 -std=c99 -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax -ffast-math" } */
+/* { dg-options "-march=rv32gc_zve64d_zvfh_zfh -mabi=ilp32d -mcmodel=medany -fdiagnostics-plain-output -ftree-vectorize -O2 --param riscv-autovec-lmul=m1 -std=c99 -fno-vect-cost-model -mrvv-vector-bits=zvl -ffast-math" } */
 
 #include <stdint-gcc.h>
 

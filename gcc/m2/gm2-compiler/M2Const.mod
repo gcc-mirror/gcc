@@ -373,7 +373,7 @@ BEGIN
    WITH h^ DO
       IF findConstMetaExpr(h)=str
       THEN
-         PutConstString(constsym, MakeKey('')) ;
+         PutConstStringKnown (constsym, MakeKey(''), FALSE, FALSE) ;
          IF DebugConsts
          THEN
             n := GetSymName(constsym) ;

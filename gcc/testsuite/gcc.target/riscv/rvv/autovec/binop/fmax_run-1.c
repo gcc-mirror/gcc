@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-signaling-nans" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -fno-signaling-nans" } */
 
 #include <math.h>
 #include "fmax-1.c"

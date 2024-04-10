@@ -3,7 +3,7 @@
 
 class aClass 
 { 
-  ; // { dg-error "" } missing declaration
+  ; // { dg-error "" "" { target c++98_only } } missing declaration
 private: 
-  ; // { dg-error "" } missing declaration
+  ; // { dg-error "" "" { target c++98_only } } missing declaration
 }; 

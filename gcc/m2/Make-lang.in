@@ -98,9 +98,6 @@ GM2_PROG_DEP=gm2$(exeext) xgcc$(exeext) cc1gm2$(exeext)
 
 include m2/config-make
 
-# Determine if float128 should represent the Modula-2 type LONGREAL.
-host_mc_longreal := $(if $(strip $(filter powerpc64le%,$(host))),--longreal=__float128)
-
 LIBSTDCXX=../$(TARGET_SUBDIR)/libstdc++-v3/src/.libs/libstdc++.a
 
 PGE=m2/pge$(exeext)
@@ -474,8 +471,7 @@ MC_ARGS= --olang=c++ \
  -I$(srcdir)/m2/gm2-gcc \
  --quiet \
  $(MC_COPYRIGHT) \
- --gcc-config-system \
- $(host_mc_longreal)
+ --gcc-config-system
 
 MCDEPS=m2/boot-bin/mc$(exeext)
 
@@ -1790,6 +1786,7 @@ BUILD-PGE-O = \
    m2/pge-boot/GSymbolKey.o \
    m2/pge-boot/GSysStorage.o \
    m2/pge-boot/Glibc.o \
+   m2/pge-boot/Gwrapc.o \
    m2/pge-boot/Gerrno.o \
    m2/pge-boot/GUnixArgs.o \
    m2/pge-boot/Gtermios.o \

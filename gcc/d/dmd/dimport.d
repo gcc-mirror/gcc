@@ -1,7 +1,7 @@
 /**
  * A `Dsymbol` representing a renamed import.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dimport.d, _dimport.d)
@@ -12,21 +12,13 @@
 module dmd.dimport;
 
 import dmd.arraytypes;
-import dmd.astenums;
-import dmd.declaration;
 import dmd.dmodule;
-import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem;
 import dmd.errors;
-import dmd.expression;
-import dmd.globals;
 import dmd.identifier;
 import dmd.location;
-import dmd.mtype;
 import dmd.visitor;
 
-import core.stdc.stdio;
 /***********************************************************
  */
 extern (C++) final class Import : Dsymbol
@@ -76,6 +68,8 @@ extern (C++) final class Import : Dsymbol
         assert(id);
         version (none)
         {
+            import core.stdc.stdio;
+
             printf("Import::Import(");
             foreach (id; packages)
             {
@@ -121,147 +115,6 @@ extern (C++) final class Import : Dsymbol
             si.addAlias(names[i], aliases[i]);
         }
         return si;
-    }
-
-    /*******************************
-     * Load this module.
-     * Returns:
-     *  true for errors, false for success
-     */
-    extern (D) bool load(Scope* sc)
-    {
-        //printf("Import::load('%s') %p\n", toPrettyChars(), this);
-        // See if existing module
-        const errors = global.errors;
-        DsymbolTable dst = Package.resolve(packages, null, &pkg);
-        version (none)
-        {
-            if (pkg && pkg.isModule())
-            {
-                .error(loc, "can only import from a module, not from a member of module `%s`. Did you mean `import %s : %s`?", pkg.toChars(), pkg.toPrettyChars(), id.toChars());
-                mod = pkg.isModule(); // Error recovery - treat as import of that module
-                return true;
-            }
-        }
-        Dsymbol s = dst.lookup(id);
-        if (s)
-        {
-            if (s.isModule())
-                mod = cast(Module)s;
-            else
-            {
-                if (s.isAliasDeclaration())
-                {
-                    .error(loc, "%s `%s` conflicts with `%s`", s.kind(), s.toPrettyChars(), id.toChars());
-                }
-                else if (Package p = s.isPackage())
-                {
-                    if (p.isPkgMod == PKG.unknown)
-                    {
-                        uint preverrors = global.errors;
-                        mod = Module.load(loc, packages, id);
-                        if (!mod)
-                            p.isPkgMod = PKG.package_;
-                        else
-                        {
-                            // mod is a package.d, or a normal module which conflicts with the package name.
-                            if (mod.isPackageFile)
-                                mod.tag = p.tag; // reuse the same package tag
-                            else
-                            {
-                                // show error if Module.load does not
-                                if (preverrors == global.errors)
-                                    .error(loc, "%s `%s` from file %s conflicts with %s `%s`", mod.kind(), mod.toPrettyChars(), mod.srcfile.toChars, p.kind(), p.toPrettyChars());
-                                return true;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        mod = p.isPackageMod();
-                    }
-                    if (!mod)
-                    {
-                        .error(loc, "can only import from a module, not from package `%s.%s`", p.toPrettyChars(), id.toChars());
-                    }
-                }
-                else if (pkg)
-                {
-                    .error(loc, "can only import from a module, not from package `%s.%s`", pkg.toPrettyChars(), id.toChars());
-                }
-                else
-                {
-                    .error(loc, "can only import from a module, not from package `%s`", id.toChars());
-                }
-            }
-        }
-        if (!mod)
-        {
-            // Load module
-            mod = Module.load(loc, packages, id);
-            if (mod)
-            {
-                // id may be different from mod.ident, if so then insert alias
-                dst.insert(id, mod);
-            }
-        }
-        if (mod && !mod.importedFrom)
-            mod.importedFrom = sc ? sc._module.importedFrom : Module.rootModule;
-        if (!pkg)
-        {
-            if (mod && mod.isPackageFile)
-            {
-                // one level depth package.d file (import pkg; ./pkg/package.d)
-                // it's necessary to use the wrapping Package already created
-                pkg = mod.pkg;
-            }
-            else
-                pkg = mod;
-        }
-        //printf("-Import::load('%s'), pkg = %p\n", toChars(), pkg);
-        return global.errors != errors;
-    }
-
-    override void importAll(Scope* sc)
-    {
-        if (mod) return; // Already done
-
-        /*
-         * https://issues.dlang.org/show_bug.cgi?id=15525
-         *
-         * Loading the import has failed,
-         * most likely because of parsing errors.
-         * Therefore we cannot trust the resulting AST.
-         */
-        if (load(sc))
-        {
-            // https://issues.dlang.org/show_bug.cgi?id=23873
-            // For imports that are not at module or function level,
-            // e.g. aggregate level, the import symbol is added to the
-            // symbol table and later semantic is performed on it.
-            // This leads to semantic analysis on an malformed AST
-            // which causes all kinds of segfaults.
-            // The fix is to note that the module has errors and avoid
-            // semantic analysis on it.
-            if(mod)
-                mod.errors = true;
-            return;
-        }
-
-        if (!mod) return; // Failed
-
-        if (sc.stc & STC.static_)
-            isstatic = true;
-        mod.importAll(null);
-        mod.checkImportDeprecation(loc, sc);
-        if (sc.explicitVisibility)
-            visibility = sc.visibility;
-        if (!isstatic && !aliasId && !names.length)
-            sc.scopesym.importScope(mod, visibility);
-        // Enable access to pkgs/mod as soon as posible, because compiler
-        // can traverse them before the import gets semantic (Issue: 21501)
-        if (!aliasId && !names.length)
-            addPackageAccess(sc.scopesym);
     }
 
     /*******************************

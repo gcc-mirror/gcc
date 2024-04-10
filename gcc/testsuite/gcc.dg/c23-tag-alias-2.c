@@ -1,4 +1,4 @@
-/* { dg-do run }
+/* { dg-do run { target lto } }
  * { dg-options "-std=c23 -flto -O2" }
  */
 

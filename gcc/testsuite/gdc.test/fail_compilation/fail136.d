@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation\fail136.d(10): Error: `"\xef\xbb\xbf"` has no effect
+fail_compilation/fail136.d(10): Error: `x"EFBBBF"` has no effect
 ---
 */
 

@@ -44,10 +44,10 @@ contains
       end function
     end interface
 
-    !$omp declare variant (f1) match (user={condition(1)})
-    !$omp declare variant (f2) match (user={condition(score(1):1)})
-    !$omp declare variant (f3) match (user={condition(score(3):1)})
-    !$omp declare variant (f4) match (user={condition(score(2):1)})
+    !$omp declare variant (f1) match (user={condition(.true.)})
+    !$omp declare variant (f2) match (user={condition(score(1):.true.)})
+    !$omp declare variant (f3) match (user={condition(score(3):.true.)})
+    !$omp declare variant (f4) match (user={condition(score(2):.true.)})
     !$omp declare variant (f5) match (implementation={vendor(gnu)})
 
     f6 = z + x + y

@@ -3,6 +3,7 @@ version(CRuntime_Microsoft)
 {
     extern(C)
     {
+        extern __gshared void* __ImageBase;
         extern __gshared uint _DP_beg;
         extern __gshared uint _DP_end;
         extern __gshared uint _TP_beg;
@@ -18,8 +19,8 @@ version(CRuntime_Microsoft)
     {
         import core.internal.traits : externDFunc;
         alias findImageSection = externDFunc!("rt.sections_win64.findImageSection",
-                                              void[] function(string name) nothrow @nogc);
-        dataSection = findImageSection(".data");
+                                              void[] function(void* handle, string name) nothrow @nogc);
+        dataSection = findImageSection(&__ImageBase, ".data");
     }
 
     void[] tlsRange;

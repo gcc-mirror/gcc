@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "gimple-fold.h"
@@ -938,7 +940,7 @@ can_strub_internally_p (cgraph_node *node, bool report = false)
     }
 
   if (list_length (TYPE_ARG_TYPES (TREE_TYPE (node->decl)))
-      >= (((HOST_WIDE_INT) 1 << IPA_PARAM_MAX_INDEX_BITS)
+      >= ((HOST_WIDE_INT_1 << IPA_PARAM_MAX_INDEX_BITS)
 	  - STRUB_INTERNAL_MAX_EXTRA_ARGS))
     {
       result = false;
@@ -2052,36 +2054,17 @@ walk_regimplify_phi (gphi *stmt)
   return needs_commit;
 }
 
-/* Create a reference type to use for PARM when turning it into a reference.
-   NONALIASED causes the reference type to gain its own separate alias set, so
-   that accessing the indirectly-passed parm won'will not add aliasing
-   noise.  */
+/* Create a reference type to use for PARM when turning it into a
+   reference.  */
 
 static tree
-build_ref_type_for (tree parm, bool nonaliased = true)
+build_ref_type_for (tree parm)
 {
   gcc_checking_assert (TREE_CODE (parm) == PARM_DECL);
 
   tree ref_type = build_reference_type (TREE_TYPE (parm));
 
-  if (!nonaliased)
-    return ref_type;
-
-  /* Each PARM turned indirect still points to the distinct memory area at the
-     wrapper, and the reference in unchanging, so we might qualify it, but...
-     const is not really important, since we're only using default defs for the
-     reference parm anyway, and not introducing any defs, and restrict seems to
-     cause trouble.  E.g., libgnat/s-concat3.adb:str_concat_3 has memmoves that,
-     if it's wrapped, the memmoves are deleted in dse1.  Using a distinct alias
-     set seems to not run afoul of this problem, and it hopefully enables the
-     compiler to tell the pointers do point to objects that are not otherwise
-     aliased.  */
-  tree qref_type = build_variant_type_copy (ref_type);
-
-  TYPE_ALIAS_SET (qref_type) = new_alias_set ();
-  record_alias_subset (TYPE_ALIAS_SET (qref_type), get_alias_set (ref_type));
-
-  return qref_type;
+  return ref_type;
 }
 
 /* Add cgraph edges from current_function_decl to callees in SEQ with frequency
@@ -2909,9 +2892,7 @@ pass_ipa_strub::execute (function *)
 	     if with transparent reference, and the wrapper doesn't take any
 	     extra parms that could point into wrapper's parms.  So we can
 	     probably drop the TREE_ADDRESSABLE and keep the TRUE.  */
-	  tree ref_type = build_ref_type_for (nparm,
-					      true
-					      || !TREE_ADDRESSABLE (parm));
+	  tree ref_type = build_ref_type_for (nparm);
 
 	  DECL_ARG_TYPE (nparm) = TREE_TYPE (nparm) = ref_type;
 	  relayout_decl (nparm);
@@ -3174,21 +3155,16 @@ pass_ipa_strub::execute (function *)
 				       resdecl,
 				       build_int_cst (TREE_TYPE (resdecl), 0));
 		  }
-		else if (!is_gimple_reg_type (restype))
+		else if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl)))
 		  {
-		    if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl)))
-		      {
-			restmp = resdecl;
+		    restmp = resdecl;
 
-			if (VAR_P (restmp))
-			  {
-			    add_local_decl (cfun, restmp);
-			    BLOCK_VARS (DECL_INITIAL (current_function_decl))
-			      = restmp;
-			  }
+		    if (VAR_P (restmp))
+		      {
+			add_local_decl (cfun, restmp);
+			BLOCK_VARS (DECL_INITIAL (current_function_decl))
+			  = restmp;
 		      }
-		    else
-		      restmp = create_tmp_var (restype, "retval");
 		  }
 		else
 		  restmp = create_tmp_reg (restype, "retval");

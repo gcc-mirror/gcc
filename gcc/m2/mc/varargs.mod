@@ -108,7 +108,8 @@ BEGIN
       contents := memcpy (contents, v^.contents, size) ;
       FOR j := 0 TO nArgs DO
          offset := VAL (CARDINAL, VAL (ptrToByte, v^.contents) - VAL (ptrToByte, v^.arg[j].ptr)) ;
-         arg[j].ptr := VAL (ptrToByte, VAL (ptrToByte, contents) + offset) ;
+         arg[j].ptr := VAL (ptrToByte, contents) ;
+         INC (arg[j].ptr, offset) ;
          arg[j].len := v^.arg[j].len ;
       END
    END ;

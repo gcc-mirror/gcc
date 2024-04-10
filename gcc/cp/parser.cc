@@ -1310,7 +1310,8 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
 
   if (cp_lexer_debugging_p (lexer))
     fprintf (cp_lexer_debug_stream,
-	     "cp_lexer: peeking ahead %ld at token: ", (long)n);
+	     "cp_lexer: peeking ahead " HOST_SIZE_T_PRINT_DEC " at token: ",
+	     (fmt_size_t) n);
 
   --n;
   token = lexer->next_token;
@@ -2088,7 +2089,9 @@ enum
   /* When parsing of the noexcept-specifier should be delayed.  */
   CP_PARSER_FLAGS_DELAY_NOEXCEPT = 0x40,
   /* When parsing a consteval declarator.  */
-  CP_PARSER_FLAGS_CONSTEVAL = 0x80
+  CP_PARSER_FLAGS_CONSTEVAL = 0x80,
+  /* When parsing a parameter declaration.  */
+  CP_PARSER_FLAGS_PARAMETER = 0x100
 };
 
 /* This type is used for parameters and variables which hold
@@ -5250,9 +5253,9 @@ cp_parser_translation_unit (cp_parser* parser)
 	      if (!warned)
 		{
 		  warned = true;
-		  error_at (token->location,
-			    "global module fragment contents must be"
-			    " from preprocessor inclusion");
+		  pedwarn (token->location, OPT_Wglobal_module,
+			   "global module fragment contents must be"
+			   " from preprocessor inclusion");
 		}
 	    }
 	}
@@ -6717,12 +6720,19 @@ cp_parser_unqualified_id (cp_parser* parser,
 
 	/* DR 2237 (C++20 only): A simple-template-id is no longer valid as the
 	   declarator-id of a constructor or destructor.  */
-	if (token->type == CPP_TEMPLATE_ID && declarator_p
-	    && cxx_dialect >= cxx20)
+	if (token->type == CPP_TEMPLATE_ID && declarator_p)
 	  {
-	    if (!cp_parser_simulate_error (parser))
-	      error_at (tilde_loc, "template-id not allowed for destructor");
-	    return error_mark_node;
+	    auto_diagnostic_group d;
+	    bool w = false;
+	    if (cxx_dialect >= cxx20 && !cp_parser_simulate_error (parser))
+	      w = pedwarn (tilde_loc, OPT_Wtemplate_id_cdtor,
+			   "template-id not allowed for destructor in C++20");
+	    else if (cxx_dialect < cxx20
+		     && !cp_parser_uncommitted_to_tentative_parse_p (parser))
+	      w = warning_at (tilde_loc, OPT_Wtemplate_id_cdtor,
+			      "template-id not allowed for destructor in C++20");
+	    if (w)
+	      inform (tilde_loc, "remove the %qs", "< >");
 	  }
 
 	/* If there was an explicit qualification (S::~T), first look
@@ -11874,8 +11884,12 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   else if (cxx_dialect < cxx23)
     omitted_parms_loc = cp_lexer_peek_token (parser->lexer)->location;
 
-  /* In the decl-specifier-seq of the lambda-declarator, each
-     decl-specifier shall either be mutable or constexpr.  */
+  /* [expr.prim.lambda.general]
+     lambda-specifier:
+	consteval, constexpr, mutable, static
+     [4] A lambda-specifier-seq shall contain at most one of each
+	 lambda-specifier and shall not contain both constexpr and consteval.
+	 The lambda-specifier-seq shall not contain both mutable and static.  */
   int declares_class_or_enum;
   if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer))
     cp_parser_decl_specifier_seq (parser,
@@ -11890,13 +11904,83 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	       "%<-std=gnu++2b%>");
       omitted_parms_loc = UNKNOWN_LOCATION;
     }
+  /* Peek at the params, see if we have an xobj parameter.  */
+  if (param_list && TREE_PURPOSE (param_list) == this_identifier)
+    {
+      quals = TYPE_UNQUALIFIED;
+      /* We still need grokdeclarator to see that this is an xobj function
+	 and finish the rest of the work, don't mutate it.  */
+      tree const xobj_param = TREE_VALUE (param_list);
+      tree const param_type = TREE_TYPE (xobj_param);
+      /* [expr.prim.lambda.closure-5]
+	 Given a lambda with a lambda-capture, the type of the explicit object
+	 parameter, if any, of the lambda's function call operator (possibly
+	 instantiated from a function call operator template) shall be either:
+	 -- the closure type,
+	 -- a class type derived from the closure type, or
+	 -- a reference to a possibly cv-qualified such type.  */
+      bool const unrelated_with_captures
+	= (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
+	   || LAMBDA_EXPR_CAPTURE_LIST (lambda_expr))
+	  /* Since a lambda's type is anonymous, we can assume an xobj
+	     parameter is unrelated to the closure if it is non-dependent.
+	     If it is dependent we handle it at instantiation time.  */
+	  && !WILDCARD_TYPE_P (non_reference (param_type));
+      if (unrelated_with_captures)
+	{
+	  error_at (DECL_SOURCE_LOCATION (xobj_param),
+		    "a lambda with captures may not have an explicit object "
+		    "parameter of an unrelated type");
+	  LAMBDA_EXPR_CAPTURE_LIST (lambda_expr) = NULL_TREE;
+	}
 
-  if (lambda_specs.storage_class == sc_mutable)
+      /* [expr.prim.lambda.general-4]
+	 If the lambda-declarator contains an explicit object parameter
+	 ([dcl.fct]), then no lambda-specifier in the lambda-specifier-seq
+	 shall be mutable or static.  */
+      if (lambda_specs.storage_class == sc_mutable)
+	{
+	  auto_diagnostic_group d;
+	  error_at (lambda_specs.locations[ds_storage_class],
+		    "%<mutable%> lambda specifier "
+		    "with explicit object parameter");
+	  /* Tell the user how to do what they probably meant, maybe fixits
+	     would be appropriate later?  */
+	  if (unrelated_with_captures)
+	    /* The following hints don't make sense when we already have an
+	       unrelated type with captures, don't emit them.  */;
+	  else if (!TYPE_REF_P (param_type))
+	    inform (DECL_SOURCE_LOCATION (xobj_param),
+		    "the passed in closure object will not be mutated because "
+		    "it is taken by value");
+	  else if (TYPE_READONLY (TREE_TYPE (param_type)))
+	    inform (DECL_SOURCE_LOCATION (xobj_param),
+		    "declare the explicit object parameter as non-const "
+		    "reference instead");
+	  else
+	    inform (DECL_SOURCE_LOCATION (xobj_param),
+		    "explicit object parameter is already a mutable "
+		    "reference");
+	}
+      else if (lambda_specs.storage_class == sc_static)
+	{
+	  auto_diagnostic_group d;
+	  error_at (lambda_specs.locations[ds_storage_class],
+		    "%<static%> lambda specifier "
+		    "with explicit object parameter");
+	  inform (DECL_SOURCE_LOCATION (xobj_param),
+		  "explicit object parameter declared here");
+	}
+    }
+  else if (lambda_specs.storage_class == sc_mutable)
     {
       quals = TYPE_UNQUALIFIED;
     }
   else if (lambda_specs.storage_class == sc_static)
     {
+      /* [expr.prim.lambda.general-4]
+	 If the lambda-specifier-seq contains static, there shall be no
+	 lambda-capture.  */
       if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
 	  || LAMBDA_EXPR_CAPTURE_LIST (lambda_expr))
 	error_at (lambda_specs.locations[ds_storage_class],
@@ -12021,7 +12105,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       {
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
 	DECL_ARTIFICIAL (fco) = 1;
-	if (!LAMBDA_EXPR_STATIC_P (lambda_expr))
+	if (DECL_IOBJ_MEMBER_FUNCTION_P (fco))
 	  /* Give the object parameter a different name.  */
 	  DECL_NAME (DECL_ARGUMENTS (fco)) = closure_identifier;
 	DECL_SET_LAMBDA_FUNCTION (fco, true);
@@ -16188,6 +16272,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
   /* Assume no class or enumeration type is declared.  */
   *declares_class_or_enum = 0;
 
+  /* Keep a token that additionally will be used for diagnostics.  */
+  cp_token *first_specifier = NULL;
   /* Keep reading specifiers until there are no more to read.  */
   while (true)
     {
@@ -16260,6 +16346,36 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	    decl_specs->locations[ds_attribute] = token->location;
 	  continue;
 	}
+      /* We know by this point that the token is not part of an attribute.  */
+      if (!first_specifier)
+	first_specifier = token;
+      /* Special case for "this" specifier, indicating a parm is an xobj parm.
+	 The "this" specifier must be the first specifier in the declaration,
+	 after any attributes.  */
+      if (token->keyword == RID_THIS && (flags & CP_PARSER_FLAGS_PARAMETER))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  if (token != first_specifier)
+	    {
+	      /* Don't emit diagnostics if we have already seen "this",
+		 leave it for set_and_check_decl_spec_loc.  */
+	      if (decl_specs->locations[ds_this] == 0)
+		{
+		  auto_diagnostic_group d;
+		  gcc_rich_location richloc (token->location);
+		  /* Works, need to add tests for it though.  */
+		  richloc.add_fixit_remove ();
+		  richloc.add_fixit_insert_before (first_specifier->location,
+						   "this ");
+		  error_at (&richloc,
+			    "%<this%> must be the first specifier "
+			    "in a parameter declaration");
+		}
+	    }
+	  set_and_check_decl_spec_loc (decl_specs, ds_this, token);
+	  continue;
+	}
+
       /* Assume we will find a decl-specifier keyword.  */
       found_decl_spec = true;
       /* If the next token is an appropriate keyword, we can simply
@@ -24957,12 +25073,20 @@ cp_parser_type_id (cp_parser *parser, cp_parser_flags flags,
 static tree
 cp_parser_template_type_arg (cp_parser *parser)
 {
-  tree r;
   const char *saved_message = parser->type_definition_forbidden_message;
   parser->type_definition_forbidden_message
     = G_("types may not be defined in template arguments");
-  r = cp_parser_type_id_1 (parser, CP_PARSER_FLAGS_NONE, true, false, NULL);
+  tree r = cp_parser_type_id_1 (parser, CP_PARSER_FLAGS_NONE,
+				/*is_template_arg=*/true,
+				/*is_trailing_return=*/false, nullptr);
   parser->type_definition_forbidden_message = saved_message;
+  /* cp_parser_type_id_1 checks for auto, but only for
+     ->auto_is_implicit_function_template_parm_p.  */
+  if (cxx_dialect >= cxx14 && !flag_concepts_ts && type_uses_auto (r))
+    {
+      error ("invalid use of %<auto%> in template argument");
+      r = error_mark_node;
+    }
   return r;
 }
 
@@ -25493,7 +25617,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
   /* Parse the declaration-specifiers.  */
   cp_token *decl_spec_token_start = cp_lexer_peek_token (parser->lexer);
   cp_parser_decl_specifier_seq (parser,
-				flags,
+				flags | CP_PARSER_FLAGS_PARAMETER,
 				&decl_specifiers,
 				&declares_class_or_enum);
 
@@ -25600,6 +25724,16 @@ cp_parser_parameter_declaration (cp_parser *parser,
      for a C-style variadic function. */
   token = cp_lexer_peek_token (parser->lexer);
 
+  bool xobj_param_p
+    = decl_spec_seq_has_spec_p (&decl_specifiers, ds_this);
+  if (xobj_param_p && template_parm_p)
+    {
+      error_at (decl_specifiers.locations[ds_this],
+		"%<this%> specifier in template parameter declaration");
+      xobj_param_p = false;
+      decl_specifiers.locations[ds_this] = 0;
+    }
+
   /* If a function parameter pack was specified and an implicit template
      parameter was introduced during cp_parser_parameter_declaration,
      change any implicit parameters introduced into packs.  */
@@ -25612,9 +25746,10 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	(INNERMOST_TEMPLATE_PARMS (current_template_parms));
 
       if (latest_template_parm_idx != template_parm_idx)
-	decl_specifiers.type = convert_generic_types_to_packs
-	  (decl_specifiers.type,
-	   template_parm_idx, latest_template_parm_idx);
+	decl_specifiers.type
+	  = convert_generic_types_to_packs (decl_specifiers.type,
+					    template_parm_idx,
+					    latest_template_parm_idx);
     }
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -25644,15 +25779,32 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	}
     }
 
+  if (xobj_param_p
+      && (declarator ? declarator->parameter_pack_p
+		     : PACK_EXPANSION_P (decl_specifiers.type)))
+    {
+      location_t xobj_param
+	= make_location (decl_specifiers.locations[ds_this],
+			 decl_spec_token_start->location,
+			 input_location);
+      error_at (xobj_param,
+		"an explicit object parameter cannot "
+		"be a function parameter pack");
+      xobj_param_p = false;
+      decl_specifiers.locations[ds_this] = 0;
+    }
+
   /* The restriction on defining new types applies only to the type
      of the parameter, not to the default argument.  */
   parser->type_definition_forbidden_message = saved_message;
-
+  cp_token *eq_token = NULL;
   /* If the next token is `=', then process a default argument.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
     {
       tree type = decl_specifiers.type;
       token = cp_lexer_peek_token (parser->lexer);
+      /* Used for diagnostics with an xobj parameter.  */
+      eq_token = token;
       if (declarator)
 	declarator->init_loc = token->location;
       /* If we are defining a class, then the tokens that make up the
@@ -25720,6 +25872,25 @@ cp_parser_parameter_declaration (cp_parser *parser,
 
   if (default_argument)
     STRIP_ANY_LOCATION_WRAPPER (default_argument);
+
+  if (xobj_param_p)
+    {
+      if (default_argument)
+	{
+	  /* If there is a default_argument, eq_token should always be set.  */
+	  gcc_assert (eq_token);
+	  location_t param_with_init_loc
+	    = make_location (eq_token->location,
+			     decl_spec_token_start->location,
+			     input_location);
+	  error_at (param_with_init_loc,
+		    "an explicit object parameter "
+		    "may not have a default argument");
+	}
+      /* Xobj parameters can not have default arguments, thus
+	 we can reuse the default argument field to flag the param as such.  */
+      default_argument = this_identifier;
+    }
 
   /* Generate a location for the parameter, ranging from the start of the
      initial token to the end of the final token (using input_location for
@@ -27507,10 +27678,16 @@ cp_parser_class_head (cp_parser* parser,
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
     {
       if (type)
-	pushclass (type);
+	{
+	  pushclass (type);
+	  start_lambda_scope (TYPE_NAME (type));
+	}
       bases = cp_parser_base_clause (parser);
       if (type)
-	popclass ();
+	{
+	  finish_lambda_scope ();
+	  popclass ();
+	}
     }
   else
     bases = NULL_TREE;
@@ -27835,7 +28012,7 @@ cp_parser_member_declaration (cp_parser* parser)
       if (!decl_specifiers.any_specifiers_p)
 	{
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-	  if (!in_system_header_at (token->location))
+	  if (cxx_dialect < cxx11 && !in_system_header_at (token->location))
 	    {
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_remove ();
@@ -29154,7 +29331,7 @@ cp_parser_throw_expression (cp_parser* parser)
      the end at the end of the final token we consumed.  */
   location_t combined_loc = make_location (start_loc, start_loc,
 					   parser->lexer);
-  expression = build_throw (combined_loc, expression);
+  expression = build_throw (combined_loc, expression, tf_warning_or_error);
 
   return expression;
 }
@@ -32175,9 +32352,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
   if (next_token->type != CPP_NAME
       && next_token->type != CPP_SCOPE
       && next_token->type != CPP_NESTED_NAME_SPECIFIER
-      /* DR 2237 (C++20 only): A simple-template-id is no longer valid as the
-	 declarator-id of a constructor or destructor.  */
-      && (next_token->type != CPP_TEMPLATE_ID || cxx_dialect >= cxx20))
+      && next_token->type != CPP_TEMPLATE_ID)
     return false;
 
   /* Parse tentatively; we are going to roll back all of the tokens
@@ -32395,6 +32570,18 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
 
   /* We did not really want to consume any tokens.  */
   cp_parser_abort_tentative_parse (parser);
+
+  /* DR 2237 (C++20 only): A simple-template-id is no longer valid as the
+     declarator-id of a constructor or destructor.  */
+  if (constructor_p
+      && cp_lexer_peek_token (parser->lexer)->type == CPP_TEMPLATE_ID)
+    {
+      auto_diagnostic_group d;
+      if (emit_diagnostic (cxx_dialect >= cxx20 ? DK_PEDWARN : DK_WARNING,
+			   input_location, OPT_Wtemplate_id_cdtor,
+			   "template-id not allowed for constructor in C++20"))
+	inform (input_location, "remove the %qs", "< >");
+    }
 
   return constructor_p;
 }
@@ -33126,6 +33313,17 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 
   if (!type)
     type = error_mark_node;
+
+  if (TREE_CODE (type) == TYPE_DECL
+      && is_auto (TREE_TYPE (type)))
+    type = TREE_TYPE (type);
+
+  if (is_auto (type)
+      && !AUTO_IS_DECLTYPE (type)
+      && !PLACEHOLDER_TYPE_CONSTRAINTS (type)
+      && !CLASS_PLACEHOLDER_TEMPLATE (type))
+    /* auto(x) and auto{x} need to use a level-less auto.  */
+    type = make_cast_auto ();
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
@@ -34091,6 +34289,8 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	}
       else
 	{
+	  /* These correspond to cp-tree.h:cp_decl_spec,
+	     changes here should also be reflected there.  */
 	  static const char *const decl_spec_names[] = {
 	    "signed",
 	    "unsigned",
@@ -34108,7 +34308,8 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    "constexpr",
 	    "__complex",
 	    "constinit",
-	    "consteval"
+	    "consteval",
+	    "this"
 	  };
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_remove ();
@@ -35176,7 +35377,8 @@ static void
 cp_parser_check_access_in_redeclaration (tree decl, location_t location)
 {
   if (!decl
-      || (!CLASS_TYPE_P (TREE_TYPE (decl))
+      || (!(CLASS_TYPE_P (TREE_TYPE (decl))
+	    && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
 	  && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE))
     return;
 
@@ -47806,7 +48008,8 @@ cp_parser_omp_context_selector (cp_parser *parser, enum omp_tss_code set,
 		}
 	      while (1);
 	      break;
-	    case OMP_TRAIT_PROPERTY_EXPR:
+	    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
+	    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
 	      /* FIXME: this is bogus, the expression need
 		 not be constant.  */
 	      t = cp_parser_constant_expression (parser);
@@ -50841,7 +51044,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_UNROLL:
     case PRAGMA_NOVECTOR:
       {
-	bool ivdep;
+	bool ivdep = false;
 	tree unroll = NULL_TREE;
 	bool novector = false;
 	const char *pragma_str;

@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "gimple-walk.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "tree-cfg.h"
 #include "tree-dfa.h"
@@ -4561,7 +4563,7 @@ ipa_node_params_t::duplicate(cgraph_node *, cgraph_node *,
 			     ipa_node_params *new_info)
 {
   new_info->descriptors = vec_safe_copy (old_info->descriptors);
-  new_info->lattices = NULL;
+  gcc_assert (new_info->lattices.is_empty ());
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
   new_info->known_csts = old_info->known_csts.copy ();
   new_info->known_contexts = old_info->known_contexts.copy ();
@@ -5988,5 +5990,23 @@ ipa_return_value_range (Value_Range &range, tree decl)
   return true;
 }
 
+/* Reset all state within ipa-prop.cc so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+ipa_prop_cc_finalize (void)
+{
+  if (function_insertion_hook_holder)
+    symtab->remove_cgraph_insertion_hook (function_insertion_hook_holder);
+  function_insertion_hook_holder = NULL;
+
+  if (ipa_edge_args_sum)
+    ggc_delete (ipa_edge_args_sum);
+  ipa_edge_args_sum = NULL;
+
+  if (ipa_node_params_sum)
+    ggc_delete (ipa_node_params_sum);
+  ipa_node_params_sum = NULL;
+}
 
 #include "gt-ipa-prop.h"

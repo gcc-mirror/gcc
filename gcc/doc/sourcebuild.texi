@@ -2352,6 +2352,26 @@ AArch64 target that is able to generate and execute armv8.3-a FJCVTZS
 instruction.
 @end table
 
+@subsubsection LoongArch specific attributes
+
+@table @code
+@item loongarch_sx
+LoongArch target that generates instructions for SX.
+
+@item loongarch_asx
+LoongArch target that generates instructions for ASX.
+
+@item loongarch_sx_hw
+LoongArch target that is able to generate and execute SX code.
+
+@item loongarch_asx_hw
+LoongArch target that is able to generate and execute ASX code.
+
+@item loongarch_call36_support
+LoongArch binutils supports call36 relocation.
+
+@end table
+
 @subsubsection MIPS-specific attributes
 
 @table @code
@@ -2422,9 +2442,6 @@ PowerPC target supports hardware double-precision floating-point.
 
 @item powerpc_htm_ok
 PowerPC target supports @code{-mhtm}
-
-@item powerpc_p8vector_ok
-PowerPC target supports @code{-mpower8-vector}
 
 @item powerpc_popcntb_ok
 PowerPC target supports the @code{popcntb} instruction, indicating
@@ -2504,6 +2521,9 @@ Test system has support for the CORE-V ALU extension.
 
 @item cv_elw
 Test system has support for the CORE-V ELW extension.
+
+@item cv_simd
+Test system has support for the CORE-V SIMD extension.
 
 @end table
 
@@ -2680,6 +2700,10 @@ Target requires a command line argument to enable a SIMD instruction set.
 
 @item xorsign
 Target supports the xorsign optab expansion.
+
+@item ifn_copysign
+Target supports the copysign optab expansion of float and double for
+both scalar and vector modes.
 
 @end table
 
@@ -2873,6 +2897,18 @@ Target supports Graphite optimizations.
 @item fixed_point
 Target supports fixed-point extension to C.
 
+@item bitint
+Target supports _BitInt(N).
+
+@item bitint128
+Target supports _BitInt(128).
+
+@item bitint575
+Target supports _BitInt(575).
+
+@item bitint65535
+Target supports _BitInt(65535).
+
 @item fopenacc
 Target supports OpenACC via @option{-fopenacc}.
 
@@ -2969,6 +3005,9 @@ Target supports @option{-mpe-aligned-commons}.
 
 @item pie
 Target supports @option{-pie}, @option{-fpie} and @option{-fPIE}.
+
+@item linker_plugin
+Target supports the linker plugin.
 
 @item rdynamic
 Target supports @option{-rdynamic}.
@@ -3298,6 +3337,10 @@ system.  Some tests are incompatible with DejaGnu's handling of remote
 hosts, which involves copying the source file to the host and compiling
 it with a relative path and "@code{-o a.out}".
 
+@item dg-require-linker-plugin ""
+Skip the test is the target does not support the linker plugin.
+This is equivalent to @code{dg-require-effective-target linker_plugin}.
+
 @item dg-require-mkfifo ""
 Skip the test if the target does not support @code{mkfifo}.
 
@@ -3356,6 +3399,10 @@ excluding LTO sections.
 @item scan-assembler-times @var{regex} @var{num} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} is matched exactly @var{num} times in the test's
 assembler output, excluding LTO sections.
+
+@item scan-assembler-bound @var{regex} @var{cmp} @var{num} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} is matched @var{cmp} @var{num} times in the test's
+assembler output, excluding LTO sections. @var{cmp} is a comparitor.
 
 @item scan-assembler-dem @var{regex} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} matches text in the test's demangled assembler output,

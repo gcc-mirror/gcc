@@ -241,8 +241,8 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = c++98 c++11 c++17 c++20 c++23 filesystem libbacktrace \
-	experimental
+DIST_SUBDIRS = c++98 c++11 c++17 c++20 c++23 c++26 filesystem \
+	libbacktrace experimental
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
 ACLOCAL = @ACLOCAL@
 ALLOCATOR_H = @ALLOCATOR_H@
@@ -491,7 +491,7 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 @GLIBCXX_HOSTED_FALSE@backtrace_dir = 
 @GLIBCXX_HOSTED_FALSE@experimental_dir = 
 @GLIBCXX_HOSTED_TRUE@experimental_dir = experimental
-SUBDIRS = c++98 c++11 c++17 c++20 c++23 \
+SUBDIRS = c++98 c++11 c++17 c++20 c++23 c++26 \
 	$(filesystem_dir) $(backtrace_dir) $(experimental_dir)
 
 @VTV_CYGMIN_FALSE@toolexeclib_LTLIBRARIES = libstdc++.la
@@ -1024,6 +1024,7 @@ vpath % $(top_srcdir)/src/c++11
 vpath % $(top_srcdir)/src/c++17
 vpath % $(top_srcdir)/src/c++20
 vpath % $(top_srcdir)/src/c++23
+vpath % $(top_srcdir)/src/c++26
 @ENABLE_FILESYSTEM_TS_TRUE@vpath % $(top_srcdir)/src/filesystem
 @ENABLE_BACKTRACE_TRUE@vpath % $(top_srcdir)/src/libbacktrace
 vpath % $(top_srcdir)/src/experimental

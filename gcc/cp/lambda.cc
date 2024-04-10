@@ -175,9 +175,7 @@ lambda_function (tree lambda)
   if (CLASSTYPE_TEMPLATE_INSTANTIATION (type)
       && !COMPLETE_OR_OPEN_TYPE_P (type))
     return NULL_TREE;
-  lambda = lookup_member (type, call_op_identifier,
-			  /*protect=*/0, /*want_type=*/false,
-			  tf_warning_or_error);
+  lambda = get_class_binding_direct (type, call_op_identifier);
   if (lambda)
     lambda = STRIP_TEMPLATE (get_first_fn (lambda));
   return lambda;
@@ -404,8 +402,10 @@ build_capture_proxy (tree member, tree init)
   fn = lambda_function (closure);
   lam = CLASSTYPE_LAMBDA_EXPR (closure);
 
+  object = DECL_ARGUMENTS (fn);
   /* The proxy variable forwards to the capture field.  */
-  object = build_fold_indirect_ref (DECL_ARGUMENTS (fn));
+  if (INDIRECT_TYPE_P (TREE_TYPE (object)))
+    object = build_fold_indirect_ref (object);
   object = finish_non_static_data_member (member, object, NULL_TREE);
   if (REFERENCE_REF_P (object))
     object = TREE_OPERAND (object, 0);
@@ -834,8 +834,9 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
 
 	  if (!LAMBDA_FUNCTION_P (containing_function))
 	    {
-	      /* We found a non-lambda function.  */
-	      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (containing_function))
+	      /* We found a non-lambda function.
+		 There is no this pointer in xobj member functions.  */
+	      if (DECL_IOBJ_MEMBER_FUNCTION_P (containing_function))
 		/* First parameter is 'this'.  */
 		init = DECL_ARGUMENTS (containing_function);
 	      break;
@@ -969,7 +970,7 @@ maybe_generic_this_capture (tree object, tree fns)
 	for (lkp_iterator iter (fns); iter; ++iter)
 	  if (((!id_expr && TREE_CODE (*iter) != USING_DECL)
 	       || TREE_CODE (*iter) == TEMPLATE_DECL)
-	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
+	      && DECL_IOBJ_MEMBER_FUNCTION_P (*iter))
 	    {
 	      /* Found a non-static member.  Capture this.  */
 	      lambda_expr_this_capture (lam, /*maybe*/-1);
@@ -1012,7 +1013,7 @@ nonlambda_method_basetype (void)
 
       tree fn = TYPE_CONTEXT (type);
       if (!fn || TREE_CODE (fn) != FUNCTION_DECL
-	  || !DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	  || !DECL_IOBJ_MEMBER_FUNCTION_P (fn))
 	/* No enclosing non-lambda method.  */
 	return NULL_TREE;
       if (!LAMBDA_FUNCTION_P (fn))

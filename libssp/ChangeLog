@@ -1,3 +1,9 @@
+2024-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (AC_CHECK_DECLS): Check for gets.
+	* configure, config.h.in: Regenerate.
+	* gets-chk.c (gets): Guard declaration with !HAVE_DECL_GETS.
+
 2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* Makefile.am: Allow overriding EXEPCT.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -749,6 +749,7 @@ package body Exp_Ch7 is
       Desig_Typ : Entity_Id;
       FM_Id     : Entity_Id;
       Priv_View : Entity_Id;
+      Scop      : Entity_Id;
       Unit_Decl : Node_Id;
       Unit_Id   : Entity_Id;
 
@@ -785,6 +786,18 @@ package body Exp_Ch7 is
 
       if Present (Priv_View) then
          Desig_Typ := Priv_View;
+      end if;
+
+      --  For a designated type not declared at library level, we cannot create
+      --  a finalization collection attached to an outer unit since this would
+      --  generate dangling references to the dynamic scope through access-to-
+      --  procedure values designating the local Finalize_Address primitive.
+
+      Scop := Enclosing_Dynamic_Scope (Desig_Typ);
+      if Scop /= Standard_Standard
+        and then Scope_Depth (Scop) > Scope_Depth (Unit_Id)
+      then
+         return;
       end if;
 
       --  Determine whether the current semantic unit already has an anonymous

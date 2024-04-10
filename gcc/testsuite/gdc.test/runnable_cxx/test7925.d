@@ -1,12 +1,5 @@
 // EXTRA_CPP_SOURCES: cpp7925.cpp
 
-/*
-Exclude -O due to a codegen bug on OSX:
-https://issues.dlang.org/show_bug.cgi?id=22556
-
-PERMUTE_ARGS(osx): -inline -release -g
-*/
-
 import core.vararg;
 
 extern(C++) class C1

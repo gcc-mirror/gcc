@@ -2212,9 +2212,9 @@ got_charlen:
 	    found_length = current_length;
 	  else if (found_length != current_length)
 	    {
-	      gfc_error ("Different CHARACTER lengths (%ld/%ld) in array"
-			 " constructor at %L", (long) found_length,
-			 (long) current_length, &p->expr->where);
+	      gfc_error ("Different CHARACTER lengths (%wd/%wd) in array"
+			 " constructor at %L", found_length,
+			 current_length, &p->expr->where);
 	      return false;
 	    }
 
@@ -2308,10 +2308,7 @@ gfc_copy_iterator (gfc_iterator *src)
   dest->start = gfc_copy_expr (src->start);
   dest->end = gfc_copy_expr (src->end);
   dest->step = gfc_copy_expr (src->step);
-  dest->unroll = src->unroll;
-  dest->ivdep = src->ivdep;
-  dest->vector = src->vector;
-  dest->novector = src->novector;
+  dest->annot = src->annot;
 
   return dest;
 }

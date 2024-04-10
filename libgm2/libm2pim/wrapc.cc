@@ -59,6 +59,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <time.h>
 #endif
 
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+
 /* Define a generic NULL if one hasn't already been defined.  */
 
 #if !defined(NULL)
@@ -315,6 +319,39 @@ EXPORT(isnanl) (long double x)
   return x != x;
 #endif
 }
+
+/* SeekSet return the system libc SEEK_SET value.  */
+
+extern "C" int
+EXPORT(SeekSet) (void)
+{
+  return SEEK_SET;
+}
+
+/* SeekEnd return the system libc SEEK_END value.  */
+
+extern "C" int
+EXPORT(SeekEnd) (void)
+{
+  return SEEK_END;
+}
+
+/* ReadOnly return the system value of O_RDONLY.  */
+
+extern "C" int
+EXPORT(ReadOnly) (void)
+{
+  return O_RDONLY;
+}
+
+/* WriteOnly return the system value of O_WRONLY.  */
+
+extern "C" int
+EXPORT(WriteOnly) (void)
+{
+  return O_WRONLY;
+}
+
 
 /* GNU Modula-2 linking hooks.  */
 

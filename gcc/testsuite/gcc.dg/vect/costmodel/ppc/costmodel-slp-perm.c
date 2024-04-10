@@ -1,10 +1,10 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
 /* Specify power9 to ensure the vectorization is profitable
    and test point stands, otherwise it could be not profitable
    to vectorize.  */
-/* { dg-additional-options "-mdejagnu-cpu=power9 -mpower9-vector" } */
+/* { dg-additional-options "-mdejagnu-cpu=power9 -mvsx" } */
 
 /* Verify we cost the exact count for required vec_perm.  */
 

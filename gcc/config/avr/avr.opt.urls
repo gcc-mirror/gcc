@@ -12,6 +12,9 @@ UrlSuffix(gcc/AVR-Options.html#index-mgas-isr-prologues)
 mn-flash=
 UrlSuffix(gcc/AVR-Options.html#index-mn-flash)
 
+mskip-bug
+UrlSuffix(gcc/AVR-Options.html#index-mskip-bug)
+
 mrmw
 UrlSuffix(gcc/AVR-Options.html#index-mrmw)
 
@@ -42,8 +45,20 @@ UrlSuffix(gcc/AVR-Options.html#index-maccumulate-args)
 mstrict-X
 UrlSuffix(gcc/AVR-Options.html#index-mstrict-X)
 
+mflmap
+UrlSuffix(gcc/AVR-Options.html#index-mflmap)
+
+mrodata-in-ram
+UrlSuffix(gcc/AVR-Options.html#index-mrodata-in-ram)
+
 msp8
 UrlSuffix(gcc/AVR-Options.html#index-msp8)
+
+mfuse-add
+UrlSuffix(gcc/AVR-Options.html#index-mfuse-add)
+
+mfuse-add=
+UrlSuffix(gcc/AVR-Options.html#index-mfuse-add)
 
 Waddr-space-convert
 UrlSuffix(gcc/AVR-Options.html#index-Waddr-space-convert)

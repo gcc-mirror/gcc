@@ -2,6 +2,7 @@
 ! Don't cycle by default through all options, just test -O0 and -O2,
 ! as this is quite large test.
 ! { dg-skip-if "" { ! run_expensive_tests } { "*" } { "-O0" "-O2" } }
+! { dg-timeout-factor 2.0 { target hppa*-*-* } }
 
 module m
   type dl

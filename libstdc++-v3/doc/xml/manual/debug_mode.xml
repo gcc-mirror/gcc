@@ -162,11 +162,10 @@ which always works correctly.
   different length.</para>
 
 <para>Note that libstdc++ is able to produce backtraces on error.
-  It requires that you configure libstdc++ build with
-  <option>--enable-libstdcxx-backtrace=yes</option>.
-  Use <code>-D_GLIBCXX_DEBUG_BACKTRACE</code> to activate it.
-  You'll then have to link with libstdc++_libbacktrace static library
-  (<option>-lstdc++_libbacktrace</option>) to build your application.</para>
+  To enable these, compile with <code>-D_GLIBCXX_DEBUG_BACKTRACE</code>
+  and then link with <option>-lstdc++exp</option>.
+  These backtraces are not supported on all platforms.
+</para>
 </section>
 
 <section xml:id="debug_mode.using.specific" xreflabel="Using Specific"><info><title>Using a Specific Debug Container</title></info>

@@ -182,6 +182,10 @@ extern const char *get_fnname_from_decl (tree);
    code or data is output after the label.  */
 extern void assemble_function_label_raw (FILE *, const char *);
 
+/* Finish outputting function label.  Needs to be called when outputting
+   function label without using assemble_function_label_raw ().  */
+extern void assemble_function_label_final (void);
+
 /* Output assembler code for the constant pool of a function and associated
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current

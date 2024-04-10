@@ -439,6 +439,12 @@
 
 (define_enum_attr "arch" "arches" (const_string "any"))
 
+;; Whether a normal INSN in fact contains a call.  Sometimes we represent
+;; calls to functions that use an ad-hoc ABI as normal insns, both for
+;; optimization reasons and to avoid the need to describe the ABI to
+;; target-independent code.
+(define_attr "is_call" "no,yes" (const_string "no"))
+
 ;; [For compatibility with Arm in pipeline models]
 ;; Attribute that specifies whether or not the instruction touches fp
 ;; registers.
@@ -547,8 +553,7 @@
 ;; The RTL mapping therefore applies at LD1 granularity, rather than
 ;; being broken down into individual types of load.
 (define_attr "stride_type"
-  "none,ld1_consecutive,ld1_strided,st1_consecutive,st1_strided,
-   luti_consecutive,luti_strided"
+  "none,ld1_consecutive,ld1_strided,st1_consecutive,st1_strided"
   (const_string "none"))
 
 ;; Attribute used to identify load pair and store pair instructions.
@@ -5395,7 +5400,7 @@
   [(set_attr "type" "alus_imm")]
 )
 
-(define_insn "*and<mode>3nr_compare0"
+(define_insn "@aarch64_and<mode>3nr_compare0"
   [(set (reg:CC_NZV CC_REGNUM)
 	(compare:CC_NZV
 	 (and:GPI (match_operand:GPI 0 "register_operand")

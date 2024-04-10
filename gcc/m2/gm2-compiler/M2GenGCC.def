@@ -45,7 +45,7 @@ EXPORT QUALIFIED ConvertQuadsToTree, ResolveConstantExpressions,
                         the GCC tree structure.
 *)
 
-PROCEDURE ConvertQuadsToTree (Scope: CARDINAL; Start, End: CARDINAL) ;
+PROCEDURE ConvertQuadsToTree (Start, End: CARDINAL) ;
 
 
 (*

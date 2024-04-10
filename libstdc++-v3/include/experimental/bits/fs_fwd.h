@@ -102,6 +102,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   /// @{
   /// @relates copy_options
+  [[__nodiscard__]]
   constexpr copy_options
   operator&(copy_options __x, copy_options __y) noexcept
   {
@@ -110,6 +111,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) & static_cast<__utype>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr copy_options
   operator|(copy_options __x, copy_options __y) noexcept
   {
@@ -118,6 +120,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) | static_cast<__utype>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr copy_options
   operator^(copy_options __x, copy_options __y) noexcept
   {
@@ -126,6 +129,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) ^ static_cast<__utype>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr copy_options
   operator~(copy_options __x) noexcept
   {
@@ -174,6 +178,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   /// @{
   /// @relates std::experimental::filesystem::perms
+  [[__nodiscard__]]
   constexpr perms
   operator&(perms __x, perms __y) noexcept
   {
@@ -182,6 +187,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) & static_cast<__utype>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr perms
   operator|(perms __x, perms __y) noexcept
   {
@@ -190,6 +196,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) | static_cast<__utype>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr perms
   operator^(perms __x, perms __y) noexcept
   {
@@ -198,6 +205,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) ^ static_cast<__utype>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr perms
   operator~(perms __x) noexcept
   {
@@ -225,6 +233,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   /// @{
   /// @relates directory_options
+  [[__nodiscard__]]
   constexpr directory_options
   operator&(directory_options __x, directory_options __y) noexcept
   {
@@ -233,6 +242,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) & static_cast<__utype>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr directory_options
   operator|(directory_options __x, directory_options __y) noexcept
   {
@@ -241,6 +251,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) | static_cast<__utype>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr directory_options
   operator^(directory_options __x, directory_options __y) noexcept
   {
@@ -249,6 +260,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	static_cast<__utype>(__x) ^ static_cast<__utype>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr directory_options
   operator~(directory_options __x) noexcept
   {

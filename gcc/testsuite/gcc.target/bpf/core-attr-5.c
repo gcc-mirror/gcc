@@ -55,8 +55,13 @@ func (struct T *t, int i)
 /* { dg-final { scan-assembler-times "ascii \"0:4.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:1:1:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:1:1:1.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
-/* { dg-final { scan-assembler-times "ascii \"0:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 2 } } */
+/* { dg-final { scan-assembler-times "ascii \"0:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:0.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:1:3\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:4\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:3\"\\)" 2 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:2\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:1:1\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:0\"\\)" 1 } } */
 /* { dg-final { scan-assembler-times "bpfcr_type \\(struct T \\*\\)" 4 } } */
 /* { dg-final { scan-assembler-times "bpfcr_type \\(struct U \\*\\)" 4 { xfail *-*-* } } } */
-

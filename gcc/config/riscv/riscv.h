@@ -50,12 +50,14 @@ extern const char *riscv_expand_arch (int argc, const char **argv);
 extern const char *riscv_expand_arch_from_cpu (int argc, const char **argv);
 extern const char *riscv_default_mtune (int argc, const char **argv);
 extern const char *riscv_multi_lib_check (int argc, const char **argv);
+extern const char *riscv_arch_help (int argc, const char **argv);
 
 # define EXTRA_SPEC_FUNCTIONS						\
   { "riscv_expand_arch", riscv_expand_arch },				\
   { "riscv_expand_arch_from_cpu", riscv_expand_arch_from_cpu },		\
   { "riscv_default_mtune", riscv_default_mtune },			\
-  { "riscv_multi_lib_check", riscv_multi_lib_check },
+  { "riscv_multi_lib_check", riscv_multi_lib_check },			\
+  { "riscv_arch_help", riscv_arch_help },
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march or -mcpu is specified.
@@ -109,6 +111,9 @@ ASM_MISA_SPEC
 
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS					\
+"%{march=help:%:riscv_arch_help()} "				\
+"%{print-supported-extensions:%:riscv_arch_help()} "		\
+"%{-print-supported-extensions:%:riscv_arch_help()} "		\
 "%{march=*:%:riscv_expand_arch(%*)} "				\
 "%{!march=*:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} "
 
@@ -634,6 +639,9 @@ enum reg_class
   (!SMALL_OPERAND (VALUE)						\
    && SMALL_OPERAND (VALUE & ~(HOST_WIDE_INT_1U << floor_log2 (VALUE))))
 
+/* True if bit BIT is set in VALUE.  */
+#define BITSET_P(VALUE, BIT) (((VALUE) & (1ULL << (BIT))) != 0)
+
 /* Stack layout; function entry, exit and calling.  */
 
 #define STACK_GROWS_DOWNWARD 1
@@ -733,8 +741,6 @@ typedef struct {
   /* Number of floating-point registers used so far, likewise.  */
   unsigned int num_fprs;
 
-  int rvv_psabi_warning;
-
   /* Number of mask registers used so far, up to MAX_ARGS_IN_MASK_REGISTERS.  */
   unsigned int num_mrs;
 
@@ -826,6 +832,10 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
       asm_fprintf ((FILE), "%U%s", (NAME));				\
   } while (0)
 
+#undef ASM_OUTPUT_OPCODE
+#define ASM_OUTPUT_OPCODE(STREAM, PTR)	\
+  (PTR) = riscv_asm_output_opcode(STREAM, PTR)
+
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 #define CASE_VECTOR_MODE SImode
 #define CASE_VECTOR_PC_RELATIVE (riscv_cmodel != CM_MEDLOW)
@@ -891,7 +901,10 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
    SLT[I][U], AND[I], XOR[I], OR[I], LUI, AUIPC, and their compressed
    counterparts, including C.MV and C.LI) can be in the branch shadow.  */
 
-#define TARGET_SFB_ALU (riscv_microarchitecture == sifive_7)
+#define TARGET_SFB_ALU \
+ ((riscv_microarchitecture == sifive_7) \
+  || (riscv_microarchitecture == sifive_p400) \
+  || (riscv_microarchitecture == sifive_p600))
 
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 

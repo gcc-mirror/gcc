@@ -73,6 +73,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "except.h"
@@ -3191,8 +3193,9 @@ sem_item_optimizer::process_cong_reduction (void)
 	worklist_push ((*it)->classes[i]);
 
   if (dump_file)
-    fprintf (dump_file, "Worklist has been filled with: %lu\n",
-	     (unsigned long) worklist.nodes ());
+    fprintf (dump_file, "Worklist has been filled with: "
+			HOST_SIZE_T_PRINT_UNSIGNED "\n",
+	     (fmt_size_t) worklist.nodes ());
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Congruence class reduction\n");
@@ -3239,8 +3242,9 @@ sem_item_optimizer::dump_cong_classes (void)
       }
 
   fprintf (dump_file,
-	   "Congruence classes: %lu with total: %u items (in a non-singular "
-	   "class: %u)\n", (unsigned long) m_classes.elements (),
+	   "Congruence classes: " HOST_SIZE_T_PRINT_UNSIGNED " with total: "
+	   "%u items (in a non-singular class: %u)\n",
+	   (fmt_size_t) m_classes.elements (),
 	   m_items.length (), m_items.length () - single_element_classes);
   fprintf (dump_file,
 	   "Class size histogram [number of members]: number of classes\n");
@@ -3662,4 +3666,13 @@ ipa_opt_pass_d *
 make_pass_ipa_icf (gcc::context *ctxt)
 {
   return new ipa_icf::pass_ipa_icf (ctxt);
+}
+
+/* Reset all state within ipa-icf.cc so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+ipa_icf_cc_finalize (void)
+{
+  ipa_icf::optimizer = NULL;
 }

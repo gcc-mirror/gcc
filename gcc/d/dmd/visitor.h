@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 2013-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 2013-2024 by The D Language Foundation, All Rights Reserved
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * https://www.boost.org/LICENSE_1_0.txt
@@ -126,6 +126,7 @@ class WithScopeSymbol;
 class ArrayScopeSymbol;
 class Nspace;
 class AliasAssign;
+class CAsmDeclaration;
 
 class AggregateDeclaration;
 class StructDeclaration;
@@ -195,6 +196,7 @@ class ThisExp;
 class SuperExp;
 class NullExp;
 class StringExp;
+class InterpExp;
 class TupleExp;
 class ArrayLiteralExp;
 class AssocArrayLiteralExp;
@@ -338,6 +340,7 @@ public:
     virtual void visit(DebugSymbol *s) { visit((Dsymbol *)s); }
     virtual void visit(VersionSymbol *s) { visit((Dsymbol *)s); }
     virtual void visit(AliasAssign *s) { visit((Dsymbol *)s); }
+    virtual void visit(CAsmDeclaration *s) { visit((Dsymbol *)s); }
 
     // ScopeDsymbols
     virtual void visit(Package *s) { visit((ScopeDsymbol *)s); }
@@ -480,6 +483,7 @@ public:
     virtual void visit(TypeidExp *e) { visit((Expression *)e); }
     virtual void visit(TraitsExp *e) { visit((Expression *)e); }
     virtual void visit(StringExp *e) { visit((Expression *)e); }
+    virtual void visit(InterpExp *e) { visit((Expression *)e); }
     virtual void visit(NewExp *e) { visit((Expression *)e); }
     virtual void visit(AssocArrayLiteralExp *e) { visit((Expression *)e); }
     virtual void visit(ArrayLiteralExp *e) { visit((Expression *)e); }

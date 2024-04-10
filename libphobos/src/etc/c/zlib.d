@@ -9,9 +9,9 @@ module etc.c.zlib;
 import core.stdc.config;
 
 /* zlib.h -- interface of the 'zlib' general purpose compression library
-  version 1.2.12, March 11th, 2022
+  version 1.3.1, January 22nd, 2024
 
-  Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler
+  Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -43,8 +43,8 @@ nothrow:
 extern (C):
 
 // Those are extern(D) as they should be mangled
-extern(D) immutable string ZLIB_VERSION = "1.2.12";
-extern(D) immutable ZLIB_VERNUM = 0x12c0;
+extern(D) immutable string ZLIB_VERSION = "1.3.1";
+extern(D) immutable ZLIB_VERNUM = 0x1310;
 
 /*
     The 'zlib' compression library provides in-memory compression and
@@ -250,7 +250,7 @@ int deflateInit(z_streamp strm, int level)
      Initializes the internal stream state for compression.  The fields
    zalloc, zfree and opaque must be initialized before by the caller.  If
    zalloc and zfree are set to Z_NULL, deflateInit updates them to use default
-   allocation functions.
+   allocation functions.  total_in, total_out, adler, and msg are initialized.
 
      The compression level must be Z_DEFAULT_COMPRESSION, or between 0 and 9:
    1 gives best speed, 9 gives best compression, 0 gives no compression at all
@@ -296,7 +296,7 @@ int deflate(z_streamp strm, int flush);
   == 0), or after each call of deflate().  If deflate returns Z_OK and with
   zero avail_out, it must be called again after making room in the output
   buffer because there might be more output pending. See deflatePending(),
-  which can be used if desired to determine whether or not there is more ouput
+  which can be used if desired to determine whether or not there is more output
   in that case.
 
     Normally the parameter flush is set to Z_NO_FLUSH, which allows deflate to
@@ -340,8 +340,8 @@ int deflate(z_streamp strm, int flush);
   with the same value of the flush parameter and more output space (updated
   avail_out), until the flush is complete (deflate returns with non-zero
   avail_out).  In the case of a Z_FULL_FLUSH or Z_SYNC_FLUSH, make sure that
-  avail_out is greater than six to avoid repeated flush markers due to
-  avail_out == 0 on return.
+  avail_out is greater than six when the flush marker begins, in order to avoid
+  repeated flush markers upon calling deflate() again when avail_out == 0.
 
     If the parameter flush is set to Z_FINISH, pending input is processed,
   pending output is flushed and deflate returns with Z_STREAM_END if there was
@@ -405,7 +405,8 @@ int inflateInit(z_streamp strm)
    read or consumed.  The allocation of a sliding window will be deferred to
    the first call of inflate (if the decompression does not complete on the
    first call).  If zalloc and zfree are set to Z_NULL, inflateInit updates
-   them to use default allocation functions.
+   them to use default allocation functions.  total_in, total_out, adler, and
+   msg are initialized.
 
      inflateInit returns Z_OK if success, Z_MEM_ERROR if there was not enough
    memory, Z_VERSION_ERROR if the zlib library version is incompatible with the
@@ -680,7 +681,7 @@ int deflateGetDictionary(z_streamp strm, ubyte *dictionary, uint  dictLength);
    to dictionary.  dictionary must have enough space, where 32768 bytes is
    always enough.  If deflateGetDictionary() is called with dictionary equal to
    Z_NULL, then only the dictionary length is returned, and nothing is copied.
-   Similary, if dictLength is Z_NULL, then it is not set.
+   Similarly, if dictLength is Z_NULL, then it is not set.
 
      deflateGetDictionary() may return a length less than the window size, even
    when more than the window size in input has been provided. It may return up
@@ -715,7 +716,7 @@ int deflateReset(z_streamp strm);
      This function is equivalent to deflateEnd followed by deflateInit, but
    does not free and reallocate the internal compression state.  The stream
    will leave the compression level and any other attributes that may have been
-   set unchanged.
+   set unchanged.  total_in, total_out, adler, and msg are initialized.
 
      deflateReset returns Z_OK if success, or Z_STREAM_ERROR if the source
    stream state was inconsistent (such as zalloc or state being Z_NULL).
@@ -746,7 +747,7 @@ int deflateParams(z_streamp strm, int level, int strategy);
    Then no more input data should be provided before the deflateParams() call.
    If this is done, the old level and strategy will be applied to the data
    compressed before deflateParams(), and the new level and strategy will be
-   applied to the the data compressed after deflateParams().
+   applied to the data compressed after deflateParams().
 
      deflateParams returns Z_OK on success, Z_STREAM_ERROR if the source stream
    state was inconsistent or if a parameter was invalid, or Z_BUF_ERROR if
@@ -829,8 +830,9 @@ int deflateSetHeader(z_streamp strm, gz_headerp head);
    gzip file" and give up.
 
      If deflateSetHeader is not used, the default gzip header has text false,
-   the time set to zero, and os set to 255, with no extra, name, or comment
-   fields.  The gzip header is returned to the default state by deflateReset().
+   the time set to zero, and os set to the current operating system, with no
+   extra, name, or comment fields.  The gzip header is returned to the default
+   state by deflateReset().
 
      deflateSetHeader returns Z_OK if success, or Z_STREAM_ERROR if the source
    stream state was inconsistent.
@@ -920,7 +922,7 @@ int inflateGetDictionary(z_streamp strm, ubyte* dictionary, uint* dictLength);
    to dictionary.  dictionary must have enough space, where 32768 bytes is
    always enough.  If inflateGetDictionary() is called with dictionary equal to
    Z_NULL, then only the dictionary length is returned, and nothing is copied.
-   Similary, if dictLength is Z_NULL, then it is not set.
+   Similarly, if dictLength is Z_NULL, then it is not set.
 
      inflateGetDictionary returns Z_OK on success, or Z_STREAM_ERROR if the
    stream state is inconsistent.
@@ -939,10 +941,10 @@ int inflateSync(z_streamp strm);
      inflateSync returns Z_OK if a possible full flush point has been found,
    Z_BUF_ERROR if no more input was provided, Z_DATA_ERROR if no flush point
    has been found, or Z_STREAM_ERROR if the stream structure was inconsistent.
-   In the success case, the application may save the current current value of
-   total_in which indicates where valid compressed data was found.  In the
-   error case, the application may repeatedly call inflateSync, providing more
-   input each time, until success or end of the input data.
+   In the success case, the application may save the current value of total_in
+   which indicates where valid compressed data was found.  In the error case,
+   the application may repeatedly call inflateSync, providing more input each
+   time, until success or end of the input data.
 */
 
 int inflateCopy(z_streamp dest, z_streamp source);
@@ -1446,12 +1448,12 @@ z_size_t gzfread(void* buf, z_size_t size, z_size_t nitems, gzFile file);
 
      In the event that the end of file is reached and only a partial item is
    available at the end, i.e. the remaining uncompressed data length is not a
-   multiple of size, then the final partial item is nevetheless read into buf
+   multiple of size, then the final partial item is nevertheless read into buf
    and the end-of-file flag is set.  The length of the partial item read is not
    provided, but could be inferred from the result of gztell().  This behavior
    is the same as the behavior of fread() implementations in common libraries,
    but it prevents the direct use of gzfread() to read a concurrently written
-   file, reseting and retrying on end-of-file, when size is not 1.
+   file, resetting and retrying on end-of-file, when size is not 1.
 */
 
 int gzwrite(gzFile file, void* buf, uint len);
@@ -1747,19 +1749,18 @@ uint crc32_z(uint crc, const(ubyte)* buf, z_size_t len);
 */
 
 uint crc32_combine(uint crc1, uint crc2, z_off_t len2);
-
 /*
      Combine two CRC-32 check values into one.  For two sequences of bytes,
    seq1 and seq2 with lengths len1 and len2, CRC-32 check values were
    calculated for each, crc1 and crc2.  crc32_combine() returns the CRC-32
    check value of seq1 and seq2 concatenated, requiring only crc1, crc2, and
-   len2.
+   len2. len2 must be non-negative.
 */
 
 uint crc32_combine_gen(z_off_t len2);
 /*
      Return the operator corresponding to length len2, to be used with
-   crc32_combine_op().
+   crc32_combine_op(). len2 must be non-negative.
 */
 
 uint crc32_combine_op(uint crc1, uint crc2, uint op);

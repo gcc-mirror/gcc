@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/cond.h"
 #include "dmd/declaration.h"
 #include "dmd/doc.h"
+#include "dmd/dsymbol.h"
 #include "dmd/errors.h"
 #include "dmd/expression.h"
 #include "dmd/hdrgen.h"
@@ -304,9 +305,6 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.warnings = DIAGNOSTICoff;
   global.params.v.errorLimit = flag_max_errors;
   global.params.v.messageStyle = MessageStyle::gnu;
-
-  global.params.imppath = d_gc_malloc<Strings> ();
-  global.params.fileImppath = d_gc_malloc<Strings> ();
 
   /* Extra GDC-specific options.  */
   d_option.fonly = NULL;
@@ -723,11 +721,11 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_I:
-      global.params.imppath->push (arg);
+      global.params.imppath.push (arg);
       break;
 
     case OPT_J:
-      global.params.fileImppath->push (arg);
+      global.params.fileImppath.push (arg);
       break;
 
     case OPT_MM:
@@ -1031,8 +1029,8 @@ d_generate_ddoc_file (Module *m, OutBuffer &ddocbuf)
   d_read_ddoc_files (global.params.ddoc.files, ddocbuf);
 
   OutBuffer ddocbuf_out;
-  gendocfile (m, ddocbuf.peekChars (), ddocbuf.length (), global.datetime,
-	      global.errorSink, ddocbuf_out);
+  dmd::gendocfile (m, ddocbuf.peekChars (), ddocbuf.length (), global.datetime,
+		   global.errorSink, ddocbuf_out);
 
   d_write_file (m->docfile.toChars (), ddocbuf_out.peekChars ());
 }
@@ -1044,25 +1042,24 @@ d_parse_file (void)
 {
   if (global.params.v.verbose)
     {
+      /* Dump information about the D compiler and language version.  */
       message ("binary    %s", global.params.argv0.ptr);
       message ("version   %s", global.versionChars ());
 
-      if (global.versionids)
+      /* Dump all predefined version identifiers.  */
+      obstack buffer;
+      gcc_obstack_init (&buffer);
+      obstack_grow (&buffer, "predefs  ", 9);
+      for (size_t i = 0; i < global.versionids.length; i++)
 	{
-	  obstack buffer;
-	  gcc_obstack_init (&buffer);
-	  obstack_grow (&buffer, "predefs  ", 9);
-	  for (size_t i = 0; i < global.versionids->length; i++)
-	    {
-	      Identifier *id = (*global.versionids)[i];
-	      const char *str = id->toChars ();
-	      obstack_1grow (&buffer, ' ');
-	      obstack_grow (&buffer, str, strlen (str));
-	    }
-
-	  obstack_1grow (&buffer, '\0');
-	  message ("%s", (char *) obstack_finish (&buffer));
+	  Identifier *id = global.versionids[i];
+	  const char *str = id->toChars ();
+	  obstack_1grow (&buffer, ' ');
+	  obstack_grow (&buffer, str, strlen (str));
 	}
+
+      obstack_1grow (&buffer, '\0');
+      message ("%s", (char *) obstack_finish (&buffer));
     }
 
   /* Start the main input file, if the debug writer wants it.  */
@@ -1208,7 +1205,7 @@ d_parse_file (void)
 	    message ("import    %s", m->toChars ());
 
 	  OutBuffer buf;
-	  genhdrfile (m, buf);
+	  dmd::genhdrfile (m, global.params.dihdr.fullOutput, buf);
 	  d_write_file (m->hdrfile.toChars (), buf.peekChars ());
 	}
 
@@ -1226,7 +1223,7 @@ d_parse_file (void)
       if (global.params.v.verbose)
 	message ("importall %s", m->toChars ());
 
-      m->importAll (NULL);
+      dmd::importAll (m, NULL);
     }
 
   if (global.errors)
@@ -1250,7 +1247,7 @@ d_parse_file (void)
       if (global.params.v.verbose)
 	message ("semantic  %s", m->toChars ());
 
-      dsymbolSemantic (m, NULL);
+      dmd::dsymbolSemantic (m, NULL);
     }
 
   /* Do deferred semantic analysis.  */
@@ -1281,7 +1278,7 @@ d_parse_file (void)
       if (global.params.v.verbose)
 	message ("semantic2 %s", m->toChars ());
 
-      semantic2 (m, NULL);
+      dmd::semantic2 (m, NULL);
     }
 
   Module::runDeferredSemantic2 ();
@@ -1297,7 +1294,7 @@ d_parse_file (void)
       if (global.params.v.verbose)
 	message ("semantic3 %s", m->toChars ());
 
-      semantic3 (m, NULL);
+      dmd::semantic3 (m, NULL);
     }
 
   Module::runDeferredSemantic3 ();
@@ -1321,7 +1318,7 @@ d_parse_file (void)
       /* Declare the name of the root module as the first global name in order
 	 to make the middle-end fully deterministic.  */
       OutBuffer buf;
-      mangleToBuffer (Module::rootModule, buf);
+      dmd::mangleToBuffer (Module::rootModule, buf);
       first_global_object_name = buf.extractChars ();
     }
 
@@ -1343,13 +1340,16 @@ d_parse_file (void)
     }
 
   if (global.params.v.templates)
-    printTemplateStats ();
+    {
+      dmd::printTemplateStats (global.params.v.templatesListInstances,
+			       global.errorSink);
+    }
 
   /* Generate JSON files.  */
   if (global.params.json.doOutput)
     {
       OutBuffer buf;
-      json_generate (modules, buf);
+      dmd::json_generate (modules, buf);
       d_write_file (global.params.json.name.ptr, buf.peekChars ());
     }
 
@@ -1372,14 +1372,14 @@ d_parse_file (void)
 	  OutBuffer buf;
 	  buf.doindent = 1;
 
-	  moduleToBuffer (buf, m);
+	  dmd::moduleToBuffer (buf, true, m);
 	  message ("%s", buf.peekChars ());
 	}
     }
 
   /* Generate C++ header files.  */
   if (global.params.cxxhdr.doOutput)
-    genCppHdrFiles (modules);
+    dmd::genCppHdrFiles (modules);
 
   if (global.errors)
     goto had_errors;

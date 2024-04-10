@@ -389,26 +389,6 @@
   [(set_attr "type" "neon_mul_<Vetype><q>")]
 )
 
-;; Advanced SIMD does not support vector DImode MUL, but SVE does.
-;; Make use of the overlap between Z and V registers to implement the V2DI
-;; optab for TARGET_SVE.  The mulvnx2di3 expander can
-;; handle the TARGET_SVE2 case transparently.
-(define_expand "mulv2di3"
-  [(set (match_operand:V2DI 0 "register_operand")
-        (mult:V2DI (match_operand:V2DI 1 "register_operand")
-		   (match_operand:V2DI 2 "aarch64_sve_vsm_operand")))]
-  "TARGET_SVE"
-  {
-    machine_mode sve_mode = VNx2DImode;
-    rtx sve_op0 = simplify_gen_subreg (sve_mode, operands[0], V2DImode, 0);
-    rtx sve_op1 = simplify_gen_subreg (sve_mode, operands[1], V2DImode, 0);
-    rtx sve_op2 = simplify_gen_subreg (sve_mode, operands[2], V2DImode, 0);
-
-    emit_insn (gen_mulvnx2di3 (sve_op0, sve_op1, sve_op2));
-    DONE;
-  }
-)
-
 (define_insn "bswap<mode>2"
   [(set (match_operand:VDQHSD 0 "register_operand" "=w")
         (bswap:VDQHSD (match_operand:VDQHSD 1 "register_operand" "w")))]
@@ -1958,7 +1938,7 @@
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
-(define_insn "aarch64_simd_vec_unpack<su>_hi_<mode>"
+(define_insn_and_split "aarch64_simd_vec_unpack<su>_hi_<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
 			       (match_operand:VQW 1 "register_operand" "w")
@@ -1966,63 +1946,42 @@
 			    )))]
   "TARGET_SIMD"
   "<su>xtl2\t%0.<Vwtype>, %1.<Vtype>"
+  "&& <CODE> == ZERO_EXTEND
+   && aarch64_split_simd_shift_p (insn)"
+  [(const_int 0)]
+  {
+    /* On many cores, it is cheaper to implement UXTL2 using a ZIP2 with zero,
+       provided that the cost of the zero can be amortized over several
+       operations.  We'll later recombine the zero and zip if there are
+       not sufficient uses of the zero to make the split worthwhile.  */
+    rtx res = simplify_gen_subreg (<MODE>mode, operands[0], <VWIDE>mode, 0);
+    rtx zero = aarch64_gen_shareable_zero (<MODE>mode);
+    emit_insn (gen_aarch64_zip2<mode> (res, operands[1], zero));
+    DONE;
+  }
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
-(define_expand "vec_unpacku_hi_<mode>"
+(define_expand "vec_unpack<su>_hi_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:VQW 1 "register_operand")]
-  "TARGET_SIMD"
-  {
-    rtx res = gen_reg_rtx (<MODE>mode);
-    rtx tmp = aarch64_gen_shareable_zero (<MODE>mode);
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_zip2<mode> (res, tmp, operands[1]));
-    else
-     emit_insn (gen_aarch64_zip2<mode> (res, operands[1], tmp));
-    emit_move_insn (operands[0],
-		   simplify_gen_subreg (<VWIDE>mode, res, <MODE>mode, 0));
-    DONE;
-  }
-)
-
-(define_expand "vec_unpacks_hi_<mode>"
-  [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:VQW 1 "register_operand")]
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))]
   "TARGET_SIMD"
   {
     rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-    emit_insn (gen_aarch64_simd_vec_unpacks_hi_<mode> (operands[0],
-						       operands[1], p));
+    emit_insn (gen_aarch64_simd_vec_unpack<su>_hi_<mode> (operands[0],
+							  operands[1], p));
     DONE;
   }
 )
 
-(define_expand "vec_unpacku_lo_<mode>"
+(define_expand "vec_unpack<su>_lo_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:VQW 1 "register_operand")]
-  "TARGET_SIMD"
-  {
-    rtx res = gen_reg_rtx (<MODE>mode);
-    rtx tmp = aarch64_gen_shareable_zero (<MODE>mode);
-    if (BYTES_BIG_ENDIAN)
-	emit_insn (gen_aarch64_zip1<mode> (res, tmp, operands[1]));
-    else
-	emit_insn (gen_aarch64_zip1<mode> (res, operands[1], tmp));
-    emit_move_insn (operands[0],
-		   simplify_gen_subreg (<VWIDE>mode, res, <MODE>mode, 0));
-    DONE;
-  }
-)
-
-(define_expand "vec_unpacks_lo_<mode>"
-  [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:VQW 1 "register_operand")]
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))]
   "TARGET_SIMD"
   {
     rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
-    emit_insn (gen_aarch64_simd_vec_unpacks_lo_<mode> (operands[0],
-						       operands[1], p));
+    emit_insn (gen_aarch64_simd_vec_unpack<su>_lo_<mode> (operands[0],
+							  operands[1], p));
     DONE;
   }
 )
@@ -2697,27 +2656,6 @@
  "TARGET_SIMD"
  "fdiv\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_fp_div_<stype><q>")]
-)
-
-;; SVE has vector integer divisions, unlike Advanced SIMD.
-;; We can use it with Advanced SIMD modes to expose the V2DI and V4SI
-;; optabs to the midend.
-(define_expand "<su_optab>div<mode>3"
-  [(set (match_operand:VQDIV 0 "register_operand")
-	(ANY_DIV:VQDIV
-	  (match_operand:VQDIV 1 "register_operand")
-	  (match_operand:VQDIV 2 "register_operand")))]
-  "TARGET_SVE"
-  {
-    machine_mode sve_mode
-      = aarch64_full_sve_mode (GET_MODE_INNER (<MODE>mode)).require ();
-    rtx sve_op0 = simplify_gen_subreg (sve_mode, operands[0], <MODE>mode, 0);
-    rtx sve_op1 = simplify_gen_subreg (sve_mode, operands[1], <MODE>mode, 0);
-    rtx sve_op2 = simplify_gen_subreg (sve_mode, operands[2], <MODE>mode, 0);
-
-    emit_insn (gen_<su_optab>div<vnx>3 (sve_op0, sve_op1, sve_op2));
-    DONE;
-  }
 )
 
 (define_insn "neg<mode>2<vczle><vczbe>"
@@ -4790,62 +4728,6 @@
   "TARGET_SIMD"
   "<ANY_EXTEND:su>subw2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
   [(set_attr "type" "neon_sub_widen")]
-)
-
-(define_insn "aarch64_usubw<mode>_lo_zip"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(minus:<VWIDE>
-	  (match_operand:<VWIDE> 1 "register_operand" "w")
-	  (subreg:<VWIDE>
-	    (unspec:<MODE> [
-		(match_operand:VQW 2 "register_operand" "w")
-		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] UNSPEC_ZIP1) 0)))]
-  "TARGET_SIMD"
-  "usubw\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
-  [(set_attr "type" "neon_sub_widen")]
-)
-
-(define_insn "aarch64_uaddw<mode>_lo_zip"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(plus:<VWIDE>
-	  (subreg:<VWIDE>
-	    (unspec:<MODE> [
-		(match_operand:VQW 2 "register_operand" "w")
-		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] UNSPEC_ZIP1) 0)
-	  (match_operand:<VWIDE> 1 "register_operand" "w")))]
-  "TARGET_SIMD"
-  "uaddw\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
-  [(set_attr "type" "neon_add_widen")]
-)
-
-(define_insn "aarch64_usubw<mode>_hi_zip"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(minus:<VWIDE>
-	  (match_operand:<VWIDE> 1 "register_operand" "w")
-	  (subreg:<VWIDE>
-	    (unspec:<MODE> [
-		(match_operand:VQW 2 "register_operand" "w")
-		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] UNSPEC_ZIP2) 0)))]
-  "TARGET_SIMD"
-  "usubw2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
-  [(set_attr "type" "neon_sub_widen")]
-)
-
-(define_insn "aarch64_uaddw<mode>_hi_zip"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(plus:<VWIDE>
-	  (subreg:<VWIDE>
-	    (unspec:<MODE> [
-		(match_operand:VQW 2 "register_operand" "w")
-		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] UNSPEC_ZIP2) 0)
-	  (match_operand:<VWIDE> 1 "register_operand" "w")))]
-  "TARGET_SIMD"
-  "uaddw2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
-  [(set_attr "type" "neon_add_widen")]
 )
 
 (define_insn "aarch64_<ANY_EXTEND:su>addw<mode>"
@@ -8339,11 +8221,24 @@
 	   || (memory_operand (operands[0], V8DImode)
 	       && register_operand (operands[1], V8DImode)))
     {
-      for (int offset = 0; offset < 64; offset += 16)
-	emit_move_insn (simplify_gen_subreg (TImode, operands[0],
-					     V8DImode, offset),
-			simplify_gen_subreg (TImode, operands[1],
-					     V8DImode, offset));
+      /* V8DI only guarantees 8-byte alignment, whereas TImode requires 16.  */
+      auto mode = STRICT_ALIGNMENT ? DImode : TImode;
+      int increment = GET_MODE_SIZE (mode);
+      std::pair<rtx, rtx> last_pair = {};
+      for (int offset = 0; offset < 64; offset += increment)
+        {
+	  std::pair<rtx, rtx> pair = {
+	    simplify_gen_subreg (mode, operands[0], V8DImode, offset),
+	    simplify_gen_subreg (mode, operands[1], V8DImode, offset)
+	  };
+	  if (register_operand (pair.first, mode)
+	      && reg_overlap_mentioned_p (pair.first, pair.second))
+	    last_pair = pair;
+	  else
+	    emit_move_insn (pair.first, pair.second);
+        }
+      if (last_pair.first)
+	emit_move_insn (last_pair.first, last_pair.second);
       DONE;
     }
   else
@@ -8621,6 +8516,18 @@
   "TARGET_SIMD"
   "<PERMUTE:perm_insn>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_permute<q>")]
+)
+
+;; ZIP1 ignores the contents of the upper halves of the registers,
+;; so we can describe 128-bit operations in terms of 64-bit inputs.
+(define_insn "aarch64_zip1<mode>_low"
+  [(set (match_operand:VQ 0 "register_operand" "=w")
+	(unspec:VQ [(match_operand:<VHALF> 1 "register_operand" "w")
+		    (match_operand:<VHALF> 2 "register_operand" "w")]
+		   UNSPEC_ZIP1))]
+  "TARGET_SIMD"
+  "zip1\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_permute_q")]
 )
 
 ;; This instruction's pattern is generated directly by
@@ -9788,11 +9695,25 @@
 )
 
 ;; Sign- or zero-extend a 64-bit integer vector to a 128-bit vector.
-(define_insn "<optab><Vnarrowq><mode>2"
+(define_insn_and_split "<optab><Vnarrowq><mode>2"
   [(set (match_operand:VQN 0 "register_operand" "=w")
 	(ANY_EXTEND:VQN (match_operand:<VNARROWQ> 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "<su>xtl\t%0.<Vtype>, %1.<Vntype>"
+  "&& <CODE> == ZERO_EXTEND
+   && aarch64_split_simd_shift_p (insn)"
+  [(const_int 0)]
+  {
+    /* On many cores, it is cheaper to implement UXTL using a ZIP1 with zero,
+       provided that the cost of the zero can be amortized over several
+       operations.  We'll later recombine the zero and zip if there are
+       not sufficient uses of the zero to make the split worthwhile.  */
+    rtx res = simplify_gen_subreg (<VNARROWQ2>mode, operands[0],
+				   <MODE>mode, 0);
+    rtx zero = aarch64_gen_shareable_zero (<VNARROWQ>mode);
+    emit_insn (gen_aarch64_zip1<Vnarrowq2>_low (res, operands[1], zero));
+    DONE;
+  }
   [(set_attr "type" "neon_shift_imm_long")]
 )
 

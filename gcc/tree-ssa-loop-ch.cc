@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "cfganal.h"
 #include "tree-ssa-loop-manip.h"
+#include "tree-ssa-loop-niter.h"
+#include "tree-scalar-evolution.h"
 
 /* Return path query insteance for testing ranges of statements
    in headers of LOOP contained in basic block BB.
@@ -797,7 +799,16 @@ ch_base::copy_headers (function *fun)
 	fprintf (dump_file,
 		 "Analyzing loop %i\n", loop->num);
 
+      /* If the loop is already a do-while style one (either because it was
+	 written as such, or because jump threading transformed it into one),
+	 we might be in fact peeling the first iteration of the loop.  This
+	 in general is not a good idea.  Also avoid touching infinite loops.  */
+      if (!loop_has_exit_edges (loop)
+	  || !process_loop_p (loop))
+	continue;
+
       basic_block header = loop->header;
+      estimate_numbers_of_iterations (loop);
       if (!get_max_loop_iterations_int (loop))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -807,14 +818,6 @@ ch_base::copy_headers (function *fun)
 	  loops_to_unloop_nunroll.safe_push (0);
 	  continue;
 	}
-
-      /* If the loop is already a do-while style one (either because it was
-	 written as such, or because jump threading transformed it into one),
-	 we might be in fact peeling the first iteration of the loop.  This
-	 in general is not a good idea.  Also avoid touching infinite loops.  */
-      if (!loop_has_exit_edges (loop)
-	  || !process_loop_p (loop))
-	continue;
 
       /* Iterate the header copying up to limit; this takes care of the cases
 	 like while (a && b) {...}, where we want to have both of the conditions
@@ -1170,12 +1173,12 @@ ch_base::copy_headers (function *fun)
 unsigned int
 pass_ch::execute (function *fun)
 {
-  loop_optimizer_init (LOOPS_HAVE_PREHEADERS
-		       | LOOPS_HAVE_SIMPLE_LATCHES
-		       | LOOPS_HAVE_RECORDED_EXITS);
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+  scev_initialize ();
 
   unsigned int res = copy_headers (fun);
 
+  scev_finalize ();
   loop_optimizer_finalize ();
   return res;
 }

@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"
@@ -3021,10 +3023,10 @@ print_lto_report_1 (void)
 	   total_scc_size + num_unshared_trees_read);
   if (flag_wpa && tree_scc_hash && num_sccs_read)
     {
-      fprintf (stderr, "[%s] tree SCC table: size %ld, %ld elements, "
-	       "collision ratio: %f\n", pfx,
-	       (long) tree_scc_hash->size (),
-	       (long) tree_scc_hash->elements (),
+      fprintf (stderr, "[%s] tree SCC table: size " HOST_SIZE_T_PRINT_DEC ", "
+	       HOST_SIZE_T_PRINT_DEC " elements, collision ratio: %f\n", pfx,
+	       (fmt_size_t) tree_scc_hash->size (),
+	       (fmt_size_t) tree_scc_hash->elements (),
 	       tree_scc_hash->collisions ());
       hash_table<tree_scc_hasher>::iterator hiter;
       tree_scc *scc, *max_scc = NULL;
@@ -3052,12 +3054,13 @@ print_lto_report_1 (void)
       fprintf (stderr, "[%s] Merged %lu types\n", pfx, num_merged_types);
       fprintf (stderr, "[%s] %lu types prevailed (%lu associated trees)\n",
 	       pfx, num_prevailing_types, num_type_scc_trees);
-      fprintf (stderr, "[%s] GIMPLE canonical type table: size %ld, "
-	       "%ld elements, %ld searches, %ld collisions (ratio: %f)\n", pfx,
-	       (long) htab_size (gimple_canonical_types),
-	       (long) htab_elements (gimple_canonical_types),
-	       (long) gimple_canonical_types->searches,
-	       (long) gimple_canonical_types->collisions,
+      fprintf (stderr, "[%s] GIMPLE canonical type table: size "
+	       HOST_SIZE_T_PRINT_DEC ", " HOST_SIZE_T_PRINT_DEC
+	       " elements, %d searches, %d collisions (ratio: %f)\n", pfx,
+	       (fmt_size_t) htab_size (gimple_canonical_types),
+	       (fmt_size_t) htab_elements (gimple_canonical_types),
+	       gimple_canonical_types->searches,
+	       gimple_canonical_types->collisions,
 	       htab_collisions (gimple_canonical_types));
       fprintf (stderr, "[%s] GIMPLE canonical type pointer-map: "
 	       "%lu elements, %ld searches\n", pfx,

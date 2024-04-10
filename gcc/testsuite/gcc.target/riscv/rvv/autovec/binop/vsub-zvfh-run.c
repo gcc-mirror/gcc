@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v && riscv_zvfh } } } */
-/* { dg-additional-options "-std=c99 -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax -ffast-math" } */
+/* { dg-additional-options "-std=c99 -fno-vect-cost-model -mrvv-vector-bits=zvl -ffast-math" } */
 
 #include "vsub-template.h"
 

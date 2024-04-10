@@ -1,6 +1,6 @@
 /* { dg-skip-if "" { *-*-darwin* } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power8 -O3" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O3" } */
 
 class A {
 public:

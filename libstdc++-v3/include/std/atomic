@@ -1774,13 +1774,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     = atomic<make_signed_t<__detail::__platform_wait_t>>;
   using atomic_unsigned_lock_free
     = atomic<make_unsigned_t<__detail::__platform_wait_t>>;
-# elif ATOMIC_INT_LOCK_FREE || !(ATOMIC_LONG_LOCK_FREE || ATOMIC_CHAR_LOCK_FREE)
+# elif ATOMIC_INT_LOCK_FREE == 2
   using atomic_signed_lock_free = atomic<signed int>;
   using atomic_unsigned_lock_free = atomic<unsigned int>;
-# elif ATOMIC_LONG_LOCK_FREE
+# elif ATOMIC_LONG_LOCK_FREE == 2
   using atomic_signed_lock_free = atomic<signed long>;
   using atomic_unsigned_lock_free = atomic<unsigned long>;
-# elif ATOMIC_CHAR_LOCK_FREE
+# elif ATOMIC_CHAR_LOCK_FREE == 2
   using atomic_signed_lock_free = atomic<signed char>;
   using atomic_unsigned_lock_free = atomic<unsigned char>;
 # else

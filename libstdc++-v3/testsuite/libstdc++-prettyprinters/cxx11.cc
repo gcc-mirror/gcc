@@ -207,6 +207,13 @@ main()
   std::atomic<Value> av{{8, 9}};
   // { dg-final { note-test av {std::atomic<Value> = { {i = 8, j = 9} }} } }
 
+  std::integral_constant<int, 1> one;
+  // { dg-final { note-test one {std::integral_constant<int, 1>} } }
+  std::integral_constant<bool, true> truth;
+  // { dg-final { note-test truth {std::true_type} } }
+  std::integral_constant<bool, 0> lies;
+  // { dg-final { note-test lies {std::false_type} } }
+
   placeholder(""); // Mark SPOT
   use(efl);
   use(fl);

@@ -133,7 +133,7 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 	switch (cpucfg_cache[1] & 0x3)
 	  {
 	    case 0x02:
-	      tmp = ISA_BASE_LA64V100;
+	      tmp = ISA_BASE_LA64;
 	      break;
 
 	    default:

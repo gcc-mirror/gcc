@@ -40,6 +40,10 @@
 #include <string>
 #include <ext/atomicity.h>
 
+#ifdef __glibcxx_text_encoding
+#include <text_encoding>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -247,6 +251,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_DEFAULT_ABI_TAG
     string
     name() const;
+
+#ifdef __glibcxx_text_encoding
+# if __CHAR_BIT__ == 8
+    text_encoding
+    encoding() const;
+# else
+    text_encoding
+    encoding() const = delete;
+# endif
+#endif
 
     /**
      *  @brief  Locale equality.

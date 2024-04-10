@@ -1,6 +1,6 @@
 /* PR tree-optimization/104992 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wno-psabi -fdump-tree-optimized" } */
+/* { dg-options "-O2 -Wno-psabi -fdump-tree-forwprop2" } */
 
 #define vector __attribute__((vector_size(4*sizeof(int))))
 
@@ -54,5 +54,4 @@ __attribute__((noipa)) unsigned waldo (unsigned x, unsigned y, unsigned z) {
     return x / y * z == x;
 }
 
-/* { dg-final { scan-tree-dump-times " % " 9 "optimized" { target { ! vect_int_mod } } } } */
-/* { dg-final { scan-tree-dump-times " % " 6 "optimized" { target vect_int_mod } } } */
+/* { dg-final { scan-tree-dump-times " % " 6 "forwprop2" } } */

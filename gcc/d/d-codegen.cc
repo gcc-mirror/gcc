@@ -150,14 +150,14 @@ declaration_type (Declaration *decl)
       TypeFunction *tf = TypeFunction::create (NULL, decl->type,
 					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
-      return build_ctype (t->merge2 ());
+      return build_ctype (dmd::merge2 (t));
     }
 
   /* Static array va_list have array->pointer conversions applied.  */
   if (decl->isParameter () && valist_array_p (decl->type))
     {
-      Type *valist = decl->type->nextOf ()->pointerTo ();
-      valist = valist->castMod (decl->type->mod);
+      Type *valist = dmd::pointerTo (decl->type->nextOf ());
+      valist = dmd::castMod (valist, decl->type->mod);
       return build_ctype (valist);
     }
 
@@ -200,14 +200,14 @@ parameter_type (Parameter *arg)
       TypeFunction *tf = TypeFunction::create (NULL, arg->type,
 					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
-      return build_ctype (t->merge2 ());
+      return build_ctype (dmd::merge2 (t));
     }
 
   /* Static array va_list have array->pointer conversions applied.  */
   if (valist_array_p (arg->type))
     {
-      Type *valist = arg->type->nextOf ()->pointerTo ();
-      valist = valist->castMod (arg->type->mod);
+      Type *valist = dmd::pointerTo (arg->type->nextOf ());
+      valist = dmd::castMod (valist, arg->type->mod);
       return build_ctype (valist);
     }
 
@@ -1006,6 +1006,7 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
 	      if (tmode == NULL_TREE)
 		tmode = make_unsigned_type (GET_MODE_BITSIZE (mode.require ()));
 
+	      tmode = build_aligned_type (tmode, TYPE_ALIGN (stype));
 	      t1ref = build_vconvert (tmode, t1ref);
 	      t2ref = build_vconvert (tmode, t2ref);
 
@@ -1089,7 +1090,7 @@ build_array_struct_comparison (tree_code code, StructDeclaration *sd,
   add_stmt (build_assign (INIT_EXPR, result, init));
 
   /* Cast pointer-to-array to pointer-to-struct.  */
-  tree ptrtype = build_ctype (sd->type->pointerTo ());
+  tree ptrtype = build_ctype (dmd::pointerTo (sd->type));
   tree lentype = TREE_TYPE (length);
 
   push_binding_level (level_block);
@@ -1859,7 +1860,7 @@ void_okay_p (tree t)
 
   if (VOID_TYPE_P (TREE_TYPE (type)))
     {
-      tree totype = build_ctype (Type::tuns8->pointerTo ());
+      tree totype = build_ctype (dmd::pointerTo (Type::tuns8));
       return fold_convert (totype, t);
     }
 
@@ -1905,7 +1906,7 @@ build_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
 	  tree str = build_string (len, filename);
 	  TREE_TYPE (str) = make_array_type (Type::tchar, len);
 
-	  file = d_array_value (build_ctype (Type::tchar->arrayOf ()),
+	  file = d_array_value (build_ctype (dmd::arrayOf (Type::tchar)),
 				size_int (len), build_address (str));
 	}
       else
@@ -2270,10 +2271,17 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	      Type *t = arg->type->toBasetype ();
 	      StructDeclaration *sd = t->baseElemOf ()->isTypeStruct ()->sym;
 
-	      /* Nested structs also have ADDRESSABLE set, but if the type has
-		 neither a copy constructor nor a destructor available, then we
-		 need to take care of copying its value before passing it.  */
-	      if (arg->op == EXP::structLiteral || (!sd->postblit && !sd->dtor))
+	      /* Need to take care of copying its value before passing the
+		 argument in the following scenarios:
+		 - The argument is a literal expression; a CONSTRUCTOR can't
+		 have its address taken.
+		 - The type has neither a copy constructor nor a destructor
+		 available; nested structs also have ADDRESSABLE set.
+		 - The ABI of the function expects the callee to destroy its
+		 arguments; when the caller is handles destruction, then `targ'
+		 has already been made into a temporary. */
+	      if (arg->op == EXP::structLiteral || (!sd->postblit && !sd->dtor)
+		  || target.isCalleeDestroyingArgs (tf))
 		targ = force_target_expr (targ);
 
 	      targ = convert (build_reference_type (TREE_TYPE (targ)),

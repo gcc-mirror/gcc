@@ -95,14 +95,21 @@ along with GCC; see the file COPYING3.  If not see
 #define UNSPEC_ADDRESS_TYPE(X) \
   ((enum riscv_symbol_type) (XINT (X, 1) - UNSPEC_ADDRESS_FIRST))
 
-/* True if bit BIT is set in VALUE.  */
-#define BITSET_P(VALUE, BIT) (((VALUE) & (1ULL << (BIT))) != 0)
-
 /* Extract the backup dynamic frm rtl.  */
 #define DYNAMIC_FRM_RTL(c) ((c)->machine->mode_sw_info.dynamic_frm)
 
 /* True the mode switching has static frm, or false.  */
 #define STATIC_FRM_P(c) ((c)->machine->mode_sw_info.static_frm_p)
+
+/* True if we can use the instructions in the XTheadInt extension
+   to handle interrupts, or false.  */
+#define TH_INT_INTERRUPT(c)						\
+  (TARGET_XTHEADINT							\
+   /* The XTheadInt extension only supports rv32.  */			\
+   && !TARGET_64BIT							\
+   && (c)->machine->interrupt_handler_p					\
+   /* The XTheadInt instructions can only be executed in M-mode.  */	\
+   && (c)->machine->interrupt_mode == MACHINE_MODE)
 
 /* Information about a function's frame layout.  */
 struct GTY(())  riscv_frame_info {
@@ -352,39 +359,48 @@ const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   VD_REGS,	VD_REGS,	VD_REGS,	VD_REGS,
 };
 
-/* Generic costs for VLS vector operations.   */
-static const common_vector_cost generic_vls_vector_cost = {
+/* RVV costs for VLS vector operations.   */
+static const common_vector_cost rvv_vls_vector_cost = {
   1, /* int_stmt_cost  */
   1, /* fp_stmt_cost  */
   1, /* gather_load_cost  */
   1, /* scatter_store_cost  */
-  2, /* vec_to_scalar_cost  */
+  1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
-  2, /* permute_cost  */
+  1, /* permute_cost  */
   1, /* align_load_cost  */
   1, /* align_store_cost  */
-  1, /* unalign_load_cost  */
-  1, /* unalign_store_cost  */
+  2, /* unalign_load_cost  */
+  2, /* unalign_store_cost  */
 };
 
-/* Generic costs for VLA vector operations.  */
-static const scalable_vector_cost generic_vla_vector_cost = {
+/* RVV costs for VLA vector operations.  */
+static const scalable_vector_cost rvv_vla_vector_cost = {
   {
     1, /* int_stmt_cost  */
     1, /* fp_stmt_cost  */
     1, /* gather_load_cost  */
     1, /* scatter_store_cost  */
-    2, /* vec_to_scalar_cost  */
+    1, /* vec_to_scalar_cost  */
     1, /* scalar_to_vec_cost  */
-    2, /* permute_cost  */
+    1, /* permute_cost  */
     1, /* align_load_cost  */
     1, /* align_store_cost  */
-    1, /* unalign_load_cost  */
-    1, /* unalign_store_cost  */
+    2, /* unalign_load_cost  */
+    2, /* unalign_store_cost  */
   },
 };
 
-/* Generic costs for vector insn classes.  */
+/* RVV register move cost.   */
+static const regmove_vector_cost rvv_regmove_vector_cost = {
+  2, /* GR2VR  */
+  2, /* FR2VR  */
+  2, /* VR2GR  */
+  2, /* VR2FR  */
+};
+
+/* Generic costs for vector insn classes.  It is supposed to be the vector cost
+   models used by default if no other cost model was specified.  */
 static const struct cpu_vector_cost generic_vector_cost = {
   1,			    /* scalar_int_stmt_cost  */
   1,			    /* scalar_fp_stmt_cost  */
@@ -392,8 +408,9 @@ static const struct cpu_vector_cost generic_vector_cost = {
   1,			    /* scalar_store_cost  */
   3,			    /* cond_taken_branch_cost  */
   1,			    /* cond_not_taken_branch_cost  */
-  &generic_vls_vector_cost, /* vls  */
-  &generic_vla_vector_cost, /* vla */
+  &rvv_vls_vector_cost,	    /* vls  */
+  &rvv_vla_vector_cost,	    /* vla  */
+  &rvv_regmove_vector_cost, /* regmove  */
 };
 
 /* Costs to use when optimizing for rocket.  */
@@ -428,6 +445,40 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   false,					/* use_divmod_expansion */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
+};
+
+/* Costs to use when optimizing for Sifive p400 Series.  */
+static const struct riscv_tune_param sifive_p400_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  3,						/* issue_rate */
+  4,						/* branch_cost */
+  3,						/* memory_cost */
+  4,						/* fmv_cost */
+  true,						/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
+  RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
+  &generic_vector_cost,				/* vector cost */
+};
+
+/* Costs to use when optimizing for Sifive p600 Series.  */
+static const struct riscv_tune_param sifive_p600_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  4,						/* issue_rate */
+  4,						/* branch_cost */
+  3,						/* memory_cost */
+  4,						/* fmv_cost */
+  true,						/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
+  RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
+  &generic_vector_cost,				/* vector cost */
 };
 
 /* Costs to use when optimizing for T-HEAD c906.  */
@@ -486,24 +537,52 @@ static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 
 /* Defining target-specific uses of __attribute__.  */
-TARGET_GNU_ATTRIBUTES (riscv_attribute_table,
+static const attribute_spec riscv_gnu_attributes[] =
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
 	       function_type_required, affects_type_identity, handler,
 	       exclude } */
 
   /* The attribute telling no prologue/epilogue.  */
-  { "naked",	0,  0, true, false, false, false,
-    riscv_handle_fndecl_attribute, NULL },
+  {"naked", 0, 0, true, false, false, false, riscv_handle_fndecl_attribute,
+   NULL},
   /* This attribute generates prologue/epilogue for interrupt handlers.  */
-  { "interrupt", 0, 1, false, true, true, false,
-    riscv_handle_type_attribute, NULL },
+  {"interrupt", 0, 1, false, true, true, false, riscv_handle_type_attribute,
+   NULL},
 
   /* The following two are used for the built-in properties of the Vector type
      and are not used externally */
   {"RVV sizeless type", 4, 4, false, true, false, true, NULL, NULL},
-  {"RVV type", 0, 0, false, true, false, true, NULL, NULL}
-});
+  {"RVV type", 0, 0, false, true, false, true, NULL, NULL},
+  /* This attribute is used to declare a function, forcing it to use the
+    standard vector calling convention variant. Syntax:
+    __attribute__((riscv_vector_cc)). */
+  {"riscv_vector_cc", 0, 0, false, true, true, true, NULL, NULL}
+};
+
+static const scoped_attribute_specs riscv_gnu_attribute_table  =
+{
+  "gnu", {riscv_gnu_attributes}
+};
+
+static const attribute_spec riscv_attributes[] =
+{
+  /* This attribute is used to declare a function, forcing it to use the
+     standard vector calling convention variant. Syntax:
+     [[riscv::vector_cc]]. */
+  {"vector_cc", 0, 0, false, true, true, true, NULL, NULL}
+};
+
+static const scoped_attribute_specs riscv_nongnu_attribute_table =
+{
+  "riscv", {riscv_attributes}
+};
+
+static const scoped_attribute_specs *const riscv_attribute_table[] =
+{
+  &riscv_gnu_attribute_table,
+  &riscv_nongnu_attribute_table
+};
 
 /* Order for the CLOBBERs/USEs of gpr_save.  */
 static const unsigned gpr_save_reg_order[] = {
@@ -1353,13 +1432,51 @@ riscv_v_ext_vls_mode_p (machine_mode mode)
   return false;
 }
 
-/* Return true if it is either RVV vector mode or RVV tuple mode.  */
+/* Return true if it is either of below modes.
+   1. RVV vector mode.
+   2. RVV tuple mode.
+   3. RVV vls mode.  */
 
 static bool
 riscv_v_ext_mode_p (machine_mode mode)
 {
   return riscv_v_ext_vector_mode_p (mode) || riscv_v_ext_tuple_mode_p (mode)
 	 || riscv_v_ext_vls_mode_p (mode);
+}
+
+static unsigned
+riscv_v_vls_mode_aggregate_gpr_count (unsigned vls_unit_size,
+				      unsigned scalar_unit_size)
+{
+  gcc_assert (vls_unit_size != 0 && scalar_unit_size != 0);
+
+  if (vls_unit_size < scalar_unit_size)
+    return 1;
+
+  /* Ensure the vls mode is exact_div by scalar_unit_size.  */
+  gcc_assert ((vls_unit_size % scalar_unit_size) == 0);
+
+  return vls_unit_size / scalar_unit_size;
+}
+
+static machine_mode
+riscv_v_vls_to_gpr_mode (unsigned vls_mode_size)
+{
+  switch (vls_mode_size)
+    {
+      case 16:
+	return TImode;
+      case 8:
+	return DImode;
+      case 4:
+	return SImode;
+      case 2:
+	return HImode;
+      case 1:
+	return QImode;
+      default:
+	gcc_unreachable ();
+    }
 }
 
 /* Call from ADJUST_NUNITS in riscv-modes.def. Return the correct
@@ -1406,11 +1523,10 @@ riscv_v_adjust_bytesize (machine_mode mode, int scale)
 {
   if (riscv_v_ext_vector_mode_p (mode))
     {
-      poly_int64 nunits = GET_MODE_NUNITS (mode);
-      poly_int64 mode_size = GET_MODE_SIZE (mode);
+      if (TARGET_XTHEADVECTOR)
+	return BYTES_PER_RISCV_VECTOR;
 
-      if (maybe_eq (mode_size, (uint16_t) -1))
-	mode_size = riscv_vector_chunks * scale;
+      poly_int64 nunits = GET_MODE_NUNITS (mode);
 
       if (nunits.coeffs[0] > 8)
 	return exact_div (nunits, 8);
@@ -2980,7 +3096,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     case SET:
       /* If we are called for an INSN that's a simple set of a register,
 	 then cost based on the SET_SRC alone.  */
-      if (outer_code == INSN && REG_P (SET_DEST (x)))
+      if (outer_code == INSN
+	  && register_operand (SET_DEST (x), GET_MODE (SET_DEST (x))))
 	{
 	  riscv_rtx_costs (SET_SRC (x), mode, outer_code, opno, total, speed);
 	  return true;
@@ -3097,7 +3214,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  rtx and_rhs = XEXP (x, 1);
 	  rtx ashift_lhs = XEXP (XEXP (x, 0), 0);
 	  rtx ashift_rhs = XEXP (XEXP (x, 0), 1);
-	  if (REG_P (ashift_lhs)
+	  if (register_operand (ashift_lhs, GET_MODE (ashift_lhs))
 	      && CONST_INT_P (ashift_rhs)
 	      && CONST_INT_P (and_rhs)
 	      && ((INTVAL (and_rhs) >> INTVAL (ashift_rhs)) == 0xffffffff))
@@ -3113,7 +3230,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	}
       /* bclr pattern for zbs.  */
       if (TARGET_ZBS
-	  && REG_P (XEXP (x, 1))
+	  && register_operand (XEXP (x, 1), GET_MODE (XEXP (x, 1)))
 	  && GET_CODE (XEXP (x, 0)) == ROTATE
 	  && CONST_INT_P (XEXP ((XEXP (x, 0)), 0))
 	  && INTVAL (XEXP ((XEXP (x, 0)), 0)) == -2)
@@ -3269,7 +3386,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       if (TARGET_ZBA
 	  && (TARGET_64BIT && (mode == DImode))
 	  && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && register_operand (XEXP (XEXP (x, 0), 0),
+			       GET_MODE (XEXP (XEXP (x, 0), 0)))
 	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == SImode)
 	{
 	  *total = COSTS_N_INSNS (1);
@@ -3280,7 +3398,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  && ((!TARGET_64BIT && (mode == SImode)) ||
 	      (TARGET_64BIT && (mode == DImode)))
 	  && (GET_CODE (XEXP (x, 0)) == ASHIFT)
-	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && register_operand (XEXP (XEXP (x, 0), 0),
+			       GET_MODE (XEXP (XEXP (x, 0), 0)))
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && IN_RANGE (INTVAL (XEXP (XEXP (x, 0), 1)), 1, 3))
 	{
@@ -3293,7 +3412,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       if (TARGET_ZBA
 	  && mode == word_mode
 	  && GET_CODE (XEXP (x, 0)) == MULT
-	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && register_operand (XEXP (XEXP (x, 0), 0),
+			       GET_MODE (XEXP (XEXP (x, 0), 0)))
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && pow2p_hwi (INTVAL (XEXP (XEXP (x, 0), 1)))
 	  && IN_RANGE (exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1))), 1, 3))
@@ -3315,7 +3435,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       if (TARGET_ZBA
 	  && (TARGET_64BIT && (mode == DImode))
 	  && (GET_CODE (XEXP (x, 0)) == AND)
-	  && (REG_P (XEXP (x, 1))))
+	  && register_operand (XEXP (x, 1), GET_MODE (XEXP (x, 1))))
 	{
 	  do {
 	    rtx and_lhs = XEXP (XEXP (x, 0), 0);
@@ -3555,7 +3675,7 @@ riscv_noce_conversion_profitable_p (rtx_insn *seq,
      this redundant zero extend operation counts towards the cost of
      the replacement sequence.  Compensate for that by incrementing the
      cost of the original sequence as well as the maximum sequence cost
-     accordingly.  */
+     accordingly.  Likewise for sign extension.  */
   rtx last_dest = NULL_RTX;
   for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
     {
@@ -3567,8 +3687,9 @@ riscv_noce_conversion_profitable_p (rtx_insn *seq,
 	  && GET_CODE (x) == SET)
 	{
 	  rtx src = SET_SRC (x);
+	  enum rtx_code code = GET_CODE (src);
 	  if (last_dest != NULL_RTX
-	      && GET_CODE (src) == ZERO_EXTEND
+	      && (code == SIGN_EXTEND || code == ZERO_EXTEND)
 	      && REG_P (XEXP (src, 0))
 	      && REGNO (XEXP (src, 0)) == REGNO (last_dest))
 	    {
@@ -4512,8 +4633,6 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	       || (code == NE && rtx_equal_p (alt, op0)))
 	    {
 	      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
-	      if (!rtx_equal_p (cons, op0))
-		std::swap (alt, cons);
 	      alt = force_reg (mode, alt);
 	      emit_insn (gen_rtx_SET (dest,
 				      gen_rtx_IF_THEN_ELSE (mode, cond,
@@ -4844,57 +4963,39 @@ riscv_pass_fpr_pair (machine_mode mode, unsigned regno1,
 				   GEN_INT (offset2))));
 }
 
-/* Return true if a vector type is included in the type TYPE.  */
-
-static bool
-riscv_arg_has_vector (const_tree type)
+static rtx
+riscv_pass_vls_aggregate_in_gpr (struct riscv_arg_info *info, machine_mode mode,
+				 unsigned gpr_base)
 {
-  if (riscv_v_ext_mode_p (TYPE_MODE (type)))
-    return true;
+  gcc_assert (riscv_v_ext_vls_mode_p (mode));
 
-  if (!COMPLETE_TYPE_P (type))
-    return false;
+  unsigned count = 0;
+  unsigned regnum = 0;
+  machine_mode gpr_mode = VOIDmode;
+  unsigned vls_size = GET_MODE_SIZE (mode).to_constant ();
+  unsigned gpr_size =  GET_MODE_SIZE (Xmode);
 
-  switch (TREE_CODE (type))
+  if (IN_RANGE (vls_size, 0, gpr_size * 2))
     {
-    case RECORD_TYPE:
-      /* If it is a record, it is further determined whether its fields have
-	 vector type.  */
-      for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
-	if (TREE_CODE (f) == FIELD_DECL)
-	  {
-	    tree field_type = TREE_TYPE (f);
-	    if (!TYPE_P (field_type))
-	      break;
+      count = riscv_v_vls_mode_aggregate_gpr_count (vls_size, gpr_size);
 
-	    if (riscv_arg_has_vector (field_type))
-	      return true;
-	  }
-      break;
-    case ARRAY_TYPE:
-      return riscv_arg_has_vector (TREE_TYPE (type));
-    default:
-      break;
+      if (count + info->gpr_offset <= MAX_ARGS_IN_REGISTERS)
+	{
+	  regnum = gpr_base + info->gpr_offset;
+	  info->num_gprs = count;
+	  gpr_mode = riscv_v_vls_to_gpr_mode (vls_size);
+	}
     }
 
-  return false;
-}
+  if (!regnum)
+    return NULL_RTX; /* Return NULL_RTX if we cannot find a suitable reg.  */
 
-/* Pass the type to check whether it's a vector type or contains vector type.
-   Only check the value type and no checking for vector pointer type.  */
+  gcc_assert (gpr_mode != VOIDmode);
 
-static void
-riscv_pass_in_vector_p (const_tree type)
-{
-  static int warned = 0;
+  rtx reg = gen_rtx_REG (gpr_mode, regnum);
+  rtx x = gen_rtx_EXPR_LIST (VOIDmode, reg, CONST0_RTX (gpr_mode));
 
-  if (type && riscv_vector::lookup_vector_type_attribute (type) && !warned)
-    {
-      warning (OPT_Wpsabi,
-	       "ABI for the vector type is currently in experimental stage and "
-	       "may changes in the upcoming version of GCC.");
-      warned = 1;
-    }
+  return gen_rtx_PARALLEL (mode, gen_rtvec (1, x));
 }
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -4902,11 +5003,7 @@ riscv_pass_in_vector_p (const_tree type)
    For a library call, FNTYPE is 0.  */
 
 void
-riscv_init_cumulative_args (CUMULATIVE_ARGS *cum,
-			    tree fntype ATTRIBUTE_UNUSED,
-			    rtx libname ATTRIBUTE_UNUSED,
-			    tree fndecl,
-			    int caller ATTRIBUTE_UNUSED)
+riscv_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx, tree, int)
 {
   memset (cum, 0, sizeof (*cum));
 
@@ -4914,15 +5011,6 @@ riscv_init_cumulative_args (CUMULATIVE_ARGS *cum,
     cum->variant_cc = (riscv_cc) fntype_abi (fntype).id ();
   else
     cum->variant_cc = RISCV_CC_BASE;
-
-  if (fndecl)
-    {
-      const tree_function_decl &fn
-	= FUNCTION_DECL_CHECK (fndecl)->function_decl;
-
-      if (fn.built_in_class == NOT_BUILT_IN)
-	  cum->rvv_psabi_warning = 1;
-    }
 }
 
 /* Return true if TYPE is a vector type that can be passed in vector registers.
@@ -5039,15 +5127,8 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
   info->gpr_offset = cum->num_gprs;
   info->fpr_offset = cum->num_fprs;
 
-  if (cum->rvv_psabi_warning)
-    {
-      /* Only check existing of vector type.  */
-      riscv_pass_in_vector_p (type);
-    }
-
-  /* When disable vector_abi or scalable vector argument is anonymous, this
-     argument is passed by reference.  */
-  if (riscv_v_ext_mode_p (mode) && (!riscv_vector_abi || !named))
+  /* Passed by reference when the scalable vector argument is anonymous.  */
+  if (riscv_v_ext_mode_p (mode) && !named)
     return NULL_RTX;
 
   if (named)
@@ -5115,6 +5196,10 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
       /* For scalable vector argument.  */
       if (riscv_vector_type_p (type) && riscv_v_ext_mode_p (mode))
 	return riscv_get_vector_arg (info, cum, mode, return_p);
+
+      /* For vls mode aggregated in gpr.  */
+      if (riscv_v_ext_vls_mode_p (mode))
+	return riscv_pass_vls_aggregate_in_gpr (info, mode, gpr_base);
     }
 
   /* Work out the size of the argument.  */
@@ -5222,17 +5307,7 @@ riscv_function_value (const_tree type, const_tree func, machine_mode mode)
 
   memset (&args, 0, sizeof args);
 
-  const_tree arg_type = type;
-  if (func && DECL_RESULT (func))
-    {
-      const tree_function_decl &fn = FUNCTION_DECL_CHECK (func)->function_decl;
-      if (fn.built_in_class == NOT_BUILT_IN)
-	args.rvv_psabi_warning = 1;
-
-      arg_type = TREE_TYPE (DECL_RESULT (func));
-    }
-
-  return riscv_get_arg_info (&info, &args, mode, arg_type, true, true);
+  return riscv_get_arg_info (&info, &args, mode, type, true, true);
 }
 
 /* Implement TARGET_PASS_BY_REFERENCE. */
@@ -5249,9 +5324,14 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
      so we can avoid the call to riscv_get_arg_info in this case.  */
   if (cum != NULL)
     {
-      /* Don't pass by reference if we can use a floating-point register.  */
       riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
+
+      /* Don't pass by reference if we can use a floating-point register.  */
       if (info.num_fprs)
+	return false;
+
+      /* Don't pass by reference if we can use general register(s) for vls.  */
+      if (info.num_gprs && riscv_v_ext_vls_mode_p (arg.mode))
 	return false;
 
       /* Don't pass by reference if we can use vector register groups.  */
@@ -5259,9 +5339,9 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 	return false;
     }
 
-  /* When vector abi disabled(without --param=riscv-vector-abi option) or
-     scalable vector argument is anonymous or cannot be passed through vector
-     registers, this argument is passed by reference. */
+  /* Passed by reference when:
+     1. The scalable vector argument is anonymous.
+     2. Args cannot be passed through vector registers.  */
   if (riscv_v_ext_mode_p (arg.mode))
     return true;
 
@@ -5367,20 +5447,27 @@ riscv_arguments_is_vector_type_p (const_tree fntype)
   return false;
 }
 
+/* Return true if FUNC is a riscv_vector_cc function.
+   For more details please reference the below link.
+   https://github.com/riscv-non-isa/riscv-c-api-doc/pull/67 */
+static bool
+riscv_vector_cc_function_p (const_tree fntype)
+{
+  return lookup_attribute ("vector_cc", TYPE_ATTRIBUTES (fntype)) != NULL_TREE
+	 || lookup_attribute ("riscv_vector_cc", TYPE_ATTRIBUTES (fntype)) != NULL_TREE;
+}
+
 /* Implement TARGET_FNTYPE_ABI.  */
 
 static const predefined_function_abi &
 riscv_fntype_abi (const_tree fntype)
 {
-  /* Implementing an experimental vector calling convention, the proposal
-     can be viewed at the bellow link:
-       https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389
-
-     You can enable this feature via the `--param=riscv-vector-abi` compiler
-     option.  */
-  if (riscv_vector_abi
-      && (riscv_return_value_is_vector_type_p (fntype)
-	  || riscv_arguments_is_vector_type_p (fntype)))
+  /* Implement the vector calling convention.  For more details please
+     reference the below link.
+     https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389  */
+  if (riscv_return_value_is_vector_type_p (fntype)
+	  || riscv_arguments_is_vector_type_p (fntype)
+	  || riscv_vector_cc_function_p (fntype))
     return riscv_v_abi ();
 
   return default_function_abi;
@@ -5667,6 +5754,17 @@ riscv_get_v_regno_alignment (machine_mode mode)
   return lmul;
 }
 
+/* Define ASM_OUTPUT_OPCODE to do anything special before
+   emitting an opcode.  */
+const char *
+riscv_asm_output_opcode (FILE *asm_out_file, const char *p)
+{
+  if (TARGET_XTHEADVECTOR)
+     return th_asm_output_opcode (asm_out_file, p);
+
+  return p;
+}
+
 /* Implement TARGET_PRINT_OPERAND.  The RISCV-specific operand codes are:
 
    'h'	Print the high-part relocation associated with OP, after stripping
@@ -5896,6 +5994,14 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       {
 	int ival = INTVAL (op) + 1;
 	rtx newop = GEN_INT (ctz_hwi (ival) + 1);
+	output_addr_const (file, newop);
+	break;
+      }
+    case 'Y':
+      {
+	unsigned int imm = (UINTVAL (op) & 63);
+	gcc_assert (imm <= 63);
+	rtx newop = GEN_INT (imm);
 	output_addr_const (file, newop);
 	break;
       }
@@ -7100,6 +7206,7 @@ riscv_expand_prologue (void)
   unsigned fmask = frame->fmask;
   int spimm, multi_push_additional, stack_adj;
   rtx insn, dwarf = NULL_RTX;
+  unsigned th_int_mask = 0;
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = constant_lower_bound (remaining_size);
@@ -7164,6 +7271,28 @@ riscv_expand_prologue (void)
       insn = emit_insn (riscv_gen_gpr_save_insn (frame));
       frame->mask = 0; /* Temporarily fib that we need not save GPRs.  */
 
+      RTX_FRAME_RELATED_P (insn) = 1;
+      REG_NOTES (insn) = dwarf;
+    }
+
+  th_int_mask = th_int_get_mask (frame->mask);
+  if (th_int_mask && TH_INT_INTERRUPT (cfun))
+    {
+      frame->mask &= ~th_int_mask;
+
+      /* RISCV_PROLOGUE_TEMP may be used to handle some CSR for
+	 interrupts, such as fcsr.  */
+      if ((TARGET_HARD_FLOAT  && frame->fmask)
+	  || (TARGET_ZFINX && frame->mask))
+	frame->mask |= (1 << RISCV_PROLOGUE_TEMP_REGNUM);
+
+      unsigned save_adjustment = th_int_get_save_adjustment ();
+      frame->gp_sp_offset -= save_adjustment;
+      remaining_size -= save_adjustment;
+
+      insn = emit_insn (gen_th_int_push ());
+
+      rtx dwarf = th_int_adjust_cfi_prologue (th_int_mask);
       RTX_FRAME_RELATED_P (insn) = 1;
       REG_NOTES (insn) = dwarf;
     }
@@ -7396,6 +7525,7 @@ riscv_expand_epilogue (int style)
     = use_multi_pop ? frame->multi_push_adj_base + frame->multi_push_adj_addi
 		    : 0;
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+  unsigned th_int_mask = 0;
   rtx insn;
 
   /* We need to add memory barrier to prevent read from deallocated stack.  */
@@ -7558,11 +7688,31 @@ riscv_expand_epilogue (int style)
   else if (use_restore_libcall)
     frame->mask = 0; /* Temporarily fib that we need not restore GPRs.  */
 
+  th_int_mask = th_int_get_mask (frame->mask);
+  if (th_int_mask && TH_INT_INTERRUPT (cfun))
+    {
+      frame->mask &= ~th_int_mask;
+
+      /* RISCV_PROLOGUE_TEMP may be used to handle some CSR for
+	 interrupts, such as fcsr.  */
+      if ((TARGET_HARD_FLOAT  && frame->fmask)
+	  || (TARGET_ZFINX && frame->mask))
+	frame->mask |= (1 << RISCV_PROLOGUE_TEMP_REGNUM);
+    }
+
   /* Restore the registers.  */
   riscv_for_each_saved_v_reg (step2, riscv_restore_reg, false);
   riscv_for_each_saved_reg (frame->total_size - step2 - libcall_size
 			      - multipop_size,
 			    riscv_restore_reg, true, style == EXCEPTION_RETURN);
+
+  if (th_int_mask && TH_INT_INTERRUPT (cfun))
+    {
+      frame->mask = mask; /* Undo the above fib.  */
+      unsigned save_adjustment = th_int_get_save_adjustment ();
+      gcc_assert (step2.to_constant () >= save_adjustment);
+      step2 -= save_adjustment;
+    }
 
   if (use_restore_libcall)
     frame->mask = mask; /* Undo the above fib.  */
@@ -7626,7 +7776,9 @@ riscv_expand_epilogue (int style)
 
       gcc_assert (mode != UNKNOWN_MODE);
 
-      if (mode == MACHINE_MODE)
+      if (th_int_mask && TH_INT_INTERRUPT (cfun))
+	emit_jump_insn (gen_th_int_pop ());
+      else if (mode == MACHINE_MODE)
 	emit_jump_insn (gen_riscv_mret ());
       else if (mode == SUPERVISOR_MODE)
 	emit_jump_insn (gen_riscv_sret ());
@@ -8150,9 +8302,7 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
 
   /* If we ever encounter an insn without an insn reservation, trip
      an assert so we can find and fix this problem.  */
-#if 0
   gcc_assert (insn_has_dfa_reservation_p (insn));
-#endif
 
   return more - 1;
 }
@@ -8315,7 +8465,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 				(lo_sum:DI (reg:DI rD) (const_int IMM12))) */
 
       if (GET_CODE (SET_SRC (prev_set)) == UNSPEC
-	  && XINT (prev_set, 1) == UNSPEC_AUIPC
+	  && XINT (SET_SRC (prev_set), 1) == UNSPEC_AUIPC
 	  && (GET_CODE (SET_SRC (curr_set)) == LO_SUM
 	      || (GET_CODE (SET_SRC (curr_set)) == PLUS
 		  && SMALL_OPERAND (INTVAL (XEXP (SET_SRC (curr_set), 1))))))
@@ -8684,10 +8834,10 @@ riscv_init_machine_status (void)
   return ggc_cleared_alloc<machine_function> ();
 }
 
-/* Return the VLEN value associated with -march.
+/* Return the VLEN value associated with -march and -mwrvv-vector-bits.
    TODO: So far we only support length-agnostic value. */
 static poly_uint16
-riscv_convert_vector_bits (struct gcc_options *opts)
+riscv_convert_vector_chunks (struct gcc_options *opts)
 {
   int chunk_num;
   int min_vlen = TARGET_MIN_VLEN_OPTS (opts);
@@ -8730,10 +8880,15 @@ riscv_convert_vector_bits (struct gcc_options *opts)
      compile-time constant if TARGET_VECTOR is disabled.  */
   if (TARGET_VECTOR_OPTS_P (opts))
     {
-      if (opts->x_riscv_autovec_preference == RVV_FIXED_VLMAX)
-	return (int) min_vlen / (riscv_bytes_per_vector_chunk * 8);
-      else
-	return poly_uint16 (chunk_num, chunk_num);
+      switch (opts->x_rvv_vector_bits)
+	{
+	case RVV_VECTOR_BITS_SCALABLE:
+	  return poly_uint16 (chunk_num, chunk_num);
+	case RVV_VECTOR_BITS_ZVL:
+	  return (int) min_vlen / (riscv_bytes_per_vector_chunk * 8);
+	default:
+	  gcc_unreachable ();
+	}
     }
   else
     return 1;
@@ -8795,11 +8950,16 @@ riscv_override_options_internal (struct gcc_options *opts)
 
      We can only allow TARGET_MIN_VLEN * 8 (LMUL) < 65535.  */
   if (TARGET_MIN_VLEN_OPTS (opts) > 4096)
-    sorry ("Current RISC-V GCC cannot support VLEN greater than 4096bit for "
+    sorry ("Current RISC-V GCC does not support VLEN greater than 4096bit for "
 	   "'V' Extension");
 
-  /* Convert -march to a chunks count.  */
-  riscv_vector_chunks = riscv_convert_vector_bits (opts);
+  /* FIXME: We don't support RVV in big-endian for now, we may enable RVV with
+     big-endian after finishing full coverage testing.  */
+  if (TARGET_VECTOR && TARGET_BIG_ENDIAN)
+    sorry ("Current RISC-V GCC does not support RVV in big-endian mode");
+
+  /* Convert -march and -mrvv-vector-bits to a chunks count.  */
+  riscv_vector_chunks = riscv_convert_vector_chunks (opts);
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
@@ -9984,7 +10144,7 @@ riscv_use_divmod_expander (void)
 static machine_mode
 riscv_preferred_simd_mode (scalar_mode mode)
 {
-  if (TARGET_VECTOR)
+  if (TARGET_VECTOR && !TARGET_XTHEADVECTOR)
     return riscv_vector::preferred_simd_mode (mode);
 
   return word_mode;
@@ -10335,7 +10495,7 @@ riscv_mode_priority (int, int n)
 unsigned int
 riscv_autovectorize_vector_modes (vector_modes *modes, bool all)
 {
-  if (TARGET_VECTOR)
+  if (TARGET_VECTOR && !TARGET_XTHEADVECTOR)
     return riscv_vector::autovectorize_vector_modes (modes, all);
 
   return default_autovectorize_vector_modes (modes, all);
@@ -10372,16 +10532,26 @@ riscv_frame_pointer_required (void)
   return riscv_save_frame_pointer && !crtl->is_leaf;
 }
 
-/* Return the appropriate common costs for vectors of type VECTYPE.  */
+/* Return the appropriate common costs according to VECTYPE from COSTS.  */
 static const common_vector_cost *
-get_common_costs (tree vectype)
+get_common_costs (const cpu_vector_cost *costs, tree vectype)
 {
-  const cpu_vector_cost *costs = tune_param->vec_costs;
   gcc_assert (costs);
 
   if (vectype && riscv_v_ext_vls_mode_p (TYPE_MODE (vectype)))
     return costs->vls;
   return costs->vla;
+}
+
+/* Return the CPU vector costs according to -mtune if tune info has non-NULL
+   vector cost.  Otherwide, return the default generic vector costs.  */
+const cpu_vector_cost *
+get_vector_costs ()
+{
+  const cpu_vector_cost *costs = tune_param->vec_costs;
+  if (!costs)
+    return &generic_vector_cost;
+  return costs;
 }
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
@@ -10390,72 +10560,67 @@ static int
 riscv_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 				  tree vectype, int misalign ATTRIBUTE_UNUSED)
 {
-  unsigned elements;
-  const cpu_vector_cost *costs = tune_param->vec_costs;
+  const cpu_vector_cost *costs = get_vector_costs ();
   bool fp = false;
 
   if (vectype != NULL)
     fp = FLOAT_TYPE_P (vectype);
 
-  if (costs != NULL)
+  const common_vector_cost *common_costs = get_common_costs (costs, vectype);
+  gcc_assert (common_costs != NULL);
+  switch (type_of_cost)
     {
-      const common_vector_cost *common_costs = get_common_costs (vectype);
-      gcc_assert (common_costs != NULL);
-      switch (type_of_cost)
-	{
-	case scalar_stmt:
-	  return fp ? costs->scalar_fp_stmt_cost : costs->scalar_int_stmt_cost;
+    case scalar_stmt:
+      return fp ? costs->scalar_fp_stmt_cost : costs->scalar_int_stmt_cost;
 
-	case scalar_load:
-	  return costs->scalar_load_cost;
+    case scalar_load:
+      return costs->scalar_load_cost;
 
-	case scalar_store:
-	  return costs->scalar_store_cost;
+    case scalar_store:
+      return costs->scalar_store_cost;
 
-	case vector_stmt:
-	  return fp ? common_costs->fp_stmt_cost : common_costs->int_stmt_cost;
+    case vector_stmt:
+      return fp ? common_costs->fp_stmt_cost : common_costs->int_stmt_cost;
 
-	case vector_load:
-	  return common_costs->align_load_cost;
+    case vector_load:
+      return common_costs->align_load_cost;
 
-	case vector_store:
-	  return common_costs->align_store_cost;
+    case vector_store:
+      return common_costs->align_store_cost;
 
-	case vec_to_scalar:
-	  return common_costs->vec_to_scalar_cost;
+    case vec_to_scalar:
+      return common_costs->vec_to_scalar_cost;
 
-	case scalar_to_vec:
-	  return common_costs->scalar_to_vec_cost;
+    case scalar_to_vec:
+      return common_costs->scalar_to_vec_cost;
 
-	case unaligned_load:
-	  return common_costs->unalign_load_cost;
-	case vector_gather_load:
-	  return common_costs->gather_load_cost;
+    case unaligned_load:
+      return common_costs->unalign_load_cost;
+    case vector_gather_load:
+      return common_costs->gather_load_cost;
 
-	case unaligned_store:
-	  return common_costs->unalign_store_cost;
-	case vector_scatter_store:
-	  return common_costs->scatter_store_cost;
+    case unaligned_store:
+      return common_costs->unalign_store_cost;
+    case vector_scatter_store:
+      return common_costs->scatter_store_cost;
 
-	case cond_branch_taken:
-	  return costs->cond_taken_branch_cost;
+    case cond_branch_taken:
+      return costs->cond_taken_branch_cost;
 
-	case cond_branch_not_taken:
-	  return costs->cond_not_taken_branch_cost;
+    case cond_branch_not_taken:
+      return costs->cond_not_taken_branch_cost;
 
-	case vec_perm:
-	  return common_costs->permute_cost;
+    case vec_perm:
+      return common_costs->permute_cost;
 
-	case vec_promote_demote:
-	  return fp ? common_costs->fp_stmt_cost : common_costs->int_stmt_cost;
+    case vec_promote_demote:
+      return fp ? common_costs->fp_stmt_cost : common_costs->int_stmt_cost;
 
-	case vec_construct:
-	  elements = estimated_poly_value (TYPE_VECTOR_SUBPARTS (vectype));
-	  return elements / 2 + 1;
+    case vec_construct:
+      return estimated_poly_value (TYPE_VECTOR_SUBPARTS (vectype));
 
-	default:
-	  gcc_unreachable ();
-	}
+    default:
+      gcc_unreachable ();
     }
 
   return default_builtin_vectorization_cost (type_of_cost, vectype, misalign);
@@ -10516,6 +10681,16 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
   *offset = NULL_RTX;
 
   return false;
+}
+
+/* Implements target hook vector_mode_supported_any_target_p.  */
+
+static bool
+riscv_vector_mode_supported_any_target_p (machine_mode)
+{
+  if (TARGET_XTHEADVECTOR)
+    return false;
+  return true;
 }
 
 /* Initialize the GCC target structure.  */
@@ -10860,6 +11035,9 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
 
 #undef TARGET_PREFERRED_ELSE_VALUE
 #define TARGET_PREFERRED_ELSE_VALUE riscv_preferred_else_value
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P
+#define TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P riscv_vector_mode_supported_any_target_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

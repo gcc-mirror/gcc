@@ -55,7 +55,7 @@ c++.serial = cc1plus$(exeext)
 CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 
 CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
-	-DTARGET_MACHINE=\"$(target)\"
+	-DTARGET_MACHINE=\"$(target)\" $(ZLIBINC)
 
 # In non-release builds, use a date-related module version.
 ifneq ($(DEVPHASE_c),)

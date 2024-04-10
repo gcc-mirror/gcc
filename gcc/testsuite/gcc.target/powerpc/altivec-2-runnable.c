@@ -1,6 +1,7 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mpower8-vector -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mvsx" } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
 
 #include <altivec.h>
 
@@ -33,7 +34,7 @@ int main ()
 
   /* Use of 'double' and ‘long long’ in AltiVec types requires -mvsx */
   /* __builtin_altivec_vupkhsw and __builtin_altivec_vupklsw
-     requires the -mpower8-vector option */
+     requires the -mcpu=power8 -mvsx option */
 
   vec_bi_arg = (vector bool int){ 0, 1, 1, 0 };
 

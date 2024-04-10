@@ -4071,7 +4071,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    || (nargs != simd_nargs))
 	  continue;
 	if (num_calls != 1)
-	  this_badness += exact_log2 (num_calls) * 4096;
+	  this_badness += floor_log2 (num_calls) * 4096;
 	if (n->simdclone->inbranch)
 	  this_badness += 8192;
 	int target_badness = targetm.simd_clone.usable (n);
@@ -4208,6 +4208,16 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 				     vect_location,
 				     "in-branch vector clones are not yet"
 				     " supported for mismatched vector sizes.\n");
+		  return false;
+		}
+	      if (!expand_vec_cond_expr_p (clone_arg_vectype,
+					   arginfo[i].vectype, ERROR_MARK))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				     vect_location,
+				     "cannot compute mask argument for"
+				     " in-branch vector clones.\n");
 		  return false;
 		}
 	    }
@@ -6756,7 +6766,8 @@ vectorizable_operation (vec_info *vinfo,
 	 those through even when the mode isn't word_mode.  For
 	 ops we have to lower the lowering code assumes we are
 	 dealing with word_mode.  */
-      if ((((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype))
+	  || (((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
 	    || !target_support_p)
 	   && maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD))
 	  /* Check only during analysis.  */
@@ -8542,7 +8553,7 @@ vectorizable_store (vec_info *vinfo,
 
       alias_off = build_int_cst (ref_type, 0);
       stmt_vec_info next_stmt_info = first_stmt_info;
-      auto_vec<tree> vec_oprnds (ncopies);
+      auto_vec<tree> vec_oprnds;
       /* For costing some adjacent vector stores, we'd like to cost with
 	 the total number of them once instead of cost each one by one. */
       unsigned int n_adjacent_stores = 0;
@@ -8772,7 +8783,7 @@ vectorizable_store (vec_info *vinfo,
   tree vec_mask = NULL;
   auto_delete_vec<auto_vec<tree>> gvec_oprnds (group_size);
   for (i = 0; i < group_size; i++)
-    gvec_oprnds.quick_push (new auto_vec<tree> (ncopies));
+    gvec_oprnds.quick_push (new auto_vec<tree> ());
 
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
     {
@@ -12870,13 +12881,18 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
      rewrite conditions to always be a comparison against 0.  To do this it
      sometimes flips the edges.  This is fine for scalar,  but for vector we
      then have to flip the test, as we're still assuming that if you take the
-     branch edge that we found the exit condition.  */
+     branch edge that we found the exit condition.  i.e. we need to know whether
+     we are generating a `forall` or an `exist` condition.  */
   auto new_code = NE_EXPR;
   auto reduc_optab = ior_optab;
   auto reduc_op = BIT_IOR_EXPR;
   tree cst = build_zero_cst (vectype);
+  edge exit_true_edge = EDGE_SUCC (gimple_bb (cond_stmt), 0);
+  if (exit_true_edge->flags & EDGE_FALSE_VALUE)
+    exit_true_edge = EDGE_SUCC (gimple_bb (cond_stmt), 1);
+  gcc_assert (exit_true_edge->flags & EDGE_TRUE_VALUE);
   if (flow_bb_inside_loop_p (LOOP_VINFO_LOOP (loop_vinfo),
-			     BRANCH_EDGE (gimple_bb (cond_stmt))->dest))
+			     exit_true_edge->dest))
     {
       new_code = EQ_EXPR;
       reduc_optab = and_optab;

@@ -185,8 +185,13 @@ extern hash_set<tree> *asan_handled_variables;
 inline bool
 asan_intercepted_p (enum built_in_function fcode)
 {
+  /* This list should be kept up-to-date with upstream's version at
+     compiler-rt/lib/hwasan/hwasan_platform_interceptors.h.  */
   if (hwasan_sanitize_p ())
-    return false;
+    return fcode == BUILT_IN_MEMCMP
+	 || fcode == BUILT_IN_MEMCPY
+	 || fcode == BUILT_IN_MEMMOVE
+	 || fcode == BUILT_IN_MEMSET;
 
   return fcode == BUILT_IN_INDEX
 	 || fcode == BUILT_IN_MEMCHR

@@ -1,3 +1,193 @@
+2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_can_run): Don't consider
+	'GCN_SUPPRESS_HOST_FALLBACK' anymore (assume always-'true').
+	(init_hsa_context): Adjust 'GCN_SUPPRESS_HOST_FALLBACK' error
+	message.
+
+2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-nvptx.c (nvptx_get_num_devices):
+	'cuDeviceGetCount' failure is fatal.
+
+2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-gcn.c (init_hsa_runtime_functions): Fatal error
+	for missing symbols.
+	* plugin/plugin-nvptx.c (init_cuda_lib): Likewise.
+
+2024-03-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	Revert:
+	2024-02-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.c++/loop-3.C: Set num_threads to 50
+	on 32-bit hppa.
+	* testsuite/libgomp.c/omp-loop03.c: Likewise.
+
+2024-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/114216
+	* target.c (gomp_target_rev): Change host_fn type and corresponding
+	cast from void (*)() to void (*) (void *).
+
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/110347
+	* testsuite/libgomp.c++/target-lambda-3.C: Moved from
+	gcc/testsuite/g++.dg/gomp/ and fixed is-mapped handling.
+	* testsuite/libgomp.c++/target-lambda-1.C: Modify to also
+	also work without offloading.
+	* testsuite/libgomp.c++/firstprivate-1.C: New test.
+	* testsuite/libgomp.c++/firstprivate-2.C: New test.
+	* testsuite/libgomp.c++/private-1.C: New test.
+	* testsuite/libgomp.c++/private-2.C: New test.
+	* testsuite/libgomp.c++/target-lambda-4.C: New test.
+	* testsuite/libgomp.c++/use_device_ptr-1.C: New test.
+
+2024-02-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenACC Runtime Library Routines): Document new 3.3
+	routines that simply map to their C counterpart.
+	* openacc.f90 (openacc): Add them.
+	* openacc_lib.h: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_host_device_ptr.f90: New test.
+	* testsuite/libgomp.oacc-fortran/acc-memcpy.f90: New test.
+	* testsuite/libgomp.oacc-fortran/acc-memcpy-2.f90: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-59.c: Crossref to f90 test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-60.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-95.c: Likewise.
+
+2024-02-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Context Selectors): Add 'nvptx64' as additional
+	'arch' value for nvptx.
+
+2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* libgomp.texi (OpenMP 5.1): Mark indirect call support as fully
+	implemented.
+
+2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* testsuite/libgomp.fortran/declare-target-indirect-1.f90: New.
+	* testsuite/libgomp.fortran/declare-target-indirect-2.f90: New.
+	* testsuite/libgomp.fortran/declare-target-indirect-3.f90: New.
+
+2024-02-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/113448
+	* testsuite/libgomp.c/alloc-pinned-1.c [!__linux__] (CHECK_SIZE):
+	Call abort.
+	* testsuite/libgomp.c/alloc-pinned-2.c [!__linux__] (CHECK_SIZE):
+	Likewise.
+
+2024-02-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgomp/113843
+	* configure.tgt (hppa*-*-linux*): Define config_path.
+
+2024-02-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.c++/loop-3.C: Set num_threads to 50
+	on 32-bit hppa.
+	* testsuite/libgomp.c/omp-loop03.c: Likewise.
+
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4.h: Use gfx1100/gfx1030
+	function not gfx90a for gfx1100/gfx1030 context selector.
+
+2024-01-26  Richard Biener  <rguenther@suse.de>
+
+	* plugin/plugin-gcn.c (suitable_hsa_agent_p): Filter out
+	agents with unsupported ISA.
+
+2024-01-26  Richard Biener  <rguenther@suse.de>
+
+	* plugin/plugin-gcn.c
+	(EF_AMDGPU_MACH::EF_AMDGPU_MACH_UNSUPPORTED): Add.
+	(isa_code): Return that instead of -1.
+	(GOMP_OFFLOAD_init_device): Adjust.
+
+2024-01-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4.h: Add variant functions
+	for gfx1030 and gfx1100.
+	* testsuite/libgomp.c/declare-variant-4-gfx1030.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1100.c: New test.
+
+2024-01-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/time.c (RTC_TICKS): Configure RDNA3.
+	(omp_get_wtime): Add RDNA3-compatible variant.
+	* plugin/plugin-gcn.c (max_isa_vgprs): Tune for gfx1030 and gfx1100.
+
+2024-01-24  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* libgomp.texi (Runtime Library Routines): Document
+	omp_pause_resource, omp_pause_resource_all and
+	omp_target_memcpy{,_rect}{,_async}.
+
+2024-01-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4-fiji.c: Xfail as fiji
+	support is no longer enabled by default.
+	* testsuite/libgomp.c/declare-variant-4-gfx803.c: Likewise.
+
+2024-01-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.fortran/alloc-comp-3.f90: Increase
+	timeout by 2 on hppa*-*-*.
+
+2024-01-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.c/simd-math-1.c: Don't run on
+	hppa*-*-hpux*.
+
+2024-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113409
+	* testsuite/libgomp.c/bitint-1.c: New test.
+
+2024-01-11  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.texi: C/C++ lvalues are supported now for map/to/from.
+	* testsuite/libgomp.c-c++-common/ind-base-4.c: New test.
+	* testsuite/libgomp.c-c++-common/unary-ptr-1.c: New test.
+
+2024-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/113192
+	* configure.ac (FLOCK): Use $libgomp_abs_srcdir/testsuite/flock
+	instead of \$(abs_top_srcdir)/testsuite/flock.
+	* configure: Regenerated.
+
+2024-01-09  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.c++/baseptrs-4.C: Remove commented-out cases that
+	now work.
+	* testsuite/libgomp.c++/baseptrs-6.C: New test.
+	* testsuite/libgomp.c++/ind-base-1.C: New test.
+	* testsuite/libgomp.c++/ind-base-2.C: New test.
+	* testsuite/libgomp.c++/lvalue-tofrom-1.C: New test.
+	* testsuite/libgomp.c++/lvalue-tofrom-2.C: New test.
+	* testsuite/libgomp.c++/map-comma-1.C: New test.
+	* testsuite/libgomp.c++/map-rvalue-ref-1.C: New test.
+	* testsuite/libgomp.c++/struct-ref-1.C: New test.
+	* testsuite/libgomp.c-c++-common/array-field-1.c: New test.
+	* testsuite/libgomp.c-c++-common/array-of-struct-1.c: New test.
+	* testsuite/libgomp.c-c++-common/array-of-struct-2.c: New test.
+
+2024-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/113192
+	* configure.ac (FLOCK): Use \$(abs_top_srcdir)/testsuite/flock
+	rather than $srcdir/testsuite/flock.
+	* configure: Regenerated.
+
 2024-01-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add

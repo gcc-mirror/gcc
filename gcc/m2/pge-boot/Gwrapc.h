@@ -118,6 +118,51 @@ EXTERN int wrapc_isfinitef (float x);
 */
 
 EXTERN int wrapc_isfinitel (long double x);
+
+/*
+   isnan - provide non builtin alternative to the gcc builtin isnan.
+           Returns 1 if x is a NaN otherwise return 0.
+*/
+
+EXTERN int wrapc_isnan (double x);
+
+/*
+   isnanf - provide non builtin alternative to the gcc builtin isnanf.
+            Returns 1 if x is a NaN otherwise return 0.
+*/
+
+EXTERN int wrapc_isnanf (float x);
+
+/*
+   isnanl - provide non builtin alternative to the gcc builtin isnanl.
+            Returns 1 if x is a NaN otherwise return 0.
+*/
+
+EXTERN int wrapc_isnanl (long double x);
+
+/*
+   SeekSet - return the system libc SEEK_SET value.
+*/
+
+EXTERN int wrapc_SeekSet (void);
+
+/*
+    SeekEnd - return the system libc SEEK_END value.
+*/
+
+EXTERN int wrapc_SeekEnd (void);
+
+/*
+   ReadOnly - return the system value of O_RDONLY.
+*/
+
+EXTERN unsigned int wrapc_ReadOnly (void);
+
+/*
+   WriteOnly - return the system value of O_WRONLY.
+*/
+
+EXTERN unsigned int wrapc_WriteOnly (void);
 #   ifdef __cplusplus
 }
 #   endif

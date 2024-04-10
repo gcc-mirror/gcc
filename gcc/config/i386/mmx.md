@@ -84,6 +84,11 @@
 (define_mode_iterator V2FI [V2SF V2SI])
 
 (define_mode_iterator V24FI [V2SF V2SI V4HF V4HI])
+
+(define_mode_iterator V248FI [V2SF V2SI V4HF V4BF V4HI V8QI])
+
+(define_mode_iterator V24FI_32 [V2HF V2BF V2HI V4QI])
+
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr mmxvecsize
   [(V8QI "b") (V4QI "b") (V2QI "b")
@@ -2869,11 +2874,18 @@
         (neg:V2QI
 	  (match_operand:V2QI 1 "register_operand" "0,Yw")))
    (clobber (reg:CC FLAGS_REG))]
-  "!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun)"
+  "!TARGET_PARTIAL_REG_STALL || optimize_size || TARGET_SSE2"
   "#"
   [(set_attr "isa" "*,sse2")
    (set_attr "type" "multi")
-   (set_attr "mode" "QI,TI")])
+   (set_attr "mode" "QI,TI")
+   (set (attr "enabled")
+	(cond [(and (eq_attr "alternative" "0")
+		    (and (match_test "TARGET_PARTIAL_REG_STALL")
+			 (not (match_test "optimize_function_for_size_p (cfun)"))))
+		(symbol_ref "false")
+	      ]
+	      (const_string "*")))])
 
 (define_split
   [(set (match_operand:V2QI 0 "general_reg_operand")
@@ -2907,8 +2919,7 @@
         (neg:V2QI
 	  (match_operand:V2QI 1 "sse_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
-  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
-   && TARGET_SSE2 && reload_completed"
+  "TARGET_SSE2 && reload_completed"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0)
 	(minus:V16QI (match_dup 0) (match_dup 1)))]
@@ -2970,11 +2981,18 @@
 	  (match_operand:V2QI 1 "register_operand" "<comm>0,0,Yw")
 	  (match_operand:V2QI 2 "register_operand" "Q,x,Yw")))
    (clobber (reg:CC FLAGS_REG))]
-  "!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun)"
+  "!TARGET_PARTIAL_REG_STALL || optimize_size || TARGET_SSE2"
   "#"
   [(set_attr "isa" "*,sse2_noavx,avx")
    (set_attr "type" "multi,sseadd,sseadd")
-   (set_attr "mode" "QI,TI,TI")])
+   (set_attr "mode" "QI,TI,TI")
+   (set (attr "enabled")
+	(cond [(and (eq_attr "alternative" "0")
+		    (and (match_test "TARGET_PARTIAL_REG_STALL")
+			 (not (match_test "optimize_function_for_size_p (cfun)"))))
+		(symbol_ref "false")
+	      ]
+	      (const_string "*")))])
 
 (define_split
   [(set (match_operand:V2QI 0 "general_reg_operand")
@@ -3016,8 +3034,7 @@
 	  (match_operand:V2QI 1 "sse_reg_operand")
 	  (match_operand:V2QI 2 "sse_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
-  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
-   && TARGET_SSE2 && reload_completed"
+  "TARGET_SSE2 && reload_completed"
   [(set (match_dup 0)
         (plusminus:V16QI (match_dup 1) (match_dup 2)))]
 {
@@ -3679,9 +3696,10 @@
 	  (match_operand:V2QI 1 "register_operand" "0")
 	  (match_operand:QI 2 "nonmemory_operand" "cI")))
    (clobber (reg:CC FLAGS_REG))]
-  "!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun)"
+  "!TARGET_PARTIAL_REG_STALL || optimize_size"
   "#"
-  "&& reload_completed"
+  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
+   && reload_completed"
   [(parallel
      [(set (zero_extract:HI (match_dup 3) (const_int 8) (const_int 8))
 	   (subreg:HI
@@ -3726,6 +3744,70 @@
 {
   ix86_expand_vecop_qihi_partial (<CODE>, operands[0],
 				  operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "vec_shl_<mode>"
+  [(set (match_operand:V248FI 0 "register_operand")
+	(ashift:V1DI
+	  (match_operand:V248FI 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_MMX_WITH_SSE"
+{
+  rtx op0 = gen_reg_rtx (V1DImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_mmx_ashlv1di3
+	      (op0, gen_lowpart (V1DImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
+  DONE;
+})
+
+(define_expand "vec_shl_<mode>"
+  [(set (match_operand:V24FI_32 0 "register_operand")
+	(ashift:V1SI
+	  (match_operand:V24FI_32 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_SSE2"
+{
+  rtx op0 = gen_reg_rtx (V1SImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_mmx_ashlv1si3
+	      (op0, gen_lowpart (V1SImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
+  DONE;
+})
+
+(define_expand "vec_shr_<mode>"
+  [(set (match_operand:V248FI 0 "register_operand")
+	(lshiftrt:V1DI
+	  (match_operand:V248FI 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_MMX_WITH_SSE"
+{
+  rtx op0 = gen_reg_rtx (V1DImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_mmx_lshrv1di3
+	      (op0, gen_lowpart (V1DImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
+  DONE;
+})
+
+(define_expand "vec_shr_<mode>"
+  [(set (match_operand:V24FI_32 0 "register_operand")
+	(lshiftrt:V1SI
+	  (match_operand:V24FI_32 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_SSE2"
+{
+  rtx op0 = gen_reg_rtx (V1SImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_mmx_lshrv1si3
+	      (op0, gen_lowpart (V1SImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
   DONE;
 })
 

@@ -4071,7 +4071,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 	  for (unsigned i = 0;
 	       i < as_a <expr *>(s->s->s->match)->ops.length (); ++i)
 	    fp_decl (f, " tree ARG_UNUSED (_p%d),", i);
-	  fp_decl (f, " tree *captures");
+	  fp_decl (f, " tree *ARG_UNUSED (captures)");
 	}
       for (unsigned i = 0; i < s->s->s->for_subst_vec.length (); ++i)
 	{
@@ -4749,10 +4749,8 @@ parser::parse_c_expr (cpp_ttype start)
 	    = (const char *)CPP_HASHNODE (token->val.node.node)->ident.str;
 	  if (strcmp (str, "return") == 0)
 	    fatal_at (token, "return statement not allowed in C expression");
-	  id_base *idb = get_operator (str);
-	  user_id *p;
-	  if (idb && (p = dyn_cast<user_id *> (idb)) && p->is_oper_list)
-	    record_operlist (token->src_loc, p);
+	  /* Mark user operators corresponding to 'str' as used.  */
+	  get_operator (str);
 	}
 
       /* Record the token.  */

@@ -160,8 +160,8 @@ struct RPC_IF_ID_VECTOR {
     uint          Count;
     RPC_IF_ID*[1] IfId;
 }
-mixin DECLARE_HANDLE!("RPC_AUTH_IDENTITY_HANDLE");
-mixin DECLARE_HANDLE!("RPC_AUTHZ_HANDLE");
+alias RPC_AUTH_IDENTITY_HANDLE = HANDLE;
+alias RPC_AUTHZ_HANDLE = HANDLE;
 
 struct RPC_SECURITY_QOS {
     uint Version;

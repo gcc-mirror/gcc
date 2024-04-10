@@ -378,7 +378,7 @@ riscv_run_selftests (void)
        compile-time unknown POLY value.
 
        Since we never need to compute a compile-time unknown POLY value
-       when --param=riscv-autovec-preference=fixed-vlmax, disable poly
+       when -mrvv-vector-bits=zvl, disable poly
        selftests in such situation.  */
     run_poly_int_selftests ();
   run_const_vector_selftests ();

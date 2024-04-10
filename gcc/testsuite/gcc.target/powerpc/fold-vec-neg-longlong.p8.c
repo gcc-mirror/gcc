@@ -2,8 +2,8 @@
    inputs produce the right code.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mpower8-vector -mdejagnu-cpu=power8 -O2" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2" } */
 
 
 #include "fold-vec-neg-longlong.h"

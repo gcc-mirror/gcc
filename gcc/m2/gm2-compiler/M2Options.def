@@ -971,6 +971,38 @@ PROCEDURE SetDebugBuiltins (value: BOOLEAN) ;
 
 
 (*
+   SetIBMLongDouble - enable/disable LONGREAL to map onto the
+                      IBM long double 128 bit data type.
+                      (Only available on the ppc).
+*)
+
+PROCEDURE SetIBMLongDouble (value: BOOLEAN) ;
+
+
+(*
+   GetIBMLongDouble - return the value of IBMLongDouble.
+*)
+
+PROCEDURE GetIBMLongDouble () : BOOLEAN ;
+
+
+(*
+   SetIEEELongDouble - enable/disable LONGREAL to map onto the
+                       IEEE long double 128 bit data type.
+                       (Only available on the ppc).
+*)
+
+PROCEDURE SetIEEELongDouble (value: BOOLEAN) ;
+
+
+(*
+   GetIEEELongDouble - return the value of IEEELongDouble.
+*)
+
+PROCEDURE GetIEEELongDouble () : BOOLEAN ;
+
+
+(*
    FinaliseOptions - once all options have been parsed we set any inferred
                      values.
 *)

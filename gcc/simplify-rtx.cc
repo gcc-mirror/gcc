@@ -1305,7 +1305,7 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	  			   > GET_MODE_UNIT_SIZE (mode)
 	  			   ? FLOAT_TRUNCATE : FLOAT_EXTEND,
 				   mode,
-				   XEXP (op, 0), mode);
+				   XEXP (op, 0), GET_MODE (XEXP (op, 0)));
 
       /*  (float_truncate (float x)) is (float x)  */
       if ((GET_CODE (op) == FLOAT || GET_CODE (op) == UNSIGNED_FLOAT)
@@ -7846,7 +7846,7 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
     {
       rtx tem = simplify_subreg (int_outermode, op, innermode, byte);
       if (tem)
-	return simplify_gen_subreg (outermode, tem, int_outermode, byte);
+	return lowpart_subreg (outermode, tem, int_outermode);
     }
 
   /* If OP is a vector comparison and the subreg is not changing the

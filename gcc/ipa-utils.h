@@ -57,6 +57,13 @@ bool ipa_make_function_pure (cgraph_node *, bool, bool);
 
 /* In ipa-profile.cc  */
 bool ipa_propagate_frequency (struct cgraph_node *node);
+void ipa_profile_cc_finalize (void);
+
+/* In ipa-icf.cc  */
+void ipa_icf_cc_finalize (void);
+
+/* In ipa-sra.cc  */
+void ipa_sra_cc_finalize (void);
 
 /* In ipa-devirt.cc  */
 

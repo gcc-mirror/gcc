@@ -4,7 +4,7 @@
  * This is the POSIX side of the implementation.
  * It exports two functions to C++, `toCppMangleItanium` and `cppTypeInfoMangleItanium`.
  *
- * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors: Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/cppmangle.d, _cppmangle.d)
@@ -65,7 +65,7 @@ package CppOperator isCppOperator(Identifier id)
 }
 
 ///
-extern(C++) const(char)* toCppMangleItanium(Dsymbol s)
+const(char)* toCppMangleItanium(Dsymbol s)
 {
     //printf("toCppMangleItanium(%s)\n", s.toChars());
     OutBuffer buf;
@@ -75,7 +75,7 @@ extern(C++) const(char)* toCppMangleItanium(Dsymbol s)
 }
 
 ///
-extern(C++) const(char)* cppTypeInfoMangleItanium(Dsymbol s)
+const(char)* cppTypeInfoMangleItanium(Dsymbol s)
 {
     //printf("cppTypeInfoMangle(%s)\n", s.toChars());
     OutBuffer buf;
@@ -86,7 +86,7 @@ extern(C++) const(char)* cppTypeInfoMangleItanium(Dsymbol s)
 }
 
 ///
-extern(C++) const(char)* cppThunkMangleItanium(FuncDeclaration fd, int offset)
+const(char)* cppThunkMangleItanium(FuncDeclaration fd, int offset)
 {
     //printf("cppThunkMangleItanium(%s)\n", fd.toChars());
     OutBuffer buf;

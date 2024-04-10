@@ -557,7 +557,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__glibcxx_assert(__o != memory_order_release
 			   && __o != memory_order_acq_rel);
-	// Ensure that the correct value of _M_ptr is visible after locking.,
+	// Ensure that the correct value of _M_ptr is visible after locking,
 	// by upgrading relaxed or consume to acquire.
 	if (__o != memory_order_seq_cst)
 	  __o = memory_order_acquire;

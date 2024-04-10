@@ -1,7 +1,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-options "-maltivec -mno-vsx -mno-power8-vector -O0" } */
+/* { dg-options "-maltivec -mno-vsx -O0" } */
 
 #include <altivec.h>
 

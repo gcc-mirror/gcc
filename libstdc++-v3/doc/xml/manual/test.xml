@@ -604,7 +604,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
       <envar>DEJAGNU</envar> environment variable will cause every test to
       be run three times, using a different <option>-std</option> each time.
       Alternatively, a list of standard versions to test with can be specified
-      as a comma-separated list in the <envvar>GLIBCXX_TESTSUITE_STDS</envvar>
+      as a comma-separated list in the <envar>GLIBCXX_TESTSUITE_STDS</envar>
       environment variable.
     </para>
 
@@ -779,7 +779,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     the test will be skipped by default unless <option>-std=gnu++11</option>
     or <option>-std=c++11</option> is explicitly specified, either via a
     target board, the <varname>v3_std_list</varname> dejagnu variable,
-    or the <envvar>GLIBCXX_TESTSUITE_STDS</envvar> environment variable.
+    or the <envar>GLIBCXX_TESTSUITE_STDS</envar> environment variable.
     For tests that require a specific standard it is useful to also add a
     <literal>dg-options</literal> directive:
 <programlisting>    // { dg-options "-std=gnu++11" }</programlisting>

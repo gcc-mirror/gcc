@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=fixed-vlmax -ffast-math -fno-vect-cost-model" } */
+/* { dg-additional-options "-mrvv-vector-bits=zvl -ffast-math -fno-vect-cost-model" } */
 
 #define N 0x1100
 

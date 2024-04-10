@@ -350,16 +350,15 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
     bad_member:
       {
 	tree member = TREE_OPERAND (value, 1);
-	if (is_overloaded_fn (member))
-	  member = get_first_fn (member);
-
-	if (DECL_FUNCTION_MEMBER_P (member)
-	    && ! flag_ms_extensions)
+	if (is_overloaded_fn (member) && !flag_ms_extensions)
 	  {
 	    gcc_rich_location richloc (loc);
 	    /* If "member" has no arguments (other than "this"), then
 	       add a fix-it hint.  */
-	    if (type_num_arguments (TREE_TYPE (member)) == 1)
+	    member = MAYBE_BASELINK_FUNCTIONS (member);
+	    if (TREE_CODE (member) == FUNCTION_DECL
+		&& DECL_OBJECT_MEMBER_FUNCTION_P (member)
+		&& type_num_arguments (TREE_TYPE (member)) == 1)
 	      richloc.add_fixit_insert_after ("()");
 	    complained = emit_diagnostic (diag_kind, &richloc, 0,
 			     "invalid use of member function %qD "
@@ -2378,7 +2377,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
       ptype = build_pointer_type (type);
-      datum = cp_convert (ptype, datum, complain);
+      datum = convert (ptype, datum);
       if (!processing_template_decl)
 	datum = build2 (POINTER_PLUS_EXPR, ptype,
 			datum, convert_to_ptrofftype (component));

@@ -29,8 +29,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #pragma GCC visibility push(default)
 #endif
 
-extern void __builtin_nested_func_ptr_created (void *, void *, void **);
-extern void __builtin_nested_func_ptr_deleted (void);
+extern void __gcc_nested_func_ptr_created (void *, void *, void *);
+extern void __gcc_nested_func_ptr_deleted (void);
 
 extern int __gcc_bcmp (const unsigned char *, const unsigned char *, size_t);
 extern void __clear_cache (void *, void *);
@@ -402,10 +402,12 @@ extern UDWtype __udivmoddi4 (UDWtype, UDWtype, UDWtype *);
 #if (defined(__BITINT_MAXWIDTH__) \
      && (defined(L_mulbitint3) || defined(L_divmodbitint4)))
 /* _BitInt support.  */
-extern void __mulbitint3 (UWtype *, SItype, const UWtype *, SItype,
-			  const UWtype *, SItype);
-extern void __divmodbitint4 (UWtype *, SItype, UWtype *, SItype,
-			     const UWtype *, SItype, const UWtype *, SItype);
+typedef UWtype __attribute__((__may_alias__)) UBILtype;
+extern void __mulbitint3 (UBILtype *, SItype, const UBILtype *, SItype,
+			  const UBILtype *, SItype);
+extern void __divmodbitint4 (UBILtype *, SItype, UBILtype *, SItype,
+			     const UBILtype *, SItype, const UBILtype *,
+			     SItype);
 #endif
 
 /* __negdi2 is static inline when building other libgcc2 portions.  */

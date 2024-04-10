@@ -53,9 +53,9 @@ shared struct SpinLock
         import core.time;
         if (k < pauseThresh)
             return core.atomic.pause();
-        else if (k < 32)
+        else // if (k < 32)
             return Thread.yield();
-        Thread.sleep(1.msecs);
+        // Thread.sleep(1.msecs);
     }
 
 private:

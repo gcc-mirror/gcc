@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-skip-if "test rvv intrinsic" { *-*-* } { "*" } { "-march=rv*v*" } } */
+/* { dg-do compile { target { ! riscv_xtheadvector } } } */
+/* { dg-skip-if "test rvv intrinsic" { ! riscv_v } } */
 
 void foo0 () {__rvv_bool64_t t;}
 void foo1 () {__rvv_bool32_t t;}

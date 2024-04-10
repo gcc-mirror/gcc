@@ -2781,7 +2781,7 @@ extern "C" int libc_dup (int d);
 extern "C" int libc_close (int d);
 extern "C" int libc_open (void * filename, int oflag, ...);
 extern "C" int libc_creat (void * filename, unsigned int mode);
-extern "C" long int libc_lseek (int fd, long int offset, int whence);
+extern "C" ssize_t libc_lseek (int fd, ssize_t offset, int whence);
 extern "C" void libc_perror (const char *string_, unsigned int _string_high);
 extern "C" int libc_readv (int fd, void * v, int n);
 extern "C" int libc_writev (int fd, void * v, int n);
@@ -6705,7 +6705,7 @@ static decl_node newNode (decl_nodeT k)
       d->at.firstUsed = 0;
       return d;
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -7065,7 +7065,7 @@ static decl_node addToScope (decl_node n)
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -7143,7 +7143,7 @@ static void setUnary (decl_node u, decl_nodeT k, decl_node a, decl_node t)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -7426,7 +7426,7 @@ static void putFieldVarient (decl_node f, decl_node v)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   switch (f->kind)
@@ -7437,7 +7437,7 @@ static void putFieldVarient (decl_node f, decl_node v)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -7488,7 +7488,7 @@ static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, 
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* fill in, n.  */
@@ -7546,7 +7546,7 @@ static void putVarientTag (decl_node v, decl_node tag)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -7570,7 +7570,7 @@ static decl_node getParent (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7598,7 +7598,7 @@ static decl_node getRecord (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7778,7 +7778,7 @@ static bool getConstExpComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7883,7 +7883,7 @@ static decl_node makeVal (decl_node params)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -7904,7 +7904,7 @@ static decl_node makeCast (decl_node c, decl_node p)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -8414,7 +8414,7 @@ static decl_node makeUnary (decl_nodeT k, decl_node e, decl_node res)
 
 
           default:
-            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
     }
@@ -8508,7 +8508,7 @@ static DynamicStrings_String getStringContents (decl_node n)
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -8644,7 +8644,7 @@ static decl_node doMakeBinary (decl_nodeT k, decl_node l, decl_node r, decl_node
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   return n;
@@ -9244,12 +9244,12 @@ static decl_node doGetExprType (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -9388,12 +9388,12 @@ static decl_node getSymScope (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -9705,7 +9705,7 @@ static bool needsParen (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   return true;
@@ -9814,7 +9814,7 @@ static void doPolyBinary (mcPretty_pretty p, decl_nodeT op, decl_node left, decl
 
 
           default:
-            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
     }
@@ -9840,7 +9840,7 @@ static void doPolyBinary (mcPretty_pretty p, decl_nodeT op, decl_node left, decl
 
 
           default:
-            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
     }
@@ -10118,7 +10118,7 @@ static decl_node doGetLastOp (decl_node a, decl_node b)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -10772,7 +10772,7 @@ static void doExprC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -10977,7 +10977,7 @@ static void doExprM2 (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -11149,7 +11149,7 @@ static DynamicStrings_String replaceChar (DynamicStrings_String s, char ch, cons
         return s;
       }
   }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -11209,7 +11209,7 @@ static unsigned int countChar (DynamicStrings_String s, char ch)
         return c;
       }
   }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -12268,7 +12268,7 @@ static decl_node doMin (decl_node n)
       M2RTS_HALT (-1);  /* finish the cacading elsif statement.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -12349,7 +12349,7 @@ static decl_node doMax (decl_node n)
       M2RTS_HALT (-1);  /* finish the cacading elsif statement.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -12655,7 +12655,7 @@ static void doBaseC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   mcPretty_setNeedSpace (p);
@@ -12745,7 +12745,7 @@ static void doSystemC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -16099,7 +16099,7 @@ static void doCreal (mcPretty_pretty p, decl_node t)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -16130,7 +16130,7 @@ static void doCimag (mcPretty_pretty p, decl_node t)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -16261,7 +16261,7 @@ static void doIntrinsicC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   outText (p, (const char *) ";", 1);
@@ -17437,7 +17437,7 @@ static void dbs (decl_dependentState s, decl_node n)
 
 
           default:
-            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
       if (n != NULL)
@@ -18330,10 +18330,10 @@ static decl_dependentState doDependants (alists_alist l, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -18430,7 +18430,7 @@ static void visitIntrinsicFunction (alists_alist v, decl_node n, decl_nodeProced
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -19429,7 +19429,7 @@ static void visitDependants (alists_alist v, decl_node n, decl_nodeProcedure p)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -19776,12 +19776,12 @@ static DynamicStrings_String genKind (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -20956,7 +20956,7 @@ static void doBaseM2 (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   mcPretty_setNeedSpace (p);
@@ -20982,7 +20982,7 @@ static void doSystemM2 (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -22193,10 +22193,10 @@ static decl_node doDupExpr (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -22526,7 +22526,7 @@ extern "C" bool decl_isVisited (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -22556,7 +22556,7 @@ extern "C" void decl_unsetVisited (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -22584,7 +22584,7 @@ extern "C" void decl_setVisited (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -22612,7 +22612,7 @@ extern "C" void decl_setEnumsComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -22640,7 +22640,7 @@ extern "C" bool decl_getEnumsComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -22861,7 +22861,7 @@ extern "C" decl_node decl_lookupInScope (decl_node scope, nameKey_Name n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -23236,12 +23236,12 @@ extern "C" decl_node decl_getType (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -23635,7 +23635,7 @@ extern "C" decl_node decl_getScope (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -24290,7 +24290,7 @@ extern "C" decl_node decl_makeVarient (decl_node r)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   return n;
@@ -24743,6 +24743,10 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
         return nameKey_makeKey ((const char *) "MIN", 3);
         break;
 
+      case decl_pointerref:
+        return nameKey_NulName;
+        break;
+
       case decl_funccall:
         return nameKey_NulName;
         break;
@@ -24757,7 +24761,7 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
         __builtin_unreachable ();
         break;
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -24795,7 +24799,7 @@ extern "C" decl_node decl_import (decl_node m, decl_node n)
 
 
           default:
-            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
       importEnumFields (m, n);
@@ -24924,7 +24928,7 @@ extern "C" void decl_setSource (decl_node n, nameKey_Name s)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -24952,7 +24956,7 @@ extern "C" nameKey_Name decl_getSource (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -25395,7 +25399,7 @@ extern "C" void decl_addParameter (decl_node proc, decl_node param)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -25488,7 +25492,7 @@ extern "C" decl_node decl_makeBinaryTok (mcReserved_toktype op, decl_node l, dec
       M2RTS_HALT (-1);  /* most likely op needs a clause as above.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -25520,7 +25524,7 @@ extern "C" decl_node decl_makeUnaryTok (mcReserved_toktype op, decl_node e)
       M2RTS_HALT (-1);  /* most likely op needs a clause as above.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -25958,7 +25962,7 @@ extern "C" void decl_setConstExpComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -26323,7 +26327,7 @@ extern "C" void decl_putBegin (decl_node b, decl_node s)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -26350,7 +26354,7 @@ extern "C" void decl_putFinally (decl_node b, decl_node s)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -26978,7 +26982,7 @@ extern "C" void decl_out (void)
 
 
       default:
-        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   closeOutput ();

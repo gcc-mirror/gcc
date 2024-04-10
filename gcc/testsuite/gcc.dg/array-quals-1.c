@@ -30,23 +30,23 @@ cia d1 = { 7, 8 };
 static cia e[2] = { { 1, 2 }, { 3, 4 } };
 /* { dg-final { scan-assembler-symbol-section {^_?e1$} {^\.(const|rodata|srodata|sdata)|\[RO\]} } } */
 cia e1[2] = { { 1, 2 }, { 3, 4 } };
-/* { dg-final { scan-assembler-symbol-section {^_?p$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?p$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const p = &a;
-/* { dg-final { scan-assembler-symbol-section {^_?q$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?q$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const q = &b;
-/* { dg-final { scan-assembler-symbol-section {^_?r$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?r$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const r = &c;
-/* { dg-final { scan-assembler-symbol-section {^_?s$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?s$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const s = &d;
-/* { dg-final { scan-assembler-symbol-section {^_?t$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?t$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const t = &e;
-/* { dg-final { scan-assembler-symbol-section {^_?p1$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?p1$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const p1 = &a1;
-/* { dg-final { scan-assembler-symbol-section {^_?q1$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?q1$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const q1 = &b1;
-/* { dg-final { scan-assembler-symbol-section {^_?r1$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?r1$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const r1 = &c1;
-/* { dg-final { scan-assembler-symbol-section {^_?s1$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?s1$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const s1 = &d1;
-/* { dg-final { scan-assembler-symbol-section {^_?t1$} {^\.(const|rodata|srodata|sdata)|\[RW\]} } } */
+/* { dg-final { scan-assembler-symbol-section {^_?t1$} {^\.(const|rodata|srodata|sdata|data.rel.ro.local)|\[RW\]} } } */
 void *const t1 = &e1;

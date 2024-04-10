@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl1024b -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax -O3" } */
+/* { dg-options "-march=rv64gcv_zvl1024b -mabi=lp64d -mrvv-vector-bits=zvl -O3" } */
 
 int a, c;
 char b;

@@ -1,8 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice10922.d(10): Error: function `ice10922.__lambda4(in uint n)` is not callable using argument types `()`
-fail_compilation/ice10922.d(10):        too few arguments, expected 1, got 0
+fail_compilation/ice10922.d(11): Error: function `__lambda4` is not callable using argument types `()`
+fail_compilation/ice10922.d(11):        too few arguments, expected 1, got 0
+fail_compilation/ice10922.d(10):        `ice10922.__lambda4(in uint n)` declared here
 ---
 */
 

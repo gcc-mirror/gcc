@@ -1,3 +1,35 @@
+2024-02-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR other/113957
+	* pex-unix.c (pex_unix_exec_child): Set pid = -1 in the error
+	paths, since that is used to signal an erroneous outcome for
+	the routine.
+
+2024-02-15  Richard Biener  <rguenther@suse.de>
+
+	* hashtab.c (iterative_hash): Remove TBAA violating handling
+	of aligned little-endian case in favor of just keeping the
+	aligned case special-cased.  Use | for composing a larger word.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* vprintf-support.c (libiberty_vprintf_buffer_size): Handle
+	properly l, ll, z, t or on _WIN32 I64 modifiers for diouxX
+	and L modifier for fFgGeE.
+
+2024-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-demangle.c (FNQUAL_COMPONENT_CASE): Add case for
+	DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+	(d_dump): Handle DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+	(d_nested_name): Parse H after N in nested name.
+	(d_count_templates_scopes): Handle
+	DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+	(d_print_mod): Likewise.
+	(d_print_function_type): Likewise.
+	* testsuite/demangle-expected: Add tests for explicit object
+	member functions.
+
 2023-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (HAVE_X86_SHA1_HW_SUPPORT): Verify __get_cpuid and

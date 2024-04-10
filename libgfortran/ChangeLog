@@ -1,3 +1,100 @@
+2024-03-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/list_read.c (list_formatted_read_scalar): Use fstrcpy
+	from libgfortran/runtime/string.c to replace snprintf.
+	(nml_read_obj): Likewise.
+	* io/transfer.c (unformatted_read): Likewise.
+	(unformatted_write): Likewise.
+	(formatted_transfer_scalar_read): Likewise.
+	(formatted_transfer_scalar_write): Likewise.
+	* io/write.c (list_formatted_write_scalar): Likewise.
+	(nml_write_obj): Likewise.
+
+2024-03-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/io.h (IOMSG_LEN): Moved to here.
+	* io/list_read.c (MSGLEN): Removed MSGLEN.
+	(convert_integer): Changed MSGLEN to IOMSG_LEN.
+	(parse_repeat): Likewise.
+	(read_logical): Likewise.
+	(read_integer): Likewise.
+	(read_character): Likewise.
+	(parse_real): Likewise.
+	(read_complex): Likewise.
+	(read_real): Likewise.
+	(check_type): Likewise.
+	(list_formatted_read_scalar): Adjust to IOMSG_LEN.
+	(nml_read_obj): Add user defined error message.
+	* io/transfer.c (unformatted_read): Add user defined error
+	message.
+	(unformatted_write): Add user defined error message.
+	(formatted_transfer_scalar_read): Add user defined error message.
+	(formatted_transfer_scalar_write): Add user defined error message.
+	* io/write.c (list_formatted_write_scalar): Add user defined error message.
+	(nml_write_obj): Add user defined error message.
+
+2024-02-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/list_read.c (list_formatted_read_scalar): Add checks
+	for the case where a user defines their own error codes
+	and error messages and generate the runtime error.
+	* io/transfer.c (st_read_done): Whitespace.
+
+2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105473
+	* io/list_read.c (eat_separator): Reject comma as a
+	seprator when it is being used as a decimal point.
+	(parse_real): Reject a '.' when is should be a comma.
+	(read_real): Likewise.
+	* io/read.c (read_f): Add more checks for ',' and '.'
+	conditions.
+
+2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/107068
+	* io/list_read.c (read_logical): When looking for a possible
+	variable name, check for left paren, indicating a possible
+	array reference.
+
+2024-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/99210
+	* io/read.c (read_x): If UTF-8 encoding is enabled, use
+	read_utf8 to move one character over in the read buffer.
+
+2024-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (formatted_transfer_scalar_write): Adjust
+	bytes_used and pos variable for stream access.
+
+2024-02-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/111022
+	* io/format.c (get_fnode): Update initialization of fnode.
+	(parse_format_list): Initialization.
+	* io/format.h (struct fnode): Added the new 'pushed' component.
+	* io/write.c (select_buffer): Whitespace.
+	(write_real): Whitespace.
+	(write_real_w0): Adjust logic for the d == 0 condition.
+	* io/write_float.def (determine_precision): Whitespace.
+	(build_float_string): Calculate width of ..E0 exponents and
+	adjust logic accordingly.
+	(build_infnan_string): Whitespace.
+	(CALCULATE_EXP): Whitespace.
+	(quadmath_snprintf): Whitespace.
+	(determine_en_precision): Whitespace.
+
+2024-01-15  Lipeng Zhu  <lipeng.zhu@intel.com>
+
+	* io/io.h (dec_waiting_unlocked): Use
+	__gthread_rwlock_wrlock/__gthread_rwlock_unlock or
+	__gthread_mutex_lock/__gthread_mutex_unlock functions
+	to replace WRLOCK and RWUNLOCK macros.
+
 2024-01-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/write.c (namelist_write): If internal_unit precede with space.

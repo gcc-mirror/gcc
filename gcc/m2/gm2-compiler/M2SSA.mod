@@ -31,7 +31,7 @@ FROM NumberIO IMPORT WriteCard ;
 FROM M2Error IMPORT InternalError ;
 FROM M2Batch IMPORT GetModuleNo ;
 FROM M2Quiet IMPORT qprintf1 ;
-FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo ;
+FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock ;
 FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord, PushWord, PopWord, PeepWord ;
 FROM M2Options IMPORT CompilerDebugging ;
 FROM Lists IMPORT InitList, KillList, List, IncludeItemIntoList, IsItemInList ;

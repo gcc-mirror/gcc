@@ -3262,6 +3262,9 @@ It must be placed immediately before a @code{DO} loop and applies only to the
 loop that follows.  N is an integer constant specifying the unrolling factor.
 The values of 0 and 1 block any unrolling of the loop.
 
+For @code{DO CONCURRENT} constructs the unrolling specification applies
+only to the first loop control variable.
+
 
 @node BUILTIN directive
 @subsection BUILTIN directive
@@ -3300,6 +3303,9 @@ whether a particular loop is vectorizable due to potential
 dependencies between iterations.  The purpose of the directive is to
 tell the compiler that vectorization is safe.
 
+For @code{DO CONCURRENT} constructs this annotation is implicit to all
+loop control variables.
+
 This directive is intended for annotation of existing code.  For new
 code it is recommended to consider OpenMP SIMD directives as potential
 alternative.
@@ -3316,6 +3322,9 @@ This directive tells the compiler to vectorize the following loop.  It
 must be placed immediately before a @code{DO} loop and applies only to
 the loop that follows.
 
+For @code{DO CONCURRENT} constructs this annotation applies to all loops
+specified in the concurrent header.
+
 
 @node NOVECTOR directive
 @subsection NOVECTOR directive
@@ -3327,6 +3336,9 @@ The syntax of the directive is
 This directive tells the compiler to not vectorize the following loop.
 It must be placed immediately before a @code{DO} loop and applies only
 to the loop that follows.
+
+For @code{DO CONCURRENT} constructs this annotation applies to all loops
+specified in the concurrent header.
 
 
 @node Non-Fortran Main Program

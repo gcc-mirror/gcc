@@ -152,33 +152,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     deferred = 2
   };
 
+  [[__nodiscard__]]
   constexpr launch operator&(launch __x, launch __y) noexcept
   {
     return static_cast<launch>(
 	static_cast<int>(__x) & static_cast<int>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr launch operator|(launch __x, launch __y) noexcept
   {
     return static_cast<launch>(
 	static_cast<int>(__x) | static_cast<int>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr launch operator^(launch __x, launch __y) noexcept
   {
     return static_cast<launch>(
 	static_cast<int>(__x) ^ static_cast<int>(__y));
   }
 
+  [[__nodiscard__]]
   constexpr launch operator~(launch __x) noexcept
   { return static_cast<launch>(~static_cast<int>(__x)); }
 
+  _GLIBCXX14_CONSTEXPR
   inline launch& operator&=(launch& __x, launch __y) noexcept
   { return __x = __x & __y; }
 
+  _GLIBCXX14_CONSTEXPR
   inline launch& operator|=(launch& __x, launch __y) noexcept
   { return __x = __x | __y; }
 
+  _GLIBCXX14_CONSTEXPR
   inline launch& operator^=(launch& __x, launch __y) noexcept
   { return __x = __x ^ __y; }
 

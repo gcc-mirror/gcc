@@ -41,17 +41,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 EXTERN char *
 m2configure_FullPathCPP (void);
 
-EXTERN bool
-m2configure_M2CLongRealFloat128 (void);
-
-EXTERN bool
-m2configure_M2CLongRealIBM128 (void);
-
-EXTERN bool
-m2configure_M2CLongRealLongDouble (void);
-
-EXTERN bool
-m2configure_M2CLongRealLongDoublePPC64LE (void);
+EXTERN int
+m2configure_TargetIEEEQuadDefault (void);
 
 #undef EXTERN
 #endif /* m2configure_h.  */

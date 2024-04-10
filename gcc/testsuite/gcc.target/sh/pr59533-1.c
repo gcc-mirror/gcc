@@ -2,15 +2,15 @@
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
 
-/* { dg-final { scan-assembler-times "shll" 1 } }  */
+/* { dg-final { scan-assembler-times "shll" 3 } }  */
 /* { dg-final { scan-assembler-times "movt" 5 } }  */
 /* { dg-final { scan-assembler-times "rotcl" 1 } }  */
 /* { dg-final { scan-assembler-times "and" 3 } }  */
 /* { dg-final { scan-assembler-times "extu.b" 5 } }  */
 
-/* { dg-final { scan-assembler-times "cmp/pz" 27 { target { ! sh2a } } } }  */
-/* { dg-final { scan-assembler-times "addc" 4 { target { ! sh2a } } } }  */
-/* { dg-final { scan-assembler-times "subc" 16 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "cmp/pz" 25 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "addc" 6 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "subc" 14 { target { ! sh2a } } } }  */
 
 /* { dg-final { scan-assembler-times "cmp/pz" 25 { target { sh2a } } } }  */
 /* { dg-final { scan-assembler-times "addc" 6 { target { sh2a } } } }  */

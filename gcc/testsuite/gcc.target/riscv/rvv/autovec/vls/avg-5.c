@@ -24,10 +24,10 @@ DEF_AVG_CEIL (uint16_t, uint32_t, 512)
 DEF_AVG_CEIL (uint16_t, uint32_t, 1024)
 
 /* { dg-final { scan-assembler-times {vwadd\.vv} 9 } } */
-/* { dg-final { scan-assembler-times {vwaddu\.vv} 9 } } */
+/* { dg-final { scan-assembler-times {csrwi\s*vxrm,\s*0} 9 } } */
 /* { dg-final { scan-assembler-times {vnsra\.wi} 9 } } */
-/* { dg-final { scan-assembler-times {vnsrl\.wi} 9 } } */
-/* { dg-final { scan-assembler-times {vadd\.vi} 18 } } */
+/* { dg-final { scan-assembler-times {vaaddu\.vv} 9 } } */
+/* { dg-final { scan-assembler-times {vadd\.vi} 9 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
 /* { dg-final { scan-tree-dump-not "1,1" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "2,2" "optimized" } } */

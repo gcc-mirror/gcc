@@ -3169,7 +3169,30 @@ finish_this_expr (void)
     return rvalue (result);
 
   tree fn = current_nonlambda_function ();
-  if (fn && DECL_STATIC_FUNCTION_P (fn))
+  if (fn && DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+    {
+      auto_diagnostic_group d;
+      error ("%<this%> is unavailable for explicit object member "
+	     "functions");
+      tree xobj_parm = DECL_ARGUMENTS (fn);
+      gcc_assert (xobj_parm);
+      tree parm_name = DECL_NAME (xobj_parm);
+
+      static tree remembered_fn = NULL_TREE;
+      /* Only output this diagnostic once per function.  */
+      if (remembered_fn == fn)
+	/* Early escape.  */;
+      else if (parm_name)
+	inform (DECL_SOURCE_LOCATION (xobj_parm),
+		"use explicit object parameter %qs instead",
+		IDENTIFIER_POINTER (parm_name));
+      else
+	inform (DECL_SOURCE_LOCATION (xobj_parm),
+		"name the explicit object parameter");
+
+      remembered_fn = fn;
+    }
+  else if (fn && DECL_STATIC_FUNCTION_P (fn))
     error ("%<this%> is unavailable for static member functions");
   else if (fn && processing_contract_condition && DECL_CONSTRUCTOR_P (fn))
     error ("invalid use of %<this%> before it is valid");
@@ -4627,20 +4650,19 @@ finish_type_pack_element (tree idx, tree types, tsubst_flags_t complain)
 	error ("%<__type_pack_element%> index is not an integral constant");
       return error_mark_node;
     }
-  HOST_WIDE_INT val = tree_to_shwi (idx);
-  if (val < 0)
+  if (tree_int_cst_sgn (idx) < 0)
     {
       if (complain & tf_error)
 	error ("%<__type_pack_element%> index is negative");
       return error_mark_node;
     }
-  if (val >= TREE_VEC_LENGTH (types))
+  if (wi::to_widest (idx) >= TREE_VEC_LENGTH (types))
     {
       if (complain & tf_error)
 	error ("%<__type_pack_element%> index is out of range");
       return error_mark_node;
     }
-  return TREE_VEC_ELT (types, val);
+  return TREE_VEC_ELT (types, tree_to_shwi (idx));
 }
 
 /* Implement the __direct_bases keyword: Return the direct base classes
@@ -6727,7 +6749,7 @@ finish_omp_declare_simd_methods (tree t)
   for (tree x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
     {
       if (TREE_CODE (x) == USING_DECL
-	  || !DECL_NONSTATIC_MEMBER_FUNCTION_P (x))
+	  || !DECL_IOBJ_MEMBER_FUNCTION_P (x))
 	continue;
       tree ods = lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (x));
       if (!ods || !TREE_VALUE (ods))
@@ -11782,6 +11804,15 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	 access expression).  */
       if (DECL_DECOMPOSITION_P (expr))
 	{
+	  if (ptds.saved)
+	    {
+	      gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (expr));
+	      /* DECL_HAS_VALUE_EXPR_P is always set if
+		 processing_template_decl.  If lookup_decomp_type
+		 returns non-NULL, it is the tuple case.  */
+	      if (tree ret = lookup_decomp_type (expr))
+		return ret;
+	    }
 	  if (DECL_HAS_VALUE_EXPR_P (expr))
 	    /* Expr is an array or struct subobject proxy, handle
 	       bit-fields properly.  */
@@ -11910,9 +11941,13 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	      if (WILDCARD_TYPE_P (non_reference (obtype)))
 		/* We don't know what the eventual obtype quals will be.  */
 		goto dependent;
-	      int quals = cp_type_quals (type);
-	      if (INDIRECT_TYPE_P (obtype))
-		quals |= cp_type_quals (TREE_TYPE (obtype));
+	      auto direct_type = [](tree t){
+		  if (INDIRECT_TYPE_P (t))
+		    return TREE_TYPE (t);
+		  return t;
+	       };
+	      int const quals = cp_type_quals (type)
+			      | cp_type_quals (direct_type (obtype));
 	      type = cp_build_qualified_type (type, quals);
 	      type = build_reference_type (type);
 	    }
@@ -12803,6 +12838,20 @@ is_this_parameter (tree t)
 	      || (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t))
 	      || (cp_binding_oracle && VAR_P (t)));
   return true;
+}
+
+/* As above, or a C++23 explicit object parameter.  */
+
+bool
+is_object_parameter (tree t)
+{
+  if (is_this_parameter (t))
+    return true;
+  if (TREE_CODE (t) != PARM_DECL)
+    return false;
+  tree ctx = DECL_CONTEXT (t);
+  return (ctx && DECL_XOBJ_MEMBER_FUNCTION_P (ctx)
+	  && t == DECL_ARGUMENTS (ctx));
 }
 
 /* Insert the deduced return type for an auto function.  */

@@ -114,7 +114,7 @@ __bid_floatbitintdd (const UBILtype *i, SItype iprec)
 			   buf + BITINT_END (q_limbs - 1, 0), q_limbs);
 	  inexact = buf[q_limbs + pow10_limbs];
 	  for (j = 1; j < pow10_limbs; ++j)
-	    inexact |= buf[q_limbs + pow10_limbs + 1];
+	    inexact |= buf[q_limbs + pow10_limbs + j];
 	}
       else
 	{
@@ -132,7 +132,7 @@ __bid_floatbitintdd (const UBILtype *i, SItype iprec)
 #if BIL_TYPE_SIZE == 64
       m = buf[BITINT_END (1, 0)];
 #elif BIL_TYPE_SIZE == 32
-      m = ((UDItype) buf[1] << 32) | buf[BITINT_END (2, 0)];
+      m = (UDItype) buf[1] << 32 | buf[BITINT_END (2, 0)];
 #else
 # error Unsupported BIL_TYPE_SIZE
 #endif
@@ -212,7 +212,8 @@ __bid_floatbitintdd (const UBILtype *i, SItype iprec)
 	  mantissa = buf[q_limbs + pow10_limbs * 2 + 1];
 #else
 	  mantissa
-	    = ((buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (0, 1)] << 32)
+	    = ((UDItype)
+	       buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (0, 1)] << 32
 	       | buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (1, 0)]);
 #endif
 	}
@@ -220,8 +221,7 @@ __bid_floatbitintdd (const UBILtype *i, SItype iprec)
 #if BIL_TYPE_SIZE == 64
 	mantissa = buf[BITINT_END (1, 0)];
 #else
-	mantissa
-	  = ((buf[1] << 32) | buf[BITINT_END (2, 0)]);
+	mantissa = (UDItype) buf[1] << 32 | buf[BITINT_END (2, 0)];
 #endif
     }
   else
@@ -232,7 +232,7 @@ __bid_floatbitintdd (const UBILtype *i, SItype iprec)
       if (in == 1)
 	mantissa = iprec < 0 ? (UDItype) (BILtype) msb : (UDItype) msb;
       else
-	mantissa = ((msb << 32) | i[BITINT_END (1, 0)]);
+	mantissa = (UDItype) msb << 32 | i[BITINT_END (1, 0)];
 #endif
       if (iprec < 0)
 	mantissa = -mantissa;

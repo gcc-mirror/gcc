@@ -339,16 +339,19 @@ void _d_arraysetctor(Tarr : T[], T)(scope Tarr p, scope ref T value) @trusted
  * Returns:
  *      newly allocated array
  */
-T[] _d_newarrayU(T)(size_t length, bool isShared=false) pure nothrow @nogc @trusted
+T[] _d_newarrayUPureNothrow(T)(size_t length, bool isShared=false) pure nothrow @trusted
 {
-    alias PureType = T[] function(size_t length, bool isShared) pure nothrow @nogc @trusted;
-    return (cast(PureType) &_d_newarrayUImpl!T)(length, isShared);
+    alias PureType = T[] function(size_t length, bool isShared) pure nothrow @trusted;
+    return (cast(PureType) &_d_newarrayU!T)(length, isShared);
 }
 
-T[] _d_newarrayUImpl(T)(size_t length, bool isShared=false) @trusted
+T[] _d_newarrayU(T)(size_t length, bool isShared=false) @trusted
 {
     import core.exception : onOutOfMemoryError;
+    import core.internal.traits : Unqual;
     import core.internal.array.utils : __arrayStart, __setArrayAllocLength, __arrayAlloc;
+
+    alias UnqT = Unqual!T;
 
     size_t elemSize = T.sizeof;
     size_t arraySize;
@@ -392,14 +395,14 @@ Loverflow:
     assert(0);
 
 Lcontinue:
-    auto info = __arrayAlloc!T(arraySize);
+    auto info = __arrayAlloc!UnqT(arraySize);
     if (!info.base)
         goto Loverflow;
     debug(PRINTF) printf("p = %p\n", info.base);
 
     auto arrstart = __arrayStart(info);
 
-    __setArrayAllocLength!T(info, arraySize, isShared);
+    __setArrayAllocLength!UnqT(info, arraySize, isShared);
 
     return (cast(T*) arrstart)[0 .. length];
 }

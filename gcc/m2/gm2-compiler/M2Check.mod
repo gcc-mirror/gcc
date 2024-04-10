@@ -33,13 +33,21 @@ IMPLEMENTATION MODULE M2Check ;
 *)
 
 FROM M2System IMPORT IsSystemType, IsGenericSystemType, IsSameSize, IsComplexN ;
-FROM M2Base IMPORT IsParameterCompatible, IsAssignmentCompatible, IsExpressionCompatible, IsComparisonCompatible, IsBaseType, IsMathType, ZType, CType, RType, IsComplexType ;
-FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, KillIndex, HighIndice, LowIndice, IncludeIndiceIntoIndex ;
+FROM M2Base IMPORT IsParameterCompatible, IsAssignmentCompatible, IsExpressionCompatible, IsComparisonCompatible, IsBaseType, IsMathType, ZType, CType, RType, IsComplexType, Char ;
+FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, KillIndex, HighIndice, LowIndice, IncludeIndiceIntoIndex, ForeachIndiceInIndexDo ;
 FROM M2Error IMPORT Error, InternalError, NewError, ErrorString, ChainError ;
 FROM M2MetaError IMPORT MetaErrorStringT2, MetaErrorStringT3, MetaErrorStringT4, MetaString2, MetaString3, MetaString4 ;
 FROM StrLib IMPORT StrEqual ;
 FROM M2Debug IMPORT Assert ;
-FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetSType, IsType, SkipType, IsProcedure, NoOfParam, IsVarParam, GetNth, GetNthParam, IsProcType, IsVar, IsEnumeration, IsArray, GetDeclaredMod, IsSubrange, GetArraySubscript, IsConst, IsReallyPointer, IsPointer, IsParameter, ModeOfAddr, GetMode, GetType, IsUnbounded, IsComposite, IsConstructor, IsParameter, IsConstString ;
+
+FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetSType, IsType,
+                        SkipType, IsProcedure, NoOfParam, IsVarParam, GetNth,
+                        GetNthParam, IsProcType, IsVar, IsEnumeration, IsArray,
+                        GetDeclaredMod, IsSubrange, GetArraySubscript, IsConst,
+                        IsReallyPointer, IsPointer, IsParameter, ModeOfAddr,
+                        GetMode, GetType, IsUnbounded, IsComposite, IsConstructor,
+                        IsParameter, IsConstString, IsConstLitInternal, IsConstLit ;
+
 FROM M2GCCDeclare IMPORT GetTypeMin, GetTypeMax ;
 FROM M2System IMPORT Address ;
 FROM M2ALU IMPORT Equ, PushIntegerTree ;
@@ -48,6 +56,7 @@ FROM SymbolConversion IMPORT Mod2Gcc ;
 FROM DynamicStrings IMPORT String, InitString, KillString ;
 FROM M2LexBuf IMPORT GetTokenNo ;
 FROM Storage IMPORT ALLOCATE ;
+FROM SYSTEM IMPORT ADR ;
 FROM libc IMPORT printf ;
 
 
@@ -99,6 +108,52 @@ VAR
    pairFreeList : pair ;
    tinfoFreeList: tInfo ;
    errors       : Index ;
+
+
+(*
+   dumpIndice -
+*)
+
+PROCEDURE dumpIndice (ptr: pair) ;
+BEGIN
+   printf (" left (%d), right (%d), status ",
+           ptr^.left, ptr^.right);
+   CASE ptr^.pairStatus OF
+
+   true   :  printf ("true") |
+   false  :  printf ("false") |
+   unknown:  printf ("unknown") |
+   visited:  printf ("visited") |
+   unused :  printf ("unused")
+
+   END ;
+   printf ("\n")
+END dumpIndice ;
+
+
+(*
+   dumpIndex -
+*)
+
+PROCEDURE dumpIndex (name: ARRAY OF CHAR; index: Index) ;
+BEGIN
+   printf ("status: %s\n", ADR (name)) ;
+   ForeachIndiceInIndexDo (index, dumpIndice)
+END dumpIndex ;
+
+
+(*
+   dumptInfo -
+*)
+
+PROCEDURE dumptInfo (t: tInfo) ;
+BEGIN
+   printf ("actual (%d), formal (%d), left (%d), right (%d), procedure (%d)\n",
+           t^.actual, t^.formal, t^.left, t^.right, t^.procedure) ;
+   dumpIndex ('visited', t^.visited) ;
+   dumpIndex ('resolved', t^.resolved) ;
+   dumpIndex ('unresolved', t^.unresolved)
+END dumptInfo ;
 
 
 (*
@@ -283,7 +338,8 @@ END firstTime ;
 
 
 (*
-   buildError4 -
+   buildError4 - generate a MetaString4 error.  This is only used when checking
+                 parameter compatibility.
 *)
 
 PROCEDURE buildError4 (tinfo: tInfo; left, right: CARDINAL) ;
@@ -300,7 +356,7 @@ BEGIN
             of paramters passed to ParameterTypeCompatible.  *)
          s := MetaString4 (tinfo^.format,
                            tinfo^.procedure,
-                           tinfo^.left, tinfo^.right,
+                           tinfo^.formal, tinfo^.actual,
                            tinfo^.nth) ;
          ErrorString (tinfo^.error, s)
       END ;
@@ -308,7 +364,8 @@ BEGIN
       IF (left # tinfo^.left) OR (right # tinfo^.right)
       THEN
          tinfo^.error := ChainError (tinfo^.token, tinfo^.error) ;
-         s := MetaString2 (InitString ("{%1Ead} and {%2ad} are incompatible in this context"), left, right) ;
+         s := MetaString2 (InitString ("{%1Ead} and {%2ad} are incompatible as formal and actual procedure parameters"),
+                           left, right) ;
          ErrorString (tinfo^.error, s)
       END
    END
@@ -316,7 +373,7 @@ END buildError4 ;
 
 
 (*
-   buildError2 -
+   buildError2 - generate a MetaString2 error.  This is called by all three kinds of errors.
 *)
 
 PROCEDURE buildError2 (tinfo: tInfo; left, right: CARDINAL) ;
@@ -327,17 +384,26 @@ BEGIN
    THEN
       IF tinfo^.error = NIL
       THEN
-         (* need to create top level error message first.  *)
+         (* Need to create top level error message first.  *)
          tinfo^.error := NewError (tinfo^.token) ;
          s := MetaString2 (tinfo^.format,
                            tinfo^.left, tinfo^.right) ;
          ErrorString (tinfo^.error, s)
       END ;
-      (* and also generate a sub error containing detail.  *)
+      (* Also generate a sub error containing detail.  *)
       IF (left # tinfo^.left) OR (right # tinfo^.right)
       THEN
          tinfo^.error := ChainError (tinfo^.token, tinfo^.error) ;
-         s := MetaString2 (InitString ("{%1Ead} and {%2ad} are incompatible in this context"), left, right) ;
+         CASE tinfo^.kind OF
+
+         parameter:  s := MetaString2 (InitString ("{%1Ead} and {%2ad} are incompatible as formal and actual procedure parameters"),
+                                       left, right) |
+         assignment: s := MetaString2 (InitString ("{%1Ead} and {%2ad} are assignment incompatible"),
+                                       left, right) |
+         expression: s := MetaString2 (InitString ("{%1Ead} and {%2ad} are expression incompatible"),
+                                       left, right)
+
+         END ;
          ErrorString (tinfo^.error, s)
       END
    END
@@ -548,11 +614,13 @@ END checkVarEquivalence ;
 
 
 (*
-   checkConstMeta -
+   checkConstMeta - performs a very course grained check against
+                    obviously incompatible type kinds.
+                    If left is a const string then it checks right against char.
 *)
 
-PROCEDURE checkConstMeta  (result: status;
-                           left, right: CARDINAL) : status ;
+PROCEDURE checkConstMeta (result: status; tinfo: tInfo;
+                          left, right: CARDINAL) : status ;
 VAR
    typeRight: CARDINAL ;
 BEGIN
@@ -566,9 +634,12 @@ BEGIN
       IF typeRight = NulSym
       THEN
          RETURN result
-      ELSIF IsSet (typeRight) OR IsEnumeration (typeRight)
+      ELSIF IsSet (typeRight) OR IsEnumeration (typeRight) OR IsProcedure (typeRight) OR
+            IsRecord (typeRight)
       THEN
          RETURN false
+      ELSE
+         RETURN doCheckPair (result, tinfo, Char, typeRight)
       END
    END ;
    RETURN result
@@ -583,7 +654,7 @@ END checkConstMeta ;
                            early on.  For example adding a string to an enum or set.
 *)
 
-PROCEDURE checkConstEquivalence (result: status;
+PROCEDURE checkConstEquivalence (result: status; tinfo: tInfo;
                                  left, right: CARDINAL) : status ;
 BEGIN
    IF isFalse (result)
@@ -595,10 +666,10 @@ BEGIN
       RETURN true
    ELSIF IsConst (left)
    THEN
-      RETURN checkConstMeta (result, left, right)
+      RETURN checkConstMeta (result, tinfo, left, right)
    ELSIF IsConst (right)
    THEN
-      RETURN checkConstMeta (result, right, left)
+      RETURN checkConstMeta (result, tinfo, right, left)
    END ;
    RETURN result
 END checkConstEquivalence ;
@@ -715,7 +786,7 @@ BEGIN
    THEN
       RETURN return (true, tinfo, left, right)
    ELSE
-      result := checkConstEquivalence (unknown, left, right) ;
+      result := checkConstEquivalence (unknown, tinfo, left, right) ;
       IF NOT isKnown (result)
       THEN
          result := checkVarEquivalence (unknown, tinfo, left, right) ;
@@ -1308,6 +1379,17 @@ END get ;
 
 
 (*
+   isInternal - return TRUE if sym is a constant lit which was declared
+                as internal.
+*)
+
+PROCEDURE isInternal (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsConstLit (sym) AND IsConstLitInternal (sym)
+END isInternal ;
+
+
+(*
    doCheck - keep obtaining an unresolved pair and check for the
              type compatibility.  This is the main check routine used by
              parameter, assignment and expression compatibility.
@@ -1320,10 +1402,22 @@ VAR
    result     : status ;
    left, right: CARDINAL ;
 BEGIN
+   IF debugging
+   THEN
+      dumptInfo (tinfo)
+   END ;
    WHILE get (tinfo^.unresolved, left, right, unknown) DO
       IF debugging
       THEN
-         printf ("doCheck (%d, %d)\n", left, right)
+         printf ("doCheck (%d, %d)\n", left, right) ;
+         dumptInfo (tinfo)
+      END ;
+      IF isInternal (left) OR isInternal (right)
+      THEN
+         (* Do not check constants which have been generated internally.
+            Currently these are generated by the default BY constant value
+            in a FOR loop.  *)
+         RETURN TRUE
       END ;
       (*
       IF in (tinfo^.visited, left, right)
@@ -1561,6 +1655,10 @@ BEGIN
    tinfo^.strict := FALSE ;
    tinfo^.isin := FALSE ;
    include (tinfo^.unresolved, actual, formal, unknown) ;
+   IF debugging
+   THEN
+      dumptInfo (tinfo)
+   END ;
    IF doCheck (tinfo)
    THEN
       deconstruct (tinfo) ;

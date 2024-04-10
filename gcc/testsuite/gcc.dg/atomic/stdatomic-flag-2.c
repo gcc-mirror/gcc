@@ -1,7 +1,7 @@
 /* Test atomic_flag routines for existence and execution.  Out-of-line
    function calls.  */
 /* The test needs a lockless atomic implementation.  */
-/* { dg-do run { xfail hppa*-*-hpux* } } */
+/* { dg-do run } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
 
 #include <stdatomic.h>

@@ -34,7 +34,7 @@ int main()
   // Reject array section in compound initialiser.
 #pragma omp target map( (struct S) { .ptr = (int *) arr[5:5] } )
 // { dg-error {expected '\]' before ':' token} "" { target *-*-* } .-1 }
-// { dg-warning {cast to pointer from integer of different size} "" { target *-*-* } .-2 }
+// { dg-warning {cast to pointer from integer of different size} "" { target lp64 } .-2 }
 // { dg-error {expected primary-expression before 'struct'} "" { target *-*-* } .-3 }
 // { dg-error {expected '\)' before 'struct'} "" { target *-*-* } .-4 }
   { }

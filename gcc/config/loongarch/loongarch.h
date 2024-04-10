@@ -868,7 +868,8 @@ typedef struct {
 /* A C expression for the cost of a branch instruction.  A value of
    1 is the default; other values are interpreted relative to that.  */
 
-#define BRANCH_COST(speed_p, predictable_p) loongarch_branch_cost
+#define BRANCH_COST(speed_p, predictable_p) la_branch_cost
+#define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
 /* Return the asm template for a conditional branch instruction.
    OPCODE is the opcode's mnemonic and OPERANDS is the asm template for
@@ -930,6 +931,7 @@ typedef struct {
   { "t8",	20 + GP_REG_FIRST },					\
   { "x",	21 + GP_REG_FIRST },					\
   { "fp",	22 + GP_REG_FIRST },					\
+  { "s9",	22 + GP_REG_FIRST },					\
   { "s0",	23 + GP_REG_FIRST },					\
   { "s1",	24 + GP_REG_FIRST },					\
   { "s2",	25 + GP_REG_FIRST },					\

@@ -129,10 +129,10 @@ diagnostic_emission_context::warn (const char *gmsgid, ...)
   auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
-  const bool result = emit_diagnostic_valist (DK_WARNING,
-					      &m_rich_loc, &m_metadata,
-					      pd.get_controlling_option (),
-					      gmsgid, &ap);
+  const bool result = emit_diagnostic_valist_meta (DK_WARNING,
+						   &m_rich_loc, &m_metadata,
+						   pd.get_controlling_option (),
+						   gmsgid, &ap);
   va_end (ap);
   return result;
 }
@@ -147,10 +147,10 @@ diagnostic_emission_context::inform (const char *gmsgid, ...)
   auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
-  emit_diagnostic_valist (DK_NOTE,
-			  &m_rich_loc, &m_metadata,
-			  pd.get_controlling_option (),
-			  gmsgid, &ap);
+  emit_diagnostic_valist_meta (DK_NOTE,
+			       &m_rich_loc, &m_metadata,
+			       pd.get_controlling_option (),
+			       gmsgid, &ap);
   va_end (ap);
 }
 

@@ -291,7 +291,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 
       /* C++14 DR 1684 removed this restriction.  */
       if (cxx_dialect < cxx14
-	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
+	  && DECL_IOBJ_MEMBER_FUNCTION_P (fun)
 	  && !CLASSTYPE_LITERAL_P (DECL_CONTEXT (fun)))
 	{
 	  ret = false;
@@ -1886,7 +1886,7 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
 					  non_constant_p, overflow_p);
       /* Check we aren't dereferencing a null pointer when calling a non-static
 	 member function, which is undefined behaviour.  */
-      if (i == 0 && DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
+      if (i == 0 && DECL_OBJECT_MEMBER_FUNCTION_P (fun)
 	  && integer_zerop (arg)
 	  /* But ignore calls from within compiler-generated code, to handle
 	     cases like lambda function pointer conversion operator thunks
@@ -6694,6 +6694,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
      object.  Make a note of this fact by marking the CONSTRUCTOR
      TREE_READONLY.  */
   if (TREE_CODE (t) == INIT_EXPR
+      && !empty_base
       && TREE_CODE (*valp) == CONSTRUCTOR
       && TYPE_READONLY (type))
     {
@@ -7105,6 +7106,16 @@ cxx_eval_switch_expr (const constexpr_ctx *ctx, tree t,
   cond = cxx_eval_constant_expression (ctx, cond, vc_prvalue,
 				       non_constant_p, overflow_p);
   VERIFY_CONSTANT (cond);
+  if (TREE_CODE (cond) != INTEGER_CST)
+    {
+      /* If the condition doesn't reduce to an INTEGER_CST it isn't a usable
+	 switch condition even if it's constant enough for other things
+	 (c++/113545).  */
+      gcc_checking_assert (ctx->quiet);
+      *non_constant_p = true;
+      return t;
+    }
+
   *jump_target = cond;
 
   tree body

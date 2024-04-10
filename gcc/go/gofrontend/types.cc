@@ -270,6 +270,16 @@ Type::set_is_error()
   this->classification_ = TYPE_ERROR;
 }
 
+// Return a string version of this type to use in an error message.
+
+std::string
+Type::message_name() const
+{
+  std::string ret;
+  this->do_message_name(&ret);
+  return ret;
+}
+
 // If this is a pointer type, return the type to which it points.
 // Otherwise, return NULL.
 
@@ -742,16 +752,14 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
     {
       if (rhs->interface_type() != NULL)
 	reason->assign(_("need explicit conversion"));
-      else if (lhs_orig->named_type() != NULL
-	       && rhs_orig->named_type() != NULL)
+      else
 	{
-	  size_t len = (lhs_orig->named_type()->name().length()
-			+ rhs_orig->named_type()->name().length()
-			+ 100);
+	  const std::string& lhs_name(lhs_orig->message_name());
+	  const std::string& rhs_name(rhs_orig->message_name());
+	  size_t len = lhs_name.length() + rhs_name.length() + 100;
 	  char* buf = new char[len];
 	  snprintf(buf, len, _("cannot use type %s as type %s"),
-		   rhs_orig->named_type()->message_name().c_str(),
-		   lhs_orig->named_type()->message_name().c_str());
+		   rhs_name.c_str(), lhs_name.c_str());
 	  reason->assign(buf);
 	  delete[] buf;
 	}
@@ -4244,6 +4252,33 @@ Integer_type::is_identical(const Integer_type* t) const
   return this->is_abstract_ == t->is_abstract_;
 }
 
+// Message name.
+
+void
+Integer_type::do_message_name(std::string* ret) const
+{
+  ret->append("<untyped ");
+  if (this->is_byte_)
+    ret->append("byte");
+  else if (this->is_rune_)
+    ret->append("rune");
+  else
+    {
+      if (this->is_unsigned_)
+	ret->push_back('u');
+      if (this->is_abstract_)
+	ret->append("int");
+      else
+	{
+	  ret->append("int");
+	  char buf[10];
+	  snprintf(buf, sizeof buf, "%d", this->bits_);
+	  ret->append(buf);
+	}
+    }
+  ret->push_back('>');
+}
+
 // Hash code.
 
 unsigned int
@@ -4382,6 +4417,21 @@ Float_type::is_identical(const Float_type* t) const
   return this->is_abstract_ == t->is_abstract_;
 }
 
+// Message name.
+
+void
+Float_type::do_message_name(std::string* ret) const
+{
+  ret->append("<untyped float");
+  if (!this->is_abstract_)
+    {
+      char buf[10];
+      snprintf(buf, sizeof buf, "%d", this->bits_);
+      ret->append(buf);
+    }
+  ret->push_back('>');
+}
+
 // Hash code.
 
 unsigned int
@@ -4494,6 +4544,21 @@ Complex_type::is_identical(const Complex_type *t) const
   if (this->bits_ != t->bits_)
     return false;
   return this->is_abstract_ == t->is_abstract_;
+}
+
+// Message name.
+
+void
+Complex_type::do_message_name(std::string* ret) const
+{
+  ret->append("<untyped complex");
+  if (!this->is_abstract_)
+    {
+      char buf[10];
+      snprintf(buf, sizeof buf, "%d", this->bits_);
+      ret->append(buf);
+    }
+  ret->push_back('>');
 }
 
 // Hash code.
@@ -4661,6 +4726,10 @@ class Sink_type : public Type
   { }
 
  protected:
+  void
+  do_message_name(std::string* ret) const
+  { ret->append("<SINK>"); }
+
   bool
   do_compare_is_identity(Gogo*)
   { return false; }
@@ -4695,6 +4764,70 @@ Type::make_sink_type()
 }
 
 // Class Function_type.
+
+// Message name.
+
+void
+Function_type::do_message_name(std::string* ret) const
+{
+  ret->append("func");
+  if (this->receiver_ != NULL)
+    {
+      ret->append(" (receiver ");
+      this->append_message_name(this->receiver_->type(), ret);
+      ret->append(") ");
+    }
+  this->append_signature(ret);
+}
+
+// Append just the signature to RET.
+
+void
+Function_type::append_signature(std::string* ret) const
+{
+  ret->push_back('(');
+  if (this->parameters_ != NULL)
+    {
+      bool first = true;
+      for (Typed_identifier_list::const_iterator p = this->parameters_->begin();
+	   p != this->parameters_->end();
+	   ++p)
+	{
+	  if (first)
+	    first = false;
+	  else
+	    ret->append(", ");
+	  this->append_message_name(p->type(), ret);
+	}
+    }
+  ret->push_back(')');
+
+  if (this->results_ != NULL)
+    {
+      if (this->results_->size() == 1)
+	{
+	  ret->push_back(' ');
+	  this->append_message_name(this->results_->front().type(), ret);
+	}
+      else
+	{
+	  ret->append(" (");
+	  bool first = true;
+	  for (Typed_identifier_list::const_iterator p =
+		 this->results_->begin();
+	       p != this->results_->end();
+	       ++p)
+	    {
+	      if (first)
+		first = false;
+	      else
+		ret->append(", ");
+	      this->append_message_name(p->type(), ret);
+	    }
+	  ret->push_back(')');
+	}
+    }
+}
 
 // Traversal.
 
@@ -5548,6 +5681,20 @@ Type::make_backend_function_type(Typed_identifier* receiver,
 
 // Class Pointer_type.
 
+// Message name.
+
+void
+Pointer_type::do_message_name(std::string* ret) const
+{
+  if (this->to_type_->is_void_type())
+    ret->append("unsafe.Pointer");
+  else
+    {
+      ret->push_back('*');
+      this->append_message_name(this->to_type_, ret);
+    }
+}
+
 // Traversal.
 
 int
@@ -5764,6 +5911,10 @@ class Call_multiple_result_type : public Type
   { }
 
  protected:
+  void
+  do_message_name(std::string* ret) const
+  { ret->append("<call-multiple-result>"); }
+
   bool
   do_has_pointer() const
   { return false; }
@@ -5939,6 +6090,41 @@ Struct_type::Identical_structs Struct_type::identical_structs;
 // structs.
 
 Struct_type::Struct_method_tables Struct_type::struct_method_tables;
+
+// Message name.
+
+void
+Struct_type::do_message_name(std::string* ret) const
+{
+  if (this->fields_ == NULL || this->fields_->empty())
+    {
+      ret->append("struct{}");
+      return;
+    }
+
+  ret->append("struct {");
+
+  bool first = true;
+  for (Struct_field_list::const_iterator p = this->fields_->begin();
+       p != this->fields_->end();
+       ++p)
+    {
+      if (first)
+	first = false;
+      else
+	ret->append("; ");
+
+      if (!p->is_anonymous())
+	{
+	  ret->append(p->field_name());
+	  ret->push_back(' ');
+	}
+
+      this->append_message_name(p->type(), ret);
+    }
+
+  ret->append(" }");
+}
 
 // Traversal.
 
@@ -7344,6 +7530,35 @@ Array_type::is_identical(const Array_type* t, int flags) const
   return false;
 }
 
+// Message name.
+
+void
+Array_type::do_message_name(std::string* ret) const
+{
+  ret->push_back('[');
+  if (!this->is_slice_type())
+    {
+      Numeric_constant nc;
+      if (!this->length_->numeric_constant_value(&nc))
+	ret->append("<unknown length>");
+      else
+	{
+	  mpz_t val;
+	  if (!nc.to_int(&val))
+	    ret->append("<unknown length>");
+	  else
+	    {
+	      char* s = mpz_get_str(NULL, 10, val);
+	      ret->append(s);
+	      free(s);
+	      mpz_clear(val);
+	    }
+	}
+    }
+  ret->push_back(']');
+  this->append_message_name(this->element_type_, ret);
+}
+
 // Traversal.
 
 int
@@ -8249,6 +8464,17 @@ Map_type::backend_zero_value(Gogo* gogo)
   return zvar;
 }
 
+// Message name.
+
+void
+Map_type::do_message_name(std::string* ret) const
+{
+  ret->append("map[");
+  this->append_message_name(this->key_type_, ret);
+  ret->push_back(']');
+  this->append_message_name(this->val_type_, ret);
+}
+
 // Traversal.
 
 int
@@ -8803,6 +9029,20 @@ Type::make_map_type(Type* key_type, Type* val_type, Location location)
 
 // Class Channel_type.
 
+// Message name.
+
+void
+Channel_type::do_message_name(std::string* ret) const
+{
+  if (!this->may_send_)
+    ret->append("<-");
+  ret->append("chan");
+  if (!this->may_receive_)
+    ret->append("<-");
+  ret->push_back(' ');
+  this->append_message_name(this->element_type_, ret);
+}
+
 // Verify.
 
 bool
@@ -9051,6 +9291,45 @@ Interface_type::method_count() const
 {
   go_assert(this->methods_are_finalized_ || saw_errors());
   return this->all_methods_ == NULL ? 0 : this->all_methods_->size();
+}
+
+// Message name.
+
+void
+Interface_type::do_message_name(std::string* ret) const
+{
+  const Typed_identifier_list* methods = (this->methods_are_finalized_
+					  ? this->all_methods_
+					  : this->parse_methods_);
+  if (methods == NULL || methods->empty())
+    {
+      ret->append("interface{}");
+      return;
+    }
+
+  ret->append("interface {");
+
+  bool first = true;
+  for (Typed_identifier_list::const_iterator p = methods->begin();
+       p != methods->end();
+       ++p)
+    {
+      if (first)
+	first = false;
+      else
+	ret->append("; ");
+
+      if (!p->name().empty())
+	ret->append(p->name());
+
+      Function_type* ft = p->type()->function_type();
+      if (ft == NULL)
+	this->append_message_name(p->type(), ret);
+      else
+	ft->append_signature(ret);
+    }
+
+  ret->append(" }");
 }
 
 // Traversal.
@@ -10295,10 +10574,10 @@ Named_type::name() const
 
 // Return the name of the type to use in an error message.
 
-std::string
-Named_type::message_name() const
+void
+Named_type::do_message_name(std::string* ret) const
 {
-  return this->named_object_->message_name();
+  ret->append(this->named_object_->message_name());
 }
 
 // Return the base type for this type.  We have to be careful about
@@ -12817,6 +13096,17 @@ Forward_declaration_type::add_existing_method(Named_object* nom)
   if (no->is_unknown())
     no->declare_as_type();
   no->type_declaration_value()->add_existing_method(nom);
+}
+
+// Message name.
+
+void
+Forward_declaration_type::do_message_name(std::string* ret) const
+{
+  if (this->is_defined())
+    this->append_message_name(this->real_type(), ret);
+  else
+    ret->append(this->named_object_->message_name());
 }
 
 // Traversal.

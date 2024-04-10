@@ -1,3 +1,4 @@
+/* { dg-do compile { target lto } }
 /* { dg-options "-O2 -flto" } */
 
 void foo ()

@@ -1120,7 +1120,21 @@ unformatted_read (st_parameter_dt *dtp, bt type,
 	  dtp->u.p.current_unit->child_dtio++;
 	  dtp->u.p.ufdtio_ptr (dest, &unit, child_iostat, child_iomsg,
 			       child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
+
 	  return;
     }
 
@@ -1250,7 +1264,20 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	  dtp->u.p.current_unit->child_dtio++;
 	  dtp->u.p.ufdtio_ptr (source, &unit, child_iostat, child_iomsg,
 			       child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
 	  return;
     }
 
@@ -1730,7 +1757,20 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, f->u.udf.vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
 
 	  if (f->u.udf.string_len != 0)
 	    free (iotype);
@@ -2072,11 +2112,11 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  dtp->u.p.skips = dtp->u.p.pending_spaces = 0;
 	}
 
-      bytes_used = dtp->u.p.current_unit->recl
-		   - dtp->u.p.current_unit->bytes_left;
-
       if (is_stream_io(dtp))
-	bytes_used = 0;
+	bytes_used = dtp->u.p.current_unit->fbuf->act;
+      else
+	bytes_used = dtp->u.p.current_unit->recl
+		    - dtp->u.p.current_unit->bytes_left;
 
       switch (t)
 	{
@@ -2214,7 +2254,20 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, f->u.udf.vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
 
 	  if (f->u.udf.string_len != 0)
 	    free (iotype);
@@ -2452,7 +2505,11 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  p = ((char *) p) + size;
 	}
 
-      pos = dtp->u.p.current_unit->recl - dtp->u.p.current_unit->bytes_left;
+      if (is_stream_io(dtp))
+	pos = dtp->u.p.current_unit->fbuf->act;
+      else
+	pos = dtp->u.p.current_unit->recl - dtp->u.p.current_unit->bytes_left;
+
       dtp->u.p.max_pos = (dtp->u.p.max_pos > pos) ? dtp->u.p.max_pos : pos;
     }
 
@@ -4552,7 +4609,7 @@ st_read_done (st_parameter_dt *dtp)
       if (dtp->u.p.current_unit->au)
 	{
 	  if (dtp->common.flags & IOPARM_DT_HAS_ID)
-	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au, AIO_READ_DONE);  
+	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au, AIO_READ_DONE);
 	  else
 	    {
 	      if (dtp->u.p.async)

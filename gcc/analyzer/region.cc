@@ -1306,10 +1306,10 @@ void
 frame_region::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   if (simple)
-    pp_printf (pp, "frame: %qs@%i", function_name (m_fun), get_stack_depth ());
+    pp_printf (pp, "frame: %qs@%i", function_name (&m_fun), get_stack_depth ());
   else
     pp_printf (pp, "frame_region(%qs, index: %i, depth: %i)",
-	       function_name (m_fun), m_index, get_stack_depth ());
+	       function_name (&m_fun), m_index, get_stack_depth ());
 }
 
 const decl_region *
@@ -1334,14 +1334,14 @@ frame_region::get_region_for_local (region_model_manager *mgr,
 	  /* Fall through.  */
 	case PARM_DECL:
 	case RESULT_DECL:
-	  gcc_assert (DECL_CONTEXT (expr) == m_fun->decl);
+	  gcc_assert (DECL_CONTEXT (expr) == m_fun.decl);
 	  break;
 	case SSA_NAME:
 	  {
 	    if (tree var = SSA_NAME_VAR (expr))
 	      {
 		if (DECL_P (var))
-		  gcc_assert (DECL_CONTEXT (var) == m_fun->decl);
+		  gcc_assert (DECL_CONTEXT (var) == m_fun.decl);
 	      }
 	    else if (ctxt)
 	      if (const extrinsic_state *ext_state = ctxt->get_ext_state ())
@@ -1351,7 +1351,7 @@ frame_region::get_region_for_local (region_model_manager *mgr,
 		    const gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
 		    const supernode *snode
 		      = sg->get_supernode_for_stmt (def_stmt);
-		    gcc_assert (snode->get_function () == m_fun);
+		    gcc_assert (snode->get_function () == &m_fun);
 		  }
 	  }
 	  break;
@@ -1988,54 +1988,6 @@ offset_region::get_relative_symbolic_offset (region_model_manager *mgr
 					      ATTRIBUTE_UNUSED) const
 {
   return get_byte_offset ();
-}
-
-/* Implementation of region::get_byte_size_sval vfunc for offset_region.  */
-
-const svalue *
-offset_region::get_byte_size_sval (region_model_manager *mgr) const
-{
-  tree offset_cst = get_byte_offset ()->maybe_get_constant ();
-  byte_size_t byte_size;
-  /* If the offset points in the middle of the region,
-     return the remaining bytes.  */
-  if (get_byte_size (&byte_size) && offset_cst)
-    {
-      byte_size_t offset = wi::to_offset (offset_cst);
-      byte_range r (0, byte_size);
-      if (r.contains_p (offset))
-	{
-	  tree remaining_byte_size = wide_int_to_tree (size_type_node,
-						       byte_size - offset);
-	  return mgr->get_or_create_constant_svalue (remaining_byte_size);
-	}
-    }
-
-  return region::get_byte_size_sval (mgr);
-}
-
-/* Implementation of region::get_bit_size_sval vfunc for offset_region.  */
-
-const svalue *
-offset_region::get_bit_size_sval (region_model_manager *mgr) const
-{
-  tree offset_cst = get_bit_offset (mgr)->maybe_get_constant ();
-  bit_size_t bit_size;
-  /* If the offset points in the middle of the region,
-     return the remaining bits.  */
-  if (get_bit_size (&bit_size) && offset_cst)
-    {
-      bit_size_t offset = wi::to_offset (offset_cst);
-      bit_range r (0, bit_size);
-      if (r.contains_p (offset))
-	{
-	  tree remaining_bit_size = wide_int_to_tree (size_type_node,
-						       bit_size - offset);
-	  return mgr->get_or_create_constant_svalue (remaining_bit_size);
-	}
-    }
-
-  return region::get_bit_size_sval (mgr);
 }
 
 /* class sized_region : public region.  */

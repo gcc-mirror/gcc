@@ -76,6 +76,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "target.h"
 
@@ -436,7 +438,7 @@ static void init_vn_nary_op_from_pieces (vn_nary_op_t, unsigned int,
 					 enum tree_code, tree, tree *);
 static tree vn_lookup_simplify_result (gimple_match_op *);
 static vn_reference_t vn_reference_lookup_or_insert_for_pieces
-	  (tree, alias_set_type, alias_set_type, tree,
+	  (tree, alias_set_type, alias_set_type, poly_int64, poly_int64, tree,
 	   vec<vn_reference_op_s, va_heap>, tree);
 
 /* Return whether there is value numbering information for a given SSA name.  */
@@ -746,6 +748,8 @@ vn_reference_compute_hash (const vn_reference_t vr1)
 	    vn_reference_op_compute_hash (vro, hstate);
 	}
     }
+  /* Do not hash vr1->offset or vr1->max_size, we want to get collisions
+     to be able to identify compatible results.  */
   result = hstate.end ();
   /* ??? We would ICE later if we hash instead of adding that in. */
   if (vr1->vuse)
@@ -769,6 +773,16 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
   /* The VOP needs to be the same.  */
   if (vr1->vuse != vr2->vuse)
     return false;
+
+  /* The offset/max_size used for the ao_ref during lookup has to be
+     the same.  */
+  if (maybe_ne (vr1->offset, vr2->offset)
+      || maybe_ne (vr1->max_size, vr2->max_size))
+    {
+      /* But nothing known in the prevailing entry is OK to be used.  */
+      if (maybe_ne (vr1->offset, 0) || known_size_p (vr1->max_size))
+	return false;
+    }
 
   /* If the operands are the same we are done.  */
   if (vr1->operands == vr2->operands)
@@ -1203,21 +1217,11 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
-	  /* We recorded the lower bound and the element size.  */
-	  if (!poly_int_tree_p (op->op0)
-	      || !poly_int_tree_p (op->op1)
-	      || TREE_CODE (op->op2) != INTEGER_CST)
+	  /* Use the recorded constant offset.  */
+	  if (maybe_eq (op->off, -1))
 	    max_size = -1;
 	  else
-	    {
-	      poly_offset_int woffset
-		= wi::sext (wi::to_poly_offset (op->op0)
-			    - wi::to_poly_offset (op->op1),
-			    TYPE_PRECISION (sizetype));
-	      woffset *= wi::to_offset (op->op2) * vn_ref_op_align_unit (op);
-	      woffset <<= LOG2_BITS_PER_UNIT;
-	      offset += woffset;
-	    }
+	    offset += op->off * BITS_PER_UNIT;
 	  break;
 
 	case REALPART_EXPR:
@@ -1724,7 +1728,8 @@ re_valueize:
 	}
       /* If it transforms a non-constant ARRAY_REF into a constant
 	 one, adjust the constant offset.  */
-      else if (vro->opcode == ARRAY_REF
+      else if ((vro->opcode == ARRAY_REF
+		|| vro->opcode == ARRAY_RANGE_REF)
 	       && known_eq (vro->off, -1)
 	       && poly_int_tree_p (vro->op0)
 	       && poly_int_tree_p (vro->op1)
@@ -1934,6 +1939,7 @@ vn_walk_cb_data::finish (alias_set_type set, alias_set_type base_set, tree val)
   vec<vn_reference_op_s> &operands
     = saved_operands.exists () ? saved_operands : vr->operands;
   return vn_reference_lookup_or_insert_for_pieces (last_vuse, set, base_set,
+						   vr->offset, vr->max_size,
 						   vr->type, operands, val);
 }
 
@@ -2287,7 +2293,12 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 				    BITS_PER_UNIT
 				    - (maxsizei % BITS_PER_UNIT));
       if (INTEGRAL_TYPE_P (type))
-	sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+	{
+	  if (TYPE_MODE (type) != BLKmode)
+	    sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+	  else
+	    sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
+	}
       if (sz > needed_len)
 	{
 	  memcpy (this_buffer + (sz - needed_len), buffer, needed_len);
@@ -2405,6 +2416,8 @@ static vn_reference_t
 vn_reference_lookup_or_insert_for_pieces (tree vuse,
 					  alias_set_type set,
 					  alias_set_type base_set,
+					  poly_int64 offset,
+					  poly_int64 max_size,
 					  tree type,
 					  vec<vn_reference_op_s,
 					        va_heap> operands,
@@ -2418,15 +2431,18 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
   vr1.type = type;
   vr1.set = set;
   vr1.base_set = base_set;
+  vr1.offset = offset;
+  vr1.max_size = max_size;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if (vn_reference_lookup_1 (&vr1, &result))
     return result;
+
   if (TREE_CODE (value) == SSA_NAME)
     value_id = VN_INFO (value)->value_id;
   else
     value_id = get_or_alloc_constant_value_id (value);
-  return vn_reference_insert_pieces (vuse, set, base_set, type,
-				     operands.copy (), value, value_id);
+  return vn_reference_insert_pieces (vuse, set, base_set, offset, max_size,
+				     type, operands.copy (), value, value_id);
 }
 
 /* Return a value-number for RCODE OPS... either by looking up an existing
@@ -2785,25 +2801,29 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    }
 	  else
 	    {
-	      tree *saved_last_vuse_ptr = data->last_vuse_ptr;
-	      /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
-	      data->last_vuse_ptr = NULL;
 	      tree saved_vuse = vr->vuse;
 	      hashval_t saved_hashcode = vr->hashcode;
-	      void *res = vn_reference_lookup_2 (ref, gimple_vuse (def_stmt),
-						 data);
+	      if (vr->vuse)
+		vr->hashcode = vr->hashcode - SSA_NAME_VERSION (vr->vuse);
+	      vr->vuse = vuse_ssa_val (gimple_vuse (def_stmt));
+	      if (vr->vuse)
+		vr->hashcode = vr->hashcode + SSA_NAME_VERSION (vr->vuse);
+	      vn_reference_t vnresult = NULL;
+	      /* Do not use vn_reference_lookup_2 since that might perform
+		 expression hashtable insertion but this lookup crosses
+		 a possible may-alias making such insertion conditionally
+		 invalid.  */
+	      vn_reference_lookup_1 (vr, &vnresult);
 	      /* Need to restore vr->vuse and vr->hashcode.  */
 	      vr->vuse = saved_vuse;
 	      vr->hashcode = saved_hashcode;
-	      data->last_vuse_ptr = saved_last_vuse_ptr;
-	      if (res && res != (void *)-1)
+	      if (vnresult)
 		{
-		  vn_reference_t vnresult = (vn_reference_t) res;
 		  if (TREE_CODE (rhs) == SSA_NAME)
 		    rhs = SSA_VAL (rhs);
 		  if (vnresult->result
 		      && operand_equal_p (vnresult->result, rhs, 0))
-		    return res;
+		    return vnresult;
 		}
 	    }
 	}
@@ -2967,8 +2987,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    }
 	  else
 	    {
-	      unsigned buflen = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vr->type)) + 1;
-	      if (INTEGRAL_TYPE_P (vr->type))
+	      unsigned buflen
+		= TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vr->type)) + 1;
+	      if (INTEGRAL_TYPE_P (vr->type)
+		  && TYPE_MODE (vr->type) != BLKmode)
 		buflen = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (vr->type)) + 1;
 	      unsigned char *buf = XALLOCAVEC (unsigned char, buflen);
 	      memset (buf, TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 1)),
@@ -3165,7 +3187,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 			 offset + maxsize - 1.  */
 		      HOST_WIDE_INT sz = maxsizei / BITS_PER_UNIT;
 		      if (INTEGRAL_TYPE_P (type))
-			sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+			{
+			  if (TYPE_MODE (type) != BLKmode)
+			    sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+			  else
+			    sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
+			}
 		      amnt = ((unsigned HOST_WIDE_INT) offset2i + size2i
 			      - offseti - maxsizei) % BITS_PER_UNIT;
 		      if (amnt)
@@ -3613,6 +3640,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    return (void *)-1;
 	}
       *ref = r;
+      vr->offset = r.offset;
+      vr->max_size = r.max_size;
 
       /* Do not update last seen VUSE after translating.  */
       data->last_vuse_ptr = NULL;
@@ -3801,6 +3830,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       if (maybe_ne (ref->size, r.size))
 	return (void *)-1;
       *ref = r;
+      vr->offset = r.offset;
+      vr->max_size = r.max_size;
 
       /* Do not update last seen VUSE after translating.  */
       data->last_vuse_ptr = NULL;
@@ -3865,6 +3896,10 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
   vr1.type = type;
   vr1.set = set;
   vr1.base_set = base_set;
+  /* We can pretend there's no extra info fed in since the ao_refs offset
+     and max_size are computed only from the VN reference ops.  */
+  vr1.offset = 0;
+  vr1.max_size = -1;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if ((cst = fully_constant_vn_reference_p (&vr1)))
     return cst;
@@ -3991,6 +4026,8 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   ao_ref_init (&op_ref, op);
   vr1.set = ao_ref_alias_set (&op_ref);
   vr1.base_set = ao_ref_base_alias_set (&op_ref);
+  vr1.offset = 0;
+  vr1.max_size = -1;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if (mask == NULL_TREE)
     if (tree cst = fully_constant_vn_reference_p (&vr1))
@@ -4013,7 +4050,13 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
       if (!valueized_anything
 	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.base_set,
 					     vr1.type, ops_for_ref))
-	ao_ref_init (&r, op);
+	{
+	  ao_ref_init (&r, op);
+	  /* Record the extra info we're getting from the full ref.  */
+	  ao_ref_base (&r);
+	  vr1.offset = r.offset;
+	  vr1.max_size = r.max_size;
+	}
       vn_walk_cb_data data (&vr1, r.ref ? NULL_TREE : op,
 			    last_vuse_ptr, kind, tbaa_p, mask,
 			    redundant_store_removal_p);
@@ -4069,6 +4112,8 @@ vn_reference_lookup_call (gcall *call, vn_reference_t *vnresult,
   vr->punned = false;
   vr->set = 0;
   vr->base_set = 0;
+  vr->offset = 0;
+  vr->max_size = -1;
   vr->hashcode = vn_reference_compute_hash (vr);
   vn_reference_lookup_1 (vr, vnresult);
 }
@@ -4132,6 +4177,10 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   ao_ref_init (&op_ref, op);
   vr1->set = ao_ref_alias_set (&op_ref);
   vr1->base_set = ao_ref_base_alias_set (&op_ref);
+  /* Specifically use an unknown extent here, we're not doing any lookup
+     and assume the caller didn't either (or it went VARYING).  */
+  vr1->offset = 0;
+  vr1->max_size = -1;
   vr1->hashcode = vn_reference_compute_hash (vr1);
   vr1->result = TREE_CODE (result) == SSA_NAME ? SSA_VAL (result) : result;
   vr1->result_vdef = vdef;
@@ -4174,7 +4223,8 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
 
 vn_reference_t
 vn_reference_insert_pieces (tree vuse, alias_set_type set,
-			    alias_set_type base_set, tree type,
+			    alias_set_type base_set,
+			    poly_int64 offset, poly_int64 max_size, tree type,
 			    vec<vn_reference_op_s> operands,
 			    tree result, unsigned int value_id)
 
@@ -4191,6 +4241,8 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set,
   vr1->punned = false;
   vr1->set = set;
   vr1->base_set = base_set;
+  vr1->offset = offset;
+  vr1->max_size = max_size;
   vr1->hashcode = vn_reference_compute_hash (vr1);
   if (result && TREE_CODE (result) == SSA_NAME)
     result = SSA_VAL (result);
@@ -5709,6 +5761,8 @@ visit_reference_op_call (tree lhs, gcall *stmt)
       vr2->type = vr1.type;
       vr2->punned = vr1.punned;
       vr2->set = vr1.set;
+      vr2->offset = vr1.offset;
+      vr2->max_size = vr1.max_size;
       vr2->base_set = vr1.base_set;
       vr2->hashcode = vr1.hashcode;
       vr2->result = lhs;
@@ -7707,12 +7761,15 @@ rpo_elim::eliminate_avail (basic_block bb, tree op)
       if (SSA_NAME_IS_DEFAULT_DEF (valnum))
 	return valnum;
       vn_ssa_aux_t valnum_info = VN_INFO (valnum);
-      /* See above.  */
-      if (!valnum_info->visited)
-	return valnum;
       vn_avail *av = valnum_info->avail;
       if (!av)
-	return NULL_TREE;
+	{
+	  /* See above.  But when there's availability info prefer
+	     what we recorded there for example to preserve LC SSA.  */
+	  if (!valnum_info->visited)
+	    return valnum;
+	  return NULL_TREE;
+	}
       if (av->location == bb->index)
 	/* On tramp3d 90% of the cases are here.  */
 	return ssa_name (av->leader);
@@ -7757,6 +7814,11 @@ rpo_elim::eliminate_avail (basic_block bb, tree op)
 	  av = av->next;
 	}
       while (av);
+      /* While we prefer avail we have to fallback to using the value
+	 directly if defined outside of the region when none of the
+	 available defs suit.  */
+      if (!valnum_info->visited)
+	return valnum;
     }
   else if (valnum != VN_TOP)
     /* valnum is is_gimple_min_invariant.  */

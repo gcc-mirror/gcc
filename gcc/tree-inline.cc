@@ -370,7 +370,7 @@ remap_decl (tree decl, copy_body_data *id)
 	 need this decl for TYPE_STUB_DECL.  */
       insert_decl_map (id, decl, t);
 
-      if (!DECL_P (t))
+      if (!DECL_P (t) || t == decl)
 	return t;
 
       /* Remap types, if necessary.  */
@@ -765,7 +765,7 @@ remap_decls (tree decls, vec<tree, va_gc> **nonlocalized_list,
 	 TREE_CHAIN.  If we remapped this variable to the return slot, it's
 	 already declared somewhere else, so don't declare it here.  */
 
-      if (new_var == id->retvar)
+      if (new_var == old_var || new_var == id->retvar)
 	;
       else if (!new_var)
         {
@@ -2984,24 +2984,13 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
       gimple *stmt = gsi_stmt (si);
       if (is_gimple_call (stmt))
 	{
-	  tree old_lhs = gimple_call_lhs (stmt);
 	  struct cgraph_edge *edge = id->dst_node->get_edge (stmt);
 	  if (edge)
 	    {
-	      gimple *new_stmt
-		= cgraph_edge::redirect_call_stmt_to_callee (edge);
-	      /* If IPA-SRA transformation, run as part of edge redirection,
-		 removed the LHS because it is unused, save it to
-		 killed_new_ssa_names so that we can prune it from debug
-		 statements.  */
-	      if (old_lhs
-		  && TREE_CODE (old_lhs) == SSA_NAME
-		  && !gimple_call_lhs (new_stmt))
-		{
-		  if (!id->killed_new_ssa_names)
-		    id->killed_new_ssa_names = new hash_set<tree> (16);
-		  id->killed_new_ssa_names->add (old_lhs);
-		}
+	      if (!id->killed_new_ssa_names)
+		id->killed_new_ssa_names = new hash_set<tree> (16);
+	      cgraph_edge::redirect_call_stmt_to_callee (edge,
+		id->killed_new_ssa_names);
 
 	      if (stmt == last && id->call_stmt && maybe_clean_eh_stmt (stmt))
 		gimple_purge_dead_eh_edges (bb);
@@ -3328,8 +3317,12 @@ copy_body (copy_body_data *id,
   body = copy_cfg_body (id, entry_block_map, exit_block_map,
 			new_entry);
   copy_debug_stmts (id);
-  delete id->killed_new_ssa_names;
-  id->killed_new_ssa_names = NULL;
+  if (id->killed_new_ssa_names)
+    {
+      ipa_release_ssas_in_hash (id->killed_new_ssa_names);
+      delete id->killed_new_ssa_names;
+      id->killed_new_ssa_names = NULL;
+    }
 
   return body;
 }
@@ -3680,6 +3673,10 @@ initialize_inlined_parameters (copy_body_data *id, gimple *stmt,
 
       setup_one_parameter (id, p, static_chain, fn, bb, &vars);
     }
+
+  /* Reverse so the variables appear in the correct order in DWARF
+     debug info.  */
+  vars = nreverse (vars);
 
   declare_inline_vars (id->block, vars);
 }
@@ -6603,7 +6600,15 @@ copy_fn (tree fn, tree& parms, tree& result)
   id.src_cfun = DECL_STRUCT_FUNCTION (fn);
   id.decl_map = &decl_map;
 
-  id.copy_decl = copy_decl_no_change;
+  id.copy_decl = [] (tree decl, copy_body_data *id)
+    {
+      if (TREE_CODE (decl) == TYPE_DECL || TREE_CODE (decl) == CONST_DECL)
+	/* Don't make copies of local types or injected enumerators,
+	   the C++ constexpr evaluator doesn't need them and they
+	   confuse modules streaming.  */
+	return decl;
+      return copy_decl_no_change (decl, id);
+    };
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
   id.transform_new_cfg = false;
   id.transform_return_to_modify = false;

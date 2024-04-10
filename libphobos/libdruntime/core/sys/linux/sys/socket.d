@@ -71,7 +71,6 @@ enum
     AF_BRIDGE     = PF_BRIDGE,
     AF_ATMPVC     = PF_ATMPVC,
     AF_X25        = PF_X25,
-    AF_INET6      = PF_INET6,
     AF_ROSE       = PF_ROSE,
     AF_DECnet     = PF_DECnet,
     AF_NETBEUI    = PF_NETBEUI,

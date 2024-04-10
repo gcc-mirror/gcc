@@ -12,6 +12,7 @@
     $(TR
         $(TD Points in Time)
         $(TD
+            $(REF_ALTTEXT Clock, Clock, std, datetime, systime)$(NBSP)
             $(REF_ALTTEXT Date, Date, std, datetime, date)$(NBSP)
             $(REF_ALTTEXT TimeOfDay, TimeOfDay, std, datetime, date)$(NBSP)
             $(REF_ALTTEXT DateTime, DateTime, std, datetime, date)$(NBSP)
@@ -19,7 +20,7 @@
         )
     )
     $(TR
-        $(TD Timezones)
+        $(TD $(MREF_ALTTEXT Timezones, std, datetime, timezone))
         $(TD
             $(REF_ALTTEXT TimeZone, TimeZone, std, datetime, timezone)$(NBSP)
             $(REF_ALTTEXT UTC, UTC, std, datetime, timezone)$(NBSP)
@@ -38,7 +39,7 @@
         )
     )
     $(TR
-        $(TD Durations of Time)
+        $(TD $(MREF_ALTTEXT Durations of Time, core, time))
         $(TD
             $(REF_ALTTEXT Duration, Duration, core, time)$(NBSP)
             $(REF_ALTTEXT weeks, weeks, core, time)$(NBSP)
@@ -62,7 +63,7 @@
     )
     ))
 
-    This functionality is separated into the following modules
+    This functionality is separated into the following modules:
 
     $(UL
         $(LI $(MREF std, datetime, date) for points in time without timezones.)
@@ -73,6 +74,7 @@
     )
 
     See_Also:
+        $(MREF core, time)$(BR)
         $(DDLINK intro-to-datetime, Introduction to std.datetime,
                  Introduction to std&#46;datetime)<br>
         $(HTTP en.wikipedia.org/wiki/ISO_8601, ISO 8601)<br>
@@ -87,7 +89,7 @@
 +/
 module std.datetime;
 
-/// Get the current time from the system clock
+/// Get the current time from the system clock.
 @safe unittest
 {
     import std.datetime.systime : SysTime, Clock;

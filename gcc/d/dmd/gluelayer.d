@@ -3,7 +3,7 @@
  *
  * This 'glues' either the DMC or GCC back-end to the front-end.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/gluelayer.d, _gluelayer.d)
@@ -30,19 +30,9 @@ version (NoBackend)
     struct TYPE;
     alias type = TYPE;
 
-    extern (C++)
+    extern(C++) abstract class ObjcGlue
     {
-        // iasm
-        Statement asmSemantic(AsmStatement s, Scope* sc)
-        {
-            sc.func.hasReturnExp = 8;
-            return null;
-        }
-
-        extern(C++) abstract class ObjcGlue
-        {
-            static void initialize() {}
-        }
+        static void initialize() {}
     }
 }
 else version (IN_GCC)
@@ -52,11 +42,6 @@ else version (IN_GCC)
     alias Symbol = tree_node;
     alias code = tree_node;
     alias type = tree_node;
-
-    extern (C++)
-    {
-        Statement asmSemantic(AsmStatement s, Scope* sc);
-    }
 
     // stubs
     extern(C++) abstract class ObjcGlue
@@ -70,6 +55,5 @@ else
     public import dmd.backend.type : type;
     public import dmd.backend.el : elem;
     public import dmd.backend.code_x86 : code;
-    public import dmd.iasm : asmSemantic;
     public import dmd.objc_glue : ObjcGlue;
 }

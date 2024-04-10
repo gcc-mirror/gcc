@@ -20,4 +20,4 @@ uint64_t f(std::vector<uint64_t>& data, size_t start, size_t end){
     return total;
 }
 
-/* { dg-final { scan-tree-dump-not "throw" "vrp1"} } */
+/* { dg-final { scan-tree-dump-not "throw" "vrp1" { xfail hppa*64*-*-* } } } */

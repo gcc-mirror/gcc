@@ -7980,10 +7980,13 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
       && DECL_WEAK (decl))
     return false;
 
-  /* We cannot do a tailcall for an indirect call by descriptor if all the
-     argument registers are used because the only register left to load the
-     address is IP and it will already contain the static chain.  */
-  if (!decl && CALL_EXPR_BY_DESCRIPTOR (exp) && !flag_trampolines)
+  /* We cannot tailcall an indirect call by descriptor if all the call-clobbered
+     general registers are live (r0-r3 and ip).  This can happen when:
+      - IP contains the static chain, or
+      - IP is needed for validating the PAC signature.  */
+  if (!decl
+      && ((CALL_EXPR_BY_DESCRIPTOR (exp) && !flag_trampolines)
+	  || arm_current_function_pac_enabled_p()))
     {
       tree fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
       CUMULATIVE_ARGS cum;
@@ -25610,11 +25613,12 @@ arm_final_prescan_insn (rtx_insn *insn)
 	      break;
 
 	    case INSN:
-	      /* Instructions using or affecting the condition codes make it
-		 fail.  */
+	      /* Check the instruction is explicitly marked as predicable.
+		 Instructions using or affecting the condition codes are not.  */
 	      scanbody = PATTERN (this_insn);
 	      if (!(GET_CODE (scanbody) == SET
 		    || GET_CODE (scanbody) == PARALLEL)
+		  || get_attr_predicable (this_insn) != PREDICABLE_YES
 		  || get_attr_conds (this_insn) != CONDS_NOCOND)
 		fail = TRUE;
 	      break;
@@ -29257,6 +29261,8 @@ arm_output_mi_thunk (FILE *file, tree thunk, HOST_WIDE_INT delta,
   const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
 
   assemble_start_function (thunk, fnname);
+  if (aarch_bti_enabled ())
+    emit_insn (aarch_gen_bti_c ());
   if (TARGET_32BIT)
     arm32_output_mi_thunk (file, thunk, delta, vcall_offset, function);
   else

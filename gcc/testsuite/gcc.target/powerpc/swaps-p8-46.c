@@ -1,6 +1,6 @@
 /* { dg-do run { target le } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power8 -O2 " } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2 " } */
 
 typedef __attribute__ ((__aligned__ (8))) unsigned long long __m64;
 typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));

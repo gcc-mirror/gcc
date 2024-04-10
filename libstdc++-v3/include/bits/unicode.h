@@ -32,7 +32,8 @@
 
 #if __cplusplus >= 202002L
 #include <array>
-#include <bit>
+#include <bit>      // bit_width
+#include <charconv> // __detail::__from_chars_alnum_to_val_table
 #include <cstdint>
 #include <bits/stl_algo.h>
 #include <bits/stl_iterator.h>
@@ -163,7 +164,7 @@ namespace __unicode
 	    else
 	      _M_read();
 	  }
-	else if (_M_buf_index + 1 <= _M_buf_last)
+	else if (_M_buf_index + 1 < _M_buf_last)
 	  ++_M_buf_index;
 	return *this;
       }
@@ -603,6 +604,7 @@ inline namespace __v15_1_0
     return (__p - __width_edges) % 2 + 1;
   }
 
+  // @pre c <= 0x10FFFF
   constexpr _Gcb_property
   __grapheme_cluster_break_property(char32_t __c) noexcept
   {
@@ -621,9 +623,13 @@ inline namespace __v15_1_0
     return std::find(__incb_linkers, __end, __c) != __end;
   }
 
+  // @pre c <= 0x10FFFF
   constexpr _InCB
   __incb_property(char32_t __c) noexcept
   {
+    if ((__c << 2) < __incb_edges[0]) [[likely]]
+      return _InCB(0);
+
     constexpr uint32_t __mask = 0x3;
     auto* __end = std::end(__incb_edges);
     auto* __p = std::lower_bound(__incb_edges, __end, (__c << 2) | __mask);
@@ -634,10 +640,10 @@ inline namespace __v15_1_0
   __is_extended_pictographic(char32_t __c)
   {
     if (__c < __xpicto_edges[0]) [[likely]]
-      return 1;
+      return 0;
 
     auto* __p = std::upper_bound(__xpicto_edges, std::end(__xpicto_edges), __c);
-    return (__p - __xpicto_edges) % 2 + 1;
+    return (__p - __xpicto_edges) % 2;
   }
 
   struct _Grapheme_cluster_iterator_base
@@ -709,15 +715,15 @@ inline namespace __v15_1_0
   };
 
   // Split a range into extended grapheme clusters.
-  template<ranges::forward_range _View>
+  template<ranges::forward_range _View> requires ranges::view<_View>
     class _Grapheme_cluster_view
     : public ranges::view_interface<_Grapheme_cluster_view<_View>>
     {
     public:
 
       constexpr
-      _Grapheme_cluster_view(const _View& __v)
-      : _M_begin(_Utf32_view(__v).begin())
+      _Grapheme_cluster_view(_View __v)
+      : _M_begin(_Utf32_view<_View>(std::move(__v)).begin())
       { }
 
       constexpr auto begin() const { return _M_begin; }
@@ -732,22 +738,22 @@ inline namespace __v15_1_0
 
       public:
 	// TODO: Change value_type to be subrange<_U32_iterator> instead?
-	// That would be the whole cluster, not just the first code point.
-	// Would need to change type of _M_start to _U32_iterator, so that
-	// operator* just does return value_type{_M_start, _M_next}.
 	// Alternatively, value_type could be _Utf32_view<iterator_t<_View>>.
+	// That would be the whole cluster, not just the first code point.
+	// Would need to store two iterators and find end of current cluster
+	// on increment, so operator* returns value_type(_M_base, _M_next).
 	using value_type = char32_t;
 	using iterator_concept = forward_iterator_tag;
+	using difference_type = ptrdiff_t;
 
 	constexpr
 	_Iterator(_U32_iterator __i)
-	: _M_start(__i.base()), _M_next(__i)
+	: _M_base(__i)
 	{
-	  if (_M_start != __i.end())
+	  if (__i != __i.end())
 	    {
 	      _M_c = *__i;
 	      _M_prop = __grapheme_cluster_break_property(_M_c);
-	      operator++(); // Finds the end of the first cluster.
 	    }
 	}
 
@@ -764,11 +770,11 @@ inline namespace __v15_1_0
 	constexpr _Iterator&
 	operator++()
 	{
-	  const auto __end = _M_next.end();
-	  if (_M_next != __end)
+	  const auto __end = _M_base.end();
+	  if (_M_base != __end)
 	    {
 	      auto __p_prev = _M_prop;
-	      auto __it = _M_next;
+	      auto __it = _M_base;
 	      while (++__it != __end)
 		{
 		  char32_t __c = *__it;
@@ -784,11 +790,8 @@ inline namespace __v15_1_0
 		    }
 		  __p_prev = __p;
 		}
-	      _M_start = _M_next.base();
-	      _M_next = __it;
+	      _M_base = __it;
 	    }
-	  else
-	    _M_start = __end;
 	  return *this;
 	}
 
@@ -802,18 +805,18 @@ inline namespace __v15_1_0
 
 	constexpr bool
 	operator==(const _Iterator& __i) const
-	{ return _M_start == __i._M_start; }
+	{ return _M_base == __i._M_base; }
 
 	// This supports iter != iter.end()
 	constexpr bool
 	operator==(const ranges::sentinel_t<_View>& __i) const
-	{ return _M_start == __i; }
+	{ return _M_base == __i; }
 
 	// Iterator to the start of the current cluster.
-	constexpr auto base() const { return _M_start; }
+	constexpr auto base() const { return _M_base.base(); }
 
 	// The end of the underlying view (not the end of the current cluster!)
-	constexpr auto end() const { return _M_next.end(); }
+	constexpr auto end() const { return _M_base.end(); }
 
 	// Field width of the first code point in the cluster.
 	constexpr int
@@ -821,8 +824,7 @@ inline namespace __v15_1_0
 	{ return __field_width(_M_c); }
 
       private:
-	ranges::iterator_t<_View> _M_start;
-	_U32_iterator _M_next;
+	_U32_iterator _M_base;
 
 	// Implement the Grapheme Cluster Boundary Rules from Unicode Annex #29
 	// http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundary_Rules
@@ -891,13 +893,13 @@ inline namespace __v15_1_0
 	  // Do not break within certain combinations with
 	  // Indic_Conjunct_Break (InCB)=Linker.
 	  if (_M_incb_linker_seen
-		&& __incb_property(*_M_start) == _InCB::_Consonant
+		&& __incb_property(_M_c) == _InCB::_Consonant
 		&& __incb_property(*__curr) == _InCB::_Consonant)
 	    {
-	      // Match [_M_start, __curr] against regular expression
+	      // Match [_M_base, __curr] against regular expression
 	      // Consonant ([Extend Linker]* Linker [Extend Linker]* Consonant)+
 	      bool __have_linker = false;
-	      auto __it = _M_start;
+	      auto __it = _M_base;
 	      while (++__it != __curr)
 		{
 		  if (__is_incb_linker(*__it))
@@ -945,7 +947,7 @@ inline namespace __v15_1_0
     {
       if (__s.empty()) [[unlikely]]
 	return 0;
-      _Grapheme_cluster_view __gc(__s);
+      _Grapheme_cluster_view<basic_string_view<_CharT>> __gc(__s);
       auto __it = __gc.begin();
       const auto __end = __gc.end();
       size_t __n = __it.width();
@@ -963,7 +965,7 @@ inline namespace __v15_1_0
       if (__s.empty()) [[unlikely]]
 	return 0;
 
-      _Grapheme_cluster_view __gc(__s);
+      _Grapheme_cluster_view<basic_string_view<_CharT>> __gc(__s);
       auto __it = __gc.begin();
       const auto __end = __gc.end();
       size_t __n = __it.width();
@@ -985,7 +987,7 @@ inline namespace __v15_1_0
       return __n;
     }
 
-    template<typename _CharT>
+  template<typename _CharT>
     consteval bool
     __literal_encoding_is_unicode()
     {
@@ -1055,7 +1057,67 @@ inline namespace __v15_1_0
   __literal_encoding_is_utf8()
   { return __literal_encoding_is_unicode<char>(); }
 
+  consteval bool
+  __literal_encoding_is_extended_ascii()
+  {
+    return '0' == 0x30 && 'A' == 0x41 && 'Z' == 0x5a
+	     && 'a' == 0x61 && 'z' == 0x7a;
+  }
+
+  // https://www.unicode.org/reports/tr22/tr22-8.html#Charset_Alias_Matching
+  constexpr bool
+  __charset_alias_match(string_view __a, string_view __b)
+  {
+    // Map alphanumeric chars to their base 64 value, everything else to 127.
+    auto __map = [](char __c, bool& __num) -> unsigned char {
+      if (__c == '0') [[unlikely]]
+	return __num ? 0 : 127;
+      const auto __v = __detail::__from_chars_alnum_to_val(__c);
+      __num = __v < 10;
+      return __v;
+    };
+
+    auto __ptr_a = __a.begin(), __end_a = __a.end();
+    auto __ptr_b = __b.begin(), __end_b = __b.end();
+    bool __num_a = false, __num_b = false;
+
+    while (true)
+      {
+	// Find the value of the next alphanumeric character in each string.
+	unsigned char __val_a{}, __val_b{};
+	while (__ptr_a != __end_a
+		 && (__val_a = __map(*__ptr_a, __num_a)) == 127)
+	  ++__ptr_a;
+	while (__ptr_b != __end_b
+		 && (__val_b = __map(*__ptr_b, __num_b)) == 127)
+	  ++__ptr_b;
+	// Stop when we reach the end of a string, or get a mismatch.
+	if (__ptr_a == __end_a)
+	  return __ptr_b == __end_b;
+	else if (__ptr_b == __end_b)
+	  return false;
+	else if (__val_a != __val_b)
+	  return false; // Found non-matching characters.
+	++__ptr_a;
+	++__ptr_b;
+      }
+    return true;
+  }
+
 } // namespace __unicode
+
+namespace ranges
+{
+  template<typename _To, typename _Range>
+    inline constexpr bool
+    enable_borrowed_range<std::__unicode::_Utf_view<_To, _Range>>
+      = enable_borrowed_range<_Range>;
+
+  template<typename _Range>
+    inline constexpr bool
+    enable_borrowed_range<std::__unicode::_Grapheme_cluster_view<_Range>>
+      = enable_borrowed_range<_Range>;
+} // namespace ranges
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

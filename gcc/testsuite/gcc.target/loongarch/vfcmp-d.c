@@ -1,28 +1,188 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlsx -ffixed-f0 -ffixed-f1 -ffixed-f2 -fno-vect-cost-model" } */
+/* { dg-options "-O2 -mlsx -fno-vect-cost-model" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #define F double
 #define I long long
 
 #include "vfcmp-f.c"
 
-/* { dg-final { scan-assembler "compare_quiet_equal:.*\tvfcmp\\.ceq\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_equal\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_not_equal:.*\tvfcmp\\.cune\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_not_equal\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_greater:.*\tvfcmp\\.slt\\.d\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_signaling_greater\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_greater_equal:.*\tvfcmp\\.sle\\.d\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_signaling_greater_equal\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_less:.*\tvfcmp\\.slt\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_signaling_less\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_less_equal:.*\tvfcmp\\.sle\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_signaling_less_equal\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_not_greater:.*\tvfcmp\\.sule\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_signaling_not_greater\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_less_unordered:.*\tvfcmp\\.sult\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_signaling_less_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_not_less:.*\tvfcmp\\.sule\\.d\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_signaling_not_less\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_greater_unordered:.*\tvfcmp\\.sult\\.d\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_signaling_greater_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_less:.*\tvfcmp\\.clt\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_less\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_less_equal:.*\tvfcmp\\.cle\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_less_equal\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_greater:.*\tvfcmp\\.clt\\.d\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_quiet_greater\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_greater_equal:.*\tvfcmp\\.cle\\.d\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_quiet_greater_equal\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_not_less:.*\tvfcmp\\.cule\\.d\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_quiet_not_less\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_greater_unordered:.*\tvfcmp\\.cult\\.d\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_quiet_greater_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_not_greater:.*\tvfcmp\\.cule\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_not_greater\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_less_unordered:.*\tvfcmp\\.cult\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_less_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_unordered:.*\tvfcmp\\.cun\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_ordered:.*\tvfcmp\\.cor\\.d\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_ordered\n" } } */
+/*
+** compare_quiet_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.ceq.d	(\$vr[0-9]+),(\1,\2|\2,\1)
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_not_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cune.d	(\$vr[0-9]+),(\1,\2|\2,\1)
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_greater:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.slt.d	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_greater_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sle.d	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_less:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.slt.d	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_less_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sle.d	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_not_greater:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sule.d	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_less_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sult.d	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_not_less:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sule.d	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_greater_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sult.d	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_less:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.clt.d	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_less_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cle.d	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_greater:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.clt.d	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_greater_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cle.d	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_not_less:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cule.d	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_greater_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cult.d	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_not_greater:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cule.d	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_less_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cult.d	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cun.d	(\$vr[0-9]+),(\1,\2|\2,\1)
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_ordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cor.d	(\$vr[0-9]+),(\1,\2|\2,\1)
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/

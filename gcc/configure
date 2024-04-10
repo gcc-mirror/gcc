@@ -8835,7 +8835,7 @@ if test $gcc_cv_prog_makeinfo_modern = no; then
 $as_echo "$as_me: WARNING:
 *** Makeinfo is missing or too old.
 *** Info documentation will not be built." >&2;}
-  BUILD_INFO=
+  BUILD_INFO=no-info
 else
   BUILD_INFO=info
 fi
@@ -28455,6 +28455,7 @@ $as_echo "#define HAVE_AS_AVR_MGCCISR_OPTION 1" >>confdefs.h
 fi
 
 
+    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
     # Check how default linker description file implements .rodata for
     # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to
     # RAM so avr-gcc skips __do_copy_data for .rodata objects.
@@ -28499,7 +28500,6 @@ $as_echo "#define HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH 1" >>confdefs.h
 $as_echo "no: avrxmega3 .rodata located in RAM" >&6; }
 	    echo "$as_me: nm output was" >&5
 	    cat conftest.nm >&5
-	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)" >&5
 $as_echo "$as_me: WARNING: support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)" >&2;}
 	fi
@@ -28512,6 +28512,74 @@ $as_echo "test failed" >&6; }
 $as_echo "$as_me: WARNING: see \`config.log' for details" >&2;}
     fi
     rm -f conftest.s conftest.o conftest.elf conftest.nm
+
+    # Check for emulation avrxmega2_flmap.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking binutils for avrxmega2_flmap support (PR31124)" >&5
+$as_echo_n "checking binutils for avrxmega2_flmap support (PR31124)... " >&6; }
+    cat > conftest.s <<EOF
+        .section .text,"ax",@progbits
+        ldi r16, __flmap_value_with_lock
+EOF
+    { ac_try='$gcc_cv_as -mmcu=avrxmega2 conftest.s -o conftest.o'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    { ac_try='$gcc_cv_ld -mavrxmega2_flmap conftest.o -o conftest.elf'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    if test -s conftest.elf
+    then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+$as_echo "#define HAVE_LD_AVR_AVRXMEGA2_FLMAP 1" >>confdefs.h
+
+    else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: support for avrxmega2_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)" >&5
+$as_echo "$as_me: WARNING: support for avrxmega2_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)" >&2;}
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: see \`config.log' for details" >&5
+$as_echo "$as_me: WARNING: see \`config.log' for details" >&2;}
+    fi
+    rm -f conftest.o conftest.elf
+
+    # Check for emulation avrxmega4_flmap.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking binutils for avrxmega4_flmap support (PR31124)" >&5
+$as_echo_n "checking binutils for avrxmega4_flmap support (PR31124)... " >&6; }
+    { ac_try='$gcc_cv_as -mmcu=avrxmega4 conftest.s -o conftest.o'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    { ac_try='$gcc_cv_ld -mavrxmega4_flmap conftest.o -o conftest.elf'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    if test -s conftest.elf
+    then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+$as_echo "#define HAVE_LD_AVR_AVRXMEGA4_FLMAP 1" >>confdefs.h
+
+    else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: support for avrxmega4_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)" >&5
+$as_echo "$as_me: WARNING: support for avrxmega4_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)" >&2;}
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: see \`config.log' for details" >&5
+$as_echo "$as_me: WARNING: see \`config.log' for details" >&2;}
+    fi
+    rm -f conftest.s conftest.o conftest.elf
     ;;
 
   cris-*-*)
@@ -29766,6 +29834,74 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+    # Check if gas and gld support "addq %r23,foo@GOTTPOFF(%rip), %r15"
+    # with R_X86_64_CODE_6_GOTTPOFF relocation.
+    if echo "$ld_ver" | grep GNU > /dev/null; then
+      if $gcc_cv_ld -V 2>/dev/null | grep elf_x86_64_sol2 > /dev/null; then
+        ld_ix86_gld_64_opt="-melf_x86_64_sol2"
+      else
+        ld_ix86_gld_64_opt="-melf_x86_64"
+      fi
+    fi
+    # Enforce 64-bit output with gas and gld.
+    if test x$gas = xyes; then
+      as_ix86_gas_64_opt="--64"
+    fi
+    conftest_s='
+	.text
+	.globl	_start
+	.type _start, @function
+_start:
+	addq	%r23,foo@GOTTPOFF(%rip), %r15
+	.section .tdata,"awT",@progbits
+	.type foo, @object
+foo:
+	.quad 0'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for R_X86_64_CODE_6_GOTTPOFF reloc" >&5
+$as_echo_n "checking assembler for R_X86_64_CODE_6_GOTTPOFF reloc... " >&6; }
+if ${gcc_cv_as_x86_64_code_6_gottpoff+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_x86_64_code_6_gottpoff=no
+  if test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $as_ix86_gas_64_opt -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
+	    && test x$gcc_cv_readelf != x \
+	    && $gcc_cv_readelf --relocs --wide conftest.o 2>&1 \
+	       | grep R_X86_64_CODE_6_GOTTPOFF > /dev/null 2>&1 \
+	    && $gcc_cv_ld $ld_ix86_gld_64_opt -o conftest conftest.o > /dev/null 2>&1; then
+	   if $gcc_cv_objdump -dw conftest 2>&1 \
+	      | grep "add \+\$0xf\+8,%r23,%r15" > /dev/null 2>&1; then
+	     gcc_cv_as_x86_64_code_6_gottpoff=yes
+	   else
+	     gcc_cv_as_x86_64_code_6_gottpoff=no
+	   fi
+	 fi
+	 rm -f conftest
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_x86_64_code_6_gottpoff" >&5
+$as_echo "$gcc_cv_as_x86_64_code_6_gottpoff" >&6; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_AS_R_X86_64_CODE_6_GOTTPOFF `if test x"$gcc_cv_as_x86_64_code_6_gottpoff" = xyes; then echo 1; else echo 0; fi`
+_ACEOF
+
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for GOTOFF in data" >&5
 $as_echo_n "checking assembler for GOTOFF in data... " >&6; }
 if ${gcc_cv_as_ix86_gotoff_in_data+:} false; then :
@@ -30283,8 +30419,41 @@ fi
     ;;
 
   mips*-*-*)
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for explicit relocation support" >&5
-$as_echo_n "checking assembler for explicit relocation support... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for explicit relocation support: %pcrel_hi/%pcrel_lo" >&5
+$as_echo_n "checking assembler for explicit relocation support: %pcrel_hi/%pcrel_lo... " >&6; }
+if ${gcc_cv_as_mips_explicit_relocs_pcrel+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_mips_explicit_relocs_pcrel=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '	lui $4,%pcrel_hi(foo)' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_mips_explicit_relocs_pcrel=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_mips_explicit_relocs_pcrel" >&5
+$as_echo "$gcc_cv_as_mips_explicit_relocs_pcrel" >&6; }
+if test $gcc_cv_as_mips_explicit_relocs_pcrel = yes; then
+
+$as_echo "#define MIPS_EXPLICIT_RELOCS MIPS_EXPLICIT_RELOCS_PCREL" >>confdefs.h
+
+fi
+
+
+    if test x$gcc_cv_as_mips_explicit_relocs_pcrel = xno; then \
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for explicit relocation support: %gp_rel" >&5
+$as_echo_n "checking assembler for explicit relocation support: %gp_rel... " >&6; }
 if ${gcc_cv_as_mips_explicit_relocs+:} false; then :
   $as_echo_n "(cached) " >&6
 else
@@ -30309,12 +30478,18 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_mips_explicit_relocs" >&5
 $as_echo "$gcc_cv_as_mips_explicit_relocs" >&6; }
 if test $gcc_cv_as_mips_explicit_relocs = yes; then
-  if test x$target_cpu_default = x
-       then target_cpu_default=MASK_EXPLICIT_RELOCS
-       else target_cpu_default="($target_cpu_default)|MASK_EXPLICIT_RELOCS"
-       fi
+
+$as_echo "#define MIPS_EXPLICIT_RELOCS MIPS_EXPLICIT_RELOCS_BASE" >>confdefs.h
+
 fi
 
+    fi
+
+    if test x$gcc_cv_as_mips_explicit_relocs = xno; then \
+
+$as_echo "#define MIPS_EXPLICIT_RELOCS MIPS_EXPLICIT_RELOCS_NONE" >>confdefs.h
+
+    fi
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -mno-shared support" >&5
 $as_echo_n "checking assembler for -mno-shared support... " >&6; }
@@ -31029,7 +31204,7 @@ else
        nop
        .endr
        beq $a0,$a1,a' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?

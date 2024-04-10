@@ -1,7 +1,7 @@
 /**
  * This module defines some utility functions for DMD.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/utils.d, _utils.d)
@@ -298,4 +298,45 @@ bool parseDigits(T)(ref T val, const(char)[] p, const T max = T.max)
     assert(i.parseDigits(int.max.stringof) && i == int.max);
     assert(i.parseDigits("420", 500) && i == 420);
     assert(!i.parseDigits("420", 400));
+}
+
+/**
+ * Cast a `ubyte[]` to an array of larger integers as if we are on a big endian architecture
+ * Params:
+ *   data = array with big endian data
+ *   size = 1 for ubyte[], 2 for ushort[], 4 for uint[], 8 for ulong[]
+ * Returns: copy of `data`, with bytes shuffled if compiled for `version(LittleEndian)`
+ */
+ubyte[] arrayCastBigEndian(const ubyte[] data, size_t size)
+{
+    ubyte[] impl(T)()
+    {
+        auto result = new T[](data.length / T.sizeof);
+        foreach (i; 0 .. result.length)
+        {
+            result[i] = 0;
+            foreach (j; 0 .. T.sizeof)
+            {
+                result[i] |= T(data[i * T.sizeof + j]) << ((T.sizeof - 1 - j) * 8);
+            }
+        }
+        return cast(ubyte[]) result;
+    }
+    switch (size)
+    {
+        case 1: return data.dup;
+        case 2: return impl!ushort;
+        case 4: return impl!uint;
+        case 8: return impl!ulong;
+        default: assert(0);
+    }
+}
+
+unittest
+{
+    ubyte[] data = [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x11, 0x22];
+    assert(cast(ulong[]) arrayCastBigEndian(data, 8) == [0xAABBCCDDEEFF1122]);
+    assert(cast(uint[]) arrayCastBigEndian(data, 4) == [0xAABBCCDD, 0xEEFF1122]);
+    assert(cast(ushort[]) arrayCastBigEndian(data, 2) == [0xAABB, 0xCCDD, 0xEEFF, 0x1122]);
+    assert(cast(ubyte[]) arrayCastBigEndian(data, 1) == data);
 }

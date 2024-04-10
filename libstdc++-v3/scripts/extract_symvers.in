@@ -52,7 +52,7 @@ SunOS)
   # Omit _DYNAMIC etc. for consistency with extract_symvers.pl, only
   # present on Solaris.
   ${readelf} ${lib} |\
-  sed -e 's/ \[<other>: [A-Fa-f0-9]*\] //' -e '/\.dynsym/,/^$/p;d' |\
+  sed -e 's/ \[<other>: [A-Fa-f0-9]*\] //' -e '/\.dynsym.*:$/,/^$/p;d' |\
   sed -e 's/ \[<localentry>: [0-9]*\] //' |\
   grep -E -v ' (LOCAL|UND) ' |\
   grep -E -v ' (_DYNAMIC|_GLOBAL_OFFSET_TABLE_|_PROCEDURE_LINKAGE_TABLE_|_edata|_end|_etext)$' |\

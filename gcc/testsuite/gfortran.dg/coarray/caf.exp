@@ -70,18 +70,6 @@ proc dg-compile-aux-modules { args } {
     }
 }
 
-# Add -latomic only where supported.  Assume built-in support elsewhere.
-set maybe_atomic_lib ""
-if [check_effective_target_libatomic_available] {
-    if ![is_remote host] {
-	if [info exists TOOL_OPTIONS] {
-	    set maybe_atomic_lib "[atomic_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
-	} else {
-	    set maybe_atomic_lib "[atomic_link_flags [get_multilibs]]"
-	}
-    }
-}
-
 # Main loop.
 foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -105,14 +93,14 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] 
     foreach flags $option_list {
 	verbose "Testing $nshort (single), $flags" 1
         set gfortran_aux_module_flags "-fcoarray=single $flags"
-	dg-test $test "-fcoarray=single $flags" $maybe_atomic_lib
+	dg-test $test "-fcoarray=single $flags" {}
 	cleanup-modules ""
     }
 
     foreach flags $option_list {
 	verbose "Testing $nshort (libcaf_single), $flags" 1
         set gfortran_aux_module_flags "-fcoarray=lib $flags -lcaf_single"
-	dg-test $test "-fcoarray=lib $flags -lcaf_single" $maybe_atomic_lib
+	dg-test $test "-fcoarray=lib $flags -lcaf_single" {}
 	cleanup-modules ""
     }
 }

@@ -214,7 +214,7 @@ int test7 (void)
 /* { dg-final { scan-ipa-dump "hooray1\[^\\n\]*inline copy in test1"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "hooray2\[^\\n\]*inline copy in test2"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "hooray3\[^\\n\]*inline copy in test3"  "inline"  } } */
-/* { dg-final { scan-ipa-dump "hooray4\[^\\n\]*inline copy in test4"  "inline"  { xfail { { hppa*-*-* } && { ! lp64 } } } } } */
+/* { dg-final { scan-ipa-dump "hooray4\[^\\n\]*inline copy in test4"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "hooray5\[^\\n\]*inline copy in test5"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "hooray6\[^\\n\]*inline copy in test6"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "hooray7\[^\\n\]*inline copy in test7"  "inline"  } } */

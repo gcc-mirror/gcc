@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include "cpuid.h"
+#ifdef DEBUG
+#include <stdio.h>
+#endif
 
 static void sha_test (void);
 

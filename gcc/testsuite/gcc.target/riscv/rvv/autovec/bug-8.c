@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zve32f -mabi=ilp32d -O3 --param=riscv-autovec-lmul=m2 --param=riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-march=rv32gc_zve32f -mabi=ilp32d -O3 --param=riscv-autovec-lmul=m2 -mrvv-vector-bits=zvl" } */
 
 union U
 {

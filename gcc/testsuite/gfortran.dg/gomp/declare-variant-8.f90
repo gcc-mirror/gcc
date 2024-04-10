@@ -23,7 +23,7 @@ contains
   end subroutine
 
   subroutine f06 ()
-    !$omp declare variant (f05) match (user={condition(1)},implementation={atomic_default_mem_order(relaxed)})
+    !$omp declare variant (f05) match (user={condition(.true.)},implementation={atomic_default_mem_order(relaxed)})
   end subroutine
 
   subroutine f07 ()

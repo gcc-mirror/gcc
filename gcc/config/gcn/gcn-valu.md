@@ -982,7 +982,8 @@
    (match_operand:V_MOV 1 "register_operand")
    (match_operand 2 "immediate_operand")]
   "MODE_VF (<V_MOV_ALT:MODE>mode) < MODE_VF (<V_MOV:MODE>mode)
-   && <V_MOV_ALT:SCALAR_MODE>mode == <V_MOV:SCALAR_MODE>mode"
+   && <V_MOV_ALT:SCALAR_MODE>mode == <V_MOV:SCALAR_MODE>mode
+   && (!TARGET_RDNA2_PLUS || MODE_VF (<V_MOV:MODE>mode) <= 32)"
   {
     int numlanes = GET_MODE_NUNITS (<V_MOV_ALT:MODE>mode);
     int firstlane = INTVAL (operands[2]) * numlanes;
@@ -3555,28 +3556,61 @@
 ;; }}}
 ;; {{{ Int/int conversions
 
+(define_code_iterator all_convert [truncate zero_extend sign_extend])
 (define_code_iterator zero_convert [truncate zero_extend])
 (define_code_attr convop [
 	(sign_extend "extend")
 	(zero_extend "zero_extend")
 	(truncate "trunc")])
 
-(define_insn "<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>"
+(define_expand "<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>"
+  [(set (match_operand:V_INT_1REG 0 "register_operand"      "=v")
+        (all_convert:V_INT_1REG
+	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
+  "")
+
+(define_insn "*<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>_sdwa<exec>"
   [(set (match_operand:V_INT_1REG 0 "register_operand"      "=v")
         (zero_convert:V_INT_1REG
 	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
-  ""
+  "!TARGET_RDNA3"
   "v_mov_b32_sdwa\t%0, %1 dst_sel:<V_INT_1REG:sdwa> dst_unused:UNUSED_PAD src0_sel:<V_INT_1REG_ALT:sdwa>"
   [(set_attr "type" "vop_sdwa")
    (set_attr "length" "8")])
 
-(define_insn "extend<V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>"
+(define_insn "extend<V_INT_1REG_ALT:mode><V_INT_1REG:mode>_sdwa<exec>"
   [(set (match_operand:V_INT_1REG 0 "register_operand"	    "=v")
         (sign_extend:V_INT_1REG
 	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
-  ""
+  "!TARGET_RDNA3"
   "v_mov_b32_sdwa\t%0, sext(%1) src0_sel:<V_INT_1REG_ALT:sdwa>"
   [(set_attr "type" "vop_sdwa")
+   (set_attr "length" "8")])
+
+(define_insn "*<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>_shift<exec>"
+  [(set (match_operand:V_INT_1REG 0 "register_operand"      "=v")
+        (all_convert:V_INT_1REG
+	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
+  "TARGET_RDNA3"
+  {
+    enum {extend, zero_extend, trunc};
+    rtx shiftwidth = (<V_INT_1REG_ALT:SCALAR_MODE>mode == QImode
+		      || <V_INT_1REG:SCALAR_MODE>mode == QImode
+		      ? GEN_INT (24)
+		      : <V_INT_1REG_ALT:SCALAR_MODE>mode == HImode
+		        || <V_INT_1REG:SCALAR_MODE>mode == HImode
+		      ? GEN_INT (16)
+		      : NULL);
+    operands[2] = shiftwidth;
+
+    if (!shiftwidth)
+      return "v_mov_b32 %0, %1";
+    else if (<convop> == extend || <convop> == trunc)
+      return "v_lshlrev_b32\t%0, %2, %1\;v_ashrrev_i32\t%0, %2, %0";
+    else
+      return "v_lshlrev_b32\t%0, %2, %1\;v_lshrrev_b32\t%0, %2, %0";
+  }
+  [(set_attr "type" "mult")
    (set_attr "length" "8")])
 
 ;; GCC can already do these for scalar types, but not for vector types.
@@ -4227,7 +4261,7 @@
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
    (fminmaxop:V_FP
      (match_operand:V_FP 1 "register_operand"))]
-  ""
+  "!TARGET_RDNA2_PLUS"
   {
     /* fmin/fmax are identical to smin/smax.  */
     emit_insn (gen_reduc_<expander>_scal_<mode> (operands[0], operands[1]));
@@ -4241,7 +4275,8 @@
  [(match_operand:<SCALAR_MODE> 0 "register_operand")
   (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand")
   (match_operand:V_FP 2 "gcn_alu_operand")]
-  "can_create_pseudo_p ()
+  "!TARGET_RDNA2_PLUS
+   && can_create_pseudo_p ()
    && (flag_openacc || flag_openmp
        || flag_associative_math)"
   {

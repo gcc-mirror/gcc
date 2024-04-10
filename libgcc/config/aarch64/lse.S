@@ -51,6 +51,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  * indirectly, they do not need to start with a BTI instruction.
  */
 
+#include "aarch64-asm.h"
 #include "auto-target.h"
 
 /* Tell the assembler to accept LSE instructions.  */
@@ -61,7 +62,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 /* Declare the symbol gating the LSE implementations.  */
-	.hidden	__aarch64_have_lse_atomics
+	HIDDEN(__aarch64_have_lse_atomics)
 
 /* Turn size and memory model defines into mnemonic fragments.  */
 #if SIZE == 1
@@ -171,15 +172,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	.text
 	.balign	16
 	.globl	\name
-	.hidden	\name
-	.type	\name, %function
+	HIDDEN(\name)
+	SYMBOL_TYPE(\name, %function)
 	.cfi_startproc
 \name:
 .endm
 
 .macro	ENDFN name
 	.cfi_endproc
-	.size	\name, . - \name
+	SYMBOL_SIZE(\name)
 .endm
 
 /* Branch to LABEL if LSE is disabled.  */
@@ -313,44 +314,4 @@ STARTFN	NAME(LDNM)
 	ret
 
 ENDFN	NAME(LDNM)
-#endif
-
-/* GNU_PROPERTY_AARCH64_* macros from elf.h for use in asm code.  */
-#define FEATURE_1_AND 0xc0000000
-#define FEATURE_1_BTI 1
-#define FEATURE_1_PAC 2
-
-/* Supported features based on the code generation options.  */
-#if defined(__ARM_FEATURE_BTI_DEFAULT)
-# define BTI_FLAG FEATURE_1_BTI
-#else
-# define BTI_FLAG 0
-#endif
-
-#if __ARM_FEATURE_PAC_DEFAULT & 3
-# define PAC_FLAG FEATURE_1_PAC
-#else
-# define PAC_FLAG 0
-#endif
-
-/* Add a NT_GNU_PROPERTY_TYPE_0 note.  */
-#define GNU_PROPERTY(type, value)	\
-  .section .note.gnu.property, "a";	\
-  .p2align 3;				\
-  .word 4;				\
-  .word 16;				\
-  .word 5;				\
-  .asciz "GNU";				\
-  .word type;				\
-  .word 4;				\
-  .word value;				\
-  .word 0;
-
-#if defined(__linux__) || defined(__FreeBSD__)
-.section .note.GNU-stack, "", %progbits
-
-/* Add GNU property note if built with branch protection.  */
-# if (BTI_FLAG|PAC_FLAG) != 0
-GNU_PROPERTY (FEATURE_1_AND, BTI_FLAG|PAC_FLAG)
-# endif
 #endif

@@ -683,41 +683,10 @@
   [(set_attr "type" "imul")
    (set_attr "opsize" "<mode>")])
 
-(define_expand "umuldi3_highpart"
-  [(set (match_operand:DI 0 "register_operand")
-	(truncate:DI
-	 (lshiftrt:TI
-	  (mult:TI (zero_extend:TI
-		     (match_operand:DI 1 "register_operand"))
-		   (match_operand:DI 2 "reg_or_8bit_operand"))
-	  (const_int 64))))]
-  ""
-{
-  if (REG_P (operands[2]))
-    operands[2] = gen_rtx_ZERO_EXTEND (TImode, operands[2]);
-})
-
-(define_insn "*umuldi3_highpart_reg"
+(define_insn "umuldi3_highpart"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(truncate:DI
-	 (lshiftrt:TI
-	  (mult:TI (zero_extend:TI
-		     (match_operand:DI 1 "register_operand" "r"))
-		   (zero_extend:TI
-		     (match_operand:DI 2 "register_operand" "r")))
-	  (const_int 64))))]
-  ""
-  "umulh %1,%2,%0"
-  [(set_attr "type" "imul")
-   (set_attr "opsize" "udi")])
-
-(define_insn "*umuldi3_highpart_const"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(truncate:DI
-	 (lshiftrt:TI
-	  (mult:TI (zero_extend:TI (match_operand:DI 1 "register_operand" "r"))
-		   (match_operand:TI 2 "cint8_operand" "I"))
-	  (const_int 64))))]
+	(umul_highpart:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
+			  (match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
   ""
   "umulh %1,%2,%0"
   [(set_attr "type" "imul")

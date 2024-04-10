@@ -121,6 +121,9 @@ along with GCC; see the file COPYING3.  If not see
 #define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
 #endif
 
+#undef DARWIN_HEAP_T_LIB
+#define DARWIN_HEAP_T_LIB " -lheapt_w "
+
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \
   DARWIN_EXTRA_SPECS                                            \

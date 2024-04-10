@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-options "-O3 -ftree-vectorize --param=riscv-autovec-preference=fixed-vlmax -mcmodel=medlow" } */
+/* { dg-options "-O3 -ftree-vectorize -mrvv-vector-bits=zvl -mcmodel=medlow" } */
 
 int printf(char *, ...);
 int a, b, c, e;

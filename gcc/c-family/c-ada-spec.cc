@@ -1566,6 +1566,8 @@ check_type_name_conflict (pretty_printer *buffer, tree t)
 	s = "";
       else if (TREE_CODE (TYPE_NAME (tmp)) == IDENTIFIER_NODE)
 	s = IDENTIFIER_POINTER (TYPE_NAME (tmp));
+      else if (!DECL_NAME (TYPE_NAME (tmp)))
+	s = "";
       else
 	s = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (tmp)));
 
@@ -1850,7 +1852,8 @@ dump_template_types (pretty_printer *buffer, tree types, int spc)
       if (!dump_ada_node (buffer, elem, NULL_TREE, spc, false, true))
 	{
 	  pp_string (buffer, "unknown");
-	  pp_scalar (buffer, "%lu", (unsigned long) TREE_HASH (elem));
+	  pp_scalar (buffer, HOST_SIZE_T_PRINT_UNSIGNED,
+		     (fmt_size_t) TREE_HASH (elem));
 	}
     }
 }

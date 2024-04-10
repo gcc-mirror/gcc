@@ -209,6 +209,22 @@ public:
   }
 };
 
+/* Implementation of "__check_object_size".  */
+  
+class known_function___check_object_size : public known_function
+{
+ public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 2;
+  }
+
+  void impl_call_pre (const call_details &) const final override
+  {
+    /* No-op.  */
+  }
+};
+
 /* Callback handler for the PLUGIN_ANALYZER_INIT event.  */
 
 static void
@@ -224,6 +240,8 @@ kernel_analyzer_init_cb (void *gcc_data, void */*user_data*/)
      make_unique<known_function_copy_from_user> ());
   iface->register_known_function ("copy_to_user",
 				  make_unique<known_function_copy_to_user> ());
+  iface->register_known_function ("__check_object_size",
+				  make_unique<known_function___check_object_size> ());
 }
 
 } // namespace ana

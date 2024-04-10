@@ -53,8 +53,6 @@ static const int tm_multilib_list[] = { TM_MULTILIB_LIST };
 static int enabled_abi_types[N_ABI_BASE_TYPES][N_ABI_EXT_TYPES] = { 0 };
 
 #define isa_required(ABI) (abi_minimal_isa[(ABI).base][(ABI).ext])
-extern "C" const struct loongarch_isa
-abi_minimal_isa[N_ABI_BASE_TYPES][N_ABI_EXT_TYPES];
 
 static inline int
 is_multilib_enabled (struct loongarch_abi abi)
@@ -140,7 +138,9 @@ static int with_default_simd = 0;
 void
 loongarch_init_target (struct loongarch_target *target,
 		       int cpu_arch, int cpu_tune, int fpu, int simd,
-		       int abi_base, int abi_ext, int cmodel)
+		       int abi_base, int abi_ext, int cmodel,
+		       HOST_WIDE_INT isa_evolution,
+		       HOST_WIDE_INT isa_evolution_set)
 {
   if (!target)
     return;
@@ -148,6 +148,8 @@ loongarch_init_target (struct loongarch_target *target,
   target->cpu_tune = cpu_tune;
   target->isa.fpu = fpu;
   target->isa.simd = simd;
+  target->isa.evolution = isa_evolution;
+  target->isa.evolution_set = isa_evolution_set;
   target->abi.base = abi_base;
   target->abi.ext = abi_ext;
   target->cmodel = cmodel;
@@ -183,6 +185,9 @@ loongarch_config_target (struct loongarch_target *target,
       M_OPT_ABSENT (target->cmodel)	  ? 0 : 1,
       M_OPT_ABSENT (target->abi.base)	  ? 0 : 1,
   };
+
+  int64_t isa_evolution = target->isa.evolution;
+  int64_t isa_evolution_set = target->isa.evolution_set;
 
   /* 1.  Target ABI */
   if (constrained.abi_base)
@@ -394,6 +399,13 @@ config_target_isa:
 	}
     }
 
+  /* Apply the ISA evolution feature switches from the user.  */
+  HOST_WIDE_INT isa_evolution_orig = t.isa.evolution;
+  t.isa.evolution &= ~(~isa_evolution & isa_evolution_set);
+  t.isa.evolution |= isa_evolution & isa_evolution_set;
+
+  /* evolution_set means "what's different from the -march default".  */
+  t.isa.evolution_set = isa_evolution_orig ^ t.isa.evolution;
 
   /* 4.  ABI-ISA compatibility */
   /* Note:
@@ -553,17 +565,17 @@ isa_default_abi (const struct loongarch_isa *isa)
   switch (isa->fpu)
     {
       case ISA_EXT_FPU64:
-	if (isa->base >= ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64)
 	  abi.base = ABI_BASE_LP64D;
 	break;
 
       case ISA_EXT_FPU32:
-	if (isa->base >= ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64)
 	  abi.base = ABI_BASE_LP64F;
 	break;
 
       case ISA_EXT_NONE:
-	if (isa->base >= ISA_BASE_LA64V100)
+	if (isa->base >= ISA_BASE_LA64)
 	  abi.base = ABI_BASE_LP64S;
 	break;
 
@@ -582,8 +594,8 @@ isa_base_compat_p (const struct loongarch_isa *set1,
 {
   switch (set2->base)
     {
-      case ISA_BASE_LA64V100:
-	return (set1->base >= ISA_BASE_LA64V100);
+      case ISA_BASE_LA64:
+	return (set1->base >= ISA_BASE_LA64);
 
       default:
 	gcc_unreachable ();
@@ -771,7 +783,15 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
   opts->x_la_opt_cpu_arch = target->cpu_arch;
   opts->x_la_opt_cpu_tune = target->cpu_tune;
 
+  /* status of -mcmodel */
+  opts->x_la_opt_cmodel = target->cmodel;
+
   /* status of -mfpu */
   opts->x_la_opt_fpu = target->isa.fpu;
+
+  /* status of -msimd */
   opts->x_la_opt_simd = target->isa.simd;
+
+  /* ISA evolution features */
+  opts->x_la_isa_evolution = target->isa.evolution;
 }

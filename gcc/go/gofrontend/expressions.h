@@ -990,9 +990,8 @@ class Expression
   // which could not be fully parsed into their final form.  It
   // returns the same Expression or a new one.
   Expression*
-  lower(Gogo* gogo, Named_object* function, Statement_inserter* inserter,
-	int iota_value)
-  { return this->do_lower(gogo, function, inserter, iota_value); }
+  lower(Gogo* gogo, Named_object* function, Statement_inserter* inserter)
+  { return this->do_lower(gogo, function, inserter); }
 
   // Flatten an expression. This is called after order_evaluation.
   // FUNCTION is the function we are in; it will be NULL for an
@@ -1162,7 +1161,7 @@ class Expression
 
   // Return a lowered expression.
   virtual Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int)
+  do_lower(Gogo*, Named_object*, Statement_inserter*)
   { return this; }
 
   // Return a flattened expression.
@@ -1472,7 +1471,7 @@ class Parser_expression : public Expression
 
  protected:
   virtual Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int) = 0;
+  do_lower(Gogo*, Named_object*, Statement_inserter*) = 0;
 
   Bexpression*
   do_get_backend(Translate_context*)
@@ -1511,7 +1510,7 @@ class Const_expression : public Expression
   do_traverse(Traverse*);
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   bool
   do_is_constant() const
@@ -1599,7 +1598,7 @@ class Var_expression : public Expression
 
  protected:
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Type*
   do_type();
@@ -1663,7 +1662,7 @@ class Enclosed_var_expression : public Expression
   do_traverse(Traverse*);
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Expression*
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
@@ -1953,7 +1952,7 @@ class Type_conversion_expression : public Expression
   do_traverse(Traverse* traverse);
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Expression*
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
@@ -2154,7 +2153,7 @@ class Unary_expression : public Expression
   { return Expression::traverse(&this->expr_, traverse); }
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Expression*
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
@@ -2315,7 +2314,7 @@ class Binary_expression : public Expression
   do_traverse(Traverse* traverse);
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Expression*
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
@@ -2440,7 +2439,7 @@ class String_concat_expression : public Expression
   { return this->exprs_->traverse(traverse); }
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int)
+  do_lower(Gogo*, Named_object*, Statement_inserter*)
   { return this; }
 
   Expression*
@@ -2628,7 +2627,7 @@ class Call_expression : public Expression
   do_traverse(Traverse*);
 
   virtual Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   virtual Expression*
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
@@ -2823,7 +2822,7 @@ class Builtin_call_expression : public Call_expression
  protected:
   // This overrides Call_expression::do_lower.
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Expression*
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
@@ -3169,7 +3168,7 @@ class Unknown_expression : public Parser_expression
   do_is_addressable() const;
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Expression*
   do_copy()
@@ -3238,7 +3237,7 @@ class Index_expression : public Parser_expression
   do_is_addressable() const;
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*s);
 
   Expression*
   do_copy()
@@ -3739,7 +3738,7 @@ class Field_reference_expression : public Expression
   { return Expression::traverse(&this->expr_, traverse); }
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Type*
   do_type();
@@ -3965,7 +3964,7 @@ class Composite_literal_expression : public Parser_expression
   do_check_types(Gogo*);
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Expression*
   do_copy();

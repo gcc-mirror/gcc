@@ -59,7 +59,6 @@
 #define __glibcxx_want_ranges_chunk_by
 #define __glibcxx_want_ranges_enumerate
 #define __glibcxx_want_ranges_iota
-#define __glibcxx_want_ranges_iota
 #define __glibcxx_want_ranges_join_with
 #define __glibcxx_want_ranges_repeat
 #define __glibcxx_want_ranges_slide
@@ -943,6 +942,8 @@ namespace views::__adaptor
     concept __is_range_adaptor_closure
       = requires (_Tp __t) { __adaptor::__is_range_adaptor_closure_fn(__t, __t); };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-reference"
   // range | adaptor is equivalent to adaptor(range).
   template<typename _Self, typename _Range>
     requires __is_range_adaptor_closure<_Self>
@@ -957,8 +958,12 @@ namespace views::__adaptor
     requires __is_range_adaptor_closure<_Lhs>
       && __is_range_adaptor_closure<_Rhs>
     constexpr auto
-    operator|(_Lhs __lhs, _Rhs __rhs)
-    { return _Pipe<_Lhs, _Rhs>{std::move(__lhs), std::move(__rhs)}; }
+    operator|(_Lhs&& __lhs, _Rhs&& __rhs)
+    {
+      return _Pipe<decay_t<_Lhs>, decay_t<_Rhs>>{std::forward<_Lhs>(__lhs),
+						 std::forward<_Rhs>(__rhs)};
+    }
+#pragma GCC diagnostic pop
 
   // The base class of every range adaptor non-closure.
   //
@@ -981,7 +986,7 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(_Args&&... __args) const
 	{
-	  return _Partial<_Derived, decay_t<_Args>...>{std::forward<_Args>(__args)...};
+	  return _Partial<_Derived, decay_t<_Args>...>{0, std::forward<_Args>(__args)...};
 	}
     };
 
@@ -1004,14 +1009,29 @@ namespace views::__adaptor
     {
       tuple<_Args...> _M_args;
 
-      constexpr
-      _Partial(_Args... __args)
-	: _M_args(std::move(__args)...)
-      { }
+      // First parameter is to ensure this constructor is never used
+      // instead of the copy/move constructor.
+      template<typename... _Ts>
+	constexpr
+	_Partial(int, _Ts&&... __args)
+	  : _M_args(std::forward<_Ts>(__args)...)
+	{ }
 
       // Invoke _Adaptor with arguments __r, _M_args... according to the
       // value category of this _Partial object.
-      // TODO: use explicit object functions ("deducing this").
+#if __cpp_explicit_this_parameter
+      template<typename _Self, typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, __like_t<_Self, _Args>...>
+	constexpr auto
+	operator()(this _Self&& __self, _Range&& __r)
+	{
+	  auto __forwarder = [&__r] (auto&&... __args) {
+	    return _Adaptor{}(std::forward<_Range>(__r),
+			      std::forward<decltype(__args)>(__args)...);
+	  };
+	  return std::apply(__forwarder, std::forward<_Self>(__self)._M_args);
+	}
+#else
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
 	constexpr auto
@@ -1037,6 +1057,7 @@ namespace views::__adaptor
       template<typename _Range>
 	constexpr auto
 	operator()(_Range&& __r) const && = delete;
+#endif
     };
 
   // A lightweight specialization of the above primary template for
@@ -1046,11 +1067,19 @@ namespace views::__adaptor
     {
       _Arg _M_arg;
 
-      constexpr
-      _Partial(_Arg __arg)
-	: _M_arg(std::move(__arg))
-      { }
+      template<typename _Tp>
+	constexpr
+	_Partial(int, _Tp&& __arg)
+	  : _M_arg(std::forward<_Tp>(__arg))
+	{ }
 
+#if __cpp_explicit_this_parameter
+      template<typename _Self, typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, __like_t<_Self, _Arg>>
+	constexpr auto
+	operator()(this _Self&& __self, _Range&& __r)
+	{ return _Adaptor{}(std::forward<_Range>(__r), std::forward<_Self>(__self)._M_arg); }
+#else
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
 	constexpr auto
@@ -1066,6 +1095,7 @@ namespace views::__adaptor
       template<typename _Range>
 	constexpr auto
 	operator()(_Range&& __r) const && = delete;
+#endif
     };
 
   // Partial specialization of the primary template for the case where the extra
@@ -1079,10 +1109,11 @@ namespace views::__adaptor
     {
       tuple<_Args...> _M_args;
 
-      constexpr
-      _Partial(_Args... __args)
-	: _M_args(std::move(__args)...)
-      { }
+      template<typename... _Ts>
+	constexpr
+	_Partial(int, _Ts&&... __args)
+	  : _M_args(std::forward<_Ts>(__args)...)
+	{ }
 
       // Invoke _Adaptor with arguments __r, const _M_args&... regardless
       // of the value category of this _Partial object.
@@ -1109,10 +1140,11 @@ namespace views::__adaptor
     {
       _Arg _M_arg;
 
-      constexpr
-      _Partial(_Arg __arg)
-	: _M_arg(std::move(__arg))
-      { }
+      template<typename _Tp>
+	constexpr
+	_Partial(int, _Tp&& __arg)
+	  : _M_arg(std::forward<_Tp>(__arg))
+	{ }
 
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
@@ -1135,14 +1167,25 @@ namespace views::__adaptor
       [[no_unique_address]] _Lhs _M_lhs;
       [[no_unique_address]] _Rhs _M_rhs;
 
-      constexpr
-      _Pipe(_Lhs __lhs, _Rhs __rhs)
-	: _M_lhs(std::move(__lhs)), _M_rhs(std::move(__rhs))
-      { }
+      template<typename _Tp, typename _Up>
+	constexpr
+	_Pipe(_Tp&& __lhs, _Up&& __rhs)
+	  : _M_lhs(std::forward<_Tp>(__lhs)), _M_rhs(std::forward<_Up>(__rhs))
+	{ }
 
       // Invoke _M_rhs(_M_lhs(__r)) according to the value category of this
       // range adaptor closure object.
-      // TODO: use explicit object functions ("deducing this").
+#if __cpp_explicit_this_parameter
+      template<typename _Self, typename _Range>
+	requires __pipe_invocable<__like_t<_Self, _Lhs>, __like_t<_Self, _Rhs>, _Range>
+	constexpr auto
+	operator()(this _Self&& __self, _Range&& __r)
+	{
+	  return (std::forward<_Self>(__self)._M_rhs
+		  (std::forward<_Self>(__self)._M_lhs
+		   (std::forward<_Range>(__r))));
+	}
+#else
       template<typename _Range>
 	requires __pipe_invocable<const _Lhs&, const _Rhs&, _Range>
 	constexpr auto
@@ -1158,6 +1201,7 @@ namespace views::__adaptor
       template<typename _Range>
 	constexpr auto
 	operator()(_Range&& __r) const && = delete;
+#endif
     };
 
   // A partial specialization of the above primary template for the case where
@@ -1172,10 +1216,11 @@ namespace views::__adaptor
       [[no_unique_address]] _Lhs _M_lhs;
       [[no_unique_address]] _Rhs _M_rhs;
 
-      constexpr
-      _Pipe(_Lhs __lhs, _Rhs __rhs)
-	: _M_lhs(std::move(__lhs)), _M_rhs(std::move(__rhs))
-      { }
+      template<typename _Tp, typename _Up>
+	constexpr
+	_Pipe(_Tp&& __lhs, _Up&& __rhs)
+	  : _M_lhs(std::forward<_Tp>(__lhs)), _M_rhs(std::forward<_Up>(__rhs))
+	{ }
 
       template<typename _Range>
 	requires __pipe_invocable<const _Lhs&, const _Rhs&, _Range>
@@ -2344,11 +2389,7 @@ namespace views::__adaptor
 	inline constexpr bool __is_basic_string_view<basic_string_view<_CharT, _Traits>>
 	  = true;
 
-      template<typename _Range>
-	inline constexpr bool __is_subrange = false;
-
-      template<typename _Iter, typename _Sent, subrange_kind _Kind>
-	inline constexpr bool __is_subrange<subrange<_Iter, _Sent, _Kind>> = true;
+      using ranges::__detail::__is_subrange;
 
       template<typename _Range>
 	inline constexpr bool __is_iota_view = false;
@@ -4121,6 +4162,10 @@ namespace views::__adaptor
 
   namespace __detail
   {
+#if __cpp_lib_tuple_like // >= C++23
+    template<typename _Tp, size_t _Nm>
+    concept __has_tuple_element = __tuple_like<_Tp> && _Nm < tuple_size_v<_Tp>;
+#else
     template<typename _Tp, size_t _Nm>
     concept __has_tuple_element = requires(_Tp __t)
       {
@@ -4130,6 +4175,7 @@ namespace views::__adaptor
 	{ std::get<_Nm>(__t) }
 	  -> convertible_to<const tuple_element_t<_Nm, _Tp>&>;
       };
+#endif
 
     template<typename _Tp, size_t _Nm>
       concept __returnable_element
@@ -4514,23 +4560,12 @@ namespace views::__adaptor
 	|| (!(bidirectional_range<_Rs> && ...) && (common_range<_Rs> && ...))
 	|| ((random_access_range<_Rs> && ...) && (sized_range<_Rs> && ...));
 
-    template<typename... _Ts>
-      struct __tuple_or_pair
-      { using type = std::tuple<_Ts...>; };
-
-    template<typename _Tp, typename _Up>
-      struct __tuple_or_pair<_Tp, _Up>
-      { using type = pair<_Tp, _Up>; };
-
-    template<typename... _Ts>
-      using __tuple_or_pair_t = typename __tuple_or_pair<_Ts...>::type;
-
     template<typename _Fp, typename _Tuple>
       constexpr auto
       __tuple_transform(_Fp&& __f, _Tuple&& __tuple)
       {
 	return std::apply([&]<typename... _Ts>(_Ts&&... __elts) {
-	  return __tuple_or_pair_t<invoke_result_t<_Fp&, _Ts>...>
+	  return tuple<invoke_result_t<_Fp&, _Ts>...>
 	    (std::__invoke(__f, std::forward<_Ts>(__elts))...);
 	}, std::forward<_Tuple>(__tuple));
       }
@@ -4651,7 +4686,7 @@ namespace views::__adaptor
 #ifdef __clang__ // LLVM-61763 workaround
   public:
 #endif
-    __detail::__tuple_or_pair_t<iterator_t<__detail::__maybe_const_t<_Const, _Vs>>...> _M_current;
+    tuple<iterator_t<__detail::__maybe_const_t<_Const, _Vs>>...> _M_current;
 
     constexpr explicit
     _Iterator(decltype(_M_current) __current)
@@ -4683,7 +4718,7 @@ namespace views::__adaptor
     // iterator_category defined in __zip_view_iter_cat
     using iterator_concept = decltype(_S_iter_concept());
     using value_type
-      = __detail::__tuple_or_pair_t<range_value_t<__detail::__maybe_const_t<_Const, _Vs>>...>;
+      = tuple<range_value_t<__detail::__maybe_const_t<_Const, _Vs>>...>;
     using difference_type
       = common_type_t<range_difference_t<__detail::__maybe_const_t<_Const, _Vs>>...>;
 
@@ -4855,7 +4890,7 @@ namespace views::__adaptor
   template<bool _Const>
   class zip_view<_Vs...>::_Sentinel
   {
-    __detail::__tuple_or_pair_t<sentinel_t<__detail::__maybe_const_t<_Const, _Vs>>...> _M_end;
+    tuple<sentinel_t<__detail::__maybe_const_t<_Const, _Vs>>...> _M_end;
 
     constexpr explicit
     _Sentinel(decltype(_M_end) __end)
@@ -8280,8 +8315,7 @@ namespace views::__adaptor
 		    && __detail::__cartesian_product_is_common<_First, _Vs...>)
     {
       auto __its = [this]<size_t... _Is>(index_sequence<_Is...>) {
-	using _Ret = __detail::__tuple_or_pair_t<iterator_t<_First>,
-						 iterator_t<_Vs>...>;
+	using _Ret = tuple<iterator_t<_First>, iterator_t<_Vs>...>;
 	bool __empty_tail = (ranges::empty(std::get<1 + _Is>(_M_bases)) || ...);
 	auto& __first = std::get<0>(_M_bases);
 	return _Ret{(__empty_tail
@@ -8297,8 +8331,7 @@ namespace views::__adaptor
     end() const requires __detail::__cartesian_product_is_common<const _First, const _Vs...>
     {
       auto __its = [this]<size_t... _Is>(index_sequence<_Is...>) {
-	using _Ret = __detail::__tuple_or_pair_t<iterator_t<const _First>,
-						 iterator_t<const _Vs>...>;
+	using _Ret = tuple<iterator_t<const _First>, iterator_t<const _Vs>...>;
 	bool __empty_tail = (ranges::empty(std::get<1 + _Is>(_M_bases)) || ...);
 	auto& __first = std::get<0>(_M_bases);
 	return _Ret{(__empty_tail
@@ -8371,8 +8404,8 @@ namespace views::__adaptor
   {
     using _Parent = __maybe_const_t<_Const, cartesian_product_view>;
     _Parent* _M_parent = nullptr;
-    __detail::__tuple_or_pair_t<iterator_t<__maybe_const_t<_Const, _First>>,
-				iterator_t<__maybe_const_t<_Const, _Vs>>...> _M_current;
+    tuple<iterator_t<__maybe_const_t<_Const, _First>>,
+	  iterator_t<__maybe_const_t<_Const, _Vs>>...> _M_current;
 
     constexpr
     _Iterator(_Parent& __parent, decltype(_M_current) __current)
@@ -8399,11 +8432,11 @@ namespace views::__adaptor
     using iterator_category = input_iterator_tag;
     using iterator_concept = decltype(_S_iter_concept());
     using value_type
-      = __detail::__tuple_or_pair_t<range_value_t<__maybe_const_t<_Const, _First>>,
-				    range_value_t<__maybe_const_t<_Const, _Vs>>...>;
+      = tuple<range_value_t<__maybe_const_t<_Const, _First>>,
+	      range_value_t<__maybe_const_t<_Const, _Vs>>...>;
     using reference
-      = __detail::__tuple_or_pair_t<range_reference_t<__maybe_const_t<_Const, _First>>,
-				    range_reference_t<__maybe_const_t<_Const, _Vs>>...>;
+      = tuple<range_reference_t<__maybe_const_t<_Const, _First>>,
+	      range_reference_t<__maybe_const_t<_Const, _Vs>>...>;
     using difference_type = decltype(cartesian_product_view::_S_difference_type());
 
     _Iterator() = default;
@@ -8706,7 +8739,7 @@ namespace views::__adaptor
 	operator() [[nodiscard]] (_Ts&&... __ts) const
 	{
 	  if constexpr (sizeof...(_Ts) == 0)
-	    return views::empty<tuple<>>;
+	    return views::single(tuple{});
 	  else
 	    return cartesian_product_view<all_t<_Ts>...>(std::forward<_Ts>(__ts)...);
 	}
@@ -9427,7 +9460,7 @@ namespace __detail
     {
       using __detail::_To;
       using views::__adaptor::_Partial;
-      return _Partial<_To<_Cont>, decay_t<_Args>...>{std::forward<_Args>(__args)...};
+      return _Partial<_To<_Cont>, decay_t<_Args>...>{0, std::forward<_Args>(__args)...};
     }
 
 /// @cond undocumented
@@ -9472,7 +9505,7 @@ namespace __detail
     {
       using __detail::_To2;
       using views::__adaptor::_Partial;
-      return _Partial<_To2<_Cont>, decay_t<_Args>...>{std::forward<_Args>(__args)...};
+      return _Partial<_To2<_Cont>, decay_t<_Args>...>{0, std::forward<_Args>(__args)...};
     }
 
 } // namespace ranges

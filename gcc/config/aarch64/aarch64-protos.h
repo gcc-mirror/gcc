@@ -880,6 +880,7 @@ rtx aarch64_return_addr_rtx (void);
 rtx aarch64_return_addr (int, rtx);
 rtx aarch64_simd_gen_const_vector_dup (machine_mode, HOST_WIDE_INT);
 rtx aarch64_gen_shareable_zero (machine_mode);
+bool aarch64_split_simd_shift_p (rtx_insn *);
 bool aarch64_simd_mem_operand_p (rtx);
 bool aarch64_sve_ld1r_operand_p (rtx);
 bool aarch64_sve_ld1rq_operand_p (rtx);
@@ -1042,7 +1043,7 @@ int aarch64_ccmp_mode_to_code (machine_mode mode);
 
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_mergeable_load_pair_p (machine_mode, rtx, rtx);
-bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
+bool aarch64_operands_ok_for_ldpstp (rtx *, bool);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
 bool aarch64_mem_ok_with_ldpstp_policy_model (rtx, bool, machine_mode);
 bool aarch64_ldpstp_operand_mode_p (machine_mode);
@@ -1074,6 +1075,7 @@ std::string aarch64_get_extension_string_for_isa_flags (aarch64_feature_flags,
 rtl_opt_pass *make_pass_aarch64_early_ra (gcc::context *);
 rtl_opt_pass *make_pass_fma_steering (gcc::context *);
 rtl_opt_pass *make_pass_track_speculation (gcc::context *);
+rtl_opt_pass *make_pass_late_track_speculation (gcc::context *);
 rtl_opt_pass *make_pass_tag_collision_avoidance (gcc::context *);
 rtl_opt_pass *make_pass_insert_bti (gcc::context *ctxt);
 rtl_opt_pass *make_pass_cc_fusion (gcc::context *ctxt);

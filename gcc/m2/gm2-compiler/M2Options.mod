@@ -31,7 +31,8 @@ FROM FIO IMPORT StdErr ;
 FROM libc IMPORT exit, printf ;
 FROM Debug IMPORT Halt ;
 FROM m2linemap IMPORT location_t ;
-FROM m2configure IMPORT FullPathCPP ;
+FROM m2configure IMPORT FullPathCPP, TargetIEEEQuadDefault ;
+FROM M2Error IMPORT InternalError ;
 
 
 FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
@@ -74,6 +75,8 @@ VAR
    MPFlag,
    MDFlag,
    MMDFlag,
+   IBMLongDouble,
+   IEEELongDouble,
    UselistFlag,
    CC1Quiet,
    SeenSources          : BOOLEAN ;
@@ -1594,6 +1597,79 @@ BEGIN
 END SetDebugBuiltins ;
 
 
+(*
+   SetIBMLongDouble - enable/disable LONGREAL to map onto the
+                      IBM long double 128 bit data type.
+                      (Only available on the ppc).
+*)
+
+PROCEDURE SetIBMLongDouble (value: BOOLEAN) ;
+BEGIN
+   IBMLongDouble := value ;
+   IF value
+   THEN
+      IEEELongDouble := FALSE
+   END
+END SetIBMLongDouble ;
+
+
+(*
+   GetIBMLongDouble - return the value of IBMLongDouble.
+*)
+
+PROCEDURE GetIBMLongDouble () : BOOLEAN ;
+BEGIN
+   RETURN IBMLongDouble
+END GetIBMLongDouble ;
+
+
+(*
+   SetIEEELongDouble - enable/disable LONGREAL to map onto the
+                       IEEE long double 128 bit data type.
+                       (Only available on the ppc).
+*)
+
+PROCEDURE SetIEEELongDouble (value: BOOLEAN) ;
+BEGIN
+   IEEELongDouble := value ;
+   IF value
+   THEN
+      IBMLongDouble := FALSE
+   END
+END SetIEEELongDouble ;
+
+
+(*
+   GetIEEELongDouble - return the value of IEEELongDouble.
+*)
+
+PROCEDURE GetIEEELongDouble () : BOOLEAN ;
+BEGIN
+   RETURN IEEELongDouble
+END GetIEEELongDouble ;
+
+
+(*
+   InitializeLongDoubleFlags - initialize the long double related flags
+                               with default values given during gcc configure.
+*)
+
+PROCEDURE InitializeLongDoubleFlags ;
+BEGIN
+   IBMLongDouble := FALSE ;
+   IEEELongDouble := FALSE ;
+   CASE TargetIEEEQuadDefault () OF
+
+   -1: |
+    0: IBMLongDouble := TRUE |
+    1: IEEELongDouble := TRUE
+
+   ELSE
+      InternalError ('unexpected value returned from TargetIEEEQuadDefault ()')
+   END
+END InitializeLongDoubleFlags ;
+
+
 BEGIN
    cflag                             := FALSE ;  (* -c.  *)
    RuntimeModuleOverride             := InitString (DefaultRuntimeModuleOverride) ;
@@ -1673,6 +1749,7 @@ BEGIN
    MFarg                             := NIL ;
    MTFlag                            := NIL ;
    MQFlag                            := NIL ;
+   InitializeLongDoubleFlags ;
    M2Prefix                          := InitString ('') ;
    M2PathName                        := InitString ('')
 END M2Options.

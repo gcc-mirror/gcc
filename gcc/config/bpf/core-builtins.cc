@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "ctfc.h"
 #include "btf.h"
-#include "coreout.h"
+#include "btfext-out.h"
 #include "core-builtins.h"
 
 /* BPF CO-RE builtins definition.

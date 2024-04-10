@@ -585,7 +585,7 @@ static bool activatePending (bool untilInterrupt, RTint_DispatchVector call, uns
 
 
               default:
-                CaseException ("../../gcc-read-write/gcc/m2/gm2-libs/RTint.def", 25, 1);
+                CaseException ("../../gcc/m2/gm2-libs/RTint.def", 25, 1);
                 __builtin_unreachable ();
             }
           vec = vec->pending;
@@ -698,7 +698,7 @@ extern "C" unsigned int RTint_InitOutputVector (int fd, unsigned int pri)
       RTco_signal (lock);
       return vptr->no;
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/RTint.def", 25, 1);
+  ReturnException ("../../gcc/m2/gm2-libs/RTint.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -755,7 +755,7 @@ extern "C" void RTint_ReArmTimeVector (unsigned int vec, unsigned int micro, uns
   vptr = FindVectorNo (vec);
   if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "ReArmTimeVector", 15, 287);
+      M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, (const char *) "ReArmTimeVector", 15, 287);
     }
   else
     {
@@ -780,7 +780,7 @@ extern "C" void RTint_GetTimeVector (unsigned int vec, unsigned int *micro, unsi
   vptr = FindVectorNo (vec);
   if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "GetTimeVector", 13, 313);
+      M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, (const char *) "GetTimeVector", 13, 313);
     }
   else
     {
@@ -806,7 +806,7 @@ extern "C" void * RTint_AttachVector (unsigned int vec, void * ptr)
   vptr = FindVectorNo (vec);
   if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "AttachVector", 12, 340);
+      M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, (const char *) "AttachVector", 12, 340);
     }
   else
     {
@@ -820,7 +820,7 @@ extern "C" void * RTint_AttachVector (unsigned int vec, void * ptr)
       RTco_signal (lock);
       return prevArg;
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/RTint.def", 25, 1);
+  ReturnException ("../../gcc/m2/gm2-libs/RTint.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -845,7 +845,7 @@ extern "C" void RTint_IncludeVector (unsigned int vec)
       vptr = FindVectorNo (vec);
       if (vptr == NULL)
         {
-          M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "IncludeVector", 13, 374);
+          M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, (const char *) "IncludeVector", 13, 374);
         }
       else
         {
@@ -891,7 +891,7 @@ extern "C" void RTint_ExcludeVector (unsigned int vec)
   vptr = FindPendingVector (vec);
   if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "cannot find pending vector supplied", 35, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "ExcludeVector", 13, 416);
+      M2RTS_Halt ((const char *) "cannot find pending vector supplied", 35, (const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, (const char *) "ExcludeVector", 13, 416);
     }
   else
     {
@@ -989,7 +989,7 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
 
 
                   default:
-                    CaseException ("../../gcc-read-write/gcc/m2/gm2-libs/RTint.def", 25, 1);
+                    CaseException ("../../gcc/m2/gm2-libs/RTint.def", 25, 1);
                     __builtin_unreachable ();
                 }
               vec = vec->pending;
@@ -1002,7 +1002,7 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
         }
       if ((untilInterrupt && (((inSet == NULL) && (outSet == NULL)) || (maxFd == -1))) && ! found)
         {
-          M2RTS_Halt ((const char *) "deadlock found, no more processes to run and no interrupts active", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "Listen", 6, 733);
+          M2RTS_Halt ((const char *) "deadlock found, no more processes to run and no interrupts active", 65, (const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, (const char *) "Listen", 6, 733);
         }
       /* printf('}
       ') ;  */

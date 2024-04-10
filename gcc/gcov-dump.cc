@@ -218,11 +218,11 @@ dump_gcov_file (const char *filename)
 
   /* stamp */
   unsigned stamp = gcov_read_unsigned ();
-  printf ("%s:stamp %lu\n", filename, (unsigned long)stamp);
+  printf ("%s:stamp %u\n", filename, stamp);
 
   /* Checksum */
   unsigned checksum = gcov_read_unsigned ();
-  printf ("%s:checksum %lu\n", filename, (unsigned long)checksum);
+  printf ("%s:checksum %u\n", filename, checksum);
 
   if (!is_data_type)
     {

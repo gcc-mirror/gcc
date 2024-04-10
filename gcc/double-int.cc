@@ -671,14 +671,14 @@ double_int::mask (unsigned prec)
   if (prec > HOST_BITS_PER_WIDE_INT)
     {
       prec -= HOST_BITS_PER_WIDE_INT;
-      m = ((unsigned HOST_WIDE_INT) 2 << (prec - 1)) - 1;
+      m = (HOST_WIDE_INT_UC (2) << (prec - 1)) - 1;
       mask.high = (HOST_WIDE_INT) m;
       mask.low = ALL_ONES;
     }
   else
     {
       mask.high = 0;
-      mask.low = prec ? ((unsigned HOST_WIDE_INT) 2 << (prec - 1)) - 1 : 0;
+      mask.low = prec ? (HOST_WIDE_INT_UC (2) << (prec - 1)) - 1 : 0;
     }
 
   return mask;

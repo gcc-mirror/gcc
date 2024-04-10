@@ -55,6 +55,8 @@ extern enum riscv_isa_spec_class riscv_isa_spec;
 enum riscv_microarchitecture_type {
   generic,
   sifive_7,
+  sifive_p400,
+  sifive_p600,
   generic_ooo
 };
 extern enum riscv_microarchitecture_type riscv_microarchitecture;
@@ -68,13 +70,6 @@ enum riscv_align_data {
 enum stack_protector_guard {
   SSP_TLS,			/* per-thread canary in TLS block */
   SSP_GLOBAL			/* global canary */
-};
-
-/* RISC-V auto-vectorization preference.  */
-enum riscv_autovec_preference_enum {
-  NO_AUTOVEC,
-  RVV_SCALABLE,
-  RVV_FIXED_VLMAX
 };
 
 /* RISC-V auto-vectorization RVV LMUL.  */
@@ -114,6 +109,25 @@ enum stringop_strategy_enum {
   STRATEGY_VECTOR = 4,
   /* Use any. */
   STRATEGY_AUTO = STRATEGY_SCALAR | STRATEGY_VECTOR
+};
+
+/* Behavior of VSETVL Pass.  */
+enum vsetvl_strategy_enum {
+  /* Optimized: Run LCM dataflow analysis to reduce vsetvl* insns and
+     delete any redundant ones generated in the process.  */
+  VSETVL_OPT,
+  /* Simple: Insert a vsetvl* instruction for each Vector instruction.  */
+  VSETVL_SIMPLE,
+  /* No fusion: Disable Phase 2 earliest global fusion.  */
+  VSETVL_OPT_NO_FUSION,
+};
+
+/* RVV vector bits for option -mrvv-vector-bits, default is scalable.  */
+enum rvv_vector_bits_enum {
+  /* scalable indicates taking the value of zvl*b as the minimal vlen.  */
+  RVV_VECTOR_BITS_SCALABLE,
+  /* zvl indicates taking the value of zvl*b as the exactly vlen.  */
+  RVV_VECTOR_BITS_ZVL,
 };
 
 #define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))

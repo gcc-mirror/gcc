@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #define STR_CPU_LA464 "la464"
 #define STR_CPU_LA664 "la664"
 
-#define STR_ISA_BASE_LA64V100 "la64"
+#define STR_ISA_BASE_LA64 "la64"
 
 #define OPTSTR_ISA_EXT_FPU "fpu"
 #define STR_NONE "none"
@@ -62,11 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #define STR_CMODEL_MEDIUM "medium"
 #define STR_CMODEL_LARGE "large"
 #define STR_CMODEL_EXTREME "extreme"
-
-#define OPTSTR_EXPLICIT_RELOCS "explicit-relocs"
-#define STR_EXPLICIT_RELOCS_AUTO "auto"
-#define STR_EXPLICIT_RELOCS_NONE "none"
-#define STR_EXPLICIT_RELOCS_ALWAYS "always"
 
 #define OPTSTR_FRECIPE	"frecipe"
 #define OPTSTR_DIV32	"div32"

@@ -328,6 +328,30 @@ else version (CRuntime_Bionic)
         int _size;
     }
 }
+else version (CRuntime_Newlib)
+{
+    enum
+    {
+        ///
+        BUFSIZ       = 1024,
+        ///
+        EOF          = -1,
+        ///
+        FOPEN_MAX    = 20,
+        ///
+        FILENAME_MAX = 1024,
+        ///
+        TMP_MAX      = 26,
+        ///
+        L_tmpnam     = 1024
+    }
+
+    struct __sbuf
+    {
+        ubyte* _base;
+        int _size;
+    }
+}
 else version (CRuntime_UClibc)
 {
     enum
@@ -769,6 +793,57 @@ else version (CRuntime_Bionic)
     ///
     alias shared(__sFILE) FILE;
 }
+else version (CRuntime_Newlib)
+{
+    import core.sys.posix.sys.types : ssize_t;
+    import core.stdc.wchar_ : mbstate_t;
+
+    ///
+    alias fpos_t = c_long;
+
+    ///
+    struct __sFILE
+    {
+        ubyte* _p;
+        int _r;
+        int _w;
+        short _flags;
+        short _file;
+        __sbuf _bf;
+        int _lbfsize;
+
+        void* _data;
+        void* _cookie;
+
+        ssize_t function(void*, void*, scope char*, size_t) _read;
+        ssize_t function(void*, void*, scope const char*, size_t) _write;
+        fpos_t function(void*, void*, fpos_t, int) _seek;
+        int function(void*, void*) _close;
+
+        __sbuf _ub;
+        ubyte* _up;
+        int _ur;
+
+        ubyte[3] _ubuf;
+        ubyte[1] _nbuf;
+
+        __sbuf _lb;
+
+        int _blksize;
+        int _flags2;
+
+        long _offset;
+        void* _unused;
+
+        void* _lock;
+        mbstate_t _mbstate;
+    }
+
+    ///
+    alias __sFILE _iobuf; // needed for phobos
+    ///
+    alias shared(__sFILE) FILE;
+}
 else version (CRuntime_UClibc)
 {
     import core.stdc.wchar_ : mbstate_t;
@@ -1135,6 +1210,40 @@ else version (CRuntime_Musl)
         _IOLBF = 1,
         ///
         _IONBF = 2,
+    }
+}
+else version (CRuntime_Newlib)
+{
+    enum
+    {
+        ///
+        _IOFBF = 0,
+        ///
+        _IOLBF = 1,
+        ///
+        _IONBF = 2,
+    }
+
+    private
+    {
+        shared struct _reent
+        {
+            int _errno;
+            __sFILE* _stdin;
+            __sFILE* _stdout;
+            __sFILE* _stderr;
+        }
+        _reent* __getreent();
+    }
+
+    pragma(inline, true)
+    {
+        ///
+        @property auto stdin()() { return __getreent()._stdin; }
+        ///
+        @property auto stdout()() { return __getreent()._stdout; }
+        ///
+        @property auto stderr()() { return __getreent()._stderr; }
     }
 }
 else version (CRuntime_UClibc)
@@ -1868,6 +1977,47 @@ else version (CRuntime_Musl)
     ///
     pragma(printf)
     int vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
+}
+else version (CRuntime_Newlib)
+{
+  // No unsafe pointer manipulation.
+  @trusted
+  {
+    ///
+    void rewind(FILE* stream);
+    ///
+    pure void clearerr(FILE* stream);
+    ///
+    pure int  feof(FILE* stream);
+    ///
+    pure int  ferror(FILE* stream);
+    ///
+    int  fileno(FILE *);
+  }
+
+    ///
+    pragma(printf)
+    int  snprintf(scope char* s, size_t n, scope const char* format, scope const ...);
+    ///
+    pragma(printf)
+    int  vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
+
+    //
+    // Gnu under-the-hood C I/O functions. Uses _iobuf* for the unshared
+    // version of FILE*, usable when the FILE is locked.
+    // See http://gnu.org/software/libc/manual/html_node/I_002fO-on-Streams.html
+    //
+    import core.stdc.wchar_ : wint_t;
+    import core.stdc.stddef : wchar_t;
+
+    ///
+    int fputc_unlocked(int c, _iobuf* stream);
+    ///
+    int fgetc_unlocked(_iobuf* stream);
+    ///
+    wint_t fputwc_unlocked(wchar_t wc, _iobuf* stream);
+    ///
+    wint_t fgetwc_unlocked(_iobuf* stream);
 }
 else version (CRuntime_UClibc)
 {

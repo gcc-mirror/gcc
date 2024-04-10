@@ -8,7 +8,7 @@
 extern void abort (void);
 extern void exit (int);
 
-extern int ilogbf (float);
+extern int ilogb (double);
 int match (float _Complex, float _Complex);
 
 #define SMALL FLT_MIN
@@ -22,7 +22,8 @@ int match (float _Complex, float _Complex);
 int match (float _Complex c, float _Complex z)
 {
   float rz, iz, rc, ic;
-  float rerr, ierr, rmax;
+  float rerr, ierr;
+  double rmax;
   int biterr;
   rz = __real__ z;
   iz = __imag__ z;
@@ -54,11 +55,11 @@ int match (float _Complex c, float _Complex z)
     {
       ierr = __builtin_fabsf (iz - ic) / SMALL;
     }
-  rmax = __builtin_fmaxf(rerr, ierr);
+  rmax = __builtin_fmax (rerr, ierr);
   biterr = 0;
   if ( rmax != 0.0)      
     {
-      biterr = ilogbf (rmax) + MAXBIT + 1;
+      biterr = ilogb (rmax) + MAXBIT + 1;
     }
 
   if (biterr >= ERRLIM)

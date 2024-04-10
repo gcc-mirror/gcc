@@ -297,6 +297,26 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_FL_SCXTNUM	   AARCH64_FL_V8_5A
 #define AARCH64_FL_ID_PFR2	   AARCH64_FL_V8_5A
 
+/* Armv8.9-A extension feature bits defined in Binutils but absent from GCC,
+   aliased to their base architecture.  */
+#define AARCH64_FL_AIE		   AARCH64_FL_V8_9A
+#define AARCH64_FL_DEBUGv8p9	   AARCH64_FL_V8_9A
+#define AARCH64_FL_FGT2	   AARCH64_FL_V8_9A
+#define AARCH64_FL_ITE		   AARCH64_FL_V8_9A
+#define AARCH64_FL_PFAR	   AARCH64_FL_V8_9A
+#define AARCH64_FL_PMUv3_ICNTR	   AARCH64_FL_V8_9A
+#define AARCH64_FL_PMUv3_SS	   AARCH64_FL_V8_9A
+#define AARCH64_FL_PMUv3p9	   AARCH64_FL_V8_9A
+#define AARCH64_FL_RASv2	   AARCH64_FL_V8_9A
+#define AARCH64_FL_S1PIE	   AARCH64_FL_V8_9A
+#define AARCH64_FL_S1POE	   AARCH64_FL_V8_9A
+#define AARCH64_FL_S2PIE	   AARCH64_FL_V8_9A
+#define AARCH64_FL_S2POE	   AARCH64_FL_V8_9A
+#define AARCH64_FL_SCTLR2	   AARCH64_FL_V8_9A
+#define AARCH64_FL_SEBEP	   AARCH64_FL_V8_9A
+#define AARCH64_FL_SPE_FDS	   AARCH64_FL_V8_9A
+#define AARCH64_FL_TCR2	   AARCH64_FL_V8_9A
+
 /* SHA2 is an optional extension to AdvSIMD.  */
 #define TARGET_SHA2 (AARCH64_ISA_SHA2)
 
@@ -1056,6 +1076,12 @@ typedef struct GTY (()) machine_function
   /* A set of all decls that have been passed to a vld1 intrinsic in the
      current function.  This is used to help guide the vector cost model.  */
   hash_set<tree> *vector_load_decls;
+
+  /* An instruction that was emitted at the start of the function to
+     set an Advanced SIMD pseudo register to zero.  If the instruction
+     still exists and still fulfils its original purpose. the same register
+     can be reused by other code.  */
+  rtx_insn *advsimd_zero_insn;
 } machine_function;
 #endif
 #endif

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -701,7 +701,15 @@ public:
     void accept(Visitor *v) override { v->visit(this); }
 };
 
-Statement* asmSemantic(AsmStatement *s, Scope *sc);
+namespace dmd
+{
+    // in statementsem.d
+    Statement* statementSemantic(Statement *s, Scope *sc);
+    // in iasm.d
+    Statement* asmSemantic(AsmStatement *s, Scope *sc);
+    // in iasmgcc.d
+    Statement *gccAsmSemantic(GccAsmStatement *s, Scope *sc);
+}
 
 class AsmStatement : public Statement
 {
@@ -716,7 +724,7 @@ public:
 class InlineAsmStatement final : public AsmStatement
 {
 public:
-    code *asmcode;
+    void *asmcode;
     unsigned asmalign;          // alignment of this statement
     unsigned regs;              // mask of registers modified (must match regm_t in back end)
     d_bool refparam;              // true if function parameter is referenced

@@ -2167,6 +2167,9 @@ expand_builtin_eh_return_data_regno (tree exp)
       return constm1_rtx;
     }
 
+  if (!tree_fits_uhwi_p (which))
+    return constm1_rtx;
+
   iwhich = tree_to_uhwi (which);
   iwhich = EH_RETURN_DATA_REGNO (iwhich);
   if (iwhich == INVALID_REGNUM)

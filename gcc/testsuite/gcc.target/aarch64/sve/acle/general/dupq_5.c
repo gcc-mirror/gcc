@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mlittle-endian" } */
 
-#include <arm_sve.h>
+#pragma GCC aarch64 "arm_sve.h"
 
 svint32_t
 dupq (int x1, int x2, int x3, int x4)

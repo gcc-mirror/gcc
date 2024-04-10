@@ -75,12 +75,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // [stacktrace.entry.obs], observers
 
+    [[nodiscard]]
     constexpr native_handle_type
     native_handle() const noexcept { return _M_pc; }
 
     constexpr explicit operator bool() const noexcept { return _M_pc != -1; }
 
     // [stacktrace.entry.query], query
+    [[nodiscard]]
     string
     description() const
     {
@@ -89,6 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __s;
     }
 
+    [[nodiscard]]
     string
     source_file() const
     {
@@ -97,6 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __s;
     }
 
+    [[nodiscard]]
     uint_least32_t
     source_line() const
     {
@@ -106,11 +110,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     // [stacktrace.entry.cmp], comparison
+    [[nodiscard]]
     friend constexpr bool
     operator==(const stacktrace_entry& __x,
 	       const stacktrace_entry& __y) noexcept
     { return __x._M_pc == __y._M_pc; }
 
+    [[nodiscard]]
     friend constexpr strong_ordering
     operator<=>(const stacktrace_entry& __x,
 		const stacktrace_entry& __y) noexcept
@@ -384,36 +390,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // [stacktrace.basic.obs], observers
+      [[nodiscard]]
       allocator_type get_allocator() const noexcept { return _M_alloc; }
 
+      [[nodiscard]]
       const_iterator
       begin() const noexcept
       { return const_iterator{_M_impl._M_frames}; }
 
+      [[nodiscard]]
       const_iterator
       end() const noexcept
       { return begin() + size(); }
 
+      [[nodiscard]]
       const_reverse_iterator
       rbegin() const noexcept
       { return std::make_reverse_iterator(end()); }
 
+      [[nodiscard]]
       const_reverse_iterator
       rend() const noexcept
       { return std::make_reverse_iterator(begin()); }
 
-      const_iterator cbegin() const noexcept { return begin(); }
-      const_iterator cend() const noexcept { return end(); }
-      const_reverse_iterator crbegin() const noexcept { return rbegin(); };
-      const_reverse_iterator crend() const noexcept { return rend(); };
+      [[nodiscard]] const_iterator cbegin() const noexcept { return begin(); }
+      [[nodiscard]] const_iterator cend() const noexcept { return end(); }
+
+      [[nodiscard]]
+      const_reverse_iterator
+      crbegin() const noexcept { return rbegin(); };
+
+      [[nodiscard]]
+      const_reverse_iterator
+      crend() const noexcept { return rend(); };
 
       [[nodiscard]] bool empty() const noexcept { return size() == 0; }
-      size_type size() const noexcept { return _M_impl._M_size; }
+      [[nodiscard]] size_type size() const noexcept { return _M_impl._M_size; }
 
+      [[nodiscard]]
       size_type
       max_size() const noexcept
       { return _Impl::_S_max_size(_M_impl._M_alloc); }
 
+      [[nodiscard]]
       const_reference
       operator[](size_type __n) const noexcept
       {
@@ -421,6 +440,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return begin()[__n];
       }
 
+      [[nodiscard]]
       const_reference
       at(size_type __n) const
       {
@@ -431,12 +451,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // [stacktrace.basic.cmp], comparisons
       template<typename _Allocator2>
+	[[nodiscard]]
 	friend bool
 	operator==(const basic_stacktrace& __x,
 		   const basic_stacktrace<_Allocator2>& __y) noexcept
 	{ return std::equal(__x.begin(), __x.end(), __y.begin(), __y.end()); }
 
       template<typename _Allocator2>
+	[[nodiscard]]
 	friend strong_ordering
 	operator<=>(const basic_stacktrace& __x,
 		    const basic_stacktrace<_Allocator2>& __y) noexcept
@@ -677,6 +699,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __os;
     }
 
+  [[nodiscard]]
   inline string
   to_string(const stacktrace_entry& __f)
   {
@@ -686,6 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   template<typename _Allocator>
+    [[nodiscard]]
     string
     to_string(const basic_stacktrace<_Allocator>& __st)
     {
@@ -785,6 +809,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct hash<stacktrace_entry>
     {
+      [[nodiscard]]
       size_t
       operator()(const stacktrace_entry& __f) const noexcept
       {
@@ -796,6 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Allocator>
     struct hash<basic_stacktrace<_Allocator>>
     {
+      [[nodiscard]]
       size_t
       operator()(const basic_stacktrace<_Allocator>& __st) const noexcept
       {

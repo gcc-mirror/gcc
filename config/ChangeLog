@@ -1,3 +1,7 @@
+2024-01-11  Mike Frysinger  <vapier@gentoo.org>
+
+	* acinclude.m4 (CYG_AC_PATH_LIBERTY): Delete.
+
 2023-11-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* hwcaps.m4 (GCC_CHECK_ASSEMBLER_HWCAP): Require

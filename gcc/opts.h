@@ -491,6 +491,9 @@ extern const struct zero_call_used_regs_opts_s
 
 extern vec<const char *> help_option_arguments;
 
+extern const char *get_option_prefix_remapping (const char *p, size_t sz,
+						const char **out_new_prefix);
+
 extern void add_misspelling_candidates (auto_vec<char *> *candidates,
 					const struct cl_option *option,
 					const char *base_option);

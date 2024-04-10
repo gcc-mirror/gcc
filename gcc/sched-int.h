@@ -1677,6 +1677,8 @@ extern void sd_copy_back_deps (rtx_insn *, rtx_insn *, bool);
 extern void sd_delete_dep (sd_iterator_def);
 extern void sd_debug_lists (rtx, sd_list_types_def);
 
+extern int dep_list_size (rtx_insn *, sd_list_types_def);
+
 /* Macros and declarations for scheduling fusion.  */
 #define FUSION_MAX_PRIORITY (INT_MAX)
 extern bool sched_fusion;

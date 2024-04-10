@@ -578,6 +578,12 @@
 #  error "__cpp_implicit_move != 202207"
 #endif
 
+#ifndef __cpp_explicit_this_parameter
+#  error "__cpp_explicit_this_parameter"
+#elif __cpp_explicit_this_parameter != 202110
+#  error "__cpp_explicit_this_parameter != 202110"
+#endif
+
 #ifndef __cpp_auto_cast
 #  error "__cpp_auto_cast"
 #elif __cpp_auto_cast != 202110

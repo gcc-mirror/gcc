@@ -1429,6 +1429,32 @@ vect_set_loop_condition (class loop *loop, edge loop_e, loop_vec_info loop_vinfo
 		     (gimple *) cond_stmt);
 }
 
+/* Get the virtual operand live on E.  The precondition on this is valid
+   immediate dominators and an actual virtual definition dominating E.  */
+/* ???  Costly band-aid.  For the use in question we can populate a
+   live-on-exit/end-of-BB virtual operand when copying stmts.  */
+
+static tree
+get_live_virtual_operand_on_edge (edge e)
+{
+  basic_block bb = e->src;
+  do
+    {
+      for (auto gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (gimple_vdef (stmt))
+	    return gimple_vdef (stmt);
+	  if (gimple_vuse (stmt))
+	    return gimple_vuse (stmt);
+	}
+      if (gphi *vphi = get_virtual_phi (bb))
+	return gimple_phi_result (vphi);
+      bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+    }
+  while (1);
+}
+
 /* Given LOOP this function generates a new copy of it and puts it
    on E which is either the entry or exit of LOOP.  If SCALAR_LOOP is
    non-NULL, assume LOOP and SCALAR_LOOP are equivalent and copy the
@@ -1568,7 +1594,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
   auto loop_exits = get_loop_exit_edges (loop);
   bool multiple_exits_p = loop_exits.length () > 1;
   auto_vec<basic_block> doms;
-  class loop *update_loop = NULL;
 
   if (at_exit) /* Add the loop copy at exit.  */
     {
@@ -1578,146 +1603,179 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	  flush_pending_stmts (new_exit);
 	}
 
+      bool need_virtual_phi = get_virtual_phi (loop->header);
+
+      /* For the main loop exit preserve the LC PHI nodes.  For vectorization
+	 we need them to continue or finalize reductions.  Since we do not
+	 copy the loop exit blocks we have to materialize PHIs at the
+	 new destination before redirecting edges.  */
+      for (auto gsi_from = gsi_start_phis (loop_exit->dest);
+	   !gsi_end_p (gsi_from); gsi_next (&gsi_from))
+	{
+	  tree res = gimple_phi_result (*gsi_from);
+	  create_phi_node (copy_ssa_name (res), new_preheader);
+	}
+      edge e = redirect_edge_and_branch (loop_exit, new_preheader);
+      gcc_assert (e == loop_exit);
+      flush_pending_stmts (loop_exit);
+      set_immediate_dominator (CDI_DOMINATORS, new_preheader, loop_exit->src);
+
+      /* If we ended up choosing an exit leading to a path not using memory
+	 we can end up without a virtual LC PHI.  Create it when it is
+	 needed because of the epilog loop continuation.  */
+      if (need_virtual_phi && !get_virtual_phi (loop_exit->dest))
+	{
+	  tree header_def = gimple_phi_result (get_virtual_phi (loop->header));
+	  gphi *vphi = create_phi_node (copy_ssa_name (header_def),
+					new_preheader);
+	  add_phi_arg (vphi, get_live_virtual_operand_on_edge (loop_exit),
+		       loop_exit, UNKNOWN_LOCATION);
+	}
+
       bool multiple_exits_p = loop_exits.length () > 1;
       basic_block main_loop_exit_block = new_preheader;
       basic_block alt_loop_exit_block = NULL;
-      /* Create intermediate edge for main exit.  But only useful for early
-	 exits.  */
+      /* Create the CFG for multiple exits.
+		   | loop_exit               | alt1   | altN
+		   v                         v   ...  v
+	    main_loop_exit_block:       alt_loop_exit_block:
+		   |                      /
+		   v                     v
+	    new_preheader:
+	 where in the new preheader we need merge PHIs for
+	 the continuation values into the epilogue header.
+	 Do not bother with exit PHIs for the early exits but
+	 their live virtual operand.  We'll fix up things below.  */
       if (multiple_exits_p)
 	{
 	  edge loop_e = single_succ_edge (new_preheader);
 	  new_preheader = split_edge (loop_e);
-	}
 
-      auto_vec <gimple *> new_phis;
-      hash_map <tree, tree> new_phi_args;
-      /* First create the empty phi nodes so that when we flush the
-	 statements they can be filled in.   However because there is no order
-	 between the PHI nodes in the exits and the loop headers we need to
-	 order them base on the order of the two headers.  First record the new
-	 phi nodes. Then redirect the edges and flush the changes.  This writes
-	 out the new SSA names.  */
-      for (auto gsi_from = gsi_start_phis (loop_exit->dest);
-	   !gsi_end_p (gsi_from); gsi_next (&gsi_from))
-	{
-	  gimple *from_phi = gsi_stmt (gsi_from);
-	  tree new_res = copy_ssa_name (gimple_phi_result (from_phi));
-	  gphi *res = create_phi_node (new_res, main_loop_exit_block);
-	  new_phis.safe_push (res);
-	}
-
-      for (auto exit : loop_exits)
-	{
-	  basic_block dest = main_loop_exit_block;
-	  if (exit != loop_exit)
-	    {
-	      if (!alt_loop_exit_block)
-		{
+	  gphi *vphi = NULL;
+	  alt_loop_exit_block = new_preheader;
+	  for (auto exit : loop_exits)
+	    if (exit != loop_exit)
+	      {
+		tree vphi_def = NULL_TREE;
+		if (gphi *evphi = get_virtual_phi (exit->dest))
+		  vphi_def = gimple_phi_arg_def_from_edge (evphi, exit);
+		edge res = redirect_edge_and_branch (exit, alt_loop_exit_block);
+		gcc_assert (res == exit);
+		redirect_edge_var_map_clear (exit);
+		if (alt_loop_exit_block == new_preheader)
 		  alt_loop_exit_block = split_edge (exit);
-		  edge res = redirect_edge_and_branch (
-				single_succ_edge (alt_loop_exit_block),
-				new_preheader);
-		  flush_pending_stmts (res);
+		if (!need_virtual_phi)
 		  continue;
-		}
-	      dest = alt_loop_exit_block;
-	    }
-	  edge e = redirect_edge_and_branch (exit, dest);
-	  flush_pending_stmts (e);
+		/* When the edge has no virtual LC PHI get at the live
+		   virtual operand by other means.  */
+		if (!vphi_def)
+		  vphi_def = get_live_virtual_operand_on_edge (exit);
+		if (!vphi)
+		  vphi = create_phi_node (copy_ssa_name (vphi_def),
+					  alt_loop_exit_block);
+		else
+		  /* Edge redirection might re-allocate the PHI node
+		     so we have to rediscover it.  */
+		  vphi = get_virtual_phi (alt_loop_exit_block);
+		add_phi_arg (vphi, vphi_def, exit, UNKNOWN_LOCATION);
+	      }
+
+	  set_immediate_dominator (CDI_DOMINATORS, new_preheader,
+				   loop->header);
 	}
 
-      /* Record the new SSA names in the cache so that we can skip materializing
-	 them again when we fill in the rest of the LCSSA variables.  */
-      for (auto phi : new_phis)
-	{
-	  tree new_arg = gimple_phi_arg (phi, loop_exit->dest_idx)->def;
-
-	  if (!SSA_VAR_P (new_arg))
-	    continue;
-
-	  /* If the PHI MEM node dominates the loop then we shouldn't create
-	     a new LC-SSSA PHI for it in the intermediate block.   */
-	  /* A MEM phi that consitutes a new DEF for the vUSE chain can either
-	     be a .VDEF or a PHI that operates on MEM. And said definition
-	     must not be inside the main loop.  Or we must be a parameter.
-	     In the last two cases we may remove a non-MEM PHI node, but since
-	     they dominate both loops the removal is unlikely to cause trouble
-	     as the exits must already be using them.  */
-	  if (virtual_operand_p (new_arg)
-	      && (SSA_NAME_IS_DEFAULT_DEF (new_arg)
-		  || !flow_bb_inside_loop_p (loop,
-				gimple_bb (SSA_NAME_DEF_STMT (new_arg)))))
-	    {
-	      auto gsi = gsi_for_stmt (phi);
-	      remove_phi_node (&gsi, true);
-	      continue;
-	    }
-
-	  /* If we decide to remove the PHI node we should also not
-	     rematerialize it later on.  */
-	  new_phi_args.put (new_arg, gimple_phi_result (phi));
-
-	  if (TREE_CODE (new_arg) != SSA_NAME)
-	    continue;
-	}
-
-      /* Copy the current loop LC PHI nodes between the original loop exit
-	 block and the new loop header.  This allows us to later split the
-	 preheader block and still find the right LC nodes.  */
-      edge loop_entry = single_succ_edge (new_preheader);
+      /* Adjust the epilog loop PHI entry values to continue iteration.
+	 This adds remaining necessary LC PHI nodes to the main exit
+	 and creates merge PHIs when we have multiple exits with
+	 their appropriate continuation.  */
       if (flow_loops)
 	{
+	  edge loop_entry = single_succ_edge (new_preheader);
 	  bool peeled_iters = single_pred (loop->latch) != loop_exit->src;
-	  /* Link through the main exit first.  */
-	  for (auto gsi_from = gsi_start_phis (loop->header),
-	       gsi_to = gsi_start_phis (new_loop->header);
-	       !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
-	       gsi_next (&gsi_from), gsi_next (&gsi_to))
-	    {
-	      gimple *from_phi = gsi_stmt (gsi_from);
-	      gimple *to_phi = gsi_stmt (gsi_to);
-	      tree new_arg = PHI_ARG_DEF_FROM_EDGE (from_phi,
-						    loop_latch_edge (loop));
 
-	      /* Check if we've already created a new phi node during edge
-		 redirection.  If we have, only propagate the value
-		 downwards.  */
-	      if (tree *res = new_phi_args.get (new_arg))
+	  /* Record the new SSA names in the cache so that we can skip
+	     materializing them again when we fill in the rest of the LC SSA
+	     variables.  */
+	  hash_map <tree, tree> new_phi_args;
+	  for (auto psi = gsi_start_phis (main_loop_exit_block);
+	       !gsi_end_p (psi); gsi_next (&psi))
+	    {
+	      gphi *phi = *psi;
+	      tree new_arg = gimple_phi_arg_def_from_edge (phi, loop_exit);
+	      if (TREE_CODE (new_arg) != SSA_NAME)
+		continue;
+
+	      /* If the loop doesn't have a virtual def then only possibly keep
+		 the epilog LC PHI for it and avoid creating new defs.  */
+	      if (virtual_operand_p (new_arg) && !need_virtual_phi)
 		{
-		  if (multiple_exits_p)
+		  auto gsi = gsi_for_stmt (phi);
+		  remove_phi_node (&gsi, true);
+		  continue;
+		}
+
+	      /* If we decided not to remove the PHI node we should also not
+		 rematerialize it later on.  */
+	      new_phi_args.put (new_arg, gimple_phi_result (phi));
+	    }
+
+	  /* Create the merge PHI nodes in new_preheader and populate the
+	     arguments for the exits.  */
+	  if (multiple_exits_p)
+	    {
+	      for (auto gsi_from = gsi_start_phis (loop->header),
+		   gsi_to = gsi_start_phis (new_loop->header);
+		   !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
+		   gsi_next (&gsi_from), gsi_next (&gsi_to))
+		{
+		  gimple *from_phi = gsi_stmt (gsi_from);
+		  gimple *to_phi = gsi_stmt (gsi_to);
+
+		  /* When the vector loop is peeled then we need to use the
+		     value at start of the loop, otherwise the main loop exit
+		     should use the final iter value.  */
+		  tree new_arg;
+		  if (peeled_iters)
+		    new_arg = gimple_phi_result (from_phi);
+		  else
+		    new_arg = PHI_ARG_DEF_FROM_EDGE (from_phi,
+						     loop_latch_edge (loop));
+
+		  /* Check if we've already created a new phi node during edge
+		     redirection and re-use it if so.  Otherwise create a
+		     LC PHI node to feed the merge PHI.  */
+		  tree *res;
+		  if (virtual_operand_p (new_arg))
+		    {
+		      /* Use the existing virtual LC SSA from exit block.  */
+		      gphi *vphi = get_virtual_phi (main_loop_exit_block);
+		      new_arg = gimple_phi_result (vphi);
+		    }
+		  else if ((res = new_phi_args.get (new_arg)))
 		    new_arg = *res;
 		  else
 		    {
-		      adjust_phi_and_debug_stmts (to_phi, loop_entry, *res);
-		      continue;
+		      /* Create the LC PHI node for the exit.  */
+		      tree new_def = copy_ssa_name (new_arg);
+		      gphi *lc_phi
+			  = create_phi_node (new_def, main_loop_exit_block);
+		      SET_PHI_ARG_DEF (lc_phi, 0, new_arg);
+		      new_arg = new_def;
 		    }
+
+		  /* Create the PHI node in the merge block merging the
+		     main and early exit values.  */
+		  tree new_res = copy_ssa_name (gimple_phi_result (from_phi));
+		  gphi *lcssa_phi = create_phi_node (new_res, new_preheader);
+		  edge main_e = single_succ_edge (main_loop_exit_block);
+		  SET_PHI_ARG_DEF_ON_EDGE (lcssa_phi, main_e, new_arg);
+
+		  /* And adjust the epilog entry value.  */
+		  adjust_phi_and_debug_stmts (to_phi, loop_entry, new_res);
 		}
-	      /* If we have multiple exits and the vector loop is peeled then we
-		 need to use the value at start of loop.  */
-	      if (peeled_iters)
-		{
-		  tree tmp_arg = gimple_phi_result (from_phi);
-		  if (!new_phi_args.get (tmp_arg))
-		    new_arg = tmp_arg;
-		}
 
-	      tree new_res = copy_ssa_name (gimple_phi_result (from_phi));
-	      gphi *lcssa_phi = create_phi_node (new_res, new_preheader);
-
-	      /* Otherwise, main loop exit should use the final iter value.  */
-	      SET_PHI_ARG_DEF (lcssa_phi, loop_exit->dest_idx, new_arg);
-
-	      adjust_phi_and_debug_stmts (to_phi, loop_entry, new_res);
-	    }
-
-	  set_immediate_dominator (CDI_DOMINATORS, main_loop_exit_block,
-				   loop_exit->src);
-
-	  /* Now link the alternative exits.  */
-	  if (multiple_exits_p)
-	    {
-	      set_immediate_dominator (CDI_DOMINATORS, new_preheader,
-				       main_loop_exit_block);
+	      /* After creating the merge PHIs handle the early exits those
+		 should use the values at the start of the loop.  */
 	      for (auto gsi_from = gsi_start_phis (loop->header),
 		   gsi_to = gsi_start_phis (new_preheader);
 		   !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
@@ -1726,15 +1784,58 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		  gimple *from_phi = gsi_stmt (gsi_from);
 		  gimple *to_phi = gsi_stmt (gsi_to);
 
+		  /* Now update the virtual PHI nodes with the right value.  */
 		  tree alt_arg = gimple_phi_result (from_phi);
-		  edge main_e = single_succ_edge (alt_loop_exit_block);
-		  for (edge e : loop_exits)
-		    if (e != loop_exit)
-		      SET_PHI_ARG_DEF (to_phi, main_e->dest_idx, alt_arg);
+		  if (virtual_operand_p (alt_arg))
+		    {
+		      gphi *vphi = get_virtual_phi (alt_loop_exit_block);
+		      alt_arg = gimple_phi_result (vphi);
+		    }
+		  /* For other live args we didn't create LC PHI nodes.
+		     Do so here.  */
+		  else
+		    {
+		      tree alt_def = copy_ssa_name (alt_arg);
+		      gphi *lc_phi
+			= create_phi_node (alt_def, alt_loop_exit_block);
+		      for (unsigned i = 0; i < gimple_phi_num_args (lc_phi);
+			   ++i)
+			SET_PHI_ARG_DEF (lc_phi, i, alt_arg);
+		      alt_arg = alt_def;
+		    }
+		  edge alt_e = single_succ_edge (alt_loop_exit_block);
+		  SET_PHI_ARG_DEF_ON_EDGE (to_phi, alt_e, alt_arg);
 		}
+	    }
+	  /* For the single exit case only create the missing LC PHI nodes
+	     for the continuation of the loop IVs that are not also already
+	     reductions and thus had LC PHI nodes on the exit already.  */
+	  else
+	    {
+	      for (auto gsi_from = gsi_start_phis (loop->header),
+		   gsi_to = gsi_start_phis (new_loop->header);
+		   !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
+		   gsi_next (&gsi_from), gsi_next (&gsi_to))
+		{
+		  gimple *from_phi = gsi_stmt (gsi_from);
+		  gimple *to_phi = gsi_stmt (gsi_to);
+		  tree new_arg = PHI_ARG_DEF_FROM_EDGE (from_phi,
+							loop_latch_edge (loop));
 
-	      set_immediate_dominator (CDI_DOMINATORS, new_preheader,
-				       loop->header);
+		  /* Check if we've already created a new phi node during edge
+		     redirection.  If we have, only propagate the value
+		     downwards.  */
+		  if (tree *res = new_phi_args.get (new_arg))
+		    {
+		      adjust_phi_and_debug_stmts (to_phi, loop_entry, *res);
+		      continue;
+		    }
+
+		  tree new_res = copy_ssa_name (gimple_phi_result (from_phi));
+		  gphi *lcssa_phi = create_phi_node (new_res, new_preheader);
+		  SET_PHI_ARG_DEF_ON_EDGE (lcssa_phi, loop_exit, new_arg);
+		  adjust_phi_and_debug_stmts (to_phi, loop_entry, new_res);
+		}
 	    }
 	}
 
@@ -1754,14 +1855,33 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	 correct.  */
       if (multiple_exits_p)
 	{
-	  update_loop = new_loop;
-	  for (edge e : get_loop_exit_edges (loop))
-	    doms.safe_push (e->dest);
-	  doms.safe_push (exit_dest);
+	  class loop *update_loop = new_loop;
+	  doms = get_all_dominated_blocks (CDI_DOMINATORS, loop->header);
+	  for (unsigned i = 0; i < doms.length (); ++i)
+	    if (flow_bb_inside_loop_p (loop, doms[i]))
+	      doms.unordered_remove (i);
 
-	  /* Likely a fall-through edge, so update if needed.  */
-	  if (single_succ_p (exit_dest))
-	    doms.safe_push (single_succ (exit_dest));
+	  for (edge e : get_loop_exit_edges (update_loop))
+	    {
+	      edge ex;
+	      edge_iterator ei;
+	      FOR_EACH_EDGE (ex, ei, e->dest->succs)
+		{
+		  /* Find the first non-fallthrough block as fall-throughs can't
+		     dominate other blocks.  */
+		  if (single_succ_p (ex->dest))
+		    {
+		      doms.safe_push (ex->dest);
+		      ex = single_succ_edge (ex->dest);
+		    }
+		  doms.safe_push (ex->dest);
+		}
+	      doms.safe_push (e->dest);
+	    }
+
+	  iterate_fix_dominators (CDI_DOMINATORS, doms, false);
+	  if (updated_doms)
+	    updated_doms->safe_splice (doms);
 	}
     }
   else /* Add the copy at entry.  */
@@ -1811,33 +1931,28 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       set_immediate_dominator (CDI_DOMINATORS, new_loop->header,
 			       loop_preheader_edge (new_loop)->src);
 
+      /* Update dominators for multiple exits.  */
       if (multiple_exits_p)
-	update_loop = loop;
-    }
-
-  if (multiple_exits_p)
-    {
-      for (edge e : get_loop_exit_edges (update_loop))
 	{
-	  edge ex;
-	  edge_iterator ei;
-	  FOR_EACH_EDGE (ex, ei, e->dest->succs)
+	  for (edge alt_e : loop_exits)
 	    {
-	      /* Find the first non-fallthrough block as fall-throughs can't
-		 dominate other blocks.  */
-	      if (single_succ_p (ex->dest))
+	      if (alt_e == loop_exit)
+		continue;
+	      basic_block old_dom
+		= get_immediate_dominator (CDI_DOMINATORS, alt_e->dest);
+	      if (flow_bb_inside_loop_p (loop, old_dom))
 		{
-		  doms.safe_push (ex->dest);
-		  ex = single_succ_edge (ex->dest);
+		  auto_vec<basic_block, 8> queue;
+		  for (auto son = first_dom_son (CDI_DOMINATORS, old_dom);
+		       son; son = next_dom_son (CDI_DOMINATORS, son))
+		    if (!flow_bb_inside_loop_p (loop, son))
+		      queue.safe_push (son);
+		  for (auto son : queue)
+		    set_immediate_dominator (CDI_DOMINATORS,
+					     son, get_bb_copy (old_dom));
 		}
-	      doms.safe_push (ex->dest);
 	    }
-	  doms.safe_push (e->dest);
 	}
-
-      iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-      if (updated_doms)
-	updated_doms->safe_splice (doms);
     }
 
   free (new_bbs);
@@ -2014,16 +2129,19 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
      For mult, don't known how to generate
      init_expr * pow (step, niters) for variable niters.
      For neg, it should be ok, since niters of vectorized main loop
-     will always be multiple of 2.  */
-  if ((!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-       || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ())
+     will always be multiple of 2.
+     See also PR113163 and PR114196.  */
+  if ((!LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()
+       || LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+       || !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
       && induction_type != vect_step_op_neg)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "Peeling for epilogue is not supported"
 			 " for nonlinear induction except neg"
-			 " when iteration count is unknown.\n");
+			 " when iteration count is unknown or"
+			 " when using partial vectorization.\n");
       return false;
     }
 
@@ -2060,25 +2178,6 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
 			 "Peeling for alignement is not supported"
 			 " for nonlinear induction when niters_skip"
 			 " is not constant.\n");
-      return false;
-    }
-
-  /* We can't support partial vectors and early breaks with an induction
-     type other than add or neg since we require the epilog and can't
-     perform the peeling.  The below condition mirrors that of
-     vect_gen_vector_loop_niters  where niters_vector_mult_vf_var then sets
-     step_vector to VF rather than 1.  This is what creates the nonlinear
-     IV.  PR113163.  */
-  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-      && LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()
-      && LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
-      && induction_type != vect_step_op_neg)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Peeling for epilogue is not supported"
-			 " for nonlinear induction except neg"
-			 " when VF is known and early breaks.\n");
       return false;
     }
 
@@ -3237,7 +3336,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
     {
       e = loop_preheader_edge (loop);
       edge exit_e = LOOP_VINFO_IV_EXIT (loop_vinfo);
-      gcc_checking_assert (slpeel_can_duplicate_loop_p (loop, exit_e, e));
+      gcc_checking_assert (slpeel_can_duplicate_loop_p (loop, exit_e, e)
+			   && !LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo));
 
       /* Peel prolog and put it on preheader edge of loop.  */
       edge scalar_e = LOOP_VINFO_SCALAR_IV_EXIT (loop_vinfo);
@@ -3268,6 +3368,24 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 					   guard_to, guard_bb,
 					   prob_prolog.invert (),
 					   irred_flag);
+	  for (edge alt_e : get_loop_exit_edges (prolog))
+	    {
+	      if (alt_e == prolog_e)
+		continue;
+	      basic_block old_dom
+		= get_immediate_dominator (CDI_DOMINATORS, alt_e->dest);
+	      if (flow_bb_inside_loop_p (prolog, old_dom))
+		{
+		  auto_vec<basic_block, 8> queue;
+		  for (auto son = first_dom_son (CDI_DOMINATORS, old_dom);
+		       son; son = next_dom_son (CDI_DOMINATORS, son))
+		    if (!flow_bb_inside_loop_p (prolog, son))
+		      queue.safe_push (son);
+		  for (auto son : queue)
+		    set_immediate_dominator (CDI_DOMINATORS, son, guard_bb);
+		}
+	    }
+
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
 	  slpeel_update_phi_nodes_for_guard1 (prolog, loop, guard_e, e);
@@ -3418,6 +3536,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	vect_update_ivs_after_vectorizer (loop_vinfo, niters_vector_mult_vf,
 					  update_e);
 
+      /* If we have a peeled vector iteration we will never skip the epilog loop
+	 and we can simplify the cfg a lot by not doing the edge split.  */
       if (skip_epilog || LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	{
 	  guard_cond = fold_build2 (EQ_EXPR, boolean_type_node,
@@ -4039,7 +4159,16 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       basic_block preheader = loop_preheader_edge (loop_to_version)->src;
       preheader->count = preheader->count.apply_probability (prob * prob2);
       scale_loop_frequencies (loop_to_version, prob * prob2);
-      single_exit (loop_to_version)->dest->count = preheader->count;
+      /* When the loop has multiple exits then we can only version itself.
+	This is denoted by loop_to_version == loop.  In this case we can
+	do the versioning by selecting the exit edge the vectorizer is
+	currently using.  */
+      edge exit_edge;
+      if (loop_to_version == loop)
+       exit_edge = LOOP_VINFO_IV_EXIT (loop_vinfo);
+      else
+       exit_edge = single_exit (loop_to_version);
+      exit_edge->dest->count = preheader->count;
       LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo) = (prob * prob2).invert ();
 
       nloop = scalar_loop;

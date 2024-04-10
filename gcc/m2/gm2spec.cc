@@ -475,15 +475,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* True if we should set up include paths and library paths.  */
   bool allow_libraries = true;
 
-#ifdef M2C_LONGREAL_PPC64LE
-  /* Should we add -mabi=ieeelongdouble by default?  */
-#ifdef M2C_LONGREAL_FLOAT128
-  bool need_default_mabi = true;
-#else
-  bool need_default_mabi = false;
-#endif
-#endif
-
 #if defined(DEBUG_ARG)
   printf ("argc = %d\n", argc);
   fprintf (stderr, "Incoming:");
@@ -589,16 +580,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  push_back_Ipath (decoded_options[i].arg);
 	  break;
-#if defined(OPT_mabi_ibmlongdouble)
-	case OPT_mabi_ibmlongdouble:
-	  need_default_mabi = false;  /* User has specified a -mabi.  */
-	  break;
-#endif
-#if defined(OPT_mabi_ieeelongdouble)
-	case OPT_mabi_ieeelongdouble:
-	  need_default_mabi = true;  /* User has specified a -mabi.  */
-	  break;
-#endif
 	case OPT_nostdlib:
 	case OPT_nostdlib__:
 	case OPT_nodefaultlibs:
@@ -867,11 +848,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   if (need_plugin)
     append_option (OPT_fplugin_, "m2rte", 1);
-
-#ifdef M2C_LONGREAL_PPC64LE
-  if (need_default_mabi)
-    append_option (OPT_mabi_ieeelongdouble, NULL, 1);
-#endif
 
   if (linking)
     {

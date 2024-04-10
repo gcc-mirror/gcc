@@ -15,7 +15,7 @@
  * - $(LINK2 https://github.com/ldc-developers/ldc, LDC repository)
  * - $(LINK2 https://github.com/D-Programming-GDC/gcc, GDC repository)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/target.d, _target.d)
@@ -110,7 +110,7 @@ extern (C++) struct Target
 
     /// Architecture name
     const(char)[] architectureName;
-    CPU cpu = CPU.baseline; // CPU instruction set to target
+    CPU cpu;                // CPU instruction set to target
     bool isX86_64;          // generate 64 bit code for x86_64; true by default for 64 bit dmd
     bool isLP64;            // pointers are 64 bits
 
@@ -119,7 +119,7 @@ extern (C++) struct Target
     const(char)[] lib_ext;    /// extension for static library files
     const(char)[] dll_ext;    /// extension for dynamic library files
     bool run_noext;           /// allow -run sources without extensions
-    bool omfobj = false;      // for Win32: write OMF object files instead of MsCoff
+    bool omfobj;              // for Win32: write OMF object files instead of MsCoff
     /**
      * Values representing all properties for floating point types
      */

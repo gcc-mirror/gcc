@@ -1,0 +1,6 @@
+DEFINITION MODULE strconst ;
+
+CONST
+   Hello = "hello world" ;
+
+END strconst.

@@ -33,8 +33,6 @@ FROM SYSTEM IMPORT ADR ;
 FROM Storage IMPORT ALLOCATE ;
 FROM StrLib IMPORT StrCopy, StrLen, StrEqual ;
 
-IMPORT M2RTS ;
-
 
 TYPE
    PtrToChar = POINTER TO CHAR ;
@@ -61,6 +59,16 @@ TYPE
                                next      : ModuleChain ;
                             END ;
 
+   ProcedureList = RECORD
+                      head, tail: ProcedureChain
+                   END ;
+
+   ProcedureChain = POINTER TO RECORD
+                                  p   : PROC ;
+                                  prev,
+                                  next: ProcedureChain ;
+                                END ;
+
 VAR
    Modules              : ARRAY DependencyState OF ModuleChain ;
    DynamicInitialization,
@@ -72,6 +80,8 @@ VAR
    PreTrace,
    PostTrace,
    ForceTrace           : BOOLEAN ;
+   InitialProc,
+   TerminateProc        : ProcedureList ;
 
 
 (*
@@ -816,8 +826,8 @@ BEGIN
          IF mptr^.dependency.appl
          THEN
             traceprintf3 (ModuleTrace, "application module: %s [%s]\n", mptr^.name, mptr^.libname);
-            traceprintf (ModuleTrace, "  calling M2RTS_ExecuteInitialProcedures\n");
-            M2RTS.ExecuteInitialProcedures ;
+            traceprintf (ModuleTrace, "  calling ExecuteInitialProcedures\n");
+            ExecuteInitialProcedures ;
             traceprintf (ModuleTrace, "  calling application module\n");
          END ;
          mptr^.init (argc, argv, envp) ;
@@ -844,7 +854,7 @@ BEGIN
       traceprintf (ModuleTrace, "  no ordered modules found during finishing\n")
    ELSE
       traceprintf (ModuleTrace, "ExecuteTerminationProcedures\n") ;
-      M2RTS.ExecuteTerminationProcedures ;
+      ExecuteTerminationProcedures ;
       traceprintf (ModuleTrace, "terminating modules in sequence\n") ;
       mptr := Modules[ordered]^.prev ;
       REPEAT
@@ -1005,6 +1015,8 @@ PROCEDURE Init ;
 VAR
    state: DependencyState ;
 BEGIN
+   InitProcList (InitialProc) ;
+   InitProcList (TerminateProc) ;
    SetupDebugFlags ;
    FOR state := MIN (DependencyState) TO MAX (DependencyState) DO
       Modules[state] := NIL
@@ -1028,6 +1040,104 @@ BEGIN
       Init
    END
 END CheckInitialized ;
+
+
+(*
+   ExecuteReverse - execute the procedure associated with procptr
+                    and then proceed to try and execute all previous
+                    procedures in the chain.
+*)
+
+PROCEDURE ExecuteReverse (procptr: ProcedureChain) ;
+BEGIN
+   WHILE procptr # NIL DO
+      procptr^.p ;  (* Invoke the procedure.  *)
+      procptr := procptr^.prev
+   END
+END ExecuteReverse ;
+
+
+(*
+   ExecuteTerminationProcedures - calls each installed termination procedure
+                                  in reverse order.
+*)
+
+PROCEDURE ExecuteTerminationProcedures ;
+BEGIN
+   ExecuteReverse (TerminateProc.tail)
+END ExecuteTerminationProcedures ;
+
+
+(*
+   ExecuteInitialProcedures - executes the initial procedures installed by
+                              InstallInitialProcedure.
+*)
+
+PROCEDURE ExecuteInitialProcedures ;
+BEGIN
+   ExecuteReverse (InitialProc.tail)
+END ExecuteInitialProcedures ;
+
+
+(*
+   AppendProc - append proc to the end of the procedure list
+                defined by proclist.
+*)
+
+PROCEDURE AppendProc (VAR proclist: ProcedureList; proc: PROC) : BOOLEAN ;
+VAR
+   pdes: ProcedureChain ;
+BEGIN
+   NEW (pdes) ;
+   WITH pdes^ DO
+      p := proc ;
+      prev := proclist.tail ;
+      next := NIL
+   END ;
+   IF proclist.head = NIL
+   THEN
+      proclist.head := pdes
+   END ;
+   proclist.tail := pdes ;
+   RETURN TRUE
+END AppendProc ;
+
+
+(*
+   InstallTerminationProcedure - installs a procedure, p, which will
+                                 be called when the procedure
+                                 ExecuteTerminationProcedures
+                                 is invoked.  It returns TRUE if the
+                                 procedure is installed.
+*)
+
+PROCEDURE InstallTerminationProcedure (p: PROC) : BOOLEAN ;
+BEGIN
+   RETURN AppendProc (TerminateProc, p)
+END InstallTerminationProcedure ;
+
+
+(*
+   InstallInitialProcedure - installs a procedure to be executed just
+                             before the BEGIN code section of the
+                             main program module.
+*)
+
+PROCEDURE InstallInitialProcedure (p: PROC) : BOOLEAN ;
+BEGIN
+   RETURN AppendProc (InitialProc, p)
+END InstallInitialProcedure ;
+
+
+(*
+   InitProcList - initialize the head and tail pointers to NIL.
+*)
+
+PROCEDURE InitProcList (VAR p: ProcedureList) ;
+BEGIN
+   p.head := NIL ;
+   p.tail := NIL
+END InitProcList ;
 
 
 BEGIN

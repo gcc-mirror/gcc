@@ -252,6 +252,38 @@ wrapc_isnanl (long double x)
   return isnan (x);
 }
 
+/* SeekSet return the system libc SEEK_SET value.  */
+
+int
+wrapc_SeekSet (void)
+{
+  return SEEK_SET;
+}
+
+/* SeekEnd return the system libc SEEK_END value.  */
+
+int
+wrapc_SeekEnd (void)
+{
+  return SEEK_END;
+}
+
+/* ReadOnly return the system value of O_RDONLY.  */
+
+int
+wrapc_ReadOnly (void)
+{
+  return O_RDONLY;
+}
+
+/* WriteOnly return the system value of O_WRONLY.  */
+
+int
+wrapc_WriteOnly (void)
+{
+  return O_WRONLY;
+}
+
 /* init - init/finish functions for the module */
 
 void

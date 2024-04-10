@@ -75,6 +75,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "cfgloop.h"
@@ -5090,4 +5092,5 @@ void
 ipa_fnsummary_cc_finalize (void)
 {
   ipa_free_fn_summary ();
+  ipa_free_size_summary ();
 }

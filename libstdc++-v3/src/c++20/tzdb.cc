@@ -651,7 +651,7 @@ namespace std::chrono
     template<typename _Tp> requires _Tp::is_always_lock_free
       struct RulesCounter<_Tp>
       {
-	atomic_signed_lock_free counter{0};
+	_Tp counter{0};
 
 	void
 	increment()
@@ -703,7 +703,12 @@ namespace std::chrono
       };
 #endif // __GTHREADS && __cpp_lib_atomic_wait
 
+#if __cpp_lib_atomic_lock_free_type_aliases
     RulesCounter<atomic_signed_lock_free> rules_counter;
+#else
+    RulesCounter<void> rules_counter;
+#endif
+
 #else // TZDB_DISABLED
     _Impl(weak_ptr<tzdb_list::_Node>) { }
     struct {
@@ -1136,8 +1141,8 @@ namespace std::chrono
   pair<vector<leap_second>, bool>
   tzdb_list::_Node::_S_read_leap_seconds()
   {
-    // This list is valid until at least 2023-12-28 00:00:00 UTC.
-    auto expires = sys_days{2023y/12/28};
+    // This list is valid until at least 2024-12-28 00:00:00 UTC.
+    auto expires = sys_days{2024y/12/28};
     vector<leap_second> leaps
     {
       (leap_second)  78796800, // 1 Jul 1972

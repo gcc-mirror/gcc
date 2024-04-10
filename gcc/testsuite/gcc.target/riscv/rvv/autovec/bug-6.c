@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zve32f -mabi=lp64d -O2 --param=riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-march=rv64gc_zve32f -mabi=lp64d -O2 -mrvv-vector-bits=zvl" } */
 
 extern void abort(void);
 extern void exit(int);

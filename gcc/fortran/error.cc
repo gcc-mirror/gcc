@@ -536,7 +536,8 @@ error_print (const char *type, const char *format0, va_list argp)
 {
   enum { TYPE_CURRENTLOC, TYPE_LOCUS, TYPE_INTEGER, TYPE_UINTEGER,
 	 TYPE_LONGINT, TYPE_ULONGINT, TYPE_LLONGINT, TYPE_ULLONGINT,
-	 TYPE_HWINT, TYPE_HWUINT, TYPE_CHAR, TYPE_STRING, NOTYPE };
+	 TYPE_HWINT, TYPE_HWUINT, TYPE_CHAR, TYPE_STRING, TYPE_SIZE,
+	 TYPE_SSIZE, TYPE_PTRDIFF, NOTYPE };
   struct
   {
     int type;
@@ -553,6 +554,9 @@ error_print (const char *type, const char *format0, va_list argp)
       unsigned HOST_WIDE_INT hwuintval;
       char charval;
       const char * stringval;
+      size_t sizeval;
+      ssize_t ssizeval;
+      ptrdiff_t ptrdiffval;
     } u;
   } arg[MAX_ARGS], spec[MAX_ARGS];
   /* spec is the array of specifiers, in the same order as they
@@ -662,6 +666,24 @@ error_print (const char *type, const char *format0, va_list argp)
 	      gcc_unreachable ();
 	    break;
 
+	  case 'z':
+	    c = *format++;
+	    if (c == 'u')
+	      arg[pos].type = TYPE_SIZE;
+	    else if (c == 'i' || c == 'd')
+	      arg[pos].type = TYPE_SSIZE;
+	    else
+	      gcc_unreachable ();
+	    break;
+
+	  case 't':
+	    c = *format++;
+	    if (c == 'u' || c == 'i' || c == 'd')
+	      arg[pos].type = TYPE_PTRDIFF;
+	    else
+	      gcc_unreachable ();
+	    break;
+
 	  case 'c':
 	    arg[pos].type = TYPE_CHAR;
 	    break;
@@ -740,6 +762,18 @@ error_print (const char *type, const char *format0, va_list argp)
 
 	  case TYPE_HWUINT:
 	    arg[pos].u.hwuintval = va_arg (argp, unsigned HOST_WIDE_INT);
+	    break;
+
+	  case TYPE_SSIZE:
+	    arg[pos].u.ssizeval = va_arg (argp, ssize_t);
+	    break;
+
+	  case TYPE_SIZE:
+	    arg[pos].u.sizeval = va_arg (argp, size_t);
+	    break;
+
+	  case TYPE_PTRDIFF:
+	    arg[pos].u.ptrdiffval = va_arg (argp, ptrdiff_t);
 	    break;
 
 	  case TYPE_CHAR:
@@ -838,6 +872,31 @@ error_print (const char *type, const char *format0, va_list argp)
 	    error_hwuint (spec[n++].u.hwintval);
 	  else
 	    error_hwint (spec[n++].u.hwuintval);
+	  break;
+
+	case 'z':
+	  format++;
+	  if (*format == 'u')
+	    error_uinteger (spec[n++].u.sizeval);
+	  else
+	    error_integer (spec[n++].u.ssizeval);
+	  break;
+
+	case 't':
+	  format++;
+	  if (*format == 'u')
+	    {
+	      unsigned long long a = spec[n++].u.ptrdiffval, m;
+#ifdef PTRDIFF_MAX
+	      m = PTRDIFF_MAX;
+#else
+	      m = INTTYPE_MAXIMUM (ptrdiff_t);
+#endif
+	      m = 2 * m + 1;  
+	      error_uinteger (a & m);
+	    }
+	  else
+	    error_integer (spec[n++].u.ptrdiffval);
 	  break;
 	}
     }

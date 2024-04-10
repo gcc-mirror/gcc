@@ -1,6 +1,6 @@
 /* { dg-do compile { target { *-*-aix* || { *-*-linux* && lp64 } } } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-O2 -mdejagnu-cpu=power8 -maltivec -mcmodel=large" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8 -mvsx -maltivec -mcmodel=large" } */
 
 /* The expansion for vector character multiply introduces a vperm operation.
    This tests that changing the vperm mask allows us to remove all swaps

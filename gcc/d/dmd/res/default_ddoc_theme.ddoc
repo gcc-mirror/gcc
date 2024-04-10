@@ -70,7 +70,7 @@ D_CODE =
   <div class="code_sample">
     <div class="dlang">
       <ol class="code_lines">
-        <li><code class="code">$0</code></li>
+        <li><pre><code class="code">$0</code></pre></li>
       </ol>
     </div>
   </div>
@@ -81,7 +81,7 @@ OTHER_CODE =
   <div class="code_sample">
     <div class="dlang">
       <ol class="code_lines">
-        <li><code class="code language-$1">$+</code></li>
+        <li><pre><code class="code language-$1">$+</code></pre></li>
       </ol>
     </div>
   </div>
@@ -515,6 +515,10 @@ DDOC =
       .ddoc .code_lines li {
         padding-left: 0;
         white-space: pre-wrap;
+      }
+
+      .ddoc .code_lines pre {
+        display: contents;
       }
 
       .ddoc .code_lines li:only-of-type::before {

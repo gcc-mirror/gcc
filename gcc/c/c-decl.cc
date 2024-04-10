@@ -6236,7 +6236,7 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 		     index.  */
 		  HOST_WIDE_INT n = tree_to_shwi (max) + 1;
 		  char buf[40];
-		  sprintf (buf, "%lu", (unsigned long)n);
+		  sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, n);
 		  spec += buf;
 		}
 	      continue;
@@ -6309,7 +6309,7 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 
 	  char buf[40];
 	  unsigned HOST_WIDE_INT n = tree_to_uhwi (nelts);
-	  sprintf (buf, "%llu", (unsigned long long)n);
+	  sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, n);
 	  spec += buf;
 	  break;
 	}
@@ -6947,7 +6947,7 @@ grokdeclarator (const struct c_declarator *declarator,
      "signed".  */
   if (bitfield && !flag_signed_bitfields && !declspecs->explicit_signed_p
       && TREE_CODE (type) == INTEGER_TYPE)
-    type = unsigned_type_for (type);
+    type = c_common_unsigned_type (type);
 
   /* Figure out the type qualifiers for the declaration.  There are
      two ways a declaration can become qualified.  One is something
@@ -9555,7 +9555,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  if (width != TYPE_PRECISION (type))
 	    {
 	      if (TREE_CODE (type) == BITINT_TYPE
-		  && (width > 1 || TYPE_UNSIGNED (type)))
+		  && width >= (TYPE_UNSIGNED (type) ? 1 : 2))
 		TREE_TYPE (field)
 		  = build_bitint_type (width, TYPE_UNSIGNED (type));
 	      else
@@ -9905,8 +9905,11 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
 
   if (ENUM_FIXED_UNDERLYING_TYPE_P (enumtype)
       && fixed_underlying_type == NULL_TREE)
-    error_at (loc, "%<enum%> declared with but defined without "
-	      "fixed underlying type");
+    {
+      error_at (loc, "%<enum%> declared with but defined without "
+		"fixed underlying type");
+      ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) = false;
+    }
 
   the_enum->enum_next_value = integer_zero_node;
   the_enum->enum_type = enumtype;

@@ -10,7 +10,7 @@
 package p
 
 func F() {
-	switch t := nil.(type) { // ERROR "cannot type switch on non-interface value"
+	switch t := nil.(type) { // ERROR "cannot type switch on non-interface value|defined to nil type"
 	default:
 		_ = t
 	}

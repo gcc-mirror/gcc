@@ -1,6 +1,6 @@
 /* Reduced from coreutils's sum.c: bsd_sum_stream */
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef unsigned char __uint8_t;
 typedef unsigned long int __uintmax_t;
 typedef struct _IO_FILE FILE;

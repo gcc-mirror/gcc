@@ -26,6 +26,9 @@
 #elif defined (__RX__)
   /* On RX division by zero does not trap.  */
 # define DO_TEST 0
+#elif defined (__H8300H__) || defined (__H8300S__) || defined (__H8300SX__)
+  /* On H8/300H, H8S and H8SX division by zero does not trap.  */
+# define DO_TEST 0
 #elif defined (__aarch64__)
   /* On AArch64 integer division by zero does not trap.  */
 # define DO_TEST 0

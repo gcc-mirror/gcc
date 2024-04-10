@@ -1,3 +1,34 @@
+2024-03-08  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_uncompress_chdr): Don't assume compressed section is
+	aligned.
+
+2024-03-02  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (libbacktrace_testing_ldflags): Define.
+	(*_LDFLAGS): Add $(libbacktrace_testing_ldflags) for test
+	programs.
+	* Makefile.in: Regenerate
+
+2024-03-02  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_uncompress_lzma_block): Skip all header padding bytes
+	and verify that they are zero.
+
+2024-03-02  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/114201
+	* elf.c (elf_add): Add caller_opd parameter.  Change all callers.
+	Release opd data after all recursive calls.
+
+2024-03-01  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_add): Add the symbol table from a debuginfo file.
+	* Makefile.am (MAKETESTS): Add buildidfull and gnudebuglinkfull
+	variants of buildid and gnudebuglink tests.
+	(%_gnudebuglinkfull, %_buildidfull): New patterns.
+	* Makefile.in: Regenerate.
+
 2023-11-30  Ian Lance Taylor  <iant@golang.org>
 
 	* pecoff.c: Include <windows.h> if available.

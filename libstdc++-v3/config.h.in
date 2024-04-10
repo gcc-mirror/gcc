@@ -841,6 +841,9 @@
 /* Define if NLS translations are to be used. */
 #undef _GLIBCXX_USE_NLS
 
+/* Define if nl_langinfo_l should be used for std::text_encoding. */
+#undef _GLIBCXX_USE_NL_LANGINFO_L
+
 /* Define if pthreads_num_processors_np is available in <pthread.h>. */
 #undef _GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP
 

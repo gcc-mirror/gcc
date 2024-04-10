@@ -34,7 +34,9 @@ extern struct loongarch_target la_target;
 void
 loongarch_init_target (struct loongarch_target *target,
 		       int cpu_arch, int cpu_tune, int fpu, int simd,
-		       int abi_base, int abi_ext, int cmodel);
+		       int abi_base, int abi_ext, int cmodel,
+		       HOST_WIDE_INT isa_evolutions,
+		       HOST_WIDE_INT isa_evolutions_set);
 
 
 /* Handler for "-m" option combinations,
@@ -77,14 +79,28 @@ struct loongarch_flags {
 #define TARGET_DOUBLE_FLOAT	  (la_target.isa.fpu == ISA_EXT_FPU64)
 #define TARGET_DOUBLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64D)
 
-#define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64V100)
+#define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64)
 #define TARGET_ABI_LP64		  (la_target.abi.base == ABI_BASE_LP64D	\
 				   || la_target.abi.base == ABI_BASE_LP64F \
 				   || la_target.abi.base == ABI_BASE_LP64S)
 
-#define ISA_HAS_LSX		  (la_target.isa.simd == ISA_EXT_SIMD_LSX \
-				   || la_target.isa.simd == ISA_EXT_SIMD_LASX)
-#define ISA_HAS_LASX		  (la_target.isa.simd == ISA_EXT_SIMD_LASX)
+#define ISA_HAS_LSX \
+  (la_target.isa.simd == ISA_EXT_SIMD_LSX \
+   || la_target.isa.simd == ISA_EXT_SIMD_LASX)
+
+#define ISA_HAS_LASX \
+  (la_target.isa.simd == ISA_EXT_SIMD_LASX)
+
+#define ISA_HAS_FRECIPE \
+  (la_target.isa.evolution & OPTION_MASK_ISA_FRECIPE)
+#define ISA_HAS_DIV32 \
+  (la_target.isa.evolution & OPTION_MASK_ISA_DIV32)
+#define ISA_HAS_LAM_BH \
+  (la_target.isa.evolution & OPTION_MASK_ISA_LAM_BH)
+#define ISA_HAS_LAMCAS \
+  (la_target.isa.evolution & OPTION_MASK_ISA_LAMCAS)
+#define ISA_HAS_LD_SEQ_SA \
+  (la_target.isa.evolution & OPTION_MASK_ISA_LD_SEQ_SA)
 
 /* TARGET_ macros for use in *.md template conditionals */
 #define TARGET_uARCH_LA464	  (la_target.cpu_tune == CPU_LA464)

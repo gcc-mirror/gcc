@@ -27,6 +27,7 @@
 #include "backend.h"
 #include "tree.h"
 #include "rtl.h"
+#include "insn-attr.h"
 #include "explow.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
@@ -883,6 +884,244 @@ th_output_move (rtx dest, rtx src)
   return NULL;
 }
 
+/* Define ASM_OUTPUT_OPCODE to do anything special before
+   emitting an opcode.  */
+const char *
+th_asm_output_opcode (FILE *asm_out_file, const char *p)
+{
+  /* We need to add th. prefix to all the xtheadvector
+     instructions here.*/
+  if (current_output_insn != NULL)
+    {
+      if (get_attr_type (current_output_insn) == TYPE_VSETVL)
+	{
+	  if (strstr (p, "zero"))
+	    {
+	      if (strstr (p, "zero,zero"))
+		return "th.vsetvli\tzero,zero,e%0,%m1";
+	      else
+		return "th.vsetvli\tzero,%0,e%1,%m2";
+	    }
+	  else
+	    {
+	      return "th.vsetvli\t%0,%1,e%2,%m3";
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLDE ||
+	  get_attr_type (current_output_insn) == TYPE_VSTE ||
+	  get_attr_type (current_output_insn) == TYPE_VLDFF)
+	{
+	  if (strstr (p, "e8") || strstr (p, "e16") ||
+	      strstr (p, "e32") || strstr (p, "e64"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTE
+				  ? fputs ("th.vse", asm_out_file)
+				  : fputs ("th.vle", asm_out_file);
+	      if (strstr (p, "e8"))
+		return p+4;
+	      else
+		return p+5;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLDS ||
+	  get_attr_type (current_output_insn) == TYPE_VSTS)
+	{
+	  if (strstr (p, "vle8") || strstr (p, "vse8") ||
+	      strstr (p, "vle16") || strstr (p, "vse16") ||
+	      strstr (p, "vle32") || strstr (p, "vse32") ||
+	      strstr (p, "vle64") || strstr (p, "vse64"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTS
+				  ? fputs ("th.vse", asm_out_file)
+				  : fputs ("th.vle", asm_out_file);
+	      if (strstr (p, "e8"))
+		return p+4;
+	      else
+		return p+5;
+	    }
+	  else if (strstr (p, "vlse8") || strstr (p, "vsse8") ||
+		   strstr (p, "vlse16") || strstr (p, "vsse16") ||
+		   strstr (p, "vlse32") || strstr (p, "vsse32") ||
+		   strstr (p, "vlse64") || strstr (p, "vsse64"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTS
+				  ? fputs ("th.vsse", asm_out_file)
+				  : fputs ("th.vlse", asm_out_file);
+	      if (strstr (p, "e8"))
+		return p+5;
+	      else
+		return p+6;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLDUX ||
+	  get_attr_type (current_output_insn) == TYPE_VLDOX)
+	{
+	  if (strstr (p, "ei"))
+	    {
+	      fputs ("th.vlxe", asm_out_file);
+	      if (strstr (p, "ei8"))
+		return p+7;
+	      else
+		return p+8;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VSTUX ||
+	  get_attr_type (current_output_insn) == TYPE_VSTOX)
+	{
+	  if (strstr (p, "ei"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTUX
+				? fputs ("th.vsuxe", asm_out_file)
+				: fputs ("th.vsxe", asm_out_file);
+	      if (strstr (p, "ei8"))
+		return p+7;
+	      else
+		return p+8;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLSEGDE ||
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTE ||
+	  get_attr_type (current_output_insn) == TYPE_VLSEGDFF)
+	{
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTE
+				? fputs ("th.vsseg", asm_out_file)
+				: fputs ("th.vlseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[5]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "e8"))
+	    return p+8;
+	  else
+	    return p+9;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLSEGDS ||
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTS)
+	{
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTS
+				? fputs ("th.vssseg", asm_out_file)
+				: fputs ("th.vlsseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[6]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "e8"))
+	    return p+9;
+	  else
+	    return p+10;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLSEGDUX ||
+	  get_attr_type (current_output_insn) == TYPE_VLSEGDOX)
+	{
+	  fputs ("th.vlxseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[7]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "ei8"))
+	    return p+11;
+	  else
+	    return p+12;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VSSEGTUX ||
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTOX)
+	{
+	  fputs ("th.vsxseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[7]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "ei8"))
+	    return p+11;
+	  else
+	    return p+12;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VNSHIFT)
+	{
+	  if (strstr (p, "vncvt"))
+	    {
+	      fputs ("th.vncvt.x.x.v", asm_out_file);
+	      return p+11;
+	    }
+
+	  strstr (p, "vnsrl") ? fputs ("th.vnsrl.v", asm_out_file)
+			      : fputs ("th.vnsra.v", asm_out_file);
+	  return p+7;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VNCLIP)
+	{
+	  if (strstr (p, "vnclipu"))
+	    {
+	      fputs ("th.vnclipu.v", asm_out_file);
+	      return p+9;
+	    }
+	  else
+	    {
+	      fputs ("th.vnclip.v", asm_out_file);
+	      return p+8;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VMPOP)
+	{
+	  fputs ("th.vmpopc", asm_out_file);
+	  return p+5;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VMFFS)
+	{
+	  fputs ("th.vmfirst", asm_out_file);
+	  return p+6;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFNCVTFTOI ||
+	  get_attr_type (current_output_insn) == TYPE_VFNCVTITOF)
+	{
+	  if (strstr (p, "xu"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VFNCVTFTOI
+			   ? fputs ("th.vfncvt.xu.f.v", asm_out_file)
+			   : fputs ("th.vfncvt.f.xu.v", asm_out_file);
+	      return p+13;
+	}
+	  else
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VFNCVTFTOI
+			   ? fputs ("th.vfncvt.x.f.v", asm_out_file)
+			   : fputs ("th.vfncvt.f.x.v", asm_out_file);
+	      return p+12;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFNCVTFTOF)
+	{
+	  fputs ("th.vfncvt.f.f.v", asm_out_file);
+	  return p+12;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFREDU
+	  && strstr (p, "sum"))
+	{
+	  fputs ("th.vfredsum", asm_out_file);
+	  return p+9;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFWREDU
+	  && strstr (p, "sum"))
+	{
+	  fputs ("th.vfwredsum", asm_out_file);
+	  return p+10;
+	}
+
+      if (p[0] == 'v')
+	fputs ("th.", asm_out_file);
+    }
+
+  return p;
+}
+
 /* Implement TARGET_PRINT_OPERAND_ADDRESS for XTheadMemIdx.  */
 
 bool
@@ -902,7 +1141,8 @@ th_print_operand_address (FILE *file, machine_mode mode, rtx x)
       return true;
 
     case ADDRESS_REG_WB:
-      fprintf (file, "(%s),%ld,%u", reg_names[REGNO (addr.reg)],
+      fprintf (file, "(%s)," HOST_WIDE_INT_PRINT_DEC ",%u",
+	       reg_names[REGNO (addr.reg)],
 	       INTVAL (addr.offset) >> addr.shift, addr.shift);
 	return true;
 
@@ -911,4 +1151,81 @@ th_print_operand_address (FILE *file, machine_mode mode, rtx x)
     }
 
   gcc_unreachable ();
+}
+
+/* Number array of registers X1, X5-X7, X10-X17, X28-X31, to be
+   operated on by instruction th.ipush/th.ipop in XTheadInt.  */
+
+int th_int_regs[] ={
+  RETURN_ADDR_REGNUM,
+  T0_REGNUM, T1_REGNUM, T2_REGNUM,
+  A0_REGNUM, A1_REGNUM, A2_REGNUM, A3_REGNUM,
+  A4_REGNUM, A5_REGNUM, A6_REGNUM, A7_REGNUM,
+  T3_REGNUM, T4_REGNUM, T5_REGNUM, T6_REGNUM,
+};
+
+/* If MASK contains registers X1, X5-X7, X10-X17, X28-X31, then
+   return the mask composed of these registers, otherwise return
+   zero.  */
+
+unsigned int
+th_int_get_mask (unsigned int mask)
+{
+  unsigned int xtheadint_mask = 0;
+
+  if (!TARGET_XTHEADINT || TARGET_64BIT)
+    return 0;
+
+  for (unsigned int i = 0; i < ARRAY_SIZE (th_int_regs); i++)
+    {
+      if (!BITSET_P (mask, th_int_regs[i]))
+	return 0;
+
+      xtheadint_mask |= (1 << th_int_regs[i]);
+    }
+
+  return xtheadint_mask; /* Usually 0xf003fce2.  */
+}
+
+/* Returns the occupied frame needed to save registers X1, X5-X7,
+   X10-X17, X28-X31.  */
+
+unsigned int
+th_int_get_save_adjustment (void)
+{
+  gcc_assert (TARGET_XTHEADINT && !TARGET_64BIT);
+  return ARRAY_SIZE (th_int_regs) * UNITS_PER_WORD;
+}
+
+rtx
+th_int_adjust_cfi_prologue (unsigned int mask)
+{
+  gcc_assert (TARGET_XTHEADINT && !TARGET_64BIT);
+
+  rtx dwarf = NULL_RTX;
+  rtx adjust_sp_rtx, reg, mem, insn;
+  int saved_size = ARRAY_SIZE (th_int_regs) * UNITS_PER_WORD;
+  int offset = saved_size;
+
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (BITSET_P (mask, regno - GP_REG_FIRST))
+      {
+	offset -= UNITS_PER_WORD;
+	reg = gen_rtx_REG (SImode, regno);
+	mem = gen_frame_mem (SImode, plus_constant (Pmode,
+						    stack_pointer_rtx,
+						    offset));
+
+	insn = gen_rtx_SET (mem, reg);
+	dwarf = alloc_reg_note (REG_CFA_OFFSET, insn, dwarf);
+      }
+
+  /* Debug info for adjust sp.  */
+  adjust_sp_rtx =
+    gen_rtx_SET (stack_pointer_rtx,
+		 gen_rtx_PLUS (GET_MODE (stack_pointer_rtx),
+			       stack_pointer_rtx, GEN_INT (-saved_size)));
+  dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx, dwarf);
+
+  return dwarf;
 }

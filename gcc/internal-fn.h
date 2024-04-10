@@ -262,6 +262,11 @@ extern void expand_MULBITINT (internal_fn, gcall *);
 extern void expand_DIVMODBITINT (internal_fn, gcall *);
 extern void expand_FLOATTOBITINT (internal_fn, gcall *);
 extern void expand_BITINTTOFLOAT (internal_fn, gcall *);
+extern void expand_CLRSB (internal_fn, gcall *);
+extern void expand_CLZ (internal_fn, gcall *);
+extern void expand_CTZ (internal_fn, gcall *);
+extern void expand_FFS (internal_fn, gcall *);
+extern void expand_PARITY (internal_fn, gcall *);
 extern void expand_POPCOUNT (internal_fn, gcall *);
 
 extern bool vectorized_internal_fn_supported_p (internal_fn, tree);

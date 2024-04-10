@@ -85,6 +85,35 @@ test_illformed_utf32()
   VERIFY( std::ranges::equal(uc::_Utf32_view(s), U"\uFFFD"sv) );
 }
 
+constexpr void
+test_past_the_end()
+{
+  const auto s8 = u8"1234"sv;
+  uc::_Utf32_view v(s8);
+  auto iter = v.begin();
+  std::advance(iter, 4);
+  VERIFY( iter == v.end() );
+  // Incrementing past the end has well-defined behaviour.
+  ++iter;
+  VERIFY( iter == v.end() );
+  VERIFY( *iter == U'4' ); // Still dereferenceable.
+  ++iter;
+  VERIFY( iter == v.end() );
+  VERIFY( *iter == U'4' );
+  iter++;
+  VERIFY( iter == v.end() );
+  VERIFY( *iter == U'4' );
+
+  std::string_view empty;
+  uc::_Utf32_view v2(empty);
+  auto iter2 = v2.begin();
+  VERIFY( iter2 == v2.end() );
+  VERIFY( *iter2 == U'\0' );
+  iter++;
+  VERIFY( iter2 == v2.end() );
+  VERIFY( *iter2 == U'\0' );
+}
+
 int main()
 {
   auto run_tests = []{
@@ -94,6 +123,7 @@ int main()
     test_illformed_utf8();
     test_illformed_utf16();
     test_illformed_utf32();
+    test_past_the_end();
     return true;
   };
 

@@ -113,7 +113,7 @@
 ;; Reloading and elimination of the frame pointer can
 ;; sometimes cause this optimization to be missed.
 (define_peephole2
-  [(set (match_operand:SI 0 "arm_general_register_operand" "")
+  [(set (match_operand:SI 0 "low_register_operand" "")
 	(match_operand:SI 1 "const_int_operand" ""))
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (reg:SI SP_REGNUM)))]

@@ -143,6 +143,21 @@ else version (CRuntime_Bionic)
     uint            if_nametoindex(const scope char*);
     char*           if_indextoname(uint, char*);
 }
+else version (CRuntime_Musl)
+{
+    struct if_nameindex_t
+    {
+        uint    if_index;
+        char*   if_name;
+    }
+
+    enum IF_NAMESIZE = 16;
+
+    uint            if_nametoindex(const scope char*);
+    char*           if_indextoname(uint, char*);
+    if_nameindex_t* if_nameindex();
+    void            if_freenameindex(if_nameindex_t*);
+}
 else version (CRuntime_UClibc)
 {
     struct if_nameindex_t

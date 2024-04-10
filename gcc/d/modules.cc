@@ -84,6 +84,7 @@ struct module_info
   vec <tree, va_gc> *sharedctors;
   vec <tree, va_gc> *shareddtors;
   vec <tree, va_gc> *sharedctorgates;
+  vec <tree, va_gc> *standalonectors;
 
   vec <tree, va_gc> *unitTests;
 };
@@ -503,7 +504,7 @@ layout_moduleinfo_fields (Module *decl, tree type)
   if (decl->sshareddtor)
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
-  if (findGetMembers (decl))
+  if (dmd::findGetMembers (decl))
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
   if (decl->sictor)
@@ -531,7 +532,7 @@ layout_moduleinfo_fields (Module *decl, tree type)
 
   /* Array of local ClassInfo decls are laid out in the same way.  */
   ClassDeclarations aclasses;
-  getLocalClasses (decl, aclasses);
+  dmd::getLocalClasses (decl, aclasses);
 
   if (aclasses.length)
     {
@@ -561,7 +562,7 @@ layout_moduleinfo (Module *decl)
   ClassDeclarations aclasses;
   FuncDeclaration *sgetmembers;
 
-  getLocalClasses (decl, aclasses);
+  dmd::getLocalClasses (decl, aclasses);
 
   size_t aimports_dim = decl->aimports.length;
   for (size_t i = 0; i < decl->aimports.length; i++)
@@ -571,7 +572,7 @@ layout_moduleinfo (Module *decl)
 	aimports_dim--;
     }
 
-  sgetmembers = findGetMembers (decl);
+  sgetmembers = dmd::findGetMembers (decl);
 
   size_t flags = 0;
   if (decl->sctor)
@@ -763,6 +764,11 @@ build_module_tree (Module *decl)
 	tm->sdtor = build_funcs_gates_fn (get_identifier ("*__modtestdtor"),
 					  mitest.dtors, NULL);
 
+      if (mi.standalonectors)
+	tm->sictor
+	  = build_funcs_gates_fn (get_identifier ("*__modtestsharedictor"),
+				  mi.standalonectors, NULL);
+
       if (mitest.sharedctors || mitest.sharedctorgates)
 	tm->ssharedctor
 	  = build_funcs_gates_fn (get_identifier ("*__modtestsharedctor"),
@@ -792,6 +798,11 @@ build_module_tree (Module *decl)
       if (mi.dtors)
 	decl->sdtor = build_funcs_gates_fn (get_identifier ("*__moddtor"),
 					    mi.dtors, NULL);
+
+      if (mi.standalonectors)
+	decl->sictor
+	  = build_funcs_gates_fn (get_identifier ("*__modsharedictor"),
+				  mi.standalonectors, NULL);
 
       if (mi.sharedctors || mi.sharedctorgates)
 	decl->ssharedctor
@@ -858,8 +869,15 @@ register_module_decl (Declaration *d)
       /* If a static constructor, push into the current ModuleInfo.
 	 Checks for `shared' first because it derives from the non-shared
 	 constructor type in the front-end.  */
-      if (fd->isSharedStaticCtorDeclaration ())
-	vec_safe_push (minfo->sharedctors, decl);
+      if (SharedStaticCtorDeclaration *sctor
+	  = fd->isSharedStaticCtorDeclaration ())
+	{
+	  /* The `shared' static constructor was marked `@standalone'.  */
+	  if (sctor->standalone)
+	    vec_safe_push (minfo->standalonectors, decl);
+	  else
+	    vec_safe_push (minfo->sharedctors, decl);
+	}
       else if (fd->isStaticCtorDeclaration ())
 	vec_safe_push (minfo->ctors, decl);
 

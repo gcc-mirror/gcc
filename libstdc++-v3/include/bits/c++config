@@ -845,10 +845,6 @@ namespace __gnu_cxx
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 #endif
 
-#if _GLIBCXX_HAS_BUILTIN(__is_same)
-#  define _GLIBCXX_HAVE_BUILTIN_IS_SAME 1
-#endif
-
 #if _GLIBCXX_HAS_BUILTIN(__builtin_launder)
 # define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
 #endif

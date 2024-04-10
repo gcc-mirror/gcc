@@ -3650,7 +3650,8 @@ assign_parms (tree fndecl)
   assign_parms_initialize_all (&all);
   fnargs = assign_parms_augmented_arg_list (&all);
 
-  if (TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (fndecl)))
+  if (TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (fndecl))
+      && fnargs.is_empty ())
     {
       struct assign_parm_data_one data = {};
       assign_parms_setup_varargs (&all, &data, false);
@@ -5202,7 +5203,7 @@ expand_function_start (tree subr)
 
   gcc_assert (NOTE_P (get_last_insn ()));
 
-  parm_birth_insn = get_last_insn ();
+  function_beg_insn = parm_birth_insn = get_last_insn ();
 
   /* If the function receives a non-local goto, then store the
      bits we need to restore the frame pointer.  */
@@ -6391,7 +6392,7 @@ fndecl_name (tree fndecl)
 
 /* Returns the name of function FN.  */
 const char *
-function_name (struct function *fn)
+function_name (const function *fn)
 {
   tree fndecl = (fn == NULL) ? NULL : fn->decl;
   return fndecl_name (fndecl);

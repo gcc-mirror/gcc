@@ -126,6 +126,20 @@ Simple expressions
    underlying string, so it is valid to pass in a pointer to an on-stack
    buffer.
 
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_context_new_sizeof (gcc_jit_context *ctxt, \
+                                          gcc_jit_type *type)
+
+   Generate an rvalue that is equal to the size of ``type``.
+
+   The parameter ``type`` must be non-NULL.
+
+   This is equivalent to this C code:
+
+   .. code-block:: c
+
+     sizeof (type)
+
 Constructor expressions
 ***********************
 
@@ -943,6 +957,23 @@ Global variables
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_CTORS
+
+Variables
+*********
+
+.. function::  void\
+               gcc_jit_lvalue_add_string_attribute (gcc_jit_lvalue *variable,
+                                                    enum gcc_jit_variable_attribute attribute,
+                                                    const char *value)
+
+     Add an attribute ``attribute`` with value ``value`` to a variable ``variable``.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_26`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ATTRIBUTES
 
 Working with pointers, structs and unions
 -----------------------------------------

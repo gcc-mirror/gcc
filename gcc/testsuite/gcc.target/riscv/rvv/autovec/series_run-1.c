@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-options "--param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m4" } */
+/* { dg-options "-mrvv-vector-bits=zvl --param riscv-autovec-lmul=m4" } */
 
 #include "series-1.c"
 

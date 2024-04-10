@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=scalable -O3 -fno-schedule-insns -fno-schedule-insns2 -fno-vect-cost-model" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -mrvv-vector-bits=scalable -O3 -fno-schedule-insns -fno-schedule-insns2 -fno-vect-cost-model" } */
 
 #define K 32
 short in[2*K][K];

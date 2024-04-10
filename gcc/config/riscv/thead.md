@@ -210,6 +210,73 @@
    (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
+;; XTheadInt
+
+(define_constants
+  [(T0_REGNUM	5)
+   (T1_REGNUM	6)
+   (T2_REGNUM	7)
+   (A0_REGNUM	10)
+   (A1_REGNUM	11)
+   (A2_REGNUM	12)
+   (A3_REGNUM	13)
+   (A4_REGNUM	14)
+   (A5_REGNUM	15)
+   (A6_REGNUM	16)
+   (A7_REGNUM	17)
+   (T3_REGNUM	28)
+   (T4_REGNUM	29)
+   (T5_REGNUM	30)
+   (T6_REGNUM	31)
+])
+
+(define_insn "th_int_push"
+  [(unspec_volatile [(const_int 0)] UNSPECV_XTHEADINT_PUSH)
+   (use (reg:SI RETURN_ADDR_REGNUM))
+   (use (reg:SI T0_REGNUM))
+   (use (reg:SI T1_REGNUM))
+   (use (reg:SI T2_REGNUM))
+   (use (reg:SI A0_REGNUM))
+   (use (reg:SI A1_REGNUM))
+   (use (reg:SI A2_REGNUM))
+   (use (reg:SI A3_REGNUM))
+   (use (reg:SI A4_REGNUM))
+   (use (reg:SI A5_REGNUM))
+   (use (reg:SI A6_REGNUM))
+   (use (reg:SI A7_REGNUM))
+   (use (reg:SI T3_REGNUM))
+   (use (reg:SI T4_REGNUM))
+   (use (reg:SI T5_REGNUM))
+   (use (reg:SI T6_REGNUM))]
+  "TARGET_XTHEADINT && !TARGET_64BIT"
+  "th.ipush"
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"SI")])
+
+(define_insn "th_int_pop"
+  [(unspec_volatile [(const_int 0)] UNSPECV_XTHEADINT_POP)
+   (clobber (reg:SI RETURN_ADDR_REGNUM))
+   (clobber (reg:SI T0_REGNUM))
+   (clobber (reg:SI T1_REGNUM))
+   (clobber (reg:SI T2_REGNUM))
+   (clobber (reg:SI A0_REGNUM))
+   (clobber (reg:SI A1_REGNUM))
+   (clobber (reg:SI A2_REGNUM))
+   (clobber (reg:SI A3_REGNUM))
+   (clobber (reg:SI A4_REGNUM))
+   (clobber (reg:SI A5_REGNUM))
+   (clobber (reg:SI A6_REGNUM))
+   (clobber (reg:SI A7_REGNUM))
+   (clobber (reg:SI T3_REGNUM))
+   (clobber (reg:SI T4_REGNUM))
+   (clobber (reg:SI T5_REGNUM))
+   (clobber (reg:SI T6_REGNUM))
+   (return)]
+  "TARGET_XTHEADINT && !TARGET_64BIT"
+  "th.ipop"
+  [(set_attr "type"	"ret")
+   (set_attr "mode"	"SI")])
+
 ;; XTheadMac
 
 (define_insn "*th_mula<mode>"
@@ -866,14 +933,17 @@
    && pow2p_hwi (INTVAL (operands[2]))
    && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)"
   "#"
-  "&& 1"
+  "&& reload_completed"
   [(set (match_dup 0)
         (mem:TH_M_NOEXTF (plus:X
           (match_dup 3)
           (ashift:X (match_dup 1) (match_dup 2)))))]
   { operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
   }
-)
+  [(set_attr "move_type" "fpload")
+   (set_attr "mode" "<UNITMODE>")
+   (set_attr "type" "fmove")
+   (set (attr "length") (const_int 16))])
 
 (define_insn_and_split "*th_fmemidx_I_c"
   [(set (mem:TH_M_ANYF (plus:X
@@ -910,7 +980,7 @@
    && CONST_INT_P (operands[3])
    && (INTVAL (operands[3]) >> exact_log2 (INTVAL (operands[2]))) == 0xffffffff"
   "#"
-  "&& 1"
+  "&& reload_completed"
   [(set (match_dup 0)
         (mem:TH_M_NOEXTF (plus:DI
           (match_dup 4)
@@ -918,7 +988,10 @@
   { operands[1] = gen_lowpart (SImode, operands[1]);
     operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
   }
-)
+  [(set_attr "move_type" "fpload")
+   (set_attr "mode" "<UNITMODE>")
+   (set_attr "type" "fmove")
+   (set (attr "length") (const_int 16))])
 
 (define_insn_and_split "*th_fmemidx_US_c"
   [(set (mem:TH_M_ANYF (plus:DI
@@ -953,12 +1026,16 @@
   "TARGET_64BIT && TARGET_XTHEADMEMIDX && TARGET_XTHEADFMEMIDX
    && (!HARD_REGISTER_NUM_P (REGNO (operands[0])) || HARDFP_REG_P (REGNO (operands[0])))"
   "#"
-  "&& 1"
+  "&& reload_completed"
   [(set (match_dup 0)
         (mem:TH_M_NOEXTF (plus:DI
           (match_dup 2)
           (zero_extend:DI (match_dup 1)))))]
-)
+  ""
+  [(set_attr "move_type" "fpload")
+   (set_attr "mode" "<UNITMODE>")
+   (set_attr "type" "fmove")
+   (set (attr "length") (const_int 16))])
 
 (define_insn_and_split "*th_fmemidx_UZ_c"
   [(set (mem:TH_M_ANYF (plus:DI

@@ -84,6 +84,25 @@ AC_DEFUN([LIBAT_TEST_ATOMIC_BUILTIN],[
 ])
 
 dnl
+dnl Test if the host assembler supports armv9.4-a LSE128 isns.
+dnl
+AC_DEFUN([LIBAT_TEST_FEAT_AARCH64_LSE128],[
+  AC_CACHE_CHECK([for armv9.4-a LSE128 insn support],
+    [libat_cv_have_feat_lse128],[
+    AC_LANG_CONFTEST([AC_LANG_PROGRAM([],[asm(".arch armv9-a+lse128")])])
+    if AC_TRY_EVAL(ac_compile); then
+      eval libat_cv_have_feat_lse128=yes
+    else
+      eval libat_cv_have_feat_lse128=no
+    fi
+    rm -f conftest*
+  ])
+  LIBAT_DEFINE_YESNO([HAVE_FEAT_LSE128], [$libat_cv_have_feat_lse128],
+	[Have LSE128 support for 16 byte integers.])
+  AM_CONDITIONAL([ARCH_AARCH64_HAVE_LSE128], [test x$libat_cv_have_feat_lse128 = xyes])
+])
+
+dnl
 dnl Test if we have __atomic_load and __atomic_store for mode $1, size $2
 dnl
 AC_DEFUN([LIBAT_HAVE_ATOMIC_LOADSTORE],[

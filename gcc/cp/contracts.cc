@@ -1398,7 +1398,7 @@ build_contract_condition_function (tree fndecl, bool pre)
 {
   if (TREE_TYPE (fndecl) == error_mark_node)
     return error_mark_node;
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
       && !TYPE_METHOD_BASETYPE (TREE_TYPE (fndecl)))
     return error_mark_node;
 
@@ -1421,7 +1421,7 @@ build_contract_condition_function (tree fndecl, bool pre)
       arg_type && arg_type != void_list_node;
       arg_type = TREE_CHAIN (arg_type))
     {
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+      if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
 	  && TYPE_ARG_TYPES (TREE_TYPE (fn)) == arg_type)
       {
 	class_type = TREE_TYPE (TREE_VALUE (arg_type));
@@ -1451,7 +1451,7 @@ build_contract_condition_function (tree fndecl, bool pre)
     }
 
   TREE_TYPE (fn) = build_function_type (value_type, arg_types);
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl))
     TREE_TYPE (fn) = build_method_type (class_type, TREE_TYPE (fn));
 
   DECL_NAME (fn) = copy_node (DECL_NAME (fn));

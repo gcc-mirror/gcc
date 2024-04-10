@@ -55,7 +55,7 @@ extern "C" void mcDebug_assert (bool q)
 {
   if (! q)
     {
-      mcError_internalError ((const char *) "assert failed", 13, (const char *) "../../gcc-read-write/gcc/m2/mc/mcDebug.mod", 42, 35);
+      mcError_internalError ((const char *) "assert failed", 13, (const char *) "../../gcc/m2/mc/mcDebug.mod", 27, 35);
     }
 }
 

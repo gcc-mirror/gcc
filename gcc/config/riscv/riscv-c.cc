@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 static int
 riscv_ext_version_value (unsigned major, unsigned minor)
 {
-  return (major * 1000000) + (minor * 1000);
+  return (major * RISCV_MAJOR_VERSION_BASE) + (minor * RISCV_MINOR_VERSION_BASE);
 }
 
 /* Implement TARGET_CPU_CPP_BUILTINS.  */
@@ -139,8 +139,12 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
     {
       builtin_define ("__riscv_vector");
       builtin_define_with_int_value ("__riscv_v_intrinsic",
-				     riscv_ext_version_value (0, 11));
+				     riscv_ext_version_value (0, 12));
     }
+
+   if (TARGET_XTHEADVECTOR)
+     builtin_define_with_int_value ("__riscv_th_v_intrinsic",
+				     riscv_ext_version_value (0, 11));
 
   /* Define architecture extension test macros.  */
   builtin_define_with_int_value ("__riscv_arch_test", 1);
@@ -191,12 +195,13 @@ riscv_pragma_intrinsic (cpp_reader *)
 
   const char *name = TREE_STRING_POINTER (x);
 
-  if (strcmp (name, "vector") == 0)
+  if (strcmp (name, "vector") == 0
+      || strcmp (name, "xtheadvector") == 0)
     {
       if (!TARGET_VECTOR)
 	{
-	  error ("%<#pragma riscv intrinsic%> option %qs needs 'V' extension "
-		 "enabled",
+	  error ("%<#pragma riscv intrinsic%> option %qs needs 'V' or "
+		 "'XTHEADVECTOR' extension enabled",
 		 name);
 	  return;
 	}
@@ -245,7 +250,8 @@ riscv_resolve_overloaded_builtin (unsigned int uncast_location, tree fndecl,
     case RISCV_BUILTIN_GENERAL:
       break;
     case RISCV_BUILTIN_VECTOR:
-      new_fndecl = riscv_vector::resolve_overloaded_builtin (subcode, arglist);
+      new_fndecl = riscv_vector::resolve_overloaded_builtin (loc, subcode,
+							     fndecl, arglist);
       break;
     default:
       gcc_unreachable ();

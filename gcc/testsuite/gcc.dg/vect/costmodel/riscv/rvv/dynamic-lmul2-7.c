@@ -22,3 +22,4 @@ x264_pixel_8x8 (unsigned char *pix1, unsigned char *pix2, int i_stride_pix2)
 }
 
 /* { dg-final { scan-assembler {e32,m2} } } */
+/* { dg-final { scan-assembler-not {xor} } } */

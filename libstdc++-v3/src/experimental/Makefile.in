@@ -148,7 +148,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-@ENABLE_FILESYSTEM_TS_TRUE@am__DEPENDENCIES_1 = $(top_builddir)/src/filesystem/libstdc++fs.la
+@ENABLE_FILESYSTEM_TS_TRUE@am__DEPENDENCIES_1 = $(top_builddir)/src/filesystem/libstdc++fsconvenience.la
 @ENABLE_BACKTRACE_TRUE@am__DEPENDENCIES_2 = $(top_builddir)/src/libbacktrace/libstdc++_libbacktrace.la
 am__objects_1 = contract.lo
 am_libstdc__exp_la_OBJECTS = $(am__objects_1)
@@ -450,7 +450,7 @@ WARN_CXXFLAGS = \
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 toolexeclib_LTLIBRARIES = libstdc++exp.la
 @ENABLE_FILESYSTEM_TS_FALSE@filesystem_lib = 
-@ENABLE_FILESYSTEM_TS_TRUE@filesystem_lib = $(top_builddir)/src/filesystem/libstdc++fs.la
+@ENABLE_FILESYSTEM_TS_TRUE@filesystem_lib = $(top_builddir)/src/filesystem/libstdc++fsconvenience.la
 @ENABLE_BACKTRACE_FALSE@backtrace_lib = 
 @ENABLE_BACKTRACE_TRUE@backtrace_lib = $(top_builddir)/src/libbacktrace/libstdc++_libbacktrace.la
 headers = 
@@ -462,10 +462,12 @@ sources = \
 libstdc__exp_la_SOURCES = $(sources)
 libstdc__exp_la_LIBADD = \
 	$(top_builddir)/src/c++23/libc++23convenience.la \
+	$(top_builddir)/src/c++26/libc++26convenience.la \
 	$(filesystem_lib) $(backtrace_lib)
 
 libstdc__exp_la_DEPENDENCIES = \
 	$(top_builddir)/src/c++23/libc++23convenience.la \
+	$(top_builddir)/src/c++26/libc++26convenience.la \
 	$(filesystem_lib) $(backtrace_lib)
 
 

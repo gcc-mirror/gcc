@@ -1,7 +1,7 @@
 /**
  * Semantic analysis for cast-expressions.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dcast.d, _dcast.d)
@@ -24,11 +24,13 @@ import dmd.dinterpret;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
+import dmd.dsymbolsem;
 import dmd.errors;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.location;
@@ -233,7 +235,7 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
  * Returns:
  *   The `MATCH` level between `e.type` and `t`.
  */
-extern(C++) MATCH implicitConvTo(Expression e, Type t)
+MATCH implicitConvTo(Expression e, Type t)
 {
     MATCH visit(Expression e)
     {
@@ -719,11 +721,6 @@ extern(C++) MATCH implicitConvTo(Expression e, Type t)
                     return m;
                 case Tint8:
                 case Tuns8:
-                    if (e.hexString)
-                    {
-                        m = MATCH.convert;
-                        return m;
-                    }
                     break;
                 case Tenum:
                     if (tn.isTypeEnum().sym.isSpecial())
@@ -736,6 +733,14 @@ extern(C++) MATCH implicitConvTo(Expression e, Type t)
                     break;
                 default:
                     break;
+                }
+            }
+            if (e.hexString)
+            {
+                if (tn.isintegral && tn.size == e.sz)
+                {
+                    m = MATCH.convert;
+                    return m;
                 }
             }
             break;
@@ -2184,7 +2189,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 
         if (auto f = isFuncAddress(e))
         {
-            if (f.checkForwardRef(e.loc))
+            if (checkForwardRef(f, e.loc))
             {
                 return ErrorExp.get();
             }
@@ -2440,7 +2445,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 
         if (auto f = isFuncAddress(e))
         {
-            if (f.checkForwardRef(e.loc))
+            if (checkForwardRef(f, e.loc))
             {
                 return ErrorExp.get();
             }
@@ -2495,7 +2500,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 
         if (auto f = isFuncAddress(e))
         {
-            if (f.checkForwardRef(e.loc))
+            if (checkForwardRef(f, e.loc))
             {
                 return ErrorExp.get();
             }
@@ -2843,7 +2848,7 @@ private bool isVoidArrayLiteral(Expression e, Type other)
  */
 Type typeMerge(Scope* sc, EXP op, ref Expression pe1, ref Expression pe2)
 {
-    //printf("typeMerge() %s op %s\n", e1.toChars(), e2.toChars());
+    //printf("typeMerge() %s op %s\n", pe1.toChars(), pe2.toChars());
 
     Expression e1 = pe1;
     Expression e2 = pe2;
@@ -3160,6 +3165,9 @@ Lagain:
         goto Lagain;
     }
 
+LmergeClassTypes:
+    /* Merge different type modifiers on classes
+     */
     if (t1.ty == Tclass && t2.ty == Tclass)
     {
         if (t1.mod != t2.mod)
@@ -3228,8 +3236,22 @@ Lagain:
 
             if (t1.ty == Tclass && t2.ty == Tclass)
             {
+                /* t1 cannot be converted to t2, and vice versa
+                 */
                 TypeClass tc1 = t1.isTypeClass();
                 TypeClass tc2 = t2.isTypeClass();
+
+                //if (tc1.sym.interfaces.length || tc2.sym.interfaces.length)
+                if (tc1.sym.isInterfaceDeclaration() ||
+                    tc2.sym.isInterfaceDeclaration())
+                {
+                    ClassDeclaration cd = findClassCommonRoot(tc1.sym, tc2.sym);
+                    if (!cd)
+                        return null;    // no common root
+                    t1 = cd.type.castMod(t1.mod);
+                    t2 = cd.type.castMod(t2.mod);
+                    goto LmergeClassTypes;   // deal with mod differences
+                }
 
                 /* Pick 'tightest' type
                  */
@@ -3246,6 +3268,7 @@ Lagain:
                     t2 = cd2.type;
                 else
                     return null;
+                goto LmergeClassTypes;
             }
             else if (t1.ty == Tstruct && t1.isTypeStruct().sym.aliasthis)
             {
@@ -3575,6 +3598,71 @@ LmodCompare:
     }
 
     return null;
+}
+
+/**********************************
+ * Find common root that both cd1 and cd2 can be implicitly converted to.
+ * Params:
+ *      cd1 = first class
+ *      cd2 = second class
+ * Returns:
+ *      common base that both can implicitly convert to, null if none or
+ *      multiple matches
+ */
+private
+ClassDeclaration findClassCommonRoot(ClassDeclaration cd1, ClassDeclaration cd2)
+{
+    enum log = false;
+    if (log) printf("findClassCommonRoot(%s, %s)\n", cd1.toChars(), cd2.toChars());
+    /* accumulate results in this */
+    static struct Root
+    {
+        ClassDeclaration cd;
+        bool error;
+
+        /* merge cd into results */
+        void accumulate(ClassDeclaration cd)
+        {
+            if (log) printf(" accumulate(r.cd: %s r.error: %d cd: %s)\n", this.cd ? this.cd.toChars() : "null", error, cd ? cd.toChars() : null);
+            if (this.cd is cd)
+            {
+            }
+            else if (!this.cd)
+                this.cd = cd;
+            else
+                error = true;
+        }
+    }
+
+    /* Find common root of cd1 and cd2. Accumulate results in r. depth is nesting level */
+    void findCommonRoot(ClassDeclaration cd1, ClassDeclaration cd2, ref Root r)
+    {
+        if (log) printf("findCommonRoot(cd1: %s cd2: %s)\n", cd1.toChars(), cd2.toChars());
+        /* Warning: quadratic time function
+         */
+        if (cd1 is cd2)
+        {
+            r.accumulate(cd1);
+            return;
+        }
+
+        foreach (b1; (*cd1.baseclasses)[])
+        {
+            if (b1.sym != r.cd)
+                findCommonRoot(cd2, b1.sym, r);
+        }
+        foreach (b2; (*cd2.baseclasses)[])
+        {
+            if (b2.sym != r.cd)
+                findCommonRoot(cd1, b2.sym, r);
+        }
+    }
+
+    Root r;
+    findCommonRoot(cd1, cd2, r);
+    if (!r.cd || r.error)
+        return null;        // no common root
+    return r.cd;
 }
 
 /************************************

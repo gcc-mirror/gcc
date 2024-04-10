@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -39,8 +39,11 @@ typedef union tree_node type;
 typedef struct TYPE type;
 #endif
 
-Type *typeSemantic(Type *t, const Loc &loc, Scope *sc);
-Type *merge(Type *type);
+namespace dmd
+{
+    Type *typeSemantic(Type *t, const Loc &loc, Scope *sc);
+    Type *merge(Type *type);
+}
 
 enum class TY : uint8_t
 {
@@ -141,11 +144,7 @@ public:
     TY ty;
     MOD mod;  // modifiers MODxxxx
     char *deco;
-
-private:
     void* mcache;
-
-public:
     Type *pto;          // merged pointer to this type
     Type *rto;          // reference to this type
     Type *arrayof;      // array of this type
@@ -221,11 +220,9 @@ public:
     Type *copy() const;
     virtual Type *syntaxCopy();
     bool equals(const RootObject * const o) const override;
-    bool equivalent(Type *t);
     // kludge for template.isType()
     DYNCAST dyncast() const override final { return DYNCAST_TYPE; }
     size_t getUniqueID() const;
-    Covariant covariant(Type *, StorageClass * = NULL, bool = false);
     const char *toChars() const override;
     char *toPrettyChars(bool QualifyTypes = false);
     static void _init();
@@ -233,8 +230,6 @@ public:
     uinteger_t size();
     virtual uinteger_t size(const Loc &loc);
     virtual unsigned alignsize();
-    Type *trySemantic(const Loc &loc, Scope *sc);
-    Type *merge2();
     void modToBuffer(OutBuffer& buf) const;
     char *modToChars() const;
 
@@ -249,7 +244,6 @@ public:
     virtual bool isString();
     virtual bool isAssignable();
     virtual bool isBoolean();
-    virtual void checkDeprecated(const Loc &loc, Scope *sc);
     bool isConst() const       { return (mod & MODconst) != 0; }
     bool isImmutable() const   { return (mod & MODimmutable) != 0; }
     bool isMutable() const     { return (mod & (MODconst | MODimmutable | MODwild)) == 0; }
@@ -260,25 +254,9 @@ public:
     bool isSharedWild() const  { return (mod & (MODshared | MODwild)) == (MODshared | MODwild); }
     bool isNaked() const       { return mod == 0; }
     Type *nullAttributes() const;
-    Type *constOf();
-    Type *immutableOf();
-    Type *mutableOf();
-    Type *sharedOf();
-    Type *sharedConstOf();
-    Type *unSharedOf();
-    Type *wildOf();
-    Type *wildConstOf();
-    Type *sharedWildOf();
-    Type *sharedWildConstOf();
-    Type *castMod(MOD mod);
-    Type *addMod(MOD mod);
-    virtual Type *addStorageClass(StorageClass stc);
-    Type *pointerTo();
-    Type *referenceTo();
     Type *arrayOf();
     Type *sarrayOf(dinteger_t dim);
     bool hasDeprecatedAliasThis();
-    Type *aliasthisOf();
     virtual Type *makeConst();
     virtual Type *makeImmutable();
     virtual Type *makeShared();
@@ -288,24 +266,16 @@ public:
     virtual Type *makeSharedWild();
     virtual Type *makeSharedWildConst();
     virtual Type *makeMutable();
-    virtual Dsymbol *toDsymbol(Scope *sc);
     Type *toBasetype();
-    virtual bool isBaseOf(Type *t, int *poffset);
     virtual MATCH implicitConvTo(Type *to);
     virtual MATCH constConv(Type *to);
     virtual unsigned char deduceWild(Type *t, bool isRef);
-    virtual Type *substWildTo(unsigned mod);
 
-    Type *unqualify(unsigned m);
-
-    virtual Type *toHeadMutable();
     virtual ClassDeclaration *isClassHandle();
     virtual structalign_t alignment();
     virtual Expression *defaultInitLiteral(const Loc &loc);
     virtual bool isZeroInit(const Loc &loc = Loc()); // if initializer is 0
-    Identifier *getTypeInfoIdent();
     virtual int hasWild() const;
-    virtual bool hasPointers();
     virtual bool hasVoidInitPointers();
     virtual bool hasSystemFields();
     virtual bool hasInvariant();
@@ -364,7 +334,6 @@ class TypeNext : public Type
 public:
     Type *next;
 
-    void checkDeprecated(const Loc &loc, Scope *sc) override final;
     int hasWild() const override final;
     Type *nextOf() override final;
     Type *makeConst() override final;
@@ -453,7 +422,6 @@ public:
     MATCH constConv(Type *to) override;
     MATCH implicitConvTo(Type *to) override;
     Expression *defaultInitLiteral(const Loc &loc) override;
-    bool hasPointers() override;
     bool hasSystemFields() override;
     bool hasVoidInitPointers() override;
     bool hasInvariant() override;
@@ -476,7 +444,6 @@ public:
     bool isZeroInit(const Loc &loc) override;
     bool isBoolean() override;
     MATCH implicitConvTo(Type *to) override;
-    bool hasPointers() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -493,7 +460,6 @@ public:
     uinteger_t size(const Loc &loc) override;
     bool isZeroInit(const Loc &loc) override;
     bool isBoolean() override;
-    bool hasPointers() override;
     MATCH implicitConvTo(Type *to) override;
     MATCH constConv(Type *to) override;
 
@@ -511,7 +477,6 @@ public:
     MATCH constConv(Type *to) override;
     bool isscalar() override;
     bool isZeroInit(const Loc &loc) override;
-    bool hasPointers() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -607,13 +572,9 @@ public:
     static TypeFunction *create(Parameters *parameters, Type *treturn, VarArg varargs, LINK linkage, StorageClass stc = 0);
     const char *kind() override;
     TypeFunction *syntaxCopy() override;
-    void purityLevel();
     bool hasLazyParameters();
     bool isDstyleVariadic() const;
-    StorageClass parameterStorageClass(Type* tthis, Parameter *p, VarDeclarations* outerVars = nullptr, bool indirect = false);
-    Type *addStorageClass(StorageClass stc) override;
 
-    Type *substWildTo(unsigned mod) override;
     MATCH constConv(Type *to) override;
 
     bool isnothrow() const;
@@ -655,13 +616,11 @@ public:
     static TypeDelegate *create(TypeFunction *t);
     const char *kind() override;
     TypeDelegate *syntaxCopy() override;
-    Type *addStorageClass(StorageClass stc) override;
     uinteger_t size(const Loc &loc) override;
     unsigned alignsize() override;
     MATCH implicitConvTo(Type *to) override;
     bool isZeroInit(const Loc &loc) override;
     bool isBoolean() override;
-    bool hasPointers() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -677,7 +636,6 @@ class TypeTraits final : public Type
     const char *kind() override;
     TypeTraits *syntaxCopy() override;
     uinteger_t size(const Loc &loc) override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -689,7 +647,6 @@ class TypeMixin final : public Type
 
     const char *kind() override;
     TypeMixin *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -715,7 +672,6 @@ public:
     static TypeIdentifier *create(const Loc &loc, Identifier *ident);
     const char *kind() override;
     TypeIdentifier *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -728,7 +684,6 @@ public:
 
     const char *kind() override;
     TypeInstance *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -740,7 +695,6 @@ public:
 
     const char *kind() override;
     TypeTypeof *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     uinteger_t size(const Loc &loc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -750,7 +704,6 @@ class TypeReturn final : public TypeQualified
 public:
     const char *kind() override;
     TypeReturn *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -778,7 +731,6 @@ public:
     uinteger_t size(const Loc &loc) override;
     unsigned alignsize() override;
     TypeStruct *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     structalign_t alignment() override;
     Expression *defaultInitLiteral(const Loc &loc) override;
     bool isZeroInit(const Loc &loc) override;
@@ -787,14 +739,12 @@ public:
     bool needsDestruction() override;
     bool needsCopyOrPostblit() override;
     bool needsNested() override;
-    bool hasPointers() override;
     bool hasVoidInitPointers() override;
     bool hasSystemFields() override;
     bool hasInvariant() override;
     MATCH implicitConvTo(Type *to) override;
     MATCH constConv(Type *to) override;
     unsigned char deduceWild(Type *t, bool isRef) override;
-    Type *toHeadMutable() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -808,8 +758,7 @@ public:
     TypeEnum *syntaxCopy() override;
     uinteger_t size(const Loc &loc) override;
     unsigned alignsize() override;
-    Type *memType(const Loc &loc = Loc());
-    Dsymbol *toDsymbol(Scope *sc) override;
+    Type *memType(const Loc &loc);
     bool isintegral() override;
     bool isfloating() override;
     bool isreal() override;
@@ -826,7 +775,6 @@ public:
     MATCH implicitConvTo(Type *to) override;
     MATCH constConv(Type *to) override;
     bool isZeroInit(const Loc &loc) override;
-    bool hasPointers() override;
     bool hasVoidInitPointers() override;
     bool hasSystemFields() override;
     bool hasInvariant() override;
@@ -845,17 +793,13 @@ public:
     const char *kind() override;
     uinteger_t size(const Loc &loc) override;
     TypeClass *syntaxCopy() override;
-    Dsymbol *toDsymbol(Scope *sc) override;
     ClassDeclaration *isClassHandle() override;
-    bool isBaseOf(Type *t, int *poffset) override;
     MATCH implicitConvTo(Type *to) override;
     MATCH constConv(Type *to) override;
     unsigned char deduceWild(Type *t, bool isRef) override;
-    Type *toHeadMutable() override;
     bool isZeroInit(const Loc &loc) override;
     bool isscope() override;
     bool isBoolean() override;
-    bool hasPointers() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -896,7 +840,6 @@ public:
 
     TypeNull *syntaxCopy() override;
     MATCH implicitConvTo(Type *to) override;
-    bool hasPointers() override;
     bool isBoolean() override;
 
     uinteger_t size(const Loc &loc) override;
@@ -927,5 +870,37 @@ public:
 
 /**************************************************************/
 
-// If the type is a class or struct, returns the symbol for it, else null.
-AggregateDeclaration *isAggregate(Type *t);
+namespace dmd
+{
+    // If the type is a class or struct, returns the symbol for it, else null.
+    AggregateDeclaration *isAggregate(Type *t);
+    bool hasPointers(Type *t);
+    // return the symbol to which type t resolves
+    Dsymbol *toDsymbol(Type *t, Scope *sc);
+    bool equivalent(Type *src, Type *t);
+    Covariant covariant(Type *, Type *, StorageClass * = NULL, bool = false);
+    bool isBaseOf(Type *tthis, Type *t, int *poffset);
+    Type *trySemantic(Type *type, const Loc &loc, Scope *sc);
+    Type *pointerTo(Type *type);
+    Type *referenceTo(Type *type);
+    Type *merge2(Type *type);
+    Type *sarrayOf(Type *type, dinteger_t dim);
+    Type *arrayOf(Type *type);
+    Type *constOf(Type *type);
+    Type *immutableOf(Type *type);
+    Type *mutableOf(Type *type);
+    Type *sharedOf(Type *type);
+    Type *sharedConstOf(Type *type);
+    Type *unSharedOf(Type *type);
+    Type *wildOf(Type *type);
+    Type *wildConstOf(Type *type);
+    Type *sharedWildOf(Type *type);
+    Type *sharedWildConstOf(Type *type);
+    Type *unqualify(Type *type, unsigned m);
+    Type *toHeadMutable(Type *type);
+    Type *aliasthisOf(Type *type);
+    Type *castMod(Type *type, MOD mod);
+    Type *addMod(Type *type, MOD mod);
+    Type *addStorageClass(Type *type, StorageClass stc);
+    Type *substWildTo(Type *type, unsigned mod);
+}

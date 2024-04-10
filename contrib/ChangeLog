@@ -1,3 +1,46 @@
+2024-03-08  Sam James  <sam@gentoo.org>
+
+	PR other/109668
+	* dg-extract-results.sh: Check for python3 before python. Check for
+	python2 last.
+
+2024-03-07  Filip Kastl  <fkastl@suse.cz>
+
+	* test_mklog.py: "Moved to..." -> "Move to..."
+
+2024-03-01  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* mklog.py: Use present tense in ChangeLog.
+
+2024-02-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc-changelog/git_commit.py (bug_components): Add libcc1.
+
+2024-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR target/90785
+	* config-list.mk (LIST): --enable-obsolete for ia64*-*-*.
+
+2024-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* test_installed: Fill in HOSTCC, HOSTCXX, HOSTCFLAGS and
+	HOSTCXXFLAGS.
+
+2024-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_libstdcxx_unicode_data.py: Add copyright and
+	license text to the output.
+
+2024-01-11  Paul Iannetta  <piannetta@kalrayinc.com>
+
+	* dg-extract-results.py: Make the test_run regex case
+	insensitive.
+
+2024-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_libstdcxx_unicode_data.py: Print out Gcb_property
+	enumerators in the order they're seen, not alphabetical order.
+
 2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unicode/README: Add notes about generating libstdc++ tables.

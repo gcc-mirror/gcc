@@ -23,10 +23,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "system.h"
 #include "libiberty.h"
 
-#include "config.h"
-#include "system.h"
-#include "libiberty.h"
-
 #include "gcc-consolidation.h"
 
 #include "../gm2-lang.h"
@@ -100,50 +96,17 @@ m2configure_FullPathCPP (void)
   return NULL;
 }
 
-/* Return true if M2C_LONGREAL_FLOAT128 is defined.  */
+/* Return the value of TARGET_IEEEQUAD_DEFAULT.  If it is undefined
+   -1 is returned.  A value of 0 indicates the default target long
+   double uses the IBM 128 representation.  A value of 1 indicates
+   the default target long double (LONGREAL) is __float128.  */
 
-bool
-m2configure_M2CLongRealFloat128 (void)
+int
+m2configure_TargetIEEEQuadDefault (void)
 {
-#if defined(M2C_LONGREAL_FLOAT128)
-  return true;
+#ifdef TARGET_IEEEQUAD_DEFAULT
+  return TARGET_IEEEQUAD_DEFAULT;
 #else
-  return false;
-#endif
-}
-
-/* Return true if M2C_LONGREAL_IBM128 is defined.  */
-
-bool
-m2configure_M2CLongRealIBM128 (void)
-{
-#if defined(M2C_LONGREAL_IBM128)
-  return true;
-#else
-  return false;
-#endif
-}
-
-/* Return true if M2C_LONGREAL_LONGDOUBLE is defined.  */
-
-bool
-m2configure_M2CLongRealLongDouble (void)
-{
-#if defined(M2C_LONGREAL_LONGDOUBLE)
-  return true;
-#else
-  return false;
-#endif
-}
-
-/* Return true if the target is ppc64le.  */
-
-bool
-m2configure_M2CLongRealLongDoublePPC64LE (void)
-{
-#if defined(M2C_LONGREAL_PPC64LE)
-  return true;
-#else
-  return false;
+  return -1;
 #endif
 }

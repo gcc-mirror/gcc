@@ -512,6 +512,8 @@ static const format_length_info gcc_diag_length_specs[] =
 {
   { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89, 0 },
   { "w", FMT_LEN_w, STD_C89, NO_FMT, 0 },
+  { "z", FMT_LEN_z, STD_C99, NO_FMT, 0 },
+  { "t", FMT_LEN_t, STD_C99, NO_FMT, 0 },
   { NO_FMT, NO_FMT, 0 }
 };
 
@@ -758,9 +760,9 @@ static const format_char_info asm_fprintf_char_table[] =
    by all pretty_printer instances within GCC.  */
 
 #define PP_FORMAT_CHAR_TABLE \
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
-  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
+  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  T99_ST,  T99_UPD, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  T99_ST,  T99_UPD, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
   { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
   { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR", NULL }, \
   { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL }, \
@@ -833,8 +835,8 @@ static const format_char_info gcc_cxxdiag_char_table[] =
 static const format_char_info gcc_gfc_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN, BADLEN, BADLEN, BADLEN }, "q", "", NULL },
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL,  BADLEN,  BADLEN,  BADLEN,  BADLEN, BADLEN, BADLEN, BADLEN  }, "q", "", NULL },
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  BADLEN, BADLEN, BADLEN, BADLEN }, "q", "", NULL },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  T99_ST,  T99_UPD, BADLEN, BADLEN, BADLEN, BADLEN  }, "q", "", NULL },
   { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN, BADLEN, BADLEN, BADLEN }, "q", "", NULL },
   { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN, BADLEN, BADLEN, BADLEN }, "q", "cR", NULL },
 

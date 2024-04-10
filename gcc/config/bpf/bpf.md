@@ -292,7 +292,7 @@
   "@
    {and\t%0,0xff|%0 &= 0xff}
    {mov\t%0,%1\;and\t%0,0xff|%0 = %1;%0 &= 0xff}
-   {ldxh\t%0,%1|%0 = *(u8 *) (%1)}"
+   {ldxb\t%0,%1|%0 = *(u8 *) (%1)}"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendsidi2"
@@ -626,5 +626,58 @@
   ""
   "{ldabs<ldop>\t%0|r0 = *(<pldop> *) skb[%0]}"
   [(set_attr "type" "ld")])
+
+;;; memmove and memcopy
+
+;; 0 is dst
+;; 1 is src
+;; 2 is size of copy in bytes
+;; 3 is alignment
+
+(define_expand "cpymemdi"
+  [(match_operand:BLK 0 "memory_operand")
+   (match_operand:BLK 1 "memory_operand")
+   (match_operand:DI 2 "general_operand")
+   (match_operand:DI 3 "immediate_operand")]
+   ""
+{
+  if (bpf_expand_cpymem (operands, false))
+    DONE;
+  FAIL;
+})
+
+;; 0 is dst
+;; 1 is src
+;; 2 is size of copy in bytes
+;; 3 is alignment
+
+(define_expand "movmemdi"
+  [(match_operand:BLK 0 "memory_operand")
+   (match_operand:BLK 1 "memory_operand")
+   (match_operand:DI 2 "general_operand")
+   (match_operand:DI 3 "immediate_operand")]
+   ""
+{
+  if (bpf_expand_cpymem (operands, true))
+    DONE;
+  FAIL;
+})
+
+;; memset
+;; 0 is dst
+;; 1 is length
+;; 2 is value
+;; 3 is alignment
+(define_expand "setmemdi"
+  [(set (match_operand:BLK 0 "memory_operand")
+	(match_operand:QI  2 "nonmemory_operand"))
+   (use (match_operand:DI  1 "general_operand"))
+   (match_operand 3 "immediate_operand")]
+ ""
+ {
+  if (bpf_expand_setmem (operands))
+    DONE;
+  FAIL;
+})
 
 (include "atomic.md")

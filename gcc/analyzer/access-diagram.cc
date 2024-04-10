@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "diagnostic-core.h"
 #include "diagnostic.h"
 #include "intl.h"
 #include "make-unique.h"
@@ -1905,7 +1906,7 @@ private:
 	const table::rect_t idx_table_rect
 	  = btm.get_table_rect (&m_string_reg, bytes, byte_idx_table_y, 1);
 	t.set_cell_span (idx_table_rect,
-			 fmt_styled_string (sm, "[%li]",
+			 fmt_styled_string (sm, "[%wu]",
 					    byte_idx_within_string.ulow ()));
       }
 

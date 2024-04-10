@@ -947,10 +947,10 @@ note_vague_linkage_fn (tree decl)
   vec_safe_push (deferred_fns, decl);
 }
 
-/* As above, but for variable template instantiations.  */
+/* As above, but for variables.  */
 
 void
-note_variable_template_instantiation (tree decl)
+note_vague_linkage_variable (tree decl)
 {
   vec_safe_push (pending_statics, decl);
 }
@@ -3360,7 +3360,9 @@ import_export_decl (tree decl)
 
      * implicit instantiations of function templates
 
-     * inline function
+     * inline functions
+
+     * inline variables
 
      * implicit instantiations of static data members of class
        templates
@@ -3383,6 +3385,7 @@ import_export_decl (tree decl)
 		|| DECL_DECLARED_INLINE_P (decl));
   else
     gcc_assert (DECL_IMPLICIT_INSTANTIATION (decl)
+		|| DECL_INLINE_VAR_P (decl)
 		|| DECL_VTABLE_OR_VTT_P (decl)
 		|| DECL_TINFO_P (decl));
   /* Check that a definition of DECL is available in this translation
@@ -3395,6 +3398,10 @@ import_export_decl (tree decl)
      unit.  */
   import_p = false;
 
+  /* FIXME: Since https://github.com/itanium-cxx-abi/cxx-abi/pull/171,
+     the ABI specifies that classes attached to named modules should
+     have their vtables uniquely emitted in the object for the module
+     unit in which it is defined.  And similarly for RTTI structures.  */
   if (VAR_P (decl) && DECL_VTABLE_OR_VTT_P (decl))
     {
       class_type = DECL_CONTEXT (decl);
@@ -3511,7 +3518,7 @@ import_export_decl (tree decl)
 	   this entity as undefined in this translation unit.  */
 	import_p = true;
     }
-  else if (DECL_FUNCTION_MEMBER_P (decl))
+  else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (decl))
     {
       if (!DECL_DECLARED_INLINE_P (decl))
 	{
@@ -3897,6 +3904,7 @@ get_tls_wrapper_fn (tree var)
       TREE_PUBLIC (fn) = TREE_PUBLIC (var);
       DECL_ARTIFICIAL (fn) = true;
       DECL_IGNORED_P (fn) = 1;
+      DECL_CONTEXT (fn) = DECL_CONTEXT (var);
       /* The wrapper is inline and emitted everywhere var is used.  */
       DECL_DECLARED_INLINE_P (fn) = true;
       if (TREE_PUBLIC (var))
@@ -5326,10 +5334,11 @@ c_parse_final_cleanups (void)
 	     #pragma interface, etc.) we decided not to emit the
 	     definition here.  */
 	  && !DECL_INITIAL (decl)
-	  /* A defaulted fn in a header module can be synthesized on
-	     demand later.  (In non-header modules we should have
-	     synthesized it above.)  */
-	  && !(DECL_DEFAULTED_FN (decl) && header_module_p ())
+	  /* A defaulted fn or TLS wrapper in a header module can be
+	     synthesized on demand later.  (In non-header modules we
+	     should have synthesized it above.)  */
+	  && !(header_module_p ()
+	       && (DECL_DEFAULTED_FN (decl) || decl_tls_wrapper_p (decl)))
 	  /* Don't complain if the template was defined.  */
 	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
@@ -5676,7 +5685,7 @@ cp_handle_deprecated_or_unavailable (tree decl, tsubst_flags_t complain)
   if (cxx_dialect >= cxx11
       && DECL_P (decl)
       && DECL_ARTIFICIAL (decl)
-      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+      && DECL_IOBJ_MEMBER_FUNCTION_P (decl)
       && copy_fn_p (decl))
     {
       /* Don't warn if the flag was disabled around the class definition

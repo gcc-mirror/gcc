@@ -1245,7 +1245,7 @@ if test $gcc_cv_prog_makeinfo_modern = no; then
   AC_MSG_WARN([
 *** Makeinfo is missing or too old.
 *** Info documentation will not be built.])
-  BUILD_INFO=
+  BUILD_INFO=no-info
 else
   BUILD_INFO=info
 fi
@@ -4549,6 +4549,7 @@ AS_HELP_STRING([--disable-fix-cortex-a53-843419],
       [AC_DEFINE(HAVE_AS_AVR_MGCCISR_OPTION, 1,
 		[Define if your avr assembler supports -mgcc-isr option.])])
 
+    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
     # Check how default linker description file implements .rodata for
     # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to
     # RAM so avr-gcc skips __do_copy_data for .rodata objects.
@@ -4574,7 +4575,6 @@ EOF
 	    AC_MSG_RESULT(no: avrxmega3 .rodata located in RAM)
 	    echo "$as_me: nm output was" >&AS_MESSAGE_LOG_FD
 	    cat conftest.nm >&AS_MESSAGE_LOG_FD
-	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
 	    AC_MSG_WARN([[support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)]])
 	fi
     else
@@ -4584,6 +4584,42 @@ EOF
 	AC_MSG_WARN([[see `config.log' for details]])
     fi
     rm -f conftest.s conftest.o conftest.elf conftest.nm
+
+    # Check for emulation avrxmega2_flmap.
+    AC_MSG_CHECKING(binutils for avrxmega2_flmap support (PR31124))
+    cat > conftest.s <<EOF
+        .section .text,"ax",@progbits
+        ldi r16, __flmap_value_with_lock
+EOF
+    AC_TRY_COMMAND([$gcc_cv_as -mmcu=avrxmega2 conftest.s -o conftest.o])
+    AC_TRY_COMMAND([$gcc_cv_ld -mavrxmega2_flmap conftest.o -o conftest.elf])
+    if test -s conftest.elf
+    then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(HAVE_LD_AVR_AVRXMEGA2_FLMAP, 1,
+	    [Define if your linker supports emulation avrxmega2_flmap.])
+    else
+	AC_MSG_RESULT(no)
+	AC_MSG_WARN([[support for avrxmega2_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)]])
+	AC_MSG_WARN([[see `config.log' for details]])
+    fi
+    rm -f conftest.o conftest.elf
+
+    # Check for emulation avrxmega4_flmap.
+    AC_MSG_CHECKING(binutils for avrxmega4_flmap support (PR31124))
+    AC_TRY_COMMAND([$gcc_cv_as -mmcu=avrxmega4 conftest.s -o conftest.o])
+    AC_TRY_COMMAND([$gcc_cv_ld -mavrxmega4_flmap conftest.o -o conftest.elf])
+    if test -s conftest.elf
+    then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(HAVE_LD_AVR_AVRXMEGA4_FLMAP, 1,
+	    [Define if your linker supports emulation avrxmega4_flmap.])
+    else
+	AC_MSG_RESULT(no)
+	AC_MSG_WARN([[support for avrxmega4_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)]])
+	AC_MSG_WARN([[see `config.log' for details]])
+    fi
+    rm -f conftest.s conftest.o conftest.elf
     ;;
 
   cris-*-*)
@@ -5021,6 +5057,50 @@ _start:
       [`if test x"$gcc_cv_as_ix86_got32x" = xyes; then echo 1; else echo 0; fi`],
       [Define 0/1 if your assembler and linker support @GOT.])
 
+    # Check if gas and gld support "addq %r23,foo@GOTTPOFF(%rip), %r15"
+    # with R_X86_64_CODE_6_GOTTPOFF relocation.
+    if echo "$ld_ver" | grep GNU > /dev/null; then
+      if $gcc_cv_ld -V 2>/dev/null | grep elf_x86_64_sol2 > /dev/null; then
+        ld_ix86_gld_64_opt="-melf_x86_64_sol2"
+      else
+        ld_ix86_gld_64_opt="-melf_x86_64"
+      fi
+    fi
+    # Enforce 64-bit output with gas and gld.
+    if test x$gas = xyes; then
+      as_ix86_gas_64_opt="--64"
+    fi
+    conftest_s='
+	.text
+	.globl	_start
+	.type _start, @function
+_start:
+	addq	%r23,foo@GOTTPOFF(%rip), %r15
+	.section .tdata,"awT",@progbits
+	.type foo, @object
+foo:
+	.quad 0'
+    gcc_GAS_CHECK_FEATURE([R_X86_64_CODE_6_GOTTPOFF reloc],
+	gcc_cv_as_x86_64_code_6_gottpoff,
+	[$as_ix86_gas_64_opt],
+	[$conftest_s],
+	[if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
+	    && test x$gcc_cv_readelf != x \
+	    && $gcc_cv_readelf --relocs --wide conftest.o 2>&1 \
+	       | grep R_X86_64_CODE_6_GOTTPOFF > /dev/null 2>&1 \
+	    && $gcc_cv_ld $ld_ix86_gld_64_opt -o conftest conftest.o > /dev/null 2>&1; then
+	   if $gcc_cv_objdump -dw conftest 2>&1 \
+	      | grep "add \+\$0xf\+8,%r23,%r15" > /dev/null 2>&1; then
+	     gcc_cv_as_x86_64_code_6_gottpoff=yes
+	   else
+	     gcc_cv_as_x86_64_code_6_gottpoff=no
+	   fi
+	 fi
+	 rm -f conftest])
+    AC_DEFINE_UNQUOTED(HAVE_AS_R_X86_64_CODE_6_GOTTPOFF,
+      [`if test x"$gcc_cv_as_x86_64_code_6_gottpoff" = xyes; then echo 1; else echo 0; fi`],
+      [Define 0/1 if your assembler and linker support R_X86_64_CODE_6_GOTTPOFF.])
+
     gcc_GAS_CHECK_FEATURE([GOTOFF in data],
       gcc_cv_as_ix86_gotoff_in_data,
       [$as_ix86_gas_32_opt],
@@ -5205,13 +5285,24 @@ LCF0:
     ;;
 
   mips*-*-*)
-    gcc_GAS_CHECK_FEATURE([explicit relocation support],
+    gcc_GAS_CHECK_FEATURE([explicit relocation support: %pcrel_hi/%pcrel_lo],
+      gcc_cv_as_mips_explicit_relocs_pcrel,,
+[	lui $4,%pcrel_hi(foo)],,
+      [AC_DEFINE(MIPS_EXPLICIT_RELOCS, MIPS_EXPLICIT_RELOCS_PCREL,
+		 [Define if assembler supports %pcrel_hi/%pcrel_lo.])])
+
+    if test x$gcc_cv_as_mips_explicit_relocs_pcrel = xno; then \
+    gcc_GAS_CHECK_FEATURE([explicit relocation support: %gp_rel],
       gcc_cv_as_mips_explicit_relocs,,
 [	lw $4,%gp_rel(foo)($4)],,
-      [if test x$target_cpu_default = x
-       then target_cpu_default=MASK_EXPLICIT_RELOCS
-       else target_cpu_default="($target_cpu_default)|MASK_EXPLICIT_RELOCS"
-       fi])
+      [AC_DEFINE(MIPS_EXPLICIT_RELOCS, MIPS_EXPLICIT_RELOCS_BASE,
+		 [Define if assembler supports %reloc.])])
+    fi
+
+    if test x$gcc_cv_as_mips_explicit_relocs = xno; then \
+      AC_DEFINE(MIPS_EXPLICIT_RELOCS, MIPS_EXPLICIT_RELOCS_NONE,
+		[Define if assembler supports %reloc.])
+    fi
 
     gcc_GAS_CHECK_FEATURE([-mno-shared support],
       gcc_cv_as_mips_no_shared,[-mno-shared], [nop],,
@@ -5439,7 +5530,7 @@ x:
 		[Define if your assembler supports -mrelax option.])])
     gcc_GAS_CHECK_FEATURE([conditional branch relaxation support],
       gcc_cv_as_loongarch_cond_branch_relax,
-      [],
+      [--fatal-warnings],
       [a:
        .rept 32769
        nop

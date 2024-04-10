@@ -3,6 +3,7 @@
 /* { dg-options "-fPIC" } */
 /* { dg-skip-if "__PIC__ is always 1 for MIPS" { mips*-*-* } } */
 /* { dg-skip-if "__PIE__ is always defined for GCN" { amdgcn*-*-* } } */
+/* { dg-skip-if "__PIE__ is always defined for hppa64" { hppa*64*-*-* } } */
 
 #if defined(__CYGWIN__) || defined(__WIN32__)
 # if __PIC__ != 1

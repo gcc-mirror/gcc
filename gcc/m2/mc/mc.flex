@@ -28,8 +28,10 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include <time.h>
 #include <ctype.h>
 
+#ifndef alloca
 #ifdef __GNUC__
 #define alloca __builtin_alloca
+#endif
 #endif
 
 #if !defined(TRUE)
@@ -330,7 +332,7 @@ handleColumn (void)
 static void
 handleDate (void)
 {
-  time_t  clock = time ((long *)0);
+  time_t  clock = time ((time_t *)0);
   char   *sdate = ctime (&clock);
   char   *s     = (char *)alloca (strlen (sdate)+2+1);
   char   *p     = strchr(sdate, '\n');

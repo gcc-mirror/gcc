@@ -64,10 +64,10 @@ Warray-bounds=
 UrlSuffix(gcc/Warning-Options.html#index-Warray-bounds)
 
 Wuse-after-free
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-use-after-free)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-use-after-free)
 
 Wuse-after-free=
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-use-after-free)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-use-after-free)
 
 Wattributes
 UrlSuffix(gcc/Warning-Options.html#index-Wattributes)
