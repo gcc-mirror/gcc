@@ -47,10 +47,12 @@ libstdc__exp_la_SOURCES = $(sources)
 
 libstdc__exp_la_LIBADD = \
 	$(top_builddir)/src/c++23/libc++23convenience.la \
+	$(top_builddir)/src/c++26/libc++26convenience.la \
 	$(filesystem_lib) $(backtrace_lib)
 
 libstdc__exp_la_DEPENDENCIES = \
 	$(top_builddir)/src/c++23/libc++23convenience.la \
+	$(top_builddir)/src/c++26/libc++26convenience.la \
 	$(filesystem_lib) $(backtrace_lib)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be

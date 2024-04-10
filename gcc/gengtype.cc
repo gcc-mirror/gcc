@@ -4718,8 +4718,8 @@ write_roots (pair_p variables, bool emit_pch)
 }
 
 /* Prints not-as-ugly version of a typename of T to OF.  Trades the uniquness
-   guaranteee for somewhat increased readability.  If name conflicts do happen,
-   this funcion will have to be adjusted to be more like
+   guarantee for somewhat increased readability.  If name conflicts do happen,
+   this function will have to be adjusted to be more like
    output_mangled_typename.  */
 
 #define INDENT 2

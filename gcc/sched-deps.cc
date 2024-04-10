@@ -4779,24 +4779,59 @@ parse_add_or_inc (struct mem_inc_info *mii, rtx_insn *insn, bool before_mem)
 /* Once a suitable mem reference has been found and the corresponding data
    in MII has been filled in, this function is called to find a suitable
    add or inc insn involving the register we found in the memory
-   reference.  */
+   reference.
+   If successful, this function will create additional dependencies between
+   - mii->inc_insn's producers and mii->mem_insn as a consumer (if backwards)
+   - mii->inc_insn's consumers and mii->mem_insn as a producer (if !backwards).
+*/
 
 static bool
 find_inc (struct mem_inc_info *mii, bool backwards)
 {
   sd_iterator_def sd_it;
   dep_t dep;
+  sd_list_types_def mem_deps = backwards ? SD_LIST_HARD_BACK : SD_LIST_FORW;
+  int n_mem_deps = sd_lists_size (mii->mem_insn, mem_deps);
 
-  sd_it = sd_iterator_start (mii->mem_insn,
-			     backwards ? SD_LIST_HARD_BACK : SD_LIST_FORW);
+  sd_it = sd_iterator_start (mii->mem_insn, mem_deps);
   while (sd_iterator_cond (&sd_it, &dep))
     {
       dep_node_t node = DEP_LINK_NODE (*sd_it.linkp);
       rtx_insn *pro = DEP_PRO (dep);
       rtx_insn *con = DEP_CON (dep);
-      rtx_insn *inc_cand = backwards ? pro : con;
+      rtx_insn *inc_cand;
+      int n_inc_deps;
+
       if (DEP_NONREG (dep) || DEP_MULTIPLE (dep))
 	goto next;
+
+      if (backwards)
+	{
+	  inc_cand = pro;
+	  n_inc_deps = sd_lists_size (inc_cand, SD_LIST_BACK);
+	}
+      else
+	{
+	  inc_cand = con;
+	  n_inc_deps = sd_lists_size (inc_cand, SD_LIST_FORW);
+	}
+
+      /* In the FOR_EACH_DEP loop below we will create additional n_inc_deps
+	 for mem_insn.  This by itself is not a problem, since each mem_insn
+	 will have only a few inc_insns associated with it.  However, if
+	 we consider that a single inc_insn may have a lot of mem_insns, AND,
+	 on top of that, a few other inc_insns associated with it --
+	 those _other inc_insns_ will get (n_mem_deps * number of MEM insns)
+	 dependencies created for them.  This may cause an exponential
+	 growth of memory usage and scheduling time.
+	 See PR96388 for details.
+	 We [heuristically] use n_inc_deps as a proxy for the number of MEM
+	 insns, and drop opportunities for breaking modifiable_mem dependencies
+	 when dependency lists grow beyond reasonable size.  */
+      if (n_mem_deps * n_inc_deps
+	  >= param_max_pending_list_length * param_max_pending_list_length)
+	goto next;
+
       if (parse_add_or_inc (mii, inc_cand, backwards))
 	{
 	  struct dep_replacement *desc;
@@ -4838,6 +4873,11 @@ find_inc (struct mem_inc_info *mii, bool backwards)
 	  desc->insn = mii->mem_insn;
 	  move_dep_link (DEP_NODE_BACK (node), INSN_HARD_BACK_DEPS (con),
 			 INSN_SPEC_BACK_DEPS (con));
+
+	  /* Make sure that n_inc_deps above is consistent with dependencies
+	     we create.  */
+	  gcc_assert (mii->inc_insn == inc_cand);
+
 	  if (backwards)
 	    {
 	      FOR_EACH_DEP (mii->inc_insn, SD_LIST_BACK, sd_it, dep)

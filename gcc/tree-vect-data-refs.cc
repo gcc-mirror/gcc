@@ -282,6 +282,12 @@ vect_preserves_scalar_order_p (dr_vec_info *dr_info_a, dr_vec_info *dr_info_b)
       && !STMT_VINFO_GROUPED_ACCESS (stmtinfo_b))
     return true;
 
+  /* If there is a loop invariant read involved we might vectorize it in
+     the prologue, breaking scalar oder with respect to the in-loop store.  */
+  if ((DR_IS_READ (dr_info_a->dr) && integer_zerop (DR_STEP (dr_info_a->dr)))
+      || (DR_IS_READ (dr_info_b->dr) && integer_zerop (DR_STEP (dr_info_b->dr))))
+    return false;
+
   /* STMT_A and STMT_B belong to overlapping groups.  All loads are
      emitted at the position of the first scalar load.
      Stores in a group are emitted at the position of the last scalar store.
@@ -2354,8 +2360,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   /* Check if we can possibly peel the loop.  */
   if (!vect_can_advance_ivs_p (loop_vinfo)
       || !slpeel_can_duplicate_loop_p (loop, LOOP_VINFO_IV_EXIT (loop_vinfo),
-				       LOOP_VINFO_IV_EXIT (loop_vinfo))
-      || loop->inner)
+				       loop_preheader_edge (loop))
+      || loop->inner
+      || LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
     do_peeling = false;
 
   struct _vect_peel_extended_info peel_for_known_alignment;

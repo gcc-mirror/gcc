@@ -8748,7 +8748,7 @@ namespace views::__adaptor
 	operator() [[nodiscard]] (_Ts&&... __ts) const
 	{
 	  if constexpr (sizeof...(_Ts) == 0)
-	    return views::empty<tuple<>>;
+	    return views::single(tuple{});
 	  else
 	    return cartesian_product_view<all_t<_Ts>...>(std::forward<_Ts>(__ts)...);
 	}

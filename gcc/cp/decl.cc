@@ -13394,12 +13394,12 @@ grokdeclarator (const cp_declarator *declarator,
 		  gcc_rich_location bad_xobj_parm
 		    (DECL_SOURCE_LOCATION (TREE_VALUE (parm)));
 		  error_at (&bad_xobj_parm,
-			  "Only the first parameter of a member function "
-			  "can be declared as an explicit object parameter");
+			    "only the first parameter of a member function "
+			    "can be declared as an explicit object parameter");
 		}
 	      if (bad_xobj_parm_encountered && xobj_parm)
 		inform (DECL_SOURCE_LOCATION (xobj_parm),
-			"Valid explicit object parameter declared here");
+			"valid explicit object parameter declared here");
 	    }
 
 	    if (reqs)
@@ -13743,6 +13743,7 @@ grokdeclarator (const cp_declarator *declarator,
 			  "destructors may not have parameters");
 		arg_types = void_list_node;
 		parms = NULL_TREE;
+		is_xobj_member_function = false;
 	      }
 
 	    type = build_function_type (type, arg_types);

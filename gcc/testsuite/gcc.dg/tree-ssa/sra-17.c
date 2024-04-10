@@ -17,5 +17,5 @@ main (int argc, char **argv)
   abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "Removing load: a = \\\*.?L.?C.?.?.?0;" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\\[" 4 "esra" } } */
+/* { dg-final { scan-tree-dump-times "Removing load: a = \\\*.?L.?C.?.?.?0;" 1 "esra" { xfail hppa*64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\\[" 4 "esra" { xfail hppa*64*-*-* } } } */

@@ -186,6 +186,7 @@ AARCH64_CORE("cortex-x3",  cortexx3, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8M
 AARCH64_CORE("cortex-x4",  cortexx4, cortexa57, V9_2A,  (SVE2_BITPERM, MEMTAG, PROFILE), neoversen2, 0x41, 0xd81, -1)
 
 AARCH64_CORE("neoverse-n2", neoversen2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversen2, 0x41, 0xd49, -1)
+AARCH64_CORE("cobalt-100",   cobalt100, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversen2, 0x6d, 0xd49, -1)
 
 AARCH64_CORE("neoverse-v2", neoversev2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)

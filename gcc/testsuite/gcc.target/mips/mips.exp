@@ -266,6 +266,7 @@ set mips_option_groups {
     stack-protector "-fstack-protector"
     stdlib "REQUIRES_STDLIB"
     unaligned-access "-m(no-|)unaligned-access"
+    xgot "-m(no-|)xgot"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {

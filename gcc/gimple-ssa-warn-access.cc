@@ -3406,6 +3406,15 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
       else
 	access_nelts = rwm->get (sizidx)->size;
 
+      /* If access_nelts is e.g. a PARM_DECL with larger precision than
+	 sizetype, such as __int128 or _BitInt(34123) parameters,
+	 cast it to sizetype.  */
+      if (access_nelts
+	  && INTEGRAL_TYPE_P (TREE_TYPE (access_nelts))
+	  && (TYPE_PRECISION (TREE_TYPE (access_nelts))
+	      > TYPE_PRECISION (sizetype)))
+	access_nelts = fold_convert (sizetype, access_nelts);
+
       /* Format the value or range to avoid an explosion of messages.  */
       char sizstr[80];
       tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };

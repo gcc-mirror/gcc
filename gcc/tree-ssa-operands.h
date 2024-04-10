@@ -82,6 +82,9 @@ struct GTY(()) ssa_operands {
 #define PHI_ARG_DEF(PHI, I)	gimple_phi_arg_def ((PHI), (I))
 #define SET_PHI_ARG_DEF(PHI, I, V)					\
 				SET_USE (PHI_ARG_DEF_PTR ((PHI), (I)), (V))
+#define SET_PHI_ARG_DEF_ON_EDGE(PHI, E, V)				      \
+				SET_USE (gimple_phi_arg_imm_use_ptr_from_edge \
+					   ((PHI), (E)), (V))
 #define PHI_ARG_DEF_FROM_EDGE(PHI, E)					\
 				gimple_phi_arg_def_from_edge ((PHI), (E))
 #define PHI_ARG_DEF_PTR_FROM_EDGE(PHI, E)				\

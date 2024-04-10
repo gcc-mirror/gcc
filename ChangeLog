@@ -1,3 +1,13 @@
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* Makefile.def: Add a dependency to libgrust for all-gcc.
+	* Makefile.in: Regenerate the file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* Makefile.def: Add libgrust target to bootstrap.
+	* Makefile.in: Regenerate.
+
 2024-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* MAINTAINERS (DCO): Add myself.

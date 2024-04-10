@@ -2324,6 +2324,21 @@ class StdIntegralConstantPrinter(printer_base):
         typename = strip_versioned_namespace(self._typename)
         return "{}<{}, {}>".format(typename, value_type, value)
 
+class StdTextEncodingPrinter(printer_base):
+    """Print a std::text_encoding."""
+
+    def __init__(self, typename, val):
+        self._val = val
+        self._typename = typename
+
+    def to_string(self):
+        rep = self._val['_M_rep'].dereference()
+        if rep['_M_id'] == 1:
+            return self._val['_M_name']
+        if rep['_M_id'] == 2:
+            return 'unknown'
+        return rep['_M_name']
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -2807,6 +2822,8 @@ def build_libstdcxx_dictionary():
 
     libstdcxx_printer.add_version('std::', 'integral_constant',
                                   StdIntegralConstantPrinter)
+    libstdcxx_printer.add_version('std::', 'text_encoding',
+                                  StdTextEncodingPrinter)
 
     if hasattr(gdb.Value, 'dynamic_type'):
         libstdcxx_printer.add_version('std::', 'error_code',

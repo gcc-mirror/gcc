@@ -3174,21 +3174,16 @@ pass_ipa_strub::execute (function *)
 				       resdecl,
 				       build_int_cst (TREE_TYPE (resdecl), 0));
 		  }
-		else if (!is_gimple_reg_type (restype))
+		else if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl)))
 		  {
-		    if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl)))
-		      {
-			restmp = resdecl;
+		    restmp = resdecl;
 
-			if (VAR_P (restmp))
-			  {
-			    add_local_decl (cfun, restmp);
-			    BLOCK_VARS (DECL_INITIAL (current_function_decl))
-			      = restmp;
-			  }
+		    if (VAR_P (restmp))
+		      {
+			add_local_decl (cfun, restmp);
+			BLOCK_VARS (DECL_INITIAL (current_function_decl))
+			  = restmp;
 		      }
-		    else
-		      restmp = create_tmp_var (restype, "retval");
 		  }
 		else
 		  restmp = create_tmp_reg (restype, "retval");

@@ -766,7 +766,6 @@ ipa_polymorphic_call_context::set_by_invariant (tree cst,
   tree base;
 
   invalid = false;
-  off = 0;
   clear_outer_type (otr_type);
 
   if (TREE_CODE (cst) != ADDR_EXPR)

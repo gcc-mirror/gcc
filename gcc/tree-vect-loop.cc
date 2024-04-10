@@ -11837,6 +11837,12 @@ move_early_exit_stmts (loop_vec_info loop_vinfo)
       gimple_set_vuse (p, vuse);
       update_stmt (p);
     }
+
+  /* And update the LC PHIs on exits.  */
+  for (edge e : get_loop_exit_edges (LOOP_VINFO_LOOP  (loop_vinfo)))
+    if (!dominated_by_p (CDI_DOMINATORS, e->src, dest_bb))
+      if (gphi *phi = get_virtual_phi (e->dest))
+	SET_PHI_ARG_DEF_ON_EDGE (phi, e, vuse);
 }
 
 /* Function vect_transform_loop.

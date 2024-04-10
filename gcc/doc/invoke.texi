@@ -207,7 +207,7 @@ in the following sections.
 -fopenmp  -fopenmp-simd  -fopenmp-target-simd-clone@r{[}=@var{device-type}@r{]}
 -fpermitted-flt-eval-methods=@var{standard}
 -fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields
--fsigned-char  -funsigned-char -fstrict-flex-arrays[=@var{n}]
+-fsigned-char  -funsigned-char  -fstrict-flex-arrays[=@var{n}]
 -fsso-struct=@var{endianness}}
 
 @item C++ Language Options
@@ -271,8 +271,7 @@ in the following sections.
 -Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
 -Wsized-deallocation  -Wsuggest-final-methods
 -Wsuggest-final-types  -Wsuggest-override
--Wno-terminate  -Wuseless-cast  -Wno-vexing-parse
--Wvirtual-inheritance
+-Wno-terminate  -Wno-vexing-parse  -Wvirtual-inheritance
 -Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
 
 @item Objective-C and Objective-C++ Language Options
@@ -406,12 +405,12 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n}
 -Wstring-compare
 -Wno-stringop-overflow -Wno-stringop-overread
--Wno-stringop-truncation -Wstrict-flex-arrays
+-Wno-stringop-truncation  -Wstrict-flex-arrays
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]}
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs
--Wtrivial-auto-var-init -Wtsan -Wtype-limits  -Wundef
+-Wtrivial-auto-var-init  -Wno-tsan  -Wtype-limits  -Wundef
 -Wuninitialized  -Wunknown-pragmas
 -Wunsuffixed-float-constants  -Wunused
 -Wunused-but-set-parameter  -Wunused-but-set-variable
@@ -420,11 +419,12 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-macros
 -Wunused-parameter  -Wno-unused-result
 -Wunused-value  -Wunused-variable
+-Wuse-after-free  -Wuse-after-free=@var{n}  -Wuseless-cast
 -Wno-varargs  -Wvariadic-macros
 -Wvector-operation-performance
 -Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than
 -Wvolatile-register-var  -Wwrite-strings
--Wxor-used-as-pow
+-Wno-xor-used-as-pow
 -Wzero-length-bounds}
 
 @item Static Analyzer Options
@@ -2945,21 +2945,21 @@ is always just like one of those two.
 
 @opindex fstrict-flex-arrays
 @opindex fno-strict-flex-arrays
-@item -fstrict-flex-arrays
-Control when to treat the trailing array of a structure as a flexible array
-member for the purpose of accessing the elements of such an array.
-The positive form is equivalent to @option{-fstrict-flex-arrays=3}, which is the
-strictest.  A trailing array is treated as a flexible array member only when it
-is declared as a flexible array member per C99 standard onwards.
-The negative form is equivalent to @option{-fstrict-flex-arrays=0}, which is the
-least strict.  All trailing arrays of structures are treated as flexible array
-members.
-
 @opindex fstrict-flex-arrays=@var{level}
-@item -fstrict-flex-arrays=@var{level}
+@item -fstrict-flex-arrays @r{(C and C++ only)}
+@itemx -fstrict-flex-arrays=@var{level} @r{(C and C++ only)}
 Control when to treat the trailing array of a structure as a flexible array
 member for the purpose of accessing the elements of such an array.  The value
 of @var{level} controls the level of strictness.
+
+@option{-fstrict-flex-arrays} is equivalent to
+@option{-fstrict-flex-arrays=3}, which is the strictest; all
+trailing arrays of structures are treated as flexible array members.
+
+The negative form @option{-fno-strict-flex-arrays} is equivalent to
+@option{-fstrict-flex-arrays=0}, which is the least strict.  In this
+case a trailing array is treated as a flexible array member only when
+it is declared as a flexible array member per C99 standard onwards.
 
 The possible values of @var{level} are the same as for the
 @code{strict_flex_array} attribute (@pxref{Variable Attributes}).
@@ -2967,6 +2967,10 @@ The possible values of @var{level} are the same as for the
 You can control this behavior for a specific trailing array field of a
 structure by using the variable attribute @code{strict_flex_array} attribute
 (@pxref{Variable Attributes}).
+
+The @option{-fstrict_flex_arrays} option interacts with the
+@option{-Wstrict-flex-arrays} option.  @xref{Warning Options}, for more
+information.
 
 @opindex fsso-struct
 @item -fsso-struct=@var{endianness}
@@ -4813,83 +4817,6 @@ annotations.
 @item -Wsuggest-override
 Warn about overriding virtual functions that are not marked with the
 @code{override} keyword.
-
-@opindex Wuse-after-free
-@opindex Wno-use-after-free
-@item -Wuse-after-free
-@itemx -Wuse-after-free=@var{n}
-Warn about uses of pointers to dynamically allocated objects that have
-been rendered indeterminate by a call to a deallocation function.
-The warning is enabled at all optimization levels but may yield different
-results with optimization than without.
-
-@table @gcctabopt
-@item -Wuse-after-free=1
-At level 1 the warning attempts to diagnose only unconditional uses
-of pointers made indeterminate by a deallocation call or a successful
-call to @code{realloc}, regardless of whether or not the call resulted
-in an actual reallocatio of memory.  This includes double-@code{free}
-calls as well as uses in arithmetic and relational expressions.  Although
-undefined, uses of indeterminate pointers in equality (or inequality)
-expressions are not diagnosed at this level.
-@item -Wuse-after-free=2
-At level 2, in addition to unconditional uses, the warning also diagnoses
-conditional uses of pointers made indeterminate by a deallocation call.
-As at level 2, uses in equality (or inequality) expressions are not
-diagnosed.  For example, the second call to @code{free} in the following
-function is diagnosed at this level:
-@smallexample
-struct A @{ int refcount; void *data; @};
-
-void release (struct A *p)
-@{
-  int refcount = --p->refcount;
-  free (p);
-  if (refcount == 0)
-    free (p->data);   // warning: p may be used after free
-@}
-@end smallexample
-@item -Wuse-after-free=3
-At level 3, the warning also diagnoses uses of indeterminate pointers in
-equality expressions.  All uses of indeterminate pointers are undefined
-but equality tests sometimes appear after calls to @code{realloc} as
-an attempt to determine whether the call resulted in relocating the object
-to a different address.  They are diagnosed at a separate level to aid
-legacy code gradually transition to safe alternatives.  For example,
-the equality test in the function below is diagnosed at this level:
-@smallexample
-void adjust_pointers (int**, int);
-
-void grow (int **p, int n)
-@{
-  int **q = (int**)realloc (p, n *= 2);
-  if (q == p)
-    return;
-  adjust_pointers ((int**)q, n);
-@}
-@end smallexample
-To avoid the warning at this level, store offsets into allocated memory
-instead of pointers.  This approach obviates needing to adjust the stored
-pointers after reallocation.
-@end table
-
-@option{-Wuse-after-free=2} is included in @option{-Wall}.
-
-@opindex Wuseless-cast
-@opindex Wno-useless-cast
-@item -Wuseless-cast @r{(C, Objective-C, C++ and Objective-C++ only)}
-Warn when an expression is cast to its own type.  This warning does not
-occur when a class object is converted to a non-reference type as that
-is a way to create a temporary:
-
-@smallexample
-struct S @{ @};
-void g (S&&);
-void f (S&& arg)
-@{
-  g (S(arg)); // make arg prvalue so that it can bind to S&&
-@}
-@end smallexample
 
 @opindex Wconversion-null
 @opindex Wno-conversion-null
@@ -7739,6 +7666,83 @@ In order to get a warning about an unused function parameter, you must
 either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
 @option{-Wunused}), or separately specify @option{-Wunused-parameter}.
 
+@opindex Wuse-after-free
+@opindex Wno-use-after-free
+@item -Wuse-after-free @r{(C, Objective-C, C++ and Objective-C++ only)}
+@itemx -Wuse-after-free=@var{n}
+Warn about uses of pointers to dynamically allocated objects that have
+been rendered indeterminate by a call to a deallocation function.
+The warning is enabled at all optimization levels but may yield different
+results with optimization than without.
+
+@table @gcctabopt
+@item -Wuse-after-free=1
+At level 1 the warning attempts to diagnose only unconditional uses
+of pointers made indeterminate by a deallocation call or a successful
+call to @code{realloc}, regardless of whether or not the call resulted
+in an actual reallocation of memory.  This includes double-@code{free}
+calls as well as uses in arithmetic and relational expressions.  Although
+undefined, uses of indeterminate pointers in equality (or inequality)
+expressions are not diagnosed at this level.
+@item -Wuse-after-free=2
+At level 2, in addition to unconditional uses, the warning also diagnoses
+conditional uses of pointers made indeterminate by a deallocation call.
+As at level 2, uses in equality (or inequality) expressions are not
+diagnosed.  For example, the second call to @code{free} in the following
+function is diagnosed at this level:
+@smallexample
+struct A @{ int refcount; void *data; @};
+
+void release (struct A *p)
+@{
+  int refcount = --p->refcount;
+  free (p);
+  if (refcount == 0)
+    free (p->data);   // warning: p may be used after free
+@}
+@end smallexample
+@item -Wuse-after-free=3
+At level 3, the warning also diagnoses uses of indeterminate pointers in
+equality expressions.  All uses of indeterminate pointers are undefined
+but equality tests sometimes appear after calls to @code{realloc} as
+an attempt to determine whether the call resulted in relocating the object
+to a different address.  They are diagnosed at a separate level to aid
+gradually transitioning legacy code to safe alternatives.  For example,
+the equality test in the function below is diagnosed at this level:
+@smallexample
+void adjust_pointers (int**, int);
+
+void grow (int **p, int n)
+@{
+  int **q = (int**)realloc (p, n *= 2);
+  if (q == p)
+    return;
+  adjust_pointers ((int**)q, n);
+@}
+@end smallexample
+To avoid the warning at this level, store offsets into allocated memory
+instead of pointers.  This approach obviates needing to adjust the stored
+pointers after reallocation.
+@end table
+
+@option{-Wuse-after-free=2} is included in @option{-Wall}.
+
+@opindex Wuseless-cast
+@opindex Wno-useless-cast
+@item -Wuseless-cast @r{(C, Objective-C, C++ and Objective-C++ only)}
+Warn when an expression is cast to its own type.  This warning does not
+occur when a class object is converted to a non-reference type as that
+is a way to create a temporary:
+
+@smallexample
+struct S @{ @};
+void g (S&&);
+void f (S&& arg)
+@{
+  g (S(arg)); // make arg prvalue so that it can bind to S&&
+@}
+@end smallexample
+
 @opindex Wuninitialized
 @opindex Wno-uninitialized
 @item -Wuninitialized
@@ -8161,28 +8165,31 @@ safe.  @xref{Common Variable Attributes}.
 
 @opindex Wstrict-flex-arrays
 @opindex Wno-strict-flex-arrays
-@item -Wstrict-flex-arrays
-Warn about inproper usages of flexible array members
+@item -Wstrict-flex-arrays @r{(C and C++ only)}
+Warn about improper usages of flexible array members
 according to the @var{level} of the @code{strict_flex_array (@var{level})}
 attribute attached to the trailing array field of a structure if it's
 available, otherwise according to the @var{level} of the option
-@option{-fstrict-flex-arrays=@var{level}}.
+@option{-fstrict-flex-arrays=@var{level}}.  @xref{Common Variable Attributes},
+for more information about the attribute, and @ref{C Dialect Options} for
+more information about the option.  @code{-Wstrict-flex-arrays}
+is effective only when @var{level} is greater than 0.
 
-This option is effective only when @var{level} is bigger than 0.  Otherwise,
-it will be ignored with a warning.
-
-when @var{level}=1, warnings will be issued for a trailing array reference
+When @var{level}=1, warnings are issued for a trailing array reference
 of a structure that have 2 or more elements if the trailing array is referenced
 as a flexible array member.
 
-when @var{level}=2, in addition to @var{level}=1, additional warnings will be
+When @var{level}=2, in addition to @var{level}=1, additional warnings are
 issued for a trailing one-element array reference of a structure
 if the array is referenced as a flexible array member.
 
-when @var{level}=3, in addition to @var{level}=2, additional warnings will be
+When @var{level}=3, in addition to @var{level}=2, additional warnings are
 issued for a trailing zero-length array reference of a structure
 if the array is referenced as a flexible array member.
 
+This option is more effective when @option{-ftree-vrp} is active (the
+default for @option{-O2} and above) but some warnings may be diagnosed
+even without optimization.
 
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
@@ -9083,13 +9090,12 @@ This warning is enabled by default.
 
 @opindex Wtsan
 @opindex Wno-tsan
-@item -Wtsan
-Warn about unsupported features in ThreadSanitizer.
+@item -Wno-tsan
+
+Disable warnings about unsupported features in ThreadSanitizer.
 
 ThreadSanitizer does not support @code{std::atomic_thread_fence} and
 can report false positives.
-
-This warning is enabled by default.
 
 @opindex Wtype-limits
 @opindex Wno-type-limits
@@ -10427,17 +10433,18 @@ and/or writes to register variables.  This warning is enabled by
 
 @opindex Wxor-used-as-pow
 @opindex Wno-xor-used-as-pow
-@item -Wxor-used-as-pow @r{(C, C++, Objective-C and Objective-C++ only)}
-Warn about uses of @code{^}, the exclusive or operator, where it appears
-the user meant exponentiation.  Specifically, the warning occurs when the
+@item -Wno-xor-used-as-pow @r{(C, C++, Objective-C and Objective-C++ only)}
+Disable warnings about uses of @code{^}, the exclusive or operator,
+where it appears the code meant exponentiation.
+Specifically, the warning occurs when the
 left-hand side is the decimal constant 2 or 10 and the right-hand side
 is also a decimal constant.
 
 In C and C++, @code{^} means exclusive or, whereas in some other languages
 (e.g. TeX and some versions of BASIC) it means exponentiation.
 
-This warning is enabled by default.  It can be silenced by converting one
-of the operands to hexadecimal.
+This warning can be silenced by converting one of the operands to
+hexadecimal as well as by compiling with @option{-Wno-xor-used-as-pow}.
 
 @opindex Wdisabled-optimization
 @opindex Wno-disabled-optimization
@@ -21166,7 +21173,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x1c}, @samp{cortex-x2},
 @samp{cortex-x3}, @samp{cortex-x4}, @samp{cortex-a510}, @samp{cortex-a520},
 @samp{cortex-a710}, @samp{cortex-a715}, @samp{cortex-a720}, @samp{ampere1},
-@samp{ampere1a}, @samp{ampere1b}, and @samp{native}.
+@samp{ampere1a}, @samp{ampere1b}, @samp{cobalt-100} and @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},

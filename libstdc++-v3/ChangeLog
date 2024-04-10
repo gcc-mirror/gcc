@@ -1,3 +1,52 @@
+2024-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113318
+	* acinclude.m4 (GLIBCXX_CONFIGURE): Add c++26 directory.
+	(GLIBCXX_CHECK_TEXT_ENCODING): Define.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_TEXT_ENCODING.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/bits/locale_classes.h (locale::encoding): Declare new
+	member function.
+	* include/bits/unicode.h (__charset_alias_match): New function.
+	* include/bits/text_encoding-data.h: New file.
+	* include/bits/version.def (text_encoding): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/text_encoding: New file.
+	* src/Makefile.am: Add new subdirectory.
+	* src/Makefile.in: Regenerate.
+	* src/c++26/Makefile.am: New file.
+	* src/c++26/Makefile.in: New file.
+	* src/c++26/text_encoding.cc: New file.
+	* src/experimental/Makefile.am: Include c++26 convenience
+	library.
+	* src/experimental/Makefile.in: Regenerate.
+	* python/libstdcxx/v6/printers.py (StdTextEncodingPrinter): New
+	printer.
+	* scripts/gen_text_encoding_data.py: New file.
+	* testsuite/22_locale/locale/encoding.cc: New test.
+	* testsuite/ext/unicode/charset_alias_match.cc: New test.
+	* testsuite/std/text_encoding/cons.cc: New test.
+	* testsuite/std/text_encoding/members.cc: New test.
+	* testsuite/std/text_encoding/requirements.cc: New test.
+
+2024-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Grapheme_cluster_view): Require view.
+	Do not use CTAD for _Utf32_view.
+	(__format_width, __truncate): Do not use CTAD.
+	(enable_borrowed_range<_Utf_view<T, R>>): Define specialization.
+	(enable_borrowed_range<_Grapheme_cluster_view<R>>): Likewise.
+
+2024-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (views::_CartesianProduct::operator()):
+	Adjust identity case as per P2540R1.
+	* testsuite/std/ranges/cartesian_product/1.cc (test01):
+	Adjust expected result of the identity case.
+
 2024-01-15  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/variant (__detail::__variant::_Variadic_union):

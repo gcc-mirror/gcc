@@ -1,7 +1,9 @@
 // P0847R7
 // { dg-do compile { target c++23 } }
 
-// rejection and diagnosis of an xobj parameter declared with a default argument
+// rejection and diagnosis of an incorrectly declared xobj parameter
+
+// default argument
 
 struct S {
   void f0(this S = {}) {} // { dg-error "an explicit object parameter may not have a default argument" }
@@ -17,4 +19,106 @@ void S::f2(this S = {}) {} // { dg-error "an explicit object parameter may not h
 
 void S::f11(this S s) {}
 void S::f12(this S s = {}) {} // { dg-error "an explicit object parameter may not have a default argument" }
+
+// parameter pack
+
+struct S0 {
+  template<typename Selves>
+  void f(this Selves...) {} // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void g(this Selves... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void h(this auto...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void j(this auto... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void fd(this Selves...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void gd(this Selves... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void hd(this auto...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void jd(this auto... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+};
+
+struct S1 {
+  template<typename Selves>
+  void f(this Selves&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void g(this Selves&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void h(this auto&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void j(this auto&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void fd(this Selves&...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void gd(this Selves&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void hd(this auto&...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void jd(this auto&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+};
+
+struct S2 {
+  template<typename Selves>
+  void f(this Selves&&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void g(this Selves&&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void h(this auto&&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void j(this auto&&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void fd(this Selves&&...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void gd(this Selves&&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void hd(this auto&&...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void jd(this auto&&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+};
+
+struct S3 {
+  template<typename Selves>
+  void f(this Selves const&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void g(this Selves const&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void h(this auto const&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void j(this auto const&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void fd(this Selves const&...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void gd(this Selves const&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void hd(this auto const&...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void jd(this auto const&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+};
+
+struct S4 {
+  template<typename Selves>
+  void f(this Selves const&&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void g(this Selves const&&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void h(this auto const&&...) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void j(this auto const&&... selves) {}  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void fd(this Selves const&&...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  template<typename Selves>
+  void gd(this Selves const&&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+
+  void hd(this auto const&&...);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+  void jd(this auto const&&... selves);  // { dg-error "an explicit object parameter cannot be a function parameter pack" }
+};
 

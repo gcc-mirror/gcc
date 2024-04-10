@@ -1752,6 +1752,16 @@ ftms = {
 };
 
 ftms = {
+  name = text_encoding;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+    extra_cond = "_GLIBCXX_USE_NL_LANGINFO_L";
+  };
+};
+
+ftms = {
   name = to_string;
   values = {
     v = 202306;
