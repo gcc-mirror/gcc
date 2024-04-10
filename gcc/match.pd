@@ -5895,7 +5895,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* !A ? B : C -> A ? C : B.  */
  (simplify
   (cnd (logical_inverted_value truth_valued_p@0) @1 @2)
-  (cnd @0 @2 @1)))
+  /* For CONDs, don't handle signed values here. */
+  (if (cnd == VEC_COND_EXPR
+       || TYPE_UNSIGNED (TREE_TYPE (@0)))
+   (cnd @0 @2 @1))))
 
 /* abs/negative simplifications moved from fold_cond_expr_with_comparison.
 
@@ -7095,6 +7098,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (cond @0 @1 @2)
  (with { bool wascmp; }
   (if (INTEGRAL_TYPE_P (type)
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
        && bitwise_inverted_equal_p (@1, @2, wascmp)
        && (!wascmp || TYPE_PRECISION (type) == 1))
    (if ((!TYPE_UNSIGNED (type) && TREE_CODE (type) == BOOLEAN_TYPE)
