@@ -3,6 +3,10 @@
 /* Define to 1 if you have the <alloca.h> header file. */
 #undef HAVE_ALLOCA_H
 
+/* Define to 1 if you have the declaration of `gets', and to 0 if you don't.
+   */
+#undef HAVE_DECL_GETS
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 

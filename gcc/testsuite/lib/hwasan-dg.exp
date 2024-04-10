@@ -100,8 +100,8 @@ proc hwasan_include_flags {} {
 # (implementation in asan-dg.exp)
 #
 
-proc hwasan_link_flags { paths } {
-    return [asan_link_flags_1 $paths hwasan]
+proc hwasan_link_flags { paths needs_cxx } {
+    return [asan_link_flags_1 $paths hwasan $needs_cxx]
 }
 
 #
@@ -114,6 +114,7 @@ proc hwasan_init { args } {
     global TOOL_OPTIONS
     global hwasan_saved_TEST_ALWAYS_FLAGS
     global hwasan_saved_ALWAYS_CXXFLAGS
+    set needs_cxx [lindex $args 0]
 
     setenv HWASAN_OPTIONS "random_tags=0"
 
@@ -126,9 +127,9 @@ proc hwasan_init { args } {
     set link_flags ""
     if ![is_remote host] {
 	if [info exists TOOL_OPTIONS] {
-	    set link_flags "[hwasan_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	    set link_flags "[hwasan_link_flags [get_multilibs ${TOOL_OPTIONS}] $needs_cxx]"
 	} else {
-	    set link_flags "[hwasan_link_flags [get_multilibs]]"
+	    set link_flags "[hwasan_link_flags [get_multilibs] $needs_cxx]"
 	}
     }
 

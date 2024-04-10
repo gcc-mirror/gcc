@@ -5053,7 +5053,8 @@ if (isInputRange!Range)
             _input = input;
             _sentinel = sentinel;
             _openRight = openRight;
-            static if (isInputRange!Sentinel)
+            static if (isInputRange!Sentinel
+                && is(immutable ElementEncodingType!Sentinel == immutable ElementEncodingType!Range))
             {
                 _matchStarted = predSatisfied();
                 _done = _input.empty || _sentinel.empty || openRight && _matchStarted;
@@ -5120,7 +5121,8 @@ if (isInputRange!Range)
         assert(!empty, "Can not popFront of an empty Until");
         if (!_openRight)
         {
-            static if (isInputRange!Sentinel)
+            static if (isInputRange!Sentinel
+                && is(immutable ElementEncodingType!Sentinel == immutable ElementEncodingType!Range))
             {
                 _input.popFront();
                 _done = _input.empty || _sentinel.empty;
@@ -5237,6 +5239,7 @@ pure @safe unittest
         assert(equal(r.save, "foo"));
     }
 }
+
 // https://issues.dlang.org/show_bug.cgi?id=14543
 pure @safe unittest
 {
@@ -5267,3 +5270,10 @@ pure @safe unittest
     assert("one two three".until!((a,b)=>a.toUpper == b)("TWO", No.openRight).equal("one two"));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=24342
+pure @safe unittest
+{
+    import std.algorithm.comparison : equal;
+    assert(["A", "BC", "D"].until("BC", No.openRight).equal(["A", "BC"]));
+    assert([[1], [2, 3], [4]].until([2, 3], No.openRight).equal([[1], [2, 3]]));
+}

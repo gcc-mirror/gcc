@@ -4275,6 +4275,10 @@ require non-@code{VOIDmode} immediate operands).
 128-bit integer constant where both the high and low 64-bit word
 satisfy the @code{e} constraint.
 
+@item Ws
+A symbolic reference or label reference.
+You can use the @code{%p} modifier to print the raw symbol.
+
 @item Z
 32-bit unsigned integer constant, or a symbolic reference known
 to fit that range (for immediate operands in zero-extending x86-64

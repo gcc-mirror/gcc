@@ -1,3 +1,9 @@
+2024-02-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.c++/loop-3.C: Set num_threads to 50
+	on 32-bit hppa.
+	* testsuite/libgomp.c/omp-loop03.c: Likewise.
+
 2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.c/declare-variant-4.h: Use gfx1100/gfx1030

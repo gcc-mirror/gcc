@@ -1,7 +1,7 @@
 /**
  * The base class for a D symbol, which can be a module, variable, function, enum, etc.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dsymbol.d, _dsymbol.d)
@@ -203,20 +203,21 @@ enum PASS : ubyte
 }
 
 // Search options
-enum : int
+alias SearchOptFlags = uint;
+enum SearchOpt : SearchOptFlags
 {
-    IgnoreNone              = 0x00, // default
-    IgnorePrivateImports    = 0x01, // don't search private imports
-    IgnoreErrors            = 0x02, // don't give error messages
-    IgnoreAmbiguous         = 0x04, // return NULL if ambiguous
-    SearchLocalsOnly        = 0x08, // only look at locals (don't search imports)
-    SearchImportsOnly       = 0x10, // only look in imports
-    SearchUnqualifiedModule = 0x20, // the module scope search is unqualified,
+    all                     = 0x00, // search for all symbols
+    ignorePrivateImports    = 0x01, // don't search private imports
+    ignoreErrors            = 0x02, // don't give error messages
+    ignoreAmbiguous         = 0x04, // return NULL if ambiguous
+    localsOnly              = 0x08, // only look at locals (don't search imports)
+    importsOnly             = 0x10, // only look in imports
+    unqualifiedModule       = 0x20, // the module scope search is unqualified,
                                     // meaning don't search imports in that scope,
                                     // because qualified module searches search
                                     // their imports
-    IgnoreSymbolVisibility  = 0x80, // also find private and package protected symbols
-    TagNameSpace            = 0x100, // search ImportC tag symbol table
+    tagNameSpace            = 0x40, // search ImportC tag symbol table
+    ignoreVisibility        = 0x80, // also find private and package protected symbols
 }
 
 /***********************************************************
@@ -712,10 +713,6 @@ extern (C++) class Dsymbol : ASTNode
         return toAlias();
     }
 
-    void importAll(Scope* sc)
-    {
-    }
-
     bool overloadInsert(Dsymbol s)
     {
         //printf("Dsymbol::overloadInsert('%s')\n", s.toChars());
@@ -848,27 +845,27 @@ extern (C++) class Dsymbol : ASTNode
     /**************************************
      * Determine if this symbol is only one.
      * Returns:
-     *      false, *ps = NULL: There are 2 or more symbols
-     *      true,  *ps = NULL: There are zero symbols
-     *      true,  *ps = symbol: The one and only one symbol
+     *      false, ps = null: There are 2 or more symbols
+     *      true,  ps = null: There are zero symbols
+     *      true,  ps = symbol: The one and only one symbol
      */
-    bool oneMember(Dsymbol* ps, Identifier ident)
+    bool oneMember(out Dsymbol ps, Identifier ident)
     {
         //printf("Dsymbol::oneMember()\n");
-        *ps = this;
+        ps = this;
         return true;
     }
 
     /*****************************************
      * Same as Dsymbol::oneMember(), but look at an array of Dsymbols.
      */
-    extern (D) static bool oneMembers(Dsymbols* members, Dsymbol* ps, Identifier ident)
+    extern (D) static bool oneMembers(Dsymbols* members, out Dsymbol ps, Identifier ident)
     {
         //printf("Dsymbol::oneMembers() %d\n", members ? members.length : 0);
         Dsymbol s = null;
         if (!members)
         {
-            *ps = null;
+            ps = null;
             return true;
         }
 
@@ -880,21 +877,21 @@ extern (C++) class Dsymbol : ASTNode
             if (!x)
             {
                 //printf("\tfalse 1\n");
-                assert(*ps is null);
+                assert(ps is null);
                 return false;
             }
-            if (*ps)
+            if (ps)
             {
                 assert(ident);
-                if (!(*ps).ident || !(*ps).ident.equals(ident))
+                if (!ps.ident || !ps.ident.equals(ident))
                     continue;
                 if (!s)
-                    s = *ps;
-                else if (s.isOverloadable() && (*ps).isOverloadable())
+                    s = ps;
+                else if (s.isOverloadable() && ps.isOverloadable())
                 {
                     // keep head of overload set
                     FuncDeclaration f1 = s.isFuncDeclaration();
-                    FuncDeclaration f2 = (*ps).isFuncDeclaration();
+                    FuncDeclaration f2 = ps.isFuncDeclaration();
                     if (f1 && f2)
                     {
                         assert(!f1.isFuncAliasDeclaration());
@@ -911,19 +908,15 @@ extern (C++) class Dsymbol : ASTNode
                 }
                 else // more than one symbol
                 {
-                    *ps = null;
+                    ps = null;
                     //printf("\tfalse 2\n");
                     return false;
                 }
             }
         }
-        *ps = s; // s is the one symbol, null if none
+        ps = s; // s is the one symbol, null if none
         //printf("\ttrue\n");
         return true;
-    }
-
-    void setFieldOffset(AggregateDeclaration ad, ref FieldState fieldState, bool isunion)
-    {
     }
 
     /*****************************************
@@ -1263,7 +1256,7 @@ public:
         (*pary)[p.tag] = true;
     }
 
-    bool isPackageAccessible(Package p, Visibility visibility, int flags = 0) nothrow
+    bool isPackageAccessible(Package p, Visibility visibility, SearchOptFlags flags = SearchOpt.all) nothrow
     {
         if (p.tag < accessiblePackages.length && accessiblePackages[p.tag] ||
             visibility.kind == Visibility.Kind.private_ && p.tag < privateAccessiblePackages.length && privateAccessiblePackages[p.tag])
@@ -1272,7 +1265,7 @@ public:
         {
             // only search visible scopes && imported modules should ignore private imports
             if (visibility.kind <= visibilities[i] &&
-                ss.isScopeDsymbol.isPackageAccessible(p, visibility, IgnorePrivateImports))
+                ss.isScopeDsymbol.isPackageAccessible(p, visibility, SearchOpt.ignorePrivateImports))
                 return true;
         }
         return false;
@@ -1369,48 +1362,6 @@ public:
             }
         }
         return false;
-    }
-
-    extern (D) alias ForeachDg = int delegate(size_t idx, Dsymbol s);
-
-    /***************************************
-     * Expands attribute declarations in members in depth first
-     * order. Calls dg(size_t symidx, Dsymbol *sym) for each
-     * member.
-     * If dg returns !=0, stops and returns that value else returns 0.
-     * Use this function to avoid the O(N + N^2/2) complexity of
-     * calculating dim and calling N times getNth.
-     * Returns:
-     *  last value returned by dg()
-     */
-    extern (D) static int _foreach(Scope* sc, Dsymbols* members, scope ForeachDg dg, size_t* pn = null)
-    {
-        assert(dg);
-        if (!members)
-            return 0;
-        size_t n = pn ? *pn : 0; // take over index
-        int result = 0;
-        foreach (size_t i; 0 .. members.length)
-        {
-            Dsymbol s = (*members)[i];
-            if (AttribDeclaration a = s.isAttribDeclaration())
-                result = _foreach(sc, a.include(sc), dg, &n);
-            else if (TemplateMixin tm = s.isTemplateMixin())
-                result = _foreach(sc, tm.members, dg, &n);
-            else if (s.isTemplateInstance())
-            {
-            }
-            else if (s.isUnitTestDeclaration())
-            {
-            }
-            else
-                result = dg(n++, s);
-            if (result)
-                break;
-        }
-        if (pn)
-            *pn = n; // update index
-        return result;
     }
 
     override final inout(ScopeDsymbol) isScopeDsymbol() inout

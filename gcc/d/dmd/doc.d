@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/ddoc.html, Documentation Generator)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/doc.d, _doc.d)
@@ -748,7 +748,8 @@ void emitAnchor(ref OutBuffer buf, Dsymbol s, Scope* sc, bool forHeader = false)
                 auto a = imp.aliases[i];
                 auto id = a ? a : imp.names[i];
                 auto loc = Loc.init;
-                if (auto symFromId = sc.search(loc, id, null))
+                Dsymbol pscopesym;
+                if (auto symFromId = sc.search(loc, id, pscopesym))
                 {
                     emitAnchor(buf, symFromId, sc, forHeader);
                 }
@@ -1295,7 +1296,7 @@ void toDocBuffer(Dsymbol s, ref OutBuffer buf, Scope* sc)
                 Type origType = d.originalType ? d.originalType : d.type;
                 if (origType.ty == Tfunction)
                 {
-                    functionToBufferFull(cast(TypeFunction)origType, *buf, d.ident, &hgs, td);
+                    functionToBufferFull(cast(TypeFunction)origType, *buf, d.ident, hgs, td);
                 }
                 else
                     toCBuffer(origType, *buf, d.ident, hgs);
@@ -1354,6 +1355,7 @@ void toDocBuffer(Dsymbol s, ref OutBuffer buf, Scope* sc)
             {
                 if (type.ty == Tclass || type.ty == Tstruct || type.ty == Tenum)
                 {
+                    import dmd.typesem : toDsymbol;
                     if (Dsymbol s = type.toDsymbol(null)) // elaborate type
                         prettyPrintDsymbol(s, ad.parent);
                     else
@@ -3636,11 +3638,12 @@ struct MarkdownLinkReferences
         if (id)
         {
             auto loc = Loc();
-            auto symbol = _scope.search(loc, id, null, IgnoreErrors);
+            Dsymbol pscopesym;
+            auto symbol = _scope.search(loc, id, pscopesym, SearchOpt.ignoreErrors);
             for (size_t i = 1; symbol && i < ids.length; ++i)
             {
                 id = Identifier.lookup(ids[i].ptr, ids[i].length);
-                symbol = id !is null ? symbol.search(loc, id, IgnoreErrors) : null;
+                symbol = id !is null ? symbol.search(loc, id, SearchOpt.ignoreErrors) : null;
             }
             if (symbol)
                 link = MarkdownLink(createHref(symbol), null, name, symbol);
@@ -4997,7 +5000,8 @@ void highlightCode(Scope* sc, Dsymbol s, ref OutBuffer buf, size_t offset)
             auto a = imp.aliases[i];
             auto id = a ? a : imp.names[i];
             auto loc = Loc.init;
-            if (auto symFromId = sc.search(loc, id, null))
+            Dsymbol pscopesym;
+            if (auto symFromId = sc.search(loc, id, pscopesym))
             {
                 highlightCode(sc, symFromId, buf, offset);
             }
@@ -5200,6 +5204,7 @@ void highlightCode2(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t offset)
             highlight = "$(D_COMMENT ";
             break;
         case TOK.string_:
+        case TOK.interpolated:
             highlight = "$(D_STRING ";
             break;
         default:
@@ -5212,7 +5217,7 @@ void highlightCode2(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t offset)
             res.writestring(highlight);
             size_t o = res.length;
             highlightCode3(sc, res, tok.ptr, lex.p);
-            if (tok.value == TOK.comment || tok.value == TOK.string_)
+            if (tok.value == TOK.comment || tok.value == TOK.string_ || tok.value == TOK.interpolated)
                 /* https://issues.dlang.org/show_bug.cgi?id=7656
                  * https://issues.dlang.org/show_bug.cgi?id=7715
                  * https://issues.dlang.org/show_bug.cgi?id=10519

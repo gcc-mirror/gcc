@@ -204,6 +204,22 @@ binop_assignment (tree_code code, Expression *e1, Expression *e2)
   return compound_expr (lexpr, expr);
 }
 
+/* Compile the function literal body.  */
+
+static void
+build_lambda_tree (FuncLiteralDeclaration *fld, Type *type = NULL)
+{
+  /* This check is for lambda's, remove `vthis' as function isn't nested.  */
+  if (fld->tok == TOK::reserved && (type == NULL || type->ty == TY::Tpointer))
+    {
+      fld->tok = TOK::function_;
+      fld->vthis = NULL;
+    }
+
+  /* Compile the function literal body.  */
+  build_decl_tree (fld);
+}
+
 /* Implements the visitor interface to build the GCC trees of all Expression
    AST classes emitted from the D Front-end.
    All visit methods accept one parameter E, which holds the frontend AST
@@ -1162,7 +1178,7 @@ public:
 	  {
 	    libcall = LIBCALL_AAGETY;
 	    ptr = build_address (build_expr (e->e1));
-	    tinfo = build_typeinfo (e, tb1->unSharedOf ()->mutableOf ());
+	    tinfo = build_typeinfo (e, mutableOf (unSharedOf (tb1)));
 	  }
 	else
 	  {
@@ -2012,17 +2028,8 @@ public:
 
   void visit (FuncExp *e) final override
   {
-    Type *ftype = e->type->toBasetype ();
-
-    /* This check is for lambda's, remove `vthis' as function isn't nested.  */
-    if (e->fd->tok == TOK::reserved && ftype->ty == TY::Tpointer)
-      {
-	e->fd->tok = TOK::function_;
-	e->fd->vthis = NULL;
-      }
-
-    /* Compile the function literal body.  */
-    build_decl_tree (e->fd);
+    /* Compile the declaration.  */
+    build_lambda_tree (e->fd, e->type->toBasetype ());
 
     /* If nested, this will be a trampoline.  */
     if (e->fd->isNested ())
@@ -2071,6 +2078,10 @@ public:
     if (e->var->isFuncDeclaration ())
       result = maybe_reject_intrinsic (result);
 
+    /* Emit lambdas, same as is done in FuncExp.  */
+    if (FuncLiteralDeclaration *fld = e->var->isFuncLiteralDeclaration ())
+      build_lambda_tree (fld);
+
     if (declaration_reference_p (e->var))
       gcc_assert (POINTER_TYPE_P (TREE_TYPE (result)));
     else
@@ -2105,19 +2116,9 @@ public:
 	return;
       }
 
-    /* This check is same as is done in FuncExp for lambdas.  */
-    FuncLiteralDeclaration *fld = e->var->isFuncLiteralDeclaration ();
-    if (fld != NULL)
-      {
-	if (fld->tok == TOK::reserved)
-	  {
-	    fld->tok = TOK::function_;
-	    fld->vthis = NULL;
-	  }
-
-	/* Compiler the function literal body.  */
-	build_decl_tree (fld);
-      }
+    /* Emit lambdas, same as is done in FuncExp.  */
+    if (FuncLiteralDeclaration *fld = e->var->isFuncLiteralDeclaration ())
+      build_lambda_tree (fld);
 
     if (this->constp_)
       {
@@ -2169,7 +2170,7 @@ public:
 	      {
 		/* Generate a slice for non-zero initialized aggregates,
 		   otherwise create an empty array.  */
-		gcc_assert (e->type == Type::tvoid->arrayOf ()->constOf ());
+		gcc_assert (e->type == constOf (Type::tvoid->arrayOf ()));
 
 		tree type = build_ctype (e->type);
 		tree length = size_int (sd->dsym->structsize);
@@ -2494,17 +2495,18 @@ public:
 
 	for (size_t i = 0; i < e->len; i++)
 	  {
-	    tree value = build_integer_cst (e->getCodeUnit (i), etype);
+	    tree value = build_integer_cst (e->getIndex (i), etype);
 	    CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
 	  }
 
 	tree ctor = build_constructor (type, elms);
 	TREE_CONSTANT (ctor) = 1;
 	this->result_ = ctor;
+	return;
       }
     else
       {
-	/* Copy the string contents to a null terminated string.  */
+	/* Copy the string contents to a null terminated STRING_CST.  */
 	dinteger_t length = (e->len * e->sz);
 	char *string = XALLOCAVEC (char, length + e->sz);
 	memset (string, 0, length + e->sz);
@@ -2513,7 +2515,18 @@ public:
 
 	/* String value and type includes the null terminator.  */
 	tree value = build_string (length + e->sz, string);
-	TREE_TYPE (value) = make_array_type (tb->nextOf (), length + 1);
+	if (e->sz <= 4)
+	  TREE_TYPE (value) = make_array_type (tb->nextOf (), length + 1);
+	else
+	  {
+	    /* Hexadecimal literal strings with an 8-byte character type are
+	       just an alternative way to store an array of `ulong'.
+	       Treat it as if it were a `uint[]' array instead.  */
+	    dinteger_t resize = e->sz / 4;
+	    TREE_TYPE (value) = make_array_type (Type::tuns32,
+						 (length * resize) + resize);
+	  }
+
 	value = build_address (value);
 
 	if (tb->ty == TY::Tarray)
@@ -2696,17 +2709,16 @@ public:
 
   void visit (AssocArrayLiteralExp *e) final override
   {
-    if (e->lowering != NULL)
+    if (this->constp_ && e->lowering != NULL)
       {
 	/* When an associative array literal gets lowered, it's converted into a
 	   struct literal suitable for static initialization.  */
-	gcc_assert (this->constp_);
 	this->result_ = build_expr (e->lowering, this->constp_, true);
 	return ;
       }
 
     /* Want the mutable type for typeinfo reference.  */
-    Type *tb = e->type->toBasetype ()->mutableOf ();
+    Type *tb = mutableOf (e->type->toBasetype ());
 
     /* Handle empty assoc array literals.  */
     TypeAArray *ta = tb->isTypeAArray ();

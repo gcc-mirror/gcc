@@ -196,20 +196,21 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/parseoptions.d core/internal/postblit.d \
 	core/internal/qsort.d core/internal/spinlock.d core/internal/string.d \
 	core/internal/switch_.d core/internal/traits.d core/internal/utf.d \
-	core/internal/util/array.d core/internal/util/math.d core/lifetime.d \
-	core/math.d core/memory.d core/runtime.d core/simd.d \
-	core/stdc/assert_.d core/stdc/complex.d core/stdc/config.d \
-	core/stdc/ctype.d core/stdc/errno.d core/stdc/fenv.d \
-	core/stdc/float_.d core/stdc/inttypes.d core/stdc/limits.d \
-	core/stdc/locale.d core/stdc/math.d core/stdc/signal.d \
-	core/stdc/stdarg.d core/stdc/stddef.d core/stdc/stdint.d \
-	core/stdc/stdio.d core/stdc/stdlib.d core/stdc/string.d \
-	core/stdc/tgmath.d core/stdc/time.d core/stdc/wchar_.d \
-	core/stdc/wctype.d core/sync/barrier.d core/sync/condition.d \
-	core/sync/config.d core/sync/event.d core/sync/exception.d \
-	core/sync/mutex.d core/sync/package.d core/sync/rwmutex.d \
-	core/sync/semaphore.d core/thread/context.d core/thread/fiber.d \
-	core/thread/osthread.d core/thread/package.d core/thread/threadbase.d \
+	core/internal/util/array.d core/internal/util/math.d \
+	core/interpolation.d core/lifetime.d core/math.d core/memory.d \
+	core/runtime.d core/simd.d core/stdc/assert_.d core/stdc/complex.d \
+	core/stdc/config.d core/stdc/ctype.d core/stdc/errno.d \
+	core/stdc/fenv.d core/stdc/float_.d core/stdc/inttypes.d \
+	core/stdc/limits.d core/stdc/locale.d core/stdc/math.d \
+	core/stdc/signal.d core/stdc/stdarg.d core/stdc/stdatomic.d \
+	core/stdc/stddef.d core/stdc/stdint.d core/stdc/stdio.d \
+	core/stdc/stdlib.d core/stdc/string.d core/stdc/tgmath.d \
+	core/stdc/time.d core/stdc/wchar_.d core/stdc/wctype.d \
+	core/sync/barrier.d core/sync/condition.d core/sync/config.d \
+	core/sync/event.d core/sync/exception.d core/sync/mutex.d \
+	core/sync/package.d core/sync/rwmutex.d core/sync/semaphore.d \
+	core/thread/context.d core/thread/fiber.d core/thread/osthread.d \
+	core/thread/package.d core/thread/threadbase.d \
 	core/thread/threadgroup.d core/thread/types.d core/time.d \
 	core/vararg.d core/volatile.d etc/valgrind/valgrind.d gcc/attribute.d \
 	gcc/attributes.d gcc/backtrace.d gcc/builtins.d gcc/deh.d gcc/emutls.d \

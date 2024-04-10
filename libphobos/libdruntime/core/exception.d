@@ -697,17 +697,17 @@ else
      * Throws:
      *  $(LREF OutOfMemoryError).
      */
-    extern (C) noreturn onOutOfMemoryError(void* pretend_sideffect = null) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
+    extern (C) noreturn onOutOfMemoryError(void* pretend_sideffect = null, string file = __FILE__, size_t line = __LINE__) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
     {
         // NOTE: Since an out of memory condition exists, no allocation must occur
         //       while generating this object.
-        throw staticError!OutOfMemoryError();
+        throw staticError!OutOfMemoryError(file, line);
     }
 
-    extern (C) noreturn onOutOfMemoryErrorNoGC() @trusted nothrow @nogc
+    extern (C) noreturn onOutOfMemoryErrorNoGC(string file = __FILE__, size_t line = __LINE__) @trusted nothrow @nogc
     {
         // suppress stacktrace until they are @nogc
-        throw staticError!OutOfMemoryError(false);
+        throw staticError!OutOfMemoryError(false, file, line);
     }
 }
 
@@ -718,11 +718,11 @@ else
  * Throws:
  *  $(LREF InvalidMemoryOperationError).
  */
-extern (C) noreturn onInvalidMemoryOperationError(void* pretend_sideffect = null) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
+extern (C) noreturn onInvalidMemoryOperationError(void* pretend_sideffect = null, string file = __FILE__, size_t line = __LINE__) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
 {
     // The same restriction applies as for onOutOfMemoryError. The GC is in an
     // undefined state, thus no allocation must occur while generating this object.
-    throw staticError!InvalidMemoryOperationError();
+    throw staticError!InvalidMemoryOperationError(file, line);
 }
 
 

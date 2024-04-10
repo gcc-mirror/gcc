@@ -3204,7 +3204,9 @@ the language standard, so @option{-fconcepts} defaults to on.
 Some constructs that were allowed by the earlier C++ Extensions for
 Concepts Technical Specification, ISO 19217 (2015), but didn't make it
 into the standard, can additionally be enabled by
-@option{-fconcepts-ts}.
+@option{-fconcepts-ts}.  The option @option{-fconcepts-ts} was deprecated
+in GCC 14 and may be removed in GCC 15; users are expected to convert
+their code to C++20 concepts.
 
 @opindex fconstexpr-depth
 @item -fconstexpr-depth=@var{n}
@@ -3915,6 +3917,20 @@ auto p = std::minmax(1, 2);
 where @code{std::minmax} returns @code{std::pair<const int&, const int&>}, and
 both references dangle after the end of the full expression that contains
 the call to @code{std::minmax}.
+
+The warning does not warn for @code{std::span}-like classes.  We consider
+classes of the form:
+
+@smallexample
+template<typename T>
+struct Span @{
+  T* data_;
+  std::size len_;
+@};
+@end smallexample
+
+as @code{std::span}-like; that is, the class is a non-union class
+that has a pointer data member and a trivial destructor.
 
 This warning is enabled by @option{-Wall}.
 
@@ -30246,6 +30262,14 @@ Supported extension are listed below:
 @tab 1.0
 @tab Integer conditional operations extension.
 
+@item za64rs
+@tab 1.0
+@tab Reservation set size of 64 bytes.
+
+@item za128rs
+@tab 1.0
+@tab Reservation set size of 128 bytes.
+
 @item zawrs
 @tab 1.0
 @tab Wait-on-reservation-set extension.
@@ -30353,6 +30377,26 @@ Supported extension are listed below:
 @item zicbop
 @tab 1.0
 @tab Cache-block prefetch extension.
+
+@item zic64b
+@tab 1.0
+@tab Cache block size isf 64 bytes.
+
+@item ziccamoa
+@tab 1.0
+@tab Main memory supports all atomics in A.
+
+@item ziccif
+@tab 1.0
+@tab Main memory supports instruction fetch with atomicity requirement.
+
+@item zicclsm
+@tab 1.0
+@tab Main memory supports misaligned loads/stores.
+
+@item ziccrse
+@tab 1.0
+@tab Main memory supports forward progress on LR/SC sequences.
 
 @item zicntr
 @tab 2.0
@@ -30663,14 +30707,16 @@ by particular CPU name.
 Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
 @samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34}, @samp{sifive-e76},
 @samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54}, @samp{sifive-s76},
-@samp{sifive-u54}, @samp{sifive-u74}, and @samp{sifive-x280}.
+@samp{sifive-u54}, @samp{sifive-u74}, @samp{sifive-x280}, @samp{sifive-xp450},
+@samp{sifive-x670}.
 
 @opindex mtune
 @item -mtune=@var{processor-string}
 Optimize the output for the given processor, specified by microarchitecture or
 particular CPU name.  Permissible values for this option are: @samp{rocket},
 @samp{sifive-3-series}, @samp{sifive-5-series}, @samp{sifive-7-series},
-@samp{thead-c906}, @samp{size}, and all valid options for @option{-mcpu=}.
+@samp{thead-c906}, @samp{size}, @samp{sifive-p400-series},
+@samp{sifive-p600-series}, and all valid options for @option{-mcpu=}.
 
 When @option{-mtune=} is not specified, use the setting from @option{-mcpu},
 the default is @samp{rocket} if both are not specified.

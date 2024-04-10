@@ -2688,6 +2688,35 @@ may reduce the size of debug information on some ports.
 
 @hook TARGET_HAVE_STRUB_SUPPORT_FOR
 
+@defmac STACK_ADDRESS_OFFSET
+Offset from the stack pointer register to the boundary address between
+the stack area claimed by an active function, and stack ranges that
+could get clobbered if it called another function.  It should NOT
+encompass any stack red zone, that is used in leaf functions.
+
+This value is added to the stack pointer register to compute the address
+returned by @code{__builtin_stack_address}, and this is its only use.
+If this macro is not defined, no offset is added.  Defining it like
+@code{STACK_POINTER_OFFSET} may be appropriate for many machines, but
+not all.
+
+On SPARC, for example, the register save area is *not* considered active
+or used by the active function, but rather as akin to the area in which
+call-preserved registers are saved by callees, so the stack address is
+above that area, even though the (unbiased) stack pointer points below
+it.  This enables @code{__strub_leave} to clear what would otherwise
+overlap with its own register save area.
+
+On PowerPC, @code{STACK_POINTER_OFFSET} also reserves space for a save
+area, but that area is used by the caller rather than the callee, so the
+boundary address is below it.
+
+If the address is computed too high or too low, parts of a stack range
+that should be scrubbed may be left unscrubbed, scrubbing may corrupt
+active portions of the stack frame, and stack ranges may be
+doubly-scrubbed by caller and callee.
+@end defmac
+
 @defmac TARGET_STRUB_USE_DYNAMIC_ARRAY
 If defined to nonzero, @code{__strub_leave} will allocate a dynamic
 array covering the stack range that needs scrubbing before clearing it.

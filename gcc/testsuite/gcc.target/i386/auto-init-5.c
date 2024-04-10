@@ -1,6 +1,6 @@
 /* Verify zero initialization for complex type automatic variables.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=zero" } */
+/* { dg-options "-ftrivial-auto-var-init=zero -fno-asynchronous-unwind-tables" } */
 
 
 _Complex long double result;

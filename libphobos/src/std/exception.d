@@ -1632,6 +1632,9 @@ class ErrnoException : Exception
     /// Operating system error code.
     final @property uint errno() nothrow pure scope @nogc @safe { return _errno; }
     private uint _errno;
+    /// Localized error message generated through $(REF strerror_r, core,stdc,string) or $(REF strerror, core,stdc,string).
+    final @property string errnoMsg() nothrow pure scope @nogc @safe { return _errnoMsg; }
+    private string _errnoMsg;
     /// Constructor which takes an error message. The current global $(REF errno, core,stdc,errno) value is used as error code.
     this(string msg, string file = null, size_t line = 0) @safe
     {
@@ -1642,7 +1645,8 @@ class ErrnoException : Exception
     this(string msg, int errno, string file = null, size_t line = 0) @safe
     {
         _errno = errno;
-        super(msg ~ " (" ~ errnoString(errno) ~ ")", file, line);
+        _errnoMsg = errnoString(errno);
+        super(msg ~ " (" ~ errnoMsg ~ ")", file, line);
     }
 }
 

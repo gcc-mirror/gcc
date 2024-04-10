@@ -1,7 +1,7 @@
 /**
  * Semantic analysis for cast-expressions.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dcast.d, _dcast.d)
@@ -24,11 +24,13 @@ import dmd.dinterpret;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
+import dmd.dsymbolsem;
 import dmd.errors;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.location;
@@ -719,11 +721,6 @@ extern(C++) MATCH implicitConvTo(Expression e, Type t)
                     return m;
                 case Tint8:
                 case Tuns8:
-                    if (e.hexString)
-                    {
-                        m = MATCH.convert;
-                        return m;
-                    }
                     break;
                 case Tenum:
                     if (tn.isTypeEnum().sym.isSpecial())
@@ -736,6 +733,14 @@ extern(C++) MATCH implicitConvTo(Expression e, Type t)
                     break;
                 default:
                     break;
+                }
+            }
+            if (e.hexString)
+            {
+                if (tn.isintegral && tn.size == e.sz)
+                {
+                    m = MATCH.convert;
+                    return m;
                 }
             }
             break;
@@ -2184,7 +2189,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 
         if (auto f = isFuncAddress(e))
         {
-            if (f.checkForwardRef(e.loc))
+            if (checkForwardRef(f, e.loc))
             {
                 return ErrorExp.get();
             }
@@ -2440,7 +2445,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 
         if (auto f = isFuncAddress(e))
         {
-            if (f.checkForwardRef(e.loc))
+            if (checkForwardRef(f, e.loc))
             {
                 return ErrorExp.get();
             }
@@ -2495,7 +2500,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 
         if (auto f = isFuncAddress(e))
         {
-            if (f.checkForwardRef(e.loc))
+            if (checkForwardRef(f, e.loc))
             {
                 return ErrorExp.get();
             }

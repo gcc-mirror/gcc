@@ -3251,7 +3251,7 @@ struct GTY(()) lang_decl {
 #define DECL_CONV_FN_TYPE(FN) \
   TREE_TYPE ((gcc_checking_assert (DECL_CONV_FN_P (FN)), DECL_NAME (FN)))
 
-/* Nonzero if NODE, a static data member, was declared in its class as an
+/* Nonzero if NODE, a templated variable, was declared as an
    array of unknown bound.  */
 #define VAR_HAD_UNKNOWN_BOUND(NODE)			\
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))		\

@@ -32,7 +32,7 @@ test01()
 }
 
 static_assert(test01()); // { dg-error "non-constant condition" }
-// { dg-error "builtin_unreachable" "" { target *-*-* } 0 }
+// { dg-error "_Error_formatter::_M_error()" "" { target *-*-* } 0 }
 
 constexpr bool
 test02()

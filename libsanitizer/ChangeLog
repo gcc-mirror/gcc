@@ -1,3 +1,10 @@
+2024-02-06  chenguoqi  <chenguoqi@loongson.cn>
+
+	* configure.tgt: Enable tsan and lsan for loongarch64.
+	* tsan/Makefile.am (EXTRA_libtsan_la_SOURCES): Add
+	tsan_rtl_loongarch64.S.
+	* tsan/Makefile.in: Regenerate.
+
 2024-01-19  Daniel Cederman  <cederman@gaisler.com>
 
 	* sanitizer_common/Makefile.am (DEFS): Add @AS_SYM_ASSIGN_DEFS@.

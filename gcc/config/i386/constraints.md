@@ -348,6 +348,10 @@
    to double word size."
   (match_operand 0 "x86_64_dwzext_immediate_operand"))
 
+(define_constraint "Ws"
+  "A symbolic reference or label reference."
+  (match_code "const,symbol_ref,label_ref"))
+
 (define_constraint "Z"
   "32-bit unsigned integer constant, or a symbolic reference known
    to fit that range (for immediate operands in zero-extending x86-64

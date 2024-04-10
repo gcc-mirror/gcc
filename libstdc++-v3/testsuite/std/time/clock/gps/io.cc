@@ -42,7 +42,7 @@ test_format()
 
   // PR libstdc++/113500
   s = std::format("{}", gt + 150ms + 10.5s);
-  VERIFY( s == "2000-01-01 00:00:35.650" );
+  VERIFY( s == "2000-01-01 00:00:23.650" );
 }
 
 void
@@ -65,5 +65,6 @@ test_parse()
 int main()
 {
   test_ostream();
+  test_format();
   test_parse();
 }

@@ -62,12 +62,13 @@ void test3()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/bug9631.d(79): Error: function `bug9631.arg.f(int i, S s)` is not callable using argument types `(int, S)`
-fail_compilation/bug9631.d(79):        cannot pass argument `y` of type `bug9631.tem!().S` to parameter `bug9631.S s`
-fail_compilation/bug9631.d(80): Error: function literal `__lambda4(S s)` is not callable using argument types `(S)`
-fail_compilation/bug9631.d(80):        cannot pass argument `x` of type `bug9631.S` to parameter `bug9631.tem!().S s`
-fail_compilation/bug9631.d(86): Error: constructor `bug9631.arg.A.this(S __param_0)` is not callable using argument types `(S)`
-fail_compilation/bug9631.d(86):        cannot pass argument `S(0)` of type `bug9631.tem!().S` to parameter `bug9631.S __param_0`
+fail_compilation/bug9631.d(80): Error: function `f` is not callable using argument types `(int, S)`
+fail_compilation/bug9631.d(80):        cannot pass argument `y` of type `bug9631.tem!().S` to parameter `bug9631.S s`
+fail_compilation/bug9631.d(79):        `bug9631.arg.f(int i, S s)` declared here
+fail_compilation/bug9631.d(81): Error: function literal `__lambda4(S s)` is not callable using argument types `(S)`
+fail_compilation/bug9631.d(81):        cannot pass argument `x` of type `bug9631.S` to parameter `bug9631.tem!().S s`
+fail_compilation/bug9631.d(87): Error: constructor `bug9631.arg.A.this(S __param_0)` is not callable using argument types `(S)`
+fail_compilation/bug9631.d(87):        cannot pass argument `S(0)` of type `bug9631.tem!().S` to parameter `bug9631.S __param_0`
 ---
 */
 void arg()
@@ -89,12 +90,13 @@ void arg()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/bug9631.d(106): Error: function `bug9631.targ.ft!().ft(S __param_0)` is not callable using argument types `(S)`
-fail_compilation/bug9631.d(106):        cannot pass argument `x` of type `bug9631.S` to parameter `bug9631.tem!().S __param_0`
-fail_compilation/bug9631.d(107): Error: template `bug9631.targ.ft` is not callable using argument types `!()(S)`
-fail_compilation/bug9631.d(105):        Candidate is: `ft()(tem!().S)`
-fail_compilation/bug9631.d(109): Error: template `bug9631.targ.ft2` is not callable using argument types `!()(S, int)`
-fail_compilation/bug9631.d(108):        Candidate is: `ft2(T)(S, T)`
+fail_compilation/bug9631.d(108): Error: function `ft` is not callable using argument types `(S)`
+fail_compilation/bug9631.d(108):        cannot pass argument `x` of type `bug9631.S` to parameter `bug9631.tem!().S __param_0`
+fail_compilation/bug9631.d(107):        `bug9631.targ.ft!().ft(S __param_0)` declared here
+fail_compilation/bug9631.d(109): Error: template `ft` is not callable using argument types `!()(S)`
+fail_compilation/bug9631.d(107):        Candidate is: `ft()(tem!().S)`
+fail_compilation/bug9631.d(111): Error: template `ft2` is not callable using argument types `!()(S, int)`
+fail_compilation/bug9631.d(110):        Candidate is: `ft2(T)(S, T)`
 ---
 */
 void targ()

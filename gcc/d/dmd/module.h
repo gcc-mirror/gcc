@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -88,7 +88,7 @@ public:
 
     Identifier *searchCacheIdent;
     Dsymbol *searchCacheSymbol; // cached value of search
-    int searchCacheFlags;       // cached flags
+    SearchOptFlags searchCacheFlags;       // cached flags
     d_bool insearch;
 
     // module from command line we're imported from,
@@ -121,9 +121,8 @@ public:
     const char *kind() const override;
     bool read(const Loc &loc); // read file, returns 'true' if succeed, 'false' otherwise.
     Module *parse();    // syntactic parse
-    void importAll(Scope *sc) override;
     int needModuleInfo();
-    bool isPackageAccessible(Package *p, Visibility visibility, int flags = 0) override;
+    bool isPackageAccessible(Package *p, Visibility visibility, SearchOptFlags flags = (SearchOptFlags)SearchOpt::all) override;
     Dsymbol *symtabInsert(Dsymbol *s) override;
     static void runDeferredSemantic();
     static void runDeferredSemantic2();

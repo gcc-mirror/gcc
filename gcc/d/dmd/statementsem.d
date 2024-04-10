@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/statement.html, Statements)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/statementsem.d, _statementsem.d)
@@ -16,12 +16,10 @@ module dmd.statementsem;
 import core.stdc.stdio;
 
 import dmd.aggregate;
-import dmd.aliasthis;
 import dmd.arrayop;
 import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.astenums;
-import dmd.attrib;
 import dmd.blockexit;
 import dmd.clone;
 import dmd.cond;
@@ -36,13 +34,12 @@ import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
-import dmd.dtemplate;
 import dmd.errors;
-import dmd.errorsink;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.gluelayer;
 import dmd.hdrgen;
@@ -63,7 +60,6 @@ import dmd.root.string;
 import dmd.semantic2;
 import dmd.sideeffect;
 import dmd.statement;
-import dmd.staticassert;
 import dmd.target;
 import dmd.tokens;
 import dmd.typesem;
@@ -568,8 +564,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             ds._body = ds._body.semanticScope(sc, ds, ds, null);
         sc.inLoop = inLoopSave;
 
-        if (ds.condition.op == EXP.dotIdentifier)
-            (cast(DotIdExp)ds.condition).noderef = true;
+        if (auto dotid = ds.condition.isDotIdExp())
+            dotid.noderef = true;
 
         // check in syntax level
         ds.condition = checkAssignmentAsCondition(ds.condition, sc);
@@ -641,8 +637,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
         if (fs.condition)
         {
-            if (fs.condition.op == EXP.dotIdentifier)
-                (cast(DotIdExp)fs.condition).noderef = true;
+            if (auto dotid = fs.condition.isDotIdExp())
+                dotid.noderef = true;
 
             // check in syntax level
             fs.condition = checkAssignmentAsCondition(fs.condition, sc);
@@ -729,8 +725,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (fs.aggr.op == EXP.error)
             return setError();
         Expression oaggr = fs.aggr;     // remember original for error messages
-        if (fs.aggr.type && fs.aggr.type.toBasetype().ty == Tstruct &&
-            (cast(TypeStruct)(fs.aggr.type.toBasetype())).sym.dtor &&
+        if (fs.aggr.type && fs.aggr.type.toBasetype().isTypeStruct() &&
+            fs.aggr.type.toBasetype().isTypeStruct().sym.dtor &&
             !fs.aggr.isTypeExp() && !fs.aggr.isLvalue())
         {
             // https://issues.dlang.org/show_bug.cgi?id=14653
@@ -804,9 +800,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                         Parameter fparam = fparameters[0];
                         if ((fparam.type.ty == Tpointer ||
                              fparam.type.ty == Tdelegate) &&
-                            fparam.type.nextOf().ty == Tfunction)
+                            fparam.type.nextOf().isTypeFunction())
                         {
-                            TypeFunction tf = cast(TypeFunction)fparam.type.nextOf();
+                            auto tf = fparam.type.nextOf().isTypeFunction();
                             foreachParamCount = tf.parameterList.length;
                             foundMismatch = true;
                         }
@@ -1284,7 +1280,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 Type tfront;
                 if (auto fd = sfront.isFuncDeclaration())
                 {
-                    if (!fd.functionSemantic())
+                    if (!functionSemantic(fd))
                         return rangeError();
                     tfront = fd.type;
                 }
@@ -1644,8 +1640,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
         else
         {
-            if (ifs.condition.op == EXP.dotIdentifier)
-                (cast(DotIdExp)ifs.condition).noderef = true;
+            if (auto dotid = ifs.condition.isDotIdExp())
+                dotid.noderef = true;
 
             ifs.condition = ifs.condition.expressionSemantic(scd);
             ifs.condition = resolveProperties(scd, ifs.condition);
@@ -1750,102 +1746,10 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
     {
         /* https://dlang.org/spec/statement.html#pragma-statement
          */
-        // Should be merged with PragmaDeclaration
-
-        //printf("PragmaStatement::semantic() %s\n", ps.toChars());
-        //printf("body = %p\n", ps._body);
-        if (ps.ident == Id.msg)
-        {
-            if (!pragmaMsgSemantic(ps.loc, sc, ps.args))
-                return setError();
-        }
-        else if (ps.ident == Id.lib)
-        {
-            version (all)
-            {
-                /* Should this be allowed?
-                 */
-                error(ps.loc, "`pragma(lib)` not allowed as statement");
-                return setError();
-            }
-            else
-            {
-                if (!ps.args || ps.args.length != 1)
-                {
-                    error(ps.loc, "`string` expected for library name");
-                    return setError();
-                }
-                else
-                {
-                    auto se = semanticString(sc, (*ps.args)[0], "library name");
-                    if (!se)
-                        return setError();
-
-                    if (global.params.v.verbose)
-                    {
-                        message("library   %.*s", cast(int)se.len, se.string);
-                    }
-                }
-            }
-        }
-        else if (ps.ident == Id.linkerDirective)
-        {
-            /* Should this be allowed?
-             */
-            error(ps.loc, "`pragma(linkerDirective)` not allowed as statement");
+        import dmd.pragmasem : pragmaStmtSemantic;
+        if (!pragmaStmtSemantic(ps, sc))
             return setError();
-        }
-        else if (ps.ident == Id.startaddress)
-        {
-            if (!pragmaStartAddressSemantic(ps.loc, sc, ps.args))
-                return setError();
-        }
-        else if (ps.ident == Id.Pinline)
-        {
-            if (auto fd = sc.func)
-            {
-                fd.inlining = evalPragmaInline(ps.loc, sc, ps.args);
-            }
-            else
-            {
-                error(ps.loc, "`pragma(inline)` is not inside a function");
-                return setError();
-            }
-        }
-        else if (ps.ident == Id.mangle)
-        {
-            auto es = ps._body ? ps._body.isExpStatement() : null;
-            auto de = es ? es.exp.isDeclarationExp() : null;
-            if (!de)
-            {
-                error(ps.loc, "`pragma(mangle)` must be attached to a declaration");
-                return setError();
-            }
-            const se = ps.args && (*ps.args).length == 1 ? semanticString(sc, (*ps.args)[0], "pragma mangle argument") : null;
-            if (!se)
-            {
-                error(ps.loc, "`pragma(mangle)` takes a single argument that must be a string literal");
-                return setError();
-            }
-            const cnt = setMangleOverride(de.declaration, cast(const(char)[])se.peekData());
-            if (cnt != 1)
-                assert(0);
-        }
-        else if (!global.params.ignoreUnsupportedPragmas)
-        {
-            error(ps.loc, "unrecognized `pragma(%s)`", ps.ident.toChars());
-            return setError();
-        }
 
-        if (ps._body)
-        {
-            if (ps.ident == Id.msg || ps.ident == Id.startaddress)
-            {
-                error(ps.loc, "`pragma(%s)` is missing a terminating `;`", ps.ident.toChars());
-                return setError();
-            }
-            ps._body = ps._body.statementSemantic(sc);
-        }
         result = ps._body;
     }
 
@@ -1910,8 +1814,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         while (!ss.condition.isErrorExp())
         {
             // preserve enum type for final switches
-            if (ss.condition.type.ty == Tenum)
-                te = cast(TypeEnum)ss.condition.type;
+            if (auto tenum = ss.condition.type.isTypeEnum())
+                te = tenum;
             if (ss.condition.type.isString())
             {
                 // If it's not an array, cast it to one
@@ -2222,14 +2126,13 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             Expression e = cs.exp;
             // Remove all the casts the user and/or implicitCastTo may introduce
             // otherwise we'd sometimes fail the check below.
-            while (e.op == EXP.cast_)
-                e = (cast(CastExp)e).e1;
+            while (e.isCastExp())
+                e = e.isCastExp().e1;
 
             /* This is where variables are allowed as case expressions.
             */
-            if (e.op == EXP.variable)
+            if (auto ve = e.isVarExp())
             {
-                VarExp ve = cast(VarExp)e;
                 VarDeclaration v = ve.var.isVarDeclaration();
                 Type t = cs.exp.type.toBasetype();
                 if (v && (t.isintegral() || t.ty == Tclass))
@@ -2261,7 +2164,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                             continue;
                         assert(scx.sw == sw);
 
-                        if (!scx.search(cs.exp.loc, v.ident, null))
+                        Dsymbol pscopesym;
+                        if (!scx.search(cs.exp.loc, v.ident, pscopesym))
                         {
                             error(cs.loc, "`case` variable `%s` declared at %s cannot be declared in `switch` body",
                                 v.toChars(), v.loc.toChars());
@@ -2525,10 +2429,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (fd.fes)
             fd = fd.fes.func; // fd is now function enclosing foreach
 
-            TypeFunction tf = cast(TypeFunction)fd.type;
-        assert(tf.ty == Tfunction);
+        auto tf = fd.type.isTypeFunction();
 
-        if (rs.exp && rs.exp.op == EXP.variable && (cast(VarExp)rs.exp).var == fd.vresult)
+        if (rs.exp && rs.exp.isVarExp() && rs.exp.isVarExp().var == fd.vresult)
         {
             // return vresult;
             if (sc.fes)
@@ -2616,7 +2519,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             rs.exp.checkSharedAccess(sc, returnSharedRef);
 
             // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
-            if (rs.exp.op == EXP.type)
+            if (rs.exp.isTypeExp())
                 rs.exp = resolveAliasThis(sc, rs.exp);
 
             rs.exp = resolveProperties(sc, rs.exp);
@@ -2632,14 +2535,14 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
             // Extract side-effect part
             rs.exp = Expression.extractLast(rs.exp, e0);
-            if (rs.exp.op == EXP.call)
+            if (rs.exp.isCallExp())
                 rs.exp = valueNoDtor(rs.exp);
 
             /* Void-return function can have void / noreturn typed expression
              * on return statement.
              */
             auto texp = rs.exp.type;
-            const convToVoid = texp.ty == Tvoid || texp.ty == Tnoreturn;
+            const convToVoid = texp.ty == Tvoid || texp.isTypeNoreturn();
 
             if (tbret && tbret.ty == Tvoid || convToVoid)
             {
@@ -2688,7 +2591,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 {
                     tf.next = rs.exp.type;
                 }
-                else if (tret.ty != Terror && !rs.exp.type.equals(tret))
+                else if (!tret.isTypeError() && !rs.exp.type.equals(tret))
                 {
                     int m1 = rs.exp.type.implicitConvTo(tret);
                     int m2 = tret.implicitConvTo(rs.exp.type);
@@ -2789,7 +2692,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 // Found an actual return value before
                 else if (tf.next.ty != Tvoid && !resType.toBasetype().isTypeNoreturn())
                 {
-                    if (tf.next.ty != Terror)
+                    if (!tf.next.isTypeError())
                     {
                         error(rs.loc, "mismatched function return type inference of `void` and `%s`", tf.next.toChars());
                     }
@@ -2807,7 +2710,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
             if (tbret.ty != Tvoid && !resType.isTypeNoreturn()) // if non-void return
             {
-                if (tbret.ty != Terror)
+                if (!tbret.isTypeError())
                 {
                     if (e0)
                         error(rs.loc, "expected return type of `%s`, not `%s`", tret.toChars(), resType.toChars());
@@ -2901,7 +2804,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
         if (e0)
         {
-            if (e0.op == EXP.declaration || e0.op == EXP.comma)
+            if (e0.isDeclarationExp() || e0.isCommaExp())
             {
                 rs.exp = Expression.combine(e0, rs.exp);
             }
@@ -3227,9 +3130,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             sym.parent = sc.scopesym;
             sym.endlinnum = ws.endloc.linnum;
         }
-        else if (ws.exp.op == EXP.type)
+        else if (auto et = ws.exp.isTypeExp())
         {
-            Dsymbol s = (cast(TypeExp)ws.exp).type.toDsymbol(sc);
+            Dsymbol s = et.type.toDsymbol(sc);
             if (!s || !s.isScopeDsymbol())
             {
                 error(ws.loc, "`with` type `%s` has no members", ws.exp.toChars());
@@ -3754,7 +3657,10 @@ public bool throwSemantic(const ref Loc loc, ref Expression exp, Scope* sc)
 {
     if (!global.params.useExceptions)
     {
-        loc.error("cannot use `throw` statements with %s", global.params.betterC ? "-betterC".ptr : "-nothrow".ptr);
+        version (IN_GCC)
+            loc.error("cannot use `throw` statements with `-fno-exceptions`");
+        else
+            loc.error("cannot use `throw` statements with %s", global.params.betterC ? "-betterC".ptr : "-nothrow".ptr);
         return false;
     }
 
@@ -3767,16 +3673,15 @@ public bool throwSemantic(const ref Loc loc, ref Expression exp, Scope* sc)
     if (FuncDeclaration fd = sc.parent.isFuncDeclaration())
         fd.hasReturnExp |= 2;
 
-    if (exp.op == EXP.new_)
+    if (auto ne = exp.isNewExp())
     {
-        NewExp ne = cast(NewExp) exp;
         ne.thrownew = true;
     }
 
     exp = exp.expressionSemantic(sc);
     exp = resolveProperties(sc, exp);
     exp = checkGC(sc, exp);
-    if (exp.op == EXP.error)
+    if (exp.isErrorExp())
         return false;
     if (!exp.type.isNaked())
     {
@@ -3805,12 +3710,12 @@ private extern(D) Expression applyOpApply(ForeachStatement fs, Expression flde,
         {
             message(loc, "To enforce `@safe`, the compiler allocates a closure unless `opApply()` uses `scope`");
         }
-        (cast(FuncExp)flde).fd.tookAddressOf = 1;
+        flde.isFuncExp().fd.tookAddressOf = 1;
     }
     else
     {
         if (sc2.useDIP1000 == FeatureState.enabled)
-            ++(cast(FuncExp)flde).fd.tookAddressOf;  // allocate a closure unless the opApply() uses 'scope'
+            ++flde.isFuncExp().fd.tookAddressOf;  // allocate a closure unless the opApply() uses 'scope'
     }
     assert(tab.ty == Tstruct || tab.ty == Tclass);
     assert(sapply);
@@ -3821,7 +3726,7 @@ private extern(D) Expression applyOpApply(ForeachStatement fs, Expression flde,
     ec = new DotIdExp(fs.loc, fs.aggr, sapply.ident);
     ec = new CallExp(fs.loc, ec, flde);
     ec = ec.expressionSemantic(sc2);
-    if (ec.op == EXP.error)
+    if (ec.isErrorExp())
         return null;
     if (ec.type != Type.tint32)
     {
@@ -3838,11 +3743,12 @@ private extern(D) Expression applyDelegate(ForeachStatement fs, Expression flde,
     /* Call:
      *      aggr(flde)
      */
-    if (fs.aggr.op == EXP.delegate_ && (cast(DelegateExp)fs.aggr).func.isNested() &&
-        !(cast(DelegateExp)fs.aggr).func.needThis())
+    if (auto de = fs.aggr.isDelegateExp())
+    if (de.func.isNested() &&
+        !de.func.needThis())
     {
         // https://issues.dlang.org/show_bug.cgi?id=3560
-        fs.aggr = (cast(DelegateExp)fs.aggr).e1;
+        fs.aggr = de.e1;
     }
     ec = new CallExp(fs.loc, fs.aggr, flde);
     ec = ec.expressionSemantic(sc2);
@@ -4099,7 +4005,7 @@ private FuncExp foreachBodyToFunction(Scope* sc, ForeachStatement fs, TypeFuncti
     fld.tookAddressOf = 0;
     if (flde.op == EXP.error)
         return null;
-    return cast(FuncExp)flde;
+    return flde.isFuncExp();
 }
 
 
@@ -4273,9 +4179,9 @@ Statement scopeCode(Statement statement, Scope* sc, out Statement sentry, out St
 {
     if (auto es = statement.isExpStatement())
     {
-        if (es.exp && es.exp.op == EXP.declaration)
+        if (es.exp && es.exp.isDeclarationExp())
         {
-            auto de = cast(DeclarationExp)es.exp;
+            auto de = es.exp.isDeclarationExp();
             auto v = de.declaration.isVarDeclaration();
             if (v && !v.isDataseg())
             {
@@ -4401,7 +4307,7 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
     }
 
     Type tab = fs.aggr.type.toBasetype();
-    TypeTuple tuple = cast(TypeTuple)tab;
+    TypeTuple tuple = tab.isTypeTuple();
 
     Statements* statements;
     Dsymbols* declarations;
@@ -4413,12 +4319,12 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
     //printf("aggr: op = %d, %s\n", fs.aggr.op, fs.aggr.toChars());
     size_t n;
     TupleExp te = null;
-    if (fs.aggr.op == EXP.tuple) // expression tuple
+    if (auto ate =  fs.aggr.isTupleExp()) // expression tuple
     {
-        te = cast(TupleExp)fs.aggr;
+        te = ate;
         n = te.exps.length;
     }
-    else if (fs.aggr.op == EXP.type) // type tuple
+    else if (fs.aggr.isTypeExp()) // type tuple
     {
         n = Parameter.dim(tuple.arguments);
     }
@@ -5005,86 +4911,6 @@ private void debugThrowWalker(Statement s)
 
     scope walker = new DebugWalker();
     s.accept(walker);
-}
-
-/***********************************************************
- * Evaluate and print a `pragma(msg, args)`
- *
- * Params:
- *    loc = location for error messages
- *    sc = scope for argument interpretation
- *    args = expressions to print
- * Returns:
- *    `true` on success
- */
-bool pragmaMsgSemantic(Loc loc, Scope* sc, Expressions* args)
-{
-    if (!args)
-        return true;
-    foreach (arg; *args)
-    {
-        sc = sc.startCTFE();
-        auto e = arg.expressionSemantic(sc);
-        e = resolveProperties(sc, e);
-        sc = sc.endCTFE();
-
-        // pragma(msg) is allowed to contain types as well as expressions
-        e = ctfeInterpretForPragmaMsg(e);
-        if (e.op == EXP.error)
-        {
-            errorSupplemental(loc, "while evaluating `pragma(msg, %s)`", arg.toChars());
-            return false;
-        }
-        if (auto se = e.toStringExp())
-        {
-            const slice = se.toUTF8(sc).peekString();
-            fprintf(stderr, "%.*s", cast(int)slice.length, slice.ptr);
-        }
-        else
-            fprintf(stderr, "%s", e.toChars());
-    }
-    fprintf(stderr, "\n");
-    return true;
-}
-
-/***********************************************************
- * Evaluate `pragma(startAddress, func)` and store the resolved symbol in `args`
- *
- * Params:
- *    loc = location for error messages
- *    sc = scope for argument interpretation
- *    args = pragma arguments
- * Returns:
- *    `true` on success
- */
-bool pragmaStartAddressSemantic(Loc loc, Scope* sc, Expressions* args)
-{
-    if (!args || args.length != 1)
-    {
-        .error(loc, "function name expected for start address");
-        return false;
-    }
-    else
-    {
-        /* https://issues.dlang.org/show_bug.cgi?id=11980
-         * resolveProperties and ctfeInterpret call are not necessary.
-         */
-        Expression e = (*args)[0];
-        sc = sc.startCTFE();
-        e = e.expressionSemantic(sc);
-        // e = resolveProperties(sc, e);
-        sc = sc.endCTFE();
-
-        // e = e.ctfeInterpret();
-        (*args)[0] = e;
-        Dsymbol sa = getDsymbol(e);
-        if (!sa || !sa.isFuncDeclaration())
-        {
-            .error(loc, "function name expected for start address, not `%s`", e.toChars());
-            return false;
-        }
-    }
-    return true;
 }
 
 /************************************

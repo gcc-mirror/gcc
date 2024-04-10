@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/statement.html, Statements)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/statement.d, _statement.d)
@@ -20,19 +20,15 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
 import dmd.errors;
-import dmd.gluelayer;
 import dmd.cond;
 import dmd.declaration;
 import dmd.dsymbol;
 import dmd.expression;
 import dmd.func;
-import dmd.globals;
-import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
-import dmd.common.outbuffer;
 import dmd.rootobject;
 import dmd.sapply;
 import dmd.staticassert;
@@ -333,6 +329,8 @@ extern (C++) final class ErrorStatement : Statement
     extern (D) this()
     {
         super(Loc.initial, STMT.Error);
+
+        import dmd.globals;
         assert(global.gaggedErrors || global.errors);
     }
 
@@ -1773,7 +1771,7 @@ extern (C++) class AsmStatement : Statement
  */
 extern (C++) final class InlineAsmStatement : AsmStatement
 {
-    code* asmcode;
+    void* asmcode;
     uint asmalign;  // alignment of this statement
     uint regs;      // mask of registers modified (must match regm_t in back end)
     bool refparam;  // true if function parameter is referenced

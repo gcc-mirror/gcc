@@ -210,14 +210,12 @@ private:
         }
         else version (RISCV_Any)
         {
-            mixin(`
             uint result = void;
             asm pure nothrow @nogc
             {
                 "frflags %0" : "=r" (result);
             }
             return result;
-            `);
         }
         else version (LoongArch_Any)
         {
@@ -307,13 +305,11 @@ private:
         }
         else version (RISCV_Any)
         {
-            mixin(`
             uint newValues = 0x0;
             asm pure nothrow @nogc
             {
                 "fsflags %0" : : "r" (newValues);
             }
-            `);
         }
         else version (LoongArch_Any)
         {
@@ -1039,14 +1035,12 @@ private:
         }
         else version (RISCV_Any)
         {
-            mixin(`
             ControlState cont;
             asm pure nothrow @nogc
             {
                 "frcsr %0" : "=r" (cont);
             }
             return cont;
-            `);
         }
         else version (LoongArch_Any)
         {
@@ -1163,12 +1157,10 @@ private:
         }
         else version (RISCV_Any)
         {
-            mixin(`
             asm pure nothrow @nogc
             {
                 "fscsr %0" : : "r" (newState);
             }
-            `);
         }
         else version (LoongArch_Any)
         {

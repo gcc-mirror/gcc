@@ -2088,7 +2088,9 @@ enum
   /* When parsing of the noexcept-specifier should be delayed.  */
   CP_PARSER_FLAGS_DELAY_NOEXCEPT = 0x40,
   /* When parsing a consteval declarator.  */
-  CP_PARSER_FLAGS_CONSTEVAL = 0x80
+  CP_PARSER_FLAGS_CONSTEVAL = 0x80,
+  /* When parsing a parameter declaration.  */
+  CP_PARSER_FLAGS_PARAMETER = 0x100
 };
 
 /* This type is used for parameters and variables which hold
@@ -16342,7 +16344,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       /* Special case for "this" specifier, indicating a parm is an xobj parm.
 	 The "this" specifier must be the first specifier in the declaration,
 	 after any attributes.  */
-      if (token->keyword == RID_THIS)
+      if (token->keyword == RID_THIS && (flags & CP_PARSER_FLAGS_PARAMETER))
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  if (token != first_specifier)
@@ -25607,7 +25609,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
   /* Parse the declaration-specifiers.  */
   cp_token *decl_spec_token_start = cp_lexer_peek_token (parser->lexer);
   cp_parser_decl_specifier_seq (parser,
-				flags,
+				flags | CP_PARSER_FLAGS_PARAMETER,
 				&decl_specifiers,
 				&declares_class_or_enum);
 

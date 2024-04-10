@@ -11786,7 +11786,7 @@ move_early_exit_stmts (loop_vec_info loop_vinfo)
 
   /* Move all stmts that need moving.  */
   basic_block dest_bb = LOOP_VINFO_EARLY_BRK_DEST_BB (loop_vinfo);
-  gimple_stmt_iterator dest_gsi = gsi_start_bb (dest_bb);
+  gimple_stmt_iterator dest_gsi = gsi_after_labels (dest_bb);
 
   for (gimple *stmt : LOOP_VINFO_EARLY_BRK_STORES (loop_vinfo))
     {
@@ -11800,8 +11800,7 @@ move_early_exit_stmts (loop_vec_info loop_vinfo)
 	dump_printf_loc (MSG_NOTE, vect_location, "moving stmt %G", stmt);
 
       gimple_stmt_iterator stmt_gsi = gsi_for_stmt (stmt);
-      gsi_move_before (&stmt_gsi, &dest_gsi);
-      gsi_prev (&dest_gsi);
+      gsi_move_before (&stmt_gsi, &dest_gsi, GSI_NEW_STMT);
     }
 
   /* Update all the stmts with their new reaching VUSES.  */

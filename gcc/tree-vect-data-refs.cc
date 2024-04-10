@@ -619,10 +619,10 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   return opt_result::success ();
 }
 
-/* Funcion vect_analyze_early_break_dependences.
+/* Function vect_analyze_early_break_dependences.
 
-   Examime all the data references in the loop and make sure that if we have
-   mulitple exits that we are able to safely move stores such that they become
+   Examine all the data references in the loop and make sure that if we have
+   multiple exits that we are able to safely move stores such that they become
    safe for vectorization.  The function also calculates the place where to move
    the instructions to and computes what the new vUSE chain should be.
 
@@ -639,7 +639,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
      - Multiple loads are allowed as long as they don't alias.
 
    NOTE:
-     This implemementation is very conservative. Any overlappig loads/stores
+     This implementation is very conservative. Any overlapping loads/stores
      that take place before the early break statement gets rejected aside from
      WAR dependencies.
 
@@ -668,7 +668,6 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
   auto_vec<data_reference *> bases;
   basic_block dest_bb = NULL;
 
-  hash_set <gimple *> visited;
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   class loop *loop_nest = loop_outer (loop);
 
@@ -677,19 +676,34 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 		     "loop contains multiple exits, analyzing"
 		     " statement dependencies.\n");
 
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+    if (dump_enabled_p ())
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "alternate exit has been chosen as main exit.\n");
+
   /* Since we don't support general control flow, the location we'll move the
      side-effects to is always the latch connected exit.  When we support
-     general control flow we can do better but for now this is fine.  */
-  dest_bb = single_pred (loop->latch);
+     general control flow we can do better but for now this is fine.  Move
+     side-effects to the in-loop destination of the last early exit.  For the
+     PEELED case we move the side-effects to the latch block as this is
+     guaranteed to be the last block to be executed when a vector iteration
+     finished.  */
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+    dest_bb = loop->latch;
+  else
+    dest_bb = single_pred (loop->latch);
+
+  /* We start looking from dest_bb, for the non-PEELED case we don't want to
+     move any stores already present, but we do want to read and validate the
+     loads.  */
   basic_block bb = dest_bb;
+
+  /* We move stores across all loads to the beginning of dest_bb, so
+     the first block processed below doesn't need dependence checking.  */
+  bool check_deps = false;
 
   do
     {
-      /* If the destination block is also the header then we have nothing to do.  */
-      if (!single_pred_p (bb))
-	continue;
-
-      bb = single_pred (bb);
       gimple_stmt_iterator gsi = gsi_last_bb (bb);
 
       /* Now analyze all the remaining statements and try to determine which
@@ -698,8 +712,7 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  gsi_prev (&gsi);
-	  if (!gimple_has_ops (stmt)
-	      || is_gimple_debug (stmt))
+	  if (is_gimple_debug (stmt))
 	    continue;
 
 	  stmt_vec_info stmt_vinfo = loop_vinfo->lookup_stmt (stmt);
@@ -707,47 +720,25 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 	  if (!dr_ref)
 	    continue;
 
-	  /* We currently only support statically allocated objects due to
-	     not having first-faulting loads support or peeling for
-	     alignment support.  Compute the size of the referenced object
-	     (it could be dynamically allocated).  */
-	  tree obj = DR_BASE_ADDRESS (dr_ref);
-	  if (!obj || TREE_CODE (obj) != ADDR_EXPR)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "early breaks only supported on statically"
-				 " allocated objects.\n");
-	      return opt_result::failure_at (stmt,
-				 "can't safely apply code motion to "
-				 "dependencies of %G to vectorize "
-				 "the early exit.\n", stmt);
-	    }
-
-	  tree refop = TREE_OPERAND (obj, 0);
-	  tree refbase = get_base_address (refop);
-	  if (!refbase || !DECL_P (refbase) || !DECL_SIZE (refbase)
-	      || TREE_CODE (DECL_SIZE (refbase)) != INTEGER_CST)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "early breaks only supported on"
-				 " statically allocated objects.\n");
-	      return opt_result::failure_at (stmt,
-				 "can't safely apply code motion to "
-				 "dependencies of %G to vectorize "
-				 "the early exit.\n", stmt);
-	    }
+	  /* We know everything below dest_bb is safe since we know we
+	     had a full vector iteration when reaching it.  Either by
+	     the loop entry / IV exit test being last or because this
+	     is the loop latch itself.  */
+	  if (!check_deps)
+	    continue;
 
 	  /* Check if vector accesses to the object will be within bounds.
 	     must be a constant or assume loop will be versioned or niters
-	     bounded by VF so accesses are within range.  */
-	  if (!ref_within_array_bound (stmt, DR_REF (dr_ref)))
+	     bounded by VF so accesses are within range.  We only need to check
+	     the reads since writes are moved to a safe place where if we get
+	     there we know they are safe to perform.  */
+	  if (DR_IS_READ (dr_ref)
+	      && !ref_within_array_bound (stmt, DR_REF (dr_ref)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "early breaks not supported: vectorization "
-				 "would %s beyond size of obj.",
+				 "would %s beyond size of obj.\n",
 				 DR_IS_READ (dr_ref) ? "read" : "write");
 	      return opt_result::failure_at (stmt,
 				 "can't safely apply code motion to "
@@ -781,7 +772,11 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 		 the store.  */
 
 	      for (auto dr_read : bases)
-		if (dr_may_alias_p (dr_ref, dr_read, loop_nest))
+		/* Note we're not passing the DRs in stmt order here
+		   since the DR dependence checking routine does not
+		   envision we're moving stores down.  The read-write
+		   order tricks it to avoid applying TBAA.  */
+		if (dr_may_alias_p (dr_read, dr_ref, loop_nest))
 		  {
 		    if (dump_enabled_p ())
 		      dump_printf_loc (MSG_MISSED_OPTIMIZATION,
@@ -814,12 +809,34 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 				 "marked statement for vUSE update: %G", stmt);
 	    }
 	}
+
+      if (!single_pred_p (bb))
+	{
+	  gcc_assert (bb == loop->header);
+	  break;
+	}
+
+      /* All earlier blocks need dependence checking.  */
+      check_deps = true;
+      bb = single_pred (bb);
     }
-  while (bb != loop->header);
+  while (1);
 
   /* We don't allow outer -> inner loop transitions which should have been
      trapped already during loop form analysis.  */
   gcc_assert (dest_bb->loop_father == loop);
+
+  /* Check that the destination block we picked has only one pred.  To relax this we
+     have to take special care when moving the statements.  We don't currently support
+     such control flow however this check is there to simplify how we handle
+     labels that may be present anywhere in the IL.  This check is to ensure that the
+     labels aren't significant for the CFG.  */
+  if (!single_pred (dest_bb))
+    return opt_result::failure_at (vect_location,
+			     "chosen loop exit block (BB %d) does not have a "
+			     "single predecessor which is currently not "
+			     "supported for early break vectorization.\n",
+			     dest_bb->index);
 
   LOOP_VINFO_EARLY_BRK_DEST_BB (loop_vinfo) = dest_bb;
 
@@ -4325,6 +4342,11 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   if (!multiple_p (pbitpos, BITS_PER_UNIT))
     return false;
 
+  /* We need to be able to form an address to the base which for example
+     isn't possible for hard registers.  */
+  if (may_be_nonaddressable_p (base))
+    return false;
+
   poly_int64 pbytepos = exact_div (pbitpos, BITS_PER_UNIT);
 
   if (TREE_CODE (base) == MEM_REF)
@@ -5320,7 +5342,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
       while (sinfo);
     }
-  aggr_ptr_type = build_pointer_type_for_mode (aggr_type, ptr_mode,
+  aggr_ptr_type = build_pointer_type_for_mode (aggr_type, VOIDmode,
 					       need_ref_all);
   aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var, base_name);
 

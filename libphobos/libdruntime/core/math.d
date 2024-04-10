@@ -30,15 +30,6 @@ public:
 nothrow:
 @safe:
 
-/*****************************************
- * Returns x rounded to a long value using the FE_TONEAREST rounding mode.
- * If the integer value of x is
- * greater than long.max, the result is
- * indeterminate.
- */
-deprecated("rndtonl is to be removed by 2.100. Please use round instead")
-extern (C) real rndtonl(real x);
-
 pure:
 /***********************************
  * Returns cosine of x. x is in radians.

@@ -2,7 +2,7 @@
  * This module contains the implementation of the C++ header generation available through
  * the command line switch -Hc.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dtohd, _dtoh.d)
@@ -30,6 +30,7 @@ import dmd.location;
 import dmd.root.filename;
 import dmd.visitor;
 import dmd.tokens;
+import dmd.typesem;
 
 import dmd.common.outbuffer;
 import dmd.utils;
@@ -777,6 +778,17 @@ public:
                         fd.toPrettyChars(), fparam.type.toChars());
                 return checkFunctionNeedsPlaceholder(fd);
             }
+        }
+
+        if (tf && tf.next)
+        {
+            // Ensure return type is declared before a function that returns that is declared.
+            if (auto sty = tf.next.isTypeStruct())
+                ensureDeclared(sty.sym);
+            //else if (auto cty = tf.next.isTypeClass())
+            //    includeSymbol(cty.sym); // classes are returned by pointer only need to forward declare
+            //else if (auto ety = tf.next.isTypeEnum())
+            //    ensureDeclared(ety.sym);
         }
 
         writeProtection(fd.visibility.kind);
@@ -3284,7 +3296,7 @@ ASTCodegen.Dsymbol symbolFromType(ASTCodegen.Type t) @safe
  */
 ASTCodegen.Dsymbol findMember(ASTCodegen.Dsymbol sym, Identifier name)
 {
-    if (auto mem = sym.search(Loc.initial, name, ASTCodegen.IgnoreErrors))
+    if (auto mem = sym.search(Loc.initial, name, ASTCodegen.SearchOpt.ignoreErrors))
         return mem;
 
     // search doesn't work for declarations inside of uninstantiated

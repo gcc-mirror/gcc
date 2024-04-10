@@ -65,7 +65,7 @@ alias ptrdiff_t = typeof(cast(void*)0 - cast(void*)0);
 alias sizediff_t = ptrdiff_t; // For backwards compatibility only.
 /**
  * Bottom type.
- * See $(DDSUBLINK spec/type, noreturn).
+ * See $(DDSUBLINK spec/type, noreturn, `noreturn`).
  */
 alias noreturn = typeof(*null);
 
@@ -526,6 +526,12 @@ unittest
 
 private extern(C) void _d_setSameMutex(shared Object ownee, shared Object owner) nothrow;
 
+/** Makes ownee use owner's mutex.
+ * This will initialize owner's mutex if it hasn't been set yet.
+ * Params:
+ * ownee = object to change
+ * owner = source object
+ */
 void setSameMutex(shared Object ownee, shared Object owner)
 {
     import core.atomic : atomicLoad;
@@ -1640,10 +1646,10 @@ class TypeInfo_Class : TypeInfo
     string      name;           /// class name
     void*[]     vtbl;           /// virtual function pointer table
     Interface[] interfaces;     /// interfaces this class implements
-    TypeInfo_Class   base;           /// base class
+    TypeInfo_Class   base;      /// base class
     void*       destructor;
     void function(Object) classInvariant;
-    enum ClassFlags : uint
+    enum ClassFlags : ushort
     {
         isCOMclass = 0x1,
         noPointers = 0x2,
@@ -1654,14 +1660,18 @@ class TypeInfo_Class : TypeInfo
         isAbstract = 0x40,
         isCPPclass = 0x80,
         hasDtor = 0x100,
+        hasNameSig = 0x200,
     }
     ClassFlags m_flags;
-    void*       deallocator;
+    ushort     depth;           /// inheritance distance from Object
+    void*      deallocator;
     OffsetTypeInfo[] m_offTi;
     void function(Object) defaultConstructor;   // default Constructor
 
     immutable(void)* m_RTInfo;        // data for precise GC
     override @property immutable(void)* rtInfo() const { return m_RTInfo; }
+
+    uint[4] nameSig;            /// unique signature for `name`
 
     /**
      * Search all modules for TypeInfo_Class corresponding to classname.

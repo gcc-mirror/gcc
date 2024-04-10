@@ -5,7 +5,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/float.html#fp_const_folding, Floating Point Constant Folding)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/constfold.d, _constfold.d)
@@ -711,7 +711,7 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
             cmp = 1; // if dim1 winds up being 0
             foreach (i; 0 .. dim1)
             {
-                uinteger_t c = es1.getCodeUnit(i);
+                uinteger_t c = es1.getIndex(i);
                 auto ee2 = es2[i];
                 if (ee2.isConst() != 1)
                 {
@@ -1038,6 +1038,7 @@ UnionExp Cast(const ref Loc loc, Type type, Type to, Expression e1)
     else if (tb.ty == Tstruct && e1.op == EXP.int64)
     {
         // Struct = 0;
+        import dmd.typesem : toDsymbol;
         StructDeclaration sd = tb.toDsymbol(null).isStructDeclaration();
         assert(sd);
         auto elements = new Expressions();
@@ -1118,7 +1119,7 @@ UnionExp Index(Type type, Expression e1, Expression e2, bool indexIsInBounds)
         }
         else
         {
-            emplaceExp!(IntegerExp)(&ue, loc, es1.getCodeUnit(cast(size_t) i), type);
+            emplaceExp!(IntegerExp)(&ue, loc, es1.getIndex(cast(size_t) i), type);
         }
     }
     else if (e1.type.toBasetype().ty == Tsarray && e2.op == EXP.int64)
@@ -1281,7 +1282,7 @@ void sliceAssignArrayLiteralFromString(ArrayLiteralExp existingAE, const StringE
     Type elemType = existingAE.type.nextOf();
     foreach (j; 0 .. len)
     {
-        const val = newval.getCodeUnit(j);
+        const val = newval.getIndex(j);
         (*existingAE.elements)[j + firstIndex] = new IntegerExp(newval.loc, val, elemType);
     }
 }
@@ -1330,9 +1331,9 @@ int sliceCmpStringWithArray(const StringExp se1, ArrayLiteralExp ae2, size_t lo1
 {
     foreach (j; 0 .. len)
     {
-        const val2 = cast(dchar)ae2[j + lo2].toInteger();
-        const val1 = se1.getCodeUnit(j + lo1);
-        const int c = val1 - val2;
+        const val2 = ae2[j + lo2].toInteger();
+        const val1 = se1.getIndex(j + lo1);
+        const int c = (val1 > val2) - (val1 < val2);
         if (c)
             return c;
     }

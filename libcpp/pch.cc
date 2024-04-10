@@ -838,7 +838,14 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
 	      != NULL)
 	    {
 	      _cpp_clean_line (r);
-	      if (!_cpp_create_definition (r, h, 0))
+
+	      /* ??? Using r->line_table->highest_line is not ideal here, but we
+		 do need to use some location that is relative to the new line
+		 map just loaded, not the old one that was in effect when these
+		 macros were lexed.  The proper fix is to remember the file name
+		 and line number where each macro was defined, and then add
+		 these locations into the new line map.  See PR105608.  */
+	      if (!_cpp_create_definition (r, h, r->line_table->highest_line))
 		abort ();
 	      _cpp_pop_buffer (r);
 	    }

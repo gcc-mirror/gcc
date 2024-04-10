@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/module.html, Modules)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dmodule.d, _dmodule.d)
@@ -401,7 +401,7 @@ extern (C++) final class Module : Package
 
     Identifier searchCacheIdent;
     Dsymbol searchCacheSymbol;  // cached value of search
-    int searchCacheFlags;       // cached flags
+    SearchOptFlags searchCacheFlags;       // cached flags
     bool insearch;
 
     /**
@@ -490,7 +490,7 @@ extern (C++) final class Module : Package
 
     extern (D) static const(char)[] find(const(char)[] filename)
     {
-        return global.fileManager.lookForSourceFile(filename, global.path ? (*global.path)[] : null);
+        return global.fileManager.lookForSourceFile(filename, global.path[]);
     }
 
     extern (C++) static Module load(const ref Loc loc, Identifiers* packages, Identifier ident)
@@ -644,9 +644,9 @@ extern (C++) final class Module : Package
         {
             /* Print path
              */
-            if (global.path)
+            if (global.path.length)
             {
-                foreach (i, p; *global.path)
+                foreach (i, p; global.path[])
                     fprintf(stderr, "import path[%llu] = %s\n", cast(ulong)i, p);
             }
             else
@@ -679,23 +679,23 @@ extern (C++) final class Module : Package
         /* Preprocess the file if it's a .c file
          */
         FileName filename = srcfile;
-        bool ifile = false;             // did we generate a .i file
-        scope (exit)
-        {
-            if (ifile)
-                File.remove(filename.toChars());        // remove generated file
-        }
 
+        const(ubyte)[] srctext;
         if (global.preprocess &&
             FileName.equalsExt(srcfile.toString(), c_ext) &&
             FileName.exists(srcfile.toString()))
         {
-            filename = global.preprocess(srcfile, loc, ifile, &defines);  // run C preprocessor
+            /* Apply C preprocessor to the .c file, returning the contents
+             * after preprocessing
+             */
+            srctext = global.preprocess(srcfile, loc, defines).data;
         }
+        else
+            srctext = global.fileManager.getFileContents(filename);
+        this.src = srctext;
 
-        if (auto result = global.fileManager.lookup(filename))
+        if (srctext)
         {
-            this.src = result;
             if (global.params.makeDeps.doOutput)
                 global.params.makeDeps.files.push(srcfile.toChars());
             return true;
@@ -921,70 +921,6 @@ extern (C++) final class Module : Package
         return this;
     }
 
-    override void importAll(Scope* prevsc)
-    {
-        //printf("+Module::importAll(this = %p, '%s'): parent = %p\n", this, toChars(), parent);
-        if (_scope)
-            return; // already done
-        if (filetype == FileType.ddoc)
-        {
-            error(loc, "%s `%s` is a Ddoc file, cannot import it", kind, toPrettyChars);
-            return;
-        }
-
-        /* Note that modules get their own scope, from scratch.
-         * This is so regardless of where in the syntax a module
-         * gets imported, it is unaffected by context.
-         * Ignore prevsc.
-         */
-        Scope* sc = Scope.createGlobal(this, global.errorSink); // create root scope
-
-        if (md && md.msg)
-            md.msg = semanticString(sc, md.msg, "deprecation message");
-
-        // Add import of "object", even for the "object" module.
-        // If it isn't there, some compiler rewrites, like
-        //    classinst == classinst -> .object.opEquals(classinst, classinst)
-        // would fail inside object.d.
-        if (filetype != FileType.c &&
-            (members.length == 0 ||
-             (*members)[0].ident != Id.object ||
-             (*members)[0].isImport() is null))
-        {
-            auto im = new Import(Loc.initial, null, Id.object, null, 0);
-            members.shift(im);
-        }
-        if (!symtab)
-        {
-            // Add all symbols into module's symbol table
-            symtab = new DsymbolTable();
-            for (size_t i = 0; i < members.length; i++)
-            {
-                Dsymbol s = (*members)[i];
-                s.addMember(sc, sc.scopesym);
-            }
-        }
-        // anything else should be run after addMember, so version/debug symbols are defined
-        /* Set scope for the symbols so that if we forward reference
-         * a symbol, it can possibly be resolved on the spot.
-         * If this works out well, it can be extended to all modules
-         * before any semantic() on any of them.
-         */
-        this.setScope(sc); // remember module scope for semantic
-        for (size_t i = 0; i < members.length; i++)
-        {
-            Dsymbol s = (*members)[i];
-            s.setScope(sc);
-        }
-        for (size_t i = 0; i < members.length; i++)
-        {
-            Dsymbol s = (*members)[i];
-            s.importAll(sc);
-        }
-        sc = sc.pop();
-        sc.pop(); // 2 pops because Scope.createGlobal() created 2
-    }
-
     /**********************************
      * Determine if we need to generate an instance of ModuleInfo
      * for this Module.
@@ -1021,14 +957,14 @@ extern (C++) final class Module : Package
         }
     }
 
-    override bool isPackageAccessible(Package p, Visibility visibility, int flags = 0)
+    override bool isPackageAccessible(Package p, Visibility visibility, SearchOptFlags flags = SearchOpt.all)
     {
         if (insearch) // don't follow import cycles
             return false;
         insearch = true;
         scope (exit)
             insearch = false;
-        if (flags & IgnorePrivateImports)
+        if (flags & SearchOpt.ignorePrivateImports)
             visibility = Visibility(Visibility.Kind.public_); // only consider public imports
         return super.isPackageAccessible(p, visibility);
     }
@@ -1384,7 +1320,53 @@ extern (C++) void getLocalClasses(Module mod, ref ClassDeclarations aclasses)
         return 0;
     }
 
-    ScopeDsymbol._foreach(null, mod.members, &pushAddClassDg);
+    _foreach(null, mod.members, &pushAddClassDg);
+}
+
+
+alias ForeachDg = int delegate(size_t idx, Dsymbol s);
+
+/***************************************
+ * Expands attribute declarations in members in depth first
+ * order. Calls dg(size_t symidx, Dsymbol *sym) for each
+ * member.
+ * If dg returns !=0, stops and returns that value else returns 0.
+ * Use this function to avoid the O(N + N^2/2) complexity of
+ * calculating dim and calling N times getNth.
+ * Returns:
+ *  last value returned by dg()
+ */
+int _foreach(Scope* sc, Dsymbols* members, scope ForeachDg dg, size_t* pn = null)
+{
+    assert(dg);
+    if (!members)
+        return 0;
+    size_t n = pn ? *pn : 0; // take over index
+    int result = 0;
+    foreach (size_t i; 0 .. members.length)
+    {
+        import dmd.attrib : AttribDeclaration;
+        import dmd.dtemplate : TemplateMixin;
+
+        Dsymbol s = (*members)[i];
+        if (AttribDeclaration a = s.isAttribDeclaration())
+            result = _foreach(sc, a.include(sc), dg, &n);
+        else if (TemplateMixin tm = s.isTemplateMixin())
+            result = _foreach(sc, tm.members, dg, &n);
+        else if (s.isTemplateInstance())
+        {
+        }
+        else if (s.isUnitTestDeclaration())
+        {
+        }
+        else
+            result = dg(n++, s);
+        if (result)
+            break;
+    }
+    if (pn)
+        *pn = n; // update index
+    return result;
 }
 
 /**

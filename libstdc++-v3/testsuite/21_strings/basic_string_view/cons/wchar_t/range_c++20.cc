@@ -115,23 +115,10 @@ test02()
   static_assert( ! std::is_constructible_v<std::wstring_view, V1> );
 
   using V2 = std::basic_string_view<wchar_t, __gnu_cxx::char_traits<wchar_t>>;
-  // V2::traits_type is not the right type
-  static_assert( ! std::is_constructible_v<std::wstring_view, V2> );
-
-  struct V3 : V2
-  {
-  private:
-    using V2::traits_type;
-  };
-  // V3::traits_type is not a valid (accessible) type
-  static_assert( std::is_constructible_v<std::wstring_view, V3> );
-
-  struct V4 : V2
-  {
-    using traits_type = std::wstring_view::traits_type;
-  };
-  // V4::traits_type is the right type
-  static_assert( std::is_constructible_v<std::wstring_view, V4> );
+  // LWG 3857
+  // basic_string_view should allow explicit conversion when only traits vary
+  static_assert( std::is_constructible_v<std::wstring_view, V2> );
+  static_assert( ! std::is_convertible_v<V2, std::wstring_view> );
 }
 
 void

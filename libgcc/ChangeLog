@@ -1,3 +1,79 @@
+2024-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/113700
+	* config/i386/libgcc-sol2.ver (GCC_14.0.0): Added all symbols from
+	i386/libgcc-glibc.ver (GCC_12.0.0, GCC_13.0.0, GCC_14.0.0).
+	* config/i386/libgcc-glibc.ver: Request notifications on updates.
+
+2024-02-06  Matteo Italia  <matteo@mitalia.net>
+
+	PR libgcc/113337
+	* unwind-seh.c (_Unwind_Resume_or_Rethrow): forward
+	_Unwind_RaiseException return code back to caller instead of
+	calling abort, allowing __cxa_rethrow to invoke std::terminate
+	in case of uncaught rethrown exception
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/113604
+	* libgcc2.c (__divmodbitint4): If uv1 >= vv1, subtract
+	vv1 from uv1:uv0 once or twice as needed, rather than
+	subtracting vv1:vv1.
+
+2024-02-02  Khem Raj  <raj.khem@gmail.com>
+
+	* config/i386/enable-execute-stack-mingw32.c: Include
+	stdlib.h for abort() definition.
+
+2024-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/113700
+	* config/i386/libgcc-glibc.ver (GCC_14.0.0): Remove __PFX prefixes
+	from symbol names.
+
+2024-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/113402
+	* libgcc2.h (__gcc_nested_func_ptr_created): Change type of last
+	argument from void ** to void *.
+	* config/i386/heap-trampoline.c (__gcc_nested_func_ptr_created):
+	Change type of dst from void ** to void * and cast dst to void **
+	before dereferencing it.
+	* config/aarch64/heap-trampoline.c (__gcc_nested_func_ptr_created):
+	Likewise.
+
+2024-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/113403
+	* config/i386/t-heap-trampoline: Add to LIB2ADDEHSHARED
+	i386/heap-trampoline.c rather than aarch64/heap-trampoline.c.
+
+2024-02-01  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/crti.S: Remove stack marking.
+	* config/aarch64/crtn.S: Remove stack marking, include aarch64-asm.h
+	* config/aarch64/lse.S: Remove stack and GNU property markings.
+
+2024-01-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libgcc/113403
+	* config.host: Build libheap_t.a for i686/x86_64 Darwin.
+	* config/aarch64/heap-trampoline.c (HEAP_T_ATTR): New.
+	(allocate_tramp_ctrl): Allow a target to build this as a weak def.
+	(__gcc_nested_func_ptr_created): Likewise.
+	* config/i386/heap-trampoline.c (HEAP_T_ATTR): New.
+	(allocate_tramp_ctrl): Allow a target to build this as a weak def.
+	(__gcc_nested_func_ptr_created): Likewise.
+	* config/t-darwin: Build libheap_t.a (a CRT with heap trampoline
+	support).
+
+2024-01-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libgcc/113403
+	* config/aarch64/t-heap-trampoline: Move the heap trampoline
+	support functions from libgcc.a to libgcc_eh.a.
+	* config/i386/t-heap-trampoline: Likewise.
+
 2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jakub Jelinek   <jakub@redhat.com>
 

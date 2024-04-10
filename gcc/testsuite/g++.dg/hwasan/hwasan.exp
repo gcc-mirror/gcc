@@ -22,7 +22,8 @@ load_lib hwasan-dg.exp
 
 # Initialize `dg'.
 dg-init
-hwasan_init
+# libhwasan uses libstdc++ but we assume that's added by the g++ impl.
+hwasan_init 0
 
 # Main loop.
 if [check_effective_target_fsanitize_hwaddress] {

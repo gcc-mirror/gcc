@@ -150,8 +150,7 @@ c_convert (tree type, tree expr, bool init_const)
 
     case BOOLEAN_TYPE:
     convert_to_boolean:
-      return fold_convert_loc
-	(loc, type, c_objc_common_truthvalue_conversion (input_location, expr));
+      return c_objc_common_truthvalue_conversion (input_location, expr, type);
 
     case POINTER_TYPE:
       /* The type nullptr_t may be converted to a pointer type.  The result is

@@ -51,10 +51,7 @@
   UNSPEC_BITREV_8B
 
   ;; TLS
-  UNSPEC_TLS_GD
-  UNSPEC_TLS_LD
-  UNSPEC_TLS_LE
-  UNSPEC_TLS_IE
+  UNSPEC_TLS
 
   ;; Stack tie
   UNSPEC_TIE
@@ -85,6 +82,10 @@
 
   UNSPEC_SIBCALL_VALUE_MULTIPLE_INTERNAL_1
   UNSPEC_CALL_VALUE_MULTIPLE_INTERNAL_1
+
+  UNSPEC_LOAD_SYMBOL_OFFSET64
+  UNSPEC_LA_PCREL_64_PART1
+  UNSPEC_LA_PCREL_64_PART2
 ])
 
 (define_c_enum "unspecv" [
@@ -2185,6 +2186,64 @@
   [(set_attr "move_type" "move,const,load,store,mgtf,fpload,mftg,fpstore")
    (set_attr "mode" "DI")])
 
+;; Use two registers to get the global symbol address from the got table.
+;; la.global rd, rt, sym
+
+(define_insn_and_split "movdi_symbolic_off64"
+ [(set (match_operand:DI 0 "register_operand" "=r,r")
+       (match_operand:DI 1 "symbolic_off64_or_reg_operand" "Yd,r"))
+  (unspec:DI [(const_int 0)]
+    UNSPEC_LOAD_SYMBOL_OFFSET64)
+  (clobber (match_operand:DI 2 "register_operand" "=&r,r"))]
+ "TARGET_64BIT && TARGET_CMODEL_EXTREME"
+{
+  if (which_alternative == 1)
+    return "#";
+
+  enum loongarch_symbol_type symbol_type;
+  gcc_assert (loongarch_symbolic_constant_p (operands[1], &symbol_type));
+
+  switch (symbol_type)
+    {
+    case SYMBOL_PCREL64:
+      return "la.local\t%0,%2,%1";
+    case SYMBOL_GOT_DISP:
+      return "la.global\t%0,%2,%1";
+    case SYMBOL_TLS_IE:
+      return "la.tls.ie\t%0,%2,%1";
+    case SYMBOL_TLSGD:
+      return "la.tls.gd\t%0,%2,%1";
+    case SYMBOL_TLSLDM:
+      return "la.tls.ld\t%0,%2,%1";
+
+    default:
+      gcc_unreachable ();
+  }
+}
+ "&& REG_P (operands[1]) && find_reg_note (insn, REG_UNUSED, operands[2]) != 0"
+ [(set (match_dup 0) (match_dup 1))]
+ ""
+ [(set_attr "mode" "DI")
+  (set_attr "insn_count" "5")])
+
+;; The 64-bit PC-relative part of address loading.
+;; Note that the psABI does not allow splitting it.
+(define_insn "la_pcrel64_two_parts"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI [(match_operand:DI 2 "") (pc)] UNSPEC_LA_PCREL_64_PART1))
+   (set (match_operand:DI 1 "register_operand" "=r")
+	(unspec:DI [(match_dup 2) (pc)] UNSPEC_LA_PCREL_64_PART2))]
+  "TARGET_ABI_LP64 && la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE"
+  {
+    return "pcalau12i\t%0,%r2\n\t"
+	   "addi.d\t%1,$r0,%L2\n\t"
+	   "lu32i.d\t%1,%R2\n\t"
+	   "lu52i.d\t%1,%1,%H2";
+  }
+  [(set_attr "move_type" "move")
+   (set_attr "mode" "DI")
+   (set_attr "length" "16")])
+
 ;; 32-bit Integer moves
 
 (define_expand "movsi"
@@ -2701,45 +2760,37 @@
 
 ;; Thread-Local Storage
 
-(define_insn "@got_load_tls_gd<mode>"
+(define_insn "@load_tls<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(unspec:P
 	    [(match_operand:P 1 "symbolic_operand" "")]
-	    UNSPEC_TLS_GD))]
+	    UNSPEC_TLS))]
   ""
-  "la.tls.gd\t%0,%1"
-  [(set_attr "got" "load")
-   (set_attr "mode" "<MODE>")])
+{
+  enum loongarch_symbol_type symbol_type;
+  gcc_assert (loongarch_symbolic_constant_p (operands[1], &symbol_type));
 
-(define_insn "@got_load_tls_ld<mode>"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P
-	    [(match_operand:P 1 "symbolic_operand" "")]
-	    UNSPEC_TLS_LD))]
-  ""
-  "la.tls.ld\t%0,%1"
-  [(set_attr "got" "load")
-   (set_attr "mode" "<MODE>")])
+  switch (symbol_type)
+    {
+    case SYMBOL_TLS_LE:
+      return "la.tls.le\t%0,%1";
+    case SYMBOL_TLS_IE:
+      return "la.tls.ie\t%0,%1";
+    case SYMBOL_TLSLDM:
+      return "la.tls.ld\t%0,%1";
+    case SYMBOL_TLSGD:
+      return "la.tls.gd\t%0,%1";
 
-(define_insn "@got_load_tls_le<mode>"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P
-	    [(match_operand:P 1 "symbolic_operand" "")]
-	    UNSPEC_TLS_LE))]
-  ""
-  "la.tls.le\t%0,%1"
-  [(set_attr "got" "load")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "@got_load_tls_ie<mode>"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P
-	    [(match_operand:P 1 "symbolic_operand" "")]
-	    UNSPEC_TLS_IE))]
-  ""
-  "la.tls.ie\t%0,%1"
-  [(set_attr "got" "load")
-   (set_attr "mode" "<MODE>")])
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "mode" "<MODE>")
+   (set (attr "insn_count")
+      (if_then_else
+	(match_test "TARGET_CMODEL_EXTREME")
+	(const_int 4)
+	(const_int 2)))])
 
 ;; Move operand 1 to the high word of operand 0 using movgr2frh.w, preserving the
 ;; value in the low word.

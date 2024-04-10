@@ -112,6 +112,8 @@ CONST
    UnboundedAddressName = "_m2_contents" ;
    UnboundedHighName    = "_m2_high_%d" ;
 
+   BreakSym             = 5293 ;
+
 TYPE
    ConstLitPoolEntry = POINTER TO RECORD
                                      sym      : CARDINAL ;
@@ -1015,6 +1017,14 @@ END FinalSymbol ;
 
 
 (*
+   stop - a debugger convenience hook.
+*)
+
+PROCEDURE stop ;
+END stop ;
+
+
+(*
    NewSym - Sets Sym to a new symbol index.
 *)
 
@@ -1028,6 +1038,10 @@ BEGIN
       SymbolType := DummySym
    END ;
    PutIndice(Symbols, sym, pSym) ;
+   IF sym = BreakSym
+   THEN
+      stop
+   END ;
    INC(FreeSymbol)
 END NewSym ;
 
@@ -6600,6 +6614,22 @@ BEGIN
       RETURN ZType
    END
 END GetConstLitType ;
+
+
+(*
+   GetTypeMode - return the type of sym, it returns Address is the
+                 symbol is a LValue.
+*)
+
+PROCEDURE GetTypeMode (sym: CARDINAL) : CARDINAL ;
+BEGIN
+   IF GetMode (sym) = LeftValue
+   THEN
+      RETURN( Address )
+   ELSE
+      RETURN( GetType (sym) )
+   END
+END GetTypeMode ;
 
 
 (*

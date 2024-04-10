@@ -33,7 +33,7 @@ version (LDC) version = GNU_OR_LDC;
  *
  * Returns: the slice containing the result
  */
-T[] arrayOp(T : T[], Args...)(T[] res, Filter!(isType, Args) args) @trusted @nogc pure nothrow
+T[] arrayOp(T : T[], Args...)(T[] res, Filter!(isType, Args) args) @trusted
 {
     alias scalarizedExp = staticMap!(toElementType, Args);
     alias check = typeCheck!(true, T, scalarizedExp); // must support all scalar ops
@@ -541,7 +541,7 @@ unittest
 }
 
 // test handling of v op= exp
-unittest
+@nogc nothrow pure @safe unittest
 {
     uint[32] c;
     arrayOp!(uint[], uint, "+=")(c[], 2);
@@ -556,7 +556,7 @@ unittest
 }
 
 // proper error message for UDT lacking certain ops
-unittest
+@nogc nothrow pure @safe unittest
 {
     static assert(!is(typeof(&arrayOp!(int[4][], int[4], "+="))));
     static assert(!is(typeof(&arrayOp!(int[4][], int[4], "u-", "="))));
@@ -585,7 +585,7 @@ unittest
 }
 
 // test mixed type array op
-unittest
+@nogc nothrow pure @safe unittest
 {
     uint[32] a = 0xF;
     float[32] res = 2.0f;
@@ -595,7 +595,7 @@ unittest
 }
 
 // test mixed type array op
-unittest
+@nogc nothrow pure @safe unittest
 {
     static struct S
     {
@@ -613,7 +613,7 @@ unittest
 }
 
 // test scalar after operation argument
-unittest
+@nogc nothrow pure @safe unittest
 {
     float[32] res, a = 2, b = 3;
     float c = 4;
@@ -622,7 +622,7 @@ unittest
         assert(v == 2 * 3 + 4);
 }
 
-unittest
+@nogc nothrow pure @safe unittest
 {
     // https://issues.dlang.org/show_bug.cgi?id=17964
     uint bug(){
@@ -635,7 +635,7 @@ unittest
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=19796
-unittest
+nothrow pure @safe unittest
 {
     double[] data = [0.5];
     double[] result;
@@ -645,7 +645,7 @@ unittest
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=21110
-unittest
+pure unittest
 {
     import core.exception;
 
@@ -667,4 +667,21 @@ unittest
 
     void func() { dst[] = a[] + b[]; }
     assertThrown!AssertError(func(), "Array operations with mismatched lengths must throw an error");
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24272
+unittest
+{
+    static struct B
+    {
+        B opOpAssign(string op)(B other)
+        {
+            static int g;
+            g++;
+            throw new Exception("");
+        }
+    }
+
+    B[] bArr;
+    bArr[] += B();
 }

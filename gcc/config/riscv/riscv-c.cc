@@ -250,7 +250,8 @@ riscv_resolve_overloaded_builtin (unsigned int uncast_location, tree fndecl,
     case RISCV_BUILTIN_GENERAL:
       break;
     case RISCV_BUILTIN_VECTOR:
-      new_fndecl = riscv_vector::resolve_overloaded_builtin (subcode, arglist);
+      new_fndecl = riscv_vector::resolve_overloaded_builtin (loc, subcode,
+							     fndecl, arglist);
       break;
     default:
       gcc_unreachable ();

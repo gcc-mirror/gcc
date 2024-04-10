@@ -64,6 +64,8 @@ size_t strcspn(scope const char* s1, scope const char* s2) pure;
 ///
 char*  strdup(scope const char *s);
 ///
+char*  strndup(scope const char *str, size_t size);
+///
 char*  strerror(int errnum);
 // This `strerror_r` definition is not following the POSIX standard
 version (ReturnStrerrorR)
@@ -72,8 +74,15 @@ version (ReturnStrerrorR)
     const(char)* strerror_r(int errnum, return scope char* buf, size_t buflen);
 }
 // This one is
+else version (CRuntime_Newlib)
+{
+    ///
+    pragma(mangle, "__xpg_strerror_r")
+    int strerror_r(int errnum, scope char* buf, size_t buflen);
+}
 else
 {
+    ///
     int strerror_r(int errnum, scope char* buf, size_t buflen);
 }
 ///

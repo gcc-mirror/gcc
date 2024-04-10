@@ -155,7 +155,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	requires convertible_to<ranges::range_reference_t<_R>, _Yielded>
 	auto
 	yield_value(ranges::elements_of<_R, _Alloc> __r)
-	  noexcept
 	{
 	  auto __n = [] (allocator_arg_t, _Alloc,
 			 ranges::iterator_t<_R> __i,

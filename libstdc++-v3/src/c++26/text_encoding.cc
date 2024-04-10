@@ -27,6 +27,9 @@
 
 #ifdef _GLIBCXX_USE_NL_LANGINFO_L
 #include <locale.h>
+#if __has_include(<xlocale.h>)
+# include <xlocale.h>
+#endif
 #include <langinfo.h>
 
 #if __CHAR_BIT__ == 8

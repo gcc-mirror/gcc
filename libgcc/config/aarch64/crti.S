@@ -23,12 +23,6 @@
 
 #include "aarch64-asm.h"
 
-/* An executable stack is *not* required for these functions.  */
-#if defined(__ELF__) && defined(__linux__)
-.section .note.GNU-stack,"",%progbits
-.previous
-#endif
-
 # This file creates a stack frame for the contents of the .fini and
 # .init sections.  Users may put any desired instructions in those
 # sections.

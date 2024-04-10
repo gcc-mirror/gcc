@@ -381,11 +381,11 @@ TargetCPP::parameterType (Type *type)
   Type *tvalist = target.va_listType (Loc (), NULL);
   if (type->ty == TY::Tsarray && tvalist->ty == TY::Tsarray)
     {
-      Type *tb = type->toBasetype ()->mutableOf ();
+      Type *tb = mutableOf (type->toBasetype ());
       if (tb == tvalist)
 	{
 	  tb = type->nextOf ()->pointerTo ();
-	  type = tb->castMod (type->mod);
+	  type = castMod (tb, type->mod);
 	}
     }
 

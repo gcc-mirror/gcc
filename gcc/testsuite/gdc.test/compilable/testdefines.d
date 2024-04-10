@@ -12,3 +12,6 @@ static assert(F64 == 8.0);
 static assert(F80 == 9.0L);
 
 static assert(SSS == "hello");
+
+static assert(ABC == 12);
+static assert(DEF == 17);

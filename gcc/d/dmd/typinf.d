@@ -1,7 +1,7 @@
 /**
  * Generate `TypeInfo` objects, which are needed for run-time introspection of types.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/typinf.d, _typinf.d)
@@ -65,6 +65,7 @@ extern (C++) bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope
         fatal();
     }
 
+    import dmd.typesem : merge2;
     Type t = torig.merge2(); // do this since not all Type's are merge'd
     bool needsCodegen = false;
     if (!t.vtinfo)

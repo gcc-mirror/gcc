@@ -150,11 +150,11 @@ get_libcall_type (d_libcall_type type)
       break;
 
     case LCT_CONST_TYPEINFO:
-      libcall_types[type] = Type::dtypeinfo->type->constOf ();
+      libcall_types[type] = constOf (Type::dtypeinfo->type);
       break;
 
     case LCT_CONST_CLASSINFO:
-      libcall_types[type] = Type::typeinfoclass->type->constOf ();
+      libcall_types[type] = constOf (Type::typeinfoclass->type);
       break;
 
     case LCT_ARRAY_VOID:
@@ -202,7 +202,7 @@ get_libcall_type (d_libcall_type type)
       break;
 
     case LCT_IMMUTABLE_CHARPTR:
-      libcall_types[type] = Type::tchar->pointerTo ()->immutableOf ();
+      libcall_types[type] = immutableOf (Type::tchar->pointerTo ());
       break;
 
     default:

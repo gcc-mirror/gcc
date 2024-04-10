@@ -4019,6 +4019,11 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
       maxlen = wi::to_wide (max_object_size (), prec) - 2;
     }
 
+  /* For -fsanitize=address, don't optimize the upper bound of the
+     length to be able to diagnose UB on non-zero terminated arrays.  */
+  if (sanitize_flags_p (SANITIZE_ADDRESS))
+    maxlen = wi::max_value (TYPE_PRECISION (sizetype), UNSIGNED);
+
   if (minlen == maxlen)
     {
       /* Fold the strlen call to a constant.  */

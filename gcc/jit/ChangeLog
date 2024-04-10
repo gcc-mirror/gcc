@@ -1,3 +1,18 @@
+2024-02-02  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_27): New ABI tag.
+	* docs/topics/expressions.rst: Document gcc_jit_context_new_sizeof.
+	* jit-playback.cc (new_sizeof): New method.
+	* jit-playback.h (new_sizeof): New method.
+	* jit-recording.cc (recording::context::new_sizeof,
+	recording::memento_of_sizeof::replay_into,
+	recording::memento_of_sizeof::make_debug_string,
+	recording::memento_of_sizeof::write_reproducer): New methods.
+	* jit-recording.h (class memento_of_sizeof): New class.
+	* libgccjit.cc (gcc_jit_context_new_sizeof): New function.
+	* libgccjit.h (gcc_jit_context_new_sizeof): New function.
+	* libgccjit.map: New function.
+
 2024-01-19  Antoni Boucher  <bouanto@zoho.com>
 
 	* jit-builtins.cc (ensure_optimization_builtins_exist): Add

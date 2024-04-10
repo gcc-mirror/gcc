@@ -240,6 +240,8 @@
 #undef r
 #undef x
 #undef y
+// <sys/poll.h> defines pollfd_ext::u on AIX 7.3
+#undef u
 // <sys/var.h> defines vario::v
 #undef v
 // <sys/timer.h> defines trb::func and cputime_tmr::func

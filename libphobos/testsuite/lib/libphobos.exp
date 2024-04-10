@@ -234,7 +234,7 @@ proc libphobos_init { args } {
 	    if { "$mldir" == "." } {
 	      continue
 	    }
-	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.${shlib_ext}*]] >= 1 } {
 	      append ld_library_path ":${gccdir}/${mldir}"
 	    }
 	  }

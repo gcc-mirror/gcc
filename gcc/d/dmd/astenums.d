@@ -1,7 +1,7 @@
 /**
  * Defines enums common to dmd and dmd as parse library.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/astenums.d, _astenums.d)
  * Documentation:  https://dlang.org/phobos/dmd_astenums.html
@@ -63,7 +63,7 @@ enum STC : ulong  // transfer changes to declaration.h
     foreach_            = 0x4000,   /// variable for foreach loop
     variadic            = 0x8000,   /// the `variadic` parameter in: T foo(T a, U b, V variadic...)
 
-    //                  = 0x1_0000,
+    constscoperef       = 0x1_0000,   /// when `in` means const|scope|ref
     templateparameter   = 0x2_0000,   /// template parameter
     ref_                = 0x4_0000,   /// `ref`
     scope_              = 0x8_0000,   /// `scope`
@@ -112,7 +112,7 @@ enum STC : ulong  // transfer changes to declaration.h
     volatile_           = 0x40_0000_0000_0000,   /// destined for volatile in the back end
 
     safeGroup = STC.safe | STC.trusted | STC.system,
-    IOR  = STC.in_ | STC.ref_ | STC.out_,
+    IOR  = STC.constscoperef | STC.in_ | STC.ref_ | STC.out_,
     TYPECTOR = (STC.const_ | STC.immutable_ | STC.shared_ | STC.wild),
     FUNCATTR = (STC.ref_ | STC.nothrow_ | STC.nogc | STC.pure_ | STC.property | STC.live |
                 safeGroup),
@@ -458,4 +458,10 @@ extern (C++) struct structalign_t
     uint get() const       { return value; }
     bool isPack() const    { return pack; }
     void setPack(bool pack) { this.pack = pack; }
+}
+
+/// Use to return D arrays from C++ functions
+extern (C++) struct DArray(T)
+{
+    T[] data;
 }

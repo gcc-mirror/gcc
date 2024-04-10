@@ -2664,6 +2664,32 @@ rest_of_handle_insert_vzeroupper (void)
   /* Call optimize_mode_switching.  */
   g->get_passes ()->execute_pass_mode_switching ();
 
+  /* LRA removes all REG_DEAD/REG_UNUSED notes and normally they
+     reappear in the IL only at the start of pass_rtl_dse2, which does
+     df_note_add_problem (); df_analyze ();
+     The vzeroupper is scheduled after postreload_cse pass and mode
+     switching computes the notes as well, the problem is that e.g.
+     pass_gcse2 doesn't maintain the notes, see PR113059 and
+     PR112760.  Remove the notes now to restore status quo ante
+     until we figure out how to maintain the notes or what else
+     to do.  */
+  basic_block bb;
+  rtx_insn *insn;
+  FOR_EACH_BB_FN (bb, cfun)
+    FOR_BB_INSNS (bb, insn)
+      if (NONDEBUG_INSN_P (insn))
+	{
+	  rtx *pnote = &REG_NOTES (insn);
+	  while (*pnote != 0)
+	    {
+	      if (REG_NOTE_KIND (*pnote) == REG_DEAD
+		  || REG_NOTE_KIND (*pnote) == REG_UNUSED)
+		*pnote = XEXP (*pnote, 1);
+	      else
+		pnote = &XEXP (*pnote, 1);
+	    }
+	}
+
   df_analyze ();
   return 0;
 }

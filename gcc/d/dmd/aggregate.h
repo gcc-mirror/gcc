@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -234,7 +234,8 @@ struct ClassFlags
         hasTypeInfo = 0x20,
         isAbstract = 0x40,
         isCPPclass = 0x80,
-        hasDtor = 0x100
+        hasDtor = 0x100,
+        hasNameSig = 0x200,
     };
 };
 

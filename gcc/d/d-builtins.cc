@@ -240,7 +240,7 @@ build_frontend_type (tree type)
       sdecl->sizeok = Sizeok::done;
       sdecl->type = (TypeStruct::create (sdecl))->addMod (mod);
       sdecl->type->ctype = type;
-      sdecl->type->merge2 ();
+      merge2 (sdecl->type);
 
       /* Add both named and anonymous fields as members of the struct.
 	 Anonymous fields still need a name in D, so call them "__pad%u".  */
@@ -690,7 +690,7 @@ strip_type_modifiers (Type *type)
       return tnext->pointerTo ();
     }
 
-  return type->castMod (0);
+  return castMod (type, 0);
 }
 
 /* Returns true if types T1 and T2 representing return types or types of
@@ -724,7 +724,7 @@ static bool
 covariant_with_builtin_type_p (Type *t1, Type *t2)
 {
   /* Check whether the declared function matches the built-in.  */
-  if (same_type_p (t1, t2) || t1->covariant (t2) == Covariant::yes)
+  if (same_type_p (t1, t2) || covariant (t1, t2) == Covariant::yes)
     return true;
 
   /* May not be covariant because of D attributes applied on t1.

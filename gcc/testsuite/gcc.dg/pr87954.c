@@ -18,4 +18,4 @@ imul(unsigned int flags)
   return type_dma + (is_rec * !is_dma) * KMALLOC_RECLAIM;
 }
 
-/* { dg-final { scan-tree-dump-times { \* } 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times { \*w? |WIDEN_MULT_PLUS_EXPR} 1 "optimized" } } */

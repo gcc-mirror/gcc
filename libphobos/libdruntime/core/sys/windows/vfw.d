@@ -678,7 +678,7 @@ extern (Windows) {
     void ICCompressorFree(PCOMPVARS pc);
 }
 
-mixin DECLARE_HANDLE!("HDRAWDIB");
+alias HDRAWDIB = HANDLE;
 
 enum {
     DDF_0001            = 0x0001,

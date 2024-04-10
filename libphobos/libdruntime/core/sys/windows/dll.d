@@ -487,10 +487,20 @@ bool dll_process_attach( HINSTANCE hInstance, bool attach_threads,
         }, null );
 }
 
-/** same as above, but only usable if druntime is linked statically
+version (Shared) version (DigitalMars) private extern(C) extern __gshared void* __ImageBase;
+
+/** same as above, but checking for shared runtime
  */
+pragma(inline, false) // version (Shared) only set when compiling druntime
 bool dll_process_attach( HINSTANCE hInstance, bool attach_threads = true )
 {
+    version (Shared) version (DigitalMars)
+    {
+        // cannot declare rt_initSharedModule globally as it then conflicts with the definition in sections_win64.d
+        pragma(mangle, "rt_initSharedModule") extern(C) bool rt_initSharedModule( void* handle );
+        if ( hInstance != &__ImageBase )
+            return rt_initSharedModule( hInstance );
+    }
     version (Win64)
     {
         return dll_process_attach( hInstance, attach_threads,
@@ -506,8 +516,16 @@ bool dll_process_attach( HINSTANCE hInstance, bool attach_threads = true )
 /**
  * to be called from DllMain with reason DLL_PROCESS_DETACH
  */
+pragma(inline, false) // version (Shared) only set when compiling druntime
 void dll_process_detach( HINSTANCE hInstance, bool detach_threads = true )
 {
+    version (Shared) version (DigitalMars)
+    {
+        // cannot declare rt_termSharedModule globally as it then conflicts with the definition in sections_win64.d
+        pragma(mangle, "rt_termSharedModule") extern(C) bool rt_termSharedModule( void* handle );
+        if ( hInstance != &__ImageBase )
+            return cast(void) rt_termSharedModule( hInstance );
+    }
     // notify core.thread.joinLowLevelThread that the DLL is about to be unloaded
     thread_DLLProcessDetaching = true;
 
@@ -531,6 +549,21 @@ void dll_process_detach( HINSTANCE hInstance, bool detach_threads = true )
     Runtime.terminate();
 }
 
+/*****************************
+* Check whether the D runtime is built as a DLL or linked statically
+*
+* Returns:
+*	true = DLL, false = static library
+*/
+pragma(inline, false) // version (Shared) only set when compiling druntime
+bool isSharedDRuntime()
+{
+    version (Shared)
+        return true;
+    else
+        return false;
+}
+
 /* Make sure that tlsCtorRun is itself a tls variable
  */
 static bool tlsCtorRun;
@@ -542,8 +575,15 @@ static ~this() { tlsCtorRun = false; }
  * Returns:
  *	true for success, false for failure
  */
-bool dll_thread_attach( bool attach_thread = true, bool initTls = true )
+pragma(inline, false) // version (Shared) only set when compiling druntime
+bool dll_thread_attach( bool attach_thread = true, bool initTls = true, HINSTANCE hInstance = null )
 {
+    version (Shared) version (DigitalMars)
+    {
+        if ( hInstance && hInstance != &__ImageBase )
+            return true;
+    }
+
     // if the OS has not prepared TLS for us, don't attach to the thread
     //  (happened when running under x64 OS)
     auto tid = GetCurrentThreadId();
@@ -565,8 +605,15 @@ bool dll_thread_attach( bool attach_thread = true, bool initTls = true )
  * Returns:
  *	true for success, false for failure
  */
-bool dll_thread_detach( bool detach_thread = true, bool exitTls = true )
+pragma(inline, false) // version (Shared) only set when compiling druntime
+bool dll_thread_detach( bool detach_thread = true, bool exitTls = true, HINSTANCE hInstance = null )
 {
+    version (Shared) version (DigitalMars)
+    {
+        if ( hInstance && hInstance != &__ImageBase )
+            return true;
+    }
+
     // if the OS has not prepared TLS for us, we did not attach to the thread
     if ( !GetTlsDataAddress( GetCurrentThreadId() ) )
          return false;
@@ -613,10 +660,10 @@ mixin template SimpleDllMain()
                 return true;
 
             case DLL_THREAD_ATTACH:
-                return dll_thread_attach( true, true );
+                return dll_thread_attach( true, true, hInstance );
 
             case DLL_THREAD_DETACH:
-                return dll_thread_detach( true, true );
+                return dll_thread_detach( true, true, hInstance );
         }
     }
 }

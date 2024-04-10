@@ -127,7 +127,7 @@
 
 (define_insn_reservation "generic_ooo_fcvt" 3
   (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "fcvt"))
+       (eq_attr "type" "fcvt,fcvt_i2f,fcvt_f2i"))
   "generic_ooo_issue,generic_ooo_fxu")
 
 (define_insn_reservation "generic_ooo_fcmp" 2

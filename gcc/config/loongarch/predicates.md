@@ -576,6 +576,18 @@
 	  || symbolic_pcrel_offset_operand (op, Pmode));
 })
 
+(define_predicate "symbolic_off64_operand"
+ (match_code "const,symbol_ref,label_ref")
+{
+  enum loongarch_symbol_type type;
+  return loongarch_symbolic_constant_p (op, &type)
+	 && loongarch_symbol_extreme_p (type);
+})
+
+(define_predicate "symbolic_off64_or_reg_operand"
+ (ior (match_operand 0 "register_operand")
+      (match_operand 0 "symbolic_off64_operand")))
+
 (define_predicate "equality_operator"
   (match_code "eq,ne"))
 

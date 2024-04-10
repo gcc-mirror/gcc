@@ -1,10 +1,11 @@
 /*
 TEST_OUTPUT:
----
-fail_compilation/ice9540.d(35): Error: function `ice9540.A.test.AddFront!(this, f).AddFront.dg(int __param_0)` is not callable using argument types `()`
-fail_compilation/ice9540.d(35):        too few arguments, expected 1, got 0
-fail_compilation/ice9540.d(26): Error: template instance `ice9540.A.test.AddFront!(this, f)` error instantiating
----
+----
+fail_compilation/ice9540.d(36): Error: function `dg` is not callable using argument types `()`
+fail_compilation/ice9540.d(36):        too few arguments, expected 1, got 0
+fail_compilation/ice9540.d(33):        `ice9540.A.test.AddFront!(this, f).AddFront.dg(int __param_0)` declared here
+fail_compilation/ice9540.d(27): Error: template instance `ice9540.A.test.AddFront!(this, f)` error instantiating
+----
 */
 
 template Tuple(E...) { alias E Tuple; }

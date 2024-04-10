@@ -1077,6 +1077,21 @@ recording::context::new_global_init_rvalue (lvalue *variable,
   gbl->set_rvalue_init (init); /* Needed by the global for write dump.  */
 }
 
+/* Create a recording::memento_of_sizeof instance and add it
+   to this context's list of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_sizeof.  */
+
+recording::rvalue *
+recording::context::new_sizeof (recording::type *type)
+{
+  recording::rvalue *result =
+    new memento_of_sizeof (this, NULL, type);
+  record (result);
+  return result;
+}
+
 /* Create a recording::memento_of_new_string_literal instance and add it
    to this context's list of mementos.
 
@@ -5456,6 +5471,43 @@ memento_of_new_rvalue_from_const <void *>::write_reproducer (reproducer &r)
    can exit the gcc::jit::recording namespace.  */
 
 } // namespace recording
+
+/* The implementation of class gcc::jit::recording::memento_of_sizeof.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::memento_of_sizeof.  */
+
+void
+recording::memento_of_sizeof::replay_into (replayer *r)
+{
+  set_playback_obj (r->new_sizeof (m_type->playback_type ()));
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   sizeof expressions.  */
+
+recording::string *
+recording::memento_of_sizeof::make_debug_string ()
+{
+  return string::from_printf (m_ctxt,
+			      "sizeof (%s)",
+			      m_type->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for sizeof
+   expressions.  */
+
+void
+recording::memento_of_sizeof::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+    "    gcc_jit_context_new_sizeof (%s, /* gcc_jit_context *ctxt */\n"
+    "                                %s); /* gcc_jit_type *type */\n",
+    id,
+    r.get_identifier (get_context ()),
+    r.get_identifier (m_type));
+}
 
 /* The implementation of class gcc::jit::recording::memento_of_new_string_literal.  */
 

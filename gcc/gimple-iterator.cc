@@ -666,10 +666,11 @@ gsi_move_after (gimple_stmt_iterator *from, gimple_stmt_iterator *to)
 
 
 /* Move the statement at FROM so it comes right before the statement
-   at TO.  */
+   at TO using method M.  M defaults to GSI_SAME_STMT.  */
 
 void
-gsi_move_before (gimple_stmt_iterator *from, gimple_stmt_iterator *to)
+gsi_move_before (gimple_stmt_iterator *from, gimple_stmt_iterator *to,
+		 gsi_iterator_update m)
 {
   gimple *stmt = gsi_stmt (*from);
   gsi_remove (from, false);
@@ -677,7 +678,7 @@ gsi_move_before (gimple_stmt_iterator *from, gimple_stmt_iterator *to)
   /* For consistency with gsi_move_after, it might be better to have
      GSI_NEW_STMT here; however, that breaks several places that expect
      that TO does not change.  */
-  gsi_insert_before (to, stmt, GSI_SAME_STMT);
+  gsi_insert_before (to, stmt, m);
 }
 
 

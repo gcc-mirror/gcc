@@ -1,3 +1,114 @@
+2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113788
+	* parser.cc (CP_PARSER_FLAGS_PARAMETER): New enumerator.
+	(cp_parser_decl_specifier_seq): Parse RID_THIS only if
+	CP_PARSER_FLAGS_PARAMETER is set in flags.
+	(cp_parser_parameter_declaration): Or in CP_PARSER_FLAGS_PARAMETER
+	when calling cp_parser_decl_specifier_seq.
+
+2024-02-06  Marek Polacek  <polacek@redhat.com>
+
+	* method.cc (early_check_defaulted_comparison): Add
+	auto_diagnostic_group.
+
+2024-02-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107291
+	* method.cc (early_check_defaulted_comparison): Fail if not friend.
+
+2024-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111286
+	* tree.cc (rvalue): Don't drop cv-quals from an array.
+
+2024-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110006
+	PR c++/112769
+	* constraint.cc (subst_info::quiet): Accomodate non-diagnostic
+	tsubst flags.
+	(tsubst_valid_expression_requirement): Likewise.
+	(tsubst_simple_requirement): Return a substituted _REQ node when
+	processing_template_decl.
+	(tsubst_type_requirement_1): Accomodate non-diagnostic tsubst
+	flags.
+	(tsubst_type_requirement): Return a substituted _REQ node when
+	processing_template_decl.
+	(tsubst_compound_requirement): Likewise.  Accomodate non-diagnostic
+	tsubst flags.
+	(tsubst_nested_requirement): Likewise.
+	(tsubst_requires_expr): Don't defer partial substitution when
+	processing_constraint_expression_p is true, in which case return
+	a substituted REQUIRES_EXPR.
+	* pt.cc (tsubst_expr) <case REQUIRES_EXPR>: Accomodate
+	non-diagnostic tsubst flags.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110084
+	* pt.cc (tsubst_function_decl): Only check a function defaulted
+	outside the class if the class is complete.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112439
+	* constexpr.cc (cxx_eval_store_expression): Check empty_base
+	before marking a CONSTRUCTOR readonly.
+
+2024-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113638
+	* cp-tree.h: Adjust comment.
+	* pt.cc (instantiate_template): Set VAR_HAD_UNKNOWN_BOUND for
+	variable template.
+
+2024-02-01  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (reference_like_class_p): Consider even non-templates for
+	std::span-like classes.
+
+2024-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112737
+	* pt.cc (iterative_hash_template_arg) <case TEMPLATE_DECL>:
+	Adjust hashing to match cp_tree_equal.
+	(ctp_hasher::hash): Also hash CLASS_PLACEHOLDER_TEMPLATE.
+	* tree.cc (cp_tree_equal) <case TEMPLATE_DECL>: Return true
+	for ttp TEMPLATE_DECLs if their TEMPLATE_TEMPLATE_PARMs are
+	equivalent.
+	* typeck.cc (structural_comptypes) <case TEMPLATE_TYPE_PARM>:
+	Use cp_tree_equal to compare CLASS_PLACEHOLDER_TEMPLATE.
+
+2024-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112437
+	* typeck.cc (treat_lvalue_as_rvalue_p): Bail out on sk_namespace in
+	the move on throw of parms loop.
+
+2024-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110358
+	PR c++/109640
+	* call.cc (reference_like_class_p): Don't warn for std::span-like
+	classes.
+
+2024-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113640
+	* call.cc (keep_unused_object_arg): Punt for an xobj member
+	function.
+
+2024-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113644
+	* pt.cc (unify) <case INTEGER_CST>: Handle NULL_TREE type.
+
+2024-01-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107594
+	* module.cc (get_module): Bail on empty name.
+
 2024-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113544

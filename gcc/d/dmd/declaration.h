@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -30,6 +30,9 @@ class StructDeclaration;
 struct IntRange;
 struct AttributeViolation;
 
+bool functionSemantic(FuncDeclaration* fd);
+bool functionSemantic3(FuncDeclaration* fd);
+
 //enum STC : ulong from astenums.d:
 
     #define STCundefined          0ULL
@@ -54,7 +57,7 @@ struct AttributeViolation;
     #define STCforeach            0x4000ULL    /// variable for foreach loop
     #define STCvariadic           0x8000ULL    /// the `variadic` parameter in: T foo(T a, U b, V variadic...)
 
-    //                            0x10000ULL
+    #define STCconstscoperef      0x10000ULL    /// when `in` means const|scope|ref
     #define STCtemplateparameter  0x20000ULL    /// template parameter
     #define STCref                0x40000ULL    /// `ref`
     #define STCscope              0x80000ULL    /// `scope`
@@ -118,7 +121,6 @@ public:
     LINK _linkage;              // may be `LINK::system`; use `resolvedLinkage()` to resolve it
     short inuse;                // used to detect cycles
     uint8_t adFlags;
-    Symbol* isym;               // import version of csym
     DString mangleOverride;     // overridden symbol with pragma(mangle, "...")
 
     const char *kind() const override;
@@ -281,7 +283,6 @@ public:
     bool systemInferred(bool v);
     static VarDeclaration *create(const Loc &loc, Type *t, Identifier *id, Initializer *init, StorageClass storage_class = STCundefined);
     VarDeclaration *syntaxCopy(Dsymbol *) override;
-    void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override final;
     const char *kind() const override;
     AggregateDeclaration *isThis() override final;
     bool needThis() override final;
@@ -700,14 +701,11 @@ public:
     FuncDeclaration *fdensure(FuncDeclaration *fde);
     Expressions *fdrequireParams(Expressions *fdrp);
     Expressions *fdensureParams(Expressions *fdep);
-    bool functionSemantic();
-    bool functionSemantic3();
     bool equals(const RootObject * const o) const override final;
 
-    int findVtblIndex(Dsymbols *vtbl, int dim);
     bool overloadInsert(Dsymbol *s) override;
     bool inUnittest();
-    MATCH leastAsSpecialized(FuncDeclaration *g, Identifiers *names);
+    static MATCH leastAsSpecialized(FuncDeclaration *f, FuncDeclaration *g, Identifiers *names);
     LabelDsymbol *searchLabel(Identifier *ident, const Loc &loc);
     const char *toPrettyChars(bool QualifyTypes = false) override;
     const char *toFullSignature();  // for diagnostics, e.g. 'int foo(int x, int y) pure'
@@ -844,6 +842,7 @@ public:
 class SharedStaticCtorDeclaration final : public StaticCtorDeclaration
 {
 public:
+    bool standalone;
     SharedStaticCtorDeclaration *syntaxCopy(Dsymbol *) override;
 
     SharedStaticCtorDeclaration *isSharedStaticCtorDeclaration() override { return this; }

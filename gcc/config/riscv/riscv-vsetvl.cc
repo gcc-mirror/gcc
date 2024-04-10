@@ -315,6 +315,48 @@ vsetvl_insn_p (rtx_insn *rinsn)
 	  || INSN_CODE (rinsn) == CODE_FOR_vsetvlsi);
 }
 
+/* Return true if it is the bogus vsetvl_pre instruction:
+
+   (define_insn "@vlmax_avl<mode>"
+     [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "const_int_operand" "i")] UNSPEC_VLMAX))]
+     "TARGET_VECTOR"
+     ""
+     [(set_attr "type" "vsetvl_pre")])
+
+   As described above, it's the bogus instruction which doesn't any assembler
+   and should be removed eventually.  It's used for occupying a scalar register
+   for VLMAX avl RVV instruction before register allocation.
+
+   Before RA:
+
+   ...
+   vsetvl_pre (set r136)
+   vadd.vv (use r136 with VLMAX avl)
+   ...
+
+   After RA:
+
+   ...
+   vsetvl_pre (set a5)
+   vadd.vv (use r136 with VLMAX avl)
+   ...
+
+   VSETVL PASS:
+
+   ...
+   vsetvl_pre (set a5) ---> removed.
+   vsetvl a5,zero,...  ---> Inserted.
+   vadd.vv
+   ...
+*/
+static bool
+vsetvl_pre_insn_p (rtx_insn *rinsn)
+{
+  return recog_memoized (rinsn) >= 0
+	 && get_attr_type (rinsn) == TYPE_VSETVL_PRE;
+}
+
 /* Return true if it is vsetvl zero, rs1.  */
 static bool
 vsetvl_discard_result_insn_p (rtx_insn *rinsn)
@@ -597,14 +639,6 @@ extract_single_source (set_info *set)
     }
 
   return first_insn;
-}
-
-static insn_info *
-extract_single_source (def_info *def)
-{
-  if (!def)
-    return nullptr;
-  return extract_single_source (dyn_cast<set_info *> (def));
 }
 
 static bool
@@ -2247,9 +2281,8 @@ private:
       }
   }
 
-  void remove_vsetvl_insn (const vsetvl_info &info)
+  void remove_vsetvl_insn (rtx_insn *rinsn)
   {
-    rtx_insn *rinsn = info.get_insn ()->rtl ();
     if (dump_file)
       {
 	fprintf (dump_file, "  Eliminate insn %d:\n", INSN_UID (rinsn));
@@ -2374,6 +2407,7 @@ public:
   }
 
   void compute_vsetvl_def_data ();
+  void compute_transparent (const bb_info *);
   void compute_lcm_local_properties ();
 
   void fuse_local_vsetvl_info ();
@@ -2383,6 +2417,7 @@ public:
   void cleaup ();
   void remove_avl_operand ();
   void remove_unused_dest_operand ();
+  void remove_vsetvl_pre_insns ();
 
   void dump (FILE *file, const char *title) const
   {
@@ -2452,20 +2487,16 @@ pre_vsetvl::compute_vsetvl_def_data ()
 	{
 	  for (unsigned i = 0; i < m_vsetvl_def_exprs.length (); i += 1)
 	    {
-	      const vsetvl_info &info = *m_vsetvl_def_exprs[i];
-	      if (!info.has_nonvlmax_reg_avl ())
-		continue;
-	      unsigned int regno;
-	      sbitmap_iterator sbi;
-	      EXECUTE_IF_SET_IN_BITMAP (m_reg_def_loc[bb->index ()], 0, regno,
-					sbi)
-		if (regno == REGNO (info.get_avl ()))
-		  {
-		    bitmap_set_bit (m_kill[bb->index ()], i);
-		    bitmap_set_bit (def_loc[bb->index ()],
-				    get_expr_index (m_vsetvl_def_exprs,
-						    m_unknow_info));
-		  }
+	      auto *info = m_vsetvl_def_exprs[i];
+	      if (info->has_nonvlmax_reg_avl ()
+		  && bitmap_bit_p (m_reg_def_loc[bb->index ()],
+				   REGNO (info->get_avl ())))
+		{
+		  bitmap_set_bit (m_kill[bb->index ()], i);
+		  bitmap_set_bit (def_loc[bb->index ()],
+				  get_expr_index (m_vsetvl_def_exprs,
+						  m_unknow_info));
+		}
 	    }
 	  continue;
 	}
@@ -2514,6 +2545,36 @@ pre_vsetvl::compute_vsetvl_def_data ()
 
   sbitmap_vector_free (def_loc);
   sbitmap_vector_free (m_kill);
+}
+
+/* Subroutine of compute_lcm_local_properties which Compute local transparent
+   BB. Note that the compile time is very sensitive to compute_transparent and
+   compute_lcm_local_properties, any change of these 2 functions should be
+   aware of the compile time changing of the program which has a large number of
+   blocks, e.g SPEC 2017 wrf.
+
+   Current compile time profile of SPEC 2017 wrf:
+
+     1. scheduling - 27%
+     2. machine dep reorg (VSETVL PASS) - 18%
+
+   VSETVL pass should not spend more time than scheduling in compilation.  */
+void
+pre_vsetvl::compute_transparent (const bb_info *bb)
+{
+  int num_exprs = m_exprs.length ();
+  unsigned bb_index = bb->index ();
+  for (int i = 0; i < num_exprs; i++)
+    {
+      auto *info = m_exprs[i];
+      if (info->has_nonvlmax_reg_avl ()
+	  && bitmap_bit_p (m_reg_def_loc[bb_index], REGNO (info->get_avl ())))
+	bitmap_clear_bit (m_transp[bb_index], i);
+      else if (info->has_vl ()
+	       && bitmap_bit_p (m_reg_def_loc[bb_index],
+				REGNO (info->get_vl ())))
+	bitmap_clear_bit (m_transp[bb_index], i);
+    }
 }
 
 /* Compute the local properties of each recorded expression.
@@ -2572,7 +2633,7 @@ pre_vsetvl::compute_lcm_local_properties ()
 
   bitmap_vector_clear (m_avloc, last_basic_block_for_fn (cfun));
   bitmap_vector_clear (m_antloc, last_basic_block_for_fn (cfun));
-  bitmap_vector_clear (m_transp, last_basic_block_for_fn (cfun));
+  bitmap_vector_ones (m_transp, last_basic_block_for_fn (cfun));
 
   /* -  If T is locally available at the end of a block, then T' must be
 	available at the end of the same block. Since some optimization has
@@ -2598,117 +2659,34 @@ pre_vsetvl::compute_lcm_local_properties ()
 
       /* Compute m_transp */
       if (block_info.empty_p ())
+	compute_transparent (bb);
+      else
 	{
-	  bitmap_ones (m_transp[bb_index]);
-	  for (int i = 0; i < num_exprs; i += 1)
-	    {
-	      const vsetvl_info &info = *m_exprs[i];
-	      if (!info.has_nonvlmax_reg_avl () && !info.has_vl ())
-		continue;
+	  bitmap_clear (m_transp[bb_index]);
+	  vsetvl_info &header_info = block_info.get_entry_info ();
+	  vsetvl_info &footer_info = block_info.get_exit_info ();
 
-	      if (info.has_nonvlmax_reg_avl ())
-		{
-		  unsigned int regno;
-		  sbitmap_iterator sbi;
-		  EXECUTE_IF_SET_IN_BITMAP (m_reg_def_loc[bb->index ()], 0,
-					    regno, sbi)
-		    {
-		      if (regno == REGNO (info.get_avl ()))
-			bitmap_clear_bit (m_transp[bb->index ()], i);
-		    }
-		}
+	  if (header_info.valid_p () && anticipated_exp_p (header_info))
+	    bitmap_set_bit (m_antloc[bb_index],
+			    get_expr_index (m_exprs, header_info));
 
-	      for (insn_info *insn : bb->real_nondebug_insns ())
-		{
-		  if (info.has_nonvlmax_reg_avl ()
-		      && find_access (insn->defs (), REGNO (info.get_avl ())))
-		    {
-		      bitmap_clear_bit (m_transp[bb_index], i);
-		      break;
-		    }
-
-		  if (info.has_vl ()
-		      && reg_mentioned_p (info.get_vl (), insn->rtl ()))
-		    {
-		      if (find_access (insn->defs (), REGNO (info.get_vl ())))
-			/* We can't fuse vsetvl into the blocks that modify the
-			   VL operand since successors of such blocks will need
-			   the value of those blocks are defining.
-
-					  bb 4: def a5
-					  /   \
-				  bb 5:use a5  bb 6:vsetvl a5, 5
-
-			   The example above shows that we can't fuse vsetvl
-			   from bb 6 into bb 4 since the successor bb 5 is using
-			   the value defined in bb 4.  */
-			;
-		      else
-			{
-			  /* We can't fuse vsetvl into the blocks that use the
-			     VL operand which has different value from the
-			     vsetvl info.
-
-					    bb 4: def a5
-					      |
-					    bb 5: use a5
-					      |
-					    bb 6: def a5
-					      |
-					    bb 7: use a5
-
-			     The example above shows that we can't fuse vsetvl
-			     from bb 6 into bb 5 since their value is different.
-			   */
-			  resource_info resource
-			    = full_register (REGNO (info.get_vl ()));
-			  def_lookup dl = crtl->ssa->find_def (resource, insn);
-			  def_info *def
-			    = dl.matching_set_or_last_def_of_prev_group ();
-			  insn_info *def_insn = extract_single_source (def);
-			  if (def_insn && vsetvl_insn_p (def_insn->rtl ()))
-			    {
-			      vsetvl_info def_info = vsetvl_info (def_insn);
-			      if (m_dem.compatible_p (def_info, info))
-				continue;
-			    }
-			}
-
-		      bitmap_clear_bit (m_transp[bb_index], i);
-		      break;
-		    }
-		}
-	    }
-
-	  continue;
+	  if (footer_info.valid_p ())
+	    for (int i = 0; i < num_exprs; i += 1)
+	      {
+		const vsetvl_info &info = *m_exprs[i];
+		if (!info.valid_p ())
+		  continue;
+		if (available_exp_p (footer_info, info))
+		  bitmap_set_bit (m_avloc[bb_index], i);
+	      }
 	}
 
-      vsetvl_info &header_info = block_info.get_entry_info ();
-      vsetvl_info &footer_info = block_info.get_exit_info ();
-
-      if (header_info.valid_p () && anticipated_exp_p (header_info))
-	bitmap_set_bit (m_antloc[bb_index],
-			get_expr_index (m_exprs, header_info));
-
-      if (footer_info.valid_p ())
-	for (int i = 0; i < num_exprs; i += 1)
-	  {
-	    const vsetvl_info &info = *m_exprs[i];
-	    if (!info.valid_p ())
-	      continue;
-	    if (available_exp_p (footer_info, info))
-	      bitmap_set_bit (m_avloc[bb_index], i);
-	  }
-    }
-
-  for (const bb_info *bb : crtl->ssa->bbs ())
-    {
-      unsigned bb_index = bb->index ();
       if (invalid_opt_bb_p (bb->cfg_bb ()))
 	{
 	  bitmap_clear (m_antloc[bb_index]);
 	  bitmap_clear (m_transp[bb_index]);
 	}
+
       /* Compute ae_kill for each basic block using:
 
 	 ~(TRANSP | COMP)
@@ -3252,7 +3230,7 @@ pre_vsetvl::emit_vsetvl ()
 	  if (curr_info.delete_p ())
 	    {
 	      if (vsetvl_insn_p (insn->rtl ()))
-		remove_vsetvl_insn (curr_info);
+		remove_vsetvl_insn (curr_info.get_insn ()->rtl ());
 	      continue;
 	    }
 	  else if (curr_info.valid_p ())
@@ -3290,7 +3268,7 @@ pre_vsetvl::emit_vsetvl ()
   for (const vsetvl_info &item : m_delete_list)
     {
       gcc_assert (vsetvl_insn_p (item.get_insn ()->rtl ()));
-      remove_vsetvl_insn (item);
+      remove_vsetvl_insn (item.get_insn ()->rtl ());
     }
 
   /* Insert vsetvl info that was not deleted after lift up.  */
@@ -3371,6 +3349,7 @@ pre_vsetvl::cleaup ()
 {
   remove_avl_operand ();
   remove_unused_dest_operand ();
+  remove_vsetvl_pre_insns ();
 }
 
 void
@@ -3435,6 +3414,26 @@ pre_vsetvl::remove_unused_dest_operand ()
 		validate_change_or_fail (rinsn, &PATTERN (rinsn), new_pat,
 					 false);
 	      }
+	}
+}
+
+/* Remove all bogus vsetvl_pre instructions.  */
+void
+pre_vsetvl::remove_vsetvl_pre_insns ()
+{
+  basic_block cfg_bb;
+  rtx_insn *rinsn;
+  FOR_ALL_BB_FN (cfg_bb, cfun)
+    FOR_BB_INSNS (cfg_bb, rinsn)
+      if (NONDEBUG_INSN_P (rinsn) && vsetvl_pre_insn_p (rinsn))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "  Eliminate vsetvl_pre insn %d:\n",
+		       INSN_UID (rinsn));
+	      print_rtl_single (dump_file, rinsn);
+	    }
+	  remove_vsetvl_insn (rinsn);
 	}
 }
 

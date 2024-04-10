@@ -8429,7 +8429,7 @@ expand_set_or_cpymem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx src
       /* See how many bytes we skipped.  */
       saveddest = expand_simple_binop (GET_MODE (*destptr), MINUS, saveddest,
 				       *destptr,
-				       saveddest, 1, OPTAB_DIRECT);
+				       NULL_RTX, 1, OPTAB_DIRECT);
       /* Adjust srcptr and count.  */
       if (!issetmem)
 	*srcptr = expand_simple_binop (GET_MODE (*srcptr), MINUS, *srcptr,

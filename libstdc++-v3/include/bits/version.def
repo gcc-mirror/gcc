@@ -1780,6 +1780,14 @@ ftms = {
   };
 };
 
+ftms = {
+  name = tuple_like;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";

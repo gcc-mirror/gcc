@@ -977,11 +977,12 @@ rvalue (tree expr)
 
   expr = mark_rvalue_use (expr);
 
-  /* [basic.lval]
-
-     Non-class rvalues always have cv-unqualified types.  */
+  /* [expr.type]: "If a prvalue initially has the type "cv T", where T is a
+     cv-unqualified non-class, non-array type, the type of the expression is
+     adjusted to T prior to any further analysis.  */
   type = TREE_TYPE (expr);
-  if (!CLASS_TYPE_P (type) && cv_qualified_p (type))
+  if (!CLASS_TYPE_P (type) && TREE_CODE (type) != ARRAY_TYPE
+      && cv_qualified_p (type))
     type = cv_unqualified (type);
 
   /* We need to do this for rvalue refs as well to get the right answer
@@ -4084,11 +4085,15 @@ cp_tree_equal (tree t1, tree t2)
 	}
       return false;
 
+    case TEMPLATE_DECL:
+      if (DECL_TEMPLATE_TEMPLATE_PARM_P (t1)
+	  && DECL_TEMPLATE_TEMPLATE_PARM_P (t2))
+	return cp_tree_equal (TREE_TYPE (t1), TREE_TYPE (t2));
+      /* Fall through.  */
     case VAR_DECL:
     case CONST_DECL:
     case FIELD_DECL:
     case FUNCTION_DECL:
-    case TEMPLATE_DECL:
     case IDENTIFIER_NODE:
     case SSA_NAME:
     case USING_DECL:

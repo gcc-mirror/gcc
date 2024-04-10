@@ -115,7 +115,6 @@ static enum internal_test map_test_to_internal_test (enum rtx_code);
 static rtx gen_int_relational (enum rtx_code, rtx, rtx);
 static rtx gen_float_relational (enum rtx_code, rtx, rtx);
 static rtx gen_conditional_move (enum rtx_code, machine_mode, rtx, rtx);
-static rtx fixup_subreg_mem (rtx);
 static struct machine_function * xtensa_init_machine_status (void);
 static rtx xtensa_legitimize_tls_address (rtx);
 static rtx xtensa_legitimize_address (rtx, rtx, machine_mode);
@@ -192,7 +191,6 @@ static void xtensa_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 				    HOST_WIDE_INT delta,
 				    HOST_WIDE_INT vcall_offset,
 				    tree function);
-static bool xtensa_lra_p (void);
 
 static rtx xtensa_delegitimize_address (rtx);
 
@@ -285,9 +283,6 @@ static rtx xtensa_delegitimize_address (rtx);
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM xtensa_cannot_force_const_mem
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P xtensa_lra_p
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	xtensa_legitimate_address_p
@@ -1333,32 +1328,7 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
 
   operands[1] = xtensa_copy_incoming_a7 (operands[1]);
 
-  /* During reload we don't want to emit (subreg:X (mem:Y)) since that
-     instruction won't be recognized after reload, so we remove the
-     subreg and adjust mem accordingly.  */
-  if (reload_in_progress)
-    {
-      operands[0] = fixup_subreg_mem (operands[0]);
-      operands[1] = fixup_subreg_mem (operands[1]);
-    }
   return 0;
-}
-
-
-static rtx
-fixup_subreg_mem (rtx x)
-{
-  if (GET_CODE (x) == SUBREG
-      && GET_CODE (SUBREG_REG (x)) == REG
-      && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER)
-    {
-      rtx temp =
-	gen_rtx_SUBREG (GET_MODE (x),
-			reg_equiv_mem (REGNO (SUBREG_REG (x))),
-			SUBREG_BYTE (x));
-      x = alter_subreg (&temp, true);
-    }
-  return x;
 }
 
 
@@ -2355,7 +2325,7 @@ xtensa_legitimate_address_p (machine_mode mode, rtx addr, bool strict,
 			     code_helper)
 {
   /* Allow constant pool addresses.  */
-  if (mode != BLKmode && GET_MODE_SIZE (mode) >= UNITS_PER_WORD
+  if (mode != BLKmode
       && ! TARGET_CONST16 && constantpool_address_p (addr)
       && ! xtensa_tls_referenced_p (addr))
     return true;
@@ -3280,7 +3250,7 @@ xtensa_output_integer_literal_parts (FILE *file, rtx x, int size)
       fputs (", ", file);
       xtensa_output_integer_literal_parts (file, second, size / 2);
     }
-  else if (size == 4)
+  else if (size == 4 || size == 2)
     {
       output_addr_const (file, x);
     }
@@ -4952,6 +4922,10 @@ xtensa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain)
 static bool
 xtensa_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
+  if (CONST_INT_P (x))
+    return TARGET_AUTO_LITPOOLS || TARGET_CONST16
+	   || xtensa_simm12b (INTVAL (x));
+
   return !xtensa_tls_referenced_p (x);
 }
 
@@ -5391,14 +5365,6 @@ xtensa_delegitimize_address (rtx op)
       break;
     }
   return op;
-}
-
-/* Implement TARGET_LRA_P.  */
-
-static bool
-xtensa_lra_p (void)
-{
-  return TARGET_LRA;
 }
 
 #include "gt-xtensa.h"

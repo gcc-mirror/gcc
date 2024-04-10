@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/enum.html, Enums)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/denum.d, _denum.d)
@@ -18,19 +18,16 @@ import core.stdc.stdio;
 
 import dmd.astenums;
 import dmd.attrib;
-import dmd.errors;
 import dmd.gluelayer;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem;
 import dmd.expression;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
 import dmd.location;
 import dmd.mtype;
-import dmd.typesem;
 import dmd.visitor;
 
 /***********************************************************
@@ -66,6 +63,8 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
     import dmd.common.bitfields : generateBitFields;
     mixin(generateBitFields!(BitFields, ubyte));
 
+    Symbol* sinit;
+
     extern (D) this(const ref Loc loc, Identifier ident, Type memtype)
     {
         super(loc, ident);
@@ -83,7 +82,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         return ed;
     }
 
-    override bool oneMember(Dsymbol* ps, Identifier ident)
+    override bool oneMember(out Dsymbol ps, Identifier ident)
     {
         if (isAnonymous())
             return Dsymbol.oneMembers(members, ps, ident);
@@ -122,97 +121,10 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         return isSpecialEnumIdent(ident) && memtype;
     }
 
-    Expression getDefaultValue(const ref Loc loc)
-    {
-        Expression handleErrors(){
-            defaultval = ErrorExp.get();
-            return defaultval;
-        }
-        //printf("EnumDeclaration::getDefaultValue() %p %s\n", this, toChars());
-        // https://issues.dlang.org/show_bug.cgi?id=23904
-        // Return defaultval only if it is not ErrorExp.
-        // A speculative context may set defaultval to ErrorExp;
-        // subsequent non-speculative contexts need to be able
-        // to print the error.
-        if (defaultval && !defaultval.isErrorExp())
-            return defaultval;
-
-        if (isCsymbol())
-            return memtype.defaultInit(loc, true);
-
-        if (_scope)
-            dsymbolSemantic(this, _scope);
-        if (errors)
-            return handleErrors();
-        if (!members)
-        {
-            if (isSpecial())
-            {
-                /* Allow these special enums to not need a member list
-                 */
-                return defaultval = memtype.defaultInit(loc);
-            }
-
-            error(loc, "%s `%s` is opaque and has no default initializer", kind, toPrettyChars);
-            return handleErrors();
-        }
-
-        foreach (const i; 0 .. members.length)
-        {
-            EnumMember em = (*members)[i].isEnumMember();
-            if (em)
-            {
-                if (em.semanticRun < PASS.semanticdone)
-                {
-                    error(loc, "%s `%s` forward reference of `%s.init`", kind, toPrettyChars, toChars());
-                    return handleErrors();
-                }
-
-                defaultval = em.value;
-                return defaultval;
-            }
-        }
-        return handleErrors();
-    }
-
-    Type getMemtype(const ref Loc loc)
-    {
-        if (_scope)
-        {
-            /* Enum is forward referenced. We don't need to resolve the whole thing,
-             * just the base type
-             */
-            if (memtype)
-            {
-                Loc locx = loc.isValid() ? loc : this.loc;
-                memtype = memtype.typeSemantic(locx, _scope);
-            }
-            else
-            {
-                // Run semantic to get the type from a possible first member value
-                dsymbolSemantic(this, _scope);
-            }
-        }
-        if (!memtype)
-        {
-            if (!isAnonymous() && (members || semanticRun >= PASS.semanticdone))
-                memtype = Type.tint32;
-            else
-            {
-                Loc locx = loc.isValid() ? loc : this.loc;
-                error(locx, "is forward referenced looking for base type");
-                return Type.terror;
-            }
-        }
-        return memtype;
-    }
-
     override inout(EnumDeclaration) isEnumDeclaration() inout
     {
         return this;
     }
-
-    Symbol* sinit;
 
     override void accept(Visitor v)
     {

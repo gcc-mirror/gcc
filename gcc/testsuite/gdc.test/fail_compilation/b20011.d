@@ -1,16 +1,19 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/b20011.d(25): Error: cannot modify expression `S1(cast(ubyte)0u).member` because it is not an lvalue
-fail_compilation/b20011.d(28): Error: cannot modify expression `S2(null).member` because it is not an lvalue
-fail_compilation/b20011.d(29): Error: cannot modify expression `S2(null).member` because it is not an lvalue
-fail_compilation/b20011.d(32): Error: cannot modify expression `U1(cast(ubyte)0u, ).m2` because it is not an lvalue
-fail_compilation/b20011.d(37): Error: function `b20011.main.assignableByRef(ref ubyte p)` is not callable using argument types `(ubyte)`
-fail_compilation/b20011.d(37):        cannot pass rvalue argument `S1(cast(ubyte)0u).member` of type `ubyte` to parameter `ref ubyte p`
-fail_compilation/b20011.d(38): Error: function `b20011.main.assignableByOut(out ubyte p)` is not callable using argument types `(ubyte)`
-fail_compilation/b20011.d(38):        cannot pass rvalue argument `S1(cast(ubyte)0u).member` of type `ubyte` to parameter `out ubyte p`
-fail_compilation/b20011.d(39): Error: function `b20011.main.assignableByConstRef(ref const(ubyte) p)` is not callable using argument types `(ubyte)`
-fail_compilation/b20011.d(39):        cannot pass rvalue argument `S1(cast(ubyte)0u).member` of type `ubyte` to parameter `ref const(ubyte) p`
+fail_compilation/b20011.d(28): Error: cannot modify expression `S1(cast(ubyte)0u).member` because it is not an lvalue
+fail_compilation/b20011.d(31): Error: cannot modify expression `S2(null).member` because it is not an lvalue
+fail_compilation/b20011.d(32): Error: cannot modify expression `S2(null).member` because it is not an lvalue
+fail_compilation/b20011.d(35): Error: cannot modify expression `U1(cast(ubyte)0u, ).m2` because it is not an lvalue
+fail_compilation/b20011.d(40): Error: function `assignableByRef` is not callable using argument types `(ubyte)`
+fail_compilation/b20011.d(40):        cannot pass rvalue argument `S1(cast(ubyte)0u).member` of type `ubyte` to parameter `ref ubyte p`
+fail_compilation/b20011.d(37):        `b20011.main.assignableByRef(ref ubyte p)` declared here
+fail_compilation/b20011.d(41): Error: function `assignableByOut` is not callable using argument types `(ubyte)`
+fail_compilation/b20011.d(41):        cannot pass rvalue argument `S1(cast(ubyte)0u).member` of type `ubyte` to parameter `out ubyte p`
+fail_compilation/b20011.d(38):        `b20011.main.assignableByOut(out ubyte p)` declared here
+fail_compilation/b20011.d(42): Error: function `assignableByConstRef` is not callable using argument types `(ubyte)`
+fail_compilation/b20011.d(42):        cannot pass rvalue argument `S1(cast(ubyte)0u).member` of type `ubyte` to parameter `ref const(ubyte) p`
+fail_compilation/b20011.d(39):        `b20011.main.assignableByConstRef(ref const(ubyte) p)` declared here
 ---
 */
 module b20011;

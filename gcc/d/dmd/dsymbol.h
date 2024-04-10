@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -147,20 +147,21 @@ enum
 
 /* Flags for symbol search
  */
-enum
+typedef unsigned SearchOptFlags;
+enum class SearchOpt : SearchOptFlags
 {
-    IgnoreNone              = 0x00, // default
-    IgnorePrivateImports    = 0x01, // don't search private imports
-    IgnoreErrors            = 0x02, // don't give error messages
-    IgnoreAmbiguous         = 0x04, // return NULL if ambiguous
-    SearchLocalsOnly        = 0x08, // only look at locals (don't search imports)
-    SearchImportsOnly       = 0x10, // only look in imports
-    SearchUnqualifiedModule = 0x20, // the module scope search is unqualified,
-                                    // meaning don't search imports in that scope,
-                                    // because qualified module searches search
-                                    // their imports
-    IgnoreSymbolVisibility  = 0x80,  // also find private and package protected symbols
-    TagNameSpace            = 0x100, // search ImportC tag symbol table
+    all                    = 0x00, // default
+    ignorePrivateImports   = 0x01, // don't search private imports
+    ignoreErrors           = 0x02, // don't give error messages
+    ignoreAmbiguous        = 0x04, // return NULL if ambiguous
+    localsOnly             = 0x08, // only look at locals (don't search imports)
+    importsOnly            = 0x10, // only look in imports
+    unqualifiedModule      = 0x20, // the module scope search is unqualified,
+                                   // meaning don't search imports in that scope,
+                                   // because qualified module searches search
+                                   // their imports
+    tagNameSpace           = 0x40, // search ImportC tag symbol table
+    ignoreVisibility       = 0x80, // also find private and package protected symbols
 };
 
 struct FieldState
@@ -227,7 +228,6 @@ public:
     virtual const char *kind() const;
     virtual Dsymbol *toAlias();                 // resolve real symbol
     virtual Dsymbol *toAlias2();
-    virtual void importAll(Scope *sc);
     virtual bool overloadInsert(Dsymbol *s);
     virtual uinteger_t size(const Loc &loc);
     virtual bool isforwardRef();
@@ -246,8 +246,7 @@ public:
     virtual bool needThis();                    // need a 'this' pointer?
     virtual Visibility visible();
     virtual Dsymbol *syntaxCopy(Dsymbol *s);    // copy only syntax trees
-    virtual bool oneMember(Dsymbol **ps, Identifier *ident);
-    virtual void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion);
+    virtual bool oneMember(Dsymbol *&ps, Identifier *ident);
     virtual bool hasPointers();
     virtual bool hasStaticCtorOrDtor();
     virtual void addObjcSymbols(ClassDeclarations *, ClassDeclarations *) { }
@@ -336,7 +335,7 @@ private:
 public:
     ScopeDsymbol *syntaxCopy(Dsymbol *s) override;
     virtual void importScope(Dsymbol *s, Visibility visibility);
-    virtual bool isPackageAccessible(Package *p, Visibility visibility, int flags = 0);
+    virtual bool isPackageAccessible(Package *p, Visibility visibility, SearchOptFlags flags = (SearchOptFlags)SearchOpt::all);
     bool isforwardRef() override final;
     static void multiplyDefined(const Loc &loc, Dsymbol *s1, Dsymbol *s2);
     const char *kind() const override;
@@ -427,6 +426,8 @@ public:
 };
 
 void addMember(Dsymbol *dsym, Scope *sc, ScopeDsymbol *sds);
-Dsymbol *search(Dsymbol *d, const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
+Dsymbol *search(Dsymbol *d, const Loc &loc, Identifier *ident, SearchOptFlags flags = (SearchOptFlags)SearchOpt::localsOnly);
 bool checkDeprecated(Dsymbol *d, const Loc &loc, Scope *sc);
 void setScope(Dsymbol *d, Scope *sc);
+void importAll(Dsymbol *d, Scope *sc);
+void setFieldOffset(Dsymbol *d, AggregateDeclaration *ad, FieldState& fieldState, bool isunion);

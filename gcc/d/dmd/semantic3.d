@@ -1,7 +1,7 @@
 /**
  * Performs the semantic3 stage, which deals with function bodies.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/semantic3.d, _semantic3.d)
@@ -41,6 +41,7 @@ import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
@@ -231,8 +232,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             if (sc.flags & SCOPE.Cfile && funcdecl.isCMain() && f.next.ty == Tint32)
                 return true;
 
-            return f.next.ty == Tvoid &&
-                (funcdecl.isMain() || global.params.betterC && funcdecl.isCMain());
+            return f.next.ty == Tvoid && (funcdecl.isMain() || funcdecl.isCMain());
         }
 
         VarDeclaration _arguments = null;
@@ -346,6 +346,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             sc2.tf = null;
             sc2.os = null;
             sc2.inLoop = false;
+            sc2.inDefaultArg = false;
             sc2.userAttribDecl = null;
             if (sc2.intypeof == 1)
                 sc2.intypeof = 2;
@@ -384,7 +385,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 }
             }
 
-            funcdecl.declareThis(sc2);
+            declareThis(funcdecl, sc2);
 
             // Reverts: https://issues.dlang.org/show_bug.cgi?id=5710
             // No compiler supports this, and there was never any spec for it.
@@ -520,7 +521,8 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 {
                     Parameter narg = Parameter.getNth(t.arguments, j);
                     assert(narg.ident);
-                    VarDeclaration v = sc2.search(Loc.initial, narg.ident, null).isVarDeclaration();
+                    Dsymbol pscopesym;
+                    VarDeclaration v = sc2.search(Loc.initial, narg.ident, pscopesym).isVarDeclaration();
                     assert(v);
                     (*exps)[j] = new VarExp(v.loc, v);
                 }
@@ -569,7 +571,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
 
                 if ((needEnsure && global.params.useOut == CHECKENABLE.on) || fpostinv)
                 {
-                    funcdecl.returnLabel = funcdecl.searchLabel(Id.returnLabel);
+                    funcdecl.returnLabel = funcdecl.searchLabel(Id.returnLabel, Loc.initial);
                 }
 
                 // scope of out contract (need for vresult.semantic)

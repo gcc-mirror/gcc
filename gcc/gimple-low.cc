@@ -790,6 +790,21 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	    return;
 	  }
 
+	if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
+	  {
+	    tree base = gimple_call_arg (stmt, 1);
+	    gcc_checking_assert (TREE_CODE (base) == ADDR_EXPR);
+	    tree decl = TREE_OPERAND (base, 0);
+	    if (VAR_P (decl) && TREE_STATIC (decl))
+	      {
+		/* Don't poison a variable with static storage; it might have
+		   gotten marked before gimplify_init_constructor promoted it
+		   to static.  */
+		gsi_remove (gsi, true);
+		return;
+	      }
+	  }
+
 	/* We delay folding of built calls from gimplification to
 	   here so the IL is in consistent state for the diagnostic
 	   machineries job.  */

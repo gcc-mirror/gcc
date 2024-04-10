@@ -65,10 +65,8 @@ BEGIN
    i := VAL (INTEGER, n) ;
    IF i < GetArgC ()
    THEN
-      (* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ; *)
-      ppc := ADDRESS (PtrToChar (GetArgV ()) + (n * TSIZE (PtrToChar))) ;
+      ppc := ADDRESS (ADDRESS (GetArgV ()) + (n * TSIZE (PtrToChar))) ;
       s   := InitStringCharStar (ppc^) ;
-
       RETURN TRUE
    ELSE
       s := NIL ;

@@ -3,7 +3,7 @@
  *
  * Specification: ($LINK2 https://dlang.org/spec/function.html#interpretation, Compile Time Function Execution (CTFE))
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dinterpret.d, _dinterpret.d)
@@ -33,6 +33,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
@@ -49,6 +50,8 @@ import dmd.rootobject;
 import dmd.root.utf;
 import dmd.statement;
 import dmd.tokens;
+import dmd.typesem : mutableOf;
+import dmd.utils : arrayCastBigEndian;
 import dmd.visitor;
 
 /*************************************
@@ -440,7 +443,7 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
         fdError("circular dependency. Functions cannot be interpreted while being compiled");
         return CTFEExp.cantexp;
     }
-    if (!fd.functionSemantic3())
+    if (!functionSemantic3(fd))
         return CTFEExp.cantexp;
     if (fd.semanticRun < PASS.semantic3done)
     {
@@ -1416,6 +1419,7 @@ Expression interpretStatement(UnionExp* pue, Statement s, InterState* istate)
             foreach (ca; *s.catches)
             {
                 Type catype = ca.type;
+                import dmd.typesem : isBaseOf;
                 if (!catype.equals(extype) && !catype.isBaseOf(extype, null))
                     continue;
 
@@ -6096,11 +6100,35 @@ public:
             result.type = e.to;
             return;
         }
+
         // Disallow array type painting, except for conversions between built-in
         // types of identical size.
         if ((e.to.ty == Tsarray || e.to.ty == Tarray) && (e1.type.ty == Tsarray || e1.type.ty == Tarray) && !isSafePointerCast(e1.type.nextOf(), e.to.nextOf()))
         {
+            auto se = e1.isStringExp();
+            // Allow casting a hex string literal to short[], int[] or long[]
+            if (se && se.hexString && se.postfix == StringExp.NoPostfix)
+            {
+                const sz = cast(size_t) e.to.nextOf().size;
+                if ((se.len % sz) != 0)
+                {
+                    error(e.loc, "hex string length %d must be a multiple of %d to cast to `%s`",
+                        cast(int) se.len, cast(int) sz, e.to.toChars());
+                    result = CTFEExp.cantexp;
+                    return;
+                }
+
+                auto str = arrayCastBigEndian((cast(const ubyte[]) se.peekString()), sz);
+                emplaceExp!(StringExp)(pue, e1.loc, str, se.len / sz, cast(ubyte) sz);
+                result = pue.exp();
+                result.type = e.to;
+                return;
+            }
             error(e.loc, "array cast from `%s` to `%s` is not supported at compile time", e1.type.toChars(), e.to.toChars());
+            if (se && se.hexString && se.postfix != StringExp.NoPostfix)
+                errorSupplemental(e.loc, "perhaps remove postfix `%s` from hex string",
+                    (cast(char) se.postfix ~ "\0").ptr);
+
             result = CTFEExp.cantexp;
             return;
         }
@@ -6237,6 +6265,11 @@ public:
         {
             if (soe.offset == 0 && soe.var.isFuncDeclaration())
                 return;
+            if (soe.offset == 0 && soe.var.isVarDeclaration() && soe.var.isImmutable())
+            {
+                result = getVarExp(e.loc, istate, soe.var, CTFEGoal.RValue);
+                return;
+            }
             error(e.loc, "cannot dereference pointer to static variable `%s` at compile time", soe.var.toChars());
             result = CTFEExp.cantexp;
             return;
@@ -6359,6 +6392,7 @@ public:
             {
                 if (auto t = isType(ex.isTypeidExp().obj))
                 {
+                    import dmd.typesem : toDsymbol;
                     auto sym = t.toDsymbol(null);
                     if (auto ident = (sym ? sym.ident : null))
                     {
@@ -6643,6 +6677,7 @@ Expressions* copyArrayOnWrite(Expressions* exps, Expressions* original)
 private
 bool stopPointersEscaping(const ref Loc loc, Expression e)
 {
+    import dmd.typesem : hasPointers;
     if (!e.type.hasPointers())
         return true;
     if (isPointer(e.type))
@@ -6706,7 +6741,7 @@ Statement findGotoTarget(InterState* istate, Identifier ident)
     Statement target = null;
     if (ident)
     {
-        LabelDsymbol label = istate.fd.searchLabel(ident);
+        LabelDsymbol label = istate.fd.searchLabel(ident, Loc.initial);
         assert(label && label.statement);
         LabelStatement ls = label.statement;
         target = ls.gotoTarget ? ls.gotoTarget : ls.statement;
@@ -7263,6 +7298,33 @@ private Expression interpret_aaApply(UnionExp* pue, InterState* istate, Expressi
     return eresult;
 }
 
+/// Returns: equivalent `StringExp` from `ArrayLiteralExp ale` containing only `IntegerExp` elements
+StringExp arrayLiteralToString(ArrayLiteralExp ale)
+{
+    const len = ale.elements ? ale.elements.length : 0;
+    const size = ale.type.nextOf().size();
+
+    StringExp impl(T)()
+    {
+        T[] result = new T[len];
+        foreach (i; 0 .. len)
+            result[i] = cast(T) (*ale.elements)[i].isIntegerExp().getInteger();
+        return new StringExp(ale.loc, result[], len, cast(ubyte) size);
+    }
+
+    switch (size)
+    {
+        case 1:
+            return impl!char();
+        case 2:
+            return impl!wchar();
+        case 4:
+            return impl!dchar();
+        default:
+            assert(0);
+    }
+}
+
 /* Decoding UTF strings for foreach loops. Duplicates the functionality of
  * the twelve _aApplyXXn functions in aApply.d in the runtime.
  */
@@ -7299,8 +7361,10 @@ private Expression foreachApplyUtf(UnionExp* pue, InterState* istate, Expression
     str = resolveSlice(str, &strTmp);
 
     auto se = str.isStringExp();
-    auto ale = str.isArrayLiteralExp();
-    if (!se && !ale)
+    if (auto ale = str.isArrayLiteralExp())
+        se = arrayLiteralToString(ale);
+
+    if (!se)
     {
         error(str.loc, "CTFE internal error: cannot foreach `%s`", str.toChars());
         return CTFEExp.cantexp;
@@ -7309,7 +7373,7 @@ private Expression foreachApplyUtf(UnionExp* pue, InterState* istate, Expression
 
     Expression eresult = null; // ded-store to prevent spurious warning
 
-    // Buffers for encoding; also used for decoding array literals
+    // Buffers for encoding
     char[4] utf8buf = void;
     wchar[2] utf16buf = void;
 
@@ -7323,90 +7387,11 @@ private Expression foreachApplyUtf(UnionExp* pue, InterState* istate, Expression
         dchar rawvalue; // Holds the decoded dchar
         size_t currentIndex = indx; // The index of the decoded character
 
-        if (ale)
+        // String literals
+        size_t saveindx; // used for reverse iteration
+
+        switch (se.sz)
         {
-            // If it is an array literal, copy the code points into the buffer
-            size_t buflen = 1; // #code points in the buffer
-            size_t n = 1; // #code points in this char
-            size_t sz = cast(size_t)ale.type.nextOf().size();
-
-            switch (sz)
-            {
-            case 1:
-                if (rvs)
-                {
-                    // find the start of the string
-                    --indx;
-                    buflen = 1;
-                    while (indx > 0 && buflen < 4)
-                    {
-                        Expression r = (*ale.elements)[indx];
-                        char x = cast(char)r.isIntegerExp().getInteger();
-                        if ((x & 0xC0) != 0x80)
-                            break;
-                        --indx;
-                        ++buflen;
-                    }
-                }
-                else
-                    buflen = (indx + 4 > len) ? len - indx : 4;
-                for (size_t i = 0; i < buflen; ++i)
-                {
-                    Expression r = (*ale.elements)[indx + i];
-                    utf8buf[i] = cast(char)r.isIntegerExp().getInteger();
-                }
-                n = 0;
-                errmsg = utf_decodeChar(utf8buf[0 .. buflen], n, rawvalue);
-                break;
-
-            case 2:
-                if (rvs)
-                {
-                    // find the start of the string
-                    --indx;
-                    buflen = 1;
-                    Expression r = (*ale.elements)[indx];
-                    ushort x = cast(ushort)r.isIntegerExp().getInteger();
-                    if (indx > 0 && x >= 0xDC00 && x <= 0xDFFF)
-                    {
-                        --indx;
-                        ++buflen;
-                    }
-                }
-                else
-                    buflen = (indx + 2 > len) ? len - indx : 2;
-                for (size_t i = 0; i < buflen; ++i)
-                {
-                    Expression r = (*ale.elements)[indx + i];
-                    utf16buf[i] = cast(ushort)r.isIntegerExp().getInteger();
-                }
-                n = 0;
-                errmsg = utf_decodeWchar(utf16buf[0 .. buflen], n, rawvalue);
-                break;
-
-            case 4:
-                {
-                    if (rvs)
-                        --indx;
-                    Expression r = (*ale.elements)[indx];
-                    rawvalue = cast(dchar)r.isIntegerExp().getInteger();
-                    n = 1;
-                }
-                break;
-
-            default:
-                assert(0);
-            }
-            if (!rvs)
-                indx += n;
-        }
-        else
-        {
-            // String literals
-            size_t saveindx; // used for reverse iteration
-
-            switch (se.sz)
-            {
             case 1:
             {
                 if (rvs)
@@ -7450,8 +7435,8 @@ private Expression foreachApplyUtf(UnionExp* pue, InterState* istate, Expression
 
             default:
                 assert(0);
-            }
         }
+
         if (errmsg)
         {
             error(deleg.loc, "`%.*s`", cast(int)errmsg.length, errmsg.ptr);

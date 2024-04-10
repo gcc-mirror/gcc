@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/traits.html, Traits)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/traits.d, _traits.d)
@@ -36,6 +36,7 @@ import dmd.errorsink;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
@@ -1306,7 +1307,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         // attribute inference.
         if (fd && fd.parent && fd.parent.isTemplateInstance)
         {
-            fd.functionSemantic3();
+            functionSemantic3(fd);
             tf = fd.type.isTypeFunction();
         }
 
@@ -1665,12 +1666,12 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             }
             else if (auto ed = sm.isEnumDeclaration())
             {
-                ScopeDsymbol._foreach(null, ed.members, &pushIdentsDg);
+                _foreach(null, ed.members, &pushIdentsDg);
             }
             return 0;
         }
 
-        ScopeDsymbol._foreach(sc, sds.members, &pushIdentsDg);
+        _foreach(sc, sds.members, &pushIdentsDg);
         auto cd = sds.isClassDeclaration();
         if (cd && e.ident == Id.allMembers)
         {
@@ -1684,7 +1685,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 {
                     auto cb = (*cd.baseclasses)[i].sym;
                     assert(cb);
-                    ScopeDsymbol._foreach(null, cb.members, &pushIdentsDg);
+                    _foreach(null, cb.members, &pushIdentsDg);
                     if (cb.baseclasses.length)
                         pushBaseMembersDg(cb);
                 }

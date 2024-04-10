@@ -222,4 +222,5 @@ extern rtx loongarch_build_signbit_mask (machine_mode, bool, bool);
 extern void loongarch_emit_swrsqrtsf (rtx, rtx, machine_mode, bool);
 extern void loongarch_emit_swdivsf (rtx, rtx, rtx, machine_mode);
 extern bool loongarch_explicit_relocs_p (enum loongarch_symbol_type);
+extern bool loongarch_symbol_extreme_p (enum loongarch_symbol_type);
 #endif /* ! GCC_LOONGARCH_PROTOS_H */

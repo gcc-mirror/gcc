@@ -729,20 +729,19 @@ wi::set_bit_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
     }
 }
 
-/* Byte swap the integer represented by XVAL and LEN into VAL.  Return
+/* Byte swap the integer represented by XVAL and XLEN into VAL.  Return
    the number of blocks in VAL.  Both XVAL and VAL have PRECISION bits.  */
 unsigned int
 wi::bswap_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
-	         unsigned int len, unsigned int precision)
+		 unsigned int xlen, unsigned int precision)
 {
-  unsigned int i, s;
+  unsigned int s, len = BLOCKS_NEEDED (precision);
 
   /* This is not a well defined operation if the precision is not a
      multiple of 8.  */
   gcc_assert ((precision & 0x7) == 0);
 
-  for (i = 0; i < len; i++)
-    val[i] = 0;
+  memset (val, 0, sizeof (unsigned HOST_WIDE_INT) * len);
 
   /* Only swap the bytes that are not the padding.  */
   for (s = 0; s < precision; s += 8)
@@ -753,7 +752,7 @@ wi::bswap_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
       unsigned int block = s / HOST_BITS_PER_WIDE_INT;
       unsigned int offset = s & (HOST_BITS_PER_WIDE_INT - 1);
 
-      byte = (safe_uhwi (xval, len, block) >> offset) & 0xff;
+      byte = (safe_uhwi (xval, xlen, block) >> offset) & 0xff;
 
       block = d / HOST_BITS_PER_WIDE_INT;
       offset = d & (HOST_BITS_PER_WIDE_INT - 1);
@@ -1484,8 +1483,8 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
     }
 
   /* We do unsigned mul and then correct it.  */
-  wi_unpack (u, op1val, op1len, half_blocks_needed, prec, SIGNED);
-  wi_unpack (v, op2val, op2len, half_blocks_needed, prec, SIGNED);
+  wi_unpack (u, op1val, op1len, half_blocks_needed, prec, UNSIGNED);
+  wi_unpack (v, op2val, op2len, half_blocks_needed, prec, UNSIGNED);
 
   /* The 2 is for a full mult.  */
   memset (r, 0, half_blocks_needed * 2
@@ -1502,6 +1501,28 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
 	  k = t >> HOST_BITS_PER_HALF_WIDE_INT;
 	}
       r[j + half_blocks_needed] = k;
+    }
+
+  unsigned int shift;
+  if ((high || needs_overflow) && (shift = prec % HOST_BITS_PER_WIDE_INT) != 0)
+    {
+      /* The high or needs_overflow code assumes that the high bits
+	 only appear from r[half_blocks_needed] up to
+	 r[half_blocks_needed * 2 - 1].  If prec is not a multiple
+	 of HOST_BITS_PER_WIDE_INT, shift the bits above prec up
+	 to make that code simple.  */
+      if (shift == HOST_BITS_PER_HALF_WIDE_INT)
+	memmove (&r[half_blocks_needed], &r[half_blocks_needed - 1],
+		 sizeof (r[0]) * half_blocks_needed);
+      else
+	{
+	  unsigned int skip = shift < HOST_BITS_PER_HALF_WIDE_INT;
+	  if (!skip)
+	    shift -= HOST_BITS_PER_HALF_WIDE_INT;
+	  for (i = 2 * half_blocks_needed - 1; i >= half_blocks_needed; i--)
+	    r[i] = ((r[i - skip] << (-shift % HOST_BITS_PER_HALF_WIDE_INT))
+		    | (r[i - skip - 1] >> shift));
+	}
     }
 
   /* We did unsigned math above.  For signed we must adjust the
@@ -1544,8 +1565,12 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
 	top = 0;
       else
 	{
-	  top = r[(half_blocks_needed) - 1];
-	  top = SIGN_MASK (top << (HOST_BITS_PER_WIDE_INT / 2));
+	  top = r[half_blocks_needed - 1
+		  - ((-prec % HOST_BITS_PER_WIDE_INT)
+		     >= HOST_BITS_PER_HALF_WIDE_INT)];
+	  top = SIGN_MASK (((unsigned HOST_WIDE_INT) top)
+			   << (HOST_BITS_PER_WIDE_INT / 2
+			       + (-prec % HOST_BITS_PER_HALF_WIDE_INT)));
 	  top &= mask;
 	}
 

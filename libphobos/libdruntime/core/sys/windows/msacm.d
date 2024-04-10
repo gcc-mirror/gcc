@@ -14,8 +14,8 @@ version (ANSI) {} else version = Unicode;
 
 import core.sys.windows.basetsd, core.sys.windows.mmsystem, core.sys.windows.windef;
 
-mixin DECLARE_HANDLE!("HACMDRIVERID");
-mixin DECLARE_HANDLE!("HACMDRIVER");
+alias HACMDRIVERID = HANDLE;
+alias HACMDRIVER = HANDLE;
 alias HACMDRIVER* LPHACMDRIVER;
 
 enum size_t

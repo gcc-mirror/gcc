@@ -78,6 +78,10 @@
 # include <bits/stl_construct.h>
 #endif
 
+#if __glibcxx_tuple_like // >= C++23
+# include <bits/utility.h> // for tuple_element_t
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -95,10 +99,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Cat, typename _Limit, typename _Otherwise = _Cat>
       using __clamp_iter_cat
 	= __conditional_t<derived_from<_Cat, _Limit>, _Limit, _Otherwise>;
-
-    template<typename _Tp, typename _Up>
-      concept __different_from
-	= !same_as<remove_cvref_t<_Tp>, remove_cvref_t<_Up>>;
   }
 #endif
 
@@ -2983,11 +2983,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // of associative containers.
   template<typename _InputIterator>
     using __iter_key_t = remove_const_t<
+#if __glibcxx_tuple_like // >= C++23
+      tuple_element_t<0, typename iterator_traits<_InputIterator>::value_type>>;
+#else
       typename iterator_traits<_InputIterator>::value_type::first_type>;
+#endif
 
   template<typename _InputIterator>
     using __iter_val_t
+#if __glibcxx_tuple_like // >= C++23
+      = tuple_element_t<1, typename iterator_traits<_InputIterator>::value_type>;
+#else
       = typename iterator_traits<_InputIterator>::value_type::second_type;
+#endif
 
   template<typename _T1, typename _T2>
     struct pair;

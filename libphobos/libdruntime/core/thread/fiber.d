@@ -1066,13 +1066,11 @@ private:
             {
                 m_pmem = valloc( sz );
             }
-            else static if ( __traits( compiles, malloc ) )
-            {
-                m_pmem = malloc( sz );
-            }
             else
             {
-                m_pmem = null;
+                import core.stdc.stdlib : malloc;
+
+                m_pmem = malloc( sz );
             }
 
             if ( !m_pmem )
@@ -1116,11 +1114,8 @@ private:
     // Free this fiber's stack.
     //
     final void freeStack() nothrow @nogc
-    in
-    {
-        assert( m_pmem && m_ctxt );
-    }
-    do
+    in(m_pmem)
+    in(m_ctxt)
     {
         // NOTE: m_ctxt is guaranteed to be alive because it is held in the
         //       global context list.
@@ -1140,11 +1135,7 @@ private:
             {
                 munmap( m_pmem, m_size );
             }
-            else static if ( __traits( compiles, valloc ) )
-            {
-                free( m_pmem );
-            }
-            else static if ( __traits( compiles, malloc ) )
+            else
             {
                 free( m_pmem );
             }

@@ -79,6 +79,7 @@ proc gfortran_link_flags { paths } {
     global ld_library_path
     global GFORTRAN_UNDER_TEST
     global shlib_ext
+    global ENABLE_DARWIN_AT_RPATH
 
     set gccpath ${paths}
     set libio_dir ""
@@ -87,39 +88,63 @@ proc gfortran_link_flags { paths } {
     set shlib_ext [get_shlib_extension]
     verbose "shared lib extension: $shlib_ext"
 
+    # We need to add options to locate libgfortran and the dependent libs
+    # libquadmath (supporting REAL*16) and libatomic (supporting operations
+    # used by coarrays).  Usually '-L' options are added to point to the
+    # relevant directories for the uninstalled libraries.
+
+    # In cases where libraries are available as both shared and convenience
+    # some additional checks are made.
+
+    # For some targets -static-xxxx options are handled by specs substitution
+    # and need a '-B' option rather than '-L'.  For Darwin, when embedded
+    # runpaths are in use (the default for all versions after macOS 10.11),
+    # '-B' is also needed to provide the runpath.
+    # When '-B' is used, this results in a '-L' for each path that exists (so
+    # that appending a '-L' as well is a needless duplicate).  There are also
+    # cases where tools warn for duplicates, leading to spurious fails.
+    # Therefore the objective of the code below is to add just one '-L' or
+    # '-B' for each of the libraries.
+
+    set target_wants_B_option 0
+    if { [istarget *-*-darwin9* ] || [istarget *-*-darwin\[12\]* ] } {
+      set target_wants_B_option 1
+    }
+
     if { $gccpath != "" } {
-      if [file exists "${gccpath}/libgfortran/.libs/libgfortran.a"] {
-          # Some targets use libgfortran.a%s in their specs, so they need a -B option
-          # for uninstalled testing.
-          append flags "-B${gccpath}/libgfortran/.libs "
-          append flags "-L${gccpath}/libgfortran/.libs "
-          append ld_library_path ":${gccpath}/libgfortran/.libs"
-      }
-      if [file exists "${gccpath}/libgfortran/.libs/libgfortran.${shlib_ext}"] {
-	  append flags "-L${gccpath}/libgfortran/.libs "
-	  append ld_library_path ":${gccpath}/libgfortran/.libs"
-      }
       if [file exists "${gccpath}/libgfortran/libgforbegin.a"] {
           append flags "-L${gccpath}/libgfortran "
       }
-      if [file exists "${gccpath}/libatomic/.libs/libatomic.${shlib_ext}"] {
-	  append flags "-L${gccpath}/libatomic/.libs "
-	  append ld_library_path ":${gccpath}/libatomic/.libs"
+      if { [file exists "${gccpath}/libgfortran/.libs/libgfortran.a"] ||
+	 [file exists "${gccpath}/libgfortran/.libs/libgfortran.${shlib_ext}"] } {
+	if { $target_wants_B_option } {
+          append flags "-B${gccpath}/libgfortran/.libs "
+	} else {
+          append flags "-L${gccpath}/libgfortran/.libs "
+	}
+	append ld_library_path ":${gccpath}/libgfortran/.libs"
       }
-      if [file exists "${gccpath}/libatomic/libatomic.a"] {
-          append flags "-L${gccpath}/libatomic "
+
+      if { [file exists "${gccpath}/libatomic/.libs/libatomic.a"] ||
+	 [file exists "${gccpath}/libatomic/.libs/libatomic.${shlib_ext}"] } {
+	if { $target_wants_B_option } {
+          append flags "-B${gccpath}/libatomic/.libs "
+	} else {
+          append flags "-L${gccpath}/libatomic/.libs "
+	}
+	append ld_library_path ":${gccpath}/libatomic/.libs"
       }
-      if [file exists "${gccpath}/libquadmath/.libs/libquadmath.a"] {
-          # Some targets use libquadmath.a%s in their specs, so they need a -B option
-          # for uninstalled testing.
+
+      if { [file exists "${gccpath}/libquadmath/.libs/libquadmath.a"] ||
+	 [file exists "${gccpath}/libquadmath/.libs/libquadmath.${shlib_ext}"] } {
+	if { $target_wants_B_option } {
           append flags "-B${gccpath}/libquadmath/.libs "
+	} else {
           append flags "-L${gccpath}/libquadmath/.libs "
-          append ld_library_path ":${gccpath}/libquadmath/.libs"
+	}
+	append ld_library_path ":${gccpath}/libquadmath/.libs"
       }
-      if [file exists "${gccpath}/libquadmath/.libs/libquadmath.${shlib_ext}"] {
-	  append flags "-L${gccpath}/libquadmath/.libs "
-	  append ld_library_path ":${gccpath}/libquadmath/.libs"
-      }
+
       if [file exists "${gccpath}/libiberty/libiberty.a"] {
           append flags "-L${gccpath}/libiberty "
       }

@@ -105,7 +105,7 @@ EXPORT QUALIFIED NulSym,
                  AddSymToModuleScope,
                  GetType, GetLType, GetSType, GetDType,
                  SkipType, SkipTypeAndSubrange,
-                 GetLowestType,
+                 GetLowestType, GetTypeMode,
                  GetSym, GetLocalSym, GetDeclareSym, GetRecord,
                  FromModuleGetSym,
                  GetOAFamily,
@@ -1172,6 +1172,14 @@ PROCEDURE GetSType (sym: CARDINAL) : CARDINAL ;
 *)
 
 PROCEDURE GetDType (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetTypeMode - return the type of sym, it returns Address is the
+                 symbol is a LValue.
+*)
+
+PROCEDURE GetTypeMode (sym: CARDINAL) : CARDINAL ;
 
 
 (*

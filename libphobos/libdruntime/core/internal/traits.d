@@ -38,7 +38,7 @@ template Unqual(T : const U, U)
 
 template BaseElemOf(T)
 {
-    static if (is(T == E[N], E, size_t N))
+    static if (is(OriginalType!T == E[N], E, size_t N))
         alias BaseElemOf = BaseElemOf!E;
     else
         alias BaseElemOf = T;
@@ -51,6 +51,8 @@ unittest
     static assert(is(BaseElemOf!(int[1][2]) == int));
     static assert(is(BaseElemOf!(int[1][]) == int[1][]));
     static assert(is(BaseElemOf!(int[][1]) == int[]));
+    static enum E : int[2]{ test = [0, 1] }
+    static assert(is(BaseElemOf!(E) == int));
 }
 
 // [For internal use]

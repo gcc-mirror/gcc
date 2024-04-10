@@ -1574,7 +1574,7 @@ select_buffer (st_parameter_dt *dtp, const fnode *f, int precision,
 	       char *buf, size_t *size, int kind)
 {
   char *result;
-  
+
   /* The buffer needs at least one more byte to allow room for
      normalizing and 1 to hold null terminator.  */
   *size = size_from_kind (dtp, f, kind) + precision + 1 + 1;
@@ -1757,7 +1757,7 @@ write_real (st_parameter_dt *dtp, const char *source, int kind)
 
   /* Scratch buffer to hold final result.  */
   buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
-  
+
   get_float_string (dtp, &f, source , kind, 1, buffer,
                            precision, buf_size, result, &flt_str_len);
   write_float_string (dtp, result, flt_str_len);
@@ -1785,8 +1785,6 @@ write_real_w0 (st_parameter_dt *dtp, const char *source, int kind,
 
   set_fnode_default (dtp, &ff, kind);
 
-  if (f->u.real.d > 0)
-    ff.u.real.d = f->u.real.d;
   ff.format = f->format;
 
   /* For FMT_G, Compensate for extra digits when using scale factor, d
@@ -1794,11 +1792,17 @@ write_real_w0 (st_parameter_dt *dtp, const char *source, int kind,
      is used.  */
   if (f->format == FMT_G)
     {
+      if (f->u.real.d > 0)
+	ff.u.real.d = f->u.real.d;
       if (dtp->u.p.scale_factor > 0 && f->u.real.d == 0)
 	comp_d = 1;
       else
 	comp_d = 0;
     }
+  else
+    if (f->u.real.d >= 0)
+      ff.u.real.d = f->u.real.d;
+
 
   if (f->u.real.e >= 0)
     ff.u.real.e = f->u.real.e;

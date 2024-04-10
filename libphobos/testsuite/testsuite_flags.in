@@ -36,8 +36,7 @@ case ${query} in
       ;;
     --gdcpaths)
       GDCPATHS_default="-nostdinc"
-      GDCPATHS_config="-B${BUILD_DIR}/src
-                       -I${BUILD_DIR}/libdruntime
+      GDCPATHS_config="-I${BUILD_DIR}/libdruntime
                        -I${SRC_DIR}/libdruntime"
       # Include phobos in search path if compiling in library.
       if [ "x@ENABLE_LIBDRUNTIME_ONLY_FALSE@" = "x" ]; then
@@ -47,9 +46,8 @@ case ${query} in
       ;;
     --gdcldflags)
       GDCLDFLAGS="-B${BUILD_DIR}/src
-                  -B${BUILD_DIR}/libdruntime/gcc
-                  -B${BUILD_DIR}/src/.libs
-                  -L${BUILD_DIR}/src/.libs"
+		  -B${BUILD_DIR}/libdruntime/gcc
+                  -B${BUILD_DIR}/src/.libs"
       echo ${GDCLDFLAGS}
       ;;
     *)

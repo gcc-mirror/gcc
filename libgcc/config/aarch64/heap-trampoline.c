@@ -26,7 +26,7 @@ int get_trampolines_per_page (void);
 struct tramp_ctrl_data *allocate_tramp_ctrl (struct tramp_ctrl_data *parent);
 void *allocate_trampoline_page (void);
 
-void __gcc_nested_func_ptr_created (void *chain, void *func, void **dst);
+void __gcc_nested_func_ptr_created (void *chain, void *func, void *dst);
 void __gcc_nested_func_ptr_deleted (void);
 
 #if defined(__gnu_linux__)
@@ -115,7 +115,7 @@ allocate_tramp_ctrl (struct tramp_ctrl_data *parent)
 
 HEAP_T_ATTR
 void
-__gcc_nested_func_ptr_created (void *chain, void *func, void **dst)
+__gcc_nested_func_ptr_created (void *chain, void *func, void *dst)
 {
   if (tramp_ctrl_curr == NULL)
     {
@@ -158,7 +158,7 @@ __gcc_nested_func_ptr_created (void *chain, void *func, void **dst)
   __builtin___clear_cache ((void *)trampoline->insns,
 			   ((void *)trampoline->insns + sizeof(trampoline->insns)));
 
-  *dst = &trampoline->insns;
+  *(void **) dst = &trampoline->insns;
 }
 
 HEAP_T_ATTR

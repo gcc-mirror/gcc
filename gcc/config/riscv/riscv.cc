@@ -447,6 +447,40 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   NULL,						/* vector cost */
 };
 
+/* Costs to use when optimizing for Sifive p400 Series.  */
+static const struct riscv_tune_param sifive_p400_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  3,						/* issue_rate */
+  4,						/* branch_cost */
+  3,						/* memory_cost */
+  4,						/* fmv_cost */
+  true,						/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
+  RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
+  &generic_vector_cost,				/* vector cost */
+};
+
+/* Costs to use when optimizing for Sifive p600 Series.  */
+static const struct riscv_tune_param sifive_p600_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  4,						/* issue_rate */
+  4,						/* branch_cost */
+  3,						/* memory_cost */
+  4,						/* fmv_cost */
+  true,						/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
+  RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
+  &generic_vector_cost,				/* vector cost */
+};
+
 /* Costs to use when optimizing for T-HEAD c906.  */
 static const struct riscv_tune_param thead_c906_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)}, /* fp_add */
@@ -1380,6 +1414,41 @@ riscv_v_ext_mode_p (machine_mode mode)
 {
   return riscv_v_ext_vector_mode_p (mode) || riscv_v_ext_tuple_mode_p (mode)
 	 || riscv_v_ext_vls_mode_p (mode);
+}
+
+static unsigned
+riscv_v_vls_mode_aggregate_gpr_count (unsigned vls_unit_size,
+				      unsigned scalar_unit_size)
+{
+  gcc_assert (vls_unit_size != 0 && scalar_unit_size != 0);
+
+  if (vls_unit_size < scalar_unit_size)
+    return 1;
+
+  /* Ensure the vls mode is exact_div by scalar_unit_size.  */
+  gcc_assert ((vls_unit_size % scalar_unit_size) == 0);
+
+  return vls_unit_size / scalar_unit_size;
+}
+
+static machine_mode
+riscv_v_vls_to_gpr_mode (unsigned vls_mode_size)
+{
+  switch (vls_mode_size)
+    {
+      case 16:
+	return TImode;
+      case 8:
+	return DImode;
+      case 4:
+	return SImode;
+      case 2:
+	return HImode;
+      case 1:
+	return QImode;
+      default:
+	gcc_unreachable ();
+    }
 }
 
 /* Call from ADJUST_NUNITS in riscv-modes.def. Return the correct
@@ -3003,7 +3072,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     case SET:
       /* If we are called for an INSN that's a simple set of a register,
 	 then cost based on the SET_SRC alone.  */
-      if (outer_code == INSN && REG_P (SET_DEST (x)))
+      if (outer_code == INSN
+	  && register_operand (SET_DEST (x), GET_MODE (SET_DEST (x))))
 	{
 	  riscv_rtx_costs (SET_SRC (x), mode, outer_code, opno, total, speed);
 	  return true;
@@ -3120,7 +3190,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  rtx and_rhs = XEXP (x, 1);
 	  rtx ashift_lhs = XEXP (XEXP (x, 0), 0);
 	  rtx ashift_rhs = XEXP (XEXP (x, 0), 1);
-	  if (REG_P (ashift_lhs)
+	  if (register_operand (ashift_lhs, GET_MODE (ashift_lhs))
 	      && CONST_INT_P (ashift_rhs)
 	      && CONST_INT_P (and_rhs)
 	      && ((INTVAL (and_rhs) >> INTVAL (ashift_rhs)) == 0xffffffff))
@@ -3136,7 +3206,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	}
       /* bclr pattern for zbs.  */
       if (TARGET_ZBS
-	  && REG_P (XEXP (x, 1))
+	  && register_operand (XEXP (x, 1), GET_MODE (XEXP (x, 1)))
 	  && GET_CODE (XEXP (x, 0)) == ROTATE
 	  && CONST_INT_P (XEXP ((XEXP (x, 0)), 0))
 	  && INTVAL (XEXP ((XEXP (x, 0)), 0)) == -2)
@@ -3292,7 +3362,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       if (TARGET_ZBA
 	  && (TARGET_64BIT && (mode == DImode))
 	  && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && register_operand (XEXP (XEXP (x, 0), 0),
+			       GET_MODE (XEXP (XEXP (x, 0), 0)))
 	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == SImode)
 	{
 	  *total = COSTS_N_INSNS (1);
@@ -3303,7 +3374,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  && ((!TARGET_64BIT && (mode == SImode)) ||
 	      (TARGET_64BIT && (mode == DImode)))
 	  && (GET_CODE (XEXP (x, 0)) == ASHIFT)
-	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && register_operand (XEXP (XEXP (x, 0), 0),
+			       GET_MODE (XEXP (XEXP (x, 0), 0)))
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && IN_RANGE (INTVAL (XEXP (XEXP (x, 0), 1)), 1, 3))
 	{
@@ -3316,7 +3388,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       if (TARGET_ZBA
 	  && mode == word_mode
 	  && GET_CODE (XEXP (x, 0)) == MULT
-	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && register_operand (XEXP (XEXP (x, 0), 0),
+			       GET_MODE (XEXP (XEXP (x, 0), 0)))
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && pow2p_hwi (INTVAL (XEXP (XEXP (x, 0), 1)))
 	  && IN_RANGE (exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1))), 1, 3))
@@ -3338,7 +3411,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       if (TARGET_ZBA
 	  && (TARGET_64BIT && (mode == DImode))
 	  && (GET_CODE (XEXP (x, 0)) == AND)
-	  && (REG_P (XEXP (x, 1))))
+	  && register_operand (XEXP (x, 1), GET_MODE (XEXP (x, 1))))
 	{
 	  do {
 	    rtx and_lhs = XEXP (XEXP (x, 0), 0);
@@ -4868,6 +4941,41 @@ riscv_pass_fpr_pair (machine_mode mode, unsigned regno1,
 				   GEN_INT (offset2))));
 }
 
+static rtx
+riscv_pass_vls_aggregate_in_gpr (struct riscv_arg_info *info, machine_mode mode,
+				 unsigned gpr_base)
+{
+  gcc_assert (riscv_v_ext_vls_mode_p (mode));
+
+  unsigned count = 0;
+  unsigned regnum = 0;
+  machine_mode gpr_mode = VOIDmode;
+  unsigned vls_size = GET_MODE_SIZE (mode).to_constant ();
+  unsigned gpr_size =  GET_MODE_SIZE (Xmode);
+
+  if (IN_RANGE (vls_size, 0, gpr_size * 2))
+    {
+      count = riscv_v_vls_mode_aggregate_gpr_count (vls_size, gpr_size);
+
+      if (count + info->gpr_offset <= MAX_ARGS_IN_REGISTERS)
+	{
+	  regnum = gpr_base + info->gpr_offset;
+	  info->num_gprs = count;
+	  gpr_mode = riscv_v_vls_to_gpr_mode (vls_size);
+	}
+    }
+
+  if (!regnum)
+    return NULL_RTX; /* Return NULL_RTX if we cannot find a suitable reg.  */
+
+  gcc_assert (gpr_mode != VOIDmode);
+
+  rtx reg = gen_rtx_REG (gpr_mode, regnum);
+  rtx x = gen_rtx_EXPR_LIST (VOIDmode, reg, CONST0_RTX (gpr_mode));
+
+  return gen_rtx_PARALLEL (mode, gen_rtvec (1, x));
+}
+
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
@@ -4997,8 +5105,7 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
   info->gpr_offset = cum->num_gprs;
   info->fpr_offset = cum->num_fprs;
 
-  /* When disable vector_abi or scalable vector argument is anonymous, this
-     argument is passed by reference.  */
+  /* Passed by reference when the scalable vector argument is anonymous.  */
   if (riscv_v_ext_mode_p (mode) && !named)
     return NULL_RTX;
 
@@ -5067,6 +5174,10 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
       /* For scalable vector argument.  */
       if (riscv_vector_type_p (type) && riscv_v_ext_mode_p (mode))
 	return riscv_get_vector_arg (info, cum, mode, return_p);
+
+      /* For vls mode aggregated in gpr.  */
+      if (riscv_v_ext_vls_mode_p (mode))
+	return riscv_pass_vls_aggregate_in_gpr (info, mode, gpr_base);
     }
 
   /* Work out the size of the argument.  */
@@ -5191,9 +5302,14 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
      so we can avoid the call to riscv_get_arg_info in this case.  */
   if (cum != NULL)
     {
-      /* Don't pass by reference if we can use a floating-point register.  */
       riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
+
+      /* Don't pass by reference if we can use a floating-point register.  */
       if (info.num_fprs)
+	return false;
+
+      /* Don't pass by reference if we can use general register(s) for vls.  */
+      if (info.num_gprs && riscv_v_ext_vls_mode_p (arg.mode))
 	return false;
 
       /* Don't pass by reference if we can use vector register groups.  */
@@ -5201,9 +5317,9 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 	return false;
     }
 
-  /* When vector abi disabled(without --param=riscv-vector-abi option) or
-     scalable vector argument is anonymous or cannot be passed through vector
-     registers, this argument is passed by reference. */
+  /* Passed by reference when:
+     1. The scalable vector argument is anonymous.
+     2. Args cannot be passed through vector registers.  */
   if (riscv_v_ext_mode_p (arg.mode))
     return true;
 
@@ -5314,12 +5430,9 @@ riscv_arguments_is_vector_type_p (const_tree fntype)
 static const predefined_function_abi &
 riscv_fntype_abi (const_tree fntype)
 {
-  /* Implementing an experimental vector calling convention, the proposal
-     can be viewed at the bellow link:
-       https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389
-
-     You can enable this feature via the `--param=riscv-vector-abi` compiler
-     option.  */
+  /* Implement the vector calling convention.  For more details please
+     reference the below link.
+     https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389  */
   if (riscv_return_value_is_vector_type_p (fntype)
 	  || riscv_arguments_is_vector_type_p (fntype))
     return riscv_v_abi ();

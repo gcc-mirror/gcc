@@ -1,7 +1,7 @@
 /**
  * Performs the semantic2 stage, which deals with initializer expressions.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/semantic2.d, _semantic2.d)
@@ -93,6 +93,13 @@ private extern(C++) final class Semantic2Visitor : Visitor
     override void visit(StaticAssert sa)
     {
         //printf("StaticAssert::semantic2() %s\n", sa.toChars());
+        if (const e = sa.exp.isStringExp())
+        {
+            // deprecated in 2.107
+            deprecation(e.loc, "static assert condition cannot be a string literal");
+            deprecationSupplemental(e.loc, "If intentional, use `%s !is null` instead to preserve behaviour",
+                e.toChars());
+        }
         auto sds = new ScopeDsymbol();
         sc = sc.push(sds);
         sc.tinst = null;
@@ -822,7 +829,8 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
 }
 
 /**
- * Try lower a variable's static Associative Array to a newaa struct.
+ * Try lower a variable's Associative Array initializer to a newaa struct
+ * so it can be put in static data.
  * Params:
  *   vd = Variable to lower
  *   sc = Scope
@@ -832,11 +840,20 @@ void lowerStaticAAs(VarDeclaration vd, Scope* sc)
     if (vd.storage_class & STC.manifest)
         return;
     if (auto ei = vd._init.isExpInitializer())
-    {
-        scope v = new StaticAAVisitor(sc);
-        v.vd = vd;
-        ei.exp.accept(v);
-    }
+        lowerStaticAAs(ei.exp, sc);
+}
+
+/**
+ * Try lower all Associative Array literals in an expression to a newaa struct
+ * so it can be put in static data.
+ * Params:
+ *   e = Expression to traverse
+ *   sc = Scope
+ */
+void lowerStaticAAs(Expression e, Scope* sc)
+{
+    scope v = new StaticAAVisitor(sc);
+    e.accept(v);
 }
 
 /// Visit Associative Array literals and lower them to structs for static initialization
@@ -844,7 +861,6 @@ private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
 {
     alias visit = SemanticTimeTransitiveVisitor.visit;
     Scope* sc;
-    VarDeclaration vd;
 
     this(Scope* sc) scope @safe
     {

@@ -1,7 +1,7 @@
 /**
  * Stores command line options and contains other miscellaneous declarations.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/globals.d, _globals.d)
@@ -15,7 +15,9 @@ import core.stdc.stdio;
 import core.stdc.stdint;
 import core.stdc.string;
 
+import dmd.astenums;
 import dmd.root.array;
+import dmd.root.file;
 import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.errorsink;
@@ -167,7 +169,7 @@ extern (C++) struct Param
     bool cov;               // generate code coverage data
     ubyte covPercent;       // 0..100 code coverage percentage required
     bool ctfe_cov = false;  // generate coverage data for ctfe
-    bool ignoreUnsupportedPragmas;  // rather than error on them
+    bool ignoreUnsupportedPragmas = true;  // rather than error on them
     bool useModuleInfo = true;   // generate runtime module information
     bool useTypeInfo = true;     // generate runtime type information
     bool useExceptions = true;   // support exception handling
@@ -217,8 +219,8 @@ extern (C++) struct Param
 
     const(char)[] argv0;                // program name
     Array!(const(char)*) modFileAliasStrings; // array of char*'s of -I module filename alias strings
-    Array!(const(char)*)* imppath;      // array of char*'s of where to look for import modules
-    Array!(const(char)*)* fileImppath;  // array of char*'s of where to look for file import modules
+    Array!(const(char)*) imppath;       // array of char*'s of where to look for import modules
+    Array!(const(char)*) fileImppath;   // array of char*'s of where to look for file import modules
     const(char)[] objdir;                // .obj/.lib file output directory
     const(char)[] objname;               // .obj file output name
     const(char)[] libname;               // .lib file output name
@@ -275,11 +277,11 @@ extern (C++) struct Global
 {
     const(char)[] inifilename; /// filename of configuration file as given by `-conf=`, or default value
 
-    string copyright = "Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved";
+    string copyright = "Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved";
     string written = "written by Walter Bright";
 
-    Array!(const(char)*)* path;         /// Array of char*'s which form the import lookup path
-    Array!(const(char)*)* filePath;     /// Array of char*'s which form the file import lookup path
+    Array!(const(char)*) path;         /// Array of char*'s which form the import lookup path
+    Array!(const(char)*) filePath;     /// Array of char*'s which form the file import lookup path
 
     private enum string _version = import("VERSION");
     char[26] datetime;      /// string returned by ctime()
@@ -294,8 +296,8 @@ extern (C++) struct Global
 
     void* console;         /// opaque pointer to console for controlling text attributes
 
-    Array!Identifier* versionids; /// command line versions and predefined versions
-    Array!Identifier* debugids;   /// command line debug versions and predefined versions
+    Array!Identifier versionids; /// command line versions and predefined versions
+    Array!Identifier debugids;   /// command line debug versions and predefined versions
 
     bool hasMainFunction; /// Whether a main function has already been compiled in (for -main switch)
     uint varSequenceNumber = 1; /// Relative lifetime of `VarDeclaration` within a function, used for `scope` checks
@@ -308,7 +310,7 @@ extern (C++) struct Global
     ErrorSink errorSink;       /// where the error messages go
     ErrorSink errorSinkNull;   /// where the error messages are ignored
 
-    extern (C++) FileName function(FileName, ref const Loc, out bool, OutBuffer*) preprocess;
+    extern (C++) DArray!ubyte function(FileName, ref const Loc, ref OutBuffer) preprocess;
 
   nothrow:
 

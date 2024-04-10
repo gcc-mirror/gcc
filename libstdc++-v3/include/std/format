@@ -406,6 +406,8 @@ namespace __format
       _WidthPrec _M_width_kind : 2;
       _WidthPrec _M_prec_kind : 2;
       _Pres_type _M_type : 4;
+      unsigned   _M_reserved : 1;
+      unsigned   _M_reserved2 : 16;
       unsigned short _M_width;
       unsigned short _M_prec;
       char32_t _M_fill = ' ';

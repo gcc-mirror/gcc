@@ -203,5 +203,8 @@ extern loongarch_def_array<loongarch_align, N_TUNE_TYPES>
   loongarch_cpu_align;
 extern loongarch_def_array<loongarch_rtx_cost_data, N_TUNE_TYPES>
   loongarch_cpu_rtx_cost_data;
+extern loongarch_def_array<
+  loongarch_def_array<loongarch_isa, N_ABI_EXT_TYPES>,
+  N_ABI_BASE_TYPES> abi_minimal_isa;
 
 #endif /* LOONGARCH_DEF_H */

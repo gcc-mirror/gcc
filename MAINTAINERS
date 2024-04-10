@@ -100,7 +100,7 @@ msp430 port		Nick Clifton		<nickc@redhat.com>
 nds32 port		Chung-Ju Wu		<jasonwucj@gmail.com>
 nds32 port		Shiva Chen		<shiva0217@gmail.com>
 nios2 port		Chung-Lin Tang		<cltang@baylibre.com>
-nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
+nios2 port		Sandra Loosemore	<sloosemore@baylibre.com>
 nvptx port		Tom de Vries		<tdevries@suse.de>
 nvptx port		Thomas Schwinge		<tschwinge@baylibre.com>
 or1k port		Stafford Horne		<shorne@gmail.com>
@@ -124,7 +124,7 @@ sparc port		David S. Miller		<davem@redhat.com>
 sparc port		Eric Botcazou		<ebotcazou@libertysurf.fr>
 v850 port		Nick Clifton		<nickc@redhat.com>
 vax port		Matt Thomas		<matt@3am-software.com>
-vax port		Maciej W. Rozycki	<macro@embecosm.com>
+vax port		Maciej W. Rozycki	<macro@orcam.me.uk>
 visium port		Eric Botcazou		<ebotcazou@libertysurf.fr>
 x86-64 port		Jan Hubicka		<hubicka@ucw.cz>
 xstormy16 port		Nick Clifton		<nickc@redhat.com>
@@ -228,7 +228,7 @@ build machinery (*.in)	Alexandre Oliva		<aoliva@gcc.gnu.org>
 build machinery (*.in)	Ralf Wildenhues		<Ralf.Wildenhues@gmx.de>
 docs co-maintainer	Gerald Pfeifer		<gerald@pfeifer.com>
 docs co-maintainer	Joseph Myers		<josmyers@redhat.com>
-docs co-maintainer	Sandra Loosemore	<sandra@codesourcery.com>
+docs co-maintainer	Sandra Loosemore	<sloosemore@baylibre.com>
 docstring relicensing	Gerald Pfeifer		<gerald@pfeifer.com>
 docstring relicensing	Joseph Myers		<josmyers@redhat.com>
 predict.def		Jan Hubicka		<hubicka@ucw.cz>

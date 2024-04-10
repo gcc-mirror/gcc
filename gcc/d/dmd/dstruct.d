@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/struct.html, Structs, Unions)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dstruct.d, _dstruct.d)
@@ -289,7 +289,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         for (size_t i = 0; i < members.length; i++)
         {
             Dsymbol s = (*members)[i];
-            s.setFieldOffset(this, fieldState, isunion);
+            s.setFieldOffset(this, &fieldState, isunion);
         }
         if (type.ty == Terror)
         {
@@ -434,7 +434,11 @@ extern (C++) class StructDeclaration : AggregateDeclaration
 
         ispod = ThreeState.yes;
 
-        if (enclosing || postblit || dtor || hasCopyCtor)
+        import dmd.clone;
+        bool hasCpCtorLocal;
+        needCopyCtor(this, hasCpCtorLocal);
+
+        if (enclosing || search(this, loc, Id.postblit) || search(this, loc, Id.dtor) || hasCpCtorLocal)
         {
             ispod = ThreeState.no;
             return false;
@@ -612,7 +616,7 @@ bool _isZeroInit(Expression exp)
 
             foreach (i; 0 .. se.len)
             {
-                if (se.getCodeUnit(i))
+                if (se.getIndex(i) != 0)
                     return false;
             }
             return true;

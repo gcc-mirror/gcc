@@ -126,6 +126,20 @@ Simple expressions
    underlying string, so it is valid to pass in a pointer to an on-stack
    buffer.
 
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_context_new_sizeof (gcc_jit_context *ctxt, \
+                                          gcc_jit_type *type)
+
+   Generate an rvalue that is equal to the size of ``type``.
+
+   The parameter ``type`` must be non-NULL.
+
+   This is equivalent to this C code:
+
+   .. code-block:: c
+
+     sizeof (type)
+
 Constructor expressions
 ***********************
 

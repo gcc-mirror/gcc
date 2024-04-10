@@ -26,3 +26,7 @@ _Static_assert(F80 == 9.0L, "9");
 
 #define SSS "hello"
 _Static_assert(SSS[0] == 'h', "10");
+
+#define ABC 12
+#define GHI (size) abbadabba
+#define DEF (ABC + 5)

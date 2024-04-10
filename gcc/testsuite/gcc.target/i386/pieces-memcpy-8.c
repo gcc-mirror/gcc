@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mno-avx2 -mavx -mtune=generic" } */
-/* Cope with --enable-frame-pointer.  */
-/* { dg-additional-options "-fomit-frame-pointer" } */
+/* Cope with --enable-frame-pointer, Solaris/x86 -mstackrealign default.  */
+/* { dg-additional-options "-fomit-frame-pointer -mno-stackrealign" } */
 
 void
 foo (int a1, int a2, int a3, int a4, int a5, int a6, char *dst, char *src)

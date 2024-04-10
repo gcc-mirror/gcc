@@ -36,7 +36,7 @@
  * are valid D identifier.
  *
  * See_Also:    https://github.com/dlang/dmd/pull/10031
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/nspace.d, _nspace.d)
@@ -46,21 +46,13 @@
 
 module dmd.nspace;
 
-import dmd.aggregate;
 import dmd.arraytypes;
-import dmd.astenums;
-import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem;
-import dmd.errors;
 import dmd.expression;
-import dmd.globals;
 import dmd.identifier;
 import dmd.location;
 import dmd.visitor;
 import core.stdc.stdio;
-
-private enum LOG = false;
 
 /// Ditto
 extern (C++) final class Nspace : ScopeDsymbol
@@ -89,14 +81,6 @@ extern (C++) final class Nspace : ScopeDsymbol
     {
         //printf("Nspace::hasPointers() %s\n", toChars());
         return members.foreachDsymbol( (s) { return s.hasPointers(); } ) != 0;
-    }
-
-    override void setFieldOffset(AggregateDeclaration ad, ref FieldState fieldState, bool isunion)
-    {
-        //printf("Nspace::setFieldOffset() %s\n", toChars());
-        if (_scope) // if fwd reference
-            dsymbolSemantic(this, null); // try to resolve it
-        members.foreachDsymbol( s => s.setFieldOffset(ad, fieldState, isunion) );
     }
 
     override const(char)* kind() const

@@ -1,3 +1,7 @@
+2024-02-05  Marek Polacek  <polacek@redhat.com>
+
+	* containers.h (vector): Remove the template-id in constructors.
+
 2024-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* libitm.texi: Bump @copying's copyright year.

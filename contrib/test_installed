@@ -114,6 +114,10 @@ set GCC_UNDER_TEST "${GCC_UNDER_TEST-${prefix}${prefix+/bin/}gcc}"
 set GXX_UNDER_TEST "${GXX_UNDER_TEST-${prefix}${prefix+/bin/}g++}"
 set GFORTRAN_UNDER_TEST "${GFORTRAN_UNDER_TEST-${prefix}${prefix+/bin/}gfortran}"
 set OBJC_UNDER_TEST "${OBJC_UNDER_TEST-${prefix}${prefix+/bin/}gcc}"
+set HOSTCC "${HOSTCC-cc}"
+set HOSTCXX "${HOSTCXX-c++}"
+set HOSTCFLAGS ""
+set HOSTCXXFLAGS ""
 EOF
 if test x${target} != x; then
   echo "set target_triplet $target" >> site.exp

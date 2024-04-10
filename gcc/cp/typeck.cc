@@ -1573,8 +1573,8 @@ structural_comptypes (tree t1, tree t2, int strict)
 	return false;
       /* If T1 and T2 don't represent the same class template deduction,
          they aren't equal.  */
-      if (CLASS_PLACEHOLDER_TEMPLATE (t1)
-	  != CLASS_PLACEHOLDER_TEMPLATE (t2))
+      if (!cp_tree_equal (CLASS_PLACEHOLDER_TEMPLATE (t1),
+			  CLASS_PLACEHOLDER_TEMPLATE (t2)))
 	return false;
       /* Constrained 'auto's are distinct from parms that don't have the same
 	 constraints.  */
@@ -10863,7 +10863,9 @@ treat_lvalue_as_rvalue_p (tree expr, bool return_p)
       for (tree decl = b->names; decl; decl = TREE_CHAIN (decl))
 	if (decl == retval)
 	  return set_implicit_rvalue_p (move (expr));
-      if (b->kind == sk_function_parms || b->kind == sk_try)
+      if (b->kind == sk_function_parms
+	  || b->kind == sk_try
+	  || b->kind == sk_namespace)
 	return NULL_TREE;
     }
 }
