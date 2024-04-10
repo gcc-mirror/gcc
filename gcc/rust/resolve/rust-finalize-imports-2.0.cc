@@ -126,16 +126,14 @@ GlobbingVisitor::visit (AST::UseDeclaration &use)
 }
 
 void
-finalize_simple_import (
-  TopLevel &toplevel,
-  const std::pair<TopLevel::ImportKind, Early::ImportData> &mapping)
+finalize_simple_import (TopLevel &toplevel, const Early::ImportPair &mapping)
 {
   // FIXME: We probably need to store namespace information
 
-  auto locus = mapping.first.to_resolve.get_locus ();
-  auto data = mapping.second;
+  auto locus = mapping.import_kind.to_resolve.get_locus ();
+  auto data = mapping.data;
   auto identifier
-    = mapping.first.to_resolve.get_final_segment ().get_segment_name ();
+    = mapping.import_kind.to_resolve.get_final_segment ().get_segment_name ();
 
   for (auto &&definition : data.definitions ())
     toplevel
@@ -144,12 +142,11 @@ finalize_simple_import (
 }
 
 void
-finalize_glob_import (
-  NameResolutionContext &ctx,
-  const std::pair<TopLevel::ImportKind, Early::ImportData> &mapping)
+finalize_glob_import (NameResolutionContext &ctx,
+		      const Early::ImportPair &mapping)
 {
   auto module = Analysis::Mappings::get ().lookup_ast_module (
-    mapping.second.module ().get_node_id ());
+    mapping.data.module ().get_node_id ());
   rust_assert (module);
 
   GlobbingVisitor glob_visitor (ctx);
@@ -157,15 +154,13 @@ finalize_glob_import (
 }
 
 void
-finalize_rebind_import (
-  TopLevel &toplevel,
-  const std::pair<TopLevel::ImportKind, Early::ImportData> &mapping)
+finalize_rebind_import (TopLevel &toplevel, const Early::ImportPair &mapping)
 {
   // We can fetch the value here as `resolve_rebind` will only be called on
   // imports of the right kind
-  auto &path = mapping.first.to_resolve;
-  auto &rebind = mapping.first.rebind.value ();
-  auto data = mapping.second;
+  auto &path = mapping.import_kind.to_resolve;
+  auto &rebind = mapping.import_kind.rebind.value ();
+  auto data = mapping.data;
 
   location_t locus = UNKNOWN_LOCATION;
   std::string declared_name;
@@ -191,11 +186,9 @@ finalize_rebind_import (
       declared_name, locus, definition.first.get_node_id (), definition.second /* TODO: This isn't clear - it would be better if it was called .ns or something */);
 }
 
-FinalizeImports::FinalizeImports (
-  std::unordered_map<
-    NodeId, std::vector<std::pair<TopLevel::ImportKind, Early::ImportData>>>
-    &&data,
-  TopLevel &toplevel, NameResolutionContext &ctx)
+FinalizeImports::FinalizeImports (Early::ImportMappings &&data,
+				  TopLevel &toplevel,
+				  NameResolutionContext &ctx)
   : DefaultResolver (ctx), data (std::move (data)), toplevel (toplevel),
     ctx (ctx)
 {}
@@ -210,10 +203,10 @@ FinalizeImports::go (AST::Crate &crate)
 void
 FinalizeImports::visit (AST::UseDeclaration &use)
 {
-  auto import_mappings = data[use.get_node_id ()];
+  auto import_mappings = data.get (use.get_node_id ());
 
   for (const auto &mapping : import_mappings)
-    switch (mapping.first.kind)
+    switch (mapping.import_kind.kind)
       {
       case TopLevel::ImportKind::Kind::Glob:
 	finalize_glob_import (ctx, mapping);

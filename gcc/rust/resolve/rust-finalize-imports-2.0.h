@@ -91,20 +91,15 @@ private:
 class FinalizeImports : DefaultResolver
 {
 public:
-  FinalizeImports (
-    std::unordered_map<
-      NodeId, std::vector<std::pair<TopLevel::ImportKind, Early::ImportData>>>
-      &&data,
-    TopLevel &toplevel, NameResolutionContext &ctx);
+  FinalizeImports (Early::ImportMappings &&data, TopLevel &toplevel,
+		   NameResolutionContext &ctx);
 
   void go (AST::Crate &crate);
 
 private:
   void visit (AST::UseDeclaration &) override;
 
-  std::unordered_map<
-    NodeId, std::vector<std::pair<TopLevel::ImportKind, Early::ImportData>>>
-    data;
+  Early::ImportMappings data;
   TopLevel &toplevel;
   NameResolutionContext &ctx;
 };

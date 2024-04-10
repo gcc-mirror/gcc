@@ -85,8 +85,9 @@ Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
   // up the module proper in `FinalizeImports`
   // The namespace does not matter here since we are dealing with a glob
   // TODO: Ugly
-  import_mappings.insert (
-    {use_dec_id, {{std::move (glob), ImportData::Glob (*resolved)}}});
+  import_mappings.insert (use_dec_id,
+			  ImportPair (std::move (glob),
+				      ImportData::Glob (*resolved)));
 
   return true;
 }
@@ -100,19 +101,11 @@ Early::resolve_simple_import (NodeId use_dec_id, TopLevel::ImportKind &&import)
   if (definitions.empty ())
     return false;
 
-  // We insert an empty vector, unless an element was already present for
-  // `use_dec_id` - which is returned in the tuple's first member
-  auto tuple = import_mappings.insert ({use_dec_id, {}});
-  // We then get that tuple's first member, which will be an iterator to the
-  // existing vec<pair<ImportKind, ImportData>> OR an iterator to our newly
-  // created empty vector (plus its key since this is a hashmap iterator).
-  // we then access the second member of the pair to get access to the
-  // vector directly.
-  auto &imports = tuple.first->second;
+  auto &imports = import_mappings.new_or_access (use_dec_id);
 
   imports.emplace_back (
-    std::make_pair (std::move (import),
-		    ImportData::Simple (std::move (definitions))));
+    ImportPair (std::move (import),
+		ImportData::Simple (std::move (definitions))));
 
   return true;
 }
@@ -127,19 +120,11 @@ Early::resolve_rebind_import (NodeId use_dec_id,
   if (definitions.empty ())
     return false;
 
-  // We insert an empty vector, unless an element was already present for
-  // `use_dec_id` - which is returned in the tuple's first member
-  auto tuple = import_mappings.insert ({use_dec_id, {}});
-  // We then get that tuple's first member, which will be an iterator to the
-  // existing vec<pair<ImportKind, ImportData>> OR an iterator to our newly
-  // created empty vector (plus its key since this is a hashmap iterator).
-  // we then access the second member of the pair to get access to the
-  // vector directly.
-  auto &imports = tuple.first->second;
+  auto &imports = import_mappings.new_or_access (use_dec_id);
 
   imports.emplace_back (
-    std::make_pair (std::move (rebind_import),
-		    ImportData::Rebind (std::move (definitions))));
+    ImportPair (std::move (rebind_import),
+		ImportData::Rebind (std::move (definitions))));
 
   return true;
 }
