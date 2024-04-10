@@ -224,7 +224,8 @@ public:
 
   /* Modify a call statement arguments (and possibly remove the return value)
      as described in the data fields of this class.  */
-  gcall *modify_call (cgraph_edge *cs, bool update_references);
+  gcall *modify_call (cgraph_edge *cs, bool update_references,
+		      hash_set <tree> *killed_ssas);
   /* Return if the first parameter is left intact.  */
   bool first_param_intact_p ();
   /* Build a function type corresponding to the modified call.  */
@@ -442,6 +443,6 @@ void push_function_arg_decls (vec<tree> *args, tree fndecl);
 void push_function_arg_types (vec<tree> *types, tree fntype);
 void ipa_verify_edge_has_no_modifications (cgraph_edge *cs);
 void ipa_edge_modifications_finalize ();
-
+void ipa_release_ssas_in_hash (hash_set <tree> *killed_ssas);
 
 #endif	/* IPA_PARAM_MANIPULATION_H */

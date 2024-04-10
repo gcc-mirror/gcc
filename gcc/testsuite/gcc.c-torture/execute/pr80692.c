@@ -1,4 +1,5 @@
 /* { dg-require-effective-target dfp } */
+/* { dg-require-effective-target dfprt } */
 
 int main () {
 	_Decimal64 d64 = -0.DD;

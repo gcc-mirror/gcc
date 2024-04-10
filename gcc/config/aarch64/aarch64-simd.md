@@ -389,26 +389,6 @@
   [(set_attr "type" "neon_mul_<Vetype><q>")]
 )
 
-;; Advanced SIMD does not support vector DImode MUL, but SVE does.
-;; Make use of the overlap between Z and V registers to implement the V2DI
-;; optab for TARGET_SVE.  The mulvnx2di3 expander can
-;; handle the TARGET_SVE2 case transparently.
-(define_expand "mulv2di3"
-  [(set (match_operand:V2DI 0 "register_operand")
-        (mult:V2DI (match_operand:V2DI 1 "register_operand")
-		   (match_operand:V2DI 2 "aarch64_sve_vsm_operand")))]
-  "TARGET_SVE"
-  {
-    machine_mode sve_mode = VNx2DImode;
-    rtx sve_op0 = simplify_gen_subreg (sve_mode, operands[0], V2DImode, 0);
-    rtx sve_op1 = simplify_gen_subreg (sve_mode, operands[1], V2DImode, 0);
-    rtx sve_op2 = simplify_gen_subreg (sve_mode, operands[2], V2DImode, 0);
-
-    emit_insn (gen_mulvnx2di3 (sve_op0, sve_op1, sve_op2));
-    DONE;
-  }
-)
-
 (define_insn "bswap<mode>2"
   [(set (match_operand:VDQHSD 0 "register_operand" "=w")
         (bswap:VDQHSD (match_operand:VDQHSD 1 "register_operand" "w")))]
@@ -2676,27 +2656,6 @@
  "TARGET_SIMD"
  "fdiv\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_fp_div_<stype><q>")]
-)
-
-;; SVE has vector integer divisions, unlike Advanced SIMD.
-;; We can use it with Advanced SIMD modes to expose the V2DI and V4SI
-;; optabs to the midend.
-(define_expand "<su_optab>div<mode>3"
-  [(set (match_operand:VQDIV 0 "register_operand")
-	(ANY_DIV:VQDIV
-	  (match_operand:VQDIV 1 "register_operand")
-	  (match_operand:VQDIV 2 "register_operand")))]
-  "TARGET_SVE"
-  {
-    machine_mode sve_mode
-      = aarch64_full_sve_mode (GET_MODE_INNER (<MODE>mode)).require ();
-    rtx sve_op0 = simplify_gen_subreg (sve_mode, operands[0], <MODE>mode, 0);
-    rtx sve_op1 = simplify_gen_subreg (sve_mode, operands[1], <MODE>mode, 0);
-    rtx sve_op2 = simplify_gen_subreg (sve_mode, operands[2], <MODE>mode, 0);
-
-    emit_insn (gen_<su_optab>div<vnx>3 (sve_op0, sve_op1, sve_op2));
-    DONE;
-  }
 )
 
 (define_insn "neg<mode>2<vczle><vczbe>"
@@ -8262,11 +8221,21 @@
 	   || (memory_operand (operands[0], V8DImode)
 	       && register_operand (operands[1], V8DImode)))
     {
+      std::pair<rtx, rtx> last_pair = {};
       for (int offset = 0; offset < 64; offset += 16)
-	emit_move_insn (simplify_gen_subreg (TImode, operands[0],
-					     V8DImode, offset),
-			simplify_gen_subreg (TImode, operands[1],
-					     V8DImode, offset));
+        {
+	  std::pair<rtx, rtx> pair = {
+	    simplify_gen_subreg (TImode, operands[0], V8DImode, offset),
+	    simplify_gen_subreg (TImode, operands[1], V8DImode, offset)
+	  };
+	  if (register_operand (pair.first, TImode)
+	      && reg_overlap_mentioned_p (pair.first, pair.second))
+	    last_pair = pair;
+	  else
+	    emit_move_insn (pair.first, pair.second);
+        }
+      if (last_pair.first)
+	emit_move_insn (last_pair.first, last_pair.second);
       DONE;
     }
   else
@@ -8544,6 +8513,18 @@
   "TARGET_SIMD"
   "<PERMUTE:perm_insn>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_permute<q>")]
+)
+
+;; ZIP1 ignores the contents of the upper halves of the registers,
+;; so we can describe 128-bit operations in terms of 64-bit inputs.
+(define_insn "aarch64_zip1<mode>_low"
+  [(set (match_operand:VQ 0 "register_operand" "=w")
+	(unspec:VQ [(match_operand:<VHALF> 1 "register_operand" "w")
+		    (match_operand:<VHALF> 2 "register_operand" "w")]
+		   UNSPEC_ZIP1))]
+  "TARGET_SIMD"
+  "zip1\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_permute_q")]
 )
 
 ;; This instruction's pattern is generated directly by
@@ -9726,9 +9707,8 @@
        not sufficient uses of the zero to make the split worthwhile.  */
     rtx res = simplify_gen_subreg (<VNARROWQ2>mode, operands[0],
 				   <MODE>mode, 0);
-    rtx zero = aarch64_gen_shareable_zero (<VNARROWQ2>mode);
-    rtx op = lowpart_subreg (<VNARROWQ2>mode, operands[1], <VNARROWQ>mode);
-    emit_insn (gen_aarch64_zip1<Vnarrowq2> (res, op, zero));
+    rtx zero = aarch64_gen_shareable_zero (<VNARROWQ>mode);
+    emit_insn (gen_aarch64_zip1<Vnarrowq2>_low (res, operands[1], zero));
     DONE;
   }
   [(set_attr "type" "neon_shift_imm_long")]

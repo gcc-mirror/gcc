@@ -869,16 +869,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_remove_bucket_begin(size_type __bkt, __node_ptr __next_n,
 			     size_type __next_bkt)
       {
-	if (!__next_n || __next_bkt != __bkt)
+	if (!__next_n)
+	  _M_buckets[__bkt] = nullptr;
+	else if (__next_bkt != __bkt)
 	  {
-	    // Bucket is now empty
-	    // First update next bucket if any
-	    if (__next_n)
-	      _M_buckets[__next_bkt] = _M_buckets[__bkt];
-
-	    // Second update before begin node if necessary
-	    if (&_M_before_begin == _M_buckets[__bkt])
-	      _M_before_begin._M_nxt = __next_n;
+	    _M_buckets[__next_bkt] = _M_buckets[__bkt];
 	    _M_buckets[__bkt] = nullptr;
 	  }
       }

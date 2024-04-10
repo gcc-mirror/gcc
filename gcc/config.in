@@ -2356,6 +2356,12 @@
 #endif
 
 
+/* Define if assembler supports %reloc. */
+#ifndef USED_FOR_TARGET
+#undef MIPS_EXPLICIT_RELOCS
+#endif
+
+
 /* Define if host mkdir takes a single argument. */
 #ifndef USED_FOR_TARGET
 #undef MKDIR_TAKES_ONE_ARG

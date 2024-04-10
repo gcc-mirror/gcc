@@ -715,12 +715,15 @@ hppa*-*-netbsd*)
 i[34567]86-*-darwin*)
 	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-msabi"
 	tm_file="$tm_file i386/darwin-lib.h"
-	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
+	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o"
+	extra_parts="$extra_parts crtfastmath.o libheapt_w.a"
+	tmake_file="${tmake_file} i386/t-heap-trampoline"
 	;;
 x86_64-*-darwin*)
 	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-msabi"
 	tm_file="$tm_file i386/darwin-lib.h"
-	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
+	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o"
+	extra_parts="$extra_parts crtfastmath.o libheapt_w.a"
 	tmake_file="${tmake_file} i386/t-heap-trampoline"
 	;;
 i[34567]86-*-elfiamcu)

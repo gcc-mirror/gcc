@@ -12,6 +12,11 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 {
   gcc_jit_context_add_command_line_option (ctxt, "-flto");
   gcc_jit_context_add_driver_option (ctxt, "-nostdlib");
+#if __APPLE__
+  /* On newer macOS, the test will fail with a complaint from the linker about
+     all user-land exes needing libSystem, so add it.  */
+  gcc_jit_context_add_driver_option (ctxt, "-lSystem");
+#endif
 
   gcc_jit_type *type_int = gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT);
   gcc_jit_param *params_for_func_main[0] = {

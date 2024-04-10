@@ -150,6 +150,7 @@ set plugin_test_list [list \
 	  infoleak-CVE-2017-18550-1.c \
 	  infoleak-antipatterns-1.c \
 	  infoleak-fixit-1.c \
+	  infoleak-pr112969.c \
 	  infoleak-uninit-size-1.c \
 	  infoleak-uninit-size-2.c \
 	  infoleak-net-ethtool-ioctl.c \
@@ -169,7 +170,9 @@ set plugin_test_list [list \
 	  taint-pr112850.c \
 	  taint-pr112850-precise.c \
 	  taint-pr112850-too-complex.c \
-	  taint-pr112850-unsanitized.c } \
+	  taint-pr112850-unsanitized.c \
+	  taint-pr112927.c \
+	  taint-pr112977.c } \
     { analyzer_cpython_plugin.c \
 	  cpython-plugin-test-no-Python-h.c \
 	  cpython-plugin-test-PyList_Append.c \

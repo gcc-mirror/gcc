@@ -15,13 +15,19 @@
 #include <pthread.h>
 #endif
 
+/* HEAP_T_ATTR is provided to allow targets to build the exported functions
+   as weak definitions.  */
+#ifndef HEAP_T_ATTR
+#  define HEAP_T_ATTR
+#endif
+
 void *allocate_trampoline_page (void);
 int get_trampolines_per_page (void);
 struct tramp_ctrl_data *allocate_tramp_ctrl (struct tramp_ctrl_data *parent);
 void *allocate_trampoline_page (void);
 
-void __builtin_nested_func_ptr_created (void *chain, void *func, void **dst);
-void __builtin_nested_func_ptr_deleted (void);
+void __gcc_nested_func_ptr_created (void *chain, void *func, void **dst);
+void __gcc_nested_func_ptr_deleted (void);
 
 #if defined(__gnu_linux__)
 static const uint32_t aarch64_trampoline_insns[] = {
@@ -107,8 +113,9 @@ allocate_tramp_ctrl (struct tramp_ctrl_data *parent)
   return p;
 }
 
+HEAP_T_ATTR
 void
-__builtin_nested_func_ptr_created (void *chain, void *func, void **dst)
+__gcc_nested_func_ptr_created (void *chain, void *func, void **dst)
 {
   if (tramp_ctrl_curr == NULL)
     {
@@ -154,8 +161,9 @@ __builtin_nested_func_ptr_created (void *chain, void *func, void **dst)
   *dst = &trampoline->insns;
 }
 
+HEAP_T_ATTR
 void
-__builtin_nested_func_ptr_deleted (void)
+__gcc_nested_func_ptr_deleted (void)
 {
   if (tramp_ctrl_curr == NULL)
     abort ();

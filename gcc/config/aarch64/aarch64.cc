@@ -2637,6 +2637,28 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
   return aarch64_gen_compare_reg (code, x, y);
 }
 
+/* Generate conditional branch to LABEL, comparing X to 0 using CODE.
+   Return the jump instruction.  */
+
+static rtx
+aarch64_gen_compare_zero_and_branch (rtx_code code, rtx x,
+				     rtx_code_label *label)
+{
+  if (aarch64_track_speculation)
+    {
+      /* Emit an explicit compare instruction, so that we can correctly
+	 track the condition codes.  */
+      rtx cc_reg = aarch64_gen_compare_reg (code, x, const0_rtx);
+      x = gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+  else
+    x = gen_rtx_fmt_ee (code, VOIDmode, x, const0_rtx);
+
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+			    gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
+  return gen_rtx_SET (pc_rtx, x);
+}
+
 /* Consider the operation:
 
      OPERANDS[0] = CODE (OPERANDS[1], OPERANDS[2]) + OPERANDS[3]
@@ -7221,6 +7243,10 @@ aarch64_function_arg_boundary (machine_mode mode, const_tree type)
 static fixed_size_mode
 aarch64_get_reg_raw_mode (int regno)
 {
+  /* Don't use any non GP registers for __builtin_apply and
+     __builtin_return if general registers only mode is requested. */
+  if (TARGET_GENERAL_REGS_ONLY && !GP_REGNUM_P (regno))
+    return as_a <fixed_size_mode> (VOIDmode);
   if (TARGET_SVE && FP_REGNUM_P (regno))
     /* Don't use the SVE part of the register for __builtin_apply and
        __builtin_return.  The SVE registers aren't used by the normal PCS,
@@ -9878,11 +9904,10 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
 	 to be SP; letting the CFA move during this adjustment
 	 is just as correct as retaining the CFA from the body
 	 of the function.  Therefore, do nothing special.  */
-      rtx label = gen_label_rtx ();
-      rtx x = gen_rtx_EQ (VOIDmode, EH_RETURN_TAKEN_RTX, const0_rtx);
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
-      rtx jump = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
+      rtx_code_label *label = gen_label_rtx ();
+      rtx x = aarch64_gen_compare_zero_and_branch (EQ, EH_RETURN_TAKEN_RTX,
+						   label);
+      rtx jump = emit_jump_insn (x);
       JUMP_LABEL (jump) = label;
       LABEL_NUSES (label)++;
       emit_insn (gen_add2_insn (stack_pointer_rtx,
@@ -10221,7 +10246,9 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
       type = ADDRESS_REG_UXTW;
       index = XEXP (XEXP (x, 0), 0);
       shift = exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)));
-      if (INTVAL (XEXP (x, 1)) != (HOST_WIDE_INT)0xffffffff << shift)
+      /* Avoid undefined code dealing with shift being -1. */
+      if (shift != -1
+	  && INTVAL (XEXP (x, 1)) != (HOST_WIDE_INT)0xffffffff << shift)
 	shift = -1;
     }
   /* (and:DI (ashift:DI (reg:DI) (const_int shift))
@@ -24653,19 +24680,8 @@ aarch64_split_compare_and_swap (rtx operands[])
 
   if (!is_weak)
     {
-      if (aarch64_track_speculation)
-	{
-	  /* Emit an explicit compare instruction, so that we can correctly
-	     track the condition codes.  */
-	  rtx cc_reg = aarch64_gen_compare_reg (NE, scratch, const0_rtx);
-	  x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
-	}
-      else
-	x = gen_rtx_NE (VOIDmode, scratch, const0_rtx);
-
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				gen_rtx_LABEL_REF (Pmode, label1), pc_rtx);
-      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+      x = aarch64_gen_compare_zero_and_branch (NE, scratch, label1);
+      aarch64_emit_unlikely_jump (x);
     }
   else
     aarch64_gen_compare_reg (NE, scratch, const0_rtx);
@@ -24681,18 +24697,8 @@ aarch64_split_compare_and_swap (rtx operands[])
       emit_label (label2);
       aarch64_emit_store_exclusive (mode, scratch, mem, rval, model_rtx);
 
-      if (aarch64_track_speculation)
-	{
-	  /* Emit an explicit compare instruction, so that we can correctly
-	     track the condition codes.  */
-	  rtx cc_reg = aarch64_gen_compare_reg (NE, scratch, const0_rtx);
-	  x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
-	}
-      else
-	x = gen_rtx_NE (VOIDmode, scratch, const0_rtx);
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				gen_rtx_LABEL_REF (Pmode, label1), pc_rtx);
-      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+      x = aarch64_gen_compare_zero_and_branch (NE, scratch, label1);
+      aarch64_emit_unlikely_jump (x);
 
       label2 = label3;
     }
@@ -24776,19 +24782,8 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   aarch64_emit_store_exclusive (mode, cond, mem,
 				gen_lowpart (mode, new_out), model_rtx);
 
-  if (aarch64_track_speculation)
-    {
-      /* Emit an explicit compare instruction, so that we can correctly
-	 track the condition codes.  */
-      rtx cc_reg = aarch64_gen_compare_reg (NE, cond, const0_rtx);
-      x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
-    }
-  else
-    x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-			    gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
-  aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+  x = aarch64_gen_compare_zero_and_branch (NE, cond, label);
+  aarch64_emit_unlikely_jump (x);
 
   /* Emit any final barrier needed for a __sync operation.  */
   if (is_sync)
@@ -27671,12 +27666,10 @@ aarch64_mem_ok_with_ldpstp_policy_model (rtx mem, bool load, machine_mode mode)
 }
 
 /* Given OPERANDS of consecutive load/store, check if we can merge
-   them into ldp/stp.  LOAD is true if they are load instructions.
-   MODE is the mode of memory operands.  */
+   them into ldp/stp.  LOAD is true if they are load instructions.  */
 
 bool
-aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
-				machine_mode mode)
+aarch64_operands_ok_for_ldpstp (rtx *operands, bool load)
 {
   enum reg_class rclass_1, rclass_2;
   rtx mem_1, mem_2, reg_1, reg_2;
@@ -27705,10 +27698,6 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
   if (MEM_VOLATILE_P (mem_1) || MEM_VOLATILE_P (mem_2))
     return false;
 
-  /* Check if mem_1 is ok with the ldp-stp policy model.  */
-  if (!aarch64_mem_ok_with_ldpstp_policy_model (mem_1, load, mode))
-    return false;
-
   /* Check if the addresses are in the form of [base+offset].  */
   bool reversed = false;
   if (!aarch64_check_consecutive_mems (&mem_1, &mem_2, &reversed))
@@ -27720,7 +27709,13 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
 
   /* The lower memory access must be a mem-pair operand.  */
   rtx lower_mem = reversed ? mem_2 : mem_1;
-  if (!aarch64_mem_pair_operand (lower_mem, GET_MODE (lower_mem)))
+  machine_mode lower_mem_mode = GET_MODE (lower_mem);
+  if (!aarch64_mem_pair_operand (lower_mem, lower_mem_mode))
+    return false;
+
+  /* Check if lower_mem is ok with the ldp-stp policy model.  */
+  if (!aarch64_mem_ok_with_ldpstp_policy_model (lower_mem, load,
+						lower_mem_mode))
     return false;
 
   if (REG_P (reg_1) && FP_REGNUM_P (REGNO (reg_1)))
@@ -28620,7 +28615,8 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   if (known_eq (clonei->simdlen, 0U))
     {
       simdlen = exact_div (poly_uint64 (64), nds_elt_bits);
-      simdlens.safe_push (simdlen);
+      if (maybe_ne (simdlen, 1U))
+	simdlens.safe_push (simdlen);
       simdlens.safe_push (simdlen * 2);
     }
   else

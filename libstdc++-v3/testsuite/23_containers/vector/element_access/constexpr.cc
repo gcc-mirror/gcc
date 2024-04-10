@@ -18,22 +18,40 @@ test_iterators()
   VERIFY( v.crend() == v.rend() );
 
   auto it = v.begin();
+  VERIFY( it[0] == 0 );
   VERIFY( &*it == &v.front() );
+  VERIFY( &it[1] == &v[1] );
   VERIFY( it++ == v.begin() );
   VERIFY( ++it == v.end() );
   VERIFY( (it - 2) == v.begin() );
+  VERIFY( (it - v.begin()) == 2 );
   it -= 2;
   it += 1;
   VERIFY( (it + 1) == v.end() );
+  VERIFY( (1 + it) == v.end() );
+  it = it + 1;
+  auto it2 = v.begin();
+  std::swap(it, it2);
+  VERIFY( it == v.begin() );
+  VERIFY( it2 == v.end() );
 
   auto rit = v.rbegin();
+  VERIFY( rit[0] == 0 );
   VERIFY( &*rit == &v.back() );
+  VERIFY( &rit[1] == &v[0] );
   VERIFY( rit++ == v.rbegin() );
   VERIFY( ++rit == v.rend() );
   VERIFY( (rit - 2) == v.rbegin() );
+  VERIFY( (rit - v.rbegin()) == 2 );
   rit -= 2;
   rit += 1;
   VERIFY( (rit + 1) == v.rend() );
+  VERIFY( (1 + rit) == v.rend() );
+  rit = rit + 1;
+  auto rit2 = v.rbegin();
+  std::swap(rit, rit2);
+  VERIFY( rit == v.rbegin() );
+  VERIFY( rit2 == v.rend() );
 
   return true;
 }

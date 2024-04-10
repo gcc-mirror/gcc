@@ -254,7 +254,6 @@ test_vcreate_v_i64m2x4 (vint64m2_t v0, vint64m2_t v1, vint64m2_t v2,
   return __riscv_vcreate_v_i64m2x4 (v0, v1, v2, v3);
 }
 
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e16,\s*mf4,\s*t[au],\s*m[au]} 7 } } */
-/* { dg-final { scan-assembler-times {v[ls]e16\.v\s+v[0-9]+,\s*0\([0-9a-x]+\)} 70 } } */
-/* { dg-final { scan-assembler-times {vl[0-9]+re[0-9]+\.v\s+v[0-9]+,\s*0\([0-9a-x]+\)} 110 } } */
-/* { dg-final { scan-assembler-times {vs[0-9]+r\.v\s+v[0-9]+,\s*0\([a-x0-9]+\)} 81 } } */
+/* { dg-final { scan-assembler-times {vmv1r.v\s+v[0-9]+,\s*v[0-9]+} 24 } } */
+/* { dg-final { scan-assembler-times {vmv2r.v\s+v[0-9]+,\s*v[0-9]+} 12 } } */
+/* { dg-final { scan-assembler-times {vmv4r.v\s+v[0-9]+,\s*v[0-9]+} 16 } } */

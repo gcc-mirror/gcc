@@ -1746,6 +1746,11 @@ lto_read_tree_1 (class lto_input_block *ib, class data_in *data_in, tree expr)
 	  dref_entry e = { expr, str, off };
 	  dref_queue.safe_push (e);
 	}
+      /* When there's no early DIE to refer to but dwarf2out set up
+	 things in a way to expect that fixup.  This tends to happen
+	 with -g1, see for example PR113488.  */
+      else if (DECL_P (expr) && DECL_ABSTRACT_ORIGIN (expr) == expr)
+	DECL_ABSTRACT_ORIGIN (expr) = NULL_TREE;
     }
 }
 

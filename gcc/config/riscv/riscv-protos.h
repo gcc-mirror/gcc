@@ -102,6 +102,7 @@ struct riscv_address_info {
 };
 
 /* Routines implemented in riscv.cc.  */
+extern const char *riscv_asm_output_opcode (FILE *asm_out_file, const char *p);
 extern enum riscv_symbol_type riscv_classify_symbolic_expression (rtx);
 extern bool riscv_symbolic_constant_p (rtx, enum riscv_symbol_type *);
 extern int riscv_float_const_rtx_index_for_fli (rtx);
@@ -298,10 +299,9 @@ void riscv_run_selftests (void);
 #endif
 
 namespace riscv_vector {
-#define RVV_VLMAX gen_rtx_REG (Pmode, X0_REGNUM)
+#define RVV_VLMAX regno_reg_rtx[X0_REGNUM]
 #define RVV_VUNDEF(MODE)                                                       \
-  gen_rtx_UNSPEC (MODE, gen_rtvec (1, gen_rtx_REG (SImode, X0_REGNUM)),        \
-		  UNSPEC_VUNDEF)
+  gen_rtx_UNSPEC (MODE, gen_rtvec (1, RVV_VLMAX), UNSPEC_VUNDEF)
 
 /* These flags describe how to pass the operands to a rvv insn pattern.
    e.g.:
@@ -708,6 +708,7 @@ bool can_be_broadcasted_p (rtx);
 bool gather_scatter_valid_offset_p (machine_mode);
 HOST_WIDE_INT estimated_poly_value (poly_int64, unsigned int);
 bool whole_reg_to_reg_move_p (rtx *, machine_mode, int);
+bool splat_to_scalar_move_p (rtx *);
 }
 
 /* We classify builtin types into two classes:
@@ -741,6 +742,7 @@ extern void th_mempair_save_restore_regs (rtx[4], bool, machine_mode);
 extern unsigned int th_int_get_mask (unsigned int);
 extern unsigned int th_int_get_save_adjustment (void);
 extern rtx th_int_adjust_cfi_prologue (unsigned int);
+extern const char *th_asm_output_opcode (FILE *asm_out_file, const char *p);
 #ifdef RTX_CODE
 extern const char*
 th_mempair_output_move (rtx[4], bool, machine_mode, RTX_CODE);

@@ -1,3 +1,118 @@
+2024-01-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* doc/xml/manual/debug_mode.xml: Link against libstdc++exp.a to use
+	_GLIBCXX_DEBUG_BACKTRACE macro.
+
+2024-01-24  Huanghui Nie  <nnnjkk@gmail.com>
+	    Théo Papadopoulo   <papadopoulo@gmail.com>
+
+	* include/bits/hashtable.h (_Hahstable<>::_M_remove_bucket_begin): Remove
+	_M_before_begin check and cleanup implementation.
+
+2024-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/clock/file/io.cc: Fix expected result in
+	assertion and call test_format() from main.
+
+2024-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113500
+	* include/bits/chrono_io.h (__formatter_chrono::_M_S): Fix
+	printing of subseconds with floating-point rep.
+	(__formatter_chrono::_M_format_to_ostream): Do not write
+	time_point specializations directly to the ostream.
+	(formatter<chrono::sys_time<D>, C>::parse): Do not allow an
+	empty chrono-spec if the type fails to meet the constraints for
+	writing to an ostream with operator<<.
+	* testsuite/std/time/clock/file/io.cc: Check formatting
+	non-integral times with empty chrono-specs.
+	* testsuite/std/time/clock/gps/io.cc: Likewise.
+	* testsuite/std/time/clock/utc/io.cc: Likewise.
+	* testsuite/std/time/hh_mm_ss/io.cc: Likewise.
+
+2024-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (__file_clock::from_sys)
+	(__file_clock::to_sys, __file_clock::_S_from_sys)
+	(__file_clock::_S_to_sys): Use common_type for return type.
+	* testsuite/std/time/clock/file/members.cc: Check round trip
+	conversion for time with lower precision that seconds.
+
+2024-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113512
+	* include/std/format (__formatter_fp::format): Fix logic for
+	alternate forms.
+	* testsuite/std/format/functions/format.cc: Check buggy cases of
+	alternate forms with g presentation type.
+
+2024-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111410
+	* include/std/ranges: Add #pragma to disable -Wdangling-reference with
+	std::ranges::views::__adaptor::operator|.
+
+2024-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (_Spec::_M_parse_fill_and_align): Do not
+	use CTAD for _Utf32_view.
+
+2024-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108822
+	* include/std/tuple (__glibcxx_no_dangling_refs) [C++17]: Fix
+	wrong fold-operator.
+	* testsuite/20_util/tuple/dangling_ref.cc: Check tuples with one
+	element and three elements. Check allocator-extended
+	constructors.
+
+2024-01-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/precompiled/stdc++.h [_GLIBCXX_HOSTED]: Include
+	<print> and <text_encoding> for C++23 and C++26 respectively.
+
+2024-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_pair.h [__cplusplus > 202002L]:
+	Guard P2321R2 changes with __glibcxx_ranges_zip instead.
+
+2024-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/tuple [__cplusplus > 202002L]: Guard P2321R2
+	changes with __cpp_lib_ranges_zip instead.
+
+2024-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/109536
+	* include/debug/safe_base.h (_Safe_sequence_base::_M_swap):
+	Remove _GLIBCXX20_CONSTEXPR from non-inline member function.
+	* include/debug/safe_iterator.h
+	(_GLIBCXX20_CONSTEXPR_NON_LITERAL_SCOPE_BEGIN): Define.
+	(_GLIBCXX20_CONSTEXPR_NON_LITERAL_SCOPE_END): Define.
+	(_Safe_iterator::operator=): Use them around the code path that
+	defines a variable of type __gnu_cxx::__scoped_lock.
+	(_Safe_iterator::operator++): Likewise.
+	(_Safe_iterator::operator--): Likewise.
+	(_Safe_iterator::operator+=): Likewise.
+	(_Safe_iterator::operator-=): Likewise.
+	* testsuite/23_containers/vector/element_access/constexpr.cc
+	(test_iterators): Test more iterator operations.
+	* testsuite/23_containers/vector/bool/element_access/constexpr.cc
+	(test_iterators): Likewise.
+	* testsuite/std/ranges/adaptors/all.cc (test08) [_GLIBCXX_DEBUG]:
+	Remove.
+
+2024-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (__charset_alias_match): Initialize
+	__var_a and __var_b.
+
+2024-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113450
+	* testsuite/std/format/functions/format.cc: Use signed char
+	instead of int8_t.
+
 2024-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/113318

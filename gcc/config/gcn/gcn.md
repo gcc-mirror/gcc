@@ -1618,7 +1618,7 @@
 	(mult:SI
 	  (any_extend:SI (match_operand:HI 1 "register_operand" "%v"))
 	  (any_extend:SI (match_operand:HI 2 "register_operand" " v"))))]
-  ""
+  "!TARGET_RDNA3"
   "v_mul_<iu>32_<iu>24_sdwa\t%0, %<e>1, %<e>2 src0_sel:WORD_0 src1_sel:WORD_0"
   [(set_attr "type" "vop_sdwa")
    (set_attr "length" "8")])
@@ -1628,7 +1628,7 @@
 	(mult:HI
 	  (any_extend:HI (match_operand:QI 1 "register_operand" "%v"))
 	  (any_extend:HI (match_operand:QI 2 "register_operand" " v"))))]
-  ""
+  "!TARGET_RDNA3"
   "v_mul_<iu>32_<iu>24_sdwa\t%0, %<e>1, %<e>2 src0_sel:BYTE_0 src1_sel:BYTE_0"
   [(set_attr "type" "vop_sdwa")
    (set_attr "length" "8")])

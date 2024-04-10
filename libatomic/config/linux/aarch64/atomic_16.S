@@ -35,27 +35,44 @@
    writes, this will be true when using atomics in actual code.
 
    The libat_<op>_16 entry points are ARMv8.0.
-   The libat_<op>_16_i1 entry points are used when LSE2 is available.  */
+   The libat_<op>_16_i1 entry points are used when LSE128 is available.
+   The libat_<op>_16_i2 entry points are used when LSE2 is available.  */
 
-
+#if HAVE_FEAT_LSE128
+	.arch	armv9-a+lse128
+#else
 	.arch	armv8-a+lse
+#endif
 
-#define ENTRY(name)		\
-	.global name;		\
-	.hidden name;		\
-	.type name,%function;	\
+#define LSE128(NAME) 	NAME##_i1
+#define LSE2(NAME) 	NAME##_i2
+#define CORE(NAME) 	NAME
+
+#define ENTRY_FEAT(NAME, FEAT)  \
+	ENTRY (FEAT (NAME))
+
+#define ENTRY(NAME)		\
+	.global NAME;		\
+	.hidden NAME;		\
+	.type NAME,%function;	\
 	.p2align 4;		\
-name:				\
-	.cfi_startproc;		\
+NAME:				\
+	.cfi_startproc;	\
 	hint	34	// bti c
 
-#define END(name)		\
-	.cfi_endproc;		\
-	.size name, .-name;
+#define END_FEAT(NAME, FEAT)	\
+	END (FEAT (NAME))
 
-#define ALIAS(alias,name)	\
-	.global alias;		\
-	.set alias, name;
+#define END(NAME)		\
+	.cfi_endproc;		\
+	.size NAME, .-NAME;
+
+#define ALIAS(NAME, FROM, TO)	\
+	ALIAS1 (FROM (NAME),TO (NAME))
+
+#define ALIAS1(ALIAS, NAME)	\
+	.global ALIAS;		\
+	.set ALIAS, NAME;
 
 #define res0 x0
 #define res1 x1
@@ -108,7 +125,7 @@ ENTRY (libat_load_16)
 END (libat_load_16)
 
 
-ENTRY (libat_load_16_i1)
+ENTRY_FEAT (libat_load_16, LSE2)
 	cbnz	w1, 1f
 
 	/* RELAXED.  */
@@ -128,7 +145,7 @@ ENTRY (libat_load_16_i1)
 	ldp	res0, res1, [x0]
 	dmb	ishld
 	ret
-END (libat_load_16_i1)
+END_FEAT (libat_load_16, LSE2)
 
 
 ENTRY (libat_store_16)
@@ -148,7 +165,7 @@ ENTRY (libat_store_16)
 END (libat_store_16)
 
 
-ENTRY (libat_store_16_i1)
+ENTRY_FEAT (libat_store_16, LSE2)
 	cbnz	w4, 1f
 
 	/* RELAXED.  */
@@ -160,7 +177,7 @@ ENTRY (libat_store_16_i1)
 	stlxp	w4, in0, in1, [x0]
 	cbnz	w4, 1b
 	ret
-END (libat_store_16_i1)
+END_FEAT (libat_store_16, LSE2)
 
 
 ENTRY (libat_exchange_16)
@@ -188,6 +205,31 @@ ENTRY (libat_exchange_16)
 	cbnz	w4, 4b
 	ret
 END (libat_exchange_16)
+
+
+#if HAVE_FEAT_LSE128
+ENTRY_FEAT (libat_exchange_16, LSE128)
+	mov	tmp0, x0
+	mov	res0, in0
+	mov	res1, in1
+	cbnz	w4, 1f
+
+	/* RELAXED.  */
+	swpp	res0, res1, [tmp0]
+	ret
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	swppa	res0, res1, [tmp0]
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	swppal	res0, res1, [tmp0]
+	ret
+END_FEAT (libat_exchange_16, LSE128)
+#endif
 
 
 ENTRY (libat_compare_exchange_16)
@@ -237,7 +279,7 @@ ENTRY (libat_compare_exchange_16)
 END (libat_compare_exchange_16)
 
 
-ENTRY (libat_compare_exchange_16_i1)
+ENTRY_FEAT (libat_compare_exchange_16, LSE2)
 	ldp	exp0, exp1, [x1]
 	mov	tmp0, exp0
 	mov	tmp1, exp1
@@ -270,7 +312,7 @@ ENTRY (libat_compare_exchange_16_i1)
 	/* ACQ_REL/SEQ_CST.  */
 4:	caspal	exp0, exp1, in0, in1, [x0]
 	b	0b
-END (libat_compare_exchange_16_i1)
+END_FEAT (libat_compare_exchange_16, LSE2)
 
 
 ENTRY (libat_fetch_add_16)
@@ -383,6 +425,31 @@ ENTRY (libat_fetch_or_16)
 END (libat_fetch_or_16)
 
 
+#if HAVE_FEAT_LSE128
+ENTRY_FEAT (libat_fetch_or_16, LSE128)
+	mov	tmp0, x0
+	mov	res0, in0
+	mov	res1, in1
+	cbnz	w4, 1f
+
+	/* RELAXED.  */
+	ldsetp	res0, res1, [tmp0]
+	ret
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	ldsetpa	res0, res1, [tmp0]
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldsetpal	res0, res1, [tmp0]
+	ret
+END_FEAT (libat_fetch_or_16, LSE128)
+#endif
+
+
 ENTRY (libat_or_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
@@ -403,6 +470,36 @@ ENTRY (libat_or_fetch_16)
 	cbnz	w4, 2b
 	ret
 END (libat_or_fetch_16)
+
+
+#if HAVE_FEAT_LSE128
+ENTRY_FEAT (libat_or_fetch_16, LSE128)
+	cbnz	w4, 1f
+	mov	tmp0, in0
+	mov	tmp1, in1
+
+	/* RELAXED.  */
+	ldsetp	in0, in1, [x0]
+	orr	res0, in0, tmp0
+	orr	res1, in1, tmp1
+	ret
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	ldsetpa	in0, in1, [x0]
+	orr	res0, in0, tmp0
+	orr	res1, in1, tmp1
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldsetpal	in0, in1, [x0]
+	orr	res0, in0, tmp0
+	orr	res1, in1, tmp1
+	ret
+END_FEAT (libat_or_fetch_16, LSE128)
+#endif
 
 
 ENTRY (libat_fetch_and_16)
@@ -427,6 +524,32 @@ ENTRY (libat_fetch_and_16)
 END (libat_fetch_and_16)
 
 
+#if HAVE_FEAT_LSE128
+ENTRY_FEAT (libat_fetch_and_16, LSE128)
+	mov	tmp0, x0
+	mvn	res0, in0
+	mvn	res1, in1
+	cbnz	w4, 1f
+
+	/* RELAXED.  */
+	ldclrp	res0, res1, [tmp0]
+	ret
+
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	ldclrpa res0, res1, [tmp0]
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldclrpal	res0, res1, [tmp0]
+	ret
+END_FEAT (libat_fetch_and_16, LSE128)
+#endif
+
+
 ENTRY (libat_and_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
@@ -447,6 +570,37 @@ ENTRY (libat_and_fetch_16)
 	cbnz	w4, 2b
 	ret
 END (libat_and_fetch_16)
+
+
+#if HAVE_FEAT_LSE128
+ENTRY_FEAT (libat_and_fetch_16, LSE128)
+	mvn	tmp0, in0
+	mvn	tmp0, in1
+	cbnz	w4, 1f
+
+	/* RELAXED.  */
+	ldclrp	tmp0, tmp1, [x0]
+	and	res0, tmp0, in0
+	and	res1, tmp1, in1
+	ret
+
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	ldclrpa tmp0, tmp1, [x0]
+	and	res0, tmp0, in0
+	and	res1, tmp1, in1
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldclrpal	tmp0, tmp1, [x5]
+	and	res0, tmp0, in0
+	and	res1, tmp1, in1
+	ret
+END_FEAT (libat_and_fetch_16, LSE128)
+#endif
 
 
 ENTRY (libat_fetch_xor_16)
@@ -554,23 +708,44 @@ ENTRY (libat_test_and_set_16)
 END (libat_test_and_set_16)
 
 
+/* Alias entry points which are the same in LSE2 and LSE128.  */
+
+#if !HAVE_FEAT_LSE128
+ALIAS (libat_exchange_16, LSE128, LSE2)
+ALIAS (libat_fetch_or_16, LSE128, LSE2)
+ALIAS (libat_fetch_and_16, LSE128, LSE2)
+ALIAS (libat_or_fetch_16, LSE128, LSE2)
+ALIAS (libat_and_fetch_16, LSE128, LSE2)
+#endif
+ALIAS (libat_load_16, LSE128, LSE2)
+ALIAS (libat_store_16, LSE128, LSE2)
+ALIAS (libat_compare_exchange_16, LSE128, LSE2)
+ALIAS (libat_fetch_add_16, LSE128, LSE2)
+ALIAS (libat_add_fetch_16, LSE128, LSE2)
+ALIAS (libat_fetch_sub_16, LSE128, LSE2)
+ALIAS (libat_sub_fetch_16, LSE128, LSE2)
+ALIAS (libat_fetch_xor_16, LSE128, LSE2)
+ALIAS (libat_xor_fetch_16, LSE128, LSE2)
+ALIAS (libat_fetch_nand_16, LSE128, LSE2)
+ALIAS (libat_nand_fetch_16, LSE128, LSE2)
+ALIAS (libat_test_and_set_16, LSE128, LSE2)
+
 /* Alias entry points which are the same in baseline and LSE2.  */
 
-ALIAS (libat_exchange_16_i1, libat_exchange_16)
-ALIAS (libat_fetch_add_16_i1, libat_fetch_add_16)
-ALIAS (libat_add_fetch_16_i1, libat_add_fetch_16)
-ALIAS (libat_fetch_sub_16_i1, libat_fetch_sub_16)
-ALIAS (libat_sub_fetch_16_i1, libat_sub_fetch_16)
-ALIAS (libat_fetch_or_16_i1, libat_fetch_or_16)
-ALIAS (libat_or_fetch_16_i1, libat_or_fetch_16)
-ALIAS (libat_fetch_and_16_i1, libat_fetch_and_16)
-ALIAS (libat_and_fetch_16_i1, libat_and_fetch_16)
-ALIAS (libat_fetch_xor_16_i1, libat_fetch_xor_16)
-ALIAS (libat_xor_fetch_16_i1, libat_xor_fetch_16)
-ALIAS (libat_fetch_nand_16_i1, libat_fetch_nand_16)
-ALIAS (libat_nand_fetch_16_i1, libat_nand_fetch_16)
-ALIAS (libat_test_and_set_16_i1, libat_test_and_set_16)
-
+ALIAS (libat_exchange_16, LSE2, CORE)
+ALIAS (libat_fetch_add_16, LSE2, CORE)
+ALIAS (libat_add_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_sub_16, LSE2, CORE)
+ALIAS (libat_sub_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_or_16, LSE2, CORE)
+ALIAS (libat_or_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_and_16, LSE2, CORE)
+ALIAS (libat_and_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_xor_16, LSE2, CORE)
+ALIAS (libat_xor_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_nand_16, LSE2, CORE)
+ALIAS (libat_nand_fetch_16, LSE2, CORE)
+ALIAS (libat_test_and_set_16, LSE2, CORE)
 
 /* GNU_PROPERTY_AARCH64_* macros from elf.h for use in asm code.  */
 #define FEATURE_1_AND 0xc0000000

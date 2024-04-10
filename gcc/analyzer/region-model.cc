@@ -3528,144 +3528,213 @@ struct fragment
     return byte_range::cmp (f1->m_byte_range, f2->m_byte_range);
   }
 
-  /* Determine if there is a zero terminator somewhere in the
-     bytes of this fragment, starting at START_READ_OFFSET (which
-     is absolute to the start of the cluster as a whole), and stopping
-     at the end of this fragment.
-
-     Return a tristate:
-     - true if there definitely is a zero byte, writing to *OUT_BYTES_READ
-     the number of bytes from that would be read, including the zero byte.
-     - false if there definitely isn't a zero byte
-     - unknown if we don't know.  */
-  tristate has_null_terminator (byte_offset_t start_read_offset,
-				byte_offset_t *out_bytes_read) const
+  void
+  dump_to_pp (pretty_printer *pp) const
   {
-    byte_offset_t rel_start_read_offset
-      = start_read_offset - m_byte_range.get_start_byte_offset ();
-    gcc_assert (rel_start_read_offset >= 0);
-    byte_offset_t available_bytes
-      = (m_byte_range.get_next_byte_offset () - start_read_offset);
-    gcc_assert (available_bytes >= 0);
-
-    if (rel_start_read_offset > INT_MAX)
-      return tristate::TS_UNKNOWN;
-    HOST_WIDE_INT rel_start_read_offset_hwi = rel_start_read_offset.slow ();
-
-    if (available_bytes > INT_MAX)
-      return tristate::TS_UNKNOWN;
-    HOST_WIDE_INT available_bytes_hwi = available_bytes.slow ();
-
-    switch (m_sval->get_kind ())
-      {
-      case SK_CONSTANT:
-	{
-	  tree cst
-	    = as_a <const constant_svalue *> (m_sval)->get_constant ();
-	  switch (TREE_CODE (cst))
-	    {
-	    case STRING_CST:
-	      return string_cst_has_null_terminator (cst,
-						     rel_start_read_offset_hwi,
-						     available_bytes_hwi,
-						     out_bytes_read);
-	    case INTEGER_CST:
-	      if (rel_start_read_offset_hwi == 0
-		  && integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (cst))))
-		{
-		  /* Model accesses to the initial byte of a 1-byte
-		     INTEGER_CST.  */
-		  if (zerop (cst))
-		    {
-		      *out_bytes_read = 1;
-		      return tristate (true);
-		    }
-		  else
-		    {
-		      *out_bytes_read = available_bytes;
-		      return tristate (false);
-		    }
-		}
-	      /* Treat any other access to an INTEGER_CST as unknown.  */
-	      return tristate::TS_UNKNOWN;
-
-	    default:
-	      gcc_unreachable ();
-	      break;
-	    }
-	}
-	break;
-
-      case SK_INITIAL:
-	{
-	  const initial_svalue *initial_sval = (const initial_svalue *)m_sval;
-	  const region *reg = initial_sval->get_region ();
-	  if (const string_region *string_reg = reg->dyn_cast_string_region ())
-	    {
-	      tree string_cst = string_reg->get_string_cst ();
-	      return string_cst_has_null_terminator (string_cst,
-						     rel_start_read_offset_hwi,
-						     available_bytes_hwi,
-						     out_bytes_read);
-	    }
-	  return tristate::TS_UNKNOWN;
-	}
-	break;
-
-      case SK_BITS_WITHIN:
-	{
-	  const bits_within_svalue *bits_within_sval
-	    = (const bits_within_svalue *)m_sval;
-	  byte_range bytes (0, 0);
-	  if (bits_within_sval->get_bits ().as_byte_range (&bytes))
-	    {
-	      const svalue *inner_sval = bits_within_sval->get_inner_svalue ();
-	      fragment f (byte_range
-			  (start_read_offset - bytes.get_start_bit_offset (),
-			   std::max<byte_size_t> (bytes.m_size_in_bytes,
-						  available_bytes)),
-			  inner_sval);
-	      return f.has_null_terminator (start_read_offset, out_bytes_read);
-	    }
-	}
-	break;
-
-      default:
-	// TODO: it may be possible to handle other cases here.
-	break;
-      }
-    return tristate::TS_UNKNOWN;
-  }
-
-  static tristate
-  string_cst_has_null_terminator (tree string_cst,
-				  HOST_WIDE_INT rel_start_read_offset_hwi,
-				  HOST_WIDE_INT available_bytes_hwi,
-				  byte_offset_t *out_bytes_read)
-  {
-    /* Look for the first 0 byte within STRING_CST
-       from START_READ_OFFSET onwards.  */
-    const HOST_WIDE_INT num_bytes_to_search
-      = std::min<HOST_WIDE_INT> ((TREE_STRING_LENGTH (string_cst)
-				  - rel_start_read_offset_hwi),
-				 available_bytes_hwi);
-    const char *start = (TREE_STRING_POINTER (string_cst)
-			 + rel_start_read_offset_hwi);
-    if (num_bytes_to_search >= 0)
-      if (const void *p = memchr (start, 0,
-				  num_bytes_to_search))
-	{
-	  *out_bytes_read = (const char *)p - start + 1;
-	  return tristate (true);
-	}
-
-    *out_bytes_read = available_bytes_hwi;
-    return tristate (false);
+    pp_string (pp, "fragment(");
+    m_byte_range.dump_to_pp (pp);
+    pp_string (pp, ", sval: ");
+    if (m_sval)
+      m_sval->dump_to_pp (pp, true);
+    else
+      pp_string (pp, "nullptr");
+    pp_string (pp, ")");
   }
 
   byte_range m_byte_range;
   const svalue *m_sval;
 };
+
+/* Determine if there is a zero terminator somewhere in the
+   part of STRING_CST covered by BYTES (where BYTES is relative to the
+   start of the constant).
+
+   Return a tristate:
+   - true if there definitely is a zero byte, writing to *OUT_BYTES_READ
+   the number of bytes from that would be read, including the zero byte.
+   - false if there definitely isn't a zero byte
+   - unknown if we don't know.  */
+
+static tristate
+string_cst_has_null_terminator (tree string_cst,
+				const byte_range &bytes,
+				byte_offset_t *out_bytes_read)
+{
+  gcc_assert (bytes.m_start_byte_offset >= 0);
+  gcc_assert (bytes.m_start_byte_offset < TREE_STRING_LENGTH (string_cst));
+
+  /* Look for the first 0 byte within STRING_CST
+     from START_READ_OFFSET onwards.  */
+  const byte_offset_t num_bytes_to_search
+    = std::min<byte_offset_t> ((TREE_STRING_LENGTH (string_cst)
+				- bytes.m_start_byte_offset),
+			       bytes.m_size_in_bytes);
+  const char *start = (TREE_STRING_POINTER (string_cst)
+		       + bytes.m_start_byte_offset.slow ());
+  if (num_bytes_to_search >= 0)
+    if (const void *p = memchr (start, 0, bytes.m_size_in_bytes.slow ()))
+      {
+	*out_bytes_read = (const char *)p - start + 1;
+	return tristate (true);
+      }
+
+  *out_bytes_read = bytes.m_size_in_bytes;
+  return tristate (false);
+}
+
+static tristate
+svalue_byte_range_has_null_terminator (const svalue *sval,
+				       const byte_range &bytes,
+				       byte_offset_t *out_bytes_read,
+				       logger *logger);
+
+/* Determine if there is a zero terminator somewhere in the
+   part of SVAL covered by BYTES (where BYTES is relative to the svalue).
+
+   Return a tristate:
+   - true if there definitely is a zero byte, writing to *OUT_BYTES_READ
+   the number of bytes from that would be read, including the zero byte.
+   - false if there definitely isn't a zero byte
+   - unknown if we don't know.
+
+   Use LOGGER (if non-null) for any logging.  */
+
+static tristate
+svalue_byte_range_has_null_terminator_1 (const svalue *sval,
+					 const byte_range &bytes,
+					 byte_offset_t *out_bytes_read,
+					 logger *logger)
+{
+  if (bytes.m_start_byte_offset == 0
+      && sval->all_zeroes_p ())
+    {
+      /* The initial byte of an all-zeroes SVAL is a zero byte.  */
+      *out_bytes_read = 1;
+      return tristate (true);
+    }
+
+  switch (sval->get_kind ())
+    {
+    case SK_CONSTANT:
+      {
+	tree cst
+	  = as_a <const constant_svalue *> (sval)->get_constant ();
+	switch (TREE_CODE (cst))
+	  {
+	  case STRING_CST:
+	    return string_cst_has_null_terminator (cst, bytes, out_bytes_read);
+	  case INTEGER_CST:
+	    if (bytes.m_start_byte_offset == 0
+		&& integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (cst))))
+	      {
+		/* Model accesses to the initial byte of a 1-byte
+		   INTEGER_CST.  */
+		*out_bytes_read = 1;
+		if (zerop (cst))
+		  return tristate (true);
+		else
+		  return tristate (false);
+	      }
+	    /* Treat any other access to an INTEGER_CST as unknown.  */
+	    return tristate::TS_UNKNOWN;
+
+	  default:
+	    break;
+	  }
+      }
+      break;
+
+    case SK_INITIAL:
+      {
+	const initial_svalue *initial_sval = (const initial_svalue *)sval;
+	const region *reg = initial_sval->get_region ();
+	if (const string_region *string_reg = reg->dyn_cast_string_region ())
+	  {
+	    tree string_cst = string_reg->get_string_cst ();
+	    return string_cst_has_null_terminator (string_cst,
+						   bytes,
+						   out_bytes_read);
+	  }
+	return tristate::TS_UNKNOWN;
+      }
+      break;
+
+    case SK_BITS_WITHIN:
+      {
+	const bits_within_svalue *bits_within_sval
+	  = (const bits_within_svalue *)sval;
+	byte_range bytes_within_inner (0, 0);
+	if (bits_within_sval->get_bits ().as_byte_range (&bytes_within_inner))
+	  {
+	    /* Consider e.g. looking for null terminator of
+	       bytes 2-4 of BITS_WITHIN(bytes 10-15 of inner_sval)
+
+	       This is equivalent to looking within bytes 12-14 of
+	       inner_sval. */
+	    const byte_offset_t start_byte_relative_to_inner
+	      = (bytes.m_start_byte_offset
+		 + bytes_within_inner.m_start_byte_offset);
+	    const byte_offset_t next_byte_relative_to_inner
+	      = (bytes.get_next_byte_offset ()
+		 + bytes_within_inner.m_start_byte_offset);
+	    if (next_byte_relative_to_inner > start_byte_relative_to_inner)
+	      {
+		const byte_range relative_to_inner
+		  (start_byte_relative_to_inner,
+		   next_byte_relative_to_inner - start_byte_relative_to_inner);
+		const svalue *inner_sval
+		  = bits_within_sval->get_inner_svalue ();
+		return svalue_byte_range_has_null_terminator (inner_sval,
+							      relative_to_inner,
+							      out_bytes_read,
+							      logger);
+	      }
+	  }
+      }
+      break;
+
+    default:
+      // TODO: it may be possible to handle other cases here.
+      break;
+    }
+  return tristate::TS_UNKNOWN;
+}
+
+/* Like svalue_byte_range_has_null_terminator_1, but add logging.  */
+
+static tristate
+svalue_byte_range_has_null_terminator (const svalue *sval,
+				       const byte_range &bytes,
+				       byte_offset_t *out_bytes_read,
+				       logger *logger)
+{
+  LOG_SCOPE (logger);
+  if (logger)
+    {
+      pretty_printer *pp = logger->get_printer ();
+      logger->start_log_line ();
+      bytes.dump_to_pp (pp);
+      logger->log_partial (" of sval: ");
+      sval->dump_to_pp (pp, true);
+      logger->end_log_line ();
+    }
+  tristate ts
+    = svalue_byte_range_has_null_terminator_1 (sval, bytes,
+					       out_bytes_read, logger);
+  if (logger)
+    {
+      pretty_printer *pp = logger->get_printer ();
+      logger->start_log_line ();
+      pp_printf (pp, "has null terminator: %s", ts.as_string ());
+      if (ts.is_true ())
+	{
+	  pp_string (pp, "; bytes read: ");
+	  pp_wide_int (pp, *out_bytes_read, SIGNED);
+	}
+      logger->end_log_line ();
+    }
+  return ts;
+}
 
 /* A frozen copy of a single base region's binding_cluster within a store,
    optimized for traversal of the concrete parts in byte order.
@@ -3716,6 +3785,25 @@ public:
   bool has_symbolic_bindings_p () const
   {
     return !m_symbolic_bindings.is_empty ();
+  }
+
+  void dump_to_pp (pretty_printer *pp) const
+  {
+    pp_string (pp, "iterable_cluster (fragments: [");
+    for (auto const &iter : &m_fragments)
+      {
+	if (&iter != m_fragments.begin ())
+	  pp_string (pp, ", ");
+	iter.dump_to_pp (pp);
+      }
+    pp_printf (pp, "], symbolic bindings: [");
+    for (auto const &iter : m_symbolic_bindings)
+      {
+	if (&iter != m_symbolic_bindings.begin ())
+	  pp_string (pp, ", ");
+	(*iter).dump_to_pp (pp, true);
+      }
+    pp_string (pp, "])");
   }
 
 private:
@@ -3769,7 +3857,7 @@ get_tree_for_byte_offset (tree ptr_expr, byte_offset_t byte_offset)
 
    Complain to CTXT and return NULL if:
    - the buffer pointed to isn't null-terminated
-   - the buffer pointed to has any uninitalized bytes before any 0-terminator
+   - the buffer pointed to has any uninitialized bytes before any 0-terminator
    - any of the reads aren't within the bounds of the underlying base region
 
    Otherwise, return a svalue for the number of bytes read (strlen + 1),
@@ -3800,11 +3888,12 @@ get_tree_for_byte_offset (tree ptr_expr, byte_offset_t byte_offset)
 */
 
 const svalue *
-region_model::scan_for_null_terminator (const region *reg,
-					tree expr,
-					const svalue **out_sval,
-					region_model_context *ctxt) const
+region_model::scan_for_null_terminator_1 (const region *reg,
+					  tree expr,
+					  const svalue **out_sval,
+					  region_model_context *ctxt) const
 {
+  logger *logger = ctxt ? ctxt->get_logger () : nullptr;
   store_manager *store_mgr = m_mgr->get_store_manager ();
 
   region_offset offset = reg->get_offset (m_mgr);
@@ -3812,6 +3901,8 @@ region_model::scan_for_null_terminator (const region *reg,
     {
       if (out_sval)
 	*out_sval = get_store_value (reg, nullptr);
+      if (logger)
+	logger->log ("offset is symbolic");
       return m_mgr->get_or_create_unknown_svalue (size_type_node);
     }
   byte_offset_t src_byte_offset;
@@ -3819,6 +3910,8 @@ region_model::scan_for_null_terminator (const region *reg,
     {
       if (out_sval)
 	*out_sval = get_store_value (reg, nullptr);
+      if (logger)
+	logger->log ("can't get concrete byte offset");
       return m_mgr->get_or_create_unknown_svalue (size_type_node);
     }
   const byte_offset_t initial_src_byte_offset = src_byte_offset;
@@ -3840,6 +3933,8 @@ region_model::scan_for_null_terminator (const region *reg,
 	  const svalue *sval = get_store_bytes (reg, bytes_to_read, ctxt);
 	  if (out_sval)
 	    *out_sval = sval;
+	  if (logger)
+	    logger->log ("using string_cst");
 	  return m_mgr->get_or_create_int_cst (size_type_node,
 					       num_bytes_read);
 	}
@@ -3847,6 +3942,14 @@ region_model::scan_for_null_terminator (const region *reg,
 
   const binding_cluster *cluster = m_store.get_cluster (base_reg);
   iterable_cluster c (cluster);
+  if (logger)
+    {
+      pretty_printer *pp = logger->get_printer ();
+      logger->start_log_line ();
+      c.dump_to_pp (pp);
+      logger->end_log_line ();
+    }
+
   binding_map result;
 
   while (1)
@@ -3854,9 +3957,29 @@ region_model::scan_for_null_terminator (const region *reg,
       fragment f;
       if (c.get_fragment_for_byte (src_byte_offset, &f))
 	{
+	  if (logger)
+	    {
+	      logger->start_log_line ();
+	      pretty_printer *pp = logger->get_printer ();
+	      pp_printf (pp, "src_byte_offset: ");
+	      pp_wide_int (pp, src_byte_offset, SIGNED);
+	      pp_string (pp, ": ");
+	      f.dump_to_pp (pp);
+	      logger->end_log_line ();
+	    }
+	  gcc_assert (f.m_byte_range.contains_p (src_byte_offset));
+	  /* src_byte_offset and f.m_byte_range are both expressed relative to
+	     the base region.
+	     Convert to a byte_range relative to the svalue.  */
+	  const byte_range bytes_relative_to_svalue
+	    (src_byte_offset - f.m_byte_range.get_start_byte_offset (),
+	     f.m_byte_range.get_next_byte_offset () - src_byte_offset);
 	  byte_offset_t fragment_bytes_read;
 	  tristate is_terminated
-	    = f.has_null_terminator (src_byte_offset, &fragment_bytes_read);
+	    = svalue_byte_range_has_null_terminator (f.m_sval,
+						     bytes_relative_to_svalue,
+						     &fragment_bytes_read,
+						     logger);
 	  if (is_terminated.is_unknown ())
 	    {
 	      if (out_sval)
@@ -3885,6 +4008,8 @@ region_model::scan_for_null_terminator (const region *reg,
 	      if (out_sval)
 		*out_sval = m_mgr->get_or_create_compound_svalue (NULL_TREE,
 								  result);
+	      if (logger)
+		logger->log ("got terminator");
 	      return m_mgr->get_or_create_int_cst (size_type_node,
 						   dst_byte_offset);
 	    }
@@ -3900,6 +4025,8 @@ region_model::scan_for_null_terminator (const region *reg,
     {
       if (out_sval)
 	*out_sval = get_store_value (reg, nullptr);
+      if (logger)
+	logger->log ("got symbolic binding");
       return m_mgr->get_or_create_unknown_svalue (size_type_node);
     }
 
@@ -3923,6 +4050,49 @@ region_model::scan_for_null_terminator (const region *reg,
     }
   else
     return nullptr;
+}
+
+/* Like region_model::scan_for_null_terminator_1, but add logging.  */
+
+const svalue *
+region_model::scan_for_null_terminator (const region *reg,
+					tree expr,
+					const svalue **out_sval,
+					region_model_context *ctxt) const
+{
+  logger *logger = ctxt ? ctxt->get_logger () : nullptr;
+  LOG_SCOPE (logger);
+  if (logger)
+    {
+      pretty_printer *pp = logger->get_printer ();
+      logger->start_log_line ();
+      logger->log_partial ("region: ");
+      reg->dump_to_pp (pp, true);
+      logger->end_log_line ();
+    }
+  const svalue *sval = scan_for_null_terminator_1 (reg, expr, out_sval, ctxt);
+  if (logger)
+    {
+      pretty_printer *pp = logger->get_printer ();
+      logger->start_log_line ();
+      logger->log_partial ("length result: ");
+      if (sval)
+	sval->dump_to_pp (pp, true);
+      else
+	pp_printf (pp, "NULL");
+      logger->end_log_line ();
+      if (out_sval)
+	{
+	  logger->start_log_line ();
+	  logger->log_partial ("content result: ");
+	  if (*out_sval)
+	    (*out_sval)->dump_to_pp (pp, true);
+	  else
+	    pp_printf (pp, "NULL");
+	  logger->end_log_line ();
+	}
+    }
+  return sval;
 }
 
 /* Check that argument ARG_IDX (0-based) to the call described by CD

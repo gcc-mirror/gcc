@@ -38,4 +38,5 @@ void f () {}
 
 /* { dg-final { jit-verify-output-file-was-created "" } } */
 /* Check that the attribute was applied correctly */
-/* { dg-final { jit-verify-assembler-output ".weak\\s+f" } } */
+/* { dg-final { jit-verify-assembler-output ".weak\\s+f" { target { ! *-*-darwin* } } } } */
+/* { dg-final { jit-verify-assembler-output ".weak_definition\\s+_f" { target *-*-darwin* } } } */

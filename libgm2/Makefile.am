@@ -35,8 +35,6 @@ AM_CFLAGS = -I $(srcdir)/../libgcc -I $(MULTIBUILDTOP)../../gcc/include
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 TOP_GCCDIR := $(shell cd $(top_srcdir) && cd .. && pwd)
 
-TARGET_LONGDOUBLE_ABI := $(if $(strip $(filter powerpc64le%,$(target))),-mabi=ieeelongdouble)
-
 GCC_DIR = $(TOP_GCCDIR)/gcc
 GM2_SRC = $(GCC_DIR)/m2
 
@@ -101,7 +99,6 @@ AM_MAKEFLAGS = \
 	"WERROR=$(WERROR)" \
         "TARGET_LIB_PATH=$(TARGET_LIB_PATH)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)" \
-        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
 	"LIBTOOL=$(GM2_BUILDDIR)/libtool" \
 	"DARWIN_AT_RPATH=$(DARWIN_AT_RPATH)"
 

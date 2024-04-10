@@ -4,7 +4,6 @@
 #include "overloaded_vloxseg2ei16.h"
 
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[ax][0-9]+,\s*e64,\s*m4,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[ax][0-9]+,\s*zero,\s*e8,\s*mf2,\s*ta,\s*ma} 4 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[ax][0-9]+,\s*e64,\s*m4,\s*tu,\s*ma} 2 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[ax][0-9]+,\s*e64,\s*m4,\s*tu,\s*mu} 1 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[ax][0-9]+,\s*e64,\s*m4,\s*ta,\s*mu} 1 } } */

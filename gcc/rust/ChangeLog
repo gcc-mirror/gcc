@@ -1,3 +1,10 @@
+2024-01-18  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-base.cc (HIRCompileBase::resolve_method_address):
+	Cast size_t value to unsigned long.
+	* expand/rust-proc-macro.cc (load_macros): Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Likewise.
+
 2024-01-16  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* hir/tree/rust-hir-pattern.h

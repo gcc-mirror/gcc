@@ -181,6 +181,12 @@ test_alternate_forms()
   // PR libstdc++/108046
   s = std::format("{0:#.0} {0:#.1} {0:#.0g}", 10.0);
   VERIFY( s == "1.e+01 1.e+01 1.e+01" );
+
+  // PR libstdc++/113512
+  s = std::format("{:#.3g}", 0.025);
+  VERIFY( s == "0.0250" );
+  s = std::format("{:#07.3g}", 0.02);
+  VERIFY( s == "00.0200" );
 }
 
 void
@@ -365,7 +371,7 @@ test_minmax()
     s = std::format("{:b}" , std::numeric_limits<U>::max());
     VERIFY( s == '1' + ones );
   };
-  check(std::int8_t(0));
+  check((signed char)(0)); // int8_t is char on Solaris, see PR 113450
   check(std::int16_t(0));
   check(std::int32_t(0));
   check(std::int64_t(0));

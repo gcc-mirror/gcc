@@ -1343,6 +1343,29 @@ distributes_over_addition_p (tree_code op, int opno)
     }
 }
 
+/* OP is the INDEXth operand to CODE (counting from zero) and OTHER_OP
+   is the other operand.  Try to use the value of OP to simplify the
+   operation in one step, without having to process individual elements.  */
+static tree
+simplify_const_binop (tree_code code, tree op, tree other_op,
+		      int index ATTRIBUTE_UNUSED)
+{
+  /* AND, IOR as well as XOR with a zerop can be simplified directly.  */
+  if (TREE_CODE (op) == VECTOR_CST && TREE_CODE (other_op) == VECTOR_CST)
+    {
+      if (integer_zerop (other_op))
+	{
+	  if (code == BIT_IOR_EXPR || code == BIT_XOR_EXPR)
+	    return op;
+	  else if (code == BIT_AND_EXPR)
+	    return other_op;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+
 /* Combine two constants ARG1 and ARG2 under operation CODE to produce a new
    constant.  We assume ARG1 and ARG2 have the same data type, or at least
    are the same kind of constant and the same machine mode.  Return zero if
@@ -1645,6 +1668,14 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       if (real && imag)
 	return build_complex (type, real, imag);
     }
+
+  tree simplified;
+  if ((simplified = simplify_const_binop (code, arg1, arg2, 0)))
+    return simplified;
+
+  if (commutative_tree_code (code)
+      && (simplified = simplify_const_binop (code, arg2, arg1, 1)))
+    return simplified;
 
   if (TREE_CODE (arg1) == VECTOR_CST
       && TREE_CODE (arg2) == VECTOR_CST
@@ -8773,8 +8804,7 @@ native_interpret_int (tree type, const unsigned char *ptr, int len)
   else
     total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
 
-  if (total_bytes > len
-      || total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
+  if (total_bytes > len)
     return NULL_TREE;
 
   wide_int result = wi::from_buffer (ptr, total_bytes);
@@ -9329,9 +9359,10 @@ fold_view_convert_vector_encoding (tree type, tree expr)
 static tree
 fold_view_convert_expr (tree type, tree expr)
 {
-  /* We support up to 1024-bit values (for GCN/RISC-V V128QImode).  */
   unsigned char buffer[128];
+  unsigned char *buf;
   int len;
+  HOST_WIDE_INT l;
 
   /* Check that the host and target are sane.  */
   if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
@@ -9341,11 +9372,23 @@ fold_view_convert_expr (tree type, tree expr)
     if (tree res = fold_view_convert_vector_encoding (type, expr))
       return res;
 
-  len = native_encode_expr (expr, buffer, sizeof (buffer));
+  l = int_size_in_bytes (type);
+  if (l > (int) sizeof (buffer)
+      && l <= WIDE_INT_MAX_PRECISION / BITS_PER_UNIT)
+    {
+      buf = XALLOCAVEC (unsigned char, l);
+      len = l;
+    }
+  else
+    {
+      buf = buffer;
+      len = sizeof (buffer);
+    }
+  len = native_encode_expr (expr, buf, len);
   if (len == 0)
     return NULL_TREE;
 
-  return native_interpret_expr (type, buffer, len);
+  return native_interpret_expr (type, buf, len);
 }
 
 /* Build an expression for the address of T.  Folds away INDIRECT_REF

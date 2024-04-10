@@ -12578,7 +12578,10 @@
   "arm_arch6
    && aarch_rev16_shleft_mask_imm_p (operands[3], SImode)
    && aarch_rev16_shright_mask_imm_p (operands[2], SImode)"
-  "rev16\\t%0, %1"
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
    (set_attr "type" "rev")]
@@ -12595,22 +12598,28 @@
   "arm_arch6
    && aarch_rev16_shleft_mask_imm_p (operands[3], SImode)
    && aarch_rev16_shright_mask_imm_p (operands[2], SImode)"
-  "rev16\\t%0, %1"
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
    (set_attr "type" "rev")]
 )
 
-(define_expand "arm_rev16si2"
-  [(set (match_operand:SI 0 "s_register_operand")
-	(bswap:SI (match_operand:SI 1 "s_register_operand")))]
+;; Similar pattern to match (rotate (bswap) 16)
+(define_insn "arm_rev16si2"
+  [(set (match_operand:SI 0 "register_operand" "=l,l,r")
+        (rotate:SI (bswap:SI (match_operand:SI 1 "register_operand" "l,l,r"))
+                   (const_int 16)))]
   "arm_arch6"
-  {
-    rtx left = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff00), SImode);
-    rtx right = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff), SImode);
-    emit_insn (gen_arm_rev16si2_alt1 (operands[0], operands[1], right, left));
-    DONE;
-  }
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
+  [(set_attr "arch" "t1,t2,32")
+   (set_attr "length" "2,2,4")
+   (set_attr "type" "rev")]
 )
 
 (define_expand "bswaphi2"

@@ -148,6 +148,10 @@ EXTERN char *M2Options_GetM2PathName (void);
 EXTERN int M2Options_SetUninitVariableChecking (bool value, const char *arg);
 EXTERN void M2Options_SetCaseEnumChecking (bool value);
 EXTERN void M2Options_SetDebugBuiltins (bool value);
+EXTERN void M2Options_SetIBMLongDouble (bool value);
+EXTERN bool M2Options_GetIBMLongDouble (void);
+EXTERN void M2Options_SetIEEELongDouble (bool value);
+EXTERN bool M2Options_GetIEEELongDouble (void);
 
 #undef EXTERN
 #endif /* m2options_h.  */

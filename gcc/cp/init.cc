@@ -4864,7 +4864,9 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 But for non-classes, that's the same as value-initialization.  */
       if (empty_list)
 	{
-	  if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
+	  if (cxx_dialect >= cxx11
+	      && (CLASS_TYPE_P (type)
+		  || TREE_CODE (type) == ARRAY_TYPE))
 	    {
 	      init = build_constructor (init_list_type_node, NULL);
 	    }

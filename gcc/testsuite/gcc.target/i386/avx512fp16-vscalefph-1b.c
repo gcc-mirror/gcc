@@ -1,9 +1,6 @@
 /* { dg-do run { target avx512fp16 } } */
 /* { dg-options "-O2 -mavx512fp16 -mavx512dq" } */
 
-
-#define DEBUG
-
 #define AVX512FP16
 #include "avx512fp16-helper.h"
 

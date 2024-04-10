@@ -582,21 +582,6 @@
   [(set_attr "type" "simd_insert")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@vec_concatz<mode>"
-  [(set (match_operand:LASX 0 "register_operand" "=f")
-    (vec_concat:LASX
-      (match_operand:<VHMODE256_ALL> 1 "nonimmediate_operand")
-      (match_operand:<VHMODE256_ALL> 2 "const_0_operand")))]
-  "ISA_HAS_LASX"
-{
-  if (MEM_P (operands[1]))
-    return "vld\t%w0,%1";
-  else
-    return "vori.b\t%w0,%w1,0";
-}
-  [(set_attr "type" "simd_splat")
-   (set_attr "mode" "<MODE>")])
-
 (define_insn "vec_concat<mode>"
   [(set (match_operand:LASX 0 "register_operand" "=f")
 	(vec_concat:LASX
@@ -760,6 +745,21 @@
       INTVAL (operands[2]));
   DONE;
 })
+
+(define_insn_and_split "vec_extract<mode>_0"
+  [(set (match_operand:<UNITMODE> 0 "register_operand" "=f")
+        (vec_select:<UNITMODE>
+          (match_operand:FLASX 1 "register_operand" "f")
+          (parallel [(const_int 0)])))]
+  "ISA_HAS_LSX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  operands[1] = gen_rtx_REG (<UNITMODE>mode, REGNO (operands[1]));
+}
+  [(set_attr "move_type" "fmove")
+   (set_attr "mode" "<UNITMODE>")])
 
 (define_expand "vec_perm<mode>"
  [(match_operand:LASX 0 "register_operand")

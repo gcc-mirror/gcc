@@ -1441,22 +1441,20 @@ build_m2_real_node (void)
 static tree
 build_m2_long_real_node (void)
 {
-  tree c;
+  tree longreal;
 
   /* Define `LONGREAL'.  */
-
-  if (m2configure_M2CLongRealFloat128 ())
-    c = float128_type_node;
-  else if (m2configure_M2CLongRealIBM128 ())
+  if (M2Options_GetIBMLongDouble ())
     {
-      c = make_node (REAL_TYPE);
-      TYPE_PRECISION (c) = LONG_DOUBLE_TYPE_SIZE;
+      longreal = make_node (REAL_TYPE);
+      TYPE_PRECISION (longreal) = LONG_DOUBLE_TYPE_SIZE;
     }
+  else if (M2Options_GetIEEELongDouble ())
+    longreal = float128_type_node;
   else
-    c = long_double_type_node;
-
-  layout_type (c);
-  return c;
+    longreal = long_double_type_node;
+  layout_type (longreal);
+  return longreal;
 }
 
 static tree

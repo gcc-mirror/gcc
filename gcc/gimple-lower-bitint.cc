@@ -1250,7 +1250,7 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 {
   tree rhs_type = TREE_TYPE (rhs1);
   gimple *g;
-  if (TREE_CODE (rhs1) == SSA_NAME
+  if ((TREE_CODE (rhs1) == SSA_NAME || TREE_CODE (rhs1) == INTEGER_CST)
       && TREE_CODE (lhs_type) == BITINT_TYPE
       && TREE_CODE (rhs_type) == BITINT_TYPE
       && bitint_precision_kind (lhs_type) >= bitint_prec_large
@@ -2401,6 +2401,8 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
       rhs1 = gimple_assign_rhs1 (store_operand
 				 ? SSA_NAME_DEF_STMT (store_operand)
 				 : stmt);
+      if (TREE_CODE (rhs1) == VIEW_CONVERT_EXPR)
+	rhs1 = TREE_OPERAND (rhs1, 0);
       /* Optimize mergeable ops ending with widening cast to _BitInt
 	 (or followed by store).  We can lower just the limbs of the
 	 cast operand and widen afterwards.  */
@@ -6100,17 +6102,27 @@ gimple_lower_bitint (void)
 		      && (TREE_CODE (rhs1) != SSA_NAME
 			  || !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)))
 		    {
-		      if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
-			  || (bitint_precision_kind (TREE_TYPE (rhs1))
-			      < bitint_prec_large))
-			continue;
 		      if (is_gimple_assign (use_stmt))
 			switch (gimple_assign_rhs_code (use_stmt))
 			  {
-			  case MULT_EXPR:
 			  case TRUNC_DIV_EXPR:
 			  case TRUNC_MOD_EXPR:
 			  case FLOAT_EXPR:
+			    /* For division, modulo and casts to floating
+			       point, avoid representing unsigned operands
+			       using negative prec if they were sign-extended
+			       from narrower precision.  */
+			    if (TYPE_UNSIGNED (TREE_TYPE (s))
+				&& !TYPE_UNSIGNED (TREE_TYPE (rhs1))
+				&& (TYPE_PRECISION (TREE_TYPE (s))
+				    > TYPE_PRECISION (TREE_TYPE (rhs1))))
+			      goto force_name;
+			    /* FALLTHRU */
+			  case MULT_EXPR:
+			    if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
+				|| (bitint_precision_kind (TREE_TYPE (rhs1))
+				    < bitint_prec_large))
+			      continue;
 			    /* Uses which use handle_operand_addr can't
 			       deal with nested casts.  */
 			    if (TREE_CODE (rhs1) == SSA_NAME
@@ -6124,6 +6136,10 @@ gimple_lower_bitint (void)
 			  default:
 			    break;
 			}
+		      if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
+			  || (bitint_precision_kind (TREE_TYPE (rhs1))
+			      < bitint_prec_large))
+			continue;
 		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
 			   >= TYPE_PRECISION (TREE_TYPE (s)))
 			  && mergeable_op (use_stmt))
@@ -6249,7 +6265,8 @@ gimple_lower_bitint (void)
 		  if (is_gimple_debug (use_stmt))
 		    continue;
 		  if (gimple_code (use_stmt) == GIMPLE_PHI
-		      || is_gimple_call (use_stmt))
+		      || is_gimple_call (use_stmt)
+		      || gimple_code (use_stmt) == GIMPLE_ASM)
 		    {
 		      optimizable_load = false;
 		      break;
@@ -6343,22 +6360,33 @@ gimple_lower_bitint (void)
 	      }
 	  }
       tree atype = NULL_TREE;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Mapping SSA_NAMEs to decls:\n");
       EXECUTE_IF_SET_IN_BITMAP (large_huge.m_names, 0, i, bi)
 	{
 	  tree s = ssa_name (i);
 	  int p = var_to_partition (large_huge.m_map, s);
-	  if (large_huge.m_vars[p] != NULL_TREE)
-	    continue;
-	  if (atype == NULL_TREE
-	      || !tree_int_cst_equal (TYPE_SIZE (atype),
-				      TYPE_SIZE (TREE_TYPE (s))))
+	  if (large_huge.m_vars[p] == NULL_TREE)
 	    {
-	      unsigned HOST_WIDE_INT nelts
-		= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (s))) / limb_prec;
-	      atype = build_array_type_nelts (large_huge.m_limb_type, nelts);
+	      if (atype == NULL_TREE
+		  || !tree_int_cst_equal (TYPE_SIZE (atype),
+					  TYPE_SIZE (TREE_TYPE (s))))
+		{
+		  unsigned HOST_WIDE_INT nelts
+		    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (s))) / limb_prec;
+		  atype = build_array_type_nelts (large_huge.m_limb_type,
+						  nelts);
+		}
+	      large_huge.m_vars[p] = create_tmp_var (atype, "bitint");
+	      mark_addressable (large_huge.m_vars[p]);
 	    }
-	  large_huge.m_vars[p] = create_tmp_var (atype, "bitint");
-	  mark_addressable (large_huge.m_vars[p]);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      print_generic_expr (dump_file, s, TDF_SLIM);
+	      fprintf (dump_file, " -> ");
+	      print_generic_expr (dump_file, large_huge.m_vars[p], TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
 	}
     }
 

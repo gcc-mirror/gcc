@@ -452,6 +452,7 @@ M_SRC = $(firstword $(filter %/$(M_FILE), $(all_c_files)))
 libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix \
 	_$(s)_.lo,$(SIZEOBJS))) $(am__append_1) $(am__append_3) \
 	$(am__append_4) $(am__append_5)
+@ARCH_AARCH64_HAVE_LSE128_TRUE@@ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@AM_CPPFLAGS = -DHAVE_FEAT_LSE128
 @ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv8-a+lse
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv7-a+fp -DHAVE_KERNEL64
 @ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=i586

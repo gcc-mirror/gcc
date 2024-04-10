@@ -112,6 +112,10 @@ test_format()
 
   s = std::format("{:%T}", leap + 1s);
   VERIFY( s == "00:00:00" );
+
+  // PR libstdc++/113500
+  s = std::format("{}", leap + 100ms + 2.5s);
+  VERIFY( s == "2017-01-01 00:00:01.600");
 }
 
 void

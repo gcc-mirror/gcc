@@ -58,6 +58,16 @@
 # define AUTIASP
 #endif
 
+#ifdef __ELF__
+#define HIDDEN(name) .hidden name
+#define SYMBOL_SIZE(name) .size name, .-name
+#define SYMBOL_TYPE(name, _type) .type name, _type
+#else
+#define HIDDEN(name)
+#define SYMBOL_SIZE(name)
+#define SYMBOL_TYPE(name, _type)
+#endif
+
 /* Add a NT_GNU_PROPERTY_TYPE_0 note.  */
 #define GNU_PROPERTY(type, value)	\
   .section .note.gnu.property, "a";	\
@@ -85,7 +95,7 @@ GNU_PROPERTY (FEATURE_1_AND, BTI_FLAG|PAC_FLAG)
 
 #define ENTRY_ALIGN(name, align) \
   .global name;		\
-  .type name,%function;	\
+  SYMBOL_TYPE(name, %function);		\
   .balign align;	\
   name:			\
   .cfi_startproc;	\
@@ -95,4 +105,4 @@ GNU_PROPERTY (FEATURE_1_AND, BTI_FLAG|PAC_FLAG)
 
 #define END(name) \
   .cfi_endproc;		\
-  .size name, .-name
+  SYMBOL_SIZE(name)

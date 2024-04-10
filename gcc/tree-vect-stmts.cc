@@ -4071,7 +4071,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    || (nargs != simd_nargs))
 	  continue;
 	if (num_calls != 1)
-	  this_badness += exact_log2 (num_calls) * 4096;
+	  this_badness += floor_log2 (num_calls) * 4096;
 	if (n->simdclone->inbranch)
 	  this_badness += 8192;
 	int target_badness = targetm.simd_clone.usable (n);
@@ -8542,7 +8542,7 @@ vectorizable_store (vec_info *vinfo,
 
       alias_off = build_int_cst (ref_type, 0);
       stmt_vec_info next_stmt_info = first_stmt_info;
-      auto_vec<tree> vec_oprnds (ncopies);
+      auto_vec<tree> vec_oprnds;
       /* For costing some adjacent vector stores, we'd like to cost with
 	 the total number of them once instead of cost each one by one. */
       unsigned int n_adjacent_stores = 0;
@@ -8772,7 +8772,7 @@ vectorizable_store (vec_info *vinfo,
   tree vec_mask = NULL;
   auto_delete_vec<auto_vec<tree>> gvec_oprnds (group_size);
   for (i = 0; i < group_size; i++)
-    gvec_oprnds.quick_push (new auto_vec<tree> (ncopies));
+    gvec_oprnds.quick_push (new auto_vec<tree> ());
 
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
     {

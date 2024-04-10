@@ -131,23 +131,37 @@ public:
 
     tree type = builtin_types[e.type.index].vector;
     machine_mode mode = TYPE_MODE (type);
-    /* Normalize same RATO (SEW/LMUL) into same vsetvl instruction.
 
-	 - e8,mf8/e16,mf4/e32,mf2/e64,m1 --> e8mf8
-	 - e8,mf4/e16,mf2/e32,m1/e64,m2  --> e8mf4
-	 - e8,mf2/e16,m1/e32,m2/e64,m4   --> e8mf2
-	 - e8,m1/e16,m2/e32,m4/e64,m8    --> e8m1
-	 - e8,m2/e16,m4/e32,m8           --> e8m2
-	 - e8,m4/e16,m8                  --> e8m4
-	 - e8,m8                         --> e8m8
-    */
-    /* SEW.  */
-    e.add_input_operand (Pmode, gen_int_mode (8, Pmode));
+    if (TARGET_XTHEADVECTOR)
+      {
+	machine_mode inner_mode = GET_MODE_INNER (mode);
+	/* SEW.  */
+	e.add_input_operand (Pmode,
+	  gen_int_mode (GET_MODE_BITSIZE (inner_mode), Pmode));
+	/* LMUL.  */
+	e.add_input_operand (Pmode,
+	  gen_int_mode (get_vlmul (mode), Pmode));
+      }
+    else
+      {
+	/* Normalize same RATO (SEW/LMUL) into same vsetvl instruction.
 
-    /* LMUL.  */
-    machine_mode e8_mode
-      = get_vector_mode (QImode, GET_MODE_NUNITS (mode)).require ();
-    e.add_input_operand (Pmode, gen_int_mode (get_vlmul (e8_mode), Pmode));
+	     - e8,mf8/e16,mf4/e32,mf2/e64,m1 --> e8mf8
+	     - e8,mf4/e16,mf2/e32,m1/e64,m2  --> e8mf4
+	     - e8,mf2/e16,m1/e32,m2/e64,m4   --> e8mf2
+	     - e8,m1/e16,m2/e32,m4/e64,m8    --> e8m1
+	     - e8,m2/e16,m4/e32,m8           --> e8m2
+	     - e8,m4/e16,m8                  --> e8m4
+	     - e8,m8                         --> e8m8
+	*/
+	/* SEW.  */
+	e.add_input_operand (Pmode, gen_int_mode (8, Pmode));
+
+	/* LMUL.  */
+	machine_mode e8_mode
+	  = get_vector_mode (QImode, GET_MODE_NUNITS (mode)).require ();
+	e.add_input_operand (Pmode, gen_int_mode (get_vlmul (e8_mode), Pmode));
+      }
 
     /* TAIL_ANY.  */
     e.add_input_operand (Pmode,
@@ -2127,6 +2141,83 @@ public:
   }
 };
 
+/* Implements
+ * th.vl(b/h/w)[u].v/th.vs(b/h/w)[u].v/th.vls(b/h/w)[u].v/th.vss(b/h/w)[u].v/
+ * th.vlx(b/h/w)[u].v/th.vs[u]x(b/h/w).v
+ * codegen.  */
+template<bool STORE_P, lst_type LST_TYPE, int UNSPEC>
+class th_loadstore_width : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return !STORE_P; }
+  bool apply_mask_policy_p () const override { return !STORE_P; }
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    if (STORE_P)
+      return CP_WRITE_MEMORY;
+    else
+      return CP_READ_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    if (STORE_P || LST_TYPE == LST_INDEXED)
+      return true;
+    return pred != PRED_TYPE_none;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    gcc_assert (TARGET_XTHEADVECTOR);
+    if (LST_TYPE == LST_INDEXED)
+      {
+	if (STORE_P)
+	  return e.use_exact_insn (
+	    code_for_pred_indexed_store_width (UNSPEC, UNSPEC,
+					       e.vector_mode ()));
+	else
+	  return e.use_exact_insn (
+	    code_for_pred_indexed_load_width (UNSPEC, e.vector_mode ()));
+      }
+    else if (LST_TYPE == LST_STRIDED)
+      {
+	if (STORE_P)
+	  return e.use_contiguous_store_insn (
+	    code_for_pred_strided_store_width (UNSPEC, e.vector_mode ()));
+	else
+	  return e.use_contiguous_load_insn (
+	    code_for_pred_strided_load_width (UNSPEC, e.vector_mode ()));
+      }
+    else
+      {
+	if (STORE_P)
+	  return e.use_contiguous_store_insn (
+	    code_for_pred_store_width (UNSPEC, e.vector_mode ()));
+	else
+	  return e.use_contiguous_load_insn (
+	    code_for_pred_mov_width (UNSPEC, e.vector_mode ()));
+      }
+  }
+};
+
+/* Implements vext.x.v.  */
+class th_extract : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    gcc_assert (TARGET_XTHEADVECTOR);
+    return e.use_exact_insn (code_for_pred_th_extract (e.vector_mode ()));
+  }
+};
+
 /* Below implements are vector crypto */
 /* Implements vandn.[vv,vx] */
 class vandn : public function_base
@@ -2589,6 +2680,37 @@ static CONSTEXPR const seg_indexed_load<UNSPEC_ORDERED> vloxseg_obj;
 static CONSTEXPR const seg_indexed_store<UNSPEC_UNORDERED> vsuxseg_obj;
 static CONSTEXPR const seg_indexed_store<UNSPEC_ORDERED> vsoxseg_obj;
 static CONSTEXPR const vlsegff vlsegff_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLB> vlb_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLBU> vlbu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLH> vlh_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLHU> vlhu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLW> vlw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_UNIT_STRIDE, UNSPEC_TH_VLWU> vlwu_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_UNIT_STRIDE, UNSPEC_TH_VLB> vsb_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_UNIT_STRIDE, UNSPEC_TH_VLH> vsh_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_UNIT_STRIDE, UNSPEC_TH_VLW> vsw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSB> vlsb_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSBU> vlsbu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSH> vlsh_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSHU> vlshu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSW> vlsw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_STRIDED, UNSPEC_TH_VLSWU> vlswu_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_STRIDED, UNSPEC_TH_VLSB> vssb_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_STRIDED, UNSPEC_TH_VLSH> vssh_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_STRIDED, UNSPEC_TH_VLSW> vssw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXB> vlxb_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXBU> vlxbu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXH> vlxh_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXHU> vlxhu_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXW> vlxw_obj;
+static CONSTEXPR const th_loadstore_width<false, LST_INDEXED, UNSPEC_TH_VLXWU> vlxwu_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VLXB> vsxb_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VLXH> vsxh_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VLXW> vsxw_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXB> vsuxb_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXH> vsuxh_obj;
+static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXW> vsuxw_obj;
+static CONSTEXPR const th_extract vext_x_v_obj;
 
 /* Crypto Vector */
 static CONSTEXPR const vandn vandn_obj;
@@ -2880,6 +3002,37 @@ BASE (vloxseg)
 BASE (vsuxseg)
 BASE (vsoxseg)
 BASE (vlsegff)
+BASE (vlb)
+BASE (vlh)
+BASE (vlw)
+BASE (vlbu)
+BASE (vlhu)
+BASE (vlwu)
+BASE (vsb)
+BASE (vsh)
+BASE (vsw)
+BASE (vlsb)
+BASE (vlsh)
+BASE (vlsw)
+BASE (vlsbu)
+BASE (vlshu)
+BASE (vlswu)
+BASE (vssb)
+BASE (vssh)
+BASE (vssw)
+BASE (vlxb)
+BASE (vlxh)
+BASE (vlxw)
+BASE (vlxbu)
+BASE (vlxhu)
+BASE (vlxwu)
+BASE (vsxb)
+BASE (vsxh)
+BASE (vsxw)
+BASE (vsuxb)
+BASE (vsuxh)
+BASE (vsuxw)
+BASE (vext_x_v)
 /* Crypto vector */
 BASE (vandn)
 BASE (vbrev)

@@ -486,6 +486,10 @@ class region_model
 					  tree expr,
 					  const svalue **out_sval,
 					  region_model_context *ctxt) const;
+  const svalue *scan_for_null_terminator_1 (const region *reg,
+					    tree expr,
+					    const svalue **out_sval,
+					    region_model_context *ctxt) const;
 
   bool region_exists_p (const region *reg) const;
 

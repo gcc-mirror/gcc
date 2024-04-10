@@ -194,7 +194,7 @@ esac
 # The type may be different on different architectures.
 case "${target}" in
   aarch64*-*-*)
-	IFUNC_RESOLVER_ARGS="uint64_t hwcap"
+	IFUNC_RESOLVER_ARGS="uint64_t hwcap, const __ifunc_arg_t *features"
 	;;
   *)
 	IFUNC_RESOLVER_ARGS="void"

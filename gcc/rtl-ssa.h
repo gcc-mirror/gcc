@@ -50,6 +50,7 @@
 #include "mux-utils.h"
 #include "rtlanal.h"
 #include "cfgbuild.h"
+#include "hash-set.h"
 
 // Provides the global crtl->ssa.
 #include "memmodel.h"

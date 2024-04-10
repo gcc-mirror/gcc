@@ -932,19 +932,14 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 
 	  /* We now know that the final suspend object is distinct from the
 	     final awaiter, so check for a non-throwing DTOR where needed.  */
-	  tree a_type = TREE_TYPE (a);
-	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (a_type))
-	    if (tree dummy
-		= build_special_member_call (a, complete_dtor_identifier,
-					     NULL, a_type, LOOKUP_NORMAL,
-					     tf_none))
-	      {
-		if (CONVERT_EXPR_P (dummy))
-		  dummy = TREE_OPERAND (dummy, 0);
-		dummy = TREE_OPERAND (CALL_EXPR_FN (dummy), 0);
-		if (coro_diagnose_throwing_fn (dummy))
-		  return error_mark_node;
-	      }
+	  if (tree dummy = cxx_maybe_build_cleanup (a, tf_none))
+	    {
+	      if (CONVERT_EXPR_P (dummy))
+		dummy = TREE_OPERAND (dummy, 0);
+	      dummy = TREE_OPERAND (CALL_EXPR_FN (dummy), 0);
+	      if (coro_diagnose_throwing_fn (dummy))
+		return error_mark_node;
+	    }
 	}
     }
   else
@@ -1096,18 +1091,14 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 	return error_mark_node;
       if (coro_diagnose_throwing_fn (awrs_func))
 	return error_mark_node;
-      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (o_type))
-	if (tree dummy
-	    = build_special_member_call (e_proxy, complete_dtor_identifier,
-					 NULL, o_type, LOOKUP_NORMAL,
-					 tf_none))
-	  {
-	    if (CONVERT_EXPR_P (dummy))
-	      dummy = TREE_OPERAND (dummy, 0);
-	    dummy = TREE_OPERAND (CALL_EXPR_FN (dummy), 0);
-	    if (coro_diagnose_throwing_fn (dummy))
-	      return error_mark_node;
-	  }
+      if (tree dummy = cxx_maybe_build_cleanup (e_proxy, tf_none))
+	{
+	  if (CONVERT_EXPR_P (dummy))
+	    dummy = TREE_OPERAND (dummy, 0);
+	  dummy = TREE_OPERAND (CALL_EXPR_FN (dummy), 0);
+	  if (coro_diagnose_throwing_fn (dummy))
+	    return error_mark_node;
+	}
     }
 
   /* We now have three call expressions, in terms of the promise, handle and
@@ -1662,7 +1653,6 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   tree resume_label = create_named_label_with_ctx (loc, buf, actor);
   tree empty_list = build_empty_stmt (loc);
 
-  tree await_type = TREE_TYPE (var);
   tree stmt_list = NULL;
   tree r;
   tree *await_init = NULL;
@@ -1791,9 +1781,7 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   append_to_statement_list (destroy_label, &body_list);
   if (needs_dtor)
     {
-      tree dtor = build_special_member_call (var, complete_dtor_identifier,
-					     NULL, await_type, LOOKUP_NORMAL,
-					     tf_warning_or_error);
+      tree dtor = build_cleanup (var);
       append_to_statement_list (dtor, &body_list);
     }
   r = build1_loc (loc, GOTO_EXPR, void_type_node, data->cleanup);
@@ -1821,9 +1809,7 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   tree *revised = tsi_stmt_ptr (tsi_last (stmt_list));
   if (needs_dtor)
     {
-      tree dtor = build_special_member_call (var, complete_dtor_identifier,
-					     NULL, await_type, LOOKUP_NORMAL,
-					     tf_warning_or_error);
+      tree dtor = build_cleanup (var);
       append_to_statement_list (dtor, &stmt_list);
     }
   data->index += 2;
@@ -2330,10 +2316,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   add_stmt (r);
 
   /* Destructors for the things we built explicitly.  */
-  r = build_special_member_call (promise_proxy, complete_dtor_identifier, NULL,
-				 promise_type, LOOKUP_NORMAL,
-				 tf_warning_or_error);
-  add_stmt (r);
+  if (tree c = cxx_maybe_build_cleanup (promise_proxy, tf_warning_or_error))
+    add_stmt (c);
 
   tree del_frame_label
     = create_named_label_with_ctx (loc, "coro.delete.frame", actor);
@@ -2362,12 +2346,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 	    = lookup_member (coro_frame_type, pid, 1, 0, tf_warning_or_error);
 	  tree a = build_class_member_access_expr (actor_frame, m, NULL_TREE,
 						   false, tf_warning_or_error);
-	  tree t = TREE_TYPE (a);
-	  tree dtor;
-	  dtor
-	    = build_special_member_call (a, complete_dtor_identifier, NULL, t,
-					 LOOKUP_NORMAL, tf_warning_or_error);
-	  add_stmt (dtor);
+	  if (tree dtor = cxx_maybe_build_cleanup (a, tf_warning_or_error))
+	    add_stmt (dtor);
 	}
     }
 
@@ -3045,16 +3025,14 @@ process_conditional (var_nest_node *n, tree& vlist)
       tree *flag = var_flags.get (var);
       if (!flag)
 	continue;
-      tree var_type = TREE_TYPE (var);
-      tree cleanup
-	= build_special_member_call (var, complete_dtor_identifier,
-				     NULL, var_type, LOOKUP_NORMAL,
-				     tf_warning_or_error);
-      tree cond_cleanup = begin_if_stmt ();
-      finish_if_stmt_cond (*flag, cond_cleanup);
-      finish_expr_stmt (cleanup);
-      finish_then_clause (cond_cleanup);
-      finish_if_stmt (cond_cleanup);
+      if (tree cleanup = cxx_maybe_build_cleanup (var, tf_warning_or_error))
+	{
+	  tree cond_cleanup = begin_if_stmt ();
+	  finish_if_stmt_cond (*flag, cond_cleanup);
+	  finish_expr_stmt (cleanup);
+	  finish_then_clause (cond_cleanup);
+	  finish_if_stmt (cond_cleanup);
+	}
     }
   final_actions = pop_stmt_list (final_actions);
   tree try_finally
@@ -3135,13 +3113,8 @@ maybe_promote_temps (tree *stmt, void *d)
 	    process_conditional (t, vlist);
 	  else
 	    finish_expr_stmt (t->init);
-	  tree var_type = TREE_TYPE (var);
-	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (var_type))
+	  if (tree cleanup = cxx_maybe_build_cleanup (var, tf_warning_or_error))
 	    {
-	      tree cleanup
-		= build_special_member_call (var, complete_dtor_identifier,
-					     NULL, var_type, LOOKUP_NORMAL,
-					     tf_warning_or_error);
 	      tree cl = build_stmt (sloc, CLEANUP_STMT, expr_list, cleanup, var);
 	      add_stmt (cl); /* push this onto the level above.  */
 	    }
@@ -4903,10 +4876,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	      vec_safe_push (param_dtor_list, parm.field_id);
 	      /* Cleanup this frame copy on exception.  */
 	      parm.fr_copy_dtor
-		= build_special_member_call (fld_idx, complete_dtor_identifier,
-					     NULL, parm.frame_type,
-					     LOOKUP_NORMAL,
-					     tf_warning_or_error);
+		= cxx_maybe_build_cleanup (fld_idx, tf_warning_or_error);
 	      if (flag_exceptions)
 		{
 		  /* This var is now live.  */
@@ -4961,10 +4931,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 			     boolean_type_node);
       finish_expr_stmt (r);
 
-      promise_dtor
-	= build_special_member_call (p, complete_dtor_identifier,
-				     NULL, promise_type, LOOKUP_NORMAL,
-				     tf_warning_or_error);
+      promise_dtor = cxx_maybe_build_cleanup (p, tf_warning_or_error);
     }
 
   /* Set up a new bind context for the GRO.  */
@@ -5025,11 +4992,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	/* If some part of the initalization code (prior to the await_resume
 	     of the initial suspend expression), then we need to clean up the
 	     return value.  */
-	gro_ret_dtor
-	  = build_special_member_call (DECL_RESULT (orig),
-				       complete_dtor_identifier, NULL,
-				       gro_type, LOOKUP_NORMAL,
-				       tf_warning_or_error);
+	gro_ret_dtor = cxx_maybe_build_cleanup (DECL_RESULT (orig),
+						tf_warning_or_error);
     }
   else
     {
@@ -5042,15 +5006,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       r = cp_build_modify_expr (input_location, gro, INIT_EXPR, get_ro,
 				tf_warning_or_error);
       /* The constructed object might require a cleanup.  */
-      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (gro_type))
-	{
-	  gro_cleanup_stmt
-	    = build_special_member_call (gro, complete_dtor_identifier,
-					 NULL, gro_type, LOOKUP_NORMAL,
-					 tf_warning_or_error);
-	  gro_cleanup_stmt = build_stmt (input_location, CLEANUP_STMT, NULL,
-					 gro_cleanup_stmt, gro);
-	}
+      if (tree cleanup = cxx_maybe_build_cleanup (gro, tf_warning_or_error))
+	gro_cleanup_stmt = build_stmt (input_location, CLEANUP_STMT, NULL,
+				       cleanup, gro);
     }
   finish_expr_stmt (r);
 

@@ -302,6 +302,9 @@ extern rtx expand_expr_real_1 (tree, rtx, machine_mode,
 			       enum expand_modifier, rtx *, bool);
 extern rtx expand_expr_real_2 (sepops, rtx, machine_mode,
 			       enum expand_modifier);
+extern rtx expand_expr_real_gassign (gassign *, rtx, machine_mode,
+				     enum expand_modifier modifier,
+				     rtx * = nullptr, bool = false);
 
 /* Generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.

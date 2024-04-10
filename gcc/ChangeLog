@@ -1,3 +1,1297 @@
+2024-01-29  Manos Anagnostakis  <manos.anagnostakis@vrull.eu>
+	    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-ldpstp.md: Remove unused mode.
+	* config/aarch64/aarch64-protos.h (aarch64_operands_ok_for_ldpstp):
+	Likewise.
+	* config/aarch64/aarch64.cc (aarch64_operands_ok_for_ldpstp):
+	Call on framework moved later.
+
+2024-01-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_expand_epilogue): Do not emit a return
+	instruction in naked function epilogues.
+
+2024-01-29  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR target/113655
+	* configure.ac: Fix typo gcc_cv_as_mips_explicit should be
+	gcc_cv_as_mips_explicit_relocs.
+	* configure: Regnerated.
+
+2024-01-29  Matthieu Longo  <matthieu.longo@arm.com>
+
+	PR target/108933
+	* config/arm/arm.md (arm_rev16si2): Convert to define_insn.
+	Correct generated RTL.
+	(arm_rev16si2_alt1): Correctly handle conditional execution.
+	(arm_rev16si2_alt2): Likewise.
+
+2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113622
+	* expr.cc (expand_assignment): Spill hard registers if
+	we index them with a variable offset.
+
+2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113622
+	* gimple-isel.cc (gimple_expand_vec_set_extract_expr):
+	Also allow DECL_HARD_REGISTER variables.
+
+2024-01-29  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113616
+	* config/aarch64/aarch64-ldp-fusion.cc (fixup_debug_uses_trailing_add):
+	Use iterate_safely when iterating over debug uses.
+	(fixup_debug_uses): Likewise.
+	(ldp_bb_info::cleanup_tombstones): Use iterate_safely to iterate
+	over nondebug insns instead of manually maintaining the next insn.
+	* iterator-utils.h (class safe_iterator): New.
+	(iterate_safely): New.
+
+2024-01-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/38534
+	* config/i386/i386-options.cc (ix86_set_func_type): Save
+	callee-saved registers in noreturn functions for -O0/-Og.
+
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR target/113615
+	* config/gcn/gcn-valu.md (fold_left_plus_<mode>): Only
+	define for !TARGET_RDNA2_PLUS.
+
+2024-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113281
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern): Remove
+	workaround for right shifts.
+	(vect_truncatable_operation_p): Handle NEGATE_EXPR and BIT_NOT_EXPR.
+	(vect_determine_precisions_from_range): Be more selective about
+	which codes can be narrowed based on their input and output ranges.
+	For shifts, require at least one more bit of precision than the
+	maximum shift amount.
+
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/nvptx/nvptx.opt (march-map=): Add sm_89 and sm_90a.
+
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (amdgcn): Recommend LLVM 15+ and newlib 4.4+,
+	but keep requiring only newlib 4.3+ and, if gfx1100 is disabled,
+	LLVM 13.0.1+.
+
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR other/111966
+	* config/gcn/mkoffload.cc (SET_XNACK_UNSET, TEST_SRAM_ECC_UNSET): New.
+	(SET_SRAM_ECC_UNSUPPORTED): Renamed to ...
+	(SET_SRAM_ECC_UNSET): ... this.
+	(copy_early_debug_info): Remove gfx900 special case, now handled as
+	part of the generic handling.
+	(main): Update SRAM_ECC and XNACK for the -march as done in gcn-hsa.h.
+
+2024-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110603
+	* tree-ssa-strlen.cc (get_range_strlen_dynamic): Remove incorrect
+	setting of pdata->maxlen to vr.upper_bound (which is unconditionally
+	overwritten anyway).  Avoid creating invalid range with minlen
+	larger than maxlen.  Formatting fix.
+
+2024-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR debug/103047
+	* tree-inline.cc (initialize_inlined_parameters): Reverse
+	the decl chain of inlined parameters.
+
+2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_build_constant_cfstring): Prevent over-
+	alignment of CFString constants by setting DECL_USER_ALIGN.
+
+2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR libgcc/113402
+	* builtins.cc (expand_builtin): Handle BUILT_IN_GCC_NESTED_PTR_CREATED
+	and BUILT_IN_GCC_NESTED_PTR_DELETED.
+	* builtins.def (BUILT_IN_GCC_NESTED_PTR_CREATED,
+	BUILT_IN_GCC_NESTED_PTR_DELETED): Make these builtins LIB-EXT and
+	rename the library fallbacks to __gcc_nested_func_ptr_created and
+	__gcc_nested_func_ptr_deleted.
+	* doc/invoke.texi: Rename these to __gcc_nested_func_ptr_created
+	and __gcc_nested_func_ptr_deleted.
+	* tree-nested.cc (finalize_nesting_tree_1): Use builtin_explicit for
+	BUILT_IN_GCC_NESTED_PTR_CREATED and BUILT_IN_GCC_NESTED_PTR_DELETED.
+	* tree.cc (build_common_builtin_nodes): Build the
+	BUILT_IN_GCC_NESTED_PTR_CREATED and BUILT_IN_GCC_NESTED_PTR_DELETED local
+	builtins only for non-explicit.
+
+2024-01-28  YunQiang Su  <syq@gcc.gnu.org>
+
+	* doc/invoke.texi: Remove duplicate MIPS explicit-relocs option.
+
+2024-01-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/38534
+	* config/i386/i386-options.cc (ix86_set_func_type): Don't
+	save and restore callee saved registers for a noreturn function
+	with nothrow or compiled with -fno-exceptions.
+
+2024-01-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103503
+	PR target/113312
+	* config/i386/i386-expand.cc (ix86_expand_call): Replace
+	no_caller_saved_registers check with call_saved_registers check.
+	Clobber all registers that are not used by the callee with
+	no_callee_saved_registers attribute.
+	* config/i386/i386-options.cc (ix86_set_func_type): Set
+	call_saved_registers to TYPE_NO_CALLEE_SAVED_REGISTERS for
+	noreturn function.  Disallow no_callee_saved_registers with
+	interrupt or no_caller_saved_registers attributes together.
+	(ix86_set_current_function): Replace no_caller_saved_registers
+	check with call_saved_registers check.
+	(ix86_handle_no_caller_saved_registers_attribute): Renamed to ...
+	(ix86_handle_call_saved_registers_attribute): This.
+	(ix86_gnu_attributes): Add
+	ix86_handle_call_saved_registers_attribute.
+	* config/i386/i386.cc (ix86_conditional_register_usage): Replace
+	no_caller_saved_registers check with call_saved_registers check.
+	(ix86_function_ok_for_sibcall): Don't allow callee with
+	no_callee_saved_registers attribute when the calling function
+	has callee-saved registers.
+	(ix86_comp_type_attributes): Also check
+	no_callee_saved_registers.
+	(ix86_epilogue_uses): Replace no_caller_saved_registers check
+	with call_saved_registers check.
+	(ix86_hard_regno_scratch_ok): Likewise.
+	(ix86_save_reg): Replace no_caller_saved_registers check with
+	call_saved_registers check.  Don't save any registers for
+	TYPE_NO_CALLEE_SAVED_REGISTERS.  Save all registers with
+	TYPE_DEFAULT_CALL_SAVED_REGISTERS if function with
+	no_callee_saved_registers attribute is called.
+	(find_drap_reg): Replace no_caller_saved_registers check with
+	call_saved_registers check.
+	* config/i386/i386.h (call_saved_registers_type): New enum.
+	(machine_function): Replace no_caller_saved_registers with
+	call_saved_registers.
+	* doc/extend.texi: Document no_callee_saved_registers attribute.
+
+2024-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113614
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Don't merge
+	widening casts from signed to unsigned types with TRUNC_DIV_EXPR,
+	TRUNC_MOD_EXPR or FLOAT_EXPR uses.
+
+2024-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113568
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_mergeable_stmt):
+	For VIEW_CONVERT_EXPR use first operand of rhs1 instead of rhs1
+	in the widening extension checks.
+
+2024-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (gimple_lower_bitint): For
+	TDF_DETAILS dump mapping of SSA_NAMEs to decls.
+
+2024-01-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* cgraphunit.cc (process_function_and_variable_attributes): Tweak
+	the warning for an attribute-always_inline without inline declaration.
+
+2024-01-26  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR other/113575
+	* genopinit.cc (main): Split init_all_optabs into functions
+	of 1000 patterns each.
+
+2024-01-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config.gcc (amdgcn-*-*): Add gfx1030 and gfx1100 to
+	TM_MULTILIB_CONFIG.
+	* doc/install.texi (Configuration amdgcn-*-*): Mention gfx1030/gfx1100.
+	* doc/invoke.texi (AMD GCN Options): Add gfx1030 and gfx1100 to
+	-march/-mtune.
+
+2024-01-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-opts.h (TARGET_PACKED_WORK_ITEMS): Add TARGET_RDNA3.
+	* config/gcn/gcn-valu.md (all_convert): New iterator.
+	(<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>): New
+	define_expand, and rename the old one to ...
+	(*<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>_sdwa<exec>): ... this.
+	(extend<V_INT_1REG_ALT:mode><V_INT_1REG:mode>2<exec>): Likewise, to ...
+	(extend<V_INT_1REG_ALT:mode><V_INT_1REG:mode>_sdwa<exec>): .. this.
+	(*<convop><V_INT_1REG_ALT:mode><V_INT_1REG:mode>_shift<exec>): New.
+	* config/gcn/gcn.cc (gcn_global_address_p): Use "offsetbits" correctly.
+	(gcn_hsa_declare_function_name): Update the vgpr counting for gfx1100.
+	* config/gcn/gcn.md (<u>mulhisi3): Disable on RDNA3.
+	(<u>mulqihi3_scalar): Likewise.
+
+2024-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113602
+	* tree-data-ref.cc (dr_analyze_innermost): Fail when
+	the base object isn't addressable.
+
+2024-01-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-hsa.h (ABI_VERSION_SPEC): New; creates the
+	"--amdhsa-code-object-version=" argument.
+	(ASM_SPEC): Use it; replace previous version of it.
+
+2024-01-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::earliest_fuse_vsetvl_info): Refine some codes.
+	(pre_vsetvl::emit_vsetvl): Ditto.
+
+2024-01-26  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_extract<mode>_0):
+	New define_insn_and_split patten.
+
+2024-01-26  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/loongarch.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Define.
+
+2024-01-26  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_emit_swdivsf): Adjust.
+
+2024-01-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113469
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::compute_lcm_local_properties): Fix bug.
+
+2024-01-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/100212
+	* config/aarch64/aarch64.cc (aarch64_classify_index): Avoid
+	undefined shift after the call to exact_log2.
+
+2024-01-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/100204
+	* config/aarch64/constraints.md (J): Cast to `unsigned HOST_WIDE_INT`
+	before taking the negative of it.
+
+2024-01-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/113526
+	* lra-constraints.cc (curr_insn_transform): Change class even for
+	spilled pseudo successfully matched with with NO_REGS.
+
+2024-01-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113601
+	* config/avr/avr-mcus.def (atmega3208, atmega3209): Fix data_section_start.
+
+2024-01-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/112987
+	* config/aarch64/aarch64.cc (aarch64_gen_compare_zero_and_branch): New.
+	(aarch64_expand_epilogue): Use the new function.
+	(aarch64_split_compare_and_swap): Likewise.
+	(aarch64_split_atomic_op): Likewise.
+
+2024-01-25  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR middle-end/112971
+	* fold-const.cc (simplify_const_binop): New function for binop
+	simplification of two constant vectors when element-wise
+	handling is not necessary.
+	(const_binop): Call new function.
+
+2024-01-25  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* common/config/riscv/riscv-common.cc: Add XCVbitmanip.
+	* config/riscv/constraints.md: Likewise.
+	* config/riscv/corev.def: Likewise.
+	* config/riscv/corev.md: Likewise.
+	* config/riscv/predicates.md: Likewise.
+	* config/riscv/riscv-builtins.cc (AVAIL): Likewise.
+	* config/riscv/riscv-ftypes.def: Likewise.
+	* config/riscv/riscv.opt: Likewise.
+	* config/riscv/riscv.cc (riscv_print_operand): Add new operand 'Y'.
+	* doc/extend.texi: Add XCVbitmanip builtin documentation.
+	* doc/sourcebuild.texi: Likewise.
+
+2024-01-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-hsa.h (ASM_SPEC): Add space after -mxnack= argument.
+
+2024-01-25  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	PR target/113538
+	* config/riscv/riscv.cc (riscv_get_arg_info): Remove the flag.
+	(riscv_fntype_abi): Ditto.
+	* config/riscv/riscv.opt: Ditto.
+
+2024-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113574
+	* convert.cc (convert_to_integer_1) <case LSHIFT_EXPR>: Compare shift
+	count against TYPE_PRECISION rather than TYPE_SIZE.
+
+2024-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113572
+	* config/aarch64/aarch64-sve-builtins.cc (vector_cst_all_same):
+	Check VECTOR_CST_ELT instead of VECTOR_CST_ENCODED_ELT
+
+2024-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113550
+	* config/aarch64/aarch64-simd.md: In the movv8di splitter, check
+	whether each split instruction is a load that clobbers the source
+	address.  Emit that instruction last if so.
+
+2024-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113485
+	* config/aarch64/aarch64-simd.md (aarch64_zip1<mode>_low): New
+	pattern.
+	(<optab><Vnarrowq><mode>2): Use it instead of generating a
+	paradoxical subreg for the input.
+
+2024-01-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (get_all_predecessors): New function.
+	(pre_vsetvl::pre_global_vsetvl_info): Add LCM delete block all
+	predecessors dump information.
+
+2024-01-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::compute_vsetvl_def_data): Remove
+	redundant full available computation.
+	(pre_vsetvl::pre_global_vsetvl_info): Ditto.
+
+2024-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/generic.texi (VECTOR_CST): Fix typo - petterns -> patterns.
+	* doc/rtl.texi (CONST_VECTOR): Likewise.
+
+2024-01-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-opts.h (enum vsetvl_strategy_enum): Add optim-no-fusion option.
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::lazy_vsetvl): Ditto.
+	(pass_vsetvl::execute): Ditto.
+	* config/riscv/riscv.opt: Ditto.
+
+2024-01-25  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (@vec_concatz<mode>): Remove this define_insn pattern.
+	* config/loongarch/loongarch.cc (loongarch_expand_vector_group_init): Use vec_concat<mode>.
+
+2024-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113576
+	* tree-vect-loop.cc (vec_init_loop_exit_info): Only allow
+	exits with may_be_zero niters when its the last one.
+
+2024-01-25  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_symbolic_constant_p):
+	For symbols of type tls, non-zero Offset is not generated.
+
+2024-01-25  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-string.cc (expand_block_compare): Enable
+	P9 with m32 and mpowerpc64.
+
+2024-01-25  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Enable -mlam=u57 by default when compiled with
+	-fsanitize=hwaddress.
+
+2024-01-25  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_implied_info):
+	Remove {"ztso", "a"}.
+
+2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108007
+	PR ipa/112616
+	* cgraph.h (cgraph_edge): Add a parameter to
+	redirect_call_stmt_to_callee.
+	* ipa-param-manipulation.h (ipa_param_adjustments): Add a
+	parameter to modify_call.
+	(ipa_release_ssas_in_hash): Declare.
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): New
+	parameter killed_ssas, pass it to padjs->modify_call.
+	* ipa-param-manipulation.cc (purge_all_uses): New function.
+	(ipa_param_adjustments::modify_call): New parameter killed_ssas.
+	Instead of substituting uses, invoke purge_all_uses.  If
+	hash of killed SSAs has not been provided, create a temporary one
+	and release SSAs that have been added to it.
+	(compare_ssa_versions): New function.
+	(ipa_release_ssas_in_hash): Likewise.
+	* tree-inline.cc (redirect_all_calls): Create
+	id->killed_new_ssa_names earlier, pass it to edge redirection,
+	adjust a comment.
+	(copy_body): Release SSAs in id->killed_new_ssa_names.
+
+2024-01-24  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113486
+	* config/aarch64/aarch64.cc (aarch64_get_reg_raw_mode): For
+	TARGET_GENERAL_REGS_ONLY, return VOIDmode for non-GP_REGNUM_P regno.
+
+2024-01-24  Monk Chiang  <monk.chiang@sifive.com>
+
+	PR target/113095
+	* config/riscv/sfb.md: New splitters to rewrite single bit
+	sign extension as the condition to SFB instructions.
+
+2024-01-24  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/88345
+	* common.opt: (flimit-function-alignment): Reorder alphabeticaly
+	(fmin-function-alignment): New parameter.
+	* doc/invoke.texi: (-fmin-function-alignment): Document.
+	(-falign-functions,-falign-loops,-falign-labels): Mention that
+	aglinments are ignored in cold code.
+	* varasm.cc (assemble_start_function): Handle min-function-alignment.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/109636
+	* config/aarch64/aarch64-simd.md (<su_optab>div<mode>3,
+	mulv2di3): Remove.
+	* config/aarch64/iterators.md (VQDIV): Remove.
+	(SVE_FULL_SDI_SIMD, SVE_FULL_HSDI_SIMD_DI,
+	SVE_I_SIMD_DI): New.
+	(VPRED, sve_lane_con): Add V4SI and V2DI.
+	* config/aarch64/aarch64-sve.md (<optab><mode>3,
+	@aarch64_pred_<optab><mode>): Support Advanced SIMD types.
+	(mul<mode>3): New, split from <optab><mode>3.
+	(@aarch64_pred_<optab><mode>, *post_ra_<optab><mode>3): New.
+	* config/aarch64/aarch64-sve2.md (@aarch64_mul_lane_<mode>,
+	*aarch64_mul_unpredicated_<mode>): Change SVE_FULL_HSDI to
+	SVE_FULL_HSDI_SIMD_DI.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113552
+	* config/aarch64/aarch64.cc
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): Block simdlen 1.
+
+2024-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113490
+	* ipa-cp.cc (ipcp_lattice<valtype>::add_value): Bail out if value
+	count is equal or greater than the limit.  Use the limit from the
+	callee.
+
+2024-01-24  YunQiang Su  <syq@gcc.gnu.org>
+
+	* configure.ac: Detect the explicit relocs support for
+	mips, and define C macro MIPS_EXPLICIT_RELOCS.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* doc/invoke.texi(MIPS Options): Add -mexplicit-relocs.
+	* config/mips/mips-opts.h: Define enum mips_explicit_relocs.
+	* config/mips/mips.cc(mips_set_compression_mode): Sorry if
+	!TARGET_EXPLICIT_RELOCS instead of just set it.
+	* config/mips/mips.h: Define TARGET_EXPLICIT_RELOCS and
+	TARGET_EXPLICIT_RELOCS_PCREL with mips_opt_explicit_relocs.
+	* config/mips/mips.opt: Introduce -mexplicit-relocs= option
+	and define -m(no-)explicit-relocs as aliases.
+
+2024-01-24  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.opt (-mearly-ldp-fusion): Set default
+	to 1.
+	(-mlate-ldp-fusion): Likewise.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-loop.cc (vect_get_vect_def,
+	vect_create_epilog_for_reduction): Rename main_exit_p to
+	last_val_reduc_p.
+
+2024-01-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113364
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): If all exits all
+	early exits then we must reduce from the first offset for all of them.
+
+2024-01-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113495
+	* config/riscv/riscv-vsetvl.cc (get_expr_id): Remove.
+	(get_regno): Ditto.
+	(get_bb_index): Ditto.
+	(pre_vsetvl::compute_avl_def_data): Ditto.
+	(pre_vsetvl::earliest_fuse_vsetvl_info): Fix large memory usage.
+	(pre_vsetvl::pre_global_vsetvl_info): Ditto.
+
+2024-01-23  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100942
+	* ccmp.cc (ccmp_candidate_p): Add outer argument.
+	Allow if the outer is true and the lhs is used more
+	than once.
+	(expand_ccmp_expr): Update call to ccmp_candidate_p.
+	* expr.h (expand_expr_real_gassign): Declare.
+	* expr.cc (expand_expr_real_gassign): New function, split out from...
+	(expand_expr_real_1): ...here.
+	* cfgexpand.cc (expand_gimple_stmt_1): Use expand_expr_real_gassign.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113089
+	* config/aarch64/aarch64-ldp-fusion.cc (reset_debug_use): New.
+	(fixup_debug_use): New.
+	(fixup_debug_uses_trailing_add): New.
+	(fixup_debug_uses): New. Use it ...
+	(ldp_bb_info::fuse_pair): ... here.
+	(try_promote_writeback): Call fixup_debug_uses_trailing_add to
+	fix up debug uses of the base register that are affected by
+	folding in the trailing add insn.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113089
+	* config/aarch64/aarch64-ldp-fusion.cc (ldp_bb_info::fuse_pair):
+	Update trailing nondebug uses of the base register in the case
+	of cancelling writeback.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113089
+	* rtl-ssa/accesses.h (use_info::next_debug_insn_use): New.
+	(debug_insn_use_iterator): New.
+	(set_info::first_debug_insn_use): New.
+	(set_info::debug_insn_uses): New.
+	* rtl-ssa/member-fns.inl (use_info::next_debug_insn_use): New.
+	(set_info::first_debug_insn_use): New.
+	(set_info::debug_insn_uses): New.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113356
+	* config/aarch64/aarch64-ldp-fusion.cc (ldp_bb_info::try_fuse_pair):
+	Don't record hazards against the opposite insn in the pair.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113070
+	* config/aarch64/aarch64-ldp-fusion.cc
+	(struct stp_change_builder): New.
+	(decide_stp_strategy): Reanme to ...
+	(try_repurpose_store): ... this.
+	(ldp_bb_info::fuse_pair): Refactor to use stp_change_builder to
+	construct stp changes.  Fix up uses when inserting new stp insns.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113070
+	* rtl-ssa.h: Include hash-set.h.
+	* rtl-ssa/changes.cc (function_info::finalize_new_accesses): Add
+	new_sets parameter and use it to keep track of new user-created sets.
+	(function_info::apply_changes_to_insn): Also call add_def on new sets.
+	(function_info::change_insns): Add hash_set to keep track of new
+	user-created defs.  Plumb it through.
+	* rtl-ssa/functions.h: Add hash_set parameter to finalize_new_accesses and
+	apply_changes_to_insn.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113070
+	* rtl-ssa/accesses.cc (function_info::create_use): New.
+	* rtl-ssa/changes.cc (function_info::finalize_new_accesses):
+	Ensure new uses end up referring to permanent defs.
+	* rtl-ssa/functions.h (function_info::create_use): Declare.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113070
+	* rtl-ssa/changes.cc (function_info::change_insns): Split out the call
+	to finalize_new_accesses from the backwards placement loop, run it
+	forwards in a separate loop.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113552
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Use
+	floor_log2 instead of exact_log2 on the number of calls.
+
+2024-01-23  Jeff Law  <jlaw@ventanamicro.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/ia64.cc (ia64_start_function): Add ATTRIBUTE_UNUSED to
+	decl.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Separate single and multi-exit case when creating PHIs between
+	the main and epilogue.
+
+2024-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112989
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (build_one): Skip
+	MODE_single variants of functions that don't take tuple arguments.
+
+2024-01-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/113114
+	* config/aarch64/aarch64-ldp-fusion.cc (try_promote_writeback):
+	Don't assert recog success, just punt if the writeback pair
+	isn't recognized.
+
+2024-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Add
+	ATTRIBUTE_UNUSED to decl.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/107058
+	* dwarf2out.cc (dwarf2out_die_ref_for_decl): Gracefully
+	handle unexpected but bogus DIE contexts when not checking
+	enabled.
+
+2024-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113462
+	* fold-const.cc (native_interpret_int): Don't punt if total_bytes
+	is larger than HOST_BITS_PER_DOUBLE_INT / BITS_PER_UNIT.
+	(fold_view_convert_expr): Use XALLOCAVEC buffers for types with
+	sizes between 129 and 8192 bytes.
+
+2024-01-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_explicit_relocs_p):
+	If la_opt_explicit_relocs is EXPLICIT_RELOCS_AUTO, return false
+	for SYMBOL_TLS_LDM and SYMBOL_TLS_GD.
+	(loongarch_call_tls_get_addr): Do not split symbols of
+	SYMBOL_TLS_LDM or SYMBOL_TLS_GD if la_opt_explicit_relocs is
+	EXPLICIT_RELOCS_AUTO.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	* alias.cc (known_base_value_p): Remove.
+	(find_base_value): Remove PLUS/MINUS handling
+	when both operands are not CONST_INT_P.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/113255
+	* alias.cc (find_base_term): Remove PLUS/MINUS handling
+	when both operands are not CONST_INT_P.
+
+2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/112718
+	* dwarf2out.cc (dwarf2out_finish): Reset all type units
+	for the fat part of an LTO compile.
+
+2024-01-23  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* doc/sourcebuild.texi: Add attributes for keywords.
+
+2024-01-23  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/90463
+	* doc/invoke.texi (Warning Options): Correct lists of options
+	enabled by -Wall and -Wextra by checking against common.opt
+	and c-family/c.opt.
+
+2024-01-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113030
+	* config/arm/parsecpu.awk (check_cpu): Use cpu_opt_alias
+	instead of cpu_optaliases.
+	(check_arch): Use arch_opt_alias instead of arch_optaliases.
+
+2024-01-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (splat_to_scalar_move_p): New function.
+	* config/riscv/riscv-v.cc (splat_to_scalar_move_p): Ditto.
+	* config/riscv/vector.md: Simplify vmv.v.x. into vmv.s.x.
+
+2024-01-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109092
+	* config/riscv/riscv.md: Use reg instead of subreg.
+
+2024-01-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR other/111966
+	* config/gcn/mkoffload.cc (elf_arch): Change default to gfx900
+	to match the compiler default.
+	(simple_object_copy_lto_debug_sections): Never unlink the outfile
+	on error as the caller does so.
+	(maybe_unlink, compile_native): Use %<...%> and %qs in fatal_error.
+	(main): Likewise. Fix 'mkoffload.dbg.o' cleanup.
+
+2024-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113373
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Create LC PHIs in the exit blocks where necessary.
+	* tree-vect-loop.cc (vectorizable_live_operation): Do not try
+	to handle missing LC PHIs.
+	(find_connected_edge): Remove.
+	(vect_create_epilog_for_reduction): Cleanup use of auto_vec.
+
+2024-01-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix vfirst/vmsbf/vmsof ratio attributes.
+
+2024-01-22  xuli  <xuli1@eswincomputing.com>
+
+	PR target/113420
+	* config/riscv/riscv-vector-builtins.cc (has_vxrm_or_frm_p):remove.
+	(registered_function::overloaded_hash):refactor.
+	(resolve_overloaded_builtin):avoid internal ICE.
+
+2024-01-21  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/82420
+	PR target/111279
+	* calls.cc (emit_library_call_value_1): Pass valid TYPE
+	to emit_push_insn.
+	* expr.cc (emit_push_insn): Likewise.
+
+2024-01-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_init_cumulative_args): Install
+	correcction version of last change.
+
+2024-01-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_init_cumulative_args): Update and
+	fix bugs in signature.
+
+2024-01-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/111267
+	* fwprop.cc (fwprop_propagation::profitabe_p): Rename
+	profitable_p method to likely_profitable_p.
+	(try_fwprop_subst_node): Update call to likely_profitable_p.
+	Only bail-out early when !prop.likely_profitable_p for instructions
+	that are not single sets.  When comparing costs, bail-out if the
+	cost is unchanged and !prop.likely_profitable_p.
+
+2024-01-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/90464
+	* doc/invoke.texi (Warning Options): Document that -Wunused-parameter
+	isn't enabled by -Wunused unless -Wextra is provided, and that
+	-Wunused does enable -Wunused-const-variable=1 for C.  Clarify that
+	-Wunused doesn't enable -Wunused-* options documented as behaving
+	otherwise, and list them explicitly.
+
+2024-01-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/109708
+	* doc/invoke.texi (Warning Options): Fix broken example and
+	clean up/reorganize the others.  Also describe what the short-form
+	options mean.
+
+2024-01-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/102998
+	* doc/invoke.texi (Option Summary): Add -Warray-parameter.
+	(Warning Options): Correct/edit discussion of -Warray-parameter
+	to make the first example less confusing, and fill in missing info.
+
+2024-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113462
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast):
+	Handle rhs1 INTEGER_CST like SSA_NAME.
+
+2024-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113491
+	* tree-switch-conversion.cc (switch_conversion::build_constructors):
+	If elt.index has precision higher than sizetype, fold_convert it to
+	sizetype.
+	(switch_conversion::array_value_type): Return type if type is
+	BITINT_TYPE with precision above MAX_FIXED_MODE_SIZE or with BLKmode.
+	(switch_conversion::build_arrays): Use unsigned_type_for rather than
+	lang_hooks.types.type_for_mode if utype is BITINT_TYPE with precision
+	above MAX_FIXED_MODE_SIZE or with BLKmode.  If utype has precision
+	higher than sizetype, use sizetype as tidx type and fold_convert the
+	subtraction to sizetype.
+
+2024-01-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_init_cumulative_args): Suppress warning.
+	(riscv_vector_mode_supported_any_target_p): Ditto.
+
+2024-01-19  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/110934
+	* config/m68k/m68k.cc (m68k_zero_call_used_regs): New function.
+	(TARGET_ZERO_CALL_USED_REGS): Define.
+
+2024-01-19  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/108640
+	* config/m68k/m68k.cc (output_andsi3): Use QImode for
+	address adjusted for 1-byte RMW access.
+	(output_iorsi3): Likewise.
+	(output_xorsi3): Likewise.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/invoke.texi (RISC-V Options): Add list of supported
+	extensions.
+
+2024-01-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113495
+	* config/riscv/riscv-protos.h (RVV_VLMAX): Change to regno_reg_rtx[X0_REGNUM].
+	(RVV_VUNDEF): Ditto.
+	* config/riscv/riscv-vsetvl.cc: Add timevar.
+
+2024-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR debug/113488
+	* lto-streamer-in.cc (lto_read_tree_1): When there isn't
+	an early DIE but there should be, do not pretend there is.
+
+2024-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113494
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Handle endless loop on exit.  Handle re-allocated PHI.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113464
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Don't try to
+	optimize loads into GIMPLE_ASM stmts.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113463
+	* gimple-ssa-warn-restrict.cc (builtin_memref::extend_offset_range):
+	Only look through NOP_EXPRs if rhs1 doesn't have wider type than
+	lhs.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113459
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::push_partial_def): Use
+	TREE_INT_CST_LOW of TYPE_SIZE_UNIT rather than GET_MODE_SIZE
+	of SCALAR_INT_TYPE_MODE if type has BLKmode.
+	(vn_reference_lookup_3): Likewise.  Formatting fix.
+
+2024-01-19  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.cc (discover_nonconstant_array_refs_r): Force non-BLKmode
+	VAR_DECLs referenced in BLKmode VIEW_CONVERT_EXPRs into memory.
+	* expr.cc (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: Do nothing
+	but adjust_address also for BLKmode mode and MEM op0.
+
+2024-01-19  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc: Add Zihpm and Zicnttr
+	extensions.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/invoke.texi (RISC-V Options): Document the syntax of -march.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_std_ext): Remove.
+	(riscv_subset_list::parse_multiletter_ext): Remove.
+	* config/riscv/riscv-subset.h
+	(riscv_subset_list::parse_std_ext): Remove.
+	(riscv_subset_list::parse_multiletter_ext): Remove.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_single_std_ext): New parameter.
+	(riscv_subset_list::parse_single_multiletter_ext): Ditto.
+	(riscv_subset_list::parse_single_ext): Ditto.
+	(riscv_subset_list::parse): Relax the order for the input of ISA
+	string.
+	* config/riscv/riscv-subset.h
+	(riscv_subset_list::parse_single_std_ext): New parameter.
+	(riscv_subset_list::parse_single_multiletter_ext): Ditto.
+	(riscv_subset_list::parse_single_ext): Ditto.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_base_ext): New.
+	(riscv_subset_list::parse): Extract part of logic into
+	riscv_subset_list::parse_base_ext.
+	* config/riscv/riscv-subset.h (riscv_subset_list::parse_base_ext):
+	New.
+
+2024-01-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_override_options_internal): Tweak
+	sorry message.
+
+2024-01-19  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/vector-crypto.md (UNSPEC_CLMUL): Rename to
+	UNSPEC_CLMUL_VC.
+
+2024-01-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/110029
+	* doc/extend.texi (Common Variable Attributes): Explain what
+	happens when multiple variables with cleanups are in the same scope.
+
+2024-01-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR ipa/108470
+	* doc/extend.texi (Common Function Attributes): Document that
+	noinline also disables some interprocedural optimizations and
+	improve flow to the part about using inline asm instead to
+	disable calls from being optimized away completely.  Remove the
+	sentence that says noipa is mainly for internal compiler testing.
+
+2024-01-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR tree-optimization/69807
+	* config/pa/pa.cc (pa_option_override): Set flag_pie on TARGET_64BIT.
+
+2024-01-18  Brian Inglis  <Brian.Inglis@Shaw.ca>
+
+	PR target/108521
+	* doc/invoke.texi (Option Summary): Remove -mcygwin and -mno-cygwin
+	from x86 Windows Options.
+
+2024-01-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/107942
+	* doc/extend.texi (C Extensions): Add new section to menu.
+	(Function Attributes):  Move dangling index entries to....
+	(Const and Volatile Functions): New section.
+
+2024-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/112684
+	* toplev.cc (toplev::main): Don't ICE in
+	-fdiagnostics-generate-patch when exiting after options,
+	since no edit context will have been created.
+
+2024-01-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_store): Do not pre-allocate
+	operands vector.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Emit ENABLE_DARWIN_AT_RPATH into site.exp
+	when ENABLE_DARWIN_AT_RPATH_TRUE is not '#'.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/thead.cc
+	(th_asm_output_opcode): Rewrite some instructions.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.md (none,thv,rvv): New attribute.
+	(no,yes): Add an attribute to disable alternative
+	for xtheadvector or RVV1.0.
+	* config/riscv/vector.md:
+	Disable alternatives that destination register overlaps
+	source register group for xtheadvector.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class th_loadstore_width): Define new builtin bases.
+	(class th_extract): Define new builtin bases.
+	(BASE): Define new builtin bases.
+	* config/riscv/riscv-vector-builtins-bases.h:
+	Define new builtin class.
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(struct th_loadstore_width_def): Define new builtin shapes.
+	(struct th_indexed_loadstore_width_def):
+	Define new builtin shapes.
+	(struct th_extract_def): Define new builtin shapes.
+	(SHAPE): Define new builtin shapes.
+	* config/riscv/riscv-vector-builtins-shapes.h:
+	Define new builtin shapes.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_FUNCTION):
+	Redefine DEF_RVV_FUNCTION for XTheadVector special intrinsics.
+	* config/riscv/riscv-vector-builtins.h
+	(enum required_ext): Add new XTheadVector member.
+	(struct function_group_info): Likewise.
+	* config/riscv/t-riscv:
+	Add thead-vector-builtins-functions.def
+	* config/riscv/thead-vector.md
+	(@pred_mov_width<vlmem_op_attr><mode>): Add new patterns.
+	(*pred_mov_width<vlmem_op_attr><mode>): Likewise.
+	(@pred_store_width<vlmem_op_attr><mode>): Likewise.
+	(@pred_strided_load_width<vlmem_op_attr><mode>): Likewise.
+	(@pred_strided_store_width<vlmem_op_attr><mode>): Likewise.
+	(@pred_indexed_load_width<vlmem_op_attr><mode>): Likewise.
+	(@pred_th_extract<mode>): Likewise.
+	(*pred_th_extract<mode>): Likewise.
+	* config/riscv/thead-vector-builtins-functions.def: New file.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config.gcc:  Add files for XTheadVector intrinsics.
+	* config/riscv/autovec.md: Guard XTheadVector.
+	* config/riscv/predicates.md: Disable immediate vl
+	for XTheadVector.
+	* config/riscv/riscv-c.cc (riscv_pragma_intrinsic):
+	Add pragma for XTheadVector.
+	* config/riscv/riscv-string.cc (riscv_expand_block_move):
+	Guard XTheadVector.
+	* config/riscv/riscv-v.cc (vls_mode_valid_p):
+	Avoid autovec.
+	* config/riscv/riscv-vector-builtins-bases.cc:
+	Do not normalize vsetvl instructions for XTheadVector.
+	* config/riscv/riscv-vector-builtins-shapes.cc (check_type):
+	New check type function.
+	(build_one): Adjust for XTheadVector.
+	* config/riscv/riscv-vector-switch.def (ENTRY):
+	Disable fractional mode for the XTheadVector extension.
+	(TUPLE_ENTRY): Likewise.
+	* config/riscv/riscv.cc (riscv_v_adjust_bytesize):
+	Guard XTheadVector.
+	(riscv_preferred_simd_mode): Likewsie.
+	(riscv_autovectorize_vector_modes): Likewise.
+	(riscv_vector_mode_supported_any_target_p): Likewise.
+	(TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P): Likewise.
+	* config/riscv/thead.cc (th_asm_output_opcode):
+	Rewrite vsetvl instructions.
+	* config/riscv/vector.md:
+	Include thead-vector.md and change fractional LMUL
+	into 1 for vbool.
+	* config/riscv/riscv_th_vector.h: New file.
+	* config/riscv/thead-vector.md: New file.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-protos.h (riscv_asm_output_opcode):
+	Add new function to add assembler insn code prefix/suffix.
+	(th_asm_output_opcode):
+	Add Thead function to add assembler insn code prefix/suffix.
+	* config/riscv/riscv.cc (riscv_asm_output_opcode):
+	Implement function to add assembler insn code prefix/suffix.
+	* config/riscv/riscv.h (ASM_OUTPUT_OPCODE):
+	Add new function to add assembler insn code prefix/suffix.
+	* config/riscv/thead.cc (th_asm_output_opcode):
+	Implement Thead function to add assembler insn code
+	prefix/suffix.
+
+2024-01-18  Jun Sha (Joshua)  <cooper.joshua@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+	    Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse): Add new vendor extension.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins):
+	Add test marco.
+	* config/riscv/riscv.opt:  Add new mask.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DARWIN_RPATH_SPEC): Arrange for the %P spec
+	to be conditional on macosx-version-min.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_objc1_section): Use the correct
+	meta-data version for constant strings.
+	(machopic_select_section): Assert if we fail to handle CFString
+	sections as Obejctive-C meta-data or drectly.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lto-section-names.h (OFFLOAD_SECTION_NAME_PREFIX,
+	OFFLOAD_VAR_TABLE_SECTION_NAME, OFFLOAD_FUNC_TABLE_SECTION_NAME,
+	OFFLOAD_IND_FUNC_TABLE_SECTION_NAME): Provide Mach-O syntax
+	versions when the object format is Mach-O.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105522
+	* config/darwin.cc (machopic_select_section): Handle C and C++
+	CFStrings.
+	(darwin_rename_builtins): Move this out of the CFString code.
+	(darwin_libc_has_function): Likewise.
+	(darwin_build_constant_cfstring): Create an anonymous var to
+	hold each CFString.
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Handle constant
+	CFstrings.
+
+2024-01-18  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	PR bootstrap/113445
+	* haifa-sched.cc (dep_list_size): Make global.
+	* sched-deps.cc (find_inc): Use instead of sd_lists_size().
+	* sched-int.h (dep_list_size): Declare.
+
+2024-01-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/110422
+	* tree-sra.cc (scan_function): Disqualify bases of operands of asm
+	gotos.
+
+2024-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113475
+	* gimple-range-phi.h (phi_analyzer::m_phi_groups): New.
+	* gimple-range-phi.cc (phi_analyzer::phi_analyzer): Initialize.
+	(phi_analyzer::~phi_analyzer): Deallocate and free collected
+	phi_grous.
+	(phi_analyzer::process_phi): Record allocated phi_groups.
+
+2024-01-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_store): Do not allocate
+	storage for gvec_oprnds elements.
+
+2024-01-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vec_init_loop_exit_info): Adjust comment,
+	prefer all later exits we can handle.
+	(vect_analyze_loop_form): Free the allocated loop body.
+	Adjust comments.
+
+2024-01-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-log.cc: Tabify.
+
+2024-01-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Support vi variant.
+
+2024-01-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-devices.cc: Tabify.
+
+2024-01-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-c.cc: Tabify.
+
+2024-01-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/driver-avr.cc: Tabify.
+
+2024-01-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-texi.cc: Tabify.
+
+2024-01-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc: Tabify.
+
+2024-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/riscv/riscv.opt (mshorten-memrefs, mrelax, mcsr-check,
+	minline-strcmp, minline-strncmp, minline-strlen,
+	-param=riscv-vector-abi): Remove Bool keywords.
+
+2024-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/113122
+	* config/i386/i386.cc (x86_function_profiler): Add -masm=intel
+	support.  Add missing space after , in emitted assembly in some
+	cases.  Formatting fixes.
+
+2024-01-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (movsi_internal): Remove
+	constraint z.
+
+2024-01-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc (diagnose_rodata_in_ram): Fix typo
+	in the diagnostic, and capitalize the device name.
+	(print_mcu): Generate specs such that:
+	<*check_rodata_in_ram>: New.
+	<*cc1_misc>: Use check_rodata_in_ram instead of cc1_rodata_in_ram.
+	<*link_misc>: Use check_rodata_in_ram instead of link_rodata_in_ram.
+	<*cc1_rodata_in_ram, *link_rodata_in_ram>: Remove.
+
+2024-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/113399
+	* common.opt (ffold-mem-offsets): Remove Target and Bool keywords, add
+	Common and Optimization.
+
+2024-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113431
+	* tree-vect-data-refs.cc (vect_preserves_scalar_order_p):
+	When there is an invariant load we might not preserve
+	scalar order.
+
+2024-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113374
+	* tree-ssa-operands.h (SET_PHI_ARG_DEF_ON_EDGE): New.
+	* tree-vect-loop.cc (move_early_exit_stmts): Update
+	virtual LC PHIs.
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Refactor.  Preserve virtual LC PHIs on all exits.
+
+2024-01-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_split_symbol):
+	Assign the '/u' attribute to the mem.
+
+2024-01-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/110847
+	* doc/invoke.texi (Option Summary): Document negative forms of
+	-Wtsan and -Wxor-used-as-pow.
+	(Warning Options): Likewise.
+
+2024-01-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113429
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::earliest_fuse_vsetvl_info): Fix bug.
+
+2024-01-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Common Function Attributes): Re-alphabetize
+	the table.
+	(Common Variable Attributes): Likewise.
+	(Common Type Attributes): Likewise.
+
 2024-01-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/111659

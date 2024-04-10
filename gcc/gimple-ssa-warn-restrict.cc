@@ -391,7 +391,8 @@ builtin_memref::extend_offset_range (tree offset)
       tree type;
       if (is_gimple_assign (stmt)
 	  && (type = TREE_TYPE (gimple_assign_rhs1 (stmt)))
-	  && INTEGRAL_TYPE_P (type))
+	  && INTEGRAL_TYPE_P (type)
+	  && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (offset)))
 	{
 	  tree_code code = gimple_assign_rhs_code (stmt);
 	  if (code == NOP_EXPR)

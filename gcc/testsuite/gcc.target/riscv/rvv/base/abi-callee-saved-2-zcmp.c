@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -march=rv64gcv_zfh_zca_zcmp -mabi=lp64d --param=riscv-vector-abi -fno-shrink-wrap-separate" } */
+/* { dg-options "-O1 -march=rv64gcv_zfh_zca_zcmp -mabi=lp64d -fno-shrink-wrap-separate" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include <riscv_vector.h>

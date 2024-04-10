@@ -230,7 +230,7 @@ do { \
 
 #if defined (__GCN3__) || defined (__GCN5__) \
     || defined (__CDNA1__) || defined (__CDNA2__) \
-    || defined (__RDNA2__)
+    || defined (__RDNA2__) || defined (__RDNA3__)
 #define CDNA3_PLUS 0
 #else
 #define CDNA3_PLUS 1

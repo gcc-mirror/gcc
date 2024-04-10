@@ -6061,10 +6061,17 @@ dwarf2out_die_ref_for_decl (tree decl, const char **sym,
     die = die->die_parent;
   /* For the containing CU DIE we compute a die_symbol in
      compute_comp_unit_symbol.  */
-  gcc_assert (die->die_tag == DW_TAG_compile_unit
-	      && die->die_id.die_symbol != NULL);
-  *sym = die->die_id.die_symbol;
-  return true;
+  if (die->die_tag == DW_TAG_compile_unit)
+    {
+      gcc_assert (die->die_id.die_symbol != NULL);
+      *sym = die->die_id.die_symbol;
+      return true;
+    }
+  /* While we can gracefully handle running into say a type unit
+     we don't really want and consider this a bug.  */
+  if (flag_checking)
+    gcc_unreachable ();
+  return false;
 }
 
 /* Add a reference of kind ATTR_KIND to a DIE at SYMBOL + OFFSET to DIE.  */
@@ -32276,24 +32283,12 @@ dwarf2out_finish (const char *filename)
       reset_dies (comp_unit_die ());
       for (limbo_die_node *node = cu_die_list; node; node = node->next)
 	reset_dies (node->die);
-
-      hash_table<comdat_type_hasher> comdat_type_table (100);
       for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
 	{
-	  comdat_type_node **slot
-	      = comdat_type_table.find_slot (ctnode, INSERT);
-
-	  /* Don't reset types twice.  */
-	  if (*slot != HTAB_EMPTY_ENTRY)
-	    continue;
-
 	  /* Remove the pointer to the line table.  */
 	  remove_AT (ctnode->root_die, DW_AT_stmt_list);
-
 	  if (debug_info_level >= DINFO_LEVEL_TERSE)
 	    reset_dies (ctnode->root_die);
-
-	  *slot = ctnode;
 	}
 
       /* Reset die CU symbol so we don't output it twice.  */

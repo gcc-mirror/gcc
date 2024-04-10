@@ -9089,7 +9089,6 @@ add_imported_namespace (tree ctx, tree name, location_t loc, unsigned import,
   if (!decl)
     {
       decl = make_namespace (ctx, name, loc, inline_p);
-      DECL_MODULE_IMPORT_P (decl) = true;
       make_namespace_finish (decl, slot, true);
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)

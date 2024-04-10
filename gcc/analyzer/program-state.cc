@@ -560,9 +560,10 @@ sm_state_map::on_svalue_leak (const svalue *sval,
 {
   if (state_machine::state_t state = get_state (sval, ctxt->m_ext_state))
     {
-      if (!m_sm.can_purge_p (state))
+      if (m_sm.can_purge_p (state))
+	m_map.remove (sval);
+      else
 	ctxt->on_state_leak (m_sm, sval, state);
-      m_map.remove (sval);
     }
 }
 
@@ -572,6 +573,7 @@ sm_state_map::on_svalue_leak (const svalue *sval,
 void
 sm_state_map::on_liveness_change (const svalue_set &live_svalues,
 				  const region_model *model,
+				  const extrinsic_state &ext_state,
 				  impl_region_model_context *ctxt)
 {
   svalue_set svals_to_unset;
@@ -605,9 +607,68 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
       ctxt->on_state_leak (m_sm, sval, e.m_state);
     }
 
+  sm_state_map old_sm_map = *this;
+
   for (svalue_set::iterator iter = svals_to_unset.begin ();
        iter != svals_to_unset.end (); ++iter)
     m_map.remove (*iter);
+
+  /* For state machines like "taint" where states can be
+     alt-inherited from other svalues, ensure that state purging doesn't
+     make us lose sm-state.
+
+     Consider e.g.:
+
+     make_tainted(foo);
+     if (foo.field > 128)
+       return;
+     arr[foo.field].f1 = v1;
+
+     where the last line is:
+
+     (A): _t1 = foo.field;
+     (B): _t2 = _t1 * sizeof(arr[0]);
+     (C): [arr + _t2].f1 = val;
+
+     At (A), foo is 'tainted' and foo.field is 'has_ub'.
+     After (B), foo.field's value (in _t1) is no longer directly
+     within LIVE_SVALUES, so with state purging enabled, we would
+     erroneously purge the "has_ub" state from the svalue.
+
+     Given that _t2's value's state comes from _t1's value's state,
+     we need to preserve that information.
+
+     Hence for all svalues that have had their explicit sm-state unset,
+     having their sm-state being unset, determine if doing so has changed
+     their effective state, and if so, explicitly set their state.
+
+     For example, in the above, unsetting the "has_ub" for _t1's value means
+     that _t2's effective value changes from "has_ub" (from alt-inherited
+     from _t1's value) to "tainted" (inherited from "foo"'s value).
+
+     For such cases, preserve the effective state by explicitly setting the
+     new state.  In the above example, this means explicitly setting _t2's
+     value to the value ("has_ub") it was previously alt-inheriting from _t1's
+     value.  */
+  if (m_sm.has_alt_get_inherited_state_p ())
+    {
+      auto_vec<const svalue *> svalues_needing_state;
+      for (auto unset_sval : svals_to_unset)
+	{
+	  const state_machine::state_t old_state
+	    = old_sm_map.get_state (unset_sval, ext_state);
+	  const state_machine::state_t new_state
+	    = get_state (unset_sval, ext_state);
+	  if (new_state != old_state)
+	    svalues_needing_state.safe_push (unset_sval);
+	}
+      for (auto sval : svalues_needing_state)
+	{
+	  const state_machine::state_t old_state
+	    = old_sm_map.get_state (sval, ext_state);
+	  impl_set_state (sval, old_state, nullptr, ext_state);
+	}
+    }
 }
 
 /* Purge state from SVAL (in response to a call to an unknown function).  */

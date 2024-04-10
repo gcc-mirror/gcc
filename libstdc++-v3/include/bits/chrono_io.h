@@ -681,6 +681,7 @@ namespace __format
 	    return __fc.locale();
 	}
 
+      // Format for empty chrono-specs, e.g. "{}" (C++20 [time.format] p6).
       // TODO: consider moving body of every operator<< into this function
       // and use std::format("{}", t) to implement those operators. That
       // would avoid std::format("{}", t) calling operator<< which calls
@@ -702,6 +703,22 @@ namespace __format
 
 	      if constexpr (__is_specialization_of<_Tp, __utc_leap_second>)
 		__os << __t._M_date << ' ' << __t._M_time;
+	      else if constexpr (chrono::__is_time_point_v<_Tp>)
+		{
+		  // Need to be careful here because not all specializations
+		  // of chrono::sys_time can be written to an ostream.
+		  // For the specializations of time_point that can be
+		  // formatted with an empty chrono-specs, either it's a
+		  // sys_time with period greater or equal to days:
+		  if constexpr (is_convertible_v<_Tp, chrono::sys_days>)
+		    __os << _S_date(__t);
+		  else // Or it's formatted as "{:L%F %T}":
+		    {
+		      auto __days = chrono::floor<chrono::days>(__t);
+		      __os << chrono::year_month_day(__days) << ' '
+			 << chrono::hh_mm_ss(__t - __days);
+		    }
+		}
 	      else
 		{
 		  if constexpr (chrono::__is_duration_v<_Tp>)
@@ -1122,39 +1139,43 @@ namespace __format
 				   'S', 'O');
 	    }
 
-	  __out = __format::__write(std::move(__out),
-				    _S_two_digits(__hms.seconds().count()));
-	  if constexpr (__hms.fractional_width != 0)
+	  if constexpr (__hms.fractional_width == 0)
+	    __out = __format::__write(std::move(__out),
+				      _S_two_digits(__hms.seconds().count()));
+	  else
 	    {
 	      locale __loc = _M_locale(__ctx);
+	      auto __s = __hms.seconds();
 	      auto __ss = __hms.subseconds();
 	      using rep = typename decltype(__ss)::rep;
 	      if constexpr (is_floating_point_v<rep>)
 		{
+		  chrono::duration<rep> __fs = __s + __ss;
 		  __out = std::format_to(std::move(__out), __loc,
-					 _GLIBCXX_WIDEN("{:.{}Lg}"),
-					 __ss.count(),
-					 __hms.fractional_width);
-		}
-	      else if constexpr (is_integral_v<rep>)
-		{
-		  const auto& __np
-		    = use_facet<numpunct<_CharT>>(__loc);
-		  __out = std::format_to(std::move(__out),
-					 _GLIBCXX_WIDEN("{}{:0{}}"),
-					 __np.decimal_point(),
-					 __ss.count(),
+					 _GLIBCXX_WIDEN("{:#0{}.{}Lf}"),
+					 __fs.count(),
+					 3 + __hms.fractional_width,
 					 __hms.fractional_width);
 		}
 	      else
 		{
 		  const auto& __np
 		    = use_facet<numpunct<_CharT>>(__loc);
+		  __out = __format::__write(std::move(__out),
+					    _S_two_digits(__s.count()));
 		  *__out++ = __np.decimal_point();
-		  auto __str = std::format(_S_empty_spec, __ss.count());
-		  __out = std::format_to(_GLIBCXX_WIDEN("{:0>{}s}"),
-							__str,
-							__hms.fractional_width);
+		  if constexpr (is_integral_v<rep>)
+		    __out = std::format_to(std::move(__out),
+					   _GLIBCXX_WIDEN("{:0{}}"),
+					   __ss.count(),
+					   __hms.fractional_width);
+		  else
+		    {
+		      auto __str = std::format(_S_empty_spec, __ss.count());
+		      __out = std::format_to(_GLIBCXX_WIDEN("{:0>{}s}"),
+					     __str,
+					     __hms.fractional_width);
+		    }
 		}
 	    }
 	  return __out;
@@ -1911,7 +1932,13 @@ namespace __format
       template<typename _ParseContext>
 	constexpr typename _ParseContext::iterator
 	parse(_ParseContext& __pc)
-	{ return _M_f._M_parse(__pc, __format::_ZonedDateTime); }
+	{
+	  auto __next = _M_f._M_parse(__pc, __format::_ZonedDateTime);
+	  if constexpr (!__stream_insertable)
+	    if (_M_f._M_spec._M_chrono_specs.empty())
+	      __format::__invalid_chrono_spec(); // chrono-specs can't be empty
+	  return __next;
+	}
 
       template<typename _FormatContext>
 	typename _FormatContext::iterator
@@ -1920,6 +1947,10 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
+      static constexpr bool __stream_insertable
+	= requires (basic_ostream<_CharT>& __os,
+		    chrono::sys_time<_Duration> __t) { __os << __t; };
+
       __format::__formatter_chrono<_CharT> _M_f;
     };
 

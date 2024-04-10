@@ -145,6 +145,14 @@ struct mips_cpu_info {
 		      || TARGET_MICROMIPS)		\
 		     && mips_cb != MIPS_CB_NEVER)
 
+/* True if assembler support %gp_rel etc.  */
+#define TARGET_EXPLICIT_RELOCS \
+  (mips_opt_explicit_relocs >= MIPS_EXPLICIT_RELOCS_BASE)
+
+/* True if assembler support %pcrel_hi/%pcrel_lo.  */
+#define TARGET_EXPLICIT_RELOCS_PCREL \
+  (mips_opt_explicit_relocs >= MIPS_EXPLICIT_RELOCS_PCREL)
+
 /* True if the output file is marked as ".abicalls; .option pic0"
    (-call_nonpic).  */
 #define TARGET_ABICALLS_PIC0 \

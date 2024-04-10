@@ -1,7 +1,7 @@
 /* Test BTF generation for enums.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O0 -gbtf -fno-short-enums -dA" } */
+/* { dg-options "-O0 -gbtf -gno-strict-dwarf -fno-short-enums -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x6000004\[\t \]+\[^\n\]*btt_info" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0x86000003\[\t \]+\[^\n\]*btt_info" 1 } } */

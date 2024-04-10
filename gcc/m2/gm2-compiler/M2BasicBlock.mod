@@ -37,8 +37,7 @@ FROM M2Quads IMPORT IsReferenced, IsConditional, IsUnConditional, IsCall,
                     GetNextQuad, GetQuad, QuadOperator,
                     SubQuad, DisplayQuadRange ;
 
-FROM M2Scope IMPORT ScopeBlock, ForeachScopeBlockDo ;
-FROM M2GenGCC IMPORT ConvertQuadsToTree ;
+FROM M2Scope IMPORT ScopeBlock, ForeachScopeBlockDo3 ;
 
 
 CONST
@@ -68,7 +67,7 @@ VAR
 PROCEDURE InitBasicBlocks (sb: ScopeBlock) : BasicBlock ;
 BEGIN
    HeadOfBasicBlock := NIL ;
-   ForeachScopeBlockDo (sb, ConvertQuads2BasicBlock) ;
+   ForeachScopeBlockDo3 (sb, ConvertQuads2BasicBlock) ;
    RETURN HeadOfBasicBlock
 END InitBasicBlocks ;
 

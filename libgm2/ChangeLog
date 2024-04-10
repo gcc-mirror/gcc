@@ -1,3 +1,19 @@
+2024-01-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111956
+	* Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* Makefile.in: Regenerate.
+	* libm2cor/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2pim/Makefile.in: Regenerate.
+
 2024-01-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2iso/RTco.cc (initialized): Use bool instead of int.

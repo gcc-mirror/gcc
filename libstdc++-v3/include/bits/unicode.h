@@ -1084,7 +1084,7 @@ inline namespace __v15_1_0
     while (true)
       {
 	// Find the value of the next alphanumeric character in each string.
-	unsigned char __val_a, __val_b;
+	unsigned char __val_a{}, __val_b{};
 	while (__ptr_a != __end_a
 		 && (__val_a = __map(*__ptr_a, __num_a)) == 127)
 	  ++__ptr_a;

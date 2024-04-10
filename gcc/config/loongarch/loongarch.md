@@ -2197,8 +2197,8 @@
 })
 
 (define_insn_and_split "*movsi_internal"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,w,*f,f,*r,*m,*r,*z")
-	(match_operand:SI 1 "move_operand" "r,Yd,w,rJ,*r*J,m,*f,*f,*z,*r"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,w,*f,f,*r,*m")
+	(match_operand:SI 1 "move_operand" "r,Yd,w,rJ,*r*J,m,*f,*f"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))"
   { return loongarch_output_move (operands[0], operands[1]); }
@@ -2211,7 +2211,7 @@
   DONE;
 }
   "
-  [(set_attr "move_type" "move,const,load,store,mgtf,fpload,mftg,fpstore,mftg,mgtf")
+  [(set_attr "move_type" "move,const,load,store,mgtf,fpload,mftg,fpstore")
    (set_attr "mode" "SI")])
 
 ;; 16-bit Integer moves

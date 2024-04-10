@@ -339,6 +339,32 @@ build_template_info (tree template_decl, tree template_args)
   return result;
 }
 
+/* DECL_TEMPLATE_INFO, if applicable, or NULL_TREE.  */
+
+static tree
+decl_template_info (const_tree decl)
+{
+  /* This needs to match template_info_decl_check.  */
+  if (DECL_LANG_SPECIFIC (decl))
+    switch (TREE_CODE (decl))
+      {
+      case FUNCTION_DECL:
+	if (DECL_THUNK_P (decl))
+	  break;
+	gcc_fallthrough ();
+      case VAR_DECL:
+      case FIELD_DECL:
+      case TYPE_DECL:
+      case CONCEPT_DECL:
+      case TEMPLATE_DECL:
+	return DECL_TEMPLATE_INFO (decl);
+
+      default:
+	break;
+      }
+  return NULL_TREE;
+}
+
 /* Return the template info node corresponding to T, whatever T is.  */
 
 tree
@@ -353,8 +379,8 @@ get_template_info (const_tree t)
       || TREE_CODE (t) == PARM_DECL)
     return NULL;
 
-  if (DECL_P (t) && DECL_LANG_SPECIFIC (t))
-    tinfo = DECL_TEMPLATE_INFO (t);
+  if (DECL_P (t))
+    tinfo = decl_template_info (t);
 
   if (!tinfo && DECL_IMPLICIT_TYPEDEF_P (t))
     t = TREE_TYPE (t);
@@ -3760,13 +3786,6 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
     {
       if (hi != ohi)
 	{
-	  /* Work around maybe_convert_nontype_argument not doing this for
-	     dependent arguments.  Don't use IMPLICIT_CONV_EXPR_NONTYPE_ARG
-	     because that will make tsubst_expr ignore it.  */
-	  tree type = tsubst (TREE_TYPE (ohi), args, complain, in_decl);
-	  if (!TREE_TYPE (hi) || !same_type_p (type, TREE_TYPE (hi)))
-	    hi = build1 (IMPLICIT_CONV_EXPR, type, hi);
-
 	  call = copy_node (call);
 	  CALL_EXPR_ARG (call, 0) = hi;
 	}
@@ -8457,23 +8476,30 @@ convert_wildcard_argument (tree parm, tree arg)
    conversion for the benefit of cp_tree_equal.  */
 
 static tree
-maybe_convert_nontype_argument (tree type, tree arg)
+maybe_convert_nontype_argument (tree type, tree arg, bool force)
 {
   /* Auto parms get no conversion.  */
   if (type_uses_auto (type))
     return arg;
+  /* ??? Do we need to push the IMPLICIT_CONV_EXPR into the pack expansion?
+     That would complicate other things, and it doesn't seem necessary.  */
+  if (TREE_CODE (arg) == EXPR_PACK_EXPANSION)
+    return arg;
   /* We don't need or want to add this conversion now if we're going to use the
      argument for deduction.  */
-  if (value_dependent_expression_p (arg))
+  if (!value_dependent_expression_p (arg))
+    force = false;
+  else if (!force)
     return arg;
 
   type = cv_unqualified (type);
   tree argtype = TREE_TYPE (arg);
-  if (same_type_p (type, argtype))
+  if (argtype && same_type_p (type, argtype))
     return arg;
 
   arg = build1 (IMPLICIT_CONV_EXPR, type, arg);
   IMPLICIT_CONV_EXPR_NONTYPE_ARG (arg) = true;
+  IMPLICIT_CONV_EXPR_FORCED (arg) = force;
   return arg;
 }
 
@@ -8741,6 +8767,22 @@ convert_template_argument (tree parm,
       if (t != TREE_TYPE (parm))
 	t = canonicalize_type_argument (t, complain);
 
+      /* We need to handle arguments for alias or concept templates
+	 differently: we need to force building an IMPLICIT_CONV_EXPR, because
+	 these arguments are going to be substituted directly into the
+	 dependent type; they might not get another chance at
+	 convert_nontype_argument.  But if the argument ends up here again for
+	 a template that isn't one of those, remove the conversion for
+	 consistency between naming the same dependent type directly or through
+	 an alias.  */
+      bool force_conv = in_decl && (DECL_ALIAS_TEMPLATE_P (in_decl)
+				    || concept_definition_p (in_decl));
+      if (!force_conv
+	  && TREE_CODE (orig_arg) == IMPLICIT_CONV_EXPR
+	  && IMPLICIT_CONV_EXPR_FORCED (orig_arg)
+	  && same_type_p (TREE_TYPE (orig_arg), t))
+	orig_arg = TREE_OPERAND (orig_arg, 0);
+
       if (!type_dependent_expression_p (orig_arg)
 	  && !uses_template_parms (t))
 	/* We used to call digest_init here.  However, digest_init
@@ -8757,9 +8799,8 @@ convert_template_argument (tree parm,
       else
 	{
 	  val = canonicalize_expr_argument (orig_arg, complain);
-	  val = maybe_convert_nontype_argument (t, val);
+	  val = maybe_convert_nontype_argument (t, val, force_conv);
 	}
-
 
       if (val == NULL_TREE)
 	val = error_mark_node;
@@ -12185,8 +12226,7 @@ instantiate_class_template (tree type)
     return error_mark_node;
 
   if (COMPLETE_OR_OPEN_TYPE_P (type)
-      || (uses_template_parms (type)
-	  && !TYPE_FUNCTION_SCOPE_P (type)))
+      || uses_template_parms (type))
     return type;
 
   /* Figure out which template is being instantiated.  */
@@ -18852,7 +18892,10 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case TAG_DEFN:
       tmp = tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
-      if (CLASS_TYPE_P (tmp))
+      if (dependent_type_p (tmp))
+	/* This is a partial instantiation, try again when full.  */
+	add_stmt (build_min (TAG_DEFN, tmp));
+      else if (CLASS_TYPE_P (tmp))
 	{
 	  /* Local classes are not independent templates; they are
 	     instantiated along with their containing function.  And this
@@ -18861,12 +18904,6 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  /* Closures are handled by the LAMBDA_EXPR.  */
 	  gcc_assert (!LAMBDA_TYPE_P (TREE_TYPE (t)));
 	  complete_type (tmp);
-	  if (dependent_type_p (tmp))
-	    {
-	      /* This is a partial instantiation, try again when full.  */
-	      add_stmt (build_min (TAG_DEFN, tmp));
-	      break;
-	    }
 	  tree save_ccp = current_class_ptr;
 	  tree save_ccr = current_class_ref;
 	  for (tree fld = TYPE_FIELDS (tmp); fld; fld = DECL_CHAIN (fld))
@@ -20056,9 +20093,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    RETURN (retval);
 	  }
 	if (IMPLICIT_CONV_EXPR_NONTYPE_ARG (t))
-	  /* We'll pass this to convert_nontype_argument again, we don't need
-	     to actually perform any conversion here.  */
-	  RETURN (expr);
+	  {
+	    tree r = convert_nontype_argument (type, expr, complain);
+	    if (r == NULL_TREE)
+	      r = error_mark_node;
+	    RETURN (r);
+	  }
 	int flags = LOOKUP_IMPLICIT;
 	if (IMPLICIT_CONV_EXPR_DIRECT_INIT (t))
 	  flags = LOOKUP_NORMAL;
@@ -27256,7 +27296,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     {
       set_instantiating_module (d);
       if (variable_template_p (gen_tmpl))
-	note_variable_template_instantiation (d);
+	note_vague_linkage_variable (d);
       instantiate_body (td, args, d, false);
     }
 

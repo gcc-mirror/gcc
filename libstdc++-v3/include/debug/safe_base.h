@@ -268,7 +268,6 @@ namespace __gnu_debug
      *  operation is complete all iterators that originally referenced
      *  one container now reference the other container.
      */
-    _GLIBCXX20_CONSTEXPR
     void
     _M_swap(_Safe_sequence_base& __x) _GLIBCXX_USE_NOEXCEPT;
 

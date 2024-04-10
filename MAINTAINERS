@@ -55,7 +55,7 @@ aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
 alpha port		Richard Henderson	<rth@gcc.gnu.org>
 amdgcn port		Julian Brown		<julian@codesourcery.com>
-amdgcn port		Andrew Stubbs		<ams@codesourcery.com>
+amdgcn port		Andrew Stubbs		<ams@baylibre.com>
 arc port		Joern Rennecke		<gnu@amylaar.uk>
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 arm port		Nick Clifton		<nickc@redhat.com>
@@ -99,10 +99,10 @@ moxie port		Anthony Green		<green@moxielogic.com>
 msp430 port		Nick Clifton		<nickc@redhat.com>
 nds32 port		Chung-Ju Wu		<jasonwucj@gmail.com>
 nds32 port		Shiva Chen		<shiva0217@gmail.com>
-nios2 port		Chung-Lin Tang		<cltang@codesourcery.com>
+nios2 port		Chung-Lin Tang		<cltang@baylibre.com>
 nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
 nvptx port		Tom de Vries		<tdevries@suse.de>
-nvptx port		Thomas Schwinge		<thomas@codesourcery.com>
+nvptx port		Thomas Schwinge		<tschwinge@baylibre.com>
 or1k port		Stafford Horne		<shorne@gmail.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
@@ -180,14 +180,14 @@ fp-bit			Ian Lance Taylor	<ian@airs.com>
 libgcc			Ian Lance Taylor	<ian@airs.com>
 libgo			Ian Lance Taylor	<ian@airs.com>
 libgomp			Jakub Jelinek		<jakub@redhat.com>
-libgomp			Tobias Burnus		<tobias@codesourcery.com>
-libgomp (OpenACC)	Thomas Schwinge		<thomas@codesourcery.com>
+libgomp			Tobias Burnus		<tburnus@baylibre.com>
+libgomp (OpenACC)	Thomas Schwinge		<tschwinge@baylibre.com>
 libgrust		All Rust front end maintainers
 libiberty		Ian Lance Taylor	<ian@airs.com>
 libitm			Torvald Riegel		<triegel@redhat.com>
 libobjc			Nicola Pero		<nicola.pero@meta-innovation.com>
 libobjc			Andrew Pinski		<pinskia@gmail.com>
-libquadmath		Tobias Burnus		<tobias@codesourcery.com>
+libquadmath		Tobias Burnus		<tburnus@baylibre.com>
 libquadmath		Jakub Jelinek		<jakub@redhat.com>
 libvtv			Caroline Tice		<cmtice@google.com>
 libphobos		Iain Buclaw		<ibuclaw@gdcproject.org>
@@ -253,10 +253,10 @@ auto-vectorizer		Zdenek Dvorak		<ook@ucw.cz>
 loop infrastructure	Zdenek Dvorak		<ook@ucw.cz>
 loop ivopts		Bin Cheng		<bin.cheng@linux.alibaba.com>
 loop optimizer		Bin Cheng		<bin.cheng@linux.alibaba.com>
-OpenACC			Thomas Schwinge		<thomas@codesourcery.com>
-OpenACC			Tobias Burnus		<tobias@codesourcery.com>
+OpenACC			Thomas Schwinge		<tschwinge@baylibre.com>
+OpenACC			Tobias Burnus		<tburnus@baylibre.com>
 OpenMP			Jakub Jelinek		<jakub@redhat.com>
-OpenMP			Tobias Burnus		<tobias@codesourcery.com>
+OpenMP			Tobias Burnus		<tburnus@baylibre.com>
 testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>
 register allocation	Vladimir Makarov	<vmakarov@redhat.com>
@@ -281,7 +281,7 @@ dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
 driver			Joseph Myers		<josmyers@redhat.com>
 Fortran			Harald Anlauf		<anlauf@gmx.de>
 Fortran			Janne Blomqvist		<jb@gcc.gnu.org>
-Fortran			Tobias Burnus		<tobias@codesourcery.com>
+Fortran			Tobias Burnus		<tburnus@baylibre.com>
 Fortran			François-Xavier Coudert	<fxcoudert@gcc.gnu.org>
 Fortran			Jerry DeLisle		<jvdelisle@gcc.gnu.org>
 Fortran			Erik Edelmann		<erik.edelmann@iki.fi>
@@ -730,7 +730,7 @@ Canqun Yang					<canqun@nudt.edu.cn>
 Fei Yang					<felix.yang@huawei.com>
 Jeffrey Yasskin					<jyasskin@google.com>
 Joey Ye						<joey.ye@arm.com>
-Kwok Cheung Yeung				<kcy@codesourcery.com>
+Kwok Cheung Yeung				<kcyeung@baylibre.com>
 Greta Yorsh					<greta.yorsh@arm.com>
 David Yuste					<david.yuste@gmail.com>
 Adhemerval Zanella				<azanella@linux.vnet.ibm.com>

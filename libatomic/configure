@@ -656,6 +656,8 @@ LIBAT_BUILD_VERSIONED_SHLIB_FALSE
 LIBAT_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
 SECTION_LDFLAGS
+ARCH_AARCH64_HAVE_LSE128_FALSE
+ARCH_AARCH64_HAVE_LSE128_TRUE
 SYSROOT_CFLAGS_FOR_TARGET
 enable_aarch64_lse
 libtool_VERSION
@@ -11456,7 +11458,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11459 "configure"
+#line 11461 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11562,7 +11564,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11565 "configure"
+#line 11567 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14697,6 +14699,57 @@ _ACEOF
 
 
 
+# Check for target-specific assembly-level support for atomic operations.
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for armv9.4-a LSE128 insn support" >&5
+$as_echo_n "checking for armv9.4-a LSE128 insn support... " >&6; }
+if ${libat_cv_have_feat_lse128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm(".arch armv9-a+lse128")
+  ;
+  return 0;
+}
+_ACEOF
+    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+      eval libat_cv_have_feat_lse128=yes
+    else
+      eval libat_cv_have_feat_lse128=no
+    fi
+    rm -f conftest*
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libat_cv_have_feat_lse128" >&5
+$as_echo "$libat_cv_have_feat_lse128" >&6; }
+
+  yesno=`echo $libat_cv_have_feat_lse128 | tr 'yesno' '1  0 '`
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FEAT_LSE128 $yesno
+_ACEOF
+
+
+   if test x$libat_cv_have_feat_lse128 = xyes; then
+  ARCH_AARCH64_HAVE_LSE128_TRUE=
+  ARCH_AARCH64_HAVE_LSE128_FALSE='#'
+else
+  ARCH_AARCH64_HAVE_LSE128_TRUE='#'
+  ARCH_AARCH64_HAVE_LSE128_FALSE=
+fi
+
+
+
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether byte ordering is bigendian" >&5
 $as_echo_n "checking whether byte ordering is bigendian... " >&6; }
 if ${ac_cv_c_bigendian+:} false; then :
@@ -15987,6 +16040,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_DARWIN_AT_RPATH_TRUE}" && test -z "${ENABLE_DARWIN_AT_RPATH_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_DARWIN_AT_RPATH\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_AARCH64_HAVE_LSE128_TRUE}" && test -z "${ARCH_AARCH64_HAVE_LSE128_FALSE}"; then
+  as_fn_error $? "conditional \"ARCH_AARCH64_HAVE_LSE128\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

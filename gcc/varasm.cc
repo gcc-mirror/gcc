@@ -1939,6 +1939,11 @@ assemble_start_function (tree decl, const char *fnname)
 
   /* Tell assembler to move to target machine's alignment for functions.  */
   align = floor_log2 (align / BITS_PER_UNIT);
+  /* Handle forced alignment.  This really ought to apply to all functions,
+     since it is used by patchable entries.  */
+  if (flag_min_function_alignment)
+    align = MAX (align, floor_log2 (flag_min_function_alignment));
+
   if (align > 0)
     {
       ASM_OUTPUT_ALIGN (asm_out_file, align);

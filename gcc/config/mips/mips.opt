@@ -145,9 +145,30 @@ meva
 Target Var(TARGET_EVA)
 Use Enhanced Virtual Addressing instructions.
 
+Enum
+Name(mips_explicit_relocs) Type(int)
+The code model option names for -mexplicit-relocs:
+
+EnumValue
+Enum(mips_explicit_relocs) String(none) Value(MIPS_EXPLICIT_RELOCS_NONE)
+
+EnumValue
+Enum(mips_explicit_relocs) String(base) Value(MIPS_EXPLICIT_RELOCS_BASE)
+
+EnumValue
+Enum(mips_explicit_relocs) String(pcrel) Value(MIPS_EXPLICIT_RELOCS_PCREL)
+
+mexplicit-relocs=
+Target RejectNegative Joined Enum(mips_explicit_relocs) Var(mips_opt_explicit_relocs) Init(MIPS_EXPLICIT_RELOCS)
+Use %reloc() assembly operators.
+
 mexplicit-relocs
-Target Mask(EXPLICIT_RELOCS)
-Use NewABI-style %reloc() assembly operators.
+Target RejectNegative Alias(mexplicit-relocs=,base)
+Use %reloc() assembly operators (for backward compatibility).
+
+mno-explicit-relocs
+Target RejectNegative Alias(mexplicit-relocs=,none)
+Don't use %reloc() assembly operators (for backward compatibility).
 
 mextern-sdata
 Target Var(TARGET_EXTERN_SDATA) Init(1)

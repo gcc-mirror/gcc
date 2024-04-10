@@ -5532,11 +5532,12 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
       /* Loop over all the words allocated on the stack for this arg.  */
       /* We can do it by words, because any scalar bigger than a word
 	 has a size a multiple of a word.  */
+      tree word_mode_type = lang_hooks.types.type_for_mode (word_mode, 1);
       for (i = num_words - 1; i >= not_stack; i--)
 	if (i >= not_stack + offset)
 	  if (!emit_push_insn (operand_subword_force (x, i, mode),
-			  word_mode, NULL_TREE, NULL_RTX, align, 0, NULL_RTX,
-			  0, args_addr,
+			  word_mode, word_mode_type, NULL_RTX, align, 0,
+			  NULL_RTX, 0, args_addr,
 			  GEN_INT (args_offset + ((i - not_stack + skip)
 						  * UNITS_PER_WORD)),
 			  reg_parm_stack_space, alignment_pad, sibcall_p))
@@ -6060,6 +6061,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    to_rtx = adjust_address (to_rtx, BLKmode, 0);
 	}
  
+      rtx stemp = NULL_RTX, old_to_rtx = NULL_RTX;
       if (offset != 0)
 	{
 	  machine_mode address_mode;
@@ -6069,9 +6071,22 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    {
 	      /* We can get constant negative offsets into arrays with broken
 		 user code.  Translate this to a trap instead of ICEing.  */
-	      gcc_assert (TREE_CODE (offset) == INTEGER_CST);
-	      expand_builtin_trap ();
-	      to_rtx = gen_rtx_MEM (BLKmode, const0_rtx);
+	      if (TREE_CODE (offset) == INTEGER_CST)
+		{
+		  expand_builtin_trap ();
+		  to_rtx = gen_rtx_MEM (BLKmode, const0_rtx);
+		}
+	      /* Else spill for variable offset to the destination.  We expect
+		 to run into this only for hard registers.  */
+	      else
+		{
+		  gcc_assert (VAR_P (tem) && DECL_HARD_REGISTER (tem));
+		  stemp = assign_stack_temp (GET_MODE (to_rtx),
+					     GET_MODE_SIZE (GET_MODE (to_rtx)));
+		  emit_move_insn (stemp, to_rtx);
+		  old_to_rtx = to_rtx;
+		  to_rtx = stemp;
+		}
 	    }
 
 	  offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
@@ -6304,6 +6319,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 				  bitregion_start, bitregion_end,
 				  mode1, from, get_alias_set (to),
 				  nontemporal, reversep);
+	  /* Move the temporary storage back to the non-MEM_P.  */
+	  if (stemp)
+	    emit_move_insn (old_to_rtx, stemp);
 	}
 
       if (result)
@@ -11037,6 +11055,62 @@ stmt_is_replaceable_p (gimple *stmt)
   return false;
 }
 
+/* A subroutine of expand_expr_real_1.  Expand gimple assignment G,
+   which is known to set an SSA_NAME result.  The other arguments are
+   as for expand_expr_real_1.  */
+
+rtx
+expand_expr_real_gassign (gassign *g, rtx target, machine_mode tmode,
+			  enum expand_modifier modifier, rtx *alt_rtl,
+			  bool inner_reference_p)
+{
+  separate_ops ops;
+  rtx r;
+  location_t saved_loc = curr_insn_location ();
+  auto loc = gimple_location (g);
+  if (loc != UNKNOWN_LOCATION)
+    set_curr_insn_location (loc);
+  tree lhs = gimple_assign_lhs (g);
+  ops.code = gimple_assign_rhs_code (g);
+  ops.type = TREE_TYPE (lhs);
+  switch (get_gimple_rhs_class (ops.code))
+    {
+    case GIMPLE_TERNARY_RHS:
+      ops.op2 = gimple_assign_rhs3 (g);
+      /* Fallthru */
+    case GIMPLE_BINARY_RHS:
+      ops.op1 = gimple_assign_rhs2 (g);
+
+      /* Try to expand conditonal compare.  */
+      if (targetm.gen_ccmp_first)
+	{
+	  gcc_checking_assert (targetm.gen_ccmp_next != NULL);
+	  r = expand_ccmp_expr (g, TYPE_MODE (ops.type));
+	  if (r)
+	    break;
+	}
+      /* Fallthru */
+    case GIMPLE_UNARY_RHS:
+      ops.op0 = gimple_assign_rhs1 (g);
+      ops.location = loc;
+      r = expand_expr_real_2 (&ops, target, tmode, modifier);
+      break;
+    case GIMPLE_SINGLE_RHS:
+      {
+	r = expand_expr_real (gimple_assign_rhs1 (g), target,
+			      tmode, modifier, alt_rtl,
+			      inner_reference_p);
+	break;
+      }
+    default:
+      gcc_unreachable ();
+    }
+  set_curr_insn_location (saved_loc);
+  if (REG_P (r) && !REG_EXPR (r))
+    set_reg_attrs_for_decl_rtl (lhs, r);
+  return r;
+}
+
 rtx
 expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		    enum expand_modifier modifier, rtx *alt_rtl,
@@ -11200,51 +11274,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  && stmt_is_replaceable_p (SSA_NAME_DEF_STMT (exp)))
 	g = SSA_NAME_DEF_STMT (exp);
       if (g)
-	{
-	  rtx r;
-	  location_t saved_loc = curr_insn_location ();
-	  loc = gimple_location (g);
-	  if (loc != UNKNOWN_LOCATION)
-	    set_curr_insn_location (loc);
-	  ops.code = gimple_assign_rhs_code (g);
-          switch (get_gimple_rhs_class (ops.code))
-	    {
-	    case GIMPLE_TERNARY_RHS:
-	      ops.op2 = gimple_assign_rhs3 (g);
-	      /* Fallthru */
-	    case GIMPLE_BINARY_RHS:
-	      ops.op1 = gimple_assign_rhs2 (g);
-
-	      /* Try to expand conditonal compare.  */
-	      if (targetm.gen_ccmp_first)
-		{
-		  gcc_checking_assert (targetm.gen_ccmp_next != NULL);
-		  r = expand_ccmp_expr (g, mode);
-		  if (r)
-		    break;
-		}
-	      /* Fallthru */
-	    case GIMPLE_UNARY_RHS:
-	      ops.op0 = gimple_assign_rhs1 (g);
-	      ops.type = TREE_TYPE (gimple_assign_lhs (g));
-	      ops.location = loc;
-	      r = expand_expr_real_2 (&ops, target, tmode, modifier);
-	      break;
-	    case GIMPLE_SINGLE_RHS:
-	      {
-		r = expand_expr_real (gimple_assign_rhs1 (g), target,
-				      tmode, modifier, alt_rtl,
-				      inner_reference_p);
-		break;
-	      }
-	    default:
-	      gcc_unreachable ();
-	    }
-	  set_curr_insn_location (saved_loc);
-	  if (REG_P (r) && !REG_EXPR (r))
-	    set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (exp), r);
-	  return r;
-	}
+	return expand_expr_real_gassign (as_a<gassign *> (g), target, tmode,
+					 modifier, alt_rtl, inner_reference_p);
 
       ssa_name = exp;
       decl_rtl = get_rtx_for_ssa_name (ssa_name);
@@ -12388,6 +12419,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 
       /* If the input and output modes are both the same, we are done.  */
       if (mode == GET_MODE (op0))
+	;
+      /* Similarly if the output mode is BLKmode and input is a MEM,
+	 adjust_address done below is all we need.  */
+      else if (mode == BLKmode && MEM_P (op0))
 	;
       /* If neither mode is BLKmode, and both modes are the same size
 	 then we can use gen_lowpart.  */

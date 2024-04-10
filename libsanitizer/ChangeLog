@@ -1,3 +1,8 @@
+2024-01-19  Daniel Cederman  <cederman@gaisler.com>
+
+	* sanitizer_common/Makefile.am (DEFS): Add @AS_SYM_ASSIGN_DEFS@.
+	* sanitizer_common/Makefile.in: Regenerate.
+
 2024-01-17  YunQiang Su  <yunqiang.su@cipunited.com>
 
 	* interception/interception.h (substitution_##func_name):

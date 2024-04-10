@@ -144,7 +144,7 @@ FROM M2System IMPORT IsPseudoSystemFunction, IsSystemType,
 FROM M2Bitset IMPORT Bitset, Bitnum ;
 FROM SymbolConversion IMPORT AddModGcc, Mod2Gcc, GccKnowsAbout, Poison, RemoveMod2Gcc ;
 FROM M2GenGCC IMPORT ResolveConstantExpressions ;
-FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo ;
+FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo3 ;
 
 FROM M2ALU IMPORT Addn, Sub, Equ, GreEqu, Gre, Less, PushInt, PushCard, ConvertToType,
                   PushIntegerTree, PopIntegerTree, PopRealTree, ConvertToInt, PopSetTree,
@@ -2865,7 +2865,7 @@ BEGIN
    PushBinding (scope) ;
    REPEAT
       copy := DupGroup (copy) ;
-      ForeachScopeBlockDo (sb, DeclareTypesConstantsProceduresInRange)
+      ForeachScopeBlockDo3 (sb, DeclareTypesConstantsProceduresInRange)
    UNTIL EqualGroup (copy, GlobalGroup) ;
    KillGroup (copy) ;
    PopBinding (scope) ;
@@ -4060,6 +4060,7 @@ END PrintProcedure ;
 
 PROCEDURE PrintVerboseFromList (l: List; i: CARDINAL) ;
 VAR
+   len,
    type,
    low,
    high,
@@ -4227,7 +4228,9 @@ BEGIN
          ELSIF IsConstStringCnul (sym)
          THEN
             printf0(' a nul terminated C string')
-         END
+         END ;
+         len := GetStringLength (sym) ;
+         printf1(' length %d', len)
       ELSIF IsConstructor(sym)
       THEN
          printf0(' constant constructor ') ;

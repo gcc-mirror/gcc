@@ -3557,13 +3557,13 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 			  root->frame_decl, field, NULL_TREE);
 	      arg3 = build_addr (x);
 
-	      x = builtin_decl_implicit (BUILT_IN_NESTED_PTR_CREATED);
+	      x = builtin_decl_explicit (BUILT_IN_GCC_NESTED_PTR_CREATED);
 	      stmt = gimple_build_call (x, 3, arg1, arg2, arg3);
 	      gimple_seq_add_stmt (&stmt_list, stmt);
 
 	      /* This call to delete the nested function trampoline is added to
 		 the cleanup list, and called when we exit the current scope.  */
-	      x = builtin_decl_implicit (BUILT_IN_NESTED_PTR_DELETED);
+	      x = builtin_decl_explicit (BUILT_IN_GCC_NESTED_PTR_DELETED);
 	      stmt = gimple_build_call (x, 0);
 	      gimple_seq_add_stmt (&cleanup_list, stmt);
 	    }

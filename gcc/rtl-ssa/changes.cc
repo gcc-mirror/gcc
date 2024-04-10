@@ -427,9 +427,11 @@ update_insn_in_place (insn_change &change)
 // pending clobbers into actual definitions.
 //
 // POS gives the final position of INSN, which hasn't yet been moved into
-// place.
+// place.  Keep track of any newly-created set_infos being added with this
+// change by adding them to NEW_SETS.
 void
-function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
+function_info::finalize_new_accesses (insn_change &change, insn_info *pos,
+				      hash_set<def_info *> &new_sets)
 {
   insn_info *insn = change.insn ();
 
@@ -465,6 +467,12 @@ function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
 		// later in case we see a second write to the same resource.
 		def_info *perm_def = allocate<set_info> (change.insn (),
 							 def->resource ());
+
+		// Keep track of the new set so we remember to add it to the
+		// def chain later.
+		if (new_sets.add (perm_def))
+		  gcc_unreachable (); // We shouldn't see duplicates here.
+
 		def->set_last_def (perm_def);
 		def = perm_def;
 	      }
@@ -609,14 +617,26 @@ function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
 	  m_temp_uses[i] = use = allocate<use_info> (*use);
 	  use->m_is_temp = false;
 	  set_info *def = use->def ();
-	  // Handle cases in which the value was previously not used
-	  // within the block.
-	  if (def && def->m_is_temp)
+	  if (!def || !def->m_is_temp)
+	    continue;
+
+	  if (auto phi = dyn_cast<phi_info *> (def))
 	    {
-	      phi_info *phi = as_a<phi_info *> (def);
+	      // Handle cases in which the value was previously not used
+	      // within the block.
 	      gcc_assert (phi->is_degenerate ());
 	      phi = create_degenerate_phi (phi->ebb (), phi->input_value (0));
 	      use->set_def (phi);
+	    }
+	  else
+	    {
+	      // The temporary def may also be a set added with this change, in
+	      // which case the permanent set is stored in the last_def link,
+	      // and we need to update the use to refer to the permanent set.
+	      gcc_assert (is_a<set_info *> (def));
+	      auto perm_set = as_a<set_info *> (def->last_def ());
+	      gcc_assert (!perm_set->is_temporary ());
+	      use->set_def (perm_set);
 	    }
 	}
     }
@@ -631,9 +651,12 @@ function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
 }
 
 // Copy information from CHANGE to its underlying insn_info, given that
-// the insn_info has already been placed appropriately.
+// the insn_info has already been placed appropriately.  NEW_SETS contains the
+// new set_infos that are being added as part of this change (as opposed to
+// being moved or repurposed from existing instructions).
 void
-function_info::apply_changes_to_insn (insn_change &change)
+function_info::apply_changes_to_insn (insn_change &change,
+				      hash_set<def_info *> &new_sets)
 {
   insn_info *insn = change.insn ();
   if (change.is_deletion ())
@@ -645,10 +668,11 @@ function_info::apply_changes_to_insn (insn_change &change)
   // Copy the cost.
   insn->set_cost (change.new_cost);
 
-  // Add all clobbers.  Sets and call clobbers never move relative to
-  // other definitions, so are OK as-is.
+  // Add all clobbers and newly-created sets.  Existing sets and call
+  // clobbers never move relative to other definitions, so are OK as-is.
   for (def_info *def : change.new_defs)
-    if (is_a<clobber_info *> (def) && !def->is_call_clobber ())
+    if ((is_a<clobber_info *> (def) && !def->is_call_clobber ())
+	|| (is_a<set_info *> (def) && new_sets.contains (def)))
       add_def (def);
 
   // Add all uses, now that their position is final.
@@ -775,13 +799,29 @@ function_info::change_insns (array_slice<insn_change *> changes)
 	      placeholder = add_placeholder_after (after);
 	      following_insn = placeholder;
 	    }
-
-	  // Finalize the new list of accesses for the change.  Don't install
-	  // them yet, so that we still have access to the old lists below.
-	  finalize_new_accesses (change,
-				 placeholder ? placeholder : insn);
 	}
       placeholders[i] = placeholder;
+    }
+
+  // We need to keep track of newly-added sets as these need adding to
+  // the def chain later.
+  hash_set<def_info *> new_sets;
+
+  // Finalize the new list of accesses for each change.  Don't install them yet,
+  // so that we still have access to the old lists below.
+  //
+  // Note that we do this forwards instead of in the backwards loop above so
+  // that any new defs being inserted are processed before new uses of those
+  // defs, so that the (initially) temporary uses referring to temporary defs
+  // can be easily updated to become permanent uses referring to permanent defs.
+  for (unsigned i = 0; i < changes.size (); i++)
+    {
+      insn_change &change = *changes[i];
+      insn_info *placeholder = placeholders[i];
+      if (!change.is_deletion ())
+	finalize_new_accesses (change,
+			       placeholder ? placeholder : change.insn (),
+			       new_sets);
     }
 
   // Remove all definitions that are no longer needed.  After the above,
@@ -836,7 +876,7 @@ function_info::change_insns (array_slice<insn_change *> changes)
 
   // Apply the changes to the underlying insn_infos.
   for (insn_change *change : changes)
-    apply_changes_to_insn (*change);
+    apply_changes_to_insn (*change, new_sets);
 
   // Now that the insns and accesses are up to date, add any REG_UNUSED notes.
   for (insn_change *change : changes)

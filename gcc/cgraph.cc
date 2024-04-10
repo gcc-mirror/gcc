@@ -1403,11 +1403,17 @@ cgraph_edge::redirect_callee (cgraph_node *n)
    speculative indirect call, remove "speculative" of the indirect call and
    also redirect stmt to it's final direct target.
 
+   When called from within tree-inline, KILLED_SSAs has to contain the pointer
+   to killed_new_ssa_names within the copy_body_data structure and SSAs
+   discovered to be useless (if LHS is removed) will be added to it, otherwise
+   it needs to be NULL.
+
    It is up to caller to iteratively transform each "speculative"
    direct call as appropriate.  */
 
 gimple *
-cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
+cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e,
+					   hash_set <tree> *killed_ssas)
 {
   tree decl = gimple_call_fndecl (e->call_stmt);
   gcall *new_stmt;
@@ -1527,7 +1533,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 	remove_stmt_from_eh_lp (e->call_stmt);
 
       tree old_fntype = gimple_call_fntype (e->call_stmt);
-      new_stmt = padjs->modify_call (e, false);
+      new_stmt = padjs->modify_call (e, false, killed_ssas);
       cgraph_node *origin = e->callee;
       while (origin->clone_of)
 	origin = origin->clone_of;

@@ -189,12 +189,12 @@ func _() {
 	var m1 map[int]string
 	delete(m1, 1<<s)
 	delete(m1, 1.<<s)
-	delete(m1, 1.1<<s) // ERROR "truncated|shift of type float64"
+	delete(m1, 1.1<<s) // ERROR "truncated|shift of type float64|incompatible|non-integer"
 
 	var m2 map[float32]string
-	delete(m2, 1<<s)   // ERROR "invalid|cannot use 1 << s as type float32"
-	delete(m2, 1.<<s)  // ERROR "invalid|cannot use 1 << s as type float32"
-	delete(m2, 1.1<<s) // ERROR "invalid|cannot use 1.1 << s as type float32"
+	delete(m2, 1<<s)   // ERROR "invalid|cannot use 1 << s as type float32|incompatible"
+	delete(m2, 1.<<s)  // ERROR "invalid|cannot use 1 << s as type float32|incompatible"
+	delete(m2, 1.1<<s) // ERROR "invalid|cannot use 1.1 << s as type float32|incompatible"
 }
 
 // shifts of shifts

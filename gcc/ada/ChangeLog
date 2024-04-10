@@ -1,3 +1,7 @@
+2024-01-23  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gnatvsn.ads: Update year.
+
 2024-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Array_Type>: Use the

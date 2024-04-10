@@ -303,6 +303,10 @@ Waddress
 C ObjC C++ ObjC++ Var(warn_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious uses of memory addresses.
 
+Waddress-of-packed-member
+C ObjC C++ ObjC++ Var(warn_address_of_packed_member) Init(1) Warning
+Warn when the address of packed member of struct or union is taken.
+
 Enum
 Name(warn_aligned_new_level) Type(int) UnknownError(argument %qs to %<-Waligned-new%> not recognized)
 
@@ -358,6 +362,10 @@ Wno-alloca-larger-than
 C ObjC C++ LTO ObjC++ Alias(Walloca-larger-than=,18446744073709551615EiB,none) Warning
 Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger.
 
+Warith-conversion
+C ObjC C++ ObjC++ Var(warn_arith_conv) Warning
+Warn if conversion of the result of arithmetic might change the value even though converting the operands cannot.
+
 Warray-bounds=
 LangEnabledBy(C ObjC C++ LTO ObjC++,Wall,1,0)
 ; in common.opt
@@ -373,10 +381,6 @@ Warn about mismatched declarations of array parameters and unsafe accesses to th
 Warray-parameter=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_array_parameter) IntegerRange(0, 2) LangEnabledBy(C ObjC C++ ObjC++,Wall, 2, 0) Warning
 Warn about mismatched declarations of array parameters and unsafe accesses to them.
-
-Wzero-length-bounds
-C ObjC C++ ObjC++ Var(warn_zero_length_bounds) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about accesses to interior zero-length array members.
 
 Wassign-intercept
 ObjC ObjC++ Var(warn_assign_intercept) Warning
@@ -420,10 +424,6 @@ Warn about boolean expression compared with an integer value different from true
 Wbool-operation
 C ObjC C++ ObjC++ Var(warn_bool_op) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about certain operations on boolean expressions.
-
-Wframe-address
-C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn when __builtin_frame_address or __builtin_return_address is used unsafely.
 
 Wbuiltin-declaration-mismatch
 C ObjC C++ ObjC++ Var(warn_builtin_declaration_mismatch) Init(1) Warning
@@ -533,6 +533,14 @@ Warn about subscripts whose type is \"char\".
 Wchkp
 C ObjC C++ ObjC++ Warning WarnRemoved
 Removed in GCC 9.  This switch has no effect.
+
+Wclass-conversion
+C++ ObjC++ Var(warn_class_conversion) Init(1) Warning
+Warn when a conversion function will never be called due to the type it converts to.
+
+Wclass-memaccess
+C++ ObjC++ Var(warn_class_memaccess) Warning LangEnabledBy(C++ ObjC++, Wall)
+Warn for unsafe raw memory writes to objects of class types.
 
 Wclobbered
 C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
@@ -650,6 +658,14 @@ Wdiv-by-zero
 C ObjC C++ ObjC++ Var(warn_div_by_zero) Init(1) Warning
 Warn about compile-time integer division by zero.
 
+Wdouble-promotion
+C ObjC C++ ObjC++ Var(warn_double_promotion) Warning
+Warn about implicit conversions from \"float\" to \"double\".
+
+Wduplicate-decl-specifier
+C ObjC Var(warn_duplicate_decl_specifier) Warning LangEnabledBy(C ObjC,Wall)
+Warn when a declaration has duplicate const, volatile, restrict or _Atomic specifier.
+
 Wduplicated-branches
 C ObjC C++ ObjC++ Var(warn_duplicated_branches) Init(0) Warning
 Warn about duplicated branches in if-else statements.
@@ -661,6 +677,10 @@ Warn about duplicated conditions in an if-else-if chain.
 Weffc++
 C++ ObjC++ Var(warn_ecpp) Warning
 Warn about violations of Effective C++ style rules.
+
+Welaborated-enum-base
+C++ ObjC++ Var(warn_elaborated_enum_base) Warning Init(1)
+Warn if an additional enum-base is used in an elaborated-type-specifier.
 
 Wempty-body
 C ObjC C++ ObjC++ Var(warn_empty_body) Warning EnabledBy(Wextra)
@@ -694,6 +714,10 @@ Wexceptions
 C++ ObjC++ Var(warn_exceptions) Init(1) Warning
 Warn when an exception handler is shadowed by another handler.
 
+Wexpansion-to-defined
+C ObjC C++ ObjC++ CPP(warn_expansion_to_defined) CppReason(CPP_W_EXPANSION_TO_DEFINED) Var(cpp_warn_expansion_to_defined) Init(0) Warning EnabledBy(Wextra || Wpedantic)
+Warn if \"defined\" is used outside #if.
+
 Wextra
 C ObjC C++ ObjC++ Warning
 ; in common.opt
@@ -701,6 +725,11 @@ C ObjC C++ ObjC++ Warning
 Wextra-semi
 C++ ObjC++ Var(warn_extra_semi) Warning
 Warn about semicolon after in-class function definition.
+
+Wflex-array-member-not-at-end
+C C++ Var(warn_flex_array_member_not_at_end) Warning
+Warn when a structure containing a C99 flexible array member as the last
+field is not at the end of another structure.
 
 Wfloat-conversion
 C ObjC C++ ObjC++ Var(warn_float_conversion) Warning LangEnabledBy(C ObjC C++ ObjC++,Wconversion)
@@ -735,6 +764,11 @@ C ObjC C++ LTO ObjC++ Warning Alias(Wformat-overflow=, 1, 0) IntegerRange(0, 2)
 Warn about function calls with format strings that write past the end
 of the destination region.  Same as -Wformat-overflow=1.
 
+Wformat-overflow=
+C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_overflow) Warning LangEnabledBy(C ObjC C++ LTO ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
+Warn about function calls with format strings that write past the end
+of the destination region.
+
 Wformat-security
 C ObjC C++ ObjC++ Var(warn_format_security) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 2, 0)
 Warn about possible security problems with format functions.
@@ -748,6 +782,10 @@ C ObjC C++ LTO ObjC++ Warning Alias(Wformat-truncation=, 1, 0)
 Warn about calls to snprintf and similar functions that truncate output.
 Same as -Wformat-truncation=1.
 
+Wformat-truncation=
+C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_trunc) Warning LangEnabledBy(C ObjC C++ LTO ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
+Warn about calls to snprintf and similar functions that truncate output.
+
 Wformat-y2k
 C ObjC C++ ObjC++ Var(warn_format_y2k) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=,warn_format >= 2, 0)
 Warn about strftime formats yielding 2-digit years.
@@ -760,19 +798,9 @@ Wformat=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0) IntegerRange(0, 2)
 Warn about printf/scanf/strftime/strfmon format string anomalies.
 
-Wformat-overflow=
-C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_overflow) Warning LangEnabledBy(C ObjC C++ LTO ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
-Warn about function calls with format strings that write past the end
-of the destination region.
-
-Wformat-truncation=
-C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_trunc) Warning LangEnabledBy(C ObjC C++ LTO ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
-Warn about calls to snprintf and similar functions that truncate output.
-
-Wflex-array-member-not-at-end
-C C++ Var(warn_flex_array_member_not_at_end) Warning
-Warn when a structure containing a C99 flexible array member as the last
-field is not at the end of another structure.
+Wframe-address
+C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn when __builtin_frame_address or __builtin_return_address is used unsafely.
 
 Wif-not-aligned
 C ObjC C++ ObjC++ Var(warn_if_not_aligned) Init(1) Warning
@@ -786,6 +814,25 @@ Wignored-attributes
 C C++ Var(warn_ignored_attributes) Init(1) Warning
 Warn whenever attributes are ignored.
 
+Wimplicit
+C ObjC Var(warn_implicit) Warning LangEnabledBy(C ObjC,Wall)
+Warn about implicit declarations.
+
+Wimplicit-fallthrough=
+LangEnabledBy(C ObjC C++ ObjC++,Wextra,3,0)
+; in common.opt
+
+Wimplicit-function-declaration
+C ObjC Var(warn_implicit_function_declaration) Init(-1) Warning LangEnabledBy(C ObjC,Wimplicit)
+Warn about implicit function declarations.
+
+Wimplicit-int
+C ObjC Var(warn_implicit_int) Init(-1) Warning LangEnabledBy(C ObjC,Wimplicit)
+Warn when a declaration does not specify a type.
+
+Wimport
+C ObjC C++ ObjC++ Undocumented Ignore
+
 Winaccessible-base
 C++ ObjC++ Var(warn_inaccessible_base) Init(1) Warning
 Warn when a base is inaccessible in derived due to ambiguity.
@@ -797,10 +844,6 @@ Warn when there is a conversion between pointers that have incompatible types.
 Winfinite-recursion
 C ObjC C++ LTO ObjC++ Var(warn_infinite_recursion) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
 Warn for infinitely recursive calls.
-
-Waddress-of-packed-member
-C ObjC C++ ObjC++ Var(warn_address_of_packed_member) Init(1) Warning
-Warn when the address of packed member of struct or union is taken.
 
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)
@@ -814,33 +857,6 @@ Winterference-size
 C++ ObjC++ Var(warn_interference_size) Warning Init(1)
 Warn about nonsensical values of --param destructive-interference-size or
 constructive-interference-size.
-
-Wimplicit
-C ObjC Var(warn_implicit) Warning LangEnabledBy(C ObjC,Wall)
-Warn about implicit declarations.
-
-Wimplicit-fallthrough=
-LangEnabledBy(C ObjC C++ ObjC++,Wextra,3,0)
-; in common.opt
-
-Wdouble-promotion
-C ObjC C++ ObjC++ Var(warn_double_promotion) Warning
-Warn about implicit conversions from \"float\" to \"double\".
-
-Wexpansion-to-defined
-C ObjC C++ ObjC++ CPP(warn_expansion_to_defined) CppReason(CPP_W_EXPANSION_TO_DEFINED) Var(cpp_warn_expansion_to_defined) Init(0) Warning EnabledBy(Wextra || Wpedantic)
-Warn if \"defined\" is used outside #if.
-
-Wimplicit-function-declaration
-C ObjC Var(warn_implicit_function_declaration) Init(-1) Warning LangEnabledBy(C ObjC,Wimplicit)
-Warn about implicit function declarations.
-
-Wimplicit-int
-C ObjC Var(warn_implicit_int) Init(-1) Warning LangEnabledBy(C ObjC,Wimplicit)
-Warn when a declaration does not specify a type.
-
-Wimport
-C ObjC C++ ObjC++ Undocumented Ignore
 
 Winherited-variadic-ctor
 C++ ObjC++ Var(warn_inh_var_ctor) Init(1) Warning
@@ -882,13 +898,13 @@ Wliteral-suffix
 C++ ObjC++ CPP(warn_literal_suffix) CppReason(CPP_W_LITERAL_SUFFIX) Var(cpp_warn_literal_suffix) Init(1) Warning
 Warn when a string or character literal is followed by a ud-suffix which does not begin with an underscore.
 
-Wlogical-op
-C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning
-Warn when a logical operator is suspiciously always evaluating to true or false.
-
 Wlogical-not-parentheses
 C ObjC C++ ObjC++ Var(warn_logical_not_paren) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when logical not is used on the left hand side operand of a comparison.
+
+Wlogical-op
+C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning
+Warn when a logical operator is suspiciously always evaluating to true or false.
 
 Wlong-long
 C ObjC C++ ObjC++ CPP(cpp_warn_long_long) CppReason(CPP_W_LONG_LONG) Var(warn_long_long) Init(-1) Warning LangEnabledBy(C ObjC,Wc90-c99-compat)
@@ -902,13 +918,17 @@ Wmain
 LangEnabledBy(C ObjC C++ ObjC++,Wpedantic, 2, 0)
 ;
 
-Wmemset-transposed-args
-C ObjC C++ ObjC++ Var(warn_memset_transposed_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not.
+Wmaybe-uninitialized
+C ObjC C++ ObjC++ LTO LangEnabledBy(C ObjC C++ ObjC++ LTO,Wall)
+;
 
 Wmemset-elt-size
 C ObjC C++ ObjC++ Var(warn_memset_elt_size) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious calls to memset where the third argument contains the number of elements not multiplied by the element size.
+
+Wmemset-transposed-args
+C ObjC C++ ObjC++ Var(warn_memset_transposed_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not.
 
 Wmisleading-indentation
 C C++ Common Var(warn_misleading_indentation) Warning LangEnabledBy(C C++,Wall)
@@ -928,6 +948,11 @@ Wmismatched-tags
 C++ ObjC++ Var(warn_mismatched_tags) Warning
 Warn when a class is redeclared or referenced using a mismatched class-key.
 
+Wmissing-attributes
+C ObjC C++ ObjC++ Var(warn_missing_attributes) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about declarations of entities that may be missing attributes
+that related entities have been declared with.
+
 Wmissing-braces
 C ObjC C++ ObjC++ Var(warn_missing_braces) Warning LangEnabledBy(C ObjC,Wall)
 Warn about possibly missing braces around initializers.
@@ -939,130 +964,6 @@ Warn about global functions without previous declarations.
 Wmissing-field-initializers
 C ObjC C++ ObjC++ Var(warn_missing_field_initializers) Warning EnabledBy(Wextra)
 Warn about missing fields in struct initializers.
-
-Wmissing-requires
-C++ ObjC++ Var(warn_missing_requires) Init(1) Warning
-Warn about likely missing requires keyword.
-
-Wmissing-template-keyword
-C++ ObjC++ Var(warn_missing_template_keyword) Init(1) Warning
-Warn when the template keyword is missing after a member access token in a dependent member access expression if that member is a template.
-
-Wmultistatement-macros
-C ObjC C++ ObjC++ Var(warn_multistatement_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about unsafe macros expanding to multiple statements used as a body of a clause such as if, else, while, switch, or for.
-
-Wmultiple-inheritance
-C++ ObjC++ Var(warn_multiple_inheritance) Warning
-Warn on direct multiple inheritance.
-
-Wnamespaces
-C++ ObjC++ Var(warn_namespaces) Warning
-Warn on namespace definition.
-
-Wnrvo
-C++ ObjC++ Var(warn_nrvo)
-Warn if the named return value optimization is not performed although it is allowed.
-
-Wpacked-not-aligned
-C ObjC C++ ObjC++ Var(warn_packed_not_aligned) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn when fields in a struct with the packed attribute are misaligned.
-
-Wrange-loop-construct
-C++ ObjC++ Var(warn_range_loop_construct) Warning LangEnabledBy(C++ ObjC++,Wall)
-Warn when a range-based for-loop is creating unnecessary copies.
-
-Wredundant-tags
-C++ ObjC++ Var(warn_redundant_tags) Warning
-Warn when a class or enumerated type is referenced using a redundant class-key.
-
-Wsized-deallocation
-C++ ObjC++ Var(warn_sized_deallocation) Warning EnabledBy(Wextra)
-Warn about missing sized deallocation functions.
-
-Wsizeof-pointer-div
-C ObjC C++ ObjC++ Var(warn_sizeof_pointer_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about suspicious divisions of two sizeof expressions that don't work correctly with pointers.
-
-Wsizeof-array-div
-C ObjC C++ ObjC++ Var(warn_sizeof_array_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about divisions of two sizeof operators when the first one is applied
-to an array and the divisor does not equal the size of the array element.
-
-Wsizeof-pointer-memaccess
-C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about suspicious length parameters to certain string functions if the argument uses sizeof.
-
-Wsizeof-array-argument
-C ObjC C++ ObjC++ Var(warn_sizeof_array_argument) Warning Init(1)
-Warn when sizeof is applied on a parameter declared as an array.
-
-Wstring-compare
-C ObjC C++ LTO ObjC++ Warning Var(warn_string_compare) Warning LangEnabledBy(C ObjC C++ ObjC++, Wextra)
-Warn about calls to strcmp and strncmp used in equality expressions that
-are necessarily true or false due to the length of one and size of the other
-argument.
-
-Wstringop-overflow
-C ObjC C++ LTO ObjC++ Warning Alias(Wstringop-overflow=, 2, 0)
-Warn about buffer overflow in string manipulation functions like memcpy
-and strcpy.
-
-Wstringop-overflow=
-C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall, 2, 0) IntegerRange(0, 4)
-Under the control of Object Size type, warn about buffer overflow in string
-manipulation functions like memcpy and strcpy.
-
-Wstringop-overread
-C ObjC C++ LTO ObjC++ Var(warn_stringop_overread) Init(1) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
-Warn about reading past the end of a source array in string manipulation functions like memchr and memcpy.
-
-Wstringop-truncation
-C ObjC C++ LTO ObjC++ Var(warn_stringop_truncation) Warning Init (1) LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
-Warn about truncation in string manipulation functions like strncat and strncpy.
-
-Wstrict-flex-arrays
-C C++ Var(warn_strict_flex_arrays) Warning
-Warn about inproper usages of flexible array members
-according to the level of -fstrict-flex-arrays.
-
-Wsuggest-attribute=format
-C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
-Warn about functions which might be candidates for format attributes.
-
-Wsuggest-override
-C++ ObjC++ Var(warn_override) Warning
-Suggest that the override keyword be used when the declaration of a virtual
-function overrides another.
-
-Wswitch
-C ObjC C++ ObjC++ Var(warn_switch) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about enumerated switches, with no default, missing a case.
-
-Wswitch-default
-C ObjC C++ ObjC++ Var(warn_switch_default) Warning
-Warn about enumerated switches missing a \"default:\" statement.
-
-Wswitch-enum
-C ObjC C++ ObjC++ Var(warn_switch_enum) Warning
-Warn about all enumerated switches missing a specific case.
-
-Wswitch-bool
-C ObjC C++ ObjC++ Var(warn_switch_bool) Warning Init(1)
-Warn about switches with boolean controlling expression.
-
-Wswitch-outside-range
-C ObjC C++ ObjC++ Var(warn_switch_outside_range) Warning Init(1)
-Warn about switch values that are outside of the switch's type range.
-
-Wtemplates
-C++ ObjC++ Var(warn_templates) Warning
-Warn on primary template declaration.
-
-Wmissing-attributes
-C ObjC C++ ObjC++ Var(warn_missing_attributes) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about declarations of entities that may be missing attributes
-that related entities have been declared with.
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Warning Alias(Wsuggest-attribute=format)
@@ -1080,6 +981,14 @@ Wmissing-prototypes
 C ObjC Var(warn_missing_prototypes) Warning
 Warn about global functions without prototypes.
 
+Wmissing-requires
+C++ ObjC++ Var(warn_missing_requires) Init(1) Warning
+Warn about likely missing requires keyword.
+
+Wmissing-template-keyword
+C++ ObjC++ Var(warn_missing_template_keyword) Init(1) Warning
+Warn when the template keyword is missing after a member access token in a dependent member access expression if that member is a template.
+
 Wmissing-variable-declarations
 C ObjC Var(warn_missing_variable_declarations) Warning
 Warn about global variables without previous declarations.
@@ -1090,6 +999,18 @@ C ObjC C++ ObjC++ WarnRemoved
 Wmultichar
 C ObjC C++ ObjC++ CPP(warn_multichar) CppReason(CPP_W_MULTICHAR) Var(cpp_warn_multichar) Init(0) Warning
 Warn about use of multi-character character constants.
+
+Wmultiple-inheritance
+C++ ObjC++ Var(warn_multiple_inheritance) Warning
+Warn on direct multiple inheritance.
+
+Wmultistatement-macros
+C ObjC C++ ObjC++ Var(warn_multistatement_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about unsafe macros expanding to multiple statements used as a body of a clause such as if, else, while, switch, or for.
+
+Wnamespaces
+C++ ObjC++ Var(warn_namespaces) Warning
+Warn on namespace definition.
 
 Wnarrowing
 C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1) LangEnabledBy(C++ ObjC++,Wall || Wc++11-compat)
@@ -1110,14 +1031,6 @@ Warn if C++17 noexcept function type will change the mangled name of a symbol.
 Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
 Warn when non-templatized friend functions are declared within a template.
-
-Wclass-conversion
-C++ ObjC++ Var(warn_class_conversion) Init(1) Warning
-Warn when a conversion function will never be called due to the type it converts to.
-
-Wclass-memaccess
-C++ ObjC++ Var(warn_class_memaccess) Warning LangEnabledBy(C++ ObjC++, Wall)
-Warn for unsafe raw memory writes to objects of class types.
 
 Wnon-virtual-dtor
 C++ ObjC++ Var(warn_nonvdtor) Warning LangEnabledBy(C++ ObjC++,Weffc++)
@@ -1211,9 +1124,17 @@ Woverride-init-side-effects
 C ObjC Var(warn_override_init_side_effects) Init(1) Warning
 Warn about overriding initializers with side effects.
 
+Wnrvo
+C++ ObjC++ Var(warn_nrvo)
+Warn if the named return value optimization is not performed although it is allowed.
+
 Wpacked-bitfield-compat
 C ObjC C++ ObjC++ Var(warn_packed_bitfield_compat) Init(-1) Warning
 Warn about packed bit-fields whose offset changed in GCC 4.4.
+
+Wpacked-not-aligned
+C ObjC C++ ObjC++ Var(warn_packed_not_aligned) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn when fields in a struct with the packed attribute are misaligned.
 
 Wparentheses
 C ObjC C++ ObjC++ Var(warn_parentheses) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -1226,6 +1147,14 @@ C ObjC C++ ObjC++ CPP(cpp_pedantic) CppReason(CPP_W_PEDANTIC) Warning
 Wpessimizing-move
 C++ ObjC++ Var(warn_pessimizing_move) Warning LangEnabledBy(C++ ObjC++, Wall)
 Warn about calling std::move on a local object in a return statement preventing copy elision.
+
+Wplacement-new
+C++ Warning Alias(Wplacement-new=, 1, 0)
+Warn for placement new expressions with undefined behavior.
+
+Wplacement-new=
+C++ Joined RejectNegative UInteger Var(warn_placement_new) Init(-1) Warning IntegerRange(0, 2)
+Warn for placement new expressions with undefined behavior.
 
 Wpmf-conversions
 C++ ObjC++ Var(warn_pmf2ptr) Init(1) Warning
@@ -1263,13 +1192,9 @@ Wprotocol
 ObjC ObjC++ Var(warn_protocol) Init(1) Warning
 Warn if inherited methods are unimplemented.
 
-Wplacement-new
-C++ Warning Alias(Wplacement-new=, 1, 0)
-Warn for placement new expressions with undefined behavior.
-
-Wplacement-new=
-C++ Joined RejectNegative UInteger Var(warn_placement_new) Init(-1) Warning IntegerRange(0, 2)
-Warn for placement new expressions with undefined behavior.
+Wrange-loop-construct
+C++ ObjC++ Var(warn_range_loop_construct) Warning LangEnabledBy(C++ ObjC++,Wall)
+Warn when a range-based for-loop is creating unnecessary copies.
 
 Wredundant-decls
 C ObjC C++ ObjC++ Var(warn_redundant_decls) Warning
@@ -1279,6 +1204,10 @@ Wredundant-move
 C++ ObjC++ Var(warn_redundant_move) Warning LangEnabledBy(C++ ObjC++,Wextra)
 Warn about redundant calls to std::move.
 
+Wredundant-tags
+C++ ObjC++ Var(warn_redundant_tags) Warning
+Warn when a class or enumerated type is referenced using a redundant class-key.
+
 Wregister
 C++ ObjC++ Var(warn_register) Warning
 Warn about uses of register storage specifier.
@@ -1286,6 +1215,11 @@ Warn about uses of register storage specifier.
 Wreorder
 C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code.
+
+Wrestrict
+C ObjC C++ ObjC++ Var(warn_restrict) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall)
+Warn when an argument passed to a restrict-qualified parameter aliases with
+another argument.
 
 Wreturn-mismatch
 C ObjC Var(warn_return_mismatch) Warning Init(1)
@@ -1335,10 +1269,6 @@ Wshift-negative-value
 C ObjC C++ ObjC++ Var(warn_shift_negative_value) Init(-1) Warning
 Warn if left shifting a negative value.
 
-Warith-conversion
-C ObjC C++ ObjC++ Var(warn_arith_conv) Warning
-Warn if conversion of the result of arithmetic might change the value even though converting the operands cannot.
-
 Wsign-compare
 C ObjC C++ ObjC++ Var(warn_sign_compare) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about signed-unsigned comparisons.
@@ -1355,25 +1285,108 @@ Wsign-promo
 C++ ObjC++ Var(warn_sign_promo) Warning
 Warn when overload promotes from unsigned to signed.
 
-Wstrict-null-sentinel
-C++ ObjC++ Warning Var(warn_strict_null_sentinel)
-Warn about uncasted NULL used as sentinel.
+Wsized-deallocation
+C++ ObjC++ Var(warn_sized_deallocation) Warning EnabledBy(Wextra)
+Warn about missing sized deallocation functions.
 
-Wstrict-prototypes
-C ObjC Var(warn_strict_prototypes) Warning
-Warn about unprototyped function declarations.
+Wsizeof-array-div
+C ObjC C++ ObjC++ Var(warn_sizeof_array_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about divisions of two sizeof operators when the first one is applied
+to an array and the divisor does not equal the size of the array element.
+
+Wsizeof-array-argument
+C ObjC C++ ObjC++ Var(warn_sizeof_array_argument) Warning Init(1)
+Warn when sizeof is applied on a parameter declared as an array.
+
+Wsizeof-pointer-div
+C ObjC C++ ObjC++ Var(warn_sizeof_pointer_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about suspicious divisions of two sizeof expressions that don't work correctly with pointers.
+
+Wsizeof-pointer-memaccess
+C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about suspicious length parameters to certain string functions if the argument uses sizeof.
 
 Wstrict-aliasing=
 C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall, 3, 0) IntegerRange(0, 3)
 ;
 
+Wstrict-flex-arrays
+C C++ Var(warn_strict_flex_arrays) Warning
+Warn about inproper usages of flexible array members
+according to the level of -fstrict-flex-arrays.
+
+Wstrict-null-sentinel
+C++ ObjC++ Warning Var(warn_strict_null_sentinel)
+Warn about uncasted NULL used as sentinel.
+
 Wstrict-overflow=
 C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0) IntegerRange(0, 5)
 ;
 
+Wstrict-prototypes
+C ObjC Var(warn_strict_prototypes) Warning
+Warn about unprototyped function declarations.
+
 Wstrict-selector-match
 ObjC ObjC++ Var(warn_strict_selector_match) Warning
 Warn if type signatures of candidate methods do not match exactly.
+
+Wstring-compare
+C ObjC C++ LTO ObjC++ Warning Var(warn_string_compare) Warning LangEnabledBy(C ObjC C++ ObjC++, Wextra)
+Warn about calls to strcmp and strncmp used in equality expressions that
+are necessarily true or false due to the length of one and size of the other
+argument.
+
+Wstringop-overflow
+C ObjC C++ LTO ObjC++ Warning Alias(Wstringop-overflow=, 2, 0)
+Warn about buffer overflow in string manipulation functions like memcpy
+and strcpy.
+
+Wstringop-overflow=
+C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall, 2, 0) IntegerRange(0, 4)
+Under the control of Object Size type, warn about buffer overflow in string
+manipulation functions like memcpy and strcpy.
+
+Wstringop-overread
+C ObjC C++ LTO ObjC++ Var(warn_stringop_overread) Init(1) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
+Warn about reading past the end of a source array in string manipulation functions like memchr and memcpy.
+
+Wstringop-truncation
+C ObjC C++ LTO ObjC++ Var(warn_stringop_truncation) Warning Init (1) LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
+Warn about truncation in string manipulation functions like strncat and strncpy.
+
+Wsubobject-linkage
+C++ ObjC++ Var(warn_subobject_linkage) Warning Init(1)
+Warn if a class type has a base or a field whose type uses the anonymous namespace or depends on a type with no linkage.
+
+Wsuggest-attribute=format
+C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
+Warn about functions which might be candidates for format attributes.
+
+Wsuggest-override
+C++ ObjC++ Var(warn_override) Warning
+Suggest that the override keyword be used when the declaration of a virtual
+function overrides another.
+
+Wswitch
+C ObjC C++ ObjC++ Var(warn_switch) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about enumerated switches, with no default, missing a case.
+
+Wswitch-default
+C ObjC C++ ObjC++ Var(warn_switch_default) Warning
+Warn about enumerated switches missing a \"default:\" statement.
+
+Wswitch-enum
+C ObjC C++ ObjC++ Var(warn_switch_enum) Warning
+Warn about all enumerated switches missing a specific case.
+
+Wswitch-bool
+C ObjC C++ ObjC++ Var(warn_switch_bool) Warning Init(1)
+Warn about switches with boolean controlling expression.
+
+Wswitch-outside-range
+C ObjC C++ ObjC++ Var(warn_switch_outside_range) Warning Init(1)
+Warn about switch values that are outside of the switch's type range.
 
 Wsync-nand
 C C++ Var(warn_sync_nand) Init(1) Warning
@@ -1386,6 +1399,10 @@ Deprecated.  This switch has no effect.
 Wsystem-headers
 C ObjC C++ ObjC++ Warning
 ; Documented in common.opt
+
+Wtemplates
+C++ ObjC++ Var(warn_templates) Warning
+Warn on primary template declaration.
 
 Wtautological-compare
 C ObjC C++ ObjC++ Var(warn_tautological_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -1423,10 +1440,6 @@ Wuninitialized
 C ObjC C++ ObjC++ LTO LangEnabledBy(C ObjC C++ ObjC++ LTO,Wall)
 ;
 
-Wmaybe-uninitialized
-C ObjC C++ ObjC++ LTO LangEnabledBy(C ObjC C++ ObjC++ LTO,Wall)
-;
-
 Wunknown-pragmas
 C ObjC C++ ObjC++ Warning Var(warn_unknown_pragmas) LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0)
 Warn about unrecognized pragmas.
@@ -1438,6 +1451,14 @@ Warn about unsuffixed float constants.
 Wunused
 C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ; documented in common.opt
+
+Wunused-const-variable
+C ObjC C++ ObjC++ Warning Alias(Wunused-const-variable=, 2, 0)
+Warn when a const variable is unused.
+
+Wunused-const-variable=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_unused_const_variable) Warning LangEnabledBy(C ObjC,Wunused-variable, 1, 0) IntegerRange(0, 2)
+Warn when a const variable is unused.
 
 Wunused-local-typedefs
 C ObjC C++ ObjC++ Var(warn_unused_local_typedefs) Warning EnabledBy(Wunused)
@@ -1455,14 +1476,6 @@ Wunused-variable
 C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wunused)
 ; documented in common.opt
 
-Wunused-const-variable
-C ObjC C++ ObjC++ Warning Alias(Wunused-const-variable=, 2, 0)
-Warn when a const variable is unused.
-
-Wunused-const-variable=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_unused_const_variable) Warning LangEnabledBy(C ObjC,Wunused-variable, 1, 0) IntegerRange(0, 2)
-Warn when a const variable is unused.
-
 ; Defining this option here in addition to common.opt is necessary
 ; in order for the default -Wall setting of -Wuse-after-free=2 to take
 ; effect.
@@ -1470,6 +1483,10 @@ Warn when a const variable is unused.
 Wuse-after-free=
 LangEnabledBy(C ObjC C++ LTO ObjC++, Wall,2,0)
 ; in common.opt
+
+Wuseless-cast
+C ObjC C++ ObjC++ Var(warn_useless_cast) Warning
+Warn about useless casts.
 
 Wvariadic-macros
 C ObjC C++ ObjC++ CPP(warn_variadic_macros) CppReason(CPP_W_VARIADIC_MACROS) Var(cpp_warn_variadic_macros) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic || Wtraditional)
@@ -1482,6 +1499,10 @@ Warn about questionable usage of the macros used to retrieve variable arguments.
 Wvexing-parse
 C++ ObjC++ Warning Var(warn_vexing_parse) Init(1)
 Warn about the most vexing parse syntactic ambiguity.
+
+Wvirtual-move-assign
+C++ ObjC++ Var(warn_virtual_move_assign) Warning Init(1)
+Warn if a virtual base has a non-trivial move assignment operator.
 
 Wvla
 C ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning
@@ -1513,10 +1534,6 @@ Wvirtual-inheritance
 C++ ObjC++ Var(warn_virtual_inheritance) Warning
 Warn on direct virtual inheritance.
 
-Wvirtual-move-assign
-C++ ObjC++ Var(warn_virtual_move_assign) Warning Init(1)
-Warn if a virtual base has a non-trivial move assignment operator.
-
 Wwrite-strings
 C ObjC C++ ObjC++ Var(warn_write_strings) Warning
 In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard.
@@ -1529,26 +1546,9 @@ Wzero-as-null-pointer-constant
 C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
 Warn when a literal '0' is used as null pointer.
 
-Wuseless-cast
-C ObjC C++ ObjC++ Var(warn_useless_cast) Warning
-Warn about useless casts.
-
-Wsubobject-linkage
-C++ ObjC++ Var(warn_subobject_linkage) Warning Init(1)
-Warn if a class type has a base or a field whose type uses the anonymous namespace or depends on a type with no linkage.
-
-Welaborated-enum-base
-C++ ObjC++ Var(warn_elaborated_enum_base) Warning Init(1)
-Warn if an additional enum-base is used in an elaborated-type-specifier.
-
-Wduplicate-decl-specifier
-C ObjC Var(warn_duplicate_decl_specifier) Warning LangEnabledBy(C ObjC,Wall)
-Warn when a declaration has duplicate const, volatile, restrict or _Atomic specifier.
-
-Wrestrict
-C ObjC C++ ObjC++ Var(warn_restrict) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall)
-Warn when an argument passed to a restrict-qualified parameter aliases with
-another argument.
+Wzero-length-bounds
+C ObjC C++ ObjC++ Var(warn_zero_length_bounds) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about accesses to interior zero-length array members.
 
 ansi
 C ObjC C++ ObjC++

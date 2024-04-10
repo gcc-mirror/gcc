@@ -40,7 +40,9 @@ int PUBLIC = 12;
 
 /* { dg-final { jit-verify-output-file-was-created "" } } */
 /* Check that the attribute was applied correctly */
-/* { dg-final { jit-verify-assembler-output ".hidden\\s+PRIVATE" } } */
-/* { dg-final { jit-verify-assembler-output ".globl\\s+PRIVATE" } } */
-/* { dg-final { jit-verify-assembler-output-not ".hidden\\s+PUBLIC" } } */
-/* { dg-final { jit-verify-assembler-output ".globl\\s+PUBLIC" } } */
+/* { dg-final { jit-verify-assembler-output ".hidden\\s+PRIVATE" { target { ! *-*-darwin* } } } } */
+/* { dg-final { jit-verify-assembler-output ".private_extern\\s+_PRIVATE" { target *-*-darwin* } } } */
+/* { dg-final { jit-verify-assembler-output ".globl\\s+_?PRIVATE" } } */
+/* { dg-final { jit-verify-assembler-output-not ".hidden\\s+PUBLIC" { target { ! *-*-darwin* } } } } */
+/* { dg-final { jit-verify-assembler-output-not ".private_extern\\s+_PUBLIC" { target *-*-darwin* } } } */
+/* { dg-final { jit-verify-assembler-output ".globl\\s+_?PUBLIC" } } */

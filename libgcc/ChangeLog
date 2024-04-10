@@ -1,3 +1,31 @@
+2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR libgcc/113402
+	* config/aarch64/heap-trampoline.c: Rename
+	__builtin_nested_func_ptr_created to __gcc_nested_func_ptr_created and
+	__builtin_nested_func_ptr_deleted to __gcc_nested_func_ptr_deleted.
+	* config/i386/heap-trampoline.c: Likewise.
+	* libgcc2.h: Likewise.
+	* libgcc-std.ver.in (GCC_7.0.0): Likewise and then move
+	__gcc_nested_func_ptr_created and
+	__gcc_nested_func_ptr_deleted from this symbol version to ...
+	(GCC_14.0.0): ... this one.
+
+2024-01-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/amdgcn_veclib.h (CDNA3_PLUS): Handle RDNA3.
+
+2024-01-23  Zac Walker  <zacwalker@microsoft.com>
+
+	* config/aarch64/aarch64-asm.h (HIDDEN, SYMBOL_SIZE, SYMBOL_TYPE)
+	(ENTRY_ALIGN, GNU_PROPERTY): New macros.
+	* config/aarch64/__arm_sme_state.S: Use them.
+	* config/aarch64/__arm_tpidr2_save.S: Likewise.
+	* config/aarch64/__arm_za_disable.S: Likewise.
+	* config/aarch64/crti.S: Likewise.
+	* config/aarch64/lse.S: Likewise.
+
 2024-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgcc2.h (UBILtype): New typedef with may_alias attribute.

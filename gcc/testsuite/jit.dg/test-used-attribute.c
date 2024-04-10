@@ -107,6 +107,10 @@ int foo() {
 
 /* { dg-final { jit-verify-output-file-was-created "" } } */
 /* Check that the "removed" function was inlined, but not the others */
-/* { dg-final { jit-verify-assembler-output-not ".type\\s+removed,\\s+@function" } } */
-/* { dg-final { jit-verify-assembler-output ".type\\s+not_removed,\\s+@function" } } */
-/* { dg-final { jit-verify-assembler-output ".type\\s+foo,\\s+@function" } } */
+/* { dg-final { jit-verify-assembler-output-not ".type\\s+removed,\\s+@function" { target { ! *-*-darwin* } } } } */
+/* { dg-final { jit-verify-assembler-output ".type\\s+not_removed,\\s+@function" { target { ! *-*-darwin* } } } } */
+/* { dg-final { jit-verify-assembler-output ".type\\s+foo,\\s+@function" { target { ! *-*-darwin* } } } } */
+
+/* { dg-final { jit-verify-assembler-output-not "\\n_removed:" { target *-*-darwin* } } } */
+/* { dg-final { jit-verify-assembler-output "\\n_not_removed:" { target *-*-darwin* } } } */
+/* { dg-final { jit-verify-assembler-output "\\n_foo:" { target *-*-darwin* } } } */

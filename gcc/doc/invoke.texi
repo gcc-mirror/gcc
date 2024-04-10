@@ -332,6 +332,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-aggressive-loop-optimizations
 -Warith-conversion
 -Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare
+-Warray-parameter  -Warray-parameter=@var{n}
 -Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias
 -Wno-attribute-warning
 -Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{|}ucn@r{]}
@@ -546,6 +547,7 @@ Objective-C and Objective-C++ Dialects}.
 -falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
 -falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
+-fmin-function-alignment=[@var{n}]
 -fno-allocation-dce -fallow-store-data-races
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}]
 -fauto-inc-dec  -fbranch-probabilities
@@ -1137,6 +1139,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcode-readable=@var{setting}
 -msplit-addresses  -mno-split-addresses
 -mexplicit-relocs  -mno-explicit-relocs
+-mexplicit-relocs=@var{release}
 -mcheck-zero-division  -mno-check-zero-division
 -mdivide-traps  -mdivide-breaks
 -mload-store-pairs  -mno-load-store-pairs
@@ -1490,7 +1493,7 @@ See RS/6000 and PowerPC Options.
 -munroll-only-small-loops -mlam=@var{choice}}
 
 @emph{x86 Windows Options}
-@gccoptlist{-mconsole  -mcrtdll=@var{library}  -mcygwin  -mno-cygwin  -mdll
+@gccoptlist{-mconsole  -mcrtdll=@var{library}  -mdll
 -mnop-fun-dllimport  -mthread
 -municode  -mwin32  -mwindows  -fno-set-stack-executable}
 
@@ -6201,27 +6204,37 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 @option{-Wall} turns on the following warning flags:
 
 @gccoptlist{-Waddress
+-Waligned-new @r{(C++ and Objective-C++ only)}
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}
 -Warray-compare
--Warray-parameter=2 @r{(C and Objective-C only)}
+-Warray-parameter=2
 -Wbool-compare
 -Wbool-operation
--Wc++11-compat  -Wc++14-compat
+-Wc++11-compat  -Wc++14-compat  -Wc++17compat  -Wc++20compat
 -Wcatch-value @r{(C++ and Objective-C++ only)}
 -Wchar-subscripts
+-Wclass-memaccess @r{(C++ and Objective-C++ only)}
 -Wcomment
+-Wdangling-else
 -Wdangling-pointer=2
+-Wdelete-non-virtual-dtor @r{(C++ and Objective-C++ only)}
 -Wduplicate-decl-specifier @r{(C and Objective-C only)}
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)}
 -Wenum-int-mismatch @r{(C and Objective-C only)}
--Wformat
--Wformat-overflow
--Wformat-truncation
--Wint-in-bool-context
+-Wformat=1
+-Wformat-contains-nul
+-Wformat-diag
+-Wformat-extra-args
+-Wformat-overflow=1
+-Wformat-truncation=1
+-Wformat-zero-length
+-Wframe-address
 -Wimplicit @r{(C and Objective-C only)}
--Wimplicit-int @r{(C and Objective-C only)}
 -Wimplicit-function-declaration @r{(C and Objective-C only)}
--Winit-self @r{(only for C++)}
+-Wimplicit-int @r{(C and Objective-C only)}
+-Winfinite-recursion
+-Winit-self @r{(C++ and Objective-C++ only)}
+-Wint-in-bool-context
 -Wlogical-not-parentheses
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}
 -Wmaybe-uninitialized
@@ -6229,24 +6242,26 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wmemset-transposed-args
 -Wmisleading-indentation @r{(only for C/C++)}
 -Wmismatched-dealloc
--Wmismatched-new-delete @r{(only for C/C++)}
+-Wmismatched-new-delete @r{(C++ and Objective-C++ only)}
 -Wmissing-attributes
 -Wmissing-braces @r{(only for C/ObjC)}
 -Wmultistatement-macros
--Wnarrowing @r{(only for C++)}
+-Wnarrowing  @r{(C++ and Objective-C++ only)}
 -Wnonnull
 -Wnonnull-compare
--Wopenmp-simd
+-Wopenmp-simd @r{(C and C++ only)}
+-Woverloaded-virtual=1 @r{(C++ and Objective-C++ only)}
+-Wpacked-not-aligned
 -Wparentheses
--Wpessimizing-move @r{(only for C++)}
--Wpointer-sign
--Wrange-loop-construct @r{(only for C++)}
--Wreorder
+-Wpessimizing-move @r{(C++ and Objective-C++ only)}
+-Wpointer-sign @r{(only for C/ObjC)}
+-Wrange-loop-construct @r{(C++ and Objective-C++ only)}
+-Wreorder @r{(C++ and Objective-C++ only)}
 -Wrestrict
 -Wreturn-type
--Wself-move @r{(only for C++)}
+-Wself-move @r{(C++ and Objective-C++ only)}
 -Wsequence-point
--Wsign-compare @r{(only in C++)}
+-Wsign-compare @r{(C++ and Objective-C++ only)}
 -Wsizeof-array-div
 -Wsizeof-pointer-div
 -Wsizeof-pointer-memaccess
@@ -6257,12 +6272,16 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wtrigraphs
 -Wuninitialized
 -Wunknown-pragmas
+-Wunused
+-Wunused-but-set-variable
+-Wunused-const-variable=1 @r{(only for C/ObjC)}
 -Wunused-function
 -Wunused-label
+-Wunused-local-typedefs
 -Wunused-value
 -Wunused-variable
 -Wuse-after-free=2
--Wvla-parameter @r{(C and Objective-C only)}
+-Wvla-parameter
 -Wvolatile-register-var
 -Wzero-length-bounds}
 
@@ -6282,26 +6301,31 @@ This enables some extra warning flags that are not enabled by
 @option{-Wall}. (This option used to be called @option{-W}.  The older
 name is still supported, but the newer name is more descriptive.)
 
-@gccoptlist{-Wclobbered
+@gccoptlist{-Wabsolute-value @r{(only for C/ObjC)}
+-Walloc-size
+-Wcalloc-transposed-args
 -Wcast-function-type
--Wdeprecated-copy @r{(C++ only)}
+-Wclobbered
+-Wdeprecated-copy @r{(C++ and Objective-C++ only)}
 -Wempty-body
--Wenum-conversion @r{(C only)}
--Wignored-qualifiers
+-Wenum-conversion @r{(only for C/ObjC)}
+-Wexpansion-to-defined
+-Wignored-qualifiers  @r{(only for C/C++)}
 -Wimplicit-fallthrough=3
+-Wmaybe-uninitialized
 -Wmissing-field-initializers
--Wmissing-parameter-type @r{(C only)}
--Wold-style-declaration @r{(C only)}
--Woverride-init
--Wsign-compare @r{(C only)}
+-Wmissing-parameter-type @r{(C/ObjC only)}
+-Wold-style-declaration @r{(C/ObjC only)}
+-Woverride-init @r{(C/ObjC only)}
+-Wredundant-move @r{(C++ and Objective-C++ only)}
+-Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}
+-Wsign-compare @r{(C++ and Objective-C++ only)}
+-Wsized-deallocation @r{(C++ and Objective-C++ only)}
 -Wstring-compare
--Wredundant-move @r{(only for C++)}
 -Wtype-limits
 -Wuninitialized
--Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}}
-
 
 The option @option{-Wextra} also prints warning messages for the
 following cases:
@@ -7597,6 +7621,8 @@ This warning is enabled by @option{-Wall}.
 @opindex Wno-unused-parameter
 @item -Wunused-parameter
 Warn whenever a function parameter is unused aside from its declaration.
+This option is not enabled by @code{-Wunused} unless @code{-Wextra} is also
+specified.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
@@ -7623,25 +7649,26 @@ To suppress this warning use the @code{unused} attribute
 @item -Wunused-const-variable
 @itemx -Wunused-const-variable=@var{n}
 Warn whenever a constant static variable is unused aside from its declaration.
-@option{-Wunused-const-variable=1} is enabled by @option{-Wunused-variable}
-for C, but not for C++. In C this declares variable storage, but in C++ this
-is not an error since const variables take the place of @code{#define}s.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
 @table @gcctabopt
 @item -Wunused-const-variable=1
-This is the warning level that is enabled by @option{-Wunused-variable} for
-C.  It warns only about unused static const variables defined in the main
+Warn about unused static const variables defined in the main
 compilation unit, but not about static const variables declared in any
 header included.
 
+@option{-Wunused-const-variable=1} is enabled by either
+@option{-Wunused-variable} or @option{-Wunused} for C, but not for
+C++. In C this declares variable storage, but in C++ this is not an
+error since const variables take the place of @code{#define}s.
+
 @item -Wunused-const-variable=2
 This warning level also warns for unused constant static variables in
-headers (excluding system headers).  This is the warning level of
-@option{-Wunused-const-variable} and must be explicitly requested since
-in C++ this isn't an error and in C it might be harder to clean up all
+headers (excluding system headers).  It is equivalent to the short form
+@option{-Wunused-const-variable}.  This level must be explicitly
+requested in both C and C++ because it might be hard to clean up all
 headers included.
 @end table
 
@@ -7660,11 +7687,16 @@ This warning is enabled by @option{-Wall}.
 @opindex Wunused
 @opindex Wno-unused
 @item -Wunused
-All the above @option{-Wunused} options combined.
+All the above @option{-Wunused} options combined, except those documented
+as needing to be specified explicitly.
 
 In order to get a warning about an unused function parameter, you must
 either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
-@option{-Wunused}), or separately specify @option{-Wunused-parameter}.
+@option{-Wunused}), or separately specify @option{-Wunused-parameter} and/or
+@option{-Wunused-but-set-parameter}.
+
+@option{-Wunused} enables only @option{-Wunused-const-variable=1} rather than
+@option{-Wunused-const-variable}, and only for C, not C++.
 
 @opindex Wuse-after-free
 @opindex Wno-use-after-free
@@ -8467,25 +8499,28 @@ bool same = arr1 == arr2;
 @option{-Warray-compare} is enabled by @option{-Wall}.
 
 @opindex Wno-array-parameter
+@opindex Warray-parameter
 @item -Warray-parameter
 @itemx -Warray-parameter=@var{n}
-Warn about redeclarations of functions involving arguments of array or
+Warn about redeclarations of functions involving parameters of array or
 pointer types of inconsistent kinds or forms, and enable the detection
 of out-of-bounds accesses to such parameters by warnings such as
 @option{-Warray-bounds}.
 
-If the first function declaration uses the array form the bound specified
+If the first function declaration uses the array form for a parameter
+declaration, the bound specified
 in the array is assumed to be the minimum number of elements expected to
 be provided in calls to the function and the maximum number of elements
 accessed by it.  Failing to provide arguments of sufficient size or accessing
 more than the maximum number of elements may be diagnosed by warnings such
-as @option{-Warray-bounds}.  At level 1 the warning diagnoses inconsistencies
+as @option{-Warray-bounds} or @option{-Wstringop-overflow}.
+At level 1, the warning diagnoses inconsistencies
 involving array parameters declared using the @code{T[static N]} form.
 
-For example, the warning triggers for the following redeclarations because
-the first one allows an array of any size to be passed to @code{f} while
-the second one with the keyword @code{static} specifies that the array
-argument must have at least four elements.
+For example, the warning triggers for the second declaration of @code{f}
+because the first one with the keyword @code{static} specifies that
+the array argument must have at least four elements, while the second
+allows an array of any size to be passed to @code{f}.
 
 @smallexample
 void f (int[static 4]);
@@ -8493,7 +8528,7 @@ void f (int[]);           // warning (inconsistent array form)
 
 void g (void)
 @{
-  int *p = (int *)malloc (4);
+  int *p = (int *)malloc (1 * sizeof (int));
   f (p);                  // warning (array too small)
   @dots{}
 @}
@@ -8513,6 +8548,10 @@ void g (int[8]);    // warning (inconsistent array bound)
 @option{-Warray-parameter=2} is included in @option{-Wall}.  The
 @option{-Wvla-parameter} option triggers warnings for similar inconsistencies
 involving Variable Length Array arguments.
+
+The short form of the option @option{-Warray-parameter} is equivalent to
+@option{-Warray-parameter=2}.  The negative form @option{-Wno-array-parameter}
+is equivalent to @option{-Warray-parameter=0}.
 
 @opindex Wattribute-alias
 @opindex Wno-attribute-alias
@@ -9415,51 +9454,63 @@ levels but may yield different results with optimization than without.
 
 @table @gcctabopt
 @item -Wdangling-pointer=1
-At level 1 the warning diagnoses only unconditional uses of dangling pointers.
-For example
-@smallexample
-int f (int c1, int c2, x)
-@{
-  char *p = strchr ((char[])@{ c1, c2 @}, c3);
-  // warning: dangling pointer to a compound literal
-  return p ? *p : 'x';
-@}
-@end smallexample
-In the following function the store of the address of the local variable
-@code{x} in the escaped pointer @code{*p} also triggers the warning.
-@smallexample
-void g (int **p)
-@{
-  int x = 7;
-  // warning: storing the address of a local variable in *p
-  *p = &x;
-@}
-@end smallexample
+At level 1, the warning diagnoses only unconditional uses of dangling pointers.
 
 @item -Wdangling-pointer=2
 At level 2, in addition to unconditional uses the warning also diagnoses
 conditional uses of dangling pointers.
+@end table
 
-For example, because the array @var{a} in the following function is out of
-scope when the pointer @var{s} that was set to point is used, the warning
-triggers at this level.
+The short form @option{-Wdangling-pointer} is equivalent to
+@option{-Wdangling-pointer=2}, while @option{-Wno-dangling-pointer} and
+@option{-Wdangling-pointer=0} have the same effect of disabling the warnings.
+@option{-Wdangling-pointer=2} is included in @option{-Wall}.
+
+This example triggers the warning at level 1; the address of the unnamed
+temporary is unconditionally referenced outside of its scope.
 
 @smallexample
-void f (char *s)
+char f (char c1, char c2, char c3)
+@{
+  char *p;
+  @{
+    p = (char[]) @{ c1, c2, c3 @};
+  @}
+  // warning: using dangling pointer 'p' to an unnamed temporary
+  return *p;
+@}
+@end smallexample
+
+In the following function the store of the address of the local variable
+@code{x} in the escaped pointer @code{*p} triggers the warning at
+level 1.
+
+@smallexample
+void g (int **p)
+@{
+  int x = 7;
+  // warning: storing the address of local variable 'x' in '*p'
+  *p = &x;
+@}
+@end smallexample
+
+In this example, the array @var{a} is out of
+scope when the pointer @var{s} is used.  Since the code that sets @code{s}
+is conditional, the warning triggers at level 2.
+
+@smallexample
+extern void frob (const char *);
+void h (char *s)
 @{
   if (!s)
     @{
       char a[12] = "tmpname";
       s = a;
     @}
-  // warning: dangling pointer to a may be used
-  strcat (s, ".tmp");
-  ...
+  // warning: dangling pointer 's' to 'a' may be used
+  frob (s);
 @}
 @end smallexample
-@end table
-
-@option{-Wdangling-pointer=2} is included in @option{-Wall}.
 
 @opindex Wdate-time
 @opindex Wno-date-time
@@ -14184,6 +14235,9 @@ Align the start of functions to the next power-of-two greater than or
 equal to @var{n}, skipping up to @var{m}-1 bytes.  This ensures that at
 least the first @var{m} bytes of the function can be fetched by the CPU
 without crossing an @var{n}-byte alignment boundary.
+This is an optimization of code performance and alignment is ignored for
+functions considered cold.  If alignment is required for all functions,
+use @option{-fmin-function-alignment}.
 
 If @var{m} is not specified, it defaults to @var{n}.
 
@@ -14247,6 +14301,8 @@ Enabled at levels @option{-O2}, @option{-O3}.
 Align loops to a power-of-two boundary.  If the loops are executed
 many times, this makes up for any execution of the dummy padding
 instructions.
+This is an optimization of code performance and alignment is ignored for
+loops considered cold.
 
 If @option{-falign-labels} is greater than this value, then its value
 is used instead.
@@ -14269,6 +14325,8 @@ Enabled at levels @option{-O2}, @option{-O3}.
 Align branch targets to a power-of-two boundary, for branch targets
 where the targets can only be reached by jumping.  In this case,
 no dummy operations need be executed.
+This is an optimization of code performance and alignment is ignored for
+jumps considered cold.
 
 If @option{-falign-labels} is greater than this value, then its value
 is used instead.
@@ -14281,6 +14339,14 @@ If @var{n} is not specified or is zero, use a machine-dependent default.
 The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
+
+@opindex fmin-function-alignment=@var{n}
+@item -fmin-function-alignment
+Specify minimal alignment of functions to the next power-of-two greater than or
+equal to @var{n}. Unlike @option{-falign-functions} this alignment is applied
+also to all functions (even those considered cold).  The alignment is also not
+affected by @option{-flimit-function-alignment}
+
 
 @opindex fno-allocation-dce
 @item -fno-allocation-dce
@@ -14378,7 +14444,7 @@ To use the link-time optimizer, @option{-flto} and optimization
 options should be specified at compile time and during the final link.
 It is recommended that you compile all the files participating in the
 same link with the same options and also specify those options at
-link time.  
+link time.
 For example:
 
 @smallexample
@@ -19457,8 +19523,8 @@ for nested functions.
 By default, trampolines are generated on stack.  However, certain platforms
 (such as the Apple M1) do not permit an executable stack.  Compiling with
 @option{-ftrampoline-impl=heap} generate calls to
-@code{__builtin_nested_func_ptr_created} and
-@code{__builtin_nested_func_ptr_deleted} in order to allocate and
+@code{__gcc_nested_func_ptr_created} and
+@code{__gcc_nested_func_ptr_deleted} in order to allocate and
 deallocate trampoline space on the executable heap.  These functions are
 implemented in libgcc, and will only be provided on specific targets:
 x86_64 Darwin, x86_64 and aarch64 Linux.  @emph{PLEASE NOTE}: Heap
@@ -21672,6 +21738,12 @@ Compile for CDNA1 Instinct MI100 series devices (gfx908).
 
 @item gfx90a
 Compile for CDNA2 Instinct MI200 series devices (gfx90a).
+
+@item gfx1030
+Compile for RDNA2 gfx1030 devices (GFX10 series).
+
+@item gfx1100
+Compile for RDNA3 gfx1100 devices (GFX11 series).
 
 @end table
 
@@ -28368,16 +28440,20 @@ Enable (disable) use of the @code{%hi()} and @code{%lo()} assembler
 relocation operators.  This option has been superseded by
 @option{-mexplicit-relocs} but is retained for backwards compatibility.
 
-@opindex mexplicit-relocs
-@opindex mno-explicit-relocs
-@item -mexplicit-relocs
+@opindex mexplicit-relocs=none
+@opindex mexplicit-relocs=base
+@opindex mexplicit-relocs=pcrel
+@item -mexplicit-relocs=none
+@itemx -mexplicit-relocs=base
+@itemx -mexplicit-relocs=pcrel
+@itemx -mexplicit-relocs
 @itemx -mno-explicit-relocs
-Use (do not use) assembler relocation operators when dealing with symbolic
-addresses.  The alternative, selected by @option{-mno-explicit-relocs},
-is to use assembler macros instead.
+These options control whether explicit relocs (such as %gp_rel) are used.
+The default value depends on the version of GAS when GCC itself was built.
 
-@option{-mexplicit-relocs} is the default if GCC was configured
-to use an assembler that supports relocation operators.
+The @code{base} explicit-relocs support introdunced into GAS in 2001.
+The @code{pcrel} explicit-relocs support introdunced into GAS in 2014,
+which supports @code{%pcrel_hi} and @code{%pcrel_lo}.
 
 @opindex mcheck-zero-division
 @opindex mno-check-zero-division
@@ -30096,6 +30172,483 @@ with @option{--with-isa-spec=} specifying a different default version.
 Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
 lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
 @samp{rv32imaf}.
+
+The syntax of the ISA string is defined as follows:
+
+@table @code
+@item The string must start with @samp{rv32} or @samp{rv64}, followed by
+@samp{i}, @samp{e}, or @samp{g}, referred to as the base ISA.
+@item The subsequent part of the string is a list of extension names. Extension
+names can be categorized as multi-letter (e.g.@: @samp{zba}) and single-letter
+(e.g.@: @samp{v}). Single-letter extensions can appear consecutively,
+but multi-letter extensions must be separated by underscores.
+@item An underscore can appear anywhere after the base ISA. It has no specific
+effect but is used to improve readability and can act as a separator.
+@item Extension names may include an optional version number, following the
+syntax @samp{<major>p<minor>} or @samp{<major>}, (e.g.@: @samp{m2p1} or
+@samp{m2}).
+@end table
+
+Supported extension are listed below:
+@multitable @columnfractions .10 .10 .80
+@headitem Extension Name @tab Supported Version @tab Description
+@item i
+@tab 2.0, 2.1
+@tab Base integer extension.
+
+@item e
+@tab 2.0
+@tab Reduced base integer extension.
+
+@item g
+@tab -
+@tab General-purpose computing base extension, @samp{g} will expand to
+@samp{i}, @samp{m}, @samp{a}, @samp{f}, @samp{d}, @samp{zicsr} and
+@samp{zifencei}.
+
+@item m
+@tab 2.0
+@tab Integer multiplication and division extension.
+
+@item a
+@tab 2.0, 2.1
+@tab Atomic extension.
+
+@item f
+@tab 2.0, 2.2
+@tab Single-precision floating-point extension.
+
+@item d
+@tab 2.0, 2.2
+@tab Double-precision floating-point extension.
+
+@item c
+@tab 2.0
+@tab Compressed extension.
+
+@item h
+@tab 1.0
+@tab Hypervisor extension.
+
+@item v
+@tab 1.0
+@tab Vector extension.
+
+@item zicsr
+@tab 2.0
+@tab Control and status register access extension.
+
+@item zifencei
+@tab 2.0
+@tab Instruction-fetch fence extension.
+
+@item zicond
+@tab 1.0
+@tab Integer conditional operations extension.
+
+@item zawrs
+@tab 1.0
+@tab Wait-on-reservation-set extension.
+
+@item zba
+@tab 1.0
+@tab Address calculation extension.
+
+@item zbb
+@tab 1.0
+@tab Basic bit manipulation extension.
+
+@item zbc
+@tab 1.0
+@tab Carry-less multiplication extension.
+
+@item zbs
+@tab 1.0
+@tab Single-bit operation extension.
+
+@item zfinx
+@tab 1.0
+@tab Single-precision floating-point in integer registers extension.
+
+@item zdinx
+@tab 1.0
+@tab Double-precision floating-point in integer registers extension.
+
+@item zhinx
+@tab 1.0
+@tab Half-precision floating-point in integer registers extension.
+
+@item zhinxmin
+@tab 1.0
+@tab Minimal half-precision floating-point in integer registers extension.
+
+@item zbkb
+@tab 1.0
+@tab Cryptography bit-manipulation extension.
+
+@item zbkc
+@tab 1.0
+@tab Cryptography carry-less multiply extension.
+
+@item zbkx
+@tab 1.0
+@tab Cryptography crossbar permutation extension.
+
+@item zkne
+@tab 1.0
+@tab AES Encryption extension.
+
+@item zknd
+@tab 1.0
+@tab AES Decryption extension.
+
+@item zknh
+@tab 1.0
+@tab Hash function extension.
+
+@item zkr
+@tab 1.0
+@tab Entropy source extension.
+
+@item zksed
+@tab 1.0
+@tab SM4 block cipher extension.
+
+@item zksh
+@tab 1.0
+@tab SM3 hash function extension.
+
+@item zkt
+@tab 1.0
+@tab Data independent execution latency extension.
+
+@item zk
+@tab 1.0
+@tab Standard scalar cryptography extension.
+
+@item zkn
+@tab 1.0
+@tab NIST algorithm suite extension.
+
+@item zks
+@tab 1.0
+@tab ShangMi algorithm suite extension.
+
+@item zihintntl
+@tab 1.0
+@tab Non-temporal locality hints extension.
+
+@item zihintpause
+@tab 1.0
+@tab Pause hint extension.
+
+@item zicboz
+@tab 1.0
+@tab Cache-block zero extension.
+
+@item zicbom
+@tab 1.0
+@tab Cache-block management extension.
+
+@item zicbop
+@tab 1.0
+@tab Cache-block prefetch extension.
+
+@item zicntr
+@tab 2.0
+@tab Standard extension for base counters and timers.
+
+@item zihpm
+@tab 2.0
+@tab Standard extension for hardware performance counters.
+
+@item ztso
+@tab 1.0
+@tab Total store ordering extension.
+
+@item zve32x
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zve32f
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zve64x
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zve64f
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zve64d
+@tab 1.0
+@tab Vector extensions for embedded processors.
+
+@item zvl32b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl64b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl128b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl256b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl512b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl1024b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl2048b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvl4096b
+@tab 1.0
+@tab Minimum vector length standard extensions
+
+@item zvbb
+@tab 1.0
+@tab Vector basic bit-manipulation extension.
+
+@item zvbc
+@tab 1.0
+@tab Vector carryless multiplication extension.
+
+@item zvkb
+@tab 1.0
+@tab Vector cryptography bit-manipulation extension.
+
+@item zvkg
+@tab 1.0
+@tab Vector GCM/GMAC extension.
+
+@item zvkned
+@tab 1.0
+@tab Vector AES block cipher extension.
+
+@item zvknha
+@tab 1.0
+@tab Vector SHA-2 secure hash extension.
+
+@item zvknhb
+@tab 1.0
+@tab Vector SHA-2 secure hash extension.
+
+@item zvksed
+@tab 1.0
+@tab Vector SM4 Block Cipher extension.
+
+@item zvksh
+@tab 1.0
+@tab Vector SM3 Secure Hash extension.
+
+@item zvkn
+@tab 1.0
+@tab Vector NIST Algorithm Suite extension, @samp{zvkn} will expand to
+@samp{zvkned}, @samp{zvknhb}, @samp{zvkb} and @samp{zvkt}.
+
+@item zvknc
+@tab 1.0
+@tab Vector NIST Algorithm Suite with carryless multiply extension, @samp{zvknc}
+will expand to @samp{zvkn} and @samp{zvbc}.
+
+@item zvkng
+@tab 1.0
+@tab Vector NIST Algorithm Suite with GCM extension, @samp{zvkng} will expand
+to @samp{zvkn} and @samp{zvkg}.
+
+@item zvks
+@tab 1.0
+@tab Vector ShangMi algorithm suite extension, @samp{zvks} will expand
+to @samp{zvksed}, @samp{zvksh}, @samp{zvkb} and @samp{zvkt}.
+
+@item zvksc
+@tab 1.0
+@tab Vector ShangMi algorithm suite with carryless multiplication extension,
+@samp{zvksc} will expand to @samp{zvks} and @samp{zvbc}.
+
+@item zvksg
+@tab 1.0
+@tab Vector ShangMi algorithm suite with GCM extension, @samp{zvksg} will expand
+to @samp{zvks} and @samp{zvkg}.
+
+@item zvkt
+@tab 1.0
+@tab Vector data independent execution latency extension.
+
+@item zfh
+@tab 1.0
+@tab Half-precision floating-point extension.
+
+@item zfhmin
+@tab 1.0
+@tab Minimal half-precision floating-point extension.
+
+@item zvfh
+@tab 1.0
+@tab Vector half-precision floating-point extension.
+
+@item zvfhmin
+@tab 1.0
+@tab Vector minimal half-precision floating-point extension.
+
+@item zvfbfmin
+@tab 1.0
+@tab Vector BF16 converts extension.
+
+@item zfa
+@tab 1.0
+@tab Additional floating-point extension.
+
+@item zmmul
+@tab 1.0
+@tab Integer multiplication extension.
+
+@item zca
+@tab 1.0
+@tab Integer compressed instruction extension.
+
+@item zcf
+@tab 1.0
+@tab Compressed single-precision floating point loads and stores extension.
+
+@item zcd
+@tab 1.0
+@tab Compressed double-precision floating point loads and stores extension.
+
+@item zcb
+@tab 1.0
+@tab Simple compressed instruction extension.
+
+@item zce
+@tab 1.0
+@tab Compressed instruction extensions for embedded processors.
+
+@item zcmp
+@tab 1.0
+@tab Compressed push pop extension.
+
+@item zcmt
+@tab 1.0
+@tab Table jump instruction extension.
+
+@item smaia
+@tab 1.0
+@tab Advanced interrupt architecture extension.
+
+@item smepmp
+@tab 1.0
+@tab PMP Enhancements for memory access and execution prevention on Machine mode.
+
+@item smstateen
+@tab 1.0
+@tab State enable extension.
+
+@item ssaia
+@tab 1.0
+@tab Advanced interrupt architecture extension for supervisor-mode.
+
+@item sscofpmf
+@tab 1.0
+@tab Count overflow & filtering extension.
+
+@item ssstateen
+@tab 1.0
+@tab State-enable extension for supervisor-mode.
+
+@item sstc
+@tab 1.0
+@tab Supervisor-mode timer interrupts extension.
+
+@item svinval
+@tab 1.0
+@tab Fine-grained address-translation cache invalidation extension.
+
+@item svnapot
+@tab 1.0
+@tab NAPOT translation contiguity extension.
+
+@item svpbmt
+@tab 1.0
+@tab Page-based memory types extension.
+
+@item xcvmac
+@tab 1.0
+@tab Core-V multiply-accumulate extension.
+
+@item xcvalu
+@tab 1.0
+@tab Core-V miscellaneous ALU extension.
+
+@item xcvelw
+@tab 1.0
+@tab Core-V event load word extension.
+
+@item xtheadba
+@tab 1.0
+@tab T-head address calculation extension.
+
+@item xtheadbb
+@tab 1.0
+@tab T-head basic bit-manipulation extension.
+
+@item xtheadbs
+@tab 1.0
+@tab T-head single-bit instructions extension.
+
+@item xtheadcmo
+@tab 1.0
+@tab T-head cache management operations extension.
+
+@item xtheadcondmov
+@tab 1.0
+@tab T-head conditional move extension.
+
+@item xtheadfmemidx
+@tab 1.0
+@tab T-head indexed memory operations for floating-point registers extension.
+
+@item xtheadfmv
+@tab 1.0
+@tab T-head double floating-point high-bit data transmission extension.
+
+@item xtheadint
+@tab 1.0
+@tab T-head acceleration interruption extension.
+
+@item xtheadmac
+@tab 1.0
+@tab T-head multiply-accumulate extension.
+
+@item xtheadmemidx
+@tab 1.0
+@tab T-head indexed memory operation extension.
+
+@item xtheadmempair
+@tab 1.0
+@tab T-head two-GPR memory operation extension.
+
+@item xtheadsync
+@tab 1.0
+@tab T-head multi-core synchronization extension.
+
+@item xventanacondops
+@tab 1.0
+@tab Ventana integer conditional operations extension.
+
+@end multitable
 
 When @option{-march=} is not specified, use the setting from @option{-mcpu}.
 

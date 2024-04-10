@@ -180,7 +180,7 @@ namespace
 
     bool changed_mem_p () const { return result_flags & CHANGED_MEM; }
     bool folded_to_constants_p () const;
-    bool profitable_p () const;
+    bool likely_profitable_p () const;
 
     bool check_mem (int, rtx) final override;
     void note_simplification (int, uint16_t, rtx, rtx) final override;
@@ -323,7 +323,7 @@ fwprop_propagation::folded_to_constants_p () const
    false if it would increase the complexity of the pattern too much.  */
 
 bool
-fwprop_propagation::profitable_p () const
+fwprop_propagation::likely_profitable_p () const
 {
   if (changed_mem_p ())
     return true;
@@ -398,7 +398,7 @@ try_fwprop_subst_note (insn_info *use_insn, set_info *def,
     }
   else
     {
-      if (!prop.folded_to_constants_p () && !prop.profitable_p ())
+      if (!prop.folded_to_constants_p () && !prop.likely_profitable_p ())
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "cannot propagate from insn %d into"
@@ -449,7 +449,10 @@ try_fwprop_subst_pattern (obstack_watermark &attempt, insn_change &use_change,
   if (prop.num_replacements == 0)
     return false;
 
-  if (!prop.profitable_p ())
+  if (!prop.likely_profitable_p ()
+      && (prop.changed_mem_p ()
+	  || use_insn->is_asm ()
+	  || !single_set (use_rtl)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "cannot propagate from insn %d into"
@@ -481,7 +484,8 @@ try_fwprop_subst_pattern (obstack_watermark &attempt, insn_change &use_change,
 	redo_changes (0);
 	auto new_cost = set_src_cost (SET_SRC (use_set),
 				      GET_MODE (SET_DEST (use_set)), speed);
-	if (new_cost > old_cost)
+	if (new_cost > old_cost
+	    || (new_cost == old_cost && !prop.likely_profitable_p ()))
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, "change not profitable"

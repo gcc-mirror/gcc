@@ -1,3 +1,142 @@
+2024-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Check.mod (dumpIndice): New procedure.
+	(dumpIndex): New procedure.
+	(dumptInfo): New procedure.
+	(buildError4): Add comment and pass formal and actual to
+	MetaError4.  Improve text describing error.
+	(buildError2): Generate different error descriptions for
+	the three error kinds.
+	(checkConstMeta): Add block comment.  Add more meta checks
+	and call doCheckPair to complete string const checking.
+	Add tinfo parameter.
+	(checkConstEquivalence): Add tinfo parameter.
+	* gm2-compiler/M2GCCDeclare.mod (PrintVerboseFromList):
+	Print the length of a const string.
+	* gm2-compiler/M2GenGCC.mod (CodeParam): Remove parameters
+	op1, op2 and op3.
+	(doParam): Add paramtok parameter.  Use paramtok instead rather
+	than CurrentQuadToken.
+	(CodeParam): Rewrite.
+	* gm2-compiler/M2Quads.mod (CheckProcedureParameters):
+	Add comments explaining that const strings are not checked
+	in M2Quads.mod.
+	(FailParameter): Use MetaErrorT2 with tokpos rather than
+	MetaError2.
+	(doBuildBinaryOp): Assign OldPos and OperatorPos before the
+	IF block.
+	* gm2-compiler/SymbolTable.mod (PutConstString): Add call to
+	InitWhereDeclaredTok.
+
+2024-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs/libc.def (lseek): Change the second parameter
+	type to	CSSIZE_T and make the return value optional.
+
+2024-01-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113559
+	* gm2-libs/FIO.mod (SetPositionFromBeginning): Convert pos into
+	CSSIZE_T during call to lseek.
+	(SetPositionFromEnd): Convert pos into CSSIZE_T during call to
+	lseek.
+
+2024-01-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/113554
+	* mc/mc.flex (alloca): Don't redefine.
+	(handleDate): Replace (long *)0 with (time_t *)0 when calling
+	time.
+
+2024-01-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2BasicBlock.mod (InitBasicBlocks): Rename
+	ForeachScopeBlockDo to ForeachScopeBlockDo3.
+	* gm2-compiler/M2Code.mod: Import ForeachScopeBlockDo2.
+	(OptimizeScopeBlock): Call ForeachScopeBlockDo3 for
+	procedures with three parameters and ForeachScopeBlockDo2
+	for two parameters.
+	(CodeBlock): Ditto.
+	* gm2-compiler/M2GCCDeclare.mod (DeclareTypesConstantsProcedures):
+	Rename ForeachScopeBlockDo to ForeachScopeBlockDo3.
+	* gm2-compiler/M2GenGCC.def (ConvertQuadsToTree): Remove Scope
+	parameter.
+	* gm2-compiler/M2GenGCC.mod (ConvertQuadsToTree): Remove Scope
+	parameter.
+	(MaybeDebugBuiltinMemcpy): Remove parameter tok.
+	(MaybeDebugBuiltinMemset): Remove.
+	(MakeCopyUse): Remove tokenno from call to
+	MaybeDebugBuiltinMemcpy.
+	(PerformFoldBecomes): Remove desloc and exprloc.
+	(checkArrayElements): Remove location.  Remove virtpos
+	as a parameter to MaybeDebugBuiltinMemcpy.
+	(NoWalkProcedure): Add attribute unused.
+	(CheckElementSetTypes): Remove parameter p.
+	Remove CurrentQuadToken in call to MaybeDebugBuiltinMemcpy.
+	Remove NoWalkProcedure from call to CheckElementSetTypes.
+	Remove tokenno from call to MaybeDebugBuiltinMemcpy.
+	* gm2-compiler/M2Optimize.mod (RemoveProcedures): Replace
+	two parameter indirect procedure iterator with
+	ForeachScopeBlockDo2.
+	* gm2-compiler/M2SSA.mod: Remove ForeachScopeBlockDo.
+	* gm2-compiler/M2Scope.def (ForeachScopeBlockDo2): New
+	declaration.
+	(ForeachScopeBlockDo): Rename ...
+	(ForeachScopeBlockDo3): ... to this.
+	(ScopeProcedure2): New declaration.
+	* gm2-compiler/M2Scope.mod (ForeachScopeBlockDo2): New
+	procedure.
+	(ForeachScopeBlockDo): Rename ...
+	(ForeachScopeBlockDo3): ... to this.
+
+2024-01-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111956
+	* Make-lang.in (host_mc_longreal): Remove.
+	* configure: Regenerate.
+	* configure.ac (M2C_LONGREAL_FLOAT128): Remove.
+	(M2C_LONGREAL_PPC64LE): Remove.
+	* gm2-compiler/M2Options.def (SetIBMLongDouble): New procedure.
+	(GetIBMLongDouble): New procedure function.
+	(SetIEEELongDouble): New procedure.
+	(GetIEEELongDouble): New procedure function.
+	* gm2-compiler/M2Options.mod (SetIBMLongDouble): New procedure.
+	(GetIBMLongDouble): New procedure function.
+	(SetIEEELongDouble): New procedure.
+	(GetIEEELongDouble): New procedure function.
+	(InitializeLongDoubleFlags): New procedure called during
+	module block initialization.
+	* gm2-gcc/m2configure.cc: Remove duplicate includes.
+	(m2configure_M2CLongRealFloat128): Remove.
+	(m2configure_M2CLongRealIBM128): Remove.
+	(m2configure_M2CLongRealLongDouble): Remove.
+	(m2configure_M2CLongRealLongDoublePPC64LE): Remove.
+	(m2configure_TargetIEEEQuadDefault): New function.
+	* gm2-gcc/m2configure.def (M2CLongRealFloat128): Remove.
+	(M2CLongRealIBM128): Remove.
+	(M2CLongRealLongDouble): Remove.
+	(M2CLongRealLongDoublePPC64LE): Remove.
+	(TargetIEEEQuadDefault): New function.
+	* gm2-gcc/m2configure.h (m2configure_M2CLongRealFloat128): Remove.
+	(m2configure_M2CLongRealIBM128): Remove.
+	(m2configure_M2CLongRealLongDouble): Remove.
+	(m2configure_M2CLongRealLongDoublePPC64LE): Remove.
+	(m2configure_TargetIEEEQuadDefault): New function.
+	* gm2-gcc/m2options.h (M2Options_SetIBMLongDouble): New prototype.
+	(M2Options_GetIBMLongDouble): New prototype.
+	(M2Options_SetIEEELongDouble): New prototype.
+	(M2Options_GetIEEELongDouble): New prototype.
+	* gm2-gcc/m2type.cc (build_m2_long_real_node): Re-implement using
+	results of M2Options_GetIBMLongDouble and M2Options_GetIEEELongDouble.
+	* gm2-lang.cc (gm2_langhook_handle_option): Add case
+	OPT_mabi_ibmlongdouble and call M2Options_SetIBMLongDouble.
+	Add case OPT_mabi_ieeelongdouble and call M2Options_SetIEEELongDouble.
+	* gm2config.aci.in: Regenerate.
+	* gm2spec.cc (lang_specific_driver): Remove block defined by
+	M2C_LONGREAL_PPC64LE.
+	Remove case OPT_mabi_ibmlongdouble.
+	Remove case OPT_mabi_ieeelongdouble.
+
 2024-01-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/112946

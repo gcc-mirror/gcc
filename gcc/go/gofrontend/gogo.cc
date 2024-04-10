@@ -2914,7 +2914,7 @@ class Lower_parse_tree : public Traverse
 	       | traverse_functions
 	       | traverse_statements
 	       | traverse_expressions),
-      gogo_(gogo), function_(function), iota_value_(-1), inserter_()
+      gogo_(gogo), function_(function), inserter_()
   { }
 
   void
@@ -2941,8 +2941,6 @@ class Lower_parse_tree : public Traverse
   Gogo* gogo_;
   // The function we are traversing.
   Named_object* function_;
-  // Value to use for the predeclared constant iota.
-  int iota_value_;
   // Current statement inserter for use by expressions.
   Statement_inserter inserter_;
 };
@@ -3086,7 +3084,7 @@ Lower_parse_tree::expression(Expression** pexpr)
     {
       Expression* e = *pexpr;
       Expression* enew = e->lower(this->gogo_, this->function_,
-				  &this->inserter_, this->iota_value_);
+				  &this->inserter_);
       if (enew == e)
 	break;
       if (enew->traverse_subexpressions(this) == TRAVERSE_EXIT)

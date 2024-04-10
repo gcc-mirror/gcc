@@ -1043,7 +1043,7 @@ int aarch64_ccmp_mode_to_code (machine_mode mode);
 
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_mergeable_load_pair_p (machine_mode, rtx, rtx);
-bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
+bool aarch64_operands_ok_for_ldpstp (rtx *, bool);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
 bool aarch64_mem_ok_with_ldpstp_policy_model (rtx, bool, machine_mode);
 bool aarch64_ldpstp_operand_mode_p (machine_mode);

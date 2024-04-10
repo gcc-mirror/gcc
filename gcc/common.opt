@@ -1040,9 +1040,6 @@ Align the start of functions.
 falign-functions=
 Common RejectNegative Joined Var(str_align_functions) Optimization
 
-flimit-function-alignment
-Common Var(flag_limit_function_alignment) Optimization Init(0)
-
 falign-jumps
 Common Var(flag_align_jumps) Optimization
 Align labels which are only reached by jumping.
@@ -2277,6 +2274,10 @@ fmessage-length=
 Common RejectNegative Joined UInteger
 -fmessage-length=<number>	Limit diagnostics to <number> characters per line.  0 suppresses line-wrapping.
 
+fmin-function-alignment=
+Common Joined RejectNegative UInteger Var(flag_min_function_alignment) Optimization
+Align the start of every function.
+
 fmodulo-sched
 Common Var(flag_modulo_sched) Optimization
 Perform SMS based modulo scheduling before the first scheduling pass.
@@ -2600,6 +2601,9 @@ starts and when the destructor finishes.
 
 flifetime-dse=
 Common Joined RejectNegative UInteger Var(flag_lifetime_dse) Optimization IntegerRange(0, 2)
+
+flimit-function-alignment
+Common Var(flag_limit_function_alignment) Optimization Init(0)
 
 flive-patching
 Common RejectNegative Alias(flive-patching=,inline-clone) Optimization

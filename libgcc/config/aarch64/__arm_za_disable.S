@@ -31,9 +31,9 @@
    - Does not return a value.
    - Can abort on failure (then registers are not preserved).  */
 
-.hidden __aarch64_have_sme
+HIDDEN (__aarch64_have_sme)
 
-.hidden __libgcc_arm_tpidr2_save
+HIDDEN (__libgcc_arm_tpidr2_save)
 
 variant_pcs (__arm_za_disable)
 
@@ -66,5 +66,5 @@ END (__arm_za_disable)
 
 /* Hidden alias used by the unwinder.  */
 .global __libgcc_arm_za_disable
-.hidden __libgcc_arm_za_disable
+HIDDEN (__libgcc_arm_za_disable)
 .set __libgcc_arm_za_disable, __arm_za_disable

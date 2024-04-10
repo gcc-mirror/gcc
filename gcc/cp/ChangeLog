@@ -1,3 +1,117 @@
+2024-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113544
+	* pt.cc (instantiate_class_template): Don't partially instantiate.
+	(tsubst_stmt): Likewise.
+
+2024-01-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113580
+	* module.cc (struct post_process_data): Create.
+	(trees_in::post_decls): Use.
+	(trees_in::post_process): Return entire vector at once.
+	Change overload to take post_process_data instead of tree.
+	(trees_out::write_function_def): Write needed flags from
+	DECL_STRUCT_FUNCTION.
+	(trees_in::read_function_def): Read them and pass to
+	post_process.
+	(module_state::read_cluster): Write flags into cfun.
+
+2024-01-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/112899
+	* cp-tree.h (note_variable_template_instantiation): Rename to...
+	(note_vague_linkage_variable): ...this.
+	* decl2.cc (note_variable_template_instantiation): Rename to...
+	(note_vague_linkage_variable): ...this.
+	* pt.cc (instantiate_decl): Rename usage of above function.
+	* module.cc (trees_in::read_var_def): Remember pending statics
+	that we stream in.
+
+2024-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113599
+	* typeck2.cc (build_m_component_ref): Use convert instead of
+	cp_convert for pointer conversion.
+
+2024-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113598
+	* init.cc (build_vec_init): Don't use {} for PMF.
+
+2024-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109227
+	* coroutines.cc (build_co_await): Use cxx_maybe_build_cleanup.
+	(build_actor_fn, process_conditional, maybe_promote_temps)
+	(morph_fn_to_coro): Likewise.
+	(expand_one_await_expression): Use build_cleanup.
+
+2024-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113405
+	* module.cc (set_defining_module): Track partial specialisations
+	for all declarations.
+
+2024-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/100707
+	* name-lookup.cc (add_imported_namespace): Don't mark namespaces
+	as imported.
+
+2024-01-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113529
+	* call.cc (add_operator_candidates): Propagate error_mark_node
+	result after recursing to find rewritten candidates.
+
+2024-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113256
+	PR c++/111607
+	PR c++/109640
+	* call.cc (do_warn_dangling_reference): Don't warn if the temporary
+	is of lambda type.
+
+2024-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/112820
+	PR c++/102607
+	* module.cc (trees_out::lang_type_bools): Write interface_only
+	and interface_unknown.
+	(trees_in::lang_type_bools): Read the above flags.
+	(trees_in::decl_value): Reset CLASSTYPE_INTERFACE_* except for
+	extern templates.
+	(trees_in::read_class_def): Remove buggy extern template
+	handling.
+
+2024-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113498
+	* pt.cc (decl_template_info): New fn.
+	(get_template_info): Use it.
+
+2024-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112632
+	PR c++/112594
+	PR c++/111357
+	PR c++/104594
+	PR c++/67898
+	* cp-tree.h (IMPLICIT_CONV_EXPR_FORCED): New.
+	* pt.cc (expand_integer_pack): Remove 111357 workaround.
+	(maybe_convert_nontype_argument): Add force parm.
+	(convert_template_argument): Handle alias template args
+	specially.
+	(tsubst_expr): Don't ignore IMPLICIT_CONV_EXPR_NONTYPE_ARG.
+	* error.cc (dump_expr) [CASE_CONVERT]: Handle null optype.
+
+2024-01-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113389
+	* decl.cc (grokdeclarator) <case cdk_function>: Set TREE_PURPOSE to
+	NULL_TREE when emitting an error.
+
 2024-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/112588

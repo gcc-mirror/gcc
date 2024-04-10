@@ -475,7 +475,9 @@ ix86_conditional_register_usage (void)
      except fixed_regs and registers used for function return value
      since aggregate_value_p checks call_used_regs[regno] on return
      value.  */
-  if (cfun && cfun->machine->no_caller_saved_registers)
+  if (cfun
+      && (cfun->machine->call_saved_registers
+	  == TYPE_NO_CALLER_SAVED_REGISTERS))
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       if (!fixed_regs[i] && !ix86_function_value_regno_p (i))
 	call_used_regs[i] = 0;
@@ -944,7 +946,8 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 
   /* Sibling call isn't OK if there are no caller-saved registers
      since all registers must be preserved before return.  */
-  if (cfun->machine->no_caller_saved_registers)
+  if (cfun->machine->call_saved_registers
+      == TYPE_NO_CALLER_SAVED_REGISTERS)
     return false;
 
   /* If we are generating position-independent code, we cannot sibcall
@@ -976,6 +979,14 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       type = TREE_TYPE (type);			/* function type */
       decl_or_type = type;
     }
+
+  /* Sibling call isn't OK if callee has no callee-saved registers
+     and the calling function has callee-saved registers.  */
+  if ((cfun->machine->call_saved_registers
+       != TYPE_NO_CALLEE_SAVED_REGISTERS)
+      && lookup_attribute ("no_callee_saved_registers",
+			   TYPE_ATTRIBUTES (type)))
+    return false;
 
   /* If outgoing reg parm stack space changes, we cannot do sibcall.  */
   if ((OUTGOING_REG_PARM_STACK_SPACE (type)
@@ -1137,6 +1148,12 @@ ix86_comp_type_attributes (const_tree type1, const_tree type2)
     return 0;
   if (ix86_function_regparm (type1, NULL)
       != ix86_function_regparm (type2, NULL))
+    return 0;
+
+  if (lookup_attribute ("no_callee_saved_registers",
+			TYPE_ATTRIBUTES (type1))
+      != lookup_attribute ("no_callee_saved_registers",
+			   TYPE_ATTRIBUTES (type2)))
     return 0;
 
   return 1;
@@ -6569,7 +6586,8 @@ ix86_epilogue_uses (int regno)
      and restoring registers.  Don't explicitly save SP register since
      it is always preserved.  */
   return (epilogue_completed
-	  && cfun->machine->no_caller_saved_registers
+	  && (cfun->machine->call_saved_registers
+	      == TYPE_NO_CALLER_SAVED_REGISTERS)
 	  && !fixed_regs[regno]
 	  && !STACK_REGNO_P (regno)
 	  && !MMX_REGNO_P (regno));
@@ -6585,7 +6603,8 @@ ix86_hard_regno_scratch_ok (unsigned int regno)
      as a scratch register after epilogue and use REGNO as scratch
      register only if it has been used before to avoid saving and
      restoring it.  */
-  return (!cfun->machine->no_caller_saved_registers
+  return ((cfun->machine->call_saved_registers
+	   != TYPE_NO_CALLER_SAVED_REGISTERS)
 	  || (!epilogue_completed
 	      && df_regs_ever_live_p (regno)));
 }
@@ -6595,14 +6614,21 @@ ix86_hard_regno_scratch_ok (unsigned int regno)
 bool
 ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 {
-  /* If there are no caller-saved registers, we preserve all registers,
-     except for MMX and x87 registers which aren't supported when saving
-     and restoring registers.  Don't explicitly save SP register since
-     it is always preserved.  */
-  if (cfun->machine->no_caller_saved_registers)
+  rtx reg;
+
+  switch (cfun->machine->call_saved_registers)
     {
-      /* Don't preserve registers used for function return value.  */
-      rtx reg = crtl->return_rtx;
+    case TYPE_DEFAULT_CALL_SAVED_REGISTERS:
+      break;
+
+    case TYPE_NO_CALLER_SAVED_REGISTERS:
+      /* If there are no caller-saved registers, we preserve all
+	 registers, except for MMX and x87 registers which aren't
+	 supported when saving and restoring registers.  Don't
+	 explicitly save SP register since it is always preserved.
+
+	 Don't preserve registers used for function return value.  */
+      reg = crtl->return_rtx;
       if (reg)
 	{
 	  unsigned int i = REGNO (reg);
@@ -6618,6 +6644,9 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 	      && !MMX_REGNO_P (regno)
 	      && (regno != HARD_FRAME_POINTER_REGNUM
 		  || !frame_pointer_needed));
+
+    case TYPE_NO_CALLEE_SAVED_REGISTERS:
+      return false;
     }
 
   if (regno == REAL_PIC_OFFSET_TABLE_REGNUM
@@ -7717,7 +7746,8 @@ find_drap_reg (void)
 	 registers in epilogue, DRAP must not use caller-saved
 	 register in such case.  */
       if (DECL_STATIC_CHAIN (decl)
-	  || cfun->machine->no_caller_saved_registers
+	  || (cfun->machine->call_saved_registers
+	      == TYPE_NO_CALLER_SAVED_REGISTERS)
 	  || crtl->tail_call_emit)
 	return R13_REG;
 
@@ -7730,7 +7760,8 @@ find_drap_reg (void)
 	 registers in epilogue, DRAP must not use caller-saved
 	 register in such case.  */
       if (DECL_STATIC_CHAIN (decl)
-	  || cfun->machine->no_caller_saved_registers
+	  || (cfun->machine->call_saved_registers
+	      == TYPE_NO_CALLER_SAVED_REGISTERS)
 	  || crtl->tail_call_emit
 	  || crtl->calls_eh_return)
 	return DI_REG;
@@ -22746,7 +22777,10 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   if (TARGET_64BIT)
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tleaq\t%sP%d(%%rip),%%r11\n", LPREFIX, labelno);
+      if (ASSEMBLER_DIALECT == ASM_INTEL)
+	fprintf (file, "\tlea\tr11, %sP%d[rip]\n", LPREFIX, labelno);
+      else
+	fprintf (file, "\tleaq\t%sP%d(%%rip), %%r11\n", LPREFIX, labelno);
 #endif
 
       if (!TARGET_PECOFF)
@@ -22757,12 +22791,29 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	      /* NB: R10 is caller-saved.  Although it can be used as a
 		 static chain register, it is preserved when calling
 		 mcount for nested functions.  */
-	      fprintf (file, "1:\tmovabsq\t$%s, %%r10\n\tcall\t*%%r10\n",
-		       mcount_name);
+	      if (ASSEMBLER_DIALECT == ASM_INTEL)
+		fprintf (file, "1:\tmovabs\tr10, OFFSET FLAT:%s\n"
+			       "\tcall\tr10\n", mcount_name);
+	      else
+		fprintf (file, "1:\tmovabsq\t$%s, %%r10\n\tcall\t*%%r10\n",
+			 mcount_name);
 	      break;
 	    case CM_LARGE_PIC:
 #ifdef NO_PROFILE_COUNTERS
-	      fprintf (file, "1:\tmovabsq\t$_GLOBAL_OFFSET_TABLE_-1b, %%r11\n");
+	      if (ASSEMBLER_DIALECT == ASM_INTEL)
+		{
+		  fprintf (file, "1:movabs\tr11, "
+				 "OFFSET FLAT:_GLOBAL_OFFSET_TABLE_-1b\n");
+		  fprintf (file, "\tlea\tr10, 1b[rip]\n");
+		  fprintf (file, "\tadd\tr10, r11\n");
+		  fprintf (file, "\tmovabs\tr11, OFFSET FLAT:%s@PLTOFF\n",
+			   mcount_name);
+		  fprintf (file, "\tadd\tr10, r11\n");
+		  fprintf (file, "\tcall\tr10\n");
+		  break;
+		}
+	      fprintf (file,
+		       "1:\tmovabsq\t$_GLOBAL_OFFSET_TABLE_-1b, %%r11\n");
 	      fprintf (file, "\tleaq\t1b(%%rip), %%r10\n");
 	      fprintf (file, "\taddq\t%%r11, %%r10\n");
 	      fprintf (file, "\tmovabsq\t$%s@PLTOFF, %%r11\n", mcount_name);
@@ -22776,7 +22827,12 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	    case CM_MEDIUM_PIC:
 	      if (!ix86_direct_extern_access)
 		{
-		  fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+		  if (ASSEMBLER_DIALECT == ASM_INTEL)
+		    fprintf (file, "1:\tcall\t[QWORD PTR %s@GOTPCREL[rip]]",
+			     mcount_name);
+		  else
+		    fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n",
+			     mcount_name);
 		  break;
 		}
 	      /* fall through */
@@ -22791,23 +22847,37 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   else if (flag_pic)
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tleal\t%sP%d@GOTOFF(%%ebx),%%" PROFILE_COUNT_REGISTER "\n",
-	       LPREFIX, labelno);
+      if (ASSEMBLER_DIALECT == ASM_INTEL)
+	fprintf (file,
+		 "\tlea\t" PROFILE_COUNT_REGISTER ", %sP%d@GOTOFF[ebx]\n",
+		 LPREFIX, labelno);
+      else
+	fprintf (file,
+		 "\tleal\t%sP%d@GOTOFF(%%ebx), %%" PROFILE_COUNT_REGISTER "\n",
+		 LPREFIX, labelno);
 #endif
-      fprintf (file, "1:\tcall\t*%s@GOT(%%ebx)\n", mcount_name);
+      if (ASSEMBLER_DIALECT == ASM_INTEL)
+	fprintf (file, "1:\tcall\t[DWORD PTR %s@GOT[ebx]]\n", mcount_name);
+      else
+	fprintf (file, "1:\tcall\t*%s@GOT(%%ebx)\n", mcount_name);
     }
   else
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tmovl\t$%sP%d,%%" PROFILE_COUNT_REGISTER "\n",
-	       LPREFIX, labelno);
+      if (ASSEMBLER_DIALECT == ASM_INTEL)
+	fprintf (file,
+		 "\tmov\t" PROFILE_COUNT_REGISTER ", OFFSET FLAT:%sP%d\n",
+		 LPREFIX, labelno);
+      else
+	fprintf (file, "\tmovl\t$%sP%d, %%" PROFILE_COUNT_REGISTER "\n",
+		 LPREFIX, labelno);
 #endif
       x86_print_call_or_nop (file, mcount_name);
     }
 
   if (flag_record_mcount
-	|| lookup_attribute ("fentry_section",
-                                DECL_ATTRIBUTES (current_function_decl)))
+      || lookup_attribute ("fentry_section",
+			   DECL_ATTRIBUTES (current_function_decl)))
     {
       const char *sname = "__mcount_loc";
 

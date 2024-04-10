@@ -1,3 +1,56 @@
+2024-01-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4.h: Use gfx1100/gfx1030
+	function not gfx90a for gfx1100/gfx1030 context selector.
+
+2024-01-26  Richard Biener  <rguenther@suse.de>
+
+	* plugin/plugin-gcn.c (suitable_hsa_agent_p): Filter out
+	agents with unsupported ISA.
+
+2024-01-26  Richard Biener  <rguenther@suse.de>
+
+	* plugin/plugin-gcn.c
+	(EF_AMDGPU_MACH::EF_AMDGPU_MACH_UNSUPPORTED): Add.
+	(isa_code): Return that instead of -1.
+	(GOMP_OFFLOAD_init_device): Adjust.
+
+2024-01-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4.h: Add variant functions
+	for gfx1030 and gfx1100.
+	* testsuite/libgomp.c/declare-variant-4-gfx1030.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1100.c: New test.
+
+2024-01-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/time.c (RTC_TICKS): Configure RDNA3.
+	(omp_get_wtime): Add RDNA3-compatible variant.
+	* plugin/plugin-gcn.c (max_isa_vgprs): Tune for gfx1030 and gfx1100.
+
+2024-01-24  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* libgomp.texi (Runtime Library Routines): Document
+	omp_pause_resource, omp_pause_resource_all and
+	omp_target_memcpy{,_rect}{,_async}.
+
+2024-01-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4-fiji.c: Xfail as fiji
+	support is no longer enabled by default.
+	* testsuite/libgomp.c/declare-variant-4-gfx803.c: Likewise.
+
+2024-01-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.fortran/alloc-comp-3.f90: Increase
+	timeout by 2 on hppa*-*-*.
+
+2024-01-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.c/simd-math-1.c: Don't run on
+	hppa*-*-hpux*.
+
 2024-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/113409

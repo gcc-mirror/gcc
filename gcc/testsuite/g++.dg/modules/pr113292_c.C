@@ -1,5 +1,7 @@
 // PR c++/113292
 // { dg-module-do link }
+// { dg-require-effective-target tls_runtime }
+// { dg-add-options tls }
 // { dg-additional-options "-fmodules-ts" }
 
 import "pr113292_a.H";

@@ -6947,7 +6947,7 @@ grokdeclarator (const struct c_declarator *declarator,
      "signed".  */
   if (bitfield && !flag_signed_bitfields && !declspecs->explicit_signed_p
       && TREE_CODE (type) == INTEGER_TYPE)
-    type = unsigned_type_for (type);
+    type = c_common_unsigned_type (type);
 
   /* Figure out the type qualifiers for the declaration.  There are
      two ways a declaration can become qualified.  One is something

@@ -2287,7 +2287,12 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 				    BITS_PER_UNIT
 				    - (maxsizei % BITS_PER_UNIT));
       if (INTEGRAL_TYPE_P (type))
-	sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+	{
+	  if (TYPE_MODE (type) != BLKmode)
+	    sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+	  else
+	    sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
+	}
       if (sz > needed_len)
 	{
 	  memcpy (this_buffer + (sz - needed_len), buffer, needed_len);
@@ -2967,8 +2972,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    }
 	  else
 	    {
-	      unsigned buflen = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vr->type)) + 1;
-	      if (INTEGRAL_TYPE_P (vr->type))
+	      unsigned buflen
+		= TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vr->type)) + 1;
+	      if (INTEGRAL_TYPE_P (vr->type)
+		  && TYPE_MODE (vr->type) != BLKmode)
 		buflen = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (vr->type)) + 1;
 	      unsigned char *buf = XALLOCAVEC (unsigned char, buflen);
 	      memset (buf, TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 1)),
@@ -3165,7 +3172,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 			 offset + maxsize - 1.  */
 		      HOST_WIDE_INT sz = maxsizei / BITS_PER_UNIT;
 		      if (INTEGRAL_TYPE_P (type))
-			sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+			{
+			  if (TYPE_MODE (type) != BLKmode)
+			    sz = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+			  else
+			    sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
+			}
 		      amnt = ((unsigned HOST_WIDE_INT) offset2i + size2i
 			      - offseti - maxsizei) % BITS_PER_UNIT;
 		      if (amnt)

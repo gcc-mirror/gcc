@@ -156,11 +156,7 @@ test07()
 constexpr bool
 test08()
 {
-#ifdef _GLIBCXX_DEBUG
-  using std::_GLIBCXX_STD_C::vector;
-#else
   using std::vector;
-#endif
 
   // Verify P2415R2 "What is a view?" changes.
   // In particular, rvalue non-view non-borrowed ranges are now viewable.

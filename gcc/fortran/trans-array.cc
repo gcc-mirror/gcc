@@ -3600,7 +3600,7 @@ array_bound_check_elemental (gfc_se * se, gfc_ss * ss, gfc_expr * expr)
 	      continue;
 	    }
 
-	  if (ref->type == REF_ARRAY && ref->u.ar.dimen > 0)
+	  if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION)
 	    {
 	      ar = &ref->u.ar;
 	      for (dim = 0; dim < ar->dimen; dim++)
@@ -4063,7 +4063,10 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
     }
 
   decl = se->expr;
-  if (IS_CLASS_ARRAY (sym) && sym->attr.dummy && ar->as->type != AS_DEFERRED)
+  if (UNLIMITED_POLY(sym)
+      && IS_CLASS_ARRAY (sym)
+      && sym->attr.dummy
+      && ar->as->type != AS_DEFERRED)
     decl = sym->backend_decl;
 
   cst_offset = offset = gfc_index_zero_node;

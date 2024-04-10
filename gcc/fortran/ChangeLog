@@ -1,3 +1,42 @@
+2024-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* trans-expr.cc (conv_dummy_value): Treat NULL actual argument to
+	optional dummy with the VALUE attribute as not present.
+	(gfc_conv_procedure_call): Likewise.
+
+2024-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104908
+	* trans-array.cc (gfc_conv_array_ref): Restrict use of transformed
+	descriptor (sym->backend_decl) to the unlimited polymorphic case.
+
+2024-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* trans-expr.cc (conv_dummy_value): New.
+	(gfc_conv_procedure_call): Factor code for handling dummy arguments
+	with the VALUE attribute in the scalar case into conv_dummy_value().
+	Reuse and adjust for calling elemental procedures.
+
+2024-01-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113377
+	* trans-expr.cc (gfc_conv_procedure_call): Fix handling of optional
+	scalar arguments of intrinsic type with the VALUE attribute.
+
+2024-01-20  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/48776
+	PR fortran/111291
+	* parse.cc: Restore current interface to its previous value on error.
+
+2024-01-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113471
+	* trans-array.cc (array_bound_check_elemental): Array bounds check
+	shall apply here to elemental dimensions of an array section only.
+
 2024-01-13  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/67277

@@ -423,6 +423,9 @@ switch_conversion::build_constructors ()
 	      constructor_elt elt;
 
 	      elt.index = int_const_binop (MINUS_EXPR, pos, m_range_min);
+	      if (TYPE_PRECISION (TREE_TYPE (elt.index))
+		  > TYPE_PRECISION (sizetype))
+		elt.index = fold_convert (sizetype, elt.index);
 	      elt.value
 		= unshare_expr_without_location (m_default_values[k]);
 	      m_constructors[k]->quick_push (elt);
@@ -452,6 +455,9 @@ switch_conversion::build_constructors ()
 	      constructor_elt elt;
 
 	      elt.index = int_const_binop (MINUS_EXPR, pos, m_range_min);
+	      if (TYPE_PRECISION (TREE_TYPE (elt.index))
+		  > TYPE_PRECISION (sizetype))
+		elt.index = fold_convert (sizetype, elt.index);
 	      elt.value = unshare_expr_without_location (val);
 	      m_constructors[j]->quick_push (elt);
 
@@ -543,7 +549,10 @@ switch_conversion::array_value_type (tree type, int num)
 
   type = TYPE_MAIN_VARIANT (type);
 
-  if (!INTEGRAL_TYPE_P (type))
+  if (!INTEGRAL_TYPE_P (type)
+      || (TREE_CODE (type) == BITINT_TYPE
+	  && (TYPE_PRECISION (type) > MAX_FIXED_MODE_SIZE
+	      || TYPE_MODE (type) == BLKmode)))
     return type;
 
   scalar_int_mode type_mode = SCALAR_INT_TYPE_MODE (type);
@@ -707,7 +716,7 @@ void
 switch_conversion::build_arrays ()
 {
   tree arr_index_type;
-  tree tidx, sub, utype;
+  tree tidx, sub, utype, tidxtype;
   gimple *stmt;
   gimple_stmt_iterator gsi;
   gphi_iterator gpi;
@@ -720,14 +729,23 @@ switch_conversion::build_arrays ()
   utype = TREE_TYPE (m_index_expr);
   if (TREE_TYPE (utype))
     utype = lang_hooks.types.type_for_mode (TYPE_MODE (TREE_TYPE (utype)), 1);
+  else if (TREE_CODE (utype) == BITINT_TYPE
+	   && (TYPE_PRECISION (utype) > MAX_FIXED_MODE_SIZE
+	       || TYPE_MODE (utype) == BLKmode))
+    utype = unsigned_type_for (utype);
   else
     utype = lang_hooks.types.type_for_mode (TYPE_MODE (utype), 1);
+  if (TYPE_PRECISION (utype) > TYPE_PRECISION (sizetype))
+    tidxtype = sizetype;
+  else
+    tidxtype = utype;
 
   arr_index_type = build_index_type (m_range_size);
-  tidx = make_ssa_name (utype);
+  tidx = make_ssa_name (tidxtype);
   sub = fold_build2_loc (loc, MINUS_EXPR, utype,
 			 fold_convert_loc (loc, utype, m_index_expr),
 			 fold_convert_loc (loc, utype, m_range_min));
+  sub = fold_convert (tidxtype, sub);
   sub = force_gimple_operand_gsi (&gsi, sub,
 				  false, NULL, true, GSI_SAME_STMT);
   stmt = gimple_build_assign (tidx, sub);

@@ -384,6 +384,7 @@ struct gcn_image_desc
    See https://llvm.org/docs/AMDGPUUsage.html#amdgpu-ef-amdgpu-mach-table */
 
 typedef enum {
+  EF_AMDGPU_MACH_UNSUPPORTED = -1,
   EF_AMDGPU_MACH_AMDGCN_GFX803 = 0x02a,
   EF_AMDGPU_MACH_AMDGCN_GFX900 = 0x02c,
   EF_AMDGPU_MACH_AMDGCN_GFX906 = 0x02f,
@@ -1426,6 +1427,8 @@ init_hsa_runtime_functions (void)
 #undef DLSYM_FN
 }
 
+static gcn_isa isa_code (const char *isa);
+
 /* Return true if the agent is a GPU and can accept of concurrent submissions
    from different threads.  */
 
@@ -1442,6 +1445,18 @@ suitable_hsa_agent_p (hsa_agent_t agent)
   switch (device_type)
     {
     case HSA_DEVICE_TYPE_GPU:
+      {
+	char name[64];
+	hsa_status_t status
+	  = hsa_fns.hsa_agent_get_info_fn (agent, HSA_AGENT_INFO_NAME, name);
+	if (status != HSA_STATUS_SUCCESS
+	    || isa_code (name) == EF_AMDGPU_MACH_UNSUPPORTED)
+	  {
+	    GCN_DEBUG ("Ignoring unsupported agent '%s'\n",
+		       status == HSA_STATUS_SUCCESS ? name : "invalid");
+	    return false;
+	  }
+      }
       break;
     case HSA_DEVICE_TYPE_CPU:
       if (!support_cpu_devices)
@@ -1727,7 +1742,7 @@ isa_code(const char *isa) {
   if (!strncmp (isa, gcn_gfx1100_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX1100;
 
-  return -1;
+  return EF_AMDGPU_MACH_UNSUPPORTED;
 }
 
 /* CDNA2 devices have twice as many VGPRs compared to older devices.  */
@@ -1741,11 +1756,13 @@ max_isa_vgprs (int isa)
     case EF_AMDGPU_MACH_AMDGCN_GFX900:
     case EF_AMDGPU_MACH_AMDGCN_GFX906:
     case EF_AMDGPU_MACH_AMDGCN_GFX908:
-    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
-    case EF_AMDGPU_MACH_AMDGCN_GFX1100:
       return 256;
     case EF_AMDGPU_MACH_AMDGCN_GFX90a:
       return 512;
+    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
+      return 512;  /* 512 SIMD32 = 256 wavefrontsize64.  */
+    case EF_AMDGPU_MACH_AMDGCN_GFX1100:
+      return 1536; /* 1536 SIMD32 = 768 wavefrontsize64.  */
     }
   GOMP_PLUGIN_fatal ("unhandled ISA in max_isa_vgprs");
 }
@@ -3372,7 +3389,7 @@ GOMP_OFFLOAD_init_device (int n)
     return hsa_error ("Error querying the name of the agent", status);
 
   agent->device_isa = isa_code (agent->name);
-  if (agent->device_isa < 0)
+  if (agent->device_isa == EF_AMDGPU_MACH_UNSUPPORTED)
     return hsa_error ("Unknown GCN agent architecture", HSA_STATUS_ERROR);
 
   status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AGENT_INFO_VENDOR_NAME,

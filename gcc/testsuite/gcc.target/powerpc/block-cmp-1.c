@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8 -mno-vsx" } */
+/* { dg-skip-if "" { has_arch_ppc64 && ilp32 } } */
 /* { dg-final { scan-assembler-not {\mb[l]? memcmp\M} } }  */
 
 /* Test that it still can do expand for memcmpsi instead of calling library

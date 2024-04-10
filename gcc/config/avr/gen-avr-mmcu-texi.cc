@@ -118,23 +118,23 @@ comparator (const void *va, const void *vb)
 
       if (*a != *b)
 	return *a - *b;
-      
+
       a++;
       b++;
     }
 
   return *a - *b;
-} 
+}
 
 static void
 print_mcus (size_t n_mcus)
 {
   int duplicate = 0;
   size_t i;
-    
+
   if (!n_mcus)
     return;
-    
+
   qsort (mcus, n_mcus, sizeof (avr_mcu_t*), comparator);
 
   printf ("@*@var{mcu}@tie{}=");

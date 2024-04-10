@@ -1,3 +1,56 @@
+2024-01-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112969
+	* store.cc (binding_cluster::maybe_get_compound_binding): When
+	populating default_map, express the bit-range of the default key
+	for REG relative to REG, rather than to the base region.
+
+2024-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112977
+	* engine.cc (impl_region_model_context::on_liveness_change): Pass
+	m_ext_state to sm_state_map::on_liveness_change.
+	* program-state.cc (sm_state_map::on_svalue_leak): Guard removal
+	of map entry based on can_purge_p.
+	(sm_state_map::on_liveness_change): Add ext_state param.  Add
+	workaround for bad interaction between state purging and
+	alt-inherited sm-state.
+	* program-state.h (sm_state_map::on_liveness_change): Add
+	ext_state param.
+	* sm-taint.cc
+	(taint_state_machine::has_alt_get_inherited_state_p): New.
+	(taint_state_machine::can_purge_p): Return false for "has_lb" and
+	"has_ub".
+	* sm.h (state_machine::has_alt_get_inherited_state_p): New vfunc.
+
+2024-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111361
+	* region-model.cc (svalue_byte_range_has_null_terminator_1): The
+	initial byte of an all-zeroes SVAL is a zero byte.  Remove
+	gcc_unreachable from SK_CONSTANT for constants that aren't
+	STRING_CST or INTEGER_CST.
+
+2024-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112811
+	* region-model.cc (fragment::dump_to_pp): New.
+	(fragment::has_null_terminator): Convert to...
+	(svalue_byte_range_has_null_terminator_1): ...this new function,
+	updating to use a byte_range relative to the start of the svalue.
+	(svalue_byte_range_has_null_terminator): New.
+	(fragment::string_cst_has_null_terminator): Convert to...
+	(string_cst_has_null_terminator): ...this, updating to use a
+	byte_range relative to the start of the svalue.
+	(iterable_cluster::dump_to_pp): New.
+	(region_model::scan_for_null_terminator): Add logging, moving body
+	to...
+	(region_model::scan_for_null_terminator_1): ...this new function,
+	adding more logging, and updating to use
+	svalue_byte_range_has_null_terminator.
+	* region-model.h (region_model::scan_for_null_terminator_1): New
+	decl.
+
 2024-01-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106229

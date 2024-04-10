@@ -947,10 +947,10 @@ note_vague_linkage_fn (tree decl)
   vec_safe_push (deferred_fns, decl);
 }
 
-/* As above, but for variable template instantiations.  */
+/* As above, but for variables.  */
 
 void
-note_variable_template_instantiation (tree decl)
+note_vague_linkage_variable (tree decl)
 {
   vec_safe_push (pending_statics, decl);
 }

@@ -26,7 +26,7 @@ B::operator char () const { return 0; }
 
 ATTR ((__noinline__))
 B::operator int () const      // { dg-warning "ignoring attribute .noinline. because it conflicts with attribute .always_inline." }
-// { dg-warning "function might not be inlinable" "" { target *-*-* } .-1 }
+// { dg-warning "function might not be inlinable unless also declared .inline." "" { target *-*-* } .-1 }
 
 {
   return 0;
@@ -45,7 +45,7 @@ C::operator char () { return 0; }
 
 ATTR ((__noinline__))
 C::operator short ()           // { dg-warning "ignoring attribute .noinline. because it conflicts with attribute .always_inline." }
-// { dg-warning "function might not be inlinable" "" { target *-*-* } .-1 }
+// { dg-warning "function might not be inlinable unless also declared .inline." "" { target *-*-* } .-1 }
 { return 0; }
 
 inline ATTR ((__noinline__))

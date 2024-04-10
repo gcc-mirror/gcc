@@ -89,6 +89,10 @@
 
   ;; Workaround for HFmode without hardware extension
   UNSPEC_FMV_SFP16_X
+
+  ;; XTheadFmv moves
+  UNSPEC_XTHEADFMV
+  UNSPEC_XTHEADFMV_HW
 ])
 
 (define_c_enum "unspecv" [
@@ -126,10 +130,6 @@
 
   ;; Zihintpause unspec
   UNSPECV_PAUSE
-
-  ;; XTheadFmv unspec
-  UNSPEC_XTHEADFMV
-  UNSPEC_XTHEADFMV_HW
 
   ;; XTheadInt unspec
   UNSPECV_XTHEADINT_PUSH
@@ -583,6 +583,25 @@
         ]
        (const_string "yes")))
 
+;; This attribute marks the alternatives not matching the constraints
+;; described in spec as disabled.
+(define_attr "spec_restriction" "none,thv,rvv"
+  (const_string "none"))
+
+(define_attr "spec_restriction_disabled" "no,yes"
+  (cond [(eq_attr "spec_restriction" "none")
+	 (const_string "no")
+
+	 (and (eq_attr "spec_restriction" "thv")
+	      (match_test "TARGET_XTHEADVECTOR"))
+	 (const_string "yes")
+
+	 (and (eq_attr "spec_restriction" "rvv")
+	      (match_test "TARGET_VECTOR && !TARGET_XTHEADVECTOR"))
+	 (const_string "yes")
+	]
+       (const_string "no")))
+
 ;; Attribute to control enable or disable instructions.
 (define_attr "enabled" "no,yes"
   (cond [
@@ -593,6 +612,9 @@
     (const_string "no")
 
     (eq_attr "group_overlap_valid" "no")
+    (const_string "no")
+
+    (eq_attr "spec_restriction_disabled" "yes")
     (const_string "no")
   ]
   (const_string "yes")))
@@ -1754,8 +1776,7 @@
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
   "TARGET_64BIT && !TARGET_ZBA && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
-   && !(register_operand (operands[1], SImode)
-        && reg_or_subregno (operands[1]) == VL_REGNUM)"
+   && !(REG_P (operands[1]) && VL_REG_P (REGNO (operands[1])))"
   "@
    #
    lwu\t%0,%1"
@@ -2192,8 +2213,7 @@
 	(match_operand:SI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f,vp"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
-    && !(register_operand (operands[1], SImode)
-         && reg_or_subregno (operands[1]) == VL_REGNUM)"
+    && !(REG_P (operands[1]) && VL_REG_P (REGNO (operands[1])))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fpstore,rdvlenb")
    (set_attr "mode" "SI")

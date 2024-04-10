@@ -7,8 +7,8 @@ foo (int * f, int d, int e)
   int t;
   int a;
   int i;
-  long unsigned int _1;
-  long unsigned int _2;
+  __SIZETYPE__ _1;
+  __SIZETYPE__ _2;
   int * _3;
   int _4;
 
@@ -17,8 +17,8 @@ foo (int * f, int d, int e)
 
   __BB(3,loop_header(1),guessed_local(1063004408)):
   i_18 = __PHI (__BB8: i_15, __BB2: 0);
-  _1 = (long unsigned int) i_18;
-  _2 = _1 * 4ul;
+  _1 = (__SIZETYPE__) i_18;
+  _2 = _1 * _Literal(__SIZETYPE__) 4;
   _3 = f_9(D) + _2;
   a_10 = __MEM <int> (_3);
   if (a_10 < 0)

@@ -1,4 +1,5 @@
 /* { dg-do compile { target x86_64-*-* } } */
+/* { dg-require-alias "" } */
 
 #include <stdlib.h>
 #include <stdio.h>

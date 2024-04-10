@@ -557,6 +557,10 @@ pa_option_override (void)
   if (flag_pic == 1 || TARGET_64BIT)
     flag_pic = 2;
 
+  /* 64-bit target is always PIE.  */
+  if (TARGET_64BIT)
+    flag_pie = 2;
+
   /* Disable -freorder-blocks-and-partition as we don't support hot and
      cold partitioning.  */
   if (flag_reorder_blocks_and_partition)

@@ -480,7 +480,6 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 
@@ -586,15 +585,13 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@libm2iso_la_CFLAGS = \
 @BUILD_ISOLIB_TRUE@   $(C_INCLUDES) -I. -I.. -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs \
 @BUILD_ISOLIB_TRUE@   -DBUILD_GM2_LIBS -I@srcdir@/../ -I../../../gcc -I$(GCC_DIR) -I$(GCC_DIR)/../include \
-@BUILD_ISOLIB_TRUE@   -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include \
-@BUILD_ISOLIB_TRUE@   $(TARGET_LONGDOUBLE_ABI)
+@BUILD_ISOLIB_TRUE@   -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include
 
 @BUILD_ISOLIB_TRUE@libm2iso_la_M2FLAGS = \
 @BUILD_ISOLIB_TRUE@  -fm2-pathname=m2iso -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso \
 @BUILD_ISOLIB_TRUE@  -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
 @BUILD_ISOLIB_TRUE@  -fiso -fextended-opaque -fm2-g -g -Wcase-enum \
-@BUILD_ISOLIB_TRUE@  -Wreturn-type -fcase -fm2-prefix=m2iso \
-@BUILD_ISOLIB_TRUE@   $(TARGET_LONGDOUBLE_ABI)
+@BUILD_ISOLIB_TRUE@  -Wreturn-type -fcase -fm2-prefix=m2iso
 
 @BUILD_ISOLIB_TRUE@@TARGET_DARWIN_FALSE@libm2iso_la_link_flags =  \
 @BUILD_ISOLIB_TRUE@@TARGET_DARWIN_FALSE@	$(am__append_1)

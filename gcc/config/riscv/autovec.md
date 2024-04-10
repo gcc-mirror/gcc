@@ -664,7 +664,7 @@
   [(set (match_operand:<VM> 0 "register_operand")
 	(match_operator:<VM> 1 "comparison_operator"
 	  [(match_operand:V_VLSI 2 "register_operand")
-	   (match_operand:V_VLSI 3 "register_operand")]))]
+	   (match_operand:V_VLSI 3 "nonmemory_operand")]))]
   "TARGET_VECTOR"
   {
     riscv_vector::expand_vec_cmp (operands[0], GET_CODE (operands[1]),
@@ -677,7 +677,7 @@
   [(set (match_operand:<VM> 0 "register_operand")
 	(match_operator:<VM> 1 "comparison_operator"
 	  [(match_operand:V_VLSI 2 "register_operand")
-	   (match_operand:V_VLSI 3 "register_operand")]))]
+	   (match_operand:V_VLSI 3 "nonmemory_operand")]))]
   "TARGET_VECTOR"
   {
     riscv_vector::expand_vec_cmp (operands[0], GET_CODE (operands[1]),
@@ -2605,7 +2605,7 @@
   [(match_operand      0 "register_operand")
    (match_operand      1 "memory_operand")
    (match_operand:ANYI 2 "const_int_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
   {
     riscv_vector::expand_rawmemchr(<MODE>mode, operands[0], operands[1],
 				   operands[2]);

@@ -31,7 +31,7 @@
    - Does not return a value.
    - Can abort on failure (then registers are not preserved).  */
 
-.hidden __aarch64_have_sme
+HIDDEN (__aarch64_have_sme)
 
 variant_pcs (__arm_tpidr2_save)
 
@@ -97,5 +97,5 @@ END (__arm_tpidr2_save)
 
 /* Hidden alias used by __arm_za_disable.  */
 .global __libgcc_arm_tpidr2_save
-.hidden __libgcc_arm_tpidr2_save
+HIDDEN (__libgcc_arm_tpidr2_save)
 .set __libgcc_arm_tpidr2_save, __arm_tpidr2_save

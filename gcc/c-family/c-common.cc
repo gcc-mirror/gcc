@@ -8082,6 +8082,12 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
   tree lhs_addr = (*orig_params)[0];
   tree val = convert (nonatomic_lhs_type, (*orig_params)[1]);
   tree model = convert (integer_type_node, (*orig_params)[2]);
+  if (!c_dialect_cxx ())
+    {
+      lhs_addr = c_fully_fold (lhs_addr, false, NULL);
+      val = c_fully_fold (val, false, NULL);
+      model = c_fully_fold (model, false, NULL);
+    }
   if (TREE_SIDE_EFFECTS (lhs_addr))
     {
       tree var = create_tmp_var_raw (TREE_TYPE (lhs_addr));

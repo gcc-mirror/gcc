@@ -41,9 +41,18 @@ test02()
   VERIFY( t - s < 1s );
 }
 
+void
+test03()
+{
+  using namespace std::chrono;
+  auto st = sys_days(2024y/January/21);
+  VERIFY( file_clock::to_sys(file_clock::from_sys(st)) == st );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

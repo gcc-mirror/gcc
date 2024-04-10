@@ -7,7 +7,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target pthread_h } */
 /* { dg-options "-Wextra -Wall -ansi" } */
-/* { dg-options "-Wextra -Wall -ansi -D_POSIX_C_SOURCE=199506L" { target { *-*-hpux* } } } */
+/* We need to define _HPUX_SOURCE on hpux11.11 for id_t and spu_t types.  */
+/* { dg-options "-Wextra -Wall -ansi -D_HPUX_SOURCE" { target { *-*-hpux* } } } */
 /* { dg-options "-Wextra -Wall -ansi -D_XOPEN_SOURCE=500" { target { powerpc-ibm-aix* } } } */
 /* The definition of PTHREAD_MUTEX_INITIALIZER is missing an initializer for
    mutexAttr.mutexAttrType in kernel mode for various VxWorks versions.  */

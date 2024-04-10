@@ -254,7 +254,7 @@ phi_group::dump (FILE *f)
 
 // Construct a phi analyzer which uses range_query G to pick up values.
 
-phi_analyzer::phi_analyzer (range_query &g) : m_global (g)
+phi_analyzer::phi_analyzer (range_query &g) : m_global (g), m_phi_groups (vNULL)
 {
   m_work.create (0);
   m_work.safe_grow (20);
@@ -273,6 +273,9 @@ phi_analyzer::~phi_analyzer ()
   bitmap_obstack_release (&m_bitmaps);
   m_tab.release ();
   m_work.release ();
+  for (auto grp : m_phi_groups)
+    delete grp;
+  m_phi_groups.release ();
 }
 
 //  Return the group, if any, that NAME is part of.  Do no analysis.
@@ -458,6 +461,7 @@ phi_analyzer::process_phi (gphi *phi)
 	  if (!cyc.range ().varying_p ())
 	    {
 	      g = new phi_group (cyc);
+	      m_phi_groups.safe_push (g);
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, "PHI ANALYZER : New ");

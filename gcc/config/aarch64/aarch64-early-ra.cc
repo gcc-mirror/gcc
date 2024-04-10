@@ -478,7 +478,7 @@ private:
   void broaden_colors ();
   void finalize_allocation ();
 
-  bool replace_regs (df_ref);
+  bool replace_regs (rtx_insn *, df_ref);
   int try_enforce_constraints (rtx_insn *, vec<std::pair<int, int>> &);
   void enforce_constraints (rtx_insn *);
   bool maybe_convert_to_strided_access (rtx_insn *);
@@ -1172,6 +1172,15 @@ early_ra::preprocess_insns ()
     {
       if (!NONDEBUG_INSN_P (insn))
 	continue;
+
+      // Mark all registers that occur in addresses as needing a GPR.
+      vec_rtx_properties properties;
+      properties.add_insn (insn, true);
+      for (rtx_obj_reference ref : properties.refs ())
+	if (ref.is_reg ()
+	    && ref.in_address ()
+	    && !HARD_REGISTER_NUM_P (ref.regno))
+	  m_pseudo_regs[ref.regno].flags |= ALLOWS_NONFPR | NEEDS_NONFPR;
 
       if (GET_CODE (PATTERN (insn)) == USE
 	  || GET_CODE (PATTERN (insn)) == CLOBBER)
@@ -2981,8 +2990,9 @@ early_ra::finalize_allocation ()
 }
 
 // Replace any allocno references in REFS with the allocated register.
+// INSN is the instruction that contains REFS.
 bool
-early_ra::replace_regs (df_ref refs)
+early_ra::replace_regs (rtx_insn *insn, df_ref refs)
 {
   bool changed = false;
   for (df_ref ref = refs; ref; ref = DF_REF_NEXT_LOC (ref))
@@ -2992,6 +3002,14 @@ early_ra::replace_regs (df_ref refs)
 	continue;
 
       auto new_regno = range.allocno (0)->hard_regno;
+      if (new_regno == FIRST_PSEUDO_REGISTER)
+	{
+	  // Reset a debug instruction if, after DCE, the only remaining
+	  // references to a register are in such instructions.
+	  gcc_assert (DEBUG_INSN_P (insn));
+	  INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+	  return true;
+	}
       *DF_REF_LOC (ref) = gen_rtx_REG (GET_MODE (DF_REF_REG (ref)), new_regno);
       changed = true;
     }
@@ -3224,8 +3242,8 @@ early_ra::apply_allocation ()
 	  continue;
 
 	bool changed = maybe_convert_to_strided_access (insn);
-	changed |= replace_regs (DF_INSN_DEFS (insn));
-	changed |= replace_regs (DF_INSN_USES (insn));
+	changed |= replace_regs (insn, DF_INSN_DEFS (insn));
+	changed |= replace_regs (insn, DF_INSN_USES (insn));
 	if (changed && NONDEBUG_INSN_P (insn))
 	  {
 	    if (GET_CODE (PATTERN (insn)) != USE
@@ -3245,7 +3263,7 @@ early_ra::apply_allocation ()
 	      else
 		ptr = &XEXP (*ptr, 1);
 	  }
-	changed |= replace_regs (DF_INSN_EQ_USES (insn));
+	changed |= replace_regs (insn, DF_INSN_EQ_USES (insn));
 	if (changed)
 	  df_insn_rescan (insn);
       }

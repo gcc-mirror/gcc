@@ -1924,11 +1924,7 @@ loongarch_symbolic_constant_p (rtx x, enum loongarch_symbol_type *symbol_type)
       x = UNSPEC_ADDRESS (x);
     }
   else if (SYMBOL_REF_P (x) || LABEL_REF_P (x))
-    {
-      *symbol_type = loongarch_classify_symbol (x);
-      if (*symbol_type == SYMBOL_TLS)
-	return true;
-    }
+    *symbol_type = loongarch_classify_symbol (x);
   else
     return false;
 
@@ -1939,17 +1935,21 @@ loongarch_symbolic_constant_p (rtx x, enum loongarch_symbol_type *symbol_type)
      relocations.  */
   switch (*symbol_type)
     {
-    case SYMBOL_TLS_IE:
-    case SYMBOL_TLS_LE:
-    case SYMBOL_TLSGD:
-    case SYMBOL_TLSLDM:
     case SYMBOL_PCREL:
     case SYMBOL_PCREL64:
       /* GAS rejects offsets outside the range [-2^31, 2^31-1].  */
       return sext_hwi (INTVAL (offset), 32) == INTVAL (offset);
 
+    /* The following symbol types do not allow non-zero offsets.  */
     case SYMBOL_GOT_DISP:
+    case SYMBOL_TLS_IE:
+    case SYMBOL_TLSGD:
+    case SYMBOL_TLSLDM:
     case SYMBOL_TLS:
+    /* From an implementation perspective, tls_le symbols are allowed to
+       have non-zero offsets, but currently binutils has not added support,
+       so the generation of non-zero offsets is prohibited here.  */
+    case SYMBOL_TLS_LE:
       return false;
     }
   gcc_unreachable ();
@@ -1970,11 +1970,11 @@ loongarch_explicit_relocs_p (enum loongarch_symbol_type type)
     {
       case SYMBOL_TLS_IE:
       case SYMBOL_TLS_LE:
-      case SYMBOL_TLSGD:
-      case SYMBOL_TLSLDM:
       case SYMBOL_PCREL64:
-	/* The linker don't know how to relax TLS accesses or 64-bit
-	   pc-relative accesses.  */
+	/* TLS IE cannot be relaxed.  TLS LE relaxation is different from
+	   the normal R_LARCH_RELAX-based relaxation and it **requires**
+	   using the explicit %le_{lo12,hi20,add}_r relocs.  The linker
+	   does not relax 64-bit pc-relative accesses as at now.  */
 	return true;
       case SYMBOL_GOT_DISP:
 	/* The linker don't know how to relax GOT accesses in extreme
@@ -2789,7 +2789,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
   start_sequence ();
 
-  if (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
+  if (la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS)
     {
       /* Split tls symbol to high and low.  */
       rtx high = gen_rtx_HIGH (Pmode, copy_rtx (loc));
@@ -9917,17 +9917,12 @@ loongarch_expand_vector_group_init (rtx target, rtx vals)
       gcc_unreachable ();
     }
 
-  if (high == CONST0_RTX (half_mode))
-    emit_insn (gen_vec_concatz (vmode, target, low, high));
-  else
-    {
-      if (!register_operand (low, half_mode))
-	low = force_reg (half_mode, low);
-      if (!register_operand (high, half_mode))
-	high = force_reg (half_mode, high);
-      emit_insn (gen_rtx_SET (target,
-			      gen_rtx_VEC_CONCAT (vmode, low, high)));
-    }
+  if (!register_operand (low, half_mode))
+    low = force_reg (half_mode, low);
+  if (!register_operand (high, half_mode))
+    high = force_reg (half_mode, high);
+  emit_insn (gen_rtx_SET (target,
+			  gen_rtx_VEC_CONCAT (vmode, low, high)));
 }
 
 /* Expand initialization of a vector which has all same elements.  */
@@ -10852,16 +10847,23 @@ void loongarch_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
   /* x0 = 1./b estimate.  */
   emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
 					      unspec)));
-  /* 2.0 - b * x0  */
+  /* e0 = 2.0 - b * x0.  */
   emit_insn (gen_rtx_SET (e0, gen_rtx_FMA (mode,
 					   gen_rtx_NEG (mode, b), x0, mtwo)));
 
-  /* x0 = a * x0  */
   if (a != CONST1_RTX (mode))
-    emit_insn (gen_rtx_SET (x0, gen_rtx_MULT (mode, a, x0)));
-
-  /* res = e0 * x0  */
-  emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, e0, x0)));
+    {
+      rtx e1 = gen_reg_rtx (mode);
+      /* e1 = a * x0.  */
+      emit_insn (gen_rtx_SET (e1, gen_rtx_MULT (mode, a, x0)));
+      /* res = e0 * e1.  */
+      emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, e0, e1)));
+    }
+  else
+    {
+      /* res = e0 * x0.  */
+      emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, e0, x0)));
+    }
 }
 
 static bool

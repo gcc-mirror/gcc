@@ -142,6 +142,10 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
 				     riscv_ext_version_value (0, 11));
     }
 
+   if (TARGET_XTHEADVECTOR)
+     builtin_define_with_int_value ("__riscv_th_v_intrinsic",
+				     riscv_ext_version_value (0, 11));
+
   /* Define architecture extension test macros.  */
   builtin_define_with_int_value ("__riscv_arch_test", 1);
 
@@ -191,12 +195,13 @@ riscv_pragma_intrinsic (cpp_reader *)
 
   const char *name = TREE_STRING_POINTER (x);
 
-  if (strcmp (name, "vector") == 0)
+  if (strcmp (name, "vector") == 0
+      || strcmp (name, "xtheadvector") == 0)
     {
       if (!TARGET_VECTOR)
 	{
-	  error ("%<#pragma riscv intrinsic%> option %qs needs 'V' extension "
-		 "enabled",
+	  error ("%<#pragma riscv intrinsic%> option %qs needs 'V' or "
+		 "'XTHEADVECTOR' extension enabled",
 		 name);
 	  return;
 	}

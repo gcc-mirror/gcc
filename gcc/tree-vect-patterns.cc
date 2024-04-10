@@ -3164,45 +3164,8 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
   tree ops[3] = {};
   for (unsigned int i = 1; i < first_op; ++i)
     ops[i - 1] = gimple_op (last_stmt, i);
-  /* For right shifts limit the shift operand.  */
   vect_convert_inputs (vinfo, last_stmt_info, nops, &ops[first_op - 1],
 		       op_type, &unprom[0], op_vectype);
-
-  /* Limit shift operands.  */
-  if (code == RSHIFT_EXPR)
-    {
-      wide_int min_value, max_value;
-      if (TREE_CODE (ops[1]) == INTEGER_CST)
-	ops[1] = wide_int_to_tree (op_type,
-				   wi::umin (wi::to_wide (ops[1]),
-					     new_precision - 1));
-      else if (!vect_get_range_info (ops[1], &min_value, &max_value)
-	       || wi::ge_p (max_value, new_precision, TYPE_SIGN (op_type)))
-	{
-	  /* ???  Note the following bad for SLP as that only supports
-	     same argument widened shifts and it un-CSEs same arguments.  */
-	  tree new_var = vect_recog_temp_ssa_var (op_type, NULL);
-	  gimple *pattern_stmt
-	    = gimple_build_assign (new_var, MIN_EXPR, ops[1],
-				   build_int_cst (op_type, new_precision - 1));
-	  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
-	  if (ops[1] == unprom[1].op && unprom[1].dt == vect_external_def)
-	    {
-	      if (edge e = vect_get_external_def_edge (vinfo, ops[1]))
-		{
-		  basic_block new_bb
-		    = gsi_insert_on_edge_immediate (e, pattern_stmt);
-		  gcc_assert (!new_bb);
-		}
-	      else
-		return NULL;
-	    }
-	  else
-	    append_pattern_def_seq (vinfo, last_stmt_info, pattern_stmt,
-				    op_vectype);
-	  ops[1] = new_var;
-	}
-    }
 
   /* Use the operation to produce a result of type OP_TYPE.  */
   tree new_var = vect_recog_temp_ssa_var (op_type, NULL);
@@ -6359,9 +6322,11 @@ vect_truncatable_operation_p (tree_code code)
 {
   switch (code)
     {
+    case NEGATE_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
+    case BIT_NOT_EXPR:
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
@@ -6520,38 +6485,85 @@ vect_determine_precisions_from_range (stmt_vec_info stmt_info, gassign *stmt)
   unsigned int nops = gimple_num_ops (stmt);
 
   if (!vect_truncatable_operation_p (code))
-    /* Check that all relevant input operands are compatible, and update
-       [MIN_VALUE, MAX_VALUE] to include their ranges.  */
-    for (unsigned int i = 1; i < nops; ++i)
-      {
-	tree op = gimple_op (stmt, i);
-	if (TREE_CODE (op) == INTEGER_CST)
-	  {
-	    /* Don't require the integer to have RHS_TYPE (which it might
-	       not for things like shift amounts, etc.), but do require it
-	       to fit the type.  */
-	    if (!int_fits_type_p (op, type))
-	      return;
+    {
+      /* Handle operations that can be computed in type T if all inputs
+	 and outputs can be represented in type T.  Also handle left and
+	 right shifts, where (in addition) the maximum shift amount must
+	 be less than the number of bits in T.  */
+      bool is_shift;
+      switch (code)
+	{
+	case LSHIFT_EXPR:
+	case RSHIFT_EXPR:
+	  is_shift = true;
+	  break;
 
-	    min_value = wi::min (min_value, wi::to_wide (op, precision), sign);
-	    max_value = wi::max (max_value, wi::to_wide (op, precision), sign);
-	  }
-	else if (TREE_CODE (op) == SSA_NAME)
-	  {
-	    /* Ignore codes that don't take uniform arguments.  */
-	    if (!types_compatible_p (TREE_TYPE (op), type))
-	      return;
+	case ABS_EXPR:
+	case MIN_EXPR:
+	case MAX_EXPR:
+	case TRUNC_DIV_EXPR:
+	case CEIL_DIV_EXPR:
+	case FLOOR_DIV_EXPR:
+	case ROUND_DIV_EXPR:
+	case EXACT_DIV_EXPR:
+	  /* Modulus is excluded because it is typically calculated by doing
+	     a division, for which minimum signed / -1 isn't representable in
+	     the original signed type.  We could take the division range into
+	     account instead, if handling modulus ever becomes important.  */
+	  is_shift = false;
+	  break;
 
-	    wide_int op_min_value, op_max_value;
-	    if (!vect_get_range_info (op, &op_min_value, &op_max_value))
-	      return;
-
-	    min_value = wi::min (min_value, op_min_value, sign);
-	    max_value = wi::max (max_value, op_max_value, sign);
-	  }
-	else
+	default:
 	  return;
-      }
+	}
+      for (unsigned int i = 1; i < nops; ++i)
+	{
+	  tree op = gimple_op (stmt, i);
+	  wide_int op_min_value, op_max_value;
+	  if (TREE_CODE (op) == INTEGER_CST)
+	    {
+	      unsigned int op_precision = TYPE_PRECISION (TREE_TYPE (op));
+	      op_min_value = op_max_value = wi::to_wide (op, op_precision);
+	    }
+	  else if (TREE_CODE (op) == SSA_NAME)
+	    {
+	      if (!vect_get_range_info (op, &op_min_value, &op_max_value))
+		return;
+	    }
+	  else
+	    return;
+
+	  if (is_shift && i == 2)
+	    {
+	      /* There needs to be one more bit than the maximum shift amount.
+
+		 If the maximum shift amount is already 1 less than PRECISION
+		 then we can't narrow the shift further.  Dealing with that
+		 case first ensures that we can safely use an unsigned range
+		 below.
+
+		 op_min_value isn't relevant, since shifts by negative amounts
+		 are UB.  */
+	      if (wi::geu_p (op_max_value, precision - 1))
+		return;
+	      unsigned int min_bits = op_max_value.to_uhwi () + 1;
+
+	      /* As explained below, we can convert a signed shift into an
+		 unsigned shift if the sign bit is always clear.  At this
+		 point we've already processed the ranges of the output and
+		 the first input.  */
+	      auto op_sign = sign;
+	      if (sign == SIGNED && !wi::neg_p (min_value))
+		op_sign = UNSIGNED;
+	      op_min_value = wide_int::from (wi::min_value (min_bits, op_sign),
+					     precision, op_sign);
+	      op_max_value = wide_int::from (wi::max_value (min_bits, op_sign),
+					     precision, op_sign);
+	    }
+	  min_value = wi::min (min_value, op_min_value, sign);
+	  max_value = wi::max (max_value, op_max_value, sign);
+	}
+    }
 
   /* Try to switch signed types for unsigned types if we can.
      This is better for two reasons.  First, unsigned ops tend

@@ -78,6 +78,12 @@ public:
     return NULL;
   }
 
+  virtual bool
+  has_alt_get_inherited_state_p () const
+  {
+    return false;
+  }
+
   virtual state_machine::state_t get_default_state (const svalue *) const
   {
     return m_start;

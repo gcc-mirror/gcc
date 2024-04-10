@@ -223,12 +223,17 @@
 #if __cplusplus > 202002L
 #include <expected>
 #include <generator>
+#include <print>
 #include <spanstream>
 #if __has_include(<stacktrace>)
 # include <stacktrace>
 #endif
 #include <stdatomic.h>
 #include <stdfloat>
+#endif
+
+#if __cplusplus > 202302L
+#include <text_encoding>
 #endif
 
 #endif // HOSTED
