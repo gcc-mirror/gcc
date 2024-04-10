@@ -1,3 +1,195 @@
+2024-04-09  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.cc (expand_perm_as_replicate): Implement.
+	(vectorize_vec_perm_const_1): Call new function.
+	* config/s390/vx-builtins.md (vec_splat<mode>): Change to...
+	(@vec_splat<mode>): ...this.
+
+2024-04-09  David Faust  <david.faust@oracle.com>
+
+	PR debug/114608
+	* btfout.cc (btf_asm_datasec_entry): Only emit a symbol reference when
+	generating BTF for BPF CO-RE target.
+
+2024-04-09  Richard Ball  <richard.ball@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_pragma_aarch64):
+	Add functions_nulls parameter to pragma_handlers.
+	* config/aarch64/aarch64-protos.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins.h
+	(enum handle_pragma_index): Add enum to count
+	number of pragmas to be handled.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(GTY): Add global variable for initial indexes
+	and change overload_names to an array.
+	(function_builder::function_builder):
+	Add pragma handler information.
+	(function_builder::add_function):
+	Add code for overwriting previous
+	registered_functions entries.
+	(add_unique_function):
+	Use an array to register overload_names
+	for both pragma handler modes.
+	(add_overloaded_function): Likewise.
+	(init_builtins):
+	Add functions_nulls parameter to pragma_handlers.
+	(handle_arm_sve_h):
+	Initialize pragma handler information.
+	(handle_arm_neon_sve_bridge_h): Likewise.
+	(handle_arm_sme_h): Likewise.
+
+2024-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114655
+	* lto-wrapper.cc (merge_flto_options): Add force argument.
+	(merge_and_complain): Do not force here.
+	(run_gcc): But here to make the link-time -flto option override
+	any compile-time one.
+
+2024-04-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/rtems.h (OS_MISSING_POWERPC64): Define.
+
+2024-04-09  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/114601
+	* tree-profile.cc (condition_uid): Guard fn->cond_uids access.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114576
+	* config/i386/i386.md (isa): Remove aes, add vaes_avx512vl.
+	(enabled): Remove aes isa check, add vaes_avx512vl.
+	* config/i386/sse.md (aesenc, aesenclast, aesdec, aesdeclast): Use
+	jm instead of m for second alternative and emit {evex} prefix
+	for it if !TARGET_AES.  Use noavx,avx,vaes_avx512vl isa attribute.
+	(vaesdec_<mode>, vaesdeclast_<mode>, vaesenc_<mode>,
+	vaesenclast_<mode>): Add second alternative with x instead of v
+	and jm instead of m.
+
+2024-04-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (Compiler options): Remove -fdebug-trace-quad.
+	Remove -fdebug-trace-api.
+	Add -fm2-debug-trace=.
+
+2024-04-09  Yang Yujie  <yangyujie@loongson.cn>
+
+	PR target/113233
+	* config/loongarch/loongarch.cc (loongarch_reg_init):
+	Reinitialize the loongarch_regno_mode_ok cache.
+	(loongarch_option_override): Same.
+	(loongarch_save_restore_target_globals): Restore target globals.
+	(loongarch_set_current_function): Restore the target contexts
+	for functions.
+	(TARGET_SET_CURRENT_FUNCTION): Define.
+	* config/loongarch/loongarch.h (SWITCHABLE_TARGET): Enable
+	switchable target context.
+	* config/loongarch/loongarch-builtins.cc (loongarch_init_builtins):
+	Initialize all builtin functions at startup.
+	(loongarch_expand_builtin): Turn assertion of builtin availability
+	into a test.
+
+2024-04-09  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR middle-end/114627
+	* tree-profile.cc (instrument_decisions): Generate constant
+	at the start of loop.
+
+2024-04-09  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR middle-end/114599
+	* tree-inline.cc (copy_bb): Copy cond_uids into callee.
+	(prepend_lexical_block): Remove outdated comment.
+	(add_local_variables): Remove bad cond_uids copy.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.cc (convert_mode_scalar): Fix duplicated words in comment;
+	into into -> it into.
+	* function.h (function::cond_uids): Fix duplicated words in comment;
+	same same -> same.
+	* config/riscv/riscv-vector-costs.cc
+	(costs::adjust_vect_cost_per_loop): Fix duplicated words in comment;
+	model model -> model.
+	* config/riscv/riscv-vector-builtins-shapes.cc (build_base): Fix
+	duplicated words in comment; for for -> for.
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::execute): Fix
+	duplicated words in comment; more more -> more.
+	* config/aarch64/driver-aarch64.cc (host_detect_local_cpu): Fix
+	duplicated words in comment; be be -> be.
+	* tree-profile.cc (masking_vectors): Fix duplicated words in comment;
+	has has -> has, the the -> the.
+	* value-range.cc (irange::set_range_from_bitmask): Fix duplicated
+	words in comment; the the -> the.
+	* gcov.cc (add_condition_counts): Fix duplicated words in comment;
+	to to -> to.
+	* vr-values.cc (get_scev_info): Fix duplicated words in comment;
+	the the -> to the.
+	* tree-vrp.cc (fully_replaceable): Fix duplicated words in comment;
+	by by -> by.
+	* mode-switching.cc (single_succ_confluence_n): Fix duplicated words
+	in comment; the the -> the.
+	* tree-ssa-phiopt.cc (value_replacement): Fix duplicated words in
+	comment; can can -> we can.
+	* gimple-range-phi.cc (phi_analyzer::process_phi): Fix duplicated words
+	in comment; it it -> it is.
+	* tree-ssa-sccvn.cc (visit_phi): Fix duplicated words in comment;
+	to to -> to.
+	* rtl-ssa/accesses.h (use_info::next_debug_insn_use): Fix duplicated
+	words in comment; if if -> if.
+	* doc/options.texi (InverseMask): Fix duplicated words; and and -> and.
+	Change take to takes.
+	* doc/invoke.texi (fanalyzer-undo-inlining): Fix duplicated words;
+	be be -> be.
+	(-minline-memops-threshold): Likewise.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114628
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Keep debug stmts
+	before returns_twice calls as is, don't push them into arg_stmts
+	vector/move to edges.
+
+2024-04-09  Sergey Bugaev  <bugaevc@gmail.com>
+
+	* config.gcc: Recognize aarch64*-*-gnu* targets.
+	* config/aarch64/aarch64-gnu.h: New file.
+
+2024-04-09  Sergey Bugaev  <bugaevc@gmail.com>
+
+	* config/i386/gnu.h: Move GNU/Hurd STARTFILE_SPEC from here...
+	* config/gnu.h: ...to here.
+
+2024-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114604
+	* gimple-range.cc (enable_ranger): Initialize the global
+	bitmap obstack.
+	(disable_ranger): Release it.
+
+2024-04-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (aarch64-*-rtems*): Add target makefile fragment
+	t-aarch64-rtems.
+	* config/aarch64/t-aarch64-rtems: New file.
+
+2024-04-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114587
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__APX_INLINE_ASM_USE_GPR32__ for -mapx-inline-asm-use-gpr32.
+
+2024-04-09  Kewen Lin  <linkw@linux.ibm.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/88309
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_builtin): Fix
+	wrong align passed to function build_aligned_type.
+	* tree-ssa-loop-prefetch.cc (is_miss_rate_acceptable): Add an
+	assertion to ensure align_unit should be positive.
+	* tree.cc (build_qualified_type): Update function comments.
+
 2024-04-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/112560

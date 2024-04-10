@@ -1,3 +1,28 @@
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114580
+	* semantics.cc (finish_if_stmt_cond): Call
+	maybe_warn_for_constant_evaluated with IF_STMT_CONSTEXPR_P (if_stmt)
+	as the second argument, rather than true/false depending on if
+	it is if constexpr with non-dependent constant expression with
+	bool type.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.cc (build_new_constexpr_heap_type): Fix duplicated words
+	in comment; is is -> is.
+	* cp-tree.def (CO_RETURN_EXPR): Fix duplicated words in comment;
+	for for -> for.
+	* parser.cc (fixup_blocks_walker): Fix duplicated words in comment;
+	is is -> is.
+	* semantics.cc (fixup_template_type): Fix duplicated words in comment;
+	for for -> for.
+	(finish_omp_for): Fix duplicated words in comment; the the -> the.
+	* pt.cc (more_specialized_fn): Fix duplicated words in comment;
+	think think -> think.
+	(type_targs_deducible_from): Fix duplicated words in comment; the the
+	-> the.
+
 2024-04-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/111132

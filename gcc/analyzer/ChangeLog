@@ -1,3 +1,12 @@
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* analyzer.opt (Wanalyzer-undefined-behavior-strtok): Fix duplicated
+	words; in in -> in.
+	* program-state.cc (sm_state_map::replay_call_summary): Fix duplicated
+	words in comment; to to -> to.
+	(program_state::replay_call_summary): Likewise.
+	* region-model.cc (region_model::replay_call_summary): Likewise.
+
 2024-04-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114588

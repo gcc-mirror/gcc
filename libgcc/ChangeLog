@@ -1,3 +1,10 @@
+2024-04-09  Sergey Bugaev  <bugaevc@gmail.com>
+
+	* config.host: Recognize aarch64*-*-gnu* hosts.
+	* config/aarch64/gnu-unwind.h: New file.
+	* config/aarch64/heap-trampoline.c
+	(allocate_trampoline_page): Support GNU/Hurd.
+
 2024-04-04  Jørgen Kvalsvik  <j@lambda.is>
 
 	* libgcov-merge.c (__gcov_merge_ior): New.

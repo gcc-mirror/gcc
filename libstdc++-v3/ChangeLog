@@ -1,3 +1,9 @@
+2024-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114633
+	* include/bits/chrono_io.h (_Parser::operator()) <'S'>: Use
+	stream extraction if std::from_chars is not available.
+
 2024-04-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/114519

@@ -1,3 +1,8 @@
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* docs/topics/expressions.rst (Constructor expressions): Fix
+	duplicated words; have have -> have.
+
 2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Make-lang.in: Implement exports list, and use a shared

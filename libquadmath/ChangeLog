@@ -1,3 +1,18 @@
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* sfp-machine.h (__LITTLE_ENDIAN, __BIG_ENDIAN, __BYTE_ORDER): Define
+	if __BYTE_ORDER isn't defined.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/114623
+	* sfp-machine.h: New file.
+	* math/sqrtq.c: Include from libgcc/soft-fp also soft-fp.h and quad.h
+	if possible.
+	(USE_SOFT_FP): Define in that case.
+	(sqrtq): Use soft-fp based implementation for the finite positive
+	arguments if possible.
+
 2024-04-03  Simon Chopin  <simon.chopin@canonical.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

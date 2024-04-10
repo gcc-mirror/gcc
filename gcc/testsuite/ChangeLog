@@ -1,3 +1,87 @@
+2024-04-09  David Faust  <david.faust@oracle.com>
+
+	PR testsuite/114642
+	* gcc.dg/debug/btf/btf-datasec-3.c: Make test more robust on different
+	architectures.
+
+2024-04-09  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-expand-replicate.c: New test.
+
+2024-04-09  David Faust  <david.faust@oracle.com>
+
+	PR debug/114608
+	* gcc.dg/debug/btf/btf-datasec-1.c: Check bts_offset symbol references
+	only for BPF target.
+	* gcc.dg/debug/btf/btf-datasec-2.c: Likewise.
+	* gcc.dg/debug/btf/btf-pr106773.c: Likewise.
+
+2024-04-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114535
+	* gfortran.dg/pr114535d.f90: New test.
+	* gfortran.dg/pr114535iv.f90: Additional source.
+
+2024-04-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/113956
+	* gfortran.dg/pr113956.f90: New test.
+
+2024-04-09  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/114601
+	* gcc.misc-tests/gcov-pr114601.c: New test.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114576
+	* gcc.target/i386/aes-pr114576.c: New test.
+
+2024-04-09  Yang Yujie  <yangyujie@loongson.cn>
+
+	PR target/113233
+	* lib/target-supports.exp: Define condition loongarch_sx_as.
+	* gcc.dg/lto/pr113233_0.c: New test.
+
+2024-04-09  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR middle-end/114599
+	* gcc.misc-tests/gcov-19.c: New test.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114580
+	* g++.dg/cpp2a/is-constant-evaluated15.C: New test.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114628
+	* gcc.dg/bitint-105.c: New test.
+
+2024-04-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114587
+	* gcc.target/i386/apx-3.c: Likewise.
+
+2024-04-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/114614
+	* gcc.misc-tests/gcov-20.c: Add effective target check
+	profile_update_atomic.
+
+2024-04-09  Kewen Lin  <linkw@linux.ibm.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/88309
+	* gcc.target/powerpc/pr88309.c: New test.
+
+2024-04-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114648
+	* gm2/cpp/default/pass/AdvParse.def: New test.
+	* gm2/cpp/default/pass/AdvParse.mod: New test.
+	* gm2/cpp/default/pass/cpp-default-pass.exp: New test.
+
 2024-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* gcc.target/gcn/cond_fmaxnm_1.c: Specify

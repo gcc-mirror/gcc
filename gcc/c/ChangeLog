@@ -1,3 +1,10 @@
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (previous_tag): Fix duplicated words in comment; the the
+	-> the.
+	(diagnose_mismatched_decls): Fix duplicated words in comment;
+	about about -> about.
+
 2024-04-05  Martin Uecker  <uecker@tugraz.at>
 
 	Revert:

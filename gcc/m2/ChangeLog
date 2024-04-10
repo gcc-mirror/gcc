@@ -1,3 +1,15 @@
+2024-04-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* tools-src/makeSystem: Invoke ${COMPILER} once and adjust
+	the echo string to expand the shell variables with -wrapper
+	gdb, --args.
+
+2024-04-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114648
+	* gm2-compiler/M2Options.mod (LineDirectives): Initially
+	set to true.
+
 2024-04-06  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114617
