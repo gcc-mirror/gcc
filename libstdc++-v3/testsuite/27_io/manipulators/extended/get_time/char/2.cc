@@ -35,9 +35,9 @@ void test01()
   VERIFY( loc_de != loc_c );
   istringstream iss;
   iss.imbue(loc_de);
-  iss.str("Di 1971");
-  tm time1;
-  iss >> get_time(&time1, "%a %Y");
+  iss.str("1971 Di."); // %a is "Di" on some targets, "Di." on others.
+  tm time1{};
+  iss >> get_time(&time1, "%Y %a");
   VERIFY(time1.tm_wday == 2);
   VERIFY(time1.tm_year == 71);
 }
