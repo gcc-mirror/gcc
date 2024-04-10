@@ -30,6 +30,10 @@
 /* function daylight exists */
 #undef HAVE_DAYLIGHT
 
+/* Define to 1 if you have the declaration of `getenv', and to 0 if you don't.
+   */
+#undef HAVE_DECL_GETENV
+
 /* Define to 1 if you have the <direct.h> header file. */
 #undef HAVE_DIRECT_H
 
@@ -50,6 +54,15 @@
 
 /* function exit exists */
 #undef HAVE_EXIT
+
+/* function exp10 exists */
+#undef HAVE_EXP10
+
+/* function exp10f exists */
+#undef HAVE_EXP10F
+
+/* function exp10l exists */
+#undef HAVE_EXP10L
 
 /* function fcntl exists */
 #undef HAVE_FCNTL
@@ -79,7 +92,7 @@
 #undef HAVE_GETPID
 
 /* function gettimeofday exists */
-#undef HAVE_GETTIMEOFD
+#undef HAVE_GETTIMEOFDAY
 
 /* function getuid exists */
 #undef HAVE_GETUID
@@ -149,6 +162,9 @@
 
 /* function setitimer exists */
 #undef HAVE_SETITIMER
+
+/* function settimeofday exists */
+#undef HAVE_SETTIMEOFDAY
 
 /* function setuid exists */
 #undef HAVE_SETUID

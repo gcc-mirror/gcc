@@ -8730,7 +8730,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 else
                 {
                     AST.Type t = parseType(); // cast( type )
-                    t = t.addMod(m); // cast( const type )
+                    t = t.addSTC(AST.ModToStc(m)); // cast( const type )
                     check(TOK.rightParenthesis);
                     e = parseUnaryExp();
                     e = new AST.CastExp(loc, e, t);

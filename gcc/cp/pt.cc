@@ -5417,9 +5417,14 @@ process_partial_specialization (tree decl)
     }
 
   if (VAR_P (decl))
-    /* We didn't register this in check_explicit_specialization so we could
-       wait until the constraints were set.  */
-    decl = register_specialization (decl, maintmpl, specargs, false, 0);
+    {
+      /* We didn't register this in check_explicit_specialization so we could
+	 wait until the constraints were set.  */
+      tree reg = register_specialization (decl, maintmpl, specargs, false, 0);
+      if (reg != decl)
+	/* Redeclaration.  */
+	return reg;
+    }
   else
     associate_classtype_constraints (type);
 
@@ -7308,14 +7313,15 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 static tree
 create_template_parm_object (tree expr, tsubst_flags_t complain)
 {
+  tree orig = expr;
   if (TREE_CODE (expr) == TARGET_EXPR)
     expr = TARGET_EXPR_INITIAL (expr);
 
   if (!TREE_CONSTANT (expr))
     {
       if ((complain & tf_error)
-	  && require_rvalue_constant_expression (expr))
-	cxx_constant_value (expr);
+	  && require_rvalue_constant_expression (orig))
+	cxx_constant_value (orig);
       return error_mark_node;
     }
   if (invalid_tparm_referent_p (TREE_TYPE (expr), expr, complain))
@@ -21179,7 +21185,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case THROW_EXPR:
       RETURN (build_throw
-       (input_location, RECUR (TREE_OPERAND (t, 0))));
+       (input_location, RECUR (TREE_OPERAND (t, 0)), complain));
 
     case CONSTRUCTOR:
       {
@@ -30681,7 +30687,7 @@ ctad_template_p (tree tmpl)
    type.  */
 
 static tree
-do_class_deduction (tree ptype, tree tmpl, tree init,
+do_class_deduction (tree ptype, tree tmpl, tree init, tree outer_targs,
 		    int flags, tsubst_flags_t complain)
 {
   /* We should have handled this in the caller.  */
@@ -30742,6 +30748,23 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   /* Wait until the initializer is non-dependent.  */
   if (type_dependent_expression_p (init))
     return ptype;
+
+  if (outer_targs)
+    {
+      int args_depth = TMPL_ARGS_DEPTH (outer_targs);
+      int parms_depth = TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl));
+      if (parms_depth > 1)
+	{
+	  /* Substitute outer arguments into this CTAD template from the
+	     current instantiation.  */
+	  int want = std::min (args_depth, parms_depth - 1);
+	  outer_targs = strip_innermost_template_args (outer_targs,
+						       args_depth - want);
+	  tmpl = tsubst (tmpl, outer_targs, complain, NULL_TREE);
+	  if (tmpl == error_mark_node)
+	    return error_mark_node;
+	}
+    }
 
   /* Don't bother with the alias rules for an equivalent template.  */
   tmpl = get_underlying_template (tmpl);
@@ -30998,7 +31021,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 
   if (tree ctmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
     /* C++17 class template argument deduction.  */
-    return do_class_deduction (type, ctmpl, init, flags, complain);
+    return do_class_deduction (type, ctmpl, init, outer_targs, flags, complain);
 
   if (init == NULL_TREE || TREE_TYPE (init) == NULL_TREE)
     /* Nothing we can do with this, even in deduction context.  */
@@ -31575,13 +31598,15 @@ init_template_processing (void)
 void
 print_template_statistics (void)
 {
-  fprintf (stderr, "decl_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", (long) decl_specializations->size (),
-	   (long) decl_specializations->elements (),
+  fprintf (stderr, "decl_specializations: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) decl_specializations->size (),
+	   (fmt_size_t) decl_specializations->elements (),
 	   decl_specializations->collisions ());
-  fprintf (stderr, "type_specializations: size %ld, %ld elements, "
-	   "%f collisions\n", (long) type_specializations->size (),
-	   (long) type_specializations->elements (),
+  fprintf (stderr, "type_specializations: size " HOST_SIZE_T_PRINT_DEC ", "
+	   HOST_SIZE_T_PRINT_DEC " elements, %f collisions\n",
+	   (fmt_size_t) type_specializations->size (),
+	   (fmt_size_t) type_specializations->elements (),
 	   type_specializations->collisions ());
 }
 

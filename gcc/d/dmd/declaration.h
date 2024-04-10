@@ -107,8 +107,6 @@ bool functionSemantic3(FuncDeclaration* fd);
 #define STC_TYPECTOR    (STCconst | STCimmutable | STCshared | STCwild)
 #define STC_FUNCATTR    (STCref | STCnothrow | STCnogc | STCpure | STCproperty | STCsafe | STCtrusted | STCsystem)
 
-void ObjectNotFound(Identifier *id);
-
 /**************************************************************/
 
 class Declaration : public Dsymbol

@@ -9,5 +9,5 @@ func (void)
   __asm__ ("@ %p0" : : "Ws" (&var + 1));
 }
 
-/* { dg-final { scan-assembler "@ func" } } */
-/* { dg-final { scan-assembler "@ var\\+4" } } */
+/* { dg-final { scan-assembler "@ _?func" } } */
+/* { dg-final { scan-assembler "@ (_?var\\+4|4\\+_?var)" } } */

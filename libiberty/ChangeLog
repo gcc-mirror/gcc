@@ -1,3 +1,9 @@
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* vprintf-support.c (libiberty_vprintf_buffer_size): Handle
+	properly l, ll, z, t or on _WIN32 I64 modifiers for diouxX
+	and L modifier for fFgGeE.
+
 2024-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-demangle.c (FNQUAL_COMPONENT_CASE): Add case for

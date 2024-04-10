@@ -7106,6 +7106,16 @@ cxx_eval_switch_expr (const constexpr_ctx *ctx, tree t,
   cond = cxx_eval_constant_expression (ctx, cond, vc_prvalue,
 				       non_constant_p, overflow_p);
   VERIFY_CONSTANT (cond);
+  if (TREE_CODE (cond) != INTEGER_CST)
+    {
+      /* If the condition doesn't reduce to an INTEGER_CST it isn't a usable
+	 switch condition even if it's constant enough for other things
+	 (c++/113545).  */
+      gcc_checking_assert (ctx->quiet);
+      *non_constant_p = true;
+      return t;
+    }
+
   *jump_target = cond;
 
   tree body

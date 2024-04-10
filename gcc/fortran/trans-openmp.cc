@@ -8426,7 +8426,8 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		{
 		  switch (otp->property_kind)
 		    {
-		    case OMP_TRAIT_PROPERTY_EXPR:
+		    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
+		    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
 		      {
 			gfc_se se;
 			gfc_init_se (&se, NULL);

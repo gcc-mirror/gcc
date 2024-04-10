@@ -2103,6 +2103,8 @@ private extern (D) void resume(ThreadBase _t) nothrow @nogc
             t.m_curr.tstack = t.m_curr.bstack;
         }
     }
+    else
+        static assert(false, "Platform not supported.");
 }
 
 

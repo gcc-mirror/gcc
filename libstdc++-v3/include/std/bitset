@@ -177,8 +177,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX14_CONSTEXPR void
       _M_do_set() _GLIBCXX_NOEXCEPT
       {
-	for (size_t __i = 0; __i < _Nw; __i++)
-	  _M_w[__i] = ~static_cast<_WordT>(0);
+#if __cplusplus >= 201402L
+	if (__builtin_is_constant_evaluated())
+	  {
+	    for (_WordT& __w : _M_w)
+	      __w = ~static_cast<_WordT>(0);;
+	    return;
+	  }
+#endif
+	__builtin_memset(_M_w, 0xFF, _Nw * sizeof(_WordT));
       }
 
       _GLIBCXX14_CONSTEXPR void
@@ -1087,10 +1094,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator>>=(size_t __position) _GLIBCXX_NOEXCEPT
       {
 	if (__builtin_expect(__position < _Nb, 1))
-	  {
-	    this->_M_do_right_shift(__position);
-	    this->_M_do_sanitize();
-	  }
+	  this->_M_do_right_shift(__position);
 	else
 	  this->_M_do_reset();
 	return *this;

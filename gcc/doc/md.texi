@@ -5746,6 +5746,7 @@ Operand 1 and operand 2 are of the same mode. Their
 product, which is of a wider mode, is computed and added to operand 3.
 Operand 3 is of a mode equal or wider than the mode of the product. The
 result is placed in operand 0, which is of the same mode as operand 3.
+@var{m} is the mode of operand 1 and operand 2.
 
 Semantically the expressions perform the multiplication in the following signs
 
@@ -5763,6 +5764,7 @@ Operand 1 and operand 2 are of the same mode. Their
 product, which is of a wider mode, is computed and added to operand 3.
 Operand 3 is of a mode equal or wider than the mode of the product. The
 result is placed in operand 0, which is of the same mode as operand 3.
+@var{m} is the mode of operand 1 and operand 2.
 
 Semantically the expressions perform the multiplication in the following signs
 
@@ -5779,6 +5781,7 @@ Operand 1 must be unsigned and operand 2 signed. Their
 product, which is of a wider mode, is computed and added to operand 3.
 Operand 3 is of a mode equal or wider than the mode of the product. The
 result is placed in operand 0, which is of the same mode as operand 3.
+@var{m} is the mode of operand 1 and operand 2.
 
 Semantically the expressions perform the multiplication in the following signs
 
@@ -5797,20 +5800,22 @@ Operand 1 and operand 2 are of the same mode. Their absolute difference, which
 is of a wider mode, is computed and added to operand 3. Operand 3 is of a mode
 equal or wider than the mode of the absolute difference. The result is placed
 in operand 0, which is of the same mode as operand 3.
+@var{m} is the mode of operand 1 and operand 2.
 
-@cindex @code{widen_ssum@var{m3}} instruction pattern
-@cindex @code{widen_usum@var{m3}} instruction pattern
-@item @samp{widen_ssum@var{m3}}
-@itemx @samp{widen_usum@var{m3}}
+@cindex @code{widen_ssum@var{m}3} instruction pattern
+@cindex @code{widen_usum@var{m}3} instruction pattern
+@item @samp{widen_ssum@var{m}3}
+@itemx @samp{widen_usum@var{m}3}
 Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
+@var{m} is the mode of operand 1.
 
-@cindex @code{smulhs@var{m3}} instruction pattern
-@cindex @code{umulhs@var{m3}} instruction pattern
-@item @samp{smulhs@var{m3}}
-@itemx @samp{umulhs@var{m3}}
+@cindex @code{smulhs@var{m}3} instruction pattern
+@cindex @code{umulhs@var{m}3} instruction pattern
+@item @samp{smulhs@var{m}3}
+@itemx @samp{umulhs@var{m}3}
 Signed/unsigned multiply high with scale. This is equivalent to the C code:
 @smallexample
 narrow op0, op1, op2;
@@ -5819,11 +5824,13 @@ op0 = (narrow) (((wide) op1 * (wide) op2) >> (N / 2 - 1));
 @end smallexample
 where the sign of @samp{narrow} determines whether this is a signed
 or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
+@var{m} is the mode for all 3 operands (narrow). The wide mode is not specified
+and is defined to fit the whole multiply.
 
-@cindex @code{smulhrs@var{m3}} instruction pattern
-@cindex @code{umulhrs@var{m3}} instruction pattern
-@item @samp{smulhrs@var{m3}}
-@itemx @samp{umulhrs@var{m3}}
+@cindex @code{smulhrs@var{m}3} instruction pattern
+@cindex @code{umulhrs@var{m}3} instruction pattern
+@item @samp{smulhrs@var{m}3}
+@itemx @samp{umulhrs@var{m}3}
 Signed/unsigned multiply high with round and scale. This is
 equivalent to the C code:
 @smallexample
@@ -5833,11 +5840,13 @@ op0 = (narrow) (((((wide) op1 * (wide) op2) >> (N / 2 - 2)) + 1) >> 1);
 @end smallexample
 where the sign of @samp{narrow} determines whether this is a signed
 or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
+@var{m} is the mode for all 3 operands (narrow). The wide mode is not specified
+and is defined to fit the whole multiply.
 
-@cindex @code{sdiv_pow2@var{m3}} instruction pattern
-@cindex @code{sdiv_pow2@var{m3}} instruction pattern
-@item @samp{sdiv_pow2@var{m3}}
-@itemx @samp{sdiv_pow2@var{m3}}
+@cindex @code{sdiv_pow2@var{m}3} instruction pattern
+@cindex @code{sdiv_pow2@var{m}3} instruction pattern
+@item @samp{sdiv_pow2@var{m}3}
+@itemx @samp{sdiv_pow2@var{m}3}
 Signed division by power-of-2 immediate. Equivalent to:
 @smallexample
 signed op0, op1;

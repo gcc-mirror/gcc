@@ -276,7 +276,11 @@ bitint_negate (UBILtype *d, const UBILtype *s, SItype n)
 	}								\
       if (iprec < 0)							\
 	{								\
-	  n = sizeof (0ULL) * __CHAR_BIT__ + 1 - __builtin_clzll (~msb);\
+	  if (msb == (UBILtype) -1)					\
+	    n = 1;							\
+	  else								\
+	    n = (sizeof (0ULL) * __CHAR_BIT__ + 1			\
+		 - __builtin_clzll (~msb));				\
 	  if (BIL_TYPE_SIZE > DI##_BITS && n > DI##_BITS)		\
 	    {								\
 	      iv = msb >> (n - DI##_BITS);				\

@@ -1,3 +1,146 @@
+2024-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113708
+	* decl.cc (make_rtl_for_nonlocal_decl): Defer inline variables.
+	* decl2.cc (import_export_decl): Support inline variables.
+
+2024-02-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113908
+	PR c++/113332
+	* method.cc (synthesized_method_walk): Use maybe_push_to_top_level.
+
+2024-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99573
+	* decl.cc (start_enum): Reorder check for redeclaring in module.
+	Add missing auto_diagnostic_groups.
+
+2024-02-13  Marek Polacek  <polacek@redhat.com>
+
+	DR 1693
+	PR c++/113760
+	* parser.cc (cp_parser_member_declaration): Only pedwarn about an extra
+	semicolon in C++98.
+
+2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113904
+	* parser.cc (cp_parser_omp_context_selector): Handle splitting of
+	OMP_TRAIT_PROPERTY_EXPR into OMP_TRAIT_PROPERTY_{DEV_NUM,BOOL}_EXPR.
+
+2024-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* Make-lang.in (CFLAGS-cp/module.o): Add $(ZLIBINC).
+	* module.cc: Include <zlib.h>.
+	(bytes::calc_crc): Use crc32 from zlib.
+	(bytes_out::set_crc): Use crc32_combine from zlib.
+
+2024-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (depset::hash::add_specializations): Use
+	STRIP_TEMPLATE consistently.
+	(get_originating_module_decl): Handle class-scope CONST_DECL.
+
+2024-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* lambda.cc (lambda_function): Call get_class_binding_direct
+	instead of lookup_member to sidestep lazy loading.
+	* name-lookup.cc (check_local_shadow): Punt if we're in a
+	function context that's not actual parsing.
+
+2024-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113612
+	* pt.cc (process_partial_specialization): Return early
+	on redeclaration.
+
+2024-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112436
+	* except.cc (expand_start_catch_block): Pass tf_warning_or_error to
+	is_admissible_throw_operand_or_catch_parameter.
+	(build_throw): Pass complain to
+	is_admissible_throw_operand_or_catch_parameter.
+	(complete_ptr_ref_or_void_ptr_p): Add a tsubst_flags_t parameter.  Use
+	it.  Return bool.  Call complete_type_or_maybe_complain instead of
+	complete_type_or_else.
+	(is_admissible_throw_operand_or_catch_parameter): Add a tsubst_flags_t
+	parameter.  Use it.  Guard error calls.
+
+2024-02-13  Alex Coplan  <alex.coplan@arm.com>
+
+	PR c++/113658
+	* cp-objcp-common.cc (cp_feature_table): Remove entry for
+	cxx_constexpr_string_builtins.
+
+2024-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113545
+	* constexpr.cc (cxx_eval_switch_expr): If the condition doesn't reduce
+	to an INTEGER_CST, consider it non-constant.
+
+2024-02-10  Marek Polacek  <polacek@redhat.com>
+
+	DR 2237
+	PR c++/107126
+	PR c++/97202
+	* parser.cc (cp_parser_unqualified_id): Downgrade the DR2237 error to
+	a pedwarn.
+	(cp_parser_constructor_declarator_p): Likewise.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (debug_binfo): Use HOST_WIDE_INT_PRINT_DEC instead of "%ld"
+	and casts to long.
+	* pt.cc (print_template_statistics): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	* class.cc (dump_class_hierarchy_1): Use HOST_WIDE_INT_PRINT_UNSIGNED
+	instead of "%lu" and casts to unsigned long.  For TYPE_ALIGN, use
+	%u instead of %lu and drop casts to unsigned long.
+	* parser.cc (cp_lexer_peek_nth_token): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+
+2024-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113834
+	* semantics.cc (finish_type_pack_element): Perform range checking
+	before tree_to_shwi.
+
+2024-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98388
+	* coroutines.cc (coro_rewrite_function_body): Pass tf_warning_or_error
+	to build_throw.
+	(morph_fn_to_coro): Likewise.
+	* cp-tree.h (build_throw): Adjust.
+	* except.cc (expand_end_catch_block): Pass tf_warning_or_error to
+	build_throw.
+	(build_throw): Add a tsubst_flags_t parameter.  Use it.  Remove
+	redundant variable.  Guard an inform call.
+	* parser.cc (cp_parser_throw_expression): Pass tf_warning_or_error
+	to build_throw.
+	* pt.cc (tsubst_expr) <case THROW_EXPR>: Pass complain to build_throw.
+
+2024-02-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112580
+	* module.cc (trees_in::read_class_def): When streaming in
+	an anonymous union field of an as-base class, don't overwrite
+	ANON_AGGR_TYPE_FIELD.
+
+2024-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113649
+	* pt.cc (do_class_deduction): Add outer_targs parameter.
+	Substitute outer arguments into the CTAD template.
+	(do_auto_deduction): Pass outer_targs to do_class_deduction.
+
+2024-02-08  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (create_template_parm_object): Pass TARGET_EXPR to
+	cxx_constant_value.
+
 2024-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/113788

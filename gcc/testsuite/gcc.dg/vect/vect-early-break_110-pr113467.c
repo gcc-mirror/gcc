@@ -10,7 +10,7 @@
 typedef struct gcry_mpi *gcry_mpi_t;
 struct gcry_mpi {
   int nlimbs;
-  unsigned long *d;
+  uint64_t *d;
 };
 
 long gcry_mpi_add_ui_up;

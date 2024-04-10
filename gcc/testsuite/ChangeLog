@@ -1,3 +1,557 @@
+2024-02-14  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105847
+	* gfortran.dg/pr105847.f90: New test.
+
+2024-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/pr113576.c (dg-additional-options):
+	Use -march=skylake-avx512 for avx512f effective target.
+	* gcc.dg/vect/pr98308.c (dg-additional-options):
+	Use -march=skylake-avx512 for all x86 targets.
+	* gcc.dg/vect/tree-vect.h (check_vect): Handle __AVX512F__
+	and __AVX512VL__.
+
+2024-02-14  Jakub Jelinek  <jakub@redhat.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113855
+	* gcc.dg/heap-trampoline-1.c: New test.
+	* lib/target-supports.exp (check_effective_target_heap_trampoline):
+	New.
+
+2024-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113871
+	* gcc.target/i386/pr113871-1a.c: New test.
+	* gcc.target/i386/pr113871-1b.c: New test.
+	* gcc.target/i386/pr113871-2a.c: New test.
+	* gcc.target/i386/pr113871-2b.c: New test.
+	* gcc.target/i386/pr113871-3a.c: New test.
+	* gcc.target/i386/pr113871-3b.c: New test.
+	* gcc.target/i386/pr113871-4a.c: New test.
+
+2024-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113708
+	* g++.dg/debug/dwarf2/inline-var-1.C: Reference 'a' to ensure it
+	is emitted.
+	* g++.dg/debug/dwarf2/inline-var-3.C: Likewise.
+	* g++.dg/modules/init-7_a.H: New test.
+	* g++.dg/modules/init-7_b.C: New test.
+
+2024-02-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/113861
+	* c-c++-common/gomp/pr63328.c: Remove dg-excess-errors.
+	* gcc.dg/gomp/pr87895-2.c: Likewise.
+
+2024-02-14  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/111054
+	* gcc.c-torture/compile/pr111054.c: New test.
+
+2024-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-novect_gcond.c: New test.
+
+2024-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/99210
+	* gfortran.dg/pr99210.f90: New test.
+
+2024-02-14  Jonathan Yong  <10walls@gmail.com>
+
+	* c-c++-common/analyzer/coreutils-sum-pr108666.c: Use
+	__SIZE_TYPE__ instead of long unsigned int for size_t
+	definition.
+
+2024-02-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113908
+	PR c++/113332
+	* g++.dg/cpp0x/lambda/lambda-nsdmi11.C: New test.
+	* g++.dg/template/non-dependent31.C: New test.
+
+2024-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/104739
+	* lib/gdc-utils.exp (gdc-convert-test) <UNICODE_NAMES>: Require
+	ucn support.
+
+2024-02-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/113899
+	* gcc.dg/vect/vect-simd-clone-10.c: Add `dg-do run`
+	* gcc.dg/vect/vect-simd-clone-12.c: Likewise.
+
+2024-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/format/gcc_diag-1.c (foo): Add tests for z and t modifiers.
+	* gcc.dg/format/gcc_gfc-1.c (foo): Add tests for ll, z and t modifiers.
+
+2024-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99573
+	* g++.dg/modules/enum-12.C: New test.
+
+2024-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/113909
+	* gcc.target/i386/pr113689-1.c: Skip on Solaris.
+	* gcc.target/i386/pr113689-2.c: Likewise.
+	* gcc.target/i386/pr113689-3.c: Likewise.
+
+2024-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gfortran.dg/fmt_en.f90 (dg-output): Don't xfail on
+	?86-*-solaris2.9*.
+	* gfortran.dg/fmt_en_rd.f90: Likewise.
+	* gfortran.dg/fmt_en_rn.f90: Likewise.
+	* gfortran.dg/fmt_en_ru.f90: Likewise.
+	* gfortran.dg/fmt_en_rz.f90: Likewise.
+
+2024-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/113706
+	* c-c++-common/pr103798-2.c (scan-assembler-not): xfail for C++ on
+	Solaris.
+
+2024-02-13  Marek Polacek  <polacek@redhat.com>
+
+	DR 1693
+	PR c++/113760
+	* g++.dg/semicolon-fixits.C: Run in C++98 only.
+	* g++.dg/warn/pedantic2.C: Adjust dg-warning.
+	* g++.old-deja/g++.jason/parse11.C: Adjust dg-error.
+	* g++.dg/DRs/dr1693-1.C: New test.
+	* g++.dg/DRs/dr1693-2.C: New test.
+
+2024-02-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113876
+	* gcc.target/i386/pr113876.c: New test.
+
+2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113904
+	* gfortran.dg/gomp/declare-variant-1.f90: Change 'condition' trait's
+	argument from integer to a logical expression.
+	* gfortran.dg/gomp/declare-variant-11.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-12.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-13.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-2.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-2a.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-3.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-4.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-6.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-8.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-20.f90: New test.
+
+2024-02-13  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/friend-6_a.C: New test.
+	* g++.dg/modules/using-enum-3_a.C: New test.
+	* g++.dg/modules/using-enum-3_b.C: New test.
+
+2024-02-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113866
+	* gfortran.dg/bind_c_optional-2.f90: New test.
+
+2024-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113612
+	* g++.dg/cpp1y/var-templ85.C: New test.
+
+2024-02-13  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/pr113742.c: New test.
+
+2024-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112436
+	* g++.dg/cpp2a/concepts-pr112436.C: New test.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113896
+	* g++.dg/torture/pr113896.C: New testcase.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113895
+	* gcc.dg/torture/pr113895-1.c: New testcase.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113902
+	* gcc.dg/vect/pr113902.c: New testcase.
+
+2024-02-13  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113734
+	* gcc.dg/vect/vect-early-break_117-pr113734.c: New test.
+
+2024-02-13  Alex Coplan  <alex.coplan@arm.com>
+
+	PR c++/113658
+	* g++.dg/ext/has-feature2.C: New test.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113898
+	* gcc.dg/torture/pr113898.c: New testcase.
+
+2024-02-13  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113883
+	* gfortran.dg/allocatable_length.f90: New test.
+
+2024-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/pr109358.f90: New test.
+
+2024-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113545
+	* g++.dg/cpp1y/constexpr-reinterpret3.C: Remove dg-ice.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113849
+	* gcc.dg/torture/bitint-58.c: New test.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113674
+	* c-c++-common/Wattributes-3.c: New test.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr113693.c: Guard _BitInt(837) use with
+	__BITINT_MAXWIDTH__ >= 837.  Use dg-prune-output instead of
+	dg-message for dbgcnt message.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113125
+	* gdc.dg/imports/pr113125.d: New test.
+	* gdc.dg/pr113125.d: New test.
+
+2024-02-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/113758
+	* gdc.dg/torture/pr113758.d: New test.
+
+2024-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	PR tree-optimization/108355
+	* gcc.dg/torture/pr113831.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-104.c: Likewise.
+
+2024-02-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr113766-1.c: Adjust the test cases.
+
+2024-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113863
+	* gcc.dg/vect/pr113863.c: New testcase.
+
+2024-02-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.c-torture/execute/ieee/cdivchkf.c: Use ilogb and
+	__builtin_fmax instead of ilogbf and __builtin_fmaxf.
+
+2024-02-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/asm-raw-symbol.c: Adjust asm patterns.
+
+2024-02-11  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr97969.c: Update to comply with GCC14 changes.
+
+2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr113689-1.c: Skip test on darwin.
+	* gcc.target/i386/pr113689-2.c: Likewise.
+	* gcc.target/i386/pr113689-3.c: Likewise.
+
+2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/ssp-2.c: Ignore warning that
+	-multiply_defined is obsolete
+
+2024-02-10  Marek Polacek  <polacek@redhat.com>
+
+	DR 2237
+	PR c++/107126
+	PR c++/97202
+	* g++.dg/DRs/dr2237.C: Adjust dg-error.
+	* g++.dg/parse/constructor2.C: Likewise.
+	* g++.dg/template/error34.C: Likewise.
+	* g++.old-deja/g++.pt/ctor2.C: Likewise.
+	* g++.dg/DRs/dr2237-2.C: New test.
+	* g++.dg/DRs/dr2237-3.C: New test.
+	* g++.dg/DRs/dr2237-4.C: New test.
+	* g++.dg/DRs/dr2237-5.C: New test.
+	* g++.dg/warn/Wtemplate-id-cdtor-1.C: New test.
+	* g++.dg/warn/Wtemplate-id-cdtor-2.C: New test.
+	* g++.dg/warn/Wtemplate-id-cdtor-3.C: New test.
+	* g++.dg/warn/Wtemplate-id-cdtor-4.C: New test.
+
+2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-ld-2.c: Ignore warning
+	that -bind_at_load is deprecated.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110754
+	* gcc.dg/attr-assume-6.c: New test.
+	* g++.dg/cpp23/attr-assume12.C: New test.
+
+2024-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR c++/113545
+	* g++.dg/cpp1y/constexpr-reinterpret3.C,
+	g++.dg/cpp1y/constexpr-reinterpret4.C: New tests.
+
+2024-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113834
+	* g++.dg/ext/type_pack_element4.C: New test.
+
+2024-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98388
+	* g++.dg/cpp0x/sfinae69.C: New test.
+
+2024-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113799
+	* gfortran.dg/arithmetic_overflow_2.f90: New test.
+
+2024-02-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112580
+	* g++.dg/modules/anon-3_a.H: New test.
+	* g++.dg/modules/anon-3_b.C: New test.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113783
+	* gcc.dg/bitint-88.c: New test.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113415
+	* gcc.target/i386/pr113415.c: New test.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113818
+	* gcc.dg/bitint-89.c: New test.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113774
+	* gcc.dg/torture/bitint-57.c: New test.
+
+2024-02-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.misc-tests/options.exp: Allow other options before the
+	-quite option for cc1.
+
+2024-02-08  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.target/riscv/rvv/base/abi-1.c: change selector
+	* gcc.target/riscv/rvv/base/pragma-2.c: ditto
+	* gcc.target/riscv/rvv/base/pragma-3.c: ditto
+
+2024-02-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16_alternative_ok_nocache): Use
+	et_arm_fp16_alternative_flags to cache the result.  Improve test
+	for FP16 availability.
+	(add_options_for_arm_fp16_alternative): Use
+	et_arm_fp16_alternative_flags.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-3.C: Update dg-* flags.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-4.C: Likewise.
+	* gcc.dg/torture/arm-fp16-int-convert-alt.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-3.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-4.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-3.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-4.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-1.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-10.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-11.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-12.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-2.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-3.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-4.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-5.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-6.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-7.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-8.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-9.c: Likewise.
+	* gcc.target/arm/fp16-rounding-alt-1.c: Likewise.
+
+2024-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113649
+	* g++.dg/cpp2a/nontype-class65.C: New test.
+
+2024-02-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/113735
+	* gcc.dg/tree-ssa/pr113735.c: New test.
+
+2024-02-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113711
+	PR target/113733
+	* gcc.target/i386/apx-ndd-2.c: New test.
+	* gcc.target/i386/apx-ndd-base-index-1.c: Likewise.
+	* gcc.target/i386/apx-ndd-no-seg-global-1.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-1.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-2.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-3.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-4.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-5.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-1a.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-2.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-3.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-4.c: Likewise.
+	* gcc.target/i386/apx-ndd-x32-1.c: Likewise.
+
+2024-02-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113808
+	* gfortran.dg/vect/vect-early-break_1-PR113808.f90: Moved to...
+	* gfortran.dg/vect/vect-early-break_1-pr113808.f90: ...here.
+
+2024-02-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113808
+	* gfortran.dg/vect/vect-early-break_1-PR113808.f90: New test.
+
+2024-02-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-early-break_110-pr113467.c: Change unsigned long *
+	to uint64_t *.
+
+2024-02-08  Pan Li  <pan2.li@intel.com>
+
+	PR target/113766
+	* gcc.target/riscv/rvv/base/pr113766-1.c: Add new cases.
+
+2024-02-08  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/113776
+	* gcc.dg/pr113776-1.c, gcc.dg/pr113776-2.c, gcc.dg/pr113776-3.c,
+	gcc.dg/pr113776-4.c: New tests.
+
+2024-02-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/nontype-class64.C: New test.
+
+2024-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113796
+	* gcc.dg/torture/pr113796.c: New testcase.
+
+2024-02-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113690
+	* gcc.target/i386/pr113690.c: New test case.
+
+2024-02-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr-armv8p9.c: New.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/compile/issue-2040.rs:
+	Enclose 'const' in single quotes.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2775.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2782.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1773.rs: Moved to...
+	* rust/compile/issue-1773.rs.bak: ...here.
+	* rust/compile/issue-2723-1.rs: New test.
+	* rust/compile/issue-2723-2.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2747.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2772-1.rs: New test.
+	* rust/compile/issue-2772-2.rs: New test.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1483.rs: New test.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/compile/issue-2812.rs: New test.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113750
+	* gcc.dg/vect/vect-early-break_112-pr113750.c: New test.
+	* gcc.dg/vect/vect-early-break_113-pr113750.c: New test.
+	* gcc.dg/vect/vect-early-break_114-pr113750.c: New test.
+	* gcc.dg/vect/vect-early-break_115-pr113750.c: New test.
+	* gcc.dg/vect/vect-early-break_116-pr113750.c: New test.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113731
+	* gcc.dg/vect/vect-early-break_111-pr113731.c: New test.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113467
+	* gcc.dg/vect/vect-early-break_110-pr113467.c: New test.
+
+2024-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113756
+	* gcc.dg/pr113756.c: New test.
+
+2024-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/debug/dwarf2/inline5.c: Don't xfail scan-assembler-not on
+	{ aix || solaris2 } && !gas.
+
+2024-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113753
+	* gcc.dg/torture/bitint-56.c: New test.
+	* gcc.dg/bitint-87.c: New test.
+
+2024-02-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/113766
+	* gcc.target/riscv/rvv/base/pr113766-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr113766-2.c: New test.
+
 2024-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/113788

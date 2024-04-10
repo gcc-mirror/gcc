@@ -3480,6 +3480,13 @@ install-no-fixedincludes:
 
 doc: $(BUILD_INFO) $(GENERATED_MANPAGES)
 
+# If BUILD_INFO is set to no-info by configure, we still want to check
+# 'info' dependencies even the build rules are no-ops because
+# BUILD_INFO != info (see %.info rule)
+ifeq ($(BUILD_INFO),no-info)
+no-info: info
+endif
+
 INFOFILES = doc/cpp.info doc/gcc.info doc/gccint.info \
             doc/gccinstall.info doc/cppinternals.info
 

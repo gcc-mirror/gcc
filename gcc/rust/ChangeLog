@@ -1,3 +1,318 @@
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_trait_item):
+	Handle macros in trait items similar to how its handled for trait
+	implementation items.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit):
+	Remove obsolete classes and functions.
+	* ast/rust-ast-collector.h:
+	Likewise.
+	* ast/rust-ast-full-decls.h (class TraitFunctionDecl):
+	Likewise.
+	(class TraitItemFunc):
+	Likewise.
+	(class TraitMethodDecl):
+	Likewise.
+	(class TraitItemMethod):
+	Likewise.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit):
+	Likewise.
+	* ast/rust-ast-visitor.h:
+	Likewise.
+	* ast/rust-ast.cc (TraitItemFunc::TraitItemFunc):
+	Likewise.
+	(TraitItemFunc::operator=):
+	Likewise.
+	(TraitItemFunc::as_string):
+	Likewise.
+	(TraitFunctionDecl::as_string):
+	Likewise.
+	(TraitItemMethod::TraitItemMethod):
+	Likewise.
+	(TraitItemMethod::operator=):
+	Likewise.
+	(TraitItemMethod::as_string):
+	Likewise.
+	(TraitMethodDecl::as_string):
+	Likewise.
+	(TraitItemFunc::accept_vis):
+	Likewise.
+	(TraitItemMethod::accept_vis):
+	Likewise.
+	* ast/rust-item.h (class TraitFunctionDecl):
+	Likewise.
+	(class TraitItemFunc):
+	Likewise.
+	(class TraitMethodDecl):
+	Likewise.
+	(class TraitItemMethod):
+	Likewise.
+	* checks/errors/rust-ast-validation.cc (ASTValidation::visit):
+	Likewise.
+	* checks/errors/rust-ast-validation.h:
+	Likewise.
+	* checks/errors/rust-feature-gate.h:
+	Likewise.
+	* expand/rust-cfg-strip.cc (CfgStrip::maybe_strip_trait_function_decl):
+	Likewise.
+	(CfgStrip::maybe_strip_trait_method_decl):
+	Likewise.
+	(CfgStrip::visit):
+	Likewise.
+	* expand/rust-cfg-strip.h:
+	Likewise.
+	* expand/rust-derive.h:
+	Likewise.
+	* expand/rust-expand-visitor.cc (ExpandVisitor::expand_trait_function_decl):
+	Likewise.
+	(ExpandVisitor::expand_trait_method_decl):
+	Likewise.
+	(ExpandVisitor::visit):
+	Likewise.
+	* expand/rust-expand-visitor.h:
+	Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::visit):
+	Likewise.
+	* hir/rust-ast-lower-base.h:
+	Likewise.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerTraitItem::visit):
+	Likewise.
+	* hir/rust-ast-lower-implitem.h:
+	Likewise.
+	* resolve/rust-ast-resolve-base.cc (ResolverBase::visit):
+	Likewise.
+	* resolve/rust-ast-resolve-base.h:
+	Likewise.
+	* resolve/rust-ast-resolve-implitem.h (visit):
+	Likewise.
+	* resolve/rust-ast-resolve-item.cc (ResolveTraitItems::visit):
+	Likewise.
+	* resolve/rust-ast-resolve-item.h:
+	Likewise.
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit):
+	Likewise.
+	* resolve/rust-default-resolver.h:
+	Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit):
+	Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.h:
+	Likewise.
+	* util/rust-attributes.cc (AttributeChecker::visit):
+	Likewise.
+	* util/rust-attributes.h:
+	Likewise.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_trait_item):
+	Use parse_function() to parse trait functions.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* hir/rust-ast-lower-implitem.cc (ASTLowerTraitItem::visit):
+	Provide visitor for AST::Function.
+	* hir/rust-ast-lower-implitem.h:
+	Likewise.
+	* resolve/rust-ast-resolve-implitem.h:
+	Likewise.
+	* resolve/rust-ast-resolve-item.cc (ResolveTraitItems::visit):
+	Likewise.
+	* resolve/rust-ast-resolve-item.h:
+	Likewise.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* checks/errors/rust-ast-validation.cc (ASTValidation::visit):
+	Add checks for Trait functions.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* ast/rust-ast.h: Replace TraitItem with AssociatedItem.
+	* ast/rust-item.h (class Trait): Likewise.
+	* expand/rust-expand-visitor.cc (ExpandVisitor::visit):
+	Likewise.
+	* parse/rust-parse-impl.h (Parser::parse_trait): Likewise.
+	* parse/rust-parse.h: Likewise.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit): use destructure
+
+2024-02-07  Nobel Singh  <nobel2073@gmail.com>
+
+	* Make-lang.in: Add rust-ast-lower-implitem.cc to list of objects.
+	* hir/rust-ast-lower-implitem.h (RUST_AST_LOWER_IMPLITEM_H): Remove
+	implementation.
+	* hir/rust-ast-lower-implitem.cc: Copy implementation from header.
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check.cc (TypeResolution::Resolve): refactor
+	* typecheck/rust-hir-type-check.h: new prototype
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::compute_inference_variables): x
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-type.cc: remove hack
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_segments): remove hack
+
+2024-02-07  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty-subst.cc (SubstitutionRef::get_mappings_from_generic_args): fix
+
+2024-02-07  Nobel Singh  <nobel2073@gmail.com>
+
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_qualifiers):
+	Change default ABI to C for extern functions
+	(ASTLoweringBase::lower_extern_block): Likewise
+
+2024-02-07  Jakub Dupak  <dev@jakubdupak.com>
+
+	* typecheck/rust-tyty.cc (BaseType::BaseType): Store orig ref.
+	(BaseType::get_orig_ref): Add getter.
+	* typecheck/rust-tyty.h: Store orig ref.
+
+2024-02-07  Jakub Dupak  <dev@jakubdupak.com>
+
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit):
+	Add region constraints.
+	(TypeCheckImplItem::visit): Add region constraints.
+	* typecheck/rust-hir-type-check-implitem.h: Add region constraints.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::ResolveImplBlockSelf):
+	Add region constraints.
+	(TypeCheckItem::visit): Add region constraints.
+	(TypeCheckItem::resolve_impl_item): Add region constraints.
+	(TypeCheckItem::resolve_impl_block_substitutions): Add region constraints.
+	* typecheck/rust-hir-type-check-item.h: Add region constraints.
+	* typecheck/rust-hir-type-check-type.cc (ResolveWhereClauseItem::Resolve):
+	Add region constraints.
+	(ResolveWhereClauseItem::visit): Add region constraints.
+	* typecheck/rust-hir-type-check-type.h (class ResolveWhereClauseItem):
+	Add region constraints.
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn):
+	Add region constraints.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundPredicate::TypeBoundPredicate):
+	Add region constraints.
+	* typecheck/rust-tyty-subst.cc (SubstitutionRef::get_region_constraints):
+	Add region constraints.
+	* typecheck/rust-tyty-subst.h (class BaseType): Add region constraints.
+	(struct RegionConstraints): Add region constraints.
+	* typecheck/rust-tyty.cc (BaseType::monomorphized_clone): Add region constraints.
+	(ADTType::clone): Add region constraints.
+	(FnType::clone): Add region constraints.
+	(ProjectionType::clone): Add region constraints.
+	* typecheck/rust-tyty.h: Add region constraints.
+
+2024-02-07  Jakub Dupak  <dev@jakubdupak.com>
+
+	* typecheck/rust-hir-trait-resolve.cc: add regions
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::resolve_literal):
+	add regions, resolve generic lifetimes
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): add regions
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit):
+	add regions, resolve lifetimes
+	(TypeCheckImplItem::visit): add regions, resove lifetimes
+	* typecheck/rust-hir-type-check-implitem.h: add default value for result
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit): add regions,
+	resove lifetimes
+	(TypeCheckItem::resolve_impl_block_substitutions): add regions, resove lifetimes
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::visit): add regions,
+	resove lifetimes
+	(TypeCheckExpr::resolve_root_path): add regions, resove lifetimes
+	(TypeCheckExpr::resolve_segments): add regions, resove lifetimes
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): add regions,
+	resove lifetimes
+	(TypeCheckType::resolve_root_path): add regions, resove lifetimes
+	(ResolveWhereClauseItem::Resolve): add regions, resove lifetimes
+	(ResolveWhereClauseItem::visit): add regions, resove lifetimes
+	* typecheck/rust-hir-type-check.cc (TypeCheckContext::LifetimeResolver::resolve):
+	add regions, resolve lifetimes
+	(TraitItemReference::get_type_from_fn): add regions, resove lifetimes
+	* typecheck/rust-hir-type-check.h: add regions, resove lifetimes
+	* typecheck/rust-substitution-mapper.cc (SubstMapper::SubstMapper): add regions,
+	resove lifetimes
+	(SubstMapper::Resolve): add regions, resove lifetimes
+	(SubstMapper::InferSubst): add regions, resove lifetimes
+	(SubstMapper::visit): add regions, resove lifetimes
+	* typecheck/rust-substitution-mapper.h: add regions, resove lifetimes
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::TypeCheckContext):
+	lifetime resolution
+	(TypeCheckContext::regions_from_generic_args): lifetime resolution helper
+	* typecheck/rust-tyty-bounds.cc (TypeBoundPredicate::TypeBoundPredicate):
+	add regions, resove lifetimes
+	(TypeBoundPredicate::operator=): add regions, resove lifetimes
+	(TypeBoundPredicate::apply_generic_arguments): add regions, resove lifetimes
+	(TypeBoundPredicateItem::get_tyty_for_receiver): add regions, resove lifetimes
+	* typecheck/rust-tyty-subst.cc (SubstitutionArgumentMappings::get_regions):
+	add regions, resove lifetimes
+	(SubstitutionArgumentMappings::get_mut_regions): getter
+	(SubstitutionArgumentMappings::error): split error and empty
+	(SubstitutionArgumentMappings::empty): split error and empty
+	(SubstitutionArgumentMappings::find_symbol): helper
+	(SubstitutionRef::get_num_lifetime_params): getter
+	(SubstitutionRef::get_num_type_params): getter
+	(SubstitutionRef::needs_substitution): extend to regions
+	(SubstitutionRef::get_mappings_from_generic_args): helper
+	(SubstitutionRef::infer_substitions): add regions
+	* typecheck/rust-tyty-subst.h (class RegionParamList): region param handler
+	* typecheck/rust-tyty.cc (BaseType::monomorphized_clone): add regions, resove lifetimes
+	(InferType::default_type): add regions, resove lifetimes
+	(FnType::clone): add regions, resove lifetimes
+	(ReferenceType::ReferenceType): add regions
+	(ReferenceType::get_region): getter
+	(ReferenceType::clone): add regions
+	* typecheck/rust-tyty.h: add regions, resove
+
+2024-02-07  Jakub Dupak  <dev@jakubdupak.com>
+
+	* hir/tree/rust-hir-item.h: Add missing getter
+
+2024-02-07  Jakub Dupak  <dev@jakubdupak.com>
+
+	* typecheck/rust-tyty-region.h: New file.
+
+2024-02-07  Jakub Dupak  <dev@jakubdupak.com>
+
+	* typecheck/rust-hir-type-check.h (class Lifetime): add interned lifetime class
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::TypeCheckContext): add
+	resolution tool
+	(TypeCheckContext::intern_lifetime): add method to intern lifetime from tyctx
+	(TypeCheckContext::lookup_lifetime): add method to lookup lifetime from tyctx
+	(TypeCheckContext::intern_and_insert_lifetime): add a helper method
+
+2024-02-07  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust-lang.cc (run_rust_tests): Add test.
+	* rust-system.h: Add <algorithm>.
+	* util/make-rust-unicode.py: Output NFC_Quick_Check table.
+	* util/rust-codepoint.h (struct Codepoint): Add is_supplementary
+	method.
+	* util/rust-unicode-data.h: Generated.
+	* util/rust-unicode.cc (binary_search_sorted_array): Removed.
+	(lookup_cc): Remove namespace.
+	(is_alphabetic): Use std::binary_search
+	(nfc_quick_check): New function.
+	(nfc_normalize): Use nfc_quick_check.
+	(is_nfc_qc_maybe): New function.
+	(is_nfc_qc_no): New function.
+	(rust_nfc_qc_test): New test.
+	* util/rust-unicode.h (is_nfc_qc_no): New function.
+	(is_nfc_qc_maybe): New function.
+	(enum class): New enum class.
+	(nfc_quick_check): New function.
+	(rust_nfc_qc_test): New test.
+
+2024-02-07  Kushal Pal  <kushalpal109@gmail.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_function):
+	Skip token if its a COMMA.
+
 2024-01-30  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* ast/rust-ast-full-decls.h

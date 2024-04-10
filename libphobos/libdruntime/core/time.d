@@ -2584,6 +2584,8 @@ extern(C) void _d_initMonoTime() @nogc nothrow
             }
         }
     }
+    else
+        static assert(0, "Unsupported platform");
 }
 
 
@@ -2883,6 +2885,8 @@ deprecated:
             else
                 ticksPerSec = 1_000_000;
         }
+        else
+            static assert(0, "Unsupported platform");
 
         if (ticksPerSec != 0)
             appOrigin = TickDuration.currSystemTick;

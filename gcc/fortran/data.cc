@@ -209,8 +209,8 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
       else
 	{
 	  gfc_warning_now (0, "Initialization string at %L was truncated to "
-			   "fit the variable (%ld/%ld)", &rvalue->where,
-			   (long) tlen, (long) len);
+			   "fit the variable (%wd/%wd)", &rvalue->where,
+			   tlen, len);
 	  len = tlen;
 	}
     }

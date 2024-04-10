@@ -477,8 +477,8 @@ is shown below:
 
 Necessary to build GCC with internationalization support via
 @option{--enable-nls}.  It can be downloaded from
-@uref{https://gnu.org/s/gettext/}.  If a GNU gettext distribution is
-found in a subdirectory of your GCC sources named @file{gettext}, it
+@uref{https://www.gnu.org/software/gettext/}. If a GNU gettext distribution
+is found in a subdirectory of your GCC sources named @file{gettext}, it
 will be built together with GCC, unless present in the system (either in
 libc or as a stand-alone library).
 

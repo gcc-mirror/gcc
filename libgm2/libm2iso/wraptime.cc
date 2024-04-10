@@ -145,7 +145,7 @@ EXPORT(KillTM) (struct tm *tv)
 extern "C" int
 EXPORT(gettimeofday) (void *tv, struct timezone *tz)
 {
-  return gettimeofday (tv, tz);
+  return gettimeofday ((struct timeval *) tv, tz);
 }
 #else
 extern "C" int
@@ -162,7 +162,7 @@ EXPORT(gettimeofday) (void *tv, void *tz)
 extern "C" int
 EXPORT(settimeofday) (void *tv, struct timezone *tz)
 {
-  return settimeofday (tv, tz);
+  return settimeofday ((struct timeval *) tv, tz);
 }
 #else
 extern "C" int

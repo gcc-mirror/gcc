@@ -24,8 +24,6 @@ enum class ErrorKind
     message = 4,
 };
 
-bool isConsoleColorSupported();
-
 #if defined(__GNUC__)
 #define D_ATTRIBUTE_FORMAT(m, n) __attribute__((format(printf, m, n))) __attribute__((nonnull (m)))
 #else

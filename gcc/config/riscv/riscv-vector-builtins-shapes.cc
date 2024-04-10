@@ -383,7 +383,10 @@ struct alu_def : public build_base
     /* Check whether rounding mode argument is a valid immediate.  */
     if (c.base->has_rounding_mode_operand_p ())
       {
-	if (!c.any_type_float_p ())
+	/* Some invalid overload intrinsic like below will have zero for
+	   c.arg_num ().  Thus, make sure arg_num is big enough here.
+	   __riscv_vaadd () will make c.arg_num () == 0.  */
+	if (!c.any_type_float_p () && c.arg_num () >= 2)
 	  return c.require_immediate (c.arg_num () - 2, VXRM_RNU, VXRM_ROD);
 	/* TODO: We will support floating-point intrinsic modeling
 	   rounding mode in the future.  */
@@ -411,8 +414,11 @@ struct build_frm_base : public build_base
   {
     gcc_assert (c.any_type_float_p ());
 
-    /* Check whether rounding mode argument is a valid immediate.  */
-    if (c.base->has_rounding_mode_operand_p ())
+    /* Check whether rounding mode argument is a valid immediate.
+       Some invalid overload intrinsic like below will have zero for
+       c.arg_num ().  Thus, make sure arg_num is big enough here.
+       __riscv_vaadd () will make c.arg_num () == 0.  */
+    if (c.base->has_rounding_mode_operand_p () && c.arg_num () >= 2)
       {
 	unsigned int frm_num = c.arg_num () - 2;
 
@@ -679,7 +685,10 @@ struct narrow_alu_def : public build_base
     /* Check whether rounding mode argument is a valid immediate.  */
     if (c.base->has_rounding_mode_operand_p ())
       {
-	if (!c.any_type_float_p ())
+	/* Some invalid overload intrinsic like below will have zero for
+	   c.arg_num ().  Thus, make sure arg_num is big enough here.
+	   __riscv_vaadd () will make c.arg_num () == 0.  */
+	if (!c.any_type_float_p () && c.arg_num () >= 2)
 	  return c.require_immediate (c.arg_num () - 2, VXRM_RNU, VXRM_ROD);
 	/* TODO: We will support floating-point intrinsic modeling
 	   rounding mode in the future.  */

@@ -132,6 +132,7 @@ else
 
 unittest
 {
+    debug(qsort) import core.stdc.stdio;
     debug(qsort) printf("array.sort.unittest()\n");
 
     int[] a = new int[10];
@@ -151,8 +152,8 @@ unittest
 
     for (int i = 0; i < a.length - 1; i++)
     {
-        //printf("i = %d", i);
-        //printf(" %d %d\n", a[i], a[i + 1]);
+        debug(qsort) printf("i = %d", i);
+        debug(qsort) printf(" %d %d\n", a[i], a[i + 1]);
         assert(a[i] <= a[i + 1]);
     }
 }

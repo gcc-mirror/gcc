@@ -317,6 +317,9 @@ public:
     void accept(Visitor *v) override { v->visit(this); }
 };
 
+// in templateparamsem.d
+bool tpsemantic(TemplateParameter *tp, Scope *sc, TemplateParameters *parameters);
+
 Expression *isExpression(RootObject *o);
 Dsymbol *isDsymbol(RootObject *o);
 Type *isType(RootObject *o);

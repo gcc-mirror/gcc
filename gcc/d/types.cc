@@ -144,7 +144,7 @@ same_type_p (Type *t1, Type *t2)
     return true;
 
   /* Types are mutably the same type.  */
-  if (tb1->ty == tb2->ty && tb1->equivalent (tb2))
+  if (tb1->ty == tb2->ty && equivalent (tb1, tb2))
     return true;
 
   return false;
@@ -1229,6 +1229,11 @@ public:
 	set_visibility_for_decl (t->ctype, t->sym);
 	apply_user_attributes (t->sym, t->ctype);
 	finish_aggregate_type (structsize, alignsize, t->ctype);
+      }
+    else
+      {
+	build_type_decl (t->ctype, t->sym);
+	apply_user_attributes (t->sym, t->ctype);
       }
 
     /* For structs with a user defined postblit, copy constructor, or a

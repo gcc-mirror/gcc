@@ -3275,6 +3275,23 @@ check_local_shadow (tree decl)
   if (TREE_CODE (decl) == PARM_DECL && !DECL_CONTEXT (decl))
     return NULL_TREE;
 
+  if (DECL_FUNCTION_SCOPE_P (decl))
+    {
+      tree ctx = DECL_CONTEXT (decl);
+      if (DECL_CLONED_FUNCTION_P (ctx)
+	  || DECL_TEMPLATE_INSTANTIATED (ctx)
+	  || (DECL_LANG_SPECIFIC (ctx)
+	      && DECL_DEFAULTED_FN (ctx))
+	  || (LAMBDA_FUNCTION_P (ctx)
+	      && LAMBDA_EXPR_REGEN_INFO (CLASSTYPE_LAMBDA_EXPR
+					 (DECL_CONTEXT (ctx)))))
+	/* It suffices to check shadowing only when actually parsing.
+	   So punt for clones, instantiations, defaulted functions and
+	   regenerated lambdas.  This optimization helps reduce lazy
+	   loading cascades with modules.  */
+	return NULL_TREE;
+    }
+
   tree old = NULL_TREE;
   cp_binding_level *old_scope = NULL;
   if (cxx_binding *binding = outer_binding (DECL_NAME (decl), NULL, true))

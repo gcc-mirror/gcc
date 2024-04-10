@@ -437,6 +437,7 @@ unittest
         string[412] names;
         ubyte[1024] moredata;
     }
+    version (OnlyLowMemUnittests) {} else
     test!(Large, Large);
 }
 

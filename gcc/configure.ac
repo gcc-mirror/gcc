@@ -1245,7 +1245,7 @@ if test $gcc_cv_prog_makeinfo_modern = no; then
   AC_MSG_WARN([
 *** Makeinfo is missing or too old.
 *** Info documentation will not be built.])
-  BUILD_INFO=
+  BUILD_INFO=no-info
 else
   BUILD_INFO=info
 fi

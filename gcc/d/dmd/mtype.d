@@ -444,11 +444,6 @@ extern (C++) abstract class Type : ASTNode
         return false;
     }
 
-    final bool equivalent(Type t)
-    {
-        return immutableOf(this).equals(t.immutableOf());
-    }
-
     // kludge for template.isType()
     override final DYNCAST dyncast() const
     {
@@ -1192,111 +1187,6 @@ extern (C++) abstract class Type : ASTNode
     }
 
     /************************************
-     * Add MODxxxx bits to existing type.
-     * We're adding, not replacing, so adding const to
-     * a shared type => "shared const"
-     */
-    final Type addMod(MOD mod)
-    {
-        /* Add anything to immutable, and it remains immutable
-         */
-        Type t = this;
-        if (!t.isImmutable())
-        {
-            //printf("addMod(%x) %s\n", mod, toChars());
-            switch (mod)
-            {
-            case 0:
-                break;
-
-            case MODFlags.const_:
-                if (isShared())
-                {
-                    if (isWild())
-                        t = this.sharedWildConstOf();
-                    else
-                        t = this.sharedConstOf();
-                }
-                else
-                {
-                    if (this.isWild())
-                        t = this.wildConstOf();
-                    else
-                        t = t.constOf();
-                }
-                break;
-
-            case MODFlags.wild:
-                if (isShared())
-                {
-                    if (isConst())
-                        t = this.sharedWildConstOf();
-                    else
-                        t = this.sharedWildOf();
-                }
-                else
-                {
-                    if (isConst())
-                        t = this.wildConstOf();
-                    else
-                        t = this.wildOf();
-                }
-                break;
-
-            case MODFlags.wildconst:
-                if (isShared())
-                    t = this.sharedWildConstOf();
-                else
-                    t = this.wildConstOf();
-                break;
-
-            case MODFlags.shared_:
-                if (isWild())
-                {
-                    if (isConst())
-                        t = this.sharedWildConstOf();
-                    else
-                        t = this.sharedWildOf();
-                }
-                else
-                {
-                    if (isConst())
-                        t = this.sharedConstOf();
-                    else
-                        t = this.sharedOf();
-                }
-                break;
-
-            case MODFlags.shared_ | MODFlags.const_:
-                if (isWild())
-                    t = this.sharedWildConstOf();
-                else
-                    t = this.sharedConstOf();
-                break;
-
-            case MODFlags.shared_ | MODFlags.wild:
-                if (isConst())
-                    t = this.sharedWildConstOf();
-                else
-                    t = this.sharedWildOf();
-                break;
-
-            case MODFlags.shared_ | MODFlags.wildconst:
-                t = this.sharedWildConstOf();
-                break;
-
-            case MODFlags.immutable_:
-                t = this.immutableOf();
-                break;
-
-            default:
-                assert(0);
-            }
-        }
-        return t;
-    }
-
-    /************************************
      * Add storage class modifiers to type.
      */
     Type addStorageClass(StorageClass stc)
@@ -1315,7 +1205,7 @@ extern (C++) abstract class Type : ASTNode
             if (stc & STC.shared_)
                 mod |= MODFlags.shared_;
         }
-        return addMod(mod);
+        return this.addMod(mod);
     }
 
     final Type pointerTo()

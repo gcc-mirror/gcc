@@ -15,7 +15,7 @@ contains
     !$omp declare variant ()	! { dg-error "" }
   end subroutine
   subroutine f5 ()
-    !$omp declare variant match(user={condition(0)})	! { dg-error "expected '\\(' at .1." }
+    !$omp declare variant match(user={condition(.false.)})	! { dg-error "expected '\\(' at .1." }
   end subroutine
   subroutine f6 ()
     !$omp declare variant (f1)	! { dg-error "expected 'match' at .1." }
@@ -66,7 +66,7 @@ contains
     !$omp declare variant (f1) match(user={condition(f1)})	! { dg-error "expected expression at .1." }
   end subroutine
   subroutine f22 ()
-    !$omp declare variant (f1) match(user={condition(1, 2, 3)})	! { dg-error "expected '\\)' at .1." }
+    !$omp declare variant (f1) match(user={condition(.false., .true., .false.)})	! { dg-error "expected '\\)' at .1." }
   end subroutine
   subroutine f23 ()
     !$omp declare variant (f1) match(construct={master})	! { dg-warning "unknown selector 'master' for context selector set 'construct'" }
@@ -189,9 +189,9 @@ contains
     !$omp declare variant (f1) match(implementation={atomic_default_mem_order("relaxed")})	! { dg-error "expected identifier at .1." }
   end subroutine
   subroutine f77 ()
-    !$omp declare variant (f1) match(user={condition(score(f76):1)})  ! { dg-error ".score. argument must be constant integer expression at .1." }
+    !$omp declare variant (f1) match(user={condition(score(f76):.true.)})  ! { dg-error ".score. argument must be constant integer expression at .1." }
   end subroutine
   subroutine f78 ()
-    !$omp declare variant (f1) match(user={condition(score(-130):1)}) ! { dg-error ".score. argument must be non-negative" }
+    !$omp declare variant (f1) match(user={condition(score(-130):.true.)}) ! { dg-error ".score. argument must be non-negative" }
   end subroutine
 end module

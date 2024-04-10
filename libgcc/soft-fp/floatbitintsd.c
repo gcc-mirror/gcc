@@ -113,7 +113,7 @@ __bid_floatbitintsd (const UBILtype *i, SItype iprec)
 			   buf + BITINT_END (q_limbs - 1, 0), q_limbs);
 	  inexact = buf[q_limbs + pow10_limbs];
 	  for (j = 1; j < pow10_limbs; ++j)
-	    inexact |= buf[q_limbs + pow10_limbs + 1];
+	    inexact |= buf[q_limbs + pow10_limbs + j];
 	}
       else
 	{

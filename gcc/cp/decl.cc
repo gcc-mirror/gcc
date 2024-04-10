@@ -7954,6 +7954,10 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
       && DECL_IMPLICIT_INSTANTIATION (decl))
     defer_p = 1;
 
+  /* Defer vague-linkage variables.  */
+  if (DECL_INLINE_VAR_P (decl))
+    defer_p = 1;
+
   /* If we're not deferring, go ahead and assemble the variable.  */
   if (!defer_p)
     rest_of_decl_compilation (decl, toplev, at_eof);
@@ -16955,8 +16959,26 @@ start_enum (tree name, tree enumtype, tree underlying_type,
      to instantiation time is the comparison of underlying types.  */
   if (enumtype && TREE_CODE (enumtype) == ENUMERAL_TYPE)
     {
-      if (scoped_enum_p != SCOPED_ENUM_P (enumtype))
+      /* Attempt to set the declaring module.  */
+      if (modules_p ())
 	{
+	  tree decl = TYPE_NAME (enumtype);
+	  if (!module_may_redeclare (decl))
+	    {
+	      auto_diagnostic_group d;
+	      error ("cannot declare %qD in different module", decl);
+	      inform (DECL_SOURCE_LOCATION (decl), "previously declared here");
+	      enumtype = error_mark_node;
+	    }
+	  else
+	    set_instantiating_module (decl);
+	}
+
+      if (enumtype == error_mark_node)
+	;
+      else if (scoped_enum_p != SCOPED_ENUM_P (enumtype))
+	{
+	  auto_diagnostic_group d;
 	  error_at (input_location, "scoped/unscoped mismatch "
 		    "in enum %q#T", enumtype);
 	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
@@ -16965,6 +16987,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	}
       else if (ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) != !! underlying_type)
 	{
+	  auto_diagnostic_group d;
 	  error_at (input_location, "underlying type mismatch "
 		    "in enum %q#T", enumtype);
 	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
@@ -16975,24 +16998,12 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	       && !same_type_p (underlying_type,
 				ENUM_UNDERLYING_TYPE (enumtype)))
 	{
+	  auto_diagnostic_group d;
 	  error_at (input_location, "different underlying type "
 		    "in enum %q#T", enumtype);
 	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
 		  "previous definition here");
 	  underlying_type = NULL_TREE;
-	}
-
-      if (modules_p ())
-	{
-	  if (!module_may_redeclare (TYPE_NAME (enumtype)))
-	    {
-	      error ("cannot define %qD in different module",
-		     TYPE_NAME (enumtype));
-	      inform (DECL_SOURCE_LOCATION (TYPE_NAME (enumtype)),
-		      "declared here");
-	      enumtype = error_mark_node;
-	    }
-	  set_instantiating_module (TYPE_NAME (enumtype));
 	}
     }
 

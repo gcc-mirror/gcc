@@ -119,9 +119,10 @@ along with GCC; see the file COPYING3.  If not see
 /* We default to x86_64 for single-arch builds, bi-arch overrides.  */
 #define DARWIN_ARCH_SPEC "x86_64"
 #define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
+#endif
+
 #undef DARWIN_HEAP_T_LIB
 #define DARWIN_HEAP_T_LIB " -lheapt_w "
-#endif
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \

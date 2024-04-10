@@ -6236,7 +6236,7 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 		     index.  */
 		  HOST_WIDE_INT n = tree_to_shwi (max) + 1;
 		  char buf[40];
-		  sprintf (buf, "%lu", (unsigned long)n);
+		  sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, n);
 		  spec += buf;
 		}
 	      continue;
@@ -6309,7 +6309,7 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 
 	  char buf[40];
 	  unsigned HOST_WIDE_INT n = tree_to_uhwi (nelts);
-	  sprintf (buf, "%llu", (unsigned long long)n);
+	  sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, n);
 	  spec += buf;
 	  break;
 	}

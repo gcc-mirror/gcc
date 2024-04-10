@@ -1190,14 +1190,14 @@ got_delim:
 	{
 	  if (istart < 1)
 	    {
-	      gfc_error ("Substring start index (%ld) at %L below 1",
-			 (long) istart, &e->ref->u.ss.start->where);
+	      gfc_error ("Substring start index (%td) at %L below 1",
+			 istart, &e->ref->u.ss.start->where);
 	      return MATCH_ERROR;
 	    }
 	  if (iend > (ssize_t) length)
 	    {
-	      gfc_error ("Substring end index (%ld) at %L exceeds string "
-			 "length", (long) iend, &e->ref->u.ss.end->where);
+	      gfc_error ("Substring end index (%td) at %L exceeds string "
+			 "length", iend, &e->ref->u.ss.end->where);
 	      return MATCH_ERROR;
 	    }
 	  length = iend - istart + 1;
@@ -3240,8 +3240,8 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	      if (warn_line_truncation && c < e1)
 		gfc_warning_now (OPT_Wcharacter_truncation,
 				 "CHARACTER expression will be truncated "
-				 "in constructor (%ld/%ld) at %L", (long int) c,
-				 (long int) e1, &actual->expr->where);
+				 "in constructor (%td/%td) at %L", c,
+				 e1, &actual->expr->where);
 	    }
 	}
 

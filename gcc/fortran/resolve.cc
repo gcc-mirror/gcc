@@ -11291,8 +11291,8 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       if (rlen && llen && rlen > llen)
 	gfc_warning_now (OPT_Wcharacter_truncation,
 			 "CHARACTER expression will be truncated "
-			 "in assignment (%ld/%ld) at %L",
-			 (long) llen, (long) rlen, &code->loc);
+			 "in assignment (%wd/%wd) at %L",
+			 llen, rlen, &code->loc);
     }
 
   /* Ensure that a vector index expression for the lvalue is evaluated

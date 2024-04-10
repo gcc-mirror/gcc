@@ -1,3 +1,454 @@
+2024-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113871
+	* config/i386/mmx.md (V248FI): New mode iterator.
+	(V24FI_32): DItto.
+	(vec_shl_<V248FI:mode>): New expander.
+	(vec_shl_<V24FI_32:mode>): Ditto.
+	(vec_shr_<V248FI:mode>): Ditto.
+	(vec_shr_<V24FI_32:mode>): Ditto.
+	* config/i386/sse.md (vec_shl_<V_128:mode>): Simplify expander.
+	(vec_shr_<V248FI:mode>): Ditto.
+
+2024-02-14  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/111054
+	* tree-ssa-loop-split.cc (split_loop): Check for profile being present.
+
+2024-02-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-cfg.cc (replace_loop_annotate): Inspect loop edges for annotations.
+
+2024-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113910
+	* bitmap.cc (bitmap_hash): Mix the full element "hash" to
+	the hashval_t hash.
+
+2024-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* pretty-print.cc (PTRDIFF_MAX): Define if not yet defined.
+	(pp_integer_with_precision): For unsigned ptrdiff_t printing
+	with u, o or x print ptrdiff_t argument converted to
+	unsigned long long and masked with 2ULL * PTRDIFF_MAX + 1.
+
+2024-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113576
+	* expr.cc (do_store_flag): For vector bool compares of vectors
+	with padding zero that.
+	* dojump.cc (do_compare_and_jump): Likewise.
+
+2024-02-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Prerequisites): Update gettext link.
+
+2024-02-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113876
+	* config/i386/i386.cc (ix86_pro_and_epilogue_can_use_push2pop2):
+	Return false if the incoming stack isn't 16-byte aligned.
+
+2024-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113904
+	* omp-general.cc (struct omp_ts_info): Update for splitting of
+	OMP_TRAIT_PROPERTY_EXPR into OMP_TRAIT_PROPERTY_{DEV_NUM,BOOL}_EXPR.
+	* omp-selectors.h (enum omp_tp_type): Replace
+	OMP_TRAIT_PROPERTY_EXPR by OMP_TRAIT_PROPERTY_{DEV_NUM,BOOL}_EXPR.
+
+2024-02-13  Monk Chiang  <monk.chiang@sifive.com>
+
+	PR target/113742
+	* config/riscv/riscv.cc (riscv_macro_fusion_pair_p): Fix
+	recognizes UNSPEC_AUIPC for RISCV_FUSE_LUI_ADDI.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113895
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): Track
+	offset to discover constant array indices in bits, handle
+	COMPONENT_REF to bitfields.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	* tree-ssa-sccvn.cc (ao_ref_init_from_vn_reference): Fix
+	typo in comment.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113902
+	* tree-vect-loop.cc (move_early_exit_stmts): Track
+	last_seen_vuse for VUSE updating.
+
+2024-02-13  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113734
+	* tree-vect-loop.cc (vect_transform_loop): Treat the final iteration of
+	an early break loop as partial.
+
+2024-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113898
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): Add
+	missing accumulated off adjustment.
+
+2024-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* hwint.h (GCC_PRISZ, fmt_size_t): Fix preprocessor conditions,
+	instead of comparing SIZE_MAX against INT_MAX and LONG_MAX compare
+	it against UINT_MAX and ULONG_MAX.
+
+2024-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h (emit_diagnostic_valist): Rename overload
+	to...
+	(emit_diagnostic_valist_meta): ...this.
+	* diagnostic.cc (emit_diagnostic_valist): Likewise, to...
+	(emit_diagnostic_valist_meta): ...this.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113849
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): Don't use
+	fast path for widening casts where !m_upwards_2limb and lhs_type
+	has precision which is a multiple of limb_prec.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113674
+	* attribs.cc (extract_attribute_substring): Remove.
+	(lookup_scoped_attribute_spec): Don't call it.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gengtype.cc (adjust_field_rtx_def): Use HOST_SIZE_T_PRINT_UNSIGNED
+	and cast to fmt_size_t instead of %lu and cast to unsigned long.
+
+2024-02-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.in: Add no-info dependency.
+	* configure.ac: Set BUILD_INFO=no-info if makeinfo is not
+	available.
+	* configure: Regenerate.
+
+2024-02-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/113855
+	* config/i386/darwin.h (DARWIN_HEAP_T_LIB): Moved to be
+	available to all sub-targets.
+	* config/i386/darwin32-biarch.h (DARWIN_HEAP_T_LIB): Delete.
+	* config/i386/darwin64-biarch.h (DARWIN_HEAP_T_LIB): Delete.
+
+2024-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	PR tree-optimization/108355
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): When
+	we see variable array indices and get_ref_base_and_extent
+	can resolve those to constants fix up the ops to constants
+	as well.
+	(ao_ref_init_from_vn_reference): Use 'off' member for
+	ARRAY_REF and ARRAY_RANGE_REF instead of recomputing it.
+	(valueize_refs_1): Also fixup 'off' of ARRAY_RANGE_REF.
+
+2024-02-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins.cc (resolve_overloaded_builtin):
+	Replace args to arguments for misspelled term.
+
+2024-02-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/112944
+	* config/avr/gen-avr-mmcu-specs.cc (print_mcu) [have_flmap]:
+	<*link_rodata_in_ram>: Spec undefs symbol __do_flmap_init
+	when not linked with -mrodata-in-ram.
+
+2024-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113863
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Record crossed virtual PHIs.
+	* tree-vect-loop.cc (move_early_exit_stmts): Elide crossed
+	virtual PHIs.
+
+2024-02-10  Marek Polacek  <polacek@redhat.com>
+
+	DR 2237
+	PR c++/107126
+	PR c++/97202
+	* doc/invoke.texi: Document -Wtemplate-id-cdtor.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (itint_large_huge::lower_addsub_overflow): Fix
+	computation of idx for i == 4 of bitint_prec_huge.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110754
+	* gimple-low.cc (assumption_copy_decl): For TREE_THIS_VOLATILE
+	decls create PARM_DECL with pointer to original type, set
+	TREE_READONLY and keep TREE_THIS_VOLATILE, TREE_ADDRESSABLE,
+	DECL_NOT_GIMPLE_REG_P and DECL_BY_REFERENCE cleared.
+	(adjust_assumption_stmt_op): For remapped TREE_THIS_VOLATILE decls
+	wrap PARM_DECL into a simple TREE_THIS_NO_TRAP MEM_REF.
+	(lower_assumption): For TREE_THIS_VOLATILE vars pass ADDR_EXPR
+	of the var as argument.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* pretty-print.cc (pp_integer_with_precision): Handle precision 3 for
+	size_t and precision 4 for ptrdiff_t.  Formatting fix.
+	(pp_format): Document %{t,z}{d,i,u,o,x}.  Implement t and z modifiers.
+	Formatting fixes.
+	(test_pp_format): Test t and z modifiers.
+	* gcc.cc (read_specs): Use %td instead of %ld and casts to long.
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-icf.cc (sem_item_optimizer::process_cong_reduction,
+	sem_item_optimizer::dump_cong_classes): Use HOST_SIZE_T_PRINT_UNSIGNED
+	and casts to fmt_size_t instead of "%lu" and casts to unsigned long.
+	* tree.cc (print_debug_expr_statistics): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	(print_value_expr_statistics, print_type_hash_statistics): Likewise.
+	* dwarf2out.cc (output_macinfo_op): Use HOST_WIDE_INT_PRINT_UNSIGNED
+	instead of "%lu" and casts to unsigned long.
+	* gcov-dump.cc (dump_gcov_file): Use %u instead of %lu and casts to
+	unsigned long.
+	* tree-ssa-dom.cc (htab_statistics): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	* cfgexpand.cc (dump_stack_var_partition): Use
+	HOST_SIZE_T_PRINT_UNSIGNED and casts to fmt_size_t instead of "%lu"
+	and casts to unsigned long.
+	* gengtype.cc (adjust_field_rtx_def): Likewise.
+	* tree-into-ssa.cc (htab_statistics): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	* postreload-gcse.cc (dump_hash_table): Likewise.
+	* ggc-page.cc (alloc_page): Use HOST_SIZE_T_PRINT_UNSIGNED
+	and casts to fmt_size_t instead of "%lu" and casts to unsigned long.
+	(ggc_internal_alloc, ggc_free): Likewise.
+	* genpreds.cc (write_lookup_constraint_1): Likewise.
+	(write_insn_constraint_len): Likewise.
+	* tree-dfa.cc (dump_dfa_stats): Use HOST_SIZE_T_PRINT_DEC
+	and casts to fmt_size_t instead of "%ld" and casts to long.
+	* varasm.cc (output_constant_pool_contents): Use
+	HOST_WIDE_INT_PRINT_DEC instead of "%ld" and casts to long.
+	* var-tracking.cc (dump_var): Likewise.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113783
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_stmt): Look
+	through VIEW_CONVERT_EXPR for final cast checks.  Handle
+	VIEW_CONVERT_EXPRs from large/huge _BitInt to > MAX_FIXED_MODE_SIZE
+	INTEGER_TYPEs.
+	(gimple_lower_bitint): Don't merge mergeable operations or other
+	casts with VIEW_CONVERT_EXPRs to > MAX_FIXED_MODE_SIZE INTEGER_TYPEs.
+	* expr.cc (expand_expr_real_1): Don't use convert_modes if either
+	mode is BLKmode.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* hwint.h (GCC_PRISZ, fmt_size_t, HOST_SIZE_T_PRINT_DEC,
+	HOST_SIZE_T_PRINT_UNSIGNED, HOST_SIZE_T_PRINT_HEX,
+	HOST_SIZE_T_PRINT_HEX_PURE): Define.
+	* ira-conflicts.cc (build_conflict_bit_table): Use it.  Formatting
+	fixes.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113415
+	* cfgexpand.cc (expand_asm_stmt): For asm goto, use
+	duplicate_insn_chain to duplicate after_rtl_seq sequence instead
+	of hand written loop with emit_insn of copy_insn and emit original
+	after_rtl_seq on the last edge.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113818
+	* gimple-lower-bitint.cc (add_eh_edge): New function.
+	(bitint_large_huge::handle_load,
+	bitint_large_huge::lower_mergeable_stmt,
+	bitint_large_huge::lower_muldiv_stmt): Use it.
+
+2024-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113774
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): Don't
+	emit any comparison if m_first and low + 1 is equal to
+	m_upwards_2limb, simplify condition for that.  If not
+	single_comparison, not m_first and we can prove that the idx <= low
+	comparison will be always true, emit instead of idx <= low
+	comparison low <= low such that cfg cleanup will optimize it at
+	the end of the pass.
+
+2024-02-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/113735
+	* value-relation.cc (equiv_oracle::add_equiv_to_block): Call
+	limit_check().
+
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc (struct McuInfo): New.
+	(main, print_mcu, diagnose_mrodata_in_ram): Pass it down.
+
+2024-02-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113711
+	PR target/113733
+	* config/i386/constraints.md: List all constraints with j prefix.
+	(j>): Change auto-dec to auto-inc in documentation.
+	(je): Changed to a memory constraint with APX NDD TLS operand
+	check.
+	(jM): New memory constraint for APX NDD instructions.
+	(jO): Likewise.
+	* config/i386/i386-protos.h (x86_poff_operand_p): Removed.
+	* config/i386/i386.cc (x86_poff_operand_p): Likewise.
+	* config/i386/i386.md (*add<dwi>3_doubleword): Use rjO.
+	(*add<mode>_1[SWI48]): Use je and jM.
+	(addsi_1_zext): Use jM.
+	(*addv<dwi>4_doubleword_1[DWI]): Likewise.
+	(*sub<mode>_1[SWI]): Use jM.
+	(@add<mode>3_cc_overflow_1[SWI]): Likewise.
+	(*add<dwi>3_doubleword_cc_overflow_1): Use rjO.
+	(*and<dwi>3_doubleword): Likewise.
+	(*anddi_1): Use jM.
+	(*andsi_1_zext): Likewise.
+	(*and<mode>_1[SWI24]): Likewise.
+	(*<code><dwi>3_doubleword[any_or]): Use rjO
+	(*code<mode>_1[any_or SWI248]): Use jM.
+	(*<code>si_1_zext[zero_extend + any_or]): Likewise.
+	* config/i386/predicates.md (apx_ndd_memory_operand): New.
+	(apx_ndd_add_memory_operand): Likewise.
+
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113824
+	* config/avr/avr-mcus.def (ata5797): Move from avr5 to avr4.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2024-02-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113808
+	* tree-vect-loop.cc (vectorizable_live_operation): Don't cache the
+	value cross iterations.
+
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc (print_mcu) <*cpp_mcu>: Spec always
+	defines __AVR_PM_BASE_ADDRESS__ if the core has it.
+
+2024-02-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Revert last change to dr_may_alias_p.
+
+2024-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc: Rename spec cc1_misc to
+	cc1_rodata_in_ram.  Rename spec link_misc to link_rodata_in_ram.
+	Remove spec asm_misc.
+	* config/avr/specs.h: Same.
+
+2024-02-08  Pan Li  <pan2.li@intel.com>
+
+	PR target/113766
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct alu_def): Make
+	sure the c.arg_num is >= 2 before checking.
+	(struct build_frm_base): Ditto.
+	(struct narrow_alu_def): Ditto.
+
+2024-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113796
+	* tree-if-conv.cc (combine_blocks): Wipe range-info before
+	replacing PHIs and inserting predicates.
+
+2024-02-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/113690
+	* config/i386/i386-features.cc (timode_convert_cst): New helper
+	function to convert a TImode CONST_SCALAR_INT_P to a V1TImode
+	CONST_VECTOR.
+	(timode_scalar_chain::convert_op): Use timode_convert_cst.
+	(timode_scalar_chain::convert_insn): Delete REG_EQUAL notes.
+	Use timode_convert_cst.
+
+2024-02-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: Copy from Binutils.
+	* config/aarch64/aarch64.h (AARCH64_FL_AIE): New.
+	(AARCH64_FL_DEBUGv8p9): Likewise.
+	(AARCH64_FL_FGT2): Likewise.Likewise.
+	(AARCH64_FL_ITE): Likewise.
+	(AARCH64_FL_PFAR): Likewise.
+	(AARCH64_FL_PMUv3_ICNTR): Likewise.
+	(AARCH64_FL_PMUv3_SS): Likewise.
+	(AARCH64_FL_PMUv3p9): Likewise.
+	(AARCH64_FL_RASv2): Likewise.
+	(AARCH64_FL_S1PIE): Likewise.
+	(AARCH64_FL_S1POE): Likewise.
+	(AARCH64_FL_S2PIE): Likewise.
+	(AARCH64_FL_S2POE): Likewise.
+	(AARCH64_FL_SCTLR2): Likewise.
+	(AARCH64_FL_SEBEP): Likewise.
+	(AARCH64_FL_SPE_FDS): Likewise.
+	(AARCH64_FL_TCR2): Likewise.
+
+2024-02-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Only check whether reads are in-bound in places that are not safe.
+	Fix dependence check.  Add missing newline.  Clarify comments.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113750
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences): Check
+	for single predecessor when doing early break vect.
+	* tree-vect-loop.cc (move_early_exit_stmts): Get gsi at the start but
+	after labels.
+
+2024-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113731
+	* gimple-iterator.cc (gsi_move_before): Take new parameter for update
+	method.
+	* gimple-iterator.h (gsi_move_before): Default new param to
+	GSI_SAME_STMT.
+	* tree-vect-loop.cc (move_early_exit_stmts): Call gsi_move_before with
+	GSI_NEW_STMT.
+
+2024-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113756
+	* range-op.cc (update_known_bitmask): For GIMPLE_UNARY_RHS,
+	use TYPE_SIGN (lh.type ()) instead of sign for widest_int::from
+	of lh_bits value and mask.
+
+2024-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113753
+	* wide-int.cc (wi::mul_internal): Unpack op1val and op2val with
+	UNSIGNED rather than SIGNED.  If high or needs_overflow and prec is
+	not a multiple of HOST_BITS_PER_WIDE_INT, shift left bits above prec
+	so that they start with r[half_blocks_needed] lowest bit.  Fix up
+	computation of top mask for SIGNED.
+
+2024-02-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/113766
+	* config/riscv/riscv-protos.h (resolve_overloaded_builtin): Adjust
+	the signature of func.
+	* config/riscv/riscv-c.cc (riscv_resolve_overloaded_builtin): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (resolve_overloaded_builtin): Make
+	overloaded func with empty args error.
+
 2024-02-06  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/113689

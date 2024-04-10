@@ -6807,6 +6807,12 @@ get_probe_interval (void)
 static bool
 ix86_pro_and_epilogue_can_use_push2pop2 (int nregs)
 {
+  /* Use push2/pop2 only if the incoming stack is 16-byte aligned.  */
+  unsigned int incoming_stack_boundary
+    = (crtl->parm_stack_boundary > ix86_incoming_stack_boundary
+       ? crtl->parm_stack_boundary : ix86_incoming_stack_boundary);
+  if (incoming_stack_boundary % 128 != 0)
+    return false;
   int aligned = cfun->machine->fs.sp_offset % 16 == 0;
   return TARGET_APX_PUSH2POP2
 	 && !cfun->machine->frame.save_regs_using_mov
@@ -23464,31 +23470,6 @@ x86_evex_reg_mentioned_p (rtx operands[], int nops)
     if (EXT_REX_SSE_REG_P (operands[i])
 	|| x86_extended_rex2reg_mentioned_p (operands[i]))
       return true;
-  return false;
-}
-
-/* Return true when rtx operand does not contain any UNSPEC_*POFF related
-   constant to avoid APX_NDD instructions excceed encoding length limit.  */
-bool
-x86_poff_operand_p (rtx operand)
-{
-  if (GET_CODE (operand) == CONST)
-    {
-      rtx op = XEXP (operand, 0);
-      if (GET_CODE (op) == PLUS)
-	op = XEXP (op, 0);
-	
-      if (GET_CODE (op) == UNSPEC)
-	{
-	  int unspec = XINT (op, 1);
-	  return (unspec == UNSPEC_NTPOFF
-		  || unspec == UNSPEC_TPOFF
-		  || unspec == UNSPEC_DTPOFF
-		  || unspec == UNSPEC_GOTTPOFF
-		  || unspec == UNSPEC_GOTNTPOFF
-		  || unspec == UNSPEC_INDNTPOFF);
-	}
-    }
   return false;
 }
 

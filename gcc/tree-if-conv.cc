@@ -2909,6 +2909,29 @@ combine_blocks (class loop *loop, bool loop_versioned)
   edge e;
   edge_iterator ei;
 
+  /* Reset flow-sensitive info before predicating stmts or PHIs we
+     might fold.  */
+  bool *predicated = XNEWVEC (bool, orig_loop_num_nodes);
+  for (i = 0; i < orig_loop_num_nodes; i++)
+    {
+      bb = ifc_bbs[i];
+      predicated[i] = is_predicated (bb);
+      if (predicated[i])
+	{
+	  for (auto gsi = gsi_start_phis (bb);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    reset_flow_sensitive_info (gimple_phi_result (*gsi));
+	  for (auto gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple *stmt = gsi_stmt (gsi);
+	      ssa_op_iter i;
+	      tree op;
+	      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
+		reset_flow_sensitive_info (op);
+	    }
+	}
+    }
+
   remove_conditions_and_labels (loop);
   insert_gimplified_predicates (loop);
   predicate_all_scalar_phis (loop, loop_versioned);
@@ -2917,20 +2940,13 @@ combine_blocks (class loop *loop, bool loop_versioned)
     predicate_statements (loop);
 
   /* Merge basic blocks.  */
-  exit_bb = NULL;
-  bool *predicated = XNEWVEC (bool, orig_loop_num_nodes);
+  exit_bb = single_exit (loop)->src;
+  gcc_assert (exit_bb != loop->latch);
   for (i = 0; i < orig_loop_num_nodes; i++)
     {
       bb = ifc_bbs[i];
-      predicated[i] = !is_true_predicate (bb_predicate (bb));
       free_bb_predicate (bb);
-      if (bb_with_exit_edge_p (loop, bb))
-	{
-	  gcc_assert (exit_bb == NULL);
-	  exit_bb = bb;
-	}
     }
-  gcc_assert (exit_bb != loop->latch);
 
   merge_target_bb = loop->header;
 
@@ -3003,13 +3019,6 @@ combine_blocks (class loop *loop, bool loop_versioned)
 	    /* If this is the first load we arrive at update last_vdef
 	       so we handle stray PHIs correctly.  */
 	    last_vdef = gimple_vuse (stmt);
-	  if (predicated[i])
-	    {
-	      ssa_op_iter i;
-	      tree op;
-	      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
-		reset_flow_sensitive_info (op);
-	    }
 	}
 
       /* Update stmt list.  */

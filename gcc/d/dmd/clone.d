@@ -327,10 +327,19 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
         auto e2 = new BlitExp(loc, new VarExp(loc, swap), new ThisExp(loc));
         auto e3 = new BlitExp(loc, new ThisExp(loc), new IdentifierExp(loc, Id.p));
 
-        /* Instead of running the destructor on s, run it
-         * on swap. This avoids needing to copy swap back in to s.
-         */
-        auto e4 = new CallExp(loc, new DotVarExp(loc, new VarExp(loc, swap), sd.dtor, false));
+        Expression e4;
+        if (target.isCalleeDestroyingArgs(tf))
+        {   /* callee destroys s
+             * Instead of running the destructor on s, run it
+             * on swap.
+             */
+            e4 = new CallExp(loc, new DotVarExp(loc, new VarExp(loc, swap), sd.dtor, false));
+        }
+        else
+        {   /* caller destroys s, so copy contents of swap back into s
+             */
+            e4 = new BlitExp(loc, new IdentifierExp(loc, Id.p), new VarExp(loc, swap));
+        }
 
         e = Expression.combine(e1, e2, e3, e4);
     }

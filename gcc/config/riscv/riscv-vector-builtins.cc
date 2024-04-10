@@ -4630,7 +4630,8 @@ resolve_overloaded_builtin (location_t loc, unsigned int code, tree fndecl,
 
      Here we report error when overloaded function with empty args.  */
   if (rfun->overloaded_p && arglist->length () == 0)
-    error_at (loc, "no matching function call to %qE with empty args", fndecl);
+    error_at (loc, "no matching function call to %qE with empty arguments",
+	      fndecl);
 
   hashval_t hash = rfun->overloaded_hash (*arglist);
   registered_function *rfn

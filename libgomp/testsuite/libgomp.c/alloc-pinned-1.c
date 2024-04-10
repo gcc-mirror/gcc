@@ -45,7 +45,10 @@ get_pinned_mem ()
 }
 #else
 #define PAGE_SIZE 1024 /* unknown */
-#define CHECK_SIZE(SIZE) fprintf (stderr, "OS unsupported\n");
+#define CHECK_SIZE(SIZE) { \
+  fprintf (stderr, "OS unsupported\n"); \
+  abort (); \
+  }
 #define EXPECT_OMP_NULL_ALLOCATOR
 
 int

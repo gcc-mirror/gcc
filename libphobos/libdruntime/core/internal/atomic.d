@@ -609,7 +609,7 @@ else version (GNU)
     import gcc.builtins;
     import gcc.config;
 
-    enum IsAtomicLockFree(T) = __atomic_is_lock_free(T.sizeof, null);
+    enum IsAtomicLockFree(T) = __traits(compiles, { enum E = __atomic_is_lock_free(T.sizeof, null); });
 
     inout(T) atomicLoad(MemoryOrder order = MemoryOrder.seq, T)(inout(T)* src) pure nothrow @nogc @trusted
         if (CanCAS!T)

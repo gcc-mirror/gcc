@@ -320,12 +320,9 @@ replace_loop_annotate (void)
 
   for (auto loop : loops_list (cfun, 0))
     {
-      /* First look into the header.  */
-      replace_loop_annotate_in_block (loop->header, loop);
-
-      /* Then look into the latch, if any.  */
-      if (loop->latch)
-	replace_loop_annotate_in_block (loop->latch, loop);
+      /* Check all exit source blocks for annotations.  */
+      for (auto e : get_loop_exit_edges (loop))
+	replace_loop_annotate_in_block (e->src, loop);
 
       /* Push the global flag_finite_loops state down to individual loops.  */
       loop->finite_p = flag_finite_loops;

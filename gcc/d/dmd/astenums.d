@@ -152,7 +152,7 @@ bool isRefReturnScope(const ulong stc)
 
 /* This is different from the one in declaration.d, make that fix a separate PR */
 static if (0)
-extern (C++) __gshared const(StorageClass) STCStorageClass =
+__gshared const(StorageClass) STCStorageClass =
     (STC.auto_ | STC.scope_ | STC.static_ | STC.extern_ | STC.const_ | STC.final_ |
      STC.abstract_ | STC.synchronized_ | STC.deprecated_ | STC.override_ | STC.lazy_ |
      STC.alias_ | STC.out_ | STC.in_ | STC.manifest | STC.immutable_ | STC.shared_ |

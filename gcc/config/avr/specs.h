@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
   "%(cc1_errata_skip) "                         \
   "%(cc1_rmw) "                                 \
   "%(cc1_absdata) "                             \
-  "%(cc1_misc) "
+  "%(cc1_rodata_in_ram) "
 
 #undef  CC1PLUS_SPEC
 #define CC1PLUS_SPEC                                    \
@@ -54,8 +54,7 @@ along with GCC; see the file COPYING3.  If not see
   "%(asm_relax) "                               \
   "%(asm_rmw) "                                 \
   "%(asm_gccisr) "                              \
-  "%(asm_errata_skip) "                         \
-  "%(asm_misc) "
+  "%(asm_errata_skip) "
 
 #define LINK_RELAX_SPEC                         \
   "%{mrelax:--relax} "
@@ -67,7 +66,7 @@ along with GCC; see the file COPYING3.  If not see
   "%(link_text_start) "                         \
   "%(link_relax) "                              \
   "%(link_pmem_wrap) "                          \
-  "%(link_misc) "                               \
+  "%(link_rodata_in_ram) "                      \
   "%{shared:%eshared is not supported} "
 
 #undef  LIB_SPEC

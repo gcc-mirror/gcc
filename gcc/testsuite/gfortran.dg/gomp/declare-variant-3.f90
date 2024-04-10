@@ -210,13 +210,13 @@ contains
     !$omp&					       vendor(score(22):gnu),unified_address,extension(score(22):foobar)})	! { dg-warning "unknown property 'foobar' of 'extension' selector" "" { target *-*-* } .-1 }
   end subroutine
   subroutine f72 ()
-    !$omp declare variant (f13) match (user={condition(0)})
+    !$omp declare variant (f13) match (user={condition(.false.)})
   end subroutine
   subroutine f73 ()
-    !$omp declare variant (f13) match (user={condition(272-272*1)})
+    !$omp declare variant (f13) match (user={condition(.true..and..not..true.)})
   end subroutine
   subroutine f74 ()
-    !$omp declare variant (f13) match (user={condition(score(25):1)})
+    !$omp declare variant (f13) match (user={condition(score(25):.true.)})
   end subroutine
   subroutine f75 ()
     !$omp declare variant (f13) match (device={kind(any,"any")})
@@ -231,7 +231,7 @@ contains
     !$omp declare variant (f13) match (implementation={vendor(nvidia)})
   end subroutine
   subroutine f79 ()
-    !$omp declare variant (f13) match (user={condition(score(0):0)})
+    !$omp declare variant (f13) match (user={condition(score(0):.false.)})
   end subroutine
 
   end module

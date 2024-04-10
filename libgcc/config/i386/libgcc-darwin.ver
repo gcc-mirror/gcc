@@ -1,9 +1,12 @@
+
+# NOTE: Darwin does not version individual symbols, the grouping is
+# preserved here to document at which GCC revision they were introduced.
+
 GCC_4.8.0 {
   __cpu_model
   __cpu_indicator_init
 }
 
-%inherit GCC_12.0.0 GCC_7.0.0
 GCC_12.0.0 {
   __divhc3
   __mulhc3
@@ -21,4 +24,23 @@ GCC_12.0.0 {
   __truncsfhf2
   __trunctfhf2
   __truncxfhf2
+}
+
+GCC_14.0.0 {
+  # Added to GCC_13.0.0 in i386/libgcc-glibc.ver.
+  __extendbfsf2
+  __floattibf
+  __floatuntibf
+  __truncdfbf2
+  __truncsfbf2
+  __trunctfbf2
+  __truncxfbf2
+  __trunchfbf2
+  # Added to GCC_14.0.0 in i386/libgcc-glibc.ver.
+  __fixxfbitint
+  __fixtfbitint
+  __floatbitintbf
+  __floatbitinthf
+  __floatbitintxf
+  __floatbitinttf
 }

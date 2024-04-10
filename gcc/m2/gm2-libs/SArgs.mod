@@ -60,12 +60,15 @@ if defined(GM2_DEBUG_SARGS)
 PROCEDURE GetArg (VAR s: String; n: CARDINAL) : BOOLEAN ;
 VAR
    i  : INTEGER ;
+   a  : ADDRESS ;
    ppc: PtrToPtrToChar ;
 BEGIN
    i := VAL (INTEGER, n) ;
    IF i < GetArgC ()
    THEN
-      ppc := ADDRESS (ADDRESS (GetArgV ()) + (n * TSIZE (PtrToChar))) ;
+      a := ADDRESS (GetArgV ()) ;
+      INC (a, n * TSIZE (PtrToChar)) ;
+      ppc := a ;
       s   := InitStringCharStar (ppc^) ;
       RETURN TRUE
    ELSE

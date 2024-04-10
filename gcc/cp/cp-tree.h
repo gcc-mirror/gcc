@@ -7185,7 +7185,8 @@ extern void init_exception_processing		(void);
 extern tree expand_start_catch_block		(tree);
 extern void expand_end_catch_block		(void);
 extern tree build_exc_ptr			(void);
-extern tree build_throw				(location_t, tree);
+extern tree build_throw				(location_t, tree,
+						 tsubst_flags_t);
 extern int nothrow_libfn_p			(const_tree);
 extern void check_handlers			(tree);
 extern tree finish_noexcept_expr		(tree, tsubst_flags_t);

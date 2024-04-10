@@ -427,7 +427,5 @@ public:
 
 void addMember(Dsymbol *dsym, Scope *sc, ScopeDsymbol *sds);
 Dsymbol *search(Dsymbol *d, const Loc &loc, Identifier *ident, SearchOptFlags flags = (SearchOptFlags)SearchOpt::localsOnly);
-bool checkDeprecated(Dsymbol *d, const Loc &loc, Scope *sc);
 void setScope(Dsymbol *d, Scope *sc);
 void importAll(Dsymbol *d, Scope *sc);
-void setFieldOffset(Dsymbol *d, AggregateDeclaration *ad, FieldState& fieldState, bool isunion);

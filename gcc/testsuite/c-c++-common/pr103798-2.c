@@ -27,4 +27,5 @@ main ()
  return 0;
 }
 
-/* { dg-final { scan-assembler-not "memchr" } } */
+/* See PR c++/113706 for the xfail.  */
+/* { dg-final { scan-assembler-not "memchr" { xfail { c++ && *-*-solaris2* } } } } */

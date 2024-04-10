@@ -1,3 +1,9 @@
+2024-02-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113848
+	* gm2-libs/SArgs.mod (GetArg): Re-write address arithmetic
+	to avoid (void *) computation.
+
 2024-02-03  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/113730

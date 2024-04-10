@@ -940,8 +940,9 @@ alloc_page (unsigned order)
 
   if (GGC_DEBUG_LEVEL >= 2)
     fprintf (G.debug_file,
-	     "Allocating page at %p, object size=%lu, data %p-%p\n",
-	     (void *) entry, (unsigned long) OBJECT_SIZE (order),
+	     "Allocating page at %p, object size="
+	     HOST_SIZE_T_PRINT_UNSIGNED ", data %p-%p\n",
+	     (void *) entry, (fmt_size_t) OBJECT_SIZE (order),
 	     (void *) page, (void *) (page + entry_size - 1));
 
   return entry;
@@ -1448,8 +1449,10 @@ ggc_internal_alloc (size_t size, void (*f)(void *), size_t s, size_t n
 
   if (GGC_DEBUG_LEVEL >= 3)
     fprintf (G.debug_file,
-	     "Allocating object, requested size=%lu, actual=%lu at %p on %p\n",
-	     (unsigned long) size, (unsigned long) object_size, result,
+	     "Allocating object, requested size="
+	     HOST_SIZE_T_PRINT_UNSIGNED ", actual=" HOST_SIZE_T_PRINT_UNSIGNED
+	     " at %p on %p\n",
+	     (fmt_size_t) size, (fmt_size_t) object_size, result,
 	     (void *) entry);
 
   return result;
@@ -1621,8 +1624,9 @@ ggc_free (void *p)
 
   if (GGC_DEBUG_LEVEL >= 3)
     fprintf (G.debug_file,
-	     "Freeing object, actual size=%lu, at %p on %p\n",
-	     (unsigned long) size, p, (void *) pe);
+	     "Freeing object, actual size="
+	     HOST_SIZE_T_PRINT_UNSIGNED ", at %p on %p\n",
+	     (fmt_size_t) size, p, (void *) pe);
 
 #ifdef ENABLE_GC_CHECKING
   /* Poison the data, to indicate the data is garbage.  */

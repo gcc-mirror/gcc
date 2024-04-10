@@ -7335,8 +7335,8 @@ dump_var (variable *var)
 
   for (i = 0; i < var->n_var_parts; i++)
     {
-      fprintf (dump_file, "    offset %ld\n",
-	       (long)(var->onepart ? 0 : VAR_PART_OFFSET (var, i)));
+      fprintf (dump_file, "    offset " HOST_WIDE_INT_PRINT_DEC "\n",
+	       var->onepart ? 0 : VAR_PART_OFFSET (var, i));
       for (node = var->var_part[i].loc_chain; node; node = node->next)
 	{
 	  fprintf (dump_file, "      ");

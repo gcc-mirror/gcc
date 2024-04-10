@@ -13572,7 +13572,17 @@ c_objc_common_truthvalue_conversion (location_t location, tree expr, tree type)
       break;
     }
 
-  int_const = (TREE_CODE (expr) == INTEGER_CST && !TREE_OVERFLOW (expr));
+  /* Conversion of a floating constant to boolean goes through here
+     and yields an integer constant expression.  Otherwise, the result
+     is only an integer constant expression if the argument is.  */
+  int_const = ((TREE_CODE (expr) == INTEGER_CST && !TREE_OVERFLOW (expr))
+	       || ((TREE_CODE (expr) == REAL_CST
+		    || TREE_CODE (expr) == COMPLEX_CST)
+		   && (TREE_CODE (type) == BOOLEAN_TYPE
+		       || (TREE_CODE (type) == ENUMERAL_TYPE
+			   && ENUM_UNDERLYING_TYPE (type) != NULL_TREE
+			   && (TREE_CODE (ENUM_UNDERLYING_TYPE (type))
+			       == BOOLEAN_TYPE)))));
   int_operands = EXPR_INT_CONST_OPERANDS (expr);
   if (int_operands && TREE_CODE (expr) != INTEGER_CST)
     {

@@ -125,3 +125,4 @@ public:
 };
 
 Expression *initializerToExpression(Initializer *init, Type *t = NULL, const bool isCfile = false);
+Initializer *initializerSemantic(Initializer *init, Scope *sc, Type *&tx, NeedInterpret needInterpret);

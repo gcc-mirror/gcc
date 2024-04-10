@@ -235,8 +235,8 @@ or any notes about the implementation.
 	Windowing range adaptors: <code>views::chunk</code>
 	and <code>views::slide</code> </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2442r2.html">
-        P2442R2
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2442r1.html">
+        P2442R1
         </link>
       </entry>
       <entry align="center"> 13.1 </entry>

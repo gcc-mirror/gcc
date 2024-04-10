@@ -95,7 +95,8 @@ target_triplet = @target@
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	s,$(SIZES),$(addsuffix \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	_$(s)_1_.lo,$(SIZEOBJS))) \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	$(addsuffix \
-@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	_8_2_.lo,$(SIZEOBJS))
+@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	_8_2_.lo,$(SIZEOBJS)) \
+@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	tas_1_2_.lo
 @ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@am__append_4 = $(addsuffix _8_1_.lo,$(SIZEOBJS))
 @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@am__append_5 = $(addsuffix _16_1_.lo,$(SIZEOBJS)) \
 @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@		       $(addsuffix _16_2_.lo,$(SIZEOBJS))

@@ -56,6 +56,7 @@ libiberty_vprintf_buffer_size (const char *format, va_list args)
     {
       if (*p++ == '%')
 	{
+	  int prec = 0;
 	  while (strchr ("-+ #0", *p))
 	    ++p;
 	  if (*p == '*')
@@ -76,8 +77,43 @@ libiberty_vprintf_buffer_size (const char *format, va_list args)
 	      else
 	      total_width += strtoul (p, (char **) &p, 10);
 	    }
-	  while (strchr ("hlL", *p))
-	    ++p;
+	  do
+	    {
+	      switch (*p)
+		{
+		case 'h':
+		  ++p;
+		  continue;
+		case 'l':
+		case 'L':
+		  ++prec;
+		  ++p;
+		  continue;
+		case 'z':
+		  prec = 3;
+		  ++p;
+		  continue;
+		case 't':
+		  prec = 4;
+		  ++p;
+		  continue;
+#ifdef _WIN32
+		case 'I':
+		  if (p[1] == '6' && p[2] == '4')
+		    {
+		      prec = 2;
+		      p += 3;
+		      continue;
+		    }
+		  break;
+#endif
+		default:
+		  break;
+		}
+	      break;
+	    }
+	  while (1);
+
 	  /* Should be big enough for any format specifier except %s and floats.  */
 	  total_width += 30;
 	  switch (*p)
@@ -88,6 +124,15 @@ libiberty_vprintf_buffer_size (const char *format, va_list args)
 	    case 'u':
 	    case 'x':
 	    case 'X':
+	      switch (prec)
+		{
+		case 0: (void) va_arg (ap, int); break;
+		case 1: (void) va_arg (ap, long int); break;
+		case 2: (void) va_arg (ap, long long int); break;
+		case 3: (void) va_arg (ap, size_t); break;
+		case 4: (void) va_arg (ap, ptrdiff_t); break;
+		}
+	      break;
 	    case 'c':
 	      (void) va_arg (ap, int);
 	      break;
@@ -96,10 +141,18 @@ libiberty_vprintf_buffer_size (const char *format, va_list args)
 	    case 'E':
 	    case 'g':
 	    case 'G':
-	      (void) va_arg (ap, double);
-	      /* Since an ieee double can have an exponent of 307, we'll
-		 make the buffer wide enough to cover the gross case. */
-	      total_width += 307;
+	      if (!prec)
+		{
+		  (void) va_arg (ap, double);
+		  /* Since an ieee double can have an exponent of 308, we'll
+		     make the buffer wide enough to cover the gross case. */
+		  total_width += 308;
+		}
+	      else
+		{
+		  (void) va_arg (ap, long double);
+		  total_width += 4932;
+		}
 	      break;
 	    case 's':
 	      total_width += strlen (va_arg (ap, char *));

@@ -1307,6 +1307,23 @@ read_x (st_parameter_dt *dtp, size_t n)
     
   if (n == 0)
     return;
+    
+  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+    {
+      gfc_char4_t c;
+      size_t nbytes, j;
+    
+      /* Proceed with decoding one character at a time.  */
+      for (j = 0; j < n; j++)
+	{
+	  c = read_utf8 (dtp, &nbytes);
+    
+	  /* Check for a short read and if so, break out.  */
+	  if (nbytes == 0 || c == (gfc_char4_t)0)
+	    break;
+	}
+      return;
+    }
 
   length = n;
 

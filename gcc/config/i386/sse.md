@@ -16498,29 +16498,35 @@
   "operands[3] = XVECEXP (operands[2], 0, 0);")
 
 (define_expand "vec_shl_<mode>"
-  [(set (match_dup 3)
+  [(set (match_operand:V_128 0 "register_operand")
 	(ashift:V1TI
-	 (match_operand:V_128 1 "register_operand")
-	 (match_operand:SI 2 "const_0_to_255_mul_8_operand")))
-   (set (match_operand:V_128 0 "register_operand") (match_dup 4))]
+	 (match_operand:V_128 1 "nonimmediate_operand")
+	 (match_operand:SI 2 "const_0_to_255_mul_8_operand")))]
   "TARGET_SSE2"
 {
-  operands[1] = gen_lowpart (V1TImode, operands[1]);
-  operands[3] = gen_reg_rtx (V1TImode);
-  operands[4] = gen_lowpart (<MODE>mode, operands[3]);
+  rtx op0 = gen_reg_rtx (V1TImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_sse2_ashlv1ti3
+	      (op0, gen_lowpart (V1TImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
+  DONE;
 })
 
 (define_expand "vec_shr_<mode>"
-  [(set (match_dup 3)
+  [(set (match_operand:V_128 0 "register_operand")
 	(lshiftrt:V1TI
-	 (match_operand:V_128 1 "register_operand")
-	 (match_operand:SI 2 "const_0_to_255_mul_8_operand")))
-   (set (match_operand:V_128 0 "register_operand") (match_dup 4))]
+	 (match_operand:V_128 1 "nonimmediate_operand")
+	 (match_operand:SI 2 "const_0_to_255_mul_8_operand")))]
   "TARGET_SSE2"
 {
-  operands[1] = gen_lowpart (V1TImode, operands[1]);
-  operands[3] = gen_reg_rtx (V1TImode);
-  operands[4] = gen_lowpart (<MODE>mode, operands[3]);
+  rtx op0 = gen_reg_rtx (V1TImode);
+  rtx op1 = force_reg (<MODE>mode, operands[1]);
+
+  emit_insn (gen_sse2_lshrv1ti3
+	      (op0, gen_lowpart (V1TImode, op1), operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, op0));
+  DONE;
 })
 
 (define_expand "ashlv1ti3"

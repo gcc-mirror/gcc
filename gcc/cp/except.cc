@@ -39,8 +39,8 @@ static tree do_end_catch (tree);
 static void initialize_handler_parm (tree, tree);
 static tree do_allocate_exception (tree);
 static tree wrap_cleanups_r (tree *, int *, void *);
-static int complete_ptr_ref_or_void_ptr_p (tree, tree);
-static bool is_admissible_throw_operand_or_catch_parameter (tree, bool);
+static bool is_admissible_throw_operand_or_catch_parameter (tree, bool,
+							    tsubst_flags_t);
 
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */
@@ -398,7 +398,8 @@ expand_start_catch_block (tree decl)
 
   if (decl)
     {
-      if (!is_admissible_throw_operand_or_catch_parameter (decl, false))
+      if (!is_admissible_throw_operand_or_catch_parameter (decl, false,
+							   tf_warning_or_error))
 	decl = error_mark_node;
 
       type = prepare_eh_type (TREE_TYPE (decl));
@@ -486,7 +487,8 @@ expand_end_catch_block (void)
 	  || DECL_DESTRUCTOR_P (current_function_decl))
       && !in_nested_catch ())
     {
-      tree rethrow = build_throw (input_location, NULL_TREE);
+      tree rethrow = build_throw (input_location, NULL_TREE,
+				  tf_warning_or_error);
       /* Disable all warnings for the generated rethrow statement.  */
       suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
@@ -607,7 +609,7 @@ wrap_cleanups_r (tree *tp, int *walk_subtrees, void * /*data*/)
 /* Build a throw expression.  */
 
 tree
-build_throw (location_t loc, tree exp)
+build_throw (location_t loc, tree exp, tsubst_flags_t complain)
 {
   if (exp == error_mark_node)
     return exp;
@@ -621,15 +623,14 @@ build_throw (location_t loc, tree exp)
       return exp;
     }
 
-  if (exp && null_node_p (exp))
+  if (exp && null_node_p (exp) && (complain & tf_warning))
     warning_at (loc, 0,
 		"throwing NULL, which has integral, not pointer type");
 
-  if (exp != NULL_TREE)
-    {
-      if (!is_admissible_throw_operand_or_catch_parameter (exp, true))
-	return error_mark_node;
-    }
+  if (exp && !is_admissible_throw_operand_or_catch_parameter (exp,
+							      /*is_throw=*/true,
+							      complain))
+    return error_mark_node;
 
   if (! doing_eh ())
     return error_mark_node;
@@ -641,8 +642,6 @@ build_throw (location_t loc, tree exp)
       tree cleanup;
       tree object, ptr;
       tree allocate_expr;
-
-      tsubst_flags_t complain = tf_warning_or_error;
 
       /* The CLEANUP_TYPE is the internal type of a destructor.  */
       if (!cleanup_type)
@@ -714,7 +713,6 @@ build_throw (location_t loc, tree exp)
       if (CLASS_TYPE_P (temp_type))
 	{
 	  int flags = LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING;
-	  bool converted = false;
 	  location_t exp_loc = cp_expr_loc_or_loc (exp, loc);
 
 	  /* Under C++0x [12.8/16 class.copy], a thrown lvalue is sometimes
@@ -727,23 +725,20 @@ build_throw (location_t loc, tree exp)
 	    exp = moved;
 
 	  /* Call the copy constructor.  */
-	  if (!converted)
-	    {
-	      releasing_vec exp_vec (make_tree_vector_single (exp));
-	      exp = (build_special_member_call
-		     (object, complete_ctor_identifier, &exp_vec,
-		      TREE_TYPE (object), flags, tf_warning_or_error));
-	    }
-
+	  releasing_vec exp_vec (make_tree_vector_single (exp));
+	  exp = build_special_member_call (object, complete_ctor_identifier,
+					   &exp_vec, TREE_TYPE (object), flags,
+					   complain);
 	  if (exp == error_mark_node)
 	    {
-	      inform (exp_loc, "  in thrown expression");
+	      if (complain & tf_error)
+		inform (exp_loc, "  in thrown expression");
 	      return error_mark_node;
 	    }
 	}
       else
 	{
-	  tree tmp = decay_conversion (exp, tf_warning_or_error);
+	  tree tmp = decay_conversion (exp, complain);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
 	  exp = cp_build_init_expr (object, tmp);
@@ -768,7 +763,7 @@ build_throw (location_t loc, tree exp)
 	  tree binfo = TYPE_BINFO (TREE_TYPE (object));
 	  tree dtor_fn = lookup_fnfields (binfo,
 					  complete_dtor_identifier, 0,
-					  tf_warning_or_error);
+					  complain);
 	  dtor_fn = BASELINK_FUNCTIONS (dtor_fn);
 	  if (!mark_used (dtor_fn)
 	      || !perform_or_defer_access_check (binfo, dtor_fn,
@@ -785,7 +780,7 @@ build_throw (location_t loc, tree exp)
 	cleanup = build_int_cst (cleanup_type, 0);
 
       /* ??? Indicate that this function call throws throw_type.  */
-      tree tmp = cp_build_function_call_nary (throw_fn, tf_warning_or_error,
+      tree tmp = cp_build_function_call_nary (throw_fn, complain,
 					      ptr, throw_type, cleanup,
 					      NULL_TREE);
 
@@ -807,7 +802,7 @@ build_throw (location_t loc, tree exp)
 
       /* ??? Indicate that this function call allows exceptions of the type
 	 of the enclosing catch block (if known).  */
-      exp = cp_build_function_call_vec (rethrow_fn, NULL, tf_warning_or_error);
+      exp = cp_build_function_call_vec (rethrow_fn, NULL, complain);
     }
 
   exp = build1_loc (loc, THROW_EXPR, void_type_node, exp);
@@ -820,28 +815,26 @@ build_throw (location_t loc, tree exp)
    Return the zero on failure and nonzero on success. FROM can be
    the expr or decl from whence TYPE came, if available.  */
 
-static int
-complete_ptr_ref_or_void_ptr_p (tree type, tree from)
+static bool
+complete_ptr_ref_or_void_ptr_p (tree type, tree from, tsubst_flags_t complain)
 {
-  int is_ptr;
-
   /* Check complete.  */
-  type = complete_type_or_else (type, from);
+  type = complete_type_or_maybe_complain (type, from, complain);
   if (!type)
-    return 0;
+    return false;
 
   /* Or a pointer or ref to one, or cv void *.  */
-  is_ptr = TYPE_PTR_P (type);
+  const bool is_ptr = TYPE_PTR_P (type);
   if (is_ptr || TYPE_REF_P (type))
     {
       tree core = TREE_TYPE (type);
 
       if (is_ptr && VOID_TYPE_P (core))
 	/* OK */;
-      else if (!complete_type_or_else (core, from))
-	return 0;
+      else if (!complete_type_or_maybe_complain (core, from, complain))
+	return false;
     }
-  return 1;
+  return true;
 }
 
 /* If IS_THROW is true return truth-value if T is an expression admissible
@@ -851,13 +844,14 @@ complete_ptr_ref_or_void_ptr_p (tree type, tree from)
    for its type plus rvalue reference type is also not admissible.  */
 
 static bool
-is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
+is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw,
+						tsubst_flags_t complain)
 {
   tree expr = is_throw ? t : NULL_TREE;
   tree type = TREE_TYPE (t);
 
   /* C++11 [except.handle] The exception-declaration shall not denote
-     an incomplete type, an abstract class type, or an rvalue reference 
+     an incomplete type, an abstract class type, or an rvalue reference
      type.  */
 
   /* 15.1/4 [...] The type of the throw-expression shall not be an
@@ -867,7 +861,7 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
 	    restrictions on type matching mentioned in 15.3, the operand
 	    of throw is treated exactly as a function argument in a call
 	    (5.2.2) or the operand of a return statement.  */
-  if (!complete_ptr_ref_or_void_ptr_p (type, expr))
+  if (!complete_ptr_ref_or_void_ptr_p (type, expr, complain))
     return false;
 
   tree nonref_type = non_reference (type);
@@ -877,25 +871,30 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
   /* 10.4/3 An abstract class shall not be used as a parameter type,
 	    as a function return type or as type of an explicit
 	    conversion.  */
-  else if (abstract_virtuals_error (is_throw ? ACU_THROW : ACU_CATCH, type))
+  else if (abstract_virtuals_error (is_throw ? ACU_THROW : ACU_CATCH, type,
+				    complain))
     return false;
   else if (!is_throw
 	   && TYPE_REF_P (type)
 	   && TYPE_REF_IS_RVALUE (type))
     {
-      error ("cannot declare %<catch%> parameter to be of rvalue "
-	     "reference type %qT", type);
+      if (complain & tf_error)
+	error ("cannot declare %<catch%> parameter to be of rvalue "
+	       "reference type %qT", type);
       return false;
     }
   else if (variably_modified_type_p (type, NULL_TREE))
     {
-      if (is_throw)
-	error_at (cp_expr_loc_or_input_loc (expr),
-		  "cannot throw expression of type %qT because it involves "
-		  "types of variable size", type);
-      else
-	error ("cannot catch type %qT because it involves types of "
-	       "variable size", type);
+      if (complain & tf_error)
+	{
+	  if (is_throw)
+	    error_at (cp_expr_loc_or_input_loc (expr),
+		      "cannot throw expression of type %qT because it involves "
+		      "types of variable size", type);
+	  else
+	    error ("cannot catch type %qT because it involves types of "
+		   "variable size", type);
+	}
       return false;
     }
 
